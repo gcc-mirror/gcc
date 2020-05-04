@@ -246,6 +246,9 @@ package body Exp_Aggr is
    -- Local Subprograms for Array Aggregate Expansion --
    -----------------------------------------------------
 
+   function Aggr_Assignment_OK_For_Backend (N : Node_Id) return Boolean;
+   --  Returns true if an aggregate assignment can be done by the back end
+
    function Aggr_Size_OK (N : Node_Id; Typ : Entity_Id) return Boolean;
    --  Very large static aggregates present problems to the back-end, and are
    --  transformed into assignments and loops. This function verifies that the
@@ -342,6 +345,246 @@ package body Exp_Aggr is
    --  and presented to the back-end as a static value. The function returns
    --  false if this transformation cannot be performed. THis is similar to,
    --  and reuses part of the machinery in Packed_Array_Aggregate_Handled.
+
+   ------------------------------------
+   -- Aggr_Assignment_OK_For_Backend --
+   ------------------------------------
+
+   --  Back-end processing by Gigi/gcc is possible only if all the following
+   --  conditions are met:
+
+   --    1. N consists of a single OTHERS choice, possibly recursively, or
+   --       of a single choice, possibly recursively, if it is surrounded by
+   --       a qualified expression whose subtype mark is unconstrained.
+
+   --    2. The array type has no null ranges (the purpose of this is to
+   --       avoid a bogus warning for an out-of-range value).
+
+   --    3. The array type has no atomic components
+
+   --    4. The component type is elementary
+
+   --    5. The component size is a multiple of Storage_Unit
+
+   --    6. The component size is Storage_Unit or the value is of the form
+   --       M * (1 + A**1 + A**2 + .. A**(K-1)) where A = 2**(Storage_Unit)
+   --       and M in 0 .. A-1. This can also be viewed as K occurrences of
+   --       the Storage_Unit value M, concatenated together.
+
+   --  The ultimate goal is to generate a call to a fast memset routine
+   --  specifically optimized for the target.
+
+   function Aggr_Assignment_OK_For_Backend (N : Node_Id) return Boolean is
+      Csiz      : Uint := No_Uint;
+      Ctyp      : Entity_Id;
+      Expr      : Node_Id;
+      High      : Node_Id;
+      Index     : Entity_Id;
+      Low       : Node_Id;
+      Nunits    : Int;
+      Remainder : Uint;
+      Value     : Uint;
+
+      function Is_OK_Aggregate (Aggr : Node_Id) return Boolean;
+      --  Return true if Aggr is suitable for back-end assignment
+
+      ---------------------
+      -- Is_OK_Aggregate --
+      ---------------------
+
+      function Is_OK_Aggregate (Aggr : Node_Id) return Boolean is
+         Assoc : constant List_Id := Component_Associations (Aggr);
+
+      begin
+         --  An "others" aggregate is most likely OK, but see below
+
+         if Is_Others_Aggregate (Aggr) then
+            null;
+
+         --  An aggregate with a single choice requires a qualified expression
+         --  whose subtype mark is an unconstrained type because we need it to
+         --  have the semantics of an "others" aggregate.
+
+         elsif Nkind (Parent (N)) = N_Qualified_Expression
+           and then not Is_Constrained (Entity (Subtype_Mark (Parent (N))))
+           and then Is_Single_Aggregate (Aggr)
+         then
+            null;
+
+         --  The other cases are not OK
+
+         else
+            return False;
+         end if;
+
+         --  In any case we do not support an iterated association
+
+         return Nkind (First (Assoc)) /= N_Iterated_Component_Association;
+      end Is_OK_Aggregate;
+
+   begin
+      --  Back end doesn't know about <>
+
+      if Has_Default_Init_Comps (N) then
+         return False;
+      end if;
+
+      --  Recurse as far as possible to find the innermost component type
+
+      Ctyp := Etype (N);
+      Expr := N;
+      while Is_Array_Type (Ctyp) loop
+         if Nkind (Expr) /= N_Aggregate
+           or else not Is_OK_Aggregate (Expr)
+         then
+            return False;
+         end if;
+
+         Index := First_Index (Ctyp);
+         while Present (Index) loop
+            Get_Index_Bounds (Index, Low, High);
+
+            if Is_Null_Range (Low, High) then
+               return False;
+            end if;
+
+            Next_Index (Index);
+         end loop;
+
+         Expr := Expression (First (Component_Associations (Expr)));
+
+         for J in 1 .. Number_Dimensions (Ctyp) - 1 loop
+            if Nkind (Expr) /= N_Aggregate
+              or else not Is_OK_Aggregate (Expr)
+            then
+               return False;
+            end if;
+
+            Expr := Expression (First (Component_Associations (Expr)));
+         end loop;
+
+         if Has_Atomic_Components (Ctyp) then
+            return False;
+         end if;
+
+         Csiz := Component_Size (Ctyp);
+         Ctyp := Component_Type (Ctyp);
+
+         if Is_Atomic_Or_VFA (Ctyp) then
+            return False;
+         end if;
+      end loop;
+
+      --  Access types need to be dealt with specially
+
+      if Is_Access_Type (Ctyp) then
+
+         --  Component_Size is not set by Layout_Type if the component
+         --  type is an access type ???
+
+         Csiz := Esize (Ctyp);
+
+         --  Fat pointers are rejected as they are not really elementary
+         --  for the backend.
+
+         if Csiz /= System_Address_Size then
+            return False;
+         end if;
+
+         --  The supported expressions are NULL and constants, others are
+         --  rejected upfront to avoid being analyzed below, which can be
+         --  problematic for some of them, for example allocators.
+
+         if Nkind (Expr) /= N_Null and then not Is_Entity_Name (Expr) then
+            return False;
+         end if;
+
+      --  Scalar types are OK if their size is a multiple of Storage_Unit
+
+      elsif Is_Scalar_Type (Ctyp) then
+         pragma Assert (Csiz /= No_Uint);
+
+         if Csiz mod System_Storage_Unit /= 0 then
+            return False;
+         end if;
+
+      --  Composite types are rejected
+
+      else
+         return False;
+      end if;
+
+      --  If the expression has side effects (e.g. contains calls with
+      --  potential side effects) reject as well. We only preanalyze the
+      --  expression to prevent the removal of intended side effects.
+
+      Preanalyze_And_Resolve (Expr, Ctyp);
+
+      if not Side_Effect_Free (Expr) then
+         return False;
+      end if;
+
+      --  The expression needs to be analyzed if True is returned
+
+      Analyze_And_Resolve (Expr, Ctyp);
+
+      --  Strip away any conversions from the expression as they simply
+      --  qualify the real expression.
+
+      while Nkind_In (Expr, N_Unchecked_Type_Conversion, N_Type_Conversion)
+      loop
+         Expr := Expression (Expr);
+      end loop;
+
+      Nunits := UI_To_Int (Csiz) / System_Storage_Unit;
+
+      if Nunits = 1 then
+         return True;
+      end if;
+
+      if not Compile_Time_Known_Value (Expr) then
+         return False;
+      end if;
+
+      --  The only supported value for floating point is 0.0
+
+      if Is_Floating_Point_Type (Ctyp) then
+         return Expr_Value_R (Expr) = Ureal_0;
+      end if;
+
+      --  For other types, we can look into the value as an integer, which
+      --  means the representation value for enumeration literals.
+
+      Value := Expr_Rep_Value (Expr);
+
+      if Has_Biased_Representation (Ctyp) then
+         Value := Value - Expr_Value (Type_Low_Bound (Ctyp));
+      end if;
+
+      --  Values 0 and -1 immediately satisfy the last check
+
+      if Value = Uint_0 or else Value = Uint_Minus_1 then
+         return True;
+      end if;
+
+      --  We need to work with an unsigned value
+
+      if Value < 0 then
+         Value := Value + 2**(System_Storage_Unit * Nunits);
+      end if;
+
+      Remainder := Value rem 2**System_Storage_Unit;
+
+      for J in 1 .. Nunits - 1 loop
+         Value := Value / 2**System_Storage_Unit;
+
+         if Value rem 2**System_Storage_Unit /= Remainder then
+            return False;
+         end if;
+      end loop;
+
+      return True;
+   end Aggr_Assignment_OK_For_Backend;
 
    ------------------
    -- Aggr_Size_OK --
@@ -4107,21 +4350,41 @@ package body Exp_Aggr is
       Aggr   : Node_Id;
       Target : Node_Id)
    is
-      Aggr_Code : List_Id;
       Typ       : constant Entity_Id := Etype (Aggr);
       Ctyp      : constant Entity_Id := Component_Type (Typ);
+      Aggr_Code : List_Id;
+      New_Aggr  : Node_Id;
 
    begin
-      --  The target is an explicit dereference of the allocated object.
-      --  Generate component assignments to it, as for an aggregate that
-      --  appears on the right-hand side of an assignment statement.
+      --  The target is an explicit dereference of the allocated object
 
-      Aggr_Code :=
-        Build_Array_Aggr_Code (Aggr,
-          Ctype       => Ctyp,
-          Index       => First_Index (Typ),
-          Into        => Target,
-          Scalar_Comp => Is_Scalar_Type (Ctyp));
+      --  If the assignment can be done directly by the back end, then
+      --  reset Set_Expansion_Delayed and do not expand further.
+
+      if not CodePeer_Mode
+        and then not Modify_Tree_For_C
+        and then Aggr_Assignment_OK_For_Backend (Aggr)
+      then
+         New_Aggr := New_Copy_Tree (Aggr);
+         Set_Expansion_Delayed (New_Aggr, False);
+
+         Aggr_Code :=
+           New_List (
+             Make_OK_Assignment_Statement (Sloc (New_Aggr),
+               Name       => Target,
+               Expression => New_Aggr));
+
+      --  Or else, generate component assignments to it, as for an aggregate
+      --  that appears on the right-hand side of an assignment statement.
+
+      else
+         Aggr_Code :=
+           Build_Array_Aggr_Code (Aggr,
+             Ctype       => Ctyp,
+             Index       => First_Index (Typ),
+             Into        => Target,
+             Scalar_Comp => Is_Scalar_Type (Ctyp));
+      end if;
 
       Insert_Actions_After (Decl, Aggr_Code);
    end Convert_Array_Aggr_In_Allocator;
@@ -5299,9 +5562,6 @@ package body Exp_Aggr is
       --  If Others_Present (J) is True, then there is an others choice in one
       --  of the subaggregates of N at dimension J.
 
-      function Aggr_Assignment_OK_For_Backend (N : Node_Id) return Boolean;
-      --  Returns true if an aggregate assignment can be done by the back end
-
       procedure Build_Constrained_Type (Positional : Boolean);
       --  If the subtype is not static or unconstrained, build a constrained
       --  type using the computable sizes of the aggregate and its sub-
@@ -5332,215 +5592,6 @@ package body Exp_Aggr is
       --  In addition to Maybe_In_Place_OK, in order for an aggregate to be
       --  built directly into the target of the assignment it must be free
       --  of side effects.
-
-      ------------------------------------
-      -- Aggr_Assignment_OK_For_Backend --
-      ------------------------------------
-
-      --  Backend processing by Gigi/gcc is possible only if all the following
-      --  conditions are met:
-
-      --    1. N consists of a single OTHERS choice, possibly recursively
-
-      --    2. The array type has no null ranges (the purpose of this is to
-      --       avoid a bogus warning for an out-of-range value).
-
-      --    3. The array type has no atomic components
-
-      --    4. The component type is elementary
-
-      --    5. The component size is a multiple of Storage_Unit
-
-      --    6. The component size is Storage_Unit or the value is of the form
-      --       M * (1 + A**1 + A**2 + .. A**(K-1)) where A = 2**(Storage_Unit)
-      --       and M in 1 .. A-1. This can also be viewed as K occurrences of
-      --       the 8-bit value M, concatenated together.
-
-      --  The ultimate goal is to generate a call to a fast memset routine
-      --  specifically optimized for the target.
-
-      function Aggr_Assignment_OK_For_Backend (N : Node_Id) return Boolean is
-         Csiz      : Uint := No_Uint;
-         Ctyp      : Entity_Id;
-         Expr      : Node_Id;
-         High      : Node_Id;
-         Index     : Entity_Id;
-         Low       : Node_Id;
-         Nunits    : Int;
-         Remainder : Uint;
-         Value     : Uint;
-
-      begin
-         --  Back end doesn't know about <>
-
-         if Has_Default_Init_Comps (N) then
-            return False;
-         end if;
-
-         --  Recurse as far as possible to find the innermost component type
-
-         Ctyp := Etype (N);
-         Expr := N;
-         while Is_Array_Type (Ctyp) loop
-            if Nkind (Expr) /= N_Aggregate
-              or else not Is_Others_Aggregate (Expr)
-            then
-               return False;
-            end if;
-
-            Index := First_Index (Ctyp);
-            while Present (Index) loop
-               Get_Index_Bounds (Index, Low, High);
-
-               if Is_Null_Range (Low, High) then
-                  return False;
-               end if;
-
-               Next_Index (Index);
-            end loop;
-
-            Expr := Expression (First (Component_Associations (Expr)));
-
-            for J in 1 .. Number_Dimensions (Ctyp) - 1 loop
-               if Nkind (Expr) /= N_Aggregate
-                 or else not Is_Others_Aggregate (Expr)
-               then
-                  return False;
-               end if;
-
-               Expr := Expression (First (Component_Associations (Expr)));
-            end loop;
-
-            if Has_Atomic_Components (Ctyp) then
-               return False;
-            end if;
-
-            Csiz := Component_Size (Ctyp);
-            Ctyp := Component_Type (Ctyp);
-
-            if Is_Atomic_Or_VFA (Ctyp) then
-               return False;
-            end if;
-         end loop;
-
-         --  An Iterated_Component_Association involves a loop (in most cases)
-         --  and is never static.
-
-         if Nkind (Parent (Expr)) = N_Iterated_Component_Association then
-            return False;
-         end if;
-
-         --  Access types need to be dealt with specially
-
-         if Is_Access_Type (Ctyp) then
-
-            --  Component_Size is not set by Layout_Type if the component
-            --  type is an access type ???
-
-            Csiz := Esize (Ctyp);
-
-            --  Fat pointers are rejected as they are not really elementary
-            --  for the backend.
-
-            if Csiz /= System_Address_Size then
-               return False;
-            end if;
-
-            --  The supported expressions are NULL and constants, others are
-            --  rejected upfront to avoid being analyzed below, which can be
-            --  problematic for some of them, for example allocators.
-
-            if Nkind (Expr) /= N_Null and then not Is_Entity_Name (Expr) then
-               return False;
-            end if;
-
-         --  Scalar types are OK if their size is a multiple of Storage_Unit
-
-         elsif Is_Scalar_Type (Ctyp) then
-            pragma Assert (Csiz /= No_Uint);
-
-            if Csiz mod System_Storage_Unit /= 0 then
-               return False;
-            end if;
-
-         --  Composite types are rejected
-
-         else
-            return False;
-         end if;
-
-         --  If the expression has side effects (e.g. contains calls with
-         --  potential side effects) reject as well. We only preanalyze the
-         --  expression to prevent the removal of intended side effects.
-
-         Preanalyze_And_Resolve (Expr, Ctyp);
-
-         if not Side_Effect_Free (Expr) then
-            return False;
-         end if;
-
-         --  The expression needs to be analyzed if True is returned
-
-         Analyze_And_Resolve (Expr, Ctyp);
-
-         --  Strip away any conversions from the expression as they simply
-         --  qualify the real expression.
-
-         while Nkind_In (Expr, N_Unchecked_Type_Conversion,
-                               N_Type_Conversion)
-         loop
-            Expr := Expression (Expr);
-         end loop;
-
-         Nunits := UI_To_Int (Csiz) / System_Storage_Unit;
-
-         if Nunits = 1 then
-            return True;
-         end if;
-
-         if not Compile_Time_Known_Value (Expr) then
-            return False;
-         end if;
-
-         --  The only supported value for floating point is 0.0
-
-         if Is_Floating_Point_Type (Ctyp) then
-            return Expr_Value_R (Expr) = Ureal_0;
-         end if;
-
-         --  For other types, we can look into the value as an integer, which
-         --  means the representation value for enumeration literals.
-
-         Value := Expr_Rep_Value (Expr);
-
-         if Has_Biased_Representation (Ctyp) then
-            Value := Value - Expr_Value (Type_Low_Bound (Ctyp));
-         end if;
-
-         --  Values 0 and -1 immediately satisfy the last check
-
-         if Value = Uint_0 or else Value = Uint_Minus_1 then
-            return True;
-         end if;
-
-         --  We need to work with an unsigned value
-
-         if Value < 0 then
-            Value := Value + 2**(System_Storage_Unit * Nunits);
-         end if;
-
-         Remainder := Value rem 2**System_Storage_Unit;
-
-         for J in 1 .. Nunits - 1 loop
-            Value := Value / 2**System_Storage_Unit;
-
-            if Value rem 2**System_Storage_Unit /= Remainder then
-               return False;
-            end if;
-         end loop;
-
-         return True;
-      end Aggr_Assignment_OK_For_Backend;
 
       ----------------------------
       -- Build_Constrained_Type --
