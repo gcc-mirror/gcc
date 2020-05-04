@@ -3141,25 +3141,15 @@ get_option_html_page (int option_index)
     return "gcc/Static-Analyzer-Options.html";
 
 #ifdef CL_Fortran
-  if (cl_opt->flags & CL_Fortran)
-    {
-      switch (option_index)
-	{
-	default:
-	  /* Most Fortran warnings are documented on this page.  */
-	  return "gfortran/Error-and-Warning-Options.html";
-
-	case OPT_Wdate_time:
-	case OPT_Wconversion:
-	case OPT_Wconversion_extra:
-	case OPT_Wmissing_include_dirs:
-	case OPT_Wopenmp_simd:
-	  /* These warnings are marked in fortran/lang.opt as
-	     "Documented in C" and thus use the common
-	     Warning-Options page below.  */
-	  break;
-	}
-    }
+  if ((cl_opt->flags & CL_Fortran) != 0
+      /* If it is option common to both C/C++ and Fortran, it is documented
+	 in gcc/ rather than gfortran/ docs.  */
+      && (cl_opt->flags & CL_C) == 0
+#ifdef CL_CXX
+      && (cl_opt->flags & CL_CXX) == 0
+#endif
+     )
+    return "gfortran/Error-and-Warning-Options.html";
 #endif
 
   return "gcc/Warning-Options.html";
