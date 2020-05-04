@@ -261,7 +261,7 @@ main (void) {
 TXT("--  This is the version for " TARGET)
 TXT("")
 TXT("with Interfaces.C;")
-#if defined (__MINGW32__)
+#if defined (__MINGW32__) || defined (__CYGWIN__)
 # define TARGET_OS "Windows"
 # define Serial_Port_Descriptor "System.Win32.HANDLE"
 TXT("with System.Win32;")
