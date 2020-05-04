@@ -1,3 +1,10 @@
+2020-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* opts.c (get_option_html_page): Instead of hardcoding a list of
+	options common between C/C++ and Fortran only use gfortran/
+	documentation for warnings that have CL_Fortran set but not
+	CL_C or CL_CXX.
+
 2020-05-03  Uroš Bizjak  <ubizjak@gmail.com>
 
         * config/i386/i386-expand.c (ix86_expand_int_movcc):
