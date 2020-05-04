@@ -27,9 +27,9 @@ msgstr ""
 "Project-Id-Version: gcc 10.1-b20200322\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2020-03-20 23:17+0000\n"
-"PO-Revision-Date: 2020-04-26 14:13+0200\n"
+"PO-Revision-Date: 2020-05-03 21:26+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
-"Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
+"Language-Team: Swedish <tp-sv-list@lists.sourceforge.net>\n"
 "Language: sv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -593,7 +593,7 @@ msgid ""
 msgstr ""
 "\n"
 "Synpunkter på översättningen till svenska rapporteras till\n"
-"<tp-sv@listor.tp-sv.se>.\n"
+"<tp-sv-list@lists.sourceforge.net>.\n"
 "För felrapporteringsinstruktioner i övrigt, se:\n"
 
 #: gcc.c:8038 gcov-tool.c:527
@@ -787,7 +787,7 @@ msgstr ""
 "\n"
 "För att rapportera fel, se:\n"
 "%s.\n"
-"Fel på översättningen rapporteras till <tp-sv@listor.tp-sv.se>\n"
+"Fel på översättningen rapporteras till <tp-sv-list@lists.sourceforge.net>\n"
 
 #: gcov-tool.c:528
 #, c-format
@@ -29174,17 +29174,15 @@ msgid "attribute %qs positional argument %i value %wi exceeds number of function
 msgstr "värdet %3$wi på argument %2$i till attributet %1$qs överskrider antalet funktionsargument %4$u"
 
 #: c-family/c-attribs.c:4119
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute requires a string argument"
+#, gcc-internal-format
 msgid "attribute %qs invalid positional argument"
-msgstr "attributet %qE behöver ett strängargument"
+msgstr "attributet %qs har ett felaktigt positionsargument"
 
 #. The first argument must have a pointer or reference type.
 #: c-family/c-attribs.c:4127
-#, fuzzy, gcc-internal-format
-#| msgid "nonnull argument references non-pointer operand (argument %lu, operand %lu)"
+#, gcc-internal-format
 msgid "attribute %qs positional argument 1 references non-pointer argument type %qT"
-msgstr "nonnull-argument refererar icke-pekar-operand (argument %lu, operand %lu)"
+msgstr "positionsargument 1 till attributet %qs refererar ett argument med typen %qT som inte är en pekare"
 
 #: c-family/c-attribs.c:4138
 #, gcc-internal-format
@@ -29192,16 +29190,14 @@ msgid "attribute %qs positional argument 1 references argument of function type 
 msgstr "attributet %qs positionsargument 1 refererar argument av funktionstyp %qT"
 
 #: c-family/c-attribs.c:4151
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute argument value %qE refers to parameter type %qT"
+#, gcc-internal-format
 msgid "attribute %qs positional argument 1 references %qs-qualified argument type %qT"
-msgstr "attributet %qE argumentvärdet %qE refererar till parametertypen %qT"
+msgstr "positionsargument 1 till attributet %qs refererar ett %qs-kvalificerat argument av typen %qT"
 
 #: c-family/c-attribs.c:4169
-#, fuzzy, gcc-internal-format
-#| msgid "nonnull argument references non-pointer operand (argument %lu, operand %lu)"
+#, gcc-internal-format
 msgid "attribute %qs positional argument 2 references non-integer argument type %qT"
-msgstr "nonnull-argument refererar icke-pekar-operand (argument %lu, operand %lu)"
+msgstr "positionsargument 2 till attributet %qs refererar argumenttyp %qT som inte är ett heltal"
 
 #: c-family/c-attribs.c:4256
 #, gcc-internal-format
@@ -29239,10 +29235,9 @@ msgid "empty string in attribute %<target%>"
 msgstr "tom sträng i attributet %<target%>"
 
 #: c-family/c-attribs.c:4503
-#, fuzzy, gcc-internal-format
-#| msgid "returns_nonnull attribute on a function not returning a pointer"
+#, gcc-internal-format
 msgid "%qE attribute on a function not returning a pointer"
-msgstr "attributet returns_nonnull på en funktion som inte returnerar en pekare"
+msgstr "attributet %qE på en funktion som inte returnerar en pekare"
 
 #: c-family/c-attribs.c:4518
 #, gcc-internal-format
@@ -29370,16 +29365,14 @@ msgid "comparison is always true due to limited range of data type"
 msgstr "jämförelsen är alltid sann på grund av begränsat intervall för datatypen"
 
 #: c-family/c-common.c:3052
-#, fuzzy, gcc-internal-format
-#| msgid "comparison of unsigned expression >= 0 is always true"
+#, gcc-internal-format
 msgid "comparison of unsigned expression in %<>= 0%> is always true"
-msgstr "jämförelse med unsigned-uttryck ≥ 0 är alltid sant"
+msgstr "jämförelse med unsigned-uttryck %<>= 0%> är alltid sant"
 
 #: c-family/c-common.c:3060
-#, fuzzy, gcc-internal-format
-#| msgid "comparison of unsigned expression < 0 is always false"
+#, gcc-internal-format
 msgid "comparison of unsigned expression in %<< 0%> is always false"
-msgstr "jämförelse med unsigned-uttryck < 0 är alltid falskt"
+msgstr "jämförelse med unsigned-uttryck %<< 0%> är alltid falskt"
 
 #: c-family/c-common.c:3104
 #, gcc-internal-format
@@ -29407,22 +29400,19 @@ msgid "%<*%> in boolean context, suggest %<&&%> instead"
 msgstr "%<*%> i boolesk kontext, föreslår %<&&%> istället"
 
 #: c-family/c-common.c:3373
-#, fuzzy, gcc-internal-format
-#| msgid "%<<<%> in boolean context, did you mean %<<%> ?"
+#, gcc-internal-format
 msgid "%<<<%> in boolean context, did you mean %<<%>?"
 msgstr "%<<<%> i boolesk kontext, menade du %<<%>?"
 
 #: c-family/c-common.c:3389
-#, fuzzy, gcc-internal-format
-#| msgid "?: using integer constants in boolean context, the expression will always evaluate to %<true%>"
+#, gcc-internal-format
 msgid "%<?:%> using integer constants in boolean context, the expression will always evaluate to %<true%>"
-msgstr "?: använder heltalskonstanter i en boolesk kontext, uttrycket kommer alltid beräknas till %<true%>"
+msgstr "%<?:%> använder heltalskonstanter i en boolesk kontext, uttrycket kommer alltid beräknas till %<true%>"
 
 #: c-family/c-common.c:3398
-#, fuzzy, gcc-internal-format
-#| msgid "?: using integer constants in boolean context"
+#, gcc-internal-format
 msgid "%<?:%> using integer constants in boolean context"
-msgstr "?: använder heltalskonstanter i en boolesk kontext"
+msgstr "%<?:%> använder heltalskonstanter i en boolesk kontext"
 
 #: c-family/c-common.c:3434
 #, gcc-internal-format
@@ -29652,10 +29642,9 @@ msgid "argument 3 in call to function %qE has pointer to boolean type"
 msgstr "argument 3 i anropet av funktionen %qE har typen pekare till boolean"
 
 #: c-family/c-common.c:6046
-#, fuzzy, gcc-internal-format
-#| msgid "argument 3 in call to function %qE has pointer to boolean type"
+#, gcc-internal-format
 msgid "argument 3 in call to function %qE has pointer to %<const%> type (%qT)"
-msgstr "argument 3 i anropet av funktionen %qE har typen pekare till boolean"
+msgstr "argument 3 i anropet av funktionen %qE har typen pekare till en %<const%>-typ (%qT) "
 
 #: c-family/c-common.c:6070
 #, gcc-internal-format
@@ -29763,8 +29752,7 @@ msgid "invalid memory model argument %d of %qE"
 msgstr "ogiltig minnesmodellsargument %d till %qE"
 
 #: c-family/c-common.c:7431
-#, fuzzy, gcc-internal-format
-#| msgid "this target does not define a speculation barrier; your program will still execute correctly, but incorrect speculation may not be be restricted"
+#, gcc-internal-format
 msgid "this target does not define a speculation barrier; your program will still execute correctly, but incorrect speculation may not be restricted"
 msgstr "detta mål definierar inte en spekulationsbarriär; ditt program kommer fortfarande fungera korrekt, men felaktig spekulation kommer kanske inte vara begränsat"
 
@@ -29826,10 +29814,9 @@ msgid "size of array exceeds maximum object size %qE"
 msgstr "sotrleken på vektorn överskrider maximal objektstorlek %qE"
 
 #: c-family/c-common.c:8363
-#, fuzzy, gcc-internal-format
-#| msgid "environment variable SOURCE_DATE_EPOCH must expand to a non-negative integer less than or equal to %wd"
+#, gcc-internal-format
 msgid "environment variable %qs must expand to a non-negative integer less than or equal to %wd"
-msgstr "miljövariabeln SOURCE_DATE_EPOCH måste expandera till ett ickenegativt heltal mindre än eller lika med %wd"
+msgstr "miljövariabeln %qs måste expandera till ett ickenegativt heltal mindre än eller lika med %wd"
 
 #: c-family/c-format.c:199
 #, gcc-internal-format
@@ -29877,8 +29864,7 @@ msgid "%qE is an unrecognized format function type"
 msgstr "%qE är en okänd funktionsformattyp"
 
 #: c-family/c-format.c:393
-#, fuzzy, gcc-internal-format
-#| msgid "format string argument follows the args to be formatted"
+#, gcc-internal-format
 msgid "format string argument follows the arguments to be formatted"
 msgstr "formatsträngsargumentet kommer efter argumenten som skall formateras"
 
@@ -29908,16 +29894,14 @@ msgid "format argument %d used more than once in %s format"
 msgstr "formatargument %d använt mer än en gång i formatet %s"
 
 #: c-family/c-format.c:1420
-#, fuzzy, gcc-internal-format
-#| msgid "$ operand number used after format without operand number"
+#, gcc-internal-format
 msgid "%<$%>operand number used after format without operand number"
-msgstr "$-operandnummer använt efter format utan operandnummer"
+msgstr "%<$%>-operandnummer använt efter format utan operandnummer"
 
 #: c-family/c-format.c:1451
-#, fuzzy, gcc-internal-format
-#| msgid "format argument %d unused before used argument %d in $-style format"
+#, gcc-internal-format
 msgid "format argument %d unused before used argument %d in %<$%>-style format"
-msgstr "formatargument %d oanvänt för använt argument %d i $-stilsformat"
+msgstr "formatargument %d oanvänt för använt argument %d i %<$%>-stilsformat"
 
 #: c-family/c-format.c:1554
 #, gcc-internal-format
@@ -29940,10 +29924,9 @@ msgid "too many arguments for format"
 msgstr "för många argument för formatsträng"
 
 #: c-family/c-format.c:1597
-#, fuzzy, gcc-internal-format
-#| msgid "unused arguments in $-style format"
+#, gcc-internal-format
 msgid "unused arguments in %<$%>-style format"
-msgstr "oanvända argument i $-stilsformat"
+msgstr "oanvända argument i %<$%>-stilsformat"
 
 #: c-family/c-format.c:1600
 #, gcc-internal-format, gfc-internal-format
@@ -30086,40 +30069,34 @@ msgid "operand number specified for format taking no argument"
 msgstr "operandnummer angivet för format som inte tar argument"
 
 #: c-family/c-format.c:3113
-#, fuzzy, gcc-internal-format
-#| msgid "repeated %s in format"
+#, gcc-internal-format
 msgid "unquoted type name %<%.*s%> in format"
-msgstr "upprepat %s i format"
+msgstr "ej citerat typnamn %<%.*s%> i format"
 
 #: c-family/c-format.c:3115
-#, fuzzy, gcc-internal-format
-#| msgid "repeated %s in format"
+#, gcc-internal-format
 msgid "unquoted operator %<%.*s%> in format"
-msgstr "upprepat %s i format"
+msgstr "ej citerad operator %<%.*s%> i format"
 
 #: c-family/c-format.c:3116
-#, fuzzy, gcc-internal-format
-#| msgid "embedded %<\\0%> in format"
+#, gcc-internal-format
 msgid "unquoted keyword %<%.*s%> in format"
-msgstr "inbäddade %<\\0%> i format"
+msgstr "ej citerat nyckelord %<%.*s%> i format"
 
 #: c-family/c-format.c:3119
-#, fuzzy, gcc-internal-format
-#| msgid "try using %qE instead"
+#, gcc-internal-format
 msgid "use %qs instead"
-msgstr "försök att använda %qE istället"
+msgstr "använd %qs istället"
 
 #: c-family/c-format.c:3171
-#, fuzzy, gcc-internal-format
-#| msgid "function attribute mismatch"
+#, gcc-internal-format
 msgid "unquoted attribute in format"
-msgstr "funktionsattributen stämmer inte"
+msgstr "attribut utan citationstecken i format"
 
 #: c-family/c-format.c:3184
-#, fuzzy, gcc-internal-format
-#| msgid "invalid argument to built-in function %s"
+#, gcc-internal-format
 msgid "unquoted name of built-in function %<%.*s%> in format"
-msgstr "ogiltigt argument till den inbyggda funktionen %s"
+msgstr "namn utan citationstecken i den inbyggda funktionen %<%.*s%> i format"
 
 #: c-family/c-format.c:3198
 #, gcc-internal-format
@@ -30142,52 +30119,44 @@ msgid "contraction %<%.*s%> in format; use %qs instead"
 msgstr "sammandragning %<%.*s%> i format; använd %qs istället"
 
 #: c-family/c-format.c:3317
-#, fuzzy, gcc-internal-format
-#| msgid "unknown conversion type character %qc in format"
+#, gcc-internal-format
 msgid "unquoted whitespace character %qc in format"
-msgstr "okänd konverteringstyptecken %qc i format"
+msgstr "blanktecken utan citationstecken %qc i format"
 
 #: c-family/c-format.c:3330
-#, fuzzy, gcc-internal-format
-#| msgid "spurious trailing %<%%%> in format"
+#, gcc-internal-format
 msgid "spurious trailing space in format"
-msgstr "vilsekommet avslutande %<%%%> i format"
+msgstr "vilsekommet avslutande mellanslag i format"
 
 #: c-family/c-format.c:3351
-#, fuzzy, gcc-internal-format
-#| msgid "non-constant initialization expression at %L"
+#, gcc-internal-format
 msgid "inconsistent capitalization in format"
-msgstr "ej konstant initieringsuttryck vid %L"
+msgstr "inkonsistent användning av versaler i format"
 
 #: c-family/c-format.c:3358
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "unknown conversion type character %qc in format"
+#, gcc-internal-format, gfc-internal-format
 msgid "unquoted sequence of %i consecutive space characters in format"
-msgstr "okänd konverteringstyptecken %qc i format"
+msgstr "sekvens av %i konsekutiva blanktecken utan citationstecken i format"
 
 #: c-family/c-format.c:3378
-#, fuzzy, gcc-internal-format
-#| msgid "unknown conversion type character %qc in format"
+#, gcc-internal-format
 msgid "unquoted control characters in format"
-msgstr "okänd konverteringstyptecken %qc i format"
+msgstr "styrtecken utan citationstecken i format"
 
 #: c-family/c-format.c:3385
-#, fuzzy, gcc-internal-format
-#| msgid "unknown conversion type character %qc in format"
+#, gcc-internal-format
 msgid "unquoted control character %qc in format"
-msgstr "okänd konverteringstyptecken %qc i format"
+msgstr "styrtecknet %qc utan citationstecken format"
 
 #: c-family/c-format.c:3443
-#, fuzzy, gcc-internal-format
-#| msgid "spurious trailing %<%%%> in format"
+#, gcc-internal-format
 msgid "unquoted option name %<%.*s%> in format"
-msgstr "vilsekommet avslutande %<%%%> i format"
+msgstr "vilsekommet alternativnamn %<%.*s%> i format"
 
 #: c-family/c-format.c:3503
-#, fuzzy, gcc-internal-format
-#| msgid "unknown conversion type character %qc in format"
+#, gcc-internal-format
 msgid "unbalanced punctuation character %qc in format"
-msgstr "okänd konverteringstyptecken %qc i format"
+msgstr "obalancerat interpunktionstecken %qc i format"
 
 #: c-family/c-format.c:3522
 #, gcc-internal-format
@@ -30195,10 +30164,9 @@ msgid "unquoted preprocessing directive %<%.*s%> in format"
 msgstr "preprocessingdirektiv utan citationstecken %<%.*s%> i format"
 
 #: c-family/c-format.c:3558
-#, fuzzy, gcc-internal-format
-#| msgid "repeated %s in format"
+#, gcc-internal-format
 msgid "bare apostrophe %<'%> in format"
-msgstr "upprepat %s i format"
+msgstr "ensam apostrof %<'%> i format"
 
 #: c-family/c-format.c:3560
 #, gcc-internal-format
@@ -30206,10 +30174,9 @@ msgid "if avoiding the apostrophe is not feasible, enclose it in a pair of %qs a
 msgstr "om det inte är görbart att undvika apostrofen, omslut den i ett par av direktiv %qs och %qs istället"
 
 #: c-family/c-format.c:3572
-#, fuzzy, gcc-internal-format
-#| msgid "repeated %s in format"
+#, gcc-internal-format
 msgid "grave accent %<`%> in format"
-msgstr "upprepat %s i format"
+msgstr "grav accent %<`%> i format"
 
 #: c-family/c-format.c:3574
 #, gcc-internal-format
@@ -30222,10 +30189,9 @@ msgid "space followed by punctuation character %<%c%>"
 msgstr "mellanslag följt av skiljetecken %<%c%>"
 
 #: c-family/c-format.c:3597
-#, fuzzy, gcc-internal-format
-#| msgid "repeated %s in format"
+#, gcc-internal-format
 msgid "quoted %qs directive in format"
-msgstr "upprepat %s i format"
+msgstr "citerat %qs-direktiv i format"
 
 #: c-family/c-format.c:3599
 #, gcc-internal-format
@@ -30233,16 +30199,14 @@ msgid "if using %qs is not feasible, use %qs instead"
 msgstr "om det inte är görbart att använda %qs, använd %qs istället"
 
 #: c-family/c-format.c:3628
-#, fuzzy, gcc-internal-format
-#| msgid "spurious trailing %<%%%> in format"
+#, gcc-internal-format
 msgid "spurious leading punctuation sequence %<%.*s%> in format"
-msgstr "vilsekommet avslutande %<%%%> i format"
+msgstr "vilsekommen inledande interpunktionssekvens %<%.*s%> i format"
 
 #: c-family/c-format.c:3668
-#, fuzzy, gcc-internal-format
-#| msgid "spurious trailing %<%%%> in format"
+#, gcc-internal-format
 msgid "spurious trailing punctuation sequence %<%.*s%> in format"
-msgstr "vilsekommet avslutande %<%%%> i format"
+msgstr "vilsekommen avslutande interpunktionssekvens %<%.*s%> i format"
 
 #: c-family/c-format.c:3685
 #, gcc-internal-format
@@ -30250,22 +30214,19 @@ msgid "unquoted sequence of %i consecutive punctuation characters %q.*s in forma
 msgstr "sekvens av %i konsekutiva skiljetecken utan citationstecken %q.*s i format"
 
 #: c-family/c-format.c:3705
-#, fuzzy, gcc-internal-format
-#| msgid "Nonconforming tab character in format at %C"
+#, gcc-internal-format
 msgid "unquoted non-graph characters in format"
-msgstr "Ej konformt tabulatortecken i formatet vid %C"
+msgstr "icke-grafiska tecken utan citationstecken i format"
 
 #: c-family/c-format.c:3712
-#, fuzzy, gcc-internal-format
-#| msgid "unknown conversion type character %qc in format"
+#, gcc-internal-format
 msgid "unquoted non-graph character %qc in format"
-msgstr "okänd konverteringstyptecken %qc i format"
+msgstr "icke-grafiskt tecken %qc utan citationstecken i format"
 
 #: c-family/c-format.c:3744
-#, fuzzy, gcc-internal-format
-#| msgid "unknown conversion type character %qc in format"
+#, gcc-internal-format
 msgid "unbalanced punctuation character %<%c%> in format"
-msgstr "okänd konverteringstyptecken %qc i format"
+msgstr "obalanserat interpunktionstecken %<%c%> i format"
 
 #: c-family/c-format.c:3751
 #, gcc-internal-format
@@ -30273,10 +30234,9 @@ msgid "unterminated quoting directive"
 msgstr "icke terminerat citationsdirektiv"
 
 #: c-family/c-format.c:3760
-#, fuzzy, gcc-internal-format
-#| msgid "unknown conversion type character %qc in format"
+#, gcc-internal-format
 msgid "unterminated quote character %<%c%> in format"
-msgstr "okänd konverteringstyptecken %qc i format"
+msgstr "oavslutat citationstecken %<%c%> i format"
 
 #: c-family/c-format.c:3830
 #, gcc-internal-format
@@ -30399,8 +30359,7 @@ msgid "%<tree%> is not defined as a pointer type"
 msgstr "%<tree%> är inte definierad som en pekartyp"
 
 #: c-family/c-format.c:5200
-#, fuzzy, gcc-internal-format
-#| msgid "args to be formatted is not %<...%>"
+#, gcc-internal-format
 msgid "argument to be formatted is not %<...%>"
 msgstr "argumenten som skall formateras är inte %<...%>"
 
@@ -30430,10 +30389,9 @@ msgid "badly nested C headers from preprocessor"
 msgstr "felaktigt inkapslade C-huvuden från preprocessorn"
 
 #: c-family/c-lex.c:262
-#, fuzzy, gcc-internal-format
-#| msgid "ignoring #pragma %s %s"
+#, gcc-internal-format
 msgid "ignoring %<#pragma %s %s%>"
-msgstr "ignorerar #pragma %s %s"
+msgstr "ignorerar %<#pragma %s %s%>"
 
 #. ... or not.
 #: c-family/c-lex.c:561 c-family/c-lex.c:1274
@@ -30477,16 +30435,14 @@ msgid "integer constant is too large for %<unsigned long%> type"
 msgstr "heltalskonstant är för stor för typen %<unsigned long%>"
 
 #: c-family/c-lex.c:868
-#, fuzzy, gcc-internal-format
-#| msgid "unsuffixed float constant"
+#, gcc-internal-format
 msgid "unsuffixed floating constant"
 msgstr "flyttalskonstant utan suffix"
 
 #: c-family/c-lex.c:882
-#, fuzzy, gcc-internal-format
-#| msgid "fixed-point types not supported for this target"
+#, gcc-internal-format
 msgid "decimal floating-point not supported for this target"
-msgstr "fixdecimaltyper stödjs inte för denna målarkitektur"
+msgstr "decimala flyttal stödjs inte för denna målarkitektur"
 
 #: c-family/c-lex.c:905 c-family/c-lex.c:929
 #, gcc-internal-format
@@ -30599,10 +30555,9 @@ msgid "missing increment expression"
 msgstr "utelämnat ökningsuttryck"
 
 #: c-family/c-omp.c:978 c-family/c-omp.c:996
-#, fuzzy, gcc-internal-format
-#| msgid "increment is not constant 1 or -1 for != condition"
+#, gcc-internal-format
 msgid "increment is not constant 1 or -1 for %<!=%> condition"
-msgstr "ökningen är inte en konstant 1 eller -1 för villkoret !="
+msgstr "ökningen är inte en konstant 1 eller -1 för villkoret %<!=%>"
 
 #: c-family/c-omp.c:1009 cp/semantics.c:8665
 #, gcc-internal-format
@@ -30625,10 +30580,9 @@ msgid "increment expression refers to iteration variable %qD"
 msgstr "ökningsuttryck refererar till iterationsvariabeln %qD"
 
 #: c-family/c-omp.c:1685
-#, fuzzy, gcc-internal-format
-#| msgid "invalid %<task%> reduction modifier on construct combined with %<simd%>"
+#, gcc-internal-format
 msgid "invalid %<task%> reduction modifier on construct combined with %<simd%> or %<loop%>"
-msgstr "felaktig reduktionsmodifierare %<task%> på konstruktion kombinerad med %<simd%>"
+msgstr "felaktig reduktionsmodifierare %<task%> på konstruktion kombinerad med %<simd%> eller %<loop%>"
 
 #: c-family/c-omp.c:1696
 #, gcc-internal-format
@@ -30641,22 +30595,19 @@ msgid "%<inscan%> %<reduction%> clause on construct other than %<for%>, %<simd%>
 msgstr "%<inscan%> %<reduction%>-klausul på en annan konstruktion än %<for%>, %<simd%>, %<for simd%>, %<parallel for%>, %<parallel for simd%>"
 
 #: c-family/c-omp.c:2016 c-family/c-omp.c:2031
-#, fuzzy, gcc-internal-format
-#| msgid "%qD is not an function argument"
+#, gcc-internal-format
 msgid "%qD is not a function argument"
-msgstr "%qD är inte en funktionsmall"
+msgstr "%qD är inte ett funktionsargument"
 
 #: c-family/c-omp.c:2138
-#, fuzzy, gcc-internal-format
-#| msgid "specified option %qs more than once"
+#, gcc-internal-format
 msgid "selector set %qs specified more than once"
-msgstr "flaggan %qs angiven mer än en gång"
+msgstr "väljarmängd %qs angiven mer än en gång"
 
 #: c-family/c-omp.c:2152 c-family/c-omp.c:2165
-#, fuzzy, gcc-internal-format
-#| msgid "%<virtual%> specified more than once in base-specifier"
+#, gcc-internal-format
 msgid "selector %qs specified more than once in set %qs"
-msgstr "%<virtual%> anges mer än en gång i basspecificerare"
+msgstr "väljaren %qs anges mer än en gång i mängden %qs"
 
 #: c-family/c-omp.c:2206
 #, gcc-internal-format
@@ -30664,16 +30615,14 @@ msgid "incorrect property %qs of %qs selector"
 msgstr "inkorrekt egenskap %qs på %qs-selektor"
 
 #: c-family/c-omp.c:2213
-#, fuzzy, gcc-internal-format
-#| msgid "unknown operator %qs in %%:version-compare"
+#, gcc-internal-format
 msgid "unknown property %qs of %qs selector"
-msgstr "okänd operator %qs i %%:version-compare"
+msgstr "okänd egenskap %qs i %qs-väljare"
 
 #: c-family/c-omp.c:2218
-#, fuzzy, gcc-internal-format
-#| msgid "unknown property attribute"
+#, gcc-internal-format
 msgid "unknown property %qE of %qs selector"
-msgstr "okänt egenskapsattribut"
+msgstr "okänd egenskap %qE i %qs-väljare"
 
 #: c-family/c-omp.c:2259
 #, gcc-internal-format
@@ -30766,10 +30715,9 @@ msgid "external TLS initialization functions not supported on this target"
 msgstr "externa TLS-initieringsfunktioner stödjs inte på denna målarkitektur"
 
 #: c-family/c-opts.c:1055
-#, fuzzy, gcc-internal-format
-#| msgid "too many filenames given.  Type %s --help for usage"
+#, gcc-internal-format
 msgid "too many filenames given; type %<%s %s%> for usage"
-msgstr "för många filnamn angivna.  Skriv %s --help för användningsinformation"
+msgstr "för många filnamn angivna; skriv %<%s %s%> för användningsinformation"
 
 #: c-family/c-opts.c:1070
 #, gcc-internal-format
@@ -30777,10 +30725,9 @@ msgid "opening output file %s: %m"
 msgstr "vid öppnandet av utdatafil %s: %m"
 
 #: c-family/c-opts.c:1090
-#, fuzzy, gcc-internal-format
-#| msgid "the \"%s\" debug format cannot be used with pre-compiled headers"
+#, gcc-internal-format
 msgid "the %qs debug format cannot be used with pre-compiled headers"
-msgstr "felsökningsformatet ”%s” kan inte användas med förkompilerade huvuden"
+msgstr "felsökningsformatet %qs kan inte användas med förkompilerade huvuden"
 
 #: c-family/c-opts.c:1244
 #, gcc-internal-format
@@ -30823,34 +30770,29 @@ msgid "too late for # directive to set debug directory"
 msgstr "för sent för #-direktiv att ange felsökningskatalog"
 
 #: c-family/c-pch.c:106
-#, fuzzy, gcc-internal-format
-#| msgid "can%'t create precompiled header %s: %m"
+#, gcc-internal-format
 msgid "cannot create precompiled header %s: %m"
 msgstr "kan inte skapa förkompilerat huvud %s: %m"
 
 #: c-family/c-pch.c:127
-#, fuzzy, gcc-internal-format
-#| msgid "can%'t write to %s: %m"
+#, gcc-internal-format
 msgid "cannot write to %s: %m"
 msgstr "kan inte skriva till %s: %m"
 
 #: c-family/c-pch.c:185
-#, fuzzy, gcc-internal-format
-#| msgid "can%'t write %s: %m"
+#, gcc-internal-format
 msgid "cannot write %s: %m"
 msgstr "kan inte skriva %s: %m"
 
 #: c-family/c-pch.c:409
-#, fuzzy, gcc-internal-format
-#| msgid "pch_preprocess pragma should only be used with %<-fpreprocessed%>"
+#, gcc-internal-format
 msgid "%<pch_preprocess%> pragma should only be used with %<-fpreprocessed%>"
-msgstr "pragmat pch_preprocess skall bara användas med %<-fpreprocessed%>"
+msgstr "pragmat %<pch_preprocess%> skall bara användas med %<-fpreprocessed%>"
 
 #: c-family/c-pch.c:411
-#, fuzzy, gcc-internal-format
-#| msgid "use #include instead"
+#, gcc-internal-format
 msgid "use %<#include%> instead"
-msgstr "använd #include istället"
+msgstr "använd %<#include%> istället"
 
 #: c-family/c-pch.c:417
 #, gcc-internal-format
@@ -30868,16 +30810,14 @@ msgid "%s: PCH file was invalid"
 msgstr "%s: PCH-fil var ogiltig"
 
 #: c-family/c-pragma.c:94
-#, fuzzy, gcc-internal-format
-#| msgid "#pragma pack (pop) encountered without matching #pragma pack (push)"
+#, gcc-internal-format
 msgid "%<#pragma pack (pop)%> encountered without matching %<#pragma pack (push)%>"
-msgstr "#pragma pack (pop) påträffat utan matchande #pragma pack (push)"
+msgstr "%<#pragma pack (pop)%> påträffat utan matchande %<#pragma pack (push)%>"
 
 #: c-family/c-pragma.c:109
-#, fuzzy, gcc-internal-format
-#| msgid "#pragma pack(pop, %E) encountered without matching #pragma pack(push, %E)"
+#, gcc-internal-format
 msgid "%<#pragma pack(pop, %E)%> encountered without matching %<#pragma pack(push, %E)%>"
-msgstr "#pragma pack(pop, %E) påträffat utan matchande #pragma pack(push, %E)"
+msgstr "%<#pragma pack(pop, %E)%> påträffat utan matchande %<#pragma pack(push, %E)%>"
 
 #: c-family/c-pragma.c:139
 #, gcc-internal-format
@@ -30915,10 +30855,9 @@ msgid "junk at end of %<#pragma pack%>"
 msgstr "skräp vid slutet av %<#pragma pack%>"
 
 #: c-family/c-pragma.c:202
-#, fuzzy, gcc-internal-format
-#| msgid "#pragma pack has no effect with %<-fpack-struct%> - ignored"
+#, gcc-internal-format
 msgid "%<#pragma pack%> has no effect with %<-fpack-struct%> - ignored"
-msgstr "#pragma pack har ingen effekt med %<-fpack-struct%> — ignoreras"
+msgstr "%<#pragma pack%> har ingen effekt med %<-fpack-struct%> — ignoreras"
 
 #: c-family/c-pragma.c:223
 #, gcc-internal-format, gfc-internal-format
@@ -30926,16 +30865,14 @@ msgid "alignment must be a small power of two, not %d"
 msgstr "justering måste vara två upphöjt till ett litet tal, inte %d"
 
 #: c-family/c-pragma.c:262
-#, fuzzy, gcc-internal-format
-#| msgid "applying #pragma weak %q+D after first use results in unspecified behavior"
+#, gcc-internal-format
 msgid "applying %<#pragma weak %+D%> after first use results in unspecified behavior"
-msgstr "applicering av #pragma weak %q+D efter första användningen ger odefinierat beteende"
+msgstr "applicering av %<#pragma weak %q+D%> efter första användningen ger odefinierat beteende"
 
 #: c-family/c-pragma.c:359 c-family/c-pragma.c:364
-#, fuzzy, gcc-internal-format
-#| msgid "malformed #pragma weak, ignored"
+#, gcc-internal-format
 msgid "malformed %<#pragma weak%>, ignored"
-msgstr "felformaterat #pragma weak, ignoreras"
+msgstr "felformaterat %<#pragma weak%>, ignoreras"
 
 #: c-family/c-pragma.c:368
 #, gcc-internal-format
@@ -30948,10 +30885,9 @@ msgid "%<#pragma weak%> declaration of %q+D not allowed, ignored"
 msgstr "%<#pragma weak%>-deklaration av %q+D stödjs inte, ignoreras"
 
 #: c-family/c-pragma.c:422
-#, fuzzy, gcc-internal-format
-#| msgid "scalar_storage_order is not supported because endianness is not uniform"
+#, gcc-internal-format
 msgid "%<scalar_storage_order%> is not supported because endianness is not uniform"
-msgstr "scalar_storage_order stödjs inte för att byteordningen inte är enhetlig"
+msgstr "%<scalar_storage_order%> stödjs inte för att byteordningen inte är enhetlig"
 
 #: c-family/c-pragma.c:431
 #, gcc-internal-format
@@ -30969,10 +30905,9 @@ msgid "expected [big-endian|little-endian|default] after %<#pragma scalar_storag
 msgstr "[big-endian|little-endian|default] förväntades efter %<#pragma scalar_storage_order%>"
 
 #: c-family/c-pragma.c:500 c-family/c-pragma.c:502
-#, fuzzy, gcc-internal-format
-#| msgid "malformed #pragma redefine_extname, ignored"
+#, gcc-internal-format
 msgid "malformed %<#pragma redefine_extname%>, ignored"
-msgstr "felformaterat #pragma redefine_extname, ignoreras"
+msgstr "felformaterat %<#pragma redefine_extname%>, ignoreras"
 
 #: c-family/c-pragma.c:505
 #, gcc-internal-format
@@ -30980,40 +30915,34 @@ msgid "junk at end of %<#pragma redefine_extname%>"
 msgstr "skräp vid slutet av %<#pragma redefine_extname%>"
 
 #: c-family/c-pragma.c:533 c-family/c-pragma.c:606
-#, fuzzy, gcc-internal-format
-#| msgid "#pragma redefine_extname ignored due to conflict with previous rename"
+#, gcc-internal-format
 msgid "%<#pragma redefine_extname%> ignored due to conflict with previous rename"
-msgstr "#pragma redefine_extname ignoreras eftersom det står i konflikt med tidigare namnbyte"
+msgstr "%<#pragma redefine_extname%> ignoreras eftersom det står i konflikt med tidigare namnbyte"
 
 #: c-family/c-pragma.c:561
-#, fuzzy, gcc-internal-format
-#| msgid "#pragma redefine_extname ignored due to conflict with previous #pragma redefine_extname"
+#, gcc-internal-format
 msgid "%<#pragma redefine_extname%> ignored due to conflict with previous %<#pragma redefine_extname%>"
-msgstr "#pragma redefine_extname ignoreras på grund av konflikt med tidigare #pragma redefine_extname"
+msgstr "%<#pragma redefine_extname%> ignoreras på grund av konflikt med tidigare %<#pragma redefine_extname%>"
 
 #: c-family/c-pragma.c:597
-#, fuzzy, gcc-internal-format
-#| msgid "asm declaration ignored due to conflict with previous rename"
+#, gcc-internal-format
 msgid "%<asm%> declaration ignored due to conflict with previous rename"
-msgstr "asm-deklaration ignorerad eftersom den står i konflikt med tidigare namnbyte"
+msgstr "%<asm%>-deklaration ignorerad eftersom den står i konflikt med tidigare namnbyte"
 
 #: c-family/c-pragma.c:628
-#, fuzzy, gcc-internal-format
-#| msgid "#pragma redefine_extname ignored due to conflict with __asm__ declaration"
+#, gcc-internal-format
 msgid "%<#pragma redefine_extname%> ignored due to conflict with %<asm%> declaration"
-msgstr "#pragma redefine_extname ignoreras på grund av konflikt med __asm__-deklaration"
+msgstr "%<#pragma redefine_extname%> ignoreras på grund av konflikt med %<asm%>-deklaration"
 
 #: c-family/c-pragma.c:689
-#, fuzzy, gcc-internal-format
-#| msgid "#pragma GCC visibility push() must specify default, internal, hidden or protected"
+#, gcc-internal-format
 msgid "%<#pragma GCC visibility push()%> must specify %<default%>, %<internal%>, %<hidden%> or %<protected%>"
-msgstr "#pragma GCC visibility push() måste ange default, internal, hidden eller protected"
+msgstr "%<#pragma GCC visibility push()%> måste ange %<default%>, %<internal%>, %<hidden%> eller %<protected%>"
 
 #: c-family/c-pragma.c:732
-#, fuzzy, gcc-internal-format
-#| msgid "#pragma GCC visibility must be followed by push or pop"
+#, gcc-internal-format
 msgid "%<#pragma GCC visibility%> must be followed by %<push%> or %<pop%>"
-msgstr "#pragma GCC visibility måste följas av push eller pop"
+msgstr "%<#pragma GCC visibility%> måste följas av %<push%> eller %<pop%>"
 
 #: c-family/c-pragma.c:739
 #, gcc-internal-format
@@ -31026,10 +30955,9 @@ msgid "missing %<(%> after %<#pragma GCC visibility push%> - ignored"
 msgstr "%<(%> saknas efter %<#pragma GCC visibility push%> - ignoreras”"
 
 #: c-family/c-pragma.c:747
-#, fuzzy, gcc-internal-format
-#| msgid "malformed #pragma GCC visibility push"
+#, gcc-internal-format
 msgid "malformed %<#pragma GCC visibility push%>"
-msgstr "felformaterat #pragma GCC visibility push"
+msgstr "felformaterat %<#pragma GCC visibility push%>"
 
 #: c-family/c-pragma.c:755
 #, gcc-internal-format
@@ -31052,10 +30980,9 @@ msgid "missing option after %<#pragma GCC diagnostic%> kind"
 msgstr "alternativ saknas efter %<#pragma GCC diagnostics%> sort"
 
 #: c-family/c-pragma.c:816
-#, fuzzy, gcc-internal-format
-#| msgid "unknown option after %<#pragma GCC diagnostic%> kind"
+#, gcc-internal-format
 msgid "unknown option after %<#pragma GCC diagnostic%> kind; did you mean %<-%s%>?"
-msgstr "okänt alternativ efter %<#pragma GCC diagnostic%> sort"
+msgstr "okänt alternativ efter %<#pragma GCC diagnostic%> sort; menade du %<-%s%>?"
 
 #: c-family/c-pragma.c:820
 #, gcc-internal-format
@@ -31073,10 +31000,9 @@ msgid "option %qs is valid for %s but not for %s"
 msgstr "flaggan %qs är giltig för %s men inte för %s"
 
 #: c-family/c-pragma.c:867
-#, fuzzy, gcc-internal-format
-#| msgid "#pragma GCC option is not allowed inside functions"
+#, gcc-internal-format
 msgid "%<#pragma GCC option%> is not allowed inside functions"
-msgstr "#pragma GCC option tillåts inte inuti funktioner"
+msgstr "%<#pragma GCC option%> tillåts inte inuti funktioner"
 
 #: c-family/c-pragma.c:880
 #, gcc-internal-format
@@ -31089,16 +31015,14 @@ msgid "%<#pragma GCC target (string [,string]...)%> does not have a final %<)%>"
 msgstr "%<#pragma GCC target (sträng [,sträng]...)%> har inte en avslutande %<)%>"
 
 #: c-family/c-pragma.c:913
-#, fuzzy, gcc-internal-format
-#| msgid "#pragma GCC target string... is badly formed"
+#, gcc-internal-format
 msgid "%<#pragma GCC target%> string is badly formed"
-msgstr "#pragma GCC target sträng... är felaktigt utformad"
+msgstr "%<#pragma GCC target%>-sträng är felaktigt utformad"
 
 #: c-family/c-pragma.c:936
-#, fuzzy, gcc-internal-format
-#| msgid "#pragma GCC optimize is not allowed inside functions"
+#, gcc-internal-format
 msgid "%<#pragma GCC optimize%> is not allowed inside functions"
-msgstr "#pragma GCC optimize tillåts inte inuti funktioner"
+msgstr "%<#pragma GCC optimize%> tillåts inte inuti funktioner"
 
 #: c-family/c-pragma.c:949
 #, gcc-internal-format
@@ -31111,10 +31035,9 @@ msgid "%<#pragma GCC optimize (string [,string]...)%> does not have a final %<)%
 msgstr "%<#pragma GCC optimize (sträng [,sträng]...)%> har inte en avslutande %<)%>"
 
 #: c-family/c-pragma.c:981
-#, fuzzy, gcc-internal-format
-#| msgid "#pragma GCC optimize string... is badly formed"
+#, gcc-internal-format
 msgid "%<#pragma GCC optimize%> string is badly formed"
-msgstr "#pragma GCC optimize string... är felaktigt utformad"
+msgstr "%<#pragma GCC optimize%>-sträng är felaktigt utformad"
 
 #: c-family/c-pragma.c:1022
 #, gcc-internal-format
@@ -31152,10 +31075,9 @@ msgid "junk at end of %<#pragma message%>"
 msgstr "skräp vid slutet av %<#pragma message%>"
 
 #: c-family/c-pragma.c:1154
-#, fuzzy, gcc-internal-format
-#| msgid "#pragma message: %s"
+#, gcc-internal-format
 msgid "%<#pragma message: %s%>"
-msgstr "#pragma message: %s"
+msgstr "%<#pragma message: %s%>"
 
 #: c-family/c-pragma.c:1192
 #, gcc-internal-format
@@ -31594,10 +31516,9 @@ msgid "enumeration value %qE not handled in switch"
 msgstr "uppräkningsvärdet %qE hanteras inte i switch"
 
 #: c-family/c-warn.c:1772
-#, fuzzy, gcc-internal-format
-#| msgid "the omitted middle operand in ?: will always be %<true%>, suggest explicit middle operand"
+#, gcc-internal-format
 msgid "the omitted middle operand in %<?:%> will always be %<true%>, suggest explicit middle operand"
-msgstr "den utelämnade mittoperanden i ?: kommer alltid att vara %<true%>, föreslår explicit mittoperand"
+msgstr "den utelämnade mittoperanden i %<?:%> kommer alltid att vara %<true%>, föreslår explicit mittoperand"
 
 #: c-family/c-warn.c:1794
 #, gcc-internal-format
@@ -31760,10 +31681,9 @@ msgid "lvalue required as unary %<&%> operand"
 msgstr "l-värde krävs som operand till unär %<&%>"
 
 #: c-family/c-warn.c:1871
-#, fuzzy, gcc-internal-format
-#| msgid "lvalue required in asm statement"
+#, gcc-internal-format
 msgid "lvalue required in %<asm%> statement"
-msgstr "l-värde krävs i asm-sats"
+msgstr "l-värde krävs i %<asm%>-sats"
 
 #: c-family/c-warn.c:1888
 #, gcc-internal-format
@@ -31922,22 +31842,19 @@ msgid "comparison of integer expressions of different signedness: %qT and %qT"
 msgstr "jämförelse av heltalsuttryck av olika teckenläge: %qT och %qT"
 
 #: c-family/c-warn.c:2341
-#, fuzzy, gcc-internal-format
-#| msgid "promoted ~unsigned is always non-zero"
+#, gcc-internal-format
 msgid "promoted bitwise complement of an unsigned value is always nonzero"
-msgstr "befordrad ~unsigned är alltid skild från noll"
+msgstr "befordrad bitvis komplement av ett teckenlöst värde är alltid skilt från noll"
 
 #: c-family/c-warn.c:2345
-#, fuzzy, gcc-internal-format
-#| msgid "comparison of promoted ~unsigned with constant"
+#, gcc-internal-format
 msgid "comparison of promoted bitwise complement of an unsigned value with constant"
-msgstr "jämförelse av befordrad ~unsigned med konstant"
+msgstr "jämförelse av befordrad bitvis komplement av ett teckenlöst värde med konstant"
 
 #: c-family/c-warn.c:2356
-#, fuzzy, gcc-internal-format
-#| msgid "comparison of promoted ~unsigned with unsigned"
+#, gcc-internal-format
 msgid "comparison of promoted bitwise complement of an unsigned value with unsigned"
-msgstr "jämförelse av befordrad ~unsigned med unsigned"
+msgstr "jämförelse av befordrad bitvis komplement av ett teckenlöst värde med teckenlöst"
 
 #: c-family/c-warn.c:2411
 #, gcc-internal-format
@@ -31985,13 +31902,10 @@ msgid "comparison of constant %qE with boolean expression is always true"
 msgstr "jämförelse av konstant %qE med booleskt uttryck är alltid sant"
 
 #: c-family/c-warn.c:2709
-#, fuzzy
-#| msgid "passing argument %i to restrict-qualified parameter aliases with argument %Z"
-#| msgid_plural "passing argument %i to restrict-qualified parameter aliases with arguments %Z"
 msgid "passing argument %i to %qs-qualified parameter aliases with argument %Z"
 msgid_plural "passing argument %i to %qs-qualified parameter aliases with arguments %Z"
-msgstr[0] "att skicka argument %i till en restrict-kvalificerad parameter blir alias med argument %Z"
-msgstr[1] "att skicka argument %i till en restrict-kvalificerad parameter blir alias med argumenten %Z"
+msgstr[0] "att skicka argument %i till en %qs-kvalificerad parameter blir alias med argument %Z"
+msgstr[1] "att skicka argument %i till en %qs-kvalificerad parameter blir alias med argumenten %Z"
 
 #: c-family/c-warn.c:2774 c/c-typeck.c:5485 cp/call.c:5673
 #, gcc-internal-format
@@ -32127,10 +32041,9 @@ msgid "option %<-mdouble=64%> is only available if configured %<--with-double={6
 msgstr "flaggan %<-mdouble=64%> är endast tillgänglig om konfigurerad med %<--with-double={64|64,32|32,64}%>"
 
 #: common/config/avr/avr-common.c:98
-#, fuzzy, gcc-internal-format
-#| msgid "option %<-mdouble=32%> is only available if configured %<--with-double={|32|32,64|64,32}%>"
+#, gcc-internal-format
 msgid "option %<-mdouble=32%> is only available if configured %<--with-double={32|32,64|64,32}%>"
-msgstr "flaggan %<-mdouble=32%> är endast tillgänglig om konfigurerad med %<--with-double={|32|32,64|64,32}%>"
+msgstr "flaggan %<-mdouble=32%> är endast tillgänglig om konfigurerad med %<--with-double={32|32,64|64,32}%>"
 
 #: common/config/avr/avr-common.c:114
 #, gcc-internal-format
@@ -32138,10 +32051,9 @@ msgid "option %<-mlong-double=64%> is only available if configured %<--with-long
 msgstr "flaggan %<-mlong-double=64%> är endast tillgänglig om konfigurerad med %<--with-long-double={64|64,32|32,64}%>, eller %<--with-long-double=double%> tillsammans med %<--with-double={64|64,32|32,64}%>"
 
 #: common/config/avr/avr-common.c:123
-#, fuzzy, gcc-internal-format
-#| msgid "option %<-mlong-double=32%> is only available if configured %<--with-long-double={|32|32,64|64,32}%>, or %<--with-long-double=double%> together with %<--with-double={|32|32,64|64,32}%>"
+#, gcc-internal-format
 msgid "option %<-mlong-double=32%> is only available if configured %<--with-long-double={32|32,64|64,32}%>, or %<--with-long-double=double%> together with %<--with-double={32|32,64|64,32}%>"
-msgstr "flaggan %<-mlong-double=32%> är endast tillgänglig om konfigurerad med %<--with-long-double={|32|32,64|64,32}%>, eller %<--with-long-double=double%> tillsammans med %<--with-double={|32|32,64|64,32}%>"
+msgstr "flaggan %<-mlong-double=32%> är endast tillgänglig om konfigurerad med %<--with-long-double={32|32,64|64,32}%>, eller %<--with-long-double=double%> tillsammans med %<--with-double={32|32,64|64,32}%>"
 
 #: common/config/bfin/bfin-common.c:304 common/config/m68k/m68k-common.c:60
 #, gcc-internal-format
@@ -32264,10 +32176,9 @@ msgid "%<-march=%s%>: ISA string must begin with rv32 or rv64"
 msgstr "%<-march=%s%>: ISA-strängen måste börja med rv32 eller rv64"
 
 #: common/config/riscv/riscv-common.c:518
-#, fuzzy, gcc-internal-format
-#| msgid "%<-march=%s%>: unsupported ISA subset %<%c%>"
+#, gcc-internal-format
 msgid "%<-march=%s%>: unexpected ISA string at end: %qs"
-msgstr "%<-march=%s%>: ISA-delmängd som ej stödjs %<%c%>"
+msgstr "%<-march=%s%>: oväntad ISA-sträng på slutet: %qs"
 
 #: common/config/rs6000/rs6000-common.c:184 config/sparc/sparc.c:1736
 #, gcc-internal-format
@@ -32310,10 +32221,9 @@ msgid "value passed in %qs is too large"
 msgstr "värde skickat till %qs är för stort"
 
 #: config/darwin-c.c:82
-#, fuzzy, gcc-internal-format
-#| msgid "too many #pragma options align=reset"
+#, gcc-internal-format
 msgid "too many %<#pragma options align=reset%>"
-msgstr "för många #pragma-flaggor align=reset"
+msgstr "för många %<#pragma-flaggor align=reset%>"
 
 #: config/darwin-c.c:102 config/darwin-c.c:105 config/darwin-c.c:107
 #: config/darwin-c.c:109
@@ -32382,10 +32292,9 @@ msgid "couldn%'t understand kern.osversion %q.*s"
 msgstr "kunde inte förstå kern.osversion %q.*s"
 
 #: config/darwin-driver.c:205
-#, fuzzy, gcc-internal-format
-#| msgid "couldn%'t understand version %s\n"
+#, gcc-internal-format
 msgid "couldn%'t understand version %s"
-msgstr "kunde inte förstå version %s\n"
+msgstr "kunde inte förstå version %s"
 
 #: config/darwin-driver.c:281
 #, gcc-internal-format, gfc-internal-format
@@ -32393,10 +32302,9 @@ msgid "this compiler does not support %s"
 msgstr "denna målarkitektur stödjer inte %s"
 
 #: config/darwin-driver.c:324
-#, fuzzy, gcc-internal-format
-#| msgid "unknown value %qs of %<-mmacosx-version-min%>"
+#, gcc-internal-format
 msgid "%qs is not valid for %<mmacosx-version-min%>"
-msgstr "okänt värde %qs till %<-mmacosx-version-min%>"
+msgstr "%qs är inte ett giltigt värde till %<-mmacosx-version-min%>"
 
 #: config/darwin-driver.c:358
 #, gcc-internal-format
@@ -32454,16 +32362,14 @@ msgid "failed to open temporary file %s with LTO output"
 msgstr "det gick inte att öppna temporär fil %s med LTO-utdata"
 
 #: config/darwin.c:3164
-#, fuzzy, gcc-internal-format
-#| msgid "%<-fobjc-abi-version%> >= 2 must be used for %<-m64%> targets with %<-fnext-runtime%>"
+#, gcc-internal-format
 msgid "%<-fobjc-abi-version%> 2 must be used for 64 bit targets with %<-fnext-runtime%>"
-msgstr "%<-fobjc-abi-version%> ≥ 2 måste användas för %<-m64%>-mål med %<-fnext-runtime%>"
+msgstr "%<-fobjc-abi-version%> 2 måste användas för 64-bitars mål med %<-fnext-runtime%>"
 
 #: config/darwin.c:3169
-#, fuzzy, gcc-internal-format
-#| msgid "%<-fobjc-abi-version%> >= 2 is not supported on %<-m32%> targets with %<-fnext-runtime%>"
+#, gcc-internal-format
 msgid "%<-fobjc-abi-version%> %d is not supported for 32 bit targets with %<-fnext-runtime%>"
-msgstr "%<-fobjc-abi-version%> ≥ 2 stödjs inte för %<-m32%>-mål med %<-fnext-runtime%>"
+msgstr "%<-fobjc-abi-version%> %d stödjs inte för 32-bitars mål med %<-fnext-runtime%>"
 
 #: config/darwin.c:3184
 #, gcc-internal-format
@@ -32476,10 +32382,9 @@ msgid "%<-mdynamic-no-pic%> overrides %<-fpic%>, %<-fPIC%>, %<-fpie%> or %<-fPIE
 msgstr "%<-mdynamic-no-pic%> åsidosätter %<-fpic%>, %<-fPIC%>, %<-fpie%> eller %<-fPIE%>"
 
 #: config/darwin.c:3305
-#, fuzzy, gcc-internal-format
-#| msgid "%<-mpic-symbol-stubs%> is not required for 64b code (ignored)"
+#, gcc-internal-format
 msgid "%<-mpic-symbol-stubs%> is not required for 64-bit code (ignored)"
-msgstr "%<-mpic-symbol-stubs%> krävs inte för 64b-kod (ignoreras)"
+msgstr "%<-mpic-symbol-stubs%> krävs inte för 64-bitars kod (ignoreras)"
 
 #: config/darwin.c:3485
 #, gcc-internal-format
@@ -32614,53 +32519,45 @@ msgid "%Ktotal size and element size must be a non-zero constant immediate"
 msgstr "%Ktotal storlek och elementstorlek måste vara en konstant omedelbar skild från noll"
 
 #: config/aarch64/aarch64-builtins.c:1758
-#, fuzzy, gcc-internal-format
-#| msgid "%Kargument %d must be a constant immediate"
+#, gcc-internal-format
 msgid "%Kargument must be a 16-bit constant immediate"
-msgstr "%Kargument %d måste vara en konstant omedelbar"
+msgstr "%Kargument måste vara en 16-bitars konstant omedelbar"
 
 #: config/aarch64/aarch64-builtins.c:1813
-#, fuzzy, gcc-internal-format
-#| msgid "assembler does not support %<-mabi=ilp32%>"
+#, gcc-internal-format
 msgid "Memory Tagging Extension does not support %<-mabi=ilp32%>"
-msgstr "assemblern stödjer inte %<-mabi=ilp32%>"
+msgstr "Memory Tagging Extension stödjer inte %<-mabi=ilp32%>"
 
 #: config/aarch64/aarch64-builtins.c:1847
-#, fuzzy, gcc-internal-format
-#| msgid "%Kargument %d must be a constant immediate"
+#, gcc-internal-format
 msgid "%Kargument %d must be a constant immediate in range [0,15]"
-msgstr "%Kargument %d måste vara en konstant omedelbar"
+msgstr "%Kargument %d måste vara en konstant omedelbar i intervallet [0,15]"
 
 #: config/aarch64/aarch64-builtins.c:2395
 #: config/aarch64/aarch64-builtins.c:2415
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected %qT but argument is of type %qT"
+#, gcc-internal-format, gfc-internal-format
 msgid "expected 64-bit address but argument 1 is %d-bit"
-msgstr "%qT förväntades men argumentet har typ %qT"
+msgstr "en 64-bitars adress förväntades men argument 1 är %d-bitars"
 
 #: config/aarch64/aarch64-builtins.c:2399
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected %qT but argument is of type %qT"
+#, gcc-internal-format, gfc-internal-format
 msgid "expected 64-bit address but argument 2 is %d-bit"
-msgstr "%qT förväntades men argumentet har typ %qT"
+msgstr "en 64-bitars adress förväntades men argument 2 är %d-bitars"
 
 #: config/aarch64/aarch64-c.c:273
-#, fuzzy, gcc-internal-format
-#| msgid "%<#pragma GCC optimize%> is not a string or number"
+#, gcc-internal-format
 msgid "%<#pragma GCC aarch64%> requires a string parameter"
-msgstr "%<#pragma GCC optimize%> är inte en sträng eller ett tal"
+msgstr "%<#pragma GCC aarch64%> kräver en strängparameter"
 
 #: config/aarch64/aarch64-c.c:281
-#, fuzzy, gcc-internal-format
-#| msgid "unknown %<#pragma extern_model%> model %qs"
+#, gcc-internal-format
 msgid "unknown %<#pragma GCC aarch64%> option %qs"
-msgstr "okänd %<#pragma extern_model%>-modell %qs"
+msgstr "okänd %<#pragma GCC aarch64%>-flagga %qs"
 
 #: config/aarch64/aarch64.c:1230
-#, fuzzy, gcc-internal-format
-#| msgid "new cannot be applied to a function type"
+#, gcc-internal-format
 msgid "the %qE attribute cannot be applied to an SVE function type"
-msgstr "new kan inte användas på en funktionstyp"
+msgstr "attributet %qE kan inte användas på en SVE-funktionstyp"
 
 #: config/aarch64/aarch64.c:1300 config/aarch64/aarch64.c:1314
 #, gcc-internal-format
@@ -32700,16 +32597,14 @@ msgstr "du kan aktivera SVE genom att använda kommandoradsflaggan %<-march%>, e
 #. We can't gracefully recover at this point, so make this a
 #. fatal error.
 #: config/aarch64/aarch64.c:4900
-#, fuzzy, gcc-internal-format
-#| msgid "argument to decltype must be an expression"
+#, gcc-internal-format
 msgid "arguments of type %qT require the SVE ISA extension"
-msgstr "argument till decltype måste vara ett uttryck"
+msgstr "argument av typen %qT kräver ISA-utökningen SVE"
 
 #: config/aarch64/aarch64.c:5254
-#, fuzzy, gcc-internal-format
-#| msgid "AltiVec argument passed to unprototyped function"
+#, gcc-internal-format
 msgid "SVE type %qT cannot be passed to an unprototyped function"
-msgstr "AltiVec-argument skickat till funktion utan prototyp"
+msgstr "SVE-typen %qT kan inte skickas till en funktion utan prototyp"
 
 #: config/aarch64/aarch64.c:5367 config/aarch64/aarch64.c:5413
 #: config/aarch64/aarch64.c:5533 config/aarch64/aarch64.c:15612
@@ -32719,16 +32614,14 @@ msgid "parameter passing for argument of type %qT changed in GCC 9.1"
 msgstr "parameterskickandet för argument av typen %qT ändrades i GCC 9.1"
 
 #: config/aarch64/aarch64.c:5482
-#, fuzzy, gcc-internal-format
-#| msgid "Emit code for the counting ISA extension."
+#, gcc-internal-format
 msgid "%qE requires the SVE ISA extension"
-msgstr "Avge kod för ISA-utökningen för räkning."
+msgstr "%qE behöver ISA-utökningen SVE"
 
 #: config/aarch64/aarch64.c:5485
-#, fuzzy, gcc-internal-format
-#| msgid "builtin function %qs requires the %qs option"
+#, gcc-internal-format
 msgid "calls to functions of type %qT require the SVE ISA extension"
-msgstr "den inbyggda funktionen %qs behöver flaggan %qs"
+msgstr "anropt till funktioner av typen %qT behöver ISA-utökningen SVE"
 
 #: config/aarch64/aarch64.c:5655
 #, gcc-internal-format
@@ -32811,14 +32704,12 @@ msgid "invalid feature modifier %qs in %<-mcpu=%s%>"
 msgstr "ogiltig funktionsmodifierare %qs i %<-mcpu=%s%>"
 
 #: config/aarch64/aarch64.c:13971
-#, fuzzy, gcc-internal-format
-#| msgid "invalid arg %<%s%> for %<-mbranch-protection=%>"
+#, gcc-internal-format
 msgid "invalid argument %<%s%> for %<-mbranch-protection=%>"
 msgstr "ogiltigt argument %<%s%> till %<-mbranch-protection=%>"
 
 #: config/aarch64/aarch64.c:13973
-#, fuzzy, gcc-internal-format
-#| msgid "missing arg for %<-mbranch-protection=%>"
+#, gcc-internal-format
 msgid "missing argument for %<-mbranch-protection=%>"
 msgstr "argumentet saknas till %<-mbranch-protection=%>"
 
@@ -33031,10 +32922,9 @@ msgid "trap mode not supported for VAX floats"
 msgstr "läge för fällor (trap mode) stödjs inte för VAX-flyttal"
 
 #: config/alpha/alpha.c:526
-#, fuzzy, gcc-internal-format
-#| msgid "128-bit long double not supported for VAX floats"
+#, gcc-internal-format
 msgid "128-bit %<long double%> not supported for VAX floats"
-msgstr "128-bitars long double stödjs inte för VAX-flyttal"
+msgstr "128-bitars %<long double%> stödjs inte för VAX-flyttal"
 
 #: config/alpha/alpha.c:554
 #, gcc-internal-format, gfc-internal-format
@@ -33313,22 +33203,19 @@ msgid "argument of %qE attribute ignored"
 msgstr "argumentet till attributet %qE ignoreras"
 
 #: config/arm/aarch-common.c:549 config/i386/i386.c:21048
-#, fuzzy, gcc-internal-format
-#| msgid "alternatives not allowed in asm flag output"
+#, gcc-internal-format
 msgid "alternatives not allowed in %<asm%> flag output"
-msgstr "alternativ är inte tillåtna i asm-flaggutdata"
+msgstr "alternativ är inte tillåtna i %<asm%>-flaggutdata"
 
 #: config/arm/aarch-common.c:610 config/i386/i386.c:21112
-#, fuzzy, gcc-internal-format
-#| msgid "unknown asm flag output %qs"
+#, gcc-internal-format
 msgid "unknown %<asm%> flag output %qs"
-msgstr "okänd asm-flaggutdata %qs"
+msgstr "okänd %<asm%>-flaggutdata %qs"
 
 #: config/arm/aarch-common.c:620 config/i386/i386.c:21141
-#, fuzzy, gcc-internal-format
-#| msgid "invalid type for asm flag output"
+#, gcc-internal-format
 msgid "invalid type for %<asm%> flag output"
-msgstr "ogiltig typ för asm-flaggutdata"
+msgstr "ogiltig typ för %<asm%>-flaggutdata"
 
 #: config/arm/arm-builtins.c:3049
 #, gcc-internal-format
@@ -33336,22 +33223,19 @@ msgid "this builtin is not supported for this target"
 msgstr "denna inbyggda stödjs inte på denna målarkitektur"
 
 #: config/arm/arm-builtins.c:3156
-#, fuzzy, gcc-internal-format
-#| msgid "%s expects an integer literal in the range [%d, %d]"
+#, gcc-internal-format
 msgid "%Ksaturation bit range must be in the range [%wd, %wd]"
-msgstr "%s förväntar sig en heltalskonstant i intervallet [%d, %d]"
+msgstr "%Kmättnatsbitsintervallet måste ligga i intervallet [%wd, %wd]"
 
 #: config/arm/arm-builtins.c:3160
-#, fuzzy, gcc-internal-format
-#| msgid "%Klane index must be a constant immediate"
+#, gcc-internal-format
 msgid "%Ksaturation bit range must be a constant immediate"
-msgstr "%Kbanindex måste vara en konstant omedelbar"
+msgstr "%Kmättnadsbitsintervallet måste vara en konstant omedelbar"
 
 #: config/arm/arm-builtins.c:3179
-#, fuzzy, gcc-internal-format
-#| msgid "You must enable VFP instructions to use these intrinsics."
+#, gcc-internal-format
 msgid "You must enable MVE instructions to use these intrinsics"
-msgstr "Du måste aktivera VFP-instruktioner för att använda dessa inbyggda."
+msgstr "Du måste aktivera MVE-instruktioner för att använda dessa inbyggda."
 
 #: config/arm/arm-builtins.c:3201
 #, gcc-internal-format
@@ -33566,10 +33450,9 @@ msgid "%s only supports non-pic code on M-profile targets with the MOVT instruct
 msgstr "%s stödjer endast icke-pic-kod på M-profile-mål med instruktionen MOVT"
 
 #: config/arm/arm.c:2955
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s only supports non-pic code on M-profile targets with the MOVT instruction"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s only supports non-pic code on M-profile targets"
-msgstr "%s stödjer endast icke-pic-kod på M-profile-mål med instruktionen MOVT"
+msgstr "%s stödjer endast icke-pic-kod på M-profile-mål"
 
 #: config/arm/arm.c:2960
 #, gcc-internal-format
@@ -33622,10 +33505,9 @@ msgid "RTP PIC is incompatible with %<-msingle-pic-base%>"
 msgstr "RTP PIC är inkompatibelt med %<-msingle-pic-base%>"
 
 #: config/arm/arm.c:3556 config/arm/arm.c:32210
-#, fuzzy, gcc-internal-format
-#| msgid "code model %qs not supported in x32 mode"
+#, gcc-internal-format
 msgid "FDPIC mode is not supported in Thumb-1 mode"
-msgstr "kodmodellen %qs stödjs inte i x32-läge"
+msgstr "FDPIC-läget stödjs inte i Thumb-1-läge"
 
 #: config/arm/arm.c:3564
 #, gcc-internal-format
@@ -33822,10 +33704,9 @@ msgid "unknown target attribute or pragma %qs"
 msgstr "okänt målattribut eller -pragma %qs"
 
 #: config/arm/arm.c:33263
-#, fuzzy, gcc-internal-format
-#| msgid "address mode %qs not supported in the %s bit mode"
+#, gcc-internal-format
 msgid "asm flags not supported in thumb1 mode"
-msgstr "adressläget %qs stödjs inte i %s-bitsläge"
+msgstr "asm-flaggor stödjs inte i thumb1-läge"
 
 #: config/arm/freebsd.h:121
 #, gcc-internal-format
@@ -34148,22 +34029,19 @@ msgid "%qE attribute cannot be specified for local variables"
 msgstr "attributet %qE kan inte anges för lokala variabler"
 
 #: config/bpf/bpf.c:288
-#, fuzzy, gcc-internal-format
-#| msgid "variable tracking size limit exceeded"
+#, gcc-internal-format
 msgid "eBPF stack limit exceeded"
-msgstr "storleksgräns på variabelspårning överskriden"
+msgstr "eBPF-stacksgränsen överskriden"
 
 #: config/bpf/bpf.c:597
-#, fuzzy, gcc-internal-format
-#| msgid "too many arguments to make"
+#, gcc-internal-format
 msgid "too many function arguments for eBPF"
-msgstr "för många argument till make"
+msgstr "för många funktionsargument till eBPF"
 
 #: config/bpf/bpf.c:615 config/bpf/bpf.c:617
-#, fuzzy, gcc-internal-format
-#| msgid "In constructor %qs"
+#, gcc-internal-format
 msgid "no constructors"
-msgstr "I konstruerare %qs"
+msgstr "inga konstruerare"
 
 #: config/bpf/bpf.c:633 config/bpf/bpf.c:635
 #, fuzzy, gcc-internal-format
