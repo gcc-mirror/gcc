@@ -197,17 +197,20 @@ __gcov_dump (void)
 #endif /* L_gcov_dump */
 
 #ifdef L_gcov_fork
-/* A wrapper for the fork function.  Flushes the accumulated profiling data, so
-   that they are not counted twice.  */
+/* A wrapper for the fork function.  We reset counters in the child
+   so that they are not counted twice.  */
 
 pid_t
 __gcov_fork (void)
 {
   pid_t pid;
-  __gcov_flush ();
   pid = fork ();
   if (pid == 0)
-    __GTHREAD_MUTEX_INIT_FUNCTION (&__gcov_flush_mx);
+    {
+      __GTHREAD_MUTEX_INIT_FUNCTION (&__gcov_flush_mx);
+      /* We do not need locking as we are the only thread in the child.  */
+      __gcov_reset_int ();
+    }
   return pid;
 }
 #endif
@@ -223,7 +226,8 @@ __gcov_execl (const char *path, char *arg, ...)
   unsigned i, length;
   char **args;
 
-  __gcov_flush ();
+  /* Dump counters only, they will be lost after exec.  */
+  __gcov_dump ();
 
   va_start (ap, arg);
   va_copy (aq, ap);
@@ -239,7 +243,10 @@ __gcov_execl (const char *path, char *arg, ...)
     args[i] = va_arg (aq, char *);
   va_end (aq);
 
-  return execv (path, args);
+  int ret = execv (path, args);
+  /* We reach this code only when execv fails, reset counter then here.  */
+  __gcov_reset ();
+  return ret;
 }
 #endif
 
@@ -254,7 +261,8 @@ __gcov_execlp (const char *path, char *arg, ...)
   unsigned i, length;
   char **args;
 
-  __gcov_flush ();
+  /* Dump counters only, they will be lost after exec.  */
+  __gcov_dump ();
 
   va_start (ap, arg);
   va_copy (aq, ap);
@@ -270,7 +278,10 @@ __gcov_execlp (const char *path, char *arg, ...)
     args[i] = va_arg (aq, char *);
   va_end (aq);
 
-  return execvp (path, args);
+  int ret = execvp (path, args);
+  /* We reach this code only when execv fails, reset counter then here.  */
+  __gcov_reset ();
+  return ret;
 }
 #endif
 
@@ -286,7 +297,8 @@ __gcov_execle (const char *path, char *arg, ...)
   char **args;
   char **envp;
 
-  __gcov_flush ();
+  /* Dump counters only, they will be lost after exec.  */
+  __gcov_dump ();
 
   va_start (ap, arg);
   va_copy (aq, ap);
@@ -303,7 +315,10 @@ __gcov_execle (const char *path, char *arg, ...)
   envp = va_arg (aq, char **);
   va_end (aq);
 
-  return execve (path, args, envp);
+  int ret = execve (path, args, envp);
+  /* We reach this code only when execv fails, reset counter then here.  */
+  __gcov_reset ();
+  return ret;
 }
 #endif
 
@@ -314,8 +329,12 @@ __gcov_execle (const char *path, char *arg, ...)
 int
 __gcov_execv (const char *path, char *const argv[])
 {
-  __gcov_flush ();
-  return execv (path, argv);
+  /* Dump counters only, they will be lost after exec.  */
+  __gcov_dump ();
+  int ret = execv (path, argv);
+  /* We reach this code only when execv fails, reset counter then here.  */
+  __gcov_reset ();
+  return ret;
 }
 #endif
 
@@ -326,8 +345,12 @@ __gcov_execv (const char *path, char *const argv[])
 int
 __gcov_execvp (const char *path, char *const argv[])
 {
-  __gcov_flush ();
-  return execvp (path, argv);
+  /* Dump counters only, they will be lost after exec.  */
+  __gcov_dump ();
+  int ret = execvp (path, argv);
+  /* We reach this code only when execv fails, reset counter then here.  */
+  __gcov_reset ();
+  return ret;
 }
 #endif
 
@@ -338,8 +361,12 @@ __gcov_execvp (const char *path, char *const argv[])
 int
 __gcov_execve (const char *path, char *const argv[], char *const envp[])
 {
-  __gcov_flush ();
-  return execve (path, argv, envp);
+  /* Dump counters only, they will be lost after exec.  */
+  __gcov_dump ();
+  int ret = execve (path, argv, envp);
+  /* We reach this code only when execv fails, reset counter then here.  */
+  __gcov_reset ();
+  return ret;
 }
 #endif
 #endif /* inhibit_libc */
