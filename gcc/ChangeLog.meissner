@@ -1,5 +1,23 @@
 2020-05-05  Michael Meissner  <meissner@linux.ibm.com>
 
+	(ieee128-lib-patch009b)
+	* config/rs6000/rs6000-builtin.def (scalar_extract_exptf): Add
+	long double versions of the float128 built-in functions.
+	(scalar_extract_sigtf): Likewise.
+	(scalar_test_neg_tf): Likewise.
+	(scalar_insert_exp_tf): Likewise.
+	(scalar_insert_exp_tfp): Likewise.
+	(scalar_cmp_exp_tf_gt): Likewise.
+	(scalar_cmp_exp_tf_lt): Likewise.
+	(scalar_cmp_exp_tf_eq): Likewise.
+	(scalar_cmp_exp_tf_unordered): Likewise.
+	* config/rs6000/rs6000-call.c (altivec_overloaded_builtins): Add
+	long double variants of the float128 built-in functions.
+	(rs6000_expand_builtin): Convert some more float128 built-in
+	functions into supporting long double
+
+2020-05-05  Michael Meissner  <meissner@linux.ibm.com>
+
 	(ieee128-lib-patch007b)
 	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Map all of
 	the special f128 constant builtins to the long double version if
