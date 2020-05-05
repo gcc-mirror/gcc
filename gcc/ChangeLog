@@ -1,3 +1,21 @@
+2020-05-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (fixuns_trunc<mode>si2): Use
+	"clobber (scratch:M)" instad of "clobber (match_scratch:M N)".
+	(addqi3_cconly_overflow): Ditto.
+	(umulv<mode>4): Ditto.
+	(<s>mul<mode>3_highpart): Ditto.
+	(tls_global_dynamic_32): Ditto.
+	(tls_local_dynamic_base_32): Ditto.
+	(atanxf2): Ditto.
+	(asinxf2): Ditto.
+	(acosxf2): Ditto.
+	(logxf2): Ditto.
+	(log10xf2): Ditto.
+	(log2xf2): Ditto.
+	(*adddi_4): Remove "m" constraint from scratch operand.
+	(*add<mode>_4): Ditto.
+
 2020-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/94516
@@ -208,7 +226,7 @@
 
 2020-05-03  Uroš Bizjak  <ubizjak@gmail.com>
 
-        * config/i386/i386-expand.c (ix86_expand_int_movcc):
+	* config/i386/i386-expand.c (ix86_expand_int_movcc):
 	Use plus_constant instead of gen_rtx_PLUS with GEN_INT.
 	(emit_memmov): Ditto.
 	(emit_memset): Ditto.
