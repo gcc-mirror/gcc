@@ -3521,7 +3521,7 @@ vrp_insert::insert_range_assertions (void)
 
 class vrp_prop : public ssa_propagation_engine
 {
- public:
+public:
   enum ssa_prop_result visit_stmt (gimple *, edge *, tree *) FINAL OVERRIDE;
   enum ssa_prop_result visit_phi (gphi *) FINAL OVERRIDE;
 
@@ -3529,12 +3529,10 @@ class vrp_prop : public ssa_propagation_engine
 
   void vrp_initialize (struct function *);
   void vrp_finalize (bool);
-  void check_all_array_refs (void);
-  bool check_array_ref (location_t, tree, bool);
-  bool check_mem_ref (location_t, tree, bool);
-  void search_for_addr_array (tree, location_t);
 
   class vr_values vr_values;
+
+private:
   /* Temporary delegator to minimize code churn.  */
   const value_range_equiv *get_value_range (const_tree op)
     { return vr_values.get_value_range (op); }
@@ -3552,6 +3550,29 @@ class vrp_prop : public ssa_propagation_engine
   void extract_range_from_phi_node (gphi *phi, value_range_equiv *vr)
     { vr_values.extract_range_from_phi_node (phi, vr); }
 };
+
+/* Array bounds checking pass.  */
+
+class array_bounds_checker
+{
+  friend class check_array_bounds_dom_walker;
+
+public:
+  array_bounds_checker (struct function *fun, class vr_values *v)
+    : fun (fun), ranges (v) { }
+  void check ();
+
+private:
+  static tree check_array_bounds (tree *tp, int *walk_subtree, void *data);
+  bool check_array_ref (location_t, tree, bool ignore_off_by_one);
+  bool check_mem_ref (location_t, tree, bool ignore_off_by_one);
+  void check_addr_expr (location_t, tree);
+  const value_range_equiv *get_value_range (const_tree op)
+    { return ranges->get_value_range (op); }
+  struct function *fun;
+  class vr_values *ranges;
+};
+
 /* Checks one ARRAY_REF in REF, located at LOCUS. Ignores flexible arrays
    and "struct" hacks. If VRP can determine that the
    array subscript is a constant, check if it is outside valid
@@ -3561,8 +3582,8 @@ class vrp_prop : public ssa_propagation_engine
    Returns true if a warning has been issued.  */
 
 bool
-vrp_prop::check_array_ref (location_t location, tree ref,
-			   bool ignore_off_by_one)
+array_bounds_checker::check_array_ref (location_t location, tree ref,
+				       bool ignore_off_by_one)
 {
   if (TREE_NO_WARNING (ref))
     return false;
@@ -3760,8 +3781,8 @@ vrp_prop::check_array_ref (location_t location, tree ref,
    Returns true if a warning has been issued.  */
 
 bool
-vrp_prop::check_mem_ref (location_t location, tree ref,
-			 bool ignore_off_by_one)
+array_bounds_checker::check_mem_ref (location_t location, tree ref,
+				     bool ignore_off_by_one)
 {
   if (TREE_NO_WARNING (ref))
     return false;
@@ -4038,7 +4059,7 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
    address of an ARRAY_REF, and call check_array_ref on it.  */
 
 void
-vrp_prop::search_for_addr_array (tree t, location_t location)
+array_bounds_checker::check_addr_expr (location_t location, tree t)
 {
   /* Check each ARRAY_REF and MEM_REF in the reference chain. */
   do
@@ -4122,14 +4143,12 @@ vrp_prop::search_for_addr_array (tree t, location_t location)
     }
 }
 
-/* walk_tree() callback that checks if *TP is
-   an ARRAY_REF inside an ADDR_EXPR (in which an array
-   subscript one outside the valid range is allowed). Call
-   check_array_ref for each ARRAY_REF found. The location is
-   passed in DATA.  */
+/* Callback for walk_tree to check a tree for out of bounds array
+   accesses.  The array_bounds_checker class is passed in DATA.  */
 
-static tree
-check_array_bounds (tree *tp, int *walk_subtree, void *data)
+tree
+array_bounds_checker::check_array_bounds (tree *tp, int *walk_subtree,
+					  void *data)
 {
   tree t = *tp;
   struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
@@ -4143,14 +4162,16 @@ check_array_bounds (tree *tp, int *walk_subtree, void *data)
   *walk_subtree = TRUE;
 
   bool warned = false;
-  vrp_prop *vrp_prop = (class vrp_prop *)wi->info;
+  array_bounds_checker *checker = (array_bounds_checker *) wi->info;
   if (TREE_CODE (t) == ARRAY_REF)
-    warned = vrp_prop->check_array_ref (location, t, false/*ignore_off_by_one*/);
+    warned = checker->check_array_ref (location, t,
+				       false/*ignore_off_by_one*/);
   else if (TREE_CODE (t) == MEM_REF)
-    warned = vrp_prop->check_mem_ref (location, t, false /*ignore_off_by_one*/);
+    warned = checker->check_mem_ref (location, t,
+				     false /*ignore_off_by_one*/);
   else if (TREE_CODE (t) == ADDR_EXPR)
     {
-      vrp_prop->search_for_addr_array (t, location);
+      checker->check_addr_expr (location, t);
       *walk_subtree = FALSE;
     }
   /* Propagate the no-warning bit to the outer expression.  */
@@ -4160,26 +4181,26 @@ check_array_bounds (tree *tp, int *walk_subtree, void *data)
   return NULL_TREE;
 }
 
-/* A dom_walker subclass for use by vrp_prop::check_all_array_refs,
-   to walk over all statements of all reachable BBs and call
-   check_array_bounds on them.  */
+/* A dom_walker subclass for use by check_all_array_refs, to walk over
+   all statements of all reachable BBs and call check_array_bounds on
+   them.  */
 
 class check_array_bounds_dom_walker : public dom_walker
 {
- public:
-  check_array_bounds_dom_walker (vrp_prop *prop)
+public:
+  check_array_bounds_dom_walker (array_bounds_checker *checker)
     : dom_walker (CDI_DOMINATORS,
 		  /* Discover non-executable edges, preserving EDGE_EXECUTABLE
 		     flags, so that we can merge in information on
 		     non-executable edges from vrp_folder .  */
 		  REACHABLE_BLOCKS_PRESERVING_FLAGS),
-      m_prop (prop) {}
+    checker (checker) { }
   ~check_array_bounds_dom_walker () {}
 
   edge before_dom_children (basic_block) FINAL OVERRIDE;
 
- private:
-  vrp_prop *m_prop;
+private:
+  array_bounds_checker *checker;
 };
 
 /* Implementation of dom_walker::before_dom_children.
@@ -4201,9 +4222,9 @@ check_array_bounds_dom_walker::before_dom_children (basic_block bb)
 
       memset (&wi, 0, sizeof (wi));
 
-      wi.info = m_prop;
+      wi.info = checker;
 
-      walk_gimple_op (stmt, check_array_bounds, &wi);
+      walk_gimple_op (stmt, array_bounds_checker::check_array_bounds, &wi);
     }
 
   /* Determine if there's a unique successor edge, and if so, return
@@ -4213,11 +4234,10 @@ check_array_bounds_dom_walker::before_dom_children (basic_block bb)
   return find_taken_edge (bb, NULL_TREE);
 }
 
-/* Walk over all statements of all reachable BBs and call check_array_bounds
-   on them.  */
+/* Entry point into array bounds checking pass.  */
 
 void
-vrp_prop::check_all_array_refs ()
+array_bounds_checker::check ()
 {
   check_array_bounds_dom_walker w (this);
   w.walk (ENTRY_BLOCK_PTR_FOR_FN (fun));
@@ -4851,14 +4871,15 @@ vrp_prop::visit_phi (gphi *phi)
 
 class vrp_folder : public substitute_and_fold_engine
 {
- public:
+public:
   vrp_folder () : substitute_and_fold_engine (/* Fold all stmts.  */ true) {  }
   tree get_value (tree) FINAL OVERRIDE;
   bool fold_stmt (gimple_stmt_iterator *) FINAL OVERRIDE;
-  bool fold_predicate_in (gimple_stmt_iterator *);
 
   class vr_values *vr_values;
 
+private:
+  bool fold_predicate_in (gimple_stmt_iterator *);
   /* Delegators.  */
   tree vrp_evaluate_conditional (tree_code code, tree op0,
 				 tree op1, gimple *stmt)
@@ -5293,7 +5314,10 @@ vrp_prop::vrp_finalize (bool warn_array_bounds_p)
   vrp_folder.substitute_and_fold ();
 
   if (warn_array_bounds && warn_array_bounds_p)
-    check_all_array_refs ();
+    {
+      array_bounds_checker array_checker (fun, &vr_values);
+      array_checker.check ();
+    }
 }
 
 /* Main entry point to VRP (Value Range Propagation).  This pass is
