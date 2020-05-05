@@ -3828,8 +3828,7 @@ static void add_bound_info (dw_die_ref, enum dwarf_attribute, tree,
 static void add_subscript_info (dw_die_ref, tree, bool);
 static void add_byte_size_attribute (dw_die_ref, tree);
 static void add_alignment_attribute (dw_die_ref, tree);
-static inline void add_bit_offset_attribute (dw_die_ref, tree,
-					     struct vlr_context *);
+static void add_bit_offset_attribute (dw_die_ref, tree);
 static void add_bit_size_attribute (dw_die_ref, tree);
 static void add_prototyped_attribute (dw_die_ref, tree);
 static void add_abstract_origin_attribute (dw_die_ref, tree);
@@ -19118,6 +19117,7 @@ struct vlr_context
      QUAL_UNION_TYPE nodes.  Each time such a structure is passed to a
      function processing a FIELD_DECL, it is required to be non null.  */
   tree struct_type;
+
   /* When generating a variant part in a RECORD_TYPE (i.e. a nested
      QUAL_UNION_TYPE), this holds an expression that computes the offset for
      this variant part as part of the root record (in storage units).  For
@@ -19456,9 +19456,13 @@ add_data_member_location_attribute (dw_die_ref die,
 	 to dwarf_version >= 4 once most consumers catched up.  */
       if (dwarf_version >= 5
 	  && TREE_CODE (decl) == FIELD_DECL
-	  && DECL_BIT_FIELD_TYPE (decl))
+	  && DECL_BIT_FIELD_TYPE (decl)
+	  && (ctx->variant_part_offset == NULL_TREE
+	      || TREE_CODE (ctx->variant_part_offset) == INTEGER_CST))
 	{
 	  tree off = bit_position (decl);
+	  if (ctx->variant_part_offset)
+	    off = bit_from_pos (ctx->variant_part_offset, off);
 	  if (tree_fits_uhwi_p (off) && get_AT (die, DW_AT_bit_size))
 	    {
 	      remove_AT (die, DW_AT_byte_size);
@@ -21095,14 +21099,12 @@ add_alignment_attribute (dw_die_ref die, tree tree_node)
    exact location of the "containing object" for a bit-field is rather
    complicated.  It's handled by the `field_byte_offset' function (above).
 
-   CTX is required: see the comment for VLR_CONTEXT.
-
    Note that it is the size (in bytes) of the hypothetical "containing object"
    which will be given in the DW_AT_byte_size attribute for this bit-field.
    (See `byte_size_attribute' above).  */
 
 static inline void
-add_bit_offset_attribute (dw_die_ref die, tree decl, struct vlr_context *ctx)
+add_bit_offset_attribute (dw_die_ref die, tree decl)
 {
   HOST_WIDE_INT object_offset_in_bytes;
   tree original_type = DECL_BIT_FIELD_TYPE (decl);
@@ -21111,7 +21113,10 @@ add_bit_offset_attribute (dw_die_ref die, tree decl, struct vlr_context *ctx)
   HOST_WIDE_INT highest_order_field_bit_offset;
   HOST_WIDE_INT bit_offset;
 
-  field_byte_offset (decl, ctx, &object_offset_in_bytes);
+  /* The containing object is within the DECL_CONTEXT.  */
+  struct vlr_context ctx = { DECL_CONTEXT (decl), NULL_TREE };
+
+  field_byte_offset (decl, &ctx, &object_offset_in_bytes);
 
   /* Must be a field and a bit field.  */
   gcc_assert (original_type && TREE_CODE (decl) == FIELD_DECL);
@@ -24279,16 +24284,11 @@ gen_field_die (tree decl, struct vlr_context *ctx, dw_die_ref context_die)
     {
       add_byte_size_attribute (decl_die, decl);
       add_bit_size_attribute (decl_die, decl);
-      add_bit_offset_attribute (decl_die, decl, ctx);
+      add_bit_offset_attribute (decl_die, decl);
     }
 
   add_alignment_attribute (decl_die, decl);
 
-  /* If we have a variant part offset, then we are supposed to process a member
-     of a QUAL_UNION_TYPE, which is how we represent variant parts in
-     trees.  */
-  gcc_assert (ctx->variant_part_offset == NULL_TREE
-	      || TREE_CODE (DECL_FIELD_CONTEXT (decl)) != QUAL_UNION_TYPE);
   if (TREE_CODE (DECL_FIELD_CONTEXT (decl)) != UNION_TYPE)
     add_data_member_location_attribute (decl_die, decl, ctx);
 
@@ -24883,7 +24883,9 @@ analyze_variants_discr (tree variant_part_decl,
 
 	  else if ((candidate_discr
 		      = analyze_discr_in_predicate (match_expr, struct_type))
-		   && TREE_TYPE (candidate_discr) == boolean_type_node)
+		   && (TREE_TYPE (candidate_discr) == boolean_type_node
+		       || TREE_TYPE (TREE_TYPE (candidate_discr))
+			  == boolean_type_node))
 	    {
 	      /* We are matching:  <discr_field> for a boolean discriminant.
 		 This sub-expression matches boolean_true_node.  */
