@@ -1,3 +1,58 @@
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/spellcheck-options-22.c: New test.
+
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/concepts/diagnostic1.C: Merge dg-options and
+	dg-additional-options if len <= 120 chars.
+	* g++.dg/cpp1y/new1.C: Likewise.
+	* g++.dg/cpp1y/new2.C: Likewise.
+	* g++.dg/debug/dwarf2/pr61433.C: Likewise.
+	* g++.dg/init/new18.C: Likewise.
+	* g++.dg/ipa/devirt-19.C: Likewise.
+	* g++.dg/ipa/devirt-52.C: Likewise.
+	* g++.dg/ipa/pr44372.C: Likewise.
+	* g++.dg/ipa/pr58371.C: Likewise.
+	* g++.dg/ipa/pr63587-2.C: Likewise.
+	* g++.dg/ipa/pr78211.C: Likewise.
+	* g++.dg/opt/dump1.C: Likewise.
+	* g++.dg/opt/pr44919.C: Likewise.
+	* g++.dg/opt/pr47615.C: Likewise.
+	* g++.dg/opt/pr82159-2.C: Likewise.
+	* g++.dg/other/pr52048.C: Likewise.
+	* g++.dg/pr57662.C: Likewise.
+	* g++.dg/pr59510.C: Likewise.
+	* g++.dg/pr67989.C: Likewise.
+	* g++.dg/pr81194.C: Likewise.
+	* g++.dg/template/canon-type-8.C: Likewise.
+	* g++.dg/template/crash107.C: Likewise.
+	* g++.dg/template/show-template-tree-3.C: Likewise.
+	* g++.dg/tm/cgraph_edge.C: Likewise.
+	* g++.dg/torture/20141013.C: Likewise.
+	* g++.dg/torture/pr34641.C: Likewise.
+	* g++.dg/torture/pr34850.C: Likewise.
+	* g++.dg/torture/pr36745.C: Likewise.
+	* g++.dg/torture/pr40991.C: Likewise.
+	* g++.dg/torture/pr48271.C: Likewise.
+	* g++.dg/torture/pr53602.C: Likewise.
+	* g++.dg/torture/pr53752.C: Likewise.
+	* g++.dg/torture/pr54838.C: Likewise.
+	* g++.dg/torture/pr58252.C: Likewise.
+	* g++.dg/tree-ssa/pr22444.C: Likewise.
+	* g++.dg/tree-ssa/pr24351-3.C: Likewise.
+	* g++.dg/tree-ssa/pr27283.C: Likewise.
+	* g++.dg/tree-ssa/pr27291.C: Likewise.
+	* g++.dg/tree-ssa/pr27548.C: Likewise.
+	* g++.dg/tree-ssa/pr42337.C: Likewise.
+	* g++.dg/ubsan/pr65583.C: Likewise.
+	* g++.old-deja/g++.robertl/eb27.C: Likewise.
+	* gcc.dg/tree-ssa/dse-points-to.c: Likewise.
+	* gcc.target/arm/simd/vmmla_1.c: Likewise.
+	* gcc.target/i386/vect-pr67800.c: Likewise.
+	* gcc.target/mips/cfgcleanup-jalr2.c: Likewise.
+	* gcc.target/mips/cfgcleanup-jalr3.c: Likewise.
+
 2020-05-05  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/92177
