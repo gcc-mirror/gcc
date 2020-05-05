@@ -1613,10 +1613,10 @@
    (set_attr "mode" "DI")])
 
 (define_insn_and_split "*vec_dupv4hi"
-  [(set (match_operand:V4HI 0 "register_operand" "=y,Yv,Yw")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,xYw,Yw")
 	(vec_duplicate:V4HI
 	  (truncate:HI
-	    (match_operand:SI 1 "register_operand" "0,Yv,r"))))]
+	    (match_operand:SI 1 "register_operand" "0,xYw,r"))))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && (TARGET_SSE || TARGET_3DNOW_A)"
   "@
