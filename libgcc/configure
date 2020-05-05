@@ -1801,6 +1801,52 @@ $as_echo "$ac_res" >&6; }
   eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
 
 } # ac_fn_c_check_header_preproc
+
+# ac_fn_c_try_link LINENO
+# -----------------------
+# Try to link conftest.$ac_ext, and return whether this succeeded.
+ac_fn_c_try_link ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  rm -f conftest.$ac_objext conftest$ac_exeext
+  if { { ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
+$as_echo "$ac_try_echo"; } >&5
+  (eval "$ac_link") 2>conftest.err
+  ac_status=$?
+  if test -s conftest.err; then
+    grep -v '^ *+' conftest.err >conftest.er1
+    cat conftest.er1 >&5
+    mv -f conftest.er1 conftest.err
+  fi
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 test -x conftest$ac_exeext
+       }; then :
+  ac_retval=0
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_retval=1
+fi
+  # Delete the IPA/IPO (Inter Procedural Analysis/Optimization) information
+  # created by the PGI compiler (conftest_ipa8_conftest.oo), as it would
+  # interfere with the next link command; also delete a directory that is
+  # left behind by Apple's compiler.  We do this before executing the actions.
+  rm -rf conftest.dSYM conftest_ipa8_conftest.oo
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+  as_fn_set_status $ac_retval
+
+} # ac_fn_c_try_link
 cat >config.log <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -5201,7 +5247,9 @@ case ${host} in
 # At present, we cannot turn -mfloat128 on via #pragma GCC target, so just
 # check if we have VSX (ISA 2.06) support to build the software libraries, and
 # whether the assembler can handle xsaddqp for hardware support.  Also check if
-# a new glibc is being used so that __builtin_cpu_supports can be used.
+# a new glibc is being used so that __builtin_cpu_supports can be used.  Check
+# to see if glibc provides the necessary decimal <-> IEEE 128 function, and
+# arrange to build our own version if they are not provided.
 powerpc*-*-linux*)
   saved_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS -mabi=altivec -mvsx -mfloat128"
@@ -5258,6 +5306,64 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcc_cv_powerpc_float128_hw" >&5
 $as_echo "$libgcc_cv_powerpc_float128_hw" >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for PowerPC convert __float128 to/from _Decimal libraries" >&5
+$as_echo_n "checking for PowerPC convert __float128 to/from _Decimal libraries... " >&6; }
+if ${libgcc_cv_powerpc_float128_dec+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+     __attribute__((noinline)) __float128 f128_from_d128 (_Decimal128 d128)
+     {
+       return (__float128)d128;
+     }
+     __attribute__((noinline)) __float128 f128_from_d64 (_Decimal128 d64)
+     {
+       return (__float128)d64;
+     }
+     __attribute__((noinline)) __float128 f128_from_d32 (_Decimal128 d32)
+     {
+       return (__float128)d32;
+     }
+     __attribute__((noinline)) _Decimal128 d128_from_f128 (__float128 f128)
+     {
+       return (_Decimal128)f128;
+     }
+     __attribute__((noinline)) _Decimal64 d64_from_f128 (__float128 f128)
+     {
+       return (_Decimal64)f128;
+     }
+     __attribute__((noinline)) _Decimal32 d32_from_f128 (__float128 f128)
+     {
+       return (_Decimal32)f128;
+     }
+     int main (void)
+     {
+       __float128 five = 5.0;
+       if (f128_from_d128 (5.0dl) != five
+           || f128_from_d64 (5.0dd) != five
+           || f128_from_d32 (5.0df) != five
+           || d128_from_f128 (five) != 5.0dl
+           || d64_from_f128 (five) != 5.0dd
+           || d32_from_f128 (five) != 5.0df)
+         abort ();
+       return 0;
+     }
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  libgcc_cv_powerpc_float128_dec=yes
+else
+  libgcc_cv_powerpc_float128_dec=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcc_cv_powerpc_float128_dec" >&5
+$as_echo "$libgcc_cv_powerpc_float128_dec" >&6; }
   CFLAGS="$saved_CFLAGS"
 esac
 
