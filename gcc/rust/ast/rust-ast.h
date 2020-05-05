@@ -213,6 +213,18 @@ public:
       }
   }
 
+  inline bool is_string_lit () const
+  {
+    switch (token_id)
+      {
+      case STRING_LITERAL:
+      case BYTE_STRING_LITERAL:
+	return true;
+      default:
+	return false;
+      }
+  }
+
   ::std::string as_string () const;
 
   virtual void accept_vis (ASTVisitor &vis) OVERRIDE;

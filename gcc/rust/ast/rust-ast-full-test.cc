@@ -242,7 +242,8 @@ Token::as_string () const
   // return get_token_description(token_id);
 
   // maybe fixed - stores everything as string though, so storage-inefficient
-  return str;
+  ::std::string quote = is_string_lit () ? "\"" : "";
+  return quote + str + quote;
 }
 
 ::std::string
