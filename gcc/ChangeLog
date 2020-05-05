@@ -1,5 +1,11 @@
 2020-05-05  Martin Liska  <mliska@suse.cz>
 
+	PR gcov-profile/93623
+	* tree-cfg.c (stmt_can_terminate_bb_p): Update comment to reflect
+	reality.
+
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
 	* opt-functions.awk (opt_args_non_empty): New function.
 	* opt-read.awk: Use the function for various option arguments.
 
