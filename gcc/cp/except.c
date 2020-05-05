@@ -143,60 +143,12 @@ declare_library_fn_1 (const char *name, int ecf,
   tree ident = get_identifier (name);
   tree except = ecf & ECF_NOTHROW ? empty_except_spec : NULL_TREE;
 
-  tree ovls = get_global_module_decls (global_namespace, ident);
-  tree res = NULL_TREE;
-
-  for (ovl_iterator iter (ovls); iter; ++iter)
-    {
-      tree fn = *iter;
-
-      if (TREE_CODE (fn) != FUNCTION_DECL)
-	continue;
-
-      tree fntype = TREE_TYPE (fn);
-      if (!same_type_p (TREE_TYPE (fntype), rtype))
-	continue;
-
-      tree targs = TYPE_ARG_TYPES (fntype);
-      for (int ix = 0; ix != nargs && targs; ix++, targs = TREE_CHAIN (targs))
-	if (same_type_p (TREE_VALUE (targs), args[ix]))
-	  /* Ok */;
-	else if (!ix)
-	  break;
-        /* Be less strict for second and following arguments, __cxa_throw
-	   needs to be more permissive.  */
-        // FIXME: See, we should fix libitm, which was the plan then
-      // https://gcc.gnu.org/pipermail/gcc-patches/2018-December/513302.html
-	else if (ix == 1
-		 && TYPE_PTROBV_P (TREE_VALUE (targs))
-		 && TYPE_PTROBV_P (args[ix]))
-	  /* Both object pointers.  */;
-	else if (ix == 2
-		 && TYPE_PTRFN_P (TREE_VALUE (targs))
-		 && TYPE_PTRFN_P (args[ix]))
-	  /* Both function pointers.  */;
-	else
-	  break;
-
-      if (targs == void_list_node)
-	{
-	  /* Found it.  */
-	  res = fn;
-	  break;
-	}
-    }
-
-  if (res)
-    res = pushdecl_top_level (res);
-  else
-    {
-      /* Make a new decl.  */
-      tree arg_list = void_list_node;
-      for (unsigned ix = nargs; ix--;)
-	arg_list = tree_cons (NULL_TREE, args[ix], arg_list);
-      tree fntype = build_function_type (rtype, arg_list);
-      res = push_library_fn (ident, fntype, except, ecf);
-    }
+  /* Make a new decl.  */
+  tree arg_list = void_list_node;
+  for (unsigned ix = nargs; ix--;)
+    arg_list = tree_cons (NULL_TREE, args[ix], arg_list);
+  tree fntype = build_function_type (rtype, arg_list);
+  tree res = push_library_fn (ident, fntype, except, ecf);
 
   return res;
 }

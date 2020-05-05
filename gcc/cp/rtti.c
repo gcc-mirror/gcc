@@ -177,6 +177,8 @@ init_rtti_processing (void)
 			     /*tag_scope=*/ts_current, false);
   tree decl = TYPE_NAME (type_info_type);
   /* This is exported from wherever it came from.  */
+  // FIXME: I don't think this is right.  It should behave as-if a GMF
+  // entity of a named module
   DECL_MODULE_EXPORT_P (decl) = true;
   pop_nested_namespace (std_node);
   const_type_info_type_node

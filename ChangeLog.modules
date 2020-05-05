@@ -1,5 +1,12 @@
 2020-05-05  Nathan Sidwell  <nathan@acm.org>
 
+	Just push the eh decls.
+	gcc/cp/
+	* except.c (declare_library_fn_1): Don't look at current binding.
+	Just make the decl and push it.
+	* name-lookup.h (get_global_module_decls): Delete decl.
+	* name-lookup.c (get_global_module_decls): Delete defn.
+
 	Fix eh specs
 	gcc/testsuite/
 	* g++.dg/eh/builtin{5,7,9,10,11}.C: Fix eh specs on __cxa fn decls.

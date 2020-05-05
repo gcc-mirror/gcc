@@ -327,7 +327,6 @@ inline tree get_global_binding (tree id)
 {
   return get_namespace_binding (NULL_TREE, id);
 }
-extern tree get_global_module_decls (tree ns, tree id);
 extern tree lookup_qualified_name (tree, tree, int = 0, bool = true, /*hidden*/bool = false);
 extern tree lookup_qualified_name (tree t, const char *p, int = 0, bool = true, bool = false);
 extern tree lookup_name_nonclass (tree);

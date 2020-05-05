@@ -5854,28 +5854,6 @@ get_namespace_binding (tree ns, tree name)
   return ret;
 }
 
-tree
-get_global_module_decls (tree ns, tree name)
-{
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  tree ret = NULL_TREE;
-
-  if (tree *b = find_namespace_slot (ns, name))
-    {
-      ret = *b;
-
-      if (TREE_CODE (ret) == MODULE_VECTOR)
-	{
-	  unsigned ix = MODULE_SLOT_GLOBAL / MODULE_VECTOR_SLOTS_PER_CLUSTER;
-	  unsigned off = MODULE_SLOT_GLOBAL % MODULE_VECTOR_SLOTS_PER_CLUSTER;
-	  ret = MODULE_VECTOR_CLUSTER (ret, ix).slots[off];
-	}
-    }
-
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-  return ret;
-}
-
 /* Push internal DECL into the global namespace.  Does not do the
    full overload fn handling and does not add it to the list of things
    in the namespace.  */
