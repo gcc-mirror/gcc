@@ -1469,11 +1469,16 @@ package body Exp_Ch6 is
       --  also takes care of any constraint checks required for the type
       --  conversion case (on both the way in and the way out).
 
-      procedure Add_Simple_Call_By_Copy_Code (Bit_Packed_Array : Boolean);
+      procedure Add_Simple_Call_By_Copy_Code (Force : Boolean);
       --  This is similar to the above, but is used in cases where we know
       --  that all that is needed is to simply create a temporary and copy
-      --  the value in and out of the temporary. If Bit_Packed_Array is True,
-      --  the procedure is called for a bit-packed array actual.
+      --  the value in and out of the temporary. If Force is True, then the
+      --  procedure may disregard legality considerations.
+
+      --  ??? We need to do the copy for a bit-packed array because this is
+      --  where the rewriting into a mask-and-shift sequence is done. But of
+      --  course this may break the program if it expects bits to be really
+      --  passed by reference. That's what we have done historically though.
 
       procedure Add_Validation_Call_By_Copy_Code (Act : Node_Id);
       --  Perform copy-back for actual parameter Act which denotes a validation
@@ -1851,7 +1856,7 @@ package body Exp_Ch6 is
       -- Add_Simple_Call_By_Copy_Code --
       ----------------------------------
 
-      procedure Add_Simple_Call_By_Copy_Code (Bit_Packed_Array : Boolean) is
+      procedure Add_Simple_Call_By_Copy_Code (Force : Boolean) is
          Decl   : Node_Id;
          F_Typ  : Entity_Id := Etype (Formal);
          Incod  : Node_Id;
@@ -1862,12 +1867,9 @@ package body Exp_Ch6 is
          Temp   : Entity_Id;
 
       begin
-         --  ??? We need to do the copy for a bit-packed array because this is
-         --  where the rewriting into a mask-and-shift sequence is done. But of
-         --  course this may break the program if it expects bits to be really
-         --  passed by reference. That's what we have done historically though.
+         --  Unless forced not to, check the legality of the copy operation
 
-         if not Bit_Packed_Array and then not Is_Legal_Copy then
+         if not Force and then not Is_Legal_Copy then
             return;
          end if;
 
@@ -2272,7 +2274,13 @@ package body Exp_Ch6 is
             --  functions that are treated as build-in-place to include other
             --  composite result types.
 
-            if Is_Build_In_Place_Function_Call (Actual) then
+            --  But do not do it here for intrinsic subprograms since this will
+            --  be done properly after the subprogram is expanded.
+
+            if Is_Intrinsic_Subprogram (Subp) then
+               null;
+
+            elsif Is_Build_In_Place_Function_Call (Actual) then
                Build_Activation_Chain_Entity (N);
                Build_Master_Entity (Etype (Actual));
                Make_Build_In_Place_Call_In_Anonymous_Context (Actual);
@@ -2366,7 +2374,7 @@ package body Exp_Ch6 is
             --  [in] out parameters.
 
             elsif Is_Ref_To_Bit_Packed_Array (Actual) then
-               Add_Simple_Call_By_Copy_Code (Bit_Packed_Array => True);
+               Add_Simple_Call_By_Copy_Code (Force => True);
 
             --  If a nonscalar actual is possibly bit-aligned, we need a copy
             --  because the back-end cannot cope with such objects. In other
@@ -2382,7 +2390,7 @@ package body Exp_Ch6 is
                 Component_May_Be_Bit_Aligned (Entity (Selector_Name (Actual)))
               and then not Represented_As_Scalar (Etype (Formal))
             then
-               Add_Simple_Call_By_Copy_Code (Bit_Packed_Array => False);
+               Add_Simple_Call_By_Copy_Code (Force => False);
 
             --  References to slices of bit-packed arrays are expanded
 
@@ -2568,14 +2576,19 @@ package body Exp_Ch6 is
             --  Is this really necessary in all cases???
 
             elsif Is_Ref_To_Bit_Packed_Array (Actual) then
-               Add_Simple_Call_By_Copy_Code (Bit_Packed_Array => True);
+               Add_Simple_Call_By_Copy_Code (Force => True);
+
+            --  If we have a C++ constructor call, we need to create the object
+
+            elsif Is_CPP_Constructor_Call (Actual) then
+               Add_Simple_Call_By_Copy_Code (Force => True);
 
             --  If a nonscalar actual is possibly unaligned, we need a copy
 
             elsif Is_Possibly_Unaligned_Object (Actual)
               and then not Represented_As_Scalar (Etype (Formal))
             then
-               Add_Simple_Call_By_Copy_Code (Bit_Packed_Array => False);
+               Add_Simple_Call_By_Copy_Code (Force => False);
 
             --  Similarly, we have to expand slices of packed arrays here
             --  because the result must be byte aligned.
