@@ -1,3 +1,11 @@
+2020-05-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*testqi_ext_3): Use
+	int_nonimmediate_operand instead of manual mode checks.
+	(*x86_mov<SWI48:mode>cc_0_m1_neg_leu<SWI:mode>):
+	Use int_nonimmediate_operand predicate.  Rewrite
+	define_insn_and_split pattern to a combine pass splitter.
+
 2020-05-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac <i[34567]86-*-*>: Add --32 to tls_as_opt on Solaris.
