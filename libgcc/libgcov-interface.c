@@ -42,18 +42,9 @@ void __gcov_dump (void) {}
 
 #else
 
-/* Some functions we want to bind in this dynamic object, but have an
-   overridable global alias.  Unfortunately not all targets support
-   aliases, so we just have a forwarding function.  That'll be tail
-   called, so the cost is a single jump instruction.*/
-
-#define ALIAS_void_fn(src,dst) \
-  void dst (void)	    \
-  { src (); }
-
 extern __gthread_mutex_t __gcov_flush_mx ATTRIBUTE_HIDDEN;
 
-#ifdef L_gcov_flush
+#ifdef L_gcov_lock_unlock
 #ifdef __GTHREAD_MUTEX_INIT
 __gthread_mutex_t __gcov_flush_mx = __GTHREAD_MUTEX_INIT;
 #define init_mx_once()
@@ -74,6 +65,25 @@ init_mx_once (void)
 }
 #endif
 
+/* Lock critical section for __gcov_dump and __gcov_reset functions.  */
+
+void
+__gcov_lock (void)
+{
+  init_mx_once ();
+  __gthread_mutex_lock (&__gcov_flush_mx);
+}
+
+/* Unlock critical section for __gcov_dump and __gcov_reset functions.  */
+
+void
+__gcov_unlock (void)
+{
+  __gthread_mutex_unlock (&__gcov_flush_mx);
+}
+#endif
+
+#ifdef L_gcov_flush
 /* Called before fork or exec - write out profile information gathered so
    far and reset it to zero.  This avoids duplication or loss of the
    profile information gathered so far.  */
@@ -81,13 +91,12 @@ init_mx_once (void)
 void
 __gcov_flush (void)
 {
-  init_mx_once ();
-  __gthread_mutex_lock (&__gcov_flush_mx);
+  __gcov_lock ();
 
   __gcov_dump_int ();
   __gcov_reset_int ();
 
-  __gthread_mutex_unlock (&__gcov_flush_mx);
+  __gcov_unlock ();
 }
 
 #endif /* L_gcov_flush */
@@ -143,7 +152,17 @@ __gcov_reset_int (void)
     }
 }
 
-ALIAS_void_fn (__gcov_reset_int, __gcov_reset);
+/* Exported function __gcov_reset.  */
+
+void
+__gcov_reset (void)
+{
+  __gcov_lock ();
+
+  __gcov_reset_int ();
+
+  __gcov_unlock ();
+}
 
 #endif /* L_gcov_reset */
 
@@ -163,7 +182,17 @@ __gcov_dump_int (void)
     __gcov_dump_one (root);
 }
 
-ALIAS_void_fn (__gcov_dump_int, __gcov_dump);
+/* Exported function __gcov_dump.  */
+
+void
+__gcov_dump (void)
+{
+  __gcov_lock ();
+
+  __gcov_dump_int ();
+
+  __gcov_unlock ();
+}
 
 #endif /* L_gcov_dump */
 

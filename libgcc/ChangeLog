@@ -1,3 +1,16 @@
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/93623
+	* Makefile.in: Add _gcov_lock_unlock to LIBGCOV_INTERFACE.
+	* libgcov-interface.c (ALIAS_void_fn): Remove.
+	(__gcov_lock): New.
+	(__gcov_unlock): New.
+	(__gcov_flush): Use __gcov_lock and __gcov_unlock.
+	(__gcov_reset): Likewise.
+	(__gcov_dump): Likewise.
+	* libgcov.h (__gcov_lock): New declaration.
+	(__gcov_unlock): Likewise.
+
 2020-05-01  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sfp-exceptions.c (__math_force_eval): New define.

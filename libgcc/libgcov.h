@@ -253,6 +253,12 @@ extern void __gcov_reset_int (void) ATTRIBUTE_HIDDEN;
 /* User function to enable early write of profile information so far.  */
 extern void __gcov_dump_int (void) ATTRIBUTE_HIDDEN;
 
+/* Lock critical section for __gcov_dump and __gcov_reset functions.  */
+extern void __gcov_lock (void) ATTRIBUTE_HIDDEN;
+
+/* Unlock critical section for __gcov_dump and __gcov_reset functions.  */
+extern void __gcov_unlock (void) ATTRIBUTE_HIDDEN;
+
 /* The merge function that just sums the counters.  */
 extern void __gcov_merge_add (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
 
