@@ -1,5 +1,11 @@
 2020-05-05  Martin Liska  <mliska@suse.cz>
 
+	PR driver/94330
+	* lto-wrapper.c (run_gcc): When using -flto=jobserver,
+	report warning when the jobserver is not detected.
+
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
 	PR gcov-profile/94636
 	* gcov.c (main): Print total lines summary at the end.
 	(generate_results): Expect file_name always being non-null.
