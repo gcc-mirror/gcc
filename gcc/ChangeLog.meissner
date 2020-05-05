@@ -1,5 +1,13 @@
 2020-05-05  Michael Meissner  <meissner@linux.ibm.com>
 
+	(ieee128-lib-patch002b)
+	PR target/94630
+	* config/rs6000/rs6000.c (rs6000_mangle_decl_assembler_name): When
+	long double is IEEE 128-bit, map *printf and *scanf built-in
+	functions to the IEEE 128-bit name.
+
+2020-05-05  Michael Meissner  <meissner@linux.ibm.com>
+
 	(ieee128-lib-patch001b)
 	PR target/94630
 	* config/rs6000/rs6000.c (rs6000_mangle_decl_assembler_name): Do
