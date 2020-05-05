@@ -28,10 +28,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #if defined(inhibit_libc)
 
-#ifdef L_gcov_flush
-void __gcov_flush (void) {}
-#endif
-
 #ifdef L_gcov_reset
 void __gcov_reset (void) {}
 #endif
@@ -42,19 +38,19 @@ void __gcov_dump (void) {}
 
 #else
 
-extern __gthread_mutex_t __gcov_flush_mx ATTRIBUTE_HIDDEN;
+extern __gthread_mutex_t __gcov_mx ATTRIBUTE_HIDDEN;
 
 #ifdef L_gcov_lock_unlock
 #ifdef __GTHREAD_MUTEX_INIT
-__gthread_mutex_t __gcov_flush_mx = __GTHREAD_MUTEX_INIT;
+__gthread_mutex_t __gcov_mx = __GTHREAD_MUTEX_INIT;
 #define init_mx_once()
 #else
-__gthread_mutex_t __gcov_flush_mx;
+__gthread_mutex_t __gcov_mx;
 
 static void
 init_mx (void)
 {
-  __GTHREAD_MUTEX_INIT_FUNCTION (&__gcov_flush_mx);
+  __GTHREAD_MUTEX_INIT_FUNCTION (&__gcov_mx);
 }
 
 static void
@@ -71,7 +67,7 @@ void
 __gcov_lock (void)
 {
   init_mx_once ();
-  __gthread_mutex_lock (&__gcov_flush_mx);
+  __gthread_mutex_lock (&__gcov_mx);
 }
 
 /* Unlock critical section for __gcov_dump and __gcov_reset functions.  */
@@ -79,27 +75,9 @@ __gcov_lock (void)
 void
 __gcov_unlock (void)
 {
-  __gthread_mutex_unlock (&__gcov_flush_mx);
+  __gthread_mutex_unlock (&__gcov_mx);
 }
 #endif
-
-#ifdef L_gcov_flush
-/* Called before fork or exec - write out profile information gathered so
-   far and reset it to zero.  This avoids duplication or loss of the
-   profile information gathered so far.  */
-
-void
-__gcov_flush (void)
-{
-  __gcov_lock ();
-
-  __gcov_dump_int ();
-  __gcov_reset_int ();
-
-  __gcov_unlock ();
-}
-
-#endif /* L_gcov_flush */
 
 #ifdef L_gcov_reset
 
@@ -207,7 +185,7 @@ __gcov_fork (void)
   pid = fork ();
   if (pid == 0)
     {
-      __GTHREAD_MUTEX_INIT_FUNCTION (&__gcov_flush_mx);
+      __GTHREAD_MUTEX_INIT_FUNCTION (&__gcov_mx);
       /* We do not need locking as we are the only thread in the child.  */
       __gcov_reset_int ();
     }

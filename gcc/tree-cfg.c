@@ -8439,8 +8439,8 @@ stmt_can_terminate_bb_p (gimple *t)
       && (call_flags & ECF_NOTHROW)
       && !(call_flags & ECF_RETURNS_TWICE)
       /* fork() doesn't really return twice, but the effect of
-         wrapping it in __gcov_fork() which calls __gcov_flush()
-	 and clears the counters before forking has the same
+	 wrapping it in __gcov_fork() which calls __gcov_dump() and
+	 __gcov_reset() and clears the counters before forking has the same
 	 effect as returning twice.  Force a fake edge.  */
       && !fndecl_built_in_p (fndecl, BUILT_IN_FORK))
     return false;
