@@ -8354,16 +8354,6 @@ package body Sem_Attr is
             if not Compile_Time_Known_Value (E)
               or else not Is_Scalar_Type (Etype (E))
             then
-               --  An odd special case, if this is a Pos attribute, this
-               --  is where we need to apply a range check since it does
-               --  not get done anywhere else.
-
-               if Id = Attribute_Pos then
-                  if Is_Integer_Type (Etype (E)) then
-                     Apply_Range_Check (E, Etype (N));
-                  end if;
-               end if;
-
                Check_Expressions;
                return;
 
