@@ -3116,6 +3116,12 @@ package Sem_Util is
       --  successive intervals (i.e., mergeable intervals are merged).
       --  Low bound is one; high bound is nonnegative.
 
+      function Aggregate_Intervals (N : Node_Id) return Discrete_Interval_List;
+      --  Given an array aggregate N, returns the (unique) interval list
+      --  representing the values of the aggregate choices; if all the array
+      --  components are covered by the others choice then the length of the
+      --  result is zero.
+
       function Type_Intervals (Typ : Entity_Id) return Discrete_Interval_List;
       --  Given a static discrete type or subtype, returns the (unique)
       --  interval list representing the values of the type/subtype.
@@ -3138,5 +3144,9 @@ package Sem_Util is
       --  rules that reference "is statically compatible" pertain to
       --  discriminants and therefore do require support for real types;
       --  the exception is 12.5.1(8).
+
+      Intervals_Error : exception;
+      --  Raised when the list of non-empty pair-wise disjoint intervals cannot
+      --  be built.
    end Interval_Lists;
 end Sem_Util;

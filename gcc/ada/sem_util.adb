@@ -17694,8 +17694,80 @@ package body Sem_Util is
    --------------------------------
 
    function Is_Potentially_Unevaluated (N : Node_Id) return Boolean is
+      function Has_Null_Others_Choice (Aggr : Node_Id) return Boolean;
+      --  Aggr is an array aggregate with static bounds and an others clause;
+      --  return True if the others choice of the given array aggregate does
+      --  not cover any component (i.e. is null).
+
+      function Non_Static_Or_Null_Range (N : Node_Id) return Boolean;
+      --  Return True if the given range is nonstatic or null
+
+      ----------------------------
+      -- Has_Null_Others_Choice --
+      ----------------------------
+
+      function Has_Null_Others_Choice (Aggr : Node_Id) return Boolean is
+         Idx : constant Node_Id := First_Index (Etype (Aggr));
+         Hiv : constant Uint := Expr_Value (Type_High_Bound (Etype (Idx)));
+         Lov : constant Uint := Expr_Value (Type_Low_Bound (Etype (Idx)));
+
+      begin
+         declare
+            Intervals : constant Interval_Lists.Discrete_Interval_List :=
+              Interval_Lists.Aggregate_Intervals (Aggr);
+
+         begin
+            --  The others choice is null if, after normalization, we
+            --  have a single interval covering the whole aggregate.
+
+            return Intervals'Length = 1
+              and then
+                Intervals (Intervals'First).Low = Lov
+              and then
+                Intervals (Intervals'First).High = Hiv;
+         end;
+
+      --  If the aggregate is malformed (that is, indexes are not disjoint)
+      --  then no action is needed at this stage; the error will be reported
+      --  later by the frontend.
+
+      exception
+         when Interval_Lists.Intervals_Error =>
+            return False;
+      end Has_Null_Others_Choice;
+
+      ------------------------------
+      -- Non_Static_Or_Null_Range --
+      ------------------------------
+
+      function Non_Static_Or_Null_Range (N : Node_Id) return Boolean is
+         Low, High : Node_Id;
+
+      begin
+         Get_Index_Bounds (N, Low, High);
+
+         --  Check static bounds
+
+         if not Compile_Time_Known_Value (Low)
+           or else not Compile_Time_Known_Value (High)
+         then
+            return True;
+
+         --  Check null range
+
+         elsif Expr_Value (High) < Expr_Value (Low) then
+            return True;
+         end if;
+
+         return False;
+      end Non_Static_Or_Null_Range;
+
+      --  Local variables
+
       Par  : Node_Id;
       Expr : Node_Id;
+
+   --  Start of processing for Is_Potentially_Unevaluated
 
    begin
       Expr := N;
@@ -17732,6 +17804,8 @@ package body Sem_Util is
                                N_Not_In,
                                N_Or_Else,
                                N_Quantified_Expression)
+        and then not (Nkind (Par) = N_Aggregate
+                        and then Is_Array_Type (Etype (Par)))
       loop
          Expr := Par;
          Par  := Parent (Par);
@@ -17775,6 +17849,55 @@ package body Sem_Util is
 
       elsif Nkind (Par) = N_Quantified_Expression then
          return Expr = Condition (Par);
+
+      elsif Nkind (Par) = N_Aggregate
+        and then Is_Array_Type (Etype (Par))
+        and then Nkind (Expr) = N_Component_Association
+      then
+         declare
+            Choice           : Node_Id;
+            In_Others_Choice : Boolean := False;
+
+         begin
+            --  The expression of an array_component_association is potentially
+            --  unevaluated if the associated choice is a subtype_indication or
+            --  range that defines a nonstatic or null range.
+
+            Choice := First (Choices (Expr));
+            while Present (Choice) loop
+               if Nkind (Choice) = N_Range
+                 and then Non_Static_Or_Null_Range (Choice)
+               then
+                  return True;
+
+               elsif Nkind (Choice) = N_Identifier
+                 and then Present (Scalar_Range (Etype (Choice)))
+                 and then
+                   Non_Static_Or_Null_Range (Scalar_Range (Etype (Choice)))
+               then
+                  return True;
+
+               elsif Nkind (Choice) = N_Others_Choice then
+                  In_Others_Choice := True;
+               end if;
+
+               Next (Choice);
+            end loop;
+
+            --  It is also potentially unevaluated if the associated choice
+            --  is an others choice and the applicable index constraint is
+            --  nonstatic or null.
+
+            if In_Others_Choice then
+               if not Compile_Time_Known_Bounds (Etype (Par)) then
+                  return True;
+               else
+                  return Has_Null_Others_Choice (Par);
+               end if;
+            end if;
+         end;
+
+         return False;
 
       else
          return False;
@@ -28770,9 +28893,96 @@ package body Sem_Util is
 
    package body Interval_Lists is
 
+      procedure Check_Consistency (Intervals : Discrete_Interval_List);
+      --  Check that list is sorted, lacks null intervals, and has gaps
+      --  between intervals.
+
       function In_Interval
         (Value : Uint; Interval : Discrete_Interval) return Boolean;
       --  Does the given value lie within the given interval?
+
+      procedure Normalize_Interval_List
+         (List : in out Discrete_Interval_List; Last : out Nat);
+      --  Perform sorting and merging as required by Check_Consistency.
+
+      -------------------------
+      -- Aggregate_Intervals --
+      -------------------------
+
+      function Aggregate_Intervals (N : Node_Id) return Discrete_Interval_List
+      is
+         pragma Assert (Nkind (N) = N_Aggregate
+           and then Is_Array_Type (Etype (N)));
+
+         function Unmerged_Intervals_Count return Nat;
+         --  Count the number of intervals given in the aggregate N; the others
+         --  choice (if present) is not taken into account.
+
+         function Unmerged_Intervals_Count return Nat is
+            Count  : Nat := 0;
+            Choice : Node_Id;
+            Comp   : Node_Id;
+         begin
+            Comp := First (Component_Associations (N));
+            while Present (Comp) loop
+               Choice := First (Choices (Comp));
+
+               while Present (Choice) loop
+                  if Nkind (Choice) /= N_Others_Choice then
+                     Count := Count + 1;
+                  end if;
+
+                  Next (Choice);
+               end loop;
+
+               Next (Comp);
+            end loop;
+
+            return Count;
+         end Unmerged_Intervals_Count;
+
+         --  Local variables
+
+         Comp      : Node_Id;
+         Max_I     : constant Nat := Unmerged_Intervals_Count;
+         Intervals : Discrete_Interval_List (1 .. Max_I);
+         Num_I     : Nat := 0;
+
+      begin
+         --  No action needed if there are no intervals
+
+         if Max_I = 0 then
+            return Intervals;
+         end if;
+
+         --  Internally store all the unsorted intervals
+
+         Comp := First (Component_Associations (N));
+         while Present (Comp) loop
+            declare
+               Choice_Intervals : constant Discrete_Interval_List
+                 := Choice_List_Intervals (Choices (Comp));
+            begin
+               for J in Choice_Intervals'Range loop
+                  Num_I := Num_I + 1;
+                  Intervals (Num_I) := Choice_Intervals (J);
+               end loop;
+            end;
+
+            Next (Comp);
+         end loop;
+
+         --  Normalize the lists sorting and merging the intervals
+
+         declare
+            Aggr_Intervals : Discrete_Interval_List (1 .. Num_I)
+                               := Intervals (1 .. Num_I);
+         begin
+            Normalize_Interval_List (Aggr_Intervals, Num_I);
+            Check_Consistency (Aggr_Intervals (1 .. Num_I));
+            return Aggr_Intervals (1 .. Num_I);
+         end;
+      end Aggregate_Intervals;
 
       -----------------
       -- In_Interval --
@@ -28782,10 +28992,6 @@ package body Sem_Util is
       begin
          return Value >= Interval.Low and then Value <= Interval.High;
       end In_Interval;
-
-      procedure Check_Consistency (Intervals : Discrete_Interval_List);
-      --  Check that list is sorted, lacks null intervals, and has gaps
-      --  between intervals.
 
       ------------------------
       --  Check_Consistency --
@@ -28896,10 +29102,6 @@ package body Sem_Util is
          end if;
       end Type_Intervals;
 
-      procedure Normalize_Interval_List
-         (List : in out Discrete_Interval_List; Last : out Nat);
-      --  Perform sorting and merging as required by Check_Consistency.
-
       -----------------------------
       -- Normalize_Interval_List --
       -----------------------------
@@ -29009,6 +29211,10 @@ package body Sem_Util is
                   List (Idx) := Null_Interval;
                   Null_Interval_Count := Null_Interval_Count + 1;
                else
+                  if List (Idx).Low <= List (Not_Null).High then
+                     raise Intervals_Error;
+                  end if;
+
                   pragma Assert (List (Idx).Low > List (Not_Null).High);
                   Not_Null := Idx;
                end if;
