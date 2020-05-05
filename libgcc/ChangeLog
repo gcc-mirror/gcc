@@ -1,6 +1,19 @@
 2020-05-05  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/93623
+	* libgcov-interface.c (__gcov_fork): Do not flush
+	and reset only in child process.
+	(__gcov_execl): Dump counters only and reset them
+	only if exec* fails.
+	(__gcov_execlp): Likewise.
+	(__gcov_execle): Likewise.
+	(__gcov_execv): Likewise.
+	(__gcov_execvp): Likewise.
+	(__gcov_execve): Likewise.
+
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/93623
 	* Makefile.in: Add _gcov_lock_unlock to LIBGCOV_INTERFACE.
 	* libgcov-interface.c (ALIAS_void_fn): Remove.
 	(__gcov_lock): New.
