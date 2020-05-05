@@ -1,3 +1,13 @@
+2020-05-12  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2020-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/94947
+	* tree-ssa-structalias.c (ipa_pta_execute): Use
+	varpool_node::externally_visible_p ().
+	(refered_from_nonlocal_var): Likewise.
+
 2020-05-12  David Edelsohn  <dje.gcc@gmail.com>
 
 	Backport from mainline
