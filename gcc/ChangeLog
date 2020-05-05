@@ -1,3 +1,28 @@
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/94636
+	* gcov.c (main): Print total lines summary at the end.
+	(generate_results): Expect file_name always being non-null.
+	Print newline after intermediate file is printed in order to align with
+	what we do for normal files.
+
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	* dumpfile.c (dump_switch_p): Change return type
+	and print option suggestion.
+	* dumpfile.h: Change return type.
+	* opts-global.c (handle_common_deferred_options):
+	Move error into dump_switch_p function.
+
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	PR c/92472
+	* alloc-pool.h: Use const for some arguments.
+	* bitmap.h: Likewise.
+	* mem-stats.h: Likewise.
+	* sese.h (get_entry_bb): Likewise.
+	(get_exit_bb): Likewise.
+
 2020-05-05  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (struct vdhs_data): New.

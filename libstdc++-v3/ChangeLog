@@ -1,3 +1,9 @@
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	PR c/92472
+	* include/parallel/multiway_merge.h:
+	Use const for _Compare template argument.
+
 2020-05-04  Fangrui Song  <maskray@google.com>
 
 	* libsupc++/cxxabi.h (__cxa_finalize): Fix return type.
