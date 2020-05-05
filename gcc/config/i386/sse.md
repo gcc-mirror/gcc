@@ -16038,73 +16038,23 @@
 
 (define_insn "avx2_ph<plusminus_mnemonic>wv16hi3"
   [(set (match_operand:V16HI 0 "register_operand" "=x")
-	(vec_concat:V16HI
-	  (vec_concat:V8HI
-	    (vec_concat:V4HI
-	      (vec_concat:V2HI
-		(ssse3_plusminus:HI
-		  (vec_select:HI
-		    (match_operand:V16HI 1 "register_operand" "x")
-		    (parallel [(const_int 0)]))
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 1)])))
-		(ssse3_plusminus:HI
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 2)]))
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 3)]))))
-	      (vec_concat:V2HI
-		(ssse3_plusminus:HI
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 4)]))
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 5)])))
-		(ssse3_plusminus:HI
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 6)]))
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 7)])))))
-	    (vec_concat:V4HI
-	      (vec_concat:V2HI
-		(ssse3_plusminus:HI
-		  (vec_select:HI
-		    (match_operand:V16HI 2 "nonimmediate_operand" "xm")
-		    (parallel [(const_int 0)]))
-		  (vec_select:HI (match_dup 2) (parallel [(const_int 1)])))
-		(ssse3_plusminus:HI
-		  (vec_select:HI (match_dup 2) (parallel [(const_int 2)]))
-		  (vec_select:HI (match_dup 2) (parallel [(const_int 3)]))))
-	      (vec_concat:V2HI
-		(ssse3_plusminus:HI
-		  (vec_select:HI (match_dup 2) (parallel [(const_int 4)]))
-		  (vec_select:HI (match_dup 2) (parallel [(const_int 5)])))
-		(ssse3_plusminus:HI
-		  (vec_select:HI (match_dup 2) (parallel [(const_int 6)]))
-		  (vec_select:HI (match_dup 2) (parallel [(const_int 7)]))))))
-	  (vec_concat:V8HI
-	    (vec_concat:V4HI
-	      (vec_concat:V2HI
-		(ssse3_plusminus:HI
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 8)]))
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 9)])))
-		(ssse3_plusminus:HI
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 10)]))
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 11)]))))
-	      (vec_concat:V2HI
-		(ssse3_plusminus:HI
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 12)]))
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 13)])))
-		(ssse3_plusminus:HI
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 14)]))
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 15)])))))
-	    (vec_concat:V4HI
-	      (vec_concat:V2HI
-		(ssse3_plusminus:HI
-		  (vec_select:HI (match_dup 2) (parallel [(const_int 8)]))
-		  (vec_select:HI (match_dup 2) (parallel [(const_int 9)])))
-		(ssse3_plusminus:HI
-		  (vec_select:HI (match_dup 2) (parallel [(const_int 10)]))
-		  (vec_select:HI (match_dup 2) (parallel [(const_int 11)]))))
-	      (vec_concat:V2HI
-		(ssse3_plusminus:HI
-		  (vec_select:HI (match_dup 2) (parallel [(const_int 12)]))
-		  (vec_select:HI (match_dup 2) (parallel [(const_int 13)])))
-		(ssse3_plusminus:HI
-		  (vec_select:HI (match_dup 2) (parallel [(const_int 14)]))
-		  (vec_select:HI (match_dup 2) (parallel [(const_int 15)]))))))))]
+	(ssse3_plusminus:V16HI
+	  (vec_select:V16HI
+	    (vec_concat:V32HI
+	      (match_operand:V16HI 1 "register_operand" "x")
+	      (match_operand:V16HI 2 "nonimmediate_operand" "xm"))
+	    (parallel
+	      [(const_int 0) (const_int 2) (const_int 4) (const_int 6)
+	       (const_int 16) (const_int 18) (const_int 20) (const_int 22)
+	       (const_int 8) (const_int 10) (const_int 12) (const_int 14)
+	       (const_int 24) (const_int 26) (const_int 28) (const_int 30)]))
+	  (vec_select:V16HI
+	    (vec_concat:V32HI (match_dup 1) (match_dup 2))
+	    (parallel
+	      [(const_int 1) (const_int 3) (const_int 5) (const_int 7)
+	       (const_int 17) (const_int 19) (const_int 21) (const_int 23)
+	       (const_int 9) (const_int 11) (const_int 13) (const_int 15)
+	       (const_int 25) (const_int 27) (const_int 29) (const_int 31)]))))]
   "TARGET_AVX2"
   "vph<plusminus_mnemonic>w\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "sseiadd")
@@ -16114,41 +16064,19 @@
 
 (define_insn "ssse3_ph<plusminus_mnemonic>wv8hi3"
   [(set (match_operand:V8HI 0 "register_operand" "=x,x")
-	(vec_concat:V8HI
-	  (vec_concat:V4HI
-	    (vec_concat:V2HI
-	      (ssse3_plusminus:HI
-		(vec_select:HI
-		  (match_operand:V8HI 1 "register_operand" "0,x")
-		  (parallel [(const_int 0)]))
-		(vec_select:HI (match_dup 1) (parallel [(const_int 1)])))
-	      (ssse3_plusminus:HI
-		(vec_select:HI (match_dup 1) (parallel [(const_int 2)]))
-		(vec_select:HI (match_dup 1) (parallel [(const_int 3)]))))
-	    (vec_concat:V2HI
-	      (ssse3_plusminus:HI
-		(vec_select:HI (match_dup 1) (parallel [(const_int 4)]))
-		(vec_select:HI (match_dup 1) (parallel [(const_int 5)])))
-	      (ssse3_plusminus:HI
-		(vec_select:HI (match_dup 1) (parallel [(const_int 6)]))
-		(vec_select:HI (match_dup 1) (parallel [(const_int 7)])))))
-	  (vec_concat:V4HI
-	    (vec_concat:V2HI
-	      (ssse3_plusminus:HI
-		(vec_select:HI
-		  (match_operand:V8HI 2 "vector_operand" "xBm,xm")
-		  (parallel [(const_int 0)]))
-		(vec_select:HI (match_dup 2) (parallel [(const_int 1)])))
-	      (ssse3_plusminus:HI
-		(vec_select:HI (match_dup 2) (parallel [(const_int 2)]))
-		(vec_select:HI (match_dup 2) (parallel [(const_int 3)]))))
-	    (vec_concat:V2HI
-	      (ssse3_plusminus:HI
-		(vec_select:HI (match_dup 2) (parallel [(const_int 4)]))
-		(vec_select:HI (match_dup 2) (parallel [(const_int 5)])))
-	      (ssse3_plusminus:HI
-		(vec_select:HI (match_dup 2) (parallel [(const_int 6)]))
-		(vec_select:HI (match_dup 2) (parallel [(const_int 7)])))))))]
+	(ssse3_plusminus:V8HI
+	  (vec_select:V8HI
+	    (vec_concat:V16HI
+	      (match_operand:V8HI 1 "register_operand" "0,x")
+	      (match_operand:V8HI 2 "vector_operand" "xBm,xm"))
+	    (parallel
+	      [(const_int 0) (const_int 2) (const_int 4) (const_int 6)
+	       (const_int 8) (const_int 10) (const_int 12) (const_int 14)]))
+	  (vec_select:V8HI
+	    (vec_concat:V16HI (match_dup 1) (match_dup 2))
+	    (parallel
+	      [(const_int 1) (const_int 3) (const_int 5) (const_int 7)
+	       (const_int 9) (const_int 11) (const_int 13) (const_int 15)]))))]
   "TARGET_SSSE3"
   "@
    ph<plusminus_mnemonic>w\t{%2, %0|%0, %2}
@@ -16163,25 +16091,17 @@
 
 (define_insn_and_split "ssse3_ph<plusminus_mnemonic>wv4hi3"
   [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yv")
-	(vec_concat:V4HI
-	  (vec_concat:V2HI
-	    (ssse3_plusminus:HI
-	      (vec_select:HI
-		(match_operand:V4HI 1 "register_operand" "0,0,Yv")
-		(parallel [(const_int 0)]))
-	      (vec_select:HI (match_dup 1) (parallel [(const_int 1)])))
-	    (ssse3_plusminus:HI
-	      (vec_select:HI (match_dup 1) (parallel [(const_int 2)]))
-	      (vec_select:HI (match_dup 1) (parallel [(const_int 3)]))))
-	  (vec_concat:V2HI
-	    (ssse3_plusminus:HI
-	      (vec_select:HI
-		(match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yv")
-		(parallel [(const_int 0)]))
-	      (vec_select:HI (match_dup 2) (parallel [(const_int 1)])))
-	    (ssse3_plusminus:HI
-	      (vec_select:HI (match_dup 2) (parallel [(const_int 2)]))
-	      (vec_select:HI (match_dup 2) (parallel [(const_int 3)]))))))]
+	(ssse3_plusminus:V4HI
+	  (vec_select:V4HI
+	    (vec_concat:V8HI
+	      (match_operand:V4HI 1 "register_operand" "0,0,Yv")
+	      (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yv"))
+	    (parallel
+	      [(const_int 0) (const_int 2) (const_int 4) (const_int 6)]))
+	  (vec_select:V4HI
+	    (vec_concat:V8HI (match_dup 1) (match_dup 2))
+	    (parallel
+	      [(const_int 1) (const_int 3) (const_int 5) (const_int 7)]))))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSSE3"
   "@
    ph<plusminus_mnemonic>w\t{%2, %0|%0, %2}
@@ -16211,41 +16131,19 @@
 
 (define_insn "avx2_ph<plusminus_mnemonic>dv8si3"
   [(set (match_operand:V8SI 0 "register_operand" "=x")
-	(vec_concat:V8SI
-	  (vec_concat:V4SI
-	    (vec_concat:V2SI
-	      (plusminus:SI
-		(vec_select:SI
-		  (match_operand:V8SI 1 "register_operand" "x")
-		  (parallel [(const_int 0)]))
-		(vec_select:SI (match_dup 1) (parallel [(const_int 1)])))
-	      (plusminus:SI
-		(vec_select:SI (match_dup 1) (parallel [(const_int 2)]))
-		(vec_select:SI (match_dup 1) (parallel [(const_int 3)]))))
-	    (vec_concat:V2SI
-	      (plusminus:SI
-		(vec_select:SI
-		  (match_operand:V8SI 2 "nonimmediate_operand" "xm")
-		  (parallel [(const_int 0)]))
-		(vec_select:SI (match_dup 2) (parallel [(const_int 1)])))
-	      (plusminus:SI
-		(vec_select:SI (match_dup 2) (parallel [(const_int 2)]))
-		(vec_select:SI (match_dup 2) (parallel [(const_int 3)])))))
-	  (vec_concat:V4SI
-	    (vec_concat:V2SI
-	      (plusminus:SI
-		(vec_select:SI (match_dup 1) (parallel [(const_int 4)]))
-		(vec_select:SI (match_dup 1) (parallel [(const_int 5)])))
-	      (plusminus:SI
-		(vec_select:SI (match_dup 1) (parallel [(const_int 6)]))
-		(vec_select:SI (match_dup 1) (parallel [(const_int 7)]))))
-	    (vec_concat:V2SI
-	      (plusminus:SI
-		(vec_select:SI (match_dup 2) (parallel [(const_int 4)]))
-		(vec_select:SI (match_dup 2) (parallel [(const_int 5)])))
-	      (plusminus:SI
-		(vec_select:SI (match_dup 2) (parallel [(const_int 6)]))
-		(vec_select:SI (match_dup 2) (parallel [(const_int 7)])))))))]
+	(plusminus:V8SI
+	  (vec_select:V8SI
+	    (vec_concat:V16SI
+	      (match_operand:V8SI 1 "register_operand" "x")
+	      (match_operand:V8SI 2 "nonimmediate_operand" "xm"))
+	    (parallel
+	      [(const_int 0) (const_int 2) (const_int 8) (const_int 10)
+	       (const_int 4) (const_int 6) (const_int 12) (const_int 14)]))
+	  (vec_select:V8SI
+	    (vec_concat:V16SI (match_dup 1) (match_dup 2))
+	    (parallel
+	      [(const_int 1) (const_int 3) (const_int 9) (const_int 11)
+	       (const_int 5) (const_int 7) (const_int 13) (const_int 15)]))))]
   "TARGET_AVX2"
   "vph<plusminus_mnemonic>d\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "sseiadd")
@@ -16255,25 +16153,17 @@
 
 (define_insn "ssse3_ph<plusminus_mnemonic>dv4si3"
   [(set (match_operand:V4SI 0 "register_operand" "=x,x")
-	(vec_concat:V4SI
-	  (vec_concat:V2SI
-	    (plusminus:SI
-	      (vec_select:SI
-		(match_operand:V4SI 1 "register_operand" "0,x")
-		(parallel [(const_int 0)]))
-	      (vec_select:SI (match_dup 1) (parallel [(const_int 1)])))
-	    (plusminus:SI
-	      (vec_select:SI (match_dup 1) (parallel [(const_int 2)]))
-	      (vec_select:SI (match_dup 1) (parallel [(const_int 3)]))))
-	  (vec_concat:V2SI
-	    (plusminus:SI
-	      (vec_select:SI
-		(match_operand:V4SI 2 "vector_operand" "xBm,xm")
-		(parallel [(const_int 0)]))
-	      (vec_select:SI (match_dup 2) (parallel [(const_int 1)])))
-	    (plusminus:SI
-	      (vec_select:SI (match_dup 2) (parallel [(const_int 2)]))
-	      (vec_select:SI (match_dup 2) (parallel [(const_int 3)]))))))]
+	(plusminus:V4SI
+	  (vec_select:V4SI
+	    (vec_concat:V8SI
+	      (match_operand:V4SI 1 "register_operand" "0,x")
+	      (match_operand:V4SI 2 "vector_operand" "xBm,xm"))
+	    (parallel
+	      [(const_int 0) (const_int 2) (const_int 4) (const_int 6)]))
+	  (vec_select:V4SI
+	    (vec_concat:V8SI (match_dup 1) (match_dup 2))
+	    (parallel
+	      [(const_int 1) (const_int 3) (const_int 5) (const_int 7)]))))]
   "TARGET_SSSE3"
   "@
    ph<plusminus_mnemonic>d\t{%2, %0|%0, %2}
@@ -16288,17 +16178,15 @@
 
 (define_insn_and_split "ssse3_ph<plusminus_mnemonic>dv2si3"
   [(set (match_operand:V2SI 0 "register_operand" "=y,x,Yv")
-	(vec_concat:V2SI
-	  (plusminus:SI
-	    (vec_select:SI
+	(plusminus:V2SI
+	  (vec_select:V2SI
+	    (vec_concat:V4SI
 	      (match_operand:V2SI 1 "register_operand" "0,0,Yv")
-	      (parallel [(const_int 0)]))
-	    (vec_select:SI (match_dup 1) (parallel [(const_int 1)])))
-	  (plusminus:SI
-	    (vec_select:SI
-	      (match_operand:V2SI 2 "register_mmxmem_operand" "ym,x,Yv")
-	      (parallel [(const_int 0)]))
-	    (vec_select:SI (match_dup 2) (parallel [(const_int 1)])))))]
+	      (match_operand:V2SI 2 "register_mmxmem_operand" "ym,x,Yv"))
+	    (parallel [(const_int 0) (const_int 2)]))
+	  (vec_select:V2SI
+	    (vec_concat:V4SI (match_dup 1) (match_dup 2))
+	    (parallel [(const_int 1) (const_int 3)]))))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSSE3"
   "@
    ph<plusminus_mnemonic>d\t{%2, %0|%0, %2}

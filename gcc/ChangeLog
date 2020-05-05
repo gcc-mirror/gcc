@@ -1,3 +1,11 @@
+2020-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94460
+	* config/i386/sse.md (avx2_ph<plusminus_mnemonic>wv16hi3,
+	ssse3_ph<plusminus_mnemonic>wv8hi3, ssse3_ph<plusminus_mnemonic>wv4hi3,
+	avx2_ph<plusminus_mnemonic>dv8si3, ssse3_ph<plusminus_mnemonic>dv4si3,
+	ssse3_ph<plusminus_mnemonic>dv2si3): Simplify RTL patterns.
+
 2020-05-04  Clement Chigot  <clement.chigot@atos.net>
 	    David Edelsohn  <dje.gcc@gmail.com>
 
