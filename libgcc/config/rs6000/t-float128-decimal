@@ -1,7 +1,0 @@
-# Add support for doing conversions between IEEE 128-bit floating point and
-# Decimal types if glibc does not provide the necessary functions.
-
-LIB2ADD		+= $(srcdir)/config/rs6000/float128-decimal.c
-SHLIB_MAPFILES	+= $(srcdir)/config/rs6000/float128-decimal.ver
-
-float128-decimal$(objext) : INTERNAL_CFLAGS += -mno-gnu-attribute
