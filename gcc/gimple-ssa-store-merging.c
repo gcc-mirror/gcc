@@ -4668,8 +4668,8 @@ pass_store_merging::process_store (gimple *stmt)
 {
   tree lhs = gimple_assign_lhs (stmt);
   tree rhs = gimple_assign_rhs1 (stmt);
-  poly_uint64 bitsize, bitpos;
-  poly_uint64 bitregion_start, bitregion_end;
+  poly_uint64 bitsize, bitpos = 0;
+  poly_uint64 bitregion_start = 0, bitregion_end = 0;
   tree base_addr
     = mem_valid_for_store_merging (lhs, &bitsize, &bitpos,
 				   &bitregion_start, &bitregion_end);
