@@ -1,5 +1,11 @@
 2020-05-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/94800
+	* gcc.dg/tree-ssa/pr94800.c: New test.
+	* gcc.dg/tree-ssa/popcount5.c: New test.
+	* gcc.dg/tree-ssa/popcount5l.c: New test.
+	* gcc.dg/tree-ssa/popcount5ll.c: New test.
+
 	PR target/94942
 	* gcc.target/i386/pr94942.c: New test.
 

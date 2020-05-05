@@ -2570,6 +2570,41 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 && single_use (@3))
      (mult (plusminus @2 { build_one_cst (type); }) @0))))))
 
+#if GIMPLE
+/* Canonicalize X + (X << C) into X * (1 + (1 << C)) and
+   (X << C1) + (X << C2) into X * ((1 << C1) + (1 << C2)).  */
+(simplify
+ (plus:c @0 (lshift:s @0 INTEGER_CST@1))
+  (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && tree_fits_uhwi_p (@1)
+       && tree_to_uhwi (@1) < element_precision (type))
+   (with { tree t = type;
+	   if (!TYPE_OVERFLOW_WRAPS (t)) t = unsigned_type_for (t);
+	   wide_int w = wi::set_bit_in_zero (tree_to_uhwi (@1),
+					     element_precision (type));
+	   w += 1;
+	   tree cst = wide_int_to_tree (VECTOR_TYPE_P (t) ? TREE_TYPE (t)
+					: t, w);
+	   cst = build_uniform_cst (t, cst); }
+    (convert (mult (convert:t @0) { cst; })))))
+(simplify
+ (plus (lshift:s @0 INTEGER_CST@1) (lshift:s @0 INTEGER_CST@2))
+  (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && tree_fits_uhwi_p (@1)
+       && tree_to_uhwi (@1) < element_precision (type)
+       && tree_fits_uhwi_p (@2)
+       && tree_to_uhwi (@2) < element_precision (type))
+   (with { tree t = type;
+	   if (!TYPE_OVERFLOW_WRAPS (t)) t = unsigned_type_for (t);
+	   unsigned int prec = element_precision (type);
+	   wide_int w = wi::set_bit_in_zero (tree_to_uhwi (@1), prec);
+	   w += wi::set_bit_in_zero (tree_to_uhwi (@2), prec);
+	   tree cst = wide_int_to_tree (VECTOR_TYPE_P (t) ? TREE_TYPE (t)
+					: t, w);
+	   cst = build_uniform_cst (t, cst); }
+    (convert (mult (convert:t @0) { cst; })))))
+#endif
+
 /* Simplifications of MIN_EXPR, MAX_EXPR, fmin() and fmax().  */
 
 (for minmax (min max FMIN_ALL FMAX_ALL)
