@@ -1,3 +1,10 @@
+2020-05-18  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	PR tree-optimization/94952
+	* gimple-ssa-store-merging.c (pass_store_merging::process_store):
+	Initialize variables bitpos, bitregion_start, and bitregion_end in
+	order to silence warnings about use of uninitialized variables.
+
 2020-05-18  Carl Love  <cel@us.ibm.com>
 
 	PR target/94833
