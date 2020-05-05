@@ -675,13 +675,15 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
       builtin_define ("__builtin_vsx_xvnmsubmsp=__builtin_vsx_xvnmsubsp");
     }
 
-  /* Map the old _Float128 'q' builtins into the new 'f128' builtins.  However,
-     if long double is IEEE 128-bit, map the built-in functions to the normal
-     long double version.  In addition, if the default long double type is
-     IEEE, the nans builtins seem to generate the normal nan builtin value.  */
+  /* Map the old _Float128 'q' builtins into the new 'f128' builtins if long
+     double is IBM or 64-bit.
+
+     However, if long double is IEEE 128-bit, map both sets of built-in
+     functions to the normal long double version.  This shows up in nansf128
+     vs. nanf128.  */
   if (TARGET_FLOAT128_TYPE)
     {
-      if (TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128)
+      if (FLOAT128_IEEE_P (TFmode))
 	{
 	  builtin_define ("__builtin_fabsq=__builtin_fabsl");
 	  builtin_define ("__builtin_copysignq=__builtin_copysignl");
@@ -689,7 +691,13 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
 	  builtin_define ("__builtin_nansq=__builtin_nansl");
 	  builtin_define ("__builtin_infq=__builtin_infl");
 	  builtin_define ("__builtin_huge_valq=__builtin_huge_vall");
+
+	  builtin_define ("__builtin_fabsf128=__builtin_fabsl");
+	  builtin_define ("__builtin_copysignf128=__builtin_copysignl");
+	  builtin_define ("__builtin_nanf128=__builtin_nanl");
 	  builtin_define ("__builtin_nansf128=__builtin_nansl");
+	  builtin_define ("__builtin_inff128=__builtin_infl");
+	  builtin_define ("__builtin_huge_valf128=__builtin_huge_vall");
 	}
       else
 	{
