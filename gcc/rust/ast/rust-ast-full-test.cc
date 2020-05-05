@@ -200,33 +200,26 @@ DelimTokenTree::as_string () const
       end_delim = "}";
       break;
     default:
-      // error
-      return "";
+      fprintf (stderr, "Invalid delimiter type, "
+		       "Should be PARENS, SQUARE, or CURLY.");
+      return "Invalid delimiter type";
     }
   ::std::string str = start_delim;
-  if (token_trees.empty ())
+  if (!token_trees.empty ())
     {
-      str += "none";
-    }
-  else
-    {
-      auto i = token_trees.begin ();
-      auto e = token_trees.end ();
-
-      // DEBUG: null pointer check
-      if (*i == NULL)
+      for (const auto &tree : token_trees)
 	{
-	  fprintf (stderr,
-		   "something really terrible has gone wrong - null pointer "
-		   "token tree in delim token tree.");
-	  return "NULL_POINTER_MARK";
-	}
+	  // DEBUG: null pointer check
+	  if (tree == NULL)
+	    {
+	      fprintf (
+		stderr,
+		"something really terrible has gone wrong - null pointer "
+		"token tree in delim token tree.");
+	      return "NULL_POINTER_MARK";
+	    }
 
-      for (; i != e; i++)
-	{
-	  str += (*i)->as_string ();
-	  if (e != i + 1)
-	    str += ", ";
+	  str += tree->as_string ();
 	}
     }
   str += end_delim;
@@ -1529,7 +1522,8 @@ MacroRulesDefinition::as_string () const
 ::std::string
 MacroInvocation::as_string () const
 {
-  return path.as_string () + "!" + token_tree.as_string ();
+  return "MacroInvocation: " + path.as_string () + "!"
+	 + token_tree.as_string ();
 }
 
 ::std::string
