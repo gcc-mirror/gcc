@@ -1743,7 +1743,9 @@ transform_await_wrapper (tree *stmt, int *do_subtree, void *d)
       && DECL_CONTEXT (*stmt) != xform->actor_fn)
     DECL_CONTEXT (*stmt) = xform->actor_fn;
 
-  if (TREE_CODE (*stmt) != CO_AWAIT_EXPR && TREE_CODE (*stmt) != CO_YIELD_EXPR)
+  /* We should have already lowered co_yields to their co_await.  */
+  gcc_checking_assert (TREE_CODE (*stmt) != CO_YIELD_EXPR);
+  if (TREE_CODE (*stmt) != CO_AWAIT_EXPR)
     return NULL_TREE;
 
   tree await_expr = *stmt;
@@ -2612,9 +2614,12 @@ struct susp_frame_data
 static tree
 captures_temporary (tree *stmt, int *do_subtree, void *d)
 {
+  /* We should have already lowered co_yields to their co_await.  */
+  gcc_checking_assert (TREE_CODE (*stmt) != CO_YIELD_EXPR);
+
   /* Stop recursing if we see an await expression, the subtrees
      of that will be handled when it is processed.  */
-  if (TREE_CODE (*stmt) == CO_AWAIT_EXPR || TREE_CODE (*stmt) == CO_YIELD_EXPR)
+  if (TREE_CODE (*stmt) == CO_AWAIT_EXPR)
     {
       *do_subtree = 0;
       return NULL_TREE;
@@ -2732,17 +2737,14 @@ register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
 {
   susp_frame_data *data = (susp_frame_data *) d;
 
-  if (TREE_CODE (*stmt) != CO_AWAIT_EXPR && TREE_CODE (*stmt) != CO_YIELD_EXPR)
+  /* We should have already lowered co_yields to their co_await.  */
+  gcc_checking_assert (TREE_CODE (*stmt) != CO_YIELD_EXPR);
+
+  if (TREE_CODE (*stmt) != CO_AWAIT_EXPR)
     return NULL_TREE;
 
   tree aw_expr = *stmt;
   location_t aw_loc = EXPR_LOCATION (aw_expr); /* location of the co_xxxx.  */
-  /* co_yield is syntactic sugar, re-write it to co_await.  */
-  if (TREE_CODE (aw_expr) == CO_YIELD_EXPR)
-    {
-      aw_expr = TREE_OPERAND (aw_expr, 1);
-      *stmt = aw_expr;
-    }
 
   /* If the awaitable is a parm or a local variable, then we already have
      a frame copy, so don't make a new one.  */
