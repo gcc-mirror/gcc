@@ -1,3 +1,10 @@
+2020-05-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/94807
+	* coroutines.cc (morph_fn_to_coro): Just check for
+	closure_identifier.
+	* pt.c (tsubst_function_decl): Update lambda fn's this_ptr name.
+
 2020-05-05  Marek Polacek  <polacek@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 

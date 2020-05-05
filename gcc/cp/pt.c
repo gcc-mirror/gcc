@@ -13821,6 +13821,7 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
   if (closure)
     {
       tree tparm = build_this_parm (r, closure, type_memfn_quals (type));
+      DECL_NAME (tparm) = closure_identifier;
       DECL_CHAIN (tparm) = parms;
       parms = tparm;
     }
