@@ -1,3 +1,9 @@
+2020-05-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90212
+	* constexpr.c (potential_constant_expression_1): In a lambda
+	function, consider a captured variable directly.
+
 2020-05-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (transform_await_wrapper): Check that we have
