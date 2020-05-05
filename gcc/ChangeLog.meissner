@@ -1,3 +1,11 @@
+2020-05-05  Michael Meissner  <meissner@linux.ibm.com>
+
+	(ieee128-lib-patch001b)
+	PR target/94630
+	* config/rs6000/rs6000.c (rs6000_mangle_decl_assembler_name): Do
+	the mapping for <name>l to <name>f128 when the long double default
+	is IEEE 128-bit.
+
 2020-05-05   Michael Meissner  <meissner@linux.ibm.com>
 
 	Clone branch
