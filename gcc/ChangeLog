@@ -1,5 +1,8 @@
 2020-05-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/94942
+	* config/i386/mmx.md (*vec_dupv4hi): Use xYw constraints instead of Yv.
+
 	PR tree-optimization/94914
 	* match.pd ((((type)A * B) >> prec) != 0 to .MUL_OVERFLOW(A, B) != 0):
 	New simplification.
