@@ -26326,122 +26326,55 @@ rs6000_globalize_decl_name (FILE * stream, tree decl)
    library before you can switch the real*16 type at compile time.
 
    We use the TARGET_MANGLE_DECL_ASSEMBLER_NAME hook to change this name.  We
-   only do this transformation if the __float128 type is enabled.  This
-   prevents us from doing the transformation on older 32-bit parts that might
-   have enabled using IEEE 128-bit floating point as the default long double
-   type.  */
+   only do this if the default is that long double is IBM extended double, and
+   the user asked for IEEE 128-bit.  */
 
 static tree
 rs6000_mangle_decl_assembler_name (tree decl, tree id)
 {
-  if (TARGET_FLOAT128_TYPE && TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128
-      && TREE_CODE (decl) == FUNCTION_DECL
-      && fndecl_built_in_p (decl, BUILT_IN_NORMAL))
+  if (!TARGET_IEEEQUAD_DEFAULT && TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128
+      && TREE_CODE (decl) == FUNCTION_DECL && DECL_IS_BUILTIN (decl) )
     {
       size_t len = IDENTIFIER_LENGTH (id);
       const char *name = IDENTIFIER_POINTER (id);
-      const char *newname = NULL;
 
-      /* See if it is one of the built-in functions with an unusual name.  */
-      switch (DECL_FUNCTION_CODE (decl))
+      if (name[len - 1] == 'l')
 	{
-	default:
-	  break;
+	  bool uses_ieee128_p = false;
+	  tree type = TREE_TYPE (decl);
+	  machine_mode ret_mode = TYPE_MODE (type);
 
-	case BUILT_IN_GAMMAL_R:
-	case BUILT_IN_LGAMMAL_R:
-	  newname = "__lgammaieee128_r";
-	  break;
-
-	case BUILT_IN_NEXTTOWARD:
-	  newname = "__nexttoward_to_ieee128";
-	  break;
-
-	case BUILT_IN_NEXTTOWARDF:
-	  newname = "__nexttowardf_to_ieee128";
-	  break;
-
-	case BUILT_IN_NEXTTOWARDL:
-	  newname = "__nexttowardieee128";
-	  break;
-	}
-
-      /* Update the __builtin_*printf && __builtin_*scanf functions.  */
-      if (!newname)
-	{
-	  const size_t printf_len = sizeof ("printf") - 1;
-	  const size_t scanf_len = sizeof ("scanf") - 1;
-	  const size_t printf_extra
-	    = sizeof ("__") - 1 + sizeof ("ieee128") - 1;
-	  const size_t scanf_extra
-	    = sizeof ("__isoc99_") - 1 + sizeof ("ieee128") - 1;
-
-	  if (len >= printf_len
-	      && strcmp (name + len - printf_len, "printf") == 0)
+	  /* See if the function returns a IEEE 128-bit floating point type or
+	     complex type.  */
+	  if (ret_mode == TFmode || ret_mode == TCmode)
+	    uses_ieee128_p = true;
+	  else
 	    {
-	      char *name2 = (char *) alloca (len + 1 + printf_extra);
-	      strcpy (name2, "__");
-	      memcpy (name2 + 2, name, len);
-	      strcpy (name2 + 2 + len, "ieee128");
-	      newname = (const char *) name2;
-	    }
+	      function_args_iterator args_iter;
+	      tree arg;
 
-	  else if (len >= scanf_len
-		   && strcmp (name + len - scanf_len, "scanf") == 0)
-	    {
-	      char *name2 = (char *) alloca (len + 1 + scanf_extra);
-	      strcpy (name2, "__isoc99_");
-	      memcpy (name2 + sizeof ("__isoc99") - 1, name, len);
-	      strcpy (name2 + sizeof ("__isoc99") - 1 + len, "ieee128");
-	      newname = (const char *) name2;
-	    }
-
-	  else if (name[len - 1] == 'l')
-	    {
-	      bool uses_ieee128_p = false;
-	      tree type = TREE_TYPE (decl);
-	      machine_mode ret_mode = TYPE_MODE (type);
-
-	      /* See if the function returns a IEEE 128-bit floating point type or
-		 complex type.  */
-	      if (ret_mode == TFmode || ret_mode == TCmode)
-		uses_ieee128_p = true;
-	      else
+	      /* See if the function passes a IEEE 128-bit floating point type
+		 or complex type.  */
+	      FOREACH_FUNCTION_ARGS (type, arg, args_iter)
 		{
-		  function_args_iterator args_iter;
-		  tree arg;
-
-		  /* See if the function passes a IEEE 128-bit floating point type
-		     or complex type.  */
-		  FOREACH_FUNCTION_ARGS (type, arg, args_iter)
+		  machine_mode arg_mode = TYPE_MODE (arg);
+		  if (arg_mode == TFmode || arg_mode == TCmode)
 		    {
-		      machine_mode arg_mode = TYPE_MODE (arg);
-		      if (arg_mode == TFmode || arg_mode == TCmode)
-			{
-			  uses_ieee128_p = true;
-			  break;
-			}
+		      uses_ieee128_p = true;
+		      break;
 		    }
 		}
-
-	      /* If we passed or returned an IEEE 128-bit floating point type,
-		 change the name.  */
-	      if (uses_ieee128_p)
-		{
-		  char *name2 = (char *) alloca (len + 4);
-		  memcpy (name2, name, len - 1);
-		  strcpy (name2 + len - 1, "f128");
-		  newname = (const char *) name2;
-		}
 	    }
-	}
 
-      if (newname)
-	{
-	  if (TARGET_DEBUG_BUILTIN)
-	    fprintf (stderr, "Map %s => %s\n", name, newname);
-
-	  id = get_identifier (newname);
+	  /* If we passed or returned an IEEE 128-bit floating point type,
+	     change the name.  */
+	  if (uses_ieee128_p)
+	    {
+	      char *name2 = (char *) alloca (len + 4);
+	      memcpy (name2, name, len - 1);
+	      strcpy (name2 + len - 1, "f128");
+	      id = get_identifier (name2);
+	    }
 	}
     }
 

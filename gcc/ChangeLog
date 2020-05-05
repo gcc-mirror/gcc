@@ -1,3 +1,11 @@
+2020-05-05  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def: Delete changes meant for a
+	private branch.
+	* config/rs6000/rs6000-c.c: Likewise.
+	* config/rs6000/rs6000-call.c: Likewise.
+	* gcc/config/rs6000/rs6000.c: Likewise.
+
 2020-05-05  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/rtems.h (RTEMS_STARTFILE_SPEC): Define if undefined.

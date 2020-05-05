@@ -1,3 +1,10 @@
+2020-05-05  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config.host: Delete changes meant for a private branch.
+	* config/rs6000/t-float128: Likewise.
+	* configure.ac: Likewise.
+	* configure: Likewise.
+
 2020-05-05  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/93623

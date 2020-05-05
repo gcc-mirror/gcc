@@ -4565,8 +4565,6 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
     RS6000_BTI_bool_int, RS6000_BTI_double, RS6000_BTI_INTSI, 0 },
   { P9V_BUILTIN_VEC_VSTDC, P9V_BUILTIN_VSTDCQP,
     RS6000_BTI_bool_int, RS6000_BTI_ieee128_float, RS6000_BTI_INTSI, 0 },
-  { P9V_BUILTIN_VEC_VSTDC, P9V_BUILTIN_VSTDCTF,
-    RS6000_BTI_bool_int, RS6000_BTI_long_double, RS6000_BTI_INTSI, 0 },
 
   { P9V_BUILTIN_VEC_VSTDCSP, P9V_BUILTIN_VSTDCSP,
     RS6000_BTI_bool_int, RS6000_BTI_float, RS6000_BTI_INTSI, 0 },
@@ -4574,8 +4572,6 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
     RS6000_BTI_bool_int, RS6000_BTI_double, RS6000_BTI_INTSI, 0 },
   { P9V_BUILTIN_VEC_VSTDCQP, P9V_BUILTIN_VSTDCQP,
     RS6000_BTI_bool_int, RS6000_BTI_ieee128_float, RS6000_BTI_INTSI, 0 },
-  { P9V_BUILTIN_VEC_VSTDCQP, P9V_BUILTIN_VSTDCTF,
-    RS6000_BTI_bool_int, RS6000_BTI_long_double, RS6000_BTI_INTSI, 0 },
 
   { P9V_BUILTIN_VEC_VSTDCN, P9V_BUILTIN_VSTDCNSP,
     RS6000_BTI_bool_int, RS6000_BTI_float, 0, 0 },
@@ -4583,8 +4579,6 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
     RS6000_BTI_bool_int, RS6000_BTI_double, 0, 0 },
   { P9V_BUILTIN_VEC_VSTDCN, P9V_BUILTIN_VSTDCNQP,
     RS6000_BTI_bool_int, RS6000_BTI_ieee128_float, 0, 0 },
-  { P9V_BUILTIN_VEC_VSTDCN, P9V_BUILTIN_VSTDCNTF,
-    RS6000_BTI_bool_int, RS6000_BTI_long_double, 0, 0 },
 
   { P9V_BUILTIN_VEC_VSTDCNSP, P9V_BUILTIN_VSTDCNSP,
     RS6000_BTI_bool_int, RS6000_BTI_float, 0, 0 },
@@ -4592,22 +4586,16 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
     RS6000_BTI_bool_int, RS6000_BTI_double, 0, 0 },
   { P9V_BUILTIN_VEC_VSTDCNQP, P9V_BUILTIN_VSTDCNQP,
     RS6000_BTI_bool_int, RS6000_BTI_ieee128_float, 0, 0 },
-  { P9V_BUILTIN_VEC_VSTDCNQP, P9V_BUILTIN_VSTDCNTF,
-    RS6000_BTI_bool_int, RS6000_BTI_long_double, 0, 0 },
 
   { P9V_BUILTIN_VEC_VSEEDP, P9V_BUILTIN_VSEEDP,
     RS6000_BTI_UINTSI, RS6000_BTI_double, 0, 0 },
   { P9V_BUILTIN_VEC_VSEEDP, P9V_BUILTIN_VSEEQP,
     RS6000_BTI_UINTDI, RS6000_BTI_ieee128_float, 0, 0 },
-  { P9V_BUILTIN_VEC_VSEEDP, P9V_BUILTIN_VSEETF,
-    RS6000_BTI_UINTDI, RS6000_BTI_long_double, 0, 0 },
 
   { P9V_BUILTIN_VEC_VSESDP, P9V_BUILTIN_VSESDP,
     RS6000_BTI_UINTDI, RS6000_BTI_double, 0, 0 },
   { P9V_BUILTIN_VEC_VSESDP, P9V_BUILTIN_VSESQP,
     RS6000_BTI_UINTTI, RS6000_BTI_ieee128_float, 0, 0 },
-  { P9V_BUILTIN_VEC_VSESDP, P9V_BUILTIN_VSESTF,
-    RS6000_BTI_UINTTI, RS6000_BTI_long_double, 0, 0 },
 
   { P9V_BUILTIN_VEC_VSIEDP, P9V_BUILTIN_VSIEDP,
     RS6000_BTI_double, RS6000_BTI_UINTDI, RS6000_BTI_UINTDI, 0 },
@@ -4616,37 +4604,25 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
 
   { P9V_BUILTIN_VEC_VSIEDP, P9V_BUILTIN_VSIEQP,
     RS6000_BTI_ieee128_float, RS6000_BTI_UINTTI, RS6000_BTI_UINTDI, 0 },
-  { P9V_BUILTIN_VEC_VSIEDP, P9V_BUILTIN_VSIETF,
-    RS6000_BTI_long_double, RS6000_BTI_UINTTI, RS6000_BTI_UINTDI, 0 },
   { P9V_BUILTIN_VEC_VSIEDP, P9V_BUILTIN_VSIEQPF,
     RS6000_BTI_ieee128_float, RS6000_BTI_ieee128_float, RS6000_BTI_UINTDI, 0 },
-  { P9V_BUILTIN_VEC_VSIEDP, P9V_BUILTIN_VSIETFF,
-    RS6000_BTI_long_double, RS6000_BTI_long_double, RS6000_BTI_UINTDI, 0 },
 
   { P9V_BUILTIN_VEC_VSCEGT, P9V_BUILTIN_VSCEDPGT,
     RS6000_BTI_INTSI, RS6000_BTI_double, RS6000_BTI_double, 0 },
   { P9V_BUILTIN_VEC_VSCEGT, P9V_BUILTIN_VSCEQPGT,
     RS6000_BTI_INTSI, RS6000_BTI_ieee128_float, RS6000_BTI_ieee128_float, 0 },
-  { P9V_BUILTIN_VEC_VSCEGT, P9V_BUILTIN_VSCETFGT,
-    RS6000_BTI_INTSI, RS6000_BTI_long_double, RS6000_BTI_long_double, 0 },
   { P9V_BUILTIN_VEC_VSCELT, P9V_BUILTIN_VSCEDPLT,
     RS6000_BTI_INTSI, RS6000_BTI_double, RS6000_BTI_double, 0 },
   { P9V_BUILTIN_VEC_VSCELT, P9V_BUILTIN_VSCEQPLT,
     RS6000_BTI_INTSI, RS6000_BTI_ieee128_float, RS6000_BTI_ieee128_float, 0 },
-  { P9V_BUILTIN_VEC_VSCELT, P9V_BUILTIN_VSCETFLT,
-    RS6000_BTI_INTSI, RS6000_BTI_long_double, RS6000_BTI_long_double, 0 },
   { P9V_BUILTIN_VEC_VSCEEQ, P9V_BUILTIN_VSCEDPEQ,
     RS6000_BTI_INTSI, RS6000_BTI_double, RS6000_BTI_double, 0 },
   { P9V_BUILTIN_VEC_VSCEEQ, P9V_BUILTIN_VSCEQPEQ,
     RS6000_BTI_INTSI, RS6000_BTI_ieee128_float, RS6000_BTI_ieee128_float, 0 },
-  { P9V_BUILTIN_VEC_VSCEEQ, P9V_BUILTIN_VSCETFEQ,
-    RS6000_BTI_INTSI, RS6000_BTI_long_double, RS6000_BTI_long_double, 0 },
   { P9V_BUILTIN_VEC_VSCEUO, P9V_BUILTIN_VSCEDPUO,
     RS6000_BTI_INTSI, RS6000_BTI_double, RS6000_BTI_double, 0 },
   { P9V_BUILTIN_VEC_VSCEUO, P9V_BUILTIN_VSCEQPUO,
     RS6000_BTI_INTSI, RS6000_BTI_ieee128_float, RS6000_BTI_ieee128_float, 0 },
-  { P9V_BUILTIN_VEC_VSCEUO, P9V_BUILTIN_VSCETFUO,
-    RS6000_BTI_INTSI, RS6000_BTI_long_double, RS6000_BTI_long_double, 0 },
 
   { P9V_BUILTIN_VEC_XL_LEN_R, P9V_BUILTIN_XL_LEN_R,
     RS6000_BTI_unsigned_V16QI, ~RS6000_BTI_UINTQI,
@@ -11584,22 +11560,6 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       case CODE_FOR_xsiexpqp_kf:	icode = CODE_FOR_xsiexpqp_tf;	break;
       case CODE_FOR_xsiexpqpf_kf:	icode = CODE_FOR_xsiexpqpf_tf;	break;
       case CODE_FOR_xststdcqp_kf:	icode = CODE_FOR_xststdcqp_tf;	break;
-
-      case CODE_FOR_xscmpexpqp_eq_kf:
-	icode = CODE_FOR_xscmpexpqp_eq_tf;
-	break;
-
-      case CODE_FOR_xscmpexpqp_lt_kf:
-	icode = CODE_FOR_xscmpexpqp_lt_tf;
-	break;
-
-      case CODE_FOR_xscmpexpqp_gt_kf:
-	icode = CODE_FOR_xscmpexpqp_gt_tf;
-	break;
-
-      case CODE_FOR_xscmpexpqp_unordered_kf:
-	icode = CODE_FOR_xscmpexpqp_unordered_tf;
-	break;
       }
 
   if (TARGET_DEBUG_BUILTIN)
