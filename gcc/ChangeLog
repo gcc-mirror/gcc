@@ -1,3 +1,15 @@
+2020-05-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (class vrp_prop): Move check_all_array_refs,
+	check_array_ref, check_mem_ref, and search_for_addr_array
+	into new class...
+	(class array_bounds_checker): ...here.
+	(class check_array_bounds_dom_walker): Adjust to use
+	array_bounds_checker.
+	(check_all_array_refs): Move into array_bounds_checker and rename
+	to check.
+	(class vrp_folder): Make fold_predicate_in private.
+
 2020-05-15 Jeff Law  <law@redhat.com>
 
 	* config/h8300/h8300.md (SFI iterator): New iterator for
