@@ -1,3 +1,9 @@
+2020-05-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/84324
+	* objc/execute/exceptions/matcher-1.m (my_exception_matcher):
+	Change return type to int.
+
 2020-05-05  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/93366
