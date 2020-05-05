@@ -1,5 +1,10 @@
 2020-05-05  Martin Liska  <mliska@suse.cz>
 
+	* opt-functions.awk (opt_args_non_empty): New function.
+	* opt-read.awk: Use the function for various option arguments.
+
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
 	PR driver/94330
 	* lto-wrapper.c (run_gcc): When using -flto=jobserver,
 	report warning when the jobserver is not detected.
