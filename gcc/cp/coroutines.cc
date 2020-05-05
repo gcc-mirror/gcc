@@ -3736,9 +3736,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	     closure object is named 'this' instead of '__closure'.  */
 	  if (lambda_p)
 	    {
-	      parm.lambda_cobj = parm.this_ptr
-				 || (DECL_NAME (arg) == closure_identifier);
-	      parm.this_ptr = false;
+	      parm.lambda_cobj = DECL_NAME (arg) == closure_identifier;
+	      gcc_checking_assert (!parm.this_ptr);
 	    }
 	  else
 	    parm.lambda_cobj = false;
