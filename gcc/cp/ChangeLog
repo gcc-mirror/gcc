@@ -1,5 +1,11 @@
 2020-05-05  Jason Merrill  <jason@redhat.com>
 
+	CWG 2235
+	* pt.c (more_specialized_fn): Do consider parms with no deducible
+	template parameters.
+
+2020-05-05  Jason Merrill  <jason@redhat.com>
+
 	PR c++/90212
 	* constexpr.c (potential_constant_expression_1): In a lambda
 	function, consider a captured variable directly.
