@@ -1,3 +1,7 @@
+2020-05-05  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/aarch64/aarch64.md (*one_cmpl_zero_extend): New.
+
 2020-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/94800

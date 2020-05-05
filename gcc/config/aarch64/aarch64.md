@@ -4619,6 +4619,15 @@
    (set_attr "arch" "*,simd")]
 )
 
+(define_insn "*one_cmpl_zero_extend"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (zero_extend:DI
+          (not:SI (match_operand:SI 1 "register_operand" "r"))))]
+  ""
+  "mvn\\t%w0, %w1"
+  [(set_attr "type" "logic_reg")]
+)
+
 (define_insn "*one_cmpl_<optab><mode>2"
   [(set (match_operand:GPI 0 "register_operand" "=r")
 	(not:GPI (SHIFT:GPI (match_operand:GPI 1 "register_operand" "r")
