@@ -1,3 +1,13 @@
+2020-05-05  Steve Kargl  <kargl@gcc.gnu.org>
+	Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93366
+	* check.c (gfc_check_associated, invalid_null_arg): Factorize
+	check for presence of invalid NULL() argument.
+	(gfc_check_kind, gfc_check_merge, gfc_check_shape)
+	(gfc_check_sizeof, gfc_check_spread, gfc_check_transfer): Use this
+	check for presence of invalid NULL() arguments.
+
 2020-04-29  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
 
 	PR fortran/94769

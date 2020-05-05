@@ -1,3 +1,8 @@
+2020-05-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93366
+	* gfortran.dg/pr93366.f90: New test.
+
 2020-05-05  Michael Meissner  <meissner@linux.ibm.com>
 
 	* gcc.dg/nextafter-2.c: Delete changes meant for a private branch.
