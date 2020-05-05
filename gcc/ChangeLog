@@ -1,3 +1,19 @@
+2020-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94516
+	* postreload.c (reload_cse_simplify): When replacing sp = sp + const
+	with sp = reg, add REG_EQUAL note with sp + const.
+	* combine-stack-adj.c (try_apply_stack_adjustment): Change return
+	type from int to bool.  Add LIVE and OTHER_INSN arguments.  Undo
+	postreload sp = sp + const to sp = reg optimization if needed and
+	possible.
+	(combine_stack_adjustments_for_block): Add LIVE argument.  Handle
+	reg = sp insn with sp + const REG_EQUAL note.  Adjust
+	try_apply_stack_adjustment caller, call
+	df_simulate_initialize_forwards and df_simulate_one_insn_forwards.
+	(combine_stack_adjustments): Allocate and free LIVE bitmap,
+	adjust combine_stack_adjustments_for_block caller.
+
 2020-05-05  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/93623
