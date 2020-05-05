@@ -26340,7 +26340,33 @@ rs6000_mangle_decl_assembler_name (tree decl, tree id)
       size_t len = IDENTIFIER_LENGTH (id);
       const char *name = IDENTIFIER_POINTER (id);
 
-      if (name[len - 1] == 'l')
+      /* Update the __builtin_*printf && __builtin_*scanf functions.  */
+      const size_t printf_len = sizeof ("printf") - 1;
+      const size_t scanf_len = sizeof ("scanf") - 1;
+      const size_t printf_extra = sizeof ("__") - 1 + sizeof ("ieee128") - 1;
+      const size_t scanf_extra = sizeof ("__isoc99_") - 1 + sizeof ("ieee128") - 1;
+
+      if (len >= printf_len
+	  && strcmp (name + len - printf_len, "printf") == 0)
+	{
+	  char *newname = (char *) alloca (len + 1 + printf_extra);
+	  strcpy (newname, "__");
+	  memcpy (newname + 2, name, len);
+	  strcpy (newname + 2 + len, "ieee128");
+	  id = get_identifier (newname);
+	}
+
+      else if (len >= scanf_len
+	       && strcmp (name + len - scanf_len, "scanf") == 0)
+	{
+	  char *newname = (char *) alloca (len + 1 + scanf_extra);
+	  strcpy (newname, "__isoc99_");
+	  memcpy (newname + sizeof ("__isoc99") - 1, name, len);
+	  strcpy (newname + sizeof ("__isoc99") - 1 + len, "ieee128");
+	  id = get_identifier (newname);
+	}
+
+      else if (name[len - 1] == 'l')
 	{
 	  bool uses_ieee128_p = false;
 	  tree type = TREE_TYPE (decl);
