@@ -1,3 +1,10 @@
+2020-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94949
+	* tree-ssa-loop-im.c (execute_sm): Check whether we use
+	the multithreaded model or always compute the stored value
+	before eliding a load.
+
 2020-05-05  Alex Coplan  <alex.coplan@arm.com>
 
 	* config/aarch64/aarch64.md (*one_cmpl_zero_extend): New.

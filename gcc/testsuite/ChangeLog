@@ -1,3 +1,8 @@
+2020-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94949
+	* gcc.dg/torture/pr94949.c: New testcase.
+
 2020-05-05  Alex Coplan  <alex.coplan@arm.com>
 
 	* gcc.target/aarch64/mvn_zero_ext.c: New test.

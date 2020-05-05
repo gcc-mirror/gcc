@@ -2128,9 +2128,9 @@ execute_sm (class loop *loop, vec<edge> exits, im_mem_ref *ref)
   fmt_data.orig_loop = loop;
   for_each_index (&ref->mem.ref, force_move_till, &fmt_data);
 
+  bool always_stored = ref_always_accessed_p (loop, ref, true);
   if (bb_in_transaction (loop_preheader_edge (loop)->src)
-      || (! flag_store_data_races
-	  && ! ref_always_accessed_p (loop, ref, true)))
+      || (! flag_store_data_races && ! always_stored))
     multi_threaded_model_p = true;
 
   if (multi_threaded_model_p)
@@ -2145,8 +2145,10 @@ execute_sm (class loop *loop, vec<edge> exits, im_mem_ref *ref)
 
   /* Avoid doing a load if there was no load of the ref in the loop.
      Esp. when the ref is not always stored we cannot optimize it
-     away later.  */
-  if (ref->loaded && bitmap_bit_p (ref->loaded, loop->num))
+     away later.  But when it is not always stored we must use a conditional
+     store then.  */
+  if ((!always_stored && !multi_threaded_model_p)
+      || (ref->loaded && bitmap_bit_p (ref->loaded, loop->num)))
     {
       load = gimple_build_assign (tmp_var, unshare_expr (ref->mem.ref));
       lim_data = init_lim_data (load);
