@@ -424,9 +424,7 @@ case ${host} in
 # At present, we cannot turn -mfloat128 on via #pragma GCC target, so just
 # check if we have VSX (ISA 2.06) support to build the software libraries, and
 # whether the assembler can handle xsaddqp for hardware support.  Also check if
-# a new glibc is being used so that __builtin_cpu_supports can be used.  Check
-# to see if glibc provides the necessary decimal <-> IEEE 128 function, and
-# arrange to build our own version if they are not provided.
+# a new glibc is being used so that __builtin_cpu_supports can be used.
 powerpc*-*-linux*)
   saved_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS -mabi=altivec -mvsx -mfloat128"
@@ -459,48 +457,6 @@ powerpc*-*-linux*)
 	__attribute__ ((__ifunc__ ("add_resolver")));])],
     [libgcc_cv_powerpc_float128_hw=yes],
     [libgcc_cv_powerpc_float128_hw=no])])
-  AC_CACHE_CHECK([for PowerPC convert __float128 to/from _Decimal libraries],
-		 [libgcc_cv_powerpc_float128_dec],
-		 [AC_LINK_IFELSE(
-    [AC_LANG_SOURCE([#include <stdlib.h>
-     __attribute__((noinline)) __float128 f128_from_d128 (_Decimal128 d128)
-     {
-       return (__float128)d128;
-     }
-     __attribute__((noinline)) __float128 f128_from_d64 (_Decimal128 d64)
-     {
-       return (__float128)d64;
-     }
-     __attribute__((noinline)) __float128 f128_from_d32 (_Decimal128 d32)
-     {
-       return (__float128)d32;
-     }
-     __attribute__((noinline)) _Decimal128 d128_from_f128 (__float128 f128)
-     {
-       return (_Decimal128)f128;
-     }
-     __attribute__((noinline)) _Decimal64 d64_from_f128 (__float128 f128)
-     {
-       return (_Decimal64)f128;
-     }
-     __attribute__((noinline)) _Decimal32 d32_from_f128 (__float128 f128)
-     {
-       return (_Decimal32)f128;
-     }
-     int main (void)
-     {
-       __float128 five = 5.0;
-       if (f128_from_d128 (5.0dl) != five
-           || f128_from_d64 (5.0dd) != five
-           || f128_from_d32 (5.0df) != five
-           || d128_from_f128 (five) != 5.0dl
-           || d64_from_f128 (five) != 5.0dd
-           || d32_from_f128 (five) != 5.0df)
-         abort ();
-       return 0;
-     }])],
-    [libgcc_cv_powerpc_float128_dec=yes],
-    [libgcc_cv_powerpc_float128_dec=no])])
   CFLAGS="$saved_CFLAGS"
 esac
 

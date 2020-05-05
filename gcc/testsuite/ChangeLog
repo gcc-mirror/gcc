@@ -1,3 +1,8 @@
+2020-05-05  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.dg/nextafter-2.c: Delete changes meant for a private branch.
+	* gcc.target/powerpc/pr70117.c: Likewise.
+
 2020-05-05  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	* gcc.target/pru/clobber-sp.c: New test.

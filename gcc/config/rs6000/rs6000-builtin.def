@@ -2154,11 +2154,8 @@ BU_P9V_64BIT_VSX_1 (VSESDP,	"scalar_extract_sig",	CONST,	xsxsigdp)
 
 BU_FLOAT128_HW_VSX_1 (VSEEQP,	"scalar_extract_expq",	CONST,	xsxexpqp_kf)
 BU_FLOAT128_HW_VSX_1 (VSESQP,	"scalar_extract_sigq",	CONST,	xsxsigqp_kf)
-BU_FLOAT128_HW_VSX_1 (VSEETF,	"scalar_extract_exptf",	CONST,	xsxexpqp_tf)
-BU_FLOAT128_HW_VSX_1 (VSESTF,	"scalar_extract_sigtf",	CONST,	xsxsigqp_tf)
 
 BU_FLOAT128_HW_VSX_1 (VSTDCNQP, "scalar_test_neg_qp",	CONST,	xststdcnegqp_kf)
-BU_FLOAT128_HW_VSX_1 (VSTDCNTF, "scalar_test_neg_tf",	CONST,	xststdcnegqp_tf)
 BU_P9V_VSX_1 (VSTDCNDP,	"scalar_test_neg_dp",	CONST,	xststdcnegdp)
 BU_P9V_VSX_1 (VSTDCNSP,	"scalar_test_neg_sp",	CONST,	xststdcnegsp)
 
@@ -2176,8 +2173,6 @@ BU_P9V_64BIT_VSX_2 (VSIEDPF,	"scalar_insert_exp_dp",	CONST,	xsiexpdpf)
 
 BU_FLOAT128_HW_VSX_2 (VSIEQP,	"scalar_insert_exp_q",	CONST,	xsiexpqp_kf)
 BU_FLOAT128_HW_VSX_2 (VSIEQPF,	"scalar_insert_exp_qp",	CONST,	xsiexpqpf_kf)
-BU_FLOAT128_HW_VSX_2 (VSIETF,	"scalar_insert_exp_tf",	CONST,	xsiexpqp_tf)
-BU_FLOAT128_HW_VSX_2 (VSIETFF,	"scalar_insert_exp_tfp", CONST,	xsiexpqpf_tf)
 
 BU_P9V_VSX_2 (VSCEDPGT,	"scalar_cmp_exp_dp_gt",	CONST,	xscmpexpdp_gt)
 BU_P9V_VSX_2 (VSCEDPLT,	"scalar_cmp_exp_dp_lt",	CONST,	xscmpexpdp_lt)
@@ -2189,13 +2184,7 @@ BU_P9V_VSX_2 (VSCEQPLT,	"scalar_cmp_exp_qp_lt",	CONST,	xscmpexpqp_lt_kf)
 BU_P9V_VSX_2 (VSCEQPEQ,	"scalar_cmp_exp_qp_eq",	CONST,	xscmpexpqp_eq_kf)
 BU_P9V_VSX_2 (VSCEQPUO,	"scalar_cmp_exp_qp_unordered",	CONST,	xscmpexpqp_unordered_kf)
 
-BU_P9V_VSX_2 (VSCETFGT,	"scalar_cmp_exp_tf_gt",	CONST,	xscmpexpqp_gt_tf)
-BU_P9V_VSX_2 (VSCETFLT,	"scalar_cmp_exp_tf_lt",	CONST,	xscmpexpqp_lt_tf)
-BU_P9V_VSX_2 (VSCETFEQ,	"scalar_cmp_exp_tf_eq",	CONST,	xscmpexpqp_eq_tf)
-BU_P9V_VSX_2 (VSCETFUO,	"scalar_cmp_exp_tf_unordered", CONST, xscmpexpqp_unordered_tf)
-
 BU_FLOAT128_HW_VSX_2 (VSTDCQP, "scalar_test_data_class_qp",	CONST,	xststdcqp_kf)
-BU_FLOAT128_HW_VSX_2 (VSTDCTF, "scalar_test_data_class_tf",	CONST,	xststdcqp_tf)
 BU_P9V_VSX_2 (VSTDCDP,	"scalar_test_data_class_dp",	CONST,	xststdcdp)
 BU_P9V_VSX_2 (VSTDCSP,	"scalar_test_data_class_sp",	CONST,	xststdcsp)
 

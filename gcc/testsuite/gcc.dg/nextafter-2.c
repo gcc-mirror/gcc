@@ -13,14 +13,4 @@
 #  define NO_LONG_DOUBLE 1
 # endif
 #endif
-
-#if defined(_ARCH_PPC) && defined(__LONG_DOUBLE_IEEE128__)
-/* On PowerPC systems, long double uses either the IBM long double format, or
-   IEEE 128-bit format.  The compiler switches the long double built-in
-   function names and glibc switches the names when math.h is included.
-   Because this test is run with -fno-builtin, include math.h so that the
-   appropriate nextafter functions are called.  */
-#include <math.h>
-#endif
-
 #include "nextafter-1.c"

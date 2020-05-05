@@ -69,13 +69,6 @@ $(fp128_ppc_obj)	 : INTERNAL_CFLAGS += $(FP128_CFLAGS_SW)
 $(fp128_obj)		 : $(fp128_includes)
 $(fp128_obj)		 : $(srcdir)/config/rs6000/quad-float128.h
 
-
-# If we are switching the default long double type, we need to use
-# -mno-gnu-attribute so that the __ibm128 support functions don't signal a
-# linker error since the default long double is now IEEE 128-bit instead of IBM
-# 128-bit.
-ibm-ldouble$(objext)	: INTERNAL_CFLAGS += -mno-gnu-attribute
-
 $(fp128_softfp_src) : $(srcdir)/soft-fp/$(subst -sw,,$(subst kf,tf,$@)) $(fp128_dep)
 	@src="$(srcdir)/soft-fp/$(subst -sw,,$(subst kf,tf,$@))"; \
 	echo "Create $@"; \
