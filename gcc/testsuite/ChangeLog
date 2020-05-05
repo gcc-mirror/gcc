@@ -1,3 +1,9 @@
+2020-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/94947
+	* gcc.dg/torture/pr94947-1.c: New testcase.
+	* gcc.dg/torture/pr94947-2.c: Likewise.
+
 2020-05-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/aggr29.adb: New test.

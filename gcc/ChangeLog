@@ -1,3 +1,10 @@
+2020-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/94947
+	* tree-ssa-structalias.c (ipa_pta_execute): Use
+	varpool_node::externally_visible_p ().
+	(refered_from_nonlocal_var): Likewise.
+
 2020-05-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c (LTO_PLUGIN_SPEC): Define if not already.
