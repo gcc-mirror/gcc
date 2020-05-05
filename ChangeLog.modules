@@ -1,3 +1,18 @@
+2020-05-05  Nathan Sidwell  <nathan@acm.org>
+
+	Fix libitm's decls
+	libitm/
+	* eh_cpp.cc (__cxa_allocate_exception, __cxa_free_exception)
+	(__cxa_begin_catch, __cxa_tm_cleanup, __cxa_eh_globals): Fix
+	exception specification.
+	(_ITM_cxa_allocate_exception, _ITM_cxa_free_exception)
+	(_ITM_cxa_begin_catch): Likewise.
+	* libitm.h (_ITM_NOTHROW): New define.
+	(_ITM_cxa_allocate_exception, _ITM_cxa_free_exception)
+	(_ITM_cxa_begin_catch): Use it.
+	* testsuite/lib/libitm.exp (libitm_init): Add
+	-fdiagnostics-color=never.
+
 2020-05-04  Nathan Sidwell  <nathan@acm.org>
 
 	Simplify except fn helper pushing part 1
