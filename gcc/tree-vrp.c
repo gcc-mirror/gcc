@@ -3940,7 +3940,7 @@ class vrp_folder : public substitute_and_fold_engine
 {
 public:
   vrp_folder () : substitute_and_fold_engine (/* Fold all stmts.  */ true) {  }
-  tree get_value (tree) FINAL OVERRIDE;
+  tree get_value (tree, gimple *stmt) FINAL OVERRIDE;
   bool fold_stmt (gimple_stmt_iterator *) FINAL OVERRIDE;
 
   class vr_values *vr_values;
@@ -4037,7 +4037,7 @@ vrp_folder::fold_stmt (gimple_stmt_iterator *si)
    Implemented as a pure wrapper right now, but this will change.  */
 
 tree
-vrp_folder::get_value (tree op)
+vrp_folder::get_value (tree op, gimple *stmt ATTRIBUTE_UNUSED)
 {
   return op_with_constant_singleton_value_range (op);
 }
