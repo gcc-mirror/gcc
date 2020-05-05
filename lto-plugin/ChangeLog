@@ -1,3 +1,15 @@
+2020-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lto-plugin.c: Document -linker-output-auto-notlo-rel option.
+	(linker_output_set): Change type to bool.
+	(linker_output_known): Likewise.
+	(linker_output_auto_nolto_rel): New variable.
+	(all_symbols_read_handler): Take it into account.
+	<LDPO_REL>: Do not issue the warning if it is set.
+	(process_option): Process -linker-output-auto-notlo-rel.
+	(cleanup_handler): Remove unused variable.
+	(onload) <LDPT_LINKER_OUTPUT>: Adjust to above type change.
+
 2020-04-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/94739

@@ -1,5 +1,11 @@
 2020-05-05  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc.c (LTO_PLUGIN_SPEC): Define if not already.
+	(LINK_PLUGIN_SPEC): Execute LTO_PLUGIN_SPEC.
+	* config/vxworks.h (LTO_PLUGIN_SPEC): Define.
+
+2020-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gimplify.c (gimplify_init_constructor): Do not put the constructor
 	into static memory if it is not complete.
 
