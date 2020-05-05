@@ -1,3 +1,7 @@
+2020-05-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/debug16.adb: New test.
+
 2020-05-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94938

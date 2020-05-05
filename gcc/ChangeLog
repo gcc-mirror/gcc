@@ -1,3 +1,14 @@
+2020-05-07  Eric Botcazou  <ebotcazou@adacore.com>
+            Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* dwarf2out.c (add_data_member_location_attribute): Take into account
+	the variant part offset in the computation of the data bit offset.
+	(add_bit_offset_attribute): Remove CTX parameter.  Pass a new context
+	in the call to field_byte_offset.
+	(gen_field_die): Adjust call to add_bit_offset_attribute and remove
+	confusing assertion.
+	(analyze_variant_discr): Deal with boolean subtypes.
+
 2020-05-07  Martin Liska  <mliska@suse.cz>
 
 	* lto-wrapper.c: Split arguments of MAKE environment
