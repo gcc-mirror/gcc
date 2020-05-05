@@ -906,7 +906,8 @@ LIBGCOV_PROFILER = _gcov_interval_profiler				\
 	_gcov_time_profiler
 LIBGCOV_INTERFACE = _gcov_dump _gcov_flush _gcov_fork			\
 	_gcov_execl _gcov_execlp					\
-	_gcov_execle _gcov_execv _gcov_execvp _gcov_execve _gcov_reset
+	_gcov_execle _gcov_execv _gcov_execvp _gcov_execve _gcov_reset  \
+	_gcov_lock_unlock
 LIBGCOV_DRIVER = _gcov
 
 libgcov-merge-objects = $(patsubst %,%$(objext),$(LIBGCOV_MERGE))
