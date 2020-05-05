@@ -1,3 +1,9 @@
+2020-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94914
+	* match.pd ((((type)A * B) >> prec) != 0 to .MUL_OVERFLOW(A, B) != 0):
+	New simplification.
+
 2020-05-05  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*testqi_ext_3): Use

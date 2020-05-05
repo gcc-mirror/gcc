@@ -1,3 +1,8 @@
+2020-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94914
+	* gcc.target/i386/pr94914.c: New test.
+
 2020-05-04  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94038

@@ -4776,6 +4776,27 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (with { tree t = TREE_TYPE (@0), cpx = build_complex_type (t); }
     (out (imagpart (IFN_MUL_OVERFLOW:cpx @0 @1)) { build_zero_cst (t); })))))
 
+/* Similarly, for unsigned operands, (((type) A * B) >> prec) != 0 where type
+   is at least twice as wide as type of A and B, simplify to
+   __builtin_mul_overflow (A, B, <unused>).  */
+(for cmp (eq ne)
+ (simplify
+  (cmp (rshift (mult:s (convert@3 @0) (convert @1)) INTEGER_CST@2)
+       integer_zerop)
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && INTEGRAL_TYPE_P (TREE_TYPE (@3))
+       && TYPE_UNSIGNED (TREE_TYPE (@0))
+       && (TYPE_PRECISION (TREE_TYPE (@3))
+	   >= 2 * TYPE_PRECISION (TREE_TYPE (@0)))
+       && tree_fits_uhwi_p (@2)
+       && tree_to_uhwi (@2) == TYPE_PRECISION (TREE_TYPE (@0))
+       && types_match (@0, @1)
+       && type_has_mode_precision_p (TREE_TYPE (@0))
+       && (optab_handler (umulv4_optab, TYPE_MODE (TREE_TYPE (@0)))
+	   != CODE_FOR_nothing))
+   (with { tree t = TREE_TYPE (@0), cpx = build_complex_type (t); }
+    (cmp (imagpart (IFN_MUL_OVERFLOW:cpx @0 @1)) { build_zero_cst (t); })))))
+
 /* Simplification of math builtins.  These rules must all be optimizations
    as well as IL simplifications.  If there is a possibility that the new
    form could be a pessimization, the rule should go in the canonicalization
