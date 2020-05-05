@@ -944,6 +944,10 @@ proper position among the other output files.  */
 # endif
 #endif
 
+#ifndef LTO_PLUGIN_SPEC
+#define LTO_PLUGIN_SPEC ""
+#endif
+
 /* Conditional to test whether the LTO plugin is used or not.
    FIXME: For slim LTO we will need to enable plugin unconditionally.  This
    still cause problems with PLUGIN_LD != LD and when plugin is built but
@@ -968,6 +972,7 @@ proper position among the other output files.  */
     -plugin %(linker_plugin_file) \
     -plugin-opt=%(lto_wrapper) \
     -plugin-opt=-fresolution=%u.res \
+    " LTO_PLUGIN_SPEC "\
     %{flinker-output=*:-plugin-opt=-linker-output-known} \
     %{!nostdlib:%{!nodefaultlibs:%:pass-through-libs(%(link_gcc_c_sequence))}} \
     }" PLUGIN_COND_CLOSE

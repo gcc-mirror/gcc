@@ -1,7 +1,6 @@
 // PR debug/52048
 // { dg-do compile }
-// { dg-options "-fcompare-debug -fnon-call-exceptions -fno-tree-dominator-opts -O2" }
-// { dg-additional-options "-Wno-return-type" }
+// { dg-options "-fcompare-debug -fnon-call-exceptions -fno-tree-dominator-opts -O2 -Wno-return-type" }
 
 template <typename T> struct A;
 template <typename T>

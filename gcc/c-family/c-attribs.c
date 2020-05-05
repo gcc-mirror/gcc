@@ -117,7 +117,7 @@ static tree handle_tm_attribute (tree *, tree, tree, int, bool *);
 static tree handle_tm_wrap_attribute (tree *, tree, tree, int, bool *);
 static tree handle_novops_attribute (tree *, tree, tree, int, bool *);
 static tree handle_vector_size_attribute (tree *, tree, tree, int,
-					  bool *);
+					  bool *) ATTRIBUTE_NONNULL(3);
 static tree handle_nonnull_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nonstring_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nothrow_attribute (tree *, tree, tree, int, bool *);
@@ -3696,6 +3696,8 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
   type = type_valid_for_vector_size (type, name, args, &nunits);
   if (!type)
     return NULL_TREE;
+
+  gcc_checking_assert (args != NULL);
 
   tree new_type = build_vector_type (type, nunits);
 

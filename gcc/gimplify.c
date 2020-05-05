@@ -4995,8 +4995,8 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	   all-zero initializers (which aren't big enough to merit
 	   clearing), and don't try to make bitwise copies of
 	   TREE_ADDRESSABLE types.  */
-
 	if (valid_const_initializer
+	    && complete_p
 	    && !(cleared || num_nonzero_elements == 0)
 	    && !TREE_ADDRESSABLE (type))
 	  {

@@ -1,3 +1,205 @@
+2020-05-05  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def: Delete changes meant for a
+	private branch.
+	* config/rs6000/rs6000-c.c: Likewise.
+	* config/rs6000/rs6000-call.c: Likewise.
+	* gcc/config/rs6000/rs6000.c: Likewise.
+
+2020-05-05  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rtems.h (RTEMS_STARTFILE_SPEC): Define if undefined.
+	(RTEMS_ENDFILE_SPEC): Likewise.
+	(STARTFILE_SPEC): Update comment.  Add RTEMS_STARTFILE_SPEC.
+	(ENDFILE_SPEC): Add RTEMS_ENDFILE_SPEC.
+	(LIB_SPECS): Support -nodefaultlibs option.
+	* config/or1k/rtems.h (RTEMS_STARTFILE_SPEC): Define.
+	(RTEMS_ENDFILE_SPEC): Likewise.
+	* config/rs6000/rtems.h (RTEMS_STARTFILE_SPEC): Likewise.
+	(RTEMS_ENDFILE_SPEC): Likewise.
+	* config/v850/rtems.h (RTEMS_STARTFILE_SPEC): Likewise.
+	(RTEMS_ENDFILE_SPEC): Likewise.
+
+2020-05-05  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.c (pru_hard_regno_call_part_clobbered): Remove.
+	(TARGET_HARD_REGNO_CALL_PART_CLOBBERED): Remove.
+
+2020-05-05  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.h: Mark R3.w0 as caller saved.
+
+2020-05-05  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.c (pru_emit_doloop): Use new gen_doloop_end_internal
+	and gen_doloop_begin_internal.
+	(pru_reorg_loop): Use gen_pruloop with mode.
+	* config/pru/pru.md: Use new @insn syntax.
+
+2020-05-05  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.c (pru_print_operand): Fix fall through comment.
+
+2020-05-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (fixuns_trunc<mode>si2): Use
+	"clobber (scratch:M)" instad of "clobber (match_scratch:M N)".
+	(addqi3_cconly_overflow): Ditto.
+	(umulv<mode>4): Ditto.
+	(<s>mul<mode>3_highpart): Ditto.
+	(tls_global_dynamic_32): Ditto.
+	(tls_local_dynamic_base_32): Ditto.
+	(atanxf2): Ditto.
+	(asinxf2): Ditto.
+	(acosxf2): Ditto.
+	(logxf2): Ditto.
+	(log10xf2): Ditto.
+	(log2xf2): Ditto.
+	(*adddi_4): Remove "m" constraint from scratch operand.
+	(*add<mode>_4): Ditto.
+
+2020-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94516
+	* postreload.c (reload_cse_simplify): When replacing sp = sp + const
+	with sp = reg, add REG_EQUAL note with sp + const.
+	* combine-stack-adj.c (try_apply_stack_adjustment): Change return
+	type from int to bool.  Add LIVE and OTHER_INSN arguments.  Undo
+	postreload sp = sp + const to sp = reg optimization if needed and
+	possible.
+	(combine_stack_adjustments_for_block): Add LIVE argument.  Handle
+	reg = sp insn with sp + const REG_EQUAL note.  Adjust
+	try_apply_stack_adjustment caller, call
+	df_simulate_initialize_forwards and df_simulate_one_insn_forwards.
+	(combine_stack_adjustments): Allocate and free LIVE bitmap,
+	adjust combine_stack_adjustments_for_block caller.
+
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/93623
+	* tree-cfg.c (stmt_can_terminate_bb_p): Update comment to reflect
+	reality.
+
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	* opt-functions.awk (opt_args_non_empty): New function.
+	* opt-read.awk: Use the function for various option arguments.
+
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	PR driver/94330
+	* lto-wrapper.c (run_gcc): When using -flto=jobserver,
+	report warning when the jobserver is not detected.
+
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/94636
+	* gcov.c (main): Print total lines summary at the end.
+	(generate_results): Expect file_name always being non-null.
+	Print newline after intermediate file is printed in order to align with
+	what we do for normal files.
+
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	* dumpfile.c (dump_switch_p): Change return type
+	and print option suggestion.
+	* dumpfile.h: Change return type.
+	* opts-global.c (handle_common_deferred_options):
+	Move error into dump_switch_p function.
+
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	PR c/92472
+	* alloc-pool.h: Use const for some arguments.
+	* bitmap.h: Likewise.
+	* mem-stats.h: Likewise.
+	* sese.h (get_entry_bb): Likewise.
+	(get_exit_bb): Likewise.
+
+2020-05-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (struct vdhs_data): New.
+	(vect_detect_hybrid_slp): New walker.
+	(vect_detect_hybrid_slp): Rewrite.
+
+2020-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/94947
+	* tree-ssa-structalias.c (ipa_pta_execute): Use
+	varpool_node::externally_visible_p ().
+	(refered_from_nonlocal_var): Likewise.
+
+2020-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c (LTO_PLUGIN_SPEC): Define if not already.
+	(LINK_PLUGIN_SPEC): Execute LTO_PLUGIN_SPEC.
+	* config/vxworks.h (LTO_PLUGIN_SPEC): Define.
+
+2020-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (gimplify_init_constructor): Do not put the constructor
+	into static memory if it is not complete.
+
+2020-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94949
+	* tree-ssa-loop-im.c (execute_sm): Check whether we use
+	the multithreaded model or always compute the stored value
+	before eliding a load.
+
+2020-05-05  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/aarch64/aarch64.md (*one_cmpl_zero_extend): New.
+
+2020-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94800
+	* match.pd (X + (X << C) to X * (1 + (1 << C)),
+	(X << C1) + (X << C2) to X * ((1 << C1) + (1 << C2))): New
+	canonicalizations.
+
+	PR target/94942
+	* config/i386/mmx.md (*vec_dupv4hi): Use xYw constraints instead of Yv.
+
+	PR tree-optimization/94914
+	* match.pd ((((type)A * B) >> prec) != 0 to .MUL_OVERFLOW(A, B) != 0):
+	New simplification.
+
+2020-05-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*testqi_ext_3): Use
+	int_nonimmediate_operand instead of manual mode checks.
+	(*x86_mov<SWI48:mode>cc_0_m1_neg_leu<SWI:mode>):
+	Use int_nonimmediate_operand predicate.  Rewrite
+	define_insn_and_split pattern to a combine pass splitter.
+
+2020-05-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac <i[34567]86-*-*>: Add --32 to tls_as_opt on Solaris.
+	* configure: Regenerate.
+
+2020-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94460
+	* config/i386/sse.md (avx2_ph<plusminus_mnemonic>wv16hi3,
+	ssse3_ph<plusminus_mnemonic>wv8hi3, ssse3_ph<plusminus_mnemonic>wv4hi3,
+	avx2_ph<plusminus_mnemonic>dv8si3, ssse3_ph<plusminus_mnemonic>dv4si3,
+	ssse3_ph<plusminus_mnemonic>dv2si3): Simplify RTL patterns.
+
+2020-05-04  Clement Chigot  <clement.chigot@atos.net>
+	    David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000-call.c (rs6000_init_builtins): Override explicit
+	for fmodl, frexpl, ldexpl and modfl builtins.
+
+2020-05-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/94941
+	* internal-fn.c (expand_load_lanes_optab_fn): Emit a move if the
+	chosen lhs is different from the gcall lhs.
+	(expand_mask_load_optab_fn): Likewise.
+	(expand_gather_load_optab_fn): Likewise.
+
 2020-05-04  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/94795
@@ -66,7 +268,7 @@
 
 2020-05-03  Uroš Bizjak  <ubizjak@gmail.com>
 
-        * config/i386/i386-expand.c (ix86_expand_int_movcc):
+	* config/i386/i386-expand.c (ix86_expand_int_movcc):
 	Use plus_constant instead of gen_rtx_PLUS with GEN_INT.
 	(emit_memmov): Ditto.
 	(emit_memset): Ditto.

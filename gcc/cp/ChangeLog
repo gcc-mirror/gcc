@@ -1,3 +1,39 @@
+2020-05-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (transform_await_wrapper): Check that we have
+	no unlowered co_yields.
+	(captures_temporary): Likewise.
+	(register_awaits): Likewise.
+
+2020-05-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/94807
+	* coroutines.cc (morph_fn_to_coro): Just check for
+	closure_identifier.
+	* pt.c (tsubst_function_decl): Update lambda fn's this_ptr name.
+
+2020-05-05  Marek Polacek  <polacek@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/94799
+	* parser.c (cp_parser_postfix_dot_deref_expression): If we have
+	a type-dependent object of class type, stash it to
+	parser->context->object_type.  If the postfix expression doesn't have
+	a type, use typeof.
+	(cp_parser_class_name): Consider object scope too.
+	(cp_parser_lookup_name): Remove code dealing with the case when
+	object_type is unknown_type_node.
+
+2020-05-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94038
+	* cp-gimplify.c (cp_fold) <case CALL_EXPR>: Move some variable
+	declarations closer to their uses.  Copy the CALL_EXPR only
+	when one of its arguments has changed.
+	<case TREE_VEC>: Instead of first collecting the folded
+	arguments into a releasing_vec, just make a copy of the TREE_VEC
+	as soon as folding changes one of its arguments.
+
 2020-05-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (morph_fn_to_coro): Mark the coro.gro variable

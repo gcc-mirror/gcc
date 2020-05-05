@@ -2030,7 +2030,7 @@ DEFHOOK
  "return value should be viewed as a tentative cost that may later be "
  "revised.",
  unsigned,
- (void *data, int count, enum vect_cost_for_stmt kind,
+ (class vec_info *, void *data, int count, enum vect_cost_for_stmt kind,
   class _stmt_vec_info *stmt_info, int misalign,
   enum vect_cost_model_location where),
  default_add_stmt_cost)

@@ -1,3 +1,130 @@
+2020-05-05  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.dg/nextafter-2.c: Delete changes meant for a private branch.
+	* gcc.target/powerpc/pr70117.c: Likewise.
+
+2020-05-05  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/pru/clobber-sp.c: New test.
+
+2020-05-05  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/pru/lra-framepointer-fragmentation-1.c: Update test to
+	take into account additional available registers.
+	* gcc.target/pru/lra-framepointer-fragmentation-2.c: Ditto.
+
+2020-05-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94799
+	* g++.dg/lookup/this1.C: Adjust dg-error.
+	* g++.dg/template/lookup12.C: New test.
+	* g++.dg/template/lookup13.C: New test.
+	* g++.dg/template/lookup14.C: New test.
+	* g++.dg/template/lookup15.C: New test.
+
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/spellcheck-options-22.c: New test.
+
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/concepts/diagnostic1.C: Merge dg-options and
+	dg-additional-options if len <= 120 chars.
+	* g++.dg/cpp1y/new1.C: Likewise.
+	* g++.dg/cpp1y/new2.C: Likewise.
+	* g++.dg/debug/dwarf2/pr61433.C: Likewise.
+	* g++.dg/init/new18.C: Likewise.
+	* g++.dg/ipa/devirt-19.C: Likewise.
+	* g++.dg/ipa/devirt-52.C: Likewise.
+	* g++.dg/ipa/pr44372.C: Likewise.
+	* g++.dg/ipa/pr58371.C: Likewise.
+	* g++.dg/ipa/pr63587-2.C: Likewise.
+	* g++.dg/ipa/pr78211.C: Likewise.
+	* g++.dg/opt/dump1.C: Likewise.
+	* g++.dg/opt/pr44919.C: Likewise.
+	* g++.dg/opt/pr47615.C: Likewise.
+	* g++.dg/opt/pr82159-2.C: Likewise.
+	* g++.dg/other/pr52048.C: Likewise.
+	* g++.dg/pr57662.C: Likewise.
+	* g++.dg/pr59510.C: Likewise.
+	* g++.dg/pr67989.C: Likewise.
+	* g++.dg/pr81194.C: Likewise.
+	* g++.dg/template/canon-type-8.C: Likewise.
+	* g++.dg/template/crash107.C: Likewise.
+	* g++.dg/template/show-template-tree-3.C: Likewise.
+	* g++.dg/tm/cgraph_edge.C: Likewise.
+	* g++.dg/torture/20141013.C: Likewise.
+	* g++.dg/torture/pr34641.C: Likewise.
+	* g++.dg/torture/pr34850.C: Likewise.
+	* g++.dg/torture/pr36745.C: Likewise.
+	* g++.dg/torture/pr40991.C: Likewise.
+	* g++.dg/torture/pr48271.C: Likewise.
+	* g++.dg/torture/pr53602.C: Likewise.
+	* g++.dg/torture/pr53752.C: Likewise.
+	* g++.dg/torture/pr54838.C: Likewise.
+	* g++.dg/torture/pr58252.C: Likewise.
+	* g++.dg/tree-ssa/pr22444.C: Likewise.
+	* g++.dg/tree-ssa/pr24351-3.C: Likewise.
+	* g++.dg/tree-ssa/pr27283.C: Likewise.
+	* g++.dg/tree-ssa/pr27291.C: Likewise.
+	* g++.dg/tree-ssa/pr27548.C: Likewise.
+	* g++.dg/tree-ssa/pr42337.C: Likewise.
+	* g++.dg/ubsan/pr65583.C: Likewise.
+	* g++.old-deja/g++.robertl/eb27.C: Likewise.
+	* gcc.dg/tree-ssa/dse-points-to.c: Likewise.
+	* gcc.target/arm/simd/vmmla_1.c: Likewise.
+	* gcc.target/i386/vect-pr67800.c: Likewise.
+	* gcc.target/mips/cfgcleanup-jalr2.c: Likewise.
+	* gcc.target/mips/cfgcleanup-jalr3.c: Likewise.
+
+2020-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/92177
+	* gcc.dg/vect/bb-slp-22.c: Adjust.
+
+2020-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/94947
+	* gcc.dg/torture/pr94947-1.c: New testcase.
+	* gcc.dg/torture/pr94947-2.c: Likewise.
+
+2020-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/aggr29.adb: New test.
+
+2020-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94949
+	* gcc.dg/torture/pr94949.c: New testcase.
+
+2020-05-05  Alex Coplan  <alex.coplan@arm.com>
+
+	* gcc.target/aarch64/mvn_zero_ext.c: New test.
+
+2020-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94800
+	* gcc.dg/tree-ssa/pr94800.c: New test.
+	* gcc.dg/tree-ssa/popcount5.c: New test.
+	* gcc.dg/tree-ssa/popcount5l.c: New test.
+	* gcc.dg/tree-ssa/popcount5ll.c: New test.
+
+	PR target/94942
+	* gcc.target/i386/pr94942.c: New test.
+
+	PR tree-optimization/94914
+	* gcc.target/i386/pr94914.c: New test.
+
+2020-05-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94038
+	* g++.dg/warn/pr94038.C: New test.
+
+2020-05-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/94941
+	* gcc.target/aarch64/sve/acle/general/unoptimized_1.c: New test.
+
 2020-05-04  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/94795

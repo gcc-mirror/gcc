@@ -1,7 +1,6 @@
 // PR c++/61433
 // { dg-do compile { target c++11 } }
-// { dg-options "-O -fcompare-debug -fno-inline -fno-ipa-pure-const -fipa-sra" }
-// { dg-additional-options "-Wno-return-type" }
+// { dg-options "-O -fcompare-debug -fno-inline -fno-ipa-pure-const -fipa-sra -Wno-return-type" }
 
 template <class T>
 struct A
