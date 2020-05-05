@@ -38,6 +38,8 @@
 ;;              matching K constraint
 ;;         jm6: An integer operand with the lowest order 6 bits all ones.
 ;;         jdd: A constant operand that fits into the data section.
+;;         j>f: An integer operand whose lower 32 bits are greater than or equal to 15
+;;         jb4: An unsigned constant 4 bit operand.
 ;;    t -- Access registers 36 and 37.
 ;;    v -- Vector registers v0-v31.
 ;;    C -- A signed 8-bit constant (-128..127)
@@ -413,7 +415,7 @@
 
 
 ;;
-;; Vector constraints follow.
+;; Vector and scalar constraints for constant values follow.
 ;;
 
 (define_constraint "j00"
@@ -449,6 +451,16 @@
 (define_constraint "jm6"
   "@internal An integer operand with the lowest order 6 bits all ones."
   (match_operand 0 "const_int_6bitset_operand"))
+
+(define_constraint "j>f"
+  "@internal An integer operand whose lower 32 bits are greater than or equal to 15."
+  (and (match_code "const_int")
+       (match_test "(unsigned int)(ival & 0xffffffff) >= 15")))
+
+(define_constraint "jb4"
+  "@internal Constant unsigned integer 4 bit value"
+  (and (match_code "const_int")
+       (match_test "ival >= 0 && ival <= 15")))
 
 ;;
 ;; Memory constraints follow.

@@ -1,3 +1,11 @@
+2020-05-05  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backport from mainline
+	2020-04-30  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/zvector/vec_load_len_r.c: New test.
+	* gcc.target/s390/zvector/vec_store_len_r.c: New test.
+
 2020-05-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline.
