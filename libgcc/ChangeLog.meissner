@@ -1,3 +1,10 @@
+2020-05-05  Michael Meissner  <meissner@linux.ibm.com>
+
+	(~/patches/ieee128-lib-patch003b)
+	PR target/94630
+	* config/rs6000/t-float128 (ibm-ldouble$(objext)): Add the
+	-mno-gnu-attribute option.
+
 2020-05-05   Michael Meissner  <meissner@linux.ibm.com>
 
 	Clone branch
