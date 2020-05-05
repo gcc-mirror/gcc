@@ -1,5 +1,9 @@
 2020-05-05  Nathan Sidwell  <nathan@acm.org>
 
+	Fix eh specs
+	gcc/testsuite/
+	* g++.dg/eh/builtin{5,7,9,10,11}.C: Fix eh specs on __cxa fn decls.
+
 	Fix libitm's decls
 	libitm/
 	* eh_cpp.cc (__cxa_allocate_exception, __cxa_free_exception)
