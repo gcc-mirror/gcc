@@ -54,6 +54,9 @@ package body Exp_SPARK is
    procedure Expand_SPARK_N_Attribute_Reference (N : Node_Id);
    --  Perform attribute-reference-specific expansion
 
+   procedure Expand_SPARK_N_Delta_Aggregate (N : Node_Id);
+   --  Perform delta-aggregate-specific expansion
+
    procedure Expand_SPARK_N_Freeze_Type (E : Entity_Id);
    --  Build the DIC procedure of a type when needed, if not already done
 
@@ -68,6 +71,9 @@ package body Exp_SPARK is
 
    procedure Expand_SPARK_N_Op_Ne (N : Node_Id);
    --  Rewrite operator /= based on operator = when defined explicitly
+
+   procedure Expand_SPARK_Delta_Or_Update (Typ : Entity_Id; Aggr : Node_Id);
+   --  Common expansion of attribute Update and delta_aggregate
 
    ------------------
    -- Expand_SPARK --
@@ -100,6 +106,9 @@ package body Exp_SPARK is
 
          when N_Attribute_Reference =>
             Expand_SPARK_N_Attribute_Reference (N);
+
+         when N_Delta_Aggregate =>
+            Expand_SPARK_N_Delta_Aggregate (N);
 
          when N_Expanded_Name
             | N_Identifier
@@ -136,6 +145,185 @@ package body Exp_SPARK is
             null;
       end case;
    end Expand_SPARK;
+
+   ----------------------------------
+   -- Expand_SPARK_Delta_Or_Update --
+   ----------------------------------
+
+   procedure Expand_SPARK_Delta_Or_Update
+     (Typ  : Entity_Id;
+      Aggr : Node_Id)
+   is
+      Assoc     : Node_Id;
+      Comp      : Node_Id;
+      Comp_Id   : Entity_Id;
+      Comp_Type : Entity_Id;
+      Expr      : Node_Id;
+      Index     : Node_Id;
+      Index_Typ : Entity_Id;
+      New_Assoc : Node_Id;
+
+   begin
+      --  Apply scalar range checks on the updated components, if needed
+
+      if Is_Array_Type (Typ) then
+
+         --  Multi-dimensional array
+
+         if Present (Next_Index (First_Index (Typ))) then
+            Assoc := First (Component_Associations (Aggr));
+
+            while Present (Assoc) loop
+               Expr      := Expression (Assoc);
+               Comp_Type := Component_Type (Typ);
+
+               if Is_Scalar_Type (Comp_Type) then
+                  Apply_Scalar_Range_Check (Expr, Comp_Type);
+               end if;
+
+               --  The current association contains a sequence of indexes
+               --  denoting an element of a multidimensional array:
+               --
+               --    (Index_1, ..., Index_N)
+
+               Expr := First (Choices (Assoc));
+
+               pragma Assert (Nkind (Aggr) = N_Aggregate);
+
+               while Present (Expr) loop
+                  Index     := First (Expressions (Expr));
+                  Index_Typ := First_Index (Typ);
+
+                  while Present (Index_Typ) loop
+                     Apply_Scalar_Range_Check (Index, Etype (Index_Typ));
+                     Next (Index);
+                     Next_Index (Index_Typ);
+                  end loop;
+
+                  Next (Expr);
+               end loop;
+
+               Next (Assoc);
+            end loop;
+
+         --  One-dimensional array
+
+         else
+            Assoc := First (Component_Associations (Aggr));
+
+            while Present (Assoc) loop
+               Expr      := Expression (Assoc);
+               Comp_Type := Component_Type (Typ);
+
+               if Is_Scalar_Type (Comp_Type) then
+                  Apply_Scalar_Range_Check (Expr, Comp_Type);
+               end if;
+
+               Index     := First (Choices (Assoc));
+               Index_Typ := First_Index (Typ);
+
+               while Present (Index) loop
+                  --  The index denotes a range of elements
+
+                  if Nkind (Index) = N_Range then
+                     Apply_Scalar_Range_Check
+                       (Low_Bound  (Index), Etype (Index_Typ));
+                     Apply_Scalar_Range_Check
+                       (High_Bound (Index), Etype (Index_Typ));
+
+                     --  Otherwise the index denotes a single element
+
+                  else
+                     Apply_Scalar_Range_Check (Index, Etype (Index_Typ));
+                  end if;
+
+                  Next (Index);
+               end loop;
+
+               Next (Assoc);
+            end loop;
+         end if;
+
+      else pragma Assert (Is_Record_Type (Typ));
+
+         --  If the aggregate has multiple component choices, e.g.
+         --
+         --    X'Update (A | B | C => 123)
+         --
+         --  then each component might be of a different type and might
+         --  or might not require a range check. We first rewrite
+         --  associations into single-component choices, e.g.:
+         --
+         --    X'Update (A => 123, B => 123, C => 123)
+         --
+         --  and then apply range checks to individual copies of the
+         --  expressions. We do the same for delta aggregates, accordingly.
+
+         --  Iterate over associations of the original aggregate
+
+         Assoc := First (Component_Associations (Aggr));
+
+         --  Rewrite into a new aggregate and decorate
+
+         case Nkind (Aggr) is
+            when N_Aggregate =>
+               Rewrite
+                 (Aggr,
+                  Make_Aggregate
+                    (Sloc                   => Sloc (Aggr),
+                     Component_Associations => New_List));
+
+            when N_Delta_Aggregate =>
+               Rewrite
+                 (Aggr,
+                  Make_Delta_Aggregate
+                    (Sloc                   => Sloc (Aggr),
+                     Expression             => Expression (Aggr),
+                     Component_Associations => New_List));
+
+            when others =>
+               raise Program_Error;
+         end case;
+
+         Set_Etype (Aggr, Typ);
+
+         --  Populate the new aggregate with component associations
+
+         while Present (Assoc) loop
+            Expr := Expression (Assoc);
+            Comp := First (Choices (Assoc));
+
+            while Present (Comp) loop
+               Comp_Id   := Entity (Comp);
+               Comp_Type := Etype (Comp_Id);
+
+               New_Assoc :=
+                 Make_Component_Association
+                   (Sloc       => Sloc (Assoc),
+                    Choices    =>
+                      New_List
+                        (New_Occurrence_Of (Comp_Id, Sloc (Comp))),
+                    Expression => New_Copy_Tree (Expr));
+
+               --  New association must be attached to the aggregate before we
+               --  analyze it.
+
+               Append (New_Assoc, Component_Associations (Aggr));
+
+               Analyze_And_Resolve (Expression (New_Assoc), Comp_Type);
+
+               if Is_Scalar_Type (Comp_Type) then
+                  Apply_Scalar_Range_Check
+                    (Expression (New_Assoc), Comp_Type);
+               end if;
+
+               Next (Comp);
+            end loop;
+
+            Next (Assoc);
+         end loop;
+      end if;
+   end Expand_SPARK_Delta_Or_Update;
 
    --------------------------------
    -- Expand_SPARK_N_Freeze_Type --
@@ -252,168 +440,18 @@ package body Exp_SPARK is
          end if;
 
       elsif Attr_Id = Attribute_Update then
-         declare
-            Aggr : constant Node_Id := First (Expressions (N));
-            --  The aggregate expression
-
-            Assoc     : Node_Id;
-            Comp      : Node_Id;
-            Comp_Id   : Entity_Id;
-            Comp_Type : Entity_Id;
-            Expr      : Node_Id;
-            Index     : Node_Id;
-            Index_Typ : Entity_Id;
-            New_Assoc : Node_Id;
-
-         begin
-            --  Apply scalar range checks on the updated components, if needed
-
-            if Is_Array_Type (Typ) then
-
-               --  Multi-dimensional array
-
-               if Present (Next_Index (First_Index (Typ))) then
-                  Assoc := First (Component_Associations (Aggr));
-
-                  while Present (Assoc) loop
-                     Expr      := Expression (Assoc);
-                     Comp_Type := Component_Type (Typ);
-
-                     if Is_Scalar_Type (Comp_Type) then
-                        Apply_Scalar_Range_Check (Expr, Comp_Type);
-                     end if;
-
-                     --  The current association contains a sequence of indexes
-                     --  denoting an element of a multidimensional array:
-                     --
-                     --    (Index_1, ..., Index_N)
-
-                     Expr := First (Choices (Assoc));
-
-                     pragma Assert (Nkind (Aggr) = N_Aggregate);
-
-                     while Present (Expr) loop
-                        Index     := First (Expressions (Expr));
-                        Index_Typ := First_Index (Typ);
-
-                        while Present (Index_Typ) loop
-                           Apply_Scalar_Range_Check (Index, Etype (Index_Typ));
-                           Next (Index);
-                           Next_Index (Index_Typ);
-                        end loop;
-
-                        Next (Expr);
-                     end loop;
-
-                     Next (Assoc);
-                  end loop;
-
-               --  One-dimensional array
-
-               else
-                  Assoc := First (Component_Associations (Aggr));
-
-                  while Present (Assoc) loop
-                     Expr      := Expression (Assoc);
-                     Comp_Type := Component_Type (Typ);
-
-                     if Is_Scalar_Type (Comp_Type) then
-                        Apply_Scalar_Range_Check (Expr, Comp_Type);
-                     end if;
-
-                     Index     := First (Choices (Assoc));
-                     Index_Typ := First_Index (Typ);
-
-                     while Present (Index) loop
-                        --  The index denotes a range of elements
-
-                        if Nkind (Index) = N_Range then
-                           Apply_Scalar_Range_Check
-                             (Low_Bound  (Index), Etype (Index_Typ));
-                           Apply_Scalar_Range_Check
-                             (High_Bound (Index), Etype (Index_Typ));
-
-                        --  Otherwise the index denotes a single element
-
-                        else
-                           Apply_Scalar_Range_Check (Index, Etype (Index_Typ));
-                        end if;
-
-                        Next (Index);
-                     end loop;
-
-                     Next (Assoc);
-                  end loop;
-               end if;
-
-            else pragma Assert (Is_Record_Type (Typ));
-
-               --  If the aggregate has multiple component choices, e.g.
-               --
-               --    X'Update (A | B | C => 123)
-               --
-               --  then each component might be of a different type and might
-               --  or might not require a range check. We first rewrite
-               --  associations into single-component choices, e.g.:
-               --
-               --    X'Update (A => 123, B => 123, C => 123)
-               --
-               --  and then apply range checks to individual copies of the
-               --  expressions.
-
-               --  Iterate over associations of the original aggregate
-
-               Assoc := First (Component_Associations (Aggr));
-
-               --  Rewrite into a new aggregate and decorate
-
-               Rewrite
-                 (Aggr,
-                  Make_Aggregate
-                    (Sloc                   => Sloc (Aggr),
-                     Component_Associations => New_List));
-
-               Set_Etype (Aggr, Typ);
-
-               --  Populate the new aggregate with component associations
-
-               while Present (Assoc) loop
-                  Expr := Expression (Assoc);
-                  Comp := First (Choices (Assoc));
-
-                  while Present (Comp) loop
-                     Comp_Id   := Entity (Comp);
-                     Comp_Type := Etype (Comp_Id);
-
-                     New_Assoc :=
-                       Make_Component_Association
-                         (Sloc       => Sloc (Assoc),
-                          Choices    =>
-                            New_List
-                              (New_Occurrence_Of (Comp_Id, Sloc (Comp))),
-                          Expression => New_Copy_Tree (Expr));
-
-                     --  New association must be attached as a child of the
-                     --  aggregate before we analyze it.
-
-                     Append (New_Assoc, Component_Associations (Aggr));
-
-                     Analyze_And_Resolve (Expression (New_Assoc), Comp_Type);
-
-                     if Is_Scalar_Type (Comp_Type) then
-                        Apply_Scalar_Range_Check
-                          (Expression (New_Assoc), Comp_Type);
-                     end if;
-
-                     Next (Comp);
-                  end loop;
-
-                  Next (Assoc);
-               end loop;
-            end if;
-         end;
+         Expand_SPARK_Delta_Or_Update (Typ, First (Expressions (N)));
       end if;
    end Expand_SPARK_N_Attribute_Reference;
+
+   ------------------------------------
+   -- Expand_SPARK_N_Delta_Aggregate --
+   ------------------------------------
+
+   procedure Expand_SPARK_N_Delta_Aggregate (N : Node_Id) is
+   begin
+      Expand_SPARK_Delta_Or_Update (Etype (N), N);
+   end Expand_SPARK_N_Delta_Aggregate;
 
    -----------------------------------
    -- Expand_SPARK_N_Loop_Statement --
