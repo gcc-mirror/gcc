@@ -1,3 +1,11 @@
+2020-05-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/lse-init.c (init_have_lse_atomics): Use __getauxval
+	instead of getauxval.
+	(AT_HWCAP): Define.
+	(HWCAP_ATOMICS): Define.
+	Guard detection on __gnu_linux__.
+
 2020-04-27  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/rs6000/crtresfpr.S: Use .machine ppc.
