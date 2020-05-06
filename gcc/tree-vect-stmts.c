@@ -9364,7 +9364,7 @@ vectorizable_load (vec_info *vinfo,
 	 initialized yet, use first_stmt_info_for_drptr DR by bumping the
 	 distance from first_stmt_info DR instead as below.  */
       if (!diff_first_stmt_info)
-	msq = vect_setup_realignment (loop_vinfo,
+	msq = vect_setup_realignment (vinfo,
 				      first_stmt_info, gsi, &realignment_token,
 				      alignment_support_scheme, NULL_TREE,
 				      &at_loop);
