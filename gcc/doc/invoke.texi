@@ -574,8 +574,8 @@ Objective-C and Objective-C++ Dialects}.
 -dD  -dI  -dM  -dN  -dU @gol
 -fdebug-cpp  -fdirectives-only  -fdollars-in-identifiers  @gol
 -fexec-charset=@var{charset}  -fextended-identifiers  @gol
--finput-charset=@var{charset}  -fmacro-prefix-map=@var{old}=@var{new}  @gol
--fmax-include-depth=@var{depth} @gol
+-finput-charset=@var{charset}  -flarge-source-files  @gol
+-fmacro-prefix-map=@var{old}=@var{new} -fmax-include-depth=@var{depth} @gol
 -fno-canonical-system-headers  -fpch-deps  -fpch-preprocess  @gol
 -fpreprocessed  -ftabstop=@var{width}  -ftrack-macro-expansion  @gol
 -fwide-exec-charset=@var{charset}  -fworking-directory @gol
@@ -14173,6 +14173,21 @@ This option may be useful in conjunction with the @option{-B} or
 @option{-wrapper} options to specify an alternate preprocessor or
 perform additional processing of the program source between
 normal preprocessing and compilation.
+
+@item -flarge-source-files
+@opindex flarge-source-files
+Adjust GCC to expect large source files, at the expense of slower
+compilation and higher memory usage.
+
+Specifically, GCC normally tracks both column numbers and line numbers
+within source files and it normally prints both of these numbers in
+diagnostics.  However, once it has processed a certain number of source
+lines, it stops tracking column numbers and only tracks line numbers.
+This means that diagnostics for later lines do not include column numbers.
+It also means that options like @option{-Wmisleading-indentation} cease to work
+at that point, although the compiler prints a note if this happens.
+Passing @option{-flarge-source-files} significantly increases the number
+of source lines that GCC can process before it stops tracking columns.
 
 @end table
 
