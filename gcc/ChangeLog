@@ -1,5 +1,11 @@
 2020-05-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/94950
+	* config/riscv/riscv-builtins.c (riscv_atomic_assign_expand_fenv): Use
+	TARGET_EXPR instead of MODIFY_EXPR for first assignment to old_flags.
+
+2020-05-06  Jakub Jelinek  <jakub@redhat.com>
+
 	PR rtl-optimization/94873
 	* combine.c (combine_instructions): Don't optimize using REG_EQUAL
 	note if SET_SRC (set) has side-effects.
