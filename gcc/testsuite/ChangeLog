@@ -1,3 +1,9 @@
+2020-05-06  qing zhao  <qing.zhao@oracle.com>
+
+	PR c/94230
+	* gcc.dg/plugin/location-overflow-test-1.c (fn_1): New message to 
+	provide hint to use the new -flarge-source-files option.
+
 2020-05-06  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/94913

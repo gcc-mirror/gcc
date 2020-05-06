@@ -1609,6 +1609,11 @@ fkeep-gc-roots-live
 Common Undocumented Report Var(flag_keep_gc_roots_live) Optimization
 ; Always keep a pointer to a live memory block
 
+flarge-source-files
+Common Report Var(flag_large_source_files) Init(0)
+Improve GCC's ability to track column numbers in large source files,
+at the expense of slower compilation.
+
 floop-parallelize-all
 Common Report Var(flag_loop_parallelize_all) Optimization
 Mark all loops as parallel.

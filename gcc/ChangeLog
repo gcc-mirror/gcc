@@ -1,3 +1,11 @@
+2020-05-06  qing zhao  <qing.zhao@oracle.com>
+
+	PR c/94230
+	* common.opt: Add -flarge-source-files.
+	* doc/invoke.texi: Document it.
+	* toplev.c (process_options): set line_table->default_range_bits
+	to 0 when flag_large_source_files is true.
+
 2020-05-06  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/94913
