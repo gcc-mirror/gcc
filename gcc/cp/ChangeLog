@@ -1,5 +1,14 @@
 2020-05-18  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/94937
+	* cvt.c (cp_get_fndecl_from_callee): Return NULL_TREE if the function
+	type is not INDIRECT_TYPE_P.
+	* decl.c (omp_declare_variant_finalize_one): Call
+	cp_get_callee_fndecl_nofold instead of looking for the function decl
+	manually.
+
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/90915
 	* parser.c (cp_parser_has_attribute_expression): Sorry on a
 	type-dependent argument.

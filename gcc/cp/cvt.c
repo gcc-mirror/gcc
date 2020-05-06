@@ -995,9 +995,8 @@ cp_get_fndecl_from_callee (tree fn, bool fold /* = true */)
   if (TREE_CODE (fn) == FUNCTION_DECL)
     return fn;
   tree type = TREE_TYPE (fn);
-  if (type == unknown_type_node)
+  if (type == NULL_TREE || !INDIRECT_TYPE_P (type))
     return NULL_TREE;
-  gcc_assert (INDIRECT_TYPE_P (type));
   if (fold)
     fn = maybe_constant_init (fn);
   STRIP_NOPS (fn);

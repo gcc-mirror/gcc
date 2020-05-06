@@ -1,3 +1,9 @@
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94937
+	* g++.dg/cpp1z/constexpr-if34.C: New test.
+	* g++.dg/cpp2a/is-constant-evaluated10.C: New test.
+
 2020-05-18  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/92815
