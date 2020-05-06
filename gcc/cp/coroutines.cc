@@ -2184,11 +2184,11 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   /* Expand co_returns in the saved function body  */
   fnbody = expand_co_returns (&fnbody, promise_proxy, ap, fs_label);
 
-  /* n4849 adds specific behaviour to treat exceptions thrown by the
-     await_resume () of the initial suspend expression.  In order to
-     implement this, we need to treat the initial_suspend expression
-     as if it were part of the user-authored function body.  This
-     only applies if exceptions are enabled.  */
+  /* Specific behaviour to treat exceptions thrown by the await_resume ()
+     of the initial suspend expression.  In order to implement this, we
+     need to treat the initial_suspend expression as if it were part of the
+     user-authored function body.  This only applies if exceptions are
+     enabled.  */
   if (flag_exceptions)
     {
       tree outer = fnbody;
@@ -2290,7 +2290,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 	}
     }
 
-  /* n4849 [dcl.fct.def.coroutine] / 12
+  /* [dcl.fct.def.coroutine] / 12
      The deallocation function’s name is looked up in the scope of the promise
      type.  If this lookup fails, the deallocation function’s name is looked up
      in the global scope.  If deallocation function lookup finds both a usual
@@ -3845,7 +3845,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
     = build_call_expr_internal_loc (fn_start, IFN_CO_FRAME, size_type_node, 2,
 				    frame_size, coro_fp);
 
-  /* n4849 [dcl.fct.def.coroutine] / 10 (part1)
+  /* [dcl.fct.def.coroutine] / 10 (part1)
     The unqualified-id get_return_object_on_allocation_failure is looked up
     in the scope of the promise type by class member access lookup.  */
 
@@ -3871,7 +3871,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
     }
 
   /* Allocate the frame, this has several possibilities:
-     n4849 [dcl.fct.def.coroutine] / 9 (part 1)
+     [dcl.fct.def.coroutine] / 9 (part 1)
      The allocation function’s name is looked up in the scope of the promise
      type.  It's not a failure for it to be absent see part 4, below.  */
   tree nwname = ovl_op_identifier (false, NEW_EXPR);
@@ -3880,7 +3880,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree new_fn = NULL_TREE;
   if (fns && BASELINK_P (fns))
     {
-      /* n4849 [dcl.fct.def.coroutine] / 9 (part 2)
+      /* [dcl.fct.def.coroutine] / 9 (part 2)
 	If the lookup finds an allocation function in the scope of the promise
 	type, overload resolution is performed on a function call created by
 	assembling an argument list.  The first argument is the amount of space
@@ -3920,7 +3920,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
       if (!new_fn || new_fn == error_mark_node)
 	{
-	  /* n4849 [dcl.fct.def.coroutine] / 9 (part 3)
+	  /* [dcl.fct.def.coroutine] / 9 (part 3)
 	    If no viable function is found, overload resolution is performed
 	    again on a function call created by passing just the amount of
 	    space required as an argument of type std::size_t.  */
@@ -3946,7 +3946,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
     }
   else
     {
-      /* n4849 [dcl.fct.def.coroutine] / 9 (part 4)
+      /* [dcl.fct.def.coroutine] / 9 (part 4)
 	 If this lookup fails, the allocation function’s name is looked up in
 	 the global scope.  */
 
@@ -3957,7 +3957,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
       if (grooaf)
 	{
-	  /* n4849 [dcl.fct.def.coroutine] / 10 (part 2)
+	  /* [dcl.fct.def.coroutine] / 10 (part 2)
 	   If any declarations (of the get return on allocation fail) are
 	   found, then the result of a call to an allocation function used
 	   to obtain storage for the coroutine state is assumed to return
@@ -3998,7 +3998,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   if (grooaf)
     {
-      /* n4849 [dcl.fct.def.coroutine] / 10 (part 3)
+      /* [dcl.fct.def.coroutine] / 10 (part 3)
 	 If the allocation function returns nullptr,the coroutine returns
 	 control to the caller of the coroutine and the return value is
 	 obtained by a call to T::get_return_object_on_allocation_failure(),
@@ -4062,7 +4062,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   r = coro_build_cvt_void_expr_stmt (r, fn_start);
   add_stmt (r);
 
-  /* n4849 [dcl.fct.def.coroutine] /13
+  /* [dcl.fct.def.coroutine] /13
      When a coroutine is invoked, a copy is created for each coroutine
      parameter.  Each such copy is an object with automatic storage duration
      that is direct-initialized from an lvalue referring to the corresponding
