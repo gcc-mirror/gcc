@@ -1174,9 +1174,8 @@ vect_get_store_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
 
 static void
 vect_model_load_cost (vec_info *vinfo,
-		      stmt_vec_info stmt_info, unsigned ncopies,
+		      stmt_vec_info stmt_info, unsigned ncopies, poly_uint64 vf,
 		      vect_memory_access_type memory_access_type,
-		      slp_instance instance,
 		      slp_tree slp_node,
 		      stmt_vector_for_cost *cost_vec)
 {
@@ -1198,10 +1197,8 @@ vect_model_load_cost (vec_info *vinfo,
       unsigned n_perms;
       unsigned assumed_nunits
 	= vect_nunits_for_cost (STMT_VINFO_VECTYPE (first_stmt_info));
-      unsigned slp_vf = (ncopies * assumed_nunits) / instance->group_size; 
       vect_transform_slp_perm_load (vinfo, slp_node, vNULL, NULL,
-				    slp_vf, instance, true,
-				    &n_perms);
+				    vf, true, &n_perms);
       inside_cost += record_stmt_cost (cost_vec, n_perms, vec_perm,
 				       first_stmt_info, 0, vect_body);
       /* And adjust the number of loads performed.  This handles
@@ -8839,8 +8836,8 @@ vectorizable_load (vec_info *vinfo,
 				  memory_access_type, &gs_info, mask);
 
       STMT_VINFO_TYPE (stmt_info) = load_vec_info_type;
-      vect_model_load_cost (vinfo, stmt_info, ncopies, memory_access_type,
-			    slp_node_instance, slp_node, cost_vec);
+      vect_model_load_cost (vinfo, stmt_info, ncopies, vf, memory_access_type,
+			    slp_node, cost_vec);
       return true;
     }
 
@@ -9137,7 +9134,7 @@ vectorizable_load (vec_info *vinfo,
 	{
 	  unsigned n_perms;
 	  vect_transform_slp_perm_load (vinfo, slp_node, dr_chain, gsi, vf,
-					slp_node_instance, false, &n_perms);
+					false, &n_perms);
 	}
       return true;
     }
@@ -9896,8 +9893,7 @@ vectorizable_load (vec_info *vinfo,
         {
 	  unsigned n_perms;
           if (!vect_transform_slp_perm_load (vinfo, slp_node, dr_chain, gsi, vf,
-                                             slp_node_instance, false,
-					     &n_perms))
+					     false, &n_perms))
             {
               dr_chain.release ();
               return false;

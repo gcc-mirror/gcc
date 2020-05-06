@@ -695,8 +695,7 @@ vect_slp_analyze_data_ref_dependence (vec_info *vinfo,
    disambiguating the loads.  */
 
 static bool
-vect_slp_analyze_node_dependences (vec_info *vinfo,
-				   slp_instance instance, slp_tree node,
+vect_slp_analyze_node_dependences (vec_info *vinfo, slp_tree node,
 				   vec<stmt_vec_info> stores,
 				   stmt_vec_info last_store_info)
 {
@@ -704,7 +703,7 @@ vect_slp_analyze_node_dependences (vec_info *vinfo,
      in NODE verifying we can sink them up to the last stmt in the
      group.  */
   stmt_vec_info last_access_info = vect_find_last_scalar_stmt_in_slp (node);
-  for (unsigned k = 0; k < SLP_INSTANCE_GROUP_SIZE (instance); ++k)
+  for (unsigned k = 0; k < SLP_TREE_SCALAR_STMTS (node).length (); ++k)
     {
       stmt_vec_info access_info = SLP_TREE_SCALAR_STMTS (node)[k];
       if (access_info == last_access_info)
@@ -794,13 +793,12 @@ vect_slp_analyze_instance_dependence (vec_info *vinfo, slp_instance instance)
   stmt_vec_info last_store_info = NULL;
   if (store)
     {
-      if (! vect_slp_analyze_node_dependences (vinfo, instance, store,
-					       vNULL, NULL))
+      if (! vect_slp_analyze_node_dependences (vinfo, store, vNULL, NULL))
 	return false;
 
       /* Mark stores in this instance and remember the last one.  */
       last_store_info = vect_find_last_scalar_stmt_in_slp (store);
-      for (unsigned k = 0; k < SLP_INSTANCE_GROUP_SIZE (instance); ++k)
+      for (unsigned k = 0; k < SLP_TREE_SCALAR_STMTS (store).length (); ++k)
 	gimple_set_visited (SLP_TREE_SCALAR_STMTS (store)[k]->stmt, true);
     }
 
@@ -811,7 +809,7 @@ vect_slp_analyze_instance_dependence (vec_info *vinfo, slp_instance instance)
   slp_tree load;
   unsigned int i;
   FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (instance), i, load)
-    if (! vect_slp_analyze_node_dependences (vinfo, instance, load,
+    if (! vect_slp_analyze_node_dependences (vinfo, load,
 					     store
 					     ? SLP_TREE_SCALAR_STMTS (store)
 					     : vNULL, last_store_info))
@@ -822,7 +820,7 @@ vect_slp_analyze_instance_dependence (vec_info *vinfo, slp_instance instance)
 
   /* Unset the visited flag.  */
   if (store)
-    for (unsigned k = 0; k < SLP_INSTANCE_GROUP_SIZE (instance); ++k)
+    for (unsigned k = 0; k < SLP_TREE_SCALAR_STMTS (store).length (); ++k)
       gimple_set_visited (SLP_TREE_SCALAR_STMTS (store)[k]->stmt, false);
 
   return res;

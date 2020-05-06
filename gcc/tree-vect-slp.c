@@ -2018,7 +2018,7 @@ vect_supported_load_permutation_p (vec_info *vinfo, slp_instance slp_instn)
 	      vec<tree> tem;
 	      unsigned n_perms;
 	      if (!vect_transform_slp_perm_load (vinfo, node, tem, NULL,
-						 1, slp_instn, true, &n_perms))
+						 1, true, &n_perms))
 		{
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION,
@@ -2044,7 +2044,7 @@ vect_supported_load_permutation_p (vec_info *vinfo, slp_instance slp_instn)
   FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (slp_instn), i, node)
     if (node->load_permutation.exists ()
 	&& !vect_transform_slp_perm_load (vinfo, node, vNULL, NULL, test_vf,
-					  slp_instn, true, &n_perms))
+					  true, &n_perms))
       return false;
 
   return true;
@@ -2930,7 +2930,7 @@ vect_slp_analyze_operations (vec_info *vinfo)
    update LIFE according to uses of NODE.  */
 
 static void 
-vect_bb_slp_scalar_cost (vec_info *vinfo, basic_block bb,
+vect_bb_slp_scalar_cost (vec_info *vinfo,
 			 slp_tree node, vec<bool, va_heap> *life,
 			 stmt_vector_for_cost *cost_vec,
 			 hash_set<slp_tree> &visited)
@@ -3002,7 +3002,7 @@ vect_bb_slp_scalar_cost (vec_info *vinfo, basic_block bb,
 	  /* Do not directly pass LIFE to the recursive call, copy it to
 	     confine changes in the callee to the current child/subtree.  */
 	  subtree_life.safe_splice (*life);
-	  vect_bb_slp_scalar_cost (vinfo, bb, child, &subtree_life, cost_vec,
+	  vect_bb_slp_scalar_cost (vinfo, child, &subtree_life, cost_vec,
 				   visited);
 	  subtree_life.truncate (0);
 	}
@@ -3028,7 +3028,7 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo)
     {
       auto_vec<bool, 20> life;
       life.safe_grow_cleared (SLP_INSTANCE_GROUP_SIZE (instance));
-      vect_bb_slp_scalar_cost (bb_vinfo, BB_VINFO_BB (bb_vinfo),
+      vect_bb_slp_scalar_cost (bb_vinfo,
 			       SLP_INSTANCE_TREE (instance),
 			       &life, &scalar_costs, visited);
     }
@@ -3866,13 +3866,12 @@ bool
 vect_transform_slp_perm_load (vec_info *vinfo,
 			      slp_tree node, vec<tree> dr_chain,
 			      gimple_stmt_iterator *gsi, poly_uint64 vf,
-			      slp_instance slp_node_instance, bool analyze_only,
-			      unsigned *n_perms)
+			      bool analyze_only, unsigned *n_perms)
 {
   stmt_vec_info stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];
   int vec_index = 0;
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  unsigned int group_size = SLP_INSTANCE_GROUP_SIZE (slp_node_instance);
+  unsigned int group_size = SLP_TREE_SCALAR_STMTS (node).length ();
   unsigned int mask_element;
   machine_mode mode;
 
@@ -4351,8 +4350,7 @@ vect_schedule_slp (vec_info *vinfo)
       if (is_a <loop_vec_info> (vinfo))
 	vect_remove_slp_scalar_calls (vinfo, root);
 
-      for (j = 0; SLP_TREE_SCALAR_STMTS (root).iterate (j, &store_info)
-                  && j < SLP_INSTANCE_GROUP_SIZE (instance); j++)
+      for (j = 0; SLP_TREE_SCALAR_STMTS (root).iterate (j, &store_info); j++)
         {
 	  if (!STMT_VINFO_DATA_REF (store_info))
 	    break;
