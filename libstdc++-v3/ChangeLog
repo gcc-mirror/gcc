@@ -1,3 +1,7 @@
+2020-05-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Updated.
+
 2020-05-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/abi/post/i386-solaris/baseline_symbols.txt: Regenerate.
