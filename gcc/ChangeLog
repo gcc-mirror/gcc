@@ -1,3 +1,9 @@
+2020-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94873
+	* combine.c (combine_instructions): Don't optimize using REG_EQUAL
+	note if SET_SRC (set) has side-effects.
+
 2020-05-06  Hongtao Liu  <hongtao.liu@intel.com>
 	    Wei Xiao  <wei3.xiao@intel.com>
 
