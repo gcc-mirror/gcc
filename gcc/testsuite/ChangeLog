@@ -1,3 +1,9 @@
+2020-05-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/94913
+	* gcc.target/i386/pr94913-1.c: New test.
+	* gcc.target/i386/pr94913-2.c: Ditto.
+
 2020-05-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/94963
