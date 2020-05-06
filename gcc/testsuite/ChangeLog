@@ -1,4 +1,17 @@
-2020-05-06  Hongtao.liu  <hongtao.liu@intel.com>
+2020-05-06  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* g++.dg/other/i386-2.c: Add -mtsxldtrk.
+	* g++.dg/other/i386-3.c: Likewise.
+	* gcc.target/i386/sse-12.c: Likewise.
+	* gcc.target/i386/sse-13.c: Likewise.
+	* gcc.target/i386/sse-14.c: Likewise.
+	* gcc.target/i386/sse-22.c: Likewsie.
+	* gcc.target/i386/sse-23.c: Likewise.
+	* gcc.target/i386/tsxldtrk-1.c: New test.
+	* gcc.target/i386/funcspec-56.inc: Add target attribute tests
+	for tsxldtrk.
+
+2020-05-06  Hongtao Liu  <hongtao.liu@intel.com>
 
 	* gcc.target/i386/funcspec-56.inc: Add enqcmd, avx512bf16,
 	avx512vp2intersect.
