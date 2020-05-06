@@ -1994,8 +1994,6 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
   gsi = gsi_start_bb (then_bb);
   /* Insert actual store.  */
   stmt = gimple_build_assign (unshare_expr (mem), tmp_var);
-  /* Make sure to not warn about maybe-uninit uses of tmp_var here.  */
-  gimple_set_no_warning (stmt, true);
   gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
 
   edge e1 = single_succ_edge (new_bb);
@@ -2149,13 +2147,19 @@ execute_sm (class loop *loop, vec<edge> exits, im_mem_ref *ref)
      store then.  */
   if ((!always_stored && !multi_threaded_model_p)
       || (ref->loaded && bitmap_bit_p (ref->loaded, loop->num)))
+    load = gimple_build_assign (tmp_var, unshare_expr (ref->mem.ref));
+  else
     {
-      load = gimple_build_assign (tmp_var, unshare_expr (ref->mem.ref));
-      lim_data = init_lim_data (load);
-      lim_data->max_loop = loop;
-      lim_data->tgt_loop = loop;
-      gsi_insert_before (&gsi, load, GSI_SAME_STMT);
+      /* If not emitting a load mark the uninitialized state on the
+	 loop entry as not to be warned for.  */
+      tree uninit = create_tmp_reg (TREE_TYPE (tmp_var));
+      TREE_NO_WARNING (uninit) = 1;
+      load = gimple_build_assign (tmp_var, uninit);
     }
+  lim_data = init_lim_data (load);
+  lim_data->max_loop = loop;
+  lim_data->tgt_loop = loop;
+  gsi_insert_before (&gsi, load, GSI_SAME_STMT);
 
   if (multi_threaded_model_p)
     {
