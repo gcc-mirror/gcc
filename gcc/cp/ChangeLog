@@ -1,5 +1,11 @@
 2020-05-18  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/94955
+	* typeck.c (cp_build_binary_op): Use fold_for_warn instead of
+	cp_fold_rvalue.
+
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/94937
 	* cvt.c (cp_get_fndecl_from_callee): Return NULL_TREE if the function
 	type is not INDIRECT_TYPE_P.
