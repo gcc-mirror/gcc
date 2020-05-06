@@ -31,13 +31,13 @@ int test_repeated_predicate_1 (int n)
     int sum = 0;
     int i;
     for (i = 0; i < n; i++)
-      p[i] = i;
+      p[i] = i; /* { dg-warning "dereference of possibly-NULL" } */
     for (i = 0; i < n; i++)
       sum += foo (p[i]); /* { dg-bogus "uninitialized" } */
     result = sum;
   }
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
   if (n > 10)
     free (ptr); /* { dg-bogus "not on the heap" } */
@@ -65,11 +65,11 @@ int test_repeated_predicate_1a (int n)
     int sum = 0;
     int i;
     for (i = 0; i < n; i++)
-      p[i] = i;
+      p[i] = i; /* { dg-warning "dereference of possibly-NULL" } */
     result = sum;
   }
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
   if (n > 10)
     free (ptr); /* { dg-bogus "not on the heap" } */
@@ -126,13 +126,13 @@ int test_explicit_flag (int n)
     int sum = 0;
     int i;
     for (i = 0; i < n; i++)
-      p[i] = i;
+      p[i] = i; /* { dg-warning "dereference of possibly-NULL" } */
     for (i = 0; i < n; i++)
       sum += foo (p[i]); /* { dg-bogus "uninitialized" } */
     result = sum;
   }
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
   if (need_to_free)
     free (ptr); /* { dg-bogus "not on the heap" } */
@@ -160,13 +160,13 @@ int test_pointer_comparison (int n)
     int sum = 0;
     int i;
     for (i = 0; i < n; i++)
-      p[i] = i;
+      p[i] = i; /* { dg-warning "dereference of possibly-NULL" } */
     for (i = 0; i < n; i++)
       sum += foo (p[i]); /* { dg-bogus "uninitialized" } */
     result = sum;
   }
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
   if (ptr != buf)
     free (ptr); /* { dg-bogus "not on the heap" } */

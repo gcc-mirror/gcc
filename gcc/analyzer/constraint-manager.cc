@@ -41,6 +41,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "sbitmap.h"
 #include "bitmap.h"
 #include "tristate.h"
+#include "analyzer/call-string.h"
+#include "analyzer/program-point.h"
+#include "analyzer/store.h"
 #include "analyzer/region-model.h"
 #include "analyzer/constraint-manager.h"
 #include "analyzer/analyzer-selftests.h"
@@ -49,38 +52,17 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
-/* One of the end-points of a range.  */
-
-struct bound
+static tristate
+compare_constants (tree lhs_const, enum tree_code op, tree rhs_const)
 {
-  bound () : m_constant (NULL_TREE), m_closed (false) {}
-  bound (tree constant, bool closed)
-  : m_constant (constant), m_closed (closed) {}
-
-  void ensure_closed (bool is_upper);
-
-  const char * get_relation_as_str () const;
-
-  tree m_constant;
-  bool m_closed;
-};
-
-/* A range of values, used for determining if a value has been
-   constrained to just one possible constant value.  */
-
-struct range
-{
-  range () : m_lower_bound (), m_upper_bound () {}
-  range (const bound &lower, const bound &upper)
-  : m_lower_bound (lower), m_upper_bound (upper) {}
-
-  void dump (pretty_printer *pp) const;
-
-  bool constrained_to_single_element (tree *out);
-
-  bound m_lower_bound;
-  bound m_upper_bound;
-};
+  tree comparison
+    = fold_binary (op, boolean_type_node, lhs_const, rhs_const);
+  if (comparison == boolean_true_node)
+    return tristate (tristate::TS_TRUE);
+  if (comparison == boolean_false_node)
+    return tristate (tristate::TS_FALSE);
+  return tristate (tristate::TS_UNKNOWN);
+}
 
 /* struct bound.  */
 
@@ -120,26 +102,60 @@ bound::get_relation_as_str () const
 /* Dump this range to PP, which must support %E for tree.  */
 
 void
-range::dump (pretty_printer *pp) const
+range::dump_to_pp (pretty_printer *pp) const
 {
-  pp_printf (pp, "%qE %s x %s %qE",
-	     m_lower_bound.m_constant,
-	     m_lower_bound.get_relation_as_str (),
-	     m_upper_bound.get_relation_as_str (),
-	     m_upper_bound.m_constant);
+  if (m_lower_bound.m_constant)
+    {
+      if (m_upper_bound.m_constant)
+	pp_printf (pp, "%qE %s x %s %qE",
+		   m_lower_bound.m_constant,
+		   m_lower_bound.get_relation_as_str (),
+		   m_upper_bound.get_relation_as_str (),
+		   m_upper_bound.m_constant);
+      else
+	pp_printf (pp, "%qE %s x",
+		   m_lower_bound.m_constant,
+		   m_lower_bound.get_relation_as_str ());
+    }
+  else
+    {
+      if (m_upper_bound.m_constant)
+	pp_printf (pp, "x %s %qE",
+		   m_upper_bound.get_relation_as_str (),
+		   m_upper_bound.m_constant);
+      else
+	pp_string (pp, "x");
+    }
+}
+
+/* Dump this range to stderr.  */
+
+DEBUG_FUNCTION void
+range::dump () const
+{
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp.buffer->stream = stderr;
+  dump_to_pp (&pp);
+  pp_newline (&pp);
+  pp_flush (&pp);
 }
 
 /* Determine if there is only one possible value for this range.
-   If so, return true and write the constant to *OUT.
-   Otherwise, return false.  */
+   If so, return the constant; otherwise, return NULL_TREE.  */
 
-bool
-range::constrained_to_single_element (tree *out)
+tree
+range::constrained_to_single_element ()
 {
+  if (m_lower_bound.m_constant == NULL_TREE
+      || m_upper_bound.m_constant == NULL_TREE)
+    return NULL_TREE;
+
   if (!INTEGRAL_TYPE_P (TREE_TYPE (m_lower_bound.m_constant)))
-    return false;
+    return NULL_TREE;
   if (!INTEGRAL_TYPE_P (TREE_TYPE (m_upper_bound.m_constant)))
-    return false;
+    return NULL_TREE;
 
   /* Convert any open bounds to closed bounds.  */
   m_lower_bound.ensure_closed (false);
@@ -150,12 +166,92 @@ range::constrained_to_single_element (tree *out)
 				 m_lower_bound.m_constant,
 				 m_upper_bound.m_constant);
   if (comparison == boolean_true_node)
-    {
-      *out = m_lower_bound.m_constant;
-      return true;
-    }
+    return m_lower_bound.m_constant;
   else
+    return NULL_TREE;
+}
+
+/* Eval the condition "X OP RHS_CONST" for X within the range.  */
+
+tristate
+range::eval_condition (enum tree_code op, tree rhs_const) const
+{
+  range copy (*this);
+  if (tree single_element = copy.constrained_to_single_element ())
+    return compare_constants (single_element, op, rhs_const);
+
+  switch (op)
+    {
+    case EQ_EXPR:
+      if (below_lower_bound (rhs_const))
+	return tristate (tristate::TS_FALSE);
+      if (above_upper_bound (rhs_const))
+	return tristate (tristate::TS_FALSE);
+      break;
+
+    case LT_EXPR:
+    case LE_EXPR:
+      /* Qn: "X </<= RHS_CONST".  */
+      /* If RHS_CONST > upper bound, then it's true.
+	 If RHS_CONST < lower bound, then it's false.
+	 Otherwise unknown.  */
+      if (above_upper_bound (rhs_const))
+	return tristate (tristate::TS_TRUE);
+      if (below_lower_bound (rhs_const))
+	return tristate (tristate::TS_FALSE);
+      break;
+
+    case NE_EXPR:
+      /* Qn: "X != RHS_CONST".  */
+      /* If RHS_CONST < lower bound, then it's true.
+	 If RHS_CONST > upper bound, then it's false.
+	 Otherwise unknown.  */
+      if (below_lower_bound (rhs_const))
+	return tristate (tristate::TS_TRUE);
+      if (above_upper_bound (rhs_const))
+	return tristate (tristate::TS_TRUE);
+      break;
+
+    case GE_EXPR:
+    case GT_EXPR:
+      /* Qn: "X >=/> RHS_CONST".  */
+      if (above_upper_bound (rhs_const))
+	return tristate (tristate::TS_FALSE);
+      if (below_lower_bound (rhs_const))
+	return tristate (tristate::TS_TRUE);
+      break;
+
+    default:
+      gcc_unreachable ();
+      break;
+    }
+  return tristate (tristate::TS_UNKNOWN);
+}
+
+/* Return true if RHS_CONST is below the lower bound of this range.  */
+
+bool
+range::below_lower_bound (tree rhs_const) const
+{
+  if (!m_lower_bound.m_constant)
     return false;
+
+  return compare_constants (rhs_const,
+			    m_lower_bound.m_closed ? LT_EXPR : LE_EXPR,
+			    m_lower_bound.m_constant).is_true ();
+}
+
+/* Return true if RHS_CONST is above the upper bound of this range.  */
+
+bool
+range::above_upper_bound (tree rhs_const) const
+{
+  if (!m_upper_bound.m_constant)
+    return false;
+
+  return compare_constants (rhs_const,
+			    m_upper_bound.m_closed ? GT_EXPR : GE_EXPR,
+			    m_upper_bound.m_constant).is_true ();
 }
 
 /* class equiv_class.  */
@@ -163,21 +259,20 @@ range::constrained_to_single_element (tree *out)
 /* equiv_class's default ctor.  */
 
 equiv_class::equiv_class ()
-: m_constant (NULL_TREE), m_cst_sid (svalue_id::null ()),
-  m_vars ()
+: m_constant (NULL_TREE), m_cst_sval (NULL), m_vars ()
 {
 }
 
 /* equiv_class's copy ctor.  */
 
 equiv_class::equiv_class (const equiv_class &other)
-: m_constant (other.m_constant), m_cst_sid (other.m_cst_sid),
+: m_constant (other.m_constant), m_cst_sval (other.m_cst_sval),
   m_vars (other.m_vars.length ())
 {
   int i;
-  svalue_id *sid;
-  FOR_EACH_VEC_ELT (other.m_vars, i, sid)
-    m_vars.quick_push (*sid);
+  const svalue *sval;
+  FOR_EACH_VEC_ELT (other.m_vars, i, sval)
+    m_vars.quick_push (sval);
 }
 
 /* Print an all-on-one-line representation of this equiv_class to PP,
@@ -188,38 +283,43 @@ equiv_class::print (pretty_printer *pp) const
 {
   pp_character (pp, '{');
   int i;
-  svalue_id *sid;
-  FOR_EACH_VEC_ELT (m_vars, i, sid)
+  const svalue *sval;
+  FOR_EACH_VEC_ELT (m_vars, i, sval)
     {
       if (i > 0)
 	pp_string (pp, " == ");
-      sid->print (pp);
+      sval->dump_to_pp (pp, true);
     }
   if (m_constant)
     {
       if (i > 0)
 	pp_string (pp, " == ");
-      pp_printf (pp, "%qE", m_constant);
+      pp_printf (pp, "[m_constant]%qE", m_constant);
     }
   pp_character (pp, '}');
 }
 
-/* Generate a hash value for this equiv_class.  */
+/* Generate a hash value for this equiv_class.
+   This relies on the ordering of m_vars, and so this object needs to
+   have been canonicalized for this to be meaningful.  */
 
 hashval_t
 equiv_class::hash () const
 {
   inchash::hash hstate;
-  int i;
-  svalue_id *sid;
 
   inchash::add_expr (m_constant, hstate);
-  FOR_EACH_VEC_ELT (m_vars, i, sid)
-    inchash::add (*sid, hstate);
+  int i;
+  const svalue *sval;
+  FOR_EACH_VEC_ELT (m_vars, i, sval)
+    hstate.add_ptr (sval);
   return hstate.end ();
 }
 
-/* Equality operator for equiv_class.  */
+/* Equality operator for equiv_class.
+   This relies on the ordering of m_vars, and so this object
+   and OTHER need to have been canonicalized for this to be
+   meaningful.  */
 
 bool
 equiv_class::operator== (const equiv_class &other)
@@ -227,15 +327,15 @@ equiv_class::operator== (const equiv_class &other)
   if (m_constant != other.m_constant)
     return false; // TODO: use tree equality here?
 
-  /* FIXME: should we compare m_cst_sid?  */
+  /* FIXME: should we compare m_cst_sval?  */
 
   if (m_vars.length () != other.m_vars.length ())
     return false;
 
   int i;
-  svalue_id *sid;
-  FOR_EACH_VEC_ELT (m_vars, i, sid)
-    if (! (*sid == other.m_vars[i]))
+  const svalue *sval;
+  FOR_EACH_VEC_ELT (m_vars, i, sval)
+    if (sval != other.m_vars[i])
       return false;
 
   return true;
@@ -244,18 +344,18 @@ equiv_class::operator== (const equiv_class &other)
 /* Add SID to this equiv_class, using CM to check if it's a constant.  */
 
 void
-equiv_class::add (svalue_id sid, const constraint_manager &cm)
+equiv_class::add (const svalue *sval)
 {
-  gcc_assert (!sid.null_p ());
-  if (tree cst = cm.maybe_get_constant (sid))
+  gcc_assert (sval);
+  if (tree cst = sval->maybe_get_constant ())
     {
       gcc_assert (CONSTANT_CLASS_P (cst));
       /* FIXME: should we canonicalize which svalue is the constant
 	 when there are multiple equal constants?  */
       m_constant = cst;
-      m_cst_sid = sid;
+      m_cst_sval = sval;
     }
-  m_vars.safe_push (sid);
+  m_vars.safe_push (sval);
 }
 
 /* Remove SID from this equivalence class.
@@ -263,16 +363,16 @@ equiv_class::add (svalue_id sid, const constraint_manager &cm)
    a possible leak).  */
 
 bool
-equiv_class::del (svalue_id sid)
+equiv_class::del (const svalue *sval)
 {
-  gcc_assert (!sid.null_p ());
-  gcc_assert (sid != m_cst_sid);
+  gcc_assert (sval);
+  gcc_assert (sval != m_cst_sval);
 
   int i;
-  svalue_id *iv;
+  const svalue *iv;
   FOR_EACH_VEC_ELT (m_vars, i, iv)
     {
-      if (*iv == sid)
+      if (iv == sval)
 	{
 	  m_vars[i] = m_vars[m_vars.length () - 1];
 	  m_vars.pop ();
@@ -280,7 +380,7 @@ equiv_class::del (svalue_id sid)
 	}
     }
 
-  /* SID must be in the class.  */
+  /* SVAL must be in the class.  */
   gcc_unreachable ();
   return false;
 }
@@ -288,46 +388,33 @@ equiv_class::del (svalue_id sid)
 /* Get a representative member of this class, for handling cases
    where the IDs can change mid-traversal.  */
 
-svalue_id
+const svalue *
 equiv_class::get_representative () const
 {
-  if (!m_cst_sid.null_p ())
-    return m_cst_sid;
-  else
-    {
-      gcc_assert (m_vars.length () > 0);
-      return m_vars[0];
-    }
-}
-
-/* Remap all svalue_ids within this equiv_class using MAP.  */
-
-void
-equiv_class::remap_svalue_ids (const svalue_id_map &map)
-{
-  int i;
-  svalue_id *iv;
-  FOR_EACH_VEC_ELT (m_vars, i, iv)
-    map.update (iv);
-  map.update (&m_cst_sid);
+  gcc_assert (m_vars.length () > 0);
+  return m_vars[0];
 }
 
 /* Comparator for use by equiv_class::canonicalize.  */
 
 static int
-svalue_id_cmp_by_id (const void *p1, const void *p2)
+svalue_cmp_by_ptr (const void *p1, const void *p2)
 {
-  const svalue_id *sid1 = (const svalue_id *)p1;
-  const svalue_id *sid2 = (const svalue_id *)p2;
-  return sid1->as_int () - sid2->as_int ();
+  const svalue *sval1 = *(const svalue * const *)p1;
+  const svalue *sval2 = *(const svalue * const *)p2;
+  if (sval1 < sval2)
+    return 1;
+  if (sval1 > sval2)
+    return -1;
+  return 0;
 }
 
-/* Sort the svalues_ids within this equiv_class.  */
+/* Sort the svalues within this equiv_class.  */
 
 void
 equiv_class::canonicalize ()
 {
-  m_vars.qsort (svalue_id_cmp_by_id);
+  m_vars.qsort (svalue_cmp_by_ptr);
 }
 
 /* Get a debug string for C_OP.  */
@@ -438,6 +525,32 @@ constraint::operator== (const constraint &other) const
   return true;
 }
 
+/* Return true if this constraint is implied by OTHER.  */
+
+bool
+constraint::implied_by (const constraint &other,
+			 const constraint_manager &cm) const
+{
+  if (m_lhs == other.m_lhs)
+    if (tree rhs_const = m_rhs.get_obj (cm).get_any_constant ())
+      if (tree other_rhs_const = other.m_rhs.get_obj (cm).get_any_constant ())
+	if (m_lhs.get_obj (cm).get_any_constant () == NULL_TREE)
+	  if (m_op == other.m_op)
+	    switch (m_op)
+	      {
+	      default:
+		break;
+	      case CONSTRAINT_LE:
+	      case CONSTRAINT_LT:
+		if (compare_constants (rhs_const,
+				       GE_EXPR,
+				       other_rhs_const).is_true ())
+		  return true;
+		break;
+	      }
+  return false;
+}
+
 /* class equiv_class_id.  */
 
 /* Get the underlying equiv_class for this ID from CM.  */
@@ -473,7 +586,8 @@ equiv_class_id::print (pretty_printer *pp) const
 
 constraint_manager::constraint_manager (const constraint_manager &other)
 : m_equiv_classes (other.m_equiv_classes.length ()),
-  m_constraints (other.m_constraints.length ())
+  m_constraints (other.m_constraints.length ()),
+  m_mgr (other.m_mgr)
 {
   int i;
   equiv_class *ec;
@@ -575,34 +689,54 @@ constraint_manager::print (pretty_printer *pp) const
   pp_printf (pp, "}");
 }
 
-/* Dump a multiline representation of this constraint_manager to PP
+/* Dump a representation of this constraint_manager to PP
    (which must support %E for trees).  */
 
 void
-constraint_manager::dump_to_pp (pretty_printer *pp) const
+constraint_manager::dump_to_pp (pretty_printer *pp, bool multiline) const
 {
-  // TODO
-  pp_string (pp, "  equiv classes:");
-  pp_newline (pp);
+  if (multiline)
+    pp_string (pp, "  ");
+  pp_string (pp, "equiv classes:");
+  if (multiline)
+    pp_newline (pp);
+  else
+    pp_string (pp, " {");
   int i;
   equiv_class *ec;
   FOR_EACH_VEC_ELT (m_equiv_classes, i, ec)
     {
-      pp_string (pp, "    ");
+      if (multiline)
+	pp_string (pp, "    ");
+      else if (i > 0)
+	pp_string (pp, ", ");
       equiv_class_id (i).print (pp);
       pp_string (pp, ": ");
       ec->print (pp);
-      pp_newline (pp);
+      if (multiline)
+	pp_newline (pp);
     }
-  pp_string (pp, "  constraints:");
-  pp_newline (pp);
+  if (multiline)
+    pp_string (pp, "  ");
+  else
+    pp_string (pp, "}");
+  pp_string (pp, "constraints:");
+  if (multiline)
+    pp_newline (pp);
+  else
+    pp_string (pp, "{");
   constraint *c;
   FOR_EACH_VEC_ELT (m_constraints, i, c)
     {
-      pp_printf (pp, "    %i: ", i);
+      if (multiline)
+	pp_string (pp, "    ");
+      pp_printf (pp, "%i: ", i);
       c->print (pp, *this);
-      pp_newline (pp);
+      if (multiline)
+	pp_newline (pp);
     }
+  if (!multiline)
+    pp_string (pp, "}");
 }
 
 /* Dump a multiline representation of this constraint_manager to FP.  */
@@ -614,7 +748,7 @@ constraint_manager::dump (FILE *fp) const
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
   pp.buffer->stream = fp;
-  dump_to_pp (&pp);
+  dump_to_pp (&pp, true);
   pp_flush (&pp);
 }
 
@@ -639,13 +773,51 @@ debug (const constraint_manager &cm)
    Return false if the constraint contradicts existing knowledge.  */
 
 bool
-constraint_manager::add_constraint (svalue_id lhs,
-				    enum tree_code op,
-				    svalue_id rhs)
+constraint_manager::add_constraint (const svalue *lhs,
+				     enum tree_code op,
+				     const svalue *rhs)
 {
+  lhs = lhs->unwrap_any_unmergeable ();
+  rhs = rhs->unwrap_any_unmergeable ();
+
+  /* Nothing can be known about unknown values.  */
+  if (lhs->get_kind () == SK_UNKNOWN
+      || rhs->get_kind () == SK_UNKNOWN)
+    /* Not a contradiction.  */
+    return true;
+
+  /* Check the conditions on svalues.  */
+  {
+    tristate t_cond = eval_condition (lhs, op, rhs);
+
+    /* If we already have the condition, do nothing.  */
+    if (t_cond.is_true ())
+      return true;
+
+    /* Reject a constraint that would contradict existing knowledge, as
+       unsatisfiable.  */
+    if (t_cond.is_false ())
+      return false;
+  }
+
   equiv_class_id lhs_ec_id = get_or_add_equiv_class (lhs);
   equiv_class_id rhs_ec_id = get_or_add_equiv_class (rhs);
-  return add_constraint (lhs_ec_id, op,rhs_ec_id);
+
+  /* Check the stronger conditions on ECs.  */
+  {
+    tristate t = eval_condition (lhs_ec_id, op, rhs_ec_id);
+
+    /* Discard constraints that are already known.  */
+    if (t.is_true ())
+      return true;
+
+    /* Reject unsatisfiable constraints.  */
+    if (t.is_false ())
+      return false;
+  }
+
+  add_unknown_constraint (lhs_ec_id, op, rhs_ec_id);
+  return true;
 }
 
 /* Attempt to add the constraint LHS_EC_ID OP RHS_EC_ID to this
@@ -655,8 +827,8 @@ constraint_manager::add_constraint (svalue_id lhs,
 
 bool
 constraint_manager::add_constraint (equiv_class_id lhs_ec_id,
-				    enum tree_code op,
-				    equiv_class_id rhs_ec_id)
+				     enum tree_code op,
+				     equiv_class_id rhs_ec_id)
 {
   tristate t = eval_condition (lhs_ec_id, op, rhs_ec_id);
 
@@ -668,6 +840,18 @@ constraint_manager::add_constraint (equiv_class_id lhs_ec_id,
   if (t.is_false ())
     return false;
 
+  add_unknown_constraint (lhs_ec_id, op, rhs_ec_id);
+  return true;
+}
+
+/* Add the constraint LHS_EC_ID OP RHS_EC_ID to this constraint_manager,
+   where the constraint has already been checked for being "unknown".  */
+
+void
+constraint_manager::add_unknown_constraint (equiv_class_id lhs_ec_id,
+					     enum tree_code op,
+					     equiv_class_id rhs_ec_id)
+{
   gcc_assert (lhs_ec_id != rhs_ec_id);
 
   /* For now, simply accumulate constraints, without attempting any further
@@ -681,14 +865,14 @@ constraint_manager::add_constraint (equiv_class_id lhs_ec_id,
 	const equiv_class &rhs_ec_obj = rhs_ec_id.get_obj (*this);
 
 	int i;
-	svalue_id *sid;
-	FOR_EACH_VEC_ELT (rhs_ec_obj.m_vars, i, sid)
-	  lhs_ec_obj.add (*sid, *this);
+	const svalue *sval;
+	FOR_EACH_VEC_ELT (rhs_ec_obj.m_vars, i, sval)
+	  lhs_ec_obj.add (sval);
 
 	if (rhs_ec_obj.m_constant)
 	  {
 	    lhs_ec_obj.m_constant = rhs_ec_obj.m_constant;
-	    lhs_ec_obj.m_cst_sid = rhs_ec_obj.m_cst_sid;
+	    lhs_ec_obj.m_cst_sval = rhs_ec_obj.m_cst_sval;
 	  }
 
 	/* Drop rhs equivalence class, overwriting it with the
@@ -718,6 +902,12 @@ constraint_manager::add_constraint (equiv_class_id lhs_ec_id,
 	    if (c->m_rhs == final_ec_id)
 	      c->m_rhs = rhs_ec_id;
 	  }
+
+	/* We may now have self-comparisons due to the merger; these
+	   constraints should be removed.  */
+	unsigned read_index, write_index;
+	VEC_ORDERED_REMOVE_IF (m_constraints, read_index, write_index, c,
+			       (c->m_lhs == c->m_rhs));
       }
       break;
     case GE_EXPR:
@@ -740,7 +930,6 @@ constraint_manager::add_constraint (equiv_class_id lhs_ec_id,
       break;
     }
   validate ();
-  return true;
 }
 
 /* Subroutine of constraint_manager::add_constraint, for handling all
@@ -748,11 +937,20 @@ constraint_manager::add_constraint (equiv_class_id lhs_ec_id,
 
 void
 constraint_manager::add_constraint_internal (equiv_class_id lhs_id,
-					     enum constraint_op c_op,
-					     equiv_class_id rhs_id)
+					      enum constraint_op c_op,
+					      equiv_class_id rhs_id)
 {
+  constraint new_c (lhs_id, c_op, rhs_id);
+
+  /* Remove existing constraints that would be implied by the
+     new constraint.  */
+  unsigned read_index, write_index;
+  constraint *c;
+  VEC_ORDERED_REMOVE_IF (m_constraints, read_index, write_index, c,
+			 (c->implied_by (new_c, *this)));
+
   /* Add the constraint.  */
-  m_constraints.safe_push (constraint (lhs_id, c_op, rhs_id));
+  m_constraints.safe_push (new_c);
 
   if (!flag_analyzer_transitivity)
     return;
@@ -762,8 +960,8 @@ constraint_manager::add_constraint_internal (equiv_class_id lhs_id,
       /* The following can potentially add EQ_EXPR facts, which could lead
 	 to ECs being merged, which would change the meaning of the EC IDs.
 	 Hence we need to do this via representatives.  */
-      svalue_id lhs = lhs_id.get_obj (*this).get_representative ();
-      svalue_id rhs = rhs_id.get_obj (*this).get_representative ();
+      const svalue *lhs = lhs_id.get_obj (*this).get_representative ();
+      const svalue *rhs = rhs_id.get_obj (*this).get_representative ();
 
       /* We have LHS </<= RHS */
 
@@ -833,13 +1031,13 @@ constraint_manager::add_constraint_internal (equiv_class_id lhs_id,
 		      range r (bound (lhs_const, c_op == CONSTRAINT_LE),
 			       bound (other_rhs_const,
 				      other->m_op == CONSTRAINT_LE));
-		      tree constant;
-		      if (r.constrained_to_single_element (&constant))
+		      if (tree constant = r.constrained_to_single_element ())
 			{
-			  svalue_id cst_sid = get_sid_for_constant (constant);
+			  const svalue *cst_sval
+			    = m_mgr->get_or_create_constant_svalue (constant);
 			  add_constraint
 			    (rhs_id, EQ_EXPR,
-			     get_or_add_equiv_class (cst_sid));
+			     get_or_add_equiv_class (cst_sval));
 			  return;
 			}
 		    }
@@ -865,13 +1063,13 @@ constraint_manager::add_constraint_internal (equiv_class_id lhs_id,
 				      other->m_op == CONSTRAINT_LE),
 			       bound (rhs_const,
 				      c_op == CONSTRAINT_LE));
-		      tree constant;
-		      if (r.constrained_to_single_element (&constant))
+		      if (tree constant = r.constrained_to_single_element ())
 			{
-			  svalue_id cst_sid = get_sid_for_constant (constant);
+			  const svalue *cst_sval
+			    = m_mgr->get_or_create_constant_svalue (constant);
 			  add_constraint
 			    (lhs_id, EQ_EXPR,
-			     get_or_add_equiv_class (cst_sid));
+			     get_or_add_equiv_class (cst_sval));
 			  return;
 			}
 		    }
@@ -887,11 +1085,13 @@ constraint_manager::add_constraint_internal (equiv_class_id lhs_id,
     }
 }
 
-/* Look for SID within the equivalence classes of this constraint_manager;
-   if found, write the id to *OUT and return true, otherwise return false.  */
+/* Look for SVAL within the equivalence classes of this constraint_manager;
+   if found, return true, writing the id to *OUT if OUT is non-NULL,
+   otherwise return false.  */
 
 bool
-constraint_manager::get_equiv_class_by_sid (svalue_id sid, equiv_class_id *out) const
+constraint_manager::get_equiv_class_by_svalue (const svalue *sval,
+					       equiv_class_id *out) const
 {
   /* TODO: should we have a map, rather than these searches?  */
   int i;
@@ -899,31 +1099,41 @@ constraint_manager::get_equiv_class_by_sid (svalue_id sid, equiv_class_id *out) 
   FOR_EACH_VEC_ELT (m_equiv_classes, i, ec)
     {
       int j;
-      svalue_id *iv;
+      const svalue *iv;
       FOR_EACH_VEC_ELT (ec->m_vars, j, iv)
-	if (*iv == sid)
+	if (iv == sval)
 	  {
-	    *out = equiv_class_id (i);
+	    if (out)
+	      *out = equiv_class_id (i);
 	    return true;
 	  }
     }
   return false;
 }
 
-/* Ensure that SID has an equivalence class within this constraint_manager;
+/* Ensure that SVAL has an equivalence class within this constraint_manager;
    return the ID of the class.  */
 
 equiv_class_id
-constraint_manager::get_or_add_equiv_class (svalue_id sid)
+constraint_manager::get_or_add_equiv_class (const svalue *sval)
 {
   equiv_class_id result (-1);
 
-  /* Try svalue_id match.  */
-  if (get_equiv_class_by_sid (sid, &result))
+  gcc_assert (sval->get_kind () != SK_UNKNOWN);
+
+  /* Convert all NULL pointers to (void *) to avoid state explosions
+     involving all of the various (foo *)NULL vs (bar *)NULL.  */
+  if (POINTER_TYPE_P (sval->get_type ()))
+    if (tree cst = sval->maybe_get_constant ())
+      if (zerop (cst))
+	sval = m_mgr->get_or_create_constant_svalue (null_pointer_node);
+
+  /* Try svalue match.  */
+  if (get_equiv_class_by_svalue (sval, &result))
     return result;
 
   /* Try equality of constants.  */
-  if (tree cst = maybe_get_constant (sid))
+  if (tree cst = sval->maybe_get_constant ())
     {
       int i;
       equiv_class *ec;
@@ -936,7 +1146,7 @@ constraint_manager::get_or_add_equiv_class (svalue_id sid)
 				   cst, ec->m_constant);
 	    if (eq == boolean_true_node)
 	      {
-		ec->add (sid, *this);
+		ec->add (sval);
 		return equiv_class_id (i);
 	      }
 	  }
@@ -945,12 +1155,12 @@ constraint_manager::get_or_add_equiv_class (svalue_id sid)
 
   /* Not found.  */
   equiv_class *new_ec = new equiv_class ();
-  new_ec->add (sid, *this);
+  new_ec->add (sval);
   m_equiv_classes.safe_push (new_ec);
 
   equiv_class_id new_id (m_equiv_classes.length () - 1);
 
-  if (maybe_get_constant (sid))
+  if (sval->maybe_get_constant ())
     {
       /* If we have a new EC for a constant, add constraints comparing this
 	 to other constants we may have (so that we accumulate the transitive
@@ -975,10 +1185,10 @@ constraint_manager::get_or_add_equiv_class (svalue_id sid)
 		add_constraint_internal (new_id, CONSTRAINT_LT, other_id);
 	      else if (lt == boolean_false_node)
 		add_constraint_internal (other_id, CONSTRAINT_LT, new_id);
-	      /* Refresh new_id, in case ECs were merged.  SID should always
+	      /* Refresh new_id, in case ECs were merged.  SVAL should always
 		 be present by now, so this should never lead to a
 		 recursion.  */
-	      new_id = get_or_add_equiv_class (sid);
+	      new_id = get_or_add_equiv_class (sval);
 	    }
 	}
     }
@@ -991,7 +1201,7 @@ constraint_manager::get_or_add_equiv_class (svalue_id sid)
 tristate
 constraint_manager::eval_condition (equiv_class_id lhs_ec,
 				    enum tree_code op,
-				    equiv_class_id rhs_ec)
+				    equiv_class_id rhs_ec) const
 {
   if (lhs_ec == rhs_ec)
     {
@@ -1015,12 +1225,10 @@ constraint_manager::eval_condition (equiv_class_id lhs_ec,
   tree rhs_const = rhs_ec.get_obj (*this).get_any_constant ();
   if (lhs_const && rhs_const)
     {
-      tree comparison
-	= fold_binary (op, boolean_type_node, lhs_const, rhs_const);
-      if (comparison == boolean_true_node)
-	return tristate (tristate::TS_TRUE);
-      if (comparison == boolean_false_node)
-	return tristate (tristate::TS_FALSE);
+      tristate result_for_constants
+	= compare_constants (lhs_const, op, rhs_const);
+      if (result_for_constants.is_known ())
+	return result_for_constants;
     }
 
   enum tree_code swapped_op = swap_tree_comparison (op);
@@ -1051,43 +1259,241 @@ constraint_manager::eval_condition (equiv_class_id lhs_ec,
   return tristate (tristate::TS_UNKNOWN);
 }
 
-/* Evaluate the condition LHS OP RHS, creating equiv_class instances for
-   LHS and RHS if they aren't already in equiv_classes.  */
-
-tristate
-constraint_manager::eval_condition (svalue_id lhs,
-				    enum tree_code op,
-				    svalue_id rhs)
+range
+constraint_manager::get_ec_bounds (equiv_class_id ec_id) const
 {
-  return eval_condition (get_or_add_equiv_class (lhs),
-			 op,
-			 get_or_add_equiv_class (rhs));
+  range result;
+
+  int i;
+  constraint *c;
+  FOR_EACH_VEC_ELT (m_constraints, i, c)
+    {
+      if (c->m_lhs == ec_id)
+	{
+	  if (tree other_cst = c->m_rhs.get_obj (*this).get_any_constant ())
+	    switch (c->m_op)
+	      {
+	      default:
+		gcc_unreachable ();
+	      case CONSTRAINT_NE:
+		continue;
+
+	      case CONSTRAINT_LT:
+		/* We have "EC_ID < OTHER_CST".  */
+		result.m_upper_bound = bound (other_cst, false);
+		break;
+
+	      case CONSTRAINT_LE:
+		/* We have "EC_ID <= OTHER_CST".  */
+		result.m_upper_bound = bound (other_cst, true);
+		break;
+	      }
+	}
+      if (c->m_rhs == ec_id)
+	{
+	  if (tree other_cst = c->m_lhs.get_obj (*this).get_any_constant ())
+	    switch (c->m_op)
+	      {
+	      default:
+		gcc_unreachable ();
+	      case CONSTRAINT_NE:
+		continue;
+
+	      case CONSTRAINT_LT:
+		/* We have "OTHER_CST < EC_ID"
+		   i.e. "EC_ID > OTHER_CST".  */
+		result.m_lower_bound = bound (other_cst, false);
+		break;
+
+	      case CONSTRAINT_LE:
+		/* We have "OTHER_CST <= EC_ID"
+		   i.e. "EC_ID >= OTHER_CST".  */
+		result.m_lower_bound = bound (other_cst, true);
+		break;
+	      }
+	}
+    }
+
+  return result;
 }
 
-/* Delete any information about svalue_id instances identified by P.
+/* Evaluate the condition LHS_EC OP RHS_CONST, avoiding the creation
+   of equiv_class instances.  */
+
+tristate
+constraint_manager::eval_condition (equiv_class_id lhs_ec,
+				    enum tree_code op,
+				    tree rhs_const) const
+{
+  gcc_assert (!lhs_ec.null_p ());
+  gcc_assert (CONSTANT_CLASS_P (rhs_const));
+
+  if (tree lhs_const = lhs_ec.get_obj (*this).get_any_constant ())
+    return compare_constants (lhs_const, op, rhs_const);
+
+  /* Check for known inequalities of the form
+       (LHS_EC != OTHER_CST) or (OTHER_CST != LHS_EC).
+     If RHS_CONST == OTHER_CST, then we also know that LHS_EC != OTHER_CST.
+     For example, we might have the constraint
+       ptr != (void *)0
+     so we want the condition
+       ptr == (foo *)0
+     to be false.  */
+  int i;
+  constraint *c;
+  FOR_EACH_VEC_ELT (m_constraints, i, c)
+    {
+      if (c->m_op == CONSTRAINT_NE)
+	{
+	  if (c->m_lhs == lhs_ec)
+	    {
+	      if (tree other_cst = c->m_rhs.get_obj (*this).get_any_constant ())
+		if (compare_constants
+		      (rhs_const, EQ_EXPR, other_cst).is_true ())
+		  {
+		    switch (op)
+		      {
+		      case EQ_EXPR:
+			return tristate (tristate::TS_FALSE);
+		      case NE_EXPR:
+			return tristate (tristate::TS_TRUE);
+		      default:
+			break;
+		      }
+		  }
+	    }
+	  if (c->m_rhs == lhs_ec)
+	    {
+	      if (tree other_cst = c->m_lhs.get_obj (*this).get_any_constant ())
+		if (compare_constants
+		      (rhs_const, EQ_EXPR, other_cst).is_true ())
+		  {
+		    switch (op)
+		      {
+		      case EQ_EXPR:
+			return tristate (tristate::TS_FALSE);
+		      case NE_EXPR:
+			return tristate (tristate::TS_TRUE);
+		      default:
+			break;
+		      }
+		  }
+	    }
+	}
+    }
+  /* Look at existing bounds on LHS_EC.  */
+  range lhs_bounds = get_ec_bounds (lhs_ec);
+  return lhs_bounds.eval_condition (op, rhs_const);
+}
+
+/* Evaluate the condition LHS OP RHS, without modifying this
+   constraint_manager (avoiding the creation of equiv_class instances).  */
+
+tristate
+constraint_manager::eval_condition (const svalue *lhs,
+				    enum tree_code op,
+				    const svalue *rhs) const
+{
+  lhs = lhs->unwrap_any_unmergeable ();
+  rhs = rhs->unwrap_any_unmergeable ();
+
+  /* Nothing can be known about unknown or poisoned values.  */
+  if (lhs->get_kind () == SK_UNKNOWN
+      || lhs->get_kind () == SK_POISONED
+      || rhs->get_kind () == SK_UNKNOWN
+      || rhs->get_kind () == SK_POISONED)
+    return tristate (tristate::TS_UNKNOWN);
+
+  if (lhs == rhs
+      && !(FLOAT_TYPE_P (lhs->get_type ())
+	   || FLOAT_TYPE_P (rhs->get_type ())))
+    {
+      switch (op)
+	{
+	case EQ_EXPR:
+	case GE_EXPR:
+	case LE_EXPR:
+	  return tristate (tristate::TS_TRUE);
+
+	case NE_EXPR:
+	case GT_EXPR:
+	case LT_EXPR:
+	  return tristate (tristate::TS_FALSE);
+	default:
+	  break;
+	}
+    }
+
+  equiv_class_id lhs_ec (-1);
+  equiv_class_id rhs_ec (-1);
+  get_equiv_class_by_svalue (lhs, &lhs_ec);
+  get_equiv_class_by_svalue (rhs, &rhs_ec);
+  if (!lhs_ec.null_p () && !rhs_ec.null_p ())
+    {
+      tristate result_for_ecs
+	= eval_condition (lhs_ec, op, rhs_ec);
+      if (result_for_ecs.is_known ())
+	return result_for_ecs;
+    }
+
+  /* If at least one is not in an EC, we have no constraints
+     comparing LHS and RHS yet.
+     They might still be comparable if one (or both) is a constant.
+
+     Alternatively, we can also get here if we had ECs but they weren't
+     comparable.  Again, constant comparisons might give an answer.  */
+  tree lhs_const = lhs->maybe_get_constant ();
+  tree rhs_const = rhs->maybe_get_constant ();
+  if (lhs_const && rhs_const)
+    {
+      tristate result_for_constants
+	= compare_constants (lhs_const, op, rhs_const);
+      if (result_for_constants.is_known ())
+	return result_for_constants;
+    }
+
+  if (!lhs_ec.null_p ())
+    {
+      if (rhs_const)
+	return eval_condition (lhs_ec, op, rhs_const);
+    }
+  if (!rhs_ec.null_p ())
+    {
+      if (lhs_const)
+	{
+	  enum tree_code swapped_op = swap_tree_comparison (op);
+	  return eval_condition (rhs_ec, swapped_op, lhs_const);
+	}
+    }
+
+  return tristate (tristate::TS_UNKNOWN);
+}
+
+/* Delete any information about svalues identified by P.
    Such instances are removed from equivalence classes, and any
    redundant ECs and constraints are also removed.
    Accumulate stats into STATS.  */
 
+template <typename PurgeCriteria>
 void
-constraint_manager::purge (const purge_criteria &p, purge_stats *stats)
+constraint_manager::purge (const PurgeCriteria &p, purge_stats *stats)
 {
-  /* Delete any svalue_ids identified by P within the various equivalence
+  /* Delete any svalues identified by P within the various equivalence
      classes.  */
   for (unsigned ec_idx = 0; ec_idx < m_equiv_classes.length (); )
     {
       equiv_class *ec = m_equiv_classes[ec_idx];
 
       int i;
-      svalue_id *pv;
+      const svalue *sval;
       bool delete_ec = false;
-      FOR_EACH_VEC_ELT (ec->m_vars, i, pv)
+      FOR_EACH_VEC_ELT (ec->m_vars, i, sval)
 	{
-	  if (*pv == ec->m_cst_sid)
+	  if (sval == ec->m_cst_sval)
 	    continue;
-	  if (p.should_purge_p (*pv))
+	  if (p.should_purge_p (sval))
 	    {
-	      if (ec->del (*pv))
+	      if (ec->del (sval))
 		if (!ec->m_constant)
 		  delete_ec = true;
 	    }
@@ -1190,20 +1596,43 @@ constraint_manager::purge (const purge_criteria &p, purge_stats *stats)
   validate ();
 }
 
-/* Remap all svalue_ids within this constraint_manager using MAP.  */
+/* Implementation of PurgeCriteria: purge svalues that are not live
+   with respect to LIVE_SVALUES and MODEL.  */
+
+class dead_svalue_purger
+{
+public:
+  dead_svalue_purger (const svalue_set &live_svalues,
+		      const region_model *model)
+  : m_live_svalues (live_svalues), m_model (model)
+  {
+  }
+
+  bool should_purge_p (const svalue *sval) const
+  {
+    return !sval->live_p (m_live_svalues, m_model);
+  }
+
+private:
+  const svalue_set &m_live_svalues;
+  const region_model *m_model;
+};
+
+/* Purge dead svalues from equivalence classes and update constraints
+   accordingly.  */
 
 void
-constraint_manager::remap_svalue_ids (const svalue_id_map &map)
+constraint_manager::
+on_liveness_change (const svalue_set &live_svalues,
+		    const region_model *model)
 {
-  int i;
-  equiv_class *ec;
-  FOR_EACH_VEC_ELT (m_equiv_classes, i, ec)
-    ec->remap_svalue_ids (map);
+  dead_svalue_purger p (live_svalues, model);
+  purge (p, NULL);
 }
 
 /* Comparator for use by constraint_manager::canonicalize.
    Sort a pair of equiv_class instances, using the representative
-   svalue_id as a sort key.  */
+   svalue as a sort key.  */
 
 static int
 equiv_class_cmp (const void *p1, const void *p2)
@@ -1211,10 +1640,17 @@ equiv_class_cmp (const void *p1, const void *p2)
   const equiv_class *ec1 = *(const equiv_class * const *)p1;
   const equiv_class *ec2 = *(const equiv_class * const *)p2;
 
-  svalue_id rep1 = ec1->get_representative ();
-  svalue_id rep2 = ec2->get_representative ();
+  const svalue *rep1 = ec1->get_representative ();
+  const svalue *rep2 = ec2->get_representative ();
 
-  return rep1.as_int () - rep2.as_int ();
+  gcc_assert (rep1);
+  gcc_assert (rep2);
+
+  if (rep1 < rep2)
+    return 1;
+  if (rep1 > rep2)
+    return -1;
+  return 0;
 }
 
 /* Comparator for use by constraint_manager::canonicalize.
@@ -1234,48 +1670,79 @@ constraint_cmp (const void *p1, const void *p2)
   return c1->m_op - c2->m_op;
 }
 
-/* Reorder the equivalence classes and constraints within this
-   constraint_manager into a canonical order, to increase the
+/* Purge redundant equivalence classes and constraints, and reorder them
+   within this constraint_manager into a canonical order, to increase the
    chances of finding equality with another instance.  */
 
 void
-constraint_manager::canonicalize (unsigned num_svalue_ids)
+constraint_manager::canonicalize ()
 {
-  /* First, sort svalue_ids within the ECs.  */
+  /* First, sort svalues within the ECs.  */
   unsigned i;
   equiv_class *ec;
   FOR_EACH_VEC_ELT (m_equiv_classes, i, ec)
     ec->canonicalize ();
 
-  /* Next, sort the ECs into a canonical order.  */
+  /* TODO: remove constraints where both sides have a constant, and are
+     thus implicit.  But does this break transitivity?  */
 
-  /* We will need to remap the equiv_class_ids in the constraints,
+  /* We will be purging and reordering ECs.
+     We will need to remap the equiv_class_ids in the constraints,
      so we need to store the original index of each EC.
-     Build a lookup table, mapping from representative svalue_id
-     to the original equiv_class_id of that svalue_id.  */
-  auto_vec<equiv_class_id> original_ec_id (num_svalue_ids);
-  for (i = 0; i < num_svalue_ids; i++)
-    original_ec_id.quick_push (equiv_class_id::null ());
+     Build a lookup table, mapping from the representative svalue
+     to the original equiv_class_id of that svalue.  */
+  hash_map<const svalue *, equiv_class_id> original_ec_id;
+  const unsigned orig_num_equiv_classes = m_equiv_classes.length ();
   FOR_EACH_VEC_ELT (m_equiv_classes, i, ec)
     {
-      svalue_id rep = ec->get_representative ();
-      gcc_assert (!rep.null_p ());
-      original_ec_id[rep.as_int ()] = i;
+      const svalue *rep = ec->get_representative ();
+      gcc_assert (rep);
+      original_ec_id.put (rep, i);
     }
 
-  /* Sort the equivalence classes.  */
+  /* Find ECs used by constraints.  */
+  hash_set<const equiv_class *> used_ecs;
+  constraint *c;
+  FOR_EACH_VEC_ELT (m_constraints, i, c)
+    {
+      used_ecs.add (m_equiv_classes[c->m_lhs.as_int ()]);
+      used_ecs.add (m_equiv_classes[c->m_rhs.as_int ()]);
+    }
+
+  /* Purge unused ECs: those that aren't used by constraints and
+     that effectively have only one svalue (either in m_constant
+     or in m_vars).  */
+  {
+    /* "unordered remove if" from a vec.  */
+    unsigned i = 0;
+    while (i < m_equiv_classes.length ())
+      {
+	equiv_class *ec = m_equiv_classes[i];
+	if (!used_ecs.contains (ec)
+	    && ((ec->m_vars.length () < 2 && ec->m_constant == NULL_TREE)
+		|| (ec->m_vars.length () == 0)))
+	  {
+	    m_equiv_classes.unordered_remove (i);
+	    delete ec;
+	  }
+	else
+	  i++;
+      }
+  }
+
+  /* Next, sort the surviving ECs into a canonical order.  */
   m_equiv_classes.qsort (equiv_class_cmp);
 
   /* Populate ec_id_map based on the old vs new EC ids.  */
-  one_way_id_map<equiv_class_id> ec_id_map (m_equiv_classes.length ());
+  one_way_id_map<equiv_class_id> ec_id_map (orig_num_equiv_classes);
   FOR_EACH_VEC_ELT (m_equiv_classes, i, ec)
     {
-      svalue_id rep = ec->get_representative ();
-      ec_id_map.put (original_ec_id[rep.as_int ()], i);
+      const svalue *rep = ec->get_representative ();
+      gcc_assert (rep);
+      ec_id_map.put (*original_ec_id.get (rep), i);
     }
 
-  /* Update the EC ids within the constraints.  */
-  constraint *c;
+  /* Use ec_id_map to update the EC ids within the constraints.  */
   FOR_EACH_VEC_ELT (m_constraints, i, c)
     {
       ec_id_map.update (&c->m_lhs);
@@ -1286,37 +1753,6 @@ constraint_manager::canonicalize (unsigned num_svalue_ids)
   m_constraints.qsort (constraint_cmp);
 }
 
-/* A concrete subclass of constraint_manager for use when
-   merging two constraint_manager into a third constraint_manager,
-   each of which has its own region_model.
-   Calls are delegated to the constraint_manager for the merged model,
-   and thus affect its region_model.  */
-
-class cleaned_constraint_manager : public constraint_manager
-{
-public:
-  cleaned_constraint_manager (constraint_manager *merged) : m_merged (merged) {}
-
-  constraint_manager *clone (region_model *) const FINAL OVERRIDE
-  {
-    gcc_unreachable ();
-  }
-  tree maybe_get_constant (svalue_id sid) const FINAL OVERRIDE
-  {
-    return m_merged->maybe_get_constant (sid);
-  }
-  svalue_id get_sid_for_constant (tree cst) const FINAL OVERRIDE
-  {
-    return m_merged->get_sid_for_constant (cst);
-  }
-  virtual int get_num_svalues () const FINAL OVERRIDE
-  {
-    return m_merged->get_num_svalues ();
-  }
-private:
-  constraint_manager *m_merged;
-};
-
 /* Concrete subclass of fact_visitor for use by constraint_manager::merge.
    For every fact in CM_A, see if it is also true in *CM_B.  Add such
    facts to *OUT.  */
@@ -1324,14 +1760,25 @@ private:
 class merger_fact_visitor : public fact_visitor
 {
 public:
-  merger_fact_visitor (constraint_manager *cm_b,
-		       constraint_manager *out)
-  : m_cm_b (cm_b), m_out (out)
+  merger_fact_visitor (const constraint_manager *cm_b,
+		       constraint_manager *out,
+		       const model_merger &merger)
+  : m_cm_b (cm_b), m_out (out), m_merger (merger)
   {}
 
-  void on_fact (svalue_id lhs, enum tree_code code, svalue_id rhs)
+  void on_fact (const svalue *lhs, enum tree_code code, const svalue *rhs)
     FINAL OVERRIDE
   {
+    /* Special-case for widening.  */
+    if (lhs->get_kind () == SK_WIDENING)
+      if (!m_cm_b->get_equiv_class_by_svalue (lhs, NULL))
+	{
+	  /* LHS isn't constrained within m_cm_b.  */
+	  bool sat = m_out->add_constraint (lhs, code, rhs);
+	  gcc_assert (sat);
+	  return;
+	}
+
     if (m_cm_b->eval_condition (lhs, code, rhs).is_true ())
       {
 	bool sat = m_out->add_constraint (lhs, code, rhs);
@@ -1340,8 +1787,9 @@ public:
   }
 
 private:
-  constraint_manager *m_cm_b;
+  const constraint_manager *m_cm_b;
   constraint_manager *m_out;
+  const model_merger &m_merger;
 };
 
 /* Use MERGER to merge CM_A and CM_B into *OUT.
@@ -1356,90 +1804,12 @@ constraint_manager::merge (const constraint_manager &cm_a,
 			   constraint_manager *out,
 			   const model_merger &merger)
 {
-  gcc_assert (merger.m_sid_mapping);
-
-  /* Map svalue_ids in each equiv class from both sources
-     to the merged region_model, dropping ids that don't survive merger,
-     and potentially creating svalues in *OUT for constants.  */
-  cleaned_constraint_manager cleaned_cm_a (out);
-  const one_way_svalue_id_map &map_a_to_m
-    = merger.m_sid_mapping->m_map_from_a_to_m;
-  clean_merger_input (cm_a, map_a_to_m, &cleaned_cm_a);
-
-  cleaned_constraint_manager cleaned_cm_b (out);
-  const one_way_svalue_id_map &map_b_to_m
-    = merger.m_sid_mapping->m_map_from_b_to_m;
-  clean_merger_input (cm_b, map_b_to_m, &cleaned_cm_b);
-
-  /* At this point, the two cleaned CMs have ECs and constraints referring
-     to svalues in the merged region model, but both of them have separate
-     ECs.  */
-
   /* Merge the equivalence classes and constraints.
      The easiest way to do this seems to be to enumerate all of the facts
-     in cleaned_cm_a, see which are also true in cleaned_cm_b,
+     in cm_a, see which are also true in cm_b,
      and add those to *OUT.  */
-  merger_fact_visitor v (&cleaned_cm_b, out);
-  cleaned_cm_a.for_each_fact (&v);
-}
-
-/* A subroutine of constraint_manager::merge.
-   Use MAP_SID_TO_M to map equivalence classes and constraints from
-   SM_IN to *OUT.  Purge any non-constant svalue_id that don't appear
-   in the result of MAP_SID_TO_M, purging any ECs and their constraints
-   that become empty as a result.  Potentially create svalues in
-   the merged region_model for constants that weren't already in use there.  */
-
-void
-constraint_manager::
-clean_merger_input (const constraint_manager &cm_in,
-		    const one_way_svalue_id_map &map_sid_to_m,
-		    constraint_manager *out)
-{
-  one_way_id_map<equiv_class_id> map_ec_to_m
-    (cm_in.m_equiv_classes.length ());
-  unsigned ec_idx;
-  equiv_class *ec;
-  FOR_EACH_VEC_ELT (cm_in.m_equiv_classes, ec_idx, ec)
-    {
-      equiv_class cleaned_ec;
-      if (tree cst = ec->get_any_constant ())
-	{
-	  cleaned_ec.m_constant = cst;
-	  /* Lazily create the constant in the out region_model.  */
-	  cleaned_ec.m_cst_sid = out->get_sid_for_constant (cst);
-	}
-      unsigned var_idx;
-      svalue_id *var_in_sid;
-      FOR_EACH_VEC_ELT (ec->m_vars, var_idx, var_in_sid)
-	{
-	  svalue_id var_m_sid = map_sid_to_m.get_dst_for_src (*var_in_sid);
-	  if (!var_m_sid.null_p ())
-	    cleaned_ec.m_vars.safe_push (var_m_sid);
-	}
-      if (cleaned_ec.get_any_constant () || !cleaned_ec.m_vars.is_empty ())
-	{
-	  map_ec_to_m.put (ec_idx, out->m_equiv_classes.length ());
-	  out->m_equiv_classes.safe_push (new equiv_class (cleaned_ec));
-	}
-    }
-
-  /* Write out to *OUT any constraints for which both sides survived
-     cleaning, using the new EC IDs.  */
-  unsigned con_idx;
-  constraint *c;
-  FOR_EACH_VEC_ELT (cm_in.m_constraints, con_idx, c)
-    {
-      equiv_class_id new_lhs = map_ec_to_m.get_dst_for_src (c->m_lhs);
-      if (new_lhs.null_p ())
-	continue;
-      equiv_class_id new_rhs = map_ec_to_m.get_dst_for_src (c->m_rhs);
-      if (new_rhs.null_p ())
-	continue;
-      out->m_constraints.safe_push (constraint (new_lhs,
-						c->m_op,
-						new_rhs));
-    }
+  merger_fact_visitor v (&cm_b, out, merger);
+  cm_a.for_each_fact (&v);
 }
 
 /* Call VISITOR's on_fact vfunc repeatedly to express the various
@@ -1455,12 +1825,12 @@ constraint_manager::for_each_fact (fact_visitor *visitor) const
   equiv_class *ec;
   FOR_EACH_VEC_ELT (m_equiv_classes, ec_idx, ec)
     {
-      if (!ec->m_cst_sid.null_p ())
+      if (ec->m_cst_sval)
 	{
 	  unsigned i;
-	  svalue_id *sid;
-	  FOR_EACH_VEC_ELT (ec->m_vars, i, sid)
-	    visitor->on_fact (ec->m_cst_sid, EQ_EXPR, *sid);
+	  const svalue *sval;
+	  FOR_EACH_VEC_ELT (ec->m_vars, i, sval)
+	    visitor->on_fact (ec->m_cst_sval, EQ_EXPR, sval);
 	}
       for (unsigned i = 0; i < ec->m_vars.length (); i++)
 	for (unsigned j = i + 1; j < ec->m_vars.length (); j++)
@@ -1476,17 +1846,17 @@ constraint_manager::for_each_fact (fact_visitor *visitor) const
       const equiv_class &ec_rhs = c->m_rhs.get_obj (*this);
       enum tree_code code = constraint_tree_code (c->m_op);
 
-      if (!ec_lhs.m_cst_sid.null_p ())
+      if (ec_lhs.m_cst_sval)
 	{
 	  for (unsigned j = 0; j < ec_rhs.m_vars.length (); j++)
 	    {
-	      visitor->on_fact (ec_lhs.m_cst_sid, code, ec_rhs.m_vars[j]);
+	      visitor->on_fact (ec_lhs.m_cst_sval, code, ec_rhs.m_vars[j]);
 	    }
 	}
       for (unsigned i = 0; i < ec_lhs.m_vars.length (); i++)
 	{
-	  if (!ec_rhs.m_cst_sid.null_p ())
-	    visitor->on_fact (ec_lhs.m_vars[i], code, ec_rhs.m_cst_sid);
+	  if (ec_rhs.m_cst_sval)
+	    visitor->on_fact (ec_lhs.m_vars[i], code, ec_rhs.m_cst_sval);
 	  for (unsigned j = 0; j < ec_rhs.m_vars.length (); j++)
 	    visitor->on_fact (ec_lhs.m_vars[i], code, ec_rhs.m_vars[j]);
 	}
@@ -1510,17 +1880,13 @@ constraint_manager::validate () const
       gcc_assert (ec);
 
       int j;
-      svalue_id *sid;
-      FOR_EACH_VEC_ELT (ec->m_vars, j, sid)
-	{
-	  gcc_assert (!sid->null_p ());
-	  gcc_assert (sid->as_int () < get_num_svalues ());
-	}
+      const svalue *sval;
+      FOR_EACH_VEC_ELT (ec->m_vars, j, sval)
+	gcc_assert (sval);
       if (ec->m_constant)
 	{
 	  gcc_assert (CONSTANT_CLASS_P (ec->m_constant));
-	  gcc_assert (!ec->m_cst_sid.null_p ());
-	  gcc_assert (ec->m_cst_sid.as_int () < get_num_svalues ());
+	  gcc_assert (ec->m_cst_sval);
 	}
 #if 0
       else
@@ -1544,8 +1910,7 @@ namespace selftest {
 
 /* Various constraint_manager selftests.
    These have to be written in terms of a region_model, since
-   the latter is responsible for managing svalue and svalue_id
-   instances.  */
+   the latter is responsible for managing svalue instances.  */
 
 /* Verify that setting and getting simple conditions within a region_model
    work (thus exercising the underlying constraint_manager).  */
@@ -1562,7 +1927,8 @@ test_constraint_conditions ()
 
   /* Self-comparisons.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ASSERT_CONDITION_TRUE (model, x, EQ_EXPR, x);
     ASSERT_CONDITION_TRUE (model, x, LE_EXPR, x);
     ASSERT_CONDITION_TRUE (model, x, GE_EXPR, x);
@@ -1571,9 +1937,25 @@ test_constraint_conditions ()
     ASSERT_CONDITION_FALSE (model, x, GT_EXPR, x);
   }
 
+  /* Adding self-equality shouldn't add equiv classes.  */
+  {
+    region_model_manager mgr;
+    region_model model (&mgr);
+    ADD_SAT_CONSTRAINT (model, x, EQ_EXPR, x);
+    ADD_SAT_CONSTRAINT (model, int_42, EQ_EXPR, int_42);
+    /* ...even when done directly via svalues: */
+    const svalue *sval_int_42 = model.get_rvalue (int_42, NULL);
+    bool sat = model.get_constraints ()->add_constraint (sval_int_42,
+							  EQ_EXPR,
+							  sval_int_42);
+    ASSERT_TRUE (sat);
+    ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 0);
+  }
+
   /* x == y.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ASSERT_CONDITION_UNKNOWN (model, x, EQ_EXPR, y);
 
     ADD_SAT_CONSTRAINT (model, x, EQ_EXPR, y);
@@ -1604,7 +1986,8 @@ test_constraint_conditions ()
 
   /* x == y, then y == z  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ASSERT_CONDITION_UNKNOWN (model, x, EQ_EXPR, y);
 
     ADD_SAT_CONSTRAINT (model, x, EQ_EXPR, y);
@@ -1620,7 +2003,8 @@ test_constraint_conditions ()
 
   /* x != y.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
 
     ADD_SAT_CONSTRAINT (model, x, NE_EXPR, y);
 
@@ -1650,7 +2034,8 @@ test_constraint_conditions ()
 
   /* x < y.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
 
     ADD_SAT_CONSTRAINT (model, x, LT_EXPR, y);
 
@@ -1672,7 +2057,8 @@ test_constraint_conditions ()
 
   /* x <= y.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
 
     ADD_SAT_CONSTRAINT (model, x, LE_EXPR, y);
 
@@ -1694,7 +2080,8 @@ test_constraint_conditions ()
 
   /* x > y.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
 
     ADD_SAT_CONSTRAINT (model, x, GT_EXPR, y);
 
@@ -1716,7 +2103,8 @@ test_constraint_conditions ()
 
   /* x >= y.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
 
     ADD_SAT_CONSTRAINT (model, x, GE_EXPR, y);
 
@@ -1740,7 +2128,8 @@ test_constraint_conditions ()
 
   /* Constants.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ASSERT_CONDITION_FALSE (model, int_0, EQ_EXPR, int_42);
     ASSERT_CONDITION_TRUE (model, int_0, NE_EXPR, int_42);
     ASSERT_CONDITION_TRUE (model, int_0, LT_EXPR, int_42);
@@ -1751,7 +2140,8 @@ test_constraint_conditions ()
 
   /* x == 0, y == 42.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ADD_SAT_CONSTRAINT (model, x, EQ_EXPR, int_0);
     ADD_SAT_CONSTRAINT (model, y, EQ_EXPR, int_42);
 
@@ -1767,42 +2157,48 @@ test_constraint_conditions ()
 
   /* x == y && x != y.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ADD_SAT_CONSTRAINT (model, x, EQ_EXPR, y);
     ADD_UNSAT_CONSTRAINT (model, x, NE_EXPR, y);
   }
 
   /* x == 0 then x == 42.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ADD_SAT_CONSTRAINT (model, x, EQ_EXPR, int_0);
     ADD_UNSAT_CONSTRAINT (model, x, EQ_EXPR, int_42);
   }
 
   /* x == 0 then x != 0.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ADD_SAT_CONSTRAINT (model, x, EQ_EXPR, int_0);
     ADD_UNSAT_CONSTRAINT (model, x, NE_EXPR, int_0);
   }
 
   /* x == 0 then x > 0.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ADD_SAT_CONSTRAINT (model, x, EQ_EXPR, int_0);
     ADD_UNSAT_CONSTRAINT (model, x, GT_EXPR, int_0);
   }
 
   /* x != y && x == y.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ADD_SAT_CONSTRAINT (model, x, NE_EXPR, y);
     ADD_UNSAT_CONSTRAINT (model, x, EQ_EXPR, y);
   }
 
   /* x <= y && x > y.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ADD_SAT_CONSTRAINT (model, x, LE_EXPR, y);
     ADD_UNSAT_CONSTRAINT (model, x, GT_EXPR, y);
   }
@@ -1822,7 +2218,8 @@ test_transitivity ()
 
   /* a == b, then c == d, then c == b.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ASSERT_CONDITION_UNKNOWN (model, a, EQ_EXPR, b);
     ASSERT_CONDITION_UNKNOWN (model, b, EQ_EXPR, c);
     ASSERT_CONDITION_UNKNOWN (model, c, EQ_EXPR, d);
@@ -1842,7 +2239,8 @@ test_transitivity ()
 
   /* Transitivity: "a < b", "b < c" should imply "a < c".  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ADD_SAT_CONSTRAINT (model, a, LT_EXPR, b);
     ADD_SAT_CONSTRAINT (model, b, LT_EXPR, c);
 
@@ -1852,7 +2250,8 @@ test_transitivity ()
 
   /* Transitivity: "a <= b", "b < c" should imply "a < c".  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ADD_SAT_CONSTRAINT (model, a, LE_EXPR, b);
     ADD_SAT_CONSTRAINT (model, b, LT_EXPR, c);
 
@@ -1862,7 +2261,8 @@ test_transitivity ()
 
   /* Transitivity: "a <= b", "b <= c" should imply "a <= c".  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ADD_SAT_CONSTRAINT (model, a, LE_EXPR, b);
     ADD_SAT_CONSTRAINT (model, b, LE_EXPR, c);
 
@@ -1872,7 +2272,8 @@ test_transitivity ()
 
   /* Transitivity: "a > b", "b > c" should imply "a > c".  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ADD_SAT_CONSTRAINT (model, a, GT_EXPR, b);
     ADD_SAT_CONSTRAINT (model, b, GT_EXPR, c);
 
@@ -1882,7 +2283,8 @@ test_transitivity ()
 
   /* Transitivity: "a >= b", "b > c" should imply " a > c".  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ADD_SAT_CONSTRAINT (model, a, GE_EXPR, b);
     ADD_SAT_CONSTRAINT (model, b, GT_EXPR, c);
 
@@ -1892,7 +2294,8 @@ test_transitivity ()
 
   /* Transitivity: "a >= b", "b >= c" should imply "a >= c".  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ADD_SAT_CONSTRAINT (model, a, GE_EXPR, b);
     ADD_SAT_CONSTRAINT (model, b, GE_EXPR, c);
 
@@ -1907,7 +2310,8 @@ test_transitivity ()
      but also that:
        (a < d).  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ADD_SAT_CONSTRAINT (model, a, LT_EXPR, b);
     ADD_SAT_CONSTRAINT (model, c, LT_EXPR, d);
     ADD_SAT_CONSTRAINT (model, b, LT_EXPR, c);
@@ -1919,17 +2323,23 @@ test_transitivity ()
 
   /* Transitivity: "a >= b", "b >= a" should imply that a == b.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ADD_SAT_CONSTRAINT (model, a, GE_EXPR, b);
     ADD_SAT_CONSTRAINT (model, b, GE_EXPR, a);
 
     // TODO:
     ASSERT_CONDITION_TRUE (model, a, EQ_EXPR, b);
+
+    /* The ECs for a and b should have merged, and any constraints removed.  */
+    ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 1);
+    ASSERT_EQ (model.get_constraints ()->m_constraints.length (), 0);
   }
 
   /* Transitivity: "a >= b", "b > a" should be impossible.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ADD_SAT_CONSTRAINT (model, a, GE_EXPR, b);
     ADD_UNSAT_CONSTRAINT (model, b, GT_EXPR, a);
   }
@@ -1937,7 +2347,8 @@ test_transitivity ()
   /* Transitivity: "a >= b", "b >= c", "c >= a" should imply
      that a == b == c.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ADD_SAT_CONSTRAINT (model, a, GE_EXPR, b);
     ADD_SAT_CONSTRAINT (model, b, GE_EXPR, c);
     ADD_SAT_CONSTRAINT (model, c, GE_EXPR, a);
@@ -1948,7 +2359,8 @@ test_transitivity ()
   /* Transitivity: "a > b", "b > c", "c > a"
      should be impossible.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ADD_SAT_CONSTRAINT (model, a, GT_EXPR, b);
     ADD_SAT_CONSTRAINT (model, b, GT_EXPR, c);
     ADD_UNSAT_CONSTRAINT (model, c, GT_EXPR, a);
@@ -1974,14 +2386,16 @@ test_constant_comparisons ()
 
   /* Given a >= 1024, then a <= 1023 should be impossible.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ADD_SAT_CONSTRAINT (model, a, GE_EXPR, int_1024);
     ADD_UNSAT_CONSTRAINT (model, a, LE_EXPR, int_1023);
   }
 
   /* a > 4.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ADD_SAT_CONSTRAINT (model, a, GT_EXPR, int_4);
     ASSERT_CONDITION_TRUE (model, a, GT_EXPR, int_4);
     ASSERT_CONDITION_TRUE (model, a, NE_EXPR, int_3);
@@ -1990,7 +2404,8 @@ test_constant_comparisons ()
 
   /* a <= 4.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ADD_SAT_CONSTRAINT (model, a, LE_EXPR, int_4);
     ASSERT_CONDITION_FALSE (model, a, GT_EXPR, int_4);
     ASSERT_CONDITION_FALSE (model, a, GT_EXPR, int_5);
@@ -1999,7 +2414,8 @@ test_constant_comparisons ()
 
   /* If "a > b" and "a == 3", then "b == 4" ought to be unsatisfiable.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ADD_SAT_CONSTRAINT (model, a, GT_EXPR, b);
     ADD_SAT_CONSTRAINT (model, a, EQ_EXPR, int_3);
     ADD_UNSAT_CONSTRAINT (model, b, EQ_EXPR, int_4);
@@ -2010,7 +2426,8 @@ test_constant_comparisons ()
     /* If "a <= 4" && "a > 3", then "a == 4",
        assuming a is of integral type.  */
     {
-      region_model model;
+      region_model_manager mgr;
+      region_model model (&mgr);
       ADD_SAT_CONSTRAINT (model, a, LE_EXPR, int_4);
       ADD_SAT_CONSTRAINT (model, a, GT_EXPR, int_3);
       ASSERT_CONDITION_TRUE (model, a, EQ_EXPR, int_4);
@@ -2019,7 +2436,8 @@ test_constant_comparisons ()
     /* If "a > 3" && "a <= 4", then "a == 4",
        assuming a is of integral type.  */
     {
-      region_model model;
+      region_model_manager mgr;
+      region_model model (&mgr);
       ADD_SAT_CONSTRAINT (model, a, GT_EXPR, int_3);
       ADD_SAT_CONSTRAINT (model, a, LE_EXPR, int_4);
       ASSERT_CONDITION_TRUE (model, a, EQ_EXPR, int_4);
@@ -2027,7 +2445,8 @@ test_constant_comparisons ()
     /* If "a > 3" && "a < 5", then "a == 4",
        assuming a is of integral type.  */
     {
-      region_model model;
+      region_model_manager mgr;
+      region_model model (&mgr);
       ADD_SAT_CONSTRAINT (model, a, GT_EXPR, int_3);
       ADD_SAT_CONSTRAINT (model, a, LT_EXPR, int_5);
       ASSERT_CONDITION_TRUE (model, a, EQ_EXPR, int_4);
@@ -2035,14 +2454,16 @@ test_constant_comparisons ()
     /* If "a >= 4" && "a < 5", then "a == 4",
        assuming a is of integral type.  */
     {
-      region_model model;
+      region_model_manager mgr;
+      region_model model (&mgr);
       ADD_SAT_CONSTRAINT (model, a, GE_EXPR, int_4);
       ADD_SAT_CONSTRAINT (model, a, LT_EXPR, int_5);
       ASSERT_CONDITION_TRUE (model, a, EQ_EXPR, int_4);
     }
     /* If "a >= 4" && "a <= 4", then "a == 4".  */
     {
-      region_model model;
+      region_model_manager mgr;
+      region_model model (&mgr);
       ADD_SAT_CONSTRAINT (model, a, GE_EXPR, int_4);
       ADD_SAT_CONSTRAINT (model, a, LE_EXPR, int_4);
       ASSERT_CONDITION_TRUE (model, a, EQ_EXPR, int_4);
@@ -2056,7 +2477,8 @@ test_constant_comparisons ()
     tree float_3 = build_real_from_int_cst (double_type_node, int_3);
     tree float_4 = build_real_from_int_cst (double_type_node, int_4);
 
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ADD_SAT_CONSTRAINT (model, f, GT_EXPR, float_3);
     ADD_SAT_CONSTRAINT (model, f, LE_EXPR, float_4);
     ASSERT_CONDITION_UNKNOWN (model, f, EQ_EXPR, float_4);
@@ -2079,7 +2501,8 @@ test_constraint_impl ()
 
   /* x == y.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
 
     ADD_SAT_CONSTRAINT (model, x, EQ_EXPR, y);
 
@@ -2091,7 +2514,8 @@ test_constraint_impl ()
 
   /* y <= z; x == y.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ASSERT_CONDITION_UNKNOWN (model, x, EQ_EXPR, y);
     ASSERT_CONDITION_UNKNOWN (model, x, GE_EXPR, z);
 
@@ -2112,7 +2536,8 @@ test_constraint_impl ()
 
   /* y <= z; y == x.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
     ASSERT_CONDITION_UNKNOWN (model, x, EQ_EXPR, y);
     ASSERT_CONDITION_UNKNOWN (model, x, GE_EXPR, z);
 
@@ -2133,20 +2558,16 @@ test_constraint_impl ()
 
   /* x == 0, then x != 42.  */
   {
-    region_model model;
+    region_model_manager mgr;
+    region_model model (&mgr);
 
     ADD_SAT_CONSTRAINT (model, x, EQ_EXPR, int_0);
     ADD_SAT_CONSTRAINT (model, x, NE_EXPR, int_42);
 
     /* Assert various things about the insides of model.  */
     constraint_manager *cm = model.get_constraints ();
-    ASSERT_EQ (cm->m_constraints.length (), 1);
-    ASSERT_EQ (cm->m_equiv_classes.length (), 2);
-    ASSERT_EQ (cm->m_constraints[0].m_lhs,
-	       cm->get_or_add_equiv_class (model.get_rvalue (int_0, NULL)));
-    ASSERT_EQ (cm->m_constraints[0].m_rhs,
-	       cm->get_or_add_equiv_class (model.get_rvalue (int_42, NULL)));
-    ASSERT_EQ (cm->m_constraints[0].m_op, CONSTRAINT_LT);
+    ASSERT_EQ (cm->m_constraints.length (), 0);
+    ASSERT_EQ (cm->m_equiv_classes.length (), 1);
   }
 
   // TODO: selftest for merging ecs "in the middle"
@@ -2165,8 +2586,9 @@ test_equality ()
   tree y = build_global_decl ("y", integer_type_node);
 
   {
-    region_model model0;
-    region_model model1;
+    region_model_manager mgr;
+    region_model model0 (&mgr);
+    region_model model1 (&mgr);
 
     constraint_manager *cm0 = model0.get_constraints ();
     constraint_manager *cm1 = model1.get_constraints ();
@@ -2184,7 +2606,7 @@ test_equality ()
     ASSERT_NE (model0.hash (), model1.hash ());
     ASSERT_NE (model0, model1);
 
-    region_model model2;
+    region_model model2 (&mgr);
     constraint_manager *cm2 = model2.get_constraints ();
     /* Make the same change to cm2.  */
     ADD_SAT_CONSTRAINT (model2, x, EQ_EXPR, y);
@@ -2201,9 +2623,11 @@ test_equality ()
 static void
 test_many_constants ()
 {
+  program_point point (program_point::origin ());
   tree a = build_global_decl ("a", integer_type_node);
 
-  region_model model;
+  region_model_manager mgr;
+  region_model model (&mgr);
   auto_vec<tree> constants;
   for (int i = 0; i < 20; i++)
     {
@@ -2214,10 +2638,10 @@ test_many_constants ()
       /* Merge, and check the result.  */
       region_model other (model);
 
-      region_model merged;
-      ASSERT_TRUE (model.can_merge_with_p (other, &merged));
-      model.canonicalize (NULL);
-      merged.canonicalize (NULL);
+      region_model merged (&mgr);
+      ASSERT_TRUE (model.can_merge_with_p (other, point, &merged));
+      model.canonicalize ();
+      merged.canonicalize ();
       ASSERT_EQ (model, merged);
 
       for (int j = 0; j <= i; j++)
@@ -2239,8 +2663,8 @@ run_constraint_manager_tests (bool transitivity)
     {
       /* These selftests assume transitivity.  */
       test_transitivity ();
-      test_constant_comparisons ();
     }
+  test_constant_comparisons ();
   test_constraint_impl ();
   test_equality ();
   test_many_constants ();

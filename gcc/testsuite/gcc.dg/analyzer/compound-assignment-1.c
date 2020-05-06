@@ -40,13 +40,13 @@ void test_4 (void)
   struct ptr_wrapper r;
   r.ptr = malloc (sizeof (int)); /* { dg-message "allocated here" } */
 } /* { dg-warning "leak of 'r.ptr'" } */
-/* { dg-bogus "leak of '<unknown>'" "unknown leak" { xfail *-*-* } .-1 } */
+/* { dg-bogus "leak of '<unknown>'" "unknown leak" { target *-*-* } .-1 } */
 
 static struct ptr_wrapper __attribute__((noinline))
 called_by_test_5a (void)
 {
   struct ptr_wrapper r;
-  r.ptr = malloc (sizeof (int));
+  r.ptr = malloc (sizeof (int)); /* { dg-message "allocated here" } */
   return r;
 }
 
@@ -54,15 +54,14 @@ void test_5a (void)
 {
   struct ptr_wrapper q = called_by_test_5a ();  
 } /* { dg-warning "leak of 'q.ptr'" } */
-/* TODO: show the allocation point.  */
 
 static struct ptr_wrapper __attribute__((noinline))
 called_by_test_5b (void)
 {
   struct ptr_wrapper r;
   r.ptr = malloc (sizeof (int));
-  return r; /* { dg-warning "leak" } */
-  /* TODO: show the allocation point.  */
+  return r; /* { dg-warning "leak of '<return-value>.ptr'" } */
+  /* TODO: show the allocation point; improve above message.  */
 }
 
 void test_5b (void)

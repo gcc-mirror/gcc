@@ -1,6 +1,6 @@
 /* Example of a multilevel wrapper around malloc, with an unchecked write.  */
 
-/* { dg-additional-options "-fdiagnostics-show-line-numbers -fdiagnostics-path-format=inline-events -fanalyzer-checker=malloc -fdiagnostics-show-caret -fanalyzer-verbose-state-changes" } */
+/* { dg-additional-options "-fdiagnostics-show-line-numbers -fdiagnostics-path-format=inline-events -fanalyzer-checker=malloc -fdiagnostics-show-caret" } */
 /* { dg-enable-nn-line-numbers "" } */
 
 #include <stdlib.h>
@@ -49,7 +49,7 @@ make_boxed_int (int i)
            |   NN |   return malloc (size);
            |      |          ~~~~~~~~~~~~~
            |      |          |
-           |      |          (4) this call could return NULL (state of '<return-value>': 'start' -> 'unchecked', origin: NULL)
+           |      |          (4) this call could return NULL
            |
     <------+
     |
@@ -62,6 +62,6 @@ make_boxed_int (int i)
     |   NN |   result->i = i;
     |      |   ~~~~~~~~~~~~~                     
     |      |             |
-    |      |             (6) 'result' could be NULL: unchecked value from (4) ('result' is in state 'unchecked')
+    |      |             (6) 'result' could be NULL: unchecked value from (4)
     |
   { dg-end-multiline-output "" } */

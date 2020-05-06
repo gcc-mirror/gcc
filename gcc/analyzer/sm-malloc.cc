@@ -35,6 +35,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
 #include "analyzer/pending-diagnostic.h"
+#include "tristate.h"
+#include "selftest.h"
+#include "analyzer/call-string.h"
+#include "analyzer/program-point.h"
+#include "analyzer/store.h"
+#include "analyzer/region-model.h"
 
 #if ENABLE_ANALYZER
 
@@ -52,6 +58,23 @@ public:
   malloc_state_machine (logger *logger);
 
   bool inherited_state_p () const FINAL OVERRIDE { return false; }
+
+  state_machine::state_t
+  get_default_state (const svalue *sval) const FINAL OVERRIDE
+  {
+    if (tree cst = sval->maybe_get_constant ())
+      {
+	if (zerop (cst))
+	  return m_null;
+      }
+    if (const region_svalue *ptr = sval->dyn_cast_region_svalue ())
+      {
+	const region *reg = ptr->get_pointee ();
+	if (reg->get_kind () == RK_STRING)
+	  return m_non_heap;
+      }
+    return m_start;
+  }
 
   bool on_stmt (sm_context *sm_ctxt,
 		const supernode *node,
@@ -71,6 +94,9 @@ public:
 
   bool can_purge_p (state_t s) const FINAL OVERRIDE;
   pending_diagnostic *on_leak (tree var) const FINAL OVERRIDE;
+
+  bool reset_when_passed_to_unknown_fn_p (state_t s,
+					  bool is_mutable) const FINAL OVERRIDE;
 
   /* Start state.  */
   state_t m_start;
@@ -127,16 +153,34 @@ public:
       return label_text::borrow ("allocated here");
     if (change.m_old_state == m_sm.m_unchecked
 	&& change.m_new_state == m_sm.m_nonnull)
-      return change.formatted_print ("assuming %qE is non-NULL",
-				     change.m_expr);
+      {
+	if (change.m_expr)
+	  return change.formatted_print ("assuming %qE is non-NULL",
+					 change.m_expr);
+	else
+	  return change.formatted_print ("assuming %qs is non-NULL",
+					 "<unknown>");
+      }
     if (change.m_new_state == m_sm.m_null)
       {
 	if (change.m_old_state == m_sm.m_unchecked)
-	  return change.formatted_print ("assuming %qE is NULL",
-					 change.m_expr);
+	  {
+	    if (change.m_expr)
+	      return change.formatted_print ("assuming %qE is NULL",
+					     change.m_expr);
+	    else
+	      return change.formatted_print ("assuming %qs is NULL",
+					     "<unknown>");
+	  }
 	else
-	  return change.formatted_print ("%qE is NULL",
-					 change.m_expr);
+	  {
+	    if (change.m_expr)
+	      return change.formatted_print ("%qE is NULL",
+					     change.m_expr);
+	    else
+	      return change.formatted_print ("%qs is NULL",
+					     "<unknown>");
+	  }
       }
 
     return label_text ();
@@ -406,9 +450,15 @@ public:
     auto_diagnostic_group d;
     diagnostic_metadata m;
     m.add_cwe (690);
-    bool warned = warning_meta (rich_loc, m, OPT_Wanalyzer_null_argument,
-				"use of NULL %qE where non-null expected",
-				m_arg);
+
+    bool warned;
+    if (zerop (m_arg))
+      warned = warning_meta (rich_loc, m, OPT_Wanalyzer_null_argument,
+			     "use of NULL where non-null expected");
+    else
+      warned = warning_meta (rich_loc, m, OPT_Wanalyzer_null_argument,
+			     "use of NULL %qE where non-null expected",
+			     m_arg);
     if (warned)
       inform_nonnull_attribute (m_fndecl, m_arg_idx);
     return warned;
@@ -416,9 +466,13 @@ public:
 
   label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
   {
-    return ev.formatted_print ("argument %u (%qE) NULL"
-			       " where non-null expected",
-			       m_arg_idx + 1, ev.m_expr);
+    if (zerop (ev.m_expr))
+      return ev.formatted_print ("argument %u NULL where non-null expected",
+				 m_arg_idx + 1);
+    else
+      return ev.formatted_print ("argument %u (%qE) NULL"
+				 " where non-null expected",
+				 m_arg_idx + 1, ev.m_expr);
   }
 
 private:
@@ -480,8 +534,12 @@ public:
   {
     diagnostic_metadata m;
     m.add_cwe (401);
-    return warning_meta (rich_loc, m, OPT_Wanalyzer_malloc_leak,
-			 "leak of %qE", m_arg);
+    if (m_arg)
+      return warning_meta (rich_loc, m, OPT_Wanalyzer_malloc_leak,
+			   "leak of %qE", m_arg);
+    else
+      return warning_meta (rich_loc, m, OPT_Wanalyzer_malloc_leak,
+			   "leak of %qs", "<unknown>");
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
@@ -497,11 +555,22 @@ public:
 
   label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
   {
-    if (m_malloc_event.known_p ())
-      return ev.formatted_print ("%qE leaks here; was allocated at %@",
-				 ev.m_expr, &m_malloc_event);
+    if (ev.m_expr)
+      {
+	if (m_malloc_event.known_p ())
+	  return ev.formatted_print ("%qE leaks here; was allocated at %@",
+				     ev.m_expr, &m_malloc_event);
+	else
+	  return ev.formatted_print ("%qE leaks here", ev.m_expr);
+      }
     else
-      return ev.formatted_print ("%qE leaks here", ev.m_expr);
+      {
+	if (m_malloc_event.known_p ())
+	  return ev.formatted_print ("%qs leaks here; was allocated at %@",
+				     "<unknown>", &m_malloc_event);
+	else
+	  return ev.formatted_print ("%qs leaks here", "<unknown>");
+      }
   }
 
 private:
@@ -618,10 +687,7 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	  {
 	    tree lhs = gimple_call_lhs (call);
 	    if (lhs)
-	      {
-		lhs = sm_ctxt->get_readable_tree (lhs);
-		sm_ctxt->on_transition (node, stmt, lhs, m_start, m_unchecked);
-	      }
+	      sm_ctxt->on_transition (node, stmt, lhs, m_start, m_unchecked);
 	    else
 	      {
 		/* TODO: report leak.  */
@@ -634,10 +700,7 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	  {
 	    tree lhs = gimple_call_lhs (call);
 	    if (lhs)
-	      {
-		lhs = sm_ctxt->get_readable_tree (lhs);
-		sm_ctxt->on_transition (node, stmt, lhs, m_start, m_non_heap);
-	      }
+	      sm_ctxt->on_transition (node, stmt, lhs, m_start, m_non_heap);
 	    return true;
 	  }
 
@@ -646,8 +709,7 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	    || is_named_call_p (callee_fndecl, "__builtin_free", call, 1))
 	  {
 	    tree arg = gimple_call_arg (call, 0);
-
-	    arg = sm_ctxt->get_readable_tree (arg);
+	    tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 
 	    /* start/unchecked/nonnull -> freed.  */
 	    sm_ctxt->on_transition (node, stmt, arg, m_start, m_freed);
@@ -659,12 +721,12 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 
 	    /* freed -> stop, with warning.  */
 	    sm_ctxt->warn_for_state (node, stmt, arg, m_freed,
-				     new double_free (*this, arg));
+				     new double_free (*this, diag_arg));
 	    sm_ctxt->on_transition (node, stmt, arg, m_freed, m_stop);
 
 	    /* non-heap -> stop, with warning.  */
 	    sm_ctxt->warn_for_state (node, stmt, arg, m_non_heap,
-				     new free_of_non_heap (*this, arg));
+				     new free_of_non_heap (*this, diag_arg));
 	    sm_ctxt->on_transition (node, stmt, arg, m_non_heap, m_stop);
 	    return true;
 	  }
@@ -685,15 +747,17 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 		  if (bitmap_empty_p (nonnull_args)
 		      || bitmap_bit_p (nonnull_args, i))
 		    {
+		      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 		      sm_ctxt->warn_for_state
 			(node, stmt, arg, m_unchecked,
-			 new possible_null_arg (*this, arg, callee_fndecl, i));
+			 new possible_null_arg (*this, diag_arg, callee_fndecl,
+						i));
 		      sm_ctxt->on_transition (node, stmt, arg, m_unchecked,
 					      m_nonnull);
 
 		      sm_ctxt->warn_for_state
 			(node, stmt, arg, m_null,
-			 new null_arg (*this, arg, callee_fndecl, i));
+			 new null_arg (*this, diag_arg, callee_fndecl, i));
 		      sm_ctxt->on_transition (node, stmt, arg, m_null, m_stop);
 		    }
 		}
@@ -702,10 +766,15 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	}
       }
 
-  if (tree lhs = is_zero_assignment (stmt))
+  if (tree lhs = sm_ctxt->is_zero_assignment (stmt))
     if (any_pointer_p (lhs))
       on_zero_assignment (sm_ctxt, node, stmt,lhs);
 
+  /* If we have "LHS = &EXPR;" and EXPR is something other than a MEM_REF,
+     transition LHS from start to non_heap.
+     Doing it for ADDR_EXPR(MEM_REF()) is likely wrong, and can lead to
+     unbounded chains of unmergeable sm-state on pointer arithmetic in loops
+     when optimization is enabled.  */
   if (const gassign *assign_stmt = dyn_cast <const gassign *> (stmt))
     {
       enum tree_code op = gimple_assign_rhs_code (assign_stmt);
@@ -714,8 +783,9 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	  tree lhs = gimple_assign_lhs (assign_stmt);
 	  if (lhs)
 	    {
-	      lhs = sm_ctxt->get_readable_tree (lhs);
-	      sm_ctxt->on_transition (node, stmt, lhs, m_start, m_non_heap);
+	      tree addr_expr = gimple_assign_rhs1 (assign_stmt);
+	      if (TREE_CODE (TREE_OPERAND (addr_expr, 0)) != MEM_REF)
+		sm_ctxt->on_transition (node, stmt, lhs, m_start, m_non_heap);
 	    }
 	}
     }
@@ -732,18 +802,18 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
       if (TREE_CODE (op) == MEM_REF)
 	{
 	  tree arg = TREE_OPERAND (op, 0);
-	  arg = sm_ctxt->get_readable_tree (arg);
+	  tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 
 	  sm_ctxt->warn_for_state (node, stmt, arg, m_unchecked,
-				   new possible_null_deref (*this, arg));
+				   new possible_null_deref (*this, diag_arg));
 	  sm_ctxt->on_transition (node, stmt, arg, m_unchecked, m_nonnull);
 
 	  sm_ctxt->warn_for_state (node, stmt, arg, m_null,
-				   new null_deref (*this, arg));
+				   new null_deref (*this, diag_arg));
 	  sm_ctxt->on_transition (node, stmt, arg, m_null, m_stop);
 
 	  sm_ctxt->warn_for_state (node, stmt, arg, m_freed,
-				   new use_after_free (*this, arg));
+				   new use_after_free (*this, diag_arg));
 	  sm_ctxt->on_transition (node, stmt, arg, m_freed, m_stop);
 	}
     }
@@ -816,6 +886,22 @@ pending_diagnostic *
 malloc_state_machine::on_leak (tree var) const
 {
   return new malloc_leak (*this, var);
+}
+
+/* Implementation of state_machine::reset_when_passed_to_unknown_fn_p vfunc
+   for malloc_state_machine.  */
+
+bool
+malloc_state_machine::reset_when_passed_to_unknown_fn_p (state_t s,
+							 bool is_mutable) const
+{
+  /* An on-stack ptr doesn't stop being stack-allocated when passed to an
+     unknown fn.  */
+  if (s == m_non_heap)
+    return false;
+
+  /* Otherwise, pointers passed as non-const can be freed.  */
+  return is_mutable;
 }
 
 /* Shared logic for handling GIMPLE_ASSIGNs and GIMPLE_PHIs that

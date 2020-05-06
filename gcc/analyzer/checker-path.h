@@ -193,26 +193,26 @@ public:
   state_change_event (const supernode *node, const gimple *stmt,
 		      int stack_depth,
 		      const state_machine &sm,
-		      tree var,
+		      const svalue *sval,
 		      state_machine::state_t from,
 		      state_machine::state_t to,
-		      tree origin,
+		      const svalue *origin,
 		      const program_state &dst_state);
 
   label_text get_desc (bool can_colorize) const FINAL OVERRIDE;
 
-  region_id get_lvalue (tree expr, region_model_context *ctxt) const
+  function *get_dest_function () const
   {
-    return m_dst_state.m_region_model->get_lvalue (expr, ctxt);
+    return m_dst_state.get_current_function ();
   }
 
   const supernode *m_node;
   const gimple *m_stmt;
   const state_machine &m_sm;
-  tree m_var;
+  const svalue *m_sval;
   state_machine::state_t m_from;
   state_machine::state_t m_to;
-  tree m_origin;
+  const svalue *m_origin;
   program_state m_dst_state;
 };
 

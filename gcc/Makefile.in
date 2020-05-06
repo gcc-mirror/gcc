@@ -1237,7 +1237,11 @@ ANALYZER_OBJS = \
 	analyzer/pending-diagnostic.o \
 	analyzer/program-point.o \
 	analyzer/program-state.o \
+	analyzer/region.o \
 	analyzer/region-model.o \
+	analyzer/region-model-impl-calls.o \
+	analyzer/region-model-manager.o \
+	analyzer/region-model-reachability.o \
 	analyzer/sm.o \
 	analyzer/sm-file.o \
 	analyzer/sm-malloc.o \
@@ -1246,7 +1250,9 @@ ANALYZER_OBJS = \
 	analyzer/sm-signal.o \
 	analyzer/sm-taint.o \
 	analyzer/state-purge.o \
-	analyzer/supergraph.o
+	analyzer/store.o \
+	analyzer/supergraph.o \
+	analyzer/svalue.o
 
 # Language-independent object files.
 # We put the *-match.o and insn-*.o files first so that a parallel make

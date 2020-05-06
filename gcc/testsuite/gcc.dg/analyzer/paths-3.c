@@ -13,7 +13,7 @@ int test_1 (int a, int b)
     else
       p = malloc (32);
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
 
   if (a > 5)
     {
@@ -34,7 +34,7 @@ int test_2 (int a, int b)
     else
       p = malloc (32);
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
 
   if (a > 6) /* different condition */
     {
