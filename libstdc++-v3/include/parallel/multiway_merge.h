@@ -118,7 +118,7 @@ namespace __gnu_parallel
        *  @return @c true if less. */
       friend bool
       operator<(_GuardedIterator<_RAIter, _Compare>& __bi1,
-		_GuardedIterator<_RAIter, const _Compare>& __bi2)
+		_GuardedIterator<_RAIter, _Compare>& __bi2)
       {
 	if (__bi1._M_current == __bi1._M_end)       // __bi1 is sup
 	  return __bi2._M_current == __bi2._M_end;  // __bi2 is not sup
@@ -188,7 +188,7 @@ namespace __gnu_parallel
        *  @return @c true if less. */
       friend bool
       operator<(_UnguardedIterator<_RAIter, _Compare>& __bi1,
-		_UnguardedIterator<_RAIter, const _Compare>& __bi2)
+		_UnguardedIterator<_RAIter, _Compare>& __bi2)
       {
 	// Normal compare.
 	return (__bi1.__comp)(*__bi1, *__bi2);
