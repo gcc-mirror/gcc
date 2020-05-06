@@ -1,3 +1,27 @@
+2020-05-06  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA2_TSXLDTRK_SET,
+	OPTION_MASK_ISA2_TSXLDTRK_UNSET): New macros.
+	* config.gcc: Add tsxldtrkintrin.h to extra_headers.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	TSXLDTRK.
+	* config/i386/i386-builtin.def: Add new builtins.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Define
+	__TSXLDTRK__.
+	* config/i386/i386-options.c (ix86_target_string): Add
+	-mtsxldtrk.
+	(ix86_valid_target_attribute_inner_p): Add attribute tsxldtrk.
+	* config/i386/i386.h (TARGET_TSXLDTRK, TARGET_TSXLDTRK_P):
+	New.
+	* config/i386/i386.md (define_c_enum "unspec"): Add
+	UNSPECV_SUSLDTRK, UNSPECV_RESLDTRK.
+	(TSXLDTRK): New define_int_iterator.
+	("<tsxldtrk>"): New define_insn.
+	* config/i386/i386.opt: Add -mtsxldtrk.
+	* config/i386/immintrin.h: Include tsxldtrkintrin.h.
+	* config/i386/tsxldtrkintrin.h: New.
+	* doc/invoke.texi: Document -mtsxldtrk.
+
 2020-05-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/94921
