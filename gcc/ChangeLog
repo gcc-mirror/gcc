@@ -1,3 +1,19 @@
+2020-05-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_transform_slp_perm_load): Adjust.
+	* tree-vect-data-refs.c (vect_slp_analyze_node_dependences):
+	Remove slp_instance parameter, just iterate over all scalar stmts.
+	(vect_slp_analyze_instance_dependence): Adjust and likewise.
+	* tree-vect-slp.c (vect_bb_slp_scalar_cost): Remove unused BB
+	parameter.
+	(vect_schedule_slp): Just iterate over all scalar stmts.
+	(vect_supported_load_permutation_p): Adjust.
+	(vect_transform_slp_perm_load): Remove slp_instance parameter,
+	instead use the number of lanes in the node as group size.
+	* tree-vect-stmts.c (vect_model_load_cost): Get vectorization
+	factor instead of slp_instance as parameter.
+	(vectorizable_load): Adjust.
+
 2020-05-06  Andreas Schwab  <schwab@suse.de>
 
 	* config/aarch64/driver-aarch64.c: Include "aarch64-protos.h".
