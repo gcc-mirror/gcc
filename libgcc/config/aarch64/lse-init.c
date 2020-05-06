@@ -29,19 +29,20 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 _Bool __aarch64_have_lse_atomics
   __attribute__((visibility("hidden"), nocommon));
 
-/* Disable initialization of __aarch64_have_lse_atomics during bootstrap.  */
-#if !defined(inhibit_libc) && defined(HAVE_SYS_AUXV_H)
-# include <sys/auxv.h>
+/* Gate availability of __getauxval on glibc.  All AArch64-supporting glibc
+   versions support it.  */
+#ifdef __gnu_linux__
 
-/* Disable initialization if the system headers are too old.  */
-# if defined(AT_HWCAP) && defined(HWCAP_ATOMICS)
+# define AT_HWCAP	16
+# define HWCAP_ATOMICS	(1 << 8)
+
+unsigned long int __getauxval (unsigned long int);
 
 static void __attribute__((constructor))
 init_have_lse_atomics (void)
 {
-  unsigned long hwcap = getauxval (AT_HWCAP);
+  unsigned long hwcap = __getauxval (AT_HWCAP);
   __aarch64_have_lse_atomics = (hwcap & HWCAP_ATOMICS) != 0;
 }
 
-# endif /* HWCAP */
-#endif /* inhibit_libc */
+#endif /* __gnu_linux__  */
