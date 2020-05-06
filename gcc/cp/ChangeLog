@@ -1,3 +1,9 @@
+2020-05-06  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/94946
+	* decl.c (grokdeclarator): Don't splice template attributes in
+	parm context -- they can apply to the parm.
+
 2020-04-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/90750
