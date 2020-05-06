@@ -1,3 +1,9 @@
+2020-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/abi.xml (abi.versioning.history): Update 8.0.0 to
+	8.1.0 in list of versions.
+	* doc/html/*: Regenerate.
+
 2020-05-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/faq.xml: Use working link for SGI STL FAQ.
