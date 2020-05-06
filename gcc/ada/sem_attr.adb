@@ -7245,22 +7245,17 @@ package body Sem_Attr is
       --  See SPARK RM 9(18) for the relevant rule.
 
       if GNATprove_Mode then
-         declare
-            Unused : Entity_Id;
+         case Attr_Id is
+            when Attribute_Callable
+               | Attribute_Caller
+               | Attribute_Count
+               | Attribute_Terminated
+            =>
+               SPARK_Implicit_Load (RE_Tasking_State);
 
-         begin
-            case Attr_Id is
-               when Attribute_Callable
-                  | Attribute_Caller
-                  | Attribute_Count
-                  | Attribute_Terminated
-               =>
-                  Unused := RTE (RE_Tasking_State);
-
-               when others =>
-                  null;
-            end case;
-         end;
+            when others =>
+               null;
+         end case;
       end if;
 
    --  All errors raise Bad_Attribute, so that we get out before any further
