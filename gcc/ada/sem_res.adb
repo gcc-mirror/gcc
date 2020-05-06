@@ -178,6 +178,7 @@ package body Sem_Res is
    procedure Resolve_Case_Expression           (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Character_Literal         (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Comparison_Op             (N : Node_Id; Typ : Entity_Id);
+   procedure Resolve_Declare_Expression        (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Entity_Name               (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Equality_Op               (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Explicit_Dereference      (N : Node_Id; Typ : Entity_Id);
@@ -2285,10 +2286,18 @@ package body Sem_Res is
       Check_Parameterless_Call (N);
 
       --  The resolution of an Expression_With_Actions is determined by
-      --  its Expression.
+      --  its Expression, but if the node comes from source it is a
+      --  Declare_Expression and requires scope management.
 
       if Nkind (N) = N_Expression_With_Actions then
-         Resolve (Expression (N), Typ);
+         if Comes_From_Source (N)
+            and then N = Original_Node (N)
+         then
+            Resolve_Declare_Expression (N, Typ);
+
+         else
+            Resolve (Expression (N), Typ);
+         end if;
 
          Found := True;
          Expr_Type := Etype (Expression (N));
@@ -7398,6 +7407,49 @@ package body Sem_Res is
          Eval_Relational_Op (N);
       end if;
    end Resolve_Comparison_Op;
+
+   --------------------------------
+   -- Resolve_Declare_Expression --
+   --------------------------------
+
+   procedure Resolve_Declare_Expression
+     (N   : Node_Id;
+      Typ : Entity_Id)
+   is
+      Decl : Node_Id;
+   begin
+      --  Install the scope created for local declarations, if
+      --  any. The syntax allows a Declare_Expression with no
+      --  declarations, in analogy with block statements.
+
+      Decl := First (Actions (N));
+
+      while Present (Decl) loop
+         exit when Nkind (Decl) = N_Object_Declaration;
+         Next (Decl);
+      end loop;
+
+      if Present (Decl) then
+         Push_Scope (Scope (Defining_Identifier (Decl)));
+
+         declare
+            E : Entity_Id := First_Entity (Current_Scope);
+
+         begin
+            while Present (E) loop
+               Set_Current_Entity (E);
+               Set_Is_Immediately_Visible (E);
+               Next_Entity (E);
+            end loop;
+         end;
+
+         Resolve (Expression (N), Typ);
+         End_Scope;
+
+      else
+         Resolve (Expression (N), Typ);
+      end if;
+   end Resolve_Declare_Expression;
 
    -----------------------------------------
    -- Resolve_Discrete_Subtype_Indication --
