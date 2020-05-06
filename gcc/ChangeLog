@@ -1,10 +1,182 @@
+2020-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93069
+	* config/i386/subst.md (store_mask_constraint, store_mask_predicate):
+	Remove.
+	(avx512dq_vextract<shuffletype>64x2_1_maskm,
+	avx512f_vextract<shuffletype>32x4_1_maskm,
+	vec_extract_lo_<mode>_maskm, vec_extract_hi_<mode>_maskm): Remove.
+	(<mask_codefor>avx512dq_vextract<shuffletype>64x2_1<mask_name>): Split
+	into ...
+	(*avx512dq_vextract<shuffletype>64x2_1,
+	avx512dq_vextract<shuffletype>64x2_1_mask): ... these new
+	define_insns.  Even in the masked variant allow memory output but in
+	that case use 0 rather than 0C constraint on the source of masked-out
+	elts.
+	(<mask_codefor>avx512f_vextract<shuffletype>32x4_1<mask_name>): Split
+	into ...
+	(*avx512f_vextract<shuffletype>32x4_1,
+	avx512f_vextract<shuffletype>32x4_1_mask): ... these new define_insns.
+	Even in the masked variant allow memory output but in that case use
+	0 rather than 0C constraint on the source of masked-out elts.
+	(vec_extract_lo_<mode><mask_name>): Split into ...
+	(vec_extract_lo_<mode>, vec_extract_lo_<mode>_mask): ... these new
+	define_insns.  Even in the masked variant allow memory output but in
+	that case use 0 rather than 0C constraint on the source of masked-out
+	elts.
+	(vec_extract_hi_<mode><mask_name>): Split into ...
+	(vec_extract_hi_<mode>, vec_extract_hi_<mode>_mask): ... these new
+	define_insns.  Even in the masked variant allow memory output but in
+	that case use 0 rather than 0C constraint on the source of masked-out
+	elts.
+
+2020-05-06  qing zhao  <qing.zhao@oracle.com>
+
+	PR c/94230
+	* common.opt: Add -flarge-source-files.
+	* doc/invoke.texi: Document it.
+	* toplev.c (process_options): set line_table->default_range_bits
+	to 0 when flag_large_source_files is true.
+
+2020-05-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/94913
+	* config/i386/predicates.md (add_comparison_operator): New predicate.
+	* config/i386/i386.md (compare->add splitter): New splitters.
+
+2020-05-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_transform_slp_perm_load): Adjust.
+	* tree-vect-data-refs.c (vect_slp_analyze_node_dependences):
+	Remove slp_instance parameter, just iterate over all scalar stmts.
+	(vect_slp_analyze_instance_dependence): Adjust and likewise.
+	* tree-vect-slp.c (vect_bb_slp_scalar_cost): Remove unused BB
+	parameter.
+	(vect_schedule_slp): Just iterate over all scalar stmts.
+	(vect_supported_load_permutation_p): Adjust.
+	(vect_transform_slp_perm_load): Remove slp_instance parameter,
+	instead use the number of lanes in the node as group size.
+	* tree-vect-stmts.c (vect_model_load_cost): Get vectorization
+	factor instead of slp_instance as parameter.
+	(vectorizable_load): Adjust.
+
+2020-05-06  Andreas Schwab  <schwab@suse.de>
+
+	* config/aarch64/driver-aarch64.c: Include "aarch64-protos.h".
+	(aarch64_get_extension_string_for_isa_flags): Don't declare.
+
+2020-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94964
+	* cfgloopmanip.c (create_preheader): Require non-complex
+	preheader edge for CP_SIMPLE_PREHEADERS.
+
+2020-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94963
+	* tree-ssa-loop-im.c (execute_sm_if_changed): Remove
+	no-warning marking of the conditional store.
+	(execute_sm): Instead mark the uninitialized state
+	on loop entry to be not warned about.
+
+2020-05-06  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA2_TSXLDTRK_SET,
+	OPTION_MASK_ISA2_TSXLDTRK_UNSET): New macros.
+	* config.gcc: Add tsxldtrkintrin.h to extra_headers.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	TSXLDTRK.
+	* config/i386/i386-builtin.def: Add new builtins.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Define
+	__TSXLDTRK__.
+	* config/i386/i386-options.c (ix86_target_string): Add
+	-mtsxldtrk.
+	(ix86_valid_target_attribute_inner_p): Add attribute tsxldtrk.
+	* config/i386/i386.h (TARGET_TSXLDTRK, TARGET_TSXLDTRK_P):
+	New.
+	* config/i386/i386.md (define_c_enum "unspec"): Add
+	UNSPECV_SUSLDTRK, UNSPECV_RESLDTRK.
+	(TSXLDTRK): New define_int_iterator.
+	("<tsxldtrk>"): New define_insn.
+	* config/i386/i386.opt: Add -mtsxldtrk.
+	* config/i386/immintrin.h: Include tsxldtrkintrin.h.
+	* config/i386/tsxldtrkintrin.h: New.
+	* doc/invoke.texi: Document -mtsxldtrk.
+
+2020-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94921
+	* match.pd (~(~X - Y) -> X + Y, ~(~X + Y) -> X - Y): New
+	simplifications.
+
+2020-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94965
+	* tree-vect-stmts.c (vectorizable_load): Fix typo.
+
+2020-05-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/install.texi: Replace Sun with Solaris as appropriate.
+	(Tools/packages necessary for building GCC, Perl version between
+	5.6.1 and 5.6.24): Remove Solaris 8 reference.
+	(Installing GCC: Binaries, Solaris 2 (SPARC, Intel)): Remove
+	TGCware reference.
+	(Specific, i?86-*-solaris2*): Update version references for
+	Solaris 11.3 and later.  Remove gas 2.26 caveat.
+	(Specific, *-*-solaris2*): Update version references for
+	Solaris 11.3 and later.  Remove boehm-gc reference.
+	Document GMP, MPFR caveats on Solaris 11.3.
+	(Specific, sparc-sun-solaris2*): Update Solaris 9 references.
+	(Specific, sparc64-*-solaris2*): Likewise.
+	Document --build requirement.
+
+2020-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94950
+	* config/riscv/riscv-builtins.c (riscv_atomic_assign_expand_fenv): Use
+	TARGET_EXPR instead of MODIFY_EXPR for first assignment to old_flags.
+
+	PR rtl-optimization/94873
+	* combine.c (combine_instructions): Don't optimize using REG_EQUAL
+	note if SET_SRC (set) has side-effects.
+
+2020-05-06  Hongtao Liu  <hongtao.liu@intel.com>
+	    Wei Xiao  <wei3.xiao@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA2_SERIALIZE_SET,
+	OPTION_MASK_ISA2_SERIALIZE_UNSET): New macros.
+	(ix86_handle_option): Handle -mserialize.
+	* config.gcc (serializeintrin.h): New header file.
+	* config/i386/cpuid.h (bit_SERIALIZE): New bit.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	-mserialize.
+	* config/i386/i386-builtin.def: Add new builtin.
+	* config/i386/i386-c.c (__SERIALIZE__): New macro.
+	* config/i386/i386-options.c (ix86_target_opts_isa2_opts):
+	  Add -mserialize.
+	* (ix86_valid_target_attribute_inner_p): Add target attribute
+	* for serialize.
+	* config/i386/i386.h (TARGET_SERIALIZE, TARGET_SERIALIZE_P):
+	  New macros.
+	* config/i386/i386.md (UNSPECV_SERIALIZE): New unspec.
+	  (serialize): New define_insn.
+	* config/i386/i386.opt (mserialize): New option
+	* config/i386/immintrin.h: Include serailizeintrin.h.
+	* config/i386/serializeintrin.h: New header file.
+	* doc/invoke.texi: Add documents for -mserialize.
+
+2020-05-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_gimple_assign_unary): Adjust integer
+	to/from pointer conversion checking.
+
 2020-05-05  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def: Delete changes meant for a
 	private branch.
 	* config/rs6000/rs6000-c.c: Likewise.
 	* config/rs6000/rs6000-call.c: Likewise.
-	* gcc/config/rs6000/rs6000.c: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
 
 2020-05-05  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
@@ -725,7 +897,7 @@
 2020-04-28  Alexandre Oliva <oliva@adacore.com>
 
 	PR target/94812
-	* gcc/config/rs6000/rs6000.md (rs6000_mffsl): Copy result to
+	* config/rs6000/rs6000.md (rs6000_mffsl): Copy result to
 	output operand in emulation.  Don't overwrite pseudos.
 
 2020-04-28  Jeff Law  <law@redhat.com>
@@ -980,7 +1152,7 @@
 
 2020-04-23  Bill Schmidt  <wschmidt@linux.ibm.com>
 
-	* gcc/doc/extend.texi (PowerPC AltiVec/VSX Built-in Functions):
+	* doc/extend.texi (PowerPC AltiVec/VSX Built-in Functions):
 	Replace outdated link to ELFv2 ABI.
 
 2020-04-23  Jakub Jelinek  <jakub@redhat.com>
@@ -2560,7 +2732,7 @@
 
 2020-03-29  John David Anglin  <dave.anglin@bell.net>
 
-	* gcc/config/pa/pa.c (pa_asm_output_aligned_bss): Delete duplicate
+	* config/pa/pa.c (pa_asm_output_aligned_bss): Delete duplicate
 	.align output.
 
 2020-03-28  Jakub Jelinek  <jakub@redhat.com>
@@ -3052,7 +3224,7 @@
 2020-03-21 Iain Sandoe <iain@sandoe.co.uk>
 
 	PR target/93694
-	* gcc/config/darwin.opt: Amend options descriptions.
+	* config/darwin.opt: Amend options descriptions.
 
 2020-03-21  Richard Sandiford  <richard.sandiford@arm.com>
 
@@ -3074,7 +3246,7 @@
 2020-03-20  Carl Love  <cel@us.ibm.com>
 
 	PR/target 87583
-	* gcc/config/rs6000/rs6000.c (rs6000_option_override_internal):
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
 	Add check for TARGET_FPRND for Power 7 or newer.
 
 2020-03-20  Jan Hubicka  <hubicka@ucw.cz>
@@ -10658,7 +10830,7 @@
 2020-03-10  Jiufu Guo  <guojiufu@linux.ibm.com>
 
 	PR target/93709
-	* gcc/config/rs6000/rs6000.c (rs6000_emit_p9_fp_minmax): Check
+	* config/rs6000/rs6000.c (rs6000_emit_p9_fp_minmax): Check
 	NAN and SIGNED_ZEROR for smax/smin.
 
 2020-03-10  Will Schmidt  <will_schmidt@vnet.ibm.com>
@@ -11716,9 +11888,9 @@
 
 2020-02-21  John David Anglin  <danglin@gcc.gnu.org>
 
-	* gcc/config/pa/pa.c (pa_function_value): Fix check for word and
+	* config/pa/pa.c (pa_function_value): Fix check for word and
 	double-word size when handling aggregate return values.
-	* gcc/config/pa/som.h (ASM_DECLARE_FUNCTION_NAME): Fix to indicate
+	* config/pa/som.h (ASM_DECLARE_FUNCTION_NAME): Fix to indicate
 	that homogeneous SFmode and DFmode aggregates are passed and returned
 	in general registers.
 
@@ -13843,7 +14015,7 @@
 
 2020-01-21  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
 
-	* gcc/config/arm/arm.c (clear_operation_p):
+	* config/arm/arm.c (clear_operation_p):
 	Initialise last_regno, skip first iteration
 	based on the first_set value and use ints instead
 	of the unnecessary HOST_WIDE_INTs.

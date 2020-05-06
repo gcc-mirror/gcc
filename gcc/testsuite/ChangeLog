@@ -1,3 +1,71 @@
+2020-05-06  qing zhao  <qing.zhao@oracle.com>
+
+	PR c/94230
+	* gcc.dg/plugin/location-overflow-test-1.c (fn_1): New message to 
+	provide hint to use the new -flarge-source-files option.
+
+2020-05-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/94913
+	* gcc.target/i386/pr94913-1.c: New test.
+	* gcc.target/i386/pr94913-2.c: Ditto.
+
+2020-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94963
+	* gcc.dg/pr94963.c: New testcase.
+
+2020-05-06  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* g++.dg/other/i386-2.c: Add -mtsxldtrk.
+	* g++.dg/other/i386-3.c: Likewise.
+	* gcc.target/i386/sse-12.c: Likewise.
+	* gcc.target/i386/sse-13.c: Likewise.
+	* gcc.target/i386/sse-14.c: Likewise.
+	* gcc.target/i386/sse-22.c: Likewsie.
+	* gcc.target/i386/sse-23.c: Likewise.
+	* gcc.target/i386/tsxldtrk-1.c: New test.
+	* gcc.target/i386/funcspec-56.inc: Add target attribute tests
+	for tsxldtrk.
+
+2020-05-06  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/funcspec-56.inc: Add enqcmd, avx512bf16,
+	avx512vp2intersect.
+
+2020-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94921
+	* match.pd (~(~X - Y) -> X + Y, ~(~X + Y) -> X - Y): New
+	simplifications.
+
+	PR rtl-optimization/94873
+	* gcc.dg/pr94873.c: New test.
+
+2020-05-06  Hongtao.liu  <hongtao.liu@intel.com>
+	    Wei Xiao  <wei3.xiao@intel.com>
+
+	* gcc/testsuite/gcc.target/i386/serialize-1.c: New test.
+	* gcc/testsuite/g++.dg/other/i386-2.C: Add -mserialize.
+	* gcc/testsuite/g++.dg/other/i386-3.C: Ditto.
+	* gcc/testsuite/gcc.target/i386/funcspec-56.inc: Ditto.
+	* gcc/testsuite/gcc.target/i386/sse-12.c: Ditto.
+	* gcc/testsuite/gcc.target/i386/sse-13.c: Ditto.
+	* gcc/testsuite/gcc.target/i386/sse-14.c: Ditto.
+	* gcc/testsuite/gcc.target/i386/sse-22.c: Ditto.
+	* gcc/testsuite/gcc.target/i386/sse-23.c: Ditto.
+
+2020-05-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/84324
+	* objc/execute/exceptions/matcher-1.m (my_exception_matcher):
+	Change return type to int.
+
+2020-05-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93366
+	* gfortran.dg/pr93366.f90: New test.
+
 2020-05-05  Michael Meissner  <meissner@linux.ibm.com>
 
 	* gcc.dg/nextafter-2.c: Delete changes meant for a private branch.
