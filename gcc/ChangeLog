@@ -1,3 +1,11 @@
+2020-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94963
+	* tree-ssa-loop-im.c (execute_sm_if_changed): Remove
+	no-warning marking of the conditional store.
+	(execute_sm): Instead mark the uninitialized state
+	on loop entry to be not warned about.
+
 2020-05-06  Hongtao Liu  <hongtao.liu@intel.com>
 
 	* common/config/i386/i386-common.c (OPTION_MASK_ISA2_TSXLDTRK_SET,
