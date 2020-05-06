@@ -8323,60 +8323,31 @@
   DONE;
 })
 
-(define_insn "avx512dq_vextract<shuffletype>64x2_1_maskm"
-  [(set (match_operand:<ssequartermode> 0 "memory_operand" "=m")
+(define_insn "avx512dq_vextract<shuffletype>64x2_1_mask"
+  [(set (match_operand:<ssequartermode> 0 "nonimmediate_operand" "=v,m")
 	(vec_merge:<ssequartermode>
 	  (vec_select:<ssequartermode>
-	    (match_operand:V8FI 1 "register_operand" "v")
-	    (parallel [(match_operand 2  "const_0_to_7_operand")
-	      (match_operand 3  "const_0_to_7_operand")]))
-	  (match_operand:<ssequartermode> 4 "memory_operand" "0")
-	  (match_operand:QI 5 "register_operand" "Yk")))]
+	    (match_operand:V8FI 1 "register_operand" "v,v")
+	    (parallel [(match_operand 2 "const_0_to_7_operand")
+		       (match_operand 3 "const_0_to_7_operand")]))
+	  (match_operand:<ssequartermode> 4 "nonimm_or_0_operand" "0C,0")
+	  (match_operand:QI 5 "register_operand" "Yk,Yk")))]
   "TARGET_AVX512DQ
    && INTVAL (operands[2]) % 2 == 0
    && INTVAL (operands[2]) == INTVAL (operands[3]) - 1
-   && rtx_equal_p (operands[4], operands[0])"
+   && (!MEM_P (operands[0]) || rtx_equal_p (operands[0], operands[4]))"
 {
-  operands[2] = GEN_INT ((INTVAL (operands[2])) >> 1);
-  return "vextract<shuffletype>64x2\t{%2, %1, %0%{%5%}|%0%{%5%}, %1, %2}";
+  operands[2] = GEN_INT (INTVAL (operands[2]) >> 1);
+  return "vextract<shuffletype>64x2\t{%2, %1, %0%{%5%}%N4|%0%{%5%}%N4, %1, %2}";
 }
-  [(set_attr "type" "sselog")
+  [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
-   (set_attr "memory" "store")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "avx512f_vextract<shuffletype>32x4_1_maskm"
-  [(set (match_operand:<ssequartermode> 0 "memory_operand" "=m")
-	(vec_merge:<ssequartermode>
-	  (vec_select:<ssequartermode>
-	    (match_operand:V16FI 1 "register_operand" "v")
-	    (parallel [(match_operand 2  "const_0_to_15_operand")
-	      (match_operand 3  "const_0_to_15_operand")
-	      (match_operand 4  "const_0_to_15_operand")
-	      (match_operand 5  "const_0_to_15_operand")]))
-	  (match_operand:<ssequartermode> 6 "memory_operand" "0")
-	  (match_operand:QI 7 "register_operand" "Yk")))]
-  "TARGET_AVX512F
-   && INTVAL (operands[2]) % 4 == 0
-   && INTVAL (operands[2]) == INTVAL (operands[3]) - 1
-   && INTVAL (operands[3]) == INTVAL (operands[4]) - 1
-   && INTVAL (operands[4]) == INTVAL (operands[5]) - 1
-   && rtx_equal_p (operands[6], operands[0])"
-{
-  operands[2] = GEN_INT (INTVAL (operands[2]) >> 2);
-  return "vextract<shuffletype>32x4\t{%2, %1, %0%{%7%}|%0%{%7%}, %1, %2}";
-}
-  [(set_attr "type" "sselog")
-   (set_attr "prefix_extra" "1")
-   (set_attr "length_immediate" "1")
-   (set_attr "memory" "store")
-   (set_attr "prefix" "evex")
-   (set_attr "mode" "<sseinsnmode>")])
-
-(define_insn "<mask_codefor>avx512dq_vextract<shuffletype>64x2_1<mask_name>"
-  [(set (match_operand:<ssequartermode> 0 "<store_mask_predicate>" "=<store_mask_constraint>")
+(define_insn "*avx512dq_vextract<shuffletype>64x2_1"
+  [(set (match_operand:<ssequartermode> 0 "nonimmediate_operand" "=vm")
 	(vec_select:<ssequartermode>
 	  (match_operand:V8FI 1 "register_operand" "v")
 	  (parallel [(match_operand 2  "const_0_to_7_operand")
@@ -8386,7 +8357,7 @@
    && INTVAL (operands[2]) == INTVAL (operands[3]) - 1"
 {
   operands[2] = GEN_INT (INTVAL (operands[2]) >> 1);
-  return "vextract<shuffletype>64x2\t{%2, %1, %0<mask_operand4>|%0<mask_operand4>, %1, %2}";
+  return "vextract<shuffletype>64x2\t{%2, %1, %0|%0, %1, %2}";
 }
   [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
@@ -8415,14 +8386,41 @@
     operands[1] = gen_lowpart (<ssequartermode>mode, operands[1]);
 })
 
-(define_insn "<mask_codefor>avx512f_vextract<shuffletype>32x4_1<mask_name>"
-  [(set (match_operand:<ssequartermode> 0 "<store_mask_predicate>" "=<store_mask_constraint>")
+(define_insn "avx512f_vextract<shuffletype>32x4_1_mask"
+  [(set (match_operand:<ssequartermode> 0 "nonimmediate_operand" "=v,m")
+	(vec_merge:<ssequartermode>
+	  (vec_select:<ssequartermode>
+	    (match_operand:V16FI 1 "register_operand" "v,v")
+	    (parallel [(match_operand 2 "const_0_to_15_operand")
+		       (match_operand 3 "const_0_to_15_operand")
+		       (match_operand 4 "const_0_to_15_operand")
+		       (match_operand 5 "const_0_to_15_operand")]))
+	  (match_operand:<ssequartermode> 6 "nonimm_or_0_operand" "0C,0")
+	  (match_operand:QI 7 "register_operand" "Yk,Yk")))]
+  "TARGET_AVX512F
+   && INTVAL (operands[2]) % 4 == 0
+   && INTVAL (operands[2]) == INTVAL (operands[3]) - 1
+   && INTVAL (operands[3]) == INTVAL (operands[4]) - 1
+   && INTVAL (operands[4]) == INTVAL (operands[5]) - 1
+   && (!MEM_P (operands[0]) || rtx_equal_p (operands[0], operands[6]))"
+{
+  operands[2] = GEN_INT (INTVAL (operands[2]) >> 2);
+  return "vextract<shuffletype>32x4\t{%2, %1, %0%{%7%}%N6|%0%{%7%}%N6, %1, %2}";
+}
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "*avx512f_vextract<shuffletype>32x4_1"
+  [(set (match_operand:<ssequartermode> 0 "nonimmediate_operand" "=vm")
 	(vec_select:<ssequartermode>
 	  (match_operand:V16FI 1 "register_operand" "v")
-	  (parallel [(match_operand 2  "const_0_to_15_operand")
-            (match_operand 3  "const_0_to_15_operand")
-            (match_operand 4  "const_0_to_15_operand")
-            (match_operand 5  "const_0_to_15_operand")])))]
+	  (parallel [(match_operand 2 "const_0_to_15_operand")
+		     (match_operand 3 "const_0_to_15_operand")
+		     (match_operand 4 "const_0_to_15_operand")
+		     (match_operand 5 "const_0_to_15_operand")])))]
   "TARGET_AVX512F
    && INTVAL (operands[2]) % 4 == 0
    && INTVAL (operands[2]) == INTVAL (operands[3]) - 1
@@ -8430,7 +8428,7 @@
    && INTVAL (operands[4]) == INTVAL (operands[5]) - 1"
 {
   operands[2] = GEN_INT (INTVAL (operands[2]) >> 2);
-  return "vextract<shuffletype>32x4\t{%2, %1, %0<mask_operand6>|%0<mask_operand6>, %1, %2}";
+  return "vextract<shuffletype>32x4\t{%2, %1, %0|%0, %1, %2}";
 }
   [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
@@ -8514,35 +8512,35 @@
   [(set (match_dup 0) (match_dup 1))]
   "operands[1] = gen_lowpart (<ssehalfvecmode>mode, operands[1]);")
 
-(define_insn "vec_extract_lo_<mode>_maskm"
-  [(set (match_operand:<ssehalfvecmode> 0 "memory_operand" "=m")
+(define_insn "vec_extract_lo_<mode>_mask"
+  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=v,m")
 	(vec_merge:<ssehalfvecmode>
 	  (vec_select:<ssehalfvecmode>
-	    (match_operand:V8FI 1 "register_operand" "v")
+	    (match_operand:V8FI 1 "register_operand" "v,v")
 	    (parallel [(const_int 0) (const_int 1)
-	      (const_int 2) (const_int 3)]))
-	  (match_operand:<ssehalfvecmode> 2 "memory_operand" "0")
-	  (match_operand:QI 3 "register_operand" "Yk")))]
+		       (const_int 2) (const_int 3)]))
+	  (match_operand:<ssehalfvecmode> 2 "nonimm_or_0_operand" "0C,0")
+	  (match_operand:QI 3 "register_operand" "Yk,Yk")))]
   "TARGET_AVX512F
-   && rtx_equal_p (operands[2], operands[0])"
-  "vextract<shuffletype>64x4\t{$0x0, %1, %0%{%3%}|%0%{%3%}, %1, 0x0}"
+   && (!MEM_P (operands[0]) || rtx_equal_p (operands[0], operands[2]))"
+  "vextract<shuffletype>64x4\t{$0x0, %1, %0%{%3%}%N2|%0%{%3%}%N2, %1, 0x0}"
   [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
+   (set_attr "memory" "none,store")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "vec_extract_lo_<mode><mask_name>"
-  [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>" "=v,<store_mask_constraint>,v")
+(define_insn "vec_extract_lo_<mode>"
+  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=v,vm,v")
 	(vec_select:<ssehalfvecmode>
-	  (match_operand:V8FI 1 "<store_mask_predicate>" "v,v,<store_mask_constraint>")
+	  (match_operand:V8FI 1 "nonimmediate_operand" "v,v,vm")
 	  (parallel [(const_int 0) (const_int 1)
-            (const_int 2) (const_int 3)])))]
-  "TARGET_AVX512F
-   && (<mask_applied> || !(MEM_P (operands[0]) && MEM_P (operands[1])))"
+		     (const_int 2) (const_int 3)])))]
+  "TARGET_AVX512F && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
 {
-  if (<mask_applied> || (!TARGET_AVX512VL && !MEM_P (operands[1])))
-    return "vextract<shuffletype>64x4\t{$0x0, %1, %0<mask_operand2>|%0<mask_operand2>, %1, 0x0}";
+  if (!TARGET_AVX512VL && !MEM_P (operands[1]))
+    return "vextract<shuffletype>64x4\t{$0x0, %1, %0|%0, %1, 0x0}";
   else
     return "#";
 }
@@ -8553,70 +8551,69 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "vec_extract_hi_<mode>_maskm"
-  [(set (match_operand:<ssehalfvecmode> 0 "memory_operand" "=m")
+(define_insn "vec_extract_hi_<mode>_mask"
+  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=v,m")
 	(vec_merge:<ssehalfvecmode>
 	  (vec_select:<ssehalfvecmode>
-	    (match_operand:V8FI 1 "register_operand" "v")
+	    (match_operand:V8FI 1 "register_operand" "v,v")
 	    (parallel [(const_int 4) (const_int 5)
-	      (const_int 6) (const_int 7)]))
-	  (match_operand:<ssehalfvecmode> 2 "memory_operand" "0")
-	  (match_operand:QI 3 "register_operand" "Yk")))]
+		       (const_int 6) (const_int 7)]))
+	  (match_operand:<ssehalfvecmode> 2 "nonimm_or_0_operand" "0C,0")
+	  (match_operand:QI 3 "register_operand" "Yk,Yk")))]
   "TARGET_AVX512F
-   && rtx_equal_p (operands[2], operands[0])"
-  "vextract<shuffletype>64x4\t{$0x1, %1, %0%{%3%}|%0%{%3%}, %1, 0x1}"
-  [(set_attr "type" "sselog")
+   && (!MEM_P (operands[0]) || rtx_equal_p (operands[0], operands[2]))"
+  "vextract<shuffletype>64x4\t{$0x1, %1, %0%{%3%}%N2|%0%{%3%}%N2, %1, 0x1}"
+  [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
-   (set_attr "memory" "store")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "vec_extract_hi_<mode><mask_name>"
-  [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>" "=<store_mask_constraint>")
+(define_insn "vec_extract_hi_<mode>"
+  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=vm")
 	(vec_select:<ssehalfvecmode>
 	  (match_operand:V8FI 1 "register_operand" "v")
 	  (parallel [(const_int 4) (const_int 5)
-            (const_int 6) (const_int 7)])))]
+		     (const_int 6) (const_int 7)])))]
   "TARGET_AVX512F"
-  "vextract<shuffletype>64x4\t{$0x1, %1, %0<mask_operand2>|%0<mask_operand2>, %1, 0x1}"
+  "vextract<shuffletype>64x4\t{$0x1, %1, %0|%0, %1, 0x1}"
   [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "vec_extract_hi_<mode>_maskm"
-   [(set (match_operand:<ssehalfvecmode> 0 "memory_operand" "=m")
+(define_insn "vec_extract_hi_<mode>_mask"
+  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=v,m")
 	(vec_merge:<ssehalfvecmode>
 	  (vec_select:<ssehalfvecmode>
-	    (match_operand:V16FI 1 "register_operand" "v")
+	    (match_operand:V16FI 1 "register_operand" "v,v")
 	    (parallel [(const_int 8) (const_int 9)
-	      (const_int 10) (const_int 11)
-	      (const_int 12) (const_int 13)
-	      (const_int 14) (const_int 15)]))
-	  (match_operand:<ssehalfvecmode> 2 "memory_operand" "0")
-	  (match_operand:QI 3 "register_operand" "Yk")))]
+		       (const_int 10) (const_int 11)
+		       (const_int 12) (const_int 13)
+		       (const_int 14) (const_int 15)]))
+	  (match_operand:<ssehalfvecmode> 2 "nonimm_or_0_operand" "0C,0")
+	  (match_operand:QI 3 "register_operand" "Yk,Yk")))]
   "TARGET_AVX512DQ
-   && rtx_equal_p (operands[2], operands[0])"
-  "vextract<shuffletype>32x8\t{$0x1, %1, %0%{%3%}|%0%{%3%}, %1, 0x1}"
+   && (!MEM_P (operands[0]) || rtx_equal_p (operands[0], operands[2]))"
+  "vextract<shuffletype>32x8\t{$0x1, %1, %0%{%3%}%N2|%0%{%3%}%N2, %1, 0x1}"
   [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "vec_extract_hi_<mode><mask_name>"
-  [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>" "=<store_mask_constraint>,vm")
+(define_insn "vec_extract_hi_<mode>"
+  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=vm,vm")
 	(vec_select:<ssehalfvecmode>
 	  (match_operand:V16FI 1 "register_operand" "v,v")
 	  (parallel [(const_int 8) (const_int 9)
-            (const_int 10) (const_int 11)
-	    (const_int 12) (const_int 13)
-	    (const_int 14) (const_int 15)])))]
-  "TARGET_AVX512F && <mask_avx512dq_condition>"
+		     (const_int 10) (const_int 11)
+		     (const_int 12) (const_int 13)
+		     (const_int 14) (const_int 15)])))]
+  "TARGET_AVX512F"
   "@
-   vextract<shuffletype>32x8\t{$0x1, %1, %0<mask_operand2>|%0<mask_operand2>, %1, 0x1}
+   vextract<shuffletype>32x8\t{$0x1, %1, %0|%0, %1, 0x1}
    vextracti64x4\t{$0x1, %1, %0|%0, %1, 0x1}"
   [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
@@ -8692,27 +8689,44 @@
   DONE;
 })
 
-(define_insn "vec_extract_lo_<mode><mask_name>"
-  [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>"
-					  "=v,v,<store_mask_constraint>")
+(define_insn "vec_extract_lo_<mode>_mask"
+  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=v,m")
+	(vec_merge:<ssehalfvecmode>
+	  (vec_select:<ssehalfvecmode>
+	    (match_operand:V16FI 1 "register_operand" "v,v")
+	    (parallel [(const_int 0) (const_int 1)
+		       (const_int 2) (const_int 3)
+		       (const_int 4) (const_int 5)
+		       (const_int 6) (const_int 7)]))
+	  (match_operand:<ssehalfvecmode> 2 "nonimm_or_0_operand" "0C,0")
+	  (match_operand:QI 3 "register_operand" "Yk,Yk")))]
+  "TARGET_AVX512DQ
+   && (!MEM_P (operands[0]) || rtx_equal_p (operands[0], operands[2]))"
+  "vextract<shuffletype>32x8\t{$0x0, %1, %0%{%3%}%N2|%0%{%3%}%N2, %1, 0x0}"
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "memory" "none,store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "vec_extract_lo_<mode>"
+  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=v,v,m")
 	(vec_select:<ssehalfvecmode>
-	  (match_operand:V16FI 1 "<store_mask_predicate>"
-				 "v,<store_mask_constraint>,v")
+	  (match_operand:V16FI 1 "nonimmediate_operand" "v,m,v")
 	  (parallel [(const_int 0) (const_int 1)
-                     (const_int 2) (const_int 3)
-                     (const_int 4) (const_int 5)
-                     (const_int 6) (const_int 7)])))]
+		     (const_int 2) (const_int 3)
+		     (const_int 4) (const_int 5)
+		     (const_int 6) (const_int 7)])))]
   "TARGET_AVX512F
-   && <mask_avx512dq_condition>
-   && (<mask_applied> || !(MEM_P (operands[0]) && MEM_P (operands[1])))"
+   && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
 {
-  if (<mask_applied>
-      || (!TARGET_AVX512VL
-	  && !REG_P (operands[0])
-	  && EXT_REX_SSE_REG_P (operands[1])))
+  if (!TARGET_AVX512VL
+      && !REG_P (operands[0])
+      && EXT_REX_SSE_REG_P (operands[1]))
     {
       if (TARGET_AVX512DQ)
-	return "vextract<shuffletype>32x8\t{$0x0, %1, %0<mask_operand2>|%0<mask_operand2>, %1, 0x0}";
+	return "vextract<shuffletype>32x8\t{$0x0, %1, %0|%0, %1, 0x0}";
       else
 	return "vextract<shuffletype>64x4\t{$0x0, %1, %0|%0, %1, 0x0}";
     }
@@ -8750,28 +8764,33 @@
     operands[1] = gen_lowpart (<ssehalfvecmode>mode, operands[1]);
 })
 
-(define_insn "vec_extract_lo_<mode><mask_name>"
-  [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>"
-					  "=v,v,<store_mask_constraint>")
-	(vec_select:<ssehalfvecmode>
-	  (match_operand:VI8F_256 1 "<store_mask_predicate>"
-				    "v,<store_mask_constraint>,v")
-	  (parallel [(const_int 0) (const_int 1)])))]
-  "TARGET_AVX
-   && <mask_avx512vl_condition> && <mask_avx512dq_condition>
-   && (<mask_applied> || !(MEM_P (operands[0]) && MEM_P (operands[1])))"
-{
-  if (<mask_applied>)
-    return "vextract<shuffletype>64x2\t{$0x0, %1, %0<mask_operand2>|%0<mask_operand2>, %1, 0x0}";
-  else
-    return "#";
-}
+(define_insn "vec_extract_lo_<mode>_mask"
+  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=v,m")
+	(vec_merge:<ssehalfvecmode>
+	  (vec_select:<ssehalfvecmode>
+	    (match_operand:VI8F_256 1 "register_operand" "v,v")
+	    (parallel [(const_int 0) (const_int 1)]))
+	  (match_operand:<ssehalfvecmode> 2 "nonimm_or_0_operand" "0C,0")
+	  (match_operand:QI 3 "register_operand" "Yk,Yk")))]
+  "TARGET_AVX512DQ
+   && TARGET_AVX512VL
+   && (!MEM_P (operands[0]) || rtx_equal_p (operands[0], operands[2]))"
+  "vextract<shuffletype>64x2\t{$0x0, %1, %0%{%3%}%N2|%0%{%3%}%N2, %1, 0x0}"
    [(set_attr "type" "sselog1")
     (set_attr "prefix_extra" "1")
     (set_attr "length_immediate" "1")
-    (set_attr "memory" "none,load,store")
+    (set_attr "memory" "none,store")
     (set_attr "prefix" "evex")
     (set_attr "mode" "XI")])
+
+(define_insn "vec_extract_lo_<mode>"
+  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=vm,v")
+	(vec_select:<ssehalfvecmode>
+	  (match_operand:VI8F_256 1 "nonimmediate_operand" "v,vm")
+	  (parallel [(const_int 0) (const_int 1)])))]
+  "TARGET_AVX
+   && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "#")
 
 (define_split
   [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand")
@@ -8783,20 +8802,38 @@
   [(set (match_dup 0) (match_dup 1))]
   "operands[1] = gen_lowpart (<ssehalfvecmode>mode, operands[1]);")
 
-(define_insn "vec_extract_hi_<mode><mask_name>"
-  [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>" "=v,<store_mask_constraint>")
+(define_insn "vec_extract_hi_<mode>_mask"
+  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=v,m")
+	(vec_merge:<ssehalfvecmode>
+	  (vec_select:<ssehalfvecmode>
+	    (match_operand:VI8F_256 1 "register_operand" "v,v")
+	    (parallel [(const_int 2) (const_int 3)]))
+	  (match_operand:<ssehalfvecmode> 2 "nonimm_or_0_operand" "0C,0")
+	  (match_operand:QI 3 "register_operand" "Yk,Yk")))]
+  "TARGET_AVX512DQ
+   && TARGET_AVX512VL
+   && (!MEM_P (operands[0]) || rtx_equal_p (operands[0], operands[2]))"
+  "vextract<shuffletype>64x2\t{$0x1, %1, %0%{%3%}%N2|%0%{%3%}%N2, %1, 0x1}"
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "vec_extract_hi_<mode>"
+  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=vm")
 	(vec_select:<ssehalfvecmode>
-	  (match_operand:VI8F_256 1 "register_operand" "v,v")
+	  (match_operand:VI8F_256 1 "register_operand" "v")
 	  (parallel [(const_int 2) (const_int 3)])))]
-  "TARGET_AVX && <mask_avx512vl_condition> && <mask_avx512dq_condition>"
+  "TARGET_AVX"
 {
   if (TARGET_AVX512VL)
-  {
-    if (TARGET_AVX512DQ)
-      return "vextract<shuffletype>64x2\t{$0x1, %1, %0<mask_operand2>|%0<mask_operand2>, %1, 0x1}";
-    else
-      return "vextract<shuffletype>32x4\t{$0x1, %1, %0|%0, %1, 0x1}";
-  }
+    {
+      if (TARGET_AVX512DQ)
+	return "vextract<shuffletype>64x2\t{$0x1, %1, %0|%0, %1, 0x1}";
+      else
+	return "vextract<shuffletype>32x4\t{$0x1, %1, %0|%0, %1, 0x1}";
+    }
   else
     return "vextract<i128>\t{$0x1, %1, %0|%0, %1, 0x1}";
 }
@@ -8817,74 +8854,50 @@
   [(set (match_dup 0) (match_dup 1))]
   "operands[1] = gen_lowpart (<ssehalfvecmode>mode, operands[1]);")
 
-(define_insn "vec_extract_lo_<mode><mask_name>"
-  [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>"
-					  "=<store_mask_constraint>,v")
+(define_insn "vec_extract_lo_<mode>_mask"
+  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=v,m")
+	(vec_merge:<ssehalfvecmode>
+	  (vec_select:<ssehalfvecmode>
+	    (match_operand:VI4F_256 1 "register_operand" "v,v")
+	    (parallel [(const_int 0) (const_int 1)
+		       (const_int 2) (const_int 3)]))
+	  (match_operand:<ssehalfvecmode> 2 "nonimm_or_0_operand" "0C,0")
+	  (match_operand:QI 3 "register_operand" "Yk,Yk")))]
+  "TARGET_AVX512VL
+   && (!MEM_P (operands[0]) || rtx_equal_p (operands[0], operands[2]))"
+  "vextract<shuffletype>32x4\t{$0x0, %1, %0%{%3%}%N2|%0%{%3%}%N2, %1, 0x0}"
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "vec_extract_lo_<mode>"
+  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=vm,v")
 	(vec_select:<ssehalfvecmode>
-	  (match_operand:VI4F_256 1 "<store_mask_predicate>"
-				    "v,<store_mask_constraint>")
+	  (match_operand:VI4F_256 1 "nonimmediate_operand" "v,vm")
 	  (parallel [(const_int 0) (const_int 1)
 		     (const_int 2) (const_int 3)])))]
   "TARGET_AVX
-   && <mask_avx512vl_condition>
-   && (<mask_applied> || !(MEM_P (operands[0]) && MEM_P (operands[1])))"
-{
-  if (<mask_applied>)
-    return "vextract<shuffletype>32x4\t{$0x0, %1, %0<mask_operand2>|%0<mask_operand2>, %1, 0x0}";
-  else
-    return "#";
-}
+   && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "#"
   [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
-   (set_attr "length_immediate" "1")
-   (set_attr "prefix" "evex")
-   (set_attr "mode" "<sseinsnmode>")])
-
-(define_insn "vec_extract_lo_<mode>_maskm"
-  [(set (match_operand:<ssehalfvecmode> 0 "memory_operand" "=m")
-	(vec_merge:<ssehalfvecmode>
-	  (vec_select:<ssehalfvecmode>
-	    (match_operand:VI4F_256 1 "register_operand" "v")
-	    (parallel [(const_int 0) (const_int 1)
-		      (const_int 2) (const_int 3)]))
-	  (match_operand:<ssehalfvecmode> 2 "memory_operand" "0")
-	  (match_operand:QI 3 "register_operand" "Yk")))]
-  "TARGET_AVX512VL && TARGET_AVX512F
-   && rtx_equal_p (operands[2], operands[0])"
-  "vextract<shuffletype>32x4\t{$0x0, %1, %0%{%3%}|%0%{%3%}, %1, 0x0}"
-  [(set_attr "type" "sselog1")
-   (set_attr "prefix_extra" "1")
-   (set_attr "length_immediate" "1")
-   (set_attr "prefix" "evex")
-   (set_attr "mode" "<sseinsnmode>")])
-
-(define_insn "vec_extract_hi_<mode>_maskm"
-  [(set (match_operand:<ssehalfvecmode> 0 "memory_operand" "=m")
-	(vec_merge:<ssehalfvecmode>
-	  (vec_select:<ssehalfvecmode>
-	    (match_operand:VI4F_256 1 "register_operand" "v")
-	    (parallel [(const_int 4) (const_int 5)
-		      (const_int 6) (const_int 7)]))
-	  (match_operand:<ssehalfvecmode> 2 "memory_operand" "0")
-	  (match_operand:<ssehalfvecmode> 3 "register_operand" "Yk")))]
-  "TARGET_AVX512F && TARGET_AVX512VL
-   && rtx_equal_p (operands[2], operands[0])"
-  "vextract<shuffletype>32x4\t{$0x1, %1, %0%{%3%}|%0%{%3%}, %1, 0x1}"
-  [(set_attr "type" "sselog1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "vec_extract_hi_<mode>_mask"
-  [(set (match_operand:<ssehalfvecmode> 0 "register_operand" "=v")
+  [(set (match_operand:<ssehalfvecmode> 0 "register_operand" "=v,m")
 	(vec_merge:<ssehalfvecmode>
 	  (vec_select:<ssehalfvecmode>
-	    (match_operand:VI4F_256 1 "register_operand" "v")
+	    (match_operand:VI4F_256 1 "register_operand" "v,v")
 	    (parallel [(const_int 4) (const_int 5)
 		       (const_int 6) (const_int 7)]))
-	  (match_operand:<ssehalfvecmode> 2 "nonimm_or_0_operand" "0C")
-	  (match_operand:<avx512fmaskmode> 3 "register_operand" "Yk")))]
-  "TARGET_AVX512VL"
+	  (match_operand:<ssehalfvecmode> 2 "nonimm_or_0_operand" "0C,0")
+	  (match_operand:<avx512fmaskmode> 3 "register_operand" "Yk,Yk")))]
+  "TARGET_AVX512VL
+   && (!MEM_P (operands[0]) || rtx_equal_p (operands[0], operands[2]))"
   "vextract<shuffletype>32x4\t{$0x1, %1, %0%{%3%}%N2|%0%{%3%}%N2, %1, 0x1}"
   [(set_attr "type" "sselog1")
    (set_attr "length_immediate" "1")

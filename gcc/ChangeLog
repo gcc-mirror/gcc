@@ -1,3 +1,35 @@
+2020-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93069
+	* config/i386/subst.md (store_mask_constraint, store_mask_predicate):
+	Remove.
+	(avx512dq_vextract<shuffletype>64x2_1_maskm,
+	avx512f_vextract<shuffletype>32x4_1_maskm,
+	vec_extract_lo_<mode>_maskm, vec_extract_hi_<mode>_maskm): Remove.
+	(<mask_codefor>avx512dq_vextract<shuffletype>64x2_1<mask_name>): Split
+	into ...
+	(*avx512dq_vextract<shuffletype>64x2_1,
+	avx512dq_vextract<shuffletype>64x2_1_mask): ... these new
+	define_insns.  Even in the masked variant allow memory output but in
+	that case use 0 rather than 0C constraint on the source of masked-out
+	elts.
+	(<mask_codefor>avx512f_vextract<shuffletype>32x4_1<mask_name>): Split
+	into ...
+	(*avx512f_vextract<shuffletype>32x4_1,
+	avx512f_vextract<shuffletype>32x4_1_mask): ... these new define_insns.
+	Even in the masked variant allow memory output but in that case use
+	0 rather than 0C constraint on the source of masked-out elts.
+	(vec_extract_lo_<mode><mask_name>): Split into ...
+	(vec_extract_lo_<mode>, vec_extract_lo_<mode>_mask): ... these new
+	define_insns.  Even in the masked variant allow memory output but in
+	that case use 0 rather than 0C constraint on the source of masked-out
+	elts.
+	(vec_extract_hi_<mode><mask_name>): Split into ...
+	(vec_extract_hi_<mode>, vec_extract_hi_<mode>_mask): ... these new
+	define_insns.  Even in the masked variant allow memory output but in
+	that case use 0 rather than 0C constraint on the source of masked-out
+	elts.
+
 2020-05-06  qing zhao  <qing.zhao@oracle.com>
 
 	PR c/94230
@@ -111,27 +143,27 @@
 2020-05-06  Hongtao Liu  <hongtao.liu@intel.com>
 	    Wei Xiao  <wei3.xiao@intel.com>
 
-	* gcc/common/config/i386/i386-common.c (OPTION_MASK_ISA2_SERIALIZE_SET,
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA2_SERIALIZE_SET,
 	OPTION_MASK_ISA2_SERIALIZE_UNSET): New macros.
 	(ix86_handle_option): Handle -mserialize.
-	* gcc/config.gcc (serializeintrin.h): New header file.
-	* gcc/config/i386/cpuid.h (bit_SERIALIZE): New bit.
-	* gcc/config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	* config.gcc (serializeintrin.h): New header file.
+	* config/i386/cpuid.h (bit_SERIALIZE): New bit.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
 	-mserialize.
-	* gcc/config/i386/i386-builtin.def: Add new builtin.
-	* gcc/config/i386/i386-c.c (__SERIALIZE__): New macro.
-	* gcc/config/i386/i386-options.c (ix86_target_opts_isa2_opts):
+	* config/i386/i386-builtin.def: Add new builtin.
+	* config/i386/i386-c.c (__SERIALIZE__): New macro.
+	* config/i386/i386-options.c (ix86_target_opts_isa2_opts):
 	  Add -mserialize.
 	* (ix86_valid_target_attribute_inner_p): Add target attribute
 	* for serialize.
-	* gcc/config/i386/i386.h (TARGET_SERIALIZE, TARGET_SERIALIZE_P):
+	* config/i386/i386.h (TARGET_SERIALIZE, TARGET_SERIALIZE_P):
 	  New macros.
-	* gcc/config/i386/i386.md (UNSPECV_SERIALIZE): New unspec.
+	* config/i386/i386.md (UNSPECV_SERIALIZE): New unspec.
 	  (serialize): New define_insn.
-	* gcc/config/i386/i386.opt (mserialize): New option
-	* gcc/config/i386/immintrin.h: Include serailizeintrin.h.
-	* gcc/config/i386/serializeintrin.h: New header file.
-	* gcc/doc/invoke.texi: Add documents for -mserialize.
+	* config/i386/i386.opt (mserialize): New option
+	* config/i386/immintrin.h: Include serailizeintrin.h.
+	* config/i386/serializeintrin.h: New header file.
+	* doc/invoke.texi: Add documents for -mserialize.
 
 2020-05-06  Richard Biener  <rguenther@suse.de>
 
@@ -144,7 +176,7 @@
 	private branch.
 	* config/rs6000/rs6000-c.c: Likewise.
 	* config/rs6000/rs6000-call.c: Likewise.
-	* gcc/config/rs6000/rs6000.c: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
 
 2020-05-05  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
@@ -865,7 +897,7 @@
 2020-04-28  Alexandre Oliva <oliva@adacore.com>
 
 	PR target/94812
-	* gcc/config/rs6000/rs6000.md (rs6000_mffsl): Copy result to
+	* config/rs6000/rs6000.md (rs6000_mffsl): Copy result to
 	output operand in emulation.  Don't overwrite pseudos.
 
 2020-04-28  Jeff Law  <law@redhat.com>
@@ -1120,7 +1152,7 @@
 
 2020-04-23  Bill Schmidt  <wschmidt@linux.ibm.com>
 
-	* gcc/doc/extend.texi (PowerPC AltiVec/VSX Built-in Functions):
+	* doc/extend.texi (PowerPC AltiVec/VSX Built-in Functions):
 	Replace outdated link to ELFv2 ABI.
 
 2020-04-23  Jakub Jelinek  <jakub@redhat.com>
@@ -2700,7 +2732,7 @@
 
 2020-03-29  John David Anglin  <dave.anglin@bell.net>
 
-	* gcc/config/pa/pa.c (pa_asm_output_aligned_bss): Delete duplicate
+	* config/pa/pa.c (pa_asm_output_aligned_bss): Delete duplicate
 	.align output.
 
 2020-03-28  Jakub Jelinek  <jakub@redhat.com>
@@ -3192,7 +3224,7 @@
 2020-03-21 Iain Sandoe <iain@sandoe.co.uk>
 
 	PR target/93694
-	* gcc/config/darwin.opt: Amend options descriptions.
+	* config/darwin.opt: Amend options descriptions.
 
 2020-03-21  Richard Sandiford  <richard.sandiford@arm.com>
 
@@ -3214,7 +3246,7 @@
 2020-03-20  Carl Love  <cel@us.ibm.com>
 
 	PR/target 87583
-	* gcc/config/rs6000/rs6000.c (rs6000_option_override_internal):
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
 	Add check for TARGET_FPRND for Power 7 or newer.
 
 2020-03-20  Jan Hubicka  <hubicka@ucw.cz>
@@ -10798,7 +10830,7 @@
 2020-03-10  Jiufu Guo  <guojiufu@linux.ibm.com>
 
 	PR target/93709
-	* gcc/config/rs6000/rs6000.c (rs6000_emit_p9_fp_minmax): Check
+	* config/rs6000/rs6000.c (rs6000_emit_p9_fp_minmax): Check
 	NAN and SIGNED_ZEROR for smax/smin.
 
 2020-03-10  Will Schmidt  <will_schmidt@vnet.ibm.com>
@@ -11856,9 +11888,9 @@
 
 2020-02-21  John David Anglin  <danglin@gcc.gnu.org>
 
-	* gcc/config/pa/pa.c (pa_function_value): Fix check for word and
+	* config/pa/pa.c (pa_function_value): Fix check for word and
 	double-word size when handling aggregate return values.
-	* gcc/config/pa/som.h (ASM_DECLARE_FUNCTION_NAME): Fix to indicate
+	* config/pa/som.h (ASM_DECLARE_FUNCTION_NAME): Fix to indicate
 	that homogeneous SFmode and DFmode aggregates are passed and returned
 	in general registers.
 
@@ -13983,7 +14015,7 @@
 
 2020-01-21  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
 
-	* gcc/config/arm/arm.c (clear_operation_p):
+	* config/arm/arm.c (clear_operation_p):
 	Initialise last_regno, skip first iteration
 	based on the first_set value and use ints instead
 	of the unnecessary HOST_WIDE_INTs.
