@@ -283,8 +283,8 @@ riscv_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   tree fsflags = GET_BUILTIN_DECL (CODE_FOR_riscv_fsflags);
   tree old_flags = create_tmp_var_raw (RISCV_ATYPE_USI);
 
-  *hold = build2 (MODIFY_EXPR, RISCV_ATYPE_USI, old_flags,
-		  build_call_expr (frflags, 0));
+  *hold = build4 (TARGET_EXPR, RISCV_ATYPE_USI, old_flags,
+		  build_call_expr (frflags, 0), NULL_TREE, NULL_TREE);
   *clear = build_call_expr (fsflags, 1, old_flags);
   *update = NULL_TREE;
 }
