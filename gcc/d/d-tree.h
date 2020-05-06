@@ -561,8 +561,6 @@ extern tree build_array_from_val (Type *, tree);
 extern tree void_okay_p (tree);
 extern tree build_bounds_condition (const Loc &, tree, tree, bool);
 extern bool array_bounds_check (void);
-extern tree create_temporary_var (tree);
-extern tree maybe_temporary_var (tree, tree *);
 extern tree bind_expr (tree, tree);
 extern TypeFunction *get_function_type (Type *);
 extern bool call_by_alias_p (FuncDeclaration *, FuncDeclaration *);
@@ -586,7 +584,7 @@ extern tree convert_for_assignment (tree, Type *, Type *);
 extern tree convert_for_argument (tree, Parameter *);
 extern tree convert_for_condition (tree, Type *);
 extern tree d_array_convert (Expression *);
-extern tree d_array_convert (Type *, Expression *, vec<tree, va_gc> **);
+extern tree d_array_convert (Type *, Expression *);
 
 /* In d-incpath.cc.  */
 extern void add_import_paths (const char *, const char *, bool);

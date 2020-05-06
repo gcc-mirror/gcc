@@ -619,7 +619,12 @@ build_target_expr (tree decl, tree exp)
 tree
 force_target_expr (tree exp)
 {
-  tree decl = create_temporary_var (TREE_TYPE (exp));
+  tree decl = build_decl (input_location, VAR_DECL, NULL_TREE,
+			  TREE_TYPE (exp));
+  DECL_CONTEXT (decl) = current_function_decl;
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
+  layout_decl (decl, 0);
 
   return build_target_expr (decl, exp);
 }
@@ -1764,66 +1769,6 @@ array_bounds_check (void)
     default:
       gcc_unreachable ();
     }
-}
-
-/* Return an undeclared local temporary of type TYPE
-   for use with BIND_EXPR.  */
-
-tree
-create_temporary_var (tree type)
-{
-  tree decl = build_decl (input_location, VAR_DECL, NULL_TREE, type);
-
-  DECL_CONTEXT (decl) = current_function_decl;
-  DECL_ARTIFICIAL (decl) = 1;
-  DECL_IGNORED_P (decl) = 1;
-  layout_decl (decl, 0);
-
-  return decl;
-}
-
-/* Return an undeclared local temporary OUT_VAR initialized
-   with result of expression EXP.  */
-
-tree
-maybe_temporary_var (tree exp, tree *out_var)
-{
-  tree t = exp;
-
-  /* Get the base component.  */
-  while (TREE_CODE (t) == COMPONENT_REF)
-    t = TREE_OPERAND (t, 0);
-
-  if (!DECL_P (t) && !REFERENCE_CLASS_P (t))
-    {
-      *out_var = create_temporary_var (TREE_TYPE (exp));
-      DECL_INITIAL (*out_var) = exp;
-      return *out_var;
-    }
-  else
-    {
-      *out_var = NULL_TREE;
-      return exp;
-    }
-}
-
-/* Builds a BIND_EXPR around BODY for the variables VAR_CHAIN.  */
-
-tree
-bind_expr (tree var_chain, tree body)
-{
-  /* Only handles one var.  */
-  gcc_assert (TREE_CHAIN (var_chain) == NULL_TREE);
-
-  if (DECL_INITIAL (var_chain))
-    {
-      tree ini = build_assign (INIT_EXPR, var_chain, DECL_INITIAL (var_chain));
-      DECL_INITIAL (var_chain) = NULL_TREE;
-      body = compound_expr (ini, body);
-    }
-
-  return d_save_expr (build3 (BIND_EXPR, TREE_TYPE (body),
-			      var_chain, body, NULL_TREE));
 }
 
 /* Returns the TypeFunction class for Type T.

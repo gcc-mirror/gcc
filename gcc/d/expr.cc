@@ -691,7 +691,6 @@ public:
     else
       etype = tb2->nextOf ();
 
-    vec<tree, va_gc> *elemvars = NULL;
     tree result;
 
     if (e->e1->op == TOKcat)
@@ -711,9 +710,7 @@ public:
 
 	/* Store all concatenation args to a temporary byte[][ndims] array.  */
 	Type *targselem = Type::tint8->arrayOf ();
-	tree var = create_temporary_var (make_array_type (targselem, ndims));
-	tree init = build_constructor (TREE_TYPE (var), NULL);
-	vec_safe_push (elemvars, var);
+	tree var = build_local_temp (make_array_type (targselem, ndims));
 
 	/* Loop through each concatenation from right to left.  */
 	vec<constructor_elt, va_gc> *elms = NULL;
@@ -725,7 +722,7 @@ public:
 	      ? (oe = ce->e1)
 	      : (ce = (CatExp *)ce->e1, oe = ce->e2)))
 	  {
-	    tree arg = d_array_convert (etype, oe, &elemvars);
+	    tree arg = d_array_convert (etype, oe);
 	    tree index = size_int (dim);
 	    CONSTRUCTOR_APPEND_ELT (elms, index, d_save_expr (arg));
 
@@ -738,8 +735,8 @@ public:
 
 	/* Check there is no logic bug in constructing byte[][] of arrays.  */
 	gcc_assert (dim == 0);
-	CONSTRUCTOR_ELTS (init) = elms;
-	DECL_INITIAL (var) = init;
+	tree init = build_constructor (TREE_TYPE (var), elms);
+	var = compound_expr (modify_expr (var, init), var);
 
 	tree arrs = d_array_value (build_ctype (targselem->arrayOf ()),
 				   size_int (ndims), build_address (var));
@@ -752,12 +749,9 @@ public:
 	/* Handle single concatenation (a ~ b).  */
 	result = build_libcall (LIBCALL_ARRAYCATT, e->type, 3,
 				build_typeinfo (e->loc, e->type),
-				d_array_convert (etype, e->e1, &elemvars),
-				d_array_convert (etype, e->e2, &elemvars));
+				d_array_convert (etype, e->e1),
+				d_array_convert (etype, e->e2));
       }
-
-    for (size_t i = 0; i < vec_safe_length (elemvars); ++i)
-      result = bind_expr ((*elemvars)[i], result);
 
     this->result_ = result;
   }
@@ -2494,12 +2488,13 @@ public:
 	else
 	  {
 	    /* Multidimensional array allocations.  */
-	    vec<constructor_elt, va_gc> *elms = NULL;
-	    Type *telem = e->newtype->toBasetype ();
 	    tree tarray = make_array_type (Type::tsize_t, e->arguments->dim);
-	    tree var = create_temporary_var (tarray);
-	    tree init = build_constructor (TREE_TYPE (var), NULL);
+	    tree var = build_local_temp (tarray);
+	    vec<constructor_elt, va_gc> *elms = NULL;
 
+	    /* Get the base element type for the array, generating the
+	       initializer for the dims parameter along the way.  */
+	    Type *telem = e->newtype->toBasetype ();
 	    for (size_t i = 0; i < e->arguments->dim; i++)
 	      {
 		Expression *arg = (*e->arguments)[i];
@@ -2510,8 +2505,9 @@ public:
 		gcc_assert (telem);
 	      }
 
-	    CONSTRUCTOR_ELTS (init) = elms;
-	    DECL_INITIAL (var) = init;
+	    /* Initialize the temporary.  */
+	    tree init = modify_expr (var, build_constructor (tarray, elms));
+	    var = compound_expr (init, var);
 
 	    /* Generate: _d_newarraymTX(ti, dims)
 		     or: _d_newarraymiTX(ti, dims)  */
@@ -2524,7 +2520,6 @@ public:
 				       build_address (var));
 
 	    result = build_libcall (libcall, tb, 2, tinfo, dims);
-	    result = bind_expr (var, result);
 	  }
 
 	if (e->argprefix)
