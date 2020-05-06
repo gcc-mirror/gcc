@@ -1,5 +1,4 @@
-// { dg-do compile { target { i?86-*-* x86_64-*-* } } }
-// { dg-options -m32 }
+// { dg-do compile { target { { i?86-*-* x86_64-*-* } && ia32 } } }
 // PR 94946
 class a {
   template <typename b> a(b (*)());
