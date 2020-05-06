@@ -112,8 +112,7 @@ int test_3 (int x, int y)
     free (ptr); /* No double-'free' warning: we've already attempted
 		   to dereference it above.  */
   return *ptr; /* { dg-warning "use after 'free' of 'ptr'" "use-after-free" } */
-  // TODO: two warnings here:  one is from sm-malloc, the other from region model
-  /* { dg-warning "leak of 'ptr'" "leak" { target *-*-* } .-2 } */
+  /* { dg-warning "leak of 'ptr'" "leak" { target *-*-* } .-1 } */
 }
 
 /* "dereference of possibly-NULL 'ptr'".  */
@@ -241,59 +240,3 @@ int test_3 (int x, int y)
     |      |          (7) 'ptr' leaks here; was allocated at (1)
     |
    { dg-end-multiline-output "" } */
-
-/* "use after 'free' of 'ptr'".  */
-/* { dg-begin-multiline-output "" }
-   NN |   *ptr = 19;
-      |   ~~~~~^~~~
-  'test_3': events 1-3
-    |
-    |   NN |   if (x)
-    |      |      ^
-    |      |      |
-    |      |      (1) following 'true' branch (when 'x != 0')...
-    |   NN |     free (ptr);
-    |      |     ~~~~~~~~~~
-    |      |     |
-    |      |     (2) ...to here
-    |   NN | 
-    |   NN |   *ptr = 19;
-    |      |   ~~~~~~~~~
-    |      |        |
-    |      |        (3) use after 'free' of 'ptr' here
-    |
-   { dg-end-multiline-output "" } */
-
-/* "use after 'free' of 'ptr'".  */
-/* { dg-begin-multiline-output "" }
-   NN |   return *ptr;
-      |          ^~~~
-  'test_3': events 1-5
-    |
-    |   NN |   if (x)
-    |      |      ^
-    |      |      |
-    |      |      (1) following 'false' branch (when 'x == 0')...
-    |......
-    |   NN |   *ptr = 19;
-    |      |   ~~~~~~~~~
-    |      |        |
-    |      |        (2) ...to here
-    |......
-    |   NN |   if (y)
-    |      |      ~
-    |      |      |
-    |      |      (3) following 'true' branch (when 'y != 0')...
-    |   NN |     free (ptr);
-    |      |     ~~~~~~~~~~
-    |      |     |
-    |      |     (4) ...to here
-    |   NN |                    to dereference it above
-    |   NN |   return *ptr;
-    |      |          ~~~~
-    |      |          |
-    |      |          (5) use after 'free' of 'ptr' here
-    |
-   { dg-end-multiline-output "" } */
-/* TODO: this is really a duplicate; can we either eliminate it, or
-   improve the path?  */

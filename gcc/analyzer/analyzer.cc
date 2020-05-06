@@ -32,6 +32,36 @@ along with GCC; see the file COPYING3.  If not see
 
 #if ENABLE_ANALYZER
 
+namespace ana {
+
+/* Workaround for missing location information for some stmts,
+   which ultimately should be solved by fixing the frontends
+   to provide the locations (TODO).  */
+
+location_t
+get_stmt_location (const gimple *stmt, function *fun)
+{
+  if (get_pure_location (stmt->location) == UNKNOWN_LOCATION)
+    {
+      /* Workaround for missing location information for clobber
+	 stmts, which seem to lack location information in the C frontend
+	 at least.  Created by gimplify_bind_expr, which uses the
+	   BLOCK_SOURCE_END_LOCATION (BIND_EXPR_BLOCK (bind_expr))
+	 but this is never set up when the block is created in
+	 c_end_compound_stmt's pop_scope.
+	 TODO: fix this missing location information.
+
+	 For now, as a hackish workaround, use the location of the end of
+	 the function.  */
+      if (gimple_clobber_p (stmt) && fun)
+	return fun->function_end_locus;
+    }
+
+  return stmt->location;
+}
+
+} // namespace ana
+
 /* Helper function for checkers.  Is the CALL to the given function name,
    and with the given number of arguments?
 

@@ -360,7 +360,7 @@ void test_30 (void)
   struct link tmp;
   tmp.m_ptr = (struct link *)malloc (sizeof (struct link)); /* { dg-message "allocated here" } */
 } /* { dg-warning "leak of 'tmp.m_ptr'" } */ 
-/* { dg-bogus "leak of '<unknown>'" "" { xfail *-*-* } .-1 } */ 
+/* { dg-bogus "leak of '<unknown>'" "leak of unknown" { target *-*-* } .-1 } */
 
 void test_31 (void)
 {
@@ -368,7 +368,7 @@ void test_31 (void)
   void *ptr = malloc (sizeof (struct link)); /* { dg-message "allocated here" } */
   tmp.m_ptr = (struct link *)ptr;
 } /* { dg-warning "leak of 'ptr'" } */ 
-/* { dg-bogus "leak of 'tmp.m_ptr'" "" { xfail *-*-* } .-1 } */ 
+/* { dg-bogus "leak of 'tmp.m_ptr'" "" { target *-*-* } .-1 } */
 
 void test_32 (void)
 {
@@ -507,8 +507,7 @@ void test_42c (void)
   void *p = malloc (1024);
   void *q = p + 64;
   free (q - 64); /* this is probably OK.  */
-} /* { dg-bogus "leak of 'p'" "" { xfail *-*-* } } */
-// TODO(xfail)
+} /* { dg-bogus "leak of 'p'" } */
 
 #if 0
 void test_31 (void *p)
@@ -531,10 +530,8 @@ struct link global_link;
 void test_43 (void)
 {
   global_link.m_ptr = malloc (sizeof (struct link)); /* { dg-message "allocated here" } */
-  global_link.m_ptr = NULL;
-} /* { dg-warning "leak of '<unknown>'" } */
-/* TODO: should be more precise than just '<unknown>', and
-   ideally would be at the assigment to NULL.  */
+  global_link.m_ptr = NULL; /* { dg-warning "leak of 'global_link.m_ptr'" } */
+}
 
 struct link *global_ptr;
 
@@ -590,4 +587,17 @@ void test_48 (void)
 {
   int *p = NULL; /* { dg-message "'p' is NULL" } */
   *p = 1; /* { dg-warning "dereference of NULL 'p'" } */
+}
+
+/* As test_48, but where the assignment of NULL is not at the start of a BB.  */
+
+int test_49 (int i)
+{
+  int *p;
+  int x;
+
+  x = i * 2;
+  p = NULL; /* { dg-message "'p' is NULL" } */
+  *p = 1; /* { dg-warning "dereference of NULL 'p'" } */
+  return x;
 }

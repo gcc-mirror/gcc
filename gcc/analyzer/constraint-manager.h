@@ -25,17 +25,47 @@ namespace ana {
 
 class constraint_manager;
 
-/* Abstract base class for specifying how state should be purged.  */
+/* One of the end-points of a range.  */
 
-class purge_criteria
+struct bound
 {
-public:
-  virtual ~purge_criteria () {}
-  virtual bool should_purge_p (svalue_id sid) const = 0;
+  bound () : m_constant (NULL_TREE), m_closed (false) {}
+  bound (tree constant, bool closed)
+  : m_constant (constant), m_closed (closed) {}
+
+  void ensure_closed (bool is_upper);
+
+  const char * get_relation_as_str () const;
+
+  tree m_constant;
+  bool m_closed;
+};
+
+/* A range of values, used for determining if a value has been
+   constrained to just one possible constant value.  */
+
+struct range
+{
+  range () : m_lower_bound (), m_upper_bound () {}
+  range (const bound &lower, const bound &upper)
+  : m_lower_bound (lower), m_upper_bound (upper) {}
+
+  void dump_to_pp (pretty_printer *pp) const;
+  void dump () const;
+
+  tree constrained_to_single_element ();
+
+  tristate eval_condition (enum tree_code op,
+			   tree rhs_const) const;
+  bool below_lower_bound (tree rhs_const) const;
+  bool above_upper_bound (tree rhs_const) const;
+
+  bound m_lower_bound;
+  bound m_upper_bound;
 };
 
 /* An equivalence class within a constraint manager: a set of
-   svalue_ids that are known to all be equal to each other,
+   svalues that are known to all be equal to each other,
    together with an optional tree constant that they are equal to.  */
 
 class equiv_class
@@ -47,14 +77,12 @@ public:
   hashval_t hash () const;
   bool operator== (const equiv_class &other);
 
-  void add (svalue_id sid, const constraint_manager &cm);
-  bool del (svalue_id sid);
+  void add (const svalue *sval);
+  bool del (const svalue *sval);
 
   tree get_any_constant () const { return m_constant; }
 
-  svalue_id get_representative () const;
-
-  void remap_svalue_ids (const svalue_id_map &map);
+  const svalue *get_representative () const;
 
   void canonicalize ();
 
@@ -64,10 +92,10 @@ public:
      different zeroes, for different types); these are just for the last
      constant added.  */
   tree m_constant;
-  svalue_id m_cst_sid;
+  const svalue *m_cst_sval;
 
   // TODO: should this be a set rather than a vec?
-  auto_vec<svalue_id> m_vars;
+  auto_vec<const svalue *> m_vars;
 };
 
 /* The various kinds of constraint.  */
@@ -141,6 +169,9 @@ class constraint
     return m_op != CONSTRAINT_NE;
   }
 
+  bool implied_by (const constraint &other,
+		   const constraint_manager &cm) const;
+
   equiv_class_id m_lhs;
   enum constraint_op m_op;
   equiv_class_id m_rhs;
@@ -152,7 +183,9 @@ class fact_visitor
 {
  public:
   virtual ~fact_visitor () {}
-  virtual void on_fact (svalue_id lhs, enum tree_code, svalue_id rhs) = 0;
+  virtual void on_fact (const svalue *lhs,
+			enum tree_code,
+			const svalue *rhs) = 0;
 };
 
 /* A collection of equivalence classes and constraints on them.
@@ -164,14 +197,9 @@ class fact_visitor
 class constraint_manager
 {
 public:
-  constraint_manager () {}
+  constraint_manager (region_model_manager *mgr) : m_mgr (mgr) {}
   constraint_manager (const constraint_manager &other);
   virtual ~constraint_manager () {}
-
-  virtual constraint_manager *clone (region_model *) const = 0;
-  virtual tree maybe_get_constant (svalue_id sid) const = 0;
-  virtual svalue_id get_sid_for_constant (tree cst) const = 0;
-  virtual int get_num_svalues () const = 0;
 
   constraint_manager& operator= (const constraint_manager &other);
 
@@ -183,7 +211,7 @@ public:
   }
 
   void print (pretty_printer *pp) const;
-  void dump_to_pp (pretty_printer *pp) const;
+  void dump_to_pp (pretty_printer *pp, bool multiline) const;
   void dump (FILE *fp) const;
   void dump () const;
 
@@ -196,32 +224,47 @@ public:
     return *m_equiv_classes[idx];
   }
 
-  equiv_class &get_equiv_class (svalue_id sid)
+  equiv_class &get_equiv_class (const svalue *sval)
   {
-    equiv_class_id ec_id = get_or_add_equiv_class (sid);
+    equiv_class_id ec_id = get_or_add_equiv_class (sval);
     return ec_id.get_obj (*this);
   }
 
-  bool add_constraint (svalue_id lhs, enum tree_code op, svalue_id rhs);
+  bool add_constraint (const svalue *lhs,
+		       enum tree_code op,
+		       const svalue *rhs);
 
   bool add_constraint (equiv_class_id lhs_ec_id,
 		       enum tree_code op,
 		       equiv_class_id rhs_ec_id);
 
-  bool get_equiv_class_by_sid (svalue_id sid, equiv_class_id *out) const;
-  equiv_class_id get_or_add_equiv_class (svalue_id sid);
+  void add_unknown_constraint (equiv_class_id lhs_ec_id,
+			       enum tree_code op,
+			       equiv_class_id rhs_ec_id);
+
+  bool get_equiv_class_by_svalue (const svalue *sval,
+				    equiv_class_id *out) const;
+  equiv_class_id get_or_add_equiv_class (const svalue *sval);
   tristate eval_condition (equiv_class_id lhs,
 			   enum tree_code op,
-			   equiv_class_id rhs);
-  tristate eval_condition (svalue_id lhs,
+			   equiv_class_id rhs) const;
+  tristate eval_condition (equiv_class_id lhs_ec,
 			   enum tree_code op,
-			   svalue_id rhs);
+			   tree rhs_const) const;
+  tristate eval_condition (const svalue *lhs,
+			   enum tree_code op,
+			   const svalue *rhs) const;
+  range get_ec_bounds (equiv_class_id ec_id) const;
 
-  void purge (const purge_criteria &p, purge_stats *stats);
+  /* PurgeCriteria should have:
+     bool should_purge_p (const svalue *sval) const.  */
+  template <typename PurgeCriteria>
+  void purge (const PurgeCriteria &p, purge_stats *stats);
 
-  void remap_svalue_ids (const svalue_id_map &map);
+  void on_liveness_change (const svalue_set &live_svalues,
+			   const region_model *model);
 
-  void canonicalize (unsigned num_svalue_ids);
+  void canonicalize ();
 
   static void merge (const constraint_manager &cm_a,
 		     const constraint_manager &cm_b,
@@ -236,13 +279,11 @@ public:
   auto_vec<constraint> m_constraints;
 
  private:
-  static void clean_merger_input (const constraint_manager &cm_in,
-				  const one_way_svalue_id_map &map_sid_to_m,
-				  constraint_manager *out);
-
   void add_constraint_internal (equiv_class_id lhs_id,
 				enum constraint_op c_op,
 				equiv_class_id rhs_id);
+
+  region_model_manager *m_mgr;
 };
 
 } // namespace ana

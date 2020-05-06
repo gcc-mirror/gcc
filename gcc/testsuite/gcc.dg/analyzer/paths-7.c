@@ -50,8 +50,7 @@ int test_2 (int flag, int *p, int n)
     sum += foo (p[i]); /* { dg-bogus "uninitialized" } */
   result = sum;
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "5 processed enodes" } */
-  // FIXME: why 5 here?
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
   free (ptr); /* { dg-warning "double-'free' of 'ptr'" } */
   return result;

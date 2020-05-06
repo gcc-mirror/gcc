@@ -35,24 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #if ENABLE_ANALYZER
 
-/* If STMT is an assignment from zero, return the LHS.  */
-
-tree
-is_zero_assignment (const gimple *stmt)
-{
-  const gassign *assign_stmt = dyn_cast <const gassign *> (stmt);
-  if (!assign_stmt)
-    return NULL_TREE;
-
-  enum tree_code op = gimple_assign_rhs_code (assign_stmt);
-  if (TREE_CODE_CLASS (op) != tcc_constant)
-    return NULL_TREE;
-
-  if (!zerop (gimple_assign_rhs1 (assign_stmt)))
-    return NULL_TREE;
-
-  return gimple_assign_lhs (assign_stmt);
-}
+namespace ana {
 
 /* Return true if VAR has pointer or reference type.  */
 
@@ -61,8 +44,6 @@ any_pointer_p (tree var)
 {
   return POINTER_TYPE_P (TREE_TYPE (var));
 }
-
-namespace ana {
 
 /* Add a state with name NAME to this state_machine.
    The string is required to outlive the state_machine.
