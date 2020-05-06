@@ -1,5 +1,12 @@
 2020-05-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/94951
+	* typeck.c (cp_strict_aliasing_warning): New function.
+	(cp_build_indirect_ref_1, build_reinterpret_cast_1): Use
+	it instead of strict_aliasing_warning.
+
+2020-05-06  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c++/94907
 	* method.c (defaulted_late_check): Don't call synthesize_method
 	on constexpr sfk_comparison if it has been called on it already.
