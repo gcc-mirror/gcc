@@ -525,7 +525,7 @@ package body Sem_Attr is
 
                --  Object or label reference
 
-               elsif Is_Object (Ent) or else Ekind (Ent) = E_Label then
+               elsif Is_Object_Reference (P) or else Ekind (Ent) = E_Label then
                   Set_Address_Taken (Ent);
 
                   --  Deal with No_Implicit_Aliasing restriction
@@ -3486,11 +3486,25 @@ package body Sem_Attr is
                return;
             end if;
 
-         --  Normal (non-obsolescent case) of application to object of
+         --  Normal (non-obsolescent case) of application to object or value of
          --  a discriminated type.
 
          else
-            Check_Object_Reference (P);
+            --  AI12-0068: In a type or subtype aspect, a prefix denoting the
+            --  current instance of the (sub)type is defined to be a value,
+            --  not an object, so the Constrained attribute is always True
+            --  (see RM 8.6(18/5) and RM 3.7.2(3/5)). We issue a warning about
+            --  this unintuitive result, to help avoid confusion.
+
+            if Is_Current_Instance_Reference_In_Type_Aspect (P) then
+               Error_Msg_Name_1 := Aname;
+               Error_Msg_N
+                 ("current instance attribute % in subtype aspect always " &
+                  "true??", N);
+
+            else
+               Check_Object_Reference (P);
+            end if;
 
             --  If N does not come from source, then we allow the
             --  the attribute prefix to be of a private type whose
@@ -4169,11 +4183,13 @@ package body Sem_Attr is
 
          if Comes_From_Source (N) then
 
-            --  A similar attribute Valid_Scalars can be prefixed with
-            --  references to both functions and objects, but this attribute
-            --  can be only prefixed with references to objects.
+            --  This attribute be prefixed with references to objects or
+            --  values (such as a current instance value given within a type
+            --  or subtype aspect).
 
-            if not Is_Object_Reference (P) then
+            if not Is_Object_Reference (P)
+              and then not Is_Current_Instance_Reference_In_Type_Aspect (P)
+            then
                Error_Attr_P ("prefix of % attribute must be object");
             end if;
          end if;
@@ -7745,11 +7761,13 @@ package body Sem_Attr is
          return;
       end if;
 
-      --  Special processing for cases where the prefix is an object. For this
-      --  purpose, a string literal counts as an object (attributes of string
-      --  literals can only appear in generated code).
+      --  Special processing for cases where the prefix is an object or value,
+      --  including string literals (attributes of string literals can only
+      --  appear in generated code) and current instance prefixes in type or
+      --  subtype aspects.
 
       if Is_Object_Reference (P)
+        or else Is_Current_Instance_Reference_In_Type_Aspect (P)
         or else Nkind (P) = N_String_Literal
         or else (Is_Entity_Name (P)
                  and then Ekind (Entity (P)) = E_Enumeration_Literal)
