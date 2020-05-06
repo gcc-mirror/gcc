@@ -1,3 +1,9 @@
+2020-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94907
+	* method.c (defaulted_late_check): Don't call synthesize_method
+	on constexpr sfk_comparison if it has been called on it already.
+
 2020-05-06  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/94946
