@@ -1,3 +1,9 @@
+2020-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/abi.xml (abi.versioning.history): Document library
+	versions for GCC 9.[123] and 10.1 releases.
+	* doc/html/*: Regenerate.
+
 2020-05-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Update.
