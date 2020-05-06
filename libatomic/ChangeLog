@@ -1,7 +1,15 @@
+2020-05-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/x86/fenv.c (__math_force_eval): Remove.
+	(__math_force_eval_div): New define.
+	(__atomic_deraiseexcept): Use __math_force_eval_div to use
+	generic division to generate INVALID, DIVZERO and INEXACT
+	exceptions.
+
 2020-05-01  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/x86/fenv.c (__math_force_eval): New define.
-	(__atomic_feraiseexcept): Use __math_force_eval to evaluete
+	(__atomic_feraiseexcept): Use __math_force_eval to evaluate
 	generic division to generate INVALID and DIVZERO exceptions.
 
 2020-04-19  Uroš Bizjak  <ubizjak@gmail.com>

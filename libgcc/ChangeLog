@@ -1,3 +1,11 @@
+2020-05-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sfp-exceptions.c (__math_force_eval): Remove.
+	(__math_force_eval_div): New define.
+	(__sfp_handle_exceptions): Use __math_force_eval_div to use
+	generic division to generate INVALID, DIVZERO and INEXACT
+	exceptions.
+
 2020-05-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/lse-init.c (init_have_lse_atomics): Use __getauxval
@@ -54,7 +62,7 @@
 2020-05-01  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sfp-exceptions.c (__math_force_eval): New define.
-	(__sfp_handle_exceptions): Use __math_force_eval to evaluete
+	(__sfp_handle_exceptions): Use __math_force_eval to evaluate
 	generic division to generate INVALID and DIVZERO exceptions.
 
 2020-04-27  Sebastian Huber  <sebastian.huber@embedded-brains.de>
