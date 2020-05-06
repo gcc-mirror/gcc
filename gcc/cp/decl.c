@@ -7295,17 +7295,7 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
   if (variant == error_mark_node && !processing_template_decl)
     return true;
 
-  variant = cp_get_callee (variant);
-  if (variant)
-    {
-      if (TREE_CODE (variant) == FUNCTION_DECL)
-	;
-      else if (TREE_TYPE (variant) && INDIRECT_TYPE_P (TREE_TYPE (variant)))
-	variant = cp_get_fndecl_from_callee (variant, false);
-      else
-	variant = NULL_TREE;
-    }
-
+  variant = cp_get_callee_fndecl_nofold (variant);
   input_location = save_loc;
 
   if (variant)
