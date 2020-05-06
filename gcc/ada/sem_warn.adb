@@ -2993,6 +2993,13 @@ package body Sem_Warn is
 
    exception
       when others =>
+         --  With debug flag K we will get an exception unless an error has
+         --  already occurred (useful for debugging).
+
+         if Debug_Flag_K then
+            Check_Error_Detected;
+         end if;
+
          return False;
    end Operand_Has_Warnings_Suppressed;
 
