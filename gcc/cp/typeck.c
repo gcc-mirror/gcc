@@ -3134,6 +3134,22 @@ build_x_indirect_ref (location_t loc, tree expr, ref_operator errorstring,
     return rval;
 }
 
+/* Like c-family strict_aliasing_warning, but don't warn for dependent
+   types or expressions.  */
+
+static bool
+cp_strict_aliasing_warning (location_t loc, tree type, tree expr)
+{
+  if (processing_template_decl)
+    {
+      tree e = expr;
+      STRIP_NOPS (e);
+      if (dependent_type_p (type) || type_dependent_expression_p (e))
+	return false;
+    }
+  return strict_aliasing_warning (loc, type, expr);
+}
+
 /* The implementation of the above, and of indirection implied by other
    constructs.  If DO_FOLD is true, fold away INDIRECT_REF of ADDR_EXPR.  */
 
@@ -3176,10 +3192,10 @@ cp_build_indirect_ref_1 (tree ptr, ref_operator errorstring,
 	  /* If a warning is issued, mark it to avoid duplicates from
 	     the backend.  This only needs to be done at
 	     warn_strict_aliasing > 2.  */
-	  if (warn_strict_aliasing > 2)
-	    if (strict_aliasing_warning (EXPR_LOCATION (ptr),
-					 type, TREE_OPERAND (ptr, 0)))
-	      TREE_NO_WARNING (ptr) = 1;
+	  if (warn_strict_aliasing > 2
+	      && cp_strict_aliasing_warning (EXPR_LOCATION (ptr),
+					     type, TREE_OPERAND (ptr, 0)))
+	    TREE_NO_WARNING (ptr) = 1;
 	}
 
       if (VOID_TYPE_P (t))
@@ -7384,7 +7400,7 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
       expr = cp_build_addr_expr (expr, complain);
 
       if (warn_strict_aliasing > 2)
-	strict_aliasing_warning (EXPR_LOCATION (expr), type, expr);
+	cp_strict_aliasing_warning (EXPR_LOCATION (expr), type, expr);
 
       if (expr != error_mark_node)
 	expr = build_reinterpret_cast_1
@@ -7497,7 +7513,7 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
 
       if (warn_strict_aliasing <= 2)
 	/* strict_aliasing_warning STRIP_NOPs its expr.  */
-	strict_aliasing_warning (EXPR_LOCATION (expr), type, expr);
+	cp_strict_aliasing_warning (EXPR_LOCATION (expr), type, expr);
 
       return build_nop_reinterpret (type, expr);
     }
