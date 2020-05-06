@@ -26,6 +26,7 @@
 with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
+with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Expander; use Expander;
@@ -3302,7 +3303,13 @@ package body Sem_Ch5 is
          --  the warning is perfectly acceptable.
 
          exception
-            when others => null;
+            when others =>
+               --  With debug flag K we will get an exception unless an error
+               --  has already occurred (useful for debugging).
+
+               if Debug_Flag_K then
+                  Check_Error_Detected;
+               end if;
          end;
       end if;
 
