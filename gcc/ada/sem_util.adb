@@ -15029,6 +15029,59 @@ package body Sem_Util is
       return False;
    end Is_Current_Instance;
 
+   --------------------------------------------------
+   -- Is_Current_Instance_Reference_In_Type_Aspect --
+   --------------------------------------------------
+
+   function Is_Current_Instance_Reference_In_Type_Aspect
+     (N : Node_Id) return Boolean
+   is
+   begin
+      --  When a current_instance is referenced within an aspect_specification
+      --  of a type or subtype, it will show up as a reference to the formal
+      --  parameter of the aspect's associated subprogram rather than as a
+      --  reference to the type or subtype itself (in fact, the original name
+      --  is never even analyzed). We check for predicate, invariant, and
+      --  Default_Initial_Condition subprograms (in theory there could be
+      --  other cases added, in which case this function will need updating).
+
+      if Is_Entity_Name (N) then
+         return Present (Entity (N))
+           and then Ekind (Entity (N)) = E_In_Parameter
+           and then Ekind_In (Scope (Entity (N)), E_Function, E_Procedure)
+           and then
+             (Is_Predicate_Function (Scope (Entity (N)))
+               or else Is_Predicate_Function_M (Scope (Entity (N)))
+               or else Is_Invariant_Procedure (Scope (Entity (N)))
+               or else Is_Partial_Invariant_Procedure (Scope (Entity (N)))
+               or else Is_DIC_Procedure (Scope (Entity (N))));
+
+      else
+         case Nkind (N) is
+            when N_Indexed_Component
+               | N_Slice
+            =>
+               return
+                 Is_Current_Instance_Reference_In_Type_Aspect (Prefix (N));
+
+            when N_Selected_Component =>
+               return
+                 Is_Current_Instance_Reference_In_Type_Aspect (Prefix (N));
+
+            when N_Type_Conversion =>
+               return Is_Current_Instance_Reference_In_Type_Aspect
+                        (Expression (N));
+
+            when N_Qualified_Expression =>
+               return Is_Current_Instance_Reference_In_Type_Aspect
+                        (Expression (N));
+
+            when others =>
+               return False;
+         end case;
+      end if;
+   end Is_Current_Instance_Reference_In_Type_Aspect;
+
    --------------------
    -- Is_Declaration --
    --------------------
@@ -16983,8 +17036,13 @@ package body Sem_Util is
 
    function Is_Object_Reference (N : Node_Id) return Boolean is
    begin
+      --  AI12-0068: Note that a current instance reference in a type or
+      --  subtype's aspect_specification is considered a value, not an object
+      --  (see RM 8.6(18/5)).
+
       if Is_Entity_Name (N) then
-         return Present (Entity (N)) and then Is_Object (Entity (N));
+         return Present (Entity (N)) and then Is_Object (Entity (N))
+           and then not Is_Current_Instance_Reference_In_Type_Aspect (N);
 
       else
          case Nkind (N) is
