@@ -1,3 +1,8 @@
+2020-05-07  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/arm/arm.c (arm_add_stmt_cost): Fix declaration, remove class
+	from definition.
+
 2020-05-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57359
