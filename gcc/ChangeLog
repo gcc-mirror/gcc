@@ -1,5 +1,13 @@
 2020-05-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (*setnbc_<un>signed_<GPR:mode>): New
+	define_insn.
+	(*setnbcr_<un>signed_<GPR:mode>): New define_insn.
+	(*neg_eq_<mode>): Avoid for TARGET_FUTURE; add missing && 1.
+	(*neg_ne_<mode>): Likewise.
+
+2020-05-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (setbc_<un>signed_<GPR:mode>): New
 	define_insn.
 	(*setbcr_<un>signed_<GPR:mode>): Likewise.
