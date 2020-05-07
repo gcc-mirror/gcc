@@ -9903,8 +9903,8 @@ alpha_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
     = build_fn_decl ("__ieee_set_fp_control",
 		     build_function_type_list (void_type_node, NULL));
   mask = build_int_cst (long_unsigned_type_node, ~SWCR_STATUS_MASK);
-  ld_fenv = build2 (MODIFY_EXPR, long_unsigned_type_node,
-		    fenv_var, build_call_expr (get_fpscr, 0));
+  ld_fenv = build4 (TARGET_EXPR, long_unsigned_type_node, fenv_var,
+		    build_call_expr (get_fpscr, 0), NULL_TREE, NULL_TREE);
   masked_fenv = build2 (BIT_AND_EXPR, long_unsigned_type_node, fenv_var, mask);
   hold_fnclex = build_call_expr (set_fpscr, 1, masked_fenv);
   *hold = build2 (COMPOUND_EXPR, void_type_node,
@@ -9925,8 +9925,8 @@ alpha_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
        __atomic_feraiseexcept (new_fenv_var);  */
 
   new_fenv_var = create_tmp_var_raw (long_unsigned_type_node);
-  reload_fenv = build2 (MODIFY_EXPR, long_unsigned_type_node, new_fenv_var,
-			build_call_expr (get_fpscr, 0));
+  reload_fenv = build4 (TARGET_EXPR, long_unsigned_type_node, new_fenv_var,
+			build_call_expr (get_fpscr, 0), NULL_TREE, NULL_TREE);
   restore_fnenv = build_call_expr (set_fpscr, 1, fenv_var);
   atomic_feraiseexcept = builtin_decl_implicit (BUILT_IN_ATOMIC_FERAISEEXCEPT);
   update_call
