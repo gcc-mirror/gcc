@@ -1955,6 +1955,9 @@ static int have_o = 0;
 /* Was the option -E passed.  */
 static int have_E = 0;
 
+/* Was the option -S passes.  */
+static int have_S = 0;
+
 /* Pointer to output file name passed in with -o. */
 static const char *output_file = 0;
 
@@ -3326,7 +3329,8 @@ execute (void)
     }
 #endif
 
-  append_split_outputs (&extra_args, commands, n_commands);
+  if (!have_S)
+    append_split_outputs (&extra_args, commands, n_commands);
 
   /* Run each piped subprocess.  */
 
@@ -4688,6 +4692,9 @@ process_command (unsigned int decoded_options_count,
       switch (decoded_options[j].opt_index)
 	{
 	case OPT_S:
+	  have_S = 1;
+	  have_c = 1;
+	  break;
 	case OPT_c:
 	case OPT_E:
 	  have_c = 1;

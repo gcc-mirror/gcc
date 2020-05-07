@@ -1,5 +1,10 @@
 2020-05-07  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
+	* gcc.c (execute): Don't call append_arg_storer if -S is provided.
+	(have_S): New variable.
+
+2020-05-07  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
 	* common.opt (fsplit-output=): New option.
 	* gcc.c (execute): Call append_split_outputs.
 	(is_compiler): New function.
