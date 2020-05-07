@@ -1948,10 +1948,19 @@ package body Sem_Ch12 is
                   end if;
 
                when N_Formal_Package_Declaration =>
-                  Match :=
-                    Matching_Actual
-                      (Defining_Identifier (Formal),
-                       Defining_Identifier (Original_Node (Analyzed_Formal)));
+                  --  The name of the formal package may be hidden by the
+                  --  formal parameter itself.
+
+                  if Error_Posted (Analyzed_Formal) then
+                     Abandon_Instantiation (Instantiation_Node);
+
+                  else
+                     Match :=
+                       Matching_Actual
+                         (Defining_Identifier (Formal),
+                          Defining_Identifier
+                            (Original_Node (Analyzed_Formal)));
+                  end if;
 
                   if No (Match) then
                      if Partial_Parameterization then
