@@ -226,8 +226,8 @@ package body Exp_Ch4 is
 
    procedure Narrow_Large_Operation (N : Node_Id);
    --  Try to compute the result of a large operation in a narrower type than
-   --  its nominal type. This is mainly aimed to get rid of operations done in
-   --  Universal_Integer that can be generated for attributes.
+   --  its nominal type. This is mainly aimed at getting rid of operations done
+   --  in Universal_Integer that can be generated for attributes.
 
    procedure Optimize_Length_Comparison (N : Node_Id);
    --  Given an expression, if it is of the form X'Length op N (or the other
@@ -14040,12 +14040,12 @@ package body Exp_Ch4 is
       --  Now compute the size of the narrower type
 
       if Compar then
-         --  The type must be able to accomodate the operands
+         --  The type must be able to accommodate the operands
 
          Nsiz := Nat'Max (Lsiz, Rsiz);
 
       else
-         --  The type must be able to accomodate the operand(s) and the result.
+         --  The type must be able to accommodate the operand(s) and result.
 
          --  Note that Determine_Range typically does not report the bounds of
          --  the value as being larger than those of the base type, which means
@@ -14090,7 +14090,7 @@ package body Exp_Ch4 is
          return;
       end if;
 
-      --  Finally rewrite the operation in the narrower type
+      --  Finally, rewrite the operation in the narrower type
 
       Nop := New_Op_Node (Kind, Sloc (N));
 

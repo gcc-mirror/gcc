@@ -705,8 +705,8 @@ package Errout is
       Flag_Location          : Source_Ptr;
       Is_Compile_Time_Pragma : Boolean);
    --  Same as Error_Msg (String, Source_Ptr) except Is_Compile_Time_Pragma
-   --  lets the caller specify whether the is a
-   --  Compile_Time_Warning/Compile_Time_Error pragma.
+   --  lets the caller specify whether this is a Compile_Time_Warning or
+   --  Compile_Time_Error pragma.
 
    procedure Error_Msg_S (Msg : String);
    --  Output a message at current scan pointer location. This routine can be

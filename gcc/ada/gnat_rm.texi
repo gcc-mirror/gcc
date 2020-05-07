@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , May 14, 2020
+GNAT Reference Manual , Jul 01, 2020
 
 AdaCore
 
@@ -2361,9 +2361,9 @@ with a first parameter of True is to warn a client about use of a package,
 for example that it is not fully implemented.
 
 In previous versions of the compiler, combining @emph{-gnatwe} with
-Compile_Time_Warning resulted in an fatal error. Now the compiler will always
-emit a warning. You can use @ref{3a,,Pragma Compile_Time_Error} to force the generation
-of an error.
+Compile_Time_Warning resulted in a fatal error. Now the compiler always emits
+a warning. You can use @ref{3a,,Pragma Compile_Time_Error} to force the generation of
+an error.
 
 @node Pragma Compiler_Unit,Pragma Compiler_Unit_Warning,Pragma Compile_Time_Warning,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-compiler-unit}@anchor{3c}
