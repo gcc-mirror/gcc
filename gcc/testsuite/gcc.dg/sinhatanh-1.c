@@ -51,12 +51,12 @@ coshatanhl_ (long double x)
 }
 
 /* There must be no calls to sinh, cosh, or atanh */
-/* {dg-final { scan-tree-dump-not "sinh " "optimized" } } */
-/* {dg-final { scan-tree-dump-not "cosh " "optimized" } } */
-/* {dg-final { scan-tree-dump-not "atanh " "optimized" }} */
-/* {dg-final { scan-tree-dump-not "sinfh " "optimized" } } */
-/* {dg-final { scan-tree-dump-not "cosfh " "optimized" } } */
-/* {dg-final { scan-tree-dump-not "atanfh " "optimized" }} */
-/* {dg-final { scan-tree-dump-not "sinlh " "optimized" } } */
-/* {dg-final { scan-tree-dump-not "coslh " "optimized" } } */
-/* {dg-final { scan-tree-dump-not "atanlh " "optimized" }} */
+/* { dg-final { scan-tree-dump-not "sinh " "optimized" } } */
+/* { dg-final { scan-tree-dump-not "cosh " "optimized" } } */
+/* { dg-final { scan-tree-dump-not "atanh " "optimized" } } */
+/* { dg-final { scan-tree-dump-not "sinfh " "optimized" } } */
+/* { dg-final { scan-tree-dump-not "cosfh " "optimized" } } */
+/* { dg-final { scan-tree-dump-not "atanfh " "optimized" } } */
+/* { dg-final { scan-tree-dump-not "sinlh " "optimized" } } */
+/* { dg-final { scan-tree-dump-not "coslh " "optimized" } } */
+/* { dg-final { scan-tree-dump-not "atanlh " "optimized" } } */

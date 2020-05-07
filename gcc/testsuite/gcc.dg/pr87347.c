@@ -1,4 +1,4 @@
-/* {dg-do compile} */
+/* { dg-do compile } */
 /* { dg-options "-Wabsolute-value" } */
 
 int a;

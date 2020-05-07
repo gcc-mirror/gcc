@@ -1,3 +1,39 @@
+2020-05-07  Manfred Schwarb <manfred99@gmx.ch>
+
+	* gcc.dg/20050121-1.c: Fix broken dg directives.
+	* gcc.dg/analzyer/pr93382.c: Likewise.
+	* gcc.dg/autopar/pr68460.c: Likewise.
+	* gcc.dg/c90-fordecl-1.c: Likewise.
+	* gcc.dg/cpp/trad/funlike-5.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-dfp.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-float.c: Likewise.
+	* gcc.dg/lto/pr52634_0.c: Likewise.
+	* gcc.dg/pr32069.c: Likewise.
+	* gcc.dg/pr35445.c: Likewise.
+	* gcc.dg/pr40172-3.c: Likewise.
+	* gcc.dg/pr87347.c: Likewise.
+	* gcc.dg/pr88660.c: Likewise.
+	* gcc.dg/pr89689.c: Likewise.
+	* gcc.dg/sinatan-2.c: Likewise.
+	* gcc.dg/sinhatanh-1.c: Likewise.
+	* gcc.dg/sinhovercosh-1.c: Likewise.
+	* gcc.dg/tls/opt-9.c: Likewise.
+	* gcc.dg/torture/builtins-1.c: Likewise.
+	* gcc.dg/torture/pr51106-1.c: Likewise.
+	* gcc.dg/torture/pr51106-2.c: Likewise.
+	* gcc.dg/torture/pr80281.c: Likewise.
+	* gcc.dg/torture/pr92252.c: Likewise.
+	* gcc.dg/tree-ssa/pr79448-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr79448.c: Likewise.
+	* gcc.dg/tree-ssa/pr92163.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-28.c: Likewise.
+	* gcc.dg/tree-ssa/upcast-1.c: Likewise.
+	* gcc.dg/two-types-6.c: Likewise.
+	* gcc.dg/ubsan/c-shift-1.c: Likewise.
+	* gcc.dg/var-expand3.c: Likewise.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-pr30843.c: Likewise.
+	* gcc.dg/vect/pr71264.c: Likewise.
+
 2020-05-07  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/other/operator1.C: Adjust expected message.

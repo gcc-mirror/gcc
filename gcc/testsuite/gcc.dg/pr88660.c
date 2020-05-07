@@ -1,4 +1,4 @@
-/* { dg-do-compile } */
+/* { dg-do compile } */
 /* { dg-options "-O -Wunused-but-set-variable" } */
 
 int main(void)

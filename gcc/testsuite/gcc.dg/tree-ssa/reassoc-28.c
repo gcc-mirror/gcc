@@ -1,4 +1,4 @@
-/* { dg-do run} */
+/* { dg-do run } */
 /* { dg-options "-O2" } */
 
 #define LENGTH 4
