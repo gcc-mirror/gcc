@@ -1,3 +1,7 @@
+2020-05-07  Release Manager
+
+	* GCC 10.1.0 released.
+
 2020-02-12  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR libstdc++/79193

@@ -1,3 +1,7 @@
+2020-05-07  Release Manager
+
+	* GCC 10.1.0 released.
+
 2020-04-29  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* config/accel/openacc.f90 (acc_device_current): Set to '-1'.
