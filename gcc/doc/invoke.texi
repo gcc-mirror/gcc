@@ -11399,7 +11399,7 @@ default, GCC emits an error message when an inconsistent profile is detected.
 This option is enabled by @option{-fauto-profile}.
 
 @item -fprofile-partial-training
-@opindex fprofile-use
+@opindex fprofile-partial-training
 With @code{-fprofile-use} all portions of programs not executed during train
 run are optimized agressively for size rather than speed.  In some cases it is
 not practical to train all possible hot paths in the program. (For
@@ -13393,6 +13393,7 @@ location.  If you combine the option with multiple source files,
 the @file{.gcno} file will be overwritten.
 
 @item -fprofile-prefix-path=@var{path}
+@opindex fprofile-prefix-path
 
 This option can be used in combination with
 @option{profile-generate=}@var{profile_dir} and
