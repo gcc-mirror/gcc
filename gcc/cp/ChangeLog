@@ -1,3 +1,13 @@
+2020-05-07  Marek Polacek  <polacek@redhat.com>
+	
+	Backported from mainline
+	2020-05-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94938
+	* pt.c (tsubst_copy_and_build): Call type_dependent_expression_p_push
+	instead of uses_template_parms.  Move the warning_sentinels after the
+	RECURs.
+
 2020-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
