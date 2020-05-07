@@ -1,3 +1,30 @@
+2020-05-07  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* tree-ssa-operands.c (operands_scanner): New class.
+	(operands_bitmap_obstack): Remove.
+	(n_initialized): Remove.
+	(build_uses): Move to operands_scanner class.
+	(build_vuse): Same as above.
+	(build_vdef): Same as above.
+	(verify_ssa_operands): Same as above.
+	(finalize_ssa_uses): Same as above.
+	(cleanup_build_arrays): Same as above.
+	(finalize_ssa_stmt_operands): Same as above.
+	(start_ssa_stmt_operands): Same as above.
+	(append_use): Same as above.
+	(append_vdef): Same as above.
+	(add_virtual_operand): Same as above.
+	(add_stmt_operand): Same as above.
+	(get_mem_ref_operands): Same as above.
+	(get_tmr_operands): Same as above.
+	(maybe_add_call_vops): Same as above.
+	(get_asm_stmt_operands): Same as above.
+	(get_expr_operands): Same as above.
+	(parse_ssa_operands): Same as above.
+	(finalize_ssa_defs): Same as above.
+	(build_ssa_operands): Same as above, plus create a C-like wrapper.
+	(update_stmt_operands): Create an instance of operands_scanner.
+
 2020-05-07  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/94947
