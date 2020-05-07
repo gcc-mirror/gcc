@@ -1,3 +1,8 @@
+2020-05-07  Marek Polacek  <polacek@redhat.com>
+
+	P1957R2
+	* g++.dg/cpp0x/initlist92.C: Don't expect an error in C++20 only.
+
 2020-05-07  Manfred Schwarb <manfred99@gmx.ch>
 
 	* gcc.dg/20050121-1.c: Fix broken dg directives.

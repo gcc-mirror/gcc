@@ -1040,9 +1040,10 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain,
     }
   else if (TREE_CODE (type) == BOOLEAN_TYPE
 	   && (TYPE_PTR_P (ftype) || TYPE_PTRMEM_P (ftype)))
-    /* This hasn't actually made it into C++20 yet, but let's add it now to get
-       an idea of the impact.  */
-    ok = (cxx_dialect < cxx2a);
+    /* C++20 P1957R2: converting from a pointer type or a pointer-to-member
+       type to bool should be considered narrowing.  This is a DR so is not
+       limited to C++20 only.  */
+    ok = false;
 
   bool almost_ok = ok;
   if (!ok && !CONSTANT_CLASS_P (init) && (complain & tf_warning_or_error))
