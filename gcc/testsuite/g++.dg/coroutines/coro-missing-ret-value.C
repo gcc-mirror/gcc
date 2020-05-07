@@ -28,6 +28,12 @@ bar ()
   co_return 6174; // { dg-error {no member named 'return_value' in} }
 }
 
+// check we have not messed up continuation of the compilation.
+template <class... Args>
+struct void_t_imp {
+  using type = void;
+};
+
 int main (int ac, char *av[]) {
   MissingRetValue x = bar ();
   return 0;
