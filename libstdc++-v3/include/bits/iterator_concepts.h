@@ -90,6 +90,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
       private:
 	template<typename _Tp>
+	  struct __result
+	  { using type = iter_reference_t<_Tp>; };
+
+	template<typename _Tp>
+	  requires __adl_imove<_Tp>
+	  struct __result<_Tp>
+	  { using type = decltype(iter_move(std::declval<_Tp>())); };
+
+	template<typename _Tp>
+	  requires (!__adl_imove<_Tp>)
+	  && is_lvalue_reference_v<iter_reference_t<_Tp>>
+	  struct __result<_Tp>
+	  { using type = remove_reference_t<iter_reference_t<_Tp>>&&; };
+
+	template<typename _Tp>
 	  static constexpr bool
 	  _S_noexcept()
 	  {
@@ -100,16 +115,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 
       public:
-	template<typename _Tp>
-	  requires __adl_imove<_Tp> || requires(_Tp& __e) { *__e; }
-	  constexpr decltype(auto)
+	// The result type of iter_move(std::declval<_Tp>())
+	template<std::__detail::__dereferenceable _Tp>
+	  using __type = typename __result<_Tp>::type;
+
+	template<std::__detail::__dereferenceable _Tp>
+	  constexpr __type<_Tp>
 	  operator()(_Tp&& __e) const
 	  noexcept(_S_noexcept<_Tp>())
 	  {
 	    if constexpr (__adl_imove<_Tp>)
 	      return iter_move(static_cast<_Tp&&>(__e));
-	    else if constexpr (is_reference_v<iter_reference_t<_Tp>>)
-	      return std::move(*__e);
+	    else if constexpr (is_lvalue_reference_v<iter_reference_t<_Tp>>)
+	      return static_cast<__type<_Tp>>(*__e);
 	    else
 	      return *__e;
 	  }
