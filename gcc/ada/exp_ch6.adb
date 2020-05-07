@@ -9982,8 +9982,8 @@ package body Exp_Ch6 is
       --  to ensure that if Func_Id is frozen then the computed result matches
       --  with the availability of the task master extra formal; unfortunately
       --  this is not feasible because we may be precisely freezing this entity
-      --  (ie. Is_Frozen has been set by Freeze_Entity but it has not completed
-      --  its work).
+      --  (that is, Is_Frozen has been set by Freeze_Entity but it has not
+      --  completed its work).
 
       if Has_Task (Func_Typ) then
          return True;
@@ -9992,9 +9992,9 @@ package body Exp_Ch6 is
          return Might_Have_Tasks (Func_Typ);
 
       --  Handle subprogram type internally generated for dispatching call. We
-      --  can not rely on the return type of the subprogram type of dispatching
+      --  cannot rely on the return type of the subprogram type of dispatching
       --  calls since it is always a class-wide type (cf. Expand_Dispatching_
-      --  _Call).
+      --  Call).
 
       elsif Ekind (Func_Id) = E_Subprogram_Type then
          if Is_Dispatch_Table_Entity (Func_Id) then

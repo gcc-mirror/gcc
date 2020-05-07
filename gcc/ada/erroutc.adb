@@ -258,12 +258,12 @@ package body Erroutc is
       elsif Warnings_Treated_As_Errors /= 0 then
          return True;
 
-         --  We should never treat warnings that originate from a
-         --  Compile_Time_Warning pragma as an error. Warnings_Count is the sum
-         --  of both "normal" and Compile_Time_Warning warnings. This means
-         --  that there only is one or more non-Compile_Time_Warning warnings
-         --  if Warnings_Count is greater than
-         --  Count_Compile_Time_Pragma_Warnings.
+      --  We should never treat warnings that originate from a
+      --  Compile_Time_Warning pragma as an error. Warnings_Count is the sum
+      --  of both "normal" and Compile_Time_Warning warnings. This means that
+      --  there are only one or more non-Compile_Time_Warning warnings when
+      --  Warnings_Count is greater than Count_Compile_Time_Pragma_Warnings.
+
       elsif Warning_Mode = Treat_As_Error
          and then Warnings_Count > Count_Compile_Time_Pragma_Warnings
       then
