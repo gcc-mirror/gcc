@@ -1,5 +1,21 @@
 2020-05-07 Jeff Law  <law@redhat.com>
 
+	* config/h8300/h8300.md: Move expanders and patterns into
+	files based on functionality.
+	* config/h8300/addsub.md: New file.
+	* config/h8300/bitfield.md: New file
+	* config/h8300/combiner.md: New file
+	* config/h8300/divmod.md: New file
+	* config/h8300/extensions.md: New file
+	* config/h8300/jumpcall.md: New file
+	* config/h8300/logical.md: New file
+	* config/h8300/movepush.md: New file
+	* config/h8300/multiply.md: New file
+	* config/h8300/other.md: New file
+	* config/h8300/proepi.md: New file
+	* config/h8300/shiftrotate.md: New file
+	* config/h8300/testcompare.md: New file
+
 	* config/h8300/h8300.md (adds/subs splitters): Merge into single
 	splitter.
 	(negation expanders and patterns): Simplify and combine using
