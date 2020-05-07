@@ -1,29 +1,31 @@
-202-05-07  Jakub Jelinek  <jakub@redhat.com>
+2020-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94946
+	* g++.dg/ext/attr-parm-1.C: Enable the test also for lp64 x86, use
+	sysv_abi and ms_abi attributes in that case instead of fastcall and
+	no attribute.
 
 	PR c/94968
 	* gcc.dg/pr94968.c: New test.
 
-2020-05-06  Jakub Jelinek  <jakub@redhat.com>
+	Backported from mainline
+	2020-05-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/94951
 	* g++.dg/warn/Wstrict-aliasing-bogus-tmpl.C: New test.
 
-2020-05-06  Jakub Jelinek  <jakub@redhat.com>
-
 	PR c++/94907
 	* g++.dg/cpp2a/spaceship-synth8.C: New test.
-
-2020-05-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/94873
 	* gcc.dg/pr94873.c: New test.
 
-2020-05-05  Jakub Jelinek  <jakub@redhat.com>
+	2020-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94942
 	* gcc.target/i386/pr94942.c: New test.
 
-2020-04-30  Jakub Jelinek  <jakub@redhat.com>
+	2020-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/94842
 	* gcc.dg/pr94842.c: New test.

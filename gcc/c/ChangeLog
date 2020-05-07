@@ -1,4 +1,7 @@
-2020-04-30  Jakub Jelinek  <jakub@redhat.com>
+2020-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2020-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/94842
 	* c-decl.c (set_labels_context_r): In addition to context-less
