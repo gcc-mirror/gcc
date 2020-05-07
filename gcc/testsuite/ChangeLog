@@ -1,5 +1,15 @@
 2020-05-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* gcc.target/powerpc/setnbc.h: New.
+	* gcc.target/powerpc/setnbceq.c: New.
+	* gcc.target/powerpc/setnbcge.c: New.
+	* gcc.target/powerpc/setnbcgt.c: New.
+	* gcc.target/powerpc/setnbcle.c: New.
+	* gcc.target/powerpc/setnbclt.c: New.
+	* gcc.target/powerpc/setnbcne.c: New.
+
+2020-05-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* gcc.target/powerpc/setbc.h: New.
 	* gcc.target/powerpc/setbceq.c: New.
 	* gcc.target/powerpc/setbcge.c: New.
