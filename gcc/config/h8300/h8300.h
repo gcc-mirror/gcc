@@ -76,8 +76,6 @@ extern const char * const *h8_reg_names;
     }							\
   while (0)
 
-#define LINK_SPEC "%{mh:%{mn:-m h8300hn}} %{mh:%{!mn:-m h8300h}} %{ms:%{mn:-m h8300sn}} %{ms:%{!mn:-m h8300s}}"
-
 #define LIB_SPEC "%{mrelax:-relax} %{g:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}"
 
 /* Macros used in the machine description to test the flags.  */
@@ -658,10 +656,6 @@ struct cum_arg
 
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
    ASM_OUTPUT_LABEL (FILE, NAME)
-
-/* The prefix to add to user-visible assembler symbols.  */
-
-#define USER_LABEL_PREFIX "_"
 
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where
