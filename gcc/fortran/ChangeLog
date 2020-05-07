@@ -1,3 +1,14 @@
+2020-05-13  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	Backported from master
+	2020-05-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93497
+	* decl.c (char_len_param_value): Check whether character
+	length expression is of type EXPR_OP and if so simplify it.
+	* resolve.c (resolve_charlen): Reject length if it has a
+	rank.
+
 2020-05-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from mainline
