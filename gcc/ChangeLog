@@ -1,3 +1,9 @@
+2020-05-07  Alan Modra  <amodra@gmail.com>
+
+	* tree-ssa-reassoc.c (optimize_range_tests_to_bit_test): Replace
+	set_rtx_cost with set_src_cost.
+	* tree-switch-conversion.c (bit_test_cluster::emit): Likewise.
+
 2020-05-07  Kewen Lin  <linkw@gcc.gnu.org>
 
 	* tree-vect-stmts.c (vectorizable_load): Check alignment to avoid
