@@ -1033,6 +1033,11 @@ char_len_param_value (gfc_expr **expr, bool *deferred)
   if (!gfc_expr_check_typed (*expr, gfc_current_ns, false))
     return MATCH_ERROR;
 
+  /* If gfortran gets an EXPR_OP, try to simplifiy it.  This catches things
+     like CHARACTER(([1])).   */
+  if ((*expr)->expr_type == EXPR_OP)
+    gfc_simplify_expr (*expr, 1);
+
   if ((*expr)->expr_type == EXPR_FUNCTION)
     {
       if ((*expr)->ts.type == BT_INTEGER
