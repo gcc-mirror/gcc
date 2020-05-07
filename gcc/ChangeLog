@@ -1,3 +1,8 @@
+2020-05-07  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* tree-vect-stmts.c (vectorizable_load): Check alignment to avoid
+	redundant half vector handlings for no peeling gaps.
+
 2020-05-07  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* tree-ssa-operands.c (operands_scanner): New class.
