@@ -1,5 +1,8 @@
 2020-05-07 Jeff Law  <law@redhat.com>
 
+	* config/h8300/h8300.h (LINK_SPEC): Remove.
+	(USER_LABEL_PREFIX): Likewise.
+
 	* config/h8300/h8300.c (h8300_asm_named_section): Remove.
 	(h8300_option_override): Remove remnants of COFF support.
 
