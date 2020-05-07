@@ -57,11 +57,11 @@
    as a consequence.
 
    See  "Efficient Field-sensitive pointer analysis for C" by "David
-   J. Pearce and Paul H. J. Kelly and Chris Hankin, at
+   J. Pearce and Paul H. J. Kelly and Chris Hankin", at
    http://citeseer.ist.psu.edu/pearce04efficient.html
 
    Also see "Ultra-fast Aliasing Analysis using CLA: A Million Lines
-   of C Code in a Second" by ""Nevin Heintze and Olivier Tardieu" at
+   of C Code in a Second" by "Nevin Heintze and Olivier Tardieu" at
    http://citeseer.ist.psu.edu/heintze01ultrafast.html
 
    There are three types of real constraint expressions, DEREF,
@@ -84,7 +84,7 @@
    Each variable for a structure field has
 
    1. "size", that tells the size in bits of that field.
-   2. "fullsize, that tells the size in bits of the entire structure.
+   2. "fullsize", that tells the size in bits of the entire structure.
    3. "offset", that tells the offset in bits from the beginning of the
    structure to this field.
 
@@ -188,7 +188,7 @@
 
    We probably should compute a per-function unit-ESCAPE solution
    propagating it simply like the clobber / uses solutions.  The
-   solution can go alongside the non-IPA espaced solution and be
+   solution can go alongside the non-IPA escaped solution and be
    used to query which vars escape the unit through a function.
    This is also required to make the escaped-HEAP trick work in IPA mode.
 
