@@ -1706,8 +1706,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	  if constexpr (__is_byte_iter<_InputIter1>)
 	    if constexpr (__is_byte_iter<_InputIter2>)
 	      {
-		const auto [__len, __lencmp]
-		  = std::__min_cmp(__last1 - __first1, __last2 - __first2);
+		const auto [__len, __lencmp] = _GLIBCXX_STD_A::
+		  __min_cmp(__last1 - __first1, __last2 - __first2);
 		if (__len)
 		  {
 		    const auto __c
@@ -1737,9 +1737,9 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 				      _InputIter2 __first2,
 				      _InputIter2 __last2)
     {
-      return std::lexicographical_compare_three_way(__first1, __last1,
-						    __first2, __last2,
-						    compare_three_way{});
+      return _GLIBCXX_STD_A::
+	lexicographical_compare_three_way(__first1, __last1, __first2, __last2,
+					  compare_three_way{});
     }
 #endif // three_way_comparison
 

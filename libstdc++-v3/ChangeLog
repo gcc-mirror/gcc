@@ -1,3 +1,25 @@
+2020-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94971 (partial)
+	* include/bits/ranges_algo.h (ranges::__sample_fn): Qualify
+	std::sample using macro to work in parallel mode.
+	(__sort_fn): Likewise for std::sort.
+	(ranges::__nth_element_fn): Likewise for std::nth_element.
+	* include/bits/stl_algobase.h (lexicographical_compare_three_way):
+	Likewise for std::__min_cmp.
+	* include/parallel/algobase.h (lexicographical_compare_three_way):
+	Add to namespace std::__parallel.
+
+	PR c/92472
+	* include/parallel/multiway_merge.h (_GuardedIterator::operator*)
+	(_GuardedIterator::operator _RAIter, _UnguardedIterator::operator*)
+	(_UnguardedIterator::operator _RAIter): Add const qualifier.
+	(operator<(_GuardedIterator&, _GuardedIterator&)
+	(operator<=(_GuardedIterator&, _GuardedIterator&)
+	(operator<(_UnguardedIterator&, _UnguardedIterator&)
+	(operator<=(_UnguardedIterator&, _UnguardedIterator&): Change
+	parameters to const references.
+
 2020-05-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/abi/post/sparc64-linux-gnu/baseline_symbols.txt: Update.
@@ -26,18 +48,6 @@
 	* config/abi/post/sparc-solaris/baseline_symbols.txt: Likewise.
 	* config/abi/post/sparc-solaris/sparcv9/baseline_symbols.txt:
 	Likewise.
-
-2020-05-07  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR c/92472
-	* include/parallel/multiway_merge.h (_GuardedIterator::operator*)
-	(_GuardedIterator::operator _RAIter, _UnguardedIterator::operator*)
-	(_UnguardedIterator::operator _RAIter): Add const qualifier.
-	(operator<(_GuardedIterator&, _GuardedIterator&)
-	(operator<=(_GuardedIterator&, _GuardedIterator&)
-	(operator<(_UnguardedIterator&, _UnguardedIterator&)
-	(operator<=(_UnguardedIterator&, _UnguardedIterator&): Change
-	parameters to const references.
 
 2020-05-06  Martin Liska  <mliska@suse.cz>
 
