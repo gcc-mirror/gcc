@@ -1,6 +1,14 @@
 2020-05-12  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2020-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/94947
+	* tree-ssa-structalias.c (refered_from_nonlocal_fn): Use
+	DECL_EXTERNAL || TREE_PUBLIC instead of externally_visible.
+	(refered_from_nonlocal_var): Likewise.
+	(ipa_pta_execute): Likewise.
+
 	2020-05-05  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/94947
