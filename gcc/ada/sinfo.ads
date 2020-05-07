@@ -11889,7 +11889,7 @@ package Sinfo is
         5 => False),  --  unused
 
      N_Delta_Aggregate =>
-       (1 => False,   --  Expressions (List1-Sem)
+       (1 => False,   --  Unused
         2 => True,    --  Component_Associations (List2)
         3 => True,    --  Expression (Node3)
         4 => False,   --  Unused
