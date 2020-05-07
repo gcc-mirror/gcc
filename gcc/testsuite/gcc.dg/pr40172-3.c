@@ -1,5 +1,5 @@
 /* PR middle-end/40172 */
-/* { dg-do compile */
+/* { dg-do compile } */
 /* { dg-xfail-if "" { "*-*-*" } } */
 /* { dg-options "-Wall -W -Werror -Wlogical-op" } */
 

@@ -1,5 +1,5 @@
 /* PR target/51106 */
-/* { dg-do "compile" } */
+/* { dg-do compile } */
 /* { dg-skip-if "RTL error" { "*-*-*" } { "-fno-fat-lto-objects" } { "" } } */
 
 int

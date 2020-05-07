@@ -14,7 +14,7 @@ ql (void)
   int n1[1];
 
   fread (n1, sizeof (n1[0]), 1, fp); /* { dg-message "'n1' gets an unchecked value here" } */
-  idx = n1[0]; /* { dg-message "'idx' has an unchecked value here (from 'n1')" */
+  idx = n1[0]; /* { dg-message "'idx' has an unchecked value here (from 'n1')" } */
 }
 
 int arr[10];

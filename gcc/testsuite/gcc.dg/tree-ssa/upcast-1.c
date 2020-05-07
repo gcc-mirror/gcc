@@ -1,4 +1,4 @@
-/* { do-go compile } */
+/* { dg-do compile } */
 /* { dg-options "-fdump-tree-gimple" } */
 
 typedef struct { int i; } Foo;

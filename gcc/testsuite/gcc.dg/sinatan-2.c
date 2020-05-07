@@ -48,12 +48,12 @@ cosatanl_ (long double x)
 }
 
 /* There must be no calls to sin, cos, or atan */
-/* {dg-final { scan-tree-dump-not "sin " "optimized" } } */
-/* {dg-final { scan-tree-dump-not "cos " "optimized" } } */
-/* {dg-final { scan-tree-dump-not "atan " "optimized" }} */
-/* {dg-final { scan-tree-dump-not "sinf " "optimized" } } */
-/* {dg-final { scan-tree-dump-not "cosf " "optimized" } } */
-/* {dg-final { scan-tree-dump-not "atanf " "optimized" }} */
-/* {dg-final { scan-tree-dump-not "sinl " "optimized" } } */
-/* {dg-final { scan-tree-dump-not "cosl " "optimized" } } */
-/* {dg-final { scan-tree-dump-not "atanl " "optimized" }} */
+/* { dg-final { scan-tree-dump-not "sin " "optimized" } } */
+/* { dg-final { scan-tree-dump-not "cos " "optimized" } } */
+/* { dg-final { scan-tree-dump-not "atan " "optimized" } } */
+/* { dg-final { scan-tree-dump-not "sinf " "optimized" } } */
+/* { dg-final { scan-tree-dump-not "cosf " "optimized" } } */
+/* { dg-final { scan-tree-dump-not "atanf " "optimized" } } */
+/* { dg-final { scan-tree-dump-not "sinl " "optimized" } } */
+/* { dg-final { scan-tree-dump-not "cosl " "optimized" } } */
+/* { dg-final { scan-tree-dump-not "atanl " "optimized" } } */

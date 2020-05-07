@@ -1,4 +1,4 @@
-/* { dg-do "compile" } */
+/* { dg-do compile } */
 /* { dg-require-effective-target fopenacc } */
 /* { dg-options "-O2 -fexceptions -fnon-call-exceptions -fopenacc" } */
 
