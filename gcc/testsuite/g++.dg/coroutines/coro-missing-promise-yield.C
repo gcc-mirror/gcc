@@ -27,6 +27,12 @@ bar ()
   co_return 0;
 }
 
+// check we have not messed up continuation of the compilation.
+template <class... Args>
+struct void_t_imp {
+  using type = void;
+};
+
 int main (int ac, char *av[]) {
   MissingPromiseYield x = bar ();
   return 0;
