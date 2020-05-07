@@ -1,4 +1,4 @@
-/* { do-do compile } */
+/* { dg-do compile } */
 /* { dg-additional-options "-ftree-vectorize" } */
 
 long int ar;

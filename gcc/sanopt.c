@@ -1189,7 +1189,6 @@ sanitize_rewrite_addressable_params (function *fun)
 	    {
 	      /* We need to create a SSA name that will be used for the
 		 assignment.  */
-	      DECL_GIMPLE_REG_P (arg) = 1;
 	      tree tmp = get_or_create_ssa_default_def (cfun, arg);
 	      g = gimple_build_assign (var, tmp);
 	      gimple_set_location (g, DECL_SOURCE_LOCATION (arg));

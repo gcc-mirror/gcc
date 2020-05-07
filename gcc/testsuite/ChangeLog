@@ -1,3 +1,124 @@
+2020-05-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94817
+	PR c++/94829
+	* g++.dg/coroutines/coro-missing-final-suspend.C: New test.
+	* g++.dg/coroutines/coro-missing-initial-suspend.C: New test.
+	* g++.dg/coroutines/coro-missing-promise-yield.C: Check for
+	continuation of compilation.
+	* g++.dg/coroutines/coro-missing-promise.C: Likewise.
+	* g++.dg/coroutines/coro-missing-ret-value.C: Likewise
+	* g++.dg/coroutines/coro-missing-ret-void.C: Likewise
+	* g++.dg/coroutines/coro-missing-ueh-3.C: Likewise
+	* g++.dg/coroutines/pr94817.C: New test.
+	* g++.dg/coroutines/pr94829.C: New test.
+
+2020-05-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94590 - Detect long double -> double narrowing.
+	* g++.dg/cpp0x/Wnarrowing18.C: New test.
+
+2020-05-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94255
+	* g++.dg/template/spec41.C: New test.
+
+2020-05-07  Marek Polacek  <polacek@redhat.com>
+
+	P1957R2
+	* g++.dg/cpp0x/initlist92.C: Don't expect an error in C++20 only.
+
+2020-05-07  Manfred Schwarb <manfred99@gmx.ch>
+
+	* gcc.dg/20050121-1.c: Fix broken dg directives.
+	* gcc.dg/analzyer/pr93382.c: Likewise.
+	* gcc.dg/autopar/pr68460.c: Likewise.
+	* gcc.dg/c90-fordecl-1.c: Likewise.
+	* gcc.dg/cpp/trad/funlike-5.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-dfp.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-float.c: Likewise.
+	* gcc.dg/lto/pr52634_0.c: Likewise.
+	* gcc.dg/pr32069.c: Likewise.
+	* gcc.dg/pr35445.c: Likewise.
+	* gcc.dg/pr40172-3.c: Likewise.
+	* gcc.dg/pr87347.c: Likewise.
+	* gcc.dg/pr88660.c: Likewise.
+	* gcc.dg/pr89689.c: Likewise.
+	* gcc.dg/sinatan-2.c: Likewise.
+	* gcc.dg/sinhatanh-1.c: Likewise.
+	* gcc.dg/sinhovercosh-1.c: Likewise.
+	* gcc.dg/tls/opt-9.c: Likewise.
+	* gcc.dg/torture/builtins-1.c: Likewise.
+	* gcc.dg/torture/pr51106-1.c: Likewise.
+	* gcc.dg/torture/pr51106-2.c: Likewise.
+	* gcc.dg/torture/pr80281.c: Likewise.
+	* gcc.dg/torture/pr92252.c: Likewise.
+	* gcc.dg/tree-ssa/pr79448-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr79448.c: Likewise.
+	* gcc.dg/tree-ssa/pr92163.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-28.c: Likewise.
+	* gcc.dg/tree-ssa/upcast-1.c: Likewise.
+	* gcc.dg/two-types-6.c: Likewise.
+	* gcc.dg/ubsan/c-shift-1.c: Likewise.
+	* gcc.dg/var-expand3.c: Likewise.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-pr30843.c: Likewise.
+	* gcc.dg/vect/pr71264.c: Likewise.
+
+2020-05-07  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/other/operator1.C: Adjust expected message.
+	* g++.dg/overload/operator2.C: Likewise.
+	* g++.dg/template/error30.C: Likewise.
+	* g++.old-deja/g++.jason/operator.C: Likewise.
+
+2020-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94703
+	* gcc.dg/tree-ssa/pr94703.c: New testcase.
+
+2020-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94946
+	* g++.dg/ext/attr-parm-1.C: Enable the test also for lp64 x86, use
+	sysv_abi and ms_abi attributes in that case instead of fastcall and
+	no attribute.
+
+	PR c/94968
+	* gcc.dg/pr94968.c: New test.
+
+2020-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57359
+	* gcc.dg/torture/pr57359-1.c: New testcase.
+	* gcc.dg/torture/pr57359-1.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-lim-14.c: Likewise.
+	* gcc.dg/graphite/pr80906.c: XFAIL.
+
+2020-05-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/debug16.adb: New test.
+
+2020-05-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94938
+	* g++.dg/warn/Wdiv-by-zero-3.C: New test.
+	* g++.dg/warn/Wtype-limits4.C: New test.
+	* g++.dg/warn/template-2.C: New test.
+	* g++.old-deja/g++.pt/crash10.C: Add dg-warning.
+
+2020-05-06  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/94970
+	* gdc.dg/pr94970.d: New test.
+
+2020-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94951
+	* g++.dg/warn/Wstrict-aliasing-bogus-tmpl.C: New test.
+
+	PR c++/94907
+	* g++.dg/cpp2a/spaceship-synth8.C: New test.
+
 2020-05-06  qing zhao  <qing.zhao@oracle.com>
 
 	PR c/94230

@@ -428,6 +428,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     };
 
+_GLIBCXX_BEGIN_NAMESPACE_CONTAINER
+
+  template<typename _Tp, typename _Ref, typename _Ptr>
+    struct _Deque_iterator;
+
+  struct _Bit_iterator;
+
+_GLIBCXX_END_NAMESPACE_CONTAINER
+
   // Helpers for streambuf iterators (either istream or ostream).
   // NB: avoid including <iosfwd>, relatively large.
   template<typename _CharT>
@@ -471,13 +480,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::__copy_move<_IsMove, __memcpyable<_OI, _II>::__value,
 			      _Category>::__copy_m(__first, __last, __result);
     }
-
-_GLIBCXX_BEGIN_NAMESPACE_CONTAINER
-
-  template<typename _Tp, typename _Ref, typename _Ptr>
-    struct _Deque_iterator;
-
-_GLIBCXX_END_NAMESPACE_CONTAINER
 
   template<bool _IsMove,
 	   typename _Tp, typename _Ref, typename _Ptr, typename _OI>
@@ -906,6 +908,10 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     __fill_a1(const _GLIBCXX_STD_C::_Deque_iterator<_Tp, _Tp&, _Tp*>&,
 	      const _GLIBCXX_STD_C::_Deque_iterator<_Tp, _Tp&, _Tp*>&,
 	      const _VTp&);
+
+  void
+  __fill_a1(_GLIBCXX_STD_C::_Bit_iterator, _GLIBCXX_STD_C::_Bit_iterator,
+	    const bool&);
 
   template<typename _FIte, typename _Tp>
     _GLIBCXX20_CONSTEXPR

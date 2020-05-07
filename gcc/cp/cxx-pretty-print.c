@@ -1534,7 +1534,7 @@ pp_cxx_parameter_declaration_clause (cxx_pretty_printer *pp, tree t)
     }
   bool first = true;
 
-  /* Skip artificial parameter for nonstatic member functions.  */
+  /* Skip artificial parameter for non-static member functions.  */
   if (TREE_CODE (t) == METHOD_TYPE)
     types = TREE_CHAIN (types);
 

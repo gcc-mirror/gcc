@@ -1894,23 +1894,32 @@ cont:
 	      putenv (xstrdup ("MAKEFLAGS="));
 	      putenv (xstrdup ("MFLAGS="));
 	    }
-	  new_argv[0] = getenv ("MAKE");
-	  if (!new_argv[0])
-	    new_argv[0] = "make";
-	  new_argv[1] = "-f";
-	  new_argv[2] = makefile;
-	  i = 3;
+
+	  char **make_argv = buildargv (getenv ("MAKE"));
+	  if (make_argv)
+	    {
+	      for (unsigned argc = 0; make_argv[argc]; argc++)
+		obstack_ptr_grow (&argv_obstack, make_argv[argc]);
+	    }
+	  else
+	    obstack_ptr_grow (&argv_obstack, "make");
+
+	  obstack_ptr_grow (&argv_obstack, "-f");
+	  obstack_ptr_grow (&argv_obstack, makefile);
 	  if (!jobserver)
 	    {
 	      snprintf (jobs, 31, "-j%ld",
 			auto_parallel ? nthreads_var : parallel);
-	      new_argv[i++] = jobs;
+	      obstack_ptr_grow (&argv_obstack, jobs);
 	    }
-	  new_argv[i++] = "all";
-	  new_argv[i++] = NULL;
+	  obstack_ptr_grow (&argv_obstack, "all");
+	  obstack_ptr_grow (&argv_obstack, NULL);
+	  new_argv = XOBFINISH (&argv_obstack, const char **);
+
 	  pex = collect_execute (new_argv[0], CONST_CAST (char **, new_argv),
 				 NULL, NULL, PEX_SEARCH, false);
 	  do_wait (new_argv[0], pex);
+	  freeargv (make_argv);
 	  maybe_unlink (makefile);
 	  makefile = NULL;
 	  for (i = 0; i < nr; ++i)

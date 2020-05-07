@@ -9628,6 +9628,12 @@ vectorizable_load (vec_info *vinfo,
 		      {
 			tree ltype = vectype;
 			tree new_vtype = NULL_TREE;
+			unsigned HOST_WIDE_INT gap
+			  = DR_GROUP_GAP (first_stmt_info);
+			unsigned int vect_align
+			  = vect_known_alignment_in_bytes (first_dr_info);
+			unsigned int scalar_dr_size
+			  = vect_get_scalar_dr_size (first_dr_info);
 			/* If there's no peeling for gaps but we have a gap
 			   with slp loads then load the lower half of the
 			   vector only.  See get_group_load_store_type for
@@ -9635,11 +9641,10 @@ vectorizable_load (vec_info *vinfo,
 			if (slp
 			    && loop_vinfo
 			    && !LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
-			    && DR_GROUP_GAP (first_stmt_info) != 0
-			    && known_eq (nunits,
-					 (group_size
-					  - DR_GROUP_GAP (first_stmt_info)) * 2)
-			    && known_eq (nunits, group_size))
+			    && gap != 0
+			    && known_eq (nunits, (group_size - gap) * 2)
+			    && known_eq (nunits, group_size)
+			    && gap >= (vect_align / scalar_dr_size))
 			  {
 			    tree half_vtype;
 			    new_vtype
@@ -9654,10 +9659,9 @@ vectorizable_load (vec_info *vinfo,
 			if (ltype != vectype
 			    && memory_access_type == VMAT_CONTIGUOUS_REVERSE)
 			  {
-			    unsigned HOST_WIDE_INT gap
-			      = DR_GROUP_GAP (first_stmt_info);
-			    gap *= tree_to_uhwi (TYPE_SIZE_UNIT (elem_type));
-			    tree gapcst = build_int_cst (ref_type, gap);
+			    unsigned HOST_WIDE_INT gap_offset
+			      = gap * tree_to_uhwi (TYPE_SIZE_UNIT (elem_type));
+			    tree gapcst = build_int_cst (ref_type, gap_offset);
 			    offset = size_binop (PLUS_EXPR, offset, gapcst);
 			  }
 			data_ref

@@ -1,3 +1,15 @@
+2020-05-07  Marek Polacek  <polacek@redhat.com>
+
+	* c-format.c (badwords): Add "nonstatic".
+
+202-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94968
+	* c-common.c (speculation_safe_value_resolve_params): Return false if
+	error_operand_p (val2).
+	(resolve_overloaded_builtin) <case BUILT_IN_SPECULATION_SAFE_VALUE_N>:
+	Remove extraneous semicolon.
+
 2020-05-06  qing zhao  <qing.zhao@oracle.com>
 
 	PR c/94230

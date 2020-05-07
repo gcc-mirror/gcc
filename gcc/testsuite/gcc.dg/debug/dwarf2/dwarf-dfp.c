@@ -1,6 +1,6 @@
 /* Verify the DWARF encoding of C99 decimal floating point types.  */
 
-/* { dg-do compile */
+/* { dg-do compile } */
 /* { dg-require-effective-target dfp } */
 /* { dg-options "-O0 -gdwarf -dA" } */
 /* { dg-final { scan-assembler "0x10.*DW_AT_encoding" } } */

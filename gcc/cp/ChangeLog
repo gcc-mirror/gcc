@@ -1,3 +1,68 @@
+2020-05-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94817
+	PR c++/94829
+	* coroutines.cc (morph_fn_to_coro): Set unformed outline
+	functions to error_mark_node.  For early error returns suppress
+	warnings about missing ramp return values.  Fix reinstatement
+	of the function body on pre-existing initial error.
+	* decl.c (finish_function): Use the normal error path for fails
+	in the ramp function, do not try to compile the helpers if the
+	transform fails.
+
+2020-05-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94590 - Detect long double -> double narrowing.
+	* typeck2.c (check_narrowing): Detect long double -> double
+	narrowing even when double and long double have the same
+	precision.  Make it handle conversions to float too.
+
+2020-05-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94255
+	* parser.c (cp_parser_class_specifier_1): Check that the scope is
+	nested inside current scope before pushing it.
+
+2020-05-07  Marek Polacek  <polacek@redhat.com>
+
+	  P1957R2
+	  * typeck2.c (check_narrowing): Consider T* to bool narrowing
+	  in C++11 and up.
+
+2020-05-07  Marek Polacek  <polacek@redhat.com>
+
+	* decl.c (grok_op_properties): Fix spelling of non-static.
+	* typeck.c (build_class_member_access_expr): Likewise.
+
+2020-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94703
+	* optimize.c (update_cloned_parm): Copy DECL_NOT_GIMPLE_REG_P.
+
+2020-05-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94938
+	* pt.c (tsubst_copy_and_build): Call type_dependent_expression_p_push
+	instead of uses_template_parms.  Move the warning_sentinels after the
+	RECURs.
+
+2020-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94951
+	* typeck.c (cp_strict_aliasing_warning): New function.
+	(cp_build_indirect_ref_1, build_reinterpret_cast_1): Use
+	it instead of strict_aliasing_warning.
+
+	PR c++/94907
+	* method.c (defaulted_late_check): Don't call synthesize_method
+	on constexpr sfk_comparison if it has been called on it already.
+
+2020-05-06  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/94946
+	* decl.c (grokdeclarator): Don't splice template attributes in
+	parm context -- they can apply to the parm.
+
 2020-05-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc: Remove references to n4849 throughout.

@@ -1541,8 +1541,9 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
       HOST_WIDE_INT m = tree_to_uhwi (minval);
       rtx reg = gen_raw_REG (word_mode, 10000);
       bool speed_p = optimize_insn_for_speed_p ();
-      cost_diff = set_rtx_cost (gen_rtx_PLUS (word_mode, reg,
-					      GEN_INT (-m)), speed_p);
+      cost_diff = set_src_cost (gen_rtx_PLUS (word_mode, reg,
+					      GEN_INT (-m)),
+				word_mode, speed_p);
       for (i = 0; i < count; i++)
 	{
 	  rtx r = immed_wide_int_const (test[i].mask, word_mode);

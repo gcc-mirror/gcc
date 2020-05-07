@@ -6126,6 +6126,29 @@ discover_nonconstant_array_refs_r (tree * tp, int *walk_subtrees,
   return NULL_TREE;
 }
 
+/* If there's a chance to get a pseudo for t then if it would be of float mode
+   and the actual access is via an integer mode (lowered memcpy or similar
+   access) then avoid the register expansion if the mode likely is not storage
+   suitable for raw bits processing (like XFmode on i?86).  */
+
+static void
+avoid_type_punning_on_regs (tree t)
+{
+  machine_mode access_mode = TYPE_MODE (TREE_TYPE (t));
+  if (access_mode != BLKmode
+      && !SCALAR_INT_MODE_P (access_mode))
+    return;
+  tree base = get_base_address (t);
+  if (DECL_P (base)
+      && !TREE_ADDRESSABLE (base)
+      && FLOAT_MODE_P (DECL_MODE (base))
+      && maybe_lt (GET_MODE_PRECISION (DECL_MODE (base)),
+		   GET_MODE_BITSIZE (GET_MODE_INNER (DECL_MODE (base))))
+      /* Double check in the expensive way we really would get a pseudo.  */
+      && use_register_for_decl (base))
+    TREE_ADDRESSABLE (base) = 1;
+}
+
 /* RTL expansion is not able to compile array references with variable
    offsets for arrays stored in single register.  Discover such
    expressions and mark variables as addressable to avoid this
@@ -6159,6 +6182,12 @@ discover_nonconstant_array_refs (void)
 		default:
 		  break;
 		}
+	    if (gimple_vdef (stmt))
+	      {
+		tree t = gimple_get_lhs (stmt);
+		if (t && REFERENCE_CLASS_P (t))
+		  avoid_type_punning_on_regs (t);
+	      }
 	  }
       }
 }

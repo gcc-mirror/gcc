@@ -1574,7 +1574,7 @@ separate_decls_in_region_name (tree name, name_to_copy_table_type *name_copies,
   if (!dslot->to)
     {
       var_copy = create_tmp_var (TREE_TYPE (var), get_name (var));
-      DECL_GIMPLE_REG_P (var_copy) = DECL_GIMPLE_REG_P (var);
+      DECL_NOT_GIMPLE_REG_P (var_copy) = DECL_NOT_GIMPLE_REG_P (var);
       dslot->uid = uid;
       dslot->to = var_copy;
 
