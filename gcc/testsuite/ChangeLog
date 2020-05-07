@@ -1,4 +1,9 @@
-202-05-07  Jakub Jelinek  <jakub@redhat.com>
+2020-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94946
+	* g++.dg/ext/attr-parm-1.C: Enable the test also for lp64 x86, use
+	sysv_abi and ms_abi attributes in that case instead of fastcall and
+	no attribute.
 
 	PR c/94968
 	* gcc.dg/pr94968.c: New test.
