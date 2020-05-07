@@ -1,5 +1,35 @@
 2020-05-07 Jeff Law  <law@redhat.com>
 
+	* config/h8300/constraints.md (L and N): Simplify now that we're not
+	longer supporting the original H8/300 chip.
+	* config/h8300/elf.h (LINK_SPEC): Likewise.  Default to H8/300H.
+	* config/h8300/h8300.c (shift_alg_qi): Drop H8/300 support.
+	(shift_alg_hi, shift_alg_si): Similarly.
+	(h8300_option_overrides): Similarly.  Default to H8/300H.  If
+	compiling for H8/S, then turn off H8/300H.  Do not update the
+	shift_alg tables for H8/300 port.
+	(h8300_emit_stack_adjustment): Remove support for H8/300.  Simplify
+	where possible.
+	(push, split_adds_subs, h8300_rtx_costs): Likewise.
+	(h8300_print_operand, compute_mov_length): Likewise.
+	(output_plussi, compute_plussi_length): Likewise.
+	(compute_plussi_cc, output_logical_op): Likewise.
+	(compute_logical_op_length, compute_logical_op_cc): Likewise.
+	(get_shift_alg, h8300_shift_needs_scratch): Likewise.
+	(output_a_shift, compute_a_shift_length): Likewise.
+	(output_a_rotate, compute_a_rotate_length): Likewise.
+	(output_simode_bld, h8300_hard_regno_mode_ok): Likewise.
+	(h8300_modes_tieable_p, h8300_return_in_memory): Likewise.
+	* config/h8300/h8300.h (TARGET_CPU_CPP_BUILTINS): Likewise.
+	(attr_cpu, TARGET_H8300): Remove.
+	(TARGET_DEFAULT): Update.
+	(UNITS_PER_WORD, PARM_BOUNDARY): Simplify where possible.
+	(BIGGEST_ALIGNMENT, STACK_BOUNDARY): Likewise.
+	(CONSTANT_ADDRESS_P, MOVE_MAX, Pmode): Likewise.
+	(SIZE_TYPE, POINTER_SIZE, ASM_WORD_OP): Likewise.
+	* config/h8300/h8300.md: Simplify patterns throughout.
+	* config/h8300/t-h8300: Update multilib configuration.
+	
 	* config/h8300/h8300.h (LINK_SPEC): Remove.
 	(USER_LABEL_PREFIX): Likewise.
 
