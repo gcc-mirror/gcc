@@ -7834,6 +7834,8 @@ package body Sem_Attr is
                        (Ekind (Entity (Enum_Expr)) = E_Constant
                           and then Nkind (Parent (Entity (Enum_Expr))) =
                                      N_Object_Declaration
+                          and then Present
+                                     (Expression (Parent (Entity (P))))
                           and then Compile_Time_Known_Value
                                      (Expression (Parent (Entity (P))))))
                   then
