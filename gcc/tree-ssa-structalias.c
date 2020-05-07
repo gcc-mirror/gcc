@@ -7893,7 +7893,8 @@ refered_from_nonlocal_fn (struct cgraph_node *node, void *data)
 {
   bool *nonlocal_p = (bool *)data;
   *nonlocal_p |= (node->used_from_other_partition
-		  || node->externally_visible
+		  || DECL_EXTERNAL (node->decl)
+		  || TREE_PUBLIC (node->decl)
 		  || node->force_output
 		  || lookup_attribute ("noipa", DECL_ATTRIBUTES (node->decl)));
   return false;
@@ -7905,7 +7906,8 @@ refered_from_nonlocal_var (struct varpool_node *node, void *data)
 {
   bool *nonlocal_p = (bool *)data;
   *nonlocal_p |= (node->used_from_other_partition
-		  || node->externally_visible_p ()
+		  || DECL_EXTERNAL (node->decl)
+		  || TREE_PUBLIC (node->decl)
 		  || node->force_output);
   return false;
 }
@@ -7954,7 +7956,8 @@ ipa_pta_execute (void)
 	 For local functions we see all callers and thus do not need initial
 	 constraints for parameters.  */
       bool nonlocal_p = (node->used_from_other_partition
-			 || node->externally_visible
+			 || DECL_EXTERNAL (node->decl)
+			 || TREE_PUBLIC (node->decl)
 			 || node->force_output
 			 || lookup_attribute ("noipa",
 					      DECL_ATTRIBUTES (node->decl)));
@@ -7994,7 +7997,8 @@ ipa_pta_execute (void)
 
       /* For the purpose of IPA PTA unit-local globals are not
          escape points.  */
-      bool nonlocal_p = (var->externally_visible_p ()
+      bool nonlocal_p = (DECL_EXTERNAL (var->decl)
+			 || TREE_PUBLIC (var->decl)
 			 || var->used_from_other_partition
 			 || var->force_output);
       var->call_for_symbol_and_aliases (refered_from_nonlocal_var,
