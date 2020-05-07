@@ -1,3 +1,8 @@
+2020-05-07 Jeff Law  <law@redhat.com>
+
+	* config/h8300/h8300.c (h8300_asm_named_section): Remove.
+	(h8300_option_override): Remove remnants of COFF support.
+
 2020-05-07  Alan Modra  <amodra@gmail.com>
 
 	* tree-ssa-reassoc.c (optimize_range_tests_to_bit_test): Replace
