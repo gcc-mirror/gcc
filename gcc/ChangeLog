@@ -1,3 +1,17 @@
+2020-05-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (setbc_<un>signed_<GPR:mode>): New
+	define_insn.
+	(*setbcr_<un>signed_<GPR:mode>): Likewise.
+	(cstore<mode>4): Use setbc[r] if available.
+	(<code><GPR:mode><GPR2:mode>2_isel): Avoid for TARGET_FUTURE.
+	(eq<mode>3): Use setbc for TARGET_FUTURE.
+	(*eq<mode>3): Avoid for TARGET_FUTURE.
+	(ne<mode>3): Replace :P with :GPR; use setbc for TARGET_FUTURE;
+	else for non-Pmode, use gen_eq and gen_xor.
+	(*ne<mode>3): Avoid for TARGET_FUTURE.
+	(*eqsi3_ext<mode>): Avoid for TARGET_FUTURE; fix missing && 1.
+
 2020-05-07 Jeff Law  <law@redhat.com>
 
 	* config/h8300/h8300.md: Move expanders and patterns into
