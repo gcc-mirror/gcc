@@ -822,7 +822,7 @@ void cpuidX86()
         {
             asm pure nothrow @nogc {
                 "cpuid" : "=a" (pnb[0]), "=b" (pnb[1]), "=c" (pnb[ 2]), "=d" (pnb[ 3]) : "a" (0x8000_0002);
-                "cpuid" : "=a" (pnb[4]), "=b" (pnb[5]), "=c" (pnb[ 6]), "=d" (pnb[ 7]) : "a" (0x8000_0003);               
+                "cpuid" : "=a" (pnb[4]), "=b" (pnb[5]), "=c" (pnb[ 6]), "=d" (pnb[ 7]) : "a" (0x8000_0003);
                 "cpuid" : "=a" (pnb[8]), "=b" (pnb[9]), "=c" (pnb[10]), "=d" (pnb[11]) : "a" (0x8000_0004);
             }
         }

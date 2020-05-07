@@ -1423,13 +1423,19 @@ public:
 		       outputs, inputs, clobbers, labels);
     SET_EXPR_LOCATION (exp, make_location_t (s->loc));
 
-    /* If the extended syntax was not used, mark the ASM_EXPR.  */
+    /* If the extended syntax was not used, mark the ASM_EXPR as being an
+       ASM_INPUT expression instead of an ASM_OPERAND with no operands.  */
     if (s->args == NULL && s->clobbers == NULL)
       ASM_INPUT_P (exp) = 1;
 
     /* All asm statements are assumed to have a side effect.  As a future
        optimization, this could be unset when building in release mode.  */
     ASM_VOLATILE_P (exp) = 1;
+
+    /* If the function has been annotated with 'pragma(inline)', then mark
+       the asm expression as being inline as well.  */
+    if (this->func_->inlining == PINLINEalways)
+      ASM_INLINE_P (exp) = 1;
 
     add_stmt (exp);
   }

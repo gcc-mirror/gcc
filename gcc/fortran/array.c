@@ -864,6 +864,10 @@ gfc_set_array_spec (gfc_symbol *sym, gfc_array_spec *as, locus *error_loc)
       return false;
     }
 
+  /* Check F2018:C822.  */
+  if (sym->as->rank + sym->as->corank > GFC_MAX_DIMENSIONS)
+    goto too_many;
+
   if (as->corank)
     {
       sym->as->cotype = as->cotype;

@@ -76,8 +76,7 @@ void unref (string_obj *obj)
   if (--obj->str_base.ob_refcnt == 0)
     {
       //__analyzer_dump();
-      obj->str_base.ob_type->tp_dealloc ((base_obj *)obj); /* { dg-bogus "use of uninitialized value '<unknown>'" "" { xfail *-*-* } } */
-      // TODO (xfail): not sure what's going on here
+      obj->str_base.ob_type->tp_dealloc ((base_obj *)obj);
     }
 }
 

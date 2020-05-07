@@ -1713,7 +1713,8 @@ struct GTY(()) tree_decl_common {
   unsigned lang_flag_8 : 1;
 
   /* In VAR_DECL and PARM_DECL, this is DECL_REGISTER
-     IN TRANSLATION_UNIT_DECL, this is TRANSLATION_UNIT_WARN_EMPTY_P.  */
+     In TRANSLATION_UNIT_DECL, this is TRANSLATION_UNIT_WARN_EMPTY_P.
+     In FIELD_DECL, this is DECL_FIELD_ABI_IGNORED.  */
   unsigned decl_flag_0 : 1;
   /* In FIELD_DECL, this is DECL_BIT_FIELD
      In VAR_DECL and FUNCTION_DECL, this is DECL_EXTERNAL.
@@ -1727,7 +1728,7 @@ struct GTY(()) tree_decl_common {
   unsigned decl_flag_3 : 1;
   /* Logically, these two would go in a theoretical base shared by var and
      parm decl. */
-  unsigned gimple_reg_flag : 1;
+  unsigned not_gimple_reg_flag : 1;
   /* In VAR_DECL, PARM_DECL and RESULT_DECL, this is DECL_BY_REFERENCE.  */
   unsigned decl_by_reference_flag : 1;
   /* In a VAR_DECL and PARM_DECL, this is DECL_READ_P.  */

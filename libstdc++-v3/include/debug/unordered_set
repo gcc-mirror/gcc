@@ -612,12 +612,13 @@ namespace __debug
 	       const unordered_set<_Value, _Hash, _Pred, _Alloc>& __y)
     { return __x._M_base() == __y._M_base(); }
 
+#if __cpp_impl_three_way_comparison < 201907L
   template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
     inline bool
     operator!=(const unordered_set<_Value, _Hash, _Pred, _Alloc>& __x,
 	       const unordered_set<_Value, _Hash, _Pred, _Alloc>& __y)
     { return !(__x == __y); }
-
+#endif
 
   /// Class std::unordered_multiset with safety/checking/debug instrumentation.
   template<typename _Value,
@@ -1176,11 +1177,13 @@ namespace __debug
 	       const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
     { return __x._M_base() == __y._M_base(); }
 
+#if __cpp_impl_three_way_comparison < 201907L
   template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
     inline bool
     operator!=(const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __x,
 	       const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
     { return !(__x == __y); }
+#endif
 
 } // namespace __debug
 } // namespace std

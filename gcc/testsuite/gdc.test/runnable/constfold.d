@@ -1,5 +1,5 @@
 #! blah
-
+// RUNNABLE_PHOBOS_TEST
 static assert(__LINE__ == 3); // fails as __LINE__ is 2
 
 import std.stdio;

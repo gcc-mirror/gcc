@@ -24,6 +24,12 @@
 #endif
 
 
+/* Define to the root for URLs about GCC changes. */
+#ifndef USED_FOR_TARGET
+#undef CHANGES_ROOT_URL
+#endif
+
+
 /* Define as the number of bits in a byte, if `limits.h' doesn't. */
 #ifndef USED_FOR_TARGET
 #undef CHAR_BIT
@@ -79,6 +85,12 @@
 /* The default for -fdiagnostics-urls option */
 #ifndef USED_FOR_TARGET
 #undef DIAGNOSTICS_URLS_DEFAULT
+#endif
+
+
+/* Define to the root for documentation URLs. */
+#ifndef USED_FOR_TARGET
+#undef DOCUMENTATION_ROOT_URL
 #endif
 
 

@@ -22,6 +22,7 @@
 # Disable the libphobos or libdruntime components on untested or known
 # broken systems.  More targets shall be added after testing.
 LIBPHOBOS_SUPPORTED=no
+LIBDRUNTIME_ONLY=auto
 case "${target}" in
   aarch64*-*-linux*)
 	LIBPHOBOS_SUPPORTED=yes
@@ -29,8 +30,15 @@ case "${target}" in
   arm*-*-linux*)
 	LIBPHOBOS_SUPPORTED=yes
 	;;
+  hppa-*-linux*)
+	LIBPHOBOS_SUPPORTED=yes
+	;;
   mips*-*-linux*)
 	LIBPHOBOS_SUPPORTED=yes
+	;;
+  power*-*-linux*)
+	LIBPHOBOS_SUPPORTED=yes
+	LIBDRUNTIME_ONLY=yes
 	;;
   riscv*-*-linux*)
 	LIBPHOBOS_SUPPORTED=yes

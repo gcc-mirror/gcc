@@ -624,6 +624,9 @@ else version (CRuntime_Bionic)
 }
 else version (CRuntime_Musl)
 {
+    extern __gshared int daylight;
+    extern __gshared c_long timezone;
+
     tm*   getdate(in char*);
     char* strptime(in char*, in char*, tm*);
 }

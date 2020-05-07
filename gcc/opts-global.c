@@ -385,8 +385,7 @@ handle_common_deferred_options (void)
 	  break;
 
 	case OPT_fdump_:
-	  if (!g->get_dumps ()->dump_switch_p (opt->arg))
-	    error ("unrecognized command-line option %<-fdump-%s%>", opt->arg);
+	  g->get_dumps ()->dump_switch_p (opt->arg);
 	  break;
 
         case OPT_fopt_info_:

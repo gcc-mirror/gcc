@@ -70,6 +70,12 @@ install-data-local:
 # https://gist.github.com/jpf91/8744acebc9dcf1e9d1a35cdff20afbb2
 # Can't use wildcards here:
 # https://www.gnu.org/software/automake/manual/html_node/Wildcards.html
+if ENABLE_LIBDRUNTIME_ONLY
+
+PHOBOS_DSOURCES =
+
+else
+
 PHOBOS_DSOURCES = etc/c/curl.d etc/c/sqlite3.d etc/c/zlib.d \
 	std/algorithm/comparison.d std/algorithm/internal.d \
 	std/algorithm/iteration.d std/algorithm/mutation.d \
@@ -132,3 +138,5 @@ PHOBOS_DSOURCES = etc/c/curl.d etc/c/sqlite3.d etc/c/zlib.d \
 	std/utf.d std/uuid.d std/variant.d std/windows/charset.d \
 	std/windows/registry.d std/windows/syserror.d std/xml.d std/zip.d \
 	std/zlib.d
+
+endif

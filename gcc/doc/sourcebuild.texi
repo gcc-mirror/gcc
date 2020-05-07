@@ -1829,6 +1829,17 @@ Some multilibs may be incompatible with these options.
 ARM target supports @code{-mfpu=vfp3 -mfloat-abi=softfp}.
 Some multilibs may be incompatible with these options.
 
+@item arm_arch_v8a_hard_ok
+@anchor{arm_arch_v8a_hard_ok}
+The compiler is targeting @code{arm*-*-*} and can compile and assemble code
+using the options @code{-march=armv8-a -mfpu=neon-fp-armv8 -mfloat-abi=hard}.
+This is not enough to guarantee that linking works.
+
+@item arm_arch_v8a_hard_multilib
+The compiler is targeting @code{arm*-*-*} and can build programs using
+the options @code{-march=armv8-a -mfpu=neon-fp-armv8 -mfloat-abi=hard}.
+The target can also run the resulting binaries.
+
 @item arm_v8_vfp_ok
 ARM target supports @code{-mfpu=fp-armv8 -mfloat-abi=softfp}.
 Some multilibs may be incompatible with these options.
@@ -1970,6 +1981,14 @@ Some multilibs may be incompatible with these options.
 ARM Target supports options suitable for accessing the Q-bit manipulation
 intrinsics from @code{arm_acle.h}.
 Some multilibs may be incompatible with these options.
+
+@item arm_softfp_ok
+@anchor{arm_softfp_ok}
+ARM target supports the @code{-mfloat-abi=softfp} option.
+
+@item arm_hard_ok
+@anchor{arm_hard_ok}
+ARM target supports the @code{-mfloat-abi=hard} option.
 
 @end table
 
@@ -2207,6 +2226,9 @@ overloads for @code{strchr} etc. functions.
 @item d_runtime
 Target provides the D runtime.
 
+@item d_runtime_has_std_library
+Target provides the D standard library (Phobos).
+
 @item dummy_wcsftime
 Target uses a dummy @code{wcsftime} function that always returns zero.
 
@@ -2221,6 +2243,12 @@ Target provides @file{fenv.h} include file.
 @item fenv_exceptions
 Target supports @file{fenv.h} with all the standard IEEE exceptions
 and floating-point exceptions are raised by arithmetic operations.
+
+@item fileio
+Target offers such file I/O library functions as @code{fopen},
+@code{fclose}, @code{tmpnam}, and @code{remove}.  This is a link-time
+requirement for the presence of the functions in the library; even if
+they fail at runtime, the requirement is still regarded as satisfied.
 
 @item freestanding
 Target is @samp{freestanding} as defined in section 4 of the C99 standard.
@@ -2574,6 +2602,11 @@ the @ref{arm_neon_fp16_ok,,arm_neon_fp16_ok effective target keyword}.
 @item arm_vfp3
 arm vfp3 floating point support; see
 the @ref{arm_vfp3_ok,,arm_vfp3_ok effective target keyword}.
+
+@item arm_arch_v8a_hard
+Add options for ARMv8-A and the hard-float variant of the AAPCS,
+if this is supported by the compiler; see the
+@ref{arm_arch_v8a_hard_ok,,arm_arch_v8a_hard_ok} effective target keyword.
 
 @item arm_v8_1a_neon
 Add options for ARMv8.1-A with Adv.SIMD support, if this is supported

@@ -3409,6 +3409,9 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
       else if (!flag_concepts && id == ridpointers[(int)RID_CONCEPT])
 	inform (location, "%<concept%> only available with %<-std=c++2a%> or "
 		"%<-fconcepts%>");
+      else if (!flag_concepts && id == ridpointers[(int)RID_REQUIRES])
+	inform (location, "%<requires%> only available with %<-std=c++2a%> or "
+		"%<-fconcepts%>");
       else if (processing_template_decl && current_class_type
 	       && TYPE_BINFO (current_class_type))
 	for (tree b = TREE_CHAIN (TYPE_BINFO (current_class_type));
@@ -7862,9 +7865,14 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
     }
 
   if (dependent_p)
-    /* Tell cp_parser_lookup_name that there was an object, even though it's
-       type-dependent.  */
-    parser->context->object_type = unknown_type_node;
+    {
+      tree type = TREE_TYPE (postfix_expression);
+      /* If we don't have a (type-dependent) object of class type, use
+	 typeof to figure out the type of the object.  */
+      if (type == NULL_TREE)
+	type = finish_typeof (postfix_expression);
+      parser->context->object_type = type;
+    }
 
   /* Assume this expression is not a pseudo-destructor access.  */
   pseudo_destructor_p = false;
@@ -23960,8 +23968,15 @@ cp_parser_class_name (cp_parser *parser,
     }
 
   /* PARSER->SCOPE can be cleared when parsing the template-arguments
-     to a template-id, so we save it here.  */
-  scope = parser->scope;
+     to a template-id, so we save it here.  Consider object scope too,
+     so that make_typename_type below can use it (cp_parser_template_name
+     considers object scope also).  This may happen with code like
+
+       p->template A<T>::a()
+
+      where we first want to look up A<T>::a in the class of the object
+      expression, as per [basic.lookup.classref].  */
+  scope = parser->scope ? parser->scope : parser->context->object_type;
   if (scope == error_mark_node)
     return error_mark_node;
 
@@ -28672,10 +28687,6 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	decl = lookup_name_real (name, prefer_type_arg (tag_type, is_template),
 				 /*nonclass=*/0,
 				 /*block_p=*/true, is_namespace, 0);
-      if (object_type == unknown_type_node)
-	/* The object is type-dependent, so we can't look anything up; we used
-	   this to get the DR 141 behavior.  */
-	object_type = NULL_TREE;
       parser->object_scope = object_type;
       parser->qualifying_scope = NULL_TREE;
     }
@@ -28726,7 +28737,8 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
      During an explicit instantiation, access is not checked at all,
      as per [temp.explicit].  */
   if (DECL_P (decl))
-    check_accessibility_of_qualified_id (decl, object_type, parser->scope);
+    check_accessibility_of_qualified_id (decl, object_type, parser->scope,
+					 tf_warning_or_error);
 
   maybe_record_typedef_use (decl);
 

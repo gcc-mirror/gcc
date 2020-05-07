@@ -32,7 +32,7 @@ namespace coro = std::experimental;
 #  if __cpp_impl_coroutine
 
 namespace std {
-inline namespace __n4835 {
+inline namespace __n4861 {
 
 // 21.11.1 coroutine traits
 template<typename _R, typename...> struct coroutine_traits {
@@ -125,7 +125,7 @@ struct suspend_never {
   void await_resume() {}
 };
 
-} // namespace __n4835
+} // namespace __n4861
 } // namespace std
 
 namespace coro = std;

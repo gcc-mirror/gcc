@@ -735,7 +735,7 @@ show_attr (symbol_attribute *attr, const char * module)
   if (attr->flavor != FL_UNKNOWN)
     {
       if (attr->flavor == FL_DERIVED && attr->pdt_template)
-	fputs (" (PDT template", dumpfile);
+	fputs (" (PDT-TEMPLATE", dumpfile);
       else
     fprintf (dumpfile, "(%s ", gfc_code2string (flavors, attr->flavor));
     }
@@ -770,6 +770,12 @@ show_attr (symbol_attribute *attr, const char * module)
     fputs (" LEN", dumpfile);
   if (attr->pointer)
     fputs (" POINTER", dumpfile);
+  if (attr->subref_array_pointer)
+    fputs (" SUBREF-ARRAY-POINTER", dumpfile);
+  if (attr->cray_pointer)
+    fputs (" CRAY-POINTER", dumpfile);
+  if (attr->cray_pointee)
+    fputs (" CRAY-POINTEE", dumpfile);
   if (attr->is_protected)
     fputs (" PROTECTED", dumpfile);
   if (attr->value)
@@ -791,6 +797,10 @@ show_attr (symbol_attribute *attr, const char * module)
     fputs (" RESULT", dumpfile);
   if (attr->entry)
     fputs (" ENTRY", dumpfile);
+  if (attr->entry_master)
+    fputs (" ENTRY-MASTER", dumpfile);
+  if (attr->mixed_entry_master)
+    fputs (" MIXED-ENTRY-MASTER", dumpfile);
   if (attr->is_bind_c)
     fputs (" BIND(C)", dumpfile);
 
@@ -819,15 +829,80 @@ show_attr (symbol_attribute *attr, const char * module)
 
   if (attr->sequence)
     fputs (" SEQUENCE", dumpfile);
+  if (attr->alloc_comp)
+    fputs (" ALLOC-COMP", dumpfile);
+  if (attr->pointer_comp)
+    fputs (" POINTER-COMP", dumpfile);
+  if (attr->proc_pointer_comp)
+    fputs (" PROC-POINTER-COMP", dumpfile);
+  if (attr->private_comp)
+    fputs (" PRIVATE-COMP", dumpfile);
+  if (attr->zero_comp)
+    fputs (" ZERO-COMP", dumpfile);
+  if (attr->coarray_comp)
+    fputs (" COARRAY-COMP", dumpfile);
+  if (attr->lock_comp)
+    fputs (" LOCK-COMP", dumpfile);
+  if (attr->event_comp)
+    fputs (" EVENT-COMP", dumpfile);
+  if (attr->defined_assign_comp)
+    fputs (" DEFINED-ASSIGNED-COMP", dumpfile);
+  if (attr->unlimited_polymorphic)
+    fputs (" UNLIMITED-POLYMORPHIC", dumpfile);
+  if (attr->has_dtio_procs)
+    fputs (" HAS-DTIO-PROCS", dumpfile);
+  if (attr->caf_token)
+    fputs (" CAF-TOKEN", dumpfile);
+  if (attr->select_type_temporary)
+    fputs (" SELECT-TYPE-TEMPORARY", dumpfile);
+  if (attr->associate_var)
+    fputs (" ASSOCIATE-VAR", dumpfile);
+  if (attr->pdt_kind)
+    fputs (" PDT-KIND", dumpfile);
+  if (attr->pdt_len)
+    fputs (" PDT-LEN", dumpfile);
+  if (attr->pdt_type)
+    fputs (" PDT-TYPE", dumpfile);
+  if (attr->pdt_array)
+    fputs (" PDT-ARRAY", dumpfile);
+  if (attr->pdt_string)
+    fputs (" PDT-STRING", dumpfile);
+  if (attr->omp_udr_artificial_var)
+    fputs (" OMP-UDT-ARTIFICIAL-VAR", dumpfile);
+  if (attr->omp_declare_target)
+    fputs (" OMP-DECLARE-TARGET", dumpfile);
+  if (attr->omp_declare_target_link)
+    fputs (" OMP-DECLARE-TARGET-LINK", dumpfile);
   if (attr->elemental)
     fputs (" ELEMENTAL", dumpfile);
   if (attr->pure)
     fputs (" PURE", dumpfile);
   if (attr->implicit_pure)
-    fputs (" IMPLICIT_PURE", dumpfile);
+    fputs (" IMPLICIT-PURE", dumpfile);
   if (attr->recursive)
     fputs (" RECURSIVE", dumpfile);
+  if (attr->unmaskable)
+    fputs (" UNMASKABKE", dumpfile);
+  if (attr->masked)
+    fputs (" MASKED", dumpfile);
+  if (attr->contained)
+    fputs (" CONTAINED", dumpfile);
+  if (attr->mod_proc)
+    fputs (" MOD-PROC", dumpfile);
+  if (attr->module_procedure)
+    fputs (" MODULE-PROCEDURE", dumpfile);
+  if (attr->public_used)
+    fputs (" PUBLIC_USED", dumpfile);
+  if (attr->array_outer_dependency)
+    fputs (" ARRAY-OUTER-DEPENDENCY", dumpfile);
+  if (attr->noreturn)
+    fputs (" NORETURN", dumpfile);
+  if (attr->always_explicit)
+    fputs (" ALWAYS-EXPLICIT", dumpfile);
+  if (attr->is_main_program)
+    fputs (" IS-MAIN-PROGRAM", dumpfile);
 
+  /* FIXME: Still missing are oacc_routine_lop and ext_attr.  */
   fputc (')', dumpfile);
 }
 

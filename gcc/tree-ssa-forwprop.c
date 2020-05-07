@@ -2475,7 +2475,21 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	  orig[0] = gimple_assign_lhs (lowpart);
 	}
       if (conv_code == ERROR_MARK)
-	gimple_assign_set_rhs_from_tree (gsi, orig[0]);
+	{
+	  tree src_type = TREE_TYPE (orig[0]);
+	  if (!useless_type_conversion_p (type, src_type))
+	    {
+	      gcc_assert (known_eq (TYPE_VECTOR_SUBPARTS (type),
+				    TYPE_VECTOR_SUBPARTS (src_type))
+			  && useless_type_conversion_p (TREE_TYPE (type),
+							TREE_TYPE (src_type)));
+	      tree rhs = build1 (VIEW_CONVERT_EXPR, type, orig[0]);
+	      orig[0] = make_ssa_name (type);
+	      gassign *assign = gimple_build_assign (orig[0], rhs);
+	      gsi_insert_before (gsi, assign, GSI_SAME_STMT);
+	    }
+	  gimple_assign_set_rhs_from_tree (gsi, orig[0]);
+	}
       else
 	gimple_assign_set_rhs_with_ops (gsi, conv_code, orig[0],
 					NULL_TREE, NULL_TREE);
@@ -2598,6 +2612,14 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 			    res, TYPE_SIZE (type), bitsize_zero_node);
       if (conv_code != ERROR_MARK)
 	res = gimple_build (&stmts, conv_code, type, res);
+      else if (!useless_type_conversion_p (type, TREE_TYPE (res)))
+	{
+	  gcc_assert (known_eq (TYPE_VECTOR_SUBPARTS (type),
+				TYPE_VECTOR_SUBPARTS (perm_type))
+		      && useless_type_conversion_p (TREE_TYPE (type),
+						    TREE_TYPE (perm_type)));
+	  res = gimple_build (&stmts, VIEW_CONVERT_EXPR, type, res);
+	}
       /* Blend in the actual constant.  */
       if (converted_orig1)
 	res = gimple_build (&stmts, VEC_PERM_EXPR, type,
@@ -2940,6 +2962,8 @@ pass_forwprop::execute (function *fun)
 		      != TARGET_MEM_REF))
 		{
 		  tree use_lhs = gimple_assign_lhs (use_stmt);
+		  if (auto_var_p (use_lhs))
+		    DECL_NOT_GIMPLE_REG_P (use_lhs) = 1;
 		  tree new_lhs = build1 (REALPART_EXPR,
 					 TREE_TYPE (TREE_TYPE (use_lhs)),
 					 unshare_expr (use_lhs));
@@ -2991,6 +3015,9 @@ pass_forwprop::execute (function *fun)
 		    = tree_to_uhwi (TYPE_SIZE (elt_t));
 		  unsigned HOST_WIDE_INT n
 		    = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (rhs)));
+		  tree use_lhs = gimple_assign_lhs (use_stmt);
+		  if (auto_var_p (use_lhs))
+		    DECL_NOT_GIMPLE_REG_P (use_lhs) = 1;
 		  for (unsigned HOST_WIDE_INT bi = 0; bi < n; bi += elt_w)
 		    {
 		      unsigned HOST_WIDE_INT ci = bi / elt_w;
@@ -2999,7 +3026,6 @@ pass_forwprop::execute (function *fun)
 			new_rhs = CONSTRUCTOR_ELT (rhs, ci)->value;
 		      else
 			new_rhs = build_zero_cst (elt_t);
-		      tree use_lhs = gimple_assign_lhs (use_stmt);
 		      tree new_lhs = build3 (BIT_FIELD_REF,
 					     elt_t,
 					     unshare_expr (use_lhs),

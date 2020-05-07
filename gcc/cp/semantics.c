@@ -2028,12 +2028,14 @@ add_typedef_to_current_template_for_access_check (tree typedef_decl,
    an error message if it is not accessible.  If OBJECT_TYPE is
    non-NULL, we have just seen `x->' or `x.' and OBJECT_TYPE is the
    type of `*x', or `x', respectively.  If the DECL was named as
-   `A::B' then NESTED_NAME_SPECIFIER is `A'.  */
+   `A::B' then NESTED_NAME_SPECIFIER is `A'.  Return value is like
+   perform_access_checks above.  */
 
-void
+bool
 check_accessibility_of_qualified_id (tree decl,
 				     tree object_type,
-				     tree nested_name_specifier)
+				     tree nested_name_specifier,
+				     tsubst_flags_t complain)
 {
   tree scope;
   tree qualifying_type = NULL_TREE;
@@ -2050,13 +2052,13 @@ check_accessibility_of_qualified_id (tree decl,
 
   /* If we're not checking, return immediately.  */
   if (deferred_access_no_check)
-    return;
+    return true;
 
   /* Determine the SCOPE of DECL.  */
   scope = context_for_name_lookup (decl);
   /* If the SCOPE is not a type, then DECL is not a member.  */
   if (!TYPE_P (scope))
-    return;
+    return true;
   /* Compute the scope through which DECL is being accessed.  */
   if (object_type
       /* OBJECT_TYPE might not be a class type; consider:
@@ -2097,8 +2099,10 @@ check_accessibility_of_qualified_id (tree decl,
 	 or similar in a default argument value.  */
       && CLASS_TYPE_P (qualifying_type)
       && !dependent_type_p (qualifying_type))
-    perform_or_defer_access_check (TYPE_BINFO (qualifying_type), decl,
-				   decl, tf_warning_or_error);
+    return perform_or_defer_access_check (TYPE_BINFO (qualifying_type), decl,
+					  decl, complain);
+
+  return true;
 }
 
 /* EXPR is the result of a qualified-id.  The QUALIFYING_CLASS was the
@@ -2508,7 +2512,7 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	      bool abnormal = true;
 	      for (lkp_iterator iter (fn); abnormal && iter; ++iter)
 		{
-		  tree fndecl = *iter;
+		  tree fndecl = STRIP_TEMPLATE (*iter);
 		  if (TREE_CODE (fndecl) != FUNCTION_DECL
 		      || !TREE_THIS_VOLATILE (fndecl))
 		    abnormal = false;

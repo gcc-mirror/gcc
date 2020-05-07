@@ -8418,7 +8418,9 @@ expand_omp_target (struct omp_region *region)
 					      i_async));
 	  }
 	if (t_async)
-	  args.safe_push (t_async);
+	  args.safe_push (force_gimple_operand_gsi (&gsi, t_async, true,
+						    NULL_TREE, true,
+						    GSI_SAME_STMT));
 
 	/* Save the argument index, and ... */
 	unsigned t_wait_idx = args.length ();
@@ -8431,9 +8433,12 @@ expand_omp_target (struct omp_region *region)
 	for (; c; c = OMP_CLAUSE_CHAIN (c))
 	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_WAIT)
 	    {
-	      args.safe_push (fold_convert_loc (OMP_CLAUSE_LOCATION (c),
-						integer_type_node,
-						OMP_CLAUSE_WAIT_EXPR (c)));
+	      tree arg = fold_convert_loc (OMP_CLAUSE_LOCATION (c),
+					   integer_type_node,
+					   OMP_CLAUSE_WAIT_EXPR (c));
+	      arg = force_gimple_operand_gsi (&gsi, arg, true, NULL_TREE, true,
+					      GSI_SAME_STMT);
+	      args.safe_push (arg);
 	      num_waits++;
 	    }
 

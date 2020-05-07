@@ -247,9 +247,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       operator==(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
       { return __x._M_node == __y._M_node; }
 
+#if __cpp_impl_three_way_comparison < 201907L
       friend bool
       operator!=(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
       { return __x._M_node != __y._M_node; }
+#endif
 
       // The only member points to the %list element.
       __detail::_List_node_base* _M_node;
@@ -331,9 +333,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       operator==(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
       { return __x._M_node == __y._M_node; }
 
+#if __cpp_impl_three_way_comparison < 201907L
       friend bool
       operator!=(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
       { return __x._M_node != __y._M_node; }
+#endif
 
       // The only member points to the %list element.
       const __detail::_List_node_base* _M_node;
@@ -2009,6 +2013,27 @@ _GLIBCXX_END_NAMESPACE_CXX11
       return __i1 == __end1 && __i2 == __end2;
     }
 
+#if __cpp_lib_three_way_comparison
+/**
+   *  @brief  List ordering relation.
+   *  @param  __x  A `list`.
+   *  @param  __y  A `list` of the same type as `__x`.
+   *  @return  A value indicating whether `__x` is less than, equal to,
+   *           greater than, or incomparable with `__y`.
+   *
+   *  See `std::lexicographical_compare_three_way()` for how the determination
+   *  is made. This operator is used to synthesize relational operators like
+   *  `<` and `>=` etc.
+  */
+  template<typename _Tp, typename _Alloc>
+    inline __detail::__synth3way_t<_Tp>
+    operator<=>(const list<_Tp, _Alloc>& __x, const list<_Tp, _Alloc>& __y)
+    {
+      return std::lexicographical_compare_three_way(__x.begin(), __x.end(),
+						    __y.begin(), __y.end(),
+						    __detail::__synth3way);
+    }
+#else
   /**
    *  @brief  List ordering relation.
    *  @param  __x  A %list.
@@ -2049,6 +2074,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
     inline bool
     operator>=(const list<_Tp, _Alloc>& __x, const list<_Tp, _Alloc>& __y)
     { return !(__x < __y); }
+#endif // three-way comparison
 
   /// See std::list::swap().
   template<typename _Tp, typename _Alloc>

@@ -35,6 +35,9 @@
 #include <debug/safe_base.h>
 #include <bits/stl_pair.h>
 #include <ext/type_traits.h>
+#if __cplusplus > 201703L
+# include <compare>
+#endif
 
 #define _GLIBCXX_DEBUG_VERIFY_OPERANDS(_Lhs, _Rhs, _BadMsgId, _DiffMsgId) \
   _GLIBCXX_DEBUG_VERIFY(!_Lhs._M_singular() && !_Rhs._M_singular(),	\
@@ -469,6 +472,7 @@ namespace __gnu_debug
 	  return __lhs.base() == __rhs.base();
 	}
 
+#if ! __cpp_lib_three_way_comparison
       friend bool
       operator!=(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -485,6 +489,7 @@ namespace __gnu_debug
 	  _GLIBCXX_DEBUG_VERIFY_EQ_OPERANDS(__lhs, __rhs);
 	  return __lhs.base() != __rhs.base();
 	}
+#endif // three-way comparison
     };
 
   template<typename _Iterator, typename _Sequence>
@@ -805,6 +810,21 @@ namespace __gnu_debug
 	return *this;
       }
 
+#if __cpp_lib_three_way_comparison
+      friend auto
+      operator<=>(const _Self& __lhs, const _Self& __rhs) noexcept
+      {
+	_GLIBCXX_DEBUG_VERIFY_REL_OPERANDS(__lhs, __rhs);
+	return __lhs.base() <=> __rhs.base();
+      }
+
+      friend auto
+      operator<=>(const _Self& __lhs, const _OtherSelf& __rhs) noexcept
+      {
+	_GLIBCXX_DEBUG_VERIFY_REL_OPERANDS(__lhs, __rhs);
+	return __lhs.base() <=> __rhs.base();
+      }
+#else
       friend bool
       operator<(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -860,6 +880,7 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY_REL_OPERANDS(__lhs, __rhs);
 	return __lhs.base() >= __rhs.base();
       }
+#endif // three-way comparison
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // According to the resolution of DR179 not only the various comparison

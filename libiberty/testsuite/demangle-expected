@@ -1453,3 +1453,6 @@ void foo<(void*)0>(enable_if<((void*)0)==(decltype(nullptr)), void>::type*)
 
 _ZNK5coro15emptyawEv
 coro1::empty::operator co_await() const
+
+_ZNK3FoossERKS_
+Foo::operator<=>(Foo const&) const

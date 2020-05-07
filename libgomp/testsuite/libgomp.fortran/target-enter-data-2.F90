@@ -1,4 +1,5 @@
 ! { dg-additional-options "-DMEM_SHARED" { target offload_device_shared_as } }
+! { dg-do run }
 !
 ! PR middle-end/94635
   implicit none

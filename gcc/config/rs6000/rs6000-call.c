@@ -68,6 +68,7 @@
 #include "tree-vrp.h"
 #include "tree-ssanames.h"
 #include "targhooks.h"
+#include "opts.h"
 
 #include "rs6000-internal.h"
 
@@ -5528,7 +5529,8 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
    sub-tree.  */
 
 static int
-rs6000_aggregate_candidate (const_tree type, machine_mode *modep)
+rs6000_aggregate_candidate (const_tree type, machine_mode *modep,
+			    int *empty_base_seen)
 {
   machine_mode mode;
   HOST_WIDE_INT size;
@@ -5598,7 +5600,8 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep)
 	    || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
 	  return -1;
 
-	count = rs6000_aggregate_candidate (TREE_TYPE (type), modep);
+	count = rs6000_aggregate_candidate (TREE_TYPE (type), modep,
+					    empty_base_seen);
 	if (count == -1
 	    || !index
 	    || !TYPE_MAX_VALUE (index)
@@ -5636,7 +5639,18 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep)
 	    if (TREE_CODE (field) != FIELD_DECL)
 	      continue;
 
-	    sub_count = rs6000_aggregate_candidate (TREE_TYPE (field), modep);
+	    if (DECL_FIELD_ABI_IGNORED (field))
+	      {
+		if (lookup_attribute ("no_unique_address",
+				      DECL_ATTRIBUTES (field)))
+		  *empty_base_seen |= 2;
+		else
+		  *empty_base_seen |= 1;
+		continue;
+	      }
+
+	    sub_count = rs6000_aggregate_candidate (TREE_TYPE (field), modep,
+						    empty_base_seen);
 	    if (sub_count < 0)
 	      return -1;
 	    count += sub_count;
@@ -5669,7 +5683,8 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep)
 	    if (TREE_CODE (field) != FIELD_DECL)
 	      continue;
 
-	    sub_count = rs6000_aggregate_candidate (TREE_TYPE (field), modep);
+	    sub_count = rs6000_aggregate_candidate (TREE_TYPE (field), modep,
+						    empty_base_seen);
 	    if (sub_count < 0)
 	      return -1;
 	    count = count > sub_count ? count : sub_count;
@@ -5710,7 +5725,9 @@ rs6000_discover_homogeneous_aggregate (machine_mode mode, const_tree type,
       && AGGREGATE_TYPE_P (type))
     {
       machine_mode field_mode = VOIDmode;
-      int field_count = rs6000_aggregate_candidate (type, &field_mode);
+      int empty_base_seen = 0;
+      int field_count = rs6000_aggregate_candidate (type, &field_mode,
+						    &empty_base_seen);
 
       if (field_count > 0)
 	{
@@ -5725,6 +5742,27 @@ rs6000_discover_homogeneous_aggregate (machine_mode mode, const_tree type,
 		*elt_mode = field_mode;
 	      if (n_elts)
 		*n_elts = field_count;
+	      if (empty_base_seen && warn_psabi)
+		{
+		  static unsigned last_reported_type_uid;
+		  unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (type));
+		  if (uid != last_reported_type_uid)
+		    {
+		      const char *url
+			= CHANGES_ROOT_URL "gcc-10/changes.html#empty_base";
+		      if (empty_base_seen & 1)
+			inform (input_location,
+				"parameter passing for argument of type %qT "
+				"when C++17 is enabled changed to match C++14 "
+				"%{in GCC 10.1%}", type, url);
+		      else
+			inform (input_location,
+				"parameter passing for argument of type %qT "
+				"with %<[[no_unique_address]]%> members "
+				"changed %{in GCC 10.1%}", type, url);
+		      last_reported_type_uid = uid;
+		    }
+		}
 	      return true;
 	    }
 	}
@@ -12032,10 +12070,28 @@ rs6000_init_builtins (void)
   def_builtin ("__builtin_cpu_is", ftype, RS6000_BUILTIN_CPU_IS);
   def_builtin ("__builtin_cpu_supports", ftype, RS6000_BUILTIN_CPU_SUPPORTS);
 
-  /* AIX libm provides clog as __clog.  */
-  if (TARGET_XCOFF &&
-      (tdecl = builtin_decl_explicit (BUILT_IN_CLOG)) != NULL_TREE)
-    set_user_assembler_name (tdecl, "__clog");
+  if (TARGET_XCOFF)
+    {
+      /* AIX libm provides clog as __clog.  */
+      if ((tdecl = builtin_decl_explicit (BUILT_IN_CLOG)) != NULL_TREE)
+	set_user_assembler_name (tdecl, "__clog");
+
+      /* When long double is 64 bit, some long double builtins of libc
+	 functions (like __builtin_frexpl) must call the double version
+	 (frexp) not the long double version (frexpl) that expects a 128 bit
+	 argument.  */
+      if (! TARGET_LONG_DOUBLE_128)
+	{
+	  if ((tdecl = builtin_decl_explicit (BUILT_IN_FMODL)) != NULL_TREE)
+	    set_user_assembler_name (tdecl, "fmod");
+	  if ((tdecl = builtin_decl_explicit (BUILT_IN_FREXPL)) != NULL_TREE)
+	    set_user_assembler_name (tdecl, "frexp");
+	  if ((tdecl = builtin_decl_explicit (BUILT_IN_LDEXPL)) != NULL_TREE)
+	    set_user_assembler_name (tdecl, "ldexp");
+	  if ((tdecl = builtin_decl_explicit (BUILT_IN_MODFL)) != NULL_TREE)
+	    set_user_assembler_name (tdecl, "modf");
+	}
+    }
 
 #ifdef SUBTARGET_INIT_BUILTINS
   SUBTARGET_INIT_BUILTINS;

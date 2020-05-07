@@ -5220,7 +5220,7 @@ trees_out::core_bools (tree t)
 
       WB (t->decl_common.decl_flag_2);
       WB (t->decl_common.decl_flag_3);
-      WB (t->decl_common.gimple_reg_flag);
+      WB (t->decl_common.not_gimple_reg_flag);
       WB (t->decl_common.decl_by_reference_flag);
       WB (t->decl_common.decl_read_flag);
       WB (t->decl_common.decl_nonshareable_flag);
@@ -5366,7 +5366,7 @@ trees_in::core_bools (tree t)
       RB (t->decl_common.decl_flag_1);
       RB (t->decl_common.decl_flag_2);
       RB (t->decl_common.decl_flag_3);
-      RB (t->decl_common.gimple_reg_flag);
+      RB (t->decl_common.not_gimple_reg_flag);
       RB (t->decl_common.decl_by_reference_flag);
       RB (t->decl_common.decl_read_flag);
       RB (t->decl_common.decl_nonshareable_flag);

@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 // PERMUTE_ARGS:
 // EXTRA_FILES: extra-files/teststdio.txt
 

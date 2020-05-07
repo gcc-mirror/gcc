@@ -55,20 +55,30 @@ namespace __gnu_pbds
       struct base_seq
       {
       private:
-	typedef typename _Alloc::template rebind<Value_Type> value_rebind;
+#if __cplusplus >= 201103L
+	using value_alloc = typename std::allocator_traits<_Alloc>::template
+	  rebind_alloc<Value_Type>;
+#else
+	typedef typename _Alloc::template rebind<Value_Type>::other value_alloc;
+#endif
 
       public:
-	typedef std::vector<Value_Type, typename value_rebind::other> type;
+	typedef std::vector<Value_Type, value_alloc> type;
       };
 
       template<typename Value_Type, typename _Alloc>
       struct base_seq<Value_Type, false, _Alloc>
       {
       private:
-	typedef typename _Alloc::template rebind<Value_Type> value_rebind;
+#if __cplusplus >= 201103L
+	using value_alloc = typename std::allocator_traits<_Alloc>::template
+	  rebind_alloc<Value_Type>;
+#else
+	typedef typename _Alloc::template rebind<Value_Type>::other value_alloc;
+#endif
 
       public:
-	typedef std::deque<Value_Type, typename value_rebind::other> type;
+	typedef std::deque<Value_Type, value_alloc> type;
       };
     } // namespace detail
 
@@ -89,11 +99,16 @@ namespace __gnu_pbds
     {
     private:
       typedef PB_DS_BASE_C_DEC base_type;
-      typedef typename _Alloc::template rebind<Value_Type> value_rebind;
+#if __cplusplus >= 201103L
+	using value_ref = const Value_Type&;
+#else
+      typedef typename
+	_Alloc::template rebind<Value_Type>::other::const_reference value_ref;
+#endif
 
     public:
       typedef Value_Type value_type;
-      typedef typename value_rebind::other::const_reference const_reference;
+      typedef value_ref const_reference;
       typedef native_pq_tag container_category;
       typedef Cmp_Fn cmp_fn;
 

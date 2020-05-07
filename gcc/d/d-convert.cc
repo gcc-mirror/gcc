@@ -672,10 +672,10 @@ convert_for_argument (tree expr, Parameter *arg)
       if (!POINTER_TYPE_P (TREE_TYPE (expr)))
 	return build_address (expr);
     }
-  else if (argument_reference_p (arg))
+  else if (parameter_reference_p (arg))
     {
       /* Front-end shouldn't automatically take the address.  */
-      return convert (type_passed_as (arg), build_address (expr));
+      return convert (parameter_type (arg), build_address (expr));
     }
 
   return expr;
@@ -774,21 +774,23 @@ d_array_convert (Expression *exp)
 
 /* Convert EXP to a dynamic array, where ETYPE is the element type.
    Similar to above, except that EXP is allowed to be an element of an array.
-   Temporary variables that need some kind of BIND_EXPR are pushed to VARS.  */
+   Temporary variables are created inline if EXP is not an lvalue.  */
 
 tree
-d_array_convert (Type *etype, Expression *exp, vec<tree, va_gc> **vars)
+d_array_convert (Type *etype, Expression *exp)
 {
   Type *tb = exp->type->toBasetype ();
 
   if ((tb->ty != Tarray && tb->ty != Tsarray) || same_type_p (tb, etype))
     {
       /* Convert single element to an array.  */
-      tree var = NULL_TREE;
-      tree expr = maybe_temporary_var (build_expr (exp), &var);
+      tree expr = build_expr (exp);
 
-      if (var != NULL_TREE)
-	vec_safe_push (*vars, var);
+      if (!exp->isLvalue ())
+	{
+	  tree var = build_local_temp (TREE_TYPE (expr));
+	  expr = compound_expr (modify_expr (var, expr), var);
+	}
 
       return d_array_value (build_ctype (exp->type->arrayOf ()),
 			    size_int (1), build_address (expr));

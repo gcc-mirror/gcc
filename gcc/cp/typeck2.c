@@ -1661,7 +1661,11 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	      ++idx;
 	    }
 	}
-      if (next)
+      if (next == error_mark_node)
+	/* We skip initializers for empty bases/fields, so skipping an invalid
+	   one could make us accept invalid code.  */
+	return PICFLAG_ERRONEOUS;
+      else if (next)
 	/* Already handled above.  */;
       else if (DECL_INITIAL (field))
 	{

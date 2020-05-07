@@ -199,6 +199,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_AVX512BF16_P(x)	TARGET_ISA2_AVX512BF16_P(x)
 #define TARGET_ENQCMD	TARGET_ISA2_ENQCMD
 #define TARGET_ENQCMD_P(x) TARGET_ISA2_ENQCMD_P(x)
+#define TARGET_SERIALIZE	TARGET_ISA2_SERIALIZE
+#define TARGET_SERIALIZE_P(x) TARGET_ISA2_SERIALIZE_P(x)
+#define TARGET_TSXLDTRK	TARGET_ISA2_TSXLDTRK
+#define TARGET_TSXLDTRK_P(x) TARGET_ISA2_TSXLDTRK_P(x)
 
 #define TARGET_LP64	TARGET_ABI_64
 #define TARGET_LP64_P(x)	TARGET_ABI_64_P(x)
@@ -1319,6 +1323,13 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    requiring a frame pointer.  */
 #ifndef SUBTARGET_FRAME_POINTER_REQUIRED
 #define SUBTARGET_FRAME_POINTER_REQUIRED 0
+#endif
+
+/* Define the shadow offset for asan. Other OS's can override in the
+   respective tm.h files.  */
+#ifndef SUBTARGET_SHADOW_OFFSET
+#define SUBTARGET_SHADOW_OFFSET	    \
+  (TARGET_LP64 ? HOST_WIDE_INT_C (0x7fff8000) : HOST_WIDE_INT_1 << 29)
 #endif
 
 /* Make sure we can access arbitrary call frames.  */

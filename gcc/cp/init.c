@@ -585,16 +585,18 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
 	  DECL_INSTANTIATING_NSDMI_P (member) = 1;
 
 	  bool pushed = false;
-	  if (!currently_open_class (DECL_CONTEXT (member)))
+	  tree ctx = DECL_CONTEXT (member);
+	  if (!currently_open_class (ctx)
+	      && !LOCAL_CLASS_P (ctx))
 	    {
 	      push_to_top_level ();
-	      push_nested_class (DECL_CONTEXT (member));
+	      push_nested_class (ctx);
 	      pushed = true;
 	    }
 
 	  gcc_checking_assert (!processing_template_decl);
 
-	  inject_this_parameter (DECL_CONTEXT (member), TYPE_UNQUALIFIED);
+	  inject_this_parameter (ctx, TYPE_UNQUALIFIED);
 
 	  start_lambda_scope (member);
 

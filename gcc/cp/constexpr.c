@@ -2370,6 +2370,21 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       STRIP_NOPS (new_obj);
       if (TREE_CODE (new_obj) == ADDR_EXPR)
 	new_obj = TREE_OPERAND (new_obj, 0);
+
+      if (ctx->call && ctx->call->fundef
+	  && DECL_CONSTRUCTOR_P (ctx->call->fundef->decl))
+	{
+	  tree cur_obj = TREE_VEC_ELT (ctx->call->bindings, 0);
+	  STRIP_NOPS (cur_obj);
+	  if (TREE_CODE (cur_obj) == ADDR_EXPR)
+	    cur_obj = TREE_OPERAND (cur_obj, 0);
+	  if (new_obj == cur_obj)
+	    /* We're calling the target constructor of a delegating
+	       constructor, or accessing a base subobject through a
+	       NOP_EXPR as part of a call to a base constructor, so
+	       there is no new (sub)object.  */
+	    new_obj = NULL_TREE;
+	}
     }
 
   tree result = NULL_TREE;
@@ -4949,7 +4964,18 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
   if (TREE_CODE (t) == INIT_EXPR
       && TREE_CODE (*valp) == CONSTRUCTOR
       && TYPE_READONLY (type))
-    TREE_READONLY (*valp) = true;
+    {
+      if (INDIRECT_REF_P (target)
+	  && (is_this_parameter
+	      (tree_strip_nop_conversions (TREE_OPERAND (target, 0)))))
+	/* We've just initialized '*this' (perhaps via the target
+	   constructor of a delegating constructor).  Leave it up to the
+	   caller that set 'this' to set TREE_READONLY appropriately.  */
+	gcc_checking_assert (same_type_ignoring_top_level_qualifiers_p
+			     (TREE_TYPE (target), type));
+      else
+	TREE_READONLY (*valp) = true;
+    }
 
   /* Update TREE_CONSTANT and TREE_SIDE_EFFECTS on enclosing
      CONSTRUCTORs, if any.  */
@@ -6533,6 +6559,12 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
   bool non_constant_p = false;
   bool overflow_p = false;
 
+  if (BRACE_ENCLOSED_INITIALIZER_P (t))
+    {
+      gcc_checking_assert (allow_non_constant);
+      return t;
+    }
+
   constexpr_global_ctx global_ctx;
   constexpr_ctx ctx = { &global_ctx, NULL, NULL, NULL, NULL, NULL, NULL,
 			allow_non_constant, strict,
@@ -7487,12 +7519,18 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		 variable with automatic storage duration defined outside that
 		 lambda-expression, where the reference would be an
 		 odr-use.  */
+
+	      if (want_rval)
+		/* Since we're doing an lvalue-rvalue conversion, this might
+		   not be an odr-use, so evaluate the variable directly. */
+		return RECUR (DECL_CAPTURED_VARIABLE (t), rval);
+
 	      if (flags & tf_error)
 		{
 		  tree cap = DECL_CAPTURED_VARIABLE (t);
 		  error ("lambda capture of %qE is not a constant expression",
 			 cap);
-		  if (!want_rval && decl_constant_var_p (cap))
+		  if (decl_constant_var_p (cap))
 		    inform (input_location, "because it is used as a glvalue");
 		}
 	      return false;
@@ -8294,7 +8332,6 @@ bool
 is_nondependent_constant_expression (tree t)
 {
   return (!type_unknown_p (t)
-	  && !BRACE_ENCLOSED_INITIALIZER_P (t)
 	  && is_constant_expression (t)
 	  && !instantiation_dependent_expression_p (t));
 }
@@ -8306,7 +8343,6 @@ bool
 is_nondependent_static_init_expression (tree t)
 {
   return (!type_unknown_p (t)
-	  && !BRACE_ENCLOSED_INITIALIZER_P (t)
 	  && is_static_init_expression (t)
 	  && !instantiation_dependent_expression_p (t));
 }

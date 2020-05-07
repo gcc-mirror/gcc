@@ -1167,7 +1167,7 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       compare_values (DECL_USER_ALIGN);
       compare_values (DECL_PRESERVE_P);
       compare_values (DECL_EXTERNAL);
-      compare_values (DECL_GIMPLE_REG_P);
+      compare_values (DECL_NOT_GIMPLE_REG_P);
       compare_values (DECL_ALIGN);
       if (code == LABEL_DECL)
 	{
@@ -1179,6 +1179,7 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 	  compare_values (DECL_PACKED);
 	  compare_values (DECL_NONADDRESSABLE_P);
 	  compare_values (DECL_PADDING_P);
+	  compare_values (DECL_FIELD_ABI_IGNORED);
 	  compare_values (DECL_OFFSET_ALIGN);
 	}
       else if (code == VAR_DECL)

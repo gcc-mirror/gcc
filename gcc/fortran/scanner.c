@@ -1755,11 +1755,15 @@ static int
 load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 {
   int c, maxlen, i, preprocessor_flag, buflen = *pbuflen;
-  int trunc_flag = 0, seen_comment = 0;
-  int seen_printable = 0, seen_ampersand = 0, quoted = ' ';
-  gfc_char_t *buffer;
+  int quoted = ' ', comment_ix = -1;
+  bool seen_comment = false;
+  bool first_comment = true;
+  bool trunc_flag = false;
+  bool seen_printable = false;
+  bool seen_ampersand = false;
   bool found_tab = false;
   bool warned_tabs = false;
+  gfc_char_t *buffer;
 
   /* Determine the maximum allowed line length.  */
   if (gfc_current_form == FORM_FREE)
@@ -1794,7 +1798,7 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 
   /* In order to not truncate preprocessor lines, we have to
      remember that this is one.  */
-  preprocessor_flag = (c == '#' ? 1 : 0);
+  preprocessor_flag = (c == '#');
 
   for (;;)
     {
@@ -1824,20 +1828,24 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 	{
 	  if (seen_ampersand)
 	    {
-	      seen_ampersand = 0;
-	      seen_printable = 1;
+	      seen_ampersand = false;
+	      seen_printable = true;
 	    }
 	  else
-	    seen_ampersand = 1;
+	    seen_ampersand = true;
 	}
 
       if ((c != '&' && c != '!' && c != ' ') || (c == '!' && !seen_ampersand))
-	seen_printable = 1;
+	seen_printable = true;
 
       /* Is this a fixed-form comment?  */
       if (gfc_current_form == FORM_FIXED && i == 0
-	  && (c == '*' || c == 'c' || c == 'd'))
-	seen_comment = 1;
+	  && (c == '*' || c == 'c' || c == 'C'
+	      || (gfc_option.flag_d_lines != -1 && (c == 'd' || c == 'D'))))
+	{
+	  seen_comment = true;
+	  comment_ix = i;
+	}
 
       if (quoted == ' ')
 	{
@@ -1849,7 +1857,34 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 
       /* Is this a free-form comment?  */
       if (c == '!' && quoted == ' ')
-        seen_comment = 1;
+	{
+	  if (seen_comment)
+	    first_comment = false;
+	  seen_comment = true;
+	  comment_ix = i;
+	}
+
+      /* For truncation and tab warnings, set seen_comment to false if one has
+	 either an OpenMP or OpenACC directive - or a !GCC$ attribute.  If
+	 OpenMP is enabled, use '!$' as as conditional compilation sentinel
+	 and OpenMP directive ('!$omp').  */
+      if (seen_comment && first_comment && flag_openmp && comment_ix + 1 == i
+	  && c == '$')
+	first_comment = seen_comment = false;
+      if (seen_comment && first_comment && comment_ix + 4 == i)
+	{
+	  if (((*pbuf)[comment_ix+1] == 'g' || (*pbuf)[comment_ix+1] == 'G')
+	      && ((*pbuf)[comment_ix+2] == 'c' || (*pbuf)[comment_ix+2] == 'C')
+	      && ((*pbuf)[comment_ix+3] == 'c' || (*pbuf)[comment_ix+3] == 'C')
+	      && (*pbuf)[comment_ix+4] == '$')
+	    first_comment = seen_comment = false;
+	  if (flag_openacc
+	      && (*pbuf)[comment_ix+1] == '$'
+	      && ((*pbuf)[comment_ix+2] == 'a' || (*pbuf)[comment_ix+2] == 'A')
+	      && ((*pbuf)[comment_ix+3] == 'c' || (*pbuf)[comment_ix+3] == 'C')
+	      && ((*pbuf)[comment_ix+4] == 'c' || (*pbuf)[comment_ix+4] == 'C'))
+	    first_comment = seen_comment = false;
+	}
 
       /* Vendor extension: "<tab>1" marks a continuation line.  */
       if (found_tab)

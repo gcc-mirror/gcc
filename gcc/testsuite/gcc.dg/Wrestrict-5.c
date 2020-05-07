@@ -26,7 +26,7 @@ void test_memcpy_nowarn (char *d)
 
 void test_strncpy_warn (char *d)
 {
-  strncpy (d + 1, d + 3, 5);  /* { dg-warning "accessing 5 bytes at offsets 1 and 3 overlaps 2 bytes at offset 3" } */
+  strncpy (d + 1, d + 3, 5);  /* { dg-warning "accessing 5 bytes at offsets 1 and 3 overlaps between 1 and 2 bytes at offset 3" } */
 }
 
 void test_strncpy_nowarn (char *d)

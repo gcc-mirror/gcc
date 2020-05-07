@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-inline.h"
 #include "case-cfn-macros.h"
+#include "tree-eh.h"
 
 static unsigned int tree_ssa_phiopt_worker (bool, bool, bool);
 static bool two_value_replacement (basic_block, basic_block, edge, gphi *,
@@ -2237,10 +2238,13 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
      whose value is not available readily, which we want to avoid.  */
   if (!nontrap->contains (lhs))
     {
-      /* If LHS is a local variable without address-taken, we could
+      /* If LHS is an access to a local variable without address-taken
+	 (or when we allow data races) and known not to trap, we could
 	 always safely move down the store.  */
       tree base = get_base_address (lhs);
-      if (!auto_var_p (base) || TREE_ADDRESSABLE (base))
+      if (!auto_var_p (base)
+	  || (TREE_ADDRESSABLE (base) && !flag_store_data_races)
+	  || tree_could_trap_p (lhs))
 	return false;
     }
 

@@ -1,3 +1,23 @@
+2020-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94703
+	* gimple-parser.c (c_parser_parse_ssa_name): Do not set
+	DECL_GIMPLE_REG_P.
+
+2020-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94842
+	* c-decl.c (set_labels_context_r): In addition to context-less
+	LABEL_DECLs adjust also LABEL_DECLs with context equal to
+	parent function if any.
+	(store_parm_decls): Adjust comment.
+
+2020-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR objc/94637
+	* c-parser.c (c_parser_objc_selector_arg): Handle CPP_SCOPE like
+	two CPP_COLON tokens.
+
 2020-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/94629

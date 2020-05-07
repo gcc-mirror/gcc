@@ -1,3 +1,77 @@
+2020-05-06  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/94970
+	* d-codegen.cc (force_target_expr): Move create_temporary_var
+	implementation inline here.
+	(create_temporary_var): Remove.
+	(maybe_temporary_var): Remove.
+	(bind_expr): Remove.
+	* d-convert.cc (d_array_convert): Use build_local_temp to generate
+	temporaries, and generate its assignment.
+	* d-tree.h (create_temporary_var): Remove.
+	(maybe_temporary_var): Remove.
+	(d_array_convert): Remove vars argument.
+	* expr.cc (ExprVisitor::visit (CatExp *)): Use build_local_temp to
+	generate temporaries, don't wrap them in a BIND_EXPR.
+	(ExprVisitor::visit (NewExp *)): Likewise.
+
+2020-04-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.texi (Options for Linking): Clarify usage of -defaultlib= and
+	-debuglib= options.
+
+2020-04-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (d_decl_context): Don't include module in the name of
+	class and struct types that aren't extern(D).
+
+2020-04-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/94777
+	* d-builtins.cc (build_frontend_type): Set parent for generated
+	fields of built-in types.
+	* d-codegen.cc (argument_reference_p): Rename to ...
+	(parameter_reference_p): ... this.
+	(type_passed_as): Rename to ...
+	(parameter_type): ... this.  Make TREE_ADDRESSABLE types restrict.
+	(d_build_call): Move handling of non-POD types here from ...
+	* d-convert.cc (convert_for_argument): ... here.
+	* d-tree.h (argument_reference_p): Rename declaration to ...
+	(parameter_reference_p): ... this.
+	(type_passed_as): Rename declaration to ...
+	(parameter_type): ... this.
+	* types.cc (TypeVisitor::visit (TypeFunction *)): Update caller.
+
+2020-04-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* decl.cc (get_symbol_decl): Set DECL_DECLARED_INLINE_P or
+	DECL_UNINLINABLE for declarations with pragma(inline).
+	* toir.cc (IRVisitor::visit (GccAsmStatement *)): Set ASM_INLINE_P if
+	in function decorated with pragma(inline).
+
+2020-04-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* intrinsics.cc (expand_intrinsic_toprec): New function.
+	(maybe_expand_intrinsic): Handle toPrec intrinsics.
+	* intrinsics.def (TOPRECF, TOPREC, TOPRECL): Add toPrec intrinsics.
+
+2020-04-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-spec.cc (need_phobos): Remove.
+	(lang_specific_driver): Replace need_phobos with phobos_library.
+	Reorder -debuglib and -defaultlib to have precedence over libphobos.
+	(lang_specific_pre_link): Remove test for need_phobos.
+
+2020-04-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/94609
+	* d-codegen.cc (argument_reference_p): Don't check TREE_ADDRESSABLE.
+	(type_passed_as): Build reference type if TREE_ADDRESSABLE.
+	* d-convert.cc (convert_for_argument): Build explicit TARGET_EXPR if
+	needed for arguments passed by invisible reference.
+	* types.cc (TypeVisitor::visit (TypeStruct *)): Mark all structs that
+	are not POD as TREE_ADDRESSABLE.
+
 2020-04-13  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* Make-lang.in (D_FRONTEND_OBJS): Remove d/argtypes.o.

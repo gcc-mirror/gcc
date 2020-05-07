@@ -1067,7 +1067,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
       hstate.add_flag (DECL_USER_ALIGN (t));
       hstate.add_flag (DECL_PRESERVE_P (t));
       hstate.add_flag (DECL_EXTERNAL (t));
-      hstate.add_flag (DECL_GIMPLE_REG_P (t));
+      hstate.add_flag (DECL_NOT_GIMPLE_REG_P (t));
       hstate.commit_flag ();
       hstate.add_int (DECL_ALIGN (t));
       if (code == LABEL_DECL)
@@ -1080,6 +1080,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 	  hstate.add_flag (DECL_PACKED (t));
 	  hstate.add_flag (DECL_NONADDRESSABLE_P (t));
 	  hstate.add_flag (DECL_PADDING_P (t));
+	  hstate.add_flag (DECL_FIELD_ABI_IGNORED (t));
 	  hstate.add_int (DECL_OFFSET_ALIGN (t));
 	}
       else if (code == VAR_DECL)

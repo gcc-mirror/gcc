@@ -84,10 +84,10 @@ _mm256_cvtps_ph (__m256 __A, const int __I)
     }))
 
 #define _mm_cvtps_ph(A, I) \
-  ((__m128i) __builtin_ia32_vcvtps2ph ((__v4sf)(__m128) A, (int) (I)))
+  ((__m128i) __builtin_ia32_vcvtps2ph ((__v4sf)(__m128) (A), (int) (I)))
 
 #define _mm256_cvtps_ph(A, I) \
-  ((__m128i) __builtin_ia32_vcvtps2ph256 ((__v8sf)(__m256) A, (int) (I)))
+  ((__m128i) __builtin_ia32_vcvtps2ph256 ((__v8sf)(__m256) (A), (int) (I)))
 #endif /* __OPTIMIZE */
 
 #ifdef __DISABLE_F16C__

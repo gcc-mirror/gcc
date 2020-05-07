@@ -58,7 +58,7 @@ update_cloned_parm (tree parm, tree cloned_parm, bool first)
   DECL_SOURCE_LOCATION (cloned_parm) = DECL_SOURCE_LOCATION (parm);
   TREE_TYPE (cloned_parm) = TREE_TYPE (parm);
 
-  DECL_GIMPLE_REG_P (cloned_parm) = DECL_GIMPLE_REG_P (parm);
+  DECL_NOT_GIMPLE_REG_P (cloned_parm) = DECL_NOT_GIMPLE_REG_P (parm);
 }
 
 /* Like copy_decl_no_change, but handle DECL_OMP_PRIVATIZED_MEMBER

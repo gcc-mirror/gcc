@@ -171,7 +171,7 @@ proc schedule-cleanups { opts } {
 	verbose "dg-keep-saved-temps ${keep_saved_temps_suffixes}" 2
     }
     # -save-temps -> cleanup-saved-temps()
-    if [regexp -- {(^|\s+)-save-temps(\s+|$)} $opts] {
+    if [regexp -- {(^|\s+)-?-save-temps(\s+|$)} $opts] {
 	verbose "Cleanup -save-temps seen" 4
 	if [info exists keep_saved_temps_suffixes] {
 	    append finalcode "cleanup-saved-temps ${keep_saved_temps_suffixes}\n"

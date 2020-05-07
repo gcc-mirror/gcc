@@ -1028,10 +1028,6 @@ ipa_param_body_adjustments::common_initialization (tree old_fndecl,
 	  DECL_CONTEXT (new_parm) = m_fndecl;
 	  TREE_USED (new_parm) = 1;
 	  DECL_IGNORED_P (new_parm) = 1;
-	  /* We assume all newly created arguments are not addressable.  */
-	  if (TREE_CODE (new_type) == COMPLEX_TYPE
-	      || TREE_CODE (new_type) == VECTOR_TYPE)
-	    DECL_GIMPLE_REG_P (new_parm) = 1;
 	  layout_decl (new_parm, 0);
 	  m_new_decls.quick_push (new_parm);
 
@@ -1888,7 +1884,7 @@ ipa_param_body_adjustments::reset_debug_stmts ()
 	  TREE_ADDRESSABLE (copy) = TREE_ADDRESSABLE (decl);
 	  TREE_READONLY (copy) = TREE_READONLY (decl);
 	  TREE_THIS_VOLATILE (copy) = TREE_THIS_VOLATILE (decl);
-	  DECL_GIMPLE_REG_P (copy) = DECL_GIMPLE_REG_P (decl);
+	  DECL_NOT_GIMPLE_REG_P (copy) = DECL_NOT_GIMPLE_REG_P (decl);
 	  DECL_ARTIFICIAL (copy) = DECL_ARTIFICIAL (decl);
 	  DECL_IGNORED_P (copy) = DECL_IGNORED_P (decl);
 	  DECL_ABSTRACT_ORIGIN (copy) = DECL_ORIGIN (decl);

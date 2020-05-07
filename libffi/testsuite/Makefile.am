@@ -13,6 +13,8 @@ RUNTEST = `if [ -f $(top_srcdir)/../dejagnu/runtest ] ; then \
 
 AM_RUNTESTFLAGS =
 
+EXTRA_DEJAGNU_SITE_CONFIG=../local.exp
+
 CLEANFILES = *.exe core* *.log *.sum
 
 EXTRA_DIST = config/default.exp libffi.call/cls_19byte.c		\

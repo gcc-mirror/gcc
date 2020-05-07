@@ -2527,7 +2527,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	 and return the found value.  */
       if (is_gimple_reg_type (TREE_TYPE (lhs))
 	  && types_compatible_p (TREE_TYPE (lhs), vr->type)
-	  && ref->ref)
+	  && (ref->ref || data->orig_ref.ref))
 	{
 	  tree *saved_last_vuse_ptr = data->last_vuse_ptr;
 	  /* Do not update last_vuse_ptr in vn_reference_lookup_2.  */
@@ -2552,7 +2552,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 		     -fno-strict-aliasing.  So simply resort to alignment to
 		     rule out overlaps.  Do this check last because it is
 		     quite expensive compared to the hash-lookup above.  */
-		  && multiple_p (get_object_alignment (ref->ref), ref->size)
+		  && multiple_p (get_object_alignment
+				   (ref->ref ? ref->ref : data->orig_ref.ref),
+				 ref->size)
 		  && multiple_p (get_object_alignment (lhs), ref->size))
 		return res;
 	    }

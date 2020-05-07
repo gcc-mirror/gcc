@@ -577,9 +577,6 @@ make_blocks_1 (gimple_seq seq, basic_block bb)
 	      gimple_set_location (s, gimple_location (stmt));
 	      gimple_set_block (s, gimple_block (stmt));
 	      gimple_set_lhs (stmt, tmp);
-	      if (TREE_CODE (TREE_TYPE (tmp)) == COMPLEX_TYPE
-		  || TREE_CODE (TREE_TYPE (tmp)) == VECTOR_TYPE)
-		DECL_GIMPLE_REG_P (tmp) = 1;
 	      gsi_insert_after (&i, s, GSI_SAME_STMT);
 	    }
 	  start_new_block = true;
@@ -2983,12 +2980,6 @@ verify_address (tree t, bool verify_addressable)
 	|| TREE_CODE (base) == RESULT_DECL))
     return false;
 
-  if (DECL_GIMPLE_REG_P (base))
-    {
-      error ("%<DECL_GIMPLE_REG_P%> set on a variable with address taken");
-      return true;
-    }
-
   if (verify_addressable && !TREE_ADDRESSABLE (base))
     {
       error ("address taken but %<TREE_ADDRESSABLE%> bit not set");
@@ -3591,13 +3582,21 @@ verify_gimple_assign_unary (gassign *stmt)
 	/* Allow conversions from pointer type to integral type only if
 	   there is no sign or zero extension involved.
 	   For targets were the precision of ptrofftype doesn't match that
-	   of pointers we need to allow arbitrary conversions to ptrofftype.  */
+	   of pointers we allow conversions to types where
+	   POINTERS_EXTEND_UNSIGNED specifies how that works.  */
 	if ((POINTER_TYPE_P (lhs_type)
 	     && INTEGRAL_TYPE_P (rhs1_type))
 	    || (POINTER_TYPE_P (rhs1_type)
 		&& INTEGRAL_TYPE_P (lhs_type)
 		&& (TYPE_PRECISION (rhs1_type) >= TYPE_PRECISION (lhs_type)
-		    || ptrofftype_p (lhs_type))))
+#if defined(POINTERS_EXTEND_UNSIGNED)
+		    || (TYPE_MODE (rhs1_type) == ptr_mode
+			&& (TYPE_PRECISION (lhs_type)
+			      == BITS_PER_WORD /* word_mode */
+			    || (TYPE_PRECISION (lhs_type)
+				  == GET_MODE_PRECISION (Pmode))))
+#endif
+		   )))
 	  return false;
 
 	/* Allow conversion from integral to offset type and vice versa.  */
@@ -8439,8 +8438,8 @@ stmt_can_terminate_bb_p (gimple *t)
       && (call_flags & ECF_NOTHROW)
       && !(call_flags & ECF_RETURNS_TWICE)
       /* fork() doesn't really return twice, but the effect of
-         wrapping it in __gcov_fork() which calls __gcov_flush()
-	 and clears the counters before forking has the same
+	 wrapping it in __gcov_fork() which calls __gcov_dump() and
+	 __gcov_reset() and clears the counters before forking has the same
 	 effect as returning twice.  Force a fake edge.  */
       && !fndecl_built_in_p (fndecl, BUILT_IN_FORK))
     return false;

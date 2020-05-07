@@ -315,9 +315,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator==(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
       { return __x._M_node == __y._M_node; }
 
+#if ! __cpp_lib_three_way_comparison
       friend bool
       operator!=(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
       { return __x._M_node != __y._M_node; }
+#endif
 
       _Base_ptr _M_node;
   };
@@ -394,9 +396,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator==(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
       { return __x._M_node == __y._M_node; }
 
+#if ! __cpp_lib_three_way_comparison
       friend bool
       operator!=(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
       { return __x._M_node != __y._M_node; }
+#endif
 
       _Base_ptr _M_node;
     };
@@ -1610,6 +1614,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  && std::equal(__x.begin(), __x.end(), __y.begin());
       }
 
+#if __cpp_lib_three_way_comparison
+      friend auto
+      operator<=>(const _Rb_tree& __x, const _Rb_tree& __y)
+      {
+	if constexpr (requires { typename __detail::__synth3way_t<_Val>; })
+	  return std::lexicographical_compare_three_way(__x.begin(), __x.end(),
+							__y.begin(), __y.end(),
+							__detail::__synth3way);
+      }
+#else
       friend bool
       operator<(const _Rb_tree& __x, const _Rb_tree& __y)
       {
@@ -1632,6 +1646,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend bool _GLIBCXX_DEPRECATED
       operator>=(const _Rb_tree& __x, const _Rb_tree& __y)
       { return !(__x < __y); }
+#endif
     };
 
   template<typename _Key, typename _Val, typename _KeyOfValue,

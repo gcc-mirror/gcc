@@ -1,3 +1,16 @@
+2020-04-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/92713
+	* configure.ac ["${ENABLE_LIBSTDCXX}" = "default" && amdgcn*-*-*]
+	(noconfigdirs): Add 'target-libstdc++-v3'.
+	* configure: Regenerate.
+
+2020-04-21  Stephen Casner  <casner@acm.org>
+
+	PR 25830
+	* configure.ac (noconfigdirs): Exclude gdb & gprof for pdp11.
+	* configure: Rebuild.
+
 2020-04-17  Martin Liska  <mliska@suse.cz>
 	    Jonathan Yong <10walls@gmail.com>
 

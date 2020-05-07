@@ -72,6 +72,16 @@ function opt_args(name, flags)
 	return flags
 }
 
+# If FLAGS contains a "NAME(...argument...)" flag, return the value
+# of the argument.  Print error message otherwise.
+function opt_args_non_empty(name, flags, description)
+{
+	args = opt_args(name, flags)
+	if (args == "")
+		print "#error Empty option argument '" name "' during parsing of: " flags
+	return args
+}
+
 # Return the Nth comma-separated element of S.  Return the empty string
 # if S does not contain N elements.
 function nth_arg(n, s)

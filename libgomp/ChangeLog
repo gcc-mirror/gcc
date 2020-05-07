@@ -1,3 +1,50 @@
+2020-04-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/accel/openacc.f90 (acc_device_current): Set to '-1'.
+	* openacc.f90 (acc_device_current): Likewise.
+	* openacc.h (acc_device_current): Likewise.
+	* openacc_lib.h (acc_device_current): Likewise.
+
+	PR target/94282
+	* testsuite/libgomp.c-c++-common/function-not-offloaded.c: Remove
+	'dg-allow-blank-lines-in-output'.
+
+	* oacc-init.c (get_openacc_name): Handle 'gcn'.
+	* testsuite/lib/libgomp.exp
+	(offload_target_to_openacc_device_type) [amdgcn*]: Return
+	'radeon'.  Adjust all users.
+	(check_effective_target_openacc_amdgcn_accel_present): Rename
+	to...
+	(check_effective_target_openacc_radeon_accel_present): ... this.
+	Adjust all users.
+	(check_effective_target_openacc_amdgcn_accel_selected): Rename to...
+	(check_effective_target_openacc_radeon_accel_selected): ... this.
+	Adjust all users.
+
+	* testsuite/libgomp.fortran/use_device_ptr-optional-2.f90: Add
+	'dg-do run'.
+
+2020-04-23  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR other/94629
+
+	* plugin/plugin-gcn.c (init_hsa_context): Check return value from
+	hsa_iterate_agents.
+	(GOMP_OFFLOAD_init_device): Check return values from both calls to
+	hsa_agent_iterate_regions.
+
+2020-04-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/94635
+	* testsuite/libgomp.fortran/target-enter-data-2.F90: Add 'dg-do
+	run'.
+
+2020-04-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94120
+	* testsuite/libgomp.oacc-c++/declare-pr94120.C: Fix 'declare copy(out)'
+	test case.
+
 2020-04-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR middle-end/94635

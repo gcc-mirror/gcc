@@ -657,7 +657,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 
 #if __cplusplus > 201402L
-#define __cpp_lib_unordered_map_insertion 201411
       /**
        *  @brief Attempts to insert a std::pair into the %unordered_map.
        *  @param __k    Key to use for finding a possibly existing pair in
@@ -2092,11 +2091,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	       const unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
     { return __x._M_h._M_equal(__y._M_h); }
 
+#if __cpp_impl_three_way_comparison < 201907L
   template<class _Key, class _Tp, class _Hash, class _Pred, class _Alloc>
     inline bool
     operator!=(const unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
 	       const unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
     { return !(__x == __y); }
+#endif
 
   template<class _Key, class _Tp, class _Hash, class _Pred, class _Alloc>
     inline bool
@@ -2104,11 +2105,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	       const unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
     { return __x._M_h._M_equal(__y._M_h); }
 
+#if __cpp_impl_three_way_comparison < 201907L
   template<class _Key, class _Tp, class _Hash, class _Pred, class _Alloc>
     inline bool
     operator!=(const unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
 	       const unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
     { return !(__x == __y); }
+#endif
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
 

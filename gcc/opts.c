@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "spellcheck.h"
 #include "opt-suggestions.h"
 #include "diagnostic-color.h"
+#include "selftest.h"
 
 static void set_Wstrict_aliasing (struct gcc_options *opts, int onoff);
 
@@ -2614,10 +2615,12 @@ common_handle_option (struct gcc_options *opts,
 	    function_entry_patch_area_start = 0;
 	  }
 	if (function_entry_patch_area_size < 0
+	    || function_entry_patch_area_size > USHRT_MAX
 	    || function_entry_patch_area_start < 0
+	    || function_entry_patch_area_start > USHRT_MAX
 	    || function_entry_patch_area_size 
 		< function_entry_patch_area_start)
-	  error ("invalid arguments for %<-fpatchable_function_entry%>");
+	  error ("invalid arguments for %<-fpatchable-function-entry%>");
 	free (patch_area_arg);
       }
       break;
@@ -3128,6 +3131,32 @@ option_name (diagnostic_context *context, int option_index,
     return NULL;
 }
 
+/* Get the page within the documentation for this option.  */
+
+static const char *
+get_option_html_page (int option_index)
+{
+  const cl_option *cl_opt = &cl_options[option_index];
+
+  /* Analyzer options are on their own page.  */
+  if (strstr(cl_opt->opt_text, "analyzer-"))
+    return "gcc/Static-Analyzer-Options.html";
+
+#ifdef CL_Fortran
+  if ((cl_opt->flags & CL_Fortran) != 0
+      /* If it is option common to both C/C++ and Fortran, it is documented
+	 in gcc/ rather than gfortran/ docs.  */
+      && (cl_opt->flags & CL_C) == 0
+#ifdef CL_CXX
+      && (cl_opt->flags & CL_CXX) == 0
+#endif
+     )
+    return "gfortran/Error-and-Warning-Options.html";
+#endif
+
+  return "gcc/Warning-Options.html";
+}
+
 /* Return malloced memory for a URL describing the option OPTION_INDEX
    which enabled a diagnostic (context CONTEXT).  */
 
@@ -3135,16 +3164,50 @@ char *
 get_option_url (diagnostic_context *, int option_index)
 {
   if (option_index)
-    /* DOCUMENTATION_ROOT_URL should be supplied via -D by the Makefile
-       (see --with-documentation-root-url).
+    return concat (/* DOCUMENTATION_ROOT_URL should be supplied via -D by
+		      the Makefile (see --with-documentation-root-url), and
+		      should have a trailing slash.  */
+		   DOCUMENTATION_ROOT_URL,
 
-       Expect an anchor of the form "index-Wfoo" e.g.
-       <a name="index-Wformat"></a>, and thus an id within
-       the URL of "#index-Wformat".  */
-    return concat (DOCUMENTATION_ROOT_URL,
-		   "Warning-Options.html",
+		   /* get_option_html_page will return something like
+		      "gcc/Warning-Options.html".  */
+		   get_option_html_page (option_index),
+
+		   /* Expect an anchor of the form "index-Wfoo" e.g.
+		      <a name="index-Wformat"></a>, and thus an id within
+		      the URL of "#index-Wformat".  */
 		   "#index", cl_options[option_index].opt_text,
 		   NULL);
   else
     return NULL;
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Verify that get_option_html_page works as expected.  */
+
+static void
+test_get_option_html_page ()
+{
+  ASSERT_STREQ (get_option_html_page (OPT_Wcpp), "gcc/Warning-Options.html");
+  ASSERT_STREQ (get_option_html_page (OPT_Wanalyzer_double_free),
+	     "gcc/Static-Analyzer-Options.html");
+#ifdef CL_Fortran
+  ASSERT_STREQ (get_option_html_page (OPT_Wline_truncation),
+		"gfortran/Error-and-Warning-Options.html");
+#endif
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+opts_c_tests ()
+{
+  test_get_option_html_page ();
+}
+
+} // namespace selftest
+
+#endif /* #if CHECKING_P */

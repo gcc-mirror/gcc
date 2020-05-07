@@ -525,6 +525,7 @@ else version (CRuntime_Bionic)
 else version (CRuntime_Musl)
 {
     alias ulong rlim_t;
+    enum RLIM_INFINITY = cast(c_ulong)(~0UL);
 
     int getrlimit(int, rlimit*);
     int setrlimit(int, in rlimit*);

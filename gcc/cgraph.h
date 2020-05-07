@@ -3162,7 +3162,7 @@ cgraph_node::can_remove_if_no_direct_calls_and_refs_p (void)
     return false;
   /* Only COMDAT functions can be removed if externally visible.  */
   if (externally_visible
-      && (!DECL_COMDAT (decl)
+      && ((!DECL_COMDAT (decl) || ifunc_resolver)
 	  || forced_by_abi
 	  || used_from_object_file_p ()))
     return false;

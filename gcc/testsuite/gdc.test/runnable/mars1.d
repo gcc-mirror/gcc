@@ -1,4 +1,5 @@
 /*
+RUNNABLE_PHOBOS_TEST
 REQUIRED_ARGS: -mcpu=native
 PERMUTE_ARGS: -O -inline
 */

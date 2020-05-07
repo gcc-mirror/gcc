@@ -1272,9 +1272,6 @@ c_parser_parse_ssa_name (gimple_parser &parser,
 	      error ("invalid base %qE for SSA name", parent);
 	      return error_mark_node;
 	    }
-	  if (VECTOR_TYPE_P (TREE_TYPE (parent))
-	      || TREE_CODE (TREE_TYPE (parent)) == COMPLEX_TYPE)
-	    DECL_GIMPLE_REG_P (parent) = 1;
 	  name = make_ssa_name_fn (cfun, parent,
 				   gimple_build_nop (), version);
 	}

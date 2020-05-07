@@ -2661,6 +2661,7 @@ asan_global_struct (void)
   TYPE_FIELDS (ret) = fields[0];
   TYPE_NAME (ret) = type_decl;
   TYPE_STUB_DECL (ret) = type_decl;
+  TYPE_ARTIFICIAL (ret) = 1;
   layout_type (ret);
   return ret;
 }
@@ -2695,7 +2696,6 @@ create_odr_indicator (tree decl, tree type)
   TREE_ADDRESSABLE (var) = 1;
   TREE_READONLY (var) = 0;
   TREE_THIS_VOLATILE (var) = 1;
-  DECL_GIMPLE_REG_P (var) = 0;
   DECL_ARTIFICIAL (var) = 1;
   DECL_IGNORED_P (var) = 1;
   TREE_STATIC (var) = 1;
@@ -2765,7 +2765,7 @@ asan_add_global (tree decl, tree type, vec<constructor_elt, va_gc> *v)
       TREE_ADDRESSABLE (refdecl) = TREE_ADDRESSABLE (decl);
       TREE_READONLY (refdecl) = TREE_READONLY (decl);
       TREE_THIS_VOLATILE (refdecl) = TREE_THIS_VOLATILE (decl);
-      DECL_GIMPLE_REG_P (refdecl) = DECL_GIMPLE_REG_P (decl);
+      DECL_NOT_GIMPLE_REG_P (refdecl) = DECL_NOT_GIMPLE_REG_P (decl);
       DECL_ARTIFICIAL (refdecl) = DECL_ARTIFICIAL (decl);
       DECL_IGNORED_P (refdecl) = DECL_IGNORED_P (decl);
       TREE_STATIC (refdecl) = 1;

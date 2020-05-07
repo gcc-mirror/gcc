@@ -575,8 +575,8 @@ Objective-C and Objective-C++ Dialects}.
 -dD  -dI  -dM  -dN  -dU @gol
 -fdebug-cpp  -fdirectives-only  -fdollars-in-identifiers  @gol
 -fexec-charset=@var{charset}  -fextended-identifiers  @gol
--finput-charset=@var{charset}  -fmacro-prefix-map=@var{old}=@var{new}  @gol
--fmax-include-depth=@var{depth} @gol
+-finput-charset=@var{charset}  -flarge-source-files  @gol
+-fmacro-prefix-map=@var{old}=@var{new} -fmax-include-depth=@var{depth} @gol
 -fno-canonical-system-headers  -fpch-deps  -fpch-preprocess  @gol
 -fpreprocessed  -ftabstop=@var{width}  -ftrack-macro-expansion  @gol
 -fwide-exec-charset=@var{charset}  -fworking-directory @gol
@@ -1345,7 +1345,7 @@ See RS/6000 and PowerPC Options.
 -mshstk -mmanual-endbr -mforce-indirect-call  -mavx512vbmi2 -mavx512bf16 -menqcmd @gol
 -mvpclmulqdq  -mavx512bitalg  -mmovdiri  -mmovdir64b  -mavx512vpopcntdq @gol
 -mavx5124fmaps  -mavx512vnni  -mavx5124vnniw  -mprfchw  -mrdpid @gol
--mrdseed  -msgx -mavx512vp2intersect@gol
+-mrdseed  -msgx -mavx512vp2intersect -mserialize -mtsxldtrk@gol
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg} @gol
 -mmemcpy-strategy=@var{strategy}  -mmemset-strategy=@var{strategy} @gol
@@ -8302,7 +8302,6 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-tainted-array-index @gol
 -Wanalyzer-unsafe-call-within-signal-handler @gol
 -Wanalyzer-use-after-free @gol
--Wanalyzer-use-of-uninitialized-value @gol
 -Wanalyzer-use-of-pointer-in-stale-stack-frame @gol
 }
 
@@ -8474,15 +8473,6 @@ to disable it.
 
 This diagnostic warns for paths through the code in which a pointer
 is dereferenced that points to a variable in a stale stack frame.
-
-@item -Wno-analyzer-use-of-uninitialized-value
-@opindex Wanalyzer-use-of-uninitialized-value
-@opindex Wno-analyzer-use-of-uninitialized-value
-This warning requires @option{-fanalyzer}, which enables it; use
-@option{-Wno-analyzer-use-of-uninitialized-value} to disable it.
-
-This diagnostic warns for paths through the code in which an uninitialized
-value is used.
 
 @end table
 
@@ -9287,14 +9277,15 @@ by @option{-O2} and also turns on the following optimization flags:
 -floop-unroll-and-jam @gol
 -fpeel-loops @gol
 -fpredictive-commoning @gol
+-fsplit-loops @gol
 -fsplit-paths @gol
--ftree-loop-distribute-patterns @gol
 -ftree-loop-distribution @gol
 -ftree-loop-vectorize @gol
 -ftree-partial-pre @gol
 -ftree-slp-vectorize @gol
 -funswitch-loops @gol
 -fvect-cost-model @gol
+-fvect-cost-model=dynamic @gol
 -fversion-loops-for-strides}
 
 @item -O0
@@ -11454,7 +11445,7 @@ default, GCC emits an error message when an inconsistent profile is detected.
 This option is enabled by @option{-fauto-profile}.
 
 @item -fprofile-partial-training
-@opindex fprofile-use
+@opindex fprofile-partial-training
 With @code{-fprofile-use} all portions of programs not executed during train
 run are optimized agressively for size rather than speed.  In some cases it is
 not practical to train all possible hot paths in the program. (For
@@ -13448,6 +13439,7 @@ location.  If you combine the option with multiple source files,
 the @file{.gcno} file will be overwritten.
 
 @item -fprofile-prefix-path=@var{path}
+@opindex fprofile-prefix-path
 
 This option can be used in combination with
 @option{profile-generate=}@var{profile_dir} and
@@ -14167,6 +14159,7 @@ If @code{N=0}, no pad location is recorded.
 The NOP instructions are inserted at---and maybe before, depending on
 @var{M}---the function entry address, even before the prologue.
 
+The maximum value of @var{N} and @var{M} is 65535.
 @end table
 
 
@@ -14227,6 +14220,21 @@ This option may be useful in conjunction with the @option{-B} or
 @option{-wrapper} options to specify an alternate preprocessor or
 perform additional processing of the program source between
 normal preprocessing and compilation.
+
+@item -flarge-source-files
+@opindex flarge-source-files
+Adjust GCC to expect large source files, at the expense of slower
+compilation and higher memory usage.
+
+Specifically, GCC normally tracks both column numbers and line numbers
+within source files and it normally prints both of these numbers in
+diagnostics.  However, once it has processed a certain number of source
+lines, it stops tracking column numbers and only tracks line numbers.
+This means that diagnostics for later lines do not include column numbers.
+It also means that options like @option{-Wmisleading-indentation} cease to work
+at that point, although the compiler prints a note if this happens.
+Passing @option{-flarge-source-files} significantly increases the number
+of source lines that GCC can process before it stops tracking columns.
 
 @end table
 
@@ -16818,7 +16826,9 @@ dynamically linked.  This is the default code model.
 @item -mcmodel=large
 @opindex mcmodel=large
 Generate code for the large code model.  This makes no assumptions about
-addresses and sizes of sections.  Programs can be statically linked only.
+addresses and sizes of sections.  Programs can be statically linked only.  The
+@option{-mcmodel=large} option is incompatible with @option{-mabi=ilp32},
+@option{-fpic} and @option{-fPIC}.
 
 @item -mstrict-align
 @itemx -mno-strict-align
@@ -16952,6 +16962,7 @@ instruction set.  If using a later revision, e.g. @option{-march=armv8.1-a}
 or @option{-march=armv8-a+lse}, the ARMv8.1-Atomics instructions will be
 used directly.  The same applies when using @option{-mcpu=} when the
 selected cpu supports the @samp{lse} feature.
+This option is on by default.
 
 @item -march=@var{name}
 @opindex march
@@ -17006,7 +17017,7 @@ performance of the code.  Permissible values for this option are:
 @samp{octeontx2f95mm}
 @samp{thunderx}, @samp{thunderxt88},
 @samp{thunderxt88p1}, @samp{thunderxt81}, @samp{tsv110},
-@samp{thunderxt83}, @samp{thunderx2t99},
+@samp{thunderxt83}, @samp{thunderx2t99}, @samp{thunderx3t110},
 @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
 @samp{cortex-a75.cortex-a55}, @samp{cortex-a76.cortex-a55}
@@ -18830,7 +18841,7 @@ Permissible names are: @samp{arm7tdmi}, @samp{arm7tdmi-s}, @samp{arm710t},
 @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-r8}, @samp{cortex-r52},
 @samp{cortex-m0}, @samp{cortex-m0plus}, @samp{cortex-m1}, @samp{cortex-m3},
 @samp{cortex-m4}, @samp{cortex-m7}, @samp{cortex-m23}, @samp{cortex-m33},
-@samp{cortex-m35p},
+@samp{cortex-m35p}, @samp{cortex-m55},
 @samp{cortex-m1.small-multiply}, @samp{cortex-m0.small-multiply},
 @samp{cortex-m0plus.small-multiply}, @samp{exynos-m1}, @samp{marvell-pj4},
 @samp{neoverse-n1}, @samp{xscale}, @samp{iwmmxt}, @samp{iwmmxt2},
@@ -29532,6 +29543,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -menqcmd
 @opindex menqcmd
 @need 200
+@itemx -mtsxldtrk
+@opindex mtsxldtrk
+@need 200
 @itemx -mavx512vpopcntdq
 @opindex mavx512vpopcntdq
 @need 200
@@ -29549,6 +29563,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @itemx -mcldemote
 @opindex mcldemote
+@need 200
+@itemx -mserialize
+@opindex mserialize
 These switches enable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4, SSE4A, SSE4.1, SSE4.2, AVX, AVX2, AVX512F, AVX512PF,
 AVX512ER, AVX512CD, AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA, AVX512VBMI, SHA,
@@ -29557,9 +29574,9 @@ WBNOINVD, FMA4, PREFETCHW, RDPID, PREFETCHWT1, RDSEED, SGX, XOP, LWP,
 3DNow!@:, enhanced 3DNow!@:, POPCNT, ABM, ADX, BMI, BMI2, LZCNT, FXSR, XSAVE,
 XSAVEOPT, XSAVEC, XSAVES, RTM, HLE, TBM, MWAITX, CLZERO, PKU, AVX512VBMI2,
 GFNI, VAES, WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B, AVX512BF16,
-ENQCMD, AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, or CLDEMOTE
-extended instruction sets.  Each has a corresponding @option{-mno-} option to
-disable use of these instructions.
+ENQCMD, AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, SERIALIZE
+or CLDEMOTE extended instruction sets.  Each has a corresponding
+@option{-mno-} option to disable use of these instructions.
 
 These extensions are also available as built-in functions: see
 @ref{x86 Built-in Functions}, for details of the functions enabled and
@@ -30163,9 +30180,9 @@ Note that @option{-mcmodel=large} is incompatible with
 @option{-mindirect-branch=thunk-extern} since the thunk function may
 not be reachable in the large code model.
 
-Note that @option{-mindirect-branch=thunk-extern} is incompatible with
-@option{-fcf-protection=branch} since the external thunk cannot be modified
-to disable control-flow check.
+Note that @option{-mindirect-branch=thunk-extern} is compatible with
+@option{-fcf-protection=branch} since the external thunk can be made
+to enable control-flow check.
 
 @item -mfunction-return=@var{choice}
 @opindex mfunction-return
@@ -30177,6 +30194,10 @@ function return to external call and return thunk provided in a separate
 object file.  You can control this behavior for a specific function by
 using the function attribute @code{function_return}.
 @xref{Function Attributes}.
+
+Note that @option{-mindirect-return=thunk-extern} is compatible with
+@option{-fcf-protection=branch} since the external thunk can be made
+to enable control-flow check.
 
 Note that @option{-mcmodel=large} is incompatible with
 @option{-mfunction-return=thunk} and

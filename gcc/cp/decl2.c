@@ -1228,7 +1228,7 @@ is_late_template_attribute (tree attr, tree decl)
    the declaration itself is dependent, so all attributes should be applied
    at instantiation time.  */
 
-static tree
+tree
 splice_template_attributes (tree *attr_p, tree decl)
 {
   tree *p = attr_p;
@@ -5527,17 +5527,6 @@ mark_used (tree decl, tsubst_flags_t complain)
   /* Mark enumeration types as used.  */
   if (TREE_CODE (decl) == CONST_DECL)
     used_types_insert (DECL_CONTEXT (decl));
-
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      && DECL_MAYBE_DELETED (decl))
-    {
-      /* ??? Switch other defaulted functions to use DECL_MAYBE_DELETED?  */
-      gcc_assert (special_function_p (decl) == sfk_comparison);
-
-      ++function_depth;
-      synthesize_method (decl);
-      --function_depth;
-    }
 
   if (TREE_CODE (decl) == FUNCTION_DECL
       && !maybe_instantiate_noexcept (decl, complain))

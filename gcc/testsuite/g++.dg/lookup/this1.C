@@ -4,5 +4,5 @@
 struct A
 {
     template<int> static void foo();
-    static void bar() { this->A::foo<0>(); } // { dg-error "unavailable" }
+    static void bar() { this->A::foo<0>(); } // { dg-error "unavailable|not a class|expected" }
 };

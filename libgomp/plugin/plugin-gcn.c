@@ -1508,6 +1508,8 @@ init_hsa_context (void)
     = GOMP_PLUGIN_malloc_cleared (hsa_context.agent_count
 				  * sizeof (struct agent_info));
   status = hsa_fns.hsa_iterate_agents_fn (assign_agent_ids, &agent_index);
+  if (status != HSA_STATUS_SUCCESS)
+    return hsa_error ("Scanning compute agents failed", status);
   if (agent_index != hsa_context.agent_count)
     {
       GOMP_PLUGIN_error ("Failed to assign IDs to all GCN agents");
@@ -3473,6 +3475,9 @@ GOMP_OFFLOAD_init_device (int n)
   status = hsa_fns.hsa_agent_iterate_regions_fn (agent->id,
 						 get_kernarg_memory_region,
 						 &agent->kernarg_region);
+  if (status != HSA_STATUS_SUCCESS
+      && status != HSA_STATUS_INFO_BREAK)
+    hsa_error ("Scanning memory regions failed", status);
   if (agent->kernarg_region.handle == (uint64_t) -1)
     {
       GOMP_PLUGIN_error ("Could not find suitable memory region for kernel "
@@ -3486,6 +3491,9 @@ GOMP_OFFLOAD_init_device (int n)
   status = hsa_fns.hsa_agent_iterate_regions_fn (agent->id,
 						 get_data_memory_region,
 						 &agent->data_region);
+  if (status != HSA_STATUS_SUCCESS
+      && status != HSA_STATUS_INFO_BREAK)
+    hsa_error ("Scanning memory regions failed", status);
   if (agent->data_region.handle == (uint64_t) -1)
     {
       GOMP_PLUGIN_error ("Could not find suitable memory region for device "

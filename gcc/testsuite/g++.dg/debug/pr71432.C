@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fcompare-debug" } */
-/* { dg-xfail-if "" { powerpc-ibm-aix* } } */
+/* { dg-xfail-if "AIX compare debug" { powerpc-ibm-aix* } } */
 
 namespace std
 {

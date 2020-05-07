@@ -601,6 +601,10 @@ Wframe-larger-than=
 Common RejectNegative Joined Host_Wide_Int ByteSize Warning Var(warn_frame_larger_than_size) Init(HOST_WIDE_INT_MAX)
 -Wframe-larger-than=<byte-size>	Warn if a function's stack frame requires in excess of <byte-size>.
 
+Wno-frame-larger-than
+Common Alias(Wframe-larger-than=,18446744073709551615EiB,none) Warning
+Disable -Wframe-larger-than= warning.  Equivalent to -Wframe-larger-than=<SIZE_MAX> or larger.
+
 Wfree-nonheap-object
 Common Var(warn_free_nonheap_object) Init(1) Warning
 Warn when attempting to free a non-heap object.
@@ -630,6 +634,10 @@ Common RejectNegative Joined Warning Undocumented Alias(Wlarger-than=)
 Wlarger-than=
 Common RejectNegative Joined Host_Wide_Int ByteSize Warning Var(warn_larger_than_size) Init(HOST_WIDE_INT_MAX)
 -Wlarger-than=<byte-size>	Warn if an object's size exceeds <byte-size>.
+
+Wno-larger-than
+Common Alias(Wlarger-than=,18446744073709551615EiB,none) Warning
+Disable -Wlarger-than= warning.  Equivalent to -Wlarger-than=<SIZE_MAX> or larger.
 
 Wnonnull-compare
 Var(warn_nonnull_compare) Warning
@@ -703,6 +711,10 @@ Warn when not issuing stack smashing protection for some reason.
 Wstack-usage=
 Common Joined RejectNegative Host_Wide_Int ByteSize Var(warn_stack_usage) Warning Init(HOST_WIDE_INT_MAX)
 -Wstack-usage=<byte-size>	Warn if stack usage might exceed <byte-size>.
+
+Wno-stack-usage
+Common Alias(Wstack-usage=,18446744073709551615EiB,none) Warning
+Disable Wstack-usage= warning.  Equivalent to Wstack-usage=<SIZE_MAX> or larger.
 
 Wstrict-aliasing
 Common Warning
@@ -1596,6 +1608,11 @@ instructions.
 fkeep-gc-roots-live
 Common Undocumented Report Var(flag_keep_gc_roots_live) Optimization
 ; Always keep a pointer to a live memory block
+
+flarge-source-files
+Common Report Var(flag_large_source_files) Init(0)
+Improve GCC's ability to track column numbers in large source files,
+at the expense of slower compilation.
 
 floop-parallelize-all
 Common Report Var(flag_loop_parallelize_all) Optimization

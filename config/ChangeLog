@@ -1,8 +1,26 @@
+2020-04-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/94739
+	* cet.m4 (GCC_CET_HOST_FLAGS): Add -fcf-protection=none to
+	-Wl,-z,ibt,-z,shstk.  Check whether -fcf-protection=none
+	-Wl,-z,ibt,-z,shstk works first.
+
+2020-04-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/94739
+	* cet.m4 (GCC_CET_HOST_FLAGS): New.
+
+2020-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/94694
+	PR libfortran/94586
+	* math.m4 (GCC_CHECK_MATH_INLINE_BUILTIN_FALLBACK1,
+	GCC_CHECK_MATH_INLINE_BUILTIN_FALLBACK2): New.
+
 2020-02-12  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR libstdc++/79193
 	PR libstdc++/88999
-
 	* no-executables.m4: Use a non-empty program to test for linker
 	support.
 

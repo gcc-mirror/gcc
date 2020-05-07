@@ -69,7 +69,7 @@ has_sse (void)
 
 /* This structure corresponds to the layout of the block
    written by FSTENV.  */
-typedef struct
+struct fenv
 {
   unsigned short int __control_word;
   unsigned short int __unused1;
@@ -79,18 +79,29 @@ typedef struct
   unsigned short int __unused3;
   unsigned int __eip;
   unsigned short int __cs_selector;
-  unsigned short int __opcode;
+  unsigned int __opcode:11;
+  unsigned int __unused4:5;
   unsigned int __data_offset;
   unsigned short int __data_selector;
   unsigned short int __unused5;
   unsigned int __mxcsr;
-}
-my_fenv_t;
+};
 
 /* Check we can actually store the FPU state in the allocated size.  */
-_Static_assert (sizeof(my_fenv_t) <= (size_t) GFC_FPE_STATE_BUFFER_SIZE,
+_Static_assert (sizeof(struct fenv) <= (size_t) GFC_FPE_STATE_BUFFER_SIZE,
 		"GFC_FPE_STATE_BUFFER_SIZE is too small");
 
+#ifdef __SSE_MATH__
+# define __math_force_eval_div(x, y)					\
+  do {									\
+    __asm__ ("" : "+x" (x)); __asm__ __volatile__ ("" : : "x" (x / y));	\
+  } while (0)
+#else
+# define __math_force_eval_div(x, y)					\
+  do {									\
+    __asm__ ("" : "+t" (x)); __asm__ __volatile__ ("" : : "f" (x / y));	\
+  } while (0)
+#endif
 
 /* Raise the supported floating-point exceptions from EXCEPTS.  Other
    bits in EXCEPTS are ignored.  Code originally borrowed from
@@ -99,21 +110,15 @@ _Static_assert (sizeof(my_fenv_t) <= (size_t) GFC_FPE_STATE_BUFFER_SIZE,
 static void
 local_feraiseexcept (int excepts)
 {
+  struct fenv temp;
+
   if (excepts & _FPU_MASK_IM)
     {
       float f = 0.0f;
-#ifdef __SSE_MATH__
-      volatile float r __attribute__ ((unused));
-      __asm__ __volatile__ ("%vdivss\t{%0, %d0|%d0, %0}" : "+x" (f));
-      r = f; /* Needed to trigger exception.   */
-#else
-      __asm__ __volatile__ ("fdiv\t{%y0, %0|%0, %y0}" : "+t" (f));
-      /* No need for fwait, exception is triggered by emitted fstp.  */
-#endif
+      __math_force_eval_div (f, f);
     }
   if (excepts & _FPU_MASK_DM)
     {
-      my_fenv_t temp;
       __asm__ __volatile__ ("fnstenv\t%0" : "=m" (temp));
       temp.__status_word |= _FPU_MASK_DM;
       __asm__ __volatile__ ("fldenv\t%0" : : "m" (temp));
@@ -122,18 +127,10 @@ local_feraiseexcept (int excepts)
   if (excepts & _FPU_MASK_ZM)
     {
       float f = 1.0f, g = 0.0f;
-#ifdef __SSE_MATH__
-      volatile float r __attribute__ ((unused));
-      __asm__ __volatile__ ("%vdivss\t{%1, %d0|%d0, %1}" : "+x" (f) : "xm" (g));
-      r = f; /* Needed to trigger exception.   */
-#else
-      __asm__ __volatile__ ("fdivs\t%1" : "+t" (f) : "m" (g));
-      /* No need for fwait, exception is triggered by emitted fstp.  */
-#endif
+      __math_force_eval_div (f, g);
     }
   if (excepts & _FPU_MASK_OM)
     {
-      my_fenv_t temp;
       __asm__ __volatile__ ("fnstenv\t%0" : "=m" (temp));
       temp.__status_word |= _FPU_MASK_OM;
       __asm__ __volatile__ ("fldenv\t%0" : : "m" (temp));
@@ -141,7 +138,6 @@ local_feraiseexcept (int excepts)
     }
   if (excepts & _FPU_MASK_UM)
     {
-      my_fenv_t temp;
       __asm__ __volatile__ ("fnstenv\t%0" : "=m" (temp));
       temp.__status_word |= _FPU_MASK_UM;
       __asm__ __volatile__ ("fldenv\t%0" : : "m" (temp));
@@ -150,14 +146,7 @@ local_feraiseexcept (int excepts)
   if (excepts & _FPU_MASK_PM)
     {
       float f = 1.0f, g = 3.0f;
-#ifdef __SSE_MATH__
-      volatile float r __attribute__ ((unused));
-      __asm__ __volatile__ ("%vdivss\t{%1, %d0|%d0, %1}" : "+x" (f) : "xm" (g));
-      r = f; /* Needed to trigger exception.   */
-#else
-      __asm__ __volatile__ ("fdivs\t%1" : "+t" (f) : "m" (g));
-      /* No need for fwait, exception is triggered by emitted fstp.  */
-#endif
+      __math_force_eval_div (f, g);
     }
 }
 
@@ -283,7 +272,7 @@ get_fpu_except_flags (void)
 void
 set_fpu_except_flags (int set, int clear)
 {
-  my_fenv_t temp;
+  struct fenv temp;
   int exc_set = 0, exc_clr = 0;
 
   /* Translate from GFC_PE_* values to _FPU_MASK_* values.  */
@@ -437,7 +426,7 @@ support_fpu_rounding_mode (int mode __attribute__((unused)))
 void
 get_fpu_state (void *state)
 {
-  my_fenv_t *envp = state;
+  struct fenv *envp = state;
 
   __asm__ __volatile__ ("fnstenv\t%0" : "=m" (*envp));
 
@@ -452,7 +441,7 @@ get_fpu_state (void *state)
 void
 set_fpu_state (void *state)
 {
-  my_fenv_t *envp = state;
+  struct fenv *envp = state;
 
   /* glibc sources (sysdeps/x86_64/fpu/fesetenv.c) do something more
      complex than this, but I think it suffices in our case.  */

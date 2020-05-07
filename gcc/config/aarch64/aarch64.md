@@ -438,6 +438,7 @@
 (include "../arm/xgene1.md")
 (include "thunderx2t99.md")
 (include "tsv110.md")
+(include "thunderx3t110.md")
 
 ;; -------------------------------------------------------------------
 ;; Jumps and other miscellaneous insns
@@ -4616,6 +4617,15 @@
   mvn\\t%0.8b, %1.8b"
   [(set_attr "type" "logic_reg,neon_logic")
    (set_attr "arch" "*,simd")]
+)
+
+(define_insn "*one_cmpl_zero_extend"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (zero_extend:DI
+          (not:SI (match_operand:SI 1 "register_operand" "r"))))]
+  ""
+  "mvn\\t%w0, %w1"
+  [(set_attr "type" "logic_reg")]
 )
 
 (define_insn "*one_cmpl_<optab><mode>2"

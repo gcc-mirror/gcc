@@ -3691,6 +3691,7 @@ namespace ranges
 
 } // namespace ranges
 
+#define __cpp_lib_shift 201806L
   template<class ForwardIterator>
     constexpr ForwardIterator
     shift_left(ForwardIterator __first, ForwardIterator __last,

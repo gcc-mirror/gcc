@@ -3840,7 +3840,7 @@ if (condition) \
 
   if (dt->asynchronous)
     {
-      int num;
+      int num = -1;
       static const char * asynchronous[] = { "YES", "NO", NULL };
 
       /* Note: gfc_reduce_init_expr reports an error if not init-expr.  */
@@ -3852,6 +3852,8 @@ if (condition) \
 		 dt->asynchronous->value.character.string,
 		 io_kind_name (k), warn, &dt->asynchronous->where, &num))
 	return false;
+
+      gcc_checking_assert (num != -1);
 
       /* For "YES", mark related symbols as asynchronous.  */
       if (num == 0)

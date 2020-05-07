@@ -56,6 +56,7 @@
 /* Note: windows.h on cygwin-64 includes x86intrin.h which uses malloc.
    That fails to compile, if malloc is poisoned, i.e. if !IN_RTS.  */
 #define _X86INTRIN_H_INCLUDED
+#define _EMMINTRIN_H_INCLUDED
 #endif
 #include <windows.h>
 

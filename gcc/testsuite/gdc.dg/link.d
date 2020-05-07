@@ -1,4 +1,4 @@
-// { dg-do link { target d_runtime } }
+// { dg-do link { target d_runtime_has_std_library } }
 
 /******************************************/
 

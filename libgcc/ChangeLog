@@ -1,3 +1,87 @@
+2020-05-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sfp-exceptions.c (__math_force_eval): Remove.
+	(__math_force_eval_div): New define.
+	(__sfp_handle_exceptions): Use __math_force_eval_div to use
+	generic division to generate INVALID, DIVZERO and INEXACT
+	exceptions.
+
+2020-05-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/lse-init.c (init_have_lse_atomics): Use __getauxval
+	instead of getauxval.
+	(AT_HWCAP): Define.
+	(HWCAP_ATOMICS): Define.
+	Guard detection on __gnu_linux__.
+
+2020-05-05  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config.host: Delete changes meant for a private branch.
+	* config/rs6000/t-float128: Likewise.
+	* configure.ac: Likewise.
+	* configure: Likewise.
+
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/93623
+	* Makefile.in: Remove __gcov_flush.
+	* gcov.h (__gcov_flush): Remove.
+	* libgcov-interface.c (__gcov_flush): Remove.
+	(init_mx): Use renamed mutex.
+	(__gcov_lock): Likewise.
+	(__gcov_unlock): Likewise.
+	(__gcov_fork): Likewise.
+	(__gcov_flush): Remove.
+
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/93623
+	* libgcov-interface.c (__gcov_fork): Do not flush
+	and reset only in child process.
+	(__gcov_execl): Dump counters only and reset them
+	only if exec* fails.
+	(__gcov_execlp): Likewise.
+	(__gcov_execle): Likewise.
+	(__gcov_execv): Likewise.
+	(__gcov_execvp): Likewise.
+	(__gcov_execve): Likewise.
+
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/93623
+	* Makefile.in: Add _gcov_lock_unlock to LIBGCOV_INTERFACE.
+	* libgcov-interface.c (ALIAS_void_fn): Remove.
+	(__gcov_lock): New.
+	(__gcov_unlock): New.
+	(__gcov_flush): Use __gcov_lock and __gcov_unlock.
+	(__gcov_reset): Likewise.
+	(__gcov_dump): Likewise.
+	* libgcov.h (__gcov_lock): New declaration.
+	(__gcov_unlock): Likewise.
+
+2020-05-01  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sfp-exceptions.c (__math_force_eval): New define.
+	(__sfp_handle_exceptions): Use __math_force_eval to evaluate
+	generic division to generate INVALID and DIVZERO exceptions.
+
+2020-04-27  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rs6000/crtresfpr.S: Use .machine ppc.
+	* config/rs6000/crtresxfpr.S: Likewise.
+	* config/rs6000/crtsavfpr.S: Likewise.
+
+2020-04-21  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94514
+	* config/aarch64/aarch64-unwind.h (aarch64_frob_update_context):
+	Update context->flags accroding to the frame state.
+
+2020-04-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sfp-exceptions.c (__sfp_handle_exceptions) [__SSE_MATH__]:
+	Remove unneeded assignments to volatile memory.
+
 2020-04-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93053

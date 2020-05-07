@@ -5,8 +5,8 @@
 #include "coro.h"
 
 int
-bad_coroutine (void) // { dg-error {coroutine return type 'int' is not a class} }
+bad_coroutine (void) 
 {
-  co_yield 5;
+  co_yield 5; // { dg-error {unable to find the promise type for this coroutine} }
   co_return;
 }

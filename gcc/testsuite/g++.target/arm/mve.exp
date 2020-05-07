@@ -35,6 +35,7 @@ global dg_runtest_extra_prunes
 set dg_runtest_extra_prunes ""
 lappend dg_runtest_extra_prunes "warning: switch -m(cpu|arch)=.* conflicts with -m(cpu|arch)=.* switch"
 
+set save-dg-do-what-default ${dg-do-what-default}
 set dg-do-what-default "assemble"
 
 # Initialize `dg'.
@@ -45,5 +46,6 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/../../gcc.target/arm/mve/int
 	"" $DEFAULT_CXXFLAGS
 
 # All done.
+set dg-do-what-default ${save-dg-do-what-default}
 set dg_runtest_extra_prunes ""
 dg-finish

@@ -976,7 +976,7 @@ output_stack_usage_1 (FILE *cf)
       stack_usage += current_function_dynamic_stack_size;
     }
 
-  if (flag_callgraph_info & CALLGRAPH_INFO_STACK_USAGE)
+  if (cf && flag_callgraph_info & CALLGRAPH_INFO_STACK_USAGE)
     fprintf (cf, "\\n" HOST_WIDE_INT_PRINT_DEC " bytes (%s)",
 	     stack_usage,
 	     stack_usage_kind_str[stack_usage_kind]);
@@ -1857,6 +1857,9 @@ process_options (void)
   if (flag_checking >= 2)
     hash_table_sanitize_eq_limit
       = param_hash_table_verification_limit;
+
+  if (flag_large_source_files)
+    line_table->default_range_bits = 0;
 
   /* Please don't change global_options after this point, those changes won't
      be reflected in optimization_{default,current}_node.  */

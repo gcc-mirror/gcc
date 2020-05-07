@@ -98,6 +98,11 @@
 #endif
 #endif
 
+/* Don't enable PC-relative addressing if the target does not support it.  */
+#ifndef PCREL_SUPPORTED_BY_OS
+#define PCREL_SUPPORTED_BY_OS	0
+#endif
+
 /* Support targetm.vectorize.builtin_mask_for_load.  */
 tree altivec_builtin_mask_for_load;
 
@@ -4024,15 +4029,17 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_isa_flags &= ~OPTION_MASK_FLOAT128_HW;
     }
 
-  /* -mprefixed (and hence -mpcrel) requires -mcpu=future.  */
-  if (TARGET_PREFIXED && !TARGET_FUTURE)
+  /* Enable -mprefixed by default on 'future' systems.  */
+  if (TARGET_FUTURE && (rs6000_isa_flags_explicit & OPTION_MASK_PREFIXED) == 0)
+    rs6000_isa_flags |= OPTION_MASK_PREFIXED;
+
+  /* -mprefixed requires -mcpu=future.  */
+  else if (TARGET_PREFIXED && !TARGET_FUTURE)
     {
-      if ((rs6000_isa_flags_explicit & OPTION_MASK_PCREL) != 0)
-	error ("%qs requires %qs", "-mpcrel", "-mcpu=future");
-      else if ((rs6000_isa_flags_explicit & OPTION_MASK_PREFIXED) != 0)
+      if ((rs6000_isa_flags_explicit & OPTION_MASK_PREFIXED) != 0)
 	error ("%qs requires %qs", "-mprefixed", "-mcpu=future");
 
-      rs6000_isa_flags &= ~(OPTION_MASK_PCREL | OPTION_MASK_PREFIXED);
+      rs6000_isa_flags &= ~OPTION_MASK_PREFIXED;
     }
 
   /* -mpcrel requires prefixed load/store addressing.  */
@@ -4175,9 +4182,16 @@ rs6000_option_override_internal (bool global_init_p)
   SUB3TARGET_OVERRIDE_OPTIONS;
 #endif
 
+  /* If the ABI has support for PC-relative relocations, enable it by default.
+     This test depends on the sub-target tests above setting the code model to
+     medium for ELF v2 systems.  */
+  if (PCREL_SUPPORTED_BY_OS
+      && (rs6000_isa_flags_explicit & OPTION_MASK_PCREL) == 0)
+    rs6000_isa_flags |= OPTION_MASK_PCREL;
+
   /* -mpcrel requires -mcmodel=medium, but we can't check TARGET_CMODEL until
       after the subtarget override options are done.  */
-  if (TARGET_PCREL && TARGET_CMODEL != CMODEL_MEDIUM)
+  else if (TARGET_PCREL && TARGET_CMODEL != CMODEL_MEDIUM)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_PCREL) != 0)
 	error ("%qs requires %qs", "-mpcrel", "-mcmodel=medium");
@@ -4543,7 +4557,7 @@ rs6000_option_override_internal (bool global_init_p)
 			   SCHED_PRESSURE_MODEL);
 
       /* Explicit -funroll-loops turns -munroll-only-small-loops off, and
-	 turns -fweb and -frename-registers on.  */
+	 turns -frename-registers on.  */
       if ((global_options_set.x_flag_unroll_loops && flag_unroll_loops)
 	   || (global_options_set.x_flag_unroll_all_loops
 	       && flag_unroll_all_loops))
@@ -4552,8 +4566,6 @@ rs6000_option_override_internal (bool global_init_p)
 	    unroll_only_small_loops = 0;
 	  if (!global_options_set.x_flag_rename_registers)
 	    flag_rename_registers = 1;
-	  if (!global_options_set.x_flag_web)
-	    flag_web = 1;
 	}
 
       /* If using typedef char *va_list, signal that
@@ -5034,7 +5046,8 @@ adjust_vectorization_cost (enum vect_cost_for_stmt kind,
 /* Implement targetm.vectorize.add_stmt_cost.  */
 
 static unsigned
-rs6000_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
+rs6000_add_stmt_cost (class vec_info *vinfo, void *data, int count,
+		      enum vect_cost_for_stmt kind,
 		      struct _stmt_vec_info *stmt_info, int misalign,
 		      enum vect_cost_model_location where)
 {
@@ -5050,7 +5063,8 @@ rs6000_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
       /* Statements in an inner loop relative to the loop being
 	 vectorized are weighted more heavily.  The value here is
 	 arbitrary and could potentially be improved with analysis.  */
-      if (where == vect_body && stmt_info && stmt_in_inner_loop_p (stmt_info))
+      if (where == vect_body && stmt_info
+	  && stmt_in_inner_loop_p (vinfo, stmt_info))
 	count *= 50;  /* FIXME.  */
 
       retval = (unsigned) (count * stmt_cost);
@@ -7192,7 +7206,9 @@ rs6000_special_round_type_align (tree type, unsigned int computed,
   tree field = TYPE_FIELDS (type);
 
   /* Skip all non field decls */
-  while (field != NULL && TREE_CODE (field) != FIELD_DECL)
+  while (field != NULL
+	 && (TREE_CODE (field) != FIELD_DECL
+	     || DECL_FIELD_ABI_IGNORED (field)))
     field = DECL_CHAIN (field);
 
   if (field != NULL && field != type)
@@ -7224,7 +7240,9 @@ darwin_rs6000_special_round_type_align (tree type, unsigned int computed,
   do {
     tree field = TYPE_FIELDS (type);
     /* Skip all non field decls */
-    while (field != NULL && TREE_CODE (field) != FIELD_DECL)
+    while (field != NULL
+	   && (TREE_CODE (field) != FIELD_DECL
+	       || DECL_FIELD_ABI_IGNORED (field)))
       field = DECL_CHAIN (field);
     if (! field)
       break;
@@ -25996,7 +26014,9 @@ rs6000_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
       tree fenv_var = create_tmp_var_raw (double_type_node);
       TREE_ADDRESSABLE (fenv_var) = 1;
-      tree fenv_addr = build1 (ADDR_EXPR, double_ptr_type_node, fenv_var);
+      tree fenv_addr = build1 (ADDR_EXPR, double_ptr_type_node,
+			       build4 (TARGET_EXPR, double_type_node, fenv_var,
+				       void_node, NULL_TREE, NULL_TREE));
 
       *hold = build_call_expr (atomic_hold_decl, 1, fenv_addr);
       *clear = build_call_expr (atomic_clear_decl, 0);
@@ -26019,12 +26039,13 @@ rs6000_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
   /* Mask to clear everything except for the rounding modes and non-IEEE
      arithmetic flag.  */
-  const unsigned HOST_WIDE_INT hold_exception_mask =
-    HOST_WIDE_INT_C (0xffffffff00000007);
+  const unsigned HOST_WIDE_INT hold_exception_mask
+    = HOST_WIDE_INT_C (0xffffffff00000007);
 
   tree fenv_var = create_tmp_var_raw (double_type_node);
 
-  tree hold_mffs = build2 (MODIFY_EXPR, void_type_node, fenv_var, call_mffs);
+  tree hold_mffs = build4 (TARGET_EXPR, double_type_node, fenv_var, call_mffs,
+			   NULL_TREE, NULL_TREE);
 
   tree fenv_llu = build1 (VIEW_CONVERT_EXPR, uint64_type_node, fenv_var);
   tree fenv_llu_and = build2 (BIT_AND_EXPR, uint64_type_node, fenv_llu,
@@ -26048,12 +26069,13 @@ rs6000_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
   /* Mask to clear everything except for the rounding modes and non-IEEE
      arithmetic flag.  */
-  const unsigned HOST_WIDE_INT clear_exception_mask =
-    HOST_WIDE_INT_C (0xffffffff00000000);
+  const unsigned HOST_WIDE_INT clear_exception_mask
+    = HOST_WIDE_INT_C (0xffffffff00000000);
 
   tree fenv_clear = create_tmp_var_raw (double_type_node);
 
-  tree clear_mffs = build2 (MODIFY_EXPR, void_type_node, fenv_clear, call_mffs);
+  tree clear_mffs = build4 (TARGET_EXPR, double_type_node, fenv_clear,
+			    call_mffs, NULL_TREE, NULL_TREE);
 
   tree fenv_clean_llu = build1 (VIEW_CONVERT_EXPR, uint64_type_node, fenv_clear);
   tree fenv_clear_llu_and = build2 (BIT_AND_EXPR, uint64_type_node,
@@ -26078,13 +26100,14 @@ rs6000_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
                                 (*(uint64_t*)fenv_var 0x1ff80fff);
      __builtin_mtfsf (0xff, fenv_update);  */
 
-  const unsigned HOST_WIDE_INT update_exception_mask =
-    HOST_WIDE_INT_C (0xffffffff1fffff00);
-  const unsigned HOST_WIDE_INT new_exception_mask =
-    HOST_WIDE_INT_C (0x1ff80fff);
+  const unsigned HOST_WIDE_INT update_exception_mask
+    = HOST_WIDE_INT_C (0xffffffff1fffff00);
+  const unsigned HOST_WIDE_INT new_exception_mask
+    = HOST_WIDE_INT_C (0x1ff80fff);
 
   tree old_fenv = create_tmp_var_raw (double_type_node);
-  tree update_mffs = build2 (MODIFY_EXPR, void_type_node, old_fenv, call_mffs);
+  tree update_mffs = build4 (TARGET_EXPR, double_type_node, old_fenv,
+			     call_mffs, NULL_TREE, NULL_TREE);
 
   tree old_llu = build1 (VIEW_CONVERT_EXPR, uint64_type_node, old_fenv);
   tree old_llu_and = build2 (BIT_AND_EXPR, uint64_type_node, old_llu,

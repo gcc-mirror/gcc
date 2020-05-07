@@ -1010,6 +1010,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   @0))
 #endif
 
+/* ~(~X - Y) -> X + Y and ~(~X + Y) -> X - Y.  */
+(simplify
+ (bit_not (minus (bit_not @0) @1))
+ (plus @0 @1))
+(simplify
+ (bit_not (plus:c (bit_not @0) @1))
+ (minus @0 @1))
+
 /* x + (x & 1) -> (x + 1) & ~1 */
 (simplify
  (plus:c @0 (bit_and:s @0 integer_onep@1))
@@ -1311,7 +1319,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    We combine the above two cases by using a conditional convert.  */
 (for bitop (bit_and bit_ior bit_xor)
  (simplify
-  (bitop (convert @0) (convert? @1))
+  (bitop (convert@2 @0) (convert?@3 @1))
   (if (((TREE_CODE (@1) == INTEGER_CST
 	 && INTEGRAL_TYPE_P (TREE_TYPE (@0))
 	 && int_fits_type_p (@1, TREE_TYPE (@0)))
@@ -1330,8 +1338,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	   || GET_MODE_CLASS (TYPE_MODE (type)) != MODE_INT
 	   /* Or if the precision of TO is not the same as the precision
 	      of its mode.  */
-	   || !type_has_mode_precision_p (type)))
-   (convert (bitop @0 (convert @1))))))
+	   || !type_has_mode_precision_p (type)
+	   /* In GIMPLE, getting rid of 2 conversions for one new results
+	      in smaller IL.  */
+	   || (GIMPLE
+	       && TREE_CODE (@1) != INTEGER_CST
+	       && tree_nop_conversion_p (type, TREE_TYPE (@0))
+	       && single_use (@2)
+	       && single_use (@3))))
+   (convert (bitop @0 (convert @1)))))
+ /* In GIMPLE, getting rid of 2 conversions for one new results
+    in smaller IL.  */
+ (simplify
+  (convert (bitop:cs@2 (nop_convert:s @0) @1))
+  (if (GIMPLE
+       && TREE_CODE (@1) != INTEGER_CST
+       && tree_nop_conversion_p (type, TREE_TYPE (@2))
+       && types_match (type, @0))
+   (bitop @0 (convert @1)))))
 
 (for bitop (bit_and bit_ior)
      rbitop (bit_ior bit_and)
@@ -2553,6 +2577,41 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 			 : wi::min_value (TYPE_PRECISION (type), SIGNED))))))
 	 && single_use (@3))
      (mult (plusminus @2 { build_one_cst (type); }) @0))))))
+
+#if GIMPLE
+/* Canonicalize X + (X << C) into X * (1 + (1 << C)) and
+   (X << C1) + (X << C2) into X * ((1 << C1) + (1 << C2)).  */
+(simplify
+ (plus:c @0 (lshift:s @0 INTEGER_CST@1))
+  (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && tree_fits_uhwi_p (@1)
+       && tree_to_uhwi (@1) < element_precision (type))
+   (with { tree t = type;
+	   if (!TYPE_OVERFLOW_WRAPS (t)) t = unsigned_type_for (t);
+	   wide_int w = wi::set_bit_in_zero (tree_to_uhwi (@1),
+					     element_precision (type));
+	   w += 1;
+	   tree cst = wide_int_to_tree (VECTOR_TYPE_P (t) ? TREE_TYPE (t)
+					: t, w);
+	   cst = build_uniform_cst (t, cst); }
+    (convert (mult (convert:t @0) { cst; })))))
+(simplify
+ (plus (lshift:s @0 INTEGER_CST@1) (lshift:s @0 INTEGER_CST@2))
+  (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && tree_fits_uhwi_p (@1)
+       && tree_to_uhwi (@1) < element_precision (type)
+       && tree_fits_uhwi_p (@2)
+       && tree_to_uhwi (@2) < element_precision (type))
+   (with { tree t = type;
+	   if (!TYPE_OVERFLOW_WRAPS (t)) t = unsigned_type_for (t);
+	   unsigned int prec = element_precision (type);
+	   wide_int w = wi::set_bit_in_zero (tree_to_uhwi (@1), prec);
+	   w += wi::set_bit_in_zero (tree_to_uhwi (@2), prec);
+	   tree cst = wide_int_to_tree (VECTOR_TYPE_P (t) ? TREE_TYPE (t)
+					: t, w);
+	   cst = build_uniform_cst (t, cst); }
+    (convert (mult (convert:t @0) { cst; })))))
+#endif
 
 /* Simplifications of MIN_EXPR, MAX_EXPR, fmin() and fmax().  */
 
@@ -4335,7 +4394,36 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (cmp (convert? addr@0) integer_zerop)
   (if (tree_single_nonzero_warnv_p (@0, NULL))
-   { constant_boolean_node (cmp == NE_EXPR, type); })))
+   { constant_boolean_node (cmp == NE_EXPR, type); }))
+
+ /* (X & C) op (Y & C) into (X ^ Y) & C op 0.  */
+ (simplify
+  (cmp (bit_and:cs @0 @2) (bit_and:cs @1 @2))
+  (cmp (bit_and (bit_xor @0 @1) @2) { build_zero_cst (TREE_TYPE (@2)); })))
+
+/* (X < 0) != (Y < 0) into (X ^ Y) < 0.
+   (X >= 0) != (Y >= 0) into (X ^ Y) < 0.
+   (X < 0) == (Y < 0) into (X ^ Y) >= 0.
+   (X >= 0) == (Y >= 0) into (X ^ Y) >= 0.  */
+(for cmp (eq ne)
+     ncmp (ge lt)
+ (for sgncmp (ge lt)
+  (simplify
+   (cmp (sgncmp @0 integer_zerop@2) (sgncmp @1 integer_zerop))
+   (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	&& !TYPE_UNSIGNED (TREE_TYPE (@0))
+	&& types_match (@0, @1))
+    (ncmp (bit_xor @0 @1) @2)))))
+/* (X < 0) == (Y >= 0) into (X ^ Y) < 0.
+   (X < 0) != (Y >= 0) into (X ^ Y) >= 0.  */
+(for cmp (eq ne)
+     ncmp (lt ge)
+ (simplify
+  (cmp:c (lt @0 integer_zerop@2) (ge @1 integer_zerop))
+   (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	&& !TYPE_UNSIGNED (TREE_TYPE (@0))
+	&& types_match (@0, @1))
+    (ncmp (bit_xor @0 @1) @2))))
 
 /* If we have (A & C) == C where C is a power of 2, convert this into
    (A & C) != 0.  Similarly for NE_EXPR.  */
@@ -4730,6 +4818,27 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (TYPE_UNSIGNED (TREE_TYPE (@0)) && !VECTOR_TYPE_P (TREE_TYPE (@0)))
    (with { tree t = TREE_TYPE (@0), cpx = build_complex_type (t); }
     (out (imagpart (IFN_MUL_OVERFLOW:cpx @0 @1)) { build_zero_cst (t); })))))
+
+/* Similarly, for unsigned operands, (((type) A * B) >> prec) != 0 where type
+   is at least twice as wide as type of A and B, simplify to
+   __builtin_mul_overflow (A, B, <unused>).  */
+(for cmp (eq ne)
+ (simplify
+  (cmp (rshift (mult:s (convert@3 @0) (convert @1)) INTEGER_CST@2)
+       integer_zerop)
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && INTEGRAL_TYPE_P (TREE_TYPE (@3))
+       && TYPE_UNSIGNED (TREE_TYPE (@0))
+       && (TYPE_PRECISION (TREE_TYPE (@3))
+	   >= 2 * TYPE_PRECISION (TREE_TYPE (@0)))
+       && tree_fits_uhwi_p (@2)
+       && tree_to_uhwi (@2) == TYPE_PRECISION (TREE_TYPE (@0))
+       && types_match (@0, @1)
+       && type_has_mode_precision_p (TREE_TYPE (@0))
+       && (optab_handler (umulv4_optab, TYPE_MODE (TREE_TYPE (@0)))
+	   != CODE_FOR_nothing))
+   (with { tree t = TREE_TYPE (@0), cpx = build_complex_type (t); }
+    (cmp (imagpart (IFN_MUL_OVERFLOW:cpx @0 @1)) { build_zero_cst (t); })))))
 
 /* Simplification of math builtins.  These rules must all be optimizations
    as well as IL simplifications.  If there is a possibility that the new

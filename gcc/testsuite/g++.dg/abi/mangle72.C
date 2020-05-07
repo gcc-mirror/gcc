@@ -24,56 +24,50 @@ struct B { padm_t a[2]; };
 template <B> struct Y { };
 
 void g__ (Y<B{{ }}>) { }
-// { dg-final { scan-assembler "_Z3g__1YIXtl1BtlA2_M1AA2_iLS3_0EEEEE" } }
+// { dg-final { scan-assembler "_Z3g__1YIXtl1BEEE" } }
 
 void g0_ (Y<B{{ 0 }}>) { }
-// { dg-final { scan-assembler "_Z3g0_1YIXtl1BtlA2_M1AA2_iLS3_0EEEEE" } }
+// { dg-final { scan-assembler "_Z3g0_1YIXtl1BEEE" } }
 
 void g00 (Y<B{{ 0, 0 }}>) { }
-// { dg-final { scan-assembler "_Z3g001YIXtl1BtlA2_M1AA2_iLS3_0EEEEE" } }
+// { dg-final { scan-assembler "_Z3g001YIXtl1BEEE" } }
 
 void g0x (Y<B{{ 0, &A::a }}>) { }
-// FIXME: This needs to mangle differently from g00.  The space at
-// the end is intentional to make the directive fail so that the xfail
-// can be reminder to change this once the mangling is fixed.
-// { dg-final { scan-assembler "_Z3g0x1YIXtl1BtlA2_M1AA2_iLS3_0EEEEE " { xfail *-*-* } } }
+// { dg-final { scan-assembler "_Z3g0x1YIXtl1BtlA2_M1AA2_iLS3_0EadL_ZNS1_1aEEEEEE" } }
 
 void gx_ (Y<B{{ &A::a }}>) { }
-// { dg-final { scan-assembler "_Z3gx_1YIXtl1BtlA2_M1AA2_iLS3_0ELS3_0EEEEE" } }
+// { dg-final { scan-assembler "_Z3gx_1YIXtl1BtlA2_M1AA2_iadL_ZNS1_1aEEEEEE" } }
 
 
 struct C { padm_t a[3]; };
 template <C> struct Z { };
 
 void h___ (Z<C{{ }}>) { }
-// { dg-final { scan-assembler "_Z4h___1ZIXtl1CtlA3_M1AA2_iLS3_0EEEEE" } }
+// { dg-final { scan-assembler "_Z4h___1ZIXtl1CEEE" } }
 
 void h0__ (Z<C{{ 0 }}>) { }
-// { dg-final { scan-assembler "_Z4h0__1ZIXtl1CtlA3_M1AA2_iLS3_0EEEEE" } }
+// { dg-final { scan-assembler "_Z4h0__1ZIXtl1CEEE" } }
 
 void h00_ (Z<C{{ 0, 0 }}>) { }
-// { dg-final { scan-assembler "_Z4h00_1ZIXtl1CtlA3_M1AA2_iLS3_0EEEEE" } }
+// { dg-final { scan-assembler "_Z4h00_1ZIXtl1CEEE" } }
 
 void h000 (Z<C{{ 0, 0, 0 }}>) { }
-// { dg-final { scan-assembler "_Z4h0001ZIXtl1CtlA3_M1AA2_iLS3_0EEEEE" } }
+// { dg-final { scan-assembler "_Z4h0001ZIXtl1CEEE" } }
 
 void h00x (Z<C{{ 0, 0, &A::a }}>) { }
-// FIXME: This needs to mangle differently from hx0_ and hx__.
-// { dg-final { scan-assembler "_Z4h00x1ZIXtl1CtlA3_M1AA2_iLS3_0ELS3_0EEEEE " { xfail *-*-*} } }
+// { dg-final { scan-assembler "_Z4h00x1ZIXtl1CtlA3_M1AA2_iLS3_0ELS3_0EadL_ZNS1_1aEEEEEE" } }
 
 void h0x0 (Z<C{{ 0, &A::a, 0 }}>) { }
-// { dg-final { scan-assembler "_Z4h0x01ZIXtl1CtlA3_M1AA2_iLS3_0ELS3_0ELS3_0EEEEE" } }
+// { dg-final { scan-assembler "_Z4h0x01ZIXtl1CtlA3_M1AA2_iLS3_0EadL_ZNS1_1aEEEEEE" } }
 
 void h0x_ (Z<C{{ 0, &A::a }}>) { }
-// { dg-final { scan-assembler "_Z4h0x_1ZIXtl1CtlA3_M1AA2_iLS3_0ELS3_0ELS3_0EEEEE" } }
+// { dg-final { scan-assembler "_Z4h0x_1ZIXtl1CtlA3_M1AA2_iLS3_0EadL_ZNS1_1aEEEEEE" } }
 
 void hx0_ (Z<C{{ &A::a, 0 }}>) { }
-// FIXME: This needs to mangle differently from h00x and hx__.
-// { dg-final { scan-assembler "_Z4hx0_1ZIXtl1CtlA3_M1AA2_iLS3_0ELS3_0EEEEE " { xfail *-*-*} } }
+// { dg-final { scan-assembler "_Z4hx0_1ZIXtl1CtlA3_M1AA2_iadL_ZNS1_1aEEEEEE" } }
 
 void hx__ (Z<C{{ &A::a }}>) { }
-// FIXME: This needs to mangle differently from h00x and hx0_.
-// { dg-final { scan-assembler "_Z4hx__1ZIXtl1CtlA3_M1AA2_iLS3_0ELS3_0EEEEE " { xfail *-*-* } } }
+// { dg-final { scan-assembler "_Z4hx__1ZIXtl1CtlA3_M1AA2_iadL_ZNS1_1aEEEEEE" } }
 
 
 // Exercise arrays of pointers to function members.

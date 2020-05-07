@@ -23,9 +23,9 @@
 #include <testsuite_hooks.h>
 
 #ifndef __cpp_lib_erase_if
-# error "Feature-test macro for erase_if missing"
+# error "Feature-test macro for erase_if missing in <map>"
 #elif __cpp_lib_erase_if < 202002
-# error "Feature-test macro for erase_if has wrong value"
+# error "Feature-test macro for erase_if has wrong value in <map>"
 #endif
 
 auto is_odd_pair = [](const std::pair<const int, std::string>& p)

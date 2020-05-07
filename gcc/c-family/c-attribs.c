@@ -117,7 +117,7 @@ static tree handle_tm_attribute (tree *, tree, tree, int, bool *);
 static tree handle_tm_wrap_attribute (tree *, tree, tree, int, bool *);
 static tree handle_novops_attribute (tree *, tree, tree, int, bool *);
 static tree handle_vector_size_attribute (tree *, tree, tree, int,
-					  bool *);
+					  bool *) ATTRIBUTE_NONNULL(3);
 static tree handle_nonnull_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nonstring_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nothrow_attribute (tree *, tree, tree, int, bool *);
@@ -3314,7 +3314,7 @@ find_tm_attribute (tree list)
 {
   for (; list ; list = TREE_CHAIN (list))
     {
-      tree name = TREE_PURPOSE (list);
+      tree name = get_attribute_name (list);
       if (tm_attr_to_mask (name) != 0)
 	return name;
     }
@@ -3696,6 +3696,8 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
   type = type_valid_for_vector_size (type, name, args, &nunits);
   if (!type)
     return NULL_TREE;
+
+  gcc_checking_assert (args != NULL);
 
   tree new_type = build_vector_type (type, nunits);
 
@@ -4549,6 +4551,15 @@ handle_patchable_function_entry_attribute (tree *, tree name, tree args,
 	{
 	  warning (OPT_Wattributes,
 		   "%qE attribute argument %qE is not an integer constant",
+		   name, val);
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+
+      if (tree_to_uhwi (val) > USHRT_MAX)
+	{
+	  warning (OPT_Wattributes,
+		   "%qE attribute argument %qE is out of range (> 65535)",
 		   name, val);
 	  *no_add_attrs = true;
 	  return NULL_TREE;

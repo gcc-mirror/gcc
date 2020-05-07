@@ -322,6 +322,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // C++17
 
 #if __cplusplus > 201703L
+#define __cpp_lib_ssize 201902L
   template<typename _Container>
     constexpr auto
     ssize(const _Container& __cont)

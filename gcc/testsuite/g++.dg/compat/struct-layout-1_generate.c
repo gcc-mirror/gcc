@@ -1,5 +1,5 @@
 /* Structure layout test generator.
-   Copyright (C) 2004-2014
+   Copyright (C) 2004-2020
    Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
@@ -44,12 +44,12 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 const char *dg_options[] = {
-"/* { dg-options \"%s-I%s -Wno-abi\" } */\n",
-"/* { dg-options \"%s-I%s -mno-mmx -Wno-abi\" { target i?86-*-* x86_64-*-* } } */\n",
-"/* { dg-options \"%s-I%s -fno-common\" { target hppa*-*-hpux* powerpc*-*-darwin* *-*-mingw32* *-*-cygwin* } } */\n",
-"/* { dg-options \"%s-I%s -mno-mmx -fno-common -Wno-abi\" { target i?86-*-darwin* x86_64-*-darwin* i?86-*-mingw32* x86_64-*-mingw32* i?86-*-cygwin* } } */\n",
-"/* { dg-options \"%s-I%s -mno-base-addresses\" { target mmix-*-* } } */\n",
-"/* { dg-options \"%s-I%s -mlongcalls -mtext-section-literals\" { target xtensa*-*-* } } */\n"
+"/* { dg-options \"%s%s-I%s -Wno-abi\" } */\n",
+"/* { dg-options \"%s%s-I%s -mno-mmx -Wno-abi\" { target i?86-*-* x86_64-*-* } } */\n",
+"/* { dg-options \"%s%s-I%s -fno-common\" { target hppa*-*-hpux* powerpc*-*-darwin* *-*-mingw32* *-*-cygwin* } } */\n",
+"/* { dg-options \"%s%s-I%s -mno-mmx -fno-common -Wno-abi\" { target i?86-*-darwin* x86_64-*-darwin* i?86-*-mingw32* x86_64-*-mingw32* i?86-*-cygwin* } } */\n",
+"/* { dg-options \"%s%s-I%s -mno-base-addresses\" { target mmix-*-* } } */\n",
+"/* { dg-options \"%s%s-I%s -mlongcalls -mtext-section-literals\" { target xtensa*-*-* } } */\n"
 #define NDG_OPTIONS (sizeof (dg_options) / sizeof (dg_options[0]))
 };
 
@@ -508,6 +508,8 @@ static int short_enums;
 static const char *destdir;
 static const char *srcdir;
 static const char *srcdir_safe;
+static int cxx14_vs_cxx17;
+static int do_cxx14_vs_cxx17;
 FILE *outfile;
 
 void
@@ -516,6 +518,8 @@ switchfiles (int fields)
   static int filecnt;
   static char *destbuf, *destptr;
   int i;
+  int cxx14_first = 0;
+  const char *cxxnn = "";
 
   ++filecnt;
   if (outfile)
@@ -545,8 +549,15 @@ switchfiles (int fields)
       exit (1);
     }
 
+  if (cxx14_vs_cxx17)
+    {
+      cxx14_first = generate_random () & 1;
+      cxxnn = (cxx14_first
+	       ? "-std=c++14 -DCXX14_VS_CXX17 "
+	       : "-std=c++17 -DCXX14_VS_CXX17 ");
+    }
   for (i = 0; i < NDG_OPTIONS; i++)
-    fprintf (outfile, dg_options[i], "", srcdir_safe);
+    fprintf (outfile, dg_options[i], "", "", srcdir_safe);
   fprintf (outfile, "\n\
 #include \"struct-layout-1.h\"\n\
 \n\
@@ -572,7 +583,7 @@ int main (void)\n\
   if (outfile == NULL)
     goto fail;
   for (i = 0; i < NDG_OPTIONS; i++)
-    fprintf (outfile, dg_options[i], "-w ", srcdir_safe);
+    fprintf (outfile, dg_options[i], cxxnn, "-w ", srcdir_safe);
   fprintf (outfile, "\n\
 #include \"struct-layout-1_x1.h\"\n\
 #include \"t%03d_test.h\"\n\
@@ -583,8 +594,12 @@ int main (void)\n\
   outfile = fopen (destbuf, "w");
   if (outfile == NULL)
     goto fail;
+  if (cxx14_vs_cxx17)
+    cxxnn = (cxx14_first
+	     ? "-std=c++17 -DCXX14_VS_CXX17 "
+	     : "-std=c++14 -DCXX14_VS_CXX17 ");
   for (i = 0; i < NDG_OPTIONS; i++)
-    fprintf (outfile, dg_options[i], "-w ", srcdir_safe);
+    fprintf (outfile, dg_options[i], cxxnn, "-w ", srcdir_safe);
   fprintf (outfile, "\n\
 #include \"struct-layout-1_y1.h\"\n\
 #include \"t%03d_test.h\"\n\
@@ -1167,7 +1182,7 @@ e_insert (struct entry *e)
 void
 output (struct entry *e)
 {
-  int i;
+  int i, flex, len;
   char c;
   struct entry *n;
 
@@ -1190,9 +1205,17 @@ output (struct entry *e)
     fprintf (outfile, "U(%d,", idx);
   c = 'a';
 
-  int flex = 0;
+  flex = 0;
+  len = e[0].len;
   for (i = 1; i <= e[0].len; )
-    i += subfield (e + i, &c, &flex, 0);
+    {
+      if (flex)
+	{
+	  e[0].len = i - 1;
+	  break;
+	}
+      i += subfield (e + i, &c, &flex, 0);
+    }
   
   fputs (",", outfile);
   c = 'a';
@@ -1202,6 +1225,7 @@ output (struct entry *e)
       if (e[0].etype == ETYPE_UNION)
 	break;
     }
+  e[0].len = len;
   fputs (")\n", outfile);
   if (output_one && idx == limidx)
     exit (0);
@@ -1539,7 +1563,7 @@ generate_random_tests (enum FEATURE features, int len)
     abort ();
   memset (e, 0, sizeof (e));
   r = generate_random ();
-  if ((r & 7) == 0)
+  if ((r & 7) == 0 && !cxx14_vs_cxx17)
     e[0].etype = ETYPE_UNION;
   else
     e[0].etype = ETYPE_STRUCT;
@@ -1577,7 +1601,7 @@ main (int argc, char **argv)
       if (argv[i][0] == '-' && argv[i][2] == '\0')
 	c = argv[i][1];
       optarg = argv[i + 1];
-      if (!optarg)
+      if (!optarg && c != 'e' && c != 'c')
 	goto usage;
       switch (c)
 	{
@@ -1598,6 +1622,10 @@ main (int argc, char **argv)
 	  short_enums = 1;
 	  i--;
 	  break;
+	case 'c':
+	  do_cxx14_vs_cxx17 = 1;
+	  i--;
+	  break;
 	default:
 	  fprintf (stderr, "unrecognized option %s\n", argv[i]);
 	  goto usage;
@@ -1614,13 +1642,18 @@ main (int argc, char **argv)
 	  return 1;
 	}
       n = limidx + 1;
+      if (do_cxx14_vs_cxx17)
+	{
+	  fputs ("-c is incompatible with -i", stderr);
+	  return 1;
+	}
     }
 
   if (destdir == NULL && !output_one)
     {
     usage:
       fprintf (stderr, "Usage:\n\
-%s [-e] [-s srcdir -d destdir] [-n count] [-i idx]\n\
+%s [-e] [-c] [-s srcdir -d destdir] [-n count] [-i idx]\n\
 Either -s srcdir -d destdir or -i idx must be used\n", argv[0]);
       return 1;
     }
@@ -1650,6 +1683,7 @@ Either -s srcdir -d destdir or -i idx must be used\n", argv[0]);
   for (i = 0; i < NATYPES2; ++i)
     if (attrib_types[i].bitfld)
       aligned_bitfld_types[n_aligned_bitfld_types++] = attrib_types[i];
+repeat:;
   for (i = 0; i < sizeof (features) / sizeof (features[0]); ++i)
     {
       int startidx = idx;
@@ -1696,6 +1730,14 @@ Either -s srcdir -d destdir or -i idx must be used\n", argv[0]);
     limidx = idx;
   while (idx < n)
     generate_random_tests (ALL_FEATURES, 1 + (generate_random () % 25));
+  if (do_cxx14_vs_cxx17)
+    {
+      cxx14_vs_cxx17 = 1;
+      do_cxx14_vs_cxx17 = 0;
+      limidx = 0;
+      idx = 0;
+      goto repeat;
+    }
   fclose (outfile);
   return 0;
 }

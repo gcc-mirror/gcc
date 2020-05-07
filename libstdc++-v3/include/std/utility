@@ -238,7 +238,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     get(const std::pair<_Tp1, _Tp2>&& __in) noexcept
     { return __pair_get<_Int>::__const_move_get(std::move(__in)); }
 
-#if __cplusplus > 201103L
+#if __cplusplus >= 201402L
 
 #define __cpp_lib_tuples_by_type 201304
 
@@ -284,10 +284,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #define __cpp_lib_exchange_function 201304
 
-#if __cplusplus > 201703L
-#  define __cpp_lib_constexpr_algorithms 201806L
-#endif
-
   /// Assign @p __new_val to @p __obj and return its previous value.
   template <typename _Tp, typename _Up = _Tp>
     _GLIBCXX20_CONSTEXPR
@@ -295,7 +291,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     exchange(_Tp& __obj, _Up&& __new_val)
     { return std::__exchange(__obj, std::forward<_Up>(__new_val)); }
 
-#endif
+#endif // C++14
 
   // Stores a tuple of indices.  Used by tuple and pair, and by bind() to
   // extract the elements in a tuple.

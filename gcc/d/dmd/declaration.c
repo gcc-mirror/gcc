@@ -2174,7 +2174,7 @@ Expression *VarDeclaration::callScopeDtor(Scope *)
 
             // Destroying C++ scope classes crashes currently. Since C++ class dtors are not currently supported, simply do not run dtors for them.
             // See https://issues.dlang.org/show_bug.cgi?id=13182
-            if (cd->cpp)
+            if (cd->isCPPclass())
             {
                 break;
             }

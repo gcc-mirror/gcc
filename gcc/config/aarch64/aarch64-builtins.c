@@ -2313,10 +2313,12 @@ aarch64_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   mask_sr = build_int_cst (unsigned_type_node,
 			   ~(AARCH64_FE_ALL_EXCEPT));
 
-  ld_fenv_cr = build2 (MODIFY_EXPR, unsigned_type_node,
-		       fenv_cr, build_call_expr (get_fpcr, 0));
-  ld_fenv_sr = build2 (MODIFY_EXPR, unsigned_type_node,
-		       fenv_sr, build_call_expr (get_fpsr, 0));
+  ld_fenv_cr = build4 (TARGET_EXPR, unsigned_type_node,
+		       fenv_cr, build_call_expr (get_fpcr, 0),
+		       NULL_TREE, NULL_TREE);
+  ld_fenv_sr = build4 (TARGET_EXPR, unsigned_type_node,
+		       fenv_sr, build_call_expr (get_fpsr, 0),
+		       NULL_TREE, NULL_TREE);
 
   masked_fenv_cr = build2 (BIT_AND_EXPR, unsigned_type_node, fenv_cr, mask_cr);
   masked_fenv_sr = build2 (BIT_AND_EXPR, unsigned_type_node, fenv_sr, mask_sr);
@@ -2348,8 +2350,9 @@ aarch64_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
        __atomic_feraiseexcept (new_fenv_var);  */
 
   new_fenv_var = create_tmp_var_raw (unsigned_type_node);
-  reload_fenv = build2 (MODIFY_EXPR, unsigned_type_node,
-			new_fenv_var, build_call_expr (get_fpsr, 0));
+  reload_fenv = build4 (TARGET_EXPR, unsigned_type_node,
+			new_fenv_var, build_call_expr (get_fpsr, 0),
+			NULL_TREE, NULL_TREE);
   restore_fnenv = build_call_expr (set_fpsr, 1, fenv_sr);
   atomic_feraiseexcept = builtin_decl_implicit (BUILT_IN_ATOMIC_FERAISEEXCEPT);
   update_call = build_call_expr (atomic_feraiseexcept, 1,

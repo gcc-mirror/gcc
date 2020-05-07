@@ -3992,6 +3992,9 @@ resolve_operator (gfc_expr *e)
 
   op1 = e->value.op.op1;
   op2 = e->value.op.op2;
+  if (op1 == NULL && op2 == NULL)
+    return false;
+
   dual_locus_error = false;
 
   /* op1 and op2 cannot both be BOZ.  */

@@ -20,9 +20,9 @@
 
 #include <functional>
 
-#ifndef __cpp_lib_constexpr_invoke
+#ifndef __cpp_lib_constexpr_functional
 # error "Feature test macro for constexpr invoke is missing"
-#elif __cpp_lib_constexpr_invoke < 201907L
+#elif __cpp_lib_constexpr_functional < 201907L
 # error "Feature test macro for constexpr invoke has wrong value"
 #endif
 

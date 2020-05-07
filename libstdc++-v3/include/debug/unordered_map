@@ -741,13 +741,14 @@ namespace __debug
 	       const unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
     { return __x._M_base() == __y._M_base(); }
 
+#if __cpp_impl_three_way_comparison < 201907L
   template<typename _Key, typename _Tp, typename _Hash,
 	   typename _Pred, typename _Alloc>
     inline bool
     operator!=(const unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
 	       const unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
     { return !(__x == __y); }
-
+#endif
 
   /// Class std::unordered_multimap with safety/checking/debug instrumentation.
   template<typename _Key, typename _Tp,
@@ -1347,12 +1348,14 @@ namespace __debug
 	       const unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
     { return __x._M_base() == __y._M_base(); }
 
+#if __cpp_impl_three_way_comparison < 201907L
   template<typename _Key, typename _Tp, typename _Hash,
 	   typename _Pred, typename _Alloc>
     inline bool
     operator!=(const unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
 	       const unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
     { return !(__x == __y); }
+#endif
 
 } // namespace __debug
 } // namespace std

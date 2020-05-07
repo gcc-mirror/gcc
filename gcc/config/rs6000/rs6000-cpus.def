@@ -75,15 +75,14 @@
 				 | OPTION_MASK_P8_VECTOR		\
 				 | OPTION_MASK_P9_VECTOR)
 
-/* Support for a future processor's features.  Do not enable -mpcrel until it
-   is fully functional.  */
-#define ISA_FUTURE_MASKS_SERVER	(ISA_3_0_MASKS_SERVER			\
-				 | OPTION_MASK_FUTURE			\
-				 | OPTION_MASK_PREFIXED)
-
 /* Flags that need to be turned off if -mno-future.  */
 #define OTHER_FUTURE_MASKS	(OPTION_MASK_PCREL			\
 				 | OPTION_MASK_PREFIXED)
+
+/* Support for a future processor's features.  */
+#define ISA_FUTURE_MASKS_SERVER	(ISA_3_0_MASKS_SERVER			\
+				 | OPTION_MASK_FUTURE			\
+				 | OTHER_FUTURE_MASKS)
 
 /* Flags that need to be turned off if -mno-power9-vector.  */
 #define OTHER_P9_VECTOR_MASKS	(OPTION_MASK_FLOAT128_HW		\

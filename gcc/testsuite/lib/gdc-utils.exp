@@ -208,6 +208,7 @@ proc gdc-convert-test { base test } {
 
     set extra_sources ""
     set extra_files ""
+    set needs_phobos 0
 
     upvar 1 compilable_do_what compilable_do_what
     set compilable_output_file_ext ""
@@ -296,6 +297,17 @@ proc gdc-convert-test { base test } {
 	    }
 	    regsub -- {COMPILED_IMPORTS.*$} $copy_line "" out_line
 
+	} elseif [regexp -- {RUNNABLE_PHOBOS_TEST} $copy_line match sources] {
+	    # RUNNABLE_PHOBOS_TEST annotates tests that import the std module.
+	    # It will need skipping if phobos is not available on the target.
+	    regsub -- {RUNNABLE_PHOBOS_TEST.*$} $copy_line "" out_line
+	    set needs_phobos 1
+
+	} elseif [regexp -- {COMPILABLE_MATH_TEST} $copy_line match sources] {
+	    # COMPILABLE_MATH_TEST annotates tests that import the std.math
+	    # module.  Which will need skipping if not available on the target.
+	    regsub -- {RUNNABLE_PHOBOS_TEST.*$} $copy_line "" out_line
+	    set needs_phobos 1
 	}
 
 	puts $fdout $out_line
@@ -331,6 +343,9 @@ proc gdc-convert-test { base test } {
 	    if ![isnative] {
 		puts $fdout "// { dg-final { output-exists } }"
 	    }
+	    if $needs_phobos {
+		puts $fdout "// { dg-skip-if \"imports phobos\" { ! d_runtime_has_std_library } }"
+	    }
 	}
 
 	compilable {
@@ -348,6 +363,9 @@ proc gdc-convert-test { base test } {
 		puts $fdout "// { dg-final { \\}                                       } }"
 		# Cleanup extra generated files.
 		puts $fdout "// { dg-final { file delete $genfile } }"
+	    }
+	    if $needs_phobos {
+		puts $fdout "// { dg-skip-if \"imports phobos\" { ! d_runtime_has_std_library } }"
 	    }
 	}
 

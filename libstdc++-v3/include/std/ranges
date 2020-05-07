@@ -353,23 +353,28 @@ namespace ranges
 	requires bidirectional_iterator<_It>
       {
 	auto __tmp = *this;
-	__tmp.advance(--__n);
+	__tmp.advance(-__n);
 	return __tmp;
       }
 
       constexpr subrange&
       advance(iter_difference_t<_It> __n)
       {
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 3433. subrange::advance(n) has UB when n < 0
+	if constexpr (bidirectional_iterator<_It>)
+	  if (__n < 0)
+	    {
+	      ranges::advance(_M_begin, __n);
+	      if constexpr (_S_store_size)
+		_M_size._M_size += __detail::__to_unsigned_like(-__n);
+	      return *this;
+	    }
+
+	__glibcxx_assert(__n >= 0);
+	auto __d = __n - ranges::advance(_M_begin, __n, _M_end);
 	if constexpr (_S_store_size)
-	  {
-	    auto __d = __n - ranges::advance(_M_begin, __n, _M_end);
-	    if (__d >= 0)
-	      _M_size._M_size -= __detail::__to_unsigned_like(__d);
-	    else
-	      _M_size._M_size += __detail::__to_unsigned_like(-__d);
-	  }
-	else
-	  ranges::advance(_M_begin, __n, _M_end);
+	  _M_size._M_size -= __detail::__to_unsigned_like(__d);
 	return *this;
       }
     };

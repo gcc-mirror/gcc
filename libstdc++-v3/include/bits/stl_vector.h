@@ -62,6 +62,9 @@
 #if __cplusplus >= 201103L
 #include <initializer_list>
 #endif
+#if __cplusplus > 201703L
+# include <compare>
+#endif
 
 #include <debug/assertions.h>
 
@@ -1890,6 +1893,27 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     { return (__x.size() == __y.size()
 	      && std::equal(__x.begin(), __x.end(), __y.begin())); }
 
+#if __cpp_lib_three_way_comparison
+  /**
+   *  @brief  Vector ordering relation.
+   *  @param  __x  A `vector`.
+   *  @param  __y  A `vector` of the same type as `__x`.
+   *  @return  A value indicating whether `__x` is less than, equal to,
+   *           greater than, or incomparable with `__y`.
+   *
+   *  See `std::lexicographical_compare_three_way()` for how the determination
+   *  is made. This operator is used to synthesize relational operators like
+   *  `<` and `>=` etc.
+  */
+  template<typename _Tp, typename _Alloc>
+    inline __detail::__synth3way_t<_Tp>
+    operator<=>(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
+    {
+      return std::lexicographical_compare_three_way(__x.begin(), __x.end(),
+						    __y.begin(), __y.end(),
+						    __detail::__synth3way);
+    }
+#else
   /**
    *  @brief  Vector ordering relation.
    *  @param  __x  A %vector.
@@ -1930,6 +1954,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     inline bool
     operator>=(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
     { return !(__x < __y); }
+#endif // three-way comparison
 
   /// See std::vector::swap().
   template<typename _Tp, typename _Alloc>

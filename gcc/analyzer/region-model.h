@@ -684,9 +684,6 @@ public:
 
 enum poison_kind
 {
-  /* For use to describe uninitialized memory.  */
-  POISON_KIND_UNINIT,
-
   /* For use to describe freed memory.  */
   POISON_KIND_FREED,
 
@@ -2208,7 +2205,7 @@ public:
     FINAL OVERRIDE
   {
     internal_error ("unhandled tree code: %qs",
-		    get_tree_code_name (TREE_CODE (t)));
+		    t ? get_tree_code_name (TREE_CODE (t)) : "(null)");
   }
 
 private:

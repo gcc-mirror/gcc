@@ -1084,7 +1084,9 @@ void[] getTLSRange(size_t mod, size_t sz) nothrow @nogc
 
         // base offset
         auto ti = tls_index(mod, 0);
-        version (IBMZ_Any)
+        version (CRuntime_Musl)
+            return (__tls_get_addr(&ti)-TLS_DTV_OFFSET)[0 .. sz];
+        else version (IBMZ_Any)
         {
             // IBM Z only provides __tls_get_offset instead of __tls_get_addr
             // which returns an offset relative to the thread pointer.

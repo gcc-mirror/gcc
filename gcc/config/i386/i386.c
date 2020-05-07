@@ -1397,9 +1397,7 @@ ix86_legitimate_combined_insn (rtx_insn *insn)
 static unsigned HOST_WIDE_INT
 ix86_asan_shadow_offset (void)
 {
-  return TARGET_LP64 ? (TARGET_MACHO ? (HOST_WIDE_INT_1 << 44)
-				     : HOST_WIDE_INT_C (0x7fff8000))
-		     : (HOST_WIDE_INT_1 << 29);
+  return SUBTARGET_SHADOW_OFFSET;
 }
 
 /* Argument support functions.  */
@@ -7103,14 +7101,14 @@ release_scratch_register_on_entry (struct scratch_reg *sr, HOST_WIDE_INT offset,
 
 	  /* The RX FRAME_RELATED_P mechanism doesn't know about pop.  */
 	  RTX_FRAME_RELATED_P (insn) = 1;
-	  x = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (UNITS_PER_WORD));
+	  x = plus_constant (Pmode, stack_pointer_rtx, UNITS_PER_WORD);
 	  x = gen_rtx_SET (stack_pointer_rtx, x);
 	  add_reg_note (insn, REG_FRAME_RELATED_EXPR, x);
 	  m->fs.sp_offset -= UNITS_PER_WORD;
 	}
       else
 	{
-	  rtx x = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (offset));
+	  rtx x = plus_constant (Pmode, stack_pointer_rtx, offset);
 	  x = gen_rtx_SET (sr->reg, gen_rtx_MEM (word_mode, x));
 	  emit_insn (x);
 	}
@@ -7897,7 +7895,7 @@ gen_frame_set (rtx reg, rtx frame_reg, int offset, bool store)
   rtx addr, mem;
 
   if (offset)
-    addr = gen_rtx_PLUS (Pmode, frame_reg, GEN_INT (offset));
+    addr = plus_constant (Pmode, frame_reg, offset);
   mem = gen_frame_mem (GET_MODE (reg), offset ? addr : frame_reg);
   return gen_rtx_SET (store ? mem : reg, store ? reg : mem);
 }
@@ -8593,8 +8591,8 @@ ix86_emit_restore_reg_using_pop (rtx reg)
 	  m->fs.cfa_offset -= UNITS_PER_WORD;
 
 	  add_reg_note (insn, REG_CFA_DEF_CFA,
-			gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-				      GEN_INT (m->fs.cfa_offset)));
+			plus_constant (Pmode, stack_pointer_rtx,
+				       m->fs.cfa_offset));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
     }
@@ -8778,7 +8776,7 @@ ix86_emit_outlined_ms2sysv_restore (const struct ix86_frame &frame,
 	  gcc_assert (m->fs.fp_valid);
 	  gcc_assert (m->fs.cfa_reg == hard_frame_pointer_rtx);
 
-	  tmp = gen_rtx_PLUS (DImode, rbp, GEN_INT (8));
+	  tmp = plus_constant (DImode, rbp, 8);
 	  RTVEC_ELT (v, vi++) = gen_rtx_SET (stack_pointer_rtx, tmp);
 	  RTVEC_ELT (v, vi++) = gen_rtx_SET (rbp, gen_rtx_MEM (DImode, rbp));
 	  tmp = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode));
@@ -8792,7 +8790,7 @@ ix86_emit_outlined_ms2sysv_restore (const struct ix86_frame &frame,
 	  gcc_assert (m->fs.sp_valid);
 
 	  r10 = gen_rtx_REG (DImode, R10_REG);
-	  tmp = gen_rtx_PLUS (Pmode, rsi, GEN_INT (stub_ptr_offset));
+	  tmp = plus_constant (Pmode, rsi, stub_ptr_offset);
 	  emit_insn (gen_rtx_SET (r10, tmp));
 
 	  RTVEC_ELT (v, vi++) = gen_rtx_SET (stack_pointer_rtx, r10);
@@ -9189,17 +9187,16 @@ ix86_expand_epilogue (int style)
 
       insn = emit_insn (gen_rtx_SET
 			(stack_pointer_rtx,
-			 gen_rtx_PLUS (Pmode,
-				       crtl->drap_reg,
-				       GEN_INT (-param_ptr_offset))));
+			 plus_constant (Pmode, crtl->drap_reg,
+					-param_ptr_offset)));
       m->fs.cfa_reg = stack_pointer_rtx;
       m->fs.cfa_offset = param_ptr_offset;
       m->fs.sp_offset = param_ptr_offset;
       m->fs.realigned = false;
 
       add_reg_note (insn, REG_CFA_DEF_CFA,
-		    gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-				  GEN_INT (param_ptr_offset)));
+		    plus_constant (Pmode, stack_pointer_rtx,
+				   param_ptr_offset));
       RTX_FRAME_RELATED_P (insn) = 1;
 
       if (!call_used_or_fixed_reg_p (REGNO (crtl->drap_reg)))
@@ -9711,8 +9708,8 @@ ix86_expand_split_stack_prologue (void)
       */
       words = TARGET_64BIT ? 3 : 5;
       emit_insn (gen_rtx_SET (scratch_reg,
-			      gen_rtx_PLUS (Pmode, frame_reg,
-					    GEN_INT (words * UNITS_PER_WORD))));
+			      plus_constant (Pmode, frame_reg,
+					     words * UNITS_PER_WORD)));
 
       varargs_label = gen_label_rtx ();
       emit_jump_insn (gen_jump (varargs_label));
@@ -9730,8 +9727,8 @@ ix86_expand_split_stack_prologue (void)
   if (cfun->machine->split_stack_varargs_pointer != NULL_RTX)
     {
       emit_insn (gen_rtx_SET (scratch_reg,
-			      gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-					    GEN_INT (UNITS_PER_WORD))));
+			      plus_constant (Pmode, stack_pointer_rtx,
+					     UNITS_PER_WORD)));
 
       emit_label (varargs_label);
       LABEL_NUSES (varargs_label) = 1;
@@ -21881,7 +21878,8 @@ ix86_init_cost (class loop *)
 /* Implement targetm.vectorize.add_stmt_cost.  */
 
 static unsigned
-ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
+ix86_add_stmt_cost (class vec_info *vinfo, void *data, int count,
+		    enum vect_cost_for_stmt kind,
 		    class _stmt_vec_info *stmt_info, int misalign,
 		    enum vect_cost_model_location where)
 {
@@ -22042,7 +22040,8 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
   /* Statements in an inner loop relative to the loop being
      vectorized are weighted more heavily.  The value here is
      arbitrary and could potentially be improved with analysis.  */
-  if (where == vect_body && stmt_info && stmt_in_inner_loop_p (stmt_info))
+  if (where == vect_body && stmt_info
+      && stmt_in_inner_loop_p (vinfo, stmt_info))
     count *= 50;  /* FIXME.  */
 
   retval = (unsigned) (count * stmt_cost);
@@ -22390,11 +22389,12 @@ ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
       *clear = build_call_expr (fnclex, 0);
       tree sw_var = create_tmp_var_raw (short_unsigned_type_node);
       tree fnstsw_call = build_call_expr (fnstsw, 0);
-      tree sw_mod = build2 (MODIFY_EXPR, short_unsigned_type_node,
-			    sw_var, fnstsw_call);
+      tree sw_mod = build4 (TARGET_EXPR, short_unsigned_type_node, sw_var,
+			    fnstsw_call, NULL_TREE, NULL_TREE);
       tree exceptions_x87 = fold_convert (integer_type_node, sw_var);
-      tree update_mod = build2 (MODIFY_EXPR, integer_type_node,
-				exceptions_var, exceptions_x87);
+      tree update_mod = build4 (TARGET_EXPR, integer_type_node,
+				exceptions_var, exceptions_x87,
+				NULL_TREE, NULL_TREE);
       *update = build2 (COMPOUND_EXPR, integer_type_node,
 			sw_mod, update_mod);
       tree update_fldenv = build_call_expr (fldenv, 1, fenv_addr);
@@ -22407,15 +22407,17 @@ ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
       tree stmxcsr = get_ix86_builtin (IX86_BUILTIN_STMXCSR);
       tree ldmxcsr = get_ix86_builtin (IX86_BUILTIN_LDMXCSR);
       tree stmxcsr_hold_call = build_call_expr (stmxcsr, 0);
-      tree hold_assign_orig = build2 (MODIFY_EXPR, unsigned_type_node,
-				      mxcsr_orig_var, stmxcsr_hold_call);
+      tree hold_assign_orig = build4 (TARGET_EXPR, unsigned_type_node,
+				      mxcsr_orig_var, stmxcsr_hold_call,
+				      NULL_TREE, NULL_TREE);
       tree hold_mod_val = build2 (BIT_IOR_EXPR, unsigned_type_node,
 				  mxcsr_orig_var,
 				  build_int_cst (unsigned_type_node, 0x1f80));
       hold_mod_val = build2 (BIT_AND_EXPR, unsigned_type_node, hold_mod_val,
 			     build_int_cst (unsigned_type_node, 0xffffffc0));
-      tree hold_assign_mod = build2 (MODIFY_EXPR, unsigned_type_node,
-				     mxcsr_mod_var, hold_mod_val);
+      tree hold_assign_mod = build4 (TARGET_EXPR, unsigned_type_node,
+				     mxcsr_mod_var, hold_mod_val,
+				     NULL_TREE, NULL_TREE);
       tree ldmxcsr_hold_call = build_call_expr (ldmxcsr, 1, mxcsr_mod_var);
       tree hold_all = build2 (COMPOUND_EXPR, unsigned_type_node,
 			      hold_assign_orig, hold_assign_mod);
@@ -22444,8 +22446,8 @@ ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 			    exceptions_assign);
 	}
       else
-	*update = build2 (MODIFY_EXPR, integer_type_node,
-			  exceptions_var, exceptions_sse);
+	*update = build4 (TARGET_EXPR, integer_type_node, exceptions_var,
+			  exceptions_sse, NULL_TREE, NULL_TREE);
       tree ldmxcsr_update_call = build_call_expr (ldmxcsr, 1, mxcsr_orig_var);
       *update = build2 (COMPOUND_EXPR, void_type_node, *update,
 			ldmxcsr_update_call);

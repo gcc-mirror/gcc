@@ -1,3 +1,87 @@
+2020-04-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/Makefile.am (DRUNTIME_SOURCES_CONFIGURED): Remove
+	config/powerpc/switchcontext.S
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/config/powerpc/callwithstack.S: Remove.
+	* libdruntime/config/powerpc/switchcontext.S: Fix symbol name of
+	fiber_switchContext.
+	* libdruntime/core/thread.d: Disable fiber migration tests on PPC.
+	* testsuite/libphobos.thread/fiber_guard_page.d: Set guardPageSize
+	same as stackSize.
+
+2020-04-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* testsuite/lib/libphobos.exp (check_effective_target_linux_pre_2639):
+	Fix KERNEL_VERSION condition.
+
+2020-04-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/94825
+	* configure: Regenerate.
+	* libdruntime/Makefile.am (DRUNTIME_SOURCES_CONFIGURED): Add both
+	switchcontext.S and callwithstack.S if DRUNTIME_CPU_POWERPC.
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/config/powerpc/switchcontext.S: Add !__PPC64__ guards.
+	* libdruntime/config/powerpc64/callwithstack.S: Add __PPC64__ guards.
+	* m4/druntime/cpu.m4 (DRUNTIME_CPU_SOURCES): Define DRUNTIME_CPU_POWER
+	for all powerpc biarchs.  Remove DRUNTIME_CPU_POWER64 conditional.
+
+2020-04-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES_LINUX): Remove
+	core/sys/linux/sys/netinet/tcp.d.
+	* libdruntime/Makefile.in: Regenerate.
+
+2020-04-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure.tgt: Add hppa-*-linux* as a supported target.
+
+2020-04-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure: Regenerate.
+	* configure.tgt: Add power*-*-linux* as a supported target, only
+	building libdruntime.
+	* m4/druntime/cpu.m4 (DRUNTIME_CPU_SOURCES): Add cases for powerpcle
+	and powerpc64le target cpus.
+
+2020-04-21  Mathias Lang  <pro.mathias.lang@gmail.com>
+	    Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure: Regenerate.
+	* configure.ac: Call DRUNTIME_LIBRARIES_UCONTEXT.
+	* m4/druntime/libraries.m4 (DRUNTIME_LIBRARIES_UCONTEXT): Define to
+	search libraries for swapcontext.
+	* libdruntime/gcc/sections/elf_shared.d (getTLSRange): Always use
+	__tls_get_addr on Musl.
+
+2020-04-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure: Regenerate.
+	* configure.ac: Fix option name for --with-libphobos-druntime-only.
+
+2020-04-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure: Regenerate.
+	* configure.ac: Remove DRUNTIME_GC.
+
+2020-04-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/94304
+	* configure: Regenerate.
+	* configure.ac: Add --with-libphobos-druntime-only option and the
+	conditional ENABLE_LIBDRUNTIME_ONLY.
+	* configure.tgt: Define LIBDRUNTIME_ONLY.
+	* src/Makefile.am: Add phobos sources if not ENABLE_LIBDRUNTIME_ONLY.
+	* src/Makefile.in: Regenerate.
+	* testsuite/testsuite_flags.in: Add phobos path if compiling phobos.
+
+2020-04-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* testsuite/libphobos.phobos/phobos.exp: Skip if effective target is
+	not d_runtime_has_std_library.
+	* testsuite/libphobos.phobos_shared/phobos_shared.exp: Likewise.
+
 2020-04-13  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/core/stdc/stdarg.d: Remove run-time va_list template.

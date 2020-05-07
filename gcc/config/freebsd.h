@@ -62,6 +62,27 @@ along with GCC; see the file COPYING3.  If not see
 #define USE_LD_AS_NEEDED 1
 #endif
 
+/* Link -lasan early on the command line.  For -static-libasan, don't link
+   it for -shared link, the executable should be compiled with -static-libasan
+   in that case, and for executable link with --{,no-}whole-archive around
+   it to force everything into the executable.  And similarly for -ltsan
+   and -llsan.  */
+#if defined(HAVE_LD_STATIC_DYNAMIC)
+#undef LIBASAN_EARLY_SPEC
+#define LIBASAN_EARLY_SPEC "%{!shared:libasan_preinit%O%s} " \
+  "%{static-libasan:%{!shared:" \
+  LD_STATIC_OPTION " --whole-archive -lasan --no-whole-archive " \
+  LD_DYNAMIC_OPTION "}}%{!static-libasan:-lasan -lpthread}"
+#undef LIBTSAN_EARLY_SPEC
+#define LIBTSAN_EARLY_SPEC "%{static-libtsan:%{!shared:" \
+  LD_STATIC_OPTION " --whole-archive -ltsan --no-whole-archive " \
+  LD_DYNAMIC_OPTION "}}%{!static-libtsan:-ltsan -lpthread}"
+#undef LIBLSAN_EARLY_SPEC
+#define LIBLSAN_EARLY_SPEC "%{static-liblsan:%{!shared:" \
+  LD_STATIC_OPTION " --whole-archive -llsan --no-whole-archive " \
+  LD_DYNAMIC_OPTION "}}%{!static-liblsan:-llsan -lpthread}"
+#endif
+
 /************************[  Target stuff  ]***********************************/
 
 /* All FreeBSD Architectures support the ELF object file format.  */

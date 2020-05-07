@@ -236,7 +236,7 @@ unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
   DECL_USER_ALIGN (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_PRESERVE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_EXTERNAL (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_GIMPLE_REG_P (expr) = (unsigned) bp_unpack_value (bp, 1);
+  DECL_NOT_GIMPLE_REG_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   SET_DECL_ALIGN (expr, (unsigned) bp_unpack_var_len_unsigned (bp));
 #ifdef ACCEL_COMPILER
   if (DECL_ALIGN (expr) > targetm.absolute_biggest_alignment)
@@ -256,6 +256,7 @@ unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       DECL_PACKED (expr) = (unsigned) bp_unpack_value (bp, 1);
       DECL_NONADDRESSABLE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
       DECL_PADDING_P (expr) = (unsigned) bp_unpack_value (bp, 1);
+      DECL_FIELD_ABI_IGNORED (expr) = (unsigned) bp_unpack_value (bp, 1);
       expr->decl_common.off_align = bp_unpack_value (bp, 8);
     }
 

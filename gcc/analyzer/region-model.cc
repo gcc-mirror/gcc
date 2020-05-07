@@ -788,8 +788,6 @@ poison_kind_to_str (enum poison_kind kind)
     {
     default:
       gcc_unreachable ();
-    case POISON_KIND_UNINIT:
-      return "uninit";
     case POISON_KIND_FREED:
       return "freed";
     case POISON_KIND_POPPED_STACK:
@@ -3204,12 +3202,9 @@ root_region::ensure_stack_region (region_model *model)
 {
   if (m_stack_rid.null_p ())
     {
-      svalue_id uninit_sid
-	= model->add_svalue (new poisoned_svalue (POISON_KIND_UNINIT,
-						  NULL_TREE));
       m_stack_rid
 	= model->add_region (new stack_region (model->get_root_rid (),
-					       uninit_sid));
+					       svalue_id::null ()));
     }
   return m_stack_rid;
 }
@@ -3270,12 +3265,9 @@ root_region::ensure_heap_region (region_model *model)
 {
   if (m_heap_rid.null_p ())
     {
-      svalue_id uninit_sid
-	= model->add_svalue (new poisoned_svalue (POISON_KIND_UNINIT,
-						  NULL_TREE));
       m_heap_rid
 	= model->add_region (new heap_region (model->get_root_rid (),
-					      uninit_sid));
+					      svalue_id::null ()));
     }
   return m_heap_rid;
 }
@@ -3859,7 +3851,6 @@ region_model::dump_summary_of_rep_path_vars (pretty_printer *pp,
   unsigned i;
   path_var *pv;
   auto_vec<tree> unknown_trees;
-  auto_vec<tree> uninit_trees;
   FOR_EACH_VEC_ELT (*rep_path_vars, i, pv)
     {
       if (TREE_CODE (pv->m_tree) == STRING_CST)
@@ -3908,14 +3899,9 @@ region_model::dump_summary_of_rep_path_vars (pretty_printer *pp,
 	  {
 	    poisoned_svalue *poisoned_sval = as_a <poisoned_svalue *> (sval);
 	    enum poison_kind pkind = poisoned_sval->get_poison_kind ();
-	    if (pkind == POISON_KIND_UNINIT)
-	      uninit_trees.safe_push (pv->m_tree);
-	    else
-	      {
-		dump_separator (pp, is_first);
-		dump_tree (pp, pv->m_tree);
-		pp_printf (pp, ": %s", poison_kind_to_str (pkind));
-	      }
+	    dump_separator (pp, is_first);
+	    dump_tree (pp, pv->m_tree);
+	    pp_printf (pp, ": %s", poison_kind_to_str (pkind));
 	  }
 	  break;
 	case SK_SETJMP:
@@ -3928,7 +3914,6 @@ region_model::dump_summary_of_rep_path_vars (pretty_printer *pp,
 
   /* Print unknown and uninitialized values in consolidated form.  */
   dump_vec_of_tree (pp, is_first, unknown_trees, "unknown");
-  dump_vec_of_tree (pp, is_first, uninit_trees, "uninit");
 }
 
 /* Assert that this object is valid.  */
@@ -3949,18 +3934,6 @@ region_model::validate () const
     r->validate (*this);
 
   // TODO: anything else?
-
-  /* Verify that the stack region (if any) has an "uninitialized" value.  */
-  region *stack_region = get_root_region ()->get_stack_region (this);
-  if (stack_region)
-    {
-      svalue_id stack_value_sid = stack_region->get_value_direct ();
-      svalue *stack_value = get_svalue (stack_value_sid);
-      gcc_assert (stack_value->get_kind () == SK_POISONED);
-      poisoned_svalue *subclass = stack_value->dyn_cast_poisoned_svalue ();
-      gcc_assert (subclass);
-      gcc_assert (subclass->get_poison_kind () == POISON_KIND_UNINIT);
-    }
 }
 
 /* Global data for use by svalue_id_cmp_by_constant_svalue.  */
@@ -4087,16 +4060,6 @@ public:
       {
       default:
 	gcc_unreachable ();
-      case POISON_KIND_UNINIT:
-	{
-	  diagnostic_metadata m;
-	  m.add_cwe (457); /* "CWE-457: Use of Uninitialized Variable".  */
-	  return warning_meta (rich_loc, m,
-			       OPT_Wanalyzer_use_of_uninitialized_value,
-			       "use of uninitialized value %qE",
-			       m_expr);
-	}
-	break;
       case POISON_KIND_FREED:
 	{
 	  diagnostic_metadata m;
@@ -4125,9 +4088,6 @@ public:
       {
       default:
 	gcc_unreachable ();
-      case POISON_KIND_UNINIT:
-	return ev.formatted_print ("use of uninitialized value %qE here",
-				   m_expr);
       case POISON_KIND_FREED:
 	return ev.formatted_print ("use after %<free%> of %qE here",
 				   m_expr);
@@ -6488,10 +6448,13 @@ region_id
 region_model::add_region_for_type (region_id parent_rid, tree type,
 				   region_model_context *ctxt)
 {
-  gcc_assert (TYPE_P (type));
+  if (type)
+    {
+      gcc_assert (TYPE_P (type));
 
-  if (region *new_region = make_region_for_type (parent_rid, type))
-    return add_region (new_region);
+      if (region *new_region = make_region_for_type (parent_rid, type))
+	return add_region (new_region);
+    }
 
   /* If we can't handle TYPE, return a placeholder region, and stop
      exploring this path.  */
@@ -7578,14 +7541,10 @@ test_dump ()
 
   ASSERT_DUMP_EQ (model, false,
 		  "r0: {kind: `root', parent: null, sval: null}\n"
-		  "|-stack: r1: {kind: `stack', parent: r0, sval: sv0}\n"
-		  "|  |: sval: sv0: {poisoned: uninit}\n"
+		  "|-stack: r1: {kind: `stack', parent: r0, sval: null}\n"
 		  "|-globals: r2: {kind: `globals', parent: r0, sval: null, map: {}}\n"
-		  "`-heap: r3: {kind: `heap', parent: r0, sval: sv1}\n"
-		  "  |: sval: sv1: {poisoned: uninit}\n"
+		  "`-heap: r3: {kind: `heap', parent: r0, sval: null}\n"
 		  "svalues:\n"
-		  "  sv0: {poisoned: uninit}\n"
-		  "  sv1: {poisoned: uninit}\n"
 		  "constraint manager:\n"
 		  "  equiv classes:\n"
 		  "  constraints:\n");
@@ -7798,15 +7757,6 @@ test_svalue_equality ()
   ASSERT_NE (cst_int_42->hash (), cst_int_0->hash ());
   ASSERT_NE (*cst_int_42, *cst_int_0);
 
-  svalue *uninit = new poisoned_svalue (POISON_KIND_UNINIT, NULL_TREE);
-  svalue *freed = new poisoned_svalue (POISON_KIND_FREED, NULL_TREE);
-
-  ASSERT_EQ (uninit->hash (), uninit->hash ());
-  ASSERT_EQ (*uninit, *uninit);
-
-  ASSERT_NE (uninit->hash (), freed->hash ());
-  ASSERT_NE (*uninit, *freed);
-
   svalue *unknown_0 = new unknown_svalue (ptr_type_node);
   svalue *unknown_1 = new unknown_svalue (ptr_type_node);
   ASSERT_EQ (unknown_0->hash (), unknown_0->hash ());
@@ -7815,24 +7765,16 @@ test_svalue_equality ()
 
   /* Comparisons between different kinds of svalue.  */
   ASSERT_NE (*ptr_to_r0, *cst_int_42);
-  ASSERT_NE (*ptr_to_r0, *uninit);
   ASSERT_NE (*ptr_to_r0, *unknown_0);
   ASSERT_NE (*cst_int_42, *ptr_to_r0);
-  ASSERT_NE (*cst_int_42, *uninit);
   ASSERT_NE (*cst_int_42, *unknown_0);
-  ASSERT_NE (*uninit, *ptr_to_r0);
-  ASSERT_NE (*uninit, *cst_int_42);
-  ASSERT_NE (*uninit, *unknown_0);
   ASSERT_NE (*unknown_0, *ptr_to_r0);
   ASSERT_NE (*unknown_0, *cst_int_42);
-  ASSERT_NE (*unknown_0, *uninit);
 
   delete ptr_to_r0;
   delete ptr_to_r1;
   delete cst_int_42;
   delete cst_int_0;
-  delete uninit;
-  delete freed;
   delete unknown_0;
   delete unknown_1;
 }

@@ -24,10 +24,7 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-
-/* Defined in common/config/aarch64/aarch64-common.c.  */
-std::string aarch64_get_extension_string_for_isa_flags (unsigned long,
-							unsigned long);
+#include "aarch64-protos.h"
 
 struct aarch64_arch_extension
 {

@@ -595,7 +595,7 @@ namespace __debug
     set(initializer_list<_Key>, _Allocator)
     -> set<_Key, less<_Key>, _Allocator>;
 
-#endif
+#endif // deduction guides
 
   template<typename _Key, typename _Compare, typename _Allocator>
     inline bool
@@ -603,6 +603,13 @@ namespace __debug
 	       const set<_Key, _Compare, _Allocator>& __rhs)
     { return __lhs._M_base() == __rhs._M_base(); }
 
+#if __cpp_lib_three_way_comparison
+  template<typename _Key, typename _Compare, typename _Alloc>
+    inline __detail::__synth3way_t<_Key>
+    operator<=>(const set<_Key, _Compare, _Alloc>& __lhs,
+		const set<_Key, _Compare, _Alloc>& __rhs)
+    { return __lhs._M_base() <=> __rhs._M_base(); }
+#else
   template<typename _Key, typename _Compare, typename _Allocator>
     inline bool
     operator!=(const set<_Key, _Compare, _Allocator>& __lhs,
@@ -632,6 +639,7 @@ namespace __debug
     operator>(const set<_Key, _Compare, _Allocator>& __lhs,
 	      const set<_Key, _Compare, _Allocator>& __rhs)
     { return __lhs._M_base() > __rhs._M_base(); }
+#endif // three-way comparison
 
   template<typename _Key, typename _Compare, typename _Allocator>
     void

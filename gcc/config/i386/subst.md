@@ -57,8 +57,6 @@
 (define_subst_attr "mask_avx512vl_condition" "mask" "1" "TARGET_AVX512VL")
 (define_subst_attr "mask_avx512bw_condition" "mask" "1" "TARGET_AVX512BW")
 (define_subst_attr "mask_avx512dq_condition" "mask" "1" "TARGET_AVX512DQ")
-(define_subst_attr "store_mask_constraint" "mask" "vm" "v")
-(define_subst_attr "store_mask_predicate" "mask" "nonimmediate_operand" "register_operand")
 (define_subst_attr "mask_prefix" "mask" "vex" "evex")
 (define_subst_attr "mask_prefix2" "mask" "maybe_vex" "evex")
 (define_subst_attr "mask_prefix3" "mask" "orig,vex" "evex,evex")

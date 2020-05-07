@@ -1477,6 +1477,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return atomic_fetch_xor_explicit(__a, __i, memory_order_seq_cst); }
 
 #if __cplusplus > 201703L
+#define __cpp_lib_atomic_float 201711L
   template<>
     struct atomic<float> : __atomic_float<float>
     {

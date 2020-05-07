@@ -41,6 +41,7 @@
 #include <bits/invoke.h>
 #if __cplusplus > 201703L
 # include <compare>
+# define __cpp_lib_constexpr_tuple 201811L
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)

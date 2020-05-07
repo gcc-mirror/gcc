@@ -66,6 +66,7 @@ d_decl_context (Dsymbol *dsym)
 {
   Dsymbol *parent = dsym;
   Declaration *decl = dsym->isDeclaration ();
+  AggregateDeclaration *ad = dsym->isAggregateDeclaration ();
 
   while ((parent = parent->toParent2 ()))
     {
@@ -74,7 +75,8 @@ d_decl_context (Dsymbol *dsym)
 	 but only for extern(D) symbols.  */
       if (parent->isModule ())
 	{
-	  if (decl != NULL && decl->linkage != LINKd)
+	  if ((decl != NULL && decl->linkage != LINKd)
+	      || (ad != NULL && ad->classKind != ClassKind::d))
 	    return NULL_TREE;
 
 	  return build_import_decl (parent);
@@ -172,16 +174,12 @@ declaration_type (Declaration *decl)
    Return TRUE if parameter ARG is a reference type.  */
 
 bool
-argument_reference_p (Parameter *arg)
+parameter_reference_p (Parameter *arg)
 {
   Type *tb = arg->type->toBasetype ();
 
   /* Parameter is a reference type.  */
   if (tb->ty == Treference || arg->storageClass & (STCout | STCref))
-    return true;
-
-  tree type = build_ctype (arg->type);
-  if (TREE_ADDRESSABLE (type))
     return true;
 
   return false;
@@ -190,7 +188,7 @@ argument_reference_p (Parameter *arg)
 /* Returns the real type for parameter ARG.  */
 
 tree
-type_passed_as (Parameter *arg)
+parameter_type (Parameter *arg)
 {
   /* Lazy parameters are converted to delegates.  */
   if (arg->storageClass & STClazy)
@@ -211,9 +209,18 @@ type_passed_as (Parameter *arg)
   tree type = build_ctype (arg->type);
 
   /* Parameter is passed by reference.  */
-  if (argument_reference_p (arg))
+  if (parameter_reference_p (arg))
     return build_reference_type (type);
 
+  /* Pass non-POD structs by invisible reference.  */
+  if (TREE_ADDRESSABLE (type))
+    {
+      type = build_reference_type (type);
+      /* There are no other pointer to this temporary.  */
+      type = build_qualified_type (type, TYPE_QUAL_RESTRICT);
+    }
+
+  /* Front-end has already taken care of type promotions.  */
   return type;
 }
 
@@ -612,7 +619,12 @@ build_target_expr (tree decl, tree exp)
 tree
 force_target_expr (tree exp)
 {
-  tree decl = create_temporary_var (TREE_TYPE (exp));
+  tree decl = build_decl (input_location, VAR_DECL, NULL_TREE,
+			  TREE_TYPE (exp));
+  DECL_CONTEXT (decl) = current_function_decl;
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
+  layout_decl (decl, 0);
 
   return build_target_expr (decl, exp);
 }
@@ -1759,66 +1771,6 @@ array_bounds_check (void)
     }
 }
 
-/* Return an undeclared local temporary of type TYPE
-   for use with BIND_EXPR.  */
-
-tree
-create_temporary_var (tree type)
-{
-  tree decl = build_decl (input_location, VAR_DECL, NULL_TREE, type);
-
-  DECL_CONTEXT (decl) = current_function_decl;
-  DECL_ARTIFICIAL (decl) = 1;
-  DECL_IGNORED_P (decl) = 1;
-  layout_decl (decl, 0);
-
-  return decl;
-}
-
-/* Return an undeclared local temporary OUT_VAR initialized
-   with result of expression EXP.  */
-
-tree
-maybe_temporary_var (tree exp, tree *out_var)
-{
-  tree t = exp;
-
-  /* Get the base component.  */
-  while (TREE_CODE (t) == COMPONENT_REF)
-    t = TREE_OPERAND (t, 0);
-
-  if (!DECL_P (t) && !REFERENCE_CLASS_P (t))
-    {
-      *out_var = create_temporary_var (TREE_TYPE (exp));
-      DECL_INITIAL (*out_var) = exp;
-      return *out_var;
-    }
-  else
-    {
-      *out_var = NULL_TREE;
-      return exp;
-    }
-}
-
-/* Builds a BIND_EXPR around BODY for the variables VAR_CHAIN.  */
-
-tree
-bind_expr (tree var_chain, tree body)
-{
-  /* Only handles one var.  */
-  gcc_assert (TREE_CHAIN (var_chain) == NULL_TREE);
-
-  if (DECL_INITIAL (var_chain))
-    {
-      tree ini = build_assign (INIT_EXPR, var_chain, DECL_INITIAL (var_chain));
-      DECL_INITIAL (var_chain) = NULL_TREE;
-      body = compound_expr (ini, body);
-    }
-
-  return d_save_expr (build3 (BIND_EXPR, TREE_TYPE (body),
-			      var_chain, body, NULL_TREE));
-}
-
 /* Returns the TypeFunction class for Type T.
    Assumes T is already ->toBasetype().  */
 
@@ -1956,6 +1908,23 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 	    {
 	      tree t = build_constructor (TREE_TYPE (targ), NULL);
 	      targ = build2 (COMPOUND_EXPR, TREE_TYPE (t), targ, t);
+	    }
+
+	  /* Parameter is a struct passed by invisible reference.  */
+	  if (TREE_ADDRESSABLE (TREE_TYPE (targ)))
+	    {
+	      Type *t = arg->type->toBasetype ();
+	      gcc_assert (t->ty == Tstruct);
+	      StructDeclaration *sd = ((TypeStruct *) t)->sym;
+
+	      /* Nested structs also have ADDRESSABLE set, but if the type has
+		 neither a copy constructor nor a destructor available, then we
+		 need to take care of copying its value before passing it.  */
+	      if (arg->op == TOKstructliteral || (!sd->postblit && !sd->dtor))
+		targ = force_target_expr (targ);
+
+	      targ = convert (build_reference_type (TREE_TYPE (targ)),
+			      build_address (targ));
 	    }
 
 	  vec_safe_push (args, targ);

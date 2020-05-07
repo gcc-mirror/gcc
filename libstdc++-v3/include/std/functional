@@ -76,7 +76,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201703L
 # define __cpp_lib_invoke 201411L
 # if __cplusplus > 201703L
-#  define __cpp_lib_constexpr_invoke 201907L
+#  define __cpp_lib_constexpr_functional 201907L
 # endif
 
   /// Invoke a callable object.

@@ -51,15 +51,6 @@ foreach offload_target [concat [split $offload_targets ","] "disable"] {
 	    unsupported "$subdir $offload_target offloading"
 	    continue
 	}
-	gcn {
-	    if { ![check_effective_target_openacc_amdgcn_accel_present] } {
-		# Don't bother; execution testing is going to FAIL.
-		untested "$subdir $offload_target offloading: supported, but hardware not accessible"
-		continue
-	    }
-
-	    set acc_mem_shared 0
-	}
 	host {
 	    set acc_mem_shared 1
 	}
@@ -75,6 +66,15 @@ foreach offload_target [concat [split $offload_targets ","] "disable"] {
 
 	    # Where timer.h lives
 	    lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/libgomp.oacc-c-c++-common"
+
+	    set acc_mem_shared 0
+	}
+	radeon {
+	    if { ![check_effective_target_openacc_radeon_accel_present] } {
+		# Don't bother; execution testing is going to FAIL.
+		untested "$subdir $offload_target offloading: supported, but hardware not accessible"
+		continue
+	    }
 
 	    set acc_mem_shared 0
 	}

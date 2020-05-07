@@ -1236,28 +1236,33 @@ init_num_threads (void)
 
 /* FIXME: once using -std=c++11, we can use std::thread::hardware_concurrency.  */
 
-/* Return true when a jobserver is running and can accept a job.  */
+/* Test and return reason why a jobserver cannot be detected.  */
 
-static bool
+static const char *
 jobserver_active_p (void)
 {
+  #define JS_PREFIX "jobserver is not available: "
+  #define JS_NEEDLE "--jobserver-auth="
+
   const char *makeflags = getenv ("MAKEFLAGS");
   if (makeflags == NULL)
-    return false;
+    return JS_PREFIX "%<MAKEFLAGS%> environment variable is unset";
 
-  const char *needle = "--jobserver-auth=";
-  const char *n = strstr (makeflags, needle);
+  const char *n = strstr (makeflags, JS_NEEDLE);
   if (n == NULL)
-    return false;
+    return JS_PREFIX "%<" JS_NEEDLE "%> is not present in %<MAKEFLAGS%>";
 
   int rfd = -1;
   int wfd = -1;
 
-  return (sscanf (n + strlen (needle), "%d,%d", &rfd, &wfd) == 2
-	  && rfd > 0
-	  && wfd > 0
-	  && is_valid_fd (rfd)
-	  && is_valid_fd (wfd));
+  if (sscanf (n + strlen (JS_NEEDLE), "%d,%d", &rfd, &wfd) == 2
+      && rfd > 0
+      && wfd > 0
+      && is_valid_fd (rfd)
+      && is_valid_fd (wfd))
+    return NULL;
+  else
+    return JS_PREFIX "cannot access %<" JS_NEEDLE "%> file descriptors";
 }
 
 /* Execute gcc. ARGC is the number of arguments. ARGV contains the arguments. */
@@ -1473,10 +1478,16 @@ run_gcc (unsigned argc, char *argv[])
       auto_parallel = 0;
       parallel = 0;
     }
-  else if (!jobserver && jobserver_active_p ())
+  else
     {
-      parallel = 1;
-      jobserver = 1;
+      const char *jobserver_error = jobserver_active_p ();
+      if (jobserver && jobserver_error != NULL)
+	warning (0, jobserver_error);
+      else if (!jobserver && jobserver_error == NULL)
+	{
+	  parallel = 1;
+	  jobserver = 1;
+	}
     }
 
   if (linker_output)
@@ -1883,23 +1894,32 @@ cont:
 	      putenv (xstrdup ("MAKEFLAGS="));
 	      putenv (xstrdup ("MFLAGS="));
 	    }
-	  new_argv[0] = getenv ("MAKE");
-	  if (!new_argv[0])
-	    new_argv[0] = "make";
-	  new_argv[1] = "-f";
-	  new_argv[2] = makefile;
-	  i = 3;
+
+	  char **make_argv = buildargv (getenv ("MAKE"));
+	  if (make_argv)
+	    {
+	      for (unsigned argc = 0; make_argv[argc]; argc++)
+		obstack_ptr_grow (&argv_obstack, make_argv[argc]);
+	    }
+	  else
+	    obstack_ptr_grow (&argv_obstack, "make");
+
+	  obstack_ptr_grow (&argv_obstack, "-f");
+	  obstack_ptr_grow (&argv_obstack, makefile);
 	  if (!jobserver)
 	    {
 	      snprintf (jobs, 31, "-j%ld",
 			auto_parallel ? nthreads_var : parallel);
-	      new_argv[i++] = jobs;
+	      obstack_ptr_grow (&argv_obstack, jobs);
 	    }
-	  new_argv[i++] = "all";
-	  new_argv[i++] = NULL;
+	  obstack_ptr_grow (&argv_obstack, "all");
+	  obstack_ptr_grow (&argv_obstack, NULL);
+	  new_argv = XOBFINISH (&argv_obstack, const char **);
+
 	  pex = collect_execute (new_argv[0], CONST_CAST (char **, new_argv),
 				 NULL, NULL, PEX_SEARCH, false);
 	  do_wait (new_argv[0], pex);
+	  freeargv (make_argv);
 	  maybe_unlink (makefile);
 	  makefile = NULL;
 	  for (i = 0; i < nr; ++i)

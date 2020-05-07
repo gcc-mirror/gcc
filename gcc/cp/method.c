@@ -2416,16 +2416,13 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 tree
 get_defaulted_eh_spec (tree decl, tsubst_flags_t complain)
 {
+  /* For DECL_MAYBE_DELETED this should already have been handled by
+     synthesize_method.  */
+  gcc_assert (!DECL_MAYBE_DELETED (decl));
+
   if (DECL_CLONED_FUNCTION_P (decl))
     decl = DECL_CLONED_FUNCTION (decl);
   special_function_kind sfk = special_function_p (decl);
-  if (sfk == sfk_comparison)
-    {
-      /* We're in synthesize_method. Start with NULL_TREE, build_comparison_op
-	 will adjust as needed.  */
-      gcc_assert (decl == current_function_decl);
-      return NULL_TREE;
-    }
   tree ctype = DECL_CONTEXT (decl);
   tree parms = FUNCTION_FIRST_USER_PARMTYPE (decl);
   tree parm_type = TREE_VALUE (parms);
@@ -2947,7 +2944,7 @@ defaulted_late_check (tree fn)
     {
       /* If the function was declared constexpr, check that the definition
 	 qualifies.  Otherwise we can define the function lazily.  */
-      if (DECL_DECLARED_CONSTEXPR_P (fn))
+      if (DECL_DECLARED_CONSTEXPR_P (fn) && !DECL_INITIAL (fn))
 	synthesize_method (fn);
       return;
     }
