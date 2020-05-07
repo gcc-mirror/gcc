@@ -1,3 +1,10 @@
+2020-05-07  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/other/operator1.C: Adjust expected message.
+	* g++.dg/overload/operator2.C: Likewise.
+	* g++.dg/template/error30.C: Likewise.
+	* g++.old-deja/g++.jason/operator.C: Likewise.
+
 2020-05-07  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/94703

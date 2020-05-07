@@ -160,7 +160,7 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
      -- if T is a scalar type, the storage is set to the value of zero
 	converted to T.
 
-     -- if T is a non-union class type, the storage for each nonstatic
+     -- if T is a non-union class type, the storage for each non-static
 	data member and each base-class subobject is zero-initialized.
 
      -- if T is a union type, the storage for its first data member is
@@ -2221,8 +2221,8 @@ build_offset_ref (tree type, tree member, bool address_p,
       /* If MEMBER is non-static, then the program has fallen afoul of
 	 [expr.prim]:
 
-	   An id-expression that denotes a nonstatic data member or
-	   nonstatic member function of a class can only be used:
+	   An id-expression that denotes a non-static data member or
+	   non-static member function of a class can only be used:
 
 	   -- as part of a class member access (_expr.ref_) in which the
 	   object-expression refers to the member's class or a class
@@ -2230,8 +2230,8 @@ build_offset_ref (tree type, tree member, bool address_p,
 
 	   -- to form a pointer to member (_expr.unary.op_), or
 
-	   -- in the body of a nonstatic member function of that class or
-	   of a class derived from that class (_class.mfct.nonstatic_), or
+	   -- in the body of a non-static member function of that class or
+	   of a class derived from that class (_class.mfct.non-static_), or
 
 	   -- in a mem-initializer for a constructor for that class or for
 	   a class derived from that class (_class.base.init_).  */

@@ -14391,7 +14391,7 @@ grok_op_properties (tree decl, bool complain)
 	  || operator_code == ARRAY_REF
 	  || operator_code == NOP_EXPR)
 	{
-	  error_at (loc, "%qD must be a nonstatic member function", decl);
+	  error_at (loc, "%qD must be a non-static member function", decl);
 	  return false;
 	}
 

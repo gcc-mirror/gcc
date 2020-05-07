@@ -1,3 +1,8 @@
+2020-05-07  Marek Polacek  <polacek@redhat.com>
+
+	* decl.c (grok_op_properties): Fix spelling of non-static.
+	* typeck.c (build_class_member_access_expr): Likewise.
+
 2020-05-07  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/94703
