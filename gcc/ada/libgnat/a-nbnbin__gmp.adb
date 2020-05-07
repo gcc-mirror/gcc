@@ -330,7 +330,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- From_String --
    -----------------
 
-   function From_String (Arg : String) return Valid_Big_Integer is
+   function From_String (Arg : String) return Big_Integer is
       function mpz_set_str
         (this : access mpz_t;
          str  : System.Address;
@@ -405,7 +405,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- Put_Image --
    ---------------
 
-   procedure Put_Image (S : in out Sink'Class; V : Big_Real) is
+   procedure Put_Image (S : in out Sink'Class; V : Big_Integer) is
       --  This is implemented in terms of To_String. It might be more elegant
       --  and more efficient to do it the other way around, but this is the
       --  most expedient implementation for now.

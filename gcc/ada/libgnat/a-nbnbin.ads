@@ -58,10 +58,11 @@ is
              then Big_Natural >= To_Big_Integer (0)),
           Predicate_Failure => (raise Constraint_Error);
 
-   function In_Range (Arg, Low, High : Big_Integer) return Boolean is
-     ((Low <= Arg) and (Arg <= High));
+   function In_Range
+     (Arg : Valid_Big_Integer; Low, High : Big_Integer) return Boolean
+   is (Low <= Arg and Arg <= High);
 
-   function To_Integer (Arg : Big_Integer) return Integer
+   function To_Integer (Arg : Valid_Big_Integer) return Integer
      with Pre => In_Range (Arg,
                            Low  => To_Big_Integer (Integer'First),
                            High => To_Big_Integer (Integer'Last))
@@ -73,7 +74,7 @@ is
 
       function To_Big_Integer (Arg : Int) return Valid_Big_Integer;
 
-      function From_Big_Integer (Arg : Big_Integer) return Int
+      function From_Big_Integer (Arg : Valid_Big_Integer) return Int
         with Pre => In_Range (Arg,
                               Low  => To_Big_Integer (Int'First),
                               High => To_Big_Integer (Int'Last))
@@ -87,7 +88,7 @@ is
 
       function To_Big_Integer (Arg : Int) return Valid_Big_Integer;
 
-      function From_Big_Integer (Arg : Big_Integer) return Int
+      function From_Big_Integer (Arg : Valid_Big_Integer) return Int
         with Pre => In_Range (Arg,
                               Low  => To_Big_Integer (Int'First),
                               High => To_Big_Integer (Int'Last))
