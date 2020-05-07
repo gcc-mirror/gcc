@@ -1,3 +1,8 @@
+2020-05-07  Martin Liska  <mliska@suse.cz>
+
+	* lto-wrapper.c: Split arguments of MAKE environment
+	variable.
+
 2020-05-07  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_atomic_assign_expand_fenv): Use
