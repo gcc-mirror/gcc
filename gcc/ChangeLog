@@ -1,3 +1,9 @@
+2020-05-07  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_atomic_assign_expand_fenv): Use
+	TARGET_EXPR instead of MODIFY_EXPR for the first assignments to
+	fenv_var and new_fenv_var.
+
 2020-05-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93069
