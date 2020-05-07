@@ -1673,9 +1673,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 
       TREE_USED (sym->backend_decl) = 1;
       if (sym->attr.assign && GFC_DECL_ASSIGN (sym->backend_decl) == 0)
-	{
-	  gfc_add_assign_aux_vars (sym);
-	}
+	gfc_add_assign_aux_vars (sym);
 
       if ((sym->attr.dimension || IS_CLASS_ARRAY (sym))
 	  && DECL_LANG_SPECIFIC (sym->backend_decl)
@@ -1688,6 +1686,10 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 
      return sym->backend_decl;
     }
+
+  if (sym->result == sym && sym->attr.assign
+      && GFC_DECL_ASSIGN (sym->backend_decl) == 0)
+    gfc_add_assign_aux_vars (sym);
 
   if (sym->backend_decl)
     return sym->backend_decl;
@@ -3141,6 +3143,9 @@ gfc_get_fake_result_decl (gfc_symbol * sym, int parent_flag)
     parent_fake_result_decl = build_tree_list (NULL, decl);
   else
     current_fake_result_decl = build_tree_list (NULL, decl);
+
+  if (sym->attr.assign)
+    DECL_LANG_SPECIFIC (decl) = DECL_LANG_SPECIFIC (sym->backend_decl);
 
   return decl;
 }
