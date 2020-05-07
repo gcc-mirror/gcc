@@ -2512,7 +2512,7 @@ build_class_member_access_expr (cp_expr object, tree member,
       if (complain & tf_error)
 	{
 	  if (TREE_CODE (member) == FIELD_DECL)
-	    error ("invalid use of nonstatic data member %qE", member);
+	    error ("invalid use of non-static data member %qE", member);
 	  else
 	    error ("%qD is not a member of %qT", member, object_type);
 	}

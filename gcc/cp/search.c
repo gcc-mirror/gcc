@@ -631,7 +631,7 @@ protected_accessible_p (tree decl, tree derived, tree type, tree otype)
   /* [class.protected]
 
      When a friend or a member function of a derived class references
-     a protected nonstatic member of a base class, an access check
+     a protected non-static member of a base class, an access check
      applies in addition to those described earlier in clause
      _class.access_) Except when forming a pointer to member
      (_expr.unary.op_), the access must be through a pointer to,
@@ -921,11 +921,11 @@ struct lookup_field_info {
    of that class.
 
    [class.member.lookup]:If the resulting set of declarations are not all
-   from sub-objects of the same type, or the set has a  nonstatic  member
+   from sub-objects of the same type, or the set has a non-static member
    and  includes members from distinct sub-objects, there is an ambiguity
    and the program is ill-formed.
 
-   This function checks that T contains no nonstatic members.  */
+   This function checks that T contains no non-static members.  */
 
 int
 shared_member_p (tree t)

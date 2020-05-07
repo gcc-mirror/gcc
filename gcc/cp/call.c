@@ -8697,7 +8697,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	      (DECL_CONTEXT (fn), BINFO_TYPE (cand->conversion_path)))) 
 	flags |= LOOKUP_NONVIRTUAL;
 
-      /* [class.mfct.nonstatic]: If a nonstatic member function of a class
+      /* [class.mfct.non-static]: If a non-static member function of a class
 	 X is called for an object that is not of type X, or of a type
 	 derived from X, the behavior is undefined.
 
