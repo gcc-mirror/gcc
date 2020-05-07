@@ -306,7 +306,7 @@ static bool aarch_macro_fusion_pair_p (rtx_insn*, rtx_insn*);
 static int arm_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 					   tree vectype,
 					   int misalign ATTRIBUTE_UNUSED);
-static unsigned arm_add_stmt_cost (void *data, int count,
+static unsigned arm_add_stmt_cost (vec_info *vinfo, void *data, int count,
 				   enum vect_cost_for_stmt kind,
 				   struct _stmt_vec_info *stmt_info,
 				   int misalign,
@@ -12131,7 +12131,7 @@ arm_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 /* Implement targetm.vectorize.add_stmt_cost.  */
 
 static unsigned
-arm_add_stmt_cost (class vec_info *vinfo, void *data, int count,
+arm_add_stmt_cost (vec_info *vinfo, void *data, int count,
 		   enum vect_cost_for_stmt kind,
 		   struct _stmt_vec_info *stmt_info, int misalign,
 		   enum vect_cost_model_location where)
