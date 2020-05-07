@@ -102,9 +102,6 @@ static tree h8300_handle_tiny_data_attribute (tree *, tree, tree, int, bool *);
 static void h8300_print_operand_address (FILE *, machine_mode, rtx);
 static void h8300_print_operand (FILE *, rtx, int);
 static bool h8300_print_operand_punct_valid_p (unsigned char code);
-#ifndef OBJECT_FORMAT_ELF
-static void h8300_asm_named_section (const char *, unsigned int, tree);
-#endif
 static int h8300_register_move_cost (machine_mode, reg_class_t, reg_class_t);
 static int h8300_and_costs (rtx);
 static int h8300_shift_costs (rtx);
@@ -322,14 +319,6 @@ h8300_option_override (void)
   static const char *const h8_push_ops[2] = { "push" , "push.l" };
   static const char *const h8_pop_ops[2]  = { "pop"  , "pop.l"  };
   static const char *const h8_mov_ops[2]  = { "mov.w", "mov.l"  };
-
-#ifndef OBJECT_FORMAT_ELF
-  if (TARGET_H8300SX)
-    {
-      error ("%<-msx%> is not supported in coff");
-      target_flags |= MASK_H8300S;
-    }
-#endif
 
   if (TARGET_H8300)
     {
@@ -5456,16 +5445,6 @@ h8300_reorg (void)
   if (flag_delayed_branch)
     shorten_branches (get_insns ());
 }
-
-#ifndef OBJECT_FORMAT_ELF
-static void
-h8300_asm_named_section (const char *name, unsigned int flags ATTRIBUTE_UNUSED,
-			 tree decl)
-{
-  /* ??? Perhaps we should be using default_coff_asm_named_section.  */
-  fprintf (asm_out_file, "\t.section %s\n", name);
-}
-#endif /* ! OBJECT_FORMAT_ELF */
 
 /* Nonzero if X is a constant address suitable as an 8-bit absolute,
    which is a special case of the 'R' operand.  */
