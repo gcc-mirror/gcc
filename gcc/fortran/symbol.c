@@ -2000,9 +2000,12 @@ gfc_add_type (gfc_symbol *sym, gfc_typespec *ts, locus *where)
 	gfc_error ("Symbol %qs at %L conflicts with symbol from module %qs, "
 		   "use-associated at %L", sym->name, where, sym->module,
 		   &sym->declared_at);
+      else if (sym->attr.function && sym->attr.result)
+	gfc_error ("Symbol %qs at %L already has basic type of %s",
+		   sym->ns->proc_name->name, where, gfc_basic_typename (type));
       else
 	gfc_error ("Symbol %qs at %L already has basic type of %s", sym->name,
-		 where, gfc_basic_typename (type));
+		   where, gfc_basic_typename (type));
       return false;
     }
 
@@ -2020,7 +2023,7 @@ gfc_add_type (gfc_symbol *sym, gfc_typespec *ts, locus *where)
       || (flavor == FL_PROCEDURE && sym->attr.subroutine)
       || flavor == FL_DERIVED || flavor == FL_NAMELIST)
     {
-      gfc_error ("Symbol %qs at %L cannot have a type", sym->name, where);
+      gfc_error ("Symbol %qs at %L cannot have a type", sym->ns->proc_name->name, where);
       return false;
     }
 

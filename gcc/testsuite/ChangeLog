@@ -1,3 +1,14 @@
+2020-05-20  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	Backport from master
+	2020-05-20  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/39695
+	* gfortran.dg/pr39695_1.f90: New test.
+	* gfortran.dg/pr39695_2.f90: New test.
+	* gfortran.dg/pr39695_3.f90: New test.
+	* gfortran.dg/pr39695_4.f90: New test.
+
 2020-05-18  Doug Rupp  <rupp@adacore.com>
 
 	* gcc.target/powerpc/pr71763.c: Require powerpc_vsx_ok.
