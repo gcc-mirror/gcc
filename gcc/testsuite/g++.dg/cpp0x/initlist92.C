@@ -23,7 +23,7 @@ bool Test4(std::initializer_list<std::string>);
 
 int main () 
 {
-  ( Test1({"false"}) );	// { dg-error "narrowing" "" { target c++2a } }
+  ( Test1({"false"}) );	// { dg-error "narrowing" }
   ( Test2({123}) );
   ( Test3({456}) );
   ( Test4({"false"}) );
