@@ -1,3 +1,13 @@
+2020-05-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/setbc.h: New.
+	* gcc.target/powerpc/setbceq.c: New.
+	* gcc.target/powerpc/setbcge.c: New.
+	* gcc.target/powerpc/setbcgt.c: New.
+	* gcc.target/powerpc/setbcle.c: New.
+	* gcc.target/powerpc/setbclt.c: New.
+	* gcc.target/powerpc/setbcne.c: New.
+
 2020-05-07  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/94817
