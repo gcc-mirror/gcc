@@ -3018,6 +3018,140 @@ add_sysrooted_hdrs_prefix (struct path_prefix *pprefix, const char *prefix,
 	      require_machine_suffix, os_multilib);
 }
 
+struct command
+{
+  const char *prog;		/* program name.  */
+  const char **argv;		/* vector of args.  */
+};
+
+/* Check if arg is a call to a compiler. Return false if not, true if yes.  */
+
+static bool is_compiler (const char *arg)
+{
+  static const char *const compilers[] = {"cc1", "cc1plus", "f771"};
+  const char* ptr = arg;
+
+  size_t i;
+
+  /* Jump to last '/' of string.  */
+  while (*arg)
+    if (*arg++ == '/')
+      ptr = arg;
+
+  /* Look if current character seems valid.  */
+  gcc_assert (!(*ptr == '\0' ||  *ptr == '/'));
+
+  for (i = 0; i < ARRAY_SIZE (compilers); i++)
+    {
+      if (!strcmp (ptr, compilers[i]))
+	return true;
+    }
+
+  return false;
+}
+
+/* Get argv[] array length.  */
+
+static int get_number_of_args (const char *argv[])
+{
+  int argc;
+
+  for (argc = 0; argv[argc] != NULL; argc++)
+    ;
+
+  return argc;
+}
+
+/* This is used to store new argv arrays created dinamically to avoid memory
+ * leaks.  */
+
+class extra_arg_storer
+{
+  public:
+
+    /* Initialize the vec with a default size.  */
+
+    extra_arg_storer ()
+      {
+	extra_args.create (64);
+      }
+
+    /* Create new array of strings of size N.  */
+    const char **create_new (size_t n)
+      {
+	const char **ret = XNEWVEC (const char *, n);
+	extra_args.safe_push (ret);
+	return ret;
+      }
+
+    ~extra_arg_storer ()
+      {
+	release ();
+      }
+
+
+  private:
+
+    /* Release all allocated strings.  */
+    void release ()
+      {
+	size_t i;
+
+	for (i = 0; i < extra_args.length (); i++)
+	  free (extra_args[i]);
+	extra_args.release ();
+      }
+
+    /* Data structure to hold all arrays.  */
+    vec<const char **> extra_args;
+};
+
+/* Append -fsplit-output=<tempfile> to all calls to compilers.  */
+
+static void append_split_outputs (extra_arg_storer *storer,
+				  struct command *commands, int n_commands)
+{
+  int i;
+
+  for (i = 0; i < n_commands; i++)
+    {
+      const char **argv;
+      int argc;
+
+      if (!is_compiler (commands[i].prog))
+	continue;
+
+      argc = get_number_of_args (commands[i].argv);
+      argv = storer->create_new (argc + 2);
+
+      memcpy (argv, commands[i].argv, argc * sizeof (const char *));
+      argv[argc++] = "-fsplit-outputs=test.txt";
+      argv[argc]   = NULL;
+
+      commands[i].argv = argv;
+
+    }
+}
+
+DEBUG_FUNCTION void
+print_command (struct command *command)
+{
+  const char **argv;
+
+  for (argv = command->argv; *argv != NULL; argv++)
+    fprintf (stdout, "%s ", *argv);
+  fputc ('\n', stdout);
+}
+
+DEBUG_FUNCTION void
+print_commands (int n, struct command *commands)
+{
+  int i;
+
+  for (i = 0; i < n; i++)
+    print_command (&commands[i]);
+}
+
 
 /* Execute the command specified by the arguments on the current line of spec.
    When using pipes, this includes several piped-together commands
@@ -3032,14 +3166,10 @@ execute (void)
   int n_commands;		/* # of command.  */
   char *string;
   struct pex_obj *pex;
-  struct command
-  {
-    const char *prog;		/* program name.  */
-    const char **argv;		/* vector of args.  */
-  };
   const char *arg;
 
   struct command *commands;	/* each command buffer with above info.  */
+  extra_arg_storer extra_args;
 
   gcc_assert (!processing_spec_function);
 
@@ -3195,6 +3325,8 @@ execute (void)
       commands[i].prog = argv[0];
     }
 #endif
+
+  append_split_outputs (&extra_args, commands, n_commands);
 
   /* Run each piped subprocess.  */
 
@@ -3370,6 +3502,7 @@ execute (void)
 
    if (commands[0].argv[0] != commands[0].prog)
      free (CONST_CAST (char *, commands[0].argv[0]));
+
 
     return ret_code;
   }

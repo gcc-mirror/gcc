@@ -226,6 +226,10 @@ bool dump_base_name_prefixed = false
 Variable
 bool flag_disable_hsa = false
 
+; Output file in which name of files containing split partitions of the current CU.
+Variable
+const char *split_outputs = NULL
+
 ###
 Driver
 
@@ -3407,5 +3411,9 @@ Driver Joined Separate
 fipa-ra
 Common Report Var(flag_ipa_ra) Optimization
 Use caller save register across calls if possible.
+
+fsplit-outputs=
+Common Joined Var(split_outputs)
+-fsplit-outputs=<tempfile>  Filename in which current Compilation Unit will be split to.
 
 ; This comment is to ensure we retain the blank line above.

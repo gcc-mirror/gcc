@@ -1,3 +1,14 @@
+2020-05-07  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* common.opt (fsplit-output=): New option.
+	* gcc.c (execute): Call append_split_outputs.
+	(is_compiler): New function.
+	(get_number_of_args): New function.
+	(extra_arg_storer): New class.
+	(append_split_outputs): New function.
+	(print_command): New debug unction.
+	(print_commands): New debug function.
+
 2020-05-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c (LTO_PLUGIN_SPEC): Define if not already.
