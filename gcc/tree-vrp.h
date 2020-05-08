@@ -116,7 +116,6 @@ extern bool range_int_cst_p (const value_range *);
 
 extern int compare_values (tree, tree);
 extern int compare_values_warnv (tree, tree, bool *);
-extern int operand_less_p (tree, tree);
 
 void range_fold_unary_expr (value_range *, enum tree_code, tree type,
 			    const value_range *, tree op0_type);
