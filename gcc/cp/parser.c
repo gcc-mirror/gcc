@@ -895,10 +895,7 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer, cp_token *token)
 static inline void
 cp_lexer_set_source_position_from_token (cp_token *token)
 {
-  if (token->type != CPP_EOF)
-    {
-      input_location = token->location;
-    }
+  input_location = token->location;
 }
 
 /* Update the globals input_location and the input file stack from LEXER.  */
