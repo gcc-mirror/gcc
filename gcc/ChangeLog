@@ -1,3 +1,15 @@
+2020-05-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (rpo_avail): Change type to
+	eliminate_dom_walker *.
+	(eliminate_with_rpo_vn): Adjust rpo_avail to make vn_valueize
+	use the DOM walker availability.
+	(vn_reference_fold_indirect): Use get_addr_base_and_unit_offset_1
+	with vn_valueize as valueization callback.
+	(vn_reference_maybe_forwprop_address): Likewise.
+	* tree-dfa.c (get_addr_base_and_unit_offset_1): Also valueize
+	array_ref_low_bound.
+
 2020-05-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/94786

@@ -1224,8 +1224,8 @@ vn_reference_fold_indirect (vec<vn_reference_op_s> *ops,
   /* The only thing we have to do is from &OBJ.foo.bar add the offset
      from .foo.bar to the preceding MEM_REF offset and replace the
      address with &OBJ.  */
-  addr_base = get_addr_base_and_unit_offset (TREE_OPERAND (op->op0, 0),
-					     &addr_offset);
+  addr_base = get_addr_base_and_unit_offset_1 (TREE_OPERAND (op->op0, 0),
+					       &addr_offset, vn_valueize);
   gcc_checking_assert (addr_base && TREE_CODE (addr_base) != MEM_REF);
   if (addr_base != TREE_OPERAND (op->op0, 0))
     {
@@ -1282,8 +1282,9 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
 	  poly_int64 addr_offset;
 
 	  addr = gimple_assign_rhs1 (def_stmt);
-	  addr_base = get_addr_base_and_unit_offset (TREE_OPERAND (addr, 0),
-						     &addr_offset);
+	  addr_base = get_addr_base_and_unit_offset_1 (TREE_OPERAND (addr, 0),
+						       &addr_offset,
+						       vn_valueize);
 	  /* If that didn't work because the address isn't invariant propagate
 	     the reference tree from the address operation in case the current
 	     dereference isn't offsetted.  */
@@ -2419,7 +2420,7 @@ public:
 };
 
 /* Global RPO state for access from hooks.  */
-static rpo_elim *rpo_avail;
+static eliminate_dom_walker *rpo_avail;
 basic_block vn_context_bb;
 
 /* Return true if BASE1 and BASE2 can be adjusted so they have the
@@ -6559,7 +6560,11 @@ eliminate_with_rpo_vn (bitmap inserted_exprs)
 {
   eliminate_dom_walker walker (CDI_DOMINATORS, inserted_exprs);
 
+  eliminate_dom_walker *saved_rpo_avail = rpo_avail;
+  rpo_avail = &walker;
   walker.walk (cfun->cfg->x_entry_block_ptr);
+  rpo_avail = saved_rpo_avail;
+
   return walker.eliminate_cleanup ();
 }
 
