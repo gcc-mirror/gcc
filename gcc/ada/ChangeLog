@@ -1,5 +1,11 @@
 2020-05-08  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Force at
+	least the unit size for an aliased object of a constrained nominal
+	subtype whose size is variable.
+
+2020-05-08  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Subtype>: Deal
 	with artificial maximally-sized types designed by access types.
 	* gcc-interface/utils.c (packable_type_hash): New structure.

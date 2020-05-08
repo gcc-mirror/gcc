@@ -969,10 +969,19 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  align = MINIMUM_ATOMIC_ALIGNMENT;
 #endif
 
-	/* Make a new type with the desired size and alignment, if needed.
-	   But do not take into account alignment promotions to compute the
-	   size of the object.  */
+	/* Do not take into account aliased adjustments or alignment promotions
+	   to compute the size of the object.  */
 	tree gnu_object_size = gnu_size ? gnu_size : TYPE_SIZE (gnu_type);
+
+	/* If the object is aliased, of a constrained nominal subtype and its
+	   size might be zero at run time, we force at least the unit size.  */
+	if (Is_Aliased (gnat_entity)
+	    && !Is_Constr_Subt_For_UN_Aliased (gnat_type)
+	    && Is_Array_Type (Underlying_Type (gnat_type))
+	    && !TREE_CONSTANT (gnu_object_size))
+	  gnu_size = size_binop (MAX_EXPR, gnu_object_size, bitsize_unit_node);
+
+	/* Make a new type with the desired size and alignment, if needed.  */
 	if (gnu_size || align > 0)
 	  {
 	    tree orig_type = gnu_type;
