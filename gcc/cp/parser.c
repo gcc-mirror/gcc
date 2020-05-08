@@ -8679,7 +8679,12 @@ cp_parser_has_attribute_expression (cp_parser *parser)
   location_t atloc = cp_lexer_peek_token (parser->lexer)->location;
   if (tree attr = cp_parser_gnu_attribute_list (parser, /*exactly_one=*/true))
     {
-      if (oper != error_mark_node)
+      if (oper == error_mark_node)
+	/* Nothing.  */;
+      else if (type_dependent_expression_p (oper))
+	sorry_at (atloc, "%<__builtin_has_attribute%> with dependent argument "
+		  "not supported yet");
+      else
 	{
 	  /* Fold constant expressions used in attributes first.  */
 	  cp_check_const_attributes (attr);
