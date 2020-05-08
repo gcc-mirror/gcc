@@ -141,11 +141,14 @@ package GNAT.Calendar.Time_IO is
    --     mmm dd, yyyy         - month spelled out
    --     dd mmm yyyy          - month spelled out
    --
-   --  The following ISO-8861 format expressed as a regular expression is also
+   --  The following ISO-8601 format expressed as a regular expression is also
    --  supported:
    --
    --    (yyyymmdd | yyyy'-'mm'-'dd)'T'(hhmmss | hh':'mm':'ss)
    --      [ ('Z' | ('.' | ',') s{s} | ('+'|'-')hh':'mm) ]
+   --  Trailing characters (including spaces) are not allowed.
+   --  In the ISO case, the current time zone is not used; the time zone
+   --  is as specified in the string, defaulting to UTC.
    --
    --  Examples:
    --
