@@ -1,3 +1,9 @@
+2020-05-08  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.dg/cpp/counter-[23].c: Move to c-c+_-common/cpp.
+	* gcc.dg/cpp/dir-only-*: Likewise.
+	* c-c++-common/cpp/dir-only-[78].c: New.
+
 2020-05-08  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/vect/bb-slp-pr68892.c: Adjust for not supported

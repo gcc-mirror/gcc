@@ -1304,6 +1304,18 @@ extern int cpp_read_state (cpp_reader *, const char *, FILE *,
 /* In lex.c */
 extern void cpp_force_token_locations (cpp_reader *, location_t);
 extern void cpp_stop_forcing_token_locations (cpp_reader *);
+enum CPP_DO_task
+{
+  CPP_DO_print,
+  CPP_DO_location,
+  CPP_DO_token
+};
+
+extern void cpp_directive_only_process (cpp_reader *pfile,
+					void *data,
+					void (*cb) (cpp_reader *,
+						    CPP_DO_task,
+						    void *data, ...));
 
 /* In expr.c */
 extern enum cpp_ttype cpp_userdef_string_remove_type
