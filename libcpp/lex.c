@@ -3826,3 +3826,485 @@ cpp_stop_forcing_token_locations (cpp_reader *r)
 {
   r->forced_token_location = 0;
 }
+
+/* We're looking at \, if it's escaping EOL, look past it.  If at
+   LIMIT, don't advance.  */
+
+static const unsigned char *
+do_peek_backslash (const unsigned char *peek, const unsigned char *limit)
+{
+  const unsigned char *probe = peek;
+
+  if (__builtin_expect (peek[1] == '\n', true))
+    {
+    eol:
+      probe += 2;
+      if (__builtin_expect (probe < limit, true))
+	{
+	  peek = probe;
+	  if (*peek == '\\')
+	    /* The user might be perverse.  */
+	    return do_peek_backslash (peek, limit);
+	}
+    }
+  else if (__builtin_expect (peek[1] == '\r', false))
+    {
+      if (probe[2] == '\n')
+	probe++;
+      goto eol;
+    }
+
+  return peek;
+}
+
+static const unsigned char *
+do_peek_next (const unsigned char *peek, const unsigned char *limit)
+{
+  if (__builtin_expect (*peek == '\\', false))
+    peek = do_peek_backslash (peek, limit);
+  return peek;
+}
+
+static const unsigned char *
+do_peek_prev (const unsigned char *peek, const unsigned char *bound)
+{
+  if (peek == bound)
+    return NULL;
+
+  unsigned char c = *--peek;
+  if (__builtin_expect (c == '\n', false)
+      || __builtin_expect (c == 'r', false))
+    {
+      if (peek == bound)
+	return peek;
+      int ix = -1;
+      if (c == '\n' && peek[ix] == '\r')
+	{
+	  if (peek + ix == bound)
+	    return peek;
+	  ix--;
+	}
+
+      if (peek[ix] == '\\')
+	return do_peek_prev (peek + ix, bound);
+
+      return peek;
+    }
+  else
+    return peek;
+}
+
+/* Directives-only scanning.  Somewhat more relaxed than correct
+   parsing -- some ill-formed programs will not be rejected.  */
+
+void
+cpp_directive_only_process (cpp_reader *pfile,
+			    void *data,
+			    void (*cb) (cpp_reader *, CPP_DO_task, void *, ...))
+{
+  do
+    {
+    restart:
+      /* Buffer initialization, but no line cleaning. */
+      cpp_buffer *buffer = pfile->buffer;
+      buffer->cur_note = buffer->notes_used = 0;
+      buffer->cur = buffer->line_base = buffer->next_line;
+      buffer->need_line = false;
+      /* Files always end in a newline.  We rely on this for
+	 character peeking safety.  */
+      gcc_assert (buffer->rlimit[-1] == '\n');
+
+      const unsigned char *base = buffer->cur;
+      unsigned line_count = 0;
+      const unsigned char *line_start = base;
+
+      bool bol = true;
+      bool raw = false;
+
+      const unsigned char *lwm = base;
+      for (const unsigned char *pos = base, *limit = buffer->rlimit;
+	   pos < limit;)
+	{
+	  unsigned char c = *pos++;
+	  /* This matches the switch in _cpp_lex_direct.  */
+	  switch (c)
+	    {
+	    case ' ': case '\t': case '\f': case '\v':
+	      /* Whitespace, do nothing.  */
+	      break;
+
+	    case '\r': /* MAC line ending, or Windows \r\n  */
+	      if (*pos == '\n')
+		pos++;
+	      /* FALLTHROUGH */
+
+	    case '\n':
+	      bol = true;
+
+	    next_line:
+	      CPP_INCREMENT_LINE (pfile, 0);
+	      line_count++;
+	      line_start = pos;
+	      break;
+
+	    case '\\':
+	      /* <backslash><newline> is removed, and doesn't undo any
+		 preceeding escape or whatnot.  */
+	      if (*pos == '\n')
+		{
+		  pos++;
+		  goto next_line;
+		}
+	      else if (*pos == '\r')
+		{
+		  if (pos[1] == '\n')
+		    pos++;
+		  pos++;
+		  goto next_line;
+		}
+	      goto dflt;
+	      
+	    case '#':
+	      if (bol)
+		{
+		  /* Line directive.  */
+		  if (pos - 1 > base && !pfile->state.skipping)
+		    cb (pfile, CPP_DO_print, data,
+			line_count, base, pos - 1 - base);
+
+		  /* Prep things for directive handling. */
+		  buffer->next_line = pos;
+		  buffer->need_line = true;
+		  _cpp_get_fresh_line (pfile);
+
+		  /* Ensure proper column numbering for generated
+		     error messages. */
+		  buffer->line_base -= pos - line_start;
+
+		  _cpp_handle_directive (pfile, line_start + 1 != pos);
+
+		  /* Sanitize the line settings.  Duplicate #include's can
+		     mess things up. */
+		  // FIXME: Necessary?
+		  pfile->line_table->highest_location
+		    = pfile->line_table->highest_line;
+
+		  if (!pfile->state.skipping
+		      && pfile->buffer->next_line < pfile->buffer->rlimit)
+		    cb (pfile, CPP_DO_location, data,
+			pfile->line_table->highest_line);
+
+		  goto restart;
+		}
+	      goto dflt;
+
+	    case '/':
+	      {
+		const unsigned char *peek = do_peek_next (pos, limit);
+		if (!(*peek == '/' || *peek == '*'))
+		  goto dflt;
+
+		/* Line or block comment  */
+		bool is_block = *peek == '*';
+		bool star = false;
+		bool esc = false;
+		location_t sloc
+		  = linemap_position_for_column (pfile->line_table,
+						 pos - line_start);
+
+		while (pos < limit)
+		  {
+		    char c = *pos++;
+		    switch (c)
+		      {
+		      case '\\':
+			esc = true;
+			break;
+
+		      case '\r':
+			if (*pos == '\n')
+			  pos++;
+			/* FALLTHROUGH  */
+
+		      case '\n':
+			{
+			  CPP_INCREMENT_LINE (pfile, 0);
+			  line_count++;
+			  line_start = pos;
+			  if (!esc && !is_block)
+			    {
+			      bol = true;
+			      goto done_comment;
+			    }
+			}
+			if (!esc)
+			  star = false;
+			esc = false;
+			break;
+
+		      case '*':
+			if (pos > peek && !esc)
+			  star = is_block;
+			esc = false;
+			break;
+
+		      case '/':
+			if (star)
+			  goto done_comment;
+			/* FALLTHROUGH  */
+
+		      default:
+			star = false;
+			esc = false;
+			break;
+		      }
+		  }
+		cpp_error_with_line (pfile, CPP_DL_ERROR, sloc, 0,
+				     "unterminated comment");
+	      done_comment:
+		lwm = pos;
+		break;
+	      }
+
+	    case '\'':
+	      if (!CPP_OPTION (pfile, digit_separators))
+		goto delimited_string;
+
+	      /* Possibly a number punctuator.  */
+	      if (!ISIDNUM (*do_peek_next (pos, limit)))
+		goto delimited_string;
+
+	      goto quote_peek;
+
+	    case '\"':
+	      if (!CPP_OPTION (pfile, rliterals))
+		goto delimited_string;
+
+	    quote_peek:
+	      {
+		/* For ' see if it's a number punctuator
+		   \.?<digit>(<digit>|<identifier-nondigit>
+		   |'<digit>|'<nondigit>|[eEpP]<sign>|\.)* */
+		/* For " see if it's a raw string
+		   {U,L,u,u8}R.  This includes CPP_NUMBER detection,
+		   because that could be 0e+R.  */
+		const unsigned char *peek = pos - 1;
+		bool quote_first = c == '"';
+		bool quote_eight = false;
+		bool maybe_number_start = false;
+		bool want_number = false;
+
+		while ((peek = do_peek_prev (peek, lwm)))
+		  {
+		    unsigned char p = *peek;
+		    if (quote_first)
+		      {
+			if (!raw)
+			  {
+			    if (p != 'R')
+			      break;
+			    raw = true;
+			    continue;
+			  }
+
+			quote_first = false;
+			if (p == 'L' || p == 'U' || p == 'u')
+			  ;
+			else if (p == '8')
+			  quote_eight = true;
+			else
+			  goto second_raw;
+		      }
+		    else if (quote_eight)
+		      {
+			if (p != 'u')
+			  {
+			    raw = false;
+			    break;
+			  }
+			quote_eight = false;
+		      }
+		    else if (c == '"')
+		      {
+		      second_raw:;
+			if (!want_number && ISIDNUM (p))
+			  {
+			    raw = false;
+			    break;
+			  }
+		      }
+
+		    if (ISDIGIT (p))
+		      maybe_number_start = true;
+		    else if (p == '.')
+		      want_number = true;
+		    else if (ISIDNUM (p))
+		      maybe_number_start = false;
+		    else if (p == '+' || p == '-')
+		      {
+			if (const unsigned char *peek_prev
+			    = do_peek_prev (peek, lwm))
+			  {
+			    p = *peek_prev;
+			    if (p == 'e' || p == 'E'
+				|| p == 'p' || p == 'P')
+			      {
+				want_number = true;
+				maybe_number_start = false;
+			      }
+			    else
+			      break;
+			  }
+			else
+			  break;
+		      }
+		    else if (p == '\'' || p == '\"')
+		      {
+			/* If this is lwm, this must be the end of a
+			   previous string.  So this is a trailing
+			   literal type, (a) if those are allowed,
+			     and (b) maybe_start is false.  Otherwise
+			     this must be a CPP_NUMBER because we've
+			     met another ', and we'd have checked that
+			     in its own right.  */
+			if (peek == lwm && CPP_OPTION (pfile, uliterals))
+			  {
+			    if  (!maybe_number_start && !want_number)
+			      /* Must be a literal type.  */
+			      raw = false;
+			  }
+			else if (p == '\''
+				 && CPP_OPTION (pfile, digit_separators))
+			  maybe_number_start = true;
+			break;
+		      }
+		    else if (c == '\'')
+		      break;
+		    else if (!quote_first && !quote_eight)
+		      break;
+		  }
+
+		if (maybe_number_start)
+		  {
+		    if (c == '\'')
+		      /* A CPP NUMBER.  */
+		      goto dflt;
+		    raw = false;
+		  }
+
+		goto delimited_string;
+	      }
+
+	    delimited_string:
+	      {
+		/* (Possibly raw) string or char literal.  */
+		unsigned char end = c;
+		int delim_len = -1;
+		const unsigned char *delim = NULL;
+		location_t sloc = linemap_position_for_column (pfile->line_table,
+							       pos - line_start);
+		int esc = 0;
+
+		if (raw)
+		  {
+		    /* There can be no line breaks in the delimiter.  */
+		    delim = pos;
+		    for (delim_len = 0; (c = *pos++) != '('; delim_len++)
+		      {
+			if (delim_len == 16)
+			  {
+			    cpp_error_with_line (pfile, CPP_DL_ERROR,
+						 sloc, 0,
+						 "raw string delimiter"
+						 " longer than %d"
+						 " characters",
+						 delim_len);
+			    raw = false;
+			    pos = delim;
+			    break;
+			  }
+			if (strchr (") \\\t\v\f\n", c))
+			  {
+			    cpp_error_with_line (pfile, CPP_DL_ERROR,
+						 sloc, 0,
+						 "invalid character '%c'"
+						 " in raw string"
+						 " delimiter", c);
+			    raw = false;
+			    pos = delim;
+			    break;
+			  }
+			if (pos >= limit)
+			  goto bad_string;
+		      }
+		  }
+
+		while (pos < limit)
+		  {
+		    char c = *pos++;
+		    switch (c)
+		      {
+		      case '\\':
+			if (!raw)
+			  esc++;
+			break;
+
+		      case '\r':
+			if (*pos == '\n')
+			  pos++;
+			/* FALLTHROUGH  */
+
+		      case '\n':
+			{
+			  CPP_INCREMENT_LINE (pfile, 0);
+			  line_count++;
+			  line_start = pos;
+			}
+			if (esc)
+			  esc--;
+			break;
+
+		      case ')':
+			if (raw
+			    && pos + delim_len + 1 < limit
+			    && pos[delim_len] == end
+			    && !memcmp (delim, pos, delim_len))
+			  {
+			    pos += delim_len + 1;
+			    raw = false;
+			    goto done_string;
+			  }
+			break;
+
+		      default:
+			if (!raw && !(esc & 1) && c == end)
+			  goto done_string;
+			esc = 0;
+			break;
+		      }
+		  }
+	      bad_string:
+		cpp_error_with_line (pfile, CPP_DL_ERROR, sloc, 0,
+				     "unterminated literal");
+		
+	      done_string:
+		raw = false;
+		lwm = pos - 1;
+	      }
+	      goto dflt;
+
+	    default:
+	    dflt:
+	      bol = false;
+	      pfile->mi_valid = false;
+	      break;
+	    }
+	}
+
+      if (buffer->rlimit > base && !pfile->state.skipping)
+	cb (pfile, CPP_DO_print, data, line_count, base, buffer->rlimit - base);
+
+      _cpp_pop_buffer (pfile);
+    }
+  while (pfile->buffer);
+}

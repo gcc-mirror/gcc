@@ -747,17 +747,6 @@ extern void _cpp_do_file_change (cpp_reader *, enum lc_reason, const char *,
 extern void _cpp_pop_buffer (cpp_reader *);
 extern char *_cpp_bracket_include (cpp_reader *);
 
-/* In directives.c */
-struct _cpp_dir_only_callbacks
-{
-  /* Called to print a block of lines. */
-  void (*print_lines) (int, const void *, size_t);
-  bool (*maybe_print_line) (location_t);
-};
-
-extern void _cpp_preprocess_dir_only (cpp_reader *,
-				      const struct _cpp_dir_only_callbacks *);
-
 /* In traditional.c.  */
 extern bool _cpp_scan_out_logical_line (cpp_reader *, cpp_macro *, bool);
 extern bool _cpp_read_logical_line_trad (cpp_reader *);
