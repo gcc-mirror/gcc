@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Calendar;            use Ada.Calendar;
-with Ada.Calendar.Time_Zones;
 with Ada.Characters.Handling;
 with Ada.Strings.Unbounded;   use Ada.Strings.Unbounded;
 with Ada.Text_IO;
@@ -203,6 +201,27 @@ package body GNAT.Calendar.Time_IO is
       else
          return NIP (NIP'Last - Length + 1 .. NIP'Last);
       end if;
+   end Image;
+
+   -----------
+   -- Image --
+   -----------
+
+   function Image
+     (Date      : Ada.Calendar.Time;
+      Picture   : Picture_String;
+      Time_Zone : Time_Zones.Time_Offset) return String
+   is
+      --  We subtract off the local time zone, and add in the requested
+      --  Time_Zone, and then pass it on to the version of Image that uses
+      --  the local time zone.
+
+      use Time_Zones;
+      Local_TZ : constant Time_Offset := Local_Time_Offset (Date);
+      Minute_Offset : constant Integer := Integer (Time_Zone - Local_TZ);
+      Second_Offset : constant Integer := Minute_Offset * 60;
+   begin
+      return Image (Date + Duration (Second_Offset), Picture);
    end Image;
 
    -----------

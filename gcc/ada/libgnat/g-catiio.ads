@@ -32,6 +32,8 @@
 --  This package augments standard Ada.Text_IO with facilities for input
 --  and output of time values in standardized format.
 
+with Ada.Calendar.Time_Zones; use Ada.Calendar;
+
 package GNAT.Calendar.Time_IO is
 
    Picture_Error : exception;
@@ -114,6 +116,13 @@ package GNAT.Calendar.Time_IO is
    --  Return Date, as interpreted in the current local time zone, as a string
    --  with format Picture. Raise Picture_Error if picture string is null or
    --  has an incorrect format.
+
+   function Image
+     (Date      : Ada.Calendar.Time;
+      Picture   : Picture_String;
+      Time_Zone : Time_Zones.Time_Offset) return String;
+   --  Same as previous Image, except it uses the specified time zone instead
+   --  of the local time zone.
 
    function Value (Date : String) return Ada.Calendar.Time;
    --  Parse the string Date, interpreted as a time representation in the
