@@ -1,3 +1,11 @@
+2020-05-13  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/94118
+	 * doc/extend.texi (x86Operandmodifiers): Document more x86
+	 operand modifier.
+	 * gcc/config/i386/i386.c: Add comment for operand modifier N
+	 and I.
+
 2020-05-12  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* tree-vrp.c (class vrp_insert): New.
