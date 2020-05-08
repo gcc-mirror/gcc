@@ -1,5 +1,9 @@
 2020-05-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/94724
+	* tree.c (get_narrower): Reuse the op temporary instead of
+	shadowing it.
+
 	PR tree-optimization/94783
 	* match.pd ((X + (X >> (prec - 1))) ^ (X >> (prec - 1)) to abs (X)):
 	New simplification.
