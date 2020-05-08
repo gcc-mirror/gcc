@@ -1,3 +1,12 @@
+2020-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94988
+	PR tree-optimization/95025
+	* gcc.dg/torture/pr94988.c: New testcase.
+	* gcc.dg/torture/pr95025.c: Likewise.
+	* gcc.dg/torture/pr95045.c: Likewise.
+	* g++.dg/asan/pr95025.C: New testcase.
+
 2020-05-11  Jakub Jelinek  <jakub@redhat.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 

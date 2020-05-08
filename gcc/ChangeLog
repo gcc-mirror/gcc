@@ -1,3 +1,17 @@
+2020-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94988
+	PR tree-optimization/95025
+	* tree-ssa-loop-im.c (seq_entry): Make a struct, add from.
+	(sm_seq_push_down): Take extra parameter denoting where we
+	moved the ref to.
+	(execute_sm_exit): Re-issue sm_other stores in the correct
+	order.
+	(sm_seq_valid_bb): When always executed, allow sm_other to
+	prevail inbetween sm_ord and record their stored value.
+	(hoist_memory_references): Adjust refs_not_supported propagation
+	and prune sm_other from the end of the ordered sequences.
+
 2020-05-11  Felix Yang  <felix.yang@huawei.com>
 
 	PR target/94991

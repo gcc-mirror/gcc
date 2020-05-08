@@ -2209,7 +2209,14 @@ execute_sm (class loop *loop, im_mem_ref *ref,
        able to execute in arbitrary order with respect to other stores
    sm_other is used for stores we do not try to apply store motion to.  */
 enum sm_kind { sm_ord, sm_unord, sm_other };
-typedef std::pair<unsigned, sm_kind> seq_entry;
+struct seq_entry
+{
+  seq_entry (unsigned f, sm_kind k, tree fr = NULL)
+    : first (f), second (k), from (fr) {}
+  unsigned first;
+  sm_kind second;
+  tree from;
+};
 
 static void
 execute_sm_exit (class loop *loop, edge ex, vec<seq_entry> &seq,
@@ -2218,35 +2225,54 @@ execute_sm_exit (class loop *loop, edge ex, vec<seq_entry> &seq,
   /* Sink the stores to exit from the loop.  */
   for (unsigned i = seq.length (); i > 0; --i)
     {
-      if (seq[i-1].second != kind)
-	continue;
       im_mem_ref *ref = memory_accesses.refs_list[seq[i-1].first];
-      sm_aux *aux = *aux_map.get (ref);
-      if (!aux->store_flag)
+      if (seq[i-1].second == sm_other)
 	{
-	  gassign *store;
-	  store = gimple_build_assign (unshare_expr (ref->mem.ref),
-				       aux->tmp_var);
+	  gcc_assert (kind == sm_ord && seq[i-1].from != NULL_TREE);
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Re-issueing dependent store of ");
+	      print_generic_expr (dump_file, ref->mem.ref);
+	      fprintf (dump_file, " from loop %d on exit %d -> %d\n",
+		       loop->num, ex->src->index, ex->dest->index);
+	    }
+	  gassign *store = gimple_build_assign (unshare_expr (ref->mem.ref),
+						seq[i-1].from);
 	  gsi_insert_on_edge (ex, store);
 	}
       else
-	execute_sm_if_changed (ex, ref->mem.ref, aux->tmp_var, aux->store_flag,
-			       loop_preheader_edge (loop), &aux->flag_bbs);
+	{
+	  sm_aux *aux = *aux_map.get (ref);
+	  if (!aux->store_flag)
+	    {
+	      gassign *store;
+	      store = gimple_build_assign (unshare_expr (ref->mem.ref),
+					   aux->tmp_var);
+	      gsi_insert_on_edge (ex, store);
+	    }
+	  else
+	    execute_sm_if_changed (ex, ref->mem.ref, aux->tmp_var,
+				   aux->store_flag,
+				   loop_preheader_edge (loop), &aux->flag_bbs);
+	}
     }
 }
 
 /* Push the SM candidate at index PTR in the sequence SEQ down until
    we hit the next SM candidate.  Return true if that went OK and
-   false if we could not disambiguate agains another unrelated ref.  */
+   false if we could not disambiguate agains another unrelated ref.
+   Update *AT to the index where the candidate now resides.  */
 
 static bool
-sm_seq_push_down (vec<seq_entry> &seq, unsigned ptr)
+sm_seq_push_down (vec<seq_entry> &seq, unsigned ptr, unsigned *at)
 {
+  *at = ptr;
   for (; ptr > 0; --ptr)
     {
       seq_entry &new_cand = seq[ptr];
       seq_entry &against = seq[ptr-1];
-      if (against.second == sm_ord)
+      if (against.second == sm_ord
+	  || (against.second == sm_other && against.from != NULL_TREE))
 	/* Found the tail of the sequence.  */
 	break;
       if (!refs_independent_p (memory_accesses.refs_list[new_cand.first],
@@ -2255,6 +2281,7 @@ sm_seq_push_down (vec<seq_entry> &seq, unsigned ptr)
 	/* ???  Prune new_cand from the list of refs to apply SM to.  */
 	return false;
       std::swap (new_cand, against);
+      *at = ptr - 1;
     }
   return true;
 }
@@ -2367,37 +2394,41 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 		     not order-preserving SM code.  */
 		  if (first_edge_seq[i].first != edge_seq[i].first)
 		    {
-		      bitmap_set_bit (refs_not_supported,
-				      first_edge_seq[i].first);
-		      bitmap_set_bit (refs_not_supported, edge_seq[i].first);
-		      first_edge_seq[i].second = sm_unord;
+		      if (first_edge_seq[i].second == sm_ord)
+			bitmap_set_bit (refs_not_supported,
+					first_edge_seq[i].first);
+		      if (edge_seq[i].second == sm_ord)
+			bitmap_set_bit (refs_not_supported, edge_seq[i].first);
+		      first_edge_seq[i].second = sm_other;
 		    }
-		  /* sm_unord prevails.  */
+		  /* sm_other prevails.  */
 		  else if (first_edge_seq[i].second != edge_seq[i].second)
 		    {
 		      /* This is just an optimization.  */
 		      gcc_assert (bitmap_bit_p (refs_not_supported,
 						first_edge_seq[i].first));
-		      first_edge_seq[i].second = sm_unord;
+		      first_edge_seq[i].second = sm_other;
 		    }
 		}
-	      /* Any excess elements become sm_unord since they are now
+	      /* Any excess elements become sm_other since they are now
 		 coonditionally executed.  */
 	      if (first_edge_seq.length () > edge_seq.length ())
 		{
 		  for (unsigned i = edge_seq.length ();
 		       i < first_edge_seq.length (); ++i)
 		    {
-		      bitmap_set_bit (refs_not_supported,
-				      first_edge_seq[i].first);
-		      first_edge_seq[i].second = sm_unord;
+		      if (first_edge_seq[i].second == sm_ord)
+			bitmap_set_bit (refs_not_supported,
+					first_edge_seq[i].first);
+		      first_edge_seq[i].second = sm_other;
 		    }
 		}
 	      else if (edge_seq.length () > first_edge_seq.length ())
 		{
 		  for (unsigned i = first_edge_seq.length ();
 		       i < edge_seq.length (); ++i)
-		    bitmap_set_bit (refs_not_supported, edge_seq[i].first);
+		    if (edge_seq[i].second == sm_ord)
+		      bitmap_set_bit (refs_not_supported, edge_seq[i].first);
 		}
 	    }
 	  /* Use the sequence from the first edge and push SMs down.  */
@@ -2407,17 +2438,13 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 		break;
 	      unsigned id = first_edge_seq[i].first;
 	      seq.safe_push (first_edge_seq[i]);
+	      unsigned new_idx;
 	      if (first_edge_seq[i].second == sm_ord
-		  && !sm_seq_push_down (seq, seq.length () - 1))
+		  && !sm_seq_push_down (seq, seq.length () - 1, &new_idx))
 		{
 		  bitmap_set_bit (refs_not_supported, id);
-		  /* ???  Mark it sm_unord but it's now "somewhere" ... */
-		  for (unsigned i = seq.length (); i != 0; --i)
-		    if (seq[i - 1].first == id)
-		      {
-			seq[i - 1].second = sm_unord;
-			break;
-		      }
+		  /* Mark it sm_other.  */
+		  seq[new_idx].second = sm_other;
 		}
 	    }
 	  return 1;
@@ -2429,21 +2456,21 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
       /* One of the stores we want to apply SM to and we've not yet seen.  */
       else if (bitmap_clear_bit (refs_not_in_seq, data->ref))
 	{
-	  seq.safe_push (std::make_pair (data->ref, sm_ord));
+	  seq.safe_push (seq_entry (data->ref, sm_ord));
 
 	  /* 1) push it down the queue until a SMed
 	     and not ignored ref is reached, skipping all not SMed refs
 	     and ignored refs via non-TBAA disambiguation.  */
-	  if (!sm_seq_push_down (seq, seq.length () - 1))
+	  unsigned new_idx;
+	  if (!sm_seq_push_down (seq, seq.length () - 1, &new_idx)
+	      /* If that fails but we did not fork yet continue, we'll see
+		 to re-materialize all of the stores in the sequence then.
+		 Further stores will only be pushed up to this one.  */
+	      && forked)
 	    {
 	      bitmap_set_bit (refs_not_supported, data->ref);
-	      /* ???  Mark it sm_unord but it's now "somewhere" ... */
-	      for (unsigned i = seq.length (); i != 0; --i)
-		if (seq[i - 1].first == data->ref)
-		  {
-		    seq[i - 1].second = sm_unord;
-		    break;
-		  }
+	      /* Mark it sm_other.  */
+	      seq[new_idx].second = sm_other;
 	    }
 
 	  /* 2) check whether we've seen all refs we want to SM and if so
@@ -2453,7 +2480,8 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 	}
       else
 	/* Another store not part of the final sequence.  Simply push it.  */
-	seq.safe_push (std::make_pair (data->ref, sm_other));
+	seq.safe_push (seq_entry (data->ref, sm_other,
+				  gimple_assign_rhs1 (def)));
 
       vdef = gimple_vuse (def);
     }
@@ -2513,20 +2541,71 @@ hoist_memory_references (class loop *loop, bitmap mem_refs,
       std::pair<edge, vec<seq_entry> > *seq;
       FOR_EACH_VEC_ELT (sms, i, seq)
 	{
+	  bool need_to_push = false;
 	  for (unsigned i = 0; i < seq->second.length (); ++i)
 	    {
-	      if (seq->second[i].second == sm_other)
+	      sm_kind kind = seq->second[i].second;
+	      if (kind == sm_other && seq->second[i].from == NULL_TREE)
 		break;
 	      unsigned id = seq->second[i].first;
-	      if (bitmap_bit_p (refs_not_supported, id))
-		seq->second[i].second = sm_other;
-	      else if (!sm_seq_push_down (seq->second, i))
+	      unsigned new_idx;
+	      if (kind == sm_ord
+		  && bitmap_bit_p (refs_not_supported, id))
 		{
-		  if (bitmap_set_bit (refs_not_supported, id))
-		    changed = true;
+		  seq->second[i].second = sm_other;
+		  gcc_assert (seq->second[i].from == NULL_TREE);
+		  need_to_push = true;
+		}
+	      else if (need_to_push
+		       && !sm_seq_push_down (seq->second, i, &new_idx))
+		{
+		  /* We need to push down both sm_ord and sm_other
+		     but for the latter we need to disqualify all
+		     following refs.  */
+		  if (kind == sm_ord)
+		    {
+		      if (bitmap_set_bit (refs_not_supported, id))
+			changed = true;
+		      seq->second[new_idx].second = sm_other;
+		    }
+		  else
+		    {
+		      for (unsigned j = seq->second.length () - 1;
+			   j > new_idx; --j)
+			if (seq->second[j].second == sm_ord
+			    && bitmap_set_bit (refs_not_supported,
+					       seq->second[j].first))
+			  changed = true;
+		      seq->second.truncate (new_idx);
+		      break;
+		    }
 		}
 	    }
 	}
+    }
+  std::pair<edge, vec<seq_entry> > *seq;
+  FOR_EACH_VEC_ELT (sms, i, seq)
+    {
+      /* Prune sm_other from the end.  */
+      while (!seq->second.is_empty ()
+	     && seq->second.last ().second == sm_other)
+	seq->second.pop ();
+      /* Prune duplicates from the start.  */
+      auto_bitmap seen (&lim_bitmap_obstack);
+      unsigned j, k;
+      for (j = k = 0; j < seq->second.length (); ++j)
+	if (bitmap_set_bit (seen, seq->second[j].first))
+	  {
+	    if (k != j)
+	      seq->second[k] = seq->second[j];
+	    ++k;
+	  }
+      seq->second.truncate (k);
+      /* And verify.  */
+      seq_entry *e;
+      FOR_EACH_VEC_ELT (seq->second, j, e)
+	gcc_assert (e->second == sm_ord
+		    || (e->second == sm_other && e->from != NULL_TREE));
     }
 
   /* Verify dependence for refs we cannot handle with the order preserving
@@ -2540,7 +2619,7 @@ hoist_memory_references (class loop *loop, bitmap mem_refs,
       /* We've now verified store order for ref with respect to all other
 	 stores in the loop does not matter.  */
       else
-	unord_refs.safe_push (std::make_pair (i, sm_unord));
+	unord_refs.safe_push (seq_entry (i, sm_unord));
     }
 
   hash_map<im_mem_ref *, sm_aux *> aux_map;
