@@ -24,6 +24,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "../common/threadasm.S"
 
+#ifdef __CET__
+# include <cet.h>
+#else
+# define _CET_ENDBR
+#endif
+
 #if defined(__i386__)
 
     .text
@@ -32,6 +38,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
     .align 16
 CSYM(fiber_switchContext):
     .cfi_startproc
+    _CET_ENDBR
     // save current stack state
     push %ebp
     mov  %esp, %ebp
@@ -66,6 +73,7 @@ CSYM(fiber_switchContext):
     .align 16
 CSYM(fiber_switchContext):
     .cfi_startproc
+    _CET_ENDBR
     // Save current stack state.save current stack state
     push %rbp
     mov  %rsp, %rbp
