@@ -30,6 +30,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Calendar;            use Ada.Calendar;
+with Ada.Calendar.Time_Zones;
 with Ada.Characters.Handling;
 with Ada.Strings.Unbounded;   use Ada.Strings.Unbounded;
 with Ada.Text_IO;
@@ -93,19 +94,14 @@ package body GNAT.Calendar.Time_IO is
       Length  : Natural := 0) return String;
    --  As above with N provided in Integer format
 
-   procedure Parse_ISO_8861_UTC
+   procedure Parse_ISO_8601
       (Date    : String;
        Time    : out Ada.Calendar.Time;
        Success : out Boolean);
    --  Subsidiary of function Value. It parses the string Date, interpreted as
-   --  an ISO 8861 time representation, and returns corresponding Time value.
-   --  Success is set to False when the string is not a supported ISO 8861
-   --  date. The following regular expression defines the supported format:
-   --
-   --    (yyyymmdd | yyyy'-'mm'-'dd)'T'(hhmmss | hh':'mm':'ss)
-   --      [ ('Z' | ('.' | ',') s{s} | ('+'|'-')hh':'mm) ]
-   --
-   --  Trailing characters (in particular spaces) are not allowed.
+   --  an ISO 8601 time representation, and returns corresponding Time value.
+   --  Success is set to False when the string is not a supported ISO 8601
+   --  date.
    --
    --  Examples:
    --
@@ -565,11 +561,11 @@ package body GNAT.Calendar.Time_IO is
       return Abbrev_Upper_Month_Names'First;
    end Month_Name_To_Number;
 
-   ------------------------
-   -- Parse_ISO_8861_UTC --
-   ------------------------
+   --------------------
+   -- Parse_ISO_8601 --
+   --------------------
 
-   procedure Parse_ISO_8861_UTC
+   procedure Parse_ISO_8601
       (Date    : String;
        Time    : out Ada.Calendar.Time;
        Success : out Boolean)
@@ -813,6 +809,8 @@ package body GNAT.Calendar.Time_IO is
 
       --  Local variables
 
+      use Time_Zones;
+
       Date_Separator : constant Character := '-';
       Hour_Separator : constant Character := ':';
 
@@ -827,7 +825,7 @@ package body GNAT.Calendar.Time_IO is
       Local_Hour   : Hour_Number     := 0;
       Local_Minute : Minute_Number   := 0;
       Local_Sign   : Character       := ' ';
-      Local_Disp   : Duration;
+      Time_Zone    : Time_Offset; -- initialized when Local_Sign is set
 
       Sep_Required : Boolean := False;
       --  True if a separator is seen (and therefore required after it!)
@@ -860,17 +858,18 @@ package body GNAT.Calendar.Time_IO is
 
          if Index <= Date'Last then
 
-            --  Suffix 'Z' just confirms that this is an UTC time. No further
-            --  action needed.
+            --  Suffix 'Z' signifies that this is UTC time (time zone 0)
 
             if Symbol = 'Z' then
+               Local_Sign := '+';
+               Time_Zone := 0;
                Advance;
 
             --  A decimal fraction shall have at least one digit, and has as
             --  many digits as supported by the underlying implementation.
             --  The valid decimal separators are those specified in ISO 31-0,
             --  i.e. the comma [,] or full stop [.]. Of these, the comma is
-            --  the preferred separator of ISO-8861.
+            --  the preferred separator of ISO-8601.
 
             elsif Symbol = ',' or else Symbol = '.' then
                Advance; --  past decimal separator
@@ -898,7 +897,11 @@ package body GNAT.Calendar.Time_IO is
 
                --  Compute local displacement
 
-               Local_Disp := Local_Hour * 3600.0 + Local_Minute * 60.0;
+               Time_Zone := Time_Offset (Local_Hour * 60 + Local_Minute);
+
+               if Local_Sign = '-' then
+                  Time_Zone := -Time_Zone;
+               end if;
             else
                raise Wrong_Syntax;
             end if;
@@ -922,24 +925,17 @@ package body GNAT.Calendar.Time_IO is
          raise Wrong_Syntax;
       end if;
 
-      --  Compute time without local displacement
+      --  If no time zone was specified, we call GNAT.Calendar.Time_Of, which
+      --  uses local time. Otherwise, we use Ada.Calendar.Formatting.Time_Of
+      --  and specify the time zone.
 
       if Local_Sign = ' ' then
-         Time := Time_Of (Year, Month, Day, Hour, Minute, Second, Subsec);
-
-      --  Compute time with positive local displacement
-
-      elsif Local_Sign = '+' then
-         Time :=
-           Time_Of (Year, Month, Day, Hour, Minute, Second, Subsec) -
-             Local_Disp;
-
-      --  Compute time with negative local displacement
-
-      elsif Local_Sign = '-' then
-         Time :=
-           Time_Of (Year, Month, Day, Hour, Minute, Second, Subsec) +
-             Local_Disp;
+         Time := GNAT.Calendar.Time_Of
+           (Year, Month, Day, Hour, Minute, Second, Subsec);
+      else
+         Time := Ada.Calendar.Formatting.Time_Of
+           (Year, Month, Day, Hour, Minute, Second, Subsec,
+            Time_Zone => Time_Zone);
       end if;
 
       --  Notify that the input string was successfully parsed
@@ -953,7 +949,7 @@ package body GNAT.Calendar.Time_IO is
          Time :=
            Time_Of (Year_Number'First, Month_Number'First, Day_Number'First);
          Success := False;
-   end Parse_ISO_8861_UTC;
+   end Parse_ISO_8601;
 
    -----------
    -- Value --
@@ -1174,10 +1170,10 @@ package body GNAT.Calendar.Time_IO is
    --  Start of processing for Value
 
    begin
-      --  Let's try parsing Date as a supported ISO-8861 format. If we do not
+      --  Let's try parsing Date as a supported ISO-8601 format. If we do not
       --  succeed, then retry using all the other GNAT supported formats.
 
-      Parse_ISO_8861_UTC (Date, Time, Success);
+      Parse_ISO_8601 (Date, Time, Success);
 
       if Success then
          return Time;
@@ -1185,15 +1181,7 @@ package body GNAT.Calendar.Time_IO is
 
       --  Length checks
 
-      if D_Length /= 8
-        and then D_Length /= 10
-        and then D_Length /= 11
-        and then D_Length /= 12
-        and then D_Length /= 17
-        and then D_Length /= 19
-        and then D_Length /= 20
-        and then D_Length /= 21
-      then
+      if D_Length not in 8 | 10 | 11 | 12 | 17 | 19 | 20 | 21 then
          raise Constraint_Error;
       end if;
 
