@@ -6501,13 +6501,14 @@ static tree
 Raise_Error_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 {
   const Node_Kind kind = Nkind (gnat_node);
-  const int reason = UI_To_Int (Reason (gnat_node));
   const Node_Id gnat_cond = Condition (gnat_node);
+  const int reason = UI_To_Int (Reason (gnat_node));
   const bool with_extra_info
     = Exception_Extra_Info
       && !No_Exception_Handlers_Set ()
       && No (get_exception_label (kind));
   tree gnu_result = NULL_TREE, gnu_cond = NULL_TREE;
+  Node_Id gnat_rcond;
 
   /* The following processing is not required for correctness.  Its purpose is
      to give more precise error messages and to record some information.  */
@@ -6521,51 +6522,51 @@ Raise_Error_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
     case CE_Index_Check_Failed:
     case CE_Range_Check_Failed:
     case CE_Invalid_Data:
-      if (Present (gnat_cond) && Nkind (gnat_cond) == N_Op_Not)
+      if (No (gnat_cond) || Nkind (gnat_cond) != N_Op_Not)
+	break;
+      gnat_rcond = Right_Opnd (gnat_cond);
+      if (Nkind (gnat_rcond) == N_In
+	  || Nkind (gnat_rcond) == N_Op_Ge
+	  || Nkind (gnat_rcond) == N_Op_Le)
 	{
-	  Node_Id gnat_index, gnat_type;
-	  tree gnu_type, gnu_index, gnu_low_bound, gnu_high_bound, disp;
-	  bool neg_p;
+	  const Node_Id gnat_index = Left_Opnd (gnat_rcond);
+	  const Node_Id gnat_type = Etype (gnat_index);
+	  tree gnu_index = gnat_to_gnu (gnat_index);
+	  tree gnu_type = get_unpadded_type (gnat_type);
+	  tree gnu_low_bound, gnu_high_bound, disp;
 	  struct loop_info_d *loop;
+	  bool neg_p;
 
-	  switch (Nkind (Right_Opnd (gnat_cond)))
+	  switch (Nkind (gnat_rcond))
 	    {
 	    case N_In:
-	      Range_to_gnu (Right_Opnd (Right_Opnd (gnat_cond)),
+	      Range_to_gnu (Right_Opnd (gnat_rcond),
 			    &gnu_low_bound, &gnu_high_bound);
 	      break;
 
 	    case N_Op_Ge:
-	      gnu_low_bound = gnat_to_gnu (Right_Opnd (Right_Opnd (gnat_cond)));
-	      gnu_high_bound = NULL_TREE;
+	      gnu_low_bound = gnat_to_gnu (Right_Opnd (gnat_rcond));
+	      gnu_high_bound = TYPE_MAX_VALUE (gnu_type);
 	      break;
 
 	    case N_Op_Le:
-	      gnu_low_bound = NULL_TREE;
-	      gnu_high_bound = gnat_to_gnu (Right_Opnd (Right_Opnd (gnat_cond)));
+	      gnu_low_bound = TYPE_MIN_VALUE (gnu_type);
+	      gnu_high_bound = gnat_to_gnu (Right_Opnd (gnat_rcond));
 	      break;
 
 	    default:
-	      goto common;
+	      gcc_unreachable ();
 	    }
 
-	  gnat_index = Left_Opnd (Right_Opnd (gnat_cond));
-	  gnat_type = Etype (gnat_index);
-	  gnu_type = maybe_character_type (get_unpadded_type (gnat_type));
-	  gnu_index = gnat_to_gnu (gnat_index);
-
+	  gnu_type = maybe_character_type (gnu_type);
 	  if (TREE_TYPE (gnu_index) != gnu_type)
 	    {
-	      if (gnu_low_bound)
-		gnu_low_bound = convert (gnu_type, gnu_low_bound);
-	      if (gnu_high_bound)
-		gnu_high_bound = convert (gnu_type, gnu_high_bound);
+	      gnu_low_bound = convert (gnu_type, gnu_low_bound);
+	      gnu_high_bound = convert (gnu_type, gnu_high_bound);
 	      gnu_index = convert (gnu_type, gnu_index);
 	    }
 
 	  if (with_extra_info
-	      && gnu_low_bound
-	      && gnu_high_bound
 	      && Known_Esize (gnat_type)
 	      && UI_To_Int (Esize (gnat_type)) <= 32)
 	    gnu_result
@@ -6630,8 +6631,8 @@ Raise_Error_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
       break;
     }
 
-  /* The following processing does the common work.  */
-common:
+  /* The following processing does the real work, but we must nevertheless make
+     sure not to override the result of the previous processing.  */
   if (!gnu_result)
     gnu_result = build_call_raise (reason, gnat_node, kind);
   set_expr_location_from_node (gnu_result, gnat_node);
@@ -9134,6 +9135,7 @@ add_cleanup (tree gnu_cleanup, Node_Id gnat_node)
 {
   if (Present (gnat_node))
     set_expr_location_from_node (gnu_cleanup, gnat_node, true);
+
   /* An EH_ELSE_EXPR must be by itself, and that's all we need when we
      use it.  The assert below makes sure that is so.  Should we ever
      need more than that, we could combine EH_ELSE_EXPRs, and copy
