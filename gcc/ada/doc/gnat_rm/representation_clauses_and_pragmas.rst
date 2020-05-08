@@ -582,7 +582,7 @@ that in each case the base is ``Short_Short_Integer`` with a size of 8):
 
 Note: the entries marked '*' are not actually specified by the Ada
 Reference Manual, which has nothing to say about size in the dynamic
-case. What GNAT does is to allocate sufficient bits to accomodate any
+case. What GNAT does is to allocate sufficient bits to accommodate any
 possible dynamic values for the bounds at run-time.
 
 So far, so good, but GNAT has to obey the RM rules, so the question is
