@@ -12506,6 +12506,8 @@ print_reg (rtx x, int code, FILE *file)
    ^ -- print addr32 prefix if TARGET_64BIT and Pmode != word_mode
    M -- print addr32 prefix for TARGET_X32 with VSIB address.
    ! -- print NOTRACK prefix for jxx/call/ret instructions if required.
+   N -- print maskz if it's constant 0 operand.
+   I -- print comparision predicate operand for sse cmp condition.
  */
 
 void
