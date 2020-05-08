@@ -1,3 +1,15 @@
+2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* ira-color.c (update_costs_from_allocno): Remove
+	conflict_cost_update_p argument.  Propagate costs only along
+	threads. Always do conflict cost update.  Add printing debugging
+	info.
+	(update_costs_from_copies): Add printing debugging info.
+	(restore_costs_from_copies): Ditto.
+	(assign_hard_reg): Improve debug info.
+	(push_only_colorable): Ditto. Call update_costs_from_prefs.
+	(color_allocnos): Remove update_costs_from_prefs.
+
 2020-05-08  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (vec_info::slp_loads): New.
