@@ -258,6 +258,29 @@ static GTY(()) vec<tree, va_gc> *builtin_decls;
 /* A chain of unused BLOCK nodes. */
 static GTY((deletable)) tree free_block_chain;
 
+/* A hash table of packable types.  It is modelled on the generic type
+   hash table in tree.c, which must thus be used as a reference.  */
+
+struct GTY((for_user)) packable_type_hash
+{
+  hashval_t hash;
+  tree type;
+};
+
+struct packable_type_hasher : ggc_cache_ptr_hash<packable_type_hash>
+{
+  static inline hashval_t hash (packable_type_hash *t) { return t->hash; }
+  static bool equal (packable_type_hash *a, packable_type_hash *b);
+
+  static int
+  keep_cache_entry (packable_type_hash *&t)
+  {
+    return ggc_marked_p (t->type);
+  }
+};
+
+static GTY ((cache)) hash_table<packable_type_hasher> *packable_type_hash_table;
+
 /* A hash table of padded types.  It is modelled on the generic type
    hash table in tree.c, which must thus be used as a reference.  */
 
@@ -333,6 +356,9 @@ init_gnat_utils (void)
   /* Initialize the association of GNAT nodes to GCC trees as dummies.  */
   dummy_node_table = ggc_cleared_vec_alloc<tree> (max_gnat_nodes);
 
+  /* Initialize the hash table of packable types.  */
+  packable_type_hash_table = hash_table<packable_type_hasher>::create_ggc (512);
+
   /* Initialize the hash table of padded types.  */
   pad_type_hash_table = hash_table<pad_type_hasher>::create_ggc (512);
 }
@@ -349,6 +375,10 @@ destroy_gnat_utils (void)
   /* Destroy the association of GNAT nodes to GCC trees as dummies.  */
   ggc_free (dummy_node_table);
   dummy_node_table = NULL;
+
+  /* Destroy the hash table of packable types.  */
+  packable_type_hash_table->empty ();
+  packable_type_hash_table = NULL;
 
   /* Destroy the hash table of padded types.  */
   pad_type_hash_table->empty ();
@@ -983,6 +1013,68 @@ make_aligning_type (tree type, unsigned int align, tree size,
   return record_type;
 }
 
+/* Return true iff the packable types are equivalent.  */
+
+bool
+packable_type_hasher::equal (packable_type_hash *t1, packable_type_hash *t2)
+{
+  tree type1, type2;
+
+  if (t1->hash != t2->hash)
+    return 0;
+
+  type1 = t1->type;
+  type2 = t2->type;
+
+  /* We consider that packable types are equivalent if they have the same
+     name, size, alignment and RM size.  Taking the mode into account is
+     redundant since it is determined by the others.  */
+  return
+    TYPE_NAME (type1) == TYPE_NAME (type2)
+    && TYPE_SIZE (type1) == TYPE_SIZE (type2)
+    && TYPE_ALIGN (type1) == TYPE_ALIGN (type2)
+    && TYPE_ADA_SIZE (type1) == TYPE_ADA_SIZE (type2);
+}
+
+/* Compute the hash value for the packable TYPE.  */
+
+static hashval_t
+hash_packable_type (tree type)
+{
+  hashval_t hashcode;
+
+  hashcode = iterative_hash_expr (TYPE_NAME (type), 0);
+  hashcode = iterative_hash_expr (TYPE_SIZE (type), hashcode);
+  hashcode = iterative_hash_hashval_t (TYPE_ALIGN (type), hashcode);
+  hashcode = iterative_hash_expr (TYPE_ADA_SIZE (type), hashcode);
+
+  return hashcode;
+}
+
+/* Look up the packable TYPE in the hash table and return its canonical version
+   if it exists; otherwise, insert it into the hash table.  */
+
+static tree
+canonicalize_packable_type (tree type)
+{
+  const hashval_t hashcode = hash_packable_type (type);
+  struct packable_type_hash in, *h, **slot;
+
+  in.hash = hashcode;
+  in.type = type;
+  slot = packable_type_hash_table->find_slot_with_hash (&in, hashcode, INSERT);
+  h = *slot;
+  if (!h)
+    {
+      h = ggc_alloc<packable_type_hash> ();
+      h->hash = hashcode;
+      h->type = type;
+      *slot = h;
+    }
+
+  return h->type;
+}
+
 /* TYPE is an ARRAY_TYPE that is being used as the type of a field in a packed
    record.  See if we can rewrite it as a type that has non-BLKmode, which we
    can pack tighter in the packed record.  If so, return the new type; if not,
@@ -1062,16 +1154,16 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
     }
   else
     {
-      tree type_size = TYPE_ADA_SIZE (type);
+      tree ada_size = TYPE_ADA_SIZE (type);
+
       /* Do not try to shrink the size if the RM size is not constant.  */
-      if (TYPE_CONTAINS_TEMPLATE_P (type)
-	  || !tree_fits_uhwi_p (type_size))
+      if (TYPE_CONTAINS_TEMPLATE_P (type) || !tree_fits_uhwi_p (ada_size))
 	return type;
 
       /* Round the RM size up to a unit boundary to get the minimal size
 	 for a BLKmode record.  Give up if it's already the size and we
 	 don't need to lower the alignment.  */
-      new_size = tree_to_uhwi (type_size);
+      new_size = tree_to_uhwi (ada_size);
       new_size = (new_size + BITS_PER_UNIT - 1) & -BITS_PER_UNIT;
       if (new_size == size && (max_align == 0 || align <= max_align))
 	return type;
@@ -1117,7 +1209,13 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
 	  && TYPE_ADA_SIZE (new_field_type))
 	new_field_size = TYPE_ADA_SIZE (new_field_type);
       else
-	new_field_size = DECL_SIZE (field);
+	{
+	  new_field_size = DECL_SIZE (field);
+
+	  /* Make sure not to use too small a type for the size.  */
+	  if (TYPE_MODE (new_field_type) == BLKmode)
+	    new_field_type = TREE_TYPE (field);
+	}
 
       /* This is a layout with full representation, alignment and size clauses
 	 so we simply pass 0 as PACKED like gnat_to_gnu_field in this case.  */
@@ -1160,8 +1258,8 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
     SET_DECL_PARALLEL_TYPE (TYPE_STUB_DECL (new_type),
 			    DECL_PARALLEL_TYPE (TYPE_STUB_DECL (type)));
 
-  /* Try harder to get a packable type if necessary, for example
-     in case the record itself contains a BLKmode field.  */
+  /* Try harder to get a packable type if necessary, for example in case
+     the record itself contains a BLKmode field.  */
   if (in_record && TYPE_MODE (new_type) == BLKmode)
     SET_TYPE_MODE (new_type,
 		   mode_for_size_tree (TYPE_SIZE (new_type),
@@ -1171,7 +1269,11 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
   if (TYPE_MODE (new_type) == BLKmode && new_size >= size && max_align == 0)
     return type;
 
-  return new_type;
+  /* If the packable type is named, we canonicalize it by means of the hash
+     table.  This is consistent with the language semantics and ensures that
+     gigi and the middle-end have a common view of these packable types.  */
+  return
+    TYPE_NAME (new_type) ? canonicalize_packable_type (new_type) : new_type;
 }
 
 /* Return true if TYPE has an unsigned representation.  This needs to be used

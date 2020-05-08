@@ -2685,6 +2685,22 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		set_reverse_storage_order_on_array_type (gnu_type);
 	      if (array_type_has_nonaliased_component (gnu_type, gnat_entity))
 		set_nonaliased_component_on_array_type (gnu_type);
+
+	      /* Kludge to remove the TREE_OVERFLOW flag for the sake of LTO
+		 on maximally-sized array types designed by access types.  */
+	      if (integer_zerop (TYPE_SIZE (gnu_type))
+		  && TREE_OVERFLOW (TYPE_SIZE (gnu_type))
+		  && Is_Itype (gnat_entity)
+		  && (gnat_temp = Associated_Node_For_Itype (gnat_entity))
+		  && IN (Nkind (gnat_temp), N_Declaration)
+		  && Is_Access_Type (Defining_Entity (gnat_temp))
+		  && Is_Entity_Name (First_Index (gnat_entity))
+		  && UI_To_Int (RM_Size (Entity (First_Index (gnat_entity))))
+		     == BITS_PER_WORD)
+		{
+		  TYPE_SIZE (gnu_type) = bitsize_zero_node;
+		  TYPE_SIZE_UNIT (gnu_type) = size_zero_node;
+		}
 	    }
 
 	  /* Attach the TYPE_STUB_DECL in case we have a parallel type.  */
