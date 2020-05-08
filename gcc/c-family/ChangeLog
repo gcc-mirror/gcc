@@ -1,3 +1,12 @@
+2020-05-08  Nathan Sidwell  <nathan@acm.org>
+
+	Reimplement directives only processing.
+	* c-ppoutput.c (token_streamer): Ne.
+	(directives_only_cb): New.  Swallow ...
+	(print_lines_directives_only): ... this.
+	(scan_translation_unit_directives_only): Reimplment using the
+	published interface.
+
 2020-05-07  Marek Polacek  <polacek@redhat.com>
 
 	* c-format.c (badwords): Add "nonstatic".

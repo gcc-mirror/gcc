@@ -466,6 +466,10 @@ namespace __parallel
                __begin1, __end1, __begin2, __end2, __pred,
                _IteratorCategory1(), _IteratorCategory2());
     }
+
+#if __cpp_lib_three_way_comparison
+  using _GLIBCXX_STD_A::lexicographical_compare_three_way;
+#endif
 } // end namespace
 } // end namespace
 

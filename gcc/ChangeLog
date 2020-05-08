@@ -1,3 +1,161 @@
+2020-05-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vec_info::slp_loads): New.
+	(vect_optimize_slp): Declare.
+	* tree-vect-slp.c (vect_attempt_slp_rearrange_stmts):  Do
+	nothing when there are no loads.
+	(vect_gather_slp_loads): Gather loads into a vector.
+	(vect_supported_load_permutation_p): Remove.
+	(vect_analyze_slp_instance): Do not verify permutation
+	validity here.
+	(vect_analyze_slp): Optimize permutations of reductions
+	after all SLP instances have been gathered and gather
+	all loads.
+	(vect_optimize_slp): New function split out from
+	vect_supported_load_permutation_p.  Elide some permutations.
+	(vect_slp_analyze_bb_1): Call vect_optimize_slp.
+	* tree-vect-loop.c (vect_analyze_loop_2): Likewise.
+	* tree-vect-stmts.c (vectorizable_load): Check whether
+	the load can be permuted.  When generating code assert we can.
+
+2020-05-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (rpo_avail): Change type to
+	eliminate_dom_walker *.
+	(eliminate_with_rpo_vn): Adjust rpo_avail to make vn_valueize
+	use the DOM walker availability.
+	(vn_reference_fold_indirect): Use get_addr_base_and_unit_offset_1
+	with vn_valueize as valueization callback.
+	(vn_reference_maybe_forwprop_address): Likewise.
+	* tree-dfa.c (get_addr_base_and_unit_offset_1): Also valueize
+	array_ref_low_bound.
+
+2020-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94786
+	* match.pd (A ^ ((A ^ B) & -(C cmp D)) -> (C cmp D) ? B : A): New
+	simplification.
+
+	PR target/94857
+	* config/i386/i386.md (peephole2 after *add<mode>3_cc_overflow_1): New
+	define_peephole2.
+
+	PR middle-end/94724
+	* tree.c (get_narrower): Reuse the op temporary instead of
+	shadowing it.
+
+	PR tree-optimization/94783
+	* match.pd ((X + (X >> (prec - 1))) ^ (X >> (prec - 1)) to abs (X)):
+	New simplification.
+
+	PR tree-optimization/94956
+	* match.pd (FFS): Optimize __builtin_ffs* of non-zero argument into
+	__builtin_ctz* + 1 if direct IFN_CTZ is supported.
+
+	PR tree-optimization/94913
+	* match.pd (A - B + -1 >= A to B >= A): New simplification.
+	(A - B > A to A < B): Don't test TYPE_OVERFLOW_WRAPS which is always
+	true for TYPE_UNSIGNED integral types.
+
+	PR bootstrap/94961
+	PR rtl-optimization/94516
+	* rtl.h (remove_reg_equal_equiv_notes): Add a bool argument defaulted
+	to false.
+	* rtlanal.c (remove_reg_equal_equiv_notes): Add no_rescan argument.
+	Call df_notes_rescan if that argument is not true and returning true.
+	* combine.c (adjust_for_new_dest): Pass true as second argument to
+	remove_reg_equal_equiv_notes.
+	* postreload.c (reload_combine_recognize_pattern): Don't call
+	df_notes_rescan.
+
+2020-05-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (*setnbc_<un>signed_<GPR:mode>): New
+	define_insn.
+	(*setnbcr_<un>signed_<GPR:mode>): New define_insn.
+	(*neg_eq_<mode>): Avoid for TARGET_FUTURE; add missing && 1.
+	(*neg_ne_<mode>): Likewise.
+
+2020-05-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (setbc_<un>signed_<GPR:mode>): New
+	define_insn.
+	(*setbcr_<un>signed_<GPR:mode>): Likewise.
+	(cstore<mode>4): Use setbc[r] if available.
+	(<code><GPR:mode><GPR2:mode>2_isel): Avoid for TARGET_FUTURE.
+	(eq<mode>3): Use setbc for TARGET_FUTURE.
+	(*eq<mode>3): Avoid for TARGET_FUTURE.
+	(ne<mode>3): Replace :P with :GPR; use setbc for TARGET_FUTURE;
+	else for non-Pmode, use gen_eq and gen_xor.
+	(*ne<mode>3): Avoid for TARGET_FUTURE.
+	(*eqsi3_ext<mode>): Avoid for TARGET_FUTURE; fix missing && 1.
+
+2020-05-07 Jeff Law  <law@redhat.com>
+
+	* config/h8300/h8300.md: Move expanders and patterns into
+	files based on functionality.
+	* config/h8300/addsub.md: New file.
+	* config/h8300/bitfield.md: New file
+	* config/h8300/combiner.md: New file
+	* config/h8300/divmod.md: New file
+	* config/h8300/extensions.md: New file
+	* config/h8300/jumpcall.md: New file
+	* config/h8300/logical.md: New file
+	* config/h8300/movepush.md: New file
+	* config/h8300/multiply.md: New file
+	* config/h8300/other.md: New file
+	* config/h8300/proepi.md: New file
+	* config/h8300/shiftrotate.md: New file
+	* config/h8300/testcompare.md: New file
+
+	* config/h8300/h8300.md (adds/subs splitters): Merge into single
+	splitter.
+	(negation expanders and patterns): Simplify and combine using
+	iterators.
+	(one_cmpl expanders and patterns): Likewise.
+	(tablejump, indirect_jump patterns ): Likewise.
+	(shift and rotate expanders and patterns): Likewise.
+	(absolute value expander and pattern): Drop expander, rename pattern
+	to just "abssf2"
+	(peephole2 patterns): Move into...
+	* config/h8300/peepholes.md: New file.
+	
+	* config/h8300/constraints.md (L and N): Simplify now that we're not
+	longer supporting the original H8/300 chip.
+	* config/h8300/elf.h (LINK_SPEC): Likewise.  Default to H8/300H.
+	* config/h8300/h8300.c (shift_alg_qi): Drop H8/300 support.
+	(shift_alg_hi, shift_alg_si): Similarly.
+	(h8300_option_overrides): Similarly.  Default to H8/300H.  If
+	compiling for H8/S, then turn off H8/300H.  Do not update the
+	shift_alg tables for H8/300 port.
+	(h8300_emit_stack_adjustment): Remove support for H8/300.  Simplify
+	where possible.
+	(push, split_adds_subs, h8300_rtx_costs): Likewise.
+	(h8300_print_operand, compute_mov_length): Likewise.
+	(output_plussi, compute_plussi_length): Likewise.
+	(compute_plussi_cc, output_logical_op): Likewise.
+	(compute_logical_op_length, compute_logical_op_cc): Likewise.
+	(get_shift_alg, h8300_shift_needs_scratch): Likewise.
+	(output_a_shift, compute_a_shift_length): Likewise.
+	(output_a_rotate, compute_a_rotate_length): Likewise.
+	(output_simode_bld, h8300_hard_regno_mode_ok): Likewise.
+	(h8300_modes_tieable_p, h8300_return_in_memory): Likewise.
+	* config/h8300/h8300.h (TARGET_CPU_CPP_BUILTINS): Likewise.
+	(attr_cpu, TARGET_H8300): Remove.
+	(TARGET_DEFAULT): Update.
+	(UNITS_PER_WORD, PARM_BOUNDARY): Simplify where possible.
+	(BIGGEST_ALIGNMENT, STACK_BOUNDARY): Likewise.
+	(CONSTANT_ADDRESS_P, MOVE_MAX, Pmode): Likewise.
+	(SIZE_TYPE, POINTER_SIZE, ASM_WORD_OP): Likewise.
+	* config/h8300/h8300.md: Simplify patterns throughout.
+	* config/h8300/t-h8300: Update multilib configuration.
+	
+	* config/h8300/h8300.h (LINK_SPEC): Remove.
+	(USER_LABEL_PREFIX): Likewise.
+
+	* config/h8300/h8300.c (h8300_asm_named_section): Remove.
+	(h8300_option_override): Remove remnants of COFF support.
+
 2020-05-07  Alan Modra  <amodra@gmail.com>
 
 	* tree-ssa-reassoc.c (optimize_range_tests_to_bit_test): Replace

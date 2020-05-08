@@ -1,3 +1,15 @@
+2020-05-08  Nathan Sidwell  <nathan@acm.org>
+
+	Reimplement directives only processing, support raw literals.
+	* directives-only.c: Delete.
+	* Makefile.in (libcpp_a_OBJS, libcpp_a_SOURCES): Remove it.
+	* include/cpplib.h (enum CPP_DO_task): New enum.
+	(cpp_directive_only_preprocess): Declare.
+	* internal.h (_cpp_dir_only_callbacks): Delete.
+	(_cpp_preprocess_dir_only): Delete.
+	* lex.c (do_peek_backslask, do_peek_next, do_peek_prev): New.
+	(cpp_directives_only_process): New implementation.
+
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Partially implement P1042R1: __VA_OPT__ wording clarifications

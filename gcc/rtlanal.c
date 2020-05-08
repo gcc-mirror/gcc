@@ -2480,10 +2480,11 @@ remove_note (rtx_insn *insn, const_rtx note)
 }
 
 /* Remove REG_EQUAL and/or REG_EQUIV notes if INSN has such notes.
-   Return true if any note has been removed.  */
+   If NO_RESCAN is false and any notes were removed, call
+   df_notes_rescan.  Return true if any note has been removed.  */
 
 bool
-remove_reg_equal_equiv_notes (rtx_insn *insn)
+remove_reg_equal_equiv_notes (rtx_insn *insn, bool no_rescan)
 {
   rtx *loc;
   bool ret = false;
@@ -2500,6 +2501,8 @@ remove_reg_equal_equiv_notes (rtx_insn *insn)
       else
 	loc = &XEXP (*loc, 1);
     }
+  if (ret && !no_rescan)
+    df_notes_rescan (insn);
   return ret;
 }
 

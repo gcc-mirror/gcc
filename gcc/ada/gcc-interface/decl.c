@@ -969,10 +969,19 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  align = MINIMUM_ATOMIC_ALIGNMENT;
 #endif
 
-	/* Make a new type with the desired size and alignment, if needed.
-	   But do not take into account alignment promotions to compute the
-	   size of the object.  */
+	/* Do not take into account aliased adjustments or alignment promotions
+	   to compute the size of the object.  */
 	tree gnu_object_size = gnu_size ? gnu_size : TYPE_SIZE (gnu_type);
+
+	/* If the object is aliased, of a constrained nominal subtype and its
+	   size might be zero at run time, we force at least the unit size.  */
+	if (Is_Aliased (gnat_entity)
+	    && !Is_Constr_Subt_For_UN_Aliased (gnat_type)
+	    && Is_Array_Type (Underlying_Type (gnat_type))
+	    && !TREE_CONSTANT (gnu_object_size))
+	  gnu_size = size_binop (MAX_EXPR, gnu_object_size, bitsize_unit_node);
+
+	/* Make a new type with the desired size and alignment, if needed.  */
 	if (gnu_size || align > 0)
 	  {
 	    tree orig_type = gnu_type;
@@ -2685,6 +2694,22 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		set_reverse_storage_order_on_array_type (gnu_type);
 	      if (array_type_has_nonaliased_component (gnu_type, gnat_entity))
 		set_nonaliased_component_on_array_type (gnu_type);
+
+	      /* Kludge to remove the TREE_OVERFLOW flag for the sake of LTO
+		 on maximally-sized array types designed by access types.  */
+	      if (integer_zerop (TYPE_SIZE (gnu_type))
+		  && TREE_OVERFLOW (TYPE_SIZE (gnu_type))
+		  && Is_Itype (gnat_entity)
+		  && (gnat_temp = Associated_Node_For_Itype (gnat_entity))
+		  && IN (Nkind (gnat_temp), N_Declaration)
+		  && Is_Access_Type (Defining_Entity (gnat_temp))
+		  && Is_Entity_Name (First_Index (gnat_entity))
+		  && UI_To_Int (RM_Size (Entity (First_Index (gnat_entity))))
+		     == BITS_PER_WORD)
+		{
+		  TYPE_SIZE (gnu_type) = bitsize_zero_node;
+		  TYPE_SIZE_UNIT (gnu_type) = size_zero_node;
+		}
 	    }
 
 	  /* Attach the TYPE_STUB_DECL in case we have a parallel type.  */
@@ -5327,9 +5352,12 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
     }
 
   /* If this is a read-only parameter, make a variant of the type that is
-     read-only.  ??? However, if this is a self-referential type, the type
+     read-only, except in LTO mode because free_lang_data_in_type would
+     undo it.  ??? However, if this is a self-referential type, the type
      can be very complex, so skip it for now.  */
-  if (ro_param && !CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_param_type)))
+  if (ro_param
+      && !flag_generate_lto
+      && !CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_param_type)))
     gnu_param_type = change_qualified_type (gnu_param_type, TYPE_QUAL_CONST);
 
   /* For foreign conventions, pass arrays as pointers to the element type.

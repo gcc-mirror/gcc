@@ -8889,7 +8889,7 @@ get_narrower (tree op, int *unsignedp_ptr)
 	return win;
       auto_vec <tree, 16> v;
       unsigned int i;
-      for (tree op = win; TREE_CODE (op) == COMPOUND_EXPR;
+      for (op = win; TREE_CODE (op) == COMPOUND_EXPR;
 	   op = TREE_OPERAND (op, 1))
 	v.safe_push (op);
       FOR_EACH_VEC_ELT_REVERSE (v, i, op)

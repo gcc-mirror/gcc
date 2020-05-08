@@ -1,3 +1,35 @@
+2020-05-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Force at
+	least the unit size for an aliased object of a constrained nominal
+	subtype whose size is variable.
+
+2020-05-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Subtype>: Deal
+	with artificial maximally-sized types designed by access types.
+	* gcc-interface/utils.c (packable_type_hash): New structure.
+	(packable_type_hasher): Likewise.
+	(packable_type_hash_table): New hash table.
+	(init_gnat_utils): Initialize it.
+	(destroy_gnat_utils): Destroy it.
+	(packable_type_hasher::equal): New method.
+	(hash_packable_type): New static function.
+	(canonicalize_packable_type): Likewise.
+	(make_packable_type): Make sure not to use too small a type for the
+	size of the new fields.  Canonicalize the type if it is named.
+
+2020-05-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Raise_Error_to_gnu): Always compute a lower
+	bound and an upper bound for use by the -gnateE switch for range and
+	comparison operators.
+
+2020-05-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_param): Do not make a variant of
+	the type in LTO mode.
+
 2020-05-04  Mikael Pettersson  <mikpelinux@gmail.com>
 
 	PR bootstrap/94918

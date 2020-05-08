@@ -1758,8 +1758,9 @@ namespace ranges
 	    // FIXME: Forwarding to std::sample here requires computing __lasti
 	    // which may take linear time.
 	    auto __lasti = ranges::next(__first, __last);
-	    return std::sample(std::move(__first), std::move(__lasti),
-			       std::move(__out), __n, std::forward<_Gen>(__g));
+	    return _GLIBCXX_STD_A::
+	      sample(std::move(__first), std::move(__lasti), std::move(__out),
+		     __n, std::forward<_Gen>(__g));
 	  }
 	else
 	  {
@@ -2018,8 +2019,8 @@ namespace ranges
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	auto __lasti = ranges::next(__first, __last);
-	std::sort(std::move(__first), __lasti,
-		  __detail::__make_comp_proj(__comp, __proj));
+	_GLIBCXX_STD_A::sort(std::move(__first), __lasti,
+			     __detail::__make_comp_proj(__comp, __proj));
 	return __lasti;
       }
 
@@ -2262,8 +2263,9 @@ namespace ranges
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	auto __lasti = ranges::next(__first, __last);
-	std::nth_element(std::move(__first), std::move(__nth), __lasti,
-			 __detail::__make_comp_proj(__comp, __proj));
+	_GLIBCXX_STD_A::nth_element(std::move(__first), std::move(__nth),
+				    __lasti,
+				    __detail::__make_comp_proj(__comp, __proj));
 	return __lasti;
       }
 

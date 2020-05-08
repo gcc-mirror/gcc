@@ -104,12 +104,12 @@ namespace __gnu_parallel
       /** @brief Dereference operator.
       *  @return Referenced element. */
       typename std::iterator_traits<_RAIter>::value_type&
-      operator*()
+      operator*() const
       { return *_M_current; }
 
       /** @brief Convert to wrapped iterator.
       *  @return Wrapped iterator. */
-      operator _RAIter()
+      operator _RAIter() const
       { return _M_current; }
 
       /** @brief Compare two elements referenced by guarded iterators.
@@ -117,8 +117,8 @@ namespace __gnu_parallel
        *  @param __bi2 Second iterator.
        *  @return @c true if less. */
       friend bool
-      operator<(_GuardedIterator<_RAIter, _Compare>& __bi1,
-		_GuardedIterator<_RAIter, _Compare>& __bi2)
+      operator<(const _GuardedIterator<_RAIter, _Compare>& __bi1,
+		const _GuardedIterator<_RAIter, _Compare>& __bi2)
       {
 	if (__bi1._M_current == __bi1._M_end)       // __bi1 is sup
 	  return __bi2._M_current == __bi2._M_end;  // __bi2 is not sup
@@ -132,8 +132,8 @@ namespace __gnu_parallel
        *  @param __bi2 Second iterator.
        *  @return @c True if less equal. */
       friend bool
-      operator<=(_GuardedIterator<_RAIter, _Compare>& __bi1,
-		 _GuardedIterator<_RAIter, _Compare>& __bi2)
+      operator<=(const _GuardedIterator<_RAIter, _Compare>& __bi1,
+		 const _GuardedIterator<_RAIter, _Compare>& __bi2)
       {
 	if (__bi2._M_current == __bi2._M_end)       // __bi1 is sup
 	  return __bi1._M_current != __bi1._M_end;  // __bi2 is not sup
@@ -174,12 +174,12 @@ namespace __gnu_parallel
       /** @brief Dereference operator.
       *  @return Referenced element. */
       typename std::iterator_traits<_RAIter>::value_type&
-      operator*()
+      operator*() const
       { return *_M_current; }
 
       /** @brief Convert to wrapped iterator.
       *  @return Wrapped iterator. */
-      operator _RAIter()
+      operator _RAIter() const
       { return _M_current; }
 
       /** @brief Compare two elements referenced by unguarded iterators.
@@ -187,8 +187,8 @@ namespace __gnu_parallel
        *  @param __bi2 Second iterator.
        *  @return @c true if less. */
       friend bool
-      operator<(_UnguardedIterator<_RAIter, _Compare>& __bi1,
-		_UnguardedIterator<_RAIter, _Compare>& __bi2)
+      operator<(const _UnguardedIterator<_RAIter, _Compare>& __bi1,
+		const _UnguardedIterator<_RAIter, _Compare>& __bi2)
       {
 	// Normal compare.
 	return (__bi1.__comp)(*__bi1, *__bi2);
@@ -199,8 +199,8 @@ namespace __gnu_parallel
        *  @param __bi2 Second iterator.
        *  @return @c True if less equal. */
       friend bool
-      operator<=(_UnguardedIterator<_RAIter, _Compare>& __bi1,
-		 _UnguardedIterator<_RAIter, _Compare>& __bi2)
+      operator<=(const _UnguardedIterator<_RAIter, _Compare>& __bi1,
+		 const _UnguardedIterator<_RAIter, _Compare>& __bi2)
       {
 	// Normal compare.
 	return !(__bi1.__comp)(*__bi2, *__bi1);
