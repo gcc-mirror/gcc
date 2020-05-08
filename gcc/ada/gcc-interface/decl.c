@@ -5327,9 +5327,12 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
     }
 
   /* If this is a read-only parameter, make a variant of the type that is
-     read-only.  ??? However, if this is a self-referential type, the type
+     read-only, except in LTO mode because free_lang_data_in_type would
+     undo it.  ??? However, if this is a self-referential type, the type
      can be very complex, so skip it for now.  */
-  if (ro_param && !CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_param_type)))
+  if (ro_param
+      && !flag_generate_lto
+      && !CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_param_type)))
     gnu_param_type = change_qualified_type (gnu_param_type, TYPE_QUAL_CONST);
 
   /* For foreign conventions, pass arrays as pointers to the element type.

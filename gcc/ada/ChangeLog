@@ -1,3 +1,8 @@
+2020-05-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_param): Do not make a variant of
+	the type in LTO mode.
+
 2020-05-04  Mikael Pettersson  <mikpelinux@gmail.com>
 
 	PR bootstrap/94918
