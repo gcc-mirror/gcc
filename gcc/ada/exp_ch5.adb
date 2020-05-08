@@ -1594,6 +1594,18 @@ package body Exp_Ch5 is
             while Present (C) loop
                if Chars (C) = Chars (Comp) then
                   return C;
+
+               --  The component may be a renamed discriminant, in
+               --  which case check against the name of the original
+               --  discriminant of the parent type.
+
+               elsif Is_Derived_Type (Scope (Comp))
+                 and then Ekind (Comp) = E_Discriminant
+                 and then Present (Corresponding_Discriminant (Comp))
+                 and then
+                   Chars (C) = Chars (Corresponding_Discriminant (Comp))
+               then
+                  return C;
                end if;
 
                Next_Entity (C);
