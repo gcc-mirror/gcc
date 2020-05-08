@@ -1,5 +1,11 @@
 2020-05-18  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/90915
+	* parser.c (cp_parser_has_attribute_expression): Sorry on a
+	type-dependent argument.
+
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
 	DR 1512
 	PR c++/87699
 	* call.c (add_builtin_candidate) <case EQ_EXPR>: Create candidate
