@@ -1356,13 +1356,11 @@ allocnos_conflict_p (ira_allocno_t a1, ira_allocno_t a2)
 
 /* Update (decrease if DECR_P) HARD_REGNO cost of allocnos connected
    by copies to ALLOCNO to increase chances to remove some copies as
-   the result of subsequent assignment.  Update conflict costs only
-   for true CONFLICT_COST_UPDATE_P.  Record cost updates if RECORD_P is
-   true.  */
+   the result of subsequent assignment.  Update conflict costs.
+   Record cost updates if RECORD_P is true.  */
 static void
 update_costs_from_allocno (ira_allocno_t allocno, int hard_regno,
-			   int divisor, bool decr_p, bool record_p,
-			   bool conflict_cost_update_p)
+			   int divisor, bool decr_p, bool record_p)
 {
   int cost, update_cost, update_conflict_cost;
   machine_mode mode;
@@ -1391,7 +1389,9 @@ update_costs_from_allocno (ira_allocno_t allocno, int hard_regno,
 	    gcc_unreachable ();
 
 	  if (another_allocno == from
-	      || allocnos_conflict_p (another_allocno, start))
+	      || (ALLOCNO_COLOR_DATA (another_allocno) != NULL
+		  && (ALLOCNO_COLOR_DATA (allocno)->first_thread_allocno
+		      != ALLOCNO_COLOR_DATA (another_allocno)->first_thread_allocno)))
 	    continue;
 
 	  aclass = ALLOCNO_CLASS (another_allocno);
@@ -1417,15 +1417,13 @@ update_costs_from_allocno (ira_allocno_t allocno, int hard_regno,
 	    cost = -cost;
 
 	  update_cost = cp->freq * cost / divisor;
-	  update_conflict_cost = conflict_cost_update_p ? update_cost : 0;
+	  update_conflict_cost = update_cost;
 
-	  if (ALLOCNO_COLOR_DATA (another_allocno) != NULL
-	      && (ALLOCNO_COLOR_DATA (allocno)->first_thread_allocno
-		  != ALLOCNO_COLOR_DATA (another_allocno)->first_thread_allocno))
-	    /* Decrease conflict cost of ANOTHER_ALLOCNO if it is not
-	       in the same allocation thread.  */
-	    update_conflict_cost /= COST_HOP_DIVISOR;
-
+	  if (internal_flag_ira_verbose > 5 && ira_dump_file != NULL)
+	    fprintf (ira_dump_file,
+		     "          a%dr%d (hr%d): update cost by %d, conflict cost by %d\n",
+		     ALLOCNO_NUM (another_allocno), ALLOCNO_REGNO (another_allocno),
+		     hard_regno, update_cost, update_conflict_cost);
 	  if (update_cost == 0)
 	    continue;
 
@@ -1453,8 +1451,13 @@ update_costs_from_prefs (ira_allocno_t allocno)
 
   start_update_cost ();
   for (pref = ALLOCNO_PREFS (allocno); pref != NULL; pref = pref->next_pref)
-    update_costs_from_allocno (allocno, pref->hard_regno,
-			       COST_HOP_DIVISOR, true, true, false);
+    {
+      if (internal_flag_ira_verbose > 5 && ira_dump_file != NULL)
+	fprintf (ira_dump_file, "        Start updating from pref of hr%d for a%dr%d:\n",
+		 pref->hard_regno, ALLOCNO_NUM (allocno), ALLOCNO_REGNO (allocno));
+      update_costs_from_allocno (allocno, pref->hard_regno,
+				 COST_HOP_DIVISOR, true, true);
+    }
 }
 
 /* Update (decrease if DECR_P) the cost of allocnos connected to
@@ -1469,7 +1472,10 @@ update_costs_from_copies (ira_allocno_t allocno, bool decr_p, bool record_p)
   hard_regno = ALLOCNO_HARD_REGNO (allocno);
   ira_assert (hard_regno >= 0 && ALLOCNO_CLASS (allocno) != NO_REGS);
   start_update_cost ();
-  update_costs_from_allocno (allocno, hard_regno, 1, decr_p, record_p, true);
+  if (internal_flag_ira_verbose > 5 && ira_dump_file != NULL)
+    fprintf (ira_dump_file, "        Start updating from a%dr%d by copies:\n",
+	     ALLOCNO_NUM (allocno), ALLOCNO_REGNO (allocno));
+  update_costs_from_allocno (allocno, hard_regno, 1, decr_p, record_p);
 }
 
 /* Update conflict_allocno_hard_prefs of allocnos conflicting with
@@ -1517,9 +1523,12 @@ restore_costs_from_copies (ira_allocno_t allocno)
     return;
   records = ALLOCNO_COLOR_DATA (allocno)->update_cost_records;
   start_update_cost ();
+  if (internal_flag_ira_verbose > 5 && ira_dump_file != NULL)
+    fprintf (ira_dump_file, "        Start restoring from a%dr%d:\n",
+	     ALLOCNO_NUM (allocno), ALLOCNO_REGNO (allocno));
   for (curr = records; curr != NULL; curr = curr->next)
     update_costs_from_allocno (allocno, curr->hard_regno,
-			       curr->divisor, true, false, true);
+			       curr->divisor, true, false);
   free_update_cost_record_list (records);
   ALLOCNO_COLOR_DATA (allocno)->update_cost_records = NULL;
 }
@@ -1934,6 +1943,8 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
       if (internal_flag_ira_verbose > 5 && ira_dump_file != NULL)
 	fprintf (ira_dump_file, "(%d=%d,%d) ", hard_regno, cost, full_cost);
     }
+  if (internal_flag_ira_verbose > 5 && ira_dump_file != NULL)
+    fprintf (ira_dump_file, "\n");
   if (min_full_cost > mem_cost
       /* Do not spill static chain pointer pseudo when non-local goto
 	 is used.  */
@@ -2112,7 +2123,7 @@ form_threads_from_copies (int cp_num)
 	      if (internal_flag_ira_verbose > 3 && ira_dump_file != NULL)
 		fprintf
 		  (ira_dump_file,
-		   "      Forming thread by copy %d:a%dr%d-a%dr%d (freq=%d):\n",
+		   "        Forming thread by copy %d:a%dr%d-a%dr%d (freq=%d):\n",
 		   cp->num, ALLOCNO_NUM (cp->first), ALLOCNO_REGNO (cp->first),
 		   ALLOCNO_NUM (cp->second), ALLOCNO_REGNO (cp->second),
 		   cp->freq);
@@ -2120,7 +2131,7 @@ form_threads_from_copies (int cp_num)
 	      if (internal_flag_ira_verbose > 3 && ira_dump_file != NULL)
 		{
 		  thread1 = ALLOCNO_COLOR_DATA (thread1)->first_thread_allocno;
-		  fprintf (ira_dump_file, "        Result (freq=%d): a%dr%d(%d)",
+		  fprintf (ira_dump_file, "          Result (freq=%d): a%dr%d(%d)",
 			   ALLOCNO_COLOR_DATA (thread1)->thread_freq,
 			   ALLOCNO_NUM (thread1), ALLOCNO_REGNO (thread1),
 			   ALLOCNO_FREQ (thread1));
@@ -2184,6 +2195,9 @@ form_threads_from_colorable_allocno (ira_allocno_t a)
   ira_copy_t cp, next_cp;
   int cp_num = 0;
 
+  if (internal_flag_ira_verbose > 3 && ira_dump_file != NULL)
+    fprintf (ira_dump_file, "      Forming thread from allocno a%dr%d:\n",
+	     ALLOCNO_NUM (a), ALLOCNO_REGNO (a));
   for (cp = ALLOCNO_COPIES (a); cp != NULL; cp = next_cp)
     {
       if (cp->first == a)
@@ -2505,7 +2519,13 @@ remove_allocno_from_bucket_and_push (ira_allocno_t allocno, bool colorable_p)
 static void
 push_only_colorable (void)
 {
+  if (internal_flag_ira_verbose > 3 && ira_dump_file != NULL)
+    fprintf (ira_dump_file, "      Forming thread from colorable bucket:\n");
   form_threads_from_bucket (colorable_allocno_bucket);
+  for (ira_allocno_t a = colorable_allocno_bucket;
+       a != NULL;
+       a = ALLOCNO_COLOR_DATA (a)->next_bucket_allocno)
+    update_costs_from_prefs (a);
   sort_bucket (&colorable_allocno_bucket, bucket_allocno_compare_func);
   for (;colorable_allocno_bucket != NULL;)
     remove_allocno_from_bucket_and_push (colorable_allocno_bucket, true);
@@ -2687,7 +2707,7 @@ pop_allocnos_from_stack (void)
       else if (assign_hard_reg (allocno, false))
 	{
 	  if (internal_flag_ira_verbose > 3 && ira_dump_file != NULL)
-	    fprintf (ira_dump_file, "assign reg %d\n",
+	    fprintf (ira_dump_file, "        assign reg %d\n",
 		     ALLOCNO_HARD_REGNO (allocno));
 	}
       else if (ALLOCNO_ASSIGNED_P (allocno))
@@ -3202,7 +3222,6 @@ color_allocnos (void)
 	  if (ALLOCNO_CLASS (a) != NO_REGS && ! empty_profitable_hard_regs (a))
 	    {
 	      ALLOCNO_COLOR_DATA (a)->in_graph_p = true;
-	      update_costs_from_prefs (a);
 	      update_conflict_allocno_hard_prefs (a);
 	    }
 	  else

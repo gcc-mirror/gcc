@@ -1,3 +1,7 @@
+2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/i386/pr92807-1.c: Improve the regex.
+
 2020-05-08  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/95003
