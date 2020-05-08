@@ -1,5 +1,9 @@
 2020-05-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/94857
+	* config/i386/i386.md (peephole2 after *add<mode>3_cc_overflow_1): New
+	define_peephole2.
+
 	PR middle-end/94724
 	* tree.c (get_narrower): Reuse the op temporary instead of
 	shadowing it.
