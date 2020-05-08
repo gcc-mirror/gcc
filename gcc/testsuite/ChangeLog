@@ -1,5 +1,8 @@
 2020-05-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/94956
+	* gcc.target/i386/pr94956.c: New test.
+
 	PR tree-optimization/94913
 	* gcc.dg/tree-ssa/pr94913.c: New test.
 

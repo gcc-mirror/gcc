@@ -5986,6 +5986,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	&& direct_internal_fn_supported_p (IFN_POPCOUNT, type,
 					   OPTIMIZE_FOR_BOTH))
     (convert (IFN_POPCOUNT:type @0)))))
+
+/* __builtin_ffs needs to deal on many targets with the possible zero
+   argument.  If we know the argument is always non-zero, __builtin_ctz + 1
+   should lead to better code.  */
+(simplify
+ (FFS tree_expr_nonzero_p@0)
+ (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && direct_internal_fn_supported_p (IFN_CTZ, TREE_TYPE (@0),
+					 OPTIMIZE_FOR_SPEED))
+  (plus (CTZ:type @0) { build_one_cst (type); })))
 #endif
 
 /* Simplify:
