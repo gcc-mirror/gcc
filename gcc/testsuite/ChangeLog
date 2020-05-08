@@ -1,5 +1,10 @@
 2020-05-12  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
+	* gcc.c-torture/execute/noinit-attribute.c: Skip for msp430
+	in the large memory model.
+
+2020-05-12  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
 	* gcc.target/msp430/region-attribute-misuse.c: Allow a .bss section to
 	be created.
 

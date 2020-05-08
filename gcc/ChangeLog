@@ -1,3 +1,13 @@
+2020-05-12  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430-protos.h (msp430_output_aligned_decl_common):
+	Update prototype to include "local" argument.
+	* config/msp430/msp430.c (msp430_output_aligned_decl_common): Add
+	"local" argument.  Handle local common decls.
+	* config/msp430/msp430.h (ASM_OUTPUT_ALIGNED_DECL_COMMON): Adjust
+	msp430_output_aligned_decl_common call with 0 for "local" argument.
+	(ASM_OUTPUT_ALIGNED_DECL_LOCAL): Define.
+
 2020-05-12  Richard Biener  <rguenther@suse.de>
 
 	* cfghooks.c (split_edge): Preserve EDGE_DFS_BACK if set.
