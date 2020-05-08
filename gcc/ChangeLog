@@ -1,3 +1,9 @@
+2020-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94724
+	* tree.c (get_narrower): Reuse the op temporary instead of
+	shadowing it.
+
 2020-05-07  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_atomic_assign_expand_fenv): Use
