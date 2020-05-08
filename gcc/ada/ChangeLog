@@ -1,5 +1,11 @@
 2020-05-08  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Raise_Error_to_gnu): Always compute a lower
+	bound and an upper bound for use by the -gnateE switch for range and
+	comparison operators.
+
+2020-05-08  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_param): Do not make a variant of
 	the type in LTO mode.
 
