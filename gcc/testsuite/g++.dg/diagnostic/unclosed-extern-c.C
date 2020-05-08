@@ -8,5 +8,6 @@ template <typename T> // { dg-error "template with C linkage" }
 void bar (void);
 // { dg-message "1: 'extern .C.' linkage started here" "" { target *-*-* } open_extern_c }
 
-void test (void); /* { dg-error "17: expected '.' at end of input" } */
+void test (void);
 // { message "12: to match this '.'" "" { target *-*-* } open_extern_c }
+/* { dg-error "-:expected '.' at end of input"  } */

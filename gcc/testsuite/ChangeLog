@@ -1,3 +1,41 @@
+2020-05-08  Nathan Sidwell  <nathan@acm.org>
+
+	* c-c++-common/raw-string-6.c: Adjust EOF error location.
+	* g++.dg/cpp0x/decltype63.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-64.C: Likewise.
+	* g++.dg/cpp0x/pr68726.C: Likewise.
+	* g++.dg/cpp0x/pr78341.C: Likewise.
+	* g++.dg/cpp1y/pr65202.C: Likewise.
+	* g++.dg/cpp1z/class-deduction44.C: Likewise.
+	* g++.dg/diagnostic/unclosed-extern-c.C: Likewise.
+	* g++.dg/diagnostic/unclosed-function.C: Likewise.
+	* g++.dg/diagnostic/unclosed-namespace.C: Likewise.
+	* g++.dg/diagnostic/unclosed-struct.C: Likewise.
+	* g++.dg/ext/pr84598.C: Likewise.
+	* g++.dg/other/switch4.C: Likewise.
+	* g++.dg/parse/crash10.C: Likewise.
+	* g++.dg/parse/crash18.C: Likewise.
+	* g++.dg/parse/crash35.C: Likewise.
+	* g++.dg/parse/crash59.C: Likewise.
+	* g++.dg/parse/crash61.C: Likewise.
+	* g++.dg/parse/crash67.C: Likewise.
+	* g++.dg/parse/ctor3.C: Likewise.
+	* g++.dg/parse/error14.C: Likewise.
+	* g++.dg/parse/error5.C: Likewise.
+	* g++.dg/parse/error56.C: Likewise.
+	* g++.dg/parse/invalid1.C: Likewise.
+	* g++.dg/parse/parameter-declaration-1.C: Likewise.
+	* g++.dg/parse/parser-pr28152-2.C: Likewise.
+	* g++.dg/parse/parser-pr28152.C: Likewise.
+	* g++.dg/parse/pr68722.C: Likewise.
+	* g++.dg/pr46852.C: Likewise.
+	* g++.dg/pr46868.C: Likewise.
+	* g++.dg/template/crash115.C: Likewise.
+	* g++.dg/template/crash43.C: Likewise.
+	* g++.dg/template/error-recovery1.C: Likewise.
+	* g++.dg/template/error57.C: Likewise.
+	* g++.old-deja/g++.other/crash31.C: Likewise.
+
 2020-05-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/addr15.adb: New test.
