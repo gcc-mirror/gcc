@@ -1,5 +1,9 @@
 2020-05-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/94783
+	* match.pd ((X + (X >> (prec - 1))) ^ (X >> (prec - 1)) to abs (X)):
+	New simplification.
+
 	PR tree-optimization/94956
 	* match.pd (FFS): Optimize __builtin_ffs* of non-zero argument into
 	__builtin_ctz* + 1 if direct IFN_CTZ is supported.

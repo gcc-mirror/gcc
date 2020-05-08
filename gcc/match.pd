@@ -120,6 +120,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
    (convert (absu:utype @0)))))
 
+#if GIMPLE
+/* Optimize (X + (X >> (prec - 1))) ^ (X >> (prec - 1)) into abs (X).  */
+(simplify
+ (bit_xor:c (plus:c @0 (rshift@2 @0 INTEGER_CST@1)) @2)
+ (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && !TYPE_UNSIGNED (TREE_TYPE (@0))
+      && wi::to_widest (@1) == element_precision (TREE_TYPE (@0)) - 1)
+  (abs @0)))
+#endif
 
 /* Simplifications of operations with one constant operand and
    simplifications to constants or single values.  */
