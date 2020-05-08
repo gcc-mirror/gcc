@@ -1,5 +1,11 @@
 2020-05-17  Aldy Hernandez  <aldyh@redhat.com>
 
+	* tree-vrp.c (operand_less_p): Move to...
+	* vr-values.c (operand_less_p): ...here.
+	* tree-vrp.h (operand_less_p): Remove.
+
+2020-05-17  Aldy Hernandez  <aldyh@redhat.com>
+
 	* tree-vrp.c (class vrp_insert): Remove prototype for
 	live_on_edge.
 
