@@ -2459,7 +2459,7 @@ static void
 adjust_for_new_dest (rtx_insn *insn)
 {
   /* For notes, be conservative and simply remove them.  */
-  remove_reg_equal_equiv_notes (insn);
+  remove_reg_equal_equiv_notes (insn, true);
 
   /* The new insn will have a destination that was previously the destination
      of an insn just above it.  Call distribute_links to make a LOG_LINK from

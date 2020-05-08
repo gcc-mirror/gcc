@@ -1008,10 +1008,17 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain,
 	      || !int_fits_type_p (init, type)))
 	ok = false;
     }
+  /* [dcl.init.list]#7.2: "from long double to double or float, or from
+      double to float".  */
   else if (TREE_CODE (ftype) == REAL_TYPE
 	   && TREE_CODE (type) == REAL_TYPE)
     {
-      if (TYPE_PRECISION (type) < TYPE_PRECISION (ftype))
+      if ((same_type_p (ftype, long_double_type_node)
+	   && (same_type_p (type, double_type_node)
+	       || same_type_p (type, float_type_node)))
+	  || (same_type_p (ftype, double_type_node)
+	      && same_type_p (type, float_type_node))
+	  || (TYPE_PRECISION (type) < TYPE_PRECISION (ftype)))
 	{
 	  if (TREE_CODE (init) == REAL_CST)
 	    {
@@ -1040,9 +1047,10 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain,
     }
   else if (TREE_CODE (type) == BOOLEAN_TYPE
 	   && (TYPE_PTR_P (ftype) || TYPE_PTRMEM_P (ftype)))
-    /* This hasn't actually made it into C++20 yet, but let's add it now to get
-       an idea of the impact.  */
-    ok = (cxx_dialect < cxx2a);
+    /* C++20 P1957R2: converting from a pointer type or a pointer-to-member
+       type to bool should be considered narrowing.  This is a DR so is not
+       limited to C++20 only.  */
+    ok = false;
 
   bool almost_ok = ok;
   if (!ok && !CONSTANT_CLASS_P (init) && (complain & tf_warning_or_error))

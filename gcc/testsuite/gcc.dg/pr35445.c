@@ -1,5 +1,5 @@
 /* PR c/35445 */
-/* { dg-do "compile" } */
+/* { dg-do compile } */
 
 extern int i;
 extern int i; /* { dg-message "was here" } */

@@ -1,3 +1,172 @@
+2020-05-08  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.dg/cpp/counter-[23].c: Move to c-c+_-common/cpp.
+	* gcc.dg/cpp/dir-only-*: Likewise.
+	* c-c++-common/cpp/dir-only-[78].c: New.
+
+2020-05-08  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-pr68892.c: Adjust for not supported
+	SLP permutations becoming builds from scalars.
+	* gcc.dg/vect/bb-slp-pr78205.c: Likewise.
+	* gcc.dg/vect/bb-slp-34.c: Likewise.
+
+2020-05-08  Nathan Sidwell  <nathan@acm.org>
+
+	* c-c++-common/raw-string-6.c: Adjust EOF error location.
+	* g++.dg/cpp0x/decltype63.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-64.C: Likewise.
+	* g++.dg/cpp0x/pr68726.C: Likewise.
+	* g++.dg/cpp0x/pr78341.C: Likewise.
+	* g++.dg/cpp1y/pr65202.C: Likewise.
+	* g++.dg/cpp1z/class-deduction44.C: Likewise.
+	* g++.dg/diagnostic/unclosed-extern-c.C: Likewise.
+	* g++.dg/diagnostic/unclosed-function.C: Likewise.
+	* g++.dg/diagnostic/unclosed-namespace.C: Likewise.
+	* g++.dg/diagnostic/unclosed-struct.C: Likewise.
+	* g++.dg/ext/pr84598.C: Likewise.
+	* g++.dg/other/switch4.C: Likewise.
+	* g++.dg/parse/crash10.C: Likewise.
+	* g++.dg/parse/crash18.C: Likewise.
+	* g++.dg/parse/crash35.C: Likewise.
+	* g++.dg/parse/crash59.C: Likewise.
+	* g++.dg/parse/crash61.C: Likewise.
+	* g++.dg/parse/crash67.C: Likewise.
+	* g++.dg/parse/ctor3.C: Likewise.
+	* g++.dg/parse/error14.C: Likewise.
+	* g++.dg/parse/error5.C: Likewise.
+	* g++.dg/parse/error56.C: Likewise.
+	* g++.dg/parse/invalid1.C: Likewise.
+	* g++.dg/parse/parameter-declaration-1.C: Likewise.
+	* g++.dg/parse/parser-pr28152-2.C: Likewise.
+	* g++.dg/parse/parser-pr28152.C: Likewise.
+	* g++.dg/parse/pr68722.C: Likewise.
+	* g++.dg/pr46852.C: Likewise.
+	* g++.dg/pr46868.C: Likewise.
+	* g++.dg/template/crash115.C: Likewise.
+	* g++.dg/template/crash43.C: Likewise.
+	* g++.dg/template/error-recovery1.C: Likewise.
+	* g++.dg/template/error57.C: Likewise.
+	* g++.old-deja/g++.other/crash31.C: Likewise.
+
+2020-05-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/addr15.adb: New test.
+
+2020-05-08  Richard Biener  <rguenther@suse.de>
+
+	* gnat.dg/opt83.adb: New testcase.
+
+2020-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94786
+	* gcc.dg/tree-ssa/pr94786.c: New test.
+
+	PR target/94857
+	* gcc.target/i386/pr94857.c: New test.
+
+	PR tree-optimization/94783
+	* gcc.dg/tree-ssa/pr94783.c: New test.
+
+	PR tree-optimization/94956
+	* gcc.target/i386/pr94956.c: New test.
+
+	PR tree-optimization/94913
+	* gcc.dg/tree-ssa/pr94913.c: New test.
+
+2020-05-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/setnbc.h: New.
+	* gcc.target/powerpc/setnbceq.c: New.
+	* gcc.target/powerpc/setnbcge.c: New.
+	* gcc.target/powerpc/setnbcgt.c: New.
+	* gcc.target/powerpc/setnbcle.c: New.
+	* gcc.target/powerpc/setnbclt.c: New.
+	* gcc.target/powerpc/setnbcne.c: New.
+
+2020-05-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/setbc.h: New.
+	* gcc.target/powerpc/setbceq.c: New.
+	* gcc.target/powerpc/setbcge.c: New.
+	* gcc.target/powerpc/setbcgt.c: New.
+	* gcc.target/powerpc/setbcle.c: New.
+	* gcc.target/powerpc/setbclt.c: New.
+	* gcc.target/powerpc/setbcne.c: New.
+
+2020-05-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94817
+	PR c++/94829
+	* g++.dg/coroutines/coro-missing-final-suspend.C: New test.
+	* g++.dg/coroutines/coro-missing-initial-suspend.C: New test.
+	* g++.dg/coroutines/coro-missing-promise-yield.C: Check for
+	continuation of compilation.
+	* g++.dg/coroutines/coro-missing-promise.C: Likewise.
+	* g++.dg/coroutines/coro-missing-ret-value.C: Likewise
+	* g++.dg/coroutines/coro-missing-ret-void.C: Likewise
+	* g++.dg/coroutines/coro-missing-ueh-3.C: Likewise
+	* g++.dg/coroutines/pr94817.C: New test.
+	* g++.dg/coroutines/pr94829.C: New test.
+
+2020-05-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94590 - Detect long double -> double narrowing.
+	* g++.dg/cpp0x/Wnarrowing18.C: New test.
+
+2020-05-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94255
+	* g++.dg/template/spec41.C: New test.
+
+2020-05-07  Marek Polacek  <polacek@redhat.com>
+
+	P1957R2
+	* g++.dg/cpp0x/initlist92.C: Don't expect an error in C++20 only.
+
+2020-05-07  Manfred Schwarb <manfred99@gmx.ch>
+
+	* gcc.dg/20050121-1.c: Fix broken dg directives.
+	* gcc.dg/analzyer/pr93382.c: Likewise.
+	* gcc.dg/autopar/pr68460.c: Likewise.
+	* gcc.dg/c90-fordecl-1.c: Likewise.
+	* gcc.dg/cpp/trad/funlike-5.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-dfp.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-float.c: Likewise.
+	* gcc.dg/lto/pr52634_0.c: Likewise.
+	* gcc.dg/pr32069.c: Likewise.
+	* gcc.dg/pr35445.c: Likewise.
+	* gcc.dg/pr40172-3.c: Likewise.
+	* gcc.dg/pr87347.c: Likewise.
+	* gcc.dg/pr88660.c: Likewise.
+	* gcc.dg/pr89689.c: Likewise.
+	* gcc.dg/sinatan-2.c: Likewise.
+	* gcc.dg/sinhatanh-1.c: Likewise.
+	* gcc.dg/sinhovercosh-1.c: Likewise.
+	* gcc.dg/tls/opt-9.c: Likewise.
+	* gcc.dg/torture/builtins-1.c: Likewise.
+	* gcc.dg/torture/pr51106-1.c: Likewise.
+	* gcc.dg/torture/pr51106-2.c: Likewise.
+	* gcc.dg/torture/pr80281.c: Likewise.
+	* gcc.dg/torture/pr92252.c: Likewise.
+	* gcc.dg/tree-ssa/pr79448-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr79448.c: Likewise.
+	* gcc.dg/tree-ssa/pr92163.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-28.c: Likewise.
+	* gcc.dg/tree-ssa/upcast-1.c: Likewise.
+	* gcc.dg/two-types-6.c: Likewise.
+	* gcc.dg/ubsan/c-shift-1.c: Likewise.
+	* gcc.dg/var-expand3.c: Likewise.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-pr30843.c: Likewise.
+	* gcc.dg/vect/pr71264.c: Likewise.
+
+2020-05-07  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/other/operator1.C: Adjust expected message.
+	* g++.dg/overload/operator2.C: Likewise.
+	* g++.dg/template/error30.C: Likewise.
+	* g++.old-deja/g++.jason/operator.C: Likewise.
+
 2020-05-07  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/94703

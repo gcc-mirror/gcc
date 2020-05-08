@@ -57,11 +57,11 @@
    as a consequence.
 
    See  "Efficient Field-sensitive pointer analysis for C" by "David
-   J. Pearce and Paul H. J. Kelly and Chris Hankin, at
+   J. Pearce and Paul H. J. Kelly and Chris Hankin", at
    http://citeseer.ist.psu.edu/pearce04efficient.html
 
    Also see "Ultra-fast Aliasing Analysis using CLA: A Million Lines
-   of C Code in a Second" by ""Nevin Heintze and Olivier Tardieu" at
+   of C Code in a Second" by "Nevin Heintze and Olivier Tardieu" at
    http://citeseer.ist.psu.edu/heintze01ultrafast.html
 
    There are three types of real constraint expressions, DEREF,
@@ -84,7 +84,7 @@
    Each variable for a structure field has
 
    1. "size", that tells the size in bits of that field.
-   2. "fullsize, that tells the size in bits of the entire structure.
+   2. "fullsize", that tells the size in bits of the entire structure.
    3. "offset", that tells the offset in bits from the beginning of the
    structure to this field.
 
@@ -188,7 +188,7 @@
 
    We probably should compute a per-function unit-ESCAPE solution
    propagating it simply like the clobber / uses solutions.  The
-   solution can go alongside the non-IPA espaced solution and be
+   solution can go alongside the non-IPA escaped solution and be
    used to query which vars escape the unit through a function.
    This is also required to make the escaped-HEAP trick work in IPA mode.
 
@@ -8085,7 +8085,8 @@ refered_from_nonlocal_fn (struct cgraph_node *node, void *data)
 {
   bool *nonlocal_p = (bool *)data;
   *nonlocal_p |= (node->used_from_other_partition
-		  || node->externally_visible
+		  || DECL_EXTERNAL (node->decl)
+		  || TREE_PUBLIC (node->decl)
 		  || node->force_output
 		  || lookup_attribute ("noipa", DECL_ATTRIBUTES (node->decl)));
   return false;
@@ -8097,7 +8098,8 @@ refered_from_nonlocal_var (struct varpool_node *node, void *data)
 {
   bool *nonlocal_p = (bool *)data;
   *nonlocal_p |= (node->used_from_other_partition
-		  || node->externally_visible_p ()
+		  || DECL_EXTERNAL (node->decl)
+		  || TREE_PUBLIC (node->decl)
 		  || node->force_output);
   return false;
 }
@@ -8146,7 +8148,8 @@ ipa_pta_execute (void)
 	 For local functions we see all callers and thus do not need initial
 	 constraints for parameters.  */
       bool nonlocal_p = (node->used_from_other_partition
-			 || node->externally_visible
+			 || DECL_EXTERNAL (node->decl)
+			 || TREE_PUBLIC (node->decl)
 			 || node->force_output
 			 || lookup_attribute ("noipa",
 					      DECL_ATTRIBUTES (node->decl)));
@@ -8187,7 +8190,8 @@ ipa_pta_execute (void)
 
       /* For the purpose of IPA PTA unit-local globals are not
          escape points.  */
-      bool nonlocal_p = (var->externally_visible_p ()
+      bool nonlocal_p = (DECL_EXTERNAL (var->decl)
+			 || TREE_PUBLIC (var->decl)
 			 || var->used_from_other_partition
 			 || var->force_output);
       var->call_for_symbol_and_aliases (refered_from_nonlocal_var,

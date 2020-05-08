@@ -24209,7 +24209,12 @@ cp_parser_class_specifier_1 (cp_parser* parser)
   if (nested_name_specifier_p)
     {
       scope = CP_DECL_CONTEXT (TYPE_MAIN_DECL (type));
-      old_scope = push_inner_scope (scope);
+      /* SCOPE must be a scope nested inside current scope.  */
+      if (is_nested_namespace (current_namespace,
+			       decl_namespace_context (scope)))
+	old_scope = push_inner_scope (scope);
+      else
+	nested_name_specifier_p = false;
     }
   type = begin_class_definition (type);
 

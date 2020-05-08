@@ -1,5 +1,7 @@
 2020-05-08  Nathan Sidwell  <nathan@acm.org>
 
+	Merge master b224c3763e0.
+
 	EOF has a location
 	gcc/cp/
 	* parser.c (cp_lexer_set_source_position_from_token): Don't

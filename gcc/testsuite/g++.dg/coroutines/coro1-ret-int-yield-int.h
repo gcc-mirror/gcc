@@ -99,14 +99,20 @@ struct coro1 {
     return handle_type::from_promise (*this);
   }
 
+#ifdef MISSING_INITIAL_SUSPEND
+#else
   auto initial_suspend () {
     PRINT ("get initial_suspend (always)");
     return suspend_always_prt{};
   }
+#endif
+#ifdef MISSING_FINAL_SUSPEND
+#else
   auto final_suspend () {
     PRINT ("get final_suspend (always)");
     return suspend_always_prt{};
   }
+#endif
 
 #ifdef USE_AWAIT_TRANSFORM
 

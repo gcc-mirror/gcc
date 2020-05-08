@@ -14446,7 +14446,7 @@ grok_op_properties (tree decl, bool complain)
 	  || operator_code == ARRAY_REF
 	  || operator_code == NOP_EXPR)
 	{
-	  error_at (loc, "%qD must be a nonstatic member function", decl);
+	  error_at (loc, "%qD must be a non-static member function", decl);
 	  return false;
 	}
 
@@ -16974,6 +16974,7 @@ finish_function (bool inline_p)
   bool coro_p = flag_coroutines
 		&& !processing_template_decl
 		&& DECL_COROUTINE_P (fndecl);
+  bool coro_emit_helpers = false;
 
   /* When we get some parse errors, we can end up without a
      current_function_decl, so cope.  */
@@ -17002,18 +17003,16 @@ finish_function (bool inline_p)
 
   if (coro_p)
     {
-      if (!morph_fn_to_coro (fndecl, &resumer, &destroyer))
-	{
-	  DECL_SAVED_TREE (fndecl) = pop_stmt_list (DECL_SAVED_TREE (fndecl));
-	  poplevel (1, 0, 1);
-	  DECL_SAVED_TREE (fndecl) = error_mark_node;
-	  return fndecl;
-	}
+      /* Only try to emit the coroutine outlined helper functions if the
+	 transforms succeeded.  Otherwise, treat errors in the same way as
+	 a regular function.  */
+      coro_emit_helpers = morph_fn_to_coro (fndecl, &resumer, &destroyer);
 
       /* We should handle coroutine IFNs in middle end lowering.  */
       cfun->coroutine_component = true;
 
-      if (use_eh_spec_block (fndecl))
+      /* Do not try to process the ramp's EH unless outlining succeeded.  */
+      if (coro_emit_helpers && use_eh_spec_block (fndecl))
 	finish_eh_spec_block (TYPE_RAISES_EXCEPTIONS
 			      (TREE_TYPE (fndecl)),
 			      current_eh_spec_block);
@@ -17262,8 +17261,9 @@ finish_function (bool inline_p)
       && !DECL_OMP_DECLARE_REDUCTION_P (fndecl))
     cp_genericize (fndecl);
 
-  /* Emit the resumer and destroyer functions now.  */
-  if (coro_p)
+  /* Emit the resumer and destroyer functions now, providing that we have
+     not encountered some fatal error.  */
+  if (coro_emit_helpers)
     {
       emit_coro_helper (resumer);
       emit_coro_helper (destroyer);

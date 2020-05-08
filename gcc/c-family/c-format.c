@@ -2997,6 +2997,7 @@ static const struct
    NAME ("decl", "declaration"),
    NAME ("enumeral", "enumerated"),
    NAME ("floating point", "floating-point"),
+   NAME ("nonstatic", "non-static"),
    NAME ("non-zero", "nonzero"),
    NAME ("reg", "register"),
    NAME ("stmt", "statement"),

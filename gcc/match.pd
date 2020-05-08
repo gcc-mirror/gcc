@@ -120,6 +120,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
    (convert (absu:utype @0)))))
 
+#if GIMPLE
+/* Optimize (X + (X >> (prec - 1))) ^ (X >> (prec - 1)) into abs (X).  */
+(simplify
+ (bit_xor:c (plus:c @0 (rshift@2 @0 INTEGER_CST@1)) @2)
+ (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && !TYPE_UNSIGNED (TREE_TYPE (@0))
+      && wi::to_widest (@1) == element_precision (TREE_TYPE (@0)) - 1)
+  (abs @0)))
+#endif
 
 /* Simplifications of operations with one constant operand and
    simplifications to constants or single values.  */
@@ -2791,6 +2800,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && (TYPE_PRECISION (TREE_TYPE (@4)) >= TYPE_PRECISION (type)
 	   || !TYPE_UNSIGNED (TREE_TYPE (@4)))
        && (GIMPLE || !TREE_SIDE_EFFECTS (@1)))
+   (cond (cmp @2 @3) @1 @0)))
+ /* Similarly with ^ instead of - though in that case with :c.  */
+ (simplify
+  (bit_xor:c @0 (bit_and:c (bit_xor:c @0 @1)
+			   (convert? (negate@4 (convert? (cmp@5 @2 @3))))))
+  (if (INTEGRAL_TYPE_P (type)
+       && INTEGRAL_TYPE_P (TREE_TYPE (@4))
+       && TREE_CODE (TREE_TYPE (@4)) != BOOLEAN_TYPE
+       && INTEGRAL_TYPE_P (TREE_TYPE (@5))
+       && (TYPE_PRECISION (TREE_TYPE (@4)) >= TYPE_PRECISION (type)
+	   || !TYPE_UNSIGNED (TREE_TYPE (@4)))
+       && (GIMPLE || !TREE_SIDE_EFFECTS (@1)))
    (cond (cmp @2 @3) @1 @0))))
 
 /* Simplifications of shift and rotates.  */
@@ -4787,9 +4808,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cmp:c (minus@2 @0 @1) @0)
   (if (single_use (@2)
        && ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
-       && TYPE_UNSIGNED (TREE_TYPE (@0))
-       && TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0)))
+       && TYPE_UNSIGNED (TREE_TYPE (@0)))
    (cmp @1 @0))))
+
+/* Optimize A - B + -1 >= A into B >= A for unsigned comparisons.  */
+(for cmp (ge lt)
+ (simplify
+  (cmp:c (plus (minus @0 @1) integer_minus_onep) @0)
+   (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	&& TYPE_UNSIGNED (TREE_TYPE (@0)))
+    (cmp @1 @0))))
 
 /* Testing for overflow is unnecessary if we already know the result.  */
 /* A - B > A  */
@@ -5979,6 +6007,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	&& direct_internal_fn_supported_p (IFN_POPCOUNT, type,
 					   OPTIMIZE_FOR_BOTH))
     (convert (IFN_POPCOUNT:type @0)))))
+
+/* __builtin_ffs needs to deal on many targets with the possible zero
+   argument.  If we know the argument is always non-zero, __builtin_ctz + 1
+   should lead to better code.  */
+(simplify
+ (FFS tree_expr_nonzero_p@0)
+ (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && direct_internal_fn_supported_p (IFN_CTZ, TREE_TYPE (@0),
+					 OPTIMIZE_FOR_SPEED))
+  (plus (CTZ:type @0) { build_one_cst (type); })))
 #endif
 
 /* Simplify:

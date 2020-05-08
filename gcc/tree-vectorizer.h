@@ -324,8 +324,9 @@ public:
   /* The mapping of GIMPLE UID to stmt_vec_info.  */
   vec<stmt_vec_info> stmt_vec_infos;
 
-  /* All SLP instances.  */
+  /* The SLP graph.  */
   auto_vec<slp_instance> slp_instances;
+  auto_vec<slp_tree> slp_loads;
 
   /* Maps base addresses to an innermost_loop_behavior that gives the maximum
      known alignment for that base.  */
@@ -1858,6 +1859,7 @@ extern void vect_schedule_slp (vec_info *);
 extern opt_result vect_analyze_slp (vec_info *, unsigned);
 extern bool vect_make_slp_decision (loop_vec_info);
 extern void vect_detect_hybrid_slp (loop_vec_info);
+extern void vect_optimize_slp (vec_info *);
 extern void vect_get_slp_defs (vec_info *, slp_tree, vec<vec<tree> > *,
 			       unsigned n = -1U);
 extern bool vect_slp_bb (basic_block);

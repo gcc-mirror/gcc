@@ -3208,8 +3208,9 @@ optimize_range_tests_to_bit_test (enum tree_code opcode, int first, int length,
 	      HOST_WIDE_INT m = tree_to_uhwi (lowi);
 	      rtx reg = gen_raw_REG (word_mode, 10000);
 	      bool speed_p = optimize_bb_for_speed_p (gimple_bb (stmt));
-	      cost_diff = set_rtx_cost (gen_rtx_PLUS (word_mode, reg,
-						      GEN_INT (-m)), speed_p);
+	      cost_diff = set_src_cost (gen_rtx_PLUS (word_mode, reg,
+						      GEN_INT (-m)),
+					word_mode, speed_p);
 	      rtx r = immed_wide_int_const (mask, word_mode);
 	      cost_diff += set_src_cost (gen_rtx_AND (word_mode, reg, r),
 					 word_mode, speed_p);
