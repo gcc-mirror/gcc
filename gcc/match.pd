@@ -2800,6 +2800,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && (TYPE_PRECISION (TREE_TYPE (@4)) >= TYPE_PRECISION (type)
 	   || !TYPE_UNSIGNED (TREE_TYPE (@4)))
        && (GIMPLE || !TREE_SIDE_EFFECTS (@1)))
+   (cond (cmp @2 @3) @1 @0)))
+ /* Similarly with ^ instead of - though in that case with :c.  */
+ (simplify
+  (bit_xor:c @0 (bit_and:c (bit_xor:c @0 @1)
+			   (convert? (negate@4 (convert? (cmp@5 @2 @3))))))
+  (if (INTEGRAL_TYPE_P (type)
+       && INTEGRAL_TYPE_P (TREE_TYPE (@4))
+       && TREE_CODE (TREE_TYPE (@4)) != BOOLEAN_TYPE
+       && INTEGRAL_TYPE_P (TREE_TYPE (@5))
+       && (TYPE_PRECISION (TREE_TYPE (@4)) >= TYPE_PRECISION (type)
+	   || !TYPE_UNSIGNED (TREE_TYPE (@4)))
+       && (GIMPLE || !TREE_SIDE_EFFECTS (@1)))
    (cond (cmp @2 @3) @1 @0))))
 
 /* Simplifications of shift and rotates.  */

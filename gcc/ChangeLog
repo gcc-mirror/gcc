@@ -1,5 +1,9 @@
 2020-05-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/94786
+	* match.pd (A ^ ((A ^ B) & -(C cmp D)) -> (C cmp D) ? B : A): New
+	simplification.
+
 	PR target/94857
 	* config/i386/i386.md (peephole2 after *add<mode>3_cc_overflow_1): New
 	define_peephole2.
