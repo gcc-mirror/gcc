@@ -1,3 +1,16 @@
+2020-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/94961
+	PR rtl-optimization/94516
+	* rtl.h (remove_reg_equal_equiv_notes): Add a bool argument defaulted
+	to false.
+	* rtlanal.c (remove_reg_equal_equiv_notes): Add no_rescan argument.
+	Call df_notes_rescan if that argument is not true and returning true.
+	* combine.c (adjust_for_new_dest): Pass true as second argument to
+	remove_reg_equal_equiv_notes.
+	* postreload.c (reload_combine_recognize_pattern): Don't call
+	df_notes_rescan.
+
 2020-05-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (*setnbc_<un>signed_<GPR:mode>): New

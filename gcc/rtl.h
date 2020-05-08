@@ -3500,7 +3500,7 @@ extern void add_args_size_note (rtx_insn *, poly_int64);
 extern void add_shallow_copy_of_reg_note (rtx_insn *, rtx);
 extern rtx duplicate_reg_note (rtx);
 extern void remove_note (rtx_insn *, const_rtx);
-extern bool remove_reg_equal_equiv_notes (rtx_insn *);
+extern bool remove_reg_equal_equiv_notes (rtx_insn *, bool = false);
 extern void remove_reg_equal_equiv_notes_for_regno (unsigned int);
 extern int side_effects_p (const_rtx);
 extern int volatile_refs_p (const_rtx);
