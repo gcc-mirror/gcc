@@ -1,3 +1,8 @@
+2020-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94913
+	* gcc.dg/tree-ssa/pr94913.c: New test.
+
 2020-05-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/setnbc.h: New.

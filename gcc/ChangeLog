@@ -1,5 +1,10 @@
 2020-05-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/94913
+	* match.pd (A - B + -1 >= A to B >= A): New simplification.
+	(A - B > A to A < B): Don't test TYPE_OVERFLOW_WRAPS which is always
+	true for TYPE_UNSIGNED integral types.
+
 	PR bootstrap/94961
 	PR rtl-optimization/94516
 	* rtl.h (remove_reg_equal_equiv_notes): Add a bool argument defaulted
