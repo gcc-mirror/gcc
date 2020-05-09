@@ -138,14 +138,12 @@ extern tree make_type_from_size (tree type, tree size_tree, bool for_biased);
    if needed.  We have already verified that SIZE and ALIGN are large enough.
    GNAT_ENTITY is used to name the resulting record and to issue a warning.
    IS_COMPONENT_TYPE is true if this is being done for the component type of
-   an array.  IS_USER_TYPE is true if the original type needs to be completed.
-   DEFINITION is true if this type is being defined.  SET_RM_SIZE is true if
-   the RM size of the resulting type is to be set to SIZE too; in this case,
-   the padded type is canonicalized before being returned.  */
+   an array.  DEFINITION is true if this type is being defined.  SET_RM_SIZE
+   is true if the RM size of the resulting type is to be set to SIZE too; in
+   this case, the padded type is canonicalized before being returned.  */
 extern tree maybe_pad_type (tree type, tree size, unsigned int align,
 			    Entity_Id gnat_entity, bool is_component_type,
-			    bool is_user_type, bool definition,
-			    bool set_rm_size);
+			    bool definition, bool set_rm_size);
 
 /* Return true if padded TYPE was built with an RM size.  */
 extern bool pad_type_has_rm_size (tree type);
