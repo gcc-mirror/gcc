@@ -5257,11 +5257,9 @@ maybe_unconstrained_array (tree exp)
 
 	  exp = build_component_ref (exp, DECL_CHAIN (TYPE_FIELDS (type)),
 				     false);
-	  type = TREE_TYPE (exp);
 
-	  /* If the array type is padded, convert to the unpadded type.  */
-	  if (TYPE_IS_PADDING_P (type))
-	    exp = convert (TREE_TYPE (TYPE_FIELDS (type)), exp);
+	  /* If the array is padded, remove the padding.  */
+	  exp = maybe_padded_object (exp);
 	}
       break;
 

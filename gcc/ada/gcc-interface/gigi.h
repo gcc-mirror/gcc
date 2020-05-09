@@ -1065,20 +1065,6 @@ extern void enumerate_modes (void (*f) (const char *, int, int, int, int, int,
 #define gigi_checking_assert(EXPR) \
   gcc_checking_assert ((EXPR) || type_annotate_only)
 
-/* If EXP's type is a VECTOR_TYPE, return EXP converted to the associated
-   TYPE_REPRESENTATIVE_ARRAY.  */
-
-static inline tree
-maybe_vector_array (tree exp)
-{
-  tree etype = TREE_TYPE (exp);
-
-  if (VECTOR_TYPE_P (etype))
-    exp = convert (TYPE_REPRESENTATIVE_ARRAY (etype), exp);
-
-  return exp;
-}
-
 /* Return the smallest power of 2 larger than X.  */
 
 static inline unsigned HOST_WIDE_INT
@@ -1144,6 +1130,33 @@ gnat_signed_type_for (tree type_node)
   return gnat_signed_or_unsigned_type_for (0, type_node);
 }
 
+/* Like build_qualified_type, but TYPE_QUALS is added to the existing
+   qualifiers on TYPE.  */
+
+static inline tree
+change_qualified_type (tree type, int type_quals)
+{
+  /* Qualifiers must be put on the associated array type.  */
+  if (TREE_CODE (type) == UNCONSTRAINED_ARRAY_TYPE)
+    return type;
+
+  return build_qualified_type (type, TYPE_QUALS (type) | type_quals);
+}
+
+/* If EXPR's type is a VECTOR_TYPE, return EXPR converted to the associated
+   TYPE_REPRESENTATIVE_ARRAY.  */
+
+static inline tree
+maybe_vector_array (tree expr)
+{
+  tree type = TREE_TYPE (expr);
+
+  if (VECTOR_TYPE_P (type))
+    expr = convert (TYPE_REPRESENTATIVE_ARRAY (type), expr);
+
+  return expr;
+}
+
 /* Adjust the character type TYPE if need be.  */
 
 static inline tree
@@ -1186,15 +1199,15 @@ maybe_debug_type (tree type)
   return type;
 }
 
-/* Like build_qualified_type, but TYPE_QUALS is added to the existing
-   qualifiers on TYPE.  */
+/* Remove the padding around EXPR if need be.  */
 
 static inline tree
-change_qualified_type (tree type, int type_quals)
+maybe_padded_object (tree expr)
 {
-  /* Qualifiers must be put on the associated array type.  */
-  if (TREE_CODE (type) == UNCONSTRAINED_ARRAY_TYPE)
-    return type;
+  tree type = TREE_TYPE (expr);
 
-  return build_qualified_type (type, TYPE_QUALS (type) | type_quals);
+  if (TYPE_IS_PADDING_P (type))
+    expr = convert (TREE_TYPE (TYPE_FIELDS (type)), expr);
+
+  return expr;
 }
