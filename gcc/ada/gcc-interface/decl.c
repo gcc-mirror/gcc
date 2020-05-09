@@ -5447,7 +5447,10 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
       && (!type_requires_init_of_formal (Etype (gnat_param))
 	  || Is_Init_Proc (gnat_subprog)
 	  || by_return))
-    return gnu_param_type;
+    {
+      Set_Mechanism (gnat_param, By_Copy);
+      return gnu_param_type;
+    }
 
   gnu_param = create_param_decl (gnu_param_name, gnu_param_type);
   TREE_READONLY (gnu_param) = ro_param || by_ref || by_component_ptr;
