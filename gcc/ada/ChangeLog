@@ -1,5 +1,49 @@
 2020-05-09  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/ada-tree.h (TYPE_PACKED_ARRAY_TYPE_P): Rename into...
+	(TYPE_BIT_PACKED_ARRAY_TYPE_P): ...this.
+	(TYPE_IS_PACKED_ARRAY_TYPE_P): Rename into...
+	(BIT_PACKED_ARRAY_TYPE_P): ...this.
+	(TYPE_IMPL_PACKED_ARRAY_P): Adjust to above renaming.
+	* gcc-interface/gigi.h (maybe_pad_type): Remove IS_USER_TYPE parameter.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Adjust call
+	to maybe_pad_type.
+	<E_Ordinary_Fixed_Point_Type>: Remove const qualifiers for tree.
+	<E_Signed_Integer_Subtype>: Remove redundant test and redundant call
+	to associate_original_type_to_packed_array.  Turn test into assertion.
+	Call associate_original_type_to_packed_array and modify gnu_entity_name
+	accordingly.  Explicitly set the parallel type for GNAT encodings.
+	Call create_type_decl in the misaligned case before maybe_pad_type.
+	<E_Array_Type>: Do not use the name of the implementation type for a
+	packed array when not using GNAT encodings.
+	<E_Array_Subtype>: Move around setting flags. Use the result of the
+	call to associate_original_type_to_packed_array for gnu_entity_name.
+	<E_Record_Subtype>: Create XVS type and XVZ variable only if debug
+	info is requested for the type.
+	Call create_type_decl if a padded type was created for a type entity.
+	(gnat_to_gnu_component_type): Use local variable and adjust calls to
+	maybe_pad_type.
+	(gnat_to_gnu_subprog_type): Adjust call to maybe_pad_type.
+	(gnat_to_gnu_field): Likewise.
+	(validate_size): Adjust to renaming of macro.
+	(set_rm_size): Likewise.
+	(associate_original_type_to_packed_array): Adjust return type and
+	return the name of the original type if GNAT encodings are not used.
+	* gcc-interface/misc.c (gnat_get_debug_typ): Remove obsolete stuff.
+	(gnat_get_fixed_point_type_info): Remove const qualifiers for tree.
+	(gnat_get_array_descr_info): Likewise and set variables lazily.
+	Remove call to maybe_debug_type.  Simplify a few computations.
+	(enumerate_modes): Remove const qualifier for tree.
+	* gcc-interface/utils.c (make_type_from_size): Adjust to renaming.
+	(maybe_pad_type): Remove IS_USER_TYPE parameter and adjust.  Remove
+	specific code for implementation types for packed arrays.
+	(compute_deferred_decl_context): Remove const qualifier for tree.
+	(convert): Adjust call to maybe_pad_type.
+	(unchecked_convert): Likewise.
+	* gcc-interface/utils2.c (is_simple_additive_expressio): Likewise.
+
+2020-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils2.c (build_binary_op) <ARRAY_RANGE_REF>: Use
 	build_nonshared_array_type to build the common type and declare it.
 

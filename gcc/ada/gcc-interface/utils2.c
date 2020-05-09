@@ -2927,7 +2927,7 @@ is_simple_additive_expression (tree expr, tree *add, tree *cst, bool *minus_p)
 tree
 gnat_invariant_expr (tree expr)
 {
-  const tree type = TREE_TYPE (expr);
+  tree type = TREE_TYPE (expr);
   tree add, cst;
   bool minus_p;
 
