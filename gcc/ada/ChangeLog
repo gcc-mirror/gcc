@@ -1,5 +1,10 @@
 2020-05-09  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (gnat_to_gnu): Do not wrap boolean values if
+	they appear in any kind of attribute references.
+
+2020-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gnat_to_gnu) <N_Assignment_Statement>: Deal
 	with qualified "others" aggregates in the memset case.
 
