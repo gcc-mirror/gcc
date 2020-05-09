@@ -871,16 +871,12 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
 
       /* ... fall through ... */
 
+    case N_Selected_Component:
     case N_Slice:
-      /* Only the array expression can require an lvalue.  */
+      /* Only the prefix expression can require an lvalue.  */
       if (Prefix (gnat_parent) != gnat_node)
 	return 0;
 
-      return lvalue_required_p (gnat_parent,
-				get_unpadded_type (Etype (gnat_parent)),
-				constant, address_of_constant);
-
-    case N_Selected_Component:
       return lvalue_required_p (gnat_parent,
 				get_unpadded_type (Etype (gnat_parent)),
 				constant, address_of_constant);
@@ -925,12 +921,6 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
 			       get_unpadded_type (Etype (gnat_parent)),
 			       constant, address_of_constant);
 
-    case N_Allocator:
-      /* We should only reach here through the N_Qualified_Expression case.
-	 Force an lvalue for composite types since a block-copy to the newly
-	 allocated area of memory is made.  */
-      return Is_Composite_Type (Underlying_Type (Etype (gnat_node)));
-
    case N_Explicit_Dereference:
       /* We look through dereferences for address of constant because we need
 	 to handle the special cases listed above.  */
@@ -947,6 +937,74 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
 
   gcc_unreachable ();
 }
+
+/* Return true if an lvalue should be used for GNAT_NODE.  GNU_TYPE is the type
+   that will be used for GNAT_NODE in the translated GNU tree and is assumed to
+   be an aggregate type.
+
+   The function climbs up the GNAT tree starting from the node and returns true
+   upon encountering a node that makes it doable to decide.  lvalue_required_p
+   should have been previously invoked on the arguments and returned false.  */
+
+static bool
+lvalue_for_aggregate_p (Node_Id gnat_node, tree gnu_type)
+{
+  Node_Id gnat_parent = Parent (gnat_node);
+
+  switch (Nkind (gnat_parent))
+    {
+    case N_Parameter_Association:
+    case N_Function_Call:
+    case N_Procedure_Call_Statement:
+      /* Even if the parameter is by copy, prefer an lvalue.  */
+      return true;
+
+    case N_Indexed_Component:
+    case N_Selected_Component:
+      /* If an elementary component is used, take it from the constant.  */
+      if (!Is_Composite_Type (Underlying_Type (Etype (gnat_parent))))
+	return false;
+
+      /* ... fall through ... */
+
+    case N_Slice:
+      return lvalue_for_aggregate_p (gnat_parent,
+				     get_unpadded_type (Etype (gnat_parent)));
+
+    case N_Object_Declaration:
+      /* For an aggregate object declaration, return the constant at top level
+	 in order to avoid generating elaboration code.  */
+      if (global_bindings_p ())
+	return false;
+
+      /* ... fall through ... */
+
+    case N_Assignment_Statement:
+      /* For an aggregate assignment, decide based on the size.  */
+      {
+	const HOST_WIDE_INT size = int_size_in_bytes (gnu_type);
+	return size < 0 || size >= param_large_stack_frame / 4;
+      }
+
+    case N_Unchecked_Type_Conversion:
+    case N_Type_Conversion:
+    case N_Qualified_Expression:
+      return lvalue_for_aggregate_p (gnat_parent,
+				     get_unpadded_type (Etype (gnat_parent)));
+
+    case N_Allocator:
+      /* We should only reach here through the N_Qualified_Expression case.
+	 Force an lvalue for aggregate types since a block-copy to the newly
+	 allocated area of memory is made.  */
+      return true;
+
+    default:
+      return false;
+    }
+
+  gcc_unreachable ();
+}
+
 
 /* Return true if T is a constant DECL node that can be safely replaced
    by its initializer.  */
@@ -1232,7 +1290,9 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
       if ((!constant_only || address_of_constant) && require_lvalue < 0)
 	require_lvalue
 	  = lvalue_required_p (gnat_node, gnu_result_type, true,
-			       address_of_constant);
+			       address_of_constant)
+	    || (AGGREGATE_TYPE_P (gnu_result_type)
+		&& lvalue_for_aggregate_p (gnat_node, gnu_result_type));
 
       /* Finally retrieve the initializer if this is deemed valid.  */
       if ((constant_only && !address_of_constant) || !require_lvalue)

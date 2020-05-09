@@ -1,5 +1,15 @@
 2020-05-09  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (lvalue_required_p) <N_Selected_Component>:
+	Merge with N_Slice.
+	<N_Allocator>: Move to...
+	(lvalue_for_aggregate_p): ...here.  New function.
+	(Identifier_to_gnu): For an identifier with aggregate type, also
+	call lvalue_for_aggregate_p if lvalue_required_p returned false
+	before substituting the identifier with the constant.
+
+2020-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gnat_to_gnu): Do not wrap boolean values if
 	they appear in any kind of attribute references.
 
