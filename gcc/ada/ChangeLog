@@ -1,5 +1,10 @@
 2020-05-09  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_param): Also back-annotate the
+	mechanism in the case of an Out parameter only passed by copy-out.
+
+2020-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (change_qualified_type): Move around.
 	(maybe_vector_array): Likewise.
 	(maybe_padded_object): New static line function.
