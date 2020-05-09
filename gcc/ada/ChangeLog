@@ -1,5 +1,10 @@
 2020-05-09  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils2.c (build_binary_op) <ARRAY_RANGE_REF>: Use
+	build_nonshared_array_type to build the common type and declare it.
+
+2020-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/misc.c (gnat_init_gcc_eh): Do not override the user
 	for -fnon-call-exceptions in default mode.
 
