@@ -6764,30 +6764,10 @@ package body Sem_Attr is
                      Analyze_And_Resolve (Low,  Etype (Index_Typ));
                      Analyze_And_Resolve (High, Etype (Index_Typ));
 
-                     --  Add a range check to ensure that the bounds of the
-                     --  range are within the index type when this cannot be
-                     --  determined statically.
-
-                     if not Is_OK_Static_Expression (Low) then
-                        Set_Do_Range_Check (Low);
-                     end if;
-
-                     if not Is_OK_Static_Expression (High) then
-                        Set_Do_Range_Check (High);
-                     end if;
-
                   --  Otherwise the index denotes a single element
 
                   else
                      Analyze_And_Resolve (Index, Etype (Index_Typ));
-
-                     --  Add a range check to ensure that the index is within
-                     --  the index type when it is not possible to determine
-                     --  this statically.
-
-                     if not Is_OK_Static_Expression (Index) then
-                        Set_Do_Range_Check (Index);
-                     end if;
                   end if;
 
                   Next (Index);
@@ -12019,14 +11999,12 @@ package body Sem_Attr is
 
                         if Nkind (C) /= N_Aggregate then
                            Analyze_And_Resolve (C, Etype (Indx));
-                           Apply_Constraint_Check (C, Etype (Indx));
                            Check_Non_Static_Context (C);
 
                         else
                            C_E := First (Expressions (C));
                            while Present (C_E) loop
                               Analyze_And_Resolve (C_E, Etype (Indx));
-                              Apply_Constraint_Check (C_E, Etype (Indx));
                               Check_Non_Static_Context (C_E);
 
                               Next (C_E);
