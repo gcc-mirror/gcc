@@ -1,5 +1,10 @@
 2020-05-09  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/misc.c (gnat_init_gcc_eh): Do not override the user
+	for -fnon-call-exceptions in default mode.
+
+2020-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (lvalue_required_p) <N_Selected_Component>:
 	Merge with N_Slice.
 	<N_Allocator>: Move to...
