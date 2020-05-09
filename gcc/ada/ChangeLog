@@ -1,5 +1,10 @@
 2020-05-09  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Access>: Assert that
+	the prefix is not a type.
+
+2020-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/ada-tree.h (TYPE_PACKED_ARRAY_TYPE_P): Rename into...
 	(TYPE_BIT_PACKED_ARRAY_TYPE_P): ...this.
 	(TYPE_IS_PACKED_ARRAY_TYPE_P): Rename into...
