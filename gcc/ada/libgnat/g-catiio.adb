@@ -593,13 +593,10 @@ package body GNAT.Calendar.Time_IO is
       --  The current character scan index. After a call to Advance, Index
       --  points to the next character.
 
-      End_Of_Source_Reached : exception;
-      --  An exception used to signal that the scan pointer has reached the
-      --  end of the source string.
-
       Wrong_Syntax : exception;
       --  An exception used to signal that the scan pointer has reached an
-      --  unexpected character in the source string.
+      --  unexpected character in the source string, or if premature
+      --  end-of-source was reached.
 
       procedure Advance;
       pragma Inline (Advance);
@@ -657,13 +654,12 @@ package body GNAT.Calendar.Time_IO is
 
       procedure Advance is
       begin
-         --  Signal the end of the source string. This stops a complex scan by
-         --  bottoming up any recursive calls till control reaches routine Scan
-         --  which handles the exception. Certain scanning scenarios may handle
-         --  this exception on their own.
+         --  Signal the end of the source string. This stops a complex scan
+         --  by bottoming up any recursive calls till control reaches routine
+         --  Scan, which handles the exception.
 
          if Index > Date'Last then
-            raise End_Of_Source_Reached;
+            raise Wrong_Syntax;
 
          --  Advance the scan pointer as long as there are characters to scan,
          --  in other words, the scan pointer has not passed the end of the
@@ -819,7 +815,7 @@ package body GNAT.Calendar.Time_IO is
          --  this exception on their own.
 
          if Index > Date'Last then
-            raise End_Of_Source_Reached;
+            raise Wrong_Syntax;
 
          else
             return Date (Index);
@@ -833,21 +829,21 @@ package body GNAT.Calendar.Time_IO is
       Date_Separator : constant Character := '-';
       Hour_Separator : constant Character := ':';
 
-      Day          : Day_Number;
-      Month        : Month_Number;
-      Year         : Year_Number;
-      Hour         : Hour_Number     := 0;
-      Minute       : Minute_Number   := 0;
-      Second       : Second_Number   := 0;
-      Subsec       : Second_Duration := 0.0;
+      Day    : Day_Number;
+      Month  : Month_Number;
+      Year   : Year_Number;
+      Hour   : Hour_Number     := 0;
+      Minute : Minute_Number   := 0;
+      Second : Second_Number   := 0;
+      Subsec : Second_Duration := 0.0;
 
-      Local_Hour   : Hour_Number     := 0;
-      Local_Minute : Minute_Number   := 0;
-      Local_Sign   : Character       := ' ';
-      Time_Zone    : Time_Offset; -- initialized when Local_Sign is set
+      Time_Zone_Seen   : Boolean := False;
+      Time_Zone_Offset : Time_Offset; -- Valid only if Time_Zone_Seen
 
       Sep_Required : Boolean := False;
       --  True if a separator is seen (and therefore required after it!)
+
+      subtype Sign_Type is Character with Predicate => Sign_Type in '+' | '-';
 
    begin
       --  Parse date
@@ -880,8 +876,8 @@ package body GNAT.Calendar.Time_IO is
             --  Suffix 'Z' signifies that this is UTC time (time zone 0)
 
             if Symbol = 'Z' then
-               Local_Sign := '+';
-               Time_Zone := 0;
+               Time_Zone_Seen := True;
+               Time_Zone_Offset := 0;
                Advance;
 
             --  A decimal fraction shall have at least one digit, and has as
@@ -902,59 +898,58 @@ package body GNAT.Calendar.Time_IO is
             --  if the difference between the time scales is exactly an
             --  integral number of hours.
 
-            elsif Symbol = '+' or else Symbol = '-' then
-               Local_Sign := Symbol;
-               Advance;
-               Local_Hour := Scan_Hour;
+            elsif Symbol in Sign_Type then
+               declare
+                  Time_Zone_Sign : constant Sign_Type := Symbol;
 
-               --  Past ':'
-
-               if Index < Date'Last and then Symbol = Hour_Separator then
+                  Time_Zone_Hour   : Hour_Number;
+                  Time_Zone_Minute : Minute_Number;
+               begin
+                  Time_Zone_Seen := True;
                   Advance;
-                  Local_Minute := Scan_Minute;
-               end if;
+                  Time_Zone_Hour := Scan_Hour;
 
-               --  Compute local displacement
+                  --  Past ':'
 
-               Time_Zone := Time_Offset (Local_Hour * 60 + Local_Minute);
+                  if Index < Date'Last and then Symbol = Hour_Separator then
+                     Advance;
+                     Time_Zone_Minute := Scan_Minute;
+                  else
+                     Time_Zone_Minute := 0;
+                  end if;
 
-               if Local_Sign = '-' then
-                  Time_Zone := -Time_Zone;
-               end if;
+                  --  Compute Time_Zone_Offset
+
+                  Time_Zone_Offset :=
+                    Time_Offset (Time_Zone_Hour * 60 + Time_Zone_Minute);
+
+                  if Time_Zone_Sign = '-' then
+                     Time_Zone_Offset := -Time_Zone_Offset;
+                  end if;
+               end;
             else
                raise Wrong_Syntax;
             end if;
          end if;
       end if;
 
-      --  Sanity checks. The check on Index ensures that there are no trailing
-      --  characters.
+      --  Check for trailing characters
 
-      if Index /= Date'Length + 1
-        or else not Year'Valid
-        or else not Month'Valid
-        or else not Day'Valid
-        or else not Hour'Valid
-        or else not Minute'Valid
-        or else not Second'Valid
-        or else not Subsec'Valid
-        or else not Local_Hour'Valid
-        or else not Local_Minute'Valid
-      then
+      if Index /= Date'Length + 1 then
          raise Wrong_Syntax;
       end if;
 
-      --  If no time zone was specified, we call GNAT.Calendar.Time_Of, which
-      --  uses local time. Otherwise, we use Ada.Calendar.Formatting.Time_Of
-      --  and specify the time zone.
+      --  If a time zone was specified, use Ada.Calendar.Formatting.Time_Of,
+      --  and specify the time zone. Otherwise, call GNAT.Calendar.Time_Of,
+      --  which uses local time.
 
-      if Local_Sign = ' ' then
-         Time := GNAT.Calendar.Time_Of
-           (Year, Month, Day, Hour, Minute, Second, Subsec);
-      else
+      if Time_Zone_Seen then
          Time := Ada.Calendar.Formatting.Time_Of
            (Year, Month, Day, Hour, Minute, Second, Subsec,
-            Time_Zone => Time_Zone);
+            Time_Zone => Time_Zone_Offset);
+      else
+         Time := GNAT.Calendar.Time_Of
+           (Year, Month, Day, Hour, Minute, Second, Subsec);
       end if;
 
       --  Notify that the input string was successfully parsed
@@ -962,9 +957,7 @@ package body GNAT.Calendar.Time_IO is
       Success := True;
 
    exception
-      when End_Of_Source_Reached
-         | Wrong_Syntax
-      =>
+      when Wrong_Syntax =>
          Time :=
            Time_Of (Year_Number'First, Month_Number'First, Day_Number'First);
          Success := False;
