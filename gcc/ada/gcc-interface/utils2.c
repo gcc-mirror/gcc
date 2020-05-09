@@ -2934,8 +2934,7 @@ gnat_invariant_expr (tree expr)
     {
       expr = DECL_INITIAL (expr);
       /* Look into CONSTRUCTORs built to initialize padded types.  */
-      if (TYPE_IS_PADDING_P (TREE_TYPE (expr)))
-	expr = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (expr))), expr);
+      expr = maybe_padded_object (expr);
       expr = remove_conversions (expr, false);
     }
 

@@ -1,5 +1,22 @@
 2020-05-09  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/gigi.h (change_qualified_type): Move around.
+	(maybe_vector_array): Likewise.
+	(maybe_padded_object): New static line function.
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Component_Size>:
+	Remove useless code.
+	<Attr_Null_Parameter>: Remove obsolete code.
+	(Call_to_gn): Likewise.  Use maybe_padded_object to remove padding.
+	(gnat_to_gnu): Likewise.
+	<N_String_Literal>: Do not add a useless null character at the end.
+	<N_Indexed_Component>: Likewise and remove obsolete code.
+	(add_decl_expr): Likewise.
+	(maybe_implicit_deref): Likewise.
+	* gcc-interface/utils.c (maybe_unconstrained_array): Likewise.
+	* gcc-interface/utils2.c (gnat_invariant_expr): Likewise.
+
+2020-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils2.c: Include builtins.h.
 	(known_alignment) <ADDR_EXPR>: Use DECL_ALIGN for DECL_P operands
 	and get_object_alignment for the rest.

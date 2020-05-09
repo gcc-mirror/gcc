@@ -2893,10 +2893,6 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       break;
 
     case Attr_Component_Size:
-      if (TREE_CODE (gnu_prefix) == COMPONENT_REF
-	  && TYPE_IS_PADDING_P (TREE_TYPE (TREE_OPERAND (gnu_prefix, 0))))
-	gnu_prefix = TREE_OPERAND (gnu_prefix, 0);
-
       gnu_prefix = maybe_implicit_deref (gnu_prefix);
       gnu_type = TREE_TYPE (gnu_prefix);
 
@@ -2934,7 +2930,6 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	= build_unary_op (INDIRECT_REF, NULL_TREE,
 			  convert (build_pointer_type (gnu_result_type),
 				   integer_zero_node));
-      TREE_PRIVATE (gnu_result) = 1;
       break;
 
     case Attr_Mechanism_Code:
@@ -5468,8 +5463,6 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       /* Otherwise the parameter is passed by copy.  */
       else
 	{
-	  tree gnu_size;
-
 	  if (!in_param)
 	    gnu_name_list = tree_cons (NULL_TREE, gnu_name, gnu_name_list);
 
@@ -5490,25 +5483,9 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 
 	  gnu_actual = convert (gnu_formal_type, gnu_actual);
 
-	  /* If this is 'Null_Parameter, pass a zero even though we are
-	     dereferencing it.  */
-	  if (TREE_CODE (gnu_actual) == INDIRECT_REF
-	      && TREE_PRIVATE (gnu_actual)
-	      && (gnu_size = TYPE_SIZE (TREE_TYPE (gnu_actual)))
-	      && TREE_CODE (gnu_size) == INTEGER_CST
-	      && compare_tree_int (gnu_size, BITS_PER_WORD) <= 0)
-	    {
-	      tree type_for_size
-		= gnat_type_for_size (TREE_INT_CST_LOW (gnu_size), 1);
-	      gnu_actual
-		= unchecked_convert (DECL_ARG_TYPE (gnu_formal),
-				     build_int_cst (type_for_size, 0),
-				     false);
-	    }
-
 	  /* If this is a front-end built-in function, there is no need to
 	     convert to the type used to pass the argument.  */
-	  else if (!frontend_builtin)
+	  if (!frontend_builtin)
 	    gnu_actual = convert (DECL_ARG_TYPE (gnu_formal), gnu_actual);
 	}
 
@@ -5630,11 +5607,8 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	    tree gnu_actual
 	      = maybe_unconstrained_array (TREE_VALUE (gnu_name_list));
 
-	    /* If the result is a padded type, remove the padding.  */
-	    if (TYPE_IS_PADDING_P (TREE_TYPE (gnu_result)))
-	      gnu_result
-		= convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_result))),
-			   gnu_result);
+	    /* If the result is padded, remove the padding.  */
+	    gnu_result = maybe_padded_object (gnu_result);
 
 	    /* If the actual is a type conversion, the real target object is
 	       denoted by the inner Expression and we need to convert the
@@ -6959,18 +6933,14 @@ gnat_to_gnu (Node_Id gnat_node)
 	  int i;
 	  char *string;
 	  if (length >= ALLOCA_THRESHOLD)
-	    string = XNEWVEC (char, length + 1);
+	    string = XNEWVEC (char, length);
 	  else
-	    string = (char *) alloca (length + 1);
+	    string = (char *) alloca (length);
 
 	  /* Build the string with the characters in the literal.  Note
 	     that Ada strings are 1-origin.  */
 	  for (i = 0; i < length; i++)
 	    string[i] = Get_String_Char (gnat_string, i + 1);
-
-	  /* Put a null at the end of the string in case it's in a context
-	     where GCC will want to treat it as a C string.  */
-	  string[i] = 0;
 
 	  gnu_result = build_string (length, string);
 
@@ -7199,6 +7169,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	Node_Id *gnat_expr_array;
 
 	gnu_array_object = maybe_implicit_deref (gnu_array_object);
+	gnu_array_object = maybe_unconstrained_array (gnu_array_object);
 
 	/* Convert vector inputs to their representative array type, to fit
 	   what the code below expects.  */
@@ -7208,14 +7179,6 @@ gnat_to_gnu (Node_Id gnat_node)
 	      gnat_mark_addressable (gnu_array_object);
 	    gnu_array_object = maybe_vector_array (gnu_array_object);
 	  }
-
-	gnu_array_object = maybe_unconstrained_array (gnu_array_object);
-
-	/* If we got a padded type, remove it too.  */
-	if (TYPE_IS_PADDING_P (TREE_TYPE (gnu_array_object)))
-	  gnu_array_object
-	    = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_array_object))),
-		       gnu_array_object);
 
 	/* The failure of this assertion will very likely come from a missing
 	   expansion for a packed array access.  */
@@ -8855,9 +8818,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	       && TREE_CODE (TREE_TYPE (gnu_result)) == RECORD_TYPE))
     {
       /* Remove any padding.  */
-      if (TYPE_IS_PADDING_P (TREE_TYPE (gnu_result)))
-	gnu_result = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_result))),
-			      gnu_result);
+      gnu_result = maybe_padded_object (gnu_result);
     }
 
   else if (gnu_result == error_mark_node || gnu_result_type == void_type_node)
@@ -9083,10 +9044,8 @@ add_decl_expr (tree gnu_decl, Node_Id gnat_node)
 	  DECL_READONLY_ONCE_ELAB (gnu_decl) = 1;
 	}
 
-      /* If GNU_DECL has a padded type, convert it to the unpadded
-	 type so the assignment is done properly.  */
-      if (TYPE_IS_PADDING_P (type))
-	gnu_decl = convert (TREE_TYPE (TYPE_FIELDS (type)), gnu_decl);
+      /* Remove any padding so the assignment is done properly.  */
+      gnu_decl = maybe_padded_object (gnu_decl);
 
       gnu_stmt = build_binary_op (INIT_EXPR, NULL_TREE, gnu_decl, gnu_init);
       add_stmt_with_node (gnu_stmt, gnat_node);
@@ -10806,14 +10765,13 @@ adjust_for_implicit_deref (Node_Id exp)
 static tree
 maybe_implicit_deref (tree exp)
 {
-  /* If the type is a pointer, dereference it.  */
+  /* If the object is a pointer, dereference it.  */
   if (POINTER_TYPE_P (TREE_TYPE (exp))
       || TYPE_IS_FAT_POINTER_P (TREE_TYPE (exp)))
     exp = build_unary_op (INDIRECT_REF, NULL_TREE, exp);
 
-  /* If we got a padded type, remove it too.  */
-  if (TYPE_IS_PADDING_P (TREE_TYPE (exp)))
-    exp = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (exp))), exp);
+  /* If the object is padded, remove the padding.  */
+  exp = maybe_padded_object (exp);
 
   return exp;
 }
