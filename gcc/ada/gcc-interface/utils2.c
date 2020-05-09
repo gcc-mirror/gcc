@@ -32,6 +32,7 @@
 #include "alias.h"
 #include "tree.h"
 #include "inchash.h"
+#include "builtins.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "stringpool.h"
@@ -167,7 +168,10 @@ known_alignment (tree exp)
       break;
 
     case ADDR_EXPR:
-      this_alignment = expr_align (TREE_OPERAND (exp, 0));
+      if (DECL_P (TREE_OPERAND (exp, 0)))
+	this_alignment = DECL_ALIGN (TREE_OPERAND (exp, 0));
+      else
+	this_alignment = get_object_alignment (TREE_OPERAND (exp, 0));
       break;
 
     case CALL_EXPR:
