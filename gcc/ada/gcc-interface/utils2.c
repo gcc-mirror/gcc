@@ -1040,8 +1040,15 @@ build_binary_op (enum tree_code op_code, tree result_type,
       /* For a range, make sure the element type is consistent.  */
       if (op_code == ARRAY_RANGE_REF
 	  && TREE_TYPE (operation_type) != TREE_TYPE (left_type))
-	operation_type = build_array_type (TREE_TYPE (left_type),
-					   TYPE_DOMAIN (operation_type));
+	{
+	  operation_type
+	    = build_nonshared_array_type (TREE_TYPE (left_type),
+					  TYPE_DOMAIN (operation_type));
+	  /* Declare it now since it will never be declared otherwise.  This
+	     is necessary to ensure that its subtrees are properly marked.  */
+	  create_type_decl (TYPE_NAME (operation_type), operation_type, true,
+			    false, Empty);
+	}
 
       /* Then convert the right operand to its base type.  This will prevent
 	 unneeded sign conversions when sizetype is wider than integer.  */
