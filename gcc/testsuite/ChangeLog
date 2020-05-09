@@ -1,3 +1,11 @@
+2020-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/95008
+	* gcc.dg/two-types-6.c: Remove dg-warning directive that never
+	triggered.
+	* gcc.dg/analyzer/pr93382.c: Properly escape ()s in the diagnostic
+	message.
+
 2020-05-09  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.target/cris/: Adjust for removing crisv32-* and cris-linux-*.
