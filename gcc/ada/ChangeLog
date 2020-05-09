@@ -1,5 +1,10 @@
 2020-05-09  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Assignment_Statement>: Deal
+	with qualified "others" aggregates in the memset case.
+
+2020-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_param): Also back-annotate the
 	mechanism in the case of an Out parameter only passed by copy-out.
 

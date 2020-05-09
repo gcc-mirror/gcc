@@ -7813,25 +7813,29 @@ gnat_to_gnu (Node_Id gnat_node)
       else
 	{
 	  const Node_Id gnat_expr = Expression (gnat_node);
+	  const Node_Id gnat_inner
+	    = Nkind (gnat_expr) == N_Qualified_Expression
+	      ? Expression (gnat_expr)
+	      : gnat_expr;
 	  const Entity_Id gnat_type
 	    = Underlying_Type (Etype (Name (gnat_node)));
 	  const bool regular_array_type_p
-	    = (Is_Array_Type (gnat_type) && !Is_Bit_Packed_Array (gnat_type));
+	    = Is_Array_Type (gnat_type) && !Is_Bit_Packed_Array (gnat_type);
 	  const bool use_memset_p
-	    = (regular_array_type_p
-	       && Nkind (gnat_expr) == N_Aggregate
-	       && Is_Others_Aggregate (gnat_expr));
+	    = regular_array_type_p
+	      && Nkind (gnat_inner) == N_Aggregate
+	      && Is_Others_Aggregate (gnat_inner);
 
-	  /* If we'll use memset, we need to find the inner expression.  */
+	  /* If we use memset, we need to find the innermost expression.  */
 	  if (use_memset_p)
 	    {
-	      Node_Id gnat_inner
-		= Expression (First (Component_Associations (gnat_expr)));
-	      while (Nkind (gnat_inner) == N_Aggregate
-		     && Is_Others_Aggregate (gnat_inner))
-		gnat_inner
-		  = Expression (First (Component_Associations (gnat_inner)));
-	      gnu_rhs = gnat_to_gnu (gnat_inner);
+	      gnat_temp = gnat_inner;
+	      do {
+		gnat_temp
+		  = Expression (First (Component_Associations (gnat_temp)));
+	      } while (Nkind (gnat_temp) == N_Aggregate
+		       && Is_Others_Aggregate (gnat_temp));
+	      gnu_rhs = gnat_to_gnu (gnat_temp);
 	    }
 	  else
 	    gnu_rhs = maybe_unconstrained_array (gnat_to_gnu (gnat_expr));
