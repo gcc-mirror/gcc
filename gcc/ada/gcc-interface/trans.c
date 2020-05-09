@@ -2302,6 +2302,9 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
     case Attr_Access:
     case Attr_Unchecked_Access:
     case Attr_Code_Address:
+      /* Taking the address of a type does not make sense.  */
+      gcc_assert (TREE_CODE (gnu_prefix) != TYPE_DECL);
+
       gnu_result_type = get_unpadded_type (Etype (gnat_node));
       gnu_result
 	= build_unary_op (((attribute == Attr_Address
