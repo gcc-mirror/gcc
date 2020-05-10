@@ -354,7 +354,7 @@ package body Checks is
       Target_Typ : Entity_Id;
       Source_Typ : Entity_Id;
       Warn_Node  : Node_Id) return Check_Result;
-   --  Like Apply_Range_Checks, except it doesn't modify anything, just
+   --  Like Apply_Range_Check, except it does not modify anything, just
    --  returns a list of nodes as described in the spec of this package
    --  for the Range_Check function.
 
