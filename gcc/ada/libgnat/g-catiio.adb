@@ -778,17 +778,10 @@ package body GNAT.Calendar.Time_IO is
       begin
          Advance_Digits (Num_Digits => 1);
 
-         while Symbol in '0' .. '9'
-           and then Index < Date'Length
-         loop
+         while Index <= Date'Length and then Symbol in '0' .. '9' loop
             Advance;
          end loop;
 
-         if Symbol not in '0' .. '9' then
-            raise Wrong_Syntax;
-         end if;
-
-         Advance;
          return Second_Duration'Value ("0." & Date (From .. Index - 1));
       end Scan_Subsecond;
 
@@ -845,6 +838,8 @@ package body GNAT.Calendar.Time_IO is
 
       subtype Sign_Type is Character with Predicate => Sign_Type in '+' | '-';
 
+   --  Start of processing for Parse_ISO_8601
+
    begin
       --  Parse date
 
@@ -869,26 +864,31 @@ package body GNAT.Calendar.Time_IO is
 
          Second := Scan_Second;
 
-         --  [('Z' | ('.' | ',') s{s} | ('+'|'-')hh:mm)]
+         --  [ ('.' | ',') s{s} ]
 
          if Index <= Date'Last then
-
-            --  Suffix 'Z' signifies that this is UTC time (time zone 0)
-
-            if Symbol = 'Z' then
-               Time_Zone_Seen := True;
-               Time_Zone_Offset := 0;
-               Advance;
-
             --  A decimal fraction shall have at least one digit, and has as
             --  many digits as supported by the underlying implementation.
             --  The valid decimal separators are those specified in ISO 31-0,
             --  i.e. the comma [,] or full stop [.]. Of these, the comma is
             --  the preferred separator of ISO-8601.
 
-            elsif Symbol = ',' or else Symbol = '.' then
+            if Symbol = ',' or else Symbol = '.' then
                Advance; --  past decimal separator
                Subsec := Scan_Subsecond;
+            end if;
+         end if;
+
+         --  [ ('Z' | ('+'|'-')hh':'mm) ]
+
+         if Index <= Date'Last then
+            Time_Zone_Seen := Symbol in 'Z' | Sign_Type;
+
+            --  Suffix 'Z' signifies that this is UTC time (time zone 0)
+
+            if Symbol = 'Z' then
+               Time_Zone_Offset := 0;
+               Advance;
 
             --  Difference between local time and UTC: It shall be expressed
             --  as positive (i.e. with the leading plus sign [+]) if the local
@@ -900,12 +900,10 @@ package body GNAT.Calendar.Time_IO is
 
             elsif Symbol in Sign_Type then
                declare
-                  Time_Zone_Sign : constant Sign_Type := Symbol;
-
+                  Time_Zone_Sign   : constant Sign_Type := Symbol;
                   Time_Zone_Hour   : Hour_Number;
                   Time_Zone_Minute : Minute_Number;
                begin
-                  Time_Zone_Seen := True;
                   Advance;
                   Time_Zone_Hour := Scan_Hour;
 
@@ -923,9 +921,10 @@ package body GNAT.Calendar.Time_IO is
                   Time_Zone_Offset :=
                     Time_Offset (Time_Zone_Hour * 60 + Time_Zone_Minute);
 
-                  if Time_Zone_Sign = '-' then
-                     Time_Zone_Offset := -Time_Zone_Offset;
-                  end if;
+                  case Time_Zone_Sign is
+                     when '+' => null;
+                     when '-' => Time_Zone_Offset := -Time_Zone_Offset;
+                  end case;
                end;
             else
                raise Wrong_Syntax;
