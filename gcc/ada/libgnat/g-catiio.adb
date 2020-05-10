@@ -69,6 +69,14 @@ package body GNAT.Calendar.Time_IO is
    -- Local Subprograms --
    -----------------------
 
+   function Image_Helper
+     (Date      : Ada.Calendar.Time;
+      Picture   : Picture_String;
+      Time_Zone : Time_Zones.Time_Offset) return String;
+   --  This is called by the two exported Image functions. It uses the local
+   --  time zone for its computations, but uses Time_Zone when interpreting the
+   --  "%:::z" tag.
+
    function Am_Pm (H : Natural) return String;
    --  Return AM or PM depending on the hour H
 
@@ -168,6 +176,10 @@ package body GNAT.Calendar.Time_IO is
       return Image (Sec_Number (N), Padding, Length);
    end Image;
 
+   -----------
+   -- Image --
+   -----------
+
    function Image
      (N       : Sec_Number;
       Padding : Padding_Mode := Zero;
@@ -213,15 +225,16 @@ package body GNAT.Calendar.Time_IO is
       Time_Zone : Time_Zones.Time_Offset) return String
    is
       --  We subtract off the local time zone, and add in the requested
-      --  Time_Zone, and then pass it on to the version of Image that uses
-      --  the local time zone.
+      --  Time_Zone, and then pass it on to Image_Helper, which uses the
+      --  local time zone.
 
       use Time_Zones;
       Local_TZ : constant Time_Offset := Local_Time_Offset (Date);
       Minute_Offset : constant Integer := Integer (Time_Zone - Local_TZ);
       Second_Offset : constant Integer := Minute_Offset * 60;
    begin
-      return Image (Date + Duration (Second_Offset), Picture);
+      return Image_Helper
+        (Date + Duration (Second_Offset), Picture, Time_Zone);
    end Image;
 
    -----------
@@ -231,6 +244,21 @@ package body GNAT.Calendar.Time_IO is
    function Image
      (Date    : Ada.Calendar.Time;
       Picture : Picture_String) return String
+   is
+      use Time_Zones;
+      Local_TZ : constant Time_Offset := Local_Time_Offset (Date);
+   begin
+      return Image_Helper (Date, Picture, Local_TZ);
+   end Image;
+
+   ------------------
+   -- Image_Helper --
+   ------------------
+
+   function Image_Helper
+     (Date      : Ada.Calendar.Time;
+      Picture   : Picture_String;
+      Time_Zone : Time_Zones.Time_Offset) return String
    is
       Padding : Padding_Mode := Zero;
       --  Padding is set for one directive
@@ -424,6 +452,43 @@ package body GNAT.Calendar.Time_IO is
                     Image (Minute, Padding, Length => 2) & ':' &
                     Image (Second, Padding, Length => 2);
 
+               --  Time zone. Append "+hh", "-hh", "+hh:mm", or "-hh:mm", as
+               --  appropriate.
+
+               when ':' =>
+                  declare
+                     use type Time_Zones.Time_Offset;
+                     TZ_Form : constant Picture_String := "%:::z";
+                     TZ : constant Natural := Natural (abs Time_Zone);
+                  begin
+                     if P + TZ_Form'Length - 1 <= Picture'Last
+                       and then Picture (P .. P + TZ_Form'Length - 1) = "%:::z"
+                     then
+                        if Time_Zone >= 0 then
+                           Result := Result & "+";
+                        else
+                           Result := Result & "-";
+                        end if;
+
+                        Result := Result &
+                          Image (Integer (TZ / 60), Padding, Length => 2);
+
+                        if TZ mod 60 /= 0 then
+                           Result := Result & ":";
+                           Result := Result &
+                             Image (TZ mod 60, Padding, Length => 2);
+                        end if;
+
+                        P := P + TZ_Form'Length - 2; -- will add 2 below
+
+                     --  We do not support any of the other standard GNU
+                     --  time-zone formats (%z, %:z, %::z, %Z).
+
+                     else
+                        raise Picture_Error with "unsupported picture format";
+                     end if;
+                  end;
+
                --  Locale's abbreviated weekday name (Sun..Sat)
 
                when 'a' =>
@@ -550,7 +615,7 @@ package body GNAT.Calendar.Time_IO is
       end loop;
 
       return To_String (Result);
-   end Image;
+   end Image_Helper;
 
    --------------------------
    -- Month_Name_To_Number --

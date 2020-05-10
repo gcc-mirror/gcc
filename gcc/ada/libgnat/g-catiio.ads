@@ -43,7 +43,7 @@ package GNAT.Calendar.Time_IO is
    --  This is a string to describe date and time output format. The string is
    --  a set of standard character and special tag that are replaced by the
    --  corresponding values. It follows the GNU Date specification. Here are
-   --  the recognized directives :
+   --  the recognized directives:
    --
    --          %    a literal %
    --          n    a newline
@@ -62,6 +62,8 @@ package GNAT.Calendar.Time_IO is
    --                (a nonstandard extension)
    --          %S   second (00..59)
    --          %T   time, 24-hour (hh:mm:ss)
+   --          %:::z  numeric time zone with : to necessary precision
+   --                 (e.g., -04, +05:30)
    --
    --          Date fields:
    --
@@ -98,8 +100,11 @@ package GNAT.Calendar.Time_IO is
    --          %e   microseconds (6 digits)
    --          %o   nanoseconds  (9 digits)
 
+   ISO_Time : constant Picture_String;
+   --  ISO 8601 standard date and time, with time zone.
+
    ISO_Date : constant Picture_String;
-   --  This format follow the ISO 8601 standard. The format is "YYYY-MM-DD",
+   --  This format follows the ISO 8601 standard. The format is "YYYY-MM-DD",
    --  four digits year, month and day number separated by minus.
 
    US_Date : constant Picture_String;
@@ -174,6 +179,7 @@ package GNAT.Calendar.Time_IO is
    --  Put Date with format Picture. Raise Picture_Error if bad picture string
 
 private
+   ISO_Time      : constant Picture_String := "%Y-%m-%dT%H:%M:%S%:::z";
    ISO_Date      : constant Picture_String := "%Y-%m-%d";
    US_Date       : constant Picture_String := "%m/%d/%y";
    European_Date : constant Picture_String := "%d/%m/%y";
