@@ -5668,7 +5668,6 @@ package body Sem_Ch6 is
       New_Type           : constant Entity_Id := Etype (New_Id);
       Old_Formal         : Entity_Id;
       New_Formal         : Entity_Id;
-      Access_Types_Match : Boolean;
       Old_Formal_Base    : Entity_Id;
       New_Formal_Base    : Entity_Id;
 
@@ -5869,57 +5868,6 @@ package body Sem_Ch6 is
             New_Formal_Base := Get_Instance_Of (New_Formal_Base);
          end if;
 
-         Access_Types_Match := Ada_Version >= Ada_2005
-
-           --  Ensure that this rule is only applied when New_Id is a
-           --  renaming of Old_Id.
-
-           and then Nkind (Parent (Parent (New_Id))) =
-                      N_Subprogram_Renaming_Declaration
-           and then Nkind (Name (Parent (Parent (New_Id)))) in N_Has_Entity
-           and then Present (Entity (Name (Parent (Parent (New_Id)))))
-           and then Entity (Name (Parent (Parent (New_Id)))) = Old_Id
-
-           --  Now handle the allowed access-type case
-
-           and then Is_Access_Type (Old_Formal_Base)
-           and then Is_Access_Type (New_Formal_Base)
-
-           --  The type kinds must match. The only exception occurs with
-           --  multiple generics of the form:
-
-           --   generic                    generic
-           --     type F is private;         type A is private;
-           --     type F_Ptr is access F;    type A_Ptr is access A;
-           --     with proc F_P (X : F_Ptr); with proc A_P (X : A_Ptr);
-           --   package F_Pack is ...      package A_Pack is
-           --                                package F_Inst is
-           --                                  new F_Pack (A, A_Ptr, A_P);
-
-           --  When checking for conformance between the parameters of A_P
-           --  and F_P, the type kinds of F_Ptr and A_Ptr will not match
-           --  because the compiler has transformed A_Ptr into a subtype of
-           --  F_Ptr. We catch this case in the code below.
-
-           and then (Ekind (Old_Formal_Base) = Ekind (New_Formal_Base)
-                      or else
-                        (Is_Generic_Type (Old_Formal_Base)
-                          and then Is_Generic_Type (New_Formal_Base)
-                          and then Is_Internal (New_Formal_Base)
-                          and then Etype (Etype (New_Formal_Base)) =
-                                                          Old_Formal_Base))
-               and then Directly_Designated_Type (Old_Formal_Base) =
-                                    Directly_Designated_Type (New_Formal_Base)
-           and then ((Is_Itype (Old_Formal_Base)
-                       and then (Can_Never_Be_Null (Old_Formal_Base)
-                                  or else Is_Access_Constant
-                                            (Old_Formal_Base)))
-                     or else
-                      (Is_Itype (New_Formal_Base)
-                        and then (Can_Never_Be_Null (New_Formal_Base)
-                                   or else Is_Access_Constant
-                                             (New_Formal_Base))));
-
          --  Types must always match. In the visible part of an instance,
          --  usual overloading rules for dispatching operations apply, and
          --  we check base types (not the actual subtypes).
@@ -5932,7 +5880,6 @@ package body Sem_Ch6 is
                       T2       => Base_Type (Etype (New_Formal)),
                       Ctype    => Ctype,
                       Get_Inst => Get_Inst)
-               and then not Access_Types_Match
             then
                Conformance_Error ("\type of & does not match!", New_Formal);
                return;
@@ -5943,7 +5890,6 @@ package body Sem_Ch6 is
                       T2       => New_Formal_Base,
                       Ctype    => Ctype,
                       Get_Inst => Get_Inst)
-           and then not Access_Types_Match
          then
             --  Don't give error message if old type is Any_Type. This test
             --  avoids some cascaded errors, e.g. in case of a bad spec.
@@ -5996,10 +5942,8 @@ package body Sem_Ch6 is
 
                return;
 
-            --  Part of mode conformance for access types is having the same
-            --  constant modifier.
-
-            elsif Access_Types_Match
+            elsif Is_Access_Type (Old_Formal_Base)
+              and then Is_Access_Type (New_Formal_Base)
               and then Is_Access_Constant (Old_Formal_Base) /=
                        Is_Access_Constant (New_Formal_Base)
             then
@@ -6021,8 +5965,8 @@ package body Sem_Ch6 is
             --  (access formals in the bodies aren't marked Can_Never_Be_Null).
 
             if Ada_Version >= Ada_2005
-              and then Ekind (Etype (Old_Formal)) = E_Anonymous_Access_Type
-              and then Ekind (Etype (New_Formal)) = E_Anonymous_Access_Type
+              and then Is_Anonymous_Access_Type (Etype (Old_Formal))
+              and then Is_Anonymous_Access_Type (Etype (New_Formal))
               and then
                 ((Can_Never_Be_Null (Etype (Old_Formal)) /=
                   Can_Never_Be_Null (Etype (New_Formal))

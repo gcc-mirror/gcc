@@ -12066,7 +12066,8 @@ package body Sem_Util is
 
          when N_Parameter_Specification =>
             if Nkind (Parameter_Type (N)) = N_Access_Definition then
-               return Null_Exclusion_Present (Parameter_Type (N));
+               return Null_Exclusion_Present (Parameter_Type (N))
+                 or else Null_Exclusion_Present (N);
             else
                return Null_Exclusion_Present (N);
             end if;
