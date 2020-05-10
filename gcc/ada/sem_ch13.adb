@@ -2276,7 +2276,7 @@ package body Sem_Ch13 is
 
                --  Annotation of a subprogram; aspect expression is required
 
-               elsif Is_Subprogram (E) then
+               elsif Is_Subprogram_Or_Entry (E) then
                   if Present (Expr) then
 
                      --  If we analyze subprogram body that acts as its own
