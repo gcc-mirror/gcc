@@ -3122,16 +3122,16 @@ package Sem_Util is
       --  components are covered by the others choice then the length of the
       --  result is zero.
 
+      function Choice_List_Intervals
+        (Discrete_Choices : List_Id) return Discrete_Interval_List;
+      --  Given a discrete choice list, returns the (unique) interval
+      --  list representing the chosen values.
+
       function Type_Intervals (Typ : Entity_Id) return Discrete_Interval_List;
       --  Given a static discrete type or subtype, returns the (unique)
       --  interval list representing the values of the type/subtype.
       --  If no static predicates are involved, the length of the result
       --  will be at most one.
-
-      function Choice_List_Intervals (Discrete_Choices : List_Id)
-                                     return Discrete_Interval_List;
-      --  Given a discrete choice list, returns the (unique) interval
-      --  list representing the chosen values.
 
       function Is_Subset (Subset, Of_Set : Discrete_Interval_List)
         return Boolean;
