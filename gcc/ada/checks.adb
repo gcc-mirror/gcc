@@ -3326,7 +3326,7 @@ package body Checks is
                         --  provide a wider range.
 
                         if not CodePeer_Mode
-                          or else Target_Typ /= RTE (RE_Priority)
+                          or else not Is_RTE (Target_Typ, RE_Priority)
                         then
                            Bad_Value;
                         end if;
