@@ -6845,7 +6845,7 @@ package body Exp_Aggr is
 
    procedure Expand_N_Delta_Aggregate (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
-      Typ  : constant Entity_Id  := Etype (N);
+      Typ  : constant Entity_Id  := Etype (Expression (N));
       Decl : Node_Id;
 
    begin
