@@ -154,7 +154,8 @@ package GNAT.Calendar.Time_IO is
    --  supported:
    --
    --    (yyyymmdd | yyyy'-'mm'-'dd)'T'(hhmmss | hh':'mm':'ss)
-   --      [ ('Z' | ('.' | ',') s{s} | ('+'|'-')hh':'mm) ]
+   --      [ ('.' | ',') s{s} ]
+   --      [ ('Z' | ('+'|'-')hh':'mm) ]
    --  Trailing characters (including spaces) are not allowed.
    --  In the ISO case, the current time zone is not used; the time zone
    --  is as specified in the string, defaulting to UTC.
