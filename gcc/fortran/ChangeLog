@@ -1,3 +1,9 @@
+2020-05-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93499
+	* arith.c (gfc_divide): Catch division by zero.
+	(eval_intrinsic_f3): Safeguard for NULL operands.
+
 2020-05-05  Steve Kargl  <kargl@gcc.gnu.org>
 	Harald Anlauf  <anlauf@gmx.de>
 

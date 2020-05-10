@@ -1,3 +1,8 @@
+2020-05-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93499
+	* gfortran.dg/pr93499.f90: New test.
+
 2020-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/95008
