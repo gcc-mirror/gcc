@@ -11698,7 +11698,7 @@ package body Sem_Attr is
                   Fam  : constant Entity_Id := Entity (Prefix (P));
                begin
                   Resolve (Indx, Entry_Index_Type (Fam));
-                  Apply_Range_Check (Indx, Entry_Index_Type (Fam));
+                  Apply_Scalar_Range_Check (Indx, Entry_Index_Type (Fam));
                end;
             end if;
 
