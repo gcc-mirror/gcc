@@ -1,5 +1,11 @@
 2020-05-11  Jason Merrill  <jason@redhat.com>
 
+	* call.c (implicit_conversion_error): Split out from...
+	(perform_implicit_conversion_flags): ...here.
+	(build_converted_constant_expr_internal): Use it.
+
+2020-05-11  Jason Merrill  <jason@redhat.com>
+
 	PR c++/90748
 	* parser.c (inject_parm_decls): Set current_class_ptr here.
 	(cp_parser_direct_declarator): And here.
