@@ -1,6 +1,26 @@
 2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 	    Bill Schmidt  <wschmidt@linux.ibm.com>
 
+	* config/rs6000/altivec.h (vec_pdep): New macro implementing new
+	built-in function.
+	(vec_pext): Likewise.
+	* config/rs6000/altivec.md (UNSPEC_VPDEPD): New constant.
+	(UNSPEC_VPEXTD): Likewise.
+	(vpdepd): New insn.
+	(vpextd): Likewise.
+	* config/rs6000/rs6000-builtin.def (__builtin_altivec_vpdepd): New
+	built-in function.
+	(__builtin_altivec_vpextd): Likewise.
+	* config/rs6000/rs6000-call.c (builtin_function_type): Add
+	handling for FUTURE_BUILTIN_VPDEPD and FUTURE_BUILTIN_VPEXTD
+	cases.
+	* doc/extend.texi (PowerPC Altivec Built-in Functions Available
+	for a Future Architecture): Add description of vec_pdep and
+	vec_pext built-in functions.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+	    Bill Schmidt  <wschmidt@linux.ibm.com>
+
 	* config/rs6000/altivec.h (vec_clzm): New macro.
 	(vec_ctzm): Likewise.
 	* config/rs6000/altivec.md (UNSPEC_VCLZDM): New constant.

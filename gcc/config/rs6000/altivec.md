@@ -162,6 +162,8 @@
    UNSPEC_VRLNM
    UNSPEC_VCLZDM
    UNSPEC_VCTZDM
+   UNSPEC_VPDEPD
+   UNSPEC_VPEXTD
 ])
 
 (define_c_enum "unspecv"
@@ -4114,6 +4116,24 @@
 	 UNSPEC_VCTZDM))]
    "TARGET_FUTURE"
    "vctzdm %0,%1,%2"
+   [(set_attr "type" "vecsimple")])
+
+(define_insn "vpdepd"
+  [(set (match_operand:V2DI 0 "altivec_register_operand" "=v")
+	(unspec:V2DI [(match_operand:V2DI 1 "altivec_register_operand" "v")
+		      (match_operand:V2DI 2 "altivec_register_operand" "v")]
+	 UNSPEC_VPDEPD))]
+   "TARGET_FUTURE"
+   "vpdepd %0,%1,%2"
+   [(set_attr "type" "vecsimple")])
+
+(define_insn "vpextd"
+  [(set (match_operand:V2DI 0 "altivec_register_operand" "=v")
+	(unspec:V2DI [(match_operand:V2DI 1 "altivec_register_operand" "v")
+		      (match_operand:V2DI 2 "altivec_register_operand" "v")]
+	 UNSPEC_VPEXTD))]
+   "TARGET_FUTURE"
+   "vpextd %0,%1,%2"
    [(set_attr "type" "vecsimple")])
 
 

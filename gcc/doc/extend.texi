@@ -20713,6 +20713,21 @@ Perform a vector count trailing zeros under bit mask operation, as if
 implemented by the Future @code{vctzdm} instruction.
 @findex vec_ctzm
 
+@smallexample
+@exdent vector unsigned long long int
+@exdent vec_pdep (vector unsigned long long int, vector unsigned long long int)
+@end smallexample
+Perform a vector parallel bits deposit operation, as if implemented by
+the Future @code{vpdepd} instruction.
+@findex vec_pdep
+
+@smallexample
+@exdent vector unsigned long long int
+@exdent vec_pext (vector unsigned long long int, vector unsigned long long int)
+@end smallexample
+Perform a vector parallel bit extract operation, as if implemented by
+the Future @code{vpextd} instruction.
+@findex vec_pext
 
 @node PowerPC Hardware Transactional Memory Built-in Functions
 @subsection PowerPC Hardware Transactional Memory Built-in Functions

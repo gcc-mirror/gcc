@@ -12928,6 +12928,8 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
     case P8V_BUILTIN_ORC_V1TI_UNS:
     case FUTURE_BUILTIN_VCLZDM:
     case FUTURE_BUILTIN_VCTZDM:
+    case FUTURE_BUILTIN_VPDEPD:
+    case FUTURE_BUILTIN_VPEXTD:
       h.uns_p[0] = 1;
       h.uns_p[1] = 1;
       h.uns_p[2] = 1;

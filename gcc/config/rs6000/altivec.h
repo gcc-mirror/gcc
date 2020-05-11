@@ -691,6 +691,9 @@ __altivec_scalar_pred(vec_any_nle,
    with support for different vector argument and result types.  */
 #define vec_clzm(a, b)	__builtin_altivec_vclzdm (a, b)
 #define vec_ctzm(a, b)	__builtin_altivec_vctzdm (a, b)
+#define vec_pdep(a, b)	__builtin_altivec_vpdepd (a, b)
+#define vec_pext(a, b)	__builtin_altivec_vpextd (a, b)
+
 #endif
 
 #endif /* _ALTIVEC_H */
