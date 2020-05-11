@@ -20833,6 +20833,62 @@ Perform a vector parallel bit extract operation, as if implemented by
 the Future @code{vpextd} instruction.
 @findex vec_pext
 
+@smallexample
+@exdent vector unsigned char vec_stril (vector unsigned char)
+@exdent vector signed char vec_stril (vector signed char)
+@exdent vector unsigned short vec_stril (vector unsigned short)
+@exdent vector signed short vec_stril (vector signed short)
+@end smallexample
+Isolate the left-most non-zero elements of the incoming vector argument,
+replacing all elements to the right of the left-most zero element
+found within the argument with zero.  The typical implementation uses
+the @code{vstribl} or @code{vstrihl} instruction on big-endian targets
+and uses the @code{vstribr} or @code{vstrihr} instruction on
+little-endian targets.
+@findex vec_stril
+
+@smallexample
+@exdent int vec_stril_p (vector unsigned char)
+@exdent int vec_stril_p (vector signed char)
+@exdent int short vec_stril_p (vector unsigned short)
+@exdent int vec_stril_p (vector signed short)
+@end smallexample
+Return a non-zero value if and only if the argument contains a zero
+element.  The typical implementation uses
+the @code{vstribl.} or @code{vstrihl.} instruction on big-endian targets
+and uses the @code{vstribr.} or @code{vstrihr.} instruction on
+little-endian targets.  Choose this built-in to check for presence of
+zero element if the same argument is also passed to @code{vec_stril}.
+@findex vec_stril_p
+
+@smallexample
+@exdent vector unsigned char vec_strir (vector unsigned char)
+@exdent vector signed char vec_strir (vector signed char)
+@exdent vector unsigned short vec_strir (vector unsigned short)
+@exdent vector signed short vec_strir (vector signed short)
+@end smallexample
+Isolate the right-most non-zero elements of the incoming vector argument,
+replacing all elements to the left of the right-most zero element
+found within the argument with zero.  The typical implementation uses
+the @code{vstribr} or @code{vstrihr} instruction on big-endian targets
+and uses the @code{vstribl} or @code{vstrihl} instruction on
+little-endian targets.
+@findex vec_strir
+
+@smallexample
+@exdent int vec_strir_p (vector unsigned char)
+@exdent int vec_strir_p (vector signed char)
+@exdent int short vec_strir_p (vector unsigned short)
+@exdent int vec_strir_p (vector signed short)
+@end smallexample
+Return a non-zero value if and only if the argument contains a zero
+element.  The typical implementation uses
+the @code{vstribr.} or @code{vstrihr.} instruction on big-endian targets
+and uses the @code{vstribl.} or @code{vstrihl.} instruction on
+little-endian targets.  Choose this built-in to check for presence of
+zero element if the same argument is also passed to @code{vec_strir}.
+@findex vec_strir_p
+
 @node PowerPC Hardware Transactional Memory Built-in Functions
 @subsection PowerPC Hardware Transactional Memory Built-in Functions
 GCC provides two interfaces for accessing the Hardware Transactional
