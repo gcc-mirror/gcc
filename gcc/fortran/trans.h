@@ -561,7 +561,7 @@ void gfc_trans_common (gfc_namespace *);
 void gfc_conv_structure (gfc_se *, gfc_expr *, int);
 
 /* Return an expression which determines if a dummy parameter is present.  */
-tree gfc_conv_expr_present (gfc_symbol *);
+tree gfc_conv_expr_present (gfc_symbol *, bool use_saved_decl = false);
 /* Convert a missing, dummy argument into a null or zero.  */
 void gfc_conv_missing_dummy (gfc_se *, gfc_expr *, gfc_typespec, int);
 

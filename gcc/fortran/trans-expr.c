@@ -1712,12 +1712,12 @@ gfc_make_safe_expr (gfc_se * se)
    Also used for arguments to procedures with multiple entry points.  */
 
 tree
-gfc_conv_expr_present (gfc_symbol * sym)
+gfc_conv_expr_present (gfc_symbol * sym, bool use_saved_desc)
 {
-  tree decl, cond;
+  tree decl, orig_decl, cond;
 
   gcc_assert (sym->attr.dummy);
-  decl = gfc_get_symbol_decl (sym);
+  orig_decl = decl = gfc_get_symbol_decl (sym);
 
   /* Intrinsic scalars with VALUE attribute which are passed by value
      use a hidden argument to denote the present status.  */
@@ -1744,10 +1744,13 @@ gfc_conv_expr_present (gfc_symbol * sym)
       return cond;
     }
 
-  if (TREE_CODE (decl) != PARM_DECL)
+  /* Assumed-shape arrays use a local variable for the array data;
+     the actual PARAM_DECL is in a saved decl.  As the local variable
+     is NULL, it can be checked instead, unless use_saved_desc is
+     requested.  */
+
+  if (use_saved_desc && TREE_CODE (decl) != PARM_DECL)
     {
-      /* Array parameters use a temporary descriptor, we want the real
-         parameter.  */
       gcc_assert (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl))
              || GFC_ARRAY_TYPE_P (TREE_TYPE (decl)));
       decl = GFC_DECL_SAVED_DESCRIPTOR (decl);
@@ -1761,9 +1764,12 @@ gfc_conv_expr_present (gfc_symbol * sym)
      we thus also need to check the array descriptor.  For BT_CLASS, it
      can also occur for scalars and F2003 due to type->class wrapping and
      class->class wrapping.  Note further that BT_CLASS always uses an
-     array descriptor for arrays, also for explicit-shape/assumed-size.  */
+     array descriptor for arrays, also for explicit-shape/assumed-size.
+     For assumed-rank arrays, no local variable is generated, hence,
+     the following also applies with !use_saved_desc.  */
 
-  if (!sym->attr.allocatable
+  if ((use_saved_desc || TREE_CODE (orig_decl) == PARM_DECL)
+      && !sym->attr.allocatable
       && ((sym->ts.type != BT_CLASS && !sym->attr.pointer)
 	  || (sym->ts.type == BT_CLASS
 	      && !CLASS_DATA (sym)->attr.allocatable
