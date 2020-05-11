@@ -160,6 +160,8 @@
    UNSPEC_BCD_OVERFLOW
    UNSPEC_VRLMI
    UNSPEC_VRLNM
+   UNSPEC_VCLZDM
+   UNSPEC_VCTZDM
 ])
 
 (define_c_enum "unspecv"
@@ -4095,6 +4097,25 @@
   "TARGET_P8_VECTOR"
   "bcd<bcd_add_sub>. %0,%1,%2,%3"
   [(set_attr "type" "vecsimple")])
+
+(define_insn "vclzdm"
+  [(set (match_operand:V2DI 0 "altivec_register_operand" "=v")
+	(unspec:V2DI [(match_operand:V2DI 1 "altivec_register_operand" "v")
+		      (match_operand:V2DI 2 "altivec_register_operand" "v")]
+	 UNSPEC_VCLZDM))]
+   "TARGET_FUTURE"
+   "vclzdm %0,%1,%2"
+   [(set_attr "type" "vecsimple")])
+
+(define_insn "vctzdm"
+  [(set (match_operand:V2DI 0 "altivec_register_operand" "=v")
+	(unspec:V2DI [(match_operand:V2DI 1 "altivec_register_operand" "v")
+		      (match_operand:V2DI 2 "altivec_register_operand" "v")]
+	 UNSPEC_VCTZDM))]
+   "TARGET_FUTURE"
+   "vctzdm %0,%1,%2"
+   [(set_attr "type" "vecsimple")])
+
 
 (define_expand "bcd<bcd_add_sub>_<code>"
   [(parallel [(set (reg:CCFP CR6_REGNO)

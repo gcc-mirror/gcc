@@ -2304,6 +2304,8 @@ extern int frame_pointer_needed;
 #define RS6000_BTM_POWERPC64	MASK_POWERPC64	/* 64-bit registers.  */
 #define RS6000_BTM_FLOAT128	MASK_FLOAT128_KEYWORD /* IEEE 128-bit float.  */
 #define RS6000_BTM_FLOAT128_HW	MASK_FLOAT128_HW /* IEEE 128-bit float h/w.  */
+#define RS6000_BTM_FUTURE	MASK_FUTURE
+
 
 #define RS6000_BTM_COMMON	(RS6000_BTM_ALTIVEC			\
 				 | RS6000_BTM_VSX			\

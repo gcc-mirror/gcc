@@ -25,6 +25,13 @@
 
 2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
+	* gcc.target/powerpc/vec-clzm-0.c: New test.
+	* gcc.target/powerpc/vec-clzm-1.c: New test.
+	* gcc.target/powerpc/vec-ctzm-0.c: New test.
+	* gcc.target/powerpc/vec-ctzm-1.c: New test.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
 	* gcc.target/powerpc/dg-future-0.c: New.
 	* gcc.target/powerpc/dg-future-1.c: New.
 	* lib/target-supports.exp (check_powerpc_future_hw_available):
