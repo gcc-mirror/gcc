@@ -1,3 +1,10 @@
+2020-05-11  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	PR tree-optimization/83403
+	* tree-affine.c (expr_to_aff_combination): Replace SSA_NAME with
+	determine_value_range, Add fold conversion of MULT_EXPR, fix the
+	previous PLUS_EXPR.
+
 2020-05-10  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* config/i386/i386-c.c (ix86_target_macros): Define _ILP32 and

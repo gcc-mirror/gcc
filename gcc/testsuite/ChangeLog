@@ -1,3 +1,10 @@
+2020-05-11  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	PR tree-optimization/83403
+	* gcc.dg/tree-ssa/pr83403-1.c: New test.
+	* gcc.dg/tree-ssa/pr83403-2.c: New test.
+	* gcc.dg/tree-ssa/pr83403.h: New header.
+
 2020-05-10  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/93499
