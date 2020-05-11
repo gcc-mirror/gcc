@@ -1,3 +1,8 @@
+2020-05-11  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (grokdeclarator): Adjust deprecated_state here.
+	(start_decl): Not here.
+
 2020-05-08  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/95003
