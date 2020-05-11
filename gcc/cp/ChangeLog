@@ -1,5 +1,10 @@
 2020-05-11  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (find_parameter_packs_r) [LAMBDA_EXPR]: Remove redundant
+	walking of capture list.
+
+2020-05-11  Jason Merrill  <jason@redhat.com>
+
 	* cp-tree.h (LOOKUP_EXPLICIT_TMPL_ARGS): Remove.
 	* call.c (build_new_function_call): Don't set it.
 	(build_new_method_call_1): Likewise.
