@@ -1,5 +1,15 @@
 2020-05-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/92583
+	PR c++/92654
+	* tree.c (cp_walk_subtrees): Stop at typedefs.
+	Handle TYPENAME_TYPE here.
+	* pt.c (find_parameter_packs_r): Not here.
+	(for_each_template_parm_r): Clear *walk_subtrees.
+	* decl2.c (min_vis_r): Look through typedefs.
+
+2020-05-11  Jason Merrill  <jason@redhat.com>
+
 	* call.c (implicit_conversion_error): Split out from...
 	(perform_implicit_conversion_flags): ...here.
 	(build_converted_constant_expr_internal): Use it.

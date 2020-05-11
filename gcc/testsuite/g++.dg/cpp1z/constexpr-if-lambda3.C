@@ -18,6 +18,7 @@ template <auto l, typename j> void m(j f) {
 template <int, int c> void o() {
   auto p = [](auto i) {
     if constexpr (a<i>{}) ;
+    if constexpr (typename a<i>::t{});	// { dg-error "" }
   };
   m<c>(p);
 }
