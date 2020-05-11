@@ -1,3 +1,7 @@
+2020-05-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc/testsuite/g++.dg/ipa/pr94856.C: Require fgnu-tm.
+
 2020-05-11  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95046
