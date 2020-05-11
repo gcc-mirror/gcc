@@ -160,6 +160,7 @@
    UNSPEC_BCD_OVERFLOW
    UNSPEC_VRLMI
    UNSPEC_VRLNM
+   UNSPEC_VCFUGED
    UNSPEC_VCLZDM
    UNSPEC_VCTZDM
    UNSPEC_VGNB
@@ -4100,6 +4101,15 @@
   "TARGET_P8_VECTOR"
   "bcd<bcd_add_sub>. %0,%1,%2,%3"
   [(set_attr "type" "vecsimple")])
+
+(define_insn "vcfuged"
+  [(set (match_operand:V2DI 0 "altivec_register_operand" "=v")
+	(unspec:V2DI [(match_operand:V2DI 1 "altivec_register_operand" "v")
+		      (match_operand:V2DI 2 "altivec_register_operand" "v")]
+	 UNSPEC_VCFUGED))]
+   "TARGET_FUTURE"
+   "vcfuged %0,%1,%2"
+   [(set_attr "type" "vecsimple")])
 
 (define_insn "vclzdm"
   [(set (match_operand:V2DI 0 "altivec_register_operand" "=v")

@@ -20719,6 +20719,15 @@ PowerPC family of processors, starting with a hypothetical CPU
 which may or may not be available in the future
 (@option{-mcpu=future}) or later:
 
+
+@smallexample
+@exdent vector unsigned long long int
+@exdent vec_cfuge (vector unsigned long long int, vector unsigned long long int)
+@end smallexample
+Perform a vector centrifuge operation, as if implemented by the Future
+@code{vcfuged} instruction.
+@findex vec_cfuge
+
 @smallexample
 @exdent vector unsigned long long int
 @exdent vec_clzm (vector unsigned long long int, vector unsigned long long int)

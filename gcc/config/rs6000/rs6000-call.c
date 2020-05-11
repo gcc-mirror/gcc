@@ -12951,6 +12951,7 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
     case P8V_BUILTIN_ORC_V4SI_UNS:
     case P8V_BUILTIN_ORC_V2DI_UNS:
     case P8V_BUILTIN_ORC_V1TI_UNS:
+    case FUTURE_BUILTIN_VCFUGED:
     case FUTURE_BUILTIN_VCLZDM:
     case FUTURE_BUILTIN_VCTZDM:
     case FUTURE_BUILTIN_VGNB:
