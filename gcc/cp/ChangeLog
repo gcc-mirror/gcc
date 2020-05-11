@@ -1,3 +1,8 @@
+2020-05-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95066
+	* decl.c (duplicate_decls): Set DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P.
+
 2020-05-13  Nathan Sidwell  <nathan@acm.org>
 
 	* pt.c (template_args_equal): Reorder category checking for
