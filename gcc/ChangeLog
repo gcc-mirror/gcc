@@ -1,3 +1,43 @@
+2020-05-11  Kelvin Nilsen  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/altivec.h (vec_ternarylogic): New #define.
+	* config/rs6000/altivec.md (UNSPEC_XXEVAL): New constant.
+	(xxeval): New insn.
+	* config/rs6000/predicates.md (u8bit_cint_operand): New predicate.
+	* config/rs6000/rs6000-builtin.def: Add handling of new macro
+	RS6000_BUILTIN_4.
+	(BU_FUTURE_V_4): New macro. Use it.
+	(BU_FUTURE_OVERLOAD_4): Likewise.
+	* config/rs6000/rs6000-c.c (altivec_build_resolved_builtin): Add
+	handling for quaternary built-in functions.
+	(altivec_resolve_overloaded_builtin): Add special-case handling
+	for __builtin_vec_xxeval.
+	* config/rs6000/rs6000-call.c: Add handling of new macro
+	RS6000_BUILTIN_4 in initialization of rs6000_builtin_info,
+	bdesc0_arg, bdesc1_arg, bdesc2_arg, bdesc_3arg,
+	bdesc_altivec_preds, bdesc_abs, and bdesc_htm arrays.
+	(altivec_overloaded_builtins): Add definitions for
+	FUTURE_BUILTIN_VEC_XXEVAL.
+	(bdesc_4arg): New array.
+	(htm_expand_builtin): Add handling for quaternary built-in
+	functions.
+	(rs6000_expand_quaternop_builtin): New function.
+	(rs6000_expand_builtin): Add handling for quaternary built-in
+	functions.
+	(rs6000_init_builtins): Initialize builtin_mode_to_type entries
+	for unsigned QImode and unsigned HImode.
+	(builtin_quaternary_function_type): New function.
+	(rs6000_common_init_builtins): Add handling of quaternary
+	operations.
+	* config/rs6000/rs6000.h (RS6000_BTC_QUATERNARY): New defined
+	constant.
+	(RS6000_BTC_PREDICATE): Change value of constant.
+	(RS6000_BTC_ABS): Likewise.
+	(rs6000_builtins): Add support for new macro RS6000_BUILTIN_4.
+	* doc/extend.texi (PowerPC AltiVec Built-In Functions Available
+	for a Future Architecture): Add description of vec_ternarylogic
+	built-in function.
+
 2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/rs6000-builtin.def (__builtin_pdepd): New built-in

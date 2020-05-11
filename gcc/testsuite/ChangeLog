@@ -1,3 +1,17 @@
+2020-05-11  Kelvin Nilsen  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/vec-ternarylogic-0.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-1.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-10.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-2.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-3.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-4.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-5.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-6.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-7.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-8.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-9.c: New.
+
 2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* gcc.target/powerpc/pdep-0.c: New.
