@@ -11809,21 +11809,8 @@ instantiate_class_template_1 (tree type)
 	    {
 	      /* Build new TYPE_FIELDS.  */
               if (TREE_CODE (t) == STATIC_ASSERT)
-                {
-                  tree condition;
-
-		  ++c_inhibit_evaluation_warnings;
-		  condition =
-		    tsubst_expr (STATIC_ASSERT_CONDITION (t), args,
-				 tf_warning_or_error, NULL_TREE,
-				 /*integral_constant_expression_p=*/true);
-		  --c_inhibit_evaluation_warnings;
-
-                  finish_static_assert (condition,
-                                        STATIC_ASSERT_MESSAGE (t), 
-                                        STATIC_ASSERT_SOURCE_LOCATION (t),
-                                        /*member_p=*/true);
-                }
+		tsubst_expr (t, args, tf_warning_or_error, NULL_TREE,
+			     /*integral_constant_expression_p=*/true);
 	      else if (TREE_CODE (t) != CONST_DECL)
 		{
 		  tree r;
