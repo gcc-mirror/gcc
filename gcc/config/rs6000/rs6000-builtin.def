@@ -993,6 +993,40 @@
 		     | RS6000_BTC_TERNARY),				\
 		    CODE_FOR_nothing)			/* ICODE */
 
+/* Miscellaneous (non-vector) builtins for instructions which may be
+   added at some point in the future.  */
+
+#define BU_FUTURE_MISC_0(ENUM, NAME, ATTR, ICODE)			\
+  RS6000_BUILTIN_0 (FUTURE_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_FUTURE,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_SPECIAL),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_FUTURE_MISC_1(ENUM, NAME, ATTR, ICODE)			\
+  RS6000_BUILTIN_1 (FUTURE_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_FUTURE,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_FUTURE_MISC_2(ENUM, NAME, ATTR, ICODE)			\
+  RS6000_BUILTIN_2 (FUTURE_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_FUTURE,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_FUTURE_MISC_3(ENUM, NAME, ATTR, ICODE)			\
+  RS6000_BUILTIN_3 (FUTURE_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_FUTURE,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_TERNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
 #endif
 
 
@@ -2539,6 +2573,9 @@ BU_P9_OVERLOAD_2 (CMPRB,	"byte_in_range")
 BU_P9_OVERLOAD_2 (CMPRB2,	"byte_in_either_range")
 BU_P9_OVERLOAD_2 (CMPEQB,	"byte_in_set")
 
+/* Future architecture scalar built-ins.  */
+BU_FUTURE_MISC_2 (CFUGED, "cfuged", CONST, cfuged)
+
 /* Future architecture vector built-ins.  */
 BU_FUTURE_V_2 (VCLZDM, "vclzdm", CONST, vclzdm)
 BU_FUTURE_V_2 (VCTZDM, "vctzdm", CONST, vctzdm)

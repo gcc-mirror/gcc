@@ -16980,6 +16980,7 @@ implementing assertions.
 * Basic PowerPC Built-in Functions Available on ISA 2.06::
 * Basic PowerPC Built-in Functions Available on ISA 2.07::
 * Basic PowerPC Built-in Functions Available on ISA 3.0::
+* Basic PowerPC Built-in Functions Available for a Future Architecture::
 @end menu
 
 This section describes PowerPC built-in functions that do not require
@@ -17533,6 +17534,27 @@ the FPSCR.  The instruction is a lower latency version of the @code{mffs}
 instruction.  If the @code{mffsl} instruction is not available, then the
 builtin uses the older @code{mffs} instruction to read the FPSCR.
 
+@node Basic PowerPC Built-in Functions Available for a Future Architecture
+@subsubsection Basic PowerPC Built-in Functions Available for a Future Architecture
+
+The basic built-in functions described in this section are
+available on the PowerPC family of processors starting with a
+hypothetical CPU which may or may not be available in the future, as
+requested by specifying @option{-mcpu=future} on the command line.
+Unless explicitly disabled on the command line,
+specifying @option{-mcpu=future} has the effect of enabling all the
+same options as for @option{-mcpu=power9}.
+
+The following built-in functions are available on Linux 64-bit systems
+that use a future architecture instruction set (@option{-mcpu=future}):
+
+@smallexample
+@exdent unsigned long long int
+@exdent __builtin_cfuged (unsigned long long int, unsigned long long int)
+@end smallexample
+Perform a 64-bit centrifuge operation, as if implemented by the Future
+@code{cfuged} instruction.
+@findex __builtin_cfuged
 
 @node PowerPC AltiVec/VSX Built-in Functions
 @subsection PowerPC AltiVec/VSX Built-in Functions

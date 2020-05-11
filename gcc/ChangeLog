@@ -1,3 +1,16 @@
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000-builtin.def (BU_FUTURE_MISC_0): New
+	#define.
+	(BU_FUTURE_MISC_1): Likewise.
+	(BU_FUTURE_MISC_2): Likewise.
+	(BU_FUTURE_MISC_3): Likewise.
+	(__builtin_cfuged): New built-in function definition.
+	* config/rs6000/rs6000.md (UNSPEC_CFUGED): New constant.
+	(cfuged): New insn.
+	* doc/extend.texi (Basic PowerPC Built-in Functions Available for
+	a Future Architecture): New subsubsection.
+
 2020-05-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/95049
