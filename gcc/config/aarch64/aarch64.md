@@ -4391,6 +4391,44 @@
   [(set_attr "type" "csel")]
 )
 
+(define_insn "*csinv3_uxtw_insn1"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(if_then_else:DI
+	  (match_operand 1 "aarch64_comparison_operation" "")
+	  (zero_extend:DI
+	    (match_operand:SI 2 "register_operand" "r"))
+	  (zero_extend:DI
+	    (NEG_NOT:SI (match_operand:SI 3 "register_operand" "r")))))]
+  ""
+  "cs<neg_not_cs>\\t%w0, %w2, %w3, %m1"
+  [(set_attr "type" "csel")]
+)
+
+(define_insn "*csinv3_uxtw_insn2"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(if_then_else:DI
+	  (match_operand 1 "aarch64_comparison_operation" "")
+	  (zero_extend:DI
+	    (NEG_NOT:SI (match_operand:SI 2 "register_operand" "r")))
+	  (zero_extend:DI
+	    (match_operand:SI 3 "register_operand" "r"))))]
+  ""
+  "cs<neg_not_cs>\\t%w0, %w3, %w2, %M1"
+  [(set_attr "type" "csel")]
+)
+
+(define_insn "*csinv3_uxtw_insn3"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(if_then_else:DI
+	  (match_operand 1 "aarch64_comparison_operation" "")
+	  (zero_extend:DI
+	    (NEG_NOT:SI (match_operand:SI 2 "register_operand" "r")))
+	  (const_int 0)))]
+  ""
+  "cs<neg_not_cs>\\t%w0, wzr, %w2, %M1"
+  [(set_attr "type" "csel")]
+)
+
 ;; If X can be loaded by a single CNT[BHWD] instruction,
 ;;
 ;;    A = UMAX (B, X)
