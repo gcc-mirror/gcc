@@ -1,5 +1,10 @@
 2020-05-11  Martin Liska  <mliska@suse.cz>
 
+	PR c/95040
+	* common.opt: Fix typo in option description.
+
+2020-05-11  Martin Liska  <mliska@suse.cz>
+
 	PR gcov-profile/94928
 	* gcov-io.h: Add caveat about coverage format parsing and
 	possible outdated documentation.
