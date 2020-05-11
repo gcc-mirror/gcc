@@ -17645,6 +17645,7 @@ briefly described below.
 * PowerPC AltiVec Built-in Functions Available on ISA 2.06::
 * PowerPC AltiVec Built-in Functions Available on ISA 2.07::
 * PowerPC AltiVec Built-in Functions Available on ISA 3.0::
+* PowerPC AltiVec Built-in Functions Available for a Future Architecture::
 @end menu
 
 @node PowerPC AltiVec Built-in Functions on ISA 2.05
@@ -20687,6 +20688,32 @@ void vec_xst (vector char, int, char *);
 void vec_xst (vector unsigned char, int, vector unsigned char *);
 void vec_xst (vector unsigned char, int, unsigned char *);
 @end smallexample
+
+@node PowerPC AltiVec Built-in Functions Available for a Future Architecture
+@subsubsection PowerPC AltiVec Built-in Functions Available for a Future Architecture
+
+The following additional built-in functions are also available for the
+PowerPC family of processors, starting with a hypothetical CPU
+which may or may not be available in the future
+(@option{-mcpu=future}) or later:
+
+@smallexample
+@exdent vector unsigned long long int
+@exdent vec_clzm (vector unsigned long long int, vector unsigned long long int)
+@end smallexample
+Perform a vector count leading zeros under bit mask operation, as if
+implemented by the Future @code{vclzdm} instruction.
+@findex vec_clzm
+
+@smallexample
+@exdent vector unsigned long long int
+@exdent vec_ctzm (vector unsigned long long int, vector unsigned long long int)
+@end smallexample
+Perform a vector count trailing zeros under bit mask operation, as if
+implemented by the Future @code{vctzdm} instruction.
+@findex vec_ctzm
+
+
 @node PowerPC Hardware Transactional Memory Built-in Functions
 @subsection PowerPC Hardware Transactional Memory Built-in Functions
 GCC provides two interfaces for accessing the Hardware Transactional

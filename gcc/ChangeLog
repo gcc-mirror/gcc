@@ -1,3 +1,29 @@
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+	    Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/altivec.h (vec_clzm): New macro.
+	(vec_ctzm): Likewise.
+	* config/rs6000/altivec.md (UNSPEC_VCLZDM): New constant.
+	(UNSPEC_VCTZDM): Likewise.
+	(vclzdm): New insn.
+	(vctzdm): Likewise.
+	* config/rs6000/rs6000-builtin.def (BU_FUTURE_V_0): New macro.
+	(BU_FUTURE_V_1): Likewise.
+	(BU_FUTURE_V_2): Likewise.
+	(BU_FUTURE_V_3): Likewise.
+	(__builtin_altivec_vclzdm): New builtin definition.
+	(__builtin_altivec_vctzdm): Likewise.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Cause
+	_ARCH_PWR_FUTURE macro to be defined if OPTION_MASK_FUTURE flag is
+	set.
+	* config/rs6000/rs6000-call.c (builtin_function_type): Set return
+	value and parameter types to be unsigned for VCLZDM and VCTZDM.
+	* config/rs6000/rs6000.c (rs6000_builtin_mask_calculate): Add
+	support for TARGET_FUTURE flag.
+	* config/rs6000/rs6000.h (RS6000_BTM_FUTURE): New macro constant.
+	* doc/extend.texi (PowerPC Altivec Built-in Functions Available
+	for a Future Architecture): New subsubsection.
+
 2020-05-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/94988
