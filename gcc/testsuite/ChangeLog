@@ -1,5 +1,10 @@
+2020-05-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* gcc.target/i386/pr95046-1.c: New test.
+
 2020-05-11  Mark Eggleston  <markeggleston@gcc.gnu.org>
-    
+
 	PR fortran/59107
 	* gfortran.dg/pr59107.f90: New test.
 

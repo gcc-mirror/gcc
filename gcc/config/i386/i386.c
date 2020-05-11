@@ -21007,9 +21007,11 @@ ix86_vector_mode_supported_p (machine_mode mode)
     return true;
   if (TARGET_AVX512F && VALID_AVX512F_REG_MODE (mode))
     return true;
-  if ((TARGET_MMX || TARGET_MMX_WITH_SSE) && VALID_MMX_REG_MODE (mode))
+  if ((TARGET_MMX || TARGET_MMX_WITH_SSE)
+      && VALID_MMX_REG_MODE (mode))
     return true;
-  if (TARGET_3DNOW && VALID_MMX_REG_MODE_3DNOW (mode))
+  if ((TARGET_3DNOW || TARGET_MMX_WITH_SSE)
+      && VALID_MMX_REG_MODE_3DNOW (mode))
     return true;
   return false;
 }
