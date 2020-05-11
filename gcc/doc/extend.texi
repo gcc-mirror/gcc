@@ -17572,6 +17572,22 @@ Perform a 64-bit count trailing zeros operation under mask, as if
 implemented by the future @code{cnttzdm} instruction.
 @findex __builtin_cnttzdm
 
+@smallexample
+@exdent unsigned long long int
+@exdent __builtin_pdepd (unsigned long long int, unsigned long long int)
+@end smallexample
+Perform a 64-bit parallel bits deposit operation, as if implemented by the
+Future @code{pdepd} instruction.
+@findex __builtin_pdepd
+
+@smallexample
+@exdent unsigned long long int
+@exdent __builtin_pextd (unsigned long long int, unsigned long long int)
+@end smallexample
+Perform a 64-bit parallel bits extract operation, as if implemented by the
+Future @code{pextd} instruction.
+@findex __builtin_pextd
+
 @node PowerPC AltiVec/VSX Built-in Functions
 @subsection PowerPC AltiVec/VSX Built-in Functions
 
