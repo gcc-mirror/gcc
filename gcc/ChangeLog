@@ -1,3 +1,11 @@
+2020-05-11  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2020-05-11  Martin Liska  <mliska@suse.cz>
+
+	PR c/95040
+	* common.opt: Fix typo in option description.
+
 2020-05-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/94724
