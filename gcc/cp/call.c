@@ -4600,15 +4600,7 @@ build_new_function_call (tree fn, vec<tree, va_gc> **args,
     }
   else
     {
-      int flags = LOOKUP_NORMAL;
-      /* If fn is template_id_expr, the call has explicit template arguments
-         (e.g. func<int>(5)), communicate this info to build_over_call
-         through flags so that later we can use it to decide whether to warn
-         about peculiar null pointer conversion.  */
-      if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
-        flags |= LOOKUP_EXPLICIT_TMPL_ARGS;
-
-      result = build_over_call (cand, flags, complain);
+      result = build_over_call (cand, LOOKUP_NORMAL, complain);
     }
 
   if (flag_coroutines
@@ -8773,7 +8765,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       if (null_node_p (arg)
           && DECL_TEMPLATE_INFO (fn)
           && cand->template_decl
-          && !(flags & LOOKUP_EXPLICIT_TMPL_ARGS))
+	  && !cand->explicit_targs)
         conversion_warning = false;
 
       /* Set user_conv_p on the argument conversions, so rvalue/base handling
@@ -10345,8 +10337,6 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 
 	  if (call != error_mark_node)
 	    {
-              if (explicit_targs)
-                flags |= LOOKUP_EXPLICIT_TMPL_ARGS;
 	      /* Now we know what function is being called.  */
 	      if (fn_p)
 		*fn_p = fn;

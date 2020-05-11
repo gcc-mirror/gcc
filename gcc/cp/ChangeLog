@@ -1,5 +1,12 @@
 2020-05-11  Jason Merrill  <jason@redhat.com>
 
+	* cp-tree.h (LOOKUP_EXPLICIT_TMPL_ARGS): Remove.
+	* call.c (build_new_function_call): Don't set it.
+	(build_new_method_call_1): Likewise.
+	(build_over_call): Check cand->explicit_targs instead.
+
+2020-05-11  Jason Merrill  <jason@redhat.com>
+
 	* decl.c (compute_array_index_type_loc): Stabilize before building
 	the MINUS_EXPR.
 
