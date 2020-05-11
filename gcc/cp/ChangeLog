@@ -1,5 +1,11 @@
 2020-05-11  Jason Merrill  <jason@redhat.com>
 
+	Resolve C++20 NB comment CA104
+	* pt.c (determine_specialization): Compare constraints for
+	specialization of member template of class instantiation.
+
+2020-05-11  Jason Merrill  <jason@redhat.com>
+
 	PR c++/92583
 	PR c++/92654
 	* tree.c (cp_walk_subtrees): Stop at typedefs.

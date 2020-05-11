@@ -2282,8 +2282,29 @@ determine_specialization (tree template_id,
              below. */
 	  if (tsk == tsk_template)
 	    {
-	      if (compparms (fn_arg_types, decl_arg_types))
-		candidates = tree_cons (NULL_TREE, fn, candidates);
+	      if (!comp_template_parms (DECL_TEMPLATE_PARMS (fn),
+					current_template_parms))
+		continue;
+	      if (!same_type_p (TREE_TYPE (TREE_TYPE (decl)),
+				TREE_TYPE (TREE_TYPE (fn))))
+		continue;
+	      if (!compparms (fn_arg_types, decl_arg_types))
+		continue;
+
+	      tree freq = get_trailing_function_requirements (fn);
+	      tree dreq = get_trailing_function_requirements (decl);
+	      if (!freq != !dreq)
+		continue;
+	      if (freq)
+		{
+		  tree fargs = DECL_TI_ARGS (fn);
+		  tsubst_flags_t complain = tf_none;
+		  freq = tsubst_constraint (freq, fargs, complain, fn);
+		  if (!cp_tree_equal (freq, dreq))
+		    continue;
+		}
+
+	      candidates = tree_cons (NULL_TREE, fn, candidates);
 	      continue;
 	    }
 
@@ -2472,7 +2493,8 @@ determine_specialization (tree template_id,
       *targs_out = copy_node (DECL_TI_ARGS (fn));
 
       /* Propagate the candidate's constraints to the declaration.  */
-      set_constraints (decl, get_constraints (fn));
+      if (tsk != tsk_template)
+	set_constraints (decl, get_constraints (fn));
 
       /* DECL is a re-declaration or partial instantiation of a template
 	 function.  */
