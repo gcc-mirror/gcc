@@ -1,3 +1,13 @@
+2020-05-11  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/95012
+	* configure.ac: Check for getpagesize declaration.
+	* mmap.c: Declare getpagesize if necessary.
+	* mmapio.c: Likewise.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* Makefile.in: Regenerate.
+
 2020-05-09  Roland McGrath  <mcgrathr@google.com>
 
 	* elf.c (elf_add): Bail early if there are no section headers at all.
