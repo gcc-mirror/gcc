@@ -1,3 +1,41 @@
+2020-05-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* config/i386/i386.c (ix86_vector_mode_supported_p):
+	Vectorize 3dNOW! vector modes for TARGET_MMX_WITH_SSE.
+	* config/i386/mmx.md (*mov<mode>_internal): Do not set
+	mode of alternative 13 to V2SF for TARGET_MMX_WITH_SSE.
+
+	(mmx_addv2sf3): Change operand predicates from
+	nonimmediate_operand to register_mmxmem_operand.
+	(addv2sf3): New expander.
+	(*mmx_addv2sf3): Add SSE/AVX alternatives.  Change operand
+	predicates from nonimmediate_operand to register_mmxmem_operand.
+	Enable instruction pattern for TARGET_MMX_WITH_SSE.
+
+	(mmx_subv2sf3): Change operand predicate from
+	nonimmediate_operand to register_mmxmem_operand.
+	(mmx_subrv2sf3): Ditto.
+	(subv2sf3): New expander.
+	(*mmx_subv2sf3): Add SSE/AVX alternatives.  Change operand
+	predicates from nonimmediate_operand to register_mmxmem_operand.
+	Enable instruction pattern for TARGET_MMX_WITH_SSE.
+
+	(mmx_mulv2sf3): Change operand predicates from
+	nonimmediate_operand to register_mmxmem_operand.
+	(mulv2sf3): New expander.
+	(*mmx_mulv2sf3): Add SSE/AVX alternatives.  Change operand
+	predicates from nonimmediate_operand to register_mmxmem_operand.
+	Enable instruction pattern for TARGET_MMX_WITH_SSE.
+
+	(mmx_<code>v2sf3): Change operand predicates from
+	nonimmediate_operand to register_mmxmem_operand.
+	(<code>v2sf3): New expander.
+	(*mmx_<code>v2sf3): Add SSE/AVX alternatives.  Change operand
+	predicates from nonimmediate_operand to register_mmxmem_operand.
+	Enable instruction pattern for TARGET_MMX_WITH_SSE.
+	(mmx_ieee_<ieee_maxmin>v2sf3): Ditto.
+
 2020-05-11  Martin Liska  <mliska@suse.cz>
 
 	PR c/95040
