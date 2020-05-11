@@ -1,3 +1,60 @@
+2020-05-11  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/95012
+	* configure.ac: Check for getpagesize declaration.
+	* mmap.c: Declare getpagesize if necessary.
+	* mmapio.c: Likewise.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* Makefile.in: Regenerate.
+
+2020-05-09  Roland McGrath  <mcgrathr@google.com>
+
+	* elf.c (elf_add): Bail early if there are no section headers at all.
+
+2020-05-09  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_add): Don't free strtab if an error occurs after
+	recording symbol information.
+
+2020-05-09  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/88745
+	* macho.c: New file.
+	* filetype.awk: Recognize Mach-O files.
+	* Makefile.am (FORMAT_FILES): Add macho.c.
+	(check_DATA): New variable.  Set to .dSYM if HAVE_DSYMUTIL.
+	(%.dSYM): New pattern target.
+	(test_macho_SOURCES, test_macho_CFLAGS): New targets.
+	(test_macho_LDADD): New target.
+	(BUILDTESTS): Add test_macho.
+	(macho.lo): Add dependencies.
+	* configure.ac: Recognize macho file type.  Check for
+	mach-o/dyld.h.  Don't try to run objcopy if we don't find it.
+	Look for dsymutil and define a HAVE_DSYMUTIL conditional.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+2020-05-09  Ian Lance Taylor  <iant@golang.org>
+
+	* read.c (backtrace_get_view): Support short read.
+
+2020-05-09  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_add): If debug sections are very large or far apart,
+	read them individually rather than as a single view.
+
+2020-05-08  Ian Lance Taylor  <iant@golang.org>
+
+	* fileline.c (sysctl_exec_name): New static function.
+	(sysctl_exec_name1): New macro or static function.
+	(sysctl_exec_name2): Likewise.
+	(fileline_initialize): Try sysctl_exec_name[12].
+	* configure.ac: Check for sysctl args to fetch executable name.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
 2020-02-15  Ian Lance Taylor  <iant@golang.org>
 
 	* ztest.c (test_large): Update file to current libgo test file.

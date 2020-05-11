@@ -1761,6 +1761,14 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 		pp_decimal_int (pp, TYPE_PRECISION (node));
 		pp_greater (pp);
 	      }
+	    else if (TREE_CODE (node) == BOOLEAN_TYPE)
+	      {
+		pp_string (pp, (TYPE_UNSIGNED (node)
+				? "<unsigned-boolean:"
+				: "<signed-boolean:"));
+		pp_decimal_int (pp, TYPE_PRECISION (node));
+		pp_greater (pp);
+	      }
 	    else if (TREE_CODE (node) == VOID_TYPE)
 	      pp_string (pp, "void");
 	    else

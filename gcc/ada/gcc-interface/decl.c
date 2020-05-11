@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2019, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2020, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -248,7 +248,7 @@ static tree create_variant_part_from (tree, vec<variant_desc>, tree,
 static void copy_and_substitute_in_size (tree, tree, vec<subst_pair>);
 static void copy_and_substitute_in_layout (Entity_Id, Entity_Id, tree, tree,
 					   vec<subst_pair>, bool);
-static void associate_original_type_to_packed_array (tree, Entity_Id);
+static tree associate_original_type_to_packed_array (tree, Entity_Id);
 static const char *get_entity_char (Entity_Id);
 
 /* The relevant constituents of a subprogram binding to a GCC builtin.  Used
@@ -987,7 +987,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    tree orig_type = gnu_type;
 
 	    gnu_type = maybe_pad_type (gnu_type, gnu_size, align, gnat_entity,
-				       false, false, definition, true);
+				       false, definition, true);
 
 	    /* If the nominal subtype of the object is unconstrained and its
 	       size is not fixed, compute the Ada size from the Ada size of
@@ -1754,9 +1754,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  {
 	    /* Given RM restrictions on 'Small values, we assume here that
 	       the denominator fits in an int.  */
-	    const tree base = build_int_cst (integer_type_node,
-					     Rbase (gnat_small_value));
-	    const tree exponent
+	    tree base
+	      = build_int_cst (integer_type_node, Rbase (gnat_small_value));
+	    tree exponent
 	      = build_int_cst (integer_type_node,
 			       UI_To_Int (Denominator (gnat_small_value)));
 	    scale_factor
@@ -1774,10 +1774,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	    if (UI_Is_In_Int_Range (num) && UI_Is_In_Int_Range (den))
 	      {
-		const tree gnu_num
+		tree gnu_num
 		  = build_int_cst (integer_type_node,
 				   UI_To_Int (Norm_Num (gnat_small_value)));
-		const tree gnu_den
+		tree gnu_den
 		  = build_int_cst (integer_type_node,
 				   UI_To_Int (Norm_Den (gnat_small_value)));
 		scale_factor = build2 (RDIV_EXPR, integer_type_node,
@@ -1856,8 +1856,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	gnat_to_gnu_entity (Ancestor_Subtype (gnat_entity), gnu_expr, false);
 
       /* Set the precision to the Esize except for bit-packed arrays.  */
-      if (Is_Packed_Array_Impl_Type (gnat_entity)
-	  && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)))
+      if (Is_Packed_Array_Impl_Type (gnat_entity))
 	esize = UI_To_Int (RM_Size (gnat_entity));
 
       /* Boolean types with foreign convention have precision 1.  */
@@ -1934,11 +1933,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       TYPE_STUB_DECL (gnu_type)
 	= create_type_stub_decl (gnu_entity_name, gnu_type);
 
-      /* For a packed array, make the original array type a parallel/debug
-	 type.  */
-      if (debug_info_p && Is_Packed_Array_Impl_Type (gnat_entity))
-	associate_original_type_to_packed_array (gnu_type, gnat_entity);
-
     discrete_type:
 
       /* We have to handle clauses that under-align the type specially.  */
@@ -1960,19 +1954,30 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	 such values), we only get the good bits, since the unused bits
 	 are uninitialized.  Both goals are accomplished by wrapping up
 	 the modular type in an enclosing record type.  */
-      if (Is_Packed_Array_Impl_Type (gnat_entity)
-	  && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)))
+      if (Is_Packed_Array_Impl_Type (gnat_entity))
 	{
-	  tree gnu_field_type, gnu_field;
+	  tree gnu_field_type, gnu_field, t;
+
+	  gcc_assert (Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)));
+	  TYPE_BIT_PACKED_ARRAY_TYPE_P (gnu_type) = 1;
+
+	  /* Make the original array type a parallel/debug type.  */
+	  if (debug_info_p)
+	    {
+	      tree gnu_name
+		= associate_original_type_to_packed_array (gnu_type,
+							   gnat_entity);
+	      if (gnu_name)
+		gnu_entity_name = gnu_name;
+	    }
 
 	  /* Set the RM size before wrapping up the original type.  */
 	  SET_TYPE_RM_SIZE (gnu_type,
 			    UI_To_gnu (RM_Size (gnat_entity), bitsizetype));
-	  TYPE_PACKED_ARRAY_TYPE_P (gnu_type) = 1;
 
 	  /* Create a stripped-down declaration, mainly for debugging.  */
-	  create_type_decl (gnu_entity_name, gnu_type, true, debug_info_p,
-			    gnat_entity);
+	  t = create_type_decl (gnu_entity_name, gnu_type, true, debug_info_p,
+				gnat_entity);
 
 	  /* Now save it and build the enclosing record type.  */
 	  gnu_field_type = gnu_type;
@@ -2011,15 +2016,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  finish_record_type (gnu_type, gnu_field, 2, false);
 	  TYPE_JUSTIFIED_MODULAR_P (gnu_type) = 1;
 
+	  /* Make the original array type a parallel/debug type.  Note that
+	     gnat_get_array_descr_info needs a TYPE_IMPL_PACKED_ARRAY_P type
+	     so we use an intermediate step for standard DWARF.  */
 	  if (debug_info_p)
 	    {
-	      /* Make the original array type a parallel/debug type.  */
-	      associate_original_type_to_packed_array (gnu_type, gnat_entity);
-
-	      /* Since GNU_TYPE is a padding type around the packed array
-		 implementation type, the padded type is its debug type.  */
 	      if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
 		SET_TYPE_DEBUG_TYPE (gnu_type, gnu_field_type);
+	      else if (DECL_PARALLEL_TYPE (t))
+		add_parallel_type (gnu_type, DECL_PARALLEL_TYPE (t));
 	    }
 	}
 
@@ -2033,9 +2038,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  /* Set the RM size before wrapping the type.  */
 	  SET_TYPE_RM_SIZE (gnu_type, gnu_size);
 
+	  /* Create a stripped-down declaration, mainly for debugging.  */
+	  create_type_decl (gnu_entity_name, gnu_type, true, debug_info_p,
+			    gnat_entity);
+
 	  gnu_type
 	    = maybe_pad_type (gnu_type, TYPE_SIZE (gnu_type), align,
-			      gnat_entity, false, true, definition, false);
+			      gnat_entity, false, definition, false);
 
 	  TYPE_PACKED (gnu_type) = 1;
 	  SET_TYPE_ADA_SIZE (gnu_type, gnu_size);
@@ -2112,7 +2121,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	tree *gnu_index_types = XALLOCAVEC (tree, ndim);
 	tree *gnu_temp_fields = XALLOCAVEC (tree, ndim);
 	tree gnu_max_size = size_one_node, tem, t;
-	Entity_Id gnat_index, gnat_name;
+	Entity_Id gnat_index;
 	int index;
 	tree comp_type;
 
@@ -2378,13 +2387,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	create_type_decl (create_concat_name (gnat_entity, "XUA"), tem,
 			  artificial_p, debug_info_p, gnat_entity);
 
-	/* If told to generate GNAT encodings for them (GDB rely on them at the
-	   moment): give the fat pointer type a name.  If this is a packed
-	   array, tell the debugger how to interpret the underlying bits.  */
-	if (Present (Packed_Array_Impl_Type (gnat_entity)))
-	  gnat_name = Packed_Array_Impl_Type (gnat_entity);
-	else
-	  gnat_name = gnat_entity;
+	/* If the GNAT encodings are used, give the fat pointer type a name.
+	   If this is a packed array, tell the debugger how to interpret the
+	   underlying bits by fetching that of the implementation type.  */
+	const Entity_Id gnat_name
+	  = (Present (Packed_Array_Impl_Type (gnat_entity))
+	     && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+	    ? Packed_Array_Impl_Type (gnat_entity)
+	    : gnat_entity;
+
 	tree xup_name
 	  = (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
 	    ? get_entity_name (gnat_name)
@@ -2752,6 +2763,24 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		}
 	    }
 
+	  /* Set the TYPE_PACKED flag on packed array types and also on their
+	     implementation types, so that the DWARF back-end can output the
+	     appropriate description for them.  */
+	  TYPE_PACKED (gnu_type)
+	    = (Is_Packed (gnat_entity)
+	       || Is_Packed_Array_Impl_Type (gnat_entity));
+
+	  TYPE_BIT_PACKED_ARRAY_TYPE_P (gnu_type)
+	    = (Is_Packed_Array_Impl_Type (gnat_entity)
+	       && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)));
+
+	  /* If the maximum size doesn't overflow, use it.  */
+	  if (gnu_max_size
+	      && TREE_CODE (gnu_max_size) == INTEGER_CST
+	      && !TREE_OVERFLOW (gnu_max_size)
+	      && compare_tree_int (gnu_max_size, TYPE_ARRAY_SIZE_LIMIT) <= 0)
+	    TYPE_ARRAY_MAX_SIZE (gnu_type) = gnu_max_size;
+
 	  /* If we need to write out a record type giving the names of the
 	     bounds for debugging purposes, do it now and make the record
 	     type a parallel type.  This is not needed for a packed array
@@ -2786,43 +2815,31 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    }
 
 	  /* If this is a packed array type, make the original array type a
-	     parallel/debug type.  Otherwise, if such GNAT encodings are
-	     required, do it for the base array type if it isn't artificial to
-	     make sure it is kept in the debug info.  */
+	     parallel/debug type.  Otherwise, if GNAT encodings are used, do
+	     it for the base array type if it is not artificial to make sure
+	     that it is kept in the debug info.  */
 	  if (debug_info_p)
 	    {
 	      if (Is_Packed_Array_Impl_Type (gnat_entity))
-		associate_original_type_to_packed_array (gnu_type,
-							 gnat_entity);
-	      else
+		{
+		  tree gnu_name
+		    = associate_original_type_to_packed_array (gnu_type,
+							       gnat_entity);
+		  if (gnu_name)
+		    gnu_entity_name = gnu_name;
+		}
+
+	      else if (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
 		{
 		  tree gnu_base_decl
 		    = gnat_to_gnu_entity (Etype (gnat_entity), NULL_TREE,
 					  false);
-		  if (!DECL_ARTIFICIAL (gnu_base_decl)
-		      && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+
+		  if (!DECL_ARTIFICIAL (gnu_base_decl))
 		    add_parallel_type (gnu_type,
 				       TREE_TYPE (TREE_TYPE (gnu_base_decl)));
 		}
 	    }
-
-	  TYPE_PACKED_ARRAY_TYPE_P (gnu_type)
-	    = (Is_Packed_Array_Impl_Type (gnat_entity)
-	       && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)));
-
-	/* Tag top-level ARRAY_TYPE nodes for packed arrays and their
-	   implementation types as such so that the debug information back-end
-	   can output the appropriate description for them.  */
-	  TYPE_PACKED (gnu_type)
-	    = (Is_Packed (gnat_entity)
-	       || Is_Packed_Array_Impl_Type (gnat_entity));
-
-	  /* If the maximum size doesn't overflow, use it.  */
-	  if (gnu_max_size
-	      && TREE_CODE (gnu_max_size) == INTEGER_CST
-	      && !TREE_OVERFLOW (gnu_max_size)
-	      && compare_tree_int (gnu_max_size, TYPE_ARRAY_SIZE_LIMIT) <= 0)
-	    TYPE_ARRAY_MAX_SIZE (gnu_type) = gnu_max_size;
 
 	  /* Set our alias set to that of our base type.  This gives all
 	     array subtypes the same alias set.  */
@@ -3511,7 +3528,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		 we are asked to output such encodings, write a record that
 		 shows what we are a subtype of and also make a variable that
 		 indicates our size, if still variable.  */
-	      if (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+	      if (debug_info_p
+		  && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
 		{
 		  tree gnu_subtype_marker = make_node (RECORD_TYPE);
 		  tree gnu_unpad_base_name
@@ -4352,15 +4370,20 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	       && integer_pow2p (gnu_size))
 	align = MIN (BIGGEST_ALIGNMENT, tree_to_uhwi (gnu_size));
 
-      /* See if we need to pad the type.  If we did, and made a record,
-	 the name of the new type may be changed.  So get it back for
-	 us when we make the new TYPE_DECL below.  */
+      /* See if we need to pad the type.  If we did and built a new type,
+	 then create a stripped-down declaration for the original type,
+	 mainly for debugging, unless there was already one.  */
       if (gnu_size || align > 0)
-	gnu_type = maybe_pad_type (gnu_type, gnu_size, align, gnat_entity,
-				   false, !gnu_decl, definition, false);
+	{
+	  tree orig_type = gnu_type;
 
-      if (TYPE_IS_PADDING_P (gnu_type))
-	gnu_entity_name = TYPE_IDENTIFIER (gnu_type);
+	  gnu_type = maybe_pad_type (gnu_type, gnu_size, align, gnat_entity,
+				     false, definition, false);
+
+	  if (gnu_type != orig_type && !gnu_decl)
+	    create_type_decl (gnu_entity_name, orig_type, true, debug_info_p,
+			      gnat_entity);
+	}
 
       /* Now set the RM size of the type.  We cannot do it before padding
 	 because we need to accept arbitrary RM sizes on integral types.  */
@@ -5107,9 +5130,10 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
 			    bool debug_info_p)
 {
   const Entity_Id gnat_type = Component_Type (gnat_array);
+  const bool is_bit_packed = Is_Bit_Packed_Array (gnat_array);
   tree gnu_type = gnat_to_gnu_type (gnat_type);
-  bool has_packed_components = Is_Bit_Packed_Array (gnat_array);
   tree gnu_comp_size;
+  bool has_packed_components;
   unsigned int max_align;
 
   /* If an alignment is specified, use it as a cap on the component type
@@ -5123,9 +5147,9 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
 
   /* Try to get a packable form of the component if needed.  */
   if ((Is_Packed (gnat_array) || Has_Component_Size_Clause (gnat_array))
+      && !is_bit_packed
       && !Has_Aliased_Components (gnat_array)
       && !Strict_Alignment (gnat_type)
-      && !has_packed_components
       && RECORD_OR_UNION_TYPE_P (gnu_type)
       && !TYPE_FAT_POINTER_P (gnu_type)
       && tree_fits_uhwi_p (TYPE_SIZE (gnu_type)))
@@ -5133,6 +5157,8 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
       gnu_type = make_packable_type (gnu_type, false, max_align);
       has_packed_components = true;
     }
+  else
+    has_packed_components = is_bit_packed;
 
   /* Get and validate any specified Component_Size.  */
   gnu_comp_size
@@ -5155,7 +5181,7 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
     gnu_comp_size = bitsize_unit_node;
 
   /* Honor the component size.  This is not needed for bit-packed arrays.  */
-  if (gnu_comp_size && !Is_Bit_Packed_Array (gnat_array))
+  if (gnu_comp_size && !is_bit_packed)
     {
       tree orig_type = gnu_type;
 
@@ -5166,7 +5192,7 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
 	orig_type = gnu_type;
 
       gnu_type = maybe_pad_type (gnu_type, gnu_comp_size, 0, gnat_array,
-				 true, false, definition, true);
+				 true, definition, true);
 
       /* If a padding record was made, declare it now since it will never be
 	 declared otherwise.  This is necessary to ensure that its subtrees
@@ -5193,7 +5219,7 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
 	    = size_binop (MAX_EXPR, TYPE_SIZE (gnu_type), bitsize_unit_node);
 	  TYPE_PADDING_FOR_COMPONENT (gnu_type)
 	    = maybe_pad_type (gnu_type, gnu_comp_size, 0, gnat_array,
-			      true, false, definition, true);
+			      true, definition, true);
 	  gnu_type = TYPE_PADDING_FOR_COMPONENT (gnu_type);
 	  create_type_decl (TYPE_NAME (gnu_type), gnu_type, true, debug_info_p,
 			    gnat_array);
@@ -5209,8 +5235,8 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
      storage order to the padding type since it is the innermost enclosing
      aggregate type around the scalar.  */
   if (TYPE_IS_PADDING_P (gnu_type)
+      && !is_bit_packed
       && Reverse_Storage_Order (gnat_array)
-      && !Is_Bit_Packed_Array (gnat_array)
       && Is_Scalar_Type (gnat_type))
     gnu_type = set_reverse_storage_order_on_pad_type (gnu_type);
 
@@ -5447,7 +5473,10 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
       && (!type_requires_init_of_formal (Etype (gnat_param))
 	  || Is_Init_Proc (gnat_subprog)
 	  || by_return))
-    return gnu_param_type;
+    {
+      Set_Mechanism (gnat_param, By_Copy);
+      return gnu_param_type;
+    }
 
   gnu_param = create_param_decl (gnu_param_name, gnu_param_type);
   TREE_READONLY (gnu_param) = ro_param || by_ref || by_component_ptr;
@@ -5843,8 +5872,8 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	    }
 
 	  gnu_return_type = maybe_pad_type (gnu_return_type, max_return_size,
-					    0, gnat_subprog, false, false,
-					    definition, true);
+					    0, gnat_subprog, false, definition,
+					    true);
 
 	  /* Declare it now since it will never be declared otherwise.  This
 	     is necessary to ensure that its subtrees are properly marked.  */
@@ -7190,7 +7219,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
       if (align > 0)
 	gnu_field_type
 	  = maybe_pad_type (gnu_field_type, NULL_TREE, align, gnat_field,
-			    false, false, definition, true);
+			    false, definition, true);
       check_ok_for_atomic_type (gnu_field_type, gnat_field, false);
     }
 
@@ -7351,7 +7380,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 
       orig_field_type = gnu_field_type;
       gnu_field_type = maybe_pad_type (gnu_field_type, gnu_size, 0, gnat_field,
-				       false, false, definition, true);
+				       false, definition, true);
 
       /* If a padding record was made, declare it now since it will never be
 	 declared otherwise.  This is necessary to ensure that its subtrees
@@ -8956,11 +8985,11 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
       return NULL_TREE;
     }
 
-  /* If this is an integral type or a packed array type, the front-end has
-     already verified the size, so we need not do it here (which would mean
-     checking against the bounds).  However, if this is an aliased object,
-     it may not be smaller than the type of the object.  */
-  if ((INTEGRAL_TYPE_P (gnu_type) || TYPE_IS_PACKED_ARRAY_TYPE_P (gnu_type))
+  /* If this is an integral type or a bit-packed array type, the front-end has
+     already verified the size, so we need not do it again (which would mean
+     checking against the bounds).  However, if this is an aliased object, it
+     may not be smaller than the type of the object.  */
+  if ((INTEGRAL_TYPE_P (gnu_type) || BIT_PACKED_ARRAY_TYPE_P (gnu_type))
       && !(kind == VAR_DECL && Is_Aliased (gnat_object)))
     return size;
 
@@ -9058,16 +9087,13 @@ set_rm_size (Uint uint_size, tree gnu_type, Entity_Id gnat_entity)
 
   /* Issue an error either if the old size of the object isn't a constant or
      if the new size is smaller than it.  The front-end has already verified
-     this for scalar and packed array types.  */
+     this for scalar and bit-packed array types.  */
   if (TREE_CODE (old_size) != INTEGER_CST
       || TREE_OVERFLOW (old_size)
       || (AGGREGATE_TYPE_P (gnu_type)
-	  && !(TREE_CODE (gnu_type) == ARRAY_TYPE
-	       && TYPE_PACKED_ARRAY_TYPE_P (gnu_type))
+	  && !BIT_PACKED_ARRAY_TYPE_P (gnu_type)
 	  && !(TYPE_IS_PADDING_P (gnu_type)
-	       && TREE_CODE (TREE_TYPE (TYPE_FIELDS (gnu_type))) == ARRAY_TYPE
-	       && TYPE_PACKED_ARRAY_TYPE_P
-		  (TREE_TYPE (TYPE_FIELDS (gnu_type))))
+	       && BIT_PACKED_ARRAY_TYPE_P (TREE_TYPE (TYPE_FIELDS (gnu_type))))
 	  && tree_int_cst_lt (size, old_size)))
     {
       if (Present (gnat_attr_node))
@@ -10022,39 +10048,43 @@ copy_and_substitute_in_layout (Entity_Id gnat_new_type,
       gnat_to_gnu_entity (Etype (gnat_field), NULL_TREE, false);
 }
 
-/* Associate to GNU_TYPE, the translation of GNAT_ENTITY, which is
-   the implementation type of a packed array type (Is_Packed_Array_Impl_Type),
-   the original array type if it has been translated.  This association is a
-   parallel type for GNAT encodings or a debug type for standard DWARF.  Note
-   that for standard DWARF, we also want to get the original type name.  */
+/* Associate to the implementation type of a packed array type specified by
+   GNU_TYPE, which is the translation of GNAT_ENTITY, the original array type
+   if it has been translated.  This association is a parallel type for GNAT
+   encodings or a debug type for standard DWARF.  Note that for standard DWARF,
+   we also want to get the original type name and therefore we return it.  */
 
-static void
+static tree
 associate_original_type_to_packed_array (tree gnu_type, Entity_Id gnat_entity)
 {
-  Entity_Id gnat_original_array_type
+  const Entity_Id gnat_original_array_type
     = Underlying_Type (Original_Array_Type (gnat_entity));
   tree gnu_original_array_type;
 
   if (!present_gnu_tree (gnat_original_array_type))
-    return;
+    return NULL_TREE;
 
   gnu_original_array_type = gnat_to_gnu_type (gnat_original_array_type);
 
   if (TYPE_IS_DUMMY_P (gnu_original_array_type))
-    return;
+    return NULL_TREE;
+
+  gcc_assert (TYPE_IMPL_PACKED_ARRAY_P (gnu_type));
 
   if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
     {
-      tree original_name = TYPE_NAME (gnu_original_array_type);
+      SET_TYPE_ORIGINAL_PACKED_ARRAY (gnu_type, gnu_original_array_type);
 
+      tree original_name = TYPE_NAME (gnu_original_array_type);
       if (TREE_CODE (original_name) == TYPE_DECL)
 	original_name = DECL_NAME (original_name);
-
-      SET_TYPE_ORIGINAL_PACKED_ARRAY (gnu_type, gnu_original_array_type);
-      TYPE_NAME (gnu_type) = original_name;
+      return original_name;
     }
   else
-    add_parallel_type (gnu_type, gnu_original_array_type);
+    {
+      add_parallel_type (gnu_type, gnu_original_array_type);
+      return NULL_TREE;
+    }
 }
 
 /* Given a type T, a FIELD_DECL F, and a replacement value R, return an

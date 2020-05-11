@@ -65,6 +65,10 @@ AC_PROG_RANLIB
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 
+# Add CET specific flags if CET is enabled
+GCC_CET_FLAGS(CET_FLAGS)
+AC_SUBST(CET_FLAGS)
+
 # This should be inherited in the recursive make, but ensure it is defined.
 test "$AR" || AR=ar
 AC_SUBST(AR)

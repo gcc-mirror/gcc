@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2019, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2020, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1332,9 +1332,9 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
       if (size == 0)
 	size = 1;
 
-      /* Only do something if the type isn't a packed array type and doesn't
-	 already have the proper size and the size isn't too large.  */
-      if (TYPE_IS_PACKED_ARRAY_TYPE_P (type)
+      /* Only do something if the type is not a bit-packed array type and does
+	 not already have the proper size and the size is not too large.  */
+      if (BIT_PACKED_ARRAY_TYPE_P (type)
 	  || (TYPE_PRECISION (type) == size && biased_p == for_biased)
 	  || size > LONG_LONG_TYPE_SIZE)
 	break;
@@ -1457,15 +1457,14 @@ canonicalize_pad_type (tree type)
    if needed.  We have already verified that SIZE and ALIGN are large enough.
    GNAT_ENTITY is used to name the resulting record and to issue a warning.
    IS_COMPONENT_TYPE is true if this is being done for the component type of
-   an array.  IS_USER_TYPE is true if the original type needs to be completed.
-   DEFINITION is true if this type is being defined.  SET_RM_SIZE is true if
-   the RM size of the resulting type is to be set to SIZE too; in this case,
-   the padded type is canonicalized before being returned.  */
+   an array.  DEFINITION is true if this type is being defined.  SET_RM_SIZE
+   is true if the RM size of the resulting type is to be set to SIZE too; in
+   this case, the padded type is canonicalized before being returned.  */
 
 tree
 maybe_pad_type (tree type, tree size, unsigned int align,
 		Entity_Id gnat_entity, bool is_component_type,
-		bool is_user_type, bool definition, bool set_rm_size)
+		bool definition, bool set_rm_size)
 {
   tree orig_size = TYPE_SIZE (type);
   unsigned int orig_align = TYPE_ALIGN (type);
@@ -1509,31 +1508,13 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   if (align == 0 && !size)
     return type;
 
-  /* If requested, complete the original type and give it a name.  */
-  if (is_user_type)
-    create_type_decl (get_entity_name (gnat_entity), type,
-		      !Comes_From_Source (gnat_entity),
-		      !(TYPE_NAME (type)
-			&& TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-			&& DECL_IGNORED_P (TYPE_NAME (type))),
-		      gnat_entity);
-
   /* We used to modify the record in place in some cases, but that could
      generate incorrect debugging information.  So make a new record
      type and name.  */
   record = make_node (RECORD_TYPE);
   TYPE_PADDING_P (record) = 1;
 
-  /* ??? Padding types around packed array implementation types will be
-     considered as root types in the array descriptor language hook (see
-     gnat_get_array_descr_info). Give them the original packed array type
-     name so that the one coming from sources appears in the debugging
-     information.  */
-  if (TYPE_IMPL_PACKED_ARRAY_P (type)
-      && TYPE_ORIGINAL_PACKED_ARRAY (type)
-      && gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
-    TYPE_NAME (record) = TYPE_NAME (TYPE_ORIGINAL_PACKED_ARRAY (type));
-  else if (Present (gnat_entity))
+  if (Present (gnat_entity))
     TYPE_NAME (record) = create_concat_name (gnat_entity, "PAD");
 
   SET_TYPE_ALIGN (record, align ? align : orig_align);
@@ -1601,6 +1582,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 	}
     }
 
+  /* Make the inner type the debug type of the padded type.  */
   if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
     SET_TYPE_DEBUG_TYPE (record, maybe_debug_type (type));
 
@@ -3229,7 +3211,7 @@ compute_deferred_decl_context (Entity_Id gnat_scope)
 
   if (TREE_CODE (context) == TYPE_DECL)
     {
-      const tree context_type = TREE_TYPE (context);
+      tree context_type = TREE_TYPE (context);
 
       /* Skip dummy types: only the final ones can appear in the context
 	 chain.  */
@@ -4875,7 +4857,7 @@ convert (tree type, tree expr)
 	   && smaller_form_type_p (etype, type))
     {
       expr = convert (maybe_pad_type (etype, TYPE_SIZE (type), 0, Empty,
-				      false, false, false, true),
+				      false, false, true),
 		      expr);
       return build1 (VIEW_CONVERT_EXPR, type, expr);
     }
@@ -5257,11 +5239,9 @@ maybe_unconstrained_array (tree exp)
 
 	  exp = build_component_ref (exp, DECL_CHAIN (TYPE_FIELDS (type)),
 				     false);
-	  type = TREE_TYPE (exp);
 
-	  /* If the array type is padded, convert to the unpadded type.  */
-	  if (TYPE_IS_PADDING_P (type))
-	    exp = convert (TREE_TYPE (TYPE_FIELDS (type)), exp);
+	  /* If the array is padded, remove the padding.  */
+	  exp = maybe_padded_object (exp);
 	}
       break;
 
@@ -5497,14 +5477,14 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
       if (c < 0)
 	{
 	  expr = convert (maybe_pad_type (etype, TYPE_SIZE (type), 0, Empty,
-					  false, false, false, true),
+					  false, false, true),
 			  expr);
 	  expr = unchecked_convert (type, expr, notrunc_p);
 	}
       else
 	{
 	  tree rec_type = maybe_pad_type (type, TYPE_SIZE (etype), 0, Empty,
-					  false, false, false, true);
+					  false, false, true);
 	  expr = unchecked_convert (rec_type, expr, notrunc_p);
 	  expr = build_component_ref (expr, TYPE_FIELDS (rec_type), false);
 	}
@@ -5522,14 +5502,14 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
       if (c < 0)
 	{
 	  expr = convert (maybe_pad_type (etype, new_size, 0, Empty,
-					  false, false, false, true),
+					  false, false, true),
 			  expr);
 	  expr = unchecked_convert (type, expr, notrunc_p);
 	}
       else
 	{
 	  tree rec_type = maybe_pad_type (type, TYPE_SIZE (etype), 0, Empty,
-					  false, false, false, true);
+					  false, false, true);
 	  expr = unchecked_convert (rec_type, expr, notrunc_p);
 	  expr = build_component_ref (expr, TYPE_FIELDS (rec_type), false);
 	}
@@ -5574,7 +5554,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 	   && TYPE_ALIGN (etype) < TYPE_ALIGN (type))
     {
       expr = convert (maybe_pad_type (etype, NULL_TREE, TYPE_ALIGN (type),
-				      Empty, false, false, false, true),
+				      Empty, false, false, true),
 		      expr);
       return unchecked_convert (type, expr, notrunc_p);
     }
@@ -5591,7 +5571,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 	       || tree_int_cst_lt (TYPE_SIZE (etype), TYPE_SIZE (type))))
     {
       expr = convert (maybe_pad_type (etype, TYPE_SIZE (type), 0,
-				      Empty, false, false, false, true),
+				      Empty, false, false, true),
 		      expr);
       return unchecked_convert (type, expr, notrunc_p);
     }

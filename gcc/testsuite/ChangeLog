@@ -1,3 +1,135 @@
+2020-05-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* gcc.target/i386/pr95046-1.c (test_sqrt): Add.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/vec-cfuged-0.c: New test.
+	* gcc.target/powerpc/vec-cfuged-1.c: New test.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target.powerpc/cfuged-0.c: New test.
+	* gcc.target.powerpc/cfuged-1.c: New test.
+
+2020-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95049
+	* gcc.dg/torture/pr95049.c: New testcase.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+	    Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/vec-gnb-0.c: New test.
+	* gcc.target/powerpc/vec-gnb-1.c: New test.
+	* gcc.target/powerpc/vec-gnb-10.c: New test.
+	* gcc.target/powerpc/vec-gnb-2.c: New test.
+	* gcc.target/powerpc/vec-gnb-3.c: New test.
+	* gcc.target/powerpc/vec-gnb-4.c: New test.
+	* gcc.target/powerpc/vec-gnb-5.c: New test.
+	* gcc.target/powerpc/vec-gnb-6.c: New test.
+	* gcc.target/powerpc/vec-gnb-7.c: New test.
+	* gcc.target/powerpc/vec-gnb-8.c: New test.
+	* gcc.target/powerpc/vec-gnb-9.c: New test.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/vec-pdep-0.c: New.
+	* gcc.target/powerpc/vec-pdep-1.c: New.
+	* gcc.target/powerpc/vec-pext-0.c: New.
+	* gcc.target/powerpc/vec-pext-1.c: New.
+
+2020-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94988
+	PR tree-optimization/95025
+	* gcc.dg/torture/pr94988.c: New testcase.
+	* gcc.dg/torture/pr95025.c: Likewise.
+	* gcc.dg/torture/pr95045.c: Likewise.
+	* g++.dg/asan/pr95025.C: New testcase.
+
+2020-05-11  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94672
+	* gfortran.dg/gomp/pr94672.f90: New.
+	* gfortran.dg/missing_optional_dummy_6a.f90: Update scan-tree.
+
+2020-05-11  Felix Yang  <felix.yang@huawei.com>
+
+	PR target/94991
+	* gcc.target/aarch64/mgeneral-regs_5.c: New test.
+
+2020-05-11  Alex Coplan  <alex.coplan@arm.com>
+
+	* gcc.target/aarch64/csinv-neg.c: New test.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/vec-clzm-0.c: New test.
+	* gcc.target/powerpc/vec-clzm-1.c: New test.
+	* gcc.target/powerpc/vec-ctzm-0.c: New test.
+	* gcc.target/powerpc/vec-ctzm-1.c: New test.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/dg-future-0.c: New.
+	* gcc.target/powerpc/dg-future-1.c: New.
+	* lib/target-supports.exp (check_powerpc_future_hw_available):
+	Replace -mfuture with -mcpu=future.
+	(check_effective_target_powerpc_future_ok): Likewise.
+	(is-effective-target): Add powerpc_future_hw.
+
+2020-05-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc/testsuite/g++.dg/ipa/pr94856.C: Require fgnu-tm.
+
+2020-05-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* gcc.target/i386/pr95046-1.c: New test.
+
+2020-05-11  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/59107
+	* gfortran.dg/pr59107.f90: New test.
+
+2020-05-11  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	PR tree-optimization/83403
+	* gcc.dg/tree-ssa/pr83403-1.c: New test.
+	* gcc.dg/tree-ssa/pr83403-2.c: New test.
+	* gcc.dg/tree-ssa/pr83403.h: New header.
+
+2020-05-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93499
+	* gfortran.dg/pr93499.f90: New test.
+
+2020-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/95008
+	* gcc.dg/two-types-6.c: Remove dg-warning directive that never
+	triggered.
+	* gcc.dg/analyzer/pr93382.c: Properly escape ()s in the diagnostic
+	message.
+
+2020-05-09  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/: Adjust for removing crisv32-* and cris-linux-*.
+	* gcc.dg/20020919-1.c, gcc.dg/pr31866.c, gcc.dg/pr46647.c,
+	gcc.dg/sibcall-10.c, gcc.dg/sibcall-3.c, gcc.dg/sibcall-4.c,
+	gcc.dg/sibcall-9.c, gcc.dg/torture/cris-asm-mof-1.c,
+	gcc.dg/torture/cris-volatile-1.c, gcc.dg/torture/pr38948.c,
+	gcc.dg/tree-ssa/20040204-1.c, gcc.dg/tree-ssa/loop-1.c,
+	gcc.dg/weak/typeof-2.c, lib/target-supports.exp: Remove remaining
+	traces of crisv32-*.
+
+2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/i386/pr92807-1.c: Improve the regex.
+
 2020-05-08  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/95003

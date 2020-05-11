@@ -40,6 +40,10 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #include "backtrace.h"
 #include "internal.h"
 
+#ifndef HAVE_DECL_GETPAGESIZE
+extern int getpagesize (void);
+#endif
+
 #ifndef MAP_FAILED
 #define MAP_FAILED ((void *)-1)
 #endif

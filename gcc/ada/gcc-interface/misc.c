@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *          Copyright (C) 1992-2019, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2020, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -417,7 +417,8 @@ gnat_init_gcc_eh (void)
     }
   else
     {
-      flag_non_call_exceptions = 1;
+      if (!global_options_set.x_flag_non_call_exceptions)
+        flag_non_call_exceptions = 1;
       flag_aggressive_loop_optimizations = 0;
       warn_aggressive_loop_optimizations = 0;
     }
@@ -601,20 +602,10 @@ gnat_enum_underlying_base_type (const_tree)
 static tree
 gnat_get_debug_type (const_tree type)
 {
-  if (TYPE_CAN_HAVE_DEBUG_TYPE_P (type) && TYPE_DEBUG_TYPE (type))
-    {
-      type = TYPE_DEBUG_TYPE (type);
-
-      /* ??? The get_debug_type language hook is processed after the array
-	 descriptor language hook, so if there is an array behind this type,
-	 the latter is supposed to handle it.  Still, we can get here with
-	 a type we are not supposed to handle (e.g. when the DWARF back-end
-	 processes the type of a variable), so keep this guard.  */
-      if (type && TYPE_CAN_HAVE_DEBUG_TYPE_P (type))
-	return const_cast<tree> (type);
-    }
-
-  return NULL_TREE;
+  if (TYPE_CAN_HAVE_DEBUG_TYPE_P (type))
+    return TYPE_DEBUG_TYPE (type);
+  else
+    return NULL_TREE;
 }
 
 /* Provide information in INFO for debugging output about the TYPE fixed-point
@@ -649,14 +640,14 @@ gnat_get_fixed_point_type_info (const_tree type,
 
   if (TREE_CODE (scale_factor) == RDIV_EXPR)
     {
-      const tree num = TREE_OPERAND (scale_factor, 0);
-      const tree den = TREE_OPERAND (scale_factor, 1);
+      tree num = TREE_OPERAND (scale_factor, 0);
+      tree den = TREE_OPERAND (scale_factor, 1);
 
       /* See if we have a binary or decimal scale.  */
       if (TREE_CODE (den) == POWER_EXPR)
 	{
-	  const tree base = TREE_OPERAND (den, 0);
-	  const tree exponent = TREE_OPERAND (den, 1);
+	  tree base = TREE_OPERAND (den, 0);
+	  tree exponent = TREE_OPERAND (den, 1);
 
 	  /* We expect the scale factor to be 1 / 2 ** N or 1 / 10 ** N.  */
 	  gcc_assert (num == integer_one_node
@@ -785,14 +776,9 @@ static bool
 gnat_get_array_descr_info (const_tree const_type,
 			   struct array_descr_info *info)
 {
-  bool convention_fortran_p;
-  bool is_array = false;
-  bool is_fat_ptr = false;
-  bool is_packed_array = false;
   tree type = const_cast<tree> (const_type);
-  const_tree first_dimen = NULL_TREE;
-  const_tree last_dimen = NULL_TREE;
-  const_tree dimen;
+  tree first_dimen, dimen;
+  bool is_packed_array, is_array, is_fat_ptr;
   int i;
 
   /* Temporaries created in the first pass and used in the second one for thin
@@ -802,9 +788,6 @@ gnat_get_array_descr_info (const_tree const_type,
   tree thinptr_template_expr = NULL_TREE;
   tree thinptr_bound_field = NULL_TREE;
 
-  /* ??? See gnat_get_debug_type.  */
-  type = maybe_debug_type (type);
-
   /* If we have an implementation type for a packed array, get the orignial
      array type.  */
   if (TYPE_IMPL_PACKED_ARRAY_P (type) && TYPE_ORIGINAL_PACKED_ARRAY (type))
@@ -812,6 +795,8 @@ gnat_get_array_descr_info (const_tree const_type,
       type = TYPE_ORIGINAL_PACKED_ARRAY (type);
       is_packed_array = true;
     }
+  else
+    is_packed_array = false;
 
   /* First pass: gather all information about this array except everything
      related to dimensions.  */
@@ -822,6 +807,7 @@ gnat_get_array_descr_info (const_tree const_type,
       && TYPE_INDEX_TYPE (TYPE_DOMAIN (type)))
     {
       is_array = true;
+      is_fat_ptr = false;
       first_dimen = type;
       info->data_location = NULL_TREE;
     }
@@ -829,18 +815,19 @@ gnat_get_array_descr_info (const_tree const_type,
   else if (TYPE_IS_FAT_POINTER_P (type)
 	   && gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
     {
-      const tree ua_type = TYPE_UNCONSTRAINED_ARRAY (type);
+      tree ua_type = TYPE_UNCONSTRAINED_ARRAY (type);
 
       /* This will be our base object address.  */
-      const tree placeholder_expr = build0 (PLACEHOLDER_EXPR, type);
+      tree placeholder_expr = build0 (PLACEHOLDER_EXPR, type);
 
       /* We assume below that maybe_unconstrained_array returns an INDIRECT_REF
 	 node.  */
-      const tree ua_val
+      tree ua_val
         = maybe_unconstrained_array (build_unary_op (INDIRECT_REF,
 						     ua_type,
 						     placeholder_expr));
 
+      is_array = false;
       is_fat_ptr = true;
       first_dimen = TREE_TYPE (ua_val);
 
@@ -860,17 +847,17 @@ gnat_get_array_descr_info (const_tree const_type,
       /* This will be our base object address.  Note that we assume that
 	 pointers to these will actually point to the array field (thin
 	 pointers are shifted).  */
-      const tree placeholder_expr = build0 (PLACEHOLDER_EXPR, type);
-      const tree placeholder_addr
-        = build_unary_op (ADDR_EXPR, NULL_TREE, placeholder_expr);
+      tree placeholder_expr = build0 (PLACEHOLDER_EXPR, type);
+      tree placeholder_addr
+	= build_unary_op (ADDR_EXPR, NULL_TREE, placeholder_expr);
 
-      const tree bounds_field = TYPE_FIELDS (type);
-      const tree bounds_type = TREE_TYPE (bounds_field);
-      const tree array_field = DECL_CHAIN (bounds_field);
-      const tree array_type = TREE_TYPE (array_field);
+      tree bounds_field = TYPE_FIELDS (type);
+      tree bounds_type = TREE_TYPE (bounds_field);
+      tree array_field = DECL_CHAIN (bounds_field);
+      tree array_type = TREE_TYPE (array_field);
 
       /* Shift the thin pointer address to get the address of the template.  */
-      const tree shift_amount
+      tree shift_amount
 	= fold_build1 (NEGATE_EXPR, sizetype, byte_position (array_field));
       tree template_addr
 	= build_binary_op (POINTER_PLUS_EXPR, TREE_TYPE (placeholder_addr),
@@ -878,6 +865,8 @@ gnat_get_array_descr_info (const_tree const_type,
       template_addr
 	= fold_convert (TYPE_POINTER_TO (bounds_type), template_addr);
 
+      is_array = false;
+      is_fat_ptr = false;
       first_dimen = array_type;
 
       /* The thin pointer is already the pointer to the array data, so there's
@@ -889,35 +878,37 @@ gnat_get_array_descr_info (const_tree const_type,
 					      template_addr);
       thinptr_bound_field = TYPE_FIELDS (bounds_type);
     }
+
   else
     return false;
 
   /* Second pass: compute the remaining information: dimensions and
      corresponding bounds.  */
 
-  if (TYPE_PACKED (first_dimen))
-    is_packed_array = true;
   /* If this array has fortran convention, it's arranged in column-major
      order, so our view here has reversed dimensions.  */
-  convention_fortran_p = TYPE_CONVENTION_FORTRAN_P (first_dimen);
+  const bool convention_fortran_p = TYPE_CONVENTION_FORTRAN_P (first_dimen);
+
+  if (TYPE_PACKED (first_dimen))
+    is_packed_array = true;
+
   /* ??? For row major ordering, we probably want to emit nothing and
      instead specify it as the default in Dw_TAG_compile_unit.  */
   info->ordering = (convention_fortran_p
 		    ? array_descr_ordering_column_major
 		    : array_descr_ordering_row_major);
-
-  /* Count how many dimensions this array has.  */
-  for (i = 0, dimen = first_dimen; ; ++i, dimen = TREE_TYPE (dimen))
-    {
-      if (i > 0
-	  && (TREE_CODE (dimen) != ARRAY_TYPE
-	      || !TYPE_MULTI_ARRAY_P (dimen)))
-	break;
-      last_dimen = dimen;
-    }
-
-  info->ndimensions = i;
   info->rank = NULL_TREE;
+
+  /* Count the number of dimensions and determine the element type.  */
+  i = 1;
+  dimen = TREE_TYPE (first_dimen);
+  while (TREE_CODE (dimen) == ARRAY_TYPE && TYPE_MULTI_ARRAY_P (dimen))
+    {
+      i++;
+      dimen = TREE_TYPE (dimen);
+    }
+  info->ndimensions = i;
+  info->element_type = dimen;
 
   /* Too many dimensions?  Give up generating proper description: yield instead
      nested arrays.  Note that in this case, this hook is invoked once on each
@@ -927,12 +918,10 @@ gnat_get_array_descr_info (const_tree const_type,
       || TYPE_MULTI_ARRAY_P (first_dimen))
     {
       info->ndimensions = 1;
-      last_dimen = first_dimen;
+      info->element_type = TREE_TYPE (first_dimen);
     }
 
-  info->element_type = TREE_TYPE (last_dimen);
-
-  /* Now iterate over all dimensions in source-order and fill the info
+  /* Now iterate over all dimensions in source order and fill the info
      structure.  */
   for (i = (convention_fortran_p ? info->ndimensions - 1 : 0),
        dimen = first_dimen;
@@ -1185,7 +1174,7 @@ must_pass_by_ref (tree gnu_type)
 void
 enumerate_modes (void (*f) (const char *, int, int, int, int, int, int, int))
 {
-  const tree c_types[]
+  tree const c_types[]
     = { float_type_node, double_type_node, long_double_type_node };
   const char *const c_names[]
     = { "float", "double", "long double" };

@@ -635,6 +635,8 @@ LTLIBOBJS
 LIBOBJS
 NATIVE_FALSE
 NATIVE_TRUE
+HAVE_DSYMUTIL_FALSE
+HAVE_DSYMUTIL_TRUE
 HAVE_OBJCOPY_DEBUGLINK_FALSE
 HAVE_OBJCOPY_DEBUGLINK_TRUE
 READELF
@@ -800,7 +802,8 @@ LDFLAGS
 LIBS
 CPPFLAGS
 CPP
-OBJCOPY'
+OBJCOPY
+DSYMUTIL'
 
 
 # Initialize some variables set by options.
@@ -1454,6 +1457,7 @@ Some influential environment variables:
               you have headers in a nonstandard directory <include dir>
   CPP         C preprocessor
   OBJCOPY     location of objcopy
+  DSYMUTIL    location of dsymutil
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -11499,7 +11503,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11502 "configure"
+#line 11506 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11605,7 +11609,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11608 "configure"
+#line 11612 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12496,6 +12500,7 @@ FORMAT_FILE=
 backtrace_supports_data=yes
 case "$libbacktrace_cv_sys_filetype" in
 elf*) FORMAT_FILE="elf.lo" ;;
+macho) FORMAT_FILE="macho.lo" ;;
 pecoff) FORMAT_FILE="pecoff.lo"
         backtrace_supports_data=no
 	;;
@@ -13069,6 +13074,20 @@ $as_echo "#define HAVE_DL_ITERATE_PHDR 1" >>confdefs.h
 
 fi
 
+# Check for header file for Mach-O image functions.
+for ac_header in mach-o/dyld.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "mach-o/dyld.h" "ac_cv_header_mach_o_dyld_h" "$ac_includes_default"
+if test "x$ac_cv_header_mach_o_dyld_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_MACH_O_DYLD_H 1
+_ACEOF
+
+fi
+
+done
+
+
 # Check for loadquery.
 for ac_header in sys/ldr.h
 do :
@@ -13147,6 +13166,16 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_STRNLEN $ac_have_decl
 _ACEOF
+ac_fn_c_check_decl "$LINENO" "getpagesize" "ac_cv_have_decl_getpagesize" "$ac_includes_default"
+if test "x$ac_cv_have_decl_getpagesize" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_GETPAGESIZE $ac_have_decl
+_ACEOF
 
 for ac_func in lstat readlink
 do :
@@ -13179,6 +13208,76 @@ fi
 if test "$have_getexecname" = "yes"; then
 
 $as_echo "#define HAVE_GETEXECNAME 1" >>confdefs.h
+
+fi
+
+# Check for sysctl definitions.
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for KERN_PROC" >&5
+$as_echo_n "checking for KERN_PROC... " >&6; }
+if ${libbacktrace_cv_proc+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <sys/types.h>
+#include <sys/sysctl.h>
+
+int
+main ()
+{
+int mib0 = CTL_KERN; int mib1 = KERN_PROC; int mib2 = KERN_PROC_PATHNAME;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libbacktrace_cv_proc=yes
+else
+  libbacktrace_cv_proc=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libbacktrace_cv_proc" >&5
+$as_echo "$libbacktrace_cv_proc" >&6; }
+if test "$libbacktrace_cv_proc" = "yes"; then
+
+$as_echo "#define HAVE_KERN_PROC 1" >>confdefs.h
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for KERN_PROG_ARGS" >&5
+$as_echo_n "checking for KERN_PROG_ARGS... " >&6; }
+if ${libbacktrace_cv_procargs+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <sys/types.h>
+#include <sys/sysctl.h>
+
+int
+main ()
+{
+int mib0 = CTL_KERN; int mib1 = KERN_PROC_ARGS; int mib2 = KERN_PROC_PATHNAME;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libbacktrace_cv_procargs=yes
+else
+  libbacktrace_cv_procargs=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libbacktrace_cv_procargs" >&5
+$as_echo "$libbacktrace_cv_procargs" >&6; }
+if test "$libbacktrace_cv_procargs" = "yes"; then
+
+$as_echo "#define HAVE_KERN_PROC_ARGS 1" >>confdefs.h
 
 fi
 
@@ -13483,6 +13582,8 @@ if ${libbacktrace_cv_objcopy_debuglink+:} false; then :
 else
   if test -n "${with_target_subdir}"; then
   libbacktrace_cv_objcopy_debuglink=no
+elif ! test -n "${OBJCOPY}"; then
+  libbacktrace_cv_objcopy_debuglink=no
 elif ${OBJCOPY} --add-gnu-debuglink=x /bin/ls /tmp/ls$$; then
   rm -f /tmp/ls$$
   libbacktrace_cv_objcopy_debuglink=yes
@@ -13498,6 +13599,53 @@ $as_echo "$libbacktrace_cv_objcopy_debuglink" >&6; }
 else
   HAVE_OBJCOPY_DEBUGLINK_TRUE='#'
   HAVE_OBJCOPY_DEBUGLINK_FALSE=
+fi
+
+
+
+# Extract the first word of "dsymutil", so it can be a program name with args.
+set dummy dsymutil; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_DSYMUTIL+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$DSYMUTIL"; then
+  ac_cv_prog_DSYMUTIL="$DSYMUTIL" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_DSYMUTIL="dsymutil"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+DSYMUTIL=$ac_cv_prog_DSYMUTIL
+if test -n "$DSYMUTIL"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DSYMUTIL" >&5
+$as_echo "$DSYMUTIL" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+ if test -n "${DSYMUTIL}"; then
+  HAVE_DSYMUTIL_TRUE=
+  HAVE_DSYMUTIL_FALSE='#'
+else
+  HAVE_DSYMUTIL_TRUE='#'
+  HAVE_DSYMUTIL_FALSE=
 fi
 
 
@@ -13711,6 +13859,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_OBJCOPY_DEBUGLINK_TRUE}" && test -z "${HAVE_OBJCOPY_DEBUGLINK_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_OBJCOPY_DEBUGLINK\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_DSYMUTIL_TRUE}" && test -z "${HAVE_DSYMUTIL_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_DSYMUTIL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${NATIVE_TRUE}" && test -z "${NATIVE_FALSE}"; then

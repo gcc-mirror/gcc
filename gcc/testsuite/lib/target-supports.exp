@@ -698,7 +698,6 @@ proc check_profiling_available { test_what } {
 	     || [istarget avr-*-*]
 	     || [istarget bfin-*-*]
 	     || [istarget cris-*-*]
-	     || [istarget crisv32-*-*]
 	     || [istarget csky-*-elf]
 	     || [istarget fido-*-elf]
 	     || [istarget h8300-*-*]
@@ -2204,7 +2203,7 @@ proc check_powerpc_future_hw_available { } {
 		asm ("pli %0,%1" : "+r" (e) : "n" (0x12345));
 		return (e == 0x12345);
 	    }
-	} "-mfuture"
+	} "-mcpu=future"
     }]
 }
 
@@ -5816,7 +5815,7 @@ proc check_effective_target_powerpc_future_ok { } {
 		asm ("pli %0,%1" : "=r" (e) : "n" (0x12345));
 		return e;
 	    }
-	} "-mfuture"]
+	} "-mcpu=future"]
     } else {
 	return 0
     }
@@ -7583,7 +7582,7 @@ proc check_effective_target_sync_int_long { } {
 	     || [istarget hppa*-*linux*]
 	     || [istarget s390*-*-*] 
 	     || [istarget powerpc*-*-*]
-	     || [istarget crisv32-*-*] || [istarget cris-*-*]
+	     || [istarget cris-*-*]
 	     || ([istarget sparc*-*-*] && [check_effective_target_sparc_v9])
 	     || ([istarget arc*-*-*] && [check_effective_target_arc_atomic])
 	     || [check_effective_target_mips_llsc] }}]
@@ -7606,7 +7605,7 @@ proc check_effective_target_sync_char_short { } {
 	     || [istarget hppa*-*linux*]
 	     || [istarget s390*-*-*] 
 	     || [istarget powerpc*-*-*]
-	     || [istarget crisv32-*-*] || [istarget cris-*-*]
+	     || [istarget cris-*-*]
 	     || ([istarget sparc*-*-*] && [check_effective_target_sparc_v9])
 	     || ([istarget arc*-*-*] && [check_effective_target_arc_atomic])
 	     || [check_effective_target_mips_llsc] }}]
@@ -7763,6 +7762,7 @@ proc is-effective-target { arg } {
 	  "named_sections" { set selected [check_named_sections_available] }
 	  "gc_sections"    { set selected [check_gc_sections_available] }
 	  "cxa_atexit"     { set selected [check_cxa_atexit_available] }
+	  "powerpc_future_hw" { set selected [check_powerpc_future_hw_available] }
 	  default          { error "unknown effective target keyword `$arg'" }
 	}
     }

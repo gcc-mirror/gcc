@@ -8,4 +8,4 @@ abs2 (unsigned int a)
   return (a+s)^s;
 }
 
-/* { dg-final { scan-assembler-not "leal" } } */
+/* { dg-final { scan-assembler-not "leal\[\t \]*\[^(\]*\\((.*),\\1\\)" } } */
