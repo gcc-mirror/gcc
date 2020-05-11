@@ -20715,6 +20715,23 @@ implemented by the Future @code{vctzdm} instruction.
 
 @smallexample
 @exdent vector unsigned long long int
+@exdent vec_gnb (vector unsigned char, const unsigned char)
+@exdent vector unsigned long long int
+@exdent vec_gnb (vector unsigned short, const unsigned char)
+@exdent vector unsigned long long int
+@exdent vec_gnb (vector unsigned int, const unsigned char)
+@exdent vector unsigned long long int
+@exdent vec_gnb (vector unsigned long long int, const unsigned char)
+@exdent vector unsigned long long int
+@exdent vec_gnb (vector unsigned __int128, const unsigned char)
+@end smallexample
+Perform a 128-bit vector gather  operation, as if implemented by the Future
+@code{vgnb} instruction.  The second argument must be a literal
+integer value between 2 and 7 inclusive.
+@findex vec_gnb
+
+@smallexample
+@exdent vector unsigned long long int
 @exdent vec_pdep (vector unsigned long long int, vector unsigned long long int)
 @end smallexample
 Perform a vector parallel bits deposit operation, as if implemented by
@@ -21451,7 +21468,6 @@ v2si __builtin_vis_fpmax32 (v2si, v2si);
 v8qi __builtin_vis_fpmaxu8 (v8qi, v8qi);
 v4hi __builtin_vis_fpmaxu16 (v4hi, v4hi);
 v2si __builtin_vis_fpmaxu32 (v2si, v2si);
-
 
 v8qi __builtin_vis_fpmin8 (v8qi, v8qi);
 v4hi __builtin_vis_fpmin16 (v4hi, v4hi);

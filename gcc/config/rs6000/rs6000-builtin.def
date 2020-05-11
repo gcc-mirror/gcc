@@ -969,6 +969,30 @@
 		     | RS6000_BTC_TERNARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 
+#define BU_FUTURE_OVERLOAD_1(ENUM, NAME)				\
+  RS6000_BUILTIN_1 (FUTURE_BUILTIN_VEC_ ## ENUM,	/* ENUM */	\
+		    "__builtin_vec_" NAME,		/* NAME */	\
+		    RS6000_BTM_FUTURE,			/* MASK */	\
+		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
+#define BU_FUTURE_OVERLOAD_2(ENUM, NAME)				\
+  RS6000_BUILTIN_2 (FUTURE_BUILTIN_VEC_ ## ENUM,	/* ENUM */	\
+		    "__builtin_vec_" NAME,		/* NAME */	\
+		    RS6000_BTM_FUTURE,			/* MASK */	\
+		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
+#define BU_FUTURE_OVERLOAD_3(ENUM, NAME)				\
+  RS6000_BUILTIN_3 (FUTURE_BUILTIN_VEC_ ## ENUM,	/* ENUM */	\
+		    "__builtin_vec_" NAME,		/* NAME */	\
+		    RS6000_BTM_FUTURE,			/* MASK */	\
+		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
+		     | RS6000_BTC_TERNARY),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
 #endif
 
 
@@ -2520,6 +2544,11 @@ BU_FUTURE_V_2 (VCLZDM, "vclzdm", CONST, vclzdm)
 BU_FUTURE_V_2 (VCTZDM, "vctzdm", CONST, vctzdm)
 BU_FUTURE_V_2 (VPDEPD, "vpdepd", CONST, vpdepd)
 BU_FUTURE_V_2 (VPEXTD, "vpextd", CONST, vpextd)
+BU_FUTURE_V_2 (VGNB, "vgnb", CONST, vgnb)
+
+/* Future architecture overloaded vector built-ins.  */
+BU_FUTURE_OVERLOAD_2 (GNB, "gnb")
+
 
 /* 1 argument crypto functions.  */
 BU_CRYPTO_1 (VSBOX,		"vsbox",	  CONST, crypto_vsbox_v2di)
