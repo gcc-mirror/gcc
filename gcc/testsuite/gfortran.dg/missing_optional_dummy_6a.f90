@@ -53,7 +53,6 @@ end program test
 ! { dg-final { scan-tree-dump-times "assumed_shape2 \\(es1" 0 "original" } }
 ! { dg-final { scan-tree-dump-times "explicit_shape2 \\(es1" 1 "original" } }
 
-! { dg-final { scan-tree-dump-times "= as1 != 0B" 2 "original" } }
+! { dg-final { scan-tree-dump-times "= as1.0 != 0B" 2 "original" } }
 ! { dg-final { scan-tree-dump-times "assumed_shape2 \\(as1" 0 "original" } }
 ! { dg-final { scan-tree-dump-times "explicit_shape2 \\(as1" 0 "original" } }
-

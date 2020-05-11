@@ -1,6 +1,19 @@
+2020-05-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94672
+	* trans.h (gfc_conv_expr_present): Add use_saved_decl=false argument.
+	* trans-expr.c (gfc_conv_expr_present): Likewise; use DECL directly
+	and only if use_saved_decl is true, use the actual PARAM_DECL arg (saved
+	descriptor).
+	* trans-array.c (gfc_trans_dummy_array_bias): Set local 'arg.0'
+	variable to NULL if 'arg' is not present.
+	* trans-openmp.c (gfc_omp_check_optional_argument): Simplify by checking
+	'arg.0' instead of the true PARM_DECL.
+	(gfc_omp_finish_clause): Remove setting 'arg.0' to NULL.
+
 2020-05-11  Janus Weil  <janus@gcc.gnu.org>
 	    Dominique d'Humieres  <dominiq@lps.ens.fr>
-    
+
 	PR fortran/59107
 	* gfortran.h: Rename field resolved as resolve_symbol_called
 	and assign two 2 bits instead of 1.
