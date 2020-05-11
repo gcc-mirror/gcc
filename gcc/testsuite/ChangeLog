@@ -1,3 +1,8 @@
+2020-05-12  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/region-attribute-misuse.c: Allow a .bss section to
+	be created.
+
 2020-05-12  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/95033
