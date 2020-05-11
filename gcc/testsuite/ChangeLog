@@ -1,3 +1,12 @@
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/dg-future-0.c: New.
+	* gcc.target/powerpc/dg-future-1.c: New.
+	* lib/target-supports.exp (check_powerpc_future_hw_available):
+	Replace -mfuture with -mcpu=future.
+	(check_effective_target_powerpc_future_ok): Likewise.
+	(is-effective-target): Add powerpc_future_hw.
+
 2020-05-11  Kito Cheng  <kito.cheng@sifive.com>
 
 	* gcc/testsuite/g++.dg/ipa/pr94856.C: Require fgnu-tm.

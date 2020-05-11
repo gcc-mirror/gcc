@@ -1,4 +1,3 @@
-/* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-options "-mdejagnu-cpu=future" } */
 
 /* This tests that powerpc_future_ok works.  */
