@@ -4282,6 +4282,28 @@ build_user_type_conversion (tree totype, tree expr, int flags,
   return ret;
 }
 
+/* Give a helpful diagnostic when implicit_conversion fails.  */
+
+static void
+implicit_conversion_error (location_t loc, tree type, tree expr)
+{
+  tsubst_flags_t complain = tf_warning_or_error;
+
+  /* If expr has unknown type, then it is an overloaded function.
+     Call instantiate_type to get good error messages.  */
+  if (TREE_TYPE (expr) == unknown_type_node)
+    instantiate_type (type, expr, complain);
+  else if (invalid_nonstatic_memfn_p (loc, expr, complain))
+    /* We gave an error.  */;
+  else
+    {
+      range_label_for_type_mismatch label (TREE_TYPE (expr), type);
+      gcc_rich_location rich_loc (loc, &label);
+      error_at (&rich_loc, "could not convert %qE from %qH to %qI",
+		expr, TREE_TYPE (expr), type);
+    }
+}
+
 /* Worker for build_converted_constant_expr.  */
 
 static tree
@@ -4397,8 +4419,7 @@ build_converted_constant_expr_internal (tree type, tree expr,
   else
     {
       if (complain & tf_error)
-	error_at (loc, "could not convert %qE from %qH to %qI", expr,
-		  TREE_TYPE (expr), type);
+	implicit_conversion_error (loc, type, expr);
       expr = error_mark_node;
     }
 
@@ -11845,21 +11866,7 @@ perform_implicit_conversion_flags (tree type, tree expr,
   if (!conv)
     {
       if (complain & tf_error)
-	{
-	  /* If expr has unknown type, then it is an overloaded function.
-	     Call instantiate_type to get good error messages.  */
-	  if (TREE_TYPE (expr) == unknown_type_node)
-	    instantiate_type (type, expr, complain);
-	  else if (invalid_nonstatic_memfn_p (loc, expr, complain))
-	    /* We gave an error.  */;
-	  else
-	    {
-	      range_label_for_type_mismatch label (TREE_TYPE (expr), type);
-	      gcc_rich_location rich_loc (loc, &label);
-	      error_at (&rich_loc, "could not convert %qE from %qH to %qI",
-			expr, TREE_TYPE (expr), type);
-	    }
-	}
+	implicit_conversion_error (loc, type, expr);
       expr = error_mark_node;
     }
   else if (processing_template_decl && conv->kind != ck_identity)
