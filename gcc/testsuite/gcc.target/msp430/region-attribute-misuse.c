@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { *-*-* } { "-mcpu=msp430" "-mlarge" "-mcode-region=*" "-mdata-region=*" } { "" } } */
-/* { dg-final { scan-assembler-not ".section.*bss" } } */
 /* { dg-final { scan-assembler ".section.*upper.data" } } */
 /* { dg-final { scan-assembler ".section.*lower.data" } } */
 /* { dg-final { scan-assembler ".section.*either.data" } } */
