@@ -1,4 +1,18 @@
-2020-05-07  Uroš Bizjak  <ubizjak@gmail.com>
+2020-05-11  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	Backport from master.
+	2020-04-27  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/91518
+	* config/rs6000/rs6000.c (frame_pointer_needed_indeed):
+	New variable.
+	(rs6000_emit_prologue_components):
+	Check with frame_pointer_needed_indeed.
+	(rs6000_emit_epilogue_components): Likewise.
+	(rs6000_emit_prologue): Likewise.
+	(rs6000_emit_epilogue): Set frame_pointer_needed_indeed.
+
+2020-05-07 Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_atomic_assign_expand_fenv): Use
 	TARGET_EXPR instead of MODIFY_EXPR for the first assignments to
