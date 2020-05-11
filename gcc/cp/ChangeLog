@@ -1,5 +1,10 @@
 2020-05-11  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (compute_array_index_type_loc): Stabilize before building
+	the MINUS_EXPR.
+
+2020-05-11  Jason Merrill  <jason@redhat.com>
+
 	* decl.c (grokdeclarator): Adjust deprecated_state here.
 	(start_decl): Not here.
 

@@ -10449,6 +10449,15 @@ compute_array_index_type_loc (location_t name_loc, tree name, tree size,
     itype = build_min (MINUS_EXPR, sizetype, size, integer_one_node);
   else
     {
+      if (!TREE_CONSTANT (size))
+	{
+	  /* A variable sized array.  Arrange for the SAVE_EXPR on the inside
+	     of the MINUS_EXPR, which allows the -1 to get folded with the +1
+	     that happens when building TYPE_SIZE.  */
+	  size = variable_size (size);
+	  stabilize_vla_size (size);
+	}
+
       /* Compute the index of the largest element in the array.  It is
 	 one less than the number of elements in the array.  We save
 	 and restore PROCESSING_TEMPLATE_DECL so that computations in
@@ -10466,11 +10475,6 @@ compute_array_index_type_loc (location_t name_loc, tree name, tree size,
 
       if (!TREE_CONSTANT (itype))
 	{
-	  /* A variable sized array.  */
-	  itype = variable_size (itype);
-
-	  stabilize_vla_size (itype);
-
 	  if (sanitize_flags_p (SANITIZE_VLA)
 	      && current_function_decl != NULL_TREE)
 	    {
