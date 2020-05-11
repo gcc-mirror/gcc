@@ -958,7 +958,7 @@ class Gogo
 
   // Return the name of the type descriptor list symbol of a package.
   std::string
-  type_descriptor_list_symbol(std::string);
+  type_descriptor_list_symbol(const std::string&);
 
   // Return the name of the list of all type descriptor lists.
   std::string
@@ -1073,7 +1073,7 @@ class Gogo
 
     Specific_type_function(Type* atype, Named_type* aname, int64_t asize,
 			   Specific_type_function_kind akind,
-			   const std::string afnname,
+			   const std::string& afnname,
 			   Function_type* afntype)
       : type(atype), name(aname), size(asize), kind(akind),
 	fnname(afnname), fntype(afntype)

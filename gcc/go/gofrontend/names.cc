@@ -1024,7 +1024,7 @@ Gogo::type_descriptor_name(const Type* type, Named_type* nt)
 // Return the name of the type descriptor list symbol of a package.
 
 std::string
-Gogo::type_descriptor_list_symbol(std::string pkgpath)
+Gogo::type_descriptor_list_symbol(const std::string& pkgpath)
 {
   return pkgpath + "..types";
 }
