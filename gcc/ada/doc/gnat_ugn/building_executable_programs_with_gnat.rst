@@ -4403,7 +4403,7 @@ to the default checks required by Ada as described above.
 
   All validity checks are turned on.
   That is, :switch:`-gnatVa` is
-  equivalent to ``gnatVcdfimorst``.
+  equivalent to ``gnatVcdfimoprst``.
 
 
 .. index:: -gnatVc  (gcc)

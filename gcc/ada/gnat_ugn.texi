@@ -13161,7 +13161,7 @@ to the default checks required by Ada as described above.
 
 All validity checks are turned on.
 That is, @code{-gnatVa} is
-equivalent to @code{gnatVcdfimorst}.
+equivalent to @code{gnatVcdfimoprst}.
 @end table
 
 @geindex -gnatVc (gcc)
