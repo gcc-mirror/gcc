@@ -1,5 +1,25 @@
 2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
+	* config/rs6000/altivec.h (vec_clrl): New #define.
+	(vec_clrr): Likewise.
+	* config/rs6000/altivec.md (UNSPEC_VCLRLB): New constant.
+	(UNSPEC_VCLRRB): Likewise.
+	(vclrlb): New insn.
+	(vclrrb): Likewise.
+	* config/rs6000/rs6000-builtin.def (__builtin_altivec_vclrlb): New
+	built-in function.
+	(__builtin_altivec_vclrrb): Likewise.
+	(__builtin_vec_clrl): New overloaded built-in function.
+	(__builtin_vec_clrr): Likewise.
+	* config/rs6000/rs6000-call.c (altivec_overloaded_builtins):
+	Define overloaded forms of __builtin_vec_clrl and
+	__builtin_vec_clrr.
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions Available
+	for a Future Architecture): Add descriptions of vec_clrl and
+	vec_clrr.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
 	* config/rs6000/rs6000-builtin.def (__builtin_cntlzdm): New
 	built-in function definition.
 	(__builtin_cnttzdm): Likewise.
