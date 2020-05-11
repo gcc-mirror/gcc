@@ -11999,13 +11999,10 @@ package body Sem_Attr is
 
                         if Nkind (C) /= N_Aggregate then
                            Analyze_And_Resolve (C, Etype (Indx));
-                           Check_Non_Static_Context (C);
-
                         else
                            C_E := First (Expressions (C));
                            while Present (C_E) loop
                               Analyze_And_Resolve (C_E, Etype (Indx));
-                              Check_Non_Static_Context (C_E);
 
                               Next (C_E);
                               Next_Index (Indx);
