@@ -1,5 +1,11 @@
 2020-05-11  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (instantiate_class_template_1): Call tsubst_expr for
+	STATIC_ASSERT member.
+	* ptree.c (cxx_print_xnode): Handle STATIC_ASSERT.
+
+2020-05-11  Jason Merrill  <jason@redhat.com>
+
 	* pt.c (find_parameter_packs_r) [LAMBDA_EXPR]: Remove redundant
 	walking of capture list.
 
