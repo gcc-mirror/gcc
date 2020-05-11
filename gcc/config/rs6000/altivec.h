@@ -700,6 +700,12 @@ __altivec_scalar_pred(vec_any_nle,
 #define vec_clrl(a, b)	__builtin_vec_clrl (a, b)
 #define vec_clrr(a, b)	__builtin_vec_clrr (a, b)
 #define vec_ternarylogic(a, b, c, d)	__builtin_vec_xxeval (a, b, c, d)
+
+#define vec_strir(a)	__builtin_vec_strir (a)
+#define vec_stril(a)	__builtin_vec_stril (a)
+
+#define vec_strir_p(a)	__builtin_vec_strir_p (a)
+#define vec_stril_p(a)	__builtin_vec_stril_p (a)
 #endif
 
 #endif /* _ALTIVEC_H */

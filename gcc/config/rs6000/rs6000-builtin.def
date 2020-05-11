@@ -2612,12 +2612,27 @@ BU_FUTURE_V_2 (VPEXTD, "vpextd", CONST, vpextd)
 BU_FUTURE_V_2 (VGNB, "vgnb", CONST, vgnb)
 BU_FUTURE_V_4 (XXEVAL, "xxeval", CONST, xxeval)
 
+BU_FUTURE_V_1 (VSTRIBR, "vstribr", CONST, vstrir_v16qi)
+BU_FUTURE_V_1 (VSTRIHR, "vstrihr", CONST, vstrir_v8hi)
+BU_FUTURE_V_1 (VSTRIBL, "vstribl", CONST, vstril_v16qi)
+BU_FUTURE_V_1 (VSTRIHL, "vstrihl", CONST, vstril_v8hi)
+
+BU_FUTURE_V_1 (VSTRIBR_P, "vstribr_p", CONST, vstrir_p_v16qi)
+BU_FUTURE_V_1 (VSTRIHR_P, "vstrihr_p", CONST, vstrir_p_v8hi)
+BU_FUTURE_V_1 (VSTRIBL_P, "vstribl_p", CONST, vstril_p_v16qi)
+BU_FUTURE_V_1 (VSTRIHL_P, "vstrihl_p", CONST, vstril_p_v8hi)
+
 /* Future architecture overloaded vector built-ins.  */
 BU_FUTURE_OVERLOAD_2 (CLRL, "clrl")
 BU_FUTURE_OVERLOAD_2 (CLRR, "clrr")
 BU_FUTURE_OVERLOAD_2 (GNB, "gnb")
 BU_FUTURE_OVERLOAD_4 (XXEVAL, "xxeval")
 
+BU_FUTURE_OVERLOAD_1 (VSTRIR, "strir")
+BU_FUTURE_OVERLOAD_1 (VSTRIL, "stril")
+
+BU_FUTURE_OVERLOAD_1 (VSTRIR_P, "strir_p")
+BU_FUTURE_OVERLOAD_1 (VSTRIL_P, "stril_p")
 
 /* 1 argument crypto functions.  */
 BU_CRYPTO_1 (VSBOX,		"vsbox",	  CONST, crypto_vsbox_v2di)

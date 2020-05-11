@@ -1,3 +1,40 @@
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/altivec.h (vec_strir): New #define.
+	(vec_stril): Likewise.
+	(vec_strir_p): Likewise.
+	(vec_stril_p): Likewise.
+	* config/rs6000/altivec.md (UNSPEC_VSTRIR): New constant.
+	(UNSPEC_VSTRIL): Likewise.
+	(vstrir_<mode>): New expansion.
+	(vstrir_code_<mode>): New insn.
+	(vstrir_p_<mode>): New expansion.
+	(vstrir_p_code_<mode>): New insn.
+	(vstril_<mode>): New expansion.
+	(vstril_code_<mode>): New insn.
+	(vstril_p_<mode>): New expansion.
+	(vstril_p_code_<mode>): New insn.
+	* config/rs6000/rs6000-builtin.def (__builtin_altivec_vstribr):
+	New built-in function.
+	(__builtin_altivec_vstrihr): Likewise.
+	(__builtin_altivec_vstribl): Likewise.
+	(__builtin_altivec_vstrihl): Likewise.
+	(__builtin_altivec_vstribr_p): Likewise.
+	(__builtin_altivec_vstrihr_p): Likewise.
+	(__builtin_altivec_vstribl_p): Likewise.
+	(__builtin_altivec_vstrihl_p): Likewise.
+	(__builtin_vec_strir): New overloaded built-in function.
+	(__builtin_vec_stril): Likewise.
+	(__builtin_vec_strir_p): Likewise.
+	(__builtin_vec_stril_p): Likewise.
+	* config/rs6000/rs6000-call.c (altivec_overloaded_builtins):
+	Define overloaded forms of __builtin_vec_strir,
+	__builtin_vec_stril, __builtin_vec_strir_p, and
+	__builtin_vec_stril_p.
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions Available
+	for a Future Architecture): Add description of vec_stril,
+	vec_stril_p, vec_strir, and vec_strir_p built-in functions.
+
 2020-05-11  Kelvin Nilsen  <wschmidt@linux.ibm.com>
 
 	* config/rs6000/altivec.h (vec_ternarylogic): New #define.
