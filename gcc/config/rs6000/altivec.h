@@ -694,6 +694,8 @@ __altivec_scalar_pred(vec_any_nle,
 #define vec_pdep(a, b)	__builtin_altivec_vpdepd (a, b)
 #define vec_pext(a, b)	__builtin_altivec_vpextd (a, b)
 
+/* Overloaded built-in functions for future architecture.  */
+#define vec_gnb(a, b)	__builtin_vec_gnb (a, b)
 #endif
 
 #endif /* _ALTIVEC_H */

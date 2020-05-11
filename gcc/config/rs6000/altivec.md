@@ -162,6 +162,7 @@
    UNSPEC_VRLNM
    UNSPEC_VCLZDM
    UNSPEC_VCTZDM
+   UNSPEC_VGNB
    UNSPEC_VPDEPD
    UNSPEC_VPEXTD
 ])
@@ -4134,6 +4135,15 @@
 	 UNSPEC_VPEXTD))]
    "TARGET_FUTURE"
    "vpextd %0,%1,%2"
+   [(set_attr "type" "vecsimple")])
+
+(define_insn "vgnb"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (unspec:DI [(match_operand:V2DI 1 "altivec_register_operand" "v")
+	            (match_operand:QI 2 "u3bit_cint_operand" "n")]
+         UNSPEC_VGNB))]
+   "TARGET_FUTURE"
+   "vgnb %0,%1,%2"
    [(set_attr "type" "vecsimple")])
 
 
