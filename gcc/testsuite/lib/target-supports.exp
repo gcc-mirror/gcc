@@ -2203,7 +2203,7 @@ proc check_powerpc_future_hw_available { } {
 		asm ("pli %0,%1" : "+r" (e) : "n" (0x12345));
 		return (e == 0x12345);
 	    }
-	} "-mfuture"
+	} "-mcpu=future"
     }]
 }
 
@@ -5815,7 +5815,7 @@ proc check_effective_target_powerpc_future_ok { } {
 		asm ("pli %0,%1" : "=r" (e) : "n" (0x12345));
 		return e;
 	    }
-	} "-mfuture"]
+	} "-mcpu=future"]
     } else {
 	return 0
     }
@@ -7762,6 +7762,7 @@ proc is-effective-target { arg } {
 	  "named_sections" { set selected [check_named_sections_available] }
 	  "gc_sections"    { set selected [check_gc_sections_available] }
 	  "cxa_atexit"     { set selected [check_cxa_atexit_available] }
+	  "powerpc_future_hw" { set selected [check_powerpc_future_hw_available] }
 	  default          { error "unknown effective target keyword `$arg'" }
 	}
     }
