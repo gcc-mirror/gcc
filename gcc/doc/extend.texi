@@ -20761,6 +20761,30 @@ implemented by the Future @code{vctzdm} instruction.
 @findex vec_ctzm
 
 @smallexample
+@exdent vector signed char
+@exdent vec_clrl (vector signed char a, unsigned int n)
+@exdent vector unsigned char
+@exdent vec_clrl (vector unsigned char a, unsigned int n)
+@end smallexample
+Clear the left-most @code{(16 - n)} bytes of vector argument @code{a}, as if
+implemented by the @code{vclrlb} instruction on a big-endian target
+and by the @code{vclrrb} instruction on a little-endian target.  A
+value of @code{n} that is greater than 16 is treated as if it equaled 16.
+@findex vec_clrl
+
+@smallexample
+@exdent vector signed char
+@exdent vec_clrr (vector signed char a, unsigned int n)
+@exdent vector unsigned char
+@exdent vec_clrr (vector unsigned char a, unsigned int n)
+@end smallexample
+Clear the right-most @code{(16 - n)} bytes of vector argument @code{a}, as if
+implemented by the @code{vclrrb} instruction on a big-endian target
+and by the @code{vclrlb} instruction on a little-endian target.  A
+value of @code{n} that is greater than 16 is treated as if it equaled 16.
+@findex vec_clrr
+
+@smallexample
 @exdent vector unsigned long long int
 @exdent vec_gnb (vector unsigned char, const unsigned char)
 @exdent vector unsigned long long int

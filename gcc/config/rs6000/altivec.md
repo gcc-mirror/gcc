@@ -166,6 +166,8 @@
    UNSPEC_VGNB
    UNSPEC_VPDEPD
    UNSPEC_VPEXTD
+   UNSPEC_VCLRLB
+   UNSPEC_VCLRRB
 ])
 
 (define_c_enum "unspecv"
@@ -4156,6 +4158,33 @@
    "vgnb %0,%1,%2"
    [(set_attr "type" "vecsimple")])
 
+(define_insn "vclrlb"
+  [(set (match_operand:V16QI 0 "altivec_register_operand" "=v")
+	(unspec:V16QI [(match_operand:V16QI 1 "altivec_register_operand" "v")
+		       (match_operand:SI 2 "gpc_reg_operand" "r")]
+	 UNSPEC_VCLRLB))]
+   "TARGET_FUTURE"
+{
+  if (BYTES_BIG_ENDIAN)
+    return "vclrlb %0,%1,%2";
+  else
+    return "vclrrb %0,%1,%2";
+}
+   [(set_attr "type" "vecsimple")])
+
+(define_insn "vclrrb"
+  [(set (match_operand:V16QI 0 "altivec_register_operand" "=v")
+	(unspec:V16QI [(match_operand:V16QI 1 "altivec_register_operand" "v")
+		       (match_operand:SI 2 "gpc_reg_operand" "r")]
+	 UNSPEC_VCLRRB))]
+   "TARGET_FUTURE"
+{
+  if (BYTES_BIG_ENDIAN)
+    return "vclrrb %0,%1,%2";
+  else
+    return "vclrlb %0,%1,%2";
+}
+   [(set_attr "type" "vecsimple")])
 
 (define_expand "bcd<bcd_add_sub>_<code>"
   [(parallel [(set (reg:CCFP CR6_REGNO)

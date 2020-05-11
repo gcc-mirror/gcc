@@ -697,6 +697,8 @@ __altivec_scalar_pred(vec_any_nle,
 
 /* Overloaded built-in functions for future architecture.  */
 #define vec_gnb(a, b)	__builtin_vec_gnb (a, b)
+#define vec_clrl(a, b)	__builtin_vec_clrl (a, b)
+#define vec_clrr(a, b)	__builtin_vec_clrr (a, b)
 #endif
 
 #endif /* _ALTIVEC_H */
