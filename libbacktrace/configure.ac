@@ -376,7 +376,7 @@ if test "$have_fcntl" = "yes"; then
 	    [Define to 1 if you have the fcntl function])
 fi
 
-AC_CHECK_DECLS(strnlen)
+AC_CHECK_DECLS([strnlen, getpagesize])
 AC_CHECK_FUNCS(lstat readlink)
 
 # Check for getexecname function.

@@ -12,6 +12,10 @@
 /* Define to 1 if you have the `clock_gettime' function. */
 #undef HAVE_CLOCK_GETTIME
 
+/* Define to 1 if you have the declaration of `getpagesize', and to 0 if you
+   don't. */
+#undef HAVE_DECL_GETPAGESIZE
+
 /* Define to 1 if you have the declaration of `strnlen', and to 0 if you
    don't. */
 #undef HAVE_DECL_STRNLEN
