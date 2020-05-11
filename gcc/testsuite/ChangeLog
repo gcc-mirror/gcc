@@ -1,5 +1,10 @@
 2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
+	* gcc.target/powerpc/vec-cfuged-0.c: New test.
+	* gcc.target/powerpc/vec-cfuged-1.c: New test.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
 	* gcc.target.powerpc/cfuged-0.c: New test.
 	* gcc.target.powerpc/cfuged-1.c: New test.
 
