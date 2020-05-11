@@ -2518,6 +2518,8 @@ BU_P9_OVERLOAD_2 (CMPEQB,	"byte_in_set")
 /* Future architecture vector built-ins.  */
 BU_FUTURE_V_2 (VCLZDM, "vclzdm", CONST, vclzdm)
 BU_FUTURE_V_2 (VCTZDM, "vctzdm", CONST, vctzdm)
+BU_FUTURE_V_2 (VPDEPD, "vpdepd", CONST, vpdepd)
+BU_FUTURE_V_2 (VPEXTD, "vpextd", CONST, vpextd)
 
 /* 1 argument crypto functions.  */
 BU_CRYPTO_1 (VSBOX,		"vsbox",	  CONST, crypto_vsbox_v2di)
