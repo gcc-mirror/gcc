@@ -1,5 +1,15 @@
 2020-05-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/90748
+	* parser.c (inject_parm_decls): Set current_class_ptr here.
+	(cp_parser_direct_declarator): And here.
+	(cp_parser_late_return_type_opt): Not here.
+	(cp_parser_noexcept_specification_opt): Nor here.
+	(cp_parser_exception_specification_opt)
+	(cp_parser_late_noexcept_specifier): Remove unneeded parameters.
+
+2020-05-11  Jason Merrill  <jason@redhat.com>
+
 	* decl.c (cxx_init_decl_processing): Call declare_weak for
 	__cxa_pure_virtual.
 
