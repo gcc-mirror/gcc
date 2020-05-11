@@ -1,3 +1,10 @@
+2020-05-11  Felix Yang  <felix.yang@huawei.com>
+
+	PR target/94991
+	* config/aarch64/aarch64.md (mov<mode>):
+	Bitcasts to the equivalent integer mode using gen_lowpart
+	instead of doing FAIL for scalar floating point move.
+
 2020-05-11  Alex Coplan  <alex.coplan@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_if_then_else_costs): Add case

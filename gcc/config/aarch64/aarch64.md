@@ -1364,7 +1364,11 @@
     if (!TARGET_FLOAT)
       {
 	aarch64_err_no_fpadvsimd (<MODE>mode);
-	FAIL;
+	machine_mode intmode
+	  = int_mode_for_size (GET_MODE_BITSIZE (<MODE>mode), 0).require ();
+	emit_move_insn (gen_lowpart (intmode, operands[0]),
+			gen_lowpart (intmode, operands[1]));
+	DONE;
       }
 
     if (GET_CODE (operands[0]) == MEM
