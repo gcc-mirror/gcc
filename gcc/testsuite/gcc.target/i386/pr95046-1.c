@@ -49,3 +49,14 @@ test_max (void)
 }
 
 /* { dg-final { scan-assembler "maxps" } } */
+
+float sqrtf (float);
+
+void
+test_sqrt (void)
+{
+  for (int i = 0; i < 2; i++)
+    r[i] = sqrtf (a[i]);
+}
+
+/* { dg-final { scan-assembler "sqrtps" } } */

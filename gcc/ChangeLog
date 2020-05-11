@@ -1,3 +1,8 @@
+2020-05-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* config/i386/mmx.md (sqrtv2sf2): New insn pattern.
+
 2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/altivec.h (vec_cfuge): New #define.

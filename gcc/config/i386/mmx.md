@@ -461,6 +461,20 @@
    (set_attr "prefix_extra" "1")
    (set_attr "mode" "V2SF")])
 
+(define_insn "sqrtv2sf2"
+  [(set (match_operand:V2SF 0 "register_operand" "=x,v")
+	(sqrt:V2SF (match_operand:V2SF 1 "register_operand" "0,v")))]
+  "TARGET_MMX_WITH_SSE"
+  "@
+   sqrtps\t{%1, %0|%0, %1}
+   vsqrtps\t{%1, %0|%0, %1}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sse")
+   (set_attr "atom_sse_attr" "sqrt")
+   (set_attr "btver2_sse_attr" "sqrt")
+   (set_attr "prefix" "orig,vex")
+   (set_attr "mode" "V4SF")])
+
 (define_insn "mmx_rsqrtv2sf2"
   [(set (match_operand:V2SF 0 "register_operand" "=y")
 	(unspec:V2SF [(match_operand:V2SF 1 "nonimmediate_operand" "ym")]
