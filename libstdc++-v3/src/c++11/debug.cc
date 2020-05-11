@@ -318,8 +318,6 @@ namespace __gnu_debug
   _Safe_sequence_base::
   _M_attach_single(_Safe_iterator_base* __it, bool __constant) throw ()
   {
-    __it->_M_sequence = this;
-    __it->_M_version = _M_version;
     _Safe_iterator_base*& __its =
       __constant ? _M_const_iterators : _M_iterators;
     __it->_M_next = __its;
@@ -347,7 +345,6 @@ namespace __gnu_debug
       _M_const_iterators = __it->_M_next;
     if (_M_iterators == __it)
       _M_iterators = __it->_M_next;
-    __it->_M_reset();
   }
 
   void
@@ -358,7 +355,11 @@ namespace __gnu_debug
 
     // Attach to the new sequence (if there is one)
     if (__seq)
-      __seq->_M_attach(this, __constant);
+      {
+	_M_sequence = __seq;
+	_M_version = _M_sequence->_M_version;
+	_M_sequence->_M_attach(this, __constant);
+      }
   }
 
   void
@@ -369,7 +370,11 @@ namespace __gnu_debug
 
     // Attach to the new sequence (if there is one)
     if (__seq)
-      __seq->_M_attach_single(this, __constant);
+      {
+	_M_sequence = __seq;
+	_M_version = _M_sequence->_M_version;
+	_M_sequence->_M_attach_single(this, __constant);
+      }
   }
 
   void
@@ -395,7 +400,10 @@ namespace __gnu_debug
   _M_detach_single() throw ()
   {
     if (_M_sequence)
-      _M_sequence->_M_detach_single(this);
+      {
+	_M_sequence->_M_detach_single(this);
+	_M_reset();
+      }
   }
 
   void
@@ -411,32 +419,20 @@ namespace __gnu_debug
   bool
   _Safe_iterator_base::
   _M_singular() const throw ()
-  {
-    auto seq = __atomic_load_n(&_M_sequence, __ATOMIC_ACQUIRE);
-    return !seq || _M_version != seq->_M_version;
-  }
+  { return !_M_sequence || _M_version != _M_sequence->_M_version; }
 
   bool
   _Safe_iterator_base::
   _M_can_compare(const _Safe_iterator_base& __x) const throw ()
   {
-    auto seq = __atomic_load_n(&_M_sequence, __ATOMIC_ACQUIRE);
-    if (seq && _M_version == seq->_M_version)
-      {
-	auto xseq = __atomic_load_n(&__x._M_sequence, __ATOMIC_ACQUIRE);
-	return xseq && __x._M_version == xseq->_M_version && seq == xseq;
-      }
-
-    return false;
+    return (!_M_singular()
+	    && !__x._M_singular() && _M_sequence == __x._M_sequence);
   }
 
   __gnu_cxx::__mutex&
   _Safe_iterator_base::
   _M_get_mutex() throw ()
-  {
-    auto seq = __atomic_load_n(&_M_sequence, __ATOMIC_ACQUIRE);
-    return get_safe_base_mutex(seq);
-  }
+  { return _M_sequence->_M_get_mutex(); }
 
   _Safe_unordered_container_base*
   _Safe_local_iterator_base::
@@ -451,8 +447,11 @@ namespace __gnu_debug
 
     // Attach to the new container (if there is one)
     if (__cont)
-      static_cast<_Safe_unordered_container_base*>(__cont)
-	->_M_attach_local(this, __constant);
+      {
+	_M_sequence = __cont;
+	_M_version = _M_sequence->_M_version;
+	_M_get_container()->_M_attach_local(this, __constant);
+      }
   }
 
   void
@@ -463,8 +462,11 @@ namespace __gnu_debug
 
     // Attach to the new container (if there is one)
     if (__cont)
-      static_cast<_Safe_unordered_container_base*>(__cont)
-	->_M_attach_local_single(this, __constant);
+      {
+	_M_sequence = __cont;
+	_M_version = _M_sequence->_M_version;
+	_M_get_container()->_M_attach_local_single(this, __constant);
+      }
   }
 
   void
@@ -524,8 +526,6 @@ namespace __gnu_debug
   _Safe_unordered_container_base::
   _M_attach_local_single(_Safe_iterator_base* __it, bool __constant) throw ()
   {
-    __it->_M_sequence = this;
-    __it->_M_version = _M_version;
     _Safe_iterator_base*& __its =
       __constant ? _M_const_local_iterators : _M_local_iterators;
     __it->_M_next = __its;
@@ -553,7 +553,6 @@ namespace __gnu_debug
       _M_const_local_iterators = __it->_M_next;
     if (_M_local_iterators == __it)
       _M_local_iterators = __it->_M_next;
-    __it->_M_reset();
   }
 }
 
