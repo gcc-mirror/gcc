@@ -1,3 +1,9 @@
+2020-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95049
+	* tree-ssa-sccvn.c (set_ssa_val_to): Reject lattice transition
+	between different constants.
+
 2020-05-11  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-pretty-print.c (dump_generic_node): Handle BOOLEAN_TYPEs.
