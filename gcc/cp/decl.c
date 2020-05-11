@@ -5214,17 +5214,10 @@ start_decl (const cp_declarator *declarator,
 
   *pushed_scope_p = NULL_TREE;
 
-  /* An object declared as __attribute__((deprecated)) suppresses
-     warnings of uses of other deprecated items.  */
-  if (lookup_attribute ("deprecated", attributes))
-    deprecated_state = DEPRECATED_SUPPRESS;
-
   attributes = chainon (attributes, prefix_attributes);
 
   decl = grokdeclarator (declarator, declspecs, NORMAL, initialized,
 			 &attributes);
-
-  deprecated_state = DEPRECATED_NORMAL;
 
   if (decl == NULL_TREE || VOID_TYPE_P (decl)
       || decl == error_mark_node)
@@ -11318,6 +11311,17 @@ grokdeclarator (const cp_declarator *declarator,
       type = NULL_TREE;
       type_was_error_mark_node = true;
     }
+
+  /* Ignore erroneous attributes.  */
+  if (attrlist && *attrlist == error_mark_node)
+    *attrlist = NULL_TREE;
+
+  /* An object declared as __attribute__((deprecated)) suppresses
+     warnings of uses of other deprecated items.  */
+  temp_override<deprecated_states> ds (deprecated_state);
+  if (attrlist && lookup_attribute ("deprecated", *attrlist))
+    deprecated_state = DEPRECATED_SUPPRESS;
+
   cp_warn_deprecated_use (type);
   if (type && TREE_CODE (type) == TYPE_DECL)
     {
