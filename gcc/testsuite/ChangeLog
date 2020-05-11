@@ -1,3 +1,8 @@
+2020-05-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95053
+	* gfortran.dg/pr95053.f: New test.
+
 2020-05-11  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95046
