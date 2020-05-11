@@ -5,6 +5,19 @@
 
 2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
+	* config/rs6000/rs6000-builtin.def (__builtin_cntlzdm): New
+	built-in function definition.
+	(__builtin_cnttzdm): Likewise.
+	* config/rs6000/rs6000.md (UNSPEC_CNTLZDM): New constant.
+	(UNSPEC_CNTTZDM): Likewise.
+	(cntlzdm): New insn.
+	(cnttzdm): Likewise.
+	* doc/extend.texi (Basic PowerPC Built-in Functions available for
+	a Future Architecture): Add descriptions of __builtin_cntlzdm and
+	__builtin_cnttzdm functions.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
 	* config/rs6000/altivec.h (vec_cfuge): New #define.
 	* config/rs6000/altivec.md (UNSPEC_VCFUGED): New constant.
 	(vcfuged): New insn.

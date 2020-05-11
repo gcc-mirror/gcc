@@ -17556,6 +17556,22 @@ Perform a 64-bit centrifuge operation, as if implemented by the Future
 @code{cfuged} instruction.
 @findex __builtin_cfuged
 
+@smallexample
+@exdent unsigned long long int
+@exdent __builtin_cntlzdm (unsigned long long int, unsigned long long int)
+@end smallexample
+Perform a 64-bit count leading zeros operation under mask, as if
+implemented by the future @code{cntlzdm} instruction.
+@findex __builtin_cntlzdm
+
+@smallexample
+@exdent unsigned long long int
+@exdent __builtin_cnttzdm (unsigned long long int, unsigned long long int)
+@end smallexample
+Perform a 64-bit count trailing zeros operation under mask, as if
+implemented by the future @code{cnttzdm} instruction.
+@findex __builtin_cnttzdm
+
 @node PowerPC AltiVec/VSX Built-in Functions
 @subsection PowerPC AltiVec/VSX Built-in Functions
 
