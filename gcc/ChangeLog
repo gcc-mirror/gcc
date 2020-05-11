@@ -1,3 +1,12 @@
+2020-05-11  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_if_then_else_costs): Add case
+	to correctly calculate cost for new pattern (*csinv3_uxtw_insn3).
+	* config/aarch64/aarch64.md (*csinv3_utxw_insn1): New.
+	(*csinv3_uxtw_insn2): New.
+	(*csinv3_uxtw_insn3): New.
+	* config/aarch64/iterators.md (neg_not_cs): New.
+
 2020-05-11  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95046
