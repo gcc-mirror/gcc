@@ -17,6 +17,17 @@
 2020-05-11  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95046
+	* config/i386/mmx.md (mmx_addv2sf3): Use "v" constraint
+	instead of "Yv" for AVX alternatives.  Add "prefix" attribute.
+	(*mmx_addv2sf3): Ditto.
+	(*mmx_subv2sf3): Ditto.
+	(*mmx_mulv2sf3): Ditto.
+	(*mmx_<code>v2sf3): Ditto.
+	(mmx_ieee_<ieee_maxmin>v2sf3): Ditto.
+
+2020-05-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
 	* config/i386/i386.c (ix86_vector_mode_supported_p):
 	Vectorize 3dNOW! vector modes for TARGET_MMX_WITH_SSE.
 	* config/i386/mmx.md (*mov<mode>_internal): Do not set

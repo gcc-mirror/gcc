@@ -255,10 +255,10 @@
   "ix86_fixup_binary_operands_no_copy (PLUS, V2SFmode, operands);")
 
 (define_insn "*mmx_addv2sf3"
-  [(set (match_operand:V2SF 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V2SF 0 "register_operand" "=y,x,v")
 	(plus:V2SF
-	  (match_operand:V2SF 1 "register_mmxmem_operand" "%0,0,Yv")
-	  (match_operand:V2SF 2 "register_mmxmem_operand" "ym,x,Yv")))]
+	  (match_operand:V2SF 1 "register_mmxmem_operand" "%0,0,v")
+	  (match_operand:V2SF 2 "register_mmxmem_operand" "ym,x,v")))]
   "(TARGET_3DNOW || TARGET_MMX_WITH_SSE)
    && ix86_binary_operator_ok (PLUS, V2SFmode, operands)"
   "@
@@ -269,6 +269,7 @@
    (set_attr "mmx_isa" "native,*,*")
    (set_attr "type" "mmxadd,sseadd,sseadd")
    (set_attr "prefix_extra" "1,*,*")
+   (set_attr "prefix" "*,orig,vex")
    (set_attr "mode" "V2SF,V4SF,V4SF")])
 
 (define_expand "mmx_subv2sf3"
@@ -292,10 +293,10 @@
   "ix86_fixup_binary_operands_no_copy (MINUS, V2SFmode, operands);")
 
 (define_insn "*mmx_subv2sf3"
-  [(set (match_operand:V2SF 0 "register_operand" "=y,y,x,Yv")
+  [(set (match_operand:V2SF 0 "register_operand" "=y,y,x,v")
         (minus:V2SF
-	  (match_operand:V2SF 1 "register_mmxmem_operand" "0,ym,0,Yv")
-	  (match_operand:V2SF 2 "register_mmxmem_operand" "ym,0,x,Yv")))]
+	  (match_operand:V2SF 1 "register_mmxmem_operand" "0,ym,0,v")
+	  (match_operand:V2SF 2 "register_mmxmem_operand" "ym,0,x,v")))]
   "(TARGET_3DNOW || TARGET_MMX_WITH_SSE)
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
@@ -307,6 +308,7 @@
    (set_attr "mmx_isa" "native,native,*,*")
    (set_attr "type" "mmxadd,mmxadd,sseadd,sseadd")
    (set_attr "prefix_extra" "1,1,*,*")
+   (set_attr "prefix" "*,*,orig,vex")
    (set_attr "mode" "V2SF,V2SF,V4SF,V4SF")])
 
 (define_expand "mmx_mulv2sf3"
@@ -325,10 +327,10 @@
   "ix86_fixup_binary_operands_no_copy (MULT, V2SFmode, operands);")
 
 (define_insn "*mmx_mulv2sf3"
-  [(set (match_operand:V2SF 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V2SF 0 "register_operand" "=y,x,v")
 	(mult:V2SF
-	  (match_operand:V2SF 1 "register_mmxmem_operand" "%0,0,Yv")
-	  (match_operand:V2SF 2 "register_mmxmem_operand" "ym,x,Yv")))]
+	  (match_operand:V2SF 1 "register_mmxmem_operand" "%0,0,v")
+	  (match_operand:V2SF 2 "register_mmxmem_operand" "ym,x,v")))]
   "(TARGET_3DNOW || TARGET_MMX_WITH_SSE)
    && ix86_binary_operator_ok (MULT, V2SFmode, operands)"
   "@
@@ -338,8 +340,9 @@
   [(set_attr "isa" "*,sse2_noavx,avx")
    (set_attr "mmx_isa" "native,*,*")
    (set_attr "type" "mmxmul,ssemul,ssemul")
-   (set_attr "prefix_extra" "1,*,*")
    (set_attr "btver2_decode" "*,direct,double")
+   (set_attr "prefix_extra" "1,*,*")
+   (set_attr "prefix" "*,orig,vex")
    (set_attr "mode" "V2SF,V4SF,V4SF")])
 
 (define_expand "mmx_<code>v2sf3"
@@ -383,10 +386,10 @@
 ;; are undefined in this condition, we're certain this is correct.
 
 (define_insn "*mmx_<code>v2sf3"
-  [(set (match_operand:V2SF 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V2SF 0 "register_operand" "=y,x,v")
         (smaxmin:V2SF
-	  (match_operand:V2SF 1 "register_mmxmem_operand" "%0,0,Yv")
-	  (match_operand:V2SF 2 "register_mmxmem_operand" "ym,x,Yv")))]
+	  (match_operand:V2SF 1 "register_mmxmem_operand" "%0,0,v")
+	  (match_operand:V2SF 2 "register_mmxmem_operand" "ym,x,v")))]
   "(TARGET_3DNOW || TARGET_MMX_WITH_SSE)
    && ix86_binary_operator_ok (<CODE>, V2SFmode, operands)"
   "@
@@ -398,6 +401,7 @@
    (set_attr "type" "mmxadd,sseadd,sseadd")
    (set_attr "btver2_sse_attr" "*,maxmin,maxmin")
    (set_attr "prefix_extra" "1,*,*")
+   (set_attr "prefix" "*,orig,vex")
    (set_attr "mode" "V2SF,V4SF,V4SF")])
 
 ;; These versions of the min/max patterns implement exactly the operations
@@ -407,10 +411,10 @@
 ;; presence of -0.0 and NaN.
 
 (define_insn "mmx_ieee_<ieee_maxmin>v2sf3"
-  [(set (match_operand:V2SF 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V2SF 0 "register_operand" "=y,x,v")
         (unspec:V2SF
-	  [(match_operand:V2SF 1 "register_operand" "0,0,Yv")
-	   (match_operand:V2SF 2 "register_mmxmem_operand" "ym,x,Yv")]
+	  [(match_operand:V2SF 1 "register_operand" "0,0,v")
+	   (match_operand:V2SF 2 "register_mmxmem_operand" "ym,x,v")]
 	  IEEE_MAXMIN))]
   "TARGET_3DNOW || TARGET_MMX_WITH_SSE"
   "@
@@ -422,6 +426,7 @@
    (set_attr "type" "mmxadd,sseadd,sseadd")
    (set_attr "btver2_sse_attr" "*,maxmin,maxmin")
    (set_attr "prefix_extra" "1,*,*")
+   (set_attr "prefix" "*,orig,vex")
    (set_attr "mode" "V2SF,V4SF,V4SF")])
 
 (define_insn "mmx_rcpv2sf2"
