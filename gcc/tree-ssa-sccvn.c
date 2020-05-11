@@ -4469,6 +4469,8 @@ set_ssa_val_to (tree from, tree to)
   vn_ssa_aux_t from_info = VN_INFO (from);
   tree currval = from_info->valnum; // SSA_VAL (from)
   poly_int64 toff, coff;
+  bool curr_undefined = false;
+  bool curr_invariant = false;
 
   /* The only thing we allow as value numbers are ssa_names
      and invariants.  So assert that here.  We don't allow VN_TOP
@@ -4511,9 +4513,9 @@ set_ssa_val_to (tree from, tree to)
 	    }
 	  return false;
 	}
-      bool curr_invariant = is_gimple_min_invariant (currval);
-      bool curr_undefined = (TREE_CODE (currval) == SSA_NAME
-			     && ssa_undefined_value_p (currval, false));
+      curr_invariant = is_gimple_min_invariant (currval);
+      curr_undefined = (TREE_CODE (currval) == SSA_NAME
+			&& ssa_undefined_value_p (currval, false));
       if (currval != VN_TOP
 	  && !curr_invariant
 	  && !curr_undefined
@@ -4568,9 +4570,8 @@ set_and_exit:
       && !operand_equal_p (currval, to, 0)
       /* Different undefined SSA names are not actually different.  See
          PR82320 for a testcase were we'd otherwise not terminate iteration.  */
-      && !(TREE_CODE (currval) == SSA_NAME
+      && !(curr_undefined
 	   && TREE_CODE (to) == SSA_NAME
-	   && ssa_undefined_value_p (currval, false)
 	   && ssa_undefined_value_p (to, false))
       /* ???  For addresses involving volatile objects or types operand_equal_p
          does not reliably detect ADDR_EXPRs as equal.  We know we are only
@@ -4582,6 +4583,22 @@ set_and_exit:
 	       == get_addr_base_and_unit_offset (TREE_OPERAND (to, 0), &toff))
 	   && known_eq (coff, toff)))
     {
+      if (to != from
+	  && currval != VN_TOP
+	  && !curr_undefined
+	  /* We do not want to allow lattice transitions from one value
+	     to another since that may lead to not terminating iteration
+	     (see PR95049).  Since there's no convenient way to check
+	     for the allowed transition of VAL -> PHI (loop entry value,
+	     same on two PHIs, to same PHI result) we restrict the check
+	     to invariants.  */
+	  && curr_invariant
+	  && is_gimple_min_invariant (to))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, " forced VARYING");
+	  to = from;
+	}
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, " (changed)\n");
       from_info->valnum = to;
