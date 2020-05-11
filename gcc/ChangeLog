@@ -1,3 +1,15 @@
+2020-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95045
+	* dbgcnt.def (lim): Add debug-counter.
+	* tree-ssa-loop-im.c: Include dbgcnt.h.
+	(find_refs_for_sm): Use lim debug counter for store motion
+	candidates.
+	(do_store_motion): Rename form store_motion.  Commit edge
+	insertions...
+	(store_motion_loop): ... here.
+	(tree_ssa_lim): Adjust.
+
 2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/altivec.h (vec_clzm): Rename to vec_cntlzm.
