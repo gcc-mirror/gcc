@@ -1,26 +1,3 @@
-2020-05-10  François Dumont  <fdumont@gcc.gnu.org>
-
-	* src/c++/debug.cc
-	(_Safe_sequence_base::_M_attach_single): Set attached iterator
-	sequence pointer and version.
-	(_Safe_sequence_base::_M_detach_single): Reset detached iterator.
-	(_Safe_iterator_base::_M_attach): Remove attached iterator sequence
-	pointer and version asignments.
-	(_Safe_iterator_base::_M_attach_single): Likewise.
-	(_Safe_iterator_base::_M_detach_single): Remove detached iterator
-	reset.
-	(_Safe_iterator_base::_M_singular): Use atomic load to access parent
-	sequence.
-	(_Safe_iterator_base::_M_can_compare): Likewise.
-	(_Safe_iterator_base::_M_get_mutex): Likewise.
-	(_Safe_local_iterator_base::_M_attach): Remove attached iterator container
-	pointer and version assignments.
-	(_Safe_local_iterator_base::_M_attach_single): Likewise.
-	(_Safe_unordered_container_base::_M_attach_local_single):Set attached
-	iterator container pointer and version.
-	(_Safe_unordered_container_base::_M_detach_local_single): Reset detached
-	iterator.
-
 2020-05-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/94971 (partial)
