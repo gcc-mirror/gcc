@@ -4940,7 +4940,8 @@ gfc_find_typebound_dtio_proc (gfc_symbol *derived, bool write, bool formatted)
   gfc_symtree *tb_io_st = NULL;
   bool t = false;
 
-  if (!derived || !derived->resolved || derived->attr.flavor != FL_DERIVED)
+  if (!derived || !derived->resolve_symbol_called
+      || derived->attr.flavor != FL_DERIVED)
     return NULL;
 
   /* Try to find a typebound DTIO binding.  */
