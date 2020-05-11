@@ -4544,6 +4544,9 @@ cxx_init_decl_processing (void)
   abort_fndecl
     = build_library_fn_ptr ("__cxa_pure_virtual", void_ftype,
 			    ECF_NORETURN | ECF_NOTHROW | ECF_COLD);
+  if (flag_weak)
+    /* If no definition is available, resolve references to NULL.  */
+    declare_weak (abort_fndecl);
 
   /* Perform other language dependent initializations.  */
   init_class_processing ();

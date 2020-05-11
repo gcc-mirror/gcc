@@ -1,5 +1,10 @@
 2020-05-11  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (cxx_init_decl_processing): Call declare_weak for
+	__cxa_pure_virtual.
+
+2020-05-11  Jason Merrill  <jason@redhat.com>
+
 	* pt.c (instantiate_class_template_1): Call tsubst_expr for
 	STATIC_ASSERT member.
 	* ptree.c (cxx_print_xnode): Handle STATIC_ASSERT.
