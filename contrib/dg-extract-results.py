@@ -117,7 +117,7 @@ class Prog:
         self.tool_re = re.compile (r'^\t\t=== (.*) tests ===$')
         self.result_re = re.compile (r'^(PASS|XPASS|FAIL|XFAIL|UNRESOLVED'
                                      r'|WARNING|ERROR|UNSUPPORTED|UNTESTED'
-                                     r'|KFAIL|KPASS):\s*(.+)')
+                                     r'|KFAIL|KPASS|PATH|DUPLICATE):\s*(.+)')
         self.completed_re = re.compile (r'.* completed at (.*)')
         # Pieces of text to write at the head of the output.
         # start_line is a pair in which the first element is a datetime
@@ -143,7 +143,9 @@ class Prog:
             '# of known failures\t\t',
             '# of untested testcases\t\t',
             '# of unresolved testcases\t',
-            '# of unsupported tests\t\t'
+            '# of unsupported tests\t\t',
+            '# of paths in test names\t',
+            '# of duplicate test names\t'
         ]
         self.runs = dict()
 
