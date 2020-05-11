@@ -1,3 +1,10 @@
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/cntlzdm-0.c: New test.
+	* gcc.target/powerpc/cntlzdm-1.c: New test.
+	* gcc.target/powerpc/cnttzdm-0.c: New test.
+	* gcc.target/powerpc/cnttzdm-1.c: New test.
+
 2020-05-11  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95053
@@ -7,13 +14,6 @@
 
 	PR target/95046
 	* gcc.target/i386/pr95046-1.c (test_sqrt): Add.
-
-2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
-
-	* gcc.target/powerpc/cntlzdm-0.c: New test.
-	* gcc.target/powerpc/cntlzdm-1.c: New test.
-	* gcc.target/powerpc/cnttzdm-0.c: New test.
-	* gcc.target/powerpc/cnttzdm-1.c: New test.
 
 2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
