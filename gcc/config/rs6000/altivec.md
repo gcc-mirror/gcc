@@ -168,6 +168,7 @@
    UNSPEC_VPEXTD
    UNSPEC_VCLRLB
    UNSPEC_VCLRRB
+   UNSPEC_XXEVAL
 ])
 
 (define_c_enum "unspecv"
@@ -3271,6 +3272,16 @@
   [(set_attr "type" "vecperm")
    (set_attr "isa" "*,p9v")])
 
+(define_insn "xxeval"
+  [(set (match_operand:V2DI 0 "register_operand" "=wa")
+	(unspec:V2DI [(match_operand:V2DI 1 "altivec_register_operand" "wa")
+		      (match_operand:V2DI 2 "altivec_register_operand" "wa")
+		      (match_operand:V2DI 3 "altivec_register_operand" "wa")
+		      (match_operand:QI 4 "u8bit_cint_operand" "n")]
+		     UNSPEC_XXEVAL))]
+   "TARGET_FUTURE"
+   "xxeval %0,%1,%2,%3,%4"
+   [(set_attr "type" "vecsimple")])
 
 (define_expand "vec_unpacku_hi_v16qi"
   [(set (match_operand:V8HI 0 "register_operand" "=v")

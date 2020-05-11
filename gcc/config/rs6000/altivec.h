@@ -699,6 +699,7 @@ __altivec_scalar_pred(vec_any_nle,
 #define vec_gnb(a, b)	__builtin_vec_gnb (a, b)
 #define vec_clrl(a, b)	__builtin_vec_clrl (a, b)
 #define vec_clrr(a, b)	__builtin_vec_clrr (a, b)
+#define vec_ternarylogic(a, b, c, d)	__builtin_vec_xxeval (a, b, c, d)
 #endif
 
 #endif /* _ALTIVEC_H */
