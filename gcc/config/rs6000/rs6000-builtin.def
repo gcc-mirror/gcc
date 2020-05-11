@@ -2577,6 +2577,8 @@ BU_P9_OVERLOAD_2 (CMPEQB,	"byte_in_set")
 BU_FUTURE_MISC_2 (CFUGED, "cfuged", CONST, cfuged)
 BU_FUTURE_MISC_2 (CNTLZDM, "cntlzdm", CONST, cntlzdm)
 BU_FUTURE_MISC_2 (CNTTZDM, "cnttzdm", CONST, cnttzdm)
+BU_FUTURE_MISC_2 (PDEPD, "pdepd", CONST, pdepd)
+BU_FUTURE_MISC_2 (PEXTD, "pextd", CONST, pextd)
 
 /* Future architecture vector built-ins.  */
 BU_FUTURE_V_2 (VCLRLB, "vclrlb", CONST, vclrlb)

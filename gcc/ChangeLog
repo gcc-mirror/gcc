@@ -1,5 +1,18 @@
 2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
+	* config/rs6000/rs6000-builtin.def (__builtin_pdepd): New built-in
+	function.
+	(__builtin_pextd): Likewise.
+	* config/rs6000/rs6000.md (UNSPEC_PDEPD): New constant.
+	(UNSPEC_PEXTD): Likewise.
+	(pdepd): New insn.
+	(pextd): Likewise.
+	* doc/extend.texi (Basic PowerPC Built-in Functions Available for
+	a Future Architecture): Add descriptions of __builtin_pdepd and
+	__builtin_pextd functions.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
 	* config/rs6000/altivec.h (vec_clrl): New #define.
 	(vec_clrr): Likewise.
 	* config/rs6000/altivec.md (UNSPEC_VCLRLB): New constant.

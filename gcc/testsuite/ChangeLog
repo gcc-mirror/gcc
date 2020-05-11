@@ -1,5 +1,12 @@
 2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
+	* gcc.target/powerpc/pdep-0.c: New.
+	* gcc.target/powerpc/pdep-1.c: New.
+	* gcc.target/powerpc/pextd-0.c: New.
+	* gcc.target/powerpc/pextd-1.c: New.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
 	* gcc.target/powerpc/vec-clrl-0.c: New.
 	* gcc.target/powerpc/vec-clrl-1.c: New.
 	* gcc.target/powerpc/vec-clrr-0.c: New.
