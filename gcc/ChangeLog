@@ -1,3 +1,13 @@
+2020-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-offload.h (omp_discover_implicit_declare_target): Declare.
+	* omp-offload.c: Include context.h.
+	(omp_declare_target_fn_p, omp_declare_target_var_p,
+	omp_discover_declare_target_fn_r, omp_discover_declare_target_var_r,
+	omp_discover_implicit_declare_target): New functions.
+	* cgraphunit.c (analyze_functions): Call
+	omp_discover_implicit_declare_target.
+
 2020-05-12  Richard Biener  <rguenther@suse.de>
 
 	* gimple-fold.c (maybe_canonicalize_mem_ref_addr): Canonicalize
