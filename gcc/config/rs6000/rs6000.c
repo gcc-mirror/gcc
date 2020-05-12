@@ -17513,10 +17513,28 @@ rs6000_init_builtins (void)
   def_builtin ("__builtin_cpu_is", ftype, RS6000_BUILTIN_CPU_IS);
   def_builtin ("__builtin_cpu_supports", ftype, RS6000_BUILTIN_CPU_SUPPORTS);
 
-  /* AIX libm provides clog as __clog.  */
-  if (TARGET_XCOFF &&
-      (tdecl = builtin_decl_explicit (BUILT_IN_CLOG)) != NULL_TREE)
-    set_user_assembler_name (tdecl, "__clog");
+  if (TARGET_XCOFF)
+    {
+      /* AIX libm provides clog as __clog.  */
+      if ((tdecl = builtin_decl_explicit (BUILT_IN_CLOG)) != NULL_TREE)
+	set_user_assembler_name (tdecl, "__clog");
+
+      /* When long double is 64 bit, some long double builtins of libc
+	 functions (like __builtin_frexpl) must call the double version
+	 (frexp) not the long double version (frexpl) that expects a 128 bit
+	 argument.  */
+      if (! TARGET_LONG_DOUBLE_128)
+	{
+	  if ((tdecl = builtin_decl_explicit (BUILT_IN_FMODL)) != NULL_TREE)
+	    set_user_assembler_name (tdecl, "fmod");
+	  if ((tdecl = builtin_decl_explicit (BUILT_IN_FREXPL)) != NULL_TREE)
+	    set_user_assembler_name (tdecl, "frexp");
+	  if ((tdecl = builtin_decl_explicit (BUILT_IN_LDEXPL)) != NULL_TREE)
+	    set_user_assembler_name (tdecl, "ldexp");
+	  if ((tdecl = builtin_decl_explicit (BUILT_IN_MODFL)) != NULL_TREE)
+	    set_user_assembler_name (tdecl, "modf");
+	}
+    }
 
 #ifdef SUBTARGET_INIT_BUILTINS
   SUBTARGET_INIT_BUILTINS;

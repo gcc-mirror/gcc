@@ -1,3 +1,12 @@
+2020-05-12  David Edelsohn  <dje.gcc@gmail.com>
+
+	Backport from mainline
+	2020-05-04  Clement Chigot  <clement.chigot@atos.net>
+		    David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_init_builtins): Override explicit
+	for fmodl, frexpl, ldexpl and modfl builtins.
+
 2020-05-07  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_atomic_assign_expand_fenv): Use
