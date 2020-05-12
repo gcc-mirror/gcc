@@ -7,4 +7,4 @@ struct foo
 {
   foo();
 };
-// { dg-error "-:expected" }
+// { dg-error "-:expected" "" { target *-*-* } .+1 }

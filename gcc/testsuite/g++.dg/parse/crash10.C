@@ -9,4 +9,4 @@ class
 {
   typename::
 ; // { dg-error "expected" }
- // { dg-error "-:expected" }
+ // { dg-error "-:expected" "" { target *-*-* } .+1 }

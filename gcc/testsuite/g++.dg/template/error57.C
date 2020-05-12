@@ -2,4 +2,4 @@
 
 template <int()> struct a;
 template <int(b)> a < b		// { dg-error "int" }
-// { dg-error "-:expected"  }
+// { dg-error "-:expected" "" { target *-*-* } .+1 }

@@ -3,4 +3,5 @@
 
 void foo()
 {
-  namespace N { /* { dg-error "is not allowed|at end of input" } */
+  namespace N { /* { dg-error "is not allowed" } */
+// { dg-error "-:expected" "" { target *-*-* } .+1 }
