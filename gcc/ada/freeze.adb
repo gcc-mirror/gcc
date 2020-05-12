@@ -7934,6 +7934,15 @@ package body Freeze is
            and then Node = Controlling_Argument (Parent (Node))
          then
             Check_And_Freeze_Type (Designated_Type (Etype (Node)));
+
+         --  An explicit dereference freezes the designated type as well,
+         --  even though that type is not attached to an entity in the
+         --  expression.
+
+         elsif Nkind (Node) in N_Has_Etype
+           and then Nkind (Parent (Node)) = N_Explicit_Dereference
+         then
+            Check_And_Freeze_Type (Designated_Type (Etype (Node)));
          end if;
 
          --  No point in posting several errors on the same expression
