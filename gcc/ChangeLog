@@ -1,6 +1,13 @@
 2020-05-12  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95046
+	* config/i386/mmx.md (copysignv2sf3): New expander.
+	(xorsignv2sf3): Ditto.
+	(signbitv2sf3): Ditto.
+
+2020-05-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
 	* config/i386/mmx.md (fmav2sf4): New insn pattern.
 	(fmsv2sf4): Ditto.
 	(fnmav2sf4): Ditto.
