@@ -1,4 +1,4 @@
-/* PR target/94942 */
+/* PR target/95046 */
 /* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O3 -ffast-math -msse2" } */
 
@@ -12,7 +12,7 @@ test_plus (void)
     r[i] = a[i] + b[i];
 }
 
-/* { dg-final { scan-assembler "addps" } } */
+/* { dg-final { scan-assembler "\tv?addps" } } */
 
 void
 test_minus (void)
@@ -21,7 +21,7 @@ test_minus (void)
     r[i] = a[i] - b[i];
 }
 
-/* { dg-final { scan-assembler "subps" } } */
+/* { dg-final { scan-assembler "\tv?subps" } } */
 
 void
 test_mult (void)
@@ -30,7 +30,7 @@ test_mult (void)
     r[i] = a[i] * b[i];
 }
 
-/* { dg-final { scan-assembler "mulps" } } */
+/* { dg-final { scan-assembler "\tv?mulps" } } */
 
 void
 test_min (void)
@@ -39,7 +39,7 @@ test_min (void)
     r[i] = a[i] < b[i] ? a[i] : b[i];
 }
 
-/* { dg-final { scan-assembler "minps" } } */
+/* { dg-final { scan-assembler "\tv?minps" } } */
 
 void
 test_max (void)
@@ -48,7 +48,7 @@ test_max (void)
     r[i] = a[i] > b[i] ? a[i] : b[i];
 }
 
-/* { dg-final { scan-assembler "maxps" } } */
+/* { dg-final { scan-assembler "\tv?maxps" } } */
 
 float sqrtf (float);
 
@@ -59,4 +59,4 @@ test_sqrt (void)
     r[i] = sqrtf (a[i]);
 }
 
-/* { dg-final { scan-assembler "sqrtps" } } */
+/* { dg-final { scan-assembler "\tv?sqrtps" } } */
