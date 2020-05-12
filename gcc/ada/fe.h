@@ -253,9 +253,9 @@ extern Boolean No_Exception_Handlers_Set	(void);
 
 /* sem_aggr:  */
 
-#define Is_Others_Aggregate	sem_aggr__is_others_aggregate
+#define Is_Single_Aggregate	sem_aggr__is_single_aggregate
 
-extern Boolean Is_Others_Aggregate	(Node_Id);
+extern Boolean Is_Single_Aggregate	(Node_Id);
 
 /* sem_aux:  */
 

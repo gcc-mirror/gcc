@@ -37,6 +37,9 @@ package Sem_Aggr is
    function Is_Others_Aggregate (Aggr : Node_Id) return Boolean;
    --  Returns True is aggregate Aggr consists of a single OTHERS choice
 
+   function Is_Single_Aggregate (Aggr : Node_Id) return Boolean;
+   --  Returns True is aggregate Aggr consists of a single choice
+
    --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
 end Sem_Aggr;

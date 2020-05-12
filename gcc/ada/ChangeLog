@@ -1,5 +1,16 @@
 2020-05-12  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* sem_aggr.ads (Is_Single_Aggregate): New function.
+	* sem_aggr.adb (Is_Others_Aggregate): Use local variable.
+	(Is_Single_Aggregate): New function to recognize an aggregate with
+	a single association containing a single choice.
+	* fe.h (Is_Others_Aggregate): Delete.
+	(Is_Single_Aggregate): New declaration.
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Assignment_Statement>: Call
+	Is_Single_Aggregate instead of Is_Others_Aggregate.
+
+2020-05-12  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR ada/95035
 	* gcc-interface/utils.c (packable_type_hasher::equal): Also compare
 	the scalar storage order.
