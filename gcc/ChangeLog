@@ -1,3 +1,19 @@
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/altivec.h (vec_clzm): Rename to vec_cntlzm.
+	(vec_ctzm): Rename to vec_cnttzm.
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Change fourth operand for vec_ternarylogic to require
+	compatibility with unsigned SImode rather than unsigned QImode.
+	* config/rs6000/rs6000-call.c (altivec_overloaded_builtins):
+	Remove overloaded forms of vec_gnb that are no longer needed.
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions Available
+	for a Future Architecture): Replace vec_clzm with vec_cntlzm;
+	replace vec_ctzm with vec_cntlzm; remove four unwanted forms of
+	vec_gnb; move vec_ternarylogic documentation into this section
+	and replace const unsigned char with const unsigned int as its
+	fourth argument.
+
 2020-05-11  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/altivec.h (vec_genpcvm): New #define.

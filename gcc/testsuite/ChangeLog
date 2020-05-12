@@ -1,3 +1,25 @@
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/vec-clzm-0.c: Rename to...
+	* gcc.target/powerpc/vec-cntlzm-0.c: ...this.
+	* gcc.target/powerpc/vec-clzm-1.c: Rename to...
+	* gcc.target/powerpc/vec-cntlzm-1.c: ...this.
+	* gcc.target/powerpc/vec-ctzm-0.c: Rename to...
+	* gcc.target/powerpc/vec-cnttzm-0.c: ...this.
+	* gcc.target/powerpc/vec-ctzm-1.c: Rename to...
+	* gcc.target/powerpc/vec-cnttzm-1.c: ...this.
+	* gcc.target/powerpc/vec-gnb-8.c: Rename to...
+	* gcc.target/powerpc/vec-gnb-0.c: ...this, deleting the old file.
+	* gcc.target/powerpc/vec-gnb-9.c: Rename to...
+	* gcc.target/powerpc/vec-gnb-1.c: ...this, deleting the old file.
+	* gcc.target/powerpc/vec-gnb-10.c: Rename to...
+	* gcc.target/powerpc/vec-gnb-2.c: ...this, deleting the old file.
+	* gcc.target/powerpc/vec-gnb-3.c: Delete.
+	* gcc.target/powerpc/vec-gnb-4.c: Delete.
+	* gcc.target/powerpc/vec-gnb-5.c: Delete.
+	* gcc.target/powerpc/vec-gnb-6.c: Delete.
+	* gcc.target/powerpc/vec-gnb-7.c: Delete.
+
 2020-05-11  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/xxgenpc-runnable.c: New.
