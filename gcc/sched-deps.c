@@ -4694,6 +4694,9 @@ attempt_change (struct mem_inc_info *mii, rtx new_addr)
   rtx mem = *mii->mem_loc;
   rtx new_mem;
 
+  if (!targetm.new_address_profitable_p (mem, mii->mem_insn, new_addr))
+    return NULL_RTX;
+
   /* Jump through a lot of hoops to keep the attributes up to date.  We
      do not want to call one of the change address variants that take
      an offset even though we know the offset in many cases.  These

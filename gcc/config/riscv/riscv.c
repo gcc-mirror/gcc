@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "builtins.h"
 #include "predict.h"
+#include "tree-pass.h"
 
 /* True if X is an UNSPEC wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
@@ -848,6 +849,52 @@ riscv_legitimate_address_p (machine_mode mode, rtx x, bool strict_p)
   return riscv_classify_address (&addr, x, mode, strict_p);
 }
 
+/* Return true if hard reg REGNO can be used in compressed instructions.  */
+
+static bool
+riscv_compressed_reg_p (int regno)
+{
+  /* x8-x15/f8-f15 are compressible registers.  */
+  return (TARGET_RVC && (IN_RANGE (regno, GP_REG_FIRST + 8, GP_REG_FIRST + 15)
+	  || IN_RANGE (regno, FP_REG_FIRST + 8, FP_REG_FIRST + 15)));
+}
+
+/* Return true if x is an unsigned 5-bit immediate scaled by 4.  */
+
+static bool
+riscv_compressed_lw_offset_p (rtx x)
+{
+  return (CONST_INT_P (x)
+	  && (INTVAL (x) & 3) == 0
+	  && IN_RANGE (INTVAL (x), 0, CSW_MAX_OFFSET));
+}
+
+/* Return true if load/store from/to address x can be compressed.  */
+
+static bool
+riscv_compressed_lw_address_p (rtx x)
+{
+  struct riscv_address_info addr;
+  bool result = riscv_classify_address (&addr, x, GET_MODE (x),
+					reload_completed);
+
+  /* Before reload, assuming all load/stores of valid addresses get compressed
+     gives better code size than checking if the address is reg + small_offset
+     early on.  */
+  if (result && !reload_completed)
+    return true;
+
+  /* Return false if address is not compressed_reg + small_offset.  */
+  if (!result
+      || addr.type != ADDRESS_REG
+      || (!riscv_compressed_reg_p (REGNO (addr.reg))
+	    && addr.reg != stack_pointer_rtx)
+      || !riscv_compressed_lw_offset_p (addr.offset))
+    return false;
+
+  return result;
+}
+
 /* Return the number of instructions needed to load or store a value
    of mode MODE at address X.  Return 0 if X isn't valid for MODE.
    Assume that multiword moves may need to be split into word moves
@@ -1308,6 +1355,24 @@ riscv_force_address (rtx x, machine_mode mode)
   return x;
 }
 
+/* Modify base + offset so that offset fits within a compressed load/store insn
+   and the excess is added to base.  */
+
+static rtx
+riscv_shorten_lw_offset (rtx base, HOST_WIDE_INT offset)
+{
+  rtx addr, high;
+  /* Leave OFFSET as an unsigned 5-bit offset scaled by 4 and put the excess
+     into HIGH.  */
+  high = GEN_INT (offset & ~CSW_MAX_OFFSET);
+  offset &= CSW_MAX_OFFSET;
+  if (!SMALL_OPERAND (INTVAL (high)))
+    high = force_reg (Pmode, high);
+  base = force_reg (Pmode, gen_rtx_PLUS (Pmode, high, base));
+  addr = plus_constant (Pmode, base, offset);
+  return addr;
+}
+
 /* This function is used to implement LEGITIMIZE_ADDRESS.  If X can
    be legitimized in a way that the generic machinery might not expect,
    return a new address, otherwise return NULL.  MODE is the mode of
@@ -1326,7 +1391,7 @@ riscv_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
   if (riscv_split_symbol (NULL, x, mode, &addr, FALSE))
     return riscv_force_address (addr, mode);
 
-  /* Handle BASE + OFFSET using riscv_add_offset.  */
+  /* Handle BASE + OFFSET.  */
   if (GET_CODE (x) == PLUS && CONST_INT_P (XEXP (x, 1))
       && INTVAL (XEXP (x, 1)) != 0)
     {
@@ -1335,7 +1400,14 @@ riscv_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 
       if (!riscv_valid_base_register_p (base, mode, false))
 	base = copy_to_mode_reg (Pmode, base);
-      addr = riscv_add_offset (NULL, base, offset);
+      if (optimize_function_for_size_p (cfun)
+	  && (strcmp (current_pass->name, "shorten_memrefs") == 0)
+	  && mode == SImode)
+	/* Convert BASE + LARGE_OFFSET into NEW_BASE + SMALL_OFFSET to allow
+	   possible compressed load/store.  */
+	addr = riscv_shorten_lw_offset (base, offset);
+      else
+	addr = riscv_add_offset (NULL, base, offset);
       return riscv_force_address (addr, mode);
     }
 
@@ -1833,6 +1905,11 @@ riscv_address_cost (rtx addr, machine_mode mode,
 		    addr_space_t as ATTRIBUTE_UNUSED,
 		    bool speed ATTRIBUTE_UNUSED)
 {
+  /* When optimizing for size, make uncompressible 32-bit addresses more
+   * expensive so that compressible 32-bit addresses are preferred.  */
+  if (TARGET_RVC && !speed && riscv_mshorten_memrefs && mode == SImode
+      && !riscv_compressed_lw_address_p (addr))
+    return riscv_address_insns (addr, mode, false) + 1;
   return riscv_address_insns (addr, mode, false);
 }
 
@@ -4666,6 +4743,7 @@ riscv_option_override (void)
     error ("%<-mriscv-attribute%> RISC-V ELF attribute requires GNU as 2.32"
 	   " [%<-mriscv-attribute%>]");
 #endif
+
 }
 
 /* Implement TARGET_CONDITIONAL_REGISTER_USAGE.  */
@@ -4705,9 +4783,9 @@ riscv_conditional_register_usage (void)
 static int
 riscv_register_priority (int regno)
 {
-  /* Favor x8-x15/f8-f15 to improve the odds of RVC instruction selection.  */
-  if (TARGET_RVC && (IN_RANGE (regno, GP_REG_FIRST + 8, GP_REG_FIRST + 15)
-		     || IN_RANGE (regno, FP_REG_FIRST + 8, FP_REG_FIRST + 15)))
+  /* Favor compressed registers to improve the odds of RVC instruction
+     selection.  */
+  if (riscv_compressed_reg_p (regno))
     return 1;
 
   return 0;
@@ -5049,6 +5127,19 @@ riscv_hard_regno_rename_ok (unsigned from_regno ATTRIBUTE_UNUSED,
   return !cfun->machine->interrupt_handler_p || df_regs_ever_live_p (to_regno);
 }
 
+/* Implement TARGET_NEW_ADDRESS_PROFITABLE_P.  */
+
+bool
+riscv_new_address_profitable_p (rtx memref, rtx_insn *insn, rtx new_addr)
+{
+  /* Prefer old address if it is less expensive.  */
+  addr_space_t as = MEM_ADDR_SPACE (memref);
+  bool speed = optimize_bb_for_speed_p (BLOCK_FOR_INSN (insn));
+  int old_cost = address_cost (XEXP (memref, 0), GET_MODE (memref), as, speed);
+  int new_cost = address_cost (new_addr, GET_MODE (memref), as, speed);
+  return new_cost <= old_cost;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -5225,6 +5316,9 @@ riscv_hard_regno_rename_ok (unsigned from_regno ATTRIBUTE_UNUSED,
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG riscv_reorg
+
+#undef TARGET_NEW_ADDRESS_PROFITABLE_P
+#define TARGET_NEW_ADDRESS_PROFITABLE_P riscv_new_address_profitable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

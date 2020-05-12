@@ -1,3 +1,37 @@
+2020-05-12  Craig Blackmore  <craig.blackmore@embecosm.com>
+
+	* config.gcc:  Add riscv-shorten-memrefs.o to extra_objs for riscv.
+	* config/riscv/riscv-passes.def: New file.
+	* config/riscv/riscv-protos.h (make_pass_shorten_memrefs): Declare.
+	* config/riscv/riscv-shorten-memrefs.c: New file.
+	* config/riscv/riscv.c (tree-pass.h): New include.
+	(riscv_compressed_reg_p): New Function
+	(riscv_compressed_lw_offset_p): Likewise.
+	(riscv_compressed_lw_address_p): Likewise.
+	(riscv_shorten_lw_offset): Likewise.
+	(riscv_legitimize_address): Attempt to convert base + large_offset
+	to compressible new_base + small_offset.
+	(riscv_address_cost): Make anticipated compressed load/stores
+	cheaper for code size than uncompressed load/stores.
+	(riscv_register_priority): Move compressed register check to
+	riscv_compressed_reg_p.
+	* config/riscv/riscv.h (C_S_BITS): Define.
+	(CSW_MAX_OFFSET): Define.
+	* config/riscv/riscv.opt (mshorten-memefs): New option.
+	* config/riscv/t-riscv (riscv-shorten-memrefs.o): New rule.
+	(PASSES_EXTRA): Add riscv-passes.def.
+	* doc/invoke.texi: Document -mshorten-memrefs.
+
+	* config/riscv/riscv.c (riscv_new_address_profitable_p): New function.
+	(TARGET_NEW_ADDRESS_PROFITABLE_P): Define.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (TARGET_NEW_ADDRESS_PROFITABLE_P):  New hook.
+	* sched-deps.c (attempt_change): Use old address if it is cheaper than
+	new address.
+	* target.def (new_address_profitable_p): New hook.
+	* targhooks.c (default_new_address_profitable_p): New function.
+	* targhooks.h (default_new_address_profitable_p): Declare.
+
 2020-05-12  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95046

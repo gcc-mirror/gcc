@@ -87,6 +87,12 @@ msave-restore
 Target Report Mask(SAVE_RESTORE)
 Use smaller but slower prologue and epilogue code.
 
+mshorten-memrefs
+Target Bool Var(riscv_mshorten_memrefs) Init(1)
+Convert BASE + LARGE_OFFSET addresses to NEW_BASE + SMALL_OFFSET to allow more
+memory accesses to be generated as compressed instructions.  Currently targets
+32-bit integer load/stores.
+
 mcmodel=
 Target Report RejectNegative Joined Enum(code_model) Var(riscv_cmodel) Init(TARGET_DEFAULT_CMODEL)
 Specify the code model.
