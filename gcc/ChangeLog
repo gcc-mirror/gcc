@@ -1,3 +1,24 @@
+2020-05-11  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.h (vec_genpcvm): New #define.
+	* config/rs6000/rs6000-builtin.def (XXGENPCVM_V16QI): New built-in
+	instantiation.
+	(XXGENPCVM_V8HI): Likewise.
+	(XXGENPCVM_V4SI): Likewise.
+	(XXGENPCVM_V2DI): Likewise.
+	(XXGENPCVM): New overloaded built-in instantiation.
+	* config/rs6000/rs6000-call.c (altivec_overloaded_builtins): Add
+	entries for FUTURE_BUILTIN_VEC_XXGENPCVM.
+	(altivec_expand_builtin): Add special handling for
+	FUTURE_BUILTIN_VEC_XXGENPCVM.
+	(builtin_function_type): Add handling for
+	FUTURE_BUILTIN_XXGENPCVM_{V16QI,V8HI,V4SI,V2DI}.
+	* config/rs6000/vsx.md (VSX_EXTRACT_I4): New mode iterator.
+	(UNSPEC_XXGENPCV): New constant.
+	(xxgenpcvm_<mode>_internal): New insn.
+	(xxgenpcvm_<mode>): New expansion.
+	* doc/extend.texi: Add documentation for vec_genpcvm built-ins.
+
 2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/altivec.h (vec_strir): New #define.

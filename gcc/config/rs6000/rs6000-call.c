@@ -5532,6 +5532,15 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
     RS6000_BTI_unsigned_V2DI, RS6000_BTI_UINTQI, 0 },
   { FUTURE_BUILTIN_VEC_GNB, FUTURE_BUILTIN_VGNB, RS6000_BTI_unsigned_long_long,
     RS6000_BTI_unsigned_V1TI, RS6000_BTI_UINTQI, 0 },
+  { FUTURE_BUILTIN_VEC_XXGENPCVM, FUTURE_BUILTIN_XXGENPCVM_V2DI,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V2DI, RS6000_BTI_INTSI, 0 },
+  { FUTURE_BUILTIN_VEC_XXGENPCVM, FUTURE_BUILTIN_XXGENPCVM_V4SI,
+    RS6000_BTI_unsigned_V4SI, RS6000_BTI_unsigned_V4SI, RS6000_BTI_INTSI, 0 },
+  { FUTURE_BUILTIN_VEC_XXGENPCVM, FUTURE_BUILTIN_XXGENPCVM_V8HI,
+    RS6000_BTI_unsigned_V8HI, RS6000_BTI_unsigned_V8HI, RS6000_BTI_INTSI, 0 },
+  { FUTURE_BUILTIN_VEC_XXGENPCVM, FUTURE_BUILTIN_XXGENPCVM_V16QI,
+    RS6000_BTI_unsigned_V16QI, RS6000_BTI_unsigned_V16QI,
+    RS6000_BTI_INTSI, 0 },
 
   /* The overloaded XXEVAL definitions are handled specially because the
      fourth unsigned char operand is not encoded in this table.  */
@@ -10384,6 +10393,24 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
 	}
       break;
 
+    case FUTURE_BUILTIN_VEC_XXGENPCVM:
+      arg1 = CALL_EXPR_ARG (exp, 1);
+      STRIP_NOPS (arg1);
+
+      /* Generate a normal call if it is invalid.  */
+      if (arg1 == error_mark_node)
+	return expand_call (exp, target, false);
+
+      if (TREE_CODE (arg1) != INTEGER_CST
+	  || !IN_RANGE (TREE_INT_CST_LOW (arg1), 0, 3))
+	{
+	  size_t uns_fcode = (size_t) fcode;
+	  const char *name = rs6000_builtin_info[uns_fcode].name;
+	  error ("Second argument of %qs must be in the range [0, 3].", name);
+	  return expand_call (exp, target, false);
+	}
+      break;
+
     default:
       break;
       /* Fall through.  */
@@ -13202,6 +13229,10 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
     case FUTURE_BUILTIN_VGNB:
     case FUTURE_BUILTIN_VPDEPD:
     case FUTURE_BUILTIN_VPEXTD:
+    case FUTURE_BUILTIN_XXGENPCVM_V16QI:
+    case FUTURE_BUILTIN_XXGENPCVM_V8HI:
+    case FUTURE_BUILTIN_XXGENPCVM_V4SI:
+    case FUTURE_BUILTIN_XXGENPCVM_V2DI:
       h.uns_p[0] = 1;
       h.uns_p[1] = 1;
       h.uns_p[2] = 1;
