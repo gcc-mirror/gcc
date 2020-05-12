@@ -206,6 +206,17 @@ AC_ARG_ENABLE(host-shared,
 [PICFLAG=-fPIC], [PICFLAG=])
 AC_SUBST(PICFLAG)
 
+# Enable Intel CET on Intel CET enabled host if jit is enabled.
+GCC_CET_HOST_FLAGS(CET_HOST_FLAGS)
+case x$enable_languages in
+*jit*)
+  ;;
+*)
+  CET_HOST_FLAGS=
+  ;;
+esac
+AC_SUBST(CET_HOST_FLAGS)
+
 AC_ARG_ENABLE(valgrind-annotations,
 [AS_HELP_STRING([--enable-valgrind-annotations],
 		[enable valgrind runtime interaction])], [],
