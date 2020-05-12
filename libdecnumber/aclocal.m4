@@ -12,6 +12,8 @@
 # PARTICULAR PURPOSE.
 
 m4_ifndef([AC_CONFIG_MACRO_DIRS], [m4_defun([_AM_CONFIG_MACRO_DIRS], [])m4_defun([AC_CONFIG_MACRO_DIRS], [_AM_CONFIG_MACRO_DIRS($@)])])
+m4_include([../config/cet.m4])
 m4_include([../config/dfp.m4])
+m4_include([../config/enable.m4])
 m4_include([../config/stdint.m4])
 m4_include([../config/warnings.m4])
