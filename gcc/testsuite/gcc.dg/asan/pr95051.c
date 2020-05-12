@@ -1,6 +1,6 @@
 /* PR sanitizer/95051 */
 /* { dg-do compile } */
-/* { dg-options "-fsanitize=kernel-address --param=asan-stack=1 -O2" } */
+/* { dg-options "-fno-sanitize=all -fsanitize=kernel-address --param=asan-stack=1 -O2" } */
 
 struct a {
   struct {
