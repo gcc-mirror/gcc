@@ -1,3 +1,10 @@
+2020-05-12  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/95033
+	PR sanitizer/95051
+	* sanopt.c (sanitize_rewrite_addressable_params):
+	Clear DECL_NOT_GIMPLE_REG_P for argument.
+
 2020-05-12  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/94980
