@@ -1,3 +1,13 @@
+2020-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2020-05-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94906
+	* src/c++17/memory_resource.cc
+	(monotonic_buffer_resource::_Chunk::release): Use size_t for shift
+	operands.
+
 2020-05-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/abi/post/sparc64-linux-gnu/baseline_symbols.txt: Update.
