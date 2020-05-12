@@ -654,6 +654,12 @@ package body GNAT.Calendar.Time_IO is
        Time    : out Ada.Calendar.Time;
        Success : out Boolean)
    is
+      pragma Unsuppress (All_Checks);
+      --  This is necessary because the run-time library is usually compiled
+      --  with checks suppressed, and we are relying on constraint checks in
+      --  this code to catch syntax errors in the Date string (e.g. out of
+      --  bounds slices).
+
       Index : Positive := Date'First;
       --  The current character scan index. After a call to Advance, Index
       --  points to the next character.
@@ -1021,7 +1027,10 @@ package body GNAT.Calendar.Time_IO is
       Success := True;
 
    exception
-      when Wrong_Syntax =>
+      when Wrong_Syntax | Constraint_Error =>
+         --  If constraint check fails, we want to behave the same as
+         --  Wrong_Syntax; we want the caller (Value) to try other
+         --  allowed syntaxes.
          Time :=
            Time_Of (Year_Number'First, Month_Number'First, Day_Number'First);
          Success := False;
@@ -1032,6 +1041,8 @@ package body GNAT.Calendar.Time_IO is
    -----------
 
    function Value (Date : String) return Ada.Calendar.Time is
+      pragma Unsuppress (All_Checks); -- see comment in Parse_ISO_8601
+
       D          : String (1 .. 21);
       D_Length   : constant Natural := Date'Length;
 
@@ -1279,18 +1290,6 @@ package body GNAT.Calendar.Time_IO is
          end;
 
          Extract_Time (1, Hour, Minute, Second, Check_Space => False);
-      end if;
-
-      --  Sanity checks
-
-      if not Year'Valid
-        or else not Month'Valid
-        or else not Day'Valid
-        or else not Hour'Valid
-        or else not Minute'Valid
-        or else not Second'Valid
-      then
-         raise Constraint_Error;
       end if;
 
       return Time_Of (Year, Month, Day, Hour, Minute, Second);
