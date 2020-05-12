@@ -1,5 +1,15 @@
+2020-05-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline
+	2020-05-11  Jakub Jelinek  <jakub@redhat.com>
+		    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94672
+	* gfortran.dg/gomp/pr94672.f90: New.
+	* gfortran.dg/missing_optional_dummy_6a.f90: Update scan-tree.
+
 2020-05-11  Mark Eggleston  <markeggleston@gcc.gnu.org>
-    
+
 	Backported from mainline
 	2020-05-11  Mark Eggleston  <markeggleston@gcc.gnu.org>
 
@@ -607,7 +617,7 @@
 	* g++.dg/coroutines/torture/local-var-4.C: Rename to...
 	* g++.dg/coroutines/torture/local-var-04-hiding-nested-scopes.C: this.
 	* g++.dg/coroutines/torture/local-var-5-awaitable.C: Rename to...
-	* g++.dg/coroutines/torture/local-var-05-awaitable.C: ...this. 
+	* g++.dg/coroutines/torture/local-var-05-awaitable.C: ...this.
 
 2020-04-22 Iain Sandoe <iain@sandoe.co.uk>
 
