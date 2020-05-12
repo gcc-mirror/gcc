@@ -6711,6 +6711,14 @@ be presented in subsequent sections.
   Exclude source files (check object consistency only).
 
 
+  .. index:: -xdr  (gnatbind)
+
+:switch:`-xdr`
+  Use the target-independent XDR protocol for stream oriented attributes
+  instead of the default implementation which is based on direct binary
+  representations and is therefore target-and endianness-dependent.
+
+
   .. index:: -Xnnn  (gnatbind)
 
 :switch:`-X{nnn}`

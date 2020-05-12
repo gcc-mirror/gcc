@@ -2704,10 +2704,7 @@ setup-rts: force
 	$(RM) $(foreach PAIR,$(LIBGNAT_TARGET_PAIRS), \
 	                $(RTSDIR)/$(word 1,$(subst <, ,$(PAIR))))
 	for f in $(RTSDIR)/*-*__*.ads $(RTSDIR)/*-*__*.adb; do \
-	  case "$$f" in \
-	    $(RTSDIR)/s-stratt__*) ;; \
-	    *) $(RM) $$f ;; \
-	  esac; \
+	  $(RM) $$f ; \
 	done
 # Copy new target dependent sources
 	$(foreach PAIR,$(LIBGNAT_TARGET_PAIRS), \
