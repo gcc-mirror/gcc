@@ -1,3 +1,8 @@
+2020-05-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95074
+	* g++.dg/lookup/koenig15.C: New test.
+
 2020-05-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/95051
