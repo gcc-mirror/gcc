@@ -4840,6 +4840,7 @@ static bool
 maybe_canonicalize_mem_ref_addr (tree *t)
 {
   bool res = false;
+  tree *orig_t = t;
 
   if (TREE_CODE (*t) == ADDR_EXPR)
     t = &TREE_OPERAND (*t, 0);
@@ -4937,6 +4938,31 @@ maybe_canonicalize_mem_ref_addr (tree *t)
 	{
 	  *t = TREE_OPERAND (TREE_OPERAND (*t, 0), 0);
 	  res = true;
+	}
+    }
+
+  else if (TREE_CODE (*orig_t) == ADDR_EXPR
+	   && TREE_CODE (*t) == MEM_REF
+	   && TREE_CODE (TREE_OPERAND (*t, 0)) == INTEGER_CST)
+    {
+      tree base;
+      poly_int64 coffset;
+      base = get_addr_base_and_unit_offset (TREE_OPERAND (*orig_t, 0),
+					    &coffset);
+      if (base)
+	{
+	  gcc_assert (TREE_CODE (base) == MEM_REF);
+	  poly_int64 moffset;
+	  if (mem_ref_offset (base).to_shwi (&moffset))
+	    {
+	      coffset += moffset;
+	      if (wi::to_poly_wide (TREE_OPERAND (base, 0)).to_shwi (&moffset))
+		{
+		  coffset += moffset;
+		  *orig_t = build_int_cst (TREE_TYPE (*orig_t), coffset);
+		  return true;
+		}
+	    }
 	}
     }
 

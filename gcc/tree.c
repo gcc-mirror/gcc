@@ -3360,51 +3360,6 @@ int_byte_position (const_tree field)
   return tree_to_shwi (byte_position (field));
 }
 
-/* Return the strictest alignment, in bits, that T is known to have.  */
-
-unsigned int
-expr_align (const_tree t)
-{
-  unsigned int align0, align1;
-
-  switch (TREE_CODE (t))
-    {
-    CASE_CONVERT:  case NON_LVALUE_EXPR:
-      /* If we have conversions, we know that the alignment of the
-	 object must meet each of the alignments of the types.  */
-      align0 = expr_align (TREE_OPERAND (t, 0));
-      align1 = TYPE_ALIGN (TREE_TYPE (t));
-      return MAX (align0, align1);
-
-    case SAVE_EXPR:         case COMPOUND_EXPR:       case MODIFY_EXPR:
-    case INIT_EXPR:         case TARGET_EXPR:         case WITH_CLEANUP_EXPR:
-    case CLEANUP_POINT_EXPR:
-      /* These don't change the alignment of an object.  */
-      return expr_align (TREE_OPERAND (t, 0));
-
-    case COND_EXPR:
-      /* The best we can do is say that the alignment is the least aligned
-	 of the two arms.  */
-      align0 = expr_align (TREE_OPERAND (t, 1));
-      align1 = expr_align (TREE_OPERAND (t, 2));
-      return MIN (align0, align1);
-
-      /* FIXME: LABEL_DECL and CONST_DECL never have DECL_ALIGN set
-	 meaningfully, it's always 1.  */
-    case LABEL_DECL:     case CONST_DECL:
-    case VAR_DECL:       case PARM_DECL:   case RESULT_DECL:
-    case FUNCTION_DECL:
-      gcc_assert (DECL_ALIGN (t) != 0);
-      return DECL_ALIGN (t);
-
-    default:
-      break;
-    }
-
-  /* Otherwise take the alignment from that of the type.  */
-  return TYPE_ALIGN (TREE_TYPE (t));
-}
-
 /* Return, as a tree node, the number of elements for TYPE (which is an
    ARRAY_TYPE) minus one. This counts only elements of the top array.  */
 
@@ -13860,6 +13815,30 @@ vector_type_mode (const_tree t)
     }
 
   return mode;
+}
+
+/* Return the size in bits of each element of vector type TYPE.  */
+
+unsigned int
+vector_element_bits (const_tree type)
+{
+  gcc_checking_assert (VECTOR_TYPE_P (type));
+  if (VECTOR_BOOLEAN_TYPE_P (type))
+    return vector_element_size (tree_to_poly_uint64 (TYPE_SIZE (type)),
+				TYPE_VECTOR_SUBPARTS (type));
+  return tree_to_uhwi (TYPE_SIZE (TREE_TYPE (type)));
+}
+
+/* Calculate the size in bits of each element of vector type TYPE
+   and return the result as a tree of type bitsizetype.  */
+
+tree
+vector_element_bits_tree (const_tree type)
+{
+  gcc_checking_assert (VECTOR_TYPE_P (type));
+  if (VECTOR_BOOLEAN_TYPE_P (type))
+    return bitsize_int (vector_element_bits (type));
+  return TYPE_SIZE (TREE_TYPE (type));
 }
 
 /* Verify that basic properties of T match TV and thus T can be a variant of

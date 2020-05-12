@@ -22,17 +22,12 @@
 ;;
 ;; - Plain old CRIS v0 (..v8)
 ;; - CRIS v10 (as used in ETRAX 100 LX)
-;; - CRIS v32 (as used in ETRAX FS)
 ;;
-;; The last two alternatives are similar, of LL/SC type.  They may
+;; The second alternative is of LL/SC type.  It may
 ;; fail for other reasons; an exception, a cache miss or a bus request
-;; from other parts of the system.  The difference between them is
-;; just in what condition-codes are used to track LL and success or
-;; failure for the store.  See the chapter on integral read-write
+;; from other parts of the system.  See the chapter on integral read-write
 ;; operations, chapter 1.13 in "ETRAX 100LX Programmers Manual",
-;; <http://www.axis.com/files/tech_notes/etrax_100lx_prog_man-050519.pdf>
-;; and chapter 2.1 in "ETRAX FS Designer's reference",
-;; <http://www.axis.com/files/manuals/etrax_fs_des_ref-070821.pdf>.
+;; <http://www.axis.com/files/tech_notes/etrax_100lx_prog_man-050519.pdf>.
 ;; Note that the datum being stored has to be contained fully within a
 ;; cache-line to be integral.  A failure to store the data integrally
 ;; will be flagged, but the store may still have happened in part,
@@ -128,24 +123,14 @@
 	 (match_operand:BWD 2 "<atomic_op_op_pred>" "<atomic_op_op_cnstr>")))
    (set (match_operand:BWD 0 "register_operand" "=&r")
 	(match_dup 1))
-   (clobber (match_scratch:SI 3 "=&r"))]
+   (clobber (match_scratch:SI 3 "=&r"))
+   (clobber (reg:CC CRIS_CC0_REGNUM))]
   "<MODE>mode == QImode || !TARGET_ATOMICS_MAY_CALL_LIBFUNCS"
 {
   /* Can't be too sure; better ICE if this happens.  */
   gcc_assert (!reg_overlap_mentioned_p (operands[2], operands[1]));
 
-  if (TARGET_V32)
-    return
-      "clearf p\n"
-      ".Lsync.%=:\;"
-      "move<m> %1,%0\;"
-      "move.d %0,%3\;"
-      "<atomic_op_mnem_pre_op2>,%3\;<atomic_op_mnem_post_op3>"
-      "ax\;"
-      "move<m> %3,%1\;"
-      "bcs .Lsync.%=\;"
-      "clearf p";
-  else if (cris_cpu_version == 10)
+  if (cris_cpu_version == 10)
     return
       "clearf\n"
       ".Lsync.%=:\;"
@@ -242,23 +227,11 @@
 	 [(match_dup 2)
 	  (match_dup 3)
 	  (match_operand:BWD 4 "register_operand" "r")]
-	 CRIS_UNSPEC_ATOMIC_SWAP_MEM))]
+	 CRIS_UNSPEC_ATOMIC_SWAP_MEM))
+   (clobber (reg:CC CRIS_CC0_REGNUM))]
   "<MODE>mode == QImode || !TARGET_ATOMICS_MAY_CALL_LIBFUNCS"
 {
-  if (TARGET_V32)
-    return
-      "\n.Lsync.repeat.%=:\;"
-      "clearf p\;"
-      "move<m> %2,%1\;"
-      "cmp<qm3> %3,%1\;"
-      "bne .Lsync.after.%=\;"
-      "ax\;"
-
-      "move<m> %4,%2\;"
-      "bcs .Lsync.repeat.%=\n"
-      ".Lsync.after.%=:\;"
-      "seq %0";
-  else if (cris_cpu_version == 10)
+  if (cris_cpu_version == 10)
     return
       "\n.Lsync.repeat.%=:\;"
       "clearf\;"

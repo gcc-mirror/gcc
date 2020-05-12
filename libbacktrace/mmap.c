@@ -42,6 +42,10 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #include "backtrace.h"
 #include "internal.h"
 
+#ifndef HAVE_DECL_GETPAGESIZE
+extern int getpagesize (void);
+#endif
+
 /* Memory allocation on systems that provide anonymous mmap.  This
    permits the backtrace functions to be invoked from a signal
    handler, assuming that mmap is async-signal safe.  */

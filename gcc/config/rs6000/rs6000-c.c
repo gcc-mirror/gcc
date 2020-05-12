@@ -448,6 +448,8 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR8");
   if ((flags & OPTION_MASK_MODULO) != 0)
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR9");
+  if ((flags & OPTION_MASK_FUTURE) != 0)
+    rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR_FUTURE");
   if ((flags & OPTION_MASK_SOFT_FLOAT) != 0)
     rs6000_define_or_undefine_macro (define_p, "_SOFT_FLOAT");
   if ((flags & OPTION_MASK_RECIP_PRECISION) != 0)
@@ -844,7 +846,7 @@ altivec_build_resolved_builtin (tree *args, int n,
   tree impl_fndecl = rs6000_builtin_decls[desc->overloaded_code];
   tree ret_type = rs6000_builtin_type (desc->ret_type);
   tree argtypes = TYPE_ARG_TYPES (TREE_TYPE (impl_fndecl));
-  tree arg_type[3];
+  tree arg_type[4];
   tree call;
 
   int i;
@@ -893,6 +895,13 @@ altivec_build_resolved_builtin (tree *args, int n,
 			      fully_fold_convert (arg_type[1], args[1]),
 			      fully_fold_convert (arg_type[2], args[2]));
       break;
+    case 4:
+      call = build_call_expr (impl_fndecl, 4,
+			      fully_fold_convert (arg_type[0], args[0]),
+			      fully_fold_convert (arg_type[1], args[1]),
+			      fully_fold_convert (arg_type[2], args[2]),
+			      fully_fold_convert (arg_type[3], args[3]));
+      break;
     default:
       gcc_unreachable ();
     }
@@ -911,7 +920,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
   enum rs6000_builtins fcode
     = (enum rs6000_builtins) DECL_MD_FUNCTION_CODE (fndecl);
   tree fnargs = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
-  tree types[3], args[3];
+  tree types[4], args[4];
   const struct altivec_builtin_types *desc;
   unsigned int n;
 
@@ -1604,7 +1613,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       if (arg == error_mark_node)
 	return error_mark_node;
 
-      if (n >= 3)
+      if (n >= 4)
         abort ();
 
       arg = default_conversion (arg);
@@ -1785,6 +1794,40 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	      }
 	    else
 	      unsupported_builtin = true;
+	  }
+      }
+    else if (fcode == FUTURE_BUILTIN_VEC_XXEVAL)
+      {
+	/* Need to special case __builtin_vec_xxeval because this takes
+	   4 arguments, and the existing infrastructure handles no
+	   more than three.  */
+	if (nargs != 4)
+	  {
+	    error ("builtin %qs requires 4 arguments",
+		   "__builtin_vec_xxeval");
+	    return error_mark_node;
+	  }
+	for ( ; desc->code == fcode; desc++)
+	  {
+	    if (rs6000_builtin_type_compatible (types[0], desc->op1)
+		&& rs6000_builtin_type_compatible (types[1], desc->op2)
+		&& rs6000_builtin_type_compatible (types[2], desc->op3)
+		&& rs6000_builtin_type_compatible (types[3],
+						   RS6000_BTI_UINTSI))
+	      {
+		if (rs6000_builtin_decls[desc->overloaded_code] == NULL_TREE)
+		  unsupported_builtin = true;
+		else
+		  {
+		    result = altivec_build_resolved_builtin (args, n, desc);
+		    if (rs6000_builtin_is_supported_p (desc->overloaded_code))
+		      return result;
+		    /* Allow loop to continue in case a different
+		       definition is supported.  */
+		    overloaded_code = desc->overloaded_code;
+		    unsupported_builtin = true;
+		  }
+	      }
 	  }
       }
     else

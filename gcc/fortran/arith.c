@@ -1746,6 +1746,9 @@ eval_intrinsic_f3 (gfc_intrinsic_op op,
   gfc_expr *result;
   eval_f f;
 
+  if (!op1 && !op2)
+    return NULL;
+
   result = reduce_binary0 (op1, op2);
   if (result != NULL)
     return eval_type_intrinsic0(op, result);
@@ -1803,6 +1806,38 @@ gfc_multiply (gfc_expr *op1, gfc_expr *op2)
 gfc_expr *
 gfc_divide (gfc_expr *op1, gfc_expr *op2)
 {
+  if (op2 && op2->expr_type == EXPR_CONSTANT)
+    {
+      arith rc = ARITH_OK;
+      switch (op2->ts.type)
+	{
+	case BT_INTEGER:
+	  /* non-integer divided by integer 0 is handled elsewhere.  */
+	  if (mpz_sgn (op2->value.integer) == 0
+	      && op1->ts.type == BT_INTEGER)
+	    rc = ARITH_DIV0;
+	  break;
+	case BT_REAL:
+	  if (mpfr_sgn (op2->value.real) == 0
+	      && flag_range_check == 1)
+	    rc = ARITH_DIV0;
+	  break;
+	case BT_COMPLEX:
+	  if (mpc_cmp_si_si (op2->value.complex, 0, 0) == 0
+	      && flag_range_check == 1)
+	    rc = ARITH_DIV0;
+	  break;
+	default:
+	  /* basic type is non-numeric, handle this elsewhere.  */
+	  break;
+	}
+      if (rc == ARITH_DIV0)
+	{
+	  gfc_seen_div0 = true;
+	  gfc_error ("Division by zero at %L", &op2->where);
+	  return NULL;
+	}
+    }
   return eval_intrinsic_f3 (INTRINSIC_DIVIDE, gfc_arith_divide, op1, op2);
 }
 

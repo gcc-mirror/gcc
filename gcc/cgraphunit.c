@@ -206,6 +206,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "ipa-inline.h"
+#include "omp-offload.h"
 
 /* Queue of cgraph nodes scheduled to be added into cgraph.  This is a
    secondary queue used during optimization to accommodate passes that
@@ -1159,6 +1160,9 @@ analyze_functions (bool first_time)
       if (node->cpp_implicit_alias)
 	  node->fixup_same_cpp_alias_visibility (node->get_alias_target ());
   build_type_inheritance_graph ();
+
+  if (flag_openmp && first_time)
+    omp_discover_implicit_declare_target ();
 
   /* Analysis adds static variables that in turn adds references to new functions.
      So we need to iterate the process until it stabilize.  */

@@ -51,7 +51,7 @@
 
 (define_predicate "cris_load_multiple_op"
   (and (match_code "parallel")
-       (match_test "cris_movem_load_rest_p (op, 0)")))
+       (match_test "cris_movem_load_rest_p (op)")))
 
 (define_predicate "cris_store_multiple_op"
   (and (match_code "parallel")
@@ -61,9 +61,7 @@
 ;; Operand helper predicates.
 
 (define_predicate "cris_bdap_const_operand"
-  (and (match_code "label_ref, symbol_ref, const_int, const_double, const")
-       (ior (not (match_test "flag_pic"))
-	    (match_test "cris_valid_pic_const (op, true)"))))
+  (match_operand 0 "immediate_operand"))
 
 (define_predicate "cris_simple_address_operand"
   (ior (match_operand:SI 0 "register_operand")
@@ -132,59 +130,3 @@
 (define_predicate "cris_bdap_biap_operand"
   (ior (match_operand 0 "cris_bdap_operand")
        (match_operand 0 "cris_biap_mult_operand")))
-
-;; Since with -fPIC, not all symbols are valid PIC symbols or indeed
-;; general_operands, we have to have a predicate that matches it for the
-;; "movsi" expander.
-;; FIXME: Can s/special_// when PR 20413 is fixed.
-
-(define_special_predicate "cris_general_operand_or_symbol"
-  (ior (match_operand 0 "general_operand")
-       (and (match_code "const, symbol_ref, label_ref")
-       	    ; The following test is actually just an assertion.
-	    (match_test "cris_symbol_type_of (op) != cris_no_symbol"))))
-
-;; A predicate for the anon movsi expansion, one that fits a PCREL
-;; operand as well as general_operand.
-
-(define_special_predicate "cris_general_operand_or_pic_source"
-  (ior (match_operand 0 "general_operand")
-       (and (match_test "flag_pic")
-	    (match_test "cris_valid_pic_const (op, false)"))))
-
-;; Since a PLT symbol is not a general_operand, we have to have a
-;; predicate that matches it when we need it.  We use this in the expanded
-;; "call" and "call_value" anonymous patterns.
-
-(define_predicate "cris_nonmemory_operand_or_callable_symbol"
-  (ior (match_operand 0 "nonmemory_operand")
-       (and (match_code "const")
-	    (and
-	     (match_test "GET_CODE (XEXP (op, 0)) == UNSPEC")
-	     (ior
-	      (match_test "XINT (XEXP (op, 0), 1) == CRIS_UNSPEC_PLT_PCREL")
-	      (match_test "XINT (XEXP (op, 0), 1) == CRIS_UNSPEC_PCREL"))))))
-
-;; This matches a (MEM (general_operand)) or
-;; (MEM (cris_general_operand_or_symbol)).  The second one isn't a valid
-;; memory_operand, so we need this predicate to recognize call
-;; destinations before we change them to a PLT operand (by wrapping in
-;; UNSPEC CRIS_UNSPEC_PLT).
-
-(define_predicate "cris_mem_call_operand"
-  (and (match_code "mem")
-       (ior (match_operand 0 "memory_operand")
-	    (match_test "cris_general_operand_or_symbol (XEXP (op, 0),
-							 Pmode)"))))
-
-;; A marker for the call-insn: (const_int 0) for a call to a
-;; hidden or static function and non-pic and
-;; pic_offset_table_rtx for a call that *might* go through the
-;; PLT.
-
-(define_predicate "cris_call_type_marker"
-  (ior (and (match_operand 0 "const_int_operand")
-	    (match_test "op == const0_rtx"))
-       (and (and (match_operand 0 "register_operand")
-		 (match_test "op == pic_offset_table_rtx"))
-	    (match_test "flag_pic != 0"))))

@@ -1932,6 +1932,9 @@
 ;; Operation names for negate and bitwise complement.
 (define_code_attr neg_not_op [(neg "neg") (not "not")])
 
+;; csinv, csneg insn suffixes.
+(define_code_attr neg_not_cs [(neg "neg") (not "inv")])
+
 ;; Similar, but when the second operand is inverted.
 (define_code_attr nlogical [(and "bic") (ior "orn") (xor "eon")])
 

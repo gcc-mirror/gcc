@@ -11,7 +11,7 @@ struct Dummy
   template<bool B>
   void tester()
   {
-    bar<evil>()(); // { dg-error "constant|template|convert" }
+    bar<evil>()(); // { dg-error "constant|template|convert|member function" }
   }
   template<bool B>
   struct bar

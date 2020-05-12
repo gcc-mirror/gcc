@@ -1,3 +1,689 @@
+2020-05-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* config/i386/mmx.md (copysignv2sf3): New expander.
+	(xorsignv2sf3): Ditto.
+	(signbitv2sf3): Ditto.
+
+2020-05-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* config/i386/mmx.md (fmav2sf4): New insn pattern.
+	(fmsv2sf4): Ditto.
+	(fnmav2sf4): Ditto.
+	(fnmsv2sf4): Ditto.
+
+2020-05-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.in (CET_HOST_FLAGS): New.
+	(COMPILER): Add $(CET_HOST_FLAGS).
+	* configure.ac: Add GCC_CET_HOST_FLAGS(CET_HOST_FLAGS) and
+	AC_SUBST(CET_HOST_FLAGS).  Clear CET_HOST_FLAGS if jit isn't
+	enabled.
+	* aclocal.m4: Regenerated.
+	* configure: Likewise.
+
+2020-05-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* config/i386/mmx.md (<code>v2sf2): New insn pattern.
+	(*mmx_<code>v2sf2): New insn_and_split pattern.
+	(*mmx_nabsv2sf2): Ditto.
+	(*mmx_andnotv2sf3): New insn pattern.
+	(*mmx_<code>v2sf3): Ditto.
+	* config/i386/i386.md (absneg_op): New code attribute.
+	* config/i386/i386.c (ix86_build_const_vector): Handle V2SFmode.
+	(ix86_build_signbit_mask): Ditto.
+
+2020-05-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-live.c (remove_unused_locals): Remove dead debug
+	bind resets.
+
+2020-05-12  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430-protos.h (msp430_output_aligned_decl_common):
+	Update prototype to include "local" argument.
+	* config/msp430/msp430.c (msp430_output_aligned_decl_common): Add
+	"local" argument.  Handle local common decls.
+	* config/msp430/msp430.h (ASM_OUTPUT_ALIGNED_DECL_COMMON): Adjust
+	msp430_output_aligned_decl_common call with 0 for "local" argument.
+	(ASM_OUTPUT_ALIGNED_DECL_LOCAL): Define.
+
+2020-05-12  Richard Biener  <rguenther@suse.de>
+
+	* cfghooks.c (split_edge): Preserve EDGE_DFS_BACK if set.
+
+2020-05-12  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/95033
+	PR sanitizer/95051
+	* sanopt.c (sanitize_rewrite_addressable_params):
+	Clear DECL_NOT_GIMPLE_REG_P for argument.
+
+2020-05-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94980
+	* tree-vect-generic.c (expand_vector_comparison): Use
+	vector_element_bits_tree to get the element size in bits,
+	rather than using TYPE_SIZE.
+	(expand_vector_condition, vector_element): Likewise.
+
+2020-05-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94980
+	* tree-vect-generic.c (build_replicated_const): Take the number
+	of bits as a parameter, instead of the type of the elements.
+	(do_plus_minus): Update accordingly, using vector_element_bits
+	to calculate the correct number of bits.
+	(do_negate): Likewise.
+
+2020-05-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94980
+	* tree.h (vector_element_bits, vector_element_bits_tree): Declare.
+	* tree.c (vector_element_bits, vector_element_bits_tree): New.
+	* match.pd: Use the new functions instead of determining the
+	vector element size directly from TYPE_SIZE(_UNIT).
+	* tree-vect-data-refs.c (vect_gather_scatter_fn_p): Likewise.
+	* tree-vect-patterns.c (vect_recog_mask_conversion_pattern): Likewise.
+	* tree-vect-stmts.c (vect_is_simple_cond): Likewise.
+	* tree-vect-generic.c (expand_vector_piecewise): Likewise.
+	(expand_vector_conversion): Likewise.
+	(expand_vector_addition): Likewise for a TYPE_SIZE_UNIT used as
+	a divisor.  Convert the dividend to bits to compensate.
+	* tree-vect-loop.c (vectorizable_live_operation): Call
+	vector_element_bits instead of open-coding it.
+
+2020-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-offload.h (omp_discover_implicit_declare_target): Declare.
+	* omp-offload.c: Include context.h.
+	(omp_declare_target_fn_p, omp_declare_target_var_p,
+	omp_discover_declare_target_fn_r, omp_discover_declare_target_var_r,
+	omp_discover_implicit_declare_target): New functions.
+	* cgraphunit.c (analyze_functions): Call
+	omp_discover_implicit_declare_target.
+
+2020-05-12  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (maybe_canonicalize_mem_ref_addr): Canonicalize
+	literal constant &MEM[..] to a constant literal.
+
+2020-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95045
+	* dbgcnt.def (lim): Add debug-counter.
+	* tree-ssa-loop-im.c: Include dbgcnt.h.
+	(find_refs_for_sm): Use lim debug counter for store motion
+	candidates.
+	(do_store_motion): Rename form store_motion.  Commit edge
+	insertions...
+	(store_motion_loop): ... here.
+	(tree_ssa_lim): Adjust.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/altivec.h (vec_clzm): Rename to vec_cntlzm.
+	(vec_ctzm): Rename to vec_cnttzm.
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Change fourth operand for vec_ternarylogic to require
+	compatibility with unsigned SImode rather than unsigned QImode.
+	* config/rs6000/rs6000-call.c (altivec_overloaded_builtins):
+	Remove overloaded forms of vec_gnb that are no longer needed.
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions Available
+	for a Future Architecture): Replace vec_clzm with vec_cntlzm;
+	replace vec_ctzm with vec_cntlzm; remove four unwanted forms of
+	vec_gnb; move vec_ternarylogic documentation into this section
+	and replace const unsigned char with const unsigned int as its
+	fourth argument.
+
+2020-05-11  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.h (vec_genpcvm): New #define.
+	* config/rs6000/rs6000-builtin.def (XXGENPCVM_V16QI): New built-in
+	instantiation.
+	(XXGENPCVM_V8HI): Likewise.
+	(XXGENPCVM_V4SI): Likewise.
+	(XXGENPCVM_V2DI): Likewise.
+	(XXGENPCVM): New overloaded built-in instantiation.
+	* config/rs6000/rs6000-call.c (altivec_overloaded_builtins): Add
+	entries for FUTURE_BUILTIN_VEC_XXGENPCVM.
+	(altivec_expand_builtin): Add special handling for
+	FUTURE_BUILTIN_VEC_XXGENPCVM.
+	(builtin_function_type): Add handling for
+	FUTURE_BUILTIN_XXGENPCVM_{V16QI,V8HI,V4SI,V2DI}.
+	* config/rs6000/vsx.md (VSX_EXTRACT_I4): New mode iterator.
+	(UNSPEC_XXGENPCV): New constant.
+	(xxgenpcvm_<mode>_internal): New insn.
+	(xxgenpcvm_<mode>): New expansion.
+	* doc/extend.texi: Add documentation for vec_genpcvm built-ins.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/altivec.h (vec_strir): New #define.
+	(vec_stril): Likewise.
+	(vec_strir_p): Likewise.
+	(vec_stril_p): Likewise.
+	* config/rs6000/altivec.md (UNSPEC_VSTRIR): New constant.
+	(UNSPEC_VSTRIL): Likewise.
+	(vstrir_<mode>): New expansion.
+	(vstrir_code_<mode>): New insn.
+	(vstrir_p_<mode>): New expansion.
+	(vstrir_p_code_<mode>): New insn.
+	(vstril_<mode>): New expansion.
+	(vstril_code_<mode>): New insn.
+	(vstril_p_<mode>): New expansion.
+	(vstril_p_code_<mode>): New insn.
+	* config/rs6000/rs6000-builtin.def (__builtin_altivec_vstribr):
+	New built-in function.
+	(__builtin_altivec_vstrihr): Likewise.
+	(__builtin_altivec_vstribl): Likewise.
+	(__builtin_altivec_vstrihl): Likewise.
+	(__builtin_altivec_vstribr_p): Likewise.
+	(__builtin_altivec_vstrihr_p): Likewise.
+	(__builtin_altivec_vstribl_p): Likewise.
+	(__builtin_altivec_vstrihl_p): Likewise.
+	(__builtin_vec_strir): New overloaded built-in function.
+	(__builtin_vec_stril): Likewise.
+	(__builtin_vec_strir_p): Likewise.
+	(__builtin_vec_stril_p): Likewise.
+	* config/rs6000/rs6000-call.c (altivec_overloaded_builtins):
+	Define overloaded forms of __builtin_vec_strir,
+	__builtin_vec_stril, __builtin_vec_strir_p, and
+	__builtin_vec_stril_p.
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions Available
+	for a Future Architecture): Add description of vec_stril,
+	vec_stril_p, vec_strir, and vec_strir_p built-in functions.
+
+2020-05-11  Kelvin Nilsen  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/altivec.h (vec_ternarylogic): New #define.
+	* config/rs6000/altivec.md (UNSPEC_XXEVAL): New constant.
+	(xxeval): New insn.
+	* config/rs6000/predicates.md (u8bit_cint_operand): New predicate.
+	* config/rs6000/rs6000-builtin.def: Add handling of new macro
+	RS6000_BUILTIN_4.
+	(BU_FUTURE_V_4): New macro. Use it.
+	(BU_FUTURE_OVERLOAD_4): Likewise.
+	* config/rs6000/rs6000-c.c (altivec_build_resolved_builtin): Add
+	handling for quaternary built-in functions.
+	(altivec_resolve_overloaded_builtin): Add special-case handling
+	for __builtin_vec_xxeval.
+	* config/rs6000/rs6000-call.c: Add handling of new macro
+	RS6000_BUILTIN_4 in initialization of rs6000_builtin_info,
+	bdesc0_arg, bdesc1_arg, bdesc2_arg, bdesc_3arg,
+	bdesc_altivec_preds, bdesc_abs, and bdesc_htm arrays.
+	(altivec_overloaded_builtins): Add definitions for
+	FUTURE_BUILTIN_VEC_XXEVAL.
+	(bdesc_4arg): New array.
+	(htm_expand_builtin): Add handling for quaternary built-in
+	functions.
+	(rs6000_expand_quaternop_builtin): New function.
+	(rs6000_expand_builtin): Add handling for quaternary built-in
+	functions.
+	(rs6000_init_builtins): Initialize builtin_mode_to_type entries
+	for unsigned QImode and unsigned HImode.
+	(builtin_quaternary_function_type): New function.
+	(rs6000_common_init_builtins): Add handling of quaternary
+	operations.
+	* config/rs6000/rs6000.h (RS6000_BTC_QUATERNARY): New defined
+	constant.
+	(RS6000_BTC_PREDICATE): Change value of constant.
+	(RS6000_BTC_ABS): Likewise.
+	(rs6000_builtins): Add support for new macro RS6000_BUILTIN_4.
+	* doc/extend.texi (PowerPC AltiVec Built-In Functions Available
+	for a Future Architecture): Add description of vec_ternarylogic
+	built-in function.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000-builtin.def (__builtin_pdepd): New built-in
+	function.
+	(__builtin_pextd): Likewise.
+	* config/rs6000/rs6000.md (UNSPEC_PDEPD): New constant.
+	(UNSPEC_PEXTD): Likewise.
+	(pdepd): New insn.
+	(pextd): Likewise.
+	* doc/extend.texi (Basic PowerPC Built-in Functions Available for
+	a Future Architecture): Add descriptions of __builtin_pdepd and
+	__builtin_pextd functions.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/altivec.h (vec_clrl): New #define.
+	(vec_clrr): Likewise.
+	* config/rs6000/altivec.md (UNSPEC_VCLRLB): New constant.
+	(UNSPEC_VCLRRB): Likewise.
+	(vclrlb): New insn.
+	(vclrrb): Likewise.
+	* config/rs6000/rs6000-builtin.def (__builtin_altivec_vclrlb): New
+	built-in function.
+	(__builtin_altivec_vclrrb): Likewise.
+	(__builtin_vec_clrl): New overloaded built-in function.
+	(__builtin_vec_clrr): Likewise.
+	* config/rs6000/rs6000-call.c (altivec_overloaded_builtins):
+	Define overloaded forms of __builtin_vec_clrl and
+	__builtin_vec_clrr.
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions Available
+	for a Future Architecture): Add descriptions of vec_clrl and
+	vec_clrr.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000-builtin.def (__builtin_cntlzdm): New
+	built-in function definition.
+	(__builtin_cnttzdm): Likewise.
+	* config/rs6000/rs6000.md (UNSPEC_CNTLZDM): New constant.
+	(UNSPEC_CNTTZDM): Likewise.
+	(cntlzdm): New insn.
+	(cnttzdm): Likewise.
+	* doc/extend.texi (Basic PowerPC Built-in Functions available for
+	a Future Architecture): Add descriptions of __builtin_cntlzdm and
+	__builtin_cnttzdm functions.
+
+2020-05-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* config/i386/mmx.md (sqrtv2sf2): New insn pattern.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/altivec.h (vec_cfuge): New #define.
+	* config/rs6000/altivec.md (UNSPEC_VCFUGED): New constant.
+	(vcfuged): New insn.
+	* config/rs6000/rs6000-builtin.def (__builtin_altivec_vcfuged):
+	New built-in function.
+	* config/rs6000/rs6000-call.c (builtin_function_type): Add
+	handling for FUTURE_BUILTIN_VCFUGED case.
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions Available
+	for a Future Architecture): Add description of vec_cfuge built-in
+	function.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000-builtin.def (BU_FUTURE_MISC_0): New
+	#define.
+	(BU_FUTURE_MISC_1): Likewise.
+	(BU_FUTURE_MISC_2): Likewise.
+	(BU_FUTURE_MISC_3): Likewise.
+	(__builtin_cfuged): New built-in function definition.
+	* config/rs6000/rs6000.md (UNSPEC_CFUGED): New constant.
+	(cfuged): New insn.
+	* doc/extend.texi (Basic PowerPC Built-in Functions Available for
+	a Future Architecture): New subsubsection.
+
+2020-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95049
+	* tree-ssa-sccvn.c (set_ssa_val_to): Reject lattice transition
+	between different constants.
+
+2020-05-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-pretty-print.c (dump_generic_node): Handle BOOLEAN_TYPEs.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+	    Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/altivec.h (vec_gnb): New #define.
+	* config/rs6000/altivec.md (UNSPEC_VGNB): New constant.
+	(vgnb): New insn.
+	* config/rs6000/rs6000-builtin.def (BU_FUTURE_OVERLOAD_1): New
+	#define.
+	(BU_FUTURE_OVERLOAD_2): Likewise.
+	(BU_FUTURE_OVERLOAD_3): Likewise.
+	(__builtin_altivec_gnb): New built-in function.
+	(__buiiltin_vec_gnb): New overloaded built-in function.
+	* config/rs6000/rs6000-call.c (altivec_overloaded_builtins):
+	Define overloaded forms of __builtin_vec_gnb.
+	(rs6000_expand_binop_builtin): Add error checking for 2nd argument
+	of __builtin_vec_gnb.
+	(builtin_function_type): Mark return value and arguments unsigned
+	for FUTURE_BUILTIN_VGNB.
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions Available
+	for a Future Architecture): Add description of vec_gnb built-in
+	function.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+	    Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/altivec.h (vec_pdep): New macro implementing new
+	built-in function.
+	(vec_pext): Likewise.
+	* config/rs6000/altivec.md (UNSPEC_VPDEPD): New constant.
+	(UNSPEC_VPEXTD): Likewise.
+	(vpdepd): New insn.
+	(vpextd): Likewise.
+	* config/rs6000/rs6000-builtin.def (__builtin_altivec_vpdepd): New
+	built-in function.
+	(__builtin_altivec_vpextd): Likewise.
+	* config/rs6000/rs6000-call.c (builtin_function_type): Add
+	handling for FUTURE_BUILTIN_VPDEPD and FUTURE_BUILTIN_VPEXTD
+	cases.
+	* doc/extend.texi (PowerPC Altivec Built-in Functions Available
+	for a Future Architecture): Add description of vec_pdep and
+	vec_pext built-in functions.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+	    Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/altivec.h (vec_clzm): New macro.
+	(vec_ctzm): Likewise.
+	* config/rs6000/altivec.md (UNSPEC_VCLZDM): New constant.
+	(UNSPEC_VCTZDM): Likewise.
+	(vclzdm): New insn.
+	(vctzdm): Likewise.
+	* config/rs6000/rs6000-builtin.def (BU_FUTURE_V_0): New macro.
+	(BU_FUTURE_V_1): Likewise.
+	(BU_FUTURE_V_2): Likewise.
+	(BU_FUTURE_V_3): Likewise.
+	(__builtin_altivec_vclzdm): New builtin definition.
+	(__builtin_altivec_vctzdm): Likewise.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Cause
+	_ARCH_PWR_FUTURE macro to be defined if OPTION_MASK_FUTURE flag is
+	set.
+	* config/rs6000/rs6000-call.c (builtin_function_type): Set return
+	value and parameter types to be unsigned for VCLZDM and VCTZDM.
+	* config/rs6000/rs6000.c (rs6000_builtin_mask_calculate): Add
+	support for TARGET_FUTURE flag.
+	* config/rs6000/rs6000.h (RS6000_BTM_FUTURE): New macro constant.
+	* doc/extend.texi (PowerPC Altivec Built-in Functions Available
+	for a Future Architecture): New subsubsection.
+
+2020-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94988
+	PR tree-optimization/95025
+	* tree-ssa-loop-im.c (seq_entry): Make a struct, add from.
+	(sm_seq_push_down): Take extra parameter denoting where we
+	moved the ref to.
+	(execute_sm_exit): Re-issue sm_other stores in the correct
+	order.
+	(sm_seq_valid_bb): When always executed, allow sm_other to
+	prevail inbetween sm_ord and record their stored value.
+	(hoist_memory_references): Adjust refs_not_supported propagation
+	and prune sm_other from the end of the ordered sequences.
+
+2020-05-11  Felix Yang  <felix.yang@huawei.com>
+
+	PR target/94991
+	* config/aarch64/aarch64.md (mov<mode>):
+	Bitcasts to the equivalent integer mode using gen_lowpart
+	instead of doing FAIL for scalar floating point move.
+
+2020-05-11  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_if_then_else_costs): Add case
+	to correctly calculate cost for new pattern (*csinv3_uxtw_insn3).
+	* config/aarch64/aarch64.md (*csinv3_utxw_insn1): New.
+	(*csinv3_uxtw_insn2): New.
+	(*csinv3_uxtw_insn3): New.
+	* config/aarch64/iterators.md (neg_not_cs): New.
+
+2020-05-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* config/i386/mmx.md (mmx_addv2sf3): Use "v" constraint
+	instead of "Yv" for AVX alternatives.  Add "prefix" attribute.
+	(*mmx_addv2sf3): Ditto.
+	(*mmx_subv2sf3): Ditto.
+	(*mmx_mulv2sf3): Ditto.
+	(*mmx_<code>v2sf3): Ditto.
+	(mmx_ieee_<ieee_maxmin>v2sf3): Ditto.
+
+2020-05-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* config/i386/i386.c (ix86_vector_mode_supported_p):
+	Vectorize 3dNOW! vector modes for TARGET_MMX_WITH_SSE.
+	* config/i386/mmx.md (*mov<mode>_internal): Do not set
+	mode of alternative 13 to V2SF for TARGET_MMX_WITH_SSE.
+
+	(mmx_addv2sf3): Change operand predicates from
+	nonimmediate_operand to register_mmxmem_operand.
+	(addv2sf3): New expander.
+	(*mmx_addv2sf3): Add SSE/AVX alternatives.  Change operand
+	predicates from nonimmediate_operand to register_mmxmem_operand.
+	Enable instruction pattern for TARGET_MMX_WITH_SSE.
+
+	(mmx_subv2sf3): Change operand predicate from
+	nonimmediate_operand to register_mmxmem_operand.
+	(mmx_subrv2sf3): Ditto.
+	(subv2sf3): New expander.
+	(*mmx_subv2sf3): Add SSE/AVX alternatives.  Change operand
+	predicates from nonimmediate_operand to register_mmxmem_operand.
+	Enable instruction pattern for TARGET_MMX_WITH_SSE.
+
+	(mmx_mulv2sf3): Change operand predicates from
+	nonimmediate_operand to register_mmxmem_operand.
+	(mulv2sf3): New expander.
+	(*mmx_mulv2sf3): Add SSE/AVX alternatives.  Change operand
+	predicates from nonimmediate_operand to register_mmxmem_operand.
+	Enable instruction pattern for TARGET_MMX_WITH_SSE.
+
+	(mmx_<code>v2sf3): Change operand predicates from
+	nonimmediate_operand to register_mmxmem_operand.
+	(<code>v2sf3): New expander.
+	(*mmx_<code>v2sf3): Add SSE/AVX alternatives.  Change operand
+	predicates from nonimmediate_operand to register_mmxmem_operand.
+	Enable instruction pattern for TARGET_MMX_WITH_SSE.
+	(mmx_ieee_<ieee_maxmin>v2sf3): Ditto.
+
+2020-05-11  Martin Liska  <mliska@suse.cz>
+
+	PR c/95040
+	* common.opt: Fix typo in option description.
+
+2020-05-11  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/94928
+	* gcov-io.h: Add caveat about coverage format parsing and
+	possible outdated documentation.
+
+2020-05-11  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	PR tree-optimization/83403
+	* tree-affine.c (expr_to_aff_combination): Replace SSA_NAME with
+	determine_value_range, Add fold conversion of MULT_EXPR, fix the
+	previous PLUS_EXPR.
+
+2020-05-10  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config/i386/i386-c.c (ix86_target_macros): Define _ILP32 and
+	__ILP32__ for 32-bit targets.
+
+2020-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.h (expr_align): Delete.
+	* tree.c (expr_align): Likewise.
+
+2020-05-09  Hans-Peter Nilsson  <hp@axis.com>
+
+	* resource.c (init_resource_info): Filter-out TARGET_FLAGS_REGNUM
+	from end_of_function_needs.
+
+	* config.gcc: Remove support for crisv32-*-* and cris-*-linux*.
+	* config/cris/t-linux, config/cris/linux.h, config/cris/linux.opt:
+	Remove.
+	* config/cris/t-elfmulti: Remove crisv32 multilib.
+	* config/cris: Remove shared-library and CRIS v32 support.
+
+	Move trivially from cc0 to reg:CC model, removing most optimizations.
+	* config/cris/cris.md: Remove all side-effect patterns and their
+	splitters.  Remove most peepholes.  Add clobbers of CRIS_CC0_REGNUM
+	to all but post-reload control-flow and movem insns.  Remove
+	constraints on all modified expanders.  Remove obsoleted cc0-related
+	references.
+	(attr "cc"): Remove alternative "rev".
+	(mode_iterator BWDD, DI_, SI_): New.
+	(mode_attr sCC_destc, cmp_op1c, cmp_op2c): New.
+	("tst<mode>"): Remove; fold as "M" alternative into compare insn.
+	("mstep_shift", "mstep_mul"): Remove patterns.
+	("s<rcond>", "s<ocond>", "s<ncond>"): Anonymize.
+	* config/cris/cris.c: Change all non-condition-code,
+	non-control-flow emitted insns to add a parallel with clobber of
+	CRIS_CC0_REGNUM, mostly by changing from gen_rtx_SET with
+	emit_insn to use of emit_move_insn, gen_add2_insn or
+	cris_emit_insn, as convenient.
+	(cris_reg_overlap_mentioned_p)
+	(cris_normal_notice_update_cc, cris_notice_update_cc): Remove.
+	(cris_movem_load_rest_p): Don't assume all elements in a
+	PARALLEL are SETs.
+	(cris_store_multiple_op_p): Ditto.
+	(cris_emit_insn): New function.
+	* cris/cris-protos.h (cris_emit_insn): Declare.
+
+	PR target/93372
+	* config/cris/cris.md (zcond): New code_iterator.
+	("*cbranch<mode>4_btstq<CC>"): New insn_and_split.
+
+	* config/cris/cris.c (TARGET_FLAGS_REGNUM): Define.
+
+	* config/cris/cris.h (REVERSIBLE_CC_MODE): Define to true.
+
+	* config/cris/cris.md ("movsi"): For memory destination
+	post-reload, generate clobberless variant.  Similarly for a
+	zero-source post-reload.
+	("*mov_tomem<mode>_split"): New split.
+	("*mov_tomem<mode>"): New insn.
+	("enabled", mov_tomem_enabled): Define and use to exclude "x" ->
+	"Q>m" for less-than-SImode.
+	("*mov_fromzero<mode>_split"): New split.
+	("*mov_fromzero<mode>"): New insn.
+
+	Prepare for cmpelim pass to eliminate redundant compare insns.
+	* config/cris/cris-modes.def: New file.
+	* config/cris/cris-protos.h (cris_select_cc_mode): Declare.
+	(cris_notice_update_cc): Remove left-over declaration.
+	* config/cris/cris.c (TARGET_CC_MODES_COMPATIBLE): Define.
+	(cris_select_cc_mode, cris_cc_modes_compatible): New functions.
+	* config/cris/cris.h (SELECT_CC_MODE): Define.
+	* config/cris/cris.md (NZSET, NZUSE, NZVCSET, NZVCUSE): New
+	mode_iterators.
+	(cond): New code_iterator.
+	(nzcond): Replacement for incorrect ncond.  All callers changed.
+	(nzvccond): Replacement for ocond.  All callers changed.
+	(rnzcond): Replacement for rcond.  All callers changed.
+	(xCC): New code_attr.
+	(cmp_op1c, cmp_op0c): Renumber from cmp_op1c and cmp_op2c.  All
+	users changed.
+	("*cmpdi<NZVCSET:mode>"): Rename from "*cmpdi".  Replace
+	CCmode with iteration over NZVCSET.
+	("*cmp_ext<BW:mode><NZVCSET:mode>"): Similarly; rename from
+	"*cmp_ext<mode>".
+	("*cmpsi<NZVCSET:mode>"): Similarly, from "*cmpsi".
+	("*cmp<BW:mode><NZVCSET:mode>"): Similarly from "*cmp<mode>".
+	("*btst<mode>"): Similarly, from "*btst".
+	("*cbranch<mode><code>4"): Rename from "*cbranch<mode>4",
+	iterating over cond instead of matching the comparison with
+	ordered_comparison_operator.
+	("*cbranch<mode>4_btstq<CC>"): Correct label operand number.
+	("b<zcond:code><mode>"): Rename from "b<ncond:code>", iterating
+	over NZUSE.
+	("b<nzvccond:code><mode>"): Similarly from "b<ocond:code>", over
+	NZVCUSE.  Remove FIXME.
+	("*b<nzcond:code>_reversed<mode>"): Similarly from
+	"*b<ncond:code>_reversed", over NZUSE.
+	("*b<nzvccond:code>_reversed<mode>"): Similarly from
+	"*b<ocond:code>_reversed", over NZVCUSE.  Remove FIXME.
+	("b<rnzcond:code><mode>"): Similarly from "b<rcond:code>",
+	over NZUSE.  Reinstate "b<oCC>" vs. "b<CC>" mnemonic choice,
+	depending on CC_NZmode vs. CCmode.  Remove FIXME.
+	("*b<rnzcond:code>_reversed<mode>"): Similarly from
+	"*b<rcond:code>_reversed", over NZUSE.
+	("*cstore<mode><code>4"): Rename from "*cstore<mode>4",
+	iterating over cond instead of matching the comparison with
+	ordered_comparison_operator.
+	("*s<nzcond:code><mode>"): Rename from "*s<ncond:code>",
+	iterating over NZUSE.
+	("*s<rnzcond:code><mode>"): Similar from "*s<rcond:code>", over
+	NZUSE.  Reinstate "b<oCC>" vs. "b<CC>" mnemonic choice,
+	depending on CC_NZmode vs. CCmode.
+	("*s<nzvccond:code><mode>"): Simlar from "*s<ocond:code>", over
+	NZVCUSE.  Remove FIXME.
+	("cc"): Comment on new use.
+	("cc_enabled"): New attribute.
+	("enabled"): Make default fall back to cc_enabled.
+	("setnz", "ccnz", "setnzvc", "ccnzvc", "setcc", "cccc"): New
+	default_subst_attrs.
+	("setnz_subst", "setnzvc_subst", "setcc_subst"): New default_subst.
+	("*movsi_internal<setcc><setnz><setnzvc>"): Rename from
+	"*movsi_internal".  Correct contents of, and rename attribute
+	"cc" to "cc<cccc><ccnz><ccnzvc>".
+	("anz", "anzvc", "acc"): New define_subst_attrs.
+	("<acc><anz><anzvc>movhi<setcc><setnz><setnzvc>"): Rename from
+	"movhi".  Rename "cc" attribute to "cc<cccc><ccnz><ccnzvc>".
+	("<acc><anz><anzvc>movqi<setcc><setnz><setnzvc>"): Similar from
+	"movqi".  Correct contents of, and rename "cc" attribute to
+	"cc<cccc><ccnz><ccnzvc>".
+	("*b<zcond:code><mode>"): Rename from "b<zcond:code><mode>".
+	("*b<nzvccond:code><mode>"): Rename from "b<nzvccond:code><mode>".
+	("*b<rnzcond:code><mode>"): Rename from "*b<rnzcond:code><mode>".
+	("<acc><anz><anzvc>extend<mode>si2<setcc><setnz><setnzvc>"):
+	Rename from "extend<mode>si2".
+	("<acc><anz><anzvc>zero_extend<mode>si2<setcc><setnz><setnzvc>"):
+	Similar, from "zero_extend<mode>si2".
+	("*adddi3<setnz>"): Rename from "*adddi3".
+	("*subdi3<setnz>"): Similarly from "*subdi3".
+	("*addsi3<setnz>"): Similarly from "*addsi3".
+	("*subsi3<setnz>"): Similarly from "*subsi3".
+	("*addhi3<setnz>"): Similarly from "*addhi3" and decorate the
+	"cc" attribute to "cc<ccnz>".
+	("*addqi3<setnz>"): Similarly from "*addqi3".
+	("*sub<mode>3<setnz>"): Similarly from "*sub<mode>3".
+	("*expanded_andsi<setcc><setnz><setnzvc>"): Rename from
+	"*expanded_andsi".
+	("*iorsi3<setcc><setnz><setnzvc>"): Similar from "*iorsi3".
+	Decorate "cc" attribute to make "cc<cccc><ccnz><ccnzvc>".
+	("*iorhi3<setcc><setnz><setnzvc>"): Similar from "*iorhi3".
+	("*iorqi3<setcc><setnz><setnzvc>"): Similar from "*iorqi3".
+	("*expanded_andhi<setcc><setnz><setnzvc>"): Similar from
+	"*expanded_andhi".  Add quick cc-setting alternative for 0..31.
+	("*andqi3<setcc><setnz><setnzvc>"): Similar from "*andqi3".
+	("<acc><anz><anzvc>xorsi3<setcc><setnz><setnzvc>"): Rename
+	from "xorsi3".
+	("<acc><anz><anzvc>one_cmplsi2<setcc><setnz><setnzvc>"): Rename
+	from "one_cmplsi2".
+	("<acc><anz><anzvc><shlr>si3<setcc><setnz><setnzvc>"): Rename
+	from "<shlr>si3".
+	("<acc><anz><anzvc>clzsi2<setcc><setnz><setnzvc>"): Rename
+	from "clzsi2".
+	("<acc><anz><anzvc>bswapsi2<setcc><setnz><setnzvc>"): Rename
+	from "bswapsi2".
+	("*uminsi3<setcc><setnz><setnzvc>"): Rename from "*uminsi3".
+
+	* config/cris/cris-modes.def (CC_ZnN): New CC_MODE.
+	* config/cris/cris.c (cris_rtx_costs): Handle pre-split bit-test
+	* config/cris/cris.md (ZnNNZSET, ZnNNZUSE): New mode_iterators.
+	(znnCC, rznnCC): New code_attrs.
+	("*btst<mode>"): Iterator over ZnNNZSET instead of NZVCSET.  Remove
+	obseolete comment.  Add belt-and-suspenders mode-test to condition.
+	Add fixme regarding remaining matched-but-not-generated case.
+	("*cbranch<mode>4_btstrq1_<CC>"): New insn_and_split.
+	("*cbranch<mode>4_btstqb0_<CC>"): Rename from
+	"*cbranch<mode>4_btstq<CC>".  Split to CC_NZ instead of CC.
+	("*b<zcond:code><mode>"): Iterate over ZnNNZUSE instead of NZUSE.
+	Handle output of CC_ZnNmode.
+	("*b<nzcond:code>_reversed<mode>"): Ditto.
+
+	* config/cris/cris.c (cris_select_cc_mode): Return CC_NZmode for
+	NEG too.  Correct comment.
+	* config/cris/cris.md ("<anz>neg<mode>2<setnz>"): Rename from
+	"neg<mode>2".
+
+2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* ira-color.c (update_costs_from_allocno): Remove
+	conflict_cost_update_p argument.  Propagate costs only along
+	threads. Always do conflict cost update.  Add printing debugging
+	info.
+	(update_costs_from_copies): Add printing debugging info.
+	(restore_costs_from_copies): Ditto.
+	(assign_hard_reg): Improve debug info.
+	(push_only_colorable): Ditto. Call update_costs_from_prefs.
+	(color_allocnos): Remove update_costs_from_prefs.
+
 2020-05-08  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (vec_info::slp_loads): New.

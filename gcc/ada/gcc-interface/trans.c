@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2019, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2020, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -871,16 +871,12 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
 
       /* ... fall through ... */
 
+    case N_Selected_Component:
     case N_Slice:
-      /* Only the array expression can require an lvalue.  */
+      /* Only the prefix expression can require an lvalue.  */
       if (Prefix (gnat_parent) != gnat_node)
 	return 0;
 
-      return lvalue_required_p (gnat_parent,
-				get_unpadded_type (Etype (gnat_parent)),
-				constant, address_of_constant);
-
-    case N_Selected_Component:
       return lvalue_required_p (gnat_parent,
 				get_unpadded_type (Etype (gnat_parent)),
 				constant, address_of_constant);
@@ -925,12 +921,6 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
 			       get_unpadded_type (Etype (gnat_parent)),
 			       constant, address_of_constant);
 
-    case N_Allocator:
-      /* We should only reach here through the N_Qualified_Expression case.
-	 Force an lvalue for composite types since a block-copy to the newly
-	 allocated area of memory is made.  */
-      return Is_Composite_Type (Underlying_Type (Etype (gnat_node)));
-
    case N_Explicit_Dereference:
       /* We look through dereferences for address of constant because we need
 	 to handle the special cases listed above.  */
@@ -947,6 +937,74 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
 
   gcc_unreachable ();
 }
+
+/* Return true if an lvalue should be used for GNAT_NODE.  GNU_TYPE is the type
+   that will be used for GNAT_NODE in the translated GNU tree and is assumed to
+   be an aggregate type.
+
+   The function climbs up the GNAT tree starting from the node and returns true
+   upon encountering a node that makes it doable to decide.  lvalue_required_p
+   should have been previously invoked on the arguments and returned false.  */
+
+static bool
+lvalue_for_aggregate_p (Node_Id gnat_node, tree gnu_type)
+{
+  Node_Id gnat_parent = Parent (gnat_node);
+
+  switch (Nkind (gnat_parent))
+    {
+    case N_Parameter_Association:
+    case N_Function_Call:
+    case N_Procedure_Call_Statement:
+      /* Even if the parameter is by copy, prefer an lvalue.  */
+      return true;
+
+    case N_Indexed_Component:
+    case N_Selected_Component:
+      /* If an elementary component is used, take it from the constant.  */
+      if (!Is_Composite_Type (Underlying_Type (Etype (gnat_parent))))
+	return false;
+
+      /* ... fall through ... */
+
+    case N_Slice:
+      return lvalue_for_aggregate_p (gnat_parent,
+				     get_unpadded_type (Etype (gnat_parent)));
+
+    case N_Object_Declaration:
+      /* For an aggregate object declaration, return the constant at top level
+	 in order to avoid generating elaboration code.  */
+      if (global_bindings_p ())
+	return false;
+
+      /* ... fall through ... */
+
+    case N_Assignment_Statement:
+      /* For an aggregate assignment, decide based on the size.  */
+      {
+	const HOST_WIDE_INT size = int_size_in_bytes (gnu_type);
+	return size < 0 || size >= param_large_stack_frame / 4;
+      }
+
+    case N_Unchecked_Type_Conversion:
+    case N_Type_Conversion:
+    case N_Qualified_Expression:
+      return lvalue_for_aggregate_p (gnat_parent,
+				     get_unpadded_type (Etype (gnat_parent)));
+
+    case N_Allocator:
+      /* We should only reach here through the N_Qualified_Expression case.
+	 Force an lvalue for aggregate types since a block-copy to the newly
+	 allocated area of memory is made.  */
+      return true;
+
+    default:
+      return false;
+    }
+
+  gcc_unreachable ();
+}
+
 
 /* Return true if T is a constant DECL node that can be safely replaced
    by its initializer.  */
@@ -1232,7 +1290,9 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
       if ((!constant_only || address_of_constant) && require_lvalue < 0)
 	require_lvalue
 	  = lvalue_required_p (gnat_node, gnu_result_type, true,
-			       address_of_constant);
+			       address_of_constant)
+	    || (AGGREGATE_TYPE_P (gnu_result_type)
+		&& lvalue_for_aggregate_p (gnat_node, gnu_result_type));
 
       /* Finally retrieve the initializer if this is deemed valid.  */
       if ((constant_only && !address_of_constant) || !require_lvalue)
@@ -2242,6 +2302,9 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
     case Attr_Access:
     case Attr_Unchecked_Access:
     case Attr_Code_Address:
+      /* Taking the address of a type does not make sense.  */
+      gcc_assert (TREE_CODE (gnu_prefix) != TYPE_DECL);
+
       gnu_result_type = get_unpadded_type (Etype (gnat_node));
       gnu_result
 	= build_unary_op (((attribute == Attr_Address
@@ -2893,10 +2956,6 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       break;
 
     case Attr_Component_Size:
-      if (TREE_CODE (gnu_prefix) == COMPONENT_REF
-	  && TYPE_IS_PADDING_P (TREE_TYPE (TREE_OPERAND (gnu_prefix, 0))))
-	gnu_prefix = TREE_OPERAND (gnu_prefix, 0);
-
       gnu_prefix = maybe_implicit_deref (gnu_prefix);
       gnu_type = TREE_TYPE (gnu_prefix);
 
@@ -2934,7 +2993,6 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	= build_unary_op (INDIRECT_REF, NULL_TREE,
 			  convert (build_pointer_type (gnu_result_type),
 				   integer_zero_node));
-      TREE_PRIVATE (gnu_result) = 1;
       break;
 
     case Attr_Mechanism_Code:
@@ -5468,8 +5526,6 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       /* Otherwise the parameter is passed by copy.  */
       else
 	{
-	  tree gnu_size;
-
 	  if (!in_param)
 	    gnu_name_list = tree_cons (NULL_TREE, gnu_name, gnu_name_list);
 
@@ -5490,25 +5546,9 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 
 	  gnu_actual = convert (gnu_formal_type, gnu_actual);
 
-	  /* If this is 'Null_Parameter, pass a zero even though we are
-	     dereferencing it.  */
-	  if (TREE_CODE (gnu_actual) == INDIRECT_REF
-	      && TREE_PRIVATE (gnu_actual)
-	      && (gnu_size = TYPE_SIZE (TREE_TYPE (gnu_actual)))
-	      && TREE_CODE (gnu_size) == INTEGER_CST
-	      && compare_tree_int (gnu_size, BITS_PER_WORD) <= 0)
-	    {
-	      tree type_for_size
-		= gnat_type_for_size (TREE_INT_CST_LOW (gnu_size), 1);
-	      gnu_actual
-		= unchecked_convert (DECL_ARG_TYPE (gnu_formal),
-				     build_int_cst (type_for_size, 0),
-				     false);
-	    }
-
 	  /* If this is a front-end built-in function, there is no need to
 	     convert to the type used to pass the argument.  */
-	  else if (!frontend_builtin)
+	  if (!frontend_builtin)
 	    gnu_actual = convert (DECL_ARG_TYPE (gnu_formal), gnu_actual);
 	}
 
@@ -5630,11 +5670,8 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	    tree gnu_actual
 	      = maybe_unconstrained_array (TREE_VALUE (gnu_name_list));
 
-	    /* If the result is a padded type, remove the padding.  */
-	    if (TYPE_IS_PADDING_P (TREE_TYPE (gnu_result)))
-	      gnu_result
-		= convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_result))),
-			   gnu_result);
+	    /* If the result is padded, remove the padding.  */
+	    gnu_result = maybe_padded_object (gnu_result);
 
 	    /* If the actual is a type conversion, the real target object is
 	       denoted by the inner Expression and we need to convert the
@@ -6959,18 +6996,14 @@ gnat_to_gnu (Node_Id gnat_node)
 	  int i;
 	  char *string;
 	  if (length >= ALLOCA_THRESHOLD)
-	    string = XNEWVEC (char, length + 1);
+	    string = XNEWVEC (char, length);
 	  else
-	    string = (char *) alloca (length + 1);
+	    string = (char *) alloca (length);
 
 	  /* Build the string with the characters in the literal.  Note
 	     that Ada strings are 1-origin.  */
 	  for (i = 0; i < length; i++)
 	    string[i] = Get_String_Char (gnat_string, i + 1);
-
-	  /* Put a null at the end of the string in case it's in a context
-	     where GCC will want to treat it as a C string.  */
-	  string[i] = 0;
 
 	  gnu_result = build_string (length, string);
 
@@ -7199,6 +7232,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	Node_Id *gnat_expr_array;
 
 	gnu_array_object = maybe_implicit_deref (gnu_array_object);
+	gnu_array_object = maybe_unconstrained_array (gnu_array_object);
 
 	/* Convert vector inputs to their representative array type, to fit
 	   what the code below expects.  */
@@ -7208,14 +7242,6 @@ gnat_to_gnu (Node_Id gnat_node)
 	      gnat_mark_addressable (gnu_array_object);
 	    gnu_array_object = maybe_vector_array (gnu_array_object);
 	  }
-
-	gnu_array_object = maybe_unconstrained_array (gnu_array_object);
-
-	/* If we got a padded type, remove it too.  */
-	if (TYPE_IS_PADDING_P (TREE_TYPE (gnu_array_object)))
-	  gnu_array_object
-	    = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_array_object))),
-		       gnu_array_object);
 
 	/* The failure of this assertion will very likely come from a missing
 	   expansion for a packed array access.  */
@@ -7850,25 +7876,29 @@ gnat_to_gnu (Node_Id gnat_node)
       else
 	{
 	  const Node_Id gnat_expr = Expression (gnat_node);
+	  const Node_Id gnat_inner
+	    = Nkind (gnat_expr) == N_Qualified_Expression
+	      ? Expression (gnat_expr)
+	      : gnat_expr;
 	  const Entity_Id gnat_type
 	    = Underlying_Type (Etype (Name (gnat_node)));
 	  const bool regular_array_type_p
-	    = (Is_Array_Type (gnat_type) && !Is_Bit_Packed_Array (gnat_type));
+	    = Is_Array_Type (gnat_type) && !Is_Bit_Packed_Array (gnat_type);
 	  const bool use_memset_p
-	    = (regular_array_type_p
-	       && Nkind (gnat_expr) == N_Aggregate
-	       && Is_Others_Aggregate (gnat_expr));
+	    = regular_array_type_p
+	      && Nkind (gnat_inner) == N_Aggregate
+	      && Is_Single_Aggregate (gnat_inner);
 
-	  /* If we'll use memset, we need to find the inner expression.  */
+	  /* If we use memset, we need to find the innermost expression.  */
 	  if (use_memset_p)
 	    {
-	      Node_Id gnat_inner
-		= Expression (First (Component_Associations (gnat_expr)));
-	      while (Nkind (gnat_inner) == N_Aggregate
-		     && Is_Others_Aggregate (gnat_inner))
-		gnat_inner
-		  = Expression (First (Component_Associations (gnat_inner)));
-	      gnu_rhs = gnat_to_gnu (gnat_inner);
+	      gnat_temp = gnat_inner;
+	      do {
+		gnat_temp
+		  = Expression (First (Component_Associations (gnat_temp)));
+	      } while (Nkind (gnat_temp) == N_Aggregate
+		       && Is_Single_Aggregate (gnat_temp));
+	      gnu_rhs = gnat_to_gnu (gnat_temp);
 	    }
 	  else
 	    gnu_rhs = maybe_unconstrained_array (gnat_to_gnu (gnat_expr));
@@ -8728,8 +8758,9 @@ gnat_to_gnu (Node_Id gnat_node)
 	  || kind == N_Indexed_Component
 	  || kind == N_Selected_Component)
       && TREE_CODE (get_base_type (gnu_result_type)) == BOOLEAN_TYPE
-      && !lvalue_required_p (gnat_node, gnu_result_type, false, false)
-      && Nkind (Parent (gnat_node)) != N_Variant_Part)
+      && Nkind (Parent (gnat_node)) != N_Attribute_Reference
+      && Nkind (Parent (gnat_node)) != N_Variant_Part
+      && !lvalue_required_p (gnat_node, gnu_result_type, false, false))
     {
       gnu_result
 	= build_binary_op (NE_EXPR, gnu_result_type,
@@ -8855,9 +8886,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	       && TREE_CODE (TREE_TYPE (gnu_result)) == RECORD_TYPE))
     {
       /* Remove any padding.  */
-      if (TYPE_IS_PADDING_P (TREE_TYPE (gnu_result)))
-	gnu_result = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_result))),
-			      gnu_result);
+      gnu_result = maybe_padded_object (gnu_result);
     }
 
   else if (gnu_result == error_mark_node || gnu_result_type == void_type_node)
@@ -9083,10 +9112,8 @@ add_decl_expr (tree gnu_decl, Node_Id gnat_node)
 	  DECL_READONLY_ONCE_ELAB (gnu_decl) = 1;
 	}
 
-      /* If GNU_DECL has a padded type, convert it to the unpadded
-	 type so the assignment is done properly.  */
-      if (TYPE_IS_PADDING_P (type))
-	gnu_decl = convert (TREE_TYPE (TYPE_FIELDS (type)), gnu_decl);
+      /* Remove any padding so the assignment is done properly.  */
+      gnu_decl = maybe_padded_object (gnu_decl);
 
       gnu_stmt = build_binary_op (INIT_EXPR, NULL_TREE, gnu_decl, gnu_init);
       add_stmt_with_node (gnu_stmt, gnat_node);
@@ -10806,14 +10833,13 @@ adjust_for_implicit_deref (Node_Id exp)
 static tree
 maybe_implicit_deref (tree exp)
 {
-  /* If the type is a pointer, dereference it.  */
+  /* If the object is a pointer, dereference it.  */
   if (POINTER_TYPE_P (TREE_TYPE (exp))
       || TYPE_IS_FAT_POINTER_P (TREE_TYPE (exp)))
     exp = build_unary_op (INDIRECT_REF, NULL_TREE, exp);
 
-  /* If we got a padded type, remove it too.  */
-  if (TYPE_IS_PADDING_P (TREE_TYPE (exp)))
-    exp = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (exp))), exp);
+  /* If the object is padded, remove the padding.  */
+  exp = maybe_padded_object (exp);
 
   return exp;
 }

@@ -15091,6 +15091,7 @@ ix86_build_const_vector (machine_mode mode, bool vect, rtx value)
     case E_V16SFmode:
     case E_V8SFmode:
     case E_V4SFmode:
+    case E_V2SFmode:
     case E_V8DFmode:
     case E_V4DFmode:
     case E_V2DFmode:
@@ -15131,6 +15132,7 @@ ix86_build_signbit_mask (machine_mode mode, bool vect, bool invert)
     case E_V4SImode:
     case E_V8SFmode:
     case E_V4SFmode:
+    case E_V2SFmode:
       vec_mode = mode;
       imode = SImode;
       break;
@@ -21007,9 +21009,11 @@ ix86_vector_mode_supported_p (machine_mode mode)
     return true;
   if (TARGET_AVX512F && VALID_AVX512F_REG_MODE (mode))
     return true;
-  if ((TARGET_MMX || TARGET_MMX_WITH_SSE) && VALID_MMX_REG_MODE (mode))
+  if ((TARGET_MMX || TARGET_MMX_WITH_SSE)
+      && VALID_MMX_REG_MODE (mode))
     return true;
-  if (TARGET_3DNOW && VALID_MMX_REG_MODE_3DNOW (mode))
+  if ((TARGET_3DNOW || TARGET_MMX_WITH_SSE)
+      && VALID_MMX_REG_MODE_3DNOW (mode))
     return true;
   return false;
 }

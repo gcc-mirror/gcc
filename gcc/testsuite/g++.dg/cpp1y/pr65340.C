@@ -16,4 +16,5 @@ struct traverse {
 };
 }
 auto &traverse = constant < functors :: traverse > ;
-operator()()->decltype(traverse(0, 0)) // { dg-error "no match|expected" }
+operator()()->decltype(traverse(0, 0))// { dg-error "no match"  }
+// { dg-error "-:expected" "" { target *-*-* } .+1 }

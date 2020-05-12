@@ -3,4 +3,4 @@
 
 template <typename> struct A;
 template <typename> struct B : A < B { , // { dg-error ""  }
-// { dg-error "-:expected"  }
+// { dg-error "-:expected" "" { target *-*-* } .+1 }

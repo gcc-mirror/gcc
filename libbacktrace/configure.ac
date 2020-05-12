@@ -178,6 +178,17 @@ AC_ARG_ENABLE(host-shared,
 [PIC_FLAG=-fPIC], [PIC_FLAG=])
 AC_SUBST(PIC_FLAG)
 
+# Enable Intel CET on Intel CET enabled host if jit is enabled.
+GCC_CET_HOST_FLAGS(CET_HOST_FLAGS)
+case x$enable_languages in
+*jit*)
+  ;;
+*)
+  CET_HOST_FLAGS=
+  ;;
+esac
+AC_SUBST(CET_HOST_FLAGS)
+
 # Test for __sync support.
 AC_CACHE_CHECK([__sync extensions],
 [libbacktrace_cv_sys_sync],
@@ -238,6 +249,7 @@ FORMAT_FILE=
 backtrace_supports_data=yes
 case "$libbacktrace_cv_sys_filetype" in
 elf*) FORMAT_FILE="elf.lo" ;;
+macho) FORMAT_FILE="macho.lo" ;;
 pecoff) FORMAT_FILE="pecoff.lo"
         backtrace_supports_data=no
 	;;
@@ -340,6 +352,9 @@ if test "$have_dl_iterate_phdr" = "yes"; then
   AC_DEFINE(HAVE_DL_ITERATE_PHDR, 1, [Define if dl_iterate_phdr is available.])
 fi
 
+# Check for header file for Mach-O image functions.
+AC_CHECK_HEADERS(mach-o/dyld.h)
+
 # Check for loadquery.
 AC_CHECK_HEADERS(sys/ldr.h)
 if test "$ac_cv_header_sys_ldr_h" = "no"; then
@@ -372,7 +387,7 @@ if test "$have_fcntl" = "yes"; then
 	    [Define to 1 if you have the fcntl function])
 fi
 
-AC_CHECK_DECLS(strnlen)
+AC_CHECK_DECLS([strnlen, getpagesize])
 AC_CHECK_FUNCS(lstat readlink)
 
 # Check for getexecname function.
@@ -386,6 +401,36 @@ else
 fi
 if test "$have_getexecname" = "yes"; then
   AC_DEFINE(HAVE_GETEXECNAME, 1, [Define if getexecname is available.])
+fi
+
+# Check for sysctl definitions.
+
+AC_CACHE_CHECK([for KERN_PROC],
+[libbacktrace_cv_proc],
+[AC_COMPILE_IFELSE(
+  [AC_LANG_PROGRAM([
+#include <sys/types.h>
+#include <sys/sysctl.h>
+], [int mib0 = CTL_KERN; int mib1 = KERN_PROC; int mib2 = KERN_PROC_PATHNAME;])],
+  [libbacktrace_cv_proc=yes],
+  [libbacktrace_cv_proc=no])])
+if test "$libbacktrace_cv_proc" = "yes"; then
+  AC_DEFINE([HAVE_KERN_PROC], 1,
+            [Define to 1 if you have KERN_PROC and KERN_PROC_PATHNAME in <sys/sysctl.h>.])
+fi
+
+AC_CACHE_CHECK([for KERN_PROG_ARGS],
+[libbacktrace_cv_procargs],
+[AC_COMPILE_IFELSE(
+  [AC_LANG_PROGRAM([
+#include <sys/types.h>
+#include <sys/sysctl.h>
+], [int mib0 = CTL_KERN; int mib1 = KERN_PROC_ARGS; int mib2 = KERN_PROC_PATHNAME;])],
+  [libbacktrace_cv_procargs=yes],
+  [libbacktrace_cv_procargs=no])])
+if test "$libbacktrace_cv_procargs" = "yes"; then
+  AC_DEFINE([HAVE_KERN_PROC_ARGS], 1,
+            [Define to 1 if you have KERN_PROCARGS and KERN_PROC_PATHNAME in <sys/sysctl.h>.])
 fi
 
 # Check for the clock_gettime function.
@@ -453,6 +498,8 @@ AC_CACHE_CHECK([whether objcopy supports debuglink],
 [libbacktrace_cv_objcopy_debuglink],
 [if test -n "${with_target_subdir}"; then
   libbacktrace_cv_objcopy_debuglink=no
+elif ! test -n "${OBJCOPY}"; then
+  libbacktrace_cv_objcopy_debuglink=no
 elif ${OBJCOPY} --add-gnu-debuglink=x /bin/ls /tmp/ls$$; then
   rm -f /tmp/ls$$
   libbacktrace_cv_objcopy_debuglink=yes
@@ -460,6 +507,10 @@ else
   libbacktrace_cv_objcopy_debuglink=no
 fi])
 AM_CONDITIONAL(HAVE_OBJCOPY_DEBUGLINK, test "$libbacktrace_cv_objcopy_debuglink" = yes)
+
+AC_ARG_VAR(DSYMUTIL, [location of dsymutil])
+AC_CHECK_PROG(DSYMUTIL, dsymutil, dsymutil)
+AM_CONDITIONAL(HAVE_DSYMUTIL, test -n "${DSYMUTIL}")
 
 AC_CACHE_CHECK([whether tests can run],
   [libbacktrace_cv_sys_native],

@@ -58,6 +58,7 @@ CXXDEPMODE = @CXXDEPMODE@
 DEPDIR = @DEPDIR@
 NOEXCEPTION_FLAGS = @noexception_flags@
 PICFLAG = @PICFLAG@
+CET_HOST_FLAGS = @CET_HOST_FLAGS@
 
 datarootdir = @datarootdir@
 datadir = @datadir@
@@ -73,9 +74,10 @@ depcomp = $(SHELL) $(srcdir)/../depcomp
 INCLUDES = -I$(srcdir) -I. -I$(srcdir)/../include @INCINTL@ \
 	-I$(srcdir)/include
 
-ALL_CFLAGS = $(CFLAGS) $(WARN_CFLAGS) $(INCLUDES) $(CPPFLAGS) $(PICFLAG)
+ALL_CFLAGS = $(CFLAGS) $(WARN_CFLAGS) $(INCLUDES) $(CPPFLAGS) $(PICFLAG) \
+	$(CET_HOST_FLAGS)
 ALL_CXXFLAGS = $(CXXFLAGS) $(WARN_CXXFLAGS) $(NOEXCEPTION_FLAGS) $(INCLUDES) \
-	$(CPPFLAGS) $(PICFLAG)
+	$(CPPFLAGS) $(PICFLAG) $(CET_HOST_FLAGS)
 
 # The name of the compiler to use.
 COMPILER = $(CXX)

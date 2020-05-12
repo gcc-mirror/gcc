@@ -1,3 +1,18 @@
+2020-05-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* libdruntime/config/x86/switchcontext.S: Include <cet.h> if
+	__CET__ is defined.
+	(_CET_ENDBR): New.  Define if __CET__ is not defined.
+	(fiber_switchContext): Add _CET_ENDBR after .cfi_startproc.
+
+2020-05-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.am (AM_MAKEFLAGS): Add $(CET_FLAGS) to GCC FLAGS.
+	* configure.ac (CET_FLAGS): Add GCC_CET_FLAGS and AC_SUBST.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Likewise.
+	* configure.ac: Likewise.
+
 2020-04-30  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/Makefile.am (DRUNTIME_SOURCES_CONFIGURED): Remove

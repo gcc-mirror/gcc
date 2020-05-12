@@ -1,4 +1,92 @@
+2020-05-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95074
+	* parser.c (cp_parser_postfix_expression) <case CPP_OPEN_PAREN>: When
+	looking for a block-scope function declaration, look through the whole
+	set, not just the first function in the overload set.
+
+2020-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/95063
+	* pt.c (tsubst_decl): Deal with DECL_OMP_PRIVATIZED_MEMBER for
+	a bit-field.
+
+2020-05-11  Jason Merrill  <jason@redhat.com>
+
+	Resolve C++20 NB comment CA104
+	* pt.c (determine_specialization): Compare constraints for
+	specialization of member template of class instantiation.
+
+2020-05-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92583
+	PR c++/92654
+	* tree.c (cp_walk_subtrees): Stop at typedefs.
+	Handle TYPENAME_TYPE here.
+	* pt.c (find_parameter_packs_r): Not here.
+	(for_each_template_parm_r): Clear *walk_subtrees.
+	* decl2.c (min_vis_r): Look through typedefs.
+
+2020-05-11  Jason Merrill  <jason@redhat.com>
+
+	* call.c (implicit_conversion_error): Split out from...
+	(perform_implicit_conversion_flags): ...here.
+	(build_converted_constant_expr_internal): Use it.
+
+2020-05-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90748
+	* parser.c (inject_parm_decls): Set current_class_ptr here.
+	(cp_parser_direct_declarator): And here.
+	(cp_parser_late_return_type_opt): Not here.
+	(cp_parser_noexcept_specification_opt): Nor here.
+	(cp_parser_exception_specification_opt)
+	(cp_parser_late_noexcept_specifier): Remove unneeded parameters.
+
+2020-05-11  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (cxx_init_decl_processing): Call declare_weak for
+	__cxa_pure_virtual.
+
+2020-05-11  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (instantiate_class_template_1): Call tsubst_expr for
+	STATIC_ASSERT member.
+	* ptree.c (cxx_print_xnode): Handle STATIC_ASSERT.
+
+2020-05-11  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (find_parameter_packs_r) [LAMBDA_EXPR]: Remove redundant
+	walking of capture list.
+
+2020-05-11  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (LOOKUP_EXPLICIT_TMPL_ARGS): Remove.
+	* call.c (build_new_function_call): Don't set it.
+	(build_new_method_call_1): Likewise.
+	(build_over_call): Check cand->explicit_targs instead.
+
+2020-05-11  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (compute_array_index_type_loc): Stabilize before building
+	the MINUS_EXPR.
+
+2020-05-11  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (grokdeclarator): Adjust deprecated_state here.
+	(start_decl): Not here.
+
+2020-05-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95003
+	* coroutines.cc (build_actor_fn): Ensure that bind scopes
+	are marked as having side-effects where necessary.
+	(replace_statement_captures): Likewise.
+	(morph_fn_to_coro): Likewise.
+
 2020-05-08  Nathan Sidwell  <nathan@acm.org>
+
+	* NEWS: Delete, it is so stale.
 
 	* parser.c (cp_lexer_set_source_position_from_token): EOF has a
 	location too.

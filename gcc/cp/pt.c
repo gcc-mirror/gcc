@@ -2279,8 +2279,29 @@ determine_specialization (tree template_id,
              below. */
 	  if (tsk == tsk_template)
 	    {
-	      if (compparms (fn_arg_types, decl_arg_types))
-		candidates = tree_cons (NULL_TREE, fn, candidates);
+	      if (!comp_template_parms (DECL_TEMPLATE_PARMS (fn),
+					current_template_parms))
+		continue;
+	      if (!same_type_p (TREE_TYPE (TREE_TYPE (decl)),
+				TREE_TYPE (TREE_TYPE (fn))))
+		continue;
+	      if (!compparms (fn_arg_types, decl_arg_types))
+		continue;
+
+	      tree freq = get_trailing_function_requirements (fn);
+	      tree dreq = get_trailing_function_requirements (decl);
+	      if (!freq != !dreq)
+		continue;
+	      if (freq)
+		{
+		  tree fargs = DECL_TI_ARGS (fn);
+		  tsubst_flags_t complain = tf_none;
+		  freq = tsubst_constraint (freq, fargs, complain, fn);
+		  if (!cp_tree_equal (freq, dreq))
+		    continue;
+		}
+
+	      candidates = tree_cons (NULL_TREE, fn, candidates);
 	      continue;
 	    }
 
@@ -2469,7 +2490,8 @@ determine_specialization (tree template_id,
       *targs_out = copy_node (DECL_TI_ARGS (fn));
 
       /* Propagate the candidate's constraints to the declaration.  */
-      set_constraints (decl, get_constraints (fn));
+      if (tsk != tsk_template)
+	set_constraints (decl, get_constraints (fn));
 
       /* DECL is a re-declaration or partial instantiation of a template
 	 function.  */
@@ -3960,12 +3982,6 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
 		    &find_parameter_packs_r, ppd, ppd->visited);
       return NULL_TREE;
 
-    case TYPENAME_TYPE:
-      cp_walk_tree (&TYPENAME_TYPE_FULLNAME (t), &find_parameter_packs_r,
-                   ppd, ppd->visited);
-      *walk_subtrees = 0;
-      return NULL_TREE;
-
     case TYPE_PACK_EXPANSION:
     case EXPR_PACK_EXPANSION:
       *walk_subtrees = 0;
@@ -3985,18 +4001,12 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
 
     case LAMBDA_EXPR:
       {
-	/* Look at explicit captures.  */
-	for (tree cap = LAMBDA_EXPR_CAPTURE_LIST (t);
-	     cap; cap = TREE_CHAIN (cap))
-	  cp_walk_tree (&TREE_VALUE (cap), &find_parameter_packs_r, ppd,
-			ppd->visited);
 	/* Since we defer implicit capture, look in the parms and body.  */
 	tree fn = lambda_function (t);
 	cp_walk_tree (&TREE_TYPE (fn), &find_parameter_packs_r, ppd,
 		      ppd->visited);
 	cp_walk_tree (&DECL_SAVED_TREE (fn), &find_parameter_packs_r, ppd,
 		      ppd->visited);
-	*walk_subtrees = 0;
 	return NULL_TREE;
       }
 
@@ -10370,6 +10380,7 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
       /* A template-id in a TYPENAME_TYPE might be a deduced context after
 	 partial instantiation.  */
       WALK_SUBTREE (TYPENAME_TYPE_FULLNAME (t));
+      *walk_subtrees = 0;
       break;
 
     case CONSTRUCTOR:
@@ -11856,22 +11867,9 @@ instantiate_class_template_1 (tree type)
 	    {
 	      /* Build new TYPE_FIELDS.  */
               if (TREE_CODE (t) == STATIC_ASSERT)
-                {
-                  tree condition;
-
-		  ++c_inhibit_evaluation_warnings;
-		  condition =
-		    tsubst_expr (STATIC_ASSERT_CONDITION (t), args,
-				 tf_warning_or_error, NULL_TREE,
-				 /*integral_constant_expression_p=*/true);
-		  --c_inhibit_evaluation_warnings;
-
-                  finish_static_assert (condition,
-                                        STATIC_ASSERT_MESSAGE (t), 
-                                        STATIC_ASSERT_SOURCE_LOCATION (t),
-                                        /*member_p=*/true);
-                }
-	      else
+		tsubst_expr (t, args, tf_warning_or_error, NULL_TREE,
+			     /*integral_constant_expression_p=*/true);
+	      else if (TREE_CODE (t) != CONST_DECL)
 		{
 		  tree r;
 		  tree vec = NULL_TREE;
@@ -14687,6 +14685,12 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		  }
 		if (nop)
 		  ve = build_nop (type, ve);
+		else if (DECL_LANG_SPECIFIC (t)
+			 && DECL_OMP_PRIVATIZED_MEMBER (t)
+			 && TREE_CODE (ve) == COMPONENT_REF
+			 && TREE_CODE (TREE_OPERAND (ve, 1)) == FIELD_DECL
+			 && DECL_BIT_FIELD_TYPE (TREE_OPERAND (ve, 1)) == type)
+		  type = TREE_TYPE (ve);
 		else
 		  gcc_checking_assert (TREE_TYPE (ve) == type);
 		SET_DECL_VALUE_EXPR (r, ve);

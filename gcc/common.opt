@@ -2215,7 +2215,7 @@ Enum(profile_update) String(prefer-atomic) Value(PROFILE_UPDATE_PREFER_ATOMIC)
 
 fprofile-prefix-path=
 Common Joined RejectNegative Var(profile_prefix_path)
-Remove prefix from absolute path before manging name for -fprofile-generate= and -fprofile-use=.
+Remove prefix from absolute path before mangling name for -fprofile-generate= and -fprofile-use=.
 
 fprofile-generate
 Common

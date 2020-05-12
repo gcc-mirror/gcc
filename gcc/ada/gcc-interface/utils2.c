@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2019, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2020, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -32,6 +32,7 @@
 #include "alias.h"
 #include "tree.h"
 #include "inchash.h"
+#include "builtins.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "stringpool.h"
@@ -167,7 +168,10 @@ known_alignment (tree exp)
       break;
 
     case ADDR_EXPR:
-      this_alignment = expr_align (TREE_OPERAND (exp, 0));
+      if (DECL_P (TREE_OPERAND (exp, 0)))
+	this_alignment = DECL_ALIGN (TREE_OPERAND (exp, 0));
+      else
+	this_alignment = get_object_alignment (TREE_OPERAND (exp, 0));
       break;
 
     case CALL_EXPR:
@@ -1036,8 +1040,15 @@ build_binary_op (enum tree_code op_code, tree result_type,
       /* For a range, make sure the element type is consistent.  */
       if (op_code == ARRAY_RANGE_REF
 	  && TREE_TYPE (operation_type) != TREE_TYPE (left_type))
-	operation_type = build_array_type (TREE_TYPE (left_type),
-					   TYPE_DOMAIN (operation_type));
+	{
+	  operation_type
+	    = build_nonshared_array_type (TREE_TYPE (left_type),
+					  TYPE_DOMAIN (operation_type));
+	  /* Declare it now since it will never be declared otherwise.  This
+	     is necessary to ensure that its subtrees are properly marked.  */
+	  create_type_decl (TYPE_NAME (operation_type), operation_type, true,
+			    false, Empty);
+	}
 
       /* Then convert the right operand to its base type.  This will prevent
 	 unneeded sign conversions when sizetype is wider than integer.  */
@@ -2916,7 +2927,7 @@ is_simple_additive_expression (tree expr, tree *add, tree *cst, bool *minus_p)
 tree
 gnat_invariant_expr (tree expr)
 {
-  const tree type = TREE_TYPE (expr);
+  tree type = TREE_TYPE (expr);
   tree add, cst;
   bool minus_p;
 
@@ -2930,8 +2941,7 @@ gnat_invariant_expr (tree expr)
     {
       expr = DECL_INITIAL (expr);
       /* Look into CONSTRUCTORs built to initialize padded types.  */
-      if (TYPE_IS_PADDING_P (TREE_TYPE (expr)))
-	expr = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (expr))), expr);
+      expr = maybe_padded_object (expr);
       expr = remove_conversions (expr, false);
     }
 

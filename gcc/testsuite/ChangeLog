@@ -1,3 +1,397 @@
+2020-05-12  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/95013
+	* c-c++-common/goacc/pr79428-1.c: Adjust EOF diagnostic location.
+	* c-c++-common/gomp/pr79428-2.c: Likewise.
+	* g++.dg/cpp0x/decltype63.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-64.C: Likewise.
+	* g++.dg/cpp0x/pr68726.C: Likewise.
+	* g++.dg/cpp0x/pr78341.C: Likewise.
+	* g++.dg/cpp1y/pr65202.C: Likewise.
+	* g++.dg/cpp1y/pr65340.C: Likewise.
+	* g++.dg/cpp1y/pr68578.C: Likewise.
+	* g++.dg/cpp1z/class-deduction44.C: Likewise.
+	* g++.dg/diagnostic/unclosed-extern-c.C: Likewise.
+	* g++.dg/diagnostic/unclosed-function.C: Likewise.
+	* g++.dg/diagnostic/unclosed-namespace.C: Likewise.
+	* g++.dg/diagnostic/unclosed-struct.C: Likewise.
+	* g++.dg/ext/pr84598.C: Likewise.
+	* g++.dg/other/switch4.C: Likewise.
+	* g++.dg/parse/attr4.C: Likewise.
+	* g++.dg/parse/cond4.C: Likewise.
+	* g++.dg/parse/crash10.C: Likewise.
+	* g++.dg/parse/crash18.C: Likewise.
+	* g++.dg/parse/crash27.C: Likewise.
+	* g++.dg/parse/crash34.C: Likewise.
+	* g++.dg/parse/crash35.C: Likewise.
+	* g++.dg/parse/crash52.C: Likewise.
+	* g++.dg/parse/crash59.C: Likewise.
+	* g++.dg/parse/crash61.C: Likewise.
+	* g++.dg/parse/crash67.C: Likewise.
+	* g++.dg/parse/error14.C: Likewise.
+	* g++.dg/parse/error56.C: Likewise.
+	* g++.dg/parse/invalid1.C: Likewise.
+	* g++.dg/parse/parameter-declaration-1.C: Likewise.
+	* g++.dg/parse/parser-pr28152-2.C: Likewise.
+	* g++.dg/parse/parser-pr28152.C: Likewise.
+	* g++.dg/parse/pr68722.C: Likewise.
+	* g++.dg/pr46852.C: Likewise.
+	* g++.dg/pr46868.C: Likewise.
+	* g++.dg/template/crash115.C: Likewise.
+	* g++.dg/template/crash43.C: Likewise.
+	* g++.dg/template/crash90.C: Likewise.
+	* g++.dg/template/error-recovery1.C: Likewise.
+	* g++.dg/template/error57.C: Likewise.
+	* g++.old-deja/g++.other/crash31.C: Likewise.
+	* gcc.dg/empty-source-2.c: Likewise.
+	* gcc.dg/empty-source-3.c: Likewise.
+	* gcc.dg/noncompile/pr30552-3.c: Likewise.
+	* gcc.dg/noncompile/pr35447-1.c: Likewise.
+	* gcc.dg/pr20245-1.c: Likewise.
+	* gcc.dg/pr28419.c: Likewise.
+	* gcc.dg/rtl/truncated-rtl-file.c: Likewise.
+	* gcc.dg/unclosed-init.c: Likewise.
+	* obj-c++.dg/property/property-neg-6.mm: Likewise.
+	* obj-c++.dg/syntax-error-10.mm: Likewise.
+	* obj-c++.dg/syntax-error-8.mm: Likewise.
+	* obj-c++.dg/syntax-error-9.mm: Likewise.
+
+2020-05-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95074
+	* g++.dg/lookup/koenig15.C: New test.
+
+2020-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/95051
+	* gcc.dg/asan/pr95051.c: Add -fno-sanitize=all to dg-options.
+
+2020-05-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* gcc.target/i386/pr95046-4.c: New test.
+
+2020-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/78752
+	* g++.dg/cpp2a/concepts-pr78752-2.C: New test.
+
+2020-05-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* gcc.target/i386/pr95046-3.c: New test.
+
+2020-05-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* gcc.target/i386/pr95046-2.c: New test.
+
+2020-05-12  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.c-torture/execute/noinit-attribute.c: Skip for msp430
+	in the large memory model.
+
+2020-05-12  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/region-attribute-misuse.c: Allow a .bss section to
+	be created.
+
+2020-05-12  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/95033
+	PR sanitizer/95051
+	* g++.dg/asan/function-argument-4.C: New test.
+	* gcc.dg/asan/pr95033.c: New test.
+	* gcc.dg/asan/pr95051.c: New test.
+
+2020-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/95063
+	* g++.dg/gomp/pr95063.C: New test.
+
+2020-05-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94980
+	* gcc.target/i386/pr94980.c: New test.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/vec-clzm-0.c: Rename to...
+	* gcc.target/powerpc/vec-cntlzm-0.c: ...this.
+	* gcc.target/powerpc/vec-clzm-1.c: Rename to...
+	* gcc.target/powerpc/vec-cntlzm-1.c: ...this.
+	* gcc.target/powerpc/vec-ctzm-0.c: Rename to...
+	* gcc.target/powerpc/vec-cnttzm-0.c: ...this.
+	* gcc.target/powerpc/vec-ctzm-1.c: Rename to...
+	* gcc.target/powerpc/vec-cnttzm-1.c: ...this.
+	* gcc.target/powerpc/vec-gnb-8.c: Rename to...
+	* gcc.target/powerpc/vec-gnb-0.c: ...this, deleting the old file.
+	* gcc.target/powerpc/vec-gnb-9.c: Rename to...
+	* gcc.target/powerpc/vec-gnb-1.c: ...this, deleting the old file.
+	* gcc.target/powerpc/vec-gnb-10.c: Rename to...
+	* gcc.target/powerpc/vec-gnb-2.c: ...this, deleting the old file.
+	* gcc.target/powerpc/vec-gnb-3.c: Delete.
+	* gcc.target/powerpc/vec-gnb-4.c: Delete.
+	* gcc.target/powerpc/vec-gnb-5.c: Delete.
+	* gcc.target/powerpc/vec-gnb-6.c: Delete.
+	* gcc.target/powerpc/vec-gnb-7.c: Delete.
+
+2020-05-11  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/xxgenpc-runnable.c: New.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/vec-stril-0.c: New.
+	* gcc.target/powerpc/vec-stril-1.c: New.
+	* gcc.target/powerpc/vec-stril-10.c: New.
+	* gcc.target/powerpc/vec-stril-11.c: New.
+	* gcc.target/powerpc/vec-stril-12.c: New.
+	* gcc.target/powerpc/vec-stril-13.c: New.
+	* gcc.target/powerpc/vec-stril-14.c: New.
+	* gcc.target/powerpc/vec-stril-15.c: New.
+	* gcc.target/powerpc/vec-stril-16.c: New.
+	* gcc.target/powerpc/vec-stril-17.c: New.
+	* gcc.target/powerpc/vec-stril-18.c: New.
+	* gcc.target/powerpc/vec-stril-19.c: New.
+	* gcc.target/powerpc/vec-stril-2.c: New.
+	* gcc.target/powerpc/vec-stril-20.c: New.
+	* gcc.target/powerpc/vec-stril-21.c: New.
+	* gcc.target/powerpc/vec-stril-22.c: New.
+	* gcc.target/powerpc/vec-stril-23.c: New.
+	* gcc.target/powerpc/vec-stril-3.c: New.
+	* gcc.target/powerpc/vec-stril-4.c: New.
+	* gcc.target/powerpc/vec-stril-5.c: New.
+	* gcc.target/powerpc/vec-stril-6.c: New.
+	* gcc.target/powerpc/vec-stril-7.c: New.
+	* gcc.target/powerpc/vec-stril-8.c: New.
+	* gcc.target/powerpc/vec-stril-9.c: New.
+	* gcc.target/powerpc/vec-stril_p-0.c: New.
+	* gcc.target/powerpc/vec-stril_p-1.c: New.
+	* gcc.target/powerpc/vec-stril_p-10.c: New.
+	* gcc.target/powerpc/vec-stril_p-11.c: New.
+	* gcc.target/powerpc/vec-stril_p-2.c: New.
+	* gcc.target/powerpc/vec-stril_p-3.c: New.
+	* gcc.target/powerpc/vec-stril_p-4.c: New.
+	* gcc.target/powerpc/vec-stril_p-5.c: New.
+	* gcc.target/powerpc/vec-stril_p-6.c: New.
+	* gcc.target/powerpc/vec-stril_p-7.c: New.
+	* gcc.target/powerpc/vec-stril_p-8.c: New.
+	* gcc.target/powerpc/vec-stril_p-9.c: New.
+	* gcc.target/powerpc/vec-strir-0.c: New.
+	* gcc.target/powerpc/vec-strir-1.c: New.
+	* gcc.target/powerpc/vec-strir-10.c: New.
+	* gcc.target/powerpc/vec-strir-11.c: New.
+	* gcc.target/powerpc/vec-strir-12.c: New.
+	* gcc.target/powerpc/vec-strir-13.c: New.
+	* gcc.target/powerpc/vec-strir-14.c: New.
+	* gcc.target/powerpc/vec-strir-15.c: New.
+	* gcc.target/powerpc/vec-strir-16.c: New.
+	* gcc.target/powerpc/vec-strir-17.c: New.
+	* gcc.target/powerpc/vec-strir-18.c: New.
+	* gcc.target/powerpc/vec-strir-19.c: New.
+	* gcc.target/powerpc/vec-strir-2.c: New.
+	* gcc.target/powerpc/vec-strir-20.c: New.
+	* gcc.target/powerpc/vec-strir-21.c: New.
+	* gcc.target/powerpc/vec-strir-22.c: New.
+	* gcc.target/powerpc/vec-strir-23.c: New.
+	* gcc.target/powerpc/vec-strir-3.c: New.
+	* gcc.target/powerpc/vec-strir-4.c: New.
+	* gcc.target/powerpc/vec-strir-5.c: New.
+	* gcc.target/powerpc/vec-strir-6.c: New.
+	* gcc.target/powerpc/vec-strir-7.c: New.
+	* gcc.target/powerpc/vec-strir-8.c: New.
+	* gcc.target/powerpc/vec-strir-9.c: New.
+	* gcc.target/powerpc/vec-strir_p-0.c: New.
+	* gcc.target/powerpc/vec-strir_p-1.c: New.
+	* gcc.target/powerpc/vec-strir_p-10.c: New.
+	* gcc.target/powerpc/vec-strir_p-11.c: New.
+	* gcc.target/powerpc/vec-strir_p-2.c: New.
+	* gcc.target/powerpc/vec-strir_p-3.c: New.
+	* gcc.target/powerpc/vec-strir_p-4.c: New.
+	* gcc.target/powerpc/vec-strir_p-5.c: New.
+	* gcc.target/powerpc/vec-strir_p-6.c: New.
+	* gcc.target/powerpc/vec-strir_p-7.c: New.
+	* gcc.target/powerpc/vec-strir_p-8.c: New.
+	* gcc.target/powerpc/vec-strir_p-9.c: New.
+
+2020-05-11  Kelvin Nilsen  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/vec-ternarylogic-0.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-1.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-10.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-2.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-3.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-4.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-5.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-6.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-7.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-8.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-9.c: New.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/pdep-0.c: New.
+	* gcc.target/powerpc/pdep-1.c: New.
+	* gcc.target/powerpc/pextd-0.c: New.
+	* gcc.target/powerpc/pextd-1.c: New.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/vec-clrl-0.c: New.
+	* gcc.target/powerpc/vec-clrl-1.c: New.
+	* gcc.target/powerpc/vec-clrr-0.c: New.
+	* gcc.target/powerpc/vec-clrr-1.c: New.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/cntlzdm-0.c: New test.
+	* gcc.target/powerpc/cntlzdm-1.c: New test.
+	* gcc.target/powerpc/cnttzdm-0.c: New test.
+	* gcc.target/powerpc/cnttzdm-1.c: New test.
+
+2020-05-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95053
+	* gfortran.dg/pr95053.f: New test.
+
+2020-05-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* gcc.target/i386/pr95046-1.c (test_sqrt): Add.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/vec-cfuged-0.c: New test.
+	* gcc.target/powerpc/vec-cfuged-1.c: New test.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target.powerpc/cfuged-0.c: New test.
+	* gcc.target.powerpc/cfuged-1.c: New test.
+
+2020-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95049
+	* gcc.dg/torture/pr95049.c: New testcase.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+	    Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/vec-gnb-0.c: New test.
+	* gcc.target/powerpc/vec-gnb-1.c: New test.
+	* gcc.target/powerpc/vec-gnb-10.c: New test.
+	* gcc.target/powerpc/vec-gnb-2.c: New test.
+	* gcc.target/powerpc/vec-gnb-3.c: New test.
+	* gcc.target/powerpc/vec-gnb-4.c: New test.
+	* gcc.target/powerpc/vec-gnb-5.c: New test.
+	* gcc.target/powerpc/vec-gnb-6.c: New test.
+	* gcc.target/powerpc/vec-gnb-7.c: New test.
+	* gcc.target/powerpc/vec-gnb-8.c: New test.
+	* gcc.target/powerpc/vec-gnb-9.c: New test.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/vec-pdep-0.c: New.
+	* gcc.target/powerpc/vec-pdep-1.c: New.
+	* gcc.target/powerpc/vec-pext-0.c: New.
+	* gcc.target/powerpc/vec-pext-1.c: New.
+
+2020-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94988
+	PR tree-optimization/95025
+	* gcc.dg/torture/pr94988.c: New testcase.
+	* gcc.dg/torture/pr95025.c: Likewise.
+	* gcc.dg/torture/pr95045.c: Likewise.
+	* g++.dg/asan/pr95025.C: New testcase.
+
+2020-05-11  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94672
+	* gfortran.dg/gomp/pr94672.f90: New.
+	* gfortran.dg/missing_optional_dummy_6a.f90: Update scan-tree.
+
+2020-05-11  Felix Yang  <felix.yang@huawei.com>
+
+	PR target/94991
+	* gcc.target/aarch64/mgeneral-regs_5.c: New test.
+
+2020-05-11  Alex Coplan  <alex.coplan@arm.com>
+
+	* gcc.target/aarch64/csinv-neg.c: New test.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/vec-clzm-0.c: New test.
+	* gcc.target/powerpc/vec-clzm-1.c: New test.
+	* gcc.target/powerpc/vec-ctzm-0.c: New test.
+	* gcc.target/powerpc/vec-ctzm-1.c: New test.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/dg-future-0.c: New.
+	* gcc.target/powerpc/dg-future-1.c: New.
+	* lib/target-supports.exp (check_powerpc_future_hw_available):
+	Replace -mfuture with -mcpu=future.
+	(check_effective_target_powerpc_future_ok): Likewise.
+	(is-effective-target): Add powerpc_future_hw.
+
+2020-05-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc/testsuite/g++.dg/ipa/pr94856.C: Require fgnu-tm.
+
+2020-05-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* gcc.target/i386/pr95046-1.c: New test.
+
+2020-05-11  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/59107
+	* gfortran.dg/pr59107.f90: New test.
+
+2020-05-11  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	PR tree-optimization/83403
+	* gcc.dg/tree-ssa/pr83403-1.c: New test.
+	* gcc.dg/tree-ssa/pr83403-2.c: New test.
+	* gcc.dg/tree-ssa/pr83403.h: New header.
+
+2020-05-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93499
+	* gfortran.dg/pr93499.f90: New test.
+
+2020-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/95008
+	* gcc.dg/two-types-6.c: Remove dg-warning directive that never
+	triggered.
+	* gcc.dg/analyzer/pr93382.c: Properly escape ()s in the diagnostic
+	message.
+
+2020-05-09  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/: Adjust for removing crisv32-* and cris-linux-*.
+	* gcc.dg/20020919-1.c, gcc.dg/pr31866.c, gcc.dg/pr46647.c,
+	gcc.dg/sibcall-10.c, gcc.dg/sibcall-3.c, gcc.dg/sibcall-4.c,
+	gcc.dg/sibcall-9.c, gcc.dg/torture/cris-asm-mof-1.c,
+	gcc.dg/torture/cris-volatile-1.c, gcc.dg/torture/pr38948.c,
+	gcc.dg/tree-ssa/20040204-1.c, gcc.dg/tree-ssa/loop-1.c,
+	gcc.dg/weak/typeof-2.c, lib/target-supports.exp: Remove remaining
+	traces of crisv32-*.
+
+2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/i386/pr92807-1.c: Improve the regex.
+
+2020-05-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95003
+	* g++.dg/coroutines/torture/pr95003.C: New test.
+
 2020-05-08  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.dg/cpp/counter-[23].c: Move to c-c+_-common/cpp.

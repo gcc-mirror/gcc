@@ -686,4 +686,27 @@ __altivec_scalar_pred(vec_any_nle,
    to #define vec_step to __builtin_vec_step.  */
 #define vec_step(x) __builtin_vec_step (* (__typeof__ (x) *) 0)
 
+#ifdef _ARCH_PWR_FUTURE
+/* May modify these macro definitions if future capabilities overload
+   with support for different vector argument and result types.  */
+#define vec_cntlzm(a, b)	__builtin_altivec_vclzdm (a, b)
+#define vec_cnttzm(a, b)	__builtin_altivec_vctzdm (a, b)
+#define vec_pdep(a, b)	__builtin_altivec_vpdepd (a, b)
+#define vec_pext(a, b)	__builtin_altivec_vpextd (a, b)
+#define vec_cfuge(a, b)	__builtin_altivec_vcfuged (a, b)
+#define vec_genpcvm(a, b)	__builtin_vec_xxgenpcvm (a, b)
+
+/* Overloaded built-in functions for future architecture.  */
+#define vec_gnb(a, b)	__builtin_vec_gnb (a, b)
+#define vec_clrl(a, b)	__builtin_vec_clrl (a, b)
+#define vec_clrr(a, b)	__builtin_vec_clrr (a, b)
+#define vec_ternarylogic(a, b, c, d)	__builtin_vec_xxeval (a, b, c, d)
+
+#define vec_strir(a)	__builtin_vec_strir (a)
+#define vec_stril(a)	__builtin_vec_stril (a)
+
+#define vec_strir_p(a)	__builtin_vec_strir_p (a)
+#define vec_stril_p(a)	__builtin_vec_stril_p (a)
+#endif
+
 #endif /* _ALTIVEC_H */

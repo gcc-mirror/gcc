@@ -5,4 +5,4 @@ template<typename T>
 class C{
  T t;
   decltype(t)::a:: // { dg-error "expected" }
-// { dg-error "-:expected"  }
+// { dg-error "-:expected" "" { target *-*-* } .+1 }

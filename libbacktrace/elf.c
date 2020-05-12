@@ -2659,10 +2659,13 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
   uint32_t debugaltlink_buildid_size;
   off_t min_offset;
   off_t max_offset;
+  off_t debug_size;
   struct backtrace_view debug_view;
   int debug_view_valid;
   unsigned int using_debug_view;
   uint16_t *zdebug_table;
+  struct backtrace_view split_debug_view[DEBUG_MAX];
+  unsigned char split_debug_view_valid[DEBUG_MAX];
   struct elf_ppc64_opd_data opd_data, *opd;
   struct dwarf_sections dwarf_sections;
 
@@ -2687,6 +2690,7 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
   debugaltlink_buildid_data = NULL;
   debugaltlink_buildid_size = 0;
   debug_view_valid = 0;
+  memset (&split_debug_view_valid[0], 0, sizeof split_debug_view_valid);
   opd = NULL;
 
   if (!backtrace_get_view (state, descriptor, 0, sizeof ehdr, error_callback,
@@ -2776,6 +2780,9 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 
       backtrace_release_view (state, &shdr_view, error_callback, data);
     }
+
+  if (shnum == 0 || shstrndx == 0)
+    goto fail;
 
   /* To translate PC to file/line when using DWARF, we need to find
      the .debug_info and .debug_line sections.  */
@@ -3007,6 +3014,7 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 	 string table permanently.  */
       backtrace_release_view (state, &symtab_view, error_callback, data);
       symtab_view_valid = 0;
+      strtab_view_valid = 0;
 
       *found_sym = 1;
 
@@ -3131,6 +3139,7 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 
   min_offset = 0;
   max_offset = 0;
+  debug_size = 0;
   for (i = 0; i < (int) DEBUG_MAX; ++i)
     {
       off_t end;
@@ -3142,6 +3151,7 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 	  end = sections[i].offset + sections[i].size;
 	  if (end > max_offset)
 	    max_offset = end;
+	  debug_size += sections[i].size;
 	}
       if (zsections[i].size != 0)
 	{
@@ -3150,6 +3160,7 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 	  end = zsections[i].offset + zsections[i].size;
 	  if (end > max_offset)
 	    max_offset = end;
+	  debug_size += zsections[i].size;
 	}
     }
   if (min_offset == 0 || max_offset == 0)
@@ -3159,11 +3170,45 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
       return 1;
     }
 
-  if (!backtrace_get_view (state, descriptor, min_offset,
-			   max_offset - min_offset,
-			   error_callback, data, &debug_view))
-    goto fail;
-  debug_view_valid = 1;
+  /* If the total debug section size is large, assume that there are
+     gaps between the sections, and read them individually.  */
+
+  if (max_offset - min_offset < 0x20000000
+      || max_offset - min_offset < debug_size + 0x10000)
+    {
+      if (!backtrace_get_view (state, descriptor, min_offset,
+			       max_offset - min_offset,
+			       error_callback, data, &debug_view))
+	goto fail;
+      debug_view_valid = 1;
+    }
+  else
+    {
+      memset (&split_debug_view[0], 0, sizeof split_debug_view);
+      for (i = 0; i < (int) DEBUG_MAX; ++i)
+	{
+	  struct debug_section_info *dsec;
+
+	  if (sections[i].size != 0)
+	    dsec = &sections[i];
+	  else if (zsections[i].size != 0)
+	    dsec = &zsections[i];
+	  else
+	    continue;
+
+	  if (!backtrace_get_view (state, descriptor, dsec->offset, dsec->size,
+				   error_callback, data, &split_debug_view[i]))
+	    goto fail;
+	  split_debug_view_valid[i] = 1;
+
+	  if (sections[i].size != 0)
+	    sections[i].data = ((const unsigned char *)
+				split_debug_view[i].data);
+	  else
+	    zsections[i].data = ((const unsigned char *)
+				 split_debug_view[i].data);
+	}
+    }
 
   /* We've read all we need from the executable.  */
   if (!backtrace_close (descriptor, error_callback, data))
@@ -3171,22 +3216,25 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
   descriptor = -1;
 
   using_debug_view = 0;
-  for (i = 0; i < (int) DEBUG_MAX; ++i)
+  if (debug_view_valid)
     {
-      if (sections[i].size == 0)
-	sections[i].data = NULL;
-      else
+      for (i = 0; i < (int) DEBUG_MAX; ++i)
 	{
-	  sections[i].data = ((const unsigned char *) debug_view.data
-			      + (sections[i].offset - min_offset));
-	  ++using_debug_view;
-	}
+	  if (sections[i].size == 0)
+	    sections[i].data = NULL;
+	  else
+	    {
+	      sections[i].data = ((const unsigned char *) debug_view.data
+				  + (sections[i].offset - min_offset));
+	      ++using_debug_view;
+	    }
 
-      if (zsections[i].size == 0)
-	zsections[i].data = NULL;
-      else
-	zsections[i].data = ((const unsigned char *) debug_view.data
-			     + (zsections[i].offset - min_offset));
+	  if (zsections[i].size == 0)
+	    zsections[i].data = NULL;
+	  else
+	    zsections[i].data = ((const unsigned char *) debug_view.data
+				 + (zsections[i].offset - min_offset));
+	}
     }
 
   /* Uncompress the old format (--compress-debug-sections=zlib-gnu).  */
@@ -3218,6 +3266,13 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 	  sections[i].data = uncompressed_data;
 	  sections[i].size = uncompressed_size;
 	  sections[i].compressed = 0;
+
+	  if (split_debug_view_valid[i])
+	    {
+	      backtrace_release_view (state, &split_debug_view[i],
+				      error_callback, data);
+	      split_debug_view_valid[i] = 0;
+	    }
 	}
     }
 
@@ -3250,7 +3305,14 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
       sections[i].size = uncompressed_size;
       sections[i].compressed = 0;
 
-      --using_debug_view;
+      if (debug_view_valid)
+	--using_debug_view;
+      else if (split_debug_view_valid[i])
+	{
+	  backtrace_release_view (state, &split_debug_view[i],
+				  error_callback, data);
+	  split_debug_view_valid[i] = 0;
+	}
     }
 
   if (zdebug_table != NULL)
@@ -3297,6 +3359,12 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
     backtrace_release_view (state, &buildid_view, error_callback, data);
   if (debug_view_valid)
     backtrace_release_view (state, &debug_view, error_callback, data);
+  for (i = 0; i < (int) DEBUG_MAX; ++i)
+    {
+      if (split_debug_view_valid[i])
+	backtrace_release_view (state, &split_debug_view[i],
+				error_callback, data);
+    }
   if (opd)
     backtrace_release_view (state, &opd->view, error_callback, data);
   if (descriptor != -1)

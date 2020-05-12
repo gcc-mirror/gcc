@@ -16980,6 +16980,7 @@ implementing assertions.
 * Basic PowerPC Built-in Functions Available on ISA 2.06::
 * Basic PowerPC Built-in Functions Available on ISA 2.07::
 * Basic PowerPC Built-in Functions Available on ISA 3.0::
+* Basic PowerPC Built-in Functions Available for a Future Architecture::
 @end menu
 
 This section describes PowerPC built-in functions that do not require
@@ -17533,6 +17534,59 @@ the FPSCR.  The instruction is a lower latency version of the @code{mffs}
 instruction.  If the @code{mffsl} instruction is not available, then the
 builtin uses the older @code{mffs} instruction to read the FPSCR.
 
+@node Basic PowerPC Built-in Functions Available for a Future Architecture
+@subsubsection Basic PowerPC Built-in Functions Available for a Future Architecture
+
+The basic built-in functions described in this section are
+available on the PowerPC family of processors starting with a
+hypothetical CPU which may or may not be available in the future, as
+requested by specifying @option{-mcpu=future} on the command line.
+Unless explicitly disabled on the command line,
+specifying @option{-mcpu=future} has the effect of enabling all the
+same options as for @option{-mcpu=power9}.
+
+The following built-in functions are available on Linux 64-bit systems
+that use a future architecture instruction set (@option{-mcpu=future}):
+
+@smallexample
+@exdent unsigned long long int
+@exdent __builtin_cfuged (unsigned long long int, unsigned long long int)
+@end smallexample
+Perform a 64-bit centrifuge operation, as if implemented by the Future
+@code{cfuged} instruction.
+@findex __builtin_cfuged
+
+@smallexample
+@exdent unsigned long long int
+@exdent __builtin_cntlzdm (unsigned long long int, unsigned long long int)
+@end smallexample
+Perform a 64-bit count leading zeros operation under mask, as if
+implemented by the future @code{cntlzdm} instruction.
+@findex __builtin_cntlzdm
+
+@smallexample
+@exdent unsigned long long int
+@exdent __builtin_cnttzdm (unsigned long long int, unsigned long long int)
+@end smallexample
+Perform a 64-bit count trailing zeros operation under mask, as if
+implemented by the future @code{cnttzdm} instruction.
+@findex __builtin_cnttzdm
+
+@smallexample
+@exdent unsigned long long int
+@exdent __builtin_pdepd (unsigned long long int, unsigned long long int)
+@end smallexample
+Perform a 64-bit parallel bits deposit operation, as if implemented by the
+Future @code{pdepd} instruction.
+@findex __builtin_pdepd
+
+@smallexample
+@exdent unsigned long long int
+@exdent __builtin_pextd (unsigned long long int, unsigned long long int)
+@end smallexample
+Perform a 64-bit parallel bits extract operation, as if implemented by the
+Future @code{pextd} instruction.
+@findex __builtin_pextd
 
 @node PowerPC AltiVec/VSX Built-in Functions
 @subsection PowerPC AltiVec/VSX Built-in Functions
@@ -17645,6 +17699,7 @@ briefly described below.
 * PowerPC AltiVec Built-in Functions Available on ISA 2.06::
 * PowerPC AltiVec Built-in Functions Available on ISA 2.07::
 * PowerPC AltiVec Built-in Functions Available on ISA 3.0::
+* PowerPC AltiVec Built-in Functions Available for a Future Architecture::
 @end menu
 
 @node PowerPC AltiVec Built-in Functions on ISA 2.05
@@ -20687,6 +20742,179 @@ void vec_xst (vector char, int, char *);
 void vec_xst (vector unsigned char, int, vector unsigned char *);
 void vec_xst (vector unsigned char, int, unsigned char *);
 @end smallexample
+
+@node PowerPC AltiVec Built-in Functions Available for a Future Architecture
+@subsubsection PowerPC AltiVec Built-in Functions Available for a Future Architecture
+
+The following additional built-in functions are also available for the
+PowerPC family of processors, starting with a hypothetical CPU
+which may or may not be available in the future
+(@option{-mcpu=future}) or later:
+
+
+@smallexample
+@exdent vector unsigned long long int
+@exdent vec_cfuge (vector unsigned long long int, vector unsigned long long int)
+@end smallexample
+Perform a vector centrifuge operation, as if implemented by the Future
+@code{vcfuged} instruction.
+@findex vec_cfuge
+
+@smallexample
+@exdent vector unsigned long long int
+@exdent vec_cntlzm (vector unsigned long long int, vector unsigned long long int)
+@end smallexample
+Perform a vector count leading zeros under bit mask operation, as if
+implemented by the Future @code{vclzdm} instruction.
+@findex vec_cntlzm
+
+@smallexample
+@exdent vector unsigned long long int
+@exdent vec_cnttzm (vector unsigned long long int, vector unsigned long long int)
+@end smallexample
+Perform a vector count trailing zeros under bit mask operation, as if
+implemented by the Future @code{vctzdm} instruction.
+@findex vec_cnttzm
+
+@smallexample
+@exdent vector signed char
+@exdent vec_clrl (vector signed char a, unsigned int n)
+@exdent vector unsigned char
+@exdent vec_clrl (vector unsigned char a, unsigned int n)
+@end smallexample
+Clear the left-most @code{(16 - n)} bytes of vector argument @code{a}, as if
+implemented by the @code{vclrlb} instruction on a big-endian target
+and by the @code{vclrrb} instruction on a little-endian target.  A
+value of @code{n} that is greater than 16 is treated as if it equaled 16.
+@findex vec_clrl
+
+@smallexample
+@exdent vector signed char
+@exdent vec_clrr (vector signed char a, unsigned int n)
+@exdent vector unsigned char
+@exdent vec_clrr (vector unsigned char a, unsigned int n)
+@end smallexample
+Clear the right-most @code{(16 - n)} bytes of vector argument @code{a}, as if
+implemented by the @code{vclrrb} instruction on a big-endian target
+and by the @code{vclrlb} instruction on a little-endian target.  A
+value of @code{n} that is greater than 16 is treated as if it equaled 16.
+@findex vec_clrr
+
+@smallexample
+@exdent vector unsigned long long int
+@exdent vec_gnb (vector unsigned __int128, const unsigned char)
+@end smallexample
+Perform a 128-bit vector gather  operation, as if implemented by the Future
+@code{vgnb} instruction.  The second argument must be a literal
+integer value between 2 and 7 inclusive.
+@findex vec_gnb
+
+@smallexample
+@exdent vector unsigned long long int
+@exdent vec_pdep (vector unsigned long long int, vector unsigned long long int)
+@end smallexample
+Perform a vector parallel bits deposit operation, as if implemented by
+the Future @code{vpdepd} instruction.
+@findex vec_pdep
+
+@smallexample
+@exdent vector unsigned long long int
+@exdent vec_pext (vector unsigned long long int, vector unsigned long long int)
+@end smallexample
+Perform a vector parallel bit extract operation, as if implemented by
+the Future @code{vpextd} instruction.
+@findex vec_pext
+
+@smallexample
+@exdent vector unsigned char vec_stril (vector unsigned char)
+@exdent vector signed char vec_stril (vector signed char)
+@exdent vector unsigned short vec_stril (vector unsigned short)
+@exdent vector signed short vec_stril (vector signed short)
+@end smallexample
+Isolate the left-most non-zero elements of the incoming vector argument,
+replacing all elements to the right of the left-most zero element
+found within the argument with zero.  The typical implementation uses
+the @code{vstribl} or @code{vstrihl} instruction on big-endian targets
+and uses the @code{vstribr} or @code{vstrihr} instruction on
+little-endian targets.
+@findex vec_stril
+
+@smallexample
+@exdent int vec_stril_p (vector unsigned char)
+@exdent int vec_stril_p (vector signed char)
+@exdent int short vec_stril_p (vector unsigned short)
+@exdent int vec_stril_p (vector signed short)
+@end smallexample
+Return a non-zero value if and only if the argument contains a zero
+element.  The typical implementation uses
+the @code{vstribl.} or @code{vstrihl.} instruction on big-endian targets
+and uses the @code{vstribr.} or @code{vstrihr.} instruction on
+little-endian targets.  Choose this built-in to check for presence of
+zero element if the same argument is also passed to @code{vec_stril}.
+@findex vec_stril_p
+
+@smallexample
+@exdent vector unsigned char vec_strir (vector unsigned char)
+@exdent vector signed char vec_strir (vector signed char)
+@exdent vector unsigned short vec_strir (vector unsigned short)
+@exdent vector signed short vec_strir (vector signed short)
+@end smallexample
+Isolate the right-most non-zero elements of the incoming vector argument,
+replacing all elements to the left of the right-most zero element
+found within the argument with zero.  The typical implementation uses
+the @code{vstribr} or @code{vstrihr} instruction on big-endian targets
+and uses the @code{vstribl} or @code{vstrihl} instruction on
+little-endian targets.
+@findex vec_strir
+
+@smallexample
+@exdent int vec_strir_p (vector unsigned char)
+@exdent int vec_strir_p (vector signed char)
+@exdent int short vec_strir_p (vector unsigned short)
+@exdent int vec_strir_p (vector signed short)
+@end smallexample
+Return a non-zero value if and only if the argument contains a zero
+element.  The typical implementation uses
+the @code{vstribr.} or @code{vstrihr.} instruction on big-endian targets
+and uses the @code{vstribl.} or @code{vstrihl.} instruction on
+little-endian targets.  Choose this built-in to check for presence of
+zero element if the same argument is also passed to @code{vec_strir}.
+@findex vec_strir_p
+
+@smallexample
+@exdent vector unsigned char
+@exdent vec_ternarylogic (vector unsigned char, vector unsigned char,
+            vector unsigned char, const unsigned int)
+@exdent vector unsigned short
+@exdent vec_ternarylogic (vector unsigned short, vector unsigned short,
+            vector unsigned short, const unsigned int)
+@exdent vector unsigned int
+@exdent vec_ternarylogic (vector unsigned int, vector unsigned int,
+            vector unsigned int, const unsigned int)
+@exdent vector unsigned long long int
+@exdent vec_ternarylogic (vector unsigned long long int, vector unsigned long long int,
+            vector unsigned long long int, const unsigned int)
+@exdent vector unsigned __int128
+@exdent vec_ternarylogic (vector unsigned __int128, vector unsigned __int128,
+            vector unsigned __int128, const unsigned int)
+@end smallexample
+Perform a 128-bit vector evaluate operation, as if implemented by the
+Future @code{xxeval} instruction.  The fourth argument must be a literal
+integer value between 0 and 255 inclusive.
+@findex vec_ternarylogic
+
+@smallexample
+@exdent vector unsigned char vec_genpcvm (vector unsigned char, const int)
+@exdent vector unsigned short vec_genpcvm (vector unsigned short, const int)
+@exdent vector unsigned int vec_genpcvm (vector unsigned int, const int)
+@exdent vector unsigned int vec_genpcvm (vector unsigned long long int,
+                                         const int)
+@end smallexample
+Generate PCV from specified Mask size, as if implemented by the Future
+@code{xxgenpcvbm}, @code{xxgenpcvhm}, @code{xxgenpcvwm} instructions, where
+immediate value is either 0, 1, 2 or 3.
+@findex vec_genpcvm
+
 @node PowerPC Hardware Transactional Memory Built-in Functions
 @subsection PowerPC Hardware Transactional Memory Built-in Functions
 GCC provides two interfaces for accessing the Hardware Transactional
@@ -21410,7 +21638,6 @@ v8qi __builtin_vis_fpmaxu8 (v8qi, v8qi);
 v4hi __builtin_vis_fpmaxu16 (v4hi, v4hi);
 v2si __builtin_vis_fpmaxu32 (v2si, v2si);
 
-
 v8qi __builtin_vis_fpmin8 (v8qi, v8qi);
 v4hi __builtin_vis_fpmin16 (v4hi, v4hi);
 v2si __builtin_vis_fpmin32 (v2si, v2si);
@@ -21909,7 +22136,6 @@ else
   @}
 @end smallexample
 @end deftypefn
-
 
 The following built-in functions are made available by @option{-mmmx}.
 All of them generate the machine instruction that is part of the name.

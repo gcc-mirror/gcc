@@ -5093,9 +5093,18 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
   while (0)
 
   if (TYPE_P (*tp))
-    /* Walk into template args without looking through typedefs.  */
-    if (tree ti = TYPE_TEMPLATE_INFO_MAYBE_ALIAS (*tp))
-      WALK_SUBTREE (TI_ARGS (ti));
+    {
+      /* Walk into template args without looking through typedefs.  */
+      if (tree ti = TYPE_TEMPLATE_INFO_MAYBE_ALIAS (*tp))
+	WALK_SUBTREE (TI_ARGS (ti));
+      /* Don't look through typedefs; walk_tree_fns that want to look through
+	 typedefs (like min_vis_r) need to do that themselves.  */
+      if (typedef_variant_p (*tp))
+	{
+	  *walk_subtrees_p = 0;
+	  return NULL_TREE;
+	}
+    }
 
   /* Not one of the easy cases.  We must explicitly go through the
      children.  */
@@ -5108,11 +5117,16 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
     case UNBOUND_CLASS_TEMPLATE:
     case TEMPLATE_PARM_INDEX:
     case TEMPLATE_TYPE_PARM:
-    case TYPENAME_TYPE:
     case TYPEOF_TYPE:
     case UNDERLYING_TYPE:
       /* None of these have subtrees other than those already walked
 	 above.  */
+      *walk_subtrees_p = 0;
+      break;
+
+    case TYPENAME_TYPE:
+      WALK_SUBTREE (TYPE_CONTEXT (*tp));
+      WALK_SUBTREE (TYPENAME_TYPE_FULLNAME (*tp));
       *walk_subtrees_p = 0;
       break;
 

@@ -89,7 +89,7 @@ struct SS2 *p2;				/* { dg-warning "'SS2' is deprecated: Please avoid SS2" } */
 class T {
   public:
     void member1(int) __attribute__ ((deprecated("Please avoid member1")));
-    void member2(INT1) __attribute__ ((__deprecated__("Please avoid member2"))); /* { dg-warning "'INT1' is deprecated" } */
+    void member2(INT1) __attribute__ ((__deprecated__("Please avoid member2")));
     int member3(T *);
     int x;
 } __attribute__ ((deprecated("Please avoid T")));

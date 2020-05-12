@@ -4,4 +4,5 @@
 void foo()
 {
   ({ int i().; }); /* { dg-error "expected" } */
-} /* { dg-error "-:expected" } */
+} /* { dg-error "expected declaration" }
+/* { dg-error "-:expected" "" { target *-*-* } .+1 } */

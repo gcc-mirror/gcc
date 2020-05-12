@@ -18,9 +18,6 @@
 ;; <http://www.gnu.org/licenses/>.
 
 ;; Register constraints.
-(define_register_constraint "a" "ACR_REGS"
-  "@internal")
-
 (define_register_constraint "b" "GENNONACR_REGS"
   "@internal")
 
@@ -106,7 +103,7 @@
        ;; A [reg] or (int) [reg], maybe with post-increment.
        (match_test "cris_bdap_index_p (op, reload_in_progress
 					   || reload_completed)")
-       (match_test "cris_constant_index_p (op)")))
+       (match_test "CONSTANT_P (op)")))
 
 (define_constraint "T"
   "Memory three-address operand."
@@ -118,14 +115,14 @@
 						       reload_in_progress
 						       || reload_completed)"))
 	    ;; Just an explicit indirect reference: [const]?
-	    (match_test "CRIS_CONSTANT_P (XEXP (op, 0))")
+	    (match_test "CONSTANT_P (XEXP (op, 0))")
 	    ;; Something that is indexed; [...+...]?
 	    (and (match_code "plus" "0")
 		      ;; A BDAP constant: [reg+(8|16|32)bit offset]?
 		 (ior (and (match_test "cris_base_p (XEXP (XEXP (op, 0), 0),
 						     reload_in_progress
 						     || reload_completed)")
-			   (match_test "cris_constant_index_p (XEXP (XEXP (op, 0), 1))"))
+			   (match_test "CONSTANT_P (XEXP (XEXP (op, 0), 1))"))
 		      ;; A BDAP register: [reg+[reg(+)].S]?
 		      (and (match_test "cris_base_p (XEXP (XEXP (op, 0), 0),
 						     reload_in_progress
@@ -149,18 +146,3 @@
 			   (match_test "cris_biap_index_p (XEXP (XEXP (op, 0), 0),
 							   reload_in_progress
 							   || reload_completed)")))))))
-
-(define_constraint "S"
-  "PIC-constructs for symbols."
-  (and (match_test "flag_pic")
-       (match_code "const")
-       (match_test "cris_valid_pic_const (op, false)")))
-
-(define_constraint "U"
-  "@internal"
-  (and (match_test "flag_pic")
-       ;; We're just interested in the ..._or_callable_symbol part.
-       ;; (Using CRIS_CONSTANT_P would exclude that too.)
-       (match_test "CONSTANT_P (op)")
-       (match_operand 0 "cris_nonmemory_operand_or_callable_symbol")))
-
