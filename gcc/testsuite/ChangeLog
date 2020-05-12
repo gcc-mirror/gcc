@@ -1,3 +1,8 @@
+2020-05-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* gcc.target/i386/pr95046-4.c: New test.
+
 2020-05-12  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/78752
