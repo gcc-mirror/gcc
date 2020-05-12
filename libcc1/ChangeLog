@@ -1,3 +1,12 @@
+2020-05-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.am (AM_CXXFLAGS): Add $(CET_HOST_FLAGS).
+	* configure.ac: Add GCC_CET_HOST_FLAGS(CET_HOST_FLAGS) and
+	AC_SUBST(CET_HOST_FLAGS).
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+
 2020-02-12  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/69448

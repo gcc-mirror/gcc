@@ -24,7 +24,7 @@ CPPFLAGS_FOR_C_FAMILY = -I $(srcdir)/../gcc/c-family \
 	-I $(srcdir)/../libcpp/include
 CPPFLAGS_FOR_C = $(CPPFLAGS_FOR_C_FAMILY) -I $(srcdir)/../gcc/c
 CPPFLAGS_FOR_CXX = $(CPPFLAGS_FOR_C_FAMILY) -I $(srcdir)/../gcc/cp
-AM_CXXFLAGS = $(WARN_FLAGS) $(WERROR) $(visibility)
+AM_CXXFLAGS = $(WARN_FLAGS) $(WERROR) $(visibility) $(CET_HOST_FLAGS)
 override CXXFLAGS := $(filter-out -fsanitize=address,$(CXXFLAGS))
 override LDFLAGS := $(filter-out -fsanitize=address,$(LDFLAGS))
 # Can be simplified when libiberty becomes a normal convenience library.
