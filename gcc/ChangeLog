@@ -1,6 +1,15 @@
 2020-05-12  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/94980
+	* tree-vect-generic.c (build_replicated_const): Take the number
+	of bits as a parameter, instead of the type of the elements.
+	(do_plus_minus): Update accordingly, using vector_element_bits
+	to calculate the correct number of bits.
+	(do_negate): Likewise.
+
+2020-05-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94980
 	* tree.h (vector_element_bits, vector_element_bits_tree): Declare.
 	* tree.c (vector_element_bits, vector_element_bits_tree): New.
 	* match.pd: Use the new functions instead of determining the
