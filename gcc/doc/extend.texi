@@ -20889,6 +20889,18 @@ little-endian targets.  Choose this built-in to check for presence of
 zero element if the same argument is also passed to @code{vec_strir}.
 @findex vec_strir_p
 
+@smallexample
+@exdent vector unsigned char vec_genpcvm (vector unsigned char, const int)
+@exdent vector unsigned short vec_genpcvm (vector unsigned short, const int)
+@exdent vector unsigned int vec_genpcvm (vector unsigned int, const int)
+@exdent vector unsigned int vec_genpcvm (vector unsigned long long int,
+                                         const int)
+@end smallexample
+Generate PCV from specified Mask size, as if implemented by the Future
+@code{xxgenpcvbm}, @code{xxgenpcvhm}, @code{xxgenpcvwm} instructions, where
+immediate value is either 0, 1, 2 or 3.
+@findex vec_genpcvm
+
 @node PowerPC Hardware Transactional Memory Built-in Functions
 @subsection PowerPC Hardware Transactional Memory Built-in Functions
 GCC provides two interfaces for accessing the Hardware Transactional
