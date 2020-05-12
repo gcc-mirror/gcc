@@ -1897,12 +1897,13 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
 
 	  BUF_APPEND (base, cur - base);
 
-	  if (pfile->buffer->cur < pfile->buffer->rlimit)
+	  pfile->buffer->cur = cur-1;
+	  _cpp_process_line_notes (pfile, false);
+
+	  if (pfile->buffer->next_line < pfile->buffer->rlimit)
 	    CPP_INCREMENT_LINE (pfile, 0);
 	  pfile->buffer->need_line = true;
 
-	  pfile->buffer->cur = cur-1;
-	  _cpp_process_line_notes (pfile, false);
 	  if (!_cpp_get_fresh_line (pfile))
 	    {
 	      location_t src_loc = token->src_loc;
@@ -1914,6 +1915,8 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
 		_cpp_release_buff (pfile, first_buff);
 	      cpp_error_with_line (pfile, CPP_DL_ERROR, src_loc, 0,
 				   "unterminated raw string");
+	      /* Now pop the buffer that _cpp_get_fresh_line did not.  */
+	      _cpp_pop_buffer (pfile);
 	      return;
 	    }
 
@@ -2651,8 +2654,6 @@ _cpp_lex_token (cpp_reader *pfile)
 bool
 _cpp_get_fresh_line (cpp_reader *pfile)
 {
-  int return_at_eof;
-
   /* We can't get a new line until we leave the current directive.  */
   if (pfile->state.in_directive)
     return false;
@@ -2683,10 +2684,17 @@ _cpp_get_fresh_line (cpp_reader *pfile)
 	  buffer->next_line = buffer->rlimit;
 	}
 
-      return_at_eof = buffer->return_at_eof;
-      _cpp_pop_buffer (pfile);
-      if (pfile->buffer == NULL || return_at_eof)
-	return false;
+      if (buffer->prev && !buffer->return_at_eof)
+	_cpp_pop_buffer (pfile);
+      else
+	{
+	  /* End of translation.  Do not pop the buffer yet. Increment
+	     line number so that the EOF token is on a line of its own
+	     (_cpp_lex_direct doesn't increment in that case, because
+	     it's hard for it to distinguish this special case). */
+	  CPP_INCREMENT_LINE (pfile, 0);
+	  return false;
+	}
     }
 }
 
@@ -2740,6 +2748,8 @@ _cpp_lex_direct (cpp_reader *pfile)
 	      /* Tell the compiler the line number of the EOF token.  */
 	      result->src_loc = pfile->line_table->highest_line;
 	      result->flags = BOL;
+	      /* Now pop the buffer that _cpp_get_fresh_line did not.  */
+	      _cpp_pop_buffer (pfile);
 	    }
 	  return result;
 	}
@@ -3975,7 +3985,8 @@ cpp_directive_only_process (cpp_reader *pfile,
 		  /* Prep things for directive handling. */
 		  buffer->next_line = pos;
 		  buffer->need_line = true;
-		  _cpp_get_fresh_line (pfile);
+		  bool ok = _cpp_get_fresh_line (pfile);
+		  gcc_checking_assert (ok);
 
 		  /* Ensure proper column numbering for generated
 		     error messages. */

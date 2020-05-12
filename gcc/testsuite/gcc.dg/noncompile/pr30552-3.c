@@ -12,4 +12,5 @@ int main()
   int g()
     int a[( {int b} )]; /* { dg-error "braced-group within expression allowed only inside a function|declaration for parameter" } */
   return 0; /* { dg-error "expected declaration specifiers before" } */
-} /* { dg-error "expected declaration specifiers before|end of input|expected declaration or statement at end of input" } */
+} /* { dg-error "expected declaration" } */
+/* { dg-error "-:expected" "" { target *-*-* } .+1 } */
