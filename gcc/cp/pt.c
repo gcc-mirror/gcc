@@ -14627,6 +14627,12 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		  }
 		if (nop)
 		  ve = build_nop (type, ve);
+		else if (DECL_LANG_SPECIFIC (t)
+			 && DECL_OMP_PRIVATIZED_MEMBER (t)
+			 && TREE_CODE (ve) == COMPONENT_REF
+			 && TREE_CODE (TREE_OPERAND (ve, 1)) == FIELD_DECL
+			 && DECL_BIT_FIELD_TYPE (TREE_OPERAND (ve, 1)) == type)
+		  type = TREE_TYPE (ve);
 		else
 		  gcc_checking_assert (TREE_TYPE (ve) == type);
 		SET_DECL_VALUE_EXPR (r, ve);
