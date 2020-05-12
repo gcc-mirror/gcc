@@ -1026,14 +1026,15 @@ packable_type_hasher::equal (packable_type_hash *t1, packable_type_hash *t2)
   type1 = t1->type;
   type2 = t2->type;
 
-  /* We consider that packable types are equivalent if they have the same
-     name, size, alignment and RM size.  Taking the mode into account is
-     redundant since it is determined by the others.  */
+  /* We consider that packable types are equivalent if they have the same name,
+     size, alignment, RM size and storage order. Taking the mode into account
+     is redundant since it is determined by the others.  */
   return
     TYPE_NAME (type1) == TYPE_NAME (type2)
     && TYPE_SIZE (type1) == TYPE_SIZE (type2)
     && TYPE_ALIGN (type1) == TYPE_ALIGN (type2)
-    && TYPE_ADA_SIZE (type1) == TYPE_ADA_SIZE (type2);
+    && TYPE_ADA_SIZE (type1) == TYPE_ADA_SIZE (type2)
+    && TYPE_REVERSE_STORAGE_ORDER (type1) == TYPE_REVERSE_STORAGE_ORDER (type2);
 }
 
 /* Compute the hash value for the packable TYPE.  */
@@ -1047,6 +1048,8 @@ hash_packable_type (tree type)
   hashcode = iterative_hash_expr (TYPE_SIZE (type), hashcode);
   hashcode = iterative_hash_hashval_t (TYPE_ALIGN (type), hashcode);
   hashcode = iterative_hash_expr (TYPE_ADA_SIZE (type), hashcode);
+  hashcode
+    = iterative_hash_hashval_t (TYPE_REVERSE_STORAGE_ORDER (type), hashcode);
 
   return hashcode;
 }
@@ -1402,7 +1405,7 @@ pad_type_hasher::equal (pad_type_hash *t1, pad_type_hash *t2)
   type1 = t1->type;
   type2 = t2->type;
 
-  /* We consider that the padded types are equivalent if they pad the same type
+  /* We consider that padded types are equivalent if they pad the same type
      and have the same size, alignment, RM size and storage order.  Taking the
      mode into account is redundant since it is determined by the others.  */
   return
@@ -1425,6 +1428,8 @@ hash_pad_type (tree type)
   hashcode = iterative_hash_expr (TYPE_SIZE (type), hashcode);
   hashcode = iterative_hash_hashval_t (TYPE_ALIGN (type), hashcode);
   hashcode = iterative_hash_expr (TYPE_ADA_SIZE (type), hashcode);
+  hashcode
+    = iterative_hash_hashval_t (TYPE_REVERSE_STORAGE_ORDER (type), hashcode);
 
   return hashcode;
 }
