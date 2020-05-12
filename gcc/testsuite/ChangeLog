@@ -1,3 +1,8 @@
+2020-05-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94980
+	* gcc.target/i386/pr94980.c: New test.
+
 2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* gcc.target/powerpc/vec-clzm-0.c: Rename to...
