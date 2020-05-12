@@ -3693,7 +3693,7 @@ vect_gather_scatter_fn_p (vec_info *vinfo, bool read_p, bool masked_p,
 			  tree *offset_vectype_out)
 {
   unsigned int memory_bits = tree_to_uhwi (TYPE_SIZE (memory_type));
-  unsigned int element_bits = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (vectype)));
+  unsigned int element_bits = vector_element_bits (vectype);
   if (element_bits != memory_bits)
     /* For now the vector elements must be the same width as the
        memory elements.  */

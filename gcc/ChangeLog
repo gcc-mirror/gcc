@@ -1,3 +1,20 @@
+2020-05-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94980
+	* tree.h (vector_element_bits, vector_element_bits_tree): Declare.
+	* tree.c (vector_element_bits, vector_element_bits_tree): New.
+	* match.pd: Use the new functions instead of determining the
+	vector element size directly from TYPE_SIZE(_UNIT).
+	* tree-vect-data-refs.c (vect_gather_scatter_fn_p): Likewise.
+	* tree-vect-patterns.c (vect_recog_mask_conversion_pattern): Likewise.
+	* tree-vect-stmts.c (vect_is_simple_cond): Likewise.
+	* tree-vect-generic.c (expand_vector_piecewise): Likewise.
+	(expand_vector_conversion): Likewise.
+	(expand_vector_addition): Likewise for a TYPE_SIZE_UNIT used as
+	a divisor.  Convert the dividend to bits to compensate.
+	* tree-vect-loop.c (vectorizable_live_operation): Call
+	vector_element_bits instead of open-coding it.
+
 2020-05-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-offload.h (omp_discover_implicit_declare_target): Declare.

@@ -10041,8 +10041,7 @@ vect_is_simple_cond (tree cond, vec_info *vinfo, slp_tree slp_node,
 	      && tree_int_cst_lt (TYPE_SIZE (scalar_type),
 				  TYPE_SIZE (TREE_TYPE (vectype))))
 	    scalar_type = build_nonstandard_integer_type
-	      (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (vectype))),
-	       TYPE_UNSIGNED (scalar_type));
+	      (vector_element_bits (vectype), TYPE_UNSIGNED (scalar_type));
 	  *comp_vectype = get_vectype_for_scalar_type (vinfo, scalar_type,
 						       slp_node);
 	}

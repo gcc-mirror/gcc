@@ -13806,6 +13806,30 @@ vector_type_mode (const_tree t)
   return mode;
 }
 
+/* Return the size in bits of each element of vector type TYPE.  */
+
+unsigned int
+vector_element_bits (const_tree type)
+{
+  gcc_checking_assert (VECTOR_TYPE_P (type));
+  if (VECTOR_BOOLEAN_TYPE_P (type))
+    return vector_element_size (tree_to_poly_uint64 (TYPE_SIZE (type)),
+				TYPE_VECTOR_SUBPARTS (type));
+  return tree_to_uhwi (TYPE_SIZE (TREE_TYPE (type)));
+}
+
+/* Calculate the size in bits of each element of vector type TYPE
+   and return the result as a tree of type bitsizetype.  */
+
+tree
+vector_element_bits_tree (const_tree type)
+{
+  gcc_checking_assert (VECTOR_TYPE_P (type));
+  if (VECTOR_BOOLEAN_TYPE_P (type))
+    return bitsize_int (vector_element_bits (type));
+  return TYPE_SIZE (TREE_TYPE (type));
+}
+
 /* Verify that basic properties of T match TV and thus T can be a variant of
    TV.  TV should be the more specified variant (i.e. the main variant).  */
 

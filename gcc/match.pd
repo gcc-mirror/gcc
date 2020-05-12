@@ -6306,7 +6306,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       }
       (if (ins)
        (bit_insert { op0; } { ins; }
-         { bitsize_int (at * tree_to_uhwi (TYPE_SIZE (TREE_TYPE (type)))); })
+         { bitsize_int (at * vector_element_bits (type)); })
        (if (changed)
         (vec_perm { op0; } { op1; } { op2; }))))))))))
 
