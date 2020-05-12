@@ -6967,6 +6967,13 @@ candidate as a replacement for the if-convertible sequence described in
 @code{if_info}.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_NEW_ADDRESS_PROFITABLE_P (rtx @var{memref}, rtx_insn * @var{insn}, rtx @var{new_addr})
+Return @code{true} if it is profitable to replace the address in
+@var{memref} with @var{new_addr}.  This allows targets to prevent the
+scheduler from undoing address optimizations.  The instruction containing the
+memref is @var{insn}.  The default implementation returns @code{true}.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P (void)
 This predicate controls the use of the eager delay slot filler to disallow
 speculatively executed instructions being placed in delay slots.  Targets

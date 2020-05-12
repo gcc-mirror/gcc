@@ -1,3 +1,13 @@
+2020-05-12  Craig Blackmore  <craig.blackmore@embecosm.com>
+
+	* gcc.target/riscv/shorten-memrefs-1.c: New test.
+	* gcc.target/riscv/shorten-memrefs-2.c: New test.
+	* gcc.target/riscv/shorten-memrefs-3.c: New test.
+	* gcc.target/riscv/shorten-memrefs-4.c: New test.
+	* gcc.target/riscv/shorten-memrefs-5.c: New test.
+	* gcc.target/riscv/shorten-memrefs-6.c: New test.
+	* gcc.target/riscv/shorten-memrefs-7.c: New test.
+
 2020-05-12  Nathan Sidwell  <nathan@acm.org>
 
 	PR preprocessor/95013

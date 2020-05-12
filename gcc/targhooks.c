@@ -1566,6 +1566,19 @@ default_mode_dependent_address_p (const_rtx addr ATTRIBUTE_UNUSED,
   return false;
 }
 
+extern bool default_new_address_profitable_p (rtx, rtx);
+
+
+/* The default implementation of TARGET_NEW_ADDRESS_PROFITABLE_P.  */
+
+bool
+default_new_address_profitable_p (rtx memref ATTRIBUTE_UNUSED,
+				  rtx_insn *insn ATTRIBUTE_UNUSED,
+				  rtx new_addr ATTRIBUTE_UNUSED)
+{
+  return true;
+}
+
 bool
 default_target_option_valid_attribute_p (tree ARG_UNUSED (fndecl),
 					 tree ARG_UNUSED (name),
