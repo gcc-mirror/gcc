@@ -653,7 +653,9 @@ package body Contracts is
                      Freeze_Expr_Types
                        (Def_Id => Subp_Id,
                         Typ    => Standard_Boolean,
-                        Expr   => Expression (Corresponding_Aspect (Prag)),
+                        Expr   =>
+                          Expression
+                            (First (Pragma_Argument_Associations (Prag))),
                         N      => Bod);
                   end if;
 
@@ -2603,7 +2605,9 @@ package body Contracts is
                         Freeze_Expr_Types
                           (Def_Id => Subp_Id,
                            Typ    => Standard_Boolean,
-                           Expr   => Expression (Corresponding_Aspect (Prag)),
+                           Expr   =>
+                             Expression
+                               (First (Pragma_Argument_Associations (Prag))),
                            N      => Body_Decl);
                      end if;
 
