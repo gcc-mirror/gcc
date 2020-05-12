@@ -1,3 +1,15 @@
+2020-05-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* config/i386/mmx.md (<code>v2sf2): New insn pattern.
+	(*mmx_<code>v2sf2): New insn_and_split pattern.
+	(*mmx_nabsv2sf2): Ditto.
+	(*mmx_andnotv2sf3): New insn pattern.
+	(*mmx_<code>v2sf3): Ditto.
+	* config/i386/i386.md (absneg_op): New code attribute.
+	* config/i386/i386.c (ix86_build_const_vector): Handle V2SFmode.
+	(ix86_build_signbit_mask): Ditto.
+
 2020-05-12  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-live.c (remove_unused_locals): Remove dead debug
