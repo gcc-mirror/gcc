@@ -276,8 +276,7 @@ expand_vector_piecewise (gimple_stmt_iterator *gsi, elem_op_func f,
   tree part_width = TYPE_SIZE (inner_type);
   tree index = bitsize_int (0);
   int nunits = nunits_for_known_piecewise_op (type);
-  int delta = tree_to_uhwi (part_width)
-	      / tree_to_uhwi (TYPE_SIZE (TREE_TYPE (type)));
+  int delta = tree_to_uhwi (part_width) / vector_element_bits (type);
   int i;
   location_t loc = gimple_location (gsi_stmt (*gsi));
 
@@ -357,8 +356,7 @@ expand_vector_addition (gimple_stmt_iterator *gsi,
 			elem_op_func f, elem_op_func f_parallel,
 			tree type, tree a, tree b, enum tree_code code)
 {
-  int parts_per_word = UNITS_PER_WORD
-	  	       / tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (type)));
+  int parts_per_word = BITS_PER_WORD / vector_element_bits (type);
 
   if (INTEGRAL_TYPE_P (TREE_TYPE (type))
       && parts_per_word >= 4
@@ -1727,19 +1725,17 @@ expand_vector_conversion (gimple_stmt_iterator *gsi)
   optab optab1 = unknown_optab;
 
   gcc_checking_assert (VECTOR_TYPE_P (ret_type) && VECTOR_TYPE_P (arg_type));
-  gcc_checking_assert (tree_fits_uhwi_p (TYPE_SIZE (TREE_TYPE (ret_type))));
-  gcc_checking_assert (tree_fits_uhwi_p (TYPE_SIZE (TREE_TYPE (arg_type))));
   if (INTEGRAL_TYPE_P (TREE_TYPE (ret_type))
       && SCALAR_FLOAT_TYPE_P (TREE_TYPE (arg_type)))
     code = FIX_TRUNC_EXPR;
   else if (INTEGRAL_TYPE_P (TREE_TYPE (arg_type))
 	   && SCALAR_FLOAT_TYPE_P (TREE_TYPE (ret_type)))
     code = FLOAT_EXPR;
-  if (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (ret_type)))
-      < tree_to_uhwi (TYPE_SIZE (TREE_TYPE (arg_type))))
+  unsigned int ret_elt_bits = vector_element_bits (ret_type);
+  unsigned int arg_elt_bits = vector_element_bits (arg_type);
+  if (ret_elt_bits < arg_elt_bits)
     modifier = NARROW;
-  else if (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (ret_type)))
-	   > tree_to_uhwi (TYPE_SIZE (TREE_TYPE (arg_type))))
+  else if (ret_elt_bits > arg_elt_bits)
     modifier = WIDEN;
 
   if (modifier == NONE && (code == FIX_TRUNC_EXPR || code == FLOAT_EXPR))
@@ -1902,8 +1898,7 @@ expand_vector_conversion (gimple_stmt_iterator *gsi)
 	      tree part_width = TYPE_SIZE (compute_type);
 	      tree index = bitsize_int (0);
 	      int nunits = nunits_for_known_piecewise_op (arg_type);
-	      int delta = tree_to_uhwi (part_width)
-			  / tree_to_uhwi (TYPE_SIZE (TREE_TYPE (arg_type)));
+	      int delta = tree_to_uhwi (part_width) / arg_elt_bits;
 	      int i;
 	      location_t loc = gimple_location (gsi_stmt (*gsi));
 
