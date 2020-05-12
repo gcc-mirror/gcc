@@ -1,3 +1,17 @@
+2020-05-12  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* gcc.c (extra_arg_storer): New variable extra_args.
+	(extra_args): New varible.
+	(is_assembler): Check if arg is an assembler.
+	(append_split_outputs): Refactor to check if argument is assembler.
+	(print_argbuf): New function.
+	(struct infile): New attribute.
+	(fsplit_arg): New function.
+	(current_infile): New file.A
+	* toplev.c (additional_asm_filenames): New variable.
+	(init_additional_asm_names_file): New.
+	(lang_dependent_init): Call init_additional_asm_names_file.
+
 2020-05-07  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* gcc.c (execute): Don't call append_arg_storer if -S is provided.

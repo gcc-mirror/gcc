@@ -178,6 +178,9 @@ FILE *callgraph_info_file = NULL;
 static bitmap callgraph_info_external_printed;
 FILE *stack_usage_file = NULL;
 
+/* Output file to write additional asm filenames.  */
+FILE *additional_asm_filenames = NULL;
+
 /* The current working directory of a translation.  It's generally the
    directory from which compilation was initiated, but a preprocessed
    file may specify the original directory in which it was
@@ -896,6 +899,23 @@ init_asm_output (const char *name)
 	  putc ('\n', asm_out_file);
 	}
     }
+}
+
+static void
+init_additional_asm_names_file (int n, const char *names[])
+{
+  int i;
+
+  if (!split_outputs)
+    return;
+
+  additional_asm_filenames = fopen (split_outputs, "w");
+  if (!additional_asm_filenames)
+    error ("Unable to create a temporary write-only file.");
+
+  for (i = 0; i < n; ++i)
+      fputs(names[i], additional_asm_filenames);
+
 }
 
 /* A helper function; used as the reallocator function for cpp's line
@@ -1973,6 +1993,7 @@ lang_dependent_init (const char *name)
   if (!flag_wpa)
     {
       init_asm_output (name);
+      init_additional_asm_names_file (1, &name);
 
       /* If stack usage information is desired, open the output file.  */
       if (flag_stack_usage && !flag_generate_lto)

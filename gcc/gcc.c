@@ -319,6 +319,72 @@ static struct obstack obstack;
 
 static struct obstack collect_obstack;
 
+/* This is used to store new argv arrays created dinamically to avoid memory
+   leaks.  */
+
+class extra_arg_storer
+{
+  public:
+
+    /* Initialize the vec with a default size.  */
+
+    extra_arg_storer ()
+      {
+	string_vec.create (8);
+	extra_args.create (64);
+      }
+
+    /* Create new array of strings of size N.  */
+    const char **create_new (size_t n)
+      {
+	const char **ret = XNEWVEC (const char *, n);
+	extra_args.safe_push (ret);
+	return ret;
+      }
+
+    char *create_string (size_t n)
+      {
+	char *ret = XNEWVEC (char, n);
+	string_vec.safe_push (ret);
+	return ret;
+      }
+
+    ~extra_arg_storer ()
+      {
+	release_extra_args ();
+	release_string_vec ();
+      }
+
+
+  private:
+
+    /* Release all allocated strings.  */
+    void release_extra_args ()
+      {
+	size_t i;
+
+	for (i = 0; i < extra_args.length (); i++)
+	  free (extra_args[i]);
+	extra_args.release ();
+      }
+
+    void release_string_vec ()
+      {
+	size_t i;
+
+	for (i = 0; i < string_vec.length (); i++)
+	  free (string_vec[i]);
+	string_vec.release ();
+      }
+
+    /* Data structure to hold all arrays.  */
+    vec<const char **> extra_args;
+    vec<char *> string_vec;
+};
+
+/* Store additional strings for further release.  */
+static extra_arg_storer extra_args;
+
 /* Forward declaration for prototypes.  */
 struct path_prefix;
 struct prefix_list;
@@ -3053,6 +3119,34 @@ static bool is_compiler (const char *arg)
   return false;
 }
 
+/* Check if arg is a call to as. Return false if not, true if yes.  */
+
+static bool is_assembler (const char *arg)
+{
+  static const char *const assemblers[] = {"as", "gas"};
+  const char* ptr = arg;
+
+  size_t i;
+
+  /* Jump to last '/' of string.  */
+  while (*arg)
+    if (*arg++ == '/')
+      ptr = arg;
+
+  /* Look if current character seems valid.  */
+  gcc_assert (!(*ptr == '\0' ||  *ptr == '/'));
+
+  for (i = 0; i < ARRAY_SIZE (assemblers); i++)
+    {
+      if (!strcmp (ptr, assemblers[i]))
+	return true;
+    }
+
+  return false;
+}
+
+
+
 /* Get argv[] array length.  */
 
 static int get_number_of_args (const char *argv[])
@@ -3065,49 +3159,7 @@ static int get_number_of_args (const char *argv[])
   return argc;
 }
 
-/* This is used to store new argv arrays created dinamically to avoid memory
- * leaks.  */
-
-class extra_arg_storer
-{
-  public:
-
-    /* Initialize the vec with a default size.  */
-
-    extra_arg_storer ()
-      {
-	extra_args.create (64);
-      }
-
-    /* Create new array of strings of size N.  */
-    const char **create_new (size_t n)
-      {
-	const char **ret = XNEWVEC (const char *, n);
-	extra_args.safe_push (ret);
-	return ret;
-      }
-
-    ~extra_arg_storer ()
-      {
-	release ();
-      }
-
-
-  private:
-
-    /* Release all allocated strings.  */
-    void release ()
-      {
-	size_t i;
-
-	for (i = 0; i < extra_args.length (); i++)
-	  free (extra_args[i]);
-	extra_args.release ();
-      }
-
-    /* Data structure to hold all arrays.  */
-    vec<const char **> extra_args;
-};
+static const char *fsplit_arg (extra_arg_storer *);
 
 /* Append -fsplit-output=<tempfile> to all calls to compilers.  */
 
@@ -3121,17 +3173,25 @@ static void append_split_outputs (extra_arg_storer *storer,
       const char **argv;
       int argc;
 
-      if (!is_compiler (commands[i].prog))
-	continue;
+      const char *extra_argument;
 
-      argc = get_number_of_args (commands[i].argv);
-      argv = storer->create_new (argc + 2);
+      if (is_compiler (commands[i].prog))
+	{
+	  extra_argument = fsplit_arg (storer);
 
-      memcpy (argv, commands[i].argv, argc * sizeof (const char *));
-      argv[argc++] = "-fsplit-outputs=test.txt";
-      argv[argc]   = NULL;
+	  argc = get_number_of_args (commands[i].argv);
+	  argv = storer->create_new (argc + 2);
 
-      commands[i].argv = argv;
+	  memcpy (argv, commands[i].argv, argc * sizeof (const char *));
+	  argv[argc++] = extra_argument;
+	  argv[argc]   = NULL;
+
+	  commands[i].argv = argv;
+	}
+      else if (is_assembler (commands[i].prog))
+	{
+
+	}
 
     }
 }
@@ -3155,6 +3215,17 @@ print_commands (int n, struct command *commands)
     print_command (&commands[i]);
 }
 
+DEBUG_FUNCTION void
+print_argbuf ()
+{
+  int i;
+  const char *arg;
+
+  for (i = 0; argbuf.iterate (i, &arg); i++)
+    fprintf (stdout, "%s ", arg);
+  fputc ('\n', stdout);
+}
+
 
 /* Execute the command specified by the arguments on the current line of spec.
    When using pipes, this includes several piped-together commands
@@ -3172,7 +3243,6 @@ execute (void)
   const char *arg;
 
   struct command *commands;	/* each command buffer with above info.  */
-  extra_arg_storer extra_args;
 
   gcc_assert (!processing_spec_function);
 
@@ -3590,6 +3660,7 @@ struct infile
 {
   const char *name;
   const char *language;
+  const char *temp_additional_asm;
   struct compiler *incompiler;
   bool compiled;
   bool preprocessed;
@@ -3598,10 +3669,34 @@ struct infile
 /* Also a vector of input files specified.  */
 
 static struct infile *infiles;
+static struct infile *current_infile = NULL;
 
 int n_infiles;
 
 static int n_infiles_alloc;
+
+static const char *fsplit_arg (extra_arg_storer *storer)
+{
+  const char *tempname = make_temp_file ("additional-asm");
+  const char arg[] = "-fsplit-outputs=";
+  char *final;
+
+  size_t n = ARRAY_SIZE (arg) + strlen (tempname);
+
+  gcc_assert (current_infile);
+
+  current_infile->temp_additional_asm = tempname;
+
+  final = storer->create_string (n);
+
+  strcpy (final, arg);
+  strcat (final, tempname);
+
+  record_temp_file (tempname, true, true);
+
+  return final;
+}
+
 
 /* True if undefined environment variables encountered during spec processing
    are ok to ignore, typically when we're running for --help or --version.  */
@@ -3782,6 +3877,8 @@ alloc_infile (void)
     {
       n_infiles_alloc = 16;
       infiles = XNEWVEC (struct infile, n_infiles_alloc);
+      memset (infiles, 0x00, sizeof(*infiles) * n_infiles_alloc);
+
     }
   else if (n_infiles_alloc == n_infiles)
     {
@@ -5808,11 +5905,14 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		  open_at_file ();
 
 		for (i = 0; (int) i < n_infiles; i++)
-		  if (compile_input_file_p (&infiles[i]))
-		    {
-		      store_arg (infiles[i].name, 0, 0);
-		      infiles[i].compiled = true;
-		    }
+		  {
+		    current_infile = &infiles[i];
+		    if (compile_input_file_p (current_infile))
+		      {
+			store_arg (current_infile->name, 0, 0);
+			current_infile->compiled = true;
+		      }
+		  }
 
 		if (at_file_supplied)
 		  close_at_file ();
@@ -8284,6 +8384,7 @@ driver::do_spec_on_infiles () const
   for (i = 0; (int) i < n_infiles; i++)
     {
       int this_file_error = 0;
+      current_infile = &infiles[i];
 
       /* Tell do_spec what to substitute for %i.  */
 
@@ -8403,12 +8504,15 @@ driver::do_spec_on_infiles () const
       int i;
 
       for (i = 0; i < n_infiles ; i++)
-	if (infiles[i].incompiler
-	    || (infiles[i].language && infiles[i].language[0] != '*'))
-	  {
-	    set_input (infiles[i].name);
-	    break;
-	  }
+	{
+	  current_infile = &infiles[i];
+	  if (infiles[i].incompiler
+	      || (infiles[i].language && infiles[i].language[0] != '*'))
+	    {
+	      set_input (infiles[i].name);
+	      break;
+	    }
+	}
     }
 
   if (!seen_error ())
