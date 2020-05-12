@@ -832,12 +832,25 @@ package body Sem_Aggr is
    -------------------------
 
    function Is_Others_Aggregate (Aggr : Node_Id) return Boolean is
+      Assoc : constant List_Id := Component_Associations (Aggr);
+
    begin
       return No (Expressions (Aggr))
-        and then
-          Nkind (First (Choice_List (First (Component_Associations (Aggr))))) =
-            N_Others_Choice;
+        and then Nkind (First (Choice_List (First (Assoc)))) = N_Others_Choice;
    end Is_Others_Aggregate;
+
+   -------------------------
+   -- Is_Single_Aggregate --
+   -------------------------
+
+   function Is_Single_Aggregate (Aggr : Node_Id) return Boolean is
+      Assoc : constant List_Id := Component_Associations (Aggr);
+
+   begin
+      return No (Expressions (Aggr))
+        and then No (Next (First (Assoc)))
+        and then No (Next (First (Choice_List (First (Assoc)))));
+   end Is_Single_Aggregate;
 
    ----------------------------
    -- Is_Top_Level_Aggregate --
