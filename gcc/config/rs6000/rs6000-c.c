@@ -1813,7 +1813,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 		&& rs6000_builtin_type_compatible (types[1], desc->op2)
 		&& rs6000_builtin_type_compatible (types[2], desc->op3)
 		&& rs6000_builtin_type_compatible (types[3],
-						   RS6000_BTI_UINTQI))
+						   RS6000_BTI_UINTSI))
 	      {
 		if (rs6000_builtin_decls[desc->overloaded_code] == NULL_TREE)
 		  unsupported_builtin = true;

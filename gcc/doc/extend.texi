@@ -20762,19 +20762,19 @@ Perform a vector centrifuge operation, as if implemented by the Future
 
 @smallexample
 @exdent vector unsigned long long int
-@exdent vec_clzm (vector unsigned long long int, vector unsigned long long int)
+@exdent vec_cntlzm (vector unsigned long long int, vector unsigned long long int)
 @end smallexample
 Perform a vector count leading zeros under bit mask operation, as if
 implemented by the Future @code{vclzdm} instruction.
-@findex vec_clzm
+@findex vec_cntlzm
 
 @smallexample
 @exdent vector unsigned long long int
-@exdent vec_ctzm (vector unsigned long long int, vector unsigned long long int)
+@exdent vec_cnttzm (vector unsigned long long int, vector unsigned long long int)
 @end smallexample
 Perform a vector count trailing zeros under bit mask operation, as if
 implemented by the Future @code{vctzdm} instruction.
-@findex vec_ctzm
+@findex vec_cnttzm
 
 @smallexample
 @exdent vector signed char
@@ -20801,14 +20801,6 @@ value of @code{n} that is greater than 16 is treated as if it equaled 16.
 @findex vec_clrr
 
 @smallexample
-@exdent vector unsigned long long int
-@exdent vec_gnb (vector unsigned char, const unsigned char)
-@exdent vector unsigned long long int
-@exdent vec_gnb (vector unsigned short, const unsigned char)
-@exdent vector unsigned long long int
-@exdent vec_gnb (vector unsigned int, const unsigned char)
-@exdent vector unsigned long long int
-@exdent vec_gnb (vector unsigned long long int, const unsigned char)
 @exdent vector unsigned long long int
 @exdent vec_gnb (vector unsigned __int128, const unsigned char)
 @end smallexample
@@ -20888,6 +20880,28 @@ and uses the @code{vstribl.} or @code{vstrihl.} instruction on
 little-endian targets.  Choose this built-in to check for presence of
 zero element if the same argument is also passed to @code{vec_strir}.
 @findex vec_strir_p
+
+@smallexample
+@exdent vector unsigned char
+@exdent vec_ternarylogic (vector unsigned char, vector unsigned char,
+            vector unsigned char, const unsigned int)
+@exdent vector unsigned short
+@exdent vec_ternarylogic (vector unsigned short, vector unsigned short,
+            vector unsigned short, const unsigned int)
+@exdent vector unsigned int
+@exdent vec_ternarylogic (vector unsigned int, vector unsigned int,
+            vector unsigned int, const unsigned int)
+@exdent vector unsigned long long int
+@exdent vec_ternarylogic (vector unsigned long long int, vector unsigned long long int,
+            vector unsigned long long int, const unsigned int)
+@exdent vector unsigned __int128
+@exdent vec_ternarylogic (vector unsigned __int128, vector unsigned __int128,
+            vector unsigned __int128, const unsigned int)
+@end smallexample
+Perform a 128-bit vector evaluate operation, as if implemented by the
+Future @code{xxeval} instruction.  The fourth argument must be a literal
+integer value between 0 and 255 inclusive.
+@findex vec_ternarylogic
 
 @smallexample
 @exdent vector unsigned char vec_genpcvm (vector unsigned char, const int)
@@ -22122,28 +22136,6 @@ else
   @}
 @end smallexample
 @end deftypefn
-
-@smallexample
-@exdent vector unsigned char
-@exdent vec_ternarylogic (vector unsigned char, vector unsigned char,
-            vector unsigned char, const unsigned char)
-@exdent vector unsigned short
-@exdent vec_ternarylogic (vector unsigned short, vector unsigned short,
-            vector unsigned short, const unsigned char)
-@exdent vector unsigned int
-@exdent vec_ternarylogic (vector unsigned int, vector unsigned int,
-            vector unsigned int, const unsigned char)
-@exdent vector unsigned long long int
-@exdent vec_ternarylogic (vector unsigned long long int, vector unsigned long long int,
-            vector unsigned long long int, const unsigned char)
-@exdent vector unsigned __int128
-@exdent vec_ternarylogic (vector unsigned __int128, vector unsigned __int128,
-            vector unsigned __int128, const unsigned char)
-@end smallexample
-Perform a 128-bit vector evaluate operation, as if implemented by the
-Future @code{xxeval} instruction.  The fourth argument must be a literal
-integer value between 0 and 255 inclusive.
-@findex vec_ternarylogic
 
 The following built-in functions are made available by @option{-mmmx}.
 All of them generate the machine instruction that is part of the name.

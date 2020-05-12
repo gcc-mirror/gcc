@@ -5,23 +5,21 @@
 
 extern void abort (void);
 
-/* This test is replicated for every different vector type since
-   vec_gnb is polymorphic.  */
 unsigned long long int
-do_vec_gnb (vector unsigned short int source, int stride)
+do_vec_gnb (vector unsigned __int128 source, int stride)
 {
   switch (stride)
     {
     case 2:
-      return vec_gnb (source, 2);
+      return vec_gnb (source, 0);	/* { dg-error "between 2 and 7" } */
     case 3:
-      return vec_gnb (source, 3);
+      return vec_gnb (source, -1);	/* { dg-error "between 2 and 7" } */
     case 4:
-      return vec_gnb (source, 4);
+      return vec_gnb (source, 8);	/* { dg-error "between 2 and 7" } */
     case 5:
-      return vec_gnb (source, 5);
+      return vec_gnb (source, 1);	/* { dg-error "between 2 and 7" } */
     case 6:
-      return vec_gnb (source, 6);
+      return vec_gnb (source, stride);	/* { dg-error "unsigned literal" } */
     case 7:
       return vec_gnb (source, 7);
 
@@ -46,13 +44,15 @@ main (int argc, char *argv [])
 
   /* The last array element appears in the left-most (first) bit
      positions of the vector register.  */
-  vector unsigned short int source_a = { 0, 0, 0, 0, 0, 0, 0x8888, 0x8888 };
-  vector unsigned short int source_b = {
-    0, 0, 0, 0, 0x8080, 0x8080, 0x8080, 0x8080 };
-  vector unsigned short int source_c = {
-    0, 0, 0, 0, 0x8888, 0x8888, 0x8888, 0x8888 };
-  vector unsigned short int source_d = {
-    0x8080, 0x8080, 0x8080, 0x8080, 0x8080, 0x8080, 0x8080, 0x8080 };
+  vector unsigned __int128 source_a =
+    { ((unsigned __int128) 0x8888888800000000ull) << 64 };
+  vector unsigned __int128 source_b =
+    { ((unsigned __int128) 0x8080808080808080ull) << 64 };
+  vector unsigned __int128 source_c =
+    { ((unsigned __int128) 0x8888888888888888ull) << 64 };
+  vector unsigned __int128 source_d =
+    { 0x8080808080808080ull |
+      ((unsigned __int128) 0x8080808080808080ull) << 64 };
 
   unsigned long long int results [] =
     { 0xaaaa000000000000ull, 0xaaaa000000000000ull,
@@ -70,4 +70,3 @@ main (int argc, char *argv [])
   return 0;
 }
 
-/* { dg-final { scan-assembler {\mvgnb\M} } } */

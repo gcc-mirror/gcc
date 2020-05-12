@@ -5,10 +5,8 @@
 
 extern void abort (void);
 
-/* This test is replicated for every different vector type since
-   vec_gnb is polymorphic.  */
 unsigned long long int
-do_vec_gnb (vector unsigned char source, int stride)
+do_vec_gnb (vector unsigned __int128 source, int stride)
 {
   switch (stride)
     {
@@ -46,15 +44,15 @@ main (int argc, char *argv [])
 
   /* The last array element appears in the left-most (first) bit
      positions of the vector register.  */
-  vector unsigned char source_a = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x88, 0x88, 0x88, 0x88 };
-  vector unsigned char source_b = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80 };
-  vector unsigned char source_c = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88 };
-  vector unsigned char source_d = {
-    0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
-    0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80 };
+  vector unsigned __int128 source_a =
+    { ((unsigned __int128) 0x8888888800000000ull) << 64 };
+  vector unsigned __int128 source_b =
+    { ((unsigned __int128) 0x8080808080808080ull) << 64 };
+  vector unsigned __int128 source_c =
+    { ((unsigned __int128) 0x8888888888888888ull) << 64 };
+  vector unsigned __int128 source_d =
+    { 0x8080808080808080ull |
+      ((unsigned __int128) 0x8080808080808080ull) << 64 };
 
   unsigned long long int results [] =
     { 0xaaaa000000000000ull, 0xaaaa000000000000ull,

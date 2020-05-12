@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target powerpc_future_hw } */
 /* { dg-options "-mdejagnu-cpu=future" } */
 
 #include <altivec.h>
@@ -6,10 +7,10 @@
 extern void abort (void);
 
 vector unsigned long long int
-do_vec_clzm (vector unsigned long long int source,
+do_vec_cnttzm (vector unsigned long long int source,
 	     vector unsigned long long int mask)
 {
-  return vec_clzm (source, mask);
+  return vec_cnttzm (source, mask);
 }
 
 int main (int argc, char *argv [])
@@ -20,7 +21,7 @@ int main (int argc, char *argv [])
   vector unsigned long long int mask_a = { 0xffff0000ull, 0x0000ffffull };
   vector unsigned long long int mask_b = { 0x0f0f0f0full, 0xf0f0f0f0ull };
 
-  /* See cntlzdm-0.c for derivation of expected results.
+  /* See cnttzdm-0.c for derivation of expected results.
 
      result_aa [0] is compute (source [0], mask [0];
      result_aa [1] is compute (source [1], mask [1].
@@ -34,21 +35,19 @@ int main (int argc, char *argv [])
      result_bb [0] is compute (source [2], mask [2];
      result_bb [1] is compute (source [3], mask [3].  */
 
-  vector unsigned long long int result_aa = { 0, 0 };
-  vector unsigned long long int result_ab = { 1, 1 };
-  vector unsigned long long int result_ba = { 2, 0 };
-  vector unsigned long long int result_bb = { 0, 1 };
+  vector unsigned long long int result_aa = { 4, 4 };
+  vector unsigned long long int result_ab = { 2, 0 };
+  vector unsigned long long int result_ba = { 0, 0 };
+  vector unsigned long long int result_bb = { 1, 2 };
 
-  if (!vec_all_eq (do_vec_clzm (source_a, mask_a), result_aa))
+  if (!vec_all_eq (do_vec_cnttzm (source_a, mask_a), result_aa))
     abort ();
-  if (!vec_all_eq (do_vec_clzm (source_a, mask_b), result_ab))
+  if (!vec_all_eq (do_vec_cnttzm (source_a, mask_b), result_ab))
     abort ();
-  if (!vec_all_eq (do_vec_clzm (source_b, mask_a), result_ba))
+  if (!vec_all_eq (do_vec_cnttzm (source_b, mask_a),result_ba))
     abort ();
-  if (!vec_all_eq (do_vec_clzm (source_b, mask_b), result_bb))
+  if (!vec_all_eq (do_vec_cnttzm (source_b, mask_b), result_bb))
     abort ();
 
   return 0;
 }
-
-/* { dg-final { scan-assembler {\mvclzdm\M} } } */
