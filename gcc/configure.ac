@@ -6848,6 +6848,17 @@ if test "$gcc_cv_no_pie" = "yes"; then
 fi
 AC_SUBST([NO_PIE_FLAG])
 
+# Enable Intel CET on Intel CET enabled host if jit is enabled.
+GCC_CET_HOST_FLAGS(CET_HOST_FLAGS)
+case x$enable_languages in
+*jit*)
+  ;;
+*)
+  CET_HOST_FLAGS=
+  ;;
+esac
+AC_SUBST(CET_HOST_FLAGS)
+
 # Check linker supports '-z bndplt'
 ld_bndplt_support=no
 AC_MSG_CHECKING(linker -z bndplt option)

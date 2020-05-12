@@ -248,6 +248,7 @@ AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
+CET_HOST_FLAGS = @CET_HOST_FLAGS@
 CFLAGS = @CFLAGS@
 CONFIG_STATUS_DEPENDENCIES = @CONFIG_STATUS_DEPENDENCIES@
 CPP = @CPP@
@@ -382,7 +383,7 @@ CPPFLAGS_FOR_C_FAMILY = -I $(srcdir)/../gcc/c-family \
 
 CPPFLAGS_FOR_C = $(CPPFLAGS_FOR_C_FAMILY) -I $(srcdir)/../gcc/c
 CPPFLAGS_FOR_CXX = $(CPPFLAGS_FOR_C_FAMILY) -I $(srcdir)/../gcc/cp
-AM_CXXFLAGS = $(WARN_FLAGS) $(WERROR) $(visibility)
+AM_CXXFLAGS = $(WARN_FLAGS) $(WERROR) $(visibility) $(CET_HOST_FLAGS)
 # Can be simplified when libiberty becomes a normal convenience library.
 libiberty_normal = ../libiberty/libiberty.a
 libiberty_noasan = ../libiberty/noasan/libiberty.a

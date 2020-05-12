@@ -1,3 +1,7 @@
+2020-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/target-39.c: New test.
+
 2020-04-29  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* config/accel/openacc.f90 (acc_device_current): Set to '-1'.

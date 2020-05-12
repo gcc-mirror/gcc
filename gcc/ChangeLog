@@ -1,3 +1,280 @@
+2020-05-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* config/i386/mmx.md (fmav2sf4): New insn pattern.
+	(fmsv2sf4): Ditto.
+	(fnmav2sf4): Ditto.
+	(fnmsv2sf4): Ditto.
+
+2020-05-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.in (CET_HOST_FLAGS): New.
+	(COMPILER): Add $(CET_HOST_FLAGS).
+	* configure.ac: Add GCC_CET_HOST_FLAGS(CET_HOST_FLAGS) and
+	AC_SUBST(CET_HOST_FLAGS).  Clear CET_HOST_FLAGS if jit isn't
+	enabled.
+	* aclocal.m4: Regenerated.
+	* configure: Likewise.
+
+2020-05-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* config/i386/mmx.md (<code>v2sf2): New insn pattern.
+	(*mmx_<code>v2sf2): New insn_and_split pattern.
+	(*mmx_nabsv2sf2): Ditto.
+	(*mmx_andnotv2sf3): New insn pattern.
+	(*mmx_<code>v2sf3): Ditto.
+	* config/i386/i386.md (absneg_op): New code attribute.
+	* config/i386/i386.c (ix86_build_const_vector): Handle V2SFmode.
+	(ix86_build_signbit_mask): Ditto.
+
+2020-05-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-live.c (remove_unused_locals): Remove dead debug
+	bind resets.
+
+2020-05-12  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430-protos.h (msp430_output_aligned_decl_common):
+	Update prototype to include "local" argument.
+	* config/msp430/msp430.c (msp430_output_aligned_decl_common): Add
+	"local" argument.  Handle local common decls.
+	* config/msp430/msp430.h (ASM_OUTPUT_ALIGNED_DECL_COMMON): Adjust
+	msp430_output_aligned_decl_common call with 0 for "local" argument.
+	(ASM_OUTPUT_ALIGNED_DECL_LOCAL): Define.
+
+2020-05-12  Richard Biener  <rguenther@suse.de>
+
+	* cfghooks.c (split_edge): Preserve EDGE_DFS_BACK if set.
+
+2020-05-12  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/95033
+	PR sanitizer/95051
+	* sanopt.c (sanitize_rewrite_addressable_params):
+	Clear DECL_NOT_GIMPLE_REG_P for argument.
+
+2020-05-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94980
+	* tree-vect-generic.c (expand_vector_comparison): Use
+	vector_element_bits_tree to get the element size in bits,
+	rather than using TYPE_SIZE.
+	(expand_vector_condition, vector_element): Likewise.
+
+2020-05-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94980
+	* tree-vect-generic.c (build_replicated_const): Take the number
+	of bits as a parameter, instead of the type of the elements.
+	(do_plus_minus): Update accordingly, using vector_element_bits
+	to calculate the correct number of bits.
+	(do_negate): Likewise.
+
+2020-05-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94980
+	* tree.h (vector_element_bits, vector_element_bits_tree): Declare.
+	* tree.c (vector_element_bits, vector_element_bits_tree): New.
+	* match.pd: Use the new functions instead of determining the
+	vector element size directly from TYPE_SIZE(_UNIT).
+	* tree-vect-data-refs.c (vect_gather_scatter_fn_p): Likewise.
+	* tree-vect-patterns.c (vect_recog_mask_conversion_pattern): Likewise.
+	* tree-vect-stmts.c (vect_is_simple_cond): Likewise.
+	* tree-vect-generic.c (expand_vector_piecewise): Likewise.
+	(expand_vector_conversion): Likewise.
+	(expand_vector_addition): Likewise for a TYPE_SIZE_UNIT used as
+	a divisor.  Convert the dividend to bits to compensate.
+	* tree-vect-loop.c (vectorizable_live_operation): Call
+	vector_element_bits instead of open-coding it.
+
+2020-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-offload.h (omp_discover_implicit_declare_target): Declare.
+	* omp-offload.c: Include context.h.
+	(omp_declare_target_fn_p, omp_declare_target_var_p,
+	omp_discover_declare_target_fn_r, omp_discover_declare_target_var_r,
+	omp_discover_implicit_declare_target): New functions.
+	* cgraphunit.c (analyze_functions): Call
+	omp_discover_implicit_declare_target.
+
+2020-05-12  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (maybe_canonicalize_mem_ref_addr): Canonicalize
+	literal constant &MEM[..] to a constant literal.
+
+2020-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95045
+	* dbgcnt.def (lim): Add debug-counter.
+	* tree-ssa-loop-im.c: Include dbgcnt.h.
+	(find_refs_for_sm): Use lim debug counter for store motion
+	candidates.
+	(do_store_motion): Rename form store_motion.  Commit edge
+	insertions...
+	(store_motion_loop): ... here.
+	(tree_ssa_lim): Adjust.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/altivec.h (vec_clzm): Rename to vec_cntlzm.
+	(vec_ctzm): Rename to vec_cnttzm.
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Change fourth operand for vec_ternarylogic to require
+	compatibility with unsigned SImode rather than unsigned QImode.
+	* config/rs6000/rs6000-call.c (altivec_overloaded_builtins):
+	Remove overloaded forms of vec_gnb that are no longer needed.
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions Available
+	for a Future Architecture): Replace vec_clzm with vec_cntlzm;
+	replace vec_ctzm with vec_cntlzm; remove four unwanted forms of
+	vec_gnb; move vec_ternarylogic documentation into this section
+	and replace const unsigned char with const unsigned int as its
+	fourth argument.
+
+2020-05-11  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.h (vec_genpcvm): New #define.
+	* config/rs6000/rs6000-builtin.def (XXGENPCVM_V16QI): New built-in
+	instantiation.
+	(XXGENPCVM_V8HI): Likewise.
+	(XXGENPCVM_V4SI): Likewise.
+	(XXGENPCVM_V2DI): Likewise.
+	(XXGENPCVM): New overloaded built-in instantiation.
+	* config/rs6000/rs6000-call.c (altivec_overloaded_builtins): Add
+	entries for FUTURE_BUILTIN_VEC_XXGENPCVM.
+	(altivec_expand_builtin): Add special handling for
+	FUTURE_BUILTIN_VEC_XXGENPCVM.
+	(builtin_function_type): Add handling for
+	FUTURE_BUILTIN_XXGENPCVM_{V16QI,V8HI,V4SI,V2DI}.
+	* config/rs6000/vsx.md (VSX_EXTRACT_I4): New mode iterator.
+	(UNSPEC_XXGENPCV): New constant.
+	(xxgenpcvm_<mode>_internal): New insn.
+	(xxgenpcvm_<mode>): New expansion.
+	* doc/extend.texi: Add documentation for vec_genpcvm built-ins.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/altivec.h (vec_strir): New #define.
+	(vec_stril): Likewise.
+	(vec_strir_p): Likewise.
+	(vec_stril_p): Likewise.
+	* config/rs6000/altivec.md (UNSPEC_VSTRIR): New constant.
+	(UNSPEC_VSTRIL): Likewise.
+	(vstrir_<mode>): New expansion.
+	(vstrir_code_<mode>): New insn.
+	(vstrir_p_<mode>): New expansion.
+	(vstrir_p_code_<mode>): New insn.
+	(vstril_<mode>): New expansion.
+	(vstril_code_<mode>): New insn.
+	(vstril_p_<mode>): New expansion.
+	(vstril_p_code_<mode>): New insn.
+	* config/rs6000/rs6000-builtin.def (__builtin_altivec_vstribr):
+	New built-in function.
+	(__builtin_altivec_vstrihr): Likewise.
+	(__builtin_altivec_vstribl): Likewise.
+	(__builtin_altivec_vstrihl): Likewise.
+	(__builtin_altivec_vstribr_p): Likewise.
+	(__builtin_altivec_vstrihr_p): Likewise.
+	(__builtin_altivec_vstribl_p): Likewise.
+	(__builtin_altivec_vstrihl_p): Likewise.
+	(__builtin_vec_strir): New overloaded built-in function.
+	(__builtin_vec_stril): Likewise.
+	(__builtin_vec_strir_p): Likewise.
+	(__builtin_vec_stril_p): Likewise.
+	* config/rs6000/rs6000-call.c (altivec_overloaded_builtins):
+	Define overloaded forms of __builtin_vec_strir,
+	__builtin_vec_stril, __builtin_vec_strir_p, and
+	__builtin_vec_stril_p.
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions Available
+	for a Future Architecture): Add description of vec_stril,
+	vec_stril_p, vec_strir, and vec_strir_p built-in functions.
+
+2020-05-11  Kelvin Nilsen  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/altivec.h (vec_ternarylogic): New #define.
+	* config/rs6000/altivec.md (UNSPEC_XXEVAL): New constant.
+	(xxeval): New insn.
+	* config/rs6000/predicates.md (u8bit_cint_operand): New predicate.
+	* config/rs6000/rs6000-builtin.def: Add handling of new macro
+	RS6000_BUILTIN_4.
+	(BU_FUTURE_V_4): New macro. Use it.
+	(BU_FUTURE_OVERLOAD_4): Likewise.
+	* config/rs6000/rs6000-c.c (altivec_build_resolved_builtin): Add
+	handling for quaternary built-in functions.
+	(altivec_resolve_overloaded_builtin): Add special-case handling
+	for __builtin_vec_xxeval.
+	* config/rs6000/rs6000-call.c: Add handling of new macro
+	RS6000_BUILTIN_4 in initialization of rs6000_builtin_info,
+	bdesc0_arg, bdesc1_arg, bdesc2_arg, bdesc_3arg,
+	bdesc_altivec_preds, bdesc_abs, and bdesc_htm arrays.
+	(altivec_overloaded_builtins): Add definitions for
+	FUTURE_BUILTIN_VEC_XXEVAL.
+	(bdesc_4arg): New array.
+	(htm_expand_builtin): Add handling for quaternary built-in
+	functions.
+	(rs6000_expand_quaternop_builtin): New function.
+	(rs6000_expand_builtin): Add handling for quaternary built-in
+	functions.
+	(rs6000_init_builtins): Initialize builtin_mode_to_type entries
+	for unsigned QImode and unsigned HImode.
+	(builtin_quaternary_function_type): New function.
+	(rs6000_common_init_builtins): Add handling of quaternary
+	operations.
+	* config/rs6000/rs6000.h (RS6000_BTC_QUATERNARY): New defined
+	constant.
+	(RS6000_BTC_PREDICATE): Change value of constant.
+	(RS6000_BTC_ABS): Likewise.
+	(rs6000_builtins): Add support for new macro RS6000_BUILTIN_4.
+	* doc/extend.texi (PowerPC AltiVec Built-In Functions Available
+	for a Future Architecture): Add description of vec_ternarylogic
+	built-in function.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000-builtin.def (__builtin_pdepd): New built-in
+	function.
+	(__builtin_pextd): Likewise.
+	* config/rs6000/rs6000.md (UNSPEC_PDEPD): New constant.
+	(UNSPEC_PEXTD): Likewise.
+	(pdepd): New insn.
+	(pextd): Likewise.
+	* doc/extend.texi (Basic PowerPC Built-in Functions Available for
+	a Future Architecture): Add descriptions of __builtin_pdepd and
+	__builtin_pextd functions.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/altivec.h (vec_clrl): New #define.
+	(vec_clrr): Likewise.
+	* config/rs6000/altivec.md (UNSPEC_VCLRLB): New constant.
+	(UNSPEC_VCLRRB): Likewise.
+	(vclrlb): New insn.
+	(vclrrb): Likewise.
+	* config/rs6000/rs6000-builtin.def (__builtin_altivec_vclrlb): New
+	built-in function.
+	(__builtin_altivec_vclrrb): Likewise.
+	(__builtin_vec_clrl): New overloaded built-in function.
+	(__builtin_vec_clrr): Likewise.
+	* config/rs6000/rs6000-call.c (altivec_overloaded_builtins):
+	Define overloaded forms of __builtin_vec_clrl and
+	__builtin_vec_clrr.
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions Available
+	for a Future Architecture): Add descriptions of vec_clrl and
+	vec_clrr.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000-builtin.def (__builtin_cntlzdm): New
+	built-in function definition.
+	(__builtin_cnttzdm): Likewise.
+	* config/rs6000/rs6000.md (UNSPEC_CNTLZDM): New constant.
+	(UNSPEC_CNTTZDM): Likewise.
+	(cntlzdm): New insn.
+	(cnttzdm): Likewise.
+	* doc/extend.texi (Basic PowerPC Built-in Functions available for
+	a Future Architecture): Add descriptions of __builtin_cntlzdm and
+	__builtin_cnttzdm functions.
+
 2020-05-11  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95046

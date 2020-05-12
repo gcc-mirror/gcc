@@ -178,6 +178,17 @@ AC_ARG_ENABLE(host-shared,
 [PIC_FLAG=-fPIC], [PIC_FLAG=])
 AC_SUBST(PIC_FLAG)
 
+# Enable Intel CET on Intel CET enabled host if jit is enabled.
+GCC_CET_HOST_FLAGS(CET_HOST_FLAGS)
+case x$enable_languages in
+*jit*)
+  ;;
+*)
+  CET_HOST_FLAGS=
+  ;;
+esac
+AC_SUBST(CET_HOST_FLAGS)
+
 # Test for __sync support.
 AC_CACHE_CHECK([__sync extensions],
 [libbacktrace_cv_sys_sync],

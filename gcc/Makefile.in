@@ -262,6 +262,10 @@ LINKER = $(CC)
 LINKER_FLAGS = $(CFLAGS)
 endif
 
+# Enable Intel CET on Intel CET enabled host if needed.
+CET_HOST_FLAGS = @CET_HOST_FLAGS@
+COMPILER += $(CET_HOST_FLAGS)
+
 NO_PIE_CFLAGS = @NO_PIE_CFLAGS@
 NO_PIE_FLAG = @NO_PIE_FLAG@
 

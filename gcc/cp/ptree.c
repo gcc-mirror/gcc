@@ -269,6 +269,17 @@ cxx_print_xnode (FILE *file, tree node, int indent)
     case LAMBDA_EXPR:
       cxx_print_lambda_node (file, node, indent);
       break;
+    case STATIC_ASSERT:
+      if (location_t loc = STATIC_ASSERT_SOURCE_LOCATION (node))
+	{
+	  expanded_location xloc = expand_location (loc);
+	  indent_to (file, indent+4);
+	  fprintf (file, "%s:%d:%d", xloc.file, xloc.line, xloc.column);
+	}
+      print_node (file, "condition", STATIC_ASSERT_CONDITION (node), indent+4);
+      if (tree message = STATIC_ASSERT_MESSAGE (node))
+	print_node (file, "message", message, indent+4);
+      break;
     default:
       break;
     }

@@ -4544,6 +4544,9 @@ cxx_init_decl_processing (void)
   abort_fndecl
     = build_library_fn_ptr ("__cxa_pure_virtual", void_ftype,
 			    ECF_NORETURN | ECF_NOTHROW | ECF_COLD);
+  if (flag_weak)
+    /* If no definition is available, resolve references to NULL.  */
+    declare_weak (abort_fndecl);
 
   /* Perform other language dependent initializations.  */
   init_class_processing ();
@@ -5214,17 +5217,10 @@ start_decl (const cp_declarator *declarator,
 
   *pushed_scope_p = NULL_TREE;
 
-  /* An object declared as __attribute__((deprecated)) suppresses
-     warnings of uses of other deprecated items.  */
-  if (lookup_attribute ("deprecated", attributes))
-    deprecated_state = DEPRECATED_SUPPRESS;
-
   attributes = chainon (attributes, prefix_attributes);
 
   decl = grokdeclarator (declarator, declspecs, NORMAL, initialized,
 			 &attributes);
-
-  deprecated_state = DEPRECATED_NORMAL;
 
   if (decl == NULL_TREE || VOID_TYPE_P (decl)
       || decl == error_mark_node)
@@ -10456,6 +10452,15 @@ compute_array_index_type_loc (location_t name_loc, tree name, tree size,
     itype = build_min (MINUS_EXPR, sizetype, size, integer_one_node);
   else
     {
+      if (!TREE_CONSTANT (size))
+	{
+	  /* A variable sized array.  Arrange for the SAVE_EXPR on the inside
+	     of the MINUS_EXPR, which allows the -1 to get folded with the +1
+	     that happens when building TYPE_SIZE.  */
+	  size = variable_size (size);
+	  stabilize_vla_size (size);
+	}
+
       /* Compute the index of the largest element in the array.  It is
 	 one less than the number of elements in the array.  We save
 	 and restore PROCESSING_TEMPLATE_DECL so that computations in
@@ -10473,11 +10478,6 @@ compute_array_index_type_loc (location_t name_loc, tree name, tree size,
 
       if (!TREE_CONSTANT (itype))
 	{
-	  /* A variable sized array.  */
-	  itype = variable_size (itype);
-
-	  stabilize_vla_size (itype);
-
 	  if (sanitize_flags_p (SANITIZE_VLA)
 	      && current_function_decl != NULL_TREE)
 	    {
@@ -11318,6 +11318,17 @@ grokdeclarator (const cp_declarator *declarator,
       type = NULL_TREE;
       type_was_error_mark_node = true;
     }
+
+  /* Ignore erroneous attributes.  */
+  if (attrlist && *attrlist == error_mark_node)
+    *attrlist = NULL_TREE;
+
+  /* An object declared as __attribute__((deprecated)) suppresses
+     warnings of uses of other deprecated items.  */
+  temp_override<deprecated_states> ds (deprecated_state);
+  if (attrlist && lookup_attribute ("deprecated", *attrlist))
+    deprecated_state = DEPRECATED_SUPPRESS;
+
   cp_warn_deprecated_use (type);
   if (type && TREE_CODE (type) == TYPE_DECL)
     {

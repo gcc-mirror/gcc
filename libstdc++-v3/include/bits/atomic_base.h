@@ -208,6 +208,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __atomic_test_and_set (&_M_i, int(__m));
     }
 
+#if __cplusplus > 201703L
+#define __cpp_lib_atomic_flag_test 201907L
+
+    _GLIBCXX_ALWAYS_INLINE bool
+    test(memory_order __m = memory_order_seq_cst) noexcept
+    {
+      __atomic_flag_data_type __v;
+      __atomic_load(&_M_i, &__v, int(__m));
+      return __v == __GCC_ATOMIC_TEST_AND_SET_TRUEVAL;
+    }
+
+    _GLIBCXX_ALWAYS_INLINE bool
+    test(memory_order __m = memory_order_seq_cst) volatile noexcept
+    {
+      __atomic_flag_data_type __v;
+      __atomic_load(&_M_i, &__v, int(__m));
+      return __v == __GCC_ATOMIC_TEST_AND_SET_TRUEVAL;
+    }
+#endif // C++20
+
     _GLIBCXX_ALWAYS_INLINE void
     clear(memory_order __m = memory_order_seq_cst) noexcept
     {

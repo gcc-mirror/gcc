@@ -743,6 +743,7 @@ remove_unused_locals (void)
   mark_scope_block_unused (DECL_INITIAL (current_function_decl));
 
   usedvars = BITMAP_ALLOC (NULL);
+  auto_bitmap useddebug;
 
   /* Walk the CFG marking all referenced symbols.  */
   FOR_EACH_BB_FN (bb, cfun)
@@ -763,7 +764,21 @@ remove_unused_locals (void)
 	     do it.  If the block is not otherwise used, the stmt will
 	     be cleaned up in clean_unused_block_pointer.  */
 	  if (is_gimple_debug (stmt))
-	    continue;
+	    {
+	      if (gimple_debug_bind_p (stmt))
+		{
+		  tree var = gimple_debug_bind_get_var  (stmt);
+		  if (VAR_P (var))
+		    {
+		      if (!gimple_debug_bind_get_value (stmt))
+			/* Run the 2nd phase.  */
+			have_local_clobbers = true;
+		      else
+			bitmap_set_bit (useddebug, DECL_UID (var));
+		    }
+		}
+	      continue;
+	    }
 
 	  if (gimple_clobber_p (stmt))
 	    {
@@ -845,6 +860,20 @@ remove_unused_locals (void)
 		  }
 		if (b)
 		  TREE_USED (b) = true;
+	      }
+	    else if (gimple_debug_bind_p (stmt))
+	      {
+		tree var = gimple_debug_bind_get_var (stmt);
+		if (VAR_P (var)
+		    && !bitmap_bit_p (useddebug, DECL_UID (var))
+		    && !is_used_p (var))
+		  {
+		    if (dump_file && (dump_flags & TDF_DETAILS))
+		      fprintf (dump_file, "Dead debug bind reset to %u\n",
+			       DECL_UID (var));
+		    gsi_remove (&gsi, true);
+		    continue;
+		  }
 	      }
 	    gsi_next (&gsi);
 	  }

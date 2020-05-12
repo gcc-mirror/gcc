@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alias.h"
 #include "builtins.h"
 #include "tree-dfa.h"
+#include "dbgcnt.h"
 
 /* TODO:  Support for predicated code motion.  I.e.
 
@@ -2862,7 +2863,7 @@ find_refs_for_sm (class loop *loop, bitmap sm_executed, bitmap refs_to_sm)
   EXECUTE_IF_AND_COMPL_IN_BITMAP (refs, sm_executed, 0, i, bi)
     {
       ref = memory_accesses.refs_list[i];
-      if (can_sm_ref_p (loop, ref))
+      if (can_sm_ref_p (loop, ref) && dbg_cnt (lim))
 	bitmap_set_bit (refs_to_sm, i);
     }
 }
@@ -2900,7 +2901,12 @@ store_motion_loop (class loop *loop, bitmap sm_executed)
     {
       find_refs_for_sm (loop, sm_executed, sm_in_loop);
       if (!bitmap_empty_p (sm_in_loop))
-	hoist_memory_references (loop, sm_in_loop, exits);
+	{
+	  hoist_memory_references (loop, sm_in_loop, exits);
+	  /* Commit edge inserts here to preserve the order of stores
+	     when an exit exits multiple loops.  */
+	  gsi_commit_edge_inserts ();
+	}
     }
   exits.release ();
 
@@ -2915,7 +2921,7 @@ store_motion_loop (class loop *loop, bitmap sm_executed)
    loops.  */
 
 static void
-store_motion (void)
+do_store_motion (void)
 {
   class loop *loop;
   bitmap sm_executed = BITMAP_ALLOC (&lim_bitmap_obstack);
@@ -2924,7 +2930,6 @@ store_motion (void)
     store_motion_loop (loop, sm_executed);
 
   BITMAP_FREE (sm_executed);
-  gsi_commit_edge_inserts ();
 }
 
 /* Fills ALWAYS_EXECUTED_IN information for basic blocks of LOOP, i.e.
@@ -3141,7 +3146,7 @@ tree_ssa_lim (void)
 
   /* Execute store motion.  Force the necessary invariants to be moved
      out of the loops as well.  */
-  store_motion ();
+  do_store_motion ();
 
   /* Move the expressions that are expensive enough.  */
   todo = move_computations ();

@@ -2019,13 +2019,15 @@ msp430_unique_section (tree decl, int reloc)
 
 /* Emit a declaration of a common symbol.
    If a data region is in use then put the symbol into the
-   equivalent .bss section instead.  */
+   equivalent .bss section instead.
+   If LOCAL is 1, then DECL is for a local common variable.  */
 void
 msp430_output_aligned_decl_common (FILE *		  stream,
 				   const tree		  decl,
 				   const char *		  name,
 				   unsigned HOST_WIDE_INT size,
-				   unsigned int		  align)
+				   unsigned int		  align,
+				   int local)
 {
   /* Only emit a common symbol if the variable does not have a specific section
      assigned.  */
@@ -2039,6 +2041,12 @@ msp430_output_aligned_decl_common (FILE *		  stream,
       && !has_attr (ATTR_PERSIST, decl)
       && !has_attr (ATTR_NOINIT, decl))
     {
+      if (local)
+	{
+	  fprintf (stream, LOCAL_ASM_OP);
+	  assemble_name (stream, name);
+	  fprintf (stream, "\n");
+	}
       fprintf (stream, COMMON_ASM_OP);
       assemble_name (stream, name);
       fprintf (stream, "," HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",
@@ -2069,8 +2077,11 @@ msp430_output_aligned_decl_common (FILE *		  stream,
 
       switch_to_section (sec);
       ASM_OUTPUT_ALIGN (stream, floor_log2 (align / BITS_PER_UNIT));
-      targetm.asm_out.globalize_label (stream, name);
-      ASM_WEAKEN_LABEL (stream, name);
+      if (!local)
+	{
+	  targetm.asm_out.globalize_label (stream, name);
+	  ASM_WEAKEN_LABEL (stream, name);
+	}
       ASM_OUTPUT_LABEL (stream, name);
       ASM_OUTPUT_SKIP (stream, size ? size : 1);
     }

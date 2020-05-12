@@ -1,3 +1,187 @@
+2020-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/78752
+	* g++.dg/cpp2a/concepts-pr78752-2.C: New test.
+
+2020-05-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* gcc.target/i386/pr95046-3.c: New test.
+
+2020-05-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* gcc.target/i386/pr95046-2.c: New test.
+
+2020-05-12  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.c-torture/execute/noinit-attribute.c: Skip for msp430
+	in the large memory model.
+
+2020-05-12  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/region-attribute-misuse.c: Allow a .bss section to
+	be created.
+
+2020-05-12  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/95033
+	PR sanitizer/95051
+	* g++.dg/asan/function-argument-4.C: New test.
+	* gcc.dg/asan/pr95033.c: New test.
+	* gcc.dg/asan/pr95051.c: New test.
+
+2020-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/95063
+	* g++.dg/gomp/pr95063.C: New test.
+
+2020-05-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94980
+	* gcc.target/i386/pr94980.c: New test.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/vec-clzm-0.c: Rename to...
+	* gcc.target/powerpc/vec-cntlzm-0.c: ...this.
+	* gcc.target/powerpc/vec-clzm-1.c: Rename to...
+	* gcc.target/powerpc/vec-cntlzm-1.c: ...this.
+	* gcc.target/powerpc/vec-ctzm-0.c: Rename to...
+	* gcc.target/powerpc/vec-cnttzm-0.c: ...this.
+	* gcc.target/powerpc/vec-ctzm-1.c: Rename to...
+	* gcc.target/powerpc/vec-cnttzm-1.c: ...this.
+	* gcc.target/powerpc/vec-gnb-8.c: Rename to...
+	* gcc.target/powerpc/vec-gnb-0.c: ...this, deleting the old file.
+	* gcc.target/powerpc/vec-gnb-9.c: Rename to...
+	* gcc.target/powerpc/vec-gnb-1.c: ...this, deleting the old file.
+	* gcc.target/powerpc/vec-gnb-10.c: Rename to...
+	* gcc.target/powerpc/vec-gnb-2.c: ...this, deleting the old file.
+	* gcc.target/powerpc/vec-gnb-3.c: Delete.
+	* gcc.target/powerpc/vec-gnb-4.c: Delete.
+	* gcc.target/powerpc/vec-gnb-5.c: Delete.
+	* gcc.target/powerpc/vec-gnb-6.c: Delete.
+	* gcc.target/powerpc/vec-gnb-7.c: Delete.
+
+2020-05-11  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/xxgenpc-runnable.c: New.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/vec-stril-0.c: New.
+	* gcc.target/powerpc/vec-stril-1.c: New.
+	* gcc.target/powerpc/vec-stril-10.c: New.
+	* gcc.target/powerpc/vec-stril-11.c: New.
+	* gcc.target/powerpc/vec-stril-12.c: New.
+	* gcc.target/powerpc/vec-stril-13.c: New.
+	* gcc.target/powerpc/vec-stril-14.c: New.
+	* gcc.target/powerpc/vec-stril-15.c: New.
+	* gcc.target/powerpc/vec-stril-16.c: New.
+	* gcc.target/powerpc/vec-stril-17.c: New.
+	* gcc.target/powerpc/vec-stril-18.c: New.
+	* gcc.target/powerpc/vec-stril-19.c: New.
+	* gcc.target/powerpc/vec-stril-2.c: New.
+	* gcc.target/powerpc/vec-stril-20.c: New.
+	* gcc.target/powerpc/vec-stril-21.c: New.
+	* gcc.target/powerpc/vec-stril-22.c: New.
+	* gcc.target/powerpc/vec-stril-23.c: New.
+	* gcc.target/powerpc/vec-stril-3.c: New.
+	* gcc.target/powerpc/vec-stril-4.c: New.
+	* gcc.target/powerpc/vec-stril-5.c: New.
+	* gcc.target/powerpc/vec-stril-6.c: New.
+	* gcc.target/powerpc/vec-stril-7.c: New.
+	* gcc.target/powerpc/vec-stril-8.c: New.
+	* gcc.target/powerpc/vec-stril-9.c: New.
+	* gcc.target/powerpc/vec-stril_p-0.c: New.
+	* gcc.target/powerpc/vec-stril_p-1.c: New.
+	* gcc.target/powerpc/vec-stril_p-10.c: New.
+	* gcc.target/powerpc/vec-stril_p-11.c: New.
+	* gcc.target/powerpc/vec-stril_p-2.c: New.
+	* gcc.target/powerpc/vec-stril_p-3.c: New.
+	* gcc.target/powerpc/vec-stril_p-4.c: New.
+	* gcc.target/powerpc/vec-stril_p-5.c: New.
+	* gcc.target/powerpc/vec-stril_p-6.c: New.
+	* gcc.target/powerpc/vec-stril_p-7.c: New.
+	* gcc.target/powerpc/vec-stril_p-8.c: New.
+	* gcc.target/powerpc/vec-stril_p-9.c: New.
+	* gcc.target/powerpc/vec-strir-0.c: New.
+	* gcc.target/powerpc/vec-strir-1.c: New.
+	* gcc.target/powerpc/vec-strir-10.c: New.
+	* gcc.target/powerpc/vec-strir-11.c: New.
+	* gcc.target/powerpc/vec-strir-12.c: New.
+	* gcc.target/powerpc/vec-strir-13.c: New.
+	* gcc.target/powerpc/vec-strir-14.c: New.
+	* gcc.target/powerpc/vec-strir-15.c: New.
+	* gcc.target/powerpc/vec-strir-16.c: New.
+	* gcc.target/powerpc/vec-strir-17.c: New.
+	* gcc.target/powerpc/vec-strir-18.c: New.
+	* gcc.target/powerpc/vec-strir-19.c: New.
+	* gcc.target/powerpc/vec-strir-2.c: New.
+	* gcc.target/powerpc/vec-strir-20.c: New.
+	* gcc.target/powerpc/vec-strir-21.c: New.
+	* gcc.target/powerpc/vec-strir-22.c: New.
+	* gcc.target/powerpc/vec-strir-23.c: New.
+	* gcc.target/powerpc/vec-strir-3.c: New.
+	* gcc.target/powerpc/vec-strir-4.c: New.
+	* gcc.target/powerpc/vec-strir-5.c: New.
+	* gcc.target/powerpc/vec-strir-6.c: New.
+	* gcc.target/powerpc/vec-strir-7.c: New.
+	* gcc.target/powerpc/vec-strir-8.c: New.
+	* gcc.target/powerpc/vec-strir-9.c: New.
+	* gcc.target/powerpc/vec-strir_p-0.c: New.
+	* gcc.target/powerpc/vec-strir_p-1.c: New.
+	* gcc.target/powerpc/vec-strir_p-10.c: New.
+	* gcc.target/powerpc/vec-strir_p-11.c: New.
+	* gcc.target/powerpc/vec-strir_p-2.c: New.
+	* gcc.target/powerpc/vec-strir_p-3.c: New.
+	* gcc.target/powerpc/vec-strir_p-4.c: New.
+	* gcc.target/powerpc/vec-strir_p-5.c: New.
+	* gcc.target/powerpc/vec-strir_p-6.c: New.
+	* gcc.target/powerpc/vec-strir_p-7.c: New.
+	* gcc.target/powerpc/vec-strir_p-8.c: New.
+	* gcc.target/powerpc/vec-strir_p-9.c: New.
+
+2020-05-11  Kelvin Nilsen  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/vec-ternarylogic-0.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-1.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-10.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-2.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-3.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-4.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-5.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-6.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-7.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-8.c: New.
+	* gcc.target/powerpc/vec-ternarylogic-9.c: New.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/pdep-0.c: New.
+	* gcc.target/powerpc/pdep-1.c: New.
+	* gcc.target/powerpc/pextd-0.c: New.
+	* gcc.target/powerpc/pextd-1.c: New.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/vec-clrl-0.c: New.
+	* gcc.target/powerpc/vec-clrl-1.c: New.
+	* gcc.target/powerpc/vec-clrr-0.c: New.
+	* gcc.target/powerpc/vec-clrr-1.c: New.
+
+2020-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/cntlzdm-0.c: New test.
+	* gcc.target/powerpc/cntlzdm-1.c: New test.
+	* gcc.target/powerpc/cnttzdm-0.c: New test.
+	* gcc.target/powerpc/cnttzdm-1.c: New test.
+
+2020-05-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95053
+	* gfortran.dg/pr95053.f: New test.
+
 2020-05-11  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95046

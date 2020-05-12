@@ -4282,6 +4282,28 @@ build_user_type_conversion (tree totype, tree expr, int flags,
   return ret;
 }
 
+/* Give a helpful diagnostic when implicit_conversion fails.  */
+
+static void
+implicit_conversion_error (location_t loc, tree type, tree expr)
+{
+  tsubst_flags_t complain = tf_warning_or_error;
+
+  /* If expr has unknown type, then it is an overloaded function.
+     Call instantiate_type to get good error messages.  */
+  if (TREE_TYPE (expr) == unknown_type_node)
+    instantiate_type (type, expr, complain);
+  else if (invalid_nonstatic_memfn_p (loc, expr, complain))
+    /* We gave an error.  */;
+  else
+    {
+      range_label_for_type_mismatch label (TREE_TYPE (expr), type);
+      gcc_rich_location rich_loc (loc, &label);
+      error_at (&rich_loc, "could not convert %qE from %qH to %qI",
+		expr, TREE_TYPE (expr), type);
+    }
+}
+
 /* Worker for build_converted_constant_expr.  */
 
 static tree
@@ -4397,8 +4419,7 @@ build_converted_constant_expr_internal (tree type, tree expr,
   else
     {
       if (complain & tf_error)
-	error_at (loc, "could not convert %qE from %qH to %qI", expr,
-		  TREE_TYPE (expr), type);
+	implicit_conversion_error (loc, type, expr);
       expr = error_mark_node;
     }
 
@@ -4600,15 +4621,7 @@ build_new_function_call (tree fn, vec<tree, va_gc> **args,
     }
   else
     {
-      int flags = LOOKUP_NORMAL;
-      /* If fn is template_id_expr, the call has explicit template arguments
-         (e.g. func<int>(5)), communicate this info to build_over_call
-         through flags so that later we can use it to decide whether to warn
-         about peculiar null pointer conversion.  */
-      if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
-        flags |= LOOKUP_EXPLICIT_TMPL_ARGS;
-
-      result = build_over_call (cand, flags, complain);
+      result = build_over_call (cand, LOOKUP_NORMAL, complain);
     }
 
   if (flag_coroutines
@@ -8773,7 +8786,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       if (null_node_p (arg)
           && DECL_TEMPLATE_INFO (fn)
           && cand->template_decl
-          && !(flags & LOOKUP_EXPLICIT_TMPL_ARGS))
+	  && !cand->explicit_targs)
         conversion_warning = false;
 
       /* Set user_conv_p on the argument conversions, so rvalue/base handling
@@ -10345,8 +10358,6 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 
 	  if (call != error_mark_node)
 	    {
-              if (explicit_targs)
-                flags |= LOOKUP_EXPLICIT_TMPL_ARGS;
 	      /* Now we know what function is being called.  */
 	      if (fn_p)
 		*fn_p = fn;
@@ -11855,21 +11866,7 @@ perform_implicit_conversion_flags (tree type, tree expr,
   if (!conv)
     {
       if (complain & tf_error)
-	{
-	  /* If expr has unknown type, then it is an overloaded function.
-	     Call instantiate_type to get good error messages.  */
-	  if (TREE_TYPE (expr) == unknown_type_node)
-	    instantiate_type (type, expr, complain);
-	  else if (invalid_nonstatic_memfn_p (loc, expr, complain))
-	    /* We gave an error.  */;
-	  else
-	    {
-	      range_label_for_type_mismatch label (TREE_TYPE (expr), type);
-	      gcc_rich_location rich_loc (loc, &label);
-	      error_at (&rich_loc, "could not convert %qE from %qH to %qI",
-			expr, TREE_TYPE (expr), type);
-	    }
-	}
+	implicit_conversion_error (loc, type, expr);
       expr = error_mark_node;
     }
   else if (processing_template_decl && conv->kind != ck_identity)

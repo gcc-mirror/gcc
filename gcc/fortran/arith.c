@@ -1828,7 +1828,8 @@ gfc_divide (gfc_expr *op1, gfc_expr *op2)
 	    rc = ARITH_DIV0;
 	  break;
 	default:
-	  gfc_internal_error ("gfc_divide(): Bad basic type");
+	  /* basic type is non-numeric, handle this elsewhere.  */
+	  break;
 	}
       if (rc == ARITH_DIV0)
 	{

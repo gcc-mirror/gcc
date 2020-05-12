@@ -28,6 +28,7 @@
    RS6000_BUILTIN_1 -- 1 arg builtins
    RS6000_BUILTIN_2 -- 2 arg builtins
    RS6000_BUILTIN_3 -- 3 arg builtins
+   RS6000_BUILTIN_4 -- 4 arg builtins
    RS6000_BUILTIN_A -- ABS builtins
    RS6000_BUILTIN_D -- DST builtins
    RS6000_BUILTIN_H -- HTM builtins
@@ -55,6 +56,10 @@
 
 #ifndef RS6000_BUILTIN_3
   #error "RS6000_BUILTIN_3 is not defined."
+#endif
+
+#ifndef RS6000_BUILTIN_4
+  #error "RS6000_BUILTIN_4 is not defined."
 #endif
 
 #ifndef RS6000_BUILTIN_A
@@ -969,6 +974,14 @@
 		     | RS6000_BTC_TERNARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 
+#define BU_FUTURE_V_4(ENUM, NAME, ATTR, ICODE)			\
+  RS6000_BUILTIN_4 (FUTURE_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_altivec_" NAME,		/* NAME */	\
+		    RS6000_BTM_FUTURE,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_QUATERNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
 #define BU_FUTURE_OVERLOAD_1(ENUM, NAME)				\
   RS6000_BUILTIN_1 (FUTURE_BUILTIN_VEC_ ## ENUM,	/* ENUM */	\
 		    "__builtin_vec_" NAME,		/* NAME */	\
@@ -991,6 +1004,14 @@
 		    RS6000_BTM_FUTURE,			/* MASK */	\
 		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
 		     | RS6000_BTC_TERNARY),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
+#define BU_FUTURE_OVERLOAD_4(ENUM, NAME)				\
+  RS6000_BUILTIN_4 (FUTURE_BUILTIN_VEC_ ## ENUM,	/* ENUM */	\
+		    "__builtin_vec_" NAME,		/* NAME */	\
+		    RS6000_BTM_FUTURE,			/* MASK */	\
+		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
+		     | RS6000_BTC_QUATERNARY),				\
 		    CODE_FOR_nothing)			/* ICODE */
 
 /* Miscellaneous (non-vector) builtins for instructions which may be
@@ -2575,18 +2596,48 @@ BU_P9_OVERLOAD_2 (CMPEQB,	"byte_in_set")
 
 /* Future architecture scalar built-ins.  */
 BU_FUTURE_MISC_2 (CFUGED, "cfuged", CONST, cfuged)
+BU_FUTURE_MISC_2 (CNTLZDM, "cntlzdm", CONST, cntlzdm)
+BU_FUTURE_MISC_2 (CNTTZDM, "cnttzdm", CONST, cnttzdm)
+BU_FUTURE_MISC_2 (PDEPD, "pdepd", CONST, pdepd)
+BU_FUTURE_MISC_2 (PEXTD, "pextd", CONST, pextd)
 
 /* Future architecture vector built-ins.  */
+BU_FUTURE_V_2 (VCLRLB, "vclrlb", CONST, vclrlb)
+BU_FUTURE_V_2 (VCLRRB, "vclrrb", CONST, vclrrb)
 BU_FUTURE_V_2 (VCFUGED, "vcfuged", CONST, vcfuged)
 BU_FUTURE_V_2 (VCLZDM, "vclzdm", CONST, vclzdm)
 BU_FUTURE_V_2 (VCTZDM, "vctzdm", CONST, vctzdm)
 BU_FUTURE_V_2 (VPDEPD, "vpdepd", CONST, vpdepd)
 BU_FUTURE_V_2 (VPEXTD, "vpextd", CONST, vpextd)
 BU_FUTURE_V_2 (VGNB, "vgnb", CONST, vgnb)
+BU_FUTURE_V_4 (XXEVAL, "xxeval", CONST, xxeval)
+BU_FUTURE_V_2 (XXGENPCVM_V16QI, "xxgenpcvm_v16qi", CONST, xxgenpcvm_v16qi)
+BU_FUTURE_V_2 (XXGENPCVM_V8HI, "xxgenpcvm_v8hi", CONST, xxgenpcvm_v8hi)
+BU_FUTURE_V_2 (XXGENPCVM_V4SI, "xxgenpcvm_v4si", CONST, xxgenpcvm_v4si)
+BU_FUTURE_V_2 (XXGENPCVM_V2DI, "xxgenpcvm_v2di", CONST, xxgenpcvm_v2di)
+
+BU_FUTURE_V_1 (VSTRIBR, "vstribr", CONST, vstrir_v16qi)
+BU_FUTURE_V_1 (VSTRIHR, "vstrihr", CONST, vstrir_v8hi)
+BU_FUTURE_V_1 (VSTRIBL, "vstribl", CONST, vstril_v16qi)
+BU_FUTURE_V_1 (VSTRIHL, "vstrihl", CONST, vstril_v8hi)
+
+BU_FUTURE_V_1 (VSTRIBR_P, "vstribr_p", CONST, vstrir_p_v16qi)
+BU_FUTURE_V_1 (VSTRIHR_P, "vstrihr_p", CONST, vstrir_p_v8hi)
+BU_FUTURE_V_1 (VSTRIBL_P, "vstribl_p", CONST, vstril_p_v16qi)
+BU_FUTURE_V_1 (VSTRIHL_P, "vstrihl_p", CONST, vstril_p_v8hi)
 
 /* Future architecture overloaded vector built-ins.  */
+BU_FUTURE_OVERLOAD_2 (CLRL, "clrl")
+BU_FUTURE_OVERLOAD_2 (CLRR, "clrr")
 BU_FUTURE_OVERLOAD_2 (GNB, "gnb")
+BU_FUTURE_OVERLOAD_4 (XXEVAL, "xxeval")
+BU_FUTURE_OVERLOAD_2 (XXGENPCVM, "xxgenpcvm")
 
+BU_FUTURE_OVERLOAD_1 (VSTRIR, "strir")
+BU_FUTURE_OVERLOAD_1 (VSTRIL, "stril")
+
+BU_FUTURE_OVERLOAD_1 (VSTRIR_P, "strir_p")
+BU_FUTURE_OVERLOAD_1 (VSTRIL_P, "stril_p")
 
 /* 1 argument crypto functions.  */
 BU_CRYPTO_1 (VSBOX,		"vsbox",	  CONST, crypto_vsbox_v2di)

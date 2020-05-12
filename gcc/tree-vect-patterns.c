@@ -4381,8 +4381,7 @@ vect_recog_mask_conversion_pattern (vec_info *vinfo,
 		  || dt == vect_constant_def))
 	    {
 	      tree wide_scalar_type = build_nonstandard_integer_type
-		(tree_to_uhwi (TYPE_SIZE (TREE_TYPE (vectype1))),
-		 TYPE_UNSIGNED (rhs1_type));
+		(vector_element_bits (vectype1), TYPE_UNSIGNED (rhs1_type));
 	      tree vectype3 = get_vectype_for_scalar_type (vinfo,
 							   wide_scalar_type);
 	      if (expand_vec_cond_expr_p (vectype1, vectype3, TREE_CODE (rhs1)))

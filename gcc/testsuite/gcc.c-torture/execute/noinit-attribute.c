@@ -1,8 +1,12 @@
 /* { dg-do run } */
 /* { dg-require-effective-target noinit } */
 /* { dg-options "-O2" } */
+/* { dg-skip-if "data LMA != VMA" { msp430-*-* } { "-mlarge" } } */
 
-/* This test checks that noinit data is handled correctly.  */
+/* This test checks that noinit data is handled correctly.
+   If data LMA != VMA (e.g. for simulating the copy of data from ROM to RAM),
+   then var_init will always be re-initialized to 2 and this test will loop
+   forever.  */
 
 extern void _start (void) __attribute__ ((noreturn));
 extern void abort (void) __attribute__ ((noreturn));

@@ -164,6 +164,7 @@
 
 #if __cplusplus > 201703L
 // c++2a
+#define __cpp_lib_atomic_flag_test 201907L
 #define __cpp_lib_atomic_float 201711L
 #define __cpp_lib_atomic_ref 201806L
 #define __cpp_lib_atomic_value_initialization 201911L

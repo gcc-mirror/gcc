@@ -1,3 +1,11 @@
+2020-05-08  Ulrich Drepper  <drepper@redhat.com>
+
+	* include/bits/atomic_base.h (atomic_flag): Implement test member
+	function.
+	* include/std/version: Define __cpp_lib_atomic_flag_test.
+	* testsuite/29_atomics/atomic_flag/test/explicit.cc: New file.
+	* testsuite/29_atomics/atomic_flag/test/implicit.cc: New file.
+
 2020-05-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/94971 (partial)

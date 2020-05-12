@@ -238,6 +238,40 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(define_expand "<code>v2sf2"
+  [(set (match_operand:V2SF 0 "register_operand")
+	(absneg:V2SF
+	  (match_operand:V2SF 1 "register_operand")))]
+  "TARGET_MMX_WITH_SSE"
+  "ix86_expand_fp_absneg_operator (<CODE>, V2SFmode, operands); DONE;")
+
+(define_insn_and_split "*mmx_<code>v2sf2"
+  [(set (match_operand:V2SF 0 "register_operand" "=x,x")
+	(absneg:V2SF
+	  (match_operand:V2SF 1 "register_operand" "%0,x")))
+   (use (match_operand:V2SF 2 "nonimmediate_operand" "x,x"))]
+  "TARGET_MMX_WITH_SSE"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0)
+	(<absneg_op>:V2SF (match_dup 1) (match_dup 2)))]
+  ""
+  [(set_attr "isa" "noavx,avx")])
+
+(define_insn_and_split "*mmx_nabsv2sf2"
+  [(set (match_operand:V2SF 0 "register_operand" "=x,x")
+	(neg:V2SF
+	  (abs:V2SF
+	    (match_operand:V2SF 1 "register_operand" "%0,x"))))
+   (use (match_operand:V2SF 2 "nonimmediate_operand" "x,x"))]
+  "TARGET_MMX_WITH_SSE"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0)
+	(ior:V2SF (match_dup 1) (match_dup 2)))]
+  ""
+  [(set_attr "isa" "noavx,avx")])
+
 (define_expand "mmx_addv2sf3"
   [(set (match_operand:V2SF 0 "register_operand")
 	(plus:V2SF
@@ -590,6 +624,111 @@
   [(set_attr "type" "mmxcmp")
    (set_attr "prefix_extra" "1")
    (set_attr "mode" "V2SF")])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Parallel single-precision floating point logical operations
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define_insn "*mmx_andnotv2sf3"
+  [(set (match_operand:V2SF 0 "register_operand" "=x,x")
+	(and:V2SF
+	  (not:V2SF
+	    (match_operand:V2SF 1 "register_operand" "0,x"))
+	  (match_operand:V2SF 2 "register_operand" "x,x")))]
+  "TARGET_MMX_WITH_SSE"
+  "@
+   andps\t{%2, %0|%0, %2}
+   vandps\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sselog")
+   (set_attr "prefix" "orig,vex")
+   (set_attr "mode" "V4SF")])
+
+(define_insn "*mmx_<code>v2sf3"
+  [(set (match_operand:V2SF 0 "register_operand" "=x,x")
+	(any_logic:V2SF
+	  (match_operand:V2SF 1 "register_operand" "%0,x")
+	  (match_operand:V2SF 2 "register_operand" "x,x")))]
+  "TARGET_MMX_WITH_SSE"
+  "@
+   <logic>ps\t{%2, %0|%0, %2}
+   v<logic>ps\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sselog")
+   (set_attr "prefix" "orig,vex")
+   (set_attr "mode" "V4SF")])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Parallel single-precision FMA multiply/accumulate instructions.
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define_insn "fmav2sf4"
+  [(set (match_operand:V2SF 0 "register_operand" "=v,v,x")
+	(fma:V2SF
+	  (match_operand:V2SF 1 "register_operand" "%0,v,x")
+	  (match_operand:V2SF 2 "register_operand" "v,v,x")
+	  (match_operand:V2SF 3 "register_operand" "v,0,x")))]
+  "(TARGET_FMA || TARGET_FMA4) && TARGET_MMX_WITH_SSE"
+  "@
+   vfmadd132ps\t{%2, %3, %0|%0, %3, %2}
+   vfmadd231ps\t{%2, %1, %0|%0, %1, %2}
+   vfmaddps\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "isa" "fma,fma,fma4")
+   (set_attr "type" "ssemuladd")
+   (set_attr "mode" "V4SF")])
+
+(define_insn "fmsv2sf4"
+  [(set (match_operand:V2SF 0 "register_operand" "=v,v,x")
+	(fma:V2SF
+	  (match_operand:V2SF   1 "register_operand" "%0,v,x")
+	  (match_operand:V2SF   2 "register_operand" "v,v,x")
+	  (neg:V2SF
+	    (match_operand:V2SF 3 "register_operand" "v,0,x"))))]
+  "(TARGET_FMA || TARGET_FMA4) && TARGET_MMX_WITH_SSE"
+  "@
+   vfmsub132ps\t{%2, %3, %0|%0, %3, %2}
+   vfmsub231ps\t{%2, %1, %0|%0, %1, %2}
+   vfmsubps\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "isa" "fma,fma,fma4")
+   (set_attr "type" "ssemuladd")
+   (set_attr "mode" "V4SF")])
+
+(define_insn "fnmav2sf4"
+  [(set (match_operand:V2SF 0 "register_operand" "=v,v,x")
+	(fma:V2SF
+	  (neg:V2SF
+	    (match_operand:V2SF 1 "register_operand" "%0,v,x"))
+	  (match_operand:V2SF   2 "register_operand" "v,v,x")
+	  (match_operand:V2SF   3 "register_operand" "v,0,x")))]
+  "(TARGET_FMA || TARGET_FMA4) && TARGET_MMX_WITH_SSE"
+  "@
+   vfnmadd132ps\t{%2, %3, %0|%0, %3, %2}
+   vfnmadd231ps\t{%2, %1, %0|%0, %1, %2}
+   vfnmaddps\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "isa" "fma,fma,fma4")
+   (set_attr "type" "ssemuladd")
+   (set_attr "mode" "V4SF")])
+
+(define_insn "fnmsv2sf4"
+  [(set (match_operand:V2SF 0 "register_operand" "=v,v,x")
+	(fma:V2SF
+	  (neg:V2SF
+	    (match_operand:V2SF 1 "register_operand" "%0,v,x"))
+	  (match_operand:V2SF   2 "register_operand" "v,v,x")
+	  (neg:V2SF
+	    (match_operand:V2SF 3 "register_operand" "v,0,x"))))]
+  "(TARGET_FMA || TARGET_FMA4) && TARGET_MMX_WITH_SSE"
+  "@
+   vfnmsub132ps\t{%2, %3, %0|%0, %3, %2}
+   vfnmsub231ps\t{%2, %1, %0|%0, %1, %2}
+   vfnmsubps\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "isa" "fma,fma,fma4")
+   (set_attr "type" "ssemuladd")
+   (set_attr "mode" "V4SF")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

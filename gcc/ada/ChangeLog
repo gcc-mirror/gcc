@@ -1,3 +1,11 @@
+2020-05-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/95035
+	* gcc-interface/utils.c (packable_type_hasher::equal): Also compare
+	the scalar storage order.
+	(hash_packable_type): Also hash the scalar storage order.
+	(hash_pad_type): Likewise.
+
 2020-05-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/*.[ch]: Update copyright year.
