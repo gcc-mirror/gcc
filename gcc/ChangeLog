@@ -1,6 +1,14 @@
 2020-05-12  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/94980
+	* tree-vect-generic.c (expand_vector_comparison): Use
+	vector_element_bits_tree to get the element size in bits,
+	rather than using TYPE_SIZE.
+	(expand_vector_condition, vector_element): Likewise.
+
+2020-05-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94980
 	* tree-vect-generic.c (build_replicated_const): Take the number
 	of bits as a parameter, instead of the type of the elements.
 	(do_plus_minus): Update accordingly, using vector_element_bits
