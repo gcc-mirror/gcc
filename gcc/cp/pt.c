@@ -4417,29 +4417,21 @@ build_template_parm_index (int index,
 static tree
 canonical_type_parameter (tree type)
 {
-  tree list;
   int idx = TEMPLATE_TYPE_IDX (type);
 
   gcc_assert (TREE_CODE (type) != TEMPLATE_TEMPLATE_PARM);
 
-  if (!canonical_template_parms)
-    vec_alloc (canonical_template_parms, idx + 1);
-
-  if (canonical_template_parms->length () <= (unsigned) idx)
+  if (vec_safe_length (canonical_template_parms) <= (unsigned) idx)
     vec_safe_grow_cleared (canonical_template_parms, idx + 1);
 
-  list = (*canonical_template_parms)[idx];
-  while (list && !comptypes (type, TREE_VALUE (list), COMPARE_STRUCTURAL))
-    list = TREE_CHAIN (list);
+  for (tree list = (*canonical_template_parms)[idx];
+       list; list = TREE_CHAIN (list))
+    if (comptypes (type, TREE_VALUE (list), COMPARE_STRUCTURAL))
+      return TREE_VALUE (list);
 
-  if (list)
-    return TREE_VALUE (list);
-  else
-    {
-      (*canonical_template_parms)[idx]
-	= tree_cons (NULL_TREE, type, (*canonical_template_parms)[idx]);
-      return type;
-    }
+  (*canonical_template_parms)[idx]
+    = tree_cons (NULL_TREE, type, (*canonical_template_parms)[idx]);
+  return type;
 }
 
 /* Return a TEMPLATE_PARM_INDEX, similar to INDEX, but whose
