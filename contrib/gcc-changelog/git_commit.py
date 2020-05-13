@@ -526,9 +526,8 @@ class GitCommit:
 
     def print_output(self):
         for entry, output in self.to_changelog_entries():
-            print('@@CL %s' % entry)
+            print('------ %s/ChangeLog ------ ' % entry)
             print(output)
-        print('@@CL')
 
     def print_errors(self):
         print('Errors:')
