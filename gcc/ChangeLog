@@ -1,3 +1,36 @@
+2020-05-13  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/altivec.h (vec_extractl): New #define.
+	(vec_extracth): Likewise.
+	* config/rs6000/altivec.md (UNSPEC_EXTRACTL): New constant.
+	(UNSPEC_EXTRACTR): Likewise.
+	(vextractl<mode>): New expansion.
+	(vextractl<mode>_internal): New insn.
+	(vextractr<mode>): New expansion.
+	(vextractr<mode>_internal): New insn.
+	* config/rs6000/rs6000-builtin.def (__builtin_altivec_vextdubvlx):
+	New built-in function.
+	(__builtin_altivec_vextduhvlx): Likewise.
+	(__builtin_altivec_vextduwvlx): Likewise.
+	(__builtin_altivec_vextddvlx): Likewise.
+	(__builtin_altivec_vextdubvhx): Likewise.
+	(__builtin_altivec_vextduhvhx): Likewise.
+	(__builtin_altivec_vextduwvhx): Likewise.
+	(__builtin_altivec_vextddvhx): Likewise.
+	(__builtin_vec_extractl): New overloaded built-in function.
+	(__builtin_vec_extracth): Likewise.
+	* config/rs6000/rs6000-call.c (altivec_overloaded_builtins):
+	Define overloaded forms of __builtin_vec_extractl and
+	__builtin_vec_extracth.
+	(builtin_function_type): Add cases to mark arguments of new
+	built-in functions as unsigned.
+	(rs6000_common_init_builtins): Add
+	opaque_ftype_opaque_opaque_opaque_opaque.
+	* config/rs6000/rs6000.md (du_or_d): New mode attribute.
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions Available
+	for a Future Architecture): Add description of vec_extractl and
+	vec_extractr built-in functions.
+
 2020-05-13  Richard Biener  <rguenther@suse.de>
 
 	* target.def (add_stmt_cost): Add new vectype parameter.
