@@ -120,7 +120,7 @@ extern bool default_empty_mask_is_expensive (unsigned);
 extern void *default_init_cost (class loop *);
 extern unsigned default_add_stmt_cost (class vec_info *, void *, int,
 				       enum vect_cost_for_stmt,
-				       class _stmt_vec_info *, int,
+				       class _stmt_vec_info *, tree, int,
 				       enum vect_cost_model_location);
 extern void default_finish_cost (void *, unsigned *, unsigned *, unsigned *);
 extern void default_destroy_cost_data (void *);

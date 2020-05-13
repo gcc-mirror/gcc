@@ -1,5 +1,32 @@
 2020-05-13  Richard Biener  <rguenther@suse.de>
 
+	* target.def (add_stmt_cost): Add new vectype parameter.
+	* targhooks.c (default_add_stmt_cost): Adjust.
+	* targhooks.h (default_add_stmt_cost): Likewise.
+	* config/aarch64/aarch64.c (aarch64_add_stmt_cost): Take new
+	vectype parameter.
+	* config/arm/arm.c (arm_add_stmt_cost): Likewise.
+	* config/i386/i386.c (ix86_add_stmt_cost): Likewise.
+	* config/rs6000/rs6000.c (rs6000_add_stmt_cost): Likewise.
+
+	* tree-vectorizer.h (stmt_info_for_cost::vectype): Add.
+	(dump_stmt_cost): Add new vectype parameter.
+	(add_stmt_cost): Likewise.
+	(record_stmt_cost): Likewise.
+	(record_stmt_cost): Add overload with old signature.
+	* tree-vect-loop.c (vect_compute_single_scalar_iteration_cost):
+	Adjust.
+	(vect_get_known_peeling_cost): Likewise.
+	(vect_estimate_min_profitable_iters): Likewise.
+	* tree-vectorizer.c (dump_stmt_cost): Add new vectype parameter.
+	* tree-vect-stmts.c (record_stmt_cost): Likewise.
+	(vect_prologue_cost_for_slp_op): Remove stmt_vec_info parameter
+	and pass down correct vectype and NULL stmt_info.
+	(vect_model_simple_cost): Adjust.
+	(vect_model_store_cost): Likewise.
+
+2020-05-13  Richard Biener  <rguenther@suse.de>
+
 	* tree-vectorizer.h (SLP_INSTANCE_GROUP_SIZE): Remove.
 	(_slp_instance::group_size): Likewise.
 	* tree-vect-loop.c (vectorizable_reduction): The group size

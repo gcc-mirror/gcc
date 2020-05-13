@@ -1350,13 +1350,12 @@ default_init_cost (class loop *loop_info ATTRIBUTE_UNUSED)
 unsigned
 default_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 		       enum vect_cost_for_stmt kind,
-		       class _stmt_vec_info *stmt_info, int misalign,
+		       class _stmt_vec_info *stmt_info, tree vectype,
+		       int misalign,
 		       enum vect_cost_model_location where)
 {
   unsigned *cost = (unsigned *) data;
   unsigned retval = 0;
-
-  tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
   int stmt_cost = targetm.vectorize.builtin_vectorization_cost (kind, vectype,
 								misalign);
    /* Statements in an inner loop relative to the loop being

@@ -21886,15 +21886,14 @@ ix86_init_cost (class loop *)
 static unsigned
 ix86_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 		    enum vect_cost_for_stmt kind,
-		    class _stmt_vec_info *stmt_info, int misalign,
+		    class _stmt_vec_info *stmt_info, tree vectype,
+		    int misalign,
 		    enum vect_cost_model_location where)
 {
   unsigned *cost = (unsigned *) data;
   unsigned retval = 0;
   bool scalar_p
     = (kind == scalar_stmt || kind == scalar_load || kind == scalar_store);
-
-  tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
   int stmt_cost = - 1;
 
   bool fp = false;
