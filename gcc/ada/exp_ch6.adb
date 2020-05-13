@@ -3947,6 +3947,11 @@ package body Exp_Ch6 is
 
                                  if Nkind (Expression (Assn)) =
                                       N_Expression_With_Actions
+                                   and then
+                                     Nkind_In
+                                       (Original_Node (Expression (Assn)),
+                                         N_Case_Expression,
+                                         N_If_Expression)
                                  then
                                     Insert_Level_Assign (Expression (Assn));
 
@@ -3983,7 +3988,10 @@ package body Exp_Ch6 is
                                                            N_If_Statement);
 
                                  Next (Cond);
-                                 pragma Assert (Present (Cond));
+
+                                 if No (Cond) then
+                                    raise Program_Error;
+                                 end if;
                               end loop;
 
                               --  Iterate through if expression branches
