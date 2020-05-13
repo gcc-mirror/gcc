@@ -1,3 +1,15 @@
+2020-05-13  Alexandre Oliva <oliva@adacore.com>
+
+	PR libstdc++/77691
+	* include/experimental/memory_resource
+	(__resource_adaptor_imp::do_allocate): Handle max_align_t on
+	x86-vxworks as on x86-solaris.
+	(__resource_adaptor_imp::do_deallocate): Likewise.
+	* testsuite/experimental/memory_resource/new_delete_resource.cc:
+	Drop xfail.
+	(BAD_MAX_ALIGN_T): Define on x86-vxworks as on x86-solaris.
+	(test03): Drop max-align test for char-aligned alloc.
+
 2020-05-08  Ulrich Drepper  <drepper@redhat.com>
 
 	* include/bits/atomic_base.h (atomic_flag): Implement test member
