@@ -1,3 +1,21 @@
+2020-05-13  Nathan Sidwell  <nathan@acm.org>
+
+	Formatting fixups & some simplifications.
+	* pt.c (spec_hash_table): New typedef.
+	(decl_specializations, type_specializations): Use it.
+	(retrieve_specialization): Likewise.
+	(register_specialization): Remove unnecessary casts.
+	(push_template_decl_real): Reformat.
+	(instantiate_class_template_1): Use more RAII.
+	(make_argument_pack): Simplify.
+	(instantiate_template_1): Use gcc_checking_assert for expensive
+	asserts.
+	(instantiate_decl): Likewise.
+	(resolve_typename_type): Reformat comment.
+	* semantics.c (struct deferred_access): Remove unnecessary GTY on
+	member.
+	(begin_class_definition): Fix formatting.
+
 2020-05-13  Jason Merrill  <jason@redhat.com>
 
 	* call.c, class.c, constexpr.c, constraint.cc, decl.c, init.c,
