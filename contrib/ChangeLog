@@ -1,5 +1,10 @@
 2020-05-13  Martin Liska  <mliska@suse.cz>
 
+	* gcc-changelog/git_commit.py: Restore print_output syntax
+	in git_commit.py.
+
+2020-05-13  Martin Liska  <mliska@suse.cz>
+
 	* gcc-changelog/git_check_commit.py: New file.
 	* gcc-changelog/git_commit.py: New file.
 	* gcc-changelog/git_email.py: New file.
