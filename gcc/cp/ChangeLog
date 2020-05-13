@@ -1,5 +1,8 @@
 2020-05-13  Nathan Sidwell  <nathan@acm.org>
 
+	* pt.c (template_args_equal): Reorder category checking for
+	clarity.
+
 	* pt.c (perform_typedefs_access_check): Cache expensively
 	calculated object references.
 	(check_auto_in_tmpl_args): Just assert we do not get unexpected
