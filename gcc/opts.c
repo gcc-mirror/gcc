@@ -2704,11 +2704,6 @@ common_handle_option (struct gcc_options *opts,
       set_debug_level (DWARF2_DEBUG, false, "", opts, opts_set, loc);
       break;
 
-    case OPT_gsplit_dwarf:
-      set_debug_level (NO_DEBUG, DEFAULT_GDB_EXTENSIONS, "", opts, opts_set,
-		       loc);
-      break;
-
     case OPT_ggdb:
       set_debug_level (NO_DEBUG, 2, arg, opts, opts_set, loc);
       break;

@@ -9166,11 +9166,11 @@ except when selective scheduling is enabled.
 
 @item -gsplit-dwarf
 @opindex gsplit-dwarf
-Separate as much DWARF debugging information as possible into a
-separate output file with the extension @file{.dwo}.  This option allows
-the build system to avoid linking files with debug information.  To
-be useful, this option requires a debugger capable of reading @file{.dwo}
-files.
+If DWARF debugging information is enabled, separate as much debugging
+information as possible into a separate output file with the extension
+@file{.dwo}.  This option allows the build system to avoid linking files with
+debug information.  To be useful, this option requires a debugger capable of
+reading @file{.dwo} files.
 
 @item -gdescribe-dies
 @opindex gdescribe-dies
