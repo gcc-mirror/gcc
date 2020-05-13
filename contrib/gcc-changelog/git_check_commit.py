@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 3, or (at your option) any later
+# version.
+#
+# GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.  */
+
+import argparse
+
+from git_repository import parse_git_revisions
+
+parser = argparse.ArgumentParser(description='Check git ChangeLog format '
+                                 'of a commit')
+parser.add_argument('revisions',
+                    help='Git revisions (e.g. hash~5..hash or just hash)')
+parser.add_argument('-g', '--git-path', default='.',
+                    help='Path to git repository')
+parser.add_argument('-p', '--print-changelog', action='store_true',
+                    help='Print final changelog entires')
+parser.add_argument('-n', '--allow-non-strict-mode', action='store_true',
+                    help='Allow non-strict mode (change in both ChangeLog and '
+                    'other files.')
+args = parser.parse_args()
+
+retval = 0
+for git_commit in parse_git_revisions(args.git_path, args.revisions,
+                                      not args.allow_non_strict_mode):
+    print('Checking %s' % git_commit.hexsha)
+    if git_commit.success:
+        print('OK')
+        if args.print_changelog:
+            git_commit.print_output()
+    else:
+        for error in git_commit.errors:
+            print('ERR: %s' % error)
+        retval = 1
+
+exit(retval)
