@@ -1,5 +1,5 @@
 // PR c++/65854
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 // Handle alias templates in type requirements.
 

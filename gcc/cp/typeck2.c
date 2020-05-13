@@ -1102,7 +1102,7 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain,
   return ok;
 }
 
-/* True iff TYPE is a C++2a "ordinary" character type.  */
+/* True iff TYPE is a C++20 "ordinary" character type.  */
 
 bool
 ordinary_char_type_p (tree type)
@@ -2236,7 +2236,7 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
     {
       /* 5.5/6: In a .* expression whose object expression is an rvalue, the
 	 program is ill-formed if the second operand is a pointer to member
-	 function with ref-qualifier & (for C++2A: unless its cv-qualifier-seq
+	 function with ref-qualifier & (for C++20: unless its cv-qualifier-seq
 	 is const). In a .* expression whose object expression is an lvalue,
 	 the program is ill-formed if the second operand is a pointer to member
 	 function with ref-qualifier &&.  */
@@ -2261,12 +2261,12 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
 			   "an lvalue", ptrmem_type);
 		  return error_mark_node;
 		}
-	      else if (cxx_dialect < cxx2a)
+	      else if (cxx_dialect < cxx20)
 		{
 		  if (complain & tf_warning_or_error)
 		    pedwarn (input_location, OPT_Wpedantic,
 			     "pointer-to-member-function type %qT requires "
-			     "an lvalue before C++2a", ptrmem_type);
+			     "an lvalue before C++20", ptrmem_type);
 		  else
 		    return error_mark_node;
 		}

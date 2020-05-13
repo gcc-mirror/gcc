@@ -324,7 +324,7 @@ static bool nonnull_check_p (tree, unsigned HOST_WIDE_INT);
    ObjC is like C except that D_OBJC and D_CXX_OBJC are not set
    C++ --std=c++98: D_CONLY | D_CXX11 | D_CXX20 | D_OBJC
    C++ --std=c++11: D_CONLY | D_CXX20 | D_OBJC
-   C++ --std=c++2a: D_CONLY | D_OBJC
+   C++ --std=c++20: D_CONLY | D_OBJC
    ObjC++ is like C++ except that D_OBJC is not set
 
    If -fno-asm is used, D_ASM is added to the mask.  If

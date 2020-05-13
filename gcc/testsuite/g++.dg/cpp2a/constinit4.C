@@ -1,5 +1,5 @@
 // PR c++/91360 - Implement C++20 P1143R2: constinit
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 struct S { };
 constinit extern S s;

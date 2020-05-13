@@ -1,5 +1,5 @@
 // Testcase from P1814R0
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template <class T> struct identity { using type = T; };
 template <class T> using identity_t = typename identity<T>::type;

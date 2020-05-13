@@ -1,5 +1,5 @@
 // PR c++/88337 - Implement P1327R1: Allow dynamic_cast/typeid in constexpr.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // { dg-additional-options "-fdelete-null-pointer-checks" }
 
 // From clang's constant-expression-cxx2a.cpp.

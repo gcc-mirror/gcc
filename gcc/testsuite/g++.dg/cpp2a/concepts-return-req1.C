@@ -1,5 +1,5 @@
 // PR c++/92268
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template <class T> concept Two = true;
 template <class T> concept One = Two<typename T::type>;

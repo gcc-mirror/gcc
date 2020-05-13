@@ -1,5 +1,5 @@
 // PR c++/94546
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template <class T> T&& forward(T&& t) { return static_cast<T&&>(t); }
 

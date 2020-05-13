@@ -1,7 +1,7 @@
 // PR c++/88095
 // Test class non-type template parameters for literal operator templates.
 // Validate basic support.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 struct literal_class {
   constexpr literal_class(...) { }

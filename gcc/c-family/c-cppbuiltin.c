@@ -988,7 +988,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	}
       if (cxx_dialect > cxx17)
 	{
-	  /* Set feature test macros for C++2a.  */
+	  /* Set feature test macros for C++20.  */
 	  cpp_define (pfile, "__cpp_init_captures=201803L");
 	  cpp_define (pfile, "__cpp_generic_lambdas=201707L");
 	  cpp_define (pfile, "__cpp_designated_initializers=201707L");
@@ -1006,7 +1006,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	}
       if (flag_concepts)
         {
-          if (cxx_dialect >= cxx2a)
+	  if (cxx_dialect >= cxx20)
             cpp_define (pfile, "__cpp_concepts=201907L");
           else
             cpp_define (pfile, "__cpp_concepts=201507L");

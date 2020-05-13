@@ -1,5 +1,5 @@
 // PR c++/88819
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template<typename T, template<T> class TT, class R = TT <0>> struct A 
 {

@@ -928,7 +928,7 @@ static bool
 function_requirements_equivalent_p (tree newfn, tree oldfn)
 {
   /* In the concepts TS, the combined constraints are compared.  */
-  if (cxx_dialect < cxx2a)
+  if (cxx_dialect < cxx20)
     {
       tree ci1 = get_constraints (oldfn);
       tree ci2 = get_constraints (newfn);
@@ -5570,7 +5570,7 @@ grok_reference_init (tree decl, tree type, tree init, int flags)
       if (TREE_TYPE (init) == NULL_TREE
 	  && CP_AGGREGATE_TYPE_P (ttype)
 	  && !DECL_DECOMPOSITION_P (decl)
-	  && (cxx_dialect >= cxx2a))
+	  && (cxx_dialect >= cxx20))
 	{
 	  /* We don't know yet if we should treat const A& r(1) as
 	     const A& r{1}.  */
@@ -5896,7 +5896,7 @@ check_for_uninitialized_const_var (tree decl, bool constexpr_context_p,
       && (CP_TYPE_CONST_P (type)
 	  /* C++20 permits trivial default initialization in constexpr
 	     context (P1331R2).  */
-	  || (cxx_dialect < cxx2a
+	  || (cxx_dialect < cxx20
 	      && (constexpr_context_p
 		  || var_in_constexpr_fn (decl))))
       && !DECL_NONTRIVIALLY_INITIALIZED_P (decl))
@@ -5907,7 +5907,7 @@ check_for_uninitialized_const_var (tree decl, bool constexpr_context_p,
 
       bool show_notes = true;
 
-      if (!constexpr_context_p || cxx_dialect >= cxx2a)
+      if (!constexpr_context_p || cxx_dialect >= cxx20)
 	{
 	  if (CP_TYPE_CONST_P (type))
 	    {
@@ -6721,7 +6721,7 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	       && TREE_TYPE (init) == NULL_TREE
 	       && TREE_CODE (type) == ARRAY_TYPE
 	       && !DECL_DECOMPOSITION_P (decl)
-	       && (cxx_dialect >= cxx2a))
+	       && (cxx_dialect >= cxx20))
 	{
 	  /* [dcl.init.string] "An array of ordinary character type [...]
 	     can be initialized by an ordinary string literal [...] by an
@@ -7186,14 +7186,14 @@ notice_forced_label_r (tree *tp, int *walk_subtrees, void *)
   return NULL_TREE;
 }
 
-/* Return true if DECL has either a trivial destructor, or for C++2A
+/* Return true if DECL has either a trivial destructor, or for C++20
    is constexpr and has a constexpr destructor.  */
 
 static bool
 decl_maybe_constant_destruction (tree decl, tree type)
 {
   return (TYPE_HAS_TRIVIAL_DESTRUCTOR (type)
-	  || (cxx_dialect >= cxx2a
+	  || (cxx_dialect >= cxx20
 	      && VAR_P (decl)
 	      && DECL_DECLARED_CONSTEXPR_P (decl)
 	      && type_has_constexpr_destructor (strip_array_types (type))));
@@ -7253,7 +7253,7 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
   if (idk == CP_ID_KIND_UNQUALIFIED || idk == CP_ID_KIND_TEMPLATE_ID)
     {
       if (identifier_p (variant)
-	  /* In C++2A, we may need to perform ADL for a template
+	  /* In C++20, we may need to perform ADL for a template
 	     name.  */
 	  || (TREE_CODE (variant) == TEMPLATE_ID_EXPR
 	      && identifier_p (TREE_OPERAND (variant, 0))))
@@ -11648,13 +11648,13 @@ grokdeclarator (const cp_declarator *declarator,
 	  storage_class = sc_none;
 	  staticp = 0;
 	}
-      if (constexpr_p && cxx_dialect < cxx2a)
+      if (constexpr_p && cxx_dialect < cxx20)
 	{
 	  gcc_rich_location richloc (declspecs->locations[ds_virtual]);
 	  richloc.add_range (declspecs->locations[ds_constexpr]);
 	  pedwarn (&richloc, OPT_Wpedantic, "member %qD can be declared both "
-		   "%<virtual%> and %<constexpr%> only in %<-std=c++2a%> or "
-		   "%<-std=gnu++2a%>", dname);
+		   "%<virtual%> and %<constexpr%> only in %<-std=c++20%> or "
+		   "%<-std=gnu++20%>", dname);
 	}
     }
   friendp = decl_spec_seq_has_spec_p (declspecs, ds_friend);
@@ -11741,10 +11741,10 @@ grokdeclarator (const cp_declarator *declarator,
       if (consteval_p)
 	error_at (declspecs->locations[ds_consteval], "structured "
 		  "binding declaration cannot be %qs", "consteval");
-      if (thread_p && cxx_dialect < cxx2a)
+      if (thread_p && cxx_dialect < cxx20)
 	pedwarn (declspecs->locations[ds_thread], 0,
 		 "structured binding declaration can be %qs only in "
-		 "%<-std=c++2a%> or %<-std=gnu++2a%>",
+		 "%<-std=c++20%> or %<-std=gnu++20%>",
 		 declspecs->gnu_thread_keyword_p
 		 ? "__thread" : "thread_local");
       if (concept_p)
@@ -11763,10 +11763,10 @@ grokdeclarator (const cp_declarator *declarator,
 		    "register");
 	  break;
 	case sc_static:
-	  if (cxx_dialect < cxx2a)
+	  if (cxx_dialect < cxx20)
 	    pedwarn (loc, 0,
 		     "structured binding declaration can be %qs only in "
-		     "%<-std=c++2a%> or %<-std=gnu++2a%>", "static");
+		     "%<-std=c++20%> or %<-std=gnu++20%>", "static");
 	  break;
 	case sc_extern:
 	  error_at (loc, "structured binding declaration cannot be %qs",
@@ -13206,11 +13206,11 @@ grokdeclarator (const cp_declarator *declarator,
 			      "a destructor cannot be %qs", "concept");
                     return error_mark_node;
                   }
-		if (constexpr_p && cxx_dialect < cxx2a)
+		if (constexpr_p && cxx_dialect < cxx20)
 		  {
 		    error_at (declspecs->locations[ds_constexpr],
 			      "%<constexpr%> destructors only available"
-			      " with %<-std=c++2a%> or %<-std=gnu++2a%>");
+			      " with %<-std=c++20%> or %<-std=gnu++20%>");
 		    return error_mark_node;
 		  }
 		if (consteval_p)

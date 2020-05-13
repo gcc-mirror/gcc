@@ -1,5 +1,5 @@
 // PR c++/94583
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 namespace std { struct strong_ordering { }; }
 

@@ -1473,7 +1473,7 @@ finish_shorthand_constraint (tree decl, tree constr)
      The standard behavior cannot be overridden by -fconcepts-ts.  */
   bool variadic_concept_p = template_parameter_pack_p (proto);
   bool declared_pack_p = template_parameter_pack_p (decl);
-  bool apply_to_each_p = (cxx_dialect >= cxx2a) ? true : !variadic_concept_p;
+  bool apply_to_each_p = (cxx_dialect >= cxx20) ? true : !variadic_concept_p;
 
   /* Get the argument and overload used for the requirement
      and adjust it if we're going to expand later.  */

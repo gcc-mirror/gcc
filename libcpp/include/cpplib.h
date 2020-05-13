@@ -173,7 +173,7 @@ enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_GNUC11, CLK_GNUC17, CLK_GNUC2X,
 	     CLK_STDC2X,
 	     CLK_GNUCXX, CLK_CXX98, CLK_GNUCXX11, CLK_CXX11,
 	     CLK_GNUCXX14, CLK_CXX14, CLK_GNUCXX17, CLK_CXX17,
-	     CLK_GNUCXX2A, CLK_CXX2A, CLK_ASM};
+	     CLK_GNUCXX20, CLK_CXX20, CLK_ASM};
 
 /* Payload of a NUMBER, STRING, CHAR or COMMENT token.  */
 struct GTY(()) cpp_string {
@@ -484,7 +484,7 @@ struct cpp_options
   /* Nonzero for C2X decimal floating-point constants.  */
   unsigned char dfp_constants;
 
-  /* Nonzero for C++2a __VA_OPT__ feature.  */
+  /* Nonzero for C++20 __VA_OPT__ feature.  */
   unsigned char va_opt;
 
   /* Nonzero for the '::' token.  */

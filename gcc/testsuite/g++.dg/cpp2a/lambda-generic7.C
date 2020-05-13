@@ -1,5 +1,5 @@
 // PR c++/94507 - ICE-on-invalid with lambda template.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 struct S { };
 

@@ -1,4 +1,4 @@
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // { dg-final { scan-assembler "_Z1gI1XEvT_" } }
 // { dg-final { scan-assembler "_Z1gI1YEvT_" } }
 // { dg-final { scan-assembler "_Z1gIiEvT_" } }

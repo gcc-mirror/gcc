@@ -1,5 +1,5 @@
 // PR c++/91363 - P0960R3: Parenthesized initialization of aggregates.
-// { dg-do run { target c++2a } }
+// { dg-do run { target c++20 } }
 
 struct A {
   int i;

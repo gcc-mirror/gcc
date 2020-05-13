@@ -1,5 +1,5 @@
 // PR c++/91428 - warn about std::is_constant_evaluated in if constexpr.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // { dg-options "-Wtautological-compare" }
 
 namespace std {

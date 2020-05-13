@@ -1,4 +1,4 @@
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template<class From, class To>
 concept convertible_to = requires(From (&f)(), void (&g)(To)) { g(f()); };

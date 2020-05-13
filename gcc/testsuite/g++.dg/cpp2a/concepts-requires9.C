@@ -1,5 +1,5 @@
 // PR c++/66832
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template <class T, class U, unsigned N>
   requires requires (T& t, U &u) { t.foo(); u.foo(); }

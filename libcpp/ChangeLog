@@ -1,3 +1,8 @@
+2020-05-13  Jason Merrill  <jason@redhat.com>
+
+	* include/cpplib.h (enum c_lang): Change CXX2A to CXX20.
+	* init.c, lex.c: Adjust.
+
 2020-05-12  Nathan Sidwell  <nathan@acm.org>
 
 	EOF location is at end of file

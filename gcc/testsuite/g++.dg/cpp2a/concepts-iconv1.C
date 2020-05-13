@@ -1,5 +1,5 @@
 // PR c++/67240
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // { dg-additional-options "-fconcepts-diagnostics-depth=2" }
 
 template <class T, class U> concept Same = __is_same_as(T,U);

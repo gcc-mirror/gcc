@@ -1,5 +1,5 @@
 // PR c++/67217
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template <class T>
   requires __is_same_as(T, double)

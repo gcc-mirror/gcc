@@ -1095,10 +1095,10 @@ early_check_defaulted_comparison (tree fn)
     ctx = DECL_FRIEND_CONTEXT (fn);
   bool ok = true;
 
-  if (cxx_dialect < cxx2a)
+  if (cxx_dialect < cxx20)
     {
-      error_at (loc, "defaulted %qD only available with %<-std=c++2a%> or "
-		     "%<-std=gnu++2a%>", fn);
+      error_at (loc, "defaulted %qD only available with %<-std=c++20%> or "
+		     "%<-std=gnu++20%>", fn);
       return false;
     }
 
@@ -1802,7 +1802,7 @@ constructible_expr (tree to, tree from)
       const int len = list_length (from);
       if (len > 1)
 	{
-	  if (cxx_dialect < cxx2a)
+	  if (cxx_dialect < cxx20)
 	    /* Too many initializers.  */
 	    return error_mark_node;
 
@@ -1831,7 +1831,7 @@ constructible_expr (tree to, tree from)
       /* If t(e) didn't work, maybe t{e} will.  */
       if (expr == NULL_TREE
 	  && len == 1
-	  && cxx_dialect >= cxx2a)
+	  && cxx_dialect >= cxx20)
 	{
 	  from = build_constructor_single (init_list_type_node, NULL_TREE,
 					   from);
@@ -2074,7 +2074,7 @@ walk_field_subobs (tree fields, special_function_kind sfk, tree fnname,
 	     be constexpr, every member must have a user-provided default
 	     constructor or an explicit initializer.  */
 	  if (constexpr_p
-	      && cxx_dialect < cxx2a
+	      && cxx_dialect < cxx20
 	      && !CLASS_TYPE_P (mem_type)
 	      && TREE_CODE (DECL_CONTEXT (field)) != UNION_TYPE)
 	    {
@@ -2226,11 +2226,11 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
       /* "The closure type associated with a lambda-expression has a deleted
 	 default constructor and a deleted copy assignment operator."
 	 This is diagnosed in maybe_explain_implicit_delete.
-	 In C++2a, only lambda-expressions with lambda-captures have those
+	 In C++20, only lambda-expressions with lambda-captures have those
 	 deleted.  */
       if (LAMBDA_TYPE_P (ctype)
 	  && (sfk == sfk_constructor || sfk == sfk_copy_assignment)
-	  && (cxx_dialect < cxx2a
+	  && (cxx_dialect < cxx20
 	      || LAMBDA_EXPR_CAPTURE_LIST (CLASSTYPE_LAMBDA_EXPR (ctype))
 	      || LAMBDA_EXPR_DEFAULT_CAPTURE_MODE
 				(CLASSTYPE_LAMBDA_EXPR (ctype)) != CPLD_NONE))
@@ -2274,7 +2274,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
   if (constexpr_p)
     *constexpr_p = (SFK_CTOR_P (sfk)
 		    || (SFK_ASSIGN_P (sfk) && cxx_dialect >= cxx14)
-		    || (SFK_DTOR_P (sfk) && cxx_dialect >= cxx2a));
+		    || (SFK_DTOR_P (sfk) && cxx_dialect >= cxx20));
 
   bool expected_trivial = type_has_trivial_fn (ctype, sfk);
   if (trivial_p)

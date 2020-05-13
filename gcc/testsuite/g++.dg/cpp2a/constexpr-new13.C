@@ -1,5 +1,5 @@
 // PR c++/93633
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 struct A {
   constexpr A () : a (0) {}

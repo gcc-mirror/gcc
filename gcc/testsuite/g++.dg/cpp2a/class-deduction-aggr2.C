@@ -1,5 +1,5 @@
 // Test that non-aggregates don't get the aggregate deduction.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // { dg-prune-output "no matching function" }
 
 struct A { A(); };

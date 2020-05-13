@@ -1,5 +1,5 @@
 // PR c++/91360 - Implement C++20 P1143R2: constinit
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 constinit constinit int v1; // { dg-error "duplicate .constinit." }
 constexpr constinit int v2 = 1; // { dg-error "can use at most one of the .constinit. and .constexpr. specifiers" }

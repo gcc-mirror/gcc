@@ -1,5 +1,5 @@
 // PR c++/92695
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 struct A {
   virtual int get () = 0;

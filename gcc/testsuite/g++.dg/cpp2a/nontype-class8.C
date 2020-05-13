@@ -1,7 +1,7 @@
 // If the entity is a template parameter object for a template parameter of
 // type T, the type of the expression is const T.
 
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template <class T, class U> struct same;
 template <class T> struct same<T,T> {};
