@@ -1,3 +1,8 @@
+2020-05-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR preprocessor/95013
+	* gcc.dg/unclosed-init.c: Add missing comment in dg-error.
+
 2020-05-13  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	PR tree-optimization/94969
