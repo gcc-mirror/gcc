@@ -1786,9 +1786,10 @@ gcn_expand_scalar_to_vector_address (machine_mode mode, rtx exec, rtx mem,
 
   if (AS_FLAT_P (as))
     {
+      rtx vcc = gen_rtx_REG (DImode, CC_SAVE_REG);
+
       if (REG_P (tmp))
 	{
-	  rtx vcc = gen_rtx_REG (DImode, CC_SAVE_REG);
 	  rtx mem_base_lo = gcn_operand_part (DImode, mem_base, 0);
 	  rtx mem_base_hi = gcn_operand_part (DImode, mem_base, 1);
 	  rtx tmphi = gcn_operand_part (V64DImode, tmp, 1);
@@ -1809,17 +1810,17 @@ gcn_expand_scalar_to_vector_address (machine_mode mode, rtx exec, rtx mem,
 					      vcc, vcc, undef_v64si, exec));
 	    }
 	  else
-	    emit_insn (gen_addv64di3_zext_dup (tmp, mem_base_lo, tmp));
+	    emit_insn (gen_addv64di3_vcc_zext_dup (tmp, mem_base_lo, tmp, vcc));
 	}
       else
 	{
 	  tmp = gen_reg_rtx (V64DImode);
 	  if (exec)
-	    emit_insn (gen_addv64di3_zext_dup2_exec (tmp, tmplo, mem_base,
-						     gcn_gen_undef (V64DImode),
-						     exec));
+	    emit_insn (gen_addv64di3_vcc_zext_dup2_exec
+		       (tmp, tmplo, mem_base, vcc, gcn_gen_undef (V64DImode),
+			exec));
 	  else
-	    emit_insn (gen_addv64di3_zext_dup2 (tmp, tmplo, mem_base));
+	    emit_insn (gen_addv64di3_vcc_zext_dup2 (tmp, tmplo, mem_base, vcc));
 	}
 
       new_base = tmp;
