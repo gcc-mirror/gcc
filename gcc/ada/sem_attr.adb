@@ -8127,14 +8127,24 @@ package body Sem_Attr is
       --  for a size from an attribute definition clause). At this stage, this
       --  can happen only for types (e.g. record types) for which the size is
       --  always non-static. We exclude generic types from consideration (since
-      --  they have bogus sizes set within templates).
+      --  they have bogus sizes set within templates). We can also fold
+      --  Max_Size_In_Storage_Elements in the same cases.
 
-      elsif Id = Attribute_Size
+      elsif (Id = Attribute_Size or
+             Id = Attribute_Max_Size_In_Storage_Elements)
         and then Is_Type (P_Entity)
         and then (not Is_Generic_Type (P_Entity))
         and then Known_Static_RM_Size (P_Entity)
       then
-         Compile_Time_Known_Attribute (N, RM_Size (P_Entity));
+         declare
+            Attr_Value : Uint := RM_Size (P_Entity);
+         begin
+            if Id = Attribute_Max_Size_In_Storage_Elements then
+               Attr_Value := (Attr_Value + System_Storage_Unit - 1)
+                             / System_Storage_Unit;
+            end if;
+            Compile_Time_Known_Attribute (N, Attr_Value);
+         end;
          return;
 
       --  We can fold 'Alignment applied to a type if the alignment is known
