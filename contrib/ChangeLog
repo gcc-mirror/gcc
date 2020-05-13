@@ -1,5 +1,10 @@
 2020-05-13  Martin Liska  <mliska@suse.cz>
 
+	* gcc-changelog/git_check_commit.py: Add default argument HEAD
+	for revisions and improve error message output.
+
+2020-05-13  Martin Liska  <mliska@suse.cz>
+
 	* gcc-changelog/git_commit.py: Restore print_output syntax
 	in git_commit.py.
 

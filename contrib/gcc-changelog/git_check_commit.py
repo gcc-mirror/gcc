@@ -22,7 +22,7 @@ from git_repository import parse_git_revisions
 
 parser = argparse.ArgumentParser(description='Check git ChangeLog format '
                                  'of a commit')
-parser.add_argument('revisions',
+parser.add_argument('revisions', default='HEAD', nargs='?',
                     help='Git revisions (e.g. hash~5..hash or just hash)')
 parser.add_argument('-g', '--git-path', default='.',
                     help='Path to git repository')
@@ -36,9 +36,9 @@ args = parser.parse_args()
 retval = 0
 for git_commit in parse_git_revisions(args.git_path, args.revisions,
                                       not args.allow_non_strict_mode):
-    print('Checking %s' % git_commit.hexsha)
+    res = 'OK' if git_commit.success else 'FAILED'
+    print('Checking %s: %s' % (git_commit.hexsha, res))
     if git_commit.success:
-        print('OK')
         if args.print_changelog:
             git_commit.print_output()
     else:
