@@ -1,3 +1,9 @@
+2020-05-13  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/95051
+	* gcc.dg/asan/pr95051.c: Simplify options as -fsanitize=address
+	and -O2 were enough to trigger the original ICE.
+
 2020-05-13  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR preprocessor/95013
