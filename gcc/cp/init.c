@@ -4076,7 +4076,9 @@ build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
     }
 
   body = loop;
-  if (!deallocate_expr)
+  if (deallocate_expr == error_mark_node)
+    return error_mark_node;
+  else if (!deallocate_expr)
     ;
   else if (!body)
     body = deallocate_expr;
@@ -4993,7 +4995,9 @@ build_delete (location_t loc, tree otype, tree addr,
       return expr;
     }
 
-  if (do_delete)
+  if (do_delete == error_mark_node)
+    return error_mark_node;
+  else if (do_delete)
     {
       tree do_delete_call_expr = extract_call_expr (do_delete);
       if (TREE_CODE (do_delete_call_expr) == CALL_EXPR)

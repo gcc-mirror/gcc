@@ -1,5 +1,13 @@
 2020-05-13  Patrick Palka  <ppalka@redhat.com>
 
+	PR c++/79706
+	* init.c (build_vec_delete_1): Just return error_mark_node if
+	deallocate_expr is error_mark_node.
+	(build_delete): Just return error_mark_node if do_delete is
+	error_mark_node.
+
+2020-05-13  Patrick Palka  <ppalka@redhat.com>
+
 	PR c++/95020
 	* constraint.c (tsubst_requires_expr): Produce a new
 	requires-expression when processing_template_decl, even if
