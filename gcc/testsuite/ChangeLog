@@ -1,3 +1,7 @@
+2020-05-13  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/parse/attr4.C: Use c++11 in a target selector.
+
 2020-05-13  Mark Eggleston  <markeggleston@gcc.gnu.org>
 
 	PR fortran/93497
