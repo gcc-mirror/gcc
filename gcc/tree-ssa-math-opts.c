@@ -2930,6 +2930,35 @@ convert_mult_to_fma_1 (tree mul_result, tree op1, tree op2)
 	  fprintf (dump_file, "\n");
 	}
 
+      /* If the FMA result is negated in a single use, fold the negation
+	 too.  */
+      orig_stmt = gsi_stmt (gsi);
+      use_operand_p use_p;
+      gimple *neg_stmt;
+      if (is_gimple_call (orig_stmt)
+	  && gimple_call_internal_p (orig_stmt)
+	  && gimple_call_lhs (orig_stmt)
+	  && TREE_CODE (gimple_call_lhs (orig_stmt)) == SSA_NAME
+	  && single_imm_use (gimple_call_lhs (orig_stmt), &use_p, &neg_stmt)
+	  && is_gimple_assign (neg_stmt)
+	  && gimple_assign_rhs_code (neg_stmt) == NEGATE_EXPR
+	  && !stmt_could_throw_p (cfun, neg_stmt))
+	{
+	  gsi = gsi_for_stmt (neg_stmt);
+	  if (fold_stmt (&gsi, follow_all_ssa_edges))
+	    {
+	      if (maybe_clean_or_replace_eh_stmt (neg_stmt, gsi_stmt (gsi)))
+		gcc_unreachable ();
+	      update_stmt (gsi_stmt (gsi));
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "Folded FMA negation ");
+		  print_gimple_stmt (dump_file, gsi_stmt (gsi), 0, TDF_NONE);
+		  fprintf (dump_file, "\n");
+		}
+	    }
+	}
+
       widen_mul_stats.fmas_inserted++;
     }
 }

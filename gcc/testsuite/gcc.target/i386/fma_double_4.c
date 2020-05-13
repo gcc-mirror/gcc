@@ -8,7 +8,7 @@
 
 #include "fma_4.h"
 
-/* { dg-final { scan-assembler-times "vfmadd132sd" 8  } } */
-/* { dg-final { scan-assembler-times "vfmsub132sd" 8  } } */
-/* { dg-final { scan-assembler-times "vfnmadd132sd" 8  } } */
-/* { dg-final { scan-assembler-times "vfnmsub132sd" 8  } } */
+/* { dg-final { scan-assembler-times "vfmadd132sd" 12  } } */
+/* { dg-final { scan-assembler-times "vfmsub132sd" 12  } } */
+/* { dg-final { scan-assembler-times "vfnmadd132sd" 4  } } */
+/* { dg-final { scan-assembler-times "vfnmsub132sd" 4  } } */

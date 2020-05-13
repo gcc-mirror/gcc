@@ -1,3 +1,32 @@
+2020-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95060
+	* gcc.target/i386/avx512f-pr95060.c: New test.
+	* gcc.target/i386/fma_double_1.c: Adjust expected insn counts.
+	* gcc.target/i386/fma_double_2.c: Likewise.
+	* gcc.target/i386/fma_double_3.c: Likewise.
+	* gcc.target/i386/fma_double_4.c: Likewise.
+	* gcc.target/i386/fma_double_5.c: Likewise.
+	* gcc.target/i386/fma_double_6.c: Likewise.
+	* gcc.target/i386/fma_float_1.c: Likewise.
+	* gcc.target/i386/fma_float_2.c: Likewise.
+	* gcc.target/i386/fma_float_3.c: Likewise.
+	* gcc.target/i386/fma_float_4.c: Likewise.
+	* gcc.target/i386/fma_float_5.c: Likewise.
+	* gcc.target/i386/fma_float_6.c: Likewise.
+	* gcc.target/i386/l_fma_double_1.c: Likewise.
+	* gcc.target/i386/l_fma_double_2.c: Likewise.
+	* gcc.target/i386/l_fma_double_3.c: Likewise.
+	* gcc.target/i386/l_fma_double_4.c: Likewise.
+	* gcc.target/i386/l_fma_double_5.c: Likewise.
+	* gcc.target/i386/l_fma_double_6.c: Likewise.
+	* gcc.target/i386/l_fma_float_1.c: Likewise.
+	* gcc.target/i386/l_fma_float_2.c: Likewise.
+	* gcc.target/i386/l_fma_float_3.c: Likewise.
+	* gcc.target/i386/l_fma_float_4.c: Likewise.
+	* gcc.target/i386/l_fma_float_5.c: Likewise.
+	* gcc.target/i386/l_fma_float_6.c: Likewise.
+
 2020-05-13  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/95051
