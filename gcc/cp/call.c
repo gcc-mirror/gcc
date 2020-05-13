@@ -2713,8 +2713,9 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 
 	     T&      operator*(T*);
 
-   8 For every function type T, there exist candidate operator functions of
-     the form
+
+   8 For every function type T that does not have cv-qualifiers or
+     a ref-qualifier, there exist candidate operator functions of the form
 	     T&      operator*(T*);  */
 
     case INDIRECT_REF:
@@ -2727,8 +2728,8 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 /* 9 For every type T, there exist candidate operator functions of the form
 	     T*      operator+(T*);
 
-   10For  every  promoted arithmetic type T, there exist candidate operator
-     functions of the form
+   10 For every floating-point or promoted integral type T, there exist
+      candidate operator functions of the form
 	     T       operator+(T);
 	     T       operator-(T);  */
 
@@ -2741,8 +2742,8 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	break;
       return;
 
-/* 11For every promoted integral type T,  there  exist  candidate  operator
-     functions of the form
+/* 11 For every promoted integral type T,  there  exist  candidate  operator
+      functions of the form
 	     T       operator~(T);  */
 
     case BIT_NOT_EXPR:
@@ -2750,10 +2751,10 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	break;
       return;
 
-/* 12For every quintuple C1, C2, T, CV1, CV2), where C2 is a class type, C1
-     is the same type as C2 or is a derived class of C2, T  is  a  complete
-     object type or a function type, and CV1 and CV2 are cv-qualifier-seqs,
-     there exist candidate operator functions of the form
+/* 12 For every quintuple (C1, C2, T, CV1, CV2), where C2 is a class type, C1
+     is the same type as C2 or is a derived class of C2, and T is an object
+     type or a function type there exist candidate operator functions of the
+     form
 	     CV12 T& operator->*(CV1 C1*, CV2 T C2::*);
      where CV12 is the union of CV1 and CV2.  */
 
@@ -2770,8 +2771,9 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	}
       return;
 
-/* 13For every pair of promoted arithmetic types L and R, there exist  can-
-     didate operator functions of the form
+/* 13 For every pair of types L and R, where each of L and R is a floating-point
+      or promoted integral type, there exist candidate operator functions of the
+      form
 	     LR      operator*(L, R);
 	     LR      operator/(L, R);
 	     LR      operator+(L, R);
@@ -2782,34 +2784,33 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	     bool    operator>=(L, R);
 	     bool    operator==(L, R);
 	     bool    operator!=(L, R);
-     where  LR  is  the  result of the usual arithmetic conversions between
-     types L and R.
+      where  LR  is  the  result of the usual arithmetic conversions between
+      types L and R.
 
-     For every integral type T there exists a candidate operator function of
-     the form
+   14 For every integral type T there exists a candidate operator function of
+      the form
 
        std::strong_ordering operator<=>(T, T);
 
-     For every pair of floating-point types L and R, there exists a candidate
-     operator function of the form
+   15 For every pair of floating-point types L and R, there exists a candidate
+      operator function of the form
 
        std::partial_ordering operator<=>(L, R);
 
-   14For every pair of types T and I, where T  is  a  cv-qualified  or  cv-
-     unqualified  complete  object  type and I is a promoted integral type,
-     there exist candidate operator functions of the form
-	     T*      operator+(T*, I);
-	     T&      operator[](T*, I);
-	     T*      operator-(T*, I);
-	     T*      operator+(I, T*);
-	     T&      operator[](I, T*);
+   16 For every cv-qualified or cv-unqualified object type T there exist
+      candidate operator functions of the form
+	     T*      operator+(T*, std::ptrdiff_t);
+	     T&      operator[](T*, std::ptrdiff_t);
+	     T*      operator-(T*, std::ptrdiff_t);
+	     T*      operator+(std::ptrdiff_t, T*);
+	     T&      operator[](std::ptrdiff_t, T*);
 
-   15For every T, where T is a pointer to complete object type, there exist
-     candidate operator functions of the form112)
-	     ptrdiff_t operator-(T, T);
+   17 For every T, where T is a pointer to object type, there exist candidate
+      operator functions of the form
+	     std::ptrdiff_t operator-(T, T);
 
-   16For every pointer or enumeration type T, there exist candidate operator
-     functions of the form
+   18 For every T, where T is an enumeration type or a pointer type, there
+      exist candidate operator functions of the form
 	     bool    operator<(T, T);
 	     bool    operator>(T, T);
 	     bool    operator<=(T, T);
@@ -2818,13 +2819,12 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	     bool    operator!=(T, T);
 	     R       operator<=>(T, T);
 
-     where R is the result type specified in [expr.spaceship].
+      where R is the result type specified in [expr.spaceship].
 
-   17For every pointer to member type T,  there  exist  candidate  operator
-     functions of the form
+   19 For every T, where T is a pointer-to-member type or std::nullptr_t,
+      there exist candidate operator functions of the form
 	     bool    operator==(T, T);
-	     bool    operator!=(T, T);
-	     std::strong_equality operator<=>(T, T);  */
+	     bool    operator!=(T, T);  */
 
     case MINUS_EXPR:
       if (TYPE_PTROB_P (type1) && TYPE_PTROB_P (type2))
@@ -2851,6 +2851,8 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
     case NE_EXPR:
       if ((TYPE_PTRMEMFUNC_P (type1) && TYPE_PTRMEMFUNC_P (type2))
 	  || (TYPE_PTRDATAMEM_P (type1) && TYPE_PTRDATAMEM_P (type2)))
+	break;
+      if (NULLPTR_TYPE_P (type1) && NULLPTR_TYPE_P (type2))
 	break;
       if (TYPE_PTRMEM_P (type1) && null_ptr_cst_p (args[1]))
 	{
