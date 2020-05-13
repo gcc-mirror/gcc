@@ -9084,22 +9084,22 @@ template_args_equal (tree ot, tree nt, bool partial_order /* = false */)
   if (class_nttp_const_wrapper_p (ot))
     ot = TREE_OPERAND (ot, 0);
 
-  if (TREE_CODE (nt) == TREE_VEC)
+  if (TREE_CODE (nt) == TREE_VEC || TREE_CODE (nt) == TREE_VEC)
     /* For member templates */
-    return TREE_CODE (ot) == TREE_VEC && comp_template_args (ot, nt);
-  else if (PACK_EXPANSION_P (ot))
-    return (PACK_EXPANSION_P (nt)
+    return TREE_CODE (ot) == TREE_CODE (nt) && comp_template_args (ot, nt);
+  else if (PACK_EXPANSION_P (ot) || PACK_EXPANSION_P (nt))
+    return (PACK_EXPANSION_P (ot) && PACK_EXPANSION_P (nt)
 	    && template_args_equal (PACK_EXPANSION_PATTERN (ot),
 				    PACK_EXPANSION_PATTERN (nt))
 	    && template_args_equal (PACK_EXPANSION_EXTRA_ARGS (ot),
 				    PACK_EXPANSION_EXTRA_ARGS (nt)));
   else if (ARGUMENT_PACK_P (ot) || ARGUMENT_PACK_P (nt))
     return cp_tree_equal (ot, nt);
-  else if (ot && TREE_CODE (ot) == ARGUMENT_PACK_SELECT)
+  else if (TREE_CODE (ot) == ARGUMENT_PACK_SELECT)
     gcc_unreachable ();
-  else if (TYPE_P (nt))
+  else if (TYPE_P (nt) || TYPE_P (nt))
     {
-      if (!TYPE_P (ot))
+      if (!(TYPE_P (nt) && TYPE_P (ot)))
 	return false;
       /* Don't treat an alias template specialization with dependent
 	 arguments as equivalent to its underlying type when used as a
@@ -9117,8 +9117,6 @@ template_args_equal (tree ot, tree nt, bool partial_order /* = false */)
       else
 	return same_type_p (ot, nt);
     }
-  else if (TREE_CODE (ot) == TREE_VEC || TYPE_P (ot))
-    return 0;
   else
     {
       /* Try to treat a template non-type argument that has been converted
@@ -9128,6 +9126,7 @@ template_args_equal (tree ot, tree nt, bool partial_order /* = false */)
 	     || code1 == NON_LVALUE_EXPR;
 	   code1 = TREE_CODE (ot))
 	ot = TREE_OPERAND (ot, 0);
+
       for (enum tree_code code2 = TREE_CODE (nt);
 	   CONVERT_EXPR_CODE_P (code2)
 	     || code2 == NON_LVALUE_EXPR;
