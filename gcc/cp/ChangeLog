@@ -1,5 +1,12 @@
 2020-05-13  Nathan Sidwell  <nathan@acm.org>
 
+	* pt.c (perform_typedefs_access_check): Cache expensively
+	calculated object references.
+	(check_auto_in_tmpl_args): Just assert we do not get unexpected
+	nodes, rather than silently do nothing.
+	(append_type_to_template_for_access): Likewise, cache expensie
+	object reference.
+
 	* pt.c (canonical_type_parameter): Simplify.
 
 	Formatting fixups & some simplifications.
