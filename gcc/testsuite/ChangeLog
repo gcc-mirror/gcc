@@ -1,3 +1,8 @@
+2020-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/95110
+	* gcc.dg/tree-ssa/pr94969.c: Swap scan-tree-dump-not arguments.
+
 2020-05-13  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/parse/attr4.C: Use c++11 in a target selector.

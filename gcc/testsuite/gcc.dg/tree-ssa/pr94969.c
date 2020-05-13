@@ -25,4 +25,4 @@ int main()
     __builtin_abort ();
 }
 
-/* { dg-final { scan-tree-dump-not "ldist" "Loop 1 distributed: split to 3 loops"} } */
+/* { dg-final { scan-tree-dump-not "Loop 1 distributed: split to 3 loops" "ldist" } } */
