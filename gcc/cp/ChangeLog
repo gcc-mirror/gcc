@@ -1,5 +1,7 @@
 2020-05-13  Nathan Sidwell  <nathan@acm.org>
 
+	* pt.c (canonical_type_parameter): Simplify.
+
 	Formatting fixups & some simplifications.
 	* pt.c (spec_hash_table): New typedef.
 	(decl_specializations, type_specializations): Use it.
