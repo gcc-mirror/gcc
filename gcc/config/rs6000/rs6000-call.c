@@ -5552,6 +5552,32 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
     RS6000_BTI_unsigned_V1TI, RS6000_BTI_unsigned_V1TI,
     RS6000_BTI_unsigned_V1TI, RS6000_BTI_unsigned_V1TI },
 
+  { FUTURE_BUILTIN_VEC_EXTRACTL, FUTURE_BUILTIN_VEXTRACTBL,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V16QI,
+    RS6000_BTI_unsigned_V16QI, RS6000_BTI_UINTQI },
+  { FUTURE_BUILTIN_VEC_EXTRACTL, FUTURE_BUILTIN_VEXTRACTHL,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V8HI,
+    RS6000_BTI_unsigned_V8HI, RS6000_BTI_UINTQI },
+  { FUTURE_BUILTIN_VEC_EXTRACTL, FUTURE_BUILTIN_VEXTRACTWL,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V4SI,
+    RS6000_BTI_unsigned_V4SI, RS6000_BTI_UINTQI },
+  { FUTURE_BUILTIN_VEC_EXTRACTL, FUTURE_BUILTIN_VEXTRACTDL,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V2DI,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_UINTQI },
+
+  { FUTURE_BUILTIN_VEC_EXTRACTH, FUTURE_BUILTIN_VEXTRACTBR,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V16QI,
+    RS6000_BTI_unsigned_V16QI, RS6000_BTI_UINTQI },
+  { FUTURE_BUILTIN_VEC_EXTRACTH, FUTURE_BUILTIN_VEXTRACTHR,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V8HI,
+    RS6000_BTI_unsigned_V8HI, RS6000_BTI_UINTQI },
+  { FUTURE_BUILTIN_VEC_EXTRACTH, FUTURE_BUILTIN_VEXTRACTWR,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V4SI,
+    RS6000_BTI_unsigned_V4SI, RS6000_BTI_UINTQI },
+  { FUTURE_BUILTIN_VEC_EXTRACTH, FUTURE_BUILTIN_VEXTRACTDR,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V2DI,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_UINTQI },
+
   { FUTURE_BUILTIN_VEC_VSTRIL, FUTURE_BUILTIN_VSTRIBL,
     RS6000_BTI_unsigned_V16QI, RS6000_BTI_unsigned_V16QI, 0, 0 },
   { FUTURE_BUILTIN_VEC_VSTRIL, FUTURE_BUILTIN_VSTRIBL,
@@ -13255,6 +13281,14 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
     case CRYPTO_BUILTIN_VSHASIGMAW:
     case CRYPTO_BUILTIN_VSHASIGMAD:
     case CRYPTO_BUILTIN_VSHASIGMA:
+    case FUTURE_BUILTIN_VEXTRACTBL:
+    case FUTURE_BUILTIN_VEXTRACTHL:
+    case FUTURE_BUILTIN_VEXTRACTWL:
+    case FUTURE_BUILTIN_VEXTRACTDL:
+    case FUTURE_BUILTIN_VEXTRACTBR:
+    case FUTURE_BUILTIN_VEXTRACTHR:
+    case FUTURE_BUILTIN_VEXTRACTWR:
+    case FUTURE_BUILTIN_VEXTRACTDR:
       h.uns_p[0] = 1;
       h.uns_p[1] = 1;
       h.uns_p[2] = 1;
@@ -13393,6 +13427,7 @@ rs6000_common_init_builtins (void)
   tree opaque_ftype_opaque = NULL_TREE;
   tree opaque_ftype_opaque_opaque = NULL_TREE;
   tree opaque_ftype_opaque_opaque_opaque = NULL_TREE;
+  tree opaque_ftype_opaque_opaque_opaque_opaque = NULL_TREE;
   HOST_WIDE_INT builtin_mask = rs6000_builtin_mask;
 
   /* Create Altivec and VSX builtins on machines with at least the
@@ -13418,9 +13453,9 @@ rs6000_common_init_builtins (void)
 
       if (rs6000_overloaded_builtin_p (d->code))
 	{
-	  type = opaque_ftype_opaque_opaque_opaque;
+	  type = opaque_ftype_opaque_opaque_opaque_opaque;
 	  if (!type)
-	    type = opaque_ftype_opaque_opaque_opaque
+	    type = opaque_ftype_opaque_opaque_opaque_opaque
 	      = build_function_type_list (opaque_V4SI_type_node,
 					  opaque_V4SI_type_node,
 					  opaque_V4SI_type_node,
