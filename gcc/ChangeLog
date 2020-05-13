@@ -1,3 +1,25 @@
+2020-05-12  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* tree-vrp.c (class vrp_insert): New.
+	(insert_range_assertions): Move to class vrp_insert.
+	(dump_all_asserts): Same as above.
+	(dump_asserts_for): Same as above.
+	(live): Same as above.
+	(need_assert_for): Same as above.
+	(live_on_edge): Same as above.
+	(finish_register_edge_assert_for): Same as above.
+	(find_switch_asserts): Same as above.
+	(find_assert_locations): Same as above.
+	(find_assert_locations_1): Same as above.
+	(find_conditional_asserts): Same as above.
+	(process_assert_insertions): Same as above.
+	(register_new_assert_for): Same as above.
+	(vrp_prop): New variable fun.
+	(vrp_initialize): New parameter.
+	(identify_jump_threads): Same as above.
+	(execute_vrp): Same as above.
+
+
 2020-05-12  Keith Packard  <keith.packard@sifive.com>
 
 	* config/riscv/riscv.c (riscv_unique_section): New.
