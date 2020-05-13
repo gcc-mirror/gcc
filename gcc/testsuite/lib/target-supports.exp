@@ -9134,6 +9134,14 @@ proc check_effective_target_c++2a { } {
     return [check_effective_target_c++2a_only]
 }
 
+proc check_effective_target_c++20_only { } {
+    return [check_effective_target_c++2a_only]
+}
+
+proc check_effective_target_c++20 { } {
+    return [check_effective_target_c++2a]
+}
+
 # Check for C++ Concepts support, i.e. -fconcepts flag.
 proc check_effective_target_concepts { } {
     if [check_effective_target_c++2a] {
