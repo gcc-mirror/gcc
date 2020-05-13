@@ -2031,7 +2031,7 @@ DEFHOOK
  "revised.",
  unsigned,
  (class vec_info *, void *data, int count, enum vect_cost_for_stmt kind,
-  class _stmt_vec_info *stmt_info, int misalign,
+  class _stmt_vec_info *stmt_info, tree vectype, int misalign,
   enum vect_cost_model_location where),
  default_add_stmt_cost)
 

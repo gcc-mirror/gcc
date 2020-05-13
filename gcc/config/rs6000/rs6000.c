@@ -5049,15 +5049,14 @@ adjust_vectorization_cost (enum vect_cost_for_stmt kind,
 static unsigned
 rs6000_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 		      enum vect_cost_for_stmt kind,
-		      struct _stmt_vec_info *stmt_info, int misalign,
-		      enum vect_cost_model_location where)
+		      struct _stmt_vec_info *stmt_info, tree vectype,
+		      int misalign, enum vect_cost_model_location where)
 {
   rs6000_cost_data *cost_data = (rs6000_cost_data*) data;
   unsigned retval = 0;
 
   if (flag_vect_cost_model)
     {
-      tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
       int stmt_cost = rs6000_builtin_vectorization_cost (kind, vectype,
 							 misalign);
       stmt_cost += adjust_vectorization_cost (kind, stmt_info);
