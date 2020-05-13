@@ -1,5 +1,5 @@
 // PR c++/88337 - Implement P1327R1: Allow dynamic_cast/typeid in constexpr.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // Here the hint turns out to be wrong: A is a public base of B2, but the
 // dynamic_cast operand is not that subobject, but rather a sibling base of
 // B2.

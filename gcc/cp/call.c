@@ -6041,7 +6041,7 @@ add_operator_candidates (z_candidate **candidates,
 
       /* Maybe add C++20 rewritten comparison candidates.  */
       tree_code rewrite_code = ERROR_MARK;
-      if (cxx_dialect >= cxx2a
+      if (cxx_dialect >= cxx20
 	  && nargs == 2
 	  && (OVERLOAD_TYPE_P (arg1_type) || OVERLOAD_TYPE_P (arg2_type)))
 	switch (code)
@@ -6599,7 +6599,7 @@ extract_call_expr (tree call)
     call = TREE_OPERAND (call, 0);
   if (TREE_CODE (call) == TARGET_EXPR)
     call = TARGET_EXPR_INITIAL (call);
-  if (cxx_dialect >= cxx2a)
+  if (cxx_dialect >= cxx20)
     switch (TREE_CODE (call))
       {
 	/* C++20 rewritten comparison operators.  */
@@ -7280,7 +7280,7 @@ maybe_inform_about_fndecl_for_bogus_argument_init (tree fn, int argnum)
 static void
 maybe_warn_array_conv (location_t loc, conversion *c, tree expr)
 {
-  if (cxx_dialect >= cxx2a)
+  if (cxx_dialect >= cxx20)
     return;
 
   tree type = TREE_TYPE (expr);
@@ -7292,7 +7292,7 @@ maybe_warn_array_conv (location_t loc, conversion *c, tree expr)
 
   if (conv_binds_to_array_of_unknown_bound (c))
     pedwarn (loc, OPT_Wpedantic, "conversions to arrays of unknown bound "
-	     "are only available with %<-std=c++2a%> or %<-std=gnu++2a%>");
+	     "are only available with %<-std=c++20%> or %<-std=gnu++20%>");
 }
 
 /* Perform the conversions in CONVS on the expression EXPR.  FN and
@@ -10251,7 +10251,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	 the two.  */
       if (DECL_CONSTRUCTOR_P (fn)
 	  && !(flags & LOOKUP_ONLYCONVERTING)
-	  && cxx_dialect >= cxx2a
+	  && cxx_dialect >= cxx20
 	  && CP_AGGREGATE_TYPE_P (basetype)
 	  && !user_args->is_empty ())
 	{

@@ -3490,7 +3490,7 @@ template_heads_equivalent_p (const_tree tmpl1, const_tree tmpl2)
   tree parms2 = DECL_TEMPLATE_PARMS (tmpl2);
 
   /* Don't change the matching rules for pre-C++20.  */
-  if (cxx_dialect < cxx2a)
+  if (cxx_dialect < cxx20)
     return comp_template_parms (parms1, parms2);
 
   /* ... have the same number of template parameters, and their
@@ -5776,7 +5776,7 @@ push_template_decl_real (tree decl, bool is_friend)
       else if (VAR_P (decl))
 	/* C++14 variable template. */;
       else if (TREE_CODE (decl) == CONCEPT_DECL)
-	/* C++2a concept definitions.  */;
+	/* C++20 concept definitions.  */;
       else
 	{
 	  error ("template declaration of %q#D", decl);
@@ -9070,7 +9070,7 @@ coerce_innermost_template_parms (tree parms,
 static bool
 class_nttp_const_wrapper_p (tree t)
 {
-  if (cxx_dialect < cxx2a)
+  if (cxx_dialect < cxx20)
     return false;
   return (TREE_CODE (t) == VIEW_CONVERT_EXPR
 	  && CP_TYPE_CONST_P (TREE_TYPE (t))
@@ -26137,11 +26137,11 @@ invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
     return false;
   else if (TREE_CODE (type) == TEMPLATE_TYPE_PARM)
     {
-      if (CLASS_PLACEHOLDER_TEMPLATE (type) && cxx_dialect < cxx2a)
+      if (CLASS_PLACEHOLDER_TEMPLATE (type) && cxx_dialect < cxx20)
 	{
 	  if (complain & tf_error)
 	    error ("non-type template parameters of deduced class type only "
-		   "available with %<-std=c++2a%> or %<-std=gnu++2a%>");
+		   "available with %<-std=c++20%> or %<-std=gnu++20%>");
 	  return true;
 	}
       return false;
@@ -26159,11 +26159,11 @@ invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
     return false;
   else if (CLASS_TYPE_P (type))
     {
-      if (cxx_dialect < cxx2a)
+      if (cxx_dialect < cxx20)
 	{
 	  if (complain & tf_error)
 	    error ("non-type template parameters of class type only available "
-		   "with %<-std=c++2a%> or %<-std=gnu++2a%>");
+		   "with %<-std=c++20%> or %<-std=gnu++20%>");
 	  return true;
 	}
       if (dependent_type_p (type))
@@ -28383,7 +28383,7 @@ is_spec_or_derived (tree etype, tree tmpl)
 static tree
 maybe_aggr_guide (tree tmpl, tree init, vec<tree,va_gc> *args)
 {
-  if (cxx_dialect < cxx2a)
+  if (cxx_dialect < cxx20)
     return NULL_TREE;
 
   if (init == NULL_TREE)
@@ -28750,12 +28750,12 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
 	error ("non-deducible template %qT used without template arguments", tmpl);
       return error_mark_node;
     }
-  else if (cxx_dialect < cxx2a && DECL_ALIAS_TEMPLATE_P (tmpl))
+  else if (cxx_dialect < cxx20 && DECL_ALIAS_TEMPLATE_P (tmpl))
     {
       /* This doesn't affect conforming C++17 code, so just pedwarn.  */
       if (complain & tf_warning_or_error)
 	pedwarn (input_location, 0, "alias template deduction only available "
-		 "with %<-std=c++2a%> or %<-std=gnu++2a%>");
+		 "with %<-std=c++20%> or %<-std=gnu++20%>");
     }
 
   if (init && TREE_TYPE (init) == ptype)

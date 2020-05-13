@@ -11,6 +11,6 @@ void
 baz ()
 {
   foo ({.d = 5, 6, .b = 2, 3});	// { dg-error "designator order for field 'S::b' does not match declaration order in 'S'" }
-				// { dg-error "either all initializer clauses should be designated or none of them should be" "" { target c++2a } .-1 }
+				// { dg-error "either all initializer clauses should be designated or none of them should be" "" { target c++20 } .-1 }
   bar ({.b = 1, .a = 2});	// { dg-error "designator order for field 'T::a' does not match declaration order in 'T'" }
 }

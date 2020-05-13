@@ -1,5 +1,5 @@
 // PR c++/93790 - wrong paren-init of aggregates interference.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 struct S {
   int i;

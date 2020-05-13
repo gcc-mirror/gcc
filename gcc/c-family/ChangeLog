@@ -1,3 +1,13 @@
+2020-05-13  Jason Merrill  <jason@redhat.com>
+
+	* c.opt (std=c++20): Make c++2a the alias.
+	(std=gnu++20): Likewise.
+	* c-common.h (cxx_dialect): Change cxx2a to cxx20.
+	* c-opts.c: Adjust.
+	* c-cppbuiltin.c: Adjust.
+	* c-ubsan.c: Adjust.
+	* c-warn.c: Adjust.
+
 2020-05-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (dump_ads): Output pragma Warnings ("U"); on entry.

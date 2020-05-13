@@ -1,5 +1,5 @@
 // PR c++/66844
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template <class T, class U>
 concept Same = __is_same_as(T, U);

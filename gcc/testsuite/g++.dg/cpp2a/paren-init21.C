@@ -1,5 +1,5 @@
 // PR c++/92947 - Paren init of aggregates in unevaluated context.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 struct A {
   int a;

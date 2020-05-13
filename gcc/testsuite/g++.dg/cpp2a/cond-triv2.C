@@ -1,5 +1,5 @@
 // PR c++/67348
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 #include <type_traits>
 #include <vector>

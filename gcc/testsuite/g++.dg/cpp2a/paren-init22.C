@@ -1,5 +1,5 @@
 // PR c++/94155 - crash in gimplifier with paren init of aggregates.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 struct S { int i, j; };
 

@@ -1,3 +1,9 @@
+2020-05-13  Jason Merrill  <jason@redhat.com>
+
+	* call.c, class.c, constexpr.c, constraint.cc, decl.c, init.c,
+	lambda.c, lex.c, method.c, name-lookup.c, parser.c, pt.c, tree.c,
+	typeck2.c: Change cxx2a to cxx20.
+
 2020-05-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/95074
