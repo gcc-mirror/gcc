@@ -341,17 +341,11 @@ Compilation::visit (AST::Function &function)
   scope.Push ();
   printf ("INSIDE FUNCTION: %s\n", function.function_name.c_str ());
 
-  if (!function.has_function_return_type ())
-    {
-      // TODO
-      // auto fntype = backend->function_type ();
+  Backend::Btyped_identifier receiver;
+  std::vector<Backend::Btyped_identifier> parameters;
+  std::vector<Backend::Btyped_identifier> results;
 
-      auto mangled_asm_name = ""; // TODO
-      currentFndecl
-	= backend->function (backend->void_type (), function.function_name,
-			     mangled_asm_name, 0, function.locus);
-    }
-  else
+  if (function.has_function_return_type ())
     {
       translatedType = NULL;
       function.return_type->accept_vis (*this);
@@ -360,40 +354,42 @@ Compilation::visit (AST::Function &function)
 	  rust_error_at (function.locus, "Unable to compile type");
 	  return;
 	}
-
-      auto mangled_asm_name = ""; // TODO
-      currentFndecl = backend->function (translatedType, function.function_name,
-					 mangled_asm_name, 0, function.locus);
     }
 
-  std::vector< ::Bvariable *> params;
   for (auto &param : function.function_params)
     {
       printf ("FUNC PARAM: %s\n", param.as_string ().c_str ());
       // TODO
     }
 
-  if (params.size () == 0 && function.function_params.size () > 0)
+  if (parameters.size () != function.function_params.size ())
     {
-      rust_error_at (function.locus, "Unable to compile parameters");
+      rust_error_at (function.locus,
+		     "Unable to compile all function parameters");
       return;
     }
-  else if (params.size () > 0)
+
+  auto fntype = backend->function_type (receiver, parameters, results, NULL,
+					function.locus);
+
+  auto mangled_asm_name = ""; // TODO
+  auto fndecl = backend->function (fntype, function.function_name,
+				   mangled_asm_name, 0, function.locus);
+
+  // walk the expression body
+  std::vector<Bvariable *> vars;
+  auto code_block
+    = backend->block (fndecl, NULL, vars, function.locus, Location ());
+  for (auto &stmt : function.function_body->statements)
     {
-      backend->function_set_parameters (currentFndecl, params);
+      stmt->accept_vis (*this);
     }
 
-  /*
-    // walk the expression body
-    Bstatement *body;
-    for (auto &stmt : function.function_body->statements)
-      {
-	stmt->accept_vis (*this);
-      }
+  auto body = backend->block_statement (code_block);
+  if (!backend->function_set_body (fndecl, body))
+    rust_error_at (function.locus, "failed to set body to function");
 
-      backend->function_set_body (fndecl, body);*/
-
-  func_decls.push_back (currentFndecl);
+  func_decls.push_back (fndecl);
   currentFndecl = NULL;
 
   scope.Pop ();
