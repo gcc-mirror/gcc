@@ -1,3 +1,38 @@
+2020-05-13  Nathan Sidwell  <nathan@acm.org>
+
+	Implement P1874 Dynamic Initialization Order
+	gcc/cp/
+	* cp-tree.h (module_initializer_kind)
+	(module_add_import_initializers): Declare.
+	(mangle_module): Add include_partition parm.
+	(init_module_processing): Rename to init_modules.
+	(fini_modules): Declare.
+	(mangle_identifier): Add prefix char.
+	(mangle_module_global_init): Declare.
+	* decl.c (cxx_init_decl_processing): Adjust for module init
+	rename.
+	* decl2.c (start_objects): Maybe mangle module initializer name.
+	Add module initializers.
+	(generate_ctor_or_dtor_function): Add module init support.
+	(c_parse_final_cleanups): Likewise, adjust for module fini
+	addition.
+	* mangle.c (mangle_identifier): Add prefix char.
+	(write_module): New, broken out of ...
+	(maybe_write_module): ... here.  Call it.
+	(mangle_module_global_init): New.
+	* module.cc (module_state): Add call_init_p flag.
+	(num_init_calls_needed): New global.
+	(module_state::mangle): Add include_partition parm.
+	(mangle_module): Likewise.
+	(module_initializer_kind): New.
+	(module_add_import_initializers): New.
+	(init_module_processing): Rename to ...
+	(init_modules): ... here.
+	(finish_module_processing): Calculate call_init_p.
+	(fini_modules): New, broken out of finish_module_processing.
+	gcc/testsuite/
+	* g++.dg/modules/init-[12]_[abc].C: New.
+
 2020-05-12  Nathan Sidwell  <nathan@acm.org>
 
 	Merge master 2a0225e4786.

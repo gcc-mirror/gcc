@@ -7040,6 +7040,9 @@ extern module_state *get_module (tree name, module_state *parent = NULL,
 				 bool partition = false);
 extern bool module_may_redeclare (tree decl);
 
+extern int module_initializer_kind ();
+extern void module_add_import_initializers ();
+
 /* Where the namespace-scope decl was originally declared.  */
 extern void set_originating_module (tree, bool friend_p = false);
 extern tree get_originating_module_decl (tree) ATTRIBUTE_PURE;
@@ -7051,7 +7054,7 @@ extern void set_instantiating_module (tree);
 extern void set_defining_module (tree);
 extern void maybe_attach_decl (tree ctx, tree decl);
 
-extern void mangle_module (int m);
+extern void mangle_module (int m, bool include_partition);
 extern void mangle_module_fini ();
 extern void lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot);
 extern void lazy_load_specializations (tree tmpl);
@@ -7069,7 +7072,8 @@ extern void declare_module (module_state *, location_t, bool export_p,
 extern void module_cpp_undef (cpp_reader *, location_t, cpp_hashnode *);
 extern cpp_macro *module_cpp_deferred_macro (cpp_reader *,
 					     location_t, cpp_hashnode *);
-extern void init_module_processing (cpp_reader *);
+extern void init_modules (cpp_reader *);
+extern void fini_modules ();
 extern void finish_module_processing (cpp_reader *);
 extern char const *module_name (unsigned, bool header_ok);
 extern bitmap get_import_bitmap ();
@@ -8016,11 +8020,12 @@ extern tree mangle_tls_wrapper_fn		(tree);
 extern bool decl_tls_wrapper_p			(tree);
 extern tree mangle_ref_init_variable		(tree);
 extern tree mangle_template_parm_object		(tree);
-extern char * get_mangled_vtable_map_var_name   (tree);
+extern char *get_mangled_vtable_map_var_name    (tree);
 extern bool mangle_return_type_p		(tree);
 extern tree mangle_decomp			(tree, vec<tree> &);
 extern void mangle_module_substitution		(int);
-extern void mangle_identifier			(tree);
+extern void mangle_identifier			(char, tree);
+extern tree mangle_module_global_init		(int);
 
 /* in dump.c */
 extern bool cp_dump_tree			(void *, tree);

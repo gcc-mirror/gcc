@@ -3627,34 +3627,44 @@ generate_tls_wrapper (tree fn)
 static tree
 start_objects (int method_type, int initp)
 {
-  tree body;
-  tree fndecl;
-  char type[14];
-
   /* Make ctor or dtor function.  METHOD_TYPE may be 'I' or 'D'.  */
+  int module_init = 0;
 
-  if (initp != DEFAULT_INIT_PRIORITY)
+  if (initp == DEFAULT_INIT_PRIORITY && method_type == 'I')
+    module_init = module_initializer_kind ();
+
+  tree name = NULL_TREE;
+  if (module_init > 0)
+    name = mangle_module_global_init (0);
+  else
     {
-      char joiner;
+      char type[14];
 
+      unsigned len = sprintf (type, "sub_%c", method_type);
+      if (initp != DEFAULT_INIT_PRIORITY)
+	{
+	  char joiner = '_';
 #ifdef JOINER
-      joiner = JOINER;
-#else
-      joiner = '_';
+	  joiner = JOINER;
 #endif
+	  type[len++] = joiner;
+	  sprintf (type + len, "%.5u", initp);
+	}
+      name = get_file_function_name (type);
+    }
 
-      sprintf (type, "sub_%c%c%.5u", method_type, joiner, initp);
+  tree fntype =	build_function_type (void_type_node, void_list_node);
+  tree fndecl = build_lang_decl (FUNCTION_DECL, name, fntype);
+  DECL_CONTEXT (fndecl) = FROB_CONTEXT (global_namespace);
+  if (module_init > 0)
+    {
+      SET_DECL_ASSEMBLER_NAME (fndecl, name);
+      TREE_PUBLIC (fndecl) = true;
+      determine_visibility (fndecl);
     }
   else
-    sprintf (type, "sub_%c", method_type);
-
-  fndecl = build_lang_decl (FUNCTION_DECL,
-			    get_file_function_name (type),
-			    build_function_type_list (void_type_node,
-						      NULL_TREE));
+    TREE_PUBLIC (fndecl) = 0;
   start_preparsed_function (fndecl, /*attrs=*/NULL_TREE, SF_PRE_PARSED);
-
-  TREE_PUBLIC (current_function_decl) = 0;
 
   /* Mark as artificial because it's not explicitly in the user's
      source code.  */
@@ -3669,7 +3679,35 @@ start_objects (int method_type, int initp)
   else
     DECL_GLOBAL_DTOR_P (current_function_decl) = 1;
 
-  body = begin_compound_stmt (BCS_FN_BODY);
+  tree body = begin_compound_stmt (BCS_FN_BODY);
+
+  if (module_init > 0)
+    {
+      // 'static bool __in_chrg = false;
+      // if (__inchrg) return;
+      // __inchrg = true
+      tree var = build_lang_decl (VAR_DECL, in_charge_identifier,
+				  boolean_type_node);
+      DECL_CONTEXT (var) = fndecl;
+      DECL_ARTIFICIAL (var) = true;
+      TREE_STATIC (var) = true;
+      pushdecl (var);
+      cp_finish_decl (var, NULL_TREE, false, NULL_TREE, 0);
+
+      tree if_stmt = begin_if_stmt ();
+      finish_if_stmt_cond (var, if_stmt);
+      finish_return_stmt (NULL_TREE);
+      finish_then_clause (if_stmt);
+      finish_if_stmt (if_stmt);
+
+      tree assign = build2 (MODIFY_EXPR, boolean_type_node,
+			    var, boolean_true_node);
+      TREE_SIDE_EFFECTS (assign) = true;
+      finish_expr_stmt (assign);
+    }
+
+  if (module_init)
+    module_add_import_initializers ();
 
   return body;
 }
@@ -3680,11 +3718,9 @@ start_objects (int method_type, int initp)
 static void
 finish_objects (int method_type, int initp, tree body)
 {
-  tree fn;
-
   /* Finish up.  */
   finish_compound_stmt (body);
-  fn = finish_function (/*inline_p=*/false);
+  tree fn = finish_function (/*inline_p=*/false);
 
   if (method_type == 'I')
     {
@@ -4219,50 +4255,50 @@ static void
 generate_ctor_or_dtor_function (bool constructor_p, int priority,
 				location_t *locus)
 {
-  char function_key;
-  tree fndecl;
-  tree body;
-  size_t i;
-
   input_location = *locus;
-  /* ??? */
-  /* Was: locus->line++; */
 
   /* We use `I' to indicate initialization and `D' to indicate
      destruction.  */
-  function_key = constructor_p ? 'I' : 'D';
+  char function_key = constructor_p ? 'I' : 'D';
 
   /* We emit the function lazily, to avoid generating empty
      global constructors and destructors.  */
-  body = NULL_TREE;
+  tree body = NULL_TREE;
 
-  /* For Objective-C++, we may need to initialize metadata found in this module.
-     This must be done _before_ any other static initializations.  */
-  if (c_dialect_objc () && (priority == DEFAULT_INIT_PRIORITY)
-      && constructor_p && objc_static_init_needed_p ())
+  if (constructor_p && priority == DEFAULT_INIT_PRIORITY)
     {
-      body = start_objects (function_key, priority);
-      objc_generate_static_init_call (NULL_TREE);
+      bool objc = c_dialect_objc () && objc_static_init_needed_p ();
+
+      /* We may have module initialization to emit and/or insert
+	 before other intializations.  */
+      if (module_initializer_kind () || objc)
+	body = start_objects (function_key, priority);
+
+      /* For Objective-C++, we may need to initialize metadata found
+         in this module.  This must be done _before_ any other static
+         initializations.  */
+      if (objc)
+	objc_generate_static_init_call (NULL_TREE);
     }
 
   /* Call the static storage duration function with appropriate
      arguments.  */
+  tree fndecl;
+  size_t i;
   FOR_EACH_VEC_SAFE_ELT (ssdf_decls, i, fndecl)
     {
       /* Calls to pure or const functions will expand to nothing.  */
       if (! (flags_from_decl_or_type (fndecl) & (ECF_CONST | ECF_PURE)))
 	{
-	  tree call;
-
 	  if (! body)
 	    body = start_objects (function_key, priority);
 
-	  call = cp_build_function_call_nary (fndecl, tf_warning_or_error,
-					      build_int_cst (NULL_TREE,
-							     constructor_p),
-					      build_int_cst (NULL_TREE,
-							     priority),
-					      NULL_TREE);
+	  tree call = cp_build_function_call_nary (fndecl, tf_warning_or_error,
+						   build_int_cst (NULL_TREE,
+								  constructor_p),
+						   build_int_cst (NULL_TREE,
+								  priority),
+						   NULL_TREE);
 	  finish_expr_stmt (call);
 	}
     }
@@ -5158,9 +5194,8 @@ c_parse_final_cleanups (void)
     splay_tree_foreach (priority_info_map,
 			generate_ctor_and_dtor_functions_for_priority,
 			/*data=*/&locus_at_end_of_parsing);
-  else if (c_dialect_objc () && objc_static_init_needed_p ())
-    /* If this is obj-c++ and we need a static init, call
-       generate_ctor_or_dtor_function.  */
+  else if ((c_dialect_objc () && objc_static_init_needed_p ())
+	   || module_initializer_kind ())
     generate_ctor_or_dtor_function (/*constructor_p=*/true,
 				    DEFAULT_INIT_PRIORITY,
 				    &locus_at_end_of_parsing);
@@ -5168,6 +5203,8 @@ c_parse_final_cleanups (void)
   /* We're done with the splay-tree now.  */
   if (priority_info_map)
     splay_tree_delete (priority_info_map);
+
+  fini_modules ();
 
   /* Generate any missing aliases.  */
   maybe_apply_pending_pragma_weaks ();

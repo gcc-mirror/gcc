@@ -4620,7 +4620,7 @@ cxx_init_decl_processing (void)
     flag_weak = 0;
 
   if (modules_p ())
-    init_module_processing (parse_in);
+    init_modules (parse_in);
 
   make_fname_decl = cp_make_fname_decl;
   start_fname_decls ();

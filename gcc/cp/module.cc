@@ -3456,9 +3456,11 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool exported_p : 1;	/* (direct_p || partition_direct_p) && exported.  */
   bool cmi_noted_p : 1; /* We've told the user about the CMI, don't
 			   do it again  */
-  
+  bool call_init_p : 1; /* This module's global initializer needs
+			   calling.  */
   /* Record extensions emitted or permitted.  */
-  unsigned char extensions : SE_BITS;
+  unsigned extensions : SE_BITS;
+  /* 12 bits used, 4 bits remain  */
 
  public:
   module_state (tree name, module_state *, bool);
@@ -3524,7 +3526,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool check_not_purview (location_t loc);
 
  public:
-  void mangle ();
+  void mangle (bool include_partition);
 
  public:
   void set_import (module_state const *, bool is_export);
@@ -3677,6 +3679,7 @@ module_state::module_state (tree name, module_state *parent, bool partition)
   direct_p = partition_direct_p = exported_p = false;
 
   cmi_noted_p = false;
+  call_init_p = false;
 
   partition_p = partition;
 
@@ -3780,6 +3783,9 @@ static unsigned loaded_clusters;
 
 /* What the current TU is.  */
 unsigned module_kind;
+
+/* Number of global init calls needed.  */
+unsigned num_init_calls_needed = 0;
 
 /* Global trees.  */
 static const std::pair<tree *, unsigned> global_tree_arys[] =
@@ -13390,25 +13396,28 @@ module_state::check_not_purview (location_t from)
 static vec<module_state *,va_heap> substs;
 
 void
-module_state::mangle ()
+module_state::mangle (bool include_partition)
 {
   if (subst)
     mangle_module_substitution (subst - 1);
   else
     {
       if (parent)
-	parent->mangle ();
-      if (!is_partition ())
+	parent->mangle (include_partition);
+      if (include_partition || !is_partition ())
 	{
+	  char p = 0;
+	  if (is_partition () && !(parent && parent->is_partition ()))
+	    p = 'P';
 	  substs.safe_push (this);
 	  subst = substs.length ();
-	  mangle_identifier (name);
+	  mangle_identifier (p, name);
 	}
     }
 }
 
 void
-mangle_module (int mod)
+mangle_module (int mod, bool include_partition)
 {
   module_state *imp = (*modules)[mod];
 
@@ -13416,7 +13425,7 @@ mangle_module (int mod)
     /* Set when importing the primary module interface.  */
     imp = imp->parent;
 
-  imp->mangle ();
+  imp->mangle (include_partition);
 }
 
 /* Clean up substitutions.  */
@@ -17271,7 +17280,11 @@ module_state::read_language (bool outermost)
 	  gcc_assert (!(*entity_ary)[ix + entity_lwm].is_lazy ());
     }
 
-  // FIXME: Belfast order-of-initialization means this may be inadequate.
+  // FIXME: Belfast order-of-initialization means this may be
+  // inadequate.  We only need the inits from directly imported header
+  // units.  Even if they're also indirectly imported, because they
+  // might be providing us a static decl with a dynamic init (looking
+  // at you _Ioinit).
   if (ok && counts[MSC_inits] && !read_inits (counts[MSC_inits]))
     ok = false;
 
@@ -18194,6 +18207,64 @@ declare_module (module_state *module, location_t from_loc, bool exporting_p,
     }
 }
 
+/* +1, we're the primary or a partition.  Therefore emitting a
+   globally-callable idemportent initializer function.
+   -1, we have direct imports.  Therefore emitting calls to their
+   initializers.  */
+
+int
+module_initializer_kind ()
+{
+  int result = 0;
+
+  if (module_has_cmi_p () && !header_module_p ())
+    result = +1;
+  else if (num_init_calls_needed)
+    result = -1;
+
+  return result;
+}
+
+/* Emit calls to each direct import's global initializer.  Including
+   direct imports of directly imported header units.  */
+
+// FIXME: We should probably call the initializers brought in by
+// header units too.  But ordering is important for them.
+
+void
+module_add_import_initializers ()
+{
+  unsigned calls = 0;
+  if (modules)
+    {
+      tree fntype = build_function_type (void_type_node, void_list_node);
+      vec<tree, va_gc> *args = NULL;
+      
+      for (unsigned ix = modules->length (); --ix;)
+	{
+	  module_state *import = (*modules)[ix];
+	  if (import->call_init_p)
+	    {
+	      tree name = mangle_module_global_init (ix);
+	      tree fndecl = build_lang_decl (FUNCTION_DECL, name, fntype);
+
+	      DECL_CONTEXT (fndecl) = FROB_CONTEXT (global_namespace);
+	      SET_DECL_ASSEMBLER_NAME (fndecl, name);
+	      TREE_PUBLIC (fndecl) = true;
+	      determine_visibility (fndecl);
+
+	      tree call = cp_build_function_call_vec (fndecl, &args,
+						      tf_warning_or_error);
+	      finish_expr_stmt (call);
+	      
+	      calls++;
+	    }
+	}
+    }
+
+  gcc_checking_assert (calls == num_init_calls_needed);
+}
+
 /* Track if NODE undefs an imported macro.  */
 
 void
@@ -18631,7 +18702,7 @@ maybe_add_global (tree val, unsigned &crc)
    global trees.  Create the module for current TU.  */
 
 void
-init_module_processing (cpp_reader *reader)
+init_modules (cpp_reader *reader)
 {
   /* PCH should not be reachable because of lang-specs, but the
      user could have overriden that.  */
@@ -18941,6 +19012,39 @@ finish_module_processing (cpp_reader *reader)
       dump.pop (n);
     }
 
+  if (modules && !header_module_p ())
+    {
+      /* Determine call_init_p.  We need the same bitmap allocation
+         scheme as for the imports member.  */
+      function_depth++; /* Disable GC.  */
+      bitmap indirect_imports (BITMAP_GGC_ALLOC ());
+
+      /* Because indirect imports are before their direct import, and
+	 we're scanning the array backwards, we only need one pass!  */
+      for (unsigned ix = modules->length (); --ix;)
+	{
+	  module_state *import = (*modules)[ix];
+
+	  if (!import->is_header ()
+	      && !bitmap_bit_p (indirect_imports, ix))
+	    {
+	      /* Everything this imports is therefore indirectly
+		 imported.  */
+	      bitmap_ior_into (indirect_imports, import->imports);
+	      /* We don't have to worry about the self-import bit,
+		 because of the single pass.  */
+
+	      import->call_init_p = true;
+	      num_init_calls_needed++;
+	    }
+	}
+      function_depth--;
+    }
+}
+
+void
+fini_modules ()
+{
   /* We're done with the macro tables now.  */
   vec_free (macro_exports);
   vec_free (macro_imports);

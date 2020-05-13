@@ -855,8 +855,10 @@ mangle_module_substitution (int v)
 }
 
 void
-mangle_identifier (tree id)
+mangle_identifier (char c, tree id)
 {
+  if (c)
+    write_char (c);
   write_source_name (id);
 }
 
@@ -872,17 +874,21 @@ mangle_identifier (tree id)
 */
 
 static void
+write_module (int m, bool include_partition)
+{
+  G.mod = true;
+
+  write_char ('W');
+  mangle_module (m, include_partition);
+  write_char ('E');
+}
+
+static void
 maybe_write_module (tree decl)
 {
   int m = get_originating_module (decl, true);
   if (m >= 0)
-    {
-      G.mod = true;
-
-      write_char ('W');
-      mangle_module (m);
-      write_char ('E');
-    }
+    write_module (m, false);
 }
 
 /* Lambdas can have a bit more context for mangling, specifically VAR_DECL
@@ -3858,6 +3864,20 @@ init_mangle (void)
   subst_identifiers[SUBID_BASIC_ISTREAM] = get_identifier ("basic_istream");
   subst_identifiers[SUBID_BASIC_OSTREAM] = get_identifier ("basic_ostream");
   subst_identifiers[SUBID_BASIC_IOSTREAM] = get_identifier ("basic_iostream");
+}
+
+/* Generate a mangling for MODULE's global initializer fn.  */
+
+tree
+mangle_module_global_init (int module)
+{
+  start_mangling (NULL_TREE);
+
+  write_string ("_ZGI");
+  write_module (module, true);
+  write_char ('v');
+
+  return finish_mangling_get_identifier ();
 }
 
 /* Generate the mangled name of DECL.  */

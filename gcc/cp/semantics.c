@@ -10205,6 +10205,7 @@ is_this_parameter (tree t)
 {
   if (!DECL_P (t) || DECL_NAME (t) != this_identifier)
     return false;
+  // FIXME: Is the is_capture_proxy correct?
   gcc_assert (TREE_CODE (t) == PARM_DECL || is_capture_proxy (t)
 	      || (cp_binding_oracle && TREE_CODE (t) == VAR_DECL));
   return true;
