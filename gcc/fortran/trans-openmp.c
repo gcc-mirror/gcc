@@ -4262,23 +4262,22 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
 		break;
 	      }
 	}
-      if (!dovar_found)
+      if (!dovar_found && op == EXEC_OMP_SIMD)
 	{
-	  if (op == EXEC_OMP_SIMD)
+	  if (collapse == 1)
 	    {
-	      if (collapse == 1)
-		{
-		  tmp = build_omp_clause (input_location, OMP_CLAUSE_LINEAR);
-		  OMP_CLAUSE_LINEAR_STEP (tmp) = step;
-		  OMP_CLAUSE_LINEAR_NO_COPYIN (tmp) = 1;
-		}
-	      else
-		tmp = build_omp_clause (input_location, OMP_CLAUSE_LASTPRIVATE);
-	      if (!simple)
-		dovar_found = 2;
+	      tmp = build_omp_clause (input_location, OMP_CLAUSE_LINEAR);
+	      OMP_CLAUSE_LINEAR_STEP (tmp) = step;
+	      OMP_CLAUSE_LINEAR_NO_COPYIN (tmp) = 1;
+	      OMP_CLAUSE_DECL (tmp) = dovar_decl;
+	      omp_clauses = gfc_trans_add_clause (tmp, omp_clauses);
 	    }
-	  else
-	    tmp = build_omp_clause (input_location, OMP_CLAUSE_PRIVATE);
+	  if (!simple)
+	    dovar_found = 2;
+	}
+      else if (!dovar_found && !simple)
+	{
+	  tmp = build_omp_clause (input_location, OMP_CLAUSE_PRIVATE);
 	  OMP_CLAUSE_DECL (tmp) = dovar_decl;
 	  omp_clauses = gfc_trans_add_clause (tmp, omp_clauses);
 	}
