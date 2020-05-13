@@ -1,5 +1,5 @@
 // Test lambda mangling
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // { dg-require-weak "" }
 // { dg-options "-fno-inline" }
 

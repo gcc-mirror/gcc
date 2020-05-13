@@ -1,3 +1,22 @@
+2020-05-13  Jason Merrill  <jason@redhat.com>
+
+	* include/cpplib.h (enum c_lang): Change CXX2A to CXX20.
+	* init.c, lex.c: Adjust.
+
+2020-05-12  Nathan Sidwell  <nathan@acm.org>
+
+	EOF location is at end of file
+	PR preprocessor/95013
+	* lex.c (lex_raw_string): Process line notes before incrementing.
+	Correct incrementing condition.  Adjust for new
+	_cpp_get_fresh_line EOF behaviour.
+	(_cpp_get_fresh_line): Do not pop buffer at EOF, increment line
+	instead.
+	(_cpp_lex_direct): Adjust for new _cpp_get_fresh_line behaviour.
+	(cpp_directive_only_process): Assert we got a fresh line.
+	* traditional.c (_cpp_read_logical_line_trad): Adjust for new
+	_cpp_get_fresh_line behaviour.
+
 2020-05-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Makefile.in (CET_HOST_FLAGS): New.

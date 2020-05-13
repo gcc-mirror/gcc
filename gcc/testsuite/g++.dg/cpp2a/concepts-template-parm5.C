@@ -1,4 +1,4 @@
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template<typename T>
   concept Int = __is_same_as(T, int);

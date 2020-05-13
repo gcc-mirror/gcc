@@ -1,5 +1,5 @@
 // PR c++/67138
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template <class T>
 concept Auto = true;

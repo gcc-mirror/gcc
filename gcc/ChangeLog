@@ -1,3 +1,146 @@
+2020-05-13  Richard Biener  <rguenther@suse.de>
+
+	* target.def (add_stmt_cost): Add new vectype parameter.
+	* targhooks.c (default_add_stmt_cost): Adjust.
+	* targhooks.h (default_add_stmt_cost): Likewise.
+	* config/aarch64/aarch64.c (aarch64_add_stmt_cost): Take new
+	vectype parameter.
+	* config/arm/arm.c (arm_add_stmt_cost): Likewise.
+	* config/i386/i386.c (ix86_add_stmt_cost): Likewise.
+	* config/rs6000/rs6000.c (rs6000_add_stmt_cost): Likewise.
+
+	* tree-vectorizer.h (stmt_info_for_cost::vectype): Add.
+	(dump_stmt_cost): Add new vectype parameter.
+	(add_stmt_cost): Likewise.
+	(record_stmt_cost): Likewise.
+	(record_stmt_cost): Add overload with old signature.
+	* tree-vect-loop.c (vect_compute_single_scalar_iteration_cost):
+	Adjust.
+	(vect_get_known_peeling_cost): Likewise.
+	(vect_estimate_min_profitable_iters): Likewise.
+	* tree-vectorizer.c (dump_stmt_cost): Add new vectype parameter.
+	* tree-vect-stmts.c (record_stmt_cost): Likewise.
+	(vect_prologue_cost_for_slp_op): Remove stmt_vec_info parameter
+	and pass down correct vectype and NULL stmt_info.
+	(vect_model_simple_cost): Adjust.
+	(vect_model_store_cost): Likewise.
+
+2020-05-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (SLP_INSTANCE_GROUP_SIZE): Remove.
+	(_slp_instance::group_size): Likewise.
+	* tree-vect-loop.c (vectorizable_reduction): The group size
+	is the number of lanes in the node.
+	* tree-vect-slp.c (vect_attempt_slp_rearrange_stmts): Likewise.
+	(vect_analyze_slp_instance): Do not set SLP_INSTANCE_GROUP_SIZE,
+	verify it matches the instance trees number of lanes.
+	(vect_slp_analyze_node_operations_1): Use the numer of lanes
+	in the node as group size.
+	(vect_bb_vectorization_profitable_p): Use the instance root
+	number of lanes for the size of life.
+	(vect_schedule_slp_instance): Use the number of lanes as
+	group_size.
+	* tree-vect-stmts.c (vectorizable_load): Remove SLP instance
+	parameter.  Use the number of lanes of the load for the group
+	size in the gap adjustment code.
+	(vect_analyze_stmt): Adjust.
+	(vect_transform_stmt): Likewise.
+
+2020-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/95080
+	* cfgrtl.c (purge_dead_edges): Skip over debug and note insns even
+	if the last insn is a note.
+
+	PR tree-optimization/95060
+	* tree-ssa-math-opts.c (convert_mult_to_fma_1): Fold a NEGATE_EXPR
+	if it is the single use of the FMA internal builtin.
+
+2020-05-13  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/94969
+	* tree-data-dependence.c (constant_access_functions): Rename to...
+	(invariant_access_functions): ...this.  Add parameter.  Check for
+	invariant access function, rather than constant.
+	(build_classic_dist_vector): Call above function.
+	* tree-loop-distribution.c (pg_add_dependence_edges): Add comment.
+
+2020-05-13  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/94118
+	 * doc/extend.texi (x86Operandmodifiers): Document more x86
+	 operand modifier.
+	 * gcc/config/i386/i386.c: Add comment for operand modifier N
+	 and I.
+
+2020-05-12  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* tree-vrp.c (class vrp_insert): New.
+	(insert_range_assertions): Move to class vrp_insert.
+	(dump_all_asserts): Same as above.
+	(dump_asserts_for): Same as above.
+	(live): Same as above.
+	(need_assert_for): Same as above.
+	(live_on_edge): Same as above.
+	(finish_register_edge_assert_for): Same as above.
+	(find_switch_asserts): Same as above.
+	(find_assert_locations): Same as above.
+	(find_assert_locations_1): Same as above.
+	(find_conditional_asserts): Same as above.
+	(process_assert_insertions): Same as above.
+	(register_new_assert_for): Same as above.
+	(vrp_prop): New variable fun.
+	(vrp_initialize): New parameter.
+	(identify_jump_threads): Same as above.
+	(execute_vrp): Same as above.
+
+
+2020-05-12  Keith Packard  <keith.packard@sifive.com>
+
+	* config/riscv/riscv.c (riscv_unique_section): New.
+	(TARGET_ASM_UNIQUE_SECTION): New.
+
+2020-05-12  Craig Blackmore  <craig.blackmore@embecosm.com>
+
+	* config.gcc:  Add riscv-shorten-memrefs.o to extra_objs for riscv.
+	* config/riscv/riscv-passes.def: New file.
+	* config/riscv/riscv-protos.h (make_pass_shorten_memrefs): Declare.
+	* config/riscv/riscv-shorten-memrefs.c: New file.
+	* config/riscv/riscv.c (tree-pass.h): New include.
+	(riscv_compressed_reg_p): New Function
+	(riscv_compressed_lw_offset_p): Likewise.
+	(riscv_compressed_lw_address_p): Likewise.
+	(riscv_shorten_lw_offset): Likewise.
+	(riscv_legitimize_address): Attempt to convert base + large_offset
+	to compressible new_base + small_offset.
+	(riscv_address_cost): Make anticipated compressed load/stores
+	cheaper for code size than uncompressed load/stores.
+	(riscv_register_priority): Move compressed register check to
+	riscv_compressed_reg_p.
+	* config/riscv/riscv.h (C_S_BITS): Define.
+	(CSW_MAX_OFFSET): Define.
+	* config/riscv/riscv.opt (mshorten-memefs): New option.
+	* config/riscv/t-riscv (riscv-shorten-memrefs.o): New rule.
+	(PASSES_EXTRA): Add riscv-passes.def.
+	* doc/invoke.texi: Document -mshorten-memrefs.
+
+	* config/riscv/riscv.c (riscv_new_address_profitable_p): New function.
+	(TARGET_NEW_ADDRESS_PROFITABLE_P): Define.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (TARGET_NEW_ADDRESS_PROFITABLE_P):  New hook.
+	* sched-deps.c (attempt_change): Use old address if it is cheaper than
+	new address.
+	* target.def (new_address_profitable_p): New hook.
+	* targhooks.c (default_new_address_profitable_p): New function.
+	* targhooks.h (default_new_address_profitable_p): Declare.
+
+2020-05-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* config/i386/mmx.md (copysignv2sf3): New expander.
+	(xorsignv2sf3): Ditto.
+	(signbitv2sf3): Ditto.
+
 2020-05-12  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95046

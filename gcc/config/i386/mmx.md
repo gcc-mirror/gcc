@@ -639,8 +639,8 @@
 	  (match_operand:V2SF 2 "register_operand" "x,x")))]
   "TARGET_MMX_WITH_SSE"
   "@
-   andps\t{%2, %0|%0, %2}
-   vandps\t{%2, %1, %0|%0, %1, %2}"
+   andnps\t{%2, %0|%0, %2}
+   vandnps\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sselog")
    (set_attr "prefix" "orig,vex")
@@ -659,6 +659,47 @@
    (set_attr "type" "sselog")
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "V4SF")])
+
+(define_expand "copysignv2sf3"
+  [(set (match_dup 4)
+	(and:V2SF
+	  (not:V2SF (match_dup 3))
+	  (match_operand:V2SF 1 "register_operand")))
+   (set (match_dup 5)
+	(and:V2SF (match_dup 3)
+		  (match_operand:V2SF 2 "register_operand")))
+   (set (match_operand:V2SF 0 "register_operand")
+	(ior:V2SF (match_dup 4) (match_dup 5)))]
+  "TARGET_MMX_WITH_SSE"
+{
+  operands[3] = ix86_build_signbit_mask (V2SFmode, true, false);
+
+  operands[4] = gen_reg_rtx (V2SFmode);
+  operands[5] = gen_reg_rtx (V2SFmode);
+})
+
+(define_expand "xorsignv2sf3"
+  [(set (match_dup 4)
+	(and:V2SF (match_dup 3)
+		  (match_operand:V2SF 2 "register_operand")))
+   (set (match_operand:V2SF 0 "register_operand")
+	(xor:V2SF (match_dup 4)
+		  (match_operand:V2SF 1 "register_operand")))]
+  "TARGET_MMX_WITH_SSE"
+{
+  operands[3] = ix86_build_signbit_mask (V2SFmode, true, false);
+
+  operands[4] = gen_reg_rtx (V2SFmode);
+})
+
+(define_expand "signbitv2sf2"
+  [(set (match_operand:V2SI 0 "register_operand")
+	(lshiftrt:V2SI
+	  (subreg:V2SI
+	    (match_operand:V2SF 1 "register_operand") 0)
+	  (match_dup 2)))]
+  "TARGET_MMX_WITH_SSE"
+  "operands[2] = GEN_INT (GET_MODE_UNIT_BITSIZE (V2SFmode)-1);")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

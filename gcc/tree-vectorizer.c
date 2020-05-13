@@ -99,7 +99,7 @@ auto_purge_vect_location::~auto_purge_vect_location ()
 
 void
 dump_stmt_cost (FILE *f, void *data, int count, enum vect_cost_for_stmt kind,
-		stmt_vec_info stmt_info, int misalign, unsigned cost,
+		stmt_vec_info stmt_info, tree, int misalign, unsigned cost,
 		enum vect_cost_model_location where)
 {
   fprintf (f, "%p ", data);

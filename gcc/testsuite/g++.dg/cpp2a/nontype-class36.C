@@ -1,5 +1,5 @@
 /* PR c++/94510 - nullptr_t implicitly cast to zero twice in std::array
-   { dg-do compile { target c++2a } }
+   { dg-do compile { target c++20 } }
    { dg-options "-Wall" } */
 
 struct A { int i; int f (); };

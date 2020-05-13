@@ -1,5 +1,5 @@
 // PR c++/94597
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template <typename b, typename c> concept d = requires(b e) { e.operator c(); };
 

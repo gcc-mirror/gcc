@@ -768,7 +768,7 @@ static bool
 cx_check_missing_mem_inits (tree ctype, tree body, bool complain)
 {
   /* We allow uninitialized bases/fields in C++20.  */
-  if (cxx_dialect >= cxx2a)
+  if (cxx_dialect >= cxx20)
     return false;
 
   unsigned nelts = 0;
@@ -1723,7 +1723,7 @@ modifying_const_object_error (tree expr, tree obj)
 static inline bool
 cxx_replaceable_global_alloc_fn (tree fndecl)
 {
-  return (cxx_dialect >= cxx2a
+  return (cxx_dialect >= cxx20
 	  && IDENTIFIER_NEWDEL_OP_P (DECL_NAME (fndecl))
 	  && CP_DECL_CONTEXT (fndecl) == global_namespace
 	  && (DECL_IS_REPLACEABLE_OPERATOR_NEW_P (fndecl)
@@ -1736,7 +1736,7 @@ cxx_replaceable_global_alloc_fn (tree fndecl)
 static inline bool
 cxx_placement_new_fn (tree fndecl)
 {
-  if (cxx_dialect >= cxx2a
+  if (cxx_dialect >= cxx20
       && IDENTIFIER_NEW_OP_P (DECL_NAME (fndecl))
       && CP_DECL_CONTEXT (fndecl) == global_namespace
       && !DECL_IS_REPLACEABLE_OPERATOR_NEW_P (fndecl)
@@ -1789,7 +1789,7 @@ is_std_allocator_allocate (tree fndecl)
 static inline bool
 cxx_dynamic_cast_fn_p (tree fndecl)
 {
-  return (cxx_dialect >= cxx2a
+  return (cxx_dialect >= cxx20
 	  && id_equal (DECL_NAME (fndecl), "__dynamic_cast")
 	  && CP_DECL_CONTEXT (fndecl) == global_namespace);
 }
@@ -2628,7 +2628,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
      of value-initializing it.  (reduced_constant_expression_p is expected to
      take care of clearing the flag.)  */
   if (TREE_CODE (result) == CONSTRUCTOR
-      && (cxx_dialect < cxx2a
+      && (cxx_dialect < cxx20
 	  || !DECL_CONSTRUCTOR_P (fun)))
     clear_no_implicit_zero (result);
 
@@ -2661,11 +2661,11 @@ reduced_constant_expression_p (tree t)
 	  if (TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
 	    /* An initialized vector would have a VECTOR_CST.  */
 	    return false;
-	  else if (cxx_dialect >= cxx2a
+	  else if (cxx_dialect >= cxx20
 		   /* An ARRAY_TYPE doesn't have any TYPE_FIELDS.  */
 		   && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
 	    field = NULL_TREE;
-	  else if (cxx_dialect >= cxx2a
+	  else if (cxx_dialect >= cxx20
 		   && TREE_CODE (TREE_TYPE (t)) == UNION_TYPE)
 	    {
 	      if (CONSTRUCTOR_NELTS (t) == 0)
@@ -2784,13 +2784,13 @@ cxx_eval_check_shift_p (location_t loc, const constexpr_ctx *ctx,
      representable in the corresponding unsigned type of the result type,
      then that value, converted to the result type, is the resulting value;
      otherwise, the behavior is undefined.
-     For C++2a:
+     For C++20:
      The value of E1 << E2 is the unique value congruent to E1 x 2^E2 modulo
      2^N, where N is the range exponent of the type of the result.  */
   if (code == LSHIFT_EXPR
       && !TYPE_UNSIGNED (lhstype)
       && cxx_dialect >= cxx11
-      && cxx_dialect < cxx2a)
+      && cxx_dialect < cxx20)
     {
       if (tree_int_cst_sgn (lhs) == -1)
 	{
@@ -4803,7 +4803,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       if (code == UNION_TYPE && CONSTRUCTOR_NELTS (*valp)
 	  && CONSTRUCTOR_ELT (*valp, 0)->index != index)
 	{
-	  if (cxx_dialect < cxx2a)
+	  if (cxx_dialect < cxx20)
 	    {
 	      if (!ctx->quiet)
 		error_at (cp_expr_loc_or_input_loc (t),
@@ -5422,7 +5422,7 @@ inline_asm_in_constexpr_error (location_t loc)
   auto_diagnostic_group d;
   error_at (loc, "inline assembly is not a constant expression");
   inform (loc, "only unevaluated inline assembly is allowed in a "
-	  "%<constexpr%> function in C++2a");
+	  "%<constexpr%> function in C++20");
 }
 
 /* Attempt to reduce the expression T to a constant value.
@@ -6582,7 +6582,7 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 	type = TREE_TYPE (object);
       else
 	{
-	  if (cxx_dialect < cxx2a)
+	  if (cxx_dialect < cxx20)
 	    return t;
 	  if (TREE_CODE (t) != CALL_EXPR && TREE_CODE (t) != AGGR_INIT_EXPR)
 	    return t;
@@ -6595,7 +6595,7 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 	    is_consteval = true;
 	}
     }
-  else if (cxx_dialect >= cxx2a
+  else if (cxx_dialect >= cxx20
 	   && (TREE_CODE (t) == CALL_EXPR
 	       || TREE_CODE (t) == AGGR_INIT_EXPR
 	       || TREE_CODE (t) == TARGET_EXPR))
@@ -7422,7 +7422,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		    /* Allow any built-in function; if the expansion
 		       isn't constant, we'll deal with that then.  */
 		    && !fndecl_built_in_p (fun)
-		    /* In C++2a, replaceable global allocation functions
+		    /* In C++20, replaceable global allocation functions
 		       are constant expressions.  */
 		    && (!cxx_replaceable_global_alloc_fn (fun)
 			|| TREE_CODE (t) != CALL_EXPR
@@ -7844,12 +7844,12 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       return false;
 
     case OBJ_TYPE_REF:
-      if (cxx_dialect >= cxx2a)
-	/* In C++2a virtual calls can be constexpr, don't give up yet.  */
+      if (cxx_dialect >= cxx20)
+	/* In C++20 virtual calls can be constexpr, don't give up yet.  */
 	return true;
       else if (flags & tf_error)
 	error_at (loc,
-		  "virtual functions cannot be %<constexpr%> before C++2a");
+		  "virtual functions cannot be %<constexpr%> before C++20");
       return false;
 
     case TYPEID_EXPR:
@@ -7857,7 +7857,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	 class type can be constexpr.  */
       {
         tree e = TREE_OPERAND (t, 0);
-	if (cxx_dialect < cxx2a
+	if (cxx_dialect < cxx20
 	    && strict
 	    && !TYPE_P (e)
 	    && !type_dependent_expression_p (e)
@@ -8153,7 +8153,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
      return true;
 
     case COND_EXPR:
-      if (COND_EXPR_IS_VEC_DELETE (t) && cxx_dialect < cxx2a)
+      if (COND_EXPR_IS_VEC_DELETE (t) && cxx_dialect < cxx20)
 	{
 	  if (flags & tf_error)
 	    error_at (loc, "%<delete[]%> is not a constant expression");

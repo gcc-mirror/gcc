@@ -1,5 +1,5 @@
 // PR c++/67148
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // { dg-additional-options "-fconcepts-ts" }
 
 namespace std

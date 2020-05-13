@@ -2080,7 +2080,8 @@ loop_distribution::pg_add_dependence_edges (struct graph *rdg, int dir,
 		this_dir = -this_dir;
 
 	      /* Known dependences can still be unordered througout the
-		 iteration space, see gcc.dg/tree-ssa/ldist-16.c.  */
+		 iteration space, see gcc.dg/tree-ssa/ldist-16.c and
+		 gcc.dg/tree-ssa/pr94969.c.  */
 	      if (DDR_NUM_DIST_VECTS (ddr) != 1)
 		this_dir = 2;
 	      /* If the overlap is exact preserve stmt order.  */

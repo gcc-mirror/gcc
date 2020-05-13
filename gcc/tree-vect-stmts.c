@@ -92,19 +92,19 @@ stmt_in_inner_loop_p (vec_info *vinfo, class _stmt_vec_info *stmt_info)
 unsigned
 record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
 		  enum vect_cost_for_stmt kind, stmt_vec_info stmt_info,
-		  int misalign, enum vect_cost_model_location where)
+		  tree vectype, int misalign,
+		  enum vect_cost_model_location where)
 {
   if ((kind == vector_load || kind == unaligned_load)
-      && STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+      && (stmt_info && STMT_VINFO_GATHER_SCATTER_P (stmt_info)))
     kind = vector_gather_load;
   if ((kind == vector_store || kind == unaligned_store)
-      && STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+      && (stmt_info && STMT_VINFO_GATHER_SCATTER_P (stmt_info)))
     kind = vector_scatter_store;
 
-  stmt_info_for_cost si = { count, kind, where, stmt_info, misalign };
+  stmt_info_for_cost si = { count, kind, where, stmt_info, vectype, misalign };
   body_cost_vec->safe_push (si);
 
-  tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
   return (unsigned)
       (builtin_vectorization_cost (kind, vectype, misalign) * count);
 }
@@ -790,7 +790,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo, bool *fatal)
 
 static unsigned
 vect_prologue_cost_for_slp_op (vec_info *vinfo,
-			       slp_tree node, stmt_vec_info stmt_info,
+			       slp_tree node,
 			       unsigned opno, enum vect_def_type dt,
 			       stmt_vector_for_cost *cost_vec)
 {
@@ -836,14 +836,11 @@ vect_prologue_cost_for_slp_op (vec_info *vinfo,
       nelt++;
       if (nelt == nelt_limit)
 	{
-	  /* ???  We need to pass down stmt_info for a vector type
-	     even if it points to the wrong stmt.  */
 	  prologue_cost += record_stmt_cost
 	      (cost_vec, 1,
 	       dt == vect_external_def
-	       ? (elt ? scalar_to_vec : vec_construct)
-	       : vector_load,
-	       stmt_info, 0, vect_prologue);
+	       ? (elt ? scalar_to_vec : vec_construct) : vector_load,
+	       NULL, vectype, 0, vect_prologue);
 	  nelt = 0;
 	}
     }
@@ -890,7 +887,6 @@ vect_model_simple_cost (vec_info *vinfo,
 	  if (vect_is_simple_use (op, vinfo, &dt)
 	      && (dt == vect_constant_def || dt == vect_external_def))
 	    prologue_cost += vect_prologue_cost_for_slp_op (vinfo, node,
-							    stmt_info,
 							    i, dt, cost_vec);
 	}
     }
@@ -1012,7 +1008,6 @@ vect_model_store_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
     {
       if (slp_node)
 	prologue_cost += vect_prologue_cost_for_slp_op (vinfo, slp_node,
-							stmt_info,
 							1, dt, cost_vec);
       else
 	prologue_cost += record_stmt_cost (cost_vec, 1, scalar_to_vec,
@@ -8606,7 +8601,6 @@ static bool
 vectorizable_load (vec_info *vinfo,
 		   stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		   stmt_vec_info *vec_stmt, slp_tree slp_node,
-		   slp_instance slp_node_instance,
 		   stmt_vector_for_cost *cost_vec)
 {
   tree scalar_dest;
@@ -9221,8 +9215,9 @@ vectorizable_load (vec_info *vinfo,
 	     unpermuted sequence.  In other cases we need to load the
 	     whole group, not only the number of vector stmts the
 	     permutation result fits in.  */
+	  unsigned scalar_lanes = SLP_TREE_SCALAR_STMTS (slp_node).length ();
 	  if (slp_perm
-	      && (group_size != SLP_INSTANCE_GROUP_SIZE (slp_node_instance)
+	      && (group_size != scalar_lanes 
 		  || !multiple_p (nunits, group_size)))
 	    {
 	      /* We don't yet generate such SLP_TREE_LOAD_PERMUTATIONs for
@@ -9236,7 +9231,7 @@ vectorizable_load (vec_info *vinfo,
 	    {
 	      vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
 	      group_gap_adj
-		= group_size - SLP_INSTANCE_GROUP_SIZE (slp_node_instance);
+		= group_size - scalar_lanes;
 	    }
     	}
       else
@@ -11062,8 +11057,7 @@ vect_analyze_stmt (vec_info *vinfo,
 				     NULL, NULL, node, cost_vec)
 	  || vectorizable_assignment (vinfo, stmt_info,
 				      NULL, NULL, node, cost_vec)
-	  || vectorizable_load (vinfo, stmt_info,
-				NULL, NULL, node, node_instance, cost_vec)
+	  || vectorizable_load (vinfo, stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_store (vinfo, stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_reduction (as_a <loop_vec_info> (vinfo), stmt_info,
 				     node, node_instance, cost_vec)
@@ -11091,7 +11085,7 @@ vect_analyze_stmt (vec_info *vinfo,
 	      || vectorizable_assignment (vinfo, stmt_info, NULL, NULL, node,
 					  cost_vec)
 	      || vectorizable_load (vinfo, stmt_info,
-				    NULL, NULL, node, node_instance, cost_vec)
+				    NULL, NULL, node, cost_vec)
 	      || vectorizable_store (vinfo, stmt_info,
 				     NULL, NULL, node, cost_vec)
 	      || vectorizable_condition (vinfo, stmt_info,
@@ -11182,7 +11176,7 @@ vect_transform_stmt (vec_info *vinfo,
 
     case load_vec_info_type:
       done = vectorizable_load (vinfo, stmt_info, gsi, &vec_stmt, slp_node,
-                                slp_node_instance, NULL);
+				NULL);
       gcc_assert (done);
       break;
 

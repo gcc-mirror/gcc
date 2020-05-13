@@ -1,5 +1,5 @@
 // PR c++/92965
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template<int>
 class TS {

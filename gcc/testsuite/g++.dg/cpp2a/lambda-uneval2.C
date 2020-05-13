@@ -1,4 +1,4 @@
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 // ill-formed, no diagnostic required: the two expressions are
 // functionally equivalent but not equivalent

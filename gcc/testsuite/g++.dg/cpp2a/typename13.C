@@ -1,5 +1,5 @@
 // P0634R3, PR c++/88358
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template <typename T>
 int pi(T::your_pi);

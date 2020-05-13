@@ -1,5 +1,5 @@
 // PR c++/91338 - P1161R3: Deprecate a[b,c].
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // { dg-options "-Wno-deprecated" }
 
 struct S {

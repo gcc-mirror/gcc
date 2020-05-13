@@ -20,4 +20,4 @@ struct X
 		  //    }
 
 };   // { dg-error "1:expected primary-expression before '.' token" "primary"  }
-// { dg-error "-:expected" "at end of input" }
+// { dg-error "-:expected" "at end of input" { target *-*-* } .+1 }

@@ -1021,7 +1021,7 @@ ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c,
 
    If the hexadecimal value is larger than the upper bound of the UCS
    codespace specified in ISO/IEC 10646, a pedantic warning is issued
-   in all versions of C and in the C++2a or later versions of C++.
+   in all versions of C and in the C++20 or later versions of C++.
 
    *PSTR must be preceded by "\u" or "\U"; it is assumed that the
    buffer end is delimited by a non-hex digit.  Returns false if the

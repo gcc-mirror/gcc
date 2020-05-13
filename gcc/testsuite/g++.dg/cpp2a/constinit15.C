@@ -1,5 +1,5 @@
 // PR c++/92058 - constinit malfunction in static data member.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 struct B {
     B() {}

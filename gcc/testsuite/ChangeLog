@@ -1,3 +1,161 @@
+2020-05-13  Jason Merrill  <jason@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_c++20_only)
+	(check_effective_target_c++20): New.
+
+2020-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/95110
+	* gcc.dg/tree-ssa/pr94969.c: Swap scan-tree-dump-not arguments.
+
+2020-05-13  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/parse/attr4.C: Use c++11 in a target selector.
+
+2020-05-13  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/93497
+	* gfortran.dg/pr88025.f90: Change in wording of error.
+	* gfortran.dg/pr93497.f90: New test.
+	* gfortran.dg/pr93714_1.f90: Change in wording of errors.
+	* gfortran.dg/pr93714_2.f90: Change in wording of errors.
+
+2020-05-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/70642
+	* g++.dg/cpp0x/alias-decl-70.C: New test.
+
+2020-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/95080
+	* g++.dg/opt/pr95080.C: New test.
+
+	PR tree-optimization/95060
+	* gcc.target/i386/avx512f-pr95060.c: New test.
+	* gcc.target/i386/fma_double_1.c: Adjust expected insn counts.
+	* gcc.target/i386/fma_double_2.c: Likewise.
+	* gcc.target/i386/fma_double_3.c: Likewise.
+	* gcc.target/i386/fma_double_4.c: Likewise.
+	* gcc.target/i386/fma_double_5.c: Likewise.
+	* gcc.target/i386/fma_double_6.c: Likewise.
+	* gcc.target/i386/fma_float_1.c: Likewise.
+	* gcc.target/i386/fma_float_2.c: Likewise.
+	* gcc.target/i386/fma_float_3.c: Likewise.
+	* gcc.target/i386/fma_float_4.c: Likewise.
+	* gcc.target/i386/fma_float_5.c: Likewise.
+	* gcc.target/i386/fma_float_6.c: Likewise.
+	* gcc.target/i386/l_fma_double_1.c: Likewise.
+	* gcc.target/i386/l_fma_double_2.c: Likewise.
+	* gcc.target/i386/l_fma_double_3.c: Likewise.
+	* gcc.target/i386/l_fma_double_4.c: Likewise.
+	* gcc.target/i386/l_fma_double_5.c: Likewise.
+	* gcc.target/i386/l_fma_double_6.c: Likewise.
+	* gcc.target/i386/l_fma_float_1.c: Likewise.
+	* gcc.target/i386/l_fma_float_2.c: Likewise.
+	* gcc.target/i386/l_fma_float_3.c: Likewise.
+	* gcc.target/i386/l_fma_float_4.c: Likewise.
+	* gcc.target/i386/l_fma_float_5.c: Likewise.
+	* gcc.target/i386/l_fma_float_6.c: Likewise.
+
+2020-05-13  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/95051
+	* gcc.dg/asan/pr95051.c: Simplify options as -fsanitize=address
+	and -O2 were enough to trigger the original ICE.
+
+2020-05-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR preprocessor/95013
+	* gcc.dg/unclosed-init.c: Add missing comment in dg-error.
+
+2020-05-13  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/94969
+	* gcc.dg/tree-ssa/pr94969.c: New test.
+
+2020-05-12  Craig Blackmore  <craig.blackmore@embecosm.com>
+
+	* gcc.target/riscv/shorten-memrefs-1.c: New test.
+	* gcc.target/riscv/shorten-memrefs-2.c: New test.
+	* gcc.target/riscv/shorten-memrefs-3.c: New test.
+	* gcc.target/riscv/shorten-memrefs-4.c: New test.
+	* gcc.target/riscv/shorten-memrefs-5.c: New test.
+	* gcc.target/riscv/shorten-memrefs-6.c: New test.
+	* gcc.target/riscv/shorten-memrefs-7.c: New test.
+
+2020-05-12  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/95013
+	* c-c++-common/goacc/pr79428-1.c: Adjust EOF diagnostic location.
+	* c-c++-common/gomp/pr79428-2.c: Likewise.
+	* g++.dg/cpp0x/decltype63.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-64.C: Likewise.
+	* g++.dg/cpp0x/pr68726.C: Likewise.
+	* g++.dg/cpp0x/pr78341.C: Likewise.
+	* g++.dg/cpp1y/pr65202.C: Likewise.
+	* g++.dg/cpp1y/pr65340.C: Likewise.
+	* g++.dg/cpp1y/pr68578.C: Likewise.
+	* g++.dg/cpp1z/class-deduction44.C: Likewise.
+	* g++.dg/diagnostic/unclosed-extern-c.C: Likewise.
+	* g++.dg/diagnostic/unclosed-function.C: Likewise.
+	* g++.dg/diagnostic/unclosed-namespace.C: Likewise.
+	* g++.dg/diagnostic/unclosed-struct.C: Likewise.
+	* g++.dg/ext/pr84598.C: Likewise.
+	* g++.dg/other/switch4.C: Likewise.
+	* g++.dg/parse/attr4.C: Likewise.
+	* g++.dg/parse/cond4.C: Likewise.
+	* g++.dg/parse/crash10.C: Likewise.
+	* g++.dg/parse/crash18.C: Likewise.
+	* g++.dg/parse/crash27.C: Likewise.
+	* g++.dg/parse/crash34.C: Likewise.
+	* g++.dg/parse/crash35.C: Likewise.
+	* g++.dg/parse/crash52.C: Likewise.
+	* g++.dg/parse/crash59.C: Likewise.
+	* g++.dg/parse/crash61.C: Likewise.
+	* g++.dg/parse/crash67.C: Likewise.
+	* g++.dg/parse/error14.C: Likewise.
+	* g++.dg/parse/error56.C: Likewise.
+	* g++.dg/parse/invalid1.C: Likewise.
+	* g++.dg/parse/parameter-declaration-1.C: Likewise.
+	* g++.dg/parse/parser-pr28152-2.C: Likewise.
+	* g++.dg/parse/parser-pr28152.C: Likewise.
+	* g++.dg/parse/pr68722.C: Likewise.
+	* g++.dg/pr46852.C: Likewise.
+	* g++.dg/pr46868.C: Likewise.
+	* g++.dg/template/crash115.C: Likewise.
+	* g++.dg/template/crash43.C: Likewise.
+	* g++.dg/template/crash90.C: Likewise.
+	* g++.dg/template/error-recovery1.C: Likewise.
+	* g++.dg/template/error57.C: Likewise.
+	* g++.old-deja/g++.other/crash31.C: Likewise.
+	* gcc.dg/empty-source-2.c: Likewise.
+	* gcc.dg/empty-source-3.c: Likewise.
+	* gcc.dg/noncompile/pr30552-3.c: Likewise.
+	* gcc.dg/noncompile/pr35447-1.c: Likewise.
+	* gcc.dg/pr20245-1.c: Likewise.
+	* gcc.dg/pr28419.c: Likewise.
+	* gcc.dg/rtl/truncated-rtl-file.c: Likewise.
+	* gcc.dg/unclosed-init.c: Likewise.
+	* obj-c++.dg/property/property-neg-6.mm: Likewise.
+	* obj-c++.dg/syntax-error-10.mm: Likewise.
+	* obj-c++.dg/syntax-error-8.mm: Likewise.
+	* obj-c++.dg/syntax-error-9.mm: Likewise.
+
+2020-05-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95074
+	* g++.dg/lookup/koenig15.C: New test.
+
+2020-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/95051
+	* gcc.dg/asan/pr95051.c: Add -fno-sanitize=all to dg-options.
+
+2020-05-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* gcc.target/i386/pr95046-4.c: New test.
+
 2020-05-12  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/78752
