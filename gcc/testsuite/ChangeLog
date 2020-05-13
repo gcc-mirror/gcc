@@ -1,3 +1,8 @@
+2020-05-13  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/94969
+	* gcc.dg/tree-ssa/pr94969.c: New test.
+
 2020-05-12  Craig Blackmore  <craig.blackmore@embecosm.com>
 
 	* gcc.target/riscv/shorten-memrefs-1.c: New test.

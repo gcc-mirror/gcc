@@ -1,3 +1,12 @@
+2020-05-13  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/94969
+	* tree-data-dependence.c (constant_access_functions): Rename to...
+	(invariant_access_functions): ...this.  Add parameter.  Check for
+	invariant access function, rather than constant.
+	(build_classic_dist_vector): Call above function.
+	* tree-loop-distribution.c (pg_add_dependence_edges): Add comment.
+
 2020-05-13  Hongtao Liu  <hongtao.liu@intel.com>
 
 	PR target/94118
