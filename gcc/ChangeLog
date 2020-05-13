@@ -1,3 +1,9 @@
+2020-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95060
+	* tree-ssa-math-opts.c (convert_mult_to_fma_1): Fold a NEGATE_EXPR
+	if it is the single use of the FMA internal builtin.
+
 2020-05-13  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	PR tree-optimization/94969

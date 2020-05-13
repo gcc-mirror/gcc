@@ -11,11 +11,11 @@ typedef double adouble __attribute__((aligned(sizeof (double))));
 
 #include "l_fma_2.h"
 
-/* { dg-final { scan-assembler-times "vfmadd\[123\]+pd" 8 } } */
-/* { dg-final { scan-assembler-times "vfmsub\[123\]+pd" 8 } } */
-/* { dg-final { scan-assembler-times "vfnmadd\[123\]+pd" 8 } } */
-/* { dg-final { scan-assembler-times "vfnmsub\[123\]+pd" 8 } } */
-/* { dg-final { scan-assembler-times "vfmadd\[123\]+sd" 32 } } */
-/* { dg-final { scan-assembler-times "vfmsub\[123\]+sd" 32 } } */
-/* { dg-final { scan-assembler-times "vfnmadd\[123\]+sd" 32 } } */
-/* { dg-final { scan-assembler-times "vfnmsub\[123\]+sd" 32 } } */
+/* { dg-final { scan-assembler-times "vfmadd\[123\]+pd" 12 } } */
+/* { dg-final { scan-assembler-times "vfmsub\[123\]+pd" 12 } } */
+/* { dg-final { scan-assembler-times "vfnmadd\[123\]+pd" 4 } } */
+/* { dg-final { scan-assembler-times "vfnmsub\[123\]+pd" 4 } } */
+/* { dg-final { scan-assembler-times "vfmadd\[123\]+sd" 48 } } */
+/* { dg-final { scan-assembler-times "vfmsub\[123\]+sd" 48 } } */
+/* { dg-final { scan-assembler-times "vfnmadd\[123\]+sd" 16 } } */
+/* { dg-final { scan-assembler-times "vfnmsub\[123\]+sd" 16 } } */

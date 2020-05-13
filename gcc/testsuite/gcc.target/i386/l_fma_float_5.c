@@ -10,11 +10,11 @@
 
 #include "l_fma_5.h"
 
-/* { dg-final { scan-assembler-times "vfmadd\[123\]+ps" 8 } } */
-/* { dg-final { scan-assembler-times "vfmsub\[123\]+ps" 8 } } */
-/* { dg-final { scan-assembler-times "vfnmadd\[123\]+ps" 8 } } */
-/* { dg-final { scan-assembler-times "vfnmsub\[123\]+ps" 8 } } */
-/* { dg-final { scan-assembler-times "vfmadd\[123\]+ss" 64 } } */
-/* { dg-final { scan-assembler-times "vfmsub\[123\]+ss" 64 } } */
-/* { dg-final { scan-assembler-times "vfnmadd\[123\]+ss" 64 } } */
-/* { dg-final { scan-assembler-times "vfnmsub\[123\]+ss" 64 } } */
+/* { dg-final { scan-assembler-times "vfmadd\[123\]+ps" 12 } } */
+/* { dg-final { scan-assembler-times "vfmsub\[123\]+ps" 12 } } */
+/* { dg-final { scan-assembler-times "vfnmadd\[123\]+ps" 4 } } */
+/* { dg-final { scan-assembler-times "vfnmsub\[123\]+ps" 4 } } */
+/* { dg-final { scan-assembler-times "vfmadd\[123\]+ss" 96 } } */
+/* { dg-final { scan-assembler-times "vfmsub\[123\]+ss" 96 } } */
+/* { dg-final { scan-assembler-times "vfnmadd\[123\]+ss" 32 } } */
+/* { dg-final { scan-assembler-times "vfnmsub\[123\]+ss" 32 } } */
