@@ -1,5 +1,9 @@
 2020-05-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/95080
+	* cfgrtl.c (purge_dead_edges): Skip over debug and note insns even
+	if the last insn is a note.
+
 	PR tree-optimization/95060
 	* tree-ssa-math-opts.c (convert_mult_to_fma_1): Fold a NEGATE_EXPR
 	if it is the single use of the FMA internal builtin.

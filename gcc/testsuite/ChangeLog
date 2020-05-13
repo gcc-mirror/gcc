@@ -1,5 +1,8 @@
 2020-05-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/95080
+	* g++.dg/opt/pr95080.C: New test.
+
 	PR tree-optimization/95060
 	* gcc.target/i386/avx512f-pr95060.c: New test.
 	* gcc.target/i386/fma_double_1.c: Adjust expected insn counts.
