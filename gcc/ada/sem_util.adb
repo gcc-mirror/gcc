@@ -17806,7 +17806,6 @@ package body Sem_Util is
                                N_Or_Else,
                                N_Quantified_Expression)
         and then not (Nkind (Par) = N_Aggregate
-                        and then Present (Etype (Par))
                         and then Etype (Par) /= Any_Composite
                         and then Is_Array_Type (Etype (Par)))
       loop
@@ -17854,6 +17853,7 @@ package body Sem_Util is
          return Expr = Condition (Par);
 
       elsif Nkind (Par) = N_Aggregate
+        and then Etype (Par) /= Any_Composite
         and then Is_Array_Type (Etype (Par))
         and then Nkind (Expr) = N_Component_Association
       then
@@ -17874,7 +17874,6 @@ package body Sem_Util is
                   return True;
 
                elsif Nkind (Choice) = N_Identifier
-                 and then Present (Etype (Choice))
                  and then Present (Scalar_Range (Etype (Choice)))
                  and then
                    Non_Static_Or_Null_Range (Scalar_Range (Etype (Choice)))
