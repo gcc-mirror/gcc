@@ -1,5 +1,9 @@
 2020-05-13  Ian Lance Taylor  <iant@golang.org>
 
+	* ztest.c (test_large): Mark state ATTRIBUTE_UNUSED.
+
+2020-05-13  Ian Lance Taylor  <iant@golang.org>
+
 	PR go/95061
 	* posix.c (backtrace_open): Treat EACCESS like ENOENT.
 
