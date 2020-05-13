@@ -1,3 +1,12 @@
+2020-05-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94690
+	* openmp.c (OMP_DISTRIBUTE_CLAUSES): Add OMP_CLAUSE_LASTPRIVATE.
+	(gfc_resolve_do_iterator): Skip the private handling for SIMD as
+	that is handled by ME code.
+	* trans-openmp.c (gfc_trans_omp_do): Don't add private/lastprivate
+	for dovar_found == 0, unless !simple.
+
 2020-05-11  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95053
