@@ -591,7 +591,7 @@ package Einfo is
 --       never have a null value. Set for constant access values initialized to
 --       a non-null value. This is also set for all access parameters in Ada 83
 --       and Ada 95 modes, and for access parameters that explicitly exclude
---       exclude null in Ada 2005 mode.
+--       null in Ada 2005 mode.
 --
 --       This is used to avoid unnecessary resetting of the Is_Known_Non_Null
 --       flag for such entities. In Ada 2005 mode, this is also used when
