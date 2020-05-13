@@ -1,3 +1,15 @@
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
+	DR 1512
+	PR c++/87699
+	* call.c (add_builtin_candidate) <case EQ_EXPR>: Create candidate
+	operator functions when type is std::nullptr_t for ==/!=.
+	* typeck.c (composite_pointer_type_r): Add a bool * parameter.  Use it
+	to maybe add "const" to the pointer type.
+	(composite_pointer_type): Update the call to composite_pointer_type_r.
+	(cp_build_binary_op): Turn two warning_at into error_at.  Print the
+	types.
+
 2020-05-18  Jason Merrill  <jason@redhat.com>
 
 	* call.c (build_over_call): Remove unnecessary

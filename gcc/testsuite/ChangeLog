@@ -1,5 +1,18 @@
 2020-05-18  Marek Polacek  <polacek@redhat.com>
 
+	DR 1512
+	PR c++/87699
+	* g++.dg/cpp0x/constexpr-array-ptr10.C: Change dg-warning to dg-error
+	and adjust the expected messages in dg-error.
+	* g++.dg/expr/composite-ptr-type.C: New test.
+	* g++.dg/expr/ptr-comp1.C: New test.
+	* g++.dg/expr/ptr-comp2.C: New test.
+	* g++.dg/expr/ptr-comp3.C: New test.
+	* g++.dg/overload/builtin4.C: New test.
+	* g++.dg/warn/Wextra-3.C: Change dg-warning to dg-error.
+
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
 	* g++.dg/overload/builtin5.C: New test.
 
 2020-05-18  Doug Rupp  <rupp@adacore.com>
