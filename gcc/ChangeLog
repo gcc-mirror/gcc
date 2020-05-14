@@ -1,3 +1,9 @@
+2020-05-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/95118
+	* real.c (real_to_decimal_for_mode): Make sure we handle
+	a zero with nonzero exponent.
+
 2020-05-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in (GTFILES): Add omp-general.c.
