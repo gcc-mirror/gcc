@@ -1,3 +1,7 @@
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
 2020-05-09  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config.host: Remove support for crisv32-*-* and cris*-*-linux.

@@ -1,3 +1,7 @@
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
 2020-05-13  Alexandre Oliva <oliva@adacore.com>
 
 	PR libstdc++/77691
