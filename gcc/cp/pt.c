@@ -10900,6 +10900,8 @@ tsubst_friend_function (tree decl, tree args)
     }
 
   new_friend = tsubst (decl, args, tf_warning_or_error, NULL_TREE);
+  if (new_friend == error_mark_node)
+    return error_mark_node;
 
   /* The NEW_FRIEND will look like an instantiation, to the
      compiler, but is not an instantiation from the point of view of
@@ -10911,11 +10913,9 @@ tsubst_friend_function (tree decl, tree args)
 
      Then, in S<int>, template <class U> void f(int, U) is not an
      instantiation of anything.  */
-  if (new_friend == error_mark_node)
-    return error_mark_node;
 
   DECL_USE_TEMPLATE (new_friend) = 0;
-  if (TREE_CODE (decl) == TEMPLATE_DECL)
+  if (TREE_CODE (new_friend) == TEMPLATE_DECL)
     {
       DECL_USE_TEMPLATE (DECL_TEMPLATE_RESULT (new_friend)) = 0;
       DECL_SAVED_TREE (DECL_TEMPLATE_RESULT (new_friend))
@@ -10942,29 +10942,27 @@ tsubst_friend_function (tree decl, tree args)
   if (DECL_NAMESPACE_SCOPE_P (new_friend))
     {
       tree old_decl;
-      tree new_friend_template_info;
-      tree new_friend_result_template_info;
       tree ns;
-      int  new_friend_is_defn;
 
       /* We must save some information from NEW_FRIEND before calling
 	 duplicate decls since that function will free NEW_FRIEND if
 	 possible.  */
-      new_friend_template_info = DECL_TEMPLATE_INFO (new_friend);
-      new_friend_is_defn =
-	    (DECL_INITIAL (DECL_TEMPLATE_RESULT
-			   (template_for_substitution (new_friend)))
-	     != NULL_TREE);
+      tree new_friend_template_info = DECL_TEMPLATE_INFO (new_friend);
+      tree new_friend_result_template_info = NULL_TREE;
+      bool new_friend_is_defn =
+	(DECL_INITIAL (DECL_TEMPLATE_RESULT
+		       (template_for_substitution (new_friend)))
+	 != NULL_TREE);
+      tree not_tmpl = new_friend;
+
       if (TREE_CODE (new_friend) == TEMPLATE_DECL)
 	{
 	  /* This declaration is a `primary' template.  */
 	  DECL_PRIMARY_TEMPLATE (new_friend) = new_friend;
 
-	  new_friend_result_template_info
-	    = DECL_TEMPLATE_INFO (DECL_TEMPLATE_RESULT (new_friend));
+	  not_tmpl = DECL_TEMPLATE_RESULT (new_friend);
+	  new_friend_result_template_info = DECL_TEMPLATE_INFO (not_tmpl);
 	}
-      else
-	new_friend_result_template_info = NULL_TREE;
 
       /* Inside pushdecl_namespace_level, we will push into the
 	 current namespace. However, the friend function should go
