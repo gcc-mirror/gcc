@@ -2563,22 +2563,6 @@ package body Sem_Ch13 is
                end if;
 
                if Expr_Value then
-
-                  --  Adding minimum decoration to generic subprograms to set
-                  --  the Yield attribute (since at this stage it may not be
-                  --  set; see Analyze_Generic_Subprogram_Declaration).
-
-                  if Nkind (N) in N_Generic_Subprogram_Declaration
-                    and then Ekind (E) = E_Void
-                  then
-                     if Nkind (Specification (N)) = N_Function_Specification
-                     then
-                        Set_Ekind (E, E_Function);
-                     else
-                        Set_Ekind (E, E_Procedure);
-                     end if;
-                  end if;
-
                   Set_Has_Yield_Aspect (E);
                end if;
 
