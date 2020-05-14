@@ -1,3 +1,11 @@
+2020-05-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/95105
+	* config/aarch64/aarch64-sve-builtins.cc
+	(handle_arm_sve_vector_bits_attribute): Create a copy of the
+	original type's TYPE_MAIN_VARIANT, then reapply all the differences
+	between the original type and its main variant.
+
 2020-05-14  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/95118
