@@ -1144,16 +1144,17 @@ goacc_exit_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 	    else if (n->refcount > 0 && n->refcount != REFCOUNT_INFINITY)
 	      n->refcount--;
 
-	    if (copyfrom
-		&& (kind != GOMP_MAP_FROM || n->refcount == 0))
-	      gomp_copy_dev2host (acc_dev, aq, (void *) cur_node.host_start,
-				  (void *) (n->tgt->tgt_start + n->tgt_offset
-					    + cur_node.host_start
-					    - n->host_start),
-				  cur_node.host_end - cur_node.host_start);
-
 	    if (n->refcount == 0)
 	      {
+		if (copyfrom)
+		  {
+		    void *d = (void *) (n->tgt->tgt_start + n->tgt_offset
+					+ cur_node.host_start - n->host_start);
+		    gomp_copy_dev2host (acc_dev, aq,
+					(void *) cur_node.host_start, d,
+					cur_node.host_end - cur_node.host_start);
+		  }
+
 		if (aq)
 		  /* TODO We can't do the 'is_tgt_unmapped' checking -- see the
 		     'gomp_unref_tgt' comment in
