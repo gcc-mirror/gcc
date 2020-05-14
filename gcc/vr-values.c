@@ -2554,6 +2554,8 @@ simplify_using_ranges::vrp_visit_cond_stmt (gcond *stmt, edge *taken_edge_p)
 
   *taken_edge_p = NULL;
 
+  dump_flags_t save_flags = dump_flags;
+  dump_flags &= ~TDF_GORI;
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       tree use;
@@ -2579,6 +2581,7 @@ simplify_using_ranges::vrp_visit_cond_stmt (gcond *stmt, edge *taken_edge_p)
       if (!first)
 	fprintf (dump_file, "\n");
     }
+  dump_flags = save_flags;
 
   /* Compute the value of the predicate COND by checking the known
      ranges of each of its operands.
