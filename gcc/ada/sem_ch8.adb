@@ -3981,20 +3981,19 @@ package body Sem_Ch8 is
          Set_Prev_Use_Clause (N, Current_Use_Clause (Pack));
       end if;
 
-      --  Mark all entities as potentially use visible.
+      --  Mark all entities as potentially use visible
 
       if Ekind (Pack) /= E_Package and then Etype (Pack) /= Any_Type then
          if Ekind (Pack) = E_Generic_Package then
             Error_Msg_N  -- CODEFIX
               ("a generic package is not allowed in a use clause", Name (N));
 
-         elsif Ekind_In (Pack, E_Generic_Function, E_Generic_Package)
-         then
+         elsif Is_Generic_Subprogram (Pack) then
             Error_Msg_N  -- CODEFIX
               ("a generic subprogram is not allowed in a use clause",
                Name (N));
 
-         elsif Ekind_In (Pack, E_Function, E_Procedure, E_Operator) then
+         elsif Is_Subprogram (Pack) then
             Error_Msg_N  -- CODEFIX
               ("a subprogram is not allowed in a use clause", Name (N));
 
