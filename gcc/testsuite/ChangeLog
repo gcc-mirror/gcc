@@ -1,3 +1,9 @@
+2020-05-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/95105
+	* gcc.target/aarch64/sve/acle/general/attributes_8.c: New test.
+	* g++.target/aarch64/sve/acle/general-c++/attributes_1.C: Likewise.
+
 2020-05-14  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/94703
