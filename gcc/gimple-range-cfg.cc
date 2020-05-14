@@ -277,6 +277,12 @@ gimple_ranger::range_of_builtin_call (irange &r, gcall *call)
 	  // r.equiv_clear ();
 	  return true;
 	}
+      arg = gimple_call_arg (call, 0);
+      if (range_of_expr (r, arg, call) && r.singleton_p ())
+	{
+	  r.set (build_one_cst (type), build_one_cst (type));
+	  return true;
+	}
       break;
 
     CASE_CFN_FFS:
