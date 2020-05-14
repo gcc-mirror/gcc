@@ -1714,8 +1714,8 @@ real_to_decimal_for_mode (char *str, const REAL_VALUE_TYPE *r_orig,
 
 	  do_multiply (&u, &v, ten);
 
-	  /* Stop if we're now >= 1.  */
-	  if (REAL_EXP (&u) > 0)
+	  /* Stop if we're now >= 1 or zero.  */
+	  if (REAL_EXP (&u) > 0 || u.cl == rvc_zero)
 	    break;
 
 	  v = u;
