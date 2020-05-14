@@ -1,5 +1,12 @@
 2020-05-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/95108
+	* omp-simd-clone.c (struct modify_stmt_info): Add after_stmt member.
+	(ipa_simd_modify_stmt_ops): For PHIs, only add before first stmt in
+	entry block if info->after_stmt is NULL, otherwise add after that stmt
+	and update it after adding each stmt.
+	(ipa_simd_modify_function_body): Initialize info.after_stmt.
+
 	* function.h (struct function): Add has_omp_target bit.
 	* omp-offload.c (omp_discover_declare_target_fn_r): New function,
 	old renamed to ...
