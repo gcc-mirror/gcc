@@ -812,6 +812,7 @@ simd_clone_init_simd_arrays (struct cgraph_node *node,
 struct modify_stmt_info {
   ipa_parm_adjustment_vec adjustments;
   gimple *stmt;
+  gimple *after_stmt;
   /* True if the parent statement was modified by
      ipa_simd_modify_stmt_ops.  */
   bool modified;
@@ -892,7 +893,10 @@ ipa_simd_modify_stmt_ops (tree *tp, int *walk_subtrees, void *data)
       gimple_stmt_iterator gsi;
       if (gimple_code (info->stmt) == GIMPLE_PHI)
 	{
-	  gsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
+	  if (info->after_stmt)
+	    gsi = gsi_for_stmt (info->after_stmt);
+	  else
+	    gsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 	  /* Cache SSA_NAME for next time.  */
 	  if (cand
 	      && TREE_CODE (*orig_tp) == ADDR_EXPR
@@ -901,7 +905,12 @@ ipa_simd_modify_stmt_ops (tree *tp, int *walk_subtrees, void *data)
 	}
       else
 	gsi = gsi_for_stmt (info->stmt);
-      gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
+      if (info->after_stmt)
+	gsi_insert_after (&gsi, stmt, GSI_SAME_STMT);
+      else
+	gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
+      if (gimple_code (info->stmt) == GIMPLE_PHI)
+	info->after_stmt = stmt;
       *orig_tp = repl;
     }
   else if (!useless_type_conversion_p (TREE_TYPE (*tp), TREE_TYPE (repl)))
@@ -1006,6 +1015,7 @@ ipa_simd_modify_function_body (struct cgraph_node *node,
 	  gphi *phi = as_a <gphi *> (gsi_stmt (gsi));
 	  int i, n = gimple_phi_num_args (phi);
 	  info.stmt = phi;
+	  info.after_stmt = NULL;
 	  struct walk_stmt_info wi;
 	  memset (&wi, 0, sizeof (wi));
 	  info.modified = false;
@@ -1031,6 +1041,7 @@ ipa_simd_modify_function_body (struct cgraph_node *node,
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 	  info.stmt = stmt;
+	  info.after_stmt = NULL;
 	  struct walk_stmt_info wi;
 
 	  memset (&wi, 0, sizeof (wi));
