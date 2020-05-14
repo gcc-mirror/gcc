@@ -10996,6 +10996,8 @@ allocate_stack_space (rtx size, HOST_WIDE_INT last_probe_offset,
 						       stack_pointer_rtx,
 						       offset));
 		}
+	      if (num_probes > 0)
+		last_probe_offset = INTVAL (offset);
 	      dump_stack_clash_frame_info (PROBE_INLINE, residual != 0);
 	    }
 	  else
@@ -11029,6 +11031,7 @@ allocate_stack_space (rtx size, HOST_WIDE_INT last_probe_offset,
 	      s390_prologue_plus_offset (stack_pointer_rtx, temp_reg,
 					 const0_rtx, true);
 	      temp_reg_clobbered_p = true;
+	      last_probe_offset = INTVAL (offset);
 	      dump_stack_clash_frame_info (PROBE_LOOP, residual != 0);
 	    }
 
