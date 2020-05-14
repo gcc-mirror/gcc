@@ -1,4 +1,4 @@
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 #include <new>
 
@@ -8,5 +8,5 @@ namespace delete_selection_r {
     void operator delete(void*) = delete;
   };
   void delete_B(B *b) { delete b; }  // { dg-bogus "deleted .* deleted" }
-  // { dg-error "deleted" "" { target c++2a } .-1 }
+  // { dg-error "deleted" "" { target c++20 } .-1 }
 }

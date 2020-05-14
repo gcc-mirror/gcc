@@ -3,7 +3,7 @@
 // parameters of class types are in fact treated as the same.  Unlike
 // nontype-class15.C which involves only one-dimensional arrays this
 // test involves arrays of arrays and arrays of structs.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 struct AA3
 {

@@ -91,4 +91,6 @@ extern std::string riscv_arch_str ();
 
 extern bool riscv_hard_regno_rename_ok (unsigned, unsigned);
 
+rtl_opt_pass * make_pass_shorten_memrefs (gcc::context *ctxt);
+
 #endif /* ! GCC_RISCV_PROTOS_H */

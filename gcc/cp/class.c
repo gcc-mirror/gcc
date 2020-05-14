@@ -5332,7 +5332,7 @@ trivial_default_constructor_is_constexpr (tree t)
        struct S { int i; constexpr S() = default; };
 
      should work.  */
-  return (cxx_dialect >= cxx2a
+  return (cxx_dialect >= cxx20
 	  || is_really_empty_class (t, /*ignore_vptr*/true));
 }
 
@@ -5709,7 +5709,7 @@ finalize_literal_type_property (tree t)
     CLASSTYPE_LITERAL_P (t) = false;
   else if (CLASSTYPE_LITERAL_P (t)
 	   && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
-	   && (cxx_dialect < cxx2a || !type_maybe_constexpr_destructor (t)))
+	   && (cxx_dialect < cxx20 || !type_maybe_constexpr_destructor (t)))
     CLASSTYPE_LITERAL_P (t) = false;
   else if (CLASSTYPE_LITERAL_P (t) && LAMBDA_TYPE_P (t))
     CLASSTYPE_LITERAL_P (t) = (cxx_dialect >= cxx17);
@@ -5763,7 +5763,7 @@ explain_non_literal_class (tree t)
     inform (UNKNOWN_LOCATION,
 	    "  %qT is a closure type, which is only literal in "
 	    "C++17 and later", t);
-  else if (cxx_dialect < cxx2a && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
+  else if (cxx_dialect < cxx20 && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
     inform (UNKNOWN_LOCATION, "  %q+T has a non-trivial destructor", t);
   else if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
 	   && !type_maybe_constexpr_destructor (t))
@@ -5911,7 +5911,7 @@ check_bases_and_members (tree t)
      Again, other conditions for being an aggregate are checked
      elsewhere.  */
   CLASSTYPE_NON_AGGREGATE (t)
-    |= ((cxx_dialect < cxx2a
+    |= ((cxx_dialect < cxx20
 	 ? type_has_user_provided_or_explicit_constructor (t)
 	 : TYPE_HAS_USER_CONSTRUCTOR (t))
 	|| TYPE_POLYMORPHIC_P (t));
@@ -7526,7 +7526,7 @@ finish_struct (tree t, tree attributes)
       /* Remember current #pragma pack value.  */
       TYPE_PRECISION (t) = maximum_field_alignment;
 
-      if (cxx_dialect < cxx2a)
+      if (cxx_dialect < cxx20)
 	{
 	  if (!CLASSTYPE_NON_AGGREGATE (t)
 	      && type_has_user_provided_or_explicit_constructor (t))

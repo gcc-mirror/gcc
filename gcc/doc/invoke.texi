@@ -1130,6 +1130,7 @@ See RS/6000 and PowerPC Options.
 -mpreferred-stack-boundary=@var{num} @gol
 -msmall-data-limit=@var{N-bytes} @gol
 -msave-restore  -mno-save-restore @gol
+-mshorten-memrefs  -mno-shorten-memrefs @gol
 -mstrict-align  -mno-strict-align @gol
 -mcmodel=medlow  -mcmodel=medany @gol
 -mexplicit-relocs  -mno-explicit-relocs @gol
@@ -25387,6 +25388,15 @@ Put global and static data smaller than @var{n} bytes into a special section
 Do or don't use smaller but slower prologue and epilogue code that uses
 library function calls.  The default is to use fast inline prologues and
 epilogues.
+
+@item -mshorten-memrefs
+@itemx -mno-shorten-memrefs
+@opindex mshorten-memrefs
+Do or do not attempt to make more use of compressed load/store instructions by
+replacing a load/store of 'base register + large offset' with a new load/store
+of 'new base + small offset'.  If the new base gets stored in a compressed
+register, then the new load/store can be compressed.  Currently targets 32-bit
+integer load/stores only.
 
 @item -mstrict-align
 @itemx -mno-strict-align

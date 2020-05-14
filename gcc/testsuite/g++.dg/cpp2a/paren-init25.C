@@ -1,5 +1,5 @@
 // PR c++/94149 - make __is_constructible work with paren-init of aggrs.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 struct nonaggr {
   nonaggr() {}

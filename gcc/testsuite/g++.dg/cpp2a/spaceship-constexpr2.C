@@ -1,5 +1,5 @@
 // PR c++/93650
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 namespace std {
   using type = enum _Ord { less };

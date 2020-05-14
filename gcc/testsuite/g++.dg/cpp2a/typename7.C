@@ -1,5 +1,5 @@
 // P0634R3
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 // Not in namespace scope.
 template<typename T>

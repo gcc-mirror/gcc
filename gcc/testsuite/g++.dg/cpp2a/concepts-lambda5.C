@@ -1,5 +1,5 @@
 // PR c++/92556
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 // Having this as a hard error is consistent with template argument deduction;
 // it's an open core issue (jason 2020-02-14).

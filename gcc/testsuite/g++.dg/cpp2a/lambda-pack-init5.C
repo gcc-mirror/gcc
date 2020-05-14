@@ -1,5 +1,5 @@
 // PR c++/94483
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template<int... a> constexpr auto x1
   = [...z = -a] (auto F) { return F(z...); };

@@ -1,5 +1,5 @@
 /* nodiscard attribute tests, adapted from gcc.dg/attr-warn-unused-result.c.  */
-/* { dg-do compile { target c++2a } } */
+/* { dg-do compile { target c++20 } } */
 /* { dg-options "-O -ftrack-macro-expansion=0" } */
 
 #define NODIS [[nodiscard("exact_message")]]

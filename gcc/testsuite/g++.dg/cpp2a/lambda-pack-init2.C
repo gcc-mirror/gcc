@@ -1,5 +1,5 @@
 // PR c++/89686
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template <typename... Ts>
 void foo(Ts... xs)

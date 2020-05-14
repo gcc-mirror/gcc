@@ -1,4 +1,4 @@
-// { dg-do run { target c++2a } }
+// { dg-do run { target c++20 } }
 
 #define assert(E) if (!(E)) __builtin_abort();
 

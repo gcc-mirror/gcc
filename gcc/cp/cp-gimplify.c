@@ -1559,6 +1559,10 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       }
       break;
 
+    case OMP_TARGET:
+      cfun->has_omp_target = true;
+      break;
+
     case TRY_BLOCK:
       {
         *walk_subtrees = 0;

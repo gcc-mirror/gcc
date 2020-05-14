@@ -112,7 +112,7 @@ static void set_std_cxx98 (int);
 static void set_std_cxx11 (int);
 static void set_std_cxx14 (int);
 static void set_std_cxx17 (int);
-static void set_std_cxx2a (int);
+static void set_std_cxx20 (int);
 static void set_std_c89 (int, int);
 static void set_std_c99 (int);
 static void set_std_c11 (int);
@@ -649,10 +649,10 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 	set_std_cxx17 (code == OPT_std_c__17 /* ISO */);
       break;
 
-    case OPT_std_c__2a:
-    case OPT_std_gnu__2a:
+    case OPT_std_c__20:
+    case OPT_std_gnu__20:
       if (!preprocessing_asm_p)
-	set_std_cxx2a (code == OPT_std_c__2a /* ISO */);
+	set_std_cxx20 (code == OPT_std_c__20 /* ISO */);
       break;
 
     case OPT_std_c90:
@@ -938,11 +938,11 @@ c_common_post_options (const char **pfilename)
   /* -Wcomma-subscript is enabled by default in C++20.  */
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 		       warn_comma_subscript,
-		       cxx_dialect >= cxx2a && warn_deprecated);
+		       cxx_dialect >= cxx20 && warn_deprecated);
 
   /* -Wvolatile is enabled by default in C++20.  */
   SET_OPTION_IF_UNSET (&global_options, &global_options_set, warn_volatile,
-		       cxx_dialect >= cxx2a && warn_deprecated);
+		       cxx_dialect >= cxx20 && warn_deprecated);
 
   /* Declone C++ 'structors if -Os.  */
   if (flag_declone_ctor_dtor == -1)
@@ -1034,9 +1034,9 @@ c_common_post_options (const char **pfilename)
   if (flag_sized_deallocation == -1)
     flag_sized_deallocation = (cxx_dialect >= cxx14);
 
-  /* char8_t support is new in C++2A.  */
+  /* char8_t support is new in C++20.  */
   if (flag_char8_t == -1)
-    flag_char8_t = (cxx_dialect >= cxx2a);
+    flag_char8_t = (cxx_dialect >= cxx20);
 
   if (flag_extern_tls_init)
     {
@@ -1058,11 +1058,11 @@ c_common_post_options (const char **pfilename)
   if (warn_return_type == -1 && c_dialect_cxx ())
     warn_return_type = 1;
 
-  /* C++2a is the final version of concepts. We still use -fconcepts
+  /* C++20 is the final version of concepts. We still use -fconcepts
      to know when concepts are enabled. Note that -fconcepts-ts can
      be used to include additional features, although modified to
      work with the standard.  */
-  if (cxx_dialect >= cxx2a || flag_concepts_ts)
+  if (cxx_dialect >= cxx20 || flag_concepts_ts)
     flag_concepts = 1;
   else if (flag_concepts)
     /* For -std=c++17 -fconcepts, imply -fconcepts-ts.  */
@@ -1758,9 +1758,9 @@ set_std_cxx17 (int iso)
 
 /* Set the C++ 202a draft standard (without GNU extensions if ISO).  */
 static void
-set_std_cxx2a (int iso)
+set_std_cxx20 (int iso)
 {
-  cpp_set_lang (parse_in, iso ? CLK_CXX2A: CLK_GNUCXX2A);
+  cpp_set_lang (parse_in, iso ? CLK_CXX20: CLK_GNUCXX20);
   flag_no_gnu_keywords = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
@@ -1768,8 +1768,8 @@ set_std_cxx2a (int iso)
   flag_isoc94 = 1;
   flag_isoc99 = 1;
   flag_isoc11 = 1;
-  /* C++2a includes concepts. */
-  cxx_dialect = cxx2a;
+  /* C++20 includes concepts. */
+  cxx_dialect = cxx20;
   lang_hooks.name = "GNU C++17"; /* Pretend C++17 until standardization.  */
 }
 

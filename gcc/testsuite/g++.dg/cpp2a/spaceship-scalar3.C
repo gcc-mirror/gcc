@@ -1,4 +1,4 @@
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // { dg-options "-fext-numeric-literals" }
 
 int main()

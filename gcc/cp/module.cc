@@ -8040,7 +8040,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 
     case CONST_DECL:
       {
-	/* If I end up cloning enum decls, implementing C++2a using
+	/* If I end up cloning enum decls, implementing C++20 using
 	   E::v, this will need tweaking.   */
 	if (streaming_p ())
 	  i (tt_enum_decl);
@@ -10071,7 +10071,7 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 
 	      if (tree reqs = get_constraints (inner))
 		{
-		  if (cxx_dialect < cxx2a)
+		  if (cxx_dialect < cxx20)
 		    reqs = CI_ASSOCIATED_CONSTRAINTS (reqs);
 		  else
 		    reqs = CI_DECLARATOR_REQS (reqs);
@@ -10270,7 +10270,7 @@ check_mergeable_decl (merge_kind mk, tree decl, tree ovl, merge_key const &key)
 		tree m_reqs = get_constraints (m_inner);
 		if (m_reqs)
 		  {
-		    if (cxx_dialect < cxx2a)
+		    if (cxx_dialect < cxx20)
 		      m_reqs = CI_ASSOCIATED_CONSTRAINTS (m_reqs);
 		    else
 		      m_reqs = CI_DECLARATOR_REQS (m_reqs);
@@ -13910,7 +13910,7 @@ module_state_config::get_dialect ()
 		      flag_rtti ? "" : "/no-rtti",
 		      flag_new_inheriting_ctors ? "" : "/old-inheriting-ctors",
 		      /* C++ 20 implies concepts.  */
-		      cxx_dialect < cxx2a && flag_concepts ? "/concepts" : "",
+		      cxx_dialect < cxx20 && flag_concepts ? "/concepts" : "",
 		      flag_coroutines ? "/coroutines" : "",
 		      NULL);
 

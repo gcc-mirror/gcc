@@ -1372,7 +1372,7 @@ maybe_va_opt_error (cpp_reader *pfile)
 	 system headers.  */
       if (!cpp_in_system_header (pfile))
 	cpp_error (pfile, CPP_DL_PEDWARN,
-		   "__VA_OPT__ is not available until C++2a");
+		   "__VA_OPT__ is not available until C++20");
     }
   else if (!pfile->state.va_args_ok)
     {
@@ -1380,7 +1380,7 @@ maybe_va_opt_error (cpp_reader *pfile)
 	 variadic macro.  */
       cpp_error (pfile, CPP_DL_PEDWARN,
 		 "__VA_OPT__ can only appear in the expansion"
-		 " of a C++2a variadic macro");
+		 " of a C++20 variadic macro");
     }
 }
 
@@ -3156,7 +3156,7 @@ _cpp_lex_direct (cpp_reader *pfile)
 	  buffer->cur++, result->type = CPP_LESS_EQ;
 	  if (*buffer->cur == '>'
 	      && CPP_OPTION (pfile, cplusplus)
-	      && CPP_OPTION (pfile, lang) >= CLK_GNUCXX2A)
+	      && CPP_OPTION (pfile, lang) >= CLK_GNUCXX20)
 	    buffer->cur++, result->type = CPP_SPACESHIP;
 	}
       else if (*buffer->cur == '<')

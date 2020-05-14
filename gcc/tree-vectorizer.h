@@ -99,6 +99,7 @@ struct stmt_info_for_cost {
   enum vect_cost_for_stmt kind;
   enum vect_cost_model_location where;
   stmt_vec_info stmt_info;
+  tree vectype;
   int misalign;
 };
 
@@ -119,13 +120,16 @@ typedef struct _slp_tree *slp_tree;
 struct _slp_tree {
   /* Nodes that contain def-stmts of this node statements operands.  */
   vec<slp_tree> children;
+
   /* A group of scalar stmts to be vectorized together.  */
   vec<stmt_vec_info> stmts;
   /* A group of scalar operands to be vectorized together.  */
   vec<tree> ops;
+
   /* Load permutation relative to the stores, NULL if there is no
      permutation.  */
   vec<unsigned> load_permutation;
+
   /* Vectorized stmt/s.  */
   vec<stmt_vec_info> vec_stmts;
   /* Number of vector stmts that are created to replace the group of scalar
@@ -133,6 +137,7 @@ struct _slp_tree {
      scalar elements in one scalar iteration (GROUP_SIZE) multiplied by VF
      divided by vector size.  */
   unsigned int vec_stmts_size;
+
   /* Reference count in the SLP graph.  */
   unsigned int refcnt;
   /* The maximum number of vector elements for the subtree rooted
@@ -156,9 +161,6 @@ public:
      from, NULL otherwise.  */
   stmt_vec_info root_stmt;
 
-  /* Size of groups of scalar stmts that will be replaced by SIMD stmt/s.  */
-  unsigned int group_size;
-
   /* The unrolling factor required to vectorized this SLP instance.  */
   poly_uint64 unrolling_factor;
 
@@ -172,7 +174,6 @@ public:
 
 /* Access Functions.  */
 #define SLP_INSTANCE_TREE(S)                     (S)->root
-#define SLP_INSTANCE_GROUP_SIZE(S)               (S)->group_size
 #define SLP_INSTANCE_UNROLLING_FACTOR(S)         (S)->unrolling_factor
 #define SLP_INSTANCE_LOADS(S)                    (S)->loads
 #define SLP_INSTANCE_ROOT_STMT(S)                (S)->root_stmt
@@ -1355,7 +1356,7 @@ init_cost (class loop *loop_info)
 }
 
 extern void dump_stmt_cost (FILE *, void *, int, enum vect_cost_for_stmt,
-			    stmt_vec_info, int, unsigned,
+			    stmt_vec_info, tree, int, unsigned,
 			    enum vect_cost_model_location);
 
 /* Alias targetm.vectorize.add_stmt_cost.  */
@@ -1363,13 +1364,14 @@ extern void dump_stmt_cost (FILE *, void *, int, enum vect_cost_for_stmt,
 static inline unsigned
 add_stmt_cost (vec_info *vinfo, void *data, int count,
 	       enum vect_cost_for_stmt kind,
-	       stmt_vec_info stmt_info, int misalign,
+	       stmt_vec_info stmt_info, tree vectype, int misalign,
 	       enum vect_cost_model_location where)
 {
   unsigned cost = targetm.vectorize.add_stmt_cost (vinfo, data, count, kind,
-						   stmt_info, misalign, where);
+						   stmt_info, vectype,
+						   misalign, where);
   if (dump_file && (dump_flags & TDF_DETAILS))
-    dump_stmt_cost (dump_file, data, count, kind, stmt_info, misalign,
+    dump_stmt_cost (dump_file, data, count, kind, stmt_info, vectype, misalign,
 		    cost, where);
   return cost;
 }
@@ -1398,7 +1400,7 @@ add_stmt_costs (vec_info *vinfo, void *data, stmt_vector_for_cost *cost_vec)
   unsigned i;
   FOR_EACH_VEC_ELT (*cost_vec, i, cost)
     add_stmt_cost (vinfo, data, cost->count, cost->kind, cost->stmt_info,
-		   cost->misalign, cost->where);
+		   cost->vectype, cost->misalign, cost->where);
 }
 
 /*-----------------------------------------------------------------*/
@@ -1699,9 +1701,22 @@ extern bool supportable_widening_operation (vec_info *,
 extern bool supportable_narrowing_operation (enum tree_code, tree, tree,
 					     enum tree_code *, int *,
 					     vec<tree> *);
+
 extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
 				  enum vect_cost_for_stmt, stmt_vec_info,
-				  int, enum vect_cost_model_location);
+				  tree, int, enum vect_cost_model_location);
+
+/* Overload of record_stmt_cost with VECTYPE derived from STMT_INFO.  */
+
+static inline unsigned
+record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
+		  enum vect_cost_for_stmt kind, stmt_vec_info stmt_info,
+		  int misalign, enum vect_cost_model_location where)
+{
+  return record_stmt_cost (body_cost_vec, count, kind, stmt_info,
+			   STMT_VINFO_VECTYPE (stmt_info), misalign, where);
+}
+
 extern stmt_vec_info vect_finish_replace_stmt (vec_info *,
 					       stmt_vec_info, gimple *);
 extern stmt_vec_info vect_finish_stmt_generation (vec_info *,

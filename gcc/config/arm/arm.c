@@ -309,7 +309,7 @@ static int arm_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 static unsigned arm_add_stmt_cost (vec_info *vinfo, void *data, int count,
 				   enum vect_cost_for_stmt kind,
 				   struct _stmt_vec_info *stmt_info,
-				   int misalign,
+				   tree vectype, int misalign,
 				   enum vect_cost_model_location where);
 
 static void arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
@@ -12133,15 +12133,14 @@ arm_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 static unsigned
 arm_add_stmt_cost (vec_info *vinfo, void *data, int count,
 		   enum vect_cost_for_stmt kind,
-		   struct _stmt_vec_info *stmt_info, int misalign,
-		   enum vect_cost_model_location where)
+		   struct _stmt_vec_info *stmt_info, tree vectype,
+		   int misalign, enum vect_cost_model_location where)
 {
   unsigned *cost = (unsigned *) data;
   unsigned retval = 0;
 
   if (flag_vect_cost_model)
     {
-      tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
       int stmt_cost = arm_builtin_vectorization_cost (kind, vectype, misalign);
 
       /* Statements in an inner loop relative to the loop being

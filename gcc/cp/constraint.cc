@@ -1473,7 +1473,7 @@ finish_shorthand_constraint (tree decl, tree constr)
      The standard behavior cannot be overridden by -fconcepts-ts.  */
   bool variadic_concept_p = template_parameter_pack_p (proto);
   bool declared_pack_p = template_parameter_pack_p (decl);
-  bool apply_to_each_p = (cxx_dialect >= cxx2a) ? true : !variadic_concept_p;
+  bool apply_to_each_p = (cxx_dialect >= cxx20) ? true : !variadic_concept_p;
 
   /* Get the argument and overload used for the requirement
      and adjust it if we're going to expand later.  */
@@ -2173,9 +2173,7 @@ tsubst_requires_expr (tree t, tree args,
   if (reqs == error_mark_node)
     return boolean_false_node;
 
-  /* In certain cases, produce a new requires-expression.
-     Otherwise the value of the expression is true.  */
-  if (processing_template_decl && uses_template_parms (args))
+  if (processing_template_decl)
     return finish_requires_expr (cp_expr_location (t), parms, reqs);
 
   return boolean_true_node;

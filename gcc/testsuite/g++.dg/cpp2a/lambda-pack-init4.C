@@ -1,5 +1,5 @@
 // P2095R0
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // { dg-options "" }
 
 template <class... T>

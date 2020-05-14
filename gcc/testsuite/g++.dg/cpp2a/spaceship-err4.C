@@ -1,5 +1,5 @@
 // PR c++/94478 - ICE with defaulted comparison operator.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 struct B {};
 bool operator!=(const B&, const B&) = default; // { dg-error "equality comparison operator can only be defaulted in a class definition" }

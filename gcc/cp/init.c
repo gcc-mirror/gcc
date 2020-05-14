@@ -812,7 +812,7 @@ perform_member_init (tree member, tree init)
   if (init && TREE_CODE (init) == TREE_LIST
       && (DIRECT_LIST_INIT_P (TREE_VALUE (init))
 	  /* FIXME C++20 parenthesized aggregate init (PR 92812).  */
-	  || !(/* cxx_dialect >= cxx2a ? CP_AGGREGATE_TYPE_P (type) */
+	  || !(/* cxx_dialect >= cxx20 ? CP_AGGREGATE_TYPE_P (type) */
 	       /* :  */CLASS_TYPE_P (type))))
     init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
 					    tf_warning_or_error);
@@ -2909,7 +2909,7 @@ build_new_constexpr_heap_type (tree elt_type, tree cookie_size, tree full_size)
 static tree
 maybe_wrap_new_for_constexpr (tree alloc_call, tree elt_type, tree cookie_size)
 {
-  if (cxx_dialect < cxx2a)
+  if (cxx_dialect < cxx20)
     return alloc_call;
 
   if (current_function_decl != NULL_TREE
@@ -3611,7 +3611,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 		 means allocate an int, and initialize it with 10.
 
 		 In C++20, also handle `new A(1, 2)'.  */
-	      if (cxx_dialect >= cxx2a
+	      if (cxx_dialect >= cxx20
 		  && AGGREGATE_TYPE_P (type)
 		  && (*init)->length () > 1)
 		{
@@ -4076,7 +4076,9 @@ build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
     }
 
   body = loop;
-  if (!deallocate_expr)
+  if (deallocate_expr == error_mark_node)
+    return error_mark_node;
+  else if (!deallocate_expr)
     ;
   else if (!body)
     body = deallocate_expr;
@@ -4993,7 +4995,9 @@ build_delete (location_t loc, tree otype, tree addr,
       return expr;
     }
 
-  if (do_delete)
+  if (do_delete == error_mark_node)
+    return error_mark_node;
+  else if (do_delete)
     {
       tree do_delete_call_expr = extract_call_expr (do_delete);
       if (TREE_CODE (do_delete_call_expr) == CALL_EXPR)

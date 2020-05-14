@@ -12506,6 +12506,8 @@ print_reg (rtx x, int code, FILE *file)
    ^ -- print addr32 prefix if TARGET_64BIT and Pmode != word_mode
    M -- print addr32 prefix for TARGET_X32 with VSIB address.
    ! -- print NOTRACK prefix for jxx/call/ret instructions if required.
+   N -- print maskz if it's constant 0 operand.
+   I -- print comparision predicate operand for sse cmp condition.
  */
 
 void
@@ -21884,15 +21886,14 @@ ix86_init_cost (class loop *)
 static unsigned
 ix86_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 		    enum vect_cost_for_stmt kind,
-		    class _stmt_vec_info *stmt_info, int misalign,
+		    class _stmt_vec_info *stmt_info, tree vectype,
+		    int misalign,
 		    enum vect_cost_model_location where)
 {
   unsigned *cost = (unsigned *) data;
   unsigned retval = 0;
   bool scalar_p
     = (kind == scalar_stmt || kind == scalar_load || kind == scalar_store);
-
-  tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
   int stmt_cost = - 1;
 
   bool fp = false;

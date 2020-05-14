@@ -1,4 +1,4 @@
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template <int N> void foo(const char (*s)[([]{}, N)]) {}
 template <class T> void spam(decltype([]{}) (*s)[sizeof(T)]) {}

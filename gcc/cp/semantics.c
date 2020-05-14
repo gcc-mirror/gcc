@@ -131,7 +131,6 @@ struct GTY(()) deferred_access {
 
   /* The current mode of access checks.  */
   enum deferring_kind deferring_access_checks_kind;
-
 };
 
 /* Data for deferred access checking.  */

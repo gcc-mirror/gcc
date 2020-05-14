@@ -1,5 +1,5 @@
 // PR c++/94521
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template <typename T>
 void spam(decltype([]{}) *s)

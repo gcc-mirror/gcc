@@ -10431,6 +10431,15 @@ for the @samp{att} and @samp{intel} dialects of assembler:
 @item @code{%3}
 @tab @code{$.L3}
 @tab @code{OFFSET FLAT:.L3}
+@item @code{%4}
+@tab @code{$8}
+@tab @code{8}
+@item @code{%5}
+@tab @code{%xmm0}
+@tab @code{xmm0}
+@item @code{%7}
+@tab @code{$0}
+@tab @code{0}
 @end multitable
 
 The table below shows the list of supported modifiers and their effects.
@@ -10447,17 +10456,32 @@ The table below shows the list of supported modifiers and their effects.
 @tab @code{%b0}
 @tab @code{%al}
 @tab @code{al}
+@item @code{B}
+@tab print the opcode suffix of b.
+@tab @code{%B0}
+@tab @code{b}
+@tab
 @item @code{c}
 @tab Require a constant operand and print the constant expression with no punctuation.
 @tab @code{%c1}
 @tab @code{2}
 @tab @code{2}
+@item @code{d}
+@tab print duplicated register operand for AVX instruction.
+@tab @code{%d5}
+@tab @code{%xmm0, %xmm0}
+@tab @code{xmm0, xmm0}
 @item @code{E}
 @tab Print the address in Double Integer (DImode) mode (8 bytes) when the target is 64-bit.
 Otherwise mode is unspecified (VOIDmode).
 @tab @code{%E1}
 @tab @code{%(rax)}
 @tab @code{[rax]}
+@item @code{g}
+@tab Print the V16SFmode name of the register.
+@tab @code{%g0}
+@tab @code{%zmm0}
+@tab @code{zmm0}
 @item @code{h}
 @tab Print the QImode name for a ``high'' register.
 @tab @code{%h0}
@@ -10479,6 +10503,16 @@ high 8 bytes of SSE values. For a memref in (%rax), it generates
 @tab @code{%l3}
 @tab @code{.L3}
 @tab @code{.L3}
+@item @code{L}
+@tab print the opcode suffix of l.
+@tab @code{%L0}
+@tab @code{l}
+@tab
+@item @code{N}
+@tab print maskz.
+@tab @code{%N7}
+@tab @code{@{z@}}
+@tab @code{@{z@}}
 @item @code{p}
 @tab Print raw symbol name (without syntax-specific prefixes).
 @tab @code{%p2}
@@ -10494,20 +10528,76 @@ issue the bare constant. See @code{p} above.
 @tab @code{%q0}
 @tab @code{%rax}
 @tab @code{rax}
+@item @code{Q}
+@tab print the opcode suffix of q.
+@tab @code{%Q0}
+@tab @code{q}
+@tab
+@item @code{R}
+@tab print embedded rounding and sae.
+@tab @code{%R4}
+@tab @code{@{rn-sae@}, }
+@tab @code{, @{rn-sae@}}
+@item @code{r}
+@tab print only sae.
+@tab @code{%r4}
+@tab @code{@{sae@}, }
+@tab @code{, @{sae@}}
+@item @code{s}
+@tab print a shift double count, followed by the assemblers argument
+delimiterprint the opcode suffix of s.
+@tab @code{%s1}
+@tab @code{$2, }
+@tab @code{2, }
+@item @code{S}
+@tab print the opcode suffix of s.
+@tab @code{%S0}
+@tab @code{s}
+@tab
+@item @code{t}
+@tab print the V8SFmode name of the register.
+@tab @code{%t5}
+@tab @code{%ymm0}
+@tab @code{ymm0}
+@item @code{T}
+@tab print the opcode suffix of t.
+@tab @code{%T0}
+@tab @code{t}
+@tab
+@item @code{V}
+@tab print naked full integer register name without %.
+@tab @code{%V0}
+@tab @code{eax}
+@tab @code{eax}
 @item @code{w}
 @tab Print the HImode name of the register.
 @tab @code{%w0}
 @tab @code{%ax}
 @tab @code{ax}
+@item @code{W}
+@tab print the opcode suffix of w.
+@tab @code{%W0}
+@tab @code{w}
+@tab
+@item @code{x}
+@tab print the V4SFmode name of the register.
+@tab @code{%x5}
+@tab @code{%xmm0}
+@tab @code{xmm0}
+@item @code{y}
+@tab print "st(0)" instead of "st" as a register.
+@tab @code{%y6}
+@tab @code{%st(0)}
+@tab @code{st(0)}
 @item @code{z}
 @tab Print the opcode suffix for the size of the current integer operand (one of @code{b}/@code{w}/@code{l}/@code{q}).
 @tab @code{%z0}
 @tab @code{l}
 @tab 
+@item @code{Z}
+@tab Like @code{z}, with special suffixes for x87 instructions.
 @end multitable
 
-@code{V} is a special modifier which prints the name of the full integer
-register without @code{%}.
 
 @anchor{x86floatingpointasmoperands}
 @subsubsection x86 Floating-Point @code{asm} Operands
@@ -20808,6 +20898,62 @@ Perform a 128-bit vector gather  operation, as if implemented by the Future
 @code{vgnb} instruction.  The second argument must be a literal
 integer value between 2 and 7 inclusive.
 @findex vec_gnb
+
+@smallexample
+@exdent vector unsigned long long int
+@exdent vec_extractl (vector unsigned char, vector unsigned char, unsigned int)
+@exdent vector unsigned long long int
+@exdent vec_extractl (vector unsigned short, vector unsigned short, unsigned int)
+@exdent vector unsigned long long int
+@exdent vec_extractl (vector unsigned int, vector unsigned int, unsigned int)
+@exdent vector unsigned long long int
+@exdent vec_extractl (vector unsigned long long, vector unsigned long long, unsigned int)
+@end smallexample
+Extract a single element from the vector formed by catenating this function's
+first two arguments at the byte offset specified by this function's
+third argument.  On big-endian targets, this function behaves as if
+implemented by the Future @code{vextdubvlx}, @code{vextduhvlx},
+@code{vextduwvlx}, or @code{vextddvlx} instructions, depending on the
+types of the function's first two arguments.  On little-endian
+targets, this function behaves as if implemented by the Future
+@code{vextdubvrx}, @code{vextduhvrx},
+@code{vextduwvrx}, or @code{vextddvrx} instructions.
+The byte offset of the element to be extracted is calculated
+by computing the remainder of dividing the third argument by 32.
+If this reminader value is not a multiple of the vector element size,
+or if its value added to the vector element size exceeds 32, the
+result is undefined.
+@findex vec_extractl
+
+@smallexample
+@exdent vector unsigned long long int
+@exdent vec_extractr (vector unsigned char, vector unsigned char, unsigned int)
+@exdent vector unsigned long long int
+@exdent vec_extractr (vector unsigned short, vector unsigned short, unsigned int)
+@exdent vector unsigned long long int
+@exdent vec_extractr (vector unsigned int, vector unsigned int, unsigned int)
+@exdent vector unsigned long long int
+@exdent vec_extractr (vector unsigned long long, vector unsigned long long, unsigned int)
+@end smallexample
+Extract a single element from the vector formed by catenating this function's
+first two arguments at the byte offset calculated by subtracting this
+function's third argument from 31.  On big-endian targets, this
+function behaves as if
+implemented by the Future
+@code{vextdubvrx}, @code{vextduhvrx},
+@code{vextduwvrx}, or @code{vextddvrx} instructions, depending on the
+types of the function's first two arguments.
+On little-endian
+targets, this function behaves as if implemented by the Future
+@code{vextdubvlx}, @code{vextduhvlx},
+@code{vextduwvlx}, or @code{vextddvlx} instructions.
+The byte offset of the element to be extracted, measured from the
+right end of the catenation of the two vector arguments, is calculated
+by computing the remainder of dividing the third argument by 32.
+If this reminader value is not a multiple of the vector element size,
+or if its value added to the vector element size exceeds 32, the
+result is undefined.
+@findex vec_extractr
 
 @smallexample
 @exdent vector unsigned long long int

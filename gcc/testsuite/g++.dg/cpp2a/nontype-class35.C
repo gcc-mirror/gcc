@@ -1,5 +1,5 @@
 // PR c++/94592 - ICE with { } as template argument.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 struct A {
     int i;

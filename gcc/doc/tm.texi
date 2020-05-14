@@ -6094,7 +6094,7 @@ all zeros.  GCC can then try to branch around the instruction instead.
 This hook should initialize target-specific data structures in preparation for modeling the costs of vectorizing a loop or basic block.  The default allocates three unsigned integers for accumulating costs for the prologue, body, and epilogue of the loop or basic block.  If @var{loop_info} is non-NULL, it identifies the loop being vectorized; otherwise a single block is being vectorized.
 @end deftypefn
 
-@deftypefn {Target Hook} unsigned TARGET_VECTORIZE_ADD_STMT_COST (class vec_info *@var{}, void *@var{data}, int @var{count}, enum vect_cost_for_stmt @var{kind}, class _stmt_vec_info *@var{stmt_info}, int @var{misalign}, enum vect_cost_model_location @var{where})
+@deftypefn {Target Hook} unsigned TARGET_VECTORIZE_ADD_STMT_COST (class vec_info *@var{}, void *@var{data}, int @var{count}, enum vect_cost_for_stmt @var{kind}, class _stmt_vec_info *@var{stmt_info}, tree @var{vectype}, int @var{misalign}, enum vect_cost_model_location @var{where})
 This hook should update the target-specific @var{data} in response to adding @var{count} copies of the given @var{kind} of statement to a loop or basic block.  The default adds the builtin vectorizer cost for the copies of the statement to the accumulator specified by @var{where}, (the prologue, body, or epilogue) and returns the amount added.  The return value should be viewed as a tentative cost that may later be revised.
 @end deftypefn
 
@@ -6965,6 +6965,13 @@ and uses a multiple of @code{BRANCH_COST} otherwise.
 This hook returns true if the instruction sequence @code{seq} is a good
 candidate as a replacement for the if-convertible sequence described in
 @code{if_info}.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_NEW_ADDRESS_PROFITABLE_P (rtx @var{memref}, rtx_insn * @var{insn}, rtx @var{new_addr})
+Return @code{true} if it is profitable to replace the address in
+@var{memref} with @var{new_addr}.  This allows targets to prevent the
+scheduler from undoing address optimizations.  The instruction containing the
+memref is @var{insn}.  The default implementation returns @code{true}.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P (void)

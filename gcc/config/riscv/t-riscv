@@ -19,3 +19,8 @@ riscv-d.o: $(srcdir)/config/riscv/riscv-d.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
+riscv-shorten-memrefs.o: $(srcdir)/config/riscv/riscv-shorten-memrefs.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+PASSES_EXTRA += $(srcdir)/config/riscv/riscv-passes.def

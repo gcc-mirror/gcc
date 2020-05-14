@@ -1,5 +1,5 @@
 // Testcase from [expr.prim.id]/5
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template<typename T> struct A {
   static void f(int) requires false;

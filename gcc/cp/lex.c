@@ -230,7 +230,7 @@ init_reswords (void)
 
   if (cxx_dialect < cxx11)
     mask |= D_CXX11;
-  if (cxx_dialect < cxx2a)
+  if (cxx_dialect < cxx20)
     mask |= D_CXX20;
   if (!flag_concepts)
     mask |= D_CXX_CONCEPTS;

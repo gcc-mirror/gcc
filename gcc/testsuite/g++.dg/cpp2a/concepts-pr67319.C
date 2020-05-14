@@ -1,5 +1,5 @@
 // PR c++/67319
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // { dg-additional-options "-fconcepts-ts" }
 
 template <typename T>

@@ -1,5 +1,5 @@
 // Testcase from P1816R0
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template <typename T>
 struct S {

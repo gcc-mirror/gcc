@@ -13753,15 +13753,14 @@ aarch64_sve_adjust_stmt_cost (class vec_info *vinfo, vect_cost_for_stmt kind,
 static unsigned
 aarch64_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 		       enum vect_cost_for_stmt kind,
-		       struct _stmt_vec_info *stmt_info, int misalign,
-		       enum vect_cost_model_location where)
+		       struct _stmt_vec_info *stmt_info, tree vectype,
+		       int misalign, enum vect_cost_model_location where)
 {
   unsigned *cost = (unsigned *) data;
   unsigned retval = 0;
 
   if (flag_vect_cost_model)
     {
-      tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
       int stmt_cost =
 	    aarch64_builtin_vectorization_cost (kind, vectype, misalign);
 

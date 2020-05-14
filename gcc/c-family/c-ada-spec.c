@@ -3416,9 +3416,12 @@ dump_ads (const char *source_file,
       cpp_check = check;
       dump_ada_nodes (&pp, source_file);
 
-      /* We require Ada 2012 syntax, so generate corresponding pragma.
-         Also, disable style checks since this file is auto-generated.  */
-      fprintf (f, "pragma Ada_2012;\npragma Style_Checks (Off);\n\n");
+      /* We require Ada 2012 syntax, so generate corresponding pragma.  */
+      fputs ("pragma Ada_2012;\n", f);
+
+      /* Disable style checks and warnings on unused entities since this file
+	 is auto-generated and always has a with clause for Interfaces.C.  */
+      fputs ("pragma Style_Checks (Off);\npragma Warnings (\"U\");\n\n", f);
 
       /* Dump withs.  */
       dump_ada_withs (f);

@@ -2031,7 +2031,7 @@ DEFHOOK
  "revised.",
  unsigned,
  (class vec_info *, void *data, int count, enum vect_cost_for_stmt kind,
-  class _stmt_vec_info *stmt_info, int misalign,
+  class _stmt_vec_info *stmt_info, tree vectype, int misalign,
   enum vect_cost_model_location where),
  default_add_stmt_cost)
 
@@ -3846,6 +3846,17 @@ candidate as a replacement for the if-convertible sequence described in\n\
 @code{if_info}.",
 bool, (rtx_insn *seq, struct noce_if_info *if_info),
 default_noce_conversion_profitable_p)
+
+/* Return true if new_addr should be preferred over the existing address used by
+   memref in insn.  */
+DEFHOOK
+(new_address_profitable_p,
+ "Return @code{true} if it is profitable to replace the address in\n\
+@var{memref} with @var{new_addr}.  This allows targets to prevent the\n\
+scheduler from undoing address optimizations.  The instruction containing the\n\
+memref is @var{insn}.  The default implementation returns @code{true}.",
+bool, (rtx memref, rtx_insn * insn, rtx new_addr),
+default_new_address_profitable_p)
 
 DEFHOOK
 (estimated_poly_value,

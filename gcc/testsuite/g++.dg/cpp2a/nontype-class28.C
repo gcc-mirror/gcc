@@ -1,5 +1,5 @@
 // PR c++/92948 - Fix class NTTP with template arguments.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 struct A {
   constexpr A(int) { }

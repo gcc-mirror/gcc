@@ -1,5 +1,5 @@
 // P0634R3
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 // (5.2.1) simple-declaration or a function-definition in namespace scope
 

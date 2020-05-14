@@ -1,5 +1,5 @@
 // PR c++/91391 - bogus -Wcomma-subscript warning.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template<typename T, typename U>
 int foo(T t, U u) { return t + u; }

@@ -691,7 +691,7 @@ build_cplus_new (tree type, tree init, tsubst_flags_t complain)
      it can produce a { }.  */
   if (BRACE_ENCLOSED_INITIALIZER_P (init))
     {
-      gcc_assert (cxx_dialect >= cxx2a);
+      gcc_assert (cxx_dialect >= cxx20);
       return finish_compound_literal (type, init, complain);
     }
 
@@ -4686,7 +4686,7 @@ handle_nodiscard_attribute (tree *node, tree name, tree args,
   return NULL_TREE;
 }
 
-/* Handle a C++2a "no_unique_address" attribute; arguments as in
+/* Handle a C++20 "no_unique_address" attribute; arguments as in
    struct attribute_spec.handler.  */
 static tree
 handle_no_unique_addr_attribute (tree* node,
