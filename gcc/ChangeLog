@@ -1,3 +1,13 @@
+2020-05-14  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.md ("allocate_stack"): Call
+	anti_adjust_stack_and_probe_stack_clash when stack clash
+	protection is enabled.
+	* explow.c (anti_adjust_stack_and_probe_stack_clash): Remove
+	prototype. Remove static.
+	* explow.h (anti_adjust_stack_and_probe_stack_clash): Add
+	prototype.
+
 2020-05-13  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/altivec.h (vec_extractl): New #define.
