@@ -1,5 +1,12 @@
 2020-05-14  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	* config/s390/s390.c (s390_emit_stack_probe): Call the probe_stack
+	expander.
+	* config/s390/s390.md ("@probe_stack2<mode>", "probe_stack"): New
+	expanders.
+
+2020-05-14  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	* config/s390/s390.c (allocate_stack_space): Add missing updates
 	of last_probe_offset.
 
