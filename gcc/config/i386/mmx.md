@@ -777,14 +777,63 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_insn "mmx_pf2id"
-  [(set (match_operand:V2SI 0 "register_operand" "=y")
-	(fix:V2SI (match_operand:V2SF 1 "nonimmediate_operand" "ym")))]
-  "TARGET_3DNOW"
-  "pf2id\t{%1, %0|%0, %1}"
-  [(set_attr "type" "mmxcvt")
+(define_insn "mmx_fix_truncv2sfv2si2"
+  [(set (match_operand:V2SI 0 "register_operand" "=y,Yv")
+	(fix:V2SI (match_operand:V2SF 1 "register_mmxmem_operand" "ym,Yv")))]
+  "TARGET_3DNOW || TARGET_MMX_WITH_SSE"
+  "@
+   pf2id\t{%1, %0|%0, %1}
+   %vcvttps2dq\t{%1, %0|%0, %1}"
+  [(set_attr "isa" "*,sse2")
+   (set_attr "mmx_isa" "native,*")
+   (set_attr "type" "mmxcvt,ssecvt")
+   (set_attr "prefix_extra" "1,*")
+   (set_attr "prefix_rep" "*,1")
+   (set_attr "prefix_data16" "*,0")
+   (set_attr "prefix" "*,maybe_vex")
+   (set_attr "mode" "V2SF,TI")])
+
+(define_expand "fix_truncv2sfv2si2"
+  [(set (match_operand:V2SI 0 "register_operand")
+	(fix:V2SI (match_operand:V2SF 1 "register_operand")))]
+  "TARGET_MMX_WITH_SSE")
+
+(define_insn "fixuns_truncv2sfv2si2"
+  [(set (match_operand:V2SI 0 "register_operand" "=v")
+	(unsigned_fix:V2SI (match_operand:V2SF 1 "register_operand" "v")))]
+  "TARGET_MMX_WITH_SSE && TARGET_AVX512VL"
+  "vcvttps2udq\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "mmx_floatv2siv2sf2"
+  [(set (match_operand:V2SF 0 "register_operand" "=y,Yv")
+	(float:V2SF (match_operand:V2SI 1 "register_mmxmem_operand" "ym,Yv")))]
+  "TARGET_3DNOW || TARGET_MMX_WITH_SSE"
+  "@
+   pi2fd\t{%1, %0|%0, %1}
+   %vcvtdq2ps\t{%1, %0|%0, %1}"
+  [(set_attr "isa" "*,sse2")
+   (set_attr "mmx_isa" "native,*")
+   (set_attr "type" "mmxcvt,ssecvt")
    (set_attr "prefix_extra" "1")
-   (set_attr "mode" "V2SF")])
+   (set_attr "prefix" "*,maybe_vex")
+   (set_attr "mode" "V2SF,V4SF")])
+
+(define_expand "floatv2siv2sf2"
+  [(set (match_operand:V2SF 0 "register_operand")
+	(float:V2SF (match_operand:V2SI 1 "register_operand")))]
+  "TARGET_MMX_WITH_SSE")
+
+(define_insn "floatunsv2siv2sf2"
+  [(set (match_operand:V2SF 0 "register_operand" "=v")
+	(unsigned_float:V2SF (match_operand:V2SI 1 "register_operand" "v")))]
+  "TARGET_MMX_WITH_SSE && TARGET_AVX512VL"
+  "vcvtudq2ps\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "V4SF")])
 
 (define_insn "mmx_pf2iw"
   [(set (match_operand:V2SI 0 "register_operand" "=y")
@@ -806,15 +855,6 @@
 	      (match_operand:V2SI 1 "nonimmediate_operand" "ym")))))]
   "TARGET_3DNOW_A"
   "pi2fw\t{%1, %0|%0, %1}"
-  [(set_attr "type" "mmxcvt")
-   (set_attr "prefix_extra" "1")
-   (set_attr "mode" "V2SF")])
-
-(define_insn "mmx_floatv2si2"
-  [(set (match_operand:V2SF 0 "register_operand" "=y")
-	(float:V2SF (match_operand:V2SI 1 "nonimmediate_operand" "ym")))]
-  "TARGET_3DNOW"
-  "pi2fd\t{%1, %0|%0, %1}"
   [(set_attr "type" "mmxcvt")
    (set_attr "prefix_extra" "1")
    (set_attr "mode" "V2SF")])

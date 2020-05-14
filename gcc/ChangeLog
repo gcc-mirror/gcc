@@ -1,3 +1,24 @@
+2020-05-14  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* config/i386/mmx.md (mmx_fix_truncv2sfv2si2): rename from mmx_pf2id.
+	Add SSE/AVX alternative.  Change operand predicates from
+	nonimmediate_operand to register_mmxmem_operand.
+	Enable instruction pattern for TARGET_MMX_WITH_SSE.
+	(fix_truncv2sfv2si2): New expander.
+	(fixuns_truncv2sfv2si2): Ditto.
+
+	(mmx_floatv2siv2sf2): rename from mmx_floatv2si2.
+	Add SSE/AVX alternative.  Change operand predicates from
+	nonimmediate_operand to register_mmxmem_operand.
+	Enable instruction pattern for TARGET_MMX_WITH_SSE.
+	(floatv2siv2sf2): New expander.
+	(floatunsv2siv2sf2): Ditto.
+
+	* config/i386/i386-builtin.def (IX86_BUILTIN_PF2ID):
+	Update for rename.
+	(IX86_BUILTIN_PI2FD): Ditto.
+
 2020-05-14  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/s390/s390.c (s390_emit_stack_probe): Call the probe_stack
@@ -123,10 +144,9 @@
 2020-05-13  Hongtao Liu  <hongtao.liu@intel.com>
 
 	PR target/94118
-	 * doc/extend.texi (x86Operandmodifiers): Document more x86
-	 operand modifier.
-	 * gcc/config/i386/i386.c: Add comment for operand modifier N
-	 and I.
+	* doc/extend.texi (x86Operandmodifiers): Document more x86
+	operand modifier.
+	* gcc/config/i386/i386.c: Add comment for operand modifier N and I.
 
 2020-05-12  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
