@@ -1,3 +1,21 @@
+2020-05-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/78446
+	* call.c (build_op_call): Pass complain to lookup_fnfields.
+	(build_special_member_call): Likewise.
+	* class.c (type_requires_array_cookie): Pass tf_warning_or_error
+	to lookup_fnfields.
+	* cp-tree.h (lookup_fnfields): Add tsubst_flags_t parameter.
+	* except.c (build_throw): Pass tf_warning_or_error to
+	lookup_fnfields.
+	* init.c (build_new_1): Pass complain to lookup_fnfields.
+	* method.c (locate_fn_flags): Likewise.
+	* name-lookup.c (lookup_name_real_1): Pass tf_warning_or_error
+	to lookup_fnfields.
+	* pt.c (tsubst_baselink): Pass complain to lookup_fnfields.
+	* search.c (lookup_fnfields): New 'complain' parameter.  Pass it
+	to lookup_member.
+
 2020-05-14  Nathan Sidwell  <nathan@acm.org>
 
 	* parser.c (cp_parser_diagnose_invalid_typename): Mention

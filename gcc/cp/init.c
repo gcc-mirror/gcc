@@ -3276,7 +3276,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       /* Create the argument list.  */
       vec_safe_insert (*placement, 0, size);
       /* Do name-lookup to find the appropriate operator.  */
-      fns = lookup_fnfields (elt_type, fnname, /*protect=*/2);
+      fns = lookup_fnfields (elt_type, fnname, /*protect=*/2, complain);
       if (fns == NULL_TREE)
 	{
 	  if (complain & tf_error)

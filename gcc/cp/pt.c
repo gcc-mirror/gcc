@@ -16022,7 +16022,8 @@ tsubst_baselink (tree baselink, tree object_type,
 	/* Treat as-if non-dependent below.  */
 	dependent_p = false;
 
-      baselink = lookup_fnfields (qualifying_scope, name, /*protect=*/1);
+      baselink = lookup_fnfields (qualifying_scope, name, /*protect=*/1,
+				  complain);
       if (!baselink)
 	{
 	  if ((complain & tf_error)
