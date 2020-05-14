@@ -1,5 +1,7 @@
 2020-05-14  Nathan Sidwell  <nathan@acm.org>
 
+	* pt.c (tsubst_friend_function): Simplify control flow.
+
 	* pt.c (lookup_template_class_1): Remove unnecessary else by
 	simply grabbing TYPE_NAME earlier.
 
