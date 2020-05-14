@@ -85,6 +85,9 @@ public:
   ~loop_ranger ();
   virtual void range_on_edge (irange &r, edge e, tree name);
   virtual bool range_of_phi (irange &r, gphi *phi);
+protected:
+  virtual void range_of_ssa_name (irange &r, tree name,
+				  gimple *stmt = NULL) OVERRIDE;
 private:
   typedef global_ranger super;
   bool range_with_loop_info (irange &r, tree name);
