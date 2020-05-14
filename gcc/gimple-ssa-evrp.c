@@ -345,6 +345,20 @@ public:
     range_analyzer.enter (bb);
   }
 
+  void tmp_stats_remove_stmt (gimple *stmt, tree lhs) OVERRIDE
+  {
+    if (flag_rvrp1_changes > 0)
+      m_gimple_state.remove (stmt, lhs);
+  }
+
+  void tmp_stats_changed_phi (gphi *orig_phi, gphi *new_phi) OVERRIDE
+  {
+    gimple *save = m_gimple_state.save (orig_phi);
+    if (flag_rvrp1_changes > 0)
+      m_gimple_state.trap_if_gimple_changed (new_phi);
+    m_gimple_state.save (save);
+  }
+
   void pre_fold_stmt (gimple *stmt)
   {
     if (dump_file && (dump_flags & TDF_DETAILS))
@@ -352,12 +366,16 @@ public:
 	fprintf (dump_file, "Visiting stmt ");
 	print_gimple_stmt (dump_file, stmt, 0);
       }
+    m_gimple_state.save (stmt);
     range_analyzer.record_ranges_from_stmt (stmt, false);
   }
 
   bool fold_stmt (gimple_stmt_iterator *gsi)
   {
-    return simplifier.simplify (gsi);
+    bool res = simplifier.simplify (gsi);
+    if (flag_rvrp1_changes > 0)
+      m_gimple_state.trap_if_gimple_changed (gsi_stmt (*gsi));
+    return res;
   }
 
   void post_fold_bb (basic_block bb)
@@ -375,6 +393,7 @@ private:
   class evrp_range_analyzer range_analyzer;
   class vr_values *vr_values;
   simplify_using_ranges simplifier;
+  class gimple_state m_gimple_state;
 };
 
 /* Main entry point for the early vrp pass which is a simplified non-iterative

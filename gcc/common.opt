@@ -2922,10 +2922,15 @@ fvect-cost-model
 Common Alias(fvect-cost-model=,dynamic,unlimited)
 Enables the dynamic vectorizer cost model.  Preserved for backward compatibility.
 
-;; Allow RVRP passes to make IL changes.
+frvrp-changes
+Common Var(flag_rvrp_changes) Init(-1)
+Allow RVRP passes to make IL changes.
+
+;; Allow IL changes in rvrp1 pass.
 frvrp1-changes
 Common Var(flag_rvrp1_changes) Init(-1)
 
+;; Allow IL changes in rvrp2 pass.
 frvrp2-changes
 Common Var(flag_rvrp2_changes) Init(-1)
 

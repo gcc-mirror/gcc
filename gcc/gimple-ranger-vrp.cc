@@ -145,7 +145,7 @@ public:
     { return flag_tree_vrp != 0; }
   virtual unsigned int execute (function *)
     {
-      // -frvrp*_changes flag overrides pass defaults.
+      // -frvrp[12]-changes overrides pass defaults.
       if (rvrp_pass_num == 1 && flag_rvrp1_changes != -1)
 	allow_il_changes = flag_rvrp1_changes;
       if (rvrp_pass_num == 2 && flag_rvrp2_changes != -1)

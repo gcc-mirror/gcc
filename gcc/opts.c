@@ -973,6 +973,13 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       opts->x_flag_reorder_blocks = 1;
     }
 
+  // -frvrp-changes overrides the individual pass settings.
+  if (opts->x_flag_rvrp_changes != -1)
+    {
+      opts->x_flag_rvrp1_changes = opts->x_flag_rvrp_changes;
+      opts->x_flag_rvrp2_changes = opts->x_flag_rvrp_changes;
+    }
+
   /* If user requested unwind info, then turn off the partitioning
      optimization.  */
 
