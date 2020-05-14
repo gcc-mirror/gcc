@@ -2494,6 +2494,9 @@ Target uses comdat groups.
 @item indirect_calls
 Target supports indirect calls, i.e. calls where the target is not
 constant.
+
+@item lgccjit
+Target supports -lgccjit, i.e. libgccjit.so can be linked into jit tests.
 @end table
 
 @subsubsection Local to tests in @code{gcc.target/i386}

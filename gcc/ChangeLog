@@ -1,3 +1,8 @@
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR jit/94778
+	* doc/sourcebuild.texi: Document effective target lgccjit.
+
 2020-05-14  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (add<mode>3_zext_dup): Change to a
