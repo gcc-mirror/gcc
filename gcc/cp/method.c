@@ -1646,7 +1646,7 @@ locate_fn_flags (tree type, tree name, tree argtype, int flags,
 	}
     }
 
-  fns = lookup_fnfields (binfo, name, 0);
+  fns = lookup_fnfields (binfo, name, 0, complain);
   rval = build_new_method_call (ob, fns, &args, binfo, flags, &fn, complain);
 
   if (fn && rval == error_mark_node)
