@@ -1,5 +1,44 @@
 2020-05-14  Jakub Jelinek  <jakub@redhat.com>
 
+	* Makefile.in (GTFILES): Add omp-general.c.
+	* cgraph.h (struct cgraph_node): Add declare_variant_alt and
+	calls_declare_variant_alt members and initialize them in the
+	ctor.
+	* ipa.c (symbol_table::remove_unreachable_nodes): Handle direct
+	calls to declare_variant_alt nodes.
+	* lto-cgraph.c (lto_output_node): Write declare_variant_alt
+	and calls_declare_variant_alt.
+	(input_overwrite_node): Read them back.
+	* omp-simd-clone.c (simd_clone_create): Copy calls_declare_variant_alt
+	bit.
+	* tree-inline.c (expand_call_inline): Or in calls_declare_variant_alt
+	bit.
+	(tree_function_versioning): Copy calls_declare_variant_alt bit.
+	* omp-offload.c (execute_omp_device_lower): Call
+	omp_resolve_declare_variant on direct function calls.
+	(pass_omp_device_lower::gate): Also enable for
+	calls_declare_variant_alt functions.
+	* omp-general.c (omp_maybe_offloaded): Return false after inlining.
+	(omp_context_selector_matches): Handle the case when
+	cfun->curr_properties has PROP_gimple_any bit set.
+	(struct omp_declare_variant_entry): New type.
+	(struct omp_declare_variant_base_entry): New type.
+	(struct omp_declare_variant_hasher): New type. 
+	(omp_declare_variant_hasher::hash, omp_declare_variant_hasher::equal):
+	New methods.
+	(omp_declare_variants): New variable.
+	(struct omp_declare_variant_alt_hasher): New type.
+	(omp_declare_variant_alt_hasher::hash,
+	omp_declare_variant_alt_hasher::equal): New methods.
+	(omp_declare_variant_alt): New variables.
+	(omp_resolve_late_declare_variant): New function.
+	(omp_resolve_declare_variant): Call omp_resolve_late_declare_variant
+	when called late.  Create a magic declare_variant_alt fndecl and
+	cgraph node and return that if decision needs to be deferred until
+	after gimplification.
+	* cgraph.c (symbol_table::create_edge): Or in calls_declare_variant_alt
+	bit.
+
 	PR middle-end/95108
 	* omp-simd-clone.c (struct modify_stmt_info): Add after_stmt member.
 	(ipa_simd_modify_stmt_ops): For PHIs, only add before first stmt in

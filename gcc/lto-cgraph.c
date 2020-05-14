@@ -535,6 +535,8 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->merged_extern_inline, 1);
   bp_pack_value (&bp, node->thunk.thunk_p, 1);
   bp_pack_value (&bp, node->parallelized_function, 1);
+  bp_pack_value (&bp, node->declare_variant_alt, 1);
+  bp_pack_value (&bp, node->calls_declare_variant_alt, 1);
   bp_pack_enum (&bp, ld_plugin_symbol_resolution,
 	        LDPR_NUM_KNOWN,
 		/* When doing incremental link, we will get new resolution
@@ -1186,6 +1188,8 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->merged_extern_inline = bp_unpack_value (bp, 1);
   node->thunk.thunk_p = bp_unpack_value (bp, 1);
   node->parallelized_function = bp_unpack_value (bp, 1);
+  node->declare_variant_alt = bp_unpack_value (bp, 1);
+  node->calls_declare_variant_alt = bp_unpack_value (bp, 1);
   node->resolution = bp_unpack_enum (bp, ld_plugin_symbol_resolution,
 				     LDPR_NUM_KNOWN);
   node->split_part = bp_unpack_value (bp, 1);

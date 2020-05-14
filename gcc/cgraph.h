@@ -937,7 +937,8 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
       split_part (false), indirect_call_target (false), local (false),
       versionable (false), can_change_signature (false),
       redefined_extern_inline (false), tm_may_enter_irr (false),
-      ipcp_clone (false), m_uid (uid), m_summary_id (-1)
+      ipcp_clone (false), declare_variant_alt (false),
+      calls_declare_variant_alt (false), m_uid (uid), m_summary_id (-1)
   {}
 
   /* Remove the node from cgraph and all inline clones inlined into it.
@@ -1539,6 +1540,11 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   unsigned tm_may_enter_irr : 1;
   /* True if this was a clone created by ipa-cp.  */
   unsigned ipcp_clone : 1;
+  /* True if this is the deferred declare variant resolution artificial
+     function.  */
+  unsigned declare_variant_alt : 1;
+  /* True if the function calls declare_variant_alt functions.  */
+  unsigned calls_declare_variant_alt : 1;
 
 private:
   /* Unique id of the node.  */
