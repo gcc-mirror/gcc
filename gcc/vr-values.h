@@ -77,6 +77,7 @@ private:
 
   vec<edge> to_remove_edges;
   vec<switch_update> to_update_switch_stmts;
+  gimple *m_stmt;
   range_store *store;
 };
 

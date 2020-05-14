@@ -1023,20 +1023,20 @@ vr_values::extract_range_from_comparison (value_range_equiv *vr,
    overflow.  */
 
 static bool
-check_for_binary_op_overflow (range_store *store,
+check_for_binary_op_overflow (range_store *store, gimple *stmt,
 			      enum tree_code subcode, tree type,
 			      tree op0, tree op1, bool *ovf)
 {
   value_range vr0, vr1;
   if (TREE_CODE (op0) == SSA_NAME)
-    gcc_assert (store->range_of_expr (vr0, op0));
+    gcc_assert (store->range_of_expr (vr0, op0, stmt));
   else if (TREE_CODE (op0) == INTEGER_CST)
     vr0.set (op0);
   else
     vr0.set_varying (TREE_TYPE (op0));
 
   if (TREE_CODE (op1) == SSA_NAME)
-    store->range_of_expr (vr1, op1);
+    store->range_of_expr (vr1, op1, stmt);
   else if (TREE_CODE (op1) == INTEGER_CST)
     vr1.set (op1);
   else
@@ -1416,7 +1416,7 @@ vr_values::extract_range_basic (value_range_equiv *vr, gimple *stmt)
 		  if (code == IMAGPART_EXPR)
 		    {
 		      bool ovf = false;
-		      if (check_for_binary_op_overflow (this,
+		      if (check_for_binary_op_overflow (this, stmt,
 							subcode, type,
 							op0, op1, &ovf))
 			vr->set (build_int_cst (type, ovf));
@@ -2110,7 +2110,7 @@ const value_range_equiv *
 simplify_using_ranges::get_vr_for_comparison (int i, value_range_equiv *tem)
 {
   /* Shallow-copy equiv bitmap.  */
-  const value_range_equiv *vr = get_value_range_equiv (ssa_name (i));
+  const value_range_equiv *vr = get_value_range_equiv (ssa_name (i), m_stmt);
 
   /* If name N_i does not have a valid range, use N_i as its own
      range.  This allows us to compare against names that may
@@ -2135,7 +2135,7 @@ simplify_using_ranges::compare_name_with_value
 				 bool *strict_overflow_p, bool use_equiv_p)
 {
   /* Get the set of equivalences for VAR.  */
-  bitmap e = get_value_range_equiv (var)->equiv ();
+  bitmap e = get_value_range_equiv (var, m_stmt)->equiv ();
 
   /* Start at -1.  Set it to 0 if we do a comparison without relying
      on overflow, or 1 if all comparisons rely on overflow.  */
@@ -2215,8 +2215,8 @@ simplify_using_ranges::compare_names (enum tree_code comp, tree n1, tree n2,
 {
   /* Compare the ranges of every name equivalent to N1 against the
      ranges of every name equivalent to N2.  */
-  bitmap e1 = get_value_range_equiv (n1)->equiv ();
-  bitmap e2 = get_value_range_equiv (n2)->equiv ();
+  bitmap e1 = get_value_range_equiv (n1, m_stmt)->equiv ();
+  bitmap e2 = get_value_range_equiv (n2, m_stmt)->equiv ();
 
   /* Use the fake bitmaps if e1 or e2 are not available.  */
   static bitmap s_e1 = NULL, s_e2 = NULL;
@@ -2328,8 +2328,10 @@ simplify_using_ranges::vrp_evaluate_conditional_warnv_with_ops_using_ranges
     (enum tree_code code, tree op0, tree op1, bool * strict_overflow_p)
 {
   const value_range_equiv *vr0, *vr1;
-  vr0 = (TREE_CODE (op0) == SSA_NAME) ? get_value_range_equiv (op0) : NULL;
-  vr1 = (TREE_CODE (op1) == SSA_NAME) ? get_value_range_equiv (op1) : NULL;
+  vr0 = (TREE_CODE (op0) == SSA_NAME)
+    ? get_value_range_equiv (op0, m_stmt) : NULL;
+  vr1 = (TREE_CODE (op1) == SSA_NAME)
+    ? get_value_range_equiv (op1, m_stmt) : NULL;
 
   tree res = NULL_TREE;
   if (vr0 && vr1)
@@ -2407,7 +2409,7 @@ simplify_using_ranges::vrp_evaluate_conditional_warnv_with_ops
 	    }
 	  else
 	    gcc_unreachable ();
-	  const value_range_equiv *vr0 = get_value_range_equiv (op0);
+	  const value_range_equiv *vr0 = get_value_range_equiv (op0, m_stmt);
 	  /* If vro, the range for OP0 to pass the overflow test, has
 	     no intersection with *vr0, OP0's known range, then the
 	     overflow test can't pass, so return the node for false.
@@ -4169,7 +4171,8 @@ simplify_using_ranges::simplify_internal_call_using_ranges
     return false;
   else
     type = TREE_TYPE (TREE_TYPE (gimple_call_lhs (stmt)));
-  if (!check_for_binary_op_overflow (store, subcode, type, op0, op1, &ovf)
+  if (!check_for_binary_op_overflow (store, stmt, subcode, type, op0, op1,
+				     &ovf)
       || (is_ubsan && ovf))
     return false;
 
@@ -4229,7 +4232,7 @@ bool
 simplify_using_ranges::two_valued_val_range_p (tree var, tree *a, tree *b)
 {
   value_range vr;
-  gcc_assert (store->range_of_expr (vr, var));
+  gcc_assert (store->range_of_expr (vr, var, m_stmt));
   if (vr.varying_p ()
       || vr.undefined_p ()
       || TREE_CODE (vr.min ()) != INTEGER_CST
@@ -4277,6 +4280,7 @@ bool
 simplify_using_ranges::simplify (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
+  m_stmt = stmt;
   if (is_gimple_assign (stmt))
     {
       enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
