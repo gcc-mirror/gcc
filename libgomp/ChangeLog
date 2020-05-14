@@ -1,3 +1,16 @@
+2020-05-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/95119
+	* testsuite/libgomp.fortran/close_errors_1.f90: New test.
+
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2020-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/target-40.c: New test.
+
 2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure: Regenerated.
