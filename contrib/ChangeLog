@@ -1,3 +1,8 @@
+2020-05-14  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/test_email.py: New file.
+	* gcc-changelog/test_patches.txt: New file.
+
 2020-05-13  Patrick Palka  <ppalka@redhat.com>
 
 	* vimrc: Reduce textwidth to 72 for Git commit messages.
