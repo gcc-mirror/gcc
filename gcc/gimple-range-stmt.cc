@@ -32,22 +32,69 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "gimple-range-stmt.h"
 
+// Adjust the range for a pointer difference where the operands came
+// from a memchr.
+//
+// This notices the following sequence:
+//
+//	def = __builtin_memchr (arg, 0, sz)
+//	n = def - arg
+//
+// The range for N can be narrowed to [0, PTRDIFF_MAX - 1].
+
+static void
+adjust_pointer_diff_expr (irange &res, const gimple *diff_stmt)
+{
+  tree op0 = gimple_assign_rhs1 (diff_stmt);
+  tree op1 = gimple_assign_rhs2 (diff_stmt);
+  tree op0_ptype = TREE_TYPE (TREE_TYPE (op0));
+  tree op1_ptype = TREE_TYPE (TREE_TYPE (op1));
+  gimple *call;
+
+  if (TREE_CODE (op0) == SSA_NAME
+      && TREE_CODE (op1) == SSA_NAME
+      && (call = SSA_NAME_DEF_STMT (op0))
+      && is_gimple_call (call)
+      && gimple_call_builtin_p (call, BUILT_IN_MEMCHR)
+      && TYPE_MODE (op0_ptype) == TYPE_MODE (char_type_node)
+      && TYPE_PRECISION (op0_ptype) == TYPE_PRECISION (char_type_node)
+      && TYPE_MODE (op1_ptype) == TYPE_MODE (char_type_node)
+      && TYPE_PRECISION (op1_ptype) == TYPE_PRECISION (char_type_node)
+      && gimple_call_builtin_p (call, BUILT_IN_MEMCHR)
+      && vrp_operand_equal_p (op1, gimple_call_arg (call, 0))
+      && integer_zerop (gimple_call_arg (call, 1)))
+    {
+      tree max = vrp_val_max (ptrdiff_type_node);
+      wide_int wmax = wi::to_wide (max, TYPE_PRECISION (TREE_TYPE (max)));
+      tree expr_type = gimple_expr_type (diff_stmt);
+      tree range_min = build_zero_cst (expr_type);
+      tree range_max = wide_int_to_tree (expr_type, wmax - 1);
+      int_range<1> r (range_min, range_max);
+      res.intersect (r);
+    }
+}
+
 // This function looks for situations when walking the use/def chains
 // may provide additonal contextual range information not exposed on
 // this statement.  Like knowing the IMAGPART return value from a
 // builtin function is a boolean result.
 
+// We should rework how we're called, as we have an op_unknown entry
+// for IMAGPART_EXPR and POINTER_DIFF_EXPR in range-ops just so this
+// function gets called.
+
 static void
-gimple_range_adjustment (const gimple *stmt, irange &res)
+gimple_range_adjustment (irange &res, const gimple *stmt)
 {
   switch (gimple_expr_code (stmt))
     {
+    case POINTER_DIFF_EXPR:
+      adjust_pointer_diff_expr (res, stmt);
+      return;
+
     case IMAGPART_EXPR:
       {
-	tree name;
-	tree type = TREE_TYPE (gimple_assign_lhs (stmt));
-
-	name = TREE_OPERAND (gimple_assign_rhs1 (stmt), 0);
+	tree name = TREE_OPERAND (gimple_assign_rhs1 (stmt), 0);
 	if (TREE_CODE (name) == SSA_NAME)
 	  {
 	    gimple *def_stmt = SSA_NAME_DEF_STMT (name);
@@ -63,6 +110,7 @@ gimple_range_adjustment (const gimple *stmt, irange &res)
 		    {
 		      int_range<1> r;
 		      r.set_varying (boolean_type_node);
+		      tree type = TREE_TYPE (gimple_assign_lhs (stmt));
 		      range_cast (r, type);
 		      res.intersect (r);
 		    }
@@ -235,7 +283,7 @@ gimple_range_fold (const gimple *stmt, irange &res,
 					   r1, r2);
 
   // If there are any gimple lookups, do those now.
-  gimple_range_adjustment (stmt, res);
+  gimple_range_adjustment (res, stmt);
   return true;
 }
 

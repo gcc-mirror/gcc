@@ -2748,6 +2748,24 @@ operator_identity::op1_range (irange &r, tree type ATTRIBUTE_UNUSED,
 }
 
 
+class operator_unknown : public range_operator
+{
+public:
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &op1,
+			   const irange &op2) const;
+} op_unknown;
+
+bool
+operator_unknown::fold_range (irange &r, tree type,
+			      const irange &lh ATTRIBUTE_UNUSED,
+			      const irange &rh ATTRIBUTE_UNUSED) const
+{
+  r.set_varying (type);
+  return true;
+}
+
+
 class operator_abs : public range_operator
 {
  public:
@@ -3195,6 +3213,8 @@ integral_table::integral_table ()
   set (SSA_NAME, op_identity);
   set (PAREN_EXPR, op_identity);
   set (OBJ_TYPE_REF, op_identity);
+  set (IMAGPART_EXPR, op_unknown);
+  set (POINTER_DIFF_EXPR, op_unknown);
   set (ABS_EXPR, op_abs);
   set (ABSU_EXPR, op_absu);
   set (NEGATE_EXPR, op_negate);
