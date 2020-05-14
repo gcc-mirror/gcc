@@ -25174,7 +25174,7 @@ always_instantiate_p (tree decl)
 bool
 maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 {
-  tree fntype, spec, noex, clone;
+  tree fntype, spec, noex;
 
   /* Don't instantiate a noexcept-specification from template context.  */
   if (processing_template_decl
@@ -25193,8 +25193,16 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
       return !DECL_MAYBE_DELETED (fn);
     }
 
-  if (DECL_CLONED_FUNCTION_P (fn))
-    fn = DECL_CLONED_FUNCTION (fn);
+  fntype = TREE_TYPE (fn);
+  spec = TYPE_RAISES_EXCEPTIONS (fntype);
+
+  if (!spec || !TREE_PURPOSE (spec))
+    return true;
+
+  noex = TREE_PURPOSE (spec);
+  if (TREE_CODE (noex) != DEFERRED_NOEXCEPT
+      && TREE_CODE (noex) != DEFERRED_PARSE)
+    return true;
 
   tree orig_fn = NULL_TREE;
   /* For a member friend template we can get a TEMPLATE_DECL.  Let's use
@@ -25206,15 +25214,14 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
       fn = DECL_TEMPLATE_RESULT (fn);
     }
 
-  fntype = TREE_TYPE (fn);
-  spec = TYPE_RAISES_EXCEPTIONS (fntype);
-
-  if (!spec || !TREE_PURPOSE (spec))
-    return true;
-
-  noex = TREE_PURPOSE (spec);
-
-  if (TREE_CODE (noex) == DEFERRED_NOEXCEPT)
+  if (DECL_CLONED_FUNCTION_P (fn))
+    {
+      tree prime = DECL_CLONED_FUNCTION (fn);
+      if (!maybe_instantiate_noexcept (prime, complain))
+	return false;
+      spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (prime));
+    }
+  else if (TREE_CODE (noex) == DEFERRED_NOEXCEPT)
     {
       static hash_set<tree>* fns = new hash_set<tree>;
       bool added = false;
@@ -25284,26 +25291,18 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 
       if (added)
 	fns->remove (fn);
-
-      if (spec == error_mark_node)
-	{
-	  /* This failed with a hard error, so let's go with false.  */
-	  gcc_assert (seen_error ());
-	  spec = noexcept_false_spec;
-	}
-
-      TREE_TYPE (fn) = build_exception_variant (fntype, spec);
-      if (orig_fn)
-	TREE_TYPE (orig_fn) = TREE_TYPE (fn);
     }
 
-  FOR_EACH_CLONE (clone, fn)
+  if (spec == error_mark_node)
     {
-      if (TREE_TYPE (clone) == fntype)
-	TREE_TYPE (clone) = TREE_TYPE (fn);
-      else
-	TREE_TYPE (clone) = build_exception_variant (TREE_TYPE (clone), spec);
+      /* This failed with a hard error, so let's go with false.  */
+      gcc_assert (seen_error ());
+      spec = noexcept_false_spec;
     }
+
+  TREE_TYPE (fn) = build_exception_variant (fntype, spec);
+  if (orig_fn)
+    TREE_TYPE (orig_fn) = TREE_TYPE (fn);
 
   return true;
 }
