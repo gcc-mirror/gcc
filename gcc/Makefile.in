@@ -1327,6 +1327,7 @@ OBJS = \
 	gimple-pretty-print.o \
 	gimple-ranger.o \
 	gimple-ranger-vrp.o \
+	misc.o \
 	gimple-range-cache.o \
 	gimple-range-cfg.o \
 	gimple-range-stmt.o \

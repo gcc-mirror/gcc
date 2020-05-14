@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "asan.h"
 #include "cfgloop.h"
+#include "misc.h"
 
 /* Disable warnings about quoting issues in the pp_xxx calls below
    that (intentionally) don't follow GCC diagnostic conventions.  */
@@ -187,56 +188,6 @@ print_gimple_expr (FILE *file, gimple *g, int spc, dump_flags_t flags)
   buffer.buffer->stream = file;
   pp_gimple_stmt_1 (&buffer, g, spc, flags);
   pp_flush (&buffer);
-}
-
-DEBUG_FUNCTION char *
-strcpy_gimple (char *dest, const gimple *g)
-{
-  pretty_printer pp;
-  pp_gimple_stmt_1 (&pp, g, 0, TDF_NONE);
-  const char *str = pp_formatted_text (&pp);
-  return strcpy (dest, str);
-}
-
-DEBUG_FUNCTION int
-strncmp_gimple (const gimple *g, const char *str, size_t n)
-{
-  char gstr[100];
-  strcpy_gimple (gstr, g);
-  return strncmp (gstr, str, n);
-}
-
-DEBUG_FUNCTION int
-strcmp_gimple (const gimple *g, const char *str)
-{
-  char gstr[100];
-  strcpy_gimple (gstr, g);
-  return strcmp (gstr, str);
-}
-
-DEBUG_FUNCTION char *
-strcpy_tree (char *dest, tree t)
-{
-  pretty_printer pp;
-  dump_generic_node (&pp, t, 0, TDF_VOPS|TDF_MEMSYMS, false);
-  const char *str = pp_formatted_text (&pp);
-  return strcpy (dest, str);
-}
-
-DEBUG_FUNCTION int
-strncmp_tree (tree t, const char *str, size_t n)
-{
-  char tstr[100];
-  strcpy_tree (tstr, t);
-  return strncmp (tstr, str, n);
-}
-
-DEBUG_FUNCTION int
-strcmp_tree (tree t, const char *str)
-{
-  char tstr[100];
-  strcpy_tree (tstr, t);
-  return strcmp (tstr, str);
 }
 
 /* Print the GIMPLE sequence SEQ on BUFFER using SPC indentation
@@ -3010,7 +2961,9 @@ gimple_dump_bb_buff (pretty_printer *buffer, basic_block bb, int indent,
       curr_indent = gimple_code (stmt) == GIMPLE_LABEL ? label_indent : indent;
 
       INDENT (curr_indent);
+      highlighter.on (buffer, curr_indent, stmt);
       pp_gimple_stmt_1 (buffer, stmt, curr_indent, flags);
+      highlighter.off (buffer, curr_indent, stmt);
       pp_newline_and_flush (buffer);
       gcc_checking_assert (DECL_STRUCT_FUNCTION (current_function_decl));
       dump_histograms_for_stmt (DECL_STRUCT_FUNCTION (current_function_decl),

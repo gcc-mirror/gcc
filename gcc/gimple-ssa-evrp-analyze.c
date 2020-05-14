@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vr-values.h"
 #include "gimple-ssa-evrp-analyze.h"
 #include "gimple-ranger.h"
+#include "misc.h"
 
 evrp_range_analyzer::evrp_range_analyzer (bool update_global_ranges)
   : stack (10), m_update_global_ranges (update_global_ranges)

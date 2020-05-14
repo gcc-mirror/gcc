@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "vr-values.h"
 #include "gimple-ssa-evrp-analyze.h"
+#include "misc.h"
 
 class evrp_folder : public substitute_and_fold_engine
 {

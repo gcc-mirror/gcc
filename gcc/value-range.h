@@ -394,28 +394,4 @@ gt_pch_nx (int_range<N> *x, gt_pointer_operator op, void *cookie)
     }
 }
 
-// Class to assert that the new range is at least as good as the old
-// one.
-
-class vr_comparison
-{
-public:
-  vr_comparison (const irange *, const irange *, class vr_values * = 0);
-  void compare (tree name, edge);
-  void compare (gimple *);
-private:
-  void compare ();
-  void dump_differences_and_trap () const;
-  void dump_differences (FILE *) const;
-  void dump_improvements (FILE *) const;
-  bool new_range_is_same () const;
-  bool new_range_is_better () const;
-  tree m_name;
-  edge m_edge;
-  gimple *m_stmt;
-  const irange *m_old_range;
-  const irange *m_new_range;
-  class vr_values *m_vr_values;
-};
-
 #endif // GCC_VALUE_RANGE_H

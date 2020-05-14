@@ -901,6 +901,7 @@ substitute_and_fold_engine::replace_phi_args_in (gphi *phi)
 {
   size_t i;
   bool replaced = false;
+  gimple *orig_phi = gimple_copy (phi);
 
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
@@ -938,6 +939,9 @@ substitute_and_fold_engine::replace_phi_args_in (gphi *phi)
 	    }
 	}
     }
+
+  if (replaced)
+    tmp_stats_changed_phi (as_a<gphi *> (orig_phi), phi);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1067,6 +1071,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 		  fprintf (dump_file, "\n");
 		}
 	      stmts_to_remove.safe_push (phi);
+	      substitute_and_fold_engine->tmp_stats_remove_stmt (phi, sprime);
 	      continue;
 	    }
 	}
@@ -1112,6 +1117,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 		  fprintf (dump_file, "\n");
 		}
 	      stmts_to_remove.safe_push (stmt);
+	      substitute_and_fold_engine->tmp_stats_remove_stmt (stmt, sprime);
 	      continue;
 	    }
 	}
@@ -1222,6 +1228,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
     }
 
   substitute_and_fold_engine->propagate_into_phi_args (bb);
+  substitute_and_fold_engine->tmp_stats_pre_fold_bb_end (bb);
 
   return NULL;
 }
