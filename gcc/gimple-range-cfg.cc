@@ -300,7 +300,7 @@ gimple_ranger::range_of_builtin_call (irange &r, gcall *call)
       if (!r.undefined_p ())
 	{
 	  wide_int max = r.upper_bound ();
-	  maxi = wi::floor_log2 (max);
+	  maxi = wi::floor_log2 (max) + 1;
 	}
       r.set (build_int_cst (type, mini), build_int_cst (type, maxi));
       return true;
