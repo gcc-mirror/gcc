@@ -7673,6 +7673,90 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
   return true;
 }
 
+/* Expand cmpstrn or memcmp.  */
+
+bool
+ix86_expand_cmpstrn_or_cmpmem (rtx result, rtx src1, rtx src2,
+			       rtx length, rtx align, bool is_cmpstrn)
+{
+  if (optimize_insn_for_size_p () && !TARGET_INLINE_ALL_STRINGOPS)
+    return false;
+
+  /* Can't use this if the user has appropriated ecx, esi or edi.  */
+  if (fixed_regs[CX_REG] || fixed_regs[SI_REG] || fixed_regs[DI_REG])
+    return false;
+
+  if (is_cmpstrn)
+    {
+      /* For strncmp, length is the maximum length, which can be larger
+	 than actual string lengths.  We can expand the cmpstrn pattern
+	 to "repz cmpsb" only if one of the strings is a constant so
+	 that expand_builtin_strncmp() can write the length argument to
+	 be the minimum of the const string length and the actual length
+	 argument.  Otherwise, "repz cmpsb" may pass the 0 byte.  */
+      tree t1 = MEM_EXPR (src1);
+      tree t2 = MEM_EXPR (src2);
+      if (!((t1 && TREE_CODE (t1) == MEM_REF
+	     && TREE_CODE (TREE_OPERAND (t1, 0)) == ADDR_EXPR
+	     && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (t1, 0), 0))
+		 == STRING_CST))
+	    || (t2 && TREE_CODE (t2) == MEM_REF
+		&& TREE_CODE (TREE_OPERAND (t2, 0)) == ADDR_EXPR
+		&& (TREE_CODE (TREE_OPERAND (TREE_OPERAND (t2, 0), 0))
+		    == STRING_CST))))
+	return false;
+    }
+  else
+    {
+      /* Expand memcmp to "repz cmpsb" only for -minline-all-stringops
+	 since "repz cmpsb" can be much slower than memcmp function
+	 implemented with vector instructions, see
+
+	 https://gcc.gnu.org/bugzilla/show_bug.cgi?id=43052
+       */
+      if (!TARGET_INLINE_ALL_STRINGOPS)
+	return false;
+    }
+
+  rtx addr1 = copy_addr_to_reg (XEXP (src1, 0));
+  rtx addr2 = copy_addr_to_reg (XEXP (src2, 0));
+  if (addr1 != XEXP (src1, 0))
+    src1 = replace_equiv_address_nv (src1, addr1);
+  if (addr2 != XEXP (src2, 0))
+    src2 = replace_equiv_address_nv (src2, addr2);
+
+  /* NB: Make a copy of the data length to avoid changing the original
+     data length by cmpstrnqi patterns.  */
+  length = ix86_zero_extend_to_Pmode (length);
+  rtx lengthreg = gen_reg_rtx (Pmode);
+  emit_move_insn (lengthreg, length);
+
+  /* If we are testing strict equality, we can use known alignment to
+     good advantage.  This may be possible with combine, particularly
+     once cc0 is dead.  */
+  if (CONST_INT_P (length))
+    {
+      if (length == const0_rtx)
+	{
+	  emit_move_insn (result, const0_rtx);
+	  return true;
+	}
+      emit_insn (gen_cmpstrnqi_nz_1 (addr1, addr2, lengthreg, align,
+				     src1, src2));
+    }
+  else
+    {
+      emit_insn (gen_cmp_1 (Pmode, lengthreg, lengthreg));
+      emit_insn (gen_cmpstrnqi_1 (addr1, addr2, lengthreg, align,
+				  src1, src2));
+    }
+
+  rtx out = gen_lowpart (QImode, result);
+  emit_insn (gen_cmpintqi (out));
+  emit_move_insn (result, gen_rtx_SIGN_EXTEND (SImode, out));
+
+  return true;
+}
 
 /* Expand the appropriate insns for doing strlen if not just doing
    repnz; scasb
