@@ -1,3 +1,9 @@
+2020-05-14  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* config/i386/sse.md (truncv2dfv2df2): New insn pattern.
+	(extendv2sfv2df2): Ditto.
+
 2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure: Regenerated.
