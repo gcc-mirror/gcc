@@ -719,7 +719,7 @@ if (DEBUG_CACHE)  fprintf (dump_file, "BACK visiting block %d\n", node->index);
 
 loop_ranger::loop_ranger ()
 {
-  m_vr_values = new vr_values_tester;
+  m_vr_values = new vr_values;
 }
 
 loop_ranger::~loop_ranger ()

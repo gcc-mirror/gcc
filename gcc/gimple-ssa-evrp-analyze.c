@@ -41,8 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "vr-values.h"
 #include "gimple-ssa-evrp-analyze.h"
-#include "gimple-ranger.h"
-#include "misc.h"
 
 evrp_range_analyzer::evrp_range_analyzer (bool update_global_ranges)
   : stack (10), m_update_global_ranges (update_global_ranges)
@@ -56,7 +54,7 @@ evrp_range_analyzer::evrp_range_analyzer (bool update_global_ranges)
       FOR_EACH_EDGE (e, ei, bb->preds)
         e->flags |= EDGE_EXECUTABLE;
     }
-  vr_values = new class vr_values_tester;
+  vr_values = new class vr_values;
 }
 
 /* Push an unwinding marker onto the unwinding stack.  */
@@ -152,36 +150,6 @@ all_uses_feed_or_dominated_by_stmt (tree name, gimple *stmt)
 	return false;
     }
   return true;
-}
-
-// ?? Eventually overload extract_range_from_stmt instead, since it is
-// higher level and more comparable to gimple_ranger::range_of_stmt.
-
-void
-vr_values_tester::extract_range_basic (value_range_equiv *vr, gimple *stmt)
-{
-  vr_values::extract_range_basic (vr, stmt);
-
-  if (gimple_code (stmt) != GIMPLE_CALL)
-    return;
-
-  class ranger_using_vrvalues : public gimple_ranger
-  {
-  public:
-    ranger_using_vrvalues (range_store *super) : super (super) { }
-    // Use the vr_values version of range_of_expr while the ranger
-    // comes up to par.
-    virtual bool range_of_expr (irange &r, tree expr, gimple *stmt)
-    { return super->range_of_expr (r, expr, stmt); }
-  private:
-    range_store *super;
-  } ranger (this);
-
-  value_range ranger_vr;
-  ranger.range_of_stmt (ranger_vr, stmt);
-
-  vr_comparison comp (vr, &ranger_vr, this);
-  comp.compare (stmt);
 }
 
 void
