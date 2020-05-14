@@ -1,5 +1,7 @@
 2020-05-14  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/gomp/declare-variant-14.c: New test.
+
 	PR middle-end/95108
 	* gcc.dg/gomp/pr95108.c: New test.
 

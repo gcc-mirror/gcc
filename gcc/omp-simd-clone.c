@@ -477,6 +477,7 @@ simd_clone_create (struct cgraph_node *old_node)
      the old node.  */
   new_node->local = old_node->local;
   new_node->externally_visible = old_node->externally_visible;
+  new_node->calls_declare_variant_alt = old_node->calls_declare_variant_alt;
 
   return new_node;
 }

@@ -2066,12 +2066,28 @@ execute_omp_device_lower ()
   bool regimplify = false;
   basic_block bb;
   gimple_stmt_iterator gsi;
+  bool calls_declare_variant_alt
+    = cgraph_node::get (cfun->decl)->calls_declare_variant_alt;
   FOR_EACH_BB_FN (bb, cfun)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
 	gimple *stmt = gsi_stmt (gsi);
-	if (!is_gimple_call (stmt) || !gimple_call_internal_p (stmt))
+	if (!is_gimple_call (stmt))
 	  continue;
+	if (!gimple_call_internal_p (stmt))
+	  {
+	    if (calls_declare_variant_alt)
+	      if (tree fndecl = gimple_call_fndecl (stmt))
+		{
+		  tree new_fndecl = omp_resolve_declare_variant (fndecl);
+		  if (new_fndecl != fndecl)
+		    {
+		      gimple_call_set_fndecl (stmt, new_fndecl);
+		      update_stmt (stmt);
+		    }
+		}
+	    continue;
+	  }
 	tree lhs = gimple_call_lhs (stmt), rhs = NULL_TREE;
 	tree type = lhs ? TREE_TYPE (lhs) : integer_type_node;
 	switch (gimple_call_internal_fn (stmt))
@@ -2165,7 +2181,9 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *fun)
     {
-      return !(fun->curr_properties & PROP_gimple_lomp_dev);
+      return (!(fun->curr_properties & PROP_gimple_lomp_dev)
+	      || (flag_openmp
+		  && cgraph_node::get (fun->decl)->calls_declare_variant_alt));
     }
   virtual unsigned int execute (function *)
     {
