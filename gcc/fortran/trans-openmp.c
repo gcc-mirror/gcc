@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef GCC_DIAG_STYLE
 #define GCC_DIAG_STYLE __gcc_gfc__
 #include "attribs.h"
+#include "function.h"
 
 int ompws_flags;
 
@@ -5392,6 +5393,7 @@ gfc_trans_omp_target (gfc_code *code)
 			 omp_clauses);
       if (code->op != EXEC_OMP_TARGET)
 	OMP_TARGET_COMBINED (stmt) = 1;
+      cfun->has_omp_target = true;
     }
   gfc_add_expr_to_block (&block, stmt);
   return gfc_finish_block (&block);

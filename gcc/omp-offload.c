@@ -190,7 +190,7 @@ omp_declare_target_var_p (tree decl)
    declare target to.  */
 
 static tree
-omp_discover_declare_target_fn_r (tree *tp, int *walk_subtrees, void *data)
+omp_discover_declare_target_tgt_fn_r (tree *tp, int *walk_subtrees, void *data)
 {
   if (TREE_CODE (*tp) == FUNCTION_DECL
       && !omp_declare_target_fn_p (*tp)
@@ -219,6 +219,24 @@ omp_discover_declare_target_fn_r (tree *tp, int *walk_subtrees, void *data)
   return NULL_TREE;
 }
 
+/* Similarly, but ignore references outside of OMP_TARGET regions.  */
+
+static tree
+omp_discover_declare_target_fn_r (tree *tp, int *walk_subtrees, void *data)
+{
+  if (TREE_CODE (*tp) == OMP_TARGET)
+    {
+      /* And not OMP_DEVICE_ANCESTOR.  */
+      walk_tree_without_duplicates (&OMP_TARGET_BODY (*tp),
+				    omp_discover_declare_target_tgt_fn_r,
+				    data);
+      *walk_subtrees = 0;
+    }
+  else if (TYPE_P (*tp))
+    *walk_subtrees = 0;
+  return NULL_TREE;
+}
+
 /* Helper function for omp_discover_implicit_declare_target, called through
    walk_tree.  Mark referenced FUNCTION_DECLs implicitly as
    declare target to.  */
@@ -227,7 +245,7 @@ static tree
 omp_discover_declare_target_var_r (tree *tp, int *walk_subtrees, void *data)
 {
   if (TREE_CODE (*tp) == FUNCTION_DECL)
-    return omp_discover_declare_target_fn_r (tp, walk_subtrees, data);
+    return omp_discover_declare_target_tgt_fn_r (tp, walk_subtrees, data);
   else if (VAR_P (*tp)
 	   && is_global_var (*tp)
 	   && !omp_declare_target_var_p (*tp))
@@ -271,21 +289,31 @@ omp_discover_implicit_declare_target (void)
   auto_vec<tree> worklist;
 
   FOR_EACH_DEFINED_FUNCTION (node)
-    if (omp_declare_target_fn_p (node->decl) && DECL_SAVED_TREE (node->decl))
-      worklist.safe_push (node->decl);
+    if (DECL_SAVED_TREE (node->decl))
+      {
+        if (omp_declare_target_fn_p (node->decl))
+	  worklist.safe_push (node->decl);
+	else if (DECL_STRUCT_FUNCTION (node->decl)
+		 && DECL_STRUCT_FUNCTION (node->decl)->has_omp_target)
+	  worklist.safe_push (node->decl);
+      }
   FOR_EACH_STATIC_INITIALIZER (vnode)
     if (omp_declare_target_var_p (vnode->decl))
       worklist.safe_push (vnode->decl);
   while (!worklist.is_empty ())
     {
       tree decl = worklist.pop ();
-      if (TREE_CODE (decl) == FUNCTION_DECL)
-	walk_tree_without_duplicates (&DECL_SAVED_TREE (decl),
-				      omp_discover_declare_target_fn_r,
-				      &worklist);
-      else
+      if (VAR_P (decl))
 	walk_tree_without_duplicates (&DECL_INITIAL (decl),
 				      omp_discover_declare_target_var_r,
+				      &worklist);
+      else if (omp_declare_target_fn_p (decl))
+	walk_tree_without_duplicates (&DECL_SAVED_TREE (decl),
+				      omp_discover_declare_target_tgt_fn_r,
+				      &worklist);
+      else
+	walk_tree_without_duplicates (&DECL_SAVED_TREE (decl),
+				      omp_discover_declare_target_fn_r,
 				      &worklist);
     }
 }
