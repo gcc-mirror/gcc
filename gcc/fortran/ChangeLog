@@ -1,3 +1,8 @@
+2020-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-openmp.c: Include function.h.
+	(gfc_trans_omp_target): Set cfun->has_omp_target.
+
 2020-05-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/93497

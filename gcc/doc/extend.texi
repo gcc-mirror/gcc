@@ -20901,6 +20901,62 @@ integer value between 2 and 7 inclusive.
 
 @smallexample
 @exdent vector unsigned long long int
+@exdent vec_extractl (vector unsigned char, vector unsigned char, unsigned int)
+@exdent vector unsigned long long int
+@exdent vec_extractl (vector unsigned short, vector unsigned short, unsigned int)
+@exdent vector unsigned long long int
+@exdent vec_extractl (vector unsigned int, vector unsigned int, unsigned int)
+@exdent vector unsigned long long int
+@exdent vec_extractl (vector unsigned long long, vector unsigned long long, unsigned int)
+@end smallexample
+Extract a single element from the vector formed by catenating this function's
+first two arguments at the byte offset specified by this function's
+third argument.  On big-endian targets, this function behaves as if
+implemented by the Future @code{vextdubvlx}, @code{vextduhvlx},
+@code{vextduwvlx}, or @code{vextddvlx} instructions, depending on the
+types of the function's first two arguments.  On little-endian
+targets, this function behaves as if implemented by the Future
+@code{vextdubvrx}, @code{vextduhvrx},
+@code{vextduwvrx}, or @code{vextddvrx} instructions.
+The byte offset of the element to be extracted is calculated
+by computing the remainder of dividing the third argument by 32.
+If this reminader value is not a multiple of the vector element size,
+or if its value added to the vector element size exceeds 32, the
+result is undefined.
+@findex vec_extractl
+
+@smallexample
+@exdent vector unsigned long long int
+@exdent vec_extractr (vector unsigned char, vector unsigned char, unsigned int)
+@exdent vector unsigned long long int
+@exdent vec_extractr (vector unsigned short, vector unsigned short, unsigned int)
+@exdent vector unsigned long long int
+@exdent vec_extractr (vector unsigned int, vector unsigned int, unsigned int)
+@exdent vector unsigned long long int
+@exdent vec_extractr (vector unsigned long long, vector unsigned long long, unsigned int)
+@end smallexample
+Extract a single element from the vector formed by catenating this function's
+first two arguments at the byte offset calculated by subtracting this
+function's third argument from 31.  On big-endian targets, this
+function behaves as if
+implemented by the Future
+@code{vextdubvrx}, @code{vextduhvrx},
+@code{vextduwvrx}, or @code{vextddvrx} instructions, depending on the
+types of the function's first two arguments.
+On little-endian
+targets, this function behaves as if implemented by the Future
+@code{vextdubvlx}, @code{vextduhvlx},
+@code{vextduwvlx}, or @code{vextddvlx} instructions.
+The byte offset of the element to be extracted, measured from the
+right end of the catenation of the two vector arguments, is calculated
+by computing the remainder of dividing the third argument by 32.
+If this reminader value is not a multiple of the vector element size,
+or if its value added to the vector element size exceeds 32, the
+result is undefined.
+@findex vec_extractr
+
+@smallexample
+@exdent vector unsigned long long int
 @exdent vec_pdep (vector unsigned long long int, vector unsigned long long int)
 @end smallexample
 Perform a vector parallel bits deposit operation, as if implemented by

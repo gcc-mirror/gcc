@@ -1347,10 +1347,11 @@ lookup_field (tree xbasetype, tree name, int protect, bool want_type)
    return NULL_TREE.  */
 
 tree
-lookup_fnfields (tree xbasetype, tree name, int protect)
+lookup_fnfields (tree xbasetype, tree name, int protect,
+		 tsubst_flags_t complain)
 {
   tree rval = lookup_member (xbasetype, name, protect, /*want_type=*/false,
-			     tf_warning_or_error);
+			     complain);
 
   /* Ignore non-functions, but propagate the ambiguity list.  */
   if (!error_operand_p (rval)

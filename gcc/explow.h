@@ -69,6 +69,10 @@ extern void anti_adjust_stack (rtx);
 /* Add some bytes to the stack while probing it.  An rtx says how many. */
 extern void anti_adjust_stack_and_probe (rtx, bool);
 
+/* Add some bytes to the stack while probing it.  An rtx says how
+   many.  Add additional probes to prevent stack clashing attacks.  */
+extern void anti_adjust_stack_and_probe_stack_clash (rtx);
+
 /* Support for building allocation/probing loops for stack-clash
    protection of dyamically allocated stack space.  */
 extern void compute_stack_clash_protection_loop_data (rtx *, rtx *, rtx *,

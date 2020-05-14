@@ -1446,7 +1446,7 @@ Optional Features:
   --enable-fast-install[=PKGS]
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
-  --enable-cet            enable Intel CET in target libraries [default=no]
+  --enable-cet            enable Intel CET in target libraries [default=auto]
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -15667,7 +15667,7 @@ if test "${enable_cet+set}" = set; then :
                           esac
 
 else
-  enable_cet=no
+  enable_cet=auto
 fi
 
 

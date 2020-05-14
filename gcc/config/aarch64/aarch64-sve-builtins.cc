@@ -3676,24 +3676,39 @@ handle_arm_sve_vector_bits_attribute (tree *node, tree, tree args, int,
      svbool_t and its fixed-length variants.  Using a type variant
      avoids that but means that we treat some ambiguous combinations
      as valid.  */
+  tree new_type;
+  tree base_type = TYPE_MAIN_VARIANT (type);
   if (lang_GNU_C () && VECTOR_BOOLEAN_TYPE_P (type))
-    type = build_variant_type_copy (type);
+    new_type = build_variant_type_copy (base_type);
   else
-    type = build_distinct_type_copy (type);
-
-  /* The new type is a normal sized type; it doesn't have the same
-     restrictions as sizeless types.  */
-  TYPE_ATTRIBUTES (type)
-    = remove_attribute ("SVE sizeless type",
-			copy_list (TYPE_ATTRIBUTES (type)));
+    new_type = build_distinct_type_copy (base_type);
 
   /* Allow the GNU vector extensions to be applied to vectors.
      The extensions aren't yet defined for packed predicates,
      so continue to treat them as abstract entities for now.  */
-  if (!VECTOR_BOOLEAN_TYPE_P (type))
-    TYPE_INDIVISIBLE_P (type) = 0;
+  if (!VECTOR_BOOLEAN_TYPE_P (new_type))
+    TYPE_INDIVISIBLE_P (new_type) = 0;
 
-  *node = type;
+  /* The new type is a normal sized type; it doesn't have the same
+     restrictions as sizeless types.  */
+  TYPE_ATTRIBUTES (new_type)
+    = remove_attribute ("SVE sizeless type",
+			copy_list (TYPE_ATTRIBUTES (new_type)));
+
+  /* Apply the relevant attributes, qualifiers and alignment of TYPE,
+     if they differ from the original (sizeless) BASE_TYPE.  */
+  if (TYPE_ATTRIBUTES (base_type) != TYPE_ATTRIBUTES (type)
+      || TYPE_QUALS (base_type) != TYPE_QUALS (type))
+    {
+      tree attrs = remove_attribute ("SVE sizeless type",
+				     copy_list (TYPE_ATTRIBUTES (type)));
+      new_type = build_type_attribute_qual_variant (new_type, attrs,
+						    TYPE_QUALS (type));
+    }
+  if (TYPE_ALIGN (base_type) != TYPE_ALIGN (type))
+    new_type = build_aligned_type (new_type, TYPE_ALIGN (type));
+
+  *node = new_type;
   return NULL_TREE;
 }
 

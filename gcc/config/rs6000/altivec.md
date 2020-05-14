@@ -171,6 +171,8 @@
    UNSPEC_XXEVAL
    UNSPEC_VSTRIR
    UNSPEC_VSTRIL
+   UNSPEC_EXTRACTL
+   UNSPEC_EXTRACTR
 ])
 
 (define_c_enum "unspecv"
@@ -782,6 +784,66 @@
 
   DONE;
 })
+
+(define_expand "vextractl<mode>"
+  [(set (match_operand:V2DI 0 "altivec_register_operand")
+	(unspec:V2DI [(match_operand:VI2 1 "altivec_register_operand")
+		      (match_operand:VI2 2 "altivec_register_operand")
+		      (match_operand:SI 3 "register_operand")]
+		     UNSPEC_EXTRACTL))]
+  "TARGET_FUTURE"
+{
+  if (BYTES_BIG_ENDIAN)
+    {
+      emit_insn (gen_vextractl<mode>_internal (operands[0], operands[1],
+					       operands[2], operands[3]));
+      emit_insn (gen_xxswapd_v2di (operands[0], operands[0]));
+    }
+  else
+    emit_insn (gen_vextractr<mode>_internal (operands[0], operands[2],
+					     operands[1], operands[3]));
+  DONE;
+})
+
+(define_insn "vextractl<mode>_internal"
+  [(set (match_operand:V2DI 0 "altivec_register_operand" "=v")
+	(unspec:V2DI [(match_operand:VEC_I 1 "altivec_register_operand" "v")
+		      (match_operand:VEC_I 2 "altivec_register_operand" "v")
+		      (match_operand:SI 3 "register_operand" "r")]
+		     UNSPEC_EXTRACTL))]
+  "TARGET_FUTURE"
+  "vext<du_or_d><wd>vlx %0,%1,%2,%3"
+  [(set_attr "type" "vecsimple")])
+
+(define_expand "vextractr<mode>"
+  [(set (match_operand:V2DI 0 "altivec_register_operand")
+	(unspec:V2DI [(match_operand:VI2 1 "altivec_register_operand")
+		      (match_operand:VI2 2 "altivec_register_operand")
+		      (match_operand:SI 3 "register_operand")]
+		     UNSPEC_EXTRACTR))]
+  "TARGET_FUTURE"
+{
+  if (BYTES_BIG_ENDIAN)
+    {
+      emit_insn (gen_vextractr<mode>_internal (operands[0], operands[1],
+					       operands[2], operands[3]));
+      emit_insn (gen_xxswapd_v2di (operands[0], operands[0]));
+    }
+  else
+    emit_insn (gen_vextractl<mode>_internal (operands[0], operands[2],
+    					     operands[1], operands[3]));
+  DONE;
+})
+
+(define_insn "vextractr<mode>_internal"
+  [(set (match_operand:V2DI 0 "altivec_register_operand" "=v")
+	(unspec:V2DI [(match_operand:VEC_I 1 "altivec_register_operand" "v")
+		      (match_operand:VEC_I 2 "altivec_register_operand" "v")
+		      (match_operand:SI 3 "register_operand" "r")]
+		     UNSPEC_EXTRACTR))]
+  "TARGET_FUTURE"
+  "vext<du_or_d><wd>vrx %0,%1,%2,%3"
+  [(set_attr "type" "vecsimple")])
 
 (define_expand "vstrir_<mode>"
   [(set (match_operand:VIshort 0 "altivec_register_operand")

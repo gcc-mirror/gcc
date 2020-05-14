@@ -1,3 +1,97 @@
+2020-05-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/78446
+	* call.c (build_op_call): Pass complain to lookup_fnfields.
+	(build_special_member_call): Likewise.
+	* class.c (type_requires_array_cookie): Pass tf_warning_or_error
+	to lookup_fnfields.
+	* cp-tree.h (lookup_fnfields): Add tsubst_flags_t parameter.
+	* except.c (build_throw): Pass tf_warning_or_error to
+	lookup_fnfields.
+	* init.c (build_new_1): Pass complain to lookup_fnfields.
+	* method.c (locate_fn_flags): Likewise.
+	* name-lookup.c (lookup_name_real_1): Pass tf_warning_or_error
+	to lookup_fnfields.
+	* pt.c (tsubst_baselink): Pass complain to lookup_fnfields.
+	* search.c (lookup_fnfields): New 'complain' parameter.  Pass it
+	to lookup_member.
+
+2020-05-14  Nathan Sidwell  <nathan@acm.org>
+
+	* parser.c (cp_parser_diagnose_invalid_typename): Mention
+	std=c++20 not 2a, reformat dependent binfo inform loops.
+
+	* pt.c (tsubst_template_decl): Reorder and commonize some control
+	paths.
+
+	* pt.c (tsubst_friend_function): Simplify control flow.
+
+	* pt.c (lookup_template_class_1): Remove unnecessary else by
+	simply grabbing TYPE_NAME earlier.
+
+	* pt.c (push_template_decl_real): Adjust friend pushing logic.
+ 	Reinit template type.
+
+	* pt.c (build_template_decl): Init DECL_TEMPLATE_RESULT &
+	TREE_TYPE here ...
+	(process_partial_specialization): ... not here ...
+	(push_template_decl_real, add_inherited_template_parms)
+	(build_deduction_guide): ... or here.
+
+2020-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.c (cp_genericize_r): Set cfun->has_omp_target.
+
+2020-05-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/79706
+	* init.c (build_vec_delete_1): Just return error_mark_node if
+	deallocate_expr is error_mark_node.
+	(build_delete): Just return error_mark_node if do_delete is
+	error_mark_node.
+
+2020-05-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95020
+	* constraint.c (tsubst_requires_expr): Produce a new
+	requires-expression when processing_template_decl, even if
+	template arguments are not dependent.
+
+2020-05-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95066
+	* decl.c (duplicate_decls): Set DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P.
+
+2020-05-13  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (template_args_equal): Reorder category checking for
+	clarity.
+
+	* pt.c (perform_typedefs_access_check): Cache expensively
+	calculated object references.
+	(check_auto_in_tmpl_args): Just assert we do not get unexpected
+	nodes, rather than silently do nothing.
+	(append_type_to_template_for_access): Likewise, cache expensie
+	object reference.
+
+	* pt.c (canonical_type_parameter): Simplify.
+
+	Formatting fixups & some simplifications.
+	* pt.c (spec_hash_table): New typedef.
+	(decl_specializations, type_specializations): Use it.
+	(retrieve_specialization): Likewise.
+	(register_specialization): Remove unnecessary casts.
+	(push_template_decl_real): Reformat.
+	(instantiate_class_template_1): Use more RAII.
+	(make_argument_pack): Simplify.
+	(instantiate_template_1): Use gcc_checking_assert for expensive
+	asserts.
+	(instantiate_decl): Likewise.
+	(resolve_typename_type): Reformat comment.
+	* semantics.c (struct deferred_access): Remove unnecessary GTY on
+	member.
+	(begin_class_definition): Fix formatting.
+
 2020-05-13  Jason Merrill  <jason@redhat.com>
 
 	* call.c, class.c, constexpr.c, constraint.cc, decl.c, init.c,

@@ -1,3 +1,189 @@
+2020-05-14  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* config/i386/sse.md (truncv2dfv2df2): New insn pattern.
+	(extendv2sfv2df2): Ditto.
+
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2020-05-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm.c (reg_needs_saving_p): New function.
+	(use_return_insn): Use reg_needs_saving_p.
+	(arm_get_vfp_saved_size): Likewise.
+	(arm_compute_frame_layout): Likewise.
+	(arm_save_coproc_regs): Likewise.
+	(thumb1_expand_epilogue): Likewise.
+	(arm_expand_epilogue_apcs_frame): Likewise.
+	(arm_expand_epilogue): Likewise.
+
+2020-05-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+        * config/arm/arm.c (thumb1_expand_prologue): Update error message.
+
+2020-05-14  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* config/i386/sse.md (sse2_cvtpi2pd): Add memory to alternative 1.
+
+	(floatv2siv2df2): New expander.
+	(floatunsv2siv2df2): New insn pattern.
+
+	(fix_truncv2dfv2si2): New expander.
+	(fixuns_truncv2dfv2si2): New insn pattern.
+
+2020-05-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/95105
+	* config/aarch64/aarch64-sve-builtins.cc
+	(handle_arm_sve_vector_bits_attribute): Create a copy of the
+	original type's TYPE_MAIN_VARIANT, then reapply all the differences
+	between the original type and its main variant.
+
+2020-05-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/95118
+	* real.c (real_to_decimal_for_mode): Make sure we handle
+	a zero with nonzero exponent.
+
+2020-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (GTFILES): Add omp-general.c.
+	* cgraph.h (struct cgraph_node): Add declare_variant_alt and
+	calls_declare_variant_alt members and initialize them in the
+	ctor.
+	* ipa.c (symbol_table::remove_unreachable_nodes): Handle direct
+	calls to declare_variant_alt nodes.
+	* lto-cgraph.c (lto_output_node): Write declare_variant_alt
+	and calls_declare_variant_alt.
+	(input_overwrite_node): Read them back.
+	* omp-simd-clone.c (simd_clone_create): Copy calls_declare_variant_alt
+	bit.
+	* tree-inline.c (expand_call_inline): Or in calls_declare_variant_alt
+	bit.
+	(tree_function_versioning): Copy calls_declare_variant_alt bit.
+	* omp-offload.c (execute_omp_device_lower): Call
+	omp_resolve_declare_variant on direct function calls.
+	(pass_omp_device_lower::gate): Also enable for
+	calls_declare_variant_alt functions.
+	* omp-general.c (omp_maybe_offloaded): Return false after inlining.
+	(omp_context_selector_matches): Handle the case when
+	cfun->curr_properties has PROP_gimple_any bit set.
+	(struct omp_declare_variant_entry): New type.
+	(struct omp_declare_variant_base_entry): New type.
+	(struct omp_declare_variant_hasher): New type.
+	(omp_declare_variant_hasher::hash, omp_declare_variant_hasher::equal):
+	New methods.
+	(omp_declare_variants): New variable.
+	(struct omp_declare_variant_alt_hasher): New type.
+	(omp_declare_variant_alt_hasher::hash,
+	omp_declare_variant_alt_hasher::equal): New methods.
+	(omp_declare_variant_alt): New variables.
+	(omp_resolve_late_declare_variant): New function.
+	(omp_resolve_declare_variant): Call omp_resolve_late_declare_variant
+	when called late.  Create a magic declare_variant_alt fndecl and
+	cgraph node and return that if decision needs to be deferred until
+	after gimplification.
+	* cgraph.c (symbol_table::create_edge): Or in calls_declare_variant_alt
+	bit.
+
+	PR middle-end/95108
+	* omp-simd-clone.c (struct modify_stmt_info): Add after_stmt member.
+	(ipa_simd_modify_stmt_ops): For PHIs, only add before first stmt in
+	entry block if info->after_stmt is NULL, otherwise add after that stmt
+	and update it after adding each stmt.
+	(ipa_simd_modify_function_body): Initialize info.after_stmt.
+
+	* function.h (struct function): Add has_omp_target bit.
+	* omp-offload.c (omp_discover_declare_target_fn_r): New function,
+	old renamed to ...
+	(omp_discover_declare_target_tgt_fn_r): ... this.
+	(omp_discover_declare_target_var_r): Call
+	omp_discover_declare_target_tgt_fn_r instead of
+	omp_discover_declare_target_fn_r.
+	(omp_discover_implicit_declare_target): Also queue functions with
+	has_omp_target bit set, for those walk with
+	omp_discover_declare_target_fn_r, for declare target to functions
+	walk with omp_discover_declare_target_tgt_fn_r.
+
+2020-05-14  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* config/i386/mmx.md (mmx_fix_truncv2sfv2si2): Rename from mmx_pf2id.
+	Add SSE/AVX alternative.  Change operand predicates from
+	nonimmediate_operand to register_mmxmem_operand.
+	Enable instruction pattern for TARGET_MMX_WITH_SSE.
+	(fix_truncv2sfv2si2): New expander.
+	(fixuns_truncv2sfv2si2): New insn pattern.
+
+	(mmx_floatv2siv2sf2): rename from mmx_floatv2si2.
+	Add SSE/AVX alternative.  Change operand predicates from
+	nonimmediate_operand to register_mmxmem_operand.
+	Enable instruction pattern for TARGET_MMX_WITH_SSE.
+	(floatv2siv2sf2): New expander.
+	(floatunsv2siv2sf2): New insn pattern.
+
+	* config/i386/i386-builtin.def (IX86_BUILTIN_PF2ID):
+	Update for rename.
+	(IX86_BUILTIN_PI2FD): Ditto.
+
+2020-05-14  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.c (s390_emit_stack_probe): Call the probe_stack
+	expander.
+	* config/s390/s390.md ("@probe_stack2<mode>", "probe_stack"): New
+	expanders.
+
+2020-05-14  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.c (allocate_stack_space): Add missing updates
+	of last_probe_offset.
+
+2020-05-14  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.md ("allocate_stack"): Call
+	anti_adjust_stack_and_probe_stack_clash when stack clash
+	protection is enabled.
+	* explow.c (anti_adjust_stack_and_probe_stack_clash): Remove
+	prototype. Remove static.
+	* explow.h (anti_adjust_stack_and_probe_stack_clash): Add
+	prototype.
+
+2020-05-13  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/altivec.h (vec_extractl): New #define.
+	(vec_extracth): Likewise.
+	* config/rs6000/altivec.md (UNSPEC_EXTRACTL): New constant.
+	(UNSPEC_EXTRACTR): Likewise.
+	(vextractl<mode>): New expansion.
+	(vextractl<mode>_internal): New insn.
+	(vextractr<mode>): New expansion.
+	(vextractr<mode>_internal): New insn.
+	* config/rs6000/rs6000-builtin.def (__builtin_altivec_vextdubvlx):
+	New built-in function.
+	(__builtin_altivec_vextduhvlx): Likewise.
+	(__builtin_altivec_vextduwvlx): Likewise.
+	(__builtin_altivec_vextddvlx): Likewise.
+	(__builtin_altivec_vextdubvhx): Likewise.
+	(__builtin_altivec_vextduhvhx): Likewise.
+	(__builtin_altivec_vextduwvhx): Likewise.
+	(__builtin_altivec_vextddvhx): Likewise.
+	(__builtin_vec_extractl): New overloaded built-in function.
+	(__builtin_vec_extracth): Likewise.
+	* config/rs6000/rs6000-call.c (altivec_overloaded_builtins):
+	Define overloaded forms of __builtin_vec_extractl and
+	__builtin_vec_extracth.
+	(builtin_function_type): Add cases to mark arguments of new
+	built-in functions as unsigned.
+	(rs6000_common_init_builtins): Add
+	opaque_ftype_opaque_opaque_opaque_opaque.
+	* config/rs6000/rs6000.md (du_or_d): New mode attribute.
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions Available
+	for a Future Architecture): Add description of vec_extractl and
+	vec_extractr built-in functions.
+
 2020-05-13  Richard Biener  <rguenther@suse.de>
 
 	* target.def (add_stmt_cost): Add new vectype parameter.
@@ -68,10 +254,9 @@
 2020-05-13  Hongtao Liu  <hongtao.liu@intel.com>
 
 	PR target/94118
-	 * doc/extend.texi (x86Operandmodifiers): Document more x86
-	 operand modifier.
-	 * gcc/config/i386/i386.c: Add comment for operand modifier N
-	 and I.
+	* doc/extend.texi (x86Operandmodifiers): Document more x86
+	operand modifier.
+	* gcc/config/i386/i386.c: Add comment for operand modifier N and I.
 
 2020-05-12  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
