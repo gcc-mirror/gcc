@@ -27,6 +27,8 @@ git config alias.gcc-undescr \!"f() { o=\$(git config --get gcc-config.upstream)
 
 git config alias.gcc-verify '!f() { "`git rev-parse --show-toplevel`/contrib/gcc-changelog/git_check_commit.py" $@; } ; f'
 
+git config alias.gcc-mklog '!f() { "`git rev-parse --show-toplevel`/contrib/mklog.py" $@; } ; f'
+
 # Make diff on MD files use "(define" as a function marker.
 # Use this in conjunction with a .gitattributes file containing
 # *.md    diff=md

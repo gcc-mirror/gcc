@@ -1,5 +1,12 @@
 2020-05-19  Martin Liska  <mliska@suse.cz>
 
+	* gcc-git-customization.sh: Add
+	alias.gcc-mklog new hook.
+	* mklog.py: New file.
+	* test_mklog.py: New file.
+
+2020-05-19  Martin Liska  <mliska@suse.cz>
+
 	* legacy/mklog: Moved from mklog.
 	* legacy/mklog.pl: Moved from mklog.pl.
 
