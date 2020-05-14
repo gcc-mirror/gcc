@@ -1,3 +1,10 @@
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR jit/94778
+	* jit.dg/jit.exp: Skip jit tests for targets that don't support
+	-lgccjit.
+	* lib/target-supports.exp (check_effective_target_lgccjit): New.
+
 2020-05-14  Andrew Stubbs  <ams@codesourcery.com>
 
 	* testsuite/gcc.target/gcn/gcn.exp: New file.
