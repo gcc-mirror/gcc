@@ -11,14 +11,6 @@
 
 	* testsuite/libgomp.c-c++-common/target-40.c: New test.
 
-2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
-
-	* configure: Regenerated.
-
-2020-05-14  Jakub Jelinek  <jakub@redhat.com>
-
-	* testsuite/libgomp.c-c++-common/target-40.c: New test.
-
 2020-05-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/94690
