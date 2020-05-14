@@ -1102,7 +1102,6 @@ goacc_exit_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 	{
 	case GOMP_MAP_FROM:
 	case GOMP_MAP_FORCE_FROM:
-	case GOMP_MAP_ALWAYS_FROM:
 	  copyfrom = true;
 	  /* Fallthrough.  */
 
