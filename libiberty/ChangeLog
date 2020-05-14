@@ -1,3 +1,36 @@
+2020-05-14  Rainer Schuetze  <r.sagitario@gmx.de>
+	    Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (enum dlang_symbol_kinds): Remove enum.
+	(struct dlang_info): New struct
+	(dlang_decode_backref): New function.
+	(dlang_backref): New function.
+	(dlang_symbol_backref): New function.
+	(dlang_type_backref): New function.
+	(dlang_symbol_name_p): New function.
+	(dlang_function_type_noreturn): New function.
+	(dlang_function_type): Add 'info' parameter.  Decode function type
+	with dlang_function_type_noreturn.
+	(dlang_function_args): Add 'info' parameter.
+	(dlang_type): Add 'info' parameter.  Handle back referenced types.
+	(dlang_identifier): Replace 'kind' parameter with 'info'.  Handle back
+	referenced symbols.  Split off decoding of plain identifiers to...
+	(dlang_lname): ...here.
+	(dlang_parse_mangle): Replace 'kind' parameter with 'info'.  Decode
+	function type and return with dlang_type.
+	(dlang_parse_qualified): Replace 'kind' parameter with 'info', add
+	'suffix_modifier' parameter.  Decode function type with
+	dlang_function_type_noreturn.
+	(dlang_parse_tuple): Add 'info' parameter.
+	(dlang_template_symbol_param): New function.
+	(dlang_template_args): Add 'info' parameter.  Decode symbol parameter
+	with dlang_template_symbol_param.  Handle back referenced values, and
+	externally mangled parameters.
+	(dlang_parse_template): Add 'info' parameter.
+	(dlang_demangle_init_info): New function.
+	(dlang_demangle): Initialize and pass 'info' parameter.
+	* testsuite/d-demangle-expected: Add new tests.
+
 2020-05-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/94998
