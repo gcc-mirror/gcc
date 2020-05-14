@@ -10946,10 +10946,9 @@ s390_prologue_plus_offset (rtx target, rtx reg, rtx offset, bool frame_related_p
 static void
 s390_emit_stack_probe (rtx addr)
 {
-  rtx tmp = gen_rtx_MEM (Pmode, addr);
-  MEM_VOLATILE_P (tmp) = 1;
-  s390_emit_compare (EQ, gen_rtx_REG (Pmode, 0), tmp);
-  emit_insn (gen_blockage ());
+  rtx mem = gen_rtx_MEM (Pmode, addr);
+  MEM_VOLATILE_P (mem) = 1;
+  emit_insn (gen_probe_stack (mem));
 }
 
 /* Use a runtime loop if we have to emit more probes than this.  */

@@ -1,5 +1,9 @@
 2020-05-14  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	* gcc.target/s390/stack-clash-2.c: New test.
+
+2020-05-14  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	* gcc.target/s390/stack-clash-1.c: New test.
 
 2020-05-14  Andreas Krebbel  <krebbel@linux.ibm.com>
