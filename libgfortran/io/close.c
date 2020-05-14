@@ -31,7 +31,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 typedef enum
-{ CLOSE_DELETE, CLOSE_KEEP, CLOSE_UNSPECIFIED }
+{ CLOSE_INVALID = - 1, CLOSE_DELETE, CLOSE_KEEP, CLOSE_UNSPECIFIED }
 close_status;
 
 static const st_option status_opt[] = {
@@ -60,6 +60,12 @@ st_close (st_parameter_close *clp)
   status = !(clp->common.flags & IOPARM_CLOSE_HAS_STATUS) ? CLOSE_UNSPECIFIED :
     find_option (&clp->common, clp->status, clp->status_len,
 		 status_opt, "Bad STATUS parameter in CLOSE statement");
+
+  if (status == CLOSE_INVALID)
+    {
+      library_end ();
+      return;
+    }
 
   u = find_unit (clp->common.unit);
 
