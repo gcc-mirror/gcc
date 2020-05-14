@@ -152,6 +152,16 @@ package body Sem_Ch6 is
    --  against a formal access-to-subprogram type so Get_Instance_Of must
    --  be called.
 
+   procedure Check_Formal_Subprogram_Conformance
+     (New_Id   : Entity_Id;
+      Old_Id   : Entity_Id;
+      Err_Loc  : Node_Id;
+      Errmsg   : Boolean;
+      Conforms : out Boolean);
+   --  Core implementation of Check_Formal_Subprogram_Conformance from spec.
+   --  Errmsg can be set to False to not emit error messages.
+   --  Conforms is set to True if there is conformance, False otherwise.
+
    procedure Check_Limited_Return
      (N      : Node_Id;
       Expr   : Node_Id;
@@ -5759,14 +5769,19 @@ package body Sem_Ch6 is
                Error_Msg_Name_2 :=
                  Name_Ada + Convention_Id'Pos (Convention (New_Id));
                Conformance_Error ("\prior declaration for% has convention %!");
+               return;
 
             else
                Conformance_Error ("\calling conventions do not match!");
+               return;
             end if;
-
-            return;
          else
-            Check_Formal_Subprogram_Conformance (New_Id, Old_Id, Err_Loc);
+            Check_Formal_Subprogram_Conformance
+              (New_Id, Old_Id, Err_Loc, Errmsg, Conforms);
+
+            if not Conforms then
+               return;
+            end if;
          end if;
       end if;
 
@@ -5932,7 +5947,11 @@ package body Sem_Ch6 is
                   begin
                      if Is_Protected_Type (Corresponding_Concurrent_Type (T))
                      then
-                        Error_Msg_PT (New_Id, Ultimate_Alias (Old_Id));
+                        Conforms := False;
+
+                        if Errmsg then
+                           Error_Msg_PT (New_Id, Ultimate_Alias (Old_Id));
+                        end if;
                      else
                         Conformance_Error
                           ("\mode of & does not match!", New_Formal);
@@ -6489,12 +6508,16 @@ package body Sem_Ch6 is
    -----------------------------------------
 
    procedure Check_Formal_Subprogram_Conformance
-     (New_Id  : Entity_Id;
-      Old_Id  : Entity_Id;
-      Err_Loc : Node_Id := Empty)
+     (New_Id   : Entity_Id;
+      Old_Id   : Entity_Id;
+      Err_Loc  : Node_Id;
+      Errmsg   : Boolean;
+      Conforms : out Boolean)
    is
       N : Node_Id;
    begin
+      Conforms := True;
+
       if Is_Formal_Subprogram (Old_Id)
         or else Is_Formal_Subprogram (New_Id)
         or else (Is_Subprogram (New_Id)
@@ -6507,12 +6530,27 @@ package body Sem_Ch6 is
             N := New_Id;
          end if;
 
-         Error_Msg_Sloc := Sloc (Old_Id);
-         Error_Msg_N ("not subtype conformant with declaration#!", N);
-         Error_Msg_NE
-           ("\formal subprograms are not subtype conformant "
-            & "(RM 6.3.1 (17/3))", N, New_Id);
+         Conforms := False;
+
+         if Errmsg then
+            Error_Msg_Sloc := Sloc (Old_Id);
+            Error_Msg_N ("not subtype conformant with declaration#!", N);
+            Error_Msg_NE
+              ("\formal subprograms are not subtype conformant "
+               & "(RM 6.3.1 (17/3))", N, New_Id);
+         end if;
       end if;
+   end Check_Formal_Subprogram_Conformance;
+
+   procedure Check_Formal_Subprogram_Conformance
+     (New_Id  : Entity_Id;
+      Old_Id  : Entity_Id;
+      Err_Loc : Node_Id := Empty)
+   is
+      Ignore : Boolean;
+   begin
+      Check_Formal_Subprogram_Conformance
+        (New_Id, Old_Id, Err_Loc, True, Ignore);
    end Check_Formal_Subprogram_Conformance;
 
    ----------------------------
@@ -8848,7 +8886,7 @@ package body Sem_Ch6 is
 
             --  Warn unless genuine overloading. Do not emit warning on
             --  hiding predefined operators in Standard (these are either an
-            --  (artifact of our implicit declarations, or simple noise) but
+            --  artifact of our implicit declarations, or simple noise) but
             --  keep warning on a operator defined on a local subtype, because
             --  of the real danger that different operators may be applied in
             --  various parts of the program.
