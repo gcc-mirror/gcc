@@ -9919,7 +9919,8 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 
       /* If we called start_enum or pushtag above, this information
 	 will already be set up.  */
-      if (!TYPE_NAME (t))
+      type_decl = TYPE_NAME (t);
+      if (!type_decl)
 	{
 	  TYPE_CONTEXT (t) = FROB_CONTEXT (context);
 
@@ -9928,8 +9929,6 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	  DECL_SOURCE_LOCATION (type_decl)
 	    = DECL_SOURCE_LOCATION (TYPE_STUB_DECL (template_type));
 	}
-      else
-	type_decl = TYPE_NAME (t);
 
       if (CLASS_TYPE_P (template_type))
 	{
