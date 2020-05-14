@@ -4007,6 +4007,12 @@ simplify_conversion_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
       || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (innerop))
     return false;
 
+  // FIXME: This conversion has nothing to do with ranges, and the way
+  // it uses global ranges versus local ranges is interfering with our
+  // ability to diagnose differences between evrp and rvrp1.
+  if (flag_rvrp1_changes)
+    return false;
+
   /* Get the value-range of the inner operand.  Use get_range_info in
      case innerop was created during substitute-and-fold.  */
   wide_int imin, imax;
