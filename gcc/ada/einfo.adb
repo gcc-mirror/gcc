@@ -2577,9 +2577,7 @@ package body Einfo is
 
    function Is_Primitive (Id : E) return B is
    begin
-      pragma Assert
-        (Is_Overloadable (Id)
-           or else Ekind_In (Id, E_Generic_Function, E_Generic_Procedure));
+      pragma Assert (Is_Overloadable (Id) or else Is_Generic_Subprogram (Id));
       return Flag218 (Id);
    end Is_Primitive;
 
@@ -5822,9 +5820,7 @@ package body Einfo is
 
    procedure Set_Is_Primitive (Id : E; V : B := True) is
    begin
-      pragma Assert
-        (Is_Overloadable (Id)
-           or else Ekind_In (Id, E_Generic_Function, E_Generic_Procedure));
+      pragma Assert (Is_Overloadable (Id) or else Is_Generic_Subprogram (Id));
       Set_Flag218 (Id, V);
    end Set_Is_Primitive;
 

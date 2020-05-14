@@ -5664,8 +5664,7 @@ package body Sem_Ch12 is
          --  If renaming, get original unit
 
          if Present (Renamed_Object (Gen_Unit))
-           and then Ekind_In (Renamed_Object (Gen_Unit), E_Generic_Procedure,
-                                                         E_Generic_Function)
+           and then Is_Generic_Subprogram (Renamed_Object (Gen_Unit))
          then
             Gen_Unit := Renamed_Object (Gen_Unit);
             Set_Is_Instantiated (Gen_Unit);

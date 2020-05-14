@@ -729,7 +729,7 @@ package body Sem_Ch8 is
          --  For subprograms, propagate the Intrinsic flag, to allow, e.g.
          --  renamings and subsequent instantiations of Unchecked_Conversion.
 
-         if Ekind_In (Old_P, E_Generic_Function, E_Generic_Procedure) then
+         if Is_Generic_Subprogram (Old_P) then
             Set_Is_Intrinsic_Subprogram
               (New_P, Is_Intrinsic_Subprogram (Old_P));
          end if;
