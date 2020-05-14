@@ -1443,8 +1443,7 @@ operator_lshift::fold_range (irange &r, tree type,
       bool saved_flag_wrapv_pointer = flag_wrapv_pointer;
       flag_wrapv = 1;
       flag_wrapv_pointer = 1;
-      bool b = range_op_handler (MULT_EXPR, type)->fold_range (r, type, op1,
-							       mult);
+      bool b = op_mult.fold_range (r, type, op1, mult);
       flag_wrapv = saved_flag_wrapv;
       flag_wrapv_pointer = saved_flag_wrapv_pointer;
       return b;
@@ -1605,8 +1604,7 @@ operator_rshift::op1_range (irange &r,
     {
       widest_irange shift_range (shift, shift);
       widest_irange lb, ub;
-      range_op_handler (LSHIFT_EXPR, type)->fold_range (lb, type, lhs,
-							shift_range);
+      op_lshift.fold_range (lb, type, lhs, shift_range);
       //    LHS
       // 0000 0111 = OP1 >> 3
       //
@@ -1619,10 +1617,16 @@ operator_rshift::op1_range (irange &r,
 					    build_minus_one_cst (type),
 					    shift));
       widest_irange mask_range (build_zero_cst (type), mask);
-      range_op_handler (PLUS_EXPR, type)->fold_range (ub, type, lb,
-						      mask_range);
+      op_plus.fold_range (ub, type, lb, mask_range);
       r = lb;
       r.union_ (ub);
+
+      if (!lhs.contains_p (build_zero_cst (lhs.type ())))
+	{
+	  mask_range.invert ();
+	  r.intersect (mask_range);
+	}
+
       return true;
     }
   return false;
