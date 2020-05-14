@@ -355,7 +355,6 @@ acc_is_present (void *h, size_t s)
 void
 acc_map_data (void *h, void *d, size_t s)
 {
-  struct target_mem_desc *tgt = NULL;
   size_t mapnum = 1;
   void *hostaddrs = h;
   void *devaddrs = d;
@@ -402,10 +401,13 @@ acc_map_data (void *h, void *d, size_t s)
 
       gomp_mutex_unlock (&acc_dev->lock);
 
-      tgt = gomp_map_vars (acc_dev, mapnum, &hostaddrs, &devaddrs, &sizes,
-			   &kinds, true, GOMP_MAP_VARS_ENTER_DATA);
+      struct target_mem_desc *tgt
+	= gomp_map_vars (acc_dev, mapnum, &hostaddrs, &devaddrs, &sizes,
+			 &kinds, true, GOMP_MAP_VARS_ENTER_DATA);
       assert (tgt);
+      assert (tgt->list_count == 1);
       splay_tree_key n = tgt->list[0].key;
+      assert (n);
       assert (n->refcount == 1);
       assert (n->virtual_refcount == 0);
       /* Special reference counting behavior.  */
@@ -555,16 +557,17 @@ goacc_enter_datum (void **hostaddrs, size_t *sizes, void *kinds, int async)
 
       goacc_aq aq = get_goacc_asyncqueue (async);
 
-      gomp_map_vars_async (acc_dev, aq, mapnum, hostaddrs, NULL, sizes, kinds,
-			   true, GOMP_MAP_VARS_OPENACC_ENTER_DATA);
+      struct target_mem_desc *tgt
+	= gomp_map_vars_async (acc_dev, aq, mapnum, hostaddrs, NULL, sizes,
+			       kinds, true, GOMP_MAP_VARS_OPENACC_ENTER_DATA);
+      assert (tgt);
+      assert (tgt->list_count == 1);
+      n = tgt->list[0].key;
+      assert (n);
+      assert (n->refcount == 1);
+      assert (n->virtual_refcount == 0);
 
-      gomp_mutex_lock (&acc_dev->lock);
-      n = lookup_host (acc_dev, hostaddrs[0], sizes[0]);
-      assert (n != NULL);
-      assert (n->tgt_offset == 0);
-      assert ((uintptr_t) hostaddrs[0] == n->host_start);
-      d = (void *) n->tgt->tgt_start;
-      gomp_mutex_unlock (&acc_dev->lock);
+      d = (void *) tgt->tgt_start;
     }
 
   if (profiling_p)
