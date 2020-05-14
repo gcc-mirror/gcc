@@ -517,7 +517,7 @@ struct token_coro
 	    /* End of the directive, handle the name.  */
 	    if (import)
 	      if (module_state *m
-		  = preprocess_module (import, token_loc,
+		  = preprocess_module (import, token_loc, module != NULL,
 				       is_import, got_export, reader))
 		if (!module)
 		  module = m;

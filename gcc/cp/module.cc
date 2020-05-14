@@ -3450,9 +3450,13 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool interface_p : 1; /* An interface.  */
   bool partition_p : 1; /* A partition.  */
 
+  // FIXME: I think there are only 4 states of the next three bits
+  // 000, 100, 110, 001
   bool direct_p : 1;	/* A direct import of TU, includes the module
 			   itself.  */
+  bool purview_direct_p : 1; /* A direct import within the purview.  */
   bool partition_direct_p : 1; /* A direct import of a partition.  */
+
   bool exported_p : 1;	/* (direct_p || partition_direct_p) && exported.  */
   bool cmi_noted_p : 1; /* We've told the user about the CMI, don't
 			   do it again  */
@@ -3460,7 +3464,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 			   calling.  */
   /* Record extensions emitted or permitted.  */
   unsigned extensions : SE_BITS;
-  /* 12 bits used, 4 bits remain  */
+  /* 13 bits used, 3 bits remain  */
 
  public:
   module_state (tree name, module_state *, bool);
@@ -3509,6 +3513,10 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool is_direct () const
   {
     return direct_p;
+  }
+  bool is_purview_direct () const
+  {
+    return purview_direct_p;
   }
   bool is_partition_direct () const
   {
@@ -3676,7 +3684,7 @@ module_state::module_state (tree name, module_state *parent, bool partition)
 
   module_p = header_p = interface_p = partition_p = false;
 
-  direct_p = partition_direct_p = exported_p = false;
+  direct_p = purview_direct_p = partition_direct_p = exported_p = false;
 
   cmi_noted_p = false;
   call_init_p = false;
@@ -13628,7 +13636,12 @@ module_state::write_imports (bytes_out &sec, bool direct)
 	    {
 	      write_location (sec, imp->imported_from ());
 	      sec.str (imp->filename);
-	      sec.u (imp->exported_p);
+	      int exportedness = 0;
+	      if (imp->exported_p)
+		exportedness = +1;
+	      else if (!imp->purview_direct_p)
+		exportedness = -1;
+	      sec.i (exportedness);
 	    }
 	}
     }
@@ -13655,7 +13668,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
       const char *name = sec.str (NULL);
       module_state *imp = get_module (name);
       unsigned crc = sec.u32 ();
-      bool exported = false;
+      int exportedness = 0;
 
       /* If the import is a partition, it must be the same primary
 	 module as this TU.  */
@@ -13674,7 +13687,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	  /* A direct import, maybe load it.  */
 	  location_t floc = read_location (sec);
 	  const char *fname = sec.str (NULL);
-	  exported = sec.u ();
+	  exportedness = sec.i ();
 
 	  if (sec.get_overrun ())
 	    break;
@@ -13709,7 +13722,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	  if (is_partition ())
 	    {
 	      imp->partition_direct_p = true;
-	      if (exported)
+	      if (exportedness > 0)
 		imp->exported_p = true;
 	    }
 	}
@@ -13728,10 +13741,11 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 
       (*slurp->remap)[ix] = (imp->mod << 1) | (lmaps != NULL);
 
-      if (lmaps)
-	set_import (imp, exported);
+      if (lmaps && exportedness >= 0)
+	set_import (imp, bool (exportedness));
       dump () && dump ("Found %simport:%u %M->%u", !lmaps ? "indirect "
-		       : exported ? "exported " : "", ix, imp,
+		       : exportedness > 0 ? "exported "
+		       : exportedness < 0 ? "gmf" : "", ix, imp,
 		       imp->mod);
       loaded++;
     }
@@ -18468,7 +18482,7 @@ begin_header_unit (cpp_reader *reader)
   main = canonicalize_header_name (NULL, 0, true, main, len);
   module_state *module = get_module (build_string (len, main));
 
-  preprocess_module (module, main_source_loc, false, true, reader);
+  preprocess_module (module, main_source_loc, false, false, true, reader);
 }
 
 /* We've just properly entered the main source file.  I.e. after the
@@ -18497,11 +18511,12 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
 
 /* We've just lexed a module-specific control line for MODULE.  Mark
    the module as a direct import, and possibly load up its macro
-   state.  */
+   state.  Returns the primary module, if this is a module
+   declaration.  */
 
 module_state *
 preprocess_module (module_state *module, location_t from_loc,
-		   bool is_import, bool is_export,
+		   bool in_purview, bool is_import, bool is_export,
 		   cpp_reader *reader)
 {
   if (!is_import)
@@ -18521,15 +18536,18 @@ preprocess_module (module_state *module, location_t from_loc,
 	}
     }
 
-  if (!module->is_direct ())
+  if (!module->is_direct ()
+      || (in_purview && !module->is_purview_direct ()))
     {
       /* Mark as a direct import.  */
       module->direct_p = true;
-      if (!module->load_state)
-	{
-	  module->loc = ordinary_loc_of (line_table, from_loc);
-	  module->set_flatname ();
-	}
+      if (in_purview)
+	module->purview_direct_p = true;
+
+      /* Set the location to be most informative for users.  */
+      module->loc = ordinary_loc_of (line_table, from_loc);
+      if (!module->flatname)
+	module->set_flatname ();
     }
 
   if (is_import

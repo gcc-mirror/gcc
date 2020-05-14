@@ -1,5 +1,17 @@
 2020-05-14  Nathan Sidwell  <nathan@acm.org>
 
+	Stop GMF leakage from interface to implementation
+	gcc/cp/
+	* cp-tree.h (preprocess_module): Add in_purview param.
+	* lex.c (token_coro::resume): Adjust.
+	* module.cc (module_state::purview_direct_p): New flag.
+	(module_state::{read,write}_imports): Pay attention to it for
+	invisible imports.
+	(begin_header_unit): Adjust preprocess_module call.
+	(preprocess_module): Set purview_direct_p as appropriate.
+	gcc/testsuite/
+	* g++.dg/modules/gmf-2_[abcd].[CH]: New.
+
 	Merge master f497e36ae56
 
 2020-05-13  Nathan Sidwell  <nathan@acm.org>

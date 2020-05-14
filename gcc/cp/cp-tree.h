@@ -7061,6 +7061,7 @@ extern void lazy_load_specializations (tree tmpl);
 extern void lazy_load_members (tree decl);
 extern bool lazy_specializations_p (unsigned, bool, bool);
 extern module_state *preprocess_module (module_state *, location_t,
+					bool in_purview, 
 					bool is_import, bool export_p,
 					cpp_reader *reader);
 extern void preprocessed_module (cpp_reader *reader);
