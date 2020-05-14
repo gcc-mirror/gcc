@@ -19866,6 +19866,7 @@ check_clauses:
 	  }
       pc = &OMP_CLAUSE_CHAIN (*pc);
     }
+  cfun->has_omp_target = true;
   return true;
 }
 

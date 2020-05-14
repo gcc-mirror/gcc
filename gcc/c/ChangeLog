@@ -1,3 +1,7 @@
+2020-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_target): Set cfun->has_omp_target.
+
 2020-05-07  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/94703
