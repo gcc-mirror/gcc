@@ -840,9 +840,9 @@ bool
 trace_ranger::trailer (unsigned counter, const char *caller, bool result,
 		       tree name, const irange &r)
 {
-  indent -= bump;
   if (dumping (counter, true))
     {
+      indent -= bump;
       fputs(result ? "TRUE : " : "FALSE : ", dump_file);
       fprintf (dump_file, "(%u) ", counter);
       fputs (caller, dump_file);
@@ -857,10 +857,10 @@ trace_ranger::trailer (unsigned counter, const char *caller, bool result,
 	}
       else
 	fputc('\n', dump_file);
+      // Marks the end of a request.
+      if (indent == 0)
+	fputc('\n', dump_file);
     }
-  // Marks the end of a request.
-  if (indent == 0)
-    fputc('\n', dump_file);
   return result;
 }
 
