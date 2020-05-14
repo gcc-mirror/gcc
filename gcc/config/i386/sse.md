@@ -5532,8 +5532,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define_insn "sse2_cvtpi2pd"
-  [(set (match_operand:V2DF 0 "register_operand" "=v,x")
-	(float:V2DF (match_operand:V2SI 1 "nonimmediate_operand" "vBm,?!y")))]
+  [(set (match_operand:V2DF 0 "register_operand" "=v,?!x")
+	(float:V2DF (match_operand:V2SI 1 "nonimmediate_operand" "vBm,yBm")))]
   "TARGET_SSE2"
   "@
    %vcvtdq2pd\t{%1, %0|%0, %1}
@@ -5543,6 +5543,21 @@
    (set_attr "unit" "*,mmx")
    (set_attr "prefix_data16" "*,1")
    (set_attr "prefix" "maybe_vex,*")
+   (set_attr "mode" "V2DF")])
+
+(define_expand "floatv2siv2df2"
+  [(set (match_operand:V2DF 0 "register_operand")
+	(float:V2DF (match_operand:V2SI 1 "nonimmediate_operand")))]
+  "TARGET_MMX_WITH_SSE")
+
+(define_insn "floatunsv2siv2df2"
+  [(set (match_operand:V2DF 0 "register_operand" "=v")
+	(unsigned_float:V2DF
+	  (match_operand:V2SI 1 "nonimmediate_operand" "vm")))]
+  "TARGET_MMX_WITH_SSE && TARGET_AVX512VL"
+  "vcvtudq2pd\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "V2DF")])
 
 (define_insn "sse2_cvtpd2pi"
@@ -5578,6 +5593,21 @@
    (set_attr "bdver1_decode" "double")
    (set_attr "prefix_data16" "*,1")
    (set_attr "prefix" "maybe_vex,*")
+   (set_attr "mode" "TI")])
+
+(define_expand "fix_truncv2dfv2si2"
+  [(set (match_operand:V2SI 0 "register_operand")
+	(fix:V2SI (match_operand:V2DF 1 "vector_operand")))]
+  "TARGET_MMX_WITH_SSE")
+
+(define_insn "fixuns_truncv2dfv2si2"
+  [(set (match_operand:V2SI 0 "register_operand" "=v")
+	(unsigned_fix:V2SI
+	  (match_operand:V2DF 1 "nonimmediate_operand" "vm")))]
+  "TARGET_MMX_WITH_SSE && TARGET_AVX512VL"
+  "vcvttpd2udq{x}\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_cvtsi2sd"

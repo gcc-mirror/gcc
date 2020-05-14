@@ -1,3 +1,14 @@
+2020-05-14  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* config/i386/sse.md (sse2_cvtpi2pd): Add memory to alternative 1.
+
+	(floatv2siv2df2): New expander.
+	(floatunsv2siv2df2): New insn pattern.
+
+	(fix_truncv2dfv2si2): New expander.
+	(fixuns_truncv2dfv2si2): New insn pattern.
+
 2020-05-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR target/95105
@@ -37,7 +48,7 @@
 	cfun->curr_properties has PROP_gimple_any bit set.
 	(struct omp_declare_variant_entry): New type.
 	(struct omp_declare_variant_base_entry): New type.
-	(struct omp_declare_variant_hasher): New type. 
+	(struct omp_declare_variant_hasher): New type.
 	(omp_declare_variant_hasher::hash, omp_declare_variant_hasher::equal):
 	New methods.
 	(omp_declare_variants): New variable.
@@ -75,19 +86,19 @@
 2020-05-14  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95046
-	* config/i386/mmx.md (mmx_fix_truncv2sfv2si2): rename from mmx_pf2id.
+	* config/i386/mmx.md (mmx_fix_truncv2sfv2si2): Rename from mmx_pf2id.
 	Add SSE/AVX alternative.  Change operand predicates from
 	nonimmediate_operand to register_mmxmem_operand.
 	Enable instruction pattern for TARGET_MMX_WITH_SSE.
 	(fix_truncv2sfv2si2): New expander.
-	(fixuns_truncv2sfv2si2): Ditto.
+	(fixuns_truncv2sfv2si2): New insn pattern.
 
 	(mmx_floatv2siv2sf2): rename from mmx_floatv2si2.
 	Add SSE/AVX alternative.  Change operand predicates from
 	nonimmediate_operand to register_mmxmem_operand.
 	Enable instruction pattern for TARGET_MMX_WITH_SSE.
 	(floatv2siv2sf2): New expander.
-	(floatunsv2siv2sf2): Ditto.
+	(floatunsv2siv2sf2): New insn pattern.
 
 	* config/i386/i386-builtin.def (IX86_BUILTIN_PF2ID):
 	Update for rename.
