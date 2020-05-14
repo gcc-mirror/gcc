@@ -1,3 +1,7 @@
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
 2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
 
 	* configure.ac: Handle `--with-toolexeclibdir='.

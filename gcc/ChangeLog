@@ -1,3 +1,7 @@
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
 2020-05-14  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/arm/arm.c (reg_needs_saving_p): New function.

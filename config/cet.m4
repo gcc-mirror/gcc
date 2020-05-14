@@ -3,7 +3,7 @@ dnl GCC_CET_FLAGS
 dnl    (SHELL-CODE_HANDLER)
 dnl
 AC_DEFUN([GCC_CET_FLAGS],[dnl
-GCC_ENABLE(cet, no, ,[enable Intel CET in target libraries],
+GCC_ENABLE(cet, auto, ,[enable Intel CET in target libraries],
 	   permit yes|no|auto)
 AC_MSG_CHECKING([for CET support])
 
