@@ -1,5 +1,8 @@
 2020-05-14  Nathan Sidwell  <nathan@acm.org>
 
+	* parser.c (cp_parser_diagnose_invalid_typename): Mention
+	std=c++20 not 2a, reformat dependent binfo inform loops.
+
 	* pt.c (tsubst_template_decl): Reorder and commonize some control
 	paths.
 
