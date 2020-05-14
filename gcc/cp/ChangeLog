@@ -1,5 +1,8 @@
 2020-05-14  Nathan Sidwell  <nathan@acm.org>
 
+	* pt.c (push_template_decl_real): Adjust friend pushing logic.
+ 	Reinit template type.
+
 	* pt.c (build_template_decl): Init DECL_TEMPLATE_RESULT &
 	TREE_TYPE here ...
 	(process_partial_specialization): ... not here ...
