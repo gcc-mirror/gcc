@@ -2686,24 +2686,34 @@ package body Exp_Ch6 is
             Parms    : constant List_Id   := Parameter_Associations (N);
             Typ      : constant Entity_Id := Etype (N);
             New_N    : Node_Id;
+            Ptr_Act  : Node_Id;
 
          begin
             --  The last actual in the call is the pointer itself.
             --  If the aspect is inherited, convert the pointer to the
             --  parent type that specifies the contract.
+            --  If the original access_to_subprogram has defaults for
+            --  in_parameters, the call may include named associations, so
+            --  we create one for the pointer as well.
 
             if Is_Derived_Type (Ptr_Type)
               and then Ptr_Type /= Etype (Last_Formal (Wrapper))
             then
-               Append
-                (Make_Type_Conversion (Loc,
-                   New_Occurrence_Of
-                    (Etype (Last_Formal (Wrapper)), Loc), Ptr),
-                   Parms);
+               Ptr_Act :=
+                Make_Type_Conversion (Loc,
+                  New_Occurrence_Of
+                    (Etype (Last_Formal (Wrapper)), Loc), Ptr);
 
             else
-               Append (Ptr, Parms);
+               Ptr_Act := Ptr;
             end if;
+
+            Append
+             (Make_Parameter_Association (Loc,
+                Selector_Name => Make_Identifier (Loc,
+                   Chars (Last_Formal (Wrapper))),
+                 Explicit_Actual_Parameter => Ptr_Act),
+              Parms);
 
             if Nkind (N) = N_Procedure_Call_Statement then
                New_N := Make_Procedure_Call_Statement (Loc,
