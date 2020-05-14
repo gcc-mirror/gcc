@@ -636,11 +636,22 @@ const pass_data pass_data_copy_prop =
   0, /* todo_flags_finish */
 };
 
+class pass_data_factory : public pass_data
+{
+public:
+  pass_data_factory (const pass_data &pass, const char *name)
+  {
+    memcpy (this, &pass, sizeof (*this));
+    if (name)
+      this->name = name;
+  }
+};
+
 class pass_copy_prop : public gimple_opt_pass
 {
 public:
-  pass_copy_prop (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_copy_prop, ctxt)
+  pass_copy_prop (gcc::context *ctxt, const char *name = NULL)
+    : gimple_opt_pass (pass_data_factory (pass_data_copy_prop, name), ctxt)
   {}
 
   /* opt_pass methods: */
@@ -656,4 +667,13 @@ gimple_opt_pass *
 make_pass_copy_prop (gcc::context *ctxt)
 {
   return new pass_copy_prop (ctxt);
+}
+
+// Instantiate a new copy propagation pass with a different name, to
+// minimize changes to tests looking for a particular copyprop dump
+// file.
+gimple_opt_pass *
+make_pass_evrp_copy_prop (gcc::context *ctxt)
+{
+  return new pass_copy_prop (ctxt, "evrp-copyprop");
 }
