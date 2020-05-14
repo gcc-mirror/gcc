@@ -1,5 +1,8 @@
 2020-05-14  Nathan Sidwell  <nathan@acm.org>
 
+	* pt.c (tsubst_template_decl): Reorder and commonize some control
+	paths.
+
 	* pt.c (tsubst_friend_function): Simplify control flow.
 
 	* pt.c (lookup_template_class_1): Remove unnecessary else by

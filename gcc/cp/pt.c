@@ -14031,51 +14031,49 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
     = tsubst_template_parms (DECL_TEMPLATE_PARMS (t), args,
 			     complain);
 
-  if (TREE_CODE (decl) == TYPE_DECL
-      && !TYPE_DECL_ALIAS_P (decl))
+  bool class_p = false;
+  tree inner = decl;
+  ++processing_template_decl;
+  if (TREE_CODE (inner) == FUNCTION_DECL)
+    inner = tsubst_function_decl (inner, args, complain, lambda_fntype);
+  else
     {
-      tree new_type;
-      ++processing_template_decl;
-      new_type = tsubst (TREE_TYPE (t), args, complain, in_decl);
-      --processing_template_decl;
-      if (new_type == error_mark_node)
-	return error_mark_node;
+      if (TREE_CODE (inner) == TYPE_DECL && !TYPE_DECL_ALIAS_P (inner))
+	{
+	  class_p = true;
+	  inner = TREE_TYPE (inner);
+	}
+      inner = tsubst (inner, args, complain, in_decl);
+    }
+  --processing_template_decl;
+  if (inner == error_mark_node)
+    return error_mark_node;
 
-      TREE_TYPE (r) = new_type;
+  if (class_p)
+    {
       /* For a partial specialization, we need to keep pointing to
 	 the primary template.  */
       if (!DECL_TEMPLATE_SPECIALIZATION (t))
-	CLASSTYPE_TI_TEMPLATE (new_type) = r;
-      DECL_TEMPLATE_RESULT (r) = TYPE_MAIN_DECL (new_type);
-      DECL_TI_ARGS (r) = CLASSTYPE_TI_ARGS (new_type);
-      DECL_CONTEXT (r) = TYPE_CONTEXT (new_type);
+	CLASSTYPE_TI_TEMPLATE (inner) = r;
+
+      DECL_TI_ARGS (r) = CLASSTYPE_TI_ARGS (inner);
+      inner = TYPE_MAIN_DECL (inner);
+    }
+  else if (lambda_fntype)
+    {
+      tree args = template_parms_to_args (DECL_TEMPLATE_PARMS (r));
+      DECL_TEMPLATE_INFO (inner) = build_template_info (r, args);
     }
   else
     {
-      tree new_decl;
-      ++processing_template_decl;
-      if (TREE_CODE (decl) == FUNCTION_DECL)
-	new_decl = tsubst_function_decl (decl, args, complain, lambda_fntype);
-      else
-	new_decl = tsubst (decl, args, complain, in_decl);
-      --processing_template_decl;
-      if (new_decl == error_mark_node)
-	return error_mark_node;
-
-      DECL_TEMPLATE_RESULT (r) = new_decl;
-      TREE_TYPE (r) = TREE_TYPE (new_decl);
-      DECL_CONTEXT (r) = DECL_CONTEXT (new_decl);
-      if (lambda_fntype)
-	{
-	  tree args = template_parms_to_args (DECL_TEMPLATE_PARMS (r));
-	  DECL_TEMPLATE_INFO (new_decl) = build_template_info (r, args);
-	}
-      else
-	{
-	  DECL_TI_TEMPLATE (new_decl) = r;
-	  DECL_TI_ARGS (r) = DECL_TI_ARGS (new_decl);
-	}
+      if (TREE_CODE (decl) != TYPE_DECL || !TYPE_DECL_ALIAS_P (decl))
+	DECL_TI_TEMPLATE (inner) = r;
+      DECL_TI_ARGS (r) = DECL_TI_ARGS (inner);
     }
+
+  DECL_TEMPLATE_RESULT (r) = inner;
+  TREE_TYPE (r) = TREE_TYPE (inner);
+  DECL_CONTEXT (r) = DECL_CONTEXT (inner);
 
   DECL_TEMPLATE_INSTANTIATIONS (r) = NULL_TREE;
   DECL_TEMPLATE_SPECIALIZATIONS (r) = NULL_TREE;
