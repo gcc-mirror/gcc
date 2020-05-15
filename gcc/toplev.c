@@ -914,7 +914,7 @@ init_additional_asm_names_file (int n, const char *names[])
     error ("Unable to create a temporary write-only file.");
 
   for (i = 0; i < n; ++i)
-      fputs(names[i], additional_asm_filenames);
+      fprintf(additional_asm_filenames, "%s\n", names[i]);
 
 }
 
@@ -1993,7 +1993,7 @@ lang_dependent_init (const char *name)
   if (!flag_wpa)
     {
       init_asm_output (name);
-      init_additional_asm_names_file (1, &name);
+      init_additional_asm_names_file (1, &asm_file_name);
 
       /* If stack usage information is desired, open the output file.  */
       if (flag_stack_usage && !flag_generate_lto)
