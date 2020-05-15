@@ -349,11 +349,6 @@ class extra_arg_storer
 	return ret;
       }
 
-    void store (char *str)
-      {
-	string_vec.safe_push (str);
-      }
-
     ~extra_arg_storer ()
       {
 	release_extra_args ();
@@ -386,6 +381,9 @@ class extra_arg_storer
     vec<const char **> extra_args;
     vec<char *> string_vec;
 };
+
+/* Store additional strings for further release.  */
+static extra_arg_storer extra_args;
 
 /* Forward declaration for prototypes.  */
 struct path_prefix;
@@ -3163,197 +3161,39 @@ static int get_number_of_args (const char *argv[])
 
 static const char *fsplit_arg (extra_arg_storer *);
 
-/* Accumulate each line in lines vec.  */
-
-void
-get_file_by_lines (extra_arg_storer *storer, vec<char *> *lines, FILE* file)
-{
-  int buf_size = 32, len = 0;
-  char *buf = XNEWVEC (char, buf_size);
-
-  while (1)
-    {
-      if (!fgets (buf + len, buf_size, file))
-	break;
-
-      len = strlen (buf);
-      if (buf[len - 1] == '\n') /* Check if we indeed read the entire line.  */
-	{
-	  buf[len - 1] = '\0';
-	  /* Yes. Insert into the lines vector.  */
-	  lines->safe_push (buf);
-	  len = 0;
-
-	  /* Store the created string for future release.  */
-	  storer->store (buf);
-	}
-      else
-	{
-	  /* No. Increase the buffer size and read again.  */
-	  buf = XRESIZEVEC (char, buf, buf_size * 2);
-	}
-    }
-}
-
-static void identify_asm_file (int argc, const char *argv[],
-			       int *infile_pos, int *outfile_pos)
-{
-  int i;
-
-  static const char *asm_extension[] = {"s", "S"};
-  static const char *obj_extension[] = {"o", "O"};
-
-  bool infile_found = false;
-  bool outfile_found = false;
-
-  for (i = 0; i < argc; i++)
-    {
-      const char *arg = argv[i];
-      const char *ext = argv[i];
-      unsigned j;
-
-      /* Jump to last '.' of string.  */
-      while (*arg)
-	if (*arg++ == '.')
-	  ext = arg;
-      
-      if (!infile_found)
-	for (j = 0; j < ARRAY_SIZE (asm_extension); ++j)
-	    if (!strcmp (ext, asm_extension[j]))
-	      {
-		infile_found = true;
-		*infile_pos = i;
-		break;
-	      }
-
-      if (!outfile_found)
-	for (j = 0; j < ARRAY_SIZE (asm_extension); ++j)
-	    if (!strcmp (ext, obj_extension[j]))
-	      {
-		outfile_found = true;
-		*outfile_pos = i;
-		break;
-	      }
-
-      if (infile_found && outfile_found)
-	return;
-    }
-
-  gcc_assert (infile_found && outfile_found);
-
-}
-
-/* Language is one of three things:
-
-   1) The name of a real programming language.
-   2) NULL, indicating that no one has figured out
-   what it is yet.
-   3) '*', indicating that the file should be passed
-   to the linker.  */
-struct infile
-{
-  const char *name;
-  const char *language;
-  const char *temp_additional_asm;
-  struct compiler *incompiler;
-  bool compiled;
-  bool preprocessed;
-};
-
-/* Also a vector of input files specified.  */
-
-static struct infile *infiles;
-static struct infile *current_infile = NULL;
-
-int n_infiles;
-
-static int n_infiles_alloc;
-
-
 /* Append -fsplit-output=<tempfile> to all calls to compilers.  */
 
 static void append_split_outputs (extra_arg_storer *storer,
-				  struct command **_commands, int *_n_commands)
+				  struct command *commands, int n_commands)
 {
   int i;
 
-  struct command *commands = *_commands;
-  int n_commands = *_n_commands;
-
-  const char **argv;
-  int argc;
-
-  const char *extra_argument;
-
-  if (is_compiler (commands[0].prog))
+  for (i = 0; i < n_commands; i++)
     {
-      extra_argument = fsplit_arg (storer);
+      const char **argv;
+      int argc;
 
-      argc = get_number_of_args (commands[0].argv);
-      argv = storer->create_new (argc + 2);
+      const char *extra_argument;
 
-      memcpy (argv, commands[0].argv, argc * sizeof (const char *));
-      argv[argc++] = extra_argument;
-      argv[argc]   = NULL;
-
-      commands[0].argv = argv;
-    }
-
-  else if (is_assembler (commands[0].prog))
-    {
-      vec<char *> additional_asm_files;
-
-      FILE *temp_asm_file;
-
-      struct command orig;
-      const char **orig_argv;
-      int orig_argc;
-
-      int infile_pos;
-      int outfile_pos;
-
-      if (n_commands != 1)
-	fatal_error (input_location, "Auto parallelism is unsupported when piping commands");
-
-      temp_asm_file = fopen (current_infile->temp_additional_asm, "r");
-
-      if (!temp_asm_file)
-	fatal_error (input_location, "Temporary file containing additional asm files not found");
-
-      get_file_by_lines (storer, &additional_asm_files, temp_asm_file);
-      fclose (temp_asm_file);
-
-      /* Get original command.  */
-      orig = commands[0];
-      orig_argv = commands[0].argv;
-      orig_argc = get_number_of_args (orig.argv);
-
-      
-      /* Update commands array to include the extra `as' calls.  */
-      *_n_commands = additional_asm_files.length ();
-      n_commands = *_n_commands;
-
-      gcc_assert (n_commands > 0);
-
-      *_commands = XRESIZEVEC (struct command, *_commands, n_commands);
-      commands = *_commands;
-
-      identify_asm_file (orig_argc, orig_argv, &infile_pos, &outfile_pos);
-
-      for (i = 0; i < n_commands; i++)
+      if (is_compiler (commands[i].prog))
 	{
-	  const char **argv = storer->create_new (orig_argc + 1);
-	  memcpy (argv, orig_argv, (orig_argc + 1) * sizeof (const char *));
+	  extra_argument = fsplit_arg (storer);
 
-	  argv[infile_pos] = additional_asm_files[i];
-	  /* argv[outfile_pos] ?? do what?  */
+	  argc = get_number_of_args (commands[i].argv);
+	  argv = storer->create_new (argc + 2);
 
-	  commands[i].prog = orig.prog;
+	  memcpy (argv, commands[i].argv, argc * sizeof (const char *));
+	  argv[argc++] = extra_argument;
+	  argv[argc]   = NULL;
+
 	  commands[i].argv = argv;
+	}
+      else if (is_assembler (commands[i].prog))
+	{
+
 	}
 
     }
-
 }
 
 DEBUG_FUNCTION void
@@ -3401,12 +3241,8 @@ execute (void)
   char *string;
   struct pex_obj *pex;
   const char *arg;
-  int ret_code;
 
   struct command *commands;	/* each command buffer with above info.  */
-
-  /* Store additional strings for further release.  */
-  extra_arg_storer extra_args;
 
   gcc_assert (!processing_spec_function);
 
@@ -3425,7 +3261,7 @@ execute (void)
       n_commands++;
 
   /* Get storage for each command.  */
-  commands = (struct command *) XNEWVEC (struct command, n_commands);
+  commands = (struct command *) alloca (n_commands * sizeof (struct command));
 
   /* Split argbuf into its separate piped processes,
      and record info about each one.
@@ -3521,8 +3357,7 @@ execute (void)
 	     returning.  This prevents spurious warnings about
 	     unused linker input files, etc.  */
 	  execution_count++;
-	  ret_code = 0;
-	  goto cleanup;
+	  return 0;
         }
 #ifdef DEBUG
       fnotice (stderr, "\nGo ahead? (y or n) ");
@@ -3533,10 +3368,7 @@ execute (void)
 	  ;
 
       if (i != 'y' && i != 'Y')
-	{
-	  ret_code = 0;
-	  goto cleanup;
-	}
+	return 0;
 #endif /* DEBUG */
     }
 
@@ -3568,7 +3400,7 @@ execute (void)
 #endif
 
   if (!have_S)
-    append_split_outputs (&extra_args, &commands, &n_commands);
+    append_split_outputs (&extra_args, commands, n_commands);
 
   /* Run each piped subprocess.  */
 
@@ -3609,7 +3441,7 @@ execute (void)
   {
     int *statuses;
     struct pex_time *times = NULL;
-    ret_code = 0;
+    int ret_code = 0;
 
     statuses = (int *) alloca (n_commands * sizeof (int));
     if (!pex_get_status (pex, n_commands, statuses))
@@ -3745,12 +3577,9 @@ execute (void)
    if (commands[0].argv[0] != commands[0].prog)
      free (CONST_CAST (char *, commands[0].argv[0]));
 
-   goto cleanup;
-  }
 
-cleanup:
-  free (commands);
-  return ret_code;
+    return ret_code;
+  }
 }
 
 /* Find all the switches given to us
@@ -3819,6 +3648,32 @@ static int n_switches_debug_check[2];
 static int n_switches_alloc_debug_check[2];
 
 static char *debug_check_temp_file[2];
+
+/* Language is one of three things:
+
+   1) The name of a real programming language.
+   2) NULL, indicating that no one has figured out
+   what it is yet.
+   3) '*', indicating that the file should be passed
+   to the linker.  */
+struct infile
+{
+  const char *name;
+  const char *language;
+  const char *temp_additional_asm;
+  struct compiler *incompiler;
+  bool compiled;
+  bool preprocessed;
+};
+
+/* Also a vector of input files specified.  */
+
+static struct infile *infiles;
+static struct infile *current_infile = NULL;
+
+int n_infiles;
+
+static int n_infiles_alloc;
 
 static const char *fsplit_arg (extra_arg_storer *storer)
 {
