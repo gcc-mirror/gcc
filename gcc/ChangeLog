@@ -1,3 +1,8 @@
+2020-05-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000-builtin.def (BU_FUTURE_MISC_2): Also require
+	RS6000_BTM_POWERPC64.
+
 2020-05-15  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (SWI48DWI): New mode iterator.
