@@ -1,3 +1,16 @@
+2020-05-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (SWI48DWI): New mode iterator.
+	(*push<mode>2): Allow XMM registers.
+	(*pushdi2_rex64): Ditto.
+	(*pushsi2_rex64): Ditto.
+	(*pushsi2): Ditto.
+	(push XMM reg splitter): New splitter
+
+	(*pushdf) Change "x" operand constraint to "v".
+	(*pushsf_rex64): Ditto.
+	(*pushsf): Ditto.
+
 2020-05-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92260
