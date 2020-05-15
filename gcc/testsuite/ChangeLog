@@ -1,3 +1,47 @@
+2020-05-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94690
+	* gfortran.dg/gomp/openmp-simd-4.f90: New test.
+
+2020-05-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95133
+	* gcc.dg/pr95133.c: New testcase.
+
+2020-05-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94635
+	* gfortran.dg/gomp/target-exit-data.f90: New.
+
+2020-05-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* gcc.target/i386/pr95046-8.c: New test.
+
+2020-05-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/33315
+	* gcc.dg/tree-ssa/ssa-sink-13.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-sink-14.c: Likewise.
+	* gcc.dg/tree-ssa/split-path-7.c: Disable sinking.
+
+2020-05-14  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	PR rtl-optimization/37451, part of PR target/61837
+	* gcc.target/powerpc/doloop-2.c: New test.
+
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR jit/94778
+	* jit.dg/jit.exp: Skip jit tests for targets that don't support
+	-lgccjit.
+	* lib/target-supports.exp (check_effective_target_lgccjit): New.
+
+2020-05-14  Andrew Stubbs  <ams@codesourcery.com>
+
+	* testsuite/gcc.target/gcn/gcn.exp: New file.
+	* testsuite/gcc.target/gcn/vcc-clobber.c: New file.
+
 2020-05-14  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95046

@@ -3561,19 +3561,12 @@ vect_get_constant_vectors (vec_info *vinfo,
   else
     vector_type = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op), op_node);
 
-  /* ???  For lane-reducing ops we should also have the required number
-     of vector stmts initialized rather than second-guessing here.  */
-  unsigned int number_of_vectors;
-  if (is_gimple_assign (stmt_vinfo->stmt)
-      && (gimple_assign_rhs_code (stmt_vinfo->stmt) == SAD_EXPR
-	  || gimple_assign_rhs_code (stmt_vinfo->stmt) == DOT_PROD_EXPR
-	  || gimple_assign_rhs_code (stmt_vinfo->stmt) == WIDEN_SUM_EXPR))
-    number_of_vectors = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-  else
-    number_of_vectors
-      = vect_get_num_vectors (SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node)
-			      * TYPE_VECTOR_SUBPARTS (stmt_vectype),
-			      vector_type);
+  poly_uint64 vf = 1;
+  if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
+    vf = loop_vinfo->vectorization_factor;
+  unsigned int number_of_vectors
+    = vect_get_num_vectors (vf * group_size, vector_type);
+
   vec_oprnds->create (number_of_vectors);
   auto_vec<tree> voprnds (number_of_vectors);
 

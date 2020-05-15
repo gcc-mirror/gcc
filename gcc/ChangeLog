@@ -1,3 +1,102 @@
+2020-05-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (SWI48DWI): New mode iterator.
+	(*push<mode>2): Allow XMM registers.
+	(*pushdi2_rex64): Ditto.
+	(*pushsi2_rex64): Ditto.
+	(*pushsi2): Ditto.
+	(push XMM reg splitter): New splitter
+
+	(*pushdf) Change "x" operand constraint to "v".
+	(*pushsf_rex64): Ditto.
+	(*pushsf): Ditto.
+
+2020-05-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92260
+	* tree-vect-slp.c (vect_get_constant_vectors): Compute
+	the number of vector stmts in a canonical way.
+
+2020-05-15  Martin Liska  <mliska@suse.cz>
+
+	* hsa-gen.c (get_symbol_for_decl): Fix misleading indentation
+	warning.
+
+2020-05-15  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (v<expander><mode>3): Fix unsignedp.
+
+2020-05-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95133
+	* gimple-ssa-split-paths.c
+	(find_block_to_duplicate_for_splitting_paths): Check for
+	normal edges.
+
+2020-05-15  Christophe Lyon  <christophe.lyon@linaro.org>
+
+        * config/arm/arm.c (reg_needs_saving_p): Add support for interrupt
+        routines.
+        (arm_compute_save_reg0_reg12_mask): Use reg_needs_saving_p.
+
+2020-05-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94635
+	* gimplify.c (gimplify_scan_omp_clauses): For MAP_TO_PSET with
+	OMP_TARGET_EXIT_DATA, use 'release:' unless the associated
+	item is 'delete:'.
+
+2020-05-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* config/i386/i386.md (isa): Add sse3_noavx.
+	(enabled): Handle sse3_noavx.
+
+	* config/i386/mmx.md (mmx_haddv2sf3): New expander.
+	(*mmx_haddv2sf3): Rename from mmx_haddv2sf3.  Add SSE/AVX
+	alternatives.  Match commutative vec_select selector operands.
+	(*mmx_haddv2sf3_low): New insn pattern.
+
+	(*mmx_hsubv2sf3): Add SSE/AVX alternatives.
+	(*mmx_hsubv2sf3_low): New insn pattern.
+
+2020-05-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/33315
+	* tree-ssa-sink.c: Include tree-eh.h.
+	(sink_stats): Add commoned member.
+	(sink_common_stores_to_bb): New function implementing store
+	commoning by sinking to the successor.
+	(sink_code_in_bb): Call it, pass down TODO_cleanup_cfg returned.
+	(pass_sink_code::execute): Likewise.  Record commoned stores
+	in statistics.
+
+2020-05-14  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	PR rtl-optimization/37451, part of PR target/61837
+	* loop-doloop.c (doloop_simplify_count): New function.  Simplify
+	(add -1; zero_ext; add +1) to zero_ext when not wrapping.
+	(doloop_modify): Call doloop_simplify_count.
+
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR jit/94778
+	* doc/sourcebuild.texi: Document effective target lgccjit.
+
+2020-05-14  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (add<mode>3_zext_dup): Change to a
+	define_expand, and rename the original to ...
+	(add<mode>3_vcc_zext_dup): ... this, and add a custom VCC operand.
+	(add<mode>3_zext_dup_exec): Likewise, with ...
+	(add<mode>3_vcc_zext_dup_exec): ... this.
+	(add<mode>3_zext_dup2): Likewise, with ...
+	(add<mode>3_zext_dup_exec): ... this.
+	(add<mode>3_zext_dup2_exec): Likewise, with ...
+	(add<mode>3_zext_dup2): ... this.
+	* config/gcn/gcn.c (gcn_expand_scalar_to_vector_address): Switch
+	addv64di3_zext* calls to use addv64di3_vcc_zext*.
+
 2020-05-14  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95046
