@@ -1762,13 +1762,6 @@ clear_tree_used (tree block)
     clear_tree_used (t);
 }
 
-enum {
-  SPCT_FLAG_DEFAULT = 1,
-  SPCT_FLAG_ALL = 2,
-  SPCT_FLAG_STRONG = 3,
-  SPCT_FLAG_EXPLICIT = 4
-};
-
 /* Examine TYPE and determine a bit mask of the following features.  */
 
 #define SPCT_HAS_LARGE_CHAR_ARRAY	1

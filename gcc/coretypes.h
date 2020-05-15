@@ -219,6 +219,14 @@ enum profile_reproducibility {
     PROFILE_REPRODUCIBILITY_MULTITHREADED
 };
 
+/* Type of -fstack-protector-*.  */
+enum stack_protector {
+  SPCT_FLAG_DEFAULT = 1,
+  SPCT_FLAG_ALL = 2,
+  SPCT_FLAG_STRONG = 3,
+  SPCT_FLAG_EXPLICIT = 4
+};
+
 /* Types of unwind/exception handling info that can be generated.  */
 
 enum unwind_info_type
