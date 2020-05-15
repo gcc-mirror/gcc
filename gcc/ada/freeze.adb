@@ -2573,13 +2573,13 @@ package body Freeze is
 
             --  Propagate flags for component type
 
-            if Is_Controlled (Component_Type (Arr))
+            if Is_Controlled (Ctyp)
               or else Has_Controlled_Component (Ctyp)
             then
                Set_Has_Controlled_Component (Arr);
             end if;
 
-            if Has_Unchecked_Union (Component_Type (Arr)) then
+            if Has_Unchecked_Union (Ctyp) then
                Set_Has_Unchecked_Union (Arr);
             end if;
 
@@ -2590,7 +2590,7 @@ package body Freeze is
             --  that the procedure can be used to check the array type
             --  invariants if any.
 
-            if Has_Invariants (Component_Type (Arr))
+            if Has_Invariants (Ctyp)
               and then not GNATprove_Mode
             then
                Set_Has_Own_Invariants (Arr);
@@ -2902,8 +2902,8 @@ package body Freeze is
                         --  If the Esize of the component is known and equal to
                         --  the component size then even packing is not needed.
 
-                        if Known_Static_Esize (Component_Type (Arr))
-                          and then Esize (Component_Type (Arr)) = Csiz
+                        if Known_Static_Esize (Ctyp)
+                          and then Esize (Ctyp) = Csiz
                         then
                            --  Here the array was requested to be packed, but
                            --  the packing request had no effect whatsoever,
@@ -3156,21 +3156,6 @@ package body Freeze is
          end if;
 
          <<Skip_Packed>>
-
-         --  For non-packed arrays set the alignment of the array to the
-         --  alignment of the component type if it is unknown. Skip this
-         --  in atomic/VFA case (atomic/VFA arrays may need larger alignments).
-
-         if not Is_Packed (Arr)
-           and then Unknown_Alignment (Arr)
-           and then Known_Alignment (Ctyp)
-           and then Known_Static_Component_Size (Arr)
-           and then Known_Static_Esize (Ctyp)
-           and then Esize (Ctyp) = Component_Size (Arr)
-           and then not Is_Atomic_Or_VFA (Arr)
-         then
-            Set_Alignment (Arr, Alignment (Component_Type (Arr)));
-         end if;
 
          --  A Ghost type cannot have a component of protected or task type
          --  (SPARK RM 6.9(19)).
