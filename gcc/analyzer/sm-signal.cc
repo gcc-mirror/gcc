@@ -274,7 +274,7 @@ get_async_signal_unsafe_fns ()
     = sizeof(async_signal_unsafe_fns) / sizeof (async_signal_unsafe_fns[0]);
   function_set fs (async_signal_unsafe_fns, count);
   return fs;
-};
+}
 
 /* Return true if FNDECL is known to be unsafe to call from a signal
    handler.  */
