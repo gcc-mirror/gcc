@@ -1,3 +1,8 @@
+2020-05-15  Martin Liska  <mliska@suse.cz>
+
+	* hsa-gen.c (get_symbol_for_decl): Fix misleading indentation
+	warning.
+
 2020-05-15  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (v<expander><mode>3): Fix unsignedp.
