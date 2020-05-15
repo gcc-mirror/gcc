@@ -3873,13 +3873,6 @@ package body Sem_Ch12 is
          Set_Ekind (Id, E_Generic_Procedure);
       end if;
 
-      --  Analyze the aspects of the generic copy to ensure that all generated
-      --  pragmas (if any) perform their semantic effects.
-
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Id);
-      end if;
-
       --  Set SPARK_Mode from context
 
       Set_SPARK_Pragma           (Id, SPARK_Mode_Pragma);
@@ -3949,6 +3942,13 @@ package body Sem_Ch12 is
 
       else
          Set_Etype (Id, Standard_Void_Type);
+      end if;
+
+      --  Analyze the aspects of the generic copy to ensure that all generated
+      --  pragmas (if any) perform their semantic effects.
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Id);
       end if;
 
       --  For a library unit, we have reconstructed the entity for the unit,
