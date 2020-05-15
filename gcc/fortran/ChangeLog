@@ -1,3 +1,9 @@
+2020-05-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94690
+	* openmp.c (resolve_omp_do): Permit more clauses for SIMD
+	iteration variables.
+
 2020-05-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-openmp.c: Include function.h.
