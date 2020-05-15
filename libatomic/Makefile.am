@@ -153,4 +153,9 @@ libatomic_convenience_la_LIBADD = $(libatomic_la_LIBADD)
 all-multi: $(libatomic_la_LIBADD)
 	$(MULTIDO) $(AM_MAKEFLAGS) DO=all multi-do # $(MAKE)
 
+# target overrides
+ifneq ($(tmake_file),)
+include $(tmake_file)
+endif
+
 include $(top_srcdir)/../multilib.am

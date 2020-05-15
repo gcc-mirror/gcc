@@ -601,6 +601,18 @@ AC_SUBST(IEEE_SUPPORT)
 IEEE_FLAGS="${ieee_flags}"
 AC_SUBST(IEEE_FLAGS)
 
+# Conditionalize the makefile for this target machine.
+tmake_file_=
+for f in ${tmake_file}
+do
+	if test -f ${srcdir}/config/$f
+	then
+		tmake_file_="${tmake_file_} \$(srcdir)/config/$f"
+	fi
+done
+tmake_file="${tmake_file_}"
+AC_SUBST(tmake_file)
+
 
 # Check for POSIX getpwuid_r 
 #
