@@ -1,5 +1,9 @@
 2020-05-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* gcc.target/powerpc/cnttzdm-0.c: Use lp64.
+
+2020-05-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* gcc.target/powerpc/cntlzdm-0.c: Use lp64 instead of powerpc64.
 	* gcc.target/powerpc/cntlzdm-1.c: Ditto.
 	* gcc.target/powerpc/cnttzdm-1.c: Ditto.
