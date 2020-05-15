@@ -1,3 +1,7 @@
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/overload/builtin5.C: New test.
+
 2020-05-18  Doug Rupp  <rupp@adacore.com>
 
 	* gcc.target/powerpc/pr71763.c: Require powerpc_vsx_ok.

@@ -2672,19 +2672,19 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
   switch (code)
     {
 
-/* 4 For every pair T, VQ), where T is an arithmetic or  enumeration  type,
+/* 4 For every pair (T, VQ), where T is an arithmetic type other than bool,
      and  VQ  is  either  volatile or empty, there exist candidate operator
      functions of the form
 	     VQ T&   operator++(VQ T&);
 	     T       operator++(VQ T&, int);
-   5 For every pair T, VQ), where T is an enumeration type or an arithmetic
-     type  other than bool, and VQ is either volatile or empty, there exist
-     candidate operator functions of the form
+   5 For every pair (T, VQ), where T is an arithmetic type other than bool,
+     and VQ is either volatile or empty, there exist candidate operator
+     functions of the form
 	     VQ T&   operator--(VQ T&);
 	     T       operator--(VQ T&, int);
-   6 For every pair T, VQ), where T is  a  cv-qualified  or  cv-unqualified
-     complete  object type, and VQ is either volatile or empty, there exist
-     candidate operator functions of the form
+   6 For every pair (T, VQ), where T is a cv-qualified or cv-unqualified object
+     type, and VQ is either volatile or empty, there exist candidate operator
+     functions of the form
 	     T*VQ&   operator++(T*VQ&);
 	     T*VQ&   operator--(T*VQ&);
 	     T*      operator++(T*VQ&, int);
@@ -2697,6 +2697,10 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
       /* FALLTHRU */
     case POSTINCREMENT_EXPR:
     case PREINCREMENT_EXPR:
+      /* P0002R1, Remove deprecated operator++(bool) added "other than bool"
+	 to p4.  */
+      if (TREE_CODE (type1) == BOOLEAN_TYPE && cxx_dialect >= cxx17)
+	return;
       if (ARITHMETIC_TYPE_P (type1) || TYPE_PTROB_P (type1))
 	{
 	  type1 = build_reference_type (type1);
