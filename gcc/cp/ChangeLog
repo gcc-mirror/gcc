@@ -1,3 +1,9 @@
+2020-05-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/57943
+	* semantics.c (finish_decltype_type): Call
+	instantiate_non_dependent_expr_sfinae on the expression.
+
 2020-05-15  Patrick Palka  <ppalka@redhat.com>
 
 	Revert:
