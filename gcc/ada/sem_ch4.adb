@@ -286,6 +286,7 @@ package body Sem_Ch4 is
       Prefix : Node_Id;
       Exprs  : List_Id) return Boolean;
    --  AI05-0139: Generalized indexing to support iterators over containers
+   --  ??? Need to provide a more detailed spec of what this function does
 
    function Try_Indexed_Call
      (N          : Node_Id;
@@ -8468,6 +8469,12 @@ package body Sem_Ch4 is
 
       if not Is_Overloaded (Func_Name) then
          Func := Entity (Func_Name);
+
+         --  Can happen in case of e.g. cascaded errors
+
+         if No (Func) then
+            return False;
+         end if;
 
          Indexing :=
            Make_Function_Call (Loc,
