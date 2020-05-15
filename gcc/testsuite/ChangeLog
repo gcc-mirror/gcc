@@ -1,5 +1,14 @@
 2020-05-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* gcc.target/powerpc/vec-gnb-0.c: Use int128 effective target.
+	* gcc.target/powerpc/vec-gnb-1.c: Ditto.
+	* gcc.target/powerpc/vec-gnb-2.c: Ditto.
+	* gcc.target/powerpc/vec-ternarylogic-8.c: Ditto.
+	* gcc.target/powerpc/vec-ternarylogic-9.c: Ditto.
+	* gcc.target/powerpc/vec-ternarylogic-10.c: Ditto.
+
+2020-05-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* gcc.target/powerpc/cnttzdm-0.c: Use lp64.
 
 2020-05-15  Segher Boessenkool  <segher@kernel.crashing.org>
