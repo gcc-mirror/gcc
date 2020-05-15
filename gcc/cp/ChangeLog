@@ -1,3 +1,7 @@
+2020-05-15  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (template_args_equal): Fix thinkos in previous 'cleanup'.
+
 2020-05-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/93901
