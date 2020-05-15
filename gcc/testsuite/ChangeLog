@@ -1,3 +1,9 @@
+2020-05-15  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/coroutines/coro.h: Always #include <utility>.
+	* g++.dg/coroutines/coroutines.exp (DEFAULT_COROFLAGS): Use
+	-std=c++20.
+
 2020-05-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/vec-gnb-0.c: Use int128 effective target.

@@ -1,3 +1,7 @@
+2020-05-15  Jason Merrill  <jason@redhat.com>
+
+	* c-opts.c (set_std_cxx20): Set flag_coroutines.
+
 2020-05-13  Jason Merrill  <jason@redhat.com>
 
 	* c.opt (std=c++20): Make c++2a the alias.
