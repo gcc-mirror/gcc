@@ -1,9 +1,18 @@
 #include "rust-resolution.h"
+#include "rust-diagnostics.h"
 
 namespace Rust {
 namespace Analysis {
 
-TypeResolution::TypeResolution (AST::Crate &crate) : scope (), crate (crate) {}
+TypeResolution::TypeResolution (AST::Crate &crate) : scope (), crate (crate)
+{
+  // push all builtin types
+  // base is parse_path_ident_segment based up on segments
+  /*  scope.Insert ("u8",
+	      new AST::MaybeNamedParam (Identifier ("u8"),
+					AST::MaybeNamedParam::IDENTIFIER,
+					NULL, Location ()));*/
+}
 
 TypeResolution::~TypeResolution () {}
 
@@ -40,7 +49,9 @@ TypeResolution::visit (AST::AttrInputMetaItemContainer &input)
 
 void
 TypeResolution::visit (AST::IdentifierExpr &ident_expr)
-{}
+{
+  printf ("IdentifierExpr %s\n", ident_expr.as_string ().c_str ());
+}
 
 void
 TypeResolution::visit (AST::Lifetime &lifetime)
@@ -80,7 +91,11 @@ TypeResolution::visit (AST::QualifiedPathInType &path)
 // rust-expr.h
 void
 TypeResolution::visit (AST::LiteralExpr &expr)
-{}
+{
+  printf ("LiteralExpr: %s\n", expr.as_string ().c_str ());
+  // figure out what this type is and push it onto the
+}
+
 void
 TypeResolution::visit (AST::AttrInputLiteral &attr_input)
 {}
@@ -526,44 +541,70 @@ TypeResolution::visit (AST::SlicePattern &pattern)
 void
 TypeResolution::visit (AST::EmptyStmt &stmt)
 {}
-void
 
+void
 TypeResolution::visit (AST::LetStmt &stmt)
 {
-  printf ("Within LetStmt: %s\n", stmt.as_string ().c_str ());
-
-  if (!stmt.has_type ())
+  AST::Type *inferedType = NULL;
+  if (stmt.has_type ())
     {
-      // infer the type
-      printf ("XXX UNKNOWN TYPE PLEASE INFER ME\n");
+      inferedType = stmt.type.get ();
+    }
+  else if (stmt.has_init_expr ())
+    {
+      stmt.init_expr->accept_vis (*this);
+
+      if (typeBuffer.empty ())
+	{
+	  rust_error_at (
+	    stmt.init_expr->get_locus_slow (),
+	    "unable to determine type for declaration from init expr");
+	  return;
+	}
+
+      inferedType = typeBuffer.back ();
+      typeBuffer.pop_back ();
+    }
+  else
+    {
+      rust_error_at (stmt.locus, "unable to determine type for declaration");
+      return;
     }
 
   // TODO check we know what the type is
 
+  // get all the names part of this declaration and add the types to the scope
   stmt.variables_pattern->accept_vis (*this);
-
   for (auto it = letPatternBuffer.begin (); it != letPatternBuffer.end (); it++)
     {
-      scope.Insert (it->variable_ident, stmt.type.get ());
+      scope.Insert (it->variable_ident, inferedType);
     }
-
   letPatternBuffer.clear ();
 }
 
 void
 TypeResolution::visit (AST::ExprStmtWithoutBlock &stmt)
-{}
+{
+  printf ("ExprStmtWithoutBlock: %s\n", stmt.as_string ().c_str ());
+  stmt.expr->accept_vis (*this);
+}
+
 void
 TypeResolution::visit (AST::ExprStmtWithBlock &stmt)
-{}
+{
+  printf ("ExprStmtWithBlock: %s\n", stmt.as_string ().c_str ());
+  stmt.expr->accept_vis (*this);
+}
 
 // rust-type.h
 void
 TypeResolution::visit (AST::TraitBound &bound)
 {}
+
 void
 TypeResolution::visit (AST::ImplTraitType &type)
 {}
+
 void
 TypeResolution::visit (AST::TraitObjectType &type)
 {}

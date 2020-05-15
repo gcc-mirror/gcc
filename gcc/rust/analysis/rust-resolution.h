@@ -229,6 +229,7 @@ private:
   AST::Crate &crate;
 
   std::vector<AST::IdentifierPattern> letPatternBuffer;
+  std::vector<AST::Type *> typeBuffer;
 };
 
 } // namespace Analysis
