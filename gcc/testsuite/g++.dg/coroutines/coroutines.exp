@@ -29,7 +29,7 @@ if ![info exists DEFAULT_CXXFLAGS] then {
 }
 
 set DEFAULT_COROFLAGS $DEFAULT_CXXFLAGS
-lappend DEFAULT_COROFLAGS "-std=c++17" "-fcoroutines"
+lappend DEFAULT_COROFLAGS "-std=c++20"
 
 dg-init
 

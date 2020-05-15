@@ -2,19 +2,11 @@
 
 #include <coroutine>
 
-#  if __clang__
-#    include <utility>
-#  endif
-
 namespace coro = std;
 
 #elif __has_include(<experimental/coroutine>)
 
 #include <experimental/coroutine>
-
-#  if __clang__
-#    include <utility>
-#  endif
 
 namespace coro = std::experimental;
 
@@ -142,6 +134,8 @@ extern "C" int puts (const char *);
 extern "C" int printf (const char *, ...);
 
 #include <cstdlib> /* for abort () */
+
+#include <utility> /* for std::forward */
 
 #ifndef OUTPUT
 #  define PRINT(X)
