@@ -1,3 +1,17 @@
+2020-05-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* config/i386/i386.md (isa): Add sse3_noavx.
+	(enabled): Handle sse3_noavx.
+
+	* config/i386/mmx.md (mmx_haddv2sf3): New expander.
+	(*mmx_haddv2sf3): Rename from mmx_haddv2sf3.  Add SSE/AVX
+	alternatives.  Match commutative vec_select selector operands.
+	(*mmx_haddv2sf3_low): New insn pattern.
+
+	(*mmx_hsubv2sf3): Add SSE/AVX alternatives.
+	(*mmx_hsubv2sf3_low): New insn pattern.
+
 2020-05-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/33315
