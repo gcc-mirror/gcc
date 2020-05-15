@@ -1,3 +1,28 @@
+2020-05-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/pdep-0.c: Change -mcpu= to -mdejagnu-cpu=.
+	* gcc.target/powerpc/pdep-1.c: Ditto.
+	* gcc.target/powerpc/pextd-0.c: Ditto.
+	* gcc.target/powerpc/pextd-1.c: Ditto.
+	* gcc.target/powerpc/pr90763.c: Ditto.
+	* gcc.target/powerpc/pr91275.c: Ditto.
+	* gcc.target/powerpc/pr92796.c: Ditto.
+	* gcc.target/powerpc/pr93658.c: Ditto.
+	* gcc.target/powerpc/pr93800.c: Ditto.
+	* gcc.target/powerpc/setbceq.c: Ditto.
+	* gcc.target/powerpc/setbcge.c: Ditto.
+	* gcc.target/powerpc/setbcgt.c: Ditto.
+	* gcc.target/powerpc/setbcle.c: Ditto.
+	* gcc.target/powerpc/setbclt.c: Ditto.
+	* gcc.target/powerpc/setbcne.c: Ditto.
+	* gcc.target/powerpc/setnbceq.c: Ditto.
+	* gcc.target/powerpc/setnbcge.c: Ditto.
+	* gcc.target/powerpc/setnbcgt.c: Ditto.
+	* gcc.target/powerpc/setnbcle.c: Ditto.
+	* gcc.target/powerpc/setnbclt.c: Ditto.
+	* gcc.target/powerpc/setnbcne.c: Ditto.
+	* gcc.target/powerpc/xxgenpc-runnable.c: Ditto.
+
 2020-05-15  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/90996
