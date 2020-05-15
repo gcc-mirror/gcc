@@ -6,7 +6,7 @@
 /* { dg-xfail-run-if "PR23616" { *-*-* } { "-fgnu-runtime" } { "-fnext-runtime" } } */
 /* { dg-xfail-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" "-fgnu-runtime" } { "" } } 
 /* { dg-prune-output ".*internal compiler error.*" } */
-/* { dg-options "-fobjc-exceptions -O2" } */
+/* { dg-options "-fobjc-exceptions -O2 -Wno-register" } */
 
 #include "../objc-obj-c++-shared/TestsuiteObject.m"
 #include <stdlib.h>

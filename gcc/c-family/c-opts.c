@@ -256,9 +256,9 @@ c_common_init_options (unsigned int decoded_options_count,
 	  }
     }
 
-  /* Set C++ standard to C++14 if not specified on the command line.  */
+  /* Set C++ standard to C++17 if not specified on the command line.  */
   if (c_dialect_cxx ())
-    set_std_cxx14 (/*ISO*/false);
+    set_std_cxx17 (/*ISO*/false);
 
   global_dc->colorize_source_p = true;
 }
