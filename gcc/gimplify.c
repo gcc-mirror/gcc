@@ -8766,7 +8766,9 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	     to be delete; hence, we turn the MAP_TO_PSET into a MAP_DELETE.  */
 	  if (code == OMP_TARGET_EXIT_DATA
 	      && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_TO_PSET)
-	    OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_DELETE);
+	    OMP_CLAUSE_SET_MAP_KIND (c, OMP_CLAUSE_MAP_KIND (*prev_list_p)
+					== GOMP_MAP_DELETE
+					? GOMP_MAP_DELETE : GOMP_MAP_RELEASE);
 	  else if ((code == OMP_TARGET_EXIT_DATA || code == OMP_TARGET_UPDATE)
 		   && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POINTER
 		       || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_TO_PSET))
