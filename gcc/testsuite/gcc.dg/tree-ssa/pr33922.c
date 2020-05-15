@@ -15,9 +15,8 @@ typedef struct
 ProtocolOperations;
 static const ProtocolOperations *protocol;
 int
-brl_readCommand (BrailleDisplay * brl)
+brl_readCommand (BrailleDisplay * brl, unsigned long int keys)
 {
-  unsigned long int keys;
   int command;
   int keyPressed;
   unsigned char routingKeys[200];
