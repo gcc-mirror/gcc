@@ -1,3 +1,17 @@
+2020-05-14  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* gcc.c (extra_arg_storer): New function store.
+	(extra_args): Move to execute.
+	(get_file_by_lines): New function.
+	(identify_asm_files): New function.
+	(struct infile): Move up.
+	(current_infile): New variable.
+	(append_list_outputs): Handle the `as' case.
+	(execute): Use XNEWVEC instead of alloca.
+	* toplev.c (init_additional_asm_names_file): Break file list with
+	newline.
+	(lang_dependent_init): Provide correct asm filename.
+	
 2020-05-12  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* gcc.c (extra_arg_storer): New variable extra_args.
