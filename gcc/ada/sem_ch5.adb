@@ -1833,7 +1833,7 @@ package body Sem_Ch5 is
 
             --  If condition is False, analyze THEN with expansion off
 
-            else -- Is_False (Expr_Value (Cond))
+            else pragma Assert (Is_False (Expr_Value (Cond)));
                Expander_Mode_Save_And_Set (False);
                In_Deleted_Code := True;
                Analyze_Statements (Tstm);
