@@ -147,6 +147,7 @@ protected:
  * difficulties, can only be guaranteed to hold an expression). */
 class ExprStmtWithoutBlock : public ExprStmt
 {
+public:
   // ExprWithoutBlock* expr;
   /* HACK: cannot ensure type safety of ExprWithoutBlock due to Pratt parsing,
    * so have to store more general type of Expr. FIXME: fix this issue somehow
@@ -154,7 +155,6 @@ class ExprStmtWithoutBlock : public ExprStmt
   //::std::unique_ptr<ExprWithoutBlock> expr;
   ::std::unique_ptr<Expr> expr;
 
-public:
   /*~ExpressionStatementWithoutBlock() {
       delete expr;
   }*/
@@ -201,10 +201,10 @@ protected:
 // Statement containing an expression with a block
 class ExprStmtWithBlock : public ExprStmt
 {
+public:
   // ExprWithBlock* expr;
   ::std::unique_ptr<ExprWithBlock> expr;
 
-public:
   /*~ExpressionStatementWithBlock() {
       delete expr;
   }*/
