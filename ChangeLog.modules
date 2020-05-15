@@ -1,5 +1,14 @@
 2020-05-15  Nathan Sidwell  <nathan@acm.org>
 
+	Enumerate load states.
+	gcc/cp/
+	* module.cc (enum module_loadedness): New.
+	(module_state::load_state): Rename to ..
+	(module_state::loadedness): ... this, change type.
+	(module_state::read_{imports,preprocessor,language}): Adjust,
+	(module_State::{load_section,do_mport}): Likewise,
+	(direct_import, {import,declare,preprocess}_module): Likewise.
+
 	Remove  {,purview_,partition_}direct_p flags.
 	gcc/cp/
 	* module.cc (module_state::{,purview_,partition_}_direct_p):

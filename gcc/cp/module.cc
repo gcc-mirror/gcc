@@ -3403,12 +3403,20 @@ struct module_state_config;
 
 unsigned module_streaming;
 
+/* Increasing levels of loadedness.  */
+enum module_loadedness {
+  ML_NONE,		/* Not loaded.  */
+  ML_CONFIG,		/* Config loaed.  */
+  ML_PREPROCESSOR,	/* Preprocessor loaded.  */
+  ML_LANGUAGE,		/* Language loaded.  */
+};
+
 /* Increasing levels of directness (toplevel) of import.  */
 enum module_directness {
-  MD_NONE,  /* Not direct.  */
-  MD_PARTITION_DIRECT,  /* Direct import of a partition.  */
-  MD_DIRECT,  /* Direct import.  */
-  MD_PURVIEW_DIRECT, /* direct import in purview.  */
+  MD_NONE,  		/* Not direct.  */
+  MD_PARTITION_DIRECT,	/* Direct import of a partition.  */
+  MD_DIRECT,		/* Direct import.  */
+  MD_PURVIEW_DIRECT,	/* direct import in purview.  */
 };
 
 /* State of a particular module. */
@@ -3447,11 +3455,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
   unsigned short subst;	/* Mangle subst if !0.  */
 
-  /* 0 - not loaded
-     1 - initial load
-     2 - cpp loaded (only relevant if cpp loading occurs)
-     3 - lang loaded.  */
-  unsigned load_state : 2;	/* loaded state*/
+  /* How loaded this module is.  */
+  enum module_loadedness loadedness : 2;
 
   bool module_p : 1;    /* /The/ module of this TU.  */
   bool header_p : 1;	/* Is a header unit.  */
@@ -3684,7 +3689,7 @@ module_state::module_state (tree name, module_state *parent, bool partition)
     loc (UNKNOWN_LOCATION),
     crc (0), mod (MODULE_UNKNOWN), remap (0), subst (0)
 {
-  load_state = 0;
+  loadedness = ML_NONE;
 
   module_p = header_p = interface_p = partition_p = false;
 
@@ -13700,7 +13705,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	  if (!imp->check_not_purview (loc))
 	    continue;
 
-	  if (!imp->load_state)
+	  if (imp->loadedness == ML_NONE)
 	    {
 	      imp->loc = floc;
 	      imp->crc = crc;
@@ -13735,7 +13740,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
       else
 	{
 	  /* An indirect import, find it, it should already be here.  */
-	  if (!imp->load_state)
+	  if (imp->loadedness == ML_NONE)
 	    {
 	      error_at (loc, "indirect import %qs is not already loaded", name);
 	      continue;
@@ -17158,7 +17163,7 @@ module_state::read_preprocessor (bool outermost)
   gcc_checking_assert (is_header () && slurp
 		       && slurp->remap_module (0) == mod);
 
-  if (load_state == 2)
+  if (loadedness == ML_PREPROCESSOR)
     return !(from () && from ()->get_error ());
 
   bool ok = true;
@@ -17186,7 +17191,7 @@ module_state::read_preprocessor (bool outermost)
   if (ok && !read_macros ())
     ok = false;
 
-  load_state = 2;
+  loadedness = ML_PREPROCESSOR;
   announce ("macros");
 
   if (flag_preprocess_only)
@@ -17218,7 +17223,7 @@ module_state::read_language (bool outermost)
 {
   gcc_checking_assert (!lazy_snum);
 
-  if (load_state == 3)
+  if (loadedness == ML_LANGUAGE)
     return !(slurp && from () && from ()->get_error ());
 
   gcc_checking_assert (slurp && slurp->current == ~0u
@@ -17312,7 +17317,7 @@ module_state::read_language (bool outermost)
   function_depth--;
   
   announce (flag_module_lazy ? "lazy" : "imported");
-  load_state = 3;
+  loadedness = ML_LANGUAGE;
 
   gcc_assert (slurp->current == ~0u);
 
@@ -17384,12 +17389,12 @@ module_state::load_section (unsigned snum, mc_slot *mslot)
 void
 module_state::maybe_completed_reading ()
 {
-  if (load_state == 3 && slurp->current == ~0u && !slurp->remaining)
+  if (loadedness == ML_LANGUAGE && slurp->current == ~0u && !slurp->remaining)
     {
       lazy_open--;
       // FIXME: Can we just keep the file mapped until after
-      // preprocessing?  I think that's what the above load_state == 3
-      // is ensuring?
+      // preprocessing?  I think that's what the above load_state ==
+      // ML_LANGUAGE is ensuring?
       if (slurp->macro_defs.size)
 	from ()->preserve (slurp->macro_defs);
       if (slurp->macro_tbl.size)
@@ -17850,7 +17855,7 @@ module_state::set_flatname ()
 bool
 module_state::do_import (char const *fname, cpp_reader *reader, bool outermost)
 {
-  gcc_assert (global_namespace == current_scope () && !load_state);
+  gcc_assert (global_namespace == current_scope () && loadedness == ML_NONE);
 
   loc = linemap_module_loc (line_table, loc, get_flatname ());
 
@@ -17880,7 +17885,7 @@ module_state::do_import (char const *fname, cpp_reader *reader, bool outermost)
   if (!from ()->get_error ())
     {
       announce ("importing");
-      load_state = 1;
+      loadedness = ML_CONFIG;
       lazy_open++;
       ok = read_initial (reader);
       slurp->lru = ++lazy_lru;
@@ -18114,11 +18119,11 @@ direct_import (module_state *import, cpp_reader *reader)
   unsigned n = dump.push (import);
 
   gcc_checking_assert (import->is_direct () && import->is_rooted ());
-  if (!import->load_state)
+  if (import->loadedness == ML_NONE)
     if (!import->do_import (NULL, reader, true))
       gcc_unreachable ();
 
-  if (import->load_state < 3)
+  if (import->loadedness < ML_LANGUAGE)
     {
       if (!attached_table)
 	attached_table = new attachset::hash (EXPERIMENT (1, 400));
@@ -18154,7 +18159,7 @@ import_module (module_state *import, location_t from_loc, bool exporting_p,
   if (exporting_p || module_exporting_p ())
     import->exported_p = true;
 
-  if (import->load_state)
+  if (import->loadedness != ML_NONE)
     {
       from_loc = ordinary_loc_of (line_table, from_loc);
       linemap_module_reparent (line_table, import->loc, from_loc);
@@ -18175,7 +18180,7 @@ declare_module (module_state *module, location_t from_loc, bool exporting_p,
   gcc_assert (global_namespace == current_scope ());
 
   module_state *current = (*modules)[0];
-  if (module_purview_p () || module->load_state)
+  if (module_purview_p () || module->loadedness != ML_NONE)
     {
       error_at (from_loc, module_purview_p ()
 		? G_("module already declared")
@@ -18556,14 +18561,14 @@ preprocess_module (module_state *module, location_t from_loc,
 
   if (is_import
       && !module->is_module () && module->is_header ()
-      && module->load_state < 2
+      && module->loadedness < ML_PREPROCESSOR
       && (!cpp_get_options (reader)->preprocessed
 	  || cpp_get_options (reader)->directives_only))
     {
       timevar_start (TV_MODULE_IMPORT);
       unsigned n = dump.push (module);
 
-      if (!module->load_state)
+      if (module->loadedness == ML_NONE)
 	{
 	  unsigned pre_hwm = 0;
 
@@ -18585,7 +18590,7 @@ preprocess_module (module_state *module, location_t from_loc,
 	  spans.open ();
 	}
 
-      if (module->load_state < 2)
+      if (module->loadedness < ML_PREPROCESSOR)
 	if (module->read_preprocessor (true))
 	  module->import_macros ();
 
