@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fstack-protector-strong -mcpu=power8" } */
+/* { dg-options "-O2 -fstack-protector-strong -mdejagnu-cpu=power8" } */
 /* { dg-require-effective-target ppc_ieee128_ok } */
 
 typedef union

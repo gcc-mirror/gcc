@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target powerpc64 } */
-/* { dg-options "-mcpu=future" } */
+/* { dg-options "-mdejagnu-cpu=future" } */
 
 extern void abort (void);
 
