@@ -1,3 +1,10 @@
+2020-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93286 - ICE with __is_constructible and variadic template.
+	* pt.c (tsubst_tree_list): New.
+	(tsubst, tsubst_copy_and_build): Use it.
+	* decl2.c (is_late_template_attribute): Handle error_mark_node args.
+
 2020-05-15  Nathan Sidwell  <nathan@acm.org>
 
 	* pt.c (template_args_equal): Fix thinkos in previous 'cleanup'.
