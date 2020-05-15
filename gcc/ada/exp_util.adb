@@ -6418,7 +6418,7 @@ package body Exp_Util is
             if Loc < Sloc (CV) then
                return;
 
-               --  After end of IF statement
+            --  After end of IF statement
 
             elsif Loc >= Sloc (CV) + Text_Ptr (UI_To_Int (End_Span (CV))) then
                return;
@@ -12741,7 +12741,7 @@ package body Exp_Util is
                --  they occur at the same level. If the second one is nested,
                --  then the decision is neither right nor wrong (it would be
                --  equally OK to leave the outer one in place, or take the new
-               --  inner one. Really we should record both, but our data
+               --  inner one). Really we should record both, but our data
                --  structures are not that elaborate.
 
                if Nkind (Current_Value (Ent)) not in N_Subexpr then

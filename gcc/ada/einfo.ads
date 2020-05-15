@@ -822,7 +822,7 @@ package Einfo is
 --       Defined in all object entities. Set in E_Variable, E_Constant, formal
 --       parameters and E_Loop_Parameter entities if we have trackable current
 --       values. Set non-Empty if the (constant) current value of the variable
---       is known, This value is valid only for references from the same
+--       is known. This value is valid only for references from the same
 --       sequential scope as the entity. The sequential scope of an entity
 --       includes the immediate scope and any contained scopes that are package
 --       specs, package bodies, blocks (at any nesting level) or statement
