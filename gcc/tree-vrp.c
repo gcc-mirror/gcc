@@ -1448,8 +1448,6 @@ dump_assert_info (FILE *file, const assert_info &assert)
   fprintf (file, "val=[");
   print_generic_expr (file, assert.val);
   fprintf (file, "]\n");
-  fprintf (file, "\tgori_computable: %d\n", assert.gori_computable_p);
-  fprintf (file, "\n");
 }
 
 DEBUG_FUNCTION void
@@ -1476,23 +1474,6 @@ debug (const vec<assert_info> &asserts)
   dump_asserts_info (stderr, asserts);
 }
 
-class gori_computable
-{
-  static bool current_status;
-public:
-  gori_computable (bool new_status)
-  {
-    saved_status = current_status;
-    current_status = new_status;
-  }
-  ~gori_computable () { current_status = saved_status; }
-  static bool status () { return current_status; }
-private:
-  bool saved_status;
-};
-
-bool gori_computable::current_status = true;
-
 /* Push the assert info for NAME, EXPR, COMP_CODE and VAL to ASSERTS.  */
 
 static void
@@ -1506,9 +1487,6 @@ add_assert_info (vec<assert_info> &asserts,
     val = drop_tree_overflow (val);
   info.val = val;
   info.expr = expr;
-  info.gori_computable_p = gori_computable::status ();
-  if (TREE_CODE (val) == SSA_NAME)
-    info.gori_computable_p = false;
   asserts.safe_push (info);
   if (dump_enabled_p ())
     dump_printf (MSG_NOTE | MSG_PRIORITY_INTERNALS,
@@ -1864,14 +1842,6 @@ register_edge_assert_for_2 (tree name, edge e,
       enum tree_code new_code = ((comp_code == GT_EXPR || comp_code == GE_EXPR)
 				 ? GT_EXPR : LE_EXPR);
 
-      // When noticing an overflow check:
-      //
-      //   unsigned_sum = unsigned_a + 1
-      //   if (unsigned_sum > unsigned_a)
-      //
-      // ...evrp registers that unsigned_a < MAXINT.
-      // This is technically an equivalence, so keep gori from checking this.
-      gori_computable set_gori_computable (false);
       add_assert_info (asserts, name, name, new_code, x);
     }
   add_assert_info (asserts, name, name, comp_code, val);
@@ -1953,7 +1923,6 @@ register_edge_assert_for_2 (tree name, edge e,
        || comp_code == EQ_EXPR)
       && TREE_CODE (val) == INTEGER_CST)
     {
-      gori_computable set_gori_computable (false);
       imm_use_iterator ui;
       gimple *use_stmt;
       FOR_EACH_IMM_USE_STMT (use_stmt, ui, name)
@@ -2134,19 +2103,6 @@ register_edge_assert_for_2 (tree name, edge e,
          simply register the same assert for it.  */
       if (CONVERT_EXPR_CODE_P (rhs_code))
 	{
-	  // This disables narrowing casts:
-	  //
-	  // long unsigned int _2;
-	  // char _3;
-	  // _3 = (char) _2;
-	  // if (_3 == 0)
-	  //   goto <bb 6>;
-	  //
-	  // evrp gets [0,0]
-	  // gori gets [0,0][256, 18446744073709551360]
-	  //
-	  // See: See tree-ssa/ivopts-lower_base.c
-	  gori_computable set_gori_computable (false);
 	  wide_int rmin, rmax;
 	  tree rhs1 = gimple_assign_rhs1 (def_stmt);
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
@@ -2188,7 +2144,6 @@ register_edge_assert_for_2 (tree name, edge e,
       names[0] = NULL_TREE;
       names[1] = NULL_TREE;
       cst2 = NULL_TREE;
-      bool problematic_cast = false;
       if (rhs_code == BIT_AND_EXPR
 	  || (CONVERT_EXPR_CODE_P (rhs_code)
 	      && INTEGRAL_TYPE_P (TREE_TYPE (val))
@@ -2196,13 +2151,6 @@ register_edge_assert_for_2 (tree name, edge e,
 	      && TYPE_PRECISION (TREE_TYPE (gimple_assign_rhs1 (def_stmt)))
 		 > prec))
 	{
-	  // This catches problematic truncating casts.
-	  //
-	  // Trigger is c-c++-common/torture/builtin-arith-overflow-p-19.c
-	  // and gimple.c.
-	  if (CONVERT_EXPR_CODE_P (rhs_code))
-	    problematic_cast = true;
-
 	  name2 = gimple_assign_rhs1 (def_stmt);
 	  if (rhs_code == BIT_AND_EXPR)
 	    cst2 = gimple_assign_rhs2 (def_stmt);
@@ -2389,7 +2337,6 @@ register_edge_assert_for_2 (tree name, edge e,
 	  if (valid_p
 	      && (maxv - minv) != -1)
 	    {
-	      gori_computable set_gori_computable (!problematic_cast);
 	      tree tmp, new_val, type;
 	      int i;
 
