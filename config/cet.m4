@@ -13,6 +13,8 @@ case "$host" in
       auto)
 	# Check if target supports multi-byte NOPs
 	# and if assembler supports CET insn.
+	save_CFLAGS="$CFLAGS"
+	CFLAGS="$CFLAGS -fcf-protection"
 	AC_COMPILE_IFELSE(
 	 [AC_LANG_PROGRAM(
 	  [],
@@ -25,6 +27,7 @@ asm ("setssbsy");
 	  ])],
 	 [enable_cet=yes],
 	 [enable_cet=no])
+	CFLAGS="$save_CFLAGS"
 	;;
       yes)
 	# Check if assembler supports CET.

@@ -1,3 +1,9 @@
+2020-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/95147
+	* cet.m4 (GCC_CET_FLAGS): Also check if -fcf-protection works
+	when defaulting to auto.
+
 2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* cet.m4 (GCC_CET_FLAGS): Change default to auto.
