@@ -578,6 +578,10 @@ dlang_attributes (string *decl, const char *mangled)
 	  mangled++;
 	  string_append (decl, "scope ");
 	  continue;
+	case 'm': /* @live */
+	  mangled++;
+	  string_append (decl, "@live ");
+	  continue;
 
 	default: /* unknown attribute */
 	  return NULL;

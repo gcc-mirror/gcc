@@ -462,6 +462,10 @@ _D8demangle4testFDFNiZaZv
 demangle.test(char() @nogc delegate)
 #
 --format=dlang
+_D8demangle4testFDFNmZaZv
+demangle.test(char() @live delegate)
+#
+--format=dlang
 _D8demangle4testFDFNaNbZaZv
 demangle.test(char() pure nothrow delegate)
 #
@@ -536,6 +540,10 @@ demangle.test(char() @safe function)
 --format=dlang
 _D8demangle4testFPFNiZaZv
 demangle.test(char() @nogc function)
+#
+--format=dlang
+_D8demangle4testFPFNmZaZv
+demangle.test(char() @live function)
 #
 --format=dlang
 _D8demangle4testFPFNaNbZaZv
