@@ -881,6 +881,17 @@ if test "x$libgo_cv_as_x86_aes" = xyes; then
 	    [Define if your assembler supports AES instructions.])
 fi
 
+dnl Test whether the linker supports the -static option.
+AC_CACHE_CHECK([whether -static is supported],
+[libgo_cv_ld_static],
+[LDFLAGS_hold=$LDFLAGS
+LDFLAGS="$LDFLAGS -static"
+AC_LINK_IFELSE([AC_LANG_PROGRAM(,)],
+[libgo_cv_ld_static=yes],
+[libgo_cv_ld_static=no])
+LDFLAGS=$LDFLAGS_hold])
+AM_CONDITIONAL(HAVE_STATIC_LINK, test "$libgo_cv_ld_static" = yes)
+
 AC_CACHE_SAVE
 
 if test ${multilib} = yes; then
