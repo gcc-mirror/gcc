@@ -1,3 +1,9 @@
+2020-05-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92260
+	* tree-vect-slp.c (vect_get_constant_vectors): Compute
+	the number of vector stmts in a canonical way.
+
 2020-05-15  Martin Liska  <mliska@suse.cz>
 
 	* hsa-gen.c (get_symbol_for_decl): Fix misleading indentation
