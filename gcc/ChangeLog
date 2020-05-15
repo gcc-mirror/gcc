@@ -1,3 +1,10 @@
+2020-05-14  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	PR rtl-optimization/37451, part of PR target/61837
+	* loop-doloop.c (doloop_simplify_count): New function.  Simplify
+	(add -1; zero_ext; add +1) to zero_ext when not wrapping.
+	(doloop_modify): Call doloop_simplify_count.
+
 2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR jit/94778

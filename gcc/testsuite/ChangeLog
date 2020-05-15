@@ -1,3 +1,8 @@
+2020-05-14  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	PR rtl-optimization/37451, part of PR target/61837
+	* gcc.target/powerpc/doloop-2.c: New test.
+
 2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR jit/94778
