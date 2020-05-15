@@ -1,5 +1,14 @@
 2020-05-15  Nathan Sidwell  <nathan@acm.org>
 
+	Remove  {,purview_,partition_}direct_p flags.
+	gcc/cp/
+	* module.cc (module_state::{,purview_,partition_}_direct_p):
+	Remove flags.
+	(module_state::is{,purview_,partition_}direct_p}): Adjust.
+	(module_state::{read,write}_imports): Remove direct flag handling.
+	(module_state::write): Likewise.
+	(direct_import, process_module): Likewise.
+
 	Duplicate {,purview_,partition_}direct_p flags in an enum.
 	gcc/cp/
 	* module.cc (enum module_directness): New.
