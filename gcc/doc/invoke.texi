@@ -2368,7 +2368,6 @@ The name @samp{c++1y} is deprecated.
 @item gnu++14
 @itemx gnu++1y
 GNU dialect of @option{-std=c++14}.
-This is the default for C++ code.
 The name @samp{gnu++1y} is deprecated.
 
 @item c++17
@@ -2379,6 +2378,7 @@ The name @samp{c++1z} is deprecated.
 @item gnu++17
 @itemx gnu++1z
 GNU dialect of @option{-std=c++17}.
+This is the default for C++ code.
 The name @samp{gnu++1z} is deprecated.
 
 @item c++20
