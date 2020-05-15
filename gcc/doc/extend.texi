@@ -3680,6 +3680,10 @@ This attribute adds stack protection code to the function if
 flags @option{-fstack-protector}, @option{-fstack-protector-strong}
 or @option{-fstack-protector-explicit} are set.
 
+@item no_stack_protector
+@cindex @code{no_stack_protector} function attribute
+This attribute prevents stack protection code for the function.
+
 @item target (@var{string}, @dots{})
 @cindex @code{target} function attribute
 Multiple target back ends implement the @code{target} attribute
