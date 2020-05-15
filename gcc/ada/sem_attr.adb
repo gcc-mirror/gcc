@@ -5512,8 +5512,16 @@ package body Sem_Attr is
             if Is_Entity_Name (P) then
                Pref_Id := Entity (P);
 
-               if Ekind_In (Pref_Id, E_Function, E_Generic_Function)
-                 and then Ekind (Spec_Id) = Ekind (Pref_Id)
+               --  Either both the prefix and the annotated spec must be
+               --  generic functions, or they both must be non-generic
+               --  functions, or the prefix must be generic and the spec
+               --  must be non-generic (i.e. it must denote an instance).
+
+               if (Ekind_In (Pref_Id, E_Function, E_Generic_Function)
+                   and then Ekind (Pref_Id) = Ekind (Spec_Id))
+                    or else
+                  (Ekind (Pref_Id) = E_Generic_Function
+                   and then Ekind (Spec_Id) = E_Function)
                then
                   if Denote_Same_Function (Pref_Id, Spec_Id) then
 

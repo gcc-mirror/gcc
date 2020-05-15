@@ -2276,7 +2276,9 @@ package body Sem_Ch13 is
 
                --  Annotation of a subprogram; aspect expression is required
 
-               elsif Is_Subprogram_Or_Entry (E) then
+               elsif Is_Subprogram_Or_Entry (E)
+                 or else Is_Generic_Subprogram (E)
+               then
                   if Present (Expr) then
 
                      --  If we analyze subprogram body that acts as its own
@@ -2291,11 +2293,13 @@ package body Sem_Ch13 is
                         Restore_Scope := True;
                         Push_Scope (E);
 
-                        if Is_Generic_Subprogram (E) then
-                           Install_Generic_Formals (E);
-                        else
-                           Install_Formals (E);
-                        end if;
+                        --  Only formals of the subprogram itself can appear
+                        --  in Relaxed_Initialization aspect expression, not
+                        --  formals of the enclosing generic unit. (This is
+                        --  different that in Precondition or Depends aspects,
+                        --  where both kinds of formals are allowed.)
+
+                        Install_Formals (E);
                      end if;
 
                      --  Aspect expression is either an aggregate with list of

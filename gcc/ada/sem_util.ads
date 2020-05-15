@@ -741,7 +741,7 @@ package Sem_Util is
    --  Insert new name in symbol table of current scope with check for
    --  duplications (error message is issued if a conflict is found).
    --  Note: Enter_Name is not used for overloadable entities, instead these
-   --  are entered using Sem_Ch6.Enter_Overloadable_Entity.
+   --  are entered using Sem_Ch6.Enter_Overloaded_Entity.
 
    function Entity_Of (N : Node_Id) return Entity_Id;
    --  Obtain the entity of arbitrary node N. If N is a renaming, return the
