@@ -1,3 +1,10 @@
+2020-05-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94635
+	* gimplify.c (gimplify_scan_omp_clauses): For MAP_TO_PSET with
+	OMP_TARGET_EXIT_DATA, use 'release:' unless the associated
+	item is 'delete:'.
+
 2020-05-15  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95046

@@ -1,3 +1,8 @@
+2020-05-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94635
+	* gfortran.dg/gomp/target-exit-data.f90: New.
+
 2020-05-15  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95046
