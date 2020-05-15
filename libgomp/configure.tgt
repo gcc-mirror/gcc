@@ -9,6 +9,8 @@
 #			config subdirectory of the source tree.
 #  XCFLAGS		Add extra compile flags to use.
 #  XLDFLAGS		Add extra link flags to use.
+#  tmake_file		A list of machine-description-specific
+#			makefile fragments.
 
 # Optimize TLS usage by avoiding the overhead of dynamic allocation.
 if test $gcc_cv_have_tls = yes ; then
@@ -30,6 +32,7 @@ if test $gcc_cv_have_tls = yes ; then
   esac
 fi
 
+tmake_file=
 # Since we require POSIX threads, assume a POSIX system by default.
 config_path="posix"
 
@@ -154,6 +157,8 @@ case "${target}" in
 	XLDFLAGS="${XLDFLAGS} -lpthread"
 	# AIX needs -frandom-seed for bootstrap compare.
 	XCFLAGS="${XCFLAGS} -frandom-seed=\$@"
+	# Create AIX-style "FAT" libraries.
+	tmake_file="t-aix"
 	;;
 
   nvptx*-*-*)
