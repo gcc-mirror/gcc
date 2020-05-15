@@ -3743,9 +3743,9 @@ package body Exp_Ch5 is
       --  Another optimization, special cases that can be simplified
 
       --     if expression then
-      --        return true;
+      --        return [standard.]true;
       --     else
-      --        return false;
+      --        return [standard.]false;
       --     end if;
 
       --  can be changed to:
@@ -3755,9 +3755,9 @@ package body Exp_Ch5 is
       --  and
 
       --     if expression then
-      --        return false;
+      --        return [standard.]false;
       --     else
-      --        return true;
+      --        return [standard.]true;
       --     end if;
 
       --  can be changed to:
@@ -3790,9 +3790,9 @@ package body Exp_Ch5 is
                      Else_Expr : constant Node_Id := Expression (Else_Stm);
 
                   begin
-                     if Nkind (Then_Expr) = N_Identifier
+                     if Nkind_In (Then_Expr, N_Expanded_Name, N_Identifier)
                           and then
-                        Nkind (Else_Expr) = N_Identifier
+                        Nkind_In (Else_Expr, N_Expanded_Name, N_Identifier)
                      then
                         if Entity (Then_Expr) = Standard_True
                           and then Entity (Else_Expr) = Standard_False
