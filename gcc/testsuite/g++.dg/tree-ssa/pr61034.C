@@ -1,6 +1,11 @@
 // { dg-do compile }
 // { dg-options "-O2 -fdump-tree-fre3 -fdump-tree-optimized -fdelete-null-pointer-checks --param early-inlining-insns=14 --param max-inline-insns-single=200" }
 
+// NOTE: rvrp throws this test off because it removes all the calls to
+// __builtin_unreachable earlier than expected, and the number of
+// __builtin_free's don't match.
+// { dg-additional-options "-fno-rvrp-changes" }
+
 #define assume(x) if(!(x))__builtin_unreachable()
 
 inline void* operator new(__SIZE_TYPE__ n){ return __builtin_malloc(n); }

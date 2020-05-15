@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-cunrolli-details -fdisable-tree-evrp" } */
+/* { dg-options "-O2 -fdump-tree-cunrolli-details -fdisable-tree-evrp -fno-rvrp-changes" } */
 void abort (void);
 int q (void);
 int a[10];

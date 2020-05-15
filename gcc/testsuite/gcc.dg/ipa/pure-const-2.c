@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-tree-local-pure-const1 -fdump-tree-optimized" } */
+/* { dg-options "-O3 -fdump-tree-local-pure-const1 -fdump-tree-optimized -fno-rvrp-changes" } */
 static __attribute__ ((noinline, noclone))
 int i_am_pure(char *c, int n)
 {

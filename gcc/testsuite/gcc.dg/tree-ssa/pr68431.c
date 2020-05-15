@@ -1,5 +1,5 @@
 /* PR tree-optimization/68431 */
-/* { dg-options "-O2 -fdisable-tree-evrp -fdump-tree-vrp1-details" } */
+/* { dg-options "-O2 -fdisable-tree-evrp -fdump-tree-vrp1-details -fno-rvrp-changes" } */
 
 unsigned int x = 1;
 int
