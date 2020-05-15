@@ -3310,7 +3310,7 @@ vect_slp_bb (basic_block bb)
   gimple_stmt_iterator gsi;
   bool any_vectorized = false;
 
-  gsi = gsi_start_bb (bb);
+  gsi = gsi_after_labels (bb);
   while (!gsi_end_p (gsi))
     {
       gimple_stmt_iterator region_begin = gsi;
@@ -3597,7 +3597,7 @@ vect_get_constant_vectors (vec_info *vinfo,
   constant_p = true;
   tree_vector_builder elts (vector_type, nunits, 1);
   elts.quick_grow (nunits);
-  bool place_after_defs = false;
+  stmt_vec_info insert_after = NULL;
   for (j = 0; j < number_of_copies; j++)
     {
       for (i = group_size - 1; op_node->ops.iterate (i, &op); i--)
@@ -3656,12 +3656,20 @@ vect_get_constant_vectors (vec_info *vinfo,
 	  elts[number_of_places_left_in_vector] = op;
 	  if (!CONSTANT_CLASS_P (op))
 	    constant_p = false;
+	  /* For BB vectorization we have to compute an insert location
+	     when a def is inside the analyzed region since we cannot
+	     simply insert at the BB start in this case.  */
+	  stmt_vec_info opdef;
 	  if (TREE_CODE (orig_op) == SSA_NAME
 	      && !SSA_NAME_IS_DEFAULT_DEF (orig_op)
 	      && is_a <bb_vec_info> (vinfo)
-	      && (as_a <bb_vec_info> (vinfo)->bb
-		  == gimple_bb (SSA_NAME_DEF_STMT (orig_op))))
-	    place_after_defs = true;
+	      && (opdef = vinfo->lookup_def (orig_op)))
+	    {
+	      if (!insert_after)
+		insert_after = opdef;
+	      else
+		insert_after = get_later_stmt (insert_after, opdef);
+	    }
 
           if (number_of_places_left_in_vector == 0)
             {
@@ -3678,12 +3686,11 @@ vect_get_constant_vectors (vec_info *vinfo,
 		  vec_cst = permute_results[number_of_vectors - j - 1];
 		}
 	      tree init;
-	      gimple_stmt_iterator gsi;
-	      if (place_after_defs)
+	      if (insert_after)
 		{
-		  stmt_vec_info last_stmt_info
-		    = vect_find_last_scalar_stmt_in_slp (slp_node);
-		  gsi = gsi_for_stmt (last_stmt_info->stmt);
+		  gimple_stmt_iterator gsi = gsi_for_stmt (insert_after->stmt);
+		  /* vect_init_vector inserts before.  */
+		  gsi_next (&gsi);
 		  init = vect_init_vector (vinfo, stmt_vinfo, vec_cst,
 					   vector_type, &gsi);
 		}
@@ -3692,12 +3699,13 @@ vect_get_constant_vectors (vec_info *vinfo,
 					 vector_type, NULL);
 	      if (ctor_seq != NULL)
 		{
-		  gsi = gsi_for_stmt (SSA_NAME_DEF_STMT (init));
+		  gimple_stmt_iterator gsi
+		    = gsi_for_stmt (SSA_NAME_DEF_STMT (init));
 		  gsi_insert_seq_before (&gsi, ctor_seq, GSI_SAME_STMT);
 		  ctor_seq = NULL;
 		}
 	      voprnds.quick_push (init);
-	      place_after_defs = false;
+	      insert_after = NULL;
               number_of_places_left_in_vector = nunits;
 	      constant_p = true;
 	      elts.new_vector (vector_type, nunits, 1);

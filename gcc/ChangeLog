@@ -1,3 +1,10 @@
+2020-05-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_slp_bb): Start after labels.
+	(vect_get_constant_vectors): Really place init stmt after scalar defs.
+	* tree-vect-stmts.c (vect_init_vector_1): Insert before
+	region begin.
+
 2020-05-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/driver-i386.c (host_detect_local_cpu): Support
