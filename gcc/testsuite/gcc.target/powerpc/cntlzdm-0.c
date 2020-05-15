@@ -1,4 +1,4 @@
-/* { dg-require-effective-target powerpc64 } */
+/* { dg-require-effective-target lp64 } */
 /* { dg-options "-mdejagnu-cpu=future" } */
 
 extern void abort (void);
