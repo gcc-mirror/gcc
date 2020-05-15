@@ -1425,13 +1425,8 @@ vect_init_vector_1 (vec_info *vinfo, stmt_vec_info stmt_vinfo, gimple *new_stmt,
       else
        {
           bb_vec_info bb_vinfo = dyn_cast <bb_vec_info> (vinfo);
-          basic_block bb;
-          gimple_stmt_iterator gsi_bb_start;
-
-          gcc_assert (bb_vinfo);
-          bb = BB_VINFO_BB (bb_vinfo);
-          gsi_bb_start = gsi_after_labels (bb);
-          gsi_insert_before (&gsi_bb_start, new_stmt, GSI_SAME_STMT);
+	  gimple_stmt_iterator gsi_region_begin = bb_vinfo->region_begin;
+	  gsi_insert_before (&gsi_region_begin, new_stmt, GSI_SAME_STMT);
        }
     }
 
