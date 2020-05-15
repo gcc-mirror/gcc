@@ -1,3 +1,16 @@
+2020-05-15  Nathan Sidwell  <nathan@acm.org>
+
+	Duplicate {,purview_,partition_}direct_p flags in an enum.
+	gcc/cp/
+	* module.cc (enum module_directness): New.
+	(module_state): Add it.
+	(module_state::is{,purview_,partition_}direct_p}): Consistency
+	asserts.
+	(module_state::{read,write}_imports): Adjust and add Consistency
+	asserts.
+	(module_state::write): Likewise.
+	(direct_import, preprocess_module): Likewise.
+
 2020-05-14  Nathan Sidwell  <nathan@acm.org>
 
 	Stop GMF leakage from interface to implementation

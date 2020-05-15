@@ -3403,6 +3403,14 @@ struct module_state_config;
 
 unsigned module_streaming;
 
+/* Increasing levels of directness.  */
+enum module_directness {
+  MD_NONE,
+  MD_PARTITION_DIRECT,
+  MD_DIRECT,
+  MD_PURVIEW_DIRECT,
+};
+
 /* State of a particular module. */
 
 class GTY((chain_next ("%h.parent"), for_user)) module_state {
@@ -3450,8 +3458,10 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool interface_p : 1; /* An interface.  */
   bool partition_p : 1; /* A partition.  */
 
+  enum module_directness directness : 2;
   // FIXME: I think there are only 4 states of the next three bits
   // 000, 100, 110, 001
+  
   bool direct_p : 1;	/* A direct import of TU, includes the module
 			   itself.  */
   bool purview_direct_p : 1; /* A direct import within the purview.  */
@@ -3512,14 +3522,17 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   }
   bool is_direct () const
   {
+    gcc_assert (direct_p == (directness >= MD_DIRECT));
     return direct_p;
   }
   bool is_purview_direct () const
   {
+    gcc_assert (purview_direct_p == (directness == MD_PURVIEW_DIRECT));
     return purview_direct_p;
   }
   bool is_partition_direct () const
   {
+    gcc_assert (partition_direct_p == (directness == MD_PARTITION_DIRECT));
     return partition_direct_p;
   }
 
@@ -3684,7 +3697,9 @@ module_state::module_state (tree name, module_state *parent, bool partition)
 
   module_p = header_p = interface_p = partition_p = false;
 
-  direct_p = purview_direct_p = partition_direct_p = exported_p = false;
+  directness = MD_NONE;
+  direct_p = purview_direct_p = partition_direct_p = false;
+  exported_p = false;
 
   cmi_noted_p = false;
   call_init_p = false;
@@ -13637,6 +13652,8 @@ module_state::write_imports (bytes_out &sec, bool direct)
 	      write_location (sec, imp->imported_from ());
 	      sec.str (imp->filename);
 	      int exportedness = 0;
+	      gcc_assert (imp->purview_direct_p
+			  == (imp->directness == MD_PURVIEW_DIRECT));
 	      if (imp->exported_p)
 		exportedness = +1;
 	      else if (!imp->purview_direct_p)
@@ -13721,7 +13738,11 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 
 	  if (is_partition ())
 	    {
-	      imp->partition_direct_p = true;
+	      if (!imp->is_direct ())
+		{
+		  imp->directness = MD_PARTITION_DIRECT;
+		  imp->partition_direct_p = true;
+		}
 	      if (exportedness > 0)
 		imp->exported_p = true;
 	    }
@@ -16840,8 +16861,13 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
       /* Promote any non-partition direct import from a partition, unless
 	 we're a partition.  */
+      gcc_assert (imp->partition_direct_p
+		  == (imp->directness == MD_PARTITION_DIRECT));
       if (!is_partition () && !imp->is_partition () && imp->partition_direct_p)
-	imp->direct_p = true;
+	{
+	  imp->directness = MD_PURVIEW_DIRECT;
+	  imp->direct_p = imp->purview_direct_p = true;
+	}
 
       /* Write any import that is not a partition, unless we're a
 	 partition.  */
@@ -18107,6 +18133,7 @@ direct_import (module_state *import, cpp_reader *reader)
   unsigned n = dump.push (import);
 
   gcc_checking_assert (import->direct_p && import->is_rooted ());
+  gcc_checking_assert (import->directness >= MD_DIRECT);
   if (!import->load_state)
     if (!import->do_import (NULL, reader, true))
       gcc_unreachable ();
@@ -18543,6 +18570,7 @@ preprocess_module (module_state *module, location_t from_loc,
       module->direct_p = true;
       if (in_purview)
 	module->purview_direct_p = true;
+      module->directness = module_directness (MD_DIRECT + in_purview);
 
       /* Set the location to be most informative for users.  */
       module->loc = ordinary_loc_of (line_table, from_loc);
