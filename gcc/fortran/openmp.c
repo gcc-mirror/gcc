@@ -5847,26 +5847,21 @@ resolve_omp_do (gfc_code *code)
 		   "at %L", name, &do_code->loc);
       if (code->ext.omp_clauses)
 	for (list = 0; list < OMP_LIST_NUM; list++)
-	  if (!is_simd
+	  if (!is_simd || code->ext.omp_clauses->collapse > 1
 	      ? (list != OMP_LIST_PRIVATE && list != OMP_LIST_LASTPRIVATE)
-	      : code->ext.omp_clauses->collapse > 1
-	      ? (list != OMP_LIST_LASTPRIVATE)
-	      : (list != OMP_LIST_LINEAR))
+	      : (list != OMP_LIST_PRIVATE && list != OMP_LIST_LASTPRIVATE
+		 && list != OMP_LIST_LINEAR))
 	    for (n = code->ext.omp_clauses->lists[list]; n; n = n->next)
 	      if (dovar == n->sym)
 		{
-		  if (!is_simd)
+		  if (!is_simd || code->ext.omp_clauses->collapse > 1)
 		    gfc_error ("%s iteration variable present on clause "
 			       "other than PRIVATE or LASTPRIVATE at %L",
 			       name, &do_code->loc);
-		  else if (code->ext.omp_clauses->collapse > 1)
-		    gfc_error ("%s iteration variable present on clause "
-			       "other than LASTPRIVATE at %L",
-			       name, &do_code->loc);
 		  else
 		    gfc_error ("%s iteration variable present on clause "
-			       "other than LINEAR at %L",
-			       name, &do_code->loc);
+			       "other than PRIVATE, LASTPRIVATE or "
+			       "LINEAR at %L", name, &do_code->loc);
 		  break;
 		}
       if (i > 1)
