@@ -1,4 +1,9 @@
-2020-05-17  Marek Polacek  <polacek@redhat.com>
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
+	* call.c (add_builtin_candidate): Don't create a builtin overload
+	candidate for ++ when type is bool in C++17.
+
+2020-05-18  Marek Polacek  <polacek@redhat.com>
 
 	* cfns.h: Regenerated.
 
