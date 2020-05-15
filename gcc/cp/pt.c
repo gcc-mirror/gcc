@@ -9087,7 +9087,7 @@ template_args_equal (tree ot, tree nt, bool partial_order /* = false */)
   if (class_nttp_const_wrapper_p (ot))
     ot = TREE_OPERAND (ot, 0);
 
-  if (TREE_CODE (nt) == TREE_VEC || TREE_CODE (nt) == TREE_VEC)
+  if (TREE_CODE (nt) == TREE_VEC || TREE_CODE (ot) == TREE_VEC)
     /* For member templates */
     return TREE_CODE (ot) == TREE_CODE (nt) && comp_template_args (ot, nt);
   else if (PACK_EXPANSION_P (ot) || PACK_EXPANSION_P (nt))
@@ -9100,7 +9100,7 @@ template_args_equal (tree ot, tree nt, bool partial_order /* = false */)
     return cp_tree_equal (ot, nt);
   else if (TREE_CODE (ot) == ARGUMENT_PACK_SELECT)
     gcc_unreachable ();
-  else if (TYPE_P (nt) || TYPE_P (nt))
+  else if (TYPE_P (nt) || TYPE_P (ot))
     {
       if (!(TYPE_P (nt) && TYPE_P (ot)))
 	return false;
