@@ -2527,6 +2527,7 @@ protected:
 // Function call expression AST node
 class CallExpr : public ExprWithoutBlock
 {
+public:
   // Expr* function;
   ::std::unique_ptr<Expr> function;
   //::std::vector<Expr> params; // inlined form of CallParams
@@ -2534,7 +2535,6 @@ class CallExpr : public ExprWithoutBlock
 
   Location locus;
 
-public:
   /*~CallExpr() {
       delete function;
   }*/
