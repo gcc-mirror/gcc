@@ -3051,6 +3051,21 @@ package body Sem_Ch13 is
 
                      Set_Has_Delayed_Aspects (Full_View (E));
                      Ensure_Freeze_Node (Full_View (E));
+
+                     --  If there is an Underlying_Full_View, also create a
+                     --  freeze node for that one.
+
+                     if Is_Private_Type (Full_View (E)) then
+                        declare
+                           U_Full : constant Entity_Id :=
+                             Underlying_Full_View (Full_View (E));
+                        begin
+                           if Present (U_Full) then
+                              Set_Has_Delayed_Aspects (U_Full);
+                              Ensure_Freeze_Node (U_Full);
+                           end if;
+                        end;
+                     end if;
                   end if;
 
                --  Predicate_Failure
