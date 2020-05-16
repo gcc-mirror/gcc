@@ -633,6 +633,13 @@ TypeResolution::visit (AST::EmptyStmt &stmt)
 void
 TypeResolution::visit (AST::LetStmt &stmt)
 {
+  if (!stmt.has_init_expr () && !stmt.has_type ())
+    {
+      rust_error_at (stmt.locus,
+		     "E0282: type annotations or init expression needed");
+      return;
+    }
+
   AST::Type *inferedType = NULL;
   if (stmt.has_init_expr ())
     {
