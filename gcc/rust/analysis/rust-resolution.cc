@@ -254,9 +254,7 @@ TypeResolution::visit (AST::ComparisonExpr &expr)
 
 void
 TypeResolution::visit (AST::LazyBooleanExpr &expr)
-{
-  printf ("LazyBooleanExpr: %s\n", expr.as_string ().c_str ());
-}
+{}
 
 void
 TypeResolution::visit (AST::TypeCastExpr &expr)
@@ -270,9 +268,7 @@ TypeResolution::visit (AST::AssignmentExpr &expr)
 
 void
 TypeResolution::visit (AST::CompoundAssignmentExpr &expr)
-{
-  printf ("CompoundAssignmentExpr: %s\n", expr.as_string ().c_str ());
-}
+{}
 
 void
 TypeResolution::visit (AST::GroupedExpr &expr)
@@ -340,9 +336,13 @@ TypeResolution::visit (AST::EnumExprTuple &expr)
 void
 TypeResolution::visit (AST::EnumExprFieldless &expr)
 {}
+
 void
 TypeResolution::visit (AST::CallExpr &expr)
-{}
+{
+  printf ("CallExpr: %s\n", expr.as_string ().c_str ());
+}
+
 void
 TypeResolution::visit (AST::MethodCallExpr &expr)
 {}
@@ -481,18 +481,25 @@ TypeResolution::visit (AST::UseDeclaration &use_decl)
 void
 TypeResolution::visit (AST::Function &function)
 {
+  // always emit the function with return type in the event of nil return type
+  // its  a marker for a void function
   scope.Insert (function.function_name, function.return_type.get ());
 
   scope.Push ();
-  printf ("INSIDE FUNCTION: %s\n", function.function_name.c_str ());
-
   for (auto &param : function.function_params)
     {
-      printf ("FUNC PARAM: %s\n", param.as_string ().c_str ());
-    }
+      auto before = letPatternBuffer.size ();
+      param.param_name->accept_vis (*this);
+      if (letPatternBuffer.size () <= before)
+	{
+	  rust_error_at (param.locus, "failed to analyse parameter name");
+	  return;
+	}
 
-  // ensure return types
-  // TODO
+      auto paramName = letPatternBuffer.back ();
+      letPatternBuffer.pop_back ();
+      scope.Insert (paramName.variable_ident, param.type.get ());
+    }
 
   // walk the expression body
   for (auto &stmt : function.function_body->statements)
@@ -743,16 +750,12 @@ TypeResolution::visit (AST::LetStmt &stmt)
 void
 TypeResolution::visit (AST::ExprStmtWithoutBlock &stmt)
 {
-  printf ("ExprStmtWithoutBlock: %s\n", stmt.as_string ().c_str ());
   stmt.expr->accept_vis (*this);
 }
 
 void
 TypeResolution::visit (AST::ExprStmtWithBlock &stmt)
-{
-  printf ("ExprStmtWithBlock: %s\n", stmt.as_string ().c_str ());
-  stmt.expr->accept_vis (*this);
-}
+{}
 
 // rust-type.h
 void
