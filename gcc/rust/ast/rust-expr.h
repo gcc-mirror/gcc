@@ -295,7 +295,7 @@ OVERRIDE { return new PathExprQual(*this);
 class OperatorExpr : public ExprWithoutBlock
 {
   // TODO: create binary and unary operator subclasses?
-
+public:
   Location locus;
 
 protected:
