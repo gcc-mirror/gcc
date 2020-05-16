@@ -6175,8 +6175,7 @@ package body Freeze is
 
                         if Present (F_Node) then
                            Inherit_Freeze_Node
-                             (Fnod => F_Node,
-                              Typ  => Full_View (E));
+                             (Fnod => F_Node, Typ => Full_View (E));
                         else
                            Set_Has_Delayed_Freeze (Full_View (E), False);
                            Set_Freeze_Node (Full_View (E), Empty);
@@ -6187,9 +6186,7 @@ package body Freeze is
                         F_Node := Freeze_Node (Full_View (E));
 
                         if Present (F_Node) then
-                           Inherit_Freeze_Node
-                             (Fnod => F_Node,
-                              Typ  => E);
+                           Inherit_Freeze_Node (Fnod => F_Node, Typ => E);
                         else
                            --  {Incomplete,Private}_Subtypes with Full_Views
                            --  constrained by discriminants.
