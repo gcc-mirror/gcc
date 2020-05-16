@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-mcpu=future -O2" } */
+/* { dg-options "-mdejagnu-cpu=future -O2" } */
 /* { dg-require-effective-target powerpc_future_hw } */
 
 #include <altivec.h>

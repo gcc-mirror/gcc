@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mcpu=860 -O2" } */
+/* { dg-options "-mdejagnu-cpu=860 -O2" } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-final { scan-assembler-not "\\.p2align 4" } } */
 

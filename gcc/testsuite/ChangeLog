@@ -1,3 +1,72 @@
+2020-05-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/co-return-syntax-10-movable.C: New test.
+
+2020-05-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/57943
+	* g++.dg/cpp0x/decltype76.C: New test.
+
+2020-05-15  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/coroutines/coro.h: Always #include <utility>.
+	* g++.dg/coroutines/coroutines.exp (DEFAULT_COROFLAGS): Use
+	-std=c++20.
+
+2020-05-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/vec-gnb-0.c: Use int128 effective target.
+	* gcc.target/powerpc/vec-gnb-1.c: Ditto.
+	* gcc.target/powerpc/vec-gnb-2.c: Ditto.
+	* gcc.target/powerpc/vec-ternarylogic-8.c: Ditto.
+	* gcc.target/powerpc/vec-ternarylogic-9.c: Ditto.
+	* gcc.target/powerpc/vec-ternarylogic-10.c: Ditto.
+
+2020-05-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/cnttzdm-0.c: Use lp64.
+
+2020-05-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/cntlzdm-0.c: Use lp64 instead of powerpc64.
+	* gcc.target/powerpc/cntlzdm-1.c: Ditto.
+	* gcc.target/powerpc/cnttzdm-1.c: Ditto.
+	* gcc.target/powerpc/pdep-0.c: Ditto.
+	* gcc.target/powerpc/pdep-1.c: Ditto.
+	* gcc.target/powerpc/pextd-0.c: Ditto.
+	* gcc.target/powerpc/pextd-1.c: Ditto.
+
+2020-05-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/pdep-0.c: Change -mcpu= to -mdejagnu-cpu=.
+	* gcc.target/powerpc/pdep-1.c: Ditto.
+	* gcc.target/powerpc/pextd-0.c: Ditto.
+	* gcc.target/powerpc/pextd-1.c: Ditto.
+	* gcc.target/powerpc/pr90763.c: Ditto.
+	* gcc.target/powerpc/pr91275.c: Ditto.
+	* gcc.target/powerpc/pr92796.c: Ditto.
+	* gcc.target/powerpc/pr93658.c: Ditto.
+	* gcc.target/powerpc/pr93800.c: Ditto.
+	* gcc.target/powerpc/setbceq.c: Ditto.
+	* gcc.target/powerpc/setbcge.c: Ditto.
+	* gcc.target/powerpc/setbcgt.c: Ditto.
+	* gcc.target/powerpc/setbcle.c: Ditto.
+	* gcc.target/powerpc/setbclt.c: Ditto.
+	* gcc.target/powerpc/setbcne.c: Ditto.
+	* gcc.target/powerpc/setnbceq.c: Ditto.
+	* gcc.target/powerpc/setnbcge.c: Ditto.
+	* gcc.target/powerpc/setnbcgt.c: Ditto.
+	* gcc.target/powerpc/setnbcle.c: Ditto.
+	* gcc.target/powerpc/setnbclt.c: Ditto.
+	* gcc.target/powerpc/setnbcne.c: Ditto.
+	* gcc.target/powerpc/xxgenpc-runnable.c: Ditto.
+
+2020-05-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/90996
+	* g++.dg/cpp1y/pr90996.C: Turn into execution test to verify that each
+	PLACEHOLDER_EXPR gets correctly resolved.
+
 2020-05-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/94690

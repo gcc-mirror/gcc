@@ -1,7 +1,7 @@
 /* Test that we generate vpmsumd correctly without a swap error.  */
 
 /* { dg-do run { target { p8vector_hw } } } */
-/* { dg-options "-O2 -std=gnu11 -mcpu=power8" } */
+/* { dg-options "-O2 -std=gnu11 -mdejagnu-cpu=power8" } */
 
 #include <altivec.h>
 

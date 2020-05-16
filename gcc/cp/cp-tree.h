@@ -6953,7 +6953,7 @@ extern tree tsubst_default_argument		(tree, int, tree, tree,
 						 tsubst_flags_t);
 extern tree tsubst (tree, tree, tsubst_flags_t, tree);
 extern tree tsubst_copy_and_build		(tree, tree, tsubst_flags_t,
-						 tree, bool, bool);
+						 tree, bool = false, bool = false);
 extern tree tsubst_expr                         (tree, tree, tsubst_flags_t,
                                                  tree, bool);
 extern tree tsubst_pack_expansion		(tree, tree, tsubst_flags_t, tree);
