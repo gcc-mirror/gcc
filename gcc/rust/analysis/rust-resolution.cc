@@ -40,6 +40,7 @@ TypeResolution::TypeResolution (AST::Crate &crate) : crate (crate)
 
   ADD_BUILTIN_TYPE ("char", typeScope);
   ADD_BUILTIN_TYPE ("str", typeScope);
+  ADD_BUILTIN_TYPE ("bool", typeScope);
 }
 
 TypeResolution::~TypeResolution ()
@@ -587,7 +588,6 @@ TypeResolution::visit (AST::LiteralPattern &pattern)
 void
 TypeResolution::visit (AST::IdentifierPattern &pattern)
 {
-  printf ("IdentifierPattern: %s\n", pattern.as_string ().c_str ());
   letPatternBuffer.push_back (pattern);
 }
 
