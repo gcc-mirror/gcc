@@ -960,11 +960,11 @@ public:
 // single-segment paths
 class IdentifierExpr : public ExprWithoutBlock
 {
+public:
   Identifier ident;
 
   Location locus;
 
-public:
   IdentifierExpr (Identifier ident, Location locus = Location (),
 		  ::std::vector<Attribute> outer_attrs
 		  = ::std::vector<Attribute> ())
