@@ -68,6 +68,99 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "range-op.h"
 
+/* Set of SSA names found live during the RPO traversal of the function
+   for still active basic-blocks.  */
+class live_names
+{
+public:
+  live_names ();
+  ~live_names ();
+  void set (tree, basic_block);
+  void clear (tree, basic_block);
+  void merge (basic_block dest, basic_block src);
+  bool live_on_block_p (tree, basic_block);
+  bool live_on_edge_p (tree, edge);
+  bool block_has_live_names_p (basic_block);
+  void clear_block (basic_block);
+
+private:
+  sbitmap *live;
+  unsigned num_blocks;
+  void init_bitmap_if_needed (basic_block);
+};
+
+void
+live_names::init_bitmap_if_needed (basic_block bb)
+{
+  unsigned i = bb->index;
+  if (!live[i])
+    {
+      live[i] = sbitmap_alloc (num_ssa_names);
+      bitmap_clear (live[i]);
+    }
+}
+
+bool
+live_names::block_has_live_names_p (basic_block bb)
+{
+  unsigned i = bb->index;
+  return live[i] && bitmap_empty_p (live[i]);
+}
+
+void
+live_names::clear_block (basic_block bb)
+{
+  unsigned i = bb->index;
+  if (live[i])
+    {
+      sbitmap_free (live[i]);
+      live[i] = NULL;
+    }
+}
+
+void
+live_names::merge (basic_block dest, basic_block src)
+{
+  init_bitmap_if_needed (dest);
+  init_bitmap_if_needed (src);
+  bitmap_ior (live[dest->index], live[dest->index], live[src->index]);
+}
+
+void
+live_names::set (tree name, basic_block bb)
+{
+  init_bitmap_if_needed (bb);
+  bitmap_set_bit (live[bb->index], SSA_NAME_VERSION (name));
+}
+
+void
+live_names::clear (tree name, basic_block bb)
+{
+  unsigned i = bb->index;
+  if (live[i])
+    bitmap_clear_bit (live[i], SSA_NAME_VERSION (name));
+}
+
+live_names::live_names ()
+{
+  num_blocks = last_basic_block_for_fn (cfun);
+  live = XCNEWVEC (sbitmap, num_blocks);
+}
+
+live_names::~live_names ()
+{
+  for (unsigned i = 0; i < num_blocks; ++i)
+    if (live[i])
+      sbitmap_free (live[i]);
+  XDELETEVEC (live);
+}
+
+bool
+live_names::live_on_block_p (tree name, basic_block bb)
+{
+  return (live[bb->index]
+	  && bitmap_bit_p (live[bb->index], SSA_NAME_VERSION (name)));
+}
 
 
 /* Location information for ASSERT_EXPRs.  Each instance of this
@@ -102,114 +195,121 @@ struct assert_locus
 
 class vrp_insert
 {
-  public:
+public:
+  vrp_insert (struct function *fn) : fun (fn) { }
 
-    vrp_insert (struct function *fn)
-      {
-	fun = fn;
-      }
+  /* Traverse the flowgraph looking for conditional jumps to insert range
+     expressions.  These range expressions are meant to provide information
+     to optimizations that need to reason in terms of value ranges.  They
+     will not be expanded into RTL.  See method implementation comment
+     for example.  */
+  void insert_range_assertions ();
 
-    /* Traverse the flowgraph looking for conditional jumps to insert range
-       expressions.  These range expressions are meant to provide information
-       to optimizations that need to reason in terms of value ranges.  They
-       will not be expanded into RTL.  See method implementation comment
-       for example.  */
-    void insert_range_assertions ();
+  /* Convert range assertion expressions into the implied copies and
+     copy propagate away the copies.  */
+  void remove_range_assertions ();
 
+  /* Dump all the registered assertions for all the names to FILE.  */
+  void dump (FILE *);
 
-    /* Dump all the registered assertions for all the names to FILE.  */
-    void dump_all_asserts (FILE *);
+  /* Dump all the registered assertions for NAME to FILE.  */
+  void dump (FILE *file, tree name);
 
-    /* Dump all the registered assertions for NAME to FILE.  */
-    void dump_asserts_for (FILE *file, tree name);
+  /* Dump all the registered assertions for NAME to stderr.  */
+  void debug (tree name)
+  {
+    dump (stderr, name);
+  }
 
-    /* Dump all the registered assertions for NAME to stderr.  */
-    DEBUG_FUNCTION void debug_asserts_for (tree name)
-      {
-	dump_asserts_for (stderr, name);
-      }
+  /* Dump all the registered assertions for all the names to stderr.  */
+  void debug ()
+  {
+    dump (stderr);
+  }
 
-    DEBUG_FUNCTION void debug_all_asserts ()
-      {
-	dump_all_asserts (stderr);
-      }
+private:
+  /* Set of SSA names found live during the RPO traversal of the function
+     for still active basic-blocks.  */
+  live_names live;
 
-  private:
-    /* Set of SSA names found live during the RPO traversal of the function
-       for still active basic-blocks.  */
-    sbitmap *live;
+  /* Function to work on.  */
+  struct function *fun;
 
-    /* Function to work on.  */
-    struct function *fun;
+  /* If bit I is present, it means that SSA name N_i has a list of
+     assertions that should be inserted in the IL.  */
+  bitmap need_assert_for;
 
-    /* If bit I is present, it means that SSA name N_i has a list of
-       assertions that should be inserted in the IL.  */
-    bitmap need_assert_for;
+  /* Array of locations lists where to insert assertions.  ASSERTS_FOR[I]
+     holds a list of ASSERT_LOCUS_T nodes that describe where
+     ASSERT_EXPRs for SSA name N_I should be inserted.  */
+  assert_locus **asserts_for;
 
-    /* Array of locations lists where to insert assertions.  ASSERTS_FOR[I]
-       holds a list of ASSERT_LOCUS_T nodes that describe where
-       ASSERT_EXPRs for SSA name N_I should be inserted.  */
-    assert_locus **asserts_for;
+  /* Return true if the SSA name NAME is live on the edge E.  */
+  bool live_on_edge (edge e, tree name);
 
-    /* Return true if the SSA name NAME is live on the edge E.  */
-    bool live_on_edge (edge e, tree name);
+  /* Finish found ASSERTS for E and register them at GSI.  */
+  void finish_register_edge_assert_for (edge e, gimple_stmt_iterator gsi,
+					vec<assert_info> &asserts);
 
-    /* Finish found ASSERTS for E and register them at GSI.  */
-    void finish_register_edge_assert_for (edge e, gimple_stmt_iterator gsi,
-					  vec<assert_info> &asserts);
+  /* Determine whether the outgoing edges of BB should receive an
+     ASSERT_EXPR for each of the operands of BB's LAST statement.  The
+     last statement of BB must be a SWITCH_EXPR.
 
-    /* Determine whether the outgoing edges of BB should receive an
-       ASSERT_EXPR for each of the operands of BB's LAST statement.
-       The last statement of BB must be a SWITCH_EXPR.
+     If any of the sub-graphs rooted at BB have an interesting use of
+     the predicate operands, an assert location node is added to the
+     list of assertions for the corresponding operands.  */
+  void find_switch_asserts (basic_block bb, gswitch *last);
 
-       If any of the sub-graphs rooted at BB have an interesting use of
-       the predicate operands, an assert location node is added to the
-       list of assertions for the corresponding operands.  */
-    void find_switch_asserts (basic_block bb, gswitch *last);
+  /* Do an RPO walk over the function computing SSA name liveness
+     on-the-fly and deciding on assert expressions to insert.  */
+  void find_assert_locations ();
 
+  /* Traverse all the statements in block BB looking for statements that
+     may generate useful assertions for the SSA names in their operand.
+     See method implementation comentary for more information.  */
+  void find_assert_locations_in_bb (basic_block bb);
 
-    /* Do an RPO walk over the function computing SSA name liveness
-       on-the-fly and deciding on assert expressions to insert.  */
-    void find_assert_locations ();
+  /* Determine whether the outgoing edges of BB should receive an
+     ASSERT_EXPR for each of the operands of BB's LAST statement.
+     The last statement of BB must be a COND_EXPR.
 
-    /* Traverse all the statements in block BB looking for statements that
-       may generate useful assertions for the SSA names in their operand.
-       See method implementation comentary for more information.  */
-    void find_assert_locations_1 (basic_block bb, sbitmap live);
+     If any of the sub-graphs rooted at BB have an interesting use of
+     the predicate operands, an assert location node is added to the
+     list of assertions for the corresponding operands.  */
+  void find_conditional_asserts (basic_block bb, gcond *last);
 
-    /* Determine whether the outgoing edges of BB should receive an
-       ASSERT_EXPR for each of the operands of BB's LAST statement.
-       The last statement of BB must be a COND_EXPR.
+  /* Process all the insertions registered for every name N_i registered
+     in NEED_ASSERT_FOR.  The list of assertions to be inserted are
+     found in ASSERTS_FOR[i].  */
+  void process_assert_insertions ();
 
-       If any of the sub-graphs rooted at BB have an interesting use of
-       the predicate operands, an assert location node is added to the
-       list of assertions for the corresponding operands.  */
-    void find_conditional_asserts (basic_block bb, gcond *last);
+  /* If NAME doesn't have an ASSERT_EXPR registered for asserting
+     'EXPR COMP_CODE VAL' at a location that dominates block BB or
+     E->DEST, then register this location as a possible insertion point
+     for ASSERT_EXPR <NAME, EXPR COMP_CODE VAL>.
 
+     BB, E and SI provide the exact insertion point for the new
+     ASSERT_EXPR.  If BB is NULL, then the ASSERT_EXPR is to be inserted
+     on edge E.  Otherwise, if E is NULL, the ASSERT_EXPR is inserted on
+     BB.  If SI points to a COND_EXPR or a SWITCH_EXPR statement, then E
+     must not be NULL.  */
+  void register_new_assert_for (tree name, tree expr,
+				enum tree_code comp_code,
+				tree val, basic_block bb,
+				edge e, gimple_stmt_iterator si);
 
-    /* Process all the insertions registered for every name N_i registered
-       in NEED_ASSERT_FOR.  The list of assertions to be inserted are
-       found in ASSERTS_FOR[i].  */
+  /* Given a COND_EXPR COND of the form 'V OP W', and an SSA name V,
+     create a new SSA name N and return the assertion assignment
+     'N = ASSERT_EXPR <V, V OP W>'.  */
+  gimple *build_assert_expr_for (tree cond, tree v);
 
-    void process_assert_insertions ();
+  /* Create an ASSERT_EXPR for NAME and insert it in the location
+     indicated by LOC.  Return true if we made any edge insertions.  */
+  bool process_assert_insertions_for (tree name, assert_locus *loc);
 
-
-    /* If NAME doesn't have an ASSERT_EXPR registered for asserting
-       'EXPR COMP_CODE VAL' at a location that dominates block BB or
-       E->DEST, then register this location as a possible insertion point
-       for ASSERT_EXPR <NAME, EXPR COMP_CODE VAL>.
-
-       BB, E and SI provide the exact insertion point for the new
-       ASSERT_EXPR.  If BB is NULL, then the ASSERT_EXPR is to be inserted
-       on edge E.  Otherwise, if E is NULL, the ASSERT_EXPR is inserted on
-       BB.  If SI points to a COND_EXPR or a SWITCH_EXPR statement, then E
-       must not be NULL.  */
-    void register_new_assert_for (tree name, tree expr,
-				  enum tree_code comp_code,
-				  tree val,
-				  basic_block bb,
-				  edge e,
-				  gimple_stmt_iterator si);
+  /* Qsort callback for sorting assert locations.  */
+  template <bool stable> static int compare_assert_loc (const void *,
+							const void *);
 };
 
 void
@@ -419,10 +519,9 @@ debug (const value_range_equiv &vr)
 /* Return true if the SSA name NAME is live on the edge E.  */
 
 bool
-vrp_insert::live_on_edge (edge e, tree name)
+live_names::live_on_edge_p (tree name, edge e)
 {
-  return (live[e->dest->index]
-	  && bitmap_bit_p (live[e->dest->index], SSA_NAME_VERSION (name)));
+  return live_on_block_p (name, e->dest);
 }
 
 
@@ -1380,8 +1479,8 @@ range_fold_unary_expr (value_range *vr,
    create a new SSA name N and return the assertion assignment
    'N = ASSERT_EXPR <V, V OP W>'.  */
 
-static gimple *
-build_assert_expr_for (tree cond, tree v)
+gimple *
+vrp_insert::build_assert_expr_for (tree cond, tree v)
 {
   tree a;
   gassign *assertion;
@@ -1460,15 +1559,10 @@ infer_value_range (gimple *stmt, tree op, tree_code *comp_code_p, tree *val_p)
   return false;
 }
 
-
-void debug_asserts_for (tree);
-void dump_all_asserts (FILE *);
-void debug_all_asserts (void);
-
 /* Dump all the registered assertions for NAME to FILE.  */
 
 void
-vrp_insert::dump_asserts_for (FILE *file, tree name)
+vrp_insert::dump (FILE *file, tree name)
 {
   assert_locus *loc;
 
@@ -1499,21 +1593,19 @@ vrp_insert::dump_asserts_for (FILE *file, tree name)
   fprintf (file, "\n");
 }
 
-
 /* Dump all the registered assertions for all the names to FILE.  */
 
 void
-vrp_insert::dump_all_asserts (FILE *file)
+vrp_insert::dump (FILE *file)
 {
   unsigned i;
   bitmap_iterator bi;
 
   fprintf (file, "\nASSERT_EXPRs to be inserted\n\n");
   EXECUTE_IF_SET_IN_BITMAP (need_assert_for, 0, i, bi)
-    dump_asserts_for (file, ssa_name (i));
+    dump (file, ssa_name (i));
   fprintf (file, "\n");
 }
-
 
 /* Dump assert_info structure.  */
 
@@ -2704,7 +2796,7 @@ vrp_insert::finish_register_edge_assert_for (edge e, gimple_stmt_iterator gsi,
   for (unsigned i = 0; i < asserts.length (); ++i)
     /* Only register an ASSERT_EXPR if NAME was found in the sub-graph
        reachable from E.  */
-    if (live_on_edge (e, asserts[i].name))
+    if (live.live_on_edge_p (asserts[i].name, e))
       register_new_assert_for (asserts[i].name, asserts[i].expr,
 			       asserts[i].comp_code, asserts[i].val,
 			       NULL, e, gsi);
@@ -2874,7 +2966,7 @@ vrp_insert::find_switch_asserts (basic_block bb, gswitch *last)
 
   XDELETEVEC (ci);
 
-  if (!live_on_edge (default_edge, op))
+  if (!live.live_on_edge_p (op, default_edge))
     return;
 
   /* Now register along the default label assertions that correspond to the
@@ -3005,7 +3097,7 @@ vrp_insert::find_switch_asserts (basic_block bb, gswitch *last)
    P_4 will receive an ASSERT_EXPR.  */
 
 void
-vrp_insert::find_assert_locations_1 (basic_block bb, sbitmap live)
+vrp_insert::find_assert_locations_in_bb (basic_block bb)
 {
   gimple *last;
 
@@ -3048,7 +3140,7 @@ vrp_insert::find_assert_locations_1 (basic_block bb, sbitmap live)
 
 	  /* If op is not live beyond this stmt, do not bother to insert
 	     asserts for it.  */
-	  if (!bitmap_bit_p (live, SSA_NAME_VERSION (op)))
+	  if (!live.live_on_block_p (op, bb))
 	    continue;
 
 	  /* If OP is used in such a way that we can infer a value
@@ -3081,7 +3173,7 @@ vrp_insert::find_assert_locations_1 (basic_block bb, sbitmap live)
 		      /* Note we want to register the assert for the
 			 operand of the NOP_EXPR after SI, not after the
 			 conversion.  */
-		      if (bitmap_bit_p (live, SSA_NAME_VERSION (t)))
+		      if (live.live_on_block_p (t, bb))
 			register_new_assert_for (t, t, comp_code, value,
 						 bb, NULL, si);
 		    }
@@ -3093,9 +3185,9 @@ vrp_insert::find_assert_locations_1 (basic_block bb, sbitmap live)
 
       /* Update live.  */
       FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_USE)
-	bitmap_set_bit (live, SSA_NAME_VERSION (op));
+	live.set (op, bb);
       FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_DEF)
-	bitmap_clear_bit (live, SSA_NAME_VERSION (op));
+	live.clear (op, bb);
     }
 
   /* Traverse all PHI nodes in BB, updating live.  */
@@ -3114,10 +3206,10 @@ vrp_insert::find_assert_locations_1 (basic_block bb, sbitmap live)
 	{
 	  tree arg = USE_FROM_PTR (arg_p);
 	  if (TREE_CODE (arg) == SSA_NAME)
-	    bitmap_set_bit (live, SSA_NAME_VERSION (arg));
+	    live.set (arg, bb);
 	}
 
-      bitmap_clear_bit (live, SSA_NAME_VERSION (res));
+      live.clear (res, bb);
     }
 }
 
@@ -3132,7 +3224,6 @@ vrp_insert::find_assert_locations (void)
   int *last_rpo = XCNEWVEC (int, last_basic_block_for_fn (fun));
   int rpo_cnt, i;
 
-  live = XCNEWVEC (sbitmap, last_basic_block_for_fn (fun));
   rpo_cnt = pre_and_rev_post_order_compute (NULL, rpo, false);
   for (i = 0; i < rpo_cnt; ++i)
     bb_rpo[rpo[i]] = i;
@@ -3153,14 +3244,7 @@ vrp_insert::find_assert_locations (void)
 	    continue;
 	  tree arg = gimple_phi_arg_def (phi, j);
 	  if (TREE_CODE (arg) == SSA_NAME)
-	    {
-	      if (live[i] == NULL)
-		{
-		  live[i] = sbitmap_alloc (num_ssa_names);
-		  bitmap_clear (live[i]);
-		}
-	      bitmap_set_bit (live[i], SSA_NAME_VERSION (arg));
-	    }
+	    live.set (arg, loop->latch);
 	}
     }
 
@@ -3170,18 +3254,12 @@ vrp_insert::find_assert_locations (void)
       edge e;
       edge_iterator ei;
 
-      if (!live[rpo[i]])
-	{
-	  live[rpo[i]] = sbitmap_alloc (num_ssa_names);
-	  bitmap_clear (live[rpo[i]]);
-	}
-
       /* Process BB and update the live information with uses in
          this block.  */
-      find_assert_locations_1 (bb, live[rpo[i]]);
+      find_assert_locations_in_bb (bb);
 
       /* Merge liveness into the predecessor blocks and free it.  */
-      if (!bitmap_empty_p (live[rpo[i]]))
+      if (!live.block_has_live_names_p (bb))
 	{
 	  int pred_rpo = i;
 	  FOR_EACH_EDGE (e, ei, bb->preds)
@@ -3190,12 +3268,7 @@ vrp_insert::find_assert_locations (void)
 	      if ((e->flags & EDGE_DFS_BACK) || pred == ENTRY_BLOCK)
 		continue;
 
-	      if (!live[pred])
-		{
-		  live[pred] = sbitmap_alloc (num_ssa_names);
-		  bitmap_clear (live[pred]);
-		}
-	      bitmap_ior (live[pred], live[pred], live[rpo[i]]);
+	      live.merge (e->src, bb);
 
 	      if (bb_rpo[pred] < pred_rpo)
 		pred_rpo = bb_rpo[pred];
@@ -3206,36 +3279,25 @@ vrp_insert::find_assert_locations (void)
 	  last_rpo[rpo[i]] = pred_rpo;
 	}
       else
-	{
-	  sbitmap_free (live[rpo[i]]);
-	  live[rpo[i]] = NULL;
-	}
+	live.clear_block (bb);
 
       /* We can free all successors live bitmaps if all their
          predecessors have been visited already.  */
       FOR_EACH_EDGE (e, ei, bb->succs)
-	if (last_rpo[e->dest->index] == i
-	    && live[e->dest->index])
-	  {
-	    sbitmap_free (live[e->dest->index]);
-	    live[e->dest->index] = NULL;
-	  }
+	if (last_rpo[e->dest->index] == i)
+	  live.clear_block (e->dest);
     }
 
   XDELETEVEC (rpo);
   XDELETEVEC (bb_rpo);
   XDELETEVEC (last_rpo);
-  for (i = 0; i < last_basic_block_for_fn (fun); ++i)
-    if (live[i])
-      sbitmap_free (live[i]);
-  XDELETEVEC (live);
 }
 
 /* Create an ASSERT_EXPR for NAME and insert it in the location
    indicated by LOC.  Return true if we made any edge insertions.  */
 
-static bool
-process_assert_insertions_for (tree name, assert_locus *loc)
+bool
+vrp_insert::process_assert_insertions_for (tree name, assert_locus *loc)
 {
   /* Build the comparison expression NAME_i COMP_CODE VAL.  */
   gimple *stmt;
@@ -3299,8 +3361,8 @@ process_assert_insertions_for (tree name, assert_locus *loc)
    on the other side some pointers might be NULL.  */
 
 template <bool stable>
-static int
-compare_assert_loc (const void *pa, const void *pb)
+int
+vrp_insert::compare_assert_loc (const void *pa, const void *pb)
 {
   assert_locus * const a = *(assert_locus * const *)pa;
   assert_locus * const b = *(assert_locus * const *)pb;
@@ -3376,7 +3438,7 @@ vrp_insert::process_assert_insertions ()
   int num_asserts = 0;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    dump_all_asserts (dump_file);
+    dump (dump_file);
 
   EXECUTE_IF_SET_IN_BITMAP (need_assert_for, 0, i, bi)
     {
@@ -4348,8 +4410,8 @@ maybe_set_nonzero_bits (edge e, tree var)
    any pass.  This is made somewhat more complex by the need for
    multiple ranges to be associated with one SSA_NAME.  */
 
-static void
-remove_range_assertions (struct function *fun)
+void
+vrp_insert::remove_range_assertions ()
 {
   basic_block bb;
   gimple_stmt_iterator si;
@@ -5375,7 +5437,8 @@ execute_vrp (struct function *fun, bool warn_array_bounds_p)
   /* ???  This ends up using stale EDGE_DFS_BACK for liveness computation.
      Inserting assertions may split edges which will invalidate
      EDGE_DFS_BACK.  */
-  vrp_insert (fun).insert_range_assertions ();
+  vrp_insert assert_engine (fun);
+  assert_engine.insert_range_assertions ();
 
   threadedge_initialize_values ();
 
@@ -5411,7 +5474,7 @@ execute_vrp (struct function *fun, bool warn_array_bounds_p)
   /* ASSERT_EXPRs must be removed before finalizing jump threads
      as finalizing jump threads calls the CFG cleanup code which
      does not properly handle ASSERT_EXPRs.  */
-  remove_range_assertions (fun);
+  assert_engine.remove_range_assertions ();
 
   /* If we exposed any new variables, go ahead and put them into
      SSA form now, before we handle jump threading.  This simplifies
