@@ -1,3 +1,12 @@
+2020-05-15 Jeff Law  <law@redhat.com>
+
+	* config/h8300/h8300.md (SFI iterator): New iterator for
+	SFmode and SImode.
+	* config/h8300/peepholes.md (memory comparison): Use mode
+	iterator to consolidate 3 patterns into one.
+	(stack allocation and stack store): Handle SFmode.  Handle
+	8 byte allocations.
+
 2020-05-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000-builtin.def (BU_FUTURE_MISC_2): Also require

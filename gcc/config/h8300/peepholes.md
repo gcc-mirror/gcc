@@ -551,9 +551,9 @@
 ;; Convert a memory comparison to a move if there is a scratch register.
 
 (define_peephole2
-  [(match_scratch:QI 1 "r")
+  [(match_scratch:QHSI 1 "r")
    (set (cc0)
-	(compare (match_operand:QI 0 "memory_operand" "")
+	(compare (match_operand:QHSI 0 "memory_operand" "")
 		 (const_int 0)))]
   ""
   [(set (match_dup 1)
@@ -561,31 +561,6 @@
    (set (cc0) (compare (match_dup 1)
 		       (const_int 0)))]
   "")
-
-(define_peephole2
-  [(match_scratch:HI 1 "r")
-   (set (cc0)
-	(compare (match_operand:HI 0 "memory_operand" "")
-		 (const_int 0)))]
-  ""
-  [(set (match_dup 1)
-	(match_dup 0))
-   (set (cc0) (compare (match_dup 1)
-		       (const_int 0)))]
-  "")
-
-(define_peephole2
-  [(match_scratch:SI 1 "r")
-   (set (cc0)
-	(compare (match_operand:SI 0 "memory_operand" "")
-		 (const_int 0)))]
-  ""
-  [(set (match_dup 1)
-	(match_dup 0))
-   (set (cc0) (compare (match_dup 1)
-		       (const_int 0)))]
-  "")
-
 
 ;; (compare (reg:HI) (const_int)) takes 4 bytes, so we try to achieve
 ;; the equivalent with shorter sequences.  Here is the summary.  Cases
@@ -1418,31 +1393,48 @@
 
 ;; stack adjustment of -4, generate one push
 ;;
-;; before : 6 bytes, 10 clocks
-;; after  : 4 bytes, 10 clocks
+;; before : 6 bytes
+;; after  : 4 bytes
 
 (define_peephole2
   [(set (reg:SI SP_REG)
 	(plus:SI (reg:SI SP_REG)
 		 (const_int -4)))
-   (set (mem:SI (reg:SI SP_REG))
-	(match_operand:SI 0 "register_operand" ""))]
+   (set (mem:SFI (reg:SI SP_REG))
+	(match_operand:SFI 0 "register_operand" ""))]
   "!TARGET_NORMAL_MODE && REGNO (operands[0]) != SP_REG"
-  [(set (mem:SI (pre_dec:SI (reg:SI SP_REG)))
-	(match_dup 0))]
-  "")
+  [(set (mem:SFI (pre_dec:SI (reg:SI SP_REG)))
+	(match_dup 0))])
+
+;; stack adjustment of -8, generate one push
+;;
+;; before : 8 bytes
+;; after  : 6 bytes
+
+(define_peephole2
+  [(set (reg:SI SP_REG)
+	(plus:SI (reg:SI SP_REG)
+		 (const_int -8)))
+   (set (mem:SFI (reg:SI SP_REG))
+	(match_operand:SFI 0 "register_operand" ""))]
+  "!TARGET_NORMAL_MODE && REGNO (operands[0]) != SP_REG"
+  [(set (reg:SI SP_REG)
+	(plus:SI (reg:SI SP_REG)
+		 (const_int -4)))
+   (set (mem:SFI (pre_dec:SI (reg:SI SP_REG)))
+	(match_dup 0))])
 
 ;; stack adjustment of -12, generate one push
 ;;
-;; before : 10 bytes, 14 clocks
-;; after  :  8 bytes, 14 clocks
+;; before : 10 bytes
+;; after  :  8 bytes
 
 (define_peephole2
   [(set (reg:SI SP_REG)
 	(plus:SI (reg:SI SP_REG)
 		 (const_int -12)))
-   (set (mem:SI (reg:SI SP_REG))
-	(match_operand:SI 0 "register_operand" ""))]
+   (set (mem:SFI (reg:SI SP_REG))
+	(match_operand:SFI 0 "register_operand" ""))]
   "!TARGET_NORMAL_MODE && REGNO (operands[0]) != SP_REG"
   [(set (reg:SI SP_REG)
 	(plus:SI (reg:SI SP_REG)
@@ -1450,9 +1442,8 @@
    (set (reg:SI SP_REG)
 	(plus:SI (reg:SI SP_REG)
 		 (const_int -4)))
-   (set (mem:SI (pre_dec:SI (reg:SI SP_REG)))
-	(match_dup 0))]
-  "")
+   (set (mem:SFI (pre_dec:SI (reg:SI SP_REG)))
+	(match_dup 0))])
 
 ;; Transform
 ;;
