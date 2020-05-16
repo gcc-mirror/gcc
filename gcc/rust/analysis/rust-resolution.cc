@@ -263,7 +263,32 @@ TypeResolution::visit (AST::TypeCastExpr &expr)
 void
 TypeResolution::visit (AST::AssignmentExpr &expr)
 {
-  printf ("AssignmentExpr: %s\n", expr.as_string ().c_str ());
+  size_t before;
+  before = typeBuffer.size ();
+  expr.visit_lhs (*this);
+  if (typeBuffer.size () <= before)
+    {
+      rust_error_at (expr.locus, "unable to determine lhs type");
+      return;
+    }
+
+  auto lhsType = typeBuffer.back ();
+  typeBuffer.pop_back ();
+
+  before = typeBuffer.size ();
+  expr.visit_rhs (*this);
+  if (typeBuffer.size () <= before)
+    {
+      rust_error_at (expr.locus, "unable to determine rhs type");
+      return;
+    }
+
+  auto rhsType = typeBuffer.back ();
+  // not poping because we will be checking they match and the
+  // scope will require knowledge of the type
+
+  // do the lhsType and the rhsType match
+  // TODO
 }
 
 void

@@ -63,6 +63,8 @@ public:
 
   Location locus;
 
+  Type *inferedType;
+
   // Returns whether let statement has outer attributes.
   inline bool has_outer_attrs () const { return !outer_attrs.empty (); }
 
