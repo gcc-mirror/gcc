@@ -67,15 +67,11 @@ TypeResolution::go ()
 
 void
 TypeResolution::visit (AST::Token &tok)
-{
-  printf ("TOKEN: %s\n", tok.as_string ().c_str ());
-}
+{}
 
 void
 TypeResolution::visit (AST::DelimTokenTree &delim_tok_tree)
-{
-  printf ("DelimTokenTree: %s\n", delim_tok_tree.as_string ().c_str ());
-}
+{}
 
 void
 TypeResolution::visit (AST::AttrInputMetaItemContainer &input)
@@ -84,7 +80,15 @@ TypeResolution::visit (AST::AttrInputMetaItemContainer &input)
 void
 TypeResolution::visit (AST::IdentifierExpr &ident_expr)
 {
-  printf ("IdentifierExpr %s\n", ident_expr.as_string ().c_str ());
+  AST::Type *type = NULL;
+  bool ok = scope.Lookup (ident_expr.ident, &type);
+  if (!ok)
+    {
+      rust_error_at (ident_expr.locus, "unknown identifier");
+      return;
+    }
+
+  typeBuffer.push_back (type);
 }
 
 void
@@ -216,9 +220,32 @@ TypeResolution::visit (AST::NegationExpr &expr)
 void
 TypeResolution::visit (AST::ArithmeticOrLogicalExpr &expr)
 {
-  printf ("ArithmeticOrLogicalExpr: %s\n", expr.as_string ().c_str ());
+  size_t before;
+  before = typeBuffer.size ();
   expr.visit_lhs (*this);
+  if (typeBuffer.size () <= before)
+    {
+      rust_error_at (expr.locus, "unable to determine lhs type");
+      return;
+    }
+
+  auto lhsType = typeBuffer.back ();
+  typeBuffer.pop_back ();
+
+  before = typeBuffer.size ();
   expr.visit_rhs (*this);
+  if (typeBuffer.size () <= before)
+    {
+      rust_error_at (expr.locus, "unable to determine rhs type");
+      return;
+    }
+
+  auto rhsType = typeBuffer.back ();
+  // not poping because we will be checking they match and the
+  // scope will require knowledge of the type
+
+  // do the lhsType and the rhsType match
+  // TODO
 }
 
 void
