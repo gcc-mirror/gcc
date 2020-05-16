@@ -74,11 +74,12 @@ class LiteralExpr : public ExprWithoutBlock
     ::std::string value_as_string;
     LitType type;*/
   // moved to Literal
+
+public:
   Literal literal;
 
   Location locus;
 
-public:
   ::std::string as_string () const { return literal.as_string (); }
 
   inline Literal::LitType get_lit_type () const
