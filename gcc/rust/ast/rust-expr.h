@@ -620,6 +620,10 @@ public:
 
   virtual void accept_vis (ASTVisitor &vis) OVERRIDE;
 
+  void visit_lhs (ASTVisitor &vis) { main_or_left_expr->accept_vis (vis); }
+
+  void visit_rhs (ASTVisitor &vis) { right_expr->accept_vis (vis); }
+
 protected:
   // Use covariance to implement clone function as returning this object rather
   // than base

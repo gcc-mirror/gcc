@@ -217,6 +217,8 @@ void
 TypeResolution::visit (AST::ArithmeticOrLogicalExpr &expr)
 {
   printf ("ArithmeticOrLogicalExpr: %s\n", expr.as_string ().c_str ());
+  expr.visit_lhs (*this);
+  expr.visit_rhs (*this);
 }
 
 void
