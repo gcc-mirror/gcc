@@ -14067,13 +14067,15 @@ package body Exp_Ch4 is
          return;
       end if;
 
-      --  Now pick the narrower type according to the size
+      --  Now pick the narrower type according to the size. We use the base
+      --  type instead of the first subtype because operations are done in
+      --  the base type, so this avoids the need for useless conversions.
 
       if Nsiz <= RM_Size (Standard_Integer) then
-         Ntyp := Standard_Integer;
+         Ntyp := Etype (Standard_Integer);
 
       elsif Nsiz <= RM_Size (Standard_Long_Long_Integer) then
-         Ntyp := Standard_Long_Long_Integer;
+         Ntyp := Etype (Standard_Long_Long_Integer);
 
       else
          return;
