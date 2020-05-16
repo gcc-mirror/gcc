@@ -1,6 +1,21 @@
 #include "rust-resolution.h"
 #include "rust-diagnostics.h"
 
+#define ADD_BUILTIN_TYPE(_X, _S)                                               \
+  do                                                                           \
+    {                                                                          \
+      AST::PathIdentSegment seg (_X);                                          \
+      auto typePath = ::std::unique_ptr<AST::TypePathSegment> (                \
+	new AST::TypePathSegment (::std::move (seg), false,                    \
+				  Linemap::unknown_location ()));              \
+      ::std::vector< ::std::unique_ptr<AST::TypePathSegment> > segs;           \
+      segs.push_back (::std::move (typePath));                                 \
+      auto bType = new AST::TypePath (::std::move (segs),                      \
+				      Linemap::unknown_location (), false);    \
+      _S.Insert (_X, bType);                                                   \
+    }                                                                          \
+  while (0)
+
 namespace Rust {
 namespace Analysis {
 
@@ -9,12 +24,22 @@ TypeResolution::TypeResolution (AST::Crate &crate) : crate (crate)
   typeScope.Push ();
   scope.Push ();
 
-  // push all builtin types
-  // base is parse_path_ident_segment based up on segments
-  /*  scope.Insert ("u8",
-	      new AST::MaybeNamedParam (Identifier ("u8"),
-					AST::MaybeNamedParam::IDENTIFIER,
-					NULL, Location ()));*/
+  // push all builtin types - this is probably too basic for future needs
+  ADD_BUILTIN_TYPE ("u8", typeScope);
+  ADD_BUILTIN_TYPE ("u16", typeScope);
+  ADD_BUILTIN_TYPE ("u32", typeScope);
+  ADD_BUILTIN_TYPE ("u64", typeScope);
+
+  ADD_BUILTIN_TYPE ("i8", typeScope);
+  ADD_BUILTIN_TYPE ("i16", typeScope);
+  ADD_BUILTIN_TYPE ("i32", typeScope);
+  ADD_BUILTIN_TYPE ("i64", typeScope);
+
+  ADD_BUILTIN_TYPE ("f32", typeScope);
+  ADD_BUILTIN_TYPE ("f64", typeScope);
+
+  ADD_BUILTIN_TYPE ("char", typeScope);
+  ADD_BUILTIN_TYPE ("str", typeScope);
 }
 
 TypeResolution::~TypeResolution ()
