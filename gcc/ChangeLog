@@ -1,5 +1,20 @@
 2020-05-17  Aldy Hernandez  <aldyh@redhat.com>
 
+	* tree-vrp.c (class live_names): New.
+	(live_on_edge): Move into live_names.
+	(build_assert_expr_for): Move into vrp_insert.
+	(find_assert_locations_in_bb): Rename from
+	find_assert_locations_1.
+	(process_assert_insertions_for): Move into vrp_insert.
+	(compare_assert_loc): Same.
+	(remove_range_assertions): Same.
+	(dump_asserts_for): Rename to vrp_insert::dump.
+	(debug_asserts_for): Rename to vrp_insert::debug.
+	(dump_all_asserts): Rename to vrp_insert::dump.
+	(debug_all_asserts): Rename to vrp_insert::debug.
+
+2020-05-17  Aldy Hernandez  <aldyh@redhat.com>
+
 	* tree-vrp.c (class vrp_prop): Move check_all_array_refs,
 	check_array_ref, check_mem_ref, and search_for_addr_array
 	into new class...
