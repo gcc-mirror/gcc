@@ -1,3 +1,12 @@
+2020-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/95155
+	* gdc.test/compilable/imports/pr9471a.d: New test.
+	* gdc.test/compilable/imports/pr9471b.d: New test.
+	* gdc.test/compilable/imports/pr9471c.d: New test.
+	* gdc.test/compilable/imports/pr9471d.d: New test.
+	* gdc.test/compilable/pr9471.d: New test.
+
 2020-05-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	Backport from mainline.

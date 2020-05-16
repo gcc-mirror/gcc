@@ -1,3 +1,9 @@
+2020-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/95155
+	* dmd/dclass.c (ClassDeclaration::semantic): Don't prematurely
+	set done on semantic analysis.
+
 2020-04-07  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/94240

@@ -395,7 +395,6 @@ void ClassDeclaration::semantic(Scope *sc)
     }
     else if (symtab && !scx)
     {
-        semanticRun = PASSsemanticdone;
         return;
     }
     semanticRun = PASSsemantic;
