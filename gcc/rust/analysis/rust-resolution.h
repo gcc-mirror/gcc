@@ -226,6 +226,7 @@ private:
   bool go ();
 
   Scope scope;
+  Scope typeScope;
   AST::Crate &crate;
 
   std::vector<AST::IdentifierPattern> letPatternBuffer;

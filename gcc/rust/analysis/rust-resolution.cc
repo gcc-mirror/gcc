@@ -4,8 +4,11 @@
 namespace Rust {
 namespace Analysis {
 
-TypeResolution::TypeResolution (AST::Crate &crate) : scope (), crate (crate)
+TypeResolution::TypeResolution (AST::Crate &crate) : crate (crate)
 {
+  typeScope.Push ();
+  scope.Push ();
+
   // push all builtin types
   // base is parse_path_ident_segment based up on segments
   /*  scope.Insert ("u8",
@@ -14,7 +17,11 @@ TypeResolution::TypeResolution (AST::Crate &crate) : scope (), crate (crate)
 					NULL, Location ()));*/
 }
 
-TypeResolution::~TypeResolution () {}
+TypeResolution::~TypeResolution ()
+{
+  typeScope.Pop ();
+  scope.Pop ();
+}
 
 bool
 TypeResolution::ResolveNamesAndTypes (AST::Crate &crate)
@@ -26,22 +33,23 @@ TypeResolution::ResolveNamesAndTypes (AST::Crate &crate)
 bool
 TypeResolution::go ()
 {
-  scope.Push ();
   for (auto &item : crate.items)
-    {
-      item->accept_vis (*this);
-    }
-  scope.Pop ();
+    item->accept_vis (*this);
+
   return true;
 }
 
 void
 TypeResolution::visit (AST::Token &tok)
-{}
+{
+  printf ("TOKEN: %s\n", tok.as_string ().c_str ());
+}
 
 void
 TypeResolution::visit (AST::DelimTokenTree &delim_tok_tree)
-{}
+{
+  printf ("DelimTokenTree: %s\n", delim_tok_tree.as_string ().c_str ());
+}
 
 void
 TypeResolution::visit (AST::AttrInputMetaItemContainer &input)
@@ -68,22 +76,33 @@ TypeResolution::visit (AST::MacroInvocationSemi &macro)
 // rust-path.h
 void
 TypeResolution::visit (AST::PathInExpression &path)
-{}
+{
+  printf ("PathInExpression: %s\n", path.as_string ().c_str ());
+}
+
 void
 TypeResolution::visit (AST::TypePathSegment &segment)
 {}
 void
 TypeResolution::visit (AST::TypePathSegmentGeneric &segment)
 {}
+
 void
 TypeResolution::visit (AST::TypePathSegmentFunction &segment)
 {}
+
 void
 TypeResolution::visit (AST::TypePath &path)
-{}
+{
+  printf ("TypePath: %s\n", path.as_string ().c_str ());
+}
+
 void
 TypeResolution::visit (AST::QualifiedPathInExpression &path)
-{}
+{
+  printf ("QualifiedPathInExpression: %s\n", path.as_string ().c_str ());
+}
+
 void
 TypeResolution::visit (AST::QualifiedPathInType &path)
 {}
@@ -92,19 +111,69 @@ TypeResolution::visit (AST::QualifiedPathInType &path)
 void
 TypeResolution::visit (AST::LiteralExpr &expr)
 {
-  printf ("LiteralExpr: %s\n", expr.as_string ().c_str ());
-  // figure out what this type is and push it onto the
+  std::string type;
+  switch (expr.literal.get_lit_type ())
+    {
+    case AST::Literal::CHAR:
+      type = "char";
+      break;
+
+    case AST::Literal::STRING:
+    case AST::Literal::RAW_STRING:
+      type = "str";
+      break;
+
+    case AST::Literal::BOOL:
+      type = "bool";
+      break;
+
+    case AST::Literal::BYTE:
+      type = "u8";
+      break;
+
+      // FIXME these are not always going to be the case
+      // eg: suffix on the value can change the type
+    case AST::Literal::FLOAT:
+      type = "f32";
+      break;
+
+    case AST::Literal::INT:
+      type = "i32";
+      break;
+
+    case AST::Literal::BYTE_STRING:
+    case AST::Literal::RAW_BYTE_STRING:
+      // FIXME
+      break;
+    }
+
+  if (type.empty ())
+    {
+      rust_error_at (expr.locus, "unknown literal: %s",
+		     expr.literal.as_string ().c_str ());
+      return;
+    }
+
+  AST::Type *val = NULL;
+  bool ok = typeScope.Lookup (type, &val);
+  if (ok)
+    typeBuffer.push_back (val);
+  else
+    rust_error_at (expr.locus, "unknown literal type: %s", type.c_str ());
 }
 
 void
 TypeResolution::visit (AST::AttrInputLiteral &attr_input)
 {}
+
 void
 TypeResolution::visit (AST::MetaItemLitExpr &meta_item)
 {}
+
 void
 TypeResolution::visit (AST::MetaItemPathLit &meta_item)
 {}
+
 void
 TypeResolution::visit (AST::BorrowExpr &expr)
 {}
@@ -117,24 +186,39 @@ TypeResolution::visit (AST::ErrorPropagationExpr &expr)
 void
 TypeResolution::visit (AST::NegationExpr &expr)
 {}
+
 void
 TypeResolution::visit (AST::ArithmeticOrLogicalExpr &expr)
-{}
+{
+  printf ("ArithmeticOrLogicalExpr: %s\n", expr.as_string ().c_str ());
+}
+
 void
 TypeResolution::visit (AST::ComparisonExpr &expr)
 {}
+
 void
 TypeResolution::visit (AST::LazyBooleanExpr &expr)
-{}
+{
+  printf ("LazyBooleanExpr: %s\n", expr.as_string ().c_str ());
+}
+
 void
 TypeResolution::visit (AST::TypeCastExpr &expr)
 {}
+
 void
 TypeResolution::visit (AST::AssignmentExpr &expr)
-{}
+{
+  printf ("AssignmentExpr: %s\n", expr.as_string ().c_str ());
+}
+
 void
 TypeResolution::visit (AST::CompoundAssignmentExpr &expr)
-{}
+{
+  printf ("CompoundAssignmentExpr: %s\n", expr.as_string ().c_str ());
+}
+
 void
 TypeResolution::visit (AST::GroupedExpr &expr)
 {}
@@ -391,9 +475,13 @@ TypeResolution::visit (AST::Enum &enum_item)
 void
 TypeResolution::visit (AST::Union &union_item)
 {}
+
 void
 TypeResolution::visit (AST::ConstantItem &const_item)
-{}
+{
+  printf ("ConstantItem: %s\n", const_item.as_string ().c_str ());
+}
+
 void
 TypeResolution::visit (AST::StaticItem &static_item)
 {}
@@ -546,11 +634,7 @@ void
 TypeResolution::visit (AST::LetStmt &stmt)
 {
   AST::Type *inferedType = NULL;
-  if (stmt.has_type ())
-    {
-      inferedType = stmt.type.get ();
-    }
-  else if (stmt.has_init_expr ())
+  if (stmt.has_init_expr ())
     {
       stmt.init_expr->accept_vis (*this);
 
@@ -565,13 +649,26 @@ TypeResolution::visit (AST::LetStmt &stmt)
       inferedType = typeBuffer.back ();
       typeBuffer.pop_back ();
     }
-  else
+
+  if (stmt.has_type () && stmt.has_init_expr ())
     {
-      rust_error_at (stmt.locus, "unable to determine type for declaration");
-      return;
+      auto declaredTyped = stmt.type.get ();
+      // TODO compare this type to the inferred type to ensure they match
+    }
+  else if (stmt.has_type () && !stmt.has_init_expr ())
+    {
+      inferedType = stmt.type.get ();
     }
 
-  // TODO check we know what the type is
+  // TODO check we know what the type is in the scope requires the builtins to
+  // be defined at the constructor
+
+  // ensure the decl has the type set for compilation later on
+  if (!stmt.has_type ())
+    {
+      // FIXME
+      // stmt.type = inferedType;
+    }
 
   // get all the names part of this declaration and add the types to the scope
   stmt.variables_pattern->accept_vis (*this);
