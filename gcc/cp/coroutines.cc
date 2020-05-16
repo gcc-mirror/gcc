@@ -969,16 +969,23 @@ finish_co_yield_expr (location_t kw, tree expr)
   return op;
 }
 
-/* Check that it's valid to have a co_return keyword here.
+/* Check and build a co_return statememt.
+   First that it's valid to have a co_return keyword here.
    If it is, then check and build the p.return_{void(),value(expr)}.
-   These are built against the promise proxy, but saved for expand time.  */
+   These are built against a proxy for the promise, which will be filled
+   in with the actual frame version when the function is transformed.  */
 
 tree
 finish_co_return_stmt (location_t kw, tree expr)
 {
-  if (expr == error_mark_node)
+  if (expr)
+    STRIP_ANY_LOCATION_WRAPPER (expr);
+
+  if (error_operand_p (expr))
     return error_mark_node;
 
+  /* If it fails the following test, the function is not permitted to be a
+     coroutine, so the co_return statement is erroneous.  */
   if (!coro_common_keyword_context_valid_p (current_function_decl, kw,
 					    "co_return"))
     return error_mark_node;
@@ -987,30 +994,30 @@ finish_co_return_stmt (location_t kw, tree expr)
      already.  */
   DECL_COROUTINE_P (current_function_decl) = 1;
 
-  if (processing_template_decl)
+  /* This function will appear to have no return statement, even if it
+     is declared to return non-void (most likely).  This is correct - we
+     synthesize the return for the ramp in the compiler.  So suppress any
+     extraneous warnings during substitution.  */
+  TREE_NO_WARNING (current_function_decl) = true;
+
+  if (processing_template_decl
+      && check_for_bare_parameter_packs (expr))
+    return error_mark_node;
+
+  /* If we don't know the promise type, we can't proceed, build the
+     co_return with the expression unchanged.  */
+  tree functype = TREE_TYPE (current_function_decl);
+  if (dependent_type_p (functype) || type_dependent_expression_p (expr))
     {
-      current_function_returns_value = 1;
-
-      if (check_for_bare_parameter_packs (expr))
-	return error_mark_node;
-
-      tree functype = TREE_TYPE (current_function_decl);
-      /* If we don't know the promise type, we can't proceed, return the
-	 expression as it is.  */
-      if (dependent_type_p (functype) || type_dependent_expression_p (expr))
-	{
-	  expr
-	    = build2_loc (kw, CO_RETURN_EXPR, void_type_node, expr, NULL_TREE);
-	  expr = maybe_cleanup_point_expr_void (expr);
-	  expr = add_stmt (expr);
-	  return expr;
-	}
+      /* co_return expressions are always void type, regardless of the
+	 expression type.  */
+      expr = build2_loc (kw, CO_RETURN_EXPR, void_type_node,
+			 expr, NULL_TREE);
+      expr = maybe_cleanup_point_expr_void (expr);
+      return add_stmt (expr);
     }
 
   if (!coro_promise_type_found_p (current_function_decl, kw))
-    return error_mark_node;
-
-  if (error_operand_p (expr))
     return error_mark_node;
 
   /* Suppress -Wreturn-type for co_return, we need to check indirectly
@@ -1020,16 +1027,29 @@ finish_co_return_stmt (location_t kw, tree expr)
   if (!processing_template_decl && warn_sequence_point)
     verify_sequence_points (expr);
 
+  if (expr)
+    {
+      /* If we had an id-expression obfuscated by force_paren_expr, we need
+	 to undo it so we can try to treat it as an rvalue below.  */
+      expr = maybe_undo_parenthesized_ref (expr);
+
+      if (processing_template_decl)
+	expr = build_non_dependent_expr (expr);
+
+      if (error_operand_p (expr))
+	return error_mark_node;
+    }
+
   /* If the promise object doesn't have the correct return call then
      there's a mis-match between the co_return <expr> and this.  */
-  tree co_ret_call = NULL_TREE;
+  tree co_ret_call = error_mark_node;
   if (expr == NULL_TREE || VOID_TYPE_P (TREE_TYPE (expr)))
     {
       tree crv_meth
 	= lookup_promise_method (current_function_decl,
 				 coro_return_void_identifier, kw,
 				 /*musthave=*/true);
-      if (!crv_meth || crv_meth == error_mark_node)
+      if (crv_meth == error_mark_node)
 	return error_mark_node;
 
       co_ret_call = build_new_method_call (
@@ -1042,13 +1062,37 @@ finish_co_return_stmt (location_t kw, tree expr)
 	= lookup_promise_method (current_function_decl,
 				 coro_return_value_identifier, kw,
 				 /*musthave=*/true);
-      if (!crv_meth || crv_meth == error_mark_node)
+      if (crv_meth == error_mark_node)
 	return error_mark_node;
 
-      vec<tree, va_gc> *args = make_tree_vector_single (expr);
-      co_ret_call = build_new_method_call (
-	get_coroutine_promise_proxy (current_function_decl), crv_meth, &args,
-	NULL_TREE, LOOKUP_NORMAL, NULL, tf_warning_or_error);
+      /* [class.copy.elision] / 3.
+	 An implicitly movable entity is a variable of automatic storage
+	 duration that is either a non-volatile object or an rvalue reference
+	 to a non-volatile object type.  For such objects in the context of
+	 the co_return, the overload resolution should be carried out first
+	 treating the object as an rvalue, if that fails, then we fall back
+	 to regular overload resolution.  */
+
+      if (treat_lvalue_as_rvalue_p (expr, /*parm_ok*/true)
+	  && CLASS_TYPE_P (TREE_TYPE (expr))
+	  && !TYPE_VOLATILE (TREE_TYPE (expr)))
+	{
+	  vec<tree, va_gc> *args = make_tree_vector_single (move (expr));
+	  /* It's OK if this fails... */
+	  co_ret_call = build_new_method_call
+	    (get_coroutine_promise_proxy (current_function_decl), crv_meth,
+	     &args, NULL_TREE, LOOKUP_NORMAL|LOOKUP_PREFER_RVALUE,
+	     NULL, tf_none);
+	}
+
+      if (co_ret_call == error_mark_node)
+	{
+	  vec<tree, va_gc> *args = make_tree_vector_single (expr);
+	  /* ... but this must succeed if we didn't get the move variant.  */
+	  co_ret_call = build_new_method_call
+	    (get_coroutine_promise_proxy (current_function_decl), crv_meth,
+	     &args, NULL_TREE, LOOKUP_NORMAL, NULL, tf_warning_or_error);
+	}
     }
 
   /* Makes no sense for a co-routine really. */
@@ -1057,13 +1101,8 @@ finish_co_return_stmt (location_t kw, tree expr)
 		"function declared %<noreturn%> has a"
 		" %<co_return%> statement");
 
-  if (!co_ret_call || co_ret_call == error_mark_node)
-    return error_mark_node;
-
   expr = build2_loc (kw, CO_RETURN_EXPR, void_type_node, expr, co_ret_call);
-  expr = maybe_cleanup_point_expr_void (expr);
-  expr = add_stmt (expr);
-  return expr;
+  return finish_expr_stmt (expr);
 }
 
 /* We need to validate the arguments to __builtin_coro_promise, since the
