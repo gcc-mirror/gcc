@@ -1644,6 +1644,7 @@ OBJS = \
 	unique-ptr-tests.o \
 	valtrack.o \
 	value-range.o \
+	value-range-equiv.o \
 	value-prof.o \
 	var-tracking.o \
 	varasm.o \
