@@ -9,6 +9,7 @@
 
 #include "rust-lex.h"
 #include "rust-parse.h"
+#include "rust-scan.h"
 #include "rust-resolution.h"
 #include "rust-compile.h"
 
@@ -752,7 +753,8 @@ void
 Session::name_resolution (AST::Crate &crate)
 {
   fprintf (stderr, "started name resolution\n");
-  Analysis::TypeResolution::ResolveNamesAndTypes (crate);
+  Analysis::TopLevelScan toplevel (crate);
+  Analysis::TypeResolution::ResolveNamesAndTypes (crate, toplevel);
   fprintf (stderr, "finished name resolution\n");
 }
 

@@ -3,18 +3,17 @@
 #include "rust-system.h"
 #include "rust-ast-full.h"
 #include "rust-ast-visitor.h"
-#include "rust-scan.h"
 #include "scope.h"
 
 namespace Rust {
 namespace Analysis {
 
-class TypeResolution : public AST::ASTVisitor
+class TopLevelScan : public AST::ASTVisitor
 {
 public:
-  static bool ResolveNamesAndTypes (AST::Crate &crate, TopLevelScan &toplevel);
+  TopLevelScan (AST::Crate &crate);
 
-  ~TypeResolution ();
+  ~TopLevelScan ();
 
   // visitor impl
   // rust-ast.h
@@ -222,20 +221,8 @@ public:
   virtual void visit (AST::BareFunctionType &type);
 
 private:
-  TypeResolution (AST::Crate &crate, TopLevelScan &toplevel);
-
-  bool go ();
-
-  bool typesAreCompatible (AST::Type *lhs, AST::Type *rhs, Location locus);
-
-  Scope<AST::Type *> scope;
-  Scope<AST::Type *> typeScope;
+  std::map<std::string, AST::Function *> functions;
   AST::Crate &crate;
-  TopLevelScan &toplevel;
-
-  std::vector<AST::IdentifierPattern> letPatternBuffer;
-  std::vector<AST::Type *> typeBuffer;
-  std::vector<std::string> typeComparisonBuffer;
 };
 
 } // namespace Analysis

@@ -70,6 +70,7 @@ GRS_OBJS = \
     rust/rust-ast-full-test.o \
     rust/rust-session-manager.o \
     rust/rust-resolution.o \
+    rust/rust-scan.o \
     rust/rust-compile.o \
     $(END)
 # removed object files from here 

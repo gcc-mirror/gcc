@@ -19,7 +19,8 @@
 namespace Rust {
 namespace Analysis {
 
-TypeResolution::TypeResolution (AST::Crate &crate) : crate (crate)
+TypeResolution::TypeResolution (AST::Crate &crate, TopLevelScan &toplevel)
+  : crate (crate), toplevel (toplevel)
 {
   typeScope.Push ();
   scope.Push ();
@@ -50,9 +51,9 @@ TypeResolution::~TypeResolution ()
 }
 
 bool
-TypeResolution::ResolveNamesAndTypes (AST::Crate &crate)
+TypeResolution::ResolveNamesAndTypes (AST::Crate &crate, TopLevelScan &toplevel)
 {
-  TypeResolution resolver (crate);
+  TypeResolution resolver (crate, toplevel);
   return resolver.go ();
 }
 
@@ -315,7 +316,11 @@ TypeResolution::visit (AST::AssignmentExpr &expr)
   // scope will require knowledge of the type
 
   // do the lhsType and the rhsType match
-  typesAreCompatible (lhsType, rhsType, expr.right_expr->get_locus_slow ());
+  if (!typesAreCompatible (lhsType, rhsType,
+			   expr.right_expr->get_locus_slow ()))
+    return;
+
+  // is the lhs mutable?
 }
 
 void

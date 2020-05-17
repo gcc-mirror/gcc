@@ -361,7 +361,6 @@ Compilation::visit (AST::Function &function)
       printf ("FUNC PARAM: %s\n", param.as_string ().c_str ());
       // TODO
     }
-
   if (parameters.size () != function.function_params.size ())
     {
       rust_error_at (function.locus,
