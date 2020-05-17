@@ -1,3 +1,15 @@
+2020-05-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/95021
+	* config/i386/i386-features.c (has_non_address_hard_reg):
+	Renamed to ...
+	(pseudo_reg_set): This.  Return the SET expression.  Ignore
+	pseudo register push.
+	(general_scalar_to_vector_candidate_p): Combine single_set and
+	has_non_address_hard_reg calls to pseudo_reg_set.
+	(timode_scalar_to_vector_candidate_p): Likewise.
+	* config/i386/i386.md (*pushv1ti2): New pattern.
+
 2020-05-17  Aldy Hernandez  <aldyh@redhat.com>
 
 	Revert:
