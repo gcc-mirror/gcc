@@ -244,9 +244,6 @@ private:
      ASSERT_EXPRs for SSA name N_I should be inserted.  */
   assert_locus **asserts_for;
 
-  /* Return true if the SSA name NAME is live on the edge E.  */
-  bool live_on_edge (edge e, tree name);
-
   /* Finish found ASSERTS for E and register them at GSI.  */
   void finish_register_edge_assert_for (edge e, gimple_stmt_iterator gsi,
 					vec<assert_info> &asserts);
