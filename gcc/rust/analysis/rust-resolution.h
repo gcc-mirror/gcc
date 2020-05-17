@@ -225,12 +225,15 @@ private:
 
   bool go ();
 
+  bool typesAreCompatible (std::string &lhs, std::string &rhs) const;
+
   Scope<AST::Type *> scope;
   Scope<AST::Type *> typeScope;
   AST::Crate &crate;
 
   std::vector<AST::IdentifierPattern> letPatternBuffer;
   std::vector<AST::Type *> typeBuffer;
+  std::vector<std::string> typeComparisonBuffer;
 };
 
 } // namespace Analysis

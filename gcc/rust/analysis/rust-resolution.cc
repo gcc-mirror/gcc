@@ -65,6 +65,14 @@ TypeResolution::go ()
   return true;
 }
 
+bool
+TypeResolution::typesAreCompatible (std::string &lhs, std::string &rhs) const
+{
+  // FIXME this needs to handle the cases of an i8 going into an i32 which is
+  // compatible
+  return lhs.compare (rhs) == 0;
+}
+
 void
 TypeResolution::visit (AST::Token &tok)
 {}
@@ -124,18 +132,21 @@ TypeResolution::visit (AST::TypePathSegmentFunction &segment)
 void
 TypeResolution::visit (AST::TypePath &path)
 {
-  printf ("TypePath: %s\n", path.as_string ().c_str ());
+  // this may not be robust enough for type comparisons but lets try it for now
+  typeComparisonBuffer.push_back (path.as_string ());
 }
 
 void
 TypeResolution::visit (AST::QualifiedPathInExpression &path)
 {
-  printf ("QualifiedPathInExpression: %s\n", path.as_string ().c_str ());
+  typeComparisonBuffer.push_back (path.as_string ());
 }
 
 void
 TypeResolution::visit (AST::QualifiedPathInType &path)
-{}
+{
+  typeComparisonBuffer.push_back (path.as_string ());
+}
 
 // rust-expr.h
 void
@@ -245,7 +256,34 @@ TypeResolution::visit (AST::ArithmeticOrLogicalExpr &expr)
   // scope will require knowledge of the type
 
   // do the lhsType and the rhsType match
-  // TODO
+  before = typeComparisonBuffer.size ();
+  lhsType->accept_vis (*this);
+  if (typeComparisonBuffer.size () <= before)
+    {
+      rust_error_at (expr.locus, "Failed to unwrap type for lhs");
+      return;
+    }
+
+  before = typeComparisonBuffer.size ();
+  rhsType->accept_vis (*this);
+  if (typeComparisonBuffer.size () <= before)
+    {
+      rust_error_at (expr.locus, "Failed to unwrap type for rhs");
+      return;
+    }
+
+  auto rhsTypeStr = typeComparisonBuffer.back ();
+  typeComparisonBuffer.pop_back ();
+  auto lhsTypeStr = typeComparisonBuffer.back ();
+  typeComparisonBuffer.pop_back ();
+
+  if (!typesAreCompatible (lhsTypeStr, rhsTypeStr))
+    {
+      rust_error_at (expr.right_expr->get_locus_slow (),
+		     "E0308: expected: %s, found %s", lhsTypeStr.c_str (),
+		     rhsTypeStr.c_str ());
+      return;
+    }
 }
 
 void
@@ -288,7 +326,34 @@ TypeResolution::visit (AST::AssignmentExpr &expr)
   // scope will require knowledge of the type
 
   // do the lhsType and the rhsType match
-  // TODO
+  before = typeComparisonBuffer.size ();
+  lhsType->accept_vis (*this);
+  if (typeComparisonBuffer.size () <= before)
+    {
+      rust_error_at (expr.locus, "Failed to unwrap type for lhs");
+      return;
+    }
+
+  before = typeComparisonBuffer.size ();
+  rhsType->accept_vis (*this);
+  if (typeComparisonBuffer.size () <= before)
+    {
+      rust_error_at (expr.locus, "Failed to unwrap type for rhs");
+      return;
+    }
+
+  auto rhsTypeStr = typeComparisonBuffer.back ();
+  typeComparisonBuffer.pop_back ();
+  auto lhsTypeStr = typeComparisonBuffer.back ();
+  typeComparisonBuffer.pop_back ();
+
+  if (!typesAreCompatible (lhsTypeStr, rhsTypeStr))
+    {
+      rust_error_at (expr.right_expr->get_locus_slow (),
+		     "E0308: expected: %s, found %s", lhsTypeStr.c_str (),
+		     rhsTypeStr.c_str ());
+      return;
+    }
 }
 
 void
