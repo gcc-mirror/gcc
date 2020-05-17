@@ -4285,7 +4285,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree gro_context_body = push_stmt_list ();
   bool gro_is_void_p = VOID_TYPE_P (TREE_TYPE (get_ro));
 
-  tree gro, gro_bind_vars = NULL_TREE;
+  tree gro = NULL_TREE;
+  tree gro_bind_vars = NULL_TREE;
   /* We have to sequence the call to get_return_object before initial
      suspend.  */
   if (gro_is_void_p)
