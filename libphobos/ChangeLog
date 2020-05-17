@@ -1,3 +1,19 @@
+2020-05-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/95166
+	* libdruntime/core/cpuid.d (cpuidX86): Do not use i7 detection on AMD
+	processors.
+	(hasCPUID): Fix deprecated asm syntax.
+
+	PR d/95167
+	* src/std/zip.d (unittest): Skip test if unzip is not installed.
+
+	PR d/95168
+	* src/std/net/curl.d (HTTP.onReceiveHeader): Move status line parsing
+	to ...
+	(HTTP.parseStatusLine): ... here.  New function.  Add support for
+	parsing HTTP/2 status lines.
+
 2020-05-07  Release Manager
 
 	* GCC 10.1.0 released.
