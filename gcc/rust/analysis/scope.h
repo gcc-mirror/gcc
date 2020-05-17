@@ -6,14 +6,14 @@
 namespace Rust {
 namespace Analysis {
 
-class Scope
+template <class T> class Scope
 {
 public:
   Scope () : scopeStack () {}
 
   ~Scope () {}
 
-  bool Insert (std::string key, AST::Type *val)
+  bool Insert (std::string key, T val)
   {
     if (scopeStack.back ().find (key) != scopeStack.back ().end ())
       {
@@ -24,7 +24,7 @@ public:
     return true;
   }
 
-  bool Lookup (std::string key, AST::Type **result)
+  bool Lookup (std::string key, T *result)
   {
     for (auto it = scopeStack.rbegin (); it != scopeStack.rend (); ++it)
       {
@@ -40,7 +40,7 @@ public:
 
   void Push () { scopeStack.push_back ({}); }
 
-  std ::map<std::string, AST::Type *> Pop ()
+  std ::map<std::string, T> Pop ()
   {
     auto toplevel = scopeStack.back ();
     scopeStack.pop_back ();
@@ -48,7 +48,7 @@ public:
   }
 
 private:
-  std::vector<std::map<std::string, AST::Type *> > scopeStack;
+  std::vector<std::map<std::string, T> > scopeStack;
 };
 
 } // namespace Analysis

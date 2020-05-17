@@ -226,7 +226,7 @@ private:
 
   bool go ();
 
-  Analysis::Scope scope;
+  Analysis::Scope<AST::Type *> scope;
   AST::Crate &crate;
   Backend *backend;
 
