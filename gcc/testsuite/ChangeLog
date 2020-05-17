@@ -1,5 +1,15 @@
 2020-05-17  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/95021
+	* c-c++-common/dfp/func-vararg-mixed-2.c: Removed.
+	* gcc.target/i386/pr95021-1.c: New test.
+	* gcc.target/i386/pr95021-2.c: Likewise.
+	* gcc.target/i386/pr95021-3.c: Likewise.
+	* gcc.target/i386/pr95021-4.c: Likewise.
+	* gcc.target/i386/pr95021-5.c: Likewise.
+
+2020-05-17  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* gcc.target/i386/strncmp-1.c: New test.
 
 2020-05-16  Iain Sandoe  <iain@sandoe.co.uk>
