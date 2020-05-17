@@ -1,3 +1,7 @@
+2020-05-22  Mark Wielaard  <mark@klomp.org>
+
+	* gcc.dg/analyzer/signal-exit.c: New testcase.
+
 2020-05-22  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95255

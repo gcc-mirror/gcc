@@ -1,3 +1,10 @@
+2020-05-22  Mark Wielaard  <mark@klomp.org>
+
+	* sm-signal.cc(signal_unsafe_call::emit): Possibly add
+	gcc_rich_location note for replacement.
+	(signal_unsafe_call::get_replacement_fn): New private function.
+	(get_async_signal_unsafe_fns): Add "exit".
+
 2020-04-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/94816
