@@ -970,6 +970,12 @@ version (Posix) @system unittest
 {
     import std.datetime, std.file, std.format, std.path, std.process, std.stdio;
 
+    if (executeShell("unzip").status != 0)
+    {
+        writeln("Can't run unzip, skipping unzip test");
+        return;
+    }
+
     auto zr = new ZipArchive();
     auto am = new ArchiveMember();
     am.compressionMethod = CompressionMethod.deflate;
