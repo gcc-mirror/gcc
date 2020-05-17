@@ -225,7 +225,7 @@ private:
 
   bool go ();
 
-  bool typesAreCompatible (std::string &lhs, std::string &rhs) const;
+  bool typesAreCompatible (AST::Type *lhs, AST::Type *rhs, Location locus);
 
   Scope<AST::Type *> scope;
   Scope<AST::Type *> typeScope;

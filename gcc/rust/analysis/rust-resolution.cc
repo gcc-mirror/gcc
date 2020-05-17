@@ -66,11 +66,27 @@ TypeResolution::go ()
 }
 
 bool
-TypeResolution::typesAreCompatible (std::string &lhs, std::string &rhs) const
+TypeResolution::typesAreCompatible (AST::Type *lhs, AST::Type *rhs,
+				    Location locus)
 {
+  lhs->accept_vis (*this);
+  rhs->accept_vis (*this);
+
+  auto rhsTypeStr = typeComparisonBuffer.back ();
+  typeComparisonBuffer.pop_back ();
+  auto lhsTypeStr = typeComparisonBuffer.back ();
+  typeComparisonBuffer.pop_back ();
+
   // FIXME this needs to handle the cases of an i8 going into an i32 which is
   // compatible
-  return lhs.compare (rhs) == 0;
+  if (lhsTypeStr.compare (rhsTypeStr))
+    {
+      rust_error_at (locus, "E0308: expected: %s, found %s",
+		     lhsTypeStr.c_str (), rhsTypeStr.c_str ());
+      return false;
+    }
+
+  return true;
 }
 
 void
@@ -256,34 +272,7 @@ TypeResolution::visit (AST::ArithmeticOrLogicalExpr &expr)
   // scope will require knowledge of the type
 
   // do the lhsType and the rhsType match
-  before = typeComparisonBuffer.size ();
-  lhsType->accept_vis (*this);
-  if (typeComparisonBuffer.size () <= before)
-    {
-      rust_error_at (expr.locus, "Failed to unwrap type for lhs");
-      return;
-    }
-
-  before = typeComparisonBuffer.size ();
-  rhsType->accept_vis (*this);
-  if (typeComparisonBuffer.size () <= before)
-    {
-      rust_error_at (expr.locus, "Failed to unwrap type for rhs");
-      return;
-    }
-
-  auto rhsTypeStr = typeComparisonBuffer.back ();
-  typeComparisonBuffer.pop_back ();
-  auto lhsTypeStr = typeComparisonBuffer.back ();
-  typeComparisonBuffer.pop_back ();
-
-  if (!typesAreCompatible (lhsTypeStr, rhsTypeStr))
-    {
-      rust_error_at (expr.right_expr->get_locus_slow (),
-		     "E0308: expected: %s, found %s", lhsTypeStr.c_str (),
-		     rhsTypeStr.c_str ());
-      return;
-    }
+  typesAreCompatible (lhsType, rhsType, expr.right_expr->get_locus_slow ());
 }
 
 void
@@ -326,34 +315,7 @@ TypeResolution::visit (AST::AssignmentExpr &expr)
   // scope will require knowledge of the type
 
   // do the lhsType and the rhsType match
-  before = typeComparisonBuffer.size ();
-  lhsType->accept_vis (*this);
-  if (typeComparisonBuffer.size () <= before)
-    {
-      rust_error_at (expr.locus, "Failed to unwrap type for lhs");
-      return;
-    }
-
-  before = typeComparisonBuffer.size ();
-  rhsType->accept_vis (*this);
-  if (typeComparisonBuffer.size () <= before)
-    {
-      rust_error_at (expr.locus, "Failed to unwrap type for rhs");
-      return;
-    }
-
-  auto rhsTypeStr = typeComparisonBuffer.back ();
-  typeComparisonBuffer.pop_back ();
-  auto lhsTypeStr = typeComparisonBuffer.back ();
-  typeComparisonBuffer.pop_back ();
-
-  if (!typesAreCompatible (lhsTypeStr, rhsTypeStr))
-    {
-      rust_error_at (expr.right_expr->get_locus_slow (),
-		     "E0308: expected: %s, found %s", lhsTypeStr.c_str (),
-		     rhsTypeStr.c_str ());
-      return;
-    }
+  typesAreCompatible (lhsType, rhsType, expr.right_expr->get_locus_slow ());
 }
 
 void
@@ -810,8 +772,11 @@ TypeResolution::visit (AST::LetStmt &stmt)
 
   if (stmt.has_type () && stmt.has_init_expr ())
     {
-      auto declaredTyped = stmt.type.get ();
-      // TODO compare this type to the inferred type to ensure they match
+      if (!typesAreCompatible (stmt.type.get (), inferedType,
+			       stmt.init_expr->get_locus_slow ()))
+	{
+	  return;
+	}
     }
   else if (stmt.has_type () && !stmt.has_init_expr ())
     {
