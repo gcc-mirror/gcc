@@ -4714,6 +4714,13 @@ package body Inline is
 
          Establish_Actual_Mapping_For_Inlined_Call (N, Subp, Decls, Func_Expr);
 
+         --  Ensure that the copy has the same parent as the call (this seems
+         --  to matter when GNATprove_Mode is set and there are nested static
+         --  calls; prevents blowups in Insert_Actions, though it's not clear
+         --  exactly why this is needed???).
+
+         Set_Parent (Expr_Copy, Parent (N));
+
          Insert_Actions (N, Decls);
 
          --  Now substitute actuals for their corresponding formal references

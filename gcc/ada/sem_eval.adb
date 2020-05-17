@@ -3243,6 +3243,14 @@ package body Sem_Eval is
          end if;
 
          return;
+
+      --  Also return if a semantic error has been posted on the node, as we
+      --  don't want to fold in that case (for GNATprove, the node might lead
+      --  to Constraint_Error but won't have been replaced with a raise node
+      --  or marked as raising CE).
+
+      elsif Error_Posted (N) then
+         return;
       end if;
 
       --  If not foldable we are done
