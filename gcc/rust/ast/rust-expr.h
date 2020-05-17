@@ -568,7 +568,6 @@ public:
     RIGHT_SHIFT	 // std::ops::Shr
   };
 
-private:
   // Note: overloading trait specified in comments
   ExprType expr_type;
 
@@ -880,10 +879,10 @@ protected:
 // Binary assignment expression.
 class AssignmentExpr : public OperatorExpr
 {
+public:
   // Expr* right_expr;
   ::std::unique_ptr<Expr> right_expr;
 
-public:
   /*~AssignmentExpr() {
       delete right_expr;
   }*/
