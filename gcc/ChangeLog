@@ -1,5 +1,10 @@
 2020-05-17  Aldy Hernandez  <aldyh@redhat.com>
 
+	* tree-vrp.c (class vrp_insert): Remove prototype for
+	live_on_edge.
+
+2020-05-17  Aldy Hernandez  <aldyh@redhat.com>
+
 	* tree-vrp.c (class live_names): New.
 	(live_on_edge): Move into live_names.
 	(build_assert_expr_for): Move into vrp_insert.
