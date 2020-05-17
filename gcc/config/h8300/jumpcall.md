@@ -37,60 +37,44 @@
     DONE;
   })
 
-(define_insn "branch_true"
+(define_insn "branch"
   [(set (pc)
-	(if_then_else (match_operator 1 "comparison_operator"
+	(if_then_else (match_operator 2 "comparison_operator"
 		       [(cc0) (const_int 0)])
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
+		      (match_operand 0 "pc_or_label_operand" "")
+		      (match_operand 1 "pc_or_label_operand" "")))]
+  "operands[0] == pc_rtx || operands[1] == pc_rtx"
 {
   if ((cc_status.flags & CC_OVERFLOW_UNUSABLE) != 0
-      && (GET_CODE (operands[1]) == GT
-	  || GET_CODE (operands[1]) == GE
-	  || GET_CODE (operands[1]) == LE
-	  || GET_CODE (operands[1]) == LT))
+      && (GET_CODE (operands[2]) == GT
+	  || GET_CODE (operands[2]) == GE
+	  || GET_CODE (operands[2]) == LE
+	  || GET_CODE (operands[2]) == LT))
     {
       cc_status.flags &= ~CC_OVERFLOW_UNUSABLE;
       return 0;
     }
 
-  if (get_attr_length (insn) == 2)
-    return "b%j1	%l0";
-  else if (get_attr_length (insn) == 4)
-    return "b%j1	%l0:16";
+  if (operands[0] != pc_rtx)
+    {
+      if (get_attr_length (insn) == 2)
+	return "b%j2	%l0";
+      else if (get_attr_length (insn) == 4)
+	return "b%j2	%l0:16";
+      else
+	return "b%k2	.Lh8BR%=\;jmp	@%l0\\n.Lh8BR%=:";
+    }
   else
-    return "b%k1	.Lh8BR%=\;jmp	@%l0\\n.Lh8BR%=:";
+    {
+      if (get_attr_length (insn) == 2)
+	return "b%k2	%l1";
+      else if (get_attr_length (insn) == 4)
+	return "b%k2	%l1:16";
+      else
+	return "b%j2	.Lh8BR%=\;jmp	@%l1\\n.Lh8BR%=:";
+    }
 }
  [(set_attr "type" "branch")
-   (set_attr "cc" "none")])
-
-(define_insn "branch_false"
-  [(set (pc)
-	(if_then_else (match_operator 1 "comparison_operator"
-		       [(cc0) (const_int 0)])
-		      (pc)
-		      (label_ref (match_operand 0 "" ""))))]
-  ""
-{
-  if ((cc_status.flags & CC_OVERFLOW_UNUSABLE) != 0
-      && (GET_CODE (operands[1]) == GT
-	  || GET_CODE (operands[1]) == GE
-	  || GET_CODE (operands[1]) == LE
-	  || GET_CODE (operands[1]) == LT))
-    {
-      cc_status.flags &= ~CC_OVERFLOW_UNUSABLE;
-      return 0;
-    }
-
-  if (get_attr_length (insn) == 2)
-    return "b%k1	%l0";
-  else if (get_attr_length (insn) == 4)
-    return "b%k1	%l0:16";
-  else
-    return "b%j1	.Lh8BR%=\;jmp	@%l0\\n.Lh8BR%=:";
-}
-  [(set_attr "type" "branch")
    (set_attr "cc" "none")])
 
 (define_insn "*brabc"

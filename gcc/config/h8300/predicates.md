@@ -495,3 +495,9 @@
 
   return (code == IOR || code == XOR);
 })
+
+;; Used to detect valid targets for conditional branches
+;; Used to detect (pc) or (label_ref) in some jumping patterns
+(define_predicate "pc_or_label_operand"
+  (match_code "pc,label_ref"))
+

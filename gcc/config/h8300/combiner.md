@@ -740,9 +740,9 @@
 					   (const_int 1)
 					   (const_int 7))
 			  (const_int 0))
-		      (label_ref (match_operand 1 "" ""))
-		      (pc)))]
-  ""
+		      (match_operand 1 "pc_or_label_operand" "")
+		      (match_operand 2 "pc_or_label_operand" "")))]
+  "operands[1] == pc_rtx || operands[2] == pc_rtx"
   "#"
   ""
   [(set (cc0) (compare (match_dup 0)
@@ -750,9 +750,8 @@
    (set (pc)
 	(if_then_else (ge (cc0)
 			  (const_int 0))
-		      (label_ref (match_dup 1))
-		      (pc)))]
-  "")
+		      (match_dup 1)
+		      (match_dup 2)))])
 
 (define_insn_and_split ""
   [(set (pc)
@@ -760,9 +759,9 @@
 					   (const_int 1)
 					   (const_int 7))
 			  (const_int 0))
-		      (label_ref (match_operand 1 "" ""))
-		      (pc)))]
-  ""
+		      (match_operand 1 "pc_or_label_operand" "")
+		      (match_operand 2 "pc_or_label_operand" "")))]
+  "operands[1] == pc_rtx || operands[2] == pc_rtx"
   "#"
   ""
   [(set (cc0) (compare (match_dup 0)
@@ -770,6 +769,5 @@
    (set (pc)
 	(if_then_else (lt (cc0)
 			  (const_int 0))
-		      (label_ref (match_dup 1))
-		      (pc)))]
-  "")
+		      (match_dup 1)
+		      (match_dup 2)))])

@@ -1,3 +1,11 @@
+2020-05-17 Jeff Law  <law@redhat.com>
+
+	* config/h8300/predicates.md (pc_or_label_operand): New predicate.
+	* config/h8300/jumpcall.md (branch_true, branch_false): Consolidate
+	into a single pattern using pc_or_label_operand.
+	* config/h8300/combiner.md (bit branch patterns): Likewise.
+	* config/h8300/peepholes.md (HImode and SImode branches): Likewise.
+
 2020-05-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/95021
