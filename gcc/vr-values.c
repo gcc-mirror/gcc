@@ -1104,32 +1104,6 @@ vr_values::check_for_binary_op_overflow (enum tree_code subcode, tree type,
   return true;
 }
 
-/* Return
-   1 if VAL < VAL2
-   0 if !(VAL < VAL2)
-   -2 if those are incomparable.  */
-static int
-operand_less_p (tree val, tree val2)
-{
-  /* LT is folded faster than GE and others.  Inline the common case.  */
-  if (TREE_CODE (val) == INTEGER_CST && TREE_CODE (val2) == INTEGER_CST)
-    return tree_int_cst_lt (val, val2);
-  else if (TREE_CODE (val) == SSA_NAME && TREE_CODE (val2) == SSA_NAME)
-    return val == val2 ? 0 : -2;
-  else
-    {
-      int cmp = compare_values (val, val2);
-      if (cmp == -1)
-	return 1;
-      else if (cmp == 0 || cmp == 1)
-	return 0;
-      else
-	return -2;
-    }
-
-  return 0;
-}
-
 /* Try to derive a nonnegative or nonzero range out of STMT relying
    primarily on generic routines in fold in conjunction with range data.
    Store the result in *VR */
