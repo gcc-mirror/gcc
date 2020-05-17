@@ -1352,6 +1352,7 @@ OBJS = \
 	ggc-common.o \
 	ggc-tests.o \
 	gimple.o \
+	gimple-array-bounds.o \
 	gimple-builder.o \
 	gimple-expr.o \
 	gimple-iterator.o \
