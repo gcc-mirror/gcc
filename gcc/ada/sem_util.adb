@@ -1510,17 +1510,38 @@ package body Sem_Util is
       Loc        : constant Source_Ptr := Sloc (Bod);
       Clone_Id   : constant Entity_Id  := Class_Wide_Clone (Spec_Id);
       Clone_Body : Node_Id;
+      Assoc_List : constant Elist_Id := New_Elmt_List;
 
    begin
       --  The declaration of the class-wide clone was created when the
       --  corresponding class-wide condition was analyzed.
+
+      --  The body of the original condition may contain references to
+      --  the formals of Spec_Id. In the body of the classwide clone,
+      --  these must be replaced with the corresponding formals of
+      --  the clone.
+
+      declare
+         Spec_Formal_Id  : Entity_Id := First_Formal (Spec_Id);
+         Clone_Formal_Id : Entity_Id := First_Formal (Clone_Id);
+      begin
+         while Present (Spec_Formal_Id) loop
+            Append_Elmt (Spec_Formal_Id,  Assoc_List);
+            Append_Elmt (Clone_Formal_Id, Assoc_List);
+
+            Next_Formal (Spec_Formal_Id);
+            Next_Formal (Clone_Formal_Id);
+         end loop;
+      end;
 
       Clone_Body :=
         Make_Subprogram_Body (Loc,
           Specification              =>
             Copy_Subprogram_Spec (Parent (Clone_Id)),
           Declarations               => Declarations (Bod),
-          Handled_Statement_Sequence => Handled_Statement_Sequence (Bod));
+          Handled_Statement_Sequence =>
+            New_Copy_Tree (Handled_Statement_Sequence (Bod),
+              Map => Assoc_List));
 
       --  The new operation is internal and overriding indicators do not apply
       --  (the original primitive may have carried one).
