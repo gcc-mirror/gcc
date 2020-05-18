@@ -1,3 +1,7 @@
+2020-05-18  Alex Coplan  <alex.coplan@arm.com>
+	* gcc.c-torture/compile/packed-aligned-1.c: New test.
+	* gcc.c-torture/execute/packed-aligned.c: New test.
+
 2020-05-18  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/95171
