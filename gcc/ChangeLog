@@ -1,5 +1,28 @@
 2020-05-22  Richard Biener  <rguenther@suse.de>
 
+	* tree-vectorizer.h (vect_is_simple_use): New overload.
+	(vect_maybe_update_slp_op_vectype): New.
+	* tree-vect-stmts.c (vect_is_simple_use): New overload
+	accessing operands of SLP vs. non-SLP operation transparently.
+	(vect_maybe_update_slp_op_vectype): New function updating
+	the possibly shared SLP operands vector type.
+	(vectorizable_operation): Be a bit more SLP vs non-SLP agnostic
+	using the new vect_is_simple_use overload;  update SLP invariant
+	operand nodes vector type.
+	(vectorizable_comparison): Likewise.
+	(vectorizable_call): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_condition): Likewise.
+	(vectorizable_assignment): Likewise.
+	* tree-vect-loop.c (vectorizable_reduction): Likewise.
+	* tree-vect-slp.c (vect_get_constant_vectors): Enforce
+	present SLP_TREE_VECTYPE and check it matches previous
+	behavior.
+
+2020-05-22  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/95248
 	* tree-ssa-loop-im.c (sm_seq_valid_bb): Remove bogus early out.
 
