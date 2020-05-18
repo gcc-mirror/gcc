@@ -3170,6 +3170,7 @@ vectorizable_call (vec_info *vinfo,
     = { vect_unknown_def_type, vect_unknown_def_type, vect_unknown_def_type,
 	vect_unknown_def_type };
   tree vectypes[ARRAY_SIZE (dt)] = {};
+  slp_tree slp_op[ARRAY_SIZE (dt)] = {};
   int ndts = ARRAY_SIZE (dt);
   int ncopies, j;
   auto_vec<tree, 8> vargs;
@@ -3209,7 +3210,7 @@ vectorizable_call (vec_info *vinfo,
   vectype_in = NULL_TREE;
   nargs = gimple_call_num_args (stmt);
 
-  /* Bail out if the function has more than three arguments, we do not have
+  /* Bail out if the function has more than four arguments, we do not have
      interesting builtin functions to vectorize with more than two arguments
      except for fma.  No arguments is also not good.  */
   if (nargs == 0 || nargs > 4)
@@ -3229,17 +3230,17 @@ vectorizable_call (vec_info *vinfo,
 
   for (i = 0; i < nargs; i++)
     {
-      op = gimple_call_arg (stmt, i);
-
       if ((int) i == mask_opno)
 	{
+	  op = gimple_call_arg (stmt, i);
 	  if (!vect_check_scalar_mask (vinfo,
 				       stmt_info, op, &dt[i], &vectypes[i]))
 	    return false;
 	  continue;
 	}
 
-      if (!vect_is_simple_use (op, vinfo, &dt[i], &vectypes[i]))
+      if (!vect_is_simple_use (vinfo, stmt_info, slp_node,
+			       i, &op, &slp_op[i], &dt[i], &vectypes[i]))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -3400,6 +3401,15 @@ vectorizable_call (vec_info *vinfo,
   vec_loop_masks *masks = (loop_vinfo ? &LOOP_VINFO_MASKS (loop_vinfo) : NULL);
   if (!vec_stmt) /* transformation not required.  */
     {
+      if (slp_node)
+	for (i = 0; i < nargs; ++i)
+	  if (!vect_maybe_update_slp_op_vectype (slp_op[i], vectype_in))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "incompatible vector types for invariants\n");
+	      return false;
+	    }
       STMT_VINFO_TYPE (stmt_info) = call_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_call");
       vect_model_simple_cost (vinfo, stmt_info,
@@ -4725,9 +4735,18 @@ vectorizable_conversion (vec_info *vinfo,
   lhs_type = TREE_TYPE (scalar_dest);
   vectype_out = STMT_VINFO_VECTYPE (stmt_info);
 
-  op0 = gimple_assign_rhs1 (stmt);
-  rhs_type = TREE_TYPE (op0);
+  /* Check the operands of the operation.  */
+  slp_tree slp_op0, slp_op1 = NULL;
+  if (!vect_is_simple_use (vinfo, stmt_info, slp_node,
+			   0, &op0, &slp_op0, &dt[0], &vectype_in))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "use not simple.\n");
+      return false;
+    }
 
+  rhs_type = TREE_TYPE (op0);
   if ((code != FIX_TRUNC_EXPR && code != FLOAT_EXPR)
       && !((INTEGRAL_TYPE_P (lhs_type)
 	    && INTEGRAL_TYPE_P (rhs_type))
@@ -4748,34 +4767,24 @@ vectorizable_conversion (vec_info *vinfo,
       return false;
     }
 
-  /* Check the operands of the operation.  */
-  if (!vect_is_simple_use (op0, vinfo, &dt[0], &vectype_in))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "use not simple.\n");
-      return false;
-    }
   if (op_type == binary_op)
     {
-      bool ok;
+      gcc_assert (code == WIDEN_MULT_EXPR || code == WIDEN_LSHIFT_EXPR);
 
       op1 = gimple_assign_rhs2 (stmt);
-      gcc_assert (code == WIDEN_MULT_EXPR || code == WIDEN_LSHIFT_EXPR);
-      /* For WIDEN_MULT_EXPR, if OP0 is a constant, use the type of
-	 OP1.  */
-      if (CONSTANT_CLASS_P (op0))
-	ok = vect_is_simple_use (op1, vinfo, &dt[1], &vectype_in);
-      else
-	ok = vect_is_simple_use (op1, vinfo, &dt[1]);
-
-      if (!ok)
+      tree vectype1_in;
+      if (!vect_is_simple_use (vinfo, stmt_info, slp_node, 1,
+			       &op1, &slp_op1, &dt[1], &vectype1_in))
 	{
           if (dump_enabled_p ())
             dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
                              "use not simple.\n");
 	  return false;
 	}
+      /* For WIDEN_MULT_EXPR, if OP0 is a constant, use the type of
+	 OP1.  */
+      if (!vectype_in)
+	vectype_in = vectype1_in;
     }
 
   /* If op0 is an external or constant def, infer the vector type
@@ -4949,6 +4958,15 @@ vectorizable_conversion (vec_info *vinfo,
 
   if (!vec_stmt)		/* transformation not required.  */
     {
+      if (slp_node
+	  && (!vect_maybe_update_slp_op_vectype (slp_op0, vectype_in)
+	      || !vect_maybe_update_slp_op_vectype (slp_op1, vectype_in)))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "incompatible vector types for invariants\n");
+	  return false;
+	}
       DUMP_VECT_SCOPE ("vectorizable_conversion");
       if (modifier == NONE)
         {
@@ -5306,16 +5324,14 @@ vectorizable_assignment (vec_info *vinfo,
   if (TREE_CODE (scalar_dest) != SSA_NAME)
     return false;
 
-  code = gimple_assign_rhs_code (stmt);
-  if (gimple_assign_single_p (stmt)
-      || code == PAREN_EXPR
-      || CONVERT_EXPR_CODE_P (code))
-    op = gimple_assign_rhs1 (stmt);
-  else
+  if (STMT_VINFO_DATA_REF (stmt_info))
     return false;
 
-  if (code == VIEW_CONVERT_EXPR)
-    op = TREE_OPERAND (op, 0);
+  code = gimple_assign_rhs_code (stmt);
+  if (!(gimple_assign_single_p (stmt)
+	|| code == PAREN_EXPR
+	|| CONVERT_EXPR_CODE_P (code)))
+    return false;
 
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
@@ -5330,13 +5346,17 @@ vectorizable_assignment (vec_info *vinfo,
 
   gcc_assert (ncopies >= 1);
 
-  if (!vect_is_simple_use (op, vinfo, &dt[0], &vectype_in))
+  slp_tree slp_op;
+  if (!vect_is_simple_use (vinfo, stmt_info, slp_node, 0, &op, &slp_op,
+			   &dt[0], &vectype_in))
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
                          "use not simple.\n");
       return false;
     }
+  if (!vectype_in)
+    vectype_in = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op), slp_node);
 
   /* We can handle NOP_EXPR conversions that do not change the number
      of elements or the vector size.  */
@@ -5373,6 +5393,14 @@ vectorizable_assignment (vec_info *vinfo,
 
   if (!vec_stmt) /* transformation not required.  */
     {
+      if (slp_node
+	  && !vect_maybe_update_slp_op_vectype (slp_op, vectype_in))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "incompatible vector types for invariants\n");
+	  return false;
+	}
       STMT_VINFO_TYPE (stmt_info) = assignment_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_assignment");
       if (!vect_nop_conversion_p (stmt_info))
@@ -5540,8 +5568,9 @@ vectorizable_shift (vec_info *vinfo,
       return false;
     }
 
-  op0 = gimple_assign_rhs1 (stmt);
-  if (!vect_is_simple_use (op0, vinfo, &dt[0], &vectype))
+  slp_tree slp_op0;
+  if (!vect_is_simple_use (vinfo, stmt_info, slp_node,
+			   0, &op0, &slp_op0, &dt[0], &vectype))
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5567,10 +5596,10 @@ vectorizable_shift (vec_info *vinfo,
   if (maybe_ne (nunits_out, nunits_in))
     return false;
 
-  op1 = gimple_assign_rhs2 (stmt);
   stmt_vec_info op1_def_stmt_info;
-  if (!vect_is_simple_use (op1, vinfo, &dt[1], &op1_vectype,
-			   &op1_def_stmt_info))
+  slp_tree slp_op1;
+  if (!vect_is_simple_use (vinfo, stmt_info, slp_node, 1, &op1, &slp_op1,
+			   &dt[1], &op1_vectype, &op1_def_stmt_info))
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5743,6 +5772,15 @@ vectorizable_shift (vec_info *vinfo,
 
   if (!vec_stmt) /* transformation not required.  */
     {
+      if (slp_node
+	  && (!vect_maybe_update_slp_op_vectype (slp_op0, vectype)
+	      || !vect_maybe_update_slp_op_vectype (slp_op1, op1_vectype)))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "incompatible vector types for invariants\n");
+	  return false;
+	}
       STMT_VINFO_TYPE (stmt_info) = shift_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_shift");
       vect_model_simple_cost (vinfo, stmt_info, ncopies, dt,
@@ -5931,7 +5969,8 @@ vectorizable_operation (vec_info *vinfo,
   if (!stmt)
     return false;
 
-  if (TREE_CODE (gimple_assign_lhs (stmt)) != SSA_NAME)
+  /* Loads and stores are handled in vectorizable_{load,store}.  */
+  if (STMT_VINFO_DATA_REF (stmt_info))
     return false;
 
   orig_code = code = gimple_assign_rhs_code (stmt);
@@ -5988,8 +6027,9 @@ vectorizable_operation (vec_info *vinfo,
       return false;
     }
 
-  op0 = gimple_assign_rhs1 (stmt);
-  if (!vect_is_simple_use (op0, vinfo, &dt[0], &vectype))
+  slp_tree slp_op0;
+  if (!vect_is_simple_use (vinfo, stmt_info, slp_node,
+			   0, &op0, &slp_op0, &dt[0], &vectype))
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -6038,10 +6078,11 @@ vectorizable_operation (vec_info *vinfo,
     return false;
 
   tree vectype2 = NULL_TREE, vectype3 = NULL_TREE;
+  slp_tree slp_op1 = NULL, slp_op2 = NULL;
   if (op_type == binary_op || op_type == ternary_op)
     {
-      op1 = gimple_assign_rhs2 (stmt);
-      if (!vect_is_simple_use (op1, vinfo, &dt[1], &vectype2))
+      if (!vect_is_simple_use (vinfo, stmt_info, slp_node,
+			       1, &op1, &slp_op1, &dt[1], &vectype2))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -6051,8 +6092,8 @@ vectorizable_operation (vec_info *vinfo,
     }
   if (op_type == ternary_op)
     {
-      op2 = gimple_assign_rhs3 (stmt);
-      if (!vect_is_simple_use (op2, vinfo, &dt[2], &vectype3))
+      if (!vect_is_simple_use (vinfo, stmt_info, slp_node,
+			       2, &op2, &slp_op2, &dt[2], &vectype3))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -6162,6 +6203,18 @@ vectorizable_operation (vec_info *vinfo,
 	  else
 	    vect_record_loop_mask (loop_vinfo, masks, ncopies * vec_num,
 				   vectype, NULL);
+	}
+
+      /* Put types on constant and invariant SLP children.  */
+      if (slp_node
+	  && (!vect_maybe_update_slp_op_vectype (slp_op0, vectype)
+	      || !vect_maybe_update_slp_op_vectype (slp_op1, vectype)
+	      || !vect_maybe_update_slp_op_vectype (slp_op2, vectype)))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "incompatible vector types for invariants\n");
+	  return false;
 	}
 
       STMT_VINFO_TYPE (stmt_info) = op_vec_info_type;
@@ -7478,6 +7531,16 @@ vectorizable_store (vec_info *vinfo,
 	  && LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo))
 	check_load_store_masking (loop_vinfo, vectype, vls_type, group_size,
 				  memory_access_type, &gs_info, mask);
+
+      if (slp_node
+	  && !vect_maybe_update_slp_op_vectype (SLP_TREE_CHILDREN (slp_node)[0],
+						vectype))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "incompatible vector types for invariants\n");
+	  return false;
+	}
 
       STMT_VINFO_TYPE (stmt_info) = store_vec_info_type;
       vect_model_store_cost (vinfo, stmt_info, ncopies,
@@ -10060,17 +10123,23 @@ vectorizable_condition (vec_info *vinfo,
     return false; /* FORNOW */
 
   cond_expr = gimple_assign_rhs1 (stmt);
-  then_clause = gimple_assign_rhs2 (stmt);
-  else_clause = gimple_assign_rhs3 (stmt);
 
   if (!vect_is_simple_cond (cond_expr, vinfo, slp_node,
 			    &comp_vectype, &dts[0], vectype)
       || !comp_vectype)
     return false;
 
-  if (!vect_is_simple_use (then_clause, vinfo, &dts[2], &vectype1))
+  unsigned slp_adjust = 0;
+  if (slp_node && SLP_TREE_CHILDREN (slp_node).length () == 4)
+    /* ???  Hack.  Hope for COND_EXPR GIMPLE sanitizing or refactor
+       things more...  */
+    slp_adjust = 1;
+  slp_tree then_slp_node, else_slp_node;
+  if (!vect_is_simple_use (vinfo, stmt_info, slp_node, 1 + slp_adjust,
+			   &then_clause, &then_slp_node, &dts[2], &vectype1))
     return false;
-  if (!vect_is_simple_use (else_clause, vinfo, &dts[3], &vectype2))
+  if (!vect_is_simple_use (vinfo, stmt_info, slp_node, 2 + slp_adjust,
+			   &else_clause, &else_slp_node, &dts[3], &vectype2))
     return false;
 
   if (vectype1 && !useless_type_conversion_p (vectype, vectype1))
@@ -10188,18 +10257,33 @@ vectorizable_condition (vec_info *vinfo,
 	    }
 	}
 
-      if (loop_vinfo
-	  && LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo)
-	  && reduction_type == EXTRACT_LAST_REDUCTION)
-	vect_record_loop_mask (loop_vinfo, &LOOP_VINFO_MASKS (loop_vinfo),
-			       ncopies * vec_num, vectype, NULL);
-
       vect_cost_for_stmt kind = vector_stmt;
       if (reduction_type == EXTRACT_LAST_REDUCTION)
 	/* Count one reduction-like operation per vector.  */
 	kind = vec_to_scalar;
       else if (!expand_vec_cond_expr_p (vectype, comp_vectype, cond_code))
 	return false;
+
+      if (slp_node
+	  && (!vect_maybe_update_slp_op_vectype
+		 (SLP_TREE_CHILDREN (slp_node)[0], comp_vectype)
+	      || (slp_adjust == 1
+		  && !vect_maybe_update_slp_op_vectype
+			(SLP_TREE_CHILDREN (slp_node)[1], comp_vectype))
+	      || !vect_maybe_update_slp_op_vectype (then_slp_node, vectype)
+	      || !vect_maybe_update_slp_op_vectype (else_slp_node, vectype)))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "incompatible vector types for invariants\n");
+	  return false;
+	}
+
+      if (loop_vinfo
+	  && LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo)
+	  && reduction_type == EXTRACT_LAST_REDUCTION)
+	vect_record_loop_mask (loop_vinfo, &LOOP_VINFO_MASKS (loop_vinfo),
+			       ncopies * vec_num, vectype, NULL);
 
       STMT_VINFO_TYPE (stmt_info) = condition_vec_info_type;
       vect_model_simple_cost (vinfo, stmt_info, ncopies, dts, ndts, slp_node,
@@ -10550,13 +10634,13 @@ vectorizable_comparison (vec_info *vinfo,
   if (TREE_CODE_CLASS (code) != tcc_comparison)
     return false;
 
-  rhs1 = gimple_assign_rhs1 (stmt);
-  rhs2 = gimple_assign_rhs2 (stmt);
-
-  if (!vect_is_simple_use (rhs1, vinfo, &dts[0], &vectype1))
+  slp_tree slp_rhs1, slp_rhs2;
+  if (!vect_is_simple_use (vinfo, stmt_info, slp_node,
+			   0, &rhs1, &slp_rhs1, &dts[0], &vectype1))
     return false;
 
-  if (!vect_is_simple_use (rhs2, vinfo, &dts[1], &vectype2))
+  if (!vect_is_simple_use (vinfo, stmt_info, slp_node,
+			   1, &rhs2, &slp_rhs2, &dts[1], &vectype2))
     return false;
 
   if (vectype1 && vectype2
@@ -10647,6 +10731,17 @@ vectorizable_comparison (vec_info *vinfo,
 	      if (!optab || optab_handler (optab, mode) == CODE_FOR_nothing)
 		return false;
 	    }
+	}
+
+      /* Put types on constant and invariant SLP children.  */
+      if (slp_node
+	  && (!vect_maybe_update_slp_op_vectype (slp_rhs1, vectype)
+	      || !vect_maybe_update_slp_op_vectype (slp_rhs2, vectype)))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "incompatible vector types for invariants\n");
+	  return false;
 	}
 
       STMT_VINFO_TYPE (stmt_info) = comparison_vec_info_type;
@@ -11705,6 +11800,61 @@ vect_is_simple_use (tree operand, vec_info *vinfo, enum vect_def_type *dt,
   return true;
 }
 
+/* Function vect_is_simple_use.
+
+   Same as vect_is_simple_use but determines the operand by operand
+   position OPERAND from either STMT or SLP_NODE, filling in *OP
+   and *SLP_DEF (when SLP_NODE is not NULL).  */
+
+bool
+vect_is_simple_use (vec_info *vinfo, stmt_vec_info stmt, slp_tree slp_node,
+		    unsigned operand, tree *op, slp_tree *slp_def,
+		    enum vect_def_type *dt,
+		    tree *vectype, stmt_vec_info *def_stmt_info_out)
+{
+  if (slp_node)
+    {
+      slp_tree child = SLP_TREE_CHILDREN (slp_node)[operand];
+      *slp_def = child;
+      if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
+	*op = gimple_get_lhs (SLP_TREE_SCALAR_STMTS (child)[0]->stmt);
+      else
+	*op = SLP_TREE_SCALAR_OPS (child)[0];
+    }
+  else
+    {
+      if (gassign *ass = dyn_cast <gassign *> (stmt->stmt))
+	{
+	  *op = gimple_op (ass, operand + 1);
+	  /* ???  Ick.  But it will vanish with SLP only.  */
+	  if (TREE_CODE (*op) == VIEW_CONVERT_EXPR)
+	    *op = TREE_OPERAND (*op, 0);
+	}
+      else if (gcall *call = dyn_cast <gcall *> (stmt->stmt))
+	*op = gimple_call_arg (call, operand);
+      else
+	gcc_unreachable ();
+    }
+
+  /* ???  We might want to update *vectype from *slp_def here though
+     when sharing nodes this would prevent unsharing in the caller.  */
+  return vect_is_simple_use (*op, vinfo, dt, vectype, def_stmt_info_out);
+}
+
+/* If OP is not NULL and is external or constant update its vector
+   type with VECTYPE.  Returns true if successful or false if not,
+   for example when conflicting vector types are present.  */
+
+bool
+vect_maybe_update_slp_op_vectype (slp_tree op, tree vectype)
+{
+  if (!op || SLP_TREE_DEF_TYPE (op) == vect_internal_def)
+    return true;
+  if (SLP_TREE_VECTYPE (op))
+    return types_compatible_p (SLP_TREE_VECTYPE (op), vectype);
+  SLP_TREE_VECTYPE (op) = vectype;
+  return true;
+}
 
 /* Function supportable_widening_operation
 

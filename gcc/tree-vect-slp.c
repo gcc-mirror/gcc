@@ -3621,16 +3621,22 @@ vect_get_constant_vectors (vec_info *vinfo,
   gimple_seq ctor_seq = NULL;
   auto_vec<tree, 16> permute_results;
 
-  /* ???  SLP analysis should compute the vector type for the
-     constant / invariant and store it in the SLP node.  */
+  /* We always want SLP_TREE_VECTYPE (op_node) here correctly set.  */
+  vector_type = SLP_TREE_VECTYPE (op_node);
+    {
   tree op = op_node->ops[0];
-  /* Check if vector type is a boolean vector.  */
   tree stmt_vectype = STMT_VINFO_VECTYPE (stmt_vinfo);
   if (VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (op))
       && vect_mask_constant_operand_p (vinfo, stmt_vinfo, op_num))
-    vector_type = truth_type_for (stmt_vectype);
+    gcc_assert (vector_type
+		&& types_compatible_p (vector_type,
+				       truth_type_for (stmt_vectype)));
   else
-    vector_type = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op), op_node);
+    gcc_assert (vector_type
+		&& types_compatible_p (vector_type,
+				       get_vectype_for_scalar_type
+					 (vinfo, TREE_TYPE (op), op_node)));
+    }
 
   poly_uint64 vf = 1;
   if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
