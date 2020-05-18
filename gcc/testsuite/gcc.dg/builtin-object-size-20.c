@@ -1,7 +1,7 @@
 /* PR middle-end/92815 - spurious -Wstringop-overflow writing into
    a flexible array of an extern struct
    { dg-do compile }
-   { dg-options "-Wall -fdump-tree-optimized" } */
+   { dg-options "-O -Wall -fdump-tree-optimized" } */
 
 #define ASSERT(expr) ((expr) ? (void)0 : fail (__LINE__))
 #define bos0(expr) __builtin_object_size (expr, 1)
@@ -213,7 +213,7 @@ void fai32cx (void)
 /* Verify sizes of a struct with a flexible array member and 7 bytes
    of tail padding.  */
 
-struct AI64CX { int64_t i; char n, a[]; };
+struct AI64CX { int64_t i __attribute__ ((aligned (8))); char n, a[]; };
 
 struct AI64CX ai64c0 = { 0 };
 struct AI64CX ai64c1 = { 0, 1, { 1 } };
