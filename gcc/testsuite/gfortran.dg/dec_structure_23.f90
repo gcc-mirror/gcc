@@ -13,8 +13,8 @@ program p
   integer :: nn
   real :: rr
   structure /s/
-    integer x(n)    /1/   ! { dg-error "array with nonconstant bounds" }
+    integer x(n)    /1/   ! { dg-error "must be constant of INTEGER type" }
     integer xx(nn)  /1/   ! { dg-error "array with nonconstant bounds" }
-    integer xxx(rr) /1.0/ ! { dg-error "array with nonconstant bounds" }
+    integer xxx(rr) /1.0/ ! { dg-error "must be constant of INTEGER type" }
   end structure
 end
