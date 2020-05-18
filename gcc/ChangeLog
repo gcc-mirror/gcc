@@ -1,3 +1,20 @@
+2020-05-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_slp_tree::vectype): Add field.
+	(SLP_TREE_VECTYPE): New.
+	* tree-vect-slp.c (vect_create_new_slp_node): Initialize
+	SLP_TREE_VECTYPE.
+	(vect_create_new_slp_node): Likewise.
+	(vect_prologue_cost_for_slp): Move here from tree-vect-stmts.c
+	and simplify.
+	(vect_slp_analyze_node_operations): Walk nodes children for
+	invariant costing.
+	(vect_get_constant_vectors): Use local scope op variable.
+	* tree-vect-stmts.c (vect_prologue_cost_for_slp_op): Remove here.
+	(vect_model_simple_cost): Adjust.
+	(vect_model_store_cost): Likewise.
+	(vectorizable_store): Likewise.
+
 2020-05-18  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/92815

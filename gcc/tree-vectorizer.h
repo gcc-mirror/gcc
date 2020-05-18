@@ -130,6 +130,7 @@ struct _slp_tree {
      permutation.  */
   vec<unsigned> load_permutation;
 
+  tree vectype;
   /* Vectorized stmt/s.  */
   vec<stmt_vec_info> vec_stmts;
   /* Number of vector stmts that are created to replace the group of scalar
@@ -186,6 +187,7 @@ public:
 #define SLP_TREE_LOAD_PERMUTATION(S)             (S)->load_permutation
 #define SLP_TREE_TWO_OPERATORS(S)		 (S)->two_operators
 #define SLP_TREE_DEF_TYPE(S)			 (S)->def_type
+#define SLP_TREE_VECTYPE(S)			 (S)->vectype
 
 /* Key for map that records association between
    scalar conditions and corresponding loop mask, and

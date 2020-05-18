@@ -129,6 +129,7 @@ vect_create_new_slp_node (vec<stmt_vec_info> scalar_stmts)
   SLP_TREE_LOAD_PERMUTATION (node) = vNULL;
   SLP_TREE_TWO_OPERATORS (node) = false;
   SLP_TREE_DEF_TYPE (node) = vect_internal_def;
+  SLP_TREE_VECTYPE (node) = NULL_TREE;
   node->refcnt = 1;
   node->max_nunits = 1;
 
@@ -155,6 +156,7 @@ vect_create_new_slp_node (vec<tree> ops)
   SLP_TREE_LOAD_PERMUTATION (node) = vNULL;
   SLP_TREE_TWO_OPERATORS (node) = false;
   SLP_TREE_DEF_TYPE (node) = vect_external_def;
+  SLP_TREE_VECTYPE (node) = NULL_TREE;
   node->refcnt = 1;
   node->max_nunits = 1;
 
@@ -2720,6 +2722,66 @@ vect_slp_convert_to_external (vec_info *vinfo, slp_tree node,
   return true;
 }
 
+/* Compute the prologue cost for invariant or constant operands represented
+   by NODE.  */
+
+static void
+vect_prologue_cost_for_slp (vec_info *vinfo,
+			    slp_tree node,
+			    stmt_vector_for_cost *cost_vec)
+{
+  /* Without looking at the actual initializer a vector of
+     constants can be implemented as load from the constant pool.
+     When all elements are the same we can use a splat.  */
+  tree vectype = SLP_TREE_VECTYPE (node);
+  /* ???  Ideally we'd want all invariant nodes to have a vectype.  */
+  if (!vectype)
+    vectype = get_vectype_for_scalar_type (vinfo,
+					   TREE_TYPE (SLP_TREE_SCALAR_OPS
+							      (node)[0]), node);
+  unsigned group_size = SLP_TREE_SCALAR_OPS (node).length ();
+  unsigned num_vects_to_check;
+  unsigned HOST_WIDE_INT const_nunits;
+  unsigned nelt_limit;
+  if (TYPE_VECTOR_SUBPARTS (vectype).is_constant (&const_nunits)
+      && ! multiple_p (const_nunits, group_size))
+    {
+      num_vects_to_check = SLP_TREE_NUMBER_OF_VEC_STMTS (node);
+      nelt_limit = const_nunits;
+    }
+  else
+    {
+      /* If either the vector has variable length or the vectors
+	 are composed of repeated whole groups we only need to
+	 cost construction once.  All vectors will be the same.  */
+      num_vects_to_check = 1;
+      nelt_limit = group_size;
+    }
+  tree elt = NULL_TREE;
+  unsigned nelt = 0;
+  for (unsigned j = 0; j < num_vects_to_check * nelt_limit; ++j)
+    {
+      unsigned si = j % group_size;
+      if (nelt == 0)
+	elt = SLP_TREE_SCALAR_OPS (node)[si];
+      /* ???  We're just tracking whether all operands of a single
+	 vector initializer are the same, ideally we'd check if
+	 we emitted the same one already.  */
+      else if (elt != SLP_TREE_SCALAR_OPS (node)[si])
+	elt = NULL_TREE;
+      nelt++;
+      if (nelt == nelt_limit)
+	{
+	  record_stmt_cost (cost_vec, 1,
+			    SLP_TREE_DEF_TYPE (node) == vect_external_def
+			    ? (elt ? scalar_to_vec : vec_construct)
+			    : vector_load,
+			    NULL, vectype, 0, vect_prologue);
+	  nelt = 0;
+	}
+    }
+}
+
 /* Analyze statements contained in SLP tree NODE after recursively analyzing
    the subtree.  NODE_INSTANCE contains NODE and VINFO contains INSTANCE.
 
@@ -2735,6 +2797,7 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
   int i, j;
   slp_tree child;
 
+  /* Assume we can code-generate all invariants.  */
   if (SLP_TREE_DEF_TYPE (node) != vect_internal_def)
     return true;
 
@@ -2797,6 +2860,26 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
     if (SLP_TREE_SCALAR_STMTS (child).length () != 0)
       STMT_VINFO_DEF_TYPE (SLP_TREE_SCALAR_STMTS (child)[0]) = dt[j];
+
+  /* When the node can be vectorized cost invariant nodes it references.
+     This is not done in DFS order to allow the refering node
+     vectorizable_* calls to nail down the invariant nodes vector type
+     and possibly unshare it if it needs a different vector type than
+     other referrers.  */
+  if (res)
+    FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
+      if (SLP_TREE_DEF_TYPE (child) != vect_internal_def)
+	{
+	  /* ???  After auditing more code paths make a "default"
+	     and push the vector type from NODE to all children
+	     if it is not already set.  */
+	  /* Perform usual caching, note code-generation still
+	     code-gens these nodes multiple times but we expect
+	     to CSE them later.  */
+	  if (!visited.contains (child)
+	      && !lvisited.add (child))
+	    vect_prologue_cost_for_slp (vinfo, child, cost_vec);
+	}
 
   /* If this node can't be vectorized, try pruning the tree here rather
      than felling the whole thing.  */
@@ -3600,6 +3683,7 @@ vect_get_constant_vectors (vec_info *vinfo,
   stmt_vec_info insert_after = NULL;
   for (j = 0; j < number_of_copies; j++)
     {
+      tree op;
       for (i = group_size - 1; op_node->ops.iterate (i, &op); i--)
         {
           /* Create 'vect_ = {op0,op1,...,opn}'.  */
