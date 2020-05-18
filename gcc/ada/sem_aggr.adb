@@ -1545,6 +1545,18 @@ package body Sem_Aggr is
          Id     : Entity_Id;
 
       begin
+         --  An element iterator specification cannot appear in
+         --  an array aggregate because it does not provide index
+         --  values for the association. This must be a semantic
+         --  check because the parser cannot tell whether this is
+         --  an array aggregate or a container aggregate.
+
+         if Present (Iterator_Specification (N)) then
+            Error_Msg_N ("container element Iterator cannot appear "
+              & "in an array aggregate", N);
+            return;
+         end if;
+
          Choice := First (Discrete_Choices (N));
 
          while Present (Choice) loop

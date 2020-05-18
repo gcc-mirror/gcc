@@ -3402,22 +3402,50 @@ package body Ch4 is
 
    --  ITERATED_COMPONENT_ASSOCIATION ::=
    --    for DEFINING_IDENTIFIER in DISCRETE_CHOICE_LIST => EXPRESSION
+   --    for ITERATOR_SPECIFICATION => EXPRESSION
 
    function P_Iterated_Component_Association return Node_Id is
       Assoc_Node : Node_Id;
+      Id         : Node_Id;
+      State      : Saved_Scan_State;
 
    --  Start of processing for P_Iterated_Component_Association
 
    begin
       Scan;  --  past FOR
+      Save_Scan_State (State);
+
+      --  A lookahead is necessary to differentiate between the
+      --  Ada2012 form with a choice list, and the Ada2020 element
+      --  iterator form, recognized by the presence of "OF". Other
+      --  disambiguation requires context and is done during semantc
+      --  analysis. Note that "for X in E" is syntactically ambiguous:
+      --  if E is a subypte indication this is a loop parameter spec,
+      --  while if E a name it is an iterator_specification, and the
+      --  disambiguation takes place during semantic analysis.
+
+      Id := P_Defining_Identifier;
       Assoc_Node :=
         New_Node (N_Iterated_Component_Association, Prev_Token_Ptr);
 
-      Set_Defining_Identifier (Assoc_Node, P_Defining_Identifier);
-      T_In;
-      Set_Discrete_Choices (Assoc_Node, P_Discrete_Choice_List);
-      TF_Arrow;
-      Set_Expression (Assoc_Node, P_Expression);
+      if Token =  Tok_In then
+         Set_Defining_Identifier (Assoc_Node, Id);
+         T_In;
+         Set_Discrete_Choices (Assoc_Node, P_Discrete_Choice_List);
+         TF_Arrow;
+         Set_Expression (Assoc_Node, P_Expression);
+
+      elsif Ada_Version >= Ada_2020
+        and then Token = Tok_Of
+      then
+         Restore_Scan_State (State);
+         Scan;  -- past OF
+         Set_Defining_Identifier (Assoc_Node, Id);
+         Set_Iterator_Specification
+           (Assoc_Node, P_Iterator_Specification (Id));
+         TF_Arrow;
+         Set_Expression (Assoc_Node, P_Expression);
+      end if;
 
       if Ada_Version < Ada_2020 then
          Error_Msg_SC ("iterated component is an Ada 202x feature");

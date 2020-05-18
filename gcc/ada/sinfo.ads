@@ -1993,7 +1993,7 @@ package Sinfo is
    --    N_Raise_xxx_Error nodes since the transformation of these nodes is
    --    handled by the back end (using the N_Push/N_Pop mechanism).
 
-   --  Loop_Actions (List2-Sem)
+   --  Loop_Actions (List5-Sem)
    --    A list present in Component_Association nodes in array aggregates.
    --    Used to collect actions that must be executed within the loop because
    --    they may need to be evaluated anew each time through.
@@ -4123,8 +4123,8 @@ package Sinfo is
       --  N_Component_Association
       --  Sloc points to first selector name
       --  Choices (List1)
-      --  Loop_Actions (List2-Sem)
       --  Expression (Node3) (empty if Box_Present)
+      --  Loop_Actions (List5-Sem)
       --  Box_Present (Flag15)
       --  Inherited_Discriminant (Flag13)
 
@@ -4222,9 +4222,10 @@ package Sinfo is
       --  N_Iterated_Component_Association
       --  Sloc points to FOR
       --  Defining_Identifier (Node1)
-      --  Loop_Actions (List2-Sem)
+      --  Iterator_Specification (Node2) (set to Empty if no Iterator_Spec)
       --  Expression (Node3)
       --  Discrete_Choices (List4)
+      --  Loop_Actions (List5-Sem)
       --  Box_Present (Flag15)
 
       --  Note that Box_Present is always False, but it is intentionally added
@@ -5081,11 +5082,15 @@ package Sinfo is
 
       --  LOOP_PARAMETER_SPECIFICATION ::=
       --    DEFINING_IDENTIFIER in [reverse] DISCRETE_SUBTYPE_DEFINITION
+      --    [Iterator_Filter]
+
+      --  Note; the optional Iterator_Filter is an Ada_2020 construct.
 
       --  N_Loop_Parameter_Specification
       --  Sloc points to first identifier
       --  Defining_Identifier (Node1)
       --  Reverse_Present (Flag15)
+      --  Iterator_Filter (Node3) (set to Empty if not present)
       --  Discrete_Subtype_Definition (Node4)
 
       -----------------------------------
@@ -5102,6 +5107,7 @@ package Sinfo is
       --  Name (Node2)
       --  Reverse_Present (Flag15)
       --  Of_Present (Flag16)
+      --  Iterator_Filter (Node3) (set to Empty if not present)
       --  Subtype_Indication (Node5)
 
       --  Note: The Of_Present flag distinguishes the two forms
@@ -9826,6 +9832,9 @@ package Sinfo is
    function Iteration_Scheme
      (N : Node_Id) return Node_Id;    -- Node2
 
+   function Iterator_Filter
+     (N : Node_Id) return Node_Id;    -- Node3
+
    function Iterator_Specification
      (N : Node_Id) return Node_Id;    -- Node2
 
@@ -9866,7 +9875,7 @@ package Sinfo is
      (N : Node_Id) return Elist_Id;   -- Elist1
 
    function Loop_Actions
-     (N : Node_Id) return List_Id;    -- List2
+     (N : Node_Id) return List_Id;    -- List5
 
    function Loop_Parameter_Specification
      (N : Node_Id) return Node_Id;    -- Node4
@@ -10929,6 +10938,9 @@ package Sinfo is
    procedure Set_Is_Write
      (N : Node_Id; Val : Boolean := True);    -- Flag5
 
+   procedure Set_Iterator_Filter
+     (N : Node_Id; Val : Node_Id);            -- Node3
+
    procedure Set_Iteration_Scheme
      (N : Node_Id; Val : Node_Id);            -- Node2
 
@@ -10972,7 +10984,7 @@ package Sinfo is
      (N : Node_Id; Val : Elist_Id);           -- Elist1
 
    procedure Set_Loop_Actions
-     (N : Node_Id; Val : List_Id);            -- List2
+     (N : Node_Id; Val : List_Id);            -- List5
 
    procedure Set_Loop_Parameter_Specification
      (N : Node_Id; Val : Node_Id);            -- Node4
@@ -11876,17 +11888,17 @@ package Sinfo is
 
      N_Component_Association =>
        (1 => True,    --  Choices (List1)
-        2 => False,   --  Loop_Actions (List2-Sem)
+        2 => False,   --  unused
         3 => True,    --  Expression (Node3)
         4 => False,   --  unused
-        5 => False),  --  unused
+        5 => True),   --  Loop_Actions (List5-Sem);
 
      N_Iterated_Component_Association =>
        (1 => True,    --  Defining_Identifier (Node1)
-        2 => True,    --  Loop_Actions (List2-Sem)
+        2 => True,    --  Iterator_Specification
         3 => True,    --  Expression (Node3)
         4 => True,    --  Discrete_Choices (List4)
-        5 => False),  --  unused
+        5 => True),   --  Loop_Actions (List5-Sem);
 
      N_Delta_Aggregate =>
        (1 => False,   --  Unused
@@ -12201,7 +12213,7 @@ package Sinfo is
         2 => False,   --  unused
         3 => False,   --  unused
         4 => True,    --  Discrete_Subtype_Definition (Node4)
-        5 => False),  --  unused
+        5 => True),  --   Iterator_Filter (Node5)
 
      N_Iterator_Specification =>
        (1 => True,    --  Defining_Identifier (Node1)
@@ -13430,6 +13442,7 @@ package Sinfo is
    pragma Inline (Is_Task_Body_Procedure);
    pragma Inline (Is_Task_Master);
    pragma Inline (Is_Write);
+   pragma Inline (Iterator_Filter);
    pragma Inline (Iteration_Scheme);
    pragma Inline (Itype);
    pragma Inline (Kill_Range_Check);
@@ -13794,6 +13807,7 @@ package Sinfo is
    pragma Inline (Set_Is_Task_Body_Procedure);
    pragma Inline (Set_Is_Task_Master);
    pragma Inline (Set_Is_Write);
+   pragma Inline (Set_Iterator_Filter);
    pragma Inline (Set_Iteration_Scheme);
    pragma Inline (Set_Iterator_Specification);
    pragma Inline (Set_Itype);
