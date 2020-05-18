@@ -1,3 +1,139 @@
+2020-05-18  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	PR tree-optimization/94952
+	* gimple-ssa-store-merging.c (pass_store_merging::process_store):
+	Initialize variables bitpos, bitregion_start, and bitregion_end in
+	order to silence warnings about use of uninitialized variables.
+
+2020-05-18  Carl Love  <cel@us.ibm.com>
+
+	PR target/94833
+	* config/rs6000/vsx.md (define_expand): Fix instruction generation for
+	first_match_index_<mode>.
+	* testsuite/gcc.target/powerpc/builtins-8-p9-runnable.c (main): Add
+	additional test cases with zero vector elements.
+
+2020-05-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95169
+	* config/i386/i386-expand.c (ix86_expand_int_movcc):
+	 Avoid reversing a non-trapping comparison to a trapping one.
+
+2020-05-18  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/arm/arm.c (output_move_double): Fix codegen when loading into
+	a register pair with an odd base register.
+
+2020-05-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.c (ix86_expand_fp_absneg_operator):
+	Do not emit FLAGS_REG clobber for TFmode.
+	* config/i386/i386.md (*<code>tf2_1): Rewrite as
+	define_insn_and_split.  Mark operands 1 and 2 commutative.
+	(*nabstf2_1): Ditto.
+	(absneg SSE splitter): Use MODEF mode iterator instead of SSEMODEF.
+	Do not swap memory operands.  Simplify RTX generation.
+	(neg abs SSE splitter): Ditto.
+	* config/i386/sse.md (*<code><mode>2): Mark operands 1 and 2
+	commutative.  Do not swap operands.  Simplify RTX generation.
+	(*nabs<mode>2): Ditto.
+
+2020-05-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_slp_bb): Start after labels.
+	(vect_get_constant_vectors): Really place init stmt after scalar defs.
+	* tree-vect-stmts.c (vect_init_vector_1): Insert before
+	region begin.
+
+2020-05-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Support
+	Intel Airmont, Tremont, Comet Lake, Ice Lake and Tiger Lake
+	processor families.
+
+2020-05-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/95171
+	* tree-inline.c (remap_gimple_stmt): Split out trapping compares
+	when inlining into a non-call EH function.
+
+2020-05-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95172
+	* tree-ssa-loop-im.c (execute_sm): Get flag whether we
+	eventually need the conditional processing.
+	(execute_sm_exit): When processing an orderd sequence
+	avoid doing any conditional processing.
+	(hoist_memory_references): Pass down whether all edges
+	have ordered processing for a ref to execute_sm.
+
+2020-05-17 Jeff Law  <law@redhat.com>
+
+	* config/h8300/predicates.md (pc_or_label_operand): New predicate.
+	* config/h8300/jumpcall.md (branch_true, branch_false): Consolidate
+	into a single pattern using pc_or_label_operand.
+	* config/h8300/combiner.md (bit branch patterns): Likewise.
+	* config/h8300/peepholes.md (HImode and SImode branches): Likewise.
+
+2020-05-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/95021
+	* config/i386/i386-features.c (has_non_address_hard_reg):
+	Renamed to ...
+	(pseudo_reg_set): This.  Return the SET expression.  Ignore
+	pseudo register push.
+	(general_scalar_to_vector_candidate_p): Combine single_set and
+	has_non_address_hard_reg calls to pseudo_reg_set.
+	(timode_scalar_to_vector_candidate_p): Likewise.
+	* config/i386/i386.md (*pushv1ti2): New pattern.
+
+2020-05-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	Revert:
+	2020-05-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (operand_less_p): Move to...
+	* vr-values.c (operand_less_p): ...here.
+	* tree-vrp.h (operand_less_p): Remove.
+
+2020-05-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (operand_less_p): Move to...
+	* vr-values.c (operand_less_p): ...here.
+	* tree-vrp.h (operand_less_p): Remove.
+
+2020-05-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (class vrp_insert): Remove prototype for
+	live_on_edge.
+
+2020-05-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (class live_names): New.
+	(live_on_edge): Move into live_names.
+	(build_assert_expr_for): Move into vrp_insert.
+	(find_assert_locations_in_bb): Rename from
+	find_assert_locations_1.
+	(process_assert_insertions_for): Move into vrp_insert.
+	(compare_assert_loc): Same.
+	(remove_range_assertions): Same.
+	(dump_asserts_for): Rename to vrp_insert::dump.
+	(debug_asserts_for): Rename to vrp_insert::debug.
+	(dump_all_asserts): Rename to vrp_insert::dump.
+	(debug_all_asserts): Rename to vrp_insert::debug.
+
+2020-05-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (class vrp_prop): Move check_all_array_refs,
+	check_array_ref, check_mem_ref, and search_for_addr_array
+	into new class...
+	(class array_bounds_checker): ...here.
+	(class check_array_bounds_dom_walker): Adjust to use
+	array_bounds_checker.
+	(check_all_array_refs): Move into array_bounds_checker and rename
+	to check.
+	(class vrp_folder): Make fold_predicate_in private.
+
 2020-05-15 Jeff Law  <law@redhat.com>
 
 	* config/h8300/h8300.md (SFI iterator): New iterator for

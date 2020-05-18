@@ -1,3 +1,42 @@
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95143
+	* g++.dg/cpp0x/sfinae66.C: New test.
+
+2020-05-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95169
+	* gcc.target/i386/pr95169.c: New test.
+
+2020-05-18  Alex Coplan  <alex.coplan@arm.com>
+
+	* gcc.c-torture/compile/packed-aligned-1.c: New test.
+	* gcc.c-torture/execute/packed-aligned.c: New test.
+
+2020-05-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/95171
+	* gcc.dg/pr95171.c: New testcase.
+
+2020-05-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95172
+	* gcc.dg/torture/pr95172.c: New testcase.
+
+2020-05-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/95021
+	* c-c++-common/dfp/func-vararg-mixed-2.c: Removed.
+	* gcc.target/i386/pr95021-1.c: New test.
+	* gcc.target/i386/pr95021-2.c: Likewise.
+	* gcc.target/i386/pr95021-3.c: Likewise.
+	* gcc.target/i386/pr95021-4.c: Likewise.
+	* gcc.target/i386/pr95021-5.c: Likewise.
+
+2020-05-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/strncmp-1.c: New test.
+
 2020-05-16  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/coroutines/co-return-syntax-10-movable.C: New test.
