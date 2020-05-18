@@ -2607,6 +2607,14 @@ variable_decl (int elem)
 	      gfc_free_expr (e);
 	    }
 
+	  if (not_constant && e->ts.type != BT_INTEGER)
+	    {
+	      gfc_error ("Explicit array shape at %C must be constant of "
+			 "INTEGER type and not %s type",
+			 gfc_basic_typename (e->ts.type));
+	      m = MATCH_ERROR;
+	      goto cleanup;
+	    }
 	  if (not_constant)
 	    {
 	      gfc_error ("Explicit shaped array with nonconstant bounds at %C");
@@ -3741,8 +3749,9 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
       if (kind_expr)
 	{
 	  /* Try simplification even for LEN expressions.  */
+	  bool ok;
 	  gfc_resolve_expr (kind_expr);
-	  gfc_simplify_expr (kind_expr, 1);
+	  ok = gfc_simplify_expr (kind_expr, 1);
 	  /* Variable expressions seem to default to BT_PROCEDURE.
 	     TODO find out why this is and fix it.  */
 	  if (kind_expr->ts.type != BT_INTEGER
@@ -3751,6 +3760,12 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	      gfc_error ("The parameter expression at %C must be of "
 		         "INTEGER type and not %s type",
 			 gfc_basic_typename (kind_expr->ts.type));
+	      goto error_return;
+	    }
+	  if (kind_expr->ts.type == BT_INTEGER && !ok)
+	    {
+	      gfc_error ("The parameter expression at %C does not "
+			 "simplify to an INTEGER constant");
 	      goto error_return;
 	    }
 
