@@ -1,4 +1,10 @@
+2020-05-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95169
+	* gcc.target/i386/pr95169.c: New test.
+
 2020-05-18  Alex Coplan  <alex.coplan@arm.com>
+
 	* gcc.c-torture/compile/packed-aligned-1.c: New test.
 	* gcc.c-torture/execute/packed-aligned.c: New test.
 
