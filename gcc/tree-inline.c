@@ -1956,6 +1956,37 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
       gimple_set_vuse (copy, NULL_TREE);
     }
 
+  if (cfun->can_throw_non_call_exceptions)
+    {
+      /* When inlining a function which does not have non-call exceptions
+	 enabled into a function that has (which only happens with
+	 always-inline) we have to fixup stmts that cannot throw.  */
+      if (gcond *cond = dyn_cast <gcond *> (copy))
+	if (gimple_could_trap_p (cond))
+	  {
+	    gassign *cmp
+	      = gimple_build_assign (make_ssa_name (boolean_type_node),
+				     gimple_cond_code (cond),
+				     gimple_cond_lhs (cond),
+				     gimple_cond_rhs (cond));
+	    gimple_seq_add_stmt (&stmts, cmp);
+	    gimple_cond_set_code (cond, NE_EXPR);
+	    gimple_cond_set_lhs (cond, gimple_assign_lhs (cmp));
+	    gimple_cond_set_rhs (cond, boolean_false_node);
+	  }
+      if (gassign *ass = dyn_cast <gassign *> (copy))
+	if ((gimple_assign_rhs_code (ass) == COND_EXPR
+	     || gimple_assign_rhs_code (ass) == VEC_COND_EXPR)
+	    && gimple_could_trap_p (ass))
+	  {
+	    gassign *cmp
+	      = gimple_build_assign (make_ssa_name (boolean_type_node),
+				     gimple_assign_rhs1 (ass));
+	    gimple_seq_add_stmt (&stmts, cmp);
+	    gimple_assign_set_rhs1 (ass, gimple_assign_lhs (cmp));
+	  }
+    }
+
   gimple_seq_add_stmt (&stmts, copy);
   return stmts;
 }
