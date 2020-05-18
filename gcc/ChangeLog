@@ -1,3 +1,13 @@
+2020-05-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95172
+	* tree-ssa-loop-im.c (execute_sm): Get flag whether we
+	eventually need the conditional processing.
+	(execute_sm_exit): When processing an orderd sequence
+	avoid doing any conditional processing.
+	(hoist_memory_references): Pass down whether all edges
+	have ordered processing for a ref to execute_sm.
+
 2020-05-17 Jeff Law  <law@redhat.com>
 
 	* config/h8300/predicates.md (pc_or_label_operand): New predicate.
