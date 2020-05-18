@@ -407,7 +407,7 @@ private:
   ::std::unique_ptr<AST::StructExprStruct>
   parse_struct_expr_struct_partial (AST::PathInExpression path,
 				    ::std::vector<AST::Attribute> outer_attrs);
-  ::std::unique_ptr<AST::StructExprTuple>
+  ::std::unique_ptr<AST::CallExpr>
   parse_struct_expr_tuple_partial (AST::PathInExpression path,
 				   ::std::vector<AST::Attribute> outer_attrs);
   AST::PathInExpression parse_path_in_expression_pratt (const_TokenPtr tok);

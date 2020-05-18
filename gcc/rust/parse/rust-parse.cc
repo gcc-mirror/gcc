@@ -10892,7 +10892,7 @@ Parser::parse_path_based_stmt_or_expr (
       case LEFT_PAREN: {
 	// assume struct expr tuple (as struct-enum disambiguation requires name
 	// lookup) again, make statement if final ';'
-	::std::unique_ptr<AST::StructExprTuple> struct_expr
+	::std::unique_ptr<AST::CallExpr> struct_expr
 	  = parse_struct_expr_tuple_partial (::std::move (path),
 					     ::std::move (outer_attrs));
 	if (struct_expr == NULL)
@@ -13229,7 +13229,7 @@ Parser::parse_struct_expr_struct_partial (
 
 // Parses a struct expr tuple with a path in expression already parsed (but not
 // '(' token).
-::std::unique_ptr<AST::StructExprTuple>
+::std::unique_ptr<AST::CallExpr>
 Parser::parse_struct_expr_tuple_partial (
   AST::PathInExpression path, ::std::vector<AST::Attribute> outer_attrs)
 {
@@ -13272,10 +13272,12 @@ Parser::parse_struct_expr_tuple_partial (
 
   Location path_locus = path.get_locus ();
 
-  return ::std::unique_ptr<AST::StructExprTuple> (
-    new AST::StructExprTuple (::std::move (path), ::std::move (exprs),
-			      ::std::move (inner_attrs),
-			      ::std::move (outer_attrs), path_locus));
+  auto pathExpr = ::std::unique_ptr<AST::PathInExpression> (
+    new AST::PathInExpression (::std::move (path)));
+
+  return ::std::unique_ptr<AST::CallExpr> (
+    new AST::CallExpr (::std::move (pathExpr), ::std::move (exprs),
+		       ::std::move (outer_attrs), path_locus));
 }
 
 /* Parses a path in expression with the first token passed as a parameter (as it
