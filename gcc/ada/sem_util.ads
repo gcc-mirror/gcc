@@ -2512,7 +2512,7 @@ package Sem_Util is
    --  with the same mode.
 
    procedure Next_Global (Node : in out Node_Id);
-   pragma Inline (Next_Actual);
+   pragma Inline (Next_Global);
    --  Next_Global (N) is equivalent to N := Next_Global (N). Note that we
    --  inline this procedural form, but not the functional form above.
 

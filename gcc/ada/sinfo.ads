@@ -2081,9 +2081,9 @@ package Sinfo is
 
    --  Next_Rep_Item (Node5-Sem)
    --    Present in pragma nodes, attribute definition nodes, enumeration rep
-   --    clauses, record rep clauses, aspect specification nodes. Used to link
-   --    representation items that apply to an entity. See full description of
-   --    First_Rep_Item field in Einfo for further details.
+   --    clauses, record rep clauses, aspect specification and null statement
+   --    nodes. Used to link representation items that apply to an entity. See
+   --    full description of First_Rep_Item field in Einfo for further details.
 
    --  Next_Use_Clause (Node3-Sem)
    --    While use clauses are active during semantic processing, they are
@@ -4848,6 +4848,7 @@ package Sinfo is
 
       --  N_Null_Statement
       --  Sloc points to NULL
+      --  Next_Rep_Item (Node5-Sem)
 
       ----------------
       -- 5.1  Label --

@@ -21407,7 +21407,7 @@ package body Sem_Util is
       --  New_Id is the corresponding new entity generated during Phase 1.
 
       procedure Add_Pending_Itype (Assoc_Nod : Node_Id; Itype : Entity_Id);
-      pragma Inline (Add_New_Entity);
+      pragma Inline (Add_Pending_Itype);
       --  Add an entry in the NCT_Pending_Itypes which maps key Assoc_Nod to
       --  value Itype. Assoc_Nod is the associated node of an itype. Itype is
       --  an itype.
