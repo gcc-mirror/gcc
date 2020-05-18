@@ -3868,13 +3868,20 @@ package body Exp_Ch5 is
       Array_Dim  : constant Pos        := Number_Dimensions (Array_Typ);
       Id         : constant Entity_Id  := Defining_Identifier (I_Spec);
       Loc        : constant Source_Ptr := Sloc (Isc);
-      Stats      : constant List_Id    := Statements (N);
+      Stats      : List_Id    := Statements (N);
       Core_Loop  : Node_Id;
       Dim1       : Int;
       Ind_Comp   : Node_Id;
       Iterator   : Entity_Id;
 
    begin
+      if Present (Iterator_Filter (I_Spec)) then
+         pragma Assert (Ada_Version >= Ada_2020);
+         Stats := New_List (Make_If_Statement (Loc,
+            Condition => Iterator_Filter (I_Spec),
+            Then_Statements => Stats));
+      end if;
+
       --  for Element of Array loop
 
       --  It requires an internally generated cursor to iterate over the array
@@ -4145,7 +4152,9 @@ package body Exp_Ch5 is
       Elem_Typ : constant Entity_Id   := Etype (Id);
       Id_Kind  : constant Entity_Kind := Ekind (Id);
       Loc      : constant Source_Ptr  := Sloc (N);
-      Stats    : constant List_Id     := Statements (N);
+
+      Stats    : List_Id     := Statements (N);
+      --  Maybe wrapped in a conditional if a filter is present
 
       Cursor    : Entity_Id;
       Decl      : Node_Id;
@@ -4167,6 +4176,13 @@ package body Exp_Ch5 is
       --  The package in which the container type is declared
 
    begin
+      if Present (Iterator_Filter (I_Spec)) then
+         pragma Assert (Ada_Version >= Ada_2020);
+         Stats := New_List (Make_If_Statement (Loc,
+            Condition => Iterator_Filter (I_Spec),
+            Then_Statements => Stats));
+      end if;
+
       --  Determine the advancement and initialization steps for the cursor.
       --  Analysis of the expanded loop will verify that the container has a
       --  reverse iterator.
@@ -4640,11 +4656,20 @@ package body Exp_Ch5 is
             Loop_Id : constant Entity_Id := Defining_Identifier (LPS);
             Ltype   : constant Entity_Id := Etype (Loop_Id);
             Btype   : constant Entity_Id := Base_Type (Ltype);
+            Stats   : constant List_Id   := Statements (N);
             Expr    : Node_Id;
             Decls   : List_Id;
             New_Id  : Entity_Id;
 
          begin
+            if Present (Iterator_Filter (LPS)) then
+               pragma Assert (Ada_Version >= Ada_2020);
+               Set_Statements (N,
+                  New_List (Make_If_Statement (Loc,
+                    Condition => Iterator_Filter (LPS),
+                    Then_Statements => Stats)));
+            end if;
+
             --  Deal with loop over predicates
 
             if Is_Discrete_Type (Ltype)
@@ -4761,7 +4786,7 @@ package body Exp_Ch5 is
                        Declarations => Decls,
                        Handled_Statement_Sequence =>
                          Make_Handled_Sequence_Of_Statements (Loc,
-                           Statements => Statements (N)))),
+                           Statements => Stats))),
 
                    End_Label => End_Label (N)));
 
@@ -4863,7 +4888,7 @@ package body Exp_Ch5 is
          end if;
       end if;
 
-      --  When the iteration scheme mentiones attribute 'Loop_Entry, the loop
+      --  When the iteration scheme mentions attribute 'Loop_Entry, the loop
       --  is transformed into a conditional block where the original loop is
       --  the sole statement. Inspect the statements of the nested loop for
       --  controlled objects.

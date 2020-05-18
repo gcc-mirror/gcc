@@ -2628,6 +2628,10 @@ package body Sem_Ch5 is
 
          end if;
       end if;
+
+      if Present (Iterator_Filter (N)) then
+         Analyze_And_Resolve (Iterator_Filter (N), Standard_Boolean);
+      end if;
    end Analyze_Iterator_Specification;
 
    -------------------
@@ -3309,6 +3313,10 @@ package body Sem_Ch5 is
                   Check_Error_Detected;
                end if;
          end;
+      end if;
+
+      if Present (Iterator_Filter (N)) then
+         Analyze_And_Resolve (Iterator_Filter (N), Standard_Boolean);
       end if;
 
       --  A loop parameter cannot be effectively volatile (SPARK RM 7.1.3(4)).
