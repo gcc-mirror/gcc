@@ -1,3 +1,13 @@
+2020-05-18  Jason Merrill  <jason@redhat.com>
+
+	* aclocal.m4: Add ax_cxx_compile_stdcxx.m4.
+	* configure.ac: Use AX_CXX_COMPILE_STDCXX(11).
+
+2020-05-14  Jason Merrill  <jason@redhat.com>
+
+	* doc/install.texi (Prerequisites): Update boostrap compiler
+	requirement to C++11/GCC 4.8.
+
 2020-05-18  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
 
 	PR tree-optimization/94952
