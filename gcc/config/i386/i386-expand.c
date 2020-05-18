@@ -1716,9 +1716,7 @@ ix86_expand_fp_absneg_operator (enum rtx_code code, machine_mode mode,
   machine_mode vmode = mode;
   rtvec par;
 
-  if (vector_mode)
-    use_sse = true;
-  else if (mode == TFmode)
+  if (vector_mode || mode == TFmode)
     use_sse = true;
   else if (TARGET_SSE_MATH)
     {
@@ -1743,7 +1741,7 @@ ix86_expand_fp_absneg_operator (enum rtx_code code, machine_mode mode,
 	 Create the appropriate mask now.  */
       mask = ix86_build_signbit_mask (vmode, vector_mode, code == ABS);
       use = gen_rtx_USE (VOIDmode, mask);
-      if (vector_mode)
+      if (vector_mode || mode == TFmode)
 	par = gen_rtvec (2, set, use);
       else
 	{

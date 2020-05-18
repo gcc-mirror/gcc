@@ -1638,59 +1638,31 @@
   "ix86_expand_fp_absneg_operator (<CODE>, <MODE>mode, operands); DONE;")
 
 (define_insn_and_split "*<code><mode>2"
-  [(set (match_operand:VF 0 "register_operand" "=x,x,v,v")
+  [(set (match_operand:VF 0 "register_operand" "=x,v")
 	(absneg:VF
-	  (match_operand:VF 1 "vector_operand" "0,  xBm,v, m")))
-   (use (match_operand:VF 2 "vector_operand"    "xBm,0,  vm,v"))]
+	  (match_operand:VF 1 "vector_operand" "%0,v")))
+   (use (match_operand:VF 2 "vector_operand" "xBm,vm"))]
   "TARGET_SSE"
   "#"
   "&& reload_completed"
-  [(set (match_dup 0) (match_dup 3))]
-{
-  enum rtx_code absneg_op = <CODE> == ABS ? AND : XOR;
-
-  if (TARGET_AVX)
-    {
-      if (MEM_P (operands[1]))
-        std::swap (operands[1], operands[2]);
-    }
-  else
-   {
-     if (operands_match_p (operands[0], operands[2]))
-       std::swap (operands[1], operands[2]);
-   }
-
-  operands[3]
-    = gen_rtx_fmt_ee (absneg_op, <MODE>mode, operands[1], operands[2]);
-}
-  [(set_attr "isa" "noavx,noavx,avx,avx")])
+  [(set (match_dup 0)
+	(<absneg_op>:VF (match_dup 1) (match_dup 2)))]
+  ""
+  [(set_attr "isa" "noavx,avx")])
 
 (define_insn_and_split "*nabs<mode>2"
-  [(set (match_operand:VF 0 "register_operand" "=x,x,v,v")
+  [(set (match_operand:VF 0 "register_operand" "=x,v")
 	(neg:VF
 	  (abs:VF
-	    (match_operand:VF 1 "vector_operand" "0,xBm,v,m"))))
-   (use (match_operand:VF 2 "vector_operand"    "xBm,0,vm,v"))]
+	    (match_operand:VF 1 "vector_operand" "%0,v"))))
+   (use (match_operand:VF 2 "vector_operand" "xBm,vm"))]
   "TARGET_SSE"
   "#"
   "&& reload_completed"
-  [(set (match_dup 0) (match_dup 3))]
-{
-  if (TARGET_AVX)
-    {
-      if (MEM_P (operands[1]))
-        std::swap (operands[1], operands[2]);
-    }
-  else
-   {
-     if (operands_match_p (operands[0], operands[2]))
-       std::swap (operands[1], operands[2]);
-   }
-
-  operands[3]
-    = gen_rtx_fmt_ee (IOR, <MODE>mode, operands[1], operands[2]);
-}
-  [(set_attr "isa" "noavx,noavx,avx,avx")])
+  [(set (match_dup 0)
+	(ior:VF (match_dup 1) (match_dup 2)))]
+  ""
+  [(set_attr "isa" "noavx,avx")])
 
 (define_expand "<plusminus_insn><mode>3<mask_name><round_name>"
   [(set (match_operand:VF 0 "register_operand")

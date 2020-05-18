@@ -1,3 +1,17 @@
+2020-05-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.c (ix86_expand_fp_absneg_operator):
+	Do not emit FLAGS_REG clobber for TFmode.
+	* config/i386/i386.md (*<code>tf2_1): Rewrite as
+	define_insn_and_split.  Mark operands 1 and 2 commutative.
+	(*nabstf2_1): Ditto.
+	(absneg SSE splitter): Use MODEF mode iterator instead of SSEMODEF.
+	Do not swap memory operands.  Simplify RTX generation.
+	(neg abs SSE splitter): Ditto.
+	* config/i386/sse.md (*<code><mode>2): Mark operands 1 and 2
+	commutative.  Do not swap operands.  Simplify RTX generation.
+	(*nabs<mode>2): Ditto.
+
 2020-05-18  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_slp_bb): Start after labels.
