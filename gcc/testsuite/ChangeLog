@@ -1,3 +1,8 @@
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95143
+	* g++.dg/cpp0x/sfinae66.C: New test.
+
 2020-05-18  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95169
