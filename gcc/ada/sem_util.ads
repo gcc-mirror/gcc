@@ -2743,13 +2743,14 @@ package Sem_Util is
      (N    : Node_Id;
       Ent  : Entity_Id;
       Cond : Boolean := False) return Boolean;
-   --  The caller is interested in capturing a value (either the current value,
-   --  or an indication that the value is non-null) for the given entity Ent.
-   --  This value can only be captured if sequential execution semantics can be
-   --  properly guaranteed so that a subsequent reference will indeed be sure
-   --  that this current value indication is correct. The node N is the
-   --  construct which resulted in the possible capture of the value (this
-   --  is used to check if we are in a conditional).
+   --  The caller is interested in capturing a value (either the current
+   --  value, an indication that the value is [non-]null or an indication that
+   --  the value is valid) for the given entity Ent. This value can only be
+   --  captured if sequential execution semantics can be properly guaranteed so
+   --  that a subsequent reference will indeed be sure that this current value
+   --  indication is correct. The node N is the construct which resulted in
+   --  the possible capture of the value (this is used to check if we are in
+   --  a conditional).
    --
    --  Cond is used to skip the test for being inside a conditional. It is used
    --  in the case of capturing values from if/while tests, which already do a

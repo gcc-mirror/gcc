@@ -25718,23 +25718,25 @@ package body Sem_Util is
    is
    begin
       --  The only entities for which we track constant values are variables
-      --  which are not renamings, constants, out parameters, and in out
-      --  parameters, so check if we have this case.
+      --  which are not renamings, constants and formal parameters, so check
+      --  if we have this case.
 
       --  Note: it may seem odd to track constant values for constants, but in
       --  fact this routine is used for other purposes than simply capturing
-      --  the value. In particular, the setting of Known[_Non]_Null.
+      --  the value. In particular, the setting of Known[_Non]_Null and
+      --  Is_Known_Valid.
 
       if (Ekind (Ent) = E_Variable and then No (Renamed_Object (Ent)))
-            or else
-          Ekind_In (Ent, E_Constant, E_Out_Parameter, E_In_Out_Parameter)
+           or else
+         Ekind (Ent) = E_Constant
+           or else
+         Is_Formal (Ent)
       then
          null;
 
-      --  For conditionals, we also allow loop parameters and all formals,
-      --  including in parameters.
+      --  For conditionals, we also allow loop parameters
 
-      elsif Cond and then Ekind_In (Ent, E_Loop_Parameter, E_In_Parameter) then
+      elsif Cond and then Ekind (Ent) = E_Loop_Parameter then
          null;
 
       --  For all other cases, not just unsafe, but impossible to capture
