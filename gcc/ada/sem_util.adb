@@ -12525,6 +12525,7 @@ package body Sem_Util is
                Subp_Id     : Entity_Id;
                Aspect_Expr : Node_Id;
                Param_Expr  : Node_Id;
+               Assoc       : Node_Id;
 
             begin
                if Is_Formal (E) then
@@ -12538,12 +12539,29 @@ package body Sem_Util is
                     Find_Value_Of_Aspect
                       (Subp_Id, Aspect_Relaxed_Initialization);
 
-                  --  Aspect expression is either an aggregate, e.g.:
+                  --  Aspect expression is either an aggregate with an optional
+                  --  Boolean expression (which defaults to True), e.g.:
                   --
                   --    function F (X : Integer) return Integer
-                  --      with Relaxed_Initialization => (X, F'Result);
+                  --      with Relaxed_Initialization => (X => True, F'Result);
 
                   if Nkind (Aspect_Expr) = N_Aggregate then
+
+                     if Present (Component_Associations (Aspect_Expr)) then
+                        Assoc := First (Component_Associations (Aspect_Expr));
+
+                        while Present (Assoc) loop
+                           if Denotes_Relaxed_Parameter
+                             (First (Choices (Assoc)), E)
+                           then
+                              return
+                                Is_True
+                                  (Static_Boolean (Expression (Assoc)));
+                           end if;
+
+                           Next (Assoc);
+                        end loop;
+                     end if;
 
                      Param_Expr := First (Expressions (Aspect_Expr));
 
