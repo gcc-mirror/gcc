@@ -15,6 +15,8 @@ public:
 
   ~TopLevelScan ();
 
+  AST::Function *lookupFunction (AST::Expr *expr);
+
   // visitor impl
   // rust-ast.h
   // virtual void visit(AttrInput& attr_input);
@@ -223,6 +225,8 @@ public:
 private:
   std::map<std::string, AST::Function *> functions;
   AST::Crate &crate;
+
+  std::vector<AST::Function *> fnLookup;
 };
 
 } // namespace Analysis

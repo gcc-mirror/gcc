@@ -12,6 +12,20 @@ TopLevelScan::TopLevelScan (AST::Crate &crate) : crate (crate)
 
 TopLevelScan::~TopLevelScan () {}
 
+AST::Function *
+TopLevelScan::lookupFunction (AST::Expr *expr)
+{
+  auto before = fnLookup.size ();
+  expr->accept_vis (*this);
+  if (fnLookup.size () > before)
+    {
+      AST::Function *fndecl = fnLookup.back ();
+      fnLookup.pop_back ();
+      return fndecl;
+    }
+  return NULL;
+}
+
 void
 TopLevelScan::visit (AST::Token &tok)
 {}
@@ -43,7 +57,15 @@ TopLevelScan::visit (AST::MacroInvocationSemi &macro)
 // rust-path.h
 void
 TopLevelScan::visit (AST::PathInExpression &path)
-{}
+{
+  auto it = functions.find (path.as_string ());
+  bool foundFndecl = it != functions.end ();
+  if (foundFndecl)
+    {
+      fnLookup.push_back (it->second);
+      return;
+    }
+}
 
 void
 TopLevelScan::visit (AST::TypePathSegment &segment)

@@ -22,6 +22,8 @@ namespace Analysis {
 TypeResolution::TypeResolution (AST::Crate &crate, TopLevelScan &toplevel)
   : Resolution (crate, toplevel)
 {
+  functionScope.Push ();
+
   // push all builtin types - this is probably too basic for future needs
   ADD_BUILTIN_TYPE ("u8", typeScope);
   ADD_BUILTIN_TYPE ("u16", typeScope);
@@ -43,6 +45,7 @@ TypeResolution::TypeResolution (AST::Crate &crate, TopLevelScan &toplevel)
 
 TypeResolution::~TypeResolution ()
 {
+  functionScope.Pop ();
   typeScope.Pop ();
   scope.Pop ();
 }
@@ -67,12 +70,25 @@ bool
 TypeResolution::typesAreCompatible (AST::Type *lhs, AST::Type *rhs,
 				    Location locus)
 {
+  auto before = typeComparisonBuffer.size ();
   lhs->accept_vis (*this);
+  if (typeComparisonBuffer.size () <= before)
+    {
+      rust_error_at (locus, "failed to understand type for lhs");
+      return false;
+    }
+
+  auto lhsTypeStr = typeComparisonBuffer.back ();
+  typeComparisonBuffer.pop_back ();
+
   rhs->accept_vis (*this);
+  if (typeComparisonBuffer.size () <= before)
+    {
+      rust_error_at (locus, "failed to understand type for rhs");
+      return false;
+    }
 
   auto rhsTypeStr = typeComparisonBuffer.back ();
-  typeComparisonBuffer.pop_back ();
-  auto lhsTypeStr = typeComparisonBuffer.back ();
   typeComparisonBuffer.pop_back ();
 
   // FIXME this needs to handle the cases of an i8 going into an i32 which is
@@ -85,6 +101,22 @@ TypeResolution::typesAreCompatible (AST::Type *lhs, AST::Type *rhs,
     }
 
   return true;
+}
+
+AST::Function *
+TypeResolution::lookupFndecl (AST::Expr *expr)
+{
+  size_t before = functionLookup.size ();
+  expr->accept_vis (*this);
+  if (functionLookup.size () > before)
+    {
+      auto fndecl = functionLookup.back ();
+      functionLookup.pop_back ();
+      return fndecl;
+    }
+
+  rust_error_at (expr->get_locus_slow (), "failed to lookup function");
+  return NULL;
 }
 
 void
@@ -129,7 +161,20 @@ TypeResolution::visit (AST::MacroInvocationSemi &macro)
 void
 TypeResolution::visit (AST::PathInExpression &path)
 {
-  printf ("PathInExpression: %s\n", path.as_string ().c_str ());
+  // look up in the functionScope else lookup in the toplevel scan
+  AST::Function *fndecl = NULL;
+  if (functionScope.Lookup (path.as_string (), &fndecl))
+    {
+      functionLookup.push_back (fndecl);
+      return;
+    }
+
+  fndecl = toplevel.lookupFunction (&path);
+  if (fndecl != NULL)
+    {
+      functionLookup.push_back (fndecl);
+      return;
+    }
 }
 
 void
@@ -394,7 +439,35 @@ TypeResolution::visit (AST::EnumExprFieldless &expr)
 void
 TypeResolution::visit (AST::CallExpr &expr)
 {
-  printf ("CallExpr: %s\n", expr.as_string ().c_str ());
+  auto fndecl = lookupFndecl (expr.function.get ());
+  if (fndecl == NULL)
+    return;
+
+  typeBuffer.push_back (fndecl->return_type.get ());
+
+  auto before = typeBuffer.size ();
+  for (auto &item : expr.params)
+    item->accept_vis (*this);
+
+  auto numInferedParams = typeBuffer.size () - before;
+  if (numInferedParams != expr.params.size ())
+    {
+      rust_error_at (expr.locus, "Failed to infer all parameters");
+      return;
+    }
+
+  auto offs = numInferedParams - 1;
+  for (auto it = fndecl->function_params.rbegin ();
+       it != fndecl->function_params.rend (); ++it)
+    {
+      AST::Type *argument = typeBuffer.back ();
+      typeBuffer.pop_back ();
+
+      if (!typesAreCompatible (it->type.get (), argument,
+			       expr.params[offs]->get_locus_slow ()))
+	return;
+      offs--;
+    }
 }
 
 void
@@ -538,7 +611,9 @@ TypeResolution::visit (AST::Function &function)
   // always emit the function with return type in the event of nil return type
   // its  a marker for a void function
   scope.Insert (function.function_name, function.return_type.get ());
+  functionScope.Insert (function.function_name, &function);
 
+  functionScope.Push ();
   scope.Push ();
   for (auto &param : function.function_params)
     {
@@ -562,6 +637,7 @@ TypeResolution::visit (AST::Function &function)
     }
 
   scope.Pop ();
+  functionScope.Pop ();
 }
 
 void
@@ -758,9 +834,10 @@ TypeResolution::visit (AST::LetStmt &stmt)
   AST::Type *inferedType = NULL;
   if (stmt.has_init_expr ())
     {
+      auto before = typeBuffer.size ();
       stmt.init_expr->accept_vis (*this);
 
-      if (typeBuffer.empty ())
+      if (typeBuffer.size () <= before)
 	{
 	  rust_error_at (
 	    stmt.init_expr->get_locus_slow (),
@@ -770,6 +847,13 @@ TypeResolution::visit (AST::LetStmt &stmt)
 
       inferedType = typeBuffer.back ();
       typeBuffer.pop_back ();
+
+      if (inferedType == NULL)
+	{
+	  rust_error_at (stmt.init_expr->get_locus_slow (),
+			 "void type found for statement initialisation");
+	  return;
+	}
     }
 
   if (stmt.has_type () && stmt.has_init_expr ())

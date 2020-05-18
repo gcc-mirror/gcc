@@ -238,6 +238,7 @@ protected:
   std::vector<AST::IdentifierPattern> letPatternBuffer;
   std::vector<AST::Type *> typeBuffer;
   std::vector<std::string> typeComparisonBuffer;
+  std::vector<AST::Function *> functionLookup;
 };
 
 } // namespace Analysis

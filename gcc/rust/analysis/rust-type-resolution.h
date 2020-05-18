@@ -220,6 +220,9 @@ private:
   TypeResolution (AST::Crate &crate, TopLevelScan &toplevel);
   bool go () override;
   bool typesAreCompatible (AST::Type *lhs, AST::Type *rhs, Location locus);
+  AST::Function *lookupFndecl (AST::Expr *expr);
+
+  Scope<AST::Function *> functionScope;
 };
 
 } // namespace Analysis
