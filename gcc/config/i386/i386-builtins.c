@@ -1835,50 +1835,6 @@ ix86_builtin_reciprocal (tree fndecl)
     }
 }
 
-/* This is the order of bit-fields in __processor_features in cpuinfo.c */
-enum processor_features
-{
-  F_CMOV = 0,
-  F_MMX,
-  F_POPCNT,
-  F_SSE,
-  F_SSE2,
-  F_SSE3,
-  F_SSSE3,
-  F_SSE4_1,
-  F_SSE4_2,
-  F_AVX,
-  F_AVX2,
-  F_SSE4_A,
-  F_FMA4,
-  F_XOP,
-  F_FMA,
-  F_AVX512F,
-  F_BMI,
-  F_BMI2,
-  F_AES,
-  F_PCLMUL,
-  F_AVX512VL,
-  F_AVX512BW,
-  F_AVX512DQ,
-  F_AVX512CD,
-  F_AVX512ER,
-  F_AVX512PF,
-  F_AVX512VBMI,
-  F_AVX512IFMA,
-  F_AVX5124VNNIW,
-  F_AVX5124FMAPS,
-  F_AVX512VPOPCNTDQ,
-  F_AVX512VBMI2,
-  F_GFNI,
-  F_VPCLMULQDQ,
-  F_AVX512VNNI,
-  F_AVX512BITALG,
-  F_AVX512BF16,
-  F_AVX512VP2INTERSECT,
-  F_MAX
-};
-
 /* These are the target attribute strings for which a dispatcher is
    available, from fold_builtin_cpu.  */
 struct _isa_names_table
@@ -1890,44 +1846,44 @@ struct _isa_names_table
 
 static const _isa_names_table isa_names_table[] =
 {
-  {"cmov",    F_CMOV,	P_NONE},
-  {"mmx",     F_MMX,	P_MMX},
-  {"popcnt",  F_POPCNT,	P_POPCNT},
-  {"sse",     F_SSE,	P_SSE},
-  {"sse2",    F_SSE2,	P_SSE2},
-  {"sse3",    F_SSE3,	P_SSE3},
-  {"ssse3",   F_SSSE3,	P_SSSE3},
-  {"sse4a",   F_SSE4_A,	P_SSE4_A},
-  {"sse4.1",  F_SSE4_1,	P_SSE4_1},
-  {"sse4.2",  F_SSE4_2,	P_SSE4_2},
-  {"avx",     F_AVX,	P_AVX},
-  {"fma4",    F_FMA4,	P_FMA4},
-  {"xop",     F_XOP,	P_XOP},
-  {"fma",     F_FMA,	P_FMA},
-  {"avx2",    F_AVX2,	P_AVX2},
-  {"avx512f", F_AVX512F, P_AVX512F},
-  {"bmi",     F_BMI,	P_BMI},
-  {"bmi2",    F_BMI2,	P_BMI2},
-  {"aes",     F_AES,	P_AES},
-  {"pclmul",  F_PCLMUL,	P_PCLMUL},
-  {"avx512vl",F_AVX512VL, P_NONE},
-  {"avx512bw",F_AVX512BW, P_NONE},
-  {"avx512dq",F_AVX512DQ, P_NONE},
-  {"avx512cd",F_AVX512CD, P_NONE},
-  {"avx512er",F_AVX512ER, P_NONE},
-  {"avx512pf",F_AVX512PF, P_NONE},
-  {"avx512vbmi",F_AVX512VBMI, P_NONE},
-  {"avx512ifma",F_AVX512IFMA, P_NONE},
-  {"avx5124vnniw",F_AVX5124VNNIW, P_NONE},
-  {"avx5124fmaps",F_AVX5124FMAPS, P_NONE},
-  {"avx512vpopcntdq",F_AVX512VPOPCNTDQ,	P_NONE},
-  {"avx512vbmi2", F_AVX512VBMI2, P_NONE},
-  {"gfni",	F_GFNI,	P_NONE},
-  {"vpclmulqdq", F_VPCLMULQDQ, P_NONE},
-  {"avx512vnni", F_AVX512VNNI, P_NONE},
-  {"avx512bitalg", F_AVX512BITALG, P_NONE},
-  {"avx512bf16", F_AVX512BF16, P_NONE},
-  {"avx512vp2intersect",F_AVX512VP2INTERSECT, P_NONE}
+  {"cmov",    FEATURE_CMOV,	P_NONE},
+  {"mmx",     FEATURE_MMX,	P_MMX},
+  {"popcnt",  FEATURE_POPCNT,	P_POPCNT},
+  {"sse",     FEATURE_SSE,	P_SSE},
+  {"sse2",    FEATURE_SSE2,	P_SSE2},
+  {"sse3",    FEATURE_SSE3,	P_SSE3},
+  {"ssse3",   FEATURE_SSSE3,	P_SSSE3},
+  {"sse4a",   FEATURE_SSE4_A,	P_SSE4_A},
+  {"sse4.1",  FEATURE_SSE4_1,	P_SSE4_1},
+  {"sse4.2",  FEATURE_SSE4_2,	P_SSE4_2},
+  {"avx",     FEATURE_AVX,	P_AVX},
+  {"fma4",    FEATURE_FMA4,	P_FMA4},
+  {"xop",     FEATURE_XOP,	P_XOP},
+  {"fma",     FEATURE_FMA,	P_FMA},
+  {"avx2",    FEATURE_AVX2,	P_AVX2},
+  {"avx512f", FEATURE_AVX512F, P_AVX512F},
+  {"bmi",     FEATURE_BMI,	P_BMI},
+  {"bmi2",    FEATURE_BMI2,	P_BMI2},
+  {"aes",     FEATURE_AES,	P_AES},
+  {"pclmul",  FEATURE_PCLMUL,	P_PCLMUL},
+  {"avx512vl",FEATURE_AVX512VL, P_NONE},
+  {"avx512bw",FEATURE_AVX512BW, P_NONE},
+  {"avx512dq",FEATURE_AVX512DQ, P_NONE},
+  {"avx512cd",FEATURE_AVX512CD, P_NONE},
+  {"avx512er",FEATURE_AVX512ER, P_NONE},
+  {"avx512pf",FEATURE_AVX512PF, P_NONE},
+  {"avx512vbmi",FEATURE_AVX512VBMI, P_NONE},
+  {"avx512ifma",FEATURE_AVX512IFMA, P_NONE},
+  {"avx5124vnniw",FEATURE_AVX5124VNNIW, P_NONE},
+  {"avx5124fmaps",FEATURE_AVX5124FMAPS, P_NONE},
+  {"avx512vpopcntdq",FEATURE_AVX512VPOPCNTDQ,	P_NONE},
+  {"avx512vbmi2", FEATURE_AVX512VBMI2, P_NONE},
+  {"gfni",	FEATURE_GFNI,	P_NONE},
+  {"vpclmulqdq", FEATURE_VPCLMULQDQ, P_NONE},
+  {"avx512vnni", FEATURE_AVX512VNNI, P_NONE},
+  {"avx512bitalg", FEATURE_AVX512BITALG, P_NONE},
+  {"avx512bf16", FEATURE_AVX512BF16, P_NONE},
+  {"avx512vp2intersect",FEATURE_AVX512VP2INTERSECT, P_NONE}
 };
 
 /* This parses the attribute arguments to target in DECL and determines
@@ -2294,16 +2250,29 @@ fold_builtin_cpu (tree fndecl, tree *args)
 
       if (isa_names_table[i].feature >= 32)
 	{
-	  tree __cpu_features2_var = make_var_decl (unsigned_type_node,
+	  tree index_type
+	    = build_index_type (size_int (SIZE_OF_CPU_FEATURES));
+	  tree type = build_array_type (unsigned_type_node, index_type);
+	  tree __cpu_features2_var = make_var_decl (type,
 						    "__cpu_features2");
 
 	  varpool_node::add (__cpu_features2_var);
-	  field_val = (1U << (isa_names_table[i].feature - 32));
-	  /* Return __cpu_features2 & field_val  */
-	  final = build2 (BIT_AND_EXPR, unsigned_type_node,
-			  __cpu_features2_var,
-			  build_int_cstu (unsigned_type_node, field_val));
-	  return build1 (CONVERT_EXPR, integer_type_node, final);
+	  for (unsigned int j = 0; j < SIZE_OF_CPU_FEATURES; j++)
+	    if (isa_names_table[i].feature < (32 + 32 + j * 32))
+	      {
+		field_val = (1U << (isa_names_table[i].feature
+				    - (32 + j * 32)));
+		tree index = size_int (j);
+		array_elt = build4 (ARRAY_REF, unsigned_type_node,
+				    __cpu_features2_var,
+				    index, NULL_TREE, NULL_TREE);
+		/* Return __cpu_features2[index] & field_val  */
+		final = build2 (BIT_AND_EXPR, unsigned_type_node,
+				array_elt,
+				build_int_cstu (unsigned_type_node,
+						field_val));
+		return build1 (CONVERT_EXPR, integer_type_node, final);
+	      }
 	}
 
       field = TYPE_FIELDS (__processor_model_type);
