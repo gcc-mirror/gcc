@@ -2130,7 +2130,7 @@ struct sm_aux
 
 static void
 execute_sm (class loop *loop, im_mem_ref *ref,
-	    hash_map<im_mem_ref *, sm_aux *> &aux_map)
+	    hash_map<im_mem_ref *, sm_aux *> &aux_map, bool maybe_mt)
 {
   gassign *load;
   struct fmt_data fmt_data;
@@ -2154,8 +2154,9 @@ execute_sm (class loop *loop, im_mem_ref *ref,
   for_each_index (&ref->mem.ref, force_move_till, &fmt_data);
 
   bool always_stored = ref_always_accessed_p (loop, ref, true);
-  if (bb_in_transaction (loop_preheader_edge (loop)->src)
-      || (! flag_store_data_races && ! always_stored))
+  if (maybe_mt
+      && (bb_in_transaction (loop_preheader_edge (loop)->src)
+	  || (! flag_store_data_races && ! always_stored)))
     multi_threaded_model_p = true;
 
   if (multi_threaded_model_p)
@@ -2244,7 +2245,7 @@ execute_sm_exit (class loop *loop, edge ex, vec<seq_entry> &seq,
       else
 	{
 	  sm_aux *aux = *aux_map.get (ref);
-	  if (!aux->store_flag)
+	  if (!aux->store_flag || kind == sm_ord)
 	    {
 	      gassign *store;
 	      store = gimple_build_assign (unshare_expr (ref->mem.ref),
@@ -2630,7 +2631,7 @@ hoist_memory_references (class loop *loop, bitmap mem_refs,
   EXECUTE_IF_SET_IN_BITMAP (mem_refs, 0, i, bi)
     {
       ref = memory_accesses.refs_list[i];
-      execute_sm (loop, ref, aux_map);
+      execute_sm (loop, ref, aux_map, bitmap_bit_p (refs_not_supported, i));
     }
 
   /* Materialize ordered store sequences on exits.  */
