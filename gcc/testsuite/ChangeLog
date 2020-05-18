@@ -1,3 +1,8 @@
+2020-05-18  Doug Rupp  <rupp@adacore.com>
+
+	* gcc.target/powerpc/pr71763.c: Require powerpc_vsx_ok.
+
+
 2020-05-18  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backport from mainline
