@@ -1668,14 +1668,19 @@ vect_finish_stmt_generation_1 (vec_info *vinfo,
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "add new stmt: %G", vec_stmt);
 
-  gimple_set_location (vec_stmt, gimple_location (stmt_info->stmt));
+  if (stmt_info)
+    {
+      gimple_set_location (vec_stmt, gimple_location (stmt_info->stmt));
 
-  /* While EH edges will generally prevent vectorization, stmt might
-     e.g. be in a must-not-throw region.  Ensure newly created stmts
-     that could throw are part of the same region.  */
-  int lp_nr = lookup_stmt_eh_lp (stmt_info->stmt);
-  if (lp_nr != 0 && stmt_could_throw_p (cfun, vec_stmt))
-    add_stmt_to_eh_lp (vec_stmt, lp_nr);
+      /* While EH edges will generally prevent vectorization, stmt might
+	 e.g. be in a must-not-throw region.  Ensure newly created stmts
+	 that could throw are part of the same region.  */
+      int lp_nr = lookup_stmt_eh_lp (stmt_info->stmt);
+      if (lp_nr != 0 && stmt_could_throw_p (cfun, vec_stmt))
+	add_stmt_to_eh_lp (vec_stmt, lp_nr);
+    }
+  else
+    gcc_assert (!stmt_could_throw_p (cfun, vec_stmt));
 
   return vec_stmt_info;
 }
@@ -1705,7 +1710,7 @@ vect_finish_stmt_generation (vec_info *vinfo,
 			     stmt_vec_info stmt_info, gimple *vec_stmt,
 			     gimple_stmt_iterator *gsi)
 {
-  gcc_assert (gimple_code (stmt_info->stmt) != GIMPLE_LABEL);
+  gcc_assert (!stmt_info || gimple_code (stmt_info->stmt) != GIMPLE_LABEL);
 
   if (!gsi_end_p (*gsi)
       && gimple_has_mem_ops (vec_stmt))
