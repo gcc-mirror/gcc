@@ -2547,6 +2547,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Aspect_Specification
         or else NT (N).Nkind = N_Attribute_Definition_Clause
         or else NT (N).Nkind = N_Enumeration_Representation_Clause
+        or else NT (N).Nkind = N_Null_Statement
         or else NT (N).Nkind = N_Pragma
         or else NT (N).Nkind = N_Record_Representation_Clause);
       return Node5 (N);
@@ -6034,6 +6035,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Aspect_Specification
         or else NT (N).Nkind = N_Attribute_Definition_Clause
         or else NT (N).Nkind = N_Enumeration_Representation_Clause
+        or else NT (N).Nkind = N_Null_Statement
         or else NT (N).Nkind = N_Pragma
         or else NT (N).Nkind = N_Record_Representation_Clause);
       Set_Node5 (N, Val); -- semantic field, no parent set
