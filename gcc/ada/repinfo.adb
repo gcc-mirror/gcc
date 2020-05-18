@@ -1006,10 +1006,12 @@ package body Repinfo is
          Comp := First_Component_Or_Discriminant (Ent);
          while Present (Comp) loop
 
-            --  Skip discriminant in unchecked union (since it is not there!)
+            --  Skip a completely hidden discriminant or a discriminant in an
+            --  unchecked union (since it is not there).
 
             if Ekind (Comp) = E_Discriminant
-              and then Is_Unchecked_Union (Ent)
+              and then (Is_Completely_Hidden (Comp)
+                         or else Is_Unchecked_Union (Ent))
             then
                goto Continue;
             end if;
@@ -1278,10 +1280,12 @@ package body Repinfo is
          Comp := First_Component_Or_Discriminant (Ent);
          while Present (Comp) loop
 
-            --  Skip discriminant in unchecked union (since it is not there!)
+            --  Skip a completely hidden discriminant or a discriminant in an
+            --  unchecked union (since it is not there).
 
             if Ekind (Comp) = E_Discriminant
-              and then Is_Unchecked_Union (Ent)
+              and then (Is_Completely_Hidden (Comp)
+                         or else Is_Unchecked_Union (Ent))
             then
                goto Continue;
             end if;
@@ -1370,7 +1374,7 @@ package body Repinfo is
             Derived_Disc : Entity_Id;
 
          begin
-            Derived_Disc := First_Stored_Discriminant (Outer_Ent);
+            Derived_Disc := First_Discriminant (Outer_Ent);
 
             --  Loop over the discriminants of the extension
 
@@ -1394,7 +1398,7 @@ package body Repinfo is
                   end if;
                end if;
 
-               Next_Stored_Discriminant (Derived_Disc);
+               Next_Discriminant (Derived_Disc);
             end loop;
 
             --  Disc is not constrained by a discriminant of Outer_Ent
@@ -1463,12 +1467,13 @@ package body Repinfo is
                end if;
 
                --  If the record has discriminants and is not an unchecked
-               --  union, then display them now.
+               --  union, then display them now. Note that, even if this is
+               --  a structural layout, we list the visible discriminants.
 
                if Has_Discriminants (Ent)
                  and then not Is_Unchecked_Union (Ent)
                then
-                  Disc := First_Stored_Discriminant (Ent);
+                  Disc := First_Discriminant (Ent);
                   while Present (Disc) loop
 
                      --  If this is a record extension and the discriminant is
@@ -1506,7 +1511,7 @@ package body Repinfo is
                      List_Component_Layout (Listed_Disc, Indent => Indent);
 
                   <<Continue_Disc>>
-                     Next_Stored_Discriminant (Disc);
+                     Next_Discriminant (Disc);
                   end loop;
                end if;
 
