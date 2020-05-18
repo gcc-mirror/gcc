@@ -166,6 +166,42 @@ compute_object_offset (const_tree expr, const_tree var)
   return size_binop (code, base, off);
 }
 
+/* Returns the size of the object designated by DECL considering its
+   initializer if it either has one or if it would not affect its size,
+   otherwise the size of the object without the initializer when MIN
+   is true, else null.  An object's initializer affects the object's
+   size if it's a struct type with a flexible array member.  */
+
+static tree
+decl_init_size (tree decl, bool min)
+{
+  tree size = DECL_SIZE_UNIT (decl);
+  tree type = TREE_TYPE (decl);
+  if (TREE_CODE (type) != RECORD_TYPE)
+    return size;
+
+  tree last = last_field (type);
+  if (!last)
+    return size;
+
+  tree last_type = TREE_TYPE (last);
+  if (TREE_CODE (last_type) != ARRAY_TYPE
+      || TYPE_SIZE (last_type))
+    return size;
+
+  /* Use TYPE_SIZE_UNIT; DECL_SIZE_UNIT sometimes reflects the size
+     of the initializer and sometimes doesn't.  */
+  size = TYPE_SIZE_UNIT (type);
+  tree ref = build3 (COMPONENT_REF, type, decl, last, NULL_TREE);
+  tree compsize = component_ref_size (ref);
+  if (!compsize)
+    return min ? size : NULL_TREE;
+
+  /* The size includes tail padding and initializer elements.  */
+  tree pos = byte_position (last);
+  size = fold_build2 (PLUS_EXPR, TREE_TYPE (size), pos, compsize);
+  return size;
+}
 
 /* Compute __builtin_object_size for PTR, which is a ADDR_EXPR.
    OBJECT_SIZE_TYPE is the second argument from __builtin_object_size.
@@ -194,8 +230,10 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
   while (handled_component_p (pt_var))
     pt_var = TREE_OPERAND (pt_var, 0);
 
-  if (pt_var
-      && TREE_CODE (pt_var) == MEM_REF)
+  if (!pt_var)
+    return false;
+
+  if (TREE_CODE (pt_var) == MEM_REF)
     {
       unsigned HOST_WIDE_INT sz;
 
@@ -236,23 +274,25 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
       if (sz != unknown[object_size_type] && sz < offset_limit)
 	pt_var_size = size_int (sz);
     }
-  else if (pt_var
-	   && DECL_P (pt_var)
-	   && tree_fits_uhwi_p (DECL_SIZE_UNIT (pt_var))
-	   && tree_to_uhwi (DECL_SIZE_UNIT (pt_var)) < offset_limit)
+  else if (DECL_P (pt_var))
     {
       *pdecl = pt_var;
-      pt_var_size = DECL_SIZE_UNIT (pt_var);
+      pt_var_size = decl_init_size (pt_var, object_size_type & 2);
+      if (!pt_var_size)
+	return false;
     }
-  else if (pt_var
-	   && TREE_CODE (pt_var) == STRING_CST
-	   && TYPE_SIZE_UNIT (TREE_TYPE (pt_var))
-	   && tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (pt_var)))
-	   && tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (pt_var)))
-	      < offset_limit)
+  else if (TREE_CODE (pt_var) == STRING_CST)
     pt_var_size = TYPE_SIZE_UNIT (TREE_TYPE (pt_var));
   else
     return false;
+
+  if (pt_var_size)
+    {
+      /* Validate the size determined above.  */
+      if (!tree_fits_uhwi_p (pt_var_size)
+	  || tree_to_uhwi (pt_var_size) >= offset_limit)
+	return false;
+    }
 
   if (pt_var != TREE_OPERAND (ptr, 0))
     {
