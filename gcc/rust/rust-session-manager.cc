@@ -362,9 +362,9 @@ Session::enable_dump (::std::string arg)
     {
       options.dump_option = CompileOptions::EXPANSION_DUMP;
     }
-  else if (arg == "name_resolution")
+  else if (arg == "resolution")
     {
-      options.dump_option = CompileOptions::NAME_RESOLUTION_DUMP;
+      options.dump_option = CompileOptions::RESOLUTION_DUMP;
     }
   else if (arg == "target_options")
     {
@@ -449,8 +449,8 @@ Session::parse_file (const char *filename)
    * injection)
    *  - expansion (expands all macros, maybe build test harness, AST validation,
    * maybe macro crate)
-   *  - name resolution (name resolution, maybe feature checking, maybe buffered
-   * lints)
+   *  - resolution (name resolution, type resolution, maybe feature checking,
+   * maybe buffered lints)
    *  TODO not done */
 
   fprintf (stderr, "\033[0;31mSUCCESSFULLY PARSED CRATE \n\033[0m");
@@ -485,11 +485,11 @@ Session::parse_file (const char *filename)
       return;
     }
 
-  // name resolution pipeline stage
-  name_resolution (parsed_crate);
-  fprintf (stderr, "\033[0;31mSUCCESSFULLY FINISHED NAME RESOLUTION \n\033[0m");
+  // resolution pipeline stage
+  resolution (parsed_crate);
+  fprintf (stderr, "\033[0;31mSUCCESSFULLY FINISHED RESOLUTION \n\033[0m");
 
-  if (options.dump_option == CompileOptions::NAME_RESOLUTION_DUMP)
+  if (options.dump_option == CompileOptions::RESOLUTION_DUMP)
     {
       // TODO: what do I dump here? resolved names? AST with resolved names?
       return;
@@ -750,10 +750,11 @@ Session::expansion (AST::Crate &crate ATTRIBUTE_UNUSED)
 }
 
 void
-Session::name_resolution (AST::Crate &crate)
+Session::resolution (AST::Crate &crate)
 {
   fprintf (stderr, "started name resolution\n");
   Analysis::TopLevelScan toplevel (crate);
+  // Name resolution must be in front of type resolution
   Analysis::TypeResolution::ResolveNamesAndTypes (crate, toplevel);
   fprintf (stderr, "finished name resolution\n");
 }

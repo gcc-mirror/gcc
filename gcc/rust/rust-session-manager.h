@@ -162,6 +162,7 @@ struct CompileOptions
     EXPANSION_DUMP,
     NAME_RESOLUTION_DUMP,
     TARGET_OPTION_DUMP,
+    RESOLUTION_DUMP,
     // TODO: add more?
   } dump_option;
 
@@ -225,11 +226,12 @@ private:
    * macros, maybe build test harness in future, AST validation, maybe create
    * macro crate (if not rustdoc).*/
   void expansion (AST::Crate &crate);
-  /* Name resolution pipeline stage. TODO maybe move to another object. Performs
-   * name resolution, maybe complete gated feature checking, maybe create
-   * buffered lints in future.
+
+  /* Resolution pipeline stage. TODO maybe move to another object.
+   * Performs name resolution and type resolution, maybe complete gated
+   * feature checking, maybe create buffered lints in future.
    */
-  void name_resolution (AST::Crate &crate);
+  void resolution (AST::Crate &crate);
 };
 } // namespace Rust
 
