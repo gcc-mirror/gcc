@@ -1,3 +1,12 @@
+2020-05-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/94940
+	* tree-vrp.c (vrp_prop::check_mem_ref): Remove unreachable code.
+	* tree.c (component_ref_size): Correct the handling or array members
+	of unions.
+	Drop a pointless test.
+	Rename a local variable.
+
 2020-05-18  Jason Merrill  <jason@redhat.com>
 
 	* aclocal.m4: Add ax_cxx_compile_stdcxx.m4.
