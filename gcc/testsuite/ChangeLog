@@ -1,5 +1,12 @@
 2020-05-18  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/92815
+	* gcc.dg/Warray-bounds-56.c: Remove xfails.
+	* gcc.dg/builtin-object-size-20.c: New test.
+	* gcc.dg/builtin-object-size-21.c: New test.
+
+2020-05-18  Martin Sebor  <msebor@redhat.com>
+
 	PR middle-end/94940
 	* gcc.dg/Warray-bounds-61.c: New test.
 

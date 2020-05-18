@@ -1,5 +1,13 @@
 2020-05-18  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/92815
+	* tree-object-size.c (decl_init_size): New function.
+	(addr_object_size): Call it.
+	* tree.h (last_field): Declare.
+	(first_field): Add attribute nonnull.
+
+2020-05-18  Martin Sebor  <msebor@redhat.com>
+
 	PR middle-end/94940
 	* tree-vrp.c (vrp_prop::check_mem_ref): Remove unreachable code.
 	* tree.c (component_ref_size): Correct the handling or array members
