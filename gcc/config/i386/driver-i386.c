@@ -752,9 +752,12 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	case 0x37:
 	case 0x4a:
 	case 0x4d:
-	case 0x5a:
 	case 0x5d:
 	  /* Silvermont.  */
+	case 0x4c:
+	case 0x5a:
+	case 0x75:
+	  /* Airmont.  */
 	  cpu = "silvermont";
 	  break;
 	case 0x0f:
@@ -807,11 +810,25 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	case 0x8e:
 	case 0x9e:
 	  /* Kaby Lake.  */
+	case 0xa5:
+	case 0xa6:
+	  /* Comet Lake.  */
 	  cpu = "skylake";
 	  break;
 	case 0x55:
 	  /* Skylake with AVX-512.  */
 	  cpu = "skylake-avx512";
+	  break;
+	case 0x6a:
+	case 0x6c:
+	  /* Ice Lake server.  */
+	  cpu = "icelake-server";
+	  break;
+	case 0x7e:
+	case 0x7d:
+	case 0x9d:
+	  /* Ice Lake client.  */
+	  cpu = "icelake-client";
 	  break;
 	case 0x57:
 	  /* Knights Landing.  */
