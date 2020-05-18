@@ -1,3 +1,8 @@
+2020-05-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/94940
+	* gcc.dg/Warray-bounds-61.c: New test.
+
 2020-05-18  Marek Polacek  <polacek@redhat.com>
 
 	DR 1512
