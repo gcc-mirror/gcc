@@ -1,3 +1,16 @@
+2020-05-18  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* gcc.c (EMPTY_CMD): New macro.
+	(temp_object_files): New variable.
+	(get_path_to_ld): New function.
+	(append_split_outputs): Queue up a call to ld.
+	(await_commands_to_finish): New function.
+	(split_commands): Same as above.
+	(parse_argbuf): Same as above.
+	(execute): Refactor based on new functions, plus call
+	additional ld when necessary.
+	(fsplit_arg): Append .s to temporary file.
+
 2020-05-14  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* gcc.c (extra_arg_storer): New function store.
