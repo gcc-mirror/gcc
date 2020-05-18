@@ -1,3 +1,9 @@
+2020-05-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Support
+	Intel Airmont, Tremont, Comet Lake, Ice Lake and Tiger Lake
+	processor families.
+
 2020-05-18  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/95171
