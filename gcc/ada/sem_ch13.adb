@@ -3120,6 +3120,12 @@ package body Sem_Ch13 is
                      Error_Msg_N
                        ("predicate cannot apply to incomplete view", Aspect);
                      goto Continue;
+
+                  elsif not Has_Predicates (E) then
+                     Error_Msg_N
+                       ("Predicate_Failure requires previous predicate" &
+                        " specification", Aspect);
+                     goto Continue;
                   end if;
 
                   --  Construct the pragma
@@ -3131,16 +3137,6 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Sloc (Expr),
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name => Name_Predicate_Failure);
-
-                  --  If the type is private, indicate that its completion
-                  --  has a freeze node, because that is the one that will
-                  --  be visible at freeze time.
-
-                  if Is_Private_Type (E) and then Present (Full_View (E)) then
-                     Set_Has_Predicates (Full_View (E));
-                     Set_Has_Delayed_Aspects (Full_View (E));
-                     Ensure_Freeze_Node (Full_View (E));
-                  end if;
 
                --  Case 2b: Aspects corresponding to pragmas with two
                --  arguments, where the second argument is a local name
