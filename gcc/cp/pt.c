@@ -29330,9 +29330,8 @@ declare_integer_pack (void)
 void
 init_template_processing (void)
 {
-  /* FIXME: enable sanitization (PR87847) */
-  decl_specializations = hash_table<spec_hasher>::create_ggc (37, false);
-  type_specializations = hash_table<spec_hasher>::create_ggc (37, false);
+  decl_specializations = hash_table<spec_hasher>::create_ggc (37);
+  type_specializations = hash_table<spec_hasher>::create_ggc (37);
 
   if (cxx_dialect >= cxx11)
     declare_integer_pack ();
