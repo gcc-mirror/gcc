@@ -275,7 +275,7 @@ struct lexer_state
   /* Nonzero to skip evaluating part of an expression.  */
   unsigned int skip_eval;
 
-  /* Nonzero when handling a deferred pragma.  */
+  /* Nonzero when tokenizing a deferred pragma.  */
   unsigned char in_deferred_pragma;
 
   /* Nonzero if the deferred pragma being handled allows macro expansion.  */
