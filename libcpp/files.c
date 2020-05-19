@@ -635,7 +635,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
   entry = new_file_hash_entry (pfile);
   entry->next = (struct cpp_file_hash_entry *) *hash_slot;
   entry->start_dir = start_dir;
-  entry->location = pfile->line_table->highest_location;
+  entry->location = loc;
   entry->u.file = file;
   *hash_slot = (void *) entry;
 
@@ -648,7 +648,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
       entry = new_file_hash_entry (pfile);
       entry->next = (struct cpp_file_hash_entry *) *hash_slot;
       entry->start_dir = pfile->bracket_include;
-      entry->location = pfile->line_table->highest_location;
+      entry->location = loc;
       entry->u.file = file;
       *hash_slot = (void *) entry;
     }
@@ -659,7 +659,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
       entry = new_file_hash_entry (pfile);
       entry->next = (struct cpp_file_hash_entry *) *hash_slot;
       entry->start_dir = pfile->quote_include;
-      entry->location = pfile->line_table->highest_location;
+      entry->location = loc;
       entry->u.file = file;
       *hash_slot = (void *) entry;
     }

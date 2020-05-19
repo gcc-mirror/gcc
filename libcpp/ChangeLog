@@ -1,5 +1,13 @@
 2020-05-18  Nathan Sidwell  <nathan@acm.org>
 
+	* include/cpplib.h (cpp_get_otions, cpp_get_callbacks)
+	(cpp_get_deps): Mark as PURE.
+	* include/line-map.h (get_combined_adhoc_loc)
+	(get_location_from_adhoc_loc, get_pure_location): Reformat decls.
+	* internal.h (struct lexer_state): Clarify comment.
+	* system.h: Remove now-unneeded bool hackery.
+	* files.c (_cpp_find_file): Store LOC not highest_location.
+
 	PR preprocessor/95149
 	* lex.c (struct lit_accum): New.
 	(bufring_append): Replace by lit_accum::append.
