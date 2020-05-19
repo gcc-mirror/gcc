@@ -1,5 +1,10 @@
 2020-05-19  Martin Liska  <mliska@suse.cz>
 
+	* mklog.py: Skip GTY for struct names.  Make flake8 happy.
+	* test_mklog.py: Add test for GTY.
+
+2020-05-19  Martin Liska  <mliska@suse.cz>
+
 	* gcc-changelog/git_update_version.py:
 	Fill up entries in reverse order.
 

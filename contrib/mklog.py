@@ -27,18 +27,21 @@
 # Author: Martin Liska <mliska@suse.cz>
 
 import argparse
-import bs4
 import os
 import re
-import requests
 import sys
+
+import bs4
+
+import requests
 
 from unidiff import PatchSet
 
 pr_regex = re.compile(r'(\/(\/|\*)|[Cc*!])\s+(?P<pr>PR [a-z+-]+\/[0-9]+)')
 identifier_regex = re.compile(r'^([a-zA-Z0-9_#].*)')
 comment_regex = re.compile(r'^\/\*')
-struct_regex = re.compile(r'^((class|struct|union|enum)\s+[a-zA-Z0-9_]+)')
+struct_regex = re.compile(r'^(class|struct|union|enum)\s+'
+                          r'(GTY\(.*\)\s+)?([a-zA-Z0-9_]+)')
 macro_regex = re.compile(r'#\s*(define|undef)\s+([a-zA-Z0-9_]+)')
 super_macro_regex = re.compile(r'^DEF[A-Z0-9_]+\s*\(([a-zA-Z0-9_]+)')
 fn_regex = re.compile(r'([a-zA-Z_][^()\s]*)\s*\([^*]')
@@ -73,7 +76,7 @@ def extract_function_name(line):
     m = struct_regex.search(line)
     if m:
         # Struct declaration
-        return m.group(1)
+        return m.group(1) + ' ' + m.group(3)
     m = macro_regex.search(line)
     if m:
         # Macro definition
@@ -116,6 +119,7 @@ def get_pr_titles(prs):
         output += '%s - %s\n' % (pr, title)
     output += '\n'
     return output
+
 
 def generate_changelog(data, no_functions=False, fill_pr_titles=False):
     changelogs = {}
