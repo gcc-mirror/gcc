@@ -397,6 +397,9 @@ struct gomp_team_state
   unsigned place_partition_off;
   unsigned place_partition_len;
 
+  /* Def-allocator-var ICV.  */
+  uintptr_t def_allocator;
+
 #ifdef HAVE_SYNC_BUILTINS
   /* Number of single stmts encountered.  */
   unsigned long single_count;
@@ -450,6 +453,7 @@ extern int gomp_debug_var;
 extern bool gomp_display_affinity_var;
 extern char *gomp_affinity_format_var;
 extern size_t gomp_affinity_format_len;
+extern uintptr_t gomp_def_allocator;
 extern int goacc_device_num;
 extern char *goacc_device_type;
 extern int goacc_default_dims[GOMP_DIM_MAX];
