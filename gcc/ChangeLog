@@ -1,3 +1,9 @@
+2020-05-19  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/94591
+	* config/aarch64/aarch64.c (aarch64_evpc_rev_local): Don't match
+	identity permutation.
+
 2020-05-19  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* doc/sourcebuild.texi: Document new short_eq_int, ptr_eq_short,
