@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-require-effective-target size20plus }
 // Origin: Markus Breuer <markus.breuer@materna.de>
 
 // PR c++/6944

@@ -1,6 +1,7 @@
 // PR c++/77321
 // { dg-do compile { target c++14 } }
 // { dg-options "-Wall" }
+// { dg-require-effective-target size24plus }
 
 extern "C" void *memset (void *, int, __SIZE_TYPE__);
 extern "C" void *malloc(__SIZE_TYPE__);

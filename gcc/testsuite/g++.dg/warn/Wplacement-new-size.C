@@ -3,6 +3,8 @@
 
 typedef __typeof__ (sizeof 0) size_t;
 
+typedef int int32_t __attribute__((mode (__SI__)));
+
 void* operator new (size_t, void *p) { return p; }
 void* operator new[] (size_t, void *p) { return p; }
 
@@ -31,7 +33,7 @@ static __attribute__ ((used))struct SAC2 { char ac [2]; } sac2;
 static __attribute__ ((used))struct SAC3 { char ac [3]; } sac3;
 static __attribute__ ((used))struct SAC4 { char ac [4]; } sac4;
 
-static __attribute__ ((used))struct SSC { SC sc; int x; } ssc;
+static __attribute__ ((used))struct SSC { SC sc; int32_t x; } ssc;
 static __attribute__ ((used))struct SSAC1 { SAC1 sac; } ssac1;
 static __attribute__ ((used))struct SSAC2 { SAC2 sac; } ssac2;
 static __attribute__ ((used))struct SSAC3 { SAC3 sac; } ssac3;
@@ -55,7 +57,7 @@ static __attribute__ ((used))void *r;
 static __attribute__ ((used))void* ptr () { return 0; }
 
 static __attribute__ ((used))
-void test (void *p, int n)
+void test (void *p, int32_t n)
 {
     {
         void *q = p;
@@ -167,83 +169,83 @@ void test (void *p, int n)
     new (ac8) char [2][2][2];
     new (ac8) char [2][2][3];           // { dg-warning "placement" }
 
-    new (&c) int;                       // { dg-warning "placement" }
+    new (&c) int32_t;                       // { dg-warning "placement" }
 
-    new (&ac1) int;                     // { dg-warning "placement" }
-    new (&ac2) int;                     // { dg-warning "placement" }
-    new (&ac3) int;                     // { dg-warning "placement" }
-    new (&ac4) int;
+    new (&ac1) int32_t;                     // { dg-warning "placement" }
+    new (&ac2) int32_t;                     // { dg-warning "placement" }
+    new (&ac3) int32_t;                     // { dg-warning "placement" }
+    new (&ac4) int32_t;
 
     // Constructing at an address of an array element.
-    new (&ac1 [0]) int;                 // { dg-warning "placement" }
-    new (&ac2 [0]) int;                 // { dg-warning "placement" }
-    new (&ac3 [0]) int;                 // { dg-warning "placement" }
-    new (&ac4 [0]) int;
+    new (&ac1 [0]) int32_t;                 // { dg-warning "placement" }
+    new (&ac2 [0]) int32_t;                 // { dg-warning "placement" }
+    new (&ac3 [0]) int32_t;                 // { dg-warning "placement" }
+    new (&ac4 [0]) int32_t;
 
     // ...plus or minus a constant offset.
-    new (&ac1 [0] + 0) int;             // { dg-warning "placement" }
-    new (&ac2 [0] + 0) int;             // { dg-warning "placement" }
-    new (&ac3 [0] + 0) int;             // { dg-warning "placement" }
-    new (&ac4 [0] + 0) int;
-    new (&ac4 [1] + 0) int;             // { dg-warning "placement" }
-    new (&ac4 [1] - 1) int;
-    new (&ac4 [2] - 1) int;             // { dg-warning "placement" }
-    new (&ac4 [2] - 2) int;
-    new (&ac4 [3] - 1) int;             // { dg-warning "placement" }
-    new (&ac4 [3] - 2) int;             // { dg-warning "placement" }
-    new (&ac4 [3] - 3) int;
-    new (&ac4 [4] - 1) int;             // { dg-warning "placement" }
-    new (&ac4 [4] - 2) int;             // { dg-warning "placement" }
-    new (&ac4 [4] - 3) int;             // { dg-warning "placement" }
-    new (&ac4 [4] - 4) int;
+    new (&ac1 [0] + 0) int32_t;             // { dg-warning "placement" }
+    new (&ac2 [0] + 0) int32_t;             // { dg-warning "placement" }
+    new (&ac3 [0] + 0) int32_t;             // { dg-warning "placement" }
+    new (&ac4 [0] + 0) int32_t;
+    new (&ac4 [1] + 0) int32_t;             // { dg-warning "placement" }
+    new (&ac4 [1] - 1) int32_t;
+    new (&ac4 [2] - 1) int32_t;             // { dg-warning "placement" }
+    new (&ac4 [2] - 2) int32_t;
+    new (&ac4 [3] - 1) int32_t;             // { dg-warning "placement" }
+    new (&ac4 [3] - 2) int32_t;             // { dg-warning "placement" }
+    new (&ac4 [3] - 3) int32_t;
+    new (&ac4 [4] - 1) int32_t;             // { dg-warning "placement" }
+    new (&ac4 [4] - 2) int32_t;             // { dg-warning "placement" }
+    new (&ac4 [4] - 3) int32_t;             // { dg-warning "placement" }
+    new (&ac4 [4] - 4) int32_t;
 
-    new (&ac1 [0] + 1) int;             // { dg-warning "placement" }
-    new (&ac2 [0] + 1) int;             // { dg-warning "placement" }
-    new (&ac3 [0] + 1) int;             // { dg-warning "placement" }
-    new (&ac4 [0] + 1) int;             // { dg-warning "placement" }
+    new (&ac1 [0] + 1) int32_t;             // { dg-warning "placement" }
+    new (&ac2 [0] + 1) int32_t;             // { dg-warning "placement" }
+    new (&ac3 [0] + 1) int32_t;             // { dg-warning "placement" }
+    new (&ac4 [0] + 1) int32_t;             // { dg-warning "placement" }
 
-    new (&ac3 [0] + n) int;             // { dg-warning "placement" }
-    new (&ac4 [0] + n) int;             // no warning (n could be zero)
-    new (&ac4 [1] + n) int;             // no warning (n could be negative)
-    new (&ac4 [2] + n) int;             // ditto
-    new (&ac4 [3] + n) int;             // ditto
-    new (&ac4 [4] + n) int;             // ditto
-    new (&ac4 [4] - n) int;             // (or positive)
+    new (&ac3 [0] + n) int32_t;             // { dg-warning "placement" }
+    new (&ac4 [0] + n) int32_t;             // no warning (n could be zero)
+    new (&ac4 [1] + n) int32_t;             // no warning (n could be negative)
+    new (&ac4 [2] + n) int32_t;             // ditto
+    new (&ac4 [3] + n) int32_t;             // ditto
+    new (&ac4 [4] + n) int32_t;             // ditto
+    new (&ac4 [4] - n) int32_t;             // (or positive)
 
-    new (&c + 0) int;                   // { dg-warning "placement" }
-    new (&c + 1) int;                   // { dg-warning "placement" }
+    new (&c + 0) int32_t;                   // { dg-warning "placement" }
+    new (&c + 1) int32_t;                   // { dg-warning "placement" }
 
     // Constructing at an offset into the address of an array.
-    new (&ac1 + 0) int;                 // { dg-warning "placement" }
-    new (&ac1 + 1) int;                 // { dg-warning "placement" }
-    new (&ac1 + n) int;                 // { dg-warning "placement" }
-    new (&ac2 + 0) int;                 // { dg-warning "placement" }
-    new (&ac2 + 1) int;                 // { dg-warning "placement" }
-    new (&ac2 + n) int;                 // { dg-warning "placement" }
-    new (&ac3 + 0) int;                 // { dg-warning "placement" }
-    new (&ac3 + 1) int;                 // { dg-warning "placement" }
+    new (&ac1 + 0) int32_t;                 // { dg-warning "placement" }
+    new (&ac1 + 1) int32_t;                 // { dg-warning "placement" }
+    new (&ac1 + n) int32_t;                 // { dg-warning "placement" }
+    new (&ac2 + 0) int32_t;                 // { dg-warning "placement" }
+    new (&ac2 + 1) int32_t;                 // { dg-warning "placement" }
+    new (&ac2 + n) int32_t;                 // { dg-warning "placement" }
+    new (&ac3 + 0) int32_t;                 // { dg-warning "placement" }
+    new (&ac3 + 1) int32_t;                 // { dg-warning "placement" }
 
     // Even though n below is uknown an array of 3 bytes isn't large
-    // enugh for an int.
-    new (&ac3 + n) int;                 // { dg-warning "placement" }
+    // enugh for an int32_t.
+    new (&ac3 + n) int32_t;                 // { dg-warning "placement" }
 
-    new (&ac4 + 0) int;
-    new (&ac4 + 1) int;                 // { dg-warning "placement" }
-    new (&ac4 + n) int;                 // no warning (n could be zero)
+    new (&ac4 + 0) int32_t;
+    new (&ac4 + 1) int32_t;                 // { dg-warning "placement" }
+    new (&ac4 + n) int32_t;                 // no warning (n could be zero)
 
     // Constructing in an array object.
-    new (ac1) int;                      // { dg-warning "placement" }
-    new (ac2) int;                      // { dg-warning "placement" }
-    new (ac3) int;                      // { dg-warning "placement" }
-    new (ac4) int;
-    new (ac5) int;
-    new (ac5 + 0) int;
-    new (ac5 + 1) int;
-    new (ac5 + n) int;                  // no warning (n could be zero)
-    new (ac5 + 2) int;                  // { dg-warning "placement" }
-    new (ac5 + 3) int;                  // { dg-warning "placement" }
-    new (ac5 + 4) int;                  // { dg-warning "placement" }
-    new (ac5 + 5) int;                  // { dg-warning "placement" }
+    new (ac1) int32_t;                      // { dg-warning "placement" }
+    new (ac2) int32_t;                      // { dg-warning "placement" }
+    new (ac3) int32_t;                      // { dg-warning "placement" }
+    new (ac4) int32_t;
+    new (ac5) int32_t;
+    new (ac5 + 0) int32_t;
+    new (ac5 + 1) int32_t;
+    new (ac5 + n) int32_t;                  // no warning (n could be zero)
+    new (ac5 + 2) int32_t;                  // { dg-warning "placement" }
+    new (ac5 + 3) int32_t;                  // { dg-warning "placement" }
+    new (ac5 + 4) int32_t;                  // { dg-warning "placement" }
+    new (ac5 + 5) int32_t;                  // { dg-warning "placement" }
 
     new (ac1_1) char;
     new (ac1_1) char[1];
@@ -278,65 +280,65 @@ void test (void *p, int n)
     new (ac2_2) char[4][2];             // { dg-warning "placement" }
     new (ac2_2) char[5];                // { dg-warning "placement" }
 
-    new (&s) int;                       // { dg-warning "placement" }
-    new (&as1) int;                     // { dg-warning "placement" }
-    new (&as2) int;
+    new (&s) int32_t;                       // { dg-warning "placement" }
+    new (&as1) int32_t;                     // { dg-warning "placement" }
+    new (&as2) int32_t;
 
-    new (as1) int;                      // { dg-warning "placement" }
-    new (as2) int;
+    new (as1) int32_t;                      // { dg-warning "placement" }
+    new (as2) int32_t;
 
-    new (&sc.c) int;                    // { dg-warning "placement" }
-    new (&sac1.ac) int;                 // { dg-warning "placement" }
-    new (&sac2.ac) int;                 // { dg-warning "placement" }
-    new (&sac3.ac) int;                 // { dg-warning "placement" }
-    new (&sac4.ac) int;
+    new (&sc.c) int32_t;                    // { dg-warning "placement" }
+    new (&sac1.ac) int32_t;                 // { dg-warning "placement" }
+    new (&sac2.ac) int32_t;                 // { dg-warning "placement" }
+    new (&sac3.ac) int32_t;                 // { dg-warning "placement" }
+    new (&sac4.ac) int32_t;
 
     new (sc.pc) char;
-    new (sc.pc) int;
-    new (sc.pc) int[1024];
-    new (sc.pc + 0) int;
-    new (sc.pc + 0) int[2048];
-    new (sc.pv) int;
+    new (sc.pc) int32_t;
+    new (sc.pc) int32_t[1024];
+    new (sc.pc + 0) int32_t;
+    new (sc.pc + 0) int32_t[2048];
+    new (sc.pv) int32_t;
     new (sc.pv) char[1024];
 
-    new (sac1.ac) int;                  // { dg-warning "placement" }
-    new (sac2.ac) int;                  // { dg-warning "placement" }
-    new (sac3.ac) int;                  // { dg-warning "placement" }
-    new (sac4.ac) int;
+    new (sac1.ac) int32_t;                  // { dg-warning "placement" }
+    new (sac2.ac) int32_t;                  // { dg-warning "placement" }
+    new (sac3.ac) int32_t;                  // { dg-warning "placement" }
+    new (sac4.ac) int32_t;
 
     new (&ssc.sc) SSC;                  // { dg-warning "placement" }
-    new (&ssac1.sac) int;               // { dg-warning "placement" }
-    new (&ssac2.sac) int;               // { dg-warning "placement" }
-    new (&ssac3.sac) int;               // { dg-warning "placement" }
-    new (&ssac4.sac) int;
+    new (&ssac1.sac) int32_t;               // { dg-warning "placement" }
+    new (&ssac2.sac) int32_t;               // { dg-warning "placement" }
+    new (&ssac3.sac) int32_t;               // { dg-warning "placement" }
+    new (&ssac4.sac) int32_t;
 
     new (&sssac4_2) char[sizeof sssac4_2];
     new (&sssac4_2) char[sizeof sssac4_2 + 1];   // { dg-warning "placement" }
 
     // taking the address of a temporary is allowed with -fpermissive
-    new (&fsc ().c) int;                // { dg-warning "18:taking address|placement" }
-    new (&fasc1 ().ac) int;             // { dg-warning "20:taking address|placement" }
-    new (&fasc2 ().ac) int;             // { dg-warning "20:taking address|placement" }
-    new (&fasc3 ().ac) int;             // { dg-warning "20:taking address|placement" }
-    new (&fasc4 ().ac) int;             // { dg-warning "20:taking address|placement" }
+    new (&fsc ().c) int32_t;                // { dg-warning "18:taking address|placement" }
+    new (&fasc1 ().ac) int32_t;             // { dg-warning "20:taking address|placement" }
+    new (&fasc2 ().ac) int32_t;             // { dg-warning "20:taking address|placement" }
+    new (&fasc3 ().ac) int32_t;             // { dg-warning "20:taking address|placement" }
+    new (&fasc4 ().ac) int32_t;             // { dg-warning "20:taking address|placement" }
 
-    new (&uac1) int;                    // { dg-warning "placement" }
-    new (&uac2) int;                    // { dg-warning "placement" }
-    new (&uac3) int;                    // { dg-warning "placement" }
-    new (&uac4) int;
-    new (&uac4 + 1) int;                // { dg-warning "placement" }
+    new (&uac1) int32_t;                    // { dg-warning "placement" }
+    new (&uac2) int32_t;                    // { dg-warning "placement" }
+    new (&uac3) int32_t;                    // { dg-warning "placement" }
+    new (&uac4) int32_t;
+    new (&uac4 + 1) int32_t;                // { dg-warning "placement" }
 
-    new (&uac1.c) int;                  // { dg-warning "placement" }
-    new (&uac2.c) int;                  // { dg-warning "placement" }
-    new (&uac3.c) int;                  // { dg-warning "placement" }
+    new (&uac1.c) int32_t;                  // { dg-warning "placement" }
+    new (&uac2.c) int32_t;                  // { dg-warning "placement" }
+    new (&uac3.c) int32_t;                  // { dg-warning "placement" }
 
     // Diagnose the following even though the size of uac4.c could be
     // expected to extend to the end of the union (as it is by Built-in
     // Object Size and so isn't diagnosed in calls to functions like
-    // memset(&uac4.c, 0, sizeof(int)) when _FORTIFY_SOURCE is non-zero.  */
-    new (&uac4.c) int;                  // { dg-warning "placement" }
+    // memset(&uac4.c, 0, sizeof(int32_t)) when _FORTIFY_SOURCE is non-zero.  */
+    new (&uac4.c) int32_t;                  // { dg-warning "placement" }
 
-    new (&uac4.c + 1) int;              // { dg-warning "placement" }
+    new (&uac4.c + 1) int32_t;              // { dg-warning "placement" }
 }
 
 
@@ -344,7 +346,7 @@ struct S { char c [2]; };
 
 // Verify the full text of the warning message.
 static  __attribute__ ((used))
-void test_message (int i)
+void test_message (int32_t i)
 {
     char a [2];
 
@@ -364,7 +366,7 @@ void test_message (int i)
 
 
 struct ClassWithMemberNew {
-    struct Object { int i; } *pobj;
+    struct Object { int32_t i; } *pobj;
     unsigned nobj;
 
     ClassWithMemberNew ();
@@ -382,7 +384,7 @@ void ClassWithMemberNew::foo()
 
 
 struct ClassWithGlobalNew {
-    int a [4];
+    int32_t a [4];
     ClassWithGlobalNew ();
 };
 
@@ -425,16 +427,16 @@ extern TemplateClass<void> exttempl_void;
 static __attribute__ ((used))
 void test_extern_buffer_of_unknown_size ()
 {
-    new (extbuf) int ();
-    new (extbuf) int [1024];
+    new (extbuf) int32_t ();
+    new (extbuf) int32_t [1024];
 
-    new (&exttempl_void) int ();
-    new (&exttempl_void) int [1024];
+    new (&exttempl_void) int32_t ();
+    new (&exttempl_void) int32_t [1024];
 }
 
-extern char extbuf_size_int [sizeof (int)];
+extern char extbuf_size_int [sizeof (int32_t)];
 
-extern TemplateClass<int> exttempl;
+extern TemplateClass<int32_t> exttempl;
 
 // Verify that a warning is issued as expected when placement new is
 // called with an extern buffer of known size (and the case is handled
@@ -442,14 +444,14 @@ extern TemplateClass<int> exttempl;
 static __attribute__ ((used))
 void test_extern_buffer ()
 {
-    new (extbuf_size_int) int ();
-    new (extbuf_size_int) int [1];
+    new (extbuf_size_int) int32_t ();
+    new (extbuf_size_int) int32_t [1];
 
-    struct S { int a [2]; };
+    struct S { int32_t a [2]; };
 
     new (extbuf_size_int) S;            // { dg-warning "placement" }
-    new (extbuf_size_int) int [2];      // { dg-warning "placement" }
+    new (extbuf_size_int) int32_t [2];      // { dg-warning "placement" }
 
-    new (&exttempl) int ();             // { dg-warning "placement" }
-    new (&exttempl) int [1024];         // { dg-warning "placement" }
+    new (&exttempl) int32_t ();             // { dg-warning "placement" }
+    new (&exttempl) int32_t [1024];         // { dg-warning "placement" }
 }

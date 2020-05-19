@@ -6,10 +6,13 @@
 
 // PR c++/12167 - infinite recursion
 
+typedef int int32_t __attribute__((mode (__SI__)));
+typedef unsigned uint32_t __attribute__((mode (__SI__)));
+
 class A {   
-  void report(int d
+  void report(int32_t d
 	      // the default arg is what NAN etc can expand to, but
 	      // with the floatiness removed.
-	      = (__extension__ ((union { unsigned l; int d; })
+	      = (__extension__ ((union { uint32_t l; int32_t d; })
 				{ l: 0x7fc00000U }).d));
 };

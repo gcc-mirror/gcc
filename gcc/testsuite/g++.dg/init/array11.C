@@ -1,3 +1,4 @@
+// { dg-require-effective-target size32plus }
 /* PR 11665 
    Orgin: jwhite@cse.unl.edu
    The problem was in initializer_constant_valid_p,

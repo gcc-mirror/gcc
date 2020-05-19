@@ -2,9 +2,11 @@
 /* { dg-options "-O -finline-functions -finline-small-functions -Wuninitialized" }  */
 /* { dg-add-options bind_pic_locally } */
 
+typedef int int32_t __attribute__((mode (__SI__)));
+
 struct SQObjectPtr
 {
-  int _type;
+  int32_t _type;
   SQObjectPtr operator = (long);
 };
 struct SQObjectPtrVec
@@ -53,11 +55,11 @@ bool
     nrefidx = 0;
   switch (o1._type)
     {
-    case 0x02000000:
+    case 0x02000000L:
       o4 = nrefidx;
       jump = 1;
       return true;
-    case 0x00000080:
+    case 0x00000080L:
       {
 	long
 	  idx = 10;

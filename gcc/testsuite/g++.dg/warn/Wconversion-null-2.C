@@ -3,9 +3,7 @@
 
 #include <cstddef>
 
-void g(int) {}
-void g(long) {}
-void g(long long) {}
+void g(__INTPTR_TYPE__) {}
 extern void g(void*);
 
 template <int I>
@@ -17,13 +15,7 @@ template <class T>
 void l(T);
 
 template <>
-void l(int) {}
-
-template <>
-void l(long) {}
-
-template <>
-void l(long long) {}
+void l(__INTPTR_TYPE__) {}
 
 void warn_for_NULL()
 {

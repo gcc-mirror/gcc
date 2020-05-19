@@ -1,8 +1,10 @@
 // { dg-do compile { target c++14 } }
 
+typedef unsigned uint32_t __attribute__((mode (__SI__)));
+
 struct Foo
 {
-  unsigned i: 32;
+  uint32_t i: 32;
 };
 
 int

@@ -3,15 +3,17 @@
 
 /* { dg-do run } */
 
+typedef int int32_t __attribute__((mode (__SI__)));
+
 struct A
 {
-  int b;
-  __INT32_TYPE__ c:24;
-  int d:10;
-  int e;
+  int32_t b;
+  int32_t c:24;
+  int32_t d:10;
+  int32_t e;
 } f;
 
-int g; 
+int32_t g; 
 
 void h ()
 {

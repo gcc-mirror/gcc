@@ -27,8 +27,8 @@ void m(char16_t c0, char32_t c1)
     f_s (c0);	/* { dg-warning "change the sign" } */
     fss (c0);	/* { dg-warning "change the sign" } */
     fus (c0);
-    f_i (c0);
-    fsi (c0);
+    f_i (c0);	/* { dg-warning "change the sign" "" { target int16 } } */
+    fsi (c0);	/* { dg-warning "change the sign" "" { target int16 } } */
     fui (c0);
     f_l (c0);
     fsl (c0);
@@ -43,11 +43,13 @@ void m(char16_t c0, char32_t c1)
     f_s (c1);	/* { dg-warning "change value" } */
     fss (c1);	/* { dg-warning "change value" } */
     fus (c1);	/* { dg-warning "change value" } */
-    f_i (c1);	/* { dg-warning "change the sign" } */
-    fsi (c1);	/* { dg-warning "change the sign" } */
-    fui (c1);
-    f_l (c1);	/* { dg-warning "change the sign" "" { target { llp64 || ilp32 } } } */
-    fsl (c1);	/* { dg-warning "change the sign" "" { target { llp64 || ilp32 } } } */
+    f_i (c1);	/* { dg-warning "change the sign" "" { target { ! int16 } } } */
+    		/* { dg-warning "change value" "" { target int16 } .-1 } */
+    fsi (c1);	/* { dg-warning "change the sign" "" { target { ! int16 } } } */
+    		/* { dg-warning "change value" "" { target int16 } .-1 } */
+    fui (c1);	/* { dg-warning "change value" "" { target int16 } } */
+    f_l (c1);	/* { dg-warning "change the sign" "" { target { llp64 || { ilp32 || int16 } } } } */
+    fsl (c1);	/* { dg-warning "change the sign" "" { target { llp64 || { ilp32 || int16 } } } } */
     ful (c1);
     f_ll (c1);
     fsll (c1);

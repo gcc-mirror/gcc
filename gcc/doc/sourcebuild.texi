@@ -1363,6 +1363,12 @@ Target has 64-bit @code{long long}.
 @item long_neq_int
 Target has @code{int} and @code{long} with different sizes.
 
+@item short_eq_int
+Target has @code{short} and @code{int} with the same size.
+
+@item ptr_eq_short
+Target has pointers (@code{void *}) and @code{short} with the same size.
+
 @item int_eq_float
 Target has @code{int} and @code{float} with the same size.
 
@@ -1379,11 +1385,15 @@ Target supports @code{long double} that is longer than @code{double}.
 Target has pointers that are 32 bits or longer.
 
 @item size20plus
-Target has a 20-bit or larger address space, so at least supports
+Target has a 20-bit or larger address space, so supports at least
 16-bit array and structure sizes.
 
+@item size24plus
+Target has a 24-bit or larger address space, so supports at least
+20-bit array and structure sizes.
+
 @item size32plus
-Target has a 32-bit or larger address space, so at least supports
+Target has a 32-bit or larger address space, so supports at least
 24-bit array and structure sizes.
 
 @item 4byte_wchar_t
@@ -2048,6 +2058,16 @@ when using the new ABI.
 
 @item mpaired_single
 MIPS target supports @code{-mpaired-single}.
+@end table
+
+@subsubsection MSP430-specific attributes
+
+@table @code
+@item msp430_small
+MSP430 target has the small memory model enabled (@code{-msmall}).
+
+@item msp430_large
+MSP430 target has the large memory model enabled (@code{-mlarge}).
 @end table
 
 @subsubsection PowerPC-specific attributes
