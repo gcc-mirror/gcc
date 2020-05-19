@@ -14456,6 +14456,16 @@ package body Sem_Util is
       return Is_Atomic_Object (N) or else Is_Volatile_Full_Access_Object (N);
    end Is_Atomic_Or_VFA_Object;
 
+   -----------------------------
+   -- Is_Attribute_Loop_Entry --
+   -----------------------------
+
+   function Is_Attribute_Loop_Entry (N : Node_Id) return Boolean is
+   begin
+      return Nkind (N) = N_Attribute_Reference
+        and then Attribute_Name (N) = Name_Loop_Entry;
+   end Is_Attribute_Loop_Entry;
+
    ----------------------
    -- Is_Attribute_Old --
    ----------------------
