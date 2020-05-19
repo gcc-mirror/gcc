@@ -86,6 +86,7 @@ char *gomp_bind_var_list;
 unsigned long gomp_bind_var_list_len;
 void **gomp_places_list;
 unsigned long gomp_places_list_len;
+uintptr_t gomp_def_allocator = omp_default_mem_alloc;
 int gomp_debug_var;
 unsigned int gomp_num_teams_var;
 bool gomp_display_affinity_var;
@@ -949,8 +950,7 @@ parse_boolean (const char *name, bool *value)
     gomp_error ("Invalid value for environment variable %s", name);
 }
 
-/* Parse the OMP_WAIT_POLICY environment variable and store the
-   result in gomp_active_wait_policy.  */
+/* Parse the OMP_WAIT_POLICY environment variable and return the value.  */
 
 static int
 parse_wait_policy (void)
@@ -1082,6 +1082,47 @@ parse_affinity (bool ignore)
  invalid:
   gomp_error ("Invalid value for enviroment variable GOMP_CPU_AFFINITY");
   return false;
+}
+
+/* Parse the OMP_ALLOCATOR environment variable and return the value.  */
+
+static uintptr_t
+parse_allocator (void)
+{
+  const char *env;
+  uintptr_t ret = omp_default_mem_alloc;
+
+  env = getenv ("OMP_ALLOCATOR");
+  if (env == NULL)
+    return ret;
+
+  while (isspace ((unsigned char) *env))
+    ++env;
+  if (0)
+    ;
+#define C(v) \
+  else if (strncasecmp (env, #v, sizeof (#v) - 1) == 0)	\
+    {							\
+      ret = v;						\
+      env += sizeof (#v) - 1;				\
+    }
+  C (omp_default_mem_alloc)
+  C (omp_large_cap_mem_alloc)
+  C (omp_const_mem_alloc)
+  C (omp_high_bw_mem_alloc)
+  C (omp_low_lat_mem_alloc)
+  C (omp_cgroup_mem_alloc)
+  C (omp_pteam_mem_alloc)
+  C (omp_thread_mem_alloc)
+#undef C
+  else
+    env = "X";
+  while (isspace ((unsigned char) *env))
+    ++env;
+  if (*env == '\0')
+    return ret;
+  gomp_error ("Invalid value for environment variable OMP_ALLOCATOR");
+  return omp_default_mem_alloc;
 }
 
 static void
@@ -1276,6 +1317,22 @@ handle_omp_display_env (unsigned long stacksize, int wait_policy)
 	   gomp_display_affinity_var ? "TRUE" : "FALSE");
   fprintf (stderr, "  OMP_AFFINITY_FORMAT = '%s'\n",
 	   gomp_affinity_format_var);
+  fprintf (stderr, "  OMP_ALLOCATOR = '");
+  switch (gomp_def_allocator)
+    {
+#define C(v) case v: fputs (#v, stderr); break;
+    C (omp_default_mem_alloc)
+    C (omp_large_cap_mem_alloc)
+    C (omp_const_mem_alloc)
+    C (omp_high_bw_mem_alloc)
+    C (omp_low_lat_mem_alloc)
+    C (omp_cgroup_mem_alloc)
+    C (omp_pteam_mem_alloc)
+    C (omp_thread_mem_alloc)
+#undef C
+    default: break;
+    }
+  fputs ("'\n", stderr);
 
   if (verbose)
     {
@@ -1312,6 +1369,7 @@ initialize_env (void)
   parse_int ("OMP_MAX_TASK_PRIORITY", &gomp_max_task_priority_var, true);
   parse_unsigned_long ("OMP_MAX_ACTIVE_LEVELS", &gomp_max_active_levels_var,
 		       true);
+  gomp_def_allocator = parse_allocator ();
   if (parse_unsigned_long ("OMP_THREAD_LIMIT", &thread_limit_var, false))
     {
       gomp_global_icv.thread_limit_var

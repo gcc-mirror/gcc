@@ -1,3 +1,32 @@
+2020-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp.h.in (omp_uintptr_t): New typedef.
+	(__GOMP_UINTPTR_T_ENUM): Define.
+	(omp_memspace_handle_t, omp_allocator_handle_t, omp_alloctrait_key_t,
+	omp_alloctrait_value_t, omp_alloctrait_t): New typedefs.
+	(__GOMP_DEFAULT_NULL_ALLOCATOR): Define.
+	(omp_init_allocator, omp_destroy_allocator, omp_set_default_allocator,
+	omp_get_default_allocator, omp_alloc, omp_free): Declare.
+	* libgomp.h (struct gomp_team_state): Add def_allocator field.
+	(gomp_def_allocator): Declare.
+	* libgomp.map (OMP_5.0.1): Export omp_set_default_allocator,
+	omp_get_default_allocator, omp_init_allocator, omp_destroy_allocator,
+	omp_alloc and omp_free.
+	* team.c (gomp_team_start): Copy over ts.def_allocator.
+	* env.c (gomp_def_allocator): New variable.
+	(parse_wait_policy): Adjust function comment.
+	(parse_allocator): New function.
+	(handle_omp_display_env): Print OMP_ALLOCATOR.
+	(initialize_env): Call parse_allocator.
+	* Makefile.am (libgomp_la_SOURCES): Add allocator.c.
+	* allocator.c: New file.
+	* icv.c (omp_set_default_allocator, omp_get_default_allocator): New
+	functions.
+	* testsuite/libgomp.c-c++-common/alloc-1.c: New test.
+	* testsuite/libgomp.c-c++-common/alloc-2.c: New test.
+	* testsuite/libgomp.c-c++-common/alloc-3.c: New test.
+	* Makefile.in: Regenerated.
+
 2020-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/95147
