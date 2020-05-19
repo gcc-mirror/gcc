@@ -1,5 +1,9 @@
 2020-05-19  Martin Liska  <mliska@suse.cz>
 
+	* mklog.py: Use REST API for bug title downloading.
+
+2020-05-19  Martin Liska  <mliska@suse.cz>
+
 	* gcc-changelog/git_commit.py: Add param use_commit_ts
 	for to_changelog_entries.
 	* gcc-changelog/git_update_version.py: Se use_commit_ts to True.
