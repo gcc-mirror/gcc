@@ -93,7 +93,7 @@ for ref in origin.refs:
             # TODO: set strict=True after testing period
             commits = parse_git_revisions(args.git_path, '%s..HEAD'
                                           % commit.hexsha, strict=False)
-            for git_commit in commits:
+            for git_commit in reversed(commits):
                 prepend_to_changelog_files(repo, args.git_path, git_commit)
             # update timestamp
             with open(datestamp_path, 'w+') as f:
