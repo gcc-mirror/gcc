@@ -190,6 +190,11 @@
 
 2020-05-18  Martin Sebor  <msebor@redhat.com>
 
+	PR c++/94923
+	* g++.dg/Wclass-memaccess.C: Add tests for std::byte.
+
+2020-05-18  Martin Sebor  <msebor@redhat.com>
+
 	PR middle-end/92815
 	* gcc.dg/builtin-object-size-20.c: Adjust to avoid failures in
 	ILP32 mode.
