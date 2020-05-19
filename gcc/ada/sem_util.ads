@@ -1621,6 +1621,9 @@ package Sem_Util is
    --  Determine whether arbitrary node N denotes a reference to an object
    --  which is either atomic or Volatile_Full_Access.
 
+   function Is_Attribute_Loop_Entry (N : Node_Id) return Boolean;
+   --  Determine whether node N denotes attribute 'Loop_Entry
+
    function Is_Attribute_Old (N : Node_Id) return Boolean;
    --  Determine whether node N denotes attribute 'Old
 
