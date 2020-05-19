@@ -1,3 +1,8 @@
+2020-05-19  Martin Liska  <mliska@suse.cz>
+
+	* gcc-git-customization.sh: Add gcc-verify alias
+	that uses contrib/gcc-changelog/git_check_commit.py.
+
 2020-05-15  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* dg-extract-results.py: Handle GDB specific test types.
