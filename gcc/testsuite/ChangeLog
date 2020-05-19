@@ -1,5 +1,10 @@
 2020-05-22  Mark Wielaard  <mark@klomp.org>
 
+	* gcc.dg/spellcheck-stdint.c: New test.
+	* g++.dg/spellcheck-stdint.C: Likewise.
+
+2020-05-22  Mark Wielaard  <mark@klomp.org>
+
 	* gcc.dg/spellcheck-stdbool.c: New test.
 
 2020-05-22  Mark Wielaard  <mark@klomp.org>
