@@ -1,3 +1,14 @@
+2020-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94087
+	* src/c++11/random.cc (__x86_rdseed): Allow fallback function to be
+	passed in.
+	(__x86_rdseed_rdrand): New function that uses rdseed with rdrand
+	fallback.
+	(random_device::_M_init): Use __x86_rdseed_rdrand when both
+	instructions are available.
+	* testsuite/26_numerics/random/random_device/94087.cc: New test.
+
 2020-05-19  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/66439
