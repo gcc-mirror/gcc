@@ -1,5 +1,11 @@
 2020-05-22  Richard Biener  <rguenther@suse.de>
 
+	PR lto/95190
+	* doc/invoke.texi (flto): Document behavior of diagnostic
+	options.
+
+2020-05-22  Richard Biener  <rguenther@suse.de>
+
 	* tree-vectorizer.h (vect_is_simple_use): New overload.
 	(vect_maybe_update_slp_op_vectype): New.
 	* tree-vect-stmts.c (vect_is_simple_use): New overload
