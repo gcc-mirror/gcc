@@ -158,6 +158,14 @@ get_stdlib_header_for_name (const char *name, enum stdlib lib)
   for (size_t i = 0; i < num_hints; i++)
     if (strcmp (name, hints[i].name) == 0)
       return hints[i].header[lib];
+
+  /* Only for C99 and higher.  */
+  if (lib == STDLIB_C && flag_isoc99)
+    if (strcmp (name, "bool") == 0
+	|| strcmp (name, "true") == 0
+	|| strcmp (name, "false") == 0)
+      return "<stdbool.h>";
+
   return NULL;
 }
 
