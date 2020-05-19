@@ -3416,11 +3416,11 @@ package body Ch4 is
       Save_Scan_State (State);
 
       --  A lookahead is necessary to differentiate between the
-      --  Ada2012 form with a choice list, and the Ada2020 element
+      --  Ada 2012 form with a choice list, and the Ada 202x element
       --  iterator form, recognized by the presence of "OF". Other
-      --  disambiguation requires context and is done during semantc
+      --  disambiguation requires context and is done during semantic
       --  analysis. Note that "for X in E" is syntactically ambiguous:
-      --  if E is a subypte indication this is a loop parameter spec,
+      --  if E is a subtype indication this is a loop parameter spec,
       --  while if E a name it is an iterator_specification, and the
       --  disambiguation takes place during semantic analysis.
 
