@@ -1,3 +1,12 @@
+2020-05-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from master
+	2020-05-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/95220
+	* config/i386/cpuinfo.c (get_available_features): Fix
+	FEATURE_GFNI check.
+
 2020-05-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	Backport from mainline.
