@@ -150,8 +150,8 @@ void wide_ptr_index_range_chain (void)
 
     T (p3[0]);                /* { dg-warning "array subscript \\\[3, 6] is outside array bounds of .\[a-z \]+\\\[3]." } */
     T (p3[1]);                /* { dg-warning "array subscript \\\[4, 7] is outside array bounds of .\[a-z \]+\\\[3]." } */
-    T (p3[9999]);             /* { dg-warning "array subscript \\\[10002, 10005] is outside array bounds of .\[a-z \]+\\\[3]." } */
-
+    T (p3[9999]);             /* { dg-warning "array subscript \\\[10002, 10005] is outside array bounds of .\[a-z \]+\\\[3]." "" { target size20plus} } */
+    /* { dg-warning "array subscript \\\[-6382, -6379] is outside array bounds of .\[a-z \]+\\\[3]." "" { target { ! size20plus } } .-1 } */
     /* Large offsets are indistinguishable from negative values.  */
     T (p3[DIFF_MAX]);         /* { dg-warning "array subscript" "bug" { xfail *-*-* } } */
   }

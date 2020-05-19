@@ -61,4 +61,4 @@ T18 t18;
 T19 t19;
 T20 t20;
 #endif
-int t21 = __has_attribute (noreturn) + __has_cpp_attribute (__malloc__);
+long t21 = __has_attribute (noreturn) + __has_cpp_attribute (__malloc__);

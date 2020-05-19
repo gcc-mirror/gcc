@@ -15,5 +15,5 @@ void foo(int x, ...) {
 }
 
 int main() {
-   foo(0, A::X);		// { dg-warning "scoped" }
+   foo(0, A::X);		// { dg-warning "scoped" "" { target { ! short_eq_int } } }
 }

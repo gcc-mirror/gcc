@@ -40,7 +40,7 @@ template <typename T>
 void
 large_array_template3(int n)
 {
-  new T[n] // { dg-error "size of array exceeds maximum object size" }
+  new T[n] // { dg-error "size.*of array exceeds maximum object size" }
     [(1ULL << (sizeof(void *) * 4)) / sizeof(T)]
     [1ULL << (sizeof(void *) * 4)];
 }

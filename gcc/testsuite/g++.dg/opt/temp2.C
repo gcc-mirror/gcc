@@ -1,4 +1,5 @@
 // { dg-do run }
+// { dg-require-effective-target size20plus }
 
 // Copyright (C) 2006 Free Software Foundation, Inc.
 

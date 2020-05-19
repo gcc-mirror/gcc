@@ -19,7 +19,7 @@ void test1 (void)
   unsigned char f = (int) uc;
   signed char g = (int) sc;
   unsigned char h = (unsigned int) (short int) uc;
-  signed char i = (int) (unsigned short int) sc;	// { dg-warning "may change value" }
+  signed char i = (int) (unsigned short int) sc;	// { dg-warning "may change value" "" { target { ! short_eq_int } } }
   unsigned char j = (unsigned int) (short int) us;	// { dg-warning "may change value" }
   signed char k = (int) (unsigned short int) ss;	// { dg-warning "may change value" }
 }

@@ -41,7 +41,7 @@ void test_integer_conversion_abs (void)
   i = abs (uc);
 
   i = abs (si);
-  i = abs (usi);
+  i = abs (usi);    /* { dg-warning ".abs. argument 1 promotes to .unsigned int. where .int. is expected in a call to built-in function declared without prototype" "" { target short_eq_int } } */
 
   i = abs (i);
   i = abs (ui);     /* { dg-warning ".abs. argument 1 type is .unsigned int. where .int. is expected in a call to built-in function declared without prototype" } */
@@ -77,9 +77,9 @@ void test_integer_conversion_memset (void *d)
   /* Passing a ptrdiff_t where size_t is expected may not be unsafe
      but because GCC may emits suboptimal code for such calls warning
      for them helps improve efficiency.  */
-  memset (d, 0, diffi);       /* { dg-warning ".memset. argument 3 promotes to .ptrdiff_t. {aka .\(long \)?int.} where .\(long \)?unsigned int. is expected" } */
+  memset (d, 0, diffi);       /* { dg-warning ".memset. argument 3 promotes to .ptrdiff_t. {aka .\(long \)?\(int\)?\(__int20\)?.} where .\(long \)?\(__int20 \)?unsigned\( int\)?. is expected" } */
 
-  memset (d, 0, 2.0);         /* { dg-warning ".memset. argument 3 type is .double. where '\(long \)?unsigned int' is expected" } */
+  memset (d, 0, 2.0);         /* { dg-warning ".memset. argument 3 type is .double. where '\(long \)?\(__int20 \)?unsigned\( int\)?' is expected" } */
 
   /* Verify that the same call as above but to the built-in doesn't
      trigger a warning.  */

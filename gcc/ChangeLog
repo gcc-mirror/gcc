@@ -1,3 +1,11 @@
+2020-05-19  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* doc/sourcebuild.texi: Document new short_eq_int, ptr_eq_short,
+	msp430_small, msp430_large and size24plus DejaGNU effective
+	targets.
+	Improve grammar in descriptions for size20plus and size32plus effective
+	targets.
+
 2020-05-19  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* config/bpf/bpf.c (bpf_compute_frame_layout): Include space for
