@@ -67,10 +67,6 @@ memrchr (void *s_, int c, size_t n)
   return NULL;
 }
 #endif
-#ifndef HAVE_SIGHANDLER_T
-typedef void (*sighandler_t) (int);
-#endif
-
 
 /* Create a mapper.  The mapper may be dead.  Yes, I'm embedding some
    client-side socket handling in the compiler.  At least it's not

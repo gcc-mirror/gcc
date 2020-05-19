@@ -18,6 +18,10 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef HAVE_SIGHANDLER_T
+typedef void (*sighandler_t) (int);
+#endif
+
 /* Mapper to query and inform of modular compilations.  This is a
    singleton.  It contains both FILE and fd entities.  The PEX
    interface provides the former, so we need to keep them around.

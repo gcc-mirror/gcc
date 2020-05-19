@@ -1,3 +1,10 @@
+2020-05-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* mapper-client.cc: Move fallback typedef for sighandler_t
+	from here ...
+	* mapper-client.h: ... to here.
+
 2020-05-19  Nathan Sidwell  <nathan@acm.org>
 
 	Merge master ed63c387aa0
