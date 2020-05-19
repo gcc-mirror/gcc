@@ -1,3 +1,9 @@
+2020-05-19  Nathan Sidwell  <nathan@acm.org>
+
+	* c-c++-common/raw-string-14.c: Adjust errors.
+	* c-c++-common/raw-string-16.c: Likewise.
+	* c-c++-common/raw-string-5.c: Likewise.
+
 2020-05-19  Richard Biener  <rguenther@suse.de>
 
 	* gcc.target/i386/pr92645-4.c: Adjust expected pattern.
