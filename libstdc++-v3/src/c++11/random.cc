@@ -97,7 +97,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 #if USE_RDSEED
     unsigned int
     __attribute__ ((target("rdseed")))
-    __x86_rdseed(void*)
+    __x86_rdseed(void* fallback)
     {
       unsigned int retries = 100;
       unsigned int val;
@@ -105,12 +105,25 @@ namespace std _GLIBCXX_VISIBILITY(default)
       while (__builtin_ia32_rdseed_si_step(&val) == 0)
 	{
 	  if (--retries == 0)
-	    std::__throw_runtime_error(__N("random_device: rdseed failed"));
+	    {
+	      if (auto f = reinterpret_cast<unsigned int(*)(void*)>(fallback))
+		return f(nullptr);
+	      std::__throw_runtime_error(__N("random_device: rdseed failed"));
+	    }
 	  __builtin_ia32_pause();
 	}
 
       return val;
     }
+
+#if USE_RDRAND
+    unsigned int
+    __attribute__ ((target("rdseed,rdrnd")))
+    __x86_rdseed_rdrand(void*)
+    {
+      return __x86_rdseed(reinterpret_cast<void*>(&__x86_rdrand));
+    }
+#endif
 #endif
 
 #ifdef _GLIBCXX_USE_CRT_RAND_S
@@ -205,6 +218,15 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	    __cpuid_count(7, 0, eax, ebx, ecx, edx);
 	    if (ebx & bit_RDSEED)
 	      {
+#ifdef USE_RDRAND
+		// CPUID.01H:ECX.RDRAND[bit 30]
+		__cpuid(1, eax, ebx, ecx, edx);
+		if (ecx & bit_RDRND)
+		  {
+		    _M_func = &__x86_rdseed_rdrand;
+		    return;
+		  }
+#endif
 		_M_func = &__x86_rdseed;
 		return;
 	      }
