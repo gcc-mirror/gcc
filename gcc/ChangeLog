@@ -1,3 +1,15 @@
+2020-05-20  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* gcc.c (get_file_by_lines): Accept a path to file instead of FILE
+	object
+	(identify_asm_file): Better object identification heuristic.
+	(append_split_outputs): Return if temporary asm file was not
+	created, and also implement -o case.
+	(fsplit_arg): Remove .s extension from temporary file.
+	* toplev.c (init_additional_asm_names_file): Close and flush file.
+	(do_compile):  init_additional_asm_names_file here instead of.
+	(land_dependent_init): Here.
+
 2020-05-18  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* gcc.c (append_split_outputs): Truncate temp_obj vector for the

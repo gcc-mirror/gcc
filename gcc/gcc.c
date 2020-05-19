@@ -3149,8 +3149,6 @@ static bool is_assembler (const char *arg)
   return false;
 }
 
-
-
 /* Get argv[] array length.  */
 
 static int get_number_of_args (const char *argv[])
@@ -3168,10 +3166,17 @@ static const char *fsplit_arg (extra_arg_storer *);
 /* Accumulate each line in lines vec.  */
 
 void
-get_file_by_lines (extra_arg_storer *storer, vec<char *> *lines, FILE* file)
+get_file_by_lines (extra_arg_storer *storer, vec<char *> *lines, const char *name)
 {
-  int buf_size = 32, len = 0;
+  int buf_size = 64, len = 0;
   char *buf = XNEWVEC (char, buf_size);
+
+
+  FILE *file = fopen (name, "r");
+
+  if (!file)
+    fatal_error (input_location,
+		 "Temporary file containing additional assember files not found");
 
   while (1)
     {
@@ -3195,6 +3200,14 @@ get_file_by_lines (extra_arg_storer *storer, vec<char *> *lines, FILE* file)
 	  buf = XRESIZEVEC (char, buf, buf_size * 2);
 	}
     }
+
+  if (lines->length () == 0)
+    {
+      fprintf (stderr, "File name: %s\n", name);
+      internal_error ("Empty file");
+    }
+
+  fclose (file);
 }
 
 static void identify_asm_file (int argc, const char *argv[],
@@ -3203,7 +3216,6 @@ static void identify_asm_file (int argc, const char *argv[],
   int i;
 
   static const char *asm_extension[] = {"s", "S"};
-  static const char *obj_extension[] = {"o", "O"};
 
   bool infile_found = false;
   bool outfile_found = false;
@@ -3229,13 +3241,11 @@ static void identify_asm_file (int argc, const char *argv[],
 	      }
 
       if (!outfile_found)
-	for (j = 0; j < ARRAY_SIZE (asm_extension); ++j)
-	    if (!strcmp (ext, obj_extension[j]))
-	      {
-		outfile_found = true;
-		*outfile_pos = i;
-		break;
-	      }
+	if (!strcmp (ext, "-o"))
+	  {
+	    outfile_found = true;
+	    *outfile_pos = i+1;
+	  }
 
       if (infile_found && outfile_found)
 	return;
@@ -3277,7 +3287,7 @@ static vec<const char *> temp_object_files;
 
 static const char *get_path_to_ld (void)
 {
-  const char *ret = find_a_file (&exec_prefixes, "ld", X_OK, false);
+  const char *ret = find_a_file (&exec_prefixes, LINKER_NAME, X_OK, false);
   if (!ret)
     ret = "ld";
 
@@ -3318,8 +3328,6 @@ static void append_split_outputs (extra_arg_storer *storer,
     {
       vec<char *> additional_asm_files;
 
-      FILE *temp_asm_file;
-
       struct command orig;
       const char **orig_argv;
       int orig_argc;
@@ -3329,6 +3337,15 @@ static void append_split_outputs (extra_arg_storer *storer,
       int outfile_pos = -1;
 
       static const char *path_to_ld = NULL;
+
+      if (!current_infile->temp_additional_asm)
+	{
+	  /* Return because we did not create a additional-asm file for this
+	     input.  */
+
+	  return;
+	}
+
       if (!path_to_ld)
 	path_to_ld = get_path_to_ld ();
 
@@ -3338,14 +3355,9 @@ static void append_split_outputs (extra_arg_storer *storer,
 	fatal_error (input_location,
 		     "Auto parallelism is unsupported when piping commands");
 
-      temp_asm_file = fopen (current_infile->temp_additional_asm, "r");
 
-      if (!temp_asm_file)
-	fatal_error (input_location,
-		     "Temporary file containing additional asm files not found");
-
-      get_file_by_lines (storer, &additional_asm_files, temp_asm_file);
-      fclose (temp_asm_file);
+      get_file_by_lines (storer, &additional_asm_files,
+			 current_infile->temp_additional_asm);
 
       /* Get original command.  */
       orig = commands[0];
@@ -3383,13 +3395,13 @@ static void append_split_outputs (extra_arg_storer *storer,
 	  temp_object_files.safe_push (temp_obj);
 	}
 
-	if (have_c && !have_o)
+	if (have_c)
 	  {
 	    unsigned int num_temp_objs = temp_object_files.length ();
 	    const char **argv = storer->create_new (num_temp_objs + 5);
 	    unsigned int j;
 
-	    argv[0] = "ld";
+	    argv[0] = path_to_ld;
 	    argv[1] = "-o";
 	    argv[2] = orig_obj_file;
 	    argv[3] = "-r";
@@ -3401,7 +3413,8 @@ static void append_split_outputs (extra_arg_storer *storer,
 	    additional_ld->prog = path_to_ld;
 	    additional_ld->argv = argv;
 
-	    temp_object_files.truncate (0);
+	    if (!have_o)
+	      temp_object_files.truncate (0);
 	  }
 
 	additional_asm_files.release ();
@@ -3979,7 +3992,7 @@ static char *debug_check_temp_file[2];
 
 static const char *fsplit_arg (extra_arg_storer *storer)
 {
-  const char *tempname = make_temp_file ("additional-asm.s");
+  const char *tempname = make_temp_file ("additional-asm");
   const char arg[] = "-fsplit-outputs=";
   char *final;
 
@@ -6570,7 +6583,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		     "%{foo=*:bar%*}%{foo=*:one%*two}"
 
 		   matches -foo=hello then it will produce:
-		   
+
 		     barhello onehellotwo
 		*/
 		if (*p == 0 || *p == '}')
@@ -8836,11 +8849,31 @@ driver::maybe_run_linker (const char *argv0) const
   int linker_was_run = 0;
   int num_linker_inputs;
 
-  /* Determine if there are any linker input files.  */
-  num_linker_inputs = 0;
-  for (i = 0; (int) i < n_infiles; i++)
-    if (explicit_link_files[i] || outfiles[i] != NULL)
-      num_linker_inputs++;
+  /* Set outfiles to be the temporary object vector.  */
+  const char **outfiles_holder = outfiles;
+  int n_infiles_holder = n_infiles;
+  bool outfiles_switched = false;
+  if (temp_object_files.length () > 0)
+    {
+      /* Insert explicit link files into the temp object vector.  */
+
+      for (i = 0; (int) i < n_infiles; i++)
+	if (explicit_link_files[i] && outfiles[i] != NULL)
+	  temp_object_files.safe_push (outfiles[i]);
+
+      num_linker_inputs = n_infiles = temp_object_files.length ();
+      temp_object_files.safe_push (NULL); /* the NULL sentinel.  */
+      outfiles = temp_object_files.address ();
+    }
+  else /* Fall back to the old method.  */
+    {
+
+      /* Determine if there are any linker input files.  */
+      num_linker_inputs = 0;
+      for (i = 0; (int) i < n_infiles; i++)
+	if (explicit_link_files[i] || outfiles[i] != NULL)
+	  num_linker_inputs++;
+    }
 
   /* Run ld to link all the compiler output files.  */
 
@@ -8911,14 +8944,23 @@ driver::maybe_run_linker (const char *argv0) const
     }
 
   /* If options said don't run linker,
-     complain about input files to be given to the linker.  */
+     complain about input files to be given to the linker.  
+     When fsplit-arg is active, the linker will run and this if
+     will not be triggered. */
 
-  if (! linker_was_run && !seen_error ())
+  if (!outfiles_switched && !linker_was_run && !seen_error ())
     for (i = 0; (int) i < n_infiles; i++)
       if (explicit_link_files[i]
 	  && !(infiles[i].language && infiles[i].language[0] == '*'))
 	warning (0, "%s: linker input file unused because linking not done",
 		 outfiles[i]);
+
+  if (outfiles_switched)
+    {
+      /* Undo our changes.  */
+      outfiles = outfiles_holder;
+      n_infiles = n_infiles_holder;
+    }
 }
 
 /* The end of "main".  */
@@ -10735,6 +10777,7 @@ driver::finalize ()
   linker_options.truncate (0);
   assembler_options.truncate (0);
   preprocessor_options.truncate (0);
+  temp_object_files.truncate (0);
 
   path_prefix_reset (&exec_prefixes);
   path_prefix_reset (&startfile_prefixes);

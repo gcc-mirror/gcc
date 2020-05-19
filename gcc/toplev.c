@@ -916,6 +916,8 @@ init_additional_asm_names_file (int n, const char *names[])
   for (i = 0; i < n; ++i)
       fprintf(additional_asm_filenames, "%s\n", names[i]);
 
+  fflush (additional_asm_filenames);
+  fclose (additional_asm_filenames);
 }
 
 /* A helper function; used as the reallocator function for cpp's line
@@ -1993,7 +1995,6 @@ lang_dependent_init (const char *name)
   if (!flag_wpa)
     {
       init_asm_output (name);
-      init_additional_asm_names_file (1, &asm_file_name);
 
       /* If stack usage information is desired, open the output file.  */
       if (flag_stack_usage && !flag_generate_lto)
@@ -2275,8 +2276,14 @@ do_compile ()
       if (!no_backend)
 	backend_init ();
 
+      int init = lang_dependent_init (main_input_filename);
+
+      /* This creates a file which we will dump any additional asm file we
+       may need.  */
+      init_additional_asm_names_file (1, &asm_file_name);
+
       /* Language-dependent initialization.  Returns true on success.  */
-      if (lang_dependent_init (main_input_filename))
+      if (init)
         {
           /* Initialize yet another pass.  */
 
