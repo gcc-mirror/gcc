@@ -1,5 +1,9 @@
 2020-05-19  Patrick Palka  <ppalka@redhat.com>
 
+	PR c++/87847
+	* pt.c (init_template_processing): Enable sanitization for
+	decl_specializations and type_specializations.
+
 	PR c++/66439
 	* pt.c (fn_type_unification): Pass 'fn' instead of NULL_TREE as
 	the 'in_decl' parameter to coerce_template_parms.
