@@ -31,4 +31,6 @@ void driver()
   fn<0>(); // OK
   fn<-1>(); // { dg-error "" }
   fn<int>(); // { dg-error "no matching function" }
+  // { dg-error "type/value mismatch at argument 1" "" { target *-*-* } .-1 }
+  // { dg-message "expected a constant of type .int., got .int." "" { target *-*-* } .-2 }
 }

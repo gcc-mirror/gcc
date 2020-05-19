@@ -1,3 +1,12 @@
+2020-05-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/66439
+	* g++.dg/cpp2a/concepts-ts4.C: Expect a "type/value mismatch"
+	diagnostic.
+	* g++.dg/cpp2a/concepts-ts6.C: Likewise.
+	* g++.dg/template/error56.C: Likewise.
+	* g++.dg/template/error59.C: New test.
+
 2020-05-18  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94955
