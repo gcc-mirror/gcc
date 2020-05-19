@@ -1,3 +1,35 @@
+2020-05-19  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Skip GTY for struct names.  Make flake8 happy.
+	* test_mklog.py: Add test for GTY.
+
+2020-05-19  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py:
+	Fill up entries in reverse order.
+
+2020-05-19  Martin Liska  <mliska@suse.cz>
+
+	* gcc-git-customization.sh: Add
+	alias.gcc-mklog new hook.
+	* mklog.py: New file.
+	* test_mklog.py: New file.
+
+2020-05-19  Martin Liska  <mliska@suse.cz>
+
+	* legacy/mklog: Moved from mklog.
+	* legacy/mklog.pl: Moved from mklog.pl.
+
+2020-05-19  Martin Liska  <mliska@suse.cz>
+
+	* gcc-git-customization.sh: Add gcc-verify alias
+	that uses contrib/gcc-changelog/git_check_commit.py.
+
+2020-05-15  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* dg-extract-results.py: Handle GDB specific test types.
+	* dg-extract-results.sh: Likewise.
+
 2020-05-14  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/test_email.py: New file.

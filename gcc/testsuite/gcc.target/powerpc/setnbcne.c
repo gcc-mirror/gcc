@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mcpu=future" } */
+/* { dg-options "-O2 -mdejagnu-cpu=future" } */
 
 #define NAME ne
 #define CODE !=

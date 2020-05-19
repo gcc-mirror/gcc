@@ -1,4 +1,124 @@
+2020-05-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/87847
+	* pt.c (init_template_processing): Enable sanitization for
+	decl_specializations and type_specializations.
+
+	PR c++/66439
+	* pt.c (fn_type_unification): Pass 'fn' instead of NULL_TREE as
+	the 'in_decl' parameter to coerce_template_parms.
+
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94955
+	* typeck.c (cp_build_binary_op): Use fold_for_warn instead of
+	cp_fold_rvalue.
+
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94937
+	* cvt.c (cp_get_fndecl_from_callee): Return NULL_TREE if the function
+	type is not INDIRECT_TYPE_P.
+	* decl.c (omp_declare_variant_finalize_one): Call
+	cp_get_callee_fndecl_nofold instead of looking for the function decl
+	manually.
+
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90915
+	* parser.c (cp_parser_has_attribute_expression): Sorry on a
+	type-dependent argument.
+
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
+	DR 1512
+	PR c++/87699
+	* call.c (add_builtin_candidate) <case EQ_EXPR>: Create candidate
+	operator functions when type is std::nullptr_t for ==/!=.
+	* typeck.c (composite_pointer_type_r): Add a bool * parameter.  Use it
+	to maybe add "const" to the pointer type.
+	(composite_pointer_type): Update the call to composite_pointer_type_r.
+	(cp_build_binary_op): Turn two warning_at into error_at.  Print the
+	types.
+
+2020-05-18  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_over_call): Remove unnecessary
+	cp_stabilize_reference.
+
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
+	* call.c (add_builtin_candidate): Don't create a builtin overload
+	candidate for ++ when type is bool in C++17.
+
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
+	* cfns.h: Regenerated.
+
+2020-05-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (morph_fn_to_coro): Initialize the gro variable.
+
+2020-05-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (finish_co_return_stmt): Implement rules
+	from [class.copy.elision] /3.
+
+2020-05-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/57943
+	* semantics.c (finish_decltype_type): Call
+	instantiate_non_dependent_expr_sfinae on the expression.
+
+2020-05-15  Patrick Palka  <ppalka@redhat.com>
+
+	Revert:
+
+	2020-04-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/90996
+	* typeck2.c (process_init_constructor_array): Propagate
+	CONSTRUCTOR_PLACEHOLDER_BOUNDARY up from each element initializer to
+	the array initializer.
+
+2020-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93286 - ICE with __is_constructible and variadic template.
+	* pt.c (tsubst_tree_list): New.
+	(tsubst, tsubst_copy_and_build): Use it.
+	* decl2.c (is_late_template_attribute): Handle error_mark_node args.
+
+2020-05-15  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (template_args_equal): Fix thinkos in previous 'cleanup'.
+
+2020-05-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93901
+	* pt.c (maybe_instantiate_noexcept): Change clone handling.
+
+2020-05-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/78446
+	* call.c (build_op_call): Pass complain to lookup_fnfields.
+	(build_special_member_call): Likewise.
+	* class.c (type_requires_array_cookie): Pass tf_warning_or_error
+	to lookup_fnfields.
+	* cp-tree.h (lookup_fnfields): Add tsubst_flags_t parameter.
+	* except.c (build_throw): Pass tf_warning_or_error to
+	lookup_fnfields.
+	* init.c (build_new_1): Pass complain to lookup_fnfields.
+	* method.c (locate_fn_flags): Likewise.
+	* name-lookup.c (lookup_name_real_1): Pass tf_warning_or_error
+	to lookup_fnfields.
+	* pt.c (tsubst_baselink): Pass complain to lookup_fnfields.
+	* search.c (lookup_fnfields): New 'complain' parameter.  Pass it
+	to lookup_member.
+
 2020-05-14  Nathan Sidwell  <nathan@acm.org>
+
+	* parser.c (cp_parser_diagnose_invalid_typename): Mention
+	std=c++20 not 2a, reformat dependent binfo inform loops.
 
 	* pt.c (tsubst_template_decl): Reorder and commonize some control
 	paths.

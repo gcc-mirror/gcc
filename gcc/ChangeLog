@@ -1,3 +1,390 @@
+2020-05-19  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* doc/sourcebuild.texi: Document new short_eq_int, ptr_eq_short,
+	msp430_small, msp430_large and size24plus DejaGNU effective
+	targets.
+	Improve grammar in descriptions for size20plus and size32plus effective
+	targets.
+
+2020-05-19  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.c (bpf_compute_frame_layout): Include space for
+	callee saved registers only in xBPF.
+	(bpf_expand_prologue): Save callee saved registers only in xBPF.
+	(bpf_expand_epilogue): Likewise for restoring.
+	* doc/invoke.texi (eBPF Options): Document this is activated by
+	-mxbpf.
+
+2020-05-19  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.opt (mxbpf): New option.
+	* doc/invoke.texi (Option Summary): Add -mxbpf.
+	(eBPF Options): Document -mxbbpf.
+
+2020-05-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/92658
+	* config/i386/sse.md (<code>v16qiv16hi2): New expander.
+	(<code>v32qiv32hi2): Ditto.
+	(<code>v8qiv8hi2): Ditto.
+	(<code>v16qiv16si2): Ditto.
+	(<code>v8qiv8si2): Ditto.
+	(<code>v4qiv4si2): Ditto.
+	(<code>v16hiv16si2): Ditto.
+	(<code>v8hiv8si2): Ditto.
+	(<code>v4hiv4si2): Ditto.
+	(<code>v8qiv8di2): Ditto.
+	(<code>v4qiv4di2): Ditto.
+	(<code>v2qiv2di2): Ditto.
+	(<code>v8hiv8di2): Ditto.
+	(<code>v4hiv4di2): Ditto.
+	(<code>v2hiv2di2): Ditto.
+	(<code>v8siv8di2): Ditto.
+	(<code>v4siv4di2): Ditto.
+	(<code>v2siv2di2): Ditto.
+
+2020-05-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.c (riscv_implied_info_t): New.
+	(riscv_implied_info): New.
+	(riscv_subset_list): Add handle_implied_ext.
+	(riscv_subset_list::to_string): New parameter version_p to
+	control output format.
+	(riscv_subset_list::handle_implied_ext): New.
+	(riscv_subset_list::parse_std_ext): Call handle_implied_ext.
+	(riscv_arch_str): New parameter version_p to control output format.
+	(riscv_expand_arch): New.
+	* config/riscv/riscv-protos.h (riscv_arch_str): New parameter,
+	version_p.
+	* config/riscv/riscv.h (riscv_expand_arch): New,
+	(EXTRA_SPEC_FUNCTIONS): Define.
+	(ASM_SPEC): Transform -march= via riscv_expand_arch.
+
+2020-05-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* riscv-common.c (parse_sv_or_non_std_ext): Rename to
+	parse_multiletter_ext.
+	(parse_multiletter_ext): Add parsing `h` and `z`, drop `sx`,
+	adjust parsing order for 's' and 'x'.
+
+2020-05-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_slp_tree::vectype): Add field.
+	(SLP_TREE_VECTYPE): New.
+	* tree-vect-slp.c (vect_create_new_slp_node): Initialize
+	SLP_TREE_VECTYPE.
+	(vect_create_new_slp_node): Likewise.
+	(vect_prologue_cost_for_slp): Move here from tree-vect-stmts.c
+	and simplify.
+	(vect_slp_analyze_node_operations): Walk nodes children for
+	invariant costing.
+	(vect_get_constant_vectors): Use local scope op variable.
+	* tree-vect-stmts.c (vect_prologue_cost_for_slp_op): Remove here.
+	(vect_model_simple_cost): Adjust.
+	(vect_model_store_cost): Likewise.
+	(vectorizable_store): Likewise.
+
+2020-05-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/92815
+	* tree-object-size.c (decl_init_size): New function.
+	(addr_object_size): Call it.
+	* tree.h (last_field): Declare.
+	(first_field): Add attribute nonnull.
+
+2020-05-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/94940
+	* tree-vrp.c (vrp_prop::check_mem_ref): Remove unreachable code.
+	* tree.c (component_ref_size): Correct the handling or array members
+	of unions.
+	Drop a pointless test.
+	Rename a local variable.
+
+2020-05-18  Jason Merrill  <jason@redhat.com>
+
+	* aclocal.m4: Add ax_cxx_compile_stdcxx.m4.
+	* configure.ac: Use AX_CXX_COMPILE_STDCXX(11).
+
+2020-05-14  Jason Merrill  <jason@redhat.com>
+
+	* doc/install.texi (Prerequisites): Update boostrap compiler
+	requirement to C++11/GCC 4.8.
+
+2020-05-18  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	PR tree-optimization/94952
+	* gimple-ssa-store-merging.c (pass_store_merging::process_store):
+	Initialize variables bitpos, bitregion_start, and bitregion_end in
+	order to silence warnings about use of uninitialized variables.
+
+2020-05-18  Carl Love  <cel@us.ibm.com>
+
+	PR target/94833
+	* config/rs6000/vsx.md (define_expand): Fix instruction generation for
+	first_match_index_<mode>.
+	* testsuite/gcc.target/powerpc/builtins-8-p9-runnable.c (main): Add
+	additional test cases with zero vector elements.
+
+2020-05-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95169
+	* config/i386/i386-expand.c (ix86_expand_int_movcc):
+	 Avoid reversing a non-trapping comparison to a trapping one.
+
+2020-05-18  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/arm/arm.c (output_move_double): Fix codegen when loading into
+	a register pair with an odd base register.
+
+2020-05-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.c (ix86_expand_fp_absneg_operator):
+	Do not emit FLAGS_REG clobber for TFmode.
+	* config/i386/i386.md (*<code>tf2_1): Rewrite as
+	define_insn_and_split.  Mark operands 1 and 2 commutative.
+	(*nabstf2_1): Ditto.
+	(absneg SSE splitter): Use MODEF mode iterator instead of SSEMODEF.
+	Do not swap memory operands.  Simplify RTX generation.
+	(neg abs SSE splitter): Ditto.
+	* config/i386/sse.md (*<code><mode>2): Mark operands 1 and 2
+	commutative.  Do not swap operands.  Simplify RTX generation.
+	(*nabs<mode>2): Ditto.
+
+2020-05-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_slp_bb): Start after labels.
+	(vect_get_constant_vectors): Really place init stmt after scalar defs.
+	* tree-vect-stmts.c (vect_init_vector_1): Insert before
+	region begin.
+
+2020-05-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Support
+	Intel Airmont, Tremont, Comet Lake, Ice Lake and Tiger Lake
+	processor families.
+
+2020-05-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/95171
+	* tree-inline.c (remap_gimple_stmt): Split out trapping compares
+	when inlining into a non-call EH function.
+
+2020-05-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95172
+	* tree-ssa-loop-im.c (execute_sm): Get flag whether we
+	eventually need the conditional processing.
+	(execute_sm_exit): When processing an orderd sequence
+	avoid doing any conditional processing.
+	(hoist_memory_references): Pass down whether all edges
+	have ordered processing for a ref to execute_sm.
+
+2020-05-17 Jeff Law  <law@redhat.com>
+
+	* config/h8300/predicates.md (pc_or_label_operand): New predicate.
+	* config/h8300/jumpcall.md (branch_true, branch_false): Consolidate
+	into a single pattern using pc_or_label_operand.
+	* config/h8300/combiner.md (bit branch patterns): Likewise.
+	* config/h8300/peepholes.md (HImode and SImode branches): Likewise.
+
+2020-05-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/95021
+	* config/i386/i386-features.c (has_non_address_hard_reg):
+	Renamed to ...
+	(pseudo_reg_set): This.  Return the SET expression.  Ignore
+	pseudo register push.
+	(general_scalar_to_vector_candidate_p): Combine single_set and
+	has_non_address_hard_reg calls to pseudo_reg_set.
+	(timode_scalar_to_vector_candidate_p): Likewise.
+	* config/i386/i386.md (*pushv1ti2): New pattern.
+
+2020-05-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	Revert:
+	2020-05-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (operand_less_p): Move to...
+	* vr-values.c (operand_less_p): ...here.
+	* tree-vrp.h (operand_less_p): Remove.
+
+2020-05-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (operand_less_p): Move to...
+	* vr-values.c (operand_less_p): ...here.
+	* tree-vrp.h (operand_less_p): Remove.
+
+2020-05-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (class vrp_insert): Remove prototype for
+	live_on_edge.
+
+2020-05-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (class live_names): New.
+	(live_on_edge): Move into live_names.
+	(build_assert_expr_for): Move into vrp_insert.
+	(find_assert_locations_in_bb): Rename from
+	find_assert_locations_1.
+	(process_assert_insertions_for): Move into vrp_insert.
+	(compare_assert_loc): Same.
+	(remove_range_assertions): Same.
+	(dump_asserts_for): Rename to vrp_insert::dump.
+	(debug_asserts_for): Rename to vrp_insert::debug.
+	(dump_all_asserts): Rename to vrp_insert::dump.
+	(debug_all_asserts): Rename to vrp_insert::debug.
+
+2020-05-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (class vrp_prop): Move check_all_array_refs,
+	check_array_ref, check_mem_ref, and search_for_addr_array
+	into new class...
+	(class array_bounds_checker): ...here.
+	(class check_array_bounds_dom_walker): Adjust to use
+	array_bounds_checker.
+	(check_all_array_refs): Move into array_bounds_checker and rename
+	to check.
+	(class vrp_folder): Make fold_predicate_in private.
+
+2020-05-15 Jeff Law  <law@redhat.com>
+
+	* config/h8300/h8300.md (SFI iterator): New iterator for
+	SFmode and SImode.
+	* config/h8300/peepholes.md (memory comparison): Use mode
+	iterator to consolidate 3 patterns into one.
+	(stack allocation and stack store): Handle SFmode.  Handle
+	8 byte allocations.
+
+2020-05-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000-builtin.def (BU_FUTURE_MISC_2): Also require
+	RS6000_BTM_POWERPC64.
+
+2020-05-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (SWI48DWI): New mode iterator.
+	(*push<mode>2): Allow XMM registers.
+	(*pushdi2_rex64): Ditto.
+	(*pushsi2_rex64): Ditto.
+	(*pushsi2): Ditto.
+	(push XMM reg splitter): New splitter
+
+	(*pushdf) Change "x" operand constraint to "v".
+	(*pushsf_rex64): Ditto.
+	(*pushsf): Ditto.
+
+2020-05-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92260
+	* tree-vect-slp.c (vect_get_constant_vectors): Compute
+	the number of vector stmts in a canonical way.
+
+2020-05-15  Martin Liska  <mliska@suse.cz>
+
+	* hsa-gen.c (get_symbol_for_decl): Fix misleading indentation
+	warning.
+
+2020-05-15  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (v<expander><mode>3): Fix unsignedp.
+
+2020-05-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95133
+	* gimple-ssa-split-paths.c
+	(find_block_to_duplicate_for_splitting_paths): Check for
+	normal edges.
+
+2020-05-15  Christophe Lyon  <christophe.lyon@linaro.org>
+
+        * config/arm/arm.c (reg_needs_saving_p): Add support for interrupt
+        routines.
+        (arm_compute_save_reg0_reg12_mask): Use reg_needs_saving_p.
+
+2020-05-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94635
+	* gimplify.c (gimplify_scan_omp_clauses): For MAP_TO_PSET with
+	OMP_TARGET_EXIT_DATA, use 'release:' unless the associated
+	item is 'delete:'.
+
+2020-05-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* config/i386/i386.md (isa): Add sse3_noavx.
+	(enabled): Handle sse3_noavx.
+
+	* config/i386/mmx.md (mmx_haddv2sf3): New expander.
+	(*mmx_haddv2sf3): Rename from mmx_haddv2sf3.  Add SSE/AVX
+	alternatives.  Match commutative vec_select selector operands.
+	(*mmx_haddv2sf3_low): New insn pattern.
+
+	(*mmx_hsubv2sf3): Add SSE/AVX alternatives.
+	(*mmx_hsubv2sf3_low): New insn pattern.
+
+2020-05-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/33315
+	* tree-ssa-sink.c: Include tree-eh.h.
+	(sink_stats): Add commoned member.
+	(sink_common_stores_to_bb): New function implementing store
+	commoning by sinking to the successor.
+	(sink_code_in_bb): Call it, pass down TODO_cleanup_cfg returned.
+	(pass_sink_code::execute): Likewise.  Record commoned stores
+	in statistics.
+
+2020-05-14  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	PR rtl-optimization/37451, part of PR target/61837
+	* loop-doloop.c (doloop_simplify_count): New function.  Simplify
+	(add -1; zero_ext; add +1) to zero_ext when not wrapping.
+	(doloop_modify): Call doloop_simplify_count.
+
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR jit/94778
+	* doc/sourcebuild.texi: Document effective target lgccjit.
+
+2020-05-14  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (add<mode>3_zext_dup): Change to a
+	define_expand, and rename the original to ...
+	(add<mode>3_vcc_zext_dup): ... this, and add a custom VCC operand.
+	(add<mode>3_zext_dup_exec): Likewise, with ...
+	(add<mode>3_vcc_zext_dup_exec): ... this.
+	(add<mode>3_zext_dup2): Likewise, with ...
+	(add<mode>3_zext_dup_exec): ... this.
+	(add<mode>3_zext_dup2_exec): Likewise, with ...
+	(add<mode>3_zext_dup2): ... this.
+	* config/gcn/gcn.c (gcn_expand_scalar_to_vector_address): Switch
+	addv64di3_zext* calls to use addv64di3_vcc_zext*.
+
+2020-05-14  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* config/i386/sse.md (truncv2dfv2df2): New insn pattern.
+	(extendv2sfv2df2): Ditto.
+
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2020-05-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm.c (reg_needs_saving_p): New function.
+	(use_return_insn): Use reg_needs_saving_p.
+	(arm_get_vfp_saved_size): Likewise.
+	(arm_compute_frame_layout): Likewise.
+	(arm_save_coproc_regs): Likewise.
+	(thumb1_expand_epilogue): Likewise.
+	(arm_expand_epilogue_apcs_frame): Likewise.
+	(arm_expand_epilogue): Likewise.
+
+2020-05-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+        * config/arm/arm.c (thumb1_expand_prologue): Update error message.
+
 2020-05-14  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95046

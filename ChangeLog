@@ -1,3 +1,11 @@
+2020-05-18  Jason Merrill  <jason@redhat.com>
+
+	* configure.ac: Update bootstrap dialect to -std=c++11.
+
+2020-05-18  Alex Coplan  <alex.coplan@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2020-04-29  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR target/92713

@@ -636,6 +636,7 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
 	  nthr->ts.active_level = thr->ts.active_level;
 	  nthr->ts.place_partition_off = place_partition_off;
 	  nthr->ts.place_partition_len = place_partition_len;
+	  nthr->ts.def_allocator = thr->ts.def_allocator;
 #ifdef HAVE_SYNC_BUILTINS
 	  nthr->ts.single_count = 0;
 #endif
@@ -823,6 +824,7 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
       start_data->ts.team_id = i;
       start_data->ts.level = team->prev_ts.level + 1;
       start_data->ts.active_level = thr->ts.active_level;
+      start_data->ts.def_allocator = thr->ts.def_allocator;
 #ifdef HAVE_SYNC_BUILTINS
       start_data->ts.single_count = 0;
 #endif

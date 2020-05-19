@@ -1,5 +1,6 @@
 // PR target/71763
 // { dg-do compile }
+// { dg-require-effective-target powerpc_vsx_ok }
 // { dg-options "-O1 -mvsx" }
 
 int a, b;

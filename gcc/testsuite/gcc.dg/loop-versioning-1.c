@@ -45,7 +45,11 @@ f6 (double *x, int stepx, unsigned int limit)
     *y = 100;
 }
 
+#if __SIZEOF_SIZE_T__ < 4
+double x[1000];
+#else
 double x[10000];
+#endif
 
 void
 g1 (int stepx, int n)

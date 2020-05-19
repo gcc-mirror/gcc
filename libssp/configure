@@ -1419,7 +1419,7 @@ Optional Features:
                           do not reject slow dependency extractors
   --disable-dependency-tracking
                           speeds up one-time build
-  --enable-cet            enable Intel CET in target libraries [default=no]
+  --enable-cet            enable Intel CET in target libraries [default=auto]
   --disable-symvers       disable symbol versioning for libssp
   --enable-shared[=PKGS]  build shared libraries [default=yes]
   --enable-static[=PKGS]  build static libraries [default=yes]
@@ -4325,7 +4325,7 @@ if test "${enable_cet+set}" = set; then :
                           esac
 
 else
-  enable_cet=no
+  enable_cet=auto
 fi
 
 
@@ -4338,6 +4338,8 @@ case "$host" in
       auto)
 	# Check if target supports multi-byte NOPs
 	# and if assembler supports CET insn.
+	save_CFLAGS="$CFLAGS"
+	CFLAGS="$CFLAGS -fcf-protection"
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -4361,6 +4363,7 @@ else
   enable_cet=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	CFLAGS="$save_CFLAGS"
 	;;
       yes)
 	# Check if assembler supports CET.
@@ -10996,7 +10999,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10999 "configure"
+#line 11002 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11102,7 +11105,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11105 "configure"
+#line 11108 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

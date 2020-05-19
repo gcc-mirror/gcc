@@ -1383,7 +1383,7 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-version-specific-runtime-libs    Specify that runtime libraries should be installed in a compiler-specific directory
   --enable-multilib       build many library versions (default)
-  --enable-cet            enable Intel CET in target libraries [default=no]
+  --enable-cet            enable Intel CET in target libraries [default=auto]
   --enable-maintainer-mode
                           enable make rules and dependencies not useful (and
                           sometimes confusing) to the casual installer
@@ -3453,7 +3453,7 @@ if test "${enable_cet+set}" = set; then :
                           esac
 
 else
-  enable_cet=no
+  enable_cet=auto
 fi
 
 
@@ -3466,6 +3466,8 @@ case "$host" in
       auto)
 	# Check if target supports multi-byte NOPs
 	# and if assembler supports CET insn.
+	save_CFLAGS="$CFLAGS"
+	CFLAGS="$CFLAGS -fcf-protection"
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -3489,6 +3491,7 @@ else
   enable_cet=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	CFLAGS="$save_CFLAGS"
 	;;
       yes)
 	# Check if assembler supports CET.
@@ -10775,7 +10778,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10778 "configure"
+#line 10781 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10881,7 +10884,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10884 "configure"
+#line 10887 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

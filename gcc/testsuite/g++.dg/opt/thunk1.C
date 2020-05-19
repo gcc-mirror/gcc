@@ -1,13 +1,14 @@
 // PR 6788
 // Test that the thunk adjusts the this pointer properly.
 // { dg-do run }
+// { dg-require-effective-target size20plus }
 
 extern "C" void abort ();
 
 struct A
 {
   virtual void foo() = 0;
-  char large[33*1024];
+  char large[33*1024U];
 };
 
 struct B

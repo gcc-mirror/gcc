@@ -1,3 +1,19 @@
+2020-05-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/66439
+	* testsuite/20_util/pair/astuple/get_neg.cc: Prune "type/value
+	mismatch" messages.
+	* testsuite/20_util/tuple/element_access/get_neg.cc: Likewise.
+
+2020-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/95147
+	* configure: Regenerated.
+
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
 2020-05-13  Alexandre Oliva <oliva@adacore.com>
 
 	PR libstdc++/77691

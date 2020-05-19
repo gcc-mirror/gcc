@@ -11,4 +11,4 @@
 #define e4	e3 e3 e3 e3 e3 e3 e3 e3 e3 e3
 #define e5	e4 e4 e4 e4 e4 e4 e4 e4 e4 e4
 
-void foo() { (void)(e5); }  /* { dg-error "size of string literal is too large" "" { target { ! size32plus } } } */
+void foo() { (void)(e5); }  /* { dg-error "size of string literal is too large" "" { target { ! size20plus } } } */

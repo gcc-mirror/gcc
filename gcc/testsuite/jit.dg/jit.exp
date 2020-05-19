@@ -38,6 +38,11 @@ load_lib gcc.exp
 load_lib g++.exp
 load_lib dejagnu.exp
 
+# Skip these tests for targets that don't support -lgccjit
+if { ![check_effective_target_lgccjit] } {
+    return
+}
+
 # Look for lines of the form:
 #   definitely lost: 11,316 bytes in 235 blocks
 #   indirectly lost: 352 bytes in 4 blocks

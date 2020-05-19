@@ -3412,30 +3412,32 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 		"%<-fconcepts%>");
       else if (processing_template_decl && current_class_type
 	       && TYPE_BINFO (current_class_type))
-	for (tree b = TREE_CHAIN (TYPE_BINFO (current_class_type));
-	     b; b = TREE_CHAIN (b))
-	  {
-	    tree base_type = BINFO_TYPE (b);
-	    if (CLASS_TYPE_P (base_type) && dependent_type_p (base_type))
-	      {
-		tree field;
-		/* Go from a particular instantiation of the
-		   template (which will have an empty TYPE_FIELDs),
-		   to the main version.  */
-		base_type = CLASSTYPE_PRIMARY_TEMPLATE_TYPE (base_type);
-		for (field = TYPE_FIELDS (base_type);
-		     field; field = DECL_CHAIN (field))
-		  if (TREE_CODE (field) == TYPE_DECL && DECL_NAME (field) == id)
-		    {
-		      inform (location,
-			      "(perhaps %<typename %T::%E%> was intended)",
-			      BINFO_TYPE (b), id);
-		      break;
-		    }
-		if (field)
-		  break;
-	      }
-	  }
+	{
+	  for (tree b = TREE_CHAIN (TYPE_BINFO (current_class_type));
+	       b; b = TREE_CHAIN (b))
+	    {
+	      tree base_type = BINFO_TYPE (b);
+	      if (CLASS_TYPE_P (base_type)
+		  && dependent_type_p (base_type))
+		{
+		  /* Go from a particular instantiation of the
+		     template (which will have an empty TYPE_FIELDs),
+		     to the main version.  */
+		  base_type = CLASSTYPE_PRIMARY_TEMPLATE_TYPE (base_type);
+		  for (tree field = TYPE_FIELDS (base_type);
+		       field; field = DECL_CHAIN (field))
+		    if (TREE_CODE (field) == TYPE_DECL
+			&& DECL_NAME (field) == id)
+		      {
+			inform (location,
+				"(perhaps %<typename %T::%E%> was intended)",
+				BINFO_TYPE (b), id);
+			goto found;
+		      }
+		}
+	    }
+	found:;
+	}
     }
   /* Here we diagnose qualified-ids where the scope is actually correct,
      but the identifier does not resolve to a valid type name.  */
@@ -8797,7 +8799,12 @@ cp_parser_has_attribute_expression (cp_parser *parser)
   location_t atloc = cp_lexer_peek_token (parser->lexer)->location;
   if (tree attr = cp_parser_gnu_attribute_list (parser, /*exactly_one=*/true))
     {
-      if (oper != error_mark_node)
+      if (oper == error_mark_node)
+	/* Nothing.  */;
+      else if (type_dependent_expression_p (oper))
+	sorry_at (atloc, "%<__builtin_has_attribute%> with dependent argument "
+		  "not supported yet");
+      else
 	{
 	  /* Fold constant expressions used in attributes first.  */
 	  cp_check_const_attributes (attr);

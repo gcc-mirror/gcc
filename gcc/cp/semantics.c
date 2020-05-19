@@ -9760,6 +9760,14 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 
       return type;
     }
+  else if (processing_template_decl)
+    {
+      ++cp_unevaluated_operand;
+      expr = instantiate_non_dependent_expr_sfinae (expr, complain);
+      --cp_unevaluated_operand;
+      if (expr == error_mark_node)
+	return error_mark_node;
+    }
 
   /* The type denoted by decltype(e) is defined as follows:  */
 

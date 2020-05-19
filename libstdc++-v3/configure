@@ -1643,7 +1643,7 @@ Optional Features:
                           enable C++11 threads support [default=auto]
   --enable-libstdcxx-filesystem-ts
                           turns on ISO/IEC TS 18822 support [default=auto]
-  --enable-cet            enable Intel CET in target libraries [default=no]
+  --enable-cet            enable Intel CET in target libraries [default=auto]
   --enable-version-specific-runtime-libs
                           Specify that runtime libraries should be installed
                           in a compiler-specific directory
@@ -77475,7 +77475,7 @@ if test "${enable_cet+set}" = set; then :
                           esac
 
 else
-  enable_cet=no
+  enable_cet=auto
 fi
 
 
@@ -77488,6 +77488,8 @@ case "$host" in
       auto)
 	# Check if target supports multi-byte NOPs
 	# and if assembler supports CET insn.
+	save_CFLAGS="$CFLAGS"
+	CFLAGS="$CFLAGS -fcf-protection"
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -77511,6 +77513,7 @@ else
   enable_cet=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	CFLAGS="$save_CFLAGS"
 	;;
       yes)
 	# Check if assembler supports CET.

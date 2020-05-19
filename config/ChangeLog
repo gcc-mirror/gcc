@@ -1,3 +1,18 @@
+2020-05-18  Jason Merrill  <jason@redhat.com>
+
+	* ax_cxx_compile_stdcxx.m4: Import from autoconf archive with
+	an adjustment to try the default mode.
+
+2020-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/95147
+	* cet.m4 (GCC_CET_FLAGS): Also check if -fcf-protection works
+	when defaulting to auto.
+
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* cet.m4 (GCC_CET_FLAGS): Change default to auto.
+
 2020-05-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/94998

@@ -90,11 +90,87 @@ typedef enum omp_pause_resource_t
   omp_pause_hard = 2
 } omp_pause_resource_t;
 
+typedef __UINTPTR_TYPE__ omp_uintptr_t;
+
+#if __cplusplus >= 201103L
+# define __GOMP_UINTPTR_T_ENUM : omp_uintptr_t
+#else
+# define __GOMP_UINTPTR_T_ENUM
+#endif
+
+typedef enum omp_memspace_handle_t __GOMP_UINTPTR_T_ENUM
+{
+  omp_default_mem_space = 0,
+  omp_large_cap_mem_space = 1,
+  omp_const_mem_space = 2,
+  omp_high_bw_mem_space = 3,
+  omp_low_lat_mem_space = 4,
+  __omp_memspace_handle_t_max__ = __UINTPTR_MAX__
+} omp_memspace_handle_t;
+
+typedef enum omp_allocator_handle_t __GOMP_UINTPTR_T_ENUM
+{
+  omp_null_allocator = 0,
+  omp_default_mem_alloc = 1,
+  omp_large_cap_mem_alloc = 2,
+  omp_const_mem_alloc = 3,
+  omp_high_bw_mem_alloc = 4,
+  omp_low_lat_mem_alloc = 5,
+  omp_cgroup_mem_alloc = 6,
+  omp_pteam_mem_alloc = 7,
+  omp_thread_mem_alloc = 8,
+  __omp_allocator_handle_t_max__ = __UINTPTR_MAX__
+} omp_allocator_handle_t;
+
+typedef enum omp_alloctrait_key_t
+{
+  omp_atk_sync_hint = 1,
+  omp_atk_alignment = 2,
+  omp_atk_access = 3,
+  omp_atk_pool_size = 4,
+  omp_atk_fallback = 5,
+  omp_atk_fb_data = 6,
+  omp_atk_pinned = 7,
+  omp_atk_partition = 8
+} omp_alloctrait_key_t;
+
+typedef enum omp_alloctrait_value_t
+{
+  omp_atv_false = 0,
+  omp_atv_true = 1,
+  omp_atv_default = 2,
+  omp_atv_contended = 3,
+  omp_atv_uncontended = 4,
+  omp_atv_sequential = 5,
+  omp_atv_private = 6,
+  omp_atv_all = 7,
+  omp_atv_thread = 8,
+  omp_atv_pteam = 9,
+  omp_atv_cgroup = 10,
+  omp_atv_default_mem_fb = 11,
+  omp_atv_null_fb = 12,
+  omp_atv_abort_fb = 13,
+  omp_atv_allocator_fb = 14,
+  omp_atv_environment = 15,
+  omp_atv_nearest = 16,
+  omp_atv_blocked = 17,
+  omp_atv_interleaved = 18,
+  __omp_alloctrait_value_max__ = __UINTPTR_MAX__
+} omp_alloctrait_value_t;
+
+typedef struct omp_alloctrait_t
+{
+  omp_alloctrait_key_t key;
+  omp_uintptr_t value;
+} omp_alloctrait_t;
+
 #ifdef __cplusplus
 extern "C" {
 # define __GOMP_NOTHROW throw ()
+# define __GOMP_DEFAULT_NULL_ALLOCATOR = omp_null_allocator
 #else
 # define __GOMP_NOTHROW __attribute__((__nothrow__))
+# define __GOMP_DEFAULT_NULL_ALLOCATOR
 #endif
 
 extern void omp_set_num_threads (int) __GOMP_NOTHROW;
@@ -187,6 +263,20 @@ extern __SIZE_TYPE__ omp_capture_affinity (char *, __SIZE_TYPE__, const char *)
 
 extern int omp_pause_resource (omp_pause_resource_t, int) __GOMP_NOTHROW;
 extern int omp_pause_resource_all (omp_pause_resource_t) __GOMP_NOTHROW;
+
+extern omp_allocator_handle_t omp_init_allocator (omp_memspace_handle_t,
+						  int,
+						  const omp_alloctrait_t [])
+  __GOMP_NOTHROW;
+extern void omp_destroy_allocator (omp_allocator_handle_t) __GOMP_NOTHROW;
+extern void omp_set_default_allocator (omp_allocator_handle_t) __GOMP_NOTHROW;
+extern omp_allocator_handle_t omp_get_default_allocator (void) __GOMP_NOTHROW;
+extern void *omp_alloc (__SIZE_TYPE__,
+			omp_allocator_handle_t __GOMP_DEFAULT_NULL_ALLOCATOR)
+  __GOMP_NOTHROW;
+extern void omp_free (void *,
+		      omp_allocator_handle_t __GOMP_DEFAULT_NULL_ALLOCATOR)
+  __GOMP_NOTHROW;
 
 #ifdef __cplusplus
 }

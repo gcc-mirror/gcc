@@ -967,9 +967,11 @@ endif
 # Also use -fno-inline to get better results from the memory profiler.
 runtime_pprof_check_GOCFLAGS = -static-libgo -fno-inline
 
-# Use -static for the syscall tests, because otherwise when
+if HAVE_STATIC_LINK
+# Use -static for the syscall tests if possible, because otherwise when
 # running as root the re-execs ignore LD_LIBRARY_PATH.
 syscall_check_GOCFLAGS = -static
+endif
 
 extra_go_files_runtime_internal_sys = version.go
 runtime/internal/sys.lo.dep: $(extra_go_files_runtime_internal_sys)

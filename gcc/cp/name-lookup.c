@@ -7618,7 +7618,8 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
 
 	  /* Lookup the conversion operator in the class.  */
 	  class_type = level->this_entity;
-	  operators = lookup_fnfields (class_type, name, /*protect=*/0);
+	  operators = lookup_fnfields (class_type, name, /*protect=*/0,
+				       tf_warning_or_error);
 	  if (operators)
 	    return operators;
 	}

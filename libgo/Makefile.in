@@ -1105,9 +1105,9 @@ runtime_internal_sys_lo_check_GOCFLAGS = -fgo-compiling-runtime
 # Also use -fno-inline to get better results from the memory profiler.
 runtime_pprof_check_GOCFLAGS = -static-libgo -fno-inline
 
-# Use -static for the syscall tests, because otherwise when
+# Use -static for the syscall tests if possible, because otherwise when
 # running as root the re-execs ignore LD_LIBRARY_PATH.
-syscall_check_GOCFLAGS = -static
+@HAVE_STATIC_LINK_TRUE@syscall_check_GOCFLAGS = -static
 extra_go_files_runtime_internal_sys = version.go
 extra_go_files_internal_cpu = cpugen.go
 extra_go_files_golang_org_x_sys_cpu = gcpugen.go

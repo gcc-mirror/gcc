@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target powerpc_future_hw } */
+/* { dg-require-effective-target int128 } */
 /* { dg-options "-mdejagnu-cpu=future" } */
 
 #include <altivec.h>

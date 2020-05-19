@@ -863,7 +863,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{eBPF Options}
 @gccoptlist{-mbig-endian -mlittle-endian -mkernel=@var{version}
--mframe-limit=@var{bytes}}
+-mframe-limit=@var{bytes} -mxbpf}
 
 @emph{FR30 Options}
 @gccoptlist{-msmall-model  -mno-lsim}
@@ -21072,6 +21072,14 @@ Generate code for a big-endian target.
 @item -mlittle-endian
 @opindex mlittle-endian
 Generate code for a little-endian target.  This is the default.
+
+@item -mxbpf
+Generate code for an expanded version of BPF, which relaxes some of
+the restrictions imposed by the BPF architecture:
+@itemize @minus
+@item Save and restore callee-saved registers at function entry and
+exit, respectively.
+@end itemize
 @end table
 
 @node FR30 Options

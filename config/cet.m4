@@ -3,7 +3,7 @@ dnl GCC_CET_FLAGS
 dnl    (SHELL-CODE_HANDLER)
 dnl
 AC_DEFUN([GCC_CET_FLAGS],[dnl
-GCC_ENABLE(cet, no, ,[enable Intel CET in target libraries],
+GCC_ENABLE(cet, auto, ,[enable Intel CET in target libraries],
 	   permit yes|no|auto)
 AC_MSG_CHECKING([for CET support])
 
@@ -13,6 +13,8 @@ case "$host" in
       auto)
 	# Check if target supports multi-byte NOPs
 	# and if assembler supports CET insn.
+	save_CFLAGS="$CFLAGS"
+	CFLAGS="$CFLAGS -fcf-protection"
 	AC_COMPILE_IFELSE(
 	 [AC_LANG_PROGRAM(
 	  [],
@@ -25,6 +27,7 @@ asm ("setssbsy");
 	  ])],
 	 [enable_cet=yes],
 	 [enable_cet=no])
+	CFLAGS="$save_CFLAGS"
 	;;
       yes)
 	# Check if assembler supports CET.

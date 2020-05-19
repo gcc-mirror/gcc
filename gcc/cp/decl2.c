@@ -1173,6 +1173,9 @@ is_late_template_attribute (tree attr, tree decl)
       && is_attribute_p ("omp declare simd", name))
     return true;
 
+  if (args == error_mark_node)
+    return false;
+
   /* An attribute pack is clearly dependent.  */
   if (args && PACK_EXPANSION_P (args))
     return true;

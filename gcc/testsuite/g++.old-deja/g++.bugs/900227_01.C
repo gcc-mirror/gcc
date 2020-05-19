@@ -33,7 +33,7 @@
 
 int main ();
 
-short s = (short) &main;	// { dg-error "11:cast \[^\n\r]* loses precision" "lose" { xfail h8*-*-* xstormy16-*-* } }
+short s = (short) &main;	// { dg-error "11:cast \[^\n\r]* loses precision" "lose" { target { ! ptr_eq_short } } }
 char c = (char) &main;		// { dg-error "10:cast \[^\n\r]* loses precision" "lose" }
 
 int main () { return 0; }

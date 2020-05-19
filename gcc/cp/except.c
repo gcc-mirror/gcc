@@ -750,7 +750,8 @@ build_throw (location_t loc, tree exp)
       if (type_build_dtor_call (TREE_TYPE (object)))
 	{
 	  tree dtor_fn = lookup_fnfields (TYPE_BINFO (TREE_TYPE (object)),
-					  complete_dtor_identifier, 0);
+					  complete_dtor_identifier, 0,
+					  tf_warning_or_error);
 	  dtor_fn = BASELINK_FUNCTIONS (dtor_fn);
 	  mark_used (dtor_fn);
 	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (object)))

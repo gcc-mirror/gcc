@@ -1,5 +1,7 @@
 2020-05-19  Nathan Sidwell  <nathan@acm.org>
 
+	Merge master ed63c387aa0
+
 	gcc/cp/
 	* name-lookup.c (add_imported_namespace): Clarify
 	inline/non-inline error message.

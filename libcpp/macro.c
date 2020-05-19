@@ -1256,11 +1256,13 @@ collect_args (cpp_reader *pfile, const cpp_hashnode *node,
 
   if (token->type == CPP_EOF)
     {
-      /* We still need the CPP_EOF to end directives, and to end
-	 pre-expansion of a macro argument.  Step back is not
-	 unconditional, since we don't want to return a CPP_EOF to our
-	 callers at the end of an -include-d file.  */
-      if (pfile->context->prev || pfile->state.in_directive)
+      /* We still need the CPP_EOF to end directives, to end
+	 pre-expansion of a macro argument, and at the end of the main
+	 file.  We do not want it at the end of a -include'd (forced)
+	 header file.  */
+      if (pfile->state.in_directive
+	  || !pfile->line_table->depth
+	  || pfile->context->prev)
 	_cpp_backup_tokens (pfile, 1);
       cpp_error (pfile, CPP_DL_ERROR,
 		 "unterminated argument list invoking macro \"%s\"",
@@ -2874,8 +2876,7 @@ cpp_get_token_1 (cpp_reader *pfile, location_t *location)
 				      || (peek_tok->flags & PREV_WHITE));
 		  node = pfile->cb.macro_to_expand (pfile, result);
 		  if (node)
-		    ret = enter_macro_context (pfile, node, result,
-					       virt_loc);
+		    ret = enter_macro_context (pfile, node, result, virt_loc);
 		  else if (whitespace_after)
 		    {
 		      /* If macro_to_expand hook returned NULL and it
@@ -2892,8 +2893,7 @@ cpp_get_token_1 (cpp_reader *pfile, location_t *location)
 		}
 	    }
 	  else
-	    ret = enter_macro_context (pfile, node, result, 
-				       virt_loc);
+	    ret = enter_macro_context (pfile, node, result, virt_loc);
 	  if (ret)
  	    {
 	      if (pfile->state.in_directive || ret == 2)

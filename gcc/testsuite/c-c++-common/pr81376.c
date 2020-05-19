@@ -35,7 +35,14 @@ void f4(unsigned short a, int b)
 {
   volatile int us_i;
   us_i = (double) a < (double) b;
-  /* { dg-final { scan-tree-dump "us_i = \\(int\\) a < b" "original" } } */
+  /* { dg-final { scan-tree-dump "us_i = \\(int\\) a < b" "original" { target { ! short_eq_int } } } } */
+}
+
+void f4_short_eq_int(unsigned short a, long b)
+{
+  volatile long us_l;
+  us_l = (double) a < (double) b;
+  /* { dg-final { scan-tree-dump "us_l = \\(long int\\) a < b" "original" { target { short_eq_int } } } } */
 }
 
 /* We don't optimize here because neither of integral types is

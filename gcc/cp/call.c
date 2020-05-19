@@ -2672,19 +2672,19 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
   switch (code)
     {
 
-/* 4 For every pair T, VQ), where T is an arithmetic or  enumeration  type,
+/* 4 For every pair (T, VQ), where T is an arithmetic type other than bool,
      and  VQ  is  either  volatile or empty, there exist candidate operator
      functions of the form
 	     VQ T&   operator++(VQ T&);
 	     T       operator++(VQ T&, int);
-   5 For every pair T, VQ), where T is an enumeration type or an arithmetic
-     type  other than bool, and VQ is either volatile or empty, there exist
-     candidate operator functions of the form
+   5 For every pair (T, VQ), where T is an arithmetic type other than bool,
+     and VQ is either volatile or empty, there exist candidate operator
+     functions of the form
 	     VQ T&   operator--(VQ T&);
 	     T       operator--(VQ T&, int);
-   6 For every pair T, VQ), where T is  a  cv-qualified  or  cv-unqualified
-     complete  object type, and VQ is either volatile or empty, there exist
-     candidate operator functions of the form
+   6 For every pair (T, VQ), where T is a cv-qualified or cv-unqualified object
+     type, and VQ is either volatile or empty, there exist candidate operator
+     functions of the form
 	     T*VQ&   operator++(T*VQ&);
 	     T*VQ&   operator--(T*VQ&);
 	     T*      operator++(T*VQ&, int);
@@ -2697,6 +2697,10 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
       /* FALLTHRU */
     case POSTINCREMENT_EXPR:
     case PREINCREMENT_EXPR:
+      /* P0002R1, Remove deprecated operator++(bool) added "other than bool"
+	 to p4.  */
+      if (TREE_CODE (type1) == BOOLEAN_TYPE && cxx_dialect >= cxx17)
+	return;
       if (ARITHMETIC_TYPE_P (type1) || TYPE_PTROB_P (type1))
 	{
 	  type1 = build_reference_type (type1);
@@ -2709,8 +2713,9 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 
 	     T&      operator*(T*);
 
-   8 For every function type T, there exist candidate operator functions of
-     the form
+
+   8 For every function type T that does not have cv-qualifiers or
+     a ref-qualifier, there exist candidate operator functions of the form
 	     T&      operator*(T*);  */
 
     case INDIRECT_REF:
@@ -2723,8 +2728,8 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 /* 9 For every type T, there exist candidate operator functions of the form
 	     T*      operator+(T*);
 
-   10For  every  promoted arithmetic type T, there exist candidate operator
-     functions of the form
+   10 For every floating-point or promoted integral type T, there exist
+      candidate operator functions of the form
 	     T       operator+(T);
 	     T       operator-(T);  */
 
@@ -2737,8 +2742,8 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	break;
       return;
 
-/* 11For every promoted integral type T,  there  exist  candidate  operator
-     functions of the form
+/* 11 For every promoted integral type T,  there  exist  candidate  operator
+      functions of the form
 	     T       operator~(T);  */
 
     case BIT_NOT_EXPR:
@@ -2746,10 +2751,10 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	break;
       return;
 
-/* 12For every quintuple C1, C2, T, CV1, CV2), where C2 is a class type, C1
-     is the same type as C2 or is a derived class of C2, T  is  a  complete
-     object type or a function type, and CV1 and CV2 are cv-qualifier-seqs,
-     there exist candidate operator functions of the form
+/* 12 For every quintuple (C1, C2, T, CV1, CV2), where C2 is a class type, C1
+     is the same type as C2 or is a derived class of C2, and T is an object
+     type or a function type there exist candidate operator functions of the
+     form
 	     CV12 T& operator->*(CV1 C1*, CV2 T C2::*);
      where CV12 is the union of CV1 and CV2.  */
 
@@ -2766,8 +2771,9 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	}
       return;
 
-/* 13For every pair of promoted arithmetic types L and R, there exist  can-
-     didate operator functions of the form
+/* 13 For every pair of types L and R, where each of L and R is a floating-point
+      or promoted integral type, there exist candidate operator functions of the
+      form
 	     LR      operator*(L, R);
 	     LR      operator/(L, R);
 	     LR      operator+(L, R);
@@ -2778,34 +2784,33 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	     bool    operator>=(L, R);
 	     bool    operator==(L, R);
 	     bool    operator!=(L, R);
-     where  LR  is  the  result of the usual arithmetic conversions between
-     types L and R.
+      where  LR  is  the  result of the usual arithmetic conversions between
+      types L and R.
 
-     For every integral type T there exists a candidate operator function of
-     the form
+   14 For every integral type T there exists a candidate operator function of
+      the form
 
        std::strong_ordering operator<=>(T, T);
 
-     For every pair of floating-point types L and R, there exists a candidate
-     operator function of the form
+   15 For every pair of floating-point types L and R, there exists a candidate
+      operator function of the form
 
        std::partial_ordering operator<=>(L, R);
 
-   14For every pair of types T and I, where T  is  a  cv-qualified  or  cv-
-     unqualified  complete  object  type and I is a promoted integral type,
-     there exist candidate operator functions of the form
-	     T*      operator+(T*, I);
-	     T&      operator[](T*, I);
-	     T*      operator-(T*, I);
-	     T*      operator+(I, T*);
-	     T&      operator[](I, T*);
+   16 For every cv-qualified or cv-unqualified object type T there exist
+      candidate operator functions of the form
+	     T*      operator+(T*, std::ptrdiff_t);
+	     T&      operator[](T*, std::ptrdiff_t);
+	     T*      operator-(T*, std::ptrdiff_t);
+	     T*      operator+(std::ptrdiff_t, T*);
+	     T&      operator[](std::ptrdiff_t, T*);
 
-   15For every T, where T is a pointer to complete object type, there exist
-     candidate operator functions of the form112)
-	     ptrdiff_t operator-(T, T);
+   17 For every T, where T is a pointer to object type, there exist candidate
+      operator functions of the form
+	     std::ptrdiff_t operator-(T, T);
 
-   16For every pointer or enumeration type T, there exist candidate operator
-     functions of the form
+   18 For every T, where T is an enumeration type or a pointer type, there
+      exist candidate operator functions of the form
 	     bool    operator<(T, T);
 	     bool    operator>(T, T);
 	     bool    operator<=(T, T);
@@ -2814,13 +2819,12 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	     bool    operator!=(T, T);
 	     R       operator<=>(T, T);
 
-     where R is the result type specified in [expr.spaceship].
+      where R is the result type specified in [expr.spaceship].
 
-   17For every pointer to member type T,  there  exist  candidate  operator
-     functions of the form
+   19 For every T, where T is a pointer-to-member type or std::nullptr_t,
+      there exist candidate operator functions of the form
 	     bool    operator==(T, T);
-	     bool    operator!=(T, T);
-	     std::strong_equality operator<=>(T, T);  */
+	     bool    operator!=(T, T);  */
 
     case MINUS_EXPR:
       if (TYPE_PTROB_P (type1) && TYPE_PTROB_P (type2))
@@ -2847,6 +2851,8 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
     case NE_EXPR:
       if ((TYPE_PTRMEMFUNC_P (type1) && TYPE_PTRMEMFUNC_P (type2))
 	  || (TYPE_PTRDATAMEM_P (type1) && TYPE_PTRDATAMEM_P (type2)))
+	break;
+      if (NULLPTR_TYPE_P (type1) && NULLPTR_TYPE_P (type2))
 	break;
       if (TYPE_PTRMEM_P (type1) && null_ptr_cst_p (args[1]))
 	{
@@ -4792,7 +4798,7 @@ build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 
   if (TYPE_BINFO (type))
     {
-      fns = lookup_fnfields (TYPE_BINFO (type), call_op_identifier, 1);
+      fns = lookup_fnfields (TYPE_BINFO (type), call_op_identifier, 1, complain);
       if (fns == error_mark_node)
 	return error_mark_node;
     }
@@ -5978,7 +5984,7 @@ add_operator_candidates (z_candidate **candidates,
   tree arg2_type = nargs > 1 ? TREE_TYPE ((*arglist)[1]) : NULL_TREE;
   if (CLASS_TYPE_P (arg1_type))
     {
-      tree fns = lookup_fnfields (arg1_type, fnname, 1);
+      tree fns = lookup_fnfields (arg1_type, fnname, 1, complain);
       if (fns == error_mark_node)
 	return error_mark_node;
       if (fns)
@@ -6785,7 +6791,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 
        Therefore, we ask lookup_fnfields to complain about ambiguity.  */
     {
-      fns = lookup_fnfields (TYPE_BINFO (type), fnname, 1);
+      fns = lookup_fnfields (TYPE_BINFO (type), fnname, 1, complain);
       if (fns == error_mark_node)
 	return error_mark_node;
     }
@@ -8999,8 +9005,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       else if ((trivial || TREE_CODE (arg) == TARGET_EXPR)
 	       && !unsafe)
 	{
-	  tree to = cp_stabilize_reference (cp_build_fold_indirect_ref (fa));
-
+	  tree to = cp_build_fold_indirect_ref (fa);
 	  val = build2 (INIT_EXPR, DECL_CONTEXT (fn), to, arg);
 	  return val;
 	}
@@ -9009,8 +9014,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	   && DECL_OVERLOADED_OPERATOR_IS (fn, NOP_EXPR)
 	   && trivial_fn_p (fn))
     {
-      tree to = cp_stabilize_reference
-	(cp_build_fold_indirect_ref (argarray[0]));
+      tree to = cp_build_fold_indirect_ref (argarray[0]);
       tree type = TREE_TYPE (to);
       tree as_base = CLASSTYPE_AS_BASE (type);
       tree arg = argarray[1];
@@ -9039,6 +9043,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  tree array_type, alias_set;
 
 	  arg2 = TYPE_SIZE_UNIT (as_base);
+	  to = cp_stabilize_reference (to);
 	  arg0 = cp_build_addr_expr (to, complain);
 
 	  array_type = build_array_type (unsigned_char_type_node,
@@ -9806,7 +9811,7 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
 	}
     }
 
-  fns = lookup_fnfields (binfo, name, 1);
+  fns = lookup_fnfields (binfo, name, 1, complain);
 
   /* When making a call to a constructor or destructor for a subobject
      that uses virtual base classes, pass down a pointer to a VTT for

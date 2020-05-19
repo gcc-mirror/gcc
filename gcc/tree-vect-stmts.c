@@ -786,68 +786,6 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo, bool *fatal)
   return opt_result::success ();
 }
 
-/* Compute the prologue cost for invariant or constant operands.  */
-
-static unsigned
-vect_prologue_cost_for_slp_op (vec_info *vinfo,
-			       slp_tree node,
-			       unsigned opno, enum vect_def_type dt,
-			       stmt_vector_for_cost *cost_vec)
-{
-  gimple *stmt = SLP_TREE_SCALAR_STMTS (node)[0]->stmt;
-  tree op = gimple_op (stmt, opno);
-  unsigned prologue_cost = 0;
-
-  /* Without looking at the actual initializer a vector of
-     constants can be implemented as load from the constant pool.
-     When all elements are the same we can use a splat.  */
-  tree vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op), node);
-  unsigned group_size = SLP_TREE_SCALAR_STMTS (node).length ();
-  unsigned num_vects_to_check;
-  unsigned HOST_WIDE_INT const_nunits;
-  unsigned nelt_limit;
-  if (TYPE_VECTOR_SUBPARTS (vectype).is_constant (&const_nunits)
-      && ! multiple_p (const_nunits, group_size))
-    {
-      num_vects_to_check = SLP_TREE_NUMBER_OF_VEC_STMTS (node);
-      nelt_limit = const_nunits;
-    }
-  else
-    {
-      /* If either the vector has variable length or the vectors
-	 are composed of repeated whole groups we only need to
-	 cost construction once.  All vectors will be the same.  */
-      num_vects_to_check = 1;
-      nelt_limit = group_size;
-    }
-  tree elt = NULL_TREE;
-  unsigned nelt = 0;
-  for (unsigned j = 0; j < num_vects_to_check * nelt_limit; ++j)
-    {
-      unsigned si = j % group_size;
-      if (nelt == 0)
-	elt = gimple_op (SLP_TREE_SCALAR_STMTS (node)[si]->stmt, opno);
-      /* ???  We're just tracking whether all operands of a single
-	 vector initializer are the same, ideally we'd check if
-	 we emitted the same one already.  */
-      else if (elt != gimple_op (SLP_TREE_SCALAR_STMTS (node)[si]->stmt,
-				 opno))
-	elt = NULL_TREE;
-      nelt++;
-      if (nelt == nelt_limit)
-	{
-	  prologue_cost += record_stmt_cost
-	      (cost_vec, 1,
-	       dt == vect_external_def
-	       ? (elt ? scalar_to_vec : vec_construct) : vector_load,
-	       NULL, vectype, 0, vect_prologue);
-	  nelt = 0;
-	}
-    }
-
-  return prologue_cost;
-}
-
 /* Function vect_model_simple_cost.
 
    Models cost for simple operations, i.e. those that only emit ncopies of a
@@ -855,7 +793,7 @@ vect_prologue_cost_for_slp_op (vec_info *vinfo,
    be generated for the single vector op.  We will handle that shortly.  */
 
 static void
-vect_model_simple_cost (vec_info *vinfo,
+vect_model_simple_cost (vec_info *,
 			stmt_vec_info stmt_info, int ncopies,
 			enum vect_def_type *dt,
 			int ndts,
@@ -871,26 +809,7 @@ vect_model_simple_cost (vec_info *vinfo,
   if (node)
     ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (node);
 
-  if (node)
-    {
-      /* Scan operands and account for prologue cost of constants/externals.
-	 ???  This over-estimates cost for multiple uses and should be
-	 re-engineered.  */
-      gimple *stmt = SLP_TREE_SCALAR_STMTS (node)[0]->stmt;
-      tree lhs = gimple_get_lhs (stmt);
-      for (unsigned i = 0; i < gimple_num_ops (stmt); ++i)
-	{
-	  tree op = gimple_op (stmt, i);
-	  enum vect_def_type dt;
-	  if (!op || op == lhs)
-	    continue;
-	  if (vect_is_simple_use (op, vinfo, &dt)
-	      && (dt == vect_constant_def || dt == vect_external_def))
-	    prologue_cost += vect_prologue_cost_for_slp_op (vinfo, node,
-							    i, dt, cost_vec);
-	}
-    }
-  else
+  if (!node)
     /* Cost the "broadcast" of a scalar operand in to a vector operand.
        Use scalar_to_vec to cost the broadcast, as elsewhere in the vector
        cost model.  */
@@ -991,7 +910,6 @@ cfun_returns (tree decl)
 
 static void
 vect_model_store_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
-		       enum vect_def_type dt,
 		       vect_memory_access_type memory_access_type,
 		       vec_load_store_type vls_type, slp_tree slp_node,
 		       stmt_vector_for_cost *cost_vec)
@@ -1006,10 +924,7 @@ vect_model_store_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
 
   if (vls_type == VLS_STORE_INVARIANT)
     {
-      if (slp_node)
-	prologue_cost += vect_prologue_cost_for_slp_op (vinfo, slp_node,
-							1, dt, cost_vec);
-      else
+      if (!slp_node)
 	prologue_cost += record_stmt_cost (cost_vec, 1, scalar_to_vec,
 					   stmt_info, 0, vect_prologue);
     }
@@ -1425,13 +1340,8 @@ vect_init_vector_1 (vec_info *vinfo, stmt_vec_info stmt_vinfo, gimple *new_stmt,
       else
        {
           bb_vec_info bb_vinfo = dyn_cast <bb_vec_info> (vinfo);
-          basic_block bb;
-          gimple_stmt_iterator gsi_bb_start;
-
-          gcc_assert (bb_vinfo);
-          bb = BB_VINFO_BB (bb_vinfo);
-          gsi_bb_start = gsi_after_labels (bb);
-          gsi_insert_before (&gsi_bb_start, new_stmt, GSI_SAME_STMT);
+	  gimple_stmt_iterator gsi_region_begin = bb_vinfo->region_begin;
+	  gsi_insert_before (&gsi_region_begin, new_stmt, GSI_SAME_STMT);
        }
     }
 
@@ -7570,7 +7480,7 @@ vectorizable_store (vec_info *vinfo,
 				  memory_access_type, &gs_info, mask);
 
       STMT_VINFO_TYPE (stmt_info) = store_vec_info_type;
-      vect_model_store_cost (vinfo, stmt_info, ncopies, rhs_dt,
+      vect_model_store_cost (vinfo, stmt_info, ncopies,
 			     memory_access_type, vls_type, slp_node, cost_vec);
       return true;
     }

@@ -25,6 +25,10 @@ git config alias.svn-rev '!f() { rev=$1; shift; git log --all --grep="^From-SVN:
 git config alias.gcc-descr \!"f() { if test \${1:-no} = --full; then c=\${2:-master}; r=\$(git describe --all --abbrev=40 --match 'basepoints/gcc-[0-9]*' \$c | sed -n 's,^\\(tags/\\)\\?basepoints/gcc-,r,p'); expr match \${r:-no} '^r[0-9]\\+\$' >/dev/null && r=\${r}-0-g\$(git rev-parse \${2:-master}); else c=\${1:-master}; r=\$(git describe --all --match 'basepoints/gcc-[0-9]*' \$c | sed -n 's,^\\(tags/\\)\\?basepoints/gcc-\\([0-9]\\+\\)-\\([0-9]\\+\\)-g[0-9a-f]*\$,r\\2-\\3,p;s,^\\(tags/\\)\\?basepoints/gcc-\\([0-9]\\+\\)\$,r\\2-0,p'); fi; if test -n \$r; then o=\$(git config --get gcc-config.upstream); rr=\$(echo \$r | sed -n 's,^r\\([0-9]\\+\\)-[0-9]\\+\\(-g[0-9a-f]\\+\\)\\?\$,\\1,p'); if git rev-parse --verify --quiet \${o:-origin}/releases/gcc-\$rr >/dev/null; then m=releases/gcc-\$rr; else m=master; fi; git merge-base --is-ancestor \$c \${o:-origin}/\$m && \echo \${r}; fi; }; f"
 git config alias.gcc-undescr \!"f() { o=\$(git config --get gcc-config.upstream); r=\$(echo \$1 | sed -n 's,^r\\([0-9]\\+\\)-[0-9]\\+\$,\\1,p'); n=\$(echo \$1 | sed -n 's,^r[0-9]\\+-\\([0-9]\\+\\)\$,\\1,p'); test -z \$r && echo Invalid id \$1 && exit 1; h=\$(git rev-parse --verify --quiet \${o:-origin}/releases/gcc-\$r); test -z \$h && h=\$(git rev-parse --verify --quiet \${o:-origin}/master); p=\$(git describe --all --match 'basepoints/gcc-'\$r \$h | sed -n 's,^\\(tags/\\)\\?basepoints/gcc-[0-9]\\+-\\([0-9]\\+\\)-g[0-9a-f]*\$,\\2,p;s,^\\(tags/\\)\\?basepoints/gcc-[0-9]\\+\$,0,p'); git rev-parse --verify \$h~\$(expr \$p - \$n); }; f"
 
+git config alias.gcc-verify '!f() { "`git rev-parse --show-toplevel`/contrib/gcc-changelog/git_check_commit.py" $@; } ; f'
+
+git config alias.gcc-mklog '!f() { "`git rev-parse --show-toplevel`/contrib/mklog.py" $@; } ; f'
+
 # Make diff on MD files use "(define" as a function marker.
 # Use this in conjunction with a .gitattributes file containing
 # *.md    diff=md

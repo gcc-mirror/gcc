@@ -4835,8 +4835,8 @@
   rtx cmp_result = gen_reg_rtx (<MODE>mode);
   rtx not_result = gen_reg_rtx (<MODE>mode);
 
-  emit_insn (gen_vcmpnez<VSX_EXTRACT_WIDTH> (cmp_result, operands[1],
-					     operands[2]));
+  emit_insn (gen_vcmpne<VSX_EXTRACT_WIDTH> (cmp_result, operands[1],
+					    operands[2]));
   emit_insn (gen_one_cmpl<mode>2 (not_result, cmp_result));
 
   sh = GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) / 2;

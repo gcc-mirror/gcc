@@ -5662,7 +5662,7 @@ type_requires_array_cookie (tree type)
      a cookie.  */
   fns = lookup_fnfields (TYPE_BINFO (type),
 			 ovl_op_identifier (false, VEC_DELETE_EXPR),
-			 /*protect=*/0);
+			 /*protect=*/0, tf_warning_or_error);
   /* If there are no `operator []' members, or the lookup is
      ambiguous, then we don't need a cookie.  */
   if (!fns || fns == error_mark_node)

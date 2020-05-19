@@ -9102,7 +9102,7 @@ template_args_equal (tree ot, tree nt, bool partial_order /* = false */)
   if (class_nttp_const_wrapper_p (ot))
     ot = TREE_OPERAND (ot, 0);
 
-  if (TREE_CODE (nt) == TREE_VEC || TREE_CODE (nt) == TREE_VEC)
+  if (TREE_CODE (nt) == TREE_VEC || TREE_CODE (ot) == TREE_VEC)
     /* For member templates */
     return TREE_CODE (ot) == TREE_CODE (nt) && comp_template_args (ot, nt);
   else if (PACK_EXPANSION_P (ot) || PACK_EXPANSION_P (nt))
@@ -9115,7 +9115,7 @@ template_args_equal (tree ot, tree nt, bool partial_order /* = false */)
     return cp_tree_equal (ot, nt);
   else if (TREE_CODE (ot) == ARGUMENT_PACK_SELECT)
     gcc_unreachable ();
-  else if (TYPE_P (nt) || TYPE_P (nt))
+  else if (TYPE_P (nt) || TYPE_P (ot))
     {
       if (!(TYPE_P (nt) && TYPE_P (ot)))
 	return false;
@@ -15111,6 +15111,94 @@ tsubst_exception_specification (tree fntype,
   return new_specs;
 }
 
+/* Substitute through a TREE_LIST of types or expressions, handling pack
+   expansions.  */
+
+tree
+tsubst_tree_list (tree t, tree args, tsubst_flags_t complain, tree in_decl)
+{
+  if (t == void_list_node)
+    return t;
+
+  tree purpose = TREE_PURPOSE (t);
+  tree purposevec = NULL_TREE;
+  if (!purpose)
+    ;
+  else if (PACK_EXPANSION_P (purpose))
+    {
+      purpose = tsubst_pack_expansion (purpose, args, complain, in_decl);
+      if (TREE_CODE (purpose) == TREE_VEC)
+	purposevec = purpose;
+    }
+  else if (TYPE_P (purpose))
+    purpose = tsubst (purpose, args, complain, in_decl);
+  else
+    purpose = tsubst_copy_and_build (purpose, args, complain, in_decl);
+  if (purpose == error_mark_node || purposevec == error_mark_node)
+    return error_mark_node;
+
+  tree value = TREE_VALUE (t);
+  tree valuevec = NULL_TREE;
+  if (!value)
+    ;
+  else if (PACK_EXPANSION_P (value))
+    {
+      value = tsubst_pack_expansion (value, args, complain, in_decl);
+      if (TREE_CODE (value) == TREE_VEC)
+	valuevec = value;
+    }
+  else if (TYPE_P (value))
+    value = tsubst (value, args, complain, in_decl);
+  else
+    value = tsubst_copy_and_build (value, args, complain, in_decl);
+  if (value == error_mark_node || valuevec == error_mark_node)
+    return error_mark_node;
+
+  tree chain = TREE_CHAIN (t);
+  if (!chain)
+    ;
+  else if (TREE_CODE (chain) == TREE_LIST)
+    chain = tsubst_tree_list (chain, args, complain, in_decl);
+  else if (TYPE_P (chain))
+    chain = tsubst (chain, args, complain, in_decl);
+  else
+    chain = tsubst_copy_and_build (chain, args, complain, in_decl);
+  if (chain == error_mark_node)
+    return error_mark_node;
+
+  if (purpose == TREE_PURPOSE (t)
+      && value == TREE_VALUE (t)
+      && chain == TREE_CHAIN (t))
+    return t;
+
+  int len;
+  /* Determine the number of arguments.  */
+  if (purposevec)
+    {
+      len = TREE_VEC_LENGTH (purposevec);
+      gcc_assert (!valuevec || len == TREE_VEC_LENGTH (valuevec));
+    }
+  else if (valuevec)
+    len = TREE_VEC_LENGTH (valuevec);
+  else
+    len = 1;
+
+  for (int i = len; i-- > 0; )
+    {
+      if (purposevec)
+	purpose = TREE_VEC_ELT (purposevec, i);
+      if (valuevec)
+	value = TREE_VEC_ELT (valuevec, i);
+
+      if (value && TYPE_P (value))
+	chain = hash_tree_cons (purpose, value, chain);
+      else
+	chain = tree_cons (purpose, value, chain);
+    }
+
+  return chain;
+}
+
 /* Take the tree structure T and replace template parameters used
    therein with the argument vector ARGS.  IN_DECL is an associated
    decl for diagnostics.  If an error occurs, returns ERROR_MARK_NODE.
@@ -15530,104 +15618,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       }
 
     case TREE_LIST:
-      {
-	tree purpose, value, chain;
-
-	if (t == void_list_node)
-	  return t;
-
-	if ((TREE_PURPOSE (t) && PACK_EXPANSION_P (TREE_PURPOSE (t)))
-	    || (TREE_VALUE (t) && PACK_EXPANSION_P (TREE_VALUE (t))))
-	  {
-	    /* We have pack expansions, so expand those and
-	       create a new list out of it.  */
-
-	    /* Expand the argument expressions.  */
-	    tree purposevec = NULL_TREE;
-	    if (TREE_PURPOSE (t))
-	      purposevec = tsubst_pack_expansion (TREE_PURPOSE (t), args,
-						  complain, in_decl);
-	    if (purposevec == error_mark_node)
-	      return error_mark_node;
-
-	    tree valuevec = NULL_TREE;
-	    if (TREE_VALUE (t))
-	      valuevec = tsubst_pack_expansion (TREE_VALUE (t), args,
-						complain, in_decl);
-	    if (valuevec == error_mark_node)
-	      return error_mark_node;
-
-	    /* Build the rest of the list.  */
-	    tree chain = TREE_CHAIN (t);
-	    if (chain && chain != void_type_node)
-	      chain = tsubst (chain, args, complain, in_decl);
-	    if (chain == error_mark_node)
-	      return error_mark_node;
-
-	    /* Determine the number of arguments.  */
-	    int len = -1;
-	    if (purposevec && TREE_CODE (purposevec) == TREE_VEC)
-	      {
-		len = TREE_VEC_LENGTH (purposevec);
-		gcc_assert (!valuevec || len == TREE_VEC_LENGTH (valuevec));
-	      }
-	    else if (TREE_CODE (valuevec) == TREE_VEC)
-	      len = TREE_VEC_LENGTH (valuevec);
-	    else
-	      {
-		/* Since we only performed a partial substitution into
-		   the argument pack, we only RETURN (a single list
-		   node.  */
-		if (purposevec == TREE_PURPOSE (t)
-		    && valuevec == TREE_VALUE (t)
-		    && chain == TREE_CHAIN (t))
-		  return t;
-
-		return tree_cons (purposevec, valuevec, chain);
-	      }
-
-	    /* Convert the argument vectors into a TREE_LIST.  */
-	    for (int i = len; i-- > 0; )
-	      {
-		purpose = (purposevec ? TREE_VEC_ELT (purposevec, i)
-			   : NULL_TREE);
-		value = (valuevec ? TREE_VEC_ELT (valuevec, i)
-			 : NULL_TREE);
-
-		/* Build the list (backwards).  */
-		chain = hash_tree_cons (purpose, value, chain);
-	      }
-
-	    return chain;
-	  }
-
-	purpose = TREE_PURPOSE (t);
-	if (purpose)
-	  {
-	    purpose = tsubst (purpose, args, complain, in_decl);
-	    if (purpose == error_mark_node)
-	      return error_mark_node;
-	  }
-	value = TREE_VALUE (t);
-	if (value)
-	  {
-	    value = tsubst (value, args, complain, in_decl);
-	    if (value == error_mark_node)
-	      return error_mark_node;
-	  }
-	chain = TREE_CHAIN (t);
-	if (chain && chain != void_type_node)
-	  {
-	    chain = tsubst (chain, args, complain, in_decl);
-	    if (chain == error_mark_node)
-	      return error_mark_node;
-	  }
-	if (purpose == TREE_PURPOSE (t)
-	    && value == TREE_VALUE (t)
-	    && chain == TREE_CHAIN (t))
-	  return t;
-	return hash_tree_cons (purpose, value, chain);
-      }
+      return tsubst_tree_list (t, args, complain, in_decl);
 
     case TREE_BINFO:
       /* We should never be tsubsting a binfo.  */
@@ -16089,7 +16080,8 @@ tsubst_baselink (tree baselink, tree object_type,
 	/* Treat as-if non-dependent below.  */
 	dependent_p = false;
 
-      baselink = lookup_fnfields (qualifying_scope, name, /*protect=*/1);
+      baselink = lookup_fnfields (qualifying_scope, name, /*protect=*/1,
+				  complain);
       if (!baselink)
 	{
 	  if ((complain & tf_error)
@@ -20145,90 +20137,7 @@ tsubst_copy_and_build (tree t,
       }
 
     case TREE_LIST:
-      {
-	tree purpose, value, chain;
-
-	if (t == void_list_node)
-	  RETURN (t);
-
-        if ((TREE_PURPOSE (t) && PACK_EXPANSION_P (TREE_PURPOSE (t)))
-            || (TREE_VALUE (t) && PACK_EXPANSION_P (TREE_VALUE (t))))
-          {
-            /* We have pack expansions, so expand those and
-               create a new list out of it.  */
-            tree purposevec = NULL_TREE;
-            tree valuevec = NULL_TREE;
-            tree chain;
-            int i, len = -1;
-
-            /* Expand the argument expressions.  */
-            if (TREE_PURPOSE (t))
-              purposevec = tsubst_pack_expansion (TREE_PURPOSE (t), args,
-                                                 complain, in_decl);
-            if (TREE_VALUE (t))
-              valuevec = tsubst_pack_expansion (TREE_VALUE (t), args,
-                                               complain, in_decl);
-
-            /* Build the rest of the list.  */
-            chain = TREE_CHAIN (t);
-            if (chain && chain != void_type_node)
-              chain = RECUR (chain);
-
-            /* Determine the number of arguments.  */
-            if (purposevec && TREE_CODE (purposevec) == TREE_VEC)
-              {
-                len = TREE_VEC_LENGTH (purposevec);
-                gcc_assert (!valuevec || len == TREE_VEC_LENGTH (valuevec));
-              }
-            else if (TREE_CODE (valuevec) == TREE_VEC)
-              len = TREE_VEC_LENGTH (valuevec);
-            else
-              {
-                /* Since we only performed a partial substitution into
-                   the argument pack, we only RETURN (a single list
-                   node.  */
-                if (purposevec == TREE_PURPOSE (t)
-                    && valuevec == TREE_VALUE (t)
-                    && chain == TREE_CHAIN (t))
-                  RETURN (t);
-
-                RETURN (tree_cons (purposevec, valuevec, chain));
-              }
-
-            /* Convert the argument vectors into a TREE_LIST */
-            i = len;
-            while (i > 0)
-              {
-                /* Grab the Ith values.  */
-                i--;
-                purpose = purposevec ? TREE_VEC_ELT (purposevec, i) 
-		                     : NULL_TREE;
-                value 
-		  = valuevec ? convert_from_reference (TREE_VEC_ELT (valuevec, i))
-                             : NULL_TREE;
-
-                /* Build the list (backwards).  */
-                chain = tree_cons (purpose, value, chain);
-              }
-
-            RETURN (chain);
-          }
-
-	purpose = TREE_PURPOSE (t);
-	if (purpose)
-	  purpose = RECUR (purpose);
-	value = TREE_VALUE (t);
-	if (value)
-	  value = RECUR (value);
-	chain = TREE_CHAIN (t);
-	if (chain && chain != void_type_node)
-	  chain = RECUR (chain);
-	if (purpose == TREE_PURPOSE (t)
-	    && value == TREE_VALUE (t)
-	    && chain == TREE_CHAIN (t))
-	  RETURN (t);
-	RETURN (tree_cons (purpose, value, chain));
-      }
+      RETURN (tsubst_tree_list (t, args, complain, in_decl));
 
     case COMPONENT_REF:
       {
@@ -21159,7 +21068,7 @@ fn_type_unification (tree fn,
       /* Adjust any explicit template arguments before entering the
 	 substitution context.  */
       explicit_targs
-	= (coerce_template_parms (tparms, explicit_targs, NULL_TREE,
+	= (coerce_template_parms (tparms, explicit_targs, fn,
 				  complain|tf_partial,
 				  /*require_all_args=*/false,
 				  /*use_default_args=*/false));
@@ -25252,7 +25161,7 @@ always_instantiate_p (tree decl)
 bool
 maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 {
-  tree fntype, spec, noex, clone;
+  tree fntype, spec, noex;
 
   /* Don't instantiate a noexcept-specification from template context.  */
   if (processing_template_decl
@@ -25271,8 +25180,16 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
       return !DECL_MAYBE_DELETED (fn);
     }
 
-  if (DECL_CLONED_FUNCTION_P (fn))
-    fn = DECL_CLONED_FUNCTION (fn);
+  fntype = TREE_TYPE (fn);
+  spec = TYPE_RAISES_EXCEPTIONS (fntype);
+
+  if (!spec || !TREE_PURPOSE (spec))
+    return true;
+
+  noex = TREE_PURPOSE (spec);
+  if (TREE_CODE (noex) != DEFERRED_NOEXCEPT
+      && TREE_CODE (noex) != DEFERRED_PARSE)
+    return true;
 
   tree orig_fn = NULL_TREE;
   /* For a member friend template we can get a TEMPLATE_DECL.  Let's use
@@ -25284,15 +25201,14 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
       fn = DECL_TEMPLATE_RESULT (fn);
     }
 
-  fntype = TREE_TYPE (fn);
-  spec = TYPE_RAISES_EXCEPTIONS (fntype);
-
-  if (!spec || !TREE_PURPOSE (spec))
-    return true;
-
-  noex = TREE_PURPOSE (spec);
-
-  if (TREE_CODE (noex) == DEFERRED_NOEXCEPT)
+  if (DECL_CLONED_FUNCTION_P (fn))
+    {
+      tree prime = DECL_CLONED_FUNCTION (fn);
+      if (!maybe_instantiate_noexcept (prime, complain))
+	return false;
+      spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (prime));
+    }
+  else if (TREE_CODE (noex) == DEFERRED_NOEXCEPT)
     {
       static hash_set<tree>* fns = new hash_set<tree>;
       bool added = false;
@@ -25362,26 +25278,18 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 
       if (added)
 	fns->remove (fn);
-
-      if (spec == error_mark_node)
-	{
-	  /* This failed with a hard error, so let's go with false.  */
-	  gcc_assert (seen_error ());
-	  spec = noexcept_false_spec;
-	}
-
-      TREE_TYPE (fn) = build_exception_variant (fntype, spec);
-      if (orig_fn)
-	TREE_TYPE (orig_fn) = TREE_TYPE (fn);
     }
 
-  FOR_EACH_CLONE (clone, fn)
+  if (spec == error_mark_node)
     {
-      if (TREE_TYPE (clone) == fntype)
-	TREE_TYPE (clone) = TREE_TYPE (fn);
-      else
-	TREE_TYPE (clone) = build_exception_variant (TREE_TYPE (clone), spec);
+      /* This failed with a hard error, so let's go with false.  */
+      gcc_assert (seen_error ());
+      spec = noexcept_false_spec;
     }
+
+  TREE_TYPE (fn) = build_exception_variant (fntype, spec);
+  if (orig_fn)
+    TREE_TYPE (orig_fn) = TREE_TYPE (fn);
 
   return true;
 }
@@ -29597,9 +29505,8 @@ add_mergeable_specialization (tree tmpl, tree args, tree decl, unsigned flags)
 void
 init_template_processing (void)
 {
-  /* FIXME: enable sanitization (PR87847) */
-  decl_specializations = hash_table<spec_hasher>::create_ggc (37, false);
-  type_specializations = hash_table<spec_hasher>::create_ggc (37, false);
+  decl_specializations = hash_table<spec_hasher>::create_ggc (37);
+  type_specializations = hash_table<spec_hasher>::create_ggc (37);
 
   if (cxx_dialect >= cxx11)
     declare_integer_pack ();

@@ -1436,7 +1436,7 @@ Optional Features:
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --disable-largefile     omit support for large files
-  --enable-cet            enable Intel CET in target libraries [default=no]
+  --enable-cet            enable Intel CET in target libraries [default=auto]
   --enable-host-shared    build host code as shared libraries
   --enable-cet            enable Intel CET in host libraries [default=auto]
 
@@ -12156,7 +12156,7 @@ if test "${enable_cet+set}" = set; then :
                           esac
 
 else
-  enable_cet=no
+  enable_cet=auto
 fi
 
 
@@ -12169,6 +12169,8 @@ case "$host" in
       auto)
 	# Check if target supports multi-byte NOPs
 	# and if assembler supports CET insn.
+	save_CFLAGS="$CFLAGS"
+	CFLAGS="$CFLAGS -fcf-protection"
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -12192,6 +12194,7 @@ else
   enable_cet=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	CFLAGS="$save_CFLAGS"
 	;;
       yes)
 	# Check if assembler supports CET.
@@ -12486,7 +12489,8 @@ rm -f core conftest.err conftest.$ac_objext \
 fi
 
 if test x$may_have_cet = xyes; then
-  if test "$cross_compiling" = yes; then :
+  if test x$cross_compiling = xno; then
+    if test "$cross_compiling" = yes; then :
   { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
 as_fn_error $? "cannot run test program while cross compiling
@@ -12531,9 +12535,14 @@ rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
   conftest.$ac_objext conftest.beam conftest.$ac_ext
 fi
 
-  if test x$enable_cet = xno -a x$have_cet = xyes; then
-    as_fn_error $? "Intel CET must be enabled on Intel CET enabled host" "$LINENO" 5
+    if test x$enable_cet = xno -a x$have_cet = xyes; then
+      as_fn_error $? "Intel CET must be enabled on Intel CET enabled host" "$LINENO" 5
+    fi
   fi
+else
+  # Enable CET in cross compiler if possible so that it will run on both
+  # CET and non-CET hosts.
+  have_cet=yes
 fi
 if test x$enable_cet = xyes; then
   CET_HOST_FLAGS="-fcf-protection"

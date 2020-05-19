@@ -4188,6 +4188,31 @@ arm_trampoline_adjust_address (rtx addr)
   return addr;
 }
 
+/* Return 1 if REG needs to be saved. For interrupt handlers, this
+   includes call-clobbered registers too.  If this is a leaf function
+   we can just examine the registers used by the RTL, but otherwise we
+   have to assume that whatever function is called might clobber
+   anything, and so we have to save all the call-clobbered registers
+   as well.  */
+static inline bool reg_needs_saving_p (unsigned reg)
+{
+  unsigned long func_type = arm_current_func_type ();
+
+  if (IS_INTERRUPT (func_type))
+    if (df_regs_ever_live_p (reg)
+	/* Save call-clobbered core registers.  */
+	|| (! crtl->is_leaf && call_used_or_fixed_reg_p (reg) && reg < FIRST_VFP_REGNUM))
+      return true;
+    else
+      return false;
+  else
+    if (!df_regs_ever_live_p (reg)
+	|| call_used_or_fixed_reg_p (reg))
+      return false;
+    else
+      return true;
+}
+
 /* Return 1 if it is possible to return using a single instruction.
    If SIBLING is non-null, this is a test for a return before a sibling
    call.  SIBLING is the call insn, so we can examine its register usage.  */
@@ -4317,12 +4342,12 @@ use_return_insn (int iscond, rtx sibling)
      since this also requires an insn.  */
   if (TARGET_VFP_BASE)
     for (regno = FIRST_VFP_REGNUM; regno <= LAST_VFP_REGNUM; regno++)
-      if (df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
+      if (reg_needs_saving_p (regno))
 	return 0;
 
   if (TARGET_REALLY_IWMMXT)
     for (regno = FIRST_IWMMXT_REGNUM; regno <= LAST_IWMMXT_REGNUM; regno++)
-      if (df_regs_ever_live_p (regno) && ! call_used_or_fixed_reg_p (regno))
+      if (reg_needs_saving_p (regno))
 	return 0;
 
   return 1;
@@ -19550,6 +19575,7 @@ output_move_double (rtx *operands, bool emit, int *count)
   if (code0 == REG)
     {
       unsigned int reg0 = REGNO (operands[0]);
+      const bool can_ldrd = TARGET_LDRD && (TARGET_THUMB2 || (reg0 % 2 == 0));
 
       otherops[0] = gen_rtx_REG (SImode, 1 + reg0);
 
@@ -19561,7 +19587,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 
 	  if (emit)
 	    {
-	      if (TARGET_LDRD
+	      if (can_ldrd
 		  && !(fix_cm3_ldrd && reg0 == REGNO(XEXP (operands[1], 0))))
 		output_asm_insn ("ldrd%?\t%0, [%m1]", operands);
 	      else
@@ -19570,7 +19596,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 	  break;
 
 	case PRE_INC:
-	  gcc_assert (TARGET_LDRD);
+	  gcc_assert (can_ldrd);
 	  if (emit)
 	    output_asm_insn ("ldrd%?\t%0, [%m1, #8]!", operands);
 	  break;
@@ -19578,7 +19604,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 	case PRE_DEC:
 	  if (emit)
 	    {
-	      if (TARGET_LDRD)
+	      if (can_ldrd)
 		output_asm_insn ("ldrd%?\t%0, [%m1, #-8]!", operands);
 	      else
 		output_asm_insn ("ldmdb%?\t%m1!, %M0", operands);
@@ -19588,7 +19614,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 	case POST_INC:
 	  if (emit)
 	    {
-	      if (TARGET_LDRD)
+	      if (can_ldrd)
 		output_asm_insn ("ldrd%?\t%0, [%m1], #8", operands);
 	      else
 		output_asm_insn ("ldmia%?\t%m1!, %M0", operands);
@@ -19596,7 +19622,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 	  break;
 
 	case POST_DEC:
-	  gcc_assert (TARGET_LDRD);
+	  gcc_assert (can_ldrd);
 	  if (emit)
 	    output_asm_insn ("ldrd%?\t%0, [%m1], #-8", operands);
 	  break;
@@ -19618,6 +19644,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 		  /* Registers overlap so split out the increment.  */
 		  if (emit)
 		    {
+		      gcc_assert (can_ldrd);
 		      output_asm_insn ("add%?\t%1, %1, %2", otherops);
 		      output_asm_insn ("ldrd%?\t%0, [%1] @split", otherops);
 		    }
@@ -19629,10 +19656,11 @@ output_move_double (rtx *operands, bool emit, int *count)
 		  /* Use a single insn if we can.
 		     FIXME: IWMMXT allows offsets larger than ldrd can
 		     handle, fix these up with a pair of ldr.  */
-		  if (TARGET_THUMB2
+		  if (can_ldrd
+		      && (TARGET_THUMB2
 		      || !CONST_INT_P (otherops[2])
 		      || (INTVAL (otherops[2]) > -256
-			  && INTVAL (otherops[2]) < 256))
+			  && INTVAL (otherops[2]) < 256)))
 		    {
 		      if (emit)
 			output_asm_insn ("ldrd%?\t%0, [%1, %2]!", otherops);
@@ -19655,10 +19683,11 @@ output_move_double (rtx *operands, bool emit, int *count)
 	      /* Use a single insn if we can.
 		 FIXME: IWMMXT allows offsets larger than ldrd can handle,
 		 fix these up with a pair of ldr.  */
-	      if (TARGET_THUMB2
+	      if (can_ldrd
+		  && (TARGET_THUMB2
 		  || !CONST_INT_P (otherops[2])
 		  || (INTVAL (otherops[2]) > -256
-		      && INTVAL (otherops[2]) < 256))
+		      && INTVAL (otherops[2]) < 256)))
 		{
 		  if (emit)
 		    output_asm_insn ("ldrd%?\t%0, [%1], %2", otherops);
@@ -19689,7 +19718,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 	  operands[1] = otherops[0];
 	  if (emit)
 	    {
-	      if (TARGET_LDRD)
+	      if (can_ldrd)
 		output_asm_insn ("ldrd%?\t%0, [%1]", operands);
 	      else
 		output_asm_insn ("ldmia%?\t%1, %M0", operands);
@@ -19734,7 +19763,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 		    }
 		  otherops[0] = gen_rtx_REG(SImode, REGNO(operands[0]) + 1);
 		  operands[1] = otherops[0];
-		  if (TARGET_LDRD
+		  if (can_ldrd
 		      && (REG_P (otherops[2])
 			  || TARGET_THUMB2
 			  || (CONST_INT_P (otherops[2])
@@ -19795,7 +19824,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 	      if (count)
 		*count = 2;
 
-	      if (TARGET_LDRD)
+	      if (can_ldrd)
 		return "ldrd%?\t%0, [%1]";
 
 	      return "ldmia%?\t%1, %M0";
@@ -20667,8 +20696,7 @@ arm_compute_save_reg0_reg12_mask (void)
 	max_reg = 12;
 
       for (reg = 0; reg <= max_reg; reg++)
-	if (df_regs_ever_live_p (reg)
-	    || (! crtl->is_leaf && call_used_or_fixed_reg_p (reg)))
+	if (reg_needs_saving_p (reg))
 	  save_reg_mask |= (1 << reg);
 
       /* Also save the pic base register if necessary.  */
@@ -20937,7 +20965,6 @@ thumb1_compute_save_core_reg_mask (void)
   return mask;
 }
 
-
 /* Return the number of bytes required to save VFP registers.  */
 static int
 arm_get_vfp_saved_size (void)
@@ -20955,10 +20982,7 @@ arm_get_vfp_saved_size (void)
 	   regno < LAST_VFP_REGNUM;
 	   regno += 2)
 	{
-	  if ((!df_regs_ever_live_p (regno)
-	       || call_used_or_fixed_reg_p (regno))
-	      && (!df_regs_ever_live_p (regno + 1)
-		  || call_used_or_fixed_reg_p (regno + 1)))
+	  if (!reg_needs_saving_p (regno) && !reg_needs_saving_p (regno + 1))
 	    {
 	      if (count > 0)
 		{
@@ -22483,8 +22507,7 @@ arm_compute_frame_layout (void)
 	  for (regno = FIRST_IWMMXT_REGNUM;
 	       regno <= LAST_IWMMXT_REGNUM;
 	       regno++)
-	    if (df_regs_ever_live_p (regno)
-		&& !call_used_or_fixed_reg_p (regno))
+	    if (reg_needs_saving_p (regno))
 	      saved += 8;
 	}
 
@@ -22705,8 +22728,9 @@ arm_save_coproc_regs(void)
   unsigned start_reg;
   rtx insn;
 
+  if (TARGET_REALLY_IWMMXT)
   for (reg = LAST_IWMMXT_REGNUM; reg >= FIRST_IWMMXT_REGNUM; reg--)
-    if (df_regs_ever_live_p (reg) && !call_used_or_fixed_reg_p (reg))
+    if (reg_needs_saving_p (reg))
       {
 	insn = gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx);
 	insn = gen_rtx_MEM (V2SImode, insn);
@@ -22721,9 +22745,7 @@ arm_save_coproc_regs(void)
 
       for (reg = FIRST_VFP_REGNUM; reg < LAST_VFP_REGNUM; reg += 2)
 	{
-	  if ((!df_regs_ever_live_p (reg) || call_used_or_fixed_reg_p (reg))
-	      && (!df_regs_ever_live_p (reg + 1)
-		  || call_used_or_fixed_reg_p (reg + 1)))
+	  if (!reg_needs_saving_p (reg) && !reg_needs_saving_p (reg + 1))
 	    {
 	      if (start_reg != reg)
 		saved_size += vfp_emit_fstmd (start_reg,
@@ -26501,7 +26523,7 @@ thumb1_expand_prologue (void)
 
   if (IS_INTERRUPT (func_type))
     {
-      error ("interrupt Service Routines cannot be coded in Thumb mode");
+      error ("Interrupt Service Routines cannot be coded in Thumb-1 mode");
       return;
     }
 
@@ -27018,7 +27040,7 @@ thumb1_expand_epilogue (void)
   /* Emit a clobber for each insn that will be restored in the epilogue,
      so that flow2 will get register lifetimes correct.  */
   for (regno = 0; regno < 13; regno++)
-    if (df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
+    if (reg_needs_saving_p (regno))
       emit_clobber (gen_rtx_REG (SImode, regno));
 
   if (! df_regs_ever_live_p (LR_REGNUM))
@@ -27084,9 +27106,7 @@ arm_expand_epilogue_apcs_frame (bool really_return)
 
       for (i = FIRST_VFP_REGNUM; i < LAST_VFP_REGNUM; i += 2)
         /* Look for a case where a reg does not need restoring.  */
-        if ((!df_regs_ever_live_p (i) || call_used_or_fixed_reg_p (i))
-            && (!df_regs_ever_live_p (i + 1)
-                || call_used_or_fixed_reg_p (i + 1)))
+	if (!reg_needs_saving_p (i) && !reg_needs_saving_p (i + 1))
           {
             if (start_reg != i)
               arm_emit_vfp_multi_reg_pop (start_reg,
@@ -27113,7 +27133,7 @@ arm_expand_epilogue_apcs_frame (bool really_return)
       int lrm_count = (num_regs % 2) ? (num_regs + 2) : (num_regs + 1);
 
       for (i = LAST_IWMMXT_REGNUM; i >= FIRST_IWMMXT_REGNUM; i--)
-        if (df_regs_ever_live_p (i) && !call_used_or_fixed_reg_p (i))
+	if (reg_needs_saving_p (i))
           {
             rtx addr = gen_frame_mem (V2SImode,
                                  plus_constant (Pmode, hard_frame_pointer_rtx,
@@ -27318,9 +27338,7 @@ arm_expand_epilogue (bool really_return)
          unlike pop, vldm can only do consecutive regs.  */
       for (i = LAST_VFP_REGNUM - 1; i >= FIRST_VFP_REGNUM; i -= 2)
         /* Look for a case where a reg does not need restoring.  */
-        if ((!df_regs_ever_live_p (i) || call_used_or_fixed_reg_p (i))
-            && (!df_regs_ever_live_p (i + 1)
-                || call_used_or_fixed_reg_p (i + 1)))
+	if (!reg_needs_saving_p (i) && !reg_needs_saving_p (i + 1))
           {
             /* Restore the regs discovered so far (from reg+2 to
                end_reg).  */
@@ -27342,7 +27360,7 @@ arm_expand_epilogue (bool really_return)
 
   if (TARGET_IWMMXT)
     for (i = FIRST_IWMMXT_REGNUM; i <= LAST_IWMMXT_REGNUM; i++)
-      if (df_regs_ever_live_p (i) && !call_used_or_fixed_reg_p (i))
+      if (reg_needs_saving_p (i))
         {
           rtx_insn *insn;
           rtx addr = gen_rtx_MEM (V2SImode,

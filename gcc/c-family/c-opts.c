@@ -1756,7 +1756,7 @@ set_std_cxx17 (int iso)
   lang_hooks.name = "GNU C++17";
 }
 
-/* Set the C++ 202a draft standard (without GNU extensions if ISO).  */
+/* Set the C++ 2020 standard (without GNU extensions if ISO).  */
 static void
 set_std_cxx20 (int iso)
 {
@@ -1768,9 +1768,10 @@ set_std_cxx20 (int iso)
   flag_isoc94 = 1;
   flag_isoc99 = 1;
   flag_isoc11 = 1;
-  /* C++20 includes concepts. */
+  /* C++20 includes coroutines. */
+  flag_coroutines = true;
   cxx_dialect = cxx20;
-  lang_hooks.name = "GNU C++17"; /* Pretend C++17 until standardization.  */
+  lang_hooks.name = "GNU C++20";
 }
 
 /* Args to -d specify what to dump.  Silently ignore

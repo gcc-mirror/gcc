@@ -1,3 +1,20 @@
+2020-05-18  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/95149
+	* lex.c (struct lit_accum): New.
+	(bufring_append): Replace by lit_accum::append.
+	(lex_raw_string): Reimplement, using fragments of the old version.
+	(lex_string): Adjust lex_raw_string call.
+
+	PR preprocessor/95182
+	* macro.c (collect_args): Preserve EOFif we fell out of the main
+	file.
+	(cpp_get_token_1): Reformat a couple of short lines.
+
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
 2020-05-13  Jason Merrill  <jason@redhat.com>
 
 	* include/cpplib.h (enum c_lang): Change CXX2A to CXX20.

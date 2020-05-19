@@ -1253,25 +1253,36 @@ scalar_chain::convert ()
   return converted_insns;
 }
 
-/* Return 1 if INSN uses or defines a hard register.
-   Hard register uses in a memory address are ignored.
-   Clobbers and flags definitions are ignored.  */
+/* Return the SET expression if INSN doesn't reference hard register.
+   Return NULL if INSN uses or defines a hard register, excluding
+   pseudo register pushes, hard register uses in a memory address,
+   clobbers and flags definitions.  */
 
-static bool
-has_non_address_hard_reg (rtx_insn *insn)
+static rtx
+pseudo_reg_set (rtx_insn *insn)
 {
+  rtx set = single_set (insn);
+  if (!set)
+    return NULL;
+
+  /* Check pseudo register push first. */
+  if (REG_P (SET_SRC (set))
+      && !HARD_REGISTER_P (SET_SRC (set))
+      && push_operand (SET_DEST (set), GET_MODE (SET_DEST (set))))
+    return set;
+
   df_ref ref;
   FOR_EACH_INSN_DEF (ref, insn)
     if (HARD_REGISTER_P (DF_REF_REAL_REG (ref))
 	&& !DF_REF_FLAGS_IS_SET (ref, DF_REF_MUST_CLOBBER)
 	&& DF_REF_REGNO (ref) != FLAGS_REG)
-      return true;
+      return NULL;
 
   FOR_EACH_INSN_USE (ref, insn)
     if (!DF_REF_REG_MEM_P (ref) && HARD_REGISTER_P (DF_REF_REAL_REG (ref)))
-      return true;
+      return NULL;
 
-  return false;
+  return set;
 }
 
 /* Check if comparison INSN may be transformed
@@ -1345,12 +1356,9 @@ convertible_comparison_p (rtx_insn *insn, enum machine_mode mode)
 static bool
 general_scalar_to_vector_candidate_p (rtx_insn *insn, enum machine_mode mode)
 {
-  rtx def_set = single_set (insn);
+  rtx def_set = pseudo_reg_set (insn);
 
   if (!def_set)
-    return false;
-
-  if (has_non_address_hard_reg (insn))
     return false;
 
   rtx src = SET_SRC (def_set);
@@ -1442,12 +1450,9 @@ general_scalar_to_vector_candidate_p (rtx_insn *insn, enum machine_mode mode)
 static bool
 timode_scalar_to_vector_candidate_p (rtx_insn *insn)
 {
-  rtx def_set = single_set (insn);
+  rtx def_set = pseudo_reg_set (insn);
 
   if (!def_set)
-    return false;
-
-  if (has_non_address_hard_reg (insn))
     return false;
 
   rtx src = SET_SRC (def_set);
