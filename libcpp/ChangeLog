@@ -1,3 +1,10 @@
+2020-05-18  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/95182
+	* macro.c (collect_args): Preserve EOFif we fell out of the main
+	file.
+	(cpp_get_token_1): Reformat a couple of short lines.
+
 2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure: Regenerated.
