@@ -21016,7 +21016,11 @@ Generate code for a little-endian target.  This is the default.
 
 @item -mxbpf
 Generate code for an expanded version of BPF, which relaxes some of
-the restrictions imposed by the BPF architecture.
+the restrictions imposed by the BPF architecture:
+@itemize @minus
+@item Save and restore callee-saved registers at function entry and
+exit, respectively.
+@end itemize
 @end table
 
 @node FR30 Options
