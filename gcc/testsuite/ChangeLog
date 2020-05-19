@@ -1,3 +1,8 @@
+2020-05-30  Richard Biener  <rguenther@suse.de>
+
+	PR c/95141
+	* gcc.dg/pr95141.c: New testcase.
+
 2020-05-19  Alex Coplan  <alex.coplan@arm.com>
 
 	PR target/94591
