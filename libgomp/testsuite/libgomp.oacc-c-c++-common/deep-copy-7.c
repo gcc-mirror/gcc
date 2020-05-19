@@ -38,7 +38,7 @@ main ()
 	assert (v.b[i] == v.a + i);
 
       assert (!acc_is_present (&v, sizeof (v)));
-      assert (!acc_is_present (v.b, sizeof (int *) * n));
+      assert (!acc_is_present (v.b, sizeof (int) * n));
     }
 
   return 0;
