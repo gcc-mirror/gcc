@@ -6,4 +6,5 @@ struct s;
 
 export s *S;
 
-// { dg-final { scan-assembler {S:} } }
+// { dg-final { scan-assembler {S:} { target { ! *-*-darwin* } } } }
+// { dg-final { scan-assembler {.zerofill __DATA,__pu_bss.,_S,} { target *-*-darwin* } } }

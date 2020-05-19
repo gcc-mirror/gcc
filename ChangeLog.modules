@@ -1,5 +1,10 @@
 2020-05-18  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/testsuite/
+	* g++.dg/modules/sym-subst-3_a.C: Adjust scan asm for Darwin.
+	* g++.dg/modules/init-2_b.C: Adjust scan-asms for Darwin.
+	* g++.dg/modules/init-2_c.C: Likewise.
+
 	gcc/cp/
 	* mapper-client.cc: Move fallback typedef for sighandler_t
 	from here ...
