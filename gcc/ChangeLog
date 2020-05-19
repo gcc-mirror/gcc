@@ -1,5 +1,10 @@
 2020-05-18  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
+	* gcc.c (append_split_outputs): Truncate temp_obj vector for the
+	next compilation.
+
+2020-05-18  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
 	* gcc.c (EMPTY_CMD): New macro.
 	(temp_object_files): New variable.
 	(get_path_to_ld): New function.

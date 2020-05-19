@@ -3400,6 +3400,8 @@ static void append_split_outputs (extra_arg_storer *storer,
 
 	    additional_ld->prog = path_to_ld;
 	    additional_ld->argv = argv;
+
+	    temp_object_files.truncate (0);
 	  }
 
 	additional_asm_files.release ();
@@ -3829,7 +3831,6 @@ execute (void)
 
   if (!have_S)
     append_split_outputs (&storer, &additional_ld, &commands, &n_commands);
-    
 
   if (!wrapper_string)
     {
