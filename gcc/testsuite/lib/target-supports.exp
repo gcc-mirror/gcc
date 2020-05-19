@@ -2767,6 +2767,16 @@ proc check_effective_target_large_return_values { } {
     }
     return 1
 }
+# Return 1 if we support 20-bit or larger array and structure sizes
+# using default options, 0 otherwise.
+# This implies at least a 24-bit address space, as no targets have an address
+# space between 20 and 24 bits.
+
+proc check_effective_target_size24plus { } {
+    return [check_no_compiler_messages size24plus object {
+	char dummy[524289L];
+    }]
+}
 
 # Return 1 if we support 24-bit or larger array and structure sizes
 # using default options, 0 otherwise.
@@ -2826,6 +2836,24 @@ proc check_effective_target_long_neq_int { } {
 proc check_effective_target_int_eq_float { } {
     return [check_no_compiler_messages int_eq_float object {
 	int dummy[sizeof (int) >= sizeof (float) ? 1 : -1];
+    }]
+}
+
+# Return 1 if short size is equal to int size,
+# 0 otherwise.
+
+proc check_effective_target_short_eq_int { } {
+    return [check_no_compiler_messages short_eq_int object {
+	int dummy[sizeof (short) == sizeof (int) ? 1 : -1];
+    }]
+}
+
+# Return 1 if pointer size is equal to short size,
+# 0 otherwise.
+
+proc check_effective_target_ptr_eq_short { } {
+    return [check_no_compiler_messages ptr_eq_short object {
+	int dummy[sizeof (void *) == sizeof (short) ? 1 : -1];
     }]
 }
 
@@ -10248,4 +10276,22 @@ proc check_effective_target_lgccjit { } {
   return [check_no_compiler_messages lgccjit executable {
      int main() { return 0; }
   } "-lgccjit"]
+}
+
+# Return 1 if the MSP430 small memory model is in use.
+proc check_effective_target_msp430_small {} {
+    return [check_no_compiler_messages msp430_small assembly {
+	#if (!defined __MSP430__ || defined __MSP430X_LARGE__)
+	#error !msp430 || __MSP430X_LARGE__
+	#endif
+    } ""]
+}
+
+# Return 1 if the MSP430 large memory model is in use.
+proc check_effective_target_msp430_large {} {
+    return [check_no_compiler_messages msp430_large assembly {
+	#ifndef __MSP430X_LARGE__
+	#error __MSP430X_LARGE__
+	#endif
+    } ""]
 }

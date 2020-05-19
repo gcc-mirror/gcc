@@ -1,3 +1,60 @@
+2020-05-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/87847
+	* pt.c (init_template_processing): Enable sanitization for
+	decl_specializations and type_specializations.
+
+	PR c++/66439
+	* pt.c (fn_type_unification): Pass 'fn' instead of NULL_TREE as
+	the 'in_decl' parameter to coerce_template_parms.
+
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94955
+	* typeck.c (cp_build_binary_op): Use fold_for_warn instead of
+	cp_fold_rvalue.
+
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94937
+	* cvt.c (cp_get_fndecl_from_callee): Return NULL_TREE if the function
+	type is not INDIRECT_TYPE_P.
+	* decl.c (omp_declare_variant_finalize_one): Call
+	cp_get_callee_fndecl_nofold instead of looking for the function decl
+	manually.
+
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90915
+	* parser.c (cp_parser_has_attribute_expression): Sorry on a
+	type-dependent argument.
+
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
+	DR 1512
+	PR c++/87699
+	* call.c (add_builtin_candidate) <case EQ_EXPR>: Create candidate
+	operator functions when type is std::nullptr_t for ==/!=.
+	* typeck.c (composite_pointer_type_r): Add a bool * parameter.  Use it
+	to maybe add "const" to the pointer type.
+	(composite_pointer_type): Update the call to composite_pointer_type_r.
+	(cp_build_binary_op): Turn two warning_at into error_at.  Print the
+	types.
+
+2020-05-18  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_over_call): Remove unnecessary
+	cp_stabilize_reference.
+
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
+	* call.c (add_builtin_candidate): Don't create a builtin overload
+	candidate for ++ when type is bool in C++17.
+
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
+	* cfns.h: Regenerated.
+
 2020-05-17  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (morph_fn_to_coro): Initialize the gro variable.

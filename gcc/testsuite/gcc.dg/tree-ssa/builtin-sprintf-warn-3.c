@@ -360,35 +360,35 @@ NOIPA void test_too_large (char *d, int x, __builtin_va_list va)
   const size_t imax_p1 = imax + 1;
 
   __builtin_snprintf (d, imax,    "%c", x);
-  __builtin_snprintf (d, imax_p1, "%c", x);   /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "INT_MAX + 1" { target lp64 } } */
-  /* { dg-warning "specified bound \[0-9\]+ exceeds maximum object size" "INT_MAX + 1" { target { { avr-*-* } || ilp32 } } .-1 } */
+  __builtin_snprintf (d, imax_p1, "%c", x);   /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "INT_MAX + 1" { target { lp64 || msp430_large } } } */
+  /* { dg-warning "specified bound \[0-9\]+ exceeds maximum object size" "INT_MAX + 1" { target { { avr-*-* } || { { ilp32 } || { int16 && { ! msp430_large } } } } } .-1 } */
 
   __builtin_vsnprintf (d, imax,    "%c", va);
-  __builtin_vsnprintf (d, imax_p1, "%c", va);   /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "INT_MAX + 1" { target lp64 } } */
-  /* { dg-warning "specified bound \[0-9\]+ exceeds maximum object size" "INT_MAX + 1" { target { { avr-*-* } || ilp32 } } .-1 } */
+  __builtin_vsnprintf (d, imax_p1, "%c", va);   /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "INT_MAX + 1" { target { lp64 || msp430_large } } } */
+  /* { dg-warning "specified bound \[0-9\]+ exceeds maximum object size" "INT_MAX + 1" { target { { avr-*-* } || { { ilp32 } || { int16 && { ! msp430_large } } } } } .-1 } */
 
   __builtin___snprintf_chk (d, imax,    0, imax,    "%c", x);
-  __builtin___snprintf_chk (d, imax_p1, 0, imax_p1, "%c", x);   /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "INT_MAX + 1" { target lp64 } } */
-  /* { dg-warning "specified bound \[0-9\]+ exceeds maximum object size" "INT_MAX + 1" { target { { avr-*-* } || ilp32 } } .-1 } */
+  __builtin___snprintf_chk (d, imax_p1, 0, imax_p1, "%c", x);   /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "INT_MAX + 1" { target { lp64 || msp430_large } } } */
+  /* { dg-warning "specified bound \[0-9\]+ exceeds maximum object size" "INT_MAX + 1" { target { { avr-*-* } || { { ilp32 } || { int16 && { ! msp430_large } } } } } .-1 } */
 
   __builtin___vsnprintf_chk (d, imax,    0, imax,    "%c", va);
-  __builtin___vsnprintf_chk (d, imax_p1, 0, imax_p1, "%c", va);   /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "INT_MAX + 1" { target lp64 } } */
-  /* { dg-warning "specified bound \[0-9\]+ exceeds maximum object size" "INT_MAX + 1" { target { { avr-*-* } || ilp32 } } .-1 } */
+  __builtin___vsnprintf_chk (d, imax_p1, 0, imax_p1, "%c", va);   /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "INT_MAX + 1" { target { lp64 || msp430_large } } } */
+  /* { dg-warning "specified bound \[0-9\]+ exceeds maximum object size" "INT_MAX + 1" { target { { avr-*-* } || { { ilp32 } || { int16 && { ! msp430_large } } } } } .-1 } */
 
   const size_t ptrmax = __PTRDIFF_MAX__;
   const size_t ptrmax_m1 = ptrmax - 1;
 
-  __builtin_snprintf (d, ptrmax_m1, "%c", x);  /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "PTRDIFF_MAX - 1" { target lp64 } } */
-  __builtin_snprintf (d, ptrmax, "  %c", x);   /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "PTRDIFF_MAX" { target lp64 } } */
+  __builtin_snprintf (d, ptrmax_m1, "%c", x);  /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "PTRDIFF_MAX - 1" { target { lp64 || msp430_large } } } */
+  __builtin_snprintf (d, ptrmax, "  %c", x);   /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "PTRDIFF_MAX" { target { lp64 || msp430_large } } } */
 
-  __builtin_vsnprintf (d, ptrmax_m1, "%c", va);   /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "PTRDIFF_MAX - 1" { target lp64 } } */
-  __builtin_vsnprintf (d, ptrmax,    "%c", va);   /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "PTRDIFF_MAX" { target lp64 } } */
+  __builtin_vsnprintf (d, ptrmax_m1, "%c", va);   /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "PTRDIFF_MAX - 1" { target { lp64 || msp430_large } } } */
+  __builtin_vsnprintf (d, ptrmax,    "%c", va);   /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "PTRDIFF_MAX" { target { lp64 || msp430_large } } } */
 
-  __builtin___snprintf_chk (d, ptrmax_m1, 0, ptrmax_m1, "%c", x);   /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "PTRDIFF_MAX - 1" { target lp64 } } */
-  __builtin___snprintf_chk (d, ptrmax,    0, ptrmax,    "%c", x);   /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "PTRDIFF_MAX" { target lp64 } } */
+  __builtin___snprintf_chk (d, ptrmax_m1, 0, ptrmax_m1, "%c", x);   /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "PTRDIFF_MAX - 1" { target { lp64 || msp430_large } } } */
+  __builtin___snprintf_chk (d, ptrmax,    0, ptrmax,    "%c", x);   /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "PTRDIFF_MAX" { target { lp64 || msp430_large } } } */
 
-  __builtin___vsnprintf_chk (d, ptrmax_m1, 0, ptrmax_m1, "%c", va);   /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "PTRDIFF_MAX - 1" { target lp64 } } */
-  __builtin___vsnprintf_chk (d, ptrmax,    0, ptrmax,    "%c", va);   /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "PTRDIFF_MAX" { target lp64 } } */
+  __builtin___vsnprintf_chk (d, ptrmax_m1, 0, ptrmax_m1, "%c", va);   /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "PTRDIFF_MAX - 1" { target { lp64 || msp430_large } } } */
+  __builtin___vsnprintf_chk (d, ptrmax,    0, ptrmax,    "%c", va);   /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "PTRDIFF_MAX" { target { lp64 || msp430_large } } } */
 }
 
 /* Exercise ordinary sprintf with malloc.  */

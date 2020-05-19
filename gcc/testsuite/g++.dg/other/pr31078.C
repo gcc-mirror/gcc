@@ -1,4 +1,5 @@
-typedef int SLONG;
+typedef int SLONG __attribute__((mode (__SI__)));
+
 typedef char SCHAR;
 typedef short SSHORT;
 typedef char TEXT;

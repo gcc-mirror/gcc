@@ -1,6 +1,7 @@
 // { dg-do assemble }
 // { dg-xfail-if "" { xstormy16-*-* } }
 // { dg-options "" }
+// { dg-skip-if "16-bit int overflow" int16 }
 
 extern "C" void qsort(void *base, __SIZE_TYPE__ nmemb, __SIZE_TYPE__ size,
               int (*compar)(const void *, const void *));

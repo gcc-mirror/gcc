@@ -2,6 +2,7 @@
 // { dg-do compile }
 // Verify the variables for inlined foo parameters are reused
 // { dg-options "-O2 -Wframe-larger-than=16384" }
+// { dg-require-effective-target size20plus }
 
 struct S { int a, b, c, d, e; char f[1024]; };
 void baz (int *, int *, int *, struct S *, int *, int *);

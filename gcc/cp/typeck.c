@@ -478,11 +478,12 @@ composite_pointer_error (const op_location_t &location,
 }
 
 /* Subroutine of composite_pointer_type to implement the recursive
-   case.  See that function for documentation of the parameters.  */
+   case.  See that function for documentation of the parameters.  And ADD_CONST
+   is used to track adding "const" where needed.  */
 
 static tree
 composite_pointer_type_r (const op_location_t &location,
-			  tree t1, tree t2, 
+			  tree t1, tree t2, bool *add_const,
 			  composite_pointer_operation operation,
 			  tsubst_flags_t complain)
 {
@@ -503,20 +504,17 @@ composite_pointer_type_r (const op_location_t &location,
       pointee2 = TYPE_PTRMEM_POINTED_TO_TYPE (t2);
     }
 
-  /* [expr.rel]
+  /* [expr.type]
 
-     Otherwise, the composite pointer type is a pointer type
-     similar (_conv.qual_) to the type of one of the operands,
-     with a cv-qualification signature (_conv.qual_) that is the
-     union of the cv-qualification signatures of the operand
-     types.  */
+     If T1 and T2 are similar types, the result is the cv-combined type of
+     T1 and T2.  */
   if (same_type_ignoring_top_level_qualifiers_p (pointee1, pointee2))
     result_type = pointee1;
   else if ((TYPE_PTR_P (pointee1) && TYPE_PTR_P (pointee2))
 	   || (TYPE_PTRMEM_P (pointee1) && TYPE_PTRMEM_P (pointee2)))
     {
       result_type = composite_pointer_type_r (location, pointee1, pointee2,
-					      operation, complain);
+					      add_const, operation, complain);
       if (result_type == error_mark_node)
 	return error_mark_node;
     }
@@ -529,9 +527,18 @@ composite_pointer_type_r (const op_location_t &location,
 	return error_mark_node;
       result_type = void_type_node;
     }
+  const int q1 = cp_type_quals (pointee1);
+  const int q2 = cp_type_quals (pointee2);
+  const int quals = q1 | q2;
   result_type = cp_build_qualified_type (result_type,
-					 (cp_type_quals (pointee1)
-					  | cp_type_quals (pointee2)));
+					 (quals | (*add_const
+						   ? TYPE_QUAL_CONST
+						   : TYPE_UNQUALIFIED)));
+  /* The cv-combined type can add "const" as per [conv.qual]/3.3 (except for
+     the TLQ).  The reason is that both T1 and T2 can then be converted to the
+     cv-combined type of T1 and T2.  */
+  if (quals != q1 || quals != q2)
+    *add_const = true;
   /* If the original types were pointers to members, so is the
      result.  */
   if (TYPE_PTRMEM_P (t1))
@@ -556,7 +563,7 @@ composite_pointer_type_r (const op_location_t &location,
   return build_type_attribute_variant (result_type, attributes);
 }
 
-/* Return the composite pointer type (see [expr.rel]) for T1 and T2.
+/* Return the composite pointer type (see [expr.type]) for T1 and T2.
    ARG1 and ARG2 are the values with those types.  The OPERATION is to
    describe the operation between the pointer types,
    in case an error occurs.
@@ -573,7 +580,7 @@ composite_pointer_type (const op_location_t &location,
   tree class1;
   tree class2;
 
-  /* [expr.rel]
+  /* [expr.type]
 
      If one operand is a null pointer constant, the composite pointer
      type is the type of the other operand.  */
@@ -584,10 +591,10 @@ composite_pointer_type (const op_location_t &location,
 
   /* We have:
 
-       [expr.rel]
+       [expr.type]
 
-       If one of the operands has type "pointer to cv1 void*", then
-       the other has type "pointer to cv2T", and the composite pointer
+       If one of the operands has type "pointer to cv1 void", then
+       the other has type "pointer to cv2 T", and the composite pointer
        type is "pointer to cv12 void", where cv12 is the union of cv1
        and cv2.
 
@@ -719,7 +726,9 @@ composite_pointer_type (const op_location_t &location,
         }
     }
 
-  return composite_pointer_type_r (location, t1, t2, operation, complain);
+  bool add_const = false;
+  return composite_pointer_type_r (location, t1, t2, &add_const, operation,
+				   complain);
 }
 
 /* Return the merged type of two types.
@@ -5316,17 +5325,19 @@ cp_build_binary_op (const op_location_t &location,
 					      CPO_COMPARISON, complain);
       else if (code0 == POINTER_TYPE && null_ptr_cst_p (orig_op1))
 	{
-	  result_type = type0;
-	  if (extra_warnings && (complain & tf_warning))
-	    warning_at (location, OPT_Wextra,
-			"ordered comparison of pointer with integer zero");
+	  /* Core Issue 1512 made this ill-formed.  */
+	  if (complain & tf_error)
+	    error_at (location, "ordered comparison of pointer with "
+		      "integer zero (%qT and %qT)", type0, type1);
+	  return error_mark_node;
 	}
       else if (code1 == POINTER_TYPE && null_ptr_cst_p (orig_op0))
 	{
-	  result_type = type1;
-	  if (extra_warnings && (complain & tf_warning))
-	    warning_at (location, OPT_Wextra,
-			"ordered comparison of pointer with integer zero");
+	  /* Core Issue 1512 made this ill-formed.  */
+	  if (complain & tf_error)
+	    error_at (location, "ordered comparison of pointer with "
+		      "integer zero (%qT and %qT)", type0, type1);
+	  return error_mark_node;
 	}
       else if (null_ptr_cst_p (orig_op0) && null_ptr_cst_p (orig_op1))
 	/* One of the operands must be of nullptr_t type.  */
@@ -5622,7 +5633,9 @@ cp_build_binary_op (const op_location_t &location,
 	{
 	  int unsigned_arg;
 	  tree arg0 = get_narrower (op0, &unsigned_arg);
-	  tree const_op1 = cp_fold_rvalue (op1);
+	  /* We're not really warning here but when we set short_shift we
+	     used fold_for_warn to fold the operand.  */
+	  tree const_op1 = fold_for_warn (op1);
 
 	  final_type = result_type;
 

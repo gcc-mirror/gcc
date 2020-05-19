@@ -1,3 +1,14 @@
+2020-05-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95053
+	* arith.c (gfc_divide): Revert hunk introduced by patch for
+	PR93499.
+	* decl.c (variable_decl): Generate error for array shape not being
+	an INTEGER constant.
+	(gfc_get_pdt_instance): Generate error if KIND or LEN expressions
+	in declaration of a PDT instance do not simplify to INTEGER
+	constants.
+
 2020-05-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/94690

@@ -6,7 +6,7 @@ template <typename T>
 void
 f (signed char i, int *p)
 {
-  if (i)
+  if (i) // { dg-warning "this condition has identical branches" "" { target short_eq_int } }
     *p = (signed short) i;
   else
     *p = (unsigned short) i;

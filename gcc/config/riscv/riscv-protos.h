@@ -87,7 +87,7 @@ extern tree riscv_builtin_decl (unsigned int, bool);
 extern void riscv_init_builtins (void);
 
 /* Routines implemented in riscv-common.c.  */
-extern std::string riscv_arch_str ();
+extern std::string riscv_arch_str (bool version_p = true);
 
 extern bool riscv_hard_regno_rename_ok (unsigned, unsigned);
 

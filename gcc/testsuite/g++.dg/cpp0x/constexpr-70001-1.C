@@ -1,5 +1,6 @@
 // PR c++/70001
 // { dg-do compile { target c++11 } }
+// { dg-require-effective-target size24plus }
 
 struct B
 {

@@ -1,3 +1,245 @@
+2020-05-19  Nathan Sidwell  <nathan@acm.org>
+
+	* c-c++-common/raw-string-14.c: Adjust errors.
+	* c-c++-common/raw-string-16.c: Likewise.
+	* c-c++-common/raw-string-5.c: Likewise.
+
+2020-05-19  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/pr92645-4.c: Adjust expected pattern.
+
+2020-05-19  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* c-c++-common/builtin-has-attribute-7.c: Require size24plus.
+	* c-c++-common/cpp/pr63831-1.c: Store result in _has_cpp_attribute in a
+	long.
+	* c-c++-common/pr81376.c: Skip scan-tree-dump for short_eq_int. Extend
+	test for short_eq_int.
+	* g++.dg/abi/scoped1.C: Skip dg-warning tests for short_eq_int.
+	* g++.dg/cpp0x/constexpr-70001-1.C: Require size24plus.
+	* g++.dg/cpp0x/constexpr-bitfield3.C: Require int32plus.
+	* g++.dg/cpp0x/enum13.C: Skip dg-warning for short_eq_int.
+	* g++.dg/cpp0x/initlist5.C: Add dg-error for short_eq_int.
+	* g++.dg/cpp0x/initlist7.C: Add dg-warning for !int32plus.
+	* g++.dg/cpp0x/nullptr04.C: Skip dg-error for ptr_eq_short.
+	* g++.dg/cpp0x/variadic-value1.C: Add typedef for int32_t.
+	* g++.dg/cpp1y/constexpr-arith-overflow.C: Fix test for
+	sizeof(int) == sizeof(short).
+	* g++.dg/cpp1y/digit-sep-neg.C: Add typedef for int32_t.
+	* g++.dg/cpp1y/pr57644.C: Add typedef for uint32_t.
+	* g++.dg/cpp1y/pr77321.C: Require size24plus.
+	* g++.dg/cpp1y/var-templ4.C: Add typedef for int32_t.
+	* g++.dg/cpp1z/direct-enum-init1.C: Skip dg-error for short_eq_int.
+	* g++.dg/delayedfold/fwrapv1.C: Skip for int16.
+	* g++.dg/expr/bitfield9.C: Add typedef for int32_t.
+	* g++.dg/ext/attribute-test-1.C: Add typedef for uint32_t.
+	* g++.dg/ext/bitfield1.C: Add typedef for int32_t.
+	* g++.dg/ext/flexary13.C: Add typedef for int32_t.
+	* g++.dg/ext/utf-cvt.C: Adjust dg-warning for int16.
+	* g++.dg/ext/vector28.C: Add typedef for int32_t.
+	* g++.dg/ext/vla15.C: Add typedef for int32_t.
+	* g++.dg/init/array11.C: Require size32plus.
+	* g++.dg/init/array15.C: Require size24plus.
+	* g++.dg/init/array4.C: Require size20plus.
+	* g++.dg/init/const7.C: Skip dg-message for ptr_eq_short.
+	* g++.dg/init/new38.C: Relax regex in dg-error.
+	* g++.dg/init/new44.C: Skip dg-error for msp430_small.
+	Adjust test for 16-bit size_t.
+	Add special case for msp430 -mlarge.
+	* g++.dg/init/value9.C: Add typedef for int32_t.
+	* g++.dg/ipa/pr77333.C: Add typedef for int32_t.
+	* g++.dg/lto/20080908-1_0.C: Add typedef for int32_t.
+	* g++.dg/opt/pr55717.C: Add typedef for uint32_t.
+	* g++.dg/opt/pr60597.C: Add typedef for int32_t.
+	* g++.dg/opt/pr81715.C: Require size20plus.
+	* g++.dg/opt/reload3.C: Add typedef for uint32_t.
+	* g++.dg/opt/temp2.C: Require size20plus.
+	* g++.dg/opt/thunk1.C: Likewise.
+	* g++.dg/other/error23.C: Dont assume __SIZEOF_INT__ == 4.
+	* g++.dg/other/pr31078.C: Adjust typedef for 32-bit int.
+	* g++.dg/parse/concat1.C: Skip dg-error for size20plus.
+	* g++.dg/parse/defarg5.C: Add typedef for int32_t and uint32_t.
+	* g++.dg/pr48484.C: Add typedef for int32_t.
+	* g++.dg/pr53037-2.C: Likewise.
+	* g++.dg/pr53037-3.C: Likewise.
+	* g++.dg/pr66655.C: Use int32_t.
+	* g++.dg/pr66655.h: Add typedef for int32_t.
+	* g++.dg/pr66655_1.cc: Use int32_t.
+	* g++.dg/pr67351.C: Define 32-bit uint.
+	* g++.dg/template/array30.C: Add typedef for int32_t.
+	* g++.dg/template/constant1.C: Extend test for 8-bit and 16-bit int.
+	* g++.dg/template/constant2.C: Likewise.
+	* g++.dg/template/friend18.C: Add typedef for int32_t.
+	* g++.dg/template/pr68978.C: Likewise.
+	* g++.dg/torture/pr37421.C: Require int_eq_float.
+	* g++.dg/torture/pr88861.C: Handle 16-bit int.
+	* g++.dg/tree-ssa/pr19807.C: Likewise.
+	* g++.dg/tree-ssa/pr27291.C: Fix typedef for uint32_t.
+	* g++.dg/tree-ssa/pr49516.C: Fix typedefs for int{16,32}_t and
+	uint{32,64}_t.
+	* g++.dg/warn/Wconversion-integer.C: Add typedefs for {u,}int32_t.
+	* g++.dg/warn/Wconversion-null-2.C: Adjust g() declaration.
+	* g++.dg/warn/Wconversion-null.C: Likewise.
+	* g++.dg/warn/Wconversion3.C: Skip dg-warning for short_eq_int.
+	* g++.dg/warn/Wduplicated-branches1.C: Add dg-warning for short_eq_int.
+	* g++.dg/warn/Wplacement-new-size-5.C: Add typedef for int32_t.
+	* g++.dg/warn/Wplacement-new-size.C: Likewise.
+	* g++.dg/warn/Wstrict-aliasing-5.C: Add typedef for uint32_t.
+	* g++.dg/warn/Wstrict-aliasing-bogus-signed-unsigned.C: Add typedef for
+	{u,}int32_t.
+	* g++.dg/warn/Wtype-limits-Wextra.C: Adjust dg-warning for
+	short_eq_int.
+	* g++.dg/warn/Wtype-limits.C: Likewise.
+	* g++.old-deja/g++.brendan/enum11.C: Add typedef for uint32_t.
+	* g++.old-deja/g++.bugs/900227_01.C: Skip dg-error for ptr_eq_short.
+	* g++.old-deja/g++.mike/ns15.C: Require size20plus.
+	* g++.old-deja/g++.other/exprstmt1.C: Add typedef for uint32_t.
+	* g++.old-deja/g++.other/inline12.C: Adjust udword typedef.
+	* g++.old-deja/g++.other/new6.C: Add typedef for int32_t.
+	* g++.old-deja/g++.pt/crash16.C: Skip for int16.
+	* g++.old-deja/g++.robertl/eb76.C: Likewise.
+	* g++.old-deja/g++.warn/flow1.C: Add typedef for int32_t.
+	* gcc.dg/Walloca-14.c: Adjust -Walloca-larger-than= parameter for
+	!ptr32plus.
+	* gcc.dg/Warray-bounds-32.c: Adjust dg-warning for size20plus.
+	* gcc.dg/Wbuiltin-declaration-mismatch-4.c: Adjust dg-warning for
+	short_eq_int.
+	Handle case where ptrdiff_t/size_t is __int20.
+	* gcc.dg/concat2.c: Skip dg-error for size20plus.
+	* gcc.dg/fold-convmaxconv-1.c: Add typedef for {u,}int32_t.
+	* gcc.dg/fold-convminconv-1.c: Likewise.
+	* gcc.dg/graphite/scop-4.c: Require size20plus.
+	* gcc.dg/loop-versioning-1.c: Adjust test for small size_t.
+	* gcc.dg/loop-versioning-2.c: Require size20plus.
+	* gcc.dg/lto/20081210-1_0.c: Adjust typedef for uintptr_t.
+	* gcc.dg/lto/pr85870_0.c: Add typedef for uint32_t.
+	* gcc.dg/lto/pr85870_1.c: Likewise.
+	* gcc.dg/pr36227.c: Adjust typedef for ptrcast.
+	* gcc.dg/pr42611.c: First check for size_t equality with void *
+	before trying other types.
+	* gcc.dg/pr59963-2.c: Skip dg-warning for int16 instead of
+	xfail.
+	* gcc.dg/pr68317.c: Add typedef for int32_t.
+	* gcc.dg/pr78973.c: Adjust dg-warning for int16.
+	* gcc.dg/pr85859.c: Cast using __INTPTR_TYPE__ instead of long.
+	* gcc.dg/pr86179.c: Add typedef for {u,}int32_t.
+	* gcc.dg/torture/20181024-1.c: Require size32plus.
+	* gcc.dg/torture/pr71598-2.c: Skip for short_eq_int.
+	* gcc.dg/torture/pr86034.c: Add typedef for int32_t.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-3.c: Adjust dg-warning
+	for int16 and msp430 -mlarge.
+	* gcc.dg/tree-ssa/integer-addr.c: Use __INTPTR_MAX__ for a large
+	constant that is a valid address.
+	* gcc.dg/tree-ssa/loop-interchange-10.c: Add typedef for
+	int32_t.
+	* gcc.dg/tree-ssa/pr84436-3.c: Adjust dg-final for int16.
+	* gcc.dg/tree-ssa/pr84648.c: Add typedef for uint32_t.
+	* gcc.dg/tree-ssa/scev-8.c: Cast to char if sizeof(int) ==
+	sizeof(short).
+	* gcc.dg/tree-ssa/ssa-dom-thread-8.c: Adjust test for msp430 -mlarge.
+	* lib/target-supports.exp (check_effective_target_size24plus): New.
+	(check_effective_target_short_eq_int): New.
+	(check_effective_target_ptr_eq_short): New.
+	(check_effective_target_msp430_small): New.
+	(check_effective_target_msp430_large): New.
+
+2020-05-19  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.target/bpf/xbpf-callee-saved-regs-1.c: New test.
+	* gcc.target/bpf/xbpf-callee-saved-regs-2.c: Likewise.
+
+2020-05-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/92658
+	* gcc.target/i386/pr92658-sse4.c: New test.
+	* gcc.target/i386/pr92658-avx2.c: New test.
+	* gcc.target/i386/pr92658-avx512bw.c: New test.
+
+2020-05-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/arch-6.c: New.
+	* gcc.target/riscv/attribute-11.c: New.
+	* gcc.target/riscv/attribute-12.c: New.
+
+2020-05-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/arch-3.c: Adjust option.
+	* gcc.target/riscv/arch-5.c: New.
+	* gcc.target/riscv/attribute-9.c: Adjust option and test
+	condition.
+
+2020-05-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/66439
+	* g++.dg/cpp2a/concepts-ts4.C: Expect a "type/value mismatch"
+	diagnostic.
+	* g++.dg/cpp2a/concepts-ts6.C: Likewise.
+	* g++.dg/template/error56.C: Likewise.
+	* g++.dg/template/error59.C: New test.
+
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94955
+	* g++.dg/cpp0x/constexpr-shift2.C: New test.
+
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94937
+	* g++.dg/cpp1z/constexpr-if34.C: New test.
+	* g++.dg/cpp2a/is-constant-evaluated10.C: New test.
+
+2020-05-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/92815
+	* gcc.dg/builtin-object-size-20.c: Adjust to avoid failures in
+	ILP32 mode.
+
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90915
+	* g++.dg/ext/builtin-has-attribute.C: New test.
+
+2020-05-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/92815
+	* gcc.dg/Warray-bounds-56.c: Remove xfails.
+	* gcc.dg/builtin-object-size-20.c: New test.
+	* gcc.dg/builtin-object-size-21.c: New test.
+
+2020-05-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/94940
+	* gcc.dg/Warray-bounds-61.c: New test.
+
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
+	DR 1512
+	PR c++/87699
+	* g++.dg/cpp0x/constexpr-array-ptr10.C: Change dg-warning to dg-error
+	and adjust the expected messages in dg-error.
+	* g++.dg/expr/composite-ptr-type.C: New test.
+	* g++.dg/expr/ptr-comp1.C: New test.
+	* g++.dg/expr/ptr-comp2.C: New test.
+	* g++.dg/expr/ptr-comp3.C: New test.
+	* g++.dg/overload/builtin4.C: New test.
+	* g++.dg/warn/Wextra-3.C: Change dg-warning to dg-error.
+
+2020-05-18  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/overload/builtin5.C: New test.
+
+2020-05-18  Doug Rupp  <rupp@adacore.com>
+
+	* gcc.target/powerpc/pr71763.c: Require powerpc_vsx_ok.
+
+2020-05-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95053
+	* gfortran.dg/dec_structure_23.f90: Adjust to new error messages.
+	* gfortran.dg/pr93499.f90: Adjust to new error messages.
+	* gfortran.dg/pr95053_2.f90: New test.
+	* gfortran.dg/pr95053_3.f90: New test.
+
 2020-05-18  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/95143

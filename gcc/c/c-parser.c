@@ -73,7 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 /* We need to walk over decls with incomplete struct/union/enum types
    after parsing the whole translation unit.
    In finish_decl(), if the decl is static, has incomplete
-   struct/union/enum type, it is appeneded to incomplete_record_decls.
+   struct/union/enum type, it is appended to incomplete_record_decls.
    In c_parser_translation_unit(), we iterate over incomplete_record_decls
    and report error if any of the decls are still incomplete.  */ 
 

@@ -6,18 +6,18 @@ void f(int i, ...)
 {
   __builtin_va_list ap;
   __builtin_va_start (ap, i);
-  if (__builtin_va_arg (ap, A) != A::a1) __builtin_abort(); // { dg-warning "passed" }
-  if (__builtin_va_arg (ap, A) != A::a2) __builtin_abort(); // { dg-warning "passed" }
-  if (__builtin_va_arg (ap, A) != A::a3) __builtin_abort(); // { dg-warning "passed" }
-  if (__builtin_va_arg (ap, A) != A::a1) __builtin_abort(); // { dg-warning "passed" }
-  if (__builtin_va_arg (ap, A) != A::a2) __builtin_abort(); // { dg-warning "passed" }
-  if (__builtin_va_arg (ap, A) != A::a3) __builtin_abort(); // { dg-warning "passed" }
-  if (__builtin_va_arg (ap, A) != A::a1) __builtin_abort(); // { dg-warning "passed" }
-  if (__builtin_va_arg (ap, A) != A::a2) __builtin_abort(); // { dg-warning "passed" }
-  if (__builtin_va_arg (ap, A) != A::a3) __builtin_abort(); // { dg-warning "passed" }
+  if (__builtin_va_arg (ap, A) != A::a1) __builtin_abort(); // { dg-warning "passed" "" { target { ! short_eq_int } } }
+  if (__builtin_va_arg (ap, A) != A::a2) __builtin_abort(); // { dg-warning "passed" "" { target { ! short_eq_int } } }
+  if (__builtin_va_arg (ap, A) != A::a3) __builtin_abort(); // { dg-warning "passed" "" { target { ! short_eq_int } } }
+  if (__builtin_va_arg (ap, A) != A::a1) __builtin_abort(); // { dg-warning "passed" "" { target { ! short_eq_int } } }
+  if (__builtin_va_arg (ap, A) != A::a2) __builtin_abort(); // { dg-warning "passed" "" { target { ! short_eq_int } } }
+  if (__builtin_va_arg (ap, A) != A::a3) __builtin_abort(); // { dg-warning "passed" "" { target { ! short_eq_int } } }
+  if (__builtin_va_arg (ap, A) != A::a1) __builtin_abort(); // { dg-warning "passed" "" { target { ! short_eq_int } } }
+  if (__builtin_va_arg (ap, A) != A::a2) __builtin_abort(); // { dg-warning "passed" "" { target { ! short_eq_int } } }
+  if (__builtin_va_arg (ap, A) != A::a3) __builtin_abort(); // { dg-warning "passed" "" { target { ! short_eq_int } } }
 }
 
 int main()
 {
-  f(9, A::a1, A::a2, A::a3, A::a1, A::a2, A::a3, A::a1, A::a2, A::a3);	// { dg-warning "passed" }
+  f(9, A::a1, A::a2, A::a3, A::a1, A::a2, A::a3, A::a1, A::a2, A::a3);	// { dg-warning "passed" "" { target { ! short_eq_int } } }
 }
