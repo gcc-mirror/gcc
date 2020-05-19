@@ -8408,114 +8408,9 @@ package body Checks is
       Loc : constant Source_Ptr := Sloc (Parent (N));
       Typ : constant Entity_Id  := Etype (N);
 
-      function Safe_To_Capture_In_Parameter_Value return Boolean;
-      --  Determines if it is safe to capture Known_Non_Null status for an
-      --  the entity referenced by node N. The caller ensures that N is indeed
-      --  an entity name. It is safe to capture the non-null status for an IN
-      --  parameter when the reference occurs within a declaration that is sure
-      --  to be executed as part of the declarative region.
-
       procedure Mark_Non_Null;
       --  After installation of check, if the node in question is an entity
       --  name, then mark this entity as non-null if possible.
-
-      function Safe_To_Capture_In_Parameter_Value return Boolean is
-         E     : constant Entity_Id := Entity (N);
-         S     : constant Entity_Id := Current_Scope;
-         S_Par : Node_Id;
-
-      begin
-         if Ekind (E) /= E_In_Parameter then
-            return False;
-         end if;
-
-         --  Two initial context checks. We must be inside a subprogram body
-         --  with declarations and reference must not appear in nested scopes.
-
-         if (Ekind (S) /= E_Function and then Ekind (S) /= E_Procedure)
-           or else Scope (E) /= S
-         then
-            return False;
-         end if;
-
-         S_Par := Parent (Parent (S));
-
-         if Nkind (S_Par) /= N_Subprogram_Body
-           or else No (Declarations (S_Par))
-         then
-            return False;
-         end if;
-
-         declare
-            N_Decl : Node_Id;
-            P      : Node_Id;
-
-         begin
-            --  Retrieve the declaration node of N (if any). Note that N
-            --  may be a part of a complex initialization expression.
-
-            P := Parent (N);
-            N_Decl := Empty;
-            while Present (P) loop
-
-               --  If we have a short circuit form, and we are within the right
-               --  hand expression, we return false, since the right hand side
-               --  is not guaranteed to be elaborated.
-
-               if Nkind (P) in N_Short_Circuit
-                 and then N = Right_Opnd (P)
-               then
-                  return False;
-               end if;
-
-               --  Similarly, if we are in an if expression and not part of the
-               --  condition, then we return False, since neither the THEN or
-               --  ELSE dependent expressions will always be elaborated.
-
-               if Nkind (P) = N_If_Expression
-                 and then N /= First (Expressions (P))
-               then
-                  return False;
-               end if;
-
-               --  If within a case expression, and not part of the expression,
-               --  then return False, since a particular dependent expression
-               --  may not always be elaborated
-
-               if Nkind (P) = N_Case_Expression
-                 and then N /= Expression (P)
-               then
-                  return False;
-               end if;
-
-               --  While traversing the parent chain, if node N belongs to a
-               --  statement, then it may never appear in a declarative region.
-
-               if Nkind (P) in N_Statement_Other_Than_Procedure_Call
-                 or else Nkind (P) = N_Procedure_Call_Statement
-               then
-                  return False;
-               end if;
-
-               --  If we are at a declaration, record it and exit
-
-               if Nkind (P) in N_Declaration
-                 and then Nkind (P) not in N_Subprogram_Specification
-               then
-                  N_Decl := P;
-                  exit;
-               end if;
-
-               P := Parent (P);
-            end loop;
-
-            if No (N_Decl) then
-               return False;
-            end if;
-
-            return List_Containing (N_Decl) = Declarations (S_Par);
-         end;
-      end Safe_To_Capture_In_Parameter_Value;
 
       -------------------
       -- Mark_Non_Null --
@@ -8532,19 +8427,10 @@ package body Checks is
 
             Set_Is_Known_Null (Entity (N), False);
 
-            --  We can mark the entity as known to be non-null if either it is
-            --  safe to capture the value, or in the case of an IN parameter,
-            --  which is a constant, if the check we just installed is in the
-            --  declarative region of the subprogram body. In this latter case,
-            --  a check is decisive for the rest of the body if the expression
-            --  is sure to be elaborated, since we know we have to elaborate
-            --  all declarations before executing the body.
+            --  We can mark the entity as known to be non-null if it is safe to
+            --  capture the value.
 
-            --  Couldn't this always be part of Safe_To_Capture_Value ???
-
-            if Safe_To_Capture_Value (N, Entity (N))
-              or else Safe_To_Capture_In_Parameter_Value
-            then
+            if Safe_To_Capture_Value (N, Entity (N)) then
                Set_Is_Known_Non_Null (Entity (N));
             end if;
          end if;
