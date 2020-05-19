@@ -27,3 +27,4 @@ void test01()
 }
 
 // { dg-prune-output "tuple_element<2" }
+// { dg-prune-output "type/value mismatch" }

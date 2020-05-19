@@ -20989,7 +20989,7 @@ fn_type_unification (tree fn,
       /* Adjust any explicit template arguments before entering the
 	 substitution context.  */
       explicit_targs
-	= (coerce_template_parms (tparms, explicit_targs, NULL_TREE,
+	= (coerce_template_parms (tparms, explicit_targs, fn,
 				  complain|tf_partial,
 				  /*require_all_args=*/false,
 				  /*use_default_args=*/false));
