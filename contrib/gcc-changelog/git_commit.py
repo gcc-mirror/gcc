@@ -151,7 +151,12 @@ LINE_LIMIT = 100
 TAB_WIDTH = 8
 CO_AUTHORED_BY_PREFIX = 'co-authored-by: '
 CHERRY_PICK_PREFIX = '(cherry picked from commit '
+REVIEWED_BY_PREFIX = 'reviewed-by: '
+REVIEWED_ON_PREFIX = 'reviewed-on: '
+SIGNED_OFF_BY_PREFIX = 'signed-off-by: '
 
+REVIEW_PREFIXES = (REVIEWED_BY_PREFIX, REVIEWED_ON_PREFIX,\
+                   SIGNED_OFF_BY_PREFIX)
 
 class Error:
     def __init__(self, message, line=None):
@@ -345,10 +350,14 @@ class GitCommit:
                     else:
                         pr_line = line.lstrip()
 
-                if line.lower().startswith(CO_AUTHORED_BY_PREFIX):
+
+                lowered_line = line.lower()
+                if lowered_line.startswith(CO_AUTHORED_BY_PREFIX):
                     name = line[len(CO_AUTHORED_BY_PREFIX):]
                     author = self.format_git_author(name)
                     self.co_authors.append(author)
+                    continue
+                elif lowered_line.startswith(REVIEW_PREFIXES):
                     continue
                 elif line.startswith(CHERRY_PICK_PREFIX):
                     continue
