@@ -500,11 +500,11 @@ class GitCommit:
                     err = Error(msg % (entry.folder, changelog_location), file)
                     self.errors.append(err)
 
-    def to_changelog_entries(self):
+    def to_changelog_entries(self, use_commit_ts=False):
         for entry in self.changelog_entries:
             output = ''
             timestamp = entry.datetime
-            if not timestamp:
+            if not timestamp or use_commit_ts:
                 timestamp = self.date.strftime('%Y-%m-%d')
             authors = entry.authors if entry.authors else [self.author]
             # add Co-Authored-By authors to all ChangeLog entries
