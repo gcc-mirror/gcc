@@ -38,7 +38,7 @@ def prepend_to_changelog_files(repo, folder, git_commit):
             print(error)
         # TODO: add error message
         return
-    for entry, output in git_commit.to_changelog_entries():
+    for entry, output in git_commit.to_changelog_entries(use_commit_ts=True):
         # TODO
         full_path = os.path.join(folder, entry, 'ChangeLog.test')
         print('writting to %s' % full_path)
