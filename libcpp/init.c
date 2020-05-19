@@ -674,8 +674,7 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname, bool unlined)
 		      : CPP_OPTION (pfile, main_search) == 1
 		      ? pfile->quote_include
 		      : pfile->bracket_include,
-		      /*angle=*/0, /*fake=*/false,
-		      /*preinclude=*/false, /*hasinclude=*/false, 0);
+		      /*angle=*/0, FFK_NORMAL, 0);
 
   const char *found_name = _cpp_found_name (pfile->main_file);
 

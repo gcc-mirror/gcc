@@ -1,3 +1,13 @@
+2020-05-19  Nathan Sidwell  <nathan@acm.org>
+
+	libcpp/
+	* internal.h (enum _find_file_kind): New.
+	(_cpp_find_file): Use it, not 3 bools.
+	* files.c (_cpp_find_file): Use _find_file_kind enum, not bools.
+	(_cpp_stack_include, cpp_find_header_unit, _cpp_fake_include)
+	(_cpp_do_file_change, _cpp_compare_file_date): Adjust.
+	* init.c (cpp_read_main): Adjust _cpp_find_file call.
+
 2020-05-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/testsuite/

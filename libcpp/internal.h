@@ -693,10 +693,9 @@ extern void _cpp_init_hashtable (cpp_reader *, cpp_hash_table *);
 extern void _cpp_destroy_hashtable (cpp_reader *);
 
 /* In files.c */
-typedef struct _cpp_file _cpp_file;
+enum _find_file_kind { FFK_NORMAL, FFK_FAKE, FFK_PRE_INCLUDE, FFK_HAS_INCLUDE };
 extern _cpp_file *_cpp_find_file (cpp_reader *, const char *, cpp_dir *,
-				  int angle, bool fake, bool preinclude,
-				  bool has_include, location_t);
+				  int angle, _find_file_kind, location_t);
 extern const char *_cpp_found_name (_cpp_file *);
 extern void _cpp_mark_file_once_only (cpp_reader *, struct _cpp_file *);
 extern void _cpp_fake_include (cpp_reader *, const char *);
