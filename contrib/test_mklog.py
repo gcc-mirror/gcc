@@ -319,6 +319,31 @@ gcc/testsuite/ChangeLog:
 
 '''
 
+PATCH6 = '''\
+diff --git a/gcc/cgraph.h b/gcc/cgraph.h
+index 5ddeb65269b..cfae6e91da9 100644
+--- a/gcc/cgraph.h
++++ b/gcc/cgraph.h
+@@ -937,7 +937,8 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
+       split_part (false), indirect_call_target (false), local (false),
+       versionable (false), can_change_signature (false),
+       redefined_extern_inline (false), tm_may_enter_irr (false),
+-      ipcp_clone (false), m_uid (uid), m_summary_id (-1)
++      ipcp_clone (false), declare_variant_alt (false),
++      calls_declare_variant_alt (false), m_uid (uid), m_summary_id (-1)
+   {}
+ 
+   /* Remove the node from cgraph and all inline clones inlined into it.
+
+'''
+
+EXPECTED6 = '''\
+gcc/ChangeLog:
+
+	* cgraph.h (struct cgraph_node):
+
+'''
+
 class TestMklog(unittest.TestCase):
     def test_macro_definition(self):
         changelog = generate_changelog(PATCH1)
@@ -343,3 +368,7 @@ class TestMklog(unittest.TestCase):
     def test_pr_bugzilla_download(self):
         changelog = generate_changelog(PATCH5, fill_pr_titles=True)
         assert changelog == EXPECTED5
+
+    def test_gty_in_struct(self):
+        changelog = generate_changelog(PATCH6, fill_pr_titles=True)
+        assert changelog == EXPECTED6
