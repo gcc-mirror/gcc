@@ -1,3 +1,7 @@
+2020-05-19  Martin Liska  <mliska@suse.cz>
+
+	* c-parser.c: Fix typo.
+
 2020-05-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_target): Set cfun->has_omp_target.
