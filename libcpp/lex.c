@@ -4206,9 +4206,9 @@ do_peek_module (cpp_reader *pfile, unsigned char c,
 	}
       /* Identifier. Ok.  */
     }
-  else if (p == '_'
-	   || (p >= 'a' && p <= 'z')
-	   || (p >= 'A' && p <= 'Z'))
+  else if ('Z' - 'A' == 25
+	   ? ((p >= 'A' && p <= 'Z') || (p >= 'a' && p <= 'z') || p == '_')
+	   : ISIDST (p))
     {
       /* IDENTIFIER.  Ok. */
     }

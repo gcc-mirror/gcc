@@ -8875,9 +8875,10 @@ add_imported_namespace (tree ctx, tree name, unsigned origin, location_t loc,
     }
   else if (DECL_NAMESPACE_INLINE_P (decl) != inline_p)
     {
-      error_at (loc, inline_p ? G_("expected %qD to be an inline namespace")
-		: G_("expected %qD to be a non-inline namespace"), decl);
-      inform (DECL_SOURCE_LOCATION (decl), "namespace introduced here");
+      error_at (loc, "%s namespace %qD conflicts with reachable definition",
+		inline_p ? "inline" : "non-inline", decl);
+      inform (DECL_SOURCE_LOCATION (decl), "reachable %s definition here",
+	      inline_p ? "non-inline" : "inline");
     }
 
   if (TREE_PUBLIC (decl) && TREE_CODE (*slot) == MODULE_VECTOR)
