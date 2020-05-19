@@ -1,3 +1,7 @@
+2020-05-19  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/pr92645-4.c: Adjust expected pattern.
+
 2020-05-19  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* c-c++-common/builtin-has-attribute-7.c: Require size24plus.
