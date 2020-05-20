@@ -7054,11 +7054,11 @@ package body Freeze is
       --  as well.
 
       function In_Expanded_Body (N : Node_Id) return Boolean;
-      --  Given an N_Handled_Sequence_Of_Statements node N, determines whether
-      --  it is the handled statement sequence of an expander-generated
-      --  subprogram: init proc, stream subprogram, renaming as body, or body
-      --  created for an expression function. If so, this is not a freezing
-      --  context and the entity will be frozen at a later point.
+      --  Given an N_Handled_Sequence_Of_Statements node, determines whether it
+      --  is the statement sequence of an expander-generated subprogram: body
+      --  created for an expression function, for a predicate function, an init
+      --  proc, a stream subprogram, or a renaming as body. If so, this is not
+      --  a freezing context and the entity will be frozen at a later point.
 
       -----------------------------------------
       -- Find_Aggregate_Component_Desig_Type --
@@ -7111,6 +7111,13 @@ package body Freeze is
 
          elsif Was_Expression_Function (P) then
             return not Comes_From_Source (P);
+
+         --  This is the body of a generated predicate function
+
+         elsif Present (Corresponding_Spec (P))
+           and then Is_Predicate_Function (Corresponding_Spec (P))
+         then
+            return True;
 
          else
             Id := Defining_Unit_Name (Specification (P));
