@@ -13974,7 +13974,7 @@ cp_parser_decomposition_declaration (cp_parser *parser,
 	  declarator->id_loc = e.get_location ();
 	}
       tree elt_pushed_scope;
-      tree decl2 = start_decl (declarator, &decl_specs, SD_INITIALIZED,
+      tree decl2 = start_decl (declarator, &decl_specs, SD_DECOMPOSITION,
 			       NULL_TREE, NULL_TREE, &elt_pushed_scope);
       if (decl2 == error_mark_node)
 	decl = error_mark_node;
