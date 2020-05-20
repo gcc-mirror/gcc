@@ -6,13 +6,10 @@ namespace Analysis {
 
 NameResolution::NameResolution (AST::Crate &crate, TopLevelScan &toplevel)
   : Resolution (crate, toplevel)
+
 {}
 
-NameResolution::~NameResolution ()
-{
-  typeScope.Pop ();
-  scope.Pop ();
-}
+NameResolution::~NameResolution () {}
 
 bool
 NameResolution::Resolve (AST::Crate &crate, TopLevelScan &toplevel)
