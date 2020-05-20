@@ -5,7 +5,7 @@ namespace Rust {
 namespace Compile {
 
 Compilation::Compilation (AST::Crate &crate, ::Backend *backend)
-  : scope (), crate (crate), backend (backend)
+  : crate (crate), backend (backend)
 {}
 
 Compilation::~Compilation () {}
@@ -28,10 +28,11 @@ Compilation::go ()
   scope.Pop ();
 
   // Define all globally declared values.
-  if (!saw_errors ())
-    backend->write_global_definitions (type_decls, const_decls, func_decls,
-				       var_decls);
+  if (saw_errors ())
+    return false;
 
+  backend->write_global_definitions (type_decls, const_decls, func_decls,
+				     var_decls);
   return true;
 }
 
@@ -76,9 +77,64 @@ Compilation::visit (AST::TypePathSegmentGeneric &segment)
 void
 Compilation::visit (AST::TypePathSegmentFunction &segment)
 {}
+
 void
 Compilation::visit (AST::TypePath &path)
-{}
+{
+  if (path.segments.size () > 1)
+    {
+      rust_error_at (path.locus, "unable to compile multi segment types yet");
+      return;
+    }
+
+  auto typeString = path.as_string ();
+  if (typeString.compare ("i64") == 0)
+    {
+      translatedType = backend->integer_type (false, 64);
+      return;
+    }
+  else if (typeString.compare ("i32") == 0)
+    {
+      translatedType = backend->integer_type (false, 32);
+      return;
+    }
+  else if (typeString.compare ("i16") == 0)
+    {
+      translatedType = backend->integer_type (false, 16);
+      return;
+    }
+  else if (typeString.compare ("i8") == 0)
+    {
+      translatedType = backend->integer_type (false, 8);
+      return;
+    }
+  else if (typeString.compare ("u64") == 0)
+    {
+      translatedType = backend->integer_type (true, 64);
+      return;
+    }
+  else if (typeString.compare ("u32") == 0)
+    {
+      translatedType = backend->integer_type (true, 32);
+      return;
+    }
+  else if (typeString.compare ("u16") == 0)
+    {
+      translatedType = backend->integer_type (true, 16);
+      return;
+    }
+  else if (typeString.compare ("u8") == 0)
+    {
+      translatedType = backend->integer_type (true, 8);
+      return;
+    }
+  else if (typeString.compare ("bool") == 0)
+    {
+      translatedType = backend->bool_type ();
+      return;
+    }
+}
+
 void
 Compilation::visit (AST::QualifiedPathInExpression &path)
 {}
@@ -345,35 +401,71 @@ Compilation::visit (AST::Function &function)
   std::vector<Backend::Btyped_identifier> parameters;
   std::vector<Backend::Btyped_identifier> results;
 
+  for (auto &param : function.function_params)
+    {
+      // translate the type
+      translatedType = NULL;
+      param.type->accept_vis (*this);
+      if (translatedType == NULL)
+	{
+	  rust_error_at (param.locus, "failed to generate type for parameter");
+	  return;
+	}
+
+      auto before = letPatternBuffer.size ();
+      param.param_name->accept_vis (*this);
+      if (letPatternBuffer.size () <= before)
+	{
+	  rust_error_at (param.locus, "failed to analyse parameter name");
+	  return;
+	}
+
+      auto numParamsPerType = letPatternBuffer.size () - before;
+      for (auto i = 0; i < numParamsPerType; i++)
+	{
+	  auto paramName = letPatternBuffer.back ();
+	  letPatternBuffer.pop_back ();
+	  scope.Insert (paramName.variable_ident, param.type.get ());
+
+	  parameters.push_back (
+	    Backend::Btyped_identifier (paramName.variable_ident,
+					translatedType, param.locus));
+	}
+    }
+
+  Btype *returnType = NULL;
   if (function.has_function_return_type ())
     {
       translatedType = NULL;
       function.return_type->accept_vis (*this);
       if (translatedType == NULL)
 	{
-	  rust_error_at (function.locus, "Unable to compile type");
+	  rust_error_at (function.locus,
+			 "failed to generate type for function");
 	  return;
 	}
     }
 
-  for (auto &param : function.function_params)
+  Btype *fntype = backend->function_type (receiver, parameters, results,
+					  returnType, function.locus);
+  Bfunction *fndecl
+    = backend->function (fntype, function.function_name, "" /* asm_name */,
+			 0 /* flags */, function.locus);
+
+  // setup the params
+  std::vector<Bvariable *> param_vars;
+  for (auto &param : parameters)
     {
-      printf ("FUNC PARAM: %s\n", param.as_string ().c_str ());
-      // TODO
+      bool tree_addressable = false;
+      backend->parameter_variable (fndecl, param.name, param.btype,
+				   tree_addressable, param.location);
     }
-  if (parameters.size () != function.function_params.size ())
+
+  if (!backend->function_set_parameters (fndecl, param_vars))
     {
-      rust_error_at (function.locus,
-		     "Unable to compile all function parameters");
+      rust_error_at (function.locus, "failed to setup parameter variables");
       return;
     }
-
-  auto fntype = backend->function_type (receiver, parameters, results, NULL,
-					function.locus);
-
-  auto mangled_asm_name = ""; // TODO
-  auto fndecl = backend->function (fntype, function.function_name,
-				   mangled_asm_name, 0, function.locus);
 
   // walk the expression body
   std::vector<Bvariable *> vars;
@@ -386,11 +478,12 @@ Compilation::visit (AST::Function &function)
 
   auto body = backend->block_statement (code_block);
   if (!backend->function_set_body (fndecl, body))
-    rust_error_at (function.locus, "failed to set body to function");
+    {
+      rust_error_at (function.locus, "failed to set body to function");
+      return;
+    }
 
   func_decls.push_back (fndecl);
-  currentFndecl = NULL;
-
   scope.Pop ();
 }
 
