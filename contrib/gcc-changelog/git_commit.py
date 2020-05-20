@@ -155,8 +155,9 @@ REVIEWED_BY_PREFIX = 'reviewed-by: '
 REVIEWED_ON_PREFIX = 'reviewed-on: '
 SIGNED_OFF_BY_PREFIX = 'signed-off-by: '
 
-REVIEW_PREFIXES = (REVIEWED_BY_PREFIX, REVIEWED_ON_PREFIX,\
+REVIEW_PREFIXES = (REVIEWED_BY_PREFIX, REVIEWED_ON_PREFIX,
                    SIGNED_OFF_BY_PREFIX)
+
 
 class Error:
     def __init__(self, message, line=None):
@@ -349,7 +350,6 @@ class GitCommit:
                         continue
                     else:
                         pr_line = line.lstrip()
-
 
                 lowered_line = line.lower()
                 if lowered_line.startswith(CO_AUTHORED_BY_PREFIX):
