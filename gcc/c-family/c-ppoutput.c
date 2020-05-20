@@ -611,8 +611,7 @@ cb_define (cpp_reader *pfile, location_t line, cpp_hashnode *node)
   linemap_resolve_location (line_table, line,
 			    LRK_MACRO_DEFINITION_LOCATION,
 			    &map);
-  if (LINEMAP_LINE (map) != 0)
-    print.src_line++;
+  print.src_line++;
 }
 
 static void

@@ -1451,7 +1451,7 @@ c_finish_options (void)
     {
       const line_map_ordinary *bltin_map
 	= linemap_check_ordinary (linemap_add (line_table, LC_RENAME, 0,
-					       _("<built-in>"), 1));
+					       _("<built-in>"), 0));
       cb_file_change (parse_in, bltin_map);
 
       /* Make sure all of the builtins about to be declared have
@@ -1474,7 +1474,7 @@ c_finish_options (void)
 
       const line_map_ordinary *cmd_map
 	= linemap_check_ordinary (linemap_add (line_table, LC_RENAME, 0,
-					       _("<command-line>"), 1));
+					       _("<command-line>"), 0));
       cb_file_change (parse_in, cmd_map);
 
       /* All command line defines must have the same location.  */

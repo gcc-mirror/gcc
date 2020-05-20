@@ -1,6 +1,13 @@
 2020-05-20  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/
+	* directives.c (_cpp_do_file_change): Optimize rewinding one line
+	to line zero.
+	gcc/c-family/
+	* c-opts.c (c_finish_options): Set locations to zero.
+	* c-ppoutput.c (cb_define): Always advance line number.
+
+	libcpp/
 	* files.c (cpp_push_include): Pass highest_line for loc.
 	(cpp_push_default): Likewise.
 	* line-map.c (linemap_add): Set range and column bits to what we
