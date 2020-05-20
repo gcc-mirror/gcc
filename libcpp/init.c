@@ -660,7 +660,7 @@ cpp_post_options (cpp_reader *pfile)
    it is the empty string.  Return the original filename
    on success (e.g. foo.i->foo.c), or NULL on failure.  */
 const char *
-cpp_read_main_file (cpp_reader *pfile, const char *fname, bool unlined)
+cpp_read_main_file (cpp_reader *pfile, const char *fname, bool have_preamble)
 {
   if (!pfile->deps && CPP_OPTION (pfile, deps.style) != DEPS_NONE)
     pfile->deps = deps_init ();
@@ -686,7 +686,7 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname, bool unlined)
     return NULL;
 
   _cpp_stack_file (pfile, pfile->main_file,
-		   unlined ? IT_MAIN_ZERO : IT_MAIN_REAL, 0);
+		   have_preamble ? IT_MAIN_PREAMBLE : IT_MAIN, 0);
 
   /* For foo.i, read the original filename foo.c now, for the benefit
      of the front ends.  */

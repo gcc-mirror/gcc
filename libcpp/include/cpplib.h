@@ -1007,7 +1007,8 @@ extern const char *cpp_find_header_unit (cpp_reader *, const char *file,
    input file, except for preprocessed input.  This will generate at
    least one file change callback, and possibly a line change callback
    too.  If there was an error opening the file, it returns NULL.  */
-extern const char *cpp_read_main_file (cpp_reader *, const char *, bool = false);
+extern const char *cpp_read_main_file (cpp_reader *, const char *,
+				       bool has_preamble = false);
 
 /* Adjust for the main file to be an include.  */
 extern void cpp_retrofit_as_include (cpp_reader *);

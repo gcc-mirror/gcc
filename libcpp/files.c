@@ -986,7 +986,10 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
   if (file->header_unit <= 0)
     /* Add line map and do callbacks.  */
     _cpp_do_file_change (pfile, LC_ENTER, file->path,
-			 type != IT_MAIN_ZERO ? 1 : 0, sysp);
+			 /* With a preamble, start on line zero, so
+	  	  	    the preamble doesn't appear to have been
+	  	  	    included from line 1.  */
+			 type == IT_MAIN_PREAMBLE ? 0 : 1, sysp);
   else if (decrement)
     {
       /* Adjust the line back one so we appear on the #include line itself.  */

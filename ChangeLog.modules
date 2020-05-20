@@ -1,6 +1,13 @@
 2020-05-20  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/
+	* include/cpplib.h (cpp_read_main): Document preamble arg.
+	* internal.h (IT_MAIN_{ZERO,REAL}): Rename to ...
+	(IT_MAIN_PREAMBLE, IT_MAIN): ... these.
+	* files.c (_cpp_stack_file): Adjust.
+	* init.c (cpp_read_main_file): Adjust.
+
+	libcpp/
 	* directives.c (_cpp_do_file_change): Optimize rewinding one line
 	to line zero.
 	gcc/c-family/
