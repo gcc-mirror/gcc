@@ -246,31 +246,37 @@
   "ix86_expand_fp_absneg_operator (<CODE>, V2SFmode, operands); DONE;")
 
 (define_insn_and_split "*mmx_<code>v2sf2"
-  [(set (match_operand:V2SF 0 "register_operand" "=x,x")
+  [(set (match_operand:V2SF 0 "register_operand" "=x,x,x")
 	(absneg:V2SF
-	  (match_operand:V2SF 1 "register_operand" "%0,x")))
-   (use (match_operand:V2SF 2 "nonimmediate_operand" "x,x"))]
+	  (match_operand:V2SF 1 "register_operand" "0,x,x")))
+   (use (match_operand:V2SF 2 "nonimmediate_operand" "x,0,x"))]
   "TARGET_MMX_WITH_SSE"
   "#"
   "&& reload_completed"
   [(set (match_dup 0)
 	(<absneg_op>:V2SF (match_dup 1) (match_dup 2)))]
-  ""
-  [(set_attr "isa" "noavx,avx")])
+{
+  if (!TARGET_AVX && operands_match_p (operands[0], operands[2]))
+    std::swap (operands[1], operands[2]);
+}
+  [(set_attr "isa" "noavx,noavx,avx")])
 
 (define_insn_and_split "*mmx_nabsv2sf2"
-  [(set (match_operand:V2SF 0 "register_operand" "=x,x")
+  [(set (match_operand:V2SF 0 "register_operand" "=x,x,x")
 	(neg:V2SF
 	  (abs:V2SF
-	    (match_operand:V2SF 1 "register_operand" "%0,x"))))
-   (use (match_operand:V2SF 2 "nonimmediate_operand" "x,x"))]
+	    (match_operand:V2SF 1 "register_operand" "0,x,x"))))
+   (use (match_operand:V2SF 2 "nonimmediate_operand" "x,0,x"))]
   "TARGET_MMX_WITH_SSE"
   "#"
   "&& reload_completed"
   [(set (match_dup 0)
 	(ior:V2SF (match_dup 1) (match_dup 2)))]
-  ""
-  [(set_attr "isa" "noavx,avx")])
+{
+  if (!TARGET_AVX && operands_match_p (operands[0], operands[2]))
+    std::swap (operands[1], operands[2]);
+}
+  [(set_attr "isa" "noavx,noavx,avx")])
 
 (define_expand "mmx_addv2sf3"
   [(set (match_operand:V2SF 0 "register_operand")
