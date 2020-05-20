@@ -1,3 +1,62 @@
+2020-05-20  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/94959
+	* gcc.target/arm/mve/intrinsics/mve_vector_float2.c: Modify.
+	* gcc.target/arm/mve/intrinsics/mve_vldr.c: New test.
+	* gcc.target/arm/mve/intrinsics/mve_vldr_z.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vstr.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vstr_p.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_f16.c: Modify.
+	* gcc.target/arm/mve/intrinsics/vld1q_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_z_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_z_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_z_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_z_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_z_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_z_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_z_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_z_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrbq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrbq_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrbq_z_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrbq_z_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrdq_gather_base_wb_s64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrdq_gather_base_wb_u64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrdq_gather_base_wb_z_s64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrdq_gather_base_wb_z_u64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_z_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_z_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_z_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_z_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_z_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrwq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrwq_gather_base_wb_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrwq_gather_base_wb_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrwq_gather_base_wb_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrwq_gather_base_wb_z_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrwq_gather_base_wb_z_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrwq_gather_base_wb_z_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrwq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrwq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrwq_z_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrwq_z_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrwq_z_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vuninitializedq_float.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vuninitializedq_float1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vuninitializedq_int.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vuninitializedq_int1.c: Likewise.
+
 2020-05-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/95219
