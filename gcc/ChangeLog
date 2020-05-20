@@ -1,3 +1,15 @@
+2020-05-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_slp_tree::_slp_tree): New.
+	(_slp_tree::~_slp_tree): Likewise.
+	* tree-vect-slp.c (_slp_tree::_slp_tree): Factor out code
+	from allocators.
+	(_slp_tree::~_slp_tree): Implement.
+	(vect_free_slp_tree): Simplify.
+	(vect_create_new_slp_node): Likewise.  Add nops parameter.
+	(vect_build_slp_tree_2): Adjust.
+	(vect_analyze_slp_instance): Likewise.
+
 2020-05-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* adjust-alignment.c: Include memmodel.h.
