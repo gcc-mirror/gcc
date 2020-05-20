@@ -110,8 +110,8 @@ namespace ip
   /// @}
 #endif
 
-  typedef uint_least16_t port_type;	///< Type used for port numbers.
-  typedef uint_least32_t scope_id_type;	///< Type used for IPv6 scope IDs.
+  using port_type = uint_least16_t;	///< Type used for port numbers.
+  using scope_id_type = uint_least32_t;	///< Type used for IPv6 scope IDs.
 
   /// Convenience alias for constraining allocators for strings.
   template<typename _Alloc>
@@ -133,7 +133,7 @@ namespace ip
   {
   public:
     // types:
-    typedef uint_least32_t uint_type;
+    using uint_type = uint_least32_t;
 
     struct bytes_type : array<unsigned char, 4>
     {
@@ -918,11 +918,11 @@ namespace ip
   {
   public:
     // types:
-    typedef address_v4 value_type;
-    typedef ptrdiff_t difference_type;
-    typedef const address_v4* pointer;
-    typedef const address_v4& reference;
-    typedef input_iterator_tag iterator_category;
+    using value_type = address_v4;
+    using difference_type = ptrdiff_t;
+    using pointer = const address_v4*;
+    using reference = const address_v4&;
+    using iterator_category = input_iterator_tag;
 
     // constructors:
     basic_address_iterator(const address_v4& __a) noexcept
@@ -972,17 +972,17 @@ namespace ip
     address_v4 _M_address;
   };
 
-  typedef basic_address_iterator<address_v4> address_v4_iterator;
+  using address_v4_iterator = basic_address_iterator<address_v4>;
 
   template<> class basic_address_iterator<address_v6>
   {
   public:
     // types:
-    typedef address_v6 value_type;
-    typedef ptrdiff_t difference_type;
-    typedef const address_v6* pointer;
-    typedef const address_v6& reference;
-    typedef input_iterator_tag iterator_category;
+    using value_type = address_v6;
+    using difference_type = ptrdiff_t;
+    using pointer = const address_v6*;
+    using reference = const address_v6&;
+    using iterator_category = input_iterator_tag;
 
     // constructors:
     basic_address_iterator(const address_v6& __a) noexcept
@@ -1026,7 +1026,7 @@ namespace ip
     address_v6 _M_address;
   };
 
-  typedef basic_address_iterator<address_v6> address_v6_iterator;
+  using address_v6_iterator = basic_address_iterator<address_v6>;
 
   template<typename> class basic_address_range; // not defined
 
@@ -1039,7 +1039,7 @@ namespace ip
   public:
     // types:
 
-    typedef basic_address_iterator<address_v4> iterator;
+    using iterator = basic_address_iterator<address_v4>;
 
     // constructors:
 
@@ -1071,7 +1071,7 @@ namespace ip
     iterator _M_end;
   };
 
-  typedef basic_address_range<address_v4> address_v4_range;
+  using address_v4_range = basic_address_range<address_v4>;
 
   // @}
 
@@ -1084,7 +1084,7 @@ namespace ip
   public:
     // types:
 
-    typedef basic_address_iterator<address_v6> iterator;
+    using iterator = basic_address_iterator<address_v6>;
 
     // constructors:
 
@@ -1112,7 +1112,7 @@ namespace ip
     iterator _M_end;
   };
 
-  typedef basic_address_range<address_v6> address_v6_range;
+  using address_v6_range = basic_address_range<address_v6>;
 
   // @}
 
@@ -1384,7 +1384,7 @@ namespace ip
     {
     public:
       // types:
-      typedef _InternetProtocol protocol_type;
+      using protocol_type = _InternetProtocol;
 
       // constructors:
 
@@ -1574,8 +1574,8 @@ namespace ip
     {
     public:
       // types:
-      typedef _InternetProtocol protocol_type;
-      typedef typename _InternetProtocol::endpoint endpoint_type;
+      using protocol_type = _InternetProtocol;
+      using endpoint_type = typename _InternetProtocol::endpoint;
 
       // constructors:
       basic_resolver_entry() { }
@@ -1697,15 +1697,15 @@ namespace ip
     {
     public:
       // types:
-      typedef _InternetProtocol protocol_type;
-      typedef typename protocol_type::endpoint endpoint_type;
-      typedef basic_resolver_entry<protocol_type> value_type;
-      typedef const value_type& const_reference;
-      typedef value_type& reference;
-      typedef typename forward_list<value_type>::const_iterator const_iterator;
-      typedef const_iterator iterator;
-      typedef ptrdiff_t difference_type;
-      typedef size_t size_type;
+      using protocol_type = _InternetProtocol;
+      using endpoint_type = typename protocol_type::endpoint;
+      using value_type = basic_resolver_entry<protocol_type>;
+      using const_reference = const value_type&;
+      using reference = value_type&;
+      using const_iterator = typename forward_list<value_type>::const_iterator;
+      using iterator = const_iterator;
+      using difference_type = ptrdiff_t;
+      using size_type = size_t;
 
       // construct / copy / destroy:
 
@@ -1775,10 +1775,10 @@ namespace ip
     public:
       // types:
 
-      typedef io_context::executor_type executor_type;
-      typedef _InternetProtocol protocol_type;
-      typedef typename _InternetProtocol::endpoint endpoint_type;
-      typedef basic_resolver_results<_InternetProtocol> results_type;
+      using executor_type = io_context::executor_type;
+      using protocol_type = _InternetProtocol;
+      using endpoint_type = typename _InternetProtocol::endpoint;
+      using results_type = basic_resolver_results<_InternetProtocol>;
 
       // construct / copy / destroy:
 
@@ -2056,11 +2056,11 @@ namespace ip
   {
   public:
     // types:
-    typedef basic_endpoint<tcp> endpoint;	 ///< A TCP endpoint.
-    typedef basic_resolver<tcp> resolver;	 ///< A TCP resolver.
-    typedef basic_stream_socket<tcp> socket;	 ///< A TCP socket.
-    typedef basic_socket_acceptor<tcp> acceptor; ///< A TCP acceptor.
-    typedef basic_socket_iostream<tcp> iostream; /// A TCP iostream.
+    using endpoint = basic_endpoint<tcp>;	 ///< A TCP endpoint.
+    using resolver = basic_resolver<tcp>;	 ///< A TCP resolver.
+    using socket = basic_stream_socket<tcp>;	 ///< A TCP socket.
+    using acceptor = basic_socket_acceptor<tcp>; ///< A TCP acceptor.
+    using iostream = basic_socket_iostream<tcp>; /// A TCP iostream.
 
 #ifdef _GLIBCXX_HAVE_NETINET_TCP_H
     /// Disable coalescing of small segments (i.e. the Nagle algorithm).
@@ -2111,9 +2111,9 @@ namespace ip
   {
   public:
     // types:
-    typedef basic_endpoint<udp> endpoint;
-    typedef basic_resolver<udp> resolver;
-    typedef basic_datagram_socket<udp> socket;
+    using endpoint = basic_endpoint<udp>;
+    using resolver = basic_resolver<udp>;
+    using socket = basic_datagram_socket<udp>;
 
     // static members:
     static constexpr udp v4() noexcept { return udp(AF_INET); }

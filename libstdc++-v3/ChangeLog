@@ -1,3 +1,12 @@
+2020-05-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/buffer: Replace typedefs with
+	alias-declarations.
+	* include/experimental/executor: Likewise.
+	* include/experimental/internet: Likewise.
+	* include/experimental/socket: Likewise.
+	* include/experimental/timer: Likewise.
+
 2020-05-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/94087

@@ -369,8 +369,8 @@ inline namespace v1
     class async_result
     {
     public:
-      typedef _CompletionToken completion_handler_type;
-      typedef void return_type;
+      using completion_handler_type = _CompletionToken;
+      using return_type = void;
 
       explicit async_result(completion_handler_type&) {}
       async_result(const async_result&) = delete;
@@ -660,8 +660,8 @@ inline namespace v1
     public:
       // types:
 
-      typedef _Tp target_type;
-      typedef _Executor executor_type;
+      using target_type = _Tp;
+      using executor_type = _Executor;
 
       // construct / copy / destroy:
 
@@ -766,7 +766,7 @@ inline namespace v1
   template<typename _Tp, typename _Executor, typename _ProtoAlloc>
     struct associated_allocator<executor_binder<_Tp, _Executor>, _ProtoAlloc>
     {
-      typedef associated_allocator_t<_Tp, _ProtoAlloc> type;
+      using type = associated_allocator_t<_Tp, _ProtoAlloc>;
 
       static type
       get(const executor_binder<_Tp, _Executor>& __b,
@@ -777,7 +777,7 @@ inline namespace v1
   template<typename _Tp, typename _Executor, typename _Executor1>
     struct associated_executor<executor_binder<_Tp, _Executor>, _Executor1>
     {
-      typedef _Executor type;
+      using type = _Executor;
 
       static type
       get(const executor_binder<_Tp, _Executor>& __b,
@@ -791,7 +791,7 @@ inline namespace v1
     public:
       // types:
 
-      typedef _Executor executor_type;
+      using executor_type = _Executor;
 
       // construct / copy / destroy:
 
@@ -845,7 +845,7 @@ inline namespace v1
   public:
     // types:
 
-    typedef system_executor executor_type;
+    using executor_type = system_executor;
 
     // construct / copy / destroy:
 
@@ -1446,7 +1446,7 @@ inline namespace v1
     public:
       // types:
 
-      typedef _Executor inner_executor_type;
+      using inner_executor_type = _Executor;
 
       // construct / copy / destroy:
 

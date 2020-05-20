@@ -701,10 +701,10 @@ inline namespace v1
     public:
       // types:
 
-      typedef io_context::executor_type executor_type;
-      typedef int native_handle_type;
-      typedef _Protocol protocol_type;
-      typedef typename protocol_type::endpoint endpoint_type;
+      using executor_type = io_context::executor_type;
+      using native_handle_type = int;
+      using protocol_type = _Protocol;
+      using endpoint_type = typename protocol_type::endpoint;
 
       // basic_socket operations:
 
@@ -1067,9 +1067,9 @@ inline namespace v1
     public:
       // types:
 
-      typedef int native_handle_type;
-      typedef _Protocol protocol_type;
-      typedef typename protocol_type::endpoint endpoint_type;
+      using native_handle_type = int;
+      using protocol_type = _Protocol;
+      using endpoint_type = typename protocol_type::endpoint;
 
       // construct / copy / destroy:
 
@@ -1520,9 +1520,9 @@ inline namespace v1
     public:
       // types:
 
-      typedef int native_handle_type;
-      typedef _Protocol protocol_type;
-      typedef typename protocol_type::endpoint endpoint_type;
+      using native_handle_type = int;
+      using protocol_type = _Protocol;
+      using endpoint_type = typename protocol_type::endpoint;
 
       // construct / copy / destroy:
 
@@ -1833,11 +1833,11 @@ inline namespace v1
     public:
       // types:
 
-      typedef io_context::executor_type executor_type;
-      typedef int native_handle_type;
-      typedef _AcceptableProtocol protocol_type;
-      typedef typename protocol_type::endpoint endpoint_type;
-      typedef typename protocol_type::socket socket_type;
+      using executor_type = io_context::executor_type;
+      using native_handle_type = int;
+      using protocol_type = _AcceptableProtocol;
+      using endpoint_type = typename protocol_type::endpoint;
+      using socket_type = typename protocol_type::socket;
 
       // construct / copy / destroy:
 
@@ -2277,12 +2277,12 @@ inline namespace v1
     public:
       // types:
 
-      typedef _Protocol protocol_type;
-      typedef typename protocol_type::endpoint endpoint_type;
-      typedef _Clock clock_type;
-      typedef typename clock_type::time_point time_point;
-      typedef typename clock_type::duration duration;
-      typedef _WaitTraits wait_traits_type;
+      using protocol_type = _Protocol;
+      using endpoint_type = typename protocol_type::endpoint;
+      using clock_type = _Clock;
+      using time_point = typename clock_type::time_point;
+      using duration = typename clock_type::duration;
+      using wait_traits_type = _WaitTraits;
 
       // construct / copy / destroy:
 
@@ -2355,12 +2355,12 @@ inline namespace v1
     public:
       // types:
 
-      typedef _Protocol protocol_type;
-      typedef typename protocol_type::endpoint endpoint_type;
-      typedef _Clock clock_type;
-      typedef typename clock_type::time_point time_point;
-      typedef typename clock_type::duration duration;
-      typedef _WaitTraits wait_traits_type;
+      using protocol_type = _Protocol;
+      using endpoint_type = typename protocol_type::endpoint;
+      using clock_type = _Clock;
+      using time_point = typename clock_type::time_point;
+      using duration = typename clock_type::duration;
+      using wait_traits_type = _WaitTraits;
 
       // construct / copy / destroy:
 
