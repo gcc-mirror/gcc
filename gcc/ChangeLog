@@ -1,3 +1,21 @@
+2020-05-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95218
+
+	* config/i386/mmx.md (*mmx_<code>v2sf): Do not mark
+	operands 1 and 2 commutative.  Manually swap operands.
+	(*mmx_nabsv2sf2): Ditto.
+
+	Partially revert:
+	2020-05-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*<code>tf2_1):
+	Mark operands 1 and 2 commutative.
+	(*nabstf2_1): Ditto.
+	* config/i386/sse.md (*<code><mode>2): Mark operands 1 and 2
+	commutative.  Do not swap operands.
+	(*nabs<mode>2): Ditto.
+
 2020-05-20  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95229
