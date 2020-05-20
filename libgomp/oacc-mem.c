@@ -1180,86 +1180,9 @@ goacc_exit_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 	  break;
 
 	case GOMP_MAP_STRUCT:
-	  {
-	    int elems = sizes[i];
-	    for (int j = 1; j <= elems; j++)
-	      {
-		assert (i + j < mapnum);
-
-		kind = kinds[i + j] & 0xff;
-
-		finalize = false;
-		if (kind == GOMP_MAP_FORCE_FROM
-		    || kind == GOMP_MAP_DELETE
-		    || kind == GOMP_MAP_FORCE_DETACH)
-		  finalize = true;
-
-		copyfrom = false;
-		if (kind == GOMP_MAP_FROM
-		    || kind == GOMP_MAP_FORCE_FROM
-		    || kind == GOMP_MAP_ALWAYS_FROM)
-		  copyfrom = true;
-
-		struct splay_tree_key_s k;
-		k.host_start = (uintptr_t) hostaddrs[i + j];
-		k.host_end = k.host_start + sizes[i + j];
-		splay_tree_key str;
-		str = splay_tree_lookup (&acc_dev->mem_map, &k);
-		if (str)
-		  {
-		    if (finalize)
-		      {
-			if (str->refcount != REFCOUNT_INFINITY)
-			  str->refcount -= str->virtual_refcount;
-			str->virtual_refcount = 0;
-		      }
-		    if (str->virtual_refcount > 0)
-		      {
-			if (str->refcount != REFCOUNT_INFINITY)
-			  str->refcount--;
-			str->virtual_refcount--;
-		      }
-		    else if (str->refcount > 0
-			     && str->refcount != REFCOUNT_INFINITY)
-		      str->refcount--;
-
-		    if (copyfrom
-			&& (kind != GOMP_MAP_FROM || str->refcount == 0))
-		      gomp_copy_dev2host (acc_dev, aq, (void *) k.host_start,
-					  (void *) (str->tgt->tgt_start
-						    + str->tgt_offset
-						    + k.host_start
-						    - str->host_start),
-					  k.host_end - k.host_start);
-
-		    if (str->refcount == 0)
-		      {
-			if (aq)
-			  /* TODO We can't do the 'is_tgt_unmapped' checking --
-			     see the 'gomp_unref_tgt' comment in
-			     <http://mid.mail-archive.com/878snl36eu.fsf@euler.schwinge.homeip.net>;
-			     PR92881.  */
-			  gomp_remove_var_async (acc_dev, str, aq);
-			else
-			  {
-			    size_t num_mappings = 0;
-			    /* If the target_mem_desc represents a single data
-			       mapping, we can check that it is freed when this
-			       splay tree key's refcount reaches zero.
-			       Otherwise (e.g. for a 'GOMP_MAP_STRUCT' mapping
-			       with multiple members), fall back to skipping
-			       the test.  */
-			    for (size_t l_i = 0; l_i < str->tgt->list_count; ++l_i)
-			      if (str->tgt->list[l_i].key)
-				++num_mappings;
-			    bool is_tgt_unmapped = gomp_remove_var (acc_dev, str);
-			    assert (is_tgt_unmapped || num_mappings > 1);
-			  }
-		      }
-		  }
-	      }
-	    i += elems;
-	  }
+	  /* Skip the 'GOMP_MAP_STRUCT' itself, and use the regular processing
+	     for all its entries.  TODO: don't generate these no-op
+	     'GOMP_MAP_STRUCT's.  */
 	  break;
 
 	default:
