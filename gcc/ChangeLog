@@ -1,5 +1,20 @@
 2020-05-20  Uroš Bizjak  <ubizjak@gmail.com>
 
+	PR target/95229
+	* config/i386/sse.md (<code>v8qiv8hi2): Use
+	simplify_gen_subreg instead of simplify_subreg.
+	(<code>v8qiv8si2): Ditto.
+	(<code>v4qiv4si2): Ditto.
+	(<code>v4hiv4si2): Ditto.
+	(<code>v8qiv8di2): Ditto.
+	(<code>v4qiv4di2): Ditto.
+	(<code>v2qiv2di2): Ditto.
+	(<code>v4hiv4di2): Ditto.
+	(<code>v2hiv2di2): Ditto.
+	(<code>v2siv2di2): Ditto.
+
+2020-05-20  Uroš Bizjak  <ubizjak@gmail.com>
+
 	PR target/95238
 	* config/i386/i386.md (*pushsi2_rex64):
 	Use "e" constraint instead of "i".
