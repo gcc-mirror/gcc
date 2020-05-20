@@ -346,6 +346,8 @@ get_available_features (unsigned int ecx, unsigned int edx,
 	{
 	  if (ebx & bit_AVX2)
 	    set_feature (FEATURE_AVX2);
+	  if (ecx & bit_VPCLMULQDQ)
+	    set_feature (FEATURE_VPCLMULQDQ);
 	}
       if (ebx & bit_BMI2)
 	set_feature (FEATURE_BMI2);
@@ -373,8 +375,6 @@ get_available_features (unsigned int ecx, unsigned int edx,
 	    set_feature (FEATURE_AVX512VBMI);
 	  if (ecx & bit_AVX512VBMI2)
 	    set_feature (FEATURE_AVX512VBMI2);
-	  if (ecx & bit_VPCLMULQDQ)
-	    set_feature (FEATURE_VPCLMULQDQ);
 	  if (ecx & bit_AVX512VNNI)
 	    set_feature (FEATURE_AVX512VNNI);
 	  if (ecx & bit_AVX512BITALG)
