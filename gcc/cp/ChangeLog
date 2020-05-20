@@ -1,3 +1,10 @@
+2020-05-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95223
+	* typeck.c (structural_comptypes): Don't perform
+	context-dependent resolution of TYPENAME_TYPEs when
+	comparing_specializations.
+
 2020-05-19  Nathan Sidwell  <nathan@acm.org>
 
 	* pt.c (lookup_template_class_1): Do not reinit template_info of an
