@@ -178,6 +178,9 @@ enum LTO_tags
   /* Special for global streamer.  A blob of unnamed tree nodes.  */
   LTO_tree_scc,
 
+  /* Sequence of trees.  */
+  LTO_trees,
+
   /* References to indexable tree nodes.  These objects are stored in
      tables that are written separately from the function bodies that
      reference them.  This way they can be instantiated even when the
@@ -751,6 +754,9 @@ struct output_block
   /* Cache of nodes written in this section.  */
   struct streamer_tree_cache_d *writer_cache;
 
+  /* All trees identified as local to the unit streamed.  */
+  hash_set<tree> *local_trees;
+
   /* All data persistent across whole duration of output block
      can go here.  */
   struct obstack obstack;
@@ -901,7 +907,7 @@ tree lto_input_tree_ref (class lto_input_block *, class data_in *,
 void lto_tag_check_set (enum LTO_tags, int, ...);
 void lto_init_eh (void);
 hashval_t lto_input_scc (class lto_input_block *, class data_in *,
-			 unsigned *, unsigned *);
+			 unsigned *, unsigned *, bool);
 tree lto_input_tree_1 (class lto_input_block *, class data_in *,
 		       enum LTO_tags, hashval_t hash);
 tree lto_input_tree (class lto_input_block *, class data_in *);

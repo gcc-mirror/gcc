@@ -1,3 +1,21 @@
+2020-05-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-in.c (lto_input_scc): Add SHARED_SCC parameter.
+	(lto_input_tree_1): Strenghten sanity check.
+	(lto_input_tree): Update call of lto_input_scc.
+	* lto-streamer-out.c: Include ipa-utils.h
+	(create_output_block): Initialize local_trees if merigng is going
+	to happen.
+	(destroy_output_block): Destroy local_trees.
+	(DFS): Add max_local_entry.
+	(local_tree_p): New function.
+	(DFS::DFS): Initialize and maintain it.
+	(DFS::DFS_write_tree): Decide on streaming format.
+	(lto_output_tree): Stream inline singleton SCCs
+	* lto-streamer.h (enum LTO_tags): Add LTO_trees.
+	(struct output_block): Add local_trees.
+	(lto_input_scc): Update prototype.
+
 2020-05-20  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/95223

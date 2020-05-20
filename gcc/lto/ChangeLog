@@ -1,3 +1,13 @@
+2020-05-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-common.c (compare_tree_sccs_1): Sanity check that we never
+	read TRANSLATION_UNIT_DECL.
+	(process_dref): Break out from ...
+	(unify_scc): ... here.
+	(process_new_tree): Break out from ...
+	(lto_read_decls): ... here; handle streaming of singleton trees.
+	(print_lto_report_1): Update statistics.
+
 2020-05-07  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/94703
