@@ -1,5 +1,25 @@
 2020-05-21  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/executor (use_future_t::use_future_t()): Fix
+	incorrect noexcept-specifier.
+	* include/experimental/internet (basic_resolver_results): Adjust
+	whitespace.
+	* include/experimental/socket (__basic_socket_impl::release): Add
+	member function.
+	(basic_socket(io_context&, const endpoint_type&)): Fix argument to
+	target constructor.
+	(basic_socket::release(), basic_socket::release(error_code&)): Add
+	missing member functions.
+	(basic_socket::is_open()): Add nodiscard attribute.
+	(basic_socket::close(error_code&)): Pass argument to base function.
+	(basic_socket_acceptor::release())
+	(basic_socket_acceptor::release(error_code&)): Add missing member
+	functions.
+	(basic_socket_acceptor::is_open()): Add nodiscard attribute.
+	(basic_socket_streambuf::error()): Add noexcept.
+	(basic_socket_iostream::error()): Likewise.
+	* testsuite/experimental/net/socket/basic_socket.cc: New test.
+
 	* include/experimental/buffer: Replace typedefs with
 	alias-declarations.
 	* include/experimental/executor: Likewise.

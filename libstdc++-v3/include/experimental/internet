@@ -1726,7 +1726,9 @@ namespace ip
       // size:
       size_type size() const noexcept { return _M_size; }
       size_type max_size() const noexcept { return _M_results.max_size(); }
-      _GLIBCXX_NODISCARD bool empty() const noexcept { return _M_results.empty(); }
+
+      _GLIBCXX_NODISCARD bool
+      empty() const noexcept { return _M_results.empty(); }
 
       // element access:
       const_iterator begin() const { return _M_results.begin(); }

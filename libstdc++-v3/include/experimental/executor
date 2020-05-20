@@ -1601,7 +1601,10 @@ inline namespace v1
       using allocator_type = _ProtoAllocator;
 
       // use_future_t members:
-      constexpr use_future_t() noexcept : _M_alloc() { }
+      constexpr
+      use_future_t()
+      noexcept(is_nothrow_default_constructible<_ProtoAllocator>::value)
+      : _M_alloc() { }
 
       explicit
       use_future_t(const _ProtoAllocator& __a) noexcept : _M_alloc(__a) { }

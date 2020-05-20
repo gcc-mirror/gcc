@@ -153,8 +153,8 @@ inline namespace v1
   // TODO SettableSocket reqs
   // TODO BooleanSocketOption reqs
   // TODO IntegerSocketOption reqs
-  // TODO _IoControlCommand reqs
-  // TODO _ConnectCondition reqs
+  // TODO IoControlCommand reqs
+  // TODO ConnectCondition reqs
 
   /** @brief Sockets
    * @{
@@ -598,6 +598,13 @@ inline namespace v1
 	  }
       }
 
+      native_handle_type release(error_code& __ec)
+      {
+	__glibcxx_assert(is_open());
+	cancel(__ec);
+	return std::exchange(_M_sockfd, -1);
+      }
+
       template<typename _SettableSocketOption>
 	void
 	set_option(const _SettableSocketOption& __option, error_code& __ec)
@@ -649,7 +656,7 @@ inline namespace v1
 #ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	socklen_t __endpoint_len = __endpoint.capacity();
 	if (::getsockname(_M_sockfd, (sockaddr*)__endpoint.data(),
-                          &__endpoint_len) == -1)
+			  &__endpoint_len) == -1)
 	  {
 	    __ec.assign(errno, generic_category());
 	    return endpoint_type{};
@@ -735,11 +742,18 @@ inline namespace v1
 	     error_code& __ec)
       { __base::assign(__protocol, __native_socket, __ec); }
 
-      bool is_open() const noexcept { return __base::is_open(); }
+      native_handle_type release()
+      { return release(__throw_on_error{"basic_socket::release"}); }
+
+      native_handle_type release(error_code& __ec)
+      { return __base::release(__ec); }
+
+      [[__nodiscard__]] bool
+      is_open() const noexcept { return __base::is_open(); }
 
       void close() { close(__throw_on_error{"basic_socket::close"}); }
 
-      void close(error_code& __ec) { __base::close(); }
+      void close(error_code& __ec) { __base::close(__ec); }
 
       void cancel() { cancel(__throw_on_error{"basic_socket::cancel"}); }
 
@@ -898,7 +912,7 @@ inline namespace v1
 #ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	socklen_t __endpoint_len = __endpoint.capacity();
 	if (::getpeername(this->_M_sockfd, (sockaddr*)__endpoint.data(),
-                          &__endpoint_len)
+			  &__endpoint_len)
 	    == -1)
 	  {
 	    __ec.assign(errno, generic_category());
@@ -921,13 +935,13 @@ inline namespace v1
       void
       connect(const endpoint_type& __endpoint, error_code& __ec)
       {
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	if (!is_open())
 	  {
 	    open(__endpoint.protocol(), __ec);
 	    if (__ec)
 	      return;
 	  }
-#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	if (::connect(native_handle(), (const sockaddr*)__endpoint.data(),
 		      __endpoint.size()) == -1)
 	  __ec.assign(errno, generic_category());
@@ -956,7 +970,7 @@ inline namespace v1
                   auto __a = get_associated_allocator(
                       __init.completion_handler, std::allocator<void>());
                   __ex.post(
-                      [__h=std::move(__init.completion_handler), __ec]
+                      [__h = std::move(__init.completion_handler), __ec]
                       () mutable
                       { __h(__ec); }, __a);
 		  return __init.result.get();
@@ -1029,7 +1043,7 @@ inline namespace v1
       { open(__protocol); }
 
       basic_socket(io_context& __ctx, const endpoint_type& __endpoint)
-      : basic_socket(std::addressof(__ctx), __endpoint.protocol())
+      : basic_socket(__ctx, __endpoint.protocol())
       { bind(__endpoint); }
 
       basic_socket(io_context& __ctx, const protocol_type& __protocol,
@@ -1918,7 +1932,13 @@ inline namespace v1
 	     error_code& __ec)
       { __base::assign(__protocol, __native_acceptor, __ec); }
 
-      bool
+      native_handle_type release()
+      { return release(__throw_on_error{"basic_socket_acceptor::release"}); }
+
+      native_handle_type release(error_code& __ec)
+      { return __base::release(__ec); }
+
+      [[__nodiscard__]] bool
       is_open() const noexcept { return __base::is_open(); }
 
       void
@@ -2313,7 +2333,8 @@ inline namespace v1
       basic_socket_streambuf* close(); // TODO
 
       basic_socket<protocol_type>& socket() { return _M_socket; }
-      error_code error() const { return _M_ec; }
+
+      error_code error() const noexcept { return _M_ec; }
 
       time_point expiry() const { return _M_expiry; }
 
@@ -2425,7 +2446,7 @@ inline namespace v1
       { return const_cast<__streambuf_type*>(std::addressof(_M_sb)); }
 
       basic_socket<protocol_type>& socket() { return rdbuf()->socket(); }
-      error_code error() const { return rdbuf()->error(); }
+      error_code error() const noexcept { return rdbuf()->error(); }
 
       time_point expiry() const { return rdbuf()->expiry(); }
       void expires_at(const time_point& __t) { rdbuf()->expires_at(__t); }
