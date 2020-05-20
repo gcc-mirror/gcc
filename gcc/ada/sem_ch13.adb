@@ -2296,7 +2296,7 @@ package body Sem_Ch13 is
                         --  Only formals of the subprogram itself can appear
                         --  in Relaxed_Initialization aspect expression, not
                         --  formals of the enclosing generic unit. (This is
-                        --  different that in Precondition or Depends aspects,
+                        --  different than in Precondition or Depends aspects,
                         --  where both kinds of formals are allowed.)
 
                         Install_Formals (E);
