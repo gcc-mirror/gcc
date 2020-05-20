@@ -439,11 +439,13 @@ TypeResolution::visit (AST::EnumExprFieldless &expr)
 void
 TypeResolution::visit (AST::CallExpr &expr)
 {
+  // this look up should probably be moved to name resolution
   auto fndecl = lookupFndecl (expr.function.get ());
   if (fndecl == NULL)
     return;
 
   typeBuffer.push_back (fndecl->return_type.get ());
+  expr.fndeclRef = fndecl;
 
   auto before = typeBuffer.size ();
   for (auto &item : expr.params)

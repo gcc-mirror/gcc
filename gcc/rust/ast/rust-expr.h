@@ -23,6 +23,7 @@ class Statement;*/ // decls no longer required as definitions moved to rust-ast.
 
 // Decl as definition moved to rust-ast.h
 class ExprWithoutBlock;
+class Function;
 
 // AST node for an expression with an accompanying block - abstract
 class ExprWithBlock : public Expr
@@ -2533,6 +2534,8 @@ public:
   ::std::vector< ::std::unique_ptr<Expr> > params;
 
   Location locus;
+
+  Function *fndeclRef;
 
   /*~CallExpr() {
       delete function;
