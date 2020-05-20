@@ -10513,6 +10513,12 @@
 (define_mode_attr pmov_suff_1
   [(V16QI "db") (V16HI "dw") (V8SI "qd") (V8HI "qw")])
 
+(define_expand "trunc<pmov_src_lower><mode>2"
+  [(set (match_operand:PMOV_DST_MODE_1 0 "nonimmediate_operand")
+	(truncate:PMOV_DST_MODE_1
+	  (match_operand:<pmov_src_mode> 1 "register_operand")))]
+  "TARGET_AVX512F")
+
 (define_insn "*avx512f_<code><pmov_src_lower><mode>2"
   [(set (match_operand:PMOV_DST_MODE_1 0 "nonimmediate_operand" "=v,m")
 	(any_truncate:PMOV_DST_MODE_1
@@ -10546,6 +10552,12 @@
       (match_dup 0)
       (match_operand:<avx512fmaskmode> 2 "register_operand")))]
   "TARGET_AVX512F")
+
+(define_expand "truncv32hiv32qi2"
+  [(set (match_operand:V32QI 0 "nonimmediate_operand")
+	(truncate:V32QI
+	  (match_operand:V32HI 1 "register_operand")))]
+  "TARGET_AVX512BW")
 
 (define_insn "avx512bw_<code>v32hiv32qi2"
   [(set (match_operand:V32QI 0 "nonimmediate_operand" "=v,m")
@@ -10585,6 +10597,12 @@
   [V4SI V8HI (V16QI "TARGET_AVX512BW")])
 (define_mode_attr pmov_suff_2
   [(V16QI "wb") (V8HI "dw") (V4SI "qd")])
+
+(define_expand "trunc<ssedoublemodelower><mode>2"
+  [(set (match_operand:PMOV_DST_MODE_2 0 "nonimmediate_operand")
+	(truncate:PMOV_DST_MODE_2
+	  (match_operand:<ssedoublemode> 1 "register_operand")))]
+  "TARGET_AVX512VL")
 
 (define_insn "*avx512vl_<code><ssedoublemodelower><mode>2"
   [(set (match_operand:PMOV_DST_MODE_2 0 "nonimmediate_operand" "=v,m")
@@ -10628,7 +10646,20 @@
 (define_mode_attr pmov_suff_3
   [(V4DI "qb") (V2DI "qb") (V8SI "db") (V4SI "db") (V8HI "wb")])
 
-(define_insn "*avx512vl_<code><mode>v<ssescalarnum>qi2"
+(define_expand "trunc<mode><pmov_dst_3>2"
+  [(set (match_operand:<pmov_dst_3> 0 "register_operand")
+	(truncate:<pmov_dst_3>
+	  (match_operand:PMOV_SRC_MODE_3 1 "register_operand")))]
+  "TARGET_AVX512VL"
+{
+  operands[0] = simplify_gen_subreg (V16QImode, operands[0], <pmov_dst_3>mode, 0);
+  emit_insn (gen_avx512vl_truncate<mode>v<ssescalarnum>qi2 (operands[0],
+							    operands[1],
+							    CONST0_RTX (<pmov_dst_zeroed_3>mode)));
+  DONE;
+})
+
+(define_insn "avx512vl_<code><mode>v<ssescalarnum>qi2"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
     (vec_concat:V16QI
       (any_truncate:<pmov_dst_3>
@@ -10920,7 +10951,21 @@
 (define_mode_attr pmov_suff_4
   [(V4DI "qw") (V2DI "qw") (V4SI "dw")])
 
-(define_insn "*avx512vl_<code><mode>v<ssescalarnum>hi2"
+(define_expand "trunc<mode><pmov_dst_4>2"
+  [(set (match_operand:<pmov_dst_4> 0 "register_operand")
+	(truncate:<pmov_dst_4>
+	  (match_operand:PMOV_SRC_MODE_4 1 "register_operand")))]
+  "TARGET_AVX512VL"
+{
+  operands[0] = simplify_gen_subreg (V8HImode, operands[0], <pmov_dst_4>mode, 0);
+  emit_insn (gen_avx512vl_truncate<mode>v<ssescalarnum>hi2 (operands[0],
+							    operands[1],
+							    CONST0_RTX (<pmov_dst_zeroed_4>mode)));
+  DONE;
+
+})
+
+(define_insn "avx512vl_<code><mode>v<ssescalarnum>hi2"
   [(set (match_operand:V8HI 0 "register_operand" "=v")
     (vec_concat:V8HI
       (any_truncate:<pmov_dst_4>
@@ -11085,7 +11130,20 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "TI")])
 
-(define_insn "*avx512vl_<code>v2div2si2"
+(define_expand "truncv2div2si2"
+  [(set (match_operand:V2SI 0 "register_operand")
+	(truncate:V2SI
+	  (match_operand:V2DI 1 "register_operand")))]
+  "TARGET_AVX512VL"
+{
+  operands[0] = simplify_gen_subreg (V4SImode, operands[0], V2SImode, 0);
+  emit_insn (gen_avx512vl_truncatev2div2si2 (operands[0],
+					     operands[1],
+					     CONST0_RTX (V2SImode)));
+  DONE;
+})
+
+(define_insn "avx512vl_<code>v2div2si2"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
     (vec_concat:V4SI
       (any_truncate:V2SI
@@ -11164,7 +11222,18 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "TI")])
 
-(define_insn "*avx512f_<code>v8div16qi2"
+(define_expand "truncv8div8qi2"
+  [(set (match_operand:V8QI 0 "register_operand")
+	(truncate:V8QI
+	    (match_operand:V8DI 1 "register_operand")))]
+  "TARGET_AVX512F"
+{
+  operands[0] = simplify_gen_subreg (V16QImode, operands[0], V8QImode, 0);
+  emit_insn (gen_avx512f_truncatev8div16qi2 (operands[0], operands[1]));
+  DONE;
+})
+
+(define_insn "avx512f_<code>v8div16qi2"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
 	(vec_concat:V16QI
 	  (any_truncate:V8QI

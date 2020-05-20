@@ -1,3 +1,18 @@
+2020-05-22  Hongtao.liu  <hongtao.liu@intel.com>
+
+	PR target/92658
+	* config/i386/sse.md (trunc<pmov_src_lower><mode>2): New expander
+	(truncv32hiv32qi2): Ditto.
+	(trunc<ssedoublemodelower><mode>2): Ditto.
+	(trunc<mode><pmov_dst_3>2): Ditto.
+	(trunc<mode><pmov_dst_mode_4>2): Ditto.
+	(truncv2div2si2): Ditto.
+	(truncv8div8qi2): Ditto.
+	(avx512f_<code>v8div16qi2): Renaming from *avx512f_<code>v8div16qi2.
+	(avx512vl_<code>v2div2si): Renaming from *avx512vl_<code>v2div2si2.
+	(avx512vl_<code><mode>v2<ssecakarnum>qi2): Renaming from
+	*avx512vl_<code><mode>v<ssescalarnum>qi2.
+
 2020-05-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/95258
