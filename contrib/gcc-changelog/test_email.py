@@ -262,3 +262,8 @@ class TestGccChangelog(unittest.TestCase):
     def test_cherry_pick_format(self):
         email = self.from_patch_glob('0001-c-Alias.patch')
         assert not email.errors
+
+    def test_signatures(self):
+        email = self.from_patch_glob('0001-RISC-V-Make-unique.patch')
+        assert not email.errors
+        assert len(email.changelog_entries) == 1

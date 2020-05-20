@@ -2410,4 +2410,38 @@ index b8f03d18541..7230ac724ba 100644
 +
 -- 
 2.26.2
+=== 0001-RISC-V-Make-unique.patch ===
+From adce62f53d8ad00e8110a6a2de7962d7a850de16 Mon Sep 17 00:00:00 2001
+From: Keith Packard <keithp@keithp.com>
+Date: Wed, 29 Apr 2020 09:49:56 -0700
+Subject: [PATCH] RISC-V: Make unique SECCAT_SRODATA names start with .srodata
+ (not .sdata2)
 
+default_unique_section uses ".sdata2" as a prefix for SECCAT_SRODATA
+unique sections, but RISC-V uses ".srodata" instead. Override the
+TARGET_ASM_UNIQUE_SECTION function to catch this case, allowing the
+default to be used for all other sections.
+
+gcc/
+	* config/riscv/riscv.c (riscv_unique_section): New.
+	(TARGET_ASM_UNIQUE_SECTION): New.
+
+Signed-off-by: Keith Packard <keithp@keithp.com>
+Reviewed-by: Keith Packard <keithp@keithp.com>
+Reviewed-on: Keith Packard <keithp@keithp.com>
+Co-Authored-by: Keith Packard <keithp@keithp.com>
+---
+ gcc/ChangeLog            |  5 +++++
+ gcc/config/riscv/riscv.c | 40 ++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 45 insertions(+)
+
+diff --git a/gcc/config/riscv/riscv.c b/gcc/config/riscv/riscv.c
+index e4c08d780db..1ad9799fce4 100644
+--- a/gcc/config/riscv/riscv.c
++++ b/gcc/config/riscv/riscv.c
+@@ -1 +1,2 @@
+
++
+
+-- 
+2.26.2
