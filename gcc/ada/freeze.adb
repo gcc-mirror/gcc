@@ -2928,7 +2928,10 @@ package body Freeze is
 
                      --  Bit packing is not needed for multiples of the storage
                      --  unit if the type is composite because the back end can
-                     --  byte pack composite types.
+                     --  byte pack composite types efficiently. That's not true
+                     --  for discrete types because every read would generate a
+                     --  lot of instructions, so we keep using the manipulation
+                     --  routines of the runtime for them.
 
                      elsif Csiz mod System_Storage_Unit = 0
                        and then Is_Composite_Type (Ctyp)
