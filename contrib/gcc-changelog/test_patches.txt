@@ -2445,3 +2445,99 @@ index e4c08d780db..1ad9799fce4 100644
 
 -- 
 2.26.2
+
+=== 0001-Fortran-ProcPtr-function.patch ===
+From eb069ae8819c3a84d7f78becc5501e21ee3a9554 Mon Sep 17 00:00:00 2001
+From: Mark Eggleston <markeggleston@gcc.gnu.org>
+Date: Thu, 7 May 2020 08:02:02 +0100
+Subject: [PATCH] Fortran  : ProcPtr function results: 'ppr@' in error message
+ PR39695
+
+The value 'ppr@' is set in the name of result symbol, the actual
+name of the symbol is in the procedure name symbol pointed
+to by the result symbol's namespace (ns). When reporting errors for
+symbols that have the proc_pointer attribute check whether the
+result attribute is set and set the name accordingly.
+
+2020-05-20  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+gcc/fortran/
+
+	PR fortran/39695
+	* resolve.c (resolve_fl_procedure): Set name depending on
+	whether the result attribute is set.  For PROCEDURE/RESULT
+	conflict use the name in sym->ns->proc_name->name.
+	* symbol.c (gfc_add_type): Add check for function and result
+	attributes use sym->ns->proc_name->name if both are set.
+	Where the symbol cannot have a type use the name in
+	sym->ns->proc_name->name.
+
+2020-05-20  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+gcc/testsuite/
+
+	PR fortran/39695
+	* gfortran.dg/pr39695_1.f90: New test.
+	* gfortran.dg/pr39695_2.f90: New test.
+	* gfortran.dg/pr39695_3.f90: New test.
+	* gfortran.dg/pr39695_4.f90: New test.
+---
+ gcc/fortran/ChangeLog                   | 11 +++++++++++
+ gcc/fortran/resolve.c                   |  6 ++++--
+ gcc/fortran/symbol.c                    |  7 +++++--
+ gcc/testsuite/ChangeLog                 |  8 ++++++++
+ gcc/testsuite/gfortran.dg/pr39695_1.f90 |  8 ++++++++
+ gcc/testsuite/gfortran.dg/pr39695_2.f90 | 12 ++++++++++++
+ gcc/testsuite/gfortran.dg/pr39695_3.f90 | 11 +++++++++++
+ gcc/testsuite/gfortran.dg/pr39695_4.f90 | 14 ++++++++++++++
+ 8 files changed, 73 insertions(+), 4 deletions(-)
+ create mode 100644 gcc/testsuite/gfortran.dg/pr39695_1.f90
+ create mode 100644 gcc/testsuite/gfortran.dg/pr39695_2.f90
+ create mode 100644 gcc/testsuite/gfortran.dg/pr39695_3.f90
+ create mode 100644 gcc/testsuite/gfortran.dg/pr39695_4.f90
+
+diff --git a/gcc/fortran/resolve.c b/gcc/fortran/resolve.c
+index f6e10ea379c..aaee5eb6b9b 100644
+--- a/gcc/fortran/resolve.c
++++ b/gcc/fortran/resolve.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/fortran/symbol.c b/gcc/fortran/symbol.c
+index 59f602d80d5..b96706138c9 100644
+--- a/gcc/fortran/symbol.c
++++ b/gcc/fortran/symbol.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/gfortran.dg/pr39695_1.f90 b/gcc/testsuite/gfortran.dg/pr39695_1.f90
+new file mode 100644
+index 00000000000..4c4b3045f69
+--- /dev/null
++++ b/gcc/testsuite/gfortran.dg/pr39695_1.f90
+@@ -0,0 +1 @@
++
+diff --git a/gcc/testsuite/gfortran.dg/pr39695_2.f90 b/gcc/testsuite/gfortran.dg/pr39695_2.f90
+new file mode 100644
+index 00000000000..8534724959a
+--- /dev/null
++++ b/gcc/testsuite/gfortran.dg/pr39695_2.f90
+@@ -0,0 +1 @@
++
+diff --git a/gcc/testsuite/gfortran.dg/pr39695_3.f90 b/gcc/testsuite/gfortran.dg/pr39695_3.f90
+new file mode 100644
+index 00000000000..661e2540bb3
+--- /dev/null
++++ b/gcc/testsuite/gfortran.dg/pr39695_3.f90
+@@ -0,0 +1 @@
++
+diff --git a/gcc/testsuite/gfortran.dg/pr39695_4.f90 b/gcc/testsuite/gfortran.dg/pr39695_4.f90
+new file mode 100644
+index 00000000000..ecb0a43929f
+--- /dev/null
++++ b/gcc/testsuite/gfortran.dg/pr39695_4.f90
+@@ -0,0 +1 @@
++
+-- 
+2.26.2
+
