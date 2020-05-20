@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "file-prefix-map.h" /* remap_debug_filename()  */
 #include "output.h"
+#include "ipa-utils.h"
 
 
 static void lto_write_tree (struct output_block*, tree, bool);
@@ -75,6 +76,10 @@ create_output_block (enum lto_section_type section_type)
 
   ob->section_type = section_type;
   ob->decl_state = lto_get_out_decl_state ();
+  /* Only global decl stream in non-wpa will ever be considered by tree
+     merging.  */
+  if (!flag_wpa && section_type == LTO_section_decls)
+    ob->local_trees = new (hash_set <tree>);
   ob->main_stream = XCNEW (struct lto_output_stream);
   ob->string_stream = XCNEW (struct lto_output_stream);
   ob->writer_cache = streamer_tree_cache_create (!flag_wpa, true, false);
@@ -100,6 +105,7 @@ destroy_output_block (struct output_block *ob)
 
   delete ob->string_hash_table;
   ob->string_hash_table = NULL;
+  delete ob->local_trees;
 
   free (ob->main_stream);
   free (ob->string_stream);
@@ -532,6 +538,8 @@ private:
     bool ref_p;
     bool this_ref_p;
   };
+  /* Maximum index of scc stack containing a local tree.  */
+  int max_local_entry;
 
   static int scc_entry_compare (const void *, const void *);
 
@@ -550,6 +558,41 @@ private:
   struct obstack sccstate_obstack;
 };
 
+/* Return true if type can not be merged with structurally same tree in
+   other translation unit.  During stream out this information is propagated
+   to all trees referring to T and they are not streamed with additional
+   information needed by the tree merging in lto-common.c (in particular,
+   scc hash codes are not streamed).
+
+   TRANSLATION_UNIT_DECL is handled specially since references to it does
+   not make other trees local as well.  */
+
+static bool
+local_tree_p (tree t)
+{
+  switch (TREE_CODE (t))
+    {
+    case LABEL_DECL:
+      return true;
+    case NAMESPACE_DECL:
+      return !DECL_NAME (t);
+    case VAR_DECL:
+    case FUNCTION_DECL:
+      return !TREE_PUBLIC (t) && !DECL_EXTERNAL (t);
+    case RECORD_TYPE:
+    case UNION_TYPE:
+    case ENUMERAL_TYPE:
+      /* Anonymous namespace types are local.
+	 Only work hard for main variants;
+	 variant types will inherit locality.  */
+      return TYPE_MAIN_VARIANT (t) == t
+	     && odr_type_p (t) && type_with_linkage_p (t)
+	     && type_in_anonymous_namespace_p (t);
+    default:
+      return false;
+    }
+}
+
 /* Emit the physical representation of tree node EXPR to output block OB,
    using depth-first search on the subgraph.  If THIS_REF_P is true, the
    leaves of EXPR are emitted as references via lto_output_tree_ref.
@@ -560,6 +603,8 @@ DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 	  bool single_p)
 {
   unsigned int next_dfs_num = 1;
+
+  max_local_entry = -1;
   gcc_obstack_init (&sccstate_obstack);
   DFS_write_tree (ob, NULL, expr, ref_p, this_ref_p);
   while (!worklist_vec.is_empty ())
@@ -586,6 +631,8 @@ DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 	  scc_entry e = { expr, 0 };
 	  /* Not yet visited.  DFS recurse and push it onto the stack.  */
 	  *slot = cstate = XOBNEW (&sccstate_obstack, struct sccs);
+	  if (ob->local_trees && local_tree_p (expr))
+	    max_local_entry = sccstack.length ();
 	  sccstack.safe_push (e);
 	  cstate->dfsnum = next_dfs_num++;
 	  cstate->low = cstate->dfsnum;
@@ -640,7 +687,26 @@ DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 	     any merging there.  */
 	  hashval_t scc_hash = 0;
 	  unsigned scc_entry_len = 0;
-	  if (!flag_wpa)
+	  bool local_to_unit = !ob->local_trees
+			       || max_local_entry >= (int)first;
+
+	  /* Remember that trees are local so info gets propagated to other
+	     SCCs.  */
+	  if (local_to_unit && ob->local_trees)
+	    {
+	      for (unsigned i = 0; i < size; ++i)
+		ob->local_trees->add (sccstack[first + i].t);
+	    }
+
+	  /* As a special case do not stream TRANSLATION_UNIT_DECL as shared
+	     tree.  We can not mark it local because references to it does not
+	     make other trees local (all global decls reffer to it via
+	     CONTEXT).  */
+	  if (size == 1
+	      && TREE_CODE (sccstack[first].t) == TRANSLATION_UNIT_DECL)
+	    local_to_unit = true;
+
+	  if (!local_to_unit)
 	    {
 	      scc_hash = hash_scc (ob, first, size, ref_p, this_ref_p);
 
@@ -672,18 +738,47 @@ DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 	      gcc_checking_assert (scc_entry_len == 1);
 	    }
 
-	  /* Write LTO_tree_scc.  */
-	  streamer_write_record_start (ob, LTO_tree_scc);
-	  streamer_write_uhwi (ob, size);
-	  streamer_write_uhwi (ob, scc_hash);
+	  worklist_vec.pop ();
+
+	  /* Only global decl sections are considered by tree merging.  */
+	  if (ob->section_type != LTO_section_decls)
+	    {
+	      /* If this is the original tree we stream and it forms SCC
+		 by itself then we do not need to stream SCC at all.  */
+	      if (worklist_vec.is_empty () && first == 0 && size == 1)
+		 return;
+	      streamer_write_record_start (ob, LTO_trees);
+	      streamer_write_uhwi (ob, size);
+	    }
+	  /* Write LTO_tree_scc if tree merging is going to be performed.  */
+	  else if (!local_to_unit
+		   /* These are special since sharing is not done by tree
+		      merging machinery.  We can not special case them earlier
+		      because we still need to compute hash for further sharing
+		      of trees referring to them.  */
+		   && (size != 1
+		       || (TREE_CODE (sccstack[first].t) != IDENTIFIER_NODE
+			   && (TREE_CODE (sccstack[first].t) != INTEGER_CST
+			       || TREE_OVERFLOW (sccstack[first].t)))))
+
+	    {
+	      gcc_checking_assert (ob->section_type == LTO_section_decls);
+	      streamer_write_record_start (ob, LTO_tree_scc);
+	      streamer_write_uhwi (ob, size);
+	      streamer_write_uhwi (ob, scc_hash);
+	    }
+	  /* Non-trivial SCCs must be packed to trees blocks so forward
+	     references work correctly.  */
+	  else if (size != 1)
+	    {
+	       streamer_write_record_start (ob, LTO_trees);
+	       streamer_write_uhwi (ob, size);
+	    }
 
 	  /* Write size-1 SCCs without wrapping them inside SCC bundles.
 	     All INTEGER_CSTs need to be handled this way as we need
 	     their type to materialize them.  Also builtins are handled
-	     this way.
-	     ???  We still wrap these in LTO_tree_scc so at the
-	     input side we can properly identify the tree we want
-	     to ultimatively return.  */
+	     this way.  */
 	  if (size == 1)
 	    lto_output_tree_1 (ob, expr, scc_hash, ref_p, this_ref_p);
 	  else
@@ -722,10 +817,11 @@ DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 
 	  /* Finally truncate the vector.  */
 	  sccstack.truncate (first);
+	  if ((int)first <= max_local_entry)
+	    max_local_entry = first - 1;
 
 	  if (from_state)
 	    from_state->low = MIN (from_state->low, cstate->low);
-	  worklist_vec.pop ();
 	  continue;
 	}
 
@@ -1569,7 +1665,14 @@ DFS::DFS_write_tree (struct output_block *ob, sccs *from_state,
 
   /* Check if we already streamed EXPR.  */
   if (streamer_tree_cache_lookup (ob->writer_cache, expr, NULL))
-    return;
+    {
+      /* Refernece to a local tree makes entry also local.  We always process
+	 top of stack entry, so set max to number of entries in stack - 1.  */
+      if (ob->local_trees
+	  && ob->local_trees->contains (expr))
+	max_local_entry = sccstack.length () - 1;
+      return;
+    }
 
   worklist w;
   w.expr = expr;
@@ -1641,15 +1744,20 @@ lto_output_tree (struct output_block *ob, tree expr,
       DFS (ob, expr, ref_p, this_ref_p, false);
       in_dfs_walk = false;
 
-      /* Finally append a reference to the tree we were writing.
-	 ???  If expr ended up as a singleton we could have
-	 inlined it here and avoid outputting a reference.  */
+      /* Finally append a reference to the tree we were writing.  */
       existed_p = streamer_tree_cache_lookup (ob->writer_cache, expr, &ix);
-      gcc_assert (existed_p);
-      streamer_write_record_start (ob, LTO_tree_pickle_reference);
-      streamer_write_uhwi (ob, ix);
-      streamer_write_enum (ob->main_stream, LTO_tags, LTO_NUM_TAGS,
-			   lto_tree_code_to_tag (TREE_CODE (expr)));
+
+      /* DFS walk above possibly skipped streaming EXPR itself to let us inline
+	 it.  */
+      if (!existed_p)
+	lto_output_tree_1 (ob, expr, 0, ref_p, this_ref_p);
+      else
+	{
+	  streamer_write_record_start (ob, LTO_tree_pickle_reference);
+	  streamer_write_uhwi (ob, ix);
+	  streamer_write_enum (ob->main_stream, LTO_tags, LTO_NUM_TAGS,
+			       lto_tree_code_to_tag (TREE_CODE (expr)));
+	}
       if (streamer_dump_file)
 	{
 	  print_node_brief (streamer_dump_file, "   Finished SCC of ",
