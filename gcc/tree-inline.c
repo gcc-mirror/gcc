@@ -1974,17 +1974,6 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	    gimple_cond_set_lhs (cond, gimple_assign_lhs (cmp));
 	    gimple_cond_set_rhs (cond, boolean_false_node);
 	  }
-      if (gassign *ass = dyn_cast <gassign *> (copy))
-	if ((gimple_assign_rhs_code (ass) == COND_EXPR
-	     || gimple_assign_rhs_code (ass) == VEC_COND_EXPR)
-	    && gimple_could_trap_p (ass))
-	  {
-	    gassign *cmp
-	      = gimple_build_assign (make_ssa_name (boolean_type_node),
-				     gimple_assign_rhs1 (ass));
-	    gimple_seq_add_stmt (&stmts, cmp);
-	    gimple_assign_set_rhs1 (ass, gimple_assign_lhs (cmp));
-	  }
     }
 
   gimple_seq_add_stmt (&stmts, copy);

@@ -1,3 +1,9 @@
+2020-05-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/95231
+	* tree-inline.c (remap_gimple_stmt): Revert adjusting
+	COND_EXPR and VEC_COND_EXPR for a -fnon-call-exception boundary.
+
 2020-05-20  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 	    Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
