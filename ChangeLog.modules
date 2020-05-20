@@ -1,3 +1,11 @@
+2020-05-20  Nathan Sidwell  <nathan@acm.org>
+
+	libcpp/
+	* files.c (cpp_push_include): Pass highest_line for loc.
+	(cpp_push_default): Likewise.
+	* line-map.c (linemap_add): Set range and column bits to what we
+	used to figure start location.
+
 2020-05-19  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/

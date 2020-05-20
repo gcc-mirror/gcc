@@ -1588,7 +1588,8 @@ _cpp_compare_file_date (cpp_reader *pfile, const char *fname,
 bool
 cpp_push_include (cpp_reader *pfile, const char *fname)
 {
-  return _cpp_stack_include (pfile, fname, false, IT_CMDLINE, 0);
+  return _cpp_stack_include (pfile, fname, false, IT_CMDLINE,
+			     pfile->line_table->highest_line);
 }
 
 /* Pushes the given file, implicitly included at the start of a
@@ -1597,7 +1598,8 @@ cpp_push_include (cpp_reader *pfile, const char *fname)
 bool
 cpp_push_default_include (cpp_reader *pfile, const char *fname)
 {
-  return _cpp_stack_include (pfile, fname, true, IT_DEFAULT, 0);
+  return _cpp_stack_include (pfile, fname, true, IT_DEFAULT,
+			     pfile->line_table->highest_line);
 }
 
 /* Do appropriate cleanup when a file INC's buffer is popped off the

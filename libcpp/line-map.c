@@ -487,17 +487,12 @@ linemap_add (line_maps *set, enum lc_reason reason,
 {
   /* Generate a start_location above the current highest_location.
      If possible, make the low range bits be zero.  */
-  location_t start_location;
-  if (set->highest_location < LINE_MAP_MAX_LOCATION_WITH_COLS)
-    {
-      start_location = set->highest_location + (1 << set->default_range_bits);
-      if (set->default_range_bits)
-	start_location &= ~((1 << set->default_range_bits) - 1);
-      linemap_assert (0 == (start_location
-			    & ((1 << set->default_range_bits) - 1)));
-    }
-  else
-    start_location = set->highest_location + 1;
+  location_t start_location = set->highest_location + 1;
+  unsigned range_bits = 0;
+  if (start_location < LINE_MAP_MAX_LOCATION_WITH_COLS)
+    range_bits = set->default_range_bits;
+  start_location += (1 << range_bits) - 1;
+  start_location &=  ~((1 << range_bits) - 1);
 
   linemap_assert (!LINEMAPS_ORDINARY_USED (set)
 		  || (start_location
@@ -562,8 +557,7 @@ linemap_add (line_maps *set, enum lc_reason reason,
   map->to_file = to_file;
   map->to_line = to_line;
   LINEMAPS_ORDINARY_CACHE (set) = LINEMAPS_ORDINARY_USED (set) - 1;
-  map->m_column_and_range_bits = 0;
-  map->m_range_bits = 0;
+  map->m_range_bits = map->m_column_and_range_bits = range_bits;
   set->highest_location = start_location;
   set->highest_line = start_location;
   set->max_column_hint = 0;
