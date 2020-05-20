@@ -7528,7 +7528,13 @@ vectorizable_induction (loop_vec_info loop_vinfo,
       unsigned group_size = SLP_TREE_SCALAR_STMTS (slp_node).length ();
       unsigned nvects = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
       unsigned elts = const_nunits * nvects;
-      unsigned nivs = least_common_multiple (group_size,
+      /* Compute the number of distinct IVs we need.  First reduce
+	 group_size if it is a multiple of const_nunits so we get
+	 one IV for a group_size of 4 but const_nunits 2.  */
+      unsigned group_sizep = group_size;
+      if (group_sizep % const_nunits == 0)
+	group_sizep = group_sizep / const_nunits;
+      unsigned nivs = least_common_multiple (group_sizep,
 					     const_nunits) / const_nunits;
       gcc_assert (elts % group_size == 0);
       tree elt = init_expr;
@@ -7576,6 +7582,12 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 
 	  SLP_TREE_VEC_STMTS (slp_node).quick_push (induction_phi_info);
 	}
+      /* Fill up to the number of vectors we need for the whole group.  */
+      nivs = least_common_multiple (group_size,
+				    const_nunits) / const_nunits;
+      for (; ivn < nivs; ++ivn)
+	SLP_TREE_VEC_STMTS (slp_node)
+	  .quick_push (SLP_TREE_VEC_STMTS (slp_node)[0]);
 
       /* Re-use IVs when we can.  */
       if (ivn < nvects)
