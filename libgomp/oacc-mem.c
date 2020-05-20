@@ -1181,8 +1181,9 @@ goacc_exit_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 
 	case GOMP_MAP_STRUCT:
 	  /* Skip the 'GOMP_MAP_STRUCT' itself, and use the regular processing
-	     for all its entries.  TODO: don't generate these no-op
-	     'GOMP_MAP_STRUCT's.  */
+	     for all its entries.  This special handling exists for GCC 10.1
+	     compatibility; afterwards, we're not generating these no-op
+	     'GOMP_MAP_STRUCT's anymore.  */
 	  break;
 
 	default:
