@@ -1,3 +1,9 @@
+2020-05-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/91695
+	* config/i386/cpuinfo.c (get_available_features): Fix VPCLMULQDQ
+	check.
+
 2020-05-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/95212
