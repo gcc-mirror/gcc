@@ -1,3 +1,9 @@
+2020-05-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95223
+	* hash-table.h (hash_table::find_with_hash): Move up the call to
+	hash_table::verify.
+
 2020-05-20  Martin Liska  <mliska@suse.cz>
 
 	* lto-compress.c (lto_compression_zstd): Fill up
