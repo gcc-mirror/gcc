@@ -43,12 +43,7 @@ TypeResolution::TypeResolution (AST::Crate &crate, TopLevelScan &toplevel)
   ADD_BUILTIN_TYPE ("bool", typeScope);
 }
 
-TypeResolution::~TypeResolution ()
-{
-  functionScope.Pop ();
-  typeScope.Pop ();
-  scope.Pop ();
-}
+TypeResolution::~TypeResolution () { functionScope.Pop (); }
 
 bool
 TypeResolution::Resolve (AST::Crate &crate, TopLevelScan &toplevel)
