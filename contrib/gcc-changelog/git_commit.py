@@ -150,6 +150,7 @@ star_prefix_regex = re.compile(r'\t\*(?P<spaces>\ *)(?P<content>.*)')
 LINE_LIMIT = 100
 TAB_WIDTH = 8
 CO_AUTHORED_BY_PREFIX = 'co-authored-by: '
+CHERRY_PICK_PREFIX = '(cherry picked from commit '
 
 
 class Error:
@@ -348,6 +349,8 @@ class GitCommit:
                     name = line[len(CO_AUTHORED_BY_PREFIX):]
                     author = self.format_git_author(name)
                     self.co_authors.append(author)
+                    continue
+                elif line.startswith(CHERRY_PICK_PREFIX):
                     continue
 
                 # ChangeLog name will be deduced later
