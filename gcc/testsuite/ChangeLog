@@ -1,3 +1,9 @@
+2020-05-20  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* g++.dg/warn/Wconversion-null-2.C: Add explicit declarations for l()
+	and g() with int, long, long long and __int20 arguments.
+	* g++.dg/warn/Wconversion-null.C: Likewise.
+
 2020-05-20  Marek Polacek  <polacek@redhat.com>
 
 	DR 2237
