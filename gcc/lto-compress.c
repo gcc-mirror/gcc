@@ -141,6 +141,7 @@ lto_compression_zstd (struct lto_compression_stream *stream)
   if (ZSTD_isError (csize))
     internal_error ("compressed stream: %s", ZSTD_getErrorName (csize));
 
+  lto_stats.num_compressed_il_bytes += csize;
   stream->callback (outbuf, csize, NULL);
 
   lto_destroy_compression_stream (stream);
@@ -169,6 +170,7 @@ lto_uncompression_zstd (struct lto_compression_stream *stream)
   if (ZSTD_isError (dsize))
     internal_error ("decompressed stream: %s", ZSTD_getErrorName (dsize));
 
+  lto_stats.num_uncompressed_il_bytes += dsize;
   stream->callback (outbuf, dsize, stream->opaque);
 
   lto_destroy_compression_stream (stream);

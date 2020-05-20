@@ -10,12 +10,11 @@ foo (uint8_t const * base)
   return vld1q_u8 (base);
 }
 
-/* { dg-final { scan-assembler "vldrb.u8"  }  } */
-
 uint8x16_t
 foo1 (uint8_t const * base)
 {
   return vld1q (base);
 }
 
-/* { dg-final { scan-assembler "vldrb.u8"  }  } */
+/* { dg-final { scan-assembler-times "vldrb.8" 2 }  } */
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

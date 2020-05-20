@@ -1,3 +1,37 @@
+2020-05-20  Marek Polacek  <polacek@redhat.com>
+
+	DR 2289
+	PR c++/94553
+	* cp-tree.h (SD_DECOMPOSITION): New flag.
+	* decl.c (duplicate_decls): Make sure a structured binding is unique
+	in its declarative region.
+	(start_decl): If INITIALIZED is SD_DECOMPOSITION, call
+	fit_decomposition_lang_decl.
+	(grokdeclarator): Compare INITIALIZED directly to SD_* flags.
+	* parser.c (cp_parser_decomposition_declaration): Pass SD_DECOMPOSITION
+	to start_decl.
+
+2020-05-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95223
+	* typeck.c (structural_comptypes): Don't perform
+	context-dependent resolution of TYPENAME_TYPEs when
+	comparing_specializations.
+
+2020-05-19  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (lookup_template_class_1): Do not reinit template_info of an
+	alias here.
+
+2020-05-18  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/94923
+	* call.c ((maybe_warn_class_memaccess): Use is_byte_access_type.
+	* cp-tree.h (is_dummy_object): Return bool.
+	(is_byte_access_type): Declare new function.
+	* tree.c (is_dummy_object): Return bool.
+	(is_byte_access_type): Define new function.
+
 2020-05-19  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/87847

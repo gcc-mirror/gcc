@@ -912,6 +912,12 @@ hash_table<Descriptor, Lazy, Allocator>
 
   if (Lazy && m_entries == NULL)
     m_entries = alloc_entries (size);
+
+#if CHECKING_P
+  if (m_sanitize_eq_and_hash)
+    verify (comparable, hash);
+#endif
+
   value_type *entry = &m_entries[index];
   if (is_empty (*entry)
       || (!is_deleted (*entry) && Descriptor::equal (*entry, comparable)))
@@ -928,13 +934,7 @@ hash_table<Descriptor, Lazy, Allocator>
       entry = &m_entries[index];
       if (is_empty (*entry)
           || (!is_deleted (*entry) && Descriptor::equal (*entry, comparable)))
-	{
-#if CHECKING_P
-	  if (m_sanitize_eq_and_hash)
-	    verify (comparable, hash);
-#endif
-	  return *entry;
-	}
+	return *entry;
     }
 }
 

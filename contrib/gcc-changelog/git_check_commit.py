@@ -28,14 +28,14 @@ parser.add_argument('-g', '--git-path', default='.',
                     help='Path to git repository')
 parser.add_argument('-p', '--print-changelog', action='store_true',
                     help='Print final changelog entires')
-parser.add_argument('-n', '--allow-non-strict-mode', action='store_true',
-                    help='Allow non-strict mode (change in both ChangeLog and '
-                    'other files.')
+parser.add_argument('-n', '--non-strict-mode', action='store_true',
+                    help='Use non-strict mode (allow changes in ChangeLog and '
+                    'other automatically updated files).')
 args = parser.parse_args()
 
 retval = 0
 for git_commit in parse_git_revisions(args.git_path, args.revisions,
-                                      not args.allow_non_strict_mode):
+                                      not args.non_strict_mode):
     res = 'OK' if git_commit.success else 'FAILED'
     print('Checking %s: %s' % (git_commit.hexsha, res))
     if git_commit.success:

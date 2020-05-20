@@ -258,3 +258,17 @@ class TestGccChangelog(unittest.TestCase):
         email = self.from_patch_glob('0020-IPA-Avoid')
         assert (email.errors[0].message
                 == 'first line should start with a tab, asterisk and space')
+
+    def test_cherry_pick_format(self):
+        email = self.from_patch_glob('0001-c-Alias.patch')
+        assert not email.errors
+
+    def test_signatures(self):
+        email = self.from_patch_glob('0001-RISC-V-Make-unique.patch')
+        assert not email.errors
+        assert len(email.changelog_entries) == 1
+
+    def test_duplicate_top_level_author(self):
+        email = self.from_patch_glob('0001-Fortran-ProcPtr-function.patch')
+        assert not email.errors
+        assert len(email.changelog_entries[0].author_lines) == 1

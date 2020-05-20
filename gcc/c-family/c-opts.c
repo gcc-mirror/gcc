@@ -1317,15 +1317,14 @@ handle_deferred_opts (void)
   if (!deps_seen)
     return;
 
-  mkdeps *deps = cpp_get_deps (parse_in);
+  if (mkdeps *deps = cpp_get_deps (parse_in))
+    for (unsigned i = 0; i < deferred_count; i++)
+      {
+	struct deferred_opt *opt = &deferred_opts[i];
 
-  for (size_t i = 0; i < deferred_count; i++)
-    {
-      struct deferred_opt *opt = &deferred_opts[i];
-
-      if (opt->code == OPT_MT || opt->code == OPT_MQ)
-	deps_add_target (deps, opt->arg, opt->code == OPT_MQ);
-    }
+	if (opt->code == OPT_MT || opt->code == OPT_MQ)
+	  deps_add_target (deps, opt->arg, opt->code == OPT_MQ);
+      }
 }
 
 /* These settings are appropriate for GCC, but not necessarily so for

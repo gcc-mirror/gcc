@@ -150,6 +150,13 @@ star_prefix_regex = re.compile(r'\t\*(?P<spaces>\ *)(?P<content>.*)')
 LINE_LIMIT = 100
 TAB_WIDTH = 8
 CO_AUTHORED_BY_PREFIX = 'co-authored-by: '
+CHERRY_PICK_PREFIX = '(cherry picked from commit '
+REVIEWED_BY_PREFIX = 'reviewed-by: '
+REVIEWED_ON_PREFIX = 'reviewed-on: '
+SIGNED_OFF_BY_PREFIX = 'signed-off-by: '
+
+REVIEW_PREFIXES = (REVIEWED_BY_PREFIX, REVIEWED_ON_PREFIX,
+                   SIGNED_OFF_BY_PREFIX)
 
 
 class Error:
@@ -344,10 +351,15 @@ class GitCommit:
                     else:
                         pr_line = line.lstrip()
 
-                if line.lower().startswith(CO_AUTHORED_BY_PREFIX):
+                lowered_line = line.lower()
+                if lowered_line.startswith(CO_AUTHORED_BY_PREFIX):
                     name = line[len(CO_AUTHORED_BY_PREFIX):]
                     author = self.format_git_author(name)
                     self.co_authors.append(author)
+                    continue
+                elif lowered_line.startswith(REVIEW_PREFIXES):
+                    continue
+                elif line.startswith(CHERRY_PICK_PREFIX):
                     continue
 
                 # ChangeLog name will be deduced later
@@ -369,7 +381,8 @@ class GitCommit:
                         self.changelog_entries.append(last_entry)
                         will_deduce = True
                 elif author_tuple:
-                    last_entry.author_lines.append(author_tuple)
+                    if author_tuple not in last_entry.author_lines:
+                        last_entry.author_lines.append(author_tuple)
                     continue
 
                 if not line.startswith('\t'):
@@ -500,11 +513,11 @@ class GitCommit:
                     err = Error(msg % (entry.folder, changelog_location), file)
                     self.errors.append(err)
 
-    def to_changelog_entries(self):
+    def to_changelog_entries(self, use_commit_ts=False):
         for entry in self.changelog_entries:
             output = ''
             timestamp = entry.datetime
-            if not timestamp:
+            if not timestamp or use_commit_ts:
                 timestamp = self.date.strftime('%Y-%m-%d')
             authors = entry.authors if entry.authors else [self.author]
             # add Co-Authored-By authors to all ChangeLog entries

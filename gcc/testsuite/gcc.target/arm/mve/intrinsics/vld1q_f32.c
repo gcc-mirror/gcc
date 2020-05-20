@@ -10,12 +10,11 @@ foo (float32_t const * base)
   return vld1q_f32 (base);
 }
 
-/* { dg-final { scan-assembler "vldrw.f32"  }  } */
-
 float32x4_t
 foo1 (float32_t const * base)
 {
   return vld1q (base);
 }
 
-/* { dg-final { scan-assembler "vldrw.f32"  }  } */
+/* { dg-final { scan-assembler-times "vldrw.32" 2 }  } */
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

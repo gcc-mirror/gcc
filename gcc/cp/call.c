@@ -9509,7 +9509,7 @@ maybe_warn_class_memaccess (location_t loc, tree fndecl,
 
       else if (!trivial
 	       && !VOID_TYPE_P (srctype)
-	       && !char_type_p (TYPE_MAIN_VARIANT (srctype))
+	       && !is_byte_access_type (srctype)
 	       && !same_type_ignoring_top_level_qualifiers_p (desttype,
 							      srctype))
 	{
@@ -9522,7 +9522,7 @@ maybe_warn_class_memaccess (location_t loc, tree fndecl,
 	}
       else if (fld
 	       && !VOID_TYPE_P (srctype)
-	       && !char_type_p (TYPE_MAIN_VARIANT (srctype))
+	       && !is_byte_access_type (srctype)
 	       && !same_type_ignoring_top_level_qualifiers_p (desttype,
 							      srctype))
 	{

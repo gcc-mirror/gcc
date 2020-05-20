@@ -1,4 +1,24 @@
+2020-05-20  Nathan Sidwell  <nathan@acm.org>
+
+	* internal.h (typedef _cpp_file): Delete, unnecessary in C++.
+	(enum _cpp_find_file_kind): New.
+	(_cpp_find_file): Use it, not 3 bools.
+	* files.c (_cpp_find_file): Use _cpp_find_file_kind enum, not
+	bools.
+	(cpp_make_system_header): Break overly long line.
+	(_cpp_stack_include, _cpp_fake_include)
+	(_cpp_do_file_change, _cpp_compare_file_date, _cpp_has_header): Adjust.
+	* init.c (cpp_read_main): Adjust _cpp_find_file call.
+
 2020-05-18  Nathan Sidwell  <nathan@acm.org>
+
+	* include/cpplib.h (cpp_get_otions, cpp_get_callbacks)
+	(cpp_get_deps): Mark as PURE.
+	* include/line-map.h (get_combined_adhoc_loc)
+	(get_location_from_adhoc_loc, get_pure_location): Reformat decls.
+	* internal.h (struct lexer_state): Clarify comment.
+	* system.h: Remove now-unneeded bool hackery.
+	* files.c (_cpp_find_file): Store LOC not highest_location.
 
 	PR preprocessor/95149
 	* lex.c (struct lit_accum): New.
