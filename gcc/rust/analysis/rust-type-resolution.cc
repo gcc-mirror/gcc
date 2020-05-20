@@ -100,6 +100,38 @@ TypeResolution::typesAreCompatible (AST::Type *lhs, AST::Type *rhs,
       return false;
     }
 
+  AST::Type *val = NULL;
+  if (!typeScope.Lookup (lhsTypeStr, &val))
+    {
+      rust_error_at (locus, "unknown type");
+      return false;
+    }
+
+  return true;
+}
+
+bool
+TypeResolution::isTypeInScope (AST::Type *type, Location locus)
+{
+  auto before = typeComparisonBuffer.size ();
+  type->accept_vis (*this);
+  if (typeComparisonBuffer.size () <= before)
+    {
+      rust_error_at (locus, "unable to decipher type: %s",
+		     type->as_string ().c_str ());
+      return false;
+    }
+
+  auto t = typeComparisonBuffer.back ();
+  typeComparisonBuffer.pop_back ();
+
+  AST::Type *val = NULL;
+  if (!typeScope.Lookup (t, &val))
+    {
+      rust_error_at (locus, "unknown type");
+      return false;
+    }
+
   return true;
 }
 
@@ -619,6 +651,9 @@ TypeResolution::visit (AST::Function &function)
   scope.Push ();
   for (auto &param : function.function_params)
     {
+      if (!isTypeInScope (param.type.get (), param.locus))
+	return;
+
       auto before = letPatternBuffer.size ();
       param.param_name->accept_vis (*this);
       if (letPatternBuffer.size () <= before)
@@ -630,6 +665,13 @@ TypeResolution::visit (AST::Function &function)
       auto paramName = letPatternBuffer.back ();
       letPatternBuffer.pop_back ();
       scope.Insert (paramName.variable_ident, param.type.get ());
+    }
+
+  // ensure the return type is resolved
+  if (function.has_function_return_type ())
+    {
+      if (!isTypeInScope (function.return_type.get (), function.locus))
+	return;
     }
 
   // walk the expression body

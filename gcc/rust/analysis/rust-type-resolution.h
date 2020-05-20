@@ -221,6 +221,7 @@ private:
   bool go () override;
   bool typesAreCompatible (AST::Type *lhs, AST::Type *rhs, Location locus);
   AST::Function *lookupFndecl (AST::Expr *expr);
+  bool isTypeInScope (AST::Type *type, Location locus);
 
   Scope<AST::Function *> functionScope;
 };
