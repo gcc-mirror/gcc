@@ -1,5 +1,11 @@
 2020-05-20  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/95219
+	* tree-vect-loop.c (vectorizable_induction): Reduce
+	group_size before computing the number of required IVs.
+
+2020-05-20  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/95231
 	* g++.dg/other/pr95231.C: New testcase.
 
