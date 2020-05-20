@@ -574,6 +574,7 @@ protected:
 // Path used inside types
 class TypePath : public TypeNoBounds
 {
+public:
   bool has_opening_scope_resolution;
   ::std::vector< ::std::unique_ptr<TypePathSegment> > segments;
 
