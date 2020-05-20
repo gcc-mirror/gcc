@@ -8708,7 +8708,8 @@ try_to_locate_new_include_insertion_point (const char *file, location_t loc)
 	    last_ord_map_after_include = NULL;
 	  }
 
-      if (ord_map->to_file == file)
+      if (0 == strcmp (ord_map->to_file, file)
+	  && ord_map->to_line)
 	{
 	  if (!first_ord_map_in_file)
 	    first_ord_map_in_file = ord_map;
