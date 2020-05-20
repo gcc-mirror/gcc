@@ -122,33 +122,7 @@ inline namespace v1
   make_error_condition(socket_errc __e) noexcept
   { return error_condition(static_cast<int>(__e), socket_category()); }
 
-  template<typename _Tp, typename = __void_t<>>
-    struct __is_endpoint_impl : false_type
-    { };
 
-  // Check Endpoint requirements.
-  template<typename _Tp>
-    auto
-    __endpoint_reqs(const _Tp* __a = 0)
-    -> enable_if_t<__and_<
-      is_default_constructible<_Tp>,
-      __is_value_constructible<_Tp>,
-      is_same<decltype(__a->__protocol()), typename _Tp::protocol_type>
-      >::value,
-    __void_t< typename _Tp::protocol_type::endpoint >>;
-
-  template<typename _Tp>
-    struct __is_endpoint_impl<_Tp, decltype(__endpoint_reqs<_Tp>())>
-    : true_type
-    { };
-
-  template<typename _Tp>
-    struct __is_endpoint : __is_endpoint_impl<_Tp>
-    { };
-
-  // TODO Endpoint reqs for extensible implementations
-  // TODO _Protocol reqs
-  // TODO AcceptableProtocol reqs
   // TODO GettableSocket reqs
   // TODO SettableSocket reqs
   // TODO BooleanSocketOption reqs
@@ -712,6 +686,9 @@ inline namespace v1
       using native_handle_type = int;
       using protocol_type = _Protocol;
       using endpoint_type = typename protocol_type::endpoint;
+
+      static_assert(__detail::__protocol<protocol_type>,
+		    "protocol_type meets the Protocol requirements");
 
       // basic_socket operations:
 
@@ -1852,6 +1829,9 @@ inline namespace v1
       using protocol_type = _AcceptableProtocol;
       using endpoint_type = typename protocol_type::endpoint;
       using socket_type = typename protocol_type::socket;
+
+      static_assert(__detail::__acceptable_protocol<protocol_type>,
+		    "protocol_type meets the AcceptableProtocol requirements");
 
       // construct / copy / destroy:
 

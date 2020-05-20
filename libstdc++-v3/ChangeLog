@@ -1,5 +1,15 @@
 2020-05-21  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/bits/net.h (__endpoint, __protocol)
+	(__acceptable_protocol, __inet_protocol): New concepts.
+	(__detail::__is_endpoint): Move trait from <experimental/socket>.
+	(__is_protocol, __is_acceptable_protocol, __is_inet_protocol): New
+	traits.
+	(__endpoint, __protocol, __acceptable_protocol): New variable
+	templates.
+	* include/experimental/socket (__is_endpoint): Move to net.h header.
+	(basic_socket, basic_socket_acceptor): Check requirements.
+
 	* include/experimental/executor (use_future_t::use_future_t()): Fix
 	incorrect noexcept-specifier.
 	* include/experimental/internet (basic_resolver_results): Adjust

@@ -38,6 +38,10 @@
 #include <system_error>
 #include <experimental/netfwd>
 
+#if __cplusplus > 201703L
+# include <concepts>
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -163,6 +167,154 @@ inline namespace v1
 	name(const _Protocol&) const noexcept
 	{ return _Derived::_S_name; }
     };
+
+namespace __detail
+{
+#if __cpp_lib_concepts
+  template<typename _Tp>
+    concept __protocol_like
+      = copyable<_Tp> && requires { typename _Tp::endpoint; };
+
+  // Endpoint requirements for non-extensible implementations.
+  template<typename _Tp>
+    concept __endpoint_base = semiregular<_Tp>
+      && requires  { typename _Tp::protocol_type; }
+      && __protocol_like<typename _Tp::protocol_type>
+      && requires(const _Tp __a) {
+	{ __a.protocol() } -> same_as<typename _Tp::protocol_type>;
+      };
+
+  // Endpoint requirements for extensible implementations.
+  template<typename _Tp>
+    concept __endpoint = __endpoint_base<_Tp>
+      && requires (const _Tp& __a, _Tp& __b, size_t __s)
+      {
+	{ __a.data() } -> same_as<const void*>;
+	{ __b.data() } -> same_as<void*>;
+	{ __b.size() } -> same_as<size_t>;
+	__b.resize(__s);
+	{ __a.capacity() } -> same_as<size_t>;
+      };
+
+  // Protocol requirements for non-extensible implementations.
+  template<typename _Tp>
+    concept __protocol_base = __protocol_like<_Tp>
+      && __endpoint_base<typename _Tp::endpoint>
+      && same_as<typename _Tp::endpoint::protocol_type, _Tp>;
+
+  // Protocol requirements for extensible implementations.
+  template<typename _Tp>
+    concept __protocol =  __protocol_base<_Tp>
+      && __endpoint<typename _Tp::endpoint>
+      && requires (const _Tp __a) {
+	{ __a.family() } -> same_as<int>;
+	{ __a.type() } -> same_as<int>;
+	{ __a.protocol() } -> same_as<int>;
+      };
+
+  template<typename _Tp>
+    concept __acceptable_protocol = __protocol<_Tp>
+      && requires { typename _Tp::socket; }
+      && move_constructible<typename _Tp::socket>
+      && derived_from<typename _Tp::socket, basic_socket<_Tp>>;
+
+  template<typename _Tp>
+    concept __inet_protocol = __acceptable_protocol<_Tp>
+      && equality_comparable<_Tp> && requires {
+	{ _Tp::v4() } -> same_as<_Tp>;
+	{ _Tp::v6() } -> same_as<_Tp>;
+	typename _Tp::resolver;
+      }
+      && same_as<typename _Tp::resolver, ip::basic_resolver<_Tp>>;
+
+#else
+  // Check Endpoint requirements for extensible implementations
+  template<typename _Tp, typename = void>
+    struct __is_endpoint : false_type
+    { };
+
+  template<typename _Tp>
+    auto
+    __endpoint_reqs(const _Tp* __a = nullptr, _Tp* __b = nullptr)
+    -> enable_if_t<__and_<
+      is_default_constructible<_Tp>, __is_value_constructible<_Tp>,
+      is_same<decltype(__a->protocol()), typename _Tp::protocol_type>,
+      is_same<decltype(__a->data()), const void*>,
+      is_same<decltype(__b->data()), void*>,
+      is_same<decltype(__a->size()), size_t>,
+      is_same<decltype(__a->capacity()), size_t>
+      >::value,
+    __void_t< typename _Tp::protocol_type::endpoint,
+	      decltype(__b->resize(std::declval<size_t>())) >>;
+
+  template<typename _Tp>
+    struct __is_endpoint<_Tp, decltype(__detail::__endpoint_reqs<_Tp>())>
+    : true_type
+    { };
+
+  // Check Protocol requirements for extensible implementations.
+  template<typename _Tp, typename = void>
+    struct __is_protocol
+    : false_type { };
+
+  template<typename _Tp>
+    auto
+    __protocol_reqs(const _Tp* __a = nullptr)
+    -> enable_if_t<__and_<
+      is_copy_constructible<_Tp>, is_copy_assignable<_Tp>,
+      __is_endpoint<typename _Tp::endpoint>,
+      is_same<decltype(__a->family()), int>,
+      is_same<decltype(__a->type()), int>,
+      is_same<decltype(__a->protocol()), int>
+      >::value>;
+
+  template<typename _Tp>
+    struct __is_protocol<_Tp, decltype(__detail::__protocol_reqs<_Tp>())>
+    : true_type
+    { };
+
+  // Check AcceptableProtocol requirements
+  template<typename _Tp, typename = void>
+    struct __is_acceptable_protocol
+    : false_type { };
+
+  template<typename _Tp>
+    struct __is_acceptable_protocol<_Tp, __void_t<typename _Tp::socket>>
+    : __and_<__is_protocol<_Tp>, is_move_constructible<typename _Tp::socket>,
+	     is_convertible<typename _Tp::socket*, basic_socket<_Tp>*>>::type
+    { };
+
+  // Check InternetProtocol requirements
+  template<typename _Tp, typename = void>
+    struct __is_inet_protocol
+    : false_type { };
+
+  template<typename _Tp>
+    auto
+    __inet_proto_reqs(const _Tp* __a = nullptr)
+    -> enable_if_t<__and_<
+      __is_acceptable_protocol<_Tp>,
+      is_same<typename _Tp::resolver, ip::basic_resolver<_Tp>>,
+      is_same<decltype(_Tp::v4()), _Tp>,
+      is_same<decltype(_Tp::v6()), _Tp>,
+      is_convertible<decltype(*__a == *__a), bool>,
+      is_convertible<decltype(*__a != *__a), bool>
+      >::value>;
+
+  template<typename _Tp>
+    struct __is_inet_protocol<_Tp, decltype(__inet_proto_reqs<_Tp>())>
+    : true_type { };
+
+  // Variable templates for requirements (with same names as concepts above).
+
+  template<typename _Tp>
+    constexpr bool __endpoint = __is_endpoint<_Tp>::value;
+  template<typename _Tp>
+    constexpr bool __protocol = __is_protocol<_Tp>::value;
+  template<typename _Tp>
+    constexpr bool __acceptable_protocol = __is_acceptable_protocol<_Tp>::value;
+#endif
+} // namespace __detail
 
   /// @}
 
