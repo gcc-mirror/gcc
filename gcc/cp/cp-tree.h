@@ -5694,8 +5694,10 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 /* Used with start_decl's initialized parameter.  */
 #define SD_UNINITIALIZED     0
 #define SD_INITIALIZED       1
-#define SD_DEFAULTED         2
-#define SD_DELETED           3
+/* Like SD_INITIALIZED, but also mark the new decl as DECL_DECOMPOSITION_P.  */
+#define SD_DECOMPOSITION     2
+#define SD_DEFAULTED         3
+#define SD_DELETED           4
 
 /* Returns nonzero iff TYPE1 and TYPE2 are the same type, or if TYPE2
    is derived from TYPE1, or if TYPE2 is a pointer (reference) to a
