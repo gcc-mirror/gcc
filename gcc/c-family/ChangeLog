@@ -1,5 +1,7 @@
 2020-05-20  Nathan Sidwell  <nathan@acm.org>
 
+	* c-common.c (try_to_locate_new_include_insertion_point): Revert change.
+
 	* c-common.c (try_to_locate_new_include_insertion_point): Use
 	strcmp to compare filenames.
 	* c-lex.c (init_c_lex): Move declaration to initialization.
