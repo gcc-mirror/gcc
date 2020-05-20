@@ -662,8 +662,6 @@ cpp_post_options (cpp_reader *pfile)
 const char *
 cpp_read_main_file (cpp_reader *pfile, const char *fname)
 {
-  const location_t loc = 0;
-
   if (CPP_OPTION (pfile, deps.style) != DEPS_NONE)
     {
       if (!pfile->deps)
@@ -675,8 +673,7 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname)
 
   pfile->main_file
     = _cpp_find_file (pfile, fname, &pfile->no_search_path, /*angle=*/0,
-		      /*fake=*/false, /*preinclude=*/false, /*hasinclude=*/false,
-		      loc);
+		      _cpp_FFK_NORMAL, 0);
   if (_cpp_find_failed (pfile->main_file))
     return NULL;
 

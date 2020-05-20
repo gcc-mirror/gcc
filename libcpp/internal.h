@@ -677,10 +677,10 @@ extern void _cpp_init_hashtable (cpp_reader *, cpp_hash_table *);
 extern void _cpp_destroy_hashtable (cpp_reader *);
 
 /* In files.c */
-typedef struct _cpp_file _cpp_file;
+enum _cpp_find_file_kind
+  { _cpp_FFK_NORMAL, _cpp_FFK_FAKE, _cpp_FFK_PRE_INCLUDE, _cpp_FFK_HAS_INCLUDE };
 extern _cpp_file *_cpp_find_file (cpp_reader *, const char *, cpp_dir *,
-				  int angle, bool fake, bool preinclude,
-				  bool has_include, location_t);
+				  int angle, _cpp_find_file_kind, location_t);
 extern bool _cpp_find_failed (_cpp_file *);
 extern void _cpp_mark_file_once_only (cpp_reader *, struct _cpp_file *);
 extern void _cpp_fake_include (cpp_reader *, const char *);
