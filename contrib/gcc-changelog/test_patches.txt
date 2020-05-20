@@ -2382,3 +2382,32 @@ index 00000000000..66c87d48694
 -- 
 2.26.1
 
+=== 0001-c-Alias.patch ===
+From 3f1a149fc35cdba988464562e2fb824b10652d6b Mon Sep 17 00:00:00 2001
+From: Nathan Sidwell <nathan@acm.org>
+Date: Tue, 19 May 2020 13:29:19 -0700
+Subject: [PATCH] c++: Alias template instantiation template info
+
+I discovered that the alias instantiation machinery would setup
+template_info, and then sometime later overwrite that with equivalent
+info.  This broke modules, because the template info, once set, is
+logically immutable.  Let's just not do that.
+
+	* pt.c (lookup_template_class_1): Do not reinit template_info of an
+	alias here.
+
+(cherry picked from commit 74744bb1f2847b5b9ce3e97e0fec9c23bb0e499f)
+---
+ gcc/cp/pt.c | 17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/gcc/cp/pt.c b/gcc/cp/pt.c
+index b8f03d18541..7230ac724ba 100644
+--- a/gcc/cp/pt.c
++++ b/gcc/cp/pt.c
+@@ -1 +1,2 @@
+
++
+-- 
+2.26.2
+

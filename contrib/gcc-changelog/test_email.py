@@ -258,3 +258,7 @@ class TestGccChangelog(unittest.TestCase):
         email = self.from_patch_glob('0020-IPA-Avoid')
         assert (email.errors[0].message
                 == 'first line should start with a tab, asterisk and space')
+
+    def test_cherry_pick_format(self):
+        email = self.from_patch_glob('0001-c-Alias.patch')
+        assert not email.errors
