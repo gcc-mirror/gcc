@@ -12,7 +12,13 @@ namespace Analysis {
 class Resolution : public AST::ASTVisitor
 {
 public:
-  ~Resolution (){};
+  virtual ~Resolution ()
+  {
+    scope.Pop ();
+    valueScope.Pop ();
+    macroScope.Pop ();
+    typeScope.Pop ();
+  };
 
   // visitor impl
   // rust-ast.h
@@ -226,12 +232,17 @@ protected:
   Resolution (AST::Crate &crate, TopLevelScan &toplevel)
     : crate (crate), toplevel (toplevel)
   {
-    typeScope.Push ();
     scope.Push ();
+    valueScope.Push ();
+    macroScope.Push ();
+    typeScope.Push ();
   };
 
   Scope<AST::Type *> scope;
+  Scope<AST::Type *> valueScope;
+  Scope<AST::Type *> macroScope;
   Scope<AST::Type *> typeScope;
+
   AST::Crate &crate;
   TopLevelScan &toplevel;
 
