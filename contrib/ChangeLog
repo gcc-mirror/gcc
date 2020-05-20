@@ -1,5 +1,12 @@
 2020-05-20  Martin Liska  <mliska@suse.cz>
 
+	* gcc-changelog/git_commit.py: Add author_tuple
+	only if not present in author_lines.
+	* gcc-changelog/test_email.py: New test.
+	* gcc-changelog/test_patches.txt: Add new patch.
+
+2020-05-20  Martin Liska  <mliska@suse.cz>
+
 	* gcc-changelog/git_commit.py: Refactor to make flake8 happy.
 	* gcc-changelog/test_email.py: Add new test.
 	* gcc-changelog/test_patches.txt: Add new patch.

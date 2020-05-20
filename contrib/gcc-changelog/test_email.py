@@ -267,3 +267,8 @@ class TestGccChangelog(unittest.TestCase):
         email = self.from_patch_glob('0001-RISC-V-Make-unique.patch')
         assert not email.errors
         assert len(email.changelog_entries) == 1
+
+    def test_duplicate_top_level_author(self):
+        email = self.from_patch_glob('0001-Fortran-ProcPtr-function.patch')
+        assert not email.errors
+        assert len(email.changelog_entries[0].author_lines) == 1

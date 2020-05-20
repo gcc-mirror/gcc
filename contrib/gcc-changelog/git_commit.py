@@ -381,7 +381,8 @@ class GitCommit:
                         self.changelog_entries.append(last_entry)
                         will_deduce = True
                 elif author_tuple:
-                    last_entry.author_lines.append(author_tuple)
+                    if author_tuple not in last_entry.author_lines:
+                        last_entry.author_lines.append(author_tuple)
                     continue
 
                 if not line.startswith('\t'):
