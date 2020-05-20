@@ -1,5 +1,6 @@
 #include "rust-session-manager.h"
 
+#include "rust-diagnostics.h"
 #include "diagnostic.h"
 #include "input.h"
 
@@ -494,6 +495,9 @@ Session::parse_file (const char *filename)
       // TODO: what do I dump here? resolved names? AST with resolved names?
       return;
     }
+
+  if (saw_errors ())
+    return;
 
   // do compile
   Compile::Compilation::Compile (parsed_crate, backend);
