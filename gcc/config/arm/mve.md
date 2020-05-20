@@ -666,8 +666,8 @@
 (define_int_iterator VSHLCQ_M [VSHLCQ_M_S VSHLCQ_M_U])
 
 (define_insn "*mve_mov<mode>"
-  [(set (match_operand:MVE_types 0 "nonimmediate_operand" "=w,w,r,w,w,r,w,Us")
-	(match_operand:MVE_types 1 "general_operand" "w,r,w,Dn,Usi,r,Dm,w"))]
+  [(set (match_operand:MVE_types 0 "nonimmediate_operand" "=w,w,r,w,w,r,w,Ux,w")
+	(match_operand:MVE_types 1 "general_operand" "w,r,w,Dn,Uxi,r,Dm,w,Ul"))]
   "TARGET_HAVE_MVE || TARGET_HAVE_MVE_FLOAT"
 {
   if (which_alternative == 3 || which_alternative == 6)
@@ -686,6 +686,50 @@
 	sprintf (templ, "vmov.i%d\t%%q0, %%x1  @ <mode>", width);
       return templ;
     }
+
+  if (which_alternative == 4 || which_alternative == 7)
+    {
+      rtx ops[2];
+      int regno = (which_alternative == 7)
+		  ? REGNO (operands[1]) : REGNO (operands[0]);
+
+      ops[0] = operands[0];
+      ops[1] = operands[1];
+      if (<MODE>mode == V2DFmode || <MODE>mode == V2DImode)
+	{
+	  if (which_alternative == 7)
+	    {
+	      ops[1] = gen_rtx_REG (DImode, regno);
+	      output_asm_insn ("vstr.64\t%P1, %E0",ops);
+	    }
+	  else
+	    {
+	      ops[0] = gen_rtx_REG (DImode, regno);
+	      output_asm_insn ("vldr.64\t%P0, %E1",ops);
+	    }
+	}
+      else if (<MODE>mode == TImode)
+	{
+	  if (which_alternative == 7)
+	    output_asm_insn ("vstr.64\t%q1, %E0",ops);
+	  else
+	    output_asm_insn ("vldr.64\t%q0, %E1",ops);
+	}
+      else
+	{
+	  if (which_alternative == 7)
+	    {
+	      ops[1] = gen_rtx_REG (TImode, regno);
+	      output_asm_insn ("vstr<V_sz_elem1>.<V_sz_elem>\t%q1, %E0",ops);
+	    }
+	  else
+	    {
+	      ops[0] = gen_rtx_REG (TImode, regno);
+	      output_asm_insn ("vldr<V_sz_elem1>.<V_sz_elem>\t%q0, %E1",ops);
+	    }
+	}
+      return "";
+    }
   switch (which_alternative)
     {
     case 0:
@@ -694,26 +738,19 @@
       return "vmov\t%e0, %Q1, %R1  @ <mode>\;vmov\t%f0, %J1, %K1";
     case 2:
       return "vmov\t%Q0, %R0, %e1  @ <mode>\;vmov\t%J0, %K0, %f1";
-    case 4:
-      if (MEM_P (operands[1])
-	  && (GET_CODE (XEXP (operands[1], 0)) == LABEL_REF
-	      || GET_CODE (XEXP (operands[1], 0)) == CONST))
-	return output_move_neon (operands);
-      else
-	return "vldrb.8 %q0, %E1";
     case 5:
       return output_move_quad (operands);
-    case 7:
-      return "vstrb.8 %q1, %E0";
+    case 8:
+	return output_move_neon (operands);
     default:
       gcc_unreachable ();
       return "";
     }
 }
-  [(set_attr "type" "mve_move,mve_move,mve_move,mve_move,mve_load,multiple,mve_move,mve_store")
-   (set_attr "length" "4,8,8,4,8,8,4,4")
-   (set_attr "thumb2_pool_range" "*,*,*,*,1018,*,*,*")
-   (set_attr "neg_pool_range" "*,*,*,*,996,*,*,*")])
+  [(set_attr "type" "mve_move,mve_move,mve_move,mve_move,mve_load,multiple,mve_move,mve_store,mve_load")
+   (set_attr "length" "4,8,8,4,8,8,4,4,4")
+   (set_attr "thumb2_pool_range" "*,*,*,*,1018,*,*,*,*")
+   (set_attr "neg_pool_range" "*,*,*,*,996,*,*,*,*")])
 
 (define_insn "*mve_mov<mode>"
   [(set (match_operand:MVE_types 0 "s_register_operand" "=w,w")
@@ -8047,7 +8084,7 @@
 ;; [vstrbq_s vstrbq_u]
 ;;
 (define_insn "mve_vstrbq_<supf><mode>"
-  [(set (match_operand:<MVE_B_ELEM> 0 "memory_operand" "=Us")
+  [(set (match_operand:<MVE_B_ELEM> 0 "mve_memory_operand" "=Ux")
 	(unspec:<MVE_B_ELEM> [(match_operand:MVE_2 1 "s_register_operand" "w")]
 	 VSTRBQ))
   ]
@@ -8133,7 +8170,7 @@
 ;;
 (define_insn "mve_vldrbq_<supf><mode>"
   [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:<MVE_B_ELEM> 1 "memory_operand" "Us")]
+	(unspec:MVE_2 [(match_operand:<MVE_B_ELEM> 1 "mve_memory_operand" "Ux")]
 	 VLDRBQ))
   ]
   "TARGET_HAVE_MVE"
@@ -8142,7 +8179,10 @@
    int regno = REGNO (operands[0]);
    ops[0] = gen_rtx_REG (TImode, regno);
    ops[1]  = operands[1];
-   output_asm_insn ("vldrb.<supf><V_sz_elem>\t%q0, %E1",ops);
+   if (<V_sz_elem> == 8)
+     output_asm_insn ("vldrb.<V_sz_elem>\t%q0, %E1",ops);
+   else
+     output_asm_insn ("vldrb.<supf><V_sz_elem>\t%q0, %E1",ops);
    return "";
 }
   [(set_attr "length" "4")])
@@ -8216,7 +8256,7 @@
 ;; [vstrbq_p_s vstrbq_p_u]
 ;;
 (define_insn "mve_vstrbq_p_<supf><mode>"
-  [(set (match_operand:<MVE_B_ELEM> 0 "memory_operand" "=Us")
+  [(set (match_operand:<MVE_B_ELEM> 0 "mve_memory_operand" "=Ux")
 	(unspec:<MVE_B_ELEM> [(match_operand:MVE_2 1 "s_register_operand" "w")
 			      (match_operand:HI 2 "vpr_register_operand" "Up")]
 	 VSTRBQ))
@@ -8227,7 +8267,7 @@
    int regno = REGNO (operands[1]);
    ops[1] = gen_rtx_REG (TImode, regno);
    ops[0]  = operands[0];
-   output_asm_insn ("vpst\n\tvstrbt.<V_sz_elem>\t%q1, %E0",ops);
+   output_asm_insn ("vpst\;vstrbt.<V_sz_elem>\t%q1, %E0",ops);
    return "";
 }
   [(set_attr "length" "8")])
@@ -8262,7 +8302,7 @@
 ;;
 (define_insn "mve_vldrbq_z_<supf><mode>"
   [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:<MVE_B_ELEM> 1 "memory_operand" "Us")
+	(unspec:MVE_2 [(match_operand:<MVE_B_ELEM> 1 "mve_memory_operand" "Ux")
 		       (match_operand:HI 2 "vpr_register_operand" "Up")]
 	 VLDRBQ))
   ]
@@ -8272,7 +8312,10 @@
    int regno = REGNO (operands[0]);
    ops[0] = gen_rtx_REG (TImode, regno);
    ops[1]  = operands[1];
-   output_asm_insn ("vpst\n\tvldrbt.<supf><V_sz_elem>\t%q0, %E1",ops);
+   if (<V_sz_elem> == 8)
+     output_asm_insn ("vpst\;vldrbt.<V_sz_elem>\t%q0, %E1",ops);
+   else
+     output_asm_insn ("vpst\;vldrbt.<supf><V_sz_elem>\t%q0, %E1",ops);
    return "";
 }
   [(set_attr "length" "8")])
@@ -8303,7 +8346,7 @@
 ;;
 (define_insn "mve_vldrhq_fv8hf"
   [(set (match_operand:V8HF 0 "s_register_operand" "=w")
-	(unspec:V8HF [(match_operand:V8HI 1 "memory_operand" "Us")]
+	(unspec:V8HF [(match_operand:V8HI 1 "mve_memory_operand" "Ux")]
 	 VLDRHQ_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -8312,7 +8355,7 @@
    int regno = REGNO (operands[0]);
    ops[0] = gen_rtx_REG (TImode, regno);
    ops[1]  = operands[1];
-   output_asm_insn ("vldrh.f16\t%q0, %E1",ops);
+   output_asm_insn ("vldrh.16\t%q0, %E1",ops);
    return "";
 }
   [(set_attr "length" "4")])
@@ -8414,12 +8457,11 @@
   [(set_attr "length" "8")])
 
 ;;
-;;
 ;; [vldrhq_s, vldrhq_u]
 ;;
 (define_insn "mve_vldrhq_<supf><mode>"
   [(set (match_operand:MVE_6 0 "s_register_operand" "=w")
-	(unspec:MVE_6 [(match_operand:<MVE_H_ELEM> 1 "memory_operand" "Us")]
+	(unspec:MVE_6 [(match_operand:<MVE_H_ELEM> 1 "mve_memory_operand" "Ux")]
 	 VLDRHQ))
   ]
   "TARGET_HAVE_MVE"
@@ -8428,7 +8470,10 @@
    int regno = REGNO (operands[0]);
    ops[0] = gen_rtx_REG (TImode, regno);
    ops[1]  = operands[1];
-   output_asm_insn ("vldrh.<supf><V_sz_elem>\t%q0, %E1",ops);
+   if (<V_sz_elem> == 16)
+     output_asm_insn ("vldrh.16\t%q0, %E1",ops);
+   else
+     output_asm_insn ("vldrh.<supf><V_sz_elem>\t%q0, %E1",ops);
    return "";
 }
   [(set_attr "length" "4")])
@@ -8438,7 +8483,7 @@
 ;;
 (define_insn "mve_vldrhq_z_fv8hf"
   [(set (match_operand:V8HF 0 "s_register_operand" "=w")
-	(unspec:V8HF [(match_operand:V8HI 1 "memory_operand" "Us")
+	(unspec:V8HF [(match_operand:V8HI 1 "mve_memory_operand" "Ux")
 	(match_operand:HI 2 "vpr_register_operand" "Up")]
 	 VLDRHQ_F))
   ]
@@ -8448,7 +8493,7 @@
    int regno = REGNO (operands[0]);
    ops[0] = gen_rtx_REG (TImode, regno);
    ops[1]  = operands[1];
-   output_asm_insn ("vpst\n\tvldrht.f16\t%q0, %E1",ops);
+   output_asm_insn ("vpst\;vldrht.16\t%q0, %E1",ops);
    return "";
 }
   [(set_attr "length" "8")])
@@ -8458,7 +8503,7 @@
 ;;
 (define_insn "mve_vldrhq_z_<supf><mode>"
   [(set (match_operand:MVE_6 0 "s_register_operand" "=w")
-	(unspec:MVE_6 [(match_operand:<MVE_H_ELEM> 1 "memory_operand" "Us")
+	(unspec:MVE_6 [(match_operand:<MVE_H_ELEM> 1 "mve_memory_operand" "Ux")
 	(match_operand:HI 2 "vpr_register_operand" "Up")]
 	 VLDRHQ))
   ]
@@ -8468,7 +8513,10 @@
    int regno = REGNO (operands[0]);
    ops[0] = gen_rtx_REG (TImode, regno);
    ops[1]  = operands[1];
-   output_asm_insn ("vpst\n\tvldrht.<supf><V_sz_elem>\t%q0, %E1",ops);
+   if (<V_sz_elem> == 16)
+     output_asm_insn ("vpst\;vldrht.16\t%q0, %E1",ops);
+   else
+     output_asm_insn ("vpst\;vldrht.<supf><V_sz_elem>\t%q0, %E1",ops);
    return "";
 }
   [(set_attr "length" "8")])
@@ -8478,7 +8526,7 @@
 ;;
 (define_insn "mve_vldrwq_fv4sf"
   [(set (match_operand:V4SF 0 "s_register_operand" "=w")
-	(unspec:V4SF [(match_operand:V4SI 1 "memory_operand" "Us")]
+	(unspec:V4SF [(match_operand:V4SI 1 "memory_operand" "Ux")]
 	 VLDRWQ_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -8487,7 +8535,7 @@
    int regno = REGNO (operands[0]);
    ops[0] = gen_rtx_REG (TImode, regno);
    ops[1]  = operands[1];
-   output_asm_insn ("vldrw.f32\t%q0, %E1",ops);
+   output_asm_insn ("vldrw.32\t%q0, %E1",ops);
    return "";
 }
   [(set_attr "length" "4")])
@@ -8497,7 +8545,7 @@
 ;;
 (define_insn "mve_vldrwq_<supf>v4si"
   [(set (match_operand:V4SI 0 "s_register_operand" "=w")
-	(unspec:V4SI [(match_operand:V4SI 1 "memory_operand" "Us")]
+	(unspec:V4SI [(match_operand:V4SI 1 "memory_operand" "Ux")]
 	 VLDRWQ))
   ]
   "TARGET_HAVE_MVE"
@@ -8506,7 +8554,7 @@
    int regno = REGNO (operands[0]);
    ops[0] = gen_rtx_REG (TImode, regno);
    ops[1]  = operands[1];
-   output_asm_insn ("vldrw.<supf>32\t%q0, %E1",ops);
+   output_asm_insn ("vldrw.32\t%q0, %E1",ops);
    return "";
 }
   [(set_attr "length" "4")])
@@ -8516,7 +8564,7 @@
 ;;
 (define_insn "mve_vldrwq_z_fv4sf"
   [(set (match_operand:V4SF 0 "s_register_operand" "=w")
-	(unspec:V4SF [(match_operand:V4SI 1 "memory_operand" "Us")
+	(unspec:V4SF [(match_operand:V4SI 1 "memory_operand" "Ux")
 	(match_operand:HI 2 "vpr_register_operand" "Up")]
 	 VLDRWQ_F))
   ]
@@ -8526,7 +8574,7 @@
    int regno = REGNO (operands[0]);
    ops[0] = gen_rtx_REG (TImode, regno);
    ops[1]  = operands[1];
-   output_asm_insn ("vpst\n\tvldrwt.f32\t%q0, %E1",ops);
+   output_asm_insn ("vpst\;vldrwt.32\t%q0, %E1",ops);
    return "";
 }
   [(set_attr "length" "8")])
@@ -8536,7 +8584,7 @@
 ;;
 (define_insn "mve_vldrwq_z_<supf>v4si"
   [(set (match_operand:V4SI 0 "s_register_operand" "=w")
-	(unspec:V4SI [(match_operand:V4SI 1 "memory_operand" "Us")
+	(unspec:V4SI [(match_operand:V4SI 1 "memory_operand" "Ux")
 	(match_operand:HI 2 "vpr_register_operand" "Up")]
 	 VLDRWQ))
   ]
@@ -8546,14 +8594,14 @@
    int regno = REGNO (operands[0]);
    ops[0] = gen_rtx_REG (TImode, regno);
    ops[1]  = operands[1];
-   output_asm_insn ("vpst\n\tvldrwt.<supf>32\t%q0, %E1",ops);
+   output_asm_insn ("vpst\;vldrwt.32\t%q0, %E1",ops);
    return "";
 }
   [(set_attr "length" "8")])
 
 (define_expand "mve_vld1q_f<mode>"
   [(match_operand:MVE_0 0 "s_register_operand")
-   (unspec:MVE_0 [(match_operand:<MVE_CNVT> 1 "memory_operand")] VLD1Q_F)
+   (unspec:MVE_0 [(match_operand:<MVE_CNVT> 1 "mve_memory_operand")] VLD1Q_F)
   ]
   "TARGET_HAVE_MVE || TARGET_HAVE_MVE_FLOAT"
 {
@@ -8563,7 +8611,7 @@
 
 (define_expand "mve_vld1q_<supf><mode>"
   [(match_operand:MVE_2 0 "s_register_operand")
-   (unspec:MVE_2 [(match_operand:MVE_2 1 "memory_operand")] VLD1Q)
+   (unspec:MVE_2 [(match_operand:MVE_2 1 "mve_memory_operand")] VLD1Q)
   ]
   "TARGET_HAVE_MVE"
 {
@@ -8991,7 +9039,7 @@
 ;; [vstrhq_f]
 ;;
 (define_insn "mve_vstrhq_fv8hf"
-  [(set (match_operand:V8HI 0 "memory_operand" "=Us")
+  [(set (match_operand:V8HI 0 "mve_memory_operand" "=Ux")
 	(unspec:V8HI [(match_operand:V8HF 1 "s_register_operand" "w")]
 	 VSTRHQ_F))
   ]
@@ -9010,7 +9058,7 @@
 ;; [vstrhq_p_f]
 ;;
 (define_insn "mve_vstrhq_p_fv8hf"
-  [(set (match_operand:V8HI 0 "memory_operand" "=Us")
+  [(set (match_operand:V8HI 0 "mve_memory_operand" "=Ux")
 	(unspec:V8HI [(match_operand:V8HF 1 "s_register_operand" "w")
 		      (match_operand:HI 2 "vpr_register_operand" "Up")]
 	 VSTRHQ_F))
@@ -9021,7 +9069,7 @@
    int regno = REGNO (operands[1]);
    ops[1] = gen_rtx_REG (TImode, regno);
    ops[0]  = operands[0];
-   output_asm_insn ("vpst\n\tvstrht.16\t%q1, %E0",ops);
+   output_asm_insn ("vpst\;vstrht.16\t%q1, %E0",ops);
    return "";
 }
   [(set_attr "length" "8")])
@@ -9030,7 +9078,7 @@
 ;; [vstrhq_p_s vstrhq_p_u]
 ;;
 (define_insn "mve_vstrhq_p_<supf><mode>"
-  [(set (match_operand:<MVE_H_ELEM> 0 "memory_operand" "=Us")
+  [(set (match_operand:<MVE_H_ELEM> 0 "mve_memory_operand" "=Ux")
 	(unspec:<MVE_H_ELEM> [(match_operand:MVE_6 1 "s_register_operand" "w")
 			      (match_operand:HI 2 "vpr_register_operand" "Up")]
 	 VSTRHQ))
@@ -9041,7 +9089,7 @@
    int regno = REGNO (operands[1]);
    ops[1] = gen_rtx_REG (TImode, regno);
    ops[0]  = operands[0];
-   output_asm_insn ("vpst\n\tvstrht.<V_sz_elem>\t%q1, %E0",ops);
+   output_asm_insn ("vpst\;vstrht.<V_sz_elem>\t%q1, %E0",ops);
    return "";
 }
   [(set_attr "length" "8")])
@@ -9093,7 +9141,7 @@
 ;; [vstrhq_scatter_shifted_offset_p_s vstrhq_scatter_shifted_offset_p_u]
 ;;
 (define_insn "mve_vstrhq_scatter_shifted_offset_p_<supf><mode>"
-  [(set (match_operand:<MVE_H_ELEM> 0 "memory_operand" "=Us")
+  [(set (match_operand:<MVE_H_ELEM> 0 "memory_operand" "=Ux")
 	(unspec:<MVE_H_ELEM>
 		[(match_operand:MVE_6 1 "s_register_operand" "w")
 		 (match_operand:MVE_6 2 "s_register_operand" "w")
@@ -9136,7 +9184,7 @@
 ;; [vstrhq_s, vstrhq_u]
 ;;
 (define_insn "mve_vstrhq_<supf><mode>"
-  [(set (match_operand:<MVE_H_ELEM> 0 "memory_operand" "=Us")
+  [(set (match_operand:<MVE_H_ELEM> 0 "mve_memory_operand" "=Ux")
 	(unspec:<MVE_H_ELEM> [(match_operand:MVE_6 1 "s_register_operand" "w")]
 	 VSTRHQ))
   ]
@@ -9155,7 +9203,7 @@
 ;; [vstrwq_f]
 ;;
 (define_insn "mve_vstrwq_fv4sf"
-  [(set (match_operand:V4SI 0 "memory_operand" "=Us")
+  [(set (match_operand:V4SI 0 "memory_operand" "=Ux")
 	(unspec:V4SI [(match_operand:V4SF 1 "s_register_operand" "w")]
 	 VSTRWQ_F))
   ]
@@ -9174,7 +9222,7 @@
 ;; [vstrwq_p_f]
 ;;
 (define_insn "mve_vstrwq_p_fv4sf"
-  [(set (match_operand:V4SI 0 "memory_operand" "=Us")
+  [(set (match_operand:V4SI 0 "memory_operand" "=Ux")
 	(unspec:V4SI [(match_operand:V4SF 1 "s_register_operand" "w")
 		      (match_operand:HI 2 "vpr_register_operand" "Up")]
 	 VSTRWQ_F))
@@ -9185,7 +9233,7 @@
    int regno = REGNO (operands[1]);
    ops[1] = gen_rtx_REG (TImode, regno);
    ops[0]  = operands[0];
-   output_asm_insn ("vpst\n\tvstrwt.32\t%q1, %E0",ops);
+   output_asm_insn ("vpst\;vstrwt.32\t%q1, %E0",ops);
    return "";
 }
   [(set_attr "length" "8")])
@@ -9194,7 +9242,7 @@
 ;; [vstrwq_p_s vstrwq_p_u]
 ;;
 (define_insn "mve_vstrwq_p_<supf>v4si"
-  [(set (match_operand:V4SI 0 "memory_operand" "=Us")
+  [(set (match_operand:V4SI 0 "memory_operand" "=Ux")
 	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "w")
 		      (match_operand:HI 2 "vpr_register_operand" "Up")]
 	 VSTRWQ))
@@ -9205,7 +9253,7 @@
    int regno = REGNO (operands[1]);
    ops[1] = gen_rtx_REG (TImode, regno);
    ops[0]  = operands[0];
-   output_asm_insn ("vpst\n\tvstrwt.32\t%q1, %E0",ops);
+   output_asm_insn ("vpst\;vstrwt.32\t%q1, %E0",ops);
    return "";
 }
   [(set_attr "length" "8")])
@@ -9214,7 +9262,7 @@
 ;; [vstrwq_s vstrwq_u]
 ;;
 (define_insn "mve_vstrwq_<supf>v4si"
-  [(set (match_operand:V4SI 0 "memory_operand" "=Us")
+  [(set (match_operand:V4SI 0 "memory_operand" "=Ux")
 	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "w")]
 	 VSTRWQ))
   ]

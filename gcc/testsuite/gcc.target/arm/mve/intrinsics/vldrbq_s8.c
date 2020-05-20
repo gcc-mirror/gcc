@@ -10,4 +10,5 @@ foo (int8_t const * base)
   return vldrbq_s8 (base);
 }
 
-/* { dg-final { scan-assembler "vldrb.s8"  }  } */
+/* { dg-final { scan-assembler-times "vldrb.8" 1 }  } */
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */
