@@ -10,4 +10,5 @@ foo (float32_t const * base)
   return vldrwq_f32 (base);
 }
 
-/* { dg-final { scan-assembler "vldrw.f32"  }  } */
+/* { dg-final { scan-assembler-times "vldrw.32" 1 }  } */
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

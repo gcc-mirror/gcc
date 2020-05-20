@@ -39,13 +39,25 @@
 ;; in all states: Pf, Pg
 
 ;; The following memory constraints have been used:
-;; in ARM/Thumb-2 state: Uh, Ut, Uv, Uy, Un, Um, Us, Up, Uf
+;; in ARM/Thumb-2 state: Uh, Ut, Uv, Uy, Un, Um, Us, Up, Uf, Ux, Ul
 ;; in ARM state: Uq
 ;; in Thumb state: Uu, Uw
 ;; in all states: Q
 
 (define_register_constraint "Up" "TARGET_HAVE_MVE ? VPR_REG : NO_REGS"
   "MVE VPR register")
+
+(define_memory_constraint "Ul"
+ "@internal
+  In ARM/Thumb-2 state a valid address for load instruction with XEXP (op, 0)
+  being label of the literal data item to be loaded."
+ (and (match_code "mem")
+      (match_test "TARGET_HAVE_MVE && reload_completed
+		   && (GET_CODE (XEXP (op, 0)) == LABEL_REF
+		       || (GET_CODE (XEXP (op, 0)) == CONST
+			   && GET_CODE (XEXP (XEXP (op, 0), 0)) == PLUS
+			   && GET_CODE (XEXP (XEXP (XEXP (op, 0), 0), 0)) == LABEL_REF
+			   && CONST_INT_P (XEXP (XEXP (XEXP (op, 0), 0), 1))))")))
 
 (define_register_constraint "Uf" "TARGET_HAVE_MVE ? VFPCC_REG : NO_REGS"
   "MVE FPCCR register")
@@ -466,6 +478,15 @@
   quad-word values in four ARM registers."
  (and (match_code "mem")
       (match_test "TARGET_32BIT && neon_vector_mem_operand (op, 1, true)")))
+
+(define_memory_constraint "Ux"
+ "@internal
+  In ARM/Thumb-2 state a valid address and load into CORE regs or only to
+  LO_REGS based on mode of op."
+ (and (match_code "mem")
+      (match_test "(TARGET_HAVE_MVE || TARGET_HAVE_MVE_FLOAT)
+		   && mve_vector_mem_operand (GET_MODE (op),
+					      XEXP (op, 0), true)")))
 
 (define_memory_constraint "Uq"
  "@internal
