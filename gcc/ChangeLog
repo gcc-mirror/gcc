@@ -1,3 +1,9 @@
+2020-05-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95238
+	* config/i386/i386.md (*pushsi2_rex64):
+	Use "e" constraint instead of "i".
+
 2020-05-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-streamer-in.c (lto_input_scc): Add SHARED_SCC parameter.
