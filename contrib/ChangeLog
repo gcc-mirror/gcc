@@ -1,5 +1,10 @@
 2020-05-20  Martin Liska  <mliska@suse.cz>
 
+	* gcc-changelog/git_check_commit.py: Change
+	--allow-non-strict-mode to --non-strict-mode.
+
+2020-05-20  Martin Liska  <mliska@suse.cz>
+
 	* gcc-changelog/git_commit.py: Support cherry pick
 	prefix.
 	* gcc-changelog/test_email.py: Test it.
