@@ -3,7 +3,12 @@
 
 #include <cstddef>
 
-void g(__INTPTR_TYPE__) {}
+void g(int) {}
+void g(long) {}
+void g(long long) {}
+#ifdef __MSP430X_LARGE__
+void g(__int20) {}
+#endif
 extern void g(void*);
 
 template <int I>
@@ -15,7 +20,18 @@ template <class T>
 void l(T);
 
 template <>
-void l(__INTPTR_TYPE__) {}
+void l(int) {}
+
+template <>
+void l(long) {}
+
+template <>
+void l(long long) {}
+
+#ifdef __MSP430X_LARGE__
+template <>
+void l(__int20) {}
+#endif
 
 int main()
 {
