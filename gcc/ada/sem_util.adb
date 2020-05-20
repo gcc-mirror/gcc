@@ -1517,7 +1517,7 @@ package body Sem_Util is
       --  corresponding class-wide condition was analyzed.
 
       --  The body of the original condition may contain references to
-      --  the formals of Spec_Id. In the body of the classwide clone,
+      --  the formals of Spec_Id. In the body of the class-wide clone,
       --  these must be replaced with the corresponding formals of
       --  the clone.
 

@@ -5513,15 +5513,15 @@ package body Sem_Attr is
                Pref_Id := Entity (P);
 
                --  Either both the prefix and the annotated spec must be
-               --  generic functions, or they both must be non-generic
+               --  generic functions, or they both must be nongeneric
                --  functions, or the prefix must be generic and the spec
-               --  must be non-generic (i.e. it must denote an instance).
+               --  must be nongeneric (i.e. it must denote an instance).
 
                if (Ekind_In (Pref_Id, E_Function, E_Generic_Function)
-                   and then Ekind (Pref_Id) = Ekind (Spec_Id))
-                    or else
-                  (Ekind (Pref_Id) = E_Generic_Function
-                   and then Ekind (Spec_Id) = E_Function)
+                    and then Ekind (Pref_Id) = Ekind (Spec_Id))
+                 or else
+                   (Ekind (Pref_Id) = E_Generic_Function
+                     and then Ekind (Spec_Id) = E_Function)
                then
                   if Denote_Same_Function (Pref_Id, Spec_Id) then
 
@@ -8079,7 +8079,7 @@ package body Sem_Attr is
 
       --  First foldable possibility is a scalar or array type (RM 4.9(7))
       --  that is not generic (generic types are eliminated by RM 4.9(25)).
-      --  Note we allow non-static non-generic types at this stage as further
+      --  Note we allow nonstatic nongeneric types at this stage as further
       --  described below.
 
       if Is_Type (P_Entity)
