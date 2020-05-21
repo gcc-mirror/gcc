@@ -1069,13 +1069,7 @@ build_cplus_array_type (tree elt_type, tree index_type, int dependent)
     }
   else
     {
-      bool typeless_storage
-	= (elt_type == unsigned_char_type_node
-	   || elt_type == signed_char_type_node
-	   || elt_type == char_type_node
-	   || (TREE_CODE (elt_type) == ENUMERAL_TYPE
-	       && TYPE_CONTEXT (elt_type) == std_node
-	       && !strcmp ("byte", TYPE_NAME_STRING (elt_type))));
+      bool typeless_storage = is_byte_access_type (elt_type);
       t = build_array_type (elt_type, index_type, typeless_storage);
     }
 
@@ -4134,13 +4128,27 @@ maybe_dummy_object (tree type, tree* binfop)
 
 /* Returns 1 if OB is a placeholder object, or a pointer to one.  */
 
-int
+bool
 is_dummy_object (const_tree ob)
 {
   if (INDIRECT_REF_P (ob))
     ob = TREE_OPERAND (ob, 0);
   return (TREE_CODE (ob) == CONVERT_EXPR
 	  && TREE_OPERAND (ob, 0) == void_node);
+}
+
+/* Returns true if TYPE is a character type or std::byte.  */
+
+bool
+is_byte_access_type (tree type)
+{
+  type = TYPE_MAIN_VARIANT (type);
+  if (char_type_p (type))
+    return true;
+
+  return (TREE_CODE (type) == ENUMERAL_TYPE
+	  && TYPE_CONTEXT (type) == std_node
+	  && !strcmp ("byte", TYPE_NAME_STRING (type)));
 }
 
 /* Returns 1 iff type T is something we want to treat as a scalar type for

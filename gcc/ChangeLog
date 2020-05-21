@@ -1,3 +1,181 @@
+2020-05-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* adjust-alignment.c: Include memmodel.h.
+
+2020-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/95260
+	* config/i386/cpuid.h: Use hexadecimal in comments.
+
+2020-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/95212
+	* config/i386/i386-builtins.c (processor_features): Move
+	F_AVX512VP2INTERSECT after F_AVX512BF16.
+	(isa_names_table): Likewise.
+
+2020-05-21  Martin Liska  <mliska@suse.cz>
+
+	* common/config/aarch64/aarch64-common.c (aarch64_handle_option):
+	Handle OPT_moutline_atomics.
+	* config/aarch64/aarch64.c: Add outline-atomics to
+	aarch64_attributes.
+	* doc/extend.texi: Document the newly added target attribute.
+
+2020-05-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95218
+
+	* config/i386/mmx.md (*mmx_<code>v2sf): Do not mark
+	operands 1 and 2 commutative.  Manually swap operands.
+	(*mmx_nabsv2sf2): Ditto.
+
+	Partially revert:
+	2020-05-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*<code>tf2_1):
+	Mark operands 1 and 2 commutative.
+	(*nabstf2_1): Ditto.
+	* config/i386/sse.md (*<code><mode>2): Mark operands 1 and 2
+	commutative.  Do not swap operands.
+	(*nabs<mode>2): Ditto.
+
+2020-05-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95229
+	* config/i386/sse.md (<code>v8qiv8hi2): Use
+	simplify_gen_subreg instead of simplify_subreg.
+	(<code>v8qiv8si2): Ditto.
+	(<code>v4qiv4si2): Ditto.
+	(<code>v4hiv4si2): Ditto.
+	(<code>v8qiv8di2): Ditto.
+	(<code>v4qiv4di2): Ditto.
+	(<code>v2qiv2di2): Ditto.
+	(<code>v4hiv4di2): Ditto.
+	(<code>v2hiv2di2): Ditto.
+	(<code>v2siv2di2): Ditto.
+
+2020-05-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95238
+	* config/i386/i386.md (*pushsi2_rex64):
+	Use "e" constraint instead of "i".
+
+2020-05-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-in.c (lto_input_scc): Add SHARED_SCC parameter.
+	(lto_input_tree_1): Strenghten sanity check.
+	(lto_input_tree): Update call of lto_input_scc.
+	* lto-streamer-out.c: Include ipa-utils.h
+	(create_output_block): Initialize local_trees if merigng is going
+	to happen.
+	(destroy_output_block): Destroy local_trees.
+	(DFS): Add max_local_entry.
+	(local_tree_p): New function.
+	(DFS::DFS): Initialize and maintain it.
+	(DFS::DFS_write_tree): Decide on streaming format.
+	(lto_output_tree): Stream inline singleton SCCs
+	* lto-streamer.h (enum LTO_tags): Add LTO_trees.
+	(struct output_block): Add local_trees.
+	(lto_input_scc): Update prototype.
+
+2020-05-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95223
+	* hash-table.h (hash_table::find_with_hash): Move up the call to
+	hash_table::verify.
+
+2020-05-20  Martin Liska  <mliska@suse.cz>
+
+	* lto-compress.c (lto_compression_zstd): Fill up
+	num_compressed_il_bytes.
+	(lto_uncompression_zstd): Likewise for num_uncompressed_il_bytes here.
+
+2020-05-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95219
+	* tree-vect-loop.c (vectorizable_induction): Reduce
+	group_size before computing the number of required IVs.
+
+2020-05-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/95231
+	* tree-inline.c (remap_gimple_stmt): Revert adjusting
+	COND_EXPR and VEC_COND_EXPR for a -fnon-call-exception boundary.
+
+2020-05-20  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+	    Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/94959
+	* config/arm/arm-protos.h (arm_mode_base_reg_class): Function
+	declaration.
+	(mve_vector_mem_operand): Likewise.
+	* config/arm/arm.c (thumb2_legitimate_address_p): For MVE target check
+	the load from memory to a core register is legitimate for give mode.
+	(mve_vector_mem_operand): Define function.
+	(arm_print_operand): Modify comment.
+	(arm_mode_base_reg_class): Define.
+	* config/arm/arm.h (MODE_BASE_REG_CLASS): Modify to add check for
+	TARGET_HAVE_MVE and expand to arm_mode_base_reg_class on TRUE.
+	* config/arm/constraints.md (Ux): Likewise.
+	(Ul): Likewise.
+	* config/arm/mve.md (mve_mov): Replace constraint Us with Ux and also
+	add support for missing Vector Store Register and Vector Load Register.
+	Add a new alternative to support load from memory to PC (or label) in
+	vector store/load.
+	(mve_vstrbq_<supf><mode>): Modify constraint Us to Ux.
+	(mve_vldrbq_<supf><mode>): Modify constriant Us to Ux, predicate to
+	mve_memory_operand and also modify the MVE instructions to emit.
+	(mve_vldrbq_z_<supf><mode>): Modify constraint Us to Ux.
+	(mve_vldrhq_fv8hf): Modify constriant Us to Ux, predicate to
+	mve_memory_operand and also modify the MVE instructions to emit.
+	(mve_vldrhq_<supf><mode>): Modify constriant Us to Ux, predicate to
+	mve_memory_operand and also modify the MVE instructions to emit.
+	(mve_vldrhq_z_fv8hf): Likewise.
+	(mve_vldrhq_z_<supf><mode>): Likewise.
+	(mve_vldrwq_fv4sf): Likewise.
+	(mve_vldrwq_<supf>v4si): Likewise.
+	(mve_vldrwq_z_fv4sf): Likewise.
+	(mve_vldrwq_z_<supf>v4si): Likewise.
+	(mve_vld1q_f<mode>): Modify constriant Us to Ux.
+	(mve_vld1q_<supf><mode>): Likewise.
+	(mve_vstrhq_fv8hf): Modify constriant Us to Ux, predicate to
+	mve_memory_operand.
+	(mve_vstrhq_p_fv8hf): Modify constriant Us to Ux, predicate to
+	mve_memory_operand and also modify the MVE instructions to emit.
+	(mve_vstrhq_p_<supf><mode>): Likewise.
+	(mve_vstrhq_<supf><mode>): Modify constriant Us to Ux, predicate to
+	mve_memory_operand.
+	(mve_vstrwq_fv4sf): Modify constriant Us to Ux.
+	(mve_vstrwq_p_fv4sf): Modify constriant Us to Ux and also modify the MVE
+	instructions to emit.
+	(mve_vstrwq_p_<supf>v4si): Likewise.
+	(mve_vstrwq_<supf>v4si): Likewise.Modify constriant Us to Ux.
+	* config/arm/predicates.md (mve_memory_operand): Define.
+
+2020-05-30  Richard Biener  <rguenther@suse.de>
+
+	PR c/95141
+	* c-fold.c (c_fully_fold_internal): Enhance guard on
+	overflow_warning.
+
+2020-05-20  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/90811
+	* Makefile.in (OBJS): Add adjust-alignment.o.
+	* adjust-alignment.c (pass_data_adjust_alignment): New.
+	(pass_adjust_alignment): New.
+	(pass_adjust_alignment::execute): New.
+	(make_pass_adjust_alignment): New.
+	* tree-pass.h (make_pass_adjust_alignment): New.
+	* passes.def: Add pass_adjust_alignment.
+
+2020-05-19  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/94591
+	* config/aarch64/aarch64.c (aarch64_evpc_rev_local): Don't match
+	identity permutation.
+
 2020-05-19  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* doc/sourcebuild.texi: Document new short_eq_int, ptr_eq_short,

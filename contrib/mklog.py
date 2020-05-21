@@ -31,13 +31,12 @@ import os
 import re
 import sys
 
-import bs4
-
 import requests
 
 from unidiff import PatchSet
 
 pr_regex = re.compile(r'(\/(\/|\*)|[Cc*!])\s+(?P<pr>PR [a-z+-]+\/[0-9]+)')
+dr_regex = re.compile(r'(\/(\/|\*)|[Cc*!])\s+(?P<dr>DR [0-9]+)')
 identifier_regex = re.compile(r'^([a-zA-Z0-9_#].*)')
 comment_regex = re.compile(r'^\/\*')
 struct_regex = re.compile(r'^(class|struct|union|enum)\s+'
@@ -46,6 +45,8 @@ macro_regex = re.compile(r'#\s*(define|undef)\s+([a-zA-Z0-9_]+)')
 super_macro_regex = re.compile(r'^DEF[A-Z0-9_]+\s*\(([a-zA-Z0-9_]+)')
 fn_regex = re.compile(r'([a-zA-Z_][^()\s]*)\s*\([^*]')
 template_and_param_regex = re.compile(r'<[^<>]*>')
+bugzilla_url = 'https://gcc.gnu.org/bugzilla/rest.cgi/bug?id=%s&' \
+               'include_fields=summary'
 
 function_extensions = set(['.c', '.cpp', '.C', '.cc', '.h', '.inc', '.def'])
 
@@ -106,18 +107,16 @@ def sort_changelog_files(changed_file):
 
 
 def get_pr_titles(prs):
-    if not prs:
-        return ''
-
     output = ''
     for pr in prs:
         id = pr.split('/')[-1]
-        r = requests.get('https://gcc.gnu.org/PR%s' % id)
-        html = bs4.BeautifulSoup(r.text, features='lxml')
-        title = html.title.text
-        title = title[title.find('–') + 1:].strip()
-        output += '%s - %s\n' % (pr, title)
-    output += '\n'
+        r = requests.get(bugzilla_url % id)
+        bugs = r.json()['bugs']
+        if len(bugs) == 1:
+            output += '%s - %s\n' % (pr, bugs[0]['summary'])
+            print(output)
+    if output:
+        output += '\n'
     return output
 
 
@@ -144,7 +143,13 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False):
                     if pr not in prs:
                         prs.append(pr)
                 else:
-                    break
+                    m = dr_regex.search(line.value)
+                    if m:
+                        dr = m.group('dr')
+                        if dr not in prs:
+                            prs.append(dr)
+                    else:
+                        break
 
     if fill_pr_titles:
         out += get_pr_titles(prs)

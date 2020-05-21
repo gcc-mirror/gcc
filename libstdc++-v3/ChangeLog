@@ -1,3 +1,68 @@
+2020-05-21  Matthias Kretz  <kretz@kde.org>
+
+	* testsuite/Makefile.am: Remove dup target_triplet and set tool,
+	allowing runtest to work without arguments.
+	* testsuite/Makefile.in: Regenerate.
+
+2020-05-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93983
+	* include/bits/iterator_concepts.h (__detail::__cpp17_iterator):
+	Reorder constraints to avoid recursion when constructors use
+	iterator_traits (LWG 3420).
+	* testsuite/24_iterators/customization_points/lwg3420.cc: New test.
+
+	* include/experimental/socket (basic_socket::is_open()
+	(basic_socket_acceptor::is_open()): Use _GLIBCXX_NODISCARD macro.
+
+	* include/experimental/bits/net.h (__endpoint, __protocol)
+	(__acceptable_protocol, __inet_protocol): New concepts.
+	(__detail::__is_endpoint): Move trait from <experimental/socket>.
+	(__is_protocol, __is_acceptable_protocol, __is_inet_protocol): New
+	traits.
+	(__endpoint, __protocol, __acceptable_protocol): New variable
+	templates.
+	* include/experimental/socket (__is_endpoint): Move to net.h header.
+	(basic_socket, basic_socket_acceptor): Check requirements.
+
+	* include/experimental/executor (use_future_t::use_future_t()): Fix
+	incorrect noexcept-specifier.
+	* include/experimental/internet (basic_resolver_results): Adjust
+	whitespace.
+	* include/experimental/socket (__basic_socket_impl::release): Add
+	member function.
+	(basic_socket(io_context&, const endpoint_type&)): Fix argument to
+	target constructor.
+	(basic_socket::release(), basic_socket::release(error_code&)): Add
+	missing member functions.
+	(basic_socket::is_open()): Add nodiscard attribute.
+	(basic_socket::close(error_code&)): Pass argument to base function.
+	(basic_socket_acceptor::release())
+	(basic_socket_acceptor::release(error_code&)): Add missing member
+	functions.
+	(basic_socket_acceptor::is_open()): Add nodiscard attribute.
+	(basic_socket_streambuf::error()): Add noexcept.
+	(basic_socket_iostream::error()): Likewise.
+	* testsuite/experimental/net/socket/basic_socket.cc: New test.
+
+	* include/experimental/buffer: Replace typedefs with
+	alias-declarations.
+	* include/experimental/executor: Likewise.
+	* include/experimental/internet: Likewise.
+	* include/experimental/socket: Likewise.
+	* include/experimental/timer: Likewise.
+
+2020-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94087
+	* src/c++11/random.cc (__x86_rdseed): Allow fallback function to be
+	passed in.
+	(__x86_rdseed_rdrand): New function that uses rdseed with rdrand
+	fallback.
+	(random_device::_M_init): Use __x86_rdseed_rdrand when both
+	instructions are available.
+	* testsuite/26_numerics/random/random_device/94087.cc: New test.
+
 2020-05-19  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/66439

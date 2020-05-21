@@ -1,4 +1,4 @@
-// { dg-do assemble  }
+// { dg-do assemble { target c++17_down } }
 // { dg-options "-O1" }
 // Origin: Jakub Jelinek <jakub@redhat.com>
 

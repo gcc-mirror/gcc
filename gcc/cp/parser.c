@@ -6228,6 +6228,15 @@ cp_parser_unqualified_id (cp_parser* parser,
 	    return build_min_nt_loc (loc, BIT_NOT_EXPR, make_auto ());
 	  }
 
+	/* DR 2237 (C++20 only): A simple-template-id is no longer valid as the
+	   declarator-id of a constructor or destructor.  */
+	if (token->type == CPP_TEMPLATE_ID && cxx_dialect >= cxx20)
+	  {
+	    if (!cp_parser_simulate_error (parser))
+	      error_at (tilde_loc, "template-id not allowed for destructor");
+	    return error_mark_node;
+	  }
+
 	/* If there was an explicit qualification (S::~T), first look
 	   in the scope given by the qualification (i.e., S).
 
@@ -14315,7 +14324,7 @@ cp_parser_decomposition_declaration (cp_parser *parser,
 	  declarator->id_loc = e.get_location ();
 	}
       tree elt_pushed_scope;
-      tree decl2 = start_decl (declarator, &decl_specs, SD_INITIALIZED,
+      tree decl2 = start_decl (declarator, &decl_specs, SD_DECOMPOSITION,
 			       NULL_TREE, NULL_TREE, &elt_pushed_scope);
       if (decl2 == error_mark_node)
 	decl = error_mark_node;
@@ -28972,7 +28981,9 @@ cp_parser_constructor_declarator_p (cp_parser *parser, cp_parser_flags flags,
   if (next_token->type != CPP_NAME
       && next_token->type != CPP_SCOPE
       && next_token->type != CPP_NESTED_NAME_SPECIFIER
-      && next_token->type != CPP_TEMPLATE_ID)
+      /* DR 2237 (C++20 only): A simple-template-id is no longer valid as the
+	 declarator-id of a constructor or destructor.  */
+      && (next_token->type != CPP_TEMPLATE_ID || cxx_dialect >= cxx20))
     return false;
 
   /* Parse tentatively; we are going to roll back all of the tokens

@@ -1708,6 +1708,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  inform (olddecl_loc, "previous declaration %q#D", olddecl);
 	  return error_mark_node;
 	}
+      else if ((VAR_P (olddecl) && DECL_DECOMPOSITION_P (olddecl))
+	       || (VAR_P (newdecl) && DECL_DECOMPOSITION_P (newdecl)))
+	/* A structured binding must be unique in its declarative region.  */;
       else if (DECL_IMPLICIT_TYPEDEF_P (olddecl)
 	       || DECL_IMPLICIT_TYPEDEF_P (newdecl))
 	/* One is an implicit typedef, that's ok.  */
@@ -5231,20 +5234,23 @@ groktypename (cp_decl_specifier_seq *type_specifiers,
   return type;
 }
 
-/* Process a DECLARATOR for a function-scope typedef or variable
-   declaration, namespace-scope typdef, variable declaration, or
-   function declaration.  (Function definitions go through
-   start_function; class member declarations appearing in the body of
-   the class go through grokfield.)  The DECL corresponding to the
-   DECLARATOR is returned.  If an error occurs, the error_mark_node is
-   returned instead.
-   
+/* Process a DECLARATOR for a function-scope variable declaration,
+   namespace-scope variable declaration, or function declaration.
+   (Function definitions go through start_function; class member
+   declarations appearing in the body of the class go through
+   grokfield.)  The DECL corresponding to the DECLARATOR is returned.
+   If an error occurs, the error_mark_node is returned instead.
+
    DECLSPECS are the decl-specifiers for the declaration.  INITIALIZED is
    SD_INITIALIZED if an explicit initializer is present, or SD_DEFAULTED
    for an explicitly defaulted function, or SD_DELETED for an explicitly
    deleted function, but 0 (SD_UNINITIALIZED) if this is a variable
-   implicitly initialized via a default constructor.  ATTRIBUTES and
-   PREFIX_ATTRIBUTES are GNU attributes associated with this declaration.
+   implicitly initialized via a default constructor.  It can also be
+   SD_DECOMPOSITION which behaves much like SD_INITIALIZED, but we also
+   mark the new decl as DECL_DECOMPOSITION_P.
+
+   ATTRIBUTES and PREFIX_ATTRIBUTES are GNU attributes associated with this
+   declaration.
 
    The scope represented by the context of the returned DECL is pushed
    (if it is not the global namespace) and is assigned to
@@ -5280,11 +5286,7 @@ start_decl (const cp_declarator *declarator,
   if (context != global_namespace)
     *pushed_scope_p = push_scope (context);
 
-  /* Is it valid for this decl to have an initializer at all?
-     If not, set INITIALIZED to zero, which will indirectly
-     tell `cp_finish_decl' to ignore the initializer once it is parsed.  */
-  if (initialized
-      && TREE_CODE (decl) == TYPE_DECL)
+  if (initialized && TREE_CODE (decl) == TYPE_DECL)
     {
       error_at (DECL_SOURCE_LOCATION (decl),
 		"typedef %qD is initialized (use %qs instead)",
@@ -5436,6 +5438,10 @@ start_decl (const cp_declarator *declarator,
 		   "declaration of %q#D outside of class is not definition",
 		   decl);
     }
+
+  /* Create a DECL_LANG_SPECIFIC so that DECL_DECOMPOSITION_P works.  */
+  if (initialized == SD_DECOMPOSITION)
+    fit_decomposition_lang_decl (decl, NULL_TREE);
 
   was_public = TREE_PUBLIC (decl);
 
@@ -11047,7 +11053,7 @@ grokdeclarator (const cp_declarator *declarator,
   else if (decl_context == TPARM)
     template_parm_flag = true, decl_context = PARM;
 
-  if (initialized > 1)
+  if (initialized == SD_DEFAULTED || initialized == SD_DELETED)
     funcdef_flag = true;
 
   location_t typespec_loc = smallest_type_location (type_quals,
@@ -13356,7 +13362,7 @@ grokdeclarator (const cp_declarator *declarator,
 		     || (!dependent_type_p (type)
 			 && !COMPLETE_TYPE_P (complete_type (type))
 			 && (!complete_or_array_type_p (type)
-			     || initialized == 0))))
+			     || initialized == SD_UNINITIALIZED))))
 	  {
 	    if (TREE_CODE (type) != ARRAY_TYPE
 		|| !COMPLETE_TYPE_P (TREE_TYPE (type)))

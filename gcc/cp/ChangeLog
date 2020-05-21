@@ -1,3 +1,79 @@
+2020-05-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94038
+	* constexpr.c (constexpr_ctx::uid_sensitive): Remove field.
+	(uid_sensitive_constexpr_evaluation_value): Define.
+	(uid_sensitive_constexpr_evaluation_true_counter): Define.
+	(uid_sensitive_constexpr_evaluation_p): Define.
+	(uid_sensitive_constexpr_evaluation_sentinel): Define its
+	constructor.
+	(uid_sensitive_constexpr_evaluation_checker): Define its
+	constructor and its evaluation_restricted_p method.
+	(get_fundef_copy): Remove 'ctx' parameter.  Use u_s_c_e_p
+	instead of constexpr_ctx::uid_sensitive.
+	(cxx_eval_call_expression): Use u_s_c_e_p instead, and test it
+	last.  Adjust call to get_fundef_copy.
+	(instantiate_cx_fn_r): Test u_s_c_e_p so that we increment the
+	counter if necessary.
+	(cxx_eval_outermost_constant_expr): Remove 'uid_sensitive'
+	parameter.  Adjust function body accordingly.
+	(maybe_constant_value): Remove 'uid_sensitive' parameter and
+	adjust function body accordingly.  Set up a
+	uid_sensitive_constexpr_evaluation_checker, and use it to
+	conditionally update the cv_cache.
+	* cp-gimplify.c (cp_fold): Set up a
+	uid_sensitive_constexpr_evaluation_checker, and use it to
+	conditionally update the fold_cache.
+	* cp-tree.h (maybe_constant_value): Update declaration.
+	(struct uid_sensitive_constexpr_evaluation_sentinel): Define.
+	(struct sensitive_constexpr_evaluation_checker): Define.
+	* expr.c (fold_for_warn): Set up a
+	uid_sensitive_constexpr_evaluation_sentinel before calling
+	the folding subroutines.  Drop all but the first argument to
+	maybe_constant_value.
+
+2020-05-20  Marek Polacek  <polacek@redhat.com>
+
+	DR 2237
+	* parser.c (cp_parser_unqualified_id): Reject simple-template-id as
+	the declarator-id of a destructor.
+	(cp_parser_constructor_declarator_p): Reject simple-template-id as
+	the declarator-id of a constructor.
+
+2020-05-20  Marek Polacek  <polacek@redhat.com>
+
+	DR 2289
+	PR c++/94553
+	* cp-tree.h (SD_DECOMPOSITION): New flag.
+	* decl.c (duplicate_decls): Make sure a structured binding is unique
+	in its declarative region.
+	(start_decl): If INITIALIZED is SD_DECOMPOSITION, call
+	fit_decomposition_lang_decl.
+	(grokdeclarator): Compare INITIALIZED directly to SD_* flags.
+	* parser.c (cp_parser_decomposition_declaration): Pass SD_DECOMPOSITION
+	to start_decl.
+
+2020-05-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95223
+	* typeck.c (structural_comptypes): Don't perform
+	context-dependent resolution of TYPENAME_TYPEs when
+	comparing_specializations.
+
+2020-05-19  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (lookup_template_class_1): Do not reinit template_info of an
+	alias here.
+
+2020-05-18  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/94923
+	* call.c ((maybe_warn_class_memaccess): Use is_byte_access_type.
+	* cp-tree.h (is_dummy_object): Return bool.
+	(is_byte_access_type): Declare new function.
+	* tree.c (is_dummy_object): Return bool.
+	(is_byte_access_type): Define new function.
+
 2020-05-19  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/87847

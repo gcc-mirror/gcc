@@ -374,6 +374,7 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 	ret = fold (expr);
       if (TREE_OVERFLOW_P (ret)
 	  && !TREE_OVERFLOW_P (op0)
+	  && !(BINARY_CLASS_P (op0) && TREE_OVERFLOW_P (TREE_OPERAND (op0, 1)))
 	  && !TREE_OVERFLOW_P (op1))
 	overflow_warning (EXPR_LOC_OR_LOC (expr, input_location), ret, expr);
       if (code == LSHIFT_EXPR

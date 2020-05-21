@@ -1,5 +1,7 @@
 2020-05-21  Nathan Sidwell  <nathan@acm.org>
 
+	Merge master 149c8c7c27a
+
 	Premerging Patrick's c++/95223 fix.
 	gcc/cp/
 	* cp-tree.h (comparing_typenames): Declare.

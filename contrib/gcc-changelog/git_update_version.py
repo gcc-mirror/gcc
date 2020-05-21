@@ -24,8 +24,7 @@ from git import Repo
 
 from git_repository import parse_git_revisions
 
-# TODO: remove sparta suffix
-current_timestamp = datetime.datetime.now().strftime('%Y%m%d sparta\n')
+current_timestamp = datetime.datetime.now().strftime('%Y%m%d\n')
 
 
 def read_timestamp(path):
@@ -36,11 +35,9 @@ def prepend_to_changelog_files(repo, folder, git_commit):
     if not git_commit.success:
         for error in git_commit.errors:
             print(error)
-        # TODO: add error message
-        return
-    for entry, output in git_commit.to_changelog_entries():
-        # TODO
-        full_path = os.path.join(folder, entry, 'ChangeLog.test')
+        raise AssertionError()
+    for entry, output in git_commit.to_changelog_entries(use_commit_ts=True):
+        full_path = os.path.join(folder, entry, 'ChangeLog')
         print('writting to %s' % full_path)
         if os.path.exists(full_path):
             content = open(full_path).read()
@@ -73,9 +70,10 @@ for ref in origin.refs:
             branch = repo.branches[name]
         else:
             branch = repo.create_head(name, ref).set_tracking_branch(ref)
+        print('=== Working on: %s ===' % branch, flush=True)
         origin.pull(rebase=True)
         branch.checkout()
-        print('=== Working on: %s ===' % branch)
+        print('branch pulled and checked out')
         assert not repo.index.diff(None)
         commit = branch.commit
         commit_count = 1
@@ -90,9 +88,8 @@ for ref in origin.refs:
         datestamp_path = os.path.join(args.git_path, 'gcc/DATESTAMP')
         if read_timestamp(datestamp_path) != current_timestamp:
             print('DATESTAMP will be changed:')
-            # TODO: set strict=True after testing period
             commits = parse_git_revisions(args.git_path, '%s..HEAD'
-                                          % commit.hexsha, strict=False)
+                                          % commit.hexsha)
             for git_commit in reversed(commits):
                 prepend_to_changelog_files(repo, args.git_path, git_commit)
             # update timestamp
@@ -101,5 +98,7 @@ for ref in origin.refs:
             repo.git.add(datestamp_path)
             repo.index.commit('Daily bump.')
             # TODO: push the repository
+            # repo.git.push('origin', branch)
         else:
             print('DATESTAMP unchanged')
+        print('branch is done\n', flush=True)

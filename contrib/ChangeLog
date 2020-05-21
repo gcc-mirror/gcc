@@ -1,3 +1,60 @@
+2020-05-21  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Prepare the script, the
+	only missing piece is pushing of the updated branches.
+
+2020-05-21  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Support DR entries/
+	* gcc-changelog/test_email.py: New test for it.
+	* gcc-changelog/test_patches.txt: New patch for it.
+
+2020-05-21  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Support DR parsing.
+	* test_mklog.py: New test for DR parsing.
+
+2020-05-20  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Add author_tuple
+	only if not present in author_lines.
+	* gcc-changelog/test_email.py: New test.
+	* gcc-changelog/test_patches.txt: Add new patch.
+
+2020-05-20  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Refactor to make flake8 happy.
+	* gcc-changelog/test_email.py: Add new test.
+	* gcc-changelog/test_patches.txt: Add new patch.
+
+2020-05-20  Frederik Harwath  <frederik@codesourcery.com>
+
+	* gcc-changelog/git_commit.py: Skip over lines starting
+	with "Reviewed-by: ", "Reviewed-on: ", or "Signed-off-by: "
+
+2020-05-20  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_check_commit.py: Change
+	--allow-non-strict-mode to --non-strict-mode.
+
+2020-05-20  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Support cherry pick
+	prefix.
+	* gcc-changelog/test_email.py: Test it.
+	* gcc-changelog/test_patches.txt: Add new patch.
+	* gcc-git-customization.sh: Add gcc-backport.
+
+2020-05-19  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Use REST API for bug title downloading.
+
+2020-05-19  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Add param use_commit_ts
+	for to_changelog_entries.
+	* gcc-changelog/git_update_version.py: Se use_commit_ts to True.
+
 2020-05-19  Martin Liska  <mliska@suse.cz>
 
 	* mklog.py: Skip GTY for struct names.  Make flake8 happy.
