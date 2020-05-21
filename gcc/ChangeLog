@@ -1,5 +1,10 @@
 2020-05-21  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/95260
+	* config/i386/cpuid.h: Use hexadecimal in comments.
+
+2020-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/95212
 	* config/i386/i386-builtins.c (processor_features): Move
 	F_AVX512VP2INTERSECT after F_AVX512BF16.
