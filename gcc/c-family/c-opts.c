@@ -1129,7 +1129,10 @@ c_common_post_options (const char **pfilename)
   input_location = UNKNOWN_LOCATION;
 
   *pfilename = this_input_filename
-    = cpp_read_main_file (parse_in, in_fnames[0], !cpp_opts->preprocessed);
+    = cpp_read_main_file (parse_in, in_fnames[0],
+			  /* We'll inject preamble pieces if this is
+			     not preprocessed.  */
+			  !cpp_opts->preprocessed);
   /* Don't do any compilation or preprocessing if there is no input file.  */
   if (this_input_filename == NULL)
     {
@@ -1453,6 +1456,7 @@ c_finish_options (void)
 	= linemap_check_ordinary (linemap_add (line_table, LC_RENAME, 0,
 					       _("<built-in>"), 0));
       cb_file_change (parse_in, bltin_map);
+      linemap_line_start (line_table, 0, 1);
 
       /* Make sure all of the builtins about to be declared have
 	 BUILTINS_LOCATION has their location_t.  */
@@ -1476,9 +1480,10 @@ c_finish_options (void)
 	= linemap_check_ordinary (linemap_add (line_table, LC_RENAME, 0,
 					       _("<command-line>"), 0));
       cb_file_change (parse_in, cmd_map);
+      linemap_line_start (line_table, 0, 1);
 
       /* All command line defines must have the same location.  */
-      cpp_force_token_locations (parse_in, cmd_map->start_location);
+      cpp_force_token_locations (parse_in, line_table->highest_line);
       for (size_t i = 0; i < deferred_count; i++)
 	{
 	  struct deferred_opt *opt = &deferred_opts[i];

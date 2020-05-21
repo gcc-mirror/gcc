@@ -557,7 +557,9 @@ linemap_add (line_maps *set, enum lc_reason reason,
   map->to_file = to_file;
   map->to_line = to_line;
   LINEMAPS_ORDINARY_CACHE (set) = LINEMAPS_ORDINARY_USED (set) - 1;
-  map->m_range_bits = map->m_column_and_range_bits = range_bits;
+  /* Do not store range_bits here.  That's readjusted in
+     linemap_line_start.  */
+  map->m_range_bits = map->m_column_and_range_bits = 0;
   set->highest_location = start_location;
   set->highest_line = start_location;
   set->max_column_hint = 0;
