@@ -1,5 +1,12 @@
 2020-05-21  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
+	* testsuite/libgomp.oacc-fortran/parallel-dims-aux.c (aux_gang):
+	Handle case where AMD GCN is used.
+	(acc_worker): Likewise.
+	(acc_vector): Likewise.
+
+2020-05-21  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	* testsuite/libgomp.oacc-c-c++-common/loop-dim-default.c (check):
 	Change ACC_DEVICE_TYPE_gcn to ACC_DEVICE_TYPE_radeon.
 
