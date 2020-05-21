@@ -1,3 +1,9 @@
+2020-05-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95169
+	* config/i386/i386-expand.c (ix86_expand_int_movcc):
+	 Avoid reversing a non-trapping comparison to a trapping one.
+
 2020-05-21  Martin Liska  <mliska@suse.cz>
 
 	* common/config/aarch64/aarch64-common.c (aarch64_handle_option):
