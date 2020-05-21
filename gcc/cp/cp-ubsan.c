@@ -118,14 +118,33 @@ cp_ubsan_maybe_instrument_member_call (tree stmt)
 {
   if (call_expr_nargs (stmt) == 0)
     return;
-  tree *opp = &CALL_EXPR_ARG (stmt, 0);
-  tree op = *opp;
-  if (op == error_mark_node
-      || !INDIRECT_TYPE_P (TREE_TYPE (op)))
-    return;
-  while (TREE_CODE (op) == COMPOUND_EXPR)
+  tree op, *opp;
+
+  tree fn = CALL_EXPR_FN (stmt);
+  if (fn && TREE_CODE (fn) == OBJ_TYPE_REF)
     {
-      opp = &TREE_OPERAND (op, 1);
+      /* Virtual function call: Sanitize the use of the object pointer in the
+	 OBJ_TYPE_REF, since the vtable reference will SEGV otherwise (95221).
+	 OBJ_TYPE_REF_EXPR is ptr->vptr[N] and OBJ_TYPE_REF_OBJECT is ptr.  */
+      opp = &OBJ_TYPE_REF_EXPR (fn);
+      op = OBJ_TYPE_REF_OBJECT (fn);
+      while (*opp != op)
+	{
+	  if (TREE_CODE (*opp) == COMPOUND_EXPR)
+	    opp = &TREE_OPERAND (*opp, 1);
+	  else
+	    opp = &TREE_OPERAND (*opp, 0);
+	}
+    }
+  else
+    {
+      /* Non-virtual call: Sanitize the 'this' argument.  */
+      opp = &CALL_EXPR_ARG (stmt, 0);
+      if (*opp == error_mark_node
+	  || !INDIRECT_TYPE_P (TREE_TYPE (*opp)))
+	return;
+      while (TREE_CODE (*opp) == COMPOUND_EXPR)
+	opp = &TREE_OPERAND (*opp, 1);
       op = *opp;
     }
   op = cp_ubsan_maybe_instrument_vptr (EXPR_LOCATION (stmt), op,

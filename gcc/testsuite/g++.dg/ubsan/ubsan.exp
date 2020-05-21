@@ -26,7 +26,7 @@ ubsan_init
 
 # Main loop.
 if [check_effective_target_fsanitize_undefined] {
-  gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C $srcdir/c-c++-common/ubsan/*.c]] "" ""
+  g++-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C $srcdir/c-c++-common/ubsan/*.c]] "" ""
 }
 
 # All done.

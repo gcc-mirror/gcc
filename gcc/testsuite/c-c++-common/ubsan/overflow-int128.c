@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-require-effective-target int128 } */
 /* { dg-options "-fsanitize=signed-integer-overflow" } */
+/* { dg-options "-fsanitize=signed-integer-overflow -Wno-volatile" { target c++ } } */
 
 /* 2^127 - 1 */
 #define INT128_MAX (__int128) (((unsigned __int128) 1 << ((__SIZEOF_INT128__ * __CHAR_BIT__) - 1)) - 1)

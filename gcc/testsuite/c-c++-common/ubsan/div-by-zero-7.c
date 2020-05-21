@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-fsanitize=integer-divide-by-zero -Wno-div-by-zero -fno-sanitize-recover=integer-divide-by-zero" } */
+/* { dg-options "-fsanitize=integer-divide-by-zero -Wno-div-by-zero -fno-sanitize-recover=integer-divide-by-zero -Wno-volatile" { target c++ } } */
 /* { dg-shouldfail "ubsan" } */
 
 #include <stdio.h>
