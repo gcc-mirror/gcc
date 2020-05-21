@@ -1,3 +1,11 @@
+2020-05-21  Martin Liska  <mliska@suse.cz>
+
+	PR target/95229
+	* g++.target/i386/pr95229.C: Fix
+	error: unnamed type with no linkage used
+	to declare variable ‘<unnamed class> e’ with linkage
+	with -std=gnu++98.
+
 2020-05-21  Nathan Sidwell  <nathan@acm.org>
 
 	* c-c++-common/cpp/cmd-1.c: Delete.
