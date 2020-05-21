@@ -488,8 +488,8 @@ inline namespace v1
     {
     public:
       // types:
-      typedef const_buffer const_buffers_type;
-      typedef mutable_buffer mutable_buffers_type;
+      using const_buffers_type = const_buffer;
+      using mutable_buffers_type = mutable_buffer;
 
       // constructors:
       explicit

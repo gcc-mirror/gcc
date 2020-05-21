@@ -1,3 +1,44 @@
+2020-05-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94038
+	* g++.dg/warn/pr94038-2.C: New test.
+
+2020-05-21  Martin Liska  <mliska@suse.cz>
+
+	PR target/95229
+	* g++.target/i386/pr95229.C: Fix
+	error: unnamed type with no linkage used
+	to declare variable ‘<unnamed class> e’ with linkage
+	with -std=gnu++98.
+
+2020-05-21  Nathan Sidwell  <nathan@acm.org>
+
+	* c-c++-common/cpp/cmd-1.c: Delete.
+	* c-c++-common/cpp/cmd-1.h: Delete.
+
+2020-05-21  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/aarch64/target_attr_20.c: New test.
+	* gcc.target/aarch64/target_attr_21.c: New test.
+
+2020-05-20  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* g++.dg/warn/Wconversion-null-2.C: Add explicit declarations for l()
+	and g() with int, long, long long and __int20 arguments.
+	* g++.dg/warn/Wconversion-null.C: Likewise.
+
+2020-05-20  Marek Polacek  <polacek@redhat.com>
+
+	DR 2237
+	* g++.dg/DRs/dr2237.C: New test.
+	* g++.dg/parse/constructor2.C: Add dg-error for C++20.
+	* g++.dg/parse/dtor12.C: Likewise.
+	* g++.dg/parse/dtor4.C: Likewise.
+	* g++.dg/template/dtor4.C: Adjust dg-error.
+	* g++.dg/template/error34.C: Likewise.
+	* g++.old-deja/g++.other/inline15.C: Only run for C++17 and lesses.
+	* g++.old-deja/g++.pt/ctor2.C: Add dg-error for C++20.
+
 2020-05-20  Marek Polacek  <polacek@redhat.com>
 
 	DR 2289

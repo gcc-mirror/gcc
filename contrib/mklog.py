@@ -36,6 +36,7 @@ import requests
 from unidiff import PatchSet
 
 pr_regex = re.compile(r'(\/(\/|\*)|[Cc*!])\s+(?P<pr>PR [a-z+-]+\/[0-9]+)')
+dr_regex = re.compile(r'(\/(\/|\*)|[Cc*!])\s+(?P<dr>DR [0-9]+)')
 identifier_regex = re.compile(r'^([a-zA-Z0-9_#].*)')
 comment_regex = re.compile(r'^\/\*')
 struct_regex = re.compile(r'^(class|struct|union|enum)\s+'
@@ -142,7 +143,13 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False):
                     if pr not in prs:
                         prs.append(pr)
                 else:
-                    break
+                    m = dr_regex.search(line.value)
+                    if m:
+                        dr = m.group('dr')
+                        if dr not in prs:
+                            prs.append(dr)
+                    else:
+                        break
 
     if fill_pr_titles:
         out += get_pr_titles(prs)

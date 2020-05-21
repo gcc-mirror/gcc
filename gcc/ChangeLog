@@ -1,3 +1,45 @@
+2020-05-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* adjust-alignment.c: Include memmodel.h.
+
+2020-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/95260
+	* config/i386/cpuid.h: Use hexadecimal in comments.
+
+2020-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/95212
+	* config/i386/i386-builtins.c (processor_features): Move
+	F_AVX512VP2INTERSECT after F_AVX512BF16.
+	(isa_names_table): Likewise.
+
+2020-05-21  Martin Liska  <mliska@suse.cz>
+
+	* common/config/aarch64/aarch64-common.c (aarch64_handle_option):
+	Handle OPT_moutline_atomics.
+	* config/aarch64/aarch64.c: Add outline-atomics to
+	aarch64_attributes.
+	* doc/extend.texi: Document the newly added target attribute.
+
+2020-05-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95218
+
+	* config/i386/mmx.md (*mmx_<code>v2sf): Do not mark
+	operands 1 and 2 commutative.  Manually swap operands.
+	(*mmx_nabsv2sf2): Ditto.
+
+	Partially revert:
+	2020-05-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*<code>tf2_1):
+	Mark operands 1 and 2 commutative.
+	(*nabstf2_1): Ditto.
+	* config/i386/sse.md (*<code><mode>2): Mark operands 1 and 2
+	commutative.  Do not swap operands.
+	(*nabs<mode>2): Ditto.
+
 2020-05-20  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95229

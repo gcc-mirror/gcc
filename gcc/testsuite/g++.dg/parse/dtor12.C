@@ -2,5 +2,5 @@
 
 template <class T> class a
 {
-  ~a<T>();
+  ~a<T>(); // { dg-error "template-id not allowed for destructor" "" { target c++20 } }
 };

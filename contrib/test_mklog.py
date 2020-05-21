@@ -344,6 +344,41 @@ gcc/ChangeLog:
 
 '''
 
+PATCH7 = '''\
+diff --git a/gcc/testsuite/g++.dg/DRs/dr2237.C b/gcc/testsuite/g++.dg/DRs/dr2237.C
+new file mode 100644
+index 00000000000..f3d6d11e61e
+--- /dev/null
++++ b/gcc/testsuite/g++.dg/DRs/dr2237.C
+@@ -0,0 +1,18 @@
++// DR 2237 - Can a template-id name a constructor?
++
++template<class T>
++struct X {
++  X<T>(); // { dg-error "expected" "" { target c++20 } }
++  X(int); // OK, injected-class-name used
++  ~X<T>(); // { dg-error "template-id not allowed for destructor" "" { target c++20 } }
++};
++
++// ill-formed since DR1435
++template<typename T> X<T>::X<T>() {} // { dg-error "names the constructor|as no template constructors" }
++template<typename T> X<T>::~X<T>() {} // { dg-error "template-id not allowed for destructor" "" { target c++20 } }
++
++struct Q {
++  // ill-formed since DR1435
++  template<typename T> friend X<T>::X<T>(); // { dg-error "names the constructor|as no template constructors" }
++  template<typename T> friend X<T>::~X<T>(); // { dg-error "template-id not allowed for destructor" "" { target c++20 } }
++};
+'''
+
+EXPECTED7 = '''\
+gcc/testsuite/ChangeLog:
+
+	DR 2237
+	* g++.dg/DRs/dr2237.C: New test.
+
+'''
+
 class TestMklog(unittest.TestCase):
     def test_macro_definition(self):
         changelog = generate_changelog(PATCH1)
@@ -372,3 +407,7 @@ class TestMklog(unittest.TestCase):
     def test_gty_in_struct(self):
         changelog = generate_changelog(PATCH6, fill_pr_titles=True)
         assert changelog == EXPECTED6
+
+    def test_dr_detection_in_test_case(self):
+        changelog = generate_changelog(PATCH7)
+        assert changelog == EXPECTED7

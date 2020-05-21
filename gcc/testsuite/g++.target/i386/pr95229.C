@@ -7,7 +7,7 @@ struct a {
   unsigned long long c;
 };
 
-class {
+class my_class {
 public:
   a d;
 } e;

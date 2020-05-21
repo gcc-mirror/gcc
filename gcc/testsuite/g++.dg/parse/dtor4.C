@@ -7,4 +7,4 @@ template <int N> struct X {
 };
 
 template <int N>
-X<N>::~X<N>(){}
+X<N>::~X<N>(){} // { dg-error "template-id not allowed for destructor" "" { target c++20 } }

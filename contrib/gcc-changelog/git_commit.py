@@ -145,6 +145,7 @@ author_line_regex = \
 additional_author_regex = re.compile(r'^\t(?P<spaces>\ *)?(?P<name>.*  <.*>)')
 changelog_regex = re.compile(r'^([a-z0-9+-/]*)/ChangeLog:?')
 pr_regex = re.compile(r'\tPR (?P<component>[a-z+-]+\/)?([0-9]+)$')
+dr_regex = re.compile(r'\tDR ([0-9]+)$')
 star_prefix_regex = re.compile(r'\t\*(?P<spaces>\ *)(?P<content>.*)')
 
 LINE_LIMIT = 100
@@ -297,7 +298,7 @@ class GitCommit:
                 continue
             if (changelog_regex.match(b) or self.find_changelog_location(b)
                     or star_prefix_regex.match(b) or pr_regex.match(b)
-                    or author_line_regex.match(b)):
+                    or dr_regex.match(b) or author_line_regex.match(b)):
                 self.changes = body[i:]
                 return
         self.errors.append(Error('cannot find a ChangeLog location in '
@@ -350,6 +351,8 @@ class GitCommit:
                         continue
                     else:
                         pr_line = line.lstrip()
+                elif dr_regex.match(line):
+                    pr_line = line.lstrip()
 
                 lowered_line = line.lower()
                 if lowered_line.startswith(CO_AUTHORED_BY_PREFIX):

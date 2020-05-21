@@ -2447,6 +2447,8 @@ cp_fold (tree x)
   if (tree *cached = fold_cache->get (x))
     return *cached;
 
+  uid_sensitive_constexpr_evaluation_checker c;
+
   code = TREE_CODE (x);
   switch (code)
     {
@@ -2929,10 +2931,13 @@ cp_fold (tree x)
       return org_x;
     }
 
-  fold_cache->put (org_x, x);
-  /* Prevent that we try to fold an already folded result again.  */
-  if (x != org_x)
-    fold_cache->put (x, x);
+  if (!c.evaluation_restricted_p ())
+    {
+      fold_cache->put (org_x, x);
+      /* Prevent that we try to fold an already folded result again.  */
+      if (x != org_x)
+	fold_cache->put (x, x);
+    }
 
   return x;
 }
