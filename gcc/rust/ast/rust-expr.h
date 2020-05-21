@@ -620,6 +620,8 @@ public:
 
   virtual void accept_vis (ASTVisitor &vis) OVERRIDE;
 
+  Expr *get_lhs () { return main_or_left_expr.get (); }
+
   void visit_lhs (ASTVisitor &vis) { main_or_left_expr->accept_vis (vis); }
 
   void visit_rhs (ASTVisitor &vis) { right_expr->accept_vis (vis); }
