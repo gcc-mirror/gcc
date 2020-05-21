@@ -1,3 +1,21 @@
+2020-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* m4/matmul.m4: Don't include <config/i386/cpuinfo.h>.  Use
+	__builtin_cpu_is/__builtin_cpu_supports
+	* generated/matmul_c10.c: Regenerated.
+	* generated/matmul_c16.c: Likewise.
+	* generated/matmul_c4.c: Likewise.
+	* generated/matmul_c8.c: Likewise.
+	* generated/matmul_i1.c: Likewise.
+	* generated/matmul_i16.c: Likewise.
+	* generated/matmul_i2.c: Likewise.
+	* generated/matmul_i4.c: Likewise.
+	* generated/matmul_i8.c: Likewise.
+	* generated/matmul_r10.c: Likewise.
+	* generated/matmul_r16.c: Likewise.
+	* generated/matmul_r4.c: Likewise.
+	* generated/matmul_r8.c: Likewise.
+
 2020-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/95147
