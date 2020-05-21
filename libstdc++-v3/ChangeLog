@@ -1,5 +1,11 @@
 2020-05-21  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/93983
+	* include/bits/iterator_concepts.h (__detail::__cpp17_iterator):
+	Reorder constraints to avoid recursion when constructors use
+	iterator_traits (LWG 3420).
+	* testsuite/24_iterators/customization_points/lwg3420.cc: New test.
+
 	* include/experimental/socket (basic_socket::is_open()
 	(basic_socket_acceptor::is_open()): Use _GLIBCXX_NODISCARD macro.
 
