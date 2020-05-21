@@ -3398,11 +3398,6 @@ enum streamed_extensions {
 /********************************************************************/
 struct module_state_config;
 
-/* Non zero when we're streaming in a module.  Restricts type
-   comparisons to not try and resolve typename types.  */
-
-unsigned module_streaming;
-
 /* Increasing levels of loadedness.  */
 enum module_loadedness {
   ML_NONE,		/* Not loaded.  */
@@ -14201,7 +14196,9 @@ module_state::read_cluster (unsigned snum)
 
   dump () && dump ("Reading section:%u", snum);
   dump.indent ();
-  module_streaming++;
+
+  /* We care about typename structural equality.  */
+  comparing_typenames++;
 
   /* First seed the imports.  */
   while (tree import = sec.tree_node ())
@@ -14378,7 +14375,7 @@ module_state::read_cluster (unsigned snum)
 #undef cfun
   cfun = old_cfun;
   current_function_decl = old_cfd;
-  module_streaming--;
+  comparing_typenames--;
   dump.outdent ();
   dump () && dump ("Read section:%u", snum);
 

@@ -1,5 +1,16 @@
 2020-05-21  Nathan Sidwell  <nathan@acm.org>
 
+	Premerging Patrick's c++/95223 fix.
+	gcc/cp/
+	* cp-tree.h (comparing_typenames): Declare.
+	(module_streaming): Delete.
+	* modules.cc (module_streaming): Delete.
+	(module_state::read_cluster): Increment comparing_typenames, not
+	module_streaming.
+	* pt.c (comparing_typenames): Define.
+	(spec_hasher::equal): Increment it.
+	* typeck.c (structural_comptypes): Check it here for typedefs.
+
 	libcpp/
 	* files.c, init.c, internal.h: Adjust file_find_kind names from trunk.
 

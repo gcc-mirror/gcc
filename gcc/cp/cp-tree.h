@@ -5512,9 +5512,14 @@ extern GTY(()) tree integer_two_node;
    function, two inside the body of a function in a local class, etc.)  */
 extern int function_depth;
 
-/* Nonzero if we are inside eq_specializations, which affects comparison of
-   PARM_DECLs in cp_tree_equal.  */
+/* Nonzero if we are inside eq_specializations, which affects
+   comparison of PARM_DECLs in cp_tree_equal and alias specializations
+   in structrual_comptypes.  */
 extern int comparing_specializations;
+
+/* Nonzero if we are inside eq_specializations, which affects
+   resolving of typenames in structural_comptypes.  */
+extern int comparing_typenames;
 
 /* In parser.c.  */
 
@@ -6993,7 +6998,6 @@ extern tree implicitly_declare_fn               (special_function_kind, tree,
 /* In module.cc  */
 class module_state; /* Forward declare.  */
 inline bool modules_p () { return flag_modules != 0; }
-extern unsigned module_streaming;
 
 #define MK_MODULE (1 << 0)     /* This TU is a module.  */
 #define MK_GLOBAL (1 << 1)     /* Entities are in the global module.  */

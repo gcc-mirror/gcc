@@ -1696,9 +1696,11 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
   return spec;
 }
 
-/* Returns true iff two spec_entry nodes are equivalent.  */
-
+/* Restricts tree and type comparisons.  */
 int comparing_specializations;
+int comparing_typenames;
+
+/* Returns true iff two spec_entry nodes are equivalent.  */
 
 bool
 spec_hasher::equal (spec_entry *e1, spec_entry *e2)
@@ -1706,6 +1708,7 @@ spec_hasher::equal (spec_entry *e1, spec_entry *e2)
   int equal;
 
   ++comparing_specializations;
+  ++comparing_typenames;
   equal = (e1->tmpl == e2->tmpl
 	   && comp_template_args (e1->args, e2->args));
   if (equal && flag_concepts
@@ -1721,6 +1724,7 @@ spec_hasher::equal (spec_entry *e1, spec_entry *e2)
       equal = equivalent_constraints (c1, c2);
     }
   --comparing_specializations;
+  --comparing_typenames;
 
   return equal;
 }

@@ -1257,15 +1257,13 @@ structural_comptypes (tree t1, tree t2, int strict)
   gcc_assert (TYPE_P (t1) && TYPE_P (t2));
 
   /* TYPENAME_TYPEs should be resolved if the qualifying scope is the
-     current instantiation.  Unless we're in the middle of streaming
-     in a module, when we want structural equality all the way down
-     and cannot tolerate randomly instantiating things.  */
-  if (TREE_CODE (t1) == TYPENAME_TYPE
-      && !module_streaming)
+     current instantiation, and we don't care about typename
+     structural equality.  The comparing_typenames check is after the
+     code check, in order to early-out the common case.  */
+  if (TREE_CODE (t1) == TYPENAME_TYPE && !comparing_typenames)
     t1 = resolve_typename_type (t1, /*only_current_p=*/true);
 
-  if (TREE_CODE (t2) == TYPENAME_TYPE
-      && !module_streaming)
+  if (TREE_CODE (t2) == TYPENAME_TYPE && !comparing_typenames)
     t2 = resolve_typename_type (t2, /*only_current_p=*/true);
 
   if (TYPE_PTRMEMFUNC_P (t1))
