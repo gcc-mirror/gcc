@@ -1,3 +1,7 @@
+2020-05-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* adjust-alignment.c: Include memmodel.h.
+
 2020-05-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/95260
