@@ -8768,6 +8768,9 @@ build_x_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
   tree overload = NULL_TREE;
   tree op = build_nt (modifycode, NULL_TREE, NULL_TREE);
 
+  if (lhs == error_mark_node || rhs == error_mark_node)
+    return cp_expr (error_mark_node, loc);
+
   if (processing_template_decl)
     {
       if (modifycode == NOP_EXPR
