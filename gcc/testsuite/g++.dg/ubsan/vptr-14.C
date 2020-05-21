@@ -1,5 +1,5 @@
 // PR sanitizer/89869
-// { dg-do run }
+// { dg-do run { target c++11 } }
 // { dg-options "-fsanitize=vptr -fno-sanitize-recover=vptr" }
 
 struct S { S *s = 0; virtual ~S () {} };
