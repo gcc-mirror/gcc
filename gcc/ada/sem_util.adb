@@ -29698,6 +29698,915 @@ package body Sem_Util is
 
    end Interval_Lists;
 
+   package body Old_Attr_Util is
+      package body Conditional_Evaluation is
+         type Determining_Expr_Context is
+           (No_Context, If_Expr, Case_Expr, Short_Circuit_Op, Membership_Test);
+
+         --  Determining_Expr_Context enumeration elements (except for
+         --  No_Context) correspond to the list items in RM 6.1.1 definition
+         --  of "determining expression".
+
+         type Determining_Expr
+           (Context : Determining_Expr_Context := No_Context)
+         is record
+            Expr : Node_Id := Empty;
+            case Context is
+               when Short_Circuit_Op =>
+                  Is_And_Then         : Boolean;
+               when If_Expr =>
+                  Is_Then_Part        : Boolean;
+               when Case_Expr =>
+                  Alternatives        : Node_Id;
+               when Membership_Test =>
+                  --  Given a subexpression of <exp4> in a membership test
+                  --    <exp1> in <exp2> | <exp3> | <exp4> | <exp5>
+                  --  the corresponding determining expression value would
+                  --  have First_Non_Preceding = <exp4> (See RM 6.1.1).
+                  First_Non_Preceding : Node_Id;
+               when No_Context =>
+                  null;
+            end case;
+         end record;
+
+         type Determining_Expression_List is
+           array (Positive range <>) of Determining_Expr;
+
+         function Determining_Condition (Det : Determining_Expr)
+           return Node_Id;
+         --  Given a determining expression, build a Boolean-valued
+         --  condition that incorporates that expression into condition
+         --  suitable for deciding whether to initialize a 'Old constant.
+         --  Polarity is "True => initialize the constant".
+
+         function Determining_Expressions
+           (Expr : Node_Id; Expr_Trailer : Node_Id := Empty)
+           return Determining_Expression_List;
+         --  Given a conditionally evaluated expression, return its
+         --  determining expressions.
+         --  See RM 6.1.1 for definition of term "determining expressions".
+         --  Tests should be performed in the order they occur in the
+         --  array, with short circuiting.
+         --  A determining expression need not be of a boolean type (e.g.,
+         --  it might be the determining expression of a case expression).
+         --  The Expr_Trailer parameter should be defaulted for nonrecursive
+         --  calls.
+
+         function Is_Conditionally_Evaluated (Expr : Node_Id) return Boolean;
+         --  See RM 6.1.1 for definition of term "conditionally evaluated".
+
+         function Is_Known_On_Entry (Expr : Node_Id) return Boolean;
+         --  See RM 6.1.1 for definition of term "known on entry".
+
+         --------------------------------------
+         -- Conditional_Evaluation_Condition --
+         --------------------------------------
+
+         function Conditional_Evaluation_Condition
+           (Expr : Node_Id) return Node_Id
+         is
+            Determiners : constant Determining_Expression_List :=
+              Determining_Expressions (Expr);
+            Loc         : constant Source_Ptr := Sloc (Expr);
+            Result      : Node_Id :=
+              New_Occurrence_Of (Standard_True, Loc);
+         begin
+            pragma Assert (Determiners'Length > 0 or else
+                           Is_Anonymous_Access_Type (Etype (Expr)));
+
+            for I in Determiners'Range loop
+               Result := Make_And_Then
+                          (Loc,
+                           Left_Opnd  => Result,
+                           Right_Opnd =>
+                             Determining_Condition (Determiners (I)));
+            end loop;
+            return Result;
+         end Conditional_Evaluation_Condition;
+
+         ---------------------------
+         -- Determining_Condition --
+         ---------------------------
+
+         function Determining_Condition (Det : Determining_Expr) return Node_Id
+         is
+            Loc : constant Source_Ptr := Sloc (Det.Expr);
+         begin
+            case Det.Context is
+               when Short_Circuit_Op =>
+                  if Det.Is_And_Then then
+                     return New_Copy_Tree (Det.Expr);
+                  else
+                     return Make_Op_Not (Loc, New_Copy_Tree (Det.Expr));
+                  end if;
+
+               when If_Expr =>
+                  if Det.Is_Then_Part then
+                     return New_Copy_Tree (Det.Expr);
+                  else
+                     return Make_Op_Not (Loc, New_Copy_Tree (Det.Expr));
+                  end if;
+
+               when Case_Expr =>
+                  declare
+                     Alts : List_Id := Discrete_Choices (Det.Alternatives);
+                  begin
+                     if Nkind (First (Alts)) = N_Others_Choice then
+                        Alts := Others_Discrete_Choices (First (Alts));
+                     end if;
+
+                     return Make_In (Loc,
+                       Left_Opnd    => New_Copy_Tree (Det.Expr),
+                       Right_Opnd   => Empty,
+                       Alternatives => New_Copy_List (Alts));
+                  end;
+
+               when Membership_Test =>
+                  declare
+                     function Copy_Prefix
+                       (List : List_Id; Suffix_Start : Node_Id)
+                       return List_Id;
+                     --  Given a list and a member of that list, returns
+                     --  a copy (similar to Nlists.New_Copy_List) of the
+                     --  prefix of the list up to but not including
+                     --  Suffix_Start.
+
+                     -----------------
+                     -- Copy_Prefix --
+                     -----------------
+
+                     function Copy_Prefix
+                       (List : List_Id; Suffix_Start : Node_Id)
+                       return List_Id
+                     is
+                        Result : constant List_Id := New_List;
+                        Elem   : Node_Id := First (List);
+                     begin
+                        while Elem /= Suffix_Start loop
+                           Append (New_Copy (Elem), Result);
+                           Next (Elem);
+                           pragma Assert (Present (Elem));
+                        end loop;
+                        return Result;
+                     end Copy_Prefix;
+
+                  begin
+                     return Make_In (Loc,
+                       Left_Opnd    => New_Copy_Tree (Left_Opnd (Det.Expr)),
+                       Right_Opnd   => Empty,
+                       Alternatives => Copy_Prefix
+                                         (Alternatives (Det.Expr),
+                                          Det.First_Non_Preceding));
+                  end;
+
+               when No_Context =>
+                  raise Program_Error;
+            end case;
+         end Determining_Condition;
+
+         -----------------------------
+         -- Determining_Expressions --
+         -----------------------------
+
+         function Determining_Expressions
+           (Expr : Node_Id; Expr_Trailer : Node_Id := Empty)
+           return Determining_Expression_List
+         is
+            Par           : Node_Id := Expr;
+            Trailer       : Node_Id := Expr_Trailer;
+            Next_Element  : Determining_Expr;
+         begin
+            --  We want to stop climbing up the tree when we reach the
+            --  postcondition expression. An aspect_specification is
+            --  transformed into a pragma, so reaching a pragma is our
+            --  termination condition. This relies on the fact that
+            --  pragmas are not allowed in declare expressions (or any
+            --  other kind of expression).
+
+            loop
+               Next_Element.Expr := Empty;
+
+               case Nkind (Par) is
+                  when N_Short_Circuit =>
+                     if Trailer = Right_Opnd (Par) then
+                        Next_Element :=
+                          (Expr        => Left_Opnd (Par),
+                           Context     => Short_Circuit_Op,
+                           Is_And_Then => Nkind (Par) = N_And_Then);
+                     end if;
+
+                  when N_If_Expression =>
+                     --  For an expression like
+                     --    (if C1 then ... elsif C2 then ... else Foo'Old)
+                     --  the RM says are two determining expressions,
+                     --  C1 and C2. Our treatment here (where we only add
+                     --  one determining expression to the list) is ok because
+                     --  we will see two if-expressions, one within the other.
+
+                     if Trailer /= First (Expressions (Par)) then
+                        Next_Element :=
+                           (Expr         => First (Expressions (Par)),
+                            Context      => If_Expr,
+                            Is_Then_Part =>
+                              Trailer = Next (First (Expressions (Par))));
+                     end if;
+
+                  when N_Case_Expression_Alternative =>
+                     pragma Assert (Nkind (Parent (Par)) = N_Case_Expression);
+
+                     Next_Element :=
+                       (Expr         => Expression (Parent (Par)),
+                        Context      => Case_Expr,
+                        Alternatives => Par);
+
+                  when N_Membership_Test =>
+                     if Trailer /= Left_Opnd (Par)
+                       and then Is_Non_Empty_List (Alternatives (Par))
+                       and then Trailer /= First (Alternatives (Par))
+                     then
+                        pragma Assert (not Present (Right_Opnd (Par)));
+                        pragma Assert
+                          (Is_List_Member (Trailer)
+                           and then List_Containing (Trailer)
+                                    = Alternatives (Par));
+
+                        --  This one is different than the others
+                        --  because one element in the array result
+                        --  may represent multiple determining
+                        --  expressions (i.e. every member of the list
+                        --     Alternatives (Par)
+                        --  up to but not including Trailer).
+
+                        Next_Element :=
+                          (Expr                => Par,
+                           Context             => Membership_Test,
+                           First_Non_Preceding => Trailer);
+                     end if;
+
+                  when N_Pragma =>
+                     declare
+                        Previous : constant Node_Id := Prev (Par);
+                        Prev_Expr : Node_Id;
+                     begin
+                        if Nkind (Previous) = N_Pragma and then
+                          Split_PPC (Previous)
+                        then
+                           --  A source-level postcondition of
+                           --    A and then B and then C
+                           --  results in
+                           --    pragma Postcondition (A);
+                           --    pragma Postcondition (B);
+                           --    pragma Postcondition (C);
+                           --  with Split_PPC set to True on all but the
+                           --  last pragma. We account for that here.
+
+                           Prev_Expr :=
+                             Expression (First
+                               (Pragma_Argument_Associations (Previous)));
+
+                           --  This Analyze call is needed in the case when
+                           --  Sem_Attr.Analyze_Attribute calls
+                           --  Eligible_For_Conditional_Evaluation. Without
+                           --  it, we end up passing an unanalyzed expression
+                           --  to Is_Known_On_Entry and that doesn't work.
+
+                           Analyze (Prev_Expr);
+
+                           Next_Element :=
+                             (Expr        => Prev_Expr,
+                              Context     => Short_Circuit_Op,
+                              Is_And_Then => True);
+
+                           return Determining_Expressions (Prev_Expr)
+                             & Next_Element;
+                        else
+                           pragma Assert
+                             (Get_Pragma_Id (Pragma_Name (Par)) in
+                                Pragma_Post | Pragma_Postcondition
+                                | Pragma_Post_Class | Pragma_Refined_Post
+                                | Pragma_Check | Pragma_Contract_Cases);
+
+                           return (1 .. 0 => <>); -- recursion terminates here
+                        end if;
+                     end;
+
+                  when N_Empty =>
+                     --  This case should be impossible, but if it does
+                     --  happen somehow then we don't want an infinite loop.
+                     raise Program_Error;
+
+                  when others =>
+                     null;
+               end case;
+
+               Trailer := Par;
+               Par := Parent (Par);
+
+               if Present (Next_Element.Expr) then
+                  return Determining_Expressions
+                           (Expr => Par, Expr_Trailer => Trailer)
+                         & Next_Element;
+               end if;
+            end loop;
+         end Determining_Expressions;
+
+         -----------------------------------------
+         -- Eligible_For_Conditional_Evaluation --
+         -----------------------------------------
+
+         function Eligible_For_Conditional_Evaluation
+           (Expr : Node_Id) return Boolean
+         is
+         begin
+            if Is_Anonymous_Access_Type (Etype (Expr)) then
+               --  The code in exp_attr.adb that also builds declarations
+               --  for 'Old constants doesn't handle the anonymous access
+               --  type case correctly, so we avoid that problem by
+               --  returning True here.
+               return True;
+            elsif Ada_Version < Ada_2020 then
+               return False;
+            elsif not Is_Conditionally_Evaluated (Expr) then
+               return False;
+            else
+               declare
+                  Determiners : constant Determining_Expression_List :=
+                    Determining_Expressions (Expr);
+               begin
+                  pragma Assert (Determiners'Length > 0);
+
+                  for Idx in Determiners'Range loop
+                     if not Is_Known_On_Entry (Determiners (Idx).Expr) then
+                        return False;
+                     end if;
+                  end loop;
+               end;
+               return True;
+            end if;
+         end Eligible_For_Conditional_Evaluation;
+
+         --------------------------------
+         -- Is_Conditionally_Evaluated --
+         --------------------------------
+
+         function Is_Conditionally_Evaluated (Expr : Node_Id) return Boolean
+         is
+            --  There are three possibilities - the expression is
+            --  unconditionally evaluated, repeatedly evaluated, or
+            --  conditionally evaluated (see RM 6.1.1). So we implement
+            --  this test by testing for the other two.
+
+            function Is_Repeatedly_Evaluated (Expr : Node_Id) return Boolean;
+            --  See RM 6.1.1 for definition of "repeatedly evaluated".
+
+            -----------------------------
+            -- Is_Repeatedly_Evaluated --
+            -----------------------------
+
+            function Is_Repeatedly_Evaluated (Expr : Node_Id) return Boolean is
+               Par : Node_Id := Expr;
+               Trailer : Node_Id := Empty;
+
+               --  There are three ways that an expression can be repeatedly
+               --  evaluated. We only test for two of them here because
+               --  container aggregates and the Aggregate aspect are not
+               --  implemented yet. ???
+
+            begin
+               --  An aspect_specification is transformed into a pragma, so
+               --  reaching a pragma is our termination condition. We want to
+               --  stop when we reach the postcondition expression.
+
+               while Nkind (Par) /= N_Pragma loop
+                  pragma Assert (Present (Par));
+
+                  --  test for case 1:
+                  --    A subexpression of a predicate of a
+                  --    quantified_expression.
+
+                  if Nkind (Par) = N_Quantified_Expression
+                     and then Trailer = Condition (Par)
+                  then
+                     return True;
+                  end if;
+
+                  --  test for case 2:
+                  --    A subexpression of the expression of an
+                  --    array_component_association
+
+                  if Nkind (Par) = N_Component_Association
+                    and then Trailer = Expression (Par)
+                  then
+
+                     --  determine whether Par is part of an array aggregate
+                     declare
+                        Rover : Node_Id := Par;
+                     begin
+                        while Nkind (Rover) not in N_Has_Etype loop
+                           pragma Assert (Present (Rover));
+                           Rover := Parent (Rover);
+                        end loop;
+                        if Present (Etype (Rover))
+                          and then Is_Array_Type (Etype (Rover))
+                        then
+                           return True;
+                        end if;
+                     end;
+                  end if;
+
+                  --  As noted above, there is a case 3 that we don't yet
+                  --  test for. When we do, that test goes here. ???
+                  null;
+
+                  Trailer := Par;
+                  Par := Parent (Par);
+               end loop;
+
+               return False;
+            end Is_Repeatedly_Evaluated;
+
+         begin
+            if not Is_Potentially_Unevaluated (Expr) then
+               --  the expression is unconditionally evaluated
+               return False;
+            elsif Is_Repeatedly_Evaluated (Expr) then
+               return False;
+            end if;
+
+            return True;
+         end Is_Conditionally_Evaluated;
+
+         -----------------------
+         -- Is_Known_On_Entry --
+         -----------------------
+
+         function Is_Known_On_Entry (Expr : Node_Id) return Boolean is
+            --  ??? This implementation is incomplete. See RM 6.1.1
+            --  for details. In particular, this function *should* return
+            --  True for a function call (or a user-defined literal, which
+            --  is equivalent to a function call) if all actual parameters
+            --  (including defaulted params) are known on entry and the
+            --  function has "Globals => null" specified; the current
+            --  implementation will incorrectly return False in this case.
+
+            function All_Exps_Known_On_Entry
+              (Expr_List : List_Id) return Boolean;
+            --  Given a list of expressions, returns False iff
+            --  Is_Known_On_Entry is False for at least one list element.
+
+            -----------------------------
+            -- All_Exps_Known_On_Entry --
+            -----------------------------
+
+            function All_Exps_Known_On_Entry
+              (Expr_List : List_Id) return Boolean
+            is
+               Expr : Node_Id := First (Expr_List);
+            begin
+               while Present (Expr) loop
+                  if not Is_Known_On_Entry (Expr) then
+                     return False;
+                  end if;
+                  Next (Expr);
+               end loop;
+               return True;
+            end All_Exps_Known_On_Entry;
+
+         begin
+            if Is_Static_Expression (Expr) then
+               return True;
+            end if;
+
+            if Is_Attribute_Old (Expr) then
+               return True;
+            end if;
+
+            declare
+               Pref : Node_Id := Expr;
+            begin
+               loop
+                  case Nkind (Pref) is
+                     when N_Selected_Component =>
+                        null;
+
+                     when N_Indexed_Component =>
+                        if not All_Exps_Known_On_Entry (Expressions (Pref))
+                        then
+                           return False;
+                        end if;
+
+                     when N_Slice =>
+                        return False; -- just to be clear about this case
+
+                     when others =>
+                        exit;
+                  end case;
+
+                  Pref := Prefix (Pref);
+               end loop;
+
+               if Is_Entity_Name (Pref)
+                 and then Is_Constant_Object (Entity (Pref))
+               then
+                  declare
+                     Obj     : constant Entity_Id := Entity (Pref);
+                     Obj_Typ : constant Entity_Id := Etype (Obj);
+                  begin
+                     case Ekind (Obj) is
+                        when E_In_Parameter =>
+                           if not Is_Elementary_Type (Obj_Typ) then
+                              return False;
+                           elsif Is_Aliased (Obj) then
+                              return False;
+                           end if;
+
+                        when E_Constant =>
+                           --  return False for a deferred constant
+                           if Present (Full_View (Obj)) then
+                              return False;
+                           end if;
+
+                           --  return False if not "all views are constant".
+                           if Is_Immutably_Limited_Type (Obj_Typ)
+                             or Needs_Finalization (Obj_Typ)
+                           then
+                              return False;
+                           end if;
+
+                        when others =>
+                           null;
+                     end case;
+                  end;
+
+                  return True;
+               end if;
+
+               --  ??? Cope with a malformed tree. Code to cope with a
+               --  nonstatic use of an enumeration literal should not be
+               --  necessary.
+               if Is_Entity_Name (Pref)
+                 and then Ekind (Entity (Pref)) = E_Enumeration_Literal
+               then
+                  return True;
+               end if;
+            end;
+
+            case Nkind (Expr) is
+               when N_Unary_Op =>
+                  return Is_Known_On_Entry (Right_Opnd (Expr));
+
+               when N_Binary_Op =>
+                  return Is_Known_On_Entry (Left_Opnd (Expr))
+                    and then Is_Known_On_Entry (Right_Opnd (Expr));
+
+               when N_Type_Conversion | N_Qualified_Expression =>
+                  return Is_Known_On_Entry (Expression (Expr));
+
+               when N_If_Expression =>
+                  if not All_Exps_Known_On_Entry (Expressions (Expr)) then
+                     return False;
+                  end if;
+
+               when N_Case_Expression =>
+                  if not Is_Known_On_Entry (Expression (Expr)) then
+                     return False;
+                  end if;
+
+                  declare
+                     Alt : Node_Id := First (Alternatives (Expr));
+                  begin
+                     while Present (Alt) loop
+                        if not Is_Known_On_Entry (Expression (Alt)) then
+                           return False;
+                        end if;
+                        Next (Alt);
+                     end loop;
+                  end;
+
+                  return True;
+
+               when others =>
+                  null;
+            end case;
+
+            return False;
+         end Is_Known_On_Entry;
+
+      end Conditional_Evaluation;
+
+      package body Indirect_Temps is
+
+         Indirect_Temp_Access_Type_Char : constant Character := 'K';
+         --  The character passed to Make_Temporary when declaring
+         --  the access type that is used in the implementation of an
+         --  indirect temporary.
+
+         --------------------------
+         -- Indirect_Temp_Needed --
+         --------------------------
+
+         function Indirect_Temp_Needed (Typ : Entity_Id) return Boolean is
+         begin
+            --  There should be no correctness issues if the only cases where
+            --  this function returns False are cases where Typ is an
+            --  anonymous access type and we need to generate a saooaaat (a
+            --  stand-alone object of an anonymous access type) in order get
+            --  accessibility right. In other cases where this function
+            --  returns False, there would be no correctness problems with
+            --  returning True instead; however, returning False when we can
+            --  generally results in simpler code.
+
+            return False
+
+               --  If Typ is not definite, then we cannot generate
+               --    Temp : Typ;
+
+              or else not Is_Definite_Subtype (Typ)
+
+              --  If Typ is tagged, then generating
+              --    Temp : Typ;
+              --  might generate an object with the wrong tag. If we had
+              --  a predicate that indicated whether the nominal tag is
+              --  trustworthy, we could use that predicate here.
+
+              or else Is_Tagged_Type (Typ)
+
+              --  If Typ needs finalization, then generating an implicit
+              --    Temp : Typ;
+              --  declaration could have user-visible side effects.
+
+              or else Needs_Finalization (Typ)
+
+              --  In the anonymous access type case, we need to
+              --  generate a saooaaat. We don't want the code in
+              --  in exp_attr.adb that deals with the case where this
+              --  function returns False to have to deal with that case
+              --  (just to avoid code duplication). So we cheat a little
+              --  bit and return True here for an anonymous access type.
+
+              or else Is_Anonymous_Access_Type (Typ);
+
+            --  ??? Unimplemented - spec description says:
+            --    For an unconstrained-but-definite discriminated subtype,
+            --    returns True if the potential difference in size between an
+            --    unconstrained object and a constrained object is large.
+            --
+            --  For example,
+            --    type Typ (Len : Natural := 0) is
+            --      record F : String (1 .. Len); end record;
+            --
+            --  See Large_Max_Size_Mutable function elsewhere in this
+            --  file (currently declared inside of
+            --  New_Requires_Transient_Scope, so it would have to be
+            --  moved if we want it to be callable from here).
+
+         end Indirect_Temp_Needed;
+
+         ---------------------------
+         -- Declare_Indirect_Temp --
+         ---------------------------
+
+         procedure Declare_Indirect_Temp
+           (Attr_Prefix : Node_Id; Indirect_Temp : out Entity_Id)
+         is
+            Loc         : constant Source_Ptr := Sloc (Attr_Prefix);
+            Prefix_Type : constant Entity_Id := Etype (Attr_Prefix);
+            Temp_Id     : constant Entity_Id :=
+              Make_Temporary (Loc, 'P', Attr_Prefix);
+
+            procedure Declare_Indirect_Temp_Via_Allocation;
+            --  Handle the usual case.
+
+            -------------------------------------------
+            --  Declare_Indirect_Temp_Via_Allocation --
+            -------------------------------------------
+
+            procedure Declare_Indirect_Temp_Via_Allocation is
+               Access_Type_Id : constant Entity_Id
+                 := Make_Temporary
+                      (Loc, Indirect_Temp_Access_Type_Char, Attr_Prefix);
+
+               Temp_Decl : constant Node_Id :=
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Temp_Id,
+                   Object_Definition   =>
+                     New_Occurrence_Of (Access_Type_Id, Loc));
+
+               Allocate_Class_Wide : constant Boolean :=
+                 Is_Specific_Tagged_Type (Prefix_Type);
+               --  If True then access type designates the class-wide type in
+               --  order to preserve (at run time) the value of the underlying
+               --  tag.
+               --  ??? We could do better here (in the case where Prefix_Type
+               --  is tagged and specific) if we had a predicate which takes an
+               --  expression and returns True iff the expression is of
+               --  a specific tagged type and the underlying tag (at run time)
+               --  is statically known to match that of the specific type.
+               --  In that case, Allocate_Class_Wide could safely be False.
+
+               function Designated_Subtype_Mark return Node_Id;
+               --  Usually, a subtype mark indicating the subtype of the
+               --  attribute prefix. If that subtype is a specific tagged
+               --  type, then returns the corresponding class-wide type.
+               --  If the prefix is of an anonymous access type, then returns
+               --  the designated type of that type.
+
+            -----------------------------
+               -- Designated_Subtype_Mark --
+            -----------------------------
+
+               function Designated_Subtype_Mark return Node_Id is
+                  Typ : Entity_Id := Prefix_Type;
+               begin
+                  if Allocate_Class_Wide then
+                     if Is_Private_Type (Typ)
+                       and then Present (Full_View (Typ))
+                     then
+                        Typ := Full_View (Typ);
+                     end if;
+                     Typ := Class_Wide_Type (Typ);
+                  end if;
+
+                  return New_Occurrence_Of (Typ, Loc);
+               end Designated_Subtype_Mark;
+
+               Access_Type_Def : constant Node_Id
+                 := Make_Access_To_Object_Definition
+                      (Loc, Subtype_Indication => Designated_Subtype_Mark);
+
+               Access_Type_Decl : constant Node_Id
+                 := Make_Full_Type_Declaration
+                      (Loc, Access_Type_Id,
+                       Type_Definition => Access_Type_Def);
+            begin
+               Set_Ekind (Temp_Id, E_Variable);
+               Set_Etype (Temp_Id, Access_Type_Id);
+               Set_Ekind (Access_Type_Id, E_Access_Type);
+
+               if Append_Decls_In_Reverse_Order then
+                  Append_Item (Temp_Decl, Is_Eval_Stmt => False);
+                  Append_Item (Access_Type_Decl, Is_Eval_Stmt => False);
+               else
+                  Append_Item (Access_Type_Decl, Is_Eval_Stmt => False);
+                  Append_Item (Temp_Decl, Is_Eval_Stmt => False);
+               end if;
+
+               Analyze (Access_Type_Decl);
+               Analyze (Temp_Decl);
+
+               pragma Assert
+                 (Is_Access_Type_For_Indirect_Temp (Access_Type_Id));
+
+               declare
+                  Expression : Node_Id := Attr_Prefix;
+                  Allocator  : Node_Id;
+               begin
+                  if Allocate_Class_Wide then
+                     --  generate T'Class'(T'Class (<prefix>))
+                     Expression :=
+                       Make_Type_Conversion (Loc,
+                         Subtype_Mark => Designated_Subtype_Mark,
+                         Expression   => Expression);
+                  end if;
+
+                  Allocator :=
+                    Make_Allocator (Loc,
+                      Make_Qualified_Expression
+                        (Loc,
+                         Subtype_Mark => Designated_Subtype_Mark,
+                         Expression   => Expression));
+
+                  --  Allocate saved prefix value on the secondary stack
+                  --  in order to avoid introducing a storage leak. This
+                  --  allocated object is never explicitly reclaimed.
+                  --
+                  --  ??? Emit storage leak warning if RE_SS_Pool
+                  --  unavailable?
+
+                  if RTE_Available (RE_SS_Pool) then
+                     Set_Storage_Pool (Allocator, RTE (RE_SS_Pool));
+                     Set_Procedure_To_Call
+                       (Allocator, RTE (RE_SS_Allocate));
+                     Set_Uses_Sec_Stack (Current_Scope);
+                  end if;
+
+                  Append_Item
+                    (Make_Assignment_Statement (Loc,
+                       Name       => New_Occurrence_Of (Temp_Id, Loc),
+                       Expression => Allocator),
+                     Is_Eval_Stmt => True);
+               end;
+            end Declare_Indirect_Temp_Via_Allocation;
+
+         begin
+            Indirect_Temp := Temp_Id;
+
+            if Is_Anonymous_Access_Type (Prefix_Type) then
+               --  In the anonymous access type case, we do not want a level
+               --  indirection (which would result in declaring an
+               --  access-to-access type); that would result in correctness
+               --  problems - the accessibility level of the type of the
+               --  'Old constant would be wrong (See 6.1.1.). So in that case,
+               --  we do not generate an allocator. Instead we generate
+               --     Temp : access Designated := null;
+               --  which is unconditionally elaborated and then
+               --     Temp := <attribute prefix>;
+               --  which is conditionally executed.
+
+               declare
+                  Temp_Decl : constant Node_Id :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Temp_Id,
+                      Object_Definition   =>
+                        Make_Access_Definition
+                          (Loc,
+                           Constant_Present =>
+                             Is_Access_Constant (Prefix_Type),
+                           Subtype_Mark =>
+                             New_Occurrence_Of
+                               (Designated_Type (Prefix_Type), Loc)));
+               begin
+                  Append_Item (Temp_Decl, Is_Eval_Stmt => False);
+                  Analyze (Temp_Decl);
+                  Append_Item
+                    (Make_Assignment_Statement (Loc,
+                       Name       => New_Occurrence_Of (Temp_Id, Loc),
+                       Expression => Attr_Prefix),
+                     Is_Eval_Stmt => True);
+               end;
+            else
+               --  the usual case
+               Declare_Indirect_Temp_Via_Allocation;
+            end if;
+         end Declare_Indirect_Temp;
+
+         -------------------------
+         -- Indirect_Temp_Value --
+         -------------------------
+
+         function Indirect_Temp_Value
+           (Temp : Entity_Id;
+            Typ  : Entity_Id;
+            Loc  : Source_Ptr) return Node_Id
+         is
+            Result : Node_Id;
+         begin
+            if Is_Anonymous_Access_Type (Typ) then
+               --  No indirection in this case; just evaluate the temp.
+               Result := New_Occurrence_Of (Temp, Loc);
+               Set_Etype (Result, Etype (Temp));
+
+            else
+               Result := Make_Explicit_Dereference (Loc,
+                                     New_Occurrence_Of (Temp, Loc));
+
+               Set_Etype (Result, Designated_Type (Etype (Temp)));
+
+               if Is_Specific_Tagged_Type (Typ) then
+                  --  The designated type of the access type is class-wide, so
+                  --  convert to the specific type.
+
+                  Result :=
+                    Make_Type_Conversion (Loc,
+                      Subtype_Mark => New_Occurrence_Of (Typ, Loc),
+                      Expression   => Result);
+
+                  Set_Etype (Result, Typ);
+               end if;
+            end if;
+
+            return Result;
+         end Indirect_Temp_Value;
+
+         function Is_Access_Type_For_Indirect_Temp
+           (T : Entity_Id) return Boolean is
+         begin
+            if Is_Access_Type (T)
+               and then not Comes_From_Source (T)
+               and then Is_Internal_Name (Chars (T))
+               and then Nkind (Scope (T)) in N_Entity
+               and then Ekind (Scope (T))
+                 in E_Entry | E_Entry_Family | E_Function | E_Procedure
+               and then
+                 (Present (Postconditions_Proc (Scope (T)))
+                  or else Present (Contract (Scope (T))))
+            then
+               --  ??? Should define a flag for this. We could incorrectly
+               --  return True if other clients of Make_Temporary happen to
+               --  pass in the same character.
+               declare
+                  Name : constant String := Get_Name_String (Chars (T));
+               begin
+                  if Name (Name'First) = Indirect_Temp_Access_Type_Char then
+                     return True;
+                  end if;
+               end;
+            end if;
+            return False;
+         end Is_Access_Type_For_Indirect_Temp;
+
+      end Indirect_Temps;
+   end Old_Attr_Util;
 begin
    Erroutc.Subprogram_Name_Ptr := Subprogram_Name'Access;
 end Sem_Util;

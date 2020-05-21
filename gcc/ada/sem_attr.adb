@@ -2828,9 +2828,21 @@ package body Sem_Attr is
 
          case Uneval_Old_Setting is
             when 'E' =>
+               --  ??? In the case where Ada_Version is < Ada_2020 and
+               --  an illegal 'Old prefix would be legal in Ada_2020,
+               --  we'd like to call Error_Msg_Ada_2020_Feature.
+               --  Identifying that case involves some work.
+
                Error_Attr_P
                  ("prefix of attribute % that is potentially "
-                  & "unevaluated must statically name an entity");
+                  & "unevaluated must statically name an entity"
+
+                  --  further text needed for accuracy if Ada_2020
+                  & (if Ada_Version >= Ada_2020
+                       and then Attr_Id = Attribute_Old
+                     then " or be eligible for conditional evaluation"
+                          & " (RM 6.1.1 (27))"
+                     else ""));
 
             when 'W' =>
                Error_Msg_Name_1 := Aname;
@@ -5136,10 +5148,15 @@ package body Sem_Attr is
 
          else
             --  Ensure that the prefix of attribute 'Old is an entity when it
-            --  is potentially unevaluated (6.1.1 (27/3)).
+            --  is potentially unevaluated (6.1.1 (27/3)). This rule is
+            --  relaxed in Ada2020 - this relaxation is reflected in the
+            --  call (below) to Eligible_For_Conditional_Evaluation.
 
             if Is_Potentially_Unevaluated (N)
               and then not Statically_Names_Object (P)
+              and then not
+                Old_Attr_Util.Conditional_Evaluation
+                 .Eligible_For_Conditional_Evaluation (N)
             then
                Uneval_Old_Msg;
 

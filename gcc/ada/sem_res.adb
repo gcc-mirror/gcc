@@ -13422,11 +13422,21 @@ package body Sem_Res is
             --  rewritten. The Comes_From_Source test isn't sufficient because
             --  nodes in inlined calls to predefined library routines can have
             --  Comes_From_Source set to False. (Is there a better way to test
-            --  for implicit conversions???)
+            --  for implicit conversions???).
+            --
+            --  Do not treat a rewritten 'Old attribute reference like other
+            --  rewrite substitutions. This makes a difference, for example,
+            --  in the case where we are generating the expansion of a
+            --  membership test of the form
+            --     Saooaaat'Old in Named_Access_Type
+            --  because in this case Valid_Conversion needs to return True
+            --  (otherwise the expansion will be False - see the call site
+            --  in exp_ch4.adb).
 
             if Ada_Version >= Ada_2012
               and then not Comes_From_Source (N)
               and then Is_Rewrite_Substitution (N)
+              and then not Is_Attribute_Old (Original_Node (N))
               and then Ekind (Base_Type (Target_Type)) = E_General_Access_Type
               and then Ekind (Opnd_Type) = E_Anonymous_Access_Type
             then

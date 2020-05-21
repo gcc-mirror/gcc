@@ -1365,9 +1365,43 @@ package body Exp_Prag is
          -----------------------
 
          function Expand_Attributes (N : Node_Id) return Traverse_Result is
-            Decl : Node_Id;
-            Pref : Node_Id;
-            Temp : Entity_Id;
+            Decl     : Node_Id;
+            Pref     : Node_Id;
+            Temp     : Entity_Id;
+            Indirect : Boolean := False;
+
+            use Sem_Util.Old_Attr_Util.Indirect_Temps;
+
+            procedure Append_For_Indirect_Temp
+              (N : Node_Id; Is_Eval_Stmt : Boolean);
+
+            --  Append either a declaration (which is to be elaborated
+            --  unconditionally) or an evaluation statement (which is
+            --  to be executed conditionally).
+
+            -------------------------------
+            --  Append_For_Indirect_Temp --
+            -------------------------------
+
+            procedure Append_For_Indirect_Temp
+              (N : Node_Id; Is_Eval_Stmt : Boolean)
+            is
+            begin
+               if Is_Eval_Stmt then
+                  Append_To (Eval_Stmts, N);
+               else
+                  Prepend_To (Decls, N);
+                  --  This use of Prepend (as opposed to Append) is why
+                  --  we have the Append_Decls_In_Reverse_Order parameter.
+               end if;
+            end Append_For_Indirect_Temp;
+
+            procedure Declare_Indirect_Temporary is new
+              Declare_Indirect_Temp (
+                Append_Item                   => Append_For_Indirect_Temp,
+                Append_Decls_In_Reverse_Order => True);
+
+         --  Start of processing for Expand_Attributes
 
          begin
             --  Attribute 'Old
@@ -1376,37 +1410,49 @@ package body Exp_Prag is
               and then Attribute_Name (N) = Name_Old
             then
                Pref := Prefix (N);
-               Temp := Make_Temporary (Loc, 'T', Pref);
-               Set_Etype (Temp, Etype (Pref));
 
-               --  Generate a temporary to capture the value of the prefix:
-               --    Temp : <Pref type>;
+               Indirect := Indirect_Temp_Needed (Etype (Pref));
 
-               Decl :=
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Temp,
-                   Object_Definition   =>
-                     New_Occurrence_Of (Etype (Pref), Loc));
+               if Indirect then
+                  if No (Eval_Stmts) then
+                     Eval_Stmts := New_List;
+                  end if;
 
-               --  Place that temporary at the beginning of declarations, to
-               --  prevent anomalies in the GNATprove flow-analysis pass in
-               --  the precondition procedure that follows.
+                  Declare_Indirect_Temporary
+                    (Attr_Prefix   => Pref,
+                     Indirect_Temp => Temp);
 
-               Prepend_To (Decls, Decl);
-
-               --  If the type is unconstrained, the prefix provides its
-               --  value and constraint, so add it to declaration.
-
-               if not Is_Constrained (Etype (Pref))
-                 and then Is_Entity_Name (Pref)
-               then
-                  Set_Expression (Decl, Pref);
-                  Analyze (Decl);
-
-               --  Otherwise add an assignment statement to temporary using
-               --  prefix as RHS.
+               --  Declare a temporary of the prefix type with no explicit
+               --  initial value. If the appropriate contract case is selected
+               --  at run time, then the temporary will be initialized via an
+               --  assignment statement.
 
                else
+                  Temp := Make_Temporary (Loc, 'T', Pref);
+                  Set_Etype (Temp, Etype (Pref));
+
+                  --  Generate a temporary to capture the value of the prefix:
+                  --    Temp : <Pref type>;
+
+                  Decl :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Temp,
+                      Object_Definition   =>
+                        New_Occurrence_Of (Etype (Pref), Loc));
+
+                  --  Place that temporary at the beginning of declarations, to
+                  --  prevent anomalies in the GNATprove flow-analysis pass in
+                  --  the precondition procedure that follows.
+
+                  Prepend_To (Decls, Decl);
+
+                  --  Initially Temp is uninitialized (which is required for
+                  --  correctness if default initialization might have side
+                  --  effects). Assign prefix value to temp on Eval_Statement
+                  --  list, so assignment will be executed conditionally.
+
+                  Set_Ekind (Temp, E_Variable);
+                  Set_Suppress_Initialization (Temp);
                   Analyze (Decl);
 
                   if No (Eval_Stmts) then
@@ -1417,7 +1463,6 @@ package body Exp_Prag is
                     Make_Assignment_Statement (Loc,
                       Name       => New_Occurrence_Of (Temp, Loc),
                       Expression => Pref));
-
                end if;
 
                --  Ensure that the prefix is valid
@@ -1429,7 +1474,13 @@ package body Exp_Prag is
                --  Replace the original attribute 'Old by a reference to the
                --  generated temporary.
 
-               Rewrite (N, New_Occurrence_Of (Temp, Loc));
+               if Indirect then
+                  Rewrite (N,
+                    Indirect_Temp_Value
+                      (Temp => Temp, Typ => Etype (Pref), Loc => Loc));
+               else
+                  Rewrite (N, New_Occurrence_Of (Temp, Loc));
+               end if;
 
             --  Attribute 'Result
 

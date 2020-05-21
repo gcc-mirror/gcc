@@ -734,12 +734,13 @@ package body Exp_Util is
 
       --  Local variables
 
-      Desig_Typ    : Entity_Id;
-      Expr         : Node_Id;
-      Needs_Fin    : Boolean;
-      Pool_Id      : Entity_Id;
-      Proc_To_Call : Node_Id := Empty;
-      Ptr_Typ      : Entity_Id;
+      Desig_Typ                : Entity_Id;
+      Expr                     : Node_Id;
+      Needs_Fin                : Boolean;
+      Pool_Id                  : Entity_Id;
+      Proc_To_Call             : Node_Id := Empty;
+      Ptr_Typ                  : Entity_Id;
+      Use_Secondary_Stack_Pool : Boolean;
 
    --  Start of processing for Build_Allocate_Deallocate_Proc
 
@@ -804,17 +805,22 @@ package body Exp_Util is
          Desig_Typ := Corresponding_Record_Type (Desig_Typ);
       end if;
 
+      Use_Secondary_Stack_Pool :=
+        Is_RTE (Pool_Id, RE_SS_Pool)
+          or else (Nkind (Expr) = N_Allocator
+                    and then Is_RTE (Storage_Pool (Expr), RE_SS_Pool));
+
       --  Do not process allocations / deallocations without a pool
 
       if No (Pool_Id) then
          return;
 
       --  Do not process allocations on / deallocations from the secondary
-      --  stack.
+      --  stack, except for access types used to implement indirect temps.
 
-      elsif Is_RTE (Pool_Id, RE_SS_Pool)
-        or else (Nkind (Expr) = N_Allocator
-                  and then Is_RTE (Storage_Pool (Expr), RE_SS_Pool))
+      elsif Use_Secondary_Stack_Pool
+        and then not Old_Attr_Util.Indirect_Temps
+                       .Is_Access_Type_For_Indirect_Temp (Ptr_Typ)
       then
          return;
 
@@ -951,7 +957,9 @@ package body Exp_Util is
          Append_To (Actuals, New_Occurrence_Of (Addr_Id, Loc));
          Append_To (Actuals, New_Occurrence_Of (Size_Id, Loc));
 
-         if Is_Allocate or else not Is_Class_Wide_Type (Desig_Typ) then
+         if (Is_Allocate or else not Is_Class_Wide_Type (Desig_Typ))
+           and then not Use_Secondary_Stack_Pool
+         then
             Append_To (Actuals, New_Occurrence_Of (Alig_Id, Loc));
 
          --  For deallocation of class-wide types we obtain the value of
@@ -966,6 +974,9 @@ package body Exp_Util is
             --  ... because 'Alignment applied to class-wide types is expanded
             --  into the code that reads the value of alignment from the TSD
             --  (see Expand_N_Attribute_Reference)
+
+            --  In the Use_Secondary_Stack_Pool case, Alig_Id is not
+            --  passed in and therefore must not be referenced.
 
             Append_To (Actuals,
               Unchecked_Convert_To (RTE (RE_Storage_Offset),
@@ -1116,55 +1127,67 @@ package body Exp_Util is
          --  Create a custom Allocate / Deallocate routine which has identical
          --  profile to that of System.Storage_Pools.
 
-         Insert_Action (N,
-           Make_Subprogram_Body (Loc,
-             Specification              =>
+         declare
+            --  P : Root_Storage_Pool
+            function Pool_Param return Node_Id is (
+              Make_Parameter_Specification (Loc,
+                Defining_Identifier => Make_Temporary (Loc, 'P'),
+                Parameter_Type      =>
+                  New_Occurrence_Of (RTE (RE_Root_Storage_Pool), Loc)));
 
-               --  procedure Pnn
+            --  A : [out] Address
+            function Address_Param return Node_Id is (
+              Make_Parameter_Specification (Loc,
+                Defining_Identifier => Addr_Id,
+                Out_Present         => Is_Allocate,
+                Parameter_Type      =>
+                  New_Occurrence_Of (RTE (RE_Address), Loc)));
 
-               Make_Procedure_Specification (Loc,
-                 Defining_Unit_Name       => Proc_Id,
-                 Parameter_Specifications => New_List (
+            --  S : Storage_Count
+            function Size_Param return Node_Id is (
+              Make_Parameter_Specification (Loc,
+                Defining_Identifier => Size_Id,
+                Parameter_Type      =>
+                  New_Occurrence_Of (RTE (RE_Storage_Count), Loc)));
 
-                  --  P : Root_Storage_Pool
+            --  L : Storage_Count
+            function Alignment_Param return Node_Id is (
+              Make_Parameter_Specification (Loc,
+                Defining_Identifier => Alig_Id,
+                Parameter_Type      =>
+                  New_Occurrence_Of (RTE (RE_Storage_Count), Loc)));
 
-                   Make_Parameter_Specification (Loc,
-                     Defining_Identifier => Make_Temporary (Loc, 'P'),
-                     Parameter_Type      =>
-                       New_Occurrence_Of (RTE (RE_Root_Storage_Pool), Loc)),
+            Formal_Params : List_Id;
+         begin
+            if Use_Secondary_Stack_Pool then
+               --  Gigi expects a different profile in the Secondary_Stack_Pool
+               --  case. There must be no uses of the two missing formals
+               --  (i.e., Pool_Param and Alignment_Param) in this case.
+               Formal_Params := New_List (Address_Param, Size_Param);
+            else
+               Formal_Params := New_List (
+                 Pool_Param, Address_Param, Size_Param, Alignment_Param);
+            end if;
 
-                  --  A : [out] Address
+            Insert_Action (N,
+              Make_Subprogram_Body (Loc,
+                Specification              =>
+                  --  procedure Pnn
+                  Make_Procedure_Specification (Loc,
+                    Defining_Unit_Name       => Proc_Id,
+                    Parameter_Specifications => Formal_Params),
 
-                   Make_Parameter_Specification (Loc,
-                     Defining_Identifier => Addr_Id,
-                     Out_Present         => Is_Allocate,
-                     Parameter_Type      =>
-                       New_Occurrence_Of (RTE (RE_Address), Loc)),
+                Declarations               => No_List,
 
-                  --  S : Storage_Count
-
-                   Make_Parameter_Specification (Loc,
-                     Defining_Identifier => Size_Id,
-                     Parameter_Type      =>
-                       New_Occurrence_Of (RTE (RE_Storage_Count), Loc)),
-
-                  --  L : Storage_Count
-
-                   Make_Parameter_Specification (Loc,
-                     Defining_Identifier => Alig_Id,
-                     Parameter_Type      =>
-                       New_Occurrence_Of (RTE (RE_Storage_Count), Loc)))),
-
-             Declarations               => No_List,
-
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => New_List (
-                   Make_Procedure_Call_Statement (Loc,
-                     Name                   =>
-                       New_Occurrence_Of (Proc_To_Call, Loc),
-                     Parameter_Associations => Actuals)))),
-           Suppress => All_Checks);
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements => New_List (
+                      Make_Procedure_Call_Statement (Loc,
+                        Name                   =>
+                          New_Occurrence_Of (Proc_To_Call, Loc),
+                        Parameter_Associations => Actuals)))),
+              Suppress => All_Checks);
+         end;
 
          --  The newly generated Allocate / Deallocate becomes the default
          --  procedure to call when the back end processes the allocation /

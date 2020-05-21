@@ -3205,11 +3205,97 @@ package Sem_Util is
       --  correctly for real types with static predicates, we may need
       --  an analogous Real_Interval_List type. Most of the language
       --  rules that reference "is statically compatible" pertain to
-      --  discriminants and therefore do require support for real types;
+      --  discriminants and therefore do not require support for real types;
       --  the exception is 12.5.1(8).
 
       Intervals_Error : exception;
       --  Raised when the list of non-empty pair-wise disjoint intervals cannot
       --  be built.
    end Interval_Lists;
+
+   package Old_Attr_Util is
+      --  Operations related to 'Old attribute evaluation. This
+      --  includes cases where a level of indirection is needed due to
+      --  conditional evaluation as well as support for the
+      --  "known on entry" rules.
+
+      package Conditional_Evaluation is
+         function Eligible_For_Conditional_Evaluation
+           (Expr : Node_Id) return Boolean;
+         --  Given a subexpression of a Postcondition expression
+         --  (typically a 'Old attribute reference), returns True if
+         --     - the expression is conditionally evaluated; and
+         --     - its determining expressions are all known on entry; and
+         --     - Ada_Version >= Ada_2020.
+         --  See RM 6.1.1 for definitions of these terms.
+         --
+         --  Also returns True if Expr is of an anonymous access type;
+         --  this is just because we want the code that knows how to build
+         --  'Old temps in that case to reside in only one place.
+
+         function Conditional_Evaluation_Condition
+           (Expr : Node_Id) return Node_Id;
+         --  Given an expression which is eligible for conditional evaluation,
+         --  build a Boolean expression whose value indicates whether the
+         --  expression should be evaluated.
+      end Conditional_Evaluation;
+
+      package Indirect_Temps is
+         generic
+            with procedure Append_Item (N : Node_Id; Is_Eval_Stmt : Boolean);
+            --  If Is_Eval_Stmt is True, then N is a statement that should
+            --  only be executed in the case where the 'Old prefix is to be
+            --  evaluated. If Is_Eval_Stmt is False, then N is a declaration
+            --  which should be elaborated unconditionally.
+            --  Client is responsible for ensuring that any appended
+            --  Eval_Stmt nodes are eventually analyzed.
+
+            Append_Decls_In_Reverse_Order : Boolean := False;
+            --  This parameter is for the convenience of exp_prag.adb, where we
+            --  want to Prepend rather than Append so it is better to get the
+            --  Append calls in reverse order.
+
+         procedure Declare_Indirect_Temp
+           (Attr_Prefix   : Node_Id; -- prefix of 'Old attribute (or similar?)
+            Indirect_Temp : out Entity_Id);
+         --  Indirect_Temp is of an access type; it is unconditionally
+         --  declared but only conditionally initialized to reference the
+         --  saved value of Attr_Prefix.
+
+         function Indirect_Temp_Needed (Typ : Entity_Id) return Boolean;
+         --  Returns True for a specific tagged type because the temp must
+         --  be of the class-wide type in order to preserve the underlying tag.
+         --
+         --  Also returns True in the case of an anonymous access type
+         --  because we want the code that knows how to deal with
+         --  this case to reside in only one place.
+         --
+         --  For an unconstrained-but-definite discriminated subtype, returns
+         --  True if the potential difference in size between an
+         --  unconstrained object and a constrained object is large.
+         --  [This part is not implemented yet.]
+         --
+         --  Otherwise, returns False if a declaration of the form
+         --     Temp : Typ;
+         --  is legal and side-effect-free (assuming that default
+         --  initialization is suppressed). For example, returns True if Typ is
+         --  indefinite, or if Typ has a controlled part.
+         --
+
+         function Indirect_Temp_Value
+           (Temp : Entity_Id;
+            Typ  : Entity_Id;
+            Loc  : Source_Ptr) return Node_Id;
+         --  Evaluate a temp declared by Declare_Indirect_Temp.
+
+         function Is_Access_Type_For_Indirect_Temp
+           (T : Entity_Id) return Boolean;
+         --  True for an access type that was declared via a call
+         --  to Declare_Indirect_Temp.
+         --  Indicates that the given access type should be treated
+         --  the same with respect to finalization as a
+         --  user-defined "comes from source" access type.
+
+      end Indirect_Temps;
+   end Old_Attr_Util;
 end Sem_Util;
