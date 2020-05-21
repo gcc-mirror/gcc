@@ -1,5 +1,11 @@
 2020-05-21  Martin Liska  <mliska@suse.cz>
 
+	* gcc-changelog/git_commit.py: Support DR entries/
+	* gcc-changelog/test_email.py: New test for it.
+	* gcc-changelog/test_patches.txt: New patch for it.
+
+2020-05-21  Martin Liska  <mliska@suse.cz>
+
 	* mklog.py: Support DR parsing.
 	* test_mklog.py: New test for DR parsing.
 
