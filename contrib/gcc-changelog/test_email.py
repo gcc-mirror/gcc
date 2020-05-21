@@ -272,3 +272,7 @@ class TestGccChangelog(unittest.TestCase):
         email = self.from_patch_glob('0001-Fortran-ProcPtr-function.patch')
         assert not email.errors
         assert len(email.changelog_entries[0].author_lines) == 1
+
+    def test_dr_entry(self):
+        email = self.from_patch_glob('0001-c-C-20-DR-2237.patch')
+        assert email.changelog_entries[0].prs == ['DR 2237']

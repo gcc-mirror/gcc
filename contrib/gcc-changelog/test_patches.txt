@@ -2541,3 +2541,30 @@ index 00000000000..ecb0a43929f
 -- 
 2.26.2
 
+=== 0001-c-C-20-DR-2237.patch ===
+From 4b38d56dbac6742b038551a36ec80200313123a1 Mon Sep 17 00:00:00 2001
+From: Marek Polacek <polacek@redhat.com>
+Date: Sat, 4 Apr 2020 18:09:53 -0400
+Subject: [PATCH] c++: C++20 DR 2237, disallow simple-template-id in cdtor.
+
+This patch implements DR 2237 which says that a simple-template-id is
+no longer valid as the declarator-id of a constructor or destructor;
+see [diff.cpp17.class]#2.  It is not explicitly stated but out-of-line
+destructors with a simple-template-id are also meant to be ill-formed
+now.  (Out-of-line constructors like that are invalid since DR1435 I
+think.)  This change only applies to C++20; it is not a DR against C++17.
+
+I'm not crazy about the diagnostic in constructors but ISTM that
+cp_parser_constructor_declarator_p shouldn't print errors.
+
+	DR 2237
+	* parser.c (cp_parser_unqualified_id): Reject simple-template-id as
+	the declarator-id of a destructor.
+---
+diff --git a/gcc/cp/parser.c b/gcc/cp/parser.c
+index a6a5d975af3..a8082d39aca 100644
+--- a/gcc/cp/parser.c
++++ b/gcc/cp/parser.c
+@@ -1 +1,2 @@
+
++
