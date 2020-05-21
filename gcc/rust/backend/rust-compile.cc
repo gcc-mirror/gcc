@@ -4,8 +4,20 @@
 namespace Rust {
 namespace Compile {
 
+#define VISIT_POP(L, S, R, B)                                                  \
+  do                                                                           \
+    {                                                                          \
+      auto before = B.size ();                                                 \
+      S->accept_vis (*this);                                                   \
+      if (B.size () <= before)                                                 \
+	break;                                                                 \
+      R = B.back ();                                                           \
+      B.pop_back ();                                                           \
+    }                                                                          \
+  while (0)
+
 Compilation::Compilation (AST::Crate &crate, ::Backend *backend)
-  : crate (crate), backend (backend)
+  : crate (crate), backend (backend), scope (backend)
 {}
 
 Compilation::~Compilation () {}
@@ -21,10 +33,22 @@ bool
 Compilation::go ()
 {
   scope.Push ();
+
+  // builtin primitives
+  scope.InsertType ("i64", backend->integer_type (false, 64));
+  scope.InsertType ("i32", backend->integer_type (false, 32));
+  scope.InsertType ("i16", backend->integer_type (false, 16));
+  scope.InsertType ("i8", backend->integer_type (false, 8));
+  scope.InsertType ("u64", backend->integer_type (true, 64));
+  scope.InsertType ("u32", backend->integer_type (true, 32));
+  scope.InsertType ("u16", backend->integer_type (true, 16));
+  scope.InsertType ("u8", backend->integer_type (true, 8));
+  scope.InsertType ("f64", backend->float_type (64));
+  scope.InsertType ("f32", backend->float_type (32));
+  scope.InsertType ("bool", backend->bool_type ());
+
   for (auto &item : crate.items)
-    {
-      item->accept_vis (*this);
-    }
+    item->accept_vis (*this);
   scope.Pop ();
 
   // Define all globally declared values.
@@ -37,7 +61,8 @@ Compilation::go ()
 }
 
 bool
-Compilation::compileVarDecl (AST::LetStmt *stmt, std::vector<Bvariable *> &vars)
+Compilation::compileVarDecl (Bfunction *fndecl, AST::LetStmt *stmt,
+			     std::vector<Bvariable *> &vars)
 {
   AST::Type *type = stmt->has_type () ? stmt->type.get () : stmt->inferedType;
   translatedType = NULL;
@@ -51,13 +76,59 @@ Compilation::compileVarDecl (AST::LetStmt *stmt, std::vector<Bvariable *> &vars)
   stmt->variables_pattern->accept_vis (*this);
   for (auto &pattern : patternBuffer)
     {
-      auto var = backend->local_variable (currentFndecl, pattern.variable_ident,
+      auto var = backend->local_variable (fndecl, pattern.variable_ident,
 					  translatedType, NULL /*decl_var*/,
 					  false /*address_taken*/, stmt->locus);
       vars.push_back (var);
+      scope.InsertVar (pattern.variable_ident, var);
     }
   patternBuffer.clear ();
   return true;
+}
+
+Bexpression *
+Compilation::compileBooleanLiteral (std::string val)
+{
+  bool bval = val.compare ("true") == 0;
+  return backend->boolean_constant_expression (bval);
+}
+
+Bexpression *
+Compilation::compileFloatLiteral (std::string val, Location locus)
+{
+  Btype *type = NULL;
+  bool ok = scope.LookupType ("f32", &type);
+  if (!ok)
+    {
+      rust_fatal_error (locus, "unable to find type");
+      return NULL;
+    }
+  mpfr_t fval;
+  if (mpfr_init_set_str (fval, val.c_str (), 10, GMP_RNDN) != 0)
+    {
+      rust_fatal_error (locus, "bad number in literal");
+      return NULL;
+    }
+  return backend->float_constant_expression (type, fval);
+}
+
+Bexpression *
+Compilation::compileIntegerLiteral (std::string val, Location locus)
+{
+  Btype *type = NULL;
+  bool ok = scope.LookupType ("i32", &type);
+  if (!ok)
+    {
+      rust_fatal_error (locus, "unable to find type");
+      return NULL;
+    }
+  mpz_t ival;
+  if (mpz_init_set_str (ival, val.c_str (), 10) != 0)
+    {
+      rust_fatal_error (locus, "bad number in literal");
+      return NULL;
+    }
+  return backend->integer_constant_expression (type, ival);
 }
 
 void
@@ -74,7 +145,15 @@ Compilation::visit (AST::AttrInputMetaItemContainer &input)
 
 void
 Compilation::visit (AST::IdentifierExpr &ident_expr)
-{}
+{
+  Bvariable *var = NULL;
+  if (!scope.LookupVar (ident_expr.as_string (), &var))
+    {
+      rust_fatal_error (ident_expr.locus, "unknown var");
+      return;
+    }
+  exprs.push_back (backend->var_expression (var, ident_expr.locus));
+}
 
 void
 Compilation::visit (AST::Lifetime &lifetime)
@@ -111,52 +190,13 @@ Compilation::visit (AST::TypePath &path)
       return;
     }
 
-  auto typeString = path.as_string ();
-  if (typeString.compare ("i64") == 0)
+  Btype *type = NULL;
+  if (!scope.LookupType (path.as_string (), &type))
     {
-      translatedType = backend->integer_type (false, 64);
+      rust_error_at (path.locus, "unknown type");
       return;
     }
-  else if (typeString.compare ("i32") == 0)
-    {
-      translatedType = backend->integer_type (false, 32);
-      return;
-    }
-  else if (typeString.compare ("i16") == 0)
-    {
-      translatedType = backend->integer_type (false, 16);
-      return;
-    }
-  else if (typeString.compare ("i8") == 0)
-    {
-      translatedType = backend->integer_type (false, 8);
-      return;
-    }
-  else if (typeString.compare ("u64") == 0)
-    {
-      translatedType = backend->integer_type (true, 64);
-      return;
-    }
-  else if (typeString.compare ("u32") == 0)
-    {
-      translatedType = backend->integer_type (true, 32);
-      return;
-    }
-  else if (typeString.compare ("u16") == 0)
-    {
-      translatedType = backend->integer_type (true, 16);
-      return;
-    }
-  else if (typeString.compare ("u8") == 0)
-    {
-      translatedType = backend->integer_type (true, 8);
-      return;
-    }
-  else if (typeString.compare ("bool") == 0)
-    {
-      translatedType = backend->bool_type ();
-      return;
-    }
+  translatedType = type;
 }
 
 void
@@ -169,7 +209,32 @@ Compilation::visit (AST::QualifiedPathInType &path)
 // rust-expr.h
 void
 Compilation::visit (AST::LiteralExpr &expr)
-{}
+{
+  Bexpression *compiled;
+  switch (expr.literal.get_lit_type ())
+    {
+    case AST::Literal::BOOL:
+      compiled = compileBooleanLiteral (expr.as_string ());
+      break;
+
+    case AST::Literal::FLOAT:
+      compiled
+	= compileFloatLiteral (expr.as_string (), expr.get_locus_slow ());
+      break;
+
+    case AST::Literal::INT:
+      compiled
+	= compileIntegerLiteral (expr.as_string (), expr.get_locus_slow ());
+      break;
+
+    default:
+      rust_fatal_error (expr.get_locus_slow (), "unknown literal");
+      return;
+    }
+
+  exprs.push_back (compiled);
+}
+
 void
 Compilation::visit (AST::AttrInputLiteral &attr_input)
 {}
@@ -191,9 +256,47 @@ Compilation::visit (AST::ErrorPropagationExpr &expr)
 void
 Compilation::visit (AST::NegationExpr &expr)
 {}
+
 void
 Compilation::visit (AST::ArithmeticOrLogicalExpr &expr)
-{}
+{
+  printf ("ArithmeticOrLogicalExpr %s\n", expr.as_string ().c_str ());
+
+  Bexpression *lhs = NULL;
+  VISIT_POP (expr.get_lhs ()->get_locus_slow (), expr.get_lhs (), lhs, exprs);
+  if (lhs == NULL)
+    {
+      rust_error_at (expr.get_lhs ()->get_locus_slow (), "failed to compile");
+      return;
+    }
+
+  Bexpression *rhs = NULL;
+  VISIT_POP (expr.right_expr->get_locus_slow (), expr.right_expr, rhs, exprs);
+  if (rhs == NULL)
+    {
+      rust_error_at (expr.right_expr->get_locus_slow (), "failed to compile");
+      return;
+    }
+
+  Operator op;
+  switch (expr.expr_type)
+    {
+    case AST::ArithmeticOrLogicalExpr::ADD:
+      op = OPERATOR_PLUS;
+      break;
+
+      // TODO fill in the other operators
+
+    default:
+      rust_error_at (expr.get_locus_slow (), "failed to compile expression");
+      return;
+    }
+
+  auto binExpr
+    = backend->binary_expression (op, lhs, rhs, expr.get_locus_slow ());
+  exprs.push_back (binExpr);
+}
+
 void
 Compilation::visit (AST::ComparisonExpr &expr)
 {}
@@ -416,11 +519,6 @@ Compilation::visit (AST::UseDeclaration &use_decl)
 void
 Compilation::visit (AST::Function &function)
 {
-  scope.Insert (function.function_name, function.return_type.get ());
-
-  scope.Push ();
-  printf ("INSIDE FUNCTION: %s\n", function.function_name.c_str ());
-
   Backend::Btyped_identifier receiver;
   std::vector<Backend::Btyped_identifier> parameters;
   std::vector<Backend::Btyped_identifier> results;
@@ -445,12 +543,10 @@ Compilation::visit (AST::Function &function)
 	}
 
       auto numParamsPerType = patternBuffer.size () - before;
-      for (auto i = 0; i < numParamsPerType; i++)
+      for (size_t i = 0; i < numParamsPerType; i++)
 	{
 	  auto paramName = patternBuffer.back ();
 	  patternBuffer.pop_back ();
-	  scope.Insert (paramName.variable_ident, param.type.get ());
-
 	  parameters.push_back (
 	    Backend::Btyped_identifier (paramName.variable_ident,
 					translatedType, param.locus));
@@ -475,15 +571,20 @@ Compilation::visit (AST::Function &function)
   Bfunction *fndecl
     = backend->function (fntype, function.function_name, "" /* asm_name */,
 			 0 /* flags */, function.locus);
-  currentFndecl = fndecl;
+
+  scope.PushCurrentFunction (function.function_name, fndecl);
+  scope.Push ();
 
   // setup the params
   std::vector<Bvariable *> param_vars;
   for (auto &param : parameters)
     {
       bool tree_addressable = false;
-      backend->parameter_variable (fndecl, param.name, param.btype,
-				   tree_addressable, param.location);
+      auto p = backend->parameter_variable (fndecl, param.name, param.btype,
+					    tree_addressable, param.location);
+
+      scope.InsertVar (param.name, p);
+      param_vars.push_back (p);
     }
 
   if (!backend->function_set_parameters (fndecl, param_vars))
@@ -495,12 +596,11 @@ Compilation::visit (AST::Function &function)
   std::vector<Bvariable *> vars;
   for (auto &decl : function.locals)
     {
-      if (!compileVarDecl (decl, vars))
+      if (!compileVarDecl (fndecl, decl, vars))
 	{
 	  rust_error_at (decl->locus, "failed to compile var decl");
 	  return;
 	}
-      // TODO add to scope
     }
 
   // is null for top level functions - nested functions will have an enclosing
@@ -516,21 +616,22 @@ Compilation::visit (AST::Function &function)
 
   auto code_block = backend->block (fndecl, enclosingScope, vars,
 				    start_location, end_location);
-  auto body = backend->block_statement (code_block);
+  scope.PushBlock (code_block);
 
+  for (auto &stmt : function.function_body->statements)
+    stmt->accept_vis (*this);
+
+  scope.PopBlock ();
+
+  auto body = backend->block_statement (code_block);
   if (!backend->function_set_body (fndecl, body))
     {
       rust_error_at (function.locus, "failed to set body to function");
       return;
     }
 
-  for (auto &stmt : function.function_body->statements)
-    {
-      stmt->accept_vis (*this);
-    }
-
-  func_decls.push_back (fndecl);
   scope.Pop ();
+  scope.PopCurrentFunction ();
 }
 
 void
@@ -643,7 +744,6 @@ Compilation::visit (AST::LiteralPattern &pattern)
 void
 Compilation::visit (AST::IdentifierPattern &pattern)
 {
-  printf ("IdentifierPattern: %s\n", pattern.as_string ().c_str ());
   patternBuffer.push_back (pattern);
 }
 
@@ -714,7 +814,33 @@ void
 
 Compilation::visit (AST::LetStmt &stmt)
 {
-  printf ("Within LetStmt: %s\n", stmt.as_string ().c_str ());
+  if (!stmt.has_init_expr ())
+    return;
+
+  Bexpression *init = NULL;
+  VISIT_POP (stmt.init_expr->get_locus_slow (), stmt.init_expr, init, exprs);
+  if (init == NULL)
+    {
+      rust_error_at (stmt.init_expr->get_locus_slow (),
+		     "failed to compile init statement");
+      return;
+    }
+
+  stmt.variables_pattern->accept_vis (*this);
+  for (auto &pattern : patternBuffer)
+    {
+      Bvariable *var = NULL;
+      if (!scope.LookupVar (pattern.variable_ident, &var))
+	{
+	  rust_error_at (stmt.locus, "failed to find var decl for %s",
+			 pattern.variable_ident.c_str ());
+	  return;
+	}
+
+      auto s = backend->init_statement (scope.GetCurrentFndecl (), var, init);
+      scope.AddStatement (s);
+    }
+  patternBuffer.clear ();
 }
 
 void
