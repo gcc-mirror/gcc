@@ -21366,6 +21366,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 		/* OK */;
 	      else if (error_operand_p (bounds))
 		/* Already gave an error.  */;
+	      else if (!cp_parser_uncommitted_to_tentative_parse_p (parser))
+		/* Let compute_array_index_type diagnose this.  */;
 	      else if (!parser->in_function_body
 		       || current_binding_level->kind == sk_function_parms)
 		{
