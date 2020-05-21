@@ -1306,6 +1306,8 @@ protected:
     ::std::vector<FunctionParam> function_params;
 };*/
 
+class LetStmt;
+
 // Rust function declaration AST node
 class Function : public VisItem, public InherentImplItem, public TraitImplItem
 {
@@ -1333,6 +1335,8 @@ public:
   ::std::unique_ptr<BlockExpr> function_body;
 
   Location locus;
+
+  ::std::vector<LetStmt *> locals;
 
   /*~Function() {
       delete function_body;

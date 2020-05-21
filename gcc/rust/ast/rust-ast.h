@@ -804,6 +804,10 @@ public:
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
 
+  // HACK: slow way of getting location from base expression through virtual
+  // methods.
+  virtual Location get_locus_slow () const { return Location (); }
+
 protected:
   // Clone function implementation as pure virtual method
   virtual Stmt *clone_stmt_impl () const = 0;

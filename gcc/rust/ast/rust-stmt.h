@@ -213,6 +213,8 @@ public:
 
   ::std::string as_string () const;
 
+  ::std::vector<LetStmt *> locals;
+
   ExprStmtWithBlock (::std::unique_ptr<ExprWithBlock> expr, Location locus)
     : ExprStmt (locus), expr (::std::move (expr))
   {}
