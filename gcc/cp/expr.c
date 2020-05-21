@@ -399,6 +399,11 @@ fold_for_warn (tree x)
 {
   /* C++ implementation.  */
 
+  /* Prevent warning-dependent constexpr evaluation from changing
+     DECL_UID (which breaks -fcompare-debug) and from instantiating
+     templates.  */
+  uid_sensitive_constexpr_evaluation_sentinel s;
+
   /* It's not generally safe to fully fold inside of a template, so
      call fold_non_dependent_expr instead.  */
   if (processing_template_decl)
@@ -410,7 +415,7 @@ fold_for_warn (tree x)
 	return f;
     }
   else if (cxx_dialect >= cxx11)
-    x = maybe_constant_value (x, NULL_TREE, false, true);
+    x = maybe_constant_value (x);
 
   return c_fully_fold (x, /*for_init*/false, /*maybe_constp*/NULL);
 }
