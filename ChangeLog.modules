@@ -1,7 +1,10 @@
 2020-05-21  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/
-	*
+	* files.c, init.c, internal.h: Adjust file_find_kind names from trunk.
+
+	libcpp/
+	* line-map.c (linemap_add): Set range and column bits to zero.
 	gcc/c-family/
 	* c-opts.c (c_common_post_options): Add comment.
 	(c_finish_options): Call linemap_line_start to start line.

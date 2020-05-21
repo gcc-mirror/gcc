@@ -499,15 +499,15 @@ _cpp_found_name (_cpp_file *file)
    had previously been closed.  To open it again pass the return value
    to open_file().
 
-   If KIND is FFK_PRE_INCLUDE then it is OK for the file to be missing.
-   If present, it is OK for a precompiled header to be included after
-   it.
+   If KIND is _cpp_FFK_PRE_INCLUDE then it is OK for the file to be
+   missing.  If present, it is OK for a precompiled header to be
+   included after it.
 
    Use LOC as the location for any errors.  */
 
 _cpp_file *
 _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
-		int angle_brackets, _find_file_kind kind, location_t loc)
+		int angle_brackets, _cpp_find_file_kind kind, location_t loc)
 {
   bool invalid_pch = false;
   bool saw_bracket_include = false;
@@ -530,10 +530,10 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
 
   _cpp_file *file = make_cpp_file (pfile, start_dir, fname);
   file->implicit_preinclude
-    = (kind == FFK_PRE_INCLUDE
+    = (kind == _cpp_FFK_PRE_INCLUDE
        || (pfile->buffer && pfile->buffer->file->implicit_preinclude));
 
-  if (kind != FFK_FAKE)
+  if (kind != _cpp_FFK_FAKE)
     /* Try each path in the include chain.  */
     for (;;)
       {
@@ -578,7 +578,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
 			     "use -Winvalid-pch for more information");
 	      }
 
-	    if (kind == FFK_PRE_INCLUDE)
+	    if (kind == _cpp_FFK_PRE_INCLUDE)
 	      {
 		free ((char *) file->name);
 		free (file);
@@ -591,7 +591,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
 		return NULL;
 	      }
 
-	    if (kind != FFK_HAS_INCLUDE)
+	    if (kind != _cpp_FFK_HAS_INCLUDE)
 	      open_file_failed (pfile, file, angle_brackets, loc);
 	    break;
 	  }
@@ -1094,8 +1094,8 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
     return false;
 
   _cpp_file *file = _cpp_find_file (pfile, fname, dir, angle_brackets,
-				    type == IT_DEFAULT ? FFK_PRE_INCLUDE
-				    : FFK_NORMAL, loc);
+				    type == IT_DEFAULT ? _cpp_FFK_PRE_INCLUDE
+				    : _cpp_FFK_NORMAL, loc);
   if (type == IT_DEFAULT && file == NULL)
     return false;
 
@@ -1112,7 +1112,8 @@ cpp_find_header_unit (cpp_reader *pfile, const char *name, bool angle,
   if (!dir)
     return NULL;
 
-  _cpp_file *file = _cpp_find_file (pfile, name, dir, angle, FFK_NORMAL, loc);
+  _cpp_file *file = _cpp_find_file (pfile, name, dir, angle,
+				    _cpp_FFK_NORMAL, loc);
   if (!file)
     return NULL;
 
@@ -1454,7 +1455,7 @@ cpp_clear_file_cache (cpp_reader *pfile)
 void
 _cpp_fake_include (cpp_reader *pfile, const char *fname)
 {
-  _cpp_find_file (pfile, fname, pfile->buffer->file->dir, 0, FFK_FAKE, 0);
+  _cpp_find_file (pfile, fname, pfile->buffer->file->dir, 0, _cpp_FFK_FAKE, 0);
 }
 
 /* Not everyone who wants to set system-header-ness on a buffer can
@@ -1573,7 +1574,7 @@ _cpp_compare_file_date (cpp_reader *pfile, const char *fname,
   if (!dir)
     return -1;
 
-  file = _cpp_find_file (pfile, fname, dir, angle_brackets, FFK_NORMAL, 0);
+  file = _cpp_find_file (pfile, fname, dir, angle_brackets, _cpp_FFK_NORMAL, 0);
   if (file->err_no)
     return -1;
 
@@ -2119,7 +2120,7 @@ _cpp_has_header (cpp_reader *pfile, const char *fname, int angle_brackets,
 {
   cpp_dir *start_dir = search_path_head (pfile, fname, angle_brackets, type);
   _cpp_file *file = _cpp_find_file (pfile, fname, start_dir, angle_brackets,
-				    FFK_HAS_INCLUDE, 0);
+				    _cpp_FFK_HAS_INCLUDE, 0);
   return file->err_no != ENOENT;
 }
 
