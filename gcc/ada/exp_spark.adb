@@ -258,10 +258,12 @@ package body Exp_SPARK is
 
             Assoc     : Node_Id;
             Comp      : Node_Id;
+            Comp_Id   : Entity_Id;
             Comp_Type : Entity_Id;
             Expr      : Node_Id;
             Index     : Node_Id;
             Index_Typ : Entity_Id;
+            New_Assoc : Node_Id;
 
          begin
             --  Apply scalar range checks on the updated components, if needed
@@ -346,19 +348,65 @@ package body Exp_SPARK is
 
             else pragma Assert (Is_Record_Type (Typ));
 
+               --  If the aggregate has multiple component choices, e.g.
+               --
+               --    X'Update (A | B | C => 123)
+               --
+               --  then each component might be of a different type and might
+               --  or might not require a range check. We first rewrite
+               --  associations into single-component choices, e.g.:
+               --
+               --    X'Update (A => 123, B => 123, C => 123)
+               --
+               --  and then apply range checks to individual copies of the
+               --  expressions.
+
+               --  Iterate over associations of the original aggregate
+
                Assoc := First (Component_Associations (Aggr));
+
+               --  Rewrite into a new aggregate and decorate
+
+               Rewrite
+                 (Aggr,
+                  Make_Aggregate
+                    (Sloc                   => Sloc (Aggr),
+                     Component_Associations => New_List));
+
+               Set_Etype (Aggr, Typ);
+
+               --  Populate the new aggregate with component associations
+
                while Present (Assoc) loop
-                  Expr      := Expression (Assoc);
-                  Comp      := First (Choices (Assoc));
-                  Comp_Type := Etype (Entity (Comp));
+                  Expr := Expression (Assoc);
+                  Comp := First (Choices (Assoc));
 
-                  --  Use the type of the first component from the Choices
-                  --  list, as multiple components can only appear there if
-                  --  they have exactly the same type.
+                  while Present (Comp) loop
+                     Comp_Id   := Entity (Comp);
+                     Comp_Type := Etype (Comp_Id);
 
-                  if Is_Scalar_Type (Comp_Type) then
-                     Apply_Scalar_Range_Check (Expr, Comp_Type);
-                  end if;
+                     New_Assoc :=
+                       Make_Component_Association
+                         (Sloc       => Sloc (Assoc),
+                          Choices    =>
+                            New_List
+                              (New_Occurrence_Of (Comp_Id, Sloc (Comp))),
+                          Expression => New_Copy_Tree (Expr));
+
+                     --  New association must be attached as a child of the
+                     --  aggregate before we analyze it.
+
+                     Append (New_Assoc, Component_Associations (Aggr));
+
+                     Analyze_And_Resolve (Expression (New_Assoc), Comp_Type);
+
+                     if Is_Scalar_Type (Comp_Type) then
+                        Apply_Scalar_Range_Check
+                          (Expression (New_Assoc), Comp_Type);
+                     end if;
+
+                     Next (Comp);
+                  end loop;
 
                   Next (Assoc);
                end loop;
