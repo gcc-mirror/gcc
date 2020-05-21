@@ -10328,13 +10328,14 @@ compute_array_index_type_loc (location_t name_loc, tree name, tree size,
      dependent type or whose size is specified by a constant expression
      that is value-dependent.  */
   /* We can only call value_dependent_expression_p on integral constant
-     expressions; treat non-constant expressions as dependent, too.  */
+     expressions.  */
   if (processing_template_decl
-      && (!TREE_CONSTANT (size) || value_dependent_expression_p (size)))
+      && potential_constant_expression (size)
+      && value_dependent_expression_p (size))
     {
-      /* We cannot do any checking for a SIZE that isn't known to be
-	 constant. Just build the index type and mark that it requires
+      /* Just build the index type and mark that it requires
 	 structural equality checks.  */
+    in_template:
       itype = build_index_type (build_min (MINUS_EXPR, sizetype,
 					   size, size_one_node));
       TYPE_DEPENDENT_P (itype) = 1;
@@ -10447,8 +10448,7 @@ compute_array_index_type_loc (location_t name_loc, tree name, tree size,
     }
 
   if (processing_template_decl && !TREE_CONSTANT (size))
-    /* A variable sized array.  */
-    itype = build_min (MINUS_EXPR, sizetype, size, integer_one_node);
+    goto in_template;
   else
     {
       if (!TREE_CONSTANT (size))
