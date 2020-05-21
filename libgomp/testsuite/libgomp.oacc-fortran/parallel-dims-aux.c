@@ -16,7 +16,8 @@
 {
   if (acc_on_device ((int) acc_device_host))
     return 0;
-  else if (acc_on_device ((int) acc_device_nvidia))
+  else if (acc_on_device ((int) acc_device_nvidia)
+	   || acc_on_device ((int) acc_device_radeon))
     return __builtin_goacc_parlevel_id (GOMP_DIM_GANG);
   else
     __builtin_abort ();
@@ -27,7 +28,8 @@
 {
   if (acc_on_device ((int) acc_device_host))
     return 0;
-  else if (acc_on_device ((int) acc_device_nvidia))
+  else if (acc_on_device ((int) acc_device_nvidia)
+	   || acc_on_device ((int) acc_device_radeon))
     return __builtin_goacc_parlevel_id (GOMP_DIM_WORKER);
   else
     __builtin_abort ();
@@ -38,7 +40,8 @@
 {
   if (acc_on_device ((int) acc_device_host))
     return 0;
-  else if (acc_on_device ((int) acc_device_nvidia))
+  else if (acc_on_device ((int) acc_device_nvidia)
+	   || acc_on_device ((int) acc_device_radeon))
     return __builtin_goacc_parlevel_id (GOMP_DIM_VECTOR);
   else
     __builtin_abort ();
