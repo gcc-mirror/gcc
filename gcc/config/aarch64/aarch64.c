@@ -11391,6 +11391,8 @@ static const struct aarch64_attribute_info aarch64_attributes[] =
      OPT_mtune_ },
   { "sign-return-address", aarch64_attr_enum, false, NULL,
      OPT_msign_return_address_ },
+  { "outline-atomics", aarch64_attr_bool, true, NULL,
+     OPT_moutline_atomics},
   { NULL, aarch64_attr_custom, false, NULL, OPT____ }
 };
 
