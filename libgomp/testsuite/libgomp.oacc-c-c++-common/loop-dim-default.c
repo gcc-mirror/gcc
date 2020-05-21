@@ -79,7 +79,7 @@ int check (const int *ary, int size, int gp, int wp, int vp)
 	exit = 1;
       }
   
-#ifndef ACC_DEVICE_TYPE_gcn
+#ifndef ACC_DEVICE_TYPE_radeon
   /* AMD GCN uses the autovectorizer for the vector dimension: the use
      of a function call in vector-partitioned code in this test is not
      currently supported.  */
