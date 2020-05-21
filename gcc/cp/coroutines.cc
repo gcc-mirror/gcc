@@ -1102,7 +1102,8 @@ finish_co_return_stmt (location_t kw, tree expr)
 		" %<co_return%> statement");
 
   expr = build2_loc (kw, CO_RETURN_EXPR, void_type_node, expr, co_ret_call);
-  return finish_expr_stmt (expr);
+  expr = maybe_cleanup_point_expr_void (expr);
+  return add_stmt (expr);
 }
 
 /* We need to validate the arguments to __builtin_coro_promise, since the
