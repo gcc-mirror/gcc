@@ -1,3 +1,9 @@
+2020-05-21  Matthias Kretz  <kretz@kde.org>
+
+	* testsuite/Makefile.am: Remove dup target_triplet and set tool,
+	allowing runtest to work without arguments.
+	* testsuite/Makefile.in: Regenerate.
+
 2020-05-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/93983
