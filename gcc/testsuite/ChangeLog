@@ -1,3 +1,8 @@
+2020-05-21  Nathan Sidwell  <nathan@acm.org>
+
+	* c-c++-common/cpp/cmd-1.c: Delete.
+	* c-c++-common/cpp/cmd-1.h: Delete.
+
 2020-05-21  Martin Liska  <mliska@suse.cz>
 
 	* gcc.target/aarch64/target_attr_20.c: New test.
