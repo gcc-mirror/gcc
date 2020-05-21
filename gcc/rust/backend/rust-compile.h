@@ -223,19 +223,21 @@ public:
 
 private:
   Compilation (AST::Crate &crate, Backend *backend);
-
   bool go ();
 
-  Analysis::Scope<AST::Type *> scope;
   AST::Crate &crate;
   Backend *backend;
 
-  /* we need lots of members to be buffers for translation of the AST */
-  std::vector<AST::IdentifierPattern> letPatternBuffer;
+  // utils
+  bool compileVarDecl (AST::LetStmt *stmt, std::vector<Bvariable *> &vars);
 
+  // state
+  Analysis::Scope<AST::Type *> scope;
+  std::vector<AST::IdentifierPattern> patternBuffer;
   ::Bfunction *currentFndecl;
   ::Btype *translatedType;
 
+  // careful these are the vectors we pass into the GCC middle-end
   std::vector< ::Btype *> type_decls;
   std::vector< ::Bvariable *> var_decls;
   std::vector< ::Bexpression *> const_decls;

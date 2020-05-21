@@ -36,6 +36,30 @@ Compilation::go ()
   return true;
 }
 
+bool
+Compilation::compileVarDecl (AST::LetStmt *stmt, std::vector<Bvariable *> &vars)
+{
+  AST::Type *type = stmt->has_type () ? stmt->type.get () : stmt->inferedType;
+  translatedType = NULL;
+  type->accept_vis (*this);
+  if (translatedType == NULL)
+    {
+      rust_error_at (stmt->locus, "failed to compile type for var decl");
+      return false;
+    }
+
+  stmt->variables_pattern->accept_vis (*this);
+  for (auto &pattern : patternBuffer)
+    {
+      auto var = backend->local_variable (currentFndecl, pattern.variable_ident,
+					  translatedType, NULL /*decl_var*/,
+					  false /*address_taken*/, stmt->locus);
+      vars.push_back (var);
+    }
+  patternBuffer.clear ();
+  return true;
+}
+
 void
 Compilation::visit (AST::Token &tok)
 {}
@@ -412,19 +436,19 @@ Compilation::visit (AST::Function &function)
 	  return;
 	}
 
-      auto before = letPatternBuffer.size ();
+      auto before = patternBuffer.size ();
       param.param_name->accept_vis (*this);
-      if (letPatternBuffer.size () <= before)
+      if (patternBuffer.size () <= before)
 	{
 	  rust_error_at (param.locus, "failed to analyse parameter name");
 	  return;
 	}
 
-      auto numParamsPerType = letPatternBuffer.size () - before;
+      auto numParamsPerType = patternBuffer.size () - before;
       for (auto i = 0; i < numParamsPerType; i++)
 	{
-	  auto paramName = letPatternBuffer.back ();
-	  letPatternBuffer.pop_back ();
+	  auto paramName = patternBuffer.back ();
+	  patternBuffer.pop_back ();
 	  scope.Insert (paramName.variable_ident, param.type.get ());
 
 	  parameters.push_back (
@@ -451,6 +475,7 @@ Compilation::visit (AST::Function &function)
   Bfunction *fndecl
     = backend->function (fntype, function.function_name, "" /* asm_name */,
 			 0 /* flags */, function.locus);
+  currentFndecl = fndecl;
 
   // setup the params
   std::vector<Bvariable *> param_vars;
@@ -467,20 +492,41 @@ Compilation::visit (AST::Function &function)
       return;
     }
 
-  // walk the expression body
   std::vector<Bvariable *> vars;
-  auto code_block
-    = backend->block (fndecl, NULL, vars, function.locus, Location ());
-  for (auto &stmt : function.function_body->statements)
+  for (auto &decl : function.locals)
     {
-      stmt->accept_vis (*this);
+      if (!compileVarDecl (decl, vars))
+	{
+	  rust_error_at (decl->locus, "failed to compile var decl");
+	  return;
+	}
+      // TODO add to scope
     }
 
+  // is null for top level functions - nested functions will have an enclosing
+  // scope
+  Bblock *enclosingScope = NULL;
+  Location start_location = function.locus;
+  Location end_location;
+  if (function.function_body->statements.size () > 0)
+    {
+      end_location
+	= function.function_body->statements.back ()->get_locus_slow ();
+    }
+
+  auto code_block = backend->block (fndecl, enclosingScope, vars,
+				    start_location, end_location);
   auto body = backend->block_statement (code_block);
+
   if (!backend->function_set_body (fndecl, body))
     {
       rust_error_at (function.locus, "failed to set body to function");
       return;
+    }
+
+  for (auto &stmt : function.function_body->statements)
+    {
+      stmt->accept_vis (*this);
     }
 
   func_decls.push_back (fndecl);
@@ -598,7 +644,7 @@ void
 Compilation::visit (AST::IdentifierPattern &pattern)
 {
   printf ("IdentifierPattern: %s\n", pattern.as_string ().c_str ());
-  letPatternBuffer.push_back (pattern);
+  patternBuffer.push_back (pattern);
 }
 
 void
@@ -669,15 +715,6 @@ void
 Compilation::visit (AST::LetStmt &stmt)
 {
   printf ("Within LetStmt: %s\n", stmt.as_string ().c_str ());
-
-  stmt.variables_pattern->accept_vis (*this);
-
-  for (auto it = letPatternBuffer.begin (); it != letPatternBuffer.end (); it++)
-    {
-      // scope.Insert (it->first., stmt.type.get ());
-    }
-
-  letPatternBuffer.clear ();
 }
 
 void
