@@ -111,7 +111,10 @@ aarch64_handle_option (struct gcc_options *opts,
       return true;
 
     case OPT_moutline_atomics:
-      opts->x_aarch64_flag_outline_atomics = val;
+      if (val)
+	opts->x_target_flags |= MASK_OUTLINE_ATOMICS;
+      else
+	opts->x_target_flags &= ~MASK_OUTLINE_ATOMICS;
       return true;
 
     default:
