@@ -725,7 +725,7 @@ inline namespace v1
       native_handle_type release(error_code& __ec)
       { return __base::release(__ec); }
 
-      [[__nodiscard__]] bool
+      _GLIBCXX_NODISCARD bool
       is_open() const noexcept { return __base::is_open(); }
 
       void close() { close(__throw_on_error{"basic_socket::close"}); }
@@ -1918,7 +1918,7 @@ inline namespace v1
       native_handle_type release(error_code& __ec)
       { return __base::release(__ec); }
 
-      [[__nodiscard__]] bool
+      _GLIBCXX_NODISCARD bool
       is_open() const noexcept { return __base::is_open(); }
 
       void
