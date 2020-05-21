@@ -7060,6 +7060,13 @@ package body Freeze is
       --  proc, a stream subprogram, or a renaming as body. If so, this is not
       --  a freezing context and the entity will be frozen at a later point.
 
+      function Has_Decl_In_List
+        (E : Entity_Id;
+         N : Node_Id;
+         L : List_Id) return Boolean;
+      --  Determines whether an entity E referenced in node N is declared in
+      --  the list L.
+
       -----------------------------------------
       -- Find_Aggregate_Component_Desig_Type --
       -----------------------------------------
@@ -7140,6 +7147,30 @@ package body Freeze is
             end if;
          end if;
       end In_Expanded_Body;
+
+      ----------------------
+      -- Has_Decl_In_List --
+      ----------------------
+
+      function Has_Decl_In_List
+        (E : Entity_Id;
+         N : Node_Id;
+         L : List_Id) return Boolean
+      is
+         Decl_Node : Node_Id;
+
+      begin
+         --  If E is an itype, pretend that it is declared in N
+
+         if Is_Itype (E) then
+            Decl_Node := N;
+         else
+            Decl_Node := Declaration_Node (E);
+         end if;
+
+         return Is_List_Member (Decl_Node)
+           and then List_Containing (Decl_Node) = L;
+      end Has_Decl_In_List;
 
       --  Local variables
 
@@ -7592,7 +7623,6 @@ package body Freeze is
 
                when N_Abortable_Part
                   | N_Accept_Alternative
-                  | N_And_Then
                   | N_Case_Statement_Alternative
                   | N_Compilation_Unit_Aux
                   | N_Conditional_Entry_Call
@@ -7603,21 +7633,50 @@ package body Freeze is
                   | N_Extended_Return_Statement
                   | N_Freeze_Entity
                   | N_If_Statement
-                  | N_Or_Else
                   | N_Selective_Accept
                   | N_Triggering_Alternative
                =>
                   exit when Is_List_Member (P);
 
-               --  Freeze nodes produced by an expression coming from the
-               --  Actions list of a N_Expression_With_Actions node must remain
-               --  within the Actions list. Inserting the freeze nodes further
-               --  up the tree may lead to use before declaration issues in the
-               --  case of array types.
+               --  The freeze nodes produced by an expression coming from the
+               --  Actions list of an N_Expression_With_Actions, short-circuit
+               --  expression or N_Case_Expression_Alternative node must remain
+               --  within the Actions list if they freeze an entity declared in
+               --  this list, as inserting the freeze nodes further up the tree
+               --  may lead to use before declaration issues for the entity.
 
-               when N_Expression_With_Actions =>
-                  exit when Is_List_Member (P)
-                    and then List_Containing (P) = Actions (Parent_P);
+               when N_Case_Expression_Alternative
+                  | N_Expression_With_Actions
+                  | N_Short_Circuit
+               =>
+                  exit when (Present (Nam)
+                              and then
+                             Has_Decl_In_List (Nam, P, Actions (Parent_P)))
+                    or else (Present (Typ)
+                              and then
+                             Has_Decl_In_List (Typ, P, Actions (Parent_P)));
+
+               --  Likewise for an N_If_Expression and its two Actions list
+
+               when N_If_Expression =>
+                  declare
+                     L1 : constant List_Id := Then_Actions (Parent_P);
+                     L2 : constant List_Id := Else_Actions (Parent_P);
+
+                  begin
+                     exit when (Present (Nam)
+                                 and then
+                                Has_Decl_In_List (Nam, P, L1))
+                       or else (Present (Typ)
+                                 and then
+                                Has_Decl_In_List (Typ, P, L1))
+                       or else (Present (Nam)
+                                 and then
+                                Has_Decl_In_List (Nam, P, L2))
+                       or else (Present (Typ)
+                                 and then
+                                Has_Decl_In_List (Typ, P, L2));
+                  end;
 
                --  N_Loop_Statement is a special case: a type that appears in
                --  the source can never be frozen in a loop (this occurs only
@@ -7625,13 +7684,9 @@ package body Freeze is
                --  going. Otherwise we terminate the search. Same is true of
                --  any entity which comes from source (if it has a predefined
                --  type, this type does not appear to come from source, but the
-               --  entity should not be frozen here). The reasoning can also be
-               --  applied to if-expressions and case-expressions.
+               --  entity should not be frozen here).
 
-               when N_Loop_Statement
-                  | N_If_Expression
-                  | N_Case_Expression
-               =>
+               when N_Loop_Statement =>
                   exit when not Comes_From_Source (Etype (N))
                     and then (No (Nam) or else not Comes_From_Source (Nam));
 
