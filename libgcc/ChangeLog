@@ -1,3 +1,12 @@
+2020-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from master
+	2020-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/95212
+	* config/i386/cpuinfo.h (processor_features): Move
+	FEATURE_AVX512VP2INTERSECT after FEATURE_AVX512BF16.
+
 2020-05-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from master
