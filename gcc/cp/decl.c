@@ -7612,7 +7612,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  init = boolean_true_node;
 	}
       else if (init
-	       && init_const_expr_p
+	       && (init_const_expr_p || DECL_DECLARED_CONSTEXPR_P (decl))
 	       && !TYPE_REF_P (type)
 	       && decl_maybe_constant_var_p (decl)
 	       && !(dep_init = value_dependent_init_p (init)))
