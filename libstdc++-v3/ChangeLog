@@ -1,5 +1,8 @@
 2020-05-21  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/socket (basic_socket::is_open()
+	(basic_socket_acceptor::is_open()): Use _GLIBCXX_NODISCARD macro.
+
 	* include/experimental/bits/net.h (__endpoint, __protocol)
 	(__acceptable_protocol, __inet_protocol): New concepts.
 	(__detail::__is_endpoint): Move trait from <experimental/socket>.
