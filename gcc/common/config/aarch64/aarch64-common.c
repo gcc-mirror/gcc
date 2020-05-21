@@ -161,6 +161,10 @@ aarch64_handle_option (struct gcc_options *opts,
       opts->x_flag_omit_leaf_frame_pointer = val;
       return true;
 
+    case OPT_moutline_atomics:
+      opts->x_aarch64_flag_outline_atomics = val;
+      return true;
+
     default:
       return true;
     }

@@ -3957,6 +3957,12 @@ Select the function scope on which branch protection will be applied.  The
 behavior and permissible arguments are the same as for the command-line option
 @option{-mbranch-protection=}.  The default value is @code{none}.
 
+@item outline-atomics
+@cindex @code{outline-atomics} function attribute, AArch64
+Enable or disable calls to out-of-line helpers to implement atomic operations.
+This corresponds to the behavior of the command line options
+@option{-moutline-atomics} and @option{-mno-outline-atomics}.
+
 @end table
 
 The above target attributes can be specified as follows:

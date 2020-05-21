@@ -1,3 +1,11 @@
+2020-05-21  Martin Liska  <mliska@suse.cz>
+
+	* common/config/aarch64/aarch64-common.c (aarch64_handle_option):
+	Handle OPT_moutline_atomics.
+	* config/aarch64/aarch64.c: Add outline-atomics to
+	aarch64_attributes.
+	* doc/extend.texi: Document the newly added target attribute.
+
 2020-05-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	Backport from mainline.
