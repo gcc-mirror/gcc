@@ -493,6 +493,9 @@
 #define vec_cntlz_lsbb __builtin_vec_vclzlsbb
 #define vec_cnttz_lsbb __builtin_vec_vctzlsbb
 
+#define vec_test_lsbb_all_ones __builtin_vec_xvtlsbb_all_ones
+#define vec_test_lsbb_all_zeros __builtin_vec_xvtlsbb_all_zeros
+
 #define vec_xlx __builtin_vec_vextulx
 #define vec_xrx __builtin_vec_vexturx
 #endif
