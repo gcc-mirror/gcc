@@ -13961,7 +13961,10 @@ grokparms (tree parmlist, tree *parms)
 	break;
 
       if (! decl || TREE_TYPE (decl) == error_mark_node)
-	continue;
+	{
+	  any_error = 1;
+	  continue;
+	}
 
       type = TREE_TYPE (decl);
       if (VOID_TYPE_P (type))
@@ -14014,7 +14017,8 @@ grokparms (tree parmlist, tree *parms)
 	      TREE_TYPE (decl) = type;
 	    }
 	  else if (abstract_virtuals_error (decl, type))
-	    any_error = 1;  /* Seems like a good idea.  */
+	    /* Ignore any default argument.  */
+	    init = NULL_TREE;
 	  else if (cxx_dialect < cxx17 && INDIRECT_TYPE_P (type))
 	    {
 	      /* Before C++17 DR 393:
@@ -14043,9 +14047,7 @@ grokparms (tree parmlist, tree *parms)
 			 decl, t);
 	    }
 
-	  if (any_error)
-	    init = NULL_TREE;
-	  else if (init && !processing_template_decl)
+	  if (init && !processing_template_decl)
 	    init = check_default_argument (decl, init, tf_warning_or_error);
 	}
 
@@ -14058,6 +14060,12 @@ grokparms (tree parmlist, tree *parms)
   if (parm)
     result = chainon (result, void_list_node);
   *parms = decls;
+  if (any_error)
+    result = NULL_TREE;
+
+  if (any_error)
+    /* We had parm errors, recover by giving the function (...) type.  */
+    result = NULL_TREE;
 
   return result;
 }
