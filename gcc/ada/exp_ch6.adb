@@ -306,6 +306,10 @@ package body Exp_Ch6 is
    --  out of. This ensures that the secondary stack is not released; otherwise
    --  the function result would be reclaimed before returning to the caller.
 
+   procedure Warn_BIP (Func_Call : Node_Id);
+   --  Give a warning on a build-in-place function call if the -gnatd_B switch
+   --  was given.
+
    ----------------------------------------------
    -- Add_Access_Actual_To_Build_In_Place_Call --
    ----------------------------------------------
@@ -8739,6 +8743,8 @@ package body Exp_Ch6 is
          raise Program_Error;
       end if;
 
+      Warn_BIP (Func_Call);
+
       Result_Subt := Available_View (Etype (Function_Id));
 
       --  Create a temp for the function result. In the caller-allocates case,
@@ -8995,6 +9001,8 @@ package body Exp_Ch6 is
          raise Program_Error;
       end if;
 
+      Warn_BIP (Func_Call);
+
       Result_Subt := Etype (Function_Id);
 
       --  If the build-in-place function returns a controlled object, then the
@@ -9142,6 +9150,8 @@ package body Exp_Ch6 is
          raise Program_Error;
       end if;
 
+      Warn_BIP (Func_Call);
+
       Result_Subt := Etype (Func_Id);
 
       --  When the result subtype is unconstrained, an additional actual must
@@ -9285,6 +9295,8 @@ package body Exp_Ch6 is
       --  Mark the call as processed as a build-in-place call
 
       Set_Is_Expanded_Build_In_Place_Call (Func_Call);
+
+      Warn_BIP (Func_Call);
 
       --  Create an access type designating the function's result subtype.
       --  We use the type of the original call because it may be a call to an
@@ -10329,5 +10341,16 @@ package body Exp_Ch6 is
 
       return Unqual_BIP_Function_Call (Expr);
    end Unqual_BIP_Iface_Function_Call;
+
+   --------------
+   -- Warn_BIP --
+   --------------
+
+   procedure Warn_BIP (Func_Call : Node_Id) is
+   begin
+      if Debug_Flag_Underscore_BB then
+         Error_Msg_N ("build-in-place function call?", Func_Call);
+      end if;
+   end Warn_BIP;
 
 end Exp_Ch6;

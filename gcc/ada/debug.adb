@@ -173,7 +173,7 @@ package body Debug is
    --  d_z  Enable Put_Image on tagged types
 
    --  d_A  Stop generation of ALI file
-   --  d_B
+   --  d_B  Warn on build-in-place function calls
    --  d_C
    --  d_D
    --  d_E
@@ -1002,6 +1002,10 @@ package body Debug is
    --       predefined.
 
    --  d_A  Do not generate ALI files by setting Opt.Disable_ALI_File.
+
+   --  d_B  Warn on build-in-place function calls. This allows users to
+   --       inspect their code in case it triggers compiler bugs related
+   --       to build-in-place calls. See known-problem entries for details.
 
    --  d_F  The compiler encodes the full path from an invocation construct to
    --       an external target, offering additional information to GNATBIND for
