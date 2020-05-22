@@ -1025,6 +1025,12 @@ streamer_write_integer_cst (struct output_block *ob, tree cst, bool ref_p)
   int i;
   int len = TREE_INT_CST_NUNITS (cst);
   gcc_assert (!TREE_OVERFLOW (cst));
+  if (streamer_dump_file)
+    {
+      print_node_brief (streamer_dump_file, "     Streaming integer ",
+			cst, 4);
+      fprintf (streamer_dump_file, "\n");
+    }
   streamer_write_record_start (ob, LTO_integer_cst);
   stream_write_tree (ob, TREE_TYPE (cst), ref_p);
   /* We're effectively streaming a non-sign-extended wide_int here,
