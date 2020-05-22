@@ -803,8 +803,7 @@ DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 	    }
 	  else if (streamer_dump_file)
 	    {
-	      fprintf (streamer_dump_file,
-		       "     Streaming single tree\n", size);
+	      fprintf (streamer_dump_file, "     Streaming single tree\n");
 	    }
 
 	  /* Write size-1 SCCs without wrapping them inside SCC bundles.
