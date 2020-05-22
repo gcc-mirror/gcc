@@ -1780,7 +1780,7 @@ lto_output_tree (struct output_block *ob, tree expr,
 	 it.  */
       if (!existed_p)
 	lto_output_tree_1 (ob, expr, 0, ref_p, this_ref_p);
-      else
+      else if (this_ref_p)
 	{
 	  if (streamer_dump_file)
 	    {
