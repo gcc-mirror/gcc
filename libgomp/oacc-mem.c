@@ -887,7 +887,10 @@ acc_attach_async (void **hostaddr, int async)
   n = splay_tree_lookup (&acc_dev->mem_map, &cur_node);
 
   if (n == NULL)
-    gomp_fatal ("struct not mapped for acc_attach");
+    {
+      gomp_mutex_unlock (&acc_dev->lock);
+      gomp_fatal ("struct not mapped for acc_attach");
+    }
 
   gomp_attach_pointer (acc_dev, aq, &acc_dev->mem_map, n, (uintptr_t) hostaddr,
 		       0, NULL);
@@ -920,7 +923,10 @@ goacc_detach_internal (void **hostaddr, int async, bool finalize)
   n = splay_tree_lookup (&acc_dev->mem_map, &cur_node);
 
   if (n == NULL)
-    gomp_fatal ("struct not mapped for acc_detach");
+    {
+      gomp_mutex_unlock (&acc_dev->lock);
+      gomp_fatal ("struct not mapped for acc_detach");
+    }
 
   gomp_detach_pointer (acc_dev, aq, n, (uintptr_t) hostaddr, finalize, NULL);
 
