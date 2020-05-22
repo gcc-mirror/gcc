@@ -904,6 +904,11 @@ package body Sem_Ch6 is
                   --  named access types and renamed objects within the
                   --  expression.
 
+                  --  Note, this loop duplicates some of the logic in
+                  --  Object_Access_Level since we have to check special rules
+                  --  based on the context we are in (a return aggregate)
+                  --  relating to formals of the current function.
+
                   Obj := Original_Node (Prefix (Expr));
                   loop
                      while Nkind_In (Obj, N_Explicit_Dereference,
@@ -943,15 +948,20 @@ package body Sem_Ch6 is
                      end if;
                   end loop;
 
-                  --  Do not check aliased formals or function calls. A
-                  --  run-time check may still be needed ???
+                  --  Do not check aliased formals statically
 
                   if Is_Formal (Entity (Obj))
-                    and then Is_Aliased (Entity (Obj))
+                    and then (Is_Aliased (Entity (Obj))
+                               or else Ekind (Etype (Entity (Obj))) =
+                                         E_Anonymous_Access_Type)
                   then
                      null;
 
-                  elsif Object_Access_Level (Obj) >
+                  --  Otherwise, handle the expression normally, avoiding the
+                  --  special logic above, and call Object_Access_Level with
+                  --  the original expression.
+
+                  elsif Object_Access_Level (Expr) >
                           Scope_Depth (Scope (Scope_Id))
                   then
                      Error_Msg_N
