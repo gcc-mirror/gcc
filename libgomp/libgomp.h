@@ -1012,11 +1012,8 @@ struct splay_tree_key_s {
   uintptr_t tgt_offset;
   /* Reference count.  */
   uintptr_t refcount;
-  /* Reference counts beyond those that represent genuine references in the
-     linked splay tree key/target memory structures, e.g. for multiple OpenACC
-     "present increment" operations (via "acc enter data") referring to the same
-     host-memory block.  */
-  uintptr_t virtual_refcount;
+  /* Dynamic reference count.  */
+  uintptr_t dynamic_refcount;
   struct splay_tree_aux *aux;
 };
 
@@ -1149,7 +1146,6 @@ struct gomp_device_descr
 enum gomp_map_vars_kind
 {
   GOMP_MAP_VARS_OPENACC,
-  GOMP_MAP_VARS_OPENACC_ENTER_DATA,
   GOMP_MAP_VARS_TARGET,
   GOMP_MAP_VARS_DATA,
   GOMP_MAP_VARS_ENTER_DATA
