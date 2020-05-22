@@ -46,6 +46,34 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 
 
+/* Initialize a SLP node.  */
+
+_slp_tree::_slp_tree ()
+{
+  SLP_TREE_SCALAR_STMTS (this) = vNULL;
+  SLP_TREE_SCALAR_OPS (this) = vNULL;
+  SLP_TREE_VEC_STMTS (this).create (0);
+  SLP_TREE_NUMBER_OF_VEC_STMTS (this) = 0;
+  SLP_TREE_CHILDREN (this) = vNULL;
+  SLP_TREE_LOAD_PERMUTATION (this) = vNULL;
+  SLP_TREE_TWO_OPERATORS (this) = false;
+  SLP_TREE_DEF_TYPE (this) = vect_uninitialized_def;
+  SLP_TREE_VECTYPE (this) = NULL_TREE;
+  this->refcnt = 1;
+  this->max_nunits = 1;
+}
+
+/* Tear down a SLP node.  */
+
+_slp_tree::~_slp_tree ()
+{
+  SLP_TREE_CHILDREN (this).release ();
+  SLP_TREE_SCALAR_STMTS (this).release ();
+  SLP_TREE_SCALAR_OPS (this).release ();
+  SLP_TREE_VEC_STMTS (this).release ();
+  SLP_TREE_LOAD_PERMUTATION (this).release ();
+}
+
 /* Recursively free the memory allocated for the SLP tree rooted at NODE.
    FINAL_P is true if we have vectorized the instance or if we have
    made a final decision not to vectorize the statements in any way.  */
@@ -76,13 +104,7 @@ vect_free_slp_tree (slp_tree node, bool final_p)
 	}
     }
 
-  SLP_TREE_CHILDREN (node).release ();
-  SLP_TREE_SCALAR_STMTS (node).release ();
-  SLP_TREE_SCALAR_OPS (node).release ();
-  SLP_TREE_VEC_STMTS (node).release ();
-  SLP_TREE_LOAD_PERMUTATION (node).release ();
-
-  free (node);
+  delete node;
 }
 
 /* Free the memory allocated for the SLP instance.  FINAL_P is true if we
@@ -101,39 +123,15 @@ vect_free_slp_instance (slp_instance instance, bool final_p)
 /* Create an SLP node for SCALAR_STMTS.  */
 
 static slp_tree
-vect_create_new_slp_node (vec<stmt_vec_info> scalar_stmts)
+vect_create_new_slp_node (vec<stmt_vec_info> scalar_stmts, unsigned nops)
 {
-  slp_tree node;
-  stmt_vec_info stmt_info = scalar_stmts[0];
-  unsigned int nops;
-
-  if (gcall *stmt = dyn_cast <gcall *> (stmt_info->stmt))
-    nops = gimple_call_num_args (stmt);
-  else if (gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt))
-    {
-      nops = gimple_num_ops (stmt) - 1;
-      if (gimple_assign_rhs_code (stmt) == COND_EXPR)
-	nops++;
-    }
-  else if (is_a <gphi *> (stmt_info->stmt))
-    nops = 0;
-  else
-    return NULL;
-
-  node = XNEW (struct _slp_tree);
+  slp_tree node = new _slp_tree;
   SLP_TREE_SCALAR_STMTS (node) = scalar_stmts;
-  SLP_TREE_SCALAR_OPS (node) = vNULL;
-  SLP_TREE_VEC_STMTS (node).create (0);
-  SLP_TREE_NUMBER_OF_VEC_STMTS (node) = 0;
   SLP_TREE_CHILDREN (node).create (nops);
-  SLP_TREE_LOAD_PERMUTATION (node) = vNULL;
-  SLP_TREE_TWO_OPERATORS (node) = false;
   SLP_TREE_DEF_TYPE (node) = vect_internal_def;
-  SLP_TREE_VECTYPE (node) = NULL_TREE;
-  node->refcnt = 1;
-  node->max_nunits = 1;
 
   unsigned i;
+  stmt_vec_info stmt_info;
   FOR_EACH_VEC_ELT (scalar_stmts, i, stmt_info)
     STMT_VINFO_NUM_SLP_USES (stmt_info)++;
 
@@ -145,21 +143,9 @@ vect_create_new_slp_node (vec<stmt_vec_info> scalar_stmts)
 static slp_tree
 vect_create_new_slp_node (vec<tree> ops)
 {
-  slp_tree node;
-
-  node = XNEW (struct _slp_tree);
-  SLP_TREE_SCALAR_STMTS (node) = vNULL;
+  slp_tree node = new _slp_tree;
   SLP_TREE_SCALAR_OPS (node) = ops;
-  SLP_TREE_VEC_STMTS (node).create (0);
-  SLP_TREE_NUMBER_OF_VEC_STMTS (node) = 0;
-  SLP_TREE_CHILDREN (node) = vNULL;
-  SLP_TREE_LOAD_PERMUTATION (node) = vNULL;
-  SLP_TREE_TWO_OPERATORS (node) = false;
   SLP_TREE_DEF_TYPE (node) = vect_external_def;
-  SLP_TREE_VECTYPE (node) = NULL_TREE;
-  node->refcnt = 1;
-  node->max_nunits = 1;
-
   return node;
 }
 
@@ -1284,7 +1270,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
       else
 	return NULL;
       (*tree_size)++;
-      node = vect_create_new_slp_node (stmts);
+      node = vect_create_new_slp_node (stmts, 0);
       return node;
     }
 
@@ -1309,7 +1295,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	{
 	  *max_nunits = this_max_nunits;
 	  (*tree_size)++;
-	  node = vect_create_new_slp_node (stmts);
+	  node = vect_create_new_slp_node (stmts, 0);
 	  /* And compute the load permutation.  Whether it is actually
 	     a permutation depends on the unrolling factor which is
 	     decided later.  */
@@ -1450,7 +1436,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "Building vector operands from scalars\n");
 	  this_tree_size++;
-	  child = vect_create_new_slp_node (oprnd_info->def_stmts);
+	  child = vect_create_new_slp_node (oprnd_info->def_stmts, 0);
 	  SLP_TREE_DEF_TYPE (child) = vect_external_def;
 	  SLP_TREE_SCALAR_OPS (child) = oprnd_info->ops;
 	  children.safe_push (child);
@@ -1587,7 +1573,7 @@ fail:
   *tree_size += this_tree_size + 1;
   *max_nunits = this_max_nunits;
 
-  node = vect_create_new_slp_node (stmts);
+  node = vect_create_new_slp_node (stmts, nops);
   SLP_TREE_TWO_OPERATORS (node) = two_operators;
   SLP_TREE_CHILDREN (node).splice (children);
   return node;
@@ -1726,9 +1712,12 @@ slp_copy_subtree (slp_tree node, hash_map<slp_tree, slp_tree> &map)
   if (existed_p)
     return copy_ref;
 
-  copy_ref = XNEW (_slp_tree);
+  copy_ref = new _slp_tree;
   slp_tree copy = copy_ref;
-  memcpy (copy, node, sizeof (_slp_tree));
+  SLP_TREE_DEF_TYPE (copy) = SLP_TREE_DEF_TYPE (node);
+  SLP_TREE_VECTYPE (copy) = SLP_TREE_VECTYPE (node);
+  copy->max_nunits = node->max_nunits;
+  copy->refcnt = 0;
   if (SLP_TREE_SCALAR_STMTS (node).exists ())
     {
       SLP_TREE_SCALAR_STMTS (copy) = SLP_TREE_SCALAR_STMTS (node).copy ();
@@ -1743,7 +1732,6 @@ slp_copy_subtree (slp_tree node, hash_map<slp_tree, slp_tree> &map)
   if (SLP_TREE_CHILDREN (node).exists ())
     SLP_TREE_CHILDREN (copy) = SLP_TREE_CHILDREN (node).copy ();
   gcc_assert (!SLP_TREE_VEC_STMTS (node).exists ());
-  copy->refcnt = 0;
 
   slp_tree child;
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (copy), i, child)
@@ -2230,7 +2218,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	      scalar_stmts.create (group_size);
 	      for (unsigned i = 0; i < group_size; ++i)
 		scalar_stmts.quick_push (next_info);
-	      slp_tree conv = vect_create_new_slp_node (scalar_stmts);
+	      slp_tree conv = vect_create_new_slp_node (scalar_stmts, 1);
 	      SLP_TREE_CHILDREN (conv).quick_push (node);
 	      SLP_INSTANCE_TREE (new_instance) = conv;
 	      /* We also have to fake this conversion stmt as SLP reduction
@@ -3633,16 +3621,22 @@ vect_get_constant_vectors (vec_info *vinfo,
   gimple_seq ctor_seq = NULL;
   auto_vec<tree, 16> permute_results;
 
-  /* ???  SLP analysis should compute the vector type for the
-     constant / invariant and store it in the SLP node.  */
+  /* We always want SLP_TREE_VECTYPE (op_node) here correctly set.  */
+  vector_type = SLP_TREE_VECTYPE (op_node);
+    {
   tree op = op_node->ops[0];
-  /* Check if vector type is a boolean vector.  */
   tree stmt_vectype = STMT_VINFO_VECTYPE (stmt_vinfo);
   if (VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (op))
       && vect_mask_constant_operand_p (vinfo, stmt_vinfo, op_num))
-    vector_type = truth_type_for (stmt_vectype);
+    gcc_assert (vector_type
+		&& types_compatible_p (vector_type,
+				       truth_type_for (stmt_vectype)));
   else
-    vector_type = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op), op_node);
+    gcc_assert (vector_type
+		&& types_compatible_p (vector_type,
+				       get_vectype_for_scalar_type
+					 (vinfo, TREE_TYPE (op), op_node)));
+    }
 
   poly_uint64 vf = 1;
   if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))

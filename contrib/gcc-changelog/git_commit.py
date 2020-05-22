@@ -127,7 +127,8 @@ bug_components = set([
 
 ignored_prefixes = [
     'gcc/d/dmd/',
-    'gcc/go/frontend/',
+    'gcc/go/gofrontend/',
+    'gcc/testsuite/go.test/test/',
     'libgo/',
     'libphobos/libdruntime',
     'libphobos/src/',

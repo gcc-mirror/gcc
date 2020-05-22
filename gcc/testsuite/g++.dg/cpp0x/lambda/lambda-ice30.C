@@ -3,11 +3,11 @@
 
 template<int> void foo()
 {
-  int x[=];  // { dg-error "expected" }
+  int x[=];  // { dg-error "" }
   [&x]{};
 }
 
 void bar()
 {
-  foo<0>();
+  foo<0>();			// { dg-prune-output "not declared" }
 }

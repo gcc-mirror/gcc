@@ -299,10 +299,11 @@ record_common_node (struct streamer_tree_cache_d *cache, tree node)
   if (!node)
     node = error_mark_node;
 
-  /* ???  FIXME, devise a better hash value.  But the hash needs to be equal
-     for all frontend and lto1 invocations.  So just use the position
-     in the cache as hash value.  */
-  streamer_tree_cache_append (cache, node, cache->nodes.length ());
+  /* This hash needs to be equal for all frontend and lto1 invocations.  So
+     just use the position in the cache as hash value.
+     Small integers are used by hash_tree to record positions within scc
+     hash. Values are not in same range.  */
+  streamer_tree_cache_append (cache, node, cache->next_idx + 0xc001);
 
   switch (TREE_CODE (node))
     {

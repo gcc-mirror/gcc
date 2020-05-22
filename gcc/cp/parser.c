@@ -10184,10 +10184,10 @@ cp_parser_constant_expression (cp_parser* parser,
       if (TREE_TYPE (expression)
 	  && TREE_CODE (TREE_TYPE (expression)) == ARRAY_TYPE)
 	decay = build_address (expression);
-      bool is_const = potential_rvalue_constant_expression (decay);
+      bool is_const = is_rvalue_constant_expression (decay);
       parser->non_integral_constant_expression_p = !is_const;
       if (!is_const && !allow_non_constant_p)
-	require_potential_rvalue_constant_expression (decay);
+	require_rvalue_constant_expression (decay);
     }
   if (allow_non_constant_p)
     *non_constant_p = parser->non_integral_constant_expression_p;
@@ -21366,6 +21366,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 		/* OK */;
 	      else if (error_operand_p (bounds))
 		/* Already gave an error.  */;
+	      else if (!cp_parser_uncommitted_to_tentative_parse_p (parser))
+		/* Let compute_array_index_type diagnose this.  */;
 	      else if (!parser->in_function_body
 		       || current_binding_level->kind == sk_function_parms)
 		{

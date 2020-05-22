@@ -1417,8 +1417,6 @@ lto_read_tree (class lto_input_block *ib, class data_in *data_in,
 
   lto_read_tree_1 (ib, data_in, result);
 
-  /* end_marker = */ streamer_read_uchar (ib);
-
   return result;
 }
 
@@ -1431,11 +1429,17 @@ hashval_t
 lto_input_scc (class lto_input_block *ib, class data_in *data_in,
 	       unsigned *len, unsigned *entry_len, bool shared_scc)
 {
-  /* A blob of unnamed tree nodes, fill the cache from it and
-     recurse.  */
   unsigned size = streamer_read_uhwi (ib);
-  hashval_t scc_hash = shared_scc ? streamer_read_uhwi (ib) : 0;
+  hashval_t scc_hash = 0;
   unsigned scc_entry_len = 1;
+
+  if (shared_scc)
+    {
+      if (size & 1)
+	scc_entry_len = streamer_read_uhwi (ib);
+      size /= 2;
+      scc_hash = streamer_read_uhwi (ib);
+    }
 
   if (size == 1)
     {
@@ -1446,8 +1450,6 @@ lto_input_scc (class lto_input_block *ib, class data_in *data_in,
     {
       unsigned int first = data_in->reader_cache->nodes.length ();
       tree result;
-
-      scc_entry_len = streamer_read_uhwi (ib);
 
       /* Materialize size trees by reading their headers.  */
       for (unsigned i = 0; i < size; ++i)
@@ -1471,7 +1473,6 @@ lto_input_scc (class lto_input_block *ib, class data_in *data_in,
 	  result = streamer_tree_cache_get_tree (data_in->reader_cache,
 						 first + i);
 	  lto_read_tree_1 (ib, data_in, result);
-	  /* end_marker = */ streamer_read_uchar (ib);
 	}
     }
 

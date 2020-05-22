@@ -1,3 +1,115 @@
+2020-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-out.c (DFS::DFS): Silence warning.
+
+2020-05-22  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95255
+	* config/i386/i386.md (<rounding_insn><mode>2): Do not try to
+	expand non-sse4 ROUND_ROUNDEVEN rounding via SSE support routines.
+
+2020-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-out.c (lto_output_tree): Do not stream final ref if
+	it is not needed.
+
+2020-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-section-out.c (lto_output_decl_index): Adjust dump indentation.
+	* lto-streamer-out.c (create_output_block): Fix whitespace
+	(lto_write_tree_1): Add (debug) dump.
+	(DFS::DFS): Add dump.
+	(DFS::DFS_write_tree_body): Do not dump here.
+	(lto_output_tree): Improve dumping; do not stream ref when not needed.
+	(produce_asm_for_decls): Fix whitespace.
+	* tree-streamer-out.c (streamer_write_tree_header): Add dump.
+	* tree-streamer-out.c (streamer_write_integer_cst): Add debug dump.
+
+2020-05-22  Hongtao.liu  <hongtao.liu@intel.com>
+
+	PR target/92658
+	* config/i386/sse.md (trunc<pmov_src_lower><mode>2): New expander
+	(truncv32hiv32qi2): Ditto.
+	(trunc<ssedoublemodelower><mode>2): Ditto.
+	(trunc<mode><pmov_dst_3>2): Ditto.
+	(trunc<mode><pmov_dst_mode_4>2): Ditto.
+	(truncv2div2si2): Ditto.
+	(truncv8div8qi2): Ditto.
+	(avx512f_<code>v8div16qi2): Renaming from *avx512f_<code>v8div16qi2.
+	(avx512vl_<code>v2div2si): Renaming from *avx512vl_<code>v2div2si2.
+	(avx512vl_<code><mode>v2<ssecakarnum>qi2): Renaming from
+	*avx512vl_<code><mode>v<ssescalarnum>qi2.
+
+2020-05-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/95258
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	AVX512VPOPCNTDQ.
+
+2020-05-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95268
+	* tree-ssa-sink.c (sink_common_stores_to_bb): Handle clobbers
+	properly.
+
+2020-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-streamer.c (record_common_node): Fix hash value of pre-streamed
+	nodes.
+
+2020-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-in.c (lto_read_tree): Do not stream end markers.
+	(lto_input_scc): Optimize streaming of entry lengths.
+	* lto-streamer-out.c (lto_write_tree): Do not stream end markers
+	(DFS::DFS): Optimize stremaing of entry lengths
+
+2020-05-22  Richard Biener  <rguenther@suse.de>
+
+	PR lto/95190
+	* doc/invoke.texi (flto): Document behavior of diagnostic
+	options.
+
+2020-05-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_is_simple_use): New overload.
+	(vect_maybe_update_slp_op_vectype): New.
+	* tree-vect-stmts.c (vect_is_simple_use): New overload
+	accessing operands of SLP vs. non-SLP operation transparently.
+	(vect_maybe_update_slp_op_vectype): New function updating
+	the possibly shared SLP operands vector type.
+	(vectorizable_operation): Be a bit more SLP vs non-SLP agnostic
+	using the new vect_is_simple_use overload;  update SLP invariant
+	operand nodes vector type.
+	(vectorizable_comparison): Likewise.
+	(vectorizable_call): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_condition): Likewise.
+	(vectorizable_assignment): Likewise.
+	* tree-vect-loop.c (vectorizable_reduction): Likewise.
+	* tree-vect-slp.c (vect_get_constant_vectors): Enforce
+	present SLP_TREE_VECTYPE and check it matches previous
+	behavior.
+
+2020-05-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95248
+	* tree-ssa-loop-im.c (sm_seq_valid_bb): Remove bogus early out.
+
+2020-05-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_slp_tree::_slp_tree): New.
+	(_slp_tree::~_slp_tree): Likewise.
+	* tree-vect-slp.c (_slp_tree::_slp_tree): Factor out code
+	from allocators.
+	(_slp_tree::~_slp_tree): Implement.
+	(vect_free_slp_tree): Simplify.
+	(vect_create_new_slp_node): Likewise.  Add nops parameter.
+	(vect_build_slp_tree_2): Adjust.
+	(vect_analyze_slp_instance): Likewise.
+
 2020-05-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* adjust-alignment.c: Include memmodel.h.

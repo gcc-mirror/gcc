@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alias.h"
 #include "stor-layout.h"
 #include "gomp-constants.h"
+#include "print-tree.h"
 
 
 /* Output the STRING constant to the string
@@ -967,6 +968,14 @@ streamer_write_tree_header (struct output_block *ob, tree expr)
   enum LTO_tags tag;
   enum tree_code code;
 
+  if (streamer_dump_file)
+    {
+      print_node_brief (streamer_dump_file, "     Streaming header of ",
+	 		expr, 4);
+      fprintf (streamer_dump_file, "  to %s\n",
+	       lto_section_name[ob->section_type]);
+    }
+
   /* We should not see any tree nodes not handled by the streamer.  */
   code = TREE_CODE (expr);
 
@@ -1016,6 +1025,12 @@ streamer_write_integer_cst (struct output_block *ob, tree cst, bool ref_p)
   int i;
   int len = TREE_INT_CST_NUNITS (cst);
   gcc_assert (!TREE_OVERFLOW (cst));
+  if (streamer_dump_file)
+    {
+      print_node_brief (streamer_dump_file, "     Streaming integer ",
+			cst, 4);
+      fprintf (streamer_dump_file, "\n");
+    }
   streamer_write_record_start (ob, LTO_integer_cst);
   stream_write_tree (ob, TREE_TYPE (cst), ref_p);
   /* We're effectively streaming a non-sign-extended wide_int here,

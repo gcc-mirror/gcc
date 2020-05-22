@@ -19,8 +19,7 @@ class B { B (int); };
 B::B (int i)
 {
   struct S {
-    int ar[1][i];  // { dg-error "15:size of array .ar. is not an integral" "" { target c++11 } }
-// { dg-error "array bound" "" { target c++98_only } .-1 }
+    int ar[1][i];  // { dg-error "15:size of array .ar. is not an integral" }
   } s;
 
   s.ar[0][0] = 0;  // { dg-prune-output "no member" }

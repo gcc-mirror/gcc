@@ -7,8 +7,8 @@ struct Tree {
   Tree* R[subtrees]; // { dg-error "" }
   ~Tree()
   {
-    delete [] L[0]; // { dg-error "" }
-    delete [] R[0]; // { dg-error "" }
+    delete [] L[0];
+    delete [] R[0];
   }
 };
 
