@@ -40,10 +40,19 @@
 # into the jit rule, but that needs a little bit of work
 # to do the right thing within all.cross.
 
+ifneq (,$(findstring mingw,$(target)))
+LIBGCCJIT_FILENAME = libgccjit.dll
+
+jit: $(LIBGCCJIT_FILENAME) \
+	$(FULL_DRIVER_NAME)
+
+else
+
 LIBGCCJIT_LINKER_NAME = libgccjit.so
 LIBGCCJIT_VERSION_NUM = 0
 LIBGCCJIT_MINOR_NUM = 0
 LIBGCCJIT_RELEASE_NUM = 1
+
 LIBGCCJIT_SONAME = $(LIBGCCJIT_LINKER_NAME).$(LIBGCCJIT_VERSION_NUM)
 LIBGCCJIT_FILENAME = \
   $(LIBGCCJIT_SONAME).$(LIBGCCJIT_MINOR_NUM).$(LIBGCCJIT_RELEASE_NUM)
@@ -68,6 +77,7 @@ jit: $(LIBGCCJIT_FILENAME) \
 	$(LIBGCCJIT_SYMLINK) \
 	$(LIBGCCJIT_LINKER_NAME_SYMLINK) \
 	$(FULL_DRIVER_NAME)
+endif
 
 # Tell GNU make to ignore these if they exist.
 .PHONY: jit
@@ -84,8 +94,20 @@ jit_OBJS = attribs.o \
 	jit/jit-spec.o \
 	gcc.o
 
+ifneq (,$(findstring mingw,$(target)))
+jit_OBJS += jit/jit-w32.o
+endif
+
 # Use strict warnings for this front end.
 jit-warn = $(STRICT_WARN)
+
+ifneq (,$(findstring mingw,$(target)))
+# Create import library libgccjit.dll.a
+LIBGCCJIT_EXTRA_OPTS = -Wl,--out-implib,$(LIBGCCJIT_FILENAME).a
+else
+LIBGCCJIT_EXTRA_OPTS = $(LIBGCCJIT_VERSION_SCRIPT_OPTION) \
+	$(LIBGCCJIT_SONAME_OPTION)
+endif
 
 # We avoid using $(BACKEND) from Makefile.in in order to avoid pulling
 # in main.o
@@ -98,14 +120,16 @@ $(LIBGCCJIT_FILENAME): $(jit_OBJS) \
 	     $(jit_OBJS) libbackend.a libcommon-target.a libcommon.a \
 	     $(CPPLIB) $(LIBDECNUMBER) $(EXTRA_GCC_LIBS) $(LIBS) $(BACKENDLIBS) \
 	     $(EXTRA_GCC_OBJS) \
-	     $(LIBGCCJIT_VERSION_SCRIPT_OPTION) \
-	     $(LIBGCCJIT_SONAME_OPTION)
+	     $(LIBGCCJIT_EXTRA_OPTS)
 
+# Create symlinks when not building for Windows
+ifeq (,$(findstring mingw,$(target)))
 $(LIBGCCJIT_SONAME_SYMLINK): $(LIBGCCJIT_FILENAME)
 	ln -sf $(LIBGCCJIT_FILENAME) $(LIBGCCJIT_SONAME_SYMLINK)
 
 $(LIBGCCJIT_LINKER_NAME_SYMLINK): $(LIBGCCJIT_SONAME_SYMLINK)
 	ln -sf $(LIBGCCJIT_SONAME_SYMLINK) $(LIBGCCJIT_LINKER_NAME_SYMLINK)
+endif
 
 #
 # Build hooks:
@@ -275,19 +299,31 @@ selftest-jit:
 
 #
 # Install hooks:
-jit.install-common: installdirs
+jit.install-headers:
+	$(INSTALL_DATA) $(srcdir)/jit/libgccjit.h \
+	  $(DESTDIR)$(includedir)/libgccjit.h
+	$(INSTALL_DATA) $(srcdir)/jit/libgccjit++.h \
+	  $(DESTDIR)$(includedir)/libgccjit++.h
+
+ifneq (,$(findstring mingw,$(target)))
+jit.install-common: installdirs jit.install-headers
+# Install import library
+	$(INSTALL_PROGRAM) $(LIBGCCJIT_FILENAME).a \
+	  $(DESTDIR)$(libdir)/$(LIBGCCJIT_FILENAME).a
+# Install DLL file
 	$(INSTALL_PROGRAM) $(LIBGCCJIT_FILENAME) \
-	  $(DESTDIR)/$(libdir)/$(LIBGCCJIT_FILENAME)
+	  $(DESTDIR)$(bindir)/$(LIBGCCJIT_FILENAME)
+else
+jit.install-common: installdirs jit.install-headers
+	$(INSTALL_PROGRAM) $(LIBGCCJIT_FILENAME) \
+	  $(DESTDIR)$(libdir)/$(LIBGCCJIT_FILENAME)
 	ln -sf \
 	  $(LIBGCCJIT_FILENAME) \
-	  $(DESTDIR)/$(libdir)/$(LIBGCCJIT_SONAME_SYMLINK)
+	  $(DESTDIR)$(libdir)/$(LIBGCCJIT_SONAME_SYMLINK)
 	ln -sf \
 	  $(LIBGCCJIT_SONAME_SYMLINK)\
-	  $(DESTDIR)/$(libdir)/$(LIBGCCJIT_LINKER_NAME_SYMLINK)
-	$(INSTALL_DATA) $(srcdir)/jit/libgccjit.h \
-	  $(DESTDIR)/$(includedir)/libgccjit.h
-	$(INSTALL_DATA) $(srcdir)/jit/libgccjit++.h \
-	  $(DESTDIR)/$(includedir)/libgccjit++.h
+	  $(DESTDIR)$(libdir)/$(LIBGCCJIT_LINKER_NAME_SYMLINK)
+endif
 
 jit.install-man:
 

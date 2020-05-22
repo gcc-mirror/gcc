@@ -24,7 +24,11 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "jit-tempdir.h"
 
+#ifdef _WIN32
+#include "jit-w32.h"
+#endif
 
+#ifndef _WIN32
 /* Construct a tempdir path template suitable for use by mkdtemp
    e.g. "/tmp/libgccjit-XXXXXX", but respecting the rules in
    libiberty's choose_tempdir rather than hardcoding "/tmp/".
@@ -62,6 +66,7 @@ make_tempdir_path_template ()
 
   return result;
 }
+#endif
 
 /* The constructor for the jit::tempdir object.
    The real work is done by the jit::tempdir::create method.  */
@@ -87,6 +92,9 @@ gcc::jit::tempdir::create ()
 {
   JIT_LOG_SCOPE (get_logger ());
 
+#ifdef _WIN32
+  m_path_tempdir = win_mkdtemp ();
+#else
   m_path_template = make_tempdir_path_template ();
   if (!m_path_template)
     return false;
@@ -97,6 +105,8 @@ gcc::jit::tempdir::create ()
      is unique.  Hence no other (non-root) users should have access to
      the paths within it.  */
   m_path_tempdir = mkdtemp (m_path_template);
+#endif
+
   if (!m_path_tempdir)
     return false;
   log ("m_path_tempdir: %s", m_path_tempdir);
