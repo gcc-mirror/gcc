@@ -1077,12 +1077,19 @@ add_method (tree type, tree method, bool via_using)
 	{
           if (!equivalently_constrained (fn, method))
 	    {
+	      if (processing_template_decl)
+		/* We can't check satisfaction in dependent context, wait until
+		   the class is instantiated.  */
+		continue;
+
 	      special_function_kind sfk = special_memfn_p (method);
 
-	      if (sfk == sfk_none || DECL_INHERITED_CTOR (fn))
-		/* Non-special member functions coexist if they are not
-		   equivalently constrained.  A member function is not hidden
-		   by an inherited constructor.  */
+	      if (sfk == sfk_none
+		  || DECL_INHERITED_CTOR (fn)
+		  || TREE_CODE (fn) == TEMPLATE_DECL)
+		/* Member function templates and non-special member functions
+		   coexist if they are not equivalently constrained.  A member
+		   function is not hidden by an inherited constructor.  */
 		continue;
 
 	      /* P0848: For special member functions, deleted, unsatisfied, or
