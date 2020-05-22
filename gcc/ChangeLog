@@ -1,5 +1,10 @@
 2020-05-22  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/95248
+	* tree-ssa-loop-im.c (sm_seq_valid_bb): Remove bogus early out.
+
+2020-05-22  Richard Biener  <rguenther@suse.de>
+
 	* tree-vectorizer.h (_slp_tree::_slp_tree): New.
 	(_slp_tree::~_slp_tree): Likewise.
 	* tree-vect-slp.c (_slp_tree::_slp_tree): Factor out code

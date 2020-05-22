@@ -2436,8 +2436,6 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 	  /* Use the sequence from the first edge and push SMs down.  */
 	  for (unsigned i = 0; i < first_edge_seq.length (); ++i)
 	    {
-	      if (first_edge_seq[i].second == sm_other)
-		break;
 	      unsigned id = first_edge_seq[i].first;
 	      seq.safe_push (first_edge_seq[i]);
 	      unsigned new_idx;
