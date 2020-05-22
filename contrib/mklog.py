@@ -30,6 +30,7 @@ import argparse
 import os
 import re
 import sys
+from itertools import takewhile
 
 import requests
 
@@ -221,6 +222,9 @@ if __name__ == '__main__':
                         help='Do not generate function names in ChangeLogs')
     parser.add_argument('-p', '--fill-up-bug-titles', action='store_true',
                         help='Download title of mentioned PRs')
+    parser.add_argument('-c', '--changelog',
+                        help='Append the ChangeLog to a git commit message '
+                             'file')
     args = parser.parse_args()
     if args.input == '-':
         args.input = None
@@ -229,4 +233,21 @@ if __name__ == '__main__':
     data = input.read()
     output = generate_changelog(data, args.no_functions,
                                 args.fill_up_bug_titles)
-    print(output, end='')
+    if args.changelog:
+        lines = open(args.changelog).read().split('\n')
+        start = list(takewhile(lambda l: not l.startswith('#'), lines))
+        end = lines[len(start):]
+        with open(args.changelog, 'w') as f:
+            if start:
+                # appent empty line
+                if start[-1] != '':
+                    start.append('')
+            else:
+                # append 2 empty lines
+                start = 2 * ['']
+            f.write('\n'.join(start))
+            f.write('\n')
+            f.write(output)
+            f.write('\n'.join(end))
+    else:
+        print(output, end='')
