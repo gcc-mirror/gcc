@@ -1,3 +1,19 @@
+2020-05-22  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	Backport from master
+	PR tree-optimization/95110
+	2020-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/tree-ssa/pr94969.c: Swap scan-tree-dump-not arguments.
+
+2020-05-22  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	Backport from master
+	PR tree-optimization/94969
+	2020-05-13  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* gcc.dg/tree-ssa/pr94969.c: New test.
+
 2020-05-21  Martin Liska  <mliska@suse.cz>
 
 	* gcc.target/aarch64/target_attr_20.c: New test.

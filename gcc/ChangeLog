@@ -1,3 +1,15 @@
+2020-05-22  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	Backport from master
+	PR tree-optimization/94969
+	2020-05-13  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* tree-data-ref.c (constant_access_functions): Rename to...
+	(invariant_access_functions): ...this.  Add parameter.  Check for
+	invariant access function, rather than constant.
+	(build_classic_dist_vector): Call above function.
+	* tree-loop-distribution.c (pg_add_dependence_edges): Add comment.
+
 2020-05-21  Martin Liska  <mliska@suse.cz>
 
 	* common/config/aarch64/aarch64-common.c (aarch64_handle_option):
