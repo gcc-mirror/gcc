@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alias.h"
 #include "stor-layout.h"
 #include "gomp-constants.h"
+#include "print-tree.h"
 
 
 /* Output the STRING constant to the string
@@ -966,6 +967,14 @@ streamer_write_tree_header (struct output_block *ob, tree expr)
 {
   enum LTO_tags tag;
   enum tree_code code;
+
+  if (streamer_dump_file)
+    {
+      print_node_brief (streamer_dump_file, "     Streaming header of ",
+	 		expr, 4);
+      fprintf (streamer_dump_file, "  to %s\n",
+	       lto_section_name[ob->section_type]);
+    }
 
   /* We should not see any tree nodes not handled by the streamer.  */
   code = TREE_CODE (expr);
