@@ -146,6 +146,7 @@ Compilation::visit (AST::AttrInputMetaItemContainer &input)
 void
 Compilation::visit (AST::IdentifierExpr &ident_expr)
 {
+  printf ("IdentifierExpr: %s\n", ident_expr.as_string ().c_str ());
   Bvariable *var = NULL;
   if (!scope.LookupVar (ident_expr.as_string (), &var))
     {
@@ -170,7 +171,17 @@ Compilation::visit (AST::MacroInvocationSemi &macro)
 // rust-path.h
 void
 Compilation::visit (AST::PathInExpression &path)
-{}
+{
+  Bfunction *fn = NULL;
+  if (scope.LookupFunction (path.as_string (), &fn))
+    {
+      auto expr
+	= backend->function_code_expression (fn, path.get_locus_slow ());
+      exprs.push_back (expr);
+      return;
+    }
+}
+
 void
 Compilation::visit (AST::TypePathSegment &segment)
 {}
@@ -260,8 +271,6 @@ Compilation::visit (AST::NegationExpr &expr)
 void
 Compilation::visit (AST::ArithmeticOrLogicalExpr &expr)
 {
-  printf ("ArithmeticOrLogicalExpr %s\n", expr.as_string ().c_str ());
-
   Bexpression *lhs = NULL;
   VISIT_POP (expr.get_lhs ()->get_locus_slow (), expr.get_lhs (), lhs, exprs);
   if (lhs == NULL)
@@ -306,9 +315,31 @@ Compilation::visit (AST::LazyBooleanExpr &expr)
 void
 Compilation::visit (AST::TypeCastExpr &expr)
 {}
+
 void
 Compilation::visit (AST::AssignmentExpr &expr)
-{}
+{
+  Bexpression *lhs = NULL;
+  VISIT_POP (expr.get_lhs ()->get_locus_slow (), expr.get_lhs (), lhs, exprs);
+  if (lhs == NULL)
+    {
+      rust_error_at (expr.get_lhs ()->get_locus_slow (), "failed to compile");
+      return;
+    }
+
+  Bexpression *rhs = NULL;
+  VISIT_POP (expr.right_expr->get_locus_slow (), expr.right_expr, rhs, exprs);
+  if (rhs == NULL)
+    {
+      rust_error_at (expr.right_expr->get_locus_slow (), "failed to compile");
+      return;
+    }
+
+  auto s = backend->assignment_statement (scope.GetCurrentFndecl (), lhs, rhs,
+					  expr.get_locus_slow ());
+  scope.AddStatement (s);
+}
+
 void
 Compilation::visit (AST::CompoundAssignmentExpr &expr)
 {}
@@ -378,9 +409,39 @@ Compilation::visit (AST::EnumExprTuple &expr)
 void
 Compilation::visit (AST::EnumExprFieldless &expr)
 {}
+
 void
 Compilation::visit (AST::CallExpr &expr)
-{}
+{
+  Bexpression *fn = NULL;
+  VISIT_POP (expr.function->get_locus_slow (), expr.function, fn, exprs);
+  if (fn == NULL)
+    {
+      printf ("expr.function = %s\n", expr.function->as_string ().c_str ());
+      rust_error_at (expr.function->get_locus_slow (), "failed to resolve");
+      return;
+    }
+
+  std::vector<Bexpression *> args;
+  for (auto &param : expr.params)
+    {
+      Bexpression *arg = NULL;
+      VISIT_POP (param->get_locus_slow (), param, arg, exprs);
+      if (arg == NULL)
+	{
+	  rust_error_at (param->get_locus_slow (),
+			 "failed to compile argument");
+	  return;
+	}
+
+      args.push_back (arg);
+    }
+
+  auto call = backend->call_expression (scope.GetCurrentFndecl (), fn, args,
+					NULL, expr.locus);
+  exprs.push_back (call);
+}
+
 void
 Compilation::visit (AST::MethodCallExpr &expr)
 {}
@@ -420,9 +481,27 @@ Compilation::visit (AST::RangeFromToInclExpr &expr)
 void
 Compilation::visit (AST::RangeToInclExpr &expr)
 {}
+
 void
 Compilation::visit (AST::ReturnExpr &expr)
-{}
+{
+  printf ("ReturnExpr: %s\n", expr.as_string ().c_str ());
+
+  Bexpression *ret = NULL;
+  VISIT_POP (expr.return_expr->get_locus_slow (), expr.return_expr, ret, exprs);
+  if (ret == NULL)
+    {
+      rust_error_at (expr.return_expr->get_locus_slow (), "failed to compile");
+      return;
+    }
+
+  std::vector<Bexpression *> retstmts;
+  retstmts.push_back (ret);
+  auto s = backend->return_statement (scope.GetCurrentFndecl (), retstmts,
+				      expr.locus);
+  scope.AddStatement (s);
+}
+
 void
 Compilation::visit (AST::UnsafeBlockExpr &expr)
 {}
@@ -632,6 +711,8 @@ Compilation::visit (AST::Function &function)
 
   scope.Pop ();
   scope.PopCurrentFunction ();
+
+  func_decls.push_back (fndecl);
 }
 
 void
@@ -845,10 +926,15 @@ Compilation::visit (AST::LetStmt &stmt)
 
 void
 Compilation::visit (AST::ExprStmtWithoutBlock &stmt)
-{}
+{
+  stmt.expr->accept_vis (*this);
+}
+
 void
 Compilation::visit (AST::ExprStmtWithBlock &stmt)
-{}
+{
+  rust_fatal_error (stmt.get_locus_slow (), "need new block to continue");
+}
 
 // rust-type.h
 void
