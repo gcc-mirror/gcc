@@ -29,14 +29,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Streams;              use Ada.Streams;
-with Ada.Exceptions;           use Ada.Exceptions;
 with Ada.Containers.Generic_Array_Sort;
+with Ada.Exceptions;           use Ada.Exceptions;
 with Ada.Finalization;
+with Ada.Streams;              use Ada.Streams;
 with Ada.Unchecked_Conversion;
 
-with GNAT.Sockets.Thin_Common; use GNAT.Sockets.Thin_Common;
 with GNAT.Sockets.Thin;        use GNAT.Sockets.Thin;
+with GNAT.Sockets.Thin_Common; use GNAT.Sockets.Thin_Common;
 
 with GNAT.Sockets.Linker_Options;
 pragma Warnings (Off, GNAT.Sockets.Linker_Options);
@@ -291,7 +291,7 @@ package body GNAT.Sockets is
    function Create_Address
      (Family : Family_Inet_4_6; Bytes : Inet_Addr_Bytes) return Inet_Addr_Type
      with Inline;
-   --  Creates address from family and Inet_Addr_Bytes array.
+   --  Creates address from family and Inet_Addr_Bytes array
 
    function Get_Bytes (Addr : Inet_Addr_Type) return Inet_Addr_Bytes
      with Inline;
@@ -2715,7 +2715,7 @@ package body GNAT.Sockets is
                U4 := C.unsigned (Option.Timeout / 0.001);
 
                if Option.Timeout > 0.0 and then U4 = 0 then
-                  --  Avoid round to zero. Zero timeout mean unlimited.
+                  --  Avoid round to zero. Zero timeout mean unlimited
                   U4 := 1;
                end if;
 
@@ -2839,9 +2839,11 @@ package body GNAT.Sockets is
          --  Check for possible Duration overflow when Tv_Sec field is 64 bit
          --  integer.
 
-         if Val.Tv_Sec > time_t (Max_D) or else
-            (Val.Tv_Sec = time_t (Max_D) and then
-             Val.Tv_Usec > suseconds_t ((Forever - Duration (Max_D)) * 1E6))
+         if Val.Tv_Sec > time_t (Max_D)
+             or else
+           (Val.Tv_Sec = time_t (Max_D)
+              and then
+            Val.Tv_Usec > suseconds_t ((Forever - Duration (Max_D)) * 1E6))
          then
             return Forever;
          end if;
