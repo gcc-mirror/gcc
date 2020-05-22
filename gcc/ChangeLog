@@ -1,3 +1,9 @@
+2020-05-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/95258
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	AVX512VPOPCNTDQ.
+
 2020-05-21  Martin Liska  <mliska@suse.cz>
 
 	* common/config/aarch64/aarch64-common.c (aarch64_handle_option):
