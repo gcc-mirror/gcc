@@ -1215,10 +1215,21 @@ package body Exp_Ch9 is
       if not Has_Master_Entity (Master_Scope)
         or else No (Current_Entity_In_Scope (Name_Id))
       then
+         declare
+            Ins_Nod : Node_Id;
+
          begin
             Set_Has_Master_Entity (Master_Scope);
             Master_Decl := Build_Master_Declaration (Loc);
-            Insert_Action (Find_Hook_Context (Related_Node), Master_Decl);
+
+            --  Ensure that the master declaration is placed before its use
+
+            Ins_Nod := Find_Hook_Context (Related_Node);
+            while not Is_List_Member (Ins_Nod) loop
+               Ins_Nod := Parent (Ins_Nod);
+            end loop;
+
+            Insert_Before (First (List_Containing (Ins_Nod)), Master_Decl);
             Analyze (Master_Decl);
 
             --  Mark the containing scope as a task master. Masters associated
