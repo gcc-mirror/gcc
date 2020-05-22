@@ -534,7 +534,9 @@ sink_common_stores_to_bb (basic_block bb)
 	      /* ??? We could handle differing SSA uses in the LHS by inserting
 		 PHIs for them.  */
 	      else if (! operand_equal_p (gimple_assign_lhs (first_store),
-					  gimple_assign_lhs (def), 0))
+					  gimple_assign_lhs (def), 0)
+		       || (gimple_clobber_p (first_store)
+			   && !gimple_clobber_p (def)))
 		{
 		  first_store = NULL;
 		  break;
@@ -546,16 +548,17 @@ sink_common_stores_to_bb (basic_block bb)
 
 	  /* Check if we need a PHI node to merge the stored values.  */
 	  bool allsame = true;
-	  for (unsigned i = 1; i < vdefs.length (); ++i)
-	    {
-	      gimple *def = SSA_NAME_DEF_STMT (vdefs[i]);
-	      if (! operand_equal_p (gimple_assign_rhs1 (first_store),
-				     gimple_assign_rhs1 (def), 0))
-		{
-		  allsame = false;
-		  break;
-		}
-	    }
+	  if (!gimple_clobber_p (first_store))
+	    for (unsigned i = 1; i < vdefs.length (); ++i)
+	      {
+		gimple *def = SSA_NAME_DEF_STMT (vdefs[i]);
+		if (! operand_equal_p (gimple_assign_rhs1 (first_store),
+				       gimple_assign_rhs1 (def), 0))
+		  {
+		    allsame = false;
+		    break;
+		  }
+	      }
 
 	  /* We cannot handle aggregate values if we need to merge them.  */
 	  tree type = TREE_TYPE (gimple_assign_lhs (first_store));
