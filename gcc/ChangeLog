@@ -1,3 +1,9 @@
+2020-05-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95268
+	* tree-ssa-sink.c (sink_common_stores_to_bb): Handle clobbers
+	properly.
+
 2020-05-22  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-streamer.c (record_common_node): Fix hash value of pre-streamed
