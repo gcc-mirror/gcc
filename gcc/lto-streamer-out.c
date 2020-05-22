@@ -1746,7 +1746,7 @@ lto_output_tree (struct output_block *ob, tree expr,
 	 it.  */
       if (!existed_p)
 	lto_output_tree_1 (ob, expr, 0, ref_p, this_ref_p);
-      else
+      else if (this_ref_p)
 	{
 	  streamer_write_record_start (ob, LTO_tree_pickle_reference);
 	  streamer_write_uhwi (ob, ix);
