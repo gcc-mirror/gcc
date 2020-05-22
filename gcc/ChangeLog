@@ -1,5 +1,10 @@
 2020-05-22  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree-streamer.c (record_common_node): Fix hash value of pre-streamed
+	nodes.
+
+2020-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
 	* lto-streamer-in.c (lto_read_tree): Do not stream end markers.
 	(lto_input_scc): Optimize streaming of entry lengths.
 	* lto-streamer-out.c (lto_write_tree): Do not stream end markers
