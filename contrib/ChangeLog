@@ -1,3 +1,9 @@
+2020-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_commit.py: Add trailing / to
+	gcc/testsuite/go.test/test and replace gcc/go/frontend/
+	with gcc/go/gofrontend/ in ignored locations.
+
 2020-05-22  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Add gcc/testsuite/go.test/test
