@@ -1,3 +1,14 @@
+2020-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-section-out.c (lto_output_decl_index): Adjust dump indentation.
+	* lto-streamer-out.c (create_output_block): Fix whitespace
+	(lto_write_tree_1): Add (debug) dump.
+	(DFS::DFS): Add dump.
+	(DFS::DFS_write_tree_body): Do not dump here.
+	(lto_output_tree): Improve dumping; do not stream ref when not needed.
+	(produce_asm_for_decls): Fix whitespace.
+	* tree-streamer-out.c (streamer_write_tree_header): Add dump.
+
 2020-05-22  Hongtao.liu  <hongtao.liu@intel.com>
 
 	PR target/92658
