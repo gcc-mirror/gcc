@@ -2028,7 +2028,11 @@ package body GNAT.Sockets is
       type Local_Selector_Access is access Selector_Type;
       for Local_Selector_Access'Storage_Size use Selector_Type'Size;
 
-      S : Selector_Access;
+      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
+        (Selector_Type, Local_Selector_Access);
+
+      Local_S : Local_Selector_Access;
+      S       : Selector_Access;
       --  Selector to use for waiting
 
       R_Fd_Set : Socket_Set_Type;
@@ -2038,12 +2042,9 @@ package body GNAT.Sockets is
       --  Create selector if not provided by the user
 
       if Selector = null then
-         declare
-            Local_S : constant Local_Selector_Access := new Selector_Type;
-         begin
-            S := Local_S.all'Unchecked_Access;
-            Create_Selector (S.all);
-         end;
+         Local_S := new Selector_Type;
+         S := Local_S.all'Unchecked_Access;
+         Create_Selector (S.all);
 
       else
          S := Selector.all'Access;
@@ -2059,7 +2060,14 @@ package body GNAT.Sockets is
 
       if Selector = null then
          Close_Selector (S.all);
+         Unchecked_Free (Local_S);
       end if;
+   exception
+      when others =>
+         if Selector = null then
+            Close_Selector (S.all);
+            Unchecked_Free (Local_S);
+         end if;
    end Wait_On_Socket;
 
    -----------------
