@@ -30,7 +30,6 @@
 ------------------------------------------------------------------------------
 
 with Interfaces.C;            use Interfaces.C;
-with Interfaces.C.Extensions; use Interfaces.C.Extensions;
 
 package body Ada.Calendar.Conversions is
 
