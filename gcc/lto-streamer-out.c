@@ -473,9 +473,6 @@ lto_write_tree (struct output_block *ob, tree expr, bool ref_p)
   streamer_write_tree_header (ob, expr);
 
   lto_write_tree_1 (ob, expr, ref_p);
-
-  /* Mark the end of EXPR.  */
-  streamer_write_zero (ob);
 }
 
 /* Emit the physical representation of tree node EXPR to output block OB,
@@ -764,7 +761,12 @@ DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 	    {
 	      gcc_checking_assert (ob->section_type == LTO_section_decls);
 	      streamer_write_record_start (ob, LTO_tree_scc);
-	      streamer_write_uhwi (ob, size);
+	      /* In wast majority of cases scc_entry_len is 1 and size is small
+		 integer.  Use extra bit of size to stream info about
+		 exceptions.  */
+	      streamer_write_uhwi (ob, size * 2 + (scc_entry_len != 1));
+	      if (scc_entry_len != 1)
+		streamer_write_uhwi (ob, scc_entry_len);
 	      streamer_write_uhwi (ob, scc_hash);
 	    }
 	  /* Non-trivial SCCs must be packed to trees blocks so forward
@@ -783,8 +785,6 @@ DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 	    lto_output_tree_1 (ob, expr, scc_hash, ref_p, this_ref_p);
 	  else
 	    {
-	      /* Write the size of the SCC entry candidates.  */
-	      streamer_write_uhwi (ob, scc_entry_len);
 
 	      /* Write all headers and populate the streamer cache.  */
 	      for (unsigned i = 0; i < size; ++i)
@@ -807,12 +807,7 @@ DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 
 	      /* Write the bitpacks and tree references.  */
 	      for (unsigned i = 0; i < size; ++i)
-		{
-		  lto_write_tree_1 (ob, sccstack[first+i].t, ref_p);
-
-		  /* Mark the end of the tree.  */
-		  streamer_write_zero (ob);
-		}
+		lto_write_tree_1 (ob, sccstack[first+i].t, ref_p);
 	    }
 
 	  /* Finally truncate the vector.  */
