@@ -947,6 +947,8 @@ public:
 
   void visit_rhs (ASTVisitor &vis) { right_expr->accept_vis (vis); }
 
+  Expr *get_lhs () { return main_or_left_expr.get (); }
+
 protected:
   // Use covariance to implement clone function as returning this object rather
   // than base
@@ -3618,13 +3620,13 @@ protected:
 // Return expression AST node representation
 class ReturnExpr : public ExprWithoutBlock
 {
+public:
   // bool has_return_expr;
   // Expr* return_expr;
   ::std::unique_ptr<Expr> return_expr;
 
   Location locus;
 
-public:
   /*~ReturnExpr() {
       if (has_return_expr) {
 	  delete return_expr;
