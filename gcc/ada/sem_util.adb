@@ -24330,7 +24330,7 @@ package body Sem_Util is
          --  than the level of any visible named access type (see 3.10.2(21)).
 
          if Is_Type (E) then
-            return Type_Access_Level (E) +  1;
+            return Type_Access_Level (E) + 1;
 
          elsif Present (Renamed_Object (E)) then
             return Object_Access_Level (Renamed_Object (E));
@@ -24346,6 +24346,12 @@ package body Sem_Util is
            and then Comes_From_Source (Scope (E))
          then
             return Type_Access_Level (Scope (E)) + 1;
+
+         --  An object of a named access type gets its level from its
+         --  associated type.
+
+         elsif Is_Named_Access_Type (Etype (E)) then
+            return Type_Access_Level (Etype (E));
 
          else
             return Scope_Depth (Enclosing_Dynamic_Scope (E));
@@ -24558,6 +24564,15 @@ package body Sem_Util is
                          Name_Loop_Entry)
       then
          return Object_Access_Level (Current_Scope);
+
+      --  Move up the attribute reference when we encounter a 'Access variation
+
+      elsif Nkind (Orig_Obj) = N_Attribute_Reference
+        and then Nam_In (Attribute_Name (Orig_Obj), Name_Access,
+                                                    Name_Unchecked_Access,
+                                                    Name_Unrestricted_Access)
+      then
+         return Object_Access_Level (Prefix (Orig_Obj));
 
       --  Otherwise return the scope level of Standard. (If there are cases
       --  that fall through to this point they will be treated as having
