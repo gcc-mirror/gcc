@@ -1,3 +1,10 @@
+2020-05-25  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/95125
+	* config/i386/sse.md (sf2dfmode_lower): New mode attribute.
+	(trunc<mode><sf2dfmode_lower>2) New expander.
+	(extend<sf2dfmode_lower><mode>2): Ditto.
+
 2020-05-23 Iain Sandoe <iain@sandoe.co.uk>
 
 	* config/darwin.h (ASM_GENERATE_INTERNAL_LABEL): Make

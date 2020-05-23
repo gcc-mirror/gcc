@@ -6552,6 +6552,20 @@
 ;; For <sse2_avx_avx512f>_cvtps2pd<avxsizesuffix> insn pattern
 (define_mode_attr sf2dfmode
   [(V8DF "V8SF") (V4DF "V4SF")])
+(define_mode_attr sf2dfmode_lower
+  [(V8DF "v8sf") (V4DF "v4sf")])
+
+(define_expand "trunc<mode><sf2dfmode_lower>2"
+  [(set (match_operand:<sf2dfmode> 0 "register_operand")
+	(float_truncate:<sf2dfmode>
+	  (match_operand:VF2_512_256 1 "vector_operand")))]
+  "TARGET_AVX")
+
+(define_expand "extend<sf2dfmode_lower><mode>2"
+  [(set (match_operand:VF2_512_256 0 "register_operand")
+	(float_extend:VF2_512_256
+	  (match_operand:<sf2dfmode> 1 "vector_operand")))]
+  "TARGET_AVX")
 
 (define_insn "<sse2_avx_avx512f>_cvtps2pd<avxsizesuffix><mask_name><round_saeonly_name>"
   [(set (match_operand:VF2_512_256 0 "register_operand" "=v")
