@@ -1,5 +1,10 @@
 2020-05-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/fs_path.h (__detail::_S_range_begin)
+	(__detail::_S_range_end): Remove unintentional static specifiers.
+	* include/experimental/bits/fs_path.h (__detail::_S_range_begin)
+	(__detail::_S_range_end): Likewise.
+
 	* include/bits/fs_path.h (filesystem::__detail::__is_encoded_char):
 	Replace alias template with variable template. Don't remove const.
 	(filesystem::__detail::__is_path_src): Replace overloaded function
