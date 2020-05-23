@@ -3,6 +3,16 @@
 	Backport from mainline
 	2020-05-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/fs_path.h (__detail::_S_range_begin)
+	(__detail::_S_range_end): Remove unintentional static specifiers.
+	* include/experimental/bits/fs_path.h (__detail::_S_range_begin)
+	(__detail::_S_range_end): Likewise.
+
+2020-05-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2020-05-23  Jonathan Wakely  <jwakely@redhat.com>
+
 	PR libstdc++/95289
 	* include/debug/helper_functions.h (__get_distance): Only declare
 	as a constexpr function for C++14 and up.
