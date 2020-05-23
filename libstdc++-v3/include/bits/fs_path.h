@@ -155,56 +155,61 @@ namespace __detail
   template<typename _Iter, typename _Tr = __safe_iterator_traits<_Iter>>
     using _Path2 = enable_if_t<__is_path_iter_src<_Tr>::value, path>;
 
-  template<typename _Source>
-    _Source
-    _S_range_begin(_Source __begin) { return __begin; }
-
-  struct __null_terminated { };
-
-  template<typename _Source>
-    __null_terminated
-    _S_range_end(_Source) { return {}; }
+  // The __effective_range overloads convert a Source parameter into
+  // either a basic_string_view or basic_string containing the
+  // effective range of the Source, as defined in [fs.path.req].
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    inline const _CharT*
-    _S_range_begin(const basic_string<_CharT, _Traits, _Alloc>& __str)
-    { return __str.data(); }
-
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    inline const _CharT*
-    _S_range_end(const basic_string<_CharT, _Traits, _Alloc>& __str)
-    { return __str.data() + __str.size(); }
+    inline basic_string_view<_CharT, _Traits>
+    __effective_range(const basic_string<_CharT, _Traits, _Alloc>& __source)
+    { return __source; }
 
   template<typename _CharT, typename _Traits>
-    inline const _CharT*
-    _S_range_begin(const basic_string_view<_CharT, _Traits>& __str)
-    { return __str.data(); }
+    inline const basic_string_view<_CharT, _Traits>&
+    __effective_range(const basic_string_view<_CharT, _Traits>& __source)
+    { return __source; }
 
-  template<typename _CharT, typename _Traits>
-    inline const _CharT*
-    _S_range_end(const basic_string_view<_CharT, _Traits>& __str)
-    { return __str.data() + __str.size(); }
+  template<typename _Source>
+    inline auto
+    __effective_range(const _Source& __source)
+    {
+      if constexpr (is_pointer_v<decay_t<_Source>>)
+	return basic_string_view{&*__source};
+      else
+	{
+	  // _Source is an input iterator that iterates over an NTCTS.
+	  // Create a basic_string by reading until the null character.
+	  using value_type
+	    = typename iterator_traits<_Source>::value_type;
+	  basic_string<value_type> __str;
+	  _Source __it = __source;
+	  for (value_type __ch = *__it; __ch != value_type(); __ch = *++__it)
+	    __str.push_back(__ch);
+	  return __str;
+	}
+    }
 
-  template<typename _Tp,
-	   typename _Iter = decltype(_S_range_begin(std::declval<_Tp>())),
-	   typename _Val = typename std::iterator_traits<_Iter>::value_type,
-	   typename _UnqualVal = std::remove_const_t<_Val>>
+  // The value type of a Source parameter's effective range.
+  template<typename _Tp>
+    using __value_t = typename remove_reference_t<
+      decltype(__detail::__effective_range(std::declval<_Tp>()))>::value_type;
+
+  // SFINAE helper to check that an effective range has value_type char,
+  // as required by path constructors taking a std::locale parameter.
+  // The type _Tp must have already been checked by _Path<Tp> or _Path2<_Tp>.
+  template<typename _Tp, typename _Val = __value_t<_Tp>>
     using __value_type_is_char
-      = std::enable_if_t<std::is_same_v<_UnqualVal, char>,
-			 _UnqualVal>;
+      = std::enable_if_t<std::is_same_v<_Val, char>, _Val>;
 
-  template<typename _Tp,
-	   typename _Iter = decltype(_S_range_begin(std::declval<_Tp>())),
-	   typename _Val = typename std::iterator_traits<_Iter>::value_type,
-	   typename _UnqualVal = std::remove_const_t<_Val>>
+  // As above, but also allows char8_t, as required by u8path
+  // C++20 [depr.fs.path.factory]
+  template<typename _Tp, typename _Val = __value_t<_Tp>>
     using __value_type_is_char_or_char8_t
-      = std::enable_if_t<__or_v<
-			   std::is_same<_UnqualVal, char>
+      = std::enable_if_t<std::is_same_v<_Val, char>
 #ifdef _GLIBCXX_USE_CHAR8_T
-			   , std::is_same<_UnqualVal, char8_t>
+			 || std::is_same_v<_Val, char8_t>
 #endif
-			   >,
-			 _UnqualVal>;
+			 , _Val>;
 
 } // namespace __detail
   /// @endcond
@@ -251,8 +256,7 @@ namespace __detail
     template<typename _Source,
 	     typename _Require = __detail::_Path<_Source>>
       path(_Source const& __source, format = auto_format)
-      : _M_pathname(_S_convert(__detail::_S_range_begin(__source),
-			       __detail::_S_range_end(__source)))
+      : _M_pathname(_S_convert(__detail::__effective_range(__source)))
       { _M_split_cmpts(); }
 
     template<typename _InputIterator,
@@ -264,9 +268,8 @@ namespace __detail
     template<typename _Source,
 	     typename _Require = __detail::_Path<_Source>,
 	     typename _Require2 = __detail::__value_type_is_char<_Source>>
-      path(_Source const& __source, const locale& __loc, format = auto_format)
-      : _M_pathname(_S_convert_loc(__detail::_S_range_begin(__source),
-				   __detail::_S_range_end(__source), __loc))
+      path(_Source const& __src, const locale& __loc, format = auto_format)
+      : _M_pathname(_S_convert_loc(__detail::__effective_range(__src), __loc))
       { _M_split_cmpts(); }
 
     template<typename _InputIterator,
@@ -309,8 +312,7 @@ namespace __detail
       __detail::_Path<_Source>&
       operator/=(_Source const& __source)
       {
-	_M_append(_S_convert(__detail::_S_range_begin(__source),
-			     __detail::_S_range_end(__source)));
+	_M_append(_S_convert(__detail::__effective_range(__source)));
 	return *this;
       }
 
@@ -318,8 +320,7 @@ namespace __detail
       __detail::_Path<_Source>&
       append(_Source const& __source)
       {
-	_M_append(_S_convert(__detail::_S_range_begin(__source),
-			     __detail::_S_range_end(__source)));
+	_M_append(_S_convert(__detail::__effective_range(__source)));
 	return *this;
       }
 
@@ -351,8 +352,7 @@ namespace __detail
       __detail::_Path<_Source>&
       concat(_Source const& __x)
       {
-	_M_concat(_S_convert(__detail::_S_range_begin(__x),
-			     __detail::_S_range_end(__x)));
+	_M_concat(_S_convert(__detail::__effective_range(__x)));
 	return *this;
       }
 
@@ -523,22 +523,6 @@ namespace __detail
       return __result;
     }
 
-    /// @cond undocumented
-    // Create a basic_string by reading until a null character.
-    template<typename _InputIterator,
-	     typename _Traits = std::iterator_traits<_InputIterator>,
-	     typename _CharT
-	       = typename std::remove_cv_t<typename _Traits::value_type>>
-      static std::basic_string<_CharT>
-      _S_string_from_iter(_InputIterator __source)
-      {
-	std::basic_string<_CharT> __str;
-	for (_CharT __ch = *__source; __ch != _CharT(); __ch = *++__source)
-	  __str.push_back(__ch);
-	return __str;
-      }
-    /// @endcond
-
   private:
     enum class _Type : unsigned char {
       _Multi = 0, _Root_name, _Root_dir, _Filename
@@ -558,43 +542,67 @@ namespace __detail
 
     pair<const string_type*, size_t> _M_find_extension() const noexcept;
 
-    template<typename _CharT>
-      struct _Cvt;
+    // Create a string or string view from an iterator range.
+    template<typename _InputIterator>
+      static auto
+      _S_to_string(_InputIterator __first, _InputIterator __last)
+      {
+	using _EcharT
+	  = typename std::iterator_traits<_InputIterator>::value_type;
+	static_assert(__detail::__is_encoded_char<_EcharT>);
 
-    static basic_string_view<value_type>
-    _S_convert(value_type* __src, __detail::__null_terminated)
-    { return __src; }
+#if __cpp_lib_concepts
+	constexpr bool __contiguous = std::contiguous_iterator<_InputIterator>;
+#else
+	constexpr bool __contiguous
+	  = is_pointer_v<decltype(std::__niter_base(__first))>;
+#endif
+	if constexpr (__contiguous)
+	  {
+	    // For contiguous iterators we can just return a string view.
+	    const auto* __f = std::__to_address(std::__niter_base(__first));
+	    const auto* __l = std::__to_address(std::__niter_base(__last));
+	    return basic_string_view<_EcharT>(__f, __l - __f);
+	  }
+	else
+	  // Conversion requires contiguous characters, so create a string.
+	  return basic_string<_EcharT>(__first, __last);
+      }
 
-    static basic_string_view<value_type>
-    _S_convert(const value_type* __src, __detail::__null_terminated)
-    { return __src; }
+    // path::_S_convert creates a basic_string<value_type> or
+    // basic_string_view<value_type> from a range (either the effective
+    // range of a Source parameter, or a pair of InputIterator parameters),
+    // performing the conversions required by [fs.path.type.cvt].
+    // If the value_type of the range value type is path::value_type,
+    // no encoding conversion is performed. If the range is contiguous
+    // a string_view
 
-    static basic_string_view<value_type>
-    _S_convert(value_type* __first, value_type* __last)
-    { return {__first, __last - __first}; }
+    static string_type
+    _S_convert(string_type __str)
+    { return __str; }
 
-    static basic_string_view<value_type>
-    _S_convert(const value_type* __first, const value_type* __last)
-    { return {__first, __last - __first}; }
+    template<typename _Tp>
+      static auto
+      _S_convert(const _Tp& __str)
+      {
+	if constexpr (is_same_v<_Tp, string_type>)
+	  return __str;
+	else if constexpr (is_same_v<_Tp, basic_string_view<value_type>>)
+	  return __str;
+	else if constexpr (is_same_v<typename _Tp::value_type, value_type>)
+	  return basic_string_view<value_type>(__str.data(), __str.size());
+	else
+	  return _S_convert(__str.data(), __str.data() + __str.size());
+      }
+
+    template<typename _EcharT>
+      static auto
+      _S_convert(const _EcharT* __first, const _EcharT* __last);
 
     template<typename _Iter>
-      static string_type
+      static auto
       _S_convert(_Iter __first, _Iter __last)
-      {
-	using __value_type = typename std::iterator_traits<_Iter>::value_type;
-	return _Cvt<typename remove_cv<__value_type>::type>::
-	  _S_convert(__first, __last);
-      }
-
-    template<typename _InputIterator>
-      static string_type
-      _S_convert(_InputIterator __src, __detail::__null_terminated)
-      {
-	// Read from iterator into basic_string until a null value is seen:
-	auto __s = _S_string_from_iter(__src);
-	// Convert (if needed) from iterator's value type to path::value_type:
-	return string_type(_S_convert(__s.data(), __s.data() + __s.size()));
-      }
+      { return _S_convert(_S_to_string(__first, __last)); }
 
     static string_type
     _S_convert_loc(const char* __first, const char* __last,
@@ -604,16 +612,14 @@ namespace __detail
       static string_type
       _S_convert_loc(_Iter __first, _Iter __last, const std::locale& __loc)
       {
-	const std::string __str(__first, __last);
-	return _S_convert_loc(__str.data(), __str.data()+__str.size(), __loc);
+	const auto __s = _S_to_string(__first, __last);
+	return _S_convert_loc(__s.data(), __s.data() + __s.size(), __loc);
       }
 
-    template<typename _InputIterator>
+    template<typename _Tp>
       static string_type
-      _S_convert_loc(_InputIterator __src, __detail::__null_terminated,
-		     const std::locale& __loc)
+      _S_convert_loc(const _Tp& __s, const std::locale& __loc)
       {
-	const std::string __s = _S_string_from_iter(__src);
 	return _S_convert_loc(__s.data(), __s.data() + __s.size(), __loc);
       }
 
@@ -803,100 +809,66 @@ namespace __detail
     size_t _M_pos;
   };
 
-  // specialize _Cvt for degenerate 'noconv' case
-  template<>
-    struct path::_Cvt<path::value_type>
+  template<typename _EcharT>
+    auto
+    path::_S_convert(const _EcharT* __f, const _EcharT* __l)
     {
-      template<typename _Iter>
-	static string_type
-	_S_convert(_Iter __first, _Iter __last)
-	{ return string_type{__first, __last}; }
-    };
+      static_assert(__detail::__is_encoded_char<_EcharT>);
 
-#if !defined _GLIBCXX_FILESYSTEM_IS_WINDOWS  && defined _GLIBCXX_USE_CHAR8_T
-  // For POSIX converting from char8_t to char is also 'noconv'
-  template<>
-    struct path::_Cvt<char8_t>
-    {
-      template<typename _Iter>
-	static string_type
-	_S_convert(_Iter __first, _Iter __last)
-	{ return string_type(__first, __last); }
-    };
+      if constexpr (is_same_v<_EcharT, value_type>)
+	return basic_string_view<value_type>(__f, __l - __f);
+#if !defined _GLIBCXX_FILESYSTEM_IS_WINDOWS && defined _GLIBCXX_USE_CHAR8_T
+      else if constexpr (is_same_v<_EcharT, char8_t>)
+	// For POSIX converting from char8_t to char is also 'noconv'
+	return string_view(reinterpret_cast<const char*>(__f), __l - __f);
 #endif
-
-  template<typename _CharT>
-    struct path::_Cvt
-    {
-      static string_type
-      _S_convert(const _CharT* __f, const _CharT* __l)
-      {
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-	std::wstring __wstr;
-	if constexpr (is_same_v<_CharT, char>)
-	  {
-	    struct _UCvt : std::codecvt<wchar_t, char, std::mbstate_t>
-	    { } __cvt;
-	    if (__str_codecvt_in_all(__f, __l, __wstr, __cvt))
-	      return __wstr;
-	  }
-#ifdef _GLIBCXX_USE_CHAR8_T
-	else if constexpr (is_same_v<_CharT, char8_t>)
-	  {
-	    const char* __f2 = (const char*)__f;
-	    const char* __l2 = (const char*)__l;
-	    std::codecvt_utf8_utf16<wchar_t> __wcvt;
-	    if (__str_codecvt_in_all(__f2, __l2, __wstr, __wcvt))
-	      return __wstr;
-	  }
-#endif
-	else // char16_t or char32_t
-	  {
-	    struct _UCvt : std::codecvt<_CharT, char, std::mbstate_t>
-	    { } __cvt;
-	    std::string __str;
-	    if (__str_codecvt_out_all(__f, __l, __str, __cvt))
-	      {
-		const char* __f2 = __str.data();
-		const char* __l2 = __f2 + __str.size();
-		std::codecvt_utf8_utf16<wchar_t> __wcvt;
-		if (__str_codecvt_in_all(__f2, __l2, __wstr, __wcvt))
-		  return __wstr;
-	      }
-	  }
-#else // ! windows
-	struct _UCvt : std::codecvt<_CharT, char, std::mbstate_t>
-	{ } __cvt;
-	std::string __str;
-	if (__str_codecvt_out_all(__f, __l, __str, __cvt))
-	  return __str;
-#endif
-	_GLIBCXX_THROW_OR_ABORT(filesystem_error(
-	      "Cannot convert character sequence",
-	      std::make_error_code(errc::illegal_byte_sequence)));
-      }
-
-      static string_type
-      _S_convert(_CharT* __f, _CharT* __l)
-      {
-	return _S_convert(const_cast<const _CharT*>(__f),
-			  const_cast<const _CharT*>(__l));
-      }
-
-      template<typename _Iter>
-	static string_type
-	_S_convert(_Iter __first, _Iter __last)
+      else
 	{
-	  const std::basic_string<_CharT> __str(__first, __last);
-	  return _S_convert(__str.data(), __str.data() + __str.size());
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+	  std::wstring __wstr;
+	  if constexpr (is_same_v<_EcharT, char>)
+	    {
+	      struct _UCvt : std::codecvt<wchar_t, char, std::mbstate_t>
+	      { } __cvt;
+	      if (__str_codecvt_in_all(__f, __l, __wstr, __cvt))
+		return __wstr;
+	    }
+#ifdef _GLIBCXX_USE_CHAR8_T
+	  else if constexpr (is_same_v<_EcharT, char8_t>)
+	    {
+	      const char* __f2 = (const char*)__f;
+	      const char* __l2 = (const char*)__l;
+	      std::codecvt_utf8_utf16<wchar_t> __wcvt;
+	      if (__str_codecvt_in_all(__f2, __l2, __wstr, __wcvt))
+		return __wstr;
+	    }
+#endif
+	  else // char16_t or char32_t
+	    {
+	      struct _UCvt : std::codecvt<_EcharT, char, std::mbstate_t>
+	      { } __cvt;
+	      std::string __str;
+	      if (__str_codecvt_out_all(__f, __l, __str, __cvt))
+		{
+		  const char* __f2 = __str.data();
+		  const char* __l2 = __f2 + __str.size();
+		  std::codecvt_utf8_utf16<wchar_t> __wcvt;
+		  if (__str_codecvt_in_all(__f2, __l2, __wstr, __wcvt))
+		    return __wstr;
+		}
+	    }
+#else // ! windows
+	  struct _UCvt : std::codecvt<_EcharT, char, std::mbstate_t>
+	  { } __cvt;
+	  std::string __str;
+	  if (__str_codecvt_out_all(__f, __l, __str, __cvt))
+	    return __str;
+#endif
+	  _GLIBCXX_THROW_OR_ABORT(filesystem_error(
+		"Cannot convert character sequence",
+		std::make_error_code(errc::illegal_byte_sequence)));
 	}
-
-      template<typename _Iter, typename _Cont>
-	static string_type
-	_S_convert(__gnu_cxx::__normal_iterator<_Iter, _Cont> __first,
-		  __gnu_cxx::__normal_iterator<_Iter, _Cont> __last)
-	{ return _S_convert(__first.base(), __last.base()); }
-    };
+    }
 
   /// @endcond
 
@@ -1030,10 +1002,10 @@ namespace __detail
 
   template<typename _CharT>
     inline __detail::_Path2<_CharT*>&
-    path::operator+=(_CharT __x)
+    path::operator+=(const _CharT __x)
     {
-      auto* __addr = std::__addressof(__x);
-      return concat(__addr, __addr + 1);
+      _M_concat(_S_convert(&__x, &__x + 1));
+      return *this;
     }
 
   inline path&
