@@ -1,3 +1,13 @@
+2020-05-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2020-05-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95289
+	* include/debug/helper_functions.h (__get_distance): Only declare
+	as a constexpr function for C++14 and up.
+	* testsuite/25_algorithms/copy/debug/95289.cc: New test.
+
 2020-05-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
