@@ -268,6 +268,14 @@ get_c_stdlib_header_for_string_macro_name (const char *name)
   return get_string_macro_hint (name, STDLIB_C);
 }
 
+/* Given non-NULL NAME, return the header name defining a string macro
+   within the C++ standard library (with '<' and '>'), or NULL.  */
+const char *
+get_cp_stdlib_header_for_string_macro_name (const char *name)
+{
+  return get_string_macro_hint (name, STDLIB_CPLUSPLUS);
+}
+
 /* Implementation of class suggest_missing_header.  */
 
 /* suggest_missing_header's ctor.  */
