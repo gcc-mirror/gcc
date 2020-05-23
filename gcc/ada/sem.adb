@@ -1848,12 +1848,16 @@ package body Sem is
                   if Withed_Unit /= Main_CU
                     and then not Done (Get_Cunit_Unit_Number (Withed_Unit))
                   then
+                     --  N_Null_Statement will happen in case of a ghost unit
+                     --  which gets rewritten.
+
                      if not Nkind_In
                               (Unit (Withed_Unit),
                                  N_Generic_Package_Declaration,
                                  N_Package_Body,
                                  N_Package_Renaming_Declaration,
-                                 N_Subprogram_Body)
+                                 N_Subprogram_Body,
+                                 N_Null_Statement)
                      then
                         Write_Unit_Name
                           (Unit_Name (Get_Cunit_Unit_Number (Withed_Unit)));
