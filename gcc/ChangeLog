@@ -1,3 +1,8 @@
+2020-05-23 Iain Sandoe <iain@sandoe.co.uk>
+
+	* config/darwin.h (ASM_GENERATE_INTERNAL_LABEL): Make
+	ubsan_{data,type},ASAN symbols linker-visible.
+
 2020-05-22  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-streamer-out.c (DFS::DFS): Silence warning.
