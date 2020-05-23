@@ -1,3 +1,9 @@
+2020-05-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/93978
+	* testsuite/std/ranges/adaptors/93978.cc: Add -Wall to
+	dg-additional-options.  Avoid unused-but-set-variable warning.
+
 2020-05-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/95289
