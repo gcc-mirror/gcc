@@ -1,3 +1,20 @@
+2020-05-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (filesystem::__detail::__is_encoded_char):
+	Replace alias template with variable template. Don't remove const.
+	(filesystem::__detail::__is_path_src): Replace overloaded function
+	template with variable template and specializations.
+	(filesystem::__detail::__is_path_iter_src): Replace alias template
+	with class template.
+	(filesystem::__detail::_Path): Use __is_path_src. Remove support for
+	iterator pairs.
+	(filesystem::__detail::_Path2): New alias template for checking
+	InputIterator requirements.
+	(filesystem::__detail::__constructible_from): Remove.
+	(filesystem::path): Replace _Path<Iter, Iter> with _Path2<Iter>.
+	* testsuite/27_io/filesystem/path/construct/80762.cc: Check with two
+	constructor arguments of void and void* types.
+
 2020-05-21  Matthias Kretz  <kretz@kde.org>
 
 	* testsuite/Makefile.am: Remove dup target_triplet and set tool,
