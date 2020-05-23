@@ -1,5 +1,10 @@
 2020-05-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/95289
+	* include/debug/helper_functions.h (__get_distance): Only declare
+	as a constexpr function for C++14 and up.
+	* testsuite/25_algorithms/copy/debug/95289.cc: New test.
+
 	* include/bits/fs_path.h (__detail::_S_range_begin)
 	(__detail::_S_range_end, path::_S_string_from_iter): Replace with
 	overloaded function template __detail::__effective_range.
