@@ -28,6 +28,7 @@ AC_CONFIG_AUX_DIR(..)
 AC_PROG_MAKE_SET
 AC_PROG_CC
 AC_PROG_RANLIB
+AC_CHECK_TOOL(AR, ar)
 
 MISSING=`cd $ac_aux_dir && ${PWDCMD-pwd}`/missing
 AC_CHECK_PROGS([ACLOCAL], [aclocal], [$MISSING aclocal])
