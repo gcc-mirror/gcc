@@ -424,6 +424,13 @@ async_wait_id (st_parameter_common *cmp, async_unit *au, int i)
     }
 
   LOCK (&au->lock);
+  if (i > au->id.high)
+    {
+      generate_error_common (cmp, LIBERROR_BAD_WAIT_ID, NULL);
+      UNLOCK (&au->lock);
+      return true;
+    }
+
   NOTE ("Waiting for id %d", i);
   if (au->id.waiting < i)
     au->id.waiting = i;
