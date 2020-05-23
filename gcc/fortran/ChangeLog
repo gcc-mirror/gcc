@@ -1,3 +1,9 @@
+2020-05-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/95191
+	* libgfortran.h (libgfortran_error_codes): Add
+	LIBERROR_BAD_WAIT_ID.
+
 2020-05-20  Mark Eggleston  <markeggleston@gcc.gnu.org>
 
 	PR fortran/39695
