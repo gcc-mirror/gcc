@@ -1,3 +1,10 @@
+2020-05-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94038
+	* constexpr.c (cxx_eval_constant_expression)
+	<case TEMPLATE_ID_EXPR>: Don't evaluate the concept when
+	constexpr evaluation is uid-sensitive.
+
 2020-05-21  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94038
