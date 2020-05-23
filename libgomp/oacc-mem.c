@@ -1060,7 +1060,10 @@ goacc_exit_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 	      = splay_tree_lookup (&acc_dev->mem_map, &cur_node);
 
 	    if (n == NULL)
-	      gomp_fatal ("struct not mapped for detach operation");
+	      {
+		gomp_mutex_unlock (&acc_dev->lock);
+		gomp_fatal ("struct not mapped for detach operation");
+	      }
 
 	    gomp_detach_pointer (acc_dev, aq, n, hostaddr, finalize, NULL);
 	  }
