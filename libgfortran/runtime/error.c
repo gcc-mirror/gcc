@@ -616,6 +616,10 @@ translate_error (int code)
       p = "Inquire statement identifies an internal file";
       break;
 
+    case LIBERROR_BAD_WAIT_ID:
+      p = "Bad ID in WAIT statement";
+      break;
+
     default:
       p = "Unknown error code";
       break;
