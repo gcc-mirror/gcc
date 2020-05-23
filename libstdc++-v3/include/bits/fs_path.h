@@ -73,58 +73,87 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 namespace __detail
 {
   template<typename _CharT>
-    using __is_encoded_char = __is_one_of<remove_const_t<_CharT>,
-	  char,
+    inline constexpr bool __is_encoded_char = false;
+  template<>
+    inline constexpr bool __is_encoded_char<char> = true;
 #ifdef _GLIBCXX_USE_CHAR8_T
-	  char8_t,
+  template<>
+    inline constexpr bool __is_encoded_char<char8_t> = true;
 #endif
 #if _GLIBCXX_USE_WCHAR_T
-	  wchar_t,
+  template<>
+    inline constexpr bool __is_encoded_char<wchar_t> = true;
 #endif
-	  char16_t, char32_t>;
+  template<>
+    inline constexpr bool __is_encoded_char<char16_t> = true;
+  template<>
+    inline constexpr bool __is_encoded_char<char32_t> = true;
 
-  template<typename _Iter,
-	   typename _Iter_traits = std::iterator_traits<_Iter>>
-    using __is_path_iter_src
-      = __and_<__is_encoded_char<typename _Iter_traits::value_type>,
-	       std::is_base_of<std::input_iterator_tag,
-			       typename _Iter_traits::iterator_category>>;
-
+#if __cpp_concepts >= 201907L
   template<typename _Iter>
-    static __is_path_iter_src<_Iter>
-    __is_path_src(_Iter, int);
-
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    static __is_encoded_char<_CharT>
-    __is_path_src(const basic_string<_CharT, _Traits, _Alloc>&, int);
-
-  template<typename _CharT, typename _Traits>
-    static __is_encoded_char<_CharT>
-    __is_path_src(const basic_string_view<_CharT, _Traits>&, int);
-
-  template<typename _Unknown>
-    static std::false_type
-    __is_path_src(const _Unknown&, ...);
-
-  template<typename _Tp1, typename _Tp2>
-    struct __constructible_from;
-
+    using __safe_iterator_traits = std::iterator_traits<_Iter>;
+#else
   template<typename _Iter>
-    struct __constructible_from<_Iter, _Iter>
-    : __is_path_iter_src<_Iter>
+    struct __safe_iterator_traits : std::iterator_traits<_Iter>
+    { };
+
+  // Protect against ill-formed iterator_traits specializations in C++17
+  template<> struct __safe_iterator_traits<void*> { };
+  template<> struct __safe_iterator_traits<const void*> { };
+  template<> struct __safe_iterator_traits<volatile void*> { };
+  template<> struct __safe_iterator_traits<const volatile void*> { };
+#endif
+
+  template<typename _Iter_traits, typename = void>
+    struct __is_path_iter_src
+    : false_type
+    { };
+
+  template<typename _Iter_traits>
+    struct __is_path_iter_src<_Iter_traits,
+			      void_t<typename _Iter_traits::value_type>>
+    : bool_constant<__is_encoded_char<typename _Iter_traits::value_type>>
     { };
 
   template<typename _Source>
-    struct __constructible_from<_Source, void>
-    : decltype(__is_path_src(std::declval<_Source>(), 0))
-    { };
+    inline constexpr bool __is_path_src
+      = __is_path_iter_src<iterator_traits<decay_t<_Source>>>::value;
 
-  template<typename _Tp1, typename _Tp2 = void>
-    using _Path = typename
-      std::enable_if<__and_<__not_<is_same<remove_cv_t<_Tp1>, path>>,
-			    __not_<is_void<remove_pointer_t<_Tp1>>>,
-			    __constructible_from<_Tp1, _Tp2>>::value,
-		     path>::type;
+  template<>
+    inline constexpr bool __is_path_src<path> = false;
+
+  template<>
+    inline constexpr bool __is_path_src<volatile path> = false;
+
+  template<>
+    inline constexpr bool __is_path_src<void*> = false;
+
+  template<>
+    inline constexpr bool __is_path_src<const void*> = false;
+
+  template<>
+    inline constexpr bool __is_path_src<volatile void*> = false;
+
+  template<>
+    inline constexpr bool __is_path_src<const volatile void*> = false;
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    inline constexpr bool
+      __is_path_src<basic_string<_CharT, _Traits, _Alloc>>
+	= __is_encoded_char<_CharT>;
+
+  template<typename _CharT, typename _Traits>
+    inline constexpr bool
+      __is_path_src<basic_string_view<_CharT, _Traits>>
+	= __is_encoded_char<_CharT>;
+
+  // SFINAE constraint for Source parameters as required by [fs.path.req].
+  template<typename _Tp>
+    using _Path = enable_if_t<__is_path_src<_Tp>, path>;
+
+  // SFINAE constraint for InputIterator parameters as required by [fs.req].
+  template<typename _Iter, typename _Tr = __safe_iterator_traits<_Iter>>
+    using _Path2 = enable_if_t<__is_path_iter_src<_Tr>::value, path>;
 
   template<typename _Source>
     static _Source
@@ -227,7 +256,7 @@ namespace __detail
       { _M_split_cmpts(); }
 
     template<typename _InputIterator,
-	     typename _Require = __detail::_Path<_InputIterator, _InputIterator>>
+	     typename _Require = __detail::_Path2<_InputIterator>>
       path(_InputIterator __first, _InputIterator __last, format = auto_format)
       : _M_pathname(_S_convert(__first, __last))
       { _M_split_cmpts(); }
@@ -241,8 +270,8 @@ namespace __detail
       { _M_split_cmpts(); }
 
     template<typename _InputIterator,
-	     typename _Require = __detail::_Path<_InputIterator, _InputIterator>,
-	     typename _Require2 = __detail::__value_type_is_char<_InputIterator>>
+	     typename _Require = __detail::_Path2<_InputIterator>,
+	     typename _Req2 = __detail::__value_type_is_char<_InputIterator>>
       path(_InputIterator __first, _InputIterator __last, const locale& __loc,
 	   format = auto_format)
       : _M_pathname(_S_convert_loc(__first, __last, __loc))
@@ -268,7 +297,7 @@ namespace __detail
       { return *this = path(__source); }
 
     template<typename _InputIterator>
-      __detail::_Path<_InputIterator, _InputIterator>&
+      __detail::_Path2<_InputIterator>&
       assign(_InputIterator __first, _InputIterator __last)
       { return *this = path(__first, __last); }
 
@@ -295,7 +324,7 @@ namespace __detail
       }
 
     template<typename _InputIterator>
-      __detail::_Path<_InputIterator, _InputIterator>&
+      __detail::_Path2<_InputIterator>&
       append(_InputIterator __first, _InputIterator __last)
       {
 	_M_append(_S_convert(__first, __last));
@@ -315,7 +344,7 @@ namespace __detail
       operator+=(_Source const& __x) { return concat(__x); }
 
     template<typename _CharT>
-      __detail::_Path<_CharT*, _CharT*>&
+      __detail::_Path2<_CharT*>&
       operator+=(_CharT __x);
 
     template<typename _Source>
@@ -328,7 +357,7 @@ namespace __detail
       }
 
     template<typename _InputIterator>
-      __detail::_Path<_InputIterator, _InputIterator>&
+      __detail::_Path2<_InputIterator>&
       concat(_InputIterator __first, _InputIterator __last)
       {
 	_M_concat(_S_convert(__first, __last));
@@ -695,7 +724,7 @@ namespace __detail
    * @relates std::filesystem::path
    */
   template<typename _InputIterator,
-	   typename _Require = __detail::_Path<_InputIterator, _InputIterator>,
+	   typename _Require = __detail::_Path2<_InputIterator>,
 	   typename _CharT
 	     = __detail::__value_type_is_char_or_char8_t<_InputIterator>>
     inline path
@@ -1000,7 +1029,7 @@ namespace __detail
   }
 
   template<typename _CharT>
-    inline __detail::_Path<_CharT*, _CharT*>&
+    inline __detail::_Path2<_CharT*>&
     path::operator+=(_CharT __x)
     {
       auto* __addr = std::__addressof(__x);
