@@ -1,3 +1,11 @@
+2020-05-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master.
+	2020-05-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (ASM_GENERATE_INTERNAL_LABEL):
+	Make ubsan_{data,type},ASAN linker-visible.
+
 2020-05-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/95258
