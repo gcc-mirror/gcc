@@ -848,6 +848,28 @@ namespace __detail
 	return __h._M_insert(__hint, __v, __node_gen, __unique_keys());
       }
 
+      template<typename _KType, typename... _Args>
+	std::pair<iterator, bool>
+	try_emplace(const_iterator, _KType&& __k, _Args&&... __args)
+	{
+	  __hashtable& __h = _M_conjure_hashtable();
+	  auto __code = __h._M_hash_code(__k);
+	  std::size_t __bkt = __h._M_bucket_index(__k, __code);
+	  if (__node_type* __node = __h._M_find_node(__bkt, __k, __code))
+	    return { iterator(__node), false };
+
+	  typename __hashtable::_Scoped_node __node {
+	    &__h,
+	    std::piecewise_construct,
+	    std::forward_as_tuple(std::forward<_KType>(__k)),
+	    std::forward_as_tuple(std::forward<_Args>(__args)...)
+	    };
+	  auto __it
+	    = __h._M_insert_unique_node(__k, __bkt, __code, __node._M_node);
+	  __node._M_node = nullptr;
+	  return { __it, true };
+	}
+
       void
       insert(initializer_list<value_type> __l)
       { this->insert(__l.begin(), __l.end()); }
