@@ -162,6 +162,8 @@ Unary Operations
 
    Build a unary operation out of an input rvalue.
 
+   The parameter ``result_type`` must be a numeric type.
+
 .. type:: enum gcc_jit_unary_op
 
 The available unary operations are:
@@ -226,6 +228,8 @@ Binary Operations
                                                              gcc_jit_rvalue *a, gcc_jit_rvalue *b)
 
    Build a binary operation out of two constituent rvalues.
+
+   The parameter ``result_type`` must be a numeric type.
 
 .. type:: enum gcc_jit_binary_op
 
@@ -546,6 +550,8 @@ Global variables
                                           const char *name)
 
    Add a new global variable of the given type and name to the context.
+
+   The parameter ``type`` must be non-`void`.
 
    The parameter ``name`` must be non-NULL.  The call takes a copy of the
    underlying string, so it is valid to pass in a pointer to an on-stack
