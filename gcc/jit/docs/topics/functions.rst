@@ -35,6 +35,8 @@ Params
    In preparation for creating a function, create a new parameter of the
    given type and name.
 
+   The parameter ``type`` must be non-`void`.
+
    The parameter ``name`` must be non-NULL.  The call takes a copy of the
    underlying string, so it is valid to pass in a pointer to an on-stack
    buffer.
@@ -147,6 +149,8 @@ Functions
 
    Create a new local variable within the function, of the given type and
    name.
+
+   The parameter ``type`` must be non-`void`.
 
    The parameter ``name`` must be non-NULL.  The call takes a copy of the
    underlying string, so it is valid to pass in a pointer to an on-stack
