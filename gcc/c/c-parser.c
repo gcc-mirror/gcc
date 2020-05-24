@@ -10458,21 +10458,23 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	  break;
 	case CPP_OPEN_PAREN:
 	  /* Function call.  */
-	  c_parser_consume_token (parser);
-	  for (i = 0; i < 3; i++)
-	    {
-	      sizeof_arg[i] = NULL_TREE;
-	      sizeof_arg_loc[i] = UNKNOWN_LOCATION;
-	    }
-	  literal_zero_mask = 0;
-	  if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
-	    exprlist = NULL;
-	  else
-	    exprlist = c_parser_expr_list (parser, true, false, &origtypes,
-					   sizeof_arg_loc, sizeof_arg,
-					   &arg_loc, &literal_zero_mask);
-	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
-				     "expected %<)%>");
+	  {
+	    matching_parens parens;
+	    parens.consume_open (parser);
+	    for (i = 0; i < 3; i++)
+	      {
+		sizeof_arg[i] = NULL_TREE;
+		sizeof_arg_loc[i] = UNKNOWN_LOCATION;
+	      }
+	    literal_zero_mask = 0;
+	    if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+	      exprlist = NULL;
+	    else
+	      exprlist = c_parser_expr_list (parser, true, false, &origtypes,
+					     sizeof_arg_loc, sizeof_arg,
+					     &arg_loc, &literal_zero_mask);
+	    parens.skip_until_found_close (parser);
+	  }
 	  orig_expr = expr;
 	  mark_exp_read (expr.value);
 	  if (warn_sizeof_pointer_memaccess)
