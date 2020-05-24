@@ -242,8 +242,9 @@ static tree
 gfc_sym_mangled_common_id (gfc_common_head *com)
 {
   int has_underscore;
-  char mangled_name[GFC_MAX_MANGLED_SYMBOL_LEN + 1];
-  char name[GFC_MAX_SYMBOL_LEN + 1];
+  /* Provide sufficient space to hold "symbol.eq.1234567890__".  */
+  char mangled_name[GFC_MAX_MANGLED_SYMBOL_LEN + 1 + 16];
+  char name[GFC_MAX_SYMBOL_LEN + 1 + 16];
 
   /* Get the name out of the common block pointer.  */
   strcpy (name, com->name);
