@@ -333,8 +333,8 @@ __gnat_getservbyport (int port, const char *proto,
 }
 #else
 int
-__gnat_gethostbyname (const char *name,
-  struct hostent *ret, char *buf, size_t buflen,
+__gnat_gethostbyname (const char *name, struct hostent *ret,
+  char *buf ATTRIBUTE_UNUSED, size_t buflen ATTRIBUTE_UNUSED,
   int *h_errnop)
 {
   struct hostent *rh;
@@ -349,8 +349,8 @@ __gnat_gethostbyname (const char *name,
 }
 
 int
-__gnat_gethostbyaddr (const char *addr, int len, int type,
-  struct hostent *ret, char *buf, size_t buflen,
+__gnat_gethostbyaddr (const char *addr, int len, int type, struct hostent *ret,
+  char *buf ATTRIBUTE_UNUSED, size_t buflen ATTRIBUTE_UNUSED,
   int *h_errnop)
 {
   struct hostent *rh;
@@ -365,8 +365,8 @@ __gnat_gethostbyaddr (const char *addr, int len, int type,
 }
 
 int
-__gnat_getservbyname (const char *name, const char *proto,
-  struct servent *ret, char *buf, size_t buflen)
+__gnat_getservbyname (const char *name, const char *proto, struct servent *ret,
+  char *buf ATTRIBUTE_UNUSED, size_t buflen ATTRIBUTE_UNUSED)
 {
   struct servent *rh;
   rh = getservbyname (name, proto);
@@ -377,8 +377,8 @@ __gnat_getservbyname (const char *name, const char *proto,
 }
 
 int
-__gnat_getservbyport (int port, const char *proto,
-  struct servent *ret, char *buf, size_t buflen)
+__gnat_getservbyport (int port, const char *proto, struct servent *ret,
+  char *buf ATTRIBUTE_UNUSED, size_t buflen ATTRIBUTE_UNUSED)
 {
   struct servent *rh;
   rh = getservbyport (port, proto);
@@ -397,19 +397,18 @@ __gnat_getservbyport (int port, const char *proto,
 void
 __gnat_last_socket_in_set (fd_set *set, int *last)
 {
-  int s;
   int l;
   l = -1;
 
 #ifdef _WIN32
   /* More efficient method for NT. */
-  for (s = 0; s < set->fd_count; s++)
+  for (unsigned int s = 0; s < set->fd_count; s++)
     if ((int) set->fd_array[s] > l)
       l = set->fd_array[s];
 
 #else
 
-  for (s = *last; s != -1; s--)
+  for (int s = *last; s != -1; s--)
     if (FD_ISSET (s, set))
       {
 	l = s;
@@ -517,7 +516,7 @@ __gnat_get_h_errno (void) {
 int
 __gnat_socket_ioctl (int fd, IOCTL_Req_T req, int *arg) {
 #if defined (_WIN32)
-  return ioctlsocket (fd, req, arg);
+  return ioctlsocket (fd, req, (unsigned long *)arg);
 #elif defined (__APPLE__)
   /*
    * On Darwin, req is an unsigned long, and we want to convert without sign
@@ -553,7 +552,8 @@ __gnat_inet_pton (int af, const char *src, void *dst) {
   int rc;
 
   ss.ss_family = af;
-  rc = WSAStringToAddressA (src, af, NULL, (struct sockaddr *)&ss, &sslen);
+  rc = WSAStringToAddressA ((char *)src, af, NULL, (struct sockaddr *)&ss,
+                            &sslen);
   if (rc == 0) {
     switch (af) {
       case AF_INET:
