@@ -808,14 +808,12 @@ int __gnat_minus_500ms() {
     ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
     osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
     // Documentation proposes to use IsWindowsVersionOrGreater(10, 0, 17763)
-    // but it does not compare by the build number (last parameter). See
-    // regression test for RC03-012 in fixedbugs, there are some code to
-    // investigate Windows version API behavior.
+    // but it does not compare by the build number (last parameter).
     GetVersionEx(&osvi);
     return osvi.dwMajorVersion < 10
-        || osvi.dwMajorVersion == 10
-        && osvi.dwMinorVersion == 0
-        && osvi.dwBuildNumber < 17763;
+        || (osvi.dwMajorVersion == 10
+            && osvi.dwMinorVersion == 0
+            && osvi.dwBuildNumber < 17763);
   } else {
     return !IsWindows8OrGreater();
   }
