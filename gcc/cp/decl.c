@@ -11951,7 +11951,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  if (declarator->kind == cdk_array)
 	    attr_flags |= (int) ATTR_FLAG_ARRAY_NEXT;
 	  tree late_attrs = NULL_TREE;
-	  if (decl_context != PARM)
+	  if (decl_context != PARM && decl_context != TYPENAME)
 	    /* Assume that any attributes that get applied late to
 	       templates will DTRT when applied to the declaration
 	       as a whole.  */
