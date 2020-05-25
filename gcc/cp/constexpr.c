@@ -7520,12 +7520,18 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		 variable with automatic storage duration defined outside that
 		 lambda-expression, where the reference would be an
 		 odr-use.  */
+
+	      if (want_rval)
+		/* Since we're doing an lvalue-rvalue conversion, this might
+		   not be an odr-use, so evaluate the variable directly. */
+		return RECUR (DECL_CAPTURED_VARIABLE (t), rval);
+
 	      if (flags & tf_error)
 		{
 		  tree cap = DECL_CAPTURED_VARIABLE (t);
 		  error ("lambda capture of %qE is not a constant expression",
 			 cap);
-		  if (!want_rval && decl_constant_var_p (cap))
+		  if (decl_constant_var_p (cap))
 		    inform (input_location, "because it is used as a glvalue");
 		}
 	      return false;
