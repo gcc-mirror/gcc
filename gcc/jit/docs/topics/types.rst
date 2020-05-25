@@ -269,6 +269,7 @@ You can model C `struct` types by creating :c:type:`gcc_jit_struct *` and
 
    This API entrypoint was added in :ref:`LIBGCCJIT_ABI_12`; you can test
    for its presence using
+
    .. code-block:: c
 
       #ifdef LIBGCCJIT_HAVE_gcc_jit_context_new_bitfield

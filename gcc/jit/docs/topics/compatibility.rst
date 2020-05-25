@@ -62,7 +62,7 @@ You can see the symbol tags provided by libgccjit.so using ``objdump``:
    [...snip...]
 
 Programmatically checking version
-***************
+*********************************
 
 Client code can programmatically check libgccjit version using:
 
@@ -200,10 +200,14 @@ entrypoints:
 ``LIBGCCJIT_ABI_11`` covers the addition of
 :func:`gcc_jit_context_add_driver_option`
 
+.. _LIBGCCJIT_ABI_12:
+
 ``LIBGCCJIT_ABI_12``
 --------------------
 ``LIBGCCJIT_ABI_12`` covers the addition of
 :func:`gcc_jit_context_new_bitfield`
+
+.. _LIBGCCJIT_ABI_13:
 
 ``LIBGCCJIT_ABI_13``
 --------------------
