@@ -33,76 +33,56 @@
 --  and can be used either built into the compiler via System.Bignums or to
 --  implement a default version of Ada.Numerics.Big_Numbers.Big_Integers.
 
---  If Use_Secondary_Stack is True then all Bignum values are allocated on the
---  secondary stack. If False, the heap is used and the caller is responsible
---  for memory management.
-
-with Ada.Unchecked_Conversion;
 with Interfaces;
+with System.Shared_Bignums;
 
 generic
-   Use_Secondary_Stack : Boolean;
+   type Big_Integer is private;
+
+   with function Allocate_Big_Integer
+          (D : Shared_Bignums.Digit_Vector; Neg : Boolean) return Big_Integer;
+   --  Allocate Bignum value with the given contents
+
+   with procedure Free_Big_Integer (X : in out Big_Integer);
+   --  Free the memory associated with X
+
+   with function To_Bignum
+          (X : aliased in out Big_Integer) return Shared_Bignums.Bignum;
+   --  Convert the given Big_Integer to a Bignum
+
 package System.Generic_Bignums is
    pragma Preelaborate;
 
-   pragma Assert (Long_Long_Integer'Size = 64);
-   --  This package assumes that Long_Long_Integer size is 64 bit (i.e. that it
-   --  has a range of -2**63 to 2**63-1). The front end ensures that the mode
-   --  ELIMINATED is not allowed for overflow checking if this is not the case.
+   subtype Bignum is Shared_Bignums.Bignum;
 
-   subtype Length is Natural range 0 .. 2 ** 23 - 1;
-   --  Represent number of words in Digit_Vector
-
-   Base : constant := 2 ** 32;
-   --  Digit vectors use this base
-
-   subtype SD is Interfaces.Unsigned_32;
-   --  Single length digit
-
-   type Digit_Vector is array (Length range <>) of SD;
-   --  Represent digits of a number (most significant digit first)
-
-   type Bignum_Data (Len : Length) is record
-      Neg : Boolean;
-      --  Set if value is negative, never set for zero
-
-      D : Digit_Vector (1 .. Len);
-      --  Digits of number, most significant first, represented in base
-      --  2**Base. No leading zeroes are stored, and the value of zero is
-      --  represented using an empty vector for D.
-   end record;
-
-   for Bignum_Data use record
-      Len at 0 range 0 .. 23;
-      Neg at 3 range 0 .. 7;
-   end record;
-
-   type Bignum is access all Bignum_Data;
-   --  This is the type that is used externally. Possibly this could be a
-   --  private type, but we leave the structure exposed for now. For one
-   --  thing it helps with debugging. Note that this package never shares
-   --  an allocated Bignum value, so for example for X + 0, a copy of X is
-   --  returned, not X itself.
-
-   function To_Bignum is new Ada.Unchecked_Conversion (System.Address, Bignum);
-   function To_Address is new
-     Ada.Unchecked_Conversion (Bignum, System.Address);
+   --  Note that this package never shares an allocated Big_Integer value, so
+   --  so for example for X + 0, a copy of X is returned, not X itself.
 
    --  Note: none of the subprograms in this package modify the Bignum_Data
    --  records referenced by Bignum arguments of mode IN.
 
-   function Big_Add (X, Y : Bignum) return Bignum;  --  "+"
-   function Big_Sub (X, Y : Bignum) return Bignum;  --  "-"
-   function Big_Mul (X, Y : Bignum) return Bignum;  --  "*"
-   function Big_Div (X, Y : Bignum) return Bignum;  --  "/"
-   function Big_Exp (X, Y : Bignum) return Bignum;  --  "**"
-   function Big_Mod (X, Y : Bignum) return Bignum;  --  "mod"
-   function Big_Rem (X, Y : Bignum) return Bignum;  --  "rem"
-   function Big_Neg (X    : Bignum) return Bignum;  --  "-"
-   function Big_Abs (X    : Bignum) return Bignum;  --  "abs"
+   function Big_Add (X, Y : Bignum) return Big_Integer;  --  "+"
+   function Big_Sub (X, Y : Bignum) return Big_Integer;  --  "-"
+   function Big_Mul (X, Y : Bignum) return Big_Integer;  --  "*"
+   function Big_Div (X, Y : Bignum) return Big_Integer;  --  "/"
+   function Big_Exp (X, Y : Bignum) return Big_Integer;  --  "**"
+   function Big_Mod (X, Y : Bignum) return Big_Integer;  --  "mod"
+   function Big_Rem (X, Y : Bignum) return Big_Integer;  --  "rem"
+   function Big_Neg (X    : Bignum) return Big_Integer;  --  "-"
+   function Big_Abs (X    : Bignum) return Big_Integer;  --  "abs"
    --  Perform indicated arithmetic operation on bignum values. No exception
    --  raised except for Div/Mod/Rem by 0 which raises Constraint_Error with
    --  an appropriate message.
+
+   function Big_And (X, Y : Bignum) return Big_Integer;  --  "and"
+   function Big_Or  (X, Y : Bignum) return Big_Integer;  --  "or"
+   --  Perform indicated bitwise operation on big num values.
+   --  The negative flags of X and Y are also combined.
+
+   function Big_Shift_Left  (X : Bignum; Amount : Natural) return Big_Integer;
+   function Big_Shift_Right (X : Bignum; Amount : Natural) return Big_Integer;
+   --  Perform indicated bitwise operation on big num values.
+   --  Constraint_Error is raised if X is negative.
 
    function Big_EQ  (X, Y : Bignum) return Boolean;  -- "="
    function Big_NE  (X, Y : Bignum) return Boolean;  -- "/="
@@ -117,17 +97,23 @@ package System.Generic_Bignums is
    --  Returns True if the Bignum value is in the range of Long_Long_Integer,
    --  so that a call to From_Bignum is guaranteed not to raise an exception.
 
-   function To_Bignum (X : Long_Long_Integer) return Bignum;
-   --  Convert Long_Long_Integer to Bignum. No exception can be raised for any
-   --  input argument.
+   function To_Bignum (X : Long_Long_Integer) return Big_Integer;
+   --  Convert Long_Long_Integer to a big integer. No exception can be raised
+   --  for any input argument.
 
-   function To_Bignum (X : Interfaces.Unsigned_64) return Bignum;
-   --  Convert Unsigned_64 to Bignum. No exception can be raised for any
+   function To_Bignum (X : Interfaces.Unsigned_64) return Big_Integer;
+   --  Convert Unsigned_64 to a big integer. No exception can be raised for any
    --  input argument.
 
    function From_Bignum (X : Bignum) return Long_Long_Integer;
    --  Convert Bignum to Long_Long_Integer. Constraint_Error raised with
    --  appropriate message if value is out of range of Long_Long_Integer.
+
+   function To_String
+     (X : Bignum; Width : Natural := 0; Base : Positive := 10)
+      return String;
+   --  Return the image of X, based on the given Width and Base, as defined
+   --  in the RM for Ada.Text_IO. Base should really be in the range 2 .. 16.
 
    function Is_Zero (X : Bignum) return Boolean;
    --  Return True if X = 0
