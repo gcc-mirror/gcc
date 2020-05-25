@@ -1867,19 +1867,22 @@ merged_store_group::can_be_merged_into (store_immediate_info *info)
   if (stores[0]->rhs_code == BIT_INSERT_EXPR && info->rhs_code == INTEGER_CST)
     return true;
 
-  /* We can turn MEM_REF into BIT_INSERT_EXPR for bit-field stores.  */
+  /* We can turn MEM_REF into BIT_INSERT_EXPR for bit-field stores, but do it
+     only for small regions since this can generate a lot of instructions.  */
   if (info->rhs_code == MEM_REF
       && (stores[0]->rhs_code == INTEGER_CST
 	  || stores[0]->rhs_code == BIT_INSERT_EXPR)
       && info->bitregion_start == stores[0]->bitregion_start
-      && info->bitregion_end == stores[0]->bitregion_end)
+      && info->bitregion_end == stores[0]->bitregion_end
+      && info->bitregion_end - info->bitregion_start < MAX_FIXED_MODE_SIZE)
     return true;
 
   if (stores[0]->rhs_code == MEM_REF
       && (info->rhs_code == INTEGER_CST
 	  || info->rhs_code == BIT_INSERT_EXPR)
       && info->bitregion_start == stores[0]->bitregion_start
-      && info->bitregion_end == stores[0]->bitregion_end)
+      && info->bitregion_end == stores[0]->bitregion_end
+      && info->bitregion_end - info->bitregion_start < MAX_FIXED_MODE_SIZE)
     return true;
 
   return false;
@@ -4172,6 +4175,15 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
 		  const HOST_WIDE_INT end_gap
 		    = (try_bitpos + try_size) - (info->bitpos + info->bitsize);
 		  tree tem = info->ops[0].val;
+		  if (!INTEGRAL_TYPE_P (TREE_TYPE (tem)))
+		    {
+		      const unsigned HOST_WIDE_INT size
+			= tree_to_uhwi (TYPE_SIZE (TREE_TYPE (tem)));
+		      tree integer_type
+			= build_nonstandard_integer_type (size, UNSIGNED);
+		      tem = gimple_build (&seq, loc, VIEW_CONVERT_EXPR,
+					  integer_type, tem);
+		    }
 		  if (TYPE_PRECISION (TREE_TYPE (tem)) <= info->bitsize)
 		    {
 		      tree bitfield_type
@@ -4788,7 +4800,7 @@ pass_store_merging::process_store (gimple *stmt)
 	  && bitsize.is_constant (&const_bitsize)
 	  && ((const_bitsize % BITS_PER_UNIT) != 0
 	      || !multiple_p (bitpos, BITS_PER_UNIT))
-	  && const_bitsize <= 64)
+	  && const_bitsize <= MAX_FIXED_MODE_SIZE)
 	{
 	  /* Bypass a conversion to the bit-field type.  */
 	  if (!bit_not_p
