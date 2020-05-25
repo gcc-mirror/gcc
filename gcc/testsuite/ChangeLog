@@ -1,3 +1,14 @@
+2020-05-25  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse2-mmx-18a.c (dg-options): Remove -mno-avx512vl.
+	* gcc.target/i386/sse2-mmx-19a.c (dg-options): Remove -mno-avx.
+	* gcc.target/i386/sse2-mmx-18b.c: Remove.
+	* gcc.target/i386/sse2-mmx-18c.c: Ditto.
+	* gcc.target/i386/sse2-mmx-19b.c: Ditto.
+	* gcc.target/i386/sse2-mmx-19c.c: Ditto.
+	* gcc.target/i386/sse2-mmx-19d.c: Ditto.
+	* gcc.target/i386/sse2-mmx-19e.c: Ditto.
+
 2020-05-25  Martin Jambor  <mjambor@suse.cz>
 
 	* brig.dg/test/gimple/packed.hsail: Fix scan dump patterns.
