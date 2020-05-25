@@ -1,5 +1,10 @@
 2020-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/renaming16.adb: New test.
+	* gnat.dg/renaming16_pkg.ads: New helper.
+
+2020-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/array40.adb: New test.
 	* gnat.dg/array40_pkg.ads: New helper.
 
