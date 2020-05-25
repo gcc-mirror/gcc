@@ -536,7 +536,7 @@ sink_common_stores_to_bb (basic_block bb)
 	      else if (! operand_equal_p (gimple_assign_lhs (first_store),
 					  gimple_assign_lhs (def), 0)
 		       || (gimple_clobber_p (first_store)
-			   && !gimple_clobber_p (def)))
+			   != gimple_clobber_p (def)))
 		{
 		  first_store = NULL;
 		  break;
