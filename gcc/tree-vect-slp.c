@@ -2856,17 +2856,37 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
      other referrers.  */
   if (res)
     FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
-      if (SLP_TREE_DEF_TYPE (child) != vect_internal_def)
+      if ((SLP_TREE_DEF_TYPE (child) == vect_constant_def
+	   || SLP_TREE_DEF_TYPE (child) == vect_external_def)
+	  /* Perform usual caching, note code-generation still
+	     code-gens these nodes multiple times but we expect
+	     to CSE them later.  */
+	  && !visited.contains (child)
+	  && !lvisited.add (child))
 	{
 	  /* ???  After auditing more code paths make a "default"
 	     and push the vector type from NODE to all children
 	     if it is not already set.  */
-	  /* Perform usual caching, note code-generation still
-	     code-gens these nodes multiple times but we expect
-	     to CSE them later.  */
-	  if (!visited.contains (child)
-	      && !lvisited.add (child))
-	    vect_prologue_cost_for_slp (vinfo, child, cost_vec);
+	  /* Compute the number of vectors to be generated.  */
+	  tree vector_type = SLP_TREE_VECTYPE (child);
+	  if (!vector_type)
+	    {
+	      /* For shifts with a scalar argument we don't need
+		 to cost or code-generate anything.
+		 ???  Represent this more explicitely.  */
+	      gcc_assert ((STMT_VINFO_TYPE (SLP_TREE_SCALAR_STMTS (node)[0])
+			   == shift_vec_info_type)
+			  && j == 1);
+	      continue;
+	    }
+	  unsigned group_size = SLP_TREE_SCALAR_OPS (child).length ();
+	  poly_uint64 vf = 1;
+	  if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
+	    vf = loop_vinfo->vectorization_factor;
+	  SLP_TREE_NUMBER_OF_VEC_STMTS (child)
+	    = vect_get_num_vectors (vf * group_size, vector_type);
+	  /* And cost them.  */
+	  vect_prologue_cost_for_slp (vinfo, child, cost_vec);
 	}
 
   /* If this node can't be vectorized, try pruning the tree here rather
@@ -3638,12 +3658,7 @@ vect_get_constant_vectors (vec_info *vinfo,
 					 (vinfo, TREE_TYPE (op), op_node)));
     }
 
-  poly_uint64 vf = 1;
-  if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
-    vf = loop_vinfo->vectorization_factor;
-  unsigned int number_of_vectors
-    = vect_get_num_vectors (vf * group_size, vector_type);
-
+  unsigned int number_of_vectors = SLP_TREE_NUMBER_OF_VEC_STMTS (op_node);
   vec_oprnds->create (number_of_vectors);
   auto_vec<tree> voprnds (number_of_vectors);
 
