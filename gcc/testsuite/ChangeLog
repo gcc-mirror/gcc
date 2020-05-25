@@ -1,3 +1,7 @@
+2020-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt84.adb: New test.
+
 2020-05-25  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/sse2-mmx-18a.c (dg-options): Remove -mno-avx512vl.
