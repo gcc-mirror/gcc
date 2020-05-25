@@ -8821,7 +8821,8 @@ gnat_to_gnu (Node_Id gnat_node)
        1. If this is the LHS of an assignment or an actual parameter of a
 	  call, return the result almost unmodified since the RHS will have
 	  to be converted to our type in that case, unless the result type
-	  has a simpler size.  Likewise if there is just a no-op unchecked
+	  has a simpler size or for array types because this size might be
+	  changed in-between. Likewise if there is just a no-op unchecked
 	  conversion in-between.  Similarly, don't convert integral types
 	  that are the operands of an unchecked conversion since we need
 	  to ignore those conversions (for 'Valid).
@@ -8856,15 +8857,17 @@ gnat_to_gnu (Node_Id gnat_node)
 	      && !AGGREGATE_TYPE_P (TREE_TYPE (gnu_result))))
       && !(TYPE_SIZE (gnu_result_type)
 	   && TYPE_SIZE (TREE_TYPE (gnu_result))
-	   && (AGGREGATE_TYPE_P (gnu_result_type)
-	       == AGGREGATE_TYPE_P (TREE_TYPE (gnu_result)))
+	   && AGGREGATE_TYPE_P (gnu_result_type)
+	      == AGGREGATE_TYPE_P (TREE_TYPE (gnu_result))
 	   && ((TREE_CODE (TYPE_SIZE (gnu_result_type)) == INTEGER_CST
 		&& (TREE_CODE (TYPE_SIZE (TREE_TYPE (gnu_result)))
 		    != INTEGER_CST))
 	       || (TREE_CODE (TYPE_SIZE (gnu_result_type)) != INTEGER_CST
 		   && !CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_result_type))
 		   && (CONTAINS_PLACEHOLDER_P
-		       (TYPE_SIZE (TREE_TYPE (gnu_result))))))
+		       (TYPE_SIZE (TREE_TYPE (gnu_result)))))
+	       || (TREE_CODE (gnu_result_type) == ARRAY_TYPE
+		   && TREE_CODE (TREE_TYPE (gnu_result)) == ARRAY_TYPE))
 	   && !(TREE_CODE (gnu_result_type) == RECORD_TYPE
 		&& TYPE_JUSTIFIED_MODULAR_P (gnu_result_type))))
     {
