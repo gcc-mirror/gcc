@@ -1,5 +1,12 @@
 2020-05-25  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/95271
+	* tree-vect-stmts.c (vectorizable_bswap): Update invariant SLP
+	children vector type.
+	(vectorizable_call): Pass down slp ops.
+
+2020-05-25  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/95297
 	* tree-vect-stmts.c (vectorizable_shift): For scalar_shift_arg
 	skip updating operand 1 vector type.

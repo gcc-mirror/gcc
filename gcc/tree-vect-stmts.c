@@ -3009,6 +3009,7 @@ static bool
 vectorizable_bswap (vec_info *vinfo,
 		    stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		    stmt_vec_info *vec_stmt, slp_tree slp_node,
+		    slp_tree *slp_op,
 		    tree vectype_in, stmt_vector_for_cost *cost_vec)
 {
   tree op, vectype;
@@ -3051,6 +3052,15 @@ vectorizable_bswap (vec_info *vinfo,
 
   if (! vec_stmt)
     {
+      if (slp_node
+	  && !vect_maybe_update_slp_op_vectype (slp_op[0], vectype_in))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "incompatible vector types for invariants\n");
+	  return false;
+	}
+
       STMT_VINFO_TYPE (stmt_info) = call_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_bswap");
       if (! slp_node)
@@ -3377,7 +3387,7 @@ vectorizable_call (vec_info *vinfo,
 		   || gimple_call_builtin_p (stmt, BUILT_IN_BSWAP32)
 		   || gimple_call_builtin_p (stmt, BUILT_IN_BSWAP64)))
 	return vectorizable_bswap (vinfo, stmt_info, gsi, vec_stmt, slp_node,
-				   vectype_in, cost_vec);
+				   slp_op, vectype_in, cost_vec);
       else
 	{
 	  if (dump_enabled_p ())
