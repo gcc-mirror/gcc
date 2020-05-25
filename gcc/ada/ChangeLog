@@ -1,5 +1,15 @@
 2020-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: Tidy up.
+	(build_variant_list): Add GNAT_VARIANT_PART parameter and annotate its
+	variants if it is present.  Adjust the recursive call by passing the
+	variant subpart of variants, if any.
+	(copy_and_substitute_in_layout): Rename GNU_SUBST_LIST to SUBST_LIST
+	and adjust throughout.  For a type, pass the variant part in the
+	call to build_variant_list.
+
+2020-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_component_type): Cap the alignment
 	of the component type according to the component size.
 

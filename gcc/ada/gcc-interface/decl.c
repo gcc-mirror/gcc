@@ -230,7 +230,7 @@ static Uint annotate_value (tree);
 static void annotate_rep (Entity_Id, tree);
 static tree build_position_list (tree, bool, tree, tree, unsigned int, tree);
 static vec<subst_pair> build_subst_list (Entity_Id, Entity_Id, bool);
-static vec<variant_desc> build_variant_list (tree, vec<subst_pair>,
+static vec<variant_desc> build_variant_list (tree, Node_Id, vec<subst_pair>,
 					     vec<variant_desc>);
 static tree maybe_saturate_size (tree);
 static tree validate_size (Uint, tree, Entity_Id, enum tree_code, bool, bool,
@@ -2991,15 +2991,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       break;
 
     /* Record Types and Subtypes
-
-       The following fields are defined on record types:
-
-		Has_Discriminants	True if the record has discriminants
-		First_Discriminant      Points to head of list of discriminants
-		First_Entity		Points to head of list of fields
-		Is_Tagged_Type		True if the record is tagged
-
-       Implementation of Ada records and discriminated records:
 
        A record type definition is transformed into the equivalent of a C
        struct definition.  The fields that are the discriminants which are
@@ -8886,20 +8877,29 @@ build_subst_list (Entity_Id gnat_subtype, Entity_Id gnat_type, bool definition)
   return gnu_list;
 }
 
-/* Scan all fields in QUAL_UNION_TYPE and return a list describing the
-   variants of QUAL_UNION_TYPE that are still relevant after applying
-   the substitutions described in SUBST_LIST.  GNU_LIST is a pre-existing
+/* Scan all fields in {GNU_QUAL_UNION_TYPE,GNAT_VARIANT_PART} and return a list
+   describing the variants of GNU_QUAL_UNION_TYPE that are still relevant after
+   applying the substitutions described in SUBST_LIST.  GNU_LIST is an existing
    list to be prepended to the newly created entries.  */
 
 static vec<variant_desc>
-build_variant_list (tree qual_union_type, vec<subst_pair> subst_list,
-		    vec<variant_desc> gnu_list)
+build_variant_list (tree gnu_qual_union_type, Node_Id gnat_variant_part,
+		    vec<subst_pair> subst_list, vec<variant_desc> gnu_list)
 {
+  Node_Id gnat_variant;
   tree gnu_field;
 
-  for (gnu_field = TYPE_FIELDS (qual_union_type);
+  for (gnu_field = TYPE_FIELDS (gnu_qual_union_type),
+       gnat_variant
+	= Present (gnat_variant_part)
+	  ? First_Non_Pragma (Variants (gnat_variant_part))
+	  : Empty;
        gnu_field;
-       gnu_field = DECL_CHAIN (gnu_field))
+       gnu_field = DECL_CHAIN (gnu_field),
+       gnat_variant
+	= Present (gnat_variant_part)
+	  ? Next_Non_Pragma (gnat_variant)
+	  : Empty)
     {
       tree qual = DECL_QUALIFIER (gnu_field);
       unsigned int i;
@@ -8918,11 +8918,21 @@ build_variant_list (tree qual_union_type, vec<subst_pair> subst_list,
 
 	  gnu_list.safe_push (v);
 
+	  /* Annotate the GNAT node if present.  */
+	  if (Present (gnat_variant))
+	    Set_Present_Expr (gnat_variant, annotate_value (qual));
+
 	  /* Recurse on the variant subpart of the variant, if any.  */
 	  variant_subpart = get_variant_part (variant_type);
 	  if (variant_subpart)
-	    gnu_list = build_variant_list (TREE_TYPE (variant_subpart),
-					   subst_list, gnu_list);
+	    gnu_list
+	      = build_variant_list (TREE_TYPE (variant_subpart),
+				    Present (gnat_variant)
+				    ? Variant_Part
+				      (Component_List (gnat_variant))
+				    : Empty,
+				    subst_list,
+				    gnu_list);
 
 	  /* If the new qualifier is unconditionally true, the subsequent
 	     variants cannot be accessed.  */
@@ -9806,7 +9816,7 @@ copy_and_substitute_in_layout (Entity_Id gnat_new_type,
 			       Entity_Id gnat_old_type,
 			       tree gnu_new_type,
 			       tree gnu_old_type,
-			       vec<subst_pair> gnu_subst_list,
+			       vec<subst_pair> subst_list,
 			       bool debug_info_p)
 {
   const bool is_subtype = (Ekind (gnat_new_type) == E_Record_Subtype);
@@ -9825,11 +9835,18 @@ copy_and_substitute_in_layout (Entity_Id gnat_new_type,
      build a new qualified union for the variants that are still relevant.  */
   if (gnu_variant_part)
     {
+      const Node_Id gnat_decl = Declaration_Node (gnat_new_type);
       variant_desc *v;
       unsigned int i;
 
-      gnu_variant_list = build_variant_list (TREE_TYPE (gnu_variant_part),
-					     gnu_subst_list, vNULL);
+      gnu_variant_list
+	= build_variant_list (TREE_TYPE (gnu_variant_part),
+			      is_subtype
+			      ? Empty
+			      : Variant_Part
+				(Component_List (Type_Definition (gnat_decl))),
+			      subst_list,
+			      vNULL);
 
       /* If all the qualifiers are unconditionally true, the innermost variant
 	 is statically selected.  */
@@ -9855,8 +9872,7 @@ copy_and_substitute_in_layout (Entity_Id gnat_new_type,
 			     IDENTIFIER_POINTER (suffix));
 	    TYPE_REVERSE_STORAGE_ORDER (new_variant)
 	      = TYPE_REVERSE_STORAGE_ORDER (gnu_new_type);
-	    copy_and_substitute_in_size (new_variant, old_variant,
-					 gnu_subst_list);
+	    copy_and_substitute_in_size (new_variant, old_variant, subst_list);
 	    v->new_type = new_variant;
 	  }
     }
@@ -9967,7 +9983,7 @@ copy_and_substitute_in_layout (Entity_Id gnat_new_type,
 	gnu_field
 	  = create_field_decl_from (gnu_old_field, gnu_field_type,
 				    gnu_cont_type, gnu_size,
-				    gnu_pos_list, gnu_subst_list);
+				    gnu_pos_list, subst_list);
 	gnu_pos = DECL_FIELD_OFFSET (gnu_field);
 
 	/* If the context is a variant, put it in the new variant directly.  */
@@ -10054,13 +10070,13 @@ copy_and_substitute_in_layout (Entity_Id gnat_new_type,
       tree new_variant_part
 	= create_variant_part_from (gnu_variant_part, gnu_variant_list,
 				    gnu_new_type, gnu_pos_list,
-				    gnu_subst_list, debug_info_p);
+				    subst_list, debug_info_p);
       DECL_CHAIN (new_variant_part) = gnu_field_list;
       gnu_field_list = new_variant_part;
     }
 
   gnu_variant_list.release ();
-  gnu_subst_list.release ();
+  subst_list.release ();
 
   /* If NEW_TYPE is a subtype, it inherits all the attributes from OLD_TYPE.
      Otherwise sizes and alignment must be computed independently.  */
