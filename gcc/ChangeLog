@@ -1,3 +1,11 @@
+2020-05-25  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (*vec_dupv2sf): Redefine as define_insn.
+	(mmx_pshufw_1): Change Yv constraint to xYw.  Correct type attribute.
+	(*vec_dupv4hi): Redefine as define_insn.
+	Remove alternative with general register input.
+	(*vec_dupv2si): Ditto.
+
 2020-05-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/95309
