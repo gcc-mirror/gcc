@@ -10556,18 +10556,18 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case VOID_FTYPE_PV8SI_V8DI_UQI:
     case VOID_FTYPE_PV8HI_V8DI_UQI:
     case VOID_FTYPE_PV16HI_V16SI_UHI:
-    case VOID_FTYPE_PV16QI_V8DI_UQI:
+    case VOID_FTYPE_PUDI_V8DI_UQI:
     case VOID_FTYPE_PV16QI_V16SI_UHI:
     case VOID_FTYPE_PV4SI_V4DI_UQI:
-    case VOID_FTYPE_PV4SI_V2DI_UQI:
-    case VOID_FTYPE_PV8HI_V4DI_UQI:
-    case VOID_FTYPE_PV8HI_V2DI_UQI:
+    case VOID_FTYPE_PUDI_V2DI_UQI:
+    case VOID_FTYPE_PUDI_V4DI_UQI:
+    case VOID_FTYPE_PUSI_V2DI_UQI:
     case VOID_FTYPE_PV8HI_V8SI_UQI:
-    case VOID_FTYPE_PV8HI_V4SI_UQI:
-    case VOID_FTYPE_PV16QI_V4DI_UQI:
-    case VOID_FTYPE_PV16QI_V2DI_UQI:
-    case VOID_FTYPE_PV16QI_V8SI_UQI:
-    case VOID_FTYPE_PV16QI_V4SI_UQI:
+    case VOID_FTYPE_PUDI_V4SI_UQI:
+    case VOID_FTYPE_PUSI_V4DI_UQI:
+    case VOID_FTYPE_PUHI_V2DI_UQI:
+    case VOID_FTYPE_PUDI_V8SI_UQI:
+    case VOID_FTYPE_PUSI_V4SI_UQI:
     case VOID_FTYPE_PCHAR_V64QI_UDI:
     case VOID_FTYPE_PCHAR_V32QI_USI:
     case VOID_FTYPE_PCHAR_V16QI_UHI:
@@ -10588,7 +10588,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case VOID_FTYPE_PFLOAT_V4SF_UQI:
     case VOID_FTYPE_PV32QI_V32HI_USI:
     case VOID_FTYPE_PV16QI_V16HI_UHI:
-    case VOID_FTYPE_PV8QI_V8HI_UQI:
+    case VOID_FTYPE_PUDI_V8HI_UQI:
       nargs = 2;
       klass = store;
       /* Reserve memory operand for target.  */
