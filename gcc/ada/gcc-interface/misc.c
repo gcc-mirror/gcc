@@ -778,7 +778,7 @@ gnat_get_array_descr_info (const_tree const_type,
 {
   tree type = const_cast<tree> (const_type);
   tree first_dimen, dimen;
-  bool is_packed_array, is_array, is_fat_ptr;
+  bool is_packed_array, is_array;
   int i;
 
   /* Temporaries created in the first pass and used in the second one for thin
@@ -807,45 +807,16 @@ gnat_get_array_descr_info (const_tree const_type,
       && TYPE_INDEX_TYPE (TYPE_DOMAIN (type)))
     {
       is_array = true;
-      is_fat_ptr = false;
       first_dimen = type;
-      info->data_location = NULL_TREE;
     }
 
-  else if (TYPE_IS_FAT_POINTER_P (type)
-	   && gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
-    {
-      tree ua_type = TYPE_UNCONSTRAINED_ARRAY (type);
-
-      /* This will be our base object address.  */
-      tree placeholder_expr = build0 (PLACEHOLDER_EXPR, type);
-
-      /* We assume below that maybe_unconstrained_array returns an INDIRECT_REF
-	 node.  */
-      tree ua_val
-        = maybe_unconstrained_array (build_unary_op (INDIRECT_REF,
-						     ua_type,
-						     placeholder_expr));
-
-      is_array = false;
-      is_fat_ptr = true;
-      first_dimen = TREE_TYPE (ua_val);
-
-      /* Get the *address* of the array, not the array itself.  */
-      info->data_location = TREE_OPERAND (ua_val, 0);
-    }
-
-  /* Unlike fat pointers (which appear for unconstrained arrays passed in
-     argument), thin pointers are used only for array access types, so we want
-     them to appear in the debug info as pointers to an array type.  That's why
-     we match only the RECORD_TYPE here instead of the POINTER_TYPE with the
-     TYPE_IS_THIN_POINTER_P predicate.  */
+  /* As well as array types embedded in a record type with their bounds.  */
   else if (TREE_CODE (type) == RECORD_TYPE
 	   && TYPE_CONTAINS_TEMPLATE_P (type)
 	   && gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
     {
       /* This will be our base object address.  Note that we assume that
-	 pointers to these will actually point to the array field (thin
+	 pointers to this will actually point to the array field (thin
 	 pointers are shifted).  */
       tree placeholder_expr = build0 (PLACEHOLDER_EXPR, type);
       tree placeholder_addr
@@ -856,7 +827,7 @@ gnat_get_array_descr_info (const_tree const_type,
       tree array_field = DECL_CHAIN (bounds_field);
       tree array_type = TREE_TYPE (array_field);
 
-      /* Shift the thin pointer address to get the address of the template.  */
+      /* Shift back the address to get the address of the template.  */
       tree shift_amount
 	= fold_build1 (NEGATE_EXPR, sizetype, byte_position (array_field));
       tree template_addr
@@ -865,18 +836,12 @@ gnat_get_array_descr_info (const_tree const_type,
       template_addr
 	= fold_convert (TYPE_POINTER_TO (bounds_type), template_addr);
 
-      is_array = false;
-      is_fat_ptr = false;
-      first_dimen = array_type;
-
-      /* The thin pointer is already the pointer to the array data, so there's
-	 no need for a specific "data location" expression.  */
-      info->data_location = NULL_TREE;
-
-      thinptr_template_expr = build_unary_op (INDIRECT_REF,
-					      bounds_type,
-					      template_addr);
+      thinptr_template_expr
+	= build_unary_op (INDIRECT_REF, NULL_TREE, template_addr);
       thinptr_bound_field = TYPE_FIELDS (bounds_type);
+
+      is_array = false;
+      first_dimen = array_type;
     }
 
   else
@@ -932,7 +897,7 @@ gnat_get_array_descr_info (const_tree const_type,
       /* We are interested in the stored bounds for the debug info.  */
       tree index_type = TYPE_INDEX_TYPE (TYPE_DOMAIN (dimen));
 
-      if (is_array || is_fat_ptr)
+      if (is_array)
 	{
 	  /* GDB does not handle very well the self-referencial bound
 	     expressions we are able to generate here for XUA types (they are
@@ -983,6 +948,7 @@ gnat_get_array_descr_info (const_tree const_type,
   /* These are Fortran-specific fields.  They make no sense here.  */
   info->allocated = NULL_TREE;
   info->associated = NULL_TREE;
+  info->data_location = NULL_TREE;
 
   if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
     {

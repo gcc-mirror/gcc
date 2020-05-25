@@ -2099,16 +2099,28 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
       /* Array Types and Subtypes
 
-	 Unconstrained array types are represented by E_Array_Type and
-	 constrained array types are represented by E_Array_Subtype.  There
-	 are no actual objects of an unconstrained array type; all we have
-	 are pointers to that type.
+	 In GNAT unconstrained array types are represented by E_Array_Type and
+	 constrained array types are represented by E_Array_Subtype.  They are
+	 translated into UNCONSTRAINED_ARRAY_TYPE and ARRAY_TYPE respectively.
+	 But there are no actual objects of an unconstrained array type; all we
+	 have are pointers to that type.  In addition to the type node itself,
+	 4 other types associated with it are built in the process:
 
-	 The following fields are defined on array types and subtypes:
+	   1. the array type (suffix XUA) containing the actual data,
 
-		Component_Type     Component type of the array.
-		Number_Dimensions  Number of dimensions (an int).
-		First_Index	   Type of first index.  */
+	   2. the template type (suffix XUB) containng the bounds,
+
+	   3. the fat pointer type (suffix XUP) representing a pointer or a
+	      reference to the unconstrained array type:
+		XUP = struct { XUA *, XUB * }
+
+	   4. the object record type (suffix XUT) containing bounds and data:
+		XUT = struct { XUB, XUA }
+
+	 The bounds of the array type XUA (de)reference the XUB * field of a
+	 PLACEHOLDER_EXPR for the fat pointer type XUP, so the array type XUA
+	 is to be interpreted in the context of the fat pointer type XUB for
+	 debug info purposes.  */
 
     case E_Array_Type:
       {
@@ -2120,7 +2132,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	tree gnu_template_reference, gnu_template_fields, gnu_fat_type;
 	tree *gnu_index_types = XALLOCAVEC (tree, ndim);
 	tree *gnu_temp_fields = XALLOCAVEC (tree, ndim);
-	tree gnu_max_size = size_one_node, tem, t;
+	tree gnu_max_size = size_one_node, tem, obj;
 	Entity_Id gnat_index;
 	int index;
 	tree comp_type;
@@ -2195,7 +2207,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    TREE_TYPE (tem) = ptr_type_node;
 	    TREE_TYPE (DECL_CHAIN (tem)) = gnu_ptr_template;
 	    TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (gnu_fat_type)) = 0;
-	    for (t = gnu_fat_type; t; t = TYPE_NEXT_VARIANT (t))
+	    for (tree t = gnu_fat_type; t; t = TYPE_NEXT_VARIANT (t))
 	      SET_TYPE_UNCONSTRAINED_ARRAY (t, gnu_type);
 	  }
 	else
@@ -2211,6 +2223,22 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    finish_fat_pointer_type (gnu_fat_type, tem);
 	    SET_TYPE_UNCONSTRAINED_ARRAY (gnu_fat_type, gnu_type);
 	  }
+
+	/* If the GNAT encodings are used, give the fat pointer type a name.
+	   If this is a packed array, tell the debugger how to interpret the
+	   underlying bits by fetching that of the implementation type.  But
+	   in any case, mark it as artificial so the debugger can skip it.  */
+	const Entity_Id gnat_name
+	  = (Present (Packed_Array_Impl_Type (gnat_entity))
+	     && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+	    ? Packed_Array_Impl_Type (gnat_entity)
+	    : gnat_entity;
+	tree xup_name
+	  = (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+	    ? create_concat_name (gnat_name, "XUP")
+	    : gnu_entity_name;
+	create_type_decl (xup_name, gnu_fat_type, true, debug_info_p,
+			  gnat_entity);
 
 	/* Build a reference to the template from a PLACEHOLDER_EXPR that
 	   is the fat pointer.  This will be used to access the individual
@@ -2313,6 +2341,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    = chainon (gnu_template_fields, gnu_temp_fields[index]);
 	finish_record_type (gnu_template_type, gnu_template_fields, 0,
 			    debug_info_p);
+	TYPE_CONTEXT (gnu_template_type) = current_function_decl;
 	TYPE_READONLY (gnu_template_type) = 1;
 
 	/* If Component_Size is not already specified, annotate it with the
@@ -2369,14 +2398,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	if (TYPE_ALIAS_SET_KNOWN_P (gnu_fat_type))
 	  record_component_aliases (gnu_fat_type);
 
-	/* The result type is an UNCONSTRAINED_ARRAY_TYPE that indicates the
-	   corresponding fat pointer.  */
-	TREE_TYPE (gnu_type) = gnu_fat_type;
-	TYPE_POINTER_TO (gnu_type) = gnu_fat_type;
-	TYPE_REFERENCE_TO (gnu_type) = gnu_fat_type;
-	SET_TYPE_MODE (gnu_type, BLKmode);
-	SET_TYPE_ALIGN (gnu_type, TYPE_ALIGN (tem));
-
 	/* If the maximum size doesn't overflow, use it.  */
 	if (gnu_max_size
 	    && TREE_CODE (gnu_max_size) == INTEGER_CST
@@ -2384,24 +2405,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    && compare_tree_int (gnu_max_size, TYPE_ARRAY_SIZE_LIMIT) <= 0)
 	  TYPE_ARRAY_MAX_SIZE (tem) = gnu_max_size;
 
+	/* See the above description for the rationale.  */
 	create_type_decl (create_concat_name (gnat_entity, "XUA"), tem,
 			  artificial_p, debug_info_p, gnat_entity);
-
-	/* If the GNAT encodings are used, give the fat pointer type a name.
-	   If this is a packed array, tell the debugger how to interpret the
-	   underlying bits by fetching that of the implementation type.  */
-	const Entity_Id gnat_name
-	  = (Present (Packed_Array_Impl_Type (gnat_entity))
-	     && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
-	    ? Packed_Array_Impl_Type (gnat_entity)
-	    : gnat_entity;
-
-	tree xup_name
-	  = (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
-	    ? get_entity_name (gnat_name)
-	    : create_concat_name (gnat_name, "XUP");
-	create_type_decl (xup_name, gnu_fat_type, artificial_p, debug_info_p,
-			  gnat_entity);
+	TYPE_CONTEXT (tem) = gnu_fat_type;
+	TYPE_CONTEXT (TYPE_POINTER_TO (tem)) = gnu_fat_type;
 
 	/* Create the type to be designated by thin pointers: a record type for
 	   the array and its template.  We used to shift the fields to have the
@@ -2412,14 +2420,22 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   don't have to name them as a GNAT encoding, except if specifically
 	   asked to.  */
 	tree xut_name
-	  = (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
-	    ? get_entity_name (gnat_name)
-	    : create_concat_name (gnat_name, "XUT");
-	tem = build_unc_object_type (gnu_template_type, tem, xut_name,
+	  = (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+	    ? create_concat_name (gnat_name, "XUT")
+	    : gnu_entity_name;
+	obj = build_unc_object_type (gnu_template_type, tem, xut_name,
 				     debug_info_p);
 
-	SET_TYPE_UNCONSTRAINED_ARRAY (tem, gnu_type);
-	TYPE_OBJECT_RECORD_TYPE (gnu_type) = tem;
+	SET_TYPE_UNCONSTRAINED_ARRAY (obj, gnu_type);
+	TYPE_OBJECT_RECORD_TYPE (gnu_type) = obj;
+
+	/* The result type is an UNCONSTRAINED_ARRAY_TYPE that indicates the
+	   corresponding fat pointer.  */
+	TREE_TYPE (gnu_type) = gnu_fat_type;
+	TYPE_POINTER_TO (gnu_type) = gnu_fat_type;
+	TYPE_REFERENCE_TO (gnu_type) = gnu_fat_type;
+	SET_TYPE_MODE (gnu_type, BLKmode);
+	SET_TYPE_ALIGN (gnu_type, TYPE_ALIGN (tem));
       }
       break;
 

@@ -891,6 +891,9 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	     their GNAT encodings.  */
 	  if (TREE_CODE (t) == ARRAY_TYPE && !TYPE_NAME (t))
 	    TYPE_NAME (t) = DECL_NAME (decl);
+	  /* Remark the canonical fat pointer type as artificial.  */
+	  if (TYPE_IS_FAT_POINTER_P (t))
+	    TYPE_ARTIFICIAL (t) = 1;
 	  t = NULL_TREE;
 	}
       else if (TYPE_NAME (t)
@@ -4167,7 +4170,6 @@ tree
 build_unc_object_type (tree template_type, tree object_type, tree name,
 		       bool debug_info_p)
 {
-  tree decl;
   tree type = make_node (RECORD_TYPE);
   tree template_field
     = create_field_decl (get_identifier ("BOUNDS"), template_type, type,
@@ -4183,12 +4185,7 @@ build_unc_object_type (tree template_type, tree object_type, tree name,
 
   /* Declare it now since it will never be declared otherwise.  This is
      necessary to ensure that its subtrees are properly marked.  */
-  decl = create_type_decl (name, type, true, debug_info_p, Empty);
-
-  /* template_type will not be used elsewhere than here, so to keep the debug
-     info clean and in order to avoid scoping issues, make decl its
-     context.  */
-  gnat_set_type_context (template_type, decl);
+  create_type_decl (name, type, true, debug_info_p, Empty);
 
   return type;
 }
