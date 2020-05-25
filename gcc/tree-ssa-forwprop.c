@@ -2763,18 +2763,18 @@ pass_forwprop::execute (function *fun)
 
 	  /* If this statement sets an SSA_NAME to an address,
 	     try to propagate the address into the uses of the SSA_NAME.  */
-	  if (code == ADDR_EXPR
-	      /* Handle pointer conversions on invariant addresses
-		 as well, as this is valid gimple.  */
-	      || (CONVERT_EXPR_CODE_P (code)
-		  && TREE_CODE (rhs) == ADDR_EXPR
-		  && POINTER_TYPE_P (TREE_TYPE (lhs))))
+	  if ((code == ADDR_EXPR
+	       /* Handle pointer conversions on invariant addresses
+		  as well, as this is valid gimple.  */
+	       || (CONVERT_EXPR_CODE_P (code)
+		   && TREE_CODE (rhs) == ADDR_EXPR
+		   && POINTER_TYPE_P (TREE_TYPE (lhs))))
+	      && TREE_CODE (TREE_OPERAND (rhs, 0)) != TARGET_MEM_REF)
 	    {
 	      tree base = get_base_address (TREE_OPERAND (rhs, 0));
 	      if ((!base
 		   || !DECL_P (base)
 		   || decl_address_invariant_p (base))
-		  && TREE_CODE (base) != TARGET_MEM_REF
 		  && !stmt_references_abnormal_ssa_name (stmt)
 		  && forward_propagate_addr_expr (lhs, rhs, true))
 		{
