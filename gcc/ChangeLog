@@ -1,5 +1,11 @@
 2020-05-25  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/95297
+	* tree-vect-stmts.c (vectorizable_shift): For scalar_shift_arg
+	skip updating operand 1 vector type.
+
+2020-05-25  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/95284
 	* tree-ssa-sink.c (sink_common_stores_to_bb): Amend previous
 	fix.
