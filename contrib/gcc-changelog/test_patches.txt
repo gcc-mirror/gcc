@@ -2568,3 +2568,46 @@ index a6a5d975af3..a8082d39aca 100644
 @@ -1 +1,2 @@
 
 +
+
+=== 0001-go-in-ignored-location.patch ===
+From 81994eab700da7fea6644541c163aa0f0f3b8cf1 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Cl=C3=A9ment=20Chigot?= <chigot.c@gmail.com>
+Date: Tue, 19 May 2020 16:03:54 +0200
+Subject: libgo: update x/sys/cpu after gccgo support added
+
+Reviewed-on: https://go-review.googlesource.com/c/gofrontend/+/234597
+---
+ gcc/go/gofrontend/MERGE                       |  2 +-
+ .../sys/cpu/{cpu_aix_ppc64.go => cpu_aix.go}  |  2 +-
+ .../golang.org/x/sys/cpu/syscall_aix_gccgo.go | 27 +++++++++++++++++++
+ 3 files changed, 29 insertions(+), 2 deletions(-)
+ rename libgo/go/golang.org/x/sys/cpu/{cpu_aix_ppc64.go => cpu_aix.go} (96%)
+ create mode 100644 libgo/go/golang.org/x/sys/cpu/syscall_aix_gccgo.go
+
+diff --git a/gcc/go/gofrontend/MERGE b/gcc/go/gofrontend/MERGE
+index bc9c1f07eda..284374820b0 100644
+--- a/gcc/go/gofrontend/MERGE
++++ b/gcc/go/gofrontend/MERGE
+@@ -1 +1,2 @@
+
++
+diff --git a/libgo/go/golang.org/x/sys/cpu/cpu_aix_ppc64.go b/libgo/go/golang.org/x/sys/cpu/cpu_aix.go
+similarity index 96%
+rename from libgo/go/golang.org/x/sys/cpu/cpu_aix_ppc64.go
+rename to libgo/go/golang.org/x/sys/cpu/cpu_aix.go
+index b0ede112d4e..02d03129e50 100644
+--- a/libgo/go/golang.org/x/sys/cpu/cpu_aix_ppc64.go
++++ b/libgo/go/golang.org/x/sys/cpu/cpu_aix.go
+@@ -1 +1,2 @@
+
++
+diff --git a/libgo/go/golang.org/x/sys/cpu/syscall_aix_gccgo.go b/libgo/go/golang.org/x/sys/cpu/syscall_aix_gccgo.go
+new file mode 100644
+index 00000000000..2609cc49ae7
+--- /dev/null
++++ b/libgo/go/golang.org/x/sys/cpu/syscall_aix_gccgo.go
+@@ -0,0 +1 @@
++
+
+-- 
+2.27.0.rc0.183.gde8f92d652-goog

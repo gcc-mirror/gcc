@@ -276,3 +276,7 @@ class TestGccChangelog(unittest.TestCase):
     def test_dr_entry(self):
         email = self.from_patch_glob('0001-c-C-20-DR-2237.patch')
         assert email.changelog_entries[0].prs == ['DR 2237']
+
+    def test_changes_only_in_ignored_location(self):
+        email = self.from_patch_glob('0001-go-in-ignored-location.patch')
+        assert not email.errors
