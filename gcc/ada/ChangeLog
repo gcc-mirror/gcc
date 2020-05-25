@@ -1,3 +1,11 @@
+2020-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (operand_type): New static inline function.
+	* gcc-interface/trans.c (gnat_to_gnu): Do not suppress conversion
+	to the resulty type at the end for array types.
+	* gcc-interface/utils2.c (build_binary_op) <MODIFY_EXPR>: Do not
+	remove conversions between array types on the LHS.
+
 2020-05-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_aggr.ads (Is_Single_Aggregate): New function.
