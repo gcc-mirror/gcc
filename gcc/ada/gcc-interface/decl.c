@@ -280,6 +280,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 {
   /* The construct that declared the entity.  */
   const Node_Id gnat_decl = Declaration_Node (gnat_entity);
+  /* The object that the entity renames, if any.  */
+  const Entity_Id gnat_renamed_obj = Renamed_Object (gnat_entity);
   /* The kind of the entity.  */
   const Entity_Kind kind = Ekind (gnat_entity);
   /* True if this is a type.  */
@@ -327,7 +329,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
   /* Contains the list of attributes directly attached to the entity.  */
   struct attrib *attr_list = NULL;
 
-  /* Since a use of an Itype is a definition, process it as such if it is in
+  /* Since a use of an itype is a definition, process it as such if it is in
      the main unit, except for E_Access_Subtype because it's actually a use
      of its base type, see below.  */
   if (!definition
@@ -375,7 +377,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    }
 	}
 
-      /* This abort means the Itype has an incorrect scope, i.e. that its
+      /* This abort means the itype has an incorrect scope, i.e. that its
 	 scope does not correspond to the subprogram it is first used in.  */
       gcc_unreachable ();
     }
@@ -447,6 +449,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
   /* If we get here, it means we have not yet done anything with this entity.
      If we are not defining it, it must be a type or an entity that is defined
      elsewhere or externally, otherwise we should have defined it already.
+
+     In other words, the failure of this assertion typically arises when a
+     reference to an entity (type or object) is made before its declaration,
+     either directly or by means of a freeze node which is incorrectly placed.
+     This can also happen for an entity referenced out of context, for example
+     a parameter outside of the subprogram where it is declared.  GNAT_ENTITY
+     is the N_Defining_Identifier of the entity, the problematic N_Identifier
+     being the argument passed to Identifier_to_gnu in the parent frame.
 
      One exception is for an entity, typically an inherited operation, which is
      a local alias for the parent's operation.  It is neither defined, since it
@@ -636,7 +646,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  && !gnu_expr
 	  && No (Address_Clause (gnat_entity))
 	  && !No_Initialization (gnat_decl)
-	  && No (Renamed_Object (gnat_entity)))
+	  && No (gnat_renamed_obj))
 	{
 	  gnu_decl = error_mark_node;
 	  saved = true;
@@ -692,7 +702,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	     && !Treat_As_Volatile (gnat_entity)
 	     && (((Nkind (gnat_decl) == N_Object_Declaration)
 		  && Present (Expression (gnat_decl)))
-		 || Present (Renamed_Object (gnat_entity))
+		 || Present (gnat_renamed_obj)
 		 || imported_p));
 	bool inner_const_flag = const_flag;
 	bool static_flag = Is_Statically_Allocated (gnat_entity);
@@ -704,20 +714,20 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	bool mutable_p = false;
 	bool used_by_ref = false;
 	tree gnu_ext_name = NULL_TREE;
-	tree renamed_obj = NULL_TREE;
+	tree gnu_renamed_obj = NULL_TREE;
 	tree gnu_ada_size = NULL_TREE;
 
 	/* We need to translate the renamed object even though we are only
 	   referencing the renaming.  But it may contain a call for which
 	   we'll generate a temporary to hold the return value and which
 	   is part of the definition of the renaming, so discard it.  */
-	if (Present (Renamed_Object (gnat_entity)) && !definition)
+	if (Present (gnat_renamed_obj) && !definition)
 	  {
 	    if (kind == E_Exception)
 	      gnu_expr = gnat_to_gnu_entity (Renamed_Entity (gnat_entity),
 					     NULL_TREE, false);
 	    else
-	      gnu_expr = gnat_to_gnu_external (Renamed_Object (gnat_entity));
+	      gnu_expr = gnat_to_gnu_external (gnat_renamed_obj);
 	  }
 
 	/* Get the type after elaborating the renamed object.  */
@@ -764,7 +774,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	/* Reject non-renamed objects whose type is an unconstrained array or
 	   any object whose type is a dummy type or void.  */
 	if ((TREE_CODE (gnu_type) == UNCONSTRAINED_ARRAY_TYPE
-	     && No (Renamed_Object (gnat_entity)))
+	     && No (gnat_renamed_obj))
 	    || TYPE_IS_DUMMY_P (gnu_type)
 	    || TREE_CODE (gnu_type) == VOID_TYPE)
 	  {
@@ -806,7 +816,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   initializing expression, in which case we can get the size from
 	   that.  Note that the resulting size may still be a variable, so
 	   this may end up with an indirect allocation.  */
-	if (No (Renamed_Object (gnat_entity))
+	if (No (gnat_renamed_obj)
 	    && CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_type)))
 	  {
 	    if (gnu_expr && kind == E_Constant)
@@ -882,7 +892,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		 && integer_zerop (TYPE_SIZE (gnu_type))
 		 && !TREE_OVERFLOW (TYPE_SIZE (gnu_type))))
 	    && !Is_Constr_Subt_For_UN_Aliased (gnat_type)
-	    && No (Renamed_Object (gnat_entity))
+	    && No (gnat_renamed_obj)
 	    && No (Address_Clause (gnat_entity)))
 	  gnu_size = bitsize_unit_node;
 
@@ -901,7 +911,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		    && !Is_Constr_Subt_For_UN_Aliased (gnat_type)
 		    && !Is_Exported (gnat_entity)
 		    && !imported_p
-		    && No (Renamed_Object (gnat_entity))
+		    && No (gnat_renamed_obj)
 		    && No (Address_Clause (gnat_entity))))
 	    && TREE_CODE (TYPE_SIZE (gnu_type)) == INTEGER_CST)
 	  align = promote_object_alignment (gnu_type, gnat_entity);
@@ -945,7 +955,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   because we don't support dynamic alignment.  */
 	if (align == 0
 	    && Ekind (gnat_type) == E_Class_Wide_Subtype
-	    && No (Renamed_Object (gnat_entity))
+	    && No (gnat_renamed_obj)
 	    && No (Address_Clause (gnat_entity)))
 	  align = get_target_system_allocator_alignment () * BITS_PER_UNIT;
 
@@ -961,7 +971,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	if (align == 0
 	    && MINIMUM_ATOMIC_ALIGNMENT > TYPE_ALIGN (gnu_type)
 	    && !FLOAT_TYPE_P (gnu_type)
-	    && !const_flag && No (Renamed_Object (gnat_entity))
+	    && !const_flag && No (gnat_renamed_obj)
 	    && !imported_p && No (Address_Clause (gnat_entity))
 	    && kind != E_Out_Parameter
 	    && (gnu_size ? TREE_CODE (gnu_size) == INTEGER_CST
@@ -1013,7 +1023,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   renaming can be applied to objects that are not names in Ada.
 	   This processing needs to be applied to the raw expression so as
 	   to make it more likely to rename the underlying object.  */
-	if (Present (Renamed_Object (gnat_entity)))
+	if (Present (gnat_renamed_obj))
 	  {
 	    /* If the renamed object had padding, strip off the reference to
 	       the inner object and reset our type.  */
@@ -1083,8 +1093,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	       the elaborated renamed expression for the renaming.  But this
 	       means that the caller is responsible for evaluating the address
 	       of the renaming in the correct place for the definition case to
-	       instantiate the SAVE_EXPRs.  */
-	    else if (!Materialize_Entity (gnat_entity))
+	       instantiate the SAVE_EXPRs.  But we cannot use this mechanism if
+	       the renamed object is an N_Expression_With_Actions because this
+	       would fail the assertion below.  */
+	    else if (!Materialize_Entity (gnat_entity)
+		     && Nkind (gnat_renamed_obj) != N_Expression_With_Actions)
 	      {
 		tree init = NULL_TREE;
 
@@ -1140,7 +1153,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		inner_const_flag = TREE_READONLY (gnu_expr);
 		gnu_size = NULL_TREE;
 
-		renamed_obj
+		gnu_renamed_obj
 		  = elaborate_reference (gnu_expr, gnat_entity, definition,
 					 &init);
 
@@ -1148,15 +1161,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		   likely be shared, even for a definition since the ADDR_EXPR
 		   built below can cause the first few nodes to be folded.  */
 		if (global_bindings_p ())
-		  MARK_VISITED (renamed_obj);
+		  MARK_VISITED (gnu_renamed_obj);
 
 		if (type_annotate_only
-		    && TREE_CODE (renamed_obj) == ERROR_MARK)
+		    && TREE_CODE (gnu_renamed_obj) == ERROR_MARK)
 		  gnu_expr = NULL_TREE;
 		else
 		  {
 		    gnu_expr
-		      = build_unary_op (ADDR_EXPR, gnu_type, renamed_obj);
+		      = build_unary_op (ADDR_EXPR, gnu_type, gnu_renamed_obj);
 		    if (init)
 		      gnu_expr
 			= build_compound_expr (TREE_TYPE (gnu_expr), init,
@@ -1525,7 +1538,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 			     imported_p || !definition, static_flag,
 			     volatile_flag, artificial_p,
 			     debug_info_p && definition, attr_list,
-			     gnat_entity, !renamed_obj);
+			     gnat_entity, !gnu_renamed_obj);
 	DECL_BY_REF_P (gnu_decl) = used_by_ref;
 	DECL_POINTS_TO_READONLY_P (gnu_decl) = used_by_ref && inner_const_flag;
 	DECL_CAN_NEVER_BE_NULL_P (gnu_decl) = Can_Never_Be_Null (gnat_entity);
@@ -1554,8 +1567,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  DECL_LOOP_PARM_P (gnu_decl) = 1;
 
 	/* If this is a renaming pointer, attach the renamed object to it.  */
-	if (renamed_obj)
-	  SET_DECL_RENAMED_OBJECT (gnu_decl, renamed_obj);
+	if (gnu_renamed_obj)
+	  SET_DECL_RENAMED_OBJECT (gnu_decl, gnu_renamed_obj);
 
 	/* If this is a constant and we are defining it or it generates a real
 	   symbol at the object level and we are referencing it, we may want
@@ -3396,7 +3409,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	    /* If there are entities in the chain corresponding to components
 	       that we did not elaborate, ensure we elaborate their types if
-	       they are Itypes.  */
+	       they are itypes.  */
 	    for (gnat_temp = First_Entity (gnat_entity);
 		 Present (gnat_temp);
 		 gnat_temp = Next_Entity (gnat_temp))
@@ -3482,7 +3495,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	  /* When the subtype has discriminants and these discriminants affect
 	     the initial shape it has inherited, factor them in.  But for an
-	     Unchecked_Union (it must be an Itype), just return the type.  */
+	     Unchecked_Union (it must be an itype), just return the type.  */
 	  if (Has_Discriminants (gnat_entity)
 	      && Stored_Constraint (gnat_entity) != No_Elist
 	      && Is_Record_Type (gnat_base_type)
@@ -3970,16 +3983,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   of its type, so we must elaborate that type now.  */
 	if (Present (Alias (gnat_entity)))
 	  {
-	    const Entity_Id gnat_renamed = Renamed_Object (gnat_entity);
+	    const Entity_Id gnat_alias = Alias (gnat_entity);
 
-	    if (Ekind (Alias (gnat_entity)) == E_Enumeration_Literal)
-	      gnat_to_gnu_entity (Etype (Alias (gnat_entity)), NULL_TREE,
-				  false);
+	    if (Ekind (gnat_alias) == E_Enumeration_Literal)
+	      gnat_to_gnu_entity (Etype (gnat_alias), NULL_TREE, false);
 
-	    gnu_decl
-	      = gnat_to_gnu_entity (Alias (gnat_entity), gnu_expr, false);
+	    gnu_decl = gnat_to_gnu_entity (gnat_alias, gnu_expr, false);
 
-	    /* Elaborate any Itypes in the parameters of this entity.  */
+	    /* Elaborate any itypes in the parameters of this entity.  */
 	    for (gnat_temp = First_Formal_With_Extras (gnat_entity);
 		 Present (gnat_temp);
 		 gnat_temp = Next_Formal_With_Extras (gnat_temp))
@@ -3987,24 +3998,22 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		gnat_to_gnu_entity (Etype (gnat_temp), NULL_TREE, false);
 
 	    /* Materialize renamed subprograms in the debugging information
-	       when the renamed object is compile time known.  We can consider
+	       when the renamed object is known at compile time; we consider
 	       such renamings as imported declarations.
 
-	       Because the parameters in generics instantiation are generally
-	       materialized as renamings, we ofter end up having both the
+	       Because the parameters in generic instantiations are generally
+	       materialized as renamings, we often end up having both the
 	       renamed subprogram and the renaming in the same context and with
-	       the same name: in this case, renaming is both useless debug-wise
+	       the same name; in this case, renaming is both useless debug-wise
 	       and potentially harmful as name resolution in the debugger could
 	       return twice the same entity!  So avoid this case.  */
-	    if (debug_info_p && !artificial_p
+	    if (debug_info_p
+		&& !artificial_p
+		&& (Ekind (gnat_alias) == E_Function
+		    || Ekind (gnat_alias) == E_Procedure)
 		&& !(get_debug_scope (gnat_entity, NULL)
-		       == get_debug_scope (gnat_renamed, NULL)
-		     && Name_Equals (Chars (gnat_entity),
-				     Chars (gnat_renamed)))
-		&& Present (gnat_renamed)
-		&& (Ekind (gnat_renamed) == E_Function
-		    || Ekind (gnat_renamed) == E_Procedure)
-		&& gnu_decl
+		     == get_debug_scope (gnat_alias, NULL)
+		     && Name_Equals (Chars (gnat_entity), Chars (gnat_alias)))
 		&& TREE_CODE (gnu_decl) == FUNCTION_DECL)
 	      {
 		tree decl = build_decl (input_location, IMPORTED_DECL,
@@ -4847,7 +4856,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
     force_global--;
 
   /* If this is a packed array type whose original array type is itself
-     an Itype without freeze node, make sure the latter is processed.  */
+     an itype without freeze node, make sure the latter is processed.  */
   if (Is_Packed_Array_Impl_Type (gnat_entity)
       && Is_Itype (Original_Array_Type (gnat_entity))
       && No (Freeze_Node (Original_Array_Type (gnat_entity)))
@@ -10083,7 +10092,7 @@ copy_and_substitute_in_layout (Entity_Id gnat_new_type,
   finish_record_type (gnu_new_type, nreverse (gnu_field_list),
 		      is_subtype ? 2 : 1, debug_info_p);
 
-  /* Now go through the entities again looking for Itypes that we have not yet
+  /* Now go through the entities again looking for itypes that we have not yet
      elaborated (e.g. Etypes of fields that have Original_Components).  */
   for (Entity_Id gnat_field = First_Entity (gnat_new_type);
        Present (gnat_field);
