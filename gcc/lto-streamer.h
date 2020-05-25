@@ -125,6 +125,9 @@ along with GCC; see the file COPYING3.  If not see
 
 typedef unsigned char	lto_decl_flags_t;
 
+/* Stream additional data to LTO object files to make it easier to debug
+   streaming code.  This changes object files.  */
+static const bool streamer_debugging = false;
 
 /* Tags representing the various IL objects written to the bytecode file
    (GIMPLE statements, basic blocks, EH regions, tree nodes, etc).
