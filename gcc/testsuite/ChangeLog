@@ -1,5 +1,11 @@
 2020-05-25  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/95297
+	* g++.dg/vect/pr95297.cc: New testcase.
+	* g++.dg/vect/pr95290.cc: Likewise.
+
+2020-05-25  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/95284
 	* g++.dg/torture/pr95284.C: New testcase.
 
