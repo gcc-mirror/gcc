@@ -2402,6 +2402,7 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 		      if (edge_seq[i].second == sm_ord)
 			bitmap_set_bit (refs_not_supported, edge_seq[i].first);
 		      first_edge_seq[i].second = sm_other;
+		      first_edge_seq[i].from = NULL_TREE;
 		    }
 		  /* sm_other prevails.  */
 		  else if (first_edge_seq[i].second != edge_seq[i].second)
@@ -2410,7 +2411,14 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 		      gcc_assert (bitmap_bit_p (refs_not_supported,
 						first_edge_seq[i].first));
 		      first_edge_seq[i].second = sm_other;
+		      first_edge_seq[i].from = NULL_TREE;
 		    }
+		  else if (first_edge_seq[i].second == sm_other
+			   && first_edge_seq[i].from != NULL_TREE
+			   && (edge_seq[i].from == NULL_TREE
+			       || !operand_equal_p (first_edge_seq[i].from,
+						    edge_seq[i].from, 0)))
+		    first_edge_seq[i].from = NULL_TREE;
 		}
 	      /* Any excess elements become sm_other since they are now
 		 coonditionally executed.  */

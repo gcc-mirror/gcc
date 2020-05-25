@@ -1,5 +1,11 @@
 2020-05-25  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/95295
+	* tree-ssa-loop-im.c (sm_seq_valid_bb): Compare remat stores
+	RHSes and drop to full sm_other if they are not equal.
+
+2020-05-25  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/95271
 	* tree-vect-stmts.c (vectorizable_bswap): Update invariant SLP
 	children vector type.
