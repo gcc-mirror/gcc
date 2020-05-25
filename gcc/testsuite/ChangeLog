@@ -1,3 +1,8 @@
+2020-05-25  Jason Merrill  <jason@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_c++20_only)
+	(check_effective_target_c++20): New.
+
 2020-05-24  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95255
