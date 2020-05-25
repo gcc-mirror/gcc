@@ -1,5 +1,12 @@
 2020-05-25  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/95295
+	* gcc.dg/torture/pr95295-1.c: New testcase.
+	* gcc.dg/torture/pr95295-2.c: Likewise.
+	* gcc.dg/torture/pr95283.c: Likewise.
+
+2020-05-25  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/95271
 	* gcc.dg/vect/bb-slp-pr95271.c: New testcase.
 
