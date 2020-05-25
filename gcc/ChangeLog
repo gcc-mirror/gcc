@@ -1,3 +1,12 @@
+2020-05-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-out.c (lto_output_tree): Add streamer_debugging check.
+	* lto-streamer.h (streamer_debugging): New constant
+	* tree-streamer-in.c (streamer_read_tree_bitfields): Add
+	streamer_debugging check.
+	(streamer_get_pickled_tree): Likewise.
+	* tree-streamer-out.c (pack_ts_base_value_fields): Likewise.
+
 2020-05-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/95308
