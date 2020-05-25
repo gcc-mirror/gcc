@@ -130,7 +130,7 @@ ignored_prefixes = [
     'gcc/go/gofrontend/',
     'gcc/testsuite/go.test/test/',
     'libgo/',
-    'libphobos/libdruntime',
+    'libphobos/libdruntime/',
     'libphobos/src/',
     'libsanitizer/',
     ]
@@ -233,7 +233,8 @@ class GitCommit:
 
         project_files = [f for f in self.modified_files
                          if self.is_changelog_filename(f[0])
-                         or f[0] in misc_files]
+                         or f[0] in misc_files
+                         or self.in_ignored_location(f[0])]
         if len(project_files) == len(self.modified_files):
             # All modified files are only MISC files
             return

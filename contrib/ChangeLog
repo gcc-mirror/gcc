@@ -1,3 +1,12 @@
+2020-05-25  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Add trailing '/'
+	for libdruntime.  Allow empty changelog for
+	only ignored files.
+	* gcc-changelog/test_email.py: New test for go
+	patch in ignored location.
+	* gcc-changelog/test_patches.txt: Add test.
+
 2020-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-changelog/git_commit.py: Add trailing / to

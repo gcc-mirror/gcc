@@ -1,3 +1,90 @@
+2020-05-25  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse2-mmx-18a.c (dg-options): Remove -mno-avx512vl.
+	* gcc.target/i386/sse2-mmx-19a.c (dg-options): Remove -mno-avx.
+	* gcc.target/i386/sse2-mmx-18b.c: Remove.
+	* gcc.target/i386/sse2-mmx-18c.c: Ditto.
+	* gcc.target/i386/sse2-mmx-19b.c: Ditto.
+	* gcc.target/i386/sse2-mmx-19c.c: Ditto.
+	* gcc.target/i386/sse2-mmx-19d.c: Ditto.
+	* gcc.target/i386/sse2-mmx-19e.c: Ditto.
+
+2020-05-25  Martin Jambor  <mjambor@suse.cz>
+
+	* brig.dg/test/gimple/packed.hsail: Fix scan dump patterns.
+
+2020-05-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95308
+	* g++.dg/torture/pr95308.C: New testcase.
+
+2020-05-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95295
+	* gcc.dg/torture/pr95295-1.c: New testcase.
+	* gcc.dg/torture/pr95295-2.c: Likewise.
+	* gcc.dg/torture/pr95283.c: Likewise.
+
+2020-05-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95271
+	* gcc.dg/vect/bb-slp-pr95271.c: New testcase.
+
+2020-05-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95297
+	* g++.dg/vect/pr95297.cc: New testcase.
+	* g++.dg/vect/pr95290.cc: Likewise.
+
+2020-05-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95284
+	* g++.dg/torture/pr95284.C: New testcase.
+
+2020-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/renaming16.adb: New test.
+	* gnat.dg/renaming16_pkg.ads: New helper.
+
+2020-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/array40.adb: New test.
+	* gnat.dg/array40_pkg.ads: New helper.
+
+2020-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/array39.adb: New test.
+	* gnat.dg/array39_pkg.ads: New helper.
+	* gnat.dg/array39_pkg.adb: Likewise.
+
+2020-05-25  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr95125-avx.c: New test.
+	* gcc.target/i386/pr95125-avx512f.c: Ditto.
+
+2020-05-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95106
+	* gfortran.dg/equiv_11.f90: New test.
+
+2020-05-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94038
+	* g++.dg/warn/pr94038-3.C: New test.
+
+2020-05-22  Mark Wielaard  <mark@klomp.org>
+
+	* gcc.dg/spellcheck-stdint.c: New test.
+	* g++.dg/spellcheck-stdint.C: Likewise.
+
+2020-05-22  Mark Wielaard  <mark@klomp.org>
+
+	* gcc.dg/spellcheck-stdbool.c: New test.
+
+2020-05-22  Mark Wielaard  <mark@klomp.org>
+
+	* gcc.dg/analyzer/signal-exit.c: New testcase.
+
 2020-05-22  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95255

@@ -158,6 +158,44 @@ get_stdlib_header_for_name (const char *name, enum stdlib lib)
   for (size_t i = 0; i < num_hints; i++)
     if (strcmp (name, hints[i].name) == 0)
       return hints[i].header[lib];
+
+  static const stdlib_hint c99_cxx11_hints[] = {
+    /* <stdbool.h>.  Defined natively in C++.  */
+    {"bool", {"<stdbool.h>", NULL} },
+    {"true", {"<stdbool.h>", NULL} },
+    {"false", {"<stdbool.h>", NULL} },
+
+    /* <stdint.h> and <cstdint>.  */
+    {"int8_t", {"<stdint.h>", "<cstdint>"} },
+    {"uint8_t", {"<stdint.h>", "<cstdint>"} },
+    {"int16_t", {"<stdint.h>", "<cstdint>"} },
+    {"uint16_t", {"<stdint.h>", "<cstdint>"} },
+    {"int32_t", {"<stdint.h>", "<cstdint>"} },
+    {"uint32_t", {"<stdint.h>", "<cstdint>"} },
+    {"int64_t", {"<stdint.h>", "<cstdint>"} },
+    {"uint64_t", {"<stdint.h>", "<cstdint>"} },
+    {"intptr_t", {"<stdint.h>", "<cstdint>"} },
+    {"uintptr_t", {"<stdint.h>", "<cstdint>"} },
+    {"INT8_MAX", {"<stdint.h>", "<cstdint>"} },
+    {"INT16_MAX", {"<stdint.h>", "<cstdint>"} },
+    {"INT32_MAX", {"<stdint.h>", "<cstdint>"} },
+    {"INT64_MAX", {"<stdint.h>", "<cstdint>"} },
+    {"UINT8_MAX", {"<stdint.h>", "<cstdint>"} },
+    {"UINT16_MAX", {"<stdint.h>", "<cstdint>"} },
+    {"UINT32_MAX", {"<stdint.h>", "<cstdint>"} },
+    {"UINT64_MAX", {"<stdint.h>", "<cstdint>"} },
+    {"INTPTR_MAX", {"<stdint.h>", "<cstdint>"} },
+    {"UINTPTR_MAX", {"<stdint.h>", "<cstdint>"} }
+  };
+
+  const size_t num_c99_cxx11_hints = sizeof (c99_cxx11_hints)
+					     / sizeof (c99_cxx11_hints[0]);
+  if ((lib == STDLIB_C && flag_isoc99)
+      || (lib == STDLIB_CPLUSPLUS && cxx_dialect >= cxx11 ))
+    for (size_t i = 0; i < num_c99_cxx11_hints; i++)
+      if (strcmp (name, c99_cxx11_hints[i].name) == 0)
+	return c99_cxx11_hints[i].header[lib];
+
   return NULL;
 }
 

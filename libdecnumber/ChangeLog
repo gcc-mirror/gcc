@@ -1,3 +1,9 @@
+2020-05-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* Makefile.in (AR): Substitute @AR@.
+	* configure.ac (CHECK_PROG AR): New.
+	* configure: Regenerate.
+
 2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure: Regenerated.

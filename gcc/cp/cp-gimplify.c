@@ -852,6 +852,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       ret = GS_OK;
       if (flag_strong_eval_order == 2
 	  && CALL_EXPR_FN (*expr_p)
+	  && !CALL_EXPR_OPERATOR_SYNTAX (*expr_p)
 	  && cp_get_callee_fndecl_nofold (*expr_p) == NULL_TREE)
 	{
 	  tree fnptrtype = TREE_TYPE (CALL_EXPR_FN (*expr_p));

@@ -1,3 +1,14 @@
+2020-05-22  Mark Wielaard  <mark@klomp.org>
+
+	* known-headers.cc (get_stdlib_header_for_name): Add a new
+	stdlib_hint array for stdbool and stdint.
+
+2020-05-22  Mark Wielaard  <mark@klomp.org>
+
+	* known-headers.cc (get_stdlib_header_for_name): Return
+	"<stdbool.h>" for "bool", "true" or "false" when STDLIB_C and
+	flag_isoc99.
+
 2020-05-20  Nathan Sidwell  <nathan@acm.org>
 
 	* c-common.c (try_to_locate_new_include_insertion_point): Revert change.
