@@ -1003,6 +1003,9 @@ get_array_bit_stride (tree comp_type)
   if (INTEGRAL_TYPE_P (comp_type))
     return TYPE_RM_SIZE (comp_type);
 
+  /* The gnat_get_array_descr_info debug hook expects a debug tyoe.  */
+  comp_type = maybe_debug_type (comp_type);
+
   /* Otherwise, see if this is an array we can analyze; if it's not, punt.  */
   memset (&info, 0, sizeof (info));
   if (!gnat_get_array_descr_info (comp_type, &info) || !info.stride)
