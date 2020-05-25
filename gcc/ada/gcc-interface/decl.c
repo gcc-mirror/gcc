@@ -5153,7 +5153,7 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
   unsigned int max_align;
 
   /* If an alignment is specified, use it as a cap on the component type
-     so that it can be honored for the whole type.  But ignore it for the
+     so that it can be honored for the whole type, but ignore it for the
      original type of packed array types.  */
   if (No (Packed_Array_Impl_Type (gnat_array))
       && Known_Alignment (gnat_array))
@@ -5200,6 +5200,7 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
   if (gnu_comp_size && !is_bit_packed)
     {
       tree orig_type = gnu_type;
+      unsigned int gnu_comp_align;
 
       gnu_type = make_type_from_size (gnu_type, gnu_comp_size, false);
       if (max_align > 0 && TYPE_ALIGN (gnu_type) > max_align)
@@ -5207,8 +5208,22 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
       else
 	orig_type = gnu_type;
 
-      gnu_type = maybe_pad_type (gnu_type, gnu_comp_size, 0, gnat_array,
-				 true, definition, true);
+      /* We need to make sure that the size is a multiple of the alignment.
+	 But we do not misalign the component type because of the alignment
+	 of the array type here; this either must have been done earlier in
+	 the packed case or should be rejected in the non-packed case.  */
+      if (TREE_CODE (gnu_comp_size) == INTEGER_CST)
+	{
+	  const unsigned HOST_WIDE_INT int_size = tree_to_uhwi (gnu_comp_size);
+	  gnu_comp_align = int_size & -int_size;
+	  if (gnu_comp_align > TYPE_ALIGN (gnu_type))
+	    gnu_comp_align = 0;
+	}
+       else
+	 gnu_comp_align = 0;
+
+      gnu_type = maybe_pad_type (gnu_type, gnu_comp_size, gnu_comp_align,
+				 gnat_array, true, definition, true);
 
       /* If a padding record was made, declare it now since it will never be
 	 declared otherwise.  This is necessary to ensure that its subtrees
