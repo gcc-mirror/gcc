@@ -5119,6 +5119,27 @@ package body Checks is
          when N_Attribute_Reference =>
             case Get_Attribute_Id (Attribute_Name (N)) is
 
+               --  For Min/Max attributes, we can refine the range using the
+               --  possible range of values of the attribute expressions.
+
+               when Attribute_Min
+                  | Attribute_Max
+               =>
+                  Determine_Range
+                    (First (Expressions (N)),
+                     OK1, Lo_Left, Hi_Left, Assume_Valid);
+
+                  if OK1 then
+                     Determine_Range
+                       (Next (First (Expressions (N))),
+                        OK1, Lo_Right, Hi_Right, Assume_Valid);
+                  end if;
+
+                  if OK1 then
+                     Lor := UI_Min (Lo_Left, Lo_Right);
+                     Hir := UI_Max (Hi_Left, Hi_Right);
+                  end if;
+
                --  For Pos/Val attributes, we can refine the range using the
                --  possible range of values of the attribute expression.
 
