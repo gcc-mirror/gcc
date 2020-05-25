@@ -1209,3 +1209,11 @@ maybe_padded_object (tree expr)
 
   return expr;
 }
+
+/* Return the type of operand #0 of EXPR.  */
+
+static inline tree
+operand_type (tree expr)
+{
+  return TREE_TYPE (TREE_OPERAND (expr, 0));
+}
