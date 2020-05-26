@@ -15651,12 +15651,14 @@ package body Sem_Util is
 
       --  Otherwise Id denotes an object
 
-      else
+      else pragma Assert (Is_Object (Id));
          --  A volatile object for which No_Caching is enabled is not
          --  effectively volatile.
 
          return
-           (Is_Volatile (Id) and then not No_Caching_Enabled (Id))
+           (Is_Volatile (Id)
+            and then not
+              (Ekind (Id) = E_Variable and then No_Caching_Enabled (Id)))
              or else Has_Volatile_Components (Id)
              or else Is_Effectively_Volatile (Etype (Id));
       end if;
@@ -15669,7 +15671,8 @@ package body Sem_Util is
    function Is_Effectively_Volatile_Object (N : Node_Id) return Boolean is
    begin
       if Is_Entity_Name (N) then
-         return Is_Effectively_Volatile (Entity (N));
+         return Is_Object (Entity (N))
+           and then Is_Effectively_Volatile (Entity (N));
 
       elsif Nkind (N) = N_Indexed_Component then
          return Is_Effectively_Volatile_Object (Prefix (N));
@@ -23289,6 +23292,7 @@ package body Sem_Util is
    ------------------------
 
    function No_Caching_Enabled (Id : Entity_Id) return Boolean is
+      pragma Assert (Ekind (Id) = E_Variable);
       Prag : constant Node_Id := Get_Pragma (Id, Pragma_No_Caching);
       Arg1 : Node_Id;
 
