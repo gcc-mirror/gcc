@@ -703,6 +703,8 @@ __altivec_scalar_pred(vec_any_nle,
 /* Overloaded built-in functions for ISA 3.1.  */
 #define vec_extractl(a, b, c)	__builtin_vec_extractl (a, b, c)
 #define vec_extracth(a, b, c)	__builtin_vec_extracth (a, b, c)
+#define vec_insertl(a, b, c)   __builtin_vec_insertl (a, b, c)
+#define vec_inserth(a, b, c)   __builtin_vec_inserth (a, b, c)
 
 #define vec_gnb(a, b)	__builtin_vec_gnb (a, b)
 #define vec_clrl(a, b)	__builtin_vec_clrl (a, b)

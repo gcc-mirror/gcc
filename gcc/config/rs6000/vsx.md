@@ -357,6 +357,8 @@
    UNSPEC_VEXTRACT
    UNSPEC_EXTRACTL
    UNSPEC_EXTRACTR
+   UNSPEC_INSERTL
+   UNSPEC_INSERTR
   ])
 
 (define_int_iterator XVCVBF16	[UNSPEC_VSX_XVCVSPBF16
@@ -3911,6 +3913,114 @@
   "TARGET_POWER10"
   "vext<du_or_d><wd>vrx %0,%1,%2,%3"
   [(set_attr "type" "vecsimple")])
+
+(define_expand "vinsertvl_<mode>"
+  [(set (match_operand:VI2 0 "altivec_register_operand")
+	(unspec:VI2 [(match_operand:VI2 1 "altivec_register_operand")
+		     (match_operand:VI2 2 "altivec_register_operand")
+		     (match_operand:SI 3 "register_operand" "r")]
+		    UNSPEC_INSERTL))]
+  "TARGET_POWER10"
+{
+  if (BYTES_BIG_ENDIAN)
+     emit_insn (gen_vinsertvl_internal_<mode> (operands[0], operands[3],
+                                               operands[1], operands[2]));
+   else
+     emit_insn (gen_vinsertvr_internal_<mode> (operands[0], operands[3],
+                                               operands[1], operands[2]));
+   DONE;
+})
+
+(define_insn "vinsertvl_internal_<mode>"
+  [(set (match_operand:VEC_I 0 "altivec_register_operand" "=v")
+	(unspec:VEC_I [(match_operand:SI 1 "register_operand" "r")
+		       (match_operand:VEC_I 2 "altivec_register_operand" "v")
+		       (match_operand:VEC_I 3 "altivec_register_operand" "0")]
+		      UNSPEC_INSERTL))]
+  "TARGET_POWER10"
+  "vins<wd>vlx %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
+
+(define_expand "vinsertvr_<mode>"
+  [(set (match_operand:VI2 0 "altivec_register_operand")
+	(unspec:VI2 [(match_operand:VI2 1 "altivec_register_operand")
+		     (match_operand:VI2 2 "altivec_register_operand")
+		     (match_operand:SI 3 "register_operand" "r")]
+		    UNSPEC_INSERTR))]
+  "TARGET_POWER10"
+{
+  if (BYTES_BIG_ENDIAN)
+     emit_insn (gen_vinsertvr_internal_<mode> (operands[0], operands[3],
+                                               operands[1], operands[2]));
+   else
+     emit_insn (gen_vinsertvl_internal_<mode> (operands[0], operands[3],
+                                               operands[1], operands[2]));
+   DONE;
+})
+
+(define_insn "vinsertvr_internal_<mode>"
+  [(set (match_operand:VEC_I 0 "altivec_register_operand" "=v")
+	(unspec:VEC_I [(match_operand:SI 1 "register_operand" "r")
+		       (match_operand:VEC_I 2 "altivec_register_operand" "v")
+		       (match_operand:VEC_I 3 "altivec_register_operand" "0")]
+		      UNSPEC_INSERTR))]
+  "TARGET_POWER10"
+  "vins<wd>vrx %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
+
+(define_expand "vinsertgl_<mode>"
+  [(set (match_operand:VI2 0 "altivec_register_operand")
+	(unspec:VI2 [(match_operand:SI 1 "register_operand")
+		     (match_operand:VI2 2 "altivec_register_operand")
+		     (match_operand:SI 3 "register_operand")]
+		    UNSPEC_INSERTL))]
+  "TARGET_POWER10"
+{
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_vinsertgl_internal_<mode> (operands[0], operands[3],
+                                            operands[1], operands[2]));
+  else
+    emit_insn (gen_vinsertgr_internal_<mode> (operands[0], operands[3],
+                                            operands[1], operands[2]));
+  DONE;
+ })
+
+(define_insn "vinsertgl_internal_<mode>"
+ [(set (match_operand:VEC_I 0 "altivec_register_operand" "=v")
+       (unspec:VEC_I [(match_operand:SI 1 "register_operand" "r")
+		      (match_operand:SI 2 "register_operand" "r")
+		      (match_operand:VEC_I 3 "altivec_register_operand" "0")]
+		     UNSPEC_INSERTL))]
+ "TARGET_POWER10"
+ "vins<wd>lx %0,%1,%2"
+ [(set_attr "type" "vecsimple")])
+
+(define_expand "vinsertgr_<mode>"
+  [(set (match_operand:VI2 0 "altivec_register_operand")
+	(unspec:VI2 [(match_operand:SI 1 "register_operand")
+		     (match_operand:VI2 2 "altivec_register_operand")
+		     (match_operand:SI 3 "register_operand")]
+		    UNSPEC_INSERTR))]
+  "TARGET_POWER10"
+{
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_vinsertgr_internal_<mode> (operands[0], operands[3],
+                                            operands[1], operands[2]));
+  else
+    emit_insn (gen_vinsertgl_internal_<mode> (operands[0], operands[3],
+                                            operands[1], operands[2]));
+  DONE;
+ })
+
+(define_insn "vinsertgr_internal_<mode>"
+ [(set (match_operand:VEC_I 0 "altivec_register_operand" "=v")
+   (unspec:VEC_I [(match_operand:SI 1 "register_operand" "r")
+		  (match_operand:SI 2 "register_operand" "r")
+		  (match_operand:VEC_I 3 "altivec_register_operand" "0")]
+		 UNSPEC_INSERTR))]
+ "TARGET_POWER10"
+ "vins<wd>rx %0,%1,%2"
+ [(set_attr "type" "vecsimple")])
 
 ;; VSX_EXTRACT optimizations
 ;; Optimize double d = (double) vec_extract (vi, <n>)
