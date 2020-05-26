@@ -9709,7 +9709,8 @@ package body Exp_Ch6 is
       --  declaration.
 
       Anon_Type := Create_Itype (E_Anonymous_Access_Type, Function_Call);
-      Set_Directly_Designated_Type (Anon_Type, Etype (BIP_Func_Call));
+      Set_Directly_Designated_Type (Anon_Type,
+        Designated_Type (Etype (Allocator)));
       Set_Etype (Anon_Type, Anon_Type);
       Build_Class_Wide_Master (Anon_Type);
 
