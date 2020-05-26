@@ -43,8 +43,8 @@ uninstall-info: info
 	-$(TEXI2PDF) '$<'
 
 clean:
-	-rm -f *.info *.pdf *.txt *.html
-	-rm -f *.log *.ind *.aux *.toc *.syn *.idx *.out *.ilg *.pla *.ky *.pg
-	-rm -f *.vr *.tp *.fn *.fns *.def *.defs *.cp *.cps *.ge *.ges *.mo
+	rm -f *.info *.pdf *.txt *.html
+	rm -f *.log *.ind *.aux *.toc *.syn *.idx *.out *.ilg *.pla *.ky *.pg
+	rm -f *.vr *.tp *.fn *.fns *.def *.defs *.cp *.cps *.ge *.ges *.mo
 
 .PHONY: all info plaintext html pdf install-info uninstall-info clean

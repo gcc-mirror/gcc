@@ -37,7 +37,8 @@ class GitEmail(GitCommit):
         date = None
         author = None
 
-        lines = open(self.filename).read().splitlines()
+        with open(self.filename, 'r') as f:
+            lines = f.read().splitlines()
         lines = list(takewhile(lambda line: line != '---', lines))
         for line in lines:
             if line.startswith(DATE_PREFIX):

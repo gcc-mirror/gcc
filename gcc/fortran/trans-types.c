@@ -2836,9 +2836,10 @@ copy_derived_types:
 	  && (c->attr.allocatable || c->attr.pointer)
 	  && !derived->attr.is_class)
 	{
-	  char caf_name[GFC_MAX_SYMBOL_LEN];
+	  /* Provide sufficient space to hold "_caf_symbol".  */
+	  char caf_name[GFC_MAX_SYMBOL_LEN + 6];
 	  gfc_component *token;
-	  snprintf (caf_name, GFC_MAX_SYMBOL_LEN, "_caf_%s", c->name);
+	  snprintf (caf_name, sizeof (caf_name), "_caf_%s", c->name);
 	  token = gfc_find_component (derived, caf_name, true, true, NULL);
 	  gcc_assert (token);
 	  c->caf_token = token->backend_decl;

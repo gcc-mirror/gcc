@@ -1988,16 +1988,44 @@
    (set_attr "length_immediate" "1")
    (set_attr "mode" "DI,TI")])
 
+(define_insn "*mmx_pshufd_1"
+  [(set (match_operand:V2SI 0 "register_operand" "=Yv")
+        (vec_select:V2SI
+          (match_operand:V2SI 1 "register_operand" "Yv")
+          (parallel [(match_operand 2 "const_0_to_1_operand")
+                     (match_operand 3 "const_0_to_1_operand")])))]
+  "TARGET_MMX_WITH_SSE"
+{
+  int mask = 0;
+  mask |= INTVAL (operands[2]) << 0;
+  mask |= INTVAL (operands[3]) << 2;
+  mask |= 2 << 4;
+  mask |= 3 << 6;
+  operands[2] = GEN_INT (mask);
+
+  return "%vpshufd\t{%2, %1, %0|%0, %1, %2}";
+}
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_data16" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "mode" "TI")])
+
 (define_insn "mmx_pswapdv2si2"
-  [(set (match_operand:V2SI 0 "register_operand" "=y")
+  [(set (match_operand:V2SI 0 "register_operand" "=y,Yv")
 	(vec_select:V2SI
-	  (match_operand:V2SI 1 "nonimmediate_operand" "ym")
+	  (match_operand:V2SI 1 "register_mmxmem_operand" "ym,Yv")
 	  (parallel [(const_int 1) (const_int 0)])))]
-  "TARGET_3DNOW_A"
-  "pswapd\t{%1, %0|%0, %1}"
-  [(set_attr "type" "mmxcvt")
-   (set_attr "prefix_extra" "1")
-   (set_attr "mode" "DI")])
+  "TARGET_3DNOW_A || TARGET_MMX_WITH_SSE"
+  "@
+   pswapd\t{%1, %0|%0, %1}
+   %vpshufd\t{$0xe1, %1, %0|%0, %1, 0xe1}";
+  [(set_attr "isa" "*,sse2")
+   (set_attr "mmx_isa" "native,*")
+   (set_attr "type" "mmxcvt,sselog1")
+   (set_attr "prefix_extra" "1,*")
+   (set_attr "prefix_data16" "*,1")
+   (set_attr "length_immediate" "*,1")
+   (set_attr "mode" "DI,TI")])
 
 (define_insn "*vec_dupv4hi"
   [(set (match_operand:V4HI 0 "register_operand" "=y,xYw")

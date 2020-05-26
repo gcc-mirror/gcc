@@ -939,11 +939,13 @@ validate_subreg (machine_mode omode, machine_mode imode,
 	   && GET_MODE_INNER (imode) == omode)
     ;
   /* ??? x86 sse code makes heavy use of *paradoxical* vector subregs,
-     i.e. (subreg:V4SF (reg:SF) 0).  This surely isn't the cleanest way to
-     represent this.  It's questionable if this ought to be represented at
-     all -- why can't this all be hidden in post-reload splitters that make
-     arbitrarily mode changes to the registers themselves.  */
-  else if (VECTOR_MODE_P (omode) && GET_MODE_INNER (omode) == imode)
+     i.e. (subreg:V4SF (reg:SF) 0) or (subreg:V4SF (reg:V2SF) 0).  This
+     surely isn't the cleanest way to represent this.  It's questionable
+     if this ought to be represented at all -- why can't this all be hidden
+     in post-reload splitters that make arbitrarily mode changes to the
+     registers themselves.  */
+  else if (VECTOR_MODE_P (omode)
+	   && GET_MODE_INNER (omode) == GET_MODE_INNER (imode))
     ;
   /* Subregs involving floating point modes are not allowed to
      change size.  Therefore (subreg:DI (reg:DF) 0) is fine, but

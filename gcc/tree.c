@@ -5556,6 +5556,7 @@ free_lang_data_in_type (tree type, class free_lang_data_d *fld)
     {
       if (TREE_CODE (type) == ENUMERAL_TYPE)
 	{
+	  tree it = NULL_TREE;
 	  ENUM_IS_OPAQUE (type) = 0;
 	  ENUM_IS_SCOPED (type) = 0;
 	  /* Type values are used only for C++ ODR checking.  Drop them
@@ -5568,8 +5569,27 @@ free_lang_data_in_type (tree type, class free_lang_data_d *fld)
 	  /* Simplify representation by recording only values rather
 	     than const decls.  */
 	    for (tree e = TYPE_VALUES (type); e; e = TREE_CHAIN (e))
-	      if (TREE_CODE (TREE_VALUE (e)) == CONST_DECL)
-		TREE_VALUE (e) = DECL_INITIAL (TREE_VALUE (e));
+	      {
+		if (TREE_CODE (TREE_VALUE (e)) == CONST_DECL)
+		  {
+		    TREE_VALUE (e) = DECL_INITIAL (TREE_VALUE (e));
+		    /* We can not stream values whose TREE_TYPE is type itself
+		       because that would create non-trivial CSS.  Canonicalize
+		       them to integer types.  */
+		  }
+		/* Some frontends use ENUMERAL_TYPE to represent the constants.
+		   This leads to nontrivial SCC components containing
+		   INTEGER_CST which is not good for streaming.  Convert them
+		   all to corresponding integer type.  */
+		if (TREE_CODE (TREE_TYPE (TREE_VALUE (e))) != INTEGER_TYPE)
+		  {
+		    if (!it)
+		      it = lang_hooks.types.type_for_size
+			       (TYPE_PRECISION (TREE_TYPE (TREE_VALUE (e))),
+				TYPE_UNSIGNED (TREE_TYPE (TREE_VALUE (e))));
+		    TREE_VALUE (e) = fold_convert (it, TREE_VALUE (e));
+		  }
+	       }
 	}
       free_lang_data_in_one_sizepos (&TYPE_MIN_VALUE (type));
       free_lang_data_in_one_sizepos (&TYPE_MAX_VALUE (type));

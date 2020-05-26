@@ -144,7 +144,7 @@ misc_files = [
 author_line_regex = \
         re.compile(r'^(?P<datetime>\d{4}-\d{2}-\d{2})\ {2}(?P<name>.*  <.*>)')
 additional_author_regex = re.compile(r'^\t(?P<spaces>\ *)?(?P<name>.*  <.*>)')
-changelog_regex = re.compile(r'^([a-z0-9+-/]*)/ChangeLog:?')
+changelog_regex = re.compile(r'^(?:[fF]or +)?([a-z0-9+-/]*)/ChangeLog:?')
 pr_regex = re.compile(r'\tPR (?P<component>[a-z+-]+\/)?([0-9]+)$')
 dr_regex = re.compile(r'\tDR ([0-9]+)$')
 star_prefix_regex = re.compile(r'\t\*(?P<spaces>\ *)(?P<content>.*)')
@@ -185,14 +185,32 @@ class ChangeLogEntry:
     @property
     def files(self):
         files = []
+
+        # Whether the content currently processed is between a star prefix the
+        # end of the file list: a colon or an open paren.
+        in_location = False
+
         for line in self.lines:
+            # If this line matches the star prefix, start the location
+            # processing on the information that follows the star.
             m = star_prefix_regex.match(line)
             if m:
+                in_location = True
                 line = m.group('content')
+
+            if in_location:
+                # Strip everything that is not a filename in "line": entities
+                # "(NAME)", entry text (the colon, if present, and anything
+                # that follows it).
                 if '(' in line:
                     line = line[:line.index('(')]
+                    in_location = False
                 if ':' in line:
                     line = line[:line.index(':')]
+                    in_location = False
+
+                # At this point, all that 's left is a list of filenames
+                # separated by commas and whitespaces.
                 for file in line.split(','):
                     file = file.strip()
                     if file:
@@ -233,8 +251,9 @@ class GitCommit:
 
         project_files = [f for f in self.modified_files
                          if self.is_changelog_filename(f[0])
-                         or f[0] in misc_files
-                         or self.in_ignored_location(f[0])]
+                         or f[0] in misc_files]
+        ignored_files = [f for f in self.modified_files
+                         if self.in_ignored_location(f[0])]
         if len(project_files) == len(self.modified_files):
             # All modified files are only MISC files
             return
@@ -244,7 +263,9 @@ class GitCommit:
                                      'separately from normal commits'))
             return
 
-        self.parse_lines()
+        all_are_ignored = (len(project_files) + len(ignored_files)
+                           == len(self.modified_files))
+        self.parse_lines(all_are_ignored)
         if self.changes:
             self.parse_changelog()
             self.deduce_changelog_locations()
@@ -292,7 +313,7 @@ class GitCommit:
                 modified_files.append((parts[2], 'A'))
         return modified_files
 
-    def parse_lines(self):
+    def parse_lines(self, all_are_ignored):
         body = self.lines
 
         for i, b in enumerate(body):
@@ -303,8 +324,9 @@ class GitCommit:
                     or dr_regex.match(b) or author_line_regex.match(b)):
                 self.changes = body[i:]
                 return
-        self.errors.append(Error('cannot find a ChangeLog location in '
-                                 'message'))
+        if not all_are_ignored:
+            self.errors.append(Error('cannot find a ChangeLog location in '
+                                     'message'))
 
     def parse_changelog(self):
         last_entry = None

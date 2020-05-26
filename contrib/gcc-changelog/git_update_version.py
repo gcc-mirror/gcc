@@ -28,10 +28,11 @@ current_timestamp = datetime.datetime.now().strftime('%Y%m%d\n')
 
 
 def read_timestamp(path):
-    return open(path).read()
+    with open(path) as f:
+        return f.read()
 
 
-def prepend_to_changelog_files(repo, folder, git_commit):
+def prepend_to_changelog_files(repo, folder, git_commit, add_to_git):
     if not git_commit.success:
         for error in git_commit.errors:
             print(error)
@@ -40,7 +41,8 @@ def prepend_to_changelog_files(repo, folder, git_commit):
         full_path = os.path.join(folder, entry, 'ChangeLog')
         print('writting to %s' % full_path)
         if os.path.exists(full_path):
-            content = open(full_path).read()
+            with open(full_path) as f:
+                content = f.read()
         else:
             content = ''
         with open(full_path, 'w+') as f:
@@ -48,7 +50,8 @@ def prepend_to_changelog_files(repo, folder, git_commit):
             if content:
                 f.write('\n\n')
                 f.write(content)
-        repo.git.add(full_path)
+        if add_to_git:
+            repo.git.add(full_path)
 
 
 active_refs = ['master', 'releases/gcc-8', 'releases/gcc-9', 'releases/gcc-10']
@@ -57,6 +60,12 @@ parser = argparse.ArgumentParser(description='Update DATESTAMP and generate '
                                  'ChangeLog entries')
 parser.add_argument('-g', '--git-path', default='.',
                     help='Path to git repository')
+parser.add_argument('-p', '--push', action='store_true',
+                    help='Push updated active branches')
+parser.add_argument('-d', '--dry-mode',
+                    help='Generate patch for ChangeLog entries and do it'
+                         ' even if DATESTAMP is unchanged; folder argument'
+                         ' is expected')
 args = parser.parse_args()
 
 repo = Repo(args.git_path)
@@ -86,19 +95,31 @@ for ref in origin.refs:
 
         print('%d revisions since last Daily bump' % commit_count)
         datestamp_path = os.path.join(args.git_path, 'gcc/DATESTAMP')
-        if read_timestamp(datestamp_path) != current_timestamp:
-            print('DATESTAMP will be changed:')
+        if (read_timestamp(datestamp_path) != current_timestamp
+                or args.dry_mode):
             commits = parse_git_revisions(args.git_path, '%s..HEAD'
                                           % commit.hexsha)
             for git_commit in reversed(commits):
-                prepend_to_changelog_files(repo, args.git_path, git_commit)
-            # update timestamp
-            with open(datestamp_path, 'w+') as f:
-                f.write(current_timestamp)
-            repo.git.add(datestamp_path)
-            repo.index.commit('Daily bump.')
-            # TODO: push the repository
-            # repo.git.push('origin', branch)
+                prepend_to_changelog_files(repo, args.git_path, git_commit,
+                                           not args.dry_mode)
+            if args.dry_mode:
+                diff = repo.git.diff('HEAD')
+                patch = os.path.join(args.dry_mode,
+                                     branch.name.split('/')[-1] + '.patch')
+                with open(patch, 'w+') as f:
+                    f.write(diff)
+                print('branch diff written to %s' % patch)
+                repo.git.checkout(force=True)
+            else:
+                # update timestamp
+                print('DATESTAMP will be changed:')
+                with open(datestamp_path, 'w+') as f:
+                    f.write(current_timestamp)
+                repo.git.add(datestamp_path)
+                repo.index.commit('Daily bump.')
+                if args.push:
+                    repo.git.push('origin', branch)
+                    print('branch is pushed')
         else:
             print('DATESTAMP unchanged')
         print('branch is done\n', flush=True)

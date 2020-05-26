@@ -1,3 +1,12 @@
+2020-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-ssa-store-merging.c (merged_store_group::can_be_merged_into):
+	Only turn MEM_REFs into bit-field stores for small bit-field regions.
+	(imm_store_chain_info::output_merged_store): Be prepared for sources
+	with non-integral type in the bit-field insertion case.
+	(pass_store_merging::process_store): Use MAX_BITSIZE_MODE_ANY_INT as
+	the largest size for the bit-field case.
+
 2020-05-25  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/mmx.md (*vec_dupv2sf): Redefine as define_insn.
