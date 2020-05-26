@@ -33,7 +33,8 @@ class TestGccChangelog(unittest.TestCase):
 
         filename = None
         patch_lines = []
-        lines = open(os.path.join(script_path, 'test_patches.txt')).read()
+        with open(os.path.join(script_path, 'test_patches.txt')) as f:
+            lines = f.read()
         for line in lines.split('\n'):
             if line.startswith('==='):
                 if patch_lines:
