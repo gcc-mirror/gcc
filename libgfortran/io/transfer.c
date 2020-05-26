@@ -4473,7 +4473,7 @@ void
 st_wait_async (st_parameter_wait *wtp)
 {
   gfc_unit *u = find_unit (wtp->common.unit);
-  if (ASYNC_IO && u->au)
+  if (ASYNC_IO && u && u->au)
     {
       if (wtp->common.flags & IOPARM_WAIT_HAS_ID)
 	async_wait_id (&(wtp->common), u->au, *wtp->id);
