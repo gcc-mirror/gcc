@@ -21021,6 +21021,75 @@ Perform a vector parallel bits deposit operation, as if implemented by
 the @code{vpdepd} instruction.
 @findex vec_pdep
 
+Vector Insert
+
+@smallexample
+@exdent vector unsigned char
+@exdent vec_insertl (unsigned char, vector unsigned char, unsigned int);
+@exdent vector unsigned short
+@exdent vec_insertl (unsigned short, vector unsigned short, unsigned int);
+@exdent vector unsigned int
+@exdent vec_insertl (unsigned int, vector unsigned int, unsigned int);
+@exdent vector unsigned long long
+@exdent vec_insertl (unsigned long long, vector unsigned long long,
+unsigned int);
+@exdent vector unsigned char
+@exdent vec_insertl (vector unsigned char, vector unsigned char, unsigned int;
+@exdent vector unsigned short
+@exdent vec_insertl (vector unsigned short, vector unsigned short,
+unsigned int);
+@exdent vector unsigned int
+@exdent vec_insertl (vector unsigned int, vector unsigned int, unsigned int);
+@end smallexample
+
+Let src be the first argument, when the first argument is a scalar, or the
+rightmost element of the left doubleword of the first argument, when the first
+argument is a vector.  Insert the source into the destination at the position
+given by the third argument, using natural element order in the second
+argument.  The rest of the second argument is unchanged.  If the byte
+index is greater than 14 for halfwords, greater than 12 for words, or
+greater than 8 for doublewords the result is undefined.   For little-endian,
+the generated code will be semantically equivalent to @code{vins[bhw]rx}
+instructions.  Similarly for big-endian it will be semantically equivalent
+to @code{vins[bhw]lx}.  Note that some fairly anomalous results can be
+generated if the byte index is not aligned on an element boundary for the
+type of element being inserted.
+@findex vec_insertl
+
+@smallexample
+@exdent vector unsigned char
+@exdent vec_inserth (unsigned char, vector unsigned char, unsigned int);
+@exdent vector unsigned short
+@exdent vec_inserth (unsigned short, vector unsigned short, unsigned int);
+@exdent vector unsigned int
+@exdent vec_inserth (unsigned int, vector unsigned int, unsigned int);
+@exdent vector unsigned long long
+@exdent vec_inserth (unsigned long long, vector unsigned long long,
+unsigned int);
+@exdent vector unsigned char
+@exdent vec_inserth (vector unsigned char, vector unsigned char, unsigned int);
+@exdent vector unsigned short
+@exdent vec_inserth (vector unsigned short, vector unsigned short,
+unsigned int);
+@exdent vector unsigned int
+@exdent vec_inserth (vector unsigned int, vector unsigned int, unsigned int);
+@end smallexample
+
+Let src be the first argument, when the first argument is a scalar, or the
+rightmost element of the first argument, when the first argument is a vector.
+Insert src into the second argument at the position identified by the third
+argument, using opposite element order in the second argument, and leaving the
+rest of the second argument unchanged.  If the byte index is greater than 14
+for halfwords, 12 for words, or 8 for doublewords, the intrinsic will be
+rejected. Note that the underlying hardware instruction uses the same register
+for the second argument and the result.
+For little-endian, the code generation will be semantically equivalent to
+@code{vins[bhw]lx}, while for big-endian it will be semantically equivalent to
+@code{vins[bhw]rx}.
+Note that some fairly anomalous results can be generated if the byte index is
+not aligned on an element boundary for the sort of element being inserted.
+@findex vec_inserth
+
 @smallexample
 @exdent vector unsigned long long int
 @exdent vec_pext (vector unsigned long long int, vector unsigned long long int)
