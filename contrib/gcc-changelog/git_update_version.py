@@ -28,7 +28,8 @@ current_timestamp = datetime.datetime.now().strftime('%Y%m%d\n')
 
 
 def read_timestamp(path):
-    return open(path).read()
+    with open(path) as f:
+        return f.read()
 
 
 def prepend_to_changelog_files(repo, folder, git_commit, add_to_git):
@@ -40,7 +41,8 @@ def prepend_to_changelog_files(repo, folder, git_commit, add_to_git):
         full_path = os.path.join(folder, entry, 'ChangeLog')
         print('writting to %s' % full_path)
         if os.path.exists(full_path):
-            content = open(full_path).read()
+            with open(full_path) as f:
+                content = f.read()
         else:
             content = ''
         with open(full_path, 'w+') as f:
