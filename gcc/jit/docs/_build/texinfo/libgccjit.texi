@@ -7037,7 +7037,26 @@ buffer.
 
 @geindex gcc_jit_context_get_builtin_function (C function)
 @anchor{topics/functions c gcc_jit_context_get_builtin_function}@anchor{df}
-@deffn {C Function} gcc_jit_function *gcc_jit_context_get_builtin_function (gcc_jit_context@w{ }*ctxt, const char@w{ }*name)
+@deffn {C Function} gcc_jit_function *            gcc_jit_context_get_builtin_function (gcc_jit_context@w{ }*ctxt, const char@w{ }*name)
+
+Get the @ref{29,,gcc_jit_function} for the built-in function with the
+given name.  For example:
+
+@example
+gcc_jit_function *fn
+  = gcc_jit_context_get_builtin_function (ctxt, "__builtin_memcpy");
+@end example
+
+@cartouche
+@quotation Note 
+Due to technical limitations with how libgccjit interacts with
+the insides of GCC, not all built-in functions are supported.  More
+precisely, not all types are supported for parameters of built-in
+functions from libgccjit.  Attempts to get a built-in function that
+uses such a parameter will lead to an error being emitted within
+the context.
+@end quotation
+@end cartouche
 @end deffn
 
 @geindex gcc_jit_function_as_object (C function)
