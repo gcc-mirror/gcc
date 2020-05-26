@@ -185,14 +185,32 @@ class ChangeLogEntry:
     @property
     def files(self):
         files = []
+
+        # Whether the content currently processed is between a star prefix the
+        # end of the file list: a colon or an open paren.
+        in_location = False
+
         for line in self.lines:
+            # If this line matches the star prefix, start the location
+            # processing on the information that follows the star.
             m = star_prefix_regex.match(line)
             if m:
+                in_location = True
                 line = m.group('content')
+
+            if in_location:
+                # Strip everything that is not a filename in "line": entities
+                # "(NAME)", entry text (the colon, if present, and anything
+                # that follows it).
                 if '(' in line:
                     line = line[:line.index('(')]
+                    in_location = False
                 if ':' in line:
                     line = line[:line.index(':')]
+                    in_location = False
+
+                # At this point, all that 's left is a list of filenames
+                # separated by commas and whitespaces.
                 for file in line.split(','):
                     file = file.strip()
                     if file:

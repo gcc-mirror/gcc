@@ -286,3 +286,12 @@ class TestGccChangelog(unittest.TestCase):
         email = self.from_patch_glob('0001-Update-merge.sh-to-reflect.patch')
         assert (email.changelog_entries[0].lines[0]
                 == '\t* LOCAL_PATCHES: Use git hash instead of SVN id.')
+
+    def test_multiline_file_list(self):
+        email = self.from_patch_glob(
+            '0001-Ada-Reuse-Is_Package_Or_Generic_Package-where-possib.patch')
+        assert (email.changelog_entries[0].files
+                == ['contracts.adb', 'einfo.adb', 'exp_ch9.adb',
+                    'sem_ch12.adb', 'sem_ch4.adb', 'sem_ch7.adb',
+                    'sem_ch8.adb', 'sem_elab.adb', 'sem_type.adb',
+                    'sem_util.adb'])
