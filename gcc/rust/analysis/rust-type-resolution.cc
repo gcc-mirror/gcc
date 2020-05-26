@@ -471,6 +471,14 @@ TypeResolution::visit (AST::CallExpr &expr)
   if (fndecl == NULL)
     return;
 
+  // check num args match
+  if (fndecl->function_params.size () != expr.params.size ())
+    {
+      rust_error_at (expr.get_locus_slow (),
+		     "differing number of arguments vs parameters to function");
+      return;
+    }
+
   typeBuffer.push_back (fndecl->return_type.get ());
   expr.fndeclRef = fndecl;
 
