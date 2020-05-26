@@ -37,11 +37,11 @@ proc scan-ltrans-tree-dump { args } {
     }
     if { [llength $args] >= 3 } {
 	scan-dump "ltrans-tree" [lindex $args 0] \
-		  "\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 1]" ".exe.ltrans0" \
+		  "\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 1]" ".ltrans0.ltrans" \
 		  [lindex $args 2]
     } else {
 	scan-dump "ltrans-tree" [lindex $args 0] \
-		  "\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 1]" ".exe.ltrans0"
+		  "\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 1]" ".ltrans0.ltrans"
     }
 }
 
@@ -63,10 +63,10 @@ proc scan-ltrans-tree-dump-times { args } {
     if { [llength $args] >= 4 } {
 	scan-dump-times "ltrans-tree" [lindex $args 0] [lindex $args 1] \
 			"\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 2]" \
-			".exe.ltrans0" [lindex $args 3]
+			".ltrans0.ltrans" [lindex $args 3]
     } else {
 	scan-dump-times "ltrans-tree" [lindex $args 0] [lindex $args 1] \
-			"\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 2]" ".exe.ltrans0"
+			"\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 2]" ".ltrans0.ltrans"
     }
 }
 
@@ -87,11 +87,11 @@ proc scan-ltrans-tree-dump-not { args } {
     }
     if { [llength $args] >= 3 } {
 	scan-dump-not "ltrans-tree" [lindex $args 0] \
-		      "\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 1]" ".exe.ltrans0" \
+		      "\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 1]" ".ltrans0.ltrans" \
 		      [lindex $args 2]
     } else {
 	scan-dump-not "ltrans-tree" [lindex $args 0] \
-		      "\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 1]" ".exe.ltrans0"
+		      "\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 1]" ".ltrans0.ltrans"
     }
 }
 
@@ -113,11 +113,11 @@ proc scan-ltrans-tree-dump-dem { args } {
     }
     if { [llength $args] >= 3 } {
 	scan-dump-dem "ltrans-tree" [lindex $args 0] \
-		      "\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 1]" ".exe.ltrans0" \
+		      "\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 1]" ".ltrans0.ltrans" \
 		      [lindex $args 2]
     } else {
 	scan-dump-dem "ltrans-tree" [lindex $args 0] \
-		      "\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 1]" ".exe.ltrans0"
+		      "\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 1]" ".ltrans0.ltrans"
     }
 }
 
@@ -139,10 +139,10 @@ proc scan-ltrans-tree-dump-dem-not { args } {
     if { [llength $args] >= 3 } {
 	scan-dump-dem-not "ltrans-tree" [lindex $args 0] \
 			  "\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 1]" \
-			  ".exe.ltrans0" [lindex $args 2]
+			  ".ltrans0.ltrans" [lindex $args 2]
     } else {
 	scan-dump-dem-not "ltrans-tree" [lindex $args 0] \
 			  "\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 1]" \
-			  ".exe.ltrans0"
+			  ".ltrans0.ltrans"
     }
 }

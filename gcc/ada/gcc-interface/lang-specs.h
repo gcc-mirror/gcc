@@ -34,17 +34,15 @@
  %{!S:%{!c:%e-c or -S required for Ada}}\
  gnat1 %{I*} %{k8:-gnatk8} %{Wall:-gnatwa} %{w:-gnatws} %{!Q:-quiet}\
     %{nostdinc*} %{nostdlib*}\
-    -dumpbase %{.adb:%b.adb}%{.ads:%b.ads}%{!.adb:%{!.ads:%b.ada}}\
-    %{fcompare-debug-second:%:compare-debug-auxbase-opt(%b) -gnatd_A} \
-    %{!fcompare-debug-second:%{c|S:%{o*:-auxbase-strip %*}%{!o*:-auxbase %b}}%{!c:%{!S:-auxbase %b}}} \
-    %{O*} %{W*} %{w} %{p} %{pg:-p} %{d*} \
+    %{fcompare-debug-second:-gnatd_A} \
+    %{O*} %{W*} %{w} %{p} %{pg:-p} %{d*} %:dumps(%{!.adb:%{!.ads:.ada}}) \
     %{coverage:-fprofile-arcs -ftest-coverage} "
 #if defined(TARGET_VXWORKS_RTP)
    "%{fRTS=rtp|fRTS=rtp-smp|fRTS=ravenscar-cert-rtp:-mrtp} "
 #endif
    "%{gnatea:-gnatez} %{g*&m*&f*} "
    "%1 %{!S:%{o*:%w%*-gnatO}} \
-    %i %{S:%W{o*}%{!o*:-o %b.s}} \
+    %i %{S:%W{o*}%{!o*:-o %w%b.s}} \
     %{gnatc*|gnats*: -o %j} %{-param*} \
     %{!gnatc*:%{!gnats*:%(invoke_as)}}", 0, 0, 0},
 
@@ -53,9 +51,7 @@
  %{!c:%e-c required for gnat2why}\
  gnat1why %{I*} %{k8:-gnatk8} %{!Q:-quiet}\
     %{nostdinc*} %{nostdlib*}\
-    -dumpbase %{.adb:%b.adb}%{.ads:%b.ads}%{!.adb:%{!.ads:%b.ada}}\
-    %{o*:-auxbase-strip %*}%{!o*:-auxbase %b} \
-    %{a} %{d*} \
+    %{a} %{d*} %:dumps(%{!.adb:%{!.ads:.ada}}) \
     %{gnatea:-gnatez} %{g*&m*&f*} \
     %1 %{o*:%w%*-gnatO} \
     %i \
@@ -66,9 +62,7 @@
  %{!c:%e-c required for gnat2scil}\
  gnat1scil %{I*} %{k8:-gnatk8} %{!Q:-quiet}\
     %{nostdinc*} %{nostdlib*}\
-    -dumpbase %{.adb:%b.adb}%{.ads:%b.ads}%{!.adb:%{!.ads:%b.ada}}\
-    %{o*:-auxbase-strip %*}%{!o*:-auxbase %b} \
-    %{a} %{d*} \
+    %{a} %{d*} %:dumps(%{!.adb:%{!.ads:.ada}}) \
     %{gnatea:-gnatez} %{g*&m*&f*} \
     %1 %{o*:%w%*-gnatO} \
     %i \
