@@ -2639,6 +2639,57 @@ package body Sem_Aggr is
       return Success;
    end Resolve_Array_Aggregate;
 
+   ---------------------------------
+   -- Resolve_Container_Aggregate --
+   ---------------------------------
+
+   procedure Resolve_Container_Aggregate (N : Node_Id; Typ : Entity_Id) is
+      Asp   : constant Node_Id := Find_Value_Of_Aspect (Typ, Aspect_Aggregate);
+
+      Empty_Subp          : Node_Id := Empty;
+      Add_Named_Subp      : Node_Id := Empty;
+      Add_Unnamed_Subp    : Node_Id := Empty;
+      New_Indexed_Subp    : Node_Id := Empty;
+      Assign_Indexed_Subp : Node_Id := Empty;
+
+   begin
+      if Nkind (Asp) /= N_Aggregate then
+         pragma Assert (False);
+         return;
+      else
+         Set_Etype (N, Typ);
+         Parse_Aspect_Aggregate (Asp,
+           Empty_Subp, Add_Named_Subp, Add_Unnamed_Subp,
+           New_Indexed_Subp, Assign_Indexed_Subp);
+
+         if Present (Add_Unnamed_Subp) then
+            declare
+               Elmt_Type : constant Entity_Id :=
+                 Etype (Next_Formal
+                   (First_Formal (Entity (Add_Unnamed_Subp))));
+               Comp : Node_Id;
+            begin
+               if Present (Expressions (N)) then
+                  --  positional aggregate
+
+                  Comp := First (Expressions (N));
+                  while Present (Comp) loop
+                     Analyze_And_Resolve (Comp, Elmt_Type);
+                     Next (Comp);
+                  end loop;
+               else
+
+                  --  Empty aggregate, to be replaced by Empty during
+                  --  expansion.
+                  null;
+               end if;
+            end;
+         else
+            Error_Msg_N ("indexed aggregates are forthcoming", N);
+         end if;
+      end if;
+   end Resolve_Container_Aggregate;
+
    -----------------------------
    -- Resolve_Delta_Aggregate --
    -----------------------------

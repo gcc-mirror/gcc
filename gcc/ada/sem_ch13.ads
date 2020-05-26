@@ -128,6 +128,17 @@ package Sem_Ch13 is
    --  If the size is too small, and an error message is given, then both
    --  Esize and RM_Size are reset to the allowed minimum value in T.
 
+   procedure Parse_Aspect_Aggregate
+     (N                   : Node_Id;
+      Empty_Subp          : in out Node_Id;
+      Add_Named_Subp      : in out Node_Id;
+      Add_Unnamed_Subp    : in out Node_Id;
+      New_Indexed_Subp    : in out Node_Id;
+      Assign_Indexed_Subp : in out Node_Id);
+   --  Utility to unpack the subprogramz in an occurrence of asoect Aggregate,
+   --  used to verify the structure of the asoect, and resolve and expand an
+   --  aggregate for a container type that carries the asoect.
+
    function Rep_Item_Too_Early (T : Entity_Id; N : Node_Id) return Boolean;
    --  Called at start of processing a representation clause/pragma. Used to
    --  check that the representation item is not being applied to an incomplete
