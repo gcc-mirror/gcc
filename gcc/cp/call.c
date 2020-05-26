@@ -6391,6 +6391,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 		    tree rhs = integer_zero_node;
 		    if (cand->reversed ())
 		      std::swap (lhs, rhs);
+		    warning_sentinel ws (warn_zero_as_null_pointer_constant);
 		    result = build_new_op (loc, code,
 					   LOOKUP_NORMAL|LOOKUP_REWRITTEN,
 					   lhs, rhs, NULL_TREE,
