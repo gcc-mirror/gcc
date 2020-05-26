@@ -1,22 +1,3 @@
-2020-05-26  Hongtao Liu  <hongtao.liu@intel.com>
-	    Uroš Bizjak  <ubizjak@gmail.com>
-
-	PR target/95211
-	PR target/95256
-	* config/i386/sse.md (<floatunssuffix>v2div2sf2): New expander.
-	(fix<fixunssuffix>_truncv2sfv2di2): Ditto.
-	(avx512dq_float<floatunssuffix>v2div2sf2): Renaming from
-	float<floatunssuffix>v2div2sf2.
-	(avx512dq_fix<fixunssuffix>_truncv2sfv2di2<mask_name>):
-	Renaming from fix<fixunssuffix>_truncv2sfv2di2<mask_name>.
-	(vec_pack<floatprefix>_float_<mode>): Adjust icode name.
-	(vec_unpack_<fixprefix>fix_trunc_lo_<mode>): Ditto.
-	(vec_unpack_<fixprefix>fix_trunc_hi_<mode>): Ditto.
-	* config/i386/i386-builtin.def: Ditto.
-	* emit-rtl.c (validate_subreg): Allow use of *paradoxical* vector
-	subregs when both omode and imode are vector mode and
-	have the same inner mode.
-
 2020-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-ssa-store-merging.c (merged_store_group::can_be_merged_into):
