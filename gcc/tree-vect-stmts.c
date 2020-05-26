@@ -5733,13 +5733,19 @@ vectorizable_shift (vec_info *vinfo,
                 dump_printf_loc (MSG_NOTE, vect_location,
                                  "vector/vector shift/rotate found.\n");
 
+	      if (!op1_vectype)
+		op1_vectype = get_vectype_for_scalar_type (vinfo,
+							   TREE_TYPE (op1),
+							   slp_node);
+
               /* Unlike the other binary operators, shifts/rotates have
                  the rhs being int, instead of the same type as the lhs,
                  so make sure the scalar is the right type if we are
 		 dealing with vectors of long long/long/short/char.  */
 	      incompatible_op1_vectype_p
-		= !tree_nop_conversion_p (TREE_TYPE (vectype),
-					  TREE_TYPE (op1));
+		= (!op1_vectype
+		   || !tree_nop_conversion_p (TREE_TYPE (vectype),
+					      TREE_TYPE (op1)));
             }
         }
     }
