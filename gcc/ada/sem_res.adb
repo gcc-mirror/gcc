@@ -2776,6 +2776,17 @@ package body Sem_Res is
             elsif Nkind (N) = N_Aggregate
               and then Etype (N) = Any_Composite
             then
+               if Ada_Version >= Ada_2020
+                 and then Has_Aspect (Typ, Aspect_Aggregate)
+               then
+                  Resolve_Container_Aggregate (N, Typ);
+
+                  if Expander_Active then
+                     Expand (N);
+                  end if;
+                  return;
+               end if;
+
                --  Disable expansion in any case. If there is a type mismatch
                --  it may be fatal to try to expand the aggregate. The flag
                --  would otherwise be set to false when the error is posted.
