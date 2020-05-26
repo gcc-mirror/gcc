@@ -125,6 +125,21 @@ Functions
                gcc_jit_context_get_builtin_function (gcc_jit_context *ctxt,\
                                                      const char *name)
 
+   Get the :type:`gcc_jit_function` for the built-in function with the
+   given name.  For example:
+
+   .. code-block:: c
+
+      gcc_jit_function *fn
+        = gcc_jit_context_get_builtin_function (ctxt, "__builtin_memcpy");
+
+   .. note:: Due to technical limitations with how libgccjit interacts with
+      the insides of GCC, not all built-in functions are supported.  More
+      precisely, not all types are supported for parameters of built-in
+      functions from libgccjit.  Attempts to get a built-in function that
+      uses such a parameter will lead to an error being emitted within
+      the context.
+
 .. function::  gcc_jit_object *\
                gcc_jit_function_as_object (gcc_jit_function *func)
 
