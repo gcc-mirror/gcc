@@ -7854,7 +7854,7 @@ print_operand (FILE *file, rtx x, int code)
     {
     case 'A':
 #ifdef HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS
-      if (TARGET_Z14 && MEM_P (x))
+      if (TARGET_Z13 && MEM_P (x))
 	{
 	  if (MEM_ALIGN (x) >= 128)
 	    fprintf (file, ",4");
