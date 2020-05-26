@@ -19977,6 +19977,7 @@ package body Sem_Ch3 is
          end if;
 
          Set_Etype (Defining_Identifier (Discr), Discr_Type);
+         Set_Ekind (Defining_Identifier (Discr), E_Discriminant);
 
          --  If a discriminant specification includes the assignment compound
          --  delimiter followed by an expression, the expression is the default
@@ -20035,7 +20036,7 @@ package body Sem_Ch3 is
                  (Defining_Identifier (Discr), Expression (Discr));
             end if;
 
-            --  In gnatc or gnatprove mode, make sure set Do_Range_Check flag
+            --  In gnatc or GNATprove mode, make sure set Do_Range_Check flag
             --  gets set unless we can be sure that no range check is required.
 
             if not Expander_Active
@@ -20175,7 +20176,6 @@ package body Sem_Ch3 is
       Discr_Number := Uint_1;
       while Present (Discr) loop
          Id := Defining_Identifier (Discr);
-         Set_Ekind (Id, E_Discriminant);
          Init_Component_Location (Id);
          Init_Esize (Id);
          Set_Discriminant_Number (Id, Discr_Number);
