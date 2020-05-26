@@ -7990,6 +7990,22 @@ package body Freeze is
            and then Nkind (Parent (Node)) = N_Explicit_Dereference
          then
             Check_And_Freeze_Type (Designated_Type (Etype (Node)));
+
+         --  An iterator specification freezes the iterator type, even though
+         --  that type is not attached to an entity in the construct.
+
+         elsif Nkind (Node) in N_Has_Etype
+           and then Nkind (Parent (Node)) = N_Iterator_Specification
+           and then Node = Name (Parent (Node))
+         then
+            declare
+               Iter : constant Node_Id :=
+                           Find_Aspect (Etype (Node), Aspect_Default_Iterator);
+            begin
+               if Present (Iter) then
+                  Check_And_Freeze_Type (Etype (Expression (Iter)));
+               end if;
+            end;
          end if;
 
          --  No point in posting several errors on the same expression

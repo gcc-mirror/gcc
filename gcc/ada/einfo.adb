@@ -10969,6 +10969,7 @@ package body Einfo is
 
          when Type_Kind
             | E_Constant
+            | E_Loop_Parameter
             | E_Variable
          =>
             Write_Str ("Related_Expression");
