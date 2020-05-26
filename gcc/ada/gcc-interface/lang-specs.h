@@ -23,6 +23,10 @@
  *                                                                          *
  ****************************************************************************/
 
+/* Pass -d* flags to the actual compiler, but mapping non-Ada
+   extensions to .ada in dump file names.  */
+#define ADA_DUMPS_OPTIONS DUMPS_OPTIONS ("%{!.adb:%{!.ads:.ada}}")
+
 /* This is the contribution to the `default_compilers' array in gcc.c for
    GNAT.  */
 
@@ -35,7 +39,7 @@
  gnat1 %{I*} %{k8:-gnatk8} %{Wall:-gnatwa} %{w:-gnatws} %{!Q:-quiet}\
     %{nostdinc*} %{nostdlib*}\
     %{fcompare-debug-second:-gnatd_A} \
-    %{O*} %{W*} %{w} %{p} %{pg:-p} %{d*} %:dumps(%{!.adb:%{!.ads:.ada}}) \
+    %{O*} %{W*} %{w} %{p} %{pg:-p} " ADA_DUMPS_OPTIONS " \
     %{coverage:-fprofile-arcs -ftest-coverage} "
 #if defined(TARGET_VXWORKS_RTP)
    "%{fRTS=rtp|fRTS=rtp-smp|fRTS=ravenscar-cert-rtp:-mrtp} "
@@ -51,7 +55,7 @@
  %{!c:%e-c required for gnat2why}\
  gnat1why %{I*} %{k8:-gnatk8} %{!Q:-quiet}\
     %{nostdinc*} %{nostdlib*}\
-    %{a} %{d*} %:dumps(%{!.adb:%{!.ads:.ada}}) \
+    %{a} " ADA_DUMPS_OPTIONS " \
     %{gnatea:-gnatez} %{g*&m*&f*} \
     %1 %{o*:%w%*-gnatO} \
     %i \
@@ -62,7 +66,7 @@
  %{!c:%e-c required for gnat2scil}\
  gnat1scil %{I*} %{k8:-gnatk8} %{!Q:-quiet}\
     %{nostdinc*} %{nostdlib*}\
-    %{a} %{d*} %:dumps(%{!.adb:%{!.ads:.ada}}) \
+    %{a} " ADA_DUMPS_OPTIONS " \
     %{gnatea:-gnatez} %{g*&m*&f*} \
     %1 %{o*:%w%*-gnatO} \
     %i \

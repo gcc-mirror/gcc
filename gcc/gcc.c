@@ -388,7 +388,7 @@ static void do_option_spec (const char *, const char *);
 static void do_self_spec (const char *);
 static const char *find_file (const char *);
 static int is_directory (const char *, bool);
-static const char *validate_switches (const char *, bool);
+static const char *validate_switches (const char *, bool, bool);
 static void validate_all_switches (void);
 static inline void validate_switches_from_spec (const char *, bool);
 static void give_switch (int, int);
@@ -1176,9 +1176,16 @@ static const char *cpp_options =
  %{!fno-working-directory:-fworking-directory}}} %{O*}\
  %{undef} %{save-temps*:-fpch-preprocess}";
 
+/* Pass -d* flags, possibly modifying -dumpdir, -dumpbase et al.
+
+   Make it easy for a language to override the argument for the
+   %:dumps specs function call.  */
+#define DUMPS_OPTIONS(EXTS) \
+  "%<dumpdir %<dumpbase %<dumpbase-ext %{d*} %:dumps(" EXTS ")"
+
 /* This contains cpp options which are not passed when the preprocessor
    output will be used by another program.  */
-static const char *cpp_debug_options = "%<dumpdir %<dumpbase %<dumpbase-ext %{d*} %:dumps()";
+static const char *cpp_debug_options = DUMPS_OPTIONS ("");
 
 /* NB: This is shared amongst all front-ends, except for Ada.  */
 static const char *cc1_options =
@@ -9061,7 +9068,7 @@ validate_switches_from_spec (const char *spec, bool user)
 	    || (*p == 'W' && *++p == '{')
 	    || (*p == '@' && *++p == '{')))
       /* We have a switch spec.  */
-      p = validate_switches (p + 1, user);
+      p = validate_switches (p + 1, user, *p == '{');
 }
 
 static void
@@ -9080,11 +9087,15 @@ validate_all_switches (void)
   validate_switches_from_spec (link_command_spec, false);
 }
 
-/* Look at the switch-name that comes after START
-   and mark as valid all supplied switches that match it.  */
+/* Look at the switch-name that comes after START and mark as valid
+   all supplied switches that match it.  If BRACED, handle other
+   switches after '|' and '&', and specs after ':' until ';' or '}',
+   going back for more switches after ';'.  Without BRACED, handle
+   only one atom.  Return a pointer to whatever follows the handled
+   items, after the closing brace if BRACED.  */
 
 static const char *
-validate_switches (const char *start, bool user_spec)
+validate_switches (const char *start, bool user_spec, bool braced)
 {
   const char *p = start;
   const char *atom;
@@ -9126,6 +9137,9 @@ next_member:
 	      switches[i].validated = true;
     }
 
+  if (!braced)
+    return p;
+
   if (*p) p++;
   if (*p && (p[-1] == '|' || p[-1] == '&'))
     goto next_member;
@@ -9138,11 +9152,11 @@ next_member:
 	    {
 	      p++;
 	      if (*p == '{' || *p == '<')
-		p = validate_switches (p+1, user_spec);
+		p = validate_switches (p+1, user_spec, *p == '{');
 	      else if (p[0] == 'W' && p[1] == '{')
-		p = validate_switches (p+2, user_spec);
+		p = validate_switches (p+2, user_spec, true);
 	      else if (p[0] == '@' && p[1] == '{')
-		p = validate_switches (p+2, user_spec);
+		p = validate_switches (p+2, user_spec, true);
 	    }
 	  else
 	    p++;
