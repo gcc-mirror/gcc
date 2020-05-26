@@ -1,3 +1,13 @@
+2020-05-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90749
+	* g++.dg/cpp0x/nsdmi-template20.C: New file.
+
+2020-05-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91529
+	* g++.dg/init/const14.C: New file.
+
 2020-05-21  Martin Liska  <mliska@suse.cz>
 
 	* gcc.target/aarch64/target_attr_20.c: New test.

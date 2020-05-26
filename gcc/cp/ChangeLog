@@ -1,3 +1,20 @@
+2020-05-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90749
+	* init.c (get_nsdmi): Don't push_to_top_level for a local class.
+
+2020-05-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91529
+	* decl.c (cp_finish_decl): Also clear TREE_READONLY if
+	-fmerge-all-constants.
+
+2020-05-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93822
+	* pt.c (tsubst_decl): Make sure DECL_VALUE_EXPR continues to have
+	the same type as the variable.
+
 2020-05-04  Marek Polacek  <polacek@redhat.com>
 
 	Backported from mainline
