@@ -158,6 +158,7 @@
   UNSPEC_CDEA		; Custom Datapath Extension instruction.
   UNSPEC_VCDE		; Custom Datapath Extension instruction.
   UNSPEC_VCDEA		; Custom Datapath Extension instruction.
+  UNSPEC_DLS		; Used for DLS (Do Loop Start), Armv8.1-M Mainline instruction
 ])
 
 
