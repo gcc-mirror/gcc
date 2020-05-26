@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target arm_thumb2_ok } */
+/* { dg-require-effective-target arm_thumb2_ok_no_arm_v8_1_lob } */
 /* { dg-options "-O" } */
 
 unsigned short foo (unsigned short x, unsigned short c)

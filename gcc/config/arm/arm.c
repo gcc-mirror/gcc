@@ -833,6 +833,9 @@ static const struct attribute_spec arm_attribute_table[] =
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT arm_constant_alignment
 
+#undef TARGET_INVALID_WITHIN_DOLOOP
+#define TARGET_INVALID_WITHIN_DOLOOP arm_invalid_within_doloop
+
 #undef TARGET_MD_ASM_ADJUST
 #define TARGET_MD_ASM_ADJUST arm_md_asm_adjust
 
@@ -33306,6 +33309,40 @@ arm_ge_bits_access (void)
     return lookup_attribute ("acle gebits",
 			     DECL_ATTRIBUTES (cfun->decl));
   return true;
+}
+
+/* NULL if insn INSN is valid within a low-overhead loop.
+   Otherwise return why doloop cannot be applied.  */
+
+static const char *
+arm_invalid_within_doloop (const rtx_insn *insn)
+{
+  if (!TARGET_HAVE_LOB)
+    return default_invalid_within_doloop (insn);
+
+  if (CALL_P (insn))
+    return "Function call in the loop.";
+
+  if (reg_mentioned_p (gen_rtx_REG (SImode, LR_REGNUM), insn))
+    return "LR is used inside loop.";
+
+  return NULL;
+}
+
+bool
+arm_target_insn_ok_for_lob (rtx insn)
+{
+  basic_block bb = BLOCK_FOR_INSN (insn);
+  /* Make sure the basic block of the target insn is a simple latch
+     having as single predecessor and successor the body of the loop
+     itself.  Only simple loops with a single basic block as body are
+     supported for 'low over head loop' making sure that LE target is
+     above LE itself in the generated code.  */
+
+  return single_succ_p (bb)
+    && single_pred_p (bb)
+    && single_succ_edge (bb)->dest == single_pred_edge (bb)->src
+    && contains_no_active_insn_p (bb);
 }
 
 #if CHECKING_P

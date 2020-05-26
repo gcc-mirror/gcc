@@ -621,6 +621,9 @@ extern const int arm_arch_cde_coproc_bits[];
 
 /* Target machine storage Layout.  */
 
+/* Nonzero if this chip provides Armv8.1-M Mainline
+   LOB (low overhead branch features) extension instructions.  */
+#define TARGET_HAVE_LOB (arm_arch8_1m_main)
 
 /* Define this macro if it is advisable to hold scalars in registers
    in a wider mode than that declared by the program.  In such cases,
