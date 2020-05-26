@@ -280,3 +280,8 @@ class TestGccChangelog(unittest.TestCase):
     def test_changes_only_in_ignored_location(self):
         email = self.from_patch_glob('0001-go-in-ignored-location.patch')
         assert not email.errors
+
+    def test_changelog_for_ignored_location(self):
+        email = self.from_patch_glob('0001-Update-merge.sh-to-reflect.patch')
+        assert (email.changelog_entries[0].lines[0]
+                == '\t* LOCAL_PATCHES: Use git hash instead of SVN id.')

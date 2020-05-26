@@ -233,8 +233,9 @@ class GitCommit:
 
         project_files = [f for f in self.modified_files
                          if self.is_changelog_filename(f[0])
-                         or f[0] in misc_files
-                         or self.in_ignored_location(f[0])]
+                         or f[0] in misc_files]
+        ignored_files = [f for f in self.modified_files
+                         if self.in_ignored_location(f[0])]
         if len(project_files) == len(self.modified_files):
             # All modified files are only MISC files
             return
@@ -244,7 +245,9 @@ class GitCommit:
                                      'separately from normal commits'))
             return
 
-        self.parse_lines()
+        all_are_ignored = (len(project_files) + len(ignored_files)
+                           == len(self.modified_files))
+        self.parse_lines(all_are_ignored)
         if self.changes:
             self.parse_changelog()
             self.deduce_changelog_locations()
@@ -292,7 +295,7 @@ class GitCommit:
                 modified_files.append((parts[2], 'A'))
         return modified_files
 
-    def parse_lines(self):
+    def parse_lines(self, all_are_ignored):
         body = self.lines
 
         for i, b in enumerate(body):
@@ -303,8 +306,9 @@ class GitCommit:
                     or dr_regex.match(b) or author_line_regex.match(b)):
                 self.changes = body[i:]
                 return
-        self.errors.append(Error('cannot find a ChangeLog location in '
-                                 'message'))
+        if not all_are_ignored:
+            self.errors.append(Error('cannot find a ChangeLog location in '
+                                     'message'))
 
     def parse_changelog(self):
         last_entry = None
