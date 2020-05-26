@@ -8000,10 +8000,11 @@ package body Freeze is
          then
             declare
                Iter : constant Node_Id :=
-                           Find_Aspect (Etype (Node), Aspect_Default_Iterator);
+                 Find_Value_Of_Aspect (Etype (Node), Aspect_Default_Iterator);
+
             begin
                if Present (Iter) then
-                  Check_And_Freeze_Type (Etype (Expression (Iter)));
+                  Check_And_Freeze_Type (Etype (Iter));
                end if;
             end;
          end if;
