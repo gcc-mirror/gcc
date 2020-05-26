@@ -185,7 +185,9 @@ in the following sections.
 @table @emph
 @item Overall Options
 @xref{Overall Options,,Options Controlling the Kind of Output}.
-@gccoptlist{-c  -S  -E  -o @var{file}  -x @var{language}  @gol
+@gccoptlist{-c  -S  -E  -o @var{file} @gol
+-dumpbase @var{dumpbase}  -dumpbase-ext @var{auxdropsuf} @gol
+-dumpdir @var{dumppfx}  -x @var{language}  @gol
 -v  -###  --help@r{[}=@var{class}@r{[},@dots{}@r{]]}  --target-help  --version @gol
 -pass-exit-codes  -pipe  -specs=@var{file}  -wrapper  @gol
 @@@var{file}  -ffile-prefix-map=@var{old}=@var{new}  @gol
@@ -1602,9 +1604,9 @@ Input files that don't require preprocessing are ignored.
 @cindex output file option
 @item -o @var{file}
 @opindex o
-Place output in file @var{file}.  This applies to whatever
-sort of output is being produced, whether it be an executable file,
-an object file, an assembler file or preprocessed C code.
+Place the primary output in file @var{file}.  This applies to whatever
+sort of output is being produced, whether it be an executable file, an
+object file, an assembler file or preprocessed C code.
 
 If @option{-o} is not specified, the default is to put an executable
 file in @file{a.out}, the object file for
@@ -1612,6 +1614,314 @@ file in @file{a.out}, the object file for
 assembler file in @file{@var{source}.s}, a precompiled header file in
 @file{@var{source}.@var{suffix}.gch}, and all preprocessed C source on
 standard output.
+
+Though @option{-o} names only the primary output, it also affects the
+naming of auxiliary and dump outputs.  See the examples below.  Unless
+overridden, both auxiliary outputs and dump outputs are placed in the
+same directory as the primary output.  In auxiliary outputs, the suffix
+of the input file is replaced with that of the auxiliary output file
+type; in dump outputs, the suffix of the dump file is appended to the
+input file suffix.  In compilation commands, the base name of both
+auxiliary and dump outputs is that of the primary output; in compile and
+link commands, the primary output name, minus the executable suffix, is
+combined with the input file name.  If both share the same base name,
+disregarding the suffix, the result of the combination is that base
+name, otherwise, they are concatenated, separated by a dash.
+
+@smallexample
+gcc -c foo.c ...
+@end smallexample
+
+will use @file{foo.o} as the primary output, and place aux outputs and
+dumps next to it, e.g., aux file @file{foo.dwo} for
+@option{-gsplit-dwarf}, and dump file @file{foo.c.???r.final} for
+@option{-fdump-rtl-final}.
+
+If a non-linker output file is explicitly specified, aux and dump files
+by default take the same base name:
+
+@smallexample
+gcc -c foo.c -o dir/foobar.o ...
+@end smallexample
+
+will name aux outputs @file{dir/foobar.*} and dump outputs
+@file{dir/foobar.c.*}.
+
+A linker output will instead prefix aux and dump outputs:
+
+@smallexample
+gcc foo.c bar.c -o dir/foobar ...
+@end smallexample
+
+will generally name aux outputs @file{dir/foobar-foo.*} and
+@file{dir/foobar-bar.*}, and dump outputs @file{dir/foobar-foo.c.*} and
+@file{dir/foobar-bar.c.*}.
+
+The one exception to the above is when the executable shares the base
+name with the single input:
+
+@smallexample
+gcc foo.c -o dir/foo ...
+@end smallexample
+
+in which case aux outputs are named @file{dir/foo.*} and dump outputs
+named @file{dir/foo.c.*}.
+
+The location and the names of auxiliary and dump outputs can be adjusted
+by the options @option{-dumpbase}, @option{-dumpbase-ext},
+@option{-dumpdir}, @option{-save-temps=cwd}, and
+@option{-save-temps=obj}.
+
+
+@item -dumpbase @var{dumpbase}
+@opindex dumpbase
+This option sets the base name for auxiliary and dump output files.  It
+does not affect the name of the primary output file.  Intermediate
+outputs, when preserved, are not regarded as primary outputs, but as
+auxiliary outputs:
+
+@smallexample
+gcc -save-temps -S foo.c
+@end smallexample
+
+saves the (no longer) temporary preprocessed file in @file{foo.i}, and
+then compiles to the (implied) output file @file{foo.s}, whereas:
+
+@smallexample
+gcc -save-temps -dumpbase save-foo -c foo.c
+@end smallexample
+
+preprocesses to in @file{save-foo.i}, compiles to @file{save-foo.s} (now
+an intermediate, thus auxiliary output), and then assembles to the
+(implied) output file @file{foo.o}.
+
+Absent this option, dump and aux files take their names from the input
+file, or from the (non-linker) output file, if one is explicitly
+specified: dump output files (e.g. those requested by @option{-fdump-*}
+options) with the input name suffix, and aux output files (those
+requested by other non-dump options, e.g. @code{-save-temps},
+@code{-gsplit-dwarf}, @code{-fcallgraph-info}) without it.
+
+Similar suffix differentiation of dump and aux outputs can be attained
+for explicitly-given @option{-dumpbase basename.suf} by also specifying
+@option{-dumpbase-ext .suf}.
+
+If @var{dumpbase} is explicitly specified with any directory component,
+any @var{dumppfx} specification (e.g. @option{-dumpdir} or
+@option{-save-temps=*}) is ignored, and instead of appending to it,
+@var{dumpbase} fully overrides it:
+
+@smallexample
+gcc foo.c -c -o dir/foo.o -dumpbase alt/foo \
+  -dumpdir pfx- -save-temps=cwd ...
+@end smallexample
+
+creates auxiliary and dump outputs named @file{alt/foo.*}, disregarding
+@file{dir/} in @option{-o}, the @file{./} prefix implied by
+@option{-save-temps=cwd}, and @file{pfx-} in @option{-dumpdir}.
+
+When @option{-dumpbase} is specified in a command that compiles multiple
+inputs, or that compiles and then links, it may be combined with
+@var{dumppfx}, as specified under @option{-dumpdir}.  Then, each input
+file is compiled using the combined @var{dumppfx}, and default values
+for @var{dumpbase} and @var{auxdropsuf} are computed for each input
+file:
+
+@smallexample
+gcc foo.c bar.c -c -dumpbase main ...
+@end smallexample
+
+creates @file{foo.o} and @file{bar.o} as primary outputs, and avoids
+overwriting the auxiliary and dump outputs by using the @var{dumpbase}
+as a prefix, creating auxiliary and dump outputs named @file{main-foo.*}
+and @file{main-bar.*}.
+
+An empty string specified as @var{dumpbase} avoids the influence of the
+output basename in the naming of auxiliary and dump outputs during
+compilation, computing default values :
+
+@smallexample
+gcc -c foo.c -o dir/foobar.o -dumpbase '' ...
+@end smallexample
+
+will name aux outputs @file{dir/foo.*} and dump outputs
+@file{dir/foo.c.*}.  Note how their basenames are taken from the input
+name, but the directory still defaults to that of the output.
+
+The empty-string dumpbase does not prevent the use of the output
+basename for outputs during linking:
+
+@smallexample
+gcc foo.c bar.c -o dir/foobar -dumpbase '' -flto ...
+@end smallexample
+
+The compilation of the source files will name auxiliary outputs
+@file{dir/foo.*} and @file{dir/bar.*}, and dump outputs
+@file{dir/foo.c.*} and @file{dir/bar.c.*}.  LTO recompilation during
+linking will use @file{dir/foobar.} as the prefix for dumps and
+auxiliary files.
+
+
+@item -dumpbase-ext @var{auxdropsuf}
+@opindex dumpbase-ext
+When forming the name of an auxiliary (but not a dump) output file, drop
+trailing @var{auxdropsuf} from @var{dumpbase} before appending any
+suffixes.  If not specified, this option defaults to the suffix of a
+default @var{dumpbase}, i.e., the suffix of the input file when
+@option{-dumpbase} is not present in the command line, or @var{dumpbase}
+is combined with @var{dumppfx}.
+
+@smallexample
+gcc foo.c -c -o dir/foo.o -dumpbase x-foo.c -dumpbase-ext .c ...
+@end smallexample
+
+creates @file{dir/foo.o} as the main output, and generates auxiliary
+outputs in @file{dir/x-foo.*}, taking the location of the primary
+output, and dropping the @file{.c} suffix from the @var{dumpbase}.  Dump
+outputs retain the suffix: @file{dir/x-foo.c.*}.
+
+This option is disregarded if it does not match the suffix of a
+specified @var{dumpbase}, except as an alternative to the executable
+suffix when appending the linker output base name to @var{dumppfx}, as
+specified below:
+
+@smallexample
+gcc foo.c bar.c -o main.out -dumpbase-ext .out ...
+@end smallexample
+
+creates @file{main.out} as the primary output, and avoids overwriting
+the auxiliary and dump outputs by using the executable name minus
+@var{auxdropsuf} as a prefix, creating auxiliary outputs named
+@file{main-foo.*} and @file{main-bar.*} and dump outputs named
+@file{main-foo.c.*} and @file{main-bar.c.*}.
+
+
+@item -dumpdir @var{dumppfx}
+@opindex dumpdir
+When forming the name of an auxiliary or dump output file, use
+@var{dumppfx} as a prefix:
+
+@smallexample
+gcc -dumpdir pfx- -c foo.c ...
+@end smallexample
+
+creates @file{foo.o} as the primary output, and auxiliary outputs named
+@file{pfx-foo.*}, combining the given @var{dumppfx} with the default
+@var{dumpbase} derived from the default primary output, derived in turn
+from the input name.  Dump outputs also take the input name suffix:
+@file{pfx-foo.c.*}.
+
+If @var{dumppfx} is to be used as a directory name, it must end with a
+directory separator:
+
+@smallexample
+gcc -dumpdir dir/ -c foo.c -o obj/bar.o ...
+@end smallexample
+
+creates @file{obj/bar.o} as the primary output, and auxiliary outputs
+named @file{dir/bar.*}, combining the given @var{dumppfx} with the
+default @var{dumpbase} derived from the primary output name.  Dump
+outputs also take the input name suffix: @file{dir/bar.c.*}.
+
+It defaults to the location of the output file; options
+@option{-save-temps=cwd} and @option{-save-temps=obj} override this
+default, just like an explicit @option{-dumpdir} option.  In case
+multiple such options are given, the last one prevails:
+
+@smallexample
+gcc -dumpdir pfx- -c foo.c -save-temps=obj ...
+@end smallexample
+
+outputs @file{foo.o}, with auxiliary outputs named @file{foo.*} because
+@option{-save-temps=*} overrides the @var{dumppfx} given by the earlier
+@option{-dumpdir} option.  It does not matter that @option{=obj} is the
+default for @option{-save-temps}, nor that the output directory is
+implicitly the current directory.  Dump outputs are named
+@file{foo.c.*}.
+
+When compiling from multiple input files, if @option{-dumpbase} is
+specified, @var{dumpbase}, minus a @var{auxdropsuf} suffix, and a dash
+are appended to (or override, if containing any directory components) an
+explicit or defaulted @var{dumppfx}, so that each of the multiple
+compilations gets differently-named aux and dump outputs.
+
+@smallexample
+gcc foo.c bar.c -c -dumpdir dir/pfx- -dumpbase main ...
+@end smallexample
+
+outputs auxiliary dumps to @file{dir/pfx-main-foo.*} and
+@file{dir/pfx-main-bar.*}, appending @var{dumpbase}- to @var{dumppfx}.
+Dump outputs retain the input file suffix: @file{dir/pfx-main-foo.c.*}
+and @file{dir/pfx-main-bar.c.*}, respectively.  Contrast with the
+single-input compilation:
+
+@smallexample
+gcc foo.c -c -dumpdir dir/pfx- -dumpbase main ...
+@end smallexample
+
+that, applying @option{-dumpbase} to a single source, does not compute
+and append a separate @var{dumpbase} per input file.  Its auxiliary and
+dump outputs go in @file{dir/pfx-main.*}.
+
+When compiling and then linking from multiple input files, a defaulted
+or explicitly specified @var{dumppfx} also undergoes the @var{dumpbase}-
+transformation above (e.g. the compilation of @file{foo.c} and
+@file{bar.c} above, but without @option{-c}).  If neither
+@option{-dumpdir} nor @option{-dumpbase} are given, the linker output
+base name, minus @var{auxdropsuf}, if specified, or the executable
+suffix otherwise, plus a dash is appended to the default @var{dumppfx}
+instead.  Note, however, that unlike earlier cases of linking:
+
+@smallexample
+gcc foo.c bar.c -dumpdir dir/pfx- -o main ...
+@end smallexample
+
+does not append the output name @file{main} to @var{dumppfx}, because
+@option{-dumpdir} is explicitly specified.  The goal is that the
+explicitly-specified @var{dumppfx} may contain the specified output name
+as part of the prefix, if desired; only an explicitly-specified
+@option{-dumpbase} would be combined with it, in order to avoid simply
+discarding a meaningful option.
+
+When compiling and then linking from a single input file, the linker
+output base name will only be appended to the default @var{dumppfx} as
+above if it does not share the base name with the single input file
+name.  This has been covered in single-input linking cases above, but
+not with an explicit @option{-dumpdir} that inhibits the combination,
+even if overridden by @option{-save-temps=*}:
+
+@smallexample
+gcc foo.c -dumpdir alt/pfx- -o dir/main.exe -save-temps=cwd ...
+@end smallexample
+
+Auxiliary outputs are named @file{foo.*}, and dump outputs
+@file{foo.c.*}, in the current working directory as ultimately requested
+by @option{-save-temps=cwd}.
+
+Summing it all up for an intuitive though slightly imprecise data flow:
+the primary output name is broken into a directory part and a basename
+part; @var{dumppfx} is set to the former, unless overridden by
+@option{-dumpdir} or @option{-save-temps=*}, and @var{dumpbase} is set
+to the latter, unless overriden by @option{-dumpbase}.  If there are
+multiple inputs or linking, this @var{dumpbase} may be combined with
+@var{dumppfx} and taken from each input file.  Auxiliary output names
+for each input are formed by combining @var{dumppfx}, @var{dumpbase}
+minus suffix, and the auxiliary output suffix; dump output names are
+only different in that the suffix from @var{dumpbase} is retained.
+
+When it comes to auxiliary and dump outputs created during LTO
+recompilation, a combination of @var{dumppfx} and @var{dumpbase}, as
+given or as derived from the linker output name but not from inputs,
+even in cases in which this combination would not otherwise be used as
+such, is passed down with a trailing period replacing the compiler-added
+dash, if any, as a @option{-dumpdir} option to @command{lto-wrapper};
+being involved in linking, this program does not normally get any
+@option{-dumpbase} and @option{-dumpbase-ext}, and it ignores them.
+
+When running sub-compilers, @command{lto-wrapper} appends LTO stage
+names to the received @var{dumppfx}, ensures it contains a directory
+component so that it overrides any @option{-dumpdir}, and passes that as
+@option{-dumpbase} to sub-compilers.
 
 @item -v
 @opindex v
@@ -16279,54 +16589,28 @@ computing CRC32).
 The @var{string} should be different for every file you compile.
 
 @item -save-temps
-@itemx -save-temps=cwd
 @opindex save-temps
-Store the usual ``temporary'' intermediate files permanently; place them
-in the current directory and name them based on the source file.  Thus,
-compiling @file{foo.c} with @option{-c -save-temps} produces files
-@file{foo.i} and @file{foo.s}, as well as @file{foo.o}.  This creates a
-preprocessed @file{foo.i} output file even though the compiler now
-normally uses an integrated preprocessor.
+Store the usual ``temporary'' intermediate files permanently; name them
+as auxiliary output files, as specified described under
+@option{-dumpbase} and @option{-dumpdir}.
 
 When used in combination with the @option{-x} command-line option,
-@option{-save-temps} is sensible enough to avoid over writing an
+@option{-save-temps} is sensible enough to avoid overwriting an
 input source file with the same extension as an intermediate file.
 The corresponding intermediate file may be obtained by renaming the
 source file before using @option{-save-temps}.
 
-If you invoke GCC in parallel, compiling several different source
-files that share a common base name in different subdirectories or the
-same source file compiled for multiple output destinations, it is
-likely that the different parallel compilers will interfere with each
-other, and overwrite the temporary files.  For instance:
-
-@smallexample
-gcc -save-temps -o outdir1/foo.o indir1/foo.c&
-gcc -save-temps -o outdir2/foo.o indir2/foo.c&
-@end smallexample
-
-may result in @file{foo.i} and @file{foo.o} being written to
-simultaneously by both compilers.
+@item -save-temps=cwd
+@opindex save-temps=cwd
+Equivalent to @option{-save-temps -dumpdir ./}.
 
 @item -save-temps=obj
 @opindex save-temps=obj
-Store the usual ``temporary'' intermediate files permanently.  If the
-@option{-o} option is used, the temporary files are based on the
-object file.  If the @option{-o} option is not used, the
-@option{-save-temps=obj} switch behaves like @option{-save-temps}.
-
-For example:
-
-@smallexample
-gcc -save-temps=obj -c foo.c
-gcc -save-temps=obj -c bar.c -o dir/xbar.o
-gcc -save-temps=obj foobar.c -o dir2/yfoobar
-@end smallexample
-
-@noindent
-creates @file{foo.i}, @file{foo.s}, @file{dir/xbar.i},
-@file{dir/xbar.s}, @file{dir2/yfoobar.i}, @file{dir2/yfoobar.s}, and
-@file{dir2/yfoobar.o}.
+Equivalent to @option{-save-temps -dumpdir @file{outdir/}}, where
+@file{outdir/} is the directory of the output file specified after the
+@option{-o} option, including any directory separators.  If the
+@option{-o} option is not used, the @option{-save-temps=obj} switch
+behaves like @option{-save-temps=cwd}.
 
 @item -time@r{[}=@var{file}@r{]}
 @opindex time
@@ -16363,7 +16647,7 @@ can later tell what file was being compiled, and with which options.
 Dump the final internal representation (RTL) to @var{file}.  If the
 optional argument is omitted (or if @var{file} is @code{.}), the name
 of the dump file is determined by appending @code{.gkd} to the
-compilation output file name.
+dump base name, see @option{-dumpbase}.
 
 @item -fcompare-debug@r{[}=@var{opts}@r{]}
 @opindex fcompare-debug
@@ -30630,17 +30914,24 @@ together or combine them with constant text in a single argument.
 @item %%
 Substitute one @samp{%} into the program name or argument.
 
+@item %"
+Substitute an empty argument.
+
 @item %i
 Substitute the name of the input file being processed.
 
 @item %b
-Substitute the basename of the input file being processed.
-This is the substring up to (and not including) the last period
-and not including the directory.
+Substitute the basename for outputs related with the input file being
+processed.  This is often the substring up to (and not including) the
+last period and not including the directory but, unless %w is active, it
+expands to the basename for auxiliary outputs, which may be influenced
+by an explicit output name, and by various other options that control
+how auxiliary outputs are named.
 
 @item %B
 This is the same as @samp{%b}, but include the file suffix (text after
-the last period).
+the last period).  Without %w, it expands to the basename for dump
+outputs.
 
 @item %d
 Marks the argument containing or following the @samp{%d} as a

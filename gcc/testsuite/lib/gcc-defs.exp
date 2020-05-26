@@ -285,11 +285,53 @@ proc dg-additional-files { args } {
     set additional_files [lindex $args 1]
 }
 
+set gcc_adjusted_linker_flags 0
+
+# Add -Wl, before any file names in ldflags, libs, and ldscripts, so
+# that default object files or libraries do not change the names of
+# gcc auxiliary outputs.
+
+proc gcc_adjust_linker_flags {} {
+    global gcc_adjusted_linker_flags
+    if {$gcc_adjusted_linker_flags} {
+	return
+    }
+    set gcc_adjusted_linker_flags 1
+
+    if {![is_remote host]} {
+	set dest [target_info name]
+	foreach i { ldflags libs ldscripts } {
+	    if {[board_info $dest exists $i]} {
+		set opts [board_info $dest $i]
+		set nopts {}
+		set skip ""
+		foreach opt [split $opts] {
+		    if { $skip != "" } then {
+			set skip ""
+		    } elseif { $opt == "-Xlinker" } then {
+			set skip $opt
+		    } elseif { ![string match "-*" $opt] \
+				&& [file isfile $opt] } {
+			set opt "-Wl,$opt"
+		    }
+		    lappend nopts $opt
+		}
+		if { $nopts != $opts } {
+		    unset_currtarget_info $i
+		    set_currtarget_info $i "$nopts"
+		}
+	    }
+	}
+    }
+}
+
 # Return an updated version of OPTIONS that mentions any additional
 # source files registered with dg-additional-sources.  SOURCE is the
 # name of the test case.
 
 proc dg-additional-files-options { options source } {
+    gcc_adjust_linker_flags
+
     global additional_sources
     global additional_sources_used
     global additional_files
@@ -305,6 +347,10 @@ proc dg-additional-files-options { options source } {
 	set to_download [concat $to_download $additional_sources]
 	set additional_sources_used "$additional_sources"
 	set additional_sources ""
+	# This option restores naming of aux and dump output files
+	# after input files when multiple input files are named,
+	# instead of getting them combined with the output name.
+	lappend options "additional_flags=-dumpbase \"\""
     }
     if { $additional_files != "" } then { 
 	regsub -all "^| " $additional_files " [file dirname $source]/" additional_files

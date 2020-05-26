@@ -203,6 +203,10 @@ static bool linker_output_known;
 static bool linker_output_auto_nolto_rel;
 static const char *link_output_name = NULL;
 
+/* This indicates link_output_name already contains the dot of the
+   suffix, so we can skip it in extensions.  */
+static int skip_in_suffix = 0;
+
 /* The version of gold being used, or -1 if not gold.  The number is
    MAJOR * 100 + MINOR.  */
 static int gold_version = -1;
@@ -621,14 +625,11 @@ exec_lto_wrapper (char *argv[])
   /* Write argv to a file to avoid a command line that is too long
      Save the file locally on save-temps.  */
   if (save_temps && link_output_name)
-    {
-      arguments_file_name = (char *) xmalloc (strlen (link_output_name)
-				  + sizeof (".lto_wrapper_args") + 1);
-      strcpy (arguments_file_name, link_output_name);
-      strcat (arguments_file_name, ".lto_wrapper_args");
-    }
+    arguments_file_name = concat (link_output_name,
+				  ".lto_wrapper_args"
+				  + skip_in_suffix, NULL);
   else
-     arguments_file_name = make_temp_file (".lto_wrapper_args");
+    arguments_file_name = make_temp_file (".lto_wrapper_args");
   check (arguments_file_name, LDPL_FATAL,
          "Failed to generate a temorary file name");
 
@@ -1439,12 +1440,82 @@ onload (struct ld_plugin_tv *tv)
       if (strstr (collect_gcc_options, "'-fno-use-linker-plugin'"))
 	return LDPS_ERR;
 
-      if ( strstr (collect_gcc_options, "'-save-temps'"))
+      if (strstr (collect_gcc_options, "'-save-temps'"))
 	save_temps = true;
 
       if (strstr (collect_gcc_options, "'-v'")
           || strstr (collect_gcc_options, "'--verbose'"))
 	verbose = true;
+
+      const char *p;
+      if ((p = strstr (collect_gcc_options, "'-dumpdir'")))
+	{
+	  p += sizeof ("'-dumpdir'");
+	  while (*p == ' ')
+	    p++;
+	  const char *start = p;
+	  int ticks = 0, escapes = 0;
+	  /* Count ticks (') and escaped (\.) characters.  Stop at the
+	     end of the options or at a blank after an even number of
+	     ticks (not counting escaped ones.  */
+	  for (p = start; *p; p++)
+	    {
+	      if (*p == '\'')
+		{
+		  ticks++;
+		  continue;
+		}
+	      else if ((ticks % 2) != 0)
+		{
+		  if (*p == ' ')
+		    break;
+		  if (*p == '\\')
+		    {
+		      if (*++p)
+			escapes++;
+		      else
+			p--;
+		    }
+		}
+	    }
+
+	  /* Now allocate a new link_output_name and decode dumpdir
+	     into it.  The loop uses the same logic, except it counts
+	     ticks and escapes backwards (so ticks is adjusted if we
+	     find an odd number of them), and it copies characters
+	     that are escaped or not otherwise skipped.  */
+	  int len = p - start - ticks - escapes + 1;
+	  char *q = xmalloc (len);
+	  link_output_name = q;
+	  int oddticks = (ticks % 2);
+	  ticks += oddticks;
+	  for (p = start; *p; p++)
+	    {
+	      if (*p == '\'')
+		{
+		  ticks--;
+		  continue;
+		}
+	      else if ((ticks % 2) != 0)
+		{
+		  if (*p == ' ')
+		    break;
+		  if (*p == '\\')
+		    {
+		      if (*++p)
+			escapes--;
+		      else
+			p--;
+		    }
+		}
+	      *q++ = *p;
+	    }
+	  *q = '\0';
+	  assert (escapes == 0);
+	  assert (ticks == oddticks);
+	  assert (q - link_output_name == len - 1);
+	  skip_in_suffix = 1;
+	}
     }
 
   return LDPS_OK;

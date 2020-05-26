@@ -188,6 +188,12 @@ const char *main_input_basename
 Variable
 int main_input_baselength
 
+; The base name used for auxiliary output files.
+; dump_base_name minus dump_base_ext.
+
+Variable
+const char *aux_base_name
+
 ; Which options have been printed by --help.
 Variable
 char *help_printed
@@ -252,10 +258,13 @@ Common Separate Alias(d)
 Common Joined Alias(d)
 
 -dumpbase
-Common Separate Alias(dumpbase)
+Driver Common Separate Alias(dumpbase)
+
+-dumpbase-ext
+Driver Common Separate Alias(dumpbase-ext)
 
 -dumpdir
-Common Separate Alias(dumpdir)
+Driver Common Separate Alias(dumpdir)
 
 -entry
 Driver Separate Alias(e)
@@ -852,12 +861,6 @@ Common Separate Var(aux_info_file_name)
 aux-info=
 Common Joined Alias(aux-info)
 
-auxbase
-Common Separate RejectDriver Var(aux_base_name)
-
-auxbase-strip
-Common Separate RejectDriver
-
 coverage
 Driver
 
@@ -869,11 +872,15 @@ Common Joined
 -d<letters>	Enable dumps from specific passes of the compiler.
 
 dumpbase
-Common Separate Var(dump_base_name)
+Driver Common Separate Var(dump_base_name)
 -dumpbase <file>	Set the file basename to be used for dumps.
 
+dumpbase-ext
+Driver Common Separate Var(dump_base_ext)
+-dumpbase-ext .<ext>    Drop a trailing .<ext> from the dump basename to name auxiliary output files.
+
 dumpdir
-Common Separate Var(dump_dir_name)
+Driver Common Separate Var(dump_dir_name)
 -dumpdir <dir>	Set the directory name to be used for dumps.
 
 dumpmachine

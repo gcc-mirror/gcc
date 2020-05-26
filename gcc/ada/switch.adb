@@ -163,9 +163,9 @@ package body Switch is
       return Is_Switch (Switch_Chars)
         and then
           (Switch_Chars (First .. Last) = "-param"        or else
+           Switch_Chars (First .. Last) = "dumpdir"       or else
            Switch_Chars (First .. Last) = "dumpbase"      or else
-           Switch_Chars (First .. Last) = "auxbase-strip" or else
-           Switch_Chars (First .. Last) = "auxbase");
+           Switch_Chars (First .. Last) = "dumpbase-ext");
    end Is_Internal_GCC_Switch;
 
    ---------------
