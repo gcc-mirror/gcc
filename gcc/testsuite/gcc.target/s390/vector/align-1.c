@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -mzarch -march=z14" } */
+/* { dg-options "-O3 -mzarch -march=z13" } */
 
 /* The user alignment ends up in DECL_ALIGN of the VAR_DECL and is
    currently ignored if it is smaller than the alignment of the type.
