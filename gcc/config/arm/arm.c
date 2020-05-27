@@ -13375,6 +13375,7 @@ mve_vector_mem_operand (machine_mode mode, rtx op, bool strict)
 	    if (val % 4 == 0 && val >= 0 && val <= 1020)
 	      return ((reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
 		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+	    return FALSE;
 	  default:
 	    return FALSE;
 	}
