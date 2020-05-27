@@ -269,6 +269,9 @@ jit_langhook_getdecls (void)
 #undef LANG_HOOKS_GETDECLS
 #define LANG_HOOKS_GETDECLS		jit_langhook_getdecls
 
+#undef  LANG_HOOKS_DEEP_UNSHARING
+#define LANG_HOOKS_DEEP_UNSHARING	true
+
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
 #include "gt-jit-dummy-frontend.h"
