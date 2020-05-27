@@ -3540,7 +3540,7 @@ package body Sem_Attr is
                return;
 
             --  Also allow an object of a generic type if extensions allowed
-            --  and allow this for any type at all. (this may be obsolete ???)
+            --  and allow this for any type at all.
 
             elsif (Is_Generic_Type (P_Type)
                     or else Is_Generic_Actual_Type (P_Type))

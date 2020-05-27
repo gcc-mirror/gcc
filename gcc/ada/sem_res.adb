@@ -3035,7 +3035,7 @@ package body Sem_Res is
          Resolution_Failed;
          return;
 
-      --  Only one intepretation
+      --  Only one interpretation
 
       else
          --  In Ada 2005, if we have something like "X : T := 2 + 2;", where
@@ -6573,7 +6573,7 @@ package body Sem_Res is
 
          if Same_Or_Aliased_Subprograms (Nam, Scop)
            and then not Restriction_Active (No_Recursion)
-           and then not Is_Static_Expression_Function (Scop)
+           and then not Is_Static_Function (Scop)
            and then Check_Infinite_Recursion (N)
          then
             --  Here we detected and flagged an infinite recursion, so we do
@@ -6591,11 +6591,10 @@ package body Sem_Res is
             Scope_Loop : while Scop /= Standard_Standard loop
                if Same_Or_Aliased_Subprograms (Nam, Scop) then
 
-                  --  Ada 202x (AI12-0075): Static expression function are
-                  --  never allowed to make a recursive call, as specified
-                  --  by 6.8(5.4/5).
+                  --  Ada 202x (AI12-0075): Static functions are never allowed
+                  --  to make a recursive call, as specified by 6.8(5.4/5).
 
-                  if Is_Static_Expression_Function (Scop) then
+                  if Is_Static_Function (Scop) then
                      Error_Msg_N
                        ("recursive call not allowed in static expression "
                           & "function", N);
@@ -6758,7 +6757,7 @@ package body Sem_Res is
         or else Is_Build_In_Place_Function (Nam)
         or else Is_Intrinsic_Subprogram (Nam)
         or else Is_Inlinable_Expression_Function (Nam)
-        or else Is_Static_Expression_Function_Call (N)
+        or else Is_Static_Function_Call (N)
       then
          null;
 
@@ -7032,10 +7031,10 @@ package body Sem_Res is
       --  when doing the inlining).
 
       if not Checking_Potentially_Static_Expression
-        and then Is_Static_Expression_Function_Call (N)
+        and then Is_Static_Function_Call (N)
         and then not Error_Posted (Ultimate_Alias (Nam))
       then
-         Inline_Static_Expression_Function_Call (N, Ultimate_Alias (Nam));
+         Inline_Static_Function_Call (N, Ultimate_Alias (Nam));
 
       --  In GNATprove mode, expansion is disabled, but we want to inline some
       --  subprograms to facilitate formal verification. Indirect calls through

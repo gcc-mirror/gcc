@@ -3610,18 +3610,38 @@ extension mode (the use of Off as a parameter cancels the effect
 of the @emph{-gnatX} command switch).
 
 In extension mode, the latest version of the Ada language is
-implemented (currently Ada 2012), and in addition a small number
+implemented (currently Ada 202x), and in addition a small number
 of GNAT specific extensions are recognized as follows:
 
 
-@table @asis
+@itemize *
 
-@item @emph{Constrained attribute for generic objects}
+@item 
+Constrained attribute for generic objects
 
 The @code{Constrained} attribute is permitted for objects of
 generic types. The result indicates if the corresponding actual
 is constrained.
-@end table
+
+@item 
+@code{Static} aspect on intrinsic functions
+
+The Ada 202x @code{Static} aspect can be specified on Intrinsic imported
+functions and the compiler will evaluate some of these intrinsic statically,
+in particular the @code{Shift_Left} and @code{Shift_Right} intrinsics.
+
+@item 
+@code{'Reduce} attribute
+
+This attribute part of the Ada 202x language definition is provided for
+now under -gnatX to confirm and potentially refine its usage and syntax.
+
+@item 
+@code{[]} aggregates
+
+This new aggregate syntax for arrays and containers is provided under -gnatX
+to experiment and confirm this new language syntax.
+@end itemize
 
 @node Pragma Extensions_Visible,Pragma External,Pragma Extensions_Allowed,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas id12}@anchor{66}@anchor{gnat_rm/implementation_defined_pragmas pragma-extensions-visible}@anchor{67}

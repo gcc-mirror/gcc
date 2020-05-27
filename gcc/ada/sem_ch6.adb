@@ -580,7 +580,7 @@ package body Sem_Ch6 is
                --  requirements of the Ada 202x RM in 4.9(3.2/5-3.4/5) and
                --  we flag an error.
 
-               if Is_Static_Expression_Function (Def_Id) then
+               if Is_Static_Function (Def_Id) then
                   if not Is_Static_Expression (Expr) then
                      declare
                         Exp_Copy : constant Node_Id := New_Copy_Tree (Expr);
