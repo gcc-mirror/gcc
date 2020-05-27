@@ -6850,9 +6850,9 @@ package body Exp_Aggr is
    --------------------------------
 
    procedure Expand_Container_Aggregate (N : Node_Id) is
-      Loc   : constant Source_Ptr := Sloc (N);
-      Typ   : constant Entity_Id := Etype (N);
-      Asp   : constant Node_Id := Find_Value_Of_Aspect (Typ, Aspect_Aggregate);
+      Loc : constant Source_Ptr := Sloc (N);
+      Typ : constant Entity_Id := Etype (N);
+      Asp : constant Node_Id := Find_Value_Of_Aspect (Typ, Aspect_Aggregate);
 
       Empty_Subp          : Node_Id := Empty;
       Add_Named_Subp      : Node_Id := Empty;
@@ -6860,11 +6860,12 @@ package body Exp_Aggr is
       New_Indexed_Subp    : Node_Id := Empty;
       Assign_Indexed_Subp : Node_Id := Empty;
 
-      Aggr_Code  : constant List_Id := New_List;
-      Temp       : constant Entity_Id :=  Make_Temporary (Loc, 'C', N);
+      Aggr_Code : constant List_Id   := New_List;
+      Temp      : constant Entity_Id := Make_Temporary (Loc, 'C', N);
 
       Decl      : Node_Id;
-      Init_Stat  : Node_Id;
+      Init_Stat : Node_Id;
+
    begin
       Parse_Aspect_Aggregate (Asp,
         Empty_Subp, Add_Named_Subp, Add_Unnamed_Subp,
@@ -6874,42 +6875,42 @@ package body Exp_Aggr is
           Defining_Identifier => Temp,
           Object_Definition   => New_Occurrence_Of (Typ, Loc));
 
-         Insert_Action (N, Decl);
-         if Ekind (Entity (Empty_Subp)) = E_Constant then
-            Init_Stat := Make_Assignment_Statement (Loc,
-              Name => New_Occurrence_Of (Temp, Loc),
-              Expression => Make_Function_Call (Loc,
-                Name => New_Occurrence_Of (Entity (Empty_Subp), Loc)));
-         else
-            Init_Stat := Make_Assignment_Statement (Loc,
-              Name => New_Occurrence_Of (Temp, Loc),
-              Expression => New_Occurrence_Of (Entity (Empty_Subp), Loc));
-         end if;
-         Append (Init_Stat, Aggr_Code);
+      Insert_Action (N, Decl);
+      if Ekind (Entity (Empty_Subp)) = E_Constant then
+         Init_Stat := Make_Assignment_Statement (Loc,
+           Name => New_Occurrence_Of (Temp, Loc),
+           Expression => Make_Function_Call (Loc,
+             Name => New_Occurrence_Of (Entity (Empty_Subp), Loc)));
+      else
+         Init_Stat := Make_Assignment_Statement (Loc,
+           Name => New_Occurrence_Of (Temp, Loc),
+           Expression => New_Occurrence_Of (Entity (Empty_Subp), Loc));
+      end if;
+      Append (Init_Stat, Aggr_Code);
 
-         --  First case : positional aggregate.
+      --  First case: positional aggregate
 
-         if Present (Expressions (N)) then
-            declare
-               Insert : constant Entity_Id := Entity (Add_Unnamed_Subp);
-               Comp   : Node_Id;
-               Stat   : Node_Id;
-            begin
-               Comp := First (Expressions (N));
-               while Present (Comp) loop
-                  Stat := Make_Procedure_Call_Statement (Loc,
-                    Name => New_Occurrence_Of (Insert, Loc),
-                    Parameter_Associations =>
-                      New_List (New_Occurrence_Of (Temp, Loc),
-                         New_Copy_Tree (Comp)));
-                  Append (Stat, Aggr_Code);
-                  Next (Comp);
-               end loop;
-            end;
-         end if;
-         Insert_Actions (N, Aggr_Code);
-         Rewrite (N, New_Occurrence_Of (Temp, Loc));
-         Analyze_And_Resolve (N, Typ);
+      if Present (Expressions (N)) then
+         declare
+            Insert : constant Entity_Id := Entity (Add_Unnamed_Subp);
+            Comp   : Node_Id;
+            Stat   : Node_Id;
+         begin
+            Comp := First (Expressions (N));
+            while Present (Comp) loop
+               Stat := Make_Procedure_Call_Statement (Loc,
+                 Name => New_Occurrence_Of (Insert, Loc),
+                 Parameter_Associations =>
+                   New_List (New_Occurrence_Of (Temp, Loc),
+                     New_Copy_Tree (Comp)));
+               Append (Stat, Aggr_Code);
+               Next (Comp);
+            end loop;
+         end;
+      end if;
+      Insert_Actions (N, Aggr_Code);
+      Rewrite (N, New_Occurrence_Of (Temp, Loc));
+      Analyze_And_Resolve (N, Typ);
    end Expand_Container_Aggregate;
 
    ------------------------------

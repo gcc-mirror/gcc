@@ -243,8 +243,8 @@ package body Sem_Ch13 is
    --  are in keeping with the components of Address_Clause_Check_Record below.
 
    procedure Validate_Aspect_Aggregate (N : Node_Id);
-   --  Check legality of operations given in the Ada_2020 Aggregate aspect
-   --  for containers.
+   --  Check legality of operations given in the Ada 202x Aggregate aspect for
+   --  containers.
 
    procedure Resolve_Aspect_Aggregate
     (Typ  : Entity_Id;
@@ -5211,10 +5211,10 @@ package body Sem_Ch13 is
          Indexing_Found : Boolean := False;
 
          procedure Check_Inherited_Indexing;
-         --  For a derived type, check tha for a derived type a specification
-         --  of an indexing aspect can only be confirming, i.e. uses the
-         --  the same name as in the parent type.
-         --  AI12-0160: verify that an indexing cannot be specified for
+         --  For a derived type, check that for a derived type, a specification
+         --  of an indexing aspect can only be confirming, i.e. uses the same
+         --  name as in the parent type.
+         --  AI12-0160: Verify that an indexing cannot be specified for
          --  a derived type unless it is specified for the parent.
 
          procedure Check_One_Function (Subp : Entity_Id);
@@ -14924,16 +14924,16 @@ package body Sem_Ch13 is
     (Typ :  Entity_Id;
      Expr : Node_Id)
    is
-      --  Predicates that establish the legality of each possible
-      --  operation in an Aggregate aspect.
+      --  Predicates that establish the legality of each possible operation in
+      --  an Aggregate aspect.
 
       function Valid_Empty          (E : Entity_Id) return Boolean;
       function Valid_Add_Named      (E : Entity_Id) return Boolean;
       function Valid_Add_Unnamed    (E : Entity_Id) return Boolean;
       function Valid_New_Indexed    (E : Entity_Id) return Boolean;
 
-      --  Note : the leglity rules for Assign_Indexed are the same
-      --  as for Add_Named.
+      --  Note: The legality rules for Assign_Indexed are the same as for
+      --  Add_Named.
 
       generic
         with function Pred (Id : Node_Id) return Boolean;
@@ -14955,7 +14955,7 @@ package body Sem_Ch13 is
          elsif Ekind (E) = E_Function then
             return No (First_Formal (E))
               or else
-               (Is_Integer_Type (Etype (First_Formal (E)))
+                (Is_Integer_Type (Etype (First_Formal (E)))
                   and then No (Next_Formal (First_Formal (E))));
          else
             return False;
@@ -14998,7 +14998,7 @@ package body Sem_Ch13 is
            and then Etype (First_Formal (E)) = Typ
            and then Ekind (First_Formal (E)) = E_In_Out_Parameter
            and then
-              not Is_Limited_Type (Etype (Next_Formal (First_Formal (E))));
+             not Is_Limited_Type (Etype (Next_Formal (First_Formal (E))));
       end Valid_Add_Unnamed;
 
       -----------------------
@@ -15070,9 +15070,9 @@ package body Sem_Ch13 is
       while Present (Assoc) loop
          Op_Name := Chars (First (Choices (Assoc)));
 
-         --  When verifying the consistency of aspects between
-         --  the freeze point and the end of declarqtions, we
-         --  use a copy which is not analyzed yet, so do it now.
+         --  When verifying the consistency of aspects between the freeze point
+         --  and the end of declarqtions, we use a copy which is not analyzed
+         --  yet, so do it now.
 
          Subp_Id := Expression (Assoc);
          if No (Etype (Subp_Id)) then
