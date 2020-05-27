@@ -11537,6 +11537,14 @@ package body Sem_Util is
       elsif Ekind (Item_Id) = E_Variable then
          return Type_Or_Variable_Has_Enabled_Property (Item_Id);
 
+      --  Other objects can only inherit properties through their type. We
+      --  cannot call directly Type_Or_Variable_Has_Enabled_Property on
+      --  these as they don't have contracts attached, which is expected by
+      --  this function.
+
+      elsif Is_Object (Item_Id) then
+         return Type_Or_Variable_Has_Enabled_Property (Etype (Item_Id));
+
       elsif Is_Type (Item_Id) then
          return Type_Or_Variable_Has_Enabled_Property
            (Item_Id => First_Subtype (Item_Id));
