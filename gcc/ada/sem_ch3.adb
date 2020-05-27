@@ -11676,9 +11676,8 @@ package body Sem_Ch3 is
             end if;
 
          elsif Is_Entry (E) then
-            if not Has_Completion (E) and then
-              (Ekind (Scope (E)) = E_Protected_Object
-                or else Ekind (Scope (E)) = E_Protected_Type)
+            if not Has_Completion (E)
+              and then Ekind (Scope (E)) = E_Protected_Type
             then
                Post_Error;
             end if;
@@ -11719,11 +11718,6 @@ package body Sem_Ch3 is
            and then Ekind (Etype (E)) = E_Task_Type
            and then not Has_Completion (Etype (E))
            and then Scope (Etype (E)) = Current_Scope
-         then
-            Post_Error;
-
-         elsif Ekind (E) = E_Protected_Object
-           and then not Has_Completion (Etype (E))
          then
             Post_Error;
 

@@ -11541,14 +11541,6 @@ package body Sem_Util is
          return Type_Or_Variable_Has_Enabled_Property
            (Item_Id => First_Subtype (Item_Id));
 
-      --  By default, protected objects only have the properties Async_Readers
-      --  and Async_Writers. If they have Part_Of components, they also inherit
-      --  their properties Effective_Reads and Effective_Writes
-      --  (SPARK RM 7.1.2(16)).
-
-      elsif Ekind (Item_Id) = E_Protected_Object then
-         return Protected_Type_Or_Variable_Has_Enabled_Property;
-
       --  Otherwise a property is enabled when the related item is effectively
       --  volatile.
 
