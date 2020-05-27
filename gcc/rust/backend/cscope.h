@@ -28,20 +28,38 @@ public:
     types.Pop ();
   }
 
-  void PushCurrentFunction (std::string name, Bfunction *fn)
+  void PushCurrentFunction (std::string name, Bfunction *fn, Btype *retType,
+			    Bvariable *retDecl)
   {
-    InsertFunction (name, fn);
     fns.push_back (fn);
+    fnRetType.push_back (retType);
+    fnRetDecl.push_back (retDecl);
   }
 
   Bfunction *PopCurrentFunction ()
   {
     auto ret = fns.back ();
     fns.pop_back ();
+    fnRetType.pop_back ();
+    fnRetDecl.pop_back ();
     return ret;
   }
 
   Bfunction *GetCurrentFndecl () { return fns.back (); }
+
+  Btype *GetCurrentFnRetType () { return fnRetType.back (); }
+
+  Bvariable *GetCurrentFnRetDecl () { return fnRetDecl.back (); }
+
+  Btype *GetFnRetType (Bfunction *fn)
+  {
+    auto it = fnRetTypeMapping.find (fn);
+    if (it == fnRetTypeMapping.end ())
+      {
+	return NULL;
+      }
+    return it->second;
+  }
 
   void PushBlock (Bblock *block)
   {
@@ -63,11 +81,14 @@ public:
     return ret;
   }
 
+  Bblock *CurBlock () { return blocks.back (); }
+
   void AddStatement (Bstatement *stmt) { context.back ().push_back (stmt); }
 
-  void InsertFunction (std::string name, Bfunction *fn)
+  void InsertFunction (std::string name, Bfunction *fn, Btype *retType)
   {
     fndecls.Insert (name, fn);
+    fnRetTypeMapping[fn] = retType;
   }
 
   bool LookupFunction (std::string name, Bfunction **fn)
@@ -95,6 +116,9 @@ private:
   ::std::vector<Bfunction *> fns;
   ::std::vector<Bblock *> blocks;
   ::std::vector< ::std::vector<Bstatement *> > context;
+  ::std::vector< ::Btype *> fnRetType;
+  ::std::vector< ::Bvariable *> fnRetDecl;
+  ::std::map<Bfunction *, Btype *> fnRetTypeMapping;
 
   Analysis::Scope<Bfunction *> fndecls;
   Analysis::Scope<Bvariable *> vars;

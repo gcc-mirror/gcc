@@ -35,17 +35,41 @@ Compilation::go ()
   scope.Push ();
 
   // builtin primitives
-  scope.InsertType ("i64", backend->integer_type (false, 64));
-  scope.InsertType ("i32", backend->integer_type (false, 32));
-  scope.InsertType ("i16", backend->integer_type (false, 16));
-  scope.InsertType ("i8", backend->integer_type (false, 8));
-  scope.InsertType ("u64", backend->integer_type (true, 64));
-  scope.InsertType ("u32", backend->integer_type (true, 32));
-  scope.InsertType ("u16", backend->integer_type (true, 16));
-  scope.InsertType ("u8", backend->integer_type (true, 8));
+  scope.InsertType ("bool",
+		    backend->named_type ("bool", backend->bool_type (),
+					 Linemap::predeclared_location ()));
+  scope.InsertType ("i64",
+		    backend->named_type ("i64",
+					 backend->integer_type (false, 64),
+					 Linemap::predeclared_location ()));
+  scope.InsertType ("i32",
+		    backend->named_type ("i32",
+					 backend->integer_type (false, 32),
+					 Linemap::predeclared_location ()));
+  scope.InsertType ("i16",
+		    backend->named_type ("i16",
+					 backend->integer_type (false, 16),
+					 Linemap::predeclared_location ()));
+  scope.InsertType ("i8",
+		    backend->named_type ("i8", backend->integer_type (false, 8),
+					 Linemap::predeclared_location ()));
+  scope.InsertType ("u64",
+		    backend->named_type ("u64",
+					 backend->integer_type (true, 64),
+					 Linemap::predeclared_location ()));
+  scope.InsertType ("u32",
+		    backend->named_type ("u32",
+					 backend->integer_type (true, 32),
+					 Linemap::predeclared_location ()));
+  scope.InsertType ("u16",
+		    backend->named_type ("u16",
+					 backend->integer_type (true, 16),
+					 Linemap::predeclared_location ()));
+  scope.InsertType ("u8",
+		    backend->named_type ("u8", backend->integer_type (true, 8),
+					 Linemap::predeclared_location ()));
   scope.InsertType ("f64", backend->float_type (64));
   scope.InsertType ("f32", backend->float_type (32));
-  scope.InsertType ("bool", backend->bool_type ());
 
   for (auto &item : crate.items)
     item->accept_vis (*this);
@@ -178,6 +202,7 @@ Compilation::visit (AST::PathInExpression &path)
       auto expr
 	= backend->function_code_expression (fn, path.get_locus_slow ());
       exprs.push_back (expr);
+      translatedType = scope.GetFnRetType (fn);
       return;
     }
 }
@@ -293,11 +318,35 @@ Compilation::visit (AST::ArithmeticOrLogicalExpr &expr)
     case AST::ArithmeticOrLogicalExpr::ADD:
       op = OPERATOR_PLUS;
       break;
-
-      // TODO fill in the other operators
-
+    case AST::ArithmeticOrLogicalExpr::SUBTRACT:
+      op = OPERATOR_MINUS;
+      break;
+    case AST::ArithmeticOrLogicalExpr::MULTIPLY:
+      op = OPERATOR_MULT;
+      break;
+    case AST::ArithmeticOrLogicalExpr::DIVIDE:
+      op = OPERATOR_DIV;
+      break;
+    case AST::ArithmeticOrLogicalExpr::MODULUS:
+      op = OPERATOR_MOD;
+      break;
+    case AST::ArithmeticOrLogicalExpr::BITWISE_AND:
+      op = OPERATOR_AND;
+      break;
+    case AST::ArithmeticOrLogicalExpr::BITWISE_OR:
+      op = OPERATOR_OR;
+      break;
+    case AST::ArithmeticOrLogicalExpr::BITWISE_XOR:
+      op = OPERATOR_XOR;
+      break;
+    case AST::ArithmeticOrLogicalExpr::LEFT_SHIFT:
+      op = OPERATOR_LSHIFT;
+      break;
+    case AST::ArithmeticOrLogicalExpr::RIGHT_SHIFT:
+      op = OPERATOR_RSHIFT;
+      break;
     default:
-      rust_error_at (expr.get_locus_slow (), "failed to compile expression");
+      rust_fatal_error (expr.get_locus_slow (), "failed to compile operator");
       return;
     }
 
@@ -414,13 +463,14 @@ void
 Compilation::visit (AST::CallExpr &expr)
 {
   Bexpression *fn = NULL;
+  translatedType = NULL;
   VISIT_POP (expr.function->get_locus_slow (), expr.function, fn, exprs);
   if (fn == NULL)
     {
-      printf ("expr.function = %s\n", expr.function->as_string ().c_str ());
       rust_error_at (expr.function->get_locus_slow (), "failed to resolve");
       return;
     }
+  Btype *returnType = translatedType; // can be NULL
 
   std::vector<Bexpression *> args;
   for (auto &param : expr.params)
@@ -491,7 +541,8 @@ Compilation::visit (AST::ReturnExpr &expr)
   VISIT_POP (expr.return_expr->get_locus_slow (), expr.return_expr, ret, exprs);
   if (ret == NULL)
     {
-      rust_error_at (expr.return_expr->get_locus_slow (), "failed to compile");
+      rust_fatal_error (expr.return_expr->get_locus_slow (),
+			"failed to compile");
       return;
     }
 
@@ -505,42 +556,65 @@ Compilation::visit (AST::ReturnExpr &expr)
 void
 Compilation::visit (AST::UnsafeBlockExpr &expr)
 {}
+
 void
 Compilation::visit (AST::LoopExpr &expr)
 {}
+
 void
 Compilation::visit (AST::WhileLoopExpr &expr)
 {}
+
 void
 Compilation::visit (AST::WhileLetLoopExpr &expr)
 {}
 void
 Compilation::visit (AST::ForLoopExpr &expr)
 {}
+
 void
 Compilation::visit (AST::IfExpr &expr)
-{}
+{
+  printf ("IfExpr %s\n", expr.as_string ().c_str ());
+}
 void
 Compilation::visit (AST::IfExprConseqElse &expr)
-{}
+{
+  printf ("IfExprConseqElse %s\n", expr.as_string ().c_str ());
+}
 void
 Compilation::visit (AST::IfExprConseqIf &expr)
-{}
+{
+  printf ("IfExprConseqIf %s\n", expr.as_string ().c_str ());
+}
 void
 Compilation::visit (AST::IfExprConseqIfLet &expr)
-{}
+{
+  printf ("IfExprConseqIfLet %s\n", expr.as_string ().c_str ());
+}
 void
 Compilation::visit (AST::IfLetExpr &expr)
-{}
+{
+  printf ("IfLetExpr %s\n", expr.as_string ().c_str ());
+}
 void
 Compilation::visit (AST::IfLetExprConseqElse &expr)
-{}
+{
+  printf ("IfLetExprConseqElse %s\n", expr.as_string ().c_str ());
+}
+
 void
 Compilation::visit (AST::IfLetExprConseqIf &expr)
-{}
+{
+  printf ("IfLetExprConseqIf %s\n", expr.as_string ().c_str ());
+}
+
 void
 Compilation::visit (AST::IfLetExprConseqIfLet &expr)
-{}
+{
+  printf ("IfLetExprConseqIfLet %s\n", expr.as_string ().c_str ());
+}
+
 // void Compilation::visit(MatchCase& match_case) {}
 void
 Compilation::visit (AST::MatchCaseBlockExpr &match_case)
@@ -639,19 +713,24 @@ Compilation::visit (AST::Function &function)
       function.return_type->accept_vis (*this);
       if (translatedType == NULL)
 	{
-	  rust_error_at (function.locus,
-			 "failed to generate type for function");
+	  rust_fatal_error (function.locus,
+			    "failed to generate type for function");
 	  return;
 	}
+      returnType = translatedType;
+
+      // add into the results:
+      results.push_back (
+	Backend::Btyped_identifier ("_", translatedType, Location ()));
     }
 
-  Btype *fntype = backend->function_type (receiver, parameters, results,
-					  returnType, function.locus);
+  Btype *fntype = backend->function_type (receiver, parameters, results, NULL,
+					  function.locus);
   Bfunction *fndecl
     = backend->function (fntype, function.function_name, "" /* asm_name */,
 			 0 /* flags */, function.locus);
 
-  scope.PushCurrentFunction (function.function_name, fndecl);
+  scope.InsertFunction (function.function_name, fndecl, returnType);
   scope.Push ();
 
   // setup the params
@@ -695,7 +774,21 @@ Compilation::visit (AST::Function &function)
 
   auto code_block = backend->block (fndecl, enclosingScope, vars,
 				    start_location, end_location);
+
   scope.PushBlock (code_block);
+
+  Bvariable *retDecl = NULL;
+  if (function.has_function_return_type ())
+    {
+      bool address_is_taken = false;
+      Bstatement *ret_var_stmt = NULL;
+      retDecl = backend->temporary_variable (fndecl, code_block, returnType,
+					     NULL, address_is_taken,
+					     function.locus, &ret_var_stmt);
+      scope.AddStatement (ret_var_stmt);
+    }
+  scope.PushCurrentFunction (function.function_name, fndecl, returnType,
+			     retDecl);
 
   for (auto &stmt : function.function_body->statements)
     stmt->accept_vis (*this);
@@ -933,7 +1026,23 @@ Compilation::visit (AST::ExprStmtWithoutBlock &stmt)
 void
 Compilation::visit (AST::ExprStmtWithBlock &stmt)
 {
-  rust_fatal_error (stmt.get_locus_slow (), "need new block to continue");
+  printf ("ExprStmtWithBlock: %s\n", stmt.as_string ().c_str ());
+
+  Bblock *enclosingScope = NULL;
+  Location start_location; /* = stmt.locus; FIXME */
+  Location end_location;   // FIXME
+
+  std::vector<Bvariable *> vars;
+  auto code_block
+    = backend->block (scope.GetCurrentFndecl (), scope.CurBlock (), vars,
+		      start_location, end_location);
+
+  scope.PushBlock (code_block);
+  stmt.expr->accept_vis (*this);
+  scope.PopBlock ();
+
+  auto body = backend->block_statement (code_block);
+  scope.AddStatement (body);
 }
 
 // rust-type.h
