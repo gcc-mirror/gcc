@@ -393,6 +393,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 280. Comparison of reverse_iterator to const reverse_iterator.
+
   template<typename _IteratorL, typename _IteratorR>
     inline _GLIBCXX17_CONSTEXPR bool
     operator==(const reverse_iterator<_IteratorL>& __x,
@@ -403,31 +404,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _GLIBCXX17_CONSTEXPR bool
     operator<(const reverse_iterator<_IteratorL>& __x,
 	      const reverse_iterator<_IteratorR>& __y)
-    { return __y.base() < __x.base(); }
+    { return __x.base() > __y.base(); }
 
   template<typename _IteratorL, typename _IteratorR>
     inline _GLIBCXX17_CONSTEXPR bool
     operator!=(const reverse_iterator<_IteratorL>& __x,
 	       const reverse_iterator<_IteratorR>& __y)
-    { return !(__x == __y); }
+    { return __x.base() != __y.base(); }
 
   template<typename _IteratorL, typename _IteratorR>
     inline _GLIBCXX17_CONSTEXPR bool
     operator>(const reverse_iterator<_IteratorL>& __x,
 	      const reverse_iterator<_IteratorR>& __y)
-    { return __y < __x; }
+    { return __x.base() < __y.base(); }
 
   template<typename _IteratorL, typename _IteratorR>
     inline _GLIBCXX17_CONSTEXPR bool
     operator<=(const reverse_iterator<_IteratorL>& __x,
 	       const reverse_iterator<_IteratorR>& __y)
-    { return !(__y < __x); }
+    { return __x.base() >= __y.base(); }
 
   template<typename _IteratorL, typename _IteratorR>
     inline _GLIBCXX17_CONSTEXPR bool
     operator>=(const reverse_iterator<_IteratorL>& __x,
 	       const reverse_iterator<_IteratorR>& __y)
-    { return !(__x < __y); }
+    { return __x.base() <= __y.base(); }
 #else // C++20
   template<typename _IteratorL, typename _IteratorR>
     constexpr bool
