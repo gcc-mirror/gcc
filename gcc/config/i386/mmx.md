@@ -552,32 +552,27 @@
   "TARGET_3DNOW")
 
 (define_insn "*mmx_haddv2sf3"
-  [(set (match_operand:V2SF 0 "register_operand" "=y,x,x")
+  [(set (match_operand:V2SF 0 "register_operand" "=y")
 	(vec_concat:V2SF
 	  (plus:SF
 	    (vec_select:SF
-	      (match_operand:V2SF 1 "register_operand" "0,0,x")
+	      (match_operand:V2SF 1 "register_operand" "0")
 	      (parallel [(match_operand:SI 3 "const_0_to_1_operand")]))
 	    (vec_select:SF (match_dup 1)
 	    (parallel [(match_operand:SI 4 "const_0_to_1_operand")])))
 	  (plus:SF
             (vec_select:SF
-	      (match_operand:V2SF 2 "nonimmediate_operand" "ym,x,x")
+	      (match_operand:V2SF 2 "nonimmediate_operand" "ym")
 	      (parallel [(match_operand:SI 5 "const_0_to_1_operand")]))
 	    (vec_select:SF (match_dup 2)
 	    (parallel [(match_operand:SI 6 "const_0_to_1_operand")])))))]
   "TARGET_3DNOW
    && INTVAL (operands[3]) != INTVAL (operands[4])
    && INTVAL (operands[5]) != INTVAL (operands[6])"
-  "@
-   pfacc\t{%2, %0|%0, %2}
-   haddps\t{%2, %0|%0, %2}
-   vhaddps\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "*,sse3_noavx,avx")
-   (set_attr "type" "mmxadd,sseadd,sseadd")
-   (set_attr "prefix_extra" "1,*,*")
-   (set_attr "prefix" "*,orig,vex")
-   (set_attr "mode" "V2SF,V4SF,V4SF")])
+  "pfacc\t{%2, %0|%0, %2}"
+  [(set_attr "type" "mmxadd")
+   (set_attr "prefix_extra" "1")
+   (set_attr "mode" "V2SF")])
 
 (define_insn "*mmx_haddv2sf3_low"
   [(set (match_operand:SF 0 "register_operand" "=x,x")
@@ -599,28 +594,23 @@
    (set_attr "mode" "V4SF")])
 
 (define_insn "mmx_hsubv2sf3"
-  [(set (match_operand:V2SF 0 "register_operand" "=y,x,x")
+  [(set (match_operand:V2SF 0 "register_operand" "=y")
 	(vec_concat:V2SF
 	  (minus:SF
 	    (vec_select:SF
-	      (match_operand:V2SF 1 "register_operand" "0,0,x")
+	      (match_operand:V2SF 1 "register_operand" "0")
 	      (parallel [(const_int  0)]))
 	    (vec_select:SF (match_dup 1) (parallel [(const_int 1)])))
 	  (minus:SF
             (vec_select:SF
-	      (match_operand:V2SF 2 "register_mmxmem_operand" "ym,x,x")
+	      (match_operand:V2SF 2 "nonimmediate_operand" "ym")
 	      (parallel [(const_int  0)]))
 	    (vec_select:SF (match_dup 2) (parallel [(const_int 1)])))))]
   "TARGET_3DNOW_A"
-  "@
-   pfnacc\t{%2, %0|%0, %2}
-   hsubps\t{%2, %0|%0, %2}
-   vhsubps\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "*,sse3_noavx,avx")
-   (set_attr "type" "mmxadd,sseadd,sseadd")
-   (set_attr "prefix_extra" "1,*,*")
-   (set_attr "prefix" "*,orig,vex")
-   (set_attr "mode" "V2SF,V4SF,V4SF")])
+  "pfnacc\t{%2, %0|%0, %2}"
+  [(set_attr "type" "mmxadd")
+   (set_attr "prefix_extra" "1")
+   (set_attr "mode" "V2SF")])
 
 (define_insn "*mmx_hsubv2sf3_low"
   [(set (match_operand:SF 0 "register_operand" "=x,x")
@@ -640,15 +630,38 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "V4SF")])
 
-(define_insn "mmx_addsubv2sf3"
+(define_expand "mmx_haddsubv2sf3"
+  [(set (match_operand:V2SF 0 "register_operand")
+	(vec_concat:V2SF
+	  (minus:SF
+	    (vec_select:SF
+	      (match_operand:V2SF 1 "register_operand")
+	      (parallel [(const_int 0)]))
+	    (vec_select:SF (match_dup 1) (parallel [(const_int 1)])))
+	  (plus:SF
+	    (vec_select:SF
+	      (match_operand:V2SF 2 "nonimmediate_operand")
+	      (parallel [(const_int 0)]))
+	    (vec_select:SF (match_dup 2) (parallel [(const_int 1)])))))]
+  "TARGET_3DNOW_A")
+
+(define_insn "*mmx_haddsubv2sf3"
   [(set (match_operand:V2SF 0 "register_operand" "=y")
-        (vec_merge:V2SF
-          (plus:V2SF
-            (match_operand:V2SF 1 "register_operand" "0")
-            (match_operand:V2SF 2 "nonimmediate_operand" "ym"))
-          (minus:V2SF (match_dup 1) (match_dup 2))
-          (const_int 1)))]
-  "TARGET_3DNOW_A"
+	(vec_concat:V2SF
+	  (minus:SF
+	    (vec_select:SF
+	      (match_operand:V2SF 1 "register_operand" "0")
+	      (parallel [(const_int  0)]))
+	    (vec_select:SF (match_dup 1) (parallel [(const_int 1)])))
+	  (plus:SF
+            (vec_select:SF
+	      (match_operand:V2SF 2 "nonimmediate_operand" "ym")
+	      (parallel [(match_operand:SI 3 "const_0_to_1_operand")]))
+	    (vec_select:SF
+	      (match_dup 2)
+	      (parallel [(match_operand:SI 4 "const_0_to_1_operand")])))))]
+  "TARGET_3DNOW_A
+   && INTVAL (operands[3]) != INTVAL (operands[4])"
   "pfpnacc\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxadd")
    (set_attr "prefix_extra" "1")
