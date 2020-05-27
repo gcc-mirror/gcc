@@ -5214,10 +5214,6 @@ package Einfo is
       --  there are some attributes that are significant for the body entity.
       --  For example, collection of exception handlers.
 
-      E_Protected_Object,
-      --  A protected object, created by an object declaration that declares
-      --  an object of a protected type.
-
       E_Protected_Body,
       --  A protected body. This entity serves almost no function, since all
       --  semantic analysis uses the protected entity (E_Protected_Type).
