@@ -30,6 +30,11 @@ import unittest
 
 from mklog import generate_changelog
 
+import unidiff
+
+unidiff_supports_renaming = hasattr(unidiff.PatchedFile(), 'is_rename')
+
+
 PATCH1 = '''\
 diff --git a/gcc/config/riscv/riscv.h b/gcc/config/riscv/riscv.h
 index 567c23380fe..e6209ede9d6 100644
@@ -379,6 +384,21 @@ gcc/testsuite/ChangeLog:
 
 '''
 
+PATCH8 = '''\
+diff --git a/gcc/ipa-icf.c b/gcc/ipa-icf2.c
+similarity index 100%
+rename from gcc/ipa-icf.c
+rename to gcc/ipa-icf2.c
+'''
+
+EXPECTED8 = '''\
+gcc/ChangeLog:
+
+	* ipa-icf.c: Moved to...
+	* ipa-icf2.c: ...here.
+
+'''
+
 class TestMklog(unittest.TestCase):
     def test_macro_definition(self):
         changelog = generate_changelog(PATCH1)
@@ -411,3 +431,9 @@ class TestMklog(unittest.TestCase):
     def test_dr_detection_in_test_case(self):
         changelog = generate_changelog(PATCH7)
         assert changelog == EXPECTED7
+
+    @unittest.skipIf(not unidiff_supports_renaming,
+                     'Newer version of unidiff is needed (0.6.0+)')
+    def test_renaming(self):
+        changelog = generate_changelog(PATCH8)
+        assert changelog == EXPECTED8
