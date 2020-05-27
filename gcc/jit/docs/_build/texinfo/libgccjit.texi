@@ -12,7 +12,7 @@
 @finalout
 @dircategory Miscellaneous
 @direntry
-* libgccjit: (libgccjit.info). One line description of project.
+* libgccjit: (libgccjit.info). GCC-based Just In Time compiler library.
 @end direntry
 
 @definfoenclose strong,`,'
@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-libgccjit 11.0.0 (experimental 20200526), May 26, 2020
+libgccjit 11.0.0 (experimental 20200527), May 27, 2020
 
 David Malcolm
 
