@@ -871,7 +871,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     template<typename _Tp>
       _GLIBCXX_ALWAYS_INLINE _Tp
-      load(_Tp* __ptr, memory_order __m) noexcept
+      load(const volatile _Tp* __ptr, memory_order __m) noexcept
       {
 	alignas(_Tp) unsigned char __buf[sizeof(_Tp)];
 	_Tp* __dest = reinterpret_cast<_Tp*>(__buf);
