@@ -9,7 +9,7 @@
 				  (match_operand 1 "const_int_operand" "n,n,n"))
 		 (const_int 0)))
    (clobber (match_scratch:QI 2 "=X,X,&r"))]
-  ""
+  "!CONSTANT_P (operands[0])"
   "@
    btst\\t%Z1,%Y0
    btst\\t%Z1,%Y0
@@ -82,7 +82,7 @@
 					  (const_int 7)))
 		 (const_int 0)))
    (clobber (match_scratch:QI 2 "=X,X,&r"))]
-  ""
+  "!CONSTANT_P (operands[0])"
   "@
    btst\\t%w1,%X0
    btst\\t%w1,%X0
