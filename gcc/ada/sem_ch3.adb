@@ -19977,7 +19977,6 @@ package body Sem_Ch3 is
          end if;
 
          Set_Etype (Defining_Identifier (Discr), Discr_Type);
-         Set_Ekind (Defining_Identifier (Discr), E_Discriminant);
 
          --  If a discriminant specification includes the assignment compound
          --  delimiter followed by an expression, the expression is the default
@@ -20131,10 +20130,13 @@ package body Sem_Ch3 is
 
          --  A discriminant cannot be effectively volatile (SPARK RM 7.1.3(4)).
          --  This check is relevant only when SPARK_Mode is on as it is not a
-         --  standard Ada legality rule.
+         --  standard Ada legality rule. The only way for a discriminant to be
+         --  effectively volatile is to have an effectively volatile type, so
+         --  we check this directly, because the Ekind of Discr might not be
+         --  set yet (to help preventing cascaded errors on derived types).
 
          if SPARK_Mode = On
-           and then Is_Effectively_Volatile (Defining_Identifier (Discr))
+           and then Is_Effectively_Volatile (Discr_Type)
          then
             Error_Msg_N ("discriminant cannot be volatile", Discr);
          end if;
@@ -20176,6 +20178,7 @@ package body Sem_Ch3 is
       Discr_Number := Uint_1;
       while Present (Discr) loop
          Id := Defining_Identifier (Discr);
+         Set_Ekind (Id, E_Discriminant);
          Init_Component_Location (Id);
          Init_Esize (Id);
          Set_Discriminant_Number (Id, Discr_Number);
