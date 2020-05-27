@@ -2915,7 +2915,12 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
   /* If this node can't be vectorized, try pruning the tree here rather
      than felling the whole thing.  */
   if (!res && vect_slp_convert_to_external (vinfo, node, node_instance))
-    res = true;
+    {
+      /* We'll need to revisit this for invariant costing and number
+	 of vectorized stmt setting.   */
+      lvisited.remove (node);
+      res = true;
+    }
 
   return res;
 }
