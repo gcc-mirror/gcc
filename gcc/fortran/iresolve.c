@@ -47,7 +47,8 @@ along with GCC; see the file COPYING3.  If not see
 const char *
 gfc_get_string (const char *format, ...)
 {
-  char temp_name[128];
+  /* Provide sufficient space to hold "_F.caf_token__symbol_MOD_symbol".  */
+  char temp_name[14 + GFC_MAX_SYMBOL_LEN + 5 + GFC_MAX_SYMBOL_LEN + 1];
   const char *str;
   va_list ap;
   tree ident;
