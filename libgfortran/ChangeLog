@@ -1,3 +1,15 @@
+2020-05-26  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl   <kargl@gcc.gnu.org>
+
+	PR libfortran/95104
+	* io/transfer.c (st_wait_async): Do not dereference NULL pointer.
+
+2020-05-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95195
+	* io/transfer.c (finalize_transfer): Generate runtime error for
+	namelist input/output to unformatted file.
+
 2020-05-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/95191

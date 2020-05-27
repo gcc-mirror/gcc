@@ -1,3 +1,154 @@
+2020-05-27  Jeff Law  <law@redhat.com>
+
+	* config/h8300/testcompare.md (tst_extzv_1_n): Do not accept constants
+	for the primary input operand.
+	(tstsi_variable_bit_qi): Similarly.
+
+2020-05-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (mmx_pswapdv2si2): Add SSE2 alternative.
+
+2020-05-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR ipa/95320
+	* ipa-utils.h (odr_type_p): Also permit calls with
+	only flag_generate_offload set.
+
+2020-05-26  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.c (validate_switches): Add braced parameter.  Adjust all
+	callers.  Expected and skip trailing brace only if braced.
+	Return after handling one atom otherwise.
+	(DUMPS_OPTIONS): New.
+	(cpp_debug_options): Define in terms of it.
+
+2020-05-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95327
+	* tree-vect-stmts.c (vectorizable_shift): Compute op1_vectype
+	when we are not using a scalar shift.
+
+2020-05-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (*mmx_pshufd_1): New insn pattern.
+	* config/i386/i386-expand.c (ix86_vectorize_vec_perm_const):
+	Handle E_V2SImode and E_V4HImode.
+	(expand_vec_perm_even_odd_1): Handle E_V4HImode.
+	Assert that E_V2SImode is already handled.
+	(expand_vec_perm_broadcast_1): Assert that E_V2SImode
+	is already handled by standard shuffle patterns.
+
+2020-05-26  Jan Hubicka  <jh@suse.cz>
+
+	* tree.c (free_lang_data_in_type): Simpify types of TYPE_VALUES in
+	enumeral types.
+
+2020-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/95197
+	* gimplify.c (find_combined_omp_for): Move to omp-general.c.
+	* omp-general.h (find_combined_omp_for): Declare.
+	* omp-general.c: Include tree-iterator.h.
+	(find_combined_omp_for): New function, moved from gimplify.c.
+
+2020-05-26  Alexandre Oliva  <oliva@adacore.com>
+
+	* common.opt (aux_base_name): Define.
+	(dumpbase, dumpdir): Mark as Driver options.
+	(-dumpbase, -dumpdir): Likewise.
+	(dumpbase-ext, -dumpbase-ext): New.
+	(auxbase, auxbase-strip): Drop.
+	* doc/invoke.texi (-dumpbase, -dumpbase-ext, -dumpdir):
+	Document.
+	(-o): Introduce the notion of primary output, mention it
+	influences auxiliary and dump output names as well, add
+	examples.
+	(-save-temps): Adjust, move examples into -dump*.
+	(-save-temps=cwd, -save-temps=obj): Likewise.
+	(-fdump-final-insns): Adjust.
+	* dwarf2out.c (gen_producer_string): Drop auxbase and
+	auxbase_strip; add dumpbase_ext.
+	* gcc.c (enum save_temps): Add SAVE_TEMPS_DUMP.
+	(save_temps_prefix, save_temps_length): Drop.
+	(save_temps_overrides_dumpdir): New.
+	(dumpdir, dumpbase, dumpbase_ext): New.
+	(dumpdir_length, dumpdir_trailing_dash_added): New.
+	(outbase, outbase_length): New.
+	(The Specs Language): Introduce %".  Adjust %b and %B.
+	(ASM_FINAL_SPEC): Use %b.dwo for an aux output name always.
+	Precede object file with %w when it's the primary output.
+	(cpp_debug_options): Do not pass on incoming -dumpdir,
+	-dumpbase and -dumpbase-ext options; recompute them with
+	%:dumps.
+	(cc1_options): Drop auxbase with and without compare-debug;
+	use cpp_debug_options instead of dumpbase.  Mark asm output
+	with %w when it's the primary output.
+	(static_spec_functions): Drop %:compare-debug-auxbase-opt and
+	%:replace-exception.  Add %:dumps.
+	(driver_handle_option): Implement -save-temps=*/-dumpdir
+	mutual overriding logic.  Save dumpdir, dumpbase and
+	dumpbase-ext options.  Do not save output_file in
+	save_temps_prefix.
+	(adds_single_suffix_p): New.
+	(single_input_file_index): New.
+	(process_command): Combine output dir, output base name, and
+	dumpbase into dumpdir and outbase.
+	(set_collect_gcc_options): Pass a possibly-adjusted -dumpdir.
+	(do_spec_1): Optionally dumpdir instead of save_temps_prefix,
+	and outbase instead of input_basename in %b, %B and in
+	-save-temps aux files.  Handle empty argument %".
+	(driver::maybe_run_linker): Adjust dumpdir and auxbase.
+	(compare_debug_dump_opt_spec_function): Adjust gkd dump file
+	naming.  Spec-quote the computed -fdump-final-insns file name.
+	(debug_auxbase_opt): Drop.
+	(compare_debug_self_opt_spec_function): Drop auxbase-strip
+	computation.
+	(compare_debug_auxbase_opt_spec_function): Drop.
+	(not_actual_file_p): New.
+	(replace_extension_spec_func): Drop.
+	(dumps_spec_func): New.
+	(convert_white_space): Split-out parts into...
+	(quote_string, whitespace_to_convert_p): ... these.  New.
+	(quote_spec_char_p, quote_spec, quote_spec_arg): New.
+	(driver::finalize): Release and reset new variables; drop
+	removed ones.
+	* lto-wrapper.c (HAVE_TARGET_EXECUTABLE_SUFFIX): Define if...
+	(TARGET_EXECUTABLE_SUFFIX): ... is defined; define this to the
+	empty string otherwise.
+	(DUMPBASE_SUFFIX): Drop leading period.
+	(debug_objcopy): Use concat.
+	(run_gcc): Recognize -save-temps=* as -save-temps too.  Obey
+	-dumpdir.  Pass on empty dumpdir and dumpbase with a directory
+	component.  Simplify temp file names.
+	* opts.c (finish_options): Drop aux base name handling.
+	(common_handle_option): Drop auxbase-strip handling.
+	* toplev.c (print_switch_values): Drop auxbase, add
+	dumpbase-ext.
+	(process_options): Derive aux_base_name from dump_base_name
+	and dump_base_ext.
+	(lang_dependent_init): Compute dump_base_ext along with
+	dump_base_name.  Disable stack usage and callgraph-info	during
+	lto generation and compare-debug recompilation.
+
+2020-05-26  Hongtao Liu  <hongtao.liu@intel.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95211
+	PR target/95256
+	* config/i386/sse.md (<floatunssuffix>v2div2sf2): New expander.
+	(fix<fixunssuffix>_truncv2sfv2di2): Ditto.
+	(avx512dq_float<floatunssuffix>v2div2sf2): Renaming from
+	float<floatunssuffix>v2div2sf2.
+	(avx512dq_fix<fixunssuffix>_truncv2sfv2di2<mask_name>):
+	Renaming from fix<fixunssuffix>_truncv2sfv2di2<mask_name>.
+	(vec_pack<floatprefix>_float_<mode>): Adjust icode name.
+	(vec_unpack_<fixprefix>fix_trunc_lo_<mode>): Ditto.
+	(vec_unpack_<fixprefix>fix_trunc_hi_<mode>): Ditto.
+	* config/i386/i386-builtin.def: Ditto.
+	* emit-rtl.c (validate_subreg): Allow use of *paradoxical* vector
+	subregs when both omode and imode are vector mode and
+	have the same inner mode.
+
 2020-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-ssa-store-merging.c (merged_store_group::can_be_merged_into):

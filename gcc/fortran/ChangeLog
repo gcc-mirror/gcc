@@ -1,3 +1,14 @@
+2020-05-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95089
+	* trans-types.c (gfc_get_derived_type): Enlarge temporary to hold
+	mangled name "_caf_symbol".
+
+2020-05-26  Alexandre Oliva  <oliva@adacore.com>
+
+	* options.c (gfc_get_option_string): Drop auxbase, add
+	dumpbase_ext.
+
 2020-05-24  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95106

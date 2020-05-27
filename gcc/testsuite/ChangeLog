@@ -1,3 +1,71 @@
+2020-05-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/95306
+	* jit.dg/all-non-failing-tests.h: Add test-builtin-memcpy.c and
+	test-pr95306-builtin-types.c.
+	* jit.dg/test-builtin-memcpy.c: New test.
+	* jit.dg/test-error-gcc_jit_context_get_builtin_function-unimplemented-type.c:
+	New test.
+	* jit.dg/test-pr95306-builtin-types.c: New test.
+
+2020-05-26  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl   <kargl@gcc.gnu.org>
+
+	PR libfortran/95104
+	* gfortran.dg/pr95104.f90: New test.
+
+2020-05-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95195
+	* gfortran.dg/namelist_97.f90: New test.
+
+2020-05-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95089
+	* gfortran.dg/pr95089.f90: New test.
+
+2020-05-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/95296
+	* jit.dg/test-error-gcc_jit_context_new_global-void-type.c: New
+	test.
+	* jit.dg/test-error-gcc_jit_function_new_local-void-type.c: New
+	test.
+	* jit.dg/test-fuzzer.c (fuzzer_init): Allow for make_random_type
+	to return NULL.
+	(get_random_type): Allow for elements in f->types to be NULL.
+
+2020-05-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/vperm-v2si.c: New test.
+	* gcc.target/i386/vperm-v4hi.c: Ditto.
+
+2020-05-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/torture/co-ret-17-void-ret-coro.C: Check for
+	promise destruction via a global variable.
+
+2020-05-26  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.misc-tests/outputs.exp: New.
+	* gcc.misc-tests/outputs-0.c: New.
+	* gcc.misc-tests/outputs-1.c: New.
+	* gcc.misc-tests/outputs-2.c: New.
+	* lib/gcc-defs.exp (gcc_adjusted_linker_flags): New.
+	(gcc_adjust_linker_flags): New.
+	(dg-additional-files-options): Call it.  Pass -dumpbase ""
+	when there are additional sources.
+	* lib/profopt.exp (profopt-execute): Pass the executable
+	suffix with -dumpbase-ext.
+	* lib/scandump.exp (dump-base): Mention -dumpbase "" use.
+	* lib/scanltranstree.exp: Adjust dump suffix expectation.
+	* lib/scanwpaipa.exp: Likewise.
+
+2020-05-26  Hongtao Liu  <hongtao.liu@intel.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr95211.c: New test.
+
 2020-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt84.adb: New test.

@@ -1,3 +1,45 @@
+2020-05-26  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc-changelog/git_commit.py (ChangeLogEntry): Handle entries
+	with multi-line file lists.
+	* gcc-changelog/test_email.py: New testcase.
+	* gcc-changelog/test_patches.txt: Likewise.
+
+2020-05-26  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc-changelog/git_update_version.py: Close file objects after
+	use.
+	* gcc-changelog/git_email.py: Likewise.
+	* gcc-changelog/test_email.py: Likewise.
+
+2020-05-26  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Add 2 new options.
+
+2020-05-26  Alexandre Oliva  <oliva@gnu.org>
+
+	* gcc-changelog/git_commit.py (changelog_regex): Accept optional
+	'for' prefix.
+
+2020-05-26  Alexandre Oliva  <oliva@adacore.com>
+
+	* compare-debug: Adjust for .gkd files named as dump files,
+	with the source suffix rather than the object suffix.
+
+2020-05-26  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Parse changelog entries for
+	ignored locations.
+	* gcc-changelog/test_email.py: Add new test for it.
+	* gcc-changelog/test_patches.txt: Likewise.
+
+2020-05-26  Jason Merrill  <jason@redhat.com>
+
+	* prepare-commit-msg: New file.
+	* gcc-git-customization.sh: Install it.  Add commit-mklog alias.
+	* mklog.py: Add new option -c which appends
+	to a ChangeLog file.
+
 2020-05-25  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Add trailing '/'

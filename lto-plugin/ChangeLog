@@ -1,3 +1,11 @@
+2020-05-26  Alexandre Oliva  <oliva@adacore.com>
+
+	* lto-plugin.c (skip_in_suffix): New.
+	(exec_lto_wrapper): Use skip_in_suffix and concat to build
+	non-temporary output names.
+	(onload): Look for -dumpdir in COLLECT_GCC_OPTIONS, and
+	override link_output_name with it.
+
 2020-05-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/94998

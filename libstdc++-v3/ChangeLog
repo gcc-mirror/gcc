@@ -1,3 +1,13 @@
+2020-05-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/95322
+	* include/bits/stl_iterator.h (__detail::_Common_iter_proxy):
+	Remove and instead define it ...
+	(common_iterator::_Proxy): ... here.
+	(common_iterator::operator->): Use it.
+	* testsuite/24_iterators/common_iterator/2.cc: New test.
+	* testsuite/std/ranges/adaptors/95322.cc: New test.
+
 2020-05-23  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/93978
