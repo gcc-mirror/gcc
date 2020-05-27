@@ -1,3 +1,55 @@
+2020-05-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/95306
+	* docs/topics/functions.rst
+	(gcc_jit_context_get_builtin_function): Document.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* dummy-frontend.c (jit_langhook_global_bindings_p): Remove
+	gcc_unreachable.
+	* jit-builtins.c (type_names): New array.
+	(get_string_for_type_id): New function.
+	(gcc::jit::builtins_manager::make_primitive_type): Show name of
+	type in error messages.  Update cases to reflect the order in
+	builtin-types.def.  Implement cases for BT_INT8, BT_INT16,
+	BT_UINT8, BT_CONST_PTR, BT_VOLATILE_PTR, BT_INT_PTR, BT_FLOAT_PTR,
+	BT_CONST_DOUBLE_PTR, BT_SIZE, BT_CONST_SIZE.
+
+2020-05-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/topics/compatibility.rst: Fix underline.
+	Fix missing labels.
+	* docs/topics/types.rst: Fix missing blank line.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2020-05-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/95296
+	* docs/topics/expressions.rst (Unary Operations): Document that
+	result_type of gcc_jit_context_new_unary_op must be a numeric type.
+	(Binary Operations): Likewise for gcc_jit_context_new_binary_op.
+	(Global variables): Document that "type" of
+	gcc_jit_context_new_global must be non-`void`.
+	* docs/topics/function-pointers.rst
+	(gcc_jit_context_new_function_ptr_type): Document that the
+	param_types must be non-void, but that return_type may be.
+	* docs/topics/functions.rst (Params): Document that
+	gcc_jit_context_new_param's type must be non-void.
+	(Functions): Likewise for gcc_jit_function_new_local.
+	* docs/topics/types.rst (gcc_jit_context_new_array_type): Document
+	that the type must be non-void.
+	(gcc_jit_context_new_field): Likewise.
+	* docs/_build/texinfo/Makefile: Regenerate.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* libgccjit.c (gcc_jit_context_new_array_type): Fail if
+	element_type is void.
+	(gcc_jit_context_new_field): Likewise for "type".
+	(gcc_jit_context_new_function_ptr_type): Likewise for each
+	element of param_types.
+	(gcc_jit_context_new_param): Likewise for "type".
+	(gcc_jit_context_new_global): Likewise.
+	(gcc_jit_function_new_local): Likewise.
+	(gcc_jit_type_get_aligned): Likewise.
+
 2020-03-31  Andrea Corallo  <andrea.corallo@arm.com>
 	    David Malcolm  <dmalcolm@redhat.com>
 
