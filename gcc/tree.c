@@ -10350,6 +10350,8 @@ build_common_tree_nodes (bool signed_char)
   uint16_type_node = make_or_reuse_type (16, 1);
   uint32_type_node = make_or_reuse_type (32, 1);
   uint64_type_node = make_or_reuse_type (64, 1);
+  if (targetm.scalar_mode_supported_p (TImode))
+    uint128_type_node = make_or_reuse_type (128, 1);
 
   /* Decimal float types. */
   if (targetm.decimal_float_supported_p ())

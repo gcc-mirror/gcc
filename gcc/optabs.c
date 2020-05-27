@@ -2889,8 +2889,11 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
 	  if (temp)
 	    return temp;
 
+	  /* We do not provide a 128-bit bswap in libgcc so force the use of
+	     a double bswap for 64-bit targets.  */
 	  if (GET_MODE_SIZE (int_mode) == 2 * UNITS_PER_WORD
-	      && optab_handler (unoptab, word_mode) != CODE_FOR_nothing)
+	      && (UNITS_PER_WORD == 64
+		  || optab_handler (unoptab, word_mode) != CODE_FOR_nothing))
 	    {
 	      temp = expand_doubleword_bswap (mode, op0, target);
 	      if (temp)

@@ -13784,13 +13784,19 @@ exactly 8 bits.
 
 @deftypefn {Built-in Function} uint32_t __builtin_bswap32 (uint32_t x)
 Similar to @code{__builtin_bswap16}, except the argument and return types
-are 32 bit.
+are 32-bit.
 @end deftypefn
 
 @deftypefn {Built-in Function} uint64_t __builtin_bswap64 (uint64_t x)
 Similar to @code{__builtin_bswap32}, except the argument and return types
-are 64 bit.
+are 64-bit.
 @end deftypefn
+
+@deftypefn {Built-in Function} uint128_t __builtin_bswap128 (uint128_t x)
+Similar to @code{__builtin_bswap64}, except the argument and return types
+are 128-bit.  Only supported on targets when 128-bit types are supported.
+@end deftypefn
+
 
 @deftypefn {Built-in Function} Pmode __builtin_extend_pointer (void * x)
 On targets where the user visible pointer size is smaller than the size
