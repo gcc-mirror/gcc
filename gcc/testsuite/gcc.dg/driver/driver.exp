@@ -1,0 +1,77 @@
+#   Copyright (C) 2008-2020 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Load support procs.
+load_lib gcc-dg.exp
+
+proc check-for-errors { test input } {
+    if { [string equal "$input" ""] } then {
+	pass "$test: std out"
+    } else {
+	fail "$test: std out\n$input"
+    }
+}
+
+if ![check_effective_target_pthread] {
+  return
+}
+
+# If a testcase doesn't have special options, use these.
+global DEFAULT_CFLAGS
+if ![info exists DEFAULT_CFLAGS] then {
+    set DEFAULT_CFLAGS " -ansi -pedantic-errors"
+}
+
+# Initialize `dg'.
+dg-init
+
+
+# Test multi-input compilation
+check-for-errors "Multi-input Compilation" \
+	[gcc_target_compile "$srcdir/$subdir/a.c $srcdir/$subdir/b.c -c" "" none ""]
+
+# Compile file and generate an assembler and object file
+check-for-errors "Object Generation" \
+	[gcc_target_compile "$srcdir/$subdir/a.c -c" "a.o" none ""]
+check-for-errors "Object Generation" \
+	[gcc_target_compile "$srcdir/$subdir/b.c -c" "a.o" none ""]
+check-for-errors "Asembler Generation" \
+	[gcc_target_compile "$srcdir/$subdir/a.c -S" "a.S" none ""]
+check-for-errors "Asembler Generation" \
+	[gcc_target_compile "$srcdir/$subdir/b.c -S" "b.S" none ""]
+
+# Test object file passthrough
+check-for-errors "Object file passthrough" \
+	[gcc_target_compile "$srcdir/$subdir/foo.c a.o" "a.exe" none ""]
+
+
+# Test compilation when assembler is provided
+check-for-errors "Assembler with Macros" \
+	[gcc_target_compile "a.S -c" "a.o" none ""]
+
+# Clean temporary generated files.
+set temp_files {"a.o" "a.S" "b.o" "b.S"}
+
+foreach f $temp_files {
+	if { [file exists $f] } {
+		file delete $f
+	}
+}
+
+# All done.
+dg-finish
