@@ -1378,9 +1378,7 @@ package body Exp_Ch4 is
       --  except that we avoid this for targets for which are not addressable
       --  by bytes.
 
-      if not Is_Bit_Packed_Array (Typ1)
-        and then Byte_Addressable
-      then
+      if not Is_Bit_Packed_Array (Typ1) and then Byte_Addressable then
          --  The call we generate is:
 
          --  Compare_Array_xn[_Unaligned]
@@ -3008,23 +3006,23 @@ package body Exp_Ch4 is
 
       --  For modular types, we use a 32-bit modular type for types whose size
       --  is in the range 1-31 bits. For 32-bit unsigned types, we use the
-      --  identity type, and for larger unsigned types we use 64-bits.
+      --  identity type, and for larger unsigned types we use a 64-bit type.
 
       elsif Is_Modular_Integer_Type (Ityp) then
-         if RM_Size (Ityp) < RM_Size (Standard_Unsigned) then
+         if RM_Size (Ityp) < Standard_Integer_Size then
             Artyp := Standard_Unsigned;
-         elsif RM_Size (Ityp) = RM_Size (Standard_Unsigned) then
+         elsif RM_Size (Ityp) = Standard_Integer_Size then
             Artyp := Ityp;
          else
-            Artyp := RTE (RE_Long_Long_Unsigned);
+            Artyp := Standard_Long_Long_Unsigned;
          end if;
 
       --  Similar treatment for signed types
 
       else
-         if RM_Size (Ityp) < RM_Size (Standard_Integer) then
+         if RM_Size (Ityp) < Standard_Integer_Size then
             Artyp := Standard_Integer;
-         elsif RM_Size (Ityp) = RM_Size (Standard_Integer) then
+         elsif RM_Size (Ityp) = Standard_Integer_Size then
             Artyp := Ityp;
          else
             Artyp := Standard_Long_Long_Integer;
@@ -4167,7 +4165,7 @@ package body Exp_Ch4 is
             --  errors on large legal literals of the type.
 
             if Modulus (Etype (N)) > UI_From_Int (Int (Integer'Last)) then
-               Target_Type := Standard_Long_Integer;
+               Target_Type := Standard_Long_Long_Integer;
             else
                Target_Type := Standard_Integer;
             end if;
@@ -8747,7 +8745,7 @@ package body Exp_Ch4 is
         --  We only handle cases where the right type is a integer
 
         and then Is_Integer_Type (Root_Type (Exptyp))
-        and then Esize (Root_Type (Exptyp)) <= Esize (Standard_Integer)
+        and then Esize (Root_Type (Exptyp)) <= Standard_Integer_Size
 
         --  This transformation is not applicable for a modular type with a
         --  nonbinary modulus because we do not handle modular reduction in
@@ -11394,7 +11392,7 @@ package body Exp_Ch4 is
          --  integer type large enough to hold the result.
 
          if Is_Fixed_Point_Type (Etype (Expr)) then
-            if Esize (Base_Type (Etype (Expr))) > Esize (Standard_Integer) then
+            if Esize (Base_Type (Etype (Expr))) > Standard_Integer_Size then
                Ityp := Standard_Long_Long_Integer;
             else
                Ityp := Standard_Integer;
@@ -13910,8 +13908,9 @@ package body Exp_Ch4 is
       Compar : constant Boolean   := Kind in N_Op_Compare or else In_Rng;
       R      : constant Node_Id   := Right_Opnd (N);
       Typ    : constant Entity_Id := Etype (R);
+      Tsiz   : constant Uint      := RM_Size (Typ);
 
-      function Get_Size_For_Range (Lo, Hi : Uint) return Nat;
+      function Get_Size_For_Range (Lo, Hi : Uint) return Uint;
       --  Return the size of a small signed integer type covering Lo .. Hi.
       --  The important thing is to return a size lower than that of Typ.
 
@@ -13919,16 +13918,16 @@ package body Exp_Ch4 is
       -- Get_Size_For_Range --
       ------------------------
 
-      function Get_Size_For_Range (Lo, Hi : Uint) return Nat is
+      function Get_Size_For_Range (Lo, Hi : Uint) return Uint is
 
-         function Is_OK_For_Range (Siz : Nat) return Boolean;
+         function Is_OK_For_Range (Siz : Uint) return Boolean;
          --  Return True if a signed integer with given size can cover Lo .. Hi
 
          --------------------------
          -- Is_OK_For_Range --
          --------------------------
 
-         function Is_OK_For_Range (Siz : Nat) return Boolean is
+         function Is_OK_For_Range (Siz : Uint) return Boolean is
             B : constant Uint := Uint_2 ** (Siz - 1);
 
          begin
@@ -13940,21 +13939,21 @@ package body Exp_Ch4 is
       begin
          --  This is (almost always) the size of Integer
 
-         if Is_OK_For_Range (32) then
-            return 32;
+         if Is_OK_For_Range (Uint_32) then
+            return Uint_32;
 
          --  If the size of Typ is 64 then check 63
 
-         elsif RM_Size (Typ) = 64 and then Is_OK_For_Range (63) then
-            return 63;
+         elsif Tsiz = Uint_64 and then Is_OK_For_Range (Uint_63) then
+            return Uint_63;
 
          --  This is (almost always) the size of Long_Long_Integer
 
-         elsif Is_OK_For_Range (64) then
-            return 64;
+         elsif Is_OK_For_Range (Uint_64) then
+            return Uint_64;
 
          else
-            return 128;
+            return Uint_128;
          end if;
       end Get_Size_For_Range;
 
@@ -13963,9 +13962,9 @@ package body Exp_Ch4 is
       L          : Node_Id;
       Llo, Lhi   : Uint;
       Rlo, Rhi   : Uint;
-      Lsiz, Rsiz : Nat;
+      Lsiz, Rsiz : Uint;
       Nlo, Nhi   : Uint;
-      Nsiz       : Nat;
+      Nsiz       : Uint;
       Ntyp       : Entity_Id;
       Nop        : Node_Id;
       OK         : Boolean;
@@ -14022,7 +14021,7 @@ package body Exp_Ch4 is
       if Binary then
          Lsiz := Get_Size_For_Range (Llo, Lhi);
       else
-         Lsiz := 0;
+         Lsiz := Uint_0;
       end if;
 
       Rsiz := Get_Size_For_Range (Rlo, Rhi);
@@ -14032,7 +14031,7 @@ package body Exp_Ch4 is
       if Compar then
          --  The type must be able to accommodate the operands
 
-         Nsiz := Nat'Max (Lsiz, Rsiz);
+         Nsiz := UI_Max (Lsiz, Rsiz);
 
       else
          --  The type must be able to accommodate the operand(s) and result.
@@ -14050,15 +14049,15 @@ package body Exp_Ch4 is
          --  here, we cannot be sure that the operation does not overflow.
 
          Nsiz := Get_Size_For_Range (Nlo, Nhi);
-         Nsiz := Nat'Max (Nsiz, Lsiz);
-         Nsiz := Nat'Max (Nsiz, Rsiz);
+         Nsiz := UI_Max (Nsiz, Lsiz);
+         Nsiz := UI_Max (Nsiz, Rsiz);
       end if;
 
       --  If the size is not lower than the size of the original type, then
       --  there is no point in changing the type, except in the case where
       --  we can remove a conversion to the original type from an operand.
 
-      if Nsiz >= RM_Size (Typ)
+      if Nsiz >= Tsiz
         and then not (Binary
                        and then Nkind (L) = N_Type_Conversion
                        and then Entity (Subtype_Mark (L)) = Typ)
@@ -14072,10 +14071,10 @@ package body Exp_Ch4 is
       --  type instead of the first subtype because operations are done in
       --  the base type, so this avoids the need for useless conversions.
 
-      if Nsiz <= RM_Size (Standard_Integer) then
+      if Nsiz <= Standard_Integer_Size then
          Ntyp := Etype (Standard_Integer);
 
-      elsif Nsiz <= RM_Size (Standard_Long_Long_Integer) then
+      elsif Nsiz <= Standard_Long_Long_Integer_Size then
          Ntyp := Etype (Standard_Long_Long_Integer);
 
       else
@@ -14112,7 +14111,7 @@ package body Exp_Ch4 is
          --  Analyze it with the narrower type and checks suppressed, but only
          --  when we are sure that the operation does not overflow, see above.
 
-         if Nsiz < RM_Size (Typ) then
+         if Nsiz < Tsiz then
             Analyze_And_Resolve (N, Ntyp, Suppress => Overflow_Check);
          else
             Analyze_And_Resolve (N, Ntyp);
