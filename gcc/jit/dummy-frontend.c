@@ -230,7 +230,6 @@ jit_langhook_builtin_function (tree decl)
 static bool
 jit_langhook_global_bindings_p (void)
 {
-  gcc_unreachable ();
   return true;
 }
 
@@ -269,6 +268,9 @@ jit_langhook_getdecls (void)
 
 #undef LANG_HOOKS_GETDECLS
 #define LANG_HOOKS_GETDECLS		jit_langhook_getdecls
+
+#undef  LANG_HOOKS_DEEP_UNSHARING
+#define LANG_HOOKS_DEEP_UNSHARING	true
 
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 

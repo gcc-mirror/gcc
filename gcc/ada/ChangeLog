@@ -1,3 +1,23 @@
+2020-05-26  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	PR ada/95333
+	* gcc-interface/decl.c (gnat_to_gnu_param): Never make a variant of
+	the type.
+
+2020-05-26  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc-interface/lang-specs.h (ADA_DUMPS_OPTIONS): Define in
+	terms of DUMPS_OPTIONS.  Replace occurrences of %{d*} %:dumps
+	with it.
+
+2020-05-26  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc-interface/lang-specs.h: Drop auxbase and auxbase-strip.
+	Use %:dumps instead of -dumpbase.  Add %w for implicit .s
+	primary output.
+	* switch.adb (Is_Internal_GCC_Switch): Recognize dumpdir and
+	dumpbase-ext.  Drop auxbase and auxbase-strip.
+
 2020-05-25  Yannick Moy  <moy@adacore.com>
 
 	* sem_util.adb (Check_No_Hidden_State): Stop propagation at

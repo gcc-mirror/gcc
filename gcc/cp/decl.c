@@ -6029,8 +6029,10 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
 
   /* The initializer for an array is always a CONSTRUCTOR.  If this is the
      outermost CONSTRUCTOR and the element type is non-aggregate, we don't need
-     to build a new one.  */
+     to build a new one.  But don't reuse if not complaining; if this is
+     tentative, we might also reshape to another type (95319).  */
   bool reuse = (first_initializer_p
+		&& (complain & tf_error)
 		&& !CP_AGGREGATE_TYPE_P (elt_type)
 		&& !TREE_SIDE_EFFECTS (first_initializer_p));
   if (reuse)
@@ -11951,7 +11953,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  if (declarator->kind == cdk_array)
 	    attr_flags |= (int) ATTR_FLAG_ARRAY_NEXT;
 	  tree late_attrs = NULL_TREE;
-	  if (decl_context != PARM)
+	  if (decl_context != PARM && decl_context != TYPENAME)
 	    /* Assume that any attributes that get applied late to
 	       templates will DTRT when applied to the declaration
 	       as a whole.  */
