@@ -1,3 +1,8 @@
+2020-05-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/95191
+	* testsuite/libgomp.fortran/async_io_9.f90: New test.
+
 2020-05-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/95119

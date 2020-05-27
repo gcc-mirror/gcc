@@ -1,3 +1,10 @@
+2020-05-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/95191
+	* io/async.c (async_wait_id): Generate error if ID is higher
+	than the highest current ID.
+	* runtime/error.c (translate_error): Handle LIBERROR_BAD_WAIT_ID.
+
 2020-05-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/95119
