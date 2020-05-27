@@ -1550,7 +1550,7 @@ package Snames is
    Name_Reference_Control_Type           : constant Name_Id := N + $;
    Name_Get_Element_Access               : constant Name_Id := N + $;
 
-   --  Names for Ada2020 Aggregate aspect. Nmme_Aggregate is already
+   --  Names for Ada 202x Aggregate aspect. Name_Aggregate is already
    --  present for gprbuild.
 
    Name_Empty                            : constant Name_Id := N + $;

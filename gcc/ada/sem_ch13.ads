@@ -135,9 +135,9 @@ package Sem_Ch13 is
       Add_Unnamed_Subp    : in out Node_Id;
       New_Indexed_Subp    : in out Node_Id;
       Assign_Indexed_Subp : in out Node_Id);
-   --  Utility to unpack the subprogramz in an occurrence of asoect Aggregate,
-   --  used to verify the structure of the asoect, and resolve and expand an
-   --  aggregate for a container type that carries the asoect.
+   --  Utility to unpack the subprograms in an occurrence of aspect Aggregate;
+   --  used to verify the structure of the aspect, and resolve and expand an
+   --  aggregate for a container type that carries the aspect.
 
    function Rep_Item_Too_Early (T : Entity_Id; N : Node_Id) return Boolean;
    --  Called at start of processing a representation clause/pragma. Used to

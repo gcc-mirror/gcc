@@ -73,7 +73,7 @@ package body Exp_SPARK is
    --  Rewrite operator /= based on operator = when defined explicitly
 
    procedure Expand_SPARK_Delta_Or_Update (Typ : Entity_Id; Aggr : Node_Id);
-   --  Common expansion of attribute Update and delta_aggregate
+   --  Common expansion for attribute Update and delta aggregates
 
    ------------------
    -- Expand_SPARK --
@@ -168,7 +168,7 @@ package body Exp_SPARK is
 
       if Is_Array_Type (Typ) then
 
-         --  Multi-dimensional array
+         --  Multidimensional arrays
 
          if Present (Next_Index (First_Index (Typ))) then
             Assoc := First (Component_Associations (Aggr));
@@ -206,7 +206,7 @@ package body Exp_SPARK is
                Next (Assoc);
             end loop;
 
-         --  One-dimensional array
+         --  One-dimensional arrays
 
          else
             Assoc := First (Component_Associations (Aggr));
@@ -231,7 +231,7 @@ package body Exp_SPARK is
                      Apply_Scalar_Range_Check
                        (High_Bound (Index), Etype (Index_Typ));
 
-                     --  Otherwise the index denotes a single element
+                  --  Otherwise the index denotes a single element
 
                   else
                      Apply_Scalar_Range_Check (Index, Etype (Index_Typ));
@@ -246,13 +246,13 @@ package body Exp_SPARK is
 
       else pragma Assert (Is_Record_Type (Typ));
 
-         --  If the aggregate has multiple component choices, e.g.
+         --  If the aggregate has multiple component choices, e.g.:
          --
          --    X'Update (A | B | C => 123)
          --
-         --  then each component might be of a different type and might
-         --  or might not require a range check. We first rewrite
-         --  associations into single-component choices, e.g.:
+         --  then each component might be of a different type and might or
+         --  might not require a range check. We first rewrite associations
+         --  into single-component choices, e.g.:
          --
          --    X'Update (A => 123, B => 123, C => 123)
          --
