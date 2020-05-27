@@ -435,7 +435,7 @@ begin
 
          if Chars (Expression (Arg1)) = Name_On then
             Extensions_Allowed := True;
-            Ada_Version := Ada_2012;
+            Ada_Version := Ada_Version_Type'Last;
          else
             Extensions_Allowed := False;
             Ada_Version := Ada_Version_Explicit;

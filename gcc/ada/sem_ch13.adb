@@ -2405,6 +2405,35 @@ package body Sem_Ch13 is
             ---------------------------
 
             procedure Analyze_Aspect_Static is
+               function Has_Convention_Intrinsic (L : List_Id) return Boolean;
+               --  Return True if L contains a pragma argument association
+               --  node representing a convention Intrinsic.
+
+               ------------------------------
+               -- Has_Convention_Intrinsic --
+               ------------------------------
+
+               function Has_Convention_Intrinsic
+                 (L : List_Id) return Boolean
+               is
+                  Arg : Node_Id := First (L);
+               begin
+                  while Present (Arg) loop
+                     if Nkind (Arg) = N_Pragma_Argument_Association
+                       and then Chars (Arg) = Name_Convention
+                       and then Chars (Expression (Arg)) = Name_Intrinsic
+                     then
+                        return True;
+                     end if;
+
+                     Next (Arg);
+                  end loop;
+
+                  return False;
+               end Has_Convention_Intrinsic;
+
+               Is_Imported_Intrinsic : Boolean;
+
             begin
                if Ada_Version < Ada_2020 then
                   Error_Msg_N
@@ -2412,21 +2441,44 @@ package body Sem_Ch13 is
                   Error_Msg_N ("\compile with -gnat2020", Aspect);
 
                   return;
+               end if;
+
+               Is_Imported_Intrinsic := Is_Imported (E)
+                 and then
+                   Has_Convention_Intrinsic
+                     (Pragma_Argument_Associations (Import_Pragma (E)));
 
                --  The aspect applies only to expression functions that
                --  statisfy the requirements for a static expression function
-               --  (such as having an expression that is predicate-static).
+               --  (such as having an expression that is predicate-static) as
+               --  well as Intrinsic imported functions as a -gnatX extension.
 
-               elsif not Is_Expression_Function (E) then
-                  Error_Msg_N
-                    ("aspect % requires expression function", Aspect);
+               if not Is_Expression_Function (E)
+                 and then
+                   not (Extensions_Allowed and then Is_Imported_Intrinsic)
+               then
+                  if Extensions_Allowed then
+                     Error_Msg_N
+                       ("aspect % requires intrinsic or expression function",
+                        Aspect);
+
+                  elsif Is_Imported_Intrinsic then
+                     Error_Msg_N
+                       ("aspect % on intrinsic function is an extension: " &
+                        "use -gnatX",
+                        Aspect);
+
+                  else
+                     Error_Msg_N
+                       ("aspect % requires expression function", Aspect);
+                  end if;
 
                   return;
 
                --  Ada 202x (AI12-0075): Check that the function satisfies
-               --  several requirements of static expression functions as
-               --  specified in RM 6.8(5.1-5.8). Note that some of the
-               --  requirements given there are checked elsewhere.
+               --  several requirements of static functions as specified in
+               --  RM 6.8(5.1-5.8). Note that some of the requirements given
+               --  there are checked elsewhere.
 
                else
                   --  The expression of the expression function must be a

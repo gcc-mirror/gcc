@@ -45,6 +45,7 @@ with Sem_Aux;  use Sem_Aux;
 with Sem_Cat;  use Sem_Cat;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Elab; use Sem_Elab;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sem_Type; use Sem_Type;
@@ -171,6 +172,9 @@ package body Sem_Eval is
    --  discrete, real, or string type and must be a compile-time-known value
    --  (it is an error to make the call if these conditions are not met).
 
+   procedure Eval_Intrinsic_Call (N : Node_Id; E : Entity_Id);
+   --  Evaluate a call N to an intrinsic subprogram E.
+
    function Find_Universal_Operator_Type (N : Node_Id) return Entity_Id;
    --  Check whether an arithmetic operation with universal operands which is a
    --  rewritten function call with an explicit scope indication is ambiguous:
@@ -178,6 +182,22 @@ package body Sem_Eval is
    --  type declared in P and the context does not impose a type on the result
    --  (e.g. in the expression of a type conversion). If ambiguous, emit an
    --  error and return Empty, else return the result type of the operator.
+
+   procedure Fold_Dummy (N : Node_Id; Typ : Entity_Id);
+   --  Rewrite N as a constant dummy value in the relevant type if possible.
+
+   procedure Fold_Shift
+     (N          : Node_Id;
+      Left       : Node_Id;
+      Right      : Node_Id;
+      Op         : Node_Kind;
+      Static     : Boolean := False;
+      Check_Elab : Boolean := False);
+   --  Rewrite N as the result of evaluating Left <shift op> Right if possible.
+   --  Op represents the shift operation.
+   --  Static indicates whether the resulting node should be marked static.
+   --  Check_Elab indicates whether checks for elaboration calls should be
+   --  inserted when relevant.
 
    function From_Bits (B : Bits; T : Entity_Id) return Uint;
    --  Converts a bit string of length B'Length to a Uint value to be used for
@@ -2217,9 +2237,8 @@ package body Sem_Eval is
    --  Only the latter case is handled here, predefined operators are
    --  constant-folded elsewhere.
 
-   --  If the function is itself inherited (see 7423-001) the literal of
-   --  the parent type must be explicitly converted to the return type
-   --  of the function.
+   --  If the function is itself inherited the literal of the parent type must
+   --  be explicitly converted to the return type of the function.
 
    procedure Eval_Call (N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (N);
@@ -2246,37 +2265,22 @@ package body Sem_Eval is
             Resolve (N, Typ);
          end if;
 
+      elsif Nkind (N) = N_Function_Call
+        and then Is_Entity_Name (Name (N))
+        and then Is_Intrinsic_Subprogram (Entity (Name (N)))
+      then
+         Eval_Intrinsic_Call (N, Entity (Name (N)));
+
       --  Ada 202x (AI12-0075): If checking for potentially static expressions
-      --  is enabled and we have a call to a static expression function,
-      --  substitute a static value for the call, to allow folding the
-      --  expression. This supports checking the requirement of RM 6.8(5.3/5)
-      --  in Analyze_Expression_Function.
+      --  is enabled and we have a call to a static function, substitute a
+      --  static value for the call, to allow folding the expression. This
+      --  supports checking the requirement of RM 6.8(5.3/5) in
+      --  Analyze_Expression_Function.
 
       elsif Checking_Potentially_Static_Expression
-        and then Is_Static_Expression_Function_Call (N)
+        and then Is_Static_Function_Call (N)
       then
-         if Is_Integer_Type (Typ) then
-            Fold_Uint (N, Uint_1, Static => True);
-            return;
-
-         elsif Is_Real_Type (Typ) then
-            Fold_Ureal (N, Ureal_1, Static => True);
-            return;
-
-         elsif Is_Enumeration_Type (Typ) then
-            Fold_Uint
-              (N,
-               Expr_Value (Type_Low_Bound (Base_Type (Typ))),
-               Static => True);
-            return;
-
-         elsif Is_String_Type (Typ) then
-            Fold_Str
-              (N,
-               Strval (Make_String_Literal (Sloc (N), "")),
-               Static => True);
-            return;
-         end if;
+         Fold_Dummy (N, Typ);
       end if;
    end Eval_Call;
 
@@ -2566,30 +2570,9 @@ package body Sem_Eval is
 
       elsif Ekind (Def_Id) = E_In_Parameter
         and then Checking_Potentially_Static_Expression
-        and then Is_Static_Expression_Function (Scope (Def_Id))
+        and then Is_Static_Function (Scope (Def_Id))
       then
-         if Is_Integer_Type (Etype (Def_Id)) then
-            Fold_Uint (N, Uint_1, Static => True);
-            return;
-
-         elsif Is_Real_Type (Etype (Def_Id)) then
-            Fold_Ureal (N, Ureal_1, Static => True);
-            return;
-
-         elsif Is_Enumeration_Type (Etype (Def_Id)) then
-            Fold_Uint
-              (N,
-               Expr_Value (Type_Low_Bound (Base_Type (Etype (Def_Id)))),
-               Static => True);
-            return;
-
-         elsif Is_String_Type (Etype (Def_Id)) then
-            Fold_Str
-              (N,
-               Strval (Make_String_Literal (Sloc (N), "")),
-               Static => True);
-            return;
-         end if;
+         Fold_Dummy (N, Etype (Def_Id));
       end if;
 
       --  Fall through if the name is not static
@@ -2893,6 +2876,80 @@ package body Sem_Eval is
       end if;
    end Eval_Integer_Literal;
 
+   -------------------------
+   -- Eval_Intrinsic_Call --
+   -------------------------
+
+   procedure Eval_Intrinsic_Call (N : Node_Id; E : Entity_Id) is
+
+      procedure Eval_Shift (N : Node_Id; E : Entity_Id; Op : Node_Kind);
+      --  Evaluate an intrinsic shift call N on the given subprogram E.
+      --  Op is the kind for the shift node.
+
+      ----------------
+      -- Eval_Shift --
+      ----------------
+
+      procedure Eval_Shift (N : Node_Id; E : Entity_Id; Op : Node_Kind) is
+         Left   : constant Node_Id := First_Actual (N);
+         Right  : constant Node_Id := Next_Actual (Left);
+         Static : constant Boolean := Is_Static_Function (E);
+
+      begin
+         if Static then
+            if Checking_Potentially_Static_Expression then
+               Fold_Dummy (N, Etype (N));
+               return;
+            end if;
+         end if;
+
+         Fold_Shift
+           (N, Left, Right, Op, Static => Static, Check_Elab => not Static);
+      end Eval_Shift;
+
+      Nam : Name_Id;
+
+   begin
+      --  Nothing to do if the intrinsic is handled by the back end.
+
+      if Present (Interface_Name (E)) then
+         return;
+      end if;
+
+      --  Intrinsic calls as part of a static function is a language extension.
+
+      if Checking_Potentially_Static_Expression
+        and then not Extensions_Allowed
+      then
+         return;
+      end if;
+
+      --  If we have a renaming, expand the call to the original operation,
+      --  which must itself be intrinsic, since renaming requires matching
+      --  conventions and this has already been checked.
+
+      if Present (Alias (E)) then
+         Eval_Intrinsic_Call (N, Alias (E));
+         return;
+      end if;
+
+      --  If the intrinsic subprogram is generic, gets its original name
+
+      if Present (Parent (E))
+        and then Present (Generic_Parent (Parent (E)))
+      then
+         Nam := Chars (Generic_Parent (Parent (E)));
+      else
+         Nam := Chars (E);
+      end if;
+
+      case Nam is
+         when Name_Shift_Left  => Eval_Shift (N, E, N_Op_Shift_Left);
+         when Name_Shift_Right => Eval_Shift (N, E, N_Op_Shift_Right);
+         when others           => null;
+      end case;
+   end Eval_Intrinsic_Call;
+
    ---------------------
    -- Eval_Logical_Op --
    ---------------------
@@ -2932,7 +2989,9 @@ package body Sem_Eval is
                To_Bits (Right_Int, Right_Bits);
 
                --  Note: should really be able to use array ops instead of
-               --  these loops, but they weren't working at the time ???
+               --  these loops, but they break the build with a cryptic error
+               --  during the bind of gnat1 likely due to a wrong computation
+               --  of a date or checksum.
 
                if Nkind (N) = N_Op_And then
                   for J in Left_Bits'Range loop
@@ -3761,16 +3820,13 @@ package body Sem_Eval is
    -- Eval_Shift --
    ----------------
 
-   --  Shift operations are intrinsic operations that can never be static, so
-   --  the only processing required is to perform the required check for a non
-   --  static context for the two operands.
-
-   --  Actually we could do some compile time evaluation here some time ???
-
    procedure Eval_Shift (N : Node_Id) is
    begin
-      Check_Non_Static_Context (Left_Opnd (N));
-      Check_Non_Static_Context (Right_Opnd (N));
+      --  This procedure is only called for compiler generated code (e.g.
+      --  packed arrays), so there is nothing to do except attempting to fold
+      --  the expression.
+
+      Fold_Shift (N, Left_Opnd (N), Right_Opnd (N), Nkind (N));
    end Eval_Shift;
 
    ------------------------
@@ -4687,6 +4743,96 @@ package body Sem_Eval is
          Why_Not_Static (Expr);
       end if;
    end Flag_Non_Static_Expr;
+
+   ----------------
+   -- Fold_Dummy --
+   ----------------
+
+   procedure Fold_Dummy (N : Node_Id; Typ : Entity_Id) is
+   begin
+      if Is_Integer_Type (Typ) then
+         Fold_Uint (N, Uint_1, Static => True);
+
+      elsif Is_Real_Type (Typ) then
+         Fold_Ureal (N, Ureal_1, Static => True);
+
+      elsif Is_Enumeration_Type (Typ) then
+         Fold_Uint
+           (N,
+            Expr_Value (Type_Low_Bound (Base_Type (Typ))),
+            Static => True);
+
+      elsif Is_String_Type (Typ) then
+         Fold_Str
+           (N,
+            Strval (Make_String_Literal (Sloc (N), "")),
+            Static => True);
+      end if;
+   end Fold_Dummy;
+
+   ----------------
+   -- Fold_Shift --
+   ----------------
+
+   procedure Fold_Shift
+     (N          : Node_Id;
+      Left       : Node_Id;
+      Right      : Node_Id;
+      Op         : Node_Kind;
+      Static     : Boolean := False;
+      Check_Elab : Boolean := False)
+   is
+      Typ : constant Entity_Id := Etype (Left);
+
+      procedure Check_Elab_Call;
+      --  Add checks related to calls in elaboration code
+
+      ---------------------
+      -- Check_Elab_Call --
+      ---------------------
+
+      procedure Check_Elab_Call is
+      begin
+         if Check_Elab then
+            if Legacy_Elaboration_Checks then
+               Check_Elab_Call (N);
+            end if;
+
+            Build_Call_Marker (N);
+         end if;
+      end Check_Elab_Call;
+
+   begin
+      --  Evaluate logical shift operators on binary modular types
+
+      if Is_Modular_Integer_Type (Typ)
+        and then not Non_Binary_Modulus (Typ)
+        and then Compile_Time_Known_Value (Left)
+        and then Compile_Time_Known_Value (Right)
+      then
+         if Op = N_Op_Shift_Left then
+            Check_Elab_Call;
+
+            --  Fold Shift_Left (X, Y) by computing (X * 2**Y) rem modulus
+
+            Fold_Uint
+              (N,
+               (Expr_Value (Left) * (Uint_2 ** Expr_Value (Right)))
+                 rem Modulus (Typ),
+               Static => Static);
+
+         elsif Op = N_Op_Shift_Right then
+            Check_Elab_Call;
+
+            --  Fold Shift_Right (X, Y) by computing X / 2**Y
+
+            Fold_Uint
+              (N,
+               Expr_Value (Left) / (Uint_2 ** Expr_Value (Right)),
+               Static => Static);
+         end if;
+      end if;
+   end Fold_Shift;
 
    --------------
    -- Fold_Str --

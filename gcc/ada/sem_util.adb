@@ -18729,29 +18729,30 @@ package body Sem_Util is
           or else Nkind (N) = N_Procedure_Call_Statement;
    end Is_Statement;
 
-   ------------------------------------
-   --  Is_Static_Expression_Function --
-   ------------------------------------
+   ------------------------
+   -- Is_Static_Function --
+   ------------------------
 
-   function Is_Static_Expression_Function (Subp : Entity_Id) return Boolean is
+   function Is_Static_Function (Subp : Entity_Id) return Boolean is
    begin
-      return Is_Expression_Function (Subp)
-        and then Has_Aspect (Subp, Aspect_Static)
+      return Has_Aspect (Subp, Aspect_Static)
         and then
           (No (Find_Value_Of_Aspect (Subp, Aspect_Static))
             or else Is_True (Static_Boolean
                                (Find_Value_Of_Aspect (Subp, Aspect_Static))));
-   end Is_Static_Expression_Function;
+   end Is_Static_Function;
 
-   -----------------------------------------
-   --  Is_Static_Expression_Function_Call --
-   -----------------------------------------
+   ------------------------------
+   --  Is_Static_Function_Call --
+   ------------------------------
 
-   function Is_Static_Expression_Function_Call (Call : Node_Id) return Boolean
-   is
-
+   function Is_Static_Function_Call (Call : Node_Id) return Boolean is
       function Has_All_Static_Actuals (Call : Node_Id) return Boolean;
       --  Return whether all actual parameters of Call are static expressions
+
+      ----------------------------
+      -- Has_All_Static_Actuals --
+      ----------------------------
 
       function Has_All_Static_Actuals (Call : Node_Id) return Boolean is
          Actual        : Node_Id := First_Actual (Call);
@@ -18765,12 +18766,12 @@ package body Sem_Util is
                --  ??? In the string-returning case we want to avoid a call
                --  being made to Establish_Transient_Scope in Resolve_Call,
                --  but at the point where that's tested for (which now includes
-               --  a call to test Is_Static_Expression_Function_Call), the
-               --  actuals of the call haven't been resolved, so expressions
-               --  of the actuals may not have been marked Is_Static_Expression
-               --  yet, so we force them to be resolved here, so we can tell if
-               --  they're static. Calling Resolve here is admittedly a kludge,
-               --  and we limit this call to string-returning cases. ???
+               --  a call to test Is_Static_Function_Call), the actuals of the
+               --  call haven't been resolved, so expressions of the actuals
+               --  may not have been marked Is_Static_Expression yet, so we
+               --  force them to be resolved here, so we can tell if they're
+               --  static. Calling Resolve here is admittedly a kludge, and we
+               --  limit this call to string-returning cases.
 
                if String_Result then
                   Resolve (Actual);
@@ -18792,9 +18793,9 @@ package body Sem_Util is
    begin
       return Nkind (Call) = N_Function_Call
         and then Is_Entity_Name (Name (Call))
-        and then Is_Static_Expression_Function (Entity (Name (Call)))
+        and then Is_Static_Function (Entity (Name (Call)))
         and then Has_All_Static_Actuals (Call);
-   end Is_Static_Expression_Function_Call;
+   end Is_Static_Function_Call;
 
    ----------------------------------------
    --  Is_Subcomponent_Of_Atomic_Object  --
