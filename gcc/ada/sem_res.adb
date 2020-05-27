@@ -4641,6 +4641,7 @@ package body Sem_Res is
                      --  This is for Starlet only though, so long obsolete.
 
                      if Mechanism (F) = By_Reference
+                       and then Ekind (Nam) = E_Procedure
                        and then Is_Valued_Procedure (Nam)
                      then
                         null;
