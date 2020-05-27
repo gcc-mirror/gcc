@@ -173,6 +173,8 @@
    UNSPEC_XXEVAL
    UNSPEC_VSTRIR
    UNSPEC_VSTRIL
+   UNSPEC_SLDB
+   UNSPEC_SRDB
 ])
 
 (define_c_enum "unspecv"
@@ -782,6 +784,22 @@
 
   DONE;
 })
+
+;; Map UNSPEC_SLDB to "l" and  UNSPEC_SRDB to "r".
+(define_int_attr SLDB_lr [(UNSPEC_SLDB "l")
+			  (UNSPEC_SRDB "r")])
+
+(define_int_iterator VSHIFT_DBL_LR [UNSPEC_SLDB UNSPEC_SRDB])
+
+(define_insn "vs<SLDB_lr>db_<mode>"
+ [(set (match_operand:VI2 0 "register_operand" "=v")
+  (unspec:VI2 [(match_operand:VI2 1 "register_operand" "v")
+	       (match_operand:VI2 2 "register_operand" "v")
+	       (match_operand:QI 3 "const_0_to_12_operand" "n")]
+	      VSHIFT_DBL_LR))]
+  "TARGET_POWER10"
+  "vs<SLDB_lr>dbi %0,%1,%2,%3"
+  [(set_attr "type" "vecsimple")])
 
 (define_expand "vstrir_<mode>"
   [(set (match_operand:VIshort 0 "altivec_register_operand")

@@ -21140,6 +21140,59 @@ The programmer is responsible for understanding the endianness issues involved
 with the first argument and the result.
 @findex vec_replace_unaligned
 
+Vector Shift Left Double Bit Immediate
+@smallexample
+@exdent vector signed char vec_sldb (vector signed char, vector signed char,
+const unsigned int);
+@exdent vector unsigned char vec_sldb (vector unsigned char,
+vector unsigned char, const unsigned int);
+@exdent vector signed short vec_sldb (vector signed short, vector signed short,
+const unsigned int);
+@exdent vector unsigned short vec_sldb (vector unsigned short,
+vector unsigned short, const unsigned int);
+@exdent vector signed int vec_sldb (vector signed int, vector signed int,
+const unsigned int);
+@exdent vector unsigned int vec_sldb (vector unsigned int, vector unsigned int,
+const unsigned int);
+@exdent vector signed long long vec_sldb (vector signed long long,
+vector signed long long, const unsigned int);
+@exdent vector unsigned long long vec_sldb (vector unsigned long long,
+vector unsigned long long, const unsigned int);
+@end smallexample
+
+Shift the combined input vectors left by the amount specified by the low-order
+three bits of the third argument, and return the leftmost remaining 128 bits.
+Code using this instruction must be endian-aware.
+
+@findex vec_sldb
+
+Vector Shift Right Double Bit Immediate
+
+@smallexample
+@exdent vector signed char vec_srdb (vector signed char, vector signed char,
+const unsigned int);
+@exdent vector unsigned char vec_srdb (vector unsigned char, vector unsigned char,
+const unsigned int);
+@exdent vector signed short vec_srdb (vector signed short, vector signed short,
+const unsigned int);
+@exdent vector unsigned short vec_srdb (vector unsigned short, vector unsigned short,
+const unsigned int);
+@exdent vector signed int vec_srdb (vector signed int, vector signed int,
+const unsigned int);
+@exdent vector unsigned int vec_srdb (vector unsigned int, vector unsigned int,
+const unsigned int);
+@exdent vector signed long long vec_srdb (vector signed long long,
+vector signed long long, const unsigned int);
+@exdent vector unsigned long long vec_srdb (vector unsigned long long,
+vector unsigned long long, const unsigned int);
+@end smallexample
+
+Shift the combined input vectors right by the amount specified by the low-order
+three bits of the third argument, and return the remaining 128 bits.  Code
+using this built-in must be endian-aware.
+
+@findex vec_srdb
+
 @smallexample
 @exdent vector unsigned long long int
 @exdent vec_pext (vector unsigned long long int, vector unsigned long long int)
