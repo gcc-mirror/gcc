@@ -600,6 +600,7 @@ enum tree_index {
   TI_UINT16_TYPE,
   TI_UINT32_TYPE,
   TI_UINT64_TYPE,
+  TI_UINT128_TYPE,
 
   TI_VOID,
 
