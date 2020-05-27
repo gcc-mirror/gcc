@@ -17752,6 +17752,13 @@ package body Sem_Util is
       --  return True if the others choice of the given array aggregate does
       --  not cover any component (i.e. is null).
 
+      function Immediate_Context_Implies_Is_Potentially_Unevaluated
+        (Expr : Node_Id) return Boolean;
+      --  Return True if the *immediate* context of this expression tells us
+      --  that it is potentially unevaluated; return False if the *immediate*
+      --  context doesn't provide an answer to this question and we need to
+      --  keep looking.
+
       function Non_Static_Or_Null_Range (N : Node_Id) return Boolean;
       --  Return True if the given range is nonstatic or null
 
@@ -17788,6 +17795,99 @@ package body Sem_Util is
          when Interval_Lists.Intervals_Error =>
             return False;
       end Has_Null_Others_Choice;
+
+      ----------------------------------------------------------
+      -- Immediate_Context_Implies_Is_Potentially_Unevaluated --
+      ----------------------------------------------------------
+
+      function Immediate_Context_Implies_Is_Potentially_Unevaluated
+        (Expr : Node_Id) return Boolean
+      is
+         Par : constant Node_Id := Parent (Expr);
+
+      begin
+         if Nkind (Par) = N_If_Expression then
+            return Is_Elsif (Par) or else Expr /= First (Expressions (Par));
+
+         elsif Nkind (Par) = N_Case_Expression then
+            return Expr /= Expression (Par);
+
+         elsif Nkind_In (Par, N_And_Then, N_Or_Else) then
+            return Expr = Right_Opnd (Par);
+
+         elsif Nkind_In (Par, N_In, N_Not_In) then
+
+            --  If the membership includes several alternatives, only the first
+            --  is definitely evaluated.
+
+            if Present (Alternatives (Par)) then
+               return Expr /= First (Alternatives (Par));
+
+            --  If this is a range membership both bounds are evaluated
+
+            else
+               return False;
+            end if;
+
+         elsif Nkind (Par) = N_Quantified_Expression then
+            return Expr = Condition (Par);
+
+         elsif Nkind (Par) = N_Aggregate
+           and then Present (Etype (Par))
+           and then Etype (Par) /= Any_Composite
+           and then Is_Array_Type (Etype (Par))
+           and then Nkind (Expr) = N_Component_Association
+         then
+            declare
+               Choice           : Node_Id;
+               In_Others_Choice : Boolean := False;
+
+            begin
+               --  The expression of an array_component_association is
+               --  potentially unevaluated if the associated choice is a
+               --  subtype_indication or range that defines a nonstatic or
+               --  null range.
+
+               Choice := First (Choices (Expr));
+               while Present (Choice) loop
+                  if Nkind (Choice) = N_Range
+                    and then Non_Static_Or_Null_Range (Choice)
+                  then
+                     return True;
+
+                  elsif Nkind (Choice) = N_Identifier
+                    and then Present (Scalar_Range (Etype (Choice)))
+                    and then
+                      Non_Static_Or_Null_Range (Scalar_Range (Etype (Choice)))
+                  then
+                     return True;
+
+                  elsif Nkind (Choice) = N_Others_Choice then
+                     In_Others_Choice := True;
+                  end if;
+
+                  Next (Choice);
+               end loop;
+
+               --  It is also potentially unevaluated if the associated choice
+               --  is an others choice and the applicable index constraint is
+               --  nonstatic or null.
+
+               if In_Others_Choice then
+                  if not Compile_Time_Known_Bounds (Etype (Par)) then
+                     return True;
+                  else
+                     return Has_Null_Others_Choice (Par);
+                  end if;
+               end if;
+            end;
+
+            return False;
+
+         else
+            return False;
+         end if;
+      end Immediate_Context_Implies_Is_Potentially_Unevaluated;
 
       ------------------------------
       -- Non_Static_Or_Null_Range --
@@ -17850,25 +17950,27 @@ package body Sem_Util is
       --  conjunct in a postcondition) with a potentially unevaluated operand.
 
       Par := Parent (Expr);
-      while not Nkind_In (Par, N_And_Then,
-                               N_Case_Expression,
-                               N_If_Expression,
-                               N_In,
-                               N_Not_In,
-                               N_Or_Else,
-                               N_Quantified_Expression)
-        and then not (Nkind (Par) = N_Aggregate
-                        and then Etype (Par) /= Any_Composite
-                        and then Is_Array_Type (Etype (Par)))
+
+      while Present (Par)
+        and then Nkind (Par) /= N_Pragma_Argument_Association
       loop
-         Expr := Par;
-         Par  := Parent (Par);
+         if Comes_From_Source (Par)
+           and then
+             Immediate_Context_Implies_Is_Potentially_Unevaluated (Expr)
+         then
+            return True;
+
+         --  For component associations continue climbing; it may be part of
+         --  an array aggregate.
+
+         elsif Nkind (Par) = N_Component_Association then
+            null;
 
          --  If the context is not an expression, or if is the result of
          --  expansion of an enclosing construct (such as another attribute)
          --  the predicate does not apply.
 
-         if Nkind (Par) = N_Case_Expression_Alternative then
+         elsif Nkind (Par) = N_Case_Expression_Alternative then
             null;
 
          elsif Nkind (Par) not in N_Subexpr
@@ -17876,87 +17978,12 @@ package body Sem_Util is
          then
             return False;
          end if;
+
+         Expr := Par;
+         Par  := Parent (Par);
       end loop;
 
-      if Nkind (Par) = N_If_Expression then
-         return Is_Elsif (Par) or else Expr /= First (Expressions (Par));
-
-      elsif Nkind (Par) = N_Case_Expression then
-         return Expr /= Expression (Par);
-
-      elsif Nkind_In (Par, N_And_Then, N_Or_Else) then
-         return Expr = Right_Opnd (Par);
-
-      elsif Nkind_In (Par, N_In, N_Not_In) then
-
-         --  If the membership includes several alternatives, only the first is
-         --  definitely evaluated.
-
-         if Present (Alternatives (Par)) then
-            return Expr /= First (Alternatives (Par));
-
-         --  If this is a range membership both bounds are evaluated
-
-         else
-            return False;
-         end if;
-
-      elsif Nkind (Par) = N_Quantified_Expression then
-         return Expr = Condition (Par);
-
-      elsif Nkind (Par) = N_Aggregate
-        and then Etype (Par) /= Any_Composite
-        and then Is_Array_Type (Etype (Par))
-        and then Nkind (Expr) = N_Component_Association
-      then
-         declare
-            Choice           : Node_Id;
-            In_Others_Choice : Boolean := False;
-
-         begin
-            --  The expression of an array_component_association is potentially
-            --  unevaluated if the associated choice is a subtype_indication or
-            --  range that defines a nonstatic or null range.
-
-            Choice := First (Choices (Expr));
-            while Present (Choice) loop
-               if Nkind (Choice) = N_Range
-                 and then Non_Static_Or_Null_Range (Choice)
-               then
-                  return True;
-
-               elsif Nkind (Choice) = N_Identifier
-                 and then Present (Scalar_Range (Etype (Choice)))
-                 and then
-                   Non_Static_Or_Null_Range (Scalar_Range (Etype (Choice)))
-               then
-                  return True;
-
-               elsif Nkind (Choice) = N_Others_Choice then
-                  In_Others_Choice := True;
-               end if;
-
-               Next (Choice);
-            end loop;
-
-            --  It is also potentially unevaluated if the associated choice
-            --  is an others choice and the applicable index constraint is
-            --  nonstatic or null.
-
-            if In_Others_Choice then
-               if not Compile_Time_Known_Bounds (Etype (Par)) then
-                  return True;
-               else
-                  return Has_Null_Others_Choice (Par);
-               end if;
-            end if;
-         end;
-
-         return False;
-
-      else
-         return False;
-      end if;
+      return False;
    end Is_Potentially_Unevaluated;
 
    -----------------------------------------
