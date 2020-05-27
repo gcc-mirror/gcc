@@ -21193,6 +21193,41 @@ using this built-in must be endian-aware.
 
 @findex vec_srdb
 
+Vector Splat
+
+@smallexample
+@exdent vector signed int vec_splati (const signed int);
+@exdent vector float vec_splati (const float);
+@end smallexample
+
+Splat a 32-bit immediate into a vector of words.
+
+@findex vec_splati
+
+@smallexample
+@exdent vector double vec_splatid (const float);
+@end smallexample
+
+Convert a single precision floating-point value to double-precision and splat
+the result to a vector of double-precision floats.
+
+@findex vec_splatid
+
+@smallexample
+@exdent vector signed int vec_splati_ins (vector signed int,
+const unsigned int, const signed int);
+@exdent vector unsigned int vec_splati_ins (vector unsigned int,
+const unsigned int, const unsigned int);
+@exdent vector float vec_splati_ins (vector float, const unsigned int,
+const float);
+@end smallexample
+
+Argument 2 must be either 0 or 1.  Splat the value of argument 3 into the word
+identified by argument 2 of each doubleword of argument 1 and return the
+result.  The other words of argument 1 are unchanged.
+
+@findex vec_splati_ins
+
 @smallexample
 @exdent vector unsigned long long int
 @exdent vec_pext (vector unsigned long long int, vector unsigned long long int)

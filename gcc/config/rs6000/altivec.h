@@ -709,6 +709,9 @@ __altivec_scalar_pred(vec_any_nle,
 #define vec_replace_unaligned(a, b, c) __builtin_vec_replace_un (a, b, c)
 #define vec_sldb(a, b, c)      __builtin_vec_sldb (a, b, c)
 #define vec_srdb(a, b, c)      __builtin_vec_srdb (a, b, c)
+#define vec_splati(a)  __builtin_vec_xxspltiw (a)
+#define vec_splatid(a) __builtin_vec_xxspltid (a)
+#define vec_splati_ins(a, b, c)        __builtin_vec_xxsplti32dx (a, b, c)
 
 #define vec_gnb(a, b)	__builtin_vec_gnb (a, b)
 #define vec_clrl(a, b)	__builtin_vec_clrl (a, b)
