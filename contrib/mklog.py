@@ -173,6 +173,14 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False):
                 out += '\t* %s: %s.\n' % (relative_path, msg)
             elif file.is_removed_file:
                 out += '\t* %s: Removed.\n' % (relative_path)
+            elif hasattr(file, 'is_rename') and file.is_rename:
+                out += '\t* %s: Moved to...\n' % (relative_path)
+                new_path = file.target_file[2:]
+                # A file can be theoretically moved to a location that
+                # belongs to a different ChangeLog.  Let user fix it.
+                if new_path.startswith(changelog):
+                    new_path = new_path[len(changelog):].lstrip('/')
+                out += '\t* %s: ...here.\n' % (new_path)
             else:
                 if not no_functions:
                     for hunk in file:
