@@ -17559,7 +17559,7 @@
 	(any_extend:V16SI
 	  (match_operand:V16QI 1 "nonimmediate_operand" "vm")))]
   "TARGET_AVX512F"
-  "vpmov<extsuffix>bd\t{%1, %0<mask_operand2>|%0<mask_operand2>, %q1}"
+  "vpmov<extsuffix>bd\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
@@ -17935,7 +17935,7 @@
 	(any_extend:V8DI
 	  (match_operand:V8HI 1 "nonimmediate_operand" "vm")))]
   "TARGET_AVX512F"
-  "vpmov<extsuffix>wq\t{%1, %0<mask_operand2>|%0<mask_operand2>, %q1}"
+  "vpmov<extsuffix>wq\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
