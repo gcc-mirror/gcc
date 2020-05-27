@@ -2741,3 +2741,156 @@ index b980b4c..c1b1d9e 100644
 -- 
 2.1.4
 
+=== 0001-Ada-Add-support-for-XDR-streaming-in-the-default-run.patch ===
+From ed248d9bc3b72b6888a1b9cd84a8ef26809249f0 Mon Sep 17 00:00:00 2001
+From: Arnaud Charlet <charlet@adacore.com>
+Date: Thu, 23 Apr 2020 05:46:29 -0400
+Subject: [PATCH] [Ada] Add support for XDR streaming in the default runtime
+
+--!# FROM: /homes/derodat/tron/gnat2fsf/gnat
+--!# COMMIT: 5ad4cabb9f70114eb61c025e91406d4fba253f95
+--!# Change-Id: I21f92cad27933747495cdfa544a048f62f944cbd
+--!# TN: T423-014
+
+Currently we provide a separate implementation of Stream_Attributes via
+s-stratt__xdr.adb which needs to be recompiled manually.
+
+This change introduces instead a new binder switch to choose at bind
+time which stream implementation to use and replaces s-stratt__xdr.adb
+by a new unit System.Stream_Attributes.XDR.
+
+2020-05-04  Arnaud Charlet  <charlet@adacore.com>
+
+gcc/ada/
+
+	* Makefile.rtl: Add s-statxd.o.
+	* bindgen.adb (Gen_Adainit): Add support for XDR_Stream.
+	* bindusg.adb (Display): Add mention of -xdr.
+	* gnatbind.adb: Process -xdr switch.
+	* init.c (__gl_xdr_stream): New.
+	* opt.ads (XDR_Stream): New.
+	* libgnat/s-stratt__xdr.adb: Rename to...
+	* libgnat/s-statxd.adb: this and adjust.
+	* libgnat/s-statxd.ads: New.
+	* libgnat/s-stratt.ads, libgnat/s-stratt.adb: Choose between
+	default and XDR implementation at runtime.
+	* libgnat/s-ststop.ads: Update comments.
+	* doc/gnat_rm/implementation_advice.rst: Update doc on XDR
+	streaming.
+	* gnat_rm.texi: Regenerate.
+---
+ gcc/ada/Makefile.rtl                          |   1 +
+ gcc/ada/bindgen.adb                           |  29 +-
+ gcc/ada/bindusg.adb                           |   5 +
+ gcc/ada/doc/gnat_rm/implementation_advice.rst |  35 +--
+ gcc/ada/gnat_rm.texi                          |  36 +--
+ gcc/ada/gnatbind.adb                          |   5 +
+ gcc/ada/init.c                                |   1 +
+ .../{s-stratt__xdr.adb => s-statxd.adb}       |  63 ++--
+ gcc/ada/libgnat/s-statxd.ads                  | 117 +++++++
+ gcc/ada/libgnat/s-stratt.adb                  | 286 +++++++++++++++---
+ gcc/ada/libgnat/s-stratt.ads                  |   7 +-
+ gcc/ada/libgnat/s-ststop.ads                  |   4 +-
+ gcc/ada/opt.ads                               |   6 +-
+ 13 files changed, 428 insertions(+), 167 deletions(-)
+ rename gcc/ada/libgnat/{s-stratt__xdr.adb => s-statxd.adb} (96%)
+ create mode 100644 gcc/ada/libgnat/s-statxd.ads
+
+diff --git a/gcc/ada/Makefile.rtl b/gcc/ada/Makefile.rtl
+index b340a9ef919..15e4f68ccdb 100644
+--- a/gcc/ada/Makefile.rtl
++++ b/gcc/ada/Makefile.rtl
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/ada/bindgen.adb b/gcc/ada/bindgen.adb
+index 99ad3009d13..91b4cb38486 100644
+--- a/gcc/ada/bindgen.adb
++++ b/gcc/ada/bindgen.adb
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/ada/bindusg.adb b/gcc/ada/bindusg.adb
+index 45215d2ebea..6fd55ee8721 100644
+--- a/gcc/ada/bindusg.adb
++++ b/gcc/ada/bindusg.adb
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/ada/doc/gnat_rm/implementation_advice.rst b/gcc/ada/doc/gnat_rm/implementation_advice.rst
+index 31376d92461..998d0c597df 100644
+--- a/gcc/ada/doc/gnat_rm/implementation_advice.rst
++++ b/gcc/ada/doc/gnat_rm/implementation_advice.rst
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/ada/gnat_rm.texi b/gcc/ada/gnat_rm.texi
+index c174073d508..d72f905a2df 100644
+--- a/gcc/ada/gnat_rm.texi
++++ b/gcc/ada/gnat_rm.texi
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/ada/gnatbind.adb b/gcc/ada/gnatbind.adb
+index 4907082a42c..4372152b439 100644
+--- a/gcc/ada/gnatbind.adb
++++ b/gcc/ada/gnatbind.adb
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/ada/init.c b/gcc/ada/init.c
+index f9f627ebcff..e76aa79c5a8 100644
+--- a/gcc/ada/init.c
++++ b/gcc/ada/init.c
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/ada/libgnat/s-stratt__xdr.adb b/gcc/ada/libgnat/s-statxd.adb
+similarity index 96%
+rename from gcc/ada/libgnat/s-stratt__xdr.adb
+rename to gcc/ada/libgnat/s-statxd.adb
+index 7e32fcf9b91..fcefae7e6f2 100644
+--- a/gcc/ada/libgnat/s-stratt__xdr.adb
++++ b/gcc/ada/libgnat/s-statxd.adb
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/ada/libgnat/s-statxd.ads b/gcc/ada/libgnat/s-statxd.ads
+new file mode 100644
+index 00000000000..cca5e5471bd
+--- /dev/null
++++ b/gcc/ada/libgnat/s-statxd.ads
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/ada/libgnat/s-stratt.adb b/gcc/ada/libgnat/s-stratt.adb
+index 64f3f040081..366dabdc7b6 100644
+--- a/gcc/ada/libgnat/s-stratt.adb
++++ b/gcc/ada/libgnat/s-stratt.adb
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/ada/libgnat/s-stratt.ads b/gcc/ada/libgnat/s-stratt.ads
+index 73369490146..c8c453aad2a 100644
+--- a/gcc/ada/libgnat/s-stratt.ads
++++ b/gcc/ada/libgnat/s-stratt.ads
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/ada/libgnat/s-ststop.ads b/gcc/ada/libgnat/s-ststop.ads
+index d0da0609d9d..321460b89d8 100644
+--- a/gcc/ada/libgnat/s-ststop.ads
++++ b/gcc/ada/libgnat/s-ststop.ads
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/ada/opt.ads b/gcc/ada/opt.ads
+index 9e0263b431d..37f3d030e3f 100644
+--- a/gcc/ada/opt.ads
++++ b/gcc/ada/opt.ads
+@@ -1 +1,2 @@
+ 
++
+-- 
+2.20.1
+

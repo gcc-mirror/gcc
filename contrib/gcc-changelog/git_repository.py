@@ -47,6 +47,11 @@ def parse_git_revisions(repo_path, revisions, strict=False):
                 t = 'A'
             elif file.deleted_file:
                 t = 'D'
+            elif file.renamed_file:
+                # Consider that renamed files are two operations: the deletion
+                # of the original name and the addition of the new one.
+                modified_files.append((file.a_path, 'D'))
+                t = 'A'
             else:
                 t = 'M'
             modified_files.append((file.b_path, t))
