@@ -16319,6 +16319,7 @@ expand_vec_perm_movs (struct expand_vec_perm_d *d)
     return false;
 
   if (!(TARGET_SSE && vmode == V4SFmode)
+      && !(TARGET_MMX_WITH_SSE && vmode == V2SFmode)
       && !(TARGET_SSE2 && vmode == V2DFmode))
     return false;
 
@@ -18639,6 +18640,13 @@ expand_vec_perm_even_odd_1 (struct expand_vec_perm_d *d, unsigned odd)
       /* These are always directly implementable by expand_vec_perm_1.  */
       gcc_unreachable ();
 
+    case E_V2SFmode:
+      gcc_assert (TARGET_MMX_WITH_SSE);
+      /* We have no suitable instructions.  */
+      if (d->testing_p)
+	return false;
+      break;
+
     case E_V4HImode:
       if (d->testing_p)
 	break;
@@ -18834,8 +18842,9 @@ expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d)
       gcc_unreachable ();
 
     case E_V2DFmode:
-    case E_V2DImode:
+    case E_V2SFmode:
     case E_V4SFmode:
+    case E_V2DImode:
     case E_V2SImode:
     case E_V4SImode:
       /* These are always implementable using standard shuffle patterns.  */
@@ -19329,6 +19338,7 @@ ix86_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
       if (d.testing_p && TARGET_SSSE3)
 	return true;
       break;
+    case E_V2SFmode:
     case E_V2SImode:
     case E_V4HImode:
       if (!TARGET_MMX_WITH_SSE)
@@ -19367,7 +19377,7 @@ ix86_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
 
       /* Implementable with shufps or pshufd.  */
       if (d.one_operand_p
-	  && (d.vmode == V4SFmode
+	  && (d.vmode == V4SFmode || d.vmode == V2SFmode
 	      || d.vmode == V4SImode || d.vmode == V2SImode))
 	return true;
 

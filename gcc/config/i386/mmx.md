@@ -938,31 +938,84 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define_insn "mmx_pswapdv2sf2"
-  [(set (match_operand:V2SF 0 "register_operand" "=y")
-	(vec_select:V2SF (match_operand:V2SF 1 "nonimmediate_operand" "ym")
-			 (parallel [(const_int 1) (const_int 0)])))]
-  "TARGET_3DNOW_A"
-  "pswapd\t{%1, %0|%0, %1}"
-  [(set_attr "type" "mmxcvt")
-   (set_attr "prefix_extra" "1")
-   (set_attr "mode" "V2SF")])
+  [(set (match_operand:V2SF 0 "register_operand" "=y,x,Yv")
+	(vec_select:V2SF
+	  (match_operand:V2SF 1 "register_mmxmem_operand" "ym,0,Yv")
+	  (parallel [(const_int 1) (const_int 0)])))]
+  "TARGET_3DNOW_A || TARGET_MMX_WITH_SSE"
+  "@
+   pswapd\t{%1, %0|%0, %1}
+   shufps\t{$0xe1, %1, %0|%0, %1, 0xe1}
+   vshufps\t{$0xe1, %1, %1, %0|%0, %1, %1, 0xe1}"
+  [(set_attr "isa" "*,sse_noavx,avx")
+   (set_attr "mmx_isa" "native,*,*")
+   (set_attr "type" "mmxcvt,ssemov,ssemov")
+   (set_attr "prefix_extra" "1,*,*")
+   (set_attr "mode" "V2SF,V4SF,V4SF")])
+
+(define_insn "*mmx_movshdup"
+  [(set (match_operand:V2SF 0 "register_operand" "=v,x")
+	(vec_select:V2SF
+	  (match_operand:V2SF 1 "register_operand" "v,0")
+	  (parallel [(const_int 1) (const_int 1)])))]
+  "TARGET_MMX_WITH_SSE"
+  "@
+   %vmovshdup\t{%1, %0|%0, %1}
+   shufps\t{$0xe5, %0, %0|%0, %0, 0xe5}"
+  [(set_attr "isa" "sse3,*")
+   (set_attr "type" "sse,sseshuf1")
+   (set_attr "length_immediate" "*,1")
+   (set_attr "prefix_rep" "1,*")
+   (set_attr "prefix" "maybe_vex,orig")
+   (set_attr "mode" "V4SF")])
+
+(define_insn "*mmx_movsldup"
+  [(set (match_operand:V2SF 0 "register_operand" "=v,x")
+	(vec_select:V2SF
+	  (match_operand:V2SF 1 "register_operand" "v,0")
+	  (parallel [(const_int 0) (const_int 0)])))]
+  "TARGET_MMX_WITH_SSE"
+  "@
+   %vmovsldup\t{%1, %0|%0, %1}
+   shufps\t{$0xe0, %0, %0|%0, %0, 0xe0}"
+  [(set_attr "isa" "sse3,*")
+   (set_attr "type" "sse,sseshuf1")
+   (set_attr "length_immediate" "*,1")
+   (set_attr "prefix_rep" "1,*")
+   (set_attr "prefix" "maybe_vex,orig")
+   (set_attr "mode" "V4SF")])
 
 (define_insn "*vec_dupv2sf"
-  [(set (match_operand:V2SF 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V2SF 0 "register_operand" "=y,Yv,x")
 	(vec_duplicate:V2SF
-	  (match_operand:SF 1 "register_operand" "0,0,Yv")))]
+	  (match_operand:SF 1 "register_operand" "0,Yv,0")))]
   "TARGET_MMX || TARGET_MMX_WITH_SSE"
   "@
    punpckldq\t%0, %0
-   shufps\t{$0xe0, %0, %0|%0, %0, 0xe0}
-   %vmovsldup\t{%1, %0|%0, %1}"
-  [(set_attr "isa" "*,sse_noavx,sse3")
+   %vmovsldup\t{%1, %0|%0, %1}
+   shufps\t{$0xe0, %0, %0|%0, %0, 0xe0}"
+  [(set_attr "isa" "*,sse3,sse_noavx")
    (set_attr "mmx_isa" "native,*,*")
-   (set_attr "type" "mmxcvt,sseshuf1,sse")
-   (set_attr "length_immediate" "*,1,*")
-   (set_attr "prefix_rep" "*,*,1")
-   (set_attr "prefix" "*,orig,maybe_vex")
+   (set_attr "type" "mmxcvt,sse,sseshuf1")
+   (set_attr "length_immediate" "*,*,1")
+   (set_attr "prefix_rep" "*,1,*")
+   (set_attr "prefix" "*,maybe_vex,orig")
    (set_attr "mode" "DI,V4SF,V4SF")])
+
+(define_insn "*mmx_movss"
+  [(set (match_operand:V2SF 0 "register_operand"   "=x,v")
+	(vec_merge:V2SF
+	  (match_operand:V2SF 2 "register_operand" " x,v")
+	  (match_operand:V2SF 1 "register_operand" " 0,v")
+	  (const_int 1)))]
+  "TARGET_MMX_WITH_SSE"
+  "@
+   movss\t{%2, %0|%0, %2}
+   vmovss\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "ssemov")
+   (set_attr "prefix" "orig,maybe_evex")
+   (set_attr "mode" "SF")])
 
 (define_insn "*mmx_concatv2sf"
   [(set (match_operand:V2SF 0 "register_operand"     "=y,y")
@@ -2015,7 +2068,7 @@
 	(vec_select:V2SI
 	  (match_operand:V2SI 1 "register_mmxmem_operand" "ym,Yv")
 	  (parallel [(const_int 1) (const_int 0)])))]
-  "TARGET_3DNOW_A || TARGET_MMX_WITH_SSE"
+  "TARGET_3DNOW_A"
   "@
    pswapd\t{%1, %0|%0, %1}
    %vpshufd\t{$0xe1, %1, %0|%0, %1, 0xe1}";
