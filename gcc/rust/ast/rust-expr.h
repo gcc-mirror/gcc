@@ -662,7 +662,6 @@ public:
     LESS_OR_EQUAL     // std::cmp::PartialEq::le
   };
 
-private:
   // Note: overloading trait specified in comments
   ExprType expr_type;
 
@@ -714,6 +713,8 @@ public:
 
   virtual void accept_vis (ASTVisitor &vis) OVERRIDE;
 
+  Expr *get_lhs () { return main_or_left_expr.get (); }
+
   // TODO: implement via a function call to std::cmp::PartialEq::eq(&op1, &op2)
   // maybe?
 protected:
@@ -746,7 +747,6 @@ public:
     LOGICAL_AND
   };
 
-private:
   ExprType expr_type;
 
   // Expr* right_expr;
@@ -795,6 +795,8 @@ public:
   inline ExprType get_expr_type () const { return expr_type; }
 
   virtual void accept_vis (ASTVisitor &vis) OVERRIDE;
+
+  Expr *get_lhs () { return main_or_left_expr.get (); }
 
 protected:
   // Use covariance to implement clone function as returning this object rather

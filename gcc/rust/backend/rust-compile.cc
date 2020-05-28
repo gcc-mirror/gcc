@@ -357,10 +357,92 @@ Compilation::visit (AST::ArithmeticOrLogicalExpr &expr)
 
 void
 Compilation::visit (AST::ComparisonExpr &expr)
-{}
+{
+  Bexpression *lhs = NULL;
+  VISIT_POP (expr.get_lhs ()->get_locus_slow (), expr.get_lhs (), lhs, exprs);
+  if (lhs == NULL)
+    {
+      rust_error_at (expr.get_lhs ()->get_locus_slow (), "failed to compile");
+      return;
+    }
+
+  Bexpression *rhs = NULL;
+  VISIT_POP (expr.right_expr->get_locus_slow (), expr.right_expr, rhs, exprs);
+  if (rhs == NULL)
+    {
+      rust_error_at (expr.right_expr->get_locus_slow (), "failed to compile");
+      return;
+    }
+
+  Operator op;
+  switch (expr.expr_type)
+    {
+    case AST::ComparisonExpr::EQUAL:
+      op = OPERATOR_EQEQ;
+      break;
+    case AST::ComparisonExpr::NOT_EQUAL:
+      op = OPERATOR_NOTEQ;
+      break;
+    case AST::ComparisonExpr::GREATER_THAN:
+      op = OPERATOR_GT;
+      break;
+    case AST::ComparisonExpr::LESS_THAN:
+      op = OPERATOR_LT;
+      break;
+    case AST::ComparisonExpr::GREATER_OR_EQUAL:
+      op = OPERATOR_GE;
+      break;
+    case AST::ComparisonExpr::LESS_OR_EQUAL:
+      op = OPERATOR_LE;
+      break;
+    default:
+      rust_fatal_error (expr.get_locus_slow (), "failed to compile operator");
+      return;
+    }
+
+  auto compExpr
+    = backend->binary_expression (op, lhs, rhs, expr.get_locus_slow ());
+  exprs.push_back (compExpr);
+}
+
 void
 Compilation::visit (AST::LazyBooleanExpr &expr)
-{}
+{
+  Bexpression *lhs = NULL;
+  VISIT_POP (expr.get_lhs ()->get_locus_slow (), expr.get_lhs (), lhs, exprs);
+  if (lhs == NULL)
+    {
+      rust_error_at (expr.get_lhs ()->get_locus_slow (), "failed to compile");
+      return;
+    }
+
+  Bexpression *rhs = NULL;
+  VISIT_POP (expr.right_expr->get_locus_slow (), expr.right_expr, rhs, exprs);
+  if (rhs == NULL)
+    {
+      rust_error_at (expr.right_expr->get_locus_slow (), "failed to compile");
+      return;
+    }
+
+  Operator op;
+  switch (expr.expr_type)
+    {
+    case AST::LazyBooleanExpr::LOGICAL_OR:
+      op = OPERATOR_OROR;
+      break;
+    case AST::LazyBooleanExpr::LOGICAL_AND:
+      op = OPERATOR_ANDAND;
+      break;
+    default:
+      rust_fatal_error (expr.get_locus_slow (), "failed to compile operator");
+      return;
+    }
+
+  auto compExpr
+    = backend->binary_expression (op, lhs, rhs, expr.get_locus_slow ());
+  exprs.push_back (compExpr);
+}
+
 void
 Compilation::visit (AST::TypeCastExpr &expr)
 {}
@@ -463,14 +545,12 @@ void
 Compilation::visit (AST::CallExpr &expr)
 {
   Bexpression *fn = NULL;
-  translatedType = NULL;
   VISIT_POP (expr.function->get_locus_slow (), expr.function, fn, exprs);
   if (fn == NULL)
     {
       rust_error_at (expr.function->get_locus_slow (), "failed to resolve");
       return;
     }
-  Btype *returnType = translatedType; // can be NULL
 
   std::vector<Bexpression *> args;
   for (auto &param : expr.params)
@@ -535,8 +615,6 @@ Compilation::visit (AST::RangeToInclExpr &expr)
 void
 Compilation::visit (AST::ReturnExpr &expr)
 {
-  printf ("ReturnExpr: %s\n", expr.as_string ().c_str ());
-
   Bexpression *ret = NULL;
   VISIT_POP (expr.return_expr->get_locus_slow (), expr.return_expr, ret, exprs);
   if (ret == NULL)
