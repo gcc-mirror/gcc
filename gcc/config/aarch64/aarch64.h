@@ -842,6 +842,23 @@ struct GTY (()) aarch64_frame
   /* Store FP,LR and setup a frame pointer.  */
   bool emit_frame_chain;
 
+  /* In each frame, we can associate up to two register saves with the
+     initial stack allocation.  This happens in one of two ways:
+
+     (1) Using an STR or STP with writeback to perform the initial
+	 stack allocation.  When EMIT_FRAME_CHAIN, the registers will
+	 be those needed to create a frame chain.
+
+	 Indicated by CALLEE_ADJUST != 0.
+
+     (2) Using a separate STP to set up the frame record, after the
+	 initial stack allocation but before setting up the frame pointer.
+	 This is used if the offset is too large to use writeback.
+
+	 Indicated by CALLEE_ADJUST == 0 && EMIT_FRAME_CHAIN.
+
+     These fields indicate which registers we've decided to handle using
+     (1) or (2), or INVALID_REGNUM if none.  */
   unsigned wb_candidate1;
   unsigned wb_candidate2;
 

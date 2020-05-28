@@ -6749,6 +6749,14 @@ aarch64_layout_frame (void)
 			+ frame.sve_callee_adjust
 			+ frame.final_adjust, frame.frame_size));
 
+  if (!frame.emit_frame_chain && frame.callee_adjust == 0)
+    {
+      /* We've decided not to associate any register saves with the initial
+	 stack allocation.  */
+      frame.wb_candidate1 = INVALID_REGNUM;
+      frame.wb_candidate2 = INVALID_REGNUM;
+    }
+
   frame.laid_out = true;
 }
 
