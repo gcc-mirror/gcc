@@ -1,7 +1,3 @@
-2020-05-28  H.J. Lu  <hongjiu.lu@intel.com>
-
-	* gcc.dg/builtin-bswap-10.c: Check "! int128" instead of ilp32
-
 2020-05-28  Alexandre Oliva  <oliva@adacore.com>
 
 	* lib/gcc-defs.exp: Avoid introducing empty arguments between
