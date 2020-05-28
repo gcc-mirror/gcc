@@ -11698,28 +11698,30 @@ package body Sem_Ch3 is
          --  A formal incomplete type (Ada 2012) does not require a completion;
          --  other incomplete type declarations do.
 
-         elsif Ekind (E) = E_Incomplete_Type
-           and then No (Underlying_Type (E))
-           and then not Is_Generic_Type (E)
-         then
-            Post_Error;
+         elsif Ekind (E) = E_Incomplete_Type then
+            if No (Underlying_Type (E))
+              and then not Is_Generic_Type (E)
+            then
+               Post_Error;
+            end if;
 
-         elsif Ekind_In (E, E_Task_Type, E_Protected_Type)
-           and then not Has_Completion (E)
-         then
-            Post_Error;
+         elsif Ekind_In (E, E_Task_Type, E_Protected_Type) then
+            if not Has_Completion (E) then
+               Post_Error;
+            end if;
 
          --  A single task declared in the current scope is a constant, verify
          --  that the body of its anonymous type is in the same scope. If the
          --  task is defined elsewhere, this may be a renaming declaration for
          --  which no completion is needed.
 
-         elsif Ekind (E) = E_Constant
-           and then Ekind (Etype (E)) = E_Task_Type
-           and then not Has_Completion (Etype (E))
-           and then Scope (Etype (E)) = Current_Scope
-         then
-            Post_Error;
+         elsif Ekind (E) = E_Constant then
+            if Ekind (Etype (E)) = E_Task_Type
+              and then not Has_Completion (Etype (E))
+              and then Scope (Etype (E)) = Current_Scope
+            then
+               Post_Error;
+            end if;
 
          elsif Ekind (E) = E_Record_Type then
             if Is_Tagged_Type (E) then
