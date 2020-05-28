@@ -306,7 +306,9 @@ proc gcc_adjust_linker_flags {} {
 		set nopts {}
 		set skip ""
 		foreach opt [split $opts] {
-		    if { $skip != "" } then {
+		    if { $opt == "" } then {
+			continue
+		    } elseif { $skip != "" } then {
 			set skip ""
 		    } elseif { $opt == "-Xlinker" } then {
 			set skip $opt
