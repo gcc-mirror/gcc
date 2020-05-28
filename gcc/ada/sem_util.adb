@@ -17217,6 +17217,11 @@ package body Sem_Util is
                return Is_Rewrite_Substitution (N)
                  and then Is_Object_Reference (Original_Node (N));
 
+            --  AI12-0125: Target name represents a constant object
+
+            when N_Target_Name =>
+               return True;
+
             when others =>
                return False;
          end case;
