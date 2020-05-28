@@ -48,6 +48,7 @@ struct gcov_var
   unsigned overread;		/* Number of words overread.  */
   int error;			/* < 0 overflow, > 0 disk error.  */
   int mode;	                /* < 0 writing, > 0 reading */
+  int endian;			/* Swap endianness.  */
 #if IN_LIBGCOV
   /* Holds one block plus 4 bytes, thus all coverage reads & writes
      fit within this buffer and we always can transfer GCOV_BLOCK_SIZE
@@ -55,7 +56,6 @@ struct gcov_var
      or 8 byte objects.  */
   gcov_unsigned_t buffer[GCOV_BLOCK_SIZE + 1];
 #else
-  int endian;			/* Swap endianness.  */
   /* Holds a variable length block, as the compiler can write
      strings and needs to backtrack.  */
   size_t alloc;
@@ -100,7 +100,7 @@ gcov_rewrite (void)
 
 static inline gcov_unsigned_t from_file (gcov_unsigned_t value)
 {
-#if !IN_LIBGCOV
+#if !IN_LIBGCOV || defined (IN_GCOV_TOOL)
   if (gcov_var.endian)
     {
       value = (value >> 16) | (value << 16);
@@ -222,7 +222,7 @@ gcov_close (void)
   return gcov_var.error;
 }
 
-#if !IN_LIBGCOV
+#if !IN_LIBGCOV || defined (IN_GCOV_TOOL)
 /* Check if MAGIC is EXPECTED. Use it to determine endianness of the
    file. Returns +1 for same endian, -1 for other endian and zero for
    not EXPECTED.  */
