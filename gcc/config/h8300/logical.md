@@ -24,14 +24,6 @@
     operands[2] = GEN_INT ((INTVAL (operands[2])) >> 8);
   })
 
-(define_insn "bclrhi_msx"
-  [(set (match_operand:HI 0 "bit_register_indirect_operand" "=m")
-	(and:HI (match_operand:HI 1 "bit_register_indirect_operand" "%0")
-		(match_operand:HI 2 "single_zero_operand" "Y0")))]
-  "TARGET_H8300SX"
-  "bclr\\t%W2,%0"
-  [(set_attr "length" "8")])
-
 (define_insn "*andqi3_2"
   [(set (match_operand:QI 0 "bit_operand" "=U,rQ,r")
 	(and:QI (match_operand:QI 1 "bit_operand" "%0,0,WU")
