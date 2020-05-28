@@ -4567,7 +4567,12 @@ rs6000_option_override_internal (bool global_init_p)
 	    unroll_only_small_loops = 0;
 	  if (!global_options_set.x_flag_rename_registers)
 	    flag_rename_registers = 1;
+	  if (!global_options_set.x_flag_cunroll_grow_size)
+	    flag_cunroll_grow_size = 1;
 	}
+      else
+	if (!global_options_set.x_flag_cunroll_grow_size)
+	  flag_cunroll_grow_size = flag_peel_loops || optimize >= 3;
 
       /* If using typedef char *va_list, signal that
 	 __builtin_va_start (&ap, 0) can be optimized to
