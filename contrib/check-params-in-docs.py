@@ -22,16 +22,19 @@
 #
 #
 
-import sys
-import json
 import argparse
+from itertools import dropwhile, takewhile
 
-from itertools import *
 
 def get_param_tuple(line):
-    line = line.strip()
+    line = line.strip().replace('--param=', '')
     i = line.find(' ')
-    return (line[:i], line[i:].strip())
+    name = line[:i]
+    if '=' in name:
+        name = name[:name.find('=')]
+    description = line[i:].strip()
+    return (name, description)
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('texi_file')
@@ -49,8 +52,8 @@ for line in open(args.params_output).readlines():
 
 # Find section in .texi manual with parameters
 texi = ([x.strip() for x in open(args.texi_file).readlines()])
-texi = dropwhile(lambda x: not 'item --param' in x, texi)
-texi = takewhile(lambda x: not '@node Instrumentation Options' in x, texi)
+texi = dropwhile(lambda x: 'item --param' not in x, texi)
+texi = takewhile(lambda x: '@node Instrumentation Options' not in x, texi)
 texi = list(texi)[1:]
 
 token = '@item '
