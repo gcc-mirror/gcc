@@ -2739,19 +2739,13 @@ vect_slp_convert_to_external (vec_info *vinfo, slp_tree node,
    by NODE.  */
 
 static void
-vect_prologue_cost_for_slp (vec_info *vinfo,
-			    slp_tree node,
+vect_prologue_cost_for_slp (slp_tree node,
 			    stmt_vector_for_cost *cost_vec)
 {
   /* Without looking at the actual initializer a vector of
      constants can be implemented as load from the constant pool.
      When all elements are the same we can use a splat.  */
   tree vectype = SLP_TREE_VECTYPE (node);
-  /* ???  Ideally we'd want all invariant nodes to have a vectype.  */
-  if (!vectype)
-    vectype = get_vectype_for_scalar_type (vinfo,
-					   TREE_TYPE (SLP_TREE_SCALAR_OPS
-							      (node)[0]), node);
   unsigned group_size = SLP_TREE_SCALAR_OPS (node).length ();
   unsigned num_vects_to_check;
   unsigned HOST_WIDE_INT const_nunits;
@@ -2911,7 +2905,7 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
 	  SLP_TREE_NUMBER_OF_VEC_STMTS (child)
 	    = vect_get_num_vectors (vf * group_size, vector_type);
 	  /* And cost them.  */
-	  vect_prologue_cost_for_slp (vinfo, child, cost_vec);
+	  vect_prologue_cost_for_slp (child, cost_vec);
 	}
 
   /* If this node can't be vectorized, try pruning the tree here rather
