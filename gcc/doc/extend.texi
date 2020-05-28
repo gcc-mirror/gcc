@@ -10179,18 +10179,31 @@ The @var{level} argument must be a constant integer.
 
 On some machines it may be impossible to determine the return address of
 any function other than the current one; in such cases, or when the top
-of the stack has been reached, this function returns @code{0} or a
-random value.  In addition, @code{__builtin_frame_address} may be used
+of the stack has been reached, this function returns an unspecified
+value.  In addition, @code{__builtin_frame_address} may be used
 to determine if the top of the stack has been reached.
 
 Additional post-processing of the returned value may be needed, see
 @code{__builtin_extract_return_addr}.
+
+The stored representation of the return address in memory may be different
+from the address returned by @code{__builtin_return_address}.  For example,
+on AArch64 the stored address may be mangled with return address signing
+whereas the address returned by @code{__builtin_return_address} is not.
 
 Calling this function with a nonzero argument can have unpredictable
 effects, including crashing the calling program.  As a result, calls
 that are considered unsafe are diagnosed when the @option{-Wframe-address}
 option is in effect.  Such calls should only be made in debugging
 situations.
+
+On targets where code addresses are representable as @code{void *},
+@smallexample
+void *addr = __builtin_extract_return_addr (__builtin_return_address (0));
+@end smallexample
+gives the code address where the current function would return.  For example,
+such an address may be used with @code{dladdr} or other interfaces that work
+with code addresses.
 @end deftypefn
 
 @deftypefn {Built-in Function} {void *} __builtin_extract_return_addr (void *@var{addr})
