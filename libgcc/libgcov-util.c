@@ -259,7 +259,7 @@ read_gcda_file (const char *filename)
 {
   unsigned tags[4];
   unsigned depth = 0;
-  unsigned magic, version;
+  unsigned version;
   struct gcov_info *obj_info;
   int i;
 
@@ -274,8 +274,7 @@ read_gcda_file (const char *filename)
     }
 
   /* Read magic.  */
-  magic = gcov_read_unsigned ();
-  if (magic != GCOV_DATA_MAGIC)
+  if (!gcov_magic (gcov_read_unsigned (), GCOV_DATA_MAGIC))
     {
       fnotice (stderr, "%s:not a gcov data file\n", filename);
       gcov_close ();

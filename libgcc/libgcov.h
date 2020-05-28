@@ -149,7 +149,7 @@ extern struct gcov_info *gcov_list;
 
 /* Poison these, so they don't accidentally slip in.  */
 #pragma GCC poison gcov_write_string gcov_write_tag gcov_write_length
-#pragma GCC poison gcov_time gcov_magic
+#pragma GCC poison gcov_time
 
 #ifdef HAVE_GAS_HIDDEN
 #define ATTRIBUTE_HIDDEN  __attribute__ ((__visibility__ ("hidden")))

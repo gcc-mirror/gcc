@@ -370,6 +370,9 @@ struct gcov_summary
 
 #if !IN_LIBGCOV
 GCOV_LINKAGE int gcov_open (const char */*name*/, int /*direction*/);
+#endif
+
+#if !IN_LIBGCOV || defined (IN_GCOV_TOOL)
 GCOV_LINKAGE int gcov_magic (gcov_unsigned_t, gcov_unsigned_t);
 #endif
 
