@@ -1,3 +1,9 @@
+2020-05-27  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl   <kargl@gcc.gnu.org>
+
+	PR libfortran/95104
+	* gfortran.dg/pr95104.f90: New test.
+
 2020-05-26  Alexandre Oliva  <oliva@adacore.com>
 
 	PR target/94812
