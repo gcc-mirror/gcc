@@ -1,3 +1,9 @@
+2020-05-27  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl   <kargl@gcc.gnu.org>
+
+	PR libfortran/95104
+	* io/transfer.c (st_wait_async): Do not dereference NULL pointer.
+
 2020-05-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/95191
