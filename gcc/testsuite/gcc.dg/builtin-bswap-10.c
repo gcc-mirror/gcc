@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ilp32 } } } */
+/* { dg-do compile { target { ! int128 } } } */
 /* { dg-options "" } */
 /* { dg-final { scan-assembler "__builtin_" } } */
 
