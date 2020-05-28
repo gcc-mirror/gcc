@@ -436,12 +436,17 @@
 
 (define_insn "mmx_addsubv2sf3"
   [(set (match_operand:V2SF 0 "register_operand" "=y")
-        (vec_merge:V2SF
-          (plus:V2SF
-            (match_operand:V2SF 1 "register_operand" "0")
-            (match_operand:V2SF 2 "nonimmediate_operand" "ym"))
-          (minus:V2SF (match_dup 1) (match_dup 2))
-          (const_int 1)))]
+	(vec_concat:V2SF
+	  (minus:SF
+	    (vec_select:SF
+	      (match_operand:V2SF 1 "register_operand" "0")
+	      (parallel [(const_int  0)]))
+	    (vec_select:SF (match_dup 1) (parallel [(const_int 1)])))
+	  (plus:SF
+            (vec_select:SF
+	      (match_operand:V2SF 2 "nonimmediate_operand" "ym")
+	      (parallel [(const_int  0)]))
+	    (vec_select:SF (match_dup 2) (parallel [(const_int 1)])))))]
   "TARGET_3DNOW_A"
   "pfpnacc\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxadd")
