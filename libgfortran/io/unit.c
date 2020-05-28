@@ -767,9 +767,12 @@ close_unit_1 (gfc_unit *u, int locked)
 void
 unlock_unit (gfc_unit *u)
 {
-  NOTE ("unlock_unit = %d", u->unit_number);
-  UNLOCK (&u->lock);
-  NOTE ("unlock_unit done");
+  if (u)
+    {
+      NOTE ("unlock_unit = %d", u->unit_number);
+      UNLOCK (&u->lock);
+      NOTE ("unlock_unit done");
+    }
 }
 
 /* close_unit()-- Close a unit.  The stream is closed, and any memory
