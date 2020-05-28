@@ -1474,6 +1474,11 @@ process_options (void)
   if (flag_unroll_all_loops)
     flag_unroll_loops = 1;
 
+  /* Allow cunroll to grow size accordingly.  */
+  if (flag_cunroll_grow_size == AUTODETECT_VALUE)
+    flag_cunroll_grow_size
+      = flag_unroll_loops || flag_peel_loops || optimize >= 3;
+
   /* web and rename-registers help when run after loop unrolling.  */
   if (flag_web == AUTODETECT_VALUE)
     flag_web = flag_unroll_loops;
