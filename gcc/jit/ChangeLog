@@ -1,3 +1,16 @@
+2020-05-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/95314
+	* dummy-frontend.c (LANG_HOOKS_DEEP_UNSHARING): Define to be true.
+	* jit-playback.h (gcc::jit::playback::rvalue): Mark tree node with
+	TREE_VISITED.
+
+2020-05-27  Tom Tromey  <tromey@gcc.gnu.org>
+
+	PR jit/91330
+	* docs/conf.py (texinfo_documents): Set description.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
 2020-05-26  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/95306

@@ -1874,7 +1874,7 @@ merged_store_group::can_be_merged_into (store_immediate_info *info)
 	  || stores[0]->rhs_code == BIT_INSERT_EXPR)
       && info->bitregion_start == stores[0]->bitregion_start
       && info->bitregion_end == stores[0]->bitregion_end
-      && info->bitregion_end - info->bitregion_start < MAX_FIXED_MODE_SIZE)
+      && info->bitregion_end - info->bitregion_start <= MAX_FIXED_MODE_SIZE)
     return true;
 
   if (stores[0]->rhs_code == MEM_REF
@@ -1882,7 +1882,7 @@ merged_store_group::can_be_merged_into (store_immediate_info *info)
 	  || info->rhs_code == BIT_INSERT_EXPR)
       && info->bitregion_start == stores[0]->bitregion_start
       && info->bitregion_end == stores[0]->bitregion_end
-      && info->bitregion_end - info->bitregion_start < MAX_FIXED_MODE_SIZE)
+      && info->bitregion_end - info->bitregion_start <= MAX_FIXED_MODE_SIZE)
     return true;
 
   return false;

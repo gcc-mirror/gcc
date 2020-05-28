@@ -18,12 +18,15 @@
 
 import os
 import tempfile
+import unidiff
 import unittest
 
 from git_email import GitEmail
 
 
 script_path = os.path.dirname(os.path.realpath(__file__))
+
+unidiff_supports_renaming = hasattr(unidiff.PatchedFile(), 'is_rename')
 
 
 class TestGccChangelog(unittest.TestCase):
@@ -295,3 +298,10 @@ class TestGccChangelog(unittest.TestCase):
                     'sem_ch12.adb', 'sem_ch4.adb', 'sem_ch7.adb',
                     'sem_ch8.adb', 'sem_elab.adb', 'sem_type.adb',
                     'sem_util.adb'])
+
+    @unittest.skipIf(not unidiff_supports_renaming,
+                     'Newer version of unidiff is needed (0.6.0+)')
+    def test_renamed_file(self):
+        email = self.from_patch_glob(
+            '0001-Ada-Add-support-for-XDR-streaming-in-the-default-run.patch')
+        assert not email.errors

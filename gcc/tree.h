@@ -4037,6 +4037,7 @@ tree_strip_any_location_wrapper (tree exp)
 #define uint16_type_node		global_trees[TI_UINT16_TYPE]
 #define uint32_type_node		global_trees[TI_UINT32_TYPE]
 #define uint64_type_node		global_trees[TI_UINT64_TYPE]
+#define uint128_type_node		global_trees[TI_UINT128_TYPE]
 
 #define void_node			global_trees[TI_VOID]
 

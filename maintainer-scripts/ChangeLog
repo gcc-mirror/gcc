@@ -1,3 +1,8 @@
+2020-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* update_version_git: Rewrite using
+	contrib/gcc-changelog/git_update_version.py.
+
 2020-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* crontab: Snapshots from trunk are now GCC 11 related.

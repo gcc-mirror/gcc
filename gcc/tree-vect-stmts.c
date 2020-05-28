@@ -1668,14 +1668,19 @@ vect_finish_stmt_generation_1 (vec_info *vinfo,
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "add new stmt: %G", vec_stmt);
 
-  gimple_set_location (vec_stmt, gimple_location (stmt_info->stmt));
+  if (stmt_info)
+    {
+      gimple_set_location (vec_stmt, gimple_location (stmt_info->stmt));
 
-  /* While EH edges will generally prevent vectorization, stmt might
-     e.g. be in a must-not-throw region.  Ensure newly created stmts
-     that could throw are part of the same region.  */
-  int lp_nr = lookup_stmt_eh_lp (stmt_info->stmt);
-  if (lp_nr != 0 && stmt_could_throw_p (cfun, vec_stmt))
-    add_stmt_to_eh_lp (vec_stmt, lp_nr);
+      /* While EH edges will generally prevent vectorization, stmt might
+	 e.g. be in a must-not-throw region.  Ensure newly created stmts
+	 that could throw are part of the same region.  */
+      int lp_nr = lookup_stmt_eh_lp (stmt_info->stmt);
+      if (lp_nr != 0 && stmt_could_throw_p (cfun, vec_stmt))
+	add_stmt_to_eh_lp (vec_stmt, lp_nr);
+    }
+  else
+    gcc_assert (!stmt_could_throw_p (cfun, vec_stmt));
 
   return vec_stmt_info;
 }
@@ -1705,7 +1710,7 @@ vect_finish_stmt_generation (vec_info *vinfo,
 			     stmt_vec_info stmt_info, gimple *vec_stmt,
 			     gimple_stmt_iterator *gsi)
 {
-  gcc_assert (gimple_code (stmt_info->stmt) != GIMPLE_LABEL);
+  gcc_assert (!stmt_info || gimple_code (stmt_info->stmt) != GIMPLE_LABEL);
 
   if (!gsi_end_p (*gsi)
       && gimple_has_mem_ops (vec_stmt))
@@ -3003,7 +3008,7 @@ vect_get_data_ptr_increment (vec_info *vinfo,
   return iv_step;
 }
 
-/* Check and perform vectorization of BUILT_IN_BSWAP{16,32,64}.  */
+/* Check and perform vectorization of BUILT_IN_BSWAP{16,32,64,128}.  */
 
 static bool
 vectorizable_bswap (vec_info *vinfo,
@@ -3385,7 +3390,8 @@ vectorizable_call (vec_info *vinfo,
       else if (modifier == NONE
 	       && (gimple_call_builtin_p (stmt, BUILT_IN_BSWAP16)
 		   || gimple_call_builtin_p (stmt, BUILT_IN_BSWAP32)
-		   || gimple_call_builtin_p (stmt, BUILT_IN_BSWAP64)))
+		   || gimple_call_builtin_p (stmt, BUILT_IN_BSWAP64)
+		   || gimple_call_builtin_p (stmt, BUILT_IN_BSWAP128)))
 	return vectorizable_bswap (vinfo, stmt_info, gsi, vec_stmt, slp_node,
 				   slp_op, vectype_in, cost_vec);
       else
@@ -5791,7 +5797,11 @@ vectorizable_shift (vec_info *vinfo,
       if (slp_node
 	  && (!vect_maybe_update_slp_op_vectype (slp_op0, vectype)
 	      || (!scalar_shift_arg
-		  && !vect_maybe_update_slp_op_vectype (slp_op1, vectype))))
+		  && (!incompatible_op1_vectype_p
+		      || dt[1] == vect_constant_def)
+		  && !vect_maybe_update_slp_op_vectype
+			(slp_op1,
+			 incompatible_op1_vectype_p ? vectype : op1_vectype))))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
