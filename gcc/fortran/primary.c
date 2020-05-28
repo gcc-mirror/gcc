@@ -1959,6 +1959,28 @@ is_inquiry_ref (const char *name, gfc_ref **ref)
   else
     return false;
 
+  switch (type)
+    {
+    case INQUIRY_RE:
+    case INQUIRY_IM:
+      if (!gfc_notify_std (GFC_STD_F2008, "RE or IM part_ref at %C"))
+	return false;
+      break;
+
+    case INQUIRY_KIND:
+      if (!gfc_notify_std (GFC_STD_F2003, "KIND part_ref at %C"))
+	return false;
+      break;
+
+    case INQUIRY_LEN:
+      if (!gfc_notify_std (GFC_STD_F2003, "LEN part_ref at %C"))
+	return false;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
   if (ref)
     {
       *ref = gfc_get_ref ();
