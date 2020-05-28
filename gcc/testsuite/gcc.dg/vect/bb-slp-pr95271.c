@@ -1,19 +1,22 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target stdint_types } */
 /* { dg-additional-options "-march=cooperlake" { target x86_64-*-* i?86-*-* } } */
+
+#include <stdint.h>
 
 int a;
 struct b c;
-long d;
+int64_t d;
 struct b {
-  unsigned long address;
-  unsigned long e;
+  uint64_t address;
+  uint64_t e;
 };
 void f()
 {
-  d = (long)(&a)[0] << 56 | (long)((unsigned char *)&a)[1] << 48 |
-      (long)((unsigned char *)&a)[2] << 40 |
-      (long)((unsigned char *)&a)[3] << 32 |
-      (long)((unsigned char *)&a)[4] << 24 | ((unsigned char *)&a)[5] << 16 |
+  d = (int64_t)(&a)[0] << 56 | (int64_t)((unsigned char *)&a)[1] << 48 |
+      (int64_t)((unsigned char *)&a)[2] << 40 |
+      (int64_t)((unsigned char *)&a)[3] << 32 |
+      (int64_t)((unsigned char *)&a)[4] << 24 | ((unsigned char *)&a)[5] << 16 |
       ((unsigned char *)&a)[6] << 8 | ((unsigned char *)&a)[7];
   c.address = c.e = d;
 }
