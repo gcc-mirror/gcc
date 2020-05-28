@@ -3,7 +3,7 @@
 template <class T>
 struct A
 {
-  static constexpr auto x = T::x;
+  static constexpr auto x = T::x; // { dg-error "incomplete" }
 };
 
 struct B;
