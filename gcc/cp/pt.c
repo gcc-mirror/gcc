@@ -25293,6 +25293,7 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
     d = DECL_CLONED_FUNCTION (d);
 
   if (DECL_TEMPLATE_INSTANTIATED (d)
+      || TREE_TYPE (d) == error_mark_node
       || (TREE_CODE (d) == FUNCTION_DECL
 	  && DECL_DEFAULTED_FN (d) && DECL_INITIAL (d))
       || DECL_TEMPLATE_SPECIALIZATION (d))
