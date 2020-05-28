@@ -1,3 +1,99 @@
+2020-05-28  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.c (xtensa_delegitimize_address): New
+	function.
+	(TARGET_DELEGITIMIZE_ADDRESS): New macro.
+
+2020-05-27  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* builtin-types.def (BT_UINT128): New primitive type.
+	(BT_FN_UINT128_UINT128): New function type.
+	* builtins.def (BUILT_IN_BSWAP128): New GCC builtin.
+	* doc/extend.texi (__builtin_bswap128): Document it.
+	* builtins.c (expand_builtin): Deal with BUILT_IN_BSWAP128.
+	(is_inexpensive_builtin): Likewise.
+	* fold-const-call.c (fold_const_call_ss): Likewise.
+	* fold-const.c (tree_call_nonnegative_warnv_p): Likewise.
+	* tree-ssa-ccp.c (evaluate_stmt): Likewise.
+	* tree-vect-stmts.c (vect_get_data_ptr_increment): Likewise.
+	(vectorizable_call): Likewise.
+	* optabs.c (expand_unop): Always use the double word path for it.
+	* tree-core.h (enum tree_index): Add TI_UINT128_TYPE.
+	* tree.h (uint128_type_node): New global type.
+	* tree.c (build_common_tree_nodes): Build it if TImode is supported.
+
+2020-05-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (*mmx_haddv2sf3): Remove SSE alternatives.
+	(mmx_hsubv2sf3): Ditto.
+	(mmx_haddsubv2sf3): New expander.
+	(*mmx_haddsubv2sf3): Rename from mmx_addsubv2sf3. Correct
+	RTL template to model horizontal subtraction and addition.
+	* config/i386/i386-builtin.def (IX86_BUILTIN_PFPNACC):
+	Update for rename.
+
+2020-05-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95355
+	* config/i386/sse.md
+	(<mask_codefor>avx512f_<code>v16qiv16si2<mask_name>):
+	Remove %q operand modifier from insn template.
+	(avx512f_<code>v8hiv8di2<mask_name>): Ditto.
+
+2020-05-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (mmx_pswapdsf2): Add SSE alternatives.
+	Enable insn pattern for TARGET_MMX_WITH_SSE.
+	(*mmx_movshdup): New insn pattern.
+	(*mmx_movsldup): Ditto.
+	(*mmx_movss): Ditto.
+	* config/i386/i386-expand.c (ix86_vectorize_vec_perm_const):
+	Handle E_V2SFmode.
+	(expand_vec_perm_movs): Handle E_V2SFmode.
+	(expand_vec_perm_even_odd): Ditto.
+	(expand_vec_perm_broadcast_1): Assert that E_V2SFmode
+	is already handled by standard shuffle patterns.
+
+2020-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95295
+	* tree-ssa-loop-im.c (sm_seq_valid_bb): Fix sinking after
+	merging stores from paths.
+
+2020-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95356
+	* tree-vect-stmts.c (vectorizable_shift): Adjust vector
+	type for the shift operand.
+
+2020-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95335
+	* tree-vect-slp.c (vect_slp_analyze_node_operations): Reset
+	lvisited for nodes made external.
+
+2020-05-27  Richard Biener  <rguenther@suse.de>
+
+	* dump-context.h (debug_dump_context): New class.
+	(dump_context): Make it friend.
+	* dumpfile.c (debug_dump_context::debug_dump_context):
+	Implement.
+	(debug_dump_context::~debug_dump_context): Likewise.
+	* tree-vect-slp.c: Include dump-context.h.
+	(vect_print_slp_tree): Dump a single SLP node.
+	(debug): New overload for slp_tree.
+	(vect_print_slp_graph): Rename from vect_print_slp_tree and
+	use that.
+	(vect_analyze_slp_instance): Adjust.
+
+2020-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95315
+	* omp-general.c (omp_declare_variant_remove_hook): New function.
+	(omp_resolve_declare_variant): Always return base if it is already
+	declare_variant_alt magic decl itself.  Register
+	omp_declare_variant_remove_hook as cgraph node removal hook.
+
 2020-05-27  Jeff Law  <law@redhat.com>
 
 	* config/h8300/testcompare.md (tst_extzv_1_n): Do not accept constants
