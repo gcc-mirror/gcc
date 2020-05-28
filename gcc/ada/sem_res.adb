@@ -8818,18 +8818,102 @@ package body Sem_Res is
    -------------------------------------
 
    procedure Resolve_Expression_With_Actions (N : Node_Id; Typ : Entity_Id) is
+
+      function OK_For_Static (Act : Node_Id) return Boolean;
+      --  True if Act is an action of a declare_expression that is allowed in a
+      --  static declare_expression.
+
+      function All_OK_For_Static return Boolean;
+      --  True if all actions of N are allowed in a static declare_expression.
+
+      function Get_Literal (Expr : Node_Id) return Node_Id;
+      --  Expr is an expression with compile-time-known value. This returns the
+      --  literal node that reprsents that value.
+
+      function OK_For_Static (Act : Node_Id) return Boolean is
+      begin
+         case Nkind (Act) is
+            when N_Object_Declaration =>
+               if Constant_Present (Act)
+                 and then Is_Static_Expression (Expression (Act))
+               then
+                  return True;
+               end if;
+
+            when N_Object_Renaming_Declaration =>
+               if Statically_Names_Object (Name (Act)) then
+                  return True;
+               end if;
+
+            when others =>
+               --  No other declarations, nor even pragmas, are allowed in a
+               --  declare expression, so if we see something else, it must be
+               --  an internally generated expression_with_actions.
+               null;
+         end case;
+
+         return False;
+      end OK_For_Static;
+
+      function All_OK_For_Static return Boolean is
+         Act : Node_Id := First (Actions (N));
+      begin
+         while Present (Act) loop
+            if not OK_For_Static (Act) then
+               return False;
+            end if;
+
+            Next (Act);
+         end loop;
+
+         return True;
+      end All_OK_For_Static;
+
+      function Get_Literal (Expr : Node_Id) return Node_Id is
+         pragma Assert (Compile_Time_Known_Value (Expr));
+         Result : Node_Id;
+      begin
+         case Nkind (Expr) is
+            when N_Has_Entity =>
+               if Ekind (Entity (Expr)) = E_Enumeration_Literal then
+                  Result := Expr;
+               else
+                  Result := Constant_Value (Entity (Expr));
+               end if;
+            when N_Numeric_Or_String_Literal =>
+               Result := Expr;
+            when others =>
+               raise Program_Error;
+         end case;
+
+         pragma Assert
+           (Nkind (Result) in N_Numeric_Or_String_Literal
+              or else Ekind (Entity (Result)) = E_Enumeration_Literal);
+         return Result;
+      end Get_Literal;
+
+      Loc : constant Source_Ptr := Sloc (N);
+
    begin
       Set_Etype (N, Typ);
 
-      --  If N has no actions, and its expression has been constant folded,
-      --  then rewrite N as just its expression. Note, we can't do this in
-      --  the general case of Is_Empty_List (Actions (N)) as this would cause
-      --  Expression (N) to be expanded again.
+      if Is_Empty_List (Actions (N)) then
+         pragma Assert (All_OK_For_Static); null;
+      end if;
 
-      if Is_Empty_List (Actions (N))
-        and then Compile_Time_Known_Value (Expression (N))
-      then
-         Rewrite (N, Expression (N));
+      --  If the value of the expression is known at compile time, and all
+      --  of the actions (if any) are suitable, then replace the declare
+      --  expression with its expression. This allows the declare expression
+      --  as a whole to be static if appropriate. See AI12-0368.
+
+      if Compile_Time_Known_Value (Expression (N)) then
+         if Is_Empty_List (Actions (N)) then
+            Rewrite (N, Expression (N));
+         elsif All_OK_For_Static then
+            Rewrite
+              (N, New_Copy_Tree
+                    (Get_Literal (Expression (N)), New_Sloc => Loc));
+         end if;
       end if;
    end Resolve_Expression_With_Actions;
 
