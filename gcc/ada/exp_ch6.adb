@@ -2686,9 +2686,10 @@ package body Exp_Ch6 is
               Access_Subprogram_Wrapper (Etype (Name (N)));
             Ptr      : constant Node_Id   := Prefix (Name (N));
             Ptr_Type : constant Entity_Id := Etype (Ptr);
-            Parms    : constant List_Id   := Parameter_Associations (N);
             Typ      : constant Entity_Id := Etype (N);
+
             New_N    : Node_Id;
+            Parms    : List_Id   := Parameter_Associations (N);
             Ptr_Act  : Node_Id;
 
          begin
@@ -2709,6 +2710,12 @@ package body Exp_Ch6 is
 
             else
                Ptr_Act := Ptr;
+            end if;
+
+            --  Handle parameterless subprogram.
+
+            if No (Parms) then
+               Parms := New_List;
             end if;
 
             Append

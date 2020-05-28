@@ -547,10 +547,10 @@ package body Exp_Ch3 is
       Act := First (Parameter_Specifications (Spec_Node));
 
       while Present (Act) loop
+         exit when Act = Last (Parameter_Specifications (Spec_Node));
          Append_To (Actuals,
            Make_Identifier (Loc, Chars (Defining_Identifier (Act))));
          Next (Act);
-         exit when Act = Last (Parameter_Specifications (Spec_Node));
       end loop;
 
       Ptr :=
