@@ -1603,9 +1603,8 @@ pass_complete_unroll::execute (function *fun)
      re-peeling the same loop multiple times.  */
   if (flag_peel_loops)
     peeled_loops = BITMAP_ALLOC (NULL);
-  unsigned int val = tree_unroll_loops_completely (flag_unroll_loops
-						   || flag_peel_loops
-						   || optimize >= 3, true);
+  unsigned int val = tree_unroll_loops_completely (flag_cunroll_grow_size, 
+						   true);
   if (peeled_loops)
     {
       BITMAP_FREE (peeled_loops);
