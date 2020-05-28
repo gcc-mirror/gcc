@@ -1,3 +1,31 @@
+2020-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95282
+	* include/bits/atomic_base.h (__atomic_impl::load): Add
+	cv-qualifiers to parameter so that _Tp is deduced as the
+	unqualified type.
+	* testsuite/29_atomics/atomic_float/95282.cc: New test.
+
+2020-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95322
+	* include/std/ranges (transform_view::_Sentinel): Allow hidden
+	friends to work with _Iterator<true> and _Iterator<false>.
+	(join_view::_Sentinel): Likewise.
+	* testsuite/std/ranges/adaptors/95322.cc: New test.
+
+2020-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94354
+	* include/bits/stl_iterator.h (reverse_iterator): Fix comparison
+	operators to use the correct operations on the underlying
+	iterators.
+	* testsuite/24_iterators/reverse_iterator/rel_ops.cc: New test.
+
+2020-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/comparisons/categories/zero_neg.cc: New test.
+
 2020-05-26  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/95322

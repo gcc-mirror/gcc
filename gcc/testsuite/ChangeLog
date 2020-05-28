@@ -1,3 +1,79 @@
+2020-05-28  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/gcc-defs.exp: Avoid introducing empty arguments between
+	consecutive blanks in board linking options.
+	* gcc.misc-tests/outputs.exp: Likewise.  Document
+	-gsplit-dwarf testing, skip LTO tests if -flto is not
+	supported, detect the default linker output name, cope with
+	the need for an explicit executable output.
+
+2020-05-27  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gcc.dg/builtin-bswap-10.c: New test.
+	* gcc.dg/builtin-bswap-11.c: Likewise.
+	* gcc.dg/builtin-bswap-12.c: Likewise.
+	* gcc.target/i386/builtin-bswap-5.c: Likewise.
+
+2020-05-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95090
+	* gfortran.dg/pr95090.f90: New test.
+
+2020-05-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95355
+	* gcc.target/i386/pr95355.c: New test.
+
+2020-05-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/95314
+	* jit.dg/all-non-failing-tests.h: Add test-pr95314-rvalue-reuse.c.
+	* jit.dg/test-pr95314-rvalue-reuse.c: New test.
+
+2020-05-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95319
+	* g++.dg/cpp0x/initlist-array12.C: New test.
+
+2020-05-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/50392
+	* gfortran.dg/pr50392.f: New test.
+
+2020-05-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/vperm-v2sf.c: New test.
+
+2020-05-27  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/spaceship-synth2.C: Add
+	-Wzero-as-null-pointer-constant.
+
+2020-05-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95222
+	* g++.dg/ext/tmplattr10.C: New test.
+
+2020-05-27  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/95263
+	* g++.dg/template/pr95263.C: New file.
+
+2020-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95295
+	* gcc.dg/torture/pr95295-3.c: New testcase.
+
+2020-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95335
+	* gcc.dg/vect/bb-slp-pr95335.c: New testcase.
+
+2020-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95315
+	* gcc.dg/gomp/pr95315.c: New test.
+
 2020-05-26  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/95306
