@@ -5792,7 +5792,11 @@ vectorizable_shift (vec_info *vinfo,
       if (slp_node
 	  && (!vect_maybe_update_slp_op_vectype (slp_op0, vectype)
 	      || (!scalar_shift_arg
-		  && !vect_maybe_update_slp_op_vectype (slp_op1, vectype))))
+		  && (!incompatible_op1_vectype_p
+		      || dt[1] == vect_constant_def)
+		  && !vect_maybe_update_slp_op_vectype
+			(slp_op1,
+			 incompatible_op1_vectype_p ? vectype : op1_vectype))))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
