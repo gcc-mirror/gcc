@@ -8180,7 +8180,7 @@ aarch64_expand_epilogue (bool for_sibcall)
   if (callee_adjust != 0)
     aarch64_pop_regs (reg1, reg2, callee_adjust, &cfi_ops);
 
-  if (callee_adjust != 0 || maybe_gt (initial_adjust, 65536))
+  if (cfi_ops && (callee_adjust != 0 || maybe_gt (initial_adjust, 65536)))
     {
       /* Emit delayed restores and set the CFA to be SP + initial_adjust.  */
       insn = get_last_insn ();
