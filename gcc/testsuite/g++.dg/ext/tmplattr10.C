@@ -1,5 +1,5 @@
 // PR c++/95222
-// { dg-do compile { target { { i?86-*-* x86_64-*-* } && ia32 } } }
+// { dg-do compile { target { { { i?86-*-* x86_64-*-* } && ia32 } && c++11 } } }
 
 #if defined(_MSC_VER)
 #define CC_FASTCALL __fastcall
