@@ -10254,7 +10254,7 @@ When enabled, interprocedural constant propagation performs function cloning
 when externally visible function can be called with constant arguments.
 Because this optimization can create multiple copies of functions,
 it may significantly increase code size
-(see @option{--param ipcp-unit-growth=@var{value}}).
+(see @option{--param ipa-cp-unit-growth=@var{value}}).
 This flag is enabled by default at @option{-O3}.
 It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
@@ -12143,7 +12143,7 @@ For example, parameter value 20 limits unit growth to 1.2 times the original
 size. Cold functions (either marked cold via an attribute or by profile
 feedback) are not accounted into the unit size.
 
-@item ipcp-unit-growth
+@item ipa-cp-unit-growth
 Specifies maximal overall growth of the compilation unit caused by
 interprocedural constant propagation.  For example, parameter value 10 limits
 unit growth to 1.1 times the original size.
@@ -13149,9 +13149,6 @@ will not try to thread through its block.
 Maximum number of nested calls to search for control dependencies
 during uninitialized variable analysis.
 
-@item max-once-peeled-insns
-The maximum number of insns of a peeled loop that rolls only once.
-
 @item sra-max-scalarization-size-Osize
 Maximum size, in storage units, of an aggregate
 which should be considered for scalarization when compiling for size.
@@ -13181,6 +13178,37 @@ a property of a variable such as its value.  This limits the number
 of iterations or recursive calls GCC performs when optimizing certain
 statements or when determining their validity prior to issuing
 diagnostics.
+
+@item store-merging-max-size
+Maximum size of a single store merging region in bytes.
+
+@item hash-table-verification-limit
+The number of elements for which hash table verification is done
+for each searched element.
+
+@item max-find-base-term-values
+Maximum number of VALUEs handled during a single find_base_term call.
+
+@item analyzer-max-enodes-per-program-point
+The maximum number of exploded nodes per program point within
+the analyzer, before terminating analysis of that point.
+
+@item analyzer-min-snodes-for-call-summary
+The minimum number of supernodes within a function for the
+analyzer to consider summarizing its effects at call sites.
+
+@item analyzer-max-recursion-depth
+The maximum number of times a callsite can appear in a call stack
+within the analyzer, before terminating analysis of a call that would
+recurse deeper.
+
+@item gimple-fe-computed-hot-bb-threshold
+The number of executions of a basic block which is considered hot.
+The parameter is used only in GIMPLE FE.
+
+@item analyzer-bb-explosion-factor
+The maximum number of 'after supernode' exploded nodes within the analyzer
+per supernode, before terminating analysis.
 
 @end table
 
