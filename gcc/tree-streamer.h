@@ -59,7 +59,6 @@ struct streamer_tree_cache_d
 
 /* In tree-streamer-in.c.  */
 tree streamer_read_string_cst (class data_in *, class lto_input_block *);
-tree streamer_read_chain (class lto_input_block *, class data_in *);
 tree streamer_alloc_tree (class lto_input_block *, class data_in *,
 		          enum LTO_tags);
 void streamer_read_tree_body (class lto_input_block *, class data_in *, tree);
@@ -70,11 +69,10 @@ void streamer_read_tree_bitfields (class lto_input_block *,
 /* In tree-streamer-out.c.  */
 void streamer_write_string_cst (struct output_block *,
 				struct lto_output_stream *, tree);
-void streamer_write_chain (struct output_block *, tree, bool);
 void streamer_write_tree_header (struct output_block *, tree);
 void streamer_write_tree_bitfields (struct output_block *, tree);
-void streamer_write_tree_body (struct output_block *, tree, bool);
-void streamer_write_integer_cst (struct output_block *, tree, bool);
+void streamer_write_tree_body (struct output_block *, tree);
+void streamer_write_integer_cst (struct output_block *, tree);
 
 /* In tree-streamer.c.  */
 extern unsigned char streamer_mode_table[1 << 8];

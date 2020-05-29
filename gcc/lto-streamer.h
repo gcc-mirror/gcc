@@ -914,6 +914,7 @@ hashval_t lto_input_scc (class lto_input_block *, class data_in *,
 tree lto_input_tree_1 (class lto_input_block *, class data_in *,
 		       enum LTO_tags, hashval_t hash);
 tree lto_input_tree (class lto_input_block *, class data_in *);
+tree stream_read_tree_ref (class lto_input_block *, class data_in *);
 
 
 /* In lto-streamer-out.c  */
@@ -921,6 +922,7 @@ extern void lto_register_decl_definition (tree, struct lto_file_decl_data *);
 extern struct output_block *create_output_block (enum lto_section_type);
 extern void destroy_output_block (struct output_block *);
 extern void lto_output_tree (struct output_block *, tree, bool, bool);
+extern void stream_write_tree_ref (struct output_block *, tree);
 extern void lto_output_toplevel_asms (void);
 extern void produce_asm (struct output_block *ob, tree fn);
 extern void lto_output ();

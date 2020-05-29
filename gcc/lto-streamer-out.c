@@ -409,6 +409,34 @@ get_symbol_initial_value (lto_symtab_encoder_t encoder, tree expr)
 }
 
 
+/* Output reference to tree T to the stream.
+   Assume that T is already in encoder cache. 
+   This is used to stream tree bodies where we know the DFS walk arranged
+   everything to cache.  Must be matched with stream_read_tree_ref.  */
+
+void
+stream_write_tree_ref (struct output_block *ob, tree t)
+{
+  if (!t)
+    streamer_write_zero (ob);
+  else
+    {
+      unsigned int ix;
+      bool existed_p = streamer_tree_cache_lookup (ob->writer_cache, t, &ix);
+      if (existed_p)
+	streamer_write_uhwi (ob, ix + LTO_NUM_TAGS);
+      else
+	{
+	  gcc_checking_assert (tree_is_indexable (t));
+	  lto_output_tree_ref (ob, t);
+	}
+      if (streamer_debugging)
+	streamer_write_uhwi (ob, TREE_CODE (t));
+    }
+}
+
+
+
 /* Write a physical representation of tree node EXPR to output block
    OB.  If REF_P is true, the leaves of EXPR are emitted as references
    via lto_output_tree_ref.  IX is the index into the streamer cache
@@ -430,7 +458,7 @@ lto_write_tree_1 (struct output_block *ob, tree expr, bool ref_p)
   streamer_write_tree_bitfields (ob, expr);
 
   /* Write all the pointer fields in EXPR.  */
-  streamer_write_tree_body (ob, expr, ref_p);
+  streamer_write_tree_body (ob, expr);
 
   /* Write any LTO-specific data to OB.  */
   if (DECL_P (expr)
@@ -505,7 +533,7 @@ lto_output_tree_1 (struct output_block *ob, tree expr, hashval_t hash,
       /* Shared INTEGER_CST nodes are special because they need their
 	 original type to be materialized by the reader (to implement
 	 TYPE_CACHED_VALUES).  */
-      streamer_write_integer_cst (ob, expr, ref_p);
+      streamer_write_integer_cst (ob, expr);
     }
   else
     {
@@ -1685,7 +1713,7 @@ DFS::DFS_write_tree (struct output_block *ob, sccs *from_state,
   /* Check if we already streamed EXPR.  */
   if (streamer_tree_cache_lookup (ob->writer_cache, expr, NULL))
     {
-      /* Refernece to a local tree makes entry also local.  We always process
+      /* Reference to a local tree makes entry also local.  We always process
 	 top of stack entry, so set max to number of entries in stack - 1.  */
       if (ob->local_trees
 	  && ob->local_trees->contains (expr))
@@ -2270,6 +2298,29 @@ lto_prepare_function_for_streaming (struct cgraph_node *node)
 	}
     }
 
+}
+
+/* Emit the chain of tree nodes starting at T.  OB is the output block
+   to write to.  REF_P is true if chain elements should be emitted
+   as references.  */
+
+static void
+streamer_write_chain (struct output_block *ob, tree t, bool ref_p)
+{
+  while (t)
+    {
+      /* We avoid outputting external vars or functions by reference
+	 to the global decls section as we do not want to have them
+	 enter decl merging.  We should not need to do this anymore because
+	 free_lang_data removes them from block scopes.  */
+      gcc_assert (!VAR_OR_FUNCTION_DECL_P (t) || !DECL_EXTERNAL (t));
+      stream_write_tree (ob, t, ref_p);
+
+      t = TREE_CHAIN (t);
+    }
+
+  /* Write a sentinel to terminate the chain.  */
+  stream_write_tree (ob, NULL_TREE, ref_p);
 }
 
 /* Output the body of function NODE->DECL.  */
