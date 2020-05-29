@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "case-cfn-macros.h"
 #include "tree-eh.h"
+#include "gimple-fold.h"
 
 static unsigned int tree_ssa_phiopt_worker (bool, bool, bool);
 static bool two_value_replacement (basic_block, basic_block, edge, gphi *,
@@ -1364,7 +1365,6 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 {
   tree result, type, rhs;
   gcond *cond;
-  gassign *new_stmt;
   edge true_edge, false_edge;
   enum tree_code cmp, minmax, ass_code;
   tree smaller, alt_smaller, larger, alt_larger, arg_true, arg_false;
@@ -1688,19 +1688,20 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
       gsi_move_before (&gsi_from, &gsi);
     }
 
-  /* Create an SSA var to hold the min/max result.  If we're the only
-     things setting the target PHI, then we  can clone the PHI
-     variable.  Otherwise we must create a new one.  */
-  result = PHI_RESULT (phi);
-  if (EDGE_COUNT (gimple_bb (phi)->preds) == 2)
-    result = duplicate_ssa_name (result, NULL);
-  else
-    result = make_ssa_name (TREE_TYPE (result));
-
   /* Emit the statement to compute min/max.  */
-  new_stmt = gimple_build_assign (result, minmax, arg0, arg1);
+  gimple_seq stmts = NULL;
+  tree phi_result = PHI_RESULT (phi);
+  result = gimple_build (&stmts, minmax, TREE_TYPE (phi_result), arg0, arg1);
+  /* Duplicate range info if we're the only things setting the target PHI.  */
+  if (!gimple_seq_empty_p (stmts)
+      && EDGE_COUNT (gimple_bb (phi)->preds) == 2
+      && !POINTER_TYPE_P (TREE_TYPE (phi_result))
+      && SSA_NAME_RANGE_INFO (phi_result))
+    duplicate_ssa_name_range_info (result, SSA_NAME_RANGE_TYPE (phi_result),
+				   SSA_NAME_RANGE_INFO (phi_result));
+
   gsi = gsi_last_bb (cond_bb);
-  gsi_insert_before (&gsi, new_stmt, GSI_NEW_STMT);
+  gsi_insert_seq_before (&gsi, stmts, GSI_NEW_STMT);
 
   replace_phi_edge_with_variable (cond_bb, e1, phi, result);
 

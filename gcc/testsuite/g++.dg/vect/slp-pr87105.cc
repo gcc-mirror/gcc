@@ -102,4 +102,4 @@ void quadBoundingBoxA(const Point bez[3], Box& bBox) noexcept {
 // { dg-final { scan-tree-dump-times "basic block part vectorized" 1 "slp2" { xfail { { ! vect_element_align } && { ! vect_hw_misalign } } } } }
 // It's a bit awkward to detect that all stores were vectorized but the
 // following more or less does the trick
-// { dg-final { scan-tree-dump "vect_iftmp\[^\r\m\]* = MIN" "slp2" { xfail { { ! vect_element_align } && { ! vect_hw_misalign } } } } }
+// { dg-final { scan-tree-dump "vect_\[^\r\m\]* = MIN" "slp2" { xfail { { ! vect_element_align } && { ! vect_hw_misalign } } } } }
