@@ -9225,7 +9225,7 @@ vectorizable_load (vec_info *vinfo,
 	     unpermuted sequence.  In other cases we need to load the
 	     whole group, not only the number of vector stmts the
 	     permutation result fits in.  */
-	  unsigned scalar_lanes = SLP_TREE_SCALAR_STMTS (slp_node).length ();
+	  unsigned scalar_lanes = SLP_TREE_LANES (slp_node);
 	  if (slp_perm
 	      && (group_size != scalar_lanes 
 		  || !multiple_p (nunits, group_size)))
@@ -11603,11 +11603,7 @@ get_vectype_for_scalar_type (vec_info *vinfo, tree scalar_type, slp_tree node)
 {
   unsigned int group_size = 0;
   if (node)
-    {
-      group_size = SLP_TREE_SCALAR_OPS (node).length ();
-      if (group_size == 0)
-	group_size = SLP_TREE_SCALAR_STMTS (node).length ();
-    }
+    group_size = SLP_TREE_LANES (node);
   return get_vectype_for_scalar_type (vinfo, scalar_type, group_size);
 }
 

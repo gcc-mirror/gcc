@@ -64,6 +64,7 @@ _slp_tree::_slp_tree ()
   SLP_TREE_REPRESENTATIVE (this) = NULL;
   this->refcnt = 1;
   this->max_nunits = 1;
+  this->lanes = 0;
 }
 
 /* Tear down a SLP node.  */
@@ -134,6 +135,7 @@ vect_create_new_slp_node (vec<stmt_vec_info> scalar_stmts, unsigned nops)
   SLP_TREE_CHILDREN (node).create (nops);
   SLP_TREE_DEF_TYPE (node) = vect_internal_def;
   SLP_TREE_REPRESENTATIVE (node) = scalar_stmts[0];
+  SLP_TREE_LANES (node) = scalar_stmts.length ();
 
   unsigned i;
   stmt_vec_info stmt_info;
@@ -151,6 +153,7 @@ vect_create_new_slp_node (vec<tree> ops)
   slp_tree node = new _slp_tree;
   SLP_TREE_SCALAR_OPS (node) = ops;
   SLP_TREE_DEF_TYPE (node) = vect_external_def;
+  SLP_TREE_LANES (node) = ops.length ();
   return node;
 }
 
@@ -1670,6 +1673,7 @@ slp_copy_subtree (slp_tree node, hash_map<slp_tree, slp_tree> &map)
   SLP_TREE_DEF_TYPE (copy) = SLP_TREE_DEF_TYPE (node);
   SLP_TREE_VECTYPE (copy) = SLP_TREE_VECTYPE (node);
   SLP_TREE_REPRESENTATIVE (copy) = SLP_TREE_REPRESENTATIVE (node);
+  SLP_TREE_LANES (copy) = SLP_TREE_LANES (node);
   copy->max_nunits = node->max_nunits;
   copy->refcnt = 0;
   if (SLP_TREE_SCALAR_STMTS (node).exists ())
@@ -2377,8 +2381,7 @@ vect_optimize_slp (vec_info *vinfo)
 		 a gap either because the group is larger than the SLP
 		 group-size or because there is a gap between the groups.  */
 	      && (known_eq (LOOP_VINFO_VECT_FACTOR (as_a <loop_vec_info> (vinfo)), 1U)
-		  || ((SLP_TREE_SCALAR_STMTS (node).length ()
-		       == DR_GROUP_SIZE (first_stmt_info))
+		  || ((SLP_TREE_LANES (node) == DR_GROUP_SIZE (first_stmt_info))
 		      && DR_GROUP_GAP (first_stmt_info) == 0)))
 	    {
 	      SLP_TREE_LOAD_PERMUTATION (node).release ();
@@ -2612,7 +2615,7 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
 	vf = loop_vinfo->vectorization_factor;
       else
 	vf = 1;
-      unsigned int group_size = SLP_TREE_SCALAR_STMTS (node).length ();
+      unsigned int group_size = SLP_TREE_LANES (node);
       tree vectype = STMT_VINFO_VECTYPE (stmt_info);
       SLP_TREE_NUMBER_OF_VEC_STMTS (node)
 	= vect_get_num_vectors (vf * group_size, vectype);
@@ -2645,7 +2648,7 @@ vect_slp_convert_to_external (vec_info *vinfo, slp_tree node,
   /* Don't remove and free the child nodes here, since they could be
      referenced by other structures.  The analysis and scheduling phases
      (need to) ignore child nodes of anything that isn't vect_internal_def.  */
-  unsigned int group_size = SLP_TREE_SCALAR_STMTS (node).length ();
+  unsigned int group_size = SLP_TREE_LANES (node);
   SLP_TREE_DEF_TYPE (node) = vect_external_def;
   SLP_TREE_SCALAR_OPS (node).safe_grow (group_size);
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
@@ -2955,8 +2958,7 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo)
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
       auto_vec<bool, 20> life;
-      life.safe_grow_cleared
-	(SLP_TREE_SCALAR_STMTS (SLP_INSTANCE_TREE (instance)).length ());
+      life.safe_grow_cleared (SLP_TREE_LANES (SLP_INSTANCE_TREE (instance)));
       vect_bb_slp_scalar_cost (bb_vinfo,
 			       SLP_INSTANCE_TREE (instance),
 			       &life, &scalar_costs, visited);

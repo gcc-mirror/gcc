@@ -4516,7 +4516,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
   tree induction_index = NULL_TREE;
 
   if (slp_node)
-    group_size = SLP_TREE_SCALAR_STMTS (slp_node).length (); 
+    group_size = SLP_TREE_LANES (slp_node);
 
   if (nested_in_vect_loop_p (loop, stmt_info))
     {
@@ -6594,7 +6594,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	 which each SLP statement has its own initial value and in which
 	 that value needs to be repeated for every instance of the
 	 statement within the initial vector.  */
-      unsigned int group_size = SLP_TREE_SCALAR_STMTS (slp_node).length ();
+      unsigned int group_size = SLP_TREE_LANES (slp_node);
       if (!neutral_op
 	  && !can_duplicate_and_interleave_p (loop_vinfo, group_size,
 					      TREE_TYPE (vectype_out)))
@@ -7110,9 +7110,8 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
   if (slp_node)
     {
       /* The size vect_schedule_slp_instance computes is off for us.  */
-      vec_num = vect_get_num_vectors
-	  (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
-	   * SLP_TREE_SCALAR_STMTS (slp_node).length (), vectype_in);
+      vec_num = vect_get_num_vectors (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
+				      * SLP_TREE_LANES (slp_node), vectype_in);
       ncopies = 1;
     }
   else
@@ -7558,7 +7557,7 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 				   new_vec, step_vectype, NULL);
 
       /* Now generate the IVs.  */
-      unsigned group_size = SLP_TREE_SCALAR_STMTS (slp_node).length ();
+      unsigned group_size = SLP_TREE_LANES (slp_node);
       unsigned nvects = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
       unsigned elts = const_nunits * nvects;
       /* Compute the number of distinct IVs we need.  First reduce
@@ -7999,7 +7998,7 @@ vectorizable_live_operation (loop_vec_info loop_vinfo,
     {
       gcc_assert (slp_index >= 0);
 
-      int num_scalar = SLP_TREE_SCALAR_STMTS (slp_node).length ();
+      int num_scalar = SLP_TREE_LANES (slp_node);
       int num_vec = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
 
       /* Get the last occurrence of the scalar index from the concatenation of
