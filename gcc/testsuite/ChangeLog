@@ -1,3 +1,59 @@
+2020-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/95328
+	* g++.dg/cpp1z/decomp53.C: New test.
+
+2020-05-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95373
+	* gfortran.dg/pr95373_1.f90: New test.
+	* gfortran.dg/pr95373_2.f90: New test.
+
+2020-05-28  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp1z/pr86648.C: Expect error.
+	* g++.dg/cpp1z/static2.C: Expect error.
+	* g++.dg/cpp0x/nsdmi16.C: New test.
+
+2020-05-28  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp0x/initlist-array12.C: Fix the definition of
+	initializer_list for ilp32 target.
+
+2020-05-28  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/ext/tmplattr10.C: Only run in c++11.
+
+2020-05-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.dg/builtin-bswap-10.c: Check "! int128" instead of ilp32
+
+2020-05-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/94397
+	* gfortran.dg/pr94397.F90: New test.
+
+2020-05-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/shrink_wrap_1.c: New test.
+
+2020-05-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/95361
+	* gcc.target/aarch64/sve/pr95361.c: New test.
+
+2020-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95273
+	PR tree-optimization/95356
+	* gcc.target/i386/pr95356.c: New testcase.
+
+2020-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/95363
+	* gcc.dg/vect/bb-slp-pr95271.c: Fix on ilp32 targets.
+
 2020-05-28  Alexandre Oliva  <oliva@adacore.com>
 
 	* lib/gcc-defs.exp: Avoid introducing empty arguments between

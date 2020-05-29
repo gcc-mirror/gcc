@@ -1,3 +1,17 @@
+2020-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/95328
+	* decl.c (cp_finish_decomp): Call complete_type before checking
+	COMPLETE_TYPE_P.
+
+2020-05-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94926
+	* decl.c (cp_finish_decl): Revert r9-297 change.
+	(check_static_variable_definition): Likewise.
+	* constexpr.c (ensure_literal_type_for_constexpr_object): Likewise.
+	* pt.c (instantiate_decl): Return early on type error.
+
 2020-05-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/95319

@@ -1,3 +1,132 @@
+2020-05-28  Nicolas Bértolo  <nicolasbertolo@gmail.com>
+
+	* Makefile.in: don't look for libiberty in the "pic" subdirectory
+	when building for Mingw. Add dependency on xgcc with the proper
+	extension.
+
+2020-05-28  Jeff Law  <law@redhat.com>
+
+	* config/h8300/logical.md (bclrhi_msx): Remove pattern.
+
+2020-05-28  Jeff Law  <law@redhat.com>
+
+	* config/h8300/logical.md (HImode H8/SX bit-and splitter): Don't
+	make a nonzero adjustment to the memory offset.
+	(b<ior,xor>hi_msx): Turn into a splitter.
+
+2020-05-28  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gimple-ssa-store-merging.c (merged_store_group::can_be_merged_into):
+	Fix off-by-one error.
+
+2020-05-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (aarch64_frame): Add a comment above
+	wb_candidate1 and wb_candidate2.
+	* config/aarch64/aarch64.c (aarch64_layout_frame): Invalidate
+	wb_candidate1 and wb_candidate2 if we decided not to use them.
+
+2020-05-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/95361
+	* config/aarch64/aarch64.c (aarch64_expand_epilogue): Assert that
+	we have at least some CFI operations when using a frame pointer.
+	Only redefine the CFA if we have CFI operations.
+
+2020-05-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_prologue_cost_for_slp): Remove
+	case for !SLP_TREE_VECTYPE.
+	(vect_slp_analyze_node_operations): Adjust.
+
+2020-05-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_slp_tree::vec_defs): Add.
+	(SLP_TREE_VEC_DEFS): Likewise.
+	* tree-vect-slp.c (_slp_tree::_slp_tree): Adjust.
+	(_slp_tree::~_slp_tree): Likewise.
+	(vect_mask_constant_operand_p): Remove unused function.
+	(vect_get_constant_vectors): Rename to...
+	(vect_create_constant_vectors): ... this.  Take the
+	invariant node as argument and code generate it.  Remove
+	dead code, remove temporary asserts.  Pass a NULL stmt_info
+	to vect_init_vector.
+	(vect_get_slp_defs): Simplify.
+	(vect_schedule_slp_instance): Code-generate externals and
+	invariants using vect_create_constant_vectors.
+
+2020-05-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.c (vect_finish_stmt_generation_1):
+	Conditionalize stmt_info use, assert the new stmt cannot throw
+	when not specified.
+	(vect_finish_stmt_generation): Adjust assert.
+
+2020-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95273
+	PR tree-optimization/95356
+	* tree-vect-stmts.c (vectorizable_shift): Adjust when and to
+	what we set the vector type of the shift operand SLP node
+	again.
+
+2020-05-28  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/arm.c (mve_vector_mem_operand): Fix unwanted
+	fall-throughs.
+
+2020-05-28  Martin Liska  <mliska@suse.cz>
+
+	PR web/95380
+	* doc/invoke.texi: Add missing params, remove max-once-peeled-insns and
+	rename ipcp-unit-growth to ipa-cp-unit-growth.
+
+2020-05-28  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (*avx512vl_<code>v2div2qi2_store_1): Rename
+	from *avx512vl_<code>v2div2qi_store and refine memory size of
+	the pattern.
+	(*avx512vl_<code>v2div2qi2_mask_store_1): Ditto.
+	(*avx512vl_<code><mode>v4qi2_store_1): Ditto.
+	(*avx512vl_<code><mode>v4qi2_mask_store_1): Ditto.
+	(*avx512vl_<code><mode>v8qi2_store_1): Ditto.
+	(*avx512vl_<code><mode>v8qi2_mask_store_1): Ditto.
+	(*avx512vl_<code><mode>v4hi2_store_1): Ditto.
+	(*avx512vl_<code><mode>v4hi2_mask_store_1): Ditto.
+	(*avx512vl_<code>v2div2hi2_store_1): Ditto.
+	(*avx512vl_<code>v2div2hi2_mask_store_1): Ditto.
+	(*avx512vl_<code>v2div2si2_store_1): Ditto.
+	(*avx512vl_<code>v2div2si2_mask_store_1): Ditto.
+	(*avx512f_<code>v8div16qi2_store_1): Ditto.
+	(*avx512f_<code>v8div16qi2_mask_store_1): Ditto.
+	(*avx512vl_<code>v2div2qi2_store_2): New define_insn_and_split.
+	(*avx512vl_<code>v2div2qi2_mask_store_2): Ditto.
+	(*avx512vl_<code><mode>v4qi2_store_2): Ditto.
+	(*avx512vl_<code><mode>v4qi2_mask_store_2): Ditto.
+	(*avx512vl_<code><mode>v8qi2_store_2): Ditto.
+	(*avx512vl_<code><mode>v8qi2_mask_store_2): Ditto.
+	(*avx512vl_<code><mode>v4hi2_store_2): Ditto.
+	(*avx512vl_<code><mode>v4hi2_mask_store_2): Ditto.
+	(*avx512vl_<code>v2div2hi2_store_2): Ditto.
+	(*avx512vl_<code>v2div2hi2_mask_store_2): Ditto.
+	(*avx512vl_<code>v2div2si2_store_2): Ditto.
+	(*avx512vl_<code>v2div2si2_mask_store_2): Ditto.
+	(*avx512f_<code>v8div16qi2_store_2): Ditto.
+	(*avx512f_<code>v8div16qi2_mask_store_2): Ditto.
+	* config/i386/i386-builtin-types.def: Adjust builtin type.
+	* config/i386/i386-expand.c: Ditto.
+	* config/i386/i386-builtin.def: Adjust builtin.
+	* config/i386/avx512fintrin.h: Ditto.
+	* config/i386/avx512vlbwintrin.h: Ditto.
+	* config/i386/avx512vlintrin.h: Ditto.
+
+2020-05-28  Dong JianQiang  <dongjianqiang2@huawei.com>
+
+	PR gcov-profile/95332
+	* gcov-io.c (gcov_var::endian): Move field.
+	(from_file): Add IN_GCOV_TOOL check.
+	* gcov-io.h (gcov_magic): Ditto.
+
 2020-05-28  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/xtensa.c (xtensa_delegitimize_address): New

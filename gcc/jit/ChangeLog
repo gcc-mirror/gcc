@@ -1,3 +1,25 @@
+2020-05-28  Nicolas Bértolo  <nicolasbertolo@gmail.com>
+
+	* Make-lang.in: Remove extra slash. Build libgccjit.dll and its
+	import library in Windows.
+	* config-lang.in: Update comment about --enable-host-shared.
+	* jit-w32.h: New file.
+	* jit-w32.c: New file.
+	(print_last_error): New function that prints the error
+	string corresponding to GetLastError().
+	(get_TOKEN_USER_current_user): Helper function used for getting
+	the SID belonging to the current user.
+	(create_directory_for_current_user): Helper function to create
+	a directory with permissions such that only the current user can
+	access it.
+	(win_mkdtemp): Create a temporary directory using Windows APIs.
+	* jit-playback.c: Do not chmod files in Windows. Use LoadLibrary,
+	FreeLibrary and GetProcAddress instead of libdl.
+	* jit-result.h, jit-result.c: Introduce result::handle_t to
+	abstract over the types used for dynamic library handles.
+	* jit-tempdir.c: Do not use mkdtemp() in Windows, use
+	win_mkdtemp().
+
 2020-05-27  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/95314
