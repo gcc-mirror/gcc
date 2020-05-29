@@ -2492,11 +2492,12 @@ satisfy_disjunction (tree t, tree args, subst_info info)
 tree
 satisfaction_value (tree t)
 {
-  if (t == error_mark_node)
+  if (t == error_mark_node || t == boolean_true_node || t == boolean_false_node)
     return t;
-  if (t == boolean_true_node || t == integer_one_node)
+  gcc_assert (TREE_CODE (t) == INTEGER_CST);
+  if (integer_onep (t))
     return boolean_true_node;
-  if (t == boolean_false_node || t == integer_zero_node)
+  if (integer_zerop (t))
     return boolean_false_node;
 
   /* Anything else should be invalid.  */
