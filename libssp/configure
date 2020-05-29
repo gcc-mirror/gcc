@@ -4332,13 +4332,14 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for CET support" >&5
 $as_echo_n "checking for CET support... " >&6; }
 
+# NB: Avoid nested save_CFLAGS and save_LDFLAGS.
 case "$host" in
   i[34567]86-*-linux* | x86_64-*-linux*)
     case "$enable_cet" in
       auto)
 	# Check if target supports multi-byte NOPs
 	# and if assembler supports CET insn.
-	save_CFLAGS="$CFLAGS"
+	cet_save_CFLAGS="$CFLAGS"
 	CFLAGS="$CFLAGS -fcf-protection"
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -4363,7 +4364,7 @@ else
   enable_cet=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-	CFLAGS="$save_CFLAGS"
+	CFLAGS="$cet_save_CFLAGS"
 	;;
       yes)
 	# Check if assembler supports CET.
@@ -10999,7 +11000,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11002 "configure"
+#line 11003 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11105,7 +11106,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11108 "configure"
+#line 11109 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
