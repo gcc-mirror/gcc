@@ -2945,3 +2945,31 @@ index 00000000000..fda10c1a88b
 +
 -- 
 2.26.2
+
+=== 0001-Missing-change-description.patch ===
+From 8ec655bd94615ba45adabae9b50df299edb74eda Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Fri, 29 May 2020 13:42:57 +0200
+Subject: [PATCH] Test me.
+
+gcc/ChangeLog:
+
+	* ipa-icf-gimple.c (compare_gimple_asm):
+	* ipa-icf-gimple2.c (compare_gimple_asm): Good.
+	* ipa-icf-gimple3.c (compare_gimple_asm):
+---
+ contrib/gcc-changelog/git_commit.py | 10 ++++++++++
+ gcc/ipa-icf-gimple.c                |  1 +
+ 2 files changed, 11 insertions(+)
+
+diff --git a/gcc/ipa-icf-gimple.c b/gcc/ipa-icf-gimple.c
+index 1cd5872c03d..6f95aedb3d3 100644
+--- a/gcc/ipa-icf-gimple.c
++++ b/gcc/ipa-icf-gimple.c
+@@ -850,3 +850,4 @@
+ }
+ 
+ } // ipa_icf_gimple namespace
++
+-- 
+2.26.2
