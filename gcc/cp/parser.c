@@ -27663,11 +27663,16 @@ static tree
 cp_parser_requires_clause_expression (cp_parser *parser, bool lambda_p)
 {
   processing_constraint_expression_sentinel parsing_constraint;
-  ++processing_template_decl;
+  temp_override<int> ovr (processing_template_decl);
+  if (!processing_template_decl)
+    /* Adjust processing_template_decl so that we always obtain template
+       trees here.  We don't do the usual ++processing_template_decl
+       because that would skew the template parameter depth of a lambda
+       within if we're already inside a template.  */
+    processing_template_decl = 1;
   cp_expr expr = cp_parser_constraint_logical_or_expression (parser, lambda_p);
   if (check_for_bare_parameter_packs (expr))
     expr = error_mark_node;
-  --processing_template_decl;
   return expr;
 }
 
@@ -27684,12 +27689,14 @@ static tree
 cp_parser_constraint_expression (cp_parser *parser)
 {
   processing_constraint_expression_sentinel parsing_constraint;
-  ++processing_template_decl;
+  temp_override<int> ovr (processing_template_decl);
+  if (!processing_template_decl)
+    /* As in cp_parser_requires_clause_expression.  */
+    processing_template_decl = 1;
   cp_expr expr = cp_parser_binary_expression (parser, false, true,
 					      PREC_NOT_OPERATOR, NULL);
   if (check_for_bare_parameter_packs (expr))
     expr = error_mark_node;
-  --processing_template_decl;
   expr.maybe_add_location_wrapper ();
   return expr;
 }
@@ -27798,9 +27805,11 @@ cp_parser_requires_expression (cp_parser *parser)
       parms = NULL_TREE;
 
     /* Parse the requirement body. */
-    ++processing_template_decl;
+    temp_override<int> ovr (processing_template_decl);
+    if (!processing_template_decl)
+      /* As in cp_parser_requires_clause_expression.  */
+      processing_template_decl = 1;
     reqs = cp_parser_requirement_body (parser);
-    --processing_template_decl;
     if (reqs == error_mark_node)
       return error_mark_node;
   }
