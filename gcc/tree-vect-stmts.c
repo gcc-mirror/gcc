@@ -1330,7 +1330,7 @@ vect_init_vector_1 (vec_info *vinfo, stmt_vec_info stmt_vinfo, gimple *new_stmt,
 	  basic_block new_bb;
 	  edge pe;
 
-	  if (nested_in_vect_loop_p (loop, stmt_vinfo))
+	  if (stmt_vinfo && nested_in_vect_loop_p (loop, stmt_vinfo))
 	    loop = loop->inner;
 
 	  pe = loop_preheader_edge (loop);
