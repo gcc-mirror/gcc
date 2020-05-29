@@ -83,7 +83,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   powerpc-lynxos powerpcle-elf \
   powerpcle-eabisim powerpcle-eabi \
   riscv32-unknown-linux-gnu riscv64-unknown-linux-gnu \
-  rs6000-ibm-aix5.3.0 rs6000-ibm-aix6.1 rs6000-ibm-aix7.1 \
+  rs6000-ibm-aix6.1 rs6000-ibm-aix7.1 \
   rl78-elf rx-elf s390-linux-gnu s390x-linux-gnu s390x-ibm-tpf sh-elf \
   shle-linux sh-netbsdelf sh-superh-elf \
   sh-rtems sh-wrs-vxworks sparc-elf \
