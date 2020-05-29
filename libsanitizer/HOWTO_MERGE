@@ -3,8 +3,7 @@ track various ABI changes and GCC-specific patches carefully.  Here is a
 general list of actions required to perform the merge:
 
 * Checkout recent GCC tree.
-* Run merge.sh script from libsanitizer directory.  The script accepts one
-  argument that is control version system (svn or git).
+* Run merge.sh script from libsanitizer directory.
 * Modify Makefile.am files into asan/tsan/lsan/ubsan/sanitizer_common/interception
   directories if needed.  In particular, you may need to add new source files
   and remove old ones in source files list, add new flags to {C, CXX}FLAGS if
