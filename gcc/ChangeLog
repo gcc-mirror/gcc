@@ -1,3 +1,28 @@
+2020-05-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/95361
+	* config/aarch64/aarch64.c (aarch64_expand_epilogue): Only
+	redefine the CFA if we have CFI operations.
+
+2020-05-28  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (mmx_haddsubv2sf3): Correct
+	RTL template to model horizontal subtraction and addition.
+
+2020-05-28  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95355
+	* config/i386/sse.md
+	(<mask_codefor>avx512f_<code>v16qiv16si2<mask_name>):
+	Remove %q operand modifier from insn template.
+	(avx512f_<code>v8hiv8di2<mask_name>): Ditto.
+
+2020-05-28  Martin Liska  <mliska@suse.cz>
+
+	PR web/95380
+	* doc/invoke.texi: Add missing params, remove max-once-peeled-insns and
+	rename ipcp-unit-growth to ipa-cp-unit-growth.
+
 2020-05-24  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95255

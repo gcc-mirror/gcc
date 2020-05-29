@@ -1,3 +1,8 @@
+2020-05-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR libfortran/95104
+	* io/unit.c (unlock_unit): Guard by check for NULL pointer.
+
 2020-05-27  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl   <kargl@gcc.gnu.org>
 
