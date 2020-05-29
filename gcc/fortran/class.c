@@ -479,11 +479,12 @@ gfc_class_initializer (gfc_typespec *ts, gfc_expr *init_expr)
 static void
 get_unique_type_string (char *string, gfc_symbol *derived)
 {
-  char dt_name[GFC_MAX_SYMBOL_LEN+1];
+  /* Provide sufficient space to hold "Pdtsymbol".  */
+  char dt_name[GFC_MAX_SYMBOL_LEN+4];
   if (derived->attr.unlimited_polymorphic)
     strcpy (dt_name, "STAR");
   else
-    strcpy (dt_name, gfc_dt_upper_string (derived->name));
+    strncpy (dt_name, gfc_dt_upper_string (derived->name), sizeof (dt_name));
   if (derived->attr.unlimited_polymorphic)
     sprintf (string, "_%s", dt_name);
   else if (derived->module)
@@ -501,7 +502,8 @@ get_unique_type_string (char *string, gfc_symbol *derived)
 static void
 get_unique_hashed_string (char *string, gfc_symbol *derived)
 {
-  char tmp[2*GFC_MAX_SYMBOL_LEN+2];
+  /* Provide sufficient space to hold "symbol_Pdtsymbol".  */
+  char tmp[2*GFC_MAX_SYMBOL_LEN+5];
   get_unique_type_string (&tmp[0], derived);
   /* If string is too long, use hash value in hex representation (allow for
      extra decoration, cf. gfc_build_class_symbol & gfc_find_derived_vtab).
@@ -523,7 +525,8 @@ unsigned int
 gfc_hash_value (gfc_symbol *sym)
 {
   unsigned int hash = 0;
-  char c[2*(GFC_MAX_SYMBOL_LEN+1)];
+  /* Provide sufficient space to hold "symbol_Pdtsymbol".  */
+  char c[2*GFC_MAX_SYMBOL_LEN+5];
   int i, len;
 
   get_unique_type_string (&c[0], sym);
