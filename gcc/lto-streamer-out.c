@@ -1791,8 +1791,9 @@ lto_output_tree (struct output_block *ob, tree expr,
 	    }
 	  streamer_write_record_start (ob, LTO_tree_pickle_reference);
 	  streamer_write_uhwi (ob, ix);
-	  streamer_write_enum (ob->main_stream, LTO_tags, LTO_NUM_TAGS,
-			       lto_tree_code_to_tag (TREE_CODE (expr)));
+	  if (streamer_debugging)
+	    streamer_write_enum (ob->main_stream, LTO_tags, LTO_NUM_TAGS,
+				 lto_tree_code_to_tag (TREE_CODE (expr)));
 	}
       in_dfs_walk = false;
       lto_stats.num_pickle_refs_output++;
