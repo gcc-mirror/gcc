@@ -3299,6 +3299,22 @@ get_or_insert_ctor_field (tree ctor, tree index, int pos_hint = -1)
     }
   else if (TREE_CODE (type) == ARRAY_TYPE || TREE_CODE (type) == VECTOR_TYPE)
     {
+      if (TREE_CODE (index) == RANGE_EXPR)
+	{
+	  /* Support for RANGE_EXPR index lookups is currently limited to
+	     accessing an existing element via POS_HINT, or appending a new
+	     element to the end of CTOR.  ??? Support for other access
+	     patterns may also be needed.  */
+	  vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (ctor);
+	  if (vec_safe_length (elts))
+	    {
+	      tree lo = TREE_OPERAND (index, 0);
+	      gcc_assert (array_index_cmp (elts->last().index, lo) < 0);
+	    }
+	  CONSTRUCTOR_APPEND_ELT (elts, index, NULL_TREE);
+	  return &elts->last();
+	}
+
       HOST_WIDE_INT i = find_array_ctor_elt (ctor, index, /*insert*/true);
       gcc_assert (i >= 0);
       constructor_elt *cep = CONSTRUCTOR_ELT (ctor, i);
