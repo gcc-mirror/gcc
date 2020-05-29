@@ -37,23 +37,27 @@ def get_branches_by_comments(comments):
     for c in comments:
         text = c['text']
         lines = text.split('\n')
-        for line in lines:
-            if 'URL: https://gcc.gnu.org/viewcvs' in line:
-                version = 'master'
+        if 'URL: https://gcc.gnu.org/viewcvs' in text:
+            version = 'master'
+            for line in lines:
                 if 'branches/gcc-' in line:
                     parts = line.strip().split('/')
                     parts = parts[1].split('-')
                     assert len(parts) == 3
-                    versions.add(parts[1])
-                versions.add(version)
-            elif line.startswith('The ') and 'branch has been updated' in line:
-                version = 'master'
-                name = line.strip().split(' ')[1]
-                if '/' in name:
-                    name = name.split('/')[1]
-                    assert '-' in name
-                    version = name.split('-')[1]
-                versions.add(version)
+                    version = parts[1]
+                    break
+            versions.add(version)
+        else:
+            for line in lines:
+                if line.startswith('The ') and 'branch has been updated' in line:
+                    version = 'master'
+                    name = line.strip().split(' ')[1]
+                    if '/' in name:
+                        name = name.split('/')[1]
+                        assert '-' in name
+                        version = name.split('-')[1]
+                    versions.add(version)
+                    break
     return versions
 
 def get_bugs(query):
@@ -79,9 +83,13 @@ def search():
             keys = list(r['bugs'].keys())
             assert len(keys) == 1
             comments = r['bugs'][keys[0]]['comments']
+            skip = False
             for c in comments:
                 if closure_question in c['text']:
-                    continue
+                    skip = True
+                    break
+            if skip:
+                continue
 
             branches = get_branches_by_comments(comments)
             if len(branches):
