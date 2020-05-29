@@ -3,14 +3,14 @@ projects initially developed by Google Inc.
 
 Both tools consist of a compiler module and a run-time library.
 The sources of the run-time library for these projects are hosted at
-https://llvm.org/svn/llvm-project/compiler-rt in the following directories:
-  include/sanitizer
-  lib/sanitizer_common
-  lib/interception
-  lib/asan
-  lib/tsan
-  lib/lsan
-  lib/ubsan
+https://github.com/llvm/llvm-project in the following directories:
+  compiler-rt/include/sanitizer
+  compiler-rt/lib/sanitizer_common
+  compiler-rt/lib/interception
+  compiler-rt/lib/asan
+  compiler-rt/lib/tsan
+  compiler-rt/lib/lsan
+  compiler-rt/lib/ubsan
 
 Trivial and urgent fixes (portability, build fixes, etc.) may go directly to the
 GCC tree.  All non-trivial changes, functionality improvements, etc. should go
