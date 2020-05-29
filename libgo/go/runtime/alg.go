@@ -276,7 +276,7 @@ func nilinterequal(p, q unsafe.Pointer) bool {
 }
 func efaceeq(x, y eface) bool {
 	t := x._type
-	if t != y._type {
+	if !eqtype(t, y._type) {
 		return false
 	}
 	if t == nil {
@@ -301,7 +301,7 @@ func ifaceeq(x, y iface) bool {
 		return false
 	}
 	t := *(**_type)(xtab)
-	if t != *(**_type)(y.tab) {
+	if !eqtype(t, *(**_type)(y.tab)) {
 		return false
 	}
 	eq := t.equal
@@ -322,7 +322,7 @@ func ifacevaleq(x iface, t *_type, p unsafe.Pointer) bool {
 		return false
 	}
 	xt := *(**_type)(x.tab)
-	if xt != t {
+	if !eqtype(xt, t) {
 		return false
 	}
 	eq := t.equal
@@ -343,7 +343,7 @@ func ifaceefaceeq(x iface, y eface) bool {
 		return false
 	}
 	xt := *(**_type)(x.tab)
-	if xt != y._type {
+	if !eqtype(xt, y._type) {
 		return false
 	}
 	eq := xt.equal
@@ -360,7 +360,7 @@ func efacevaleq(x eface, t *_type, p unsafe.Pointer) bool {
 	if x._type == nil {
 		return false
 	}
-	if x._type != t {
+	if !eqtype(x._type, t) {
 		return false
 	}
 	eq := t.equal

@@ -340,6 +340,9 @@ DEF_GO_RUNTIME(PANICDOTTYPE, "runtime.panicdottype", P3(TYPE, TYPE, TYPE),
 // Return whether we can convert a type to an interface type.
 DEF_GO_RUNTIME(IFACET2IP, "runtime.ifaceT2Ip", P2(TYPE, TYPE), R1(BOOL))
 
+// Compare two type descriptors for equality.
+DEF_GO_RUNTIME(EQTYPE, "runtime.eqtype", P2(TYPE, TYPE), R1(BOOL))
+
 // Compare two empty interface values.
 DEF_GO_RUNTIME(EFACEEQ, "runtime.efaceeq", P2(EFACE, EFACE), R1(BOOL))
 
