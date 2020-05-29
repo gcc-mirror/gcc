@@ -2893,4 +2893,55 @@ index 9e0263b431d..37f3d030e3f 100644
 +
 -- 
 2.20.1
+=== 0001-Fortran-type-is-real-kind-1.patch ===
+From 3ea6977d0f1813d982743a09660eec1760e981ec Mon Sep 17 00:00:00 2001
+From: Mark Eggleston <markeggleston@gcc.gnu.org>
+Date: Wed, 1 Apr 2020 09:52:41 +0100
+Subject: [PATCH] Fortran  : "type is( real(kind(1.)) )" spurious syntax error
+ PR94397
 
+Based on a patch in the comments of the PR. That patch fixed this
+problem but caused the test cases for PR93484 to fail. It has been
+changed to reduce initialisation expressions if the expression is
+not EXPR_VARIABLE and not EXPR_CONSTANT.
+
+2020-05-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+gcc/fortran/
+
+	PR fortran/94397
+	* match.c (gfc_match_type_spec): New variable ok initialised
+	to true. Set ok with the return value of gfc_reduce_init_expr
+	called only if the expression is not EXPR_CONSTANT and is not
+	EXPR_VARIABLE. Add !ok to the check for type not being integer
+	or the rank being greater than zero.
+
+2020-05-28  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+gcc/testsuite/
+
+	PR fortran/94397
+	* gfortran.dg/pr94397.F90: New test.
+---
+ gcc/fortran/match.c                   |  5 ++++-
+ gcc/testsuite/gfortran.dg/pr94397.F90 | 26 ++++++++++++++++++++++++++
+ 2 files changed, 30 insertions(+), 1 deletion(-)
+ create mode 100644 gcc/testsuite/gfortran.dg/pr94397.F90
+
+diff --git a/gcc/fortran/match.c b/gcc/fortran/match.c
+index 8ae34a94a95..82d2b5087e5 100644
+--- a/gcc/fortran/match.c
++++ b/gcc/fortran/match.c
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/testsuite/gfortran.dg/pr94397.F90 b/gcc/testsuite/gfortran.dg/pr94397.F90
+new file mode 100644
+index 00000000000..fda10c1a88b
+--- /dev/null
++++ b/gcc/testsuite/gfortran.dg/pr94397.F90
+@@ -0,0 +1 @@
++
+-- 
+2.26.2

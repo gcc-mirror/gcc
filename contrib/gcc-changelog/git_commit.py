@@ -232,6 +232,12 @@ class ChangeLogEntry:
     def is_empty(self):
         return not self.lines and self.prs == self.initial_prs
 
+    def contains_author(self, author):
+        for author_lines in self.author_lines:
+            if author_lines[0] == author:
+                return True
+        return False
+
 
 class GitCommit:
     def __init__(self, hexsha, date, author, body, modified_files,
@@ -408,7 +414,7 @@ class GitCommit:
                         self.changelog_entries.append(last_entry)
                         will_deduce = True
                 elif author_tuple:
-                    if author_tuple not in last_entry.author_lines:
+                    if not last_entry.contains_author(author_tuple[0]):
                         last_entry.author_lines.append(author_tuple)
                     continue
 
