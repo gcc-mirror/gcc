@@ -1,3 +1,13 @@
+2020-05-28  Tobias Burnus  <tobias@codesourcery.com>
+	    Mark Eggleston  <markeggleston@gnu.gcc.org>
+
+	PR fortran/50392
+	* trans-decl.c (gfc_get_symbol_decl): Remove unnecessary block
+	delimiters.  Add auxiliary variables if a label is assigned to
+	a return variable. (gfc_gat_fake_result): If the symbol has an
+	assign attribute set declaration from the symbol's backend
+	declaration.
+
 2020-05-20  Mark Eggleston  <markeggleston@gcc.gnu.org>
 
 	Backport from master
