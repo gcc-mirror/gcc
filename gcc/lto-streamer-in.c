@@ -1021,6 +1021,30 @@ input_struct_function_base (struct function *fn, class data_in *data_in,
     }
 }
 
+/* Read a chain of tree nodes from input block IB.  DATA_IN contains
+   tables and descriptors for the file being read.  */
+
+static tree
+streamer_read_chain (class lto_input_block *ib, class data_in *data_in)
+{
+  tree first, prev, curr;
+
+  /* The chain is written as NULL terminated list of trees.  */
+  first = prev = NULL_TREE;
+  do
+    {
+      curr = stream_read_tree (ib, data_in);
+      if (prev)
+	TREE_CHAIN (prev) = curr;
+      else
+	first = curr;
+
+      prev = curr;
+    }
+  while (curr);
+
+  return first;
+}
 
 /* Read the body of function FN_DECL from DATA_IN using input block IB.  */
 
@@ -1481,6 +1505,30 @@ lto_input_scc (class lto_input_block *ib, class data_in *data_in,
   return scc_hash;
 }
 
+/* Read reference to tree from IB and DATA_IN.
+   This is used for streaming tree bodies where we know that
+   the tree is already in cache or is indexable and 
+   must be matched with stream_write_tree_ref.  */
+
+tree
+stream_read_tree_ref (lto_input_block *ib, data_in *data_in)
+{
+  unsigned ix = streamer_read_uhwi (ib);
+  tree ret;
+  if (!ix)
+    return NULL_TREE;
+  else if (ix < LTO_NUM_TAGS)
+    ret = lto_input_tree_ref (ib, data_in, cfun, (LTO_tags)ix);
+  else
+    ret = streamer_tree_cache_get_tree (data_in->reader_cache,
+					ix - LTO_NUM_TAGS);
+  if (ret && streamer_debugging)
+    {
+      enum tree_code c = (enum tree_code)streamer_read_uhwi (ib);
+      gcc_assert (c == TREE_CODE (ret));
+    }
+  return ret;
+}
 
 /* Read a tree from input block IB using the per-file context in
    DATA_IN.  This context is used, for example, to resolve references
@@ -1513,7 +1561,7 @@ lto_input_tree_1 (class lto_input_block *ib, class data_in *data_in,
     {
       /* For shared integer constants in singletons we can use the
          existing tree integer constant merging code.  */
-      tree type = stream_read_tree (ib, data_in);
+      tree type = stream_read_tree_ref (ib, data_in);
       unsigned HOST_WIDE_INT len = streamer_read_uhwi (ib);
       unsigned HOST_WIDE_INT i;
       HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
