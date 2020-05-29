@@ -312,3 +312,9 @@ class TestGccChangelog(unittest.TestCase):
                 == 'Steven G. Kargl  <kargl@gcc.gnu.org>')
         assert (email.changelog_entries[0].author_lines[1][0]
                 == 'Mark Eggleston  <markeggleston@gcc.gnu.org>')
+
+    def test_missing_change_description(self):
+        email = self.from_patch_glob('0001-Missing-change-description.patch')
+        assert len(email.errors) == 2
+        assert email.errors[0].message == 'missing description of a change'
+        assert email.errors[1].message == 'missing description of a change'

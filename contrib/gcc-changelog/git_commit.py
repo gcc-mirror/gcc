@@ -274,6 +274,7 @@ class GitCommit:
         self.parse_lines(all_are_ignored)
         if self.changes:
             self.parse_changelog()
+            self.check_for_empty_description()
             self.deduce_changelog_locations()
             if not self.errors:
                 self.check_mentioned_files()
@@ -439,6 +440,15 @@ class GitCommit:
                             self.errors.append(Error(msg, line))
                         else:
                             last_entry.lines.append(line)
+
+    def check_for_empty_description(self):
+        for entry in self.changelog_entries:
+            for i, line in enumerate(entry.lines):
+                if (star_prefix_regex.match(line) and line.endswith(':') and
+                    (i == len(entry.lines) - 1
+                     or star_prefix_regex.match(entry.lines[i + 1]))):
+                    msg = 'missing description of a change'
+                    self.errors.append(Error(msg, line))
 
     def get_file_changelog_location(self, changelog_file):
         for file in self.modified_files:
