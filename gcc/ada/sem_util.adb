@@ -15615,22 +15615,24 @@ package body Sem_Util is
          --  effectively volatile.
 
          elsif Is_Array_Type (Id) then
-            declare
-               Anc : Entity_Id := Base_Type (Id);
-            begin
-               if Is_Private_Type (Anc) then
-                  Anc := Full_View (Anc);
-               end if;
+            if Has_Volatile_Components (Id) then
+               return True;
+            else
+               declare
+                  Anc : Entity_Id := Base_Type (Id);
+               begin
+                  if Is_Private_Type (Anc) then
+                     Anc := Full_View (Anc);
+                  end if;
 
-               --  Test for presence of ancestor, as the full view of a private
-               --  type may be missing in case of error.
+                  --  Test for presence of ancestor, as the full view of a
+                  --  private type may be missing in case of error.
 
-               return
-                 Has_Volatile_Components (Id)
-                   or else
-                 (Present (Anc)
-                   and then Is_Effectively_Volatile (Component_Type (Anc)));
-            end;
+                  return
+                    Present (Anc)
+                      and then Is_Effectively_Volatile (Component_Type (Anc));
+               end;
+            end if;
 
          --  A protected type is always volatile
 
