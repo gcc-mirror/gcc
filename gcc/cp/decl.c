@@ -7467,18 +7467,24 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       && (DECL_INITIAL (decl) || init))
     DECL_INITIALIZED_IN_CLASS_P (decl) = 1;
 
-  /* Do auto deduction unless decl is a function or an uninstantiated
-     template specialization.  */
   if (TREE_CODE (decl) != FUNCTION_DECL
-      && !(init == NULL_TREE
-	   && DECL_LANG_SPECIFIC (decl)
-	   && DECL_TEMPLATE_INSTANTIATION (decl)
-	   && !DECL_TEMPLATE_INSTANTIATED (decl))
       && (auto_node = type_uses_auto (type)))
     {
       tree d_init;
       if (init == NULL_TREE)
-	gcc_assert (CLASS_PLACEHOLDER_TEMPLATE (auto_node));
+	{
+	  if (DECL_LANG_SPECIFIC (decl)
+	      && DECL_TEMPLATE_INSTANTIATION (decl)
+	      && !DECL_TEMPLATE_INSTANTIATED (decl))
+	    {
+	      /* init is null because we're deferring instantiating the
+		 initializer until we need it.  Well, we need it now.  */
+	      instantiate_decl (decl, /*defer_ok*/true, /*expl*/false);
+	      return;
+	    }
+
+	  gcc_assert (CLASS_PLACEHOLDER_TEMPLATE (auto_node));
+	}
       d_init = init;
       if (d_init)
 	{
@@ -8394,6 +8400,8 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
       error_at (loc, "cannot decompose lambda closure type %qT", type);
       goto error_out;
     }
+  else if (processing_template_decl && complete_type (type) == error_mark_node)
+    goto error_out;
   else if (processing_template_decl && !COMPLETE_TYPE_P (type))
     pedwarn (loc, 0, "structured binding refers to incomplete class type %qT",
 	     type);
@@ -10171,7 +10179,6 @@ check_static_variable_definition (tree decl, tree type)
      in check_initializer.  Similarly for inline static data members.  */
   else if (DECL_P (decl)
       && (DECL_DECLARED_CONSTEXPR_P (decl)
-	  || undeduced_auto_decl (decl)
 	  || DECL_VAR_DECLARED_INLINE_P (decl)))
     ;
   else if (cxx_dialect >= cxx11 && !INTEGRAL_OR_ENUMERATION_TYPE_P (type))

@@ -1046,10 +1046,12 @@ ALL_LINKERFLAGS = $(ALL_CXXFLAGS)
 
 # Build and host support libraries.
 
-# Use the "pic" build of libiberty if --enable-host-shared.
+# Use the "pic" build of libiberty if --enable-host-shared, unless we are
+# building for mingw.
+LIBIBERTY_PICDIR=$(if $(findstring mingw,$(target)),,pic)
 ifeq ($(enable_host_shared),yes)
-LIBIBERTY = ../libiberty/pic/libiberty.a
-BUILD_LIBIBERTY = $(build_libobjdir)/libiberty/pic/libiberty.a
+LIBIBERTY = ../libiberty/$(LIBIBERTY_PICDIR)/libiberty.a
+BUILD_LIBIBERTY = $(build_libobjdir)/libiberty/$(LIBIBERTY_PICDIR)/libiberty.a
 else
 LIBIBERTY = ../libiberty/libiberty.a
 BUILD_LIBIBERTY = $(build_libobjdir)/libiberty/libiberty.a
@@ -1726,7 +1728,7 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
 # This symlink makes the full installation name of the driver be available
 # from within the *build* directory, for use when running the JIT library
 # from there (e.g. when running its testsuite).
-$(FULL_DRIVER_NAME): ./xgcc
+$(FULL_DRIVER_NAME): ./xgcc$(exeext)
 	rm -f $@
 	$(LN_S) $< $@
 

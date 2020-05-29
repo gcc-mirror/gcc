@@ -232,6 +232,12 @@ class ChangeLogEntry:
     def is_empty(self):
         return not self.lines and self.prs == self.initial_prs
 
+    def contains_author(self, author):
+        for author_lines in self.author_lines:
+            if author_lines[0] == author:
+                return True
+        return False
+
 
 class GitCommit:
     def __init__(self, hexsha, date, author, body, modified_files,
@@ -268,6 +274,7 @@ class GitCommit:
         self.parse_lines(all_are_ignored)
         if self.changes:
             self.parse_changelog()
+            self.check_for_empty_description()
             self.deduce_changelog_locations()
             if not self.errors:
                 self.check_mentioned_files()
@@ -408,7 +415,7 @@ class GitCommit:
                         self.changelog_entries.append(last_entry)
                         will_deduce = True
                 elif author_tuple:
-                    if author_tuple not in last_entry.author_lines:
+                    if not last_entry.contains_author(author_tuple[0]):
                         last_entry.author_lines.append(author_tuple)
                     continue
 
@@ -433,6 +440,15 @@ class GitCommit:
                             self.errors.append(Error(msg, line))
                         else:
                             last_entry.lines.append(line)
+
+    def check_for_empty_description(self):
+        for entry in self.changelog_entries:
+            for i, line in enumerate(entry.lines):
+                if (star_prefix_regex.match(line) and line.endswith(':') and
+                    (i == len(entry.lines) - 1
+                     or star_prefix_regex.match(entry.lines[i + 1]))):
+                    msg = 'missing description of a change'
+                    self.errors.append(Error(msg, line))
 
     def get_file_changelog_location(self, changelog_file):
         for file in self.modified_files:

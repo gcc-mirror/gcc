@@ -18,11 +18,11 @@
 
 import os
 import tempfile
-import unidiff
 import unittest
 
 from git_email import GitEmail
 
+import unidiff
 
 script_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -305,3 +305,16 @@ class TestGccChangelog(unittest.TestCase):
         email = self.from_patch_glob(
             '0001-Ada-Add-support-for-XDR-streaming-in-the-default-run.patch')
         assert not email.errors
+
+    def test_duplicite_author_lines(self):
+        email = self.from_patch_glob('0001-Fortran-type-is-real-kind-1.patch')
+        assert (email.changelog_entries[0].author_lines[0][0]
+                == 'Steven G. Kargl  <kargl@gcc.gnu.org>')
+        assert (email.changelog_entries[0].author_lines[1][0]
+                == 'Mark Eggleston  <markeggleston@gcc.gnu.org>')
+
+    def test_missing_change_description(self):
+        email = self.from_patch_glob('0001-Missing-change-description.patch')
+        assert len(email.errors) == 2
+        assert email.errors[0].message == 'missing description of a change'
+        assert email.errors[1].message == 'missing description of a change'
