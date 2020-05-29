@@ -468,8 +468,6 @@ acc_unmap_data (void *h)
 		  (void *) h, (int) host_size);
     }
 
-  splay_tree_remove (&acc_dev->mem_map, n);
-
   struct target_mem_desc *tgt = n->tgt;
 
   if (tgt->refcount == REFCOUNT_INFINITY)
@@ -482,8 +480,12 @@ acc_unmap_data (void *h)
      'acc_map_data'.  */
   assert (tgt->refcount == 1);
 
-  free (tgt->array);
-  free (tgt);
+  /* Nullifying these fields prevents 'gomp_unmap_tgt' via 'gomp_remove_var'
+     from freeing the target memory.  */
+  tgt->tgt_end = 0;
+  tgt->to_free = NULL;
+
+  gomp_remove_var (acc_dev, n);
 
   gomp_mutex_unlock (&acc_dev->lock);
 
