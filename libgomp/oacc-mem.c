@@ -477,13 +477,13 @@ acc_unmap_data (void *h)
       gomp_mutex_unlock (&acc_dev->lock);
       gomp_fatal ("cannot unmap target block");
     }
-  else if (tgt->refcount > 1)
-    tgt->refcount--;
-  else
-    {
-      free (tgt->array);
-      free (tgt);
-    }
+
+  /* Above, we've verified that the mapping must have been set up by
+     'acc_map_data'.  */
+  assert (tgt->refcount == 1);
+
+  free (tgt->array);
+  free (tgt);
 
   gomp_mutex_unlock (&acc_dev->lock);
 
