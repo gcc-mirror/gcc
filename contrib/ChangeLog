@@ -1,3 +1,23 @@
+2020-05-28  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc-changelog/git_email.py (GitEmail.__init__): Interpret file
+	renamings as a file deletion plus a file addition.
+	* gcc-changelog/git_repository.py (parse_git_revisions):
+	Likewise.
+	* gcc-changelog/test_email.py: New testcase.
+	* gcc-changelog/test_patches.txt: New testcase.
+
+2020-05-28  Martin Liska  <mliska@suse.cz>
+
+	* check-params-in-docs.py: Update to new format
+	of help.  Apply flake8 corrections.
+
+2020-05-28  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Support renaming of files.
+	One needs unidiff 0.6.0+.
+	* test_mklog.py: Test it.
+
 2020-05-27  Martin Liska  <mliska@suse.cz>
 
 	* gcc-git-customization.sh: Use git-backport.py to drop
