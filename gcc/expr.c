@@ -5583,6 +5583,7 @@ store_expr (tree exp, rtx target, int call_param_p,
   rtx temp;
   rtx alt_rtl = NULL_RTX;
   location_t loc = curr_insn_location ();
+  bool shortened_string_cst = false;
 
   if (VOID_TYPE_P (TREE_TYPE (exp)))
     {
@@ -5749,7 +5750,32 @@ store_expr (tree exp, rtx target, int call_param_p,
       /* If we want to use a nontemporal or a reverse order store, force the
 	 value into a register first.  */
       tmp_target = nontemporal || reverse ? NULL_RTX : target;
-      temp = expand_expr_real (exp, tmp_target, GET_MODE (target),
+      tree rexp = exp;
+      if (TREE_CODE (exp) == STRING_CST
+	  && tmp_target == target
+	  && GET_MODE (target) == BLKmode
+	  && TYPE_MODE (TREE_TYPE (exp)) == BLKmode)
+	{
+	  rtx size = expr_size (exp);
+	  if (CONST_INT_P (size)
+	      && size != const0_rtx
+	      && (UINTVAL (size)
+		  > ((unsigned HOST_WIDE_INT) TREE_STRING_LENGTH (exp) + 32)))
+	    {
+	      /* If the STRING_CST has much larger array type than
+		 TREE_STRING_LENGTH, only emit the TREE_STRING_LENGTH part of
+		 it into the rodata section as the code later on will use
+		 memset zero for the remainder anyway.  See PR95052.  */
+	      tmp_target = NULL_RTX;
+	      rexp = copy_node (exp);
+	      tree index
+		= build_index_type (size_int (TREE_STRING_LENGTH (exp) - 1));
+	      TREE_TYPE (rexp) = build_array_type (TREE_TYPE (TREE_TYPE (exp)),
+						   index);
+	      shortened_string_cst = true;
+	    }
+	}
+      temp = expand_expr_real (rexp, tmp_target, GET_MODE (target),
 			       (call_param_p
 				? EXPAND_STACK_PARM : EXPAND_NORMAL),
 			       &alt_rtl, false);
@@ -5763,6 +5789,7 @@ store_expr (tree exp, rtx target, int call_param_p,
       && TREE_CODE (exp) != ERROR_MARK
       && GET_MODE (target) != TYPE_MODE (TREE_TYPE (exp)))
     {
+      gcc_assert (!shortened_string_cst);
       if (GET_MODE_CLASS (GET_MODE (target))
 	  != GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (exp)))
 	  && known_eq (GET_MODE_BITSIZE (GET_MODE (target)),
@@ -5815,6 +5842,7 @@ store_expr (tree exp, rtx target, int call_param_p,
     {
       if (GET_MODE (temp) != GET_MODE (target) && GET_MODE (temp) != VOIDmode)
 	{
+	  gcc_assert (!shortened_string_cst);
 	  if (GET_MODE (target) == BLKmode)
 	    {
 	      /* Handle calls that return BLKmode values in registers.  */
@@ -5900,6 +5928,8 @@ store_expr (tree exp, rtx target, int call_param_p,
 		emit_label (label);
 	    }
 	}
+      else if (shortened_string_cst)
+	gcc_unreachable ();
       /* Handle calls that return values in multiple non-contiguous locations.
 	 The Irix 6 ABI has examples of this.  */
       else if (GET_CODE (target) == PARALLEL)
@@ -5929,6 +5959,8 @@ store_expr (tree exp, rtx target, int call_param_p,
 	    emit_move_insn (target, temp);
 	}
     }
+  else
+    gcc_assert (!shortened_string_cst);
 
   return NULL_RTX;
 }
