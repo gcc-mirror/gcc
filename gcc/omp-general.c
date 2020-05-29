@@ -1851,7 +1851,7 @@ omp_resolve_declare_variant (tree base)
 	}
 
       static struct cgraph_node_hook_list *node_removal_hook_holder;
-      if (node_removal_hook_holder)
+      if (!node_removal_hook_holder)
 	node_removal_hook_holder
 	  = symtab->add_cgraph_removal_hook (omp_declare_variant_remove_hook,
 					     NULL);
