@@ -5696,7 +5696,7 @@ vectorizable_shift (vec_info *vinfo,
 
       if (!op1_vectype)
 	op1_vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op1),
-						   slp_node);
+						   slp_op1);
       incompatible_op1_vectype_p
 	= (op1_vectype == NULL_TREE
 	   || maybe_ne (TYPE_VECTOR_SUBPARTS (op1_vectype),
@@ -5704,8 +5704,8 @@ vectorizable_shift (vec_info *vinfo,
 	   || TYPE_MODE (op1_vectype) != TYPE_MODE (vectype));
       if (incompatible_op1_vectype_p
 	  && (!slp_node
-	      || SLP_TREE_DEF_TYPE
-		   (SLP_TREE_CHILDREN (slp_node)[1]) != vect_constant_def))
+	      || SLP_TREE_DEF_TYPE (slp_op1) != vect_constant_def
+	      || slp_op1->refcnt != 1))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5808,6 +5808,21 @@ vectorizable_shift (vec_info *vinfo,
 			     "incompatible vector types for invariants\n");
 	  return false;
 	}
+      /* Now adjust the constant shift amount in place.  */
+      if (slp_node
+	  && incompatible_op1_vectype_p
+	  && dt[1] == vect_constant_def)
+	{
+	  for (unsigned i = 0;
+	       i < SLP_TREE_SCALAR_OPS (slp_op1).length (); ++i)
+	    {
+	      SLP_TREE_SCALAR_OPS (slp_op1)[i]
+		= fold_convert (TREE_TYPE (vectype),
+				SLP_TREE_SCALAR_OPS (slp_op1)[i]);
+	      gcc_assert ((TREE_CODE (SLP_TREE_SCALAR_OPS (slp_op1)[i])
+			   == INTEGER_CST));
+	    }
+	}
       STMT_VINFO_TYPE (stmt_info) = shift_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_shift");
       vect_model_simple_cost (vinfo, stmt_info, ncopies, dt,
@@ -5882,20 +5897,8 @@ vectorizable_shift (vec_info *vinfo,
 		    vec_oprnds1.quick_push (vec_oprnd1);
 		}
 	      else if (dt[1] == vect_constant_def)
-		{
-		  /* Convert the scalar constant shift amounts in-place.  */
-		  slp_tree shift = SLP_TREE_CHILDREN (slp_node)[1];
-		  gcc_assert (SLP_TREE_DEF_TYPE (shift) == vect_constant_def);
-		  for (unsigned i = 0;
-		       i < SLP_TREE_SCALAR_OPS (shift).length (); ++i)
-		    {
-		      SLP_TREE_SCALAR_OPS (shift)[i]
-			  = fold_convert (TREE_TYPE (vectype),
-					  SLP_TREE_SCALAR_OPS (shift)[i]);
-		      gcc_assert ((TREE_CODE (SLP_TREE_SCALAR_OPS (shift)[i])
-				   == INTEGER_CST));
-		    }
-		}
+		/* The constant shift amount has been adjusted in place.  */
+		;
 	      else
 		gcc_assert (TYPE_MODE (op1_vectype) == TYPE_MODE (vectype));
 	    }
