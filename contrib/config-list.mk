@@ -41,7 +41,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   arm-symbianelf avr-elf \
   bfin-elf bfin-uclinux bfin-linux-uclibc bfin-rtems bfin-openbsd \
   bpf-unknown-none \
-  c6x-elf c6x-uclinux cr16-elf cris-elf cris-linux crisv32-elf crisv32-linux \
+  c6x-elf c6x-uclinux cr16-elf cris-elf \
   csky-elf csky-linux-gnu \
   epiphany-elf epiphany-elfOPT-with-stack-offset=16 fido-elf \
   fr30-elf frv-elf frv-linux ft32-elf h8300-elf hppa-linux-gnu \
