@@ -91,9 +91,10 @@ def search():
             if skip:
                 continue
 
-            branches = get_branches_by_comments(comments)
-            if len(branches):
-                branches_str = ','.join(sorted(list(branches)))
+            branches = sorted(list(get_branches_by_comments(comments)),
+                              key=lambda b: 999 if b is 'master' else int(b))
+            if branches:
+                branches_str = ','.join(branches)
                 print('%-30s%-30s%-40s%-40s%-60s' % ('https://gcc.gnu.org/PR%d' % id, branches_str, fail, work, b['summary']), flush=True)
                 ids.append(id)
 
