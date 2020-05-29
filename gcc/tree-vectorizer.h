@@ -128,6 +128,9 @@ struct _slp_tree {
   vec<stmt_vec_info> stmts;
   /* A group of scalar operands to be vectorized together.  */
   vec<tree> ops;
+  /* The representative that should be used for analysis and
+     code generation.  */
+  stmt_vec_info representative;
 
   /* Load permutation relative to the stores, NULL if there is no
      permutation.  */
@@ -193,6 +196,7 @@ public:
 #define SLP_TREE_TWO_OPERATORS(S)		 (S)->two_operators
 #define SLP_TREE_DEF_TYPE(S)			 (S)->def_type
 #define SLP_TREE_VECTYPE(S)			 (S)->vectype
+#define SLP_TREE_REPRESENTATIVE(S)		 (S)->representative
 
 /* Key for map that records association between
    scalar conditions and corresponding loop mask, and

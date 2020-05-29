@@ -6192,9 +6192,9 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
     {
       slp_for_stmt_info = slp_node_instance->root;
       /* And then there's reduction chain with a conversion ...  */
-      if (SLP_TREE_SCALAR_STMTS (slp_for_stmt_info)[0] != stmt_info)
+      if (SLP_TREE_REPRESENTATIVE (slp_for_stmt_info) != stmt_info)
 	slp_for_stmt_info = SLP_TREE_CHILDREN (slp_for_stmt_info)[0];
-      gcc_assert (SLP_TREE_SCALAR_STMTS (slp_for_stmt_info)[0] == stmt_info);
+      gcc_assert (SLP_TREE_REPRESENTATIVE (slp_for_stmt_info) == stmt_info);
     }
   slp_tree *slp_op = XALLOCAVEC (slp_tree, op_type);
   for (i = 0; i < op_type; i++)
@@ -7952,6 +7952,10 @@ vectorizable_live_operation (loop_vec_info loop_vinfo,
 	     all involved stmts together.  */
 	  else if (slp_index != 0)
 	    return true;
+	  else
+	    /* For SLP reductions the meta-info is attached to
+	       the representative.  */
+	    stmt_info = SLP_TREE_REPRESENTATIVE (slp_node);
 	}
       stmt_vec_info reduc_info = info_for_reduction (loop_vinfo, stmt_info);
       gcc_assert (reduc_info->is_reduc_info);

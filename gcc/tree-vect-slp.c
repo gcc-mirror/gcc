@@ -61,6 +61,7 @@ _slp_tree::_slp_tree ()
   SLP_TREE_TWO_OPERATORS (this) = false;
   SLP_TREE_DEF_TYPE (this) = vect_uninitialized_def;
   SLP_TREE_VECTYPE (this) = NULL_TREE;
+  SLP_TREE_REPRESENTATIVE (this) = NULL;
   this->refcnt = 1;
   this->max_nunits = 1;
 }
@@ -132,6 +133,7 @@ vect_create_new_slp_node (vec<stmt_vec_info> scalar_stmts, unsigned nops)
   SLP_TREE_SCALAR_STMTS (node) = scalar_stmts;
   SLP_TREE_CHILDREN (node).create (nops);
   SLP_TREE_DEF_TYPE (node) = vect_internal_def;
+  SLP_TREE_REPRESENTATIVE (node) = scalar_stmts[0];
 
   unsigned i;
   stmt_vec_info stmt_info;
@@ -1741,6 +1743,7 @@ slp_copy_subtree (slp_tree node, hash_map<slp_tree, slp_tree> &map)
   slp_tree copy = copy_ref;
   SLP_TREE_DEF_TYPE (copy) = SLP_TREE_DEF_TYPE (node);
   SLP_TREE_VECTYPE (copy) = SLP_TREE_VECTYPE (node);
+  SLP_TREE_REPRESENTATIVE (copy) = SLP_TREE_REPRESENTATIVE (node);
   copy->max_nunits = node->max_nunits;
   copy->refcnt = 0;
   if (SLP_TREE_SCALAR_STMTS (node).exists ())
@@ -1786,14 +1789,6 @@ vect_slp_rearrange_stmts (slp_tree node, unsigned int group_size,
   if (SLP_TREE_SCALAR_STMTS (node).exists ())
     {
       gcc_assert (group_size == SLP_TREE_SCALAR_STMTS (node).length ());
-      /* ???  Computation nodes are isomorphic and need no rearrangement.
-	 This is a quick hack to cover those where rearrangement breaks
-	 semantics because only the first stmt is guaranteed to have the
-	 correct operation code due to others being swapped or inverted.  */
-      stmt_vec_info first = SLP_TREE_SCALAR_STMTS (node)[0];
-      if (is_gimple_assign (first->stmt)
-	  && gimple_assign_rhs_code (first->stmt) == COND_EXPR)
-	return;
       vec<stmt_vec_info> tmp_stmts;
       tmp_stmts.create (group_size);
       tmp_stmts.quick_grow (group_size);
@@ -2664,7 +2659,7 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
 				    slp_instance node_instance,
 				    stmt_vector_for_cost *cost_vec)
 {
-  stmt_vec_info stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];
+  stmt_vec_info stmt_info = SLP_TREE_REPRESENTATIVE (node);
   gcc_assert (STMT_SLP_TYPE (stmt_info) != loop_vect);
 
   /* Calculate the number of vector statements to be created for the
@@ -4079,7 +4074,7 @@ vect_schedule_slp_instance (vec_info *vinfo,
 	  STMT_VINFO_DEF_TYPE (child_stmt_info) = SLP_TREE_DEF_TYPE (child);
       }
 
-  stmt_vec_info stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];
+  stmt_vec_info stmt_info = SLP_TREE_REPRESENTATIVE (node);
 
   /* VECTYPE is the type of the destination.  */
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
