@@ -30,9 +30,13 @@ if __name__ == '__main__':
 
     r = subprocess.run('git cherry-pick -x %s' % args.revision, shell=True)
     if r.returncode == 0:
-        cmd = 'git show --name-only --pretty="" -- "*ChangeLog" |' \
-              'xargs git checkout HEAD~'
-        subprocess.check_output(cmd, shell=True)
+        cmd = 'git show --name-only --pretty="" -- "*ChangeLog"'
+        changelogs = subprocess.check_output(cmd, shell=True, encoding='utf8')
+        changelogs = changelogs.strip()
+        if changelogs:
+            for changelog in changelogs.split('\n'):
+                subprocess.check_output('git checkout HEAD~ %s' % changelog,
+                                        shell=True)
         subprocess.check_output('git commit --amend --no-edit', shell=True)
     else:
         # 1) remove all ChangeLog files from conflicts
@@ -55,6 +59,7 @@ if __name__ == '__main__':
 
         # try to continue
         if len(conflicts) == len(changelogs):
-            subprocess.check_output('git cherry-pick --continue', shell=True)
+            cmd = 'git -c core.editor=true cherry-pick --continue'
+            subprocess.check_output(cmd, shell=True)
         else:
             print('Please resolve all remaining file conflicts.')
