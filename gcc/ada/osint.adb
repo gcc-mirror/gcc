@@ -100,6 +100,10 @@ package body Osint is
    --  executable is stored in directory "/foo/bar/bin", this routine returns
    --  "/foo/bar/". Return "" if location is not recognized as described above.
 
+   function File_Names_Equal (File1, File2 : String) return Boolean;
+   --  Compare File1 and File2 taking into account the case insensitivity
+   --  of the OS.
+
    function Update_Path (Path : String_Ptr) return String_Ptr;
    --  Update the specified path to replace the prefix with the location where
    --  GNAT is installed. See the file prefix.c in GCC for details.
@@ -852,30 +856,22 @@ package body Osint is
          end if;
 
          if Add_Suffix then
-            declare
-               Buffer : String := Name_Buffer (1 .. Name_Len);
+            --  If Executable doesn't end with the executable suffix, add it
 
-            begin
-               --  Get the file name in canonical case to accept as is. Names
-               --  end with ".EXE" on Windows.
-
-               Canonical_Case_File_Name (Buffer);
-
-               --  If Executable doesn't end with the executable suffix, add it
-
-               if Buffer'Length <= Exec_Suffix'Length
-                 or else
-                   Buffer (Buffer'Last - Exec_Suffix'Length + 1 .. Buffer'Last)
-                     /= Exec_Suffix.all
-               then
-                  Name_Buffer
-                    (Name_Len + 1 .. Name_Len + Exec_Suffix'Length) :=
-                      Exec_Suffix.all;
-                  Name_Len := Name_Len + Exec_Suffix'Length;
-                  Free (Exec_Suffix);
-                  return Name_Find;
-               end if;
-            end;
+            if Name_Len <= Exec_Suffix'Length
+              or else not
+                File_Names_Equal
+                  (Name_Buffer
+                    (Name_Len - Exec_Suffix'Length + 1 .. Name_Len),
+                   Exec_Suffix.all)
+            then
+               Name_Buffer
+                 (Name_Len + 1 .. Name_Len + Exec_Suffix'Length) :=
+                   Exec_Suffix.all;
+               Name_Len := Name_Len + Exec_Suffix'Length;
+               Free (Exec_Suffix);
+               return Name_Find;
+            end if;
          end if;
       end if;
 
@@ -889,7 +885,6 @@ package body Osint is
    is
       Exec_Suffix    : String_Access;
       Add_Suffix     : Boolean;
-      Canonical_Name : String := Name;
 
    begin
       if Executable_Extension_On_Target = No_Name then
@@ -909,25 +904,26 @@ package body Osint is
 
          begin
             Free (Exec_Suffix);
-            Canonical_Case_File_Name (Canonical_Name);
-
             Add_Suffix := True;
+
             if Only_If_No_Suffix then
-               for J in reverse Canonical_Name'Range loop
-                  if Canonical_Name (J) = '.' then
+               for J in reverse Name'Range loop
+                  if Name (J) = '.' then
                      Add_Suffix := False;
                      exit;
 
-                  elsif Is_Directory_Separator (Canonical_Name (J)) then
+                  elsif Is_Directory_Separator (Name (J)) then
                      exit;
                   end if;
                end loop;
             end if;
 
             if Add_Suffix and then
-              (Canonical_Name'Length <= Suffix'Length
-               or else Canonical_Name (Canonical_Name'Last - Suffix'Length + 1
-                                       .. Canonical_Name'Last) /= Suffix)
+              (Name'Length <= Suffix'Length
+               or else not
+                 File_Names_Equal
+                   (Name (Name'Last - Suffix'Length + 1 .. Name'Last),
+                    Suffix))
             then
                declare
                   Result : String (1 .. Name'Length + Suffix'Length);
@@ -1056,6 +1052,19 @@ package body Osint is
 
       Exit_Program (E_Fatal);
    end Fail;
+
+   ----------------------
+   -- File_Names_Equal --
+   ----------------------
+
+   function File_Names_Equal (File1, File2 : String) return Boolean is
+   begin
+      if File_Names_Case_Sensitive then
+         return File1 = File2;
+      else
+         return To_Lower (File1) = To_Lower (File2);
+      end if;
+   end File_Names_Equal;
 
    ---------------
    -- File_Hash --
