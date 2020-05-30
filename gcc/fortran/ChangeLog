@@ -1,3 +1,11 @@
+2020-05-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95090
+	* class.c (get_unique_type_string): Enlarge temporary for
+	name-mangling.  Use strncpy to prevent buffer overrun.
+	(get_unique_hashed_string): Enlarge temporary.
+	(gfc_hash_value): Enlarge temporary for name-mangling.
+
 2020-05-28  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95373

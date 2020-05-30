@@ -1,3 +1,105 @@
+2020-05-29  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/vsx-vector-6.p9.c: Allow xxperm as perm as well.
+
+2020-05-29  Patrick Palka  <ppalka@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/95181
+	* g++.dg/concepts/pr95181.C: New test.
+	* g++.dg/concepts/pr95181-2.C: New test.
+
+2020-05-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95371
+	* g++.dg/cpp2a/concepts-ttp1.C: New test.
+
+2020-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/95390
+	* gfortran.dg/findloc_8.f90: New test.
+
+2020-05-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95344
+	* c-c++-common/Wparentheses-2.c: New test.
+
+2020-05-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95311
+	* g++.dg/ubsan/vptr-16.C: New test.
+
+2020-05-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/92652
+	PR c++/93698
+	PR c++/94128
+	* g++.dg/cpp2a/concepts-lambda8.C: New test.
+	* g++.dg/cpp2a/concepts-lambda9.C: New test.
+	* g++.dg/cpp2a/concepts-lambda10.C: New test.
+
+2020-05-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95241
+	* g++.dg/cpp0x/constexpr-array25.C: New test.
+
+2020-05-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95272
+	* gcc.dg/vect/pr95272.c: New testcase.
+
+2020-05-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95403
+	* gfortran.dg/vect/pr95403.f: New testcase.
+
+2020-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95315
+	* gcc.dg/gomp/pr95315-2.c: New test.
+
+2020-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95052
+	* gcc.target/i386/pr95052.c: New test.
+
+2020-05-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95393
+	* gcc.dg/tree-ssa/phi-opt-21.c: New testcase.
+	* g++.dg/vect/slp-pr87105.cc: Adjust.
+
+2020-05-29  Joe Ramsay  <joe.ramsay@arm.com>
+
+	* gcc.target/aarch64/sve/load_const_offset_2.c: Force using packed
+	vectors.
+	* gcc.target/aarch64/sve/logical_unpacked_and_1.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_and_2.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_and_3.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_and_4.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_and_5.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_and_6.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_and_7.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_eor_1.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_eor_2.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_eor_3.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_eor_4.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_eor_5.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_eor_6.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_eor_7.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_orr_1.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_orr_2.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_orr_3.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_orr_4.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_orr_5.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_orr_6.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_orr_7.c: New test.
+	* gcc.target/aarch64/sve/scatter_store_6.c: Force using packed vectors.
+	* gcc.target/aarch64/sve/scatter_store_7.c: Force using packed vectors.
+	* gcc.target/aarch64/sve/strided_load_3.c: Force using packed vectors.
+	* gcc.target/aarch64/sve/strided_store_3.c: Force using packed vectors.
+	* gcc.target/aarch64/sve/unpack_signed_1.c: Force using packed vectors.
+
 2020-05-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/95328

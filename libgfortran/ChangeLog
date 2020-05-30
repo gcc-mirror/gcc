@@ -1,3 +1,19 @@
+2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/95413
+	* configure: Regenerated.
+
+2020-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/95390
+	* Makefile.am (i_findloc0_c): Add findloc0_i10.c.
+	(i_findloc1_c): Add findloc1_i10.c.
+	* gfortran.map (GFORTRAN_10.2): New symbol version, export
+	_gfortran_{,m,s}findloc{0,1}_c10 symbols.
+	* Makefile.in: Regenerated.
+	* generated/findloc0_c10.c: Generated.
+	* generated/findloc1_c10.c: Generated.
+
 2020-05-28  Harald Anlauf  <anlauf@gmx.de>
 
 	PR libfortran/95104

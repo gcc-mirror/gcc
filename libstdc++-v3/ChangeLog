@@ -1,3 +1,15 @@
+2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/95413
+	* configure: Regenerated.
+
+2020-05-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/95079
+	* include/bits/hashtable_policy.h (_Insert_base<>::try_emplace): New.
+	* include/bits/unordered_map.h (unordered_map<>::try_emplace): Adapt.
+	(unordered_map<>::insert_or_assign): Adapt.
+
 2020-05-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/95282
