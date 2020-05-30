@@ -4,12 +4,12 @@
 
 subroutine s (x)
   complex, parameter :: z = 3
-  real(z% kind)      :: x       ! { dg-error "nonderived-type variable" }
+  real(z% kind)      :: x       ! { dg-error "Fortran 2003: KIND part_ref" }
   type t
      real    :: kind
      logical :: re
   end type t
   type(t) :: b
   print *, b% kind, b% re
-  print *, z% re                ! { dg-error "nonderived-type variable" }
+  print *, z% re                ! { dg-error "Fortran 2008: RE or IM part_ref" }
 end
