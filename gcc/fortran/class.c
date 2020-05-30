@@ -484,7 +484,14 @@ get_unique_type_string (char *string, gfc_symbol *derived)
   if (derived->attr.unlimited_polymorphic)
     strcpy (dt_name, "STAR");
   else
-    strncpy (dt_name, gfc_dt_upper_string (derived->name), sizeof (dt_name));
+    {
+      const char *upper = gfc_dt_upper_string (derived->name);
+      size_t len = strnlen (upper, sizeof (dt_name));
+      if (len >= sizeof (dt_name))
+	gfc_internal_error ("get_unique_type_string: identifier overflow");
+      memcpy (dt_name, upper, len);
+      dt_name[len] = '\0';
+    }
   if (derived->attr.unlimited_polymorphic)
     sprintf (string, "_%s", dt_name);
   else if (derived->module)
