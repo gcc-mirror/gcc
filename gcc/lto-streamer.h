@@ -956,6 +956,10 @@ bool reachable_from_this_partition_p (struct cgraph_node *,
 lto_symtab_encoder_t compute_ltrans_boundary (lto_symtab_encoder_t encoder);
 void select_what_to_stream (void);
 
+struct ltrans_partition_def;
+void lto_apply_partition_mask (struct ltrans_partition_def *partition);
+
+
 /* In options-save.c.  */
 void cl_target_option_stream_out (struct output_block *, struct bitpack_d *,
 				  struct cl_target_option *);

@@ -1449,6 +1449,7 @@ OBJS = \
 	lra-spills.o \
 	lto-cgraph.o \
 	lto-streamer.o \
+	lto-partition.o \
 	lto-streamer-in.o \
 	lto-streamer-out.o \
 	lto-section-in.o \

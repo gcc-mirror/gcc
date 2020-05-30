@@ -1,3 +1,16 @@
+2020-05-29  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* Makefile.in (lto-partition.o): Add.
+	* cgraph.c (release_function_body): Remove dom_info_available_p
+	check.
+	* cgraphunit.c (ipa_passes): Run partitioner after
+	execute_ipa_summary_passes.
+	* ipa-visibility.c (optimize_weakref): Remove whole_program or
+	in_lto_p check.
+	* lto-cgraph.c (lto_apply_partition_mask): New.
+	* lto-streamer.h (ltrans_partition_def: Declare.
+	* (lto_apply_partition_mask): Expose symbol externally.
+
 2020-05-20  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* gcc.c (get_file_by_lines): Accept a path to file instead of FILE

@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-offload.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "lto-partition.h"
 
 /* True when asm nodes has been output.  */
 bool asm_nodes_output = false;
@@ -2057,5 +2058,39 @@ input_cgraph_opt_summary (vec<symtab_node *> nodes)
 					&len);
       if (data)
 	input_cgraph_opt_section (file_data, data, len, nodes);
+    }
+}
+
+/* Replace the partition in the symbol table, removing every node which is not
+   in partition.  */
+
+void
+lto_apply_partition_mask (ltrans_partition partition)
+{
+  vec<lto_encoder_entry> &nodes = partition->encoder->nodes;
+  symtab_node *node;
+  auto_vec<symtab_node *, 16> mark_to_remove;
+  int i;
+
+  for (i = 0; i < nodes.length (); i++)
+    {
+      symtab_node *node = nodes[i].node;
+      node->aux = (void *) 1;
+
+      if (!nodes[i].in_partition)
+	  node->in_other_partition = true;
+    }
+
+  FOR_EACH_SYMBOL (node)
+    if (!node->aux)
+      mark_to_remove.safe_push (node);
+
+  FOR_EACH_SYMBOL (node)
+    node->aux = NULL;
+
+  for (i = 0; i < mark_to_remove.length (); i++)
+    {
+      symtab_node *node = mark_to_remove[i];
+      node->remove ();
     }
 }

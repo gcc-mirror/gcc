@@ -206,6 +206,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "ipa-inline.h"
+#include "lto-partition.h"
 
 /* Queue of cgraph nodes scheduled to be added into cgraph.  This is a
    secondary queue used during optimization to accommodate passes that
@@ -2633,6 +2634,10 @@ ipa_passes (void)
 
   if (!in_lto_p)
     {
+      struct symtab_node *node;
+      int partitions, i, pid;
+      int *pids;
+
       /* Generate coverage variables and constructors.  */
       coverage_finish ();
 
@@ -2643,7 +2648,71 @@ ipa_passes (void)
 
       execute_ipa_summary_passes
 	((ipa_opt_pass_d *) passes->all_regular_ipa_passes);
+
+      symtab_node::checking_verify_symtab_nodes ();
+
+      /* Use max map for now for debugging.  */
+      lto_max_map ();
+
+      /* AUX pointers are used by partitioning code to bookkeep number of
+	 partitions symbol is in.  This is no longer needed.  */
+      FOR_EACH_SYMBOL (node)
+	node->aux = NULL;
+
+      /* Find out statics that need to be promoted
+	 to globals with hidden visibility because they are accessed from multiple
+	 partitions.  */
+      lto_promote_cross_file_statics ();
+      
+      partitions = ltrans_partitions.length ();
+      pids = (int *) alloca (partitions * sizeof (*pids));
+
+
+      for (i = 0; i < partitions; ++i)
+	{
+	  pid = fork ();
+	  if (pid == 0)
+	    {
+	      printf ("Process %d\n", i);
+	      lto_apply_partition_mask (ltrans_partitions[i]);
+	      goto continue_compilation;
+	    }
+	  else
+	    {
+	      int wstatus;
+	      waitpid (pid, &wstatus, 0);
+	    }
+	}
+      exit(0);
+
+      /* 
+      for (i = 0; i < partitions; ++i)
+	{
+	  pid = fork ();
+	  if (pid == 0)
+	    {
+	      // Child.
+	      lto_apply_partition_mask (ltrans_partitions[i]);
+	      goto continue_compilation;
+	    }
+	  else
+	    {
+	      // Parent.
+	      pids[i] = partitions;
+	    }
+	}
+
+      for (i = 0; i < partitions; ++i)
+	{
+	  int wstatus;
+	  waitpid (pids[i], &wstatus, 0);
+	}
+
+      exit(0);
+      */
     }
+
+  continue_compilation:
 
   /* Some targets need to handle LTO assembler output specially.  */
   if (flag_generate_lto || flag_generate_offload)
