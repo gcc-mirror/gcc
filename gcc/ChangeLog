@@ -1,3 +1,30 @@
+2020-05-29  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/94591
+	* config/aarch64/aarch64.c (aarch64_evpc_rev_local): Don't match
+	identity permutation.
+
+2020-05-29  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (add<mode>3_zext_dup): Change to a
+	define_expand, and rename the original to ...
+	(add<mode>3_vcc_zext_dup): ... this, and add a custom VCC operand.
+	(add<mode>3_zext_dup_exec): Likewise, with ...
+	(add<mode>3_vcc_zext_dup_exec): ... this.
+	(add<mode>3_zext_dup2): Likewise, with ...
+	(add<mode>3_zext_dup_exec): ... this.
+	(add<mode>3_zext_dup2_exec): Likewise, with ...
+	(add<mode>3_zext_dup2): ... this.
+	* config/gcn/gcn.c (gcn_expand_scalar_to_vector_address): Switch
+	addv64di3_zext* calls to use addv64di3_vcc_zext*.
+
+2020-05-29  Dong JianQiang  <dongjianqiang2@huawei.com>
+
+	PR gcov-profile/95332
+	* gcov-io.c (gcov_var::endian): Move field.
+	(from_file): Add IN_GCOV_TOOL check.
+	* gcov-io.h (gcov_magic): Ditto.
+
 2020-05-28  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR testsuite/95361
