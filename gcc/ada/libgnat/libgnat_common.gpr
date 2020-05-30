@@ -1,0 +1,19 @@
+abstract project Libgnat_Common is
+
+   Common_Flags := Split (External ("CFLAGS", "-O2 -g"), " ");
+   C_Flags      := Common_Flags &
+                   ("-I../include", "-DIN_RTS=1", "-fexceptions",
+                    "-DSTANDALONE") &
+                   External_As_List ("EXTRALIBFLAGS", " ");
+   Ada_Flags    := Common_Flags & ("-nostdinc", "-I../adainclude")
+                   & Split (External ("ADAFLAGS", "-gnatpg"), " ");
+   Library_Kind := External ("LIBRARY_KIND", "static");
+
+   No_Opt      := ("-O0");
+   Force_Debug := ("-g");
+   No_Inline   := ("-fno-inline");
+   No_Omit     := ("-fno-omit-frame-pointer");
+   No_Sibling  := ("-fno-optimize-sibling-calls");
+   No_Reorder  := ("-fno-toplevel-reorder", "-O0");
+
+end Libgnat_Common;

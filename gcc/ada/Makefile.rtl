@@ -2621,7 +2621,7 @@ LIBGNAT_OBJS = adadecode.o adaint.o argv.o aux-io.o 			\
 
 LIBGNAT_SRCS = $(patsubst %.o,%.c,$(LIBGNAT_OBJS))			\
   adadecode.h adaint.h env.h gsocket.h raise.h standard.ads.h		\
-  tb-gcc.c runtime.h libgnarl/thread.c $(EXTRA_LIBGNAT_SRCS)
+  runtime.h $(EXTRA_LIBGNAT_SRCS)
 
 # memtrack.o is special as not put into libgnat.
 GNATRTL_OBJS = $(GNATRTL_NONTASKING_OBJS) $(GNATRTL_TASKING_OBJS) \
@@ -2634,7 +2634,8 @@ GNATRTL_OBJS = $(GNATRTL_NONTASKING_OBJS) $(GNATRTL_TASKING_OBJS) \
 ADA_INCLUDE_SRCS =\
  libgnat/ada.ads libgnat/calendar.ads libgnat/directio.ads libgnat/gnat.ads libgnat/interfac.ads libgnat/ioexcept.ads \
  libgnat/machcode.ads libgnat/text_io.ads libgnat/unchconv.ads libgnat/unchdeal.ads \
- libgnat/sequenio.ads libgnat/system.ads Makefile.adalib libgnat/memtrack.adb \
+ libgnat/sequenio.ads libgnat/system.ads libgnat/memtrack.adb \
+ libgna*/*.gpr \
  libgnat/a-[a-o]*.adb libgnat/a-[a-o]*.ads \
  libgnat/a-[p-z]*.adb libgnat/a-[p-z]*.ads \
  libgnat/g-[a-o]*.adb libgnat/g-[a-o]*.ads \
@@ -2680,7 +2681,7 @@ setup-rts: force
 	$(MKDIR) $(RTSDIR)
 	$(CHMOD) u+w $(RTSDIR)
 # Copy target independent sources
-	$(foreach f,$(ADA_INCLUDE_SRCS) $(LIBGNAT_SRCS), \
+	$(foreach f,$(ADA_INCLUDE_SRCS) $(LIBGNAT_SRCS) libgnarl/thread.c, \
 	  $(LN_S) $(GNAT_SRC)/$(f) $(RTSDIR) ;) true
 # Remove files not used
 	$(RM) $(patsubst %,$(RTSDIR)/%,$(ADA_EXCLUDE_FILES))
@@ -2697,6 +2698,25 @@ setup-rts: force
 	$(foreach PAIR,$(LIBGNAT_TARGET_PAIRS), \
 	          $(LN_S) $(GNAT_SRC)/$(word 2,$(subst <, ,$(PAIR))) \
 	                $(RTSDIR)/$(word 1,$(subst <, ,$(PAIR)));)
+# And finally generate libgnat.lst and libgnarl.lst
+	@for f in \
+	  $(foreach F,$(GNATRTL_TASKING_OBJS),$(subst $(objext),.ads,$(F))) \
+	  $(foreach F,$(GNATRTL_TASKING_OBJS),$(subst $(objext),.adb,$(F))); \
+	do \
+	  if [ -f $(RTSDIR)/$$f ]; then echo $$f >> $(RTSDIR)/libgnarl.lst; fi \
+	done
+	@echo thread.c >> $(RTSDIR)/libgnarl.lst
+	@for f in \
+	  $(foreach F,$(GNATRTL_NONTASKING_OBJS),$(subst $(objext),.ads,$(F))) \
+	  $(foreach F,$(GNATRTL_NONTASKING_OBJS),$(subst $(objext),.adb,$(F))); \
+	do \
+	  if [ -f $(RTSDIR)/$$f ]; then echo $$f >> $(RTSDIR)/libgnat.lst; fi \
+	done
+# s-oscons.ads is generated later, so hardcode it here
+	@echo s-oscons.ads >> $(RTSDIR)/libgnat.lst
+	@for f in $(LIBGNAT_SRCS); do \
+	  echo $$f >> $(RTSDIR)/libgnat.lst; \
+	done
 
 # Special flags. It is recommended not to change the compilation flags
 # without a careful analysis of the consequences because (part of) the
@@ -2772,4 +2792,11 @@ a-tags.o  : a-tags.adb a-tags.ads
 
 s-memory.o  : s-memory.adb s-memory.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(NO_SIBLING_ADAFLAGS) $(ADA_INCLUDES) \
+	  $< $(OUTPUT_OPTION)
+
+# Need to keep functions ordered on g-debpoo.o since labels are used to
+# exclude subprograms from traceback computation.
+
+g-debpoo.o: g-debpoo.adb g-debpoo.ads
+	$(ADAC) -c $(ALL_ADAFLAGS) $(NO_REORDER_ADAFLAGS) $(ADA_INCLUDES) \
 	  $< $(OUTPUT_OPTION)
