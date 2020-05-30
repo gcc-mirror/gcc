@@ -6075,10 +6075,10 @@ package body Sem_Ch13 is
                           (N, U_Ent, No_Uint, O_Ent, Off);
                      end if;
 
-                     --  If the overlay changes the storage order, mark the
-                     --  entity as being volatile to block any optimization
-                     --  for it since the construct is not really supported
-                     --  by the back end.
+                     --  If the overlay changes the storage order, warn since
+                     --  the construct is not really supported by the back end.
+                     --  Also mark the entity as being volatile to block the
+                     --  optimizer, even if there is no warranty on the result.
 
                      if (Is_Record_Type (Etype (U_Ent))
                           or else Is_Array_Type (Etype (U_Ent)))
@@ -6087,6 +6087,8 @@ package body Sem_Ch13 is
                        and then Reverse_Storage_Order (Etype (U_Ent)) /=
                                 Reverse_Storage_Order (Etype (O_Ent))
                      then
+                        Error_Msg_N
+                          ("??overlay changes scalar storage order", Expr);
                         Set_Treat_As_Volatile (U_Ent);
                      end if;
 
