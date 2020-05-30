@@ -9155,7 +9155,7 @@ package body Sem_Res is
          Array_Type := Implicitly_Designated_Type (Array_Type);
       end if;
 
-      --  If name was overloaded, set component type correctly now
+      --  If name was overloaded, set component type correctly now.
       --  If a misplaced call to an entry family (which has no index types)
       --  return. Error will be diagnosed from calling context.
 

@@ -15676,7 +15676,7 @@ package body Sem_Util is
          return Is_Object (Entity (N))
            and then Is_Effectively_Volatile (Entity (N));
 
-      elsif Nkind (N) = N_Indexed_Component then
+      elsif Nkind_In (N, N_Indexed_Component, N_Slice) then
          return Is_Effectively_Volatile_Object (Prefix (N));
 
       elsif Nkind (N) = N_Selected_Component then
@@ -15684,6 +15684,12 @@ package body Sem_Util is
            Is_Effectively_Volatile_Object (Prefix (N))
              or else
            Is_Effectively_Volatile_Object (Selector_Name (N));
+
+      elsif Nkind_In (N, N_Qualified_Expression,
+                         N_Unchecked_Type_Conversion,
+                         N_Type_Conversion)
+      then
+         return Is_Effectively_Volatile_Object (Expression (N));
 
       else
          return False;
@@ -17497,7 +17503,8 @@ package body Sem_Util is
       --  The volatile object appears as the expression of a type conversion
       --  occurring in a non-interfering context.
 
-      elsif Nkind_In (Context, N_Type_Conversion,
+      elsif Nkind_In (Context, N_Qualified_Expression,
+                               N_Type_Conversion,
                                N_Unchecked_Type_Conversion)
         and then Expression (Context) = Obj_Ref
         and then Is_OK_Volatile_Context
