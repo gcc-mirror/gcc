@@ -170,7 +170,6 @@ Compilation::visit (AST::AttrInputMetaItemContainer &input)
 void
 Compilation::visit (AST::IdentifierExpr &ident_expr)
 {
-  printf ("IdentifierExpr: %s\n", ident_expr.as_string ().c_str ());
   Bvariable *var = NULL;
   if (!scope.LookupVar (ident_expr.as_string (), &var))
     {
@@ -581,9 +580,27 @@ Compilation::visit (AST::FieldAccessExpr &expr)
 void
 Compilation::visit (AST::ClosureExprInner &expr)
 {}
+
 void
 Compilation::visit (AST::BlockExpr &expr)
-{}
+{
+  Bblock *enclosingScope = NULL;
+  Location start_location; /* = stmt.locus; FIXME */
+  Location end_location;   // FIXME
+
+  std::vector<Bvariable *> vars;
+  auto code_block
+    = backend->block (scope.GetCurrentFndecl (), scope.CurBlock (), vars,
+		      start_location, end_location);
+
+  scope.PushBlock (code_block);
+  for (auto &stmt : expr.statements)
+    {
+      stmt->accept_vis (*this);
+    }
+  // dont pop
+}
+
 void
 Compilation::visit (AST::ClosureExprInnerTyped &expr)
 {}
@@ -653,18 +670,89 @@ Compilation::visit (AST::ForLoopExpr &expr)
 void
 Compilation::visit (AST::IfExpr &expr)
 {
-  printf ("IfExpr %s\n", expr.as_string ().c_str ());
+  Bexpression *cond = NULL;
+  VISIT_POP (expr.get_if_condition ()->get_locus_slow (),
+	     expr.get_if_condition (), cond, exprs);
+  if (cond == NULL)
+    {
+      rust_error_at (expr.get_if_condition ()->get_locus_slow (),
+		     "failed to compile");
+      return;
+    }
+
+  expr.vis_if_block (*this);
+  Bblock *then_block = scope.PopBlock ();
+
+  auto stmt = backend->if_statement (scope.GetCurrentFndecl (), cond,
+				     then_block, NULL, expr.get_locus_slow ());
+  stmts.push_back (stmt);
 }
+
 void
 Compilation::visit (AST::IfExprConseqElse &expr)
 {
-  printf ("IfExprConseqElse %s\n", expr.as_string ().c_str ());
+  Bexpression *cond = NULL;
+  VISIT_POP (expr.get_if_condition ()->get_locus_slow (),
+	     expr.get_if_condition (), cond, exprs);
+  if (cond == NULL)
+    {
+      rust_error_at (expr.get_if_condition ()->get_locus_slow (),
+		     "failed to compile");
+      return;
+    }
+
+  expr.vis_if_block (*this);
+  Bblock *then_block = scope.PopBlock ();
+
+  expr.vis_else_block (*this);
+  Bblock *else_block = scope.PopBlock ();
+
+  auto stmt
+    = backend->if_statement (scope.GetCurrentFndecl (), cond, then_block,
+			     else_block, expr.get_locus_slow ());
+  stmts.push_back (stmt);
 }
+
 void
 Compilation::visit (AST::IfExprConseqIf &expr)
 {
-  printf ("IfExprConseqIf %s\n", expr.as_string ().c_str ());
+  Bexpression *cond = NULL;
+  VISIT_POP (expr.get_if_condition ()->get_locus_slow (),
+	     expr.get_if_condition (), cond, exprs);
+  if (cond == NULL)
+    {
+      rust_error_at (expr.get_if_condition ()->get_locus_slow (),
+		     "failed to compile");
+      return;
+    }
+
+  expr.vis_if_block (*this);
+  Bblock *then_block = scope.PopBlock ();
+
+  // setup else block
+  Bblock *enclosingScope = NULL;
+  Location start_location; /* = stmt.locus; FIXME */
+  Location end_location;   // FIXME
+
+  std::vector<Bvariable *> vars;
+  auto else_block
+    = backend->block (scope.GetCurrentFndecl (), scope.CurBlock (), vars,
+		      start_location, end_location);
+
+  scope.PushBlock (else_block);
+  expr.vis_conseq_if_expr (*this);
+  // get trailing if required
+  for (auto &s : stmts)
+    scope.AddStatement (s);
+  stmts.clear ();
+  scope.PopBlock ();
+
+  auto stmt
+    = backend->if_statement (scope.GetCurrentFndecl (), cond, then_block,
+			     else_block, expr.get_locus_slow ());
+  stmts.push_back (stmt);
 }
+
 void
 Compilation::visit (AST::IfExprConseqIfLet &expr)
 {
@@ -1104,8 +1192,6 @@ Compilation::visit (AST::ExprStmtWithoutBlock &stmt)
 void
 Compilation::visit (AST::ExprStmtWithBlock &stmt)
 {
-  printf ("ExprStmtWithBlock: %s\n", stmt.as_string ().c_str ());
-
   Bblock *enclosingScope = NULL;
   Location start_location; /* = stmt.locus; FIXME */
   Location end_location;   // FIXME
@@ -1117,6 +1203,14 @@ Compilation::visit (AST::ExprStmtWithBlock &stmt)
 
   scope.PushBlock (code_block);
   stmt.expr->accept_vis (*this);
+
+  // get trailing if required
+  for (auto &s : stmts)
+    {
+      scope.AddStatement (s);
+    }
+  stmts.clear ();
+
   scope.PopBlock ();
 
   auto body = backend->block_statement (code_block);

@@ -1970,7 +1970,7 @@ IfExprConseqIf::as_string () const
 {
   ::std::string str = IfExpr::as_string ();
 
-  str += "\n Else if expr: \n  " + if_expr->as_string ();
+  str += "\n Else if expr: \n  " + conseq_if_expr->as_string ();
 
   return str;
 }

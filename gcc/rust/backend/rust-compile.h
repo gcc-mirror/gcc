@@ -241,6 +241,7 @@ private:
   ::Btype *translatedType;
   std::vector<AST::IdentifierPattern> patternBuffer;
   std::vector< ::Bexpression *> exprs;
+  std::vector< ::Bstatement *> stmts;
 
   // careful these are the vectors we pass into the GCC middle-end
   std::vector< ::Btype *> type_decls;

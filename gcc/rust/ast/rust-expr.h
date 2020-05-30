@@ -4195,6 +4195,14 @@ public:
 
   virtual void accept_vis (ASTVisitor &vis) OVERRIDE;
 
+  void vis_if_condition (ASTVisitor &vis) { condition->accept_vis (vis); }
+
+  void vis_if_block (ASTVisitor &vis) { if_block->accept_vis (vis); }
+
+  Expr *get_if_condition () { return condition.get (); }
+
+  BlockExpr *get_if_block () { return if_block.get (); }
+
 protected:
   // Use covariance to implement clone function as returning this object rather
   // than base
@@ -4259,6 +4267,8 @@ public:
 
   virtual void accept_vis (ASTVisitor &vis) OVERRIDE;
 
+  void vis_else_block (ASTVisitor &vis) { else_block->accept_vis (vis); }
+
 protected:
   // Use covariance to implement clone function as returning this object rather
   // than base
@@ -4286,7 +4296,7 @@ protected:
 class IfExprConseqIf : public IfExpr
 {
   // IfExpr* if_expr;
-  ::std::unique_ptr<IfExpr> if_expr;
+  ::std::unique_ptr<IfExpr> conseq_if_expr;
 
 public:
   /*~IfExprConseqIf() {
@@ -4299,13 +4309,13 @@ public:
 		  ::std::unique_ptr<BlockExpr> if_block,
 		  ::std::unique_ptr<IfExpr> conseq_if_expr, Location locus)
     : IfExpr (::std::move (condition), ::std::move (if_block), locus),
-      if_expr (::std::move (conseq_if_expr))
+      conseq_if_expr (::std::move (conseq_if_expr))
   {}
   // outer attributes not allowed
 
   // Copy constructor with clone
   IfExprConseqIf (IfExprConseqIf const &other)
-    : IfExpr (other), if_expr (other.if_expr->clone_if_expr ())
+    : IfExpr (other), conseq_if_expr (other.conseq_if_expr->clone_if_expr ())
   {}
 
   // Destructor - define here if required
@@ -4316,7 +4326,7 @@ public:
     IfExpr::operator= (other);
     // condition = other.condition->clone_expr();
     // if_block = other.if_block->clone_block_expr();
-    if_expr = other.if_expr->clone_if_expr ();
+    conseq_if_expr = other.conseq_if_expr->clone_if_expr ();
 
     return *this;
   }
@@ -4326,6 +4336,11 @@ public:
   IfExprConseqIf &operator= (IfExprConseqIf &&other) = default;
 
   virtual void accept_vis (ASTVisitor &vis) OVERRIDE;
+
+  void vis_conseq_if_expr (ASTVisitor &vis)
+  {
+    conseq_if_expr->accept_vis (vis);
+  }
 
 protected:
   // Use covariance to implement clone function as returning this object rather
