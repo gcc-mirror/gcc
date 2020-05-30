@@ -501,7 +501,6 @@ public:
     NOT
   };
 
-private:
   // Note: overload negation via std::ops::Neg and not via std::ops::Not
   // Negation only works for signed integer and floating-point types, NOT only
   // works for boolean and integer types (via bitwise NOT)
@@ -530,6 +529,8 @@ public:
   // Move semantics here if required
 
   virtual void accept_vis (ASTVisitor &vis) OVERRIDE;
+
+  Expr *get_expr () { return main_or_left_expr.get (); }
 
 protected:
   // Use covariance to implement clone function as returning this object rather

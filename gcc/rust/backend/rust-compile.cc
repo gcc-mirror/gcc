@@ -288,9 +288,36 @@ Compilation::visit (AST::DereferenceExpr &expr)
 void
 Compilation::visit (AST::ErrorPropagationExpr &expr)
 {}
+
 void
 Compilation::visit (AST::NegationExpr &expr)
-{}
+{
+  Bexpression *root = NULL;
+  VISIT_POP (expr.get_expr ()->get_locus_slow (), expr.get_expr (), root,
+	     exprs);
+  if (root == NULL)
+    {
+      rust_error_at (expr.get_expr ()->get_locus_slow (), "failed to compile");
+      return;
+    }
+
+  Operator op;
+  switch (expr.negation_type)
+    {
+    case AST::NegationExpr::NEGATE:
+      op = OPERATOR_MINUS;
+      break;
+    case AST::NegationExpr::NOT:
+      op = OPERATOR_NOT;
+      break;
+    default:
+      rust_fatal_error (expr.get_locus_slow (), "failed to compile operator");
+      return;
+    }
+
+  auto unary = backend->unary_expression (op, root, expr.get_locus_slow ());
+  exprs.push_back (unary);
+}
 
 void
 Compilation::visit (AST::ArithmeticOrLogicalExpr &expr)
