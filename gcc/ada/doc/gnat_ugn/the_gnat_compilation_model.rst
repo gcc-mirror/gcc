@@ -2393,10 +2393,9 @@ Rebuilding the GNAT Run-Time Library
 .. index:: Rebuilding the GNAT Run-Time Library
 .. index:: Run-Time Library, rebuilding
 
-It may be useful to recompile the GNAT library in various contexts, the
-most important one being the use of partition-wide configuration pragmas
-such as ``Normalize_Scalars``. A special Makefile called
-:file:`Makefile.adalib` is provided to that effect and can be found in
+It may be useful to recompile the GNAT library in various debugging or
+experimentation contexts. A project file called
+:file:`libada.gpr` is provided to that effect and can be found in
 the directory containing the GNAT library. The location of this
 directory depends on the way the GNAT environment has been installed and can
 be determined by means of the command:
@@ -2405,10 +2404,13 @@ be determined by means of the command:
 
       $ gnatls -v
 
-The last entry in the object search path usually contains the
-gnat library. This Makefile contains its own documentation and in
-particular the set of instructions needed to rebuild a new library and
-to use it.
+The last entry in the source search path usually contains the
+gnat library (the :file:`adainclude` directory). This project file contains its
+own documentation and in particular the set of instructions needed to rebuild a
+new library and to use it.
+
+Note that rebuilding the GNAT Run-Time is only recommended for temporary
+experiments or debugging, and is not supported.
 
 
 .. index:: ! Conditional compilation
