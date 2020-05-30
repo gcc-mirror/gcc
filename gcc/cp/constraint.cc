@@ -2490,15 +2490,15 @@ satisfy_disjunction (tree t, tree args, subst_info info)
 tree
 satisfaction_value (tree t)
 {
-  if (t == error_mark_node)
+  if (t == error_mark_node || t == boolean_true_node || t == boolean_false_node)
     return t;
-  if (t == boolean_true_node || t == integer_one_node)
-    return boolean_true_node;
-  if (t == boolean_false_node || t == integer_zero_node)
-    return boolean_false_node;
 
-  /* Anything else should be invalid.  */
-  gcc_assert (false);
+  gcc_assert (TREE_CODE (t) == INTEGER_CST
+	      && same_type_p (TREE_TYPE (t), boolean_type_node));
+  if (integer_zerop (t))
+    return boolean_false_node;
+  else
+    return boolean_true_node;
 }
 
 /* Build a new template argument list with template arguments corresponding
