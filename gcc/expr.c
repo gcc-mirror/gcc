@@ -5779,6 +5779,11 @@ store_expr (tree exp, rtx target, int call_param_p,
 			       (call_param_p
 				? EXPAND_STACK_PARM : EXPAND_NORMAL),
 			       &alt_rtl, false);
+      if (shortened_string_cst)
+	{
+	  gcc_assert (MEM_P (temp));
+	  temp = change_address (temp, BLKmode, NULL_RTX);
+	}
     }
 
   /* If TEMP is a VOIDmode constant and the mode of the type of EXP is not
