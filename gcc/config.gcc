@@ -1193,7 +1193,7 @@ arm-wrs-vxworks7*)
 	tmake_file="${tmake_file} arm/t-arm arm/t-vxworks arm/t-bpabi"
 	tm_file="elfos.h arm/elf.h arm/bpabi.h arm/aout.h ${tm_file}"
 	tm_file="${tm_file} vx-common.h vxworks.h arm/vxworks.h"
-	target_cpu_cname="armv7-a"
+	target_cpu_cname="generic-armv7-a"
 	need_64bit_hwint=yes
 	;;
 arm*-*-freebsd*)                # ARM FreeBSD EABI
