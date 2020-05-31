@@ -907,7 +907,7 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
   if (!comp_is_finalizable (comp))
     return;
 
-  if (comp->finalized)
+  if (expr->finalized)
     return;
 
   e = gfc_copy_expr (expr);
@@ -998,6 +998,7 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
 	}
       else
 	(*code) = cond;
+
     }
   else if (comp->ts.type == BT_DERIVED
 	    && comp->ts.u.derived->f2k_derived
@@ -1037,7 +1038,7 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
 			    sub_ns);
       gfc_free_expr (e);
     }
-  comp->finalized = true;
+  expr->finalized = 1;
 }
 
 
