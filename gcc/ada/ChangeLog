@@ -1,3 +1,18 @@
+2020-05-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* Makefile.rtl (ADA_INCLUDE_SRCS): Replace Makefile.adalib by
+	libada.gpr and associated project files.
+	(g-debpoo.o): Add missing rule to ensure subprograms are not reordered.
+	(setup-rts): Add generation of libgnat/libgnarl.lst.
+	(LIBGNAT_SRCS): Remove thread.c which is part of libgnarl.
+	* tracebak.c, tb-gcc.c: Merged the two files to simplify dependencies.
+	* libgnarl/libgnarl.gpr, libgnat/libada.gpr,
+	libgnat/libgnat.gpr, libgnat/libgnat_common.gpr: New files.
+	* doc/gnat_ugn/the_gnat_compilation_model.rst: Makefile.adalib
+	replaced by libada.gpr.
+	* libgnat/system-mingw.ads: Remove obsolete comment.
+	* gcc-interface/Makefile.in: Remove dependency on tb-gcc.c.
+
 2020-05-27  Martin Liska  <mliska@suse.cz>
 
 	* gnatvsn.ads: Bump Library_Version to 11.

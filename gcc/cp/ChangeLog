@@ -1,3 +1,14 @@
+2020-05-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (morph_fn_to_coro): Revise initialization
+	of the frame pointer to avoid an unused value.
+
+2020-05-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95386
+	* constraint.cc (satisfaction_value): Accept INTEGER_CST of any
+	boolean type.
+
 2020-05-29  Patrick Palka  <ppalka@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 

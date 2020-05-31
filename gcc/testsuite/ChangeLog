@@ -1,3 +1,18 @@
+2020-05-31  Jim Wilson  <jimw@sifive.com>
+
+	* gcc.target/riscv/zero-extend-5.c: New.
+
+2020-05-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95373
+	* gfortran.dg/pr95373_1.f90: Adjust error messages.
+	* gfortran.dg/pr95373_2.f90: Adjust error message.
+
+2020-05-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95386
+	* g++.dg/concepts/pr95386.C: New test.
+
 2020-05-29  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/vsx-vector-6.p9.c: Allow xxperm as perm as well.
