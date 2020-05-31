@@ -696,9 +696,8 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
   tree o;
   if (MAYBE_CLASS_TYPE_P (TREE_TYPE (a)))
     {
-      tree overload = NULL_TREE;
       o = build_new_op (loc, CO_AWAIT_EXPR, LOOKUP_NORMAL, a, NULL_TREE,
-			NULL_TREE, &overload, tf_warning_or_error);
+			NULL_TREE, NULL, tf_warning_or_error);
       /* If no viable functions are found, o is a.  */
       if (!o || o == error_mark_node)
 	o = a;
@@ -873,19 +872,18 @@ finish_co_await_expr (location_t kw, tree expr)
   if (at_meth)
     {
       /* try to build a = p.await_transform (e). */
-      tree at_fn = NULL_TREE;
       vec<tree, va_gc> *args = make_tree_vector_single (expr);
       a = build_new_method_call (get_coroutine_promise_proxy (
 				   current_function_decl),
 				 at_meth, &args, NULL_TREE, LOOKUP_NORMAL,
-				 &at_fn, tf_warning_or_error);
+				 NULL, tf_warning_or_error);
 
       /* As I read the section.
 	 We saw an await_transform method, so it's mandatory that we replace
 	 expr with p.await_transform (expr), therefore if the method call fails
 	 (presumably, we don't have suitable arguments) then this part of the
 	 process fails.  */
-      if (!at_fn || a == error_mark_node)
+      if (a == error_mark_node)
 	return error_mark_node;
     }
 
@@ -945,19 +943,19 @@ finish_co_yield_expr (location_t kw, tree expr)
   if (!y_meth || y_meth == error_mark_node)
     return error_mark_node;
 
-  tree yield_fn = NULL_TREE;
+  /* [expr.yield] / 1
+     Let e be the operand of the yield-expression and p be an lvalue naming
+     the promise object of the enclosing coroutine, then the yield-expression
+     is equivalent to the expression co_await p.yield_value(e).
+     build p.yield_value(e):  */
   vec<tree, va_gc> *args = make_tree_vector_single (expr);
-  tree yield_call = build_new_method_call (
-    get_coroutine_promise_proxy (current_function_decl), y_meth, &args,
-    NULL_TREE, LOOKUP_NORMAL, &yield_fn, tf_warning_or_error);
+  tree yield_call = build_new_method_call
+    (get_coroutine_promise_proxy (current_function_decl), y_meth, &args,
+     NULL_TREE, LOOKUP_NORMAL, NULL, tf_warning_or_error);
 
-  if (!yield_fn || yield_call == error_mark_node)
-    return error_mark_node;
-
-  /* So now we have the type of p.yield_value (e).
-     Now we want to build co_await p.yield_value (e).
+  /* Now build co_await p.yield_value (e).
      Noting that for co_yield, there is no evaluation of any potential
-     promise transform_await().  */
+     promise transform_await(), so we call build_co_await directly.  */
 
   tree op = build_co_await (kw, yield_call, CO_YIELD_SUSPEND_POINT);
   if (op != error_mark_node)
