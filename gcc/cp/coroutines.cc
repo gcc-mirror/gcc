@@ -3585,6 +3585,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	 ramp return value, since the user cannot fix this - a 'return' is
 	 not allowed in a coroutine.  */
       TREE_NO_WARNING (orig) = true;
+      /* Discard the body, we can't process it further.  */
+      pop_stmt_list (DECL_SAVED_TREE (orig));
+      DECL_SAVED_TREE (orig) = push_stmt_list ();
       return false;
     }
 
