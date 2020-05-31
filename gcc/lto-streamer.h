@@ -841,21 +841,6 @@ extern void lto_end_section (void);
 extern void lto_write_data (const void *, unsigned int);
 extern void lto_write_raw_data (const void *, unsigned int);
 extern void lto_write_stream (struct lto_output_stream *);
-extern bool lto_output_decl_index (struct lto_output_stream *,
-			    struct lto_tree_ref_encoder *,
-			    tree, unsigned int *);
-extern void lto_output_field_decl_index (struct lto_out_decl_state *,
-				  struct lto_output_stream *, tree);
-extern void lto_output_fn_decl_index (struct lto_out_decl_state *,
-			       struct lto_output_stream *, tree);
-extern void lto_output_namespace_decl_index (struct lto_out_decl_state *,
-				      struct lto_output_stream *, tree);
-extern void lto_output_var_decl_index (struct lto_out_decl_state *,
-				struct lto_output_stream *, tree);
-extern void lto_output_type_decl_index (struct lto_out_decl_state *,
-				 struct lto_output_stream *, tree);
-extern void lto_output_type_ref_index (struct lto_out_decl_state *,
-				struct lto_output_stream *, tree);
 extern struct lto_simple_output_block *lto_create_simple_output_block (
 				enum lto_section_type);
 extern void lto_destroy_simple_output_block (struct lto_simple_output_block *);
@@ -923,6 +908,10 @@ extern struct output_block *create_output_block (enum lto_section_type);
 extern void destroy_output_block (struct output_block *);
 extern void lto_output_tree (struct output_block *, tree, bool, bool);
 extern void stream_write_tree_ref (struct output_block *, tree);
+extern void lto_output_var_decl_index (struct lto_out_decl_state *,
+				       struct lto_output_stream *, tree);
+extern void lto_output_fn_decl_index (struct lto_out_decl_state *,
+				      struct lto_output_stream *, tree);
 extern void lto_output_toplevel_asms (void);
 extern void produce_asm (struct output_block *ob, tree fn);
 extern void lto_output ();

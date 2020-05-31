@@ -119,15 +119,6 @@ destroy_output_block (struct output_block *ob)
 }
 
 
-/* Look up NODE in the type table and write the index for it to OB.  */
-
-static void
-output_type_ref (struct output_block *ob, tree node)
-{
-  streamer_write_record_start (ob, LTO_type_ref);
-  lto_output_type_ref_index (ob->decl_state, ob->main_stream, node);
-}
-
 /* Wrapper around variably_modified_type_p avoiding type modification
    during WPA streaming.  */
 
@@ -224,96 +215,147 @@ lto_output_location (struct output_block *ob, struct bitpack_d *bp,
 }
 
 
+/* Lookup NAME in ENCODER.  If NAME is not found, create a new entry in
+   ENCODER for NAME with the next available index of ENCODER,  then
+   print the index to OBS.
+   Return the index.  */
+
+
+static unsigned
+lto_get_index (struct lto_tree_ref_encoder *encoder, tree t)
+{
+  bool existed_p;
+
+  unsigned int &index
+    = encoder->tree_hash_table->get_or_insert (t, &existed_p);
+  if (!existed_p)
+    {
+      index = encoder->trees.length ();
+      if (streamer_dump_file)
+	{
+	  print_node_brief (streamer_dump_file, "     Encoding indexable ",
+			    t, 4);
+	  fprintf (streamer_dump_file, "  as %i \n", index);
+	}
+      encoder->trees.safe_push (t);
+    }
+
+  return index;
+}
+
+
 /* If EXPR is an indexable tree node, output a reference to it to
    output block OB.  Otherwise, output the physical representation of
    EXPR to OB.  */
 
 static void
-lto_output_tree_ref (struct output_block *ob, tree expr)
+lto_indexable_tree_ref (struct output_block *ob, tree expr,
+			enum LTO_tags *tag, unsigned *index)
 {
   enum tree_code code;
+  enum lto_decl_stream_e_t encoder;
+
+  gcc_checking_assert (tree_is_indexable (expr));
 
   if (TYPE_P (expr))
     {
-      output_type_ref (ob, expr);
-      return;
+      *tag = LTO_type_ref;
+      encoder = LTO_DECL_STREAM_TYPE;
     }
-
-  code = TREE_CODE (expr);
-  switch (code)
+  else
     {
-    case SSA_NAME:
-      streamer_write_record_start (ob, LTO_ssa_name_ref);
-      streamer_write_uhwi (ob, SSA_NAME_VERSION (expr));
-      break;
+      code = TREE_CODE (expr);
+      switch (code)
+	{
+	case SSA_NAME:
+	  *tag = LTO_ssa_name_ref;
+	  *index = SSA_NAME_VERSION (expr);
+	  return;
+	  break;
 
-    case FIELD_DECL:
-      streamer_write_record_start (ob, LTO_field_decl_ref);
-      lto_output_field_decl_index (ob->decl_state, ob->main_stream, expr);
-      break;
+	case FIELD_DECL:
+	  *tag = LTO_field_decl_ref;
+	  encoder = LTO_DECL_STREAM_FIELD_DECL;
+	  break;
 
-    case FUNCTION_DECL:
-      streamer_write_record_start (ob, LTO_function_decl_ref);
-      lto_output_fn_decl_index (ob->decl_state, ob->main_stream, expr);
-      break;
+	case FUNCTION_DECL:
+	  *tag = LTO_function_decl_ref;
+	  encoder = LTO_DECL_STREAM_FN_DECL;
+	  break;
 
-    case VAR_DECL:
-    case DEBUG_EXPR_DECL:
-      gcc_assert (decl_function_context (expr) == NULL || TREE_STATIC (expr));
-      /* FALLTHRU */
-    case PARM_DECL:
-      streamer_write_record_start (ob, LTO_global_decl_ref);
-      lto_output_var_decl_index (ob->decl_state, ob->main_stream, expr);
-      break;
+	case VAR_DECL:
+	case DEBUG_EXPR_DECL:
+	  gcc_checking_assert (decl_function_context (expr) == NULL
+			       || TREE_STATIC (expr));
+	  /* FALLTHRU */
+	case PARM_DECL:
+	  *tag = LTO_global_decl_ref;
+	  encoder = LTO_DECL_STREAM_VAR_DECL;
+	  break;
 
-    case CONST_DECL:
-      streamer_write_record_start (ob, LTO_const_decl_ref);
-      lto_output_var_decl_index (ob->decl_state, ob->main_stream, expr);
-      break;
+	case CONST_DECL:
+	  *tag = LTO_const_decl_ref;
+	  encoder = LTO_DECL_STREAM_VAR_DECL;
+	  break;
 
-    case IMPORTED_DECL:
-      gcc_assert (decl_function_context (expr) == NULL);
-      streamer_write_record_start (ob, LTO_imported_decl_ref);
-      lto_output_var_decl_index (ob->decl_state, ob->main_stream, expr);
-      break;
+	case TYPE_DECL:
+	  *tag = LTO_type_decl_ref;
+	  encoder = LTO_DECL_STREAM_TYPE_DECL;
+	  break;
 
-    case TYPE_DECL:
-      streamer_write_record_start (ob, LTO_type_decl_ref);
-      lto_output_type_decl_index (ob->decl_state, ob->main_stream, expr);
-      break;
+	case NAMESPACE_DECL:
+	  *tag = LTO_namespace_decl_ref;
+	  encoder = LTO_DECL_STREAM_NAMESPACE_DECL;
+	  break;
 
-    case NAMELIST_DECL:
-      streamer_write_record_start (ob, LTO_namelist_decl_ref);
-      lto_output_var_decl_index (ob->decl_state, ob->main_stream, expr);
-      break;
+	case LABEL_DECL:
+	  *tag = LTO_label_decl_ref;
+	  encoder = LTO_DECL_STREAM_VAR_DECL;
+	  break;
 
-    case NAMESPACE_DECL:
-      streamer_write_record_start (ob, LTO_namespace_decl_ref);
-      lto_output_namespace_decl_index (ob->decl_state, ob->main_stream, expr);
-      break;
+	case RESULT_DECL:
+	  *tag = LTO_result_decl_ref;
+	  encoder = LTO_DECL_STREAM_VAR_DECL;
+	  break;
 
-    case LABEL_DECL:
-      streamer_write_record_start (ob, LTO_label_decl_ref);
-      lto_output_var_decl_index (ob->decl_state, ob->main_stream, expr);
-      break;
+	case TRANSLATION_UNIT_DECL:
+	  *tag = LTO_translation_unit_decl_ref;
+	  encoder = LTO_DECL_STREAM_VAR_DECL;
+	  break;
 
-    case RESULT_DECL:
-      streamer_write_record_start (ob, LTO_result_decl_ref);
-      lto_output_var_decl_index (ob->decl_state, ob->main_stream, expr);
-      break;
-
-    case TRANSLATION_UNIT_DECL:
-      streamer_write_record_start (ob, LTO_translation_unit_decl_ref);
-      lto_output_var_decl_index (ob->decl_state, ob->main_stream, expr);
-      break;
-
-    default:
-      /* No other node is indexable, so it should have been handled by
-	 lto_output_tree.  */
-      gcc_unreachable ();
+	default:
+	  /* No other node is indexable, so it should have been handled by
+	     lto_output_tree.  */
+	  gcc_unreachable ();
+	}
     }
+  *index = lto_get_index (&ob->decl_state->streams[encoder], expr);
 }
 
+
+/* Output a static or extern var DECL to OBS.  */
+
+void
+lto_output_var_decl_index (struct lto_out_decl_state *decl_state,
+			   struct lto_output_stream * obs, tree decl)
+{
+  gcc_checking_assert (TREE_CODE (decl) == VAR_DECL);
+  streamer_write_uhwi_stream
+     (obs, lto_get_index (&decl_state->streams[LTO_DECL_STREAM_VAR_DECL],
+			  decl));
+}
+
+
+/* Output a static or extern var DECL to OBS.  */
+
+void
+lto_output_fn_decl_index (struct lto_out_decl_state *decl_state,
+			  struct lto_output_stream * obs, tree decl)
+{
+  gcc_checking_assert (TREE_CODE (decl) == FUNCTION_DECL);
+  streamer_write_uhwi_stream
+     (obs, lto_get_index (&decl_state->streams[LTO_DECL_STREAM_FN_DECL], decl));
+}
 
 /* Return true if EXPR is a tree node that can be written to disk.  */
 
@@ -427,8 +469,12 @@ stream_write_tree_ref (struct output_block *ob, tree t)
 	streamer_write_uhwi (ob, ix + LTO_NUM_TAGS);
       else
 	{
-	  gcc_checking_assert (tree_is_indexable (t));
-	  lto_output_tree_ref (ob, t);
+	  enum LTO_tags tag;
+	  unsigned ix;
+
+	  lto_indexable_tree_ref (ob, t, &tag, &ix);
+	  streamer_write_uhwi (ob, tag);
+	  streamer_write_uhwi (ob, ix);
 	}
       if (streamer_debugging)
 	streamer_write_uhwi (ob, TREE_CODE (t));
@@ -1754,7 +1800,12 @@ lto_output_tree (struct output_block *ob, tree expr,
 
   if (this_ref_p && tree_is_indexable (expr))
     {
-      lto_output_tree_ref (ob, expr);
+      enum LTO_tags tag;
+      unsigned ix;
+
+      lto_indexable_tree_ref (ob, expr, &tag, &ix);
+      streamer_write_record_start (ob, tag);
+      streamer_write_uhwi (ob, ix);
       return;
     }
 
