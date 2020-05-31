@@ -36,7 +36,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   amdgcn-amdhsa \
   arc-elf32OPT-with-cpu=arc600 arc-elf32OPT-with-cpu=arc700 \
   arc-linux-uclibcOPT-with-cpu=arc700 arceb-linux-uclibcOPT-with-cpu=arc700 \
-  arm-wrs-vxworks arm-netbsdelf \
+  arm-netbsdelf \
   arm-linux-androideabi arm-uclinux_eabi arm-eabi arm-rtems \
   arm-symbianelf avr-elf \
   bfin-elf bfin-uclinux bfin-linux-uclibc bfin-rtems bfin-openbsd \
