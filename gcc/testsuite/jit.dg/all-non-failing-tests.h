@@ -74,6 +74,9 @@
 #undef create_code
 #undef verify_code
 
+/* test-builtin-unreachable.c: We don't add this one, since it touches
+   the optimization level of the context as a whole.  */
+
 /* test-calling-external-function.c */
 #define create_code create_code_calling_external_function
 #define verify_code verify_code_calling_external_function
