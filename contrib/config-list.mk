@@ -72,6 +72,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   nds32le-elf nds32be-elf \
   nios2-elf nios2-linux-gnu nios2-rtems \
   nvptx-none \
+  or1k-elf or1k-linux-uclibc or1k-linux-musl or1k-rtems \
   pdp11-aout \
   powerpc-darwin8 \
   powerpc-darwin7 powerpc64-darwin powerpc-freebsd6 powerpc-netbsd \
