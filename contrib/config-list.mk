@@ -29,7 +29,6 @@ GCC_SRC_DIR=../../gcc
 #     > make.out 2>&1 &
 #
 
-# v850e1-elf is rejected by config.sub
 LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   alpha-linux-gnu alpha-netbsd alpha-openbsd \
   alpha64-dec-vms alpha-dec-vms \
@@ -95,7 +94,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   sparc-wrs-vxworks sparc64-elf sparc64-rtems sparc64-linux sparc64-freebsd6 \
   sparc64-netbsd sparc64-openbsd \
   tilegx-linux-gnu tilegxbe-linux-gnu tilepro-linux-gnu \
-  v850e-elf v850-elf v850-rtems vax-linux-gnu \
+  v850e1-elf v850e-elf v850-elf v850-rtems vax-linux-gnu \
   vax-netbsdelf vax-openbsd visium-elf x86_64-apple-darwin \
   x86_64-pc-linux-gnuOPT-with-fpmath=avx \
   x86_64-elfOPT-with-fpmath=sse x86_64-freebsd6 x86_64-netbsd \
