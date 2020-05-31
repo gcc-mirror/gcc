@@ -1,3 +1,15 @@
+2020-05-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95373
+	* primary.c (is_inquiry_ref): Move validity check of inquiry
+	references against selected Fortran standard from here...
+	(gfc_match_varspec) ...to here.
+
+2020-05-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95090
+	* class.c (get_unique_type_string): Use buffer overrun check.
+
 2020-05-29  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95090

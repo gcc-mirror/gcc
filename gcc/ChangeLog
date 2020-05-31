@@ -1,3 +1,14 @@
+2020-05-31  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.md (zero_extendsidi2_shifted): New.
+
+2020-05-30  Jonathan Yong  <10walls@gmail.com>
+
+	* config/i386/mingw32.h (REAL_LIBGCC_SPEC): Insert -lkernel32
+	after -lmsvcrt. This is necessary as libmsvcrt.a is not a pure
+	import library, but also contains some functions that invoke
+	others in KERNEL32.DLL.
+
 2020-05-29  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/altivec.md (altivec_vmrghw_direct): Prefer VSX form.
