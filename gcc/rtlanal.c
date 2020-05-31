@@ -6591,3 +6591,29 @@ tls_referenced_p (const_rtx x)
       return true;
   return false;
 }
+
+/* Process recursively X of INSN and add REG_INC notes if necessary.  */
+void
+add_auto_inc_notes (rtx_insn *insn, rtx x)
+{
+  enum rtx_code code = GET_CODE (x);
+  const char *fmt;
+  int i, j;
+
+  if (code == MEM && auto_inc_p (XEXP (x, 0)))
+    {
+      add_reg_note (insn, REG_INC, XEXP (XEXP (x, 0), 0));
+      return;
+    }
+
+  /* Scan all X sub-expressions.  */
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	add_auto_inc_notes (insn, XEXP (x, i));
+      else if (fmt[i] == 'E')
+	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  add_auto_inc_notes (insn, XVECEXP (x, i, j));
+    }
+}
