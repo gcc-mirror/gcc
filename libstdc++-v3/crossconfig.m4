@@ -299,7 +299,8 @@ dnl # macros, in which case the tests might fail, and we might have to
 dnl # switch to more elaborate tests.
     GLIBCXX_CHECK_MATH_DECLS([
       acosl asinl atan2l atanl ceill cosl coshl expl fabsl floorl fmodl
-      frexpl ldexpl log10l logl modfl powl sinl sinhl sqrtl tanl tanhl])
+      frexpl ldexpl log10l logl modfl powl sinl sinhl sqrtl tanl tanhl hypotl
+      ldexpf modff hypotf frexpf])
 dnl # sincosl is the only one missing here, compared with the *l
 dnl # functions in the list guarded by
 dnl # long_double_math_on_this_cpu in configure.ac, right after
