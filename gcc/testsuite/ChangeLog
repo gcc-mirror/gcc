@@ -1,3 +1,34 @@
+2020-05-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95386
+	* g++.dg/concepts/pr95386.C: New test.
+
+2020-05-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/92652
+	PR c++/93698
+	PR c++/94128
+	* g++.dg/cpp2a/concepts-lambda8.C: New test.
+	* g++.dg/cpp2a/concepts-lambda9.C: New test.
+	* g++.dg/cpp2a/concepts-lambda10.C: New test.
+
+2020-05-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95241
+	* g++.dg/cpp0x/constexpr-array25.C: New test.
+
+2020-05-30  Patrick Palka  <ppalka@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/95181
+	* g++.dg/concepts/pr95181.C: New test.
+	* g++.dg/concepts/pr95181-2.C: New test.
+
+2020-05-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95371
+	* g++.dg/cpp2a/concepts-ttp1.C: New test.
+
 2020-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libfortran/95390

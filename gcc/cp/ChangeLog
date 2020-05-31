@@ -1,3 +1,39 @@
+2020-05-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95386
+	* constraint.cc (satisfaction_value): Relax to accept any
+	INTEGER_CST that satisfies integer_zerop or integer_onep.
+
+2020-05-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/92652
+	PR c++/93698
+	PR c++/94128
+	* parser.c (cp_parser_requires_clause_expression): Temporarily
+	increment processing_template_decl only if it is 0.
+	(cp_parser_constraint_expression): Likewise.
+	(cp_parser_requires_expression): Likewise.
+
+2020-05-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95241
+	* constexpr.c (get_or_insert_ctor_field): Add limited support
+	for RANGE_EXPR index lookups.
+
+2020-05-30  Patrick Palka  <ppalka@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/95181
+	* class.c (add_method): Let special member function templates
+	coexist if they are not equivalently constrained, or in a class
+	template.
+
+2020-05-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95371
+	* pt.c (process_template_parm): Set DECL_TEMPLATE_INFO
+	on the DECL_TEMPLATE_RESULT.
+
 2020-05-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/95319
