@@ -238,6 +238,9 @@ build_frontend_type (tree type)
       sdecl->type->ctype = type;
       sdecl->type->merge2 ();
 
+      /* Add both named and anonymous fields as members of the struct.
+	 Anonymous fields still need a name in D, so call them "__pad%d".  */
+      int anonfield_id = 0;
       sdecl->members = new Dsymbols;
 
       for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
@@ -249,12 +252,19 @@ build_frontend_type (tree type)
 	      return NULL;
 	    }
 
-	  Identifier *fident
-	    = Identifier::idPool (IDENTIFIER_POINTER (DECL_NAME (field)));
+	  Identifier *fident;
+	  if (DECL_NAME (field) == NULL_TREE)
+	    fident = Identifier::generateId ("__pad", anonfield_id++);
+	  else
+	    {
+	      const char *name = IDENTIFIER_POINTER (DECL_NAME (field));
+	      fident = Identifier::idPool (name);
+	    }
+
 	  VarDeclaration *vd = VarDeclaration::create (Loc (), ftype, fident,
 						       NULL);
 	  vd->parent = sdecl;
-	  vd->offset = tree_to_uhwi (DECL_FIELD_OFFSET (field));
+	  vd->offset = tree_to_uhwi (byte_position (field));
 	  vd->semanticRun = PASSsemanticdone;
 	  vd->csym = field;
 	  sdecl->members->push (vd);
