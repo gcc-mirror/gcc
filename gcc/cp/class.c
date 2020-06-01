@@ -729,13 +729,9 @@ build_vtbl_ref (tree instance, tree idx)
 tree
 build_vfn_ref (tree instance_ptr, tree idx)
 {
-  tree obtype = TREE_TYPE (TREE_TYPE (instance_ptr));
+  tree aref;
 
-  /* Leave the INDIRECT_REF unfolded so cp_ubsan_maybe_instrument_member_call
-     can find instance_ptr.  */
-  tree ind = build1 (INDIRECT_REF, obtype, instance_ptr);
-
-  tree aref = build_vtbl_ref (ind, idx);
+  aref = build_vtbl_ref (cp_build_fold_indirect_ref (instance_ptr), idx);
 
   /* When using function descriptors, the address of the
      vtable entry is treated as a function pointer.  */
