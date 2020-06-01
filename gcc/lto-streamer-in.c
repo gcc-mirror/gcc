@@ -316,34 +316,17 @@ lto_input_tree_ref (class lto_input_block *ib, class data_in *data_in,
   unsigned HOST_WIDE_INT ix_u;
   tree result = NULL_TREE;
 
-  lto_tag_check_range (tag, LTO_field_decl_ref, LTO_namelist_decl_ref);
-
-  switch (tag)
+  if (tag == LTO_ssa_name_ref)
     {
-    case LTO_ssa_name_ref:
       ix_u = streamer_read_uhwi (ib);
       result = (*SSANAMES (fn))[ix_u];
-      break;
-
-    case LTO_type_ref:
-    case LTO_field_decl_ref:
-    case LTO_function_decl_ref:
-    case LTO_type_decl_ref:
-    case LTO_namespace_decl_ref:
-    case LTO_global_decl_ref:
-    case LTO_result_decl_ref:
-    case LTO_const_decl_ref:
-    case LTO_imported_decl_ref:
-    case LTO_label_decl_ref:
-    case LTO_translation_unit_decl_ref:
-    case LTO_namelist_decl_ref:
+    }
+  else
+    {
+      gcc_checking_assert (tag == LTO_global_stream_ref);
       ix_u = streamer_read_uhwi (ib);
       result = (*data_in->file_data->current_decl_state
 		->streams[LTO_DECL_STREAM])[ix_u];
-      break;
-
-    default:
-      gcc_unreachable ();
     }
 
   gcc_assert (result);
@@ -1485,7 +1468,7 @@ lto_input_scc (class lto_input_block *ib, class data_in *data_in,
 	{
 	  enum LTO_tags tag = streamer_read_record_start (ib);
 	  if (tag == LTO_null
-	      || (tag >= LTO_field_decl_ref && tag <= LTO_global_decl_ref)
+	      || tag == LTO_global_stream_ref
 	      || tag == LTO_tree_pickle_reference
 	      || tag == LTO_integer_cst
 	      || tag == LTO_tree_scc
@@ -1549,7 +1532,7 @@ lto_input_tree_1 (class lto_input_block *ib, class data_in *data_in,
 
   if (tag == LTO_null)
     result = NULL_TREE;
-  else if (tag >= LTO_field_decl_ref && tag <= LTO_namelist_decl_ref)
+  else if (tag == LTO_global_stream_ref || tag == LTO_ssa_name_ref)
     {
       /* If TAG is a reference to an indexable tree, the next value
 	 in IB is the index into the table where we expect to find
