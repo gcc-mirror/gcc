@@ -12613,8 +12613,6 @@ package body Exp_Ch9 is
    --  global references if within an instantiation.
 
    procedure Expand_N_Timed_Entry_Call (N : Node_Id) is
-      Loc : constant Source_Ptr := Sloc (N);
-
       Actuals        : List_Id;
       Blk_Typ        : Entity_Id;
       Call           : Node_Id;
@@ -12637,6 +12635,7 @@ package body Exp_Ch9 is
       Index          : Node_Id;
       Is_Disp_Select : Boolean;
       Lim_Typ_Stmts  : List_Id;
+      Loc            : constant Source_Ptr := Sloc (D_Stat);
       N_Stats        : List_Id;
       Obj            : Entity_Id;
       Param          : Node_Id;
