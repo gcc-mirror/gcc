@@ -1,3 +1,24 @@
+2020-05-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config-list.mk (LIST): Add v850e1-elf.
+
+2020-05-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config-list.mk (LIST): Add or1k-elf, or1k-linux-*, and or1k-rtems.
+
+2020-05-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config-list.mk (LIST): Remove arm-wrs-vxworks.
+
+2020-05-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config-list.mk (LIST): Remove cris-linux, crisv32-elf, and
+	crisv32-linux.
+
+2020-05-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config-list.mk (LIST): Add pru-elf.
+
 2020-05-29  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* config-list.mk (LIST): Remove rs6000-ibm-aix5.3.0.

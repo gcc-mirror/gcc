@@ -1,3 +1,19 @@
+2020-06-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/policy_data_structures_biblio.xml: Remove
+	stray change.
+
+2020-06-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/policy_data_structures_biblio.xml: Switch
+	www.cs.princeton.edu to https.
+	* doc/html/manual/policy_data_structures.html: Regenerate.
+
+2020-05-31  Douglas B Rupp  <douglas.b.rupp@gmail.com>
+
+	* crossconfig.m4 (<*-vxworks>): Check for more math decls.
+	* configure: Rebuild.
+
 2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR bootstrap/95413

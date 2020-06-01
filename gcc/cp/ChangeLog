@@ -1,3 +1,16 @@
+2020-05-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95087
+	* coroutines.cc (morph_fn_to_coro): If we see an
+	early fatal error, drop the erroneous function body.
+
+2020-05-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (build_co_await): Remove unused
+	variable.
+	(finish_co_await_expr): Likewise.
+	(finish_co_yield_expr): Likewise; revise comment.
+
 2020-05-30  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (morph_fn_to_coro): Revise initialization
