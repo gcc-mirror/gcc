@@ -2648,11 +2648,11 @@ package body Sem_Aggr is
        (Comp      : Node_Id;
         Key_Type  : Entity_Id;
         Elmt_Type : Entity_Id);
-      --  Resolve choices and expression in an iterated component
-      --  association. This is similar but not identical to the handling
-      --  of this construct in an array aggregate.
+      --  Resolve choices and expression in an iterated component association.
+      --  This is similar but not identical to the handling of this construct
+      --  in an array aggregate.
       --  For a named container, the type of each choice must be compatible
-      --  with the key type. For a positional container the choice must be
+      --  with the key type. For a positional container, the choice must be
       --  a subtype indication or an iterator specification that determines
       --  an element type.
 

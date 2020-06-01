@@ -9733,8 +9733,8 @@ package body Exp_Ch6 is
                   Expression   => New_Copy_Tree (BIP_Func_Call))));
 
       --  Manually set the associated node for the anonymous access type to
-      --  be its local declaration to avoid confusing and complicating
-      --  the accessibility machinary.
+      --  be its local declaration, to avoid confusing and complicating
+      --  the accessibility machinery.
 
       Set_Associated_Node_For_Itype (Anon_Type, Tmp_Decl);
 
