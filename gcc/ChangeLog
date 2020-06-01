@@ -1,3 +1,47 @@
+2020-05-31  Jeff Law  <law@redhat.com>
+
+	* lra.c (add_auto_inc_notes): Remove function.
+	* reload1.c (add_auto_inc_notes): Similarly.  Move into...
+	* rtlanal.c (add_auto_inc_notes): New function.
+	* rtl.h (add_auto_inc_notes): Add prototype.
+	* recog.c (peep2_attempt): Scan and add REG_INC notes to new insns
+	as needed.
+
+2020-05-31  Jan Hubicka  <jh@suse.cz>
+
+	* lto-section-out.c (lto_output_decl_index): Remove.
+	(lto_output_field_decl_index): Move to lto-streamer-out.c
+	(lto_output_fn_decl_index): Move to lto-streamer-out.c
+	(lto_output_namespace_decl_index): Remove.
+	(lto_output_var_decl_index): Remove.
+	(lto_output_type_decl_index): Remove.
+	(lto_output_type_ref_index): Remove.
+	* lto-streamer-out.c (output_type_ref): Remove.
+	(lto_get_index): New function.
+	(lto_output_tree_ref): Remove.
+	(lto_indexable_tree_ref): New function.
+	(lto_output_var_decl_index): Move here from lto-section-out.c; simplify.
+	(lto_output_fn_decl_index): Move here from lto-section-out.c; simplify.
+	(stream_write_tree_ref): Update.
+	(lto_output_tree): Update.
+	* lto-streamer.h (lto_output_decl_index): Remove prototype.
+	(lto_output_field_decl_index): Remove prototype.
+	(lto_output_namespace_decl_index): Remove prototype.
+	(lto_output_type_decl_index): Remove prototype.
+	(lto_output_type_ref_index): Remove prototype.
+	(lto_output_var_decl_index): Move.
+	(lto_output_fn_decl_index): Move
+
+2020-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95052
+	* expr.c (store_expr): For shortedned_string_cst, ensure temp has
+	BLKmode.
+
+2020-05-31  Jeff Law  <law@redhat.com>
+
+	* config/h8300/jumpcall.md (brabs, brabc): Disable patterns.
+
 2020-05-31  Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/riscv.md (zero_extendsidi2_shifted): New.

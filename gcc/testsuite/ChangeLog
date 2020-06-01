@@ -1,3 +1,23 @@
+2020-05-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95087
+	* g++.dg/coroutines/co-return-syntax-08-bad-return.C:
+	Adjust the testcase to do the compile (rather than an
+	-fsyntax-only parse).
+
+2020-05-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94361
+	* gfortran.dg/finalize_28.f90: Adjusted free counts.
+	* gfortran.dg/finalize_33.f90: Likewise.
+	* gfortran.dg/finalize_34.f90: Likewise.
+	* gfortran.dg/finalize_35.f90: New test.
+
+2020-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95052
+	* gcc.dg/pr95052.c: New test.
+
 2020-05-31  Jim Wilson  <jimw@sifive.com>
 
 	* gcc.target/riscv/zero-extend-5.c: New.
