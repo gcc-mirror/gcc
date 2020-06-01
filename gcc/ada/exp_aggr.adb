@@ -6922,17 +6922,17 @@ package body Exp_Aggr is
                  Defining_Identifier => Loop_Id,
                  Discrete_Subtype_Definition => L_Range));
 
-         --  Build insertion statement. for a positional aggregate only
-         --  the expression is needed. For a named aggregate the loop
-         --  variable, whose type is that of the key, is an additional
-         --  parameter for the insertion operation.
+         --  Build insertion statement. For a positional aggregate, only the
+         --  expression is needed. For a named aggregate, the loop variable,
+         --  whose type is that of the key, is an additional parameter for
+         --  the insertion operation.
 
          if Present (Add_Unnamed_Subp) then
             Stats := New_List
               (Make_Procedure_Call_Statement (Loc,
-                Name => New_Occurrence_Of (Entity (Add_Unnamed_Subp), Loc),
-                Parameter_Associations =>
-                  New_List (New_Occurrence_Of (Temp, Loc),
+                 Name => New_Occurrence_Of (Entity (Add_Unnamed_Subp), Loc),
+                 Parameter_Associations =>
+                   New_List (New_Occurrence_Of (Temp, Loc),
                      New_Copy_Tree (Expr))));
          else
             Stats := New_List
@@ -6940,8 +6940,8 @@ package body Exp_Aggr is
                  Name => New_Occurrence_Of (Entity (Add_Named_Subp), Loc),
                  Parameter_Associations =>
                    New_List (New_Occurrence_Of (Temp, Loc),
-                   New_Occurrence_Of (Loop_Id, Loc),
-                   New_Copy_Tree (Expr))));
+                     New_Occurrence_Of (Loop_Id, Loc),
+                     New_Copy_Tree (Expr))));
          end if;
 
          Loop_Stat :=  Make_Implicit_Loop_Statement
@@ -6990,7 +6990,7 @@ package body Exp_Aggr is
                     Name => New_Occurrence_Of (Insert, Loc),
                     Parameter_Associations =>
                       New_List (New_Occurrence_Of (Temp, Loc),
-                         New_Copy_Tree (Comp)));
+                        New_Copy_Tree (Comp)));
                   Append (Stat, Aggr_Code);
                   Next (Comp);
                end loop;
@@ -7013,7 +7013,7 @@ package body Exp_Aggr is
          begin
             Comp := First (Component_Associations (N));
 
-            --  Each component association may contain several choices,
+            --  Each component association may contain several choices;
             --  generate an insertion statement for each.
 
             while Present (Comp) loop
@@ -7027,8 +7027,8 @@ package body Exp_Aggr is
                        Name => New_Occurrence_Of (Insert, Loc),
                        Parameter_Associations =>
                          New_List (New_Occurrence_Of (Temp, Loc),
-                            New_Copy_Tree (Key),
-                            New_Copy_Tree (Expression (Comp))));
+                           New_Copy_Tree (Key),
+                           New_Copy_Tree (Expression (Comp))));
                      Append (Stat, Aggr_Code);
 
                      Next (Key);
