@@ -9259,7 +9259,9 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	    ? CLASS_DATA (code->expr2)->ts.u.derived : code->expr2->ts.u.derived;
 	}
 
-      if (code->expr2->rank && CLASS_DATA (code->expr1)->as)
+      if (code->expr2->rank
+	  && code->expr1->ts.type == BT_CLASS
+	  && CLASS_DATA (code->expr1)->as)
 	CLASS_DATA (code->expr1)->as->rank = code->expr2->rank;
 
       /* F2008: C803 The selector expression must not be coindexed.  */
