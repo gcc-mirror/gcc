@@ -956,8 +956,20 @@ now defaults to zero.
 </para>
 
 <para>
+  The non-standard <function>std::__is_nullptr_t</function> type trait
+  was deprecated.
+</para>
+
+<para>
   The <classname>std::packaged_task</classname> constructors taking
   an allocator argument are only defined for C++11 and C++14.
+</para>
+
+<para>
+  Several members of <classname>std::allocator</classname> were removed
+  for C++20 mode. The removed functionality has been provided by
+  <classname>std::allocator_traits</classname> since C++11 and that should
+  be used instead.
 </para>
 
 </section>
