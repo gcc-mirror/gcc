@@ -993,7 +993,7 @@
     of a few dozen kilobytes on startup. This pool is used to ensure it's
     possible to throw exceptions (such as <classname>bad_alloc</classname>)
     even when <code>malloc</code> is unable to allocate any more memory.
-    With some versions of <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://valgrind.org/"><command>valgrind</command></link>
+    With some versions of <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://valgrind.org"><command>valgrind</command></link>
     this pool will be shown as "still reachable" when the process exits, e.g.
     <code>still reachable: 72,704 bytes in 1 blocks</code>.
     This memory is not a leak, because it's still in use by libstdc++,
@@ -1004,7 +1004,7 @@
     <para>
     In the past, a few people reported that the standard containers appear
     to leak memory when tested with memory checkers such as
-    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://valgrind.org/"><command>valgrind</command></link>.
+    <command>valgrind</command>.
     Under some (non-default) configurations the library's allocators keep
     free memory in a
     pool for later reuse, rather than deallocating it with <code>delete</code>
