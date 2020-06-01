@@ -1314,20 +1314,20 @@ static stringop_algs znver1_memcpy[2] = {
   /* 32-bit tuning.  */
   {libcall, {{6, loop, false},
 	     {14, unrolled_loop, false},
-	     {-1, rep_prefix_4_byte, false}}},
+	     {-1, libcall, false}}},
   /* 64-bit tuning.  */
   {libcall, {{16, loop, false},
-	     {8192, rep_prefix_8_byte, false},
+	     {128, rep_prefix_8_byte, false},
 	     {-1, libcall, false}}}};
 static stringop_algs znver1_memset[2] = {
   /* 32-bit tuning.  */
   {libcall, {{8, loop, false},
 	     {24, unrolled_loop, false},
-	     {2048, rep_prefix_4_byte, false},
+	     {128, rep_prefix_4_byte, false},
 	     {-1, libcall, false}}},
   /* 64-bit tuning.  */
   {libcall, {{48, unrolled_loop, false},
-	     {8192, rep_prefix_8_byte, false},
+	     {128, rep_prefix_8_byte, false},
 	     {-1, libcall, false}}}};
 struct processor_costs znver1_cost = {
   {
@@ -1460,7 +1460,7 @@ static stringop_algs znver2_memcpy[2] = {
   /* 32-bit tuning.  */
   {libcall, {{6, loop, false},
 	     {14, unrolled_loop, false},
-	     {-1, rep_prefix_4_byte, false}}},
+	     {-1, libcall, false}}},
   /* 64-bit tuning.  */
   {libcall, {{16, loop, false},
 	     {64, rep_prefix_4_byte, false},
@@ -1469,7 +1469,7 @@ static stringop_algs znver2_memset[2] = {
   /* 32-bit tuning.  */
   {libcall, {{8, loop, false},
 	     {24, unrolled_loop, false},
-	     {2048, rep_prefix_4_byte, false}
+	     {128, rep_prefix_4_byte, false},
 	     {-1, libcall, false}}},
   /* 64-bit tuning.  */
   {libcall, {{24, rep_prefix_4_byte, false},
