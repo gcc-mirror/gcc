@@ -14633,7 +14633,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 			 && DECL_BIT_FIELD_TYPE (TREE_OPERAND (ve, 1)) == type)
 		  type = TREE_TYPE (ve);
 		else
-		  gcc_checking_assert (TREE_TYPE (ve) == type);
+		  gcc_checking_assert (TYPE_MAIN_VARIANT (TREE_TYPE (ve))
+				       == TYPE_MAIN_VARIANT (type));
 		SET_DECL_VALUE_EXPR (r, ve);
 	      }
 	    if (CP_DECL_THREAD_LOCAL_P (r)
