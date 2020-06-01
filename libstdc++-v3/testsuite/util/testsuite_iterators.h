@@ -208,6 +208,17 @@ namespace __gnu_test
   : public std::iterator<std::input_iterator_tag, typename remove_cv<T>::type,
 			 std::ptrdiff_t, T*, T&>
   {
+    struct post_inc_proxy
+    {
+      struct deref_proxy
+      {
+	T* ptr;
+	operator const T&() const { return *ptr; }
+      } p;
+
+      deref_proxy operator*() const { return p; }
+    };
+
   protected:
     input_iterator_wrapper() : ptr(0), SharedInfo(0)
     { }
@@ -266,10 +277,12 @@ namespace __gnu_test
       return *this;
     }
 
-    void
+    post_inc_proxy
     operator++(int)
     {
+      post_inc_proxy tmp = { { ptr } };
       ++*this;
+      return tmp;
     }
 
 #if __cplusplus >= 201103L
