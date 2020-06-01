@@ -201,6 +201,9 @@ omp_alloc (size_t size, omp_allocator_handle_t allocator)
   size_t alignment, new_size;
   void *ptr, *ret;
 
+  if (__builtin_expect (size == 0, 0))
+    return NULL;
+
 retry:
   if (allocator == omp_null_allocator)
     {

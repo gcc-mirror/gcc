@@ -1,3 +1,17 @@
+2020-05-29  Martin Liska  <mliska@suse.cz>
+
+	* bugzilla-close-candidate.py: Fix sorting of branches.
+
+2020-05-29  Martin Liska  <mliska@suse.cz>
+
+	* bugzilla-close-candidate.py: Fix parsing of SVN revisions.
+	Fix skipping of PRs that contain Can be closed message.
+
+2020-05-29  Martin Liska  <mliska@suse.cz>
+
+	* bugzilla-close-candidate.py: Support both SVN and GIT messages
+	in PRs. Remove need of usage of the bugzilla API key.
+
 2020-05-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* update_version_git: Rewrite using

@@ -1,3 +1,31 @@
+2020-05-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94361
+	* class.c (finalize_component): Use expr->finalized instead of
+	comp->finalized.
+	* gfortran.h (gfc_component): Remove finalized member.
+	(gfc_expr): Add it here instead.
+
+2020-05-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95373
+	* primary.c (is_inquiry_ref): Move validity check of inquiry
+	references against selected Fortran standard from here...
+	(gfc_match_varspec) ...to here.
+
+2020-05-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95090
+	* class.c (get_unique_type_string): Use buffer overrun check.
+
+2020-05-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95090
+	* class.c (get_unique_type_string): Enlarge temporary for
+	name-mangling.  Use strncpy to prevent buffer overrun.
+	(get_unique_hashed_string): Enlarge temporary.
+	(gfc_hash_value): Enlarge temporary for name-mangling.
+
 2020-05-28  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95373

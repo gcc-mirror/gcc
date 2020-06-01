@@ -2735,9 +2735,8 @@ propagate_aggs_across_jump_function (struct cgraph_edge *cs,
 	  gcc_assert (!jfunc->agg.items);
 	  ret |= merge_aggregate_lattices (cs, dest_plats, src_plats,
 					   src_idx, 0);
+	  return ret;
 	}
-      else
-	ret |= set_agg_lats_contain_variable (dest_plats);
     }
   else if (jfunc->type == IPA_JF_ANCESTOR
 	   && ipa_get_jf_ancestor_agg_preserved (jfunc))
@@ -2759,8 +2758,10 @@ propagate_aggs_across_jump_function (struct cgraph_edge *cs,
 	ret |= set_agg_lats_to_bottom (dest_plats);
       else
 	ret |= set_agg_lats_contain_variable (dest_plats);
+      return ret;
     }
-  else if (jfunc->agg.items)
+
+  if (jfunc->agg.items)
     {
       bool pre_existing = dest_plats->aggs != NULL;
       struct ipcp_agg_lattice **aglat = &dest_plats->aggs;
@@ -4988,11 +4989,7 @@ intersect_aggregates_with_edge (struct cgraph_edge *cs, int index,
 	      else
 		intersect_with_agg_replacements (cs->caller, src_idx,
 						 &inter, 0);
-	    }
-	  else
-	    {
-	      inter.release ();
-	      return vNULL;
+	      return inter;
 	    }
 	}
       else
@@ -5008,11 +5005,7 @@ intersect_aggregates_with_edge (struct cgraph_edge *cs, int index,
 		inter = copy_plats_to_inter (src_plats, 0);
 	      else
 		intersect_with_plats (src_plats, &inter, 0);
-	    }
-	  else
-	    {
-	      inter.release ();
-	      return vNULL;
+	      return inter;
 	    }
 	}
     }
@@ -5043,8 +5036,10 @@ intersect_aggregates_with_edge (struct cgraph_edge *cs, int index,
 	  else
 	    intersect_with_plats (src_plats, &inter, delta);
 	}
+      return inter;
     }
-  else if (jfunc->agg.items)
+
+  if (jfunc->agg.items)
     {
       class ipa_node_params *caller_info = IPA_NODE_REF (cs->caller);
       struct ipa_agg_value *item;

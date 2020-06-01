@@ -696,9 +696,8 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
   tree o;
   if (MAYBE_CLASS_TYPE_P (TREE_TYPE (a)))
     {
-      tree overload = NULL_TREE;
       o = build_new_op (loc, CO_AWAIT_EXPR, LOOKUP_NORMAL, a, NULL_TREE,
-			NULL_TREE, &overload, tf_warning_or_error);
+			NULL_TREE, NULL, tf_warning_or_error);
       /* If no viable functions are found, o is a.  */
       if (!o || o == error_mark_node)
 	o = a;
@@ -873,19 +872,18 @@ finish_co_await_expr (location_t kw, tree expr)
   if (at_meth)
     {
       /* try to build a = p.await_transform (e). */
-      tree at_fn = NULL_TREE;
       vec<tree, va_gc> *args = make_tree_vector_single (expr);
       a = build_new_method_call (get_coroutine_promise_proxy (
 				   current_function_decl),
 				 at_meth, &args, NULL_TREE, LOOKUP_NORMAL,
-				 &at_fn, tf_warning_or_error);
+				 NULL, tf_warning_or_error);
 
       /* As I read the section.
 	 We saw an await_transform method, so it's mandatory that we replace
 	 expr with p.await_transform (expr), therefore if the method call fails
 	 (presumably, we don't have suitable arguments) then this part of the
 	 process fails.  */
-      if (!at_fn || a == error_mark_node)
+      if (a == error_mark_node)
 	return error_mark_node;
     }
 
@@ -945,19 +943,19 @@ finish_co_yield_expr (location_t kw, tree expr)
   if (!y_meth || y_meth == error_mark_node)
     return error_mark_node;
 
-  tree yield_fn = NULL_TREE;
+  /* [expr.yield] / 1
+     Let e be the operand of the yield-expression and p be an lvalue naming
+     the promise object of the enclosing coroutine, then the yield-expression
+     is equivalent to the expression co_await p.yield_value(e).
+     build p.yield_value(e):  */
   vec<tree, va_gc> *args = make_tree_vector_single (expr);
-  tree yield_call = build_new_method_call (
-    get_coroutine_promise_proxy (current_function_decl), y_meth, &args,
-    NULL_TREE, LOOKUP_NORMAL, &yield_fn, tf_warning_or_error);
+  tree yield_call = build_new_method_call
+    (get_coroutine_promise_proxy (current_function_decl), y_meth, &args,
+     NULL_TREE, LOOKUP_NORMAL, NULL, tf_warning_or_error);
 
-  if (!yield_fn || yield_call == error_mark_node)
-    return error_mark_node;
-
-  /* So now we have the type of p.yield_value (e).
-     Now we want to build co_await p.yield_value (e).
+  /* Now build co_await p.yield_value (e).
      Noting that for co_yield, there is no evaluation of any potential
-     promise transform_await().  */
+     promise transform_await(), so we call build_co_await directly.  */
 
   tree op = build_co_await (kw, yield_call, CO_YIELD_SUSPEND_POINT);
   if (op != error_mark_node)
@@ -1805,7 +1803,6 @@ struct param_info
   tree frame_type;   /* The type used to represent this parm in the frame.  */
   tree orig_type;    /* The original type of the parm (not as passed).  */
   bool by_ref;       /* Was passed by reference.  */
-  bool rv_ref;       /* Was an rvalue reference.  */
   bool pt_ref;       /* Was a pointer to object.  */
   bool trivial_dtor; /* The frame type has a trivial DTOR.  */
   bool this_ptr;     /* Is 'this' */
@@ -2074,12 +2071,6 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 	   back to the type expected.  */
 	  if (parm.pt_ref)
 	    fld_idx = build1_loc (loc, CONVERT_EXPR, TREE_TYPE (arg), fld_idx);
-
-	  /* We expect an rvalue ref. here.  */
-	  if (parm.rv_ref)
-	    fld_idx = convert_to_reference (DECL_ARG_TYPE (arg), fld_idx,
-					    CONV_STATIC, LOOKUP_NORMAL,
-					    NULL_TREE, tf_warning_or_error);
 
 	  int i;
 	  tree *puse;
@@ -3587,6 +3578,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	 ramp return value, since the user cannot fix this - a 'return' is
 	 not allowed in a coroutine.  */
       TREE_NO_WARNING (orig) = true;
+      /* Discard the body, we can't process it further.  */
+      pop_stmt_list (DECL_SAVED_TREE (orig));
+      DECL_SAVED_TREE (orig) = push_stmt_list ();
       return false;
     }
 
@@ -3765,15 +3759,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  if (actual_type == NULL_TREE)
 	    actual_type = error_mark_node;
 	  parm.orig_type = actual_type;
-	  parm.by_ref = parm.rv_ref = parm.pt_ref = false;
-	  if (TREE_CODE (actual_type) == REFERENCE_TYPE
-	      && TYPE_REF_IS_RVALUE (DECL_ARG_TYPE (arg)))
-	    {
-	      parm.rv_ref = true;
-	      actual_type = TREE_TYPE (actual_type);
-	      parm.frame_type = actual_type;
-	    }
-	  else if (TREE_CODE (actual_type) == REFERENCE_TYPE)
+	  parm.by_ref = parm.pt_ref = false;
+	  if (TREE_CODE (actual_type) == REFERENCE_TYPE)
 	    {
 	      /* If the user passes by reference, then we will save the
 		 pointer to the original.  As noted in
@@ -3781,16 +3768,12 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 		 referenced item ends and then the coroutine is resumed,
 		 we have UB; well, the user asked for it.  */
 	      actual_type = build_pointer_type (TREE_TYPE (actual_type));
-	      parm.frame_type = actual_type;
 	      parm.pt_ref = true;
 	    }
 	  else if (TYPE_REF_P (DECL_ARG_TYPE (arg)))
-	    {
-	      parm.by_ref = true;
-	      parm.frame_type = actual_type;
-	    }
-	  else
-	    parm.frame_type = actual_type;
+	    parm.by_ref = true;
+
+	  parm.frame_type = actual_type;
 
 	  parm.this_ptr = is_this_parameter (arg);
 	  /* See PR94807.  When a lambda is in a template instantiation, the
@@ -3889,11 +3872,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   /* The decl_expr for the coro frame pointer, initialize to zero so that we
      can pass it to the IFN_CO_FRAME (since there's no way to pass a type,
      directly apparently).  This avoids a "used uninitialized" warning.  */
-  tree r = build_stmt (fn_start, DECL_EXPR, coro_fp);
   tree zeroinit = build1 (CONVERT_EXPR, coro_frame_ptr, integer_zero_node);
-  r = build2 (INIT_EXPR, TREE_TYPE (coro_fp), coro_fp, zeroinit);
-  r = coro_build_cvt_void_expr_stmt (r, fn_start);
-  add_stmt (r);
+  DECL_INITIAL (coro_fp) = zeroinit;
+  add_decl_expr (coro_fp);
 
   /* The CO_FRAME internal function is a mechanism to allow the middle end
      to adjust the allocation in response to optimisations.  We provide the
@@ -4047,7 +4028,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
     }
 
   tree allocated = build1 (CONVERT_EXPR, coro_frame_ptr, new_fn);
-  r = build2 (INIT_EXPR, TREE_TYPE (coro_fp), coro_fp, allocated);
+  tree r = build2 (INIT_EXPR, TREE_TYPE (coro_fp), coro_fp, allocated);
   r = coro_build_cvt_void_expr_stmt (r, fn_start);
   add_stmt (r);
 
@@ -4176,17 +4157,16 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	    }
 	  else if (parm.by_ref)
 	    vec_safe_push (promise_args, fld_idx);
-	  else if (parm.rv_ref)
-	    vec_safe_push (promise_args, rvalue (fld_idx));
 	  else
 	    vec_safe_push (promise_args, arg);
 
 	  if (TYPE_NEEDS_CONSTRUCTING (parm.frame_type))
 	    {
 	      vec<tree, va_gc> *p_in;
-	      if (parm.by_ref
-		  && classtype_has_non_deleted_move_ctor (parm.frame_type)
-		  && !classtype_has_non_deleted_copy_ctor (parm.frame_type))
+	      if (CLASS_TYPE_P (parm.frame_type)
+		  && classtype_has_non_deleted_move_ctor (parm.frame_type))
+		p_in = make_tree_vector_single (move (arg));
+	      else if (lvalue_p (arg))
 		p_in = make_tree_vector_single (rvalue (arg));
 	      else
 		p_in = make_tree_vector_single (arg);
@@ -4199,9 +4179,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	    }
 	  else
 	    {
-	      if (parm.rv_ref)
-		r = convert_from_reference (arg);
-	      else if (!same_type_p (parm.frame_type, DECL_ARG_TYPE (arg)))
+	      if (!same_type_p (parm.frame_type, DECL_ARG_TYPE (arg)))
 		r = build1_loc (DECL_SOURCE_LOCATION (arg), CONVERT_EXPR,
 				parm.frame_type, arg);
 	      else

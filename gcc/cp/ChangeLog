@@ -1,3 +1,70 @@
+2020-05-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95087
+	* coroutines.cc (morph_fn_to_coro): If we see an
+	early fatal error, drop the erroneous function body.
+
+2020-05-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (build_co_await): Remove unused
+	variable.
+	(finish_co_await_expr): Likewise.
+	(finish_co_yield_expr): Likewise; revise comment.
+
+2020-05-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (morph_fn_to_coro): Revise initialization
+	of the frame pointer to avoid an unused value.
+
+2020-05-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95386
+	* constraint.cc (satisfaction_value): Accept INTEGER_CST of any
+	boolean type.
+
+2020-05-29  Patrick Palka  <ppalka@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/95181
+	* class.c (add_method): Let special member function templates
+	coexist if they are not equivalently constrained, or in a class
+	template.
+
+2020-05-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95371
+	* pt.c (process_template_parm): Set DECL_TEMPLATE_INFO
+	on the DECL_TEMPLATE_RESULT.
+
+2020-05-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95344
+	* cp-gimplify.c (cp_fold) <case MODIFY_EXPR>: Don't set
+	TREE_THIS_VOLATILE here.
+	(cp_fold): Set it here along with TREE_NO_WARNING.
+
+2020-05-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95311
+	PR c++/95221
+	* class.c (build_vfn_ref): Don't fold the INDIRECT_REF.
+
+2020-05-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/92652
+	PR c++/93698
+	PR c++/94128
+	* parser.c (cp_parser_requires_clause_expression): Temporarily
+	increment processing_template_decl only if it is 0.
+	(cp_parser_constraint_expression): Likewise.
+	(cp_parser_requires_expression): Likewise.
+
+2020-05-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95241
+	* constexpr.c (get_or_insert_ctor_field): Add limited support
+	for RANGE_EXPR index lookups.
+
 2020-05-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/95328

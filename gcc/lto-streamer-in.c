@@ -316,57 +316,45 @@ lto_input_tree_ref (class lto_input_block *ib, class data_in *data_in,
   unsigned HOST_WIDE_INT ix_u;
   tree result = NULL_TREE;
 
-  lto_tag_check_range (tag, LTO_field_decl_ref, LTO_namelist_decl_ref);
-
-  switch (tag)
+  if (tag == LTO_ssa_name_ref)
     {
-    case LTO_type_ref:
-      ix_u = streamer_read_uhwi (ib);
-      result = lto_file_decl_data_get_type (data_in->file_data, ix_u);
-      break;
-
-    case LTO_ssa_name_ref:
       ix_u = streamer_read_uhwi (ib);
       result = (*SSANAMES (fn))[ix_u];
-      break;
-
-    case LTO_field_decl_ref:
+    }
+  else
+    {
+      gcc_checking_assert (tag == LTO_global_stream_ref);
       ix_u = streamer_read_uhwi (ib);
-      result = lto_file_decl_data_get_field_decl (data_in->file_data, ix_u);
-      break;
-
-    case LTO_function_decl_ref:
-      ix_u = streamer_read_uhwi (ib);
-      result = lto_file_decl_data_get_fn_decl (data_in->file_data, ix_u);
-      break;
-
-    case LTO_type_decl_ref:
-      ix_u = streamer_read_uhwi (ib);
-      result = lto_file_decl_data_get_type_decl (data_in->file_data, ix_u);
-      break;
-
-    case LTO_namespace_decl_ref:
-      ix_u = streamer_read_uhwi (ib);
-      result = lto_file_decl_data_get_namespace_decl (data_in->file_data, ix_u);
-      break;
-
-    case LTO_global_decl_ref:
-    case LTO_result_decl_ref:
-    case LTO_const_decl_ref:
-    case LTO_imported_decl_ref:
-    case LTO_label_decl_ref:
-    case LTO_translation_unit_decl_ref:
-    case LTO_namelist_decl_ref:
-      ix_u = streamer_read_uhwi (ib);
-      result = lto_file_decl_data_get_var_decl (data_in->file_data, ix_u);
-      break;
-
-    default:
-      gcc_unreachable ();
+      result = (*data_in->file_data->current_decl_state
+		->streams[LTO_DECL_STREAM])[ix_u];
     }
 
   gcc_assert (result);
 
+  return result;
+}
+
+/* Read VAR_DECL reference to DATA from IB.  */
+
+tree
+lto_input_var_decl_ref (lto_input_block *ib, lto_file_decl_data *file_data)
+{
+  unsigned int ix_u = streamer_read_uhwi (ib);
+  tree result = (*file_data->current_decl_state
+		 ->streams[LTO_DECL_STREAM])[ix_u];
+  gcc_assert (TREE_CODE (result) == VAR_DECL);
+  return result;
+}
+
+/* Read VAR_DECL reference to DATA from IB.  */
+
+tree
+lto_input_fn_decl_ref (lto_input_block *ib, lto_file_decl_data *file_data)
+{
+  unsigned int ix_u = streamer_read_uhwi (ib);
+  tree result = (*file_data->current_decl_state
+		 ->streams[LTO_DECL_STREAM])[ix_u];
+  gcc_assert (TREE_CODE (result) == FUNCTION_DECL);
   return result;
 }
 
@@ -1021,6 +1009,30 @@ input_struct_function_base (struct function *fn, class data_in *data_in,
     }
 }
 
+/* Read a chain of tree nodes from input block IB.  DATA_IN contains
+   tables and descriptors for the file being read.  */
+
+static tree
+streamer_read_chain (class lto_input_block *ib, class data_in *data_in)
+{
+  tree first, prev, curr;
+
+  /* The chain is written as NULL terminated list of trees.  */
+  first = prev = NULL_TREE;
+  do
+    {
+      curr = stream_read_tree (ib, data_in);
+      if (prev)
+	TREE_CHAIN (prev) = curr;
+      else
+	first = curr;
+
+      prev = curr;
+    }
+  while (curr);
+
+  return first;
+}
 
 /* Read the body of function FN_DECL from DATA_IN using input block IB.  */
 
@@ -1456,7 +1468,7 @@ lto_input_scc (class lto_input_block *ib, class data_in *data_in,
 	{
 	  enum LTO_tags tag = streamer_read_record_start (ib);
 	  if (tag == LTO_null
-	      || (tag >= LTO_field_decl_ref && tag <= LTO_global_decl_ref)
+	      || tag == LTO_global_stream_ref
 	      || tag == LTO_tree_pickle_reference
 	      || tag == LTO_integer_cst
 	      || tag == LTO_tree_scc
@@ -1481,6 +1493,30 @@ lto_input_scc (class lto_input_block *ib, class data_in *data_in,
   return scc_hash;
 }
 
+/* Read reference to tree from IB and DATA_IN.
+   This is used for streaming tree bodies where we know that
+   the tree is already in cache or is indexable and 
+   must be matched with stream_write_tree_ref.  */
+
+tree
+stream_read_tree_ref (lto_input_block *ib, data_in *data_in)
+{
+  unsigned ix = streamer_read_uhwi (ib);
+  tree ret;
+  if (!ix)
+    return NULL_TREE;
+  else if (ix < LTO_NUM_TAGS)
+    ret = lto_input_tree_ref (ib, data_in, cfun, (LTO_tags)ix);
+  else
+    ret = streamer_tree_cache_get_tree (data_in->reader_cache,
+					ix - LTO_NUM_TAGS);
+  if (ret && streamer_debugging)
+    {
+      enum tree_code c = (enum tree_code)streamer_read_uhwi (ib);
+      gcc_assert (c == TREE_CODE (ret));
+    }
+  return ret;
+}
 
 /* Read a tree from input block IB using the per-file context in
    DATA_IN.  This context is used, for example, to resolve references
@@ -1496,7 +1532,7 @@ lto_input_tree_1 (class lto_input_block *ib, class data_in *data_in,
 
   if (tag == LTO_null)
     result = NULL_TREE;
-  else if (tag >= LTO_field_decl_ref && tag <= LTO_namelist_decl_ref)
+  else if (tag == LTO_global_stream_ref || tag == LTO_ssa_name_ref)
     {
       /* If TAG is a reference to an indexable tree, the next value
 	 in IB is the index into the table where we expect to find
@@ -1513,7 +1549,7 @@ lto_input_tree_1 (class lto_input_block *ib, class data_in *data_in,
     {
       /* For shared integer constants in singletons we can use the
          existing tree integer constant merging code.  */
-      tree type = stream_read_tree (ib, data_in);
+      tree type = stream_read_tree_ref (ib, data_in);
       unsigned HOST_WIDE_INT len = streamer_read_uhwi (ib);
       unsigned HOST_WIDE_INT i;
       HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];

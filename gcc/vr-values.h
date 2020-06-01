@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_VR_VALUES_H
 #define GCC_VR_VALUES_H
 
+#include "value-range-equiv.h"
+
 /* The VR_VALUES class holds the current view of range information
    for all the SSA_NAMEs in the IL.
 

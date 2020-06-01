@@ -185,11 +185,6 @@ private
    --  model, but maps them using compression onto the 7 priority levels
    --  available in NT and on the 16 priority levels available in 2000/XP.
 
-   --  To replace the default values of the Underlying_Priorities mapping,
-   --  copy this source file into your build directory, edit the file to
-   --  reflect your desired behavior, and recompile using Makefile.adalib
-   --  which can be found under the adalib directory of your gnat installation
-
    pragma Linker_Options ("-Wl,--stack=0x2000000");
    --  This is used to change the default stack (32 MB) size for non tasking
    --  programs. We change this value for GNAT on Windows here because the

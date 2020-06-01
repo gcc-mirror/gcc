@@ -1808,6 +1808,28 @@
   operands[2] = GEN_INT (ctz_hwi (INTVAL (operands[2])));
 })
 
+;; Handle SImode to DImode zero-extend combined with a left shift.  This can
+;; occur when unsigned int is used for array indexing.  Split this into two
+;; shifts.  Otherwise we can get 3 shifts.
+
+(define_insn_and_split "zero_extendsidi2_shifted"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(and:DI (ashift:DI (match_operand:DI 1 "register_operand" "r")
+			   (match_operand:QI 2 "immediate_operand" "I"))
+		(match_operand 3 "immediate_operand" "")))
+   (clobber (match_scratch:DI 4 "=&r"))]
+  "TARGET_64BIT
+   && ((INTVAL (operands[3]) >> INTVAL (operands[2])) == 0xffffffff)"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 4)
+	(ashift:DI (match_dup 1) (const_int 32)))
+   (set (match_dup 0)
+	(lshiftrt:DI (match_dup 4) (match_dup 5)))]
+  "operands[5] = GEN_INT (32 - (INTVAL (operands [2])));"
+  [(set_attr "type" "shift")
+   (set_attr "mode" "DI")])
+
 ;;
 ;;  ....................
 ;;

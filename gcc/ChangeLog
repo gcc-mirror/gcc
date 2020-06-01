@@ -1,3 +1,204 @@
+2020-05-31  Jeff Law  <law@redhat.com>
+
+	* lra.c (add_auto_inc_notes): Remove function.
+	* reload1.c (add_auto_inc_notes): Similarly.  Move into...
+	* rtlanal.c (add_auto_inc_notes): New function.
+	* rtl.h (add_auto_inc_notes): Add prototype.
+	* recog.c (peep2_attempt): Scan and add REG_INC notes to new insns
+	as needed.
+
+2020-05-31  Jan Hubicka  <jh@suse.cz>
+
+	* lto-section-out.c (lto_output_decl_index): Remove.
+	(lto_output_field_decl_index): Move to lto-streamer-out.c
+	(lto_output_fn_decl_index): Move to lto-streamer-out.c
+	(lto_output_namespace_decl_index): Remove.
+	(lto_output_var_decl_index): Remove.
+	(lto_output_type_decl_index): Remove.
+	(lto_output_type_ref_index): Remove.
+	* lto-streamer-out.c (output_type_ref): Remove.
+	(lto_get_index): New function.
+	(lto_output_tree_ref): Remove.
+	(lto_indexable_tree_ref): New function.
+	(lto_output_var_decl_index): Move here from lto-section-out.c; simplify.
+	(lto_output_fn_decl_index): Move here from lto-section-out.c; simplify.
+	(stream_write_tree_ref): Update.
+	(lto_output_tree): Update.
+	* lto-streamer.h (lto_output_decl_index): Remove prototype.
+	(lto_output_field_decl_index): Remove prototype.
+	(lto_output_namespace_decl_index): Remove prototype.
+	(lto_output_type_decl_index): Remove prototype.
+	(lto_output_type_ref_index): Remove prototype.
+	(lto_output_var_decl_index): Move.
+	(lto_output_fn_decl_index): Move
+
+2020-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95052
+	* expr.c (store_expr): For shortedned_string_cst, ensure temp has
+	BLKmode.
+
+2020-05-31  Jeff Law  <law@redhat.com>
+
+	* config/h8300/jumpcall.md (brabs, brabc): Disable patterns.
+
+2020-05-31  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.md (zero_extendsidi2_shifted): New.
+
+2020-05-30  Jonathan Yong  <10walls@gmail.com>
+
+	* config/i386/mingw32.h (REAL_LIBGCC_SPEC): Insert -lkernel32
+	after -lmsvcrt. This is necessary as libmsvcrt.a is not a pure
+	import library, but also contains some functions that invoke
+	others in KERNEL32.DLL.
+
+2020-05-29  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/altivec.md (altivec_vmrghw_direct): Prefer VSX form.
+	(altivec_vmrglw_direct): Ditto.
+	(altivec_vperm_<mode>_direct): Ditto.
+	(altivec_vperm_v8hiv16qi): Ditto.
+	(*altivec_vperm_<mode>_uns_internal): Ditto.
+	(*altivec_vpermr_<mode>_internal): Ditto.
+	(vperm_v8hiv4si): Ditto.
+	(vperm_v16qiv8hi): Ditto.
+
+2020-05-29  Jan Hubicka  <jh@suse.cz>
+
+	* lto-streamer-in.c (streamer_read_chain): Move here from
+	tree-streamer-in.c.
+	(stream_read_tree_ref): New.
+	(lto_input_tree_1): Simplify.
+	* lto-streamer-out.c (stream_write_tree_ref): New.
+	(lto_write_tree_1): Simplify.
+	(lto_output_tree_1): Simplify.
+	(DFS::DFS_write_tree): Simplify.
+	(streamer_write_chain): Move here from tree-stremaer-out.c.
+	* lto-streamer.h (lto_output_tree_ref): Update prototype.
+	(stream_read_tree_ref): Declare
+	(stream_write_tree_ref): Declare
+	* tree-streamer-in.c (streamer_read_chain): Update to use
+	stream_read_tree_ref.
+	(lto_input_ts_common_tree_pointers): Likewise.
+	(lto_input_ts_vector_tree_pointers): Likewise.
+	(lto_input_ts_poly_tree_pointers): Likewise.
+	(lto_input_ts_complex_tree_pointers): Likewise.
+	(lto_input_ts_decl_minimal_tree_pointers): Likewise.
+	(lto_input_ts_decl_common_tree_pointers): Likewise.
+	(lto_input_ts_decl_with_vis_tree_pointers): Likewise.
+	(lto_input_ts_field_decl_tree_pointers): Likewise.
+	(lto_input_ts_function_decl_tree_pointers): Likewise.
+	(lto_input_ts_type_common_tree_pointers): Likewise.
+	(lto_input_ts_type_non_common_tree_pointers): Likewise.
+	(lto_input_ts_list_tree_pointers): Likewise.
+	(lto_input_ts_vec_tree_pointers): Likewise.
+	(lto_input_ts_exp_tree_pointers): Likewise.
+	(lto_input_ts_block_tree_pointers): Likewise.
+	(lto_input_ts_binfo_tree_pointers): Likewise.
+	(lto_input_ts_constructor_tree_pointers): Likewise.
+	(lto_input_ts_omp_clause_tree_pointers): Likewise.
+	* tree-streamer-out.c (streamer_write_chain): Update to use
+	stream_write_tree_ref.
+	(write_ts_common_tree_pointers): Likewise.
+	(write_ts_vector_tree_pointers): Likewise.
+	(write_ts_poly_tree_pointers): Likewise.
+	(write_ts_complex_tree_pointers): Likewise.
+	(write_ts_decl_minimal_tree_pointers): Likewise.
+	(write_ts_decl_common_tree_pointers): Likewise.
+	(write_ts_decl_non_common_tree_pointers): Likewise.
+	(write_ts_decl_with_vis_tree_pointers): Likewise.
+	(write_ts_field_decl_tree_pointers): Likewise.
+	(write_ts_function_decl_tree_pointers): Likewise.
+	(write_ts_type_common_tree_pointers): Likewise.
+	(write_ts_type_non_common_tree_pointers): Likewise.
+	(write_ts_list_tree_pointers): Likewise.
+	(write_ts_vec_tree_pointers): Likewise.
+	(write_ts_exp_tree_pointers): Likewise.
+	(write_ts_block_tree_pointers): Likewise.
+	(write_ts_binfo_tree_pointers): Likewise.
+	(write_ts_constructor_tree_pointers): Likewise.
+	(write_ts_omp_clause_tree_pointers): Likewise.
+	(streamer_write_tree_body): Likewise.
+	(streamer_write_integer_cst): Likewise.
+	* tree-streamer.h (streamer_read_chain):Declare.
+	(streamer_write_chain):Declare.
+	(streamer_write_tree_body): Update prototype.
+	(streamer_write_integer_cst): Update prototype.
+
+2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/95413
+	* configure: Regenerated.
+
+2020-05-29  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (add<mode>3_vcc_zext_dup): Add early clobber.
+	(add<mode>3_vcc_zext_dup_exec): Likewise.
+	(add<mode>3_vcc_zext_dup2): Likewise.
+	(add<mode>3_vcc_zext_dup2_exec): Likewise.
+
+2020-05-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95272
+	* tree-vectorizer.h (_slp_tree::representative): Add.
+	(SLP_TREE_REPRESENTATIVE): Likewise.
+	* tree-vect-loop.c (vectorizable_reduction): Adjust SLP
+	node gathering.
+	(vectorizable_live_operation): Use the representative to
+	attach the reduction info to.
+	* tree-vect-slp.c (_slp_tree::_slp_tree): Initialize
+	SLP_TREE_REPRESENTATIVE.
+	(vect_create_new_slp_node): Likewise.
+	(slp_copy_subtree): Copy it.
+	(vect_slp_rearrange_stmts): Re-arrange even COND_EXPR stmts.
+	(vect_slp_analyze_node_operations_1): Pass the representative
+	to vect_analyze_stmt.
+	(vect_schedule_slp_instance): Pass the representative to
+	vect_transform_stmt.
+
+2020-05-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95356
+	* tree-vect-stmts.c (vectorizable_shift): Do in-place SLP
+	node hacking during analysis.
+
+2020-05-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/95362
+	* lto-streamer-out.c (lto_output_tree): Disable redundant streaming.
+
+2020-05-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95403
+	* tree-vect-stmts.c (vect_init_vector_1): Guard against NULL
+	stmt_vinfo.
+
+2020-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95315
+	* omp-general.c (omp_resolve_declare_variant): Fix up addition of
+	declare variant cgraph node removal callback.
+
+2020-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95052
+	* expr.c (store_expr): If expr_size is constant and significantly
+	larger than TREE_STRING_LENGTH, set temp to just the
+	TREE_STRING_LENGTH portion of the STRING_CST.
+
+2020-05-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95393
+	* tree-ssa-phiopt.c (minmax_replacement): Use gimple_build
+	to build the min/max expression so we simplify cases like
+	MAX(0, s) immediately.
+
+2020-05-29  Joe Ramsay  <joe.ramsay@arm.com>
+
+	* config/aarch64/aarch64-sve.md (<LOGICAL:optab><mode>3): Add support
+	for unpacked EOR, ORR, AND.
+
 2020-05-28  Nicolas Bértolo  <nicolasbertolo@gmail.com>
 
 	* Makefile.in: don't look for libiberty in the "pic" subdirectory

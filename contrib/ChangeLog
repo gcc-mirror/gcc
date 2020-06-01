@@ -1,3 +1,48 @@
+2020-05-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config-list.mk (LIST): Add v850e1-elf.
+
+2020-05-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config-list.mk (LIST): Add or1k-elf, or1k-linux-*, and or1k-rtems.
+
+2020-05-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config-list.mk (LIST): Remove arm-wrs-vxworks.
+
+2020-05-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config-list.mk (LIST): Remove cris-linux, crisv32-elf, and
+	crisv32-linux.
+
+2020-05-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config-list.mk (LIST): Add pru-elf.
+
+2020-05-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config-list.mk (LIST): Remove rs6000-ibm-aix5.3.0.
+
+2020-05-29  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Find empty change descriptions.
+	* gcc-changelog/test_email.py: New test.
+	* gcc-changelog/test_patches.txt: New patch that tests that.
+
+2020-05-29  Martin Liska  <mliska@suse.cz>
+
+	* git-backport.py: The script did 'git co HEAD~' when
+	there was no modified ChangeLog file in a successful
+	git cherry pick.
+	Run cherry-pick --continue without editor.
+
+2020-05-29  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Properly
+	handle duplicite authors.
+	* gcc-changelog/test_email.py: New test.
+	* gcc-changelog/test_patches.txt: New patch.
+
 2020-05-28  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gcc-changelog/git_email.py (GitEmail.__init__): Interpret file

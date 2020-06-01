@@ -1107,7 +1107,6 @@ typedef struct gfc_component
   struct gfc_typebound_proc *tb;
   /* When allocatable/pointer and in a coarray the associated token.  */
   tree caf_token;
-  bool finalized;
 }
 gfc_component;
 
@@ -2217,6 +2216,9 @@ typedef struct gfc_expr
 
   /* Set this if the expression came from expanding an array constructor.  */
   unsigned int from_constructor : 1;
+
+  /* Set this if the expression has already been finalized.  */
+  unsigned int finalized : 1;
 
   /* If an expression comes from a Hollerith constant or compile-time
      evaluation of a transfer statement, it may have a prescribed target-

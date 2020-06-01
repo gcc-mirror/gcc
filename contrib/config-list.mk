@@ -29,19 +29,18 @@ GCC_SRC_DIR=../../gcc
 #     > make.out 2>&1 &
 #
 
-# v850e1-elf is rejected by config.sub
 LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   alpha-linux-gnu alpha-netbsd alpha-openbsd \
   alpha64-dec-vms alpha-dec-vms \
   amdgcn-amdhsa \
   arc-elf32OPT-with-cpu=arc600 arc-elf32OPT-with-cpu=arc700 \
   arc-linux-uclibcOPT-with-cpu=arc700 arceb-linux-uclibcOPT-with-cpu=arc700 \
-  arm-wrs-vxworks arm-netbsdelf \
+  arm-netbsdelf \
   arm-linux-androideabi arm-uclinux_eabi arm-eabi arm-rtems \
   arm-symbianelf avr-elf \
   bfin-elf bfin-uclinux bfin-linux-uclibc bfin-rtems bfin-openbsd \
   bpf-unknown-none \
-  c6x-elf c6x-uclinux cr16-elf cris-elf cris-linux crisv32-elf crisv32-linux \
+  c6x-elf c6x-uclinux cr16-elf cris-elf \
   csky-elf csky-linux-gnu \
   epiphany-elf epiphany-elfOPT-with-stack-offset=16 fido-elf \
   fr30-elf frv-elf frv-linux ft32-elf h8300-elf hppa-linux-gnu \
@@ -72,6 +71,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   nds32le-elf nds32be-elf \
   nios2-elf nios2-linux-gnu nios2-rtems \
   nvptx-none \
+  or1k-elf or1k-linux-uclibc or1k-linux-musl or1k-rtems \
   pdp11-aout \
   powerpc-darwin8 \
   powerpc-darwin7 powerpc64-darwin powerpc-freebsd6 powerpc-netbsd \
@@ -82,6 +82,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   powerpc-wrs-vxworks powerpc-wrs-vxworksae powerpc-wrs-vxworksmils \
   powerpc-lynxos powerpcle-elf \
   powerpcle-eabisim powerpcle-eabi \
+  pru-elf \
   riscv32-unknown-linux-gnu riscv64-unknown-linux-gnu \
   rs6000-ibm-aix6.1 rs6000-ibm-aix7.1 \
   rl78-elf rx-elf s390-linux-gnu s390x-linux-gnu s390x-ibm-tpf sh-elf \
@@ -93,7 +94,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   sparc-wrs-vxworks sparc64-elf sparc64-rtems sparc64-linux sparc64-freebsd6 \
   sparc64-netbsd sparc64-openbsd \
   tilegx-linux-gnu tilegxbe-linux-gnu tilepro-linux-gnu \
-  v850e-elf v850-elf v850-rtems vax-linux-gnu \
+  v850e1-elf v850e-elf v850-elf v850-rtems vax-linux-gnu \
   vax-netbsdelf vax-openbsd visium-elf x86_64-apple-darwin \
   x86_64-pc-linux-gnuOPT-with-fpmath=avx \
   x86_64-elfOPT-with-fpmath=sse x86_64-freebsd6 x86_64-netbsd \

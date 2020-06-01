@@ -84,24 +84,10 @@ lto_tag_name (enum LTO_tags tag)
       return "LTO_ert_must_not_throw";
     case LTO_tree_pickle_reference:
       return "LTO_tree_pickle_reference";
-    case LTO_field_decl_ref:
-      return "LTO_field_decl_ref";
-    case LTO_function_decl_ref:
-      return "LTO_function_decl_ref";
-    case LTO_label_decl_ref:
-      return "LTO_label_decl_ref";
-    case LTO_namespace_decl_ref:
-      return "LTO_namespace_decl_ref";
-    case LTO_result_decl_ref:
-      return "LTO_result_decl_ref";
+    case LTO_global_stream_ref:
+      return "LTO_global_sream_ref";
     case LTO_ssa_name_ref:
       return "LTO_ssa_name_ref";
-    case LTO_type_decl_ref:
-      return "LTO_type_decl_ref";
-    case LTO_type_ref:
-      return "LTO_type_ref";
-    case LTO_global_decl_ref:
-      return "LTO_global_decl_ref";
     default:
       return "LTO_UNKNOWN";
     }

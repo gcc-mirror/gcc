@@ -895,7 +895,7 @@ ADA_RTL_DSO_DIR = $(toolexeclibdir)
 # need to keep the frame pointer in tracebak.o to pop the stack properly on
 # some targets.
 
-tracebak.o  : tracebak.c tb-gcc.c
+tracebak.o  : tracebak.c
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) \
 	      $(INCLUDES) $(NO_OMIT_ADAFLAGS) $< $(OUTPUT_OPTION)
 

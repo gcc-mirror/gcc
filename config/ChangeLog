@@ -1,3 +1,9 @@
+2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/95413
+	* cet.m4: Replace save_CFLAGS and save_LDFLAGS with
+	cet_save_CFLAGS and cet_save_LDFLAGS.
+
 2020-05-18  Jason Merrill  <jason@redhat.com>
 
 	* ax_cxx_compile_stdcxx.m4: Import from autoconf archive with

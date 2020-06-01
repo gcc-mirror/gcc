@@ -1352,6 +1352,7 @@ OBJS = \
 	ggc-common.o \
 	ggc-tests.o \
 	gimple.o \
+	gimple-array-bounds.o \
 	gimple-builder.o \
 	gimple-expr.o \
 	gimple-iterator.o \
@@ -1644,6 +1645,7 @@ OBJS = \
 	unique-ptr-tests.o \
 	valtrack.o \
 	value-range.o \
+	value-range-equiv.o \
 	value-prof.o \
 	var-tracking.o \
 	varasm.o \
