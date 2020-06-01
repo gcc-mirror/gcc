@@ -55,7 +55,7 @@ public:
   // This is the range getter for the simplifier, but is really only
   // used for the conditional folding which still uses equivalences.
   virtual const value_range_equiv *get_value_range (const_tree expr,
-						    gimple *stmt)
+						    gimple *stmt) OVERRIDE
   {
     widest_irange r;
     if (range_of_expr (r, const_cast<tree> (expr), stmt))
@@ -72,7 +72,7 @@ public:
   rvrp_folder (bool allow_il_changes)
     : simplifier (&ranger), allow_il_changes (allow_il_changes) { }
 
-  tree get_value (tree op, gimple *stmt)
+  tree get_value (tree op, gimple *stmt) OVERRIDE
   {
     widest_irange r;
     tree singleton;
@@ -82,8 +82,32 @@ public:
     return NULL;
   }
 
-  bool fold_stmt (gimple_stmt_iterator *gsi)
+  bool fold_cond (gcond *cond)
   {
+    if (!irange::supports_type_p (gimple_expr_type (cond)))
+      return false;
+
+    widest_irange r;
+    if (ranger.range_of_stmt (r, cond) && r.singleton_p ())
+      {
+	if (allow_il_changes)
+	  {
+	    if (r.zero_p ())
+	      gimple_cond_make_false (cond);
+	    else
+	      gimple_cond_make_true (cond);
+	    return true;
+	  }
+      }
+    return false;
+  }
+
+  bool fold_stmt (gimple_stmt_iterator *gsi) OVERRIDE
+  {
+    gcond *cond = dyn_cast <gcond *> (gsi_stmt (*gsi));
+    if (cond && fold_cond (cond))
+      return true;
+
     if (allow_il_changes)
       return simplifier.simplify (gsi);
     return false;
