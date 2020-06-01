@@ -1,3 +1,8 @@
+2020-05-31  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config/i386/i386-c.c (ix86_target_macros): Define _ILP32 and
+	__ILP32__ for 32-bit targets.
+
 2020-05-29  Alex Coplan  <alex.coplan@arm.com>
 
 	PR target/94591
