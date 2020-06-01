@@ -252,84 +252,18 @@ static void
 lto_indexable_tree_ref (struct output_block *ob, tree expr,
 			enum LTO_tags *tag, unsigned *index)
 {
-  enum tree_code code;
-  enum lto_decl_stream_e_t encoder;
-
   gcc_checking_assert (tree_is_indexable (expr));
 
-  if (TYPE_P (expr))
+  if (TREE_CODE (expr) == SSA_NAME)
     {
-      *tag = LTO_type_ref;
-      encoder = LTO_DECL_STREAM;
+      *tag = LTO_ssa_name_ref;
+      *index = SSA_NAME_VERSION (expr);
     }
   else
     {
-      code = TREE_CODE (expr);
-      switch (code)
-	{
-	case SSA_NAME:
-	  *tag = LTO_ssa_name_ref;
-	  *index = SSA_NAME_VERSION (expr);
-	  return;
-	  break;
-
-	case FIELD_DECL:
-	  *tag = LTO_field_decl_ref;
-	  encoder = LTO_DECL_STREAM;
-	  break;
-
-	case FUNCTION_DECL:
-	  *tag = LTO_function_decl_ref;
-	  encoder = LTO_DECL_STREAM;
-	  break;
-
-	case VAR_DECL:
-	case DEBUG_EXPR_DECL:
-	  gcc_checking_assert (decl_function_context (expr) == NULL
-			       || TREE_STATIC (expr));
-	  /* FALLTHRU */
-	case PARM_DECL:
-	  *tag = LTO_global_decl_ref;
-	  encoder = LTO_DECL_STREAM;
-	  break;
-
-	case CONST_DECL:
-	  *tag = LTO_const_decl_ref;
-	  encoder = LTO_DECL_STREAM;
-	  break;
-
-	case TYPE_DECL:
-	  *tag = LTO_type_decl_ref;
-	  encoder = LTO_DECL_STREAM;
-	  break;
-
-	case NAMESPACE_DECL:
-	  *tag = LTO_namespace_decl_ref;
-	  encoder = LTO_DECL_STREAM;
-	  break;
-
-	case LABEL_DECL:
-	  *tag = LTO_label_decl_ref;
-	  encoder = LTO_DECL_STREAM;
-	  break;
-
-	case RESULT_DECL:
-	  *tag = LTO_result_decl_ref;
-	  encoder = LTO_DECL_STREAM;
-	  break;
-
-	case TRANSLATION_UNIT_DECL:
-	  *tag = LTO_translation_unit_decl_ref;
-	  encoder = LTO_DECL_STREAM;
-	  break;
-
-	default:
-	  /* No other node is indexable, so it should have been handled by
-	     lto_output_tree.  */
-	  gcc_unreachable ();
-	}
+      *tag = LTO_global_stream_ref;
+      *index = lto_get_index (&ob->decl_state->streams[LTO_DECL_STREAM], expr);
     }
-  *index = lto_get_index (&ob->decl_state->streams[encoder], expr);
 }
 
 

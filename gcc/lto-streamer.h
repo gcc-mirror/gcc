@@ -185,28 +185,15 @@ enum LTO_tags
   LTO_trees,
 
   /* References to indexable tree nodes.  These objects are stored in
-     tables that are written separately from the function bodies that
-     reference them.  This way they can be instantiated even when the
-     referencing functions aren't (e.g., during WPA) and it also allows
-     functions to be copied from one file to another without having
-     to unpickle the body first (the references are location
-     independent).
+     tables that are written separately from the function bodies
+     and variable constructors that reference them.  This way they can be
+     instantiated even when the referencing functions aren't (e.g., during WPA)
+     and it also allows functions to be copied from one file to another without
+     having to unpickle the body first (the references are location
+     independent).  */
+  LTO_global_stream_ref,
 
-     NOTE, do not regroup these values as the grouping is exposed
-     in the range checks done in lto_input_tree.  */
-  LTO_field_decl_ref,			/* Do not change.  */
-  LTO_function_decl_ref,
-  LTO_label_decl_ref,
-  LTO_namespace_decl_ref,
-  LTO_result_decl_ref,
   LTO_ssa_name_ref,
-  LTO_type_decl_ref,
-  LTO_type_ref,
-  LTO_const_decl_ref,
-  LTO_imported_decl_ref,
-  LTO_translation_unit_decl_ref,
-  LTO_global_decl_ref,
-  LTO_namelist_decl_ref,		/* Do not change.  */
 
   /* This tag must always be last.  */
   LTO_NUM_TAGS
