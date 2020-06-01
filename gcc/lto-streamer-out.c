@@ -260,7 +260,7 @@ lto_indexable_tree_ref (struct output_block *ob, tree expr,
   if (TYPE_P (expr))
     {
       *tag = LTO_type_ref;
-      encoder = LTO_DECL_STREAM_TYPE;
+      encoder = LTO_DECL_STREAM;
     }
   else
     {
@@ -275,12 +275,12 @@ lto_indexable_tree_ref (struct output_block *ob, tree expr,
 
 	case FIELD_DECL:
 	  *tag = LTO_field_decl_ref;
-	  encoder = LTO_DECL_STREAM_FIELD_DECL;
+	  encoder = LTO_DECL_STREAM;
 	  break;
 
 	case FUNCTION_DECL:
 	  *tag = LTO_function_decl_ref;
-	  encoder = LTO_DECL_STREAM_FN_DECL;
+	  encoder = LTO_DECL_STREAM;
 	  break;
 
 	case VAR_DECL:
@@ -290,37 +290,37 @@ lto_indexable_tree_ref (struct output_block *ob, tree expr,
 	  /* FALLTHRU */
 	case PARM_DECL:
 	  *tag = LTO_global_decl_ref;
-	  encoder = LTO_DECL_STREAM_VAR_DECL;
+	  encoder = LTO_DECL_STREAM;
 	  break;
 
 	case CONST_DECL:
 	  *tag = LTO_const_decl_ref;
-	  encoder = LTO_DECL_STREAM_VAR_DECL;
+	  encoder = LTO_DECL_STREAM;
 	  break;
 
 	case TYPE_DECL:
 	  *tag = LTO_type_decl_ref;
-	  encoder = LTO_DECL_STREAM_TYPE_DECL;
+	  encoder = LTO_DECL_STREAM;
 	  break;
 
 	case NAMESPACE_DECL:
 	  *tag = LTO_namespace_decl_ref;
-	  encoder = LTO_DECL_STREAM_NAMESPACE_DECL;
+	  encoder = LTO_DECL_STREAM;
 	  break;
 
 	case LABEL_DECL:
 	  *tag = LTO_label_decl_ref;
-	  encoder = LTO_DECL_STREAM_VAR_DECL;
+	  encoder = LTO_DECL_STREAM;
 	  break;
 
 	case RESULT_DECL:
 	  *tag = LTO_result_decl_ref;
-	  encoder = LTO_DECL_STREAM_VAR_DECL;
+	  encoder = LTO_DECL_STREAM;
 	  break;
 
 	case TRANSLATION_UNIT_DECL:
 	  *tag = LTO_translation_unit_decl_ref;
-	  encoder = LTO_DECL_STREAM_VAR_DECL;
+	  encoder = LTO_DECL_STREAM;
 	  break;
 
 	default:
@@ -336,12 +336,12 @@ lto_indexable_tree_ref (struct output_block *ob, tree expr,
 /* Output a static or extern var DECL to OBS.  */
 
 void
-lto_output_var_decl_index (struct lto_out_decl_state *decl_state,
-			   struct lto_output_stream * obs, tree decl)
+lto_output_var_decl_ref (struct lto_out_decl_state *decl_state,
+			 struct lto_output_stream * obs, tree decl)
 {
   gcc_checking_assert (TREE_CODE (decl) == VAR_DECL);
   streamer_write_uhwi_stream
-     (obs, lto_get_index (&decl_state->streams[LTO_DECL_STREAM_VAR_DECL],
+     (obs, lto_get_index (&decl_state->streams[LTO_DECL_STREAM],
 			  decl));
 }
 
@@ -349,12 +349,12 @@ lto_output_var_decl_index (struct lto_out_decl_state *decl_state,
 /* Output a static or extern var DECL to OBS.  */
 
 void
-lto_output_fn_decl_index (struct lto_out_decl_state *decl_state,
-			  struct lto_output_stream * obs, tree decl)
+lto_output_fn_decl_ref (struct lto_out_decl_state *decl_state,
+			struct lto_output_stream * obs, tree decl)
 {
   gcc_checking_assert (TREE_CODE (decl) == FUNCTION_DECL);
   streamer_write_uhwi_stream
-     (obs, lto_get_index (&decl_state->streams[LTO_DECL_STREAM_FN_DECL], decl));
+     (obs, lto_get_index (&decl_state->streams[LTO_DECL_STREAM], decl));
 }
 
 /* Return true if EXPR is a tree node that can be written to disk.  */

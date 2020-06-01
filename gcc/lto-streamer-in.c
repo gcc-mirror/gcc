@@ -320,36 +320,16 @@ lto_input_tree_ref (class lto_input_block *ib, class data_in *data_in,
 
   switch (tag)
     {
-    case LTO_type_ref:
-      ix_u = streamer_read_uhwi (ib);
-      result = lto_file_decl_data_get_type (data_in->file_data, ix_u);
-      break;
-
     case LTO_ssa_name_ref:
       ix_u = streamer_read_uhwi (ib);
       result = (*SSANAMES (fn))[ix_u];
       break;
 
+    case LTO_type_ref:
     case LTO_field_decl_ref:
-      ix_u = streamer_read_uhwi (ib);
-      result = lto_file_decl_data_get_field_decl (data_in->file_data, ix_u);
-      break;
-
     case LTO_function_decl_ref:
-      ix_u = streamer_read_uhwi (ib);
-      result = lto_file_decl_data_get_fn_decl (data_in->file_data, ix_u);
-      break;
-
     case LTO_type_decl_ref:
-      ix_u = streamer_read_uhwi (ib);
-      result = lto_file_decl_data_get_type_decl (data_in->file_data, ix_u);
-      break;
-
     case LTO_namespace_decl_ref:
-      ix_u = streamer_read_uhwi (ib);
-      result = lto_file_decl_data_get_namespace_decl (data_in->file_data, ix_u);
-      break;
-
     case LTO_global_decl_ref:
     case LTO_result_decl_ref:
     case LTO_const_decl_ref:
@@ -358,7 +338,8 @@ lto_input_tree_ref (class lto_input_block *ib, class data_in *data_in,
     case LTO_translation_unit_decl_ref:
     case LTO_namelist_decl_ref:
       ix_u = streamer_read_uhwi (ib);
-      result = lto_file_decl_data_get_var_decl (data_in->file_data, ix_u);
+      result = (*data_in->file_data->current_decl_state
+		->streams[LTO_DECL_STREAM])[ix_u];
       break;
 
     default:
@@ -367,6 +348,30 @@ lto_input_tree_ref (class lto_input_block *ib, class data_in *data_in,
 
   gcc_assert (result);
 
+  return result;
+}
+
+/* Read VAR_DECL reference to DATA from IB.  */
+
+tree
+lto_input_var_decl_ref (lto_input_block *ib, lto_file_decl_data *file_data)
+{
+  unsigned int ix_u = streamer_read_uhwi (ib);
+  tree result = (*file_data->current_decl_state
+		 ->streams[LTO_DECL_STREAM])[ix_u];
+  gcc_assert (TREE_CODE (result) == VAR_DECL);
+  return result;
+}
+
+/* Read VAR_DECL reference to DATA from IB.  */
+
+tree
+lto_input_fn_decl_ref (lto_input_block *ib, lto_file_decl_data *file_data)
+{
+  unsigned int ix_u = streamer_read_uhwi (ib);
+  tree result = (*file_data->current_decl_state
+		 ->streams[LTO_DECL_STREAM])[ix_u];
+  gcc_assert (TREE_CODE (result) == FUNCTION_DECL);
   return result;
 }
 
