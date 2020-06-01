@@ -85,7 +85,7 @@ struct fenv
   unsigned short int __data_selector;
   unsigned short int __unused5;
   unsigned int __mxcsr;
-};
+} __attribute__ ((gcc_struct));
 
 /* Check we can actually store the FPU state in the allocated size.  */
 _Static_assert (sizeof(struct fenv) <= (size_t) GFC_FPE_STATE_BUFFER_SIZE,
