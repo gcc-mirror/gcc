@@ -2277,12 +2277,28 @@ resolve_elemental_actual (gfc_expr *expr, gfc_code *c)
 	  && (set_by_optional || arg->expr->rank != rank)
 	  && !(isym && isym->id == GFC_ISYM_CONVERSION))
 	{
-	  gfc_warning (OPT_Wpedantic,
-		       "%qs at %L is an array and OPTIONAL; IF IT IS "
-		       "MISSING, it cannot be the actual argument of an "
-		       "ELEMENTAL procedure unless there is a non-optional "
-		       "argument with the same rank (12.4.1.5)",
-		       arg->expr->symtree->n.sym->name, &arg->expr->where);
+	  bool t = false;
+	  gfc_actual_arglist *a;
+
+	  /* Scan the argument list for a non-optional argument with the
+	     same rank as arg.  */
+	  for (a = arg0; a; a = a->next)
+	    if (a != arg
+		&& a->expr->rank == arg->expr->rank
+		&& !a->expr->symtree->n.sym->attr.optional)
+	      {
+		t = true;
+		break;
+	      }
+
+	  if (!t)
+	    gfc_warning (OPT_Wpedantic,
+			 "%qs at %L is an array and OPTIONAL; If it is not "
+			 "present, then it cannot be the actual argument of "
+			 "an ELEMENTAL procedure unless there is a non-optional"
+			 " argument with the same rank "
+			 "(Fortran 2018, 15.5.2.12)",
+			 arg->expr->symtree->n.sym->name, &arg->expr->where);
 	}
     }
 
