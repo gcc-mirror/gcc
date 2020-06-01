@@ -69,8 +69,9 @@ my_coro (Foo t_lv, Foo& t_ref, Foo&& t_rv_ref)
   PRINT ("my_coro 1");
   sum += co_await t_ref;
   PRINT ("my_coro 2");
-  sum += co_await t_rv_ref;
-  PRINT ("my_coro 3");
+  // This can't work for the rvalue ref, it's always dangling.
+  //sum += co_await t_rv_ref;
+  //PRINT ("my_coro 3");
   co_return sum;
 }
 
@@ -90,17 +91,17 @@ int main ()
   // now do the three co_awaits.
   while(!x.handle.done())
     x.handle.resume();
-  PRINT ("main: after resuming 3 co_awaits");
+  PRINT ("main: after resuming 2 co_awaits");
 
   /* Now we should have the co_returned value.  */
   int y = x.handle.promise().get_value();
-  if (y != 14)
+  if (y != 10)
     {
       PRINTF ("main: wrong result (%d).", y);
       abort ();
     }
 
-  if (regular != 3 || copy != 1 || move != 1)
+  if (regular != 3 || copy != 0 || move != 1)
     {
       PRINTF ("main: unexpected ctor use (R:%d, C:%d, M:%d)\n",
 	      regular, copy, move);
