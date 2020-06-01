@@ -19,6 +19,7 @@
 #include "sanitizer_common/sanitizer_libc.h"
 #include "sanitizer_common/sanitizer_posix.h"
 #include "sanitizer_common/sanitizer_procmaps.h"
+#include "sanitizer_common/sanitizer_ptrauth.h"
 #include "sanitizer_common/sanitizer_stackdepot.h"
 #include "tsan_platform.h"
 #include "tsan_rtl.h"
@@ -75,9 +76,14 @@ static uptr main_thread_identity = 0;
 ALIGNED(64) static char main_thread_state[sizeof(ThreadState)];
 static ThreadState *main_thread_state_loc = (ThreadState *)main_thread_state;
 
+// We cannot use pthread_self() before libpthread has been initialized.  Our
+// current heuristic for guarding this is checking `main_thread_identity` which
+// is only assigned in `__tsan::InitializePlatform`.
 static ThreadState **cur_thread_location() {
+  if (main_thread_identity == 0)
+    return &main_thread_state_loc;
   uptr thread_identity = (uptr)pthread_self();
-  if (thread_identity == main_thread_identity || main_thread_identity == 0)
+  if (thread_identity == main_thread_identity)
     return &main_thread_state_loc;
   return (ThreadState **)MemToShadow(thread_identity);
 }
@@ -269,6 +275,8 @@ void InitializePlatform() {
 uptr ExtractLongJmpSp(uptr *env) {
   uptr mangled_sp = env[LONG_JMP_SP_ENV_SLOT];
   uptr sp = mangled_sp ^ longjmp_xor_key;
+  sp = (uptr)ptrauth_auth_data((void *)sp, ptrauth_key_asdb,
+                               ptrauth_string_discriminator("sp"));
   return sp;
 }
 
