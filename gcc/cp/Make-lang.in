@@ -46,7 +46,7 @@ CP_PLUGIN_HEADERS := cp-tree.h cxx-pretty-print.h name-lookup.h type-utils.h ope
 # Note that it would be nice to move the dependency on g++
 # into the C++ rule, but that needs a little bit of work
 # to do the right thing within all.cross.
-c++: cc1plus$(exeext) mapper-server$(exeext)
+c++: cc1plus$(exeext) mapper-server$(exeext) mapper-server2$(exeext)
 
 # Tell GNU make to ignore these if they exist.
 .PHONY: c++
@@ -54,12 +54,20 @@ c++: cc1plus$(exeext) mapper-server$(exeext)
 CFLAGS-cp/g++spec.o += $(DRIVER_DEFINES)
 
 CFLAGS-cp/module.o += -DHOST_MACHINE=\"$(host)\" \
-	-DTARGET_MACHINE=\"$(target)\"
+	-DTARGET_MACHINE=\"$(target)\" $(CODYINC)
+
+CFLAGS-cp/mapper-client.o += $(CODYINC)
+cp/mapper-client.o: $(CODYLIB_H)
+
+CFLAGS-cp/mapper-resolver.o += $(CODYINC)
+CFLAGS-cp/mapper-server2.o += $(CODYINC)
+cp/mapper-resolver.o: $(CODYLIB_H)
+cp/mappper-server2.o: $(CODYLIB_H)
 
 ifeq ($(DEVPHASE_c),experimental)
 # We want to make the module version volatile, when in development mode,
 # so link it to the cp dir modification time
-cp/module.o : $(srcdir)/cp
+cp/module.o : $(srcdir)/cp  $(CODYLIB_H)
 # Some date's don't grok 'r', if so, simply use today's
 # date (don't bootstrap at midnight).
 MODULE_VERSION := $(shell date -r $(srcdir)/cp '+%y%m%d-%H%M' 2>/dev/null\
@@ -143,6 +151,11 @@ mapper-server$(exeext): $(MAPPER_SERVER_OBJS) $(LIBDEPS)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	$(MAPPER_SERVER_OBJS) version.o $(LIBIBERTY) $(LIBINTL)
 
+MAPPER_SERVER2_OBJS := cp/mapper-server2.o cp/mapper-resolver.o
+mapper-server2$(exeext): $(MAPPER_SERVER2_OBJS) $(CODYLIB) $(LIBDEPS)
+	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	$(MAPPER_SERVER_OBJS) version.o $(CODYLIB) $(LIBIBERTY) $(LIBINTL)
+
 # Language-specific object files for C++.
 CXX_OBJS = cp/cp-lang.o c-family/stub-objc.o $(CXX_AND_OBJCXX_OBJS)
 
@@ -165,9 +178,10 @@ cc1plus-checksum.c : build/genchecksum$(build_exeext) checksum-options \
 	  $(srcdir)/../move-if-change cc1plus-checksum.c.tmp cc1plus-checksum.c; \
 	fi
 
-cc1plus$(exeext): $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(LIBDEPS)
+cc1plus$(exeext): $(CXX_OBJS) cc1plus-checksum.o $(CODYLIB) $(BACKEND) $(LIBDEPS)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-	      $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
+	      $(CXX_OBJS) cc1plus-checksum.o $(CODYLIB) $(BACKEND) \
+		$(LIBS) $(BACKENDLIBS)
 
 ifeq ($(ENABLE_MAINTAINER_RULES), true)
 # Special build rule.  This is a maintainer rule, that is only

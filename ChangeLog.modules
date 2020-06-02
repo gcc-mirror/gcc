@@ -1,3 +1,19 @@
+2020-06-02  Nathan Sidwell  <nathan@acm.org>
+
+	Add libcody with stub users
+	* libcody: New.  Currently a symlink to cody repo.
+	* Makefile.def: Add libcody.
+	* configure.ac: Add libcody.
+	* Makefile.in: Rebuilt.
+	* configure: Rebuilt.
+	gcc/
+	* Makefile.in: Add libcody.
+	gcc/cp/
+	* Make-lang.in: Add libcody
+	* mapper.h: New stub/
+	* mapper-resolver.cc: New stub.
+	* mapper-server2.cc: New stub.
+
 2020-05-21  Nathan Sidwell  <nathan@acm.org>
 
 	Merge master 149c8c7c27a
