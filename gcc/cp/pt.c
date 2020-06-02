@@ -13854,7 +13854,10 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
      don't substitute through the constraints; that's only done when
      they are checked.  */
   if (tree ci = get_constraints (t))
-    set_constraints (r, ci);
+    /* Unless we're regenerating a lambda, in which case we'll set the
+       lambda's constraints in tsubst_lambda_expr.  */
+    if (!lambda_fntype)
+      set_constraints (r, ci);
 
   if (DECL_FRIEND_P (t) && DECL_FRIEND_CONTEXT (t))
     SET_DECL_FRIEND_CONTEXT (r,
@@ -19027,6 +19030,17 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      goto out;
 	    }
 	  finish_member_declaration (fn);
+	}
+
+      if (tree ci = get_constraints (oldfn))
+	{
+	  /* Substitute into the lambda's constraints.  */
+	  if (oldtmpl)
+	    ++processing_template_decl;
+	  ci = tsubst_constraint_info (ci, args, complain, in_decl);
+	  if (oldtmpl)
+	    --processing_template_decl;
+	  set_constraints (fn, ci);
 	}
 
       /* Let finish_function set this.  */
