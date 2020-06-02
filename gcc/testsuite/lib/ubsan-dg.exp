@@ -17,6 +17,9 @@
 # Return 1 if compilation with -fsanitize=undefined is error-free for trivial
 # code, 0 otherwise.
 
+set orig_ubsan_options_saved 0
+set orig_ubsan_options 0
+
 proc check_effective_target_fsanitize_undefined {} {
     return [check_runtime fsanitize_undefined {
 	int main (void) { return 0; }
@@ -74,6 +77,17 @@ proc ubsan_init { args } {
     global TOOL_OPTIONS
     global ubsan_saved_TEST_ALWAYS_FLAGS
     global ubsan_saved_ALWAYS_CXXFLAGS
+    global orig_ubsan_options_saved
+    global orig_ubsan_options
+
+    if { $orig_ubsan_options_saved == 0 } {
+	# Save the original environment.
+	if [info exists env(UBSAN_OPTIONS)] {
+	    set orig_ubsan_options "$env(UBSAN_OPTIONS)"
+	    set orig_ubsan_options_saved 1
+	}
+    }
+    setenv UBSAN_OPTIONS color=never
 
     set link_flags ""
     if ![is_remote host] {
@@ -109,6 +123,14 @@ proc ubsan_finish { args } {
     global ubsan_saved_ALWAYS_CXXFLAGS
     global ubsan_saved_library_path
     global ld_library_path
+    global orig_ubsan_options_saved
+    global orig_ubsan_options
+
+    if { $orig_ubsan_options_saved } {
+	setenv UBSAN_OPTIONS "$orig_ubsan_options"
+    } elseif [info exists env(UBSAN_OPTIONS)] {
+	unsetenv UBSAN_OPTIONS
+    }
 
     if [info exists ubsan_saved_ALWAYS_CXXFLAGS ] {
 	set ALWAYS_CXXFLAGS $ubsan_saved_ALWAYS_CXXFLAGS
