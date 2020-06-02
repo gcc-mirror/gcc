@@ -16800,7 +16800,8 @@ aarch64_short_vector_p (const_tree type,
     {
       /* Rely only on the type, not the mode, when processing SVE types.  */
       if (type && aarch64_some_values_include_pst_objects_p (type))
-	gcc_assert (aarch64_sve_mode_p (mode));
+	/* Leave later code to report an error if SVE is disabled.  */
+	gcc_assert (!TARGET_SVE || aarch64_sve_mode_p (mode));
       else
 	size = GET_MODE_SIZE (mode);
     }
