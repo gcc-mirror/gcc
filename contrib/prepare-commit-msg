@@ -23,6 +23,9 @@ COMMIT_MSG_FILE=$1
 COMMIT_SOURCE=$2
 SHA1=$3
 
+# We might be on a branch before the file was added.
+if ! [ -x contrib/mklog.py ]; then exit 0; fi
+
 # Can't do anything if $COMMIT_MSG_FILE isn't a file.
 if ! [ -f "$COMMIT_MSG_FILE" ]; then exit 0; fi
 
