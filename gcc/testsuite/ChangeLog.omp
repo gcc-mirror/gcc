@@ -1,3 +1,7 @@
+2020-06-02  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-c++-common/goacc/noncontig_array-1.c: Dump Gimple pass.
+
 2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gfortran.dg/goacc/classify-kernels-unparallelized.f95: Adjust
