@@ -107,10 +107,12 @@ FUNC_END (__umoddi3)
   /* Handle negative arguments to __divdi3.  */
 .L10:
   neg   a0, a0
-  bgez  a1, .L12      /* Compute __udivdi3(-a0, a1), then negate the result.  */
+  /* Zero is handled as a negative so that the result will not be inverted.  */
+  bgtz  a1, .L12     /* Compute __udivdi3(-a0, a1), then negate the result.  */
+
   neg   a1, a1
-  j     __udivdi3     /* Compute __udivdi3(-a0, -a1).  */
-.L11:                 /* Compute __udivdi3(a0, -a1), then negate the result.  */
+  j     __udivdi3    /* Compute __udivdi3(-a0, -a1).  */
+.L11:                /* Compute __udivdi3(a0, -a1), then negate the result.  */
   neg   a1, a1
 .L12:
   move  t0, ra
