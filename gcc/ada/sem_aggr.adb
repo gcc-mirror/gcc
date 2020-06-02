@@ -2677,7 +2677,7 @@ package body Sem_Aggr is
          Ent    : Entity_Id;
          Expr   : Node_Id;
          Id     : Entity_Id;
-         Typ    : Entity_Id;
+         Typ    : Entity_Id := Empty;
 
       begin
          if Present (Iterator_Specification (Comp)) then
@@ -2727,7 +2727,9 @@ package body Sem_Aggr is
          --  expression will reference the internal (synonym) loop variable.
 
          Enter_Name (Id);
+
          if No (Key_Type) then
+            pragma Assert (Present (Typ));
             Set_Etype (Id, Typ);
          else
             Set_Etype (Id, Key_Type);
