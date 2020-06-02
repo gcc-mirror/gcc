@@ -400,15 +400,19 @@ stream_write_tree_ref (struct output_block *ob, tree t)
       unsigned int ix;
       bool existed_p = streamer_tree_cache_lookup (ob->writer_cache, t, &ix);
       if (existed_p)
-	streamer_write_uhwi (ob, ix + LTO_NUM_TAGS);
+	streamer_write_hwi (ob, ix + 1);
       else
 	{
 	  enum LTO_tags tag;
 	  unsigned ix;
+	  int id = 0;
 
 	  lto_indexable_tree_ref (ob, t, &tag, &ix);
-	  streamer_write_uhwi (ob, tag);
-	  streamer_write_uhwi (ob, ix);
+	  if (tag == LTO_ssa_name_ref)
+	    id = 1;
+	  else
+	    gcc_checking_assert (tag == LTO_global_stream_ref);
+	  streamer_write_hwi (ob, -(int)(ix * 2 + id + 1));
 	}
       if (streamer_debugging)
 	streamer_write_uhwi (ob, TREE_CODE (t));

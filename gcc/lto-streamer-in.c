@@ -1501,20 +1501,22 @@ lto_input_scc (class lto_input_block *ib, class data_in *data_in,
 tree
 stream_read_tree_ref (lto_input_block *ib, data_in *data_in)
 {
-  unsigned ix = streamer_read_uhwi (ib);
-  tree ret;
+  int ix = streamer_read_hwi (ib);
   if (!ix)
     return NULL_TREE;
-  else if (ix < LTO_NUM_TAGS)
-    ret = lto_input_tree_ref (ib, data_in, cfun, (LTO_tags)ix);
+  if (ix > 0)
+    return streamer_tree_cache_get_tree (data_in->reader_cache, ix - 1);
+
+  ix = -ix - 1;
+  int id = ix & 1;
+  ix /= 2;
+
+  tree ret;
+  if (!id)
+    ret = (*data_in->file_data->current_decl_state
+	   ->streams[LTO_DECL_STREAM])[ix];
   else
-    ret = streamer_tree_cache_get_tree (data_in->reader_cache,
-					ix - LTO_NUM_TAGS);
-  if (ret && streamer_debugging)
-    {
-      enum tree_code c = (enum tree_code)streamer_read_uhwi (ib);
-      gcc_assert (c == TREE_CODE (ret));
-    }
+    ret = (*SSANAMES (cfun))[ix];
   return ret;
 }
 
