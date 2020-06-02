@@ -83,7 +83,7 @@ int gcn_isa = 3;		/* Default to GCN3.  */
 /* The number of registers usable by normal non-kernel functions.
    The SGPR count includes any special extra registers such as VCC.  */
 
-#define MAX_NORMAL_SGPR_COUNT	64
+#define MAX_NORMAL_SGPR_COUNT	62  // i.e. 64 with VCC
 #define MAX_NORMAL_VGPR_COUNT	24
 
 /* }}}  */
@@ -127,7 +127,7 @@ gcn_option_override (void)
   if (!flag_pic)
     flag_pic = flag_pie;
 
-  gcn_isa = gcn_arch == PROCESSOR_VEGA ? 5 : 3;
+  gcn_isa = gcn_arch == PROCESSOR_FIJI ? 3 : 5;
 
   /* The default stack size needs to be small for offload kernels because
      there may be many, many threads.  Also, a smaller stack gives a
@@ -168,37 +168,31 @@ static const struct gcn_kernel_arg_type
   {"exec", NULL, DImode, EXEC_REG},
 #define PRIVATE_SEGMENT_BUFFER_ARG 1
   {"private_segment_buffer",
-    "enable_sgpr_private_segment_buffer", TImode, -1},
+    ".amdhsa_user_sgpr_private_segment_buffer", TImode, -1},
 #define DISPATCH_PTR_ARG 2
-  {"dispatch_ptr", "enable_sgpr_dispatch_ptr", DImode, -1},
+  {"dispatch_ptr", ".amdhsa_user_sgpr_dispatch_ptr", DImode, -1},
 #define QUEUE_PTR_ARG 3
-  {"queue_ptr", "enable_sgpr_queue_ptr", DImode, -1},
+  {"queue_ptr", ".amdhsa_user_sgpr_queue_ptr", DImode, -1},
 #define KERNARG_SEGMENT_PTR_ARG 4
-  {"kernarg_segment_ptr", "enable_sgpr_kernarg_segment_ptr", DImode, -1},
-  {"dispatch_id", "enable_sgpr_dispatch_id", DImode, -1},
+  {"kernarg_segment_ptr", ".amdhsa_user_sgpr_kernarg_segment_ptr", DImode, -1},
+  {"dispatch_id", ".amdhsa_user_sgpr_dispatch_id", DImode, -1},
 #define FLAT_SCRATCH_INIT_ARG 6
-  {"flat_scratch_init", "enable_sgpr_flat_scratch_init", DImode, -1},
+  {"flat_scratch_init", ".amdhsa_user_sgpr_flat_scratch_init", DImode, -1},
 #define FLAT_SCRATCH_SEGMENT_SIZE_ARG 7
-  {"private_segment_size", "enable_sgpr_private_segment_size", SImode, -1},
-  {"grid_workgroup_count_X",
-    "enable_sgpr_grid_workgroup_count_x", SImode, -1},
-  {"grid_workgroup_count_Y",
-    "enable_sgpr_grid_workgroup_count_y", SImode, -1},
-  {"grid_workgroup_count_Z",
-    "enable_sgpr_grid_workgroup_count_z", SImode, -1},
-#define WORKGROUP_ID_X_ARG 11
-  {"workgroup_id_X", "enable_sgpr_workgroup_id_x", SImode, -2},
-  {"workgroup_id_Y", "enable_sgpr_workgroup_id_y", SImode, -2},
-  {"workgroup_id_Z", "enable_sgpr_workgroup_id_z", SImode, -2},
-  {"workgroup_info", "enable_sgpr_workgroup_info", SImode, -1},
-#define PRIVATE_SEGMENT_WAVE_OFFSET_ARG 15
+  {"private_segment_size", ".amdhsa_user_sgpr_private_segment_size", SImode, -1},
+#define WORKGROUP_ID_X_ARG 8
+  {"workgroup_id_X", ".amdhsa_system_sgpr_workgroup_id_x", SImode, -2},
+  {"workgroup_id_Y", ".amdhsa_system_sgpr_workgroup_id_y", SImode, -2},
+  {"workgroup_id_Z", ".amdhsa_system_sgpr_workgroup_id_z", SImode, -2},
+  {"workgroup_info", ".amdhsa_system_sgpr_workgroup_info", SImode, -1},
+#define PRIVATE_SEGMENT_WAVE_OFFSET_ARG 12
   {"private_segment_wave_offset",
-    "enable_sgpr_private_segment_wave_byte_offset", SImode, -2},
-#define WORK_ITEM_ID_X_ARG 16
+    ".amdhsa_system_sgpr_private_segment_wavefront_offset", SImode, -2},
+#define WORK_ITEM_ID_X_ARG 13
   {"work_item_id_X", NULL, V64SImode, FIRST_VGPR_REG},
-#define WORK_ITEM_ID_Y_ARG 17
+#define WORK_ITEM_ID_Y_ARG 14
   {"work_item_id_Y", NULL, V64SImode, FIRST_VGPR_REG + 1},
-#define WORK_ITEM_ID_Z_ARG 18
+#define WORK_ITEM_ID_Z_ARG 15
   {"work_item_id_Z", NULL, V64SImode, FIRST_VGPR_REG + 2}
 };
 
@@ -2075,7 +2069,7 @@ gcn_conditional_register_usage (void)
   if (cfun->machine->normal_function)
     {
       /* Restrict the set of SGPRs and VGPRs used by non-kernel functions.  */
-      for (int i = SGPR_REGNO (MAX_NORMAL_SGPR_COUNT - 2);
+      for (int i = SGPR_REGNO (MAX_NORMAL_SGPR_COUNT);
 	   i <= LAST_SGPR_REG; i++)
 	fixed_regs[i] = 1, call_used_regs[i] = 1;
 
@@ -2574,9 +2568,9 @@ gcn_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
       if (strcmp (name, "fiji") == 0)
 	return gcn_arch == PROCESSOR_FIJI;
       if (strcmp (name, "gfx900") == 0)
-	return gcn_arch == PROCESSOR_VEGA;
+	return gcn_arch == PROCESSOR_VEGA10;
       if (strcmp (name, "gfx906") == 0)
-	return gcn_arch == PROCESSOR_VEGA;
+	return gcn_arch == PROCESSOR_VEGA20;
       return 0;
     default:
       gcc_unreachable ();
@@ -4943,11 +4937,16 @@ gcn_fixup_accel_lto_options (tree fndecl)
 static void
 output_file_start (void)
 {
-  fprintf (asm_out_file, "\t.text\n");
-  fprintf (asm_out_file, "\t.hsa_code_object_version 2,0\n");
-  fprintf (asm_out_file, "\t.hsa_code_object_isa\n");	/* Autodetect.  */
-  fprintf (asm_out_file, "\t.section\t.AMDGPU.config\n");
-  fprintf (asm_out_file, "\t.text\n");
+  char *cpu;
+  switch (gcn_arch)
+    {
+    case PROCESSOR_FIJI: cpu = "gfx803"; break;
+    case PROCESSOR_VEGA10: cpu = "gfx900"; break;
+    case PROCESSOR_VEGA20: cpu = "gfx906"; break;
+    default: gcc_unreachable ();
+    }
+
+  fprintf(asm_out_file, "\t.amdgcn_target \"amdgcn-unknown-amdhsa--%s\"\n", cpu);
 }
 
 /* Implement ASM_DECLARE_FUNCTION_NAME via gcn-hsa.h.
@@ -4963,7 +4962,8 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 {
   int sgpr, vgpr;
   bool xnack_enabled = false;
-  int extra_regs = 0;
+
+  fputs ("\n\n", file);
 
   if (cfun && cfun->machine && cfun->machine->normal_function)
     {
@@ -4986,76 +4986,20 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
       break;
   vgpr++;
 
-  if (xnack_enabled)
-    extra_regs = 6;
-  if (df_regs_ever_live_p (FLAT_SCRATCH_LO_REG)
-      || df_regs_ever_live_p (FLAT_SCRATCH_HI_REG))
-    extra_regs = 4;
-  else if (df_regs_ever_live_p (VCC_LO_REG)
-	   || df_regs_ever_live_p (VCC_HI_REG))
-    extra_regs = 2;
-
   if (!leaf_function_p ())
     {
       /* We can't know how many registers function calls might use.  */
       if (vgpr < MAX_NORMAL_VGPR_COUNT)
 	vgpr = MAX_NORMAL_VGPR_COUNT;
-      if (sgpr + extra_regs < MAX_NORMAL_SGPR_COUNT)
-	sgpr = MAX_NORMAL_SGPR_COUNT - extra_regs;
+      if (sgpr < MAX_NORMAL_SGPR_COUNT)
+	sgpr = MAX_NORMAL_SGPR_COUNT;
     }
 
-  /* GFX8 allocates SGPRs in blocks of 8.
-     GFX9 uses blocks of 16.  */
-  int granulated_sgprs;
-  if (TARGET_GCN3)
-    granulated_sgprs = (sgpr + extra_regs + 7) / 8 - 1;
-  else if (TARGET_GCN5)
-    granulated_sgprs = 2 * ((sgpr + extra_regs + 15) / 16 - 1);
-  else
-    gcc_unreachable ();
-
-  fputs ("\t.align\t256\n", file);
-  fputs ("\t.type\t", file);
-  assemble_name (file, name);
-  fputs (",@function\n\t.amdgpu_hsa_kernel\t", file);
+  fputs ("\t.rodata\n"
+	 "\t.p2align\t6\n"
+	 "\t.amdhsa_kernel\t", file);
   assemble_name (file, name);
   fputs ("\n", file);
-  assemble_name (file, name);
-  fputs (":\n", file);
-  fprintf (file, "\t.amd_kernel_code_t\n"
-	   "\t\tkernel_code_version_major = 1\n"
-	   "\t\tkernel_code_version_minor = 0\n" "\t\tmachine_kind = 1\n"
-	   /* "\t\tmachine_version_major = 8\n"
-	      "\t\tmachine_version_minor = 0\n"
-	      "\t\tmachine_version_stepping = 1\n" */
-	   "\t\tkernel_code_entry_byte_offset = 256\n"
-	   "\t\tkernel_code_prefetch_byte_size = 0\n"
-	   "\t\tmax_scratch_backing_memory_byte_size = 0\n"
-	   "\t\tcompute_pgm_rsrc1_vgprs = %i\n"
-	   "\t\tcompute_pgm_rsrc1_sgprs = %i\n"
-	   "\t\tcompute_pgm_rsrc1_priority = 0\n"
-	   "\t\tcompute_pgm_rsrc1_float_mode = 192\n"
-	   "\t\tcompute_pgm_rsrc1_priv = 0\n"
-	   "\t\tcompute_pgm_rsrc1_dx10_clamp = 1\n"
-	   "\t\tcompute_pgm_rsrc1_debug_mode = 0\n"
-	   "\t\tcompute_pgm_rsrc1_ieee_mode = 1\n"
-	   /* We enable scratch memory.  */
-	   "\t\tcompute_pgm_rsrc2_scratch_en = 1\n"
-	   "\t\tcompute_pgm_rsrc2_user_sgpr = %i\n"
-	   "\t\tcompute_pgm_rsrc2_tgid_x_en = 1\n"
-	   "\t\tcompute_pgm_rsrc2_tgid_y_en = 0\n"
-	   "\t\tcompute_pgm_rsrc2_tgid_z_en = 0\n"
-	   "\t\tcompute_pgm_rsrc2_tg_size_en = 0\n"
-	   "\t\tcompute_pgm_rsrc2_tidig_comp_cnt = 0\n"
-	   "\t\tcompute_pgm_rsrc2_excp_en_msb = 0\n"
-	   "\t\tcompute_pgm_rsrc2_lds_size = 0\n"	/* Set at runtime.  */
-	   "\t\tcompute_pgm_rsrc2_excp_en = 0\n",
-	   (vgpr - 1) / 4,
-	   /* Must match wavefront_sgpr_count */
-	   granulated_sgprs,
-	   /* The total number of SGPR user data registers requested.  This
-	      number must match the number of user data registers enabled.  */
-	   cfun->machine->args.nsgprs);
   int reg = FIRST_SGPR_REG;
   for (int a = 0; a < GCN_KERNEL_ARG_TYPES; a++)
     {
@@ -5073,7 +5017,8 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 
       if (gcn_kernel_arg_types[a].header_pseudo)
 	{
-	  fprintf (file, "\t\t%s = %i",
+	  fprintf (file, "\t  %s%s\t%i",
+		   (cfun->machine->args.requested & (1 << a)) != 0 ? "" : ";",
 		   gcn_kernel_arg_types[a].header_pseudo,
 		   (cfun->machine->args.requested & (1 << a)) != 0);
 	  if (reg_first != -1)
@@ -5091,54 +5036,71 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 	}
       else if (gcn_kernel_arg_types[a].fixed_regno >= 0
 	       && cfun->machine->args.requested & (1 << a))
-	fprintf (file, "\t\t; %s = %i (%s)\n",
+	fprintf (file, "\t  ; %s\t%i (%s)\n",
 		 gcn_kernel_arg_types[a].name,
 		 (cfun->machine->args.requested & (1 << a)) != 0,
 		 reg_names[gcn_kernel_arg_types[a].fixed_regno]);
     }
-  fprintf (file, "\t\tenable_vgpr_workitem_id = %i\n",
+  fprintf (file, "\t  .amdhsa_system_vgpr_workitem_id\t%i\n",
 	   (cfun->machine->args.requested & (1 << WORK_ITEM_ID_Z_ARG))
 	   ? 2
 	   : cfun->machine->args.requested & (1 << WORK_ITEM_ID_Y_ARG)
 	   ? 1 : 0);
-  fprintf (file, "\t\tenable_ordered_append_gds = 0\n"
-	   "\t\tprivate_element_size = 1\n"
-	   "\t\tis_ptr64 = 1\n"
-	   "\t\tis_dynamic_callstack = 0\n"
-	   "\t\tis_debug_enabled = 0\n"
-	   "\t\tis_xnack_enabled = %i\n"
-	   "\t\tworkitem_private_segment_byte_size = %i\n"
-	   "\t\tworkgroup_group_segment_byte_size = %u\n"
-	   "\t\tgds_segment_byte_size = 0\n"
-	   "\t\tkernarg_segment_byte_size = %i\n"
-	   "\t\tworkgroup_fbarrier_count = 0\n"
-	   "\t\twavefront_sgpr_count = %i\n"
-	   "\t\tworkitem_vgpr_count = %i\n"
-	   "\t\treserved_vgpr_first = 0\n"
-	   "\t\treserved_vgpr_count = 0\n"
-	   "\t\treserved_sgpr_first = 0\n"
-	   "\t\treserved_sgpr_count = 0\n"
-	   "\t\tdebug_wavefront_private_segment_offset_sgpr = 0\n"
-	   "\t\tdebug_private_segment_buffer_sgpr = 0\n"
-	   "\t\tkernarg_segment_alignment = %i\n"
-	   "\t\tgroup_segment_alignment = 4\n"
-	   "\t\tprivate_segment_alignment = %i\n"
-	   "\t\twavefront_size = 6\n"
-	   "\t\tcall_convention = 0\n"
-	   "\t\truntime_loader_kernel_symbol = 0\n"
-	   "\t.end_amd_kernel_code_t\n", xnack_enabled,
+  fprintf (file,
+	   "\t  .amdhsa_next_free_vgpr\t%i\n"
+	   "\t  .amdhsa_next_free_sgpr\t%i\n"
+	   "\t  .amdhsa_reserve_vcc\t1\n"
+	   "\t  .amdhsa_reserve_flat_scratch\t0\n"
+	   "\t  .amdhsa_reserve_xnack_mask\t%i\n"
+	   "\t  .amdhsa_private_segment_fixed_size\t%i\n"
+	   "\t  .amdhsa_group_segment_fixed_size\t%u\n"
+	   "\t  .amdhsa_float_denorm_mode_32\t3\n"
+	   "\t  .amdhsa_float_denorm_mode_16_64\t3\n",
+	   vgpr,
+	   sgpr,
+	   xnack_enabled,
 	   /* workitem_private_segment_bytes_size needs to be
 	      one 64th the wave-front stack size.  */
 	   stack_size_opt / 64,
-	   LDS_SIZE, cfun->machine->kernarg_segment_byte_size,
-	   /* Number of scalar registers used by a wavefront.  This
-	      includes the special SGPRs for VCC, Flat Scratch (Base,
-	      Size) and XNACK (for GFX8 (VI)+).  It does not include the
-	      16 SGPR added if a trap handler is enabled.  Must match
-	      compute_pgm_rsrc1.sgprs.  */
-	   sgpr + extra_regs, vgpr,
+	   LDS_SIZE);
+  fputs ("\t.end_amdhsa_kernel\n", file);
+
+#if 1
+  /* The following is YAML embedded in assembler; tabs are not allowed.  */
+  fputs ("        .amdgpu_metadata\n"
+	 "        amdhsa.version:\n"
+	 "          - 1\n"
+	 "          - 0\n"
+	 "        amdhsa.kernels:\n"
+	 "          - .name: ", file);
+  assemble_name (file, name);
+  fputs ("\n            .symbol: ", file);
+  assemble_name (file, name);
+  fprintf (file,
+	   ".kd\n"
+	   "            .kernarg_segment_size: %i\n"
+	   "            .kernarg_segment_align: %i\n"
+	   "            .group_segment_fixed_size: %u\n"
+	   "            .private_segment_fixed_size: %i\n"
+	   "            .wavefront_size: 64\n"
+	   "            .sgpr_count: %i\n"
+	   "            .vgpr_count: %i\n"
+	   "            .max_flat_workgroup_size: 1024\n",
+	   cfun->machine->kernarg_segment_byte_size,
 	   cfun->machine->kernarg_segment_alignment,
-	   crtl->stack_alignment_needed / 8);
+	   LDS_SIZE,
+	   stack_size_opt / 64,
+	   sgpr, vgpr);
+  fputs ("        .end_amdgpu_metadata\n", file);
+#endif
+
+  fputs ("\t.text\n", file);
+  fputs ("\t.align\t256\n", file);
+  fputs ("\t.type\t", file);
+  assemble_name (file, name);
+  fputs (",@function\n", file);
+  assemble_name (file, name);
+  fputs (":\n", file);
 
   /* This comment is read by mkoffload.  */
   if (flag_openacc)
@@ -5200,11 +5162,6 @@ gcn_target_asm_function_prologue (FILE *file)
       asm_fprintf (file, "\t; local vars size: %wd\n", offsets->local_vars);
       asm_fprintf (file, "\t; outgoing args size: %wd\n",
 		   offsets->outgoing_args_size);
-
-      /* Enable denorms.  */
-      asm_fprintf (file, "\n\t; Set MODE[FP_DENORM]: allow single and double"
-		   " input and output denorms\n");
-      asm_fprintf (file, "\ts_setreg_imm32_b32\thwreg(1, 4, 4), 0xf\n\n");
     }
 }
 
