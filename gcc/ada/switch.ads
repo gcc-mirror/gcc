@@ -77,7 +77,7 @@ package Switch is
 
    function Is_Internal_GCC_Switch (Switch_Chars : String) return Boolean;
    --  Returns True iff Switch_Chars represents an internal GCC switch to be
-   --  followed by a single argument, such as -dumpbase, --param or -auxbase.
+   --  followed by a single argument, such as -dumpbase, or --param.
    --  Even though passed by the "gcc" driver, these need not be stored in ALI
    --  files and may safely be ignored by non GCC back-ends.
 

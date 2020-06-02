@@ -998,7 +998,7 @@ private
    --  The following table records the compilation switches used to compile
    --  the main unit. The table includes only switches. It excludes -o
    --  switches as well as artifacts of the gcc/gnat1 interface such as
-   --  -quiet, -dumpbase, or -auxbase.
+   --  -quiet, or -dumpbase.
 
    --  This table is set as part of the compiler argument scanning in
    --  Back_End. It can also be reset in -gnatc mode from the data in an
