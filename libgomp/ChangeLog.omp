@@ -1,3 +1,13 @@
+2020-06-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (init_environment_variables): Use ".so.1"
+	variant for HSA_RUNTIME_LIB name.
+	(find_executable_symbol_1): Delete.
+	(find_executable_symbol): Delete.
+	(init_kernel_properties): Add ".kd" suffix to symbol names.
+	(find_load_offset): Delete.
+	(create_and_finalize_hsa_program): Remove relocation handling.
+
 2020-06-02  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/routine-wv-2.c (DoWorkVec):

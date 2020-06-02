@@ -18,8 +18,8 @@
  #error elf.h included before elfos.h
 #endif
 
-#define TEXT_SECTION_ASM_OP "\t.section\t.text"
-#define BSS_SECTION_ASM_OP  "\t.section\t.bss"
+#define TEXT_SECTION_ASM_OP "\t.text"
+#define BSS_SECTION_ASM_OP  "\t.bss"
 #define GLOBAL_ASM_OP       "\t.globl\t"
 #define DATA_SECTION_ASM_OP "\t.data\t"
 #define SET_ASM_OP          "\t.set\t"
@@ -76,7 +76,7 @@ extern unsigned int gcn_local_sym_hash (const char *name);
 #define GOMP_SELF_SPECS ""
 
 /* Use LLVM assembler and linker options.  */
-#define ASM_SPEC  "-triple=amdgcn--amdhsa -mattr=-code-object-v3 "  \
+#define ASM_SPEC  "-triple=amdgcn--amdhsa "  \
 		  "%:last_arg(%{march=*:-mcpu=%*}) " \
 		  "-filetype=obj"
 /* Add -mlocal-symbol-id=<source-file-basename> unless the user (or mkoffload)
@@ -89,7 +89,7 @@ extern unsigned int gcn_local_sym_hash (const char *name);
    -fcompare-debug options.  */
 #define CC1_SPEC "%{!mlocal-symbol-id=*:%{!fdump-tree-*:"	\
 		 "%{!fdump-ipa-*:%{!fcompare-debug*:-mlocal-symbol-id=%b}}}}"
-#define LINK_SPEC "--pie"
+#define LINK_SPEC "--pie --export-dynamic"
 #define LIB_SPEC  "-lc"
 
 /* Provides a _start symbol to keep the linker happy.  */

@@ -1,3 +1,28 @@
+2020-06-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-hsa.h (TEXT_SECTION_ASM_OP): Use ".text".
+	(BSS_SECTION_ASM_OP): Use ".bss".
+	(ASM_SPEC): Remove "-mattr=-code-object-v3".
+	(LINK_SPEC): Add "--export-dynamic".
+	* config/gcn/gcn-opts.h (processor_type): Replace PROCESSOR_VEGA with
+	PROCESSOR_VEGA10 and PROCESSOR_VEGA20.
+	* config/gcn/gcn-run.c (HSA_RUNTIME_LIB): Use ".so.1" variant.
+	(load_image): Remove obsolete relocation handling.
+	Add ".kd" suffix to the symbol names.
+	* config/gcn/gcn.c (MAX_NORMAL_SGPR_COUNT): Set to 62.
+	(gcn_option_override): Update gcn_isa test.
+	(gcn_kernel_arg_types): Update all the assembler directives.
+	Remove the obsolete options.
+	(gcn_conditional_register_usage): Update MAX_NORMAL_SGPR_COUNT usage.
+	(gcn_omp_device_kind_arch_isa): Handle PROCESSOR_VEGA10 and
+	PROCESSOR_VEGA20.
+	(output_file_start): Rework assembler file header.
+	(gcn_hsa_declare_function_name): Rework kernel metadata.
+	* config/gcn/gcn.h (GCN_KERNEL_ARG_TYPES): Set to 16.
+	* config/gcn/gcn.opt (PROCESSOR_VEGA): Remove enum.
+	(PROCESSOR_VEGA10): New enum value.
+	(PROCESSOR_VEGA20): New enum value.
+
 2020-06-06  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* omp-sese.c (oacc_build_component_ref): Apply address space of
