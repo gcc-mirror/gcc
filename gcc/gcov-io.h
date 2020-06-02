@@ -292,6 +292,9 @@ GCOV_COUNTERS
 /* Maximum number of tracked TOP N value profiles.  */
 #define GCOV_TOPN_MAXIMUM_TRACKED_VALUES 32
 
+/* Number of pre-allocated gcov_kvp structures.  */
+#define GCOV_PREALLOCATED_KVP 16
+
 /* Convert a counter index to a tag.  */
 #define GCOV_TAG_FOR_COUNTER(COUNT)				\
 	(GCOV_TAG_COUNTER_BASE + ((gcov_unsigned_t)(COUNT) << 17))
