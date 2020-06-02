@@ -3891,9 +3891,11 @@ package body Sem_Ch3 is
 
       begin
          if Present (Aspect_Specifications (N)) then
-            A    := First (Aspect_Specifications (N));
-            A_Id := Get_Aspect_Id (Chars (Identifier (A)));
+            A := First (Aspect_Specifications (N));
+
             while Present (A) loop
+               A_Id := Get_Aspect_Id (Chars (Identifier (A)));
+
                if A_Id = Aspect_Alignment or else A_Id = Aspect_Address then
 
                   --  Set flag on object entity, for later processing at
