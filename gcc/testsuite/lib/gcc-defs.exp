@@ -287,7 +287,7 @@ proc dg-additional-files { args } {
 
 set gcc_adjusted_linker_flags 0
 
-# Add -Wl, before any file names in ldflags, libs, and ldscripts, so
+# Add -Wl, before any file names in ldflags, libs, and ldscript, so
 # that default object files or libraries do not change the names of
 # gcc auxiliary outputs.
 
@@ -300,7 +300,7 @@ proc gcc_adjust_linker_flags {} {
 
     if {![is_remote host]} {
 	set dest [target_info name]
-	foreach i { ldflags libs ldscripts } {
+	foreach i { ldflags libs ldscript } {
 	    if {[board_info $dest exists $i]} {
 		set opts [board_info $dest $i]
 		set nopts {}

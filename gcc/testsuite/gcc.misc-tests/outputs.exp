@@ -48,7 +48,7 @@ set skip_lto ![check_effective_target_lto]
 # We do not compile to an executable, because that requires naming an output.
 set link_options ""
 set dest [target_info name]
-foreach i { ldflags libs ldscripts } {
+foreach i { ldflags libs ldscript } {
     if {[board_info $dest exists $i]} {
 	set skip ""
 	foreach opt [split [board_info $dest $i]] {
