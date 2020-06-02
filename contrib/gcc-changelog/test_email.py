@@ -176,7 +176,7 @@ class TestGccChangelog(unittest.TestCase):
     def test_long_lines(self):
         email = self.get_git_email('long-lines.patch')
         assert len(email.errors) == 1
-        assert email.errors[0].message == 'line limit exceeds 100 characters'
+        assert email.errors[0].message == 'line exceeds 100 character limit'
 
     def test_new_files(self):
         email = self.from_patch_glob('0030')
