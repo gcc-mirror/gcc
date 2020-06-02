@@ -524,7 +524,7 @@ main (int argc, char **argv)
   FILE *in = stdin;
   FILE *out = stdout;
   FILE *cfile = stdout;
-  const char *outname = 0, *offloadsrc = 0;
+  const char *outname = 0;
 
   progname = "mkoffload";
   diagnostic_initialize (global_dc, 0);
@@ -653,18 +653,11 @@ main (int argc, char **argv)
       if (!strcmp (argv[ix], "-o") && ix + 1 != argc)
 	outname = argv[++ix];
       else
-	{
-	  obstack_ptr_grow (&cc_argv_obstack, argv[ix]);
-
-	  if (argv[ix][0] != '-')
-	    offloadsrc = argv[ix];
-	}
+	obstack_ptr_grow (&cc_argv_obstack, argv[ix]);
     }
 
   obstack_ptr_grow (&cc_argv_obstack, "-o");
   obstack_ptr_grow (&cc_argv_obstack, gcn_s1_name);
-  obstack_ptr_grow (&cc_argv_obstack,
-		    concat ("-mlocal-symbol-id=", offloadsrc, NULL));
   obstack_ptr_grow (&cc_argv_obstack, NULL);
   const char **cc_argv = XOBFINISH (&cc_argv_obstack, const char **);
 
