@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2019, AdaCore                     --
+--                     Copyright (C) 1999-2020, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -950,6 +950,8 @@ package body GNAT.Calendar.Time_IO is
       when End_Of_Source_Reached
          | Wrong_Syntax
       =>
+         Time :=
+           Time_Of (Year_Number'First, Month_Number'First, Day_Number'First);
          Success := False;
    end Parse_ISO_8861_UTC;
 

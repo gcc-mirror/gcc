@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,7 +52,7 @@ package Stand is
 
       --  Types and subtypes defined in package Standard (in the order in which
       --  they appear in the RM, so that the declarations are in the right
-      --  order for the purposes of ASIS traversals
+      --  order for the purposes of e.g. ASIS traversals
 
       S_Boolean,
 

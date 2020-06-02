@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1101,7 +1101,7 @@ package body Sem_Ch12 is
       --  actuals are positional, return the next one, if any. If the actuals
       --  are named, scan the parameter associations to find the right one.
       --  A_F is the corresponding entity in the analyzed generic, which is
-      --  placed on the selector name for ASIS use.
+      --  placed on the selector name.
       --
       --  In Ada 2005, a named association may be given with a box, in which
       --  case Matching_Actual sets Found_Assoc to the generic association,
@@ -3048,8 +3048,7 @@ package body Sem_Ch12 is
 
       Set_Has_Completion (Formal, True);
 
-      --  Add semantic information to the original defining identifier for ASIS
-      --  use.
+      --  Add semantic information to the original defining identifier.
 
       Set_Ekind (Pack_Id, E_Package);
       Set_Etype (Pack_Id, Standard_Void_Type);
@@ -4348,8 +4347,7 @@ package body Sem_Ch12 is
          --  body if there is one and it needs to be instantiated here.
 
          --  We instantiate the body only if we are generating code, or if we
-         --  are generating cross-reference information, or if we are building
-         --  trees for ASIS use or GNATprove use.
+         --  are generating cross-reference information, or for GNATprove use.
 
          declare
             Enclosing_Body_Present : Boolean := False;
@@ -4446,7 +4444,7 @@ package body Sem_Ch12 is
                and then not Inline_Now
                and then (Operating_Mode = Generate_Code
                           or else (Operating_Mode = Check_Semantics
-                                    and then (ASIS_Mode or GNATprove_Mode)));
+                                    and then GNATprove_Mode));
 
             --  If front-end inlining is enabled or there are any subprograms
             --  marked with Inline_Always, do not instantiate body when within
@@ -4779,17 +4777,6 @@ package body Sem_Ch12 is
 
       if Inline_Now then
          Inline_Instance_Body (N, Gen_Unit, Act_Decl);
-      end if;
-
-      --  The following is a tree patch for ASIS: ASIS needs separate nodes to
-      --  be used as defining identifiers for a formal package and for the
-      --  corresponding expanded package.
-
-      if Nkind (N) = N_Formal_Package_Declaration then
-         Act_Decl_Id := New_Copy (Defining_Entity (N));
-         Set_Comes_From_Source (Act_Decl_Id, True);
-         Set_Is_Generic_Instance (Act_Decl_Id, False);
-         Set_Defining_Identifier (N, Act_Decl_Id);
       end if;
 
       --  Check that if N is an instantiation of System.Dim_Float_IO or
@@ -5185,17 +5172,17 @@ package body Sem_Ch12 is
 
       if (Is_In_Main_Unit (N) or else Is_Inlined_Or_Child_Of_Inlined (Subp))
 
-        --  Must be generating code or analyzing code in ASIS/GNATprove mode
+        --  Must be generating code or analyzing code in GNATprove mode
 
         and then (Operating_Mode = Generate_Code
                    or else (Operating_Mode = Check_Semantics
-                             and then (ASIS_Mode or GNATprove_Mode)))
+                             and then GNATprove_Mode))
 
-        --  The body is needed when generating code (full expansion), in ASIS
-        --  mode for other tools, and in GNATprove mode (special expansion) for
-        --  formal verification of the body itself.
+        --  The body is needed when generating code (full expansion) and in
+        --  in GNATprove mode (special expansion) for formal verification of
+        --  the body itself.
 
-        and then (Expander_Active or ASIS_Mode or GNATprove_Mode)
+        and then (Expander_Active or GNATprove_Mode)
 
         --  No point in inlining if ABE is inevitable
 
@@ -5814,8 +5801,7 @@ package body Sem_Ch12 is
             --  constitute a freeze point, but to insure that the freeze node
             --  is placed properly, it is created directly when instantiating
             --  the body (otherwise the freeze node might appear to early for
-            --  nested instantiations). For ASIS purposes, indicate that the
-            --  wrapper package has replaced the instantiation node.
+            --  nested instantiations).
 
             elsif Nkind (Parent (N)) = N_Compilation_Unit then
                Rewrite (N, Unit (Parent (N)));
@@ -5823,7 +5809,7 @@ package body Sem_Ch12 is
             end if;
 
          --  Replace instance node for library-level instantiations of
-         --  intrinsic subprograms, for ASIS use.
+         --  intrinsic subprograms.
 
          elsif Nkind (Parent (N)) = N_Compilation_Unit then
             Rewrite (N, Unit (Parent (N)));
@@ -7701,9 +7687,8 @@ package body Sem_Ch12 is
 
       function In_Defining_Unit_Name (Nam : Node_Id) return Boolean;
       --  True if an identifier is part of the defining program unit name of
-      --  a child unit. The entity of such an identifier must be kept (for
-      --  ASIS use) even though as the name of an enclosing generic it would
-      --  otherwise not be preserved in the generic tree.
+      --  a child unit.
+      --  Consider removing this subprogram now that ASIS no longer uses it.
 
       ----------------------
       -- Copy_Descendants --
@@ -7887,7 +7872,7 @@ package body Sem_Ch12 is
             --  The entities for parent units in the defining_program_unit of a
             --  generic child unit are established when the context of the unit
             --  is first analyzed, before the generic copy is made. They are
-            --  preserved in the copy for use in ASIS queries.
+            --  preserved in the copy for use in e.g. ASIS queries.
 
             Ent := Entity (New_N);
 
@@ -10364,7 +10349,7 @@ package body Sem_Ch12 is
       --  such as a parent generic within the body of a generic child.
 
       if not Is_Entity_Name (Actual)
-        or else not Ekind_In (Entity (Actual), E_Generic_Package, E_Package)
+        or else not Is_Package_Or_Generic_Package (Entity (Actual))
       then
          Error_Msg_N
            ("expect package instance to instantiate formal", Actual);
@@ -10924,41 +10909,6 @@ package body Sem_Ch12 is
       Subt_Decl   : Node_Id             := Empty;
       Subt_Mark   : Node_Id             := Empty;
 
-      function Copy_Access_Def return Node_Id;
-      --  If formal is an anonymous access, copy access definition of formal
-      --  for generated object declaration.
-
-      ---------------------
-      -- Copy_Access_Def --
-      ---------------------
-
-      function Copy_Access_Def return Node_Id is
-      begin
-         Def := New_Copy_Tree (Acc_Def);
-
-         --  In addition, if formal is an access to subprogram we need to
-         --  generate new formals for the signature of the default, so that
-         --  the tree is properly formatted for ASIS use.
-
-         if Present (Access_To_Subprogram_Definition (Acc_Def)) then
-            declare
-               Par_Spec : Node_Id;
-            begin
-               Par_Spec :=
-                 First (Parameter_Specifications
-                          (Access_To_Subprogram_Definition (Def)));
-               while Present (Par_Spec) loop
-                  Set_Defining_Identifier (Par_Spec,
-                    Make_Defining_Identifier (Sloc (Acc_Def),
-                      Chars => Chars (Defining_Identifier (Par_Spec))));
-                  Next (Par_Spec);
-               end loop;
-            end;
-         end if;
-
-         return Def;
-      end Copy_Access_Def;
-
    --  Start of processing for Instantiate_Object
 
    begin
@@ -10990,8 +10940,9 @@ package body Sem_Ch12 is
          --  use the actual directly, rather than a copy, because it is not
          --  used further in the list of actuals, and because a copy or a use
          --  of relocate_node is incorrect if the instance is nested within a
-         --  generic. In order to simplify ASIS searches, the Generic_Parent
-         --  field links the declaration to the generic association.
+         --  generic. In order to simplify e.g. ASIS queries, the
+         --  Generic_Parent field links the declaration to the generic
+         --  association.
 
          if No (Actual) then
             Error_Msg_NE
@@ -11159,8 +11110,9 @@ package body Sem_Ch12 is
          if Present (Actual) then
             if Present (Subt_Mark) then
                Def := New_Copy_Tree (Subt_Mark);
-            else pragma Assert (Present (Acc_Def));
-               Def := Copy_Access_Def;
+            else
+               pragma Assert (Present (Acc_Def));
+               Def := New_Copy_Tree (Acc_Def);
             end if;
 
             Decl_Node :=
@@ -11241,8 +11193,9 @@ package body Sem_Ch12 is
 
             if Present (Subt_Mark) then
                Def := New_Copy (Subt_Mark);
-            else pragma Assert (Present (Acc_Def));
-               Def := Copy_Access_Def;
+            else
+               pragma Assert (Present (Acc_Def));
+               Def := New_Copy_Tree (Acc_Def);
             end if;
 
             Decl_Node :=
@@ -15353,38 +15306,7 @@ package body Sem_Ch12 is
             end if;
 
             if Is_Global (E) then
-
-               --  If the entity is a package renaming that is the prefix of
-               --  an expanded name, it has been rewritten as the renamed
-               --  package, which is necessary semantically but complicates
-               --  ASIS tree traversal, so we recover the original entity to
-               --  expose the renaming. Take into account that the context may
-               --  be a nested generic, that the original node may itself have
-               --  an associated node that had better be an entity, and that
-               --  the current node is still a selected component.
-
-               if Ekind (E) = E_Package
-                 and then Nkind (N) = N_Selected_Component
-                 and then Nkind (Parent (N)) = N_Expanded_Name
-                 and then Present (Original_Node (N2))
-                 and then Is_Entity_Name (Original_Node (N2))
-                 and then Present (Entity (Original_Node (N2)))
-               then
-                  if Is_Global (Entity (Original_Node (N2))) then
-                     N2 := Original_Node (N2);
-                     Set_Associated_Node (N, N2);
-                     Set_Global_Type     (N, N2);
-
-                  --  Renaming is local, and will be resolved in instance
-
-                  else
-                     Set_Associated_Node (N, Empty);
-                     Set_Etype (N, Empty);
-                  end if;
-
-               else
-                  Set_Global_Type (N, N2);
-               end if;
+               Set_Global_Type (N, N2);
 
             elsif Nkind (N) = N_Op_Concat
               and then Is_Generic_Type (Etype (N2))
@@ -15917,41 +15839,14 @@ package body Sem_Ch12 is
             --  The node did not undergo a transformation
 
             if Nkind (N) = Nkind (Get_Associated_Node (N)) then
-               declare
-                  Aux_N2         : constant Node_Id := Get_Associated_Node (N);
-                  Orig_N2_Parent : constant Node_Id :=
-                                     Original_Node (Parent (Aux_N2));
-               begin
-                  --  The parent of this identifier is a selected component
-                  --  which denotes a named number that was constant folded.
-                  --  Preserve the original name for ASIS and link the parent
-                  --  with its expanded name. The constant folding will be
-                  --  repeated in the instance.
+               --  If this is a discriminant reference, always save it.
+               --  It is used in the instance to find the corresponding
+               --  discriminant positionally rather than by name.
 
-                  if Nkind (Parent (N)) = N_Selected_Component
-                    and then Nkind_In (Parent (Aux_N2), N_Integer_Literal,
-                                                        N_Real_Literal)
-                    and then Is_Entity_Name (Orig_N2_Parent)
-                    and then Ekind (Entity (Orig_N2_Parent)) in Named_Kind
-                    and then Is_Global (Entity (Orig_N2_Parent))
-                  then
-                     N2 := Aux_N2;
-                     Set_Associated_Node
-                       (Parent (N), Original_Node (Parent (N2)));
+               Set_Original_Discriminant
+                 (N, Original_Discriminant (Get_Associated_Node (N)));
 
-                  --  Common case
-
-                  else
-                     --  If this is a discriminant reference, always save it.
-                     --  It is used in the instance to find the corresponding
-                     --  discriminant positionally rather than by name.
-
-                     Set_Original_Discriminant
-                       (N, Original_Discriminant (Get_Associated_Node (N)));
-                  end if;
-
-                  Reset_Entity (N);
-               end;
+               Reset_Entity (N);
 
             --  The analysis of the generic copy transformed the identifier
             --  into another construct. Propagate the changes to the template.
@@ -15975,6 +15870,7 @@ package body Sem_Ch12 is
                --  The identifier denotes a named number that was constant
                --  folded. Preserve the original name for ASIS and undo the
                --  constant folding which will be repeated in the instance.
+               --  Is this still needed???
 
                elsif Nkind_In (N2, N_Integer_Literal, N_Real_Literal)
                  and then Is_Entity_Name (Original_Node (N2))
@@ -16086,8 +15982,9 @@ package body Sem_Ch12 is
                     and then Nkind (Original_Node (N2)) = Nkind (N)
                   then
                      --  Operation was constant-folded. Whenever possible,
-                     --  recover semantic information from unfolded node,
-                     --  for ASIS use.
+                     --  recover semantic information from unfolded node.
+                     --  This was initially done for ASIS but is apparently
+                     --  needed also for e.g. compiling a-nbnbin.adb.
 
                      Set_Associated_Node (N, Original_Node (N2));
 

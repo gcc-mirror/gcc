@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1655,9 +1655,9 @@ package body Sem_Ch10 is
       procedure Optional_Subunit;
       --  This procedure is called when the main unit is a stub, or when we
       --  are not generating code. In such a case, we analyze the subunit if
-      --  present, which is user-friendly and in fact required for ASIS, but we
-      --  don't complain if the subunit is missing. In GNATprove_Mode, we issue
-      --  an error to avoid formal verification of a partial unit.
+      --  present, which is user-friendly, but we don't complain if the subunit
+      --  is missing. In GNATprove_Mode, we issue an error to avoid formal
+      --  verification of a partial unit.
 
       ----------------------
       -- Optional_Subunit --
@@ -1673,7 +1673,7 @@ package body Sem_Ch10 is
          --  ignore all errors. Note that Fatal_Error will still be set, so we
          --  will be able to check for this case below.
 
-         if not (ASIS_Mode or GNATprove_Mode) then
+         if not GNATprove_Mode then
             Ignore_Errors_Enable := Ignore_Errors_Enable + 1;
          end if;
 
@@ -1684,7 +1684,7 @@ package body Sem_Ch10 is
               Subunit    => True,
               Error_Node => N);
 
-         if not (ASIS_Mode or GNATprove_Mode) then
+         if not GNATprove_Mode then
             Ignore_Errors_Enable := Ignore_Errors_Enable - 1;
          end if;
 
@@ -1808,27 +1808,13 @@ package body Sem_Ch10 is
 
       --  If the main unit is a subunit, then we are just performing semantic
       --  analysis on that subunit, and any other subunits of any parent unit
-      --  should be ignored, except that if we are building trees for ASIS
-      --  usage we want to annotate the stub properly. If the main unit is
-      --  itself a subunit, another subunit is irrelevant unless it is a
-      --  subunit of the current one, that is to say appears in the current
-      --  source tree.
+      --  should be ignored. If the main unit is itself a subunit, another
+      --  subunit is irrelevant unless it is a subunit of the current one, that
+      --  is to say appears in the current source tree.
 
       elsif Nkind (Unit (Cunit (Main_Unit))) = N_Subunit
         and then Subunit_Name /= Unit_Name (Main_Unit)
       then
-         if ASIS_Mode then
-            declare
-               PB : constant Node_Id := Proper_Body (Unit (Cunit (Main_Unit)));
-            begin
-               if Nkind_In (PB, N_Package_Body, N_Subprogram_Body)
-                 and then List_Containing (N) = Declarations (PB)
-               then
-                  Optional_Subunit;
-               end if;
-            end;
-         end if;
-
          --  But before we return, set the flag for unloaded subunits. This
          --  will suppress junk warnings of variables in the same declarative
          --  part (or a higher level one) that are in danger of looking unused
@@ -2610,14 +2596,7 @@ package body Sem_Ch10 is
          --  clauses into regular with clauses.
 
          if Sloc (U) /= No_Location then
-            if In_Predefined_Unit (U)
-
-              --  In ASIS mode the rtsfind mechanism plays no role, and
-              --  we need to maintain the original tree structure, so
-              --  this transformation is not performed in this case.
-
-              and then not ASIS_Mode
-            then
+            if In_Predefined_Unit (U) then
                Set_Limited_Present (N, False);
                Analyze_With_Clause (N);
             else
@@ -5273,9 +5252,8 @@ package body Sem_Ch10 is
 
                --  Set entity of parent identifiers if the unit is a child
                --  unit. This ensures that the tree is properly formed from
-               --  semantic point of view (e.g. for ASIS queries). The unit
-               --  entities are not fully analyzed, so we need to follow unit
-               --  links in the tree.
+               --  semantic point of view. The unit entities are not fully
+               --  analyzed, so we need to follow unit links in the tree.
 
                Set_Entity (Nam, Ent);
 
@@ -6866,6 +6844,7 @@ package body Sem_Ch10 is
             --  clauses in other nested packages. We replace the clause with
             --  a null statement, which is otherwise ignored by the rest of
             --  the compiler, so that ASIS tools can reconstruct the source.
+            --  Is this still needed now that ASIS mode is removed???
 
             if In_Regular_With_Clause (Entity (Name (Item))) then
                declare

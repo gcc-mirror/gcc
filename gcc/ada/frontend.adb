@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -412,14 +412,15 @@ begin
 
             --  Cleanup processing after completing main analysis
 
-            --  Comment needed for ASIS mode test and GNATprove mode test???
+            --  In GNATprove_Mode we do not perform most expansions but body
+            --  instantiation is needed.
 
             pragma Assert
               (Operating_Mode = Generate_Code
                 or else Operating_Mode = Check_Semantics);
 
             if Operating_Mode = Generate_Code
-              or else (ASIS_Mode or GNATprove_Mode)
+              or else GNATprove_Mode
             then
                Instantiate_Bodies;
             end if;

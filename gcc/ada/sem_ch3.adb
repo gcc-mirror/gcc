@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -657,14 +657,22 @@ package body Sem_Ch3 is
    --  declaration, Prev_T is the original incomplete type, whose full view is
    --  the record type.
 
-   procedure Replace_Components (Typ : Entity_Id; Decl : Node_Id);
-   --  Subsidiary to Build_Derived_Record_Type. For untagged records, we
-   --  build a copy of the declaration tree of the parent, and we create
-   --  independently the list of components for the derived type. Semantic
-   --  information uses the component entities, but record representation
-   --  clauses are validated on the declaration tree. This procedure replaces
-   --  discriminants and components in the declaration with those that have
-   --  been created by Inherit_Components.
+   procedure Replace_Discriminants (Typ : Entity_Id; Decl : Node_Id);
+   --  Subsidiary to Build_Derived_Record_Type. For untagged record types, we
+   --  first create the list of components for the derived type from that of
+   --  the parent by means of Inherit_Components and then build a copy of the
+   --  declaration tree of the parent with the help of the mapping returned by
+   --  Inherit_Components, which will for example be used to validate record
+   --  representation clauses given for the derived type. If the parent type
+   --  is private and has discriminants, the ancestor discriminants used in the
+   --  inheritance are that of the private declaration, whereas the ancestor
+   --  discriminants present in the declaration tree of the parent are that of
+   --  the full declaration; as a consequence, the remapping done during the
+   --  copy will leave the references to the ancestor discriminants unchanged
+   --  in the declaration tree and they need to be fixed up. If the derived
+   --  type has a known discriminant part, then the remapping done during the
+   --  copy will only create references to the girder discriminants and they
+   --  need to be replaced with references to the non-girder discriminants.
 
    procedure Set_Fixed_Range
      (E   : Entity_Id;
@@ -1197,22 +1205,6 @@ package body Sem_Ch3 is
 
          begin
             F := First (Formals);
-
-            --  In ASIS mode, the access_to_subprogram may be analyzed twice,
-            --  when it is part of an unconstrained type and subtype expansion
-            --  is disabled. To avoid back-end problems with shared profiles,
-            --  use previous subprogram type as the designated type, and then
-            --  remove scope added above.
-
-            if ASIS_Mode and then Present (Scope (Defining_Identifier (F)))
-            then
-               Set_Etype                    (T_Name, T_Name);
-               Init_Size_Align              (T_Name);
-               Set_Directly_Designated_Type (T_Name,
-                 Scope (Defining_Identifier (F)));
-               End_Scope;
-               return;
-            end if;
 
             while Present (F) loop
                if No (Parent (Defining_Identifier (F))) then
@@ -1800,13 +1792,9 @@ package body Sem_Ch3 is
                --  of locally defined tagged types (or compiling with static
                --  dispatch tables generation disabled) the corresponding
                --  entry of the secondary dispatch table is filled when such
-               --  an entity is frozen. This is an expansion activity that must
-               --  be suppressed for ASIS because it leads to gigi elaboration
-               --  issues in annotate mode.
+               --  an entity is frozen.
 
-               if not ASIS_Mode then
-                  Set_Has_Delayed_Freeze (New_Subp);
-               end if;
+               Set_Has_Delayed_Freeze (New_Subp);
             end if;
 
             <<Continue>>
@@ -2703,14 +2691,7 @@ package body Sem_Ch3 is
 
                else
                   --  For declarations in a subprogram body there is no issue
-                  --  with name resolution in aspect specifications, but in
-                  --  ASIS mode we need to preanalyze aspect specifications
-                  --  that may otherwise only be analyzed during expansion
-                  --  (e.g. during generation of a related subprogram).
-
-                  if ASIS_Mode then
-                     Resolve_Aspects;
-                  end if;
+                  --  with name resolution in aspect specifications.
 
                   Freeze_All (First_Entity (Current_Scope), Decl);
                   Freeze_From := Last_Entity (Current_Scope);
@@ -2735,16 +2716,6 @@ package body Sem_Ch3 is
                Adjust_Decl;
 
                --  End of a package declaration
-
-               --  In compilation mode the expansion of freeze node takes care
-               --  of resolving expressions of all aspects in the list. In ASIS
-               --  mode this must be done explicitly.
-
-               if ASIS_Mode
-                 and then Scope (Current_Scope) = Standard_Standard
-               then
-                  Resolve_Aspects;
-               end if;
 
                --  This is a freeze point because it is the end of a
                --  compilation unit.
@@ -2807,18 +2778,10 @@ package body Sem_Ch3 is
             --  to examine Next_Decl as the late primitive idiom can only apply
             --  to the first encountered body.
 
-            --  The spec of the late primitive is not generated in ASIS mode to
-            --  ensure a consistent list of primitives that indicates the true
-            --  semantic structure of the program (which is not relevant when
-            --  generating executable code).
-
             --  ??? A cleaner approach may be possible and/or this solution
             --  could be extended to general-purpose late primitives, TBD.
 
-            if not ASIS_Mode
-              and then not Body_Seen
-              and then not Is_Body (Decl)
-            then
+            if not Body_Seen and then not Is_Body (Decl) then
                Body_Seen := True;
 
                if Nkind (Next_Decl) = N_Subprogram_Body then
@@ -2828,6 +2791,7 @@ package body Sem_Ch3 is
             else
                --  In ASIS mode, if the next declaration is a body, complete
                --  the analysis of declarations so far.
+               --  Is this still needed???
 
                Resolve_Aspects;
             end if;
@@ -4310,7 +4274,11 @@ package body Sem_Ch3 is
             --  If the aggregate is limited it will be built in place, and its
             --  expansion is deferred until the object declaration is expanded.
 
-            if Is_Limited_Type (T) then
+            --  This is also required when generating C code to ensure that an
+            --  object with an alignment or address clause can be initialized
+            --  by means of component by component assignments.
+
+            if Is_Limited_Type (T) or else Modify_Tree_For_C then
                Set_Expansion_Delayed (E);
             end if;
 
@@ -6528,61 +6496,6 @@ package body Sem_Ch3 is
           Type_Definition     => Copy_Separate_Tree (Spec));
 
       Mark_Rewrite_Insertion (Decl);
-
-      --  In ASIS mode, analyze the profile on the original node, because
-      --  the separate copy does not provide enough links to recover the
-      --  original tree. Analysis is limited to type annotations, within
-      --  a temporary scope that serves as an anonymous subprogram to collect
-      --  otherwise useless temporaries and itypes.
-
-      if ASIS_Mode then
-         declare
-            Typ : constant Entity_Id := Make_Temporary (Loc, 'S');
-
-         begin
-            if Nkind (Spec) = N_Access_Function_Definition then
-               Set_Ekind (Typ, E_Function);
-            else
-               Set_Ekind (Typ, E_Procedure);
-            end if;
-
-            Set_Parent (Typ, N);
-            Set_Scope  (Typ, Current_Scope);
-            Push_Scope (Typ);
-
-            --  Nothing to do if procedure is parameterless
-
-            if Present (Parameter_Specifications (Spec)) then
-               Process_Formals (Parameter_Specifications (Spec), Spec);
-            end if;
-
-            if Nkind (Spec) = N_Access_Function_Definition then
-               declare
-                  Def : constant Node_Id := Result_Definition (Spec);
-
-               begin
-                  --  The result might itself be an anonymous access type, so
-                  --  have to recurse.
-
-                  if Nkind (Def) = N_Access_Definition then
-                     if Present (Access_To_Subprogram_Definition (Def)) then
-                        Set_Etype
-                          (Def,
-                           Replace_Anonymous_Access_To_Protected_Subprogram
-                            (Spec));
-                     else
-                        Find_Type (Subtype_Mark (Def));
-                     end if;
-
-                  else
-                     Find_Type (Def);
-                  end if;
-               end;
-            end if;
-
-            End_Scope;
-         end;
-      end if;
 
       --  Insert the new declaration in the nearest enclosing scope. If the
       --  parent is a body and N is its return type, the declaration belongs
@@ -9628,7 +9541,7 @@ package body Sem_Ch3 is
             Set_Stored_Constraint
               (Derived_Type, Expand_To_Stored_Constraint (Parent_Type, Discs));
 
-            Replace_Components (Derived_Type, New_Decl);
+            Replace_Discriminants (Derived_Type, New_Decl);
          end if;
 
          --  Insert the new derived type declaration
@@ -9649,10 +9562,6 @@ package body Sem_Ch3 is
 
       elsif not Private_Extension then
          Expand_Record_Extension (Derived_Type, Type_Def);
-
-         --  Note : previously in ASIS mode we set the Parent_Subtype of the
-         --  derived type to propagate some semantic information. This led
-         --  to other ASIS failures and has been removed.
 
          --  Ada 2005 (AI-251): Addition of the Tag corresponding to all the
          --  implemented interfaces if we are in expansion mode
@@ -11485,6 +11394,7 @@ package body Sem_Ch3 is
 
             --  If an access to object, preserve entity of designated type,
             --  for ASIS use, before rewriting the component definition.
+            --  Is this still needed???
 
             else
                declare
@@ -11493,16 +11403,16 @@ package body Sem_Ch3 is
                begin
                   Desig := Entity (Subtype_Indication (Type_Def));
 
-                  --  If the access definition is to the current  record,
-                  --  the visible entity at this point is an  incomplete
-                  --  type. Retrieve the full view to simplify  ASIS queries
+                  --  If the access definition is to the current record,
+                  --  the visible entity at this point is an incomplete
+                  --  type. Retrieve the full view to simplify ASIS queries
 
                   if Ekind (Desig) = E_Incomplete_Type then
                      Desig := Full_View (Desig);
                   end if;
 
                   Set_Entity
-                    (Subtype_Mark (Access_Definition  (Comp_Def)), Desig);
+                    (Subtype_Mark (Access_Definition (Comp_Def)), Desig);
                end;
             end if;
 
@@ -17840,19 +17750,6 @@ package body Sem_Ch3 is
 
       else
          T := Process_Subtype (Obj_Def, Related_Nod);
-
-         --  If expansion is disabled an object definition that is an aggregate
-         --  will not get expanded and may lead to scoping problems in the back
-         --  end, if the object is referenced in an inner scope. In that case
-         --  create an itype reference for the object definition now. This
-         --  may be redundant in some cases, but harmless.
-
-         if Is_Itype (T)
-           and then Nkind (Related_Nod) = N_Object_Declaration
-           and then ASIS_Mode
-         then
-            Build_Itype_Reference (T, Related_Nod);
-         end if;
       end if;
 
       return T;
@@ -22292,11 +22189,11 @@ package body Sem_Ch3 is
       end if;
    end Record_Type_Definition;
 
-   ------------------------
-   -- Replace_Components --
-   ------------------------
+   ---------------------------
+   -- Replace_Discriminants --
+   ---------------------------
 
-   procedure Replace_Components (Typ : Entity_Id; Decl : Node_Id) is
+   procedure Replace_Discriminants (Typ : Entity_Id; Decl : Node_Id) is
       function Process (N : Node_Id) return Traverse_Result;
 
       -------------
@@ -22310,7 +22207,9 @@ package body Sem_Ch3 is
          if Nkind (N) = N_Discriminant_Specification then
             Comp := First_Discriminant (Typ);
             while Present (Comp) loop
-               if Chars (Comp) = Chars (Defining_Identifier (N)) then
+               if Original_Record_Component (Comp) = Defining_Identifier (N)
+                 or else Chars (Comp) = Chars (Defining_Identifier (N))
+               then
                   Set_Defining_Identifier (N, Comp);
                   exit;
                end if;
@@ -22321,23 +22220,25 @@ package body Sem_Ch3 is
          elsif Nkind (N) = N_Variant_Part then
             Comp := First_Discriminant (Typ);
             while Present (Comp) loop
-               if Chars (Comp) = Chars (Name (N)) then
-                  Set_Entity (Name (N), Comp);
+               if Original_Record_Component (Comp) = Entity (Name (N))
+                 or else Chars (Comp) = Chars (Name (N))
+               then
+                  --  Make sure to preserve the type coming from the parent on
+                  --  the Name, even if the subtype of the discriminant can be
+                  --  constrained, so that discrete choices inherited from the
+                  --  parent in the variant part are not flagged as violating
+                  --  the constraints of the subtype.
+
+                  declare
+                     Typ : constant Entity_Id := Etype (Name (N));
+                  begin
+                     Rewrite (Name (N), New_Occurrence_Of (Comp, Sloc (N)));
+                     Set_Etype (Name (N), Typ);
+                  end;
                   exit;
                end if;
 
                Next_Discriminant (Comp);
-            end loop;
-
-         elsif Nkind (N) = N_Component_Declaration then
-            Comp := First_Component (Typ);
-            while Present (Comp) loop
-               if Chars (Comp) = Chars (Defining_Identifier (N)) then
-                  Set_Defining_Identifier (N, Comp);
-                  exit;
-               end if;
-
-               Next_Component (Comp);
             end loop;
          end if;
 
@@ -22346,11 +22247,11 @@ package body Sem_Ch3 is
 
       procedure Replace is new Traverse_Proc (Process);
 
-   --  Start of processing for Replace_Components
+   --  Start of processing for Replace_Discriminants
 
    begin
       Replace (Decl);
-   end Replace_Components;
+   end Replace_Discriminants;
 
    -------------------------------
    -- Set_Completion_Referenced --
@@ -22549,18 +22450,10 @@ package body Sem_Ch3 is
               ("non-static expression used for integer type bound!", Expr);
             Errs := True;
 
-         --  The bounds are folded into literals, and we set their type to be
-         --  universal, to avoid typing difficulties: we cannot set the type
-         --  of the literal to the new type, because this would be a forward
-         --  reference for the back end,  and if the original type is user-
-         --  defined this can lead to spurious semantic errors (e.g. 2928-003).
+         --  Otherwise the bounds are folded into literals
 
-         else
-            if Is_Entity_Name (Expr) then
-               Fold_Uint (Expr, Expr_Value (Expr), True);
-            end if;
-
-            Set_Etype (Expr, Universal_Integer);
+         elsif Is_Entity_Name (Expr) then
+            Fold_Uint (Expr, Expr_Value (Expr), True);
          end if;
       end Check_Bound;
 
@@ -22582,6 +22475,7 @@ package body Sem_Ch3 is
       if Hi = Error or else Lo = Error then
          Base_Typ := Any_Integer;
          Set_Error_Posted (T, True);
+         Errs := True;
 
       --  Here both bounds are OK expressions
 
@@ -22624,6 +22518,17 @@ package body Sem_Ch3 is
             Hi := Type_High_Bound (Standard_Long_Long_Integer);
             Lo := Type_Low_Bound (Standard_Long_Long_Integer);
          end if;
+      end if;
+
+      --  Set the type of the bounds to the implicit base: we cannot set it to
+      --  the new type, because this would be a forward reference for the code
+      --  generator and, if the original type is user-defined, this could even
+      --  lead to spurious semantic errors. Furthermore we do not set it to be
+      --  universal, because this could make it much larger than needed here.
+
+      if not Errs then
+         Set_Etype (Lo, Implicit_Base);
+         Set_Etype (Hi, Implicit_Base);
       end if;
 
       --  Complete both implicit base and declared first subtype entities. The

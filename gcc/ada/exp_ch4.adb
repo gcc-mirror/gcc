@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2814,7 +2814,7 @@ package body Exp_Ch4 is
       --  to just do a Copy_Node to get an appropriate copy. The extra zeroth
       --  entry always is set to zero. The length is of type Artyp.
 
-      Low_Bound : Node_Id;
+      Low_Bound : Node_Id := Empty;
       --  A tree node representing the low bound of the result (of type Ityp).
       --  This is either an integer literal node, or an identifier reference to
       --  a constant entity initialized to the appropriate value.
@@ -2834,7 +2834,7 @@ package body Exp_Ch4 is
       High_Bound : Node_Id := Empty;
       --  A tree node representing the high bound of the result (of type Ityp)
 
-      Result : Node_Id;
+      Result : Node_Id := Empty;
       --  Result of the concatenation (of type Ityp)
 
       Actions : constant List_Id := New_List;
@@ -3365,6 +3365,8 @@ package body Exp_Ch4 is
          end;
       end if;
 
+      pragma Assert (Present (Low_Bound));
+
       --  Now we can safely compute the upper bound, normally
       --  Low_Bound + Length - 1.
 
@@ -3621,6 +3623,7 @@ package body Exp_Ch4 is
       Result := New_Occurrence_Of (Ent, Loc);
 
    <<Done>>
+      pragma Assert (Present (Result));
       Rewrite (Cnode, Result);
       Analyze_And_Resolve (Cnode, Atyp);
 
@@ -4369,8 +4372,7 @@ package body Exp_Ch4 is
          declare
             Idx : Node_Id := First_Index (E);
             Len : Node_Id;
-            Res : Node_Id;
-            pragma Warnings (Off, Res);
+            Res : Node_Id := Empty;
 
          begin
             for J in 1 .. Number_Dimensions (E) loop
@@ -4443,6 +4445,7 @@ package body Exp_Ch4 is
                   Res := Len;
 
                else
+                  pragma Assert (Present (Res));
                   Res :=
                     Make_Op_Multiply (Loc,
                       Left_Opnd  => Res,
@@ -7429,16 +7432,10 @@ package body Exp_Ch4 is
 
       if Is_Fixed_Point_Type (Typ) then
 
-         --  No special processing if Treat_Fixed_As_Integer is set, since
-         --  from a semantic point of view such operations are simply integer
-         --  operations and will be treated that way.
-
-         if not Treat_Fixed_As_Integer (N) then
-            if Is_Integer_Type (Rtyp) then
-               Expand_Divide_Fixed_By_Integer_Giving_Fixed (N);
-            else
-               Expand_Divide_Fixed_By_Fixed_Giving_Fixed (N);
-            end if;
+         if Is_Integer_Type (Rtyp) then
+            Expand_Divide_Fixed_By_Integer_Giving_Fixed (N);
+         else
+            Expand_Divide_Fixed_By_Fixed_Giving_Fixed (N);
          end if;
 
          --  Deal with divide-by-zero check if back end cannot handle them
@@ -7462,12 +7459,9 @@ package body Exp_Ch4 is
                   Reason  => CE_Divide_By_Zero));
          end if;
 
-      --  Other cases of division of fixed-point operands. Again we exclude the
-      --  case where Treat_Fixed_As_Integer is set.
+      --  Other cases of division of fixed-point operands
 
-      elsif (Is_Fixed_Point_Type (Ltyp) or else Is_Fixed_Point_Type (Rtyp))
-        and then not Treat_Fixed_As_Integer (N)
-      then
+      elsif Is_Fixed_Point_Type (Ltyp) or else Is_Fixed_Point_Type (Rtyp) then
          if Is_Integer_Type (Typ) then
             Expand_Divide_Fixed_By_Fixed_Giving_Integer (N);
          else
@@ -9571,35 +9565,25 @@ package body Exp_Ch4 is
 
       if Is_Fixed_Point_Type (Typ) then
 
-         --  No special processing if Treat_Fixed_As_Integer is set, since from
-         --  a semantic point of view such operations are simply integer
-         --  operations and will be treated that way.
+         --  Case of fixed * integer => fixed
 
-         if not Treat_Fixed_As_Integer (N) then
+         if Is_Integer_Type (Rtyp) then
+            Expand_Multiply_Fixed_By_Integer_Giving_Fixed (N);
 
-            --  Case of fixed * integer => fixed
+         --  Case of integer * fixed => fixed
 
-            if Is_Integer_Type (Rtyp) then
-               Expand_Multiply_Fixed_By_Integer_Giving_Fixed (N);
+         elsif Is_Integer_Type (Ltyp) then
+            Expand_Multiply_Integer_By_Fixed_Giving_Fixed (N);
 
-            --  Case of integer * fixed => fixed
+         --  Case of fixed * fixed => fixed
 
-            elsif Is_Integer_Type (Ltyp) then
-               Expand_Multiply_Integer_By_Fixed_Giving_Fixed (N);
-
-            --  Case of fixed * fixed => fixed
-
-            else
-               Expand_Multiply_Fixed_By_Fixed_Giving_Fixed (N);
-            end if;
+         else
+            Expand_Multiply_Fixed_By_Fixed_Giving_Fixed (N);
          end if;
 
-      --  Other cases of multiplication of fixed-point operands. Again we
-      --  exclude the cases where Treat_Fixed_As_Integer flag is set.
+      --  Other cases of multiplication of fixed-point operands
 
-      elsif (Is_Fixed_Point_Type (Ltyp) or else Is_Fixed_Point_Type (Rtyp))
-        and then not Treat_Fixed_As_Integer (N)
-      then
+      elsif Is_Fixed_Point_Type (Ltyp) or else Is_Fixed_Point_Type (Rtyp) then
          if Is_Integer_Type (Typ) then
             Expand_Multiply_Fixed_By_Fixed_Giving_Integer (N);
          else
@@ -11160,6 +11144,51 @@ package body Exp_Ch4 is
          Expr : Node_Id;
          Ityp : Entity_Id;
 
+         procedure Generate_Temporary;
+         --  Generate a temporary to facilitate in the C backend the code
+         --  generation of the unchecked conversion since the size of the
+         --  source type may differ from the size of the target type.
+
+         ------------------------
+         -- Generate_Temporary --
+         ------------------------
+
+         procedure Generate_Temporary is
+         begin
+            if Esize (Etype (Expr)) < Esize (Etype (Ityp)) then
+               declare
+                  Exp_Type : constant Entity_Id := Ityp;
+                  Def_Id   : constant Entity_Id :=
+                               Make_Temporary (Loc, 'R', Expr);
+                  E        : Node_Id;
+                  Res      : Node_Id;
+
+               begin
+                  Set_Is_Internal (Def_Id);
+                  Set_Etype (Def_Id, Exp_Type);
+                  Res := New_Occurrence_Of (Def_Id, Loc);
+
+                  E :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Def_Id,
+                      Object_Definition   => New_Occurrence_Of
+                                               (Exp_Type, Loc),
+                      Constant_Present    => True,
+                      Expression          => Relocate_Node (Expr));
+
+                  Set_Assignment_OK (E);
+                  Insert_Action (Expr, E);
+
+                  Set_Assignment_OK (Res, Assignment_OK (Expr));
+
+                  Rewrite (Expr, Res);
+                  Analyze_And_Resolve (Expr, Exp_Type);
+               end;
+            end if;
+         end Generate_Temporary;
+
+      --  Start of processing for Discrete_Range_Check
+
       begin
          --  Nothing to do if conversion was rewritten
 
@@ -11194,6 +11223,13 @@ package body Exp_Ch4 is
                Ityp := Standard_Long_Long_Integer;
             else
                Ityp := Standard_Integer;
+            end if;
+
+            --  Generate a temporary with the large type to facilitate in the C
+            --  backend the code generation for the unchecked conversion.
+
+            if Modify_Tree_For_C then
+               Generate_Temporary;
             end if;
 
             Set_Do_Range_Check (Expr, False);

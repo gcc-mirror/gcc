@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -289,6 +289,8 @@ package body System.Img_Real is
             --  What we are looking for is a power of ten to divide X by
             --  so that the result lies within the required range.
 
+            pragma Assert (Powten (Maxpow) /= 0.0);
+
             loop
                XP := X / Powten (Maxpow);
                exit when XP < Powten (S) or else Scale > Maxscaling;
@@ -490,6 +492,9 @@ package body System.Img_Real is
          --  an infinite value, so we print Inf.
 
          if V > Long_Long_Float'Last then
+            pragma Annotate
+              (CodePeer, Intentional, "test always true", "test for infinity");
+
             Set ('+');
             Set ('I');
             Set ('n');

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -8064,7 +8064,7 @@ package body Checks is
       --  Do not generate an elaboration check in compilation modes where
       --  expansion is not desirable.
 
-      if ASIS_Mode or GNATprove_Mode then
+      if GNATprove_Mode then
          return;
 
       --  Do not generate an elaboration check if all checks have been
@@ -8740,8 +8740,7 @@ package body Checks is
 
             else
                declare
-                  Rtype    : Entity_Id;
-                  pragma Warnings (Off, Rtype);
+                  Rtype    : Entity_Id := Empty;
                   New_Alts : List_Id;
                   New_Exp  : Node_Id;
 
@@ -8771,6 +8770,7 @@ package body Checks is
                       Expression   => Expression (N),
                       Alternatives => New_Alts));
 
+                  pragma Assert (Present (Rtype));
                   Reanalyze (Rtype, Suppress => True);
                end;
             end if;

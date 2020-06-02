@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -935,16 +935,8 @@ package body Sem_Ch4 is
 
       if Present (Op_Id) then
          if Ekind (Op_Id) = E_Operator then
-
-            if Nkind_In (N, N_Op_Divide, N_Op_Mod, N_Op_Multiply, N_Op_Rem)
-              and then Treat_Fixed_As_Integer (N)
-            then
-               null;
-            else
-               Set_Etype (N, Any_Type);
-               Find_Arithmetic_Types (L, R, Op_Id, N);
-            end if;
-
+            Set_Etype (N, Any_Type);
+            Find_Arithmetic_Types (L, R, Op_Id, N);
          else
             Set_Etype (N, Any_Type);
             Add_One_Interp (N, Op_Id, Etype (Op_Id));
@@ -2829,18 +2821,6 @@ package body Sem_Ch4 is
            and then Is_Overloadable (Entity (Selector_Name (P)))
          then
             Process_Function_Call;
-
-         --  In ASIS mode within a generic, a prefixed call is analyzed and
-         --  partially rewritten but the original indexed component has not
-         --  yet been rewritten as a call. Perform the replacement now.
-
-         elsif Nkind (P) = N_Selected_Component
-           and then Nkind (Parent (P)) = N_Function_Call
-           and then ASIS_Mode
-         then
-            Rewrite (N, Parent (P));
-            Analyze (N);
-
          else
             --  Indexed component, slice, or a call to a member of a family
             --  entry, which will be converted to an entry call later.
@@ -4197,6 +4177,7 @@ package body Sem_Ch4 is
                --  reflect the right kind. This is needed for proper ASIS
                --  navigation. If expansion is enabled, the transformation is
                --  performed when the expression is rewritten as a loop.
+               --  Is this still needed???
 
                Set_Iterator_Specification (N,
                  New_Copy_Tree (Iterator_Specification (Parent (Loop_Par))));
@@ -5316,6 +5297,7 @@ package body Sem_Ch4 is
                --  In ASIS mode the generic parent type may be absent. Examine
                --  the parent type directly for a component that may have been
                --  visible in a parent generic unit.
+               --  ??? Revisit now that ASIS mode is gone
 
                elsif Is_Derived_Type (Prefix_Type) then
                   Par := Etype (Prefix_Type);
@@ -5915,25 +5897,15 @@ package body Sem_Ch4 is
          if Is_Fixed_Point_Type (T1)
            and then (Is_Fixed_Point_Type (T2) or else T2 = Universal_Real)
          then
-            --  If Treat_Fixed_As_Integer is set then the Etype is already set
-            --  and no further processing is required (this is the case of an
-            --  operator constructed by Exp_Fixd for a fixed point operation)
-            --  Otherwise add one interpretation with universal fixed result
-            --  If the operator is given in functional notation, it comes
-            --  from source and Fixed_As_Integer cannot apply.
+            --  Add one interpretation with universal fixed result
 
-            if (Nkind (N) not in N_Op
-                 or else not Treat_Fixed_As_Integer (N))
-              and then
-                (not Has_Fixed_Op (T1, Op_Id)
-                  or else Nkind (Parent (N)) = N_Type_Conversion)
+            if not Has_Fixed_Op (T1, Op_Id)
+              or else Nkind (Parent (N)) = N_Type_Conversion
             then
                Add_One_Interp (N, Op_Id, Universal_Fixed);
             end if;
 
          elsif Is_Fixed_Point_Type (T2)
-           and then (Nkind (N) not in N_Op
-                      or else not Treat_Fixed_As_Integer (N))
            and then T1 = Universal_Real
            and then
              (not Has_Fixed_Op (T1, Op_Id)
@@ -5984,10 +5956,6 @@ package body Sem_Ch4 is
          end if;
 
       elsif Op_Name = Name_Op_Mod or else Op_Name = Name_Op_Rem then
-
-         --  Note: The fixed-point operands case with Treat_Fixed_As_Integer
-         --  set does not require any special processing, since the Etype is
-         --  already set (case of operation constructed by Exp_Fixed).
 
          if Is_Integer_Type (T1)
            and then (Covers (T1 => T1, T2 => T2)
@@ -6725,8 +6693,8 @@ package body Sem_Ch4 is
          --  in Standard to be chosen, and the "/=" will be rewritten as a
          --  negation of "=" (see the end of Analyze_Equality_Op). This ensures
          --  that rewriting happens during analysis rather than being
-         --  delayed until expansion (this is needed for ASIS, which only sees
-         --  the unexpanded tree). Note that if the node is N_Op_Ne, but Op_Id
+         --  delayed until expansion (is this still needed now that ASIS mode
+         --  is gone???). Note that if the node is N_Op_Ne, but Op_Id
          --  is Name_Op_Eq then we still proceed with the interpretation,
          --  because that indicates the potential rewriting case where the
          --  interpretation to consider is actually "=" and the node may be
@@ -8290,8 +8258,8 @@ package body Sem_Ch4 is
       --  the Controlled types. The code below is motivated by containers that
       --  are derived from other types with a Reference aspect.
       --  Note as well that we need to examine the base type, given that
-      --  the container object may be a constrained subtype or itype which
-      --  does not have an explicit declaration,
+      --  the container object may be a constrained subtype or itype that
+      --  does not have an explicit declaration.
 
       elsif Is_Derived_Type (C_Type)
         and then Etype (First_Formal (Entity (Func_Name))) /= Pref_Typ
@@ -8888,14 +8856,6 @@ package body Sem_Ch4 is
          Actuals : List_Id;
 
       begin
-         --  Obj may already have been rewritten if it involves an implicit
-         --  dereference (e.g. if it is an access to a limited view). Preserve
-         --  a link to the original node for ASIS use.
-
-         if not Comes_From_Source (Obj) then
-            Set_Original_Node (Dummy, Original_Node (Obj));
-         end if;
-
          --  Common case covering 1) Call to a procedure and 2) Call to a
          --  function that has some additional actuals.
 
@@ -9480,7 +9440,7 @@ package body Sem_Ch4 is
             Type_Scope : constant Entity_Id := Scope (T);
             Op_List    : Elist_Id := Primitive_Operations (T);
          begin
-            if Ekind_In (Type_Scope, E_Package, E_Generic_Package)
+            if Is_Package_Or_Generic_Package (Type_Scope)
               and then ((In_Package_Body (Type_Scope)
               and then In_Open_Scopes (Type_Scope)) or else In_Instance_Body)
             then

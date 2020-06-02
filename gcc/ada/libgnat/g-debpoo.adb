@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1420,6 +1420,7 @@ package body GNAT.Debug_Pools is
 
    begin
       Valid := Is_Valid (Storage_Address);
+      Size_In_Storage_Elements := Storage_Count'First;
 
       if Is_Valid (Storage_Address) then
          declare

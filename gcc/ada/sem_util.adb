@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1899,12 +1899,6 @@ package body Sem_Util is
       if Present (Elaboration_Entity (Spec_Id)) then
          return;
 
-      --  Ignore in ASIS mode, elaboration entity is not in source and plays
-      --  no role in analysis.
-
-      elsif ASIS_Mode then
-         return;
-
       --  Do not generate an elaboration entity in GNATprove move because the
       --  elaboration counter is a form of expansion.
 
@@ -2759,7 +2753,7 @@ package body Sem_Util is
                   declare
                      Count_Components   : Uint := Uint_0;
                      Num_Components     : Uint;
-                     Others_Assoc       : Node_Id;
+                     Others_Assoc       : Node_Id := Empty;
                      Others_Choice      : Node_Id := Empty;
                      Others_Box_Present : Boolean := False;
 
@@ -2843,6 +2837,8 @@ package body Sem_Util is
                            --  we analyze it silently to have available the
                            --  minimum decoration required to collect the
                            --  identifiers.
+
+                           pragma Assert (Present (Others_Assoc));
 
                            if not Expander_Active then
                               Comp_Expr := Expression (Others_Assoc);
@@ -3396,18 +3392,12 @@ package body Sem_Util is
            or else Ekind_In (Context, E_Block, E_Task_Type)
          then
             return;
-
-         --  When examining a package body, use the entity of the spec as it
-         --  carries the abstract state declarations.
-
-         elsif Ekind (Context) = E_Package_Body then
-            Context := Spec_Entity (Context);
          end if;
 
          --  Stop the traversal when a package subject to a null abstract state
          --  has been found.
 
-         if Ekind_In (Context, E_Generic_Package, E_Package)
+         if Is_Package_Or_Generic_Package (Context)
            and then Has_Null_Abstract_State (Context)
          then
             exit;
@@ -10185,6 +10175,7 @@ package body Sem_Util is
    begin
       R := N;
       while Is_Entity_Name (R)
+        and then Is_Object (Entity (R))
         and then Present (Renamed_Object (Entity (R)))
       loop
          R := Renamed_Object (Entity (R));
@@ -12978,7 +12969,7 @@ package body Sem_Util is
 
       begin
          if Present (Pkg)
-           and then Ekind_In (Pkg, E_Generic_Package, E_Package)
+           and then Is_Package_Or_Generic_Package (Pkg)
          then
             while Nkind (Pkg_Decl) /= N_Package_Specification loop
                Pkg_Decl := Parent (Pkg_Decl);
@@ -13269,7 +13260,7 @@ package body Sem_Util is
    procedure Insert_Explicit_Dereference (N : Node_Id) is
       New_Prefix : constant Node_Id := Relocate_Node (N);
       Ent        : Entity_Id := Empty;
-      Pref       : Node_Id;
+      Pref       : Node_Id := Empty;
       I          : Interp_Index;
       It         : Interp;
       T          : Entity_Id;
@@ -20124,12 +20115,6 @@ package body Sem_Util is
       if Legacy_Elaboration_Checks then
          return False;
 
-      --  No marker needs to be created for ASIS because ABE diagnostics and
-      --  checks are not performed in this mode.
-
-      elsif ASIS_Mode then
-         return False;
-
       --  No marker needs to be created when the reference is preanalyzed
       --  because the marker will be inserted in the wrong place.
 
@@ -24373,10 +24358,63 @@ package body Sem_Util is
    function Requires_Transient_Scope (Id : Entity_Id) return Boolean is
       Old_Result : constant Boolean := Old_Requires_Transient_Scope (Id);
 
+      procedure Ensure_Minimum_Decoration (Typ : Entity_Id);
+      --  If Typ is not frozen then add to Typ the minimum decoration required
+      --  by Requires_Transient_Scope to reliably provide its functionality;
+      --  otherwise no action is performed.
+
+      -------------------------------
+      -- Ensure_Minimum_Decoration --
+      -------------------------------
+
+      procedure Ensure_Minimum_Decoration (Typ : Entity_Id) is
+      begin
+         --  Do not set Has_Controlled_Component on a class-wide equivalent
+         --  type. See Make_CW_Equivalent_Type.
+
+         if Present (Typ)
+           and then not Is_Frozen (Typ)
+           and then (Is_Record_Type (Typ)
+                       or else Is_Concurrent_Type (Typ)
+                       or else Is_Incomplete_Or_Private_Type (Typ))
+           and then not Is_Class_Wide_Equivalent_Type (Typ)
+         then
+            declare
+               Comp : Entity_Id;
+
+            begin
+               Comp := First_Component (Typ);
+               while Present (Comp) loop
+                  if Has_Controlled_Component (Etype (Comp))
+                    or else
+                      (Chars (Comp) /= Name_uParent
+                         and then Is_Controlled (Etype (Comp)))
+                    or else
+                      (Is_Protected_Type (Etype (Comp))
+                         and then
+                           Present (Corresponding_Record_Type (Etype (Comp)))
+                         and then
+                           Has_Controlled_Component
+                             (Corresponding_Record_Type (Etype (Comp))))
+                  then
+                     Set_Has_Controlled_Component (Typ);
+                     exit;
+                  end if;
+
+                  Next_Component (Comp);
+               end loop;
+            end;
+         end if;
+      end Ensure_Minimum_Decoration;
+
+   --  Start of processing for Requires_Transient_Scope
+
    begin
       if Debug_Flag_QQ then
          return Old_Result;
       end if;
+
+      Ensure_Minimum_Decoration (Id);
 
       declare
          New_Result : constant Boolean := New_Requires_Transient_Scope (Id);
@@ -25283,7 +25321,7 @@ package body Sem_Util is
               or else
                 (Present (Scope (Val))
                   and then Is_Implementation_Defined (Scope (Val))))
-           and then not (Ekind_In (Val, E_Package, E_Generic_Package)
+           and then not (Is_Package_Or_Generic_Package (Val)
                           and then Is_Library_Level_Entity (Val))
          then
             Check_Restriction (No_Implementation_Identifiers, Post_Node);

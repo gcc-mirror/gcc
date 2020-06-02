@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-2017, Florida State University            --
---                     Copyright (C) 1995-2019, AdaCore                     --
+--                     Copyright (C) 1995-2020, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -102,6 +102,8 @@ begin
    --  not been already set. If tasking is present, Timed_Delay has already set
    --  this soft link, or this will be overridden during the elaboration of
    --  System.Tasking.Initialization
+
+   pragma Annotate (CodePeer, Modified, SSL.Timed_Delay);
 
    if SSL.Timed_Delay = null then
       SSL.Timed_Delay := Timed_Delay_NT'Access;

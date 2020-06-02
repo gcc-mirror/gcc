@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2031,11 +2031,9 @@ package body Sem_Prag is
 
                --  Do not normalize a clause if errors were detected (count
                --  of Serious_Errors has increased) because the inputs and/or
-               --  outputs may denote illegal items. Normalization is disabled
-               --  in ASIS mode as it alters the tree by introducing new nodes
-               --  similar to expansion.
+               --  outputs may denote illegal items.
 
-               if Serious_Errors_Detected = Errors and then not ASIS_Mode then
+               if Serious_Errors_Detected = Errors then
                   Normalize_Clause (Clause);
                end if;
 
@@ -2897,7 +2895,7 @@ package body Sem_Prag is
       --  Verify the legality of a single initialization item followed by a
       --  list of input items.
 
-      procedure Collect_States_And_Objects;
+      procedure Collect_States_And_Objects (Pack_Decl : Node_Id);
       --  Inspect the visible declarations of the related package and gather
       --  the entities of all abstract states and objects in States_And_Objs.
 
@@ -3166,15 +3164,21 @@ package body Sem_Prag is
       -- Collect_States_And_Objects --
       --------------------------------
 
-      procedure Collect_States_And_Objects is
-         Pack_Spec : constant Node_Id := Specification (Pack_Decl);
-         Decl      : Node_Id;
+      procedure Collect_States_And_Objects (Pack_Decl : Node_Id) is
+         Pack_Spec  : constant Node_Id := Specification (Pack_Decl);
+         Pack_Id    : constant Entity_Id := Defining_Entity (Pack_Decl);
+         Decl       : Node_Id;
+         State_Elmt : Elmt_Id;
 
       begin
          --  Collect the abstract states defined in the package (if any)
 
-         if Present (Abstract_States (Pack_Id)) then
-            States_And_Objs := New_Copy_Elist (Abstract_States (Pack_Id));
+         if Has_Non_Null_Abstract_State (Pack_Id) then
+            State_Elmt := First_Elmt (Abstract_States (Pack_Id));
+            while Present (State_Elmt) loop
+               Append_New_Elmt (Node (State_Elmt), States_And_Objs);
+               Next_Elmt (State_Elmt);
+            end loop;
          end if;
 
          --  Collect all objects that appear in the visible declarations of the
@@ -3188,6 +3192,9 @@ package body Sem_Prag is
                                           N_Object_Renaming_Declaration)
                then
                   Append_New_Elmt (Defining_Entity (Decl), States_And_Objs);
+
+               elsif Nkind (Decl) = N_Package_Declaration then
+                  Collect_States_And_Objects (Decl);
 
                elsif Is_Single_Concurrent_Type_Declaration (Decl) then
                   Append_New_Elmt
@@ -3228,7 +3235,7 @@ package body Sem_Prag is
 
       --  Initialize the various lists used during analysis
 
-      Collect_States_And_Objects;
+      Collect_States_And_Objects (Pack_Decl);
 
       if Present (Expressions (Inits)) then
          Init := First (Expressions (Inits));
@@ -9037,7 +9044,8 @@ package body Sem_Prag is
                               Set_Mechanism_Value
                                 (Formal, Expression (Massoc));
 
-                              --  Set entity on identifier (needed by ASIS)
+                              --  Set entity on identifier for proper tree
+                              --  structure.
 
                               Set_Entity (Choice, Formal);
 
@@ -9955,15 +9963,6 @@ package body Sem_Prag is
                   then
                      Error_Msg_N
                        ("Inline cannot apply to a formal subprogram", N);
-
-                  --  If Subp is a renaming, it is the renamed entity that
-                  --  will appear in any call, and be inlined. However, for
-                  --  ASIS uses it is convenient to indicate that the renaming
-                  --  itself is an inlined subprogram, so that some gnatcheck
-                  --  rules can be applied in the absence of expansion.
-
-                  elsif Nkind (Decl) = N_Subprogram_Renaming_Declaration then
-                     Set_Inline_Flags (Subp);
                   end if;
                end if;
 
@@ -13534,8 +13533,9 @@ package body Sem_Prag is
             if Arg_Count > 1 then
                Check_Optional_Identifier (Arg2, Name_Message);
 
-               --  Provide semantic annnotations for optional argument, for
+               --  Provide semantic annotations for optional argument, for
                --  ASIS use, before rewriting.
+               --  Is this still needed???
 
                Preanalyze_And_Resolve (Expression (Arg2), Standard_String);
                Append_To (New_Args, New_Copy_Tree (Arg2));
@@ -17572,15 +17572,12 @@ package body Sem_Prag is
 
                   if Present (CS) then
 
-                     --  If we have multiple instances, concatenate them, but
-                     --  not in ASIS, where we want the original tree.
+                     --  If we have multiple instances, concatenate them.
 
-                     if not ASIS_Mode then
-                        Start_String (Strval (CS));
-                        Store_String_Char (' ');
-                        Store_String_Chars (Strval (Str));
-                        Set_Strval (CS, End_String);
-                     end if;
+                     Start_String (Strval (CS));
+                     Store_String_Char (' ');
+                     Store_String_Chars (Strval (Str));
+                     Set_Strval (CS, End_String);
 
                   else
                      Set_Ident_String (Current_Sem_Unit, Str);
@@ -20486,8 +20483,7 @@ package body Sem_Prag is
 
                if Present (Ename) then
 
-                  --  If entity name matches, we are fine. Save entity in
-                  --  pragma argument, for ASIS use.
+                  --  If entity name matches, we are fine.
 
                   if Chars (Ename) = Chars (Ent) then
                      Set_Entity (Ename, Ent);
@@ -22167,7 +22163,7 @@ package body Sem_Prag is
 
                --  Now declare the operators. We do this during analysis rather
                --  than expansion, since we want the operators available if we
-               --  are operating in -gnatc or ASIS mode.
+               --  are operating in -gnatc mode.
 
                Declare_Shift_Operator (Name_Rotate_Left);
                Declare_Shift_Operator (Name_Rotate_Right);
@@ -24812,10 +24808,10 @@ package body Sem_Prag is
 
             Add_Contract_Item (N, Subp_Id);
 
-            --  Preanalyze the original aspect argument "Name" for ASIS or for
-            --  a generic subprogram to properly capture global references.
+            --  Preanalyze the original aspect argument "Name" for a generic
+            --  subprogram to properly capture global references.
 
-            if ASIS_Mode or else Is_Generic_Subprogram (Subp_Id) then
+            if Is_Generic_Subprogram (Subp_Id) then
                Asp_Arg := Test_Case_Arg (N, Name_Name, From_Aspect => True);
 
                if Present (Asp_Arg) then
@@ -25670,7 +25666,7 @@ package body Sem_Prag is
                  and then Nam_In (Chars (Argx), Name_Gnat, Name_Gnatprove)
                then
                   if Chars (Argx) = Name_Gnat then
-                     if CodePeer_Mode or GNATprove_Mode or ASIS_Mode then
+                     if CodePeer_Mode or GNATprove_Mode then
                         Rewrite (N, Make_Null_Statement (Loc));
                         Analyze (N);
                         raise Pragma_Exit;
@@ -27291,13 +27287,6 @@ package body Sem_Prag is
                Spec_Outputs => Spec_Outputs,
                Body_Inputs  => Body_Inputs,
                Body_Outputs => Body_Outputs);
-         end if;
-
-         --  Matching is disabled in ASIS because clauses are not normalized as
-         --  this is a tree altering activity similar to expansion.
-
-         if ASIS_Mode then
-            goto Leave;
          end if;
 
          --  Multiple dependency clauses appear as component associations of an
@@ -29352,10 +29341,10 @@ package body Sem_Prag is
          Arg : Node_Id;
 
       begin
-         --  Preanalyze the original aspect argument for ASIS or for a generic
-         --  subprogram to properly capture global references.
+         --  Preanalyze the original aspect argument for a generic subprogram
+         --  to properly capture global references.
 
-         if ASIS_Mode or else Is_Generic_Subprogram (Spec_Id) then
+         if Is_Generic_Subprogram (Spec_Id) then
             Arg :=
               Test_Case_Arg
                 (Prag        => N,
@@ -30079,7 +30068,7 @@ package body Sem_Prag is
       --  explicit contract.
 
       Prags        : constant Node_Id := Contract (Parent_Subp);
-      In_Spec_Expr : Boolean;
+      In_Spec_Expr : Boolean := In_Spec_Expression;
       Installed    : Boolean;
       Prag         : Node_Id;
       New_Prag     : Node_Id;
@@ -30883,14 +30872,13 @@ package body Sem_Prag is
       Args : constant List_Id := Pragma_Argument_Associations (Prag);
 
    begin
-      --  Use the expression of the original aspect when compiling for ASIS or
-      --  when analyzing the template of a generic unit. In both cases the
-      --  aspect's tree must be decorated to allow for ASIS queries or to save
-      --  the global references in the generic context.
+      --  Use the expression of the original aspect when analyzing the template
+      --  of a generic unit. In both cases the aspect's tree must be decorated
+      --  to allow for ASIS queries or to save the global references in the
+      --  generic context.
 
       if From_Aspect_Specification (Prag)
-        and then (ASIS_Mode or else (Present (Context_Id)
-                                      and then Is_Generic_Unit (Context_Id)))
+        and then (Present (Context_Id) and then Is_Generic_Unit (Context_Id))
       then
          return Corresponding_Aspect (Prag);
 
@@ -32140,7 +32128,6 @@ package body Sem_Prag is
       elsif Nkind (N) = N_Identifier
         and then From_Policy
         and then Serious_Errors_Detected = 0
-        and then not ASIS_Mode
       then
          if Chars (N) = Name_Precondition
            or else Chars (N) = Name_Postcondition
@@ -32303,6 +32290,64 @@ package body Sem_Prag is
       Generate_Reference (Entity (With_Item), N, Set_Ref => False);
    end Set_Elab_Unit_Name;
 
+   -----------------------
+   -- Set_Overflow_Mode --
+   -----------------------
+
+   procedure Set_Overflow_Mode (N : Node_Id) is
+
+      function Get_Overflow_Mode (Arg : Node_Id) return Overflow_Mode_Type;
+      --  Function to process one pragma argument, Arg
+
+      -----------------------
+      -- Get_Overflow_Mode --
+      -----------------------
+
+      function Get_Overflow_Mode (Arg : Node_Id) return Overflow_Mode_Type is
+         Argx : constant Node_Id := Get_Pragma_Arg (Arg);
+
+      begin
+         if Chars (Argx) = Name_Strict then
+            return Strict;
+
+         elsif Chars (Argx) = Name_Minimized then
+            return Minimized;
+
+         elsif Chars (Argx) = Name_Eliminated then
+            return Eliminated;
+
+         else
+            raise Program_Error;
+         end if;
+      end Get_Overflow_Mode;
+
+      --  Local variables
+
+      Arg1 : constant Node_Id := First (Pragma_Argument_Associations (N));
+      Arg2 : constant Node_Id := Next (Arg1);
+
+   --  Start of processing for Set_Overflow_Mode
+
+   begin
+      --  Process first argument
+
+      Scope_Suppress.Overflow_Mode_General :=
+        Get_Overflow_Mode (Arg1);
+
+      --  Case of only one argument
+
+      if No (Arg2) then
+         Scope_Suppress.Overflow_Mode_Assertions :=
+           Scope_Suppress.Overflow_Mode_General;
+
+      --  Case of two arguments present
+
+      else
+         Scope_Suppress.Overflow_Mode_Assertions  :=
+           Get_Overflow_Mode (Arg2);
+      end if;
+   end Set_Overflow_Mode;
+
    -------------------
    -- Test_Case_Arg --
    -------------------
@@ -32399,9 +32444,9 @@ package body Sem_Prag is
       return Empty;
    end Test_Case_Arg;
 
-   -----------------------------------------
+   --------------------------------------------
    -- Defer_Compile_Time_Warning_Error_To_BE --
-   -----------------------------------------
+   --------------------------------------------
 
    procedure Defer_Compile_Time_Warning_Error_To_BE (N : Node_Id) is
       Arg1  : constant Node_Id := First (Pragma_Argument_Associations (N));

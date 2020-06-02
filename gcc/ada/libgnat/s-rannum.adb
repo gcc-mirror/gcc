@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2007-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2007-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -295,6 +295,7 @@ is
             K      : Bit_Count;       --  Next decrement to exponent
 
          begin
+            K := 0;
             Mantissa := Random (Gen) / 2**Extra_Bits;
             R := Unsigned_32 (Mantissa mod 2**Extra_Bits);
             R_Bits := Extra_Bits;

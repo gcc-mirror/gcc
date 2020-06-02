@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -5579,7 +5579,7 @@ package body Exp_Ch3 is
          declare
             Comp  : Entity_Id;
             First : Boolean;
-            M_Id  : Entity_Id;
+            M_Id  : Entity_Id := Empty;
             Typ   : Entity_Id;
 
          begin
@@ -5612,6 +5612,7 @@ package body Exp_Ch3 is
                   --  Reuse the same master to service any additional types
 
                   else
+                     pragma Assert (Present (M_Id));
                      Set_Master_Id (Typ, M_Id);
                   end if;
                end if;
@@ -6609,9 +6610,13 @@ package body Exp_Ch3 is
             --  An aggregate that must be built in place is not resolved and
             --  expanded until the enclosing construct is expanded. This will
             --  happen when the aggregate is limited and the declared object
-            --  has a following address clause.
+            --  has a following address clause; it happens also when generating
+            --  C code for an aggregate that has an alignment or address clause
+            --  (see Analyze_Object_Declaration).
 
-            if Is_Limited_Type (Typ) and then not Analyzed (Expr) then
+            if (Is_Limited_Type (Typ) or else Modify_Tree_For_C)
+              and then not Analyzed (Expr)
+            then
                Resolve (Expr, Typ);
             end if;
 
@@ -9559,10 +9564,9 @@ package body Exp_Ch3 is
                begin
                   --  Build equality code with a user-defined operator, if
                   --  available, and with the predefined "=" otherwise. For
-                  --  compatibility with older Ada versions, and preserve the
-                  --  workings of some ASIS tools, we also use the predefined
-                  --  operation if the component-type equality is abstract,
-                  --  rather than raising Program_Error.
+                  --  compatibility with older Ada versions, we also use the
+                  --  predefined operation if the component-type equality is
+                  --  abstract, rather than raising Program_Error.
 
                   if Ada_Version < Ada_2012 then
                      Next_Test := Make_Op_Ne (Loc, Lhs, Rhs);
@@ -10216,15 +10220,13 @@ package body Exp_Ch3 is
       New_Ref  : Node_Id;
 
    begin
-      --  This expansion activity is called during analysis, but cannot
-      --  be applied in ASIS mode when other expansion is disabled.
+      --  This expansion activity is called during analysis.
 
       if Is_Tagged_Type (Typ)
        and then not Is_Class_Wide_Type (Typ)
        and then not Is_CPP_Class (Typ)
        and then Tagged_Type_Expansion
        and then Nkind (Expr) /= N_Aggregate
-       and then not ASIS_Mode
        and then (Nkind (Expr) /= N_Qualified_Expression
                   or else Nkind (Expression (Expr)) /= N_Aggregate)
       then

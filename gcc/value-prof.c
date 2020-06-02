@@ -265,16 +265,15 @@ dump_histogram_value (FILE *dump_file, histogram_value hist)
 		    ? "Top N value counter" : "Indirect call counter"));
 	  if (hist->hvalue.counters)
 	    {
-	      fprintf (dump_file, " all: %" PRId64 "%s, values: ",
-		       (int64_t) abs_hwi (hist->hvalue.counters[0]),
-		       hist->hvalue.counters[0] < 0
-		       ? " (values missing)": "");
-	      for (unsigned i = 0; i < GCOV_TOPN_VALUES; i++)
+	      unsigned count = hist->hvalue.counters[1];
+	      fprintf (dump_file, " all: %" PRId64 ", %" PRId64 " values: ",
+		       (int64_t) hist->hvalue.counters[0], (int64_t) count);
+	      for (unsigned i = 0; i < count; i++)
 		{
 		  fprintf (dump_file, "[%" PRId64 ":%" PRId64 "]",
-			   (int64_t) hist->hvalue.counters[2 * i + 1],
-			   (int64_t) hist->hvalue.counters[2 * i + 2]);
-		  if (i != GCOV_TOPN_VALUES - 1)
+			   (int64_t) hist->hvalue.counters[2 * i + 2],
+			   (int64_t) hist->hvalue.counters[2 * i + 3]);
+		  if (i != count - 1)
 		    fprintf (dump_file, ", ");
 		}
 	      fprintf (dump_file, ".\n");
@@ -377,7 +376,6 @@ stream_in_histogram_value (class lto_input_block *ib, gimple *stmt)
 
 	case HIST_TYPE_TOPN_VALUES:
 	case HIST_TYPE_INDIR_CALL:
-	  ncounters = GCOV_TOPN_VALUES_COUNTERS;
 	  break;
 
 	case HIST_TYPE_IOR:
@@ -388,12 +386,31 @@ stream_in_histogram_value (class lto_input_block *ib, gimple *stmt)
 	default:
 	  gcc_unreachable ();
 	}
-      new_val->hvalue.counters = XNEWVAR (gcov_type,
-					  sizeof (*new_val->hvalue.counters)
-					  * ncounters);
-      new_val->n_counters = ncounters;
-      for (i = 0; i < ncounters; i++)
-	new_val->hvalue.counters[i] = streamer_read_gcov_count (ib);
+
+      /* TOP N counters have variable number of counters.  */
+      if (type == HIST_TYPE_INDIR_CALL || type == HIST_TYPE_TOPN_VALUES)
+	{
+	  gcov_type total = streamer_read_gcov_count (ib);
+	  gcov_type ncounters = streamer_read_gcov_count (ib);
+	  new_val->hvalue.counters = XNEWVAR (gcov_type,
+					      sizeof (*new_val->hvalue.counters)
+					      * (2 + 2 * ncounters));
+	  new_val->hvalue.counters[0] = total;
+	  new_val->hvalue.counters[1] = ncounters;
+	  new_val->n_counters = 2 + 2 * ncounters;
+	  for (i = 0; i < 2 * ncounters; i++)
+	    new_val->hvalue.counters[2 + i] = streamer_read_gcov_count (ib);
+	}
+      else
+	{
+	  new_val->hvalue.counters = XNEWVAR (gcov_type,
+					      sizeof (*new_val->hvalue.counters)
+					      * ncounters);
+	  new_val->n_counters = ncounters;
+	  for (i = 0; i < ncounters; i++)
+	    new_val->hvalue.counters[i] = streamer_read_gcov_count (ib);
+	}
+
       if (!next_p)
 	gimple_add_histogram_value (cfun, stmt, new_val);
       else
@@ -738,15 +755,17 @@ get_nth_most_common_value (gimple *stmt, const char *counter_type,
 			   histogram_value hist, gcov_type *value,
 			   gcov_type *count, gcov_type *all, unsigned n)
 {
-  gcc_assert (n < GCOV_TOPN_VALUES);
+  unsigned counters = hist->hvalue.counters[1];
+  if (n >= counters)
+    return false;
 
   *count = 0;
   *value = 0;
 
   gcov_type read_all = abs_hwi (hist->hvalue.counters[0]);
 
-  gcov_type v = hist->hvalue.counters[2 * n + 1];
-  gcov_type c = hist->hvalue.counters[2 * n + 2];
+  gcov_type v = hist->hvalue.counters[2 * n + 2];
+  gcov_type c = hist->hvalue.counters[2 * n + 3];
 
   if (hist->hvalue.counters[0] < 0
       && (flag_profile_reproducible == PROFILE_REPRODUCIBILITY_PARALLEL_RUNS
@@ -1433,7 +1452,7 @@ dump_ic_profile (gimple_stmt_iterator *gsi)
   count = 0;
   all = histogram->hvalue.counters[0];
 
-  for (unsigned j = 0; j < GCOV_TOPN_VALUES; j++)
+  for (unsigned j = 0; j < GCOV_TOPN_MAXIMUM_TRACKED_VALUES; j++)
     {
       if (!get_nth_most_common_value (NULL, "indirect call", histogram, &val,
 				      &count, &all, j))
@@ -1902,7 +1921,7 @@ gimple_find_values_to_profile (histogram_values *values)
 
 	case HIST_TYPE_TOPN_VALUES:
 	case HIST_TYPE_INDIR_CALL:
-	  hist->n_counters = GCOV_TOPN_VALUES_COUNTERS;
+	  hist->n_counters = GCOV_TOPN_MEM_COUNTERS;
 	  break;
 
         case HIST_TYPE_TIME_PROFILE:

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1876,14 +1876,10 @@ package body Sem_Aggr is
 
                         --  If the subtype has a static predicate, replace the
                         --  original choice with the list of individual values
-                        --  covered by the predicate. Do not perform this
-                        --  transformation if we need to preserve the source
-                        --  for ASIS use.
+                        --  covered by the predicate.
                         --  This should be deferred to expansion time ???
 
-                        if Present (Static_Discrete_Predicate (E))
-                          and then not ASIS_Mode
-                        then
+                        if Present (Static_Discrete_Predicate (E)) then
                            Delete_Choice := True;
 
                            New_Cs := New_List;
@@ -2370,22 +2366,7 @@ package body Sem_Aggr is
                               if Lo_Dup > Hi_Dup then
                                  null;
 
-                              --  Otherwise place proper message. Because
-                              --  of the missing expansion of subtypes with
-                              --  predicates in ASIS mode, do not report
-                              --  spurious overlap errors.
-
-                              elsif ASIS_Mode
-                                and then
-                                   ((Is_Type (Entity (Table (J).Choice))
-                                       and then Has_Predicates
-                                         (Entity (Table (J).Choice)))
-                                  or else
-                                    (Is_Type (Entity (Table (K).Choice))
-                                       and then Has_Predicates
-                                         (Entity (Table (K).Choice))))
-                              then
-                                 null;
+                              --  Otherwise place proper message
 
                               else
                                  --  We place message on later choice, with a
@@ -3881,22 +3862,9 @@ package body Sem_Aggr is
                         --  access types, even in compile_only mode.
 
                         if not Inside_A_Generic then
-
-                           --  In ASIS mode, preanalyze the expression in an
-                           --  others association before making copies for
-                           --  separate resolution and accessibility checks.
-                           --  This ensures that the type of the expression is
-                           --  available to ASIS in all cases, in particular if
-                           --  the expression is itself an aggregate.
-
-                           if ASIS_Mode then
-                              Preanalyze_And_Resolve (Expression (Assoc), Typ);
-                           end if;
-
                            return
                              New_Copy_Tree_And_Copy_Dimensions
                                (Expression (Assoc));
-
                         else
                            return Expression (Assoc);
                         end if;

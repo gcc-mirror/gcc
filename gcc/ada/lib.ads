@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -537,7 +537,7 @@ package Lib is
 
    function Get_Compilation_Switch (N : Pos) return String_Ptr;
    --  Return the Nth stored compilation switch, or null if less than N
-   --  switches have been stored. Used by ASIS and back ends written in Ada.
+   --  switches have been stored. Used by back ends written in Ada.
 
    function Generic_May_Lack_ALI (Unum : Unit_Number_Type) return Boolean;
    --  Generic units must be separately compiled. Since we always use
@@ -1003,7 +1003,7 @@ private
    --  This table is set as part of the compiler argument scanning in
    --  Back_End. It can also be reset in -gnatc mode from the data in an
    --  existing ali file, and is read and written by the Tree_Read and
-   --  Tree_Write routines for ASIS.
+   --  Tree_Write routines.
 
    package Compilation_Switches is new Table.Table (
      Table_Component_Type => String_Ptr,

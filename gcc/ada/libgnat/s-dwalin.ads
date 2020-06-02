@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 2009-2019, Free Software Foundation, Inc.        --
+--           Copyright (C) 2009-2020, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -93,7 +93,7 @@ package System.Dwarf_Lines is
      (Cin          :        Dwarf_Context;
       Traceback    :        AET.Tracebacks_Array;
       Suppress_Hex :        Boolean;
-      Symbol_Found : in out Boolean;
+      Symbol_Found :    out Boolean;
       Res          : in out System.Bounded_Strings.Bounded_String);
    --  Generate a string for a traceback suitable for displaying to the user.
    --  If one or more symbols are found, Symbol_Found is set to True. This

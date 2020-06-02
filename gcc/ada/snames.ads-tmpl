@@ -33,10 +33,15 @@ with Namet; use Namet;
 
 package Snames is
 
---  This package contains definitions of standard names (i.e. entries in the
---  Names table) that are used throughout the GNAT compiler. It also contains
---  the definitions of some enumeration types whose definitions are tied to the
---  order of these preset names.
+   --  This package contains definitions of standard names (i.e. entries in
+   --  the Names table) that are used throughout the GNAT compiler. It also
+   --  contains the definitions of some enumeration types whose definitions
+   --  are tied to the order of these preset names.
+
+   --  NOTE WELL: If you add names of attributes, the enumeration type
+   --  Attribute_Id must be kept in synch (same names in same order, with
+   --  some exceptions). See the body of Get_Attribute_Id for details. The
+   --  same is true of other enumeration types declared in this package.
 
    ------------------
    -- Preset Names --
@@ -956,7 +961,6 @@ package Snames is
    Name_Has_Same_Storage               : constant Name_Id := N + $; -- Ada 12
    Name_Has_Tagged_Values              : constant Name_Id := N + $; -- GNAT
    Name_Identity                       : constant Name_Id := N + $;
-   Name_Img                            : constant Name_Id := N + $; -- GNAT
    Name_Implicit_Dereference           : constant Name_Id := N + $; -- GNAT
    Name_Integer_Value                  : constant Name_Id := N + $; -- GNAT
    Name_Invalid_Value                  : constant Name_Id := N + $; -- GNAT
@@ -1059,6 +1063,7 @@ package Snames is
    Name_Fraction                       : constant Name_Id := N + $;
    Name_From_Any                       : constant Name_Id := N + $; -- GNAT
    Name_Image                          : constant Name_Id := N + $;
+   Name_Img                            : constant Name_Id := N + $; -- GNAT
    Name_Input                          : constant Name_Id := N + $;
    Name_Machine                        : constant Name_Id := N + $;
    Name_Max                            : constant Name_Id := N + $;
@@ -1629,7 +1634,6 @@ package Snames is
       Attribute_Has_Same_Storage,
       Attribute_Has_Tagged_Values,
       Attribute_Identity,
-      Attribute_Img,
       Attribute_Implicit_Dereference,
       Attribute_Integer_Value,
       Attribute_Invalid_Value,
@@ -1729,6 +1733,7 @@ package Snames is
       Attribute_Fraction,
       Attribute_From_Any,
       Attribute_Image,
+      Attribute_Img,
       Attribute_Input,
       Attribute_Machine,
       Attribute_Max,

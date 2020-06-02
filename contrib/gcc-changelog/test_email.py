@@ -176,7 +176,7 @@ class TestGccChangelog(unittest.TestCase):
     def test_long_lines(self):
         email = self.get_git_email('long-lines.patch')
         assert len(email.errors) == 1
-        assert email.errors[0].message == 'line limit exceeds 100 characters'
+        assert email.errors[0].message == 'line exceeds 100 character limit'
 
     def test_new_files(self):
         email = self.from_patch_glob('0030')
@@ -318,3 +318,16 @@ class TestGccChangelog(unittest.TestCase):
         assert len(email.errors) == 2
         assert email.errors[0].message == 'missing description of a change'
         assert email.errors[1].message == 'missing description of a change'
+
+    def test_libstdcxx_html_regenerated(self):
+        email = self.from_patch_glob('0001-Fix-text-of-hyperlink')
+        assert not email.errors
+        email = self.from_patch_glob('0002-libstdc-Fake-test-change-1.patch')
+        assert len(email.errors) == 1
+        msg = 'pattern doesn''t match any changed files'
+        assert email.errors[0].message == msg
+        assert email.errors[0].line == 'libstdc++-v3/doc/html/'
+        email = self.from_patch_glob('0003-libstdc-Fake-test-change-2.patch')
+        assert len(email.errors) == 1
+        msg = 'changed file not mentioned in a ChangeLog'
+        assert email.errors[0].message == msg

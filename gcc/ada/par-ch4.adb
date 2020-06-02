@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1385,7 +1385,7 @@ package body Ch4 is
       if Token = Tok_Left_Bracket and then Ada_Version >= Ada_2020 then
          Scan;
 
-         --  Special case for null aggregate in Ada2020.
+         --  Special case for null aggregate in Ada 2020
 
          if Token = Tok_Right_Bracket then
             Scan;   --  past ]

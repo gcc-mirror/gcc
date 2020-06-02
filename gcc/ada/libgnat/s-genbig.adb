@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2012-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2012-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -733,6 +733,7 @@ package body System.Generic_Bignums is
             ND := 0;
             for J in 1 .. X.Len loop
                ND := Base * ND + DD (X.D (J));
+               pragma Assert (Div /= 0);
                Result (J) := SD (ND / Div);
                ND := ND rem Div;
             end loop;

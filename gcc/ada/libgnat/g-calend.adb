@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2019, AdaCore                     --
+--                     Copyright (C) 1999-2020, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -352,6 +352,9 @@ package body GNAT.Calendar is
 
    begin
       timeval_to_duration (T, sec'Access, usec'Access);
+      pragma Annotate (CodePeer, Modified, sec);
+      pragma Annotate (CodePeer, Modified, usec);
+
       return Duration (sec) + Duration (usec) / Micro;
    end To_Duration;
 

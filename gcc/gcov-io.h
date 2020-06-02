@@ -170,6 +170,17 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef GCC_GCOV_IO_H
 #define GCC_GCOV_IO_H
 
+/* GCOV key-value pair linked list type.  */
+
+struct gcov_kvp;
+
+struct gcov_kvp
+{
+  gcov_type value;
+  gcov_type count;
+  struct gcov_kvp *next;
+};
+
 #ifndef IN_LIBGCOV
 /* About the host */
 
@@ -272,11 +283,14 @@ GCOV_COUNTERS
 #define GCOV_N_VALUE_COUNTERS \
   (GCOV_LAST_VALUE_COUNTER - GCOV_FIRST_VALUE_COUNTER + 1)
 
-/* Number of top N value histogram.  */
-#define GCOV_TOPN_VALUES 4
+/* Number of top N counters when being in memory.  */
+#define GCOV_TOPN_MEM_COUNTERS 3
 
-/* Total number of single value counters.  */
-#define GCOV_TOPN_VALUES_COUNTERS (2 * GCOV_TOPN_VALUES + 1)
+/* Number of top N counters in disk representation.  */
+#define GCOV_TOPN_DISK_COUNTERS 2
+
+/* Maximum number of tracked TOP N value profiles.  */
+#define GCOV_TOPN_MAXIMUM_TRACKED_VALUES 32
 
 /* Convert a counter index to a tag.  */
 #define GCOV_TAG_FOR_COUNTER(COUNT)				\

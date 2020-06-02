@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -214,32 +214,6 @@ procedure Gnat1drv is
       --  expansion.
 
       if Operating_Mode = Check_Syntax then
-         CodePeer_Mode := False;
-      end if;
-
-      --  Set ASIS mode if -gnatt and -gnatc are set
-
-      if Operating_Mode = Check_Semantics and then Tree_Output then
-         ASIS_Mode := True;
-
-         --  Set ASIS GNSA mode if -gnatd.H is set
-
-         if Debug_Flag_Dot_HH then
-            ASIS_GNSA_Mode := True;
-         end if;
-
-         --  Turn off inlining in ASIS mode, since ASIS cannot handle the extra
-         --  information in the trees caused by inlining being active.
-
-         --  More specifically, the tree seems to be malformed from the ASIS
-         --  point of view if -gnatc and -gnatn appear together???
-
-         Inline_Active := False;
-
-         --  Turn off SCIL generation and CodePeer mode in semantics mode,
-         --  since SCIL requires front-end expansion.
-
-         Generate_SCIL := False;
          CodePeer_Mode := False;
       end if;
 
@@ -655,11 +629,11 @@ procedure Gnat1drv is
 
       --  Set and check exception mechanism. This is only meaningful when
       --  compiling, and in particular not meaningful for special modes used
-      --  for program analysis rather than compilation: ASIS mode, CodePeer
-      --  mode and GNATprove mode.
+      --  for program analysis rather than compilation: CodePeer mode and
+      --  GNATprove mode.
 
       if Operating_Mode = Generate_Code
-        and then not (ASIS_Mode or CodePeer_Mode or GNATprove_Mode)
+        and then not (CodePeer_Mode or GNATprove_Mode)
       then
          case Targparm.Frontend_Exceptions_On_Target is
             when True =>
@@ -802,10 +776,6 @@ procedure Gnat1drv is
         --  No back-end inlining available on C generation
 
         not Generate_C_Code
-
-        --  No back-end inlining available in ASIS mode
-
-        and then not ASIS_Mode
 
         --  No back-end inlining in GNATprove mode, since it just confuses
         --  the formal verification process.
@@ -1564,18 +1534,13 @@ begin
       --  Annotation is suppressed for targets where front-end layout is
       --  enabled, because the front end determines representations.
 
-      --  The back end is not invoked in ASIS mode with GNSA because all type
-      --  representation information will be provided by the GNSA back end, not
-      --  gigi.
-
       --  A special back end is always called in CodePeer and GNATprove modes,
       --  unless this is a subunit.
 
       if Back_End_Mode = Declarations_Only
         and then
           (not (Back_Annotate_Rep_Info or Generate_SCIL or GNATprove_Mode)
-            or else Main_Unit_Kind = N_Subunit
-            or else ASIS_GNSA_Mode)
+            or else Main_Unit_Kind = N_Subunit)
       then
          Post_Compilation_Validation_Checks;
          Errout.Finalize (Last_Call => True);
@@ -1701,10 +1666,12 @@ begin
          Back_End.Gen_Or_Update_Object_File;
       end if;
 
-      --  Generate ASIS tree after writing the ALI file, since in ASIS mode,
-      --  Write_ALI may in fact result in further tree decoration from the
-      --  original tree file. Note that we dump the tree just before generating
-      --  it, so that the dump will exactly reflect what is written out.
+      --  Generate tree after writing the ALI file, since Write_ALI may in
+      --  fact result in further tree decoration from the original tree file.
+      --  Note that we dump the tree just before generating it, so that the
+      --  dump will exactly reflect what is written out.
+      --  Should we remove Tree_Dump completely now that ASIS is no longer
+      --  supported???
 
       Treepr.Tree_Dump;
       Tree_Gen;

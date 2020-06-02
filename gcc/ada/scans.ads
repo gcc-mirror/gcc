@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -87,7 +87,7 @@ package Scans is
       --  exception-name". This degrades error recovery slightly, and perhaps
       --  we could do better, but not worth the effort.
 
-      --  Ada2020 introduces square brackets as delimiters for array and
+      --  Ada 2020 introduces square brackets as delimiters for array and
       --  container aggregates.
 
       Tok_Raise,           -- RAISE

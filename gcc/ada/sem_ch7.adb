@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2428,7 +2428,7 @@ package body Sem_Ch7 is
       --  defined in the associated package, subject to at least one Part_Of
       --  constituent.
 
-      if Ekind_In (P, E_Generic_Package, E_Package) then
+      if Is_Package_Or_Generic_Package (P) then
          declare
             States     : constant Elist_Id := Abstract_States (P);
             State_Elmt : Elmt_Id;
@@ -3322,7 +3322,7 @@ package body Sem_Ch7 is
       --  performed if the caller requests this behavior.
 
       if Do_Abstract_States
-        and then Ekind_In (Pack_Id, E_Generic_Package, E_Package)
+        and then Is_Package_Or_Generic_Package (Pack_Id)
         and then Has_Non_Null_Abstract_State (Pack_Id)
         and then Requires_Body
       then
@@ -3380,7 +3380,7 @@ package body Sem_Ch7 is
       --  provided). If Ignore_Abstract_State is True, we don't do this check
       --  (so we can use Unit_Requires_Body to check for some other reason).
 
-      elsif Ekind_In (Pack_Id, E_Generic_Package, E_Package)
+      elsif Is_Package_Or_Generic_Package (Pack_Id)
         and then Present (Abstract_States (Pack_Id))
         and then not Is_Null_State
                        (Node (First_Elmt (Abstract_States (Pack_Id))))

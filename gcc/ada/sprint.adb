@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -175,11 +175,6 @@ package body Sprint is
    procedure Print_Debug_Line (S : String);
    --  Used to print output lines in Debug_Generated_Code mode (this is used
    --  as the argument for a call to Set_Special_Output in package Output).
-
-   procedure Process_TFAI_RR_Flags (Nod : Node_Id);
-   --  Given a divide, multiplication or division node, check the flags
-   --  Treat_Fixed_As_Integer and Rounded_Flags, and if set, output the
-   --  appropriate special syntax characters (# and @).
 
    procedure Set_Debug_Sloc;
    --  If Dump_Node is non-empty, this routine sets the appropriate value
@@ -470,21 +465,6 @@ package body Sprint is
    begin
       Write_Debug_Line (S, Debug_Sloc);
    end Print_Debug_Line;
-
-   ---------------------------
-   -- Process_TFAI_RR_Flags --
-   ---------------------------
-
-   procedure Process_TFAI_RR_Flags (Nod : Node_Id) is
-   begin
-      if Treat_Fixed_As_Integer (Nod) then
-         Write_Char ('#');
-      end if;
-
-      if Rounded_Result (Nod) then
-         Write_Char ('@');
-      end if;
-   end Process_TFAI_RR_Flags;
 
    --------
    -- ps --
@@ -2508,7 +2488,9 @@ package body Sprint is
          when N_Op_Divide =>
             Sprint_Left_Opnd (Node);
             Write_Char (' ');
-            Process_TFAI_RR_Flags (Node);
+            if Rounded_Result (Node) then
+               Write_Char ('@');
+            end if;
             Write_Operator (Node, "/ ");
             Sprint_Right_Opnd (Node);
 
@@ -2548,18 +2530,15 @@ package body Sprint is
 
          when N_Op_Mod =>
             Sprint_Left_Opnd (Node);
-
-            if Treat_Fixed_As_Integer (Node) then
-               Write_Str (" #");
-            end if;
-
             Write_Operator (Node, " mod ");
             Sprint_Right_Opnd (Node);
 
          when N_Op_Multiply =>
             Sprint_Left_Opnd (Node);
             Write_Char (' ');
-            Process_TFAI_RR_Flags (Node);
+            if Rounded_Result (Node) then
+               Write_Char ('@');
+            end if;
             Write_Operator (Node, "* ");
             Sprint_Right_Opnd (Node);
 
@@ -2583,11 +2562,6 @@ package body Sprint is
 
          when N_Op_Rem =>
             Sprint_Left_Opnd (Node);
-
-            if Treat_Fixed_As_Integer (Node) then
-               Write_Str (" #");
-            end if;
-
             Write_Operator (Node, " rem ");
             Sprint_Right_Opnd (Node);
 

@@ -45,7 +45,7 @@ struct fenv
   unsigned int __data_offset;
   unsigned short int __data_selector;
   unsigned short int __unused5;
-};
+} __attribute__ ((gcc_struct));
 
 #ifdef __SSE_MATH__
 # define __math_force_eval_div(x, y) \

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1055,10 +1055,7 @@ package Atree is
    procedure Set_Original_Node         (N : Node_Id; Val : Node_Id);
    pragma Inline (Set_Original_Node);
    --  Note that this routine is used only in very peculiar cases. In normal
-   --  cases, the Original_Node link is set by calls to Rewrite. We currently
-   --  use it in ASIS mode to manually set the link from pragma expressions to
-   --  their aspect original source expressions, so that the original source
-   --  expressions accessed by ASIS are also semantically analyzed.
+   --  cases, the Original_Node link is set by calls to Rewrite.
 
    procedure Set_Parent                (N : Node_Id; Val : Node_Id);
    pragma Inline (Set_Parent);
@@ -1180,10 +1177,9 @@ package Atree is
    function Original_Node (Node : Node_Id) return Node_Id;
    pragma Inline (Original_Node);
    --  If Node has not been rewritten, then returns its input argument
-   --  unchanged, else returns the Node for the original subtree. Note that
-   --  this is used extensively by ASIS on the trees constructed in ASIS mode
-   --  to reconstruct the original semantic tree. See section in sinfo.ads
-   --  for requirements on original nodes returned by this function.
+   --  unchanged, else returns the Node for the original subtree. See section
+   --  in sinfo.ads for requirements on original nodes returned by this
+   --  function.
    --
    --  Note: Parents are not preserved in original tree nodes that are
    --  retrieved in this way (i.e. their children may have children whose

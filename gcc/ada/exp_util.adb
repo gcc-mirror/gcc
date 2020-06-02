@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1634,43 +1634,6 @@ package body Exp_Util is
          DIC_Proc : constant Entity_Id := DIC_Procedure (DIC_Typ);
          Obj_Id   : constant Entity_Id := First_Formal (DIC_Proc);
 
-         procedure Preanalyze_Own_DIC_For_ASIS;
-         --  Preanalyze the original DIC expression of an aspect or a source
-         --  pragma for ASIS.
-
-         ---------------------------------
-         -- Preanalyze_Own_DIC_For_ASIS --
-         ---------------------------------
-
-         procedure Preanalyze_Own_DIC_For_ASIS is
-            Expr : Node_Id := Empty;
-
-         begin
-            --  The DIC pragma is a source construct, preanalyze the original
-            --  expression of the pragma.
-
-            if Comes_From_Source (DIC_Prag) then
-               Expr := DIC_Expr;
-
-            --  Otherwise preanalyze the expression of the corresponding aspect
-
-            elsif Present (DIC_Asp) then
-               Expr := Expression (DIC_Asp);
-            end if;
-
-            --  The expression must be subjected to the same substitutions as
-            --  the copy used in the generation of the runtime check.
-
-            if Present (Expr) then
-               Replace_Type_References
-                 (Expr   => Expr,
-                  Typ    => DIC_Typ,
-                  Obj_Id => Obj_Id);
-
-               Preanalyze_Assert_Expression (Expr, Any_Boolean);
-            end if;
-         end Preanalyze_Own_DIC_For_ASIS;
-
          --  Local variables
 
          Typ_Decl : constant Node_Id := Declaration_Node (DIC_Typ);
@@ -1715,12 +1678,6 @@ package body Exp_Util is
 
          if Present (DIC_Asp) then
             Set_Entity (Identifier (DIC_Asp), New_Copy_Tree (Expr));
-         end if;
-
-         --  Preanalyze the original DIC expression for ASIS
-
-         if ASIS_Mode then
-            Preanalyze_Own_DIC_For_ASIS;
          end if;
 
          --  Once the DIC assertion expression is fully processed, add a check
@@ -1951,11 +1908,11 @@ package body Exp_Util is
          Set_Corresponding_Spec (Proc_Body, Proc_Id);
 
          --  The body should not be inserted into the tree when the context
-         --  is ASIS or a generic unit because it is not part of the template.
+         --  is a generic unit because it is not part of the template.
          --  Note that the body must still be generated in order to resolve the
          --  DIC assertion expression.
 
-         if ASIS_Mode or Inside_A_Generic then
+         if Inside_A_Generic then
             null;
 
          --  Semi-insert the body into the tree for GNATprove by setting its
@@ -2158,9 +2115,9 @@ package body Exp_Util is
                     New_Occurrence_Of (Work_Typ, Loc)))));
 
       --  The declaration should not be inserted into the tree when the context
-      --  is ASIS or a generic unit because it is not part of the template.
+      --  is a generic unit because it is not part of the template.
 
-      if ASIS_Mode or Inside_A_Generic then
+      if Inside_A_Generic then
          null;
 
       --  Semi-insert the declaration into the tree for GNATprove by setting
@@ -2775,7 +2732,6 @@ package body Exp_Util is
          Checks    : in out List_Id;
          Priv_Item : Node_Id := Empty)
       is
-         ASIS_Expr     : Node_Id;
          Expr          : Node_Id;
          Prag          : Node_Id;
          Prag_Asp      : Node_Id;
@@ -2852,23 +2808,6 @@ package body Exp_Util is
 
                if Present (Prag_Asp) then
                   Set_Entity (Identifier (Prag_Asp), New_Copy_Tree (Expr));
-               end if;
-
-               --  Analyze the original invariant expression for ASIS
-
-               if ASIS_Mode then
-                  ASIS_Expr := Empty;
-
-                  if Comes_From_Source (Prag) then
-                     ASIS_Expr := Prag_Expr;
-                  elsif Present (Prag_Asp) then
-                     ASIS_Expr := Expression (Prag_Asp);
-                  end if;
-
-                  if Present (ASIS_Expr) then
-                     Replace_Type_References (ASIS_Expr, T, Obj_Id);
-                     Preanalyze_Assert_Expression (ASIS_Expr, Any_Boolean);
-                  end if;
                end if;
 
                Add_Invariant_Check (Prag, Expr, Checks);
@@ -3428,11 +3367,11 @@ package body Exp_Util is
       Set_Corresponding_Spec (Proc_Body, Proc_Id);
 
       --  The body should not be inserted into the tree when the context is
-      --  ASIS or a generic unit because it is not part of the template. Note
+      --  a generic unit because it is not part of the template. Note
       --  that the body must still be generated in order to resolve the
       --  invariants.
 
-      if ASIS_Mode or Inside_A_Generic then
+      if Inside_A_Generic then
          null;
 
       --  Semi-insert the body into the tree for GNATprove by setting its
@@ -3663,9 +3602,9 @@ package body Exp_Util is
                   Parameter_Type      => New_Occurrence_Of (Obj_Typ, Loc)))));
 
       --  The declaration should not be inserted into the tree when the context
-      --  is ASIS or a generic unit because it is not part of the template.
+      --  is a generic unit because it is not part of the template.
 
-      if ASIS_Mode or Inside_A_Generic then
+      if Inside_A_Generic then
          null;
 
       --  Semi-insert the declaration into the tree for GNATprove by setting
@@ -9666,11 +9605,6 @@ package body Exp_Util is
          procedure Replace_Subtype_Reference (N : Node_Id) is
          begin
             Rewrite (N, New_Copy_Tree (Expr));
-
-            --  We want to treat the node as if it comes from source, so that
-            --  ASIS will not ignore it.
-
-            Set_Comes_From_Source (N, True);
          end Replace_Subtype_Reference;
 
          procedure Replace_Subtype_References is
@@ -12117,13 +12051,8 @@ package body Exp_Util is
       procedure Replace_Type_Ref (N : Node_Id) is
       begin
          --  Decorate the reference to Typ even though it may be rewritten
-         --  further down. This is done for two reasons:
-
-         --    * ASIS has all necessary semantic information in the original
-         --      tree.
-
-         --    * Routines which examine properties of the Original_Node have
-         --      some semantic information.
+         --  further down. This is done so that routines which examine
+         --  properties of the Original_Node have some semantic information.
 
          if Nkind (N) = N_Identifier then
             Set_Entity (N, Typ);

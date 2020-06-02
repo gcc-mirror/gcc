@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3594,12 +3594,6 @@ package body Sem_Elab is
       if Legacy_Elaboration_Checks then
          return;
 
-      --  Nothing to do for ASIS because ABE checks and diagnostics are not
-      --  performed in this mode.
-
-      elsif ASIS_Mode then
-         return;
-
       --  Nothing to do when the call is being preanalyzed as the marker will
       --  be inserted in the wrong place.
 
@@ -3934,13 +3928,6 @@ package body Sem_Elab is
       --  to carry out this action.
 
       if Legacy_Elaboration_Checks then
-         Finalize_All_Data_Structures;
-         return;
-
-      --  Nothing to do for ASIS because ABE checks and diagnostics are not
-      --  performed in this mode.
-
-      elsif ASIS_Mode then
          Finalize_All_Data_Structures;
          return;
 
@@ -13826,7 +13813,7 @@ package body Sem_Elab is
          --  be on another machine.
 
          if Ekind (Body_Id) = E_Package_Body
-           and then Ekind_In (Spec_Id, E_Generic_Package, E_Package)
+           and then Is_Package_Or_Generic_Package (Spec_Id)
            and then (Is_Remote_Call_Interface (Spec_Id)
                       or else Is_Remote_Types (Spec_Id))
          then
@@ -14028,12 +14015,6 @@ package body Sem_Elab is
       --  to carry out this action.
 
       if Legacy_Elaboration_Checks then
-         return;
-
-      --  Nothing to do for ASIS because ABE checks and diagnostics are not
-      --  performed in this mode.
-
-      elsif ASIS_Mode then
          return;
 
       --  Nothing to do when the scenario is being preanalyzed

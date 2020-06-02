@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -323,8 +323,6 @@ package body Opt is
       Assertions_Enabled_Config_Val   : Nat;
 
    begin
-      Tree_Read_Int  (Tree_ASIS_Version_Number);
-
       Tree_Read_Bool (Address_Is_Private);
       Tree_Read_Bool (Brief_Output);
       Tree_Read_Bool (GNAT_Mode);
@@ -393,8 +391,6 @@ package body Opt is
       Version_String : String := Gnat_Version_String;
 
    begin
-      Tree_Write_Int  (ASIS_Version_Number);
-
       Tree_Write_Bool (Address_Is_Private);
       Tree_Write_Bool (Brief_Output);
       Tree_Write_Bool (GNAT_Mode);

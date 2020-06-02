@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -537,6 +537,7 @@ package body GNAT.Command_Line is
       P      : Switch_Parameter_Type;
 
    begin
+      Param             := Parameter_None;
       Index_In_Switches := 0;
       Switch_Length     := 0;
 

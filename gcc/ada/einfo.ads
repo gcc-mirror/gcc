@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -973,7 +973,7 @@ package Einfo is
 --       list is always empty.
 --       When expansion is disabled the corresponding record type of a
 --       synchronized type is not constructed. In that case, such types
---       carry this attribute directly, for ASIS use.
+--       carry this attribute directly.
 
 --    Directly_Designated_Type (Node20)
 --       Defined in access types. This field points to the type that is

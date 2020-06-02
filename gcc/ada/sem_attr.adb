@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -5513,10 +5513,10 @@ package body Sem_Attr is
                --  Prefix is a name, as for other attributes.
 
                --  If the object is a function we asume that it is not
-               --  overloaded. AI12-242 does not suggest an name resulution
-               --  rule for that case, but can suppose that the expected
-               --  type of the reduction is the expected type of the
-               --  component of the prefix.
+               --  overloaded. AI12-242 does not suggest a name resolution
+               --  rule for that case, but we can suppose that the expected
+               --  type of the reduction is the expected type of the component
+               --  of the prefix.
 
                Analyze_And_Resolve (Stream);
                Typ := Etype (Stream);

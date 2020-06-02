@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -415,9 +415,7 @@ package Namet is
    --  also the suffixes used to indicate package body entities and to
    --  distinguish between overloaded entities). Note that names are not
    --  qualified until just before the call to gigi, so this routine is only
-   --  needed by processing that occurs after gigi has been called. This
-   --  includes all ASIS processing, since ASIS works on the tree written
-   --  after gigi has been called.
+   --  needed by processing that occurs after gigi has been called.
 
    procedure Append_Unqualified_Decoded
      (Buf : in out Bounded_String;

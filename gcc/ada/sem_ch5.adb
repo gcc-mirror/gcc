@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1847,7 +1847,7 @@ package body Sem_Ch5 is
       Save_Unblocked_Exit_Count : constant Nat := Unblocked_Exit_Count;
       --  Recursively save value of this global, will be restored on exit
 
-      Save_In_Deleted_Code : Boolean;
+      Save_In_Deleted_Code : Boolean := In_Deleted_Code;
 
       Del : Boolean := False;
       --  This flag gets set True if a True condition has been found, which

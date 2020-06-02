@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -192,6 +192,10 @@ package body Ada.Strings.Fixed is
       elsif From not in Source'Range
         or else Through > Source'Last
       then
+         pragma Annotate
+           (CodePeer, False_Positive,
+            "test always false", "self fullfilling prophecy");
+
          --  In most cases this raises an exception, but the case of deleting
          --  a null string at the end of the current one is a special-case, and
          --  reflects the equivalence with Replace_String (RM A.4.3 (86/3)).

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1096,12 +1096,10 @@ package body Exp_Attr is
           Selector_Name => Make_Identifier (Loc, Nam));
 
       --  The generated call is given the provided set of parameters, and then
-      --  wrapped in a conversion which converts the result to the target type
-      --  We use the base type as the target because a range check may be
-      --  required.
+      --  wrapped in a conversion which converts the result to the target type.
 
       Rewrite (N,
-        Unchecked_Convert_To (Base_Type (Etype (N)),
+        Convert_To (Typ,
           Make_Function_Call (Loc,
             Name                   => Fnm,
             Parameter_Associations => Args)));
@@ -2459,12 +2457,20 @@ package body Exp_Attr is
 
             New_Node := Build_Get_Alignment (Loc, New_Node);
 
-            --  Case where the context is a specific integer type with which
-            --  the original attribute was compatible. The function has a
-            --  specific type as well, so to preserve the compatibility we
-            --  must convert explicitly.
+            --  Case where the context is an unchecked conversion to a specific
+            --  integer type. We directly convert from the alignment's type.
 
-            if Typ /= Standard_Integer then
+            if Nkind (Parent (N)) = N_Unchecked_Type_Conversion then
+               Rewrite (N, New_Node);
+               Analyze_And_Resolve (N);
+               return;
+
+            --  Case where the context is a specific integer type with which
+            --  the original attribute was compatible. But the alignment has a
+            --  specific type in a-tags.ads (Standard.Natural) so, in order to
+            --  preserve type compatibility, we must convert explicitly.
+
+            elsif Typ /= Standard_Natural then
                New_Node := Convert_To (Typ, New_Node);
             end if;
 
@@ -5476,18 +5482,18 @@ package body Exp_Attr is
             Typ     : constant Entity_Id := Etype (N);
             New_Loop : Node_Id;
 
-         --  If the prefix is an aggregwte, its unique component is sn
-         --  Iterated_Element, and we create a loop out of its itertor.
+         --  If the prefix is an aggregate, its unique component is an
+         --  Iterated_Element, and we create a loop out of its iterator.
 
          begin
             if Nkind (Prefix (N)) = N_Aggregate then
                declare
                   Stream  : constant Node_Id :=
-                     First (Component_Associations (Prefix (N)));
+                              First (Component_Associations (Prefix (N)));
                   Id      : constant Node_Id := Defining_Identifier (Stream);
                   Expr    : constant Node_Id := Expression (Stream);
                   Ch      : constant Node_Id :=
-                               First (Discrete_Choices (Stream));
+                              First (Discrete_Choices (Stream));
                begin
                   New_Loop := Make_Loop_Statement (Loc,
                     Iteration_Scheme =>
@@ -5509,9 +5515,9 @@ package body Exp_Attr is
                               Relocate_Node (Expr))))));
                end;
             else
-               --  If the prefix is a name we construct an element iterwtor
-               --  over it. Its expansion will verify that it is an array
-               --  or a container with the proper aspects.
+               --  If the prefix is a name, we construct an element iterator
+               --  over it. Its expansion will verify that it is an array or
+               --  a container with the proper aspects.
 
                declare
                   Iter : Node_Id;
@@ -6003,12 +6009,13 @@ package body Exp_Attr is
          if Is_Access_Type (Ptyp) then
             if Present (Storage_Size_Variable (Root_Type (Ptyp))) then
                Rewrite (N,
-                 Make_Attribute_Reference (Loc,
-                   Prefix => New_Occurrence_Of (Typ, Loc),
-                   Attribute_Name => Name_Max,
-                   Expressions => New_List (
-                     Make_Integer_Literal (Loc, 0),
-                     Convert_To (Typ,
+                 Convert_To (Typ,
+                   Make_Attribute_Reference (Loc,
+                     Prefix => New_Occurrence_Of
+                       (Etype (Storage_Size_Variable (Root_Type (Ptyp))), Loc),
+                     Attribute_Name => Name_Max,
+                     Expressions => New_List (
+                       Make_Integer_Literal (Loc, 0),
                        New_Occurrence_Of
                          (Storage_Size_Variable (Root_Type (Ptyp)), Loc)))));
 
@@ -6061,7 +6068,7 @@ package body Exp_Attr is
 
                else
                   Rewrite (N,
-                    OK_Convert_To (Typ,
+                    Convert_To (Typ,
                       Make_Function_Call (Loc,
                         Name =>
                           New_Occurrence_Of (Alloc_Op, Loc),

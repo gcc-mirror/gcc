@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -713,7 +713,7 @@ package body Einfo is
 
    function Abstract_States (Id : E) return L is
    begin
-      pragma Assert (Ekind_In (Id, E_Generic_Package, E_Package));
+      pragma Assert (Is_Package_Or_Generic_Package (Id));
       return Elist25 (Id);
    end Abstract_States;
 
@@ -837,7 +837,7 @@ package body Einfo is
 
    function Body_Entity (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Package, E_Generic_Package));
+      pragma Assert (Is_Package_Or_Generic_Package (Id));
       return Node19 (Id);
    end Body_Entity;
 
@@ -1424,8 +1424,8 @@ package body Einfo is
 
    function First_Private_Entity (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Package, E_Generic_Package)
-                       or else Ekind (Id) in Concurrent_Kind);
+      pragma Assert (Is_Package_Or_Generic_Package (Id)
+                       or else Is_Concurrent_Type (Id));
       return Node16 (Id);
    end First_Private_Entity;
 
@@ -3044,7 +3044,7 @@ package body Einfo is
 
    function Package_Instantiation (Id : E) return N is
    begin
-      pragma Assert (Ekind_In (Id, E_Package, E_Generic_Package));
+      pragma Assert (Is_Package_Or_Generic_Package (Id));
       return Node26 (Id);
    end Package_Instantiation;
 
@@ -3883,7 +3883,7 @@ package body Einfo is
 
    procedure Set_Abstract_States (Id : E; V : L) is
    begin
-      pragma Assert (Ekind_In (Id, E_Generic_Package, E_Package));
+      pragma Assert (Is_Package_Or_Generic_Package (Id));
       Set_Elist25 (Id, V);
    end Set_Abstract_States;
 
@@ -4006,7 +4006,7 @@ package body Einfo is
 
    procedure Set_Body_Entity (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Package, E_Generic_Package));
+      pragma Assert (Is_Package_Or_Generic_Package (Id));
       Set_Node19 (Id, V);
    end Set_Body_Entity;
 
@@ -4593,8 +4593,8 @@ package body Einfo is
 
    procedure Set_First_Private_Entity (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Package, E_Generic_Package)
-                       or else Ekind (Id) in Concurrent_Kind);
+      pragma Assert (Is_Package_Or_Generic_Package (Id)
+                       or else Is_Concurrent_Type (Id));
       Set_Node16 (Id, V);
    end Set_First_Private_Entity;
 
@@ -7827,7 +7827,7 @@ package body Einfo is
 
    function Has_Non_Null_Abstract_State (Id : E) return B is
    begin
-      pragma Assert (Ekind_In (Id, E_Generic_Package, E_Package));
+      pragma Assert (Is_Package_Or_Generic_Package (Id));
 
       return
         Present (Abstract_States (Id))
@@ -7863,7 +7863,7 @@ package body Einfo is
    -----------------------------
 
    function Has_Null_Abstract_State (Id : E) return B is
-      pragma Assert (Ekind_In (Id, E_Generic_Package, E_Package));
+      pragma Assert (Is_Package_Or_Generic_Package (Id));
 
       States : constant Elist_Id := Abstract_States (Id);
 
