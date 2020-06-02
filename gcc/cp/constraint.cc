@@ -2173,9 +2173,7 @@ tsubst_requires_expr (tree t, tree args,
   if (reqs == error_mark_node)
     return boolean_false_node;
 
-  /* In certain cases, produce a new requires-expression.
-     Otherwise the value of the expression is true.  */
-  if (processing_template_decl && uses_template_parms (args))
+  if (processing_template_decl)
     return finish_requires_expr (cp_expr_location (t), parms, reqs);
 
   return boolean_true_node;
