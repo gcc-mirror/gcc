@@ -11023,7 +11023,29 @@ package body Sem_Attr is
                end if;
 
                Resolve (Prefix (P));
-               Generate_Reference (Entity (Selector_Name (P)), P);
+
+               if not Is_Overloaded (P) then
+                  Generate_Reference (Entity (Selector_Name (P)), P);
+
+               else
+                  Get_First_Interp (P, Index, It);
+                  while Present (It.Nam) loop
+                     if Type_Conformant (Designated_Type (Typ), It.Nam) then
+                        Set_Entity (Selector_Name (P), It.Nam);
+
+                        --  The prefix is definitely NOT overloaded anymore at
+                        --  this point, so we reset the Is_Overloaded flag to
+                        --  avoid any confusion when reanalyzing the node.
+
+                        Set_Is_Overloaded (P, False);
+                        Set_Is_Overloaded (N, False);
+                        Generate_Reference (Entity (Selector_Name (P)), P);
+                        exit;
+                     end if;
+
+                     Get_Next_Interp (Index, It);
+                  end loop;
+               end if;
 
             --  Implement check implied by 3.10.2 (18.1/2) : F.all'access is
             --  statically illegal if F is an anonymous access to subprogram.
