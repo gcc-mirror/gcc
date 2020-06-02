@@ -1,3 +1,23 @@
+2020-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95466
+	* g++.dg/ubsan/vptr-17.C: New test.
+
+2020-06-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95350
+	* g++.dg/coroutines/torture/func-params-08.C: Adjust test to
+	reflect that all rvalue refs are dangling.
+	* g++.dg/coroutines/torture/func-params-09-awaitable-parms.C:
+	Likewise.
+	* g++.dg/coroutines/pr95350.C: New test.
+
+2020-06-01  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/93429
+	* gcc.dg/ipa/ipcp-agg-8.c: Change dump string.
+	* gcc.dg/ipa/ipcp-agg-13.c: New test.
+
 2020-05-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/95087
