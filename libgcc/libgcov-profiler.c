@@ -26,17 +26,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgcov.h"
 #if !defined(inhibit_libc)
 
-/* Detect whether target can support atomic update of profilers.  */
-#if __SIZEOF_LONG_LONG__ == 4 && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
-#define GCOV_SUPPORTS_ATOMIC 1
-#else
-#if __SIZEOF_LONG_LONG__ == 8 && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_8
-#define GCOV_SUPPORTS_ATOMIC 1
-#else
-#define GCOV_SUPPORTS_ATOMIC 0
-#endif
-#endif
-
 #ifdef L_gcov_interval_profiler
 /* If VALUE is in interval <START, START + STEPS - 1>, then increases the
    corresponding counter in COUNTERS.  If the VALUE is above or below
