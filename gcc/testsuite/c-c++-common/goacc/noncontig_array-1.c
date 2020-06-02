@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-fdump-tree-gimple" } */
 
 void foo (void)
 {
