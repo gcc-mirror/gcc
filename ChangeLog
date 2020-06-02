@@ -1,8 +1,3 @@
-2020-06-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
-
-	PR fortran/94361
-	* -: New file.
-
 2020-04-20  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
