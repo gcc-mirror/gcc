@@ -346,7 +346,7 @@ class GitCommit:
             if line != line.rstrip():
                 self.errors.append(Error('trailing whitespace', line))
             if len(line.replace('\t', ' ' * TAB_WIDTH)) > LINE_LIMIT:
-                self.errors.append(Error('line limit exceeds %d characters'
+                self.errors.append(Error('line exceeds %d character limit'
                                          % LINE_LIMIT, line))
             m = changelog_regex.match(line)
             if m:
