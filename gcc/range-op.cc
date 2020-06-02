@@ -1966,7 +1966,7 @@ operator_bitwise_and::remove_impossible_ranges (irange &r,
 
   tree tree_mask;
   mask.singleton_p (&tree_mask);
-  if (!tree_fits_uhwi_p (tree_mask)) // ?? Rewrite with wide_int's.
+  if (!tree_fits_uhwi_p (tree_mask)) // FIXME: Rewrite with wide_int's.
     return;
 
   unsigned HOST_WIDE_INT int_mask = tree_to_uhwi (tree_mask);
@@ -1976,17 +1976,18 @@ operator_bitwise_and::remove_impossible_ranges (irange &r,
   widest_irange impossible_ranges;
 
   /* We know that starting at the most significant bit, any 0 in the
-     mask is impossible, so the following ranges are impossible:
+     mask means the resulting range cannot contain a 1 in that same
+     position.  This means the following ranges are impossible:
 
 	x & 0b1001 1010
 			  IMPOSSIBLE RANGES
-	    0b01xx xxxx   [0100 0000, 0111 1111]
-	    0b001x xxxx   [0010 0000, 0011 1111]
-	    0b0000 01xx   [0000 0100, 0000 0111]
-	    0b0000 0001   [0000 0001, 0000 0001]
+	      01xx xxxx   [0100 0000, 0111 1111]
+	      001x xxxx   [0010 0000, 0011 1111]
+	      0000 01xx   [0000 0100, 0000 0111]
+	      0000 0001   [0000 0001, 0000 0001]
   */
   for (int i = 0; i < prec - leading_zeros - 1; ++i)
-    if ((int_mask & (1 << i)) == 0)
+    if ((int_mask & ((unsigned HOST_WIDE_INT)1 << i)) == 0)
       {
 	tree lb = fold_build2 (LSHIFT_EXPR, type,
 			       build_one_cst (type),
@@ -3464,6 +3465,24 @@ operator_tests ()
   i1 = int_range<1> (integer_type_node);
   op_bitwise_and.op1_range (res, integer_type_node, i1, i2);
   ASSERT_TRUE (res == int_range<1> (integer_type_node));
+
+  // Test that 0x808.... & 0x8.... still contains 0x8....
+  // for a large set of numbers.
+  {
+    tree big_type = long_long_unsigned_type_node;
+    // big_num = 0x808,0000,0000,0000
+    tree big_num = fold_build2 (LSHIFT_EXPR, big_type,
+				build_int_cst (big_type, 0x808),
+				build_int_cst (big_type, 48));
+    op_bitwise_and.fold_range (res, big_type,
+			       int_range <1> (big_type),
+			       int_range <1> (big_num, big_num));
+    // val = 0x8,0000,0000,0000
+    tree val = fold_build2 (LSHIFT_EXPR, big_type,
+			    build_int_cst (big_type, 0x8),
+			    build_int_cst (big_type, 48));
+    ASSERT_TRUE (res.contains_p (val));
+  }
 }
 
 // Run all of the selftests within this file.
