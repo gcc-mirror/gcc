@@ -10825,6 +10825,24 @@ aarch64_initial_elimination_offset (unsigned from, unsigned to)
   return cfun->machine->frame.frame_size;
 }
 
+
+/* Get return address without mangling.  */
+
+rtx
+aarch64_return_addr_rtx (void)
+{
+  rtx val = get_hard_reg_initial_val (Pmode, LR_REGNUM);
+  /* Note: aarch64_return_address_signing_enabled only
+     works after cfun->machine->frame.laid_out is set,
+     so here we don't know if the return address will
+     be signed or not.  */
+  rtx lr = gen_rtx_REG (Pmode, LR_REGNUM);
+  emit_move_insn (lr, val);
+  emit_insn (GEN_FCN (CODE_FOR_xpaclri) ());
+  return lr;
+}
+
+
 /* Implement RETURN_ADDR_RTX.  We do not support moving back to a
    previous frame.  */
 
@@ -10833,7 +10851,7 @@ aarch64_return_addr (int count, rtx frame ATTRIBUTE_UNUSED)
 {
   if (count != 0)
     return const0_rtx;
-  return get_hard_reg_initial_val (Pmode, LR_REGNUM);
+  return aarch64_return_addr_rtx ();
 }
 
 static void
