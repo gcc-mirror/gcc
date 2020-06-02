@@ -1,3 +1,11 @@
+2020-06-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94361
+	* class.c (finalize_component): Use expr->finalized instead of
+	comp->finalized.
+	* gfortran.h (gfc_component): Remove finalized member.
+	(gfc_expr): Add it here instead.
+
 2020-05-28  Tobias Burnus  <tobias@codesourcery.com>
 	    Mark Eggleston  <markeggleston@gnu.gcc.org>
 
