@@ -136,6 +136,11 @@ ignored_prefixes = [
     'libsanitizer/',
     ]
 
+wildcard_prefixes = [
+    'gcc/testsuite/',
+    'libstdc++-v3/doc/html/'
+    ]
+
 misc_files = [
     'gcc/DATESTAMP',
     'gcc/BASE-VER',
@@ -182,11 +187,10 @@ class ChangeLogEntry:
         self.initial_prs = list(prs)
         self.prs = list(prs)
         self.lines = []
+        self.files = []
+        self.file_patterns = []
 
-    @property
-    def files(self):
-        files = []
-
+    def parse_file_names(self):
         # Whether the content currently processed is between a star prefix the
         # end of the file list: a colon or an open paren.
         in_location = False
@@ -215,8 +219,10 @@ class ChangeLogEntry:
                 for file in line.split(','):
                     file = file.strip()
                     if file:
-                        files.append(file)
-        return files
+                        if file.endswith('*'):
+                            self.file_patterns.append(file[:-1])
+                        else:
+                            self.files.append(file)
 
     @property
     def datetime(self):
@@ -275,8 +281,10 @@ class GitCommit:
         self.parse_lines(all_are_ignored)
         if self.changes:
             self.parse_changelog()
+            self.parse_file_names()
             self.check_for_empty_description()
             self.deduce_changelog_locations()
+            self.check_file_patterns()
             if not self.errors:
                 self.check_mentioned_files()
                 self.check_for_correct_changelog()
@@ -442,6 +450,18 @@ class GitCommit:
                         else:
                             last_entry.lines.append(line)
 
+    def parse_file_names(self):
+        for entry in self.changelog_entries:
+            entry.parse_file_names()
+
+    def check_file_patterns(self):
+        for entry in self.changelog_entries:
+            for pattern in entry.file_patterns:
+                name = os.path.join(entry.folder, pattern)
+                if name not in wildcard_prefixes:
+                    msg = 'unsupported wildcard prefix'
+                    self.errors.append(Error(msg, name))
+
     def check_for_empty_description(self):
         for entry in self.changelog_entries:
             for i, line in enumerate(entry.lines):
@@ -502,6 +522,8 @@ class GitCommit:
         assert folder_count == len(self.changelog_entries)
 
         mentioned_files = set()
+        mentioned_patterns = []
+        used_patterns = set()
         for entry in self.changelog_entries:
             if not entry.files:
                 msg = 'ChangeLog must contain at least one file entry'
@@ -510,6 +532,8 @@ class GitCommit:
             for file in entry.files:
                 if not self.is_changelog_filename(file):
                     mentioned_files.add(os.path.join(entry.folder, file))
+            for pattern in entry.file_patterns:
+                mentioned_patterns.append(os.path.join(entry.folder, pattern))
 
         cand = [x[0] for x in self.modified_files
                 if not self.is_changelog_filename(x[0])]
@@ -543,9 +567,21 @@ class GitCommit:
                     assert file.startswith(entry.folder)
                     file = file[len(entry.folder):].lstrip('/')
                     entry.lines.append('\t* %s: New file.' % file)
+                    entry.files.append(file)
                 else:
-                    msg = 'changed file not mentioned in a ChangeLog'
-                    self.errors.append(Error(msg, file))
+                    used_pattern = [p for p in mentioned_patterns
+                                    if file.startswith(p)]
+                    used_pattern = used_pattern[0] if used_pattern else None
+                    if used_pattern:
+                        used_patterns.add(used_pattern)
+                    else:
+                        msg = 'changed file not mentioned in a ChangeLog'
+                        self.errors.append(Error(msg, file))
+
+        for pattern in mentioned_patterns:
+            if pattern not in used_patterns:
+                error = 'pattern doesn''t match any changed files'
+                self.errors.append(Error(error, pattern))
 
     def check_for_correct_changelog(self):
         for entry in self.changelog_entries:

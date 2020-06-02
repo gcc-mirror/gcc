@@ -2973,3 +2973,89 @@ index 1cd5872c03d..6f95aedb3d3 100644
 +
 -- 
 2.26.2
+
+=== 0001-Fix-text-of-hyperlink-in-manual.patch ===
+From c7904d9e08a0ca3f733be3c2e8a3b912fa851fc5 Mon Sep 17 00:00:00 2001
+From: Jonathan Wakely <jwakely@redhat.com>
+Date: Fri, 8 Mar 2019 13:56:53 +0000
+Subject: [PATCH] Fix text of hyperlink in manual
+
+	* doc/xml/manual/using.xml: Use link element instead of xref.
+	* doc/html/*: Regenerate.
+
+---
+ libstdc++-v3/ChangeLog                         | 3 +++
+ libstdc++-v3/doc/html/manual/using_macros.html | 3 ++-
+ libstdc++-v3/doc/xml/manual/using.xml          | 4 ++--
+ 3 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/libstdc++-v3/doc/html/manual/using_macros.html b/libstdc++-v3/doc/html/manual/using_macros.html
+index 7030bd2d0fd..dad6564a97d 100644
+--- a/libstdc++-v3/doc/html/manual/using_macros.html
++++ b/libstdc++-v3/doc/html/manual/using_macros.html
+@@ -1 +1,2 @@
+ 
++
+diff --git a/libstdc++-v3/doc/xml/manual/using.xml b/libstdc++-v3/doc/xml/manual/using.xml
+index 2d44a739406..7647e9b8dad 100644
+--- a/libstdc++-v3/doc/xml/manual/using.xml
++++ b/libstdc++-v3/doc/xml/manual/using.xml
+@@ -1 +1,2 @@
+ 
++
+-- 
+2.25.4
+
+=== 0002-libstdc-Fake-test-change-1.patch ===
+From fe4ade6778d1d97214db12bf2c40d0f40e7f953a Mon Sep 17 00:00:00 2001
+From: Jonathan Wakely <jwakely@redhat.com>
+Date: Tue, 2 Jun 2020 11:52:34 +0100
+Subject: [PATCH] libstdc++: Fake change for testing git_commit.py
+
+libstdc++-v3/ChangeLog:
+
+	* doc/xml/faq.xml: Fake change.
+	* doc/html/*: Regenerated.
+---
+ libstdc++-v3/doc/xml/faq.xml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/libstdc++-v3/doc/xml/faq.xml b/libstdc++-v3/doc/xml/faq.xml
+index e419d3c22a0..bcc14dd6d90 100644
+--- a/libstdc++-v3/doc/xml/faq.xml
++++ b/libstdc++-v3/doc/xml/faq.xml
+@@ -1 +1,2 @@
+ 
++
+-- 
+2.25.4
+
+=== 0003-libstdc-Fake-test-change-2.patch ===
+From e460effb3a42c1c046b682fe266da418f2693ef3 Mon Sep 17 00:00:00 2001
+From: Jonathan Wakely <jwakely@redhat.com>
+Date: Tue, 2 Jun 2020 11:52:34 +0100
+Subject: [PATCH] libstdc++: Fake change for testing 2
+
+libstdc++-v3/ChangeLog:
+
+	* doc/xml/faq.xml: Fake change.
+---
+ libstdc++-v3/doc/html/faq.html | 2 +-
+ libstdc++-v3/doc/xml/faq.xml   | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/libstdc++-v3/doc/html/faq.html b/libstdc++-v3/doc/html/faq.html
+index 967e5f5f348..95d21b5bf9f 100644
+--- a/libstdc++-v3/doc/html/faq.html
++++ b/libstdc++-v3/doc/html/faq.html
+@@ -1 +1,2 @@
+ 
++
+--- a/libstdc++-v3/doc/xml/faq.xml
++++ b/libstdc++-v3/doc/xml/faq.xml
+@@ -1 +1,2 @@
+ 
++
+-- 
+2.25.4
+
