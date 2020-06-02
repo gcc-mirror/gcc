@@ -443,7 +443,7 @@ gcov_topn_add_value (gcov_type *counters, gcov_type value, gcov_type count,
   else
     {
       struct gcov_kvp *new_node
-	= (struct gcov_kvp *)xmalloc (sizeof (struct gcov_kvp));
+	= (struct gcov_kvp *)xcalloc (1, sizeof (struct gcov_kvp));
       new_node->value = value;
       new_node->count = count;
 
