@@ -131,6 +131,17 @@ public:
     this->in_version_unittest_ = false;
   }
 
+  /* Helper for generating code for the dsymbol AST class D.
+     Sets up the location of the symbol before lowering.  */
+
+  void build_dsymbol (Dsymbol *d)
+  {
+    location_t saved_location = input_location;
+    input_location = make_location_t (d->loc);
+    d->accept (this);
+    input_location = saved_location;
+  }
+
   /* This should be overridden by each declaration class.  */
 
   void visit (Dsymbol *)
@@ -212,7 +223,7 @@ public:
 	  {
 	    Declaration *d = ((DsymbolExp *) o)->s->isDeclaration ();
 	    if (d)
-	      d->accept (this);
+	      this->build_dsymbol (d);
 	  }
       }
   }
@@ -227,10 +238,7 @@ public:
       return;
 
     for (size_t i = 0; i < ds->dim; i++)
-      {
-	Dsymbol *s = (*ds)[i];
-	s->accept (this);
-      }
+      this->build_dsymbol ((*ds)[i]);
   }
 
   /* Pragmas are a way to pass special information to the compiler and to add
@@ -278,10 +286,7 @@ public:
       return;
 
     for (size_t i = 0; i < d->members->dim; i++)
-      {
-	Dsymbol *s = (*d->members)[i];
-	s->accept (this);
-      }
+      this->build_dsymbol ((*d->members)[i]);
   }
 
   /* Templates are D's approach to generic programming.  They have no members
@@ -315,7 +320,7 @@ public:
     /* Return type is instantiated from this template declaration, walk over
        all members of the instance.  */
     if (ti && ti->tempdecl == d)
-      ti->accept (this);
+      this->build_dsymbol (ti);
   }
 
   /* Walk over all members in the instantiated template.  */
@@ -329,10 +334,7 @@ public:
       return;
 
     for (size_t i = 0; i < d->members->dim; i++)
-      {
-	Dsymbol *s = (*d->members)[i];
-	s->accept (this);
-      }
+      this->build_dsymbol ((*d->members)[i]);
   }
 
   /* Walk over all members in the mixin template scope.  */
@@ -343,10 +345,7 @@ public:
       return;
 
     for (size_t i = 0; i < d->members->dim; i++)
-      {
-	Dsymbol *s = (*d->members)[i];
-	s->accept (this);
-      }
+      this->build_dsymbol ((*d->members)[i]);
   }
 
   /* Write out compiler generated TypeInfo, initializer and functions for the
@@ -391,24 +390,20 @@ public:
 
     d_finish_decl (d->sinit);
 
-    /* Put out the members.  */
+    /* Put out the members.  There might be static constructors in the members
+       list, and they cannot be put in separate object files.  */
     for (size_t i = 0; i < d->members->dim; i++)
-      {
-	Dsymbol *member = (*d->members)[i];
-	/* There might be static ctors in the members, and they cannot
-	   be put in separate object files.  */
-	member->accept (this);
-      }
+      this->build_dsymbol ((*d->members)[i]);
 
     /* Put out xopEquals, xopCmp and xopHash.  */
     if (d->xeq && d->xeq != d->xerreq)
-      d->xeq->accept (this);
+      this->build_dsymbol (d->xeq);
 
     if (d->xcmp && d->xcmp != d->xerrcmp)
-      d->xcmp->accept (this);
+      this->build_dsymbol (d->xcmp);
 
     if (d->xhash)
-      d->xhash->accept (this);
+      this->build_dsymbol (d->xhash);
 
     d->semanticRun = PASSobj;
   }
@@ -503,10 +498,7 @@ public:
 
     /* Put out the members.  */
     for (size_t i = 0; i < d->members->dim; i++)
-      {
-	Dsymbol *member = (*d->members)[i];
-	member->accept (this);
-      }
+      this->build_dsymbol ((*d->members)[i]);
 
     /* If something goes wrong during final semantic pass, don't bother with
        the rest as we may have incomplete info.  */
@@ -582,10 +574,7 @@ public:
 
     /* Put out the members.  */
     for (size_t i = 0; i < d->members->dim; i++)
-      {
-	Dsymbol *member = (*d->members)[i];
-	member->accept (this);
-      }
+      this->build_dsymbol ((*d->members)[i]);
 
     /* Generate C symbols.  */
     d->csym = get_classinfo_decl (d);
@@ -594,7 +583,7 @@ public:
     if (have_typeinfo_p (Type::dtypeinfo))
       {
 	create_typeinfo (d->type, NULL);
-	d->type->vtinfo->accept (this);
+	this->build_dsymbol (d->type->vtinfo);
       }
 
     DECL_INITIAL (d->csym) = layout_classinfo (d);
@@ -669,7 +658,7 @@ public:
 
     if (d->aliassym)
       {
-	d->toAlias ()->accept (this);
+	this->build_dsymbol (d->toAlias ());
 	return;
       }
 
@@ -1044,7 +1033,7 @@ build_decl_tree (Dsymbol *d)
     input_location = make_location_t (Loc ("<no_file>", 1, 0));
 
   DeclVisitor v = DeclVisitor ();
-  d->accept (&v);
+  v.build_dsymbol (d);
 
   input_location = saved_location;
 }
