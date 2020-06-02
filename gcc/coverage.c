@@ -245,7 +245,9 @@ read_counts_file (void)
       else if (GCOV_TAG_IS_COUNTER (tag) && fn_ident)
 	{
 	  counts_entry **slot, *entry, elt;
-	  unsigned n_counts = GCOV_TAG_COUNTER_NUM (length);
+	  int read_length = (int)length;
+	  length = read_length > 0 ? read_length : 0;
+	  unsigned n_counts = GCOV_TAG_COUNTER_NUM (abs (read_length));
 	  unsigned ix;
 
 	  elt.ident = fn_ident;
@@ -274,8 +276,9 @@ read_counts_file (void)
 	      counts_hash = NULL;
 	      break;
 	    }
-	  for (ix = 0; ix != n_counts; ix++)
-	    entry->counts[ix] += gcov_read_counter ();
+	  if (read_length > 0)
+	    for (ix = 0; ix != n_counts; ix++)
+	      entry->counts[ix] = gcov_read_counter ();
 	}
       gcov_sync (offset, length);
       if ((is_error = gcov_is_error ()))

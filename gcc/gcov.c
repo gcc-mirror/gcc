@@ -1972,11 +1972,16 @@ read_count_file (void)
 	}
       else if (tag == GCOV_TAG_FOR_COUNTER (GCOV_COUNTER_ARCS) && fn)
 	{
+	  int read_length = (int)length;
+	  length = abs (read_length);
 	  if (length != GCOV_TAG_COUNTER_LENGTH (fn->counts.size ()))
 	    goto mismatch;
 
-	  for (ix = 0; ix != fn->counts.size (); ix++)
-	    fn->counts[ix] += gcov_read_counter ();
+	  if (read_length > 0)
+	    for (ix = 0; ix != fn->counts.size (); ix++)
+	      fn->counts[ix] += gcov_read_counter ();
+	  else
+	    length = 0;
 	}
       gcov_sync (base, length);
       if ((error = gcov_is_error ()))

@@ -302,13 +302,16 @@ merge_one_data (const char *filename,
             continue;
 
 	  tag = gcov_read_unsigned ();
-	  length = gcov_read_unsigned ();
+	  int read_length = (int)gcov_read_unsigned ();
+	  length = abs (read_length);
 	  if (tag != GCOV_TAG_FOR_COUNTER (t_ix)
 	      || (length != GCOV_TAG_COUNTER_LENGTH (ci_ptr->num)
 		  && t_ix != GCOV_COUNTER_V_TOPN
 		  && t_ix != GCOV_COUNTER_V_INDIR))
 	    goto read_mismatch;
-	  (*merge) (ci_ptr->values, ci_ptr->num);
+	  /* Merging with all zero counters does not make sense.  */
+	  if (read_length > 0)
+	    (*merge) (ci_ptr->values, ci_ptr->num);
 	  ci_ptr++;
 	}
       if ((error = gcov_is_error ()))
@@ -414,27 +417,40 @@ write_one_data (const struct gcov_info *gi_ptr,
       ci_ptr = gfi_ptr->ctrs;
       for (t_ix = 0; t_ix < GCOV_COUNTERS; t_ix++)
         {
-          gcov_unsigned_t n_counts;
-          gcov_type *c_ptr;
+	  gcov_position_t n_counts;
 
-          if (!gi_ptr->merge[t_ix])
-            continue;
+	  if (!gi_ptr->merge[t_ix])
+	    continue;
 
-          n_counts = ci_ptr->num;
+	  n_counts = ci_ptr->num;
 
 	  if (gi_ptr->merge[t_ix] == __gcov_merge_topn)
 	    write_top_counters (ci_ptr, t_ix, n_counts);
 	  else
 	    {
-	      gcov_write_tag_length (GCOV_TAG_FOR_COUNTER (t_ix),
-				     GCOV_TAG_COUNTER_LENGTH (n_counts));
-	      c_ptr = ci_ptr->values;
-	      while (n_counts--)
-		gcov_write_counter (*c_ptr++);
+	      /* Do not stream when all counters are zero.  */
+	      int all_zeros = 1;
+	      for (unsigned i = 0; i < n_counts; i++)
+		if (ci_ptr->values[i] != 0)
+		  {
+		    all_zeros = 0;
+		    break;
+		  }
+
+	      if (all_zeros)
+		gcov_write_tag_length (GCOV_TAG_FOR_COUNTER (t_ix),
+				       GCOV_TAG_COUNTER_LENGTH (-n_counts));
+	      else
+		{
+		  gcov_write_tag_length (GCOV_TAG_FOR_COUNTER (t_ix),
+					 GCOV_TAG_COUNTER_LENGTH (n_counts));
+		  for (unsigned i = 0; i < n_counts; i++)
+		    gcov_write_counter (ci_ptr->values[i]);
+		}
 	    }
 
-          ci_ptr++;
-        }
+	  ci_ptr++;
+	}
       if (buffered)
         fn_buffer = free_fn_data (gi_ptr, fn_buffer, GCOV_COUNTERS);
     }
