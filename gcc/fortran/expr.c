@@ -3693,7 +3693,7 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform,
 
   /* Check size of array assignments.  */
   if (lvalue->rank != 0 && rvalue->rank != 0
-      && !gfc_check_conformance (lvalue, rvalue, "array assignment"))
+      && !gfc_check_conformance (lvalue, rvalue, _("array assignment")))
     return false;
 
   /* Handle the case of a BOZ literal on the RHS.  */

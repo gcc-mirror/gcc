@@ -67,7 +67,7 @@ gfc_invalid_boz (const char *msg, locus *loc)
       return false;
     }
 
-  const char hint[] = " [see %<-fno-allow-invalid-boz%>]";
+  const char hint[] = _(" [see %<-fno-allow-invalid-boz%>]");
   size_t len = strlen (msg) + strlen (hint) + 1;
   char *msg2 = (char *) alloca (len);
   strcpy (msg2, msg);
@@ -1313,8 +1313,8 @@ gfc_check_achar (gfc_expr *a, gfc_expr *kind)
 {
   if (a->ts.type == BT_BOZ)
     {
-      if (gfc_invalid_boz ("BOZ literal constant at %L cannot appear in "
-			   "ACHAR intrinsic subprogram", &a->where))
+      if (gfc_invalid_boz (G_("BOZ literal constant at %L cannot appear in "
+			   "ACHAR intrinsic subprogram"), &a->where))
 	return false;
 
       if (!gfc_boz2int (a, gfc_default_integer_kind))
@@ -1973,8 +1973,8 @@ gfc_check_char (gfc_expr *i, gfc_expr *kind)
 {
   if (i->ts.type == BT_BOZ)
     {
-      if (gfc_invalid_boz ("BOZ literal constant at %L cannot appear in "
-			   "CHAR intrinsic subprogram", &i->where))
+      if (gfc_invalid_boz (G_("BOZ literal constant at %L cannot appear in "
+			   "CHAR intrinsic subprogram"), &i->where))
 	return false;
 
       if (!gfc_boz2int (i, gfc_default_integer_kind))
@@ -2424,8 +2424,8 @@ gfc_check_complex (gfc_expr *x, gfc_expr *y)
 
   if (x->ts.type == BT_BOZ)
     {
-      if (gfc_invalid_boz ("BOZ constant at %L cannot appear in the COMPLEX "
-			   "intrinsic subprogram", &x->where))
+      if (gfc_invalid_boz (G_("BOZ constant at %L cannot appear in the COMPLEX"
+			   " intrinsic subprogram"), &x->where))
 	{
 	  reset_boz (x);
 	  return false;
@@ -2438,8 +2438,8 @@ gfc_check_complex (gfc_expr *x, gfc_expr *y)
 
   if (y->ts.type == BT_BOZ)
     {
-      if (gfc_invalid_boz ("BOZ constant at %L cannot appear in the COMPLEX "
-			   "intrinsic subprogram", &y->where))
+      if (gfc_invalid_boz (G_("BOZ constant at %L cannot appear in the COMPLEX"
+			   " intrinsic subprogram"), &y->where))
 	{
 	  reset_boz (y);
 	  return false;
@@ -2903,8 +2903,8 @@ gfc_check_float (gfc_expr *a)
 {
   if (a->ts.type == BT_BOZ)
     {
-      if (gfc_invalid_boz ("BOZ literal constant at %L cannot appear in the "
-			   "FLOAT intrinsic subprogram", &a->where))
+      if (gfc_invalid_boz (G_("BOZ literal constant at %L cannot appear in the"
+			   " FLOAT intrinsic subprogram"), &a->where))
 	{
 	  reset_boz (a);
 	  return false;
@@ -3706,8 +3706,8 @@ check_rest (bt type, int kind, gfc_actual_arglist *arglist)
 
       for (tmp = arglist, m=1; tmp != arg; tmp = tmp->next, m++)
 	if (!gfc_check_conformance (tmp->expr, x,
-				    "arguments 'a%d' and 'a%d' for "
-				    "intrinsic '%s'", m, n,
+				    _("arguments 'a%d' and 'a%d' for "
+				    "intrinsic '%s'"), m, n,
 				    gfc_current_intrinsic))
 	    return false;
     }
@@ -3914,7 +3914,7 @@ gfc_check_minloc_maxloc (gfc_actual_arglist *ap)
 
   if (m != NULL
       && !gfc_check_conformance (a, m,
-				 "arguments '%s' and '%s' for intrinsic %s",
+				 _("arguments '%s' and '%s' for intrinsic %s"),
 				 gfc_current_intrinsic_arg[0]->name,
 				 gfc_current_intrinsic_arg[2]->name,
 				 gfc_current_intrinsic))
@@ -3995,7 +3995,7 @@ gfc_check_findloc (gfc_actual_arglist *ap)
 
   if (m != NULL
       && !gfc_check_conformance (a, m,
-				 "arguments '%s' and '%s' for intrinsic %s",
+				 _("arguments '%s' and '%s' for intrinsic %s"),
 				 gfc_current_intrinsic_arg[0]->name,
 				 gfc_current_intrinsic_arg[3]->name,
 				 gfc_current_intrinsic))
@@ -4060,7 +4060,7 @@ check_reduction (gfc_actual_arglist *ap)
 
   if (m != NULL
       && !gfc_check_conformance (a, m,
-				 "arguments '%s' and '%s' for intrinsic %s",
+				 _("arguments '%s' and '%s' for intrinsic %s"),
 				 gfc_current_intrinsic_arg[0]->name,
 				 gfc_current_intrinsic_arg[2]->name,
 				 gfc_current_intrinsic))
@@ -4398,7 +4398,7 @@ gfc_check_pack (gfc_expr *array, gfc_expr *mask, gfc_expr *vector)
     return false;
 
   if (!gfc_check_conformance (array, mask,
-			      "arguments '%s' and '%s' for intrinsic '%s'",
+			      _("arguments '%s' and '%s' for intrinsic '%s'"),
 			      gfc_current_intrinsic_arg[0]->name,
 			      gfc_current_intrinsic_arg[1]->name,
 			      gfc_current_intrinsic))

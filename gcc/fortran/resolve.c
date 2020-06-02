@@ -2315,7 +2315,7 @@ resolve_elemental_actual (gfc_expr *expr, gfc_code *c)
       /* Elemental procedure's array actual arguments must conform.  */
       if (e != NULL)
 	{
-	  if (!gfc_check_conformance (arg->expr, e, "elemental procedure"))
+	  if (!gfc_check_conformance (arg->expr, e, _("elemental procedure")))
 	    return false;
 	}
       else
@@ -4190,9 +4190,9 @@ resolve_operator (gfc_expr *e)
       /* If op1 is BOZ, then op2 is not!.  Try to convert to type of op2.  */
       if (op1->ts.type == BT_BOZ)
 	{
-	  if (gfc_invalid_boz ("BOZ literal constant near %L cannot appear as "
-				"an operand of a relational operator",
-				&op1->where))
+	  if (gfc_invalid_boz (G_("BOZ literal constant near %L cannot appear "
+			       "as an operand of a relational operator"),
+			       &op1->where))
 	    return false;
 
 	  if (op2->ts.type == BT_INTEGER && !gfc_boz2int (op1, op2->ts.kind))
@@ -4205,8 +4205,8 @@ resolve_operator (gfc_expr *e)
       /* If op2 is BOZ, then op1 is not!.  Try to convert to type of op2. */
       if (op2->ts.type == BT_BOZ)
 	{
-	  if (gfc_invalid_boz ("BOZ literal constant near %L cannot appear as "
-				"an operand of a relational operator",
+	  if (gfc_invalid_boz (G_("BOZ literal constant near %L cannot appear"
+			       " as an operand of a relational operator"),
 				&op2->where))
 	    return false;
 
@@ -4244,9 +4244,9 @@ resolve_operator (gfc_expr *e)
 		  const char *msg;
 
 		  if (op == INTRINSIC_EQ || op == INTRINSIC_EQ_OS)
-		    msg = "Equality comparison for %s at %L";
+		    msg = G_("Equality comparison for %s at %L");
 		  else
-		    msg = "Inequality comparison for %s at %L";
+		    msg = G_("Inequality comparison for %s at %L");
 
 		  gfc_warning (OPT_Wcompare_reals, msg,
 			       gfc_typename (op1), &op1->where);

@@ -2406,7 +2406,7 @@ check_open_constraints (gfc_open *open, locus *where)
       && open->recl->ts.type == BT_INTEGER
       && mpz_sgn (open->recl->value.integer) != 1)
     {
-      warn_or_error ("RECL in OPEN statement at %L must be positive",
+      warn_or_error (G_("RECL in OPEN statement at %L must be positive"),
 		     &open->recl->where);
     }
 
@@ -2431,8 +2431,8 @@ check_open_constraints (gfc_open *open, locus *where)
 	{
 	  char *s = gfc_widechar_to_char (open->status->value.character.string,
 					  -1);
-	  warn_or_error ("The STATUS specified in OPEN statement at %L is "
-			 "%qs and no FILE specifier is present",
+	  warn_or_error (G_("The STATUS specified in OPEN statement at %L is "
+			 "%qs and no FILE specifier is present"),
 			 &open->status->where, s);
 	  free (s);
 	}
@@ -2442,9 +2442,9 @@ check_open_constraints (gfc_open *open, locus *where)
       if (gfc_wide_strncasecmp (open->status->value.character.string,
 				"scratch", 7) == 0 && open->file)
 	{
-	  warn_or_error ("The STATUS specified in OPEN statement at %L "
+	  warn_or_error (G_("The STATUS specified in OPEN statement at %L "
 			 "cannot have the value SCRATCH if a FILE specifier "
-			 "is present", &open->status->where);
+			 "is present"), &open->status->where);
 	}
     }
 
@@ -2506,16 +2506,16 @@ check_open_constraints (gfc_open *open, locus *where)
 	  spec = "";
 	}
 
-      warn_or_error ("%s specifier at %L not allowed in OPEN statement for "
-		     "unformatted I/O", spec, loc);
+      warn_or_error (G_("%s specifier at %L not allowed in OPEN statement for "
+		     "unformatted I/O"), spec, loc);
     }
 
   if (open->recl && open->access && open->access->expr_type == EXPR_CONSTANT
       && gfc_wide_strncasecmp (open->access->value.character.string,
 			       "stream", 6) == 0)
     {
-      warn_or_error ("RECL specifier not allowed in OPEN statement at %L for "
-		     "stream I/O", &open->recl->where);
+      warn_or_error (G_("RECL specifier not allowed in OPEN statement at %L for "
+		     "stream I/O"), &open->recl->where);
     }
 
   if (open->position
@@ -2527,8 +2527,8 @@ check_open_constraints (gfc_open *open, locus *where)
 	   || gfc_wide_strncasecmp (open->access->value.character.string,
 				    "append", 6) == 0))
     {
-      warn_or_error ("POSITION specifier in OPEN statement at %L only allowed "
-		     "for stream or sequential ACCESS", &open->position->where);
+      warn_or_error (G_("POSITION specifier in OPEN statement at %L only allowed "
+		     "for stream or sequential ACCESS"), &open->position->where);
     }
 
   return true;
@@ -3665,8 +3665,8 @@ match_io_element (io_kind k, gfc_code **cpp)
 
       if (m == MATCH_YES && expr->ts.type == BT_BOZ)
 	{
-	  if (gfc_invalid_boz ("BOZ literal constant at %L cannot appear in "
-				"an output IO list", &gfc_current_locus))
+	  if (gfc_invalid_boz (G_("BOZ literal constant at %L cannot appear in"
+				" an output IO list"), &gfc_current_locus))
 	    return MATCH_ERROR;
 	  if (!gfc_boz2int (expr, gfc_max_integer_kind))
 	    return MATCH_ERROR;
