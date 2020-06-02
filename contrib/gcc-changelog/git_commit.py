@@ -176,7 +176,7 @@ class Error:
 class ChangeLogEntry:
     def __init__(self, folder, authors, prs):
         self.folder = folder
-        # Python2 has not 'copy' function
+        # The 'list.copy()' function is not available before Python 3.3
         self.author_lines = list(authors)
         self.initial_prs = list(prs)
         self.prs = list(prs)
@@ -209,7 +209,7 @@ class ChangeLogEntry:
                     line = line[:line.index(':')]
                     in_location = False
 
-                # At this point, all that 's left is a list of filenames
+                # At this point, all that's left is a list of filenames
                 # separated by commas and whitespaces.
                 for file in line.split(','):
                     file = file.strip()
@@ -503,7 +503,7 @@ class GitCommit:
         mentioned_files = set()
         for entry in self.changelog_entries:
             if not entry.files:
-                msg = 'ChangeLog must contain a file entry'
+                msg = 'ChangeLog must contain at least one file entry'
                 self.errors.append(Error(msg, entry.folder))
             assert not entry.folder.endswith('/')
             for file in entry.files:
