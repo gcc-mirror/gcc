@@ -227,9 +227,9 @@ package body Exp_SPARK is
 
                   if Nkind (Index) = N_Range then
                      Apply_Scalar_Range_Check
-                       (Low_Bound  (Index), Etype (Index_Typ));
+                       (Low_Bound  (Index), Base_Type (Etype (Index_Typ)));
                      Apply_Scalar_Range_Check
-                       (High_Bound (Index), Etype (Index_Typ));
+                       (High_Bound (Index), Base_Type (Etype (Index_Typ)));
 
                   --  Otherwise the index denotes a single element
 
