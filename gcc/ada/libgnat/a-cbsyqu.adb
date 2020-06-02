@@ -27,7 +27,9 @@
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
-package body Ada.Containers.Bounded_Synchronized_Queues is
+package body Ada.Containers.Bounded_Synchronized_Queues with
+  SPARK_Mode => Off
+is
 
    package body Implementation is
 
