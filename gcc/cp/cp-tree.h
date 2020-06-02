@@ -7794,6 +7794,7 @@ extern tree cp_fold_maybe_rvalue		(tree, bool);
 extern tree cp_fold_rvalue			(tree);
 extern tree cp_fully_fold			(tree);
 extern tree cp_fully_fold_init			(tree);
+extern tree predeclare_vla			(tree);
 extern void clear_fold_cache			(void);
 extern tree lookup_hotness_attribute		(tree);
 extern tree process_stmt_hotness_attribute	(tree, location_t);
