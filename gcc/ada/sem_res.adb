@@ -3428,7 +3428,7 @@ package body Sem_Res is
 
       procedure Flag_Effectively_Volatile_Objects (Expr : Node_Id);
       --  Emit an error concerning the illegal usage of an effectively volatile
-      --  object in interfering context (SPARK RM 7.1.3(10)).
+      --  object for reading in interfering context (SPARK RM 7.1.3(10)).
 
       procedure Insert_Default;
       --  If the actual is missing in a call, insert in the actuals list
@@ -3687,7 +3687,7 @@ package body Sem_Res is
       procedure Flag_Effectively_Volatile_Objects (Expr : Node_Id) is
          function Flag_Object (N : Node_Id) return Traverse_Result;
          --  Determine whether arbitrary node N denotes an effectively volatile
-         --  object and if it does, emit an error.
+         --  object for reading and if it does, emit an error.
 
          -----------------
          -- Flag_Object --
@@ -3707,9 +3707,7 @@ package body Sem_Res is
                Id := Entity (N);
 
                if Is_Object (Id)
-                 and then Is_Effectively_Volatile (Id)
-                 and then (Async_Writers_Enabled (Id)
-                            or else Effective_Reads_Enabled (Id))
+                 and then Is_Effectively_Volatile_For_Reading (Id)
                then
                   Error_Msg_N
                     ("volatile object cannot appear in this context (SPARK "
@@ -4876,17 +4874,17 @@ package body Sem_Res is
 
             if SPARK_Mode = On and then Comes_From_Source (A) then
 
-               --  An effectively volatile object may act as an actual when the
-               --  corresponding formal is of a non-scalar effectively volatile
-               --  type (SPARK RM 7.1.3(10)).
+               --  An effectively volatile object for reading may act as an
+               --  actual when the corresponding formal is of a non-scalar
+               --  effectively volatile type for reading (SPARK RM 7.1.3(10)).
 
                if not Is_Scalar_Type (Etype (F))
-                 and then Is_Effectively_Volatile (Etype (F))
+                 and then Is_Effectively_Volatile_For_Reading (Etype (F))
                then
                   null;
 
-               --  An effectively volatile object may act as an actual in a
-               --  call to an instance of Unchecked_Conversion.
+               --  An effectively volatile object for reading may act as an
+               --  actual in a call to an instance of Unchecked_Conversion.
                --  (SPARK RM 7.1.3(10)).
 
                elsif Is_Unchecked_Conversion_Instance (Nam) then
@@ -4894,18 +4892,18 @@ package body Sem_Res is
 
                --  The actual denotes an object
 
-               elsif Is_Effectively_Volatile_Object (A) then
+               elsif Is_Effectively_Volatile_Object_For_Reading (A) then
                   Error_Msg_N
                     ("volatile object cannot act as actual in a call (SPARK "
                      & "RM 7.1.3(10))", A);
 
                --  Otherwise the actual denotes an expression. Inspect the
-               --  expression and flag each effectively volatile object with
-               --  enabled property Async_Writers or Effective_Reads as illegal
-               --  because it apprears within an interfering context. Note that
-               --  this is usually done in Resolve_Entity_Name, but when the
-               --  effectively volatile object appears as an actual in a call,
-               --  the call must be resolved first.
+               --  expression and flag each effectively volatile object
+               --  for reading as illegal because it apprears within an
+               --  interfering context. Note that this is usually done in
+               --  Resolve_Entity_Name, but when the effectively volatile
+               --  object for reading appears as an actual in a call, the
+               --  call must be resolved first.
 
                else
                   Flag_Effectively_Volatile_Objects (A);
@@ -4923,7 +4921,7 @@ package body Sem_Res is
                   A_Id := Entity (A);
 
                   if Ekind (A_Id) = E_Variable
-                    and then Is_Effectively_Volatile (Etype (A_Id))
+                    and then Is_Effectively_Volatile_For_Reading (Etype (A_Id))
                     and then Effective_Reads_Enabled (A_Id)
                   then
                      Error_Msg_NE
@@ -7770,14 +7768,11 @@ package body Sem_Res is
 
          if SPARK_Mode = On then
 
-            --  An effectively volatile object subject to enabled properties
-            --  Async_Writers or Effective_Reads must appear in non-interfering
-            --  context (SPARK RM 7.1.3(10)).
+            --  An effectively volatile object for reading must appear in
+            --  non-interfering context (SPARK RM 7.1.3(10)).
 
             if Is_Object (E)
-              and then Is_Effectively_Volatile (E)
-              and then (Async_Writers_Enabled (E)
-                         or else Effective_Reads_Enabled (E))
+              and then Is_Effectively_Volatile_For_Reading (E)
               and then not Is_OK_Volatile_Context (Par, N)
             then
                SPARK_Msg_N
