@@ -525,7 +525,7 @@ enum gcn_address_spaces
 
 #ifndef USED_FOR_TARGET
 
-#define GCN_KERNEL_ARG_TYPES 19
+#define GCN_KERNEL_ARG_TYPES 16
 struct GTY(()) gcn_kernel_args
 {
   long requested;
