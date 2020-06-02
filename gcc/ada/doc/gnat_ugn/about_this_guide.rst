@@ -14,13 +14,13 @@ toolset for the full Ada programming language.
 It documents the features of the compiler and tools, and explains
 how to use them to build Ada applications.
 
-GNAT implements Ada 95, Ada 2005 and Ada 2012, and it may also be
+GNAT implements Ada 95, Ada 2005, Ada 2012, and Ada 202x, and it may also be
 invoked in Ada 83 compatibility mode.
 By default, GNAT assumes Ada 2012, but you can override with a
 compiler switch (:ref:`Compiling_Different_Versions_of_Ada`)
 to explicitly specify the language version.
 Throughout this manual, references to 'Ada' without a year suffix
-apply to all Ada 95/2005/2012 versions of the language.
+apply to all Ada versions of the language, starting with Ada 95.
 
 What This Guide Contains
 ========================
@@ -71,8 +71,6 @@ What You Should Know before Reading This Guide
 This guide assumes a basic familiarity with the Ada 95 language, as
 described in the International Standard ANSI/ISO/IEC-8652:1995, January
 1995.
-It does not require knowledge of the features introduced by Ada 2005
-or Ada 2012.
 Reference manuals for Ada 95, Ada 2005, and Ada 2012 are included in
 the GNAT documentation package.
 
@@ -102,81 +100,6 @@ following documents:
 * :title:`GNU Emacs Manual`,
   for full information on the extensible editor and programming
   environment Emacs.
-
-
-A Note to Readers of Previous Versions of the Manual
-====================================================
-
-In early 2015 the GNAT manuals were transitioned to the
-reStructuredText (rst) / Sphinx documentation generator technology.
-During that process the :title:`GNAT User's Guide` was reorganized
-so that related topics would be described together in the same chapter
-or appendix.  Here's a summary of the major changes realized in
-the new document structure.
-
-* :ref:`The_GNAT_Compilation_Model` has been extended so that it now covers
-  the following material:
-
-  - The ``gnatname``, ``gnatkr``, and ``gnatchop`` tools
-  - :ref:`Configuration_Pragmas`
-  - :ref:`GNAT_and_Libraries`
-  - :ref:`Conditional_Compilation` including :ref:`Preprocessing_with_gnatprep`
-    and :ref:`Integrated_Preprocessing`
-  - :ref:`Generating_Ada_Bindings_for_C_and_C++_headers`
-  - :ref:`Using_GNAT_Files_with_External_Tools`
-
-* :ref:`Building_Executable_Programs_With_GNAT` is a new chapter consolidating
-  the following content:
-
-  - :ref:`The_GNAT_Make_Program_gnatmake`
-  - :ref:`Compiling_with_GCC`
-  - :ref:`Binding_with_gnatbind`
-  - :ref:`Linking_with_gnatlink`
-  - :ref:`Using_the_GNU_make_Utility`
-
-* :ref:`GNAT_Utility_Programs` is a new chapter consolidating the information about several
-  GNAT tools:
-
-  .. only:: PRO or GPL
-
-    - :ref:`The_File_Cleanup_Utility_gnatclean`
-    - :ref:`The_GNAT_Library_Browser_gnatls`
-    - :ref:`The_Cross-Referencing_Tools_gnatxref_and_gnatfind`
-    - :ref:`The_Ada_to_HTML_Converter_gnathtml`
-    - :ref:`The_Ada-to-XML_Converter_gnat2xml`
-    - :ref:`The_Coding_Standard_Verifier_gnatcheck`
-    - :ref:`The_GNAT_Metrics_Tool_gnatmetric`
-    - :ref:`The_GNAT_Pretty_Printer_gnatpp`
-    - :ref:`The_Body_Stub_Generator_gnatstub`
-    - :ref:`The_Unit_Test_Generator_gnattest`
-
-  .. only:: FSF
-
-    - :ref:`The_File_Cleanup_Utility_gnatclean`
-    - :ref:`The_GNAT_Library_Browser_gnatls`
-    - :ref:`The_Cross-Referencing_Tools_gnatxref_and_gnatfind`
-    - :ref:`The_Ada_to_HTML_Converter_gnathtml`
-
-* :ref:`GNAT_and_Program_Execution` is a new chapter consolidating the following:
-
-  - :ref:`Running_and_Debugging_Ada_Programs`
-  - :ref:`Profiling`
-  - :ref:`Improving_Performance`
-  - :ref:`Overflow Check Handling in GNAT <Overflow_Check_Handling_in_GNAT>`
-  - :ref:`Performing Dimensionality Analysis in GNAT <Performing_Dimensionality_Analysis_in_GNAT>`
-  - :ref:`Stack_Related_Facilities`
-  - :ref:`Memory_Management_Issues`
-
-* :ref:`Platform_Specific_Information` is a new appendix consolidating the following:
-
-  - :ref:`Run_Time_Libraries`
-  - :ref:`Microsoft_Windows_Topics`
-  - :ref:`Mac_OS_Topics`
-
-* The *Compatibility and Porting Guide* appendix has been moved to the
-  :title:`GNAT Reference Manual`. It now includes a section
-  *Writing Portable Fixed-Point Declarations* which was previously
-  a separate chapter in the :title:`GNAT User's Guide`.
 
 
 Conventions
