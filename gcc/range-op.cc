@@ -1959,20 +1959,15 @@ unsigned_singleton_p (const irange &op)
 
 void
 operator_bitwise_and::remove_impossible_ranges (irange &r,
-						const irange &mask) const
+						const irange &rmask) const
 {
-  if (r.undefined_p () || !unsigned_singleton_p (mask))
+  if (r.undefined_p () || !unsigned_singleton_p (rmask))
     return;
 
-  tree tree_mask;
-  mask.singleton_p (&tree_mask);
-  if (!tree_fits_uhwi_p (tree_mask)) // FIXME: Rewrite with wide_int's.
-    return;
-
-  unsigned HOST_WIDE_INT int_mask = tree_to_uhwi (tree_mask);
+  wide_int mask = rmask.lower_bound ();
   tree type = r.type ();
   int prec = TYPE_PRECISION (type);
-  int leading_zeros = wi::clz (mask.lower_bound ());
+  int leading_zeros = wi::clz (mask);
   widest_irange impossible_ranges;
 
   /* We know that starting at the most significant bit, any 0 in the
@@ -1986,8 +1981,9 @@ operator_bitwise_and::remove_impossible_ranges (irange &r,
 	      0000 01xx   [0000 0100, 0000 0111]
 	      0000 0001   [0000 0001, 0000 0001]
   */
+  wide_int one = wi::one (prec);
   for (int i = 0; i < prec - leading_zeros - 1; ++i)
-    if ((int_mask & ((unsigned HOST_WIDE_INT)1 << i)) == 0)
+    if (wi::bit_and (mask, wi::lshift (one, wi::uhwi (i, prec))) == 0)
       {
 	tree lb = fold_build2 (LSHIFT_EXPR, type,
 			       build_one_cst (type),
