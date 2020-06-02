@@ -250,6 +250,8 @@ struct indirect_call_tuple
   
 /* Exactly one of these will be active in the process.  */
 extern struct gcov_master __gcov_master;
+extern struct gcov_kvp __gcov_kvp_pool[GCOV_PREALLOCATED_KVP];
+extern unsigned __gcov_kvp_pool_index;
 
 /* Dump a set of gcov objects.  */
 extern void __gcov_dump_one (struct gcov_root *) ATTRIBUTE_HIDDEN;
@@ -402,6 +404,47 @@ gcov_counter_add (gcov_type *counter, gcov_type value,
     *counter += value;
 }
 
+/* Allocate gcov_kvp from heap.  If we are recursively called, then allocate
+   it from a list of pre-allocated pool.  */
+
+static inline struct gcov_kvp *
+allocate_gcov_kvp (void)
+{
+  struct gcov_kvp *new_node = NULL;
+
+  static
+#if defined(HAVE_CC_TLS)
+__thread
+#endif
+  volatile unsigned in_recursion ATTRIBUTE_UNUSED = 0;
+
+#if !defined(IN_GCOV_TOOL) && !defined(L_gcov_merge_topn)
+  if (__builtin_expect (in_recursion, 0))
+    {
+      unsigned index;
+#if GCOV_SUPPORTS_ATOMIC
+      index
+	= __atomic_fetch_add (&__gcov_kvp_pool_index, 1, __ATOMIC_RELAXED);
+#else
+      index = __gcov_kvp_pool_index++;
+#endif
+      if (index < GCOV_PREALLOCATED_KVP)
+	new_node = &__gcov_kvp_pool[index];
+      else
+	/* Do not crash in the situation.  */
+	return NULL;
+    }
+  else
+#endif
+    {
+      in_recursion = 1;
+      new_node = (struct gcov_kvp *)xcalloc (1, sizeof (struct gcov_kvp));
+      in_recursion = 0;
+    }
+
+  return new_node;
+}
+
 /* Add key value pair VALUE:COUNT to a top N COUNTERS.  When INCREMENT_TOTAL
    is true, add COUNT to total of the TOP counter.  If USE_ATOMIC is true,
    do it in atomic way.  */
@@ -443,8 +486,10 @@ gcov_topn_add_value (gcov_type *counters, gcov_type value, gcov_type count,
     }
   else
     {
-      struct gcov_kvp *new_node
-	= (struct gcov_kvp *)xcalloc (1, sizeof (struct gcov_kvp));
+      struct gcov_kvp *new_node = allocate_gcov_kvp ();
+      if (new_node == NULL)
+	return;
+
       new_node->value = value;
       new_node->count = count;
 
