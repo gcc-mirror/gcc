@@ -1,3 +1,11 @@
+2020-06-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94361
+	* gfortran.dg/finalize_28.f90: Adjusted free counts.
+	* gfortran.dg/finalize_33.f90: Likewise.
+	* gfortran.dg/finalize_34.f90: Likewise.
+	* gfortran.dg/finalize_35.f90: New test.
+
 2020-05-29  Alex Coplan  <alex.coplan@arm.com>
 
 	PR target/94591
