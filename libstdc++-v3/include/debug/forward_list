@@ -201,6 +201,14 @@ namespace __debug
       template<typename _ItT, typename _SeqT, typename _CatT>
 	friend class ::__gnu_debug::_Safe_iterator;
 
+      // Reference wrapper for base class. See PR libstdc++/90102.
+      struct _Base_ref
+      {
+	_Base_ref(const _Base& __r) : _M_ref(__r) { }
+
+	const _Base& _M_ref;
+      };
+
     public:
       typedef typename _Base::reference		reference;
       typedef typename _Base::const_reference	const_reference;
@@ -264,6 +272,8 @@ namespace __debug
       { }
 
       ~forward_list() = default;
+
+      forward_list(_Base_ref __x) : _Base(__x._M_ref) { }
 
       forward_list&
       operator=(const forward_list&) = default;

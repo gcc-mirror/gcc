@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2020 Free Software Foundation, Inc.
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,39 +15,20 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-D_GLIBCXX_DEBUG" }
 // { dg-do compile { target c++11 } }
-// { dg-skip-if "" { *-*-* } { "-D_GLIBCXX_PARALLEL" } }
 
-#include <vector>
+#include <debug/unordered_map>
 
-// PR libstdc++/80553
+// PR libstdc++/90102
 
-struct DeletedDtor {
-  ~DeletedDtor() = delete;
-};
-
-class PrivateDtor {
-  ~PrivateDtor() { }
-};
-
-void
-test01()
+struct AnyCont
 {
-  std::vector<DeletedDtor> v;
-}
+  template<class Cont, class Check = decltype(std::declval<Cont>().clear())>
+  operator Cont () const;
+} a;
 
-void
-test02()
-{
-  std::vector<PrivateDtor> v;
-}
+// This should use copy constructor, not be ambiguous
+__gnu_debug::unordered_map<int, int> c(a);
 
-// { dg-error "value type is destructible" "" { target *-*-* } 0 }
-
-// In Debug Mode the "required from here" errors come from <debug/vector>
-// { dg-error "required from here" "" { target *-*-* } 173 }
-
-// Needed because of PR c++/92193
-// { dg-prune-output "deleted function" }
-// { dg-prune-output "private within this context" }
+// Ensure construction from base container still works
+__gnu_debug::unordered_map<int, int> d(static_cast<std::unordered_map<int, int>>(a));
