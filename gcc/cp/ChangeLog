@@ -1,3 +1,19 @@
+2020-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95466
+	PR c++/95311
+	PR c++/95221
+	* class.c (build_vfn_ref): Revert 95311 change.
+	* cp-ubsan.c (cp_ubsan_maybe_instrument_member_call): Build a
+	COMPOUND_EXPR.
+
+2020-06-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95350
+	* coroutines.cc (struct param_info): Remove rv_ref field.
+	(build_actor_fn): Remove specifial rvalue ref handling.
+	(morph_fn_to_coro): Likewise.
+
 2020-05-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/95087

@@ -1,3 +1,45 @@
+2020-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95392
+	* include/bits/fs_path.h (path::_S_to_string): Move to
+	namespace-scope and rename to ...
+	(__detail::__string_from_range): ... this.
+	[WINDOWS] (__detail::__wstr_from_utf8): New function template to
+	convert a char sequence containing UTF-8 to wstring.
+	(path::_S_convert(Iter, Iter)): Adjust call to _S_to_string.
+	(path::_S_convert_loc(Iter, Iter, const locale&)): Likewise.
+	(u8path(InputIterator, InputIterator)) [WINDOWS]: Use
+	__string_from_range to obtain a contiguous range and
+	__wstr_from_utf8 to obtain a wide string.
+	(u8path(const Source&)) [WINDOWS]: Use __effective_range to
+	obtain a contiguous range and __wstr_from_utf8 to obtain a wide
+	string.
+	(path::_S_convert(const _EcharT*, const _EcharT)) [WINDOWS]:
+	Use __wstr_from_utf8.
+
+2020-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_iterators.h:
+	(input_iterator_wrapper::operator++(int)): Return proxy object.
+
+2020-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Document deprecation of
+	__is_nullptr_t and removal of std::allocator members.
+	* doc/html/manual/api.html: Regenerate.
+
+2020-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/containers.xml: Replace <xref> with <link>.
+	* doc/xml/manual/evolution.xml: Likewise.
+	* doc/html/manual/api.html: Regenerate.
+	* doc/html/manual/containers.html: Regenerate.
+
+2020-06-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/faq.xml: Adjust Valgrind reference and remove another.
+	* doc/html/faq.html: Regenerate.
+
 2020-06-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/policy_data_structures_biblio.xml: Remove
