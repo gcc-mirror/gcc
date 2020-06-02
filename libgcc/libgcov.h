@@ -85,6 +85,19 @@ typedef unsigned gcov_type_unsigned __attribute__ ((mode (QI)));
 #define GCOV_LOCKED 0
 #endif
 
+#ifndef GCOV_SUPPORTS_ATOMIC
+/* Detect whether target can support atomic update of profilers.  */
+#if __SIZEOF_LONG_LONG__ == 4 && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
+#define GCOV_SUPPORTS_ATOMIC 1
+#else
+#if __SIZEOF_LONG_LONG__ == 8 && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_8
+#define GCOV_SUPPORTS_ATOMIC 1
+#else
+#define GCOV_SUPPORTS_ATOMIC 0
+#endif
+#endif
+#endif
+
 /* In libgcov we need these functions to be extern, so prefix them with
    __gcov.  In libgcov they must also be hidden so that the instance in
    the executable is not also used in a DSO.  */
@@ -377,11 +390,14 @@ gcov_get_counter_target (void)
    if USE_ATOMIC is true.  */
 
 static inline void
-gcov_counter_add (gcov_type *counter, gcov_type value, int use_atomic)
+gcov_counter_add (gcov_type *counter, gcov_type value,
+		  int use_atomic ATTRIBUTE_UNUSED)
 {
+#if GCOV_SUPPORTS_ATOMIC
   if (use_atomic)
     __atomic_fetch_add (counter, value, __ATOMIC_RELAXED);
   else
+#endif
     *counter += value;
 }
 
@@ -390,11 +406,13 @@ gcov_counter_add (gcov_type *counter, gcov_type value, int use_atomic)
 
 static inline int
 gcov_counter_set_if_null (gcov_type *counter, struct gcov_kvp *node,
-			  int use_atomic)
+			  int use_atomic ATTRIBUTE_UNUSED)
 {
+#if GCOV_SUPPORTS_ATOMIC
   if (use_atomic)
     return !__sync_val_compare_and_swap (counter, NULL, (intptr_t)node);
   else
+#endif
     {
       *counter = (intptr_t)node;
       return 1;
