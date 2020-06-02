@@ -88,7 +88,9 @@ generic
    --  map values returns an unspecified value. The exact arguments and number
    --  of calls of this generic formal function by the function "=" on map
    --  values are unspecified.
-package Ada.Containers.Hashed_Maps is
+package Ada.Containers.Hashed_Maps with
+  SPARK_Mode => Off
+is
    pragma Annotate (CodePeer, Skip_Analysis);
    pragma Preelaborate;
    pragma Remote_Types;
