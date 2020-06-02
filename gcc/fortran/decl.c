@@ -576,16 +576,16 @@ match_old_style_init (const char *name)
   for (nd = newdata; nd; nd = nd->next)
     {
       if (nd->value->expr->ts.type == BT_BOZ
-	  && gfc_invalid_boz ("BOZ at %L cannot appear in an old-style "
-			      "initialization", &nd->value->expr->where))
+	  && gfc_invalid_boz (G_("BOZ at %L cannot appear in an old-style "
+			      "initialization"), &nd->value->expr->where))
 	return MATCH_ERROR;
 
       if (nd->var->expr->ts.type != BT_INTEGER
 	  && nd->var->expr->ts.type != BT_REAL
 	  && nd->value->expr->ts.type == BT_BOZ)
 	{
-	  gfc_error ("BOZ literal constant near %L cannot be assigned to "
-		     "a %qs variable in an old-style initialization",
+	  gfc_error (G_("BOZ literal constant near %L cannot be assigned to "
+		     "a %qs variable in an old-style initialization"),
 		     &nd->value->expr->where,
 		     gfc_typename (&nd->value->expr->ts));
 	  return MATCH_ERROR;
