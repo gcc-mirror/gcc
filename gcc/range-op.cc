@@ -3408,6 +3408,17 @@ widest_irange_tests ()
   int_range<1> tmp (INT (5), INT (37));
   big.intersect (tmp);
   ASSERT_TRUE (big.num_pairs () == 4);
+
+  // Test that [10,10][20,20] does NOT contain 15.
+  {
+    widest_irange i1 (build_int_cst (integer_type_node, 10),
+		      build_int_cst (integer_type_node, 10));
+    widest_irange i2 (build_int_cst (integer_type_node, 20),
+		      build_int_cst (integer_type_node, 20));
+    i1.union_ (i2);
+    ASSERT_FALSE (i1.contains_p (build_int_cst (integer_type_node, 15)));
+  }
+
 }
 
 static void

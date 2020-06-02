@@ -875,9 +875,9 @@ irange::value_inside_range (tree val) const
 
   /* For constants we can just intersect and avoid using VR_ANTI_RANGE
      code further below.  */
-  if (constant_p ())
+  if (TREE_CODE (val) == INTEGER_CST && constant_p ())
     {
-      value_range v (val, val);
+      widest_irange v (val, val);
       v.intersect (this);
       return v == value_range (val, val) ? 1 : 0;
     }
@@ -1776,7 +1776,11 @@ irange::intersect (const irange *other)
 	  /* If a simple range was requested on the LHS, do the entire
 	     operation in simple mode, because the RHS may be a
 	     symbolic, and we only know how to deal with those in
-	     simple mode.  */
+	     simple mode.
+
+	     FIXME: Squishing [10,10][20,20] into a value_range, will
+	     yield [10,20].  If this result is then used with
+	     contains_p(15), the result may be wrong.  Revisit this.  */
 	  small = *other;
 	  other = &small;
 	}
