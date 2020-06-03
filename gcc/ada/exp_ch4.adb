@@ -11951,6 +11951,39 @@ package body Exp_Ch4 is
          Remove_Side_Effects (N);
          Insert_Action (N, Make_Invariant_Call (Duplicate_Subexpr (N)));
          goto Done;
+
+      --  AI12-0042: For a view conversion to a class-wide type occurring
+      --  within the immediate scope of T, from a specific type that is
+      --  a descendant of T (including T itself), an invariant check is
+      --  performed on the part of the object that is of type T. (We don't
+      --  need to explicitly check for the operand type being a descendant,
+      --  just that it's a specific type, because the conversion would be
+      --  illegal if it's specific and not a descendant -- downward conversion
+      --  is not allowed).
+
+      elsif Is_Class_Wide_Type (Target_Type)
+        and then not Is_Class_Wide_Type (Etype (Expression (N)))
+        and then Present (Invariant_Procedure (Root_Type (Target_Type)))
+        and then Comes_From_Source (N)
+        and then Within_Scope (Find_Enclosing_Scope (N), Scope (Target_Type))
+      then
+         Remove_Side_Effects (N);
+
+         --  Perform the invariant check on a conversion to the class-wide
+         --  type's root type.
+
+         declare
+            Root_Conv : constant Node_Id :=
+              Make_Type_Conversion (Loc,
+                Subtype_Mark =>
+                  New_Occurrence_Of (Root_Type (Target_Type), Loc),
+                Expression   => Duplicate_Subexpr (Expression (N)));
+         begin
+            Set_Etype (Root_Conv, Root_Type (Target_Type));
+
+            Insert_Action (N, Make_Invariant_Call (Root_Conv));
+            goto Done;
+         end;
       end if;
 
       --  Here if we may need to expand conversion
