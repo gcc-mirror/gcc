@@ -2750,9 +2750,9 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			}
 		      else
 			{
-			  OMP_CLAUSE_DECL (node) = decl;
+			  OMP_CLAUSE_DECL (node) = inner;
 			  OMP_CLAUSE_SIZE (node)
-			    = TYPE_SIZE_UNIT (TREE_TYPE (decl));
+			    = TYPE_SIZE_UNIT (TREE_TYPE (inner));
 			}
 		    }
 		  else if (lastcomp->next
