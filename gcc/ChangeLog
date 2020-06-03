@@ -1,3 +1,9 @@
+2020-06-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-cores.def (zeus): Define.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi (AArch64 Options): Document zeus -mcpu option.
+
 2020-05-31  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* config/i386/i386-c.c (ix86_target_macros): Define _ILP32 and
