@@ -11679,6 +11679,7 @@ package body Sem_Res is
          --  odd subtype coming from the bounds).
 
          if (Is_Entity_Name (Orig_N)
+              and then Present (Entity (Orig_N))
               and then
                 (Etype (Entity (Orig_N)) = Orig_T
                   or else
@@ -11733,17 +11734,15 @@ package body Sem_Res is
             --  entity, give the name of the entity in the message. If not,
             --  just mention the expression.
 
-            --  Shoudn't we test Warn_On_Redundant_Constructs here ???
-
             else
                if Is_Entity_Name (Orig_N) then
                   Error_Msg_Node_2 := Orig_T;
                   Error_Msg_NE -- CODEFIX
-                    ("??redundant conversion, & is of type &!",
+                    ("?r?redundant conversion, & is of type &!",
                      N, Entity (Orig_N));
                else
                   Error_Msg_NE
-                    ("??redundant conversion, expression is of type&!",
+                    ("?r?redundant conversion, expression is of type&!",
                      N, Orig_T);
                end if;
             end if;
