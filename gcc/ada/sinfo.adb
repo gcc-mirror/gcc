@@ -1278,6 +1278,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Expression_With_Actions
         or else NT (N).Nkind = N_Free_Statement
         or else NT (N).Nkind = N_Iterated_Component_Association
+        or else NT (N).Nkind = N_Iterated_Element_Association
         or else NT (N).Nkind = N_Mod_Clause
         or else NT (N).Nkind = N_Modular_Type_Definition
         or else NT (N).Nkind = N_Number_Declaration
@@ -2245,6 +2246,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Iterated_Component_Association
+        or else NT (N).Nkind = N_Iterated_Element_Association
         or else NT (N).Nkind = N_Iteration_Scheme
         or else NT (N).Nkind = N_Quantified_Expression);
       return Node2 (N);
@@ -2257,6 +2259,14 @@ package body Sinfo is
       or else NT (N).Nkind = N_Itype_Reference);
       return Node1 (N);
    end Itype;
+
+   function Key_Expression
+      (N : Node_Id) return Node_Id is
+   begin
+      pragma Assert (False
+      or else NT (N).Nkind = N_Iterated_Element_Association);
+      return Node1 (N);
+   end Key_Expression;
 
    function Kill_Range_Check
       (N : Node_Id) return Boolean is
@@ -2367,7 +2377,8 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Component_Association
-        or else NT (N).Nkind = N_Iterated_Component_Association);
+        or else NT (N).Nkind = N_Iterated_Component_Association
+        or else NT (N).Nkind = N_Iterated_Element_Association);
       return List5 (N);
    end Loop_Actions;
 
@@ -2375,6 +2386,7 @@ package body Sinfo is
       (N : Node_Id) return Node_Id is
    begin
       pragma Assert (False
+        or else NT (N).Nkind = N_Iterated_Element_Association
         or else NT (N).Nkind = N_Iteration_Scheme
         or else NT (N).Nkind = N_Quantified_Expression);
       return Node4 (N);
@@ -4762,6 +4774,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Expression_With_Actions
         or else NT (N).Nkind = N_Free_Statement
         or else NT (N).Nkind = N_Iterated_Component_Association
+        or else NT (N).Nkind = N_Iterated_Element_Association
         or else NT (N).Nkind = N_Mod_Clause
         or else NT (N).Nkind = N_Modular_Type_Definition
         or else NT (N).Nkind = N_Number_Declaration
@@ -5733,6 +5746,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Iterated_Component_Association
+        or else NT (N).Nkind = N_Iterated_Element_Association
         or else NT (N).Nkind = N_Iteration_Scheme
         or else NT (N).Nkind = N_Quantified_Expression);
       Set_Node2_With_Parent (N, Val);
@@ -5745,6 +5759,14 @@ package body Sinfo is
       or else NT (N).Nkind = N_Itype_Reference);
       Set_Node1 (N, Val); -- no parent, semantic field
    end Set_Itype;
+
+   procedure Set_Key_Expression
+      (N : Node_Id; Val : Entity_Id) is
+   begin
+      pragma Assert (False
+      or else NT (N).Nkind = N_Iterated_Element_Association);
+      Set_Node1_With_Parent (N, Val);
+   end Set_Key_Expression;
 
    procedure Set_Kill_Range_Check
       (N : Node_Id; Val : Boolean := True) is
@@ -5855,7 +5877,8 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Component_Association
-        or else NT (N).Nkind = N_Iterated_Component_Association);
+        or else NT (N).Nkind = N_Iterated_Component_Association
+        or else NT (N).Nkind = N_Iterated_Element_Association);
       Set_List5 (N, Val); -- semantic field, no parent set
    end Set_Loop_Actions;
 
@@ -5863,6 +5886,7 @@ package body Sinfo is
       (N : Node_Id; Val : Node_Id) is
    begin
       pragma Assert (False
+        or else NT (N).Nkind = N_Iterated_Element_Association
         or else NT (N).Nkind = N_Iteration_Scheme
         or else NT (N).Nkind = N_Quantified_Expression);
       Set_Node4_With_Parent (N, Val);
