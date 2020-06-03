@@ -28605,12 +28605,12 @@ package body Sem_Util is
       then
          return;
 
-      --  In  an instance, there is an ongoing problem with completion of
+      --  In an instance, there is an ongoing problem with completion of
       --  types derived from private types. Their structure is what Gigi
-      --  expects, but the  Etype is the parent type rather than the
-      --  derived private type itself. Do not flag error in this case. The
-      --  private completion is an entity without a parent, like an Itype.
-      --  Similarly, full and partial views may be incorrect in the instance.
+      --  expects, but the Etype is the parent type rather than the derived
+      --  private type itself. Do not flag error in this case. The private
+      --  completion is an entity without a parent, like an Itype. Similarly,
+      --  full and partial views may be incorrect in the instance.
       --  There is no simple way to insure that it is consistent ???
 
       --  A similar view discrepancy can happen in an inlined body, for the
