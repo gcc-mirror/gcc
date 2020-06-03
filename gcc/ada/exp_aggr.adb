@@ -6914,13 +6914,20 @@ package body Exp_Aggr is
          Stats              : List_Id;
 
       begin
-         L_Range := Relocate_Node (First (Discrete_Choices (Comp)));
-         L_Iteration_Scheme :=
-           Make_Iteration_Scheme (Loc,
-             Loop_Parameter_Specification =>
-               Make_Loop_Parameter_Specification (Loc,
-                 Defining_Identifier => Loop_Id,
-                 Discrete_Subtype_Definition => L_Range));
+         if Present (Iterator_Specification (Comp)) then
+            L_Iteration_Scheme :=
+              Make_Iteration_Scheme (Loc,
+                Iterator_Specification => Iterator_Specification (Comp));
+
+         else
+            L_Range := Relocate_Node (First (Discrete_Choices (Comp)));
+            L_Iteration_Scheme :=
+              Make_Iteration_Scheme (Loc,
+                Loop_Parameter_Specification =>
+                  Make_Loop_Parameter_Specification (Loc,
+                    Defining_Identifier => Loop_Id,
+                    Discrete_Subtype_Definition => L_Range));
+         end if;
 
          --  Build insertion statement. For a positional aggregate, only the
          --  expression is needed. For a named aggregate, the loop variable,

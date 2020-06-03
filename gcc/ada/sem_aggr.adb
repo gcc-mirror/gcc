@@ -2677,36 +2677,39 @@ package body Sem_Aggr is
          Ent    : Entity_Id;
          Expr   : Node_Id;
          Id     : Entity_Id;
+         Iter   : Node_Id;
          Typ    : Entity_Id := Empty;
 
       begin
          if Present (Iterator_Specification (Comp)) then
-            Error_Msg_N ("element iterator ins aggregate Forthcoming", N);
-            return;
+            Iter := Copy_Separate_Tree (Iterator_Specification (Comp));
+            Analyze (Iter);
+            Typ := Etype (Defining_Identifier (Iter));
+
+         else
+            Choice := First (Discrete_Choices (Comp));
+
+            while Present (Choice) loop
+               Analyze (Choice);
+
+               --  Choice can be a subtype name, a range, or an expression
+
+               if Is_Entity_Name (Choice)
+                 and then Is_Type (Entity (Choice))
+                 and then Base_Type (Entity (Choice)) = Base_Type (Key_Type)
+               then
+                  null;
+
+               elsif Present (Key_Type) then
+                  Analyze_And_Resolve (Choice, Key_Type);
+
+               else
+                  Typ := Etype (Choice);  --  assume unique for now
+               end if;
+
+               Next (Choice);
+            end loop;
          end if;
-
-         Choice := First (Discrete_Choices (Comp));
-
-         while Present (Choice) loop
-            Analyze (Choice);
-
-            --  Choice can be a subtype name, a range, or an expression
-
-            if Is_Entity_Name (Choice)
-              and then Is_Type (Entity (Choice))
-              and then Base_Type (Entity (Choice)) = Base_Type (Key_Type)
-            then
-               null;
-
-            elsif Present (Key_Type) then
-               Analyze_And_Resolve (Choice, Key_Type);
-
-            else
-               Typ := Etype (Choice);  --  assume unique for now
-            end if;
-
-            Next (Choice);
-         end loop;
 
          --  Create a scope in which to introduce an index, which is usually
          --  visible in the expression for the component, and needed for its
