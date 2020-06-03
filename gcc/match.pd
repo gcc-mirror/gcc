@@ -5229,6 +5229,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (rdiv (SINH:s @0) (COSH:s @0))
    (TANH @0))
 
+ /* Simplify tanh (x) / sinh (x) -> 1.0 / cosh (x). */
+ (simplify
+   (rdiv (TANH:s @0) (SINH:s @0))
+   (rdiv {build_one_cst (type);} (COSH @0)))
+
  /* Simplify cos(x) / sin(x) -> 1 / tan(x). */
  (simplify
   (rdiv (COS:s @0) (SIN:s @0))
