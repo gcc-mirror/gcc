@@ -388,7 +388,7 @@ d_eval_constant_expression (tree cst)
 	    }
 
 	  Expression *e = ArrayLiteralExp::create (Loc (), elements);
-	  e->type = ((TypeVector *) type)->basetype;
+	  e->type = type->isTypeVector ()->basetype;
 
 	  return VectorExp::create (Loc (), e, type);
 	}
@@ -517,8 +517,8 @@ d_build_builtins_module (Module *m)
   for (size_t i = 0; vec_safe_iterate (gcc_builtins_functions, i, &decl); ++i)
     {
       const char *name = IDENTIFIER_POINTER (DECL_NAME (decl));
-      TypeFunction *tf
-	= (TypeFunction *) build_frontend_type (TREE_TYPE (decl));
+      Type *t = build_frontend_type (TREE_TYPE (decl));
+      TypeFunction *tf = t ? t->isTypeFunction () : NULL;
 
       /* Cannot create built-in function type for DECL.  */
       if (!tf)
@@ -601,14 +601,13 @@ d_build_builtins_module (Module *m)
 
   /* Expose target-specific va_list type.  */
   Type *tvalist = target.va_listType (Loc (), NULL);
-  StructDeclaration *sd = (tvalist->ty == Tstruct)
-    ? ((TypeStruct *) tvalist)->sym : NULL;
-  if (sd == NULL || !sd->isAnonymous ())
+  TypeStruct *ts = tvalist->isTypeStruct ();
+  if (ts == NULL || !ts->sym->isAnonymous ())
     members->push (build_alias_declaration ("__builtin_va_list", tvalist));
   else
     {
-      sd->ident = Identifier::idPool ("__builtin_va_list");
-      members->push (sd);
+      ts->sym->ident = Identifier::idPool ("__builtin_va_list");
+      members->push (ts->sym);
     }
 
   /* Expose target-specific integer types to the builtins module.  */

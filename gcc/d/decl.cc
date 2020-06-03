@@ -313,9 +313,9 @@ public:
     TemplateInstance *ti = NULL;
 
     if (tb->ty == Tstruct)
-      ti = ((TypeStruct *) tb)->sym->isInstantiated ();
+      ti = tb->isTypeStruct ()->sym->isInstantiated ();
     else if (tb->ty == Tclass)
-      ti = ((TypeClass *) tb)->sym->isInstantiated ();
+      ti = tb->isTypeClass ()->sym->isInstantiated ();
 
     /* Return type is instantiated from this template declaration, walk over
        all members of the instance.  */
@@ -620,7 +620,7 @@ public:
     if (have_typeinfo_p (Type::dtypeinfo))
       create_typeinfo (d->type, NULL);
 
-    TypeEnum *tc = (TypeEnum *) d->type;
+    TypeEnum *tc = d->type->isTypeEnum ();
     if (tc->sym->members && !d->type->isZeroInit ())
       {
 	/* Generate static initializer.  */
@@ -717,11 +717,8 @@ public:
 	  }
 	else
 	  {
-	    if (d->type->ty == Tstruct)
-	      {
-		StructDeclaration *sd = ((TypeStruct *) d->type)->sym;
-		DECL_INITIAL (decl) = layout_struct_initializer (sd);
-	      }
+	    if (TypeStruct *ts = d->type->isTypeStruct ())
+	      DECL_INITIAL (decl) = layout_struct_initializer (ts->sym);
 	    else
 	      {
 		Expression *e = d->type->defaultInitLiteral (d->loc);
@@ -813,9 +810,8 @@ public:
       return;
 
     /* Check if any errors occurred when running semantic.  */
-    if (d->type->ty == Tfunction)
+    if (TypeFunction *tf = d->type->isTypeFunction ())
       {
-	TypeFunction *tf = (TypeFunction *) d->type;
 	if (tf->next == NULL || tf->next->ty == Terror)
 	  return;
       }

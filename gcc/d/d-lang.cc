@@ -1672,11 +1672,10 @@ static classify_record
 d_classify_record (tree type)
 {
   Type *t = TYPE_LANG_FRONTEND (type);
+  TypeClass *tc = t ? t->isTypeClass () : NULL;
 
-  if (t && t->ty == Tclass)
+  if (tc != NULL)
     {
-      TypeClass *tc = (TypeClass *) t;
-
       /* extern(C++) interfaces get emitted as classes.  */
       if (tc->sym->isInterfaceDeclaration ()
 	  && !tc->sym->isCPPinterface ())
@@ -1814,12 +1813,10 @@ static tree
 d_build_eh_runtime_type (tree type)
 {
   Type *t = TYPE_LANG_FRONTEND (type);
+  gcc_assert (t != NULL);
+  t = t->toBasetype ();
 
-  if (t != NULL)
-    t = t->toBasetype ();
-
-  gcc_assert (t != NULL && t->ty == Tclass);
-  ClassDeclaration *cd = ((TypeClass *) t)->sym;
+  ClassDeclaration *cd = t->isTypeClass ()->sym;
   tree decl;
 
   if (cd->isCPPclass ())

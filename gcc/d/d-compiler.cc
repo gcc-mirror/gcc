@@ -111,7 +111,7 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
 	}
 
       /* Build vector type.  */
-      int nunits = ((TypeSArray *) expr->type)->dim->toUInteger ();
+      int nunits = expr->type->isTypeSArray ()->dim->toUInteger ();
       Type *telem = expr->type->nextOf ();
       tree vectype = build_vector_type (build_ctype (telem), nunits);
 
@@ -127,7 +127,7 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
     {
       /* Interpret value as a vector of the same size,
 	 then return the array literal.  */
-      int nunits = ((TypeSArray *) type)->dim->toUInteger ();
+      int nunits = type->isTypeSArray ()->dim->toUInteger ();
       Type *elem = type->nextOf ();
       tree vectype = build_vector_type (build_ctype (elem), nunits);
 
