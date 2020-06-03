@@ -13869,8 +13869,9 @@ localize_reductions (tree clauses, tree body)
 
 	if (!lang_hooks.decls.omp_privatize_by_reference (var))
 	  continue;
-
 	type = TREE_TYPE (TREE_TYPE (var));
+	if (TREE_CODE (type) == ARRAY_TYPE)
+	  continue;
 	new_var = create_tmp_var (type, IDENTIFIER_POINTER (DECL_NAME (var)));
 
 	pr.ref_var = var;
