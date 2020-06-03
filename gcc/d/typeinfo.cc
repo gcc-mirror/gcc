@@ -140,7 +140,7 @@ get_typeinfo_kind (Type *type)
       return TK_TYPELIST_TYPE;
 
     case Tclass:
-      if (((TypeClass *) type)->sym->isInterfaceDeclaration ())
+      if (type->isTypeClass ()->sym->isInterfaceDeclaration ())
 	return TK_INTERFACE_TYPE;
       else
 	return TK_CLASSINFO_TYPE;
@@ -619,8 +619,7 @@ public:
 
   void visit (TypeInfoEnumDeclaration *d)
   {
-    gcc_assert (d->tinfo->ty == Tenum);
-    TypeEnum *ti = (TypeEnum *) d->tinfo;
+    TypeEnum *ti = d->tinfo->isTypeEnum ();
     EnumDeclaration *ed = ti->sym;
 
     /* The vtable for TypeInfo_Enum.  */
@@ -652,8 +651,7 @@ public:
 
   void visit (TypeInfoPointerDeclaration *d)
   {
-    gcc_assert (d->tinfo->ty == Tpointer);
-    TypePointer *ti = (TypePointer *) d->tinfo;
+    TypePointer *ti = d->tinfo->isTypePointer ();
 
     /* The vtable for TypeInfo_Pointer.  */
     this->layout_base (Type::typeinfopointer);
@@ -669,8 +667,7 @@ public:
 
   void visit (TypeInfoArrayDeclaration *d)
   {
-    gcc_assert (d->tinfo->ty == Tarray);
-    TypeDArray *ti = (TypeDArray *) d->tinfo;
+    TypeDArray *ti = d->tinfo->isTypeDArray ();
 
     /* The vtable for TypeInfo_Array.  */
     this->layout_base (Type::typeinfoarray);
@@ -687,8 +684,7 @@ public:
 
   void visit (TypeInfoStaticArrayDeclaration *d)
   {
-    gcc_assert (d->tinfo->ty == Tsarray);
-    TypeSArray *ti = (TypeSArray *) d->tinfo;
+    TypeSArray *ti = d->tinfo->isTypeSArray ();
 
     /* The vtable for TypeInfo_StaticArray.  */
     this->layout_base (Type::typeinfostaticarray);
@@ -708,8 +704,7 @@ public:
 
   void visit (TypeInfoAssociativeArrayDeclaration *d)
   {
-    gcc_assert (d->tinfo->ty == Taarray);
-    TypeAArray *ti = (TypeAArray *) d->tinfo;
+    TypeAArray *ti = d->tinfo->isTypeAArray ();
 
     /* The vtable for TypeInfo_AssociativeArray.  */
     this->layout_base (Type::typeinfoassociativearray);
@@ -728,8 +723,7 @@ public:
 
   void visit (TypeInfoVectorDeclaration *d)
   {
-    gcc_assert (d->tinfo->ty == Tvector);
-    TypeVector *ti = (TypeVector *) d->tinfo;
+    TypeVector *ti = d->tinfo->isTypeVector ();
 
     /* The vtable for TypeInfo_Vector.  */
     this->layout_base (Type::typeinfovector);
@@ -746,8 +740,8 @@ public:
 
   void visit (TypeInfoFunctionDeclaration *d)
   {
-    gcc_assert (d->tinfo->ty == Tfunction && d->tinfo->deco != NULL);
-    TypeFunction *ti = (TypeFunction *) d->tinfo;
+    TypeFunction *ti = d->tinfo->isTypeFunction ();
+    gcc_assert (ti->deco != NULL);
 
     /* The vtable for TypeInfo_Function.  */
     this->layout_base (Type::typeinfofunction);
@@ -767,8 +761,8 @@ public:
 
   void visit (TypeInfoDelegateDeclaration *d)
   {
-    gcc_assert (d->tinfo->ty == Tdelegate && d->tinfo->deco != NULL);
-    TypeDelegate *ti = (TypeDelegate *) d->tinfo;
+    TypeDelegate *ti = d->tinfo->isTypeDelegate ();
+    gcc_assert (ti->deco != NULL);
 
     /* The vtable for TypeInfo_Delegate.  */
     this->layout_base (Type::typeinfodelegate);
@@ -801,8 +795,7 @@ public:
 
   void visit (TypeInfoClassDeclaration *d)
   {
-    gcc_assert (d->tinfo->ty == Tclass);
-    TypeClass *ti = (TypeClass *) d->tinfo;
+    TypeClass *ti = d->tinfo->isTypeClass ();
     ClassDeclaration *cd = ti->sym;
 
     /* The vtable for ClassInfo.  */
@@ -994,8 +987,7 @@ public:
 
   void visit (TypeInfoInterfaceDeclaration *d)
   {
-    gcc_assert (d->tinfo->ty == Tclass);
-    TypeClass *ti = (TypeClass *) d->tinfo;
+    TypeClass *ti = d->tinfo->isTypeClass ();
 
     if (!ti->sym->vclassinfo)
       ti->sym->vclassinfo = TypeInfoClassDeclaration::create (ti);
@@ -1028,8 +1020,7 @@ public:
 
   void visit (TypeInfoStructDeclaration *d)
   {
-    gcc_assert (d->tinfo->ty == Tstruct);
-    TypeStruct *ti = (TypeStruct *) d->tinfo;
+    TypeStruct *ti = d->tinfo->isTypeStruct ();
     StructDeclaration *sd = ti->sym;
 
     /* The vtable for TypeInfo_Struct.  */
@@ -1128,8 +1119,7 @@ public:
 
   void visit (TypeInfoTupleDeclaration *d)
   {
-    gcc_assert (d->tinfo->ty == Ttuple);
-    TypeTuple *ti = (TypeTuple *) d->tinfo;
+    TypeTuple *ti = d->tinfo->isTypeTuple ();
 
     /* The vtable for TypeInfo_Tuple.  */
     this->layout_base (Type::typeinfotypelist);
@@ -1323,8 +1313,7 @@ public:
 
   void visit (TypeInfoClassDeclaration *tid)
   {
-    gcc_assert (tid->tinfo->ty == Tclass);
-    TypeClass *tc = (TypeClass *) tid->tinfo;
+    TypeClass *tc = tid->tinfo->isTypeClass ();
     tid->csym = get_classinfo_decl (tc->sym);
   }
 };

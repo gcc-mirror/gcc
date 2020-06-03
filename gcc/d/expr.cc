@@ -62,10 +62,9 @@ class ExprVisitor : public Visitor
   {
     t = t->baseElemOf ();
 
-    if (t->ty == Tstruct)
+    if (TypeStruct *ts = t->isTypeStruct ())
       {
-	StructDeclaration *sd = ((TypeStruct *) t)->sym;
-	if (sd->postblit)
+	if (ts->sym->postblit)
 	  return true;
       }
 
@@ -78,10 +77,9 @@ class ExprVisitor : public Visitor
   {
     t = t->baseElemOf ();
 
-    if (t->ty == Tstruct)
+    if (TypeStruct *ts = t->isTypeStruct ())
       {
-	StructDeclaration *sd = ((TypeStruct *) t)->sym;
-	if (sd->dtor)
+	if (ts->sym->dtor)
 	  return true;
       }
 
@@ -298,17 +296,16 @@ public:
 	      this->result_ = build_boolop (TRUTH_ORIF_EXPR, req, ieq);
 	  }
       }
-    else if (tb1->ty == Tstruct)
+    else if (TypeStruct *ts = tb1->isTypeStruct ())
       {
 	/* For struct objects, identity is defined as bits in operands being
 	   identical also.  Alignment holes in structs are ignored.  */
-	StructDeclaration *sd = ((TypeStruct *) tb1)->sym;
 	tree t1 = build_expr (e->e1);
 	tree t2 = build_expr (e->e2);
 
 	gcc_assert (same_type_p (tb1, tb2));
 
-	this->result_ = build_struct_comparison (code, sd, t1, t2);
+	this->result_ = build_struct_comparison (code, ts->sym, t1, t2);
       }
     else
       {
@@ -345,7 +342,7 @@ public:
 	    Or when generating a NE expression:
 		e1.length != e2.length || memcmp(e1.ptr, e2.ptr, size) != 0;  */
 	if ((t1elem->isintegral () || t1elem->ty == Tvoid
-	     || (t1elem->ty == Tstruct && !((TypeStruct *)t1elem)->sym->xeq))
+	     || (t1elem->ty == Tstruct && !t1elem->isTypeStruct ()->sym->xeq))
 	    && t1elem->ty == t2elem->ty)
 	  {
 	    tree t1 = d_array_convert (e->e1);
@@ -367,7 +364,7 @@ public:
 	    /* Compare arrays using memcmp if possible, otherwise for structs,
 	       each field is compared inline.  */
 	    if (t1elem->ty != Tstruct
-		|| identity_compare_p (((TypeStruct *) t1elem)->sym))
+		|| identity_compare_p (t1elem->isTypeStruct ()->sym))
 	      {
 		tree size = size_mult_expr (t1len, size_int (t1elem->size ()));
 		tree tmemcmp = builtin_decl_explicit (BUILT_IN_MEMCMP);
@@ -377,7 +374,7 @@ public:
 	      }
 	    else
 	      {
-		StructDeclaration *sd = ((TypeStruct *) t1elem)->sym;
+		StructDeclaration *sd = t1elem->isTypeStruct ()->sym;
 
 		result = build_array_struct_comparison (code, sd, t1len,
 							t1ptr, t2ptr);
@@ -432,24 +429,22 @@ public:
 	    this->result_ = result;
 	  }
       }
-    else if (tb1->ty == Tstruct)
+    else if (TypeStruct *ts = tb1->isTypeStruct ())
       {
 	/* Equality for struct objects means the logical product of all
 	   equality results of the corresponding object fields.  */
-	StructDeclaration *sd = ((TypeStruct *) tb1)->sym;
 	tree t1 = build_expr (e->e1);
 	tree t2 = build_expr (e->e2);
 
 	gcc_assert (same_type_p (tb1, tb2));
 
-	this->result_ = build_struct_comparison (code, sd, t1, t2);
+	this->result_ = build_struct_comparison (code, ts->sym, t1, t2);
       }
     else if (tb1->ty == Taarray && tb2->ty == Taarray)
       {
 	/* Use _aaEqual() for associative arrays.  */
-	TypeAArray *taa1 = (TypeAArray *) tb1;
 	tree result = build_libcall (LIBCALL_AAEQUAL, e->type, 3,
-				     build_typeinfo (e->loc, taa1),
+				     build_typeinfo (e->loc, tb1),
 				     build_expr (e->e1),
 				     build_expr (e->e2));
 
@@ -477,9 +472,7 @@ public:
   void visit (InExp *e)
   {
     Type *tb2 = e->e2->type->toBasetype ();
-    gcc_assert (tb2->ty == Taarray);
-
-    Type *tkey = ((TypeAArray *) tb2)->index->toBasetype ();
+    Type *tkey = tb2->isTypeAArray ()->index->toBasetype ();
     tree key = convert_expr (build_expr (e->e1), e->e1->type, tkey);
 
     /* Build a call to _aaInX().  */
@@ -1031,7 +1024,7 @@ public:
 	tree t1 = build_expr (e->e1);
 	tree t2 = convert_for_assignment (build_expr (e->e2),
 					  e->e2->type, e->e1->type);
-	StructDeclaration *sd = ((TypeStruct *) tb1)->sym;
+	StructDeclaration *sd = tb1->isTypeStruct ()->sym;
 
 	/* Look for struct = 0.  */
 	if (e->e2->op == TOKint64)
@@ -1193,7 +1186,7 @@ public:
     if (tb1->ty == Taarray)
       {
 	/* Get the key for the associative array.  */
-	Type *tkey = ((TypeAArray *) tb1)->index->toBasetype ();
+	Type *tkey = tb1->isTypeAArray ()->index->toBasetype ();
 	tree key = convert_expr (build_expr (e->e2), e->e2->type, tkey);
 	libcall_fn libcall;
 	tree tinfo, ptr;
@@ -1476,10 +1469,9 @@ public:
 	Type *telem = tb1->nextOf ()->baseElemOf ();
 	tree ti = null_pointer_node;
 
-	if (telem->ty == Tstruct)
+	if (TypeStruct *ts = telem->isTypeStruct ())
 	  {
 	    /* Might need to run destructor on array contents.  */
-	    TypeStruct *ts = (TypeStruct *) telem;
 	    if (ts->sym->dtor)
 	      ti = build_typeinfo (e->loc, tb1->nextOf ());
 	  }
@@ -1493,11 +1485,10 @@ public:
 	/* For pointers to a struct instance, if the struct has overloaded
 	   operator delete, then that operator is called.  */
 	t1 = build_address (t1);
-	Type *tnext = ((TypePointer *)tb1)->next->toBasetype ();
+	Type *tnext = tb1->isTypePointer ()->next->toBasetype ();
 
-	if (tnext->ty == Tstruct)
+	if (TypeStruct *ts = tnext->isTypeStruct ())
 	  {
-	    TypeStruct *ts = (TypeStruct *)tnext;
 	    if (ts->sym->dtor)
 	      {
 		tree ti = build_typeinfo (e->loc, tnext);
@@ -1527,7 +1518,7 @@ public:
     if (e->e1->type->toBasetype ()->ty == Taarray)
       {
 	Type *tb = e->e1->type->toBasetype ();
-	Type *tkey = ((TypeAArray *) tb)->index->toBasetype ();
+	Type *tkey = tb->isTypeAArray ()->index->toBasetype ();
 	tree index = convert_expr (build_expr (e->e2), e->e2->type, tkey);
 
 	this->result_ = build_libcall (LIBCALL_AADELX, Type::tbool, 3,
@@ -1623,7 +1614,7 @@ public:
        allocated in memory because its address is taken.  */
     if (tnext && tnext->ty == Tstruct)
       {
-	StructDeclaration *sd = ((TypeStruct *) tnext)->sym;
+	StructDeclaration *sd = tnext->isTypeStruct ()->sym;
 
 	for (size_t i = 0; i < sd->fields.length; i++)
 	  {
@@ -1998,7 +1989,7 @@ public:
 	      }
 	    else if (tb1->ty == Tpointer && tb1->nextOf ()->ty == Tstruct)
 	      {
-		StructDeclaration *sd = ((TypeStruct *) tb1->nextOf ())->sym;
+		StructDeclaration *sd = tb1->nextOf ()->isTypeStruct ()->sym;
 		if (sd->inv != NULL)
 		  {
 		    Expressions args;
@@ -2089,7 +2080,7 @@ public:
 	ci = indirect_ref (ptr_type_node, ci);
 
 	/* Add extra indirection for interfaces.  */
-	if (((TypeClass *) type)->sym->isInterfaceDeclaration ())
+	if (type->isTypeClass ()->sym->isInterfaceDeclaration ())
 	  ci = indirect_ref (ptr_type_node, ci);
 
 	this->result_ = build_nop (build_ctype (e->type), ci);
@@ -2288,9 +2279,8 @@ public:
       {
 	/* Allocating a new class.  */
 	tb = e->newtype->toBasetype ();
-	gcc_assert (tb->ty == Tclass);
 
-	ClassDeclaration *cd = ((TypeClass *) tb)->sym;
+	ClassDeclaration *cd = tb->isTypeClass ()->sym;
 	tree type = build_ctype (tb);
 	tree setup_exp = NULL_TREE;
 	tree new_call;
@@ -2368,10 +2358,9 @@ public:
       {
 	/* Allocating memory for a new struct.  */
 	Type *htype = e->newtype->toBasetype ();
-	gcc_assert (htype->ty == Tstruct);
 	gcc_assert (!e->onstack);
 
-	TypeStruct *stype = (TypeStruct *) htype;
+	TypeStruct *stype = htype->isTypeStruct ();
 	StructDeclaration *sd = stype->sym;
 	tree new_call;
 
@@ -2443,8 +2432,7 @@ public:
       {
 	/* Allocating memory for a new D array.  */
 	tb = e->newtype->toBasetype ();
-	gcc_assert (tb->ty == Tarray);
-	TypeDArray *tarray = (TypeDArray *) tb;
+	TypeDArray *tarray = tb->isTypeDArray ();
 
 	gcc_assert (!e->allocator);
 	gcc_assert (e->arguments && e->arguments->length >= 1);
@@ -2511,7 +2499,7 @@ public:
     else if (tb->ty == Tpointer)
       {
 	/* Allocating memory for a new pointer.  */
-	TypePointer *tpointer = (TypePointer *) tb;
+	TypePointer *tpointer = tb->isTypePointer ();
 
 	if (tpointer->next->size () == 0)
 	  {
@@ -2666,7 +2654,7 @@ public:
 
     /* Implicitly convert void[n] to ubyte[n].  */
     if (tb->ty == Tsarray && tb->nextOf ()->toBasetype ()->ty == Tvoid)
-      tb = Type::tuns8->sarrayOf (((TypeSArray *) tb)->dim->toUInteger ());
+      tb = Type::tuns8->sarrayOf (tb->isTypeSArray ()->dim->toUInteger ());
 
     gcc_assert (tb->ty == Tarray || tb->ty == Tsarray || tb->ty == Tpointer);
 
@@ -2781,10 +2769,9 @@ public:
   {
     /* Want the mutable type for typeinfo reference.  */
     Type *tb = e->type->toBasetype ()->mutableOf ();
-    gcc_assert (tb->ty == Taarray);
 
     /* Handle empty assoc array literals.  */
-    TypeAArray *ta = (TypeAArray *) tb;
+    TypeAArray *ta = tb->isTypeAArray ();
     if (e->keys->length == 0)
       {
 	this->result_ = build_constructor (build_ctype (ta), NULL);
@@ -3018,7 +3005,7 @@ public:
        interface offset to symbol.  */
     if (this->constp_)
       {
-	TypeClass *tc = (TypeClass *) e->type;
+	TypeClass *tc = e->type->toBasetype ()->isTypeClass ();
 	InterfaceDeclaration *to = tc->sym->isInterfaceDeclaration ();
 
 	if (to != NULL)

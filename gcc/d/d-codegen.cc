@@ -319,7 +319,7 @@ get_array_length (tree exp, Type *type)
   switch (tb->ty)
     {
     case Tsarray:
-      return size_int (((TypeSArray *) tb)->dim->toUInteger ());
+      return size_int (tb->isTypeSArray ()->dim->toUInteger ());
 
     case Tarray:
       return d_array_length (exp);
@@ -812,9 +812,8 @@ identity_compare_p (StructDeclaration *sd)
       Type *tb = vd->type->toBasetype ();
 
       /* Check inner data structures.  */
-      if (tb->ty == Tstruct)
+      if (TypeStruct *ts = tb->isTypeStruct ())
 	{
-	  TypeStruct *ts = (TypeStruct *) tb;
 	  if (!identity_compare_p (ts->sym))
 	    return false;
 	}
@@ -897,11 +896,10 @@ lower_struct_comparison (tree_code code, StructDeclaration *sd,
       tree t2ref = component_ref (t2, sfield);
       tree tcmp;
 
-      if (type->ty == Tstruct)
+      if (TypeStruct *ts = type->isTypeStruct ())
 	{
 	  /* Compare inner data structures.  */
-	  StructDeclaration *decl = ((TypeStruct *) type)->sym;
-	  tcmp = lower_struct_comparison (code, decl, t1ref, t2ref);
+	  tcmp = lower_struct_comparison (code, ts->sym, t1ref, t2ref);
 	}
       else if (type->ty != Tvector && type->isintegral ())
 	{
@@ -1680,15 +1678,13 @@ build_array_set (tree ptr, tree length, tree value)
 tree
 build_array_from_val (Type *type, tree val)
 {
-  gcc_assert (type->ty == Tsarray);
-
   tree etype = build_ctype (type->nextOf ());
 
   /* Initializing a multidimensional array.  */
   if (TREE_CODE (etype) == ARRAY_TYPE && TREE_TYPE (val) != etype)
     val = build_array_from_val (type->nextOf (), val);
 
-  size_t dims = ((TypeSArray *) type)->dim->toInteger ();
+  size_t dims = type->isTypeSArray ()->dim->toInteger ();
   vec<constructor_elt, va_gc> *elms = NULL;
   vec_safe_reserve (elms, dims);
 
@@ -1762,8 +1758,7 @@ array_bounds_check (void)
       fd = d_function_chain->function;
       if (fd && fd->type->ty == Tfunction)
 	{
-	  TypeFunction *tf = (TypeFunction *) fd->type;
-	  if (tf->trust == TRUSTsafe)
+	  if (fd->type->isTypeFunction ()->trust == TRUSTsafe)
 	    return true;
 	}
       return false;
@@ -1783,9 +1778,9 @@ get_function_type (Type *t)
   if (t->ty == Tpointer)
     t = t->nextOf ()->toBasetype ();
   if (t->ty == Tfunction)
-    tf = (TypeFunction *) t;
+    tf = t->isTypeFunction ();
   else if (t->ty == Tdelegate)
-    tf = (TypeFunction *) ((TypeDelegate *) t)->next;
+    tf = t->isTypeDelegate ()->next->isTypeFunction ();
   return tf;
 }
 
@@ -1916,8 +1911,7 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 	  if (TREE_ADDRESSABLE (TREE_TYPE (targ)))
 	    {
 	      Type *t = arg->type->toBasetype ();
-	      gcc_assert (t->ty == Tstruct);
-	      StructDeclaration *sd = ((TypeStruct *) t)->sym;
+	      StructDeclaration *sd = t->isTypeStruct ()->sym;
 
 	      /* Nested structs also have ADDRESSABLE set, but if the type has
 		 neither a copy constructor nor a destructor available, then we

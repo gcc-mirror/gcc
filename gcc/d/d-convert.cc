@@ -467,7 +467,7 @@ convert_expr (tree exp, Type *etype, Type *totype)
 	}
       else if (tbtype->ty == Tarray)
 	{
-	  dinteger_t dim = ((TypeSArray *) ebtype)->dim->toInteger ();
+	  dinteger_t dim = ebtype->isTypeSArray ()->dim->toInteger ();
 	  dinteger_t esize = ebtype->nextOf ()->size ();
 	  dinteger_t tsize = tbtype->nextOf ()->size ();
 
@@ -616,7 +616,7 @@ convert_for_assignment (tree expr, Type *etype, Type *totype)
 
       if (same_type_p (telem, ebtype))
 	{
-	  TypeSArray *sa_type = (TypeSArray *) tbtype;
+	  TypeSArray *sa_type = tbtype->isTypeSArray ();
 	  uinteger_t count = sa_type->dim->toUInteger ();
 
 	  tree ctor = build_constructor (build_ctype (totype), NULL);

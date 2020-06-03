@@ -498,9 +498,9 @@ merge_aggregate_types (Type *type, tree deco)
   AggregateDeclaration *sym;
 
   if (type->ty == Tstruct)
-    sym = ((TypeStruct *) type)->sym;
+    sym = type->isTypeStruct ()->sym;
   else if (type->ty == Tclass)
-    sym = ((TypeClass *) type)->sym;
+    sym = type->isTypeClass ()->sym;
   else
     gcc_unreachable ();
 
@@ -671,7 +671,7 @@ public:
 
   void visit (TypeVector *t)
   {
-    int nunits = ((TypeSArray *) t->basetype)->dim->toUInteger ();
+    int nunits = t->basetype->isTypeSArray ()->dim->toUInteger ();
     tree inner = build_ctype (t->elementType ());
 
     /* Same rationale as void static arrays.  */

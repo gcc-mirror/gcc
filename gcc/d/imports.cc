@@ -131,11 +131,11 @@ public:
 	if (type != NULL)
 	  {
 	    if (type->ty == Tenum)
-	      dsym = ((TypeEnum *) type)->sym;
+	      dsym = type->isTypeEnum ()->sym;
 	    else if (type->ty == Tstruct)
-	      dsym = ((TypeStruct *) type)->sym;
+	      dsym = type->isTypeStruct ()->sym;
 	    else if (type->ty == Tclass)
-	      dsym = ((TypeClass *) type)->sym;
+	      dsym = type->isTypeClass ()->sym;
 	  }
       }
 
