@@ -1,3 +1,19 @@
+2020-06-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/92633
+	PR c++/92838
+	* pt.c (tsubst_function_decl): Don't do set_constraints when
+	regenerating a lambda.
+	(tsubst_lambda_expr): Substitute into the lambda's constraints
+	and do set_constraints here.
+
+2020-06-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95020
+	* constraint.cc (tsubst_requires_expr): Produce a new
+	requires-expression when processing_template_decl, even if
+	template arguments are not dependent.
+
 2020-05-30  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/95386
