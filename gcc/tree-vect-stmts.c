@@ -7676,8 +7676,12 @@ vectorizable_store (vec_info *vinfo,
 							      gs_info.offset,
 							      stmt_info);
 	      if (mask)
-		mask_op = vec_mask = vect_get_vec_def_for_operand (vinfo, mask,
-								   stmt_info);
+		{
+		  tree mask_vectype = truth_type_for (vectype);
+		  mask_op = vec_mask
+		    = vect_get_vec_def_for_operand (vinfo, mask,
+						    stmt_info, mask_vectype);
+		}
 	    }
 	  else if (modifier != NONE && (j & 1))
 	    {
