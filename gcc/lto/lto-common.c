@@ -1503,9 +1503,7 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
     {
-      if (code == ENUMERAL_TYPE)
-	compare_tree_edges (TYPE_VALUES (t1), TYPE_VALUES (t2));
-      else if (code == ARRAY_TYPE)
+      if (code == ARRAY_TYPE)
 	compare_tree_edges (TYPE_DOMAIN (t1), TYPE_DOMAIN (t2));
       else if (RECORD_OR_UNION_TYPE_P (t1))
 	{

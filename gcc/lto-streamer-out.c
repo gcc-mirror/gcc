@@ -1000,9 +1000,7 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
     {
-      if (TREE_CODE (expr) == ENUMERAL_TYPE)
-	DFS_follow_tree_edge (TYPE_VALUES (expr));
-      else if (TREE_CODE (expr) == ARRAY_TYPE)
+      if (TREE_CODE (expr) == ARRAY_TYPE)
 	DFS_follow_tree_edge (TYPE_DOMAIN (expr));
       else if (RECORD_OR_UNION_TYPE_P (expr))
 	for (tree t = TYPE_FIELDS (expr); t; t = TREE_CHAIN (t))
@@ -1413,9 +1411,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
     {
-      if (code == ENUMERAL_TYPE)
-	visit (TYPE_VALUES (t));
-      else if (code == ARRAY_TYPE)
+      if (code == ARRAY_TYPE)
 	visit (TYPE_DOMAIN (t));
       else if (RECORD_OR_UNION_TYPE_P (t))
 	for (tree f = TYPE_FIELDS (t); f; f = TREE_CHAIN (f))

@@ -724,9 +724,7 @@ write_ts_type_common_tree_pointers (struct output_block *ob, tree expr)
 static void
 write_ts_type_non_common_tree_pointers (struct output_block *ob, tree expr)
 {
-  if (TREE_CODE (expr) == ENUMERAL_TYPE)
-    stream_write_tree_ref (ob, TYPE_VALUES (expr));
-  else if (TREE_CODE (expr) == ARRAY_TYPE)
+  if (TREE_CODE (expr) == ARRAY_TYPE)
     stream_write_tree_ref (ob, TYPE_DOMAIN (expr));
   else if (RECORD_OR_UNION_TYPE_P (expr))
     streamer_write_chain (ob, TYPE_FIELDS (expr));
