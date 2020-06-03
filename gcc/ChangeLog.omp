@@ -1,3 +1,8 @@
+2020-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimplify.cc (localize_reductions): Do not create local
+	variable for privatized arrays.
+
 2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Option Summary): Add entries for
