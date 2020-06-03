@@ -1185,14 +1185,17 @@ static tree genericize_spaceship (tree expr)
 
 /* If EXPR involves an anonymous VLA type, prepend a DECL_EXPR for that type
    to trigger gimplify_type_sizes; otherwise a cast to pointer-to-VLA confuses
-   the middle-end (c++/88256).  */
+   the middle-end (c++/88256).  If EXPR is a DECL, use add_stmt and return
+   NULL_TREE; otherwise return a COMPOUND_STMT of the DECL_EXPR and EXPR.  */
 
-static tree
+tree
 predeclare_vla (tree expr)
 {
   tree type = TREE_TYPE (expr);
   if (type == error_mark_node)
     return expr;
+  if (is_typedef_decl (expr))
+    type = DECL_ORIGINAL_TYPE (expr);
 
   /* We need to strip pointers for gimplify_type_sizes.  */
   tree vla = type;
@@ -1209,8 +1212,16 @@ predeclare_vla (tree expr)
   DECL_ARTIFICIAL (decl) = 1;
   TYPE_NAME (vla) = decl;
   tree dexp = build_stmt (input_location, DECL_EXPR, decl);
-  expr = build2 (COMPOUND_EXPR, type, dexp, expr);
-  return expr;
+  if (DECL_P (expr))
+    {
+      add_stmt (dexp);
+      return NULL_TREE;
+    }
+  else
+    {
+      expr = build2 (COMPOUND_EXPR, type, dexp, expr);
+      return expr;
+    }
 }
 
 /* Perform any pre-gimplification lowering of C++ front end trees to
@@ -2267,7 +2278,8 @@ cxx_omp_const_qual_no_mutable (tree decl)
   return false;
 }
 
-/* True if OpenMP sharing attribute of DECL is predetermined.  */
+/* OMP_CLAUSE_DEFAULT_UNSPECIFIED unless OpenMP sharing attribute
+   of DECL is predetermined.  */
 
 enum omp_clause_default_kind
 cxx_omp_predetermined_sharing_1 (tree decl)
@@ -2319,6 +2331,25 @@ cxx_omp_predetermined_sharing (tree decl)
     return OMP_CLAUSE_DEFAULT_SHARED;
 
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
+}
+
+enum omp_clause_defaultmap_kind
+cxx_omp_predetermined_mapping (tree decl)
+{
+  /* Predetermine artificial variables holding integral values, those
+     are usually result of gimplify_one_sizepos or SAVE_EXPR
+     gimplification.  */
+  if (VAR_P (decl)
+      && DECL_ARTIFICIAL (decl)
+      && INTEGRAL_TYPE_P (TREE_TYPE (decl))
+      && !(DECL_LANG_SPECIFIC (decl)
+	   && DECL_OMP_PRIVATIZED_MEMBER (decl)))
+    return OMP_CLAUSE_DEFAULTMAP_FIRSTPRIVATE;
+
+  if (c_omp_predefined_variable (decl))
+    return OMP_CLAUSE_DEFAULTMAP_TO;
+
+  return OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED;
 }
 
 /* Finalize an implicitly determined clause.  */

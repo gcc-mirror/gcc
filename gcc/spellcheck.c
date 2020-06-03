@@ -25,14 +25,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "spellcheck.h"
 #include "selftest.h"
 
+/* Cost of a case transformation.  */
+#define CASE_COST 1
+
+/* Cost of another kind of edit.  */
+#define BASE_COST 2
+
 /* Get the edit distance between the two strings: the minimal
    number of edits that are needed to change one string into another,
    where edits can be one-character insertions, removals, or substitutions,
    or transpositions of two adjacent characters (counting as one "edit").
 
-   This implementation uses the Wagner-Fischer algorithm for the
-   Damerau-Levenshtein distance; specifically, the "optimal string alignment
-   distance" or "restricted edit distance" variant.  */
+   This implementation uses a modified variant of the Wagner-Fischer
+   algorithm for the Damerau-Levenshtein distance; specifically, the
+   "optimal string alignment distance" or "restricted edit distance"
+   variant.  This implementation has been further modified to take
+   case into account.  */
 
 edit_distance_t
 get_edit_distance (const char *s, int len_s,
@@ -47,9 +55,9 @@ get_edit_distance (const char *s, int len_s,
     }
 
   if (len_s == 0)
-    return len_t;
+    return BASE_COST * len_t;
   if (len_t == 0)
-    return len_s;
+    return BASE_COST * len_s;
 
   /* We effectively build a matrix where each (i, j) contains the
      distance between the prefix strings s[0:j] and t[0:i].
@@ -67,7 +75,7 @@ get_edit_distance (const char *s, int len_s,
   /* The first row is for the case of an empty target string, which
      we can reach by deleting every character in the source string.  */
   for (int i = 0; i < len_s + 1; i++)
-    v_one_ago[i] = i;
+    v_one_ago[i] = i * BASE_COST;
 
   /* Build successive rows.  */
   for (int i = 0; i < len_t; i++)
@@ -83,21 +91,28 @@ get_edit_distance (const char *s, int len_s,
       /* The initial column is for the case of an empty source string; we
 	 can reach prefixes of the target string of length i
 	 by inserting i characters.  */
-      v_next[0] = i + 1;
+      v_next[0] = (i + 1) * BASE_COST;
 
       /* Build the rest of the row by considering neighbors to
 	 the north, west and northwest.  */
       for (int j = 0; j < len_s; j++)
 	{
-	  edit_distance_t cost = (s[j] == t[i] ? 0 : 1);
-	  edit_distance_t deletion     = v_next[j] + 1;
-	  edit_distance_t insertion    = v_one_ago[j + 1] + 1;
+	  edit_distance_t cost;
+
+	  if (s[j] == t[i])
+	    cost = 0;
+	  else if (TOLOWER (s[j]) == TOLOWER (t[i]))
+	    cost = CASE_COST;
+	  else
+	    cost = BASE_COST;
+	  edit_distance_t deletion     = v_next[j] + BASE_COST;
+	  edit_distance_t insertion    = v_one_ago[j + 1] + BASE_COST;
 	  edit_distance_t substitution = v_one_ago[j] + cost;
 	  edit_distance_t cheapest = MIN (deletion, insertion);
 	  cheapest = MIN (cheapest, substitution);
 	  if (i > 0 && j > 0 && s[j] == t[i - 1] && s[j - 1] == t[i])
 	    {
-	      edit_distance_t transposition = v_two_ago[j - 1] + 1;
+	      edit_distance_t transposition = v_two_ago[j - 1] + BASE_COST;
 	      cheapest = MIN (cheapest, transposition);
 	    }
 	  v_next[j + 1] = cheapest;
@@ -185,11 +200,11 @@ get_edit_distance_cutoff (size_t goal_len, size_t candidate_len)
   /* If the lengths are close, then round down.  */
   if (max_length - min_length <= 1)
     /* ...but allow an edit distance of at least 1.  */
-    return MAX (max_length / 3, 1);
+    return BASE_COST * MAX (max_length / 3, 1);
 
   /* Otherwise, round up (thus giving a little extra leeway to some cases
      involving insertions/deletions).  */
-  return (max_length + 2) / 3;
+  return BASE_COST * (max_length + 2) / 3;
 }
 
 #if CHECKING_P
@@ -228,47 +243,50 @@ test_get_edit_distance_both_ways (const char *a, const char *b,
 static void
 test_edit_distances ()
 {
-  test_get_edit_distance_both_ways ("", "nonempty", strlen ("nonempty"));
-  test_get_edit_distance_both_ways ("saturday", "sunday", 3);
-  test_get_edit_distance_both_ways ("foo", "m_foo", 2);
-  test_get_edit_distance_both_ways ("hello_world", "HelloWorld", 3);
+  test_get_edit_distance_both_ways ("", "nonempty",
+				    BASE_COST * strlen ("nonempty"));
+  test_get_edit_distance_both_ways ("saturday", "sunday",
+				    BASE_COST * 3);
+  test_get_edit_distance_both_ways ("foo", "m_foo", BASE_COST * 2);
+  test_get_edit_distance_both_ways ("hello_world", "HelloWorld", 4);
   test_get_edit_distance_both_ways
-    ("the quick brown fox jumps over the lazy dog", "dog", 40);
+    ("the quick brown fox jumps over the lazy dog", "dog", BASE_COST * 40);
   test_get_edit_distance_both_ways
     ("the quick brown fox jumps over the lazy dog",
      "the quick brown dog jumps over the lazy fox",
-     4);
+     BASE_COST * 4);
   test_get_edit_distance_both_ways
     ("Lorem ipsum dolor sit amet, consectetur adipiscing elit,",
      "All your base are belong to us",
-     44);
+     BASE_COST * 44);
   test_get_edit_distance_both_ways ("foo", "FOO", 3);
-  test_get_edit_distance_both_ways ("fee", "deed", 2);
-  test_get_edit_distance_both_ways ("coorzd1", "coordx1", 2);
-  test_get_edit_distance_both_ways ("assert", "sqrt", 3);
-  test_get_edit_distance_both_ways ("PATH_MAX", "INT8_MAX", 3);
-  test_get_edit_distance_both_ways ("time", "nice", 2);
-  test_get_edit_distance_both_ways ("bar", "carg", 2);
+  test_get_edit_distance_both_ways ("fee", "deed", BASE_COST * 2);
+  test_get_edit_distance_both_ways ("coorzd1", "coordx1", BASE_COST * 2);
+  test_get_edit_distance_both_ways ("assert", "sqrt", BASE_COST * 3);
+  test_get_edit_distance_both_ways ("PATH_MAX", "INT8_MAX", BASE_COST * 3);
+  test_get_edit_distance_both_ways ("time", "nice", BASE_COST * 2);
+  test_get_edit_distance_both_ways ("bar", "carg", BASE_COST * 2);
   test_get_edit_distance_both_ways ("gtk_widget_show_all",
-				    "GtkWidgetShowAll", 7);
-  test_get_edit_distance_both_ways ("m_bar", "bar", 2);
-  test_get_edit_distance_both_ways ("MACRO", "MACRAME", 3);
-  test_get_edit_distance_both_ways ("ab", "ac", 1);
-  test_get_edit_distance_both_ways ("ab", "a", 1);
-  test_get_edit_distance_both_ways ("a", "b", 1);
-  test_get_edit_distance_both_ways ("nanl", "name", 2);
-  test_get_edit_distance_both_ways ("char", "bar", 2);
-  test_get_edit_distance_both_ways ("-optimize", "fsanitize", 5);
-  test_get_edit_distance_both_ways ("__DATE__", "__i386__", 4);
+				    "GtkWidgetShowAll", 10);
+  test_get_edit_distance_both_ways ("m_bar", "bar", BASE_COST * 2);
+  test_get_edit_distance_both_ways ("MACRO", "MACRAME", BASE_COST * 3);
+  test_get_edit_distance_both_ways ("ab", "ac", BASE_COST * 1);
+  test_get_edit_distance_both_ways ("ab", "a", BASE_COST * 1);
+  test_get_edit_distance_both_ways ("a", "b", BASE_COST * 1);
+  test_get_edit_distance_both_ways ("nanl", "name", BASE_COST * 2);
+  test_get_edit_distance_both_ways ("char", "bar", BASE_COST * 2);
+  test_get_edit_distance_both_ways ("-optimize", "fsanitize", BASE_COST * 5);
+  test_get_edit_distance_both_ways ("__DATE__", "__i386__", BASE_COST * 4);
 
   /* Examples where transposition helps.  */
-  test_get_edit_distance_both_ways ("ab", "ba", 1);
-  test_get_edit_distance_both_ways ("ba", "abc", 2);
-  test_get_edit_distance_both_ways ("coorzd1", "coordz1", 1);
+  test_get_edit_distance_both_ways ("ab", "ba", BASE_COST * 1);
+  test_get_edit_distance_both_ways ("ba", "abc", BASE_COST * 2);
+  test_get_edit_distance_both_ways ("coorzd1", "coordz1", BASE_COST * 1);
   test_get_edit_distance_both_ways ("abcdefghijklmnopqrstuvwxyz",
-				    "bacdefghijklmnopqrstuvwxzy", 2);
-  test_get_edit_distance_both_ways ("saturday", "sundya", 4);
-  test_get_edit_distance_both_ways ("signed", "singed", 1);
+				    "bacdefghijklmnopqrstuvwxzy",
+				    BASE_COST * 2);
+  test_get_edit_distance_both_ways ("saturday", "sundya", BASE_COST * 4);
+  test_get_edit_distance_both_ways ("signed", "singed", BASE_COST * 1);
 }
 
 /* Subroutine of test_get_edit_distance_cutoff, for emulating the
@@ -277,7 +295,7 @@ test_edit_distances ()
 static edit_distance_t
 get_old_cutoff (size_t goal_len, size_t candidate_len)
 {
-  return MAX (goal_len, candidate_len) / 2;
+  return BASE_COST * MAX (goal_len, candidate_len) / 2;
 }
 
 /* Verify that the cutoff for "meaningfulness" of suggestions is at least as
@@ -428,6 +446,24 @@ test_find_closest_string ()
   candidates.safe_push("coordy1");
   candidates.safe_push("coordz1");
   ASSERT_STREQ ("coordz1", find_closest_string ("coorzd1", &candidates));
+
+  candidates.truncate (0);
+  candidates.safe_push ("DWARF_GNAT_ENCODINGS_GDB");
+  candidates.safe_push ("DWARF_GNAT_ENCODINGS_ALL");
+  candidates.safe_push ("DWARF_GNAT_ENCODINGS_MINIMAL");
+  ASSERT_STREQ ("DWARF_GNAT_ENCODINGS_ALL",
+		find_closest_string ("DWARF_GNAT_ENCODINGS_all",
+				     &candidates));
+
+  /* The same as the previous test, but with a different order of
+     candidates.  */
+  candidates.truncate (0);
+  candidates.safe_push ("DWARF_GNAT_ENCODINGS_ALL");
+  candidates.safe_push ("DWARF_GNAT_ENCODINGS_GDB");
+  candidates.safe_push ("DWARF_GNAT_ENCODINGS_MINIMAL");
+  ASSERT_STREQ ("DWARF_GNAT_ENCODINGS_ALL",
+		find_closest_string ("DWARF_GNAT_ENCODINGS_all",
+				     &candidates));
 }
 
 /* Test data for test_metric_conditions.  */

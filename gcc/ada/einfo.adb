@@ -7405,7 +7405,7 @@ package body Einfo is
       Comp_Id := First_Entity (Id);
       while Present (Comp_Id) loop
          exit when Ekind (Comp_Id) = E_Component;
-         Comp_Id := Next_Entity (Comp_Id);
+         Next_Entity (Comp_Id);
       end loop;
 
       return Comp_Id;
@@ -7428,7 +7428,7 @@ package body Einfo is
       Comp_Id := First_Entity (Id);
       while Present (Comp_Id) loop
          exit when Ekind_In (Comp_Id, E_Component, E_Discriminant);
-         Comp_Id := Next_Entity (Comp_Id);
+         Next_Entity (Comp_Id);
       end loop;
 
       return Comp_Id;
@@ -7755,7 +7755,7 @@ package body Einfo is
             return True;
          end if;
 
-         Ent := Next_Entity (Ent);
+         Next_Entity (Ent);
       end loop;
 
       return False;
@@ -8540,7 +8540,7 @@ package body Einfo is
       Comp_Id := Next_Entity (Id);
       while Present (Comp_Id) loop
          exit when Ekind (Comp_Id) = E_Component;
-         Comp_Id := Next_Entity (Comp_Id);
+         Next_Entity (Comp_Id);
       end loop;
 
       return Comp_Id;
@@ -8557,7 +8557,7 @@ package body Einfo is
       Comp_Id := Next_Entity (Id);
       while Present (Comp_Id) loop
          exit when Ekind_In (Comp_Id, E_Component, E_Discriminant);
-         Comp_Id := Next_Entity (Comp_Id);
+         Next_Entity (Comp_Id);
       end loop;
 
       return Comp_Id;
@@ -8590,7 +8590,7 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Discriminant);
 
       loop
-         D := Next_Entity (D);
+         Next_Entity (D);
          if No (D)
            or else (Ekind (D) /= E_Discriminant
                       and then not Is_Itype (D))
@@ -8715,7 +8715,7 @@ package body Einfo is
             N := N + 1;
          end if;
 
-         Ent := Next_Entity (Ent);
+         Next_Entity (Ent);
       end loop;
 
       return N;
@@ -8734,7 +8734,7 @@ package body Einfo is
       Formal := First_Formal (Id);
       while Present (Formal) loop
          N := N + 1;
-         Formal := Next_Formal (Formal);
+         Next_Formal (Formal);
       end loop;
 
       return N;

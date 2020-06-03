@@ -6769,6 +6769,28 @@ package body Exp_Ch6 is
       --  of the return object to the specific type on assignments to the
       --  individual components.
 
+      procedure Check_Against_Result_Level (Level : Node_Id);
+      --  Check the given accessibility level against the level
+      --  determined by the point of call. (AI05-0234).
+
+      --------------------------------
+      -- Check_Against_Result_Level --
+      --------------------------------
+
+      procedure Check_Against_Result_Level (Level : Node_Id) is
+      begin
+         Insert_Action (N,
+           Make_Raise_Program_Error (Loc,
+             Condition =>
+               Make_Op_Gt (Loc,
+                 Left_Opnd  => Level,
+                 Right_Opnd =>
+                   New_Occurrence_Of
+                     (Extra_Accessibility_Of_Result (Scope_Id), Loc)),
+                 Reason => PE_Accessibility_Check_Failed));
+      end Check_Against_Result_Level;
+
+   --  Start of processing for Expand_Simple_Function_Return
    begin
       if Is_Class_Wide_Type (R_Type)
         and then not Is_Class_Wide_Type (Exptyp)
@@ -7315,6 +7337,16 @@ package body Exp_Ch6 is
              Suppress  => All_Checks);
       end if;
 
+      --  Determine if the special rules within RM 3.10.2 for explicitly
+      --  aliased formals apply to Exp - in which case we require a dynamic
+      --  check to be generated.
+
+      if Is_Special_Aliased_Formal_Access (Exp, Scope_Id) then
+         Check_Against_Result_Level
+           (Make_Integer_Literal (Loc,
+             Object_Access_Level (Entity (Ultimate_Prefix (Prefix (Exp))))));
+      end if;
+
       --  AI05-0234: RM 6.5(21/3). Check access discriminants to
       --  ensure that the function result does not outlive an
       --  object designated by one of it discriminants.
@@ -7324,28 +7356,6 @@ package body Exp_Ch6 is
       then
          declare
             Discrim_Source : Node_Id;
-
-            procedure Check_Against_Result_Level (Level : Node_Id);
-            --  Check the given accessibility level against the level
-            --  determined by the point of call. (AI05-0234).
-
-            --------------------------------
-            -- Check_Against_Result_Level --
-            --------------------------------
-
-            procedure Check_Against_Result_Level (Level : Node_Id) is
-            begin
-               Insert_Action (N,
-                 Make_Raise_Program_Error (Loc,
-                   Condition =>
-                     Make_Op_Gt (Loc,
-                       Left_Opnd  => Level,
-                       Right_Opnd =>
-                         New_Occurrence_Of
-                           (Extra_Accessibility_Of_Result (Scope_Id), Loc)),
-                       Reason => PE_Accessibility_Check_Failed));
-            end Check_Against_Result_Level;
-
          begin
             Discrim_Source := Exp;
             while Nkind (Discrim_Source) = N_Qualified_Expression loop
@@ -9636,7 +9646,7 @@ package body Exp_Ch6 is
 
       Last_Formal := First_Formal (Proc_Id);
       while Present (Next_Formal (Last_Formal)) loop
-         Last_Formal := Next_Formal (Last_Formal);
+         Next_Formal (Last_Formal);
       end loop;
 
       Actuals := Parameter_Associations (N);

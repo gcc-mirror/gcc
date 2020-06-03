@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Dec 10, 2019
+GNAT User's Guide for Native Platforms , May 04, 2020
 
 AdaCore
 
@@ -9686,10 +9686,6 @@ Object_Size, Scalar_Storage_Order, Size, Small, Stream_Size,
 and Value_Size. Pragma Default_Scalar_Storage_Order is also ignored.
 Note that this option should be used only for compiling -- the
 code is likely to malfunction at run time.
-
-Note that when @code{-gnatct} is used to generate trees for input
-into ASIS tools, these representation clauses are removed
-from the tree and ignored. This means that the tool will not see them.
 @end table
 
 @geindex -gnatjnn (gcc)
@@ -10017,16 +10013,6 @@ Syntax check only.
 @item @code{-gnatS}
 
 Print package Standard.
-@end table
-
-@geindex -gnatt (gcc)
-
-
-@table @asis
-
-@item @code{-gnatt}
-
-Generate tree output file.
 @end table
 
 @geindex -gnatT (gcc)
@@ -10714,14 +10700,6 @@ for use by tools (e.g., semantic browsing tools or integrated development
 environments) that are driven from the @code{ALI} file. This switch
 implies @code{-gnatq}, since the semantic phase must be run to get a
 meaningful ALI file.
-
-In addition, if @code{-gnatt} is also specified, then the tree file is
-generated even if there are illegalities. It may be useful in this case
-to also specify @code{-gnatq} to ensure that full semantic processing
-occurs. The resulting tree file can be processed by ASIS, for the purpose
-of providing partial information about illegal units, but if the error
-causes the tree to be badly malformed, then ASIS may crash during the
-analysis.
 
 When @code{-gnatQ} is used and the generated @code{ALI} file is marked as
 being in error, @code{gnatmake} will attempt to recompile the source when it
@@ -14898,28 +14876,6 @@ inlining, but that is no longer the case.
 @anchor{gnat_ugn/building_executable_programs_with_gnat auxiliary-output-control}@anchor{110}@anchor{gnat_ugn/building_executable_programs_with_gnat id26}@anchor{111}
 @subsection Auxiliary Output Control
 
-
-@geindex -gnatt (gcc)
-
-@geindex Writing internal trees
-
-@geindex Internal trees
-@geindex writing to file
-
-
-@table @asis
-
-@item @code{-gnatt}
-
-Causes GNAT to write the internal tree for a unit to a file (with the
-extension @code{.adt}.
-This not normally required, but is used by separate analysis tools.
-Typically
-these tools do the necessary compilations automatically, so you should
-not have to specify this switch in normal operation.
-Note that the combination of switches @code{-gnatct}
-generates a tree in the form required by ASIS applications.
-@end table
 
 @geindex -gnatu (gcc)
 

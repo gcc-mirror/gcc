@@ -2448,7 +2448,7 @@ package body Sem_Ch3 is
                end if;
 
                exit when Last_Entity (Current_Scope) = Curr;
-               Curr := Next_Entity (Curr);
+               Next_Entity (Curr);
             end loop;
          end if;
 
@@ -2683,7 +2683,7 @@ package body Sem_Ch3 is
                  and then Present (First_Entity (Current_Scope))
                then
                   while Is_Generic_Formal (Freeze_From) loop
-                     Freeze_From := Next_Entity (Freeze_From);
+                     Next_Entity (Freeze_From);
                   end loop;
 
                   Freeze_All (Freeze_From, Decl);
@@ -3811,7 +3811,7 @@ package body Sem_Ch3 is
                while Present (Comp) loop
                   Check_Component (Etype (Comp), Parent (Comp));
 
-                  Comp := Next_Component (Comp);
+                  Next_Component (Comp);
                end loop;
             end if;
          end Check_Component;
@@ -15865,7 +15865,7 @@ package body Sem_Ch3 is
                return True;
             end if;
 
-            E := Next_Entity (E);
+            Next_Entity (E);
          end loop;
 
          List := Collect_Primitive_Operations (Derived_Type);

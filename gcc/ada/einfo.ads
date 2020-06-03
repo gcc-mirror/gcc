@@ -1217,14 +1217,16 @@ package Einfo is
 --       for the same literal.
 
 --    Enum_Pos_To_Rep (Node23)
---       Defined in enumeration types (but not enumeration subtypes). Set to
---       Empty unless the enumeration type has a non-standard representation
---       (i.e. at least one literal has a representation value different from
---       its pos value). In this case, Enum_Pos_To_Rep is the entity for an
---       array constructed when the type is frozen that maps Pos values to
---       corresponding Rep values. The index type of this array is Natural,
---       and the component type is a suitable integer type that holds the
---       full range of representation values.
+--       Defined in enumeration types, but not enumeration subtypes. Set to
+--       Empty unless the enumeration type has a non-standard representation,
+--       i.e. at least one literal has a representation value different from
+--       its position value. In this case, the alternative is the following:
+--       if the representation is not contiguous, then Enum_Pos_To_Rep is the
+--       entity for an array constant built when the type is frozen that maps
+--       Pos values to corresponding Rep values, whose index type is Natural
+--       and whose component type is the enumeration type itself; or else, if
+--       the representation is contiguous, then Enum_Pos_To_Rep is the entity
+--       of the index type defined above.
 
 --    Equivalent_Type (Node18)
 --       Defined in class wide types and subtypes, access to protected
@@ -1575,7 +1577,7 @@ package Einfo is
 --       in sem_aux is used to test for this case.
 
 --    Has_Contiguous_Rep (Flag181)
---       Defined in enumeration types. Set if the type as a representation
+--       Defined in enumeration types. Set if the type has a representation
 --       clause whose entries are successive integers.
 
 --    Has_Controlled_Component (Flag43) [base type only]

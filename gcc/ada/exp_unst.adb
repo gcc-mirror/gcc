@@ -2104,7 +2104,7 @@ package body Exp_Unst is
 
                                     Comp := First_Component (STJ.ARECnT);
                                     while Chars (Comp) /= Chars (Ent) loop
-                                       Comp := Next_Component (Comp);
+                                       Next_Component (Comp);
                                     end loop;
 
                                     Rhs :=

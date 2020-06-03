@@ -1,3 +1,11 @@
+2020-06-02  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Update hash of local patches.
+
+2020-06-02  Martin Liska  <mliska@suse.cz>
+
+	* MERGE: Merge from master.
+
 2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR bootstrap/95413

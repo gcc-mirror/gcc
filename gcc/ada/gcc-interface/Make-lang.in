@@ -472,9 +472,6 @@ GNAT_ADA_OBJS =	\
  ada/table.o	\
  ada/targparm.o	\
  ada/tbuild.o	\
- ada/tree_gen.o	\
- ada/tree_in.o	\
- ada/tree_io.o	\
  ada/treepr.o	\
  ada/treeprs.o	\
  ada/ttypes.o	\
@@ -484,6 +481,7 @@ GNAT_ADA_OBJS =	\
  ada/urealp.o	\
  ada/usage.o	\
  ada/validsw.o	\
+ ada/vast.o	\
  ada/warnsw.o	\
  ada/widechar.o
 
@@ -632,7 +630,6 @@ GNATBIND_OBJS = \
  ada/table.o      \
  ada/targext.o    \
  ada/targparm.o   \
- ada/tree_io.o    \
  ada/types.o      \
  ada/uintp.o      \
  ada/uname.o      \
@@ -1040,7 +1037,7 @@ ada/sdefault.o : ada/libgnat/ada.ads ada/libgnat/a-except.ads ada/libgnat/a-uncc
    ada/libgnat/s-exctab.ads ada/libgnat/s-memory.ads ada/libgnat/s-os_lib.ads ada/libgnat/s-parame.ads \
    ada/libgnat/s-stalib.ads ada/libgnat/s-strops.ads ada/libgnat/s-sopco3.ads ada/libgnat/s-sopco4.ads \
    ada/libgnat/s-sopco5.ads ada/libgnat/s-string.ads ada/libgnat/s-traent.ads ada/libgnat/s-unstyp.ads \
-   ada/libgnat/s-wchcon.ads ada/libgnat/system.ads ada/table.adb ada/table.ads ada/tree_io.ads \
+   ada/libgnat/s-wchcon.ads ada/libgnat/system.ads ada/table.adb ada/table.ads \
    ada/types.ads ada/libgnat/unchdeal.ads ada/libgnat/unchconv.ads
 
 # Special flags - see gcc-interface/Makefile.in for the template.

@@ -580,26 +580,6 @@ package body Elists is
       Elmts.Table (Elmt).Node := New_Node;
    end Replace_Elmt;
 
-   ---------------
-   -- Tree_Read --
-   ---------------
-
-   procedure Tree_Read is
-   begin
-      Elists.Tree_Read;
-      Elmts.Tree_Read;
-   end Tree_Read;
-
-   ----------------
-   -- Tree_Write --
-   ----------------
-
-   procedure Tree_Write is
-   begin
-      Elists.Tree_Write;
-      Elmts.Tree_Write;
-   end Tree_Write;
-
    ------------
    -- Unlock --
    ------------

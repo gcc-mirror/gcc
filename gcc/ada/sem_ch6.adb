@@ -813,39 +813,50 @@ package body Sem_Ch6 is
                then
                   --  Obtain the object to perform static checks on by moving
                   --  up the prefixes in the expression taking into account
-                  --  named access types.
+                  --  named access types and renamed objects within the
+                  --  expression.
 
                   Obj := Original_Node (Prefix (Expr));
-                  while Nkind_In (Obj, N_Explicit_Dereference,
-                                       N_Indexed_Component,
-                                       N_Selected_Component)
                   loop
-                     --  When we encounter a named access type then we can
-                     --  ignore accessibility checks on the dereference.
+                     while Nkind_In (Obj, N_Explicit_Dereference,
+                                          N_Indexed_Component,
+                                          N_Selected_Component)
+                     loop
+                        --  When we encounter a named access type then we can
+                        --  ignore accessibility checks on the dereference.
 
-                     if Ekind (Etype (Original_Node (Prefix (Obj))))
-                          in E_Access_Type ..
-                             E_Access_Protected_Subprogram_Type
-                     then
-                        if Nkind (Obj) = N_Selected_Component then
-                           Obj := Selector_Name (Obj);
-                        else
-                           Obj := Original_Node (Prefix (Obj));
+                        if Ekind (Etype (Original_Node (Prefix (Obj))))
+                             in E_Access_Type ..
+                                E_Access_Protected_Subprogram_Type
+                        then
+                           if Nkind (Obj) = N_Selected_Component then
+                              Obj := Selector_Name (Obj);
+                           else
+                              Obj := Original_Node (Prefix (Obj));
+                           end if;
+                           exit;
                         end if;
-                        exit;
+
+                        Obj := Original_Node (Prefix (Obj));
+                     end loop;
+
+                     if Nkind (Obj) = N_Selected_Component then
+                        Obj := Selector_Name (Obj);
                      end if;
 
-                     Obj := Original_Node (Prefix (Obj));
-                  end loop;
+                     --  Check for renamings
 
-                  if Nkind (Obj) = N_Selected_Component then
-                     Obj := Selector_Name (Obj);
-                  end if;
+                     pragma Assert (Is_Entity_Name (Obj));
+
+                     if Present (Renamed_Object (Entity (Obj))) then
+                        Obj := Renamed_Object (Entity (Obj));
+                     else
+                        exit;
+                     end if;
+                  end loop;
 
                   --  Do not check aliased formals or function calls. A
                   --  run-time check may still be needed ???
-
-                  pragma Assert (Is_Entity_Name (Obj));
 
                   if Is_Formal (Entity (Obj))
                     and then Is_Aliased (Entity (Obj))
@@ -4579,6 +4590,15 @@ package body Sem_Ch6 is
             end if;
 
          elsif Nkind (Parent (Parent (Spec_Id))) = N_Subprogram_Body_Stub then
+            null;
+
+         --  SPARK_Mode Off could complete no SPARK_Mode in a generic, either
+         --  as specified in source code, or because SPARK_Mode On is ignored
+         --  in an instance where the context is SPARK_Mode Off/Auto.
+
+         elsif Get_SPARK_Mode_From_Annotation (SPARK_Pragma (Body_Id)) = Off
+           and then (Is_Generic_Unit (Spec_Id) or else In_Instance)
+         then
             null;
 
          else

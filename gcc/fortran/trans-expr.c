@@ -2613,7 +2613,8 @@ gfc_maybe_dereference_var (gfc_symbol *sym, tree var, bool descriptor_only_p,
     {
       /* Dereference character pointer dummy arguments
 	 or results.  */
-      if ((sym->attr.pointer || sym->attr.allocatable)
+      if ((sym->attr.pointer || sym->attr.allocatable
+	   || (sym->as && sym->as->type == AS_ASSUMED_RANK))
 	  && (sym->attr.dummy
 	      || sym->attr.function
 	      || sym->attr.result))

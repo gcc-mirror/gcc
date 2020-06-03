@@ -210,7 +210,7 @@ package Opt is
    Allow_Integer_Address : Boolean := False;
    --  GNAT
    --  Allow use of integer expression in a context requiring System.Address.
-   --  Set by the use of configuration pragma Allow_Integer_Address Also set
+   --  Set by the use of configuration pragma Allow_Integer_Address. Also set
    --  in relaxed semantics mode for use by CodePeer or when -gnatd.M is used.
 
    All_Sources : Boolean := False;
@@ -242,9 +242,9 @@ package Opt is
    --  GNAT
    --  If set True, enables back annotation of representation information
    --  by gigi, even in -gnatc mode. This is set True by the use of -gnatR
-   --  (list representation information) or -gnatt (generate tree). It is
-   --  also set true if certain Unchecked_Conversion instantiations require
-   --  checking based on annotated values.
+   --  (list representation information). It is also set true if certain
+   --  Unchecked_Conversion instantiations require checking based on annotated
+   --  values.
 
    Back_End_Handles_Limited_Types : Boolean;
    --  This flag is set true if the back end can properly handle limited or
@@ -492,6 +492,15 @@ package Opt is
    --  PROJECT MANAGER
    --  Set to False with switch -f of gnatclean and gprclean
 
+   Disable_FE_Inline        : Boolean := False;
+   Disable_FE_Inline_Always : Boolean := False;
+   --  GNAT
+   --  Request to disable front end inlining from pragma Inline or pragma
+   --  Inline_Always out of the presence of the -fno-inline back end flag
+   --  on the command line, regardless of any other switches that are set.
+   --  It remains the back end's reponsibility to honor -fno-inline at the
+   --  back end level.
+
    Display_Compilation_Progress : Boolean := False;
    --  GNATMAKE, GPRBUILD
    --  Set True (-d switch) to display information on progress while compiling
@@ -695,10 +704,10 @@ package Opt is
    --  Indicates the current setting of Fast_Math mode, as set by the use
    --  of a Fast_Math pragma (set True by Fast_Math (On)).
 
-   Force_ALI_Tree_File : Boolean := False;
+   Force_ALI_File : Boolean := False;
    --  GNAT
-   --  Force generation of ALI file even if errors are encountered. Also forces
-   --  generation of tree file if -gnatt is also set. Set on by use of -gnatQ.
+   --  Force generation of ALI file even if errors are encountered.
+   --  Set on by use of -gnatQ.
 
    Disable_ALI_File : Boolean := False;
    --  GNAT
@@ -1514,15 +1523,6 @@ package Opt is
    --  with'ed indirectly. It is set True by use of either the -gnatg or
    --  -gnaty switches, but not by use of the Style_Checks pragma.
 
-   Disable_FE_Inline        : Boolean := False;
-   Disable_FE_Inline_Always : Boolean := False;
-   --  GNAT
-   --  Request to disable front end inlining from pragma Inline or pragma
-   --  Inline_Always out of the presence of the -fno-inline back end flag
-   --  on the command line, regardless of any other switches that are set.
-   --  It remains the back end's reponsibility to honor -fno-inline at the
-   --  back end level.
-
    Suppress_Control_Flow_Optimizations : Boolean := False;
    --  GNAT
    --  Set by -fpreserve-control-flow. Suppresses control flow optimizations
@@ -1643,10 +1643,6 @@ package Opt is
    --  GNAT
    --  Set True to treat pragma Restrictions as Restriction_Warnings. Set by
    --  -gnatr switch.
-
-   Tree_Output : Boolean := False;
-   --  GNAT
-   --  Set to True (-gnatt) to generate output tree file
 
    Try_Semantics : Boolean := False;
    --  GNAT
@@ -2231,20 +2227,6 @@ package Opt is
    --  this flag, see package Expander. Indeed this flag might more logically
    --  be in the spec of Expander, but it is referenced by Errout, and it
    --  really seems wrong for Errout to depend on Expander.
-
-   -----------------------
-   -- Tree I/O Routines --
-   -----------------------
-
-   procedure Tree_Read;
-   --  Reads switch settings from current tree file using Tree_Read
-
-   procedure Tree_Write;
-   --  Writes out switch settings to current tree file using Tree_Write
-
-   Tree_Version_String : String_Access;
-   --  Used to store the compiler version string read from a tree file to check
-   --  if it is from the same date as stored in the version string in Gnatvsn.
 
    -----------------------------------
    -- Modes for Formal Verification --

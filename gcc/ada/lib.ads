@@ -755,14 +755,6 @@ package Lib is
    --  important to keep the serial numbers synchronized in the two cases (e.g.
    --  when the references in a package and a client must be kept consistent).
 
-   procedure Tree_Read;
-   --  Initializes internal tables from current tree file using the relevant
-   --  Table.Tree_Read routines.
-
-   procedure Tree_Write;
-   --  Writes out internal tables to current tree file using the relevant
-   --  Table.Tree_Write routines.
-
    procedure Unlock;
    --  Unlock internal tables, in cases where the back end needs to modify them
 
@@ -998,12 +990,11 @@ private
    --  The following table records the compilation switches used to compile
    --  the main unit. The table includes only switches. It excludes -o
    --  switches as well as artifacts of the gcc/gnat1 interface such as
-   --  -quiet, -dumpbase, or -auxbase.
+   --  -quiet, or -dumpbase.
 
    --  This table is set as part of the compiler argument scanning in
    --  Back_End. It can also be reset in -gnatc mode from the data in an
-   --  existing ali file, and is read and written by the Tree_Read and
-   --  Tree_Write routines.
+   --  existing ali file.
 
    package Compilation_Switches is new Table.Table (
      Table_Component_Type => String_Ptr,

@@ -3210,8 +3210,9 @@ package body Sem_Ch5 is
         and then Is_Discrete_Type (Etype (DS))
       then
          declare
-            L : Node_Id;
-            H : Node_Id;
+            L          : Node_Id;
+            H          : Node_Id;
+            Null_Range : Boolean := False;
 
          begin
             if Nkind (DS) = N_Range then
@@ -3231,6 +3232,14 @@ package body Sem_Ch5 is
             --  null range may be detected statically.
 
             if Compile_Time_Compare (L, H, Assume_Valid => True) = GT then
+               if Compile_Time_Compare (L, H, Assume_Valid => False) = GT then
+                  --  Since we know the range of the loop is always null,
+                  --  set the appropriate flag to remove the loop entirely
+                  --  during expansion.
+
+                  Set_Is_Null_Loop (Loop_Nod);
+                  Null_Range := True;
+               end if;
 
                --  Suppress the warning if inside a generic template or
                --  instance, since in practice they tend to be dubious in these
@@ -3241,24 +3250,14 @@ package body Sem_Ch5 is
                   --  Specialize msg if invalid values could make the loop
                   --  non-null after all.
 
-                  if Compile_Time_Compare
-                       (L, H, Assume_Valid => False) = GT
-                  then
-                     --  Since we know the range of the loop is null, set the
-                     --  appropriate flag to remove the loop entirely during
-                     --  expansion.
-
-                     Set_Is_Null_Loop (Loop_Nod);
-
+                  if Null_Range then
                      if Comes_From_Source (N) then
                         Error_Msg_N
                           ("??loop range is null, loop will not execute", DS);
                      end if;
 
-                     --  Here is where the loop could execute because of
-                     --  invalid values, so issue appropriate message and in
-                     --  this case we do not set the Is_Null_Loop flag since
-                     --  the loop may execute.
+                  --  Here is where the loop could execute because of
+                  --  invalid values, so issue appropriate message.
 
                   elsif Comes_From_Source (N) then
                      Error_Msg_N
@@ -3992,6 +3991,12 @@ package body Sem_Ch5 is
          --  Pre-Ada2012 for-loops and while loops
 
          Analyze_Statements (Statements (N));
+      end if;
+
+      --  If the loop has no side effects, mark it for removal.
+
+      if Side_Effect_Free_Loop (N) then
+         Set_Is_Null_Loop (N);
       end if;
 
       --  When the iteration scheme of a loop contains attribute 'Loop_Entry,

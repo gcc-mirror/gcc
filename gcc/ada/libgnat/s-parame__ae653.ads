@@ -94,7 +94,7 @@ package System.Parameters is
 
    Runtime_Default_Sec_Stack_Size : constant Size_Type := 10 * 1024;
    --  The run-time chosen default size for secondary stacks that may be
-   --  overriden by the user with the use of binder -D switch.
+   --  overridden by the user with the use of binder -D switch.
 
    Sec_Stack_Dynamic : constant Boolean := False;
    --  Indicates if secondary stacks can grow and shrink at run-time. If False,

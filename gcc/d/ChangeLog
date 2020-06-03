@@ -1,3 +1,24 @@
+2020-06-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* decl.cc (DeclVisitor::build_dsymbol): New function.
+	(DeclVisitor::visit (TupleDeclaration *)): Use build_dsymbol to
+	traverse AST instead of accept.
+	(DeclVisitor::visit (AttribDeclaration *)): Likewise.
+	(DeclVisitor::visit (Nspace *)): Likewise.
+	(DeclVisitor::visit (TemplateDeclaration *)): Likewise.
+	(DeclVisitor::visit (TemplateInstance *)): Likewise.
+	(DeclVisitor::visit (TemplateMixin *)): Likewise.
+	(DeclVisitor::visit (StructDeclaration *)): Likewise.
+	(DeclVisitor::visit (ClassDeclaration *)): Likewise.
+	(DeclVisitor::visit (InterfaceDeclaration *)): Likewise.
+	(DeclVisitor::visit (VarDeclaration *)): Likewise.
+	(build_decl_tree): Likewise.
+
+2020-06-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (build_frontend_type): Handle struct fields with NULL
+	DECL_NAME.  Use byte_position to get the real field offset.
+
 2020-05-06  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/94970

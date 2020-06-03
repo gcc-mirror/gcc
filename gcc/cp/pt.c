@@ -14633,7 +14633,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 			 && DECL_BIT_FIELD_TYPE (TREE_OPERAND (ve, 1)) == type)
 		  type = TREE_TYPE (ve);
 		else
-		  gcc_checking_assert (TREE_TYPE (ve) == type);
+		  gcc_checking_assert (TYPE_MAIN_VARIANT (TREE_TYPE (ve))
+				       == TYPE_MAIN_VARIANT (type));
 		SET_DECL_VALUE_EXPR (r, ve);
 	      }
 	    if (CP_DECL_THREAD_LOCAL_P (r)
@@ -17988,6 +17989,11 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 
 		    if (ndecl != error_mark_node)
 		      cp_maybe_mangle_decomp (ndecl, first, cnt);
+
+		    /* In a non-template function, VLA type declarations are
+		       handled in grokdeclarator; for templates, handle them
+		       now.  */
+		    predeclare_vla (decl);
 
 		    cp_finish_decl (decl, init, const_init, NULL_TREE,
 				    constinit_p ? LOOKUP_CONSTINIT : 0);

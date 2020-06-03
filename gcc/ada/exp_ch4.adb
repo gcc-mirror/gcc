@@ -7904,7 +7904,7 @@ package body Exp_Ch4 is
                if Is_Equality (E, Typ) then
                   return E;
                end if;
-               E := Next_Entity (E);
+               Next_Entity (E);
             end loop;
          end loop;
 
@@ -12460,7 +12460,7 @@ package body Exp_Ch4 is
       --  If we have a conversion of a compile time known value to a target
       --  type and the value is in range of the target type, then we can simply
       --  replace the construct by an integer literal of the correct type. We
-      --  only apply this to integer types being converted. Possibly it may
+      --  only apply this to discrete types being converted. Possibly it may
       --  apply in other cases, but it is too much trouble to worry about.
 
       --  Note that we do not do this transformation if the Kill_Range_Check
@@ -12473,13 +12473,13 @@ package body Exp_Ch4 is
 
       if Is_Integer_Type (Target_Type)
         and then not Has_Biased_Representation (Target_Type)
-        and then Is_Integer_Type (Operand_Type)
+        and then Is_Discrete_Type (Operand_Type)
         and then not Has_Biased_Representation (Operand_Type)
         and then Compile_Time_Known_Value (Operand)
         and then not Kill_Range_Check (N)
       then
          declare
-            Val : constant Uint := Expr_Value (Operand);
+            Val : constant Uint := Expr_Rep_Value (Operand);
 
          begin
             if Compile_Time_Known_Value (Type_Low_Bound (Target_Type))

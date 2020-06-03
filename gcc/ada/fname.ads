@@ -100,14 +100,4 @@ package Fname is
    function Is_GNAT_File_Name (Fname : File_Name_Type) return Boolean;
    --  True for units in the GNAT hierarchy
 
-   procedure Tree_Read;
-   --  Dummy procedure (reads dummy table values from tree file)
-
-   procedure Tree_Write;
-   --  Writes out internal tables to current tree file using Tree_Write
-   --  This is actually a dummy routine, since the relevant table is
-   --  no longer used, but we retain it for now, to avoid a tree file
-   --  incompatibility with the 3.13 compiler. Should be removed for
-   --  the 3.14a release ???
-
 end Fname;

@@ -13,9 +13,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Finalization;
 with Ada.Streams;
 
+private with Ada.Finalization;
 private with System;
 
 --  Note that some Ada 2020 aspects are commented out since they are not
@@ -89,7 +89,7 @@ is
 
    end Unsigned_Conversions;
 
-   function To_String (Arg : Big_Integer;
+   function To_String (Arg   : Big_Integer;
                        Width : Field := 0;
                        Base  : Number_Base := 10) return String
      with Post => To_String'Result'First = 1;

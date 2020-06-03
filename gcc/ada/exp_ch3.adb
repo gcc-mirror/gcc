@@ -4670,6 +4670,7 @@ package body Exp_Ch3 is
       Ent           : Entity_Id;
       Fent          : Entity_Id;
       Is_Contiguous : Boolean;
+      Index_Typ     : Entity_Id;
       Ityp          : Entity_Id;
       Last_Repval   : Uint;
       Lst           : List_Id;
@@ -4686,81 +4687,99 @@ package body Exp_Ch3 is
 
       Ent := First_Literal (Typ);
       Last_Repval := Enumeration_Rep (Ent);
-
+      Num := 1;
       Next_Literal (Ent);
+
       while Present (Ent) loop
          if Enumeration_Rep (Ent) - Last_Repval /= 1 then
             Is_Contiguous := False;
-            exit;
          else
             Last_Repval := Enumeration_Rep (Ent);
          end if;
 
+         Num := Num + 1;
          Next_Literal (Ent);
       end loop;
 
       if Is_Contiguous then
          Set_Has_Contiguous_Rep (Typ);
-         Ent := First_Literal (Typ);
-         Num := 1;
-         Lst := New_List (New_Occurrence_Of (Ent, Sloc (Ent)));
+
+         --  Now build a subtype declaration
+
+         --    subtype typI is new Natural range 0 .. num - 1
+
+         Index_Typ :=
+           Make_Defining_Identifier (Loc,
+             Chars => New_External_Name (Chars (Typ), 'I'));
+
+         Append_Freeze_Action (Typ,
+           Make_Subtype_Declaration (Loc,
+             Defining_Identifier => Index_Typ,
+             Subtype_Indication =>
+               Make_Subtype_Indication (Loc,
+                 Subtype_Mark =>
+                   New_Occurrence_Of (Standard_Natural,  Loc),
+                 Constraint  =>
+                   Make_Range_Constraint (Loc,
+                     Range_Expression =>
+                       Make_Range (Loc,
+                         Low_Bound  =>
+                           Make_Integer_Literal (Loc, 0),
+                         High_Bound =>
+                           Make_Integer_Literal (Loc, Num - 1))))));
+
+         Set_Enum_Pos_To_Rep (Typ, Index_Typ);
 
       else
          --  Build list of literal references
 
          Lst := New_List;
-         Num := 0;
-
          Ent := First_Literal (Typ);
          while Present (Ent) loop
             Append_To (Lst, New_Occurrence_Of (Ent, Sloc (Ent)));
-            Num := Num + 1;
             Next_Literal (Ent);
          end loop;
+
+         --  Now build an array declaration
+
+         --    typA : constant array (Natural range 0 .. num - 1) of typ :=
+         --             (v, v, v, v, v, ....)
+
+         Arr :=
+           Make_Defining_Identifier (Loc,
+             Chars => New_External_Name (Chars (Typ), 'A'));
+
+         Append_Freeze_Action (Typ,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Arr,
+             Constant_Present    => True,
+
+             Object_Definition   =>
+               Make_Constrained_Array_Definition (Loc,
+                 Discrete_Subtype_Definitions => New_List (
+                   Make_Subtype_Indication (Loc,
+                     Subtype_Mark =>
+                       New_Occurrence_Of (Standard_Natural, Loc),
+                     Constraint   =>
+                       Make_Range_Constraint (Loc,
+                         Range_Expression =>
+                           Make_Range (Loc,
+                             Low_Bound  =>
+                               Make_Integer_Literal (Loc, 0),
+                             High_Bound =>
+                               Make_Integer_Literal (Loc, Num - 1))))),
+
+                 Component_Definition =>
+                   Make_Component_Definition (Loc,
+                     Aliased_Present => False,
+                     Subtype_Indication => New_Occurrence_Of (Typ, Loc))),
+
+             Expression =>
+               Make_Aggregate (Loc,
+                 Expressions => Lst)));
+
+         Set_Enum_Pos_To_Rep (Typ, Arr);
       end if;
-
-      --  Now build an array declaration
-
-      --    typA : array (Natural range 0 .. num - 1) of ctype :=
-      --             (v, v, v, v, v, ....)
-
-      --  where ctype is the corresponding integer type. If the representation
-      --  is contiguous, we only keep the first literal, which provides the
-      --  offset for Pos_To_Rep computations.
-
-      Arr :=
-        Make_Defining_Identifier (Loc,
-          Chars => New_External_Name (Chars (Typ), 'A'));
-
-      Append_Freeze_Action (Typ,
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => Arr,
-          Constant_Present    => True,
-
-          Object_Definition   =>
-            Make_Constrained_Array_Definition (Loc,
-              Discrete_Subtype_Definitions => New_List (
-                Make_Subtype_Indication (Loc,
-                  Subtype_Mark => New_Occurrence_Of (Standard_Natural, Loc),
-                  Constraint   =>
-                    Make_Range_Constraint (Loc,
-                      Range_Expression =>
-                        Make_Range (Loc,
-                          Low_Bound  =>
-                            Make_Integer_Literal (Loc, 0),
-                          High_Bound =>
-                            Make_Integer_Literal (Loc, Num - 1))))),
-
-              Component_Definition =>
-                Make_Component_Definition (Loc,
-                  Aliased_Present => False,
-                  Subtype_Indication => New_Occurrence_Of (Typ, Loc))),
-
-          Expression =>
-            Make_Aggregate (Loc,
-              Expressions => Lst)));
-
-      Set_Enum_Pos_To_Rep (Typ, Arr);
 
       --  Now we build the function that converts representation values to
       --  position values. This function has the form:
@@ -4806,7 +4825,7 @@ package body Exp_Ch3 is
          if Esize (Typ) <= Standard_Integer_Size then
             Ityp := Standard_Integer;
          else
-            Ityp := Universal_Integer;
+            Ityp := Standard_Long_Long_Integer;
          end if;
 
       --  Representations are unsigned

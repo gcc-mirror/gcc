@@ -548,15 +548,6 @@ package Namet is
    --  Unlocks the name table to allow use of the extra space reserved by the
    --  call to Lock. See gnat1drv for details of the need for this.
 
-   procedure Tree_Read;
-   --  Initializes internal tables from current tree file using the relevant
-   --  Table.Tree_Read routines. Note that Initialize should not be called if
-   --  Tree_Read is used. Tree_Read includes all necessary initialization.
-
-   procedure Tree_Write;
-   --  Writes out internal tables to current tree file using the relevant
-   --  Table.Tree_Write routines.
-
    procedure Write_Name (Id : Valid_Name_Id);
    --  Write_Name writes the characters of the specified name using the
    --  standard output procedures in package Output. The name is written

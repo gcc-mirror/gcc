@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                              T R E E _ I N                               --
+--                                 V A S T                                  --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--             Copyright (C) 2020, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,43 +29,18 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;
-with Atree;
-with Csets;
-with Elists;
-with Fname;
-with Lib;
-with Namet;
-with Nlists;
-with Opt;
-with Repinfo;
-with Sem_Aux;
-with Sinput;
-with Stand;
-with Stringt;
-with Tree_IO;
-with Uintp;
-with Urealp;
+--  Dummy implementation
 
-procedure Tree_In (Desc : File_Descriptor) is
-begin
-   Tree_IO.Tree_Read_Initialize (Desc);
+package body VAST is
 
-   Opt.Tree_Read;
-   Atree.Tree_Read;
-   Elists.Tree_Read;
-   Fname.Tree_Read;
-   Lib.Tree_Read;
-   Namet.Tree_Read;
-   Nlists.Tree_Read;
-   Sem_Aux.Tree_Read;
-   Sinput.Tree_Read;
-   Stand.Tree_Read;
-   Stringt.Tree_Read;
-   Uintp.Tree_Read;
-   Urealp.Tree_Read;
-   Repinfo.Tree_Read;
-   Aspects.Tree_Read;
+   ----------------
+   -- Check_Tree --
+   ----------------
 
-   Csets.Initialize;
-end Tree_In;
+   procedure Check_Tree (GNAT_Root : Node_Id) is
+      pragma Unreferenced (GNAT_Root);
+   begin
+      null;
+   end Check_Tree;
+
+end VAST;

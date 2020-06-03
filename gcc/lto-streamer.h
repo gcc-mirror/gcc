@@ -137,28 +137,42 @@ enum LTO_tags
 {
   LTO_null = 0,
 
-  /* Special for streamer.  Reference to previously-streamed node.  */
+  /* Reference to previously-streamed node.  */
   LTO_tree_pickle_reference,
 
-  /* Reserve enough entries to fit all the tree and gimple codes handled
-     by the streamer.  This guarantees that:
+  /* References to indexable tree nodes.  These objects are stored in
+     tables that are written separately from the function bodies
+     and variable constructors that reference them.  This way they can be
+     instantiated even when the referencing functions aren't (e.g., during WPA)
+     and it also allows functions to be copied from one file to another without
+     having to unpickle the body first (the references are location
+     independent).  */
+  LTO_global_stream_ref,
 
-     1- Given a tree code C:
-     		enum LTO_tags tag == C + 1
+  LTO_ssa_name_ref,
 
-     2- Given a gimple code C:
-		enum LTO_tags tag == C + NUM_TREE_CODES + 1
+  /* Special for global streamer.  A blob of unnamed tree nodes.  */
+  LTO_tree_scc,
 
-     Conversely, to map between LTO tags and tree/gimple codes, the
-     reverse operation must be applied.  */
-  LTO_bb0 = 1 + MAX_TREE_CODES + LAST_AND_UNUSED_GIMPLE_CODE,
+  /* Sequence of trees.  */
+  LTO_trees,
+
+  /* Shared INTEGER_CST node.  */
+  LTO_integer_cst,
+
+  /* Tags of trees are encoded as
+     LTO_first_tree_tag + TREE_CODE.  */
+  LTO_first_tree_tag,
+  /* Tags of gimple typles are encoded as
+     LTO_first_gimple_tag + gimple_code.  */
+  LTO_first_gimple_tag = LTO_first_tree_tag + MAX_TREE_CODES,
+
+  /* Entry and exit basic blocks.  */
+  LTO_bb0 = LTO_first_gimple_tag + LAST_AND_UNUSED_GIMPLE_CODE,
   LTO_bb1,
 
   /* EH region holding the previous statement.  */
   LTO_eh_region,
-
-  /* Shared INTEGER_CST node.  */
-  LTO_integer_cst,
 
   /* Function body.  */
   LTO_function,
@@ -177,23 +191,6 @@ enum LTO_tags
 
   /* EH try/catch node.  */
   LTO_eh_catch,
-
-  /* Special for global streamer.  A blob of unnamed tree nodes.  */
-  LTO_tree_scc,
-
-  /* Sequence of trees.  */
-  LTO_trees,
-
-  /* References to indexable tree nodes.  These objects are stored in
-     tables that are written separately from the function bodies
-     and variable constructors that reference them.  This way they can be
-     instantiated even when the referencing functions aren't (e.g., during WPA)
-     and it also allows functions to be copied from one file to another without
-     having to unpickle the body first (the references are location
-     independent).  */
-  LTO_global_stream_ref,
-
-  LTO_ssa_name_ref,
 
   /* This tag must always be last.  */
   LTO_NUM_TAGS
@@ -953,7 +950,7 @@ extern vec<lto_out_decl_state_ptr> lto_function_decl_states;
 static inline bool
 lto_tag_is_tree_code_p (enum LTO_tags tag)
 {
-  return tag > LTO_tree_pickle_reference && (unsigned) tag <= MAX_TREE_CODES;
+  return tag > LTO_first_tree_tag && (unsigned) tag <= MAX_TREE_CODES;
 }
 
 
@@ -961,8 +958,9 @@ lto_tag_is_tree_code_p (enum LTO_tags tag)
 static inline bool
 lto_tag_is_gimple_code_p (enum LTO_tags tag)
 {
-  return (unsigned) tag >= NUM_TREE_CODES + 2
-	 && (unsigned) tag < 2 + NUM_TREE_CODES + LAST_AND_UNUSED_GIMPLE_CODE;
+  return (unsigned) tag >= LTO_first_gimple_tag
+	 && (unsigned) tag
+	    < LTO_first_gimple_tag + LAST_AND_UNUSED_GIMPLE_CODE;
 }
 
 
@@ -971,7 +969,7 @@ lto_tag_is_gimple_code_p (enum LTO_tags tag)
 static inline enum LTO_tags
 lto_gimple_code_to_tag (enum gimple_code code)
 {
-  return (enum LTO_tags) ((unsigned) code + NUM_TREE_CODES + 2);
+  return (enum LTO_tags) ((unsigned) code + LTO_first_gimple_tag);
 }
 
 
@@ -981,7 +979,7 @@ static inline enum gimple_code
 lto_tag_to_gimple_code (enum LTO_tags tag)
 {
   gcc_assert (lto_tag_is_gimple_code_p (tag));
-  return (enum gimple_code) ((unsigned) tag - NUM_TREE_CODES - 2);
+  return (enum gimple_code) ((unsigned) tag - LTO_first_gimple_tag);
 }
 
 
@@ -990,7 +988,7 @@ lto_tag_to_gimple_code (enum LTO_tags tag)
 static inline enum LTO_tags
 lto_tree_code_to_tag (enum tree_code code)
 {
-  return (enum LTO_tags) ((unsigned) code + 2);
+  return (enum LTO_tags) ((unsigned) code + LTO_first_tree_tag);
 }
 
 
@@ -1000,7 +998,7 @@ static inline enum tree_code
 lto_tag_to_tree_code (enum LTO_tags tag)
 {
   gcc_assert (lto_tag_is_tree_code_p (tag));
-  return (enum tree_code) ((unsigned) tag - 2);
+  return (enum tree_code) ((unsigned) tag - LTO_first_tree_tag);
 }
 
 /* Check that tag ACTUAL == EXPECTED.  */

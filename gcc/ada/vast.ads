@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                              T R E E _ I N                               --
+--                                 V A S T                                  --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--             Copyright (C) 2020, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,14 +29,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This procedure is used to read in a tree if the option is set. Note that
---  it is not part of the compiler proper, but rather the interface from
---  tools that need to read the tree to the tree reading routines, and is
---  thus bound as part of such tools.
+--  This package is the entry point for VAST: Verifier for the Ada Semantic
+--  Tree.
 
-with System.OS_Lib; use System.OS_Lib;
+with Types; use Types;
 
-procedure Tree_In (Desc : File_Descriptor);
---  Desc is the file descriptor for the file containing the tree, as written
---  by the compiler in a previous compilation using Tree_Gen. On return the
---  global data structures are appropriately initialized.
+package VAST is
+
+   procedure Check_Tree (GNAT_Root : Node_Id);
+   --  Check the validity of the given Root tree
+
+end VAST;

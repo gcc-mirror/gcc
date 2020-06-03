@@ -931,6 +931,8 @@ package body Rtsfind is
 
       Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
       Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_ISMP : constant Boolean        :=
+                     Ignore_SPARK_Mode_Pragmas_In_Instance;
       Saved_SM  : constant SPARK_Mode_Type := SPARK_Mode;
       Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
       --  Save Ghost and SPARK mode-related data to restore on exit
@@ -946,6 +948,7 @@ package body Rtsfind is
 
       --  Provide a clean environment for the unit
 
+      Ignore_SPARK_Mode_Pragmas_In_Instance := False;
       Install_Ghost_Region (None, Empty);
       Install_SPARK_Mode   (None, Empty);
 
@@ -1044,6 +1047,7 @@ package body Rtsfind is
          Set_Is_Potentially_Use_Visible (U.Entity, True);
       end if;
 
+      Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
       Restore_Ghost_Region (Saved_GM, Saved_IGR);
       Restore_SPARK_Mode   (Saved_SM, Saved_SMP);
    end Load_RTU;

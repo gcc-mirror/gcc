@@ -74,7 +74,6 @@ with Stringt;
 with Stylesw;   use Stylesw;
 with Targparm;  use Targparm;
 with Tbuild;
-with Tree_Gen;
 with Treepr;    use Treepr;
 with Ttypes;
 with Types;     use Types;
@@ -380,7 +379,7 @@ procedure Gnat1drv is
          --  Always perform semantics and generate ali files in CodePeer mode,
          --  so that a gnatmake -c -k will proceed further when possible.
 
-         Force_ALI_Tree_File := True;
+         Force_ALI_File := True;
          Try_Semantics := True;
 
          --  Make the Ada front end more liberal so that the compiler will
@@ -1271,9 +1270,8 @@ begin
 
          --  Generate ALI file if specially requested
 
-         if Opt.Force_ALI_Tree_File then
+         if Opt.Force_ALI_File then
             Write_ALI (Object => False);
-            Tree_Gen;
          end if;
 
          Exit_Program (E_Errors);
@@ -1308,7 +1306,6 @@ begin
          Treepr.Tree_Dump;
          Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
-         Tree_Gen;
          Namet.Finalize;
          Check_Rep_Info;
 
@@ -1461,7 +1458,7 @@ begin
 
                --  Force generation of ALI file, for backward compatibility
 
-               Opt.Force_ALI_Tree_File := True;
+               Opt.Force_ALI_File := True;
 
             elsif Main_Unit_Kind = N_Subunit then
                Write_Str (" (subunit)");
@@ -1483,7 +1480,7 @@ begin
 
                --  Force generation of ALI file, for backward compatibility
 
-               Opt.Force_ALI_Tree_File := True;
+               Opt.Force_ALI_File := True;
 
             --  Only other case is a package spec
 
@@ -1499,7 +1496,6 @@ begin
          Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
          Treepr.Tree_Dump;
-         Tree_Gen;
 
          --  Generate ALI file if specially requested, or for missing subunits,
          --  subunits or predefined generic. For ignored ghost code, the object
@@ -1508,7 +1504,7 @@ begin
          --  an object file without an ALI file.
 
          if Is_Ignored_Ghost_Unit (Main_Unit_Node)
-           or else Opt.Force_ALI_Tree_File
+           or else Opt.Force_ALI_File
          then
             Write_ALI (Object => Is_Ignored_Ghost_Unit (Main_Unit_Node));
          end if;
@@ -1523,8 +1519,8 @@ begin
          Exit_Program (Ecode);
       end if;
 
-      --  In -gnatc mode we only do annotation if -gnatt or -gnatR is also set,
-      --  or if -gnatwz is enabled (default setting) and there is an unchecked
+      --  In -gnatc mode we only do annotation if -gnatR is also set, or if
+      --  -gnatwz is enabled (default setting) and there is an unchecked
       --  conversion that involves a type whose size is not statically known,
       --  as indicated by Back_Annotate_Rep_Info being set to True.
 
@@ -1547,7 +1543,6 @@ begin
          Errout.Output_Messages;
          Write_ALI (Object => False);
          Tree_Dump;
-         Tree_Gen;
          Namet.Finalize;
 
          if not (Generate_SCIL or GNATprove_Mode) then
@@ -1670,11 +1665,8 @@ begin
       --  fact result in further tree decoration from the original tree file.
       --  Note that we dump the tree just before generating it, so that the
       --  dump will exactly reflect what is written out.
-      --  Should we remove Tree_Dump completely now that ASIS is no longer
-      --  supported???
 
       Treepr.Tree_Dump;
-      Tree_Gen;
 
       --  Finalize name table and we are all done
 

@@ -1309,6 +1309,13 @@ package Sem_Util is
    function Has_Non_Null_Statements (L : List_Id) return Boolean;
    --  Return True if L has non-null statements
 
+   function Side_Effect_Free_Statements (L : List_Id) return Boolean;
+   --  Return True if L has no statements with side effects
+
+   function Side_Effect_Free_Loop (N : Node_Id) return Boolean;
+   --  Return True if the loop has no side effect and can therefore be
+   --  marked for removal. Return False if N is not a N_Loop_Statement.
+
    function Has_Overriding_Initialize (T : Entity_Id) return Boolean;
    --  Predicate to determine whether a controlled type has a user-defined
    --  Initialize primitive (and, in Ada 2012, whether that primitive is
@@ -1984,6 +1991,17 @@ package Sem_Util is
    --  2005. This differs from Is_Object_Reference in that only variables,
    --  constants, formal parameters, and selected_components of those are
    --  valid objects in SPARK 2005.
+
+   function Is_Special_Aliased_Formal_Access
+     (Exp  : Node_Id;
+      Scop : Entity_Id) return Boolean;
+   --  Determines whether a dynamic check must be generated for explicitly
+   --  aliased formals within a function Scop for the expression Exp.
+
+   --  More specially, Is_Special_Aliased_Formal_Access checks that Exp is a
+   --  'Access attribute reference within a return statement where the ultimate
+   --  prefix is an aliased formal of Scop and that Scop returns an anonymous
+   --  access type. See RM 3.10.2 for more details.
 
    function Is_Specific_Tagged_Type (Typ : Entity_Id) return Boolean;
    --  Determine whether an arbitrary [private] type is specifically tagged

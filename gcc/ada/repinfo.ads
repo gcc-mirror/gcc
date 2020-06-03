@@ -388,10 +388,6 @@ package Repinfo is
    --  as an argument value, and return it unmodified. A No_Uint value is
    --  also returned unmodified.
 
-   procedure Tree_Read;
-   --  Initializes internal tables from current tree file using the relevant
-   --  Table.Tree_Read routines.
-
    ------------------------
    -- Compiler Interface --
    ------------------------
@@ -399,10 +395,6 @@ package Repinfo is
    procedure List_Rep_Info (Bytes_Big_Endian : Boolean);
    --  Procedure to list representation information. Bytes_Big_Endian is the
    --  value from Ttypes (Repinfo cannot have a dependency on Ttypes).
-
-   procedure Tree_Write;
-   --  Writes out internal tables to current tree file using the relevant
-   --  Table.Tree_Write routines.
 
    --------------------------
    -- Debugging Procedures --

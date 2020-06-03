@@ -6418,7 +6418,7 @@ package body Sem_Attr is
                      end if;
                   end if;
 
-                  Rep := Next_Rep_Item (Rep);
+                  Next_Rep_Item (Rep);
                end loop;
             end if;
          end Compute_Type_Key;
@@ -6760,7 +6760,7 @@ package body Sem_Attr is
                   exit;
                end if;
 
-               Comp_Or_Discr := Next_Entity (Comp_Or_Discr);
+               Next_Entity (Comp_Or_Discr);
             end loop;
 
             --  Diagnose an illegal reference
@@ -10970,9 +10970,19 @@ package body Sem_Attr is
 
                             or else Nkind (Associated_Node_For_Itype (Btyp)) =
                                                         N_Object_Declaration)
+                 and then Attr_Id = Attribute_Access
+
+                 --  Verify that static checking is OK (namely that we aren't
+                 --  in a specific context requiring dynamic checks on
+                 --  expicitly aliased parameters), and then check the level.
+
+                 --  Otherwise a check will be generated later when the return
+                 --  statement gets expanded.
+
+                 and then not Is_Special_Aliased_Formal_Access
+                                (N, Current_Scope)
                  and then
                    Object_Access_Level (P) > Deepest_Type_Access_Level (Btyp)
-                 and then Attr_Id = Attribute_Access
                then
                   --  In an instance, this is a runtime check, but one we know
                   --  will fail, so generate an appropriate warning. As usual,

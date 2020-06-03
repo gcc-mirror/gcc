@@ -933,7 +933,7 @@ package body Ada.Containers.Bounded_Ordered_Sets is
                           Control =>
                             (Controlled with
                               Container.TC'Unrestricted_Access,
-                              Container => Container'Access,
+                              Container => Container'Unchecked_Access,
                               Pos       => Position,
                               Old_Key   => new Key_Type'(Key (Position))))
             do
@@ -961,7 +961,7 @@ package body Ada.Containers.Bounded_Ordered_Sets is
                           Control =>
                             (Controlled with
                               Container.TC'Unrestricted_Access,
-                              Container => Container'Access,
+                              Container => Container'Unchecked_Access,
                                Pos      => Find (Container, Key),
                                Old_Key  => new Key_Type'(Key)))
             do
