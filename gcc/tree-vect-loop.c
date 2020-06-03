@@ -814,7 +814,7 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     vec_outside_cost (0),
     vec_inside_cost (0),
     vectorizable (false),
-    can_fully_mask_p (true),
+    can_use_partial_vectors_p (true),
     fully_masked_p (false),
     peeling_for_gaps (false),
     peeling_for_niter (false),
@@ -2061,7 +2061,8 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal, unsigned *n_stmts)
       vect_optimize_slp (loop_vinfo);
     }
 
-  bool saved_can_fully_mask_p = LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo);
+  bool saved_can_use_partial_vectors_p
+    = LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo);
 
   /* We don't expect to have to roll back to anything other than an empty
      set of rgroups.  */
@@ -2146,7 +2147,7 @@ start_over:
   /* Decide whether to use a fully-masked loop for this vectorization
      factor.  */
   LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
-    = (LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo)
+    = (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
        && vect_verify_full_masking (loop_vinfo));
   if (dump_enabled_p ())
     {
@@ -2383,7 +2384,8 @@ again:
   LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) = false;
   LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo) = 0;
   LOOP_VINFO_VERSIONING_THRESHOLD (loop_vinfo) = 0;
-  LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = saved_can_fully_mask_p;
+  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
+    = saved_can_use_partial_vectors_p;
 
   goto start_over;
 }
@@ -6778,7 +6780,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       STMT_VINFO_DEF_TYPE (vect_orig_stmt (tem)) = vect_internal_def;
       STMT_VINFO_DEF_TYPE (tem) = vect_internal_def;
     }
-  else if (loop_vinfo && LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo))
+  else if (loop_vinfo && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
     {
       vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
       internal_fn cond_fn = get_conditional_internal_fn (code);
@@ -6793,7 +6795,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "can't use a fully-masked loop because no"
 			     " conditional operation is available.\n");
-	  LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
+	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	}
       else if (reduction_type == FOLD_LEFT_REDUCTION
 	       && reduc_fn == IFN_LAST
@@ -6805,7 +6807,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "can't use a fully-masked loop because no"
 			     " conditional operation is available.\n");
-	  LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
+	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	}
       else
 	vect_record_loop_mask (loop_vinfo, masks, ncopies * vec_num,
@@ -7876,7 +7878,7 @@ vectorizable_live_operation (loop_vec_info loop_vinfo,
   if (!vec_stmt_p)
     {
       /* No transformation required.  */
-      if (LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo))
+      if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
 	{
 	  if (!direct_internal_fn_supported_p (IFN_EXTRACT_LAST, vectype,
 					       OPTIMIZE_FOR_SPEED))
@@ -7886,7 +7888,7 @@ vectorizable_live_operation (loop_vec_info loop_vinfo,
 				 "can't use a fully-masked loop because "
 				 "the target doesn't support extract last "
 				 "reduction.\n");
-	      LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
+	      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	    }
 	  else if (slp_node)
 	    {
@@ -7894,7 +7896,7 @@ vectorizable_live_operation (loop_vec_info loop_vinfo,
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "can't use a fully-masked loop because an "
 				 "SLP statement is live after the loop.\n");
-	      LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
+	      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	    }
 	  else if (ncopies > 1)
 	    {
@@ -7902,7 +7904,7 @@ vectorizable_live_operation (loop_vec_info loop_vinfo,
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "can't use a fully-masked loop because"
 				 " ncopies is greater than 1.\n");
-	      LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
+	      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	    }
 	  else
 	    {
