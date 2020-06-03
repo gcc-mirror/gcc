@@ -2267,7 +2267,8 @@ cxx_omp_const_qual_no_mutable (tree decl)
   return false;
 }
 
-/* True if OpenMP sharing attribute of DECL is predetermined.  */
+/* OMP_CLAUSE_DEFAULT_UNSPECIFIED unless OpenMP sharing attribute
+   of DECL is predetermined.  */
 
 enum omp_clause_default_kind
 cxx_omp_predetermined_sharing_1 (tree decl)
@@ -2319,6 +2320,25 @@ cxx_omp_predetermined_sharing (tree decl)
     return OMP_CLAUSE_DEFAULT_SHARED;
 
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
+}
+
+enum omp_clause_defaultmap_kind
+cxx_omp_predetermined_mapping (tree decl)
+{
+  /* Predetermine artificial variables holding integral values, those
+     are usually result of gimplify_one_sizepos or SAVE_EXPR
+     gimplification.  */
+  if (VAR_P (decl)
+      && DECL_ARTIFICIAL (decl)
+      && INTEGRAL_TYPE_P (TREE_TYPE (decl))
+      && !(DECL_LANG_SPECIFIC (decl)
+	   && DECL_OMP_PRIVATIZED_MEMBER (decl)))
+    return OMP_CLAUSE_DEFAULTMAP_FIRSTPRIVATE;
+
+  if (c_omp_predefined_variable (decl))
+    return OMP_CLAUSE_DEFAULTMAP_TO;
+
+  return OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED;
 }
 
 /* Finalize an implicitly determined clause.  */
