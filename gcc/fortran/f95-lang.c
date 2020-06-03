@@ -118,6 +118,7 @@ static const struct attribute_spec gfc_attribute_table[] =
 #undef LANG_HOOKS_OMP_CHECK_OPTIONAL_ARGUMENT
 #undef LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE
 #undef LANG_HOOKS_OMP_PREDETERMINED_SHARING
+#undef LANG_HOOKS_OMP_PREDETERMINED_MAPPING
 #undef LANG_HOOKS_OMP_REPORT_DECL
 #undef LANG_HOOKS_OMP_CLAUSE_DEFAULT_CTOR
 #undef LANG_HOOKS_OMP_CLAUSE_COPY_CTOR
@@ -153,6 +154,7 @@ static const struct attribute_spec gfc_attribute_table[] =
 #define LANG_HOOKS_OMP_CHECK_OPTIONAL_ARGUMENT	gfc_omp_check_optional_argument
 #define LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE	gfc_omp_privatize_by_reference
 #define LANG_HOOKS_OMP_PREDETERMINED_SHARING	gfc_omp_predetermined_sharing
+#define LANG_HOOKS_OMP_PREDETERMINED_MAPPING	gfc_omp_predetermined_mapping
 #define LANG_HOOKS_OMP_REPORT_DECL		gfc_omp_report_decl
 #define LANG_HOOKS_OMP_CLAUSE_DEFAULT_CTOR	gfc_omp_clause_default_ctor
 #define LANG_HOOKS_OMP_CLAUSE_COPY_CTOR		gfc_omp_clause_copy_ctor

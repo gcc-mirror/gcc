@@ -207,7 +207,8 @@ gfc_omp_privatize_by_reference (const_tree decl)
   return false;
 }
 
-/* True if OpenMP sharing attribute of DECL is predetermined.  */
+/* OMP_CLAUSE_DEFAULT_UNSPECIFIED unless OpenMP sharing attribute
+   of DECL is predetermined.  */
 
 enum omp_clause_default_kind
 gfc_omp_predetermined_sharing (tree decl)
@@ -277,6 +278,28 @@ gfc_omp_predetermined_sharing (tree decl)
 
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
 }
+
+
+/* OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED unless OpenMP mapping attribute
+   of DECL is predetermined.  */
+
+enum omp_clause_defaultmap_kind
+gfc_omp_predetermined_mapping (tree decl)
+{
+  if (DECL_ARTIFICIAL (decl)
+      && ! GFC_DECL_RESULT (decl)
+      && ! (DECL_LANG_SPECIFIC (decl)
+	    && GFC_DECL_SAVED_DESCRIPTOR (decl)))
+    return OMP_CLAUSE_DEFAULTMAP_TO;
+
+  /* These are either array or derived parameters, or vtables.  */
+  if (VAR_P (decl) && TREE_READONLY (decl)
+      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
+    return OMP_CLAUSE_DEFAULTMAP_TO;
+
+  return OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED;
+}
+
 
 /* Return decl that should be used when reporting DEFAULT(NONE)
    diagnostics.  */

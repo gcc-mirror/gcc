@@ -7432,6 +7432,7 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
 	      if (!is_declare_target)
 		{
 		  int gdmk;
+		  enum omp_clause_defaultmap_kind kind;
 		  if (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
 		      || (TREE_CODE (TREE_TYPE (decl)) == REFERENCE_TYPE
 			  && (TREE_CODE (TREE_TYPE (TREE_TYPE (decl)))
@@ -7441,7 +7442,17 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
 		    gdmk = GDMK_SCALAR;
 		  else
 		    gdmk = GDMK_AGGREGATE;
-		  if (ctx->defaultmap[gdmk] == 0)
+		  kind = lang_hooks.decls.omp_predetermined_mapping (decl);
+		  if (kind != OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED)
+		    {
+		      if (kind == OMP_CLAUSE_DEFAULTMAP_FIRSTPRIVATE)
+			nflags |= GOVD_FIRSTPRIVATE;
+		      else if (kind == OMP_CLAUSE_DEFAULTMAP_TO)
+			nflags |= GOVD_MAP | GOVD_MAP_TO_ONLY;
+		      else
+			gcc_unreachable ();
+		    }
+		  else if (ctx->defaultmap[gdmk] == 0)
 		    {
 		      tree d = lang_hooks.decls.omp_report_decl (decl);
 		      error ("%qE not specified in enclosing %<target%>",
