@@ -1735,6 +1735,10 @@ $(FULL_DRIVER_NAME): ./xgcc$(exeext)
 	$(LN_S) $< $@
 
 #
+# SELFTEST_DEPS need to be set before including language makefile fragments.
+# Otherwise $(SELFTEST_DEPS) is empty when used from <LANG>/Make-lang.in.
+SELFTEST_DEPS = $(GCC_PASSES) stmp-int-hdrs $(srcdir)/testsuite/selftests
+
 # Language makefile fragments.
 
 # The following targets define the interface between us and the languages.
@@ -2009,8 +2013,6 @@ rest.cross: specs
 DEVNULL=$(if $(findstring mingw,$(build)),nul,/dev/null)
 SELFTEST_FLAGS = -nostdinc $(DEVNULL) -S -o $(DEVNULL) \
 	-fself-test=$(srcdir)/testsuite/selftests
-
-SELFTEST_DEPS = $(GCC_PASSES) stmp-int-hdrs $(srcdir)/testsuite/selftests
 
 # Run the selftests during the build once we have a driver and the frontend,
 # so that self-test failures are caught as early as possible.
