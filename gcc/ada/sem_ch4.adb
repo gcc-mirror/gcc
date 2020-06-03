@@ -4476,6 +4476,13 @@ package body Sem_Ch4 is
       --  Check whether prefix includes a dereference, explicit or implicit,
       --  at any recursive level.
 
+      function Try_By_Protected_Procedure_Prefixed_View return Boolean;
+      --  Return True if N is an access attribute whose prefix is a prefixed
+      --  class-wide (synchronized or protected) interface view for which some
+      --  interpretation is a procedure with synchronization kind By_Protected
+      --  _Procedure, and collect all its interpretations (since it may be an
+      --  overloaded interface primitive); otherwise return False.
+
       --------------------------------
       -- Find_Component_In_Instance --
       --------------------------------
@@ -4596,6 +4603,65 @@ package body Sem_Ch4 is
             return False;
          end if;
       end Has_Dereference;
+
+      ----------------------------------------------
+      -- Try_By_Protected_Procedure_Prefixed_View --
+      ----------------------------------------------
+
+      function Try_By_Protected_Procedure_Prefixed_View return Boolean is
+         Candidate : Node_Id := Empty;
+         Elmt      : Elmt_Id;
+         Prim      : Node_Id;
+
+      begin
+         if Nkind (Parent (N)) = N_Attribute_Reference
+           and then Nam_In (Attribute_Name (Parent (N)),
+                      Name_Access,
+                      Name_Unchecked_Access,
+                      Name_Unrestricted_Access)
+           and then Is_Class_Wide_Type (Prefix_Type)
+           and then (Is_Synchronized_Interface (Prefix_Type)
+                       or else Is_Protected_Interface (Prefix_Type))
+         then
+            --  If we have not found yet any interpretation then mark this
+            --  one as the first interpretation (cf. Add_One_Interp).
+
+            if No (Etype (Sel)) then
+               Set_Etype (Sel, Any_Type);
+            end if;
+
+            Elmt := First_Elmt (Primitive_Operations (Etype (Prefix_Type)));
+            while Present (Elmt) loop
+               Prim := Node (Elmt);
+
+               if Chars (Prim) = Chars (Sel)
+                 and then Is_By_Protected_Procedure (Prim)
+               then
+                  Candidate := New_Copy (Prim);
+
+                  --  Skip the controlling formal; required to check type
+                  --  conformance of the target access to protected type
+                  --  (see Conforming_Types).
+
+                  Set_First_Entity (Candidate,
+                    Next_Entity (First_Entity (Prim)));
+
+                  Add_One_Interp (Sel, Candidate, Etype (Prim));
+                  Set_Etype (N, Etype (Prim));
+               end if;
+
+               Next_Elmt (Elmt);
+            end loop;
+         end if;
+
+         --  Propagate overloaded attribute
+
+         if Present (Candidate) and then Is_Overloaded (Sel) then
+            Set_Is_Overloaded (N);
+         end if;
+
+         return Present (Candidate);
+      end Try_By_Protected_Procedure_Prefixed_View;
 
    --  Start of processing for Analyze_Selected_Component
 
@@ -4891,6 +4957,9 @@ package body Sem_Ch4 is
                if Find_Primitive_Operation (N) then
                   return;
                end if;
+
+            elsif Try_By_Protected_Procedure_Prefixed_View then
+               return;
 
             elsif Try_Object_Operation (N) then
                return;

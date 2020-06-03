@@ -14565,6 +14565,17 @@ package body Sem_Util is
                   Is_RTE (Root_Type (Under), RO_WW_Super_String));
    end Is_Bounded_String;
 
+   -------------------------------
+   -- Is_By_Protected_Procedure --
+   -------------------------------
+
+   function Is_By_Protected_Procedure (Id : Entity_Id) return Boolean is
+   begin
+      return Ekind (Id) = E_Procedure
+        and then Present (Get_Rep_Pragma (Id, Name_Implemented))
+        and then Implementation_Kind (Id) = Name_By_Protected_Procedure;
+   end Is_By_Protected_Procedure;
+
    ---------------------
    -- Is_CCT_Instance --
    ---------------------
