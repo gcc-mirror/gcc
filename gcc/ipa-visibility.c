@@ -541,7 +541,7 @@ static void
 localize_node (bool whole_program, symtab_node *node)
 {
   /* FIXME: This seems not to be necessary when compiling in fsplit-args.  */
-  //gcc_assert (whole_program || in_lto_p || !TREE_PUBLIC (node->decl));
+  gcc_assert (whole_program || in_lto_p || !TREE_PUBLIC (node->decl));
 
   /* It is possible that one comdat group contains both hidden and non-hidden
      symbols.  In this case we can privatize all hidden symbol but we need

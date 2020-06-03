@@ -2635,7 +2635,7 @@ ipa_passes (void)
   if (!in_lto_p)
     {
       struct symtab_node *node;
-      int partitions, i, pid;
+      int partitions, i;
       int *pids;
 
       /* Generate coverage variables and constructors.  */
@@ -2649,67 +2649,57 @@ ipa_passes (void)
       execute_ipa_summary_passes
 	((ipa_opt_pass_d *) passes->all_regular_ipa_passes);
 
-      symtab_node::checking_verify_symtab_nodes ();
-
-      /* Use max map for now for debugging.  */
-      lto_max_map ();
-
-      /* AUX pointers are used by partitioning code to bookkeep number of
-	 partitions symbol is in.  This is no longer needed.  */
-      FOR_EACH_SYMBOL (node)
-	node->aux = NULL;
-
-      /* Find out statics that need to be promoted
-	 to globals with hidden visibility because they are accessed from multiple
-	 partitions.  */
-      lto_promote_cross_file_statics ();
-      
-      partitions = ltrans_partitions.length ();
-      pids = (int *) alloca (partitions * sizeof (*pids));
-
-
-      for (i = 0; i < partitions; ++i)
+      if (split_outputs)
 	{
-	  pid = fork ();
-	  if (pid == 0)
-	    {
-	      printf ("Process %d\n", i);
-	      lto_apply_partition_mask (ltrans_partitions[i]);
-	      goto continue_compilation;
-	    }
-	  else
-	    {
-	      int wstatus;
-	      waitpid (pid, &wstatus, 0);
-	    }
-	}
-      exit(0);
+	  /* Trick the compiler to think that we are in WPA*/
+	  flag_wpa = "";
+	  symtab_node::checking_verify_symtab_nodes ();
 
-      /* 
-      for (i = 0; i < partitions; ++i)
-	{
-	  pid = fork ();
-	  if (pid == 0)
-	    {
-	      // Child.
-	      lto_apply_partition_mask (ltrans_partitions[i]);
-	      goto continue_compilation;
-	    }
-	  else
-	    {
-	      // Parent.
-	      pids[i] = partitions;
-	    }
-	}
+	  /* Use max map for now for debugging.  */
+	  lto_max_map ();
 
-      for (i = 0; i < partitions; ++i)
-	{
-	  int wstatus;
-	  waitpid (pids[i], &wstatus, 0);
-	}
+	  /* AUX pointers are used by partitioning code to bookkeep number of
+	     partitions symbol is in.  This is no longer needed.  */
+	  FOR_EACH_SYMBOL (node)
+	    node->aux = NULL;
 
-      exit(0);
-      */
+	  /* Find out statics that need to be promoted
+	     to globals with hidden visibility because they are accessed from
+	     multiple partitions.  */
+	  lto_promote_cross_file_statics ();
+
+	  /* Check if we have variables being referenced across partitions.  */
+	  lto_check_usage_from_other_partitions ();
+
+	  /* Trick the compiler to think we are not in WPA anymore.  */
+	  flag_wpa = NULL;
+
+	  partitions = ltrans_partitions.length ();
+	  pids = (int *) alloca (partitions * sizeof (*pids));
+
+	  /* Trick the compiler to think we are in LTRANS mode.  */
+	  flag_ltrans = true;
+
+	  init_additional_asm_names_file ();
+
+	  /* Run serially for now.  */
+	  for (i = 0; i < partitions; ++i)
+	    {
+	      pids[i] = fork ();
+	      if (pids[i] == 0)
+		{
+		  handle_additional_asm ();
+		  lto_apply_partition_mask (ltrans_partitions[i]);
+		  goto continue_compilation;
+		}
+	      else
+		{
+		  int wstatus;
+		  waitpid (pids[i], &wstatus, 0);
+		}
+	    }
+	  exit (0);
+	}
     }
 
   continue_compilation:

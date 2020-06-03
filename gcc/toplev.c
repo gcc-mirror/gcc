@@ -901,22 +901,43 @@ init_asm_output (const char *name)
     }
 }
 
-static void
-init_additional_asm_names_file (int n, const char *names[])
+void
+init_additional_asm_names_file (void)
 {
-  int i;
-
-  if (!split_outputs)
-    return;
+  gcc_assert (split_outputs);
 
   additional_asm_filenames = fopen (split_outputs, "w");
   if (!additional_asm_filenames)
     error ("Unable to create a temporary write-only file.");
 
-  for (i = 0; i < n; ++i)
-      fprintf(additional_asm_filenames, "%s\n", names[i]);
+  fclose (additional_asm_filenames);
+}
 
-  fflush (additional_asm_filenames);
+/* Reinitialize the assembler file and store it in the additional asm file.  */
+
+void handle_additional_asm (void)
+{
+  gcc_assert (split_outputs);
+
+  const char *temp_asm_name = make_temp_file (".s");
+  asm_file_name = temp_asm_name;
+
+  if (asm_out_file == stdout)
+    fatal_error (UNKNOWN_LOCATION, "Unexpected asm output to stdout");
+
+  fclose (asm_out_file);
+
+  asm_out_file = fopen (temp_asm_name, "w");
+  if (!asm_out_file)
+    fatal_error (UNKNOWN_LOCATION, "Unable to create asm output file.");
+
+  /* Reopen file as append mode. Here we assume that write to append file is
+     atomic, as it is in Linux.  */
+  additional_asm_filenames = fopen (split_outputs, "a");
+  if (!additional_asm_filenames)
+    fatal_error (UNKNOWN_LOCATION, "Unable open the temporary asm files container.");
+
+  fprintf (additional_asm_filenames, "%s\n", asm_file_name);
   fclose (additional_asm_filenames);
 }
 
@@ -2277,10 +2298,6 @@ do_compile ()
 	backend_init ();
 
       int init = lang_dependent_init (main_input_filename);
-
-      /* This creates a file which we will dump any additional asm file we
-       may need.  */
-      init_additional_asm_names_file (1, &asm_file_name);
 
       /* Language-dependent initialization.  Returns true on success.  */
       if (init)

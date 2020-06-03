@@ -3163,9 +3163,10 @@ static int get_number_of_args (const char *argv[])
 
 static const char *fsplit_arg (extra_arg_storer *);
 
-/* Accumulate each line in lines vec.  */
+/* Accumulate each line in lines vec.  Return true if file exists, false if
+   not.  */
 
-void
+static bool
 get_file_by_lines (extra_arg_storer *storer, vec<char *> *lines, const char *name)
 {
   int buf_size = 64, len = 0;
@@ -3175,13 +3176,15 @@ get_file_by_lines (extra_arg_storer *storer, vec<char *> *lines, const char *nam
   FILE *file = fopen (name, "r");
 
   if (!file)
-    fatal_error (input_location,
-		 "Temporary file containing additional assember files not found");
+    return false;
 
   while (1)
     {
       if (!fgets (buf + len, buf_size, file))
-	break;
+	{
+	  free (buf); /* Release buffer we created unecessarily.  */
+	  break;
+	}
 
       len = strlen (buf);
       if (buf[len - 1] == '\n') /* Check if we indeed read the entire line.  */
@@ -3193,6 +3196,7 @@ get_file_by_lines (extra_arg_storer *storer, vec<char *> *lines, const char *nam
 
 	  /* Store the created string for future release.  */
 	  storer->store (buf);
+	  buf = XNEWVEC (char, buf_size);
 	}
       else
 	{
@@ -3208,6 +3212,7 @@ get_file_by_lines (extra_arg_storer *storer, vec<char *> *lines, const char *nam
     }
 
   fclose (file);
+  return true;
 }
 
 static void identify_asm_file (int argc, const char *argv[],
@@ -3315,10 +3320,13 @@ static void append_split_outputs (extra_arg_storer *storer,
       const char *extra_argument = fsplit_arg (storer);
 
       argc = get_number_of_args (commands[0].argv);
-      argv = storer->create_new (argc + 2);
+      argv = storer->create_new (argc + 3);
 
       memcpy (argv, commands[0].argv, argc * sizeof (const char *));
       argv[argc++] = extra_argument;
+      if (have_c)
+	argv[argc++] = "-fPIE"; /* Necessary when -c is provided for some
+				   reason.  */
       argv[argc]   = NULL;
 
       commands[0].argv = argv;
@@ -3346,18 +3354,22 @@ static void append_split_outputs (extra_arg_storer *storer,
 	  return;
 	}
 
-      if (!path_to_ld)
-	path_to_ld = get_path_to_ld ();
-
       additional_asm_files.create (2);
+
+      if (!get_file_by_lines (storer, &additional_asm_files,
+			      current_infile->temp_additional_asm))
+	{
+	  additional_asm_files.release ();
+	  return; /* File not found.  This means that cc1* decided not to
+		      parallelize.  */
+	}
 
       if (n_commands != 1)
 	fatal_error (input_location,
 		     "Auto parallelism is unsupported when piping commands");
 
-
-      get_file_by_lines (storer, &additional_asm_files,
-			 current_infile->temp_additional_asm);
+      if (!path_to_ld)
+	path_to_ld = get_path_to_ld ();
 
       /* Get original command.  */
       orig = commands[0];
@@ -8948,7 +8960,8 @@ driver::maybe_run_linker (const char *argv0) const
      When fsplit-arg is active, the linker will run and this if
      will not be triggered. */
 
-  if (!outfiles_switched && !linker_was_run && !seen_error ())
+  if (!outfiles_switched && !linker_was_run && !seen_error () &&
+      temp_object_files.length () == 0)
     for (i = 0; (int) i < n_infiles; i++)
       if (explicit_link_files[i]
 	  && !(infiles[i].language && infiles[i].language[0] == '*'))

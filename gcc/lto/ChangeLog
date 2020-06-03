@@ -1,3 +1,8 @@
+2020-06-03  Giuliano Belinassi <giuliano.belinassi@usp.br>
+
+	* lto-partition.c: Remove.
+	* Make-lang.in: Remove lto-partition.o.
+
 2020-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94707

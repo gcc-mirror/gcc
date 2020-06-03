@@ -1,3 +1,24 @@
+2020-06-03  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* cgraph.c: (release_function_body): Reinsert dom_info_available_p
+	check.
+	* cgraphunit.c (ipa_passes): Check for split_outputs, correctly
+	check for variable usage from other partitions, and handle the
+	additional assembler file correctly.
+	* gcc.c (get_file_by_lines): Returns file existence. Fix double
+	free.
+	(append_file_outputs): Add -fPIE when -c is provided, and quickly
+	returns if additional asm file not found.
+	(maybe_run_linker): Check if split outputs case by checking
+	temp_object_files length equals zero.
+	* ipa-visibility.c (localize_node): Reinsert assertion check.
+	* lto-cgraph.c (maybe_release_function_dominators): New.
+	(lto_apply_partition_mask): Release data not required anymore.
+	* lto-partition.c (lto_promote_corss_file_statics): Reinsert
+	assertion check.
+	(lto_check_usage_from_other_partitions): New.
+	* lto-partition.h (lto_check_usage_from_other_partitions): Declare.
+
 2020-05-29  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* Makefile.in (lto-partition.o): Add.

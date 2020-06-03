@@ -1791,9 +1791,8 @@ release_function_body (tree decl)
 	}
       if (fn->cfg)
 	{
-	  /* FIXME: Why these assertions are necessary?  */
-	  //gcc_assert (!dom_info_available_p (fn, CDI_DOMINATORS));
-	  //gcc_assert (!dom_info_available_p (fn, CDI_POST_DOMINATORS));
+	  gcc_assert (!dom_info_available_p (fn, CDI_DOMINATORS));
+	  gcc_assert (!dom_info_available_p (fn, CDI_POST_DOMINATORS));
 	  delete_tree_cfg_annotations (fn);
 	  clear_edges (fn);
 	  fn->cfg = NULL;

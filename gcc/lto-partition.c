@@ -1128,6 +1128,8 @@ lto_promote_cross_file_statics (void)
 {
   unsigned i, n_sets;
 
+  gcc_assert (flag_wpa);
+
   lto_stream_offload_p = false;
   select_what_to_stream ();
 
@@ -1190,4 +1192,25 @@ lto_promote_statics_nonwpa (void)
       validize_symbol_for_target (node);
     }
   delete lto_clone_numbers;
+}
+
+/* Check if a variable is accessed across partitions.  If yesm then update
+   used_from_other_partition.  */
+
+void
+lto_check_usage_from_other_partitions (void)
+{
+  unsigned int i, j;
+  for (i = 0; i < ltrans_partitions.length (); i++)
+    {
+      vec<lto_encoder_entry> &nodes = (ltrans_partitions[i])->encoder->nodes;
+      
+      for (j = 0; j < nodes.length (); j++)
+	{
+	  varpool_node *vnode = dyn_cast<varpool_node *> (nodes[j].node);
+	  if (vnode && !nodes[j].in_partition)
+	    vnode->used_from_other_partition = true;
+	}
+    }
+
 }

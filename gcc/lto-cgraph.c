@@ -2061,6 +2061,30 @@ input_cgraph_opt_summary (vec<symtab_node *> nodes)
     }
 }
 
+static void
+maybe_release_function_dominators (cgraph_node *cnode)
+{
+  struct function *fun = DECL_STRUCT_FUNCTION (cnode->decl);
+
+  if (fun && fun->cfg)
+    {
+      if (dom_info_available_p (fun, CDI_DOMINATORS))
+	free_dominance_info (fun, CDI_DOMINATORS);
+      if (dom_info_available_p (fun, CDI_POST_DOMINATORS))
+	free_dominance_info (fun, CDI_POST_DOMINATORS);
+    }
+}
+
+static void
+maybe_release_function_dominators (symtab_node *node)
+{
+  cgraph_node *cnode = dyn_cast<cgraph_node *> (node);
+  if (!cnode)
+    return;
+
+  maybe_release_function_dominators (cnode);
+}
+
 /* Replace the partition in the symbol table, removing every node which is not
    in partition.  */
 
@@ -2070,7 +2094,7 @@ lto_apply_partition_mask (ltrans_partition partition)
   vec<lto_encoder_entry> &nodes = partition->encoder->nodes;
   symtab_node *node;
   auto_vec<symtab_node *, 16> mark_to_remove;
-  int i;
+  unsigned int i;
 
   for (i = 0; i < nodes.length (); i++)
     {
@@ -2078,19 +2102,29 @@ lto_apply_partition_mask (ltrans_partition partition)
       node->aux = (void *) 1;
 
       if (!nodes[i].in_partition)
+	{
+	  cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
+	  if (cnode)
+	    {
+	      maybe_release_function_dominators (cnode);
+	      cnode->release_body ();
+	    }
+
 	  node->in_other_partition = true;
+	}
     }
 
   FOR_EACH_SYMBOL (node)
     if (!node->aux)
       mark_to_remove.safe_push (node);
-
-  FOR_EACH_SYMBOL (node)
-    node->aux = NULL;
+    else
+      node->aux = NULL;
 
   for (i = 0; i < mark_to_remove.length (); i++)
     {
       symtab_node *node = mark_to_remove[i];
+      maybe_release_function_dominators (node);
+
       node->remove ();
     }
 }
