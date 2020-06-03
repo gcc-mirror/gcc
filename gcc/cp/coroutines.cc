@@ -851,19 +851,18 @@ finish_co_await_expr (location_t kw, tree expr)
   /* The current function has now become a coroutine, if it wasn't already.  */
   DECL_COROUTINE_P (current_function_decl) = 1;
 
-  if (processing_template_decl)
-    {
-      current_function_returns_value = 1;
+  /* This function will appear to have no return statement, even if it
+     is declared to return non-void (most likely).  This is correct - we
+     synthesize the return for the ramp in the compiler.  So suppress any
+     extraneous warnings during substitution.  */
+  TREE_NO_WARNING (current_function_decl) = true;
 
-      if (check_for_bare_parameter_packs (expr))
-	return error_mark_node;
-
-      /* If we don't know the promise type, we can't proceed.  */
-      tree functype = TREE_TYPE (current_function_decl);
-      if (dependent_type_p (functype) || type_dependent_expression_p (expr))
-	return build5_loc (kw, CO_AWAIT_EXPR, unknown_type_node, expr,
-			   NULL_TREE, NULL_TREE, NULL_TREE, integer_zero_node);
-    }
+  /* If we don't know the promise type, we can't proceed, build the
+     co_await with the expression unchanged.  */
+  tree functype = TREE_TYPE (current_function_decl);
+  if (dependent_type_p (functype) || type_dependent_expression_p (expr))
+    return build5_loc (kw, CO_AWAIT_EXPR, unknown_type_node, expr,
+		       NULL_TREE, NULL_TREE, NULL_TREE, integer_zero_node);
 
   /* We must be able to look up the "await_transform" method in the scope of
      the promise type, and obtain its return type.  */
@@ -928,19 +927,17 @@ finish_co_yield_expr (location_t kw, tree expr)
   /* The current function has now become a coroutine, if it wasn't already.  */
   DECL_COROUTINE_P (current_function_decl) = 1;
 
-  if (processing_template_decl)
-    {
-      current_function_returns_value = 1;
+  /* This function will appear to have no return statement, even if it
+     is declared to return non-void (most likely).  This is correct - we
+     synthesize the return for the ramp in the compiler.  So suppress any
+     extraneous warnings during substitution.  */
+  TREE_NO_WARNING (current_function_decl) = true;
 
-      if (check_for_bare_parameter_packs (expr))
-	return error_mark_node;
-
-      tree functype = TREE_TYPE (current_function_decl);
-      /* If we don't know the promise type, we can't proceed.  */
-      if (dependent_type_p (functype) || type_dependent_expression_p (expr))
-	return build2_loc (kw, CO_YIELD_EXPR, unknown_type_node, expr,
-			   NULL_TREE);
-    }
+  /* If we don't know the promise type, we can't proceed, build the
+     co_await with the expression unchanged.  */
+  tree functype = TREE_TYPE (current_function_decl);
+  if (dependent_type_p (functype) || type_dependent_expression_p (expr))
+    return build2_loc (kw, CO_YIELD_EXPR, unknown_type_node, expr, NULL_TREE);
 
   if (!coro_promise_type_found_p (current_function_decl, kw))
     /* We must be able to look up the "yield_value" method in the scope of
