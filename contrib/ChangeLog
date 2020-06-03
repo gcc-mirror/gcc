@@ -1,3 +1,35 @@
+2020-06-02  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Support foo/bar/*: patterns in
+	wildcard_prefixes locations.
+	* gcc-changelog/test_email.py: Test it.
+	* gcc-changelog/test_patches.txt: Add 3 new patches.
+
+2020-06-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gcc-changelog/git_commit.py (ignored_prefixes): Add
+	gcc/testsuite/gdc.test/.
+
+2020-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gcc-changelog/test_email.py (TestGccChangelog.test_long_lines):
+	Update expected error message.
+
+2020-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gcc-changelog/git_commit.py (GitCommit.parse_changelog): Fix
+	grammar.
+
+2020-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* prepare-commit-msg: Do nothing if the mklog.py script isn't
+	present.
+
+2020-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gcc-changelog/git_commit.py (GitCommit.check_mentioned_files):
+	Improve error text.
+
 2020-05-31  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* config-list.mk (LIST): Add v850e1-elf.

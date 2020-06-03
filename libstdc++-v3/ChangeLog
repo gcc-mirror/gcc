@@ -1,3 +1,36 @@
+2020-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90102
+	* include/debug/deque (deque(const _Base&)): Replace parameter
+	with a struct that wraps a const _Base&.
+	* include/debug/forward_list (forward_list(_Base_ref)): New
+	constructor.
+	* include/debug/list (list(const _Base&)): Replace parameter
+	with a struct that wraps a const _Base&.
+	* include/debug/map.h (map(const _Base&)): Likewise.
+	* include/debug/multimap.h (multimap(const _Base&)): Likewise.
+	* include/debug/multiset.h (multiset(const _Base&)): Likewise.
+	* include/debug/set.h (set(const _Base&)): Likewise.
+	* include/debug/unordered_map (unordered_map(const _Base&))
+	(unordered_multimap(const _Base&)): Likewise.
+	* include/debug/unordered_set (unordered_set(const _Base&))
+	(unordered_multiset(const _Base&)): Likewise.
+	* testsuite/23_containers/vector/cons/destructible_debug_neg.cc:
+	Adjust dg-error line number.
+	* include/debug/vector (vector(const _Base&)): Likewise.
+	* testsuite/23_containers/deque/debug/90102.cc: New test.
+	* testsuite/23_containers/forward_list/debug/90102.cc: New test.
+	* testsuite/23_containers/list/debug/90102.cc: New test.
+	* testsuite/23_containers/map/debug/90102.cc: New test.
+	* testsuite/23_containers/multimap/debug/90102.cc: New test.
+	* testsuite/23_containers/multiset/debug/90102.cc: New test.
+	* testsuite/23_containers/set/debug/90102.cc: New test.
+	* testsuite/23_containers/unordered_map/debug/90102.cc: New test.
+	* testsuite/23_containers/unordered_multimap/debug/90102.cc: New test.
+	* testsuite/23_containers/unordered_multiset/debug/90102.cc: New test.
+	* testsuite/23_containers/unordered_set/debug/90102.cc: New test.
+	* testsuite/23_containers/vector/debug/90102.cc: New test.
+
 2020-06-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/95392

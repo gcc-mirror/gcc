@@ -1,3 +1,54 @@
+2020-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/95426
+	* jit.dg/all-non-failing-tests.h: Add note about...
+	* jit.dg/test-builtin-unreachable.c: New test.
+
+2020-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95193
+	* g++.dg/cpp1z/lambda-this7.C: New test.
+
+2020-06-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95050
+	* g++.dg/coroutines/pr95050.C: New test.
+
+2020-06-02  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.misc-tests/outputs.exp: Spell ldscript correctly.
+	* lib/gcc-defs.exp (gcc_adjust_linker_flags): Likewise.
+
+2020-06-02  Felix Yang  <felix.yang@huawei.com>
+
+	PR target/95459
+	* gcc.target/aarch64/mgeneral-regs_6.c: New test.
+
+2020-06-02  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.dg/intermod-1.c: Don't use -mlocal-symbol-id.
+
+2020-06-02  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/vector/align-1.c: Change target architecture
+	to z13.
+	* gcc.target/s390/vector/align-2.c: Change target architecture
+	to z13.
+
+2020-06-02  Kito Cheng  <kito.cheng@sifive.com>
+
+	* lib/ubsan-dg.exp (orig_ubsan_options_saved): New
+	(orig_ubsan_options): Ditto.
+	(ubsan_init): Store UBSAN_OPTIONS and set UBSAN_OPTIONS.
+	(ubsan_finish): Restore UBSAN_OPTIONS.
+
+2020-06-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/92633
+	PR c++/92838
+	* g++.dg/cpp2a/concepts-lambda11.C: New test.
+	* g++.dg/cpp2a/concepts-lambda12.C: New test.
+
 2020-06-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/95466

@@ -1,3 +1,30 @@
+2020-06-02  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/div.S (__divdi3): For negative arguments, change bgez
+	to bgtz.
+
+2020-06-02  Martin Liska  <mliska@suse.cz>
+
+	* libgcov.h (gcov_topn_add_value): Use xcalloc instead
+	of xmalloc.
+
+2020-06-02  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c (prune_topn_counter): Remove.
+	(prune_counters): Likewise.
+	(merge_one_data): Special case TOP N counters
+	as they have variable length.
+	(write_top_counters): New.
+	(write_one_data): Special case TOP N.
+	(dump_one_gcov): Do not prune TOP N counters.
+	* libgcov-merge.c (merge_topn_values_set): Remove.
+	(__gcov_merge_topn): Use gcov_topn_add_value.
+	* libgcov-profiler.c (__gcov_topn_values_profiler_body):
+	Likewise here.
+	* libgcov.h (gcov_counter_add): New.
+	(gcov_counter_set_if_null): Likewise.
+	(gcov_topn_add_value): New.
+
 2020-06-01  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sfp-exceptions.c (struct fenv):

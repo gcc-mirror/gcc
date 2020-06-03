@@ -1,3 +1,36 @@
+2020-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/95426
+	* dummy-frontend.c: Include "options.h", "stringpool.h", and
+	"attribs.h".
+	(ATTR_EXCL): New, copied from lto/lto-lang.c.
+	(attr_noreturn_exclusions): Likewise.
+	(attr_returns_twice_exclusions): Likewise.
+	(attr_const_pure_exclusions): Likewise.
+	(jit_attribute_table): Likewise, copied from lto_attribute_table.
+	(jit_format_attribute_table): Likewise, copied from
+	lto_format_attribute_table.
+	(handle_noreturn_attribute): New, copied from lto/lto-lang.c.
+	(handle_leaf_attribute): Likewise.
+	(handle_const_attribute): Likewise.
+	(handle_malloc_attribute): Likewise.
+	(handle_pure_attribute): Likewise.
+	(handle_novops_attribute): Likewise.
+	(get_nonnull_operand): Likewise.
+	(handle_nonnull_attribute): Likewise.
+	(handle_nothrow_attribute): Likewise.
+	(handle_sentinel_attribute): Likewise.
+	(handle_type_generic_attribute): Likewise.
+	(handle_transaction_pure_attribute): Likewise.
+	(handle_returns_twice_attribute): Likewise.
+	(handle_patchable_function_entry_attribute): Likewise.
+	(ignore_attribute): Likewise.
+	(handle_format_attribute): Likewise.
+	(handle_format_arg_attribute): Likewise.
+	(handle_fnspec_attribute): Likewise.
+	(LANG_HOOKS_COMMON_ATTRIBUTE_TABLE): Define.
+	(LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE): Define.
+
 2020-05-28  Nicolas Bértolo  <nicolasbertolo@gmail.com>
 
 	* Make-lang.in: Remove extra slash. Build libgccjit.dll and its

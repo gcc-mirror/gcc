@@ -1,3 +1,84 @@
+2020-06-02  Felix Yang  <felix.yang@huawei.com>
+
+	PR target/95459
+	* config/aarch64/aarch64.c (aarch64_short_vector_p):
+	Leave later code to report an error if SVE is disabled.
+
+2020-06-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-cores.def (zeus): Define.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi (AArch64 Options): Document zeus -mcpu option.
+
+2020-06-02  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	PR target/95347
+	* config/rs6000/rs6000.c (prefixed_store_p): Add special case
+	for stfs.
+	(is_stfs_insn): New helper function.
+
+2020-06-02  Jan Hubicka  <jh@suse.cz>
+
+	* lto-streamer-in.c (stream_read_tree_ref): Simplify streaming of
+	references.
+	* lto-streamer-out.c (stream_write_tree_ref): Likewise.
+
+2020-06-02  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-hsa.h (CC1_SPEC): Delete.
+	* config/gcn/gcn.opt (-mlocal-symbol-id): Delete.
+	* config/gcn/mkoffload.c (main): Don't use -mlocal-symbol-id.
+
+2020-06-02  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	PR middle-end/95395
+	* optabs.c (expand_unop): Fix bits/bytes confusion in latest change.
+	* tree-pretty-print.c (dump_generic_node) <ARRAY_TYPE>: Print quals.
+
+2020-06-02  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390.c (print_operand): Emit vector alignment
+	hints for z13.
+
+2020-06-02  Martin Liska  <mliska@suse.cz>
+
+	* coverage.c (get_coverage_counts): Skip sanity check for TOP N counters
+	as they have variable number of counters.
+	* gcov-dump.c (main): Add new option -r.
+	(print_usage): Likewise.
+	(tag_counters): All new raw format.
+	* gcov-io.h (struct gcov_kvp): New.
+	(GCOV_TOPN_VALUES): Remove.
+	(GCOV_TOPN_VALUES_COUNTERS): Likewise.
+	(GCOV_TOPN_MEM_COUNTERS): New.
+	(GCOV_TOPN_DISK_COUNTERS): Likewise.
+	(GCOV_TOPN_MAXIMUM_TRACKED_VALUES): Likewise.
+	* ipa-profile.c (ipa_profile_generate_summary): Use
+	GCOV_TOPN_MAXIMUM_TRACKED_VALUES.
+	(ipa_profile_write_edge_summary): Likewise.
+	(ipa_profile_read_edge_summary): Likewise.
+	(ipa_profile): Remove usage of GCOV_TOPN_VALUES.
+	* profile.c (sort_hist_values): Sort variable number
+	of counters.
+	(compute_value_histograms): Special case for TOP N counters
+	that have dynamic number of key-value pairs.
+	* value-prof.c (dump_histogram_value): Dump variable number
+	of key-value pairs.
+	(stream_in_histogram_value): Stream in variable number
+	of key-value pairs for TOP N counter.
+	(get_nth_most_common_value): Deal with variable number
+	of key-value pairs.
+	(dump_ic_profile): Use GCOV_TOPN_MAXIMUM_TRACKED_VALUES
+	for loop iteration.
+	(gimple_find_values_to_profile): Set GCOV_TOPN_MEM_COUNTERS
+	to n_counters.
+	* doc/gcov-dump.texi: Document new -r option.
+
+2020-06-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR target/95420
+	* config.gcc (arm-wrs-vxworks7*): Set default cpu to generic-armv7-a.
+
 2020-06-01  Jeff Law  <law@torsion.usersys.redhat.com>
 
 	* lower-subreg.c (resolve_simple_move): If simplify_gen_subreg_concatn
