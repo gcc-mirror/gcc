@@ -2014,6 +2014,10 @@ package body Sem_Ch6 is
            and then Comes_From_Source (N)
          then
             Error_Msg_N ("missing explicit dereference in call", N);
+
+         elsif Ekind (Entity (P)) = E_Operator then
+            Error_Msg_Name_1 := Chars (P);
+            Error_Msg_N ("operator % cannot be used as a procedure", N);
          end if;
 
          Analyze_Call_And_Resolve;
