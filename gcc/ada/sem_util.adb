@@ -6422,8 +6422,28 @@ package body Sem_Util is
 
       function Is_Renaming (N : Node_Id) return Boolean is
       begin
-         return
-           Is_Entity_Name (N) and then Present (Renamed_Entity (Entity (N)));
+         if not Is_Entity_Name (N) then
+            return False;
+         end if;
+
+         case Ekind (Entity (N)) is
+            when E_Variable | E_Constant =>
+               return Present (Renamed_Object (Entity (N)));
+
+            when E_Exception
+               | E_Function
+               | E_Generic_Function
+               | E_Generic_Package
+               | E_Generic_Procedure
+               | E_Operator
+               | E_Package
+               | E_Procedure
+            =>
+               return Present (Renamed_Entity (Entity (N)));
+
+            when others =>
+               return False;
+         end case;
       end Is_Renaming;
 
       -----------------------
