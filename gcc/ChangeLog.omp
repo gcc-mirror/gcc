@@ -1,3 +1,8 @@
+2020-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimplify.cc (localize_reductions): Do not create local
+	variable for privatized arrays.
+
 2020-02-06  Tobias Burnus  <tobias@codesourcery.com>
 
 	* omp-low.c (convert_from_firstprivate_int):
