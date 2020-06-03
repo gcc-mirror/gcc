@@ -727,24 +727,6 @@ loop_ranger::~loop_ranger ()
   delete m_vr_values;
 }
 
-// FIXME: Clean-up and/or possibly merge with
-// range_of_ssa_name_with_loop_info.
-
-void
-loop_ranger::range_of_ssa_name (irange &r, tree name, gimple *stmt)
-{
-  super::range_of_ssa_name (r, name, stmt);
-
-  class loop *l;
-  if (stmt && (l = loop_containing_stmt (stmt)))
-    {
-      value_range_equiv vr (TREE_TYPE (name));
-      m_vr_values->adjust_range_with_scev (&vr, l, stmt, name);
-      vr.normalize_symbolics ();
-      r.intersect (vr);
-    }
-}
-
 void
 loop_ranger::range_of_ssa_name_with_loop_info (irange &r, tree name,
 					       class loop *l, gphi *phi)
