@@ -98,6 +98,8 @@ void enable_odr_based_tbaa (tree type);
 bool odr_based_tbaa_p (const_tree type);
 void set_type_canonical_for_odr_type (tree type, tree canonical);
 
+void register_odr_enum (tree type);
+
 /* Return vector containing possible targets of polymorphic call E.
    If COMPLETEP is non-NULL, store true if the list is complete. 
    CACHE_TOKEN (if non-NULL) will get stored to an unique ID of entry
