@@ -631,8 +631,11 @@ public:
   /* Is the loop vectorizable? */
   bool vectorizable;
 
-  /* Records whether we still have the option of using a fully-masked loop.  */
-  bool can_fully_mask_p;
+  /* Records whether we still have the option of vectorizing this loop
+     using partially-populated vectors; in other words, whether it is
+     still possible for one iteration of the vector loop to handle
+     fewer than VF scalars.  */
+  bool can_use_partial_vectors_p;
 
   /* True if have decided to use a fully-masked loop.  */
   bool fully_masked_p;
@@ -698,7 +701,7 @@ public:
 #define LOOP_VINFO_COST_MODEL_THRESHOLD(L) (L)->th
 #define LOOP_VINFO_VERSIONING_THRESHOLD(L) (L)->versioning_threshold
 #define LOOP_VINFO_VECTORIZABLE_P(L)       (L)->vectorizable
-#define LOOP_VINFO_CAN_FULLY_MASK_P(L)     (L)->can_fully_mask_p
+#define LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P(L) (L)->can_use_partial_vectors_p
 #define LOOP_VINFO_FULLY_MASKED_P(L)       (L)->fully_masked_p
 #define LOOP_VINFO_VECT_FACTOR(L)          (L)->vectorization_factor
 #define LOOP_VINFO_MAX_VECT_FACTOR(L)      (L)->max_vectorization_factor

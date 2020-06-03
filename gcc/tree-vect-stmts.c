@@ -1667,7 +1667,7 @@ static tree permute_vec_elements (vec_info *, tree, tree, tree, stmt_vec_info,
    its arguments.  If the load or store is conditional, SCALAR_MASK is the
    condition under which it occurs.
 
-   Clear LOOP_VINFO_CAN_FULLY_MASK_P if a fully-masked loop is not
+   Clear LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P if a fully-masked loop is not
    supported, otherwise record the required mask types.  */
 
 static void
@@ -1694,7 +1694,7 @@ check_load_store_masking (loop_vec_info loop_vinfo, tree vectype,
 			     "can't use a fully-masked loop because the"
 			     " target doesn't have an appropriate masked"
 			     " load/store-lanes instruction.\n");
-	  LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
+	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	  return;
 	}
       unsigned int ncopies = vect_get_num_copies (loop_vinfo, vectype);
@@ -1717,7 +1717,7 @@ check_load_store_masking (loop_vec_info loop_vinfo, tree vectype,
 			     "can't use a fully-masked loop because the"
 			     " target doesn't have an appropriate masked"
 			     " gather load or scatter store instruction.\n");
-	  LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
+	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	  return;
 	}
       unsigned int ncopies = vect_get_num_copies (loop_vinfo, vectype);
@@ -1734,7 +1734,7 @@ check_load_store_masking (loop_vec_info loop_vinfo, tree vectype,
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "can't use a fully-masked loop because an access"
 			 " isn't contiguous.\n");
-      LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
+      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
       return;
     }
 
@@ -1748,7 +1748,7 @@ check_load_store_masking (loop_vec_info loop_vinfo, tree vectype,
 			 "can't use a fully-masked loop because the target"
 			 " doesn't have the appropriate masked load or"
 			 " store.\n");
-      LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
+      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
       return;
     }
   /* We might load more scalars than we need for permuting SLP loads.
@@ -5866,7 +5866,7 @@ vectorizable_operation (vec_info *vinfo,
 	 should only change the active lanes of the reduction chain,
 	 keeping the inactive lanes as-is.  */
       if (loop_vinfo
-	  && LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo)
+	  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
 	  && reduc_idx >= 0)
 	{
 	  if (cond_fn == IFN_LAST
@@ -5877,7 +5877,7 @@ vectorizable_operation (vec_info *vinfo,
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "can't use a fully-masked loop because no"
 				 " conditional operation is available.\n");
-	      LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
+	      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	    }
 	  else
 	    vect_record_loop_mask (loop_vinfo, masks, ncopies * vec_num,
@@ -7139,7 +7139,7 @@ vectorizable_store (vec_info *vinfo,
       STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) = memory_access_type;
 
       if (loop_vinfo
-	  && LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo))
+	  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
 	check_load_store_masking (loop_vinfo, vectype, vls_type, group_size,
 				  memory_access_type, &gs_info, mask);
 
@@ -8432,7 +8432,7 @@ vectorizable_load (vec_info *vinfo,
 	STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) = memory_access_type;
 
       if (loop_vinfo
-	  && LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo))
+	  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
 	check_load_store_masking (loop_vinfo, vectype, VLS_LOAD, group_size,
 				  memory_access_type, &gs_info, mask);
 
@@ -9845,7 +9845,7 @@ vectorizable_condition (vec_info *vinfo,
 	}
 
       if (loop_vinfo
-	  && LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo)
+	  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
 	  && reduction_type == EXTRACT_LAST_REDUCTION)
 	vect_record_loop_mask (loop_vinfo, &LOOP_VINFO_MASKS (loop_vinfo),
 			       ncopies * vec_num, vectype, NULL);
