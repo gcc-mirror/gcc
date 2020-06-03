@@ -2888,7 +2888,7 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
 	      /* For shifts with a scalar argument we don't need
 		 to cost or code-generate anything.
 		 ???  Represent this more explicitely.  */
-	      gcc_assert ((STMT_VINFO_TYPE (SLP_TREE_SCALAR_STMTS (node)[0])
+	      gcc_assert ((STMT_VINFO_TYPE (SLP_TREE_REPRESENTATIVE (node))
 			   == shift_vec_info_type)
 			  && j == 1);
 	      continue;
