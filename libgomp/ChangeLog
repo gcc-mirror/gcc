@@ -1,3 +1,8 @@
+2020-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* allocator.c (omp_free): Fix up build if HAVE_SYNC_BUILTINS is not
+	defined.
+
 2020-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c-c++-common/alloc-4.c: New test.
