@@ -8,6 +8,7 @@ create_code (gcc_jit_context *ctxt, void *user_data)
 #define CHECK_BUILTIN(NAME) \
   CHECK_NON_NULL (gcc_jit_context_get_builtin_function (ctxt, NAME));
   
+  CHECK_BUILTIN ("__atomic_load");
   CHECK_BUILTIN ("__builtin_memcpy");
   CHECK_BUILTIN ("__builtin_sadd_overflow");
 

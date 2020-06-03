@@ -513,7 +513,9 @@ builtins_manager::make_primitive_type (enum jit_builtin_type type_id)
     case BT_VOLATILE_PTR:
       return (m_ctxt->get_type (GCC_JIT_TYPE_VOID)->get_volatile ()
 	      ->get_pointer ());
-    // case BT_CONST_VOLATILE_PTR:
+    case BT_CONST_VOLATILE_PTR:
+      return (m_ctxt->get_type (GCC_JIT_TYPE_VOID)->get_const ()
+	      ->get_volatile ()->get_pointer ());
     // case BT_PTRMODE:
     case BT_INT_PTR:
       return m_ctxt->get_type (GCC_JIT_TYPE_INT)->get_pointer ();
