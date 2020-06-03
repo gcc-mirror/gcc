@@ -125,7 +125,7 @@ range_def_chain::build_def_chain (tree name, bitmap result, basic_block bb)
     {
       // Get the def chain for the operand
       b = get_def_chain (name);
-      // If there was one, copy it into result and retuirn the terminal name.
+      // If there was one, copy it into result and return the terminal name.
       if (b)
         {
 	  bitmap_ior_into (result, b);
@@ -242,24 +242,16 @@ gori_map::gori_map ()
   m_outgoing.safe_grow_cleared (last_basic_block_for_fn (cfun));
   m_incoming.create (0);
   m_incoming.safe_grow_cleared (last_basic_block_for_fn (cfun));
-
+  bitmap_obstack_initialize (&m_bitmaps);
 }
 
 // Free any memory the GORI map allocated.
 
 gori_map::~gori_map ()
 {
-  unsigned bb;
-  for (bb = 0; bb < m_outgoing.length (); ++bb)
-    if (m_outgoing[bb])
-      BITMAP_FREE (m_outgoing[bb]);
-  m_outgoing.release ();
-
-  for (bb = 0; bb < m_incoming.length (); ++bb)
-    if (m_incoming[bb])
-      BITMAP_FREE (m_incoming[bb]);
+  bitmap_obstack_release (&m_bitmaps);
   m_incoming.release ();
-
+  m_outgoing.release ();
 }
 
 // Return the bitmap vector of all imports to BB. Calculate if necessary.
@@ -347,9 +339,14 @@ void
 gori_map::calculate_gori (basic_block bb)
 {
   tree name;
+  if (bb->index >= (signed int)m_outgoing.length ())
+    {
+      m_outgoing.safe_grow_cleared (last_basic_block_for_fn (cfun));
+      m_incoming.safe_grow_cleared (last_basic_block_for_fn (cfun));
+    }
   gcc_assert (m_outgoing[bb->index] == NULL);
-  m_outgoing[bb->index] = BITMAP_ALLOC (NULL);
-  m_incoming[bb->index] = BITMAP_ALLOC (NULL);
+  m_outgoing[bb->index] = BITMAP_ALLOC (&m_bitmaps);
+  m_incoming[bb->index] = BITMAP_ALLOC (&m_bitmaps);
 
   // If this block's last statement may generate range informaiton, go
   // calculate it.

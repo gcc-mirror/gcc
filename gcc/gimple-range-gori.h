@@ -124,8 +124,9 @@ public:
   void dump (FILE *f);
   void dump (FILE *f, basic_block bb);
 private:
-  vec<bitmap> m_outgoing;	// BB: Outgoing ranges generated.
-  vec<bitmap> m_incoming;	// BB: ranges coming in.
+  bitmap_obstack m_bitmaps;
+  vec<bitmap> m_outgoing;	// BB: Outgoing ranges calculatable on edges
+  vec<bitmap> m_incoming;	// BB: block imports
   void maybe_add_gori (tree name, basic_block bb);
   void calculate_gori (basic_block bb);
   bitmap imports (basic_block bb);
