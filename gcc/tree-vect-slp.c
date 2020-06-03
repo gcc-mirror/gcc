@@ -3078,17 +3078,17 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo)
 			       SLP_INSTANCE_TREE (instance),
 			       &life, &scalar_costs, visited);
     }
+  /* Unset visited flag.  */
+  stmt_info_for_cost *si;
+  FOR_EACH_VEC_ELT (scalar_costs, i, si)
+    gimple_set_visited  (si->stmt_info->stmt, false);
+
   void *target_cost_data = init_cost (NULL);
   add_stmt_costs (bb_vinfo, target_cost_data, &scalar_costs);
   scalar_costs.release ();
   unsigned dummy;
   finish_cost (target_cost_data, &dummy, &scalar_cost, &dummy);
   destroy_cost_data (target_cost_data);
-
-  /* Unset visited flag.  */
-  for (gimple_stmt_iterator gsi = bb_vinfo->region_begin;
-       gsi_stmt (gsi) != gsi_stmt (bb_vinfo->region_end); gsi_next (&gsi))
-    gimple_set_visited  (gsi_stmt (gsi), false);
 
   /* Complete the target-specific cost calculation.  */
   finish_cost (BB_VINFO_TARGET_COST_DATA (bb_vinfo), &vec_prologue_cost,
