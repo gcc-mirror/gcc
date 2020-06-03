@@ -579,6 +579,12 @@ package body Sem_Ch3 is
    --  Extensions_Visible with value False and has at least one controlling
    --  parameter of mode OUT.
 
+   function Is_Private_Primitive (Prim : Entity_Id) return Boolean;
+   --  Subsidiary to Check_Abstract_Overriding and Derive_Subprogram.
+   --  When applied to a primitive subprogram Prim, returns True if Prim is
+   --  declared as a private operation within a package or generic package,
+   --  and returns False otherwise.
+
    function Is_Valid_Constraint_Kind
      (T_Kind          : Type_Kind;
       Constraint_Kind : Node_Kind) return Boolean;
@@ -10754,6 +10760,32 @@ package body Sem_Ch3 is
          elsif Present (Interface_Alias (Subp)) then
             null;
 
+         --  AI12-0042: Test for rule in 7.3.2(6.1/4), that requires overriding
+         --  of a visible private primitive inherited from an ancestor with
+         --  the aspect Type_Invariant'Class, unless the inherited primitive
+         --  is abstract. (The test for the extension occurring in a different
+         --  scope than the ancestor is to avoid requiring overriding when
+         --  extending in the same scope, because the inherited primitive will
+         --  also be private in that case, which looks like an unhelpful
+         --  restriction that may break reasonable code, though the rule
+         --  appears to apply in the same-scope case as well???)
+
+         elsif not Is_Abstract_Subprogram (Subp)
+           and then not Comes_From_Source (Subp) -- An inherited subprogram
+           and then Requires_Overriding (Subp)
+           and then Present (Alias_Subp)
+           and then Has_Invariants (Etype (T))
+           and then Present (Get_Pragma (Etype (T), Pragma_Invariant))
+           and then Class_Present (Get_Pragma (Etype (T), Pragma_Invariant))
+           and then Is_Private_Primitive (Alias_Subp)
+           and then Scope (Subp) /= Scope (Alias_Subp)
+         then
+            Error_Msg_NE
+              ("inherited private primitive & must be overridden", T, Subp);
+            Error_Msg_N
+              ("\because ancestor type has 'Type_'Invariant''Class " &
+               "(RM 7.3.2(6.1))", T);
+
          elsif (Is_Abstract_Subprogram (Subp)
                  or else Requires_Overriding (Subp)
                  or else
@@ -15676,6 +15708,9 @@ package body Sem_Ch3 is
       --  Ada 2005 (AI-228): Calculate the "require overriding" and "abstract"
       --  properties of the subprogram, as defined in RM-3.9.3(4/2-6/2).
 
+      --  Ada 202x (AI12-0042): Similarly, set those properties for
+      --  implementing the rule of RM 7.3.2(6.1/4).
+
       --  A subprogram subject to pragma Extensions_Visible with value False
       --  requires overriding if the subprogram has at least one controlling
       --  OUT parameter (SPARK RM 6.1.7(6)).
@@ -15692,7 +15727,23 @@ package body Sem_Ch3 is
                                                         Derived_Type
                              and then not Is_Null_Extension (Derived_Type))
                    or else (Comes_From_Source (Alias (New_Subp))
-                             and then Is_EVF_Procedure (Alias (New_Subp))))
+                             and then Is_EVF_Procedure (Alias (New_Subp)))
+
+                   --  AI12-0042: Set Requires_Overriding when a type extension
+                   --  inherits a private operation that is visible at the
+                   --  point of extension (Has_Private_Ancestor is False) from
+                   --  an ancestor that has Type_Invariant'Class.
+
+                   or else
+                     (not Has_Private_Ancestor (Derived_Type)
+                       and then Has_Invariants (Parent_Type)
+                       and then
+                         Present (Get_Pragma (Parent_Type, Pragma_Invariant))
+                       and then
+                         Class_Present
+                           (Get_Pragma (Parent_Type, Pragma_Invariant))
+                       and then Is_Private_Primitive (Parent_Subp)))
+
         and then No (Actual_Subp)
       then
          if not Is_Tagged_Type (Derived_Type)
@@ -18726,6 +18777,29 @@ package body Sem_Ch3 is
          return True;
       end if;
    end Is_Null_Extension;
+
+   --------------------------
+   -- Is_Private_Primitive --
+   --------------------------
+
+   function Is_Private_Primitive (Prim : Entity_Id) return Boolean is
+      Prim_Scope  : constant Entity_Id := Scope (Prim);
+      Priv_Entity : Entity_Id;
+   begin
+      if Is_Package_Or_Generic_Package (Prim_Scope) then
+         Priv_Entity := First_Private_Entity (Prim_Scope);
+
+         while Present (Priv_Entity) loop
+            if Priv_Entity = Prim then
+               return True;
+            end if;
+
+            Next_Entity (Priv_Entity);
+         end loop;
+      end if;
+
+      return False;
+   end Is_Private_Primitive;
 
    ------------------------------
    -- Is_Valid_Constraint_Kind --
