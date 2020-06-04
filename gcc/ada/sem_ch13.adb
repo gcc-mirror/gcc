@@ -2861,14 +2861,27 @@ package body Sem_Ch13 is
                   if A_Id in Boolean_Aspects and then No (Expr) then
                      Delay_Required := False;
 
-                  --  For non-Boolean aspects, don't delay if integer literal,
-                  --  unless the aspect is Alignment, which affects the
-                  --  freezing of an initialized object.
+                  --  For non-Boolean aspects, don't delay if integer literal
 
                   elsif A_Id not in Boolean_Aspects
-                    and then A_Id /= Aspect_Alignment
                     and then Present (Expr)
                     and then Nkind (Expr) = N_Integer_Literal
+                  then
+                     Delay_Required := False;
+
+                  --  For Alignment and various Size aspects, don't delay for
+                  --  an attribute reference whose prefix is Standard, for
+                  --  example Standard'Maximum_Alignment or Standard'Word_Size.
+
+                  elsif (A_Id = Aspect_Alignment
+                          or else A_Id = Aspect_Component_Size
+                          or else A_Id = Aspect_Object_Size
+                          or else A_Id = Aspect_Size
+                          or else A_Id = Aspect_Value_Size)
+                    and then Present (Expr)
+                    and then Nkind (Expr) = N_Attribute_Reference
+                    and then Nkind (Prefix (Expr)) = N_Identifier
+                    and then Chars (Prefix (Expr)) = Name_Standard
                   then
                      Delay_Required := False;
 

@@ -281,8 +281,7 @@ package Einfo is
 --  For object declarations, the flag is set when an address clause for the
 --  object is encountered. Legality checks on the address expression only take
 --  place at the freeze point of the object. In Ada 2012, the flag is also set
---  when an address or an alignment aspect for the object is encountered (note
---  the discrepancy with the non-aspect case).
+--  when an address aspect for the object is encountered.
 
 --  Most types have an explicit freeze node, because they cannot be elaborated
 --  until all representation and operational items that apply to them have been

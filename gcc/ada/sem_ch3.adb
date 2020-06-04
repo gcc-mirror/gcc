@@ -3668,7 +3668,7 @@ package body Sem_Ch3 is
       --  has aspects that require delayed analysis, the resolution of the
       --  aggregate must be deferred to the freeze point of the object. This
       --  special processing was created for address clauses, but it must
-      --  also apply to Alignment. This must be done before the aspect
+      --  also apply to address aspects. This must be done before the aspect
       --  specifications are analyzed because we must handle the aggregate
       --  before the analysis of the object declaration is complete.
 
@@ -3896,7 +3896,7 @@ package body Sem_Ch3 is
             while Present (A) loop
                A_Id := Get_Aspect_Id (Chars (Identifier (A)));
 
-               if A_Id = Aspect_Alignment or else A_Id = Aspect_Address then
+               if A_Id = Aspect_Address then
 
                   --  Set flag on object entity, for later processing at
                   --  the freeze point.
