@@ -1753,6 +1753,7 @@ extern void vect_get_vec_defs_for_stmt_copy (vec_info *,
 extern tree vect_init_vector (vec_info *, stmt_vec_info, tree, tree,
                               gimple_stmt_iterator *);
 extern tree vect_get_vec_def_for_stmt_copy (vec_info *, tree);
+extern tree vect_get_slp_vect_def (slp_tree, unsigned);
 extern bool vect_transform_stmt (vec_info *, stmt_vec_info,
 				 gimple_stmt_iterator *,
 				 slp_tree, slp_instance);
