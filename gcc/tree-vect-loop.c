@@ -4719,7 +4719,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
   for (unsigned i = 0; i < vec_num; i++)
     {
       if (slp_node)
-	def = gimple_get_lhs (SLP_TREE_VEC_STMTS (slp_node)[i]->stmt);
+	def = vect_get_slp_vect_def (slp_node, i);
       else
 	def = gimple_get_lhs (STMT_VINFO_VEC_STMT (rdef_info)->stmt);
       for (j = 0; j < ncopies; j++)

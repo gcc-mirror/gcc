@@ -11385,7 +11385,7 @@ vect_transform_stmt (vec_info *vinfo,
 		      == SLP_TREE_VEC_STMTS (slp_node).length ());
 	  for (unsigned i = 0; i < SLP_TREE_VEC_STMTS (phi_node).length (); ++i)
 	    add_phi_arg (as_a <gphi *> (SLP_TREE_VEC_STMTS (phi_node)[i]->stmt),
-			 gimple_get_lhs (SLP_TREE_VEC_STMTS (slp_node)[i]->stmt),
+			 vect_get_slp_vect_def (slp_node, i),
 			 e, gimple_phi_arg_location (phi, e->dest_idx));
 	}
     }
@@ -11850,7 +11850,7 @@ vect_is_simple_use (vec_info *vinfo, stmt_vec_info stmt, slp_tree slp_node,
       slp_tree child = SLP_TREE_CHILDREN (slp_node)[operand];
       *slp_def = child;
       if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
-	*op = gimple_get_lhs (SLP_TREE_SCALAR_STMTS (child)[0]->stmt);
+	*op = gimple_get_lhs (SLP_TREE_REPRESENTATIVE (child)->stmt);
       else
 	{
 	  if (def_stmt_info_out)
