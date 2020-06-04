@@ -1,3 +1,11 @@
+2020-06-03  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/95480
+	* libgcov-profiler.c (GCOV_SUPPORTS_ATOMIC): Move to...
+	* libgcov.h (GCOV_SUPPORTS_ATOMIC): ...here.
+	(gcov_counter_add): Use GCOV_SUPPORTS_ATOMIC guard.
+	(gcov_counter_set_if_null): Likewise.
+
 2020-06-02  Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/div.S (__divdi3): For negative arguments, change bgez

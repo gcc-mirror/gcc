@@ -1,3 +1,17 @@
+2020-06-03  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/95214
+	PR fortran/66833
+	PR fortran/67938
+	* trans-expr.c (gfc_maybe_dereference_var): Add assumed-rank to
+	character dummy arguments list of possible attributes.
+
+2020-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* f95-lang.c (LANG_HOOKS_OMP_PREDETERMINED_MAPPING): Redefine.
+	* trans-openmp.c (gfc_omp_predetermined_mapping): New.
+	* trans.h (gfc_omp_predetermined_mapping): Declare.
+
 2020-05-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/94361

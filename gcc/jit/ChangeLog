@@ -1,3 +1,9 @@
+2020-06-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/95306
+	* jit-builtins.c (builtins_manager::make_primitive_type):
+	Implement BT_CONST_VOLATILE_PTR.
+
 2020-06-02  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/95426

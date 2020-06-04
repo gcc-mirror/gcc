@@ -1,3 +1,100 @@
+2020-06-03  Vitor Guidi  <vitor.guidi@usp.br>
+
+	* match.pd (tanh/sinh -> 1/cosh): New simplification.
+
+2020-06-03  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	PR target/95347
+	* config/rs6000/rs6000.c (is_stfs_insn): Rename to
+	is_lfs_stfs_insn and make it recognize lfs as well.
+	(prefixed_store_p): Use is_lfs_stfs_insn().
+	(prefixed_load_p): Use is_lfs_stfs_insn() to recognize lfs.
+
+2020-06-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c: Include data-streamer.h, lto-streamer.h and
+	streamer-hooks.h.
+	(odr_enums): New static var.
+	(struct odr_enum_val): New struct.
+	(class odr_enum): New struct.
+	(odr_enum_map): New hashtable.
+	(odr_types_equivalent_p): Drop code testing TYPE_VALUES.
+	(add_type_duplicate): Likewise.
+	(free_odr_warning_data): Do not free TYPE_VALUES.
+	(register_odr_enum): New function.
+	(ipa_odr_summary_write): New function.
+	(ipa_odr_read_section): New function.
+	(ipa_odr_summary_read): New function.
+	(class pass_ipa_odr): New pass.
+	(make_pass_ipa_odr): New function.
+	* ipa-utils.h (register_odr_enum): Declare.
+	* lto-section-in.c: (lto_section_name): Add odr_types section.
+	* lto-streamer.h (enum lto_section_type): Add odr_types section.
+	* passes.def: Add odr_types pass.
+	* lto-streamer-out.c (DFS::DFS_write_tree_body): Do not stream
+	TYPE_VALUES.
+	(hash_tree): Likewise.
+	* tree-streamer-in.c (lto_input_ts_type_non_common_tree_pointers):
+	Likewise.
+	* tree-streamer-out.c (write_ts_type_non_common_tree_pointers):
+	Likewise.
+	* timevar.def (TV_IPA_ODR): New timervar.
+	* tree-pass.h (make_pass_ipa_odr): Declare.
+	* tree.c (free_lang_data_in_type): Regiser ODR types.
+
+2020-06-03  Romain Naour  <romain.naour@gmail.com>
+
+	* Makefile.in (SELFTEST_DEPS): Move before including language makefile
+	fragments.
+
+2020-06-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95487
+	* tree-vect-stmts.c (vectorizable_store): Use a truth type
+	for the scatter mask.
+
+2020-06-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95495
+	* tree-vect-slp.c (vect_slp_analyze_node_operations): Use
+	SLP_TREE_REPRESENTATIVE in the shift assertion.
+
+2020-06-03  Tom Tromey  <tromey@adacore.com>
+
+	* spellcheck.c (CASE_COST): New define.
+	(BASE_COST): New define.
+	(get_edit_distance): Recognize case changes.
+	(get_edit_distance_cutoff): Update.
+	(test_edit_distances): Update.
+	(get_old_cutoff): Update.
+	(test_find_closest_string): Add case sensitivity test.
+
+2020-06-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_bb_vectorization_profitable_p): Loop over
+	the cost vector to unset the visited flag on stmts.
+
+2020-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimplify.c (omp_notice_variable): Use new hook.
+	* langhooks-def.h (lhd_omp_predetermined_mapping): Declare.
+	(LANG_HOOKS_OMP_PREDETERMINED_MAPPING): Define
+	(LANG_HOOKS_DECLS): Add it.
+	* langhooks.c (lhd_omp_predetermined_sharing): Remove bogus unused attr.
+	(lhd_omp_predetermined_mapping): New.
+	* langhooks.h (struct lang_hooks_for_decls): Add new hook.
+
+2020-06-03  Jan Hubicka  <jh@suse.cz>
+
+	* lto-streamer.h (LTO_tags): Reorder so frequent tags has small indexes;
+	add LTO_first_tree_tag and LTO_first_gimple_tag.
+	(lto_tag_is_tree_code_p): Update.
+	(lto_tag_is_gimple_code_p): Update.
+	(lto_gimple_code_to_tag): Update.
+	(lto_tag_to_gimple_code): Update.
+	(lto_tree_code_to_tag): Update.
+	(lto_tag_to_tree_code): Update.
+
 2020-06-02  Felix Yang  <felix.yang@huawei.com>
 
 	PR target/95459
