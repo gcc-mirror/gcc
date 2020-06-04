@@ -2444,9 +2444,9 @@ const wide_int_bitmask PTA_RDPID (0, HOST_WIDE_INT_1U << 6);
 const wide_int_bitmask PTA_PCONFIG (0, HOST_WIDE_INT_1U << 7);
 const wide_int_bitmask PTA_WBNOINVD (0, HOST_WIDE_INT_1U << 8);
 const wide_int_bitmask PTA_AVX512VP2INTERSECT (0, HOST_WIDE_INT_1U << 9);
-const wide_int_bitmask PTA_WAITPKG (0, HOST_WIDE_INT_1U << 9);
 const wide_int_bitmask PTA_PTWRITE (0, HOST_WIDE_INT_1U << 10);
 const wide_int_bitmask PTA_AVX512BF16 (0, HOST_WIDE_INT_1U << 11);
+const wide_int_bitmask PTA_WAITPKG (0, HOST_WIDE_INT_1U << 12);
 const wide_int_bitmask PTA_MOVDIRI(0, HOST_WIDE_INT_1U << 13);
 const wide_int_bitmask PTA_MOVDIR64B(0, HOST_WIDE_INT_1U << 14);
 
