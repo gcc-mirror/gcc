@@ -4616,7 +4616,8 @@ expand_debug_expr (tree exp)
 	      op0 = copy_rtx (op0);
 	    if (op0 == orig_op0)
 	      op0 = shallow_copy_rtx (op0);
-	    set_mem_attributes (op0, exp, 0);
+	    if (TREE_CODE (tem) != SSA_NAME)
+	      set_mem_attributes (op0, exp, 0);
 	  }
 
 	if (known_eq (bitpos, 0) && mode == GET_MODE (op0))
