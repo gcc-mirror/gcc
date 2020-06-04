@@ -754,7 +754,7 @@ public:
 
     void visit(ArrayLiteralExp *e)
     {
-        size_t dim = e->elements ? e->elements->dim : 0;
+        size_t dim = e->elements ? e->elements->length : 0;
         buf->printf("A%u", dim);
         for (size_t i = 0; i < dim; i++)
         {
@@ -764,7 +764,7 @@ public:
 
     void visit(AssocArrayLiteralExp *e)
     {
-        size_t dim = e->keys->dim;
+        size_t dim = e->keys->length;
         buf->printf("A%u", dim);
         for (size_t i = 0; i < dim; i++)
         {
@@ -775,7 +775,7 @@ public:
 
     void visit(StructLiteralExp *e)
     {
-        size_t dim = e->elements ? e->elements->dim : 0;
+        size_t dim = e->elements ? e->elements->length : 0;
         buf->printf("S%u", dim);
         for (size_t i = 0; i < dim; i++)
         {

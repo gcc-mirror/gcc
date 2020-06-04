@@ -91,8 +91,8 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
       Expressions *elements = ((ArrayLiteralExp *) expr)->elements;
       vec<constructor_elt, va_gc> *elms = NULL;
 
-      vec_safe_reserve (elms, elements->dim);
-      for (size_t i = 0; i < elements->dim; i++)
+      vec_safe_reserve (elms, elements->length);
+      for (size_t i = 0; i < elements->length; i++)
 	{
 	  Expression *e = (*elements)[i];
 	  if (e->type->isintegral ())
@@ -167,13 +167,13 @@ Compiler::loadModule (Module *m)
       if (!strcmp (id->toChars (), "object"))
 	create_tinfo_types (m);
     }
-  else if (md->packages->dim == 1)
+  else if (md->packages->length == 1)
     {
       if (!strcmp ((*md->packages)[0]->toChars (), "gcc")
 	  && !strcmp (md->id->toChars (), "builtins"))
 	d_build_builtins_module (m);
     }
-  else if (md->packages->dim == 2)
+  else if (md->packages->length == 2)
     {
       if (!strcmp ((*md->packages)[0]->toChars (), "core")
 	  && !strcmp ((*md->packages)[1]->toChars (), "stdc"))

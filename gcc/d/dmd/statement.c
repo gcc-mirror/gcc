@@ -360,7 +360,7 @@ Statement *toStatement(Dsymbol *s)
                 return NULL;
 
             Statements *statements = new Statements();
-            for (size_t i = 0; i < a->dim; i++)
+            for (size_t i = 0; i < a->length; i++)
             {
                 statements->push(toStatement((*a)[i]));
             }
@@ -376,7 +376,7 @@ Statement *toStatement(Dsymbol *s)
         void visit(TemplateMixin *tm)
         {
             Statements *a = new Statements();
-            for (size_t i = 0; i < tm->members->dim; i++)
+            for (size_t i = 0; i < tm->members->length; i++)
             {
                 Statement *s = toStatement((*tm->members)[i]);
                 if (s)
@@ -561,8 +561,8 @@ CompoundStatement *CompoundStatement::create(Loc loc, Statement *s1, Statement *
 Statement *CompoundStatement::syntaxCopy()
 {
     Statements *a = new Statements();
-    a->setDim(statements->dim);
-    for (size_t i = 0; i < statements->dim; i++)
+    a->setDim(statements->length);
+    for (size_t i = 0; i < statements->length; i++)
     {
         Statement *s = (*statements)[i];
         (*a)[i] = s ? s->syntaxCopy() : NULL;
@@ -579,7 +579,7 @@ ReturnStatement *CompoundStatement::isReturnStatement()
 {
     ReturnStatement *rs = NULL;
 
-    for (size_t i = 0; i < statements->dim; i++)
+    for (size_t i = 0; i < statements->length; i++)
     {
         Statement *s = (*statements)[i];
         if (s)
@@ -596,7 +596,7 @@ Statement *CompoundStatement::last()
 {
     Statement *s = NULL;
 
-    for (size_t i = statements->dim; i; --i)
+    for (size_t i = statements->length; i; --i)
     {   s = (*statements)[i - 1];
         if (s)
         {
@@ -619,8 +619,8 @@ CompoundDeclarationStatement::CompoundDeclarationStatement(Loc loc, Statements *
 Statement *CompoundDeclarationStatement::syntaxCopy()
 {
     Statements *a = new Statements();
-    a->setDim(statements->dim);
-    for (size_t i = 0; i < statements->dim; i++)
+    a->setDim(statements->length);
+    for (size_t i = 0; i < statements->length; i++)
     {
         Statement *s = (*statements)[i];
         (*a)[i] = s ? s->syntaxCopy() : NULL;
@@ -639,8 +639,8 @@ UnrolledLoopStatement::UnrolledLoopStatement(Loc loc, Statements *s)
 Statement *UnrolledLoopStatement::syntaxCopy()
 {
     Statements *a = new Statements();
-    a->setDim(statements->dim);
-    for (size_t i = 0; i < statements->dim; i++)
+    a->setDim(statements->length);
+    for (size_t i = 0; i < statements->length; i++)
     {
         Statement *s = (*statements)[i];
         (*a)[i] = s ? s->syntaxCopy() : NULL;
@@ -747,8 +747,8 @@ Statements *ForwardingStatement::flatten(Scope *sc)
         return a;
     }
     Statements *b = new Statements();
-    b->setDim(a->dim);
-    for (size_t i = 0; i < a->dim; i++)
+    b->setDim(a->length);
+    for (size_t i = 0; i < a->length; i++)
     {
         Statement *s = (*a)[i];
         (*b)[i] = s ? new ForwardingStatement(s->loc, sym, s) : NULL;
@@ -887,7 +887,7 @@ bool ForeachStatement::checkForArgTypes()
 {
     bool result = false;
 
-    for (size_t i = 0; i < parameters->dim; i++)
+    for (size_t i = 0; i < parameters->length; i++)
     {
         Parameter *p = (*parameters)[i];
         if (!p->type)
@@ -1151,7 +1151,7 @@ bool SwitchStatement::checkLabel()
     if (sdefault && checkVar(this, sdefault->lastVar))
         return !error; // return error once fully deprecated
 
-    for (size_t i = 0; i < cases->dim; i++)
+    for (size_t i = 0; i < cases->length; i++)
     {
         CaseStatement *scase = (*cases)[i];
         if (scase && checkVar(this, scase->lastVar))
@@ -1350,8 +1350,8 @@ TryCatchStatement::TryCatchStatement(Loc loc, Statement *body, Catches *catches)
 Statement *TryCatchStatement::syntaxCopy()
 {
     Catches *a = new Catches();
-    a->setDim(catches->dim);
-    for (size_t i = 0; i < a->dim; i++)
+    a->setDim(catches->length);
+    for (size_t i = 0; i < a->length; i++)
     {
         Catch *c = (*catches)[i];
         (*a)[i] = c->syntaxCopy();
@@ -1515,7 +1515,7 @@ Statements *DebugStatement::flatten(Scope *sc)
     Statements *a = statement ? statement->flatten(sc) : NULL;
     if (a)
     {
-        for (size_t i = 0; i < a->dim; i++)
+        for (size_t i = 0; i < a->length; i++)
         {   Statement *s = (*a)[i];
 
             s = new DebugStatement(loc, s);
@@ -1640,7 +1640,7 @@ Statements *LabelStatement::flatten(Scope *sc)
         a = statement->flatten(sc);
         if (a)
         {
-            if (!a->dim)
+            if (!a->length)
             {
                 a->push(new ExpStatement(loc, (Expression *)NULL));
             }
@@ -1737,8 +1737,8 @@ CompoundAsmStatement::CompoundAsmStatement(Loc loc, Statements *s, StorageClass 
 CompoundAsmStatement *CompoundAsmStatement::syntaxCopy()
 {
     Statements *a = new Statements();
-    a->setDim(statements->dim);
-    for (size_t i = 0; i < statements->dim; i++)
+    a->setDim(statements->length);
+    for (size_t i = 0; i < statements->length; i++)
     {
         Statement *s = (*statements)[i];
         (*a)[i] = s ? s->syntaxCopy() : NULL;
@@ -1762,8 +1762,8 @@ ImportStatement::ImportStatement(Loc loc, Dsymbols *imports)
 Statement *ImportStatement::syntaxCopy()
 {
     Dsymbols *m = new Dsymbols();
-    m->setDim(imports->dim);
-    for (size_t i = 0; i < imports->dim; i++)
+    m->setDim(imports->length);
+    for (size_t i = 0; i < imports->length; i++)
     {
         Dsymbol *s = (*imports)[i];
         (*m)[i] = s->syntaxCopy(NULL);

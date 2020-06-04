@@ -10,7 +10,8 @@
 
 #pragma once
 
-#include "root/root.h"
+#include "root/array.h"
+#include "root/bitarray.h"
 
 typedef Array<class TemplateParameter *> TemplateParameters;
 

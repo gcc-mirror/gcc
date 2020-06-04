@@ -88,7 +88,7 @@ class CppMangleVisitor : public Visitor
     int find(RootObject *p)
     {
         //printf("find %p %d %s\n", p, p.dyncast(), p ? p.toChars() : NULL);
-        for (size_t i = 0; i < components.dim; i++)
+        for (size_t i = 0; i < components.length; i++)
         {
             if (p == components[i])
                 return (int)i;
@@ -166,7 +166,7 @@ class CppMangleVisitor : public Visitor
         if (!ti)                // could happen if std::basic_string is not a template
             return;
         buf->writeByte('I');
-        for (size_t i = 0; i < ti->tiargs->dim; i++)
+        for (size_t i = 0; i < ti->tiargs->length; i++)
         {
             RootObject *o = (*ti->tiargs)[i];
             TemplateDeclaration *td = ti->tempdecl->isTemplateDeclaration();
@@ -184,7 +184,7 @@ class CppMangleVisitor : public Visitor
                 buf->writeByte('I');     // argument pack
 
                 // mangle the rest of the arguments as types
-                for (size_t j = i; j < ti->tiargs->dim; j++)
+                for (size_t j = i; j < ti->tiargs->length; j++)
                 {
                     Type *t = isType((*ti->tiargs)[j]);
                     assert(t);
@@ -365,7 +365,7 @@ class CppMangleVisitor : public Visitor
         if (!ti)
             return false;
         Dsymbol *q = getQualifier(ti);
-        return isStd(q) && ti->tiargs->dim == 1 && isChar((*ti->tiargs)[0]);
+        return isStd(q) && ti->tiargs->length == 1 && isChar((*ti->tiargs)[0]);
     }
 
     /***
@@ -376,7 +376,7 @@ class CppMangleVisitor : public Visitor
      */
     bool char_std_char_traits_char(TemplateInstance *ti, const char *st)
     {
-        if (ti->tiargs->dim == 2 &&
+        if (ti->tiargs->length == 2 &&
             isChar((*ti->tiargs)[0]) &&
             isChar_traits_char((*ti->tiargs)[1]))
         {
@@ -411,7 +411,7 @@ class CppMangleVisitor : public Visitor
                         if (s->ident == Id::basic_string)
                         {
                             // ::std::basic_string<char, ::std::char_traits<char>, ::std::allocator<char>>
-                            if (ti->tiargs->dim == 3 &&
+                            if (ti->tiargs->length == 3 &&
                                 isChar((*ti->tiargs)[0]) &&
                                 isChar_traits_char((*ti->tiargs)[1]) &&
                                 isAllocator_char((*ti->tiargs)[2]))
@@ -491,7 +491,7 @@ class CppMangleVisitor : public Visitor
                 else if (s->ident == Id::basic_string)
                 {
                     // ::std::basic_string<char, ::std::char_traits<char>, ::std::allocator<char>>
-                    if (ti->tiargs->dim == 3 &&
+                    if (ti->tiargs->length == 3 &&
                         isChar((*ti->tiargs)[0]) &&
                         isChar_traits_char((*ti->tiargs)[1]) &&
                         isAllocator_char((*ti->tiargs)[2]))

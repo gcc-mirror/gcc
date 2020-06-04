@@ -78,7 +78,7 @@ public:
 
     void visit(ArrayLiteralExp *e)
     {
-        if (e->type->ty != Tarray || !e->elements || !e->elements->dim)
+        if (e->type->ty != Tarray || !e->elements || !e->elements->length)
             return;
 
         if (f->setGC())
@@ -93,7 +93,7 @@ public:
 
     void visit(AssocArrayLiteralExp *e)
     {
-        if (!e->keys->dim)
+        if (!e->keys->length)
             return;
 
         if (f->setGC())

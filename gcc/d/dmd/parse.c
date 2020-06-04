@@ -354,8 +354,8 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
             case TOKtraits:
             Ldeclaration:
                 a = parseDeclarations(false, pAttrs, pAttrs->comment);
-                if (a && a->dim)
-                    *pLastDecl = (*a)[a->dim-1];
+                if (a && a->length)
+                    *pLastDecl = (*a)[a->length-1];
                 break;
 
             case TOKthis:
@@ -577,8 +577,8 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
                 {
                     a = parseAutoDeclarations(pAttrs->storageClass, pAttrs->comment);
                     pAttrs->storageClass = STCundefined;
-                    if (a && a->dim)
-                        *pLastDecl = (*a)[a->dim-1];
+                    if (a && a->length)
+                        *pLastDecl = (*a)[a->length-1];
                     if (pAttrs->udas)
                     {
                         s = new UserAttributeDeclaration(pAttrs->udas, a);
@@ -596,8 +596,8 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
                    )
                 {
                     a = parseDeclarations(true, pAttrs, pAttrs->comment);
-                    if (a && a->dim)
-                        *pLastDecl = (*a)[a->dim-1];
+                    if (a && a->length)
+                        *pLastDecl = (*a)[a->length-1];
                     if (pAttrs->udas)
                     {
                         s = new UserAttributeDeclaration(pAttrs->udas, a);
@@ -704,8 +704,8 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
                 if (idents)
                 {
                     assert(link == LINKcpp);
-                    assert(idents->dim);
-                    for (size_t i = idents->dim; i;)
+                    assert(idents->length);
+                    for (size_t i = idents->length; i;)
                     {
                         Identifier *id = (*idents)[--i];
                         if (s)
@@ -950,7 +950,7 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
             decldefs->push(s);
             addComment(s, pAttrs->comment);
         }
-        else if (a && a->dim)
+        else if (a && a->length)
         {
             decldefs->append(a);
         }
@@ -3251,10 +3251,10 @@ Type *Parser::parseBasicTypeStartingAt(TypeQualified *tid, bool dontLookDotIdent
                             break;
                         }
                     }
-                    assert(dimStack.dim > 0);
+                    assert(dimStack.length > 0);
                     // We're good. Replay indices in the reverse order.
                     tid = (TypeQualified *)t;
-                    while (dimStack.dim)
+                    while (dimStack.length)
                     {
                         tid->addIndex(dimStack.pop());
                     }
@@ -4820,7 +4820,7 @@ Statement *Parser::parseForeach(Loc loc, bool *isRange, bool isDecl)
     check(TOKsemicolon);
 
     Expression *aggr = parseExpression();
-    if (token.value == TOKslice && parameters->dim == 1)
+    if (token.value == TOKslice && parameters->length == 1)
     {
         Parameter *p = (*parameters)[0];
         delete parameters;
@@ -5073,11 +5073,11 @@ Statement *Parser::parseStatement(int flags, const utf8_t** endPtr, Loc *pEndloc
         Ldeclaration:
         {
             Dsymbols *a = parseDeclarations(false, NULL, NULL);
-            if (a->dim > 1)
+            if (a->length > 1)
             {
                 Statements *as = new Statements();
-                as->reserve(a->dim);
-                for (size_t i = 0; i < a->dim; i++)
+                as->reserve(a->length);
+                for (size_t i = 0; i < a->length; i++)
                 {
                     Dsymbol *d = (*a)[i];
                     s = new ExpStatement(loc, d);
@@ -5085,7 +5085,7 @@ Statement *Parser::parseStatement(int flags, const utf8_t** endPtr, Loc *pEndloc
                 }
                 s = new CompoundDeclarationStatement(loc, as);
             }
-            else if (a->dim == 1)
+            else if (a->length == 1)
             {
                 Dsymbol *d = (*a)[0];
                 s = new ExpStatement(loc, d);
@@ -5500,7 +5500,7 @@ Statement *Parser::parseStatement(int flags, const utf8_t** endPtr, Loc *pEndloc
              */
             if (token.value == TOKslice)
             {
-                if (cases.dim > 1)
+                if (cases.length > 1)
                     error("only one case allowed for start of case range");
                 nextToken();
                 check(TOKcase);
@@ -5531,7 +5531,7 @@ Statement *Parser::parseStatement(int flags, const utf8_t** endPtr, Loc *pEndloc
             else
             {
                 // Keep cases in order by building the case statements backwards
-                for (size_t i = cases.dim; i; i--)
+                for (size_t i = cases.length; i; i--)
                 {
                     exp = cases[i - 1];
                     s = new CaseStatement(loc, exp, s);
@@ -7154,7 +7154,7 @@ Expression *Parser::parsePrimaryExp()
             while (token.value != TOKrbracket && token.value != TOKeof)
             {
                     e = parseAssignExp();
-                    if (token.value == TOKcolon && (keys || values->dim == 0))
+                    if (token.value == TOKcolon && (keys || values->length == 0))
                     {   nextToken();
                         if (!keys)
                             keys = new Expressions();
