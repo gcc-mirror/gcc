@@ -1,3 +1,42 @@
+2020-06-03  Mark Wielaard  <mark@klomp.org>
+
+	* parser.c (cp_lexer_safe_previous_token): New function.
+	(cp_parser_error_1): Add name_hint if the previous token is
+	a string literal and next token is a CPP_NAME and we have a
+	missing header suggestion for the name.
+
+2020-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.c (process_partial_specialization): Pass the full set of
+	generic template arguments to strictly_subsumes.
+
+2020-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/92103
+	* pt.c (most_specialized_partial_spec): Reorganize the loop over
+	DECL_TEMPLATE_SPECIALIZATIONS.  Check constraints_satisfied_p on
+	the original template declaration, not on the tsubsted one.
+
+2020-06-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95345
+	* coroutines.cc (finish_co_await_expr): Revise to allow for
+	parameter packs.
+	(finish_co_yield_expr): Likewise.
+
+2020-06-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95232
+	* cp-tree.h (predeclare_vla): Declare.
+	* cp-gimplify.c (predeclare_vla): Handle getting a decl.
+	* pt.c (tsubst_expr) [DECL_EXPR]: Use it.
+
+2020-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* cp-gimplify.c (cxx_omp_predetermined_mapping): New.
+	* cp-objcp-common.h (LANG_HOOKS_OMP_PREDETERMINED_MAPPING): Redfine.
+	* cp-tree.h (cxx_omp_predetermined_mapping): Declare.
+
 2020-06-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/95193
