@@ -1071,6 +1071,8 @@ match_reload (signed char out, signed char *ins, signed char *outs,
   if (find_reg_note (curr_insn, REG_UNUSED, out_rtx) == NULL_RTX)
     {
       start_sequence ();
+      if (out >= 0 && curr_static_id->operand[out].strict_low)
+	out_rtx = gen_rtx_STRICT_LOW_PART (VOIDmode, out_rtx);
       lra_emit_move (out_rtx, copy_rtx (new_out_reg));
       emit_insn (*after);
       *after = get_insns ();
