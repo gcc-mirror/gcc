@@ -144,6 +144,9 @@ gimple_ranger::range_of_range_op (irange &r, gimple *s)
   tree op1 = gimple_range_operand1 (s);
   tree op2 = gimple_range_operand2 (s);
 
+  if (range_of_non_trivial_assignment (r, s))
+    return true;
+
   if (range_of_expr (range1, op1, s))
     {
       if (!op2)
@@ -154,6 +157,37 @@ gimple_ranger::range_of_range_op (irange &r, gimple *s)
     }
   r.set_varying (type);
   return true;
+}
+
+
+// Calculate the range of a non-trivial assignment.  That is, is one
+// inolving arithmetic on an SSA name (for example, an ADDR_EXPR).
+// Return the range in R.
+//
+// If a range cannot be calculated, return false.
+
+bool
+gimple_ranger::range_of_non_trivial_assignment (irange &r, gimple *stmt)
+{
+  if (gimple_code (stmt) != GIMPLE_ASSIGN)
+    return false;
+
+  tree base = gimple_range_base_of_assignment (stmt);
+  if (base && TREE_CODE (base) == MEM_REF
+      && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
+    {
+      widest_irange range1;
+      tree ssa = TREE_OPERAND (base, 0);
+      if (range_of_expr (range1, ssa, stmt))
+	{
+	  tree type = TREE_TYPE (ssa);
+	  range_operator *op = range_op_handler (POINTER_PLUS_EXPR, type);
+	  int_range<1> offset (TREE_OPERAND (base, 1), TREE_OPERAND (base, 1));
+	  op->fold_range (r, type, range1, offset);
+	  return true;
+	}
+    }
+  return false;
 }
 
 

@@ -36,6 +36,7 @@ protected:
   bool range_of_call (irange &r, gcall *call);
   bool range_of_cond_expr (irange &r, gassign* cond);
 private:
+  bool range_of_non_trivial_assignment (irange &r, gimple *s);
   bool range_of_builtin_call (irange &r, gcall *call);
   void range_of_builtin_ubsan_call (irange &r, gcall *call, tree_code code);
 };

@@ -38,6 +38,7 @@ extern gimple *gimple_outgoing_edge_range_p (irange &r, edge e);
 // These routines provide a GIMPLE interface to the range-ops code.
 extern tree gimple_range_operand1 (const gimple *s);
 extern tree gimple_range_operand2 (const gimple *s);
+extern tree gimple_range_base_of_assignment (const gimple *s);
 extern bool gimple_range_fold (const gimple *s, irange &res,
 			       const irange &r1);
 extern bool gimple_range_fold (const gimple *s, irange &res,

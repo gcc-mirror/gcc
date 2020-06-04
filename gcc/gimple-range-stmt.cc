@@ -287,6 +287,17 @@ gimple_range_fold (const gimple *stmt, irange &res,
   return true;
 }
 
+// Return the base of the RHS of an assignment.
+
+tree
+gimple_range_base_of_assignment (const gimple *stmt)
+{
+  gcc_checking_assert (gimple_code (stmt) == GIMPLE_ASSIGN);
+  tree op1 = gimple_assign_rhs1 (stmt);
+  if (gimple_assign_rhs_code (stmt) == ADDR_EXPR)
+    return get_base_address (TREE_OPERAND (op1, 0));
+  return op1;
+}
 
 // Return the first operand of this statement if it is a valid operand
 // supported by ranges, otherwise return NULL_TREE.  Special case is
@@ -303,24 +314,19 @@ gimple_range_operand1 (const gimple *stmt)
 	return gimple_cond_lhs (stmt);
       case GIMPLE_ASSIGN:
 	{
-	  tree expr = gimple_assign_rhs1 (stmt);
-	  if (gimple_assign_rhs_code (stmt) == ADDR_EXPR)
+	  tree base = gimple_range_base_of_assignment (stmt);
+	  if (base && TREE_CODE (base) == MEM_REF)
 	    {
 	      // If the base address is an SSA_NAME, we return it
 	      // here.  This allows processing of the range of that
 	      // name, while the rest of the expression is simply
 	      // ignored.  The code in range_ops will see the
 	      // ADDR_EXPR and do the right thing.
-	      tree base = get_base_address (TREE_OPERAND (expr, 0));
-	      if (base != NULL_TREE && TREE_CODE (base) == MEM_REF)
-		{
-		  // If the base address is an SSA_NAME, return it.
-		  tree b = TREE_OPERAND (base, 0);
-		  if (TREE_CODE (b) == SSA_NAME)
-		    return b;
-		}
+	      tree ssa = TREE_OPERAND (base, 0);
+	      if (TREE_CODE (ssa) == SSA_NAME)
+		return ssa;
 	    }
-	  return expr;
+	  return base;
 	}
       default:
 	break;
