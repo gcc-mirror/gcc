@@ -478,7 +478,7 @@ namespace __gnu_test
 	}
       else
 	{
-	  ITERATOR_VERIFY(n <= this->ptr - this->SharedInfo->first);
+	  ITERATOR_VERIFY(-n <= this->ptr - this->SharedInfo->first);
 	  this->ptr += n;
 	}
       return *this;
