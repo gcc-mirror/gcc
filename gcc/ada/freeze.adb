@@ -3431,7 +3431,7 @@ package body Freeze is
          Check_Address_Clause (E);
 
          --  Similar processing is needed for aspects that may affect object
-         --  layout, like Alignment, if there is an initialization expression.
+         --  layout, like Address, if there is an initialization expression.
          --  We don't do this if there is a pragma Linker_Section, because it
          --  would prevent the back end from statically initializing the
          --  object; we don't want elaboration code in that case.
