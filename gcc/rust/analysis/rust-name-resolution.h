@@ -1,6 +1,7 @@
 #pragma once
 
 #include "rust-resolution.h"
+#include <list>
 
 namespace Rust {
 namespace Analysis {
@@ -219,6 +220,12 @@ public:
 private:
   NameResolution (AST::Crate &crate, TopLevelScan &toplevel);
   bool go () override;
+  void process_names ();
+  void process_work_list ();
+  void expand_macros ();
+  bool is_work_list_changed () { return is_work_list_changed_; }
+  std::list<AST::UseDeclaration> work_list_;
+  bool is_work_list_changed_;
 };
 
 } // namespace Analysis
