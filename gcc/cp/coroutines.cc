@@ -4284,7 +4284,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
     }
 
   tree gro_context_body = push_stmt_list ();
-  bool gro_is_void_p = VOID_TYPE_P (TREE_TYPE (get_ro));
+  tree gro_type = TREE_TYPE (get_ro);
+  bool gro_is_void_p = VOID_TYPE_P (gro_type);
 
   tree gro = NULL_TREE;
   tree gro_bind_vars = NULL_TREE;
@@ -4294,17 +4295,23 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
     finish_expr_stmt (get_ro);
   else
     {
-      gro = build_lang_decl (VAR_DECL, get_identifier ("coro.gro"),
-			      TREE_TYPE (get_ro));
+      gro = build_lang_decl (VAR_DECL, get_identifier ("coro.gro"), gro_type);
       DECL_CONTEXT (gro) = current_scope ();
       DECL_ARTIFICIAL (gro) = true;
       DECL_IGNORED_P (gro) = true;
       add_decl_expr (gro);
       gro_bind_vars = gro;
-
-      r = build2_loc (fn_start, INIT_EXPR, TREE_TYPE (gro), gro, get_ro);
-      r = coro_build_cvt_void_expr_stmt (r, fn_start);
-      add_stmt (r);
+      if (TYPE_NEEDS_CONSTRUCTING (gro_type))
+	{
+	  vec<tree, va_gc> *arg = make_tree_vector_single (get_ro);
+	  r = build_special_member_call (gro, complete_ctor_identifier,
+					 &arg, gro_type, LOOKUP_NORMAL,
+					 tf_warning_or_error);
+	  release_tree_vector (arg);
+	}
+      else
+	r = build2_loc (fn_start, INIT_EXPR, gro_type, gro, get_ro);
+      finish_expr_stmt (r);
     }
 
   /* Initialize the resume_idx_name to 0, meaning "not started".  */
@@ -4338,28 +4345,43 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   /* Switch to using 'input_location' as the loc, since we're now more
      logically doing things related to the end of the function.  */
 
-  /* The ramp is done, we just need the return value.  */
-  if (!same_type_p (TREE_TYPE (get_ro), fn_return_type))
-    {
-      /* construct the return value with a single GRO param, if it's not
-	 void.  */
-      vec<tree, va_gc> *args = NULL;
-      vec<tree, va_gc> **arglist = NULL;
-      if (!gro_is_void_p)
-	{
-	  args = make_tree_vector_single (gro);
-	  arglist = &args;
-	}
-      r = build_special_member_call (NULL_TREE,
-				     complete_ctor_identifier, arglist,
-				     fn_return_type, LOOKUP_NORMAL,
-				     tf_warning_or_error);
-      r = build_cplus_new (fn_return_type, r, tf_warning_or_error);
-    }
-  else if (!gro_is_void_p)
-    r = rvalue (gro); /* The GRO is the return value.  */
-  else
+  /* The ramp is done, we just need the return value.
+     [dcl.fct.def.coroutine] / 7
+     The expression promise.get_return_object() is used to initialize the
+     glvalue result or prvalue result object of a call to a coroutine.
+
+     If the 'get return object' is non-void, then we built it before the
+     promise was constructed.  We now supply a reference to that var,
+     either as the return value (if it's the same type) or to the CTOR
+     for an object of the return type.  */
+  if (gro_is_void_p)
     r = NULL_TREE;
+  else
+    r = rvalue (gro);
+
+  if (!same_type_p (gro_type, fn_return_type))
+    {
+      /* The return object is , even if the gro is void.  */
+      if (CLASS_TYPE_P (fn_return_type))
+	{
+	  vec<tree, va_gc> *args = NULL;
+	  vec<tree, va_gc> **arglist = NULL;
+	  if (!gro_is_void_p)
+	    {
+	      args = make_tree_vector_single (r);
+	      arglist = &args;
+	    }
+	  r = build_special_member_call (NULL_TREE,
+					 complete_ctor_identifier, arglist,
+					 fn_return_type, LOOKUP_NORMAL,
+					 tf_warning_or_error);
+	  r = build_cplus_new (fn_return_type, r, tf_warning_or_error);
+	  if (args)
+	    release_tree_vector (args);
+	}
+      else /* ??? suppose we have non-class return and void gro?  */
+	r = build1_loc (input_location, CONVERT_EXPR, fn_return_type, r);
+    }
 
   finish_return_stmt (r);
 
