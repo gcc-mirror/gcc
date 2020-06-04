@@ -10688,6 +10688,8 @@
   "TARGET_AVX512VL")
 
 (define_mode_iterator PMOV_SRC_MODE_3 [V4DI V2DI V8SI V4SI (V8HI "TARGET_AVX512BW")])
+(define_mode_attr pmov_dst_3_lower
+  [(V4DI "v4qi") (V2DI "v2qi") (V8SI "v8qi") (V4SI "v4qi") (V8HI "v8qi")])
 (define_mode_attr pmov_dst_3
   [(V4DI "V4QI") (V2DI "V2QI") (V8SI "V8QI") (V4SI "V4QI") (V8HI "V8QI")])
 (define_mode_attr pmov_dst_zeroed_3
@@ -10695,7 +10697,7 @@
 (define_mode_attr pmov_suff_3
   [(V4DI "qb") (V2DI "qb") (V8SI "db") (V4SI "db") (V8HI "wb")])
 
-(define_expand "trunc<mode><pmov_dst_3>2"
+(define_expand "trunc<mode><pmov_dst_3_lower>2"
   [(set (match_operand:<pmov_dst_3> 0 "register_operand")
 	(truncate:<pmov_dst_3>
 	  (match_operand:PMOV_SRC_MODE_3 1 "register_operand")))]

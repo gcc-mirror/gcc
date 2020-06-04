@@ -87,5 +87,4 @@ truncwb_128 (v16qi * dst, v8hi * __restrict src)
   dst[0] = *(v16qi *) tem;
 }
 
-/* { dg-final { scan-assembler-times "vpmovwb" 2 } } */
-/* { dg-final { scan-assembler-times "vpmovwb" 3 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times "vpmovwb" 3 } } */
