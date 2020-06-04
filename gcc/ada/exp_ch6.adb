@@ -2196,6 +2196,13 @@ package body Exp_Ch6 is
             return False;
          end if;
 
+         --  There is no requirement inside initialization procedures and this
+         --  would generate copies for atomic or volatile composite components.
+
+         if Inside_Init_Proc then
+            return False;
+         end if;
+
          --  Check for atomicity mismatch
 
          if Is_Atomic_Object (Actual) and then not Is_Atomic (E_Formal)
