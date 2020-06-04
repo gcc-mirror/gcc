@@ -1034,7 +1034,8 @@ package body Sem_Ch13 is
               and then Has_Primitive_Operations (Parent_Type)
             then
                Error_Msg_N
-                 ("|representation aspect not permitted before Ada 202x!", N);
+                 ("|representation aspect not permitted before Ada 202x: " &
+                  "use -gnat2020!", N);
                Error_Msg_NE
                  ("\parent type & has primitive operations!", N, Parent_Type);
 
