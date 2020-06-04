@@ -1898,7 +1898,16 @@ pp_c_additive_expression (c_pretty_printer *pp, tree e)
       else
 	pp_minus (pp);
       pp_c_whitespace (pp);
-      pp->multiplicative_expression (TREE_OPERAND (e, 1));
+      {
+	tree op1 = TREE_OPERAND (e, 1);
+	if (code == POINTER_PLUS_EXPR
+	    && TREE_CODE (op1) == INTEGER_CST
+	    && tree_int_cst_sign_bit (op1))
+	  /* A pointer minus an integer is represented internally as plus a very
+	     large number, don't expose that to users.  */
+	  op1 = convert (ssizetype, op1);
+	pp->multiplicative_expression (op1);
+      }
       break;
 
     default:
