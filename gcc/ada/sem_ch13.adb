@@ -10519,6 +10519,8 @@ package body Sem_Ch13 is
             Preanalyze_Spec_Expression (End_Decl_Expr, T);
             Pop_Type (Ent);
 
+         elsif A_Id = Aspect_Predicate_Failure then
+            Preanalyze_Spec_Expression (End_Decl_Expr, Standard_String);
          else
             Preanalyze_Spec_Expression (End_Decl_Expr, T);
          end if;
