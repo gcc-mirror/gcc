@@ -771,10 +771,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
 	    typename iterator_traits<_InputIterator>::value_type>)
-      __glibcxx_requires_can_increment(__first, __n);
-      __glibcxx_requires_can_increment(__result, __n);
 
-      return std::__copy_n(__first, __n, __result,
+      const auto __n2 = std::__size_to_integer(__n);
+      if (__n2 <= 0)
+	return __result;
+
+      __glibcxx_requires_can_increment(__first, __n2);
+      __glibcxx_requires_can_increment(__result, __n2);
+
+      return std::__copy_n(__first, __n2, __result,
 			   std::__iterator_category(__first));
     }
 
