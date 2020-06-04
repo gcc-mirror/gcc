@@ -878,16 +878,16 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
   epilogue_vinfos.create (6);
 }
 
-/* Free all levels of MASKS.  */
+/* Free all levels of rgroup CONTROLS.  */
 
 void
-release_vec_loop_masks (vec_loop_masks *masks)
+release_vec_loop_controls (vec<rgroup_controls> *controls)
 {
-  rgroup_masks *rgm;
+  rgroup_controls *rgc;
   unsigned int i;
-  FOR_EACH_VEC_ELT (*masks, i, rgm)
-    rgm->masks.release ();
-  masks->release ();
+  FOR_EACH_VEC_ELT (*controls, i, rgc)
+    rgc->controls.release ();
+  controls->release ();
 }
 
 /* Free all memory used by the _loop_vec_info, as well as all the
@@ -897,7 +897,7 @@ _loop_vec_info::~_loop_vec_info ()
 {
   free (bbs);
 
-  release_vec_loop_masks (&masks);
+  release_vec_loop_controls (&masks);
   delete ivexpr_map;
   delete scan_map;
   epilogue_vinfos.release ();
@@ -938,12 +938,12 @@ cse_and_gimplify_to_preheader (loop_vec_info loop_vinfo, tree expr)
 static bool
 can_produce_all_loop_masks_p (loop_vec_info loop_vinfo, tree cmp_type)
 {
-  rgroup_masks *rgm;
+  rgroup_controls *rgm;
   unsigned int i;
   FOR_EACH_VEC_ELT (LOOP_VINFO_MASKS (loop_vinfo), i, rgm)
-    if (rgm->mask_type != NULL_TREE
+    if (rgm->type != NULL_TREE
 	&& !direct_internal_fn_supported_p (IFN_WHILE_ULT,
-					    cmp_type, rgm->mask_type,
+					    cmp_type, rgm->type,
 					    OPTIMIZE_FOR_SPEED))
       return false;
   return true;
@@ -957,7 +957,7 @@ vect_get_max_nscalars_per_iter (loop_vec_info loop_vinfo)
 {
   unsigned int res = 1;
   unsigned int i;
-  rgroup_masks *rgm;
+  rgroup_controls *rgm;
   FOR_EACH_VEC_ELT (LOOP_VINFO_MASKS (loop_vinfo), i, rgm)
     res = MAX (res, rgm->max_nscalars_per_iter);
   return res;
@@ -2379,7 +2379,7 @@ again:
   LOOP_VINFO_TARGET_COST_DATA (loop_vinfo)
     = init_cost (LOOP_VINFO_LOOP (loop_vinfo));
   /* Reset accumulated rgroup information.  */
-  release_vec_loop_masks (&LOOP_VINFO_MASKS (loop_vinfo));
+  release_vec_loop_controls (&LOOP_VINFO_MASKS (loop_vinfo));
   /* Reset assorted flags.  */
   LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo) = false;
   LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) = false;
@@ -3512,10 +3512,10 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 
       /* Calculate how many masks we need to generate.  */
       unsigned int num_masks = 0;
-      rgroup_masks *rgm;
+      rgroup_controls *rgm;
       unsigned int num_vectors_m1;
       FOR_EACH_VEC_ELT (LOOP_VINFO_MASKS (loop_vinfo), num_vectors_m1, rgm)
-	if (rgm->mask_type)
+	if (rgm->type)
 	  num_masks += num_vectors_m1 + 1;
       gcc_assert (num_masks > 0);
 
@@ -8153,7 +8153,7 @@ vect_record_loop_mask (loop_vec_info loop_vinfo, vec_loop_masks *masks,
   gcc_assert (nvectors != 0);
   if (masks->length () < nvectors)
     masks->safe_grow_cleared (nvectors);
-  rgroup_masks *rgm = &(*masks)[nvectors - 1];
+  rgroup_controls *rgm = &(*masks)[nvectors - 1];
   /* The number of scalars per iteration and the number of vectors are
      both compile-time constants.  */
   unsigned int nscalars_per_iter
@@ -8169,7 +8169,7 @@ vect_record_loop_mask (loop_vec_info loop_vinfo, vec_loop_masks *masks,
   if (rgm->max_nscalars_per_iter < nscalars_per_iter)
     {
       rgm->max_nscalars_per_iter = nscalars_per_iter;
-      rgm->mask_type = truth_type_for (vectype);
+      rgm->type = truth_type_for (vectype);
     }
 }
 
@@ -8184,24 +8184,24 @@ tree
 vect_get_loop_mask (gimple_stmt_iterator *gsi, vec_loop_masks *masks,
 		    unsigned int nvectors, tree vectype, unsigned int index)
 {
-  rgroup_masks *rgm = &(*masks)[nvectors - 1];
-  tree mask_type = rgm->mask_type;
+  rgroup_controls *rgm = &(*masks)[nvectors - 1];
+  tree mask_type = rgm->type;
 
   /* Populate the rgroup's mask array, if this is the first time we've
      used it.  */
-  if (rgm->masks.is_empty ())
+  if (rgm->controls.is_empty ())
     {
-      rgm->masks.safe_grow_cleared (nvectors);
+      rgm->controls.safe_grow_cleared (nvectors);
       for (unsigned int i = 0; i < nvectors; ++i)
 	{
 	  tree mask = make_temp_ssa_name (mask_type, NULL, "loop_mask");
 	  /* Provide a dummy definition until the real one is available.  */
 	  SSA_NAME_DEF_STMT (mask) = gimple_build_nop ();
-	  rgm->masks[i] = mask;
+	  rgm->controls[i] = mask;
 	}
     }
 
-  tree mask = rgm->masks[index];
+  tree mask = rgm->controls[index];
   if (maybe_ne (TYPE_VECTOR_SUBPARTS (mask_type),
 		TYPE_VECTOR_SUBPARTS (vectype)))
     {

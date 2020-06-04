@@ -390,7 +390,6 @@ is_a_helper <_bb_vec_info *>::test (vec_info *i)
   return i->kind == vec_info::bb;
 }
 
-
 /* In general, we can divide the vector statements in a vectorized loop
    into related groups ("rgroups") and say that for each rgroup there is
    some nS such that the rgroup operates on nS values from one scalar
@@ -420,19 +419,21 @@ is_a_helper <_bb_vec_info *>::test (vec_info *i)
 
    In classical vectorization, each iteration of the vector loop would
    handle exactly VF iterations of the original scalar loop.  However,
-   in a fully-masked loop, a particular iteration of the vector loop
-   might handle fewer than VF iterations of the scalar loop.  The vector
-   lanes that correspond to iterations of the scalar loop are said to be
-   "active" and the other lanes are said to be "inactive".
+   in vector loops that are able to operate on partial vectors, a
+   particular iteration of the vector loop might handle fewer than VF
+   iterations of the scalar loop.  The vector lanes that correspond to
+   iterations of the scalar loop are said to be "active" and the other
+   lanes are said to be "inactive".
 
-   In a fully-masked loop, many rgroups need to be masked to ensure that
-   they have no effect for the inactive lanes.  Each such rgroup needs a
-   sequence of booleans in the same order as above, but with each (i,j)
-   replaced by a boolean that indicates whether iteration i is active.
-   This sequence occupies nV vector masks that again have nL lanes each.
-   Thus the mask sequence as a whole consists of VF independent booleans
-   that are each repeated nS times.
+   In such vector loops, many rgroups need to be controlled to ensure
+   that they have no effect for the inactive lanes.  Conceptually, each
+   such rgroup needs a sequence of booleans in the same order as above,
+   but with each (i,j) replaced by a boolean that indicates whether
+   iteration i is active.  This sequence occupies nV vector controls
+   that again have nL lanes each.  Thus the control sequence as a whole
+   consists of VF independent booleans that are each repeated nS times.
 
+   Taking mask-based approach as a partially-populated vectors example.
    We make the simplifying assumption that if a sequence of nV masks is
    suitable for one (nS,nL) pair, we can reuse it for (nS/2,nL/2) by
    VIEW_CONVERTing it.  This holds for all current targets that support
@@ -472,20 +473,21 @@ is_a_helper <_bb_vec_info *>::test (vec_info *i)
    first level being indexed by nV - 1 (since nV == 0 doesn't exist) and
    the second being indexed by the mask index 0 <= i < nV.  */
 
-/* The masks needed by rgroups with nV vectors, according to the
-   description above.  */
-struct rgroup_masks {
-  /* The largest nS for all rgroups that use these masks.  */
+/* The controls (like masks) needed by rgroups with nV vectors,
+   according to the description above.  */
+struct rgroup_controls {
+  /* The largest nS for all rgroups that use these controls.  */
   unsigned int max_nscalars_per_iter;
 
-  /* The type of mask to use, based on the highest nS recorded above.  */
-  tree mask_type;
+  /* The type of control to use, based on the highest nS recorded above.
+     For mask-based approach, it's used for mask_type.  */
+  tree type;
 
-  /* A vector of nV masks, in iteration order.  */
-  vec<tree> masks;
+  /* A vector of nV controls, in iteration order.  */
+  vec<tree> controls;
 };
 
-typedef auto_vec<rgroup_masks> vec_loop_masks;
+typedef auto_vec<rgroup_controls> vec_loop_masks;
 
 typedef auto_vec<std::pair<data_reference*, tree> > drs_init_vec;
 
