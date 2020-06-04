@@ -1,6 +1,46 @@
 #include "rust-name-resolution.h"
 #include "rust-diagnostics.h"
 
+/*
+ * The principles of name resolution:
+ * 1. If a name resolves to a binding then it should always resolve to that
+ * binding, and if resolving a name produces an error, it should always produce
+ * an error.
+ * 2. Avoid errors due to the resolver being stuck.
+ * 3. Names should be able to be used before they are declared, but the order of
+ * declarations should be irrelevant.
+ * 4. Macros should be hygiene and manually expandable.
+ * 5. Glob imports should be manually expandable.
+ */
+
+/* The algorithm of name resolution
+ * 1. When encouter items which bind a name, add the name to the binding table.
+ * 2. When we find an import which can't be resolved, we add it to a work list.
+ * 3. When we find a glob import, we have to record a 'back link', so that when
+ *    a public name is added for the supplying module, we can add it for the
+ *    importing module.
+ * 4. Loop over the work list and try to lookup names.
+ *    a. If a name has exactly one best binding then we use it (and record the
+ *       binding on a list of resolved names).
+ *    b. If there are zero then we put it back on the work list.
+ *    c. If there is more than one binding, then we record an ambiguity error.
+ *    d. When the work list no longer changes, then we are done.
+ *    e. If the work list is empty, then expansion/import resolution succeeded.
+ *       Otherwise there are names not found, or ambiguous names, then failed.
+ * 5. When looking up names, we record the resolutions in the binding table.
+ *    a. If the name a glob import, we add bindings for every accessible name
+ *       currently known.
+ * 6. To expand a macro, we try to resolve the macro's name.
+ *    a. If that fails, we put it on the work list.
+ *       Otherwise, we expand that macro by parsing the arguments,
+ *       pattern matching, and doing hygienic expansion.
+ *    b. We then parse the generated code in the same way as we parsed the
+ *       original program. We add new names to the binding table, and expand any
+ *       new macro uses.
+ * 7. If we add names for a module which has back links, we must follow them and
+ *    add these names to the importing module (if they are accessible).
+ */
+
 namespace Rust {
 namespace Analysis {
 
