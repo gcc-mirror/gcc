@@ -1,3 +1,253 @@
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Denotes_Previous_Actual): Delete.
+	(Check_Generic_Actuals): Do not special case array types whose
+	component type denotes a previous actual.  Do not special case
+	access types whose base type is private.
+	(Check_Private_View): Remove code dealing with secondary types.
+	Do not switch the views of an array because of its component.
+	(Copy_Generic_Node): Add special handling for a comparison
+	operator on array types.
+	(Instantiate_Type): Do not special case access types whose
+	designated type is private.
+	(Set_Global_Type): Do not special case array types whose
+	component type is private.
+
+2020-06-03  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch10.adb (Process_Body_Clauses): Add loop to interate
+	through all prefixes in a use_type clause so that all packages
+	in the expanded name get examined for effectiveness.
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Check_Private_View): Clean up implementation of
+	second main case, when the generic sees the private declaration.
+
+2020-06-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/a-nbnbin.ads: Minor reformatting.
+	* libgnat/a-nbnbre.ads, libgnat/a-nbnbre.adb (Is_Valid): Add
+	convention Intrinsic. Add detection of uninitialized big reals.
+
+2020-06-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Side_Effect_Free_Statements,
+	Side_Effect_Free_Loop): New functions.
+	(Has_Non_Null_Statements): Consider N_Call_Marker as a null
+	statement.
+	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): Call
+	Set_Is_Null_Loop even inside a generic instantiation.
+	(Analyze_Loop_Statement): Mark for removal loops with no side
+	effects.
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* opt.ads (Allow_Integer_Address): Fix typo in comment.
+	* stand.ads (Standard_Address): New entity.
+	* cstand.adb (Create_Standard): Create it.
+	* sem_ch4.adb (Operator_Check): Convert the operands of an
+	operation with addresses and integers to Standard_Address
+	if pragma Allow_Integer_Address is in effect.
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-atopar.adb (Atomic_Fetch_And_Add): Make use of an
+	equivalent static expression.
+	(Atomic_Fetch_And_Subtract): Likewise.
+	(Is_Lock_Free): Likewise.
+	* libgnat/s-atopex.adb (Atomic_Exchange): Likewise.
+	(Atomic_Compare_And_Exchange): Likewise.
+	(Is_Lock_Free): Likewise.
+
+2020-06-03  Vadim Godunko  <godunko@adacore.com>
+
+	* libgnat/s-parame.ads, libgnat/s-parame__ae653.ads,
+	libgnat/s-parame__hpux.ads: Fix typos.
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Remove_Side_Effects): For a type conversion, do
+	not remove the side effects of the expression only if it is of
+	universal integer type.
+
+2020-06-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-aotase.ads, libgnat/s-atoope.ads,
+	libgnat/s-atopar.ads, libgnat/s-atopex.ads: Update header.
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Unchecked_Type_Conversion): Also fold the
+	conversion for literals of enumeration types.
+
+2020-06-03  Yannick Moy  <moy@adacore.com>
+
+	* rtsfind.adb (Load_RTU): Correctly set/reset global variable to
+	ignore SPARK_Mode in instances around loading.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Accept Off
+	without prior On.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Likewise.
+	* sem_prag.adb (Analyze_Pragma): Always take into account
+	SPARK_Mode Off.
+
+2020-06-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* frontend.adb (Frontend): Call (dummy for now) tree checker.
+	* debug.adb: Reserve -gnatd_V for the tree checker.
+	* vast.ads, vast.adb: New files.
+	* gcc-interface/Make-lang.in: Add vast.o.
+
+2020-06-03  Justin Squirek  <squirek@adacore.com>
+
+	* libgnat/a-cborse.adb, libgnat/a-cihase.adb,
+	libgnat/a-ciorse.adb, libgnat/a-coorse.adb: Modified to use
+	'Unrestricted_Access in certain cases where static accessibility
+	errors were triggered.
+	* exp_ch6.adb (Expand_Simple_Return_Statement): Add generation
+	of dynamic accessibility checks as determined by
+	Is_Special_Aliased_Formal_Access.
+	* sem_attr.adb (Resolve_Attribute): Add call to
+	Is_Special_Aliased_Formal_Access to avoid performing static
+	checks where dynamic ones are required.
+	* sem_ch6.adb (Check_Return_Obj_Accessibility): Handle renamed
+	objects within component associations requiring special
+	accessibility checks.
+	* sem_util.adb, sem_util.ads (Is_Special_Aliased_Formal_Access):
+	Created to detect the special case where an aliased formal is
+	being compared against the level of an anonymous access return
+	object.
+	(Object_Access_Level): Remove incorrect condition leading to
+	overly permissive accessibility levels being returned on
+	explicitly aliased parameters.
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Enum_Pos_To_Rep): Adjust description.
+	* exp_attr.adb (Expand_N_Attribute_Reference) <Pred>:
+	Reimplement in the case of an enumeration type with non-standard
+	but contiguous representation.
+	<Succ>: Likewise.
+	<Val>: Likewise.
+	* exp_ch3.adb (Expand_Freeze_Enumeration_Type): Count the
+	literals in the first loop.  If the representation is
+	contiguous, just build the index type of the array type and set
+	Enum_Pos_To_Rep to it.
+
+2020-06-03  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_attr.adb (Expand_Loop_Entry_Attribute): Revise loop that
+	resets the scopes of entities associated with Loop_Id to the
+	scope of the new function, so the resetting is not restricted to
+	itypes, but excludes loop parameters and the function entity
+	itself. However, this fix is believed to be incomplete and a ???
+	comment is added to indicate that.
+
+2020-06-03  Bob Duff  <duff@adacore.com>
+
+	* libgnat/s-regexp.ads: Fix comment
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference) <Enum_Rep>:
+	In the case of an enumeration type, do an intermediate
+	conversion to a small integer type.  Remove useless stuff.
+	<Finalization_Size>: Do not hardcode Universal_Integer and
+	fix a type mismatch in the assignment to the variable.
+	<Max_Size_In_Storage_Elements>: Likewise.
+	<From_Any>: Do not redefine the Ptyp local variable.
+	<To_Any>: Likewise.
+	<TypeCode>: Likewise.
+	<Pos>: Small tweaks.
+	<Val>: For an enumeration type with standard representation,
+	apply the range check to the expression of a convertion to
+	Universal_Integer, if any.  For an integer type, expand to
+	a mere conversion.
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-rannum.adb (Random_Discrete): In the 32-bit case,
+	use the same linear implementation as in the 64-bit case when
+	the type has a contiguous representation.
+
+2020-06-03  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_util.adb (Build_Class_Wide_Clone_Decl): Call
+	Set_Debug_Info_Needed to set the Needs_Debug_Info flag on
+	Clone_Id if the flag is set on Spec_Id.
+
+2020-06-03  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Expand_Inlined_Call): Do not suppress checks on
+	inlined code in GNATprove mode.
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Has_Contiguous_Rep): Fix typo in comment.
+
+2020-06-03  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb, einfo.adb, exp_aggr.adb, exp_ch4.adb, exp_ch6.adb,
+	exp_unst.adb, exp_util.adb, freeze.adb, inline.adb, repinfo.adb,
+	sem_aggr.adb, sem_attr.adb, sem_aux.adb, sem_ch13.adb,
+	sem_ch3.adb, sem_ch4.adb, sem_ch8.adb, sem_elab.adb,
+	sem_eval.adb, sem_prag.adb, sem_res.adb, sem_smem.adb,
+	sem_util.adb, treepr.adb: Replace uses of Next_ functions with
+	corresponding procedures.
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_attr.adb (Attribute_Valid): Use Standard_Long_Long_Integer
+	in lieu of Universal_Integer as large integer type.
+	* exp_ch3.adb (Expand_Freeze_Enumeration_Type): Likewise.
+
+2020-06-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-auxdec.ads (Address_Int): New.
+
+2020-06-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* aspects.adb, aspects.ads, atree.adb, atree.ads, elists.adb,
+	elists.ads, fname.adb, fname.ads, gnat1drv.adb, lib.adb,
+	lib.ads, namet.adb, namet.ads, nlists.adb, nlists.ads, opt.adb,
+	opt.ads, osint-c.adb, osint-c.ads, repinfo.adb, repinfo.ads,
+	sem_aux.adb, sem_aux.ads, sinput.adb, sinput.ads, stand.ads,
+	stringt.adb, stringt.ads, switch-c.adb, table.adb, table.ads,
+	uintp.adb, uintp.ads, urealp.adb, urealp.ads (Tree_Read,
+	Tree_Write): Remove generation of ASIS trees.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Remove -gnatt and -gnatct documentation.
+	* gnat_ugn.texi: Regenerate.
+	* tree_in.ads, tree_in.adb, tree_io.ads, tree_io.adb,
+	tree_gen.ads, tree_gen.adb, stand.adb: Remove.
+	* gcc-interface/Makefile.in, gcc-interface/Make-lang.in: Remove
+	references to tree_gen.o tree_in.o tree_io.o.
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* opt.ads (Disable_FE_Inline): Move around.
+	(Disable_FE_Inline_Always): Likewise.
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Is_Single_Attribute_Reference): New predicate.
+	(Generate_Range_Check): Do not force the evaluation if the
+	node is a single attribute reference.
+	* exp_util.adb (Side_Effect_Free_Attribute): New predicate.
+	(Side_Effect_Free) <N_Attribute_Reference>: Call it.
+	(Remove_Side_Effects): Remove the side effects of the prefix
+	for an attribute reference whose prefix is not a name.
+
+2020-06-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* switch-c.adb (Scan_Front_End_Switches): Remove processing of
+	-gnatt.
+	* usage.adb (Usage): Remove mention of -gnatt.
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sinfo.ads: Minor tweaks in commentary.
+
 2020-06-02  Alexandre Oliva  <oliva@adacore.com>
 
 	* lib.ads (Compilation_Switches): Remove -auxbase from

@@ -6137,7 +6137,7 @@ package body Sem_Ch3 is
          end if;
 
          --  Add a subtype declaration for each index of private array type
-         --  declaration whose etype is also private. For example:
+         --  declaration whose type is also private. For example:
 
          --     package Pkg is
          --        type Index is private;
@@ -6147,11 +6147,14 @@ package body Sem_Ch3 is
 
          --  This is currently required by the expander for the internally
          --  generated equality subprogram of records with variant parts in
-         --  which the etype of some component is such private type.
+         --  which the type of some component is such a private type. And it
+         --  also helps semantic analysis in peculiar cases where the array
+         --  type is referenced from an instance but not the index directly.
 
-         if Ekind (Current_Scope) = E_Package
+         if Is_Package_Or_Generic_Package (Current_Scope)
            and then In_Private_Part (Current_Scope)
            and then Has_Private_Declaration (Etype (Index))
+           and then Scope (Etype (Index)) = Current_Scope
          then
             declare
                Loc   : constant Source_Ptr := Sloc (Def);
@@ -7666,19 +7669,26 @@ package body Sem_Ch3 is
             Full_Parent := Full_View (Full_Parent);
          end if;
 
-         --  And its underlying full view if necessary
+         --  If the full view is itself derived from another private type
+         --  and has got an underlying full view, and this is done for a
+         --  completion, i.e. to build the underlying full view of the type,
+         --  then use this underlying full view. We cannot do that if this
+         --  is not a completion, i.e. to build the full view of the type,
+         --  because this would break the privacy status of the parent.
 
          if Is_Private_Type (Full_Parent)
            and then Present (Underlying_Full_View (Full_Parent))
+           and then Is_Completion
          then
             Full_Parent := Underlying_Full_View (Full_Parent);
          end if;
 
-         --  For record, concurrent, access and most enumeration types, the
-         --  derivation from full view requires a fully-fledged declaration.
-         --  In the other cases, just use an itype.
+         --  For private, record, concurrent, access and almost all enumeration
+         --  types, the derivation from the full view requires a fully-fledged
+         --  declaration. In the other cases, just use an itype.
 
-         if Is_Record_Type (Full_Parent)
+         if Is_Private_Type (Full_Parent)
+           or else Is_Record_Type (Full_Parent)
            or else Is_Concurrent_Type (Full_Parent)
            or else Is_Access_Type (Full_Parent)
            or else
@@ -7725,9 +7735,13 @@ package body Sem_Ch3 is
                end if;
 
             else
+               --  If the parent type is private, this is not a completion and
+               --  we build the full derivation recursively as a completion.
+
                Build_Derived_Type
                  (Full_N, Full_Parent, Full_Der,
-                  Is_Completion => False, Derive_Subps => False);
+                  Is_Completion => Is_Private_Type (Full_Parent),
+                  Derive_Subps => False);
             end if;
 
             --  The full declaration has been introduced into the tree and
@@ -7915,7 +7929,9 @@ package body Sem_Ch3 is
          --  case (see point 5. of its head comment) since we build it for the
          --  derived subtype.
 
-         if Present (Full_View (Parent_Type))
+         if (Present (Full_View (Parent_Type))
+             or else (Present (Underlying_Full_View (Parent_Type))
+                       and then Is_Completion))
            and then not Is_Itype (Derived_Type)
          then
             declare
@@ -7967,8 +7983,14 @@ package body Sem_Ch3 is
             end;
          end if;
 
-      elsif Present (Full_View (Parent_Type))
-        and then Has_Discriminants (Full_View (Parent_Type))
+      elsif (Present (Full_View (Parent_Type))
+              and then
+             Has_Discriminants (Full_View (Parent_Type)))
+        or else (Present (Underlying_Full_View (Parent_Type))
+                  and then
+                 Has_Discriminants (Underlying_Full_View (Parent_Type))
+                  and then
+                 Is_Completion)
       then
          if Has_Unknown_Discriminants (Parent_Type)
            and then Nkind (Subtype_Indication (Type_Definition (N))) =
@@ -8044,7 +8066,9 @@ package body Sem_Ch3 is
          end if;
 
          --  If this is not a completion, construct the implicit full view by
-         --  deriving from the full view of the parent type.
+         --  deriving from the full view of the parent type. But if this is a
+         --  completion, the derived private type being built is a full view
+         --  and the full derivation can only be its underlying full view.
 
          --  ??? If the parent is untagged private and its completion is
          --  tagged, this mechanism will not work because we cannot derive from
@@ -8052,10 +8076,16 @@ package body Sem_Ch3 is
 
          if Present (Full_View (Parent_Type))
            and then not Is_Tagged_Type (Full_View (Parent_Type))
-           and then not Is_Completion
+           and then not Error_Posted (N)
          then
             Build_Full_Derivation;
-            Set_Full_View (Derived_Type, Full_Der);
+
+            if not Is_Completion then
+               Set_Full_View (Derived_Type, Full_Der);
+            else
+               Set_Underlying_Full_View (Derived_Type, Full_Der);
+               Set_Is_Underlying_Full_View (Full_Der);
+            end if;
          end if;
       end if;
 

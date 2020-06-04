@@ -937,6 +937,8 @@ package body Sinput is
 
    procedure Sloc_Range (N : Node_Id; Min, Max : out Source_Ptr) is
 
+      Indx : constant Source_File_Index :=  Get_Source_File_Index (Sloc (N));
+
       function Process (N : Node_Id) return Traverse_Result;
       --  Process function for traversing the node tree
 
@@ -950,6 +952,14 @@ package body Sinput is
          Orig : constant Node_Id := Original_Node (N);
 
       begin
+         --  Skip nodes that may have been added during expansion and
+         --  that originate in other units, such as code for contracts
+         --  in subprogram bodies.
+
+         if Get_Source_File_Index (Sloc (Orig)) /= Indx then
+            return Skip;
+         end if;
+
          if Sloc (Orig) < Min then
             if Sloc (Orig) > No_Location then
                Min := Sloc (Orig);

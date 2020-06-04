@@ -495,6 +495,23 @@ package body Sem_Ch12 is
    --  nodes or subprogram body and declaration nodes depending on the case).
    --  On return, the node N has been rewritten with the actual body.
 
+   function Build_Subprogram_Decl_Wrapper
+     (Formal_Subp : Entity_Id;
+      Actual_Subp : Entity_Id) return Node_Id;
+   --  Ada 2020 allows formal subprograms to carry pre/postconditions.
+   --  At the point of instantiation these contracts apply to uses of
+   --  the actual subprogram. This is implemented by creating wrapper
+   --  subprograms instead of the renamings previously used to link
+   --  formal subprograms and the corresponding actuals. If the actual
+   --  is not an entity (e.g. an attribute reference) a renaming is
+   --  created to handle the expansion of the attribute.
+
+   function Build_Subprogram_Body_Wrapper
+     (Formal_Subp : Entity_Id;
+      Actual_Subp : Entity_Id) return Node_Id;
+   --  The body of the wrapper is a call to the actual, with the generated
+   --  pre/postconditon checks added.
+
    procedure Check_Access_Definition (N : Node_Id);
    --  Subsidiary routine to null exclusion processing. Perform an assertion
    --  check on Ada version and the presence of an access definition in N.
@@ -1078,6 +1095,14 @@ package body Sem_Ch12 is
       --  In Ada 2005, indicates partial parameterization of a formal
       --  package. As usual an other association must be last in the list.
 
+      procedure Build_Subprogram_Wrappers;
+      --  Ada_2020: AI12-0272 introduces pre/postconditions for formal
+      --  subprograms. The implementation of making the formal into a renaming
+      --  of the actual does not work, given that subprogram renaming cannot
+      --  carry aspect specifications. Instead we must create subprogram
+      --  wrappers whose body is a call to the actual, and whose declaration
+      --  carries the aspects of the formal.
+
       procedure Check_Fixed_Point_Actual (Actual : Node_Id);
       --  Warn if an actual fixed-point type has user-defined arithmetic
       --  operations, but there is no corresponding formal in the generic,
@@ -1130,6 +1155,49 @@ package body Sem_Ch12 is
       --  correspondence between the two lists is not one-one. In addition to
       --  anonymous types, the presence a formal equality will introduce an
       --  implicit declaration for the corresponding inequality.
+
+      -----------------------------------------
+      -- procedure Build_Subprogram_Wrappers --
+      -----------------------------------------
+
+      procedure Build_Subprogram_Wrappers is
+         Formal : constant Entity_Id :=
+           Defining_Unit_Name (Specification (Analyzed_Formal));
+         Aspect_Spec : Node_Id;
+         Decl_Node   : Node_Id;
+         Ent         : Entity_Id;
+
+      begin
+         --  Create declaration for wrapper subprogram
+
+         if Is_Entity_Name (Match) then
+            Ent := Entity (Match);
+         else
+            Ent := Defining_Entity (Last (Assoc_List));
+         end if;
+
+         Decl_Node := Build_Subprogram_Decl_Wrapper (Formal, Ent);
+
+         --  Transfer aspect specifications from formal subprogram to wrapper
+
+         Set_Aspect_Specifications (Decl_Node,
+           New_Copy_List_Tree (Aspect_Specifications (Analyzed_Formal)));
+
+         Aspect_Spec := First (Aspect_Specifications (Decl_Node));
+         while Present (Aspect_Spec) loop
+            Set_Analyzed (Aspect_Spec, False);
+            Next (Aspect_Spec);
+         end loop;
+
+         Append_To (Assoc_List, Decl_Node);
+
+         --  Create corresponding body, and append it to association list
+         --  that appears at the head of the declarations in the instance.
+         --  The subprogram may be called in the analysis of subsequent
+         --  actuals.
+
+         Append_To (Assoc_List, Build_Subprogram_Body_Wrapper (Formal, Ent));
+      end Build_Subprogram_Wrappers;
 
       ----------------------------------------
       -- Check_Overloaded_Formal_Subprogram --
@@ -1792,6 +1860,16 @@ package body Sem_Ch12 is
                      Append_To (Assoc_List,
                        Instantiate_Formal_Subprogram
                          (Formal, Match, Analyzed_Formal));
+
+                     --  If formal subprogram has contracts, create wrappers
+                     --  for it. This is an expansion activity that cannot
+                     --  take place e.g. within an enclosing generic unit.
+
+                     if Present (Aspect_Specifications (Analyzed_Formal))
+                       and then Expander_Active
+                     then
+                        Build_Subprogram_Wrappers;
+                     end if;
 
                      --  An instantiation is a freeze point for the actuals,
                      --  unless this is a rewritten formal package.
@@ -3475,6 +3553,12 @@ package body Sem_Ch12 is
       end loop;
 
       Generate_Reference_To_Generic_Formals (Current_Scope);
+
+      --  For Ada_2020, some formal parameters can carry aspects, which must
+      --  be name-resolved at the end of the list of formal parameters (which
+      --  has the semantics of a declaration list).
+
+      Analyze_Contracts (Generic_Formal_Declarations (N));
    end Analyze_Generic_Formal_Part;
 
    ------------------------------------------
@@ -6115,6 +6199,116 @@ package body Sem_Ch12 is
       return Decl;
    end Build_Operator_Wrapper;
 
+   -----------------------------------
+   -- Build_Subprogram_Decl_Wrapper --
+   -----------------------------------
+
+   function Build_Subprogram_Decl_Wrapper
+     (Formal_Subp : Entity_Id;
+      Actual_Subp : Entity_Id) return Node_Id
+   is
+      Loc       : constant Source_Ptr := Sloc (Current_Scope);
+      Ret_Type  : constant Entity_Id  := Get_Instance_Of (Etype (Formal_Subp));
+      Decl      : Node_Id;
+      Subp      : Entity_Id;
+      Parm_Spec : Node_Id;
+      Profile   : List_Id := New_List;
+      Spec      : Node_Id;
+      Form_F    : Entity_Id;
+      New_F     : Entity_Id;
+
+   begin
+
+      Subp := Make_Defining_Identifier (Loc, Chars (Formal_Subp));
+      Set_Ekind (Subp, Ekind (Formal_Subp));
+      Set_Is_Generic_Actual_Subprogram (Subp);
+
+      Profile := Parameter_Specifications (
+                   New_Copy_Tree
+                    (Specification (Unit_Declaration_Node (Actual_Subp))));
+
+      Form_F := First_Formal (Formal_Subp);
+      Parm_Spec := First (Profile);
+
+      --  Create new entities for the formals.
+
+      while Present (Parm_Spec) loop
+         New_F := Make_Defining_Identifier (Loc, Chars (Form_F));
+         Set_Defining_Identifier (Parm_Spec, New_F);
+         Next (Parm_Spec);
+         Next_Formal (Form_F);
+      end loop;
+
+      if Ret_Type = Standard_Void_Type then
+         Spec :=
+           Make_Procedure_Specification (Loc,
+             Defining_Unit_Name       => Subp,
+             Parameter_Specifications => Profile);
+      else
+         Spec :=
+           Make_Function_Specification (Loc,
+             Defining_Unit_Name       => Subp,
+             Parameter_Specifications => Profile,
+             Result_Definition        => New_Occurrence_Of (Ret_Type, Loc));
+      end if;
+
+      Decl :=
+        Make_Subprogram_Declaration (Loc, Specification => Spec);
+
+      return Decl;
+   end Build_Subprogram_Decl_Wrapper;
+
+   -----------------------------------
+   -- Build_Subprogram_Body_Wrapper --
+   -----------------------------------
+
+   function Build_Subprogram_Body_Wrapper
+     (Formal_Subp : Entity_Id;
+      Actual_Subp : Entity_Id) return Node_Id
+   is
+      Loc       : constant Source_Ptr := Sloc (Current_Scope);
+      Ret_Type  : constant Entity_Id  := Get_Instance_Of (Etype (Formal_Subp));
+      Spec_Node : constant Node_Id :=
+        Specification
+          (Build_Subprogram_Decl_Wrapper (Formal_Subp, Actual_Subp));
+      Act       : Node_Id;
+      Actuals   : List_Id;
+      Body_Node : Node_Id;
+      Stmt      : Node_Id;
+   begin
+      Actuals := New_List;
+      Act := First (Parameter_Specifications (Spec_Node));
+
+      while Present (Act) loop
+         Append_To (Actuals,
+            Make_Identifier  (Loc, Chars (Defining_Identifier (Act))));
+         Next (Act);
+      end loop;
+
+      if Ret_Type = Standard_Void_Type then
+         Stmt := Make_Procedure_Call_Statement (Loc,
+          Name                   => New_Occurrence_Of (Actual_Subp, Loc),
+          Parameter_Associations => Actuals);
+
+      else
+         Stmt := Make_Simple_Return_Statement (Loc,
+            Expression =>
+              Make_Function_Call (Loc,
+                Name                   =>
+                  New_Occurrence_Of (Actual_Subp, Loc),
+                Parameter_Associations => Actuals));
+      end if;
+
+      Body_Node := Make_Subprogram_Body (Loc,
+        Specification => Spec_Node,
+        Declarations  => New_List,
+        Handled_Statement_Sequence =>
+           Make_Handled_Sequence_Of_Statements (Loc,
+             Statements    => New_List (Stmt)));
+
+      return Body_Node;
+   end Build_Subprogram_Body_Wrapper;
+
    -------------------------------------------
    -- Build_Instance_Compilation_Unit_Nodes --
    -------------------------------------------
@@ -6802,7 +6996,34 @@ package body Sem_Ch12 is
            and then Scope (Etype (E)) /= Instance
            and then Is_Entity_Name (Subtype_Indication (Parent (E)))
          then
+            --  Restore the proper view of the actual from the information
+            --  saved earlier by Instantiate_Type.
+
             Check_Private_View (Subtype_Indication (Parent (E)));
+
+            --  If the actual is itself the formal of a parent instance,
+            --  then also restore the proper view of its actual and so on.
+            --  That's necessary for nested instantiations of the form
+
+            --    generic
+            --      type Component is private;
+            --      type Array_Type is array (Positive range <>) of Component;
+            --    procedure Proc;
+
+            --  when the outermost actuals have inconsistent views, because
+            --  the Component_Type of Array_Type of the inner instantiations
+            --  is the actual of Component of the outermost one and not that
+            --  of the corresponding inner instantiations.
+
+            Astype := Ancestor_Subtype (E);
+            while Present (Astype)
+              and then Nkind (Parent (Astype)) = N_Subtype_Declaration
+              and then Present (Generic_Parent_Type (Parent (Astype)))
+              and then Is_Entity_Name (Subtype_Indication (Parent (Astype)))
+            loop
+               Check_Private_View (Subtype_Indication (Parent (Astype)));
+               Astype := Ancestor_Subtype (Astype);
+            end loop;
 
             Set_Is_Generic_Actual_Type (E);
 
@@ -7845,8 +8066,8 @@ package body Sem_Ch12 is
                      --  Adding e.g. a dummy variable of type Pt in the body is
                      --  sufficient to make everything work, so we generate an
                      --  artificial reference to Pt on the fly and thus force
-                     --  the switcthing of views on the ground that, if the
-                     --  comparison was accepted during the semantics analysis
+                     --  the switching of views on the grounds that, if the
+                     --  comparison was accepted during the semantic analysis
                      --  of the generic, this means that the component cannot
                      --  have been private (see Sem_Type.Valid_Comparison_Arg).
 
@@ -7871,6 +8092,37 @@ package body Sem_Ch12 is
                               Check_Private_View
                                 (New_Occurrence_Of (Component_Type (Rtyp),
                                  Sloc (N)));
+                           end if;
+                        end;
+
+                     --  Here is a similar case, for the Designated_Type of an
+                     --  access type that is present as target type in a type
+                     --  conversion from another access type. In this case, if
+                     --  the base types of the designated types are different
+                     --  and the conversion was accepted during the semantic
+                     --  analysis of the generic, this means that the target
+                     --  type cannot have been private (see Valid_Conversion).
+
+                     elsif Nkind (Assoc) = N_Identifier
+                       and then Nkind (Parent (Assoc)) = N_Type_Conversion
+                       and then Subtype_Mark (Parent (Assoc)) = Assoc
+                       and then Is_Access_Type (Etype (Assoc))
+                       and then Present (Etype (Expression (Parent (Assoc))))
+                       and then
+                         Is_Access_Type (Etype (Expression (Parent (Assoc))))
+                     then
+                        declare
+                           Targ_Desig : constant Entity_Id :=
+                             Designated_Type (Etype (Assoc));
+                           Expr_Desig : constant Entity_Id :=
+                             Designated_Type
+                               (Etype (Expression (Parent (Assoc))));
+                        begin
+                           if Base_Type (Targ_Desig) /= Base_Type (Expr_Desig)
+                             and then Is_Private_Type (Targ_Desig)
+                           then
+                              Check_Private_View
+                                (New_Occurrence_Of (Targ_Desig, Sloc (N)));
                            end if;
                         end;
                      end if;
@@ -10638,7 +10890,20 @@ package body Sem_Ch12 is
       --  Create new entity for the actual (New_Copy_Tree does not), and
       --  indicate that it is an actual.
 
-      New_Subp := Make_Defining_Identifier (Loc, Chars (Formal_Sub));
+      --  If the actual is not an entity and the formal includes aspect
+      --  specifications for contracts, we create an internal name for
+      --  the renaming declaration. The constructed wrapper contains a
+      --  call to the entity in the renaming.
+
+      if Ada_Version >= Ada_2020
+        and then Present (Aspect_Specifications (Analyzed_Formal))
+      then
+         New_Subp := Make_Temporary (Sloc (Actual), 'S');
+         Set_Defining_Unit_Name (New_Spec, New_Subp);
+      else
+         New_Subp := Make_Defining_Identifier (Loc, Chars (Formal_Sub));
+      end if;
+
       Set_Ekind (New_Subp, Ekind (Analyzed_S));
       Set_Is_Generic_Actual_Subprogram (New_Subp);
       Set_Defining_Unit_Name (New_Spec, New_Subp);
@@ -10727,7 +10992,13 @@ package body Sem_Ch12 is
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => New_List (Make_Null_Statement (Loc))));
 
-         Set_Is_Intrinsic_Subprogram (Defining_Unit_Name (New_Spec));
+         --  RM 12.6 (16 2/2): The procedure has convention Intrinsic
+
+         Set_Convention (Defining_Unit_Name (New_Spec), Convention_Intrinsic);
+
+         --  Eliminate the calls to it when optimization is enabled
+
+         Set_Is_Inlined (Defining_Unit_Name (New_Spec));
          return Decl_Node;
 
       else
@@ -12808,8 +13079,8 @@ package body Sem_Ch12 is
          --  Perform atomic/volatile checks (RM C.6(12)). Note that AI05-0218-1
          --  removes the second instance of the phrase "or allow pass by copy".
 
-         --  In Ada_2020 the aspect may be specified explicitly for the formal
-         --  regardless of whether an ancestor obeys it.
+         --  For Ada_2020, the aspect may be specified explicitly for the
+         --  formal regardless of whether an ancestor obeys it.
 
          if Is_Atomic (Act_T)
              and then not Is_Atomic (Ancestor)
@@ -13602,6 +13873,10 @@ package body Sem_Ch12 is
         Make_Subtype_Declaration (Loc,
           Defining_Identifier => Subt,
           Subtype_Indication  => New_Occurrence_Of (Act_T, Loc));
+
+      --  Record whether the actual is private at this point, so that
+      --  Check_Generic_Actuals can restore its proper view before the
+      --  semantic analysis of the instance.
 
       if Is_Private_Type (Act_T) then
          Set_Has_Private_View (Subtype_Indication (Decl_Node));
@@ -16355,6 +16630,7 @@ package body Sem_Ch12 is
             OK := (Is_Fun and then Num_F = 1);
 
          when Attribute_Output
+            | Attribute_Put_Image
             | Attribute_Read
             | Attribute_Write
          =>

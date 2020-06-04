@@ -41,13 +41,11 @@ with System.Tasking.Debug;
 with System.Task_Primitives.Operations;
 with System.Tasking.Initialization;
 with System.Tasking.Queuing;
-with System.Parameters;
 
 package body System.Tasking.Utilities is
 
    package STPO renames System.Task_Primitives.Operations;
 
-   use Parameters;
    use Tasking.Debug;
    use Task_Primitives;
    use Task_Primitives.Operations;
@@ -58,7 +56,7 @@ package body System.Tasking.Utilities is
 
    --  Similar to Locked_Abort_To_Level (Self_ID, T, Level_Completed_Task),
    --  but:
-   --    (1) caller should be holding no locks except RTS_Lock when Single_Lock
+   --    (1) caller should be holding no locks
    --    (2) may be called for tasks that have not yet been activated
    --    (3) always aborts whole task
 
@@ -248,11 +246,6 @@ package body System.Tasking.Utilities is
       end if;
 
       Initialization.Defer_Abort (Self_Id);
-
-      if Single_Lock then
-         Lock_RTS;
-      end if;
-
       Write_Lock (Environment_Task);
       Write_Lock (Self_Id);
 
@@ -277,11 +270,6 @@ package body System.Tasking.Utilities is
       pragma Assert (Environment_Task.Common.State /= Master_Completion_Sleep);
 
       Unlock (Environment_Task);
-
-      if Single_Lock then
-         Unlock_RTS;
-      end if;
-
       Initialization.Undefer_Abort (Self_Id);
 
       --  Return True. Actually the return value is junk, since we expect it

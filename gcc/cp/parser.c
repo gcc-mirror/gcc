@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "cp-name-hint.h"
 #include "memmodel.h"
+#include "c-family/known-headers.h"
 
 
 /* The lexer.  */
@@ -774,6 +775,20 @@ cp_lexer_previous_token (cp_lexer *lexer)
     }
 
   return cp_lexer_token_at (lexer, tp);
+}
+
+/* Same as above, but return NULL when the lexer doesn't own the token
+   buffer or if the next_token is at the start of the token
+   vector.  */
+
+static cp_token *
+cp_lexer_safe_previous_token (cp_lexer *lexer)
+{
+  if (lexer->buffer)
+    if (lexer->next_token != lexer->buffer->address ())
+      return cp_lexer_previous_token (lexer);
+
+  return NULL;
 }
 
 /* Overload for make_location, taking the lexer to mean the location of the
@@ -2919,6 +2934,7 @@ cp_parser_error_1 (cp_parser* parser, const char* gmsgid,
 	}
     }
 
+  auto_diagnostic_group d;
   gcc_rich_location richloc (input_location);
 
   bool added_matching_location = false;
@@ -2939,6 +2955,26 @@ cp_parser_error_1 (cp_parser* parser, const char* gmsgid,
       if (matching_location != UNKNOWN_LOCATION)
 	added_matching_location
 	  = richloc.add_location_if_nearby (matching_location);
+    }
+
+  /* If we were parsing a string-literal and there is an unknown name
+     token right after, then check to see if that could also have been
+     a literal string by checking the name against a list of known
+     standard string literal constants defined in header files. If
+     there is one, then add that as an hint to the error message. */
+  name_hint h;
+  cp_token *prev_token = cp_lexer_safe_previous_token (parser->lexer);
+  if (prev_token && cp_parser_is_string_literal (prev_token)
+      && token->type == CPP_NAME)
+    {
+      tree name = token->u.value;
+      const char *token_name = IDENTIFIER_POINTER (name);
+      const char *header_hint
+	= get_cp_stdlib_header_for_string_macro_name (token_name);
+      if (header_hint != NULL)
+	h = name_hint (NULL, new suggest_missing_header (token->location,
+							 token_name,
+							 header_hint));
     }
 
   /* Actually emit the error.  */

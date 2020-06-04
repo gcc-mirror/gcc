@@ -57,6 +57,7 @@ package GNAT.Exception_Actions is
 
    type Exception_Action is access
      procedure (Occurrence : Exception_Occurrence);
+   pragma Favor_Top_Level (Exception_Action);
    --  General callback type whenever an exception is raised. The callback
    --  procedure must not propagate an exception (execution of the program
    --  is erroneous if such an exception is propagated).
@@ -68,6 +69,10 @@ package GNAT.Exception_Actions is
    --
    --  Action is called before the exception is propagated to user's code.
    --  If Action is null, this will in effect cancel all exception actions.
+
+   procedure Register_Global_Unhandled_Action (Action : Exception_Action);
+   --  Similar to Register_Global_Action, called on unhandled exceptions
+   --  only.
 
    procedure Register_Id_Action
      (Id     : Exception_Id;

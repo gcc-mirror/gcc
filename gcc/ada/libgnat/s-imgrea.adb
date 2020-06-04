@@ -151,14 +151,9 @@ package body System.Img_Real is
       Scale : Integer;
       Expon : Integer;
 
-      Field_Max : constant := 255;
-      --  This should be the same value as Ada.[Wide_]Text_IO.Field'Last.
-      --  It is not worth dragging in Ada.Text_IO to pick up this value,
-      --  since it really should never be necessary to change it.
-
-      Digs : String (1 .. 2 * Field_Max + 16);
-      --  Array used to hold digits of converted integer value. This is a
-      --  large enough buffer to accommodate ludicrous values of Fore and Aft.
+      Digs : String (1 .. Max_Real_Image_Length);
+      --  Array used to hold digits of converted integer value. This is a large
+      --  enough buffer to accommodate ludicrous Fore/Aft/Exp combinations.
 
       Ndigs : Natural;
       --  Number of digits stored in Digs (and also subscript of last digit)

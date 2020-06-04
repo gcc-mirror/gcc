@@ -492,13 +492,16 @@ namespace ranges
 		 _Out __result) const
       {
 	if constexpr (random_access_iterator<_Iter>)
-	  return ranges::copy(__first, __first + __n, std::move(__result));
+	  {
+	    if (__n > 0)
+	      return ranges::copy(__first, __first + __n, std::move(__result));
+	  }
 	else
 	  {
 	    for (; __n > 0; --__n, (void)++__result, (void)++__first)
 	      *__result = *__first;
-	    return {std::move(__first), std::move(__result)};
 	  }
+	return {std::move(__first), std::move(__result)};
       }
   };
 

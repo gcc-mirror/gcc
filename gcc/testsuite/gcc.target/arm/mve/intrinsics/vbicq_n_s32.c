@@ -17,3 +17,4 @@ foo1 (int32x4_t a)
 }
 
 /* { dg-final { scan-assembler-times "vbic.i32" 2 }  } */
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

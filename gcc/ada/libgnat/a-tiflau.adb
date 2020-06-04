@@ -194,7 +194,7 @@ package body Ada.Text_IO.Float_Aux is
       Aft  : Field;
       Exp  : Field)
    is
-      Buf : String (1 .. 3 * Field'Last + 2);
+      Buf : String (1 .. Max_Real_Image_Length);
       Ptr : Natural := 0;
 
    begin
@@ -212,7 +212,7 @@ package body Ada.Text_IO.Float_Aux is
       Aft  : Field;
       Exp  : Field)
    is
-      Buf : String (1 .. 3 * Field'Last + 2);
+      Buf : String (1 .. Max_Real_Image_Length);
       Ptr : Natural := 0;
 
    begin

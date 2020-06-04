@@ -2089,22 +2089,6 @@ package body Sinfo is
       return Flag16 (N);
    end Is_Null_Loop;
 
-   function Is_OpenAcc_Environment
-      (N : Node_Id) return Boolean is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Loop_Statement);
-      return Flag13 (N);
-   end Is_OpenAcc_Environment;
-
-   function Is_OpenAcc_Loop
-      (N : Node_Id) return Boolean is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Loop_Statement);
-      return Flag14 (N);
-   end Is_OpenAcc_Loop;
-
    function Is_Overloaded
       (N : Node_Id) return Boolean is
    begin
@@ -5580,22 +5564,6 @@ package body Sinfo is
         or else NT (N).Nkind = N_Loop_Statement);
       Set_Flag16 (N, Val);
    end Set_Is_Null_Loop;
-
-   procedure Set_Is_OpenAcc_Environment
-      (N : Node_Id; Val : Boolean := True) is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Loop_Statement);
-      Set_Flag13 (N, Val);
-   end Set_Is_OpenAcc_Environment;
-
-   procedure Set_Is_OpenAcc_Loop
-      (N : Node_Id; Val : Boolean := True) is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Loop_Statement);
-      Set_Flag14 (N, Val);
-   end Set_Is_OpenAcc_Loop;
 
    procedure Set_Is_Overloaded
       (N : Node_Id; Val : Boolean := True) is

@@ -302,6 +302,7 @@ GNAT_ADA_OBJS =	\
  ada/exp_intr.o	\
  ada/exp_pakd.o	\
  ada/exp_prag.o	\
+ ada/exp_put_image.o	\
  ada/exp_sel.o	\
  ada/exp_smem.o	\
  ada/exp_strm.o	\

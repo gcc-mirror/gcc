@@ -355,7 +355,6 @@ acc_is_present (void *h, size_t s)
 void
 acc_map_data (void *h, void *d, size_t s)
 {
-  struct target_mem_desc *tgt = NULL;
   size_t mapnum = 1;
   void *hostaddrs = h;
   void *devaddrs = d;
@@ -402,10 +401,13 @@ acc_map_data (void *h, void *d, size_t s)
 
       gomp_mutex_unlock (&acc_dev->lock);
 
-      tgt = gomp_map_vars (acc_dev, mapnum, &hostaddrs, &devaddrs, &sizes,
-			   &kinds, true, GOMP_MAP_VARS_ENTER_DATA);
+      struct target_mem_desc *tgt
+	= gomp_map_vars (acc_dev, mapnum, &hostaddrs, &devaddrs, &sizes,
+			 &kinds, true, GOMP_MAP_VARS_ENTER_DATA);
       assert (tgt);
+      assert (tgt->list_count == 1);
       splay_tree_key n = tgt->list[0].key;
+      assert (n);
       assert (n->refcount == 1);
       assert (n->virtual_refcount == 0);
       /* Special reference counting behavior.  */
@@ -466,8 +468,6 @@ acc_unmap_data (void *h)
 		  (void *) h, (int) host_size);
     }
 
-  splay_tree_remove (&acc_dev->mem_map, n);
-
   struct target_mem_desc *tgt = n->tgt;
 
   if (tgt->refcount == REFCOUNT_INFINITY)
@@ -475,13 +475,18 @@ acc_unmap_data (void *h)
       gomp_mutex_unlock (&acc_dev->lock);
       gomp_fatal ("cannot unmap target block");
     }
-  else if (tgt->refcount > 1)
-    tgt->refcount--;
-  else
-    {
-      free (tgt->array);
-      free (tgt);
-    }
+
+  /* Above, we've verified that the mapping must have been set up by
+     'acc_map_data'.  */
+  assert (tgt->refcount == 1);
+
+  /* Nullifying these fields prevents 'gomp_unmap_tgt' via 'gomp_remove_var'
+     from freeing the target memory.  */
+  tgt->tgt_end = 0;
+  tgt->to_free = NULL;
+
+  bool is_tgt_unmapped = gomp_remove_var (acc_dev, n);
+  assert (is_tgt_unmapped);
 
   gomp_mutex_unlock (&acc_dev->lock);
 
@@ -555,16 +560,17 @@ goacc_enter_datum (void **hostaddrs, size_t *sizes, void *kinds, int async)
 
       goacc_aq aq = get_goacc_asyncqueue (async);
 
-      gomp_map_vars_async (acc_dev, aq, mapnum, hostaddrs, NULL, sizes, kinds,
-			   true, GOMP_MAP_VARS_OPENACC_ENTER_DATA);
+      struct target_mem_desc *tgt
+	= gomp_map_vars_async (acc_dev, aq, mapnum, hostaddrs, NULL, sizes,
+			       kinds, true, GOMP_MAP_VARS_OPENACC_ENTER_DATA);
+      assert (tgt);
+      assert (tgt->list_count == 1);
+      n = tgt->list[0].key;
+      assert (n);
+      assert (n->refcount == 1);
+      assert (n->virtual_refcount == 0);
 
-      gomp_mutex_lock (&acc_dev->lock);
-      n = lookup_host (acc_dev, hostaddrs[0], sizes[0]);
-      assert (n != NULL);
-      assert (n->tgt_offset == 0);
-      assert ((uintptr_t) hostaddrs[0] == n->host_start);
-      d = (void *) n->tgt->tgt_start;
-      gomp_mutex_unlock (&acc_dev->lock);
+      d = (void *) tgt->tgt_start;
     }
 
   if (profiling_p)
@@ -722,8 +728,16 @@ goacc_exit_datum (void *h, size_t s, unsigned short kind, int async)
 	gomp_remove_var_async (acc_dev, n, aq);
       else
 	{
+	  size_t num_mappings = 0;
+	  /* If the target_mem_desc represents a single data mapping, we can
+	     check that it is freed when this splay tree key's refcount reaches
+	     zero.  Otherwise (e.g. for a 'GOMP_MAP_STRUCT' mapping with
+	     multiple members), fall back to skipping the test.  */
+	  for (size_t l_i = 0; l_i < n->tgt->list_count; ++l_i)
+	    if (n->tgt->list[l_i].key)
+	      ++num_mappings;
 	  bool is_tgt_unmapped = gomp_remove_var (acc_dev, n);
-	  assert (is_tgt_unmapped);
+	  assert (is_tgt_unmapped || num_mappings > 1);
 	}
     }
 
@@ -887,7 +901,10 @@ acc_attach_async (void **hostaddr, int async)
   n = splay_tree_lookup (&acc_dev->mem_map, &cur_node);
 
   if (n == NULL)
-    gomp_fatal ("struct not mapped for acc_attach");
+    {
+      gomp_mutex_unlock (&acc_dev->lock);
+      gomp_fatal ("struct not mapped for acc_attach");
+    }
 
   gomp_attach_pointer (acc_dev, aq, &acc_dev->mem_map, n, (uintptr_t) hostaddr,
 		       0, NULL);
@@ -920,7 +937,10 @@ goacc_detach_internal (void **hostaddr, int async, bool finalize)
   n = splay_tree_lookup (&acc_dev->mem_map, &cur_node);
 
   if (n == NULL)
-    gomp_fatal ("struct not mapped for acc_detach");
+    {
+      gomp_mutex_unlock (&acc_dev->lock);
+      gomp_fatal ("struct not mapped for acc_detach");
+    }
 
   gomp_detach_pointer (acc_dev, aq, n, (uintptr_t) hostaddr, finalize, NULL);
 
@@ -1054,7 +1074,10 @@ goacc_exit_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 	      = splay_tree_lookup (&acc_dev->mem_map, &cur_node);
 
 	    if (n == NULL)
-	      gomp_fatal ("struct not mapped for detach operation");
+	      {
+		gomp_mutex_unlock (&acc_dev->lock);
+		gomp_fatal ("struct not mapped for detach operation");
+	      }
 
 	    gomp_detach_pointer (acc_dev, aq, n, hostaddr, finalize, NULL);
 	  }
@@ -1131,7 +1154,28 @@ goacc_exit_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 				  cur_node.host_end - cur_node.host_start);
 
 	    if (n->refcount == 0)
-	      gomp_remove_var_async (acc_dev, n, aq);
+	      {
+		if (aq)
+		  /* TODO We can't do the 'is_tgt_unmapped' checking -- see the
+		     'gomp_unref_tgt' comment in
+		     <http://mid.mail-archive.com/878snl36eu.fsf@euler.schwinge.homeip.net>;
+		     PR92881.  */
+		  gomp_remove_var_async (acc_dev, n, aq);
+		else
+		  {
+		    size_t num_mappings = 0;
+		    /* If the target_mem_desc represents a single data mapping,
+		       we can check that it is freed when this splay tree key's
+		       refcount reaches zero.  Otherwise (e.g. for a
+		       'GOMP_MAP_STRUCT' mapping with multiple members), fall
+		       back to skipping the test.  */
+		    for (size_t l_i = 0; l_i < n->tgt->list_count; ++l_i)
+		      if (n->tgt->list[l_i].key)
+			++num_mappings;
+		    bool is_tgt_unmapped = gomp_remove_var (acc_dev, n);
+		    assert (is_tgt_unmapped || num_mappings > 1);
+		  }
+	      }
 	  }
 	  break;
 
@@ -1140,6 +1184,22 @@ goacc_exit_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 	    int elems = sizes[i];
 	    for (int j = 1; j <= elems; j++)
 	      {
+		assert (i + j < mapnum);
+
+		kind = kinds[i + j] & 0xff;
+
+		finalize = false;
+		if (kind == GOMP_MAP_FORCE_FROM
+		    || kind == GOMP_MAP_DELETE
+		    || kind == GOMP_MAP_FORCE_DETACH)
+		  finalize = true;
+
+		copyfrom = false;
+		if (kind == GOMP_MAP_FROM
+		    || kind == GOMP_MAP_FORCE_FROM
+		    || kind == GOMP_MAP_ALWAYS_FROM)
+		  copyfrom = true;
+
 		struct splay_tree_key_s k;
 		k.host_start = (uintptr_t) hostaddrs[i + j];
 		k.host_end = k.host_start + sizes[i + j];
@@ -1162,8 +1222,40 @@ goacc_exit_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 		    else if (str->refcount > 0
 			     && str->refcount != REFCOUNT_INFINITY)
 		      str->refcount--;
+
+		    if (copyfrom
+			&& (kind != GOMP_MAP_FROM || str->refcount == 0))
+		      gomp_copy_dev2host (acc_dev, aq, (void *) k.host_start,
+					  (void *) (str->tgt->tgt_start
+						    + str->tgt_offset
+						    + k.host_start
+						    - str->host_start),
+					  k.host_end - k.host_start);
+
 		    if (str->refcount == 0)
-		      gomp_remove_var_async (acc_dev, str, aq);
+		      {
+			if (aq)
+			  /* TODO We can't do the 'is_tgt_unmapped' checking --
+			     see the 'gomp_unref_tgt' comment in
+			     <http://mid.mail-archive.com/878snl36eu.fsf@euler.schwinge.homeip.net>;
+			     PR92881.  */
+			  gomp_remove_var_async (acc_dev, str, aq);
+			else
+			  {
+			    size_t num_mappings = 0;
+			    /* If the target_mem_desc represents a single data
+			       mapping, we can check that it is freed when this
+			       splay tree key's refcount reaches zero.
+			       Otherwise (e.g. for a 'GOMP_MAP_STRUCT' mapping
+			       with multiple members), fall back to skipping
+			       the test.  */
+			    for (size_t l_i = 0; l_i < str->tgt->list_count; ++l_i)
+			      if (str->tgt->list[l_i].key)
+				++num_mappings;
+			    bool is_tgt_unmapped = gomp_remove_var (acc_dev, str);
+			    assert (is_tgt_unmapped || num_mappings > 1);
+			  }
+		      }
 		  }
 	      }
 	    i += elems;

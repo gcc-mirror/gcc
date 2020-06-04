@@ -103,8 +103,10 @@ package body Snames is
    --    xxxDF   deep finalize routine for type xxx                 (Exp_TSS)
    --    xxxDI   deep initialize routine for type xxx               (Exp_TSS)
    --    xxxEQ   composite equality routine for record type xxx     (Exp_TSS)
+   --    xxxFD   finalize address routine for type xxx              (Exp_TSS)
    --    xxxFA   PolyORB/DSA From_Any converter for type xxx        (Exp_TSS)
    --    xxxIP   initialization procedure for type xxx              (Exp_TSS)
+   --    xxxIC   init C++ dispatch tables procedure for type xxx    (Exp_TSS)
    --    xxxRA   RAS type access routine for type xxx               (Exp_TSS)
    --    xxxRD   RAS type dereference routine for type xxx          (Exp_TSS)
    --    xxxRP   Rep to Pos conversion for enumeration type xxx     (Exp_TSS)
@@ -113,6 +115,7 @@ package body Snames is
    --    xxxSO   stream output attribute subprogram for type xxx    (Exp_TSS)
    --    xxxSR   stream read attribute subprogram for type xxx      (Exp_TSS)
    --    xxxSW   stream write attribute subprogram for type xxx     (Exp_TSS)
+   --    xxxPI   Put_Image attribute subprogram for type xxx        (Exp_TSS)
    --    xxxTA   PolyORB/DSA To_Any converter for type xxx          (Exp_TSS)
    --    xxxTC   PolyORB/DSA Typecode for type xxx                  (Exp_TSS)
 

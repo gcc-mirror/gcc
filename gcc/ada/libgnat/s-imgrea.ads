@@ -73,4 +73,9 @@ package System.Img_Real is
    --  can be set to any valid values for the case of use from Text_IO. Note
    --  that no space is stored at the start for non-negative values.
 
+   Max_Real_Image_Length : constant := 5200;
+   --   If Exp is set to zero and Aft is set to Text_IO.Field'Last (i.e., 255)
+   --   then Long_Long_Float'Last generates an image whose length is
+   --   slightly less than 5200.
+
 end System.Img_Real;

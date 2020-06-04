@@ -36,13 +36,15 @@ package Interfaces.C is
    type short is new Short_Integer;
    type long  is range -(2 ** (System.Parameters.long_bits - Integer'(1)))
      .. +(2 ** (System.Parameters.long_bits - Integer'(1))) - 1;
+   type long_long is new Long_Long_Integer;
 
    type signed_char is range SCHAR_MIN .. SCHAR_MAX;
    for signed_char'Size use CHAR_BIT;
 
-   type unsigned       is mod 2 ** int'Size;
-   type unsigned_short is mod 2 ** short'Size;
-   type unsigned_long  is mod 2 ** long'Size;
+   type unsigned           is mod 2 ** int'Size;
+   type unsigned_short     is mod 2 ** short'Size;
+   type unsigned_long      is mod 2 ** long'Size;
+   type unsigned_long_long is mod 2 ** long_long'Size;
 
    type unsigned_char is mod (UCHAR_MAX + 1);
    for unsigned_char'Size use CHAR_BIT;

@@ -88,7 +88,7 @@ package body System.Atomic_Operations.Arithmetic is
       pragma Warnings (On);
 
    begin
-      case Atomic_Type'Size is
+      case Atomic_Type'Object_Size is
          when 8      => return Atomic_Fetch_Add_1 (Item'Address, Value);
          when 16     => return Atomic_Fetch_Add_2 (Item'Address, Value);
          when 32     => return Atomic_Fetch_Add_4 (Item'Address, Value);
@@ -125,7 +125,7 @@ package body System.Atomic_Operations.Arithmetic is
       pragma Warnings (On);
 
    begin
-      case Atomic_Type'Size is
+      case Atomic_Type'Object_Size is
          when 8      => return Atomic_Fetch_Sub_1 (Item'Address, Value);
          when 16     => return Atomic_Fetch_Sub_2 (Item'Address, Value);
          when 32     => return Atomic_Fetch_Sub_4 (Item'Address, Value);
@@ -142,7 +142,7 @@ package body System.Atomic_Operations.Arithmetic is
       pragma Unreferenced (Item);
       use type Interfaces.C.size_t;
    begin
-      return Boolean (Atomic_Always_Lock_Free (Atomic_Type'Size / 8));
+      return Boolean (Atomic_Always_Lock_Free (Atomic_Type'Object_Size / 8));
    end Is_Lock_Free;
 
 end System.Atomic_Operations.Arithmetic;

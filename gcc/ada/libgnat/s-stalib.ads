@@ -81,6 +81,7 @@ package System.Standard_Library is
    -------------------------------------
 
    type Raise_Action is access procedure;
+   pragma Favor_Top_Level (Raise_Action);
    --  A pointer to a procedure used in the Raise_Hook field
 
    type Exception_Data;

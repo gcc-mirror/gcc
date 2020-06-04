@@ -8290,12 +8290,12 @@ package body Exp_Ch7 is
          Ref  := Convert_Concurrent (Ref, Typ);
 
       elsif Is_Private_Type (Typ)
-        and then Present (Full_View (Typ))
-        and then Is_Concurrent_Type (Full_View (Typ))
+        and then Present (Underlying_Type (Typ))
+        and then Is_Concurrent_Type (Underlying_Type (Typ))
       then
-         Utyp := Corresponding_Record_Type (Full_View (Typ));
+         Utyp := Corresponding_Record_Type (Underlying_Type (Typ));
          Atyp := Typ;
-         Ref  := Convert_Concurrent (Ref, Full_View (Typ));
+         Ref  := Convert_Concurrent (Ref, Underlying_Type (Typ));
 
       else
          Utyp := Typ;
@@ -8431,6 +8431,15 @@ package body Exp_Ch7 is
                   Ref := Unchecked_Convert_To (Formal_Typ, Ref);
                end if;
             end;
+
+            --  If the object is unanalyzed, set its expected type for use in
+            --  Convert_View in case an additional conversion is needed.
+
+            if No (Etype (Ref))
+              and then Nkind (Ref) /= N_Unchecked_Type_Conversion
+            then
+               Set_Etype (Ref, Typ);
+            end if;
 
             Ref := Convert_View (Fin_Id, Ref);
          end if;

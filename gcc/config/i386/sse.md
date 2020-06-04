@@ -10688,6 +10688,8 @@
   "TARGET_AVX512VL")
 
 (define_mode_iterator PMOV_SRC_MODE_3 [V4DI V2DI V8SI V4SI (V8HI "TARGET_AVX512BW")])
+(define_mode_attr pmov_dst_3_lower
+  [(V4DI "v4qi") (V2DI "v2qi") (V8SI "v8qi") (V4SI "v4qi") (V8HI "v8qi")])
 (define_mode_attr pmov_dst_3
   [(V4DI "V4QI") (V2DI "V2QI") (V8SI "V8QI") (V4SI "V4QI") (V8HI "V8QI")])
 (define_mode_attr pmov_dst_zeroed_3
@@ -10695,7 +10697,7 @@
 (define_mode_attr pmov_suff_3
   [(V4DI "qb") (V2DI "qb") (V8SI "db") (V4SI "db") (V8HI "wb")])
 
-(define_expand "trunc<mode><pmov_dst_3>2"
+(define_expand "trunc<mode><pmov_dst_3_lower>2"
   [(set (match_operand:<pmov_dst_3> 0 "register_operand")
 	(truncate:<pmov_dst_3>
 	  (match_operand:PMOV_SRC_MODE_3 1 "register_operand")))]
@@ -21773,19 +21775,19 @@
    (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "V4SF")])
 
-(define_insn "*vcvtps2ph_store<mask_name>"
+(define_insn "*vcvtps2ph_store<merge_mask_name>"
   [(set (match_operand:V4HI 0 "memory_operand" "=m")
 	(unspec:V4HI [(match_operand:V4SF 1 "register_operand" "v")
 		      (match_operand:SI 2 "const_0_to_255_operand" "N")]
 		     UNSPEC_VCVTPS2PH))]
   "TARGET_F16C || TARGET_AVX512VL"
-  "vcvtps2ph\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+  "vcvtps2ph\t{%2, %1, %0<merge_mask_operand3>|%0<merge_mask_operand3>, %1, %2}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "V4SF")])
 
 (define_insn "vcvtps2ph256<mask_name>"
-  [(set (match_operand:V8HI 0 "nonimmediate_operand" "=vm")
+  [(set (match_operand:V8HI 0 "register_operand" "=v")
 	(unspec:V8HI [(match_operand:V8SF 1 "register_operand" "v")
 		      (match_operand:SI 2 "const_0_to_255_operand" "N")]
 		     UNSPEC_VCVTPS2PH))]
@@ -21796,14 +21798,38 @@
    (set_attr "btver2_decode" "vector")
    (set_attr "mode" "V8SF")])
 
+(define_insn "*vcvtps2ph256<merge_mask_name>"
+  [(set (match_operand:V8HI 0 "memory_operand" "=m")
+	(unspec:V8HI [(match_operand:V8SF 1 "register_operand" "v")
+		      (match_operand:SI 2 "const_0_to_255_operand" "N")]
+		     UNSPEC_VCVTPS2PH))]
+  "TARGET_F16C || TARGET_AVX512VL"
+  "vcvtps2ph\t{%2, %1, %0<merge_mask_operand3>|%0<merge_mask_operand3>, %1, %2}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "maybe_evex")
+   (set_attr "btver2_decode" "vector")
+   (set_attr "mode" "V8SF")])
+
 (define_insn "<mask_codefor>avx512f_vcvtps2ph512<mask_name>"
-  [(set (match_operand:V16HI 0 "nonimmediate_operand" "=vm")
+  [(set (match_operand:V16HI 0 "register_operand" "=v")
 	(unspec:V16HI
 	  [(match_operand:V16SF 1 "register_operand" "v")
 	   (match_operand:SI 2 "const_0_to_255_operand" "N")]
 	  UNSPEC_VCVTPS2PH))]
   "TARGET_AVX512F"
   "vcvtps2ph\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "V16SF")])
+
+(define_insn "*avx512f_vcvtps2ph512<merge_mask_name>"
+  [(set (match_operand:V16HI 0 "memory_operand" "=m")
+	(unspec:V16HI
+	  [(match_operand:V16SF 1 "register_operand" "v")
+	   (match_operand:SI 2 "const_0_to_255_operand" "N")]
+	  UNSPEC_VCVTPS2PH))]
+  "TARGET_AVX512F"
+  "vcvtps2ph\t{%2, %1, %0<merge_mask_operand3>|%0<merge_mask_operand3>, %1, %2}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")
    (set_attr "mode" "V16SF")])

@@ -264,6 +264,9 @@ UINT __gnat_current_ccs_encoding;
 
 #ifndef DIR_SEPARATOR
 #define DIR_SEPARATOR '/'
+#define IS_DIRECTORY_SEPARATOR(c) ((c) == DIR_SEPARATOR)
+#else
+#define IS_DIRECTORY_SEPARATOR(c) ((c) == '/' || (c) == DIR_SEPARATOR)
 #endif
 
 /* Check for cross-compilation.  */
@@ -1709,9 +1712,10 @@ __gnat_is_absolute_path (char *name, int length)
   return 0;
 #else
   return (length != 0) &&
-     (*name == '/' || *name == DIR_SEPARATOR
+     (IS_DIRECTORY_SEPARATOR(*name)
 #if defined (WINNT) || defined(__DJGPP__)
-      || (length > 1 && ISALPHA (name[0]) && name[1] == ':')
+      || (length > 2 && ISALPHA (name[0]) && name[1] == ':'
+          && IS_DIRECTORY_SEPARATOR(name[2]))
 #endif
 	  );
 #endif
@@ -2845,7 +2849,7 @@ __gnat_locate_file_with_predicate (char *file_name, char *path_val,
 
   /* If file_name include directory separator(s), try it first as
      a path name relative to the current directory */
-  for (ptr = file_name; *ptr && *ptr != '/' && *ptr != DIR_SEPARATOR; ptr++)
+  for (ptr = file_name; *ptr && !IS_DIRECTORY_SEPARATOR(*ptr); ptr++)
     ;
 
   if (*ptr != 0)
@@ -2886,7 +2890,7 @@ __gnat_locate_file_with_predicate (char *file_name, char *path_val,
       if (*ptr == '"')
 	ptr--;
 
-      if (*ptr != '/' && *ptr != DIR_SEPARATOR)
+      if (!IS_DIRECTORY_SEPARATOR(*ptr))
         *++ptr = DIR_SEPARATOR;
 
       strcpy (++ptr, file_name);

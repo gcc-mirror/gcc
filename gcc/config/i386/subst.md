@@ -73,6 +73,18 @@
 	  (match_operand:SUBST_V 2 "nonimm_or_0_operand" "0C")
 	  (match_operand:<avx512fmaskmode> 3 "register_operand" "Yk")))])
 
+(define_subst_attr "merge_mask_name" "merge_mask" "" "_merge_mask")
+(define_subst_attr "merge_mask_operand3" "merge_mask" "" "%{%3%}")
+(define_subst "merge_mask"
+  [(set (match_operand:SUBST_V 0)
+        (match_operand:SUBST_V 1))]
+  "TARGET_AVX512F"
+  [(set (match_dup 0)
+        (vec_merge:SUBST_V
+	  (match_dup 1)
+	  (match_dup 0)
+	  (match_operand:<avx512fmaskmode> 2 "register_operand" "Yk")))])
+
 (define_subst_attr "mask_scalar_merge_name" "mask_scalar_merge" "" "_mask")
 (define_subst_attr "mask_scalar_merge_operand3" "mask_scalar_merge" "" "%{%3%}")
 (define_subst_attr "mask_scalar_merge_operand4" "mask_scalar_merge" "" "%{%4%}")

@@ -493,11 +493,10 @@ package Opt is
    --  Set to False with switch -f of gnatclean and gprclean
 
    Disable_FE_Inline        : Boolean := False;
-   Disable_FE_Inline_Always : Boolean := False;
    --  GNAT
-   --  Request to disable front end inlining from pragma Inline or pragma
-   --  Inline_Always out of the presence of the -fno-inline back end flag
-   --  on the command line, regardless of any other switches that are set.
+   --  Request to disable front end inlining from pragma Inline in the
+   --  presence of the -fno-inline back end flag on the command line,
+   --  regardless of any other switches that are set.
    --  It remains the back end's reponsibility to honor -fno-inline at the
    --  back end level.
 
@@ -1252,11 +1251,6 @@ package Opt is
    --  Set to True with switch --single-compile-per-obj-dir. When True, there
    --  cannot be simultaneous compilations with the object files in the same
    --  object directory, if project files are used.
-
-   OpenAcc_Enabled : Boolean := False;
-   --  GNAT
-   --  Indicates whether OpenAcc pragmas should be taken into account. Set to
-   --  True by the use of -fopenacc.
 
    type Operating_Mode_Type is (Check_Syntax, Check_Semantics, Generate_Code);
    pragma Ordered (Operating_Mode_Type);

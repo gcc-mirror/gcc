@@ -1,4 +1,3 @@
-! { dg-do run { xfail ia64-*-linux* } }
 ! { dg-options "-fno-range-check -ffree-line-length-none -O0" }
 ! { dg-add-options ieee }
 ! { dg-skip-if "PR libfortran/59313" { hppa*-*-hpux* } }
@@ -6,8 +5,6 @@
 ! Check that simplification functions and runtime library agree on ERF,
 ! ERFC and ERFC_SCALED, for quadruple-precision.
 !
-! XFAILed for IA64 Linux because of a glibc bug:
-! http://gcc.gnu.org/bugzilla/show_bug.cgi?id=59227
 
 program test
   use, intrinsic :: iso_fortran_env

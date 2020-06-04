@@ -843,9 +843,7 @@ lto_input_ts_type_non_common_tree_pointers (class lto_input_block *ib,
 					    class data_in *data_in,
 					    tree expr)
 {
-  if (TREE_CODE (expr) == ENUMERAL_TYPE)
-    TYPE_VALUES (expr) = stream_read_tree_ref (ib, data_in);
-  else if (TREE_CODE (expr) == ARRAY_TYPE)
+  if (TREE_CODE (expr) == ARRAY_TYPE)
     TYPE_DOMAIN (expr) = stream_read_tree_ref (ib, data_in);
   else if (RECORD_OR_UNION_TYPE_P (expr))
     TYPE_FIELDS (expr) = streamer_read_chain (ib, data_in);

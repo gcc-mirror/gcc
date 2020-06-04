@@ -11726,12 +11726,20 @@ package body Sem_Util is
 
          when N_Component_Definition
             | N_Formal_Object_Declaration
-            | N_Object_Renaming_Declaration
          =>
             if Present (Subtype_Mark (N)) then
                return Null_Exclusion_Present (N);
             else pragma Assert (Present (Access_Definition (N)));
                return Null_Exclusion_Present (Access_Definition (N));
+            end if;
+
+         when N_Object_Renaming_Declaration =>
+            if Present (Subtype_Mark (N)) then
+               return Null_Exclusion_Present (N);
+            elsif Present (Access_Definition (N)) then
+               return Null_Exclusion_Present (Access_Definition (N));
+            else
+               return False;  -- Case of no subtype in renaming (AI12-0275)
             end if;
 
          when N_Discriminant_Specification =>
@@ -17227,6 +17235,7 @@ package body Sem_Util is
            or else TSS_Name = TSS_Stream_Output
            or else TSS_Name = TSS_Stream_Read
            or else TSS_Name = TSS_Stream_Write
+           or else TSS_Name = TSS_Put_Image
            or else Is_Predefined_Interface_Primitive (E)
          then
             return True;

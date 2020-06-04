@@ -486,10 +486,6 @@ package Snames is
 
    Name_Abort_Defer                    : constant Name_Id := N + $; -- GNAT
    Name_Abstract_State                 : constant Name_Id := N + $; -- GNAT
-   Name_Acc_Data                       : constant Name_Id := N + $;
-   Name_Acc_Kernels                    : constant Name_Id := N + $;
-   Name_Acc_Loop                       : constant Name_Id := N + $;
-   Name_Acc_Parallel                   : constant Name_Id := N + $;
    Name_All_Calls_Remote               : constant Name_Id := N + $;
    Name_Assert                         : constant Name_Id := N + $; -- Ada 05
    Name_Assert_And_Cut                 : constant Name_Id := N + $; -- GNAT
@@ -871,35 +867,9 @@ package Snames is
    Name_Warn                           : constant Name_Id := N + $;
    Name_Working_Storage                : constant Name_Id := N + $;
 
-   --  OpenAcc-specific clause names for Parallel, Kernels, Data
+   --  used by Repinfo JSON I/O
 
-   Name_Acc_If                         : constant Name_Id := N + $;
-   Name_Acc_Private                    : constant Name_Id := N + $;
-   Name_Attach                         : constant Name_Id := N + $;
-   Name_Copy_In                        : constant Name_Id := N + $;
-   Name_Copy_Out                       : constant Name_Id := N + $;
-   Name_Create                         : constant Name_Id := N + $;
-   Name_Delete                         : constant Name_Id := N + $;
-   Name_Detach                         : constant Name_Id := N + $;
-   Name_Device_Ptr                     : constant Name_Id := N + $;
-   Name_Device_Type                    : constant Name_Id := N + $;
-   Name_First_Private                  : constant Name_Id := N + $;
-   Name_No_Create                      : constant Name_Id := N + $;
-   Name_Num_Gangs                      : constant Name_Id := N + $;
-   Name_Num_Workers                    : constant Name_Id := N + $;
    Name_Present                        : constant Name_Id := N + $;
-   Name_Reduction                      : constant Name_Id := N + $;
-   Name_Vector_Length                  : constant Name_Id := N + $;
-   Name_Wait                           : constant Name_Id := N + $;
-
-   --  Loop
-
-   Name_Auto                           : constant Name_Id := N + $;
-   Name_Collapse                       : constant Name_Id := N + $;
-   Name_Gang                           : constant Name_Id := N + $;
-   Name_Seq                            : constant Name_Id := N + $;
-   Name_Tile                           : constant Name_Id := N + $;
-   Name_Worker                         : constant Name_Id := N + $;
 
    --  Names of recognized attributes. The entries with the comment "Ada 83"
    --  are attributes that are defined in Ada 83, but not in Ada 95. These
@@ -1087,6 +1057,7 @@ package Snames is
 
    First_Procedure_Attribute           : constant Name_Id := N + $;
    Name_Output                         : constant Name_Id := N + $;
+   Name_Put_Image                      : constant Name_Id := N + $;
    Name_Read                           : constant Name_Id := N + $;
    Name_Write                          : constant Name_Id := N + $;
    Last_Procedure_Attribute            : constant Name_Id := N + $;
@@ -1755,6 +1726,7 @@ package Snames is
       --  Attributes designating procedures
 
       Attribute_Output,
+      Attribute_Put_Image,
       Attribute_Read,
       Attribute_Write,
 
@@ -1934,10 +1906,6 @@ package Snames is
 
       Pragma_Abort_Defer,
       Pragma_Abstract_State,
-      Pragma_Acc_Data,
-      Pragma_Acc_Kernels,
-      Pragma_Acc_Loop,
-      Pragma_Acc_Parallel,
       Pragma_All_Calls_Remote,
       Pragma_Assert,
       Pragma_Assert_And_Cut,

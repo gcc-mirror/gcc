@@ -39,6 +39,7 @@ GNATRTL_TASKING_OBJS= \
   a-sytaco$(objext) \
   a-tasatt$(objext) \
   a-taside$(objext) \
+  a-tasini$(objext) \
   a-taster$(objext) \
   g-boubuf$(objext) \
   g-boumai$(objext) \
@@ -52,6 +53,7 @@ GNATRTL_TASKING_OBJS= \
   s-mudido$(objext) \
   s-osinte$(objext) \
   s-proinf$(objext) \
+  s-putaim$(objext) \
   s-solita$(objext) \
   s-stusta$(objext) \
   s-taenca$(objext) \
@@ -79,7 +81,7 @@ GNATRTL_TASKING_OBJS= \
   thread$(objext) \
   $(EXTRA_GNATRTL_TASKING_OBJS)
 
-# Objects the require IEEE Float
+# Objects that require IEEE Float
 GNATRTL_ALTIVEC_OBJS= \
   g-allein$(objext) \
   g-alleve$(objext) \
@@ -263,7 +265,13 @@ GNATRTL_NONTASKING_OBJS= \
   a-stboha$(objext) \
   a-stfiha$(objext) \
   a-stmaco$(objext) \
+  a-stobbu$(objext) \
+  a-stobfi$(objext) \
   a-storio$(objext) \
+  a-stoubu$(objext) \
+  a-stoufi$(objext) \
+  a-stoufo$(objext) \
+  a-stouut$(objext) \
   a-strbou$(objext) \
   a-stream$(objext) \
   a-strfix$(objext) \
@@ -274,6 +282,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-strsup$(objext) \
   a-strunb$(objext) \
   a-ststio$(objext) \
+  a-stteou$(objext) \
   a-stunau$(objext) \
   a-stunha$(objext) \
   a-stuten$(objext) \
@@ -421,7 +430,6 @@ GNATRTL_NONTASKING_OBJS= \
   g-excact$(objext) \
   g-except$(objext) \
   g-exctra$(objext) \
-  s-exctra$(objext) \
   g-expect$(objext) \
   g-exptty$(objext) \
   g-flocon$(objext) \
@@ -476,7 +484,6 @@ GNATRTL_NONTASKING_OBJS= \
   g-timsta$(objext) \
   g-traceb$(objext) \
   g-trasym$(objext) \
-  s-trasym$(objext) \
   g-tty$(objext) \
   g-u3spch$(objext) \
   g-utf_32$(objext) \
@@ -539,7 +546,6 @@ GNATRTL_NONTASKING_OBJS= \
   s-dfmkio$(objext) \
   s-dfmopr$(objext) \
   s-dgmgop$(objext) \
-  s-dlmopr$(objext) \
   s-diflio$(objext) \
   s-diflmk$(objext) \
   s-digemk$(objext) \
@@ -550,12 +556,14 @@ GNATRTL_NONTASKING_OBJS= \
   s-dimmks$(objext) \
   s-direio$(objext) \
   s-dlmkio$(objext) \
+  s-dlmopr$(objext) \
   s-dmotpr$(objext) \
   s-dsaser$(objext) \
   s-elaall$(objext) \
   s-excdeb$(objext) \
   s-except$(objext) \
   s-exctab$(objext) \
+  s-exctra$(objext) \
   s-exnint$(objext) \
   s-exnllf$(objext) \
   s-exnlli$(objext) \
@@ -672,6 +680,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-poosiz$(objext) \
   s-powtab$(objext) \
   s-purexc$(objext) \
+  s-putima$(objext) \
   s-rannum$(objext) \
   s-ransee$(objext) \
   s-regexp$(objext) \
@@ -700,6 +709,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-tasloc$(objext) \
   s-traceb$(objext) \
   s-traent$(objext) \
+  s-trasym$(objext) \
   s-unstyp$(objext) \
   s-utf_32$(objext) \
   s-valboo$(objext) \

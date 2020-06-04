@@ -155,6 +155,8 @@ struct _slp_tree {
   bool two_operators;
   /* The DEF type of this node.  */
   enum vect_def_type def_type;
+  /* The number of scalar lanes produced by this node.  */
+  unsigned int lanes;
 };
 
 
@@ -197,6 +199,7 @@ public:
 #define SLP_TREE_DEF_TYPE(S)			 (S)->def_type
 #define SLP_TREE_VECTYPE(S)			 (S)->vectype
 #define SLP_TREE_REPRESENTATIVE(S)		 (S)->representative
+#define SLP_TREE_LANES(S)			 (S)->lanes
 
 /* Key for map that records association between
    scalar conditions and corresponding loop mask, and
@@ -1750,6 +1753,7 @@ extern void vect_get_vec_defs_for_stmt_copy (vec_info *,
 extern tree vect_init_vector (vec_info *, stmt_vec_info, tree, tree,
                               gimple_stmt_iterator *);
 extern tree vect_get_vec_def_for_stmt_copy (vec_info *, tree);
+extern tree vect_get_slp_vect_def (slp_tree, unsigned);
 extern bool vect_transform_stmt (vec_info *, stmt_vec_info,
 				 gimple_stmt_iterator *,
 				 slp_tree, slp_instance);
