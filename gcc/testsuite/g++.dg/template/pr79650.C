@@ -11,10 +11,10 @@ foo ()
   static int a, b;
 lab1:
 lab2:
-  A<(intptr_t)&&lab1 - (__INTPTR_TYPE__)&&lab2> c;	// { dg-error "not a constant integer" }
-  A<(intptr_t)&&lab1 - (__INTPTR_TYPE__)&&lab1> d;
-  A<(intptr_t)&a - (intptr_t)&b> e;			// { dg-error "is not a constant expression" }
-  A<(intptr_t)&a - (intptr_t)&a> f;
-  A<(intptr_t)sizeof(a) + (intptr_t)&a> g;		// { dg-error "not a constant integer" }
+  A<(intptr_t)&&lab1 - (__INTPTR_TYPE__)&&lab2> c;	// { dg-error "conversion from pointer type" }
+  A<(intptr_t)&&lab1 - (__INTPTR_TYPE__)&&lab1> d;	// { dg-error "conversion from pointer type" }
+  A<(intptr_t)&a - (intptr_t)&b> e;			// { dg-error "conversion from pointer type" }
+  A<(intptr_t)&a - (intptr_t)&a> f;			// { dg-error "conversion from pointer type" }
+  A<(intptr_t)sizeof(a) + (intptr_t)&a> g;		// { dg-error "conversion from pointer type" }
   A<(intptr_t)&a> h;					// { dg-error "conversion from pointer type" }
 }
