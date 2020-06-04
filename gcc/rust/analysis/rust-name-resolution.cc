@@ -45,7 +45,7 @@ namespace Rust {
 namespace Analysis {
 
 NameResolution::NameResolution (AST::Crate &crate, TopLevelScan &toplevel)
-  : Resolution (crate, toplevel)
+  : Resolution (crate, toplevel), is_work_list_changed_ (false)
 
 {}
 
@@ -58,13 +58,35 @@ NameResolution::Resolve (AST::Crate &crate, TopLevelScan &toplevel)
   return resolver.go ();
 }
 
+void
+NameResolution::process_work_list ()
+{}
+
+void
+NameResolution::expand_macros ()
+{}
+
 bool
 NameResolution::go ()
 {
-  for (auto &item : crate.items)
-    item->accept_vis (*this);
+  bool ret = true;
 
-  return true;
+  do
+    {
+      for (auto &item : crate.items)
+	{
+	  item->accept_vis (*this);
+	}
+    }
+  while (is_work_list_changed ());
+
+  ret = work_list_.empty ();
+  for (auto &item : work_list_)
+    {
+      std::cout << "Resolution error: " << item.as_string () << std::endl;
+    }
+
+  return ret;
 }
 
 void
@@ -81,7 +103,14 @@ NameResolution::visit (AST::AttrInputMetaItemContainer &input)
 
 void
 NameResolution::visit (AST::IdentifierExpr &ident_expr)
-{}
+{
+  do
+    {
+      process_work_list ();
+    }
+  while (is_work_list_changed ());
+  expand_macros ();
+}
 
 void
 NameResolution::visit (AST::Lifetime &lifetime)
