@@ -161,3 +161,5 @@ f4 (char x[64], char *y, __builtin_va_list ap)
   snprintf (p, sizeof (buf), "%s", y);
   vsnprintf (p, sizeof (buf), "%s", ap);
 }
+
+/* { dg-prune-output "-Wuninitialized" } */

@@ -2497,8 +2497,8 @@ may be diagnosed by warnings such as @option{-Wstringop-overflow},
 The @code{access} attribute specifies that a function to whose by-reference
 arguments the attribute applies accesses the referenced object according to
 @var{access-mode}.  The @var{access-mode} argument is required and must be
-one of three names: @code{read_only}, @code{read_write}, or @code{write_only}.
-The remaining two are positional arguments.
+one of four names: @code{read_only}, @code{read_write}, @code{write_only},
+or @code{none}.  The remaining two are positional arguments.
 
 The required @var{ref-index} positional argument  denotes a function
 argument of pointer (or in C++, reference) type that is subject to
@@ -2554,6 +2554,14 @@ function.
 __attribute__ ((access (write_only, 1), access (read_only, 2))) char* strcpy (char*, const char*);
 __attribute__ ((access (write_only, 1, 2), access (read_write, 3))) int fgets (char*, int, FILE*);
 @end smallexample
+
+The access mode @code{none} specifies that the pointer to which it applies
+is not used to access the referenced object at all.  Unless the pointer is
+null the pointed-to object must exist and have at least the size as denoted
+by the @var{size-index} argument.  The object need not be initialized.
+The mode is intended to be used as a means to help validate the expected
+object size, for example in functions that call @code{__builtin_object_size}.
+@xref{Object Size Checking}.
 
 @item alias ("@var{target}")
 @cindex @code{alias} function attribute

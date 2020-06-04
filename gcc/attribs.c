@@ -2017,6 +2017,65 @@ maybe_diag_alias_attributes (tree alias, tree target)
     }
 }
 
+/* Initialize a mapping for a call to function FNDECL declared with
+   attribute access.  Each attribute positional operand inserts one
+   entry into the mapping with the operand number as the key.  */
+
+void
+init_attr_rdwr_indices (rdwr_map *rwm, tree fntype)
+{
+  if (!fntype)
+    return;
+
+  for (tree access = TYPE_ATTRIBUTES (fntype);
+       (access = lookup_attribute ("access", access));
+       access = TREE_CHAIN (access))
+    {
+      /* The TREE_VALUE of an attribute is a TREE_LIST whose TREE_VALUE
+	 is the attribute argument's value.  */
+      tree mode = TREE_VALUE (access);
+      gcc_assert (TREE_CODE (mode) == TREE_LIST);
+      mode = TREE_VALUE (mode);
+      gcc_assert (TREE_CODE (mode) == STRING_CST);
+
+      const char *modestr = TREE_STRING_POINTER (mode);
+      for (const char *m = modestr; *m; )
+	{
+	  attr_access acc = { };
+
+	  switch (*m)
+	    {
+	    case 'r': acc.mode = acc.read_only; break;
+	    case 'w': acc.mode = acc.write_only; break;
+	    case 'x': acc.mode = acc.read_write; break;
+	    case '-': acc.mode = acc.none; break;
+	    default: gcc_unreachable ();
+	    }
+
+	  char *end;
+	  acc.ptrarg = strtoul (++m, &end, 10);
+	  m = end;
+	  if (*m == ',')
+	    {
+	      acc.sizarg = strtoul (++m, &end, 10);
+	      m = end;
+	    }
+	  else
+	    acc.sizarg = UINT_MAX;
+
+	  acc.ptr = NULL_TREE;
+	  acc.size = NULL_TREE;
+
+	  /* Unconditionally add an entry for the required pointer
+	     operand of the attribute, and one for the optional size
+	     operand when it's specified.  */
+	  rwm->put (acc.ptrarg, acc);
+	  if (acc.sizarg != UINT_MAX)
+	    rwm->put (acc.sizarg, acc);
+	}
+    }
+}
+
 
 #if CHECKING_P
 

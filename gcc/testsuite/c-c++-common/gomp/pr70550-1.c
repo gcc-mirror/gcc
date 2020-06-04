@@ -16,7 +16,7 @@ foo (void)
 {
   {
     int i;
-    #pragma omp target defaultmap(tofrom:scalar)	/* { dg-bogus "is used uninitialized in this function" } */
+    #pragma omp target defaultmap(tofrom:scalar)	/* { dg-bogus "is used uninitialized" } */
     {
       i = 26;
       bar (i);
@@ -24,7 +24,7 @@ foo (void)
   }
   {
     T j;
-    #pragma omp target defaultmap(tofrom:scalar)	/* { dg-bogus "is used uninitialized in this function" } */
+    #pragma omp target defaultmap(tofrom:scalar)	/* { dg-bogus "is used uninitialized" } */
     {
       j = 37;
       bar (j);
@@ -32,7 +32,7 @@ foo (void)
   }
   {
     int i;
-    #pragma omp target					/* { dg-bogus "is used uninitialized in this function" } */
+    #pragma omp target					/* { dg-bogus "is used uninitialized" } */
     {
       i = 26;
       bar (i);
@@ -40,7 +40,7 @@ foo (void)
   }
   {
     T j;
-    #pragma omp target					/* { dg-bogus "is used uninitialized in this function" } */
+    #pragma omp target					/* { dg-bogus "is used uninitialized" } */
     {
       j = 37;
       bar (j);
@@ -48,7 +48,7 @@ foo (void)
   }
   {
     int i;
-    #pragma omp target firstprivate (i)			/* { dg-warning "is used uninitialized in this function" } */
+    #pragma omp target firstprivate (i)			/* { dg-warning "is used uninitialized" } */
     {
       i = 26;
       bar (i);
@@ -56,7 +56,7 @@ foo (void)
   }
   {
     T j;
-    #pragma omp target firstprivate (j)			/* { dg-warning "is used uninitialized in this function" } */
+    #pragma omp target firstprivate (j)			/* { dg-warning "is used uninitialized" } */
     {
       j = 37;
       bar (j);
@@ -64,7 +64,7 @@ foo (void)
   }
   {
     int i;
-    #pragma omp target private (i)			/* { dg-bogus "is used uninitialized in this function" } */
+    #pragma omp target private (i)			/* { dg-bogus "is used uninitialized" } */
     {
       i = 26;
       bar (i);
@@ -72,7 +72,7 @@ foo (void)
   }
   {
     T j;
-    #pragma omp target private (j)			/* { dg-bogus "is used uninitialized in this function" } */
+    #pragma omp target private (j)			/* { dg-bogus "is used uninitialized" } */
     {
       j = 37;
       bar (j);

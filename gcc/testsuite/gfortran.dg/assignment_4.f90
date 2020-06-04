@@ -12,5 +12,5 @@
   logical :: r
   type(event), pointer :: myEvent
   allocate(myEvent)
-  r=myEvent%task()
+  r=myEvent%task()  ! { dg-warning "uninitialized" }
 end 
