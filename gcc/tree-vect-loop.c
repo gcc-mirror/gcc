@@ -815,7 +815,7 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     vec_inside_cost (0),
     vectorizable (false),
     can_use_partial_vectors_p (true),
-    fully_masked_p (false),
+    using_partial_vectors_p (false),
     peeling_for_gaps (false),
     peeling_for_niter (false),
     no_data_dependencies (false),
@@ -1634,9 +1634,9 @@ vect_analyze_loop_costing (loop_vec_info loop_vinfo)
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   unsigned int assumed_vf = vect_vf_for_cost (loop_vinfo);
 
-  /* Only fully-masked loops can have iteration counts less than the
-     vectorization factor.  */
-  if (!LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+  /* Only loops that can handle partially-populated vectors can have iteration
+     counts less than the vectorization factor.  */
+  if (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
     {
       HOST_WIDE_INT max_niter;
 
@@ -1872,7 +1872,7 @@ determine_peel_for_niter (loop_vec_info loop_vinfo)
     th = LOOP_VINFO_COST_MODEL_THRESHOLD (LOOP_VINFO_ORIG_LOOP_INFO
 					  (loop_vinfo));
 
-  if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+  if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
     /* The main loop handles all iterations.  */
     LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo) = false;
   else if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
@@ -2146,7 +2146,7 @@ start_over:
 
   /* Decide whether to use a fully-masked loop for this vectorization
      factor.  */
-  LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
+  LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
     = (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
        && vect_verify_full_masking (loop_vinfo));
   if (dump_enabled_p ())
@@ -2164,7 +2164,7 @@ start_over:
      enough iterations for vectorization.  */
   if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
       && LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-      && !LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+      && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
     {
       poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
       tree scalar_niters = LOOP_VINFO_NITERSM1 (loop_vinfo);
@@ -2175,10 +2175,11 @@ start_over:
 				       " support peeling for gaps.\n");
     }
 
-  /* If we're vectorizing an epilogue loop, we either need a fully-masked
-     loop or a loop that has a lower VF than the main loop.  */
+  /* If we're vectorizing an epilogue loop, the vectorized loop either needs
+     to be able to handle fewer than VF scalars, or needs to have a lower VF
+     than the main loop.  */
   if (LOOP_VINFO_EPILOGUE_P (loop_vinfo)
-      && !LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
+      && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
       && maybe_ge (LOOP_VINFO_VECT_FACTOR (loop_vinfo),
 		   LOOP_VINFO_VECT_FACTOR (orig_loop_vinfo)))
     return opt_result::failure_at (vect_location,
@@ -2249,7 +2250,7 @@ start_over:
 	}
 
       /* Niters for at least one iteration of vectorized loop.  */
-      if (!LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+      if (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
 	niters_th += LOOP_VINFO_VECT_FACTOR (loop_vinfo);
       /* One additional iteration because of peeling for gap.  */
       if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
@@ -3826,7 +3827,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 		 "  Calculated minimum iters for profitability: %d\n",
 		 min_profitable_iters);
 
-  if (!LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
+  if (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
       && min_profitable_iters < (assumed_vf + peel_iters_prologue))
     /* We want the vectorized loop to execute at least once.  */
     min_profitable_iters = assumed_vf + peel_iters_prologue;
@@ -8582,7 +8583,7 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
   if (niters_vector == NULL_TREE)
     {
       if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-	  && !LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
+	  && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
 	  && known_eq (lowest_vf, vf))
 	{
 	  niters_vector
@@ -8751,7 +8752,8 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 
   /* True if the final iteration might not handle a full vector's
      worth of scalar iterations.  */
-  bool final_iter_may_be_partial = LOOP_VINFO_FULLY_MASKED_P (loop_vinfo);
+  bool final_iter_may_be_partial
+    = LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo);
   /* The minimum number of iterations performed by the epilogue.  This
      is 1 when peeling for gaps because we always need a final scalar
      iteration.  */
@@ -8762,7 +8764,7 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
   int bias_for_lowest = 1 - min_epilogue_iters;
   int bias_for_assumed = bias_for_lowest;
   int alignment_npeels = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
-  if (alignment_npeels && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+  if (alignment_npeels && LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
     {
       /* When the amount of peeling is known at compile time, the first
 	 iteration will have exactly alignment_npeels active elements.
