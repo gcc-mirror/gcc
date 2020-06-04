@@ -16370,6 +16370,7 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	}
 
       /* *(field_ptr_t)&ha = *((field_ptr_t)vr_saved_area  */
+      TREE_ADDRESSABLE (tmp_ha) = 1;
       tmp_ha = build1 (ADDR_EXPR, field_ptr_t, tmp_ha);
       addr = t;
       t = fold_convert (field_ptr_t, addr);
