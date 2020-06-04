@@ -1184,6 +1184,16 @@ goacc_exit_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 	    int elems = sizes[i];
 	    for (int j = 1; j <= elems; j++)
 	      {
+		assert (i + j < mapnum);
+
+		kind = kinds[i + j] & 0xff;
+
+		finalize = false;
+		if (kind == GOMP_MAP_FORCE_FROM
+		    || kind == GOMP_MAP_DELETE
+		    || kind == GOMP_MAP_FORCE_DETACH)
+		  finalize = true;
+
 		struct splay_tree_key_s k;
 		k.host_start = (uintptr_t) hostaddrs[i + j];
 		k.host_end = k.host_start + sizes[i + j];
