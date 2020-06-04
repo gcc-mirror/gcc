@@ -490,13 +490,16 @@ void
 lra_emit_move (rtx x, rtx y)
 {
   int old;
-
+  rtx_insn *insn;
+  
   if (GET_CODE (y) != PLUS)
     {
       if (rtx_equal_p (x, y))
 	return;
       old = max_reg_num ();
-      rtx_insn *insn = emit_move_insn (x, y);
+
+      insn = (GET_CODE (x) != STRICT_LOW_PART
+	      ? emit_move_insn (x, y) : emit_insn (gen_rtx_SET (x, y)));
       /* The move pattern may require scratch registers, so convert them
 	 into real registers now.  */
       if (insn != NULL_RTX)
