@@ -6197,6 +6197,12 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       gcc_assert (SLP_TREE_REPRESENTATIVE (slp_for_stmt_info) == stmt_info);
     }
   slp_tree *slp_op = XALLOCAVEC (slp_tree, op_type);
+  /* We need to skip an extra operand for COND_EXPRs with embedded
+     comparison.  */
+  unsigned opno_adjust = 0;
+  if (code == COND_EXPR
+      && COMPARISON_CLASS_P (gimple_assign_rhs1 (stmt)))
+    opno_adjust = 1;
   for (i = 0; i < op_type; i++)
     {
       /* The condition of COND_EXPR is checked in vectorizable_condition().  */
@@ -6207,7 +6213,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       enum vect_def_type dt;
       tree op;
       if (!vect_is_simple_use (loop_vinfo, stmt_info, slp_for_stmt_info,
-			       i, &op, &slp_op[i], &dt, &tem,
+			       i + opno_adjust, &op, &slp_op[i], &dt, &tem,
 			       &def_stmt_info))
 	{
 	  if (dump_enabled_p ())
