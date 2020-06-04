@@ -352,7 +352,7 @@ void Scope::mergeFieldInit(Loc loc, unsigned *fies)
         AggregateDeclaration *ad = f->isMember2();
         assert(ad);
 
-        for (size_t i = 0; i < ad->fields.dim; i++)
+        for (size_t i = 0; i < ad->fields.length; i++)
         {
             VarDeclaration *v = ad->fields[i];
             bool mustInit = (v->storage_class & STCnodefaultctor ||
@@ -644,20 +644,20 @@ void Scope::deprecation10378(Loc loc, Dsymbol *sold, Dsymbol *snew)
     OverloadSet *osnew = NULL;
     if (sold && (osold = sold->isOverloadSet()) != NULL &&
         snew && (osnew = snew->isOverloadSet()) != NULL &&
-        osold->a.dim == osnew->a.dim)
+        osold->a.length == osnew->a.length)
         return;
 
     OutBuffer buf;
     buf.writestring("local import search method found ");
     if (osold)
-        buf.printf("%s %s (%d overloads)", sold->kind(), sold->toPrettyChars(), (int)osold->a.dim);
+        buf.printf("%s %s (%d overloads)", sold->kind(), sold->toPrettyChars(), (int)osold->a.length);
     else if (sold)
         buf.printf("%s %s", sold->kind(), sold->toPrettyChars());
     else
         buf.writestring("nothing");
     buf.writestring(" instead of ");
     if (osnew)
-        buf.printf("%s %s (%d overloads)", snew->kind(), snew->toPrettyChars(), (int)osnew->a.dim);
+        buf.printf("%s %s (%d overloads)", snew->kind(), snew->toPrettyChars(), (int)osnew->a.length);
     else if (snew)
         buf.printf("%s %s", snew->kind(), snew->toPrettyChars());
     else

@@ -12,7 +12,7 @@
 
 #include "root/root.h"
 #include "root/stringtable.h"
-#include "root/rmem.h" // for d_size_t
+#include "root/dcompat.h" // for d_size_t
 
 #include "arraytypes.h"
 #include "expression.h"

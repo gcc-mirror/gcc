@@ -121,7 +121,7 @@ bool isError(RootObject *o)
  */
 bool arrayObjectIsError(Objects *args)
 {
-    for (size_t i = 0; i < args->dim; i++)
+    for (size_t i = 0; i < args->length; i++)
     {
         RootObject *o = (*args)[i];
         if (isError(o))
@@ -370,9 +370,9 @@ int arrayObjectMatch(Objects *oa1, Objects *oa2)
 {
     if (oa1 == oa2)
         return 1;
-    if (oa1->dim != oa2->dim)
+    if (oa1->length != oa2->length)
         return 0;
-    for (size_t j = 0; j < oa1->dim; j++)
+    for (size_t j = 0; j < oa1->length; j++)
     {
         RootObject *o1 = (*oa1)[j];
         RootObject *o2 = (*oa2)[j];
@@ -423,7 +423,7 @@ static hash_t expressionHash(Expression *e)
         TupleExp *te = (TupleExp *)e;
         size_t hash = 0;
         hash += te->e0 ? expressionHash(te->e0) : 0;
-        for (size_t i = 0; i < te->exps->dim; i++)
+        for (size_t i = 0; i < te->exps->length; i++)
         {
             Expression *elem = (*te->exps)[i];
             hash = mixHash(hash, expressionHash(elem));
@@ -435,7 +435,7 @@ static hash_t expressionHash(Expression *e)
     {
         ArrayLiteralExp *ae = (ArrayLiteralExp *)e;
         size_t hash = 0;
-        for (size_t i = 0; i < ae->elements->dim; i++)
+        for (size_t i = 0; i < ae->elements->length; i++)
             hash = mixHash(hash, expressionHash(ae->getElement(i)));
         return hash;
     }
@@ -444,7 +444,7 @@ static hash_t expressionHash(Expression *e)
     {
         AssocArrayLiteralExp *ae = (AssocArrayLiteralExp *)e;
         size_t hash = 0;
-        for (size_t i = 0; i < ae->keys->dim; i++)
+        for (size_t i = 0; i < ae->keys->length; i++)
             // reduction needs associative op as keys are unsorted (use XOR)
             hash ^= mixHash(expressionHash((*ae->keys)[i]), expressionHash((*ae->values)[i]));
         return hash;
@@ -454,7 +454,7 @@ static hash_t expressionHash(Expression *e)
     {
         StructLiteralExp *se = (StructLiteralExp *)e;
         size_t hash = 0;
-        for (size_t i = 0; i < se->elements->dim; i++)
+        for (size_t i = 0; i < se->elements->length; i++)
         {
             Expression *elem = (*se->elements)[i];
             hash = mixHash(hash, elem ? expressionHash(elem) : 0);
@@ -482,7 +482,7 @@ static hash_t expressionHash(Expression *e)
 static hash_t arrayObjectHash(Objects *oa1)
 {
     hash_t hash = 0;
-    for (size_t j = 0; j < oa1->dim; j++)
+    for (size_t j = 0; j < oa1->length; j++)
     {
         /* Must follow the logic of match()
          */
@@ -558,8 +558,8 @@ Dsymbol *TemplateDeclaration::syntaxCopy(Dsymbol *)
     if (parameters)
     {
         p = new TemplateParameters();
-        p->setDim(parameters->dim);
-        for (size_t i = 0; i < p->dim; i++)
+        p->setDim(parameters->length);
+        for (size_t i = 0; i < p->length; i++)
             (*p)[i] = (*parameters)[i]->syntaxCopy();
     }
     return new TemplateDeclaration(loc, ident, p,
@@ -609,15 +609,15 @@ void TemplateDeclaration::semantic(Scope *sc)
     if (global.params.doDocComments)
     {
         origParameters = new TemplateParameters();
-        origParameters->setDim(parameters->dim);
-        for (size_t i = 0; i < parameters->dim; i++)
+        origParameters->setDim(parameters->length);
+        for (size_t i = 0; i < parameters->length; i++)
         {
             TemplateParameter *tp = (*parameters)[i];
             (*origParameters)[i] = tp->syntaxCopy();
         }
     }
 
-    for (size_t i = 0; i < parameters->dim; i++)
+    for (size_t i = 0; i < parameters->length; i++)
     {
         TemplateParameter *tp = (*parameters)[i];
 
@@ -630,7 +630,7 @@ void TemplateDeclaration::semantic(Scope *sc)
         {
             errors = true;
         }
-        if (i + 1 != parameters->dim && tp->isTemplateTupleParameter())
+        if (i + 1 != parameters->length && tp->isTemplateTupleParameter())
         {
             error("template tuple parameter must be last one");
             errors = true;
@@ -641,12 +641,12 @@ void TemplateDeclaration::semantic(Scope *sc)
      */
     TemplateParameters tparams;
     tparams.setDim(1);
-    for (size_t i = 0; i < parameters->dim; i++)
+    for (size_t i = 0; i < parameters->length; i++)
     {
         TemplateParameter *tp = (*parameters)[i];
         tparams[0] = tp;
 
-        for (size_t j = 0; j < parameters->dim; j++)
+        for (size_t j = 0; j < parameters->length; j++)
         {
             // Skip cases like: X(T : T)
             if (i == j)
@@ -798,7 +798,7 @@ bool TemplateDeclaration::evaluateConstraint(
             if (fvarargs == 2 && i + 1 == nfparams)
                 fparam->storageClass |= STCvariadic;
         }
-        for (size_t i = 0; i < fparameters->dim; i++)
+        for (size_t i = 0; i < fparameters->length; i++)
         {
             Parameter *fparam = (*fparameters)[i];
             if (!fparam->ident)
@@ -852,24 +852,24 @@ MATCH TemplateDeclaration::matchWithInstance(Scope *sc, TemplateInstance *ti,
         Objects *dedtypes, Expressions *fargs, int flag)
 {
     MATCH m;
-    size_t dedtypes_dim = dedtypes->dim;
+    size_t dedtypes_dim = dedtypes->length;
 
     dedtypes->zero();
 
     if (errors)
         return MATCHnomatch;
 
-    size_t parameters_dim = parameters->dim;
+    size_t parameters_dim = parameters->length;
     int variadic = isVariadic() != NULL;
 
     // If more arguments than parameters, no match
-    if (ti->tiargs->dim > parameters_dim && !variadic)
+    if (ti->tiargs->length > parameters_dim && !variadic)
     {
         return MATCHnomatch;
     }
 
     assert(dedtypes_dim == parameters_dim);
-    assert(dedtypes_dim >= ti->tiargs->dim || variadic);
+    assert(dedtypes_dim >= ti->tiargs->length || variadic);
 
     assert(_scope);
 
@@ -918,7 +918,7 @@ MATCH TemplateDeclaration::matchWithInstance(Scope *sc, TemplateInstance *ti,
         {
             if (!(*dedtypes)[i])
             {
-                assert(i < ti->tiargs->dim);
+                assert(i < ti->tiargs->length);
                 (*dedtypes)[i] = (Type *)(*ti->tiargs)[i];
             }
         }
@@ -943,7 +943,7 @@ MATCH TemplateDeclaration::matchWithInstance(Scope *sc, TemplateInstance *ti,
             fd->inferRetType = true;
 
             // Shouldn't run semantic on default arguments and return type.
-            for (size_t i = 0; i < tf->parameters->dim; i++)
+            for (size_t i = 0; i < tf->parameters->length; i++)
                 (*tf->parameters)[i]->defaultArg = NULL;
             tf->next = NULL;
 
@@ -995,8 +995,8 @@ MATCH TemplateDeclaration::leastAsSpecialized(Scope *sc, TemplateDeclaration *td
     // Set type arguments to dummy template instance to be types
     // generated from the parameters to this template declaration
     ti.tiargs = new Objects();
-    ti.tiargs->reserve(parameters->dim);
-    for (size_t i = 0; i < parameters->dim; i++)
+    ti.tiargs->reserve(parameters->length);
+    for (size_t i = 0; i < parameters->length; i++)
     {
         TemplateParameter *tp = (*parameters)[i];
         if (tp->dependent)
@@ -1010,7 +1010,7 @@ MATCH TemplateDeclaration::leastAsSpecialized(Scope *sc, TemplateDeclaration *td
 
     // Temporary Array to hold deduced types
     Objects dedtypes;
-    dedtypes.setDim(td2->parameters->dim);
+    dedtypes.setDim(td2->parameters->length);
 
     // Attempt a type deduction
     MATCH m = td2->matchWithInstance(sc, &ti, &dedtypes, fargs, 1);
@@ -1064,7 +1064,7 @@ public:
     MATCH matchAll(Type *tt)
     {
         MATCH match = MATCHexact;
-        for (size_t j = 0; j < argexps.dim; j++)
+        for (size_t j = 0; j < argexps.length; j++)
         {
             Expression *e = argexps[j];
             assert(e);
@@ -1122,10 +1122,10 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
 
     assert(_scope);
 
-    dedargs->setDim(parameters->dim);
+    dedargs->setDim(parameters->length);
     dedargs->zero();
 
-    dedtypes->setDim(parameters->dim);
+    dedtypes->setDim(parameters->length);
     dedtypes->zero();
 
     if (errors || fd->errors)
@@ -1147,8 +1147,8 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
     if (tiargs)
     {
         // Set initial template arguments
-        ntargs = tiargs->dim;
-        size_t n = parameters->dim;
+        ntargs = tiargs->length;
+        size_t n = parameters->length;
         if (tp)
             n--;
         if (ntargs > n)
@@ -1160,11 +1160,11 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
              * now form the tuple argument.
              */
             Tuple *t = new Tuple();
-            assert(parameters->dim);
-            (*dedargs)[parameters->dim - 1] = t;
+            assert(parameters->length);
+            (*dedargs)[parameters->length - 1] = t;
 
             t->objects.setDim(ntargs - n);
-            for (size_t i = 0; i < t->objects.dim; i++)
+            for (size_t i = 0; i < t->objects.length; i++)
             {
                 t->objects[i] = (*tiargs)[n + i];
             }
@@ -1178,7 +1178,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
 
         for (size_t i = 0; i < n; i++)
         {
-            assert(i < parameters->dim);
+            assert(i < parameters->length);
             Declaration *sparam = NULL;
             MATCH m = (*parameters)[i]->matchArg(instLoc, paramscope, dedargs, i, parameters, dedtypes, &sparam);
             //printf("\tdeduceType m = %d\n", m);
@@ -1191,18 +1191,18 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
             if (!paramscope->insert(sparam))
                 goto Lnomatch;
         }
-        if (n < parameters->dim && !declaredTuple)
+        if (n < parameters->length && !declaredTuple)
         {
             inferStart = n;
         }
         else
-            inferStart = parameters->dim;
+            inferStart = parameters->length;
         //printf("tiargs matchTiargs = %d\n", matchTiargs);
     }
 
     fparameters = fd->getParameters(&fvarargs);
     nfparams = Parameter::dim(fparameters);     // number of function parameters
-    nfargs = fargs ? fargs->dim : 0;            // number of function arguments
+    nfargs = fargs ? fargs->length : 0;            // number of function arguments
 
     /* Check for match of function arguments with variadic template
      * parameter, such as:
@@ -1221,7 +1221,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
             {
                 Tuple *t = new Tuple();
                 //printf("t = %p\n", t);
-                (*dedargs)[parameters->dim - 1] = t;
+                (*dedargs)[parameters->length - 1] = t;
                 declareParameter(paramscope, tp, t);
                 declaredTuple = t;
             }
@@ -1239,7 +1239,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
                 if (fparam->type->ty != Tident)
                     continue;
                 TypeIdentifier *tid = (TypeIdentifier *)fparam->type;
-                if (!tp->ident->equals(tid->ident) || tid->idents.dim)
+                if (!tp->ident->equals(tid->ident) || tid->idents.length)
                     continue;
 
                 if (fvarargs)           // variadic function doesn't
@@ -1260,7 +1260,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
         bool hasttp = false;
 
         // Match 'tthis' to any TemplateThisParameter's
-        for (size_t i = 0; i < parameters->dim; i++)
+        for (size_t i = 0; i < parameters->length; i++)
         {
             TemplateThisParameter *ttp = (*parameters)[i]->isTemplateThisParameter();
             if (ttp)
@@ -1314,7 +1314,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
 
     // Loop through the function parameters
     {
-    //printf("%s\n\tnfargs = %d, nfparams = %d, tuple_dim = %d\n", toChars(), nfargs, nfparams, declaredTuple ? declaredTuple->objects.dim : 0);
+    //printf("%s\n\tnfargs = %d, nfparams = %d, tuple_dim = %d\n", toChars(), nfargs, nfparams, declaredTuple ? declaredTuple->objects.length : 0);
     //printf("\ttp = %p, fptupindex = %d, found = %d, declaredTuple = %s\n", tp, fptupindex, fptupindex != IDX_NOTFOUND, declaredTuple ? declaredTuple->toChars() : NULL);
     size_t argi = 0;
     size_t nfargs2 = nfargs;    // nfargs + supplied defaultArgs
@@ -1340,7 +1340,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
                  * now form the tuple argument.
                  */
                 declaredTuple = new Tuple();
-                (*dedargs)[parameters->dim - 1] = declaredTuple;
+                (*dedargs)[parameters->length - 1] = declaredTuple;
 
                 /* Count function parameters following a tuple parameter.
                  * void foo(U, T...)(int y, T, U, int) {}  // rem == 2 (U, int)
@@ -1352,7 +1352,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
                     if (!reliesOnTident(p->type, parameters, inferStart))
                     {
                         Type *pt = p->type->syntaxCopy()->semantic(fd->loc, paramscope);
-                        rem += pt->ty == Ttuple ? ((TypeTuple *)pt)->arguments->dim : 1;
+                        rem += pt->ty == Ttuple ? ((TypeTuple *)pt)->arguments->length : 1;
                     }
                     else
                     {
@@ -1363,7 +1363,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
                 if (nfargs2 - argi < rem)
                     goto Lnomatch;
                 declaredTuple->objects.setDim(nfargs2 - argi - rem);
-                for (size_t i = 0; i < declaredTuple->objects.dim; i++)
+                for (size_t i = 0; i < declaredTuple->objects.length; i++)
                 {
                     farg = (*fargs)[argi + i];
 
@@ -1407,14 +1407,14 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
             {
                 // Bugzilla 6810: If declared tuple is not a type tuple,
                 // it cannot be function parameter types.
-                for (size_t i = 0; i < declaredTuple->objects.dim; i++)
+                for (size_t i = 0; i < declaredTuple->objects.length; i++)
                 {
                     if (!isType(declaredTuple->objects[i]))
                         goto Lnomatch;
                 }
             }
             assert(declaredTuple);
-            argi += declaredTuple->objects.dim;
+            argi += declaredTuple->objects.length;
             continue;
         }
 
@@ -1428,7 +1428,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
             if (prmtype->ty == Ttuple)
             {
                 TypeTuple *tt = (TypeTuple *)prmtype;
-                size_t tt_dim = tt->arguments->dim;
+                size_t tt_dim = tt->arguments->length;
                 for (size_t j = 0; j < tt_dim; j++, ++argi)
                 {
                     Parameter *p = (*tt->arguments)[j];
@@ -1474,7 +1474,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
              */
             if (argi == nfargs)
             {
-                for (size_t i = 0; i < dedtypes->dim; i++)
+                for (size_t i = 0; i < dedtypes->length; i++)
                 {
                     Type *at = isType((*dedtypes)[i]);
                     if (at && at->ty == Tnone)
@@ -1484,7 +1484,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
                         delete xt;
                     }
                 }
-                for (size_t i = ntargs; i < dedargs->dim; i++)
+                for (size_t i = ntargs; i < dedargs->length; i++)
                 {
                     TemplateParameter *tparam = (*parameters)[i];
 
@@ -1583,7 +1583,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
                 if (argtype->ty == Tarray &&
                     (prmtype->ty == Tsarray ||
                      (prmtype->ty == Taarray && (taai = ((TypeAArray *)prmtype)->index)->ty == Tident &&
-                      ((TypeIdentifier *)taai)->idents.dim == 0)))
+                      ((TypeIdentifier *)taai)->idents.length == 0)))
                 {
                     if (farg->op == TOKstring)
                     {
@@ -1593,7 +1593,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
                     else if (farg->op == TOKarrayliteral)
                     {
                         ArrayLiteralExp *ae = (ArrayLiteralExp *)farg;
-                        argtype = ae->type->nextOf()->sarrayOf(ae->elements->dim);
+                        argtype = ae->type->nextOf()->sarrayOf(ae->elements->length);
                     }
                     else if (farg->op == TOKslice)
                     {
@@ -1608,7 +1608,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
             else if ((fparam->storageClass & STCout) == 0 &&
                      (argtype->ty == Tarray || argtype->ty == Tpointer) &&
                      templateParameterLookup(prmtype, parameters) != IDX_NOTFOUND &&
-                     ((TypeIdentifier *)prmtype)->idents.dim == 0)
+                     ((TypeIdentifier *)prmtype)->idents.length == 0)
             {
                 /* The farg passing to the prmtype always make a copy. Therefore,
                  * we can shrink the set of the deduced type arguments for prmtype
@@ -1839,7 +1839,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
 
 Lmatch:
 
-    for (size_t i = 0; i < dedtypes->dim; i++)
+    for (size_t i = 0; i < dedtypes->length; i++)
     {
         Type *at = isType((*dedtypes)[i]);
         if (at)
@@ -1853,7 +1853,7 @@ Lmatch:
             (*dedtypes)[i] = at->merge2();
         }
     }
-    for (size_t i = ntargs; i < dedargs->dim; i++)
+    for (size_t i = ntargs; i < dedargs->length; i++)
     {
         TemplateParameter *tparam = (*parameters)[i];
         //printf("tparam[%d] = %s\n", i, tparam->ident->toChars());
@@ -1900,7 +1900,7 @@ Lmatch:
                     // we're one or more arguments short (i.e. no tuple argument)
                     if (tparam == tp &&
                         fptupindex == IDX_NOTFOUND &&
-                        ntargs <= dedargs->dim - 1)
+                        ntargs <= dedargs->length - 1)
                     {
                         // make tuple argument an empty tuple
                         oded = (RootObject *)new Tuple();
@@ -1939,11 +1939,11 @@ Lmatch:
     /* Bugzilla 7469: As same as the code for 7469 in findBestMatch,
      * expand a Tuple in dedargs to normalize template arguments.
      */
-    if (size_t d = dedargs->dim)
+    if (size_t d = dedargs->length)
     {
         if (Tuple *va = isTuple((*dedargs)[d - 1]))
         {
-            if (va->objects.dim)
+            if (va->objects.length)
             {
                 dedargs->setDim(d - 1);
                 dedargs->insert(d - 1, &va->objects);
@@ -2093,7 +2093,7 @@ RootObject *TemplateDeclaration::declareParameter(Scope *sc, TemplateParameter *
 
 TemplateTupleParameter *isVariadic(TemplateParameters *parameters)
 {
-    size_t dim = parameters->dim;
+    size_t dim = parameters->length;
     TemplateTupleParameter *tp = NULL;
 
     if (dim)
@@ -2167,7 +2167,7 @@ void functionResolve(Match *m, Dsymbol *dstart, Loc loc, Scope *sc,
             if (fd == m->lastf)
                 return 0;
             // explicitly specified tiargs never match to non template function
-            if (tiargs && tiargs->dim > 0)
+            if (tiargs && tiargs->length > 0)
                 return 0;
 
             // constructors need a valid scope in order to detect semantic errors
@@ -2333,7 +2333,7 @@ void functionResolve(Match *m, Dsymbol *dstart, Loc loc, Scope *sc,
                     tiargs = new Objects();
                 TemplateInstance *ti = new TemplateInstance(loc, td, tiargs);
                 Objects dedtypes;
-                dedtypes.setDim(td->parameters->dim);
+                dedtypes.setDim(td->parameters->length);
                 assert(td->semanticRun != PASSinit);
                 MATCH mta = td->matchWithInstance(sc, ti, &dedtypes, fargs, 0);
                 //printf("matchWithInstance = %d\n", mta);
@@ -2664,7 +2664,7 @@ FuncDeclaration *TemplateDeclaration::doHeaderInstantiation(
     {
         // Match 'tthis' to any TemplateThisParameter's
         bool hasttp = false;
-        for (size_t i = 0; i < parameters->dim; i++)
+        for (size_t i = 0; i < parameters->length; i++)
         {
             TemplateParameter *tp = (*parameters)[i];
             TemplateThisParameter *ttp = tp->isTemplateThisParameter();
@@ -2681,7 +2681,7 @@ FuncDeclaration *TemplateDeclaration::doHeaderInstantiation(
     Scope *scx = sc2->push();
 
     // Shouldn't run semantic on default arguments and return type.
-    for (size_t i = 0; i < tf->parameters->dim; i++)
+    for (size_t i = 0; i < tf->parameters->length; i++)
         (*tf->parameters)[i]->defaultArg = NULL;
     if (fd->isCtorDeclaration())
     {
@@ -2740,7 +2740,7 @@ const char *TemplateDeclaration::toChars()
 
     buf.writestring(ident->toChars());
     buf.writeByte('(');
-    for (size_t i = 0; i < parameters->dim; i++)
+    for (size_t i = 0; i < parameters->length; i++)
     {
         TemplateParameter *tp = (*parameters)[i];
         if (i)
@@ -2786,7 +2786,7 @@ TemplateInstance *TemplateDeclaration::findExistingInstance(TemplateInstance *ti
     TemplateInstances *tinstances = (TemplateInstances *)dmd_aaGetRvalue((AA *)instances, (void *)tithis->toHash());
     if (tinstances)
     {
-        for (size_t i = 0; i < tinstances->dim; i++)
+        for (size_t i = 0; i < tinstances->length; i++)
         {
             TemplateInstance *ti = (*tinstances)[i];
             if (tithis->compare(ti) == 0)
@@ -2823,7 +2823,7 @@ void TemplateDeclaration::removeInstance(TemplateInstance *handle)
     TemplateInstances *tinstances = (TemplateInstances *)dmd_aaGetRvalue((AA *)instances, (void *)handle->toHash());
     if (tinstances)
     {
-        for (size_t i = 0; i < tinstances->dim; i++)
+        for (size_t i = 0; i < tinstances->length; i++)
         {
             TemplateInstance *ti = (*tinstances)[i];
             if (handle == ti)
@@ -2844,7 +2844,7 @@ void TemplateDeclaration::removeInstance(TemplateInstance *handle)
 
 static size_t templateIdentifierLookup(Identifier *id, TemplateParameters *parameters)
 {
-    for (size_t i = 0; i < parameters->dim; i++)
+    for (size_t i = 0; i < parameters->length; i++)
     {
         TemplateParameter *tp = (*parameters)[i];
         if (tp->ident->equals(id))
@@ -3189,7 +3189,7 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                     /* Need a loc to go with the semantic routine.
                      */
                     Loc loc;
-                    if (parameters->dim)
+                    if (parameters->length)
                     {
                         TemplateParameter *tp = (*parameters)[0];
                         loc = tp->loc;
@@ -3207,11 +3207,11 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                 TemplateParameter *tp = (*parameters)[i];
 
                 TypeIdentifier *tident = (TypeIdentifier *)tparam;
-                if (tident->idents.dim > 0)
+                if (tident->idents.length > 0)
                 {
                     //printf("matching %s to %s\n", tparam->toChars(), t->toChars());
                     Dsymbol *s = t->toDsymbol(sc);
-                    for (size_t j = tident->idents.dim; j-- > 0; )
+                    for (size_t j = tident->idents.length; j-- > 0; )
                     {
                         RootObject *id = tident->idents[j];
                         if (id->dyncast() == DYNCAST_IDENTIFIER)
@@ -3364,7 +3364,7 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                 /* Need a loc to go with the semantic routine.
                  */
                 Loc loc;
-                if (parameters->dim)
+                if (parameters->length)
                 {
                     TemplateParameter *tp = (*parameters)[0];
                     loc = tp->loc;
@@ -3570,7 +3570,7 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                     if (fparam->type->ty != Tident)
                         goto L1;
                     TypeIdentifier *tid = (TypeIdentifier *)fparam->type;
-                    if (tid->idents.dim)
+                    if (tid->idents.length)
                         goto L1;
 
                     /* Look through parameters to find tuple matching tid->ident
@@ -3578,7 +3578,7 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                     size_t tupi = 0;
                     for (; 1; tupi++)
                     {
-                        if (tupi == parameters->dim)
+                        if (tupi == parameters->length)
                             goto L1;
                         TemplateParameter *tx = (*parameters)[tupi];
                         TemplateTupleParameter *tup = tx->isTemplateTupleParameter();
@@ -3598,7 +3598,7 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                     {
                         // Existing deduced argument must be a tuple, and must match
                         Tuple *tup = isTuple(o);
-                        if (!tup || tup->objects.dim != tuple_dim)
+                        if (!tup || tup->objects.length != tuple_dim)
                         {
                             result = MATCHnomatch;
                             return;
@@ -3659,7 +3659,7 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
             {
                 TypeIdentifier *tp = (TypeIdentifier *)tparam;
 
-                for (size_t i = 0; i < t->idents.dim; i++)
+                for (size_t i = 0; i < t->idents.length; i++)
                 {
                     RootObject *id1 = t->idents[i];
                     RootObject *id2 = tp->idents[i];
@@ -3748,19 +3748,19 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                 {
                     //printf("\ttest: tempinst->tiargs[%d]\n", i);
                     RootObject *o1 = NULL;
-                    if (i < t->tempinst->tiargs->dim)
+                    if (i < t->tempinst->tiargs->length)
                         o1 = (*t->tempinst->tiargs)[i];
-                    else if (i < t->tempinst->tdtypes.dim && i < tp->tempinst->tiargs->dim)
+                    else if (i < t->tempinst->tdtypes.length && i < tp->tempinst->tiargs->length)
                     {
                         // Pick up default arg
                         o1 = t->tempinst->tdtypes[i];
                     }
-                    else if (i >= tp->tempinst->tiargs->dim)
+                    else if (i >= tp->tempinst->tiargs->length)
                         break;
 
-                    if (i >= tp->tempinst->tiargs->dim)
+                    if (i >= tp->tempinst->tiargs->length)
                     {
-                        size_t dim = tempdecl->parameters->dim - (tempdecl->isVariadic() ? 1 : 0);
+                        size_t dim = tempdecl->parameters->length - (tempdecl->isVariadic() ? 1 : 0);
                         while (i < dim && ((*tempdecl->parameters)[i]->dependent ||
                                            (*tempdecl->parameters)[i]->hasDefaultArg()))
                         {
@@ -3774,9 +3774,9 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                     RootObject *o2 = (*tp->tempinst->tiargs)[i];
                     Type *t2 = isType(o2);
 
-                    size_t j = (t2 && t2->ty == Tident && i == tp->tempinst->tiargs->dim - 1)
+                    size_t j = (t2 && t2->ty == Tident && i == tp->tempinst->tiargs->length - 1)
                         ? templateParameterLookup(t2, parameters) : IDX_NOTFOUND;
-                    if (j != IDX_NOTFOUND && j == parameters->dim - 1 &&
+                    if (j != IDX_NOTFOUND && j == parameters->length - 1 &&
                         (*parameters)[j]->isTemplateTupleParameter())
                     {
                         /* Given:
@@ -3790,12 +3790,12 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                          */
                         Tuple *vt = new Tuple();
                         size_t vtdim = (tempdecl->isVariadic()
-                                        ? t->tempinst->tiargs->dim : t->tempinst->tdtypes.dim) - i;
+                                        ? t->tempinst->tiargs->length : t->tempinst->tdtypes.length) - i;
                         vt->objects.setDim(vtdim);
                         for (size_t k = 0; k < vtdim; k++)
                         {
                             RootObject *o;
-                            if (k < t->tempinst->tiargs->dim)
+                            if (k < t->tempinst->tiargs->length)
                                 o = (*t->tempinst->tiargs)[i + k];
                             else    // Pick up default arg
                                 o = t->tempinst->tdtypes[i + k];
@@ -3929,9 +3929,9 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                  *  S!(T).foo
                  */
                 TypeInstance *tpi = (TypeInstance *)tparam;
-                if (tpi->idents.dim)
+                if (tpi->idents.length)
                 {
-                    RootObject *id = tpi->idents[tpi->idents.dim - 1];
+                    RootObject *id = tpi->idents[tpi->idents.length - 1];
                     if (id->dyncast() == DYNCAST_IDENTIFIER && t->sym->ident->equals((Identifier *)id))
                     {
                         Type *tparent = t->sym->parent->getType();
@@ -3939,9 +3939,9 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                         {
                             /* Slice off the .foo in S!(T).foo
                              */
-                            tpi->idents.dim--;
+                            tpi->idents.length--;
                             result = deduceType(tparent, sc, tpi, parameters, dedtypes, wm);
-                            tpi->idents.dim++;
+                            tpi->idents.length++;
                             return;
                         }
                     }
@@ -4014,8 +4014,8 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
             {
                 // Make a temporary copy of dedtypes so we don't destroy it
                 Objects *tmpdedtypes = new Objects();
-                tmpdedtypes->setDim(dedtypes->dim);
-                memcpy(tmpdedtypes->tdata(), dedtypes->tdata(), dedtypes->dim * sizeof(void *));
+                tmpdedtypes->setDim(dedtypes->length);
+                memcpy(tmpdedtypes->tdata(), dedtypes->tdata(), dedtypes->length * sizeof(void *));
 
                 TypeInstance *t = new TypeInstance(Loc(), parti);
                 MATCH m = deduceType(t, sc, tparam, parameters, tmpdedtypes);
@@ -4023,8 +4023,8 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                 {
                     // If this is the first ever match, it becomes our best estimate
                     if (numBaseClassMatches==0)
-                        memcpy(best->tdata(), tmpdedtypes->tdata(), tmpdedtypes->dim * sizeof(void *));
-                    else for (size_t k = 0; k < tmpdedtypes->dim; ++k)
+                        memcpy(best->tdata(), tmpdedtypes->tdata(), tmpdedtypes->length * sizeof(void *));
+                    else for (size_t k = 0; k < tmpdedtypes->length; ++k)
                     {
                         // If we've found more than one possible type for a parameter,
                         // mark it as unknown.
@@ -4074,9 +4074,9 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                  *  S!(T).foo
                  */
                 TypeInstance *tpi = (TypeInstance *)tparam;
-                if (tpi->idents.dim)
+                if (tpi->idents.length)
                 {
-                    RootObject *id = tpi->idents[tpi->idents.dim - 1];
+                    RootObject *id = tpi->idents[tpi->idents.length - 1];
                     if (id->dyncast() == DYNCAST_IDENTIFIER && t->sym->ident->equals((Identifier *)id))
                     {
                         Type *tparent = t->sym->parent->getType();
@@ -4084,9 +4084,9 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                         {
                             /* Slice off the .foo in S!(T).foo
                              */
-                            tpi->idents.dim--;
+                            tpi->idents.length--;
                             result = deduceType(tparent, sc, tpi, parameters, dedtypes, wm);
-                            tpi->idents.dim++;
+                            tpi->idents.length++;
                             return;
                         }
                     }
@@ -4106,10 +4106,10 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
 
                 // Our best guess at dedtypes
                 Objects *best = new Objects();
-                best->setDim(dedtypes->dim);
+                best->setDim(dedtypes->length);
 
                 ClassDeclaration *s = t->sym;
-                while (s && s->baseclasses->dim > 0)
+                while (s && s->baseclasses->length > 0)
                 {
                     // Test the base class
                     deduceBaseClassParameters((*s->baseclasses)[0],
@@ -4133,7 +4133,7 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                 }
 
                 // If we got at least one match, copy the known types into dedtypes
-                memcpy(dedtypes->tdata(), best->tdata(), best->dim * sizeof(void *));
+                memcpy(dedtypes->tdata(), best->tdata(), best->length * sizeof(void *));
                 result = MATCHconvert;
                 return;
             }
@@ -4159,7 +4159,7 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
         {
             //printf("Expression::deduceType(e = %s)\n", e->toChars());
             size_t i = templateParameterLookup(tparam, parameters);
-            if (i == IDX_NOTFOUND || ((TypeIdentifier *)tparam)->idents.dim > 0)
+            if (i == IDX_NOTFOUND || ((TypeIdentifier *)tparam)->idents.length > 0)
             {
                 if (e == emptyArrayElement && tparam->ty == Tarray)
                 {
@@ -4326,7 +4326,7 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
             if (e->type->ty == Tarray &&
                 (tparam->ty == Tsarray ||
                  (tparam->ty == Taarray && (taai = ((TypeAArray *)tparam)->index)->ty == Tident &&
-                  ((TypeIdentifier *)taai)->idents.dim == 0)))
+                  ((TypeIdentifier *)taai)->idents.length == 0)))
             {
                 // Consider compile-time known boundaries
                 e->type->nextOf()->sarrayOf(e->len)->accept(this);
@@ -4337,7 +4337,7 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
 
         void visit(ArrayLiteralExp *e)
         {
-            if ((!e->elements || !e->elements->dim) &&
+            if ((!e->elements || !e->elements->length) &&
                 e->type->toBasetype()->nextOf()->ty == Tvoid &&
                 tparam->ty == Tarray)
             {
@@ -4346,7 +4346,7 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                 return;
             }
 
-            if (tparam->ty == Tarray && e->elements && e->elements->dim)
+            if (tparam->ty == Tarray && e->elements && e->elements->length)
             {
                 Type *tn = ((TypeDArray *)tparam)->next;
                 result = MATCHexact;
@@ -4356,7 +4356,7 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                     if (m < result)
                         result = m;
                 }
-                for (size_t i = 0; i < e->elements->dim; i++)
+                for (size_t i = 0; i < e->elements->length; i++)
                 {
                     if (result <= MATCHnomatch)
                         break;
@@ -4374,10 +4374,10 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
             if (e->type->ty == Tarray &&
                 (tparam->ty == Tsarray ||
                  (tparam->ty == Taarray && (taai = ((TypeAArray *)tparam)->index)->ty == Tident &&
-                  ((TypeIdentifier *)taai)->idents.dim == 0)))
+                  ((TypeIdentifier *)taai)->idents.length == 0)))
             {
                 // Consider compile-time known boundaries
-                e->type->nextOf()->sarrayOf(e->elements->dim)->accept(this);
+                e->type->nextOf()->sarrayOf(e->elements->length)->accept(this);
                 return;
             }
             visit((Expression *)e);
@@ -4385,11 +4385,11 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
 
         void visit(AssocArrayLiteralExp *e)
         {
-            if (tparam->ty == Taarray && e->keys && e->keys->dim)
+            if (tparam->ty == Taarray && e->keys && e->keys->length)
             {
                 TypeAArray *taa = (TypeAArray *)tparam;
                 result = MATCHexact;
-                for (size_t i = 0; i < e->keys->dim; i++)
+                for (size_t i = 0; i < e->keys->length; i++)
                 {
                     MATCH m1 = deduceType((*e->keys)[i], sc, taa->index, parameters, dedtypes, wm);
                     if (m1 < result)
@@ -4429,9 +4429,9 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                     return;
 
                 Objects *tiargs = new Objects();
-                tiargs->reserve(e->td->parameters->dim);
+                tiargs->reserve(e->td->parameters->length);
 
-                for (size_t i = 0; i < e->td->parameters->dim; i++)
+                for (size_t i = 0; i < e->td->parameters->length; i++)
                 {
                     TemplateParameter *tp = (*e->td->parameters)[i];
                     size_t u = 0;
@@ -4498,7 +4498,7 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
             if (e->type->ty == Tarray &&
                 (tparam->ty == Tsarray ||
                  (tparam->ty == Taarray && (taai = ((TypeAArray *)tparam)->index)->ty == Tident &&
-                  ((TypeIdentifier *)taai)->idents.dim == 0)))
+                  ((TypeIdentifier *)taai)->idents.length == 0)))
             {
                 // Consider compile-time known boundaries
                 if (Type *tsa = toStaticArrayType(e))
@@ -4597,7 +4597,7 @@ bool reliesOnTident(Type *t, TemplateParameters *tparams, size_t iStart)
                 return;
             }
 
-            for (size_t i = iStart; i < tparams->dim; i++)
+            for (size_t i = iStart; i < tparams->length; i++)
             {
                 TemplateParameter *tp = (*tparams)[i];
                 if (tp->ident->equals(t->ident))
@@ -4613,7 +4613,7 @@ bool reliesOnTident(Type *t, TemplateParameters *tparams, size_t iStart)
             if (!tparams)
                 return;
 
-            for (size_t i = iStart; i < tparams->dim; i++)
+            for (size_t i = iStart; i < tparams->length; i++)
             {
                 TemplateParameter *tp = (*tparams)[i];
                 if (t->tempinst->name == tp->ident)
@@ -4624,7 +4624,7 @@ bool reliesOnTident(Type *t, TemplateParameters *tparams, size_t iStart)
             }
             if (!t->tempinst->tiargs)
                 return;
-            for (size_t i = 0; i < t->tempinst->tiargs->dim; i++)
+            for (size_t i = 0; i < t->tempinst->tiargs->length; i++)
             {
                 Type *ta = isType((*t->tempinst->tiargs)[i]);
                 if (ta)
@@ -4646,7 +4646,7 @@ bool reliesOnTident(Type *t, TemplateParameters *tparams, size_t iStart)
         {
             if (t->arguments)
             {
-                for (size_t i = 0; i < t->arguments->dim; i++)
+                for (size_t i = 0; i < t->arguments->length; i++)
                 {
                     Parameter *arg = (*t->arguments)[i];
                     arg->type->accept(this);
@@ -4664,7 +4664,7 @@ bool reliesOnTident(Type *t, TemplateParameters *tparams, size_t iStart)
         void visit(IdentifierExp *e)
         {
             //printf("IdentifierExp::reliesOnTident('%s')\n", e->toChars());
-            for (size_t i = iStart; i < tparams->dim; i++)
+            for (size_t i = iStart; i < tparams->length; i++)
             {
                 TemplateParameter *tp = (*tparams)[i];
                 if (e->ident == tp->ident)
@@ -4680,7 +4680,7 @@ bool reliesOnTident(Type *t, TemplateParameters *tparams, size_t iStart)
             //printf("TupleExp::reliesOnTident('%s')\n", e->toChars());
             if (e->exps)
             {
-                for (size_t i = 0; i < e->exps->dim; i++)
+                for (size_t i = 0; i < e->exps->length; i++)
                 {
                     Expression *ea = (*e->exps)[i];
                     ea->accept(this);
@@ -4695,7 +4695,7 @@ bool reliesOnTident(Type *t, TemplateParameters *tparams, size_t iStart)
             //printf("ArrayLiteralExp::reliesOnTident('%s')\n", e->toChars());
             if (e->elements)
             {
-                for (size_t i = 0; i < e->elements->dim; i++)
+                for (size_t i = 0; i < e->elements->length; i++)
                 {
                     Expression *el = (*e->elements)[i];
                     el->accept(this);
@@ -4708,14 +4708,14 @@ bool reliesOnTident(Type *t, TemplateParameters *tparams, size_t iStart)
         void visit(AssocArrayLiteralExp *e)
         {
             //printf("AssocArrayLiteralExp::reliesOnTident('%s')\n", e->toChars());
-            for (size_t i = 0; i < e->keys->dim; i++)
+            for (size_t i = 0; i < e->keys->length; i++)
             {
                 Expression *ek = (*e->keys)[i];
                 ek->accept(this);
                 if (result)
                     return;
             }
-            for (size_t i = 0; i < e->values->dim; i++)
+            for (size_t i = 0; i < e->values->length; i++)
             {
                 Expression *ev = (*e->values)[i];
                 ev->accept(this);
@@ -4729,7 +4729,7 @@ bool reliesOnTident(Type *t, TemplateParameters *tparams, size_t iStart)
             //printf("StructLiteralExp::reliesOnTident('%s')\n", e->toChars());
             if (e->elements)
             {
-                for (size_t i = 0; i < e->elements->dim; i++)
+                for (size_t i = 0; i < e->elements->length; i++)
                 {
                     Expression *ea = (*e->elements)[i];
                     ea->accept(this);
@@ -4752,7 +4752,7 @@ bool reliesOnTident(Type *t, TemplateParameters *tparams, size_t iStart)
                 e->thisexp->accept(this);
             if (!result && e->newargs)
             {
-                for (size_t i = 0; i < e->newargs->dim; i++)
+                for (size_t i = 0; i < e->newargs->length; i++)
                 {
                     Expression *ea = (*e->newargs)[i];
                     ea->accept(this);
@@ -4763,7 +4763,7 @@ bool reliesOnTident(Type *t, TemplateParameters *tparams, size_t iStart)
             e->newtype->accept(this);
             if (!result && e->arguments)
             {
-                for (size_t i = 0; i < e->arguments->dim; i++)
+                for (size_t i = 0; i < e->arguments->length; i++)
                 {
                     Expression *ea = (*e->arguments)[i];
                     ea->accept(this);
@@ -4799,7 +4799,7 @@ bool reliesOnTident(Type *t, TemplateParameters *tparams, size_t iStart)
             //printf("TraitsExp::reliesOnTident('%s')\n", e->toChars());
             if (e->args)
             {
-                for (size_t i = 0; i < e->args->dim; i++)
+                for (size_t i = 0; i < e->args->length; i++)
                 {
                     RootObject *oa = (*e->args)[i];
                     if (Expression *ea = isExpression(oa))
@@ -4830,7 +4830,7 @@ bool reliesOnTident(Type *t, TemplateParameters *tparams, size_t iStart)
             visit((UnaExp *)e);
             if (!result && e->ti->tiargs)
             {
-                for (size_t i = 0; i < e->ti->tiargs->dim; i++)
+                for (size_t i = 0; i < e->ti->tiargs->length; i++)
                 {
                     RootObject *oa = (*e->ti->tiargs)[i];
                     if (Expression *ea = isExpression(oa))
@@ -4849,7 +4849,7 @@ bool reliesOnTident(Type *t, TemplateParameters *tparams, size_t iStart)
             visit((UnaExp *)e);
             if (!result && e->arguments)
             {
-                for (size_t i = 0; i < e->arguments->dim; i++)
+                for (size_t i = 0; i < e->arguments->length; i++)
                 {
                     Expression *ea = (*e->arguments)[i];
                     ea->accept(this);
@@ -4892,7 +4892,7 @@ bool reliesOnTident(Type *t, TemplateParameters *tparams, size_t iStart)
             visit((UnaExp *)e);
             if (!result && e->arguments)
             {
-                for (size_t i = 0; i < e->arguments->dim; i++)
+                for (size_t i = 0; i < e->arguments->length; i++)
                 {
                     Expression *ea = (*e->arguments)[i];
                     ea->accept(this);
@@ -4975,7 +4975,7 @@ MATCH TemplateParameter::matchArg(Loc instLoc, Scope *sc, Objects *tiargs,
 {
     RootObject *oarg;
 
-    if (i < tiargs->dim)
+    if (i < tiargs->length)
         oarg = (*tiargs)[i];
     else
     {
@@ -4983,7 +4983,7 @@ MATCH TemplateParameter::matchArg(Loc instLoc, Scope *sc, Objects *tiargs,
         oarg = defaultArg(instLoc, sc);
         if (!oarg)
         {
-            assert(i < dedtypes->dim);
+            assert(i < dedtypes->length);
             // It might have already been deduced
             oarg = (*dedtypes)[i];
             if (!oarg)
@@ -5706,7 +5706,7 @@ MATCH TemplateTupleParameter::matchArg(Loc, Scope *sc, Objects *tiargs,
     /* The rest of the actual arguments (tiargs[]) form the match
      * for the variadic parameter.
      */
-    assert(i + 1 == dedtypes->dim);     // must be the last one
+    assert(i + 1 == dedtypes->length);     // must be the last one
     Tuple *ovar;
 
     if (Tuple *u = isTuple((*dedtypes)[i]))
@@ -5714,17 +5714,17 @@ MATCH TemplateTupleParameter::matchArg(Loc, Scope *sc, Objects *tiargs,
         // It has already been deduced
         ovar = u;
     }
-    else if (i + 1 == tiargs->dim && isTuple((*tiargs)[i]))
+    else if (i + 1 == tiargs->length && isTuple((*tiargs)[i]))
         ovar = isTuple((*tiargs)[i]);
     else
     {
         ovar = new Tuple();
         //printf("ovar = %p\n", ovar);
-        if (i < tiargs->dim)
+        if (i < tiargs->length)
         {
-            //printf("i = %d, tiargs->dim = %d\n", i, tiargs->dim);
-            ovar->objects.setDim(tiargs->dim - i);
-            for (size_t j = 0; j < ovar->objects.dim; j++)
+            //printf("i = %d, tiargs->length = %d\n", i, tiargs->length);
+            ovar->objects.setDim(tiargs->length - i);
+            for (size_t j = 0; j < ovar->objects.length; j++)
                 ovar->objects[j] = (*tiargs)[i + j];
         }
     }
@@ -5760,8 +5760,8 @@ void TemplateTupleParameter::print(RootObject *, RootObject *oded)
     Tuple *v = isTuple(oded);
     assert(v);
 
-    //printf("|%d| ", v->objects.dim);
-    for (size_t i = 0; i < v->objects.dim; i++)
+    //printf("|%d| ", v->objects.length);
+    for (size_t i = 0; i < v->objects.length; i++)
     {
         if (i)
             printf(", ");
@@ -5873,8 +5873,8 @@ Objects *TemplateInstance::arraySyntaxCopy(Objects *objs)
     if (objs)
     {
         a = new Objects();
-        a->setDim(objs->dim);
-        for (size_t i = 0; i < objs->dim; i++)
+        a->setDim(objs->length);
+        for (size_t i = 0; i < objs->length; i++)
             (*a)[i] = objectSyntaxCopy((*objs)[i]);
     }
     return a;
@@ -5901,19 +5901,19 @@ void TemplateInstance::semantic(Scope *sc)
 
 void TemplateInstance::expandMembers(Scope *sc2)
 {
-    for (size_t i = 0; i < members->dim; i++)
+    for (size_t i = 0; i < members->length; i++)
     {
         Dsymbol *s = (*members)[i];
         s->setScope(sc2);
     }
 
-    for (size_t i = 0; i < members->dim; i++)
+    for (size_t i = 0; i < members->length; i++)
     {
         Dsymbol *s = (*members)[i];
         s->importAll(sc2);
     }
 
-    for (size_t i = 0; i < members->dim; i++)
+    for (size_t i = 0; i < members->length; i++)
     {
         Dsymbol *s = (*members)[i];
         //printf("\t[%d] semantic on '%s' %p kind %s in '%s'\n", i, s->toChars(), s, s->kind(), this->toChars());
@@ -6124,13 +6124,13 @@ Lerror:
     // Store the place we added it to in target_symbol_list(_idx) so we can
     // remove it later if we encounter an error.
     Dsymbols *target_symbol_list = appendToModuleMember();
-    size_t target_symbol_list_idx = target_symbol_list ? target_symbol_list->dim - 1 : 0;
+    size_t target_symbol_list_idx = target_symbol_list ? target_symbol_list->length - 1 : 0;
 
     // Copy the syntax trees from the TemplateDeclaration
     members = Dsymbol::arraySyntaxCopy(tempdecl->members);
 
     // resolve TemplateThisParameter
-    for (size_t i = 0; i < tempdecl->parameters->dim; i++)
+    for (size_t i = 0; i < tempdecl->parameters->length; i++)
     {
         if ((*tempdecl->parameters)[i]->isTemplateThisParameter() == NULL)
             continue;
@@ -6171,7 +6171,7 @@ Lerror:
     // Add members of template instance to template instance symbol table
 //    parent = scope->scopesym;
     symtab = new DsymbolTable();
-    for (size_t i = 0; i < members->dim; i++)
+    for (size_t i = 0; i < members->length; i++)
     {
         Dsymbol *s = (*members)[i];
         s->addMember(scope, this);
@@ -6181,8 +6181,8 @@ Lerror:
      * member has the same name as the template instance.
      * If so, this template instance becomes an alias for that member.
      */
-    //printf("members->dim = %d\n", members->dim);
-    if (members->dim)
+    //printf("members->length = %d\n", members->length);
+    if (members->length)
     {
         Dsymbol *s;
         if (Dsymbol::oneMembers(members, &s, tempdecl->ident) && s)
@@ -6224,7 +6224,7 @@ Lerror:
     /* ConditionalDeclaration may introduce eponymous declaration,
      * so we should find it once again after semantic.
      */
-    if (members->dim)
+    if (members->length)
     {
         Dsymbol *s;
         if (Dsymbol::oneMembers(members, &s, tempdecl->ident) && s)
@@ -6247,7 +6247,7 @@ Lerror:
      */
     {
     bool found_deferred_ad = false;
-    for (size_t i = 0; i < Module::deferred.dim; i++)
+    for (size_t i = 0; i < Module::deferred.length; i++)
     {
         Dsymbol *sd = Module::deferred[i];
         AggregateDeclaration *ad = sd->isAggregateDeclaration();
@@ -6263,7 +6263,7 @@ Lerror:
             }
         }
     }
-    if (found_deferred_ad || Module::deferred.dim)
+    if (found_deferred_ad || Module::deferred.length)
         goto Laftersemantic;
     }
 
@@ -6295,7 +6295,7 @@ Lerror:
         //printf("Run semantic3 on %s\n", toChars());
         trySemantic3(sc2);
 
-        for (size_t i = 0; i < deferred.dim; i++)
+        for (size_t i = 0; i < deferred.length; i++)
         {
             //printf("+ run deferred semantic3 on %s\n", deferred[i]->toChars());
             deferred[i]->semantic3(NULL);
@@ -6320,7 +6320,7 @@ Lerror:
              * all instantiated functions should run the semantic3 immediately.
              * See also compilable/test14973.d
              */
-            for (size_t i = 0; i < tdtypes.dim; i++)
+            for (size_t i = 0; i < tdtypes.length; i++)
             {
                 RootObject *oarg = tdtypes[i];
                 Dsymbol *s = getDsymbol(oarg);
@@ -6331,7 +6331,7 @@ Lerror:
                 {
                     if (!td->literal)
                         continue;
-                    assert(td->members && td->members->dim == 1);
+                    assert(td->members && td->members->length == 1);
                     s = (*td->members)[0];
                 }
                 if (FuncLiteralDeclaration *fld = s->isFuncLiteralDeclaration())
@@ -6365,7 +6365,7 @@ Lerror:
             //printf("deferred semantic3 of %p %s, ti = %s, ti->deferred = %p\n", this, toChars(), ti->toChars());
             for (size_t i = 0; ; i++)
             {
-                if (i == ti->deferred->dim)
+                if (i == ti->deferred->length)
                 {
                     ti->deferred->push(this);
                     break;
@@ -6436,7 +6436,7 @@ Lerror:
         //printf("replaceInstance()\n");
         TemplateInstances *tinstances = (TemplateInstances *)dmd_aaGetRvalue((AA *)tempdecl->instances, (void *)hash);
         assert(tinstances);
-        for (size_t i = 0; i < tinstances->dim; i++)
+        for (size_t i = 0; i < tinstances->length; i++)
         {
             TemplateInstance *ti = (*tinstances)[i];
             if (ti == errinst)
@@ -6547,7 +6547,7 @@ bool TemplateInstance::findTempDecl(Scope *sc, WithScopeSymbol **pwithsym)
   };
     // Look for forward references
     OverloadSet *tovers = tempdecl->isOverloadSet();
-    size_t overs_dim = tovers ? tovers->a.dim : 1;
+    size_t overs_dim = tovers ? tovers->a.length : 1;
     for (size_t oi = 0; oi < overs_dim; oi++)
     {
         if (overloadApply(tovers ? tovers->a[oi] : tempdecl, (void *)this, &ParamFwdTi::fp))
@@ -6581,7 +6581,7 @@ bool TemplateInstance::updateTempDecl(Scope *sc, Dsymbol *s)
         if (os)
         {
             s = NULL;
-            for (size_t i = 0; i < os->a.dim; i++)
+            for (size_t i = 0; i < os->a.length; i++)
             {
                 Dsymbol *s2 = os->a[i];
                 if (FuncDeclaration *f = s2->isFuncDeclaration())
@@ -6704,7 +6704,7 @@ bool TemplateInstance::semanticTiargs(Loc loc, Scope *sc, Objects *tiargs, int f
     if (!tiargs)
         return true;
     bool err = false;
-    for (size_t j = 0; j < tiargs->dim; j++)
+    for (size_t j = 0; j < tiargs->length; j++)
     {
         RootObject *o = (*tiargs)[j];
         Type *ta = isType(o);
@@ -6730,7 +6730,7 @@ bool TemplateInstance::semanticTiargs(Loc loc, Scope *sc, Objects *tiargs, int f
             {
                 // Expand tuple
                 TypeTuple *tt = (TypeTuple *)ta;
-                size_t dim = tt->arguments->dim;
+                size_t dim = tt->arguments->length;
                 tiargs->remove(j);
                 if (dim)
                 {
@@ -6798,7 +6798,7 @@ bool TemplateInstance::semanticTiargs(Loc loc, Scope *sc, Objects *tiargs, int f
             {
                 // Expand tuple
                 TupleExp *te = (TupleExp *)ea;
-                size_t dim = te->exps->dim;
+                size_t dim = te->exps->length;
                 tiargs->remove(j);
                 if (dim)
                 {
@@ -6925,7 +6925,7 @@ bool TemplateInstance::findBestMatch(Scope *sc, Expressions *fargs)
         assert(tempdecl);
         assert(tempdecl->_scope);
         // Deduce tdtypes
-        tdtypes.setDim(tempdecl->parameters->dim);
+        tdtypes.setDim(tempdecl->parameters->length);
         if (!tempdecl->matchWithInstance(sc, this, &tdtypes, fargs, 2))
         {
             error("incompatible arguments for template instantiation");
@@ -6965,13 +6965,13 @@ bool TemplateInstance::findBestMatch(Scope *sc, Expressions *fargs)
 
         // If more arguments than parameters,
         // then this is no match.
-        if (td->parameters->dim < ti->tiargs->dim)
+        if (td->parameters->length < ti->tiargs->length)
         {
             if (!td->isVariadic())
                 return 0;
         }
 
-        dedtypes.setDim(td->parameters->dim);
+        dedtypes.setDim(td->parameters->length);
         dedtypes.zero();
         assert(td->semanticRun != PASSinit);
         MATCH m = td->matchWithInstance(sc, ti, &dedtypes, ti->fargs, 0);
@@ -7002,8 +7002,8 @@ bool TemplateInstance::findBestMatch(Scope *sc, Expressions *fargs)
         td_ambig = NULL;
         td_best = td;
         m_best = m;
-        ti->tdtypes.setDim(dedtypes.dim);
-        memcpy(ti->tdtypes.tdata(), dedtypes.tdata(), ti->tdtypes.dim * sizeof(void *));
+        ti->tdtypes.setDim(dedtypes.length);
+        memcpy(ti->tdtypes.tdata(), dedtypes.tdata(), ti->tdtypes.length * sizeof(void *));
         return 0;
     }
   };
@@ -7018,7 +7018,7 @@ bool TemplateInstance::findBestMatch(Scope *sc, Expressions *fargs)
     TemplateDeclaration *td_last = NULL;
 
     OverloadSet *tovers = tempdecl->isOverloadSet();
-    size_t overs_dim = tovers ? tovers->a.dim : 1;
+    size_t overs_dim = tovers ? tovers->a.length : 1;
     for (size_t oi = 0; oi < overs_dim; oi++)
     {
         // result
@@ -7061,12 +7061,12 @@ bool TemplateInstance::findBestMatch(Scope *sc, Expressions *fargs)
          *    S!num s;             // S!1 is instantiated, not S!num
          *  }
          */
-        size_t dim = td_last->parameters->dim - (td_last->isVariadic() ? 1 : 0);
+        size_t dim = td_last->parameters->length - (td_last->isVariadic() ? 1 : 0);
         for (size_t i = 0; i < dim; i++)
         {
-            if (tiargs->dim <= i)
+            if (tiargs->length <= i)
                 tiargs->push(tdtypes[i]);
-            assert(i < tiargs->dim);
+            assert(i < tiargs->length);
 
             TemplateValueParameter *tvp = (*td_last->parameters)[i]->isTemplateValueParameter();
             if (!tvp)
@@ -7076,11 +7076,11 @@ bool TemplateInstance::findBestMatch(Scope *sc, Expressions *fargs)
 
             (*tiargs)[i] = tdtypes[i];
         }
-        if (td_last->isVariadic() && tiargs->dim == dim && tdtypes[dim])
+        if (td_last->isVariadic() && tiargs->length == dim && tdtypes[dim])
         {
             Tuple *va = isTuple(tdtypes[dim]);
             assert(va);
-            for (size_t i = 0; i < va->objects.dim; i++)
+            for (size_t i = 0; i < va->objects.length; i++)
                 tiargs->push(va->objects[i]);
         }
     }
@@ -7161,7 +7161,7 @@ bool TemplateInstance::needsTypeInference(Scope *sc, int flag)
         {
             if (!td2->onemember || !td2->onemember->isFuncDeclaration())
                 return 0;
-            if (ti->tiargs->dim >= td->parameters->dim - (td->isVariadic() ? 1 : 0))
+            if (ti->tiargs->length >= td->parameters->length - (td->isVariadic() ? 1 : 0))
                 return 0;
             return 1;
         }
@@ -7171,7 +7171,7 @@ bool TemplateInstance::needsTypeInference(Scope *sc, int flag)
             return 0;
         }
 
-        for (size_t i = 0; i < td->parameters->dim; i++)
+        for (size_t i = 0; i < td->parameters->length; i++)
         {
             if ((*td->parameters)[i]->isTemplateThisParameter())
                 return 1;
@@ -7180,18 +7180,18 @@ bool TemplateInstance::needsTypeInference(Scope *sc, int flag)
         /* Determine if the instance arguments, tiargs, are all that is necessary
          * to instantiate the template.
          */
-        //printf("tp = %p, td->parameters->dim = %d, tiargs->dim = %d\n", tp, td->parameters->dim, ti->tiargs->dim);
+        //printf("tp = %p, td->parameters->length = %d, tiargs->length = %d\n", tp, td->parameters->length, ti->tiargs->length);
         TypeFunction *tf = (TypeFunction *)fd->type;
         if (size_t dim = Parameter::dim(tf->parameters))
         {
             TemplateParameter *tp = td->isVariadic();
-            if (tp && td->parameters->dim > 1)
+            if (tp && td->parameters->length > 1)
                 return 1;
 
-            if (!tp && ti->tiargs->dim < td->parameters->dim)
+            if (!tp && ti->tiargs->length < td->parameters->length)
             {
                 // Can remain tiargs be filled by default arguments?
-                for (size_t i = ti->tiargs->dim; i < td->parameters->dim; i++)
+                for (size_t i = ti->tiargs->length; i < td->parameters->length; i++)
                 {
                     if (!(*td->parameters)[i]->hasDefaultArg())
                         return 1;
@@ -7211,7 +7211,7 @@ bool TemplateInstance::needsTypeInference(Scope *sc, int flag)
             /* Calculate the need for overload resolution.
              * When only one template can match with tiargs, inference is not necessary.
              */
-            dedtypes.setDim(td->parameters->dim);
+            dedtypes.setDim(td->parameters->length);
             dedtypes.zero();
             if (td->semanticRun == PASSinit)
             {
@@ -7251,7 +7251,7 @@ bool TemplateInstance::needsTypeInference(Scope *sc, int flag)
     p.count = 0;
 
     OverloadSet *tovers = tempdecl->isOverloadSet();
-    size_t overs_dim = tovers ? tovers->a.dim : 1;
+    size_t overs_dim = tovers ? tovers->a.length : 1;
     unsigned olderrs = global.errors;
     for (size_t oi = 0; oi < overs_dim; oi++)
     {
@@ -7287,7 +7287,7 @@ bool TemplateInstance::hasNestedArgs(Objects *args, bool isstatic)
     /* A nested instance happens when an argument references a local
      * symbol that is on the stack.
      */
-    for (size_t i = 0; i < args->dim; i++)
+    for (size_t i = 0; i < args->length; i++)
     {
         RootObject *o = (*args)[i];
         Expression *ea = isExpression(o);
@@ -7492,8 +7492,8 @@ Identifier *TemplateInstance::genIdent(Objects *args)
     }
     else
         buf.printf("__T%llu%s", (ulonglong)strlen(id), id);
-    size_t nparams = tempdecl->parameters->dim - (tempdecl->isVariadic() ? 1 : 0);
-    for (size_t i = 0; i < args->dim; i++)
+    size_t nparams = tempdecl->parameters->length - (tempdecl->isVariadic() ? 1 : 0);
+    for (size_t i = 0; i < args->length; i++)
     {
         RootObject *o = (*args)[i];
         Type *ta = isType(o);
@@ -7584,7 +7584,7 @@ Identifier *TemplateInstance::genIdent(Objects *args)
         }
         else if (va)
         {
-            assert(i + 1 == args->dim);         // must be last one
+            assert(i + 1 == args->length);         // must be last one
             args = &va->objects;
             i = -(size_t)1;
         }
@@ -7620,7 +7620,7 @@ void TemplateInstance::declareParameters(Scope *sc)
     assert(tempdecl);
 
     //printf("TemplateInstance::declareParameters()\n");
-    for (size_t i = 0; i < tdtypes.dim; i++)
+    for (size_t i = 0; i < tdtypes.length; i++)
     {
         TemplateParameter *tp = (*tempdecl->parameters)[i];
         //RootObject *o = (*tiargs)[i];
@@ -7654,7 +7654,7 @@ void TemplateInstance::semantic2(Scope *sc)
         if (needGagging)
             oldGaggedErrors = global.startGagging();
 
-        for (size_t i = 0; i < members->dim; i++)
+        for (size_t i = 0; i < members->length; i++)
         {
             Dsymbol *s = (*members)[i];
             s->semantic2(sc);
@@ -7709,7 +7709,7 @@ void TemplateInstance::semantic3(Scope *sc)
         if (needGagging)
             oldGaggedErrors = global.startGagging();
 
-        for (size_t i = 0; i < members->dim; i++)
+        for (size_t i = 0; i < members->length; i++)
         {
             Dsymbol *s = (*members)[i];
             s->semantic3(sc);
@@ -7884,7 +7884,7 @@ int TemplateInstance::compare(RootObject *o)
     TemplateInstance *ti = (TemplateInstance *)o;
 
     //printf("this = %p, ti = %p\n", this, ti);
-    assert(tdtypes.dim == ti->tdtypes.dim);
+    assert(tdtypes.length == ti->tdtypes.length);
 
     // Nesting must match
     if (enclosing != ti->enclosing)
@@ -7913,7 +7913,7 @@ int TemplateInstance::compare(RootObject *o)
                 {
                     if (!fargs)
                         goto Lnotequals;
-                    if (fargs->dim <= j)
+                    if (fargs->length <= j)
                         break;
                     Expression *farg = (*fargs)[j];
                     if (farg->isLvalue())
@@ -7961,7 +7961,7 @@ void unSpeculative(Scope *sc, RootObject *o)
 
     if (Tuple *tup = isTuple(o))
     {
-        for (size_t i = 0; i < tup->objects.dim; i++)
+        for (size_t i = 0; i < tup->objects.length; i++)
         {
             unSpeculative(sc, tup->objects[i]);
         }
@@ -8179,7 +8179,7 @@ bool TemplateInstance::needsCodegen()
 /* ======================== TemplateMixin ================================ */
 
 TemplateMixin::TemplateMixin(Loc loc, Identifier *ident, TypeQualified *tqual, Objects *tiargs)
-        : TemplateInstance(loc, tqual->idents.dim ? (Identifier *)tqual->idents[tqual->idents.dim - 1]
+        : TemplateInstance(loc, tqual->idents.length ? (Identifier *)tqual->idents[tqual->idents.length - 1]
                                                   : ((TypeIdentifier *)tqual)->ident)
 {
     //printf("TemplateMixin(ident = '%s')\n", ident ? ident->toChars() : "");
@@ -8218,7 +8218,7 @@ bool TemplateMixin::findTempDecl(Scope *sc)
         if (os)
         {
             Dsymbol *ds = NULL;
-            for (size_t i = 0; i < os->a.dim; i++)
+            for (size_t i = 0; i < os->a.length; i++)
             {
                 Dsymbol *s2 = os->a[i]->isTemplateDeclaration();
                 if (s2)
@@ -8264,7 +8264,7 @@ bool TemplateMixin::findTempDecl(Scope *sc)
   };
     // Look for forward references
     OverloadSet *tovers = tempdecl->isOverloadSet();
-    size_t overs_dim = tovers ? tovers->a.dim : 1;
+    size_t overs_dim = tovers ? tovers->a.length : 1;
     for (size_t oi = 0; oi < overs_dim; oi++)
     {
         if (overloadApply(tovers ? tovers->a[oi] : tempdecl, (void *)this, &ParamFwdResTm::fp))
@@ -8356,10 +8356,10 @@ void TemplateMixin::semantic(Scope *sc)
 
         /* Different argument list lengths happen with variadic args
          */
-        if (tiargs->dim != tm->tiargs->dim)
+        if (tiargs->length != tm->tiargs->length)
             continue;
 
-        for (size_t i = 0; i < tiargs->dim; i++)
+        for (size_t i = 0; i < tiargs->length; i++)
         {
             RootObject *o = (*tiargs)[i];
             Type *ta = isType(o);
@@ -8426,7 +8426,7 @@ void TemplateMixin::semantic(Scope *sc)
     declareParameters(argscope);
 
     // Add members to enclosing scope, as well as this scope
-    for (size_t i = 0; i < members->dim; i++)
+    for (size_t i = 0; i < members->length; i++)
     {
         Dsymbol *s = (*members)[i];
         s->addMember(argscope, this);
@@ -8436,7 +8436,7 @@ void TemplateMixin::semantic(Scope *sc)
 
     // Do semantic() analysis on template instance members
     Scope *sc2 = argscope->push(this);
-    //size_t deferred_dim = Module::deferred.dim;
+    //size_t deferred_dim = Module::deferred.length;
 
     static int nest;
     //printf("%d\n", nest);
@@ -8447,19 +8447,19 @@ void TemplateMixin::semantic(Scope *sc)
         fatal();
     }
 
-    for (size_t i = 0; i < members->dim; i++)
+    for (size_t i = 0; i < members->length; i++)
     {
         Dsymbol *s = (*members)[i];
         s->setScope(sc2);
     }
 
-    for (size_t i = 0; i < members->dim; i++)
+    for (size_t i = 0; i < members->length; i++)
     {
         Dsymbol *s = (*members)[i];
         s->importAll(sc2);
     }
 
-    for (size_t i = 0; i < members->dim; i++)
+    for (size_t i = 0; i < members->length; i++)
     {
         Dsymbol *s = (*members)[i];
         s->semantic(sc2);
@@ -8471,7 +8471,7 @@ void TemplateMixin::semantic(Scope *sc)
      * Because the members would already call Module::addDeferredSemantic() for themselves.
      * See Struct, Class, Interface, and EnumDeclaration::semantic().
      */
-    //if (!sc->func && Module::deferred.dim > deferred_dim) {}
+    //if (!sc->func && Module::deferred.length > deferred_dim) {}
 
     AggregateDeclaration *ad = toParent()->isAggregateDeclaration();
     if (sc->func && !ad)
@@ -8502,7 +8502,7 @@ void TemplateMixin::semantic2(Scope *sc)
         assert(sc);
         sc = sc->push(argsym);
         sc = sc->push(this);
-        for (size_t i = 0; i < members->dim; i++)
+        for (size_t i = 0; i < members->length; i++)
         {
             Dsymbol *s = (*members)[i];
             s->semantic2(sc);
@@ -8521,7 +8521,7 @@ void TemplateMixin::semantic3(Scope *sc)
     {
         sc = sc->push(argsym);
         sc = sc->push(this);
-        for (size_t i = 0; i < members->dim; i++)
+        for (size_t i = 0; i < members->length; i++)
         {
             Dsymbol *s = (*members)[i];
             s->semantic3(sc);
@@ -8547,7 +8547,7 @@ int TemplateMixin::apply(Dsymbol_apply_ft_t fp, void *param)
         semantic(NULL); // try to resolve it
     if (members)
     {
-        for (size_t i = 0; i < members->dim; i++)
+        for (size_t i = 0; i < members->length; i++)
         {
             Dsymbol *s = (*members)[i];
             if (s)
@@ -8566,7 +8566,7 @@ bool TemplateMixin::hasPointers()
 
     if (members)
     {
-        for (size_t i = 0; i < members->dim; i++)
+        for (size_t i = 0; i < members->length; i++)
         {
             Dsymbol *s = (*members)[i];
             //printf(" s = %s %s\n", s->kind(), s->toChars());
@@ -8586,7 +8586,7 @@ void TemplateMixin::setFieldOffset(AggregateDeclaration *ad, unsigned *poffset, 
         semantic(NULL);         // try to resolve it
     if (members)
     {
-        for (size_t i = 0; i < members->dim; i++)
+        for (size_t i = 0; i < members->length; i++)
         {
             Dsymbol *s = (*members)[i];
             //printf("\t%s\n", s->toChars());

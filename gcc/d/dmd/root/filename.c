@@ -425,7 +425,7 @@ const char *FileName::searchPath(Strings *path, const char *name, bool cwd)
     if (path)
     {
 
-        for (size_t i = 0; i < path->dim; i++)
+        for (size_t i = 0; i < path->length; i++)
         {
             const char *p = (*path)[i];
             const char *n = combine(p, name);
@@ -492,7 +492,7 @@ const char *FileName::safeSearchPath(Strings *path, const char *name)
         /* Each path is converted to a cannonical name and then a check is done to see
          * that the searched name is really a child one of the the paths searched.
          */
-        for (size_t i = 0; i < path->dim; i++)
+        for (size_t i = 0; i < path->length; i++)
         {
             const char *cname = NULL;
             const char *cpath = canonicalName((*path)[i]);

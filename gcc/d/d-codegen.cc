@@ -356,7 +356,7 @@ build_class_binfo (tree super, ClassDeclaration *cd)
 tree
 build_interface_binfo (tree super, ClassDeclaration *cd, unsigned& offset)
 {
-  tree binfo = make_tree_binfo (cd->baseclasses->dim);
+  tree binfo = make_tree_binfo (cd->baseclasses->length);
   tree ctype = build_ctype (cd->type);
 
   /* Want RECORD_TYPE, not POINTER_TYPE.  */
@@ -365,7 +365,7 @@ build_interface_binfo (tree super, ClassDeclaration *cd, unsigned& offset)
   BINFO_OFFSET (binfo) = size_int (offset * Target::ptrsize);
   BINFO_VIRTUAL_P (binfo) = 1;
 
-  for (size_t i = 0; i < cd->baseclasses->dim; i++, offset++)
+  for (size_t i = 0; i < cd->baseclasses->length; i++, offset++)
     {
       BaseClass *bc = (*cd->baseclasses)[i];
       BINFO_BASE_APPEND (binfo, build_interface_binfo (binfo, bc->sym, offset));
@@ -804,7 +804,7 @@ identity_compare_p (StructDeclaration *sd)
 
   unsigned offset = 0;
 
-  for (size_t i = 0; i < sd->fields.dim; i++)
+  for (size_t i = 0; i < sd->fields.length; i++)
     {
       VarDeclaration *vd = sd->fields[i];
       Type *tb = vd->type->toBasetype ();
@@ -864,7 +864,7 @@ lower_struct_comparison (tree_code code, StructDeclaration *sd,
   tree tmemcmp = NULL_TREE;
 
   /* We can skip the compare if the structs are empty.  */
-  if (sd->fields.dim == 0)
+  if (sd->fields.length == 0)
     {
       tmemcmp = build_boolop (code, integer_zero_node, integer_zero_node);
       if (TREE_SIDE_EFFECTS (t2))
@@ -885,7 +885,7 @@ lower_struct_comparison (tree_code code, StructDeclaration *sd,
       return build_boolop (code, tmemcmp, integer_zero_node);
     }
 
-  for (size_t i = 0; i < sd->fields.dim; i++)
+  for (size_t i = 0; i < sd->fields.length; i++)
     {
       VarDeclaration *vd = sd->fields[i];
       Type *type = vd->type->toBasetype ();
@@ -968,7 +968,7 @@ build_struct_comparison (tree_code code, StructDeclaration *sd,
 			 tree t1, tree t2)
 {
   /* We can skip the compare if the structs are empty.  */
-  if (sd->fields.dim == 0)
+  if (sd->fields.length == 0)
     {
       tree exp = build_boolop (code, integer_zero_node, integer_zero_node);
       if (TREE_SIDE_EFFECTS (t2))
@@ -1869,7 +1869,7 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
   if (arguments)
     {
       /* First pass, evaluated expanded tuples in function arguments.  */
-      for (size_t i = 0; i < arguments->dim; ++i)
+      for (size_t i = 0; i < arguments->length; ++i)
 	{
 	Lagain:
 	  Expression *arg = (*arguments)[i];
@@ -1889,8 +1889,8 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
       /* if _arguments[] is the first argument.  */
       size_t varargs = (tf->linkage == LINKd && tf->varargs == 1);
 
-      /* Assumes arguments->dim <= formal_args->dim if (!tf->varargs).  */
-      for (size_t i = 0; i < arguments->dim; ++i)
+      /* Assumes arguments->length <= formal_args->length if (!tf->varargs).  */
+      for (size_t i = 0; i < arguments->length; ++i)
 	{
 	  Expression *arg = (*arguments)[i];
 	  tree targ = build_expr (arg);
@@ -2381,11 +2381,11 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
     {
       if (fd->parameters)
 	{
-	  for (size_t i = 0; fd->parameters && i < fd->parameters->dim; i++)
+	  for (size_t i = 0; fd->parameters && i < fd->parameters->length; i++)
 	    {
 	      VarDeclaration *v = (*fd->parameters)[i];
 	      /* Remove if already in closureVars so can push to front.  */
-	      for (size_t j = i; j < fd->closureVars.dim; j++)
+	      for (size_t j = i; j < fd->closureVars.length; j++)
 		{
 		  Dsymbol *s = fd->closureVars[j];
 		  if (s == v)
@@ -2401,7 +2401,7 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
       /* Also add hidden 'this' to outer context.  */
       if (fd->vthis)
 	{
-	  for (size_t i = 0; i < fd->closureVars.dim; i++)
+	  for (size_t i = 0; i < fd->closureVars.length; i++)
 	    {
 	      Dsymbol *s = fd->closureVars[i];
 	      if (s == fd->vthis)
@@ -2414,7 +2414,7 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
 	}
     }
 
-  for (size_t i = 0; i < fd->closureVars.dim; i++)
+  for (size_t i = 0; i < fd->closureVars.length; i++)
     {
       VarDeclaration *v = fd->closureVars[i];
       tree vsym = get_symbol_decl (v);
@@ -2507,7 +2507,7 @@ build_closure (FuncDeclaration *fd)
     }
 
   /* Copy parameters that are referenced nonlocally.  */
-  for (size_t i = 0; i < fd->closureVars.dim; i++)
+  for (size_t i = 0; i < fd->closureVars.length; i++)
     {
       VarDeclaration *v = fd->closureVars[i];
 

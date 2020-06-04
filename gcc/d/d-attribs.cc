@@ -245,7 +245,7 @@ build_attributes (Expressions *eattrs)
 
   tree attribs = NULL_TREE;
 
-  for (size_t i = 0; i < eattrs->dim; i++)
+  for (size_t i = 0; i < eattrs->length; i++)
     {
       Expression *attr = (*eattrs)[i];
       Dsymbol *sym = attr->type->toDsymbol (0);
@@ -297,7 +297,7 @@ build_attributes (Expressions *eattrs)
       /* Chain all attribute arguments together.  */
       tree args = NULL_TREE;
 
-      for (size_t j = 1; j < elems->dim; j++)
+      for (size_t j = 1; j < elems->length; j++)
 	{
 	  Expression *e = (*elems)[j];
 	  tree t;

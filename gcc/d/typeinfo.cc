@@ -417,7 +417,7 @@ class TypeInfoVisitor : public Visitor
 
     /* Put out the offset to where vtblInterfaces are written.  */
     tree value = d_array_value (array_type_node,
-				size_int (cd->vtblInterfaces->dim),
+				size_int (cd->vtblInterfaces->length),
 				build_offset (csym, size_int (offset)));
     this->layout_field (value);
 
@@ -430,7 +430,7 @@ class TypeInfoVisitor : public Visitor
 	size_t offset;  */
     vec<constructor_elt, va_gc> *elms = NULL;
 
-    for (size_t i = 0; i < cd->vtblInterfaces->dim; i++)
+    for (size_t i = 0; i < cd->vtblInterfaces->length; i++)
       {
 	BaseClass *b = (*cd->vtblInterfaces)[i];
 	ClassDeclaration *id = b->sym;
@@ -451,7 +451,7 @@ class TypeInfoVisitor : public Visitor
 	    gcc_assert (voffset != 0u);
 	    value = build_offset (csym, size_int (voffset));
 
-	    CONSTRUCTOR_APPEND_ELT (v, size_int (1), size_int (id->vtbl.dim));
+	    CONSTRUCTOR_APPEND_ELT (v, size_int (1), size_int (id->vtbl.length));
 	    CONSTRUCTOR_APPEND_ELT (v, size_int (2), value);
 	  }
 
@@ -463,7 +463,7 @@ class TypeInfoVisitor : public Visitor
 	CONSTRUCTOR_APPEND_ELT (elms, size_int (i), value);
       }
 
-    tree domain = size_int (cd->vtblInterfaces->dim - 1);
+    tree domain = size_int (cd->vtblInterfaces->length - 1);
     tree arrtype = build_array_type (vtbl_interface_type_node,
 				     build_index_type (domain));
     return build_constructor (arrtype, elms);
@@ -483,7 +483,7 @@ class TypeInfoVisitor : public Visitor
     vec<constructor_elt, va_gc> *elms = NULL;
     FuncDeclarations bvtbl;
 
-    if (id->vtbl.dim == 0 || base_vtable_offset (cd, bs) == ~0u)
+    if (id->vtbl.length == 0 || base_vtable_offset (cd, bs) == ~0u)
       return;
 
     /* Fill bvtbl with the functions we want to put out.  */
@@ -500,7 +500,7 @@ class TypeInfoVisitor : public Visitor
 	CONSTRUCTOR_APPEND_ELT (elms, size_zero_node, value);
       }
 
-    for (size_t i = id->vtblOffset () ? 1 : 0; i < id->vtbl.dim; i++)
+    for (size_t i = id->vtblOffset () ? 1 : 0; i < id->vtbl.length; i++)
       {
 	FuncDeclaration *fd = (cd == bcd) ? bs->vtbl[i] : bvtbl[i];
 	if (fd != NULL)
@@ -510,7 +510,7 @@ class TypeInfoVisitor : public Visitor
 	  }
       }
 
-    tree vtbldomain = build_index_type (size_int (id->vtbl.dim - 1));
+    tree vtbldomain = build_index_type (size_int (id->vtbl.length - 1));
     tree vtbltype = build_array_type (vtable_entry_type, vtbldomain);
     tree value = build_constructor (vtbltype, elms);
     this->layout_field (value);
@@ -827,12 +827,12 @@ public:
 	this->layout_string (name);
 
 	/* The vtable of the class declaration.  */
-	value = d_array_value (array_type_node, size_int (cd->vtbl.dim),
+	value = d_array_value (array_type_node, size_int (cd->vtbl.length),
 			       build_address (get_vtable_decl (cd)));
 	this->layout_field (value);
 
 	/* Array of base interfaces that have their own vtable.  */
-	if (cd->vtblInterfaces->dim)
+	if (cd->vtblInterfaces->length)
 	  interfaces = this->layout_interfaces (cd);
 	else
 	  this->layout_field (null_array_node);
@@ -884,7 +884,7 @@ public:
 	    if (!bcd->members)
 	      continue;
 
-	    for (size_t i = 0; i < bcd->members->dim; i++)
+	    for (size_t i = 0; i < bcd->members->length; i++)
 	      {
 		Dsymbol *sm = (*bcd->members)[i];
 		if (sm->hasPointers ())
@@ -933,7 +933,7 @@ public:
 	this->layout_field (null_array_node);
 
 	/* Array of base interfaces that have their own vtable.  */
-	if (cd->vtblInterfaces->dim)
+	if (cd->vtblInterfaces->length)
 	  interfaces = this->layout_interfaces (cd);
 	else
 	  this->layout_field (null_array_node);
@@ -974,13 +974,13 @@ public:
     if (!cd->isInterfaceDeclaration ())
       {
 	/* Put out this class' interface vtables[].  */
-	for (size_t i = 0; i < cd->vtblInterfaces->dim; i++)
+	for (size_t i = 0; i < cd->vtblInterfaces->length; i++)
 	  this->layout_base_vtable (cd, cd, i);
 
 	/* Put out the overriding interface vtables[].  */
 	for (ClassDeclaration *bcd = cd->baseClass; bcd; bcd = bcd->baseClass)
 	  {
-	    for (size_t i = 0; i < bcd->vtblInterfaces->dim; i++)
+	    for (size_t i = 0; i < bcd->vtblInterfaces->length; i++)
 	      this->layout_base_vtable (cd, bcd, i);
 	  }
       }
@@ -1134,9 +1134,9 @@ public:
     this->layout_base (Type::typeinfotypelist);
 
     /* TypeInfo[] elements;  */
-    Type *satype = Type::tvoidptr->sarrayOf (ti->arguments->dim);
+    Type *satype = Type::tvoidptr->sarrayOf (ti->arguments->length);
     vec<constructor_elt, va_gc> *elms = NULL;
-    for (size_t i = 0; i < ti->arguments->dim; i++)
+    for (size_t i = 0; i < ti->arguments->length; i++)
       {
 	Parameter *arg = (*ti->arguments)[i];
 	CONSTRUCTOR_APPEND_ELT (elms, size_int (i),
@@ -1145,7 +1145,7 @@ public:
     tree ctor = build_constructor (build_ctype (satype), elms);
     tree decl = this->internal_reference (ctor);
 
-    tree length = size_int (ti->arguments->dim);
+    tree length = size_int (ti->arguments->length);
     tree ptr = build_address (decl);
     this->layout_field (d_array_value (array_type_node, length, ptr));
 
@@ -1193,7 +1193,7 @@ layout_classinfo_interfaces (ClassDeclaration *decl)
   tree type = tinfo_types[TK_CLASSINFO_TYPE];
   size_t structsize = int_size_in_bytes (type);
 
-  if (decl->vtblInterfaces->dim)
+  if (decl->vtblInterfaces->length)
     {
       size_t interfacesize = int_size_in_bytes (vtbl_interface_type_node);
       tree field;
@@ -1202,28 +1202,28 @@ layout_classinfo_interfaces (ClassDeclaration *decl)
 
       /* First layout the static array of Interface, which provides information
 	 about the vtables that follow.  */
-      tree domain = size_int (decl->vtblInterfaces->dim - 1);
+      tree domain = size_int (decl->vtblInterfaces->length - 1);
       tree arrtype = build_array_type (vtbl_interface_type_node,
 				       build_index_type (domain));
       field = create_field_decl (arrtype, NULL, 1, 1);
       insert_aggregate_field (type, field, structsize);
-      structsize += decl->vtblInterfaces->dim * interfacesize;
+      structsize += decl->vtblInterfaces->length * interfacesize;
 
       /* For each interface, layout each vtable.  */
-      for (size_t i = 0; i < decl->vtblInterfaces->dim; i++)
+      for (size_t i = 0; i < decl->vtblInterfaces->length; i++)
 	{
 	  BaseClass *b = (*decl->vtblInterfaces)[i];
 	  ClassDeclaration *id = b->sym;
 	  unsigned offset = base_vtable_offset (decl, b);
 
-	  if (id->vtbl.dim && offset != ~0u)
+	  if (id->vtbl.length && offset != ~0u)
 	    {
-	      tree vtbldomain = build_index_type (size_int (id->vtbl.dim - 1));
+	      tree vtbldomain = build_index_type (size_int (id->vtbl.length - 1));
 	      tree vtbltype = build_array_type (vtable_entry_type, vtbldomain);
 
 	      field = create_field_decl (vtbltype, NULL, 1, 1);
 	      insert_aggregate_field (type, field, offset);
-	      structsize += id->vtbl.dim * Target::ptrsize;
+	      structsize += id->vtbl.length * Target::ptrsize;
 	    }
 	}
     }
@@ -1231,23 +1231,23 @@ layout_classinfo_interfaces (ClassDeclaration *decl)
   /* Layout the arrays of overriding interface vtables.  */
   for (ClassDeclaration *bcd = decl->baseClass; bcd; bcd = bcd->baseClass)
     {
-      for (size_t i = 0; i < bcd->vtblInterfaces->dim; i++)
+      for (size_t i = 0; i < bcd->vtblInterfaces->length; i++)
 	{
 	  BaseClass *b = (*bcd->vtblInterfaces)[i];
 	  ClassDeclaration *id = b->sym;
 	  unsigned offset = base_vtable_offset (decl, b);
 
-	  if (id->vtbl.dim && offset != ~0u)
+	  if (id->vtbl.length && offset != ~0u)
 	    {
 	      if (type == tinfo_types[TK_CLASSINFO_TYPE])
 		type = copy_aggregate_type (type);
 
-	      tree vtbldomain = build_index_type (size_int (id->vtbl.dim - 1));
+	      tree vtbldomain = build_index_type (size_int (id->vtbl.length - 1));
 	      tree vtbltype = build_array_type (vtable_entry_type, vtbldomain);
 
 	      tree field = create_field_decl (vtbltype, NULL, 1, 1);
 	      insert_aggregate_field (type, field, offset);
-	      structsize += id->vtbl.dim * Target::ptrsize;
+	      structsize += id->vtbl.length * Target::ptrsize;
 	    }
 	}
     }
@@ -1732,7 +1732,7 @@ public:
     if (!t->arguments)
       return;
 
-    for (size_t i = 0; i < t->arguments->dim; i++)
+    for (size_t i = 0; i < t->arguments->length; i++)
       {
 	Type *tprm = (*t->arguments)[i]->type;
 	if (tprm)

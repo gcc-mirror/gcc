@@ -52,7 +52,7 @@ Prot getAccess(AggregateDeclaration *ad, Dsymbol *smember)
     }
     if (ClassDeclaration *cd = ad->isClassDeclaration())
     {
-        for (size_t i = 0; i < cd->baseclasses->dim; i++)
+        for (size_t i = 0; i < cd->baseclasses->length; i++)
         {
             BaseClass *b = (*cd->baseclasses)[i];
 
@@ -110,7 +110,7 @@ static bool isAccessible(
 
         if (ClassDeclaration *cdthis = dthis->isClassDeclaration())
         {
-            for (size_t i = 0; i < cdthis->baseclasses->dim; i++)
+            for (size_t i = 0; i < cdthis->baseclasses->length; i++)
             {
                 BaseClass *b = (*cdthis->baseclasses)[i];
                 Prot access = getAccess(b->sym, smember);
@@ -128,7 +128,7 @@ static bool isAccessible(
         {
             if (ClassDeclaration *cdthis = dthis->isClassDeclaration())
             {
-                for (size_t i = 0; i < cdthis->baseclasses->dim; i++)
+                for (size_t i = 0; i < cdthis->baseclasses->length; i++)
                 {
                     BaseClass *b = (*cdthis->baseclasses)[i];
                     if (isAccessible(smember, sfunc, b->sym, cdscope))

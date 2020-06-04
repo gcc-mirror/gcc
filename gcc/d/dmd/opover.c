@@ -239,10 +239,10 @@ Expression *op_overload(Expression *e, Scope *sc)
                 Expression *ae1old = ae->e1;
 
                 const bool maybeSlice =
-                    (ae->arguments->dim == 0 ||
-                     (ae->arguments->dim == 1 && (*ae->arguments)[0]->op == TOKinterval));
+                    (ae->arguments->length == 0 ||
+                     (ae->arguments->length == 1 && (*ae->arguments)[0]->op == TOKinterval));
                 IntervalExp *ie = NULL;
-                if (maybeSlice && ae->arguments->dim)
+                if (maybeSlice && ae->arguments->length)
                 {
                     assert((*ae->arguments)[0]->op == TOKinterval);
                     ie = (IntervalExp *)(*ae->arguments)[0];
@@ -397,10 +397,10 @@ Expression *op_overload(Expression *e, Scope *sc)
             Expression *ae1old = ae->e1;
 
             const bool maybeSlice =
-                (ae->arguments->dim == 0 ||
-                 (ae->arguments->dim == 1 && (*ae->arguments)[0]->op == TOKinterval));
+                (ae->arguments->length == 0 ||
+                 (ae->arguments->length == 1 && (*ae->arguments)[0]->op == TOKinterval));
             IntervalExp *ie = NULL;
-            if (maybeSlice && ae->arguments->dim)
+            if (maybeSlice && ae->arguments->length)
             {
                 assert((*ae->arguments)[0]->op == TOKinterval);
                 ie = (IntervalExp *)(*ae->arguments)[0];
@@ -439,7 +439,7 @@ Expression *op_overload(Expression *e, Scope *sc)
                             return;
                         }
                         // Convert to IndexExp
-                        if (ae->arguments->dim == 1)
+                        if (ae->arguments->length == 1)
                         {
                             result = new IndexExp(ae->loc, ae->e1, (*ae->arguments)[0]);
                             result = semantic(result, sc);
@@ -1079,11 +1079,11 @@ Expression *op_overload(Expression *e, Scope *sc)
             {
                 TupleExp *tup1 = (TupleExp *)e->e1;
                 TupleExp *tup2 = (TupleExp *)e->e2;
-                size_t dim = tup1->exps->dim;
-                if (dim != tup2->exps->dim)
+                size_t dim = tup1->exps->length;
+                if (dim != tup2->exps->length)
                 {
                     e->error("mismatched tuple lengths, %d and %d",
-                        (int)dim, (int)tup2->exps->dim);
+                        (int)dim, (int)tup2->exps->length);
                     result = new ErrorExp();
                     return;
                 }
@@ -1140,10 +1140,10 @@ Expression *op_overload(Expression *e, Scope *sc)
                 Expression *ae1old = ae->e1;
 
                 const bool maybeSlice =
-                    (ae->arguments->dim == 0 ||
-                     (ae->arguments->dim == 1 && (*ae->arguments)[0]->op == TOKinterval));
+                    (ae->arguments->length == 0 ||
+                     (ae->arguments->length == 1 && (*ae->arguments)[0]->op == TOKinterval));
                 IntervalExp *ie = NULL;
-                if (maybeSlice && ae->arguments->dim)
+                if (maybeSlice && ae->arguments->length)
                 {
                     assert((*ae->arguments)[0]->op == TOKinterval);
                     ie = (IntervalExp *)(*ae->arguments)[0];
@@ -1704,12 +1704,12 @@ Lerr:
 
 bool inferApplyArgTypes(ForeachStatement *fes, Scope *sc, Dsymbol *&sapply)
 {
-    if (!fes->parameters || !fes->parameters->dim)
+    if (!fes->parameters || !fes->parameters->length)
         return false;
 
     if (sapply)     // prefer opApply
     {
-        for (size_t u = 0; u < fes->parameters->dim; u++)
+        for (size_t u = 0; u < fes->parameters->length; u++)
         {
             Parameter *p = (*fes->parameters)[u];
             if (p->type)
@@ -1742,7 +1742,7 @@ bool inferApplyArgTypes(ForeachStatement *fes, Scope *sc, Dsymbol *&sapply)
 
     /* Return if no parameters need types.
      */
-    for (size_t u = 0; u < fes->parameters->dim; u++)
+    for (size_t u = 0; u < fes->parameters->length; u++)
     {
         Parameter *p = (*fes->parameters)[u];
         if (!p->type)
@@ -1760,7 +1760,7 @@ bool inferApplyArgTypes(ForeachStatement *fes, Scope *sc, Dsymbol *&sapply)
         case Tarray:
         case Tsarray:
         case Ttuple:
-            if (fes->parameters->dim == 2)
+            if (fes->parameters->length == 2)
             {
                 if (!p->type)
                 {
@@ -1780,7 +1780,7 @@ bool inferApplyArgTypes(ForeachStatement *fes, Scope *sc, Dsymbol *&sapply)
         {
             TypeAArray *taa = (TypeAArray *)tab;
 
-            if (fes->parameters->dim == 2)
+            if (fes->parameters->length == 2)
             {
                 if (!p->type)
                 {
@@ -1808,7 +1808,7 @@ bool inferApplyArgTypes(ForeachStatement *fes, Scope *sc, Dsymbol *&sapply)
             goto Laggr;
 
         Laggr:
-            if (fes->parameters->dim == 1)
+            if (fes->parameters->length == 1)
             {
                 if (!p->type)
                 {
@@ -1937,7 +1937,7 @@ static int inferApplyArgTypesY(TypeFunction *tf, Parameters *parameters, int fla
     nparams = Parameter::dim(tf->parameters);
     if (nparams == 0 || tf->varargs)
         goto Lnomatch;          // not enough parameters
-    if (parameters->dim != nparams)
+    if (parameters->length != nparams)
         goto Lnomatch;          // not enough parameters
 
     for (size_t u = 0; u < nparams; u++)

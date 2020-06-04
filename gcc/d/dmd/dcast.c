@@ -148,7 +148,7 @@ Expression *implicitCastTo(Expression *e, Scope *sc, Type *t)
                 Type *tb = t->toBasetype();
                 Type *tx;
                 if (tb->ty == Tsarray)
-                    tx = tb->nextOf()->sarrayOf(ale->elements ? ale->elements->dim : 0);
+                    tx = tb->nextOf()->sarrayOf(ale->elements ? ale->elements->length : 0);
                 else
                     tx = tb->nextOf()->arrayOf();
                 e->e1 = ale->implicitCastTo(sc, tx);
@@ -515,7 +515,7 @@ MATCH implicitConvTo(Expression *e, Type *t)
                 ((TypeStruct *)e->type)->sym == ((TypeStruct *)t)->sym)
             {
                 result = MATCHconst;
-                for (size_t i = 0; i < e->elements->dim; i++)
+                for (size_t i = 0; i < e->elements->length; i++)
                 {
                     Expression *el = (*e->elements)[i];
                     if (!el)
@@ -658,12 +658,12 @@ MATCH implicitConvTo(Expression *e, Type *t)
                 if (tb->ty == Tsarray)
                 {
                     TypeSArray *tsa = (TypeSArray *)tb;
-                    if (e->elements->dim != tsa->dim->toInteger())
+                    if (e->elements->length != tsa->dim->toInteger())
                         result = MATCHnomatch;
                 }
 
                 Type *telement = tb->nextOf();
-                if (!e->elements->dim)
+                if (!e->elements->length)
                 {
                     if (typen->ty != Tvoid)
                         result = typen->implicitConvTo(telement);
@@ -676,7 +676,7 @@ MATCH implicitConvTo(Expression *e, Type *t)
                         if (m < result)
                             result = m;
                     }
-                    for (size_t i = 0; i < e->elements->dim; i++)
+                    for (size_t i = 0; i < e->elements->length; i++)
                     {
                         Expression *el = (*e->elements)[i];
                         if (result == MATCHnomatch)
@@ -702,7 +702,7 @@ MATCH implicitConvTo(Expression *e, Type *t)
                 TypeVector *tv = (TypeVector *)tb;
                 TypeSArray *tbase = (TypeSArray *)tv->basetype;
                 assert(tbase->ty == Tsarray);
-                const size_t edim = e->elements->dim;
+                const size_t edim = e->elements->length;
                 const size_t tbasedim = tbase->dim->toInteger();
                 if (edim > tbasedim)
                 {
@@ -740,7 +740,7 @@ MATCH implicitConvTo(Expression *e, Type *t)
             if (tb->ty == Taarray && typeb->ty == Taarray)
             {
                 result = MATCHexact;
-                for (size_t i = 0; i < e->keys->dim; i++)
+                for (size_t i = 0; i < e->keys->length; i++)
                 {
                     Expression *el = (*e->keys)[i];
                     MATCH m = el->implicitConvTo(((TypeAArray *)tb)->index);
@@ -849,7 +849,7 @@ MATCH implicitConvTo(Expression *e, Type *t)
                 if (targ->constConv(targ->castMod(mod)) == MATCHnomatch)
                     return;
             }
-            for (size_t i = j; i < e->arguments->dim; ++i)
+            for (size_t i = j; i < e->arguments->length; ++i)
             {
                 Expression *earg = (*e->arguments)[i];
                 Type *targ = earg->type->toBasetype();
@@ -895,7 +895,7 @@ MATCH implicitConvTo(Expression *e, Type *t)
             {
                 OverExp *eo = (OverExp *)e->e1;
                 FuncDeclaration *f = NULL;
-                for (size_t i = 0; i < eo->vars->a.dim; i++)
+                for (size_t i = 0; i < eo->vars->a.length; i++)
                 {
                     Dsymbol *s = eo->vars->a[i];
                     FuncDeclaration *f2 = s->isFuncDeclaration();
@@ -1126,7 +1126,7 @@ MATCH implicitConvTo(Expression *e, Type *t)
 
                 size_t nparams = Parameter::dim(tf->parameters);
                 size_t j = (tf->linkage == LINKd && tf->varargs == 1); // if TypeInfoArray was prepended
-                for (size_t i = j; i < e->arguments->dim; ++i)
+                for (size_t i = j; i < e->arguments->length; ++i)
                 {
                     Expression *earg = (*args)[i];
                     Type *targ = earg->type->toBasetype();
@@ -1156,7 +1156,7 @@ MATCH implicitConvTo(Expression *e, Type *t)
              */
             if (!e->member && e->arguments)
             {
-                for (size_t i = 0; i < e->arguments->dim; ++i)
+                for (size_t i = 0; i < e->arguments->length; ++i)
                 {
                     Expression *earg = (*e->arguments)[i];
                     if (!earg)  // Bugzilla 14853: if it's on overlapped field
@@ -1201,7 +1201,7 @@ MATCH implicitConvTo(Expression *e, Type *t)
                     {
                         static bool convertible(Loc loc, ClassDeclaration *cd, MOD mod)
                         {
-                            for (size_t i = 0; i < cd->fields.dim; i++)
+                            for (size_t i = 0; i < cd->fields.length; i++)
                             {
                                 VarDeclaration *v = cd->fields[i];
                                 Initializer *init = v->_init;
@@ -1902,7 +1902,7 @@ Expression *castTo(Expression *e, Scope *sc, Type *t)
                 {
                     OverExp *eo = (OverExp *)e->e1;
                     FuncDeclaration *f = NULL;
-                    for (size_t i = 0; i < eo->vars->a.dim; i++)
+                    for (size_t i = 0; i < eo->vars->a.length; i++)
                     {
                         Dsymbol *s = eo->vars->a[i];
                         FuncDeclaration *f2 = s->isFuncDeclaration();
@@ -1976,7 +1976,7 @@ Expression *castTo(Expression *e, Scope *sc, Type *t)
             TupleExp *te = (TupleExp *)e->copy();
             te->e0 = e->e0 ? e->e0->copy() : NULL;
             te->exps = (Expressions *)e->exps->copy();
-            for (size_t i = 0; i < te->exps->dim; i++)
+            for (size_t i = 0; i < te->exps->length; i++)
             {
                 Expression *ex = (*te->exps)[i];
                 ex = ex->castTo(sc, t);
@@ -2022,7 +2022,7 @@ Expression *castTo(Expression *e, Scope *sc, Type *t)
                     if (tb->ty == Tsarray)
                     {
                         TypeSArray *tsa = (TypeSArray *)tb;
-                        if (e->elements->dim != tsa->dim->toInteger())
+                        if (e->elements->length != tsa->dim->toInteger())
                             goto L1;
                     }
 
@@ -2030,7 +2030,7 @@ Expression *castTo(Expression *e, Scope *sc, Type *t)
                     if (e->basis)
                         ae->basis = e->basis->castTo(sc, tb->nextOf());
                     ae->elements = e->elements->copy();
-                    for (size_t i = 0; i < e->elements->dim; i++)
+                    for (size_t i = 0; i < e->elements->length; i++)
                     {
                         Expression *ex = (*e->elements)[i];
                         if (!ex)
@@ -2059,7 +2059,7 @@ Expression *castTo(Expression *e, Scope *sc, Type *t)
                 TypeVector *tv = (TypeVector *)tb;
                 TypeSArray *tbase = (TypeSArray *)tv->basetype;
                 assert(tbase->ty == Tsarray);
-                const size_t edim = e->elements->dim;
+                const size_t edim = e->elements->length;
                 const size_t tbasedim = tbase->dim->toInteger();
                 if (edim > tbasedim)
                     goto L1;
@@ -2106,8 +2106,8 @@ Expression *castTo(Expression *e, Scope *sc, Type *t)
                 AssocArrayLiteralExp *ae = (AssocArrayLiteralExp *)e->copy();
                 ae->keys = e->keys->copy();
                 ae->values = e->values->copy();
-                assert(e->keys->dim == e->values->dim);
-                for (size_t i = 0; i < e->keys->dim; i++)
+                assert(e->keys->length == e->values->length);
+                for (size_t i = 0; i < e->keys->length; i++)
                 {
                     Expression *ex = (*e->values)[i];
                     ex = ex->castTo(sc, tb->nextOf());
@@ -2408,7 +2408,7 @@ Expression *inferType(Expression *e, Type *t, int flag)
                 Type *tn = tb->nextOf();
                 if (ale->basis)
                     ale->basis = inferType(ale->basis, tn, flag);
-                for (size_t i = 0; i < ale->elements->dim; i++)
+                for (size_t i = 0; i < ale->elements->length; i++)
                 {
                     Expression *e = (*ale->elements)[i];
                     if (e)
@@ -2429,7 +2429,7 @@ Expression *inferType(Expression *e, Type *t, int flag)
                 TypeAArray *taa = (TypeAArray *)tb;
                 Type *ti = taa->index;
                 Type *tv = taa->nextOf();
-                for (size_t i = 0; i < aale->keys->dim; i++)
+                for (size_t i = 0; i < aale->keys->length; i++)
                 {
                     Expression *e = (*aale->keys)[i];
                     if (e)
@@ -2438,7 +2438,7 @@ Expression *inferType(Expression *e, Type *t, int flag)
                         (*aale->keys)[i] = e;
                     }
                 }
-                for (size_t i = 0; i < aale->values->dim; i++)
+                for (size_t i = 0; i < aale->values->length; i++)
                 {
                     Expression *e = (*aale->values)[i];
                     if (e)
@@ -2552,7 +2552,7 @@ Expression *scaleFactor(BinExp *be, Scope *sc)
 bool isVoidArrayLiteral(Expression *e, Type *other)
 {
     while (e->op == TOKarrayliteral && e->type->ty == Tarray
-        && (((ArrayLiteralExp *)e)->elements->dim == 1))
+        && (((ArrayLiteralExp *)e)->elements->length == 1))
     {
         ArrayLiteralExp *ale = (ArrayLiteralExp *)e;
         e = ale->getElement(0);
@@ -2566,7 +2566,7 @@ bool isVoidArrayLiteral(Expression *e, Type *other)
     Type *t = e->type;
     return (e->op == TOKarrayliteral && t->ty == Tarray &&
         t->nextOf()->ty == Tvoid &&
-        ((ArrayLiteralExp *)e)->elements->dim == 0);
+        ((ArrayLiteralExp *)e)->elements->length == 0);
 }
 
 // used by deduceType()

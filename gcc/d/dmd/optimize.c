@@ -242,7 +242,7 @@ Expression *Expression_optimize(Expression *e, int result, bool keepLvalue)
         void visit(TupleExp *e)
         {
             expOptimize(e->e0, WANTvalue);
-            for (size_t i = 0; i < e->exps->dim; i++)
+            for (size_t i = 0; i < e->exps->length; i++)
             {
                 expOptimize((*e->exps)[i], WANTvalue);
             }
@@ -253,7 +253,7 @@ Expression *Expression_optimize(Expression *e, int result, bool keepLvalue)
             if (e->elements)
             {
                 expOptimize(e->basis, result & WANTexpand);
-                for (size_t i = 0; i < e->elements->dim; i++)
+                for (size_t i = 0; i < e->elements->length; i++)
                 {
                     expOptimize((*e->elements)[i], result & WANTexpand);
                 }
@@ -262,8 +262,8 @@ Expression *Expression_optimize(Expression *e, int result, bool keepLvalue)
 
         void visit(AssocArrayLiteralExp *e)
         {
-            assert(e->keys->dim == e->values->dim);
-            for (size_t i = 0; i < e->keys->dim; i++)
+            assert(e->keys->length == e->values->length);
+            for (size_t i = 0; i < e->keys->length; i++)
             {
                 expOptimize((*e->keys)[i], result & WANTexpand);
                 expOptimize((*e->values)[i], result & WANTexpand);
@@ -277,7 +277,7 @@ Expression *Expression_optimize(Expression *e, int result, bool keepLvalue)
             e->stageflags |= stageOptimize;
             if (e->elements)
             {
-                for (size_t i = 0; i < e->elements->dim; i++)
+                for (size_t i = 0; i < e->elements->length; i++)
                 {
                     expOptimize((*e->elements)[i], result & WANTexpand);
                 }
@@ -501,7 +501,7 @@ Expression *Expression_optimize(Expression *e, int result, bool keepLvalue)
             // Optimize parameters
             if (e->newargs)
             {
-                for (size_t i = 0; i < e->newargs->dim; i++)
+                for (size_t i = 0; i < e->newargs->length; i++)
                 {
                     expOptimize((*e->newargs)[i], WANTvalue);
                 }
@@ -509,7 +509,7 @@ Expression *Expression_optimize(Expression *e, int result, bool keepLvalue)
 
             if (e->arguments)
             {
-                for (size_t i = 0; i < e->arguments->dim; i++)
+                for (size_t i = 0; i < e->arguments->length; i++)
                 {
                     expOptimize((*e->arguments)[i], WANTvalue);
                 }
@@ -529,7 +529,7 @@ Expression *Expression_optimize(Expression *e, int result, bool keepLvalue)
                 if (t1->ty == Tdelegate) t1 = t1->nextOf();
                 assert(t1->ty == Tfunction);
                 TypeFunction *tf = (TypeFunction *)t1;
-                for (size_t i = 0; i < e->arguments->dim; i++)
+                for (size_t i = 0; i < e->arguments->length; i++)
                 {
                     Parameter *p = Parameter::getNth(tf->parameters, i);
                     bool keep = p && (p->storageClass & (STCref | STCout)) != 0;
@@ -1017,7 +1017,7 @@ Expression *Expression_optimize(Expression *e, int result, bool keepLvalue)
             if (arr->op == TOKstring)
                 len = ((StringExp *)arr)->len;
             else if (arr->op == TOKarrayliteral)
-                len = ((ArrayLiteralExp *)arr)->elements->dim;
+                len = ((ArrayLiteralExp *)arr)->elements->length;
             else
             {
                 Type *t = arr->type->toBasetype();

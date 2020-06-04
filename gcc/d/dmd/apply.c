@@ -43,7 +43,7 @@ public:
     {
         if (!e)
             return false;
-        for (size_t i = 0; i < e->dim && !stop; i++)
+        for (size_t i = 0; i < e->length && !stop; i++)
             doCond((*e)[i]);
         return stop;
     }

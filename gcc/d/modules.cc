@@ -506,8 +506,8 @@ layout_moduleinfo_fields (Module *decl, tree type)
 
   /* Array of module imports is laid out as a length field, followed by
      a static array of ModuleInfo pointers.  */
-  size_t aimports_dim = decl->aimports.dim;
-  for (size_t i = 0; i < decl->aimports.dim; i++)
+  size_t aimports_dim = decl->aimports.length;
+  for (size_t i = 0; i < decl->aimports.length; i++)
     {
       Module *mi = decl->aimports[i];
       if (!mi->needmoduleinfo)
@@ -523,16 +523,17 @@ layout_moduleinfo_fields (Module *decl, tree type)
 
   /* Array of local ClassInfo decls are laid out in the same way.  */
   ClassDeclarations aclasses;
-  for (size_t i = 0; i < decl->members->dim; i++)
+  for (size_t i = 0; i < decl->members->length; i++)
     {
       Dsymbol *member = (*decl->members)[i];
       member->addLocalClass (&aclasses);
     }
 
-  if (aclasses.dim)
+  if (aclasses.length)
     {
       layout_moduleinfo_field (size_type_node, type, offset);
-      layout_moduleinfo_field (make_array_type (Type::tvoidptr, aclasses.dim),
+      layout_moduleinfo_field (make_array_type (Type::tvoidptr,
+						aclasses.length),
 			       type, offset);
     }
 
@@ -556,14 +557,14 @@ layout_moduleinfo (Module *decl)
   ClassDeclarations aclasses;
   FuncDeclaration *sgetmembers;
 
-  for (size_t i = 0; i < decl->members->dim; i++)
+  for (size_t i = 0; i < decl->members->length; i++)
     {
       Dsymbol *member = (*decl->members)[i];
       member->addLocalClass (&aclasses);
     }
 
-  size_t aimports_dim = decl->aimports.dim;
-  for (size_t i = 0; i < decl->aimports.dim; i++)
+  size_t aimports_dim = decl->aimports.length;
+  for (size_t i = 0; i < decl->aimports.length; i++)
     {
       Module *mi = decl->aimports[i];
       if (!mi->needmoduleinfo)
@@ -589,7 +590,7 @@ layout_moduleinfo (Module *decl)
     flags |= MIunitTest;
   if (aimports_dim)
     flags |= MIimportedModules;
-  if (aclasses.dim)
+  if (aclasses.length)
     flags |= MIlocalClasses;
   if (!decl->needmoduleinfo)
     flags |= MIstandalone;
@@ -652,7 +653,7 @@ layout_moduleinfo (Module *decl)
       tree satype = make_array_type (Type::tvoidptr, aimports_dim);
       size_t idx = 0;
 
-      for (size_t i = 0; i < decl->aimports.dim; i++)
+      for (size_t i = 0; i < decl->aimports.length; i++)
 	{
 	  Module *mi = decl->aimports[i];
 	  if (mi->needmoduleinfo)
@@ -671,16 +672,16 @@ layout_moduleinfo (Module *decl)
   if (flags & MIlocalClasses)
     {
       vec<constructor_elt, va_gc> *elms = NULL;
-      tree satype = make_array_type (Type::tvoidptr, aclasses.dim);
+      tree satype = make_array_type (Type::tvoidptr, aclasses.length);
 
-      for (size_t i = 0; i < aclasses.dim; i++)
+      for (size_t i = 0; i < aclasses.length; i++)
 	{
 	  ClassDeclaration *cd = aclasses[i];
 	  CONSTRUCTOR_APPEND_ELT (elms, size_int (i),
 				  build_address (get_classinfo_decl (cd)));
 	}
 
-      CONSTRUCTOR_APPEND_ELT (minit, NULL_TREE, size_int (aclasses.dim));
+      CONSTRUCTOR_APPEND_ELT (minit, NULL_TREE, size_int (aclasses.length));
       CONSTRUCTOR_APPEND_ELT (minit, NULL_TREE,
 			      build_constructor (satype, elms));
     }
@@ -722,7 +723,7 @@ build_module_tree (Module *decl)
   /* Layout module members.  */
   if (decl->members)
     {
-      for (size_t i = 0; i < decl->members->dim; i++)
+      for (size_t i = 0; i < decl->members->length; i++)
 	{
 	  Dsymbol *s = (*decl->members)[i];
 	  build_decl_tree (s);

@@ -176,7 +176,7 @@ deps_write (Module *module, OutBuffer *buffer, unsigned colmax = 72)
   column++;
 
   /* Search all modules for file dependencies.  */
-  while (modlist.dim > 0)
+  while (modlist.length > 0)
     {
       Module *depmod = modlist.pop ();
 
@@ -193,7 +193,7 @@ deps_write (Module *module, OutBuffer *buffer, unsigned colmax = 72)
 	phonylist.safe_push (modstr);
 
       /* Add imported files to dependency list.  */
-      for (size_t i = 0; i < depmod->contentImportedFiles.dim; i++)
+      for (size_t i = 0; i < depmod->contentImportedFiles.length; i++)
 	{
 	  const char *impstr = depmod->contentImportedFiles[i];
 	  dependencies.safe_push (impstr);
@@ -201,7 +201,7 @@ deps_write (Module *module, OutBuffer *buffer, unsigned colmax = 72)
 	}
 
       /* Search all imports of the module.  */
-      for (size_t i = 0; i < depmod->aimports.dim; i++)
+      for (size_t i = 0; i < depmod->aimports.length; i++)
 	{
 	  Module *m = depmod->aimports[i];
 
@@ -998,7 +998,7 @@ d_parse_file (void)
 	{
 	  OutBuffer buf;
 	  buf.writestring ("predefs  ");
-	  for (size_t i = 0; i < global.params.versionids->dim; i++)
+	  for (size_t i = 0; i < global.params.versionids->length; i++)
 	    {
 	      const char *s = (*global.params.versionids)[i];
 	      buf.writestring (" ");
@@ -1068,14 +1068,14 @@ d_parse_file (void)
     }
 
   /* Read all D source files.  */
-  for (size_t i = 0; i < modules.dim; i++)
+  for (size_t i = 0; i < modules.length; i++)
     {
       Module *m = modules[i];
       m->read (Loc ());
     }
 
   /* Parse all D source files.  */
-  for (size_t i = 0; i < modules.dim; i++)
+  for (size_t i = 0; i < modules.length; i++)
     {
       Module *m = modules[i];
 
@@ -1119,7 +1119,7 @@ d_parse_file (void)
       /* Generate 'header' import files.  Since 'header' import files must be
 	 independent of command line switches and what else is imported, they
 	 are generated before any semantic analysis.  */
-      for (size_t i = 0; i < modules.dim; i++)
+      for (size_t i = 0; i < modules.length; i++)
 	{
 	  Module *m = modules[i];
 	  if (d_option.fonly && m != Module::rootModule)
@@ -1136,7 +1136,7 @@ d_parse_file (void)
     goto had_errors;
 
   /* Load all unconditional imports for better symbol resolving.  */
-  for (size_t i = 0; i < modules.dim; i++)
+  for (size_t i = 0; i < modules.length; i++)
     {
       Module *m = modules[i];
 
@@ -1152,7 +1152,7 @@ d_parse_file (void)
   /* Do semantic analysis.  */
   doing_semantic_analysis_p = true;
 
-  for (size_t i = 0; i < modules.dim; i++)
+  for (size_t i = 0; i < modules.length; i++)
     {
       Module *m = modules[i];
 
@@ -1166,9 +1166,9 @@ d_parse_file (void)
   Module::dprogress = 1;
   Module::runDeferredSemantic ();
 
-  if (Module::deferred.dim)
+  if (Module::deferred.length)
     {
-      for (size_t i = 0; i < Module::deferred.dim; i++)
+      for (size_t i = 0; i < Module::deferred.length; i++)
 	{
 	  Dsymbol *sd = Module::deferred[i];
 	  error_at (make_location_t (sd->loc),
@@ -1177,14 +1177,14 @@ d_parse_file (void)
     }
 
   /* Process all built-in modules or functions now for CTFE.  */
-  while (builtin_modules.dim != 0)
+  while (builtin_modules.length != 0)
     {
       Module *m = builtin_modules.pop ();
       d_maybe_set_builtin (m);
     }
 
   /* Do pass 2 semantic analysis.  */
-  for (size_t i = 0; i < modules.dim; i++)
+  for (size_t i = 0; i < modules.length; i++)
     {
       Module *m = modules[i];
 
@@ -1200,7 +1200,7 @@ d_parse_file (void)
     goto had_errors;
 
   /* Do pass 3 semantic analysis.  */
-  for (size_t i = 0; i < modules.dim; i++)
+  for (size_t i = 0; i < modules.length; i++)
     {
       Module *m = modules[i];
 
@@ -1213,7 +1213,7 @@ d_parse_file (void)
   Module::runDeferredSemantic3 ();
 
   /* Check again, incase semantic3 pass loaded any more modules.  */
-  while (builtin_modules.dim != 0)
+  while (builtin_modules.length != 0)
     {
       Module *m = builtin_modules.pop ();
       d_maybe_set_builtin (m);
@@ -1240,7 +1240,7 @@ d_parse_file (void)
     {
       OutBuffer buf;
 
-      for (size_t i = 0; i < modules.dim; i++)
+      for (size_t i = 0; i < modules.length; i++)
 	deps_write (modules[i], &buf);
 
       /* -MF <arg> overrides -M[M]D.  */
@@ -1281,7 +1281,7 @@ d_parse_file (void)
   /* Generate Ddoc files.  */
   if (global.params.doDocComments && !global.errors && !errorcount)
     {
-      for (size_t i = 0; i < modules.dim; i++)
+      for (size_t i = 0; i < modules.length; i++)
 	{
 	  Module *m = modules[i];
 	  gendocfile (m);
@@ -1291,7 +1291,7 @@ d_parse_file (void)
   /* Handle -fdump-d-original.  */
   if (global.params.vcg_ast)
     {
-      for (size_t i = 0; i < modules.dim; i++)
+      for (size_t i = 0; i < modules.length; i++)
 	{
 	  Module *m = modules[i];
 	  OutBuffer buf;
@@ -1302,7 +1302,7 @@ d_parse_file (void)
 	}
     }
 
-  for (size_t i = 0; i < modules.dim; i++)
+  for (size_t i = 0; i < modules.length; i++)
     {
       Module *m = modules[i];
       if (d_option.fonly && m != Module::rootModule)

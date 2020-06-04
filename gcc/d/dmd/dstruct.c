@@ -154,7 +154,7 @@ void semanticTypeInfo(Scope *sc, Type *t)
         {
             if (t->arguments)
             {
-                for (size_t i = 0; i < t->arguments->dim; i++)
+                for (size_t i = 0; i < t->arguments->length; i++)
                 {
                     Type *tprm = (*t->arguments)[i]->type;
                     if (tprm)
@@ -261,7 +261,7 @@ void AggregateDeclaration::semantic2(Scope *sc)
 
     determineSize(loc);
 
-    for (size_t i = 0; i < members->dim; i++)
+    for (size_t i = 0; i < members->length; i++)
     {
         Dsymbol *s = (*members)[i];
         //printf("\t[%d] %s\n", i, s->toChars());
@@ -287,7 +287,7 @@ void AggregateDeclaration::semantic3(Scope *sc)
 
     Scope *sc2 = newScope(sc);
 
-    for (size_t i = 0; i < members->dim; i++)
+    for (size_t i = 0; i < members->length; i++)
     {
         Dsymbol *s = (*members)[i];
         s->semantic3(sc2);
@@ -344,7 +344,7 @@ bool AggregateDeclaration::determineFields()
     if (sizeok != SIZEOKnone)
         return true;
 
-    //printf("determineFields() %s, fields.dim = %d\n", toChars(), fields.dim);
+    //printf("determineFields() %s, fields.length = %d\n", toChars(), fields.length);
     fields.setDim(0);
 
     struct SV
@@ -396,7 +396,7 @@ bool AggregateDeclaration::determineFields()
     SV sv;
     sv.agg = this;
 
-    for (size_t i = 0; i < members->dim; i++)
+    for (size_t i = 0; i < members->length; i++)
     {
         Dsymbol *s = (*members)[i];
         if (s->apply(&SV::func, &sv))
@@ -557,7 +557,7 @@ bool AggregateDeclaration::checkOverlappedFields()
 {
     //printf("AggregateDeclaration::checkOverlappedFields() %s\n", toChars());
     assert(sizeok == SIZEOKdone);
-    size_t nfields = fields.dim;
+    size_t nfields = fields.length;
     if (isNested())
     {
         ClassDeclaration *cd = isClassDeclaration();
@@ -633,10 +633,10 @@ bool AggregateDeclaration::fill(Loc loc, Expressions *elements, bool ctorinit)
     //printf("AggregateDeclaration::fill() %s\n", toChars());
     assert(sizeok == SIZEOKdone);
     assert(elements);
-    size_t nfields = fields.dim - isNested();
+    size_t nfields = fields.length - isNested();
     bool errors = false;
 
-    size_t dim = elements->dim;
+    size_t dim = elements->length;
     elements->setDim(nfields);
     for (size_t i = dim; i < nfields; i++)
         (*elements)[i] = NULL;
@@ -768,7 +768,7 @@ bool AggregateDeclaration::fill(Loc loc, Expressions *elements, bool ctorinit)
         }
     }
 
-    for (size_t i = 0; i < elements->dim; i++)
+    for (size_t i = 0; i < elements->length; i++)
     {
         Expression *e = (*elements)[i];
         if (e && e->op == TOKerror)
@@ -967,7 +967,7 @@ Dsymbol *AggregateDeclaration::searchCtor()
             }
         };
 
-        for (size_t i = 0; i < members->dim; i++)
+        for (size_t i = 0; i < members->length; i++)
         {
             Dsymbol *sm = (*members)[i];
             sm->apply(&SearchCtor::fp, NULL);
@@ -1091,7 +1091,7 @@ void StructDeclaration::semantic(Scope *sc)
     {
         symtab = new DsymbolTable();
 
-        for (size_t i = 0; i < members->dim; i++)
+        for (size_t i = 0; i < members->length; i++)
         {
             Dsymbol *s = (*members)[i];
             //printf("adding member '%s' to '%s'\n", s->toChars(), this->toChars());
@@ -1104,20 +1104,20 @@ void StructDeclaration::semantic(Scope *sc)
     /* Set scope so if there are forward references, we still might be able to
      * resolve individual members like enums.
      */
-    for (size_t i = 0; i < members->dim; i++)
+    for (size_t i = 0; i < members->length; i++)
     {
         Dsymbol *s = (*members)[i];
         //printf("struct: setScope %s %s\n", s->kind(), s->toChars());
         s->setScope(sc2);
     }
 
-    for (size_t i = 0; i < members->dim; i++)
+    for (size_t i = 0; i < members->length; i++)
     {
         Dsymbol *s = (*members)[i];
         s->importAll(sc2);
     }
 
-    for (size_t i = 0; i < members->dim; i++)
+    for (size_t i = 0; i < members->length; i++)
     {
         Dsymbol *s = (*members)[i];
         s->semantic(sc2);
@@ -1136,7 +1136,7 @@ void StructDeclaration::semantic(Scope *sc)
      * needs to check existence of elaborate dtor in type of each fields.
      * See the case in compilable/test14838.d
      */
-    for (size_t i = 0; i < fields.dim; i++)
+    for (size_t i = 0; i < fields.length; i++)
     {
         VarDeclaration *v = fields[i];
         Type *tb = v->type->baseElemOf();
@@ -1245,14 +1245,14 @@ void StructDeclaration::finalizeSize()
     //printf("StructDeclaration::finalizeSize() %s, sizeok = %d\n", toChars(), sizeok);
     assert(sizeok != SIZEOKdone);
 
-    //printf("+StructDeclaration::finalizeSize() %s, fields.dim = %d, sizeok = %d\n", toChars(), fields.dim, sizeok);
+    //printf("+StructDeclaration::finalizeSize() %s, fields.length = %d, sizeok = %d\n", toChars(), fields.length, sizeok);
 
     fields.setDim(0);   // workaround
 
     // Set the offsets of the fields and determine the size of the struct
     unsigned offset = 0;
     bool isunion = isUnionDeclaration() != NULL;
-    for (size_t i = 0; i < members->dim; i++)
+    for (size_t i = 0; i < members->length; i++)
     {
         Dsymbol *s = (*members)[i];
         s->setFieldOffset(this, &offset, isunion);
@@ -1277,7 +1277,7 @@ void StructDeclaration::finalizeSize()
 
     sizeok = SIZEOKdone;
 
-    //printf("-StructDeclaration::finalizeSize() %s, fields.dim = %d, structsize = %d\n", toChars(), fields.dim, structsize);
+    //printf("-StructDeclaration::finalizeSize() %s, fields.length = %d, structsize = %d\n", toChars(), fields.length, structsize);
 
     if (errors)
         return;
@@ -1291,7 +1291,7 @@ void StructDeclaration::finalizeSize()
 
     // Determine if struct is all zeros or not
     zeroInit = 1;
-    for (size_t i = 0; i < fields.dim; i++)
+    for (size_t i = 0; i < fields.length; i++)
     {
         VarDeclaration *vd = fields[i];
         if (vd->_init)
@@ -1308,7 +1308,7 @@ void StructDeclaration::finalizeSize()
     }
 
     TypeTuple *tt = Target::toArgTypes(type);
-    size_t dim = tt ? tt->arguments->dim : 0;
+    size_t dim = tt ? tt->arguments->length : 0;
     if (dim >= 1)
     {
         assert(dim <= 2);
@@ -1333,9 +1333,9 @@ bool StructDeclaration::fit(Loc loc, Scope *sc, Expressions *elements, Type *sty
     if (!elements)
         return true;
 
-    size_t nfields = fields.dim - isNested();
+    size_t nfields = fields.length - isNested();
     size_t offset = 0;
-    for (size_t i = 0; i < elements->dim; i++)
+    for (size_t i = 0; i < elements->length; i++)
     {
         Expression *e = (*elements)[i];
         if (!e)
@@ -1344,7 +1344,7 @@ bool StructDeclaration::fit(Loc loc, Scope *sc, Expressions *elements, Type *sty
         e = resolveProperties(sc, e);
         if (i >= nfields)
         {
-            if (i == fields.dim - 1 && isNested() && e->op == TOKnull)
+            if (i == fields.length - 1 && isNested() && e->op == TOKnull)
             {
                 // CTFE sometimes creates null as hidden pointer; we'll allow this.
                 continue;
@@ -1428,7 +1428,7 @@ bool StructDeclaration::isPOD()
         ispod = ISPODno;
 
     // Recursively check all fields are POD.
-    for (size_t i = 0; i < fields.dim; i++)
+    for (size_t i = 0; i < fields.length; i++)
     {
         VarDeclaration *v = fields[i];
         if (v->storage_class & STCref)

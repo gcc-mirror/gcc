@@ -18,3 +18,15 @@ struct DArray
     size_t length;
     T *ptr;
 };
+
+/// Corresponding C++ type that maps to D size_t
+#if __APPLE__ && __i386__
+// size_t is 'unsigned long', which makes it mangle differently than D's 'uint'
+typedef unsigned d_size_t;
+#elif MARS && DMD_VERSION >= 2079 && DMD_VERSION <= 2081 && \
+        __APPLE__ && __SIZEOF_SIZE_T__ == 8
+// DMD versions between 2.079 and 2.081 mapped D ulong to uint64_t on OS X.
+typedef uint64_t d_size_t;
+#else
+typedef size_t d_size_t;
+#endif

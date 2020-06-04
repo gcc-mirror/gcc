@@ -8,16 +8,7 @@
 
 #pragma once
 
-#include "dsystem.h"    // for size_t
-
-#if __APPLE__ && __i386__
-    /* size_t is 'unsigned long', which makes it mangle differently
-     * than D's 'uint'
-     */
-    typedef unsigned d_size_t;
-#else
-    typedef size_t d_size_t;
-#endif
+#include "dcompat.h"    // for d_size_t
 
 struct Mem
 {
