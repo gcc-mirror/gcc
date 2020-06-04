@@ -376,6 +376,162 @@ lto_max_map (void)
     new_partition ("empty");
 }
 
+class union_find
+{
+public:
+
+  int *parent;
+  int *rank;
+  int n;
+  int successful_unions;
+
+  union_find (int num_nodes)
+    {
+      n = num_nodes;
+      parent = XNEWVEC (int, n);
+      rank   = XNEWVEC (int, n);
+
+      for (int i = 0; i < n; ++i)
+	parent[i] = i;
+
+      memset (rank, 0, n*sizeof(*rank));
+      successful_unions = 0;
+    }
+
+  ~union_find ()
+    {
+      free (parent);
+      free (rank);
+    }
+
+  int find (int x)
+    {
+      while (parent[x] != x)
+	{
+	  parent[x] = parent[parent[x]];
+	  x = parent[x];
+	}
+      return x;
+    }
+
+  void unite (int x, int y)
+    {
+      int x_root = find (x);
+      int y_root = find (y);
+
+      if (x_root == y_root) /* If x and y are in same set.  */
+	return;
+
+      successful_unions++;
+
+      if (rank[x_root] > rank[y_root]) /* Get which ones have greater rank.  */
+	{
+	  x_root ^= y_root; /* Swap.  */
+	  y_root ^= x_root;
+	  x_root ^= y_root;
+	}
+
+      parent[y_root] = x_root;
+      if (rank[x_root] == rank[y_root])
+	rank[x_root]++;
+    }
+};
+
+/* Cast an void * to integer. Shall not work if sizeof (void*) greater
+   than int.  */
+
+static inline int int_cast (void *x)
+{
+  union void_to_int
+    {
+      void *ptr;
+      int val;
+    } u;
+
+  u.ptr = x;
+  return u.val;
+}
+
+/* Maximal partitioning with a restriction: Varnodes can't be let alone in a
+   single partition, i.e. there must be at least one function adjacent to a
+   varnode.  Complexity: (2|E| + |V|)*log*(|V|) + 2|V|.  */
+
+void
+lto_max_no_alonevap_map (void)
+{
+  symtab_node *node;
+  cgraph_node *cnode;
+  int n_partitions = 0, i, n = 0, j = 0;
+  int *compression;
+
+  FOR_EACH_SYMBOL (node)
+    node->aux = (void *) n++;
+
+  union_find disjoint_sets = union_find (n);
+
+  /* Look for each function neighbor, checking for global-like variables that
+     it references.  Complexity:
+
+       \sum_{i=0}^n g(v_i)*c(u) = 2|E|*c(u) = 2|E| * log*(n)
+
+     where n is the graph order, v is a vertex from the graph, g(v) is the
+     order of vertex, E is the set of edges of the graph, and c(u) is the cost
+     of a single union operation, wich is log*(n).  The fact that such sum
+     is |2E|*log*(n) is a consequence from the handshake lemma.  */
+
+  FOR_EACH_FUNCTION (cnode)
+    {
+      struct ipa_ref *ref = NULL;
+      for (i = 0; cnode->iterate_reference (i, ref); i++)
+	if (is_a <varpool_node *> (ref->referred))
+	  disjoint_sets.unite (int_cast (cnode->aux), int_cast (ref->referred->aux));
+    }
+
+  /* Allocate a compression vector, where we will map each disjoint set into
+     0, ..., n_partitions - 1.  Complexity: n.  */
+
+  compression = (int *) alloca (n * sizeof (*compression));
+  for (i = 0; i < n; ++i)
+    compression[i] = -1; /* Invalid value.  */
+
+  /* Create LTRANS partitions.  */
+
+  n_partitions = n - disjoint_sets.successful_unions;
+  ltrans_partitions.create (n_partitions);
+  for (i = 0; i < n_partitions; i++)
+    new_partition ("");
+
+  /* Compress 0...(n-1) into 0...(n_partitions-1) so that we avoid manuvers with
+     the LTRANS partitions.  Complexity: n * log*(n).  */
+
+  i = 0, j = 0;
+  FOR_EACH_SYMBOL (node)
+    {
+      int root = disjoint_sets.find (i);
+      node->aux = (void *) root;
+      if (compression[root] < 0)
+	compression[root] = j++;
+      i++;
+    }
+
+  /* A invariant of the above loop.  */
+  gcc_assert (n_partitions == j);
+
+  /* Indeed insert vertex into the LTRANS partitions, and clear AUX
+     variable.  Complexity: n.  */
+  FOR_EACH_SYMBOL (node)
+    {
+      int p = compression[int_cast (node->aux)];
+      node->aux = NULL;
+
+      if (node->get_partitioning_class () != SYMBOL_PARTITION
+	  || symbol_partitioned_p (node))
+	  continue;
+
+      add_symbol_to_partition (ltrans_partitions[p], node);
+    }
+}
+
 /* Helper function for qsort; sort nodes by order.  */
 static int
 node_cmp (const void *pa, const void *pb)

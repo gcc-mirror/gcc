@@ -40,3 +40,4 @@ void lto_promote_cross_file_statics (void);
 void free_ltrans_partitions (void);
 void lto_promote_statics_nonwpa (void);
 void lto_check_usage_from_other_partitions (void);
+void lto_max_no_alonevap_map (void);

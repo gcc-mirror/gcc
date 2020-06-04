@@ -2651,12 +2651,13 @@ ipa_passes (void)
 
       if (split_outputs)
 	{
-	  /* Trick the compiler to think that we are in WPA*/
+	  /* Trick the compiler to think that we are in WPA.  */
 	  flag_wpa = "";
 	  symtab_node::checking_verify_symtab_nodes ();
 
-	  /* Use max map for now for debugging.  */
-	  lto_max_map ();
+	  /* Map with a restriction of varpool nodes be in the same partition
+	     if functions that have references to them.  */
+	  lto_max_no_alonevap_map ();
 
 	  /* AUX pointers are used by partitioning code to bookkeep number of
 	     partitions symbol is in.  This is no longer needed.  */
