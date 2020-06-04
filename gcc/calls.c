@@ -1865,70 +1865,6 @@ maybe_complain_about_tail_call (tree call_expr, const char *reason)
   error_at (EXPR_LOCATION (call_expr), "cannot tail-call: %s", reason);
 }
 
-/* Used to define rdwr_map below.  */
-struct rdwr_access_hash: int_hash<int, -1> { };
-
-/* A mapping between argument number corresponding to attribute access
-   mode (read_only, write_only, or read_write) and operands.  */
-typedef hash_map<rdwr_access_hash, attr_access> rdwr_map;
-
-/* Initialize a mapping for a call to function FNDECL declared with
-   attribute access.  Each attribute positional operand inserts one
-   entry into the mapping with the operand number as the key.  */
-
-static void
-init_attr_rdwr_indices (rdwr_map *rwm, tree fntype)
-{
-  if (!fntype)
-    return;
-
-  for (tree access = TYPE_ATTRIBUTES (fntype);
-       (access = lookup_attribute ("access", access));
-       access = TREE_CHAIN (access))
-    {
-      /* The TREE_VALUE of an attribute is a TREE_LIST whose TREE_VALUE
-	 is the attribute argument's value.  */
-      tree mode = TREE_VALUE (access);
-      gcc_assert (TREE_CODE (mode) == TREE_LIST);
-      mode = TREE_VALUE (mode);
-      gcc_assert (TREE_CODE (mode) == STRING_CST);
-
-      const char *modestr = TREE_STRING_POINTER (mode);
-      for (const char *m = modestr; *m; )
-	{
-	  attr_access acc = { };
-
-	  switch (*m)
-	    {
-	    case 'r': acc.mode = acc.read_only; break;
-	    case 'w': acc.mode = acc.write_only; break;
-	    default: acc.mode = acc.read_write; break;
-	    }
-
-	  char *end;
-	  acc.ptrarg = strtoul (++m, &end, 10);
-	  m = end;
-	  if (*m == ',')
-	    {
-	      acc.sizarg = strtoul (++m, &end, 10);
-	      m = end;
-	    }
-	  else
-	    acc.sizarg = UINT_MAX;
-
-	  acc.ptr = NULL_TREE;
-	  acc.size = NULL_TREE;
-
-	  /* Unconditionally add an entry for the required pointer
-	     operand of the attribute, and one for the optional size
-	     operand when it's specified.  */
-	  rwm->put (acc.ptrarg, acc);
-	  if (acc.sizarg != UINT_MAX)
-	    rwm->put (acc.sizarg, acc);
-	}
-    }
-}
-
 /* Returns the type of the argument ARGNO to function with type FNTYPE
    or null when the typoe cannot be determined or no such argument exists.  */
 
@@ -1959,11 +1895,13 @@ append_attrname (const std::pair<int, attr_access> &access,
      appends the attribute pointer operand even when none was specified.  */
   size_t len = strlen (attrstr);
 
-  const char *atname
+  const char* const atname
     = (access.second.mode == attr_access::read_only
        ? "read_only"
        : (access.second.mode == attr_access::write_only
-	  ? "write_only" : "read_write"));
+	  ? "write_only"
+	  : (access.second.mode == attr_access::read_write
+	     ? "read_write" : "none")));
 
   const char *sep = len ? ", " : "";
 
@@ -2131,11 +2069,13 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree exp)
 	  /* For read-only and read-write attributes also set the source
 	     size.  */
 	  srcsize = objsize;
-	  if (access.second.mode == attr_access::read_only)
+	  if (access.second.mode == attr_access::read_only
+	      || access.second.mode == attr_access::none)
 	    {
 	      /* For a read-only attribute there is no destination so
 		 clear OBJSIZE.  This emits "reading N bytes" kind of
-		 diagnostics instead of the "writing N bytes" kind.  */
+		 diagnostics instead of the "writing N bytes" kind,
+		 unless MODE is none.  */
 	      objsize = NULL_TREE;
 	    }
 	}
@@ -2145,7 +2085,7 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree exp)
 	 diagnosed.  */
       TREE_NO_WARNING (exp) = false;
       check_access (exp, NULL_TREE, NULL_TREE, size, /*maxread=*/ NULL_TREE,
-		    srcsize, objsize);
+		    srcsize, objsize, access.second.mode != attr_access::none);
 
       if (TREE_NO_WARNING (exp))
 	/* If check_access issued a warning above, append the relevant
@@ -2285,8 +2225,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
   /* Array for up to the two attribute alloc_size arguments.  */
   tree alloc_args[] = { NULL_TREE, NULL_TREE };
 
-  /* Map of attribute read_only, write_only, or read_write specifications
-     for function arguments.  */
+  /* Map of attribute accewss specifications for function arguments.  */
   rdwr_map rdwr_idx;
   init_attr_rdwr_indices (&rdwr_idx, fntype);
 
@@ -2559,7 +2498,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
      nul-terminated strings.  */
   maybe_warn_nonstring_arg (fndecl, exp);
 
-  /* Check read_only, write_only, and read_write arguments.  */
+  /* Check attribute access arguments.  */
   maybe_warn_rdwr_sizes (&rdwr_idx, exp);
 }
 

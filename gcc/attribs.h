@@ -234,8 +234,18 @@ struct attr_access
   unsigned sizarg;
 
   /* The access mode.  */
-  enum access_mode { read_only, write_only, read_write };
+  enum access_mode { none, read_only, write_only, read_write };
   access_mode mode;
 };
+
+/* Used to define rdwr_map below.  */
+struct rdwr_access_hash: int_hash<int, -1> { };
+
+/* A mapping between argument number corresponding to attribute access
+   mode (read_only, write_only, or read_write) and operands.  */
+struct attr_access;
+typedef hash_map<rdwr_access_hash, attr_access> rdwr_map;
+
+extern void init_attr_rdwr_indices (rdwr_map *, tree);
 
 #endif // GCC_ATTRIBS_H

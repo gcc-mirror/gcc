@@ -6,19 +6,19 @@ _Complex float
 f1 (void)
 {
   float x;
-  return x;	/* { dg-warning "is used uninitialized in this function" } */
+  return x;	/* { dg-warning "is used uninitialized" } */
 }
 
 _Complex double
 f2 (void)
 {
   double x;
-  return x;	/* { dg-warning "is used uninitialized in this function" } */
+  return x;	/* { dg-warning "is used uninitialized" } */
 }
 
 _Complex int
 f3 (void)
 {
   int x;
-  return x;	/* { dg-warning "is used uninitialized in this function" } */
+  return x;	/* { dg-warning "is used uninitialized" } */
 }

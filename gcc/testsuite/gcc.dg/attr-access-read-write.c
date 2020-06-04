@@ -10,7 +10,7 @@ int  __attribute__ ((access ()))
 access___v (void);     /* { dg-error "wrong number of arguments specified for 'access' attribute" } */
 
 int  __attribute__ ((access (rdwr)))
-rdwr_spelling (void);   /* { dg-error "attribute .access. invalid mode 'rdwr'; expected one of 'read_only', 'read_write', or 'write_only'" } */
+rdwr_spelling (void);   /* { dg-error "attribute .access. invalid mode 'rdwr'; expected one of 'read_only', 'read_write', 'write_only', or 'none'" } */
 
 int  __attribute__ ((access (read_write)))
 rdwr_v_all (void);   /* { dg-error "attribute .access\\(read_write\\). missing an argument" } */
