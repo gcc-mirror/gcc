@@ -1987,26 +1987,33 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
 
    ??? We currently are very conservative and assume that a load might
    trap even if a store doesn't (write-only memory).  This probably is
-   overly conservative.  */
+   overly conservative.
 
-/* A hash-table of SSA_NAMEs, and in which basic block an MEM_REF
-   through it was seen, which would constitute a no-trap region for
-   same accesses.  */
-struct name_to_bb
+   We currently support a special case that for !TREE_ADDRESSABLE automatic
+   variables, it could ignore whether something is a load or store because the
+   local stack should be always writable.  */
+
+/* A hash-table of references (MEM_REF/ARRAY_REF/COMPONENT_REF), and in which
+   basic block an *_REF through it was seen, which would constitute a
+   no-trap region for same accesses.
+
+   Size is needed to support 2 MEM_REFs of different types, like
+   MEM<double>(s_1) and MEM<long>(s_1), which would compare equal with
+   OEP_ADDRESS_OF.  */
+struct ref_to_bb
 {
-  unsigned int ssa_name_ver;
+  tree exp;
+  HOST_WIDE_INT size;
   unsigned int phase;
-  bool store;
-  HOST_WIDE_INT offset, size;
   basic_block bb;
 };
 
 /* Hashtable helpers.  */
 
-struct ssa_names_hasher : free_ptr_hash <name_to_bb>
+struct refs_hasher : free_ptr_hash<ref_to_bb>
 {
-  static inline hashval_t hash (const name_to_bb *);
-  static inline bool equal (const name_to_bb *, const name_to_bb *);
+  static inline hashval_t hash (const ref_to_bb *);
+  static inline bool equal (const ref_to_bb *, const ref_to_bb *);
 };
 
 /* Used for quick clearing of the hash-table when we see calls.
@@ -2016,28 +2023,29 @@ static unsigned int nt_call_phase;
 /* The hash function.  */
 
 inline hashval_t
-ssa_names_hasher::hash (const name_to_bb *n)
+refs_hasher::hash (const ref_to_bb *n)
 {
-  return n->ssa_name_ver ^ (((hashval_t) n->store) << 31)
-         ^ (n->offset << 6) ^ (n->size << 3);
+  inchash::hash hstate;
+  inchash::add_expr (n->exp, hstate, OEP_ADDRESS_OF);
+  hstate.add_hwi (n->size);
+  return hstate.end ();
 }
 
 /* The equality function of *P1 and *P2.  */
 
 inline bool
-ssa_names_hasher::equal (const name_to_bb *n1, const name_to_bb *n2)
+refs_hasher::equal (const ref_to_bb *n1, const ref_to_bb *n2)
 {
-  return n1->ssa_name_ver == n2->ssa_name_ver
-         && n1->store == n2->store
-         && n1->offset == n2->offset
-         && n1->size == n2->size;
+  return operand_equal_p (n1->exp, n2->exp, OEP_ADDRESS_OF)
+	 && n1->size == n2->size;
 }
 
 class nontrapping_dom_walker : public dom_walker
 {
 public:
   nontrapping_dom_walker (cdi_direction direction, hash_set<tree> *ps)
-    : dom_walker (direction), m_nontrapping (ps), m_seen_ssa_names (128) {}
+    : dom_walker (direction), m_nontrapping (ps), m_seen_refs (128)
+  {}
 
   virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
@@ -2054,7 +2062,7 @@ private:
   hash_set<tree> *m_nontrapping;
 
   /* The hash table for remembering what we've seen.  */
-  hash_table<ssa_names_hasher> m_seen_ssa_names;
+  hash_table<refs_hasher> m_seen_refs;
 };
 
 /* Called by walk_dominator_tree, when entering the block BB.  */
@@ -2103,65 +2111,68 @@ nontrapping_dom_walker::after_dom_children (basic_block bb)
 }
 
 /* We see the expression EXP in basic block BB.  If it's an interesting
-   expression (an MEM_REF through an SSA_NAME) possibly insert the
-   expression into the set NONTRAP or the hash table of seen expressions.
-   STORE is true if this expression is on the LHS, otherwise it's on
-   the RHS.  */
+   expression of:
+     1) MEM_REF
+     2) ARRAY_REF
+     3) COMPONENT_REF
+   possibly insert the expression into the set NONTRAP or the hash table
+   of seen expressions.  STORE is true if this expression is on the LHS,
+   otherwise it's on the RHS.  */
 void
 nontrapping_dom_walker::add_or_mark_expr (basic_block bb, tree exp, bool store)
 {
   HOST_WIDE_INT size;
 
-  if (TREE_CODE (exp) == MEM_REF
-      && TREE_CODE (TREE_OPERAND (exp, 0)) == SSA_NAME
-      && tree_fits_shwi_p (TREE_OPERAND (exp, 1))
+  if ((TREE_CODE (exp) == MEM_REF || TREE_CODE (exp) == ARRAY_REF
+       || TREE_CODE (exp) == COMPONENT_REF)
       && (size = int_size_in_bytes (TREE_TYPE (exp))) > 0)
     {
-      tree name = TREE_OPERAND (exp, 0);
-      struct name_to_bb map;
-      name_to_bb **slot;
-      struct name_to_bb *n2bb;
+      struct ref_to_bb map;
+      ref_to_bb **slot;
+      struct ref_to_bb *r2bb;
       basic_block found_bb = 0;
 
-      /* Try to find the last seen MEM_REF through the same
-         SSA_NAME, which can trap.  */
-      map.ssa_name_ver = SSA_NAME_VERSION (name);
-      map.phase = 0;
-      map.bb = 0;
-      map.store = store;
-      map.offset = tree_to_shwi (TREE_OPERAND (exp, 1));
+      if (!store)
+	{
+	  tree base = get_base_address (exp);
+	  /* Only record a LOAD of a local variable without address-taken, as
+	     the local stack is always writable.  This allows cselim on a STORE
+	     with a dominating LOAD.  */
+	  if (!auto_var_p (base) || TREE_ADDRESSABLE (base))
+	    return;
+	}
+
+      /* Try to find the last seen *_REF, which can trap.  */
+      map.exp = exp;
       map.size = size;
+      slot = m_seen_refs.find_slot (&map, INSERT);
+      r2bb = *slot;
+      if (r2bb && r2bb->phase >= nt_call_phase)
+	found_bb = r2bb->bb;
 
-      slot = m_seen_ssa_names.find_slot (&map, INSERT);
-      n2bb = *slot;
-      if (n2bb && n2bb->phase >= nt_call_phase)
-        found_bb = n2bb->bb;
-
-      /* If we've found a trapping MEM_REF, _and_ it dominates EXP
-         (it's in a basic block on the path from us to the dominator root)
+      /* If we've found a trapping *_REF, _and_ it dominates EXP
+	 (it's in a basic block on the path from us to the dominator root)
 	 then we can't trap.  */
       if (found_bb && (((size_t)found_bb->aux) & 1) == 1)
 	{
 	  m_nontrapping->add (exp);
 	}
       else
-        {
+	{
 	  /* EXP might trap, so insert it into the hash table.  */
-	  if (n2bb)
+	  if (r2bb)
 	    {
-	      n2bb->phase = nt_call_phase;
-	      n2bb->bb = bb;
+	      r2bb->phase = nt_call_phase;
+	      r2bb->bb = bb;
 	    }
 	  else
 	    {
-	      n2bb = XNEW (struct name_to_bb);
-	      n2bb->ssa_name_ver = SSA_NAME_VERSION (name);
-	      n2bb->phase = nt_call_phase;
-	      n2bb->bb = bb;
-	      n2bb->store = store;
-	      n2bb->offset = map.offset;
-	      n2bb->size = size;
-	      *slot = n2bb;
+	      r2bb = XNEW (struct ref_to_bb);
+	      r2bb->phase = nt_call_phase;
+	      r2bb->bb = bb;
+	      r2bb->exp = exp;
+	      r2bb->size = size;
+	      *slot = r2bb;
 	    }
 	}
     }

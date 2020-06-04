@@ -13,4 +13,4 @@ int test(int b, int k) {
     return a.data[0] + a.data[1];
 }
 
-/* { dg-final { scan-tree-dump "Conditional store replacement" "cselim" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "Conditional store replacement" "cselim" } } */
