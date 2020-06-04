@@ -1194,6 +1194,12 @@ goacc_exit_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 		    || kind == GOMP_MAP_FORCE_DETACH)
 		  finalize = true;
 
+		copyfrom = false;
+		if (kind == GOMP_MAP_FROM
+		    || kind == GOMP_MAP_FORCE_FROM
+		    || kind == GOMP_MAP_ALWAYS_FROM)
+		  copyfrom = true;
+
 		struct splay_tree_key_s k;
 		k.host_start = (uintptr_t) hostaddrs[i + j];
 		k.host_end = k.host_start + sizes[i + j];
@@ -1216,6 +1222,16 @@ goacc_exit_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 		    else if (str->refcount > 0
 			     && str->refcount != REFCOUNT_INFINITY)
 		      str->refcount--;
+
+		    if (copyfrom
+			&& (kind != GOMP_MAP_FROM || str->refcount == 0))
+		      gomp_copy_dev2host (acc_dev, aq, (void *) k.host_start,
+					  (void *) (str->tgt->tgt_start
+						    + str->tgt_offset
+						    + k.host_start
+						    - str->host_start),
+					  k.host_end - k.host_start);
+
 		    if (str->refcount == 0)
 		      {
 			if (aq)
