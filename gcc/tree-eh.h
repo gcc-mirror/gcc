@@ -39,6 +39,7 @@ extern bool operation_could_trap_p (enum tree_code, bool, bool, tree);
 extern bool tree_could_trap_p (tree);
 extern tree rewrite_to_non_trapping_overflow (tree);
 extern bool stmt_could_throw_p (function *, gimple *);
+extern bool stmt_unremovable_because_of_non_call_eh_p (function *, gimple *);
 extern bool tree_could_throw_p (tree);
 extern bool stmt_can_throw_external (function *, gimple *);
 extern bool stmt_can_throw_internal (function *, gimple *);
