@@ -6307,47 +6307,9 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       break;
 
     case OBJ_TYPE_REF:
-      {
-	/* Virtual function call.  Let the constexpr machinery figure out
-	   the dynamic type.  */
-	int token = tree_to_shwi (OBJ_TYPE_REF_TOKEN (t));
-	tree obj = OBJ_TYPE_REF_OBJECT (t);
-	obj = cxx_eval_constant_expression (ctx, obj, lval, non_constant_p,
-					    overflow_p);
-	STRIP_NOPS (obj);
-	/* We expect something in the form of &x.D.2103.D.2094; get x. */
-	if (TREE_CODE (obj) != ADDR_EXPR
-	    || !DECL_P (get_base_address (TREE_OPERAND (obj, 0))))
-	  {
-	    if (!ctx->quiet)
-	      error_at (loc, "expression %qE is not a constant expression", t);
-	    *non_constant_p = true;
-	    return t;
-	  }
-	obj = TREE_OPERAND (obj, 0);
-	while (TREE_CODE (obj) == COMPONENT_REF
-	       && DECL_FIELD_IS_BASE (TREE_OPERAND (obj, 1)))
-	  obj = TREE_OPERAND (obj, 0);
-	tree objtype = TREE_TYPE (obj);
-	if (VAR_P (obj)
-	    && DECL_NAME (obj) == heap_identifier
-	    && TREE_CODE (objtype) == ARRAY_TYPE)
-	  objtype = TREE_TYPE (objtype);
-	if (!CLASS_TYPE_P (objtype))
-	  {
-	    if (!ctx->quiet)
-	      error_at (loc, "expression %qE is not a constant expression", t);
-	    *non_constant_p = true;
-	    return t;
-	  }
-	/* Find the function decl in the virtual functions list.  TOKEN is
-	   the DECL_VINDEX that says which function we're looking for.  */
-	tree virtuals = BINFO_VIRTUALS (TYPE_BINFO (objtype));
-	if (TARGET_VTABLE_USES_DESCRIPTORS)
-	  token /= MAX (TARGET_VTABLE_USES_DESCRIPTORS, 1);
-	r = TREE_VALUE (chain_index (token, virtuals));
-	break;
-      }
+      /* Virtual function lookup.  We don't need to do anything fancy.  */
+      return cxx_eval_constant_expression (ctx, OBJ_TYPE_REF_EXPR (t),
+					   lval, non_constant_p, overflow_p);
 
     case PLACEHOLDER_EXPR:
       /* Use of the value or address of the current object.  */
