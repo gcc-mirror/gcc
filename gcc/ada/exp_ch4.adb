@@ -11305,6 +11305,11 @@ package body Exp_Ch4 is
       --  True iff Present (Effective_Extra_Accessibility (Id)) successfully
       --  evaluates to True.
 
+      function Statically_Deeper_Relation_Applies (Targ_Typ : Entity_Id)
+        return Boolean;
+      --  Given a target type for a conversion, determine whether the
+      --  statically deeper accessibility rules apply to it.
+
       --------------------------
       -- Discrete_Range_Check --
       --------------------------
@@ -11887,6 +11892,25 @@ package body Exp_Ch4 is
          end if;
       end Has_Extra_Accessibility;
 
+      ----------------------------------------
+      -- Statically_Deeper_Relation_Applies --
+      ----------------------------------------
+
+      function Statically_Deeper_Relation_Applies (Targ_Typ : Entity_Id)
+        return Boolean
+      is
+      begin
+         --  The case where the target type is an anonymous access type is
+         --  ignored since they have different semantics and get covered by
+         --  various runtime checks depending on context.
+
+         --  Note, the current implementation of this predicate is incomplete
+         --  and doesn't fully reflect the rules given in RM 3.10.2 (19) and
+         --  (19.1) ???
+
+         return Ekind (Targ_Typ) /= E_Anonymous_Access_Type;
+      end Statically_Deeper_Relation_Applies;
+
    --  Start of processing for Expand_N_Type_Conversion
 
    begin
@@ -12133,21 +12157,7 @@ package body Exp_Ch4 is
          --  Note: warnings are issued by the analyzer for the instance cases
 
          elsif In_Instance_Body
-
-           --  The case where the target type is an anonymous access type of
-           --  a discriminant is excluded, because the level of such a type
-           --  depends on the context and currently the level returned for such
-           --  types is zero, resulting in warnings about check failures
-           --  in certain legal cases involving class-wide interfaces as the
-           --  designated type (some cases, such as return statements, are
-           --  checked at run time, but not clear if these are handled right
-           --  in general, see 3.10.2(12/2-12.5/3) ???).
-
-           and then
-             not (Ekind (Target_Type) = E_Anonymous_Access_Type
-                   and then Present (Associated_Node_For_Itype (Target_Type))
-                   and then Nkind (Associated_Node_For_Itype (Target_Type)) =
-                                                  N_Discriminant_Specification)
+           and then Statically_Deeper_Relation_Applies (Target_Type)
            and then
              Type_Access_Level (Operand_Type) > Type_Access_Level (Target_Type)
          then
