@@ -12212,6 +12212,12 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	 Note that DECLs get walked as part of processing the BIND_EXPR.  */
       if (TREE_CODE (DECL_EXPR_DECL (*tp)) == TYPE_DECL)
 	{
+	  /* Call the function for the decl so e.g. copy_tree_body_r can
+	     replace it with the remapped one.  */
+	  result = (*func) (&DECL_EXPR_DECL (*tp), &walk_subtrees, data);
+	  if (result || !walk_subtrees)
+	    return result;
+
 	  tree *type_p = &TREE_TYPE (DECL_EXPR_DECL (*tp));
 	  if (TREE_CODE (*type_p) == ERROR_MARK)
 	    return NULL_TREE;
