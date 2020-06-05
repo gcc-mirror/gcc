@@ -2212,11 +2212,11 @@ public:
             if ((sinteger_t)uval >= 0)
             {
                 dinteger_t sizemax;
-                if (Target::ptrsize == 8)
+                if (target.ptrsize == 8)
                     sizemax = 0xFFFFFFFFFFFFFFFFULL;
-                else if (Target::ptrsize == 4)
+                else if (target.ptrsize == 4)
                     sizemax = 0xFFFFFFFFUL;
-                else if (Target::ptrsize == 2)
+                else if (target.ptrsize == 2)
                     sizemax = 0xFFFFUL;
                 else
                     assert(0);
@@ -2358,7 +2358,7 @@ public:
                     buf->writestring("cast(");
                     buf->writestring(t->toChars());
                     buf->writeByte(')');
-                    if (Target::ptrsize == 8)
+                    if (target.ptrsize == 8)
                         goto L4;
                     else
                         goto L3;

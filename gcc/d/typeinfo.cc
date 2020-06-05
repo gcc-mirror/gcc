@@ -1223,7 +1223,7 @@ layout_classinfo_interfaces (ClassDeclaration *decl)
 
 	      field = create_field_decl (vtbltype, NULL, 1, 1);
 	      insert_aggregate_field (type, field, offset);
-	      structsize += id->vtbl.length * Target::ptrsize;
+	      structsize += id->vtbl.length * target.ptrsize;
 	    }
 	}
     }
@@ -1247,7 +1247,7 @@ layout_classinfo_interfaces (ClassDeclaration *decl)
 
 	      tree field = create_field_decl (vtbltype, NULL, 1, 1);
 	      insert_aggregate_field (type, field, offset);
-	      structsize += id->vtbl.length * Target::ptrsize;
+	      structsize += id->vtbl.length * target.ptrsize;
 	    }
 	}
     }
@@ -1415,7 +1415,7 @@ layout_cpp_typeinfo (ClassDeclaration *cd)
 
   /* Let C++ do the RTTI generation, and just reference the symbol as
      extern, knowing the underlying type is not required.  */
-  const char *ident = Target::cppTypeInfoMangle (cd);
+  const char *ident = target.cpp.typeInfoMangle (cd);
   tree typeinfo = declare_extern_var (get_identifier (ident),
 				      unknown_type_node);
   TREE_READONLY (typeinfo) = 1;

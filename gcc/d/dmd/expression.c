@@ -2925,11 +2925,11 @@ void IntegerExp::normalize()
         case Tint64:        value = (d_int64) value;        break;
         case Tuns64:        value = (d_uns64) value;        break;
         case Tpointer:
-            if (Target::ptrsize == 8)
+            if (target.ptrsize == 8)
                 value = (d_uns64) value;
-            else if (Target::ptrsize == 4)
+            else if (target.ptrsize == 4)
                 value = (d_uns32) value;
-            else if (Target::ptrsize == 2)
+            else if (target.ptrsize == 2)
                 value = (d_uns16) value;
             else
                 assert(0);

@@ -78,7 +78,7 @@ Port::isFloat32LiteralOutOfRange (const char *buffer)
 
   real_from_string3 (&r.rv (), buffer, TYPE_MODE (float_type_node));
 
-  return r == Target::RealProperties::infinity;
+  return r == target.RealProperties.infinity;
 }
 
 /* Return true if the real_t value from string BUFFER overflows
@@ -91,7 +91,7 @@ Port::isFloat64LiteralOutOfRange (const char *buffer)
 
   real_from_string3 (&r.rv (), buffer, TYPE_MODE (double_type_node));
 
-  return r == Target::RealProperties::infinity;
+  return r == target.RealProperties.infinity;
 }
 
 /* Fetch a little-endian 16-bit value from BUFFER.  */

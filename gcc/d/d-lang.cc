@@ -387,7 +387,7 @@ d_init (void)
   /* This is the C main, not the D main.  */
   main_identifier_node = get_identifier ("main");
 
-  Target::_init ();
+  target._init (global.params);
   d_init_versions ();
 
   /* Insert all library-configured identifiers and import paths.  */

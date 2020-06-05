@@ -44,9 +44,6 @@ Expression *typeToExpression(Type *t);
 Expression *typeToExpressionHelper(TypeQualified *t, Expression *e, size_t i = 0);
 Initializer *semantic(Initializer *init, Scope *sc, Type *t, NeedInterpret needInterpret);
 
-int Tsize_t = Tuns32;
-int Tptrdiff_t = Tint32;
-
 /***************************** Type *****************************/
 
 ClassDeclaration *Type::dtypeinfo;
@@ -109,7 +106,6 @@ Type *Type::tvoidptr;
 Type *Type::tstring;
 Type *Type::twstring;
 Type *Type::tdstring;
-Type *Type::tvalist;
 Type *Type::basic[TMAX];
 unsigned char Type::sizeTy[TMAX];
 StringTable Type::stringtable;
@@ -262,21 +258,11 @@ void Type::_init()
     tstring = tchar->immutableOf()->arrayOf();
     twstring = twchar->immutableOf()->arrayOf();
     tdstring = tdchar->immutableOf()->arrayOf();
-    tvalist = Target::va_listType();
 
-    if (global.params.isLP64)
-    {
-        Tsize_t = Tuns64;
-        Tptrdiff_t = Tint64;
-    }
-    else
-    {
-        Tsize_t = Tuns32;
-        Tptrdiff_t = Tint32;
-    }
+    const bool isLP64 = global.params.isLP64;
 
-    tsize_t = basic[Tsize_t];
-    tptrdiff_t = basic[Tptrdiff_t];
+    tsize_t = basic[isLP64 ? Tuns64 : Tuns32];
+    tptrdiff_t = basic[isLP64 ? Tint64 : Tint32];
     thash_t = tsize_t;
 }
 
@@ -3041,7 +3027,7 @@ d_uns64 TypeBasic::size(Loc)
                         size = 8;       break;
         case Tfloat80:
         case Timaginary80:
-                        size = Target::realsize; break;
+                        size = target.realsize; break;
         case Tcomplex32:
                         size = 8;               break;
         case Tcomplex64:
@@ -3049,7 +3035,7 @@ d_uns64 TypeBasic::size(Loc)
         case Tuns128:
                         size = 16;              break;
         case Tcomplex80:
-                        size = Target::realsize * 2; break;
+                        size = target.realsize * 2; break;
 
         case Tvoid:
             //size = Type::size();      // error message
@@ -3071,7 +3057,7 @@ d_uns64 TypeBasic::size(Loc)
 
 unsigned TypeBasic::alignsize()
 {
-    return Target::alignsize(this);
+    return target.alignsize(this);
 }
 
 
@@ -3125,17 +3111,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            fvalue = Target::FloatProperties::max;
+            fvalue = target.FloatProperties.max;
             goto Lfvalue;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            fvalue = Target::DoubleProperties::max;
+            fvalue = target.DoubleProperties.max;
             goto Lfvalue;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            fvalue = Target::RealProperties::max;
+            fvalue = target.RealProperties.max;
             goto Lfvalue;
         }
     }
@@ -3200,17 +3186,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            fvalue = Target::FloatProperties::min_normal;
+            fvalue = target.FloatProperties.min_normal;
             goto Lfvalue;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            fvalue = Target::DoubleProperties::min_normal;
+            fvalue = target.DoubleProperties.min_normal;
             goto Lfvalue;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            fvalue = Target::RealProperties::min_normal;
+            fvalue = target.RealProperties.min_normal;
             goto Lfvalue;
         }
     }
@@ -3227,7 +3213,7 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tfloat32:
         case Tfloat64:
         case Tfloat80:
-            fvalue = Target::RealProperties::nan;
+            fvalue = target.RealProperties.nan;
             goto Lfvalue;
         }
     }
@@ -3244,7 +3230,7 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tfloat32:
         case Tfloat64:
         case Tfloat80:
-            fvalue = Target::RealProperties::infinity;
+            fvalue = target.RealProperties.infinity;
             goto Lfvalue;
         }
     }
@@ -3255,17 +3241,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            ivalue = Target::FloatProperties::dig;
+            ivalue = target.FloatProperties.dig;
             goto Lint;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            ivalue = Target::DoubleProperties::dig;
+            ivalue = target.DoubleProperties.dig;
             goto Lint;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            ivalue = Target::RealProperties::dig;
+            ivalue = target.RealProperties.dig;
             goto Lint;
         }
     }
@@ -3276,17 +3262,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            fvalue = Target::FloatProperties::epsilon;
+            fvalue = target.FloatProperties.epsilon;
             goto Lfvalue;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            fvalue = Target::DoubleProperties::epsilon;
+            fvalue = target.DoubleProperties.epsilon;
             goto Lfvalue;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            fvalue = Target::RealProperties::epsilon;
+            fvalue = target.RealProperties.epsilon;
             goto Lfvalue;
         }
     }
@@ -3297,17 +3283,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            ivalue = Target::FloatProperties::mant_dig;
+            ivalue = target.FloatProperties.mant_dig;
             goto Lint;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            ivalue = Target::DoubleProperties::mant_dig;
+            ivalue = target.DoubleProperties.mant_dig;
             goto Lint;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            ivalue = Target::RealProperties::mant_dig;
+            ivalue = target.RealProperties.mant_dig;
             goto Lint;
         }
     }
@@ -3318,17 +3304,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            ivalue = Target::FloatProperties::max_10_exp;
+            ivalue = target.FloatProperties.max_10_exp;
             goto Lint;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            ivalue = Target::DoubleProperties::max_10_exp;
+            ivalue = target.DoubleProperties.max_10_exp;
             goto Lint;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            ivalue = Target::RealProperties::max_10_exp;
+            ivalue = target.RealProperties.max_10_exp;
             goto Lint;
         }
     }
@@ -3339,17 +3325,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            ivalue = Target::FloatProperties::max_exp;
+            ivalue = target.FloatProperties.max_exp;
             goto Lint;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            ivalue = Target::DoubleProperties::max_exp;
+            ivalue = target.DoubleProperties.max_exp;
             goto Lint;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            ivalue = Target::RealProperties::max_exp;
+            ivalue = target.RealProperties.max_exp;
             goto Lint;
         }
     }
@@ -3360,17 +3346,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            ivalue = Target::FloatProperties::min_10_exp;
+            ivalue = target.FloatProperties.min_10_exp;
             goto Lint;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            ivalue = Target::DoubleProperties::min_10_exp;
+            ivalue = target.DoubleProperties.min_10_exp;
             goto Lint;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            ivalue = Target::RealProperties::min_10_exp;
+            ivalue = target.RealProperties.min_10_exp;
             goto Lint;
         }
     }
@@ -3381,17 +3367,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            ivalue = Target::FloatProperties::min_exp;
+            ivalue = target.FloatProperties.min_exp;
             goto Lint;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            ivalue = Target::DoubleProperties::min_exp;
+            ivalue = target.DoubleProperties.min_exp;
             goto Lint;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            ivalue = Target::RealProperties::min_exp;
+            ivalue = target.RealProperties.min_exp;
             goto Lint;
         }
     }
@@ -3514,13 +3500,13 @@ Expression *TypeBasic::defaultInit(Loc loc)
         case Tfloat32:
         case Tfloat64:
         case Tfloat80:
-            return new RealExp(loc, Target::RealProperties::snan, this);
+            return new RealExp(loc, target.RealProperties.snan, this);
 
         case Tcomplex32:
         case Tcomplex64:
         case Tcomplex80:
         {   // Can't use fvalue + I*fvalue (the im part becomes a quiet NaN).
-            complex_t cvalue = complex_t(Target::RealProperties::snan, Target::RealProperties::snan);
+            complex_t cvalue = complex_t(target.RealProperties.snan, target.RealProperties.snan);
             return new ComplexExp(loc, cvalue, this);
         }
 
@@ -3730,7 +3716,7 @@ Type *TypeVector::semantic(Loc loc, Scope *sc)
     }
     TypeSArray *t = (TypeSArray *)basetype;
     int sz = (int)t->size(loc);
-    switch (Target::isVectorTypeSupported(sz, t->nextOf()))
+    switch (target.isVectorTypeSupported(sz, t->nextOf()))
     {
     case 0: // valid
         break;
@@ -4142,7 +4128,7 @@ Type *TypeSArray::semantic(Loc loc, Scope *sc)
         {
         Loverflow:
             error(loc, "%s size %llu * %llu exceeds 0x%llx size limit for static array",
-                toChars(), (unsigned long long)tbn->size(loc), (unsigned long long)d1, Target::maxStaticDataSize);
+                toChars(), (unsigned long long)tbn->size(loc), (unsigned long long)d1, target.maxStaticDataSize);
             goto Lerror;
         }
 
@@ -4166,7 +4152,7 @@ Type *TypeSArray::semantic(Loc loc, Scope *sc)
              * run on them for the size, since they may be forward referenced.
              */
             bool overflow = false;
-            if (mulu(tbn->size(loc), d2, overflow) >= Target::maxStaticDataSize || overflow)
+            if (mulu(tbn->size(loc), d2, overflow) >= target.maxStaticDataSize || overflow)
                 goto Loverflow;
         }
     }
@@ -4405,14 +4391,14 @@ Type *TypeDArray::syntaxCopy()
 d_uns64 TypeDArray::size(Loc)
 {
     //printf("TypeDArray::size()\n");
-    return Target::ptrsize * 2;
+    return target.ptrsize * 2;
 }
 
 unsigned TypeDArray::alignsize()
 {
     // A DArray consists of two ptr-sized values, so align it on pointer size
     // boundary
-    return Target::ptrsize;
+    return target.ptrsize;
 }
 
 Type *TypeDArray::semantic(Loc loc, Scope *sc)
@@ -4604,7 +4590,7 @@ Type *TypeAArray::syntaxCopy()
 
 d_uns64 TypeAArray::size(Loc)
 {
-    return Target::ptrsize;
+    return target.ptrsize;
 }
 
 Type *TypeAArray::semantic(Loc loc, Scope *sc)
@@ -4967,7 +4953,7 @@ Type *TypePointer::semantic(Loc loc, Scope *sc)
 
 d_uns64 TypePointer::size(Loc)
 {
-    return Target::ptrsize;
+    return target.ptrsize;
 }
 
 MATCH TypePointer::implicitConvTo(Type *to)
@@ -5111,7 +5097,7 @@ Type *TypeReference::semantic(Loc loc, Scope *sc)
 
 d_uns64 TypeReference::size(Loc)
 {
-    return Target::ptrsize;
+    return target.ptrsize;
 }
 
 Expression *TypeReference::dotExp(Scope *sc, Expression *e, Identifier *ident, int flag)
@@ -6474,12 +6460,12 @@ Type *TypeDelegate::addStorageClass(StorageClass stc)
 
 d_uns64 TypeDelegate::size(Loc)
 {
-    return Target::ptrsize * 2;
+    return target.ptrsize * 2;
 }
 
 unsigned TypeDelegate::alignsize()
 {
-    return Target::ptrsize;
+    return target.ptrsize;
 }
 
 MATCH TypeDelegate::implicitConvTo(Type *to)
@@ -8148,7 +8134,7 @@ Expression *TypeStruct::defaultInitLiteral(Loc loc)
     /* Copy from the initializer symbol for larger symbols,
      * otherwise the literals expressed as code get excessively large.
      */
-    if (size(loc) > Target::ptrsize * 4U && !needsNested())
+    if (size(loc) > target.ptrsize * 4U && !needsNested())
         structinit->useStaticInit = true;
 
     structinit->type = this;
@@ -8401,7 +8387,7 @@ Type *TypeClass::semantic(Loc, Scope *sc)
 
 d_uns64 TypeClass::size(Loc)
 {
-    return Target::ptrsize;
+    return target.ptrsize;
 }
 
 Dsymbol *TypeClass::toDsymbol(Scope *)

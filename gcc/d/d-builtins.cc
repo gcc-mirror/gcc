@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dmd/identifier.h"
 #include "dmd/module.h"
 #include "dmd/mtype.h"
+#include "dmd/target.h"
 
 #include "tree.h"
 #include "fold-const.h"
@@ -67,7 +68,7 @@ static vec<builtin_data> builtin_converted_decls;
    as casting from `C char' to `D char', which also means that `char *`
    needs to be specially handled.  */
 
-static Type *
+Type *
 build_frontend_type (tree type)
 {
   Type *dtype;
@@ -598,14 +599,12 @@ d_build_builtins_module (Module *m)
 	}
     }
 
-  /* va_list should already be built, so no need to convert to D type again.  */
-  StructDeclaration *sd = (Type::tvalist->ty == Tstruct)
-    ? ((TypeStruct *) Type::tvalist)->sym : NULL;
+  /* Expose target-specific va_list type.  */
+  Type *tvalist = target.va_listType (Loc (), NULL);
+  StructDeclaration *sd = (tvalist->ty == Tstruct)
+    ? ((TypeStruct *) tvalist)->sym : NULL;
   if (sd == NULL || !sd->isAnonymous ())
-    {
-      members->push (build_alias_declaration ("__builtin_va_list",
-					      Type::tvalist));
-    }
+    members->push (build_alias_declaration ("__builtin_va_list", tvalist));
   else
     {
       sd->ident = Identifier::idPool ("__builtin_va_list");
@@ -1152,16 +1151,6 @@ d_define_builtins (tree va_list_ref_type_node ATTRIBUTE_UNUSED,
 void
 d_init_builtins (void)
 {
-  /* Build the "standard" abi va_list.  */
-  Type::tvalist = build_frontend_type (va_list_type_node);
-  if (!Type::tvalist)
-    sorry ("cannot represent built-in %<va_list%> type in D");
-
-  /* Map the va_list type to the D frontend Type.  This is to prevent both
-     errors in gimplification or an ICE in targetm.canonical_va_list_type.  */
-  Type::tvalist->ctype = va_list_type_node;
-  TYPE_LANG_SPECIFIC (va_list_type_node) = build_lang_type (Type::tvalist);
-
   d_build_c_type_nodes ();
   d_build_d_type_nodes ();
 

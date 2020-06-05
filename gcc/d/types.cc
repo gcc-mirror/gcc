@@ -49,10 +49,11 @@ along with GCC; see the file COPYING3.  If not see
 bool
 valist_array_p (Type *type)
 {
-  if (Type::tvalist->ty == Tsarray)
+  Type *tvalist = target.va_listType (Loc (), NULL);
+  if (tvalist->ty == Tsarray)
     {
       Type *tb = type->toBasetype ();
-      if (same_type_p (tb, Type::tvalist))
+      if (same_type_p (tb, tvalist))
 	return true;
     }
 
@@ -423,7 +424,7 @@ layout_aggregate_type (AggregateDeclaration *decl, tree type,
 	    {
 	      tree field = create_field_decl (ptr_type_node, "__monitor", 1,
 					      inherited_p);
-	      insert_aggregate_field (type, field, Target::ptrsize);
+	      insert_aggregate_field (type, field, target.ptrsize);
 	    }
 	}
 

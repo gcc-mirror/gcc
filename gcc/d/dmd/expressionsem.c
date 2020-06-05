@@ -2073,7 +2073,7 @@ public:
                      * The results of this are highly platform dependent, and intended
                      * primarly for use in implementing va_arg().
                      */
-                    tded = Target::toArgTypes(e->targ);
+                    tded = target.toArgTypes(e->targ);
                     if (!tded)
                         goto Lno;           // not valid for a parameter
                     break;
@@ -2295,7 +2295,7 @@ public:
                 exp->e2 = exp->e2->castTo(sc, Type::tshiftcnt);
         }
 
-        if (!Target::isVectorOpSupported(exp->type->toBasetype(), exp->op, exp->e2->type->toBasetype()))
+        if (!target.isVectorOpSupported(exp->type->toBasetype(), exp->op, exp->e2->type->toBasetype()))
         {
             result = exp->incompatibleTypes();
             return;
@@ -3917,7 +3917,7 @@ public:
             return;
         }
 
-        if (!Target::isVectorOpSupported(tb, exp->op))
+        if (!target.isVectorOpSupported(tb, exp->op))
         {
             result = exp->incompatibleTypes();
             return;
@@ -3941,7 +3941,7 @@ public:
             return;
         }
 
-        if (!Target::isVectorOpSupported(exp->e1->type->toBasetype(), exp->op))
+        if (!target.isVectorOpSupported(exp->e1->type->toBasetype(), exp->op))
         {
             result = exp->incompatibleTypes();
             return;
@@ -3982,7 +3982,7 @@ public:
             return;
         }
 
-        if (!Target::isVectorOpSupported(tb, exp->op))
+        if (!target.isVectorOpSupported(tb, exp->op))
         {
             result = exp->incompatibleTypes();
             return;
@@ -4024,7 +4024,7 @@ public:
             return;
         }
 
-        if (!Target::isVectorOpSupported(e->e1->type->toBasetype(), e->op))
+        if (!target.isVectorOpSupported(e->e1->type->toBasetype(), e->op))
         {
             result = e->incompatibleTypes();
             return;
@@ -6410,7 +6410,7 @@ public:
         }
 
         tb1 = exp->e1->type->toBasetype();
-        if (!Target::isVectorOpSupported(tb1, exp->op, tb2))
+        if (!target.isVectorOpSupported(tb1, exp->op, tb2))
         {
             result = exp->incompatibleTypes();
             return;
@@ -6543,7 +6543,7 @@ public:
 
         t1 = exp->e1->type->toBasetype();
         t2 = exp->e2->type->toBasetype();
-        if (!Target::isVectorOpSupported(t1, exp->op, t2))
+        if (!target.isVectorOpSupported(t1, exp->op, t2))
         {
             result = exp->incompatibleTypes();
             return;
@@ -6864,7 +6864,7 @@ public:
                 exp->type = t1;  // t1 is complex
             }
         }
-        else if (!Target::isVectorOpSupported(tb, exp->op, exp->e2->type->toBasetype()))
+        else if (!target.isVectorOpSupported(tb, exp->op, exp->e2->type->toBasetype()))
         {
             result = exp->incompatibleTypes();
             return;
@@ -6964,7 +6964,7 @@ public:
                 exp->type = t1;  // t1 is complex
             }
         }
-        else if (!Target::isVectorOpSupported(tb, exp->op, exp->e2->type->toBasetype()))
+        else if (!target.isVectorOpSupported(tb, exp->op, exp->e2->type->toBasetype()))
         {
             result = exp->incompatibleTypes();
             return;
@@ -7009,7 +7009,7 @@ public:
             result = exp;
             return;
         }
-        if (!Target::isVectorOpSupported(tb, exp->op, exp->e2->type->toBasetype()))
+        if (!target.isVectorOpSupported(tb, exp->op, exp->e2->type->toBasetype()))
         {
             result = exp->incompatibleTypes();
             return;
@@ -7091,7 +7091,7 @@ public:
         if (exp->checkArithmeticBin())
             return setError();
 
-        if (!Target::isVectorOpSupported(exp->e1->type->toBasetype(), exp->op, exp->e2->type->toBasetype()))
+        if (!target.isVectorOpSupported(exp->e1->type->toBasetype(), exp->op, exp->e2->type->toBasetype()))
         {
             result = exp->incompatibleTypes();
             return;
@@ -7191,7 +7191,7 @@ public:
 
         if (exp->checkIntegralBin())
             return setError();
-        if (!Target::isVectorOpSupported(exp->e1->type->toBasetype(), exp->op, exp->e2->type->toBasetype()))
+        if (!target.isVectorOpSupported(exp->e1->type->toBasetype(), exp->op, exp->e2->type->toBasetype()))
         {
             result = exp->incompatibleTypes();
             return;
@@ -7226,7 +7226,7 @@ public:
 
         if (exp->checkIntegralBin())
             return setError();
-        if (!Target::isVectorOpSupported(exp->e1->type->toBasetype(), exp->op, exp->e2->type->toBasetype()))
+        if (!target.isVectorOpSupported(exp->e1->type->toBasetype(), exp->op, exp->e2->type->toBasetype()))
         {
             result = exp->incompatibleTypes();
             return;
@@ -7261,7 +7261,7 @@ public:
 
         if (exp->checkIntegralBin())
             return setError();
-        if (!Target::isVectorOpSupported(exp->e1->type->toBasetype(), exp->op, exp->e2->type->toBasetype()))
+        if (!target.isVectorOpSupported(exp->e1->type->toBasetype(), exp->op, exp->e2->type->toBasetype()))
         {
             result = exp->incompatibleTypes();
             return;
@@ -7320,7 +7320,7 @@ public:
             return;
         }
 
-        if (!Target::isVectorOpSupported(tb, exp->op, exp->e2->type->toBasetype()))
+        if (!target.isVectorOpSupported(tb, exp->op, exp->e2->type->toBasetype()))
         {
             result = exp->incompatibleTypes();
             return;
@@ -7377,7 +7377,7 @@ public:
             return;
         }
 
-        if (!Target::isVectorOpSupported(tb, exp->op, exp->e2->type->toBasetype()))
+        if (!target.isVectorOpSupported(tb, exp->op, exp->e2->type->toBasetype()))
         {
             result = exp->incompatibleTypes();
             return;
@@ -7434,7 +7434,7 @@ public:
             return;
         }
 
-        if (!Target::isVectorOpSupported(tb, exp->op, exp->e2->type->toBasetype()))
+        if (!target.isVectorOpSupported(tb, exp->op, exp->e2->type->toBasetype()))
         {
             result = exp->incompatibleTypes();
             return;
@@ -7756,7 +7756,7 @@ public:
             exp->error("%s is not defined for associative arrays", Token::toChars(exp->op));
             return setError();
         }
-        else if (!Target::isVectorOpSupported(t1, exp->op, t2))
+        else if (!target.isVectorOpSupported(t1, exp->op, t2))
         {
             result = exp->incompatibleTypes();
             return;
@@ -7905,7 +7905,7 @@ public:
         Type *t1 = exp->e1->type->toBasetype();
         Type *t2 = exp->e2->type->toBasetype();
 
-        if (!Target::isVectorOpSupported(t1, exp->op, t2))
+        if (!target.isVectorOpSupported(t1, exp->op, t2))
         {
             result = exp->incompatibleTypes();
             return;
@@ -7958,7 +7958,7 @@ public:
 
         Type *tb1 = exp->e1->type->toBasetype();
         Type *tb2 = exp->e2->type->toBasetype();
-        if (!Target::isVectorOpSupported(tb1, exp->op, tb2))
+        if (!target.isVectorOpSupported(tb1, exp->op, tb2))
         {
             result = exp->incompatibleTypes();
             return;

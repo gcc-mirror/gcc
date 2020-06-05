@@ -1048,7 +1048,7 @@ static unsigned membersPlace(BaseClasses *vtblInterfaces, size_t &bi, ClassDecla
         assert(b->sym->sizeok == SIZEOKdone);
 
         if (!b->sym->alignsize)
-            b->sym->alignsize = Target::ptrsize;
+            b->sym->alignsize = target.ptrsize;
         cd->alignmember(b->sym->alignsize, b->sym->alignsize, &offset);
         assert(bi < vtblInterfaces->length);
         BaseClass *bv = (*vtblInterfaces)[bi];
@@ -1092,16 +1092,16 @@ void ClassDeclaration::finalizeSize()
     {
         if (interfaces.length == 0)
         {
-            alignsize = Target::ptrsize;
-            structsize = Target::ptrsize;      // allow room for __vptr
+            alignsize = target.ptrsize;
+            structsize = target.ptrsize;      // allow room for __vptr
         }
     }
     else
     {
-        alignsize = Target::ptrsize;
-        structsize = Target::ptrsize;      // allow room for __vptr
+        alignsize = target.ptrsize;
+        structsize = target.ptrsize;      // allow room for __vptr
         if (!isCPPclass())
-            structsize += Target::ptrsize; // allow room for __monitor
+            structsize += target.ptrsize; // allow room for __monitor
     }
 
     //printf("finalizeSize() %s, sizeok = %d\n", toChars(), sizeok);
