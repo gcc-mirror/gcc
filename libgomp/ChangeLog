@@ -1,3 +1,97 @@
+2020-06-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* oacc-mem.c (goacc_exit_data_internal) <GOMP_MAP_STRUCT>:
+	Evaluate 'copyfrom' individually for each entry.
+	* testsuite/libgomp.oacc-c-c++-common/struct-1.c: Update.
+
+2020-06-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* oacc-mem.c (goacc_exit_data_internal) <GOMP_MAP_STRUCT>:
+	Evaluate 'finalize' individually for each entry.
+	* testsuite/libgomp.oacc-c-c++-common/struct-1.c: New file.
+	* testsuite/libgomp.oacc-c-c++-common/struct-refcount-1.c: Remove
+	file.
+
+2020-06-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-7.c: Fix 'sizeof'
+	usage.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-8.c: Likewise.
+
+2020-06-04  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* oacc-mem.c (goacc_exit_datum): Repair 'is_tgt_unmapped'
+	checking.
+	(acc_unmap_data, goacc_exit_data_internal): Restore
+	'is_tgt_unmapped' checking.
+	* testsuite/libgomp.oacc-c-c++-common/struct-refcount-1.c: New
+	file.
+	* testsuite/libgomp.oacc-fortran/deep-copy-6.f90: Adjust.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-1-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-2-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-2-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-3-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-4-1.f90: Likewise.
+
+2020-06-04  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* oacc-mem.c (acc_unmap_data): Don't open-code 'gomp_remove_var'.
+
+2020-06-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/92854
+	* oacc-mem.c (acc_unmap_data): Remove 'tgt' reference counting.
+
+2020-06-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/92854
+	* testsuite/libgomp.oacc-c-c++-common/pr92854-1.c: Extend some
+	more.
+
+2020-06-04  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* oacc-mem.c (goacc_enter_datum): Use 'tgt' returned from
+	'gomp_map_vars'.
+	 (acc_map_data): Clean up accordingly.
+
+2020-06-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/deep-copy-6.f90: XFAIL behavior
+	of over-eager 'finalize' clause.
+	* testsuite/libgomp.oacc-fortran/deep-copy-6-no_finalize.F90: New
+	file.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-1-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-1-2.F90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-2-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-2-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-3-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-3-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-4-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-4-2.f90: Likewise.
+
+2020-06-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* oacc-mem.c (goacc_exit_data_internal): Unlock on error path.
+
+2020-06-04  Julian Brown  <julian@codesourcery.com>
+
+	* oacc-mem.c (acc_attach_async): Add missing gomp_mutex_unlock on
+	error path.
+	(goacc_detach_internal): Likewise.
+
+2020-06-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/error_stop-1.f: Initialize before
+	the checkpoint.
+	* testsuite/libgomp.oacc-fortran/error_stop-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/error_stop-3.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/stop-1.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/stop-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/stop-3.f: Likewise.
+
 2020-05-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/95191
