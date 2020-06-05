@@ -1488,7 +1488,7 @@ int ScopeDsymbol_foreach(Scope *sc, Dsymbols *members, ForeachDg dg, void *ctx, 
     {   Dsymbol *s = (*members)[i];
 
         if (AttribDeclaration *a = s->isAttribDeclaration())
-            result = ScopeDsymbol_foreach(sc, a->include(sc, NULL), dg, ctx, &n);
+            result = ScopeDsymbol_foreach(sc, a->include(sc), dg, ctx, &n);
         else if (TemplateMixin *tm = s->isTemplateMixin())
             result = ScopeDsymbol_foreach(sc, tm->members, dg, ctx, &n);
         else if (s->isTemplateInstance())
