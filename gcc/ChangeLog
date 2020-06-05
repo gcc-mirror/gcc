@@ -1,3 +1,16 @@
+2020-06-05  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* cgraph.h (symtab_node): New attribute aux2.
+	* cgraphunit.c (ipa_passes): Decide not to compile in parallel.
+	* gcc.c (has_hidden_E): New function.
+	* (append_split_outputs): Add fPIC and abort when a hidden -E is
+	  provided.
+	* (execute): Do not call append_split_outputs when -E is provided.
+	* lto-partition.c: Merge calls to static functions to same
+	  partition.
+	* (lto_check_usage_from_other_partitions): Update
+	  used_from_other_partitions to nodes other than varpool.
+
 2020-06-04  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* lto-partition.c (class union_find): New class.

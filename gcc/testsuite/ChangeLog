@@ -1,3 +1,8 @@
+2020-06-05  Giuliano Belinassi <giuliano.belinassi@usp.br>
+
+	* gcc.dg/driver/driver.exp: New test.
+	* gcc.dg/driver/empty.c: New file.
+
 2020-05-27  Giuliano Belinassi <giuliano.belinassi@usp.br>
 
 	* gcc.dg/driver/driver.exp: New test.

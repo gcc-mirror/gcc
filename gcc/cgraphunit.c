@@ -2664,6 +2664,14 @@ ipa_passes (void)
 	  FOR_EACH_SYMBOL (node)
 	    node->aux = NULL;
 
+	  /* We decided that partitioning is a bad idea. In this case, just
+	     proceed with the default compilation method.  */
+	  if (ltrans_partitions.length () <= 1)
+	    {
+	      flag_wpa = NULL;
+	      goto continue_compilation;
+	    }
+
 	  /* Find out statics that need to be promoted
 	     to globals with hidden visibility because they are accessed from
 	     multiple partitions.  */

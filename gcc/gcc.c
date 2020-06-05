@@ -3299,6 +3299,18 @@ static const char *get_path_to_ld (void)
   return ret;
 }
 
+/* Check if a hidden -E was passed as argument to something.  */
+
+static bool has_hidden_E (int argc, const char *argv[])
+{
+  int i;
+  for (i = 0; i < argc; ++i)
+    if (!strcmp (argv[i], "-E"))
+      return true;
+
+  return false;
+}
+
 /* Append -fsplit-output=<tempfile> to all calls to compilers. Return true
    if a additional call to LD is required to merge the resulting files.  */
 
@@ -3317,16 +3329,21 @@ static void append_split_outputs (extra_arg_storer *storer,
 
   if (is_compiler (commands[0].prog))
     {
-      const char *extra_argument = fsplit_arg (storer);
-
       argc = get_number_of_args (commands[0].argv);
-      argv = storer->create_new (argc + 3);
+      argv = storer->create_new (argc + 4);
 
       memcpy (argv, commands[0].argv, argc * sizeof (const char *));
-      argv[argc++] = extra_argument;
+
+      if (!has_hidden_E (argc, commands[0].argv))
+	{
+	  const char *extra_argument = fsplit_arg (storer);
+	  argv[argc++] = extra_argument;
+	}
+
       if (have_c)
-	argv[argc++] = "-fPIE"; /* Necessary when -c is provided for some
-				   reason.  */
+	argv[argc++] = "-fPIE"; 
+	argv[argc++] = "-fPIC";
+
       argv[argc]   = NULL;
 
       commands[0].argv = argv;
@@ -3854,7 +3871,7 @@ execute (void)
   /* Parse the argbuf into several commands.  */
   commands = parse_argbuf (&argbuf, &n_commands);
 
-  if (!have_S)
+  if (!have_S && !have_E)
     append_split_outputs (&storer, &additional_ld, &commands, &n_commands);
 
   if (!wrapper_string)
@@ -4013,6 +4030,9 @@ static const char *fsplit_arg (extra_arg_storer *storer)
   gcc_assert (current_infile);
 
   current_infile->temp_additional_asm = tempname;
+  /* Remove file, once we may not even need it and create it later.  */
+  /* FIXME: This is a little hackish.  */
+  remove (tempname);
 
   final = storer->create_string (n);
 

@@ -55,17 +55,20 @@ check-for-errors "Asembler Generation" \
 check-for-errors "Asembler Generation" \
 	[gcc_target_compile "$srcdir/$subdir/b.c -S" "b.S" none ""]
 
+# Empty file is a valid program.
+check-for-errors "Empty Program" \
+	[gcc_target_compile "$srcdir/$subdir/empty.c -c" "empty.o" none ""]
+
 # Test object file passthrough
 check-for-errors "Object file passthrough" \
 	[gcc_target_compile "$srcdir/$subdir/foo.c a.o" "a.exe" none ""]
-
 
 # Test compilation when assembler is provided
 check-for-errors "Assembler with Macros" \
 	[gcc_target_compile "a.S -c" "a.o" none ""]
 
 # Clean temporary generated files.
-set temp_files {"a.o" "a.S" "b.o" "b.S"}
+set temp_files {"a.o" "a.S" "b.o" "b.S" "empty.o"}
 
 foreach f $temp_files {
 	if { [file exists $f] } {

@@ -465,7 +465,7 @@ lto_max_no_alonevap_map (void)
   int *compression;
 
   FOR_EACH_SYMBOL (node)
-    node->aux = (void *) n++;
+    node->aux2 = n++;
 
   union_find disjoint_sets = union_find (n);
 
@@ -482,9 +482,22 @@ lto_max_no_alonevap_map (void)
   FOR_EACH_FUNCTION (cnode)
     {
       struct ipa_ref *ref = NULL;
+      cgraph_edge *e;
+
       for (i = 0; cnode->iterate_reference (i, ref); i++)
-	if (is_a <varpool_node *> (ref->referred))
-	  disjoint_sets.unite (int_cast (cnode->aux), int_cast (ref->referred->aux));
+	{
+	  symtab_node *node = ref->referred;
+	  if (is_a <varpool_node *> (node))
+	    disjoint_sets.unite (cnode->aux2, node->aux2);
+	}
+
+      for (e = cnode->callees; e; e = e->next_callee)
+	{
+	  cgraph_node *node = e->callee;
+	  if (TREE_STATIC (node->decl))
+	    disjoint_sets.unite (cnode->aux2, node->aux2);
+	}
+
     }
 
   /* Allocate a compression vector, where we will map each disjoint set into
@@ -508,7 +521,7 @@ lto_max_no_alonevap_map (void)
   FOR_EACH_SYMBOL (node)
     {
       int root = disjoint_sets.find (i);
-      node->aux = (void *) root;
+      node->aux2 = root;
       if (compression[root] < 0)
 	compression[root] = j++;
       i++;
@@ -521,8 +534,8 @@ lto_max_no_alonevap_map (void)
      variable.  Complexity: n.  */
   FOR_EACH_SYMBOL (node)
     {
-      int p = compression[int_cast (node->aux)];
-      node->aux = NULL;
+      int p = compression[node->aux2];
+      node->aux2 = -1;
 
       if (node->get_partitioning_class () != SYMBOL_PARTITION
 	  || symbol_partitioned_p (node))
@@ -1360,13 +1373,12 @@ lto_check_usage_from_other_partitions (void)
   for (i = 0; i < ltrans_partitions.length (); i++)
     {
       vec<lto_encoder_entry> &nodes = (ltrans_partitions[i])->encoder->nodes;
-      
+
       for (j = 0; j < nodes.length (); j++)
 	{
-	  varpool_node *vnode = dyn_cast<varpool_node *> (nodes[j].node);
-	  if (vnode && !nodes[j].in_partition)
-	    vnode->used_from_other_partition = true;
+	  symtab_node *node = nodes[j].node;
+	  if (node && !nodes[j].in_partition)
+	    node->used_from_other_partition = true;
 	}
     }
-
 }
