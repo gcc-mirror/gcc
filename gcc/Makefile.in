@@ -388,6 +388,10 @@ GMPINC = @GMPINC@
 ISLLIBS = @ISLLIBS@
 ISLINC = @ISLINC@
 
+# How to find libcody
+CODYLIB = @CODYLIB@ -lcody
+CODYLIBINC = @CODYLIBINC@
+
 # Set to 'yes' if the LTO front end is enabled.
 enable_lto = @enable_lto@
 
@@ -411,9 +415,6 @@ enable_as_accelerator = @enable_as_accelerator@
 
 CPPLIB = ../libcpp/libcpp.a
 CPPINC = -I$(srcdir)/../libcpp/include
-
-CODYLIB = ../libcody/libcody.a
-CODYINC = -I$(srcdir)/../libcody
 
 # Where to find decNumber
 enable_decimal_float = @enable_decimal_float@
@@ -986,8 +987,6 @@ SYSTEM_H = system.h hwint.h $(srcdir)/../include/libiberty.h \
 PREDICT_H = predict.h predict.def
 CPPLIB_H = $(srcdir)/../libcpp/include/line-map.h \
 	$(srcdir)/../libcpp/include/cpplib.h
-CODYLIB_H = $(srcdir)/../libcody/cody.hh \
-	$(srcdir)/../libcody/cody-conf.h
 INPUT_H = $(srcdir)/../libcpp/include/line-map.h input.h
 OPTS_H = $(INPUT_H) $(VEC_H) opts.h $(OBSTACK_H)
 SYMTAB_H = $(srcdir)/../libcpp/include/symtab.h $(OBSTACK_H)
@@ -1072,7 +1071,7 @@ BUILD_LIBDEPS= $(BUILD_LIBIBERTY)
 # and the system's installed libraries.
 LIBS = @LIBS@ libcommon.a $(CPPLIB) $(LIBINTL) $(LIBICONV) $(LIBBACKTRACE) \
 	$(LIBIBERTY) $(LIBDECNUMBER) $(HOST_LIBS)
-BACKENDLIBS = $(ISLLIBS) $(GMPLIBS) $(PLUGINLIBS) $(HOST_LIBS) \
+BACKENDLIBS = $(ISLLIBS) $(GMPLIBS) $(CODYLIB) $(PLUGINLIBS) $(HOST_LIBS) \
 	$(ZLIB) $(ZSTD_LIB)
 # Any system libraries needed just for GNAT.
 SYSLIBS = @GNAT_LIBEXC@
@@ -1105,7 +1104,7 @@ BUILD_ERRORS = build/errors.o
 # libintl.h will be found in ../intl if we are using the included libintl.
 INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
 	   -I$(srcdir)/../include @INCINTL@ \
-	   $(CPPINC) $(GMPINC) $(DECNUMINC) $(BACKTRACEINC) \
+	   $(CPPINC) $(GMPINC) $(CODYLIBINC) $(DECNUMINC) $(BACKTRACEINC) \
 	   $(ISLINC)
 
 COMPILE.base = $(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) -o $@

@@ -124,14 +124,14 @@ extra_host_args=
 # these library is used by various programs built for the build
 # environment
 #
-build_libs="build-libiberty build-libcpp build-libcody"
+build_libs="build-libiberty build-libcpp"
 
 # these tools are built for the build environment
 build_tools="build-texinfo build-flex build-bison build-m4 build-fixincludes"
 
 # these libraries are used by various programs built for the host environment
 #f
-host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libcody libdecnumber gmp mpfr mpc isl libelf libiconv libctf"
+host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libdecnumber gmp mpfr mpc isl libelf libiconv libctf"
 
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
@@ -1703,6 +1703,32 @@ AC_SUBST(extra_mpfr_configure_flags)
 AC_SUBST(extra_mpc_gmp_configure_flags)
 AC_SUBST(extra_mpc_mpfr_configure_flags)
 AC_SUBST(extra_isl_gmp_configure_flags)
+
+# Specify a location for libcody
+AC_ARG_WITH(libcody,
+[AS_HELP_STRING([--with-libcody=PATH],
+		[specify prefix directory for installed libcody package.
+		 Equivalent to --with-libcody-include=PATH/include
+		 plus --with-libcody-lib=PATH/lib])])
+AC_ARG_WITH(libcody-include,
+[AS_HELP_STRING([--with-libcody-include=PATH],
+		[specify directory for installed libcody include files])])
+AC_ARG_WITH(libcody-lib,
+[AS_HELP_STRING([--with-libcody-lib=PATH],
+		[specify directory for the installed libcody library])])
+
+if test "x$with_libcody" != x; then
+  codylib="-L$with_libcody/lib"
+  codylibinc="-I$with_libcody/include"
+fi
+if test "x$with_libcody_include" != x; then
+  codylibinc="-I$with_libcody_include"
+fi
+if test "x$with_libcody_lib" != x; then
+  codylib="-L$with_libcody_lib"
+fi
+AC_SUBST(codylib)
+AC_SUBST(codylibinc)
 
 # Libraries to use for stage1 or when not bootstrapping.
 AC_ARG_WITH(stage1-libs,

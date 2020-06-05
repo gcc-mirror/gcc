@@ -229,6 +229,8 @@ HOST_EXPORTS = \
 	GMPINC="$(HOST_GMPINC)"; export GMPINC; \
 	ISLLIBS="$(HOST_ISLLIBS)"; export ISLLIBS; \
 	ISLINC="$(HOST_ISLINC)"; export ISLINC; \
+	CODYLIB="$(HOST_CODYLIB)"; export CODYLIB; \
+	CODYLIBINC="$(HOST_CODYLIBINC)"; export CODYLIBINC; \
 	LIBELFLIBS="$(HOST_LIBELFLIBS)"; export LIBELFLIBS; \
 	LIBELFINC="$(HOST_LIBELFINC)"; export LIBELFINC; \
 	XGCC_FLAGS_FOR_TARGET="$(XGCC_FLAGS_FOR_TARGET)"; export XGCC_FLAGS_FOR_TARGET; \
@@ -331,6 +333,10 @@ HOST_GMPINC = @gmpinc@
 # Where to find isl
 HOST_ISLLIBS = @isllibs@
 HOST_ISLINC = @islinc@
+
+# Where to find libcody
+HOST_CODYLIB = @codylib@
+HOST_CODYLIBINC = @codylibinc@
 
 # Where to find libelf
 HOST_LIBELFLIBS = @libelflibs@

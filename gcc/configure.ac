@@ -6828,6 +6828,9 @@ if test "x${ISLLIBS}" != "x" ; then
    AC_DEFINE(HAVE_isl, 1, [Define if isl is in use.])
 fi
 
+AC_ARG_VAR(CODYLIB,[How to link Cody])
+AC_ARG_VAR(CODYLIBINC,[How to find Cody include files])
+
 GCC_ENABLE_PLUGINS
 AC_SUBST(pluginlibs)
 AC_SUBST(enable_plugin)

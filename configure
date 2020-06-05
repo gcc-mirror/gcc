@@ -688,6 +688,8 @@ poststage1_ldflags
 poststage1_libs
 stage1_ldflags
 stage1_libs
+codylibinc
+codylib
 extra_isl_gmp_configure_flags
 extra_mpc_mpfr_configure_flags
 extra_mpc_gmp_configure_flags
@@ -805,6 +807,9 @@ with_gmp_dir
 with_gmp
 with_gmp_include
 with_gmp_lib
+with_libcody
+with_libcody_include
+with_libcody_lib
 with_stage1_libs
 with_static_standard_libraries
 with_stage1_ldflags
@@ -1579,6 +1584,14 @@ Optional Packages:
                           --with-gmp-lib=PATH/lib
   --with-gmp-include=PATH specify directory for installed GMP include files
   --with-gmp-lib=PATH     specify directory for the installed GMP library
+  --with-libcody=PATH     specify prefix directory for installed libcody
+                          package. Equivalent to
+                          --with-libcody-include=PATH/include plus
+                          --with-libcody-lib=PATH/lib
+  --with-libcody-include=PATH
+                          specify directory for installed libcody include
+                          files
+  --with-libcody-lib=PATH specify directory for the installed libcody library
   --with-stage1-libs=LIBS libraries for stage1
   --with-static-standard-libraries
                           use -static-libstdc++ and -static-libgcc
@@ -2778,14 +2791,14 @@ extra_host_args=
 # these library is used by various programs built for the build
 # environment
 #
-build_libs="build-libiberty build-libcpp build-libcody"
+build_libs="build-libiberty build-libcpp"
 
 # these tools are built for the build environment
 build_tools="build-texinfo build-flex build-bison build-m4 build-fixincludes"
 
 # these libraries are used by various programs built for the host environment
 #f
-host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libcody libdecnumber gmp mpfr mpc isl libelf libiconv libctf"
+host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libdecnumber gmp mpfr mpc isl libelf libiconv libctf"
 
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
@@ -5941,6 +5954,39 @@ fi
 
 
 
+
+
+
+# Specify a location for libcody
+
+# Check whether --with-libcody was given.
+if test "${with_libcody+set}" = set; then :
+  withval=$with_libcody;
+fi
+
+
+# Check whether --with-libcody-include was given.
+if test "${with_libcody_include+set}" = set; then :
+  withval=$with_libcody_include;
+fi
+
+
+# Check whether --with-libcody-lib was given.
+if test "${with_libcody_lib+set}" = set; then :
+  withval=$with_libcody_lib;
+fi
+
+
+if test "x$with_libcody" != x; then
+  codylib="-L$with_libcody/lib"
+  codylibinc="-I$with_libcody/include"
+fi
+if test "x$with_libcody_include" != x; then
+  codylibinc="-I$with_libcody_include"
+fi
+if test "x$with_libcody_lib" != x; then
+  codylib="-L$with_libcody_lib"
+fi
 
 
 
