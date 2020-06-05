@@ -1,3 +1,144 @@
+2020-06-04  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/10138
+	PR middle-end/95136
+	* c-c++-common/Wsizeof-pointer-memaccess1.c: Prune out valid
+	Wuninitialized.
+	* c-c++-common/uninit-pr51010.c: Adjust expected warning format.
+	* c-c++-common/goacc/uninit-dim-clause.c: Same.
+	* c-c++-common/goacc/uninit-firstprivate-clause.c: Same.
+	* c-c++-common/goacc/uninit-if-clause.c: Same.
+	* c-c++-common/gomp/pr70550-1.c: Same.
+	* c-c++-common/gomp/pr70550-2.c: Adjust.
+	* g++.dg/20090107-1.C: Same.
+	* g++.dg/20090121-1.C: Same.
+	* g++.dg/ext/attr-access.C: Avoid -Wuninitialized.
+	* gcc.dg/tree-ssa/forwprop-6.c: Prune out -Wuninitialized.
+	* gcc.dg/Warray-bounds-52.c: Prune out valid -Wuninitialized.
+	* gcc.dg/Warray-bounds-53.c: Same.
+	* gcc.dg/Warray-bounds-54.c: Same.
+	* gcc.dg/Wstringop-overflow-33.c: New test.
+	* gcc.dg/attr-access-none.c: New test.
+	* gcc.dg/attr-access-read-only.c: Adjust.
+	* gcc.dg/attr-access-read-write.c: Same.
+	* gcc.dg/attr-access-write-only.c: Same.
+	* gcc.dg/pr71581.c: Adjust text of expected warning.
+	* gcc.dg/uninit-15.c: Same.
+	* gcc.dg/uninit-32.c: New test.
+	* gcc.dg/uninit-33.c: New test.
+	* gcc.dg/uninit-34.c: New test.
+	* gcc.dg/uninit-36.c: New test.
+	* gcc.dg/uninit-B-O0.c: Adjust text of expected warning.
+	* gcc.dg/uninit-I-O0.c: Same.
+	* gcc.dg/uninit-pr19430-O0.c: Same.
+	* gcc.dg/uninit-pr19430.c: Same.
+	* gcc.dg/uninit-pr95136.c: New test.
+	* gfortran.dg/assignment_4.f90: Expect -Wuninitialized.
+	* gfortran.dg/goacc/uninit-dim-clause.f95: Adjust text of expected
+	warning.
+	* gfortran.dg/goacc/uninit-firstprivate-clause.f95
+	* gfortran.dg/goacc/uninit-if-clause.f95
+	* gfortran.dg/pr66545_2.f90
+
+2020-06-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93310
+	* g++.dg/cpp2a/constexpr-virtual16.C: New test.
+	* g++.dg/cpp2a/constexpr-virtual17.C: New test.
+	* g++.dg/cpp2a/constexpr-new12.C: Adjust diagnostic.
+
+2020-06-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95158
+	* g++.dg/template/virtual5.C: New test.
+
+2020-06-04  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95500
+	* gfortran.dg/pr95500.f90: New test.
+
+2020-06-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95346
+	* g++.dg/coroutines/pr95346.C: New test.
+
+2020-06-04  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/95464
+	* gcc.target/i386/pr95464.c: New.
+
+2020-06-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/95113
+	* gcc.dg/ipa/pr95113.c: New test.
+
+2020-06-04  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/94735
+	* gcc.target/arm/mve/intrinsics/mve_vstore_scatter_base.c: New test.
+	* gcc.target/arm/mve/intrinsics/mve_vstore_scatter_base_p.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vstore_scatter_offset.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vstore_scatter_offset_p.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vstore_scatter_shifted_offset.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vstore_scatter_shifted_offset_p.c:
+	Likewise.
+
+2020-06-04  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vbicq_f16.c: Modify.
+	* gcc.target/arm/mve/intrinsics/vbicq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vbicq_n_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vbicq_n_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vbicq_n_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vbicq_n_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vbicq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vbicq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vbicq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vbicq_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vbicq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vbicq_u8.c: Likewise.
+
+2020-06-04  Hongtao Liu  <hongtao.liu@inte.com>
+
+	* gcc.target/i386/avx512f-vcvtps2ph-pr95254.c: New test.
+	* gcc.target/i386/avx512vl-vcvtps2ph-pr95254.c: Ditto.
+
+2020-06-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/openacc1.adb: Remove testcase.
+
+2020-06-04  Hao Liu  <hliu@os.amperecomputing.com>
+
+	PR tree-optimization/89430
+	* gcc.dg/tree-ssa/pr89430-1.c: Remove xfail.
+	* gcc.dg/tree-ssa/pr89430-2.c: Remove xfail.
+	* gcc.dg/tree-ssa/pr89430-5.c: Remove xfail.
+	* gcc.dg/tree-ssa/pr89430-6.c: Remove xfail.
+	* gcc.dg/tree-ssa/pr89430-7-comp-ref.c: New test.
+	* gcc.dg/tree-ssa/pr89430-8-mem-ref-size.c: New test.
+	* gcc.dg/tree-ssa/ssa-pre-17.c: Add -fno-tree-cselim.
+
+2020-06-04  Andreas Schwab  <schwab@suse.de>
+
+	PR libfortran/59227
+	* gfortran.dg/erf_3.F90: Remove XFAIL on ia64-*-linux*.
+
+2020-06-04  Hongtao.liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr92658-avx512bw-trunc.c: Adjust testcase.
+
+2020-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82304
+	PR c++/95307
+	* g++.dg/template/pr79650.C: Expect different diagnostics and expect
+	it on all lines that do pointer to integer casts.
+	* g++.dg/cpp1y/constexpr-shift1.C: Expect different diagnostics.
+	* g++.dg/cpp1y/constexpr-82304.C: New test.
+	* g++.dg/cpp0x/constexpr-95307.C: New test.
+
 2020-06-03  Mark Wielaard  <mark@klomp.org>
 
 	* g++.dg/spellcheck-inttypes.C: Add string-literal testcases.

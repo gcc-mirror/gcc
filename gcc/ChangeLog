@@ -1,3 +1,195 @@
+2020-06-04  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/10138
+	PR middle-end/95136
+	* attribs.c (init_attr_rdwr_indices): Move function here.
+	* attribs.h (rdwr_access_hash, rdwr_map): Define.
+	(attr_access): Add 'none'.
+	(init_attr_rdwr_indices): Declared function.
+	* builtins.c (warn_for_access)): New function.
+	(check_access): Call it.
+	* builtins.h (checK-access): Add an optional argument.
+	* calls.c (rdwr_access_hash, rdwr_map): Move to attribs.h.
+	(init_attr_rdwr_indices): Declare extern.
+	(append_attrname): Handle attr_access::none.
+	(maybe_warn_rdwr_sizes): Same.
+	(initialize_argument_information): Update comments.
+	* doc/extend.texi (attribute access): Document 'none'.
+	* tree-ssa-uninit.c (struct wlimits): New.
+	(maybe_warn_operand): New function.
+	(maybe_warn_pass_by_reference): Same.
+	(warn_uninitialized_vars): Refactor code into maybe_warn_operand.
+	Also call for function calls.
+	(pass_late_warn_uninitialized::execute): Adjust comments.
+	(execute_early_warn_uninitialized): Same.
+
+2020-06-04  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/95464
+	* lra.c (lra_emit_move): Add processing STRICT_LOW_PART.
+	* lra-constraints.c (match_reload): Use STRICT_LOW_PART in output
+	reload if the original insn has it too.
+
+2020-06-04  Richard Biener  <rguenther@suse.de>
+
+	* config/aarch64/aarch64.c (aarch64_gimplify_va_arg_expr):
+	Ensure that tmp_ha is marked TREE_ADDRESSABLE.
+
+2020-06-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/95113
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Move non-call
+	exceptions check to...
+	* tree-eh.c (stmt_unremovable_because_of_non_call_eh_p): ...this
+	new function.
+	* tree-eh.h (stmt_unremovable_because_of_non_call_eh_p): Declare it.
+	* ipa-sra.c (isra_track_scalar_value_uses): Use it.  New parameter
+	fun.
+
+2020-06-04  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/94735
+	* config/arm/predicates.md (mve_scatter_memory): Define to
+	match (mem (reg)) for scatter store memory.
+	* config/arm/mve.md (mve_vstrbq_scatter_offset_<supf><mode>): Modify
+	define_insn to define_expand.
+	(mve_vstrbq_scatter_offset_p_<supf><mode>): Likewise.
+	(mve_vstrhq_scatter_offset_<supf><mode>): Likewise.
+	(mve_vstrhq_scatter_shifted_offset_p_<supf><mode>): Likewise.
+	(mve_vstrhq_scatter_shifted_offset_<supf><mode>): Likewise.
+	(mve_vstrdq_scatter_offset_p_<supf>v2di): Likewise.
+	(mve_vstrdq_scatter_offset_<supf>v2di): Likewise.
+	(mve_vstrdq_scatter_shifted_offset_p_<supf>v2di): Likewise.
+	(mve_vstrdq_scatter_shifted_offset_<supf>v2di): Likewise.
+	(mve_vstrhq_scatter_offset_fv8hf): Likewise.
+	(mve_vstrhq_scatter_offset_p_fv8hf): Likewise.
+	(mve_vstrhq_scatter_shifted_offset_fv8hf): Likewise.
+	(mve_vstrhq_scatter_shifted_offset_p_fv8hf): Likewise.
+	(mve_vstrwq_scatter_offset_fv4sf): Likewise.
+	(mve_vstrwq_scatter_offset_p_fv4sf): Likewise.
+	(mve_vstrwq_scatter_offset_p_<supf>v4si): Likewise.
+	(mve_vstrwq_scatter_offset_<supf>v4si): Likewise.
+	(mve_vstrwq_scatter_shifted_offset_fv4sf): Likewise.
+	(mve_vstrwq_scatter_shifted_offset_p_fv4sf): Likewise.
+	(mve_vstrwq_scatter_shifted_offset_p_<supf>v4si): Likewise.
+	(mve_vstrwq_scatter_shifted_offset_<supf>v4si): Likewise.
+	(mve_vstrbq_scatter_offset_<supf><mode>_insn): Define insn for scatter
+	stores.
+	(mve_vstrbq_scatter_offset_p_<supf><mode>_insn): Likewise.
+	(mve_vstrhq_scatter_offset_<supf><mode>_insn): Likewise.
+	(mve_vstrhq_scatter_shifted_offset_p_<supf><mode>_insn): Likewise.
+	(mve_vstrhq_scatter_shifted_offset_<supf><mode>_insn): Likewise.
+	(mve_vstrdq_scatter_offset_p_<supf>v2di_insn): Likewise.
+	(mve_vstrdq_scatter_offset_<supf>v2di_insn): Likewise.
+	(mve_vstrdq_scatter_shifted_offset_p_<supf>v2di_insn): Likewise.
+	(mve_vstrdq_scatter_shifted_offset_<supf>v2di_insn): Likewise.
+	(mve_vstrhq_scatter_offset_fv8hf_insn): Likewise.
+	(mve_vstrhq_scatter_offset_p_fv8hf_insn): Likewise.
+	(mve_vstrhq_scatter_shifted_offset_fv8hf_insn): Likewise.
+	(mve_vstrhq_scatter_shifted_offset_p_fv8hf_insn): Likewise.
+	(mve_vstrwq_scatter_offset_fv4sf_insn): Likewise.
+	(mve_vstrwq_scatter_offset_p_fv4sf_insn): Likewise.
+	(mve_vstrwq_scatter_offset_p_<supf>v4si_insn): Likewise.
+	(mve_vstrwq_scatter_offset_<supf>v4si_insn): Likewise.
+	(mve_vstrwq_scatter_shifted_offset_fv4sf_insn): Likewise.
+	(mve_vstrwq_scatter_shifted_offset_p_fv4sf_insn): Likewise.
+	(mve_vstrwq_scatter_shifted_offset_p_<supf>v4si_insn): Likewise.
+	(mve_vstrwq_scatter_shifted_offset_<supf>v4si_insn): Likewise.
+
+2020-06-04  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/arm_mve.h (__arm_vbicq_n_u16): Correct the intrinsic
+	arguments.
+	(__arm_vbicq_n_s16): Likewise.
+	(__arm_vbicq_n_u32): Likewise.
+	(__arm_vbicq_n_s32): Likewise.
+	(__arm_vbicq): Modify polymorphic variant.
+
+2020-06-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_get_slp_vect_def): Declare.
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Use it.
+	* tree-vect-stmts.c (vect_transform_stmt): Likewise.
+	(vect_is_simple_use): Use SLP_TREE_REPRESENTATIVE.
+	* tree-vect-slp.c (vect_get_slp_vect_defs): Fold into single
+	use ...
+	(vect_get_slp_defs): ... here.
+	(vect_get_slp_vect_def): New function.
+
+2020-06-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_slp_tree::lanes): New.
+	(SLP_TREE_LANES): Likewise.
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Use it.
+	(vectorizable_reduction): Likewise.
+	(vect_transform_cycle_phi): Likewise.
+	(vectorizable_induction): Likewise.
+	(vectorizable_live_operation): Likewise.
+	* tree-vect-slp.c (_slp_tree::_slp_tree): Initialize lanes.
+	(vect_create_new_slp_node): Likewise.
+	(slp_copy_subtree): Copy it.
+	(vect_optimize_slp): Use it.
+	(vect_slp_analyze_node_operations_1): Likewise.
+	(vect_slp_convert_to_external): Likewise.
+	(vect_bb_vectorization_profitable_p): Likewise.
+	* tree-vect-stmts.c (vectorizable_load): Likewise.
+	(get_vectype_for_scalar_type): Likewise.
+
+2020-06-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_update_all_shared_vectypes): Remove.
+	(vect_build_slp_tree_2): Simplify building all external op
+	nodes from scalars.
+	(vect_slp_analyze_node_operations): Remove push/pop of
+	STMT_VINFO_DEF_TYPE.
+	(vect_schedule_slp_instance): Likewise.
+	* tree-vect-stmts.c (ect_check_store_rhs): Pass in the
+	stmt_info, use the vect_is_simple_use overload combining
+	SLP and stmt_info analysis.
+	(vect_is_simple_cond): Likewise.
+	(vectorizable_store): Adjust.
+	(vectorizable_condition): Likewise.
+	(vect_is_simple_use): Fully handle invariant SLP nodes
+	here.  Amend stmt_info operand extraction with COND_EXPR
+	and masked stores.
+	* tree-vect-loop.c (vectorizable_reduction): Deal with
+	COND_EXPR representation ugliness.
+
+2020-06-04  Hongtao Liu  <hongtao.liu@inte.com>
+
+	PR target/95254
+	* config/i386/sse.md (*vcvtps2ph_store<merge_mask_name>):
+	Refine from *vcvtps2ph_store<mask_name>.
+	(vcvtps2ph256<mask_name>): Refine constraint from vm to v.
+	(<mask_codefor>avx512f_vcvtps2ph512<mask_name>): Ditto.
+	(*vcvtps2ph256<merge_mask_name>): New define_insn.
+	(*avx512f_vcvtps2ph512<merge_mask_name>): Ditto.
+	* config/i386/subst.md (merge_mask): New define_subst.
+	(merge_mask_name): New define_subst_attr.
+	(merge_mask_operand3): Ditto.
+
+2020-06-04  Hao Liu  <hliu@os.amperecomputing.com>
+
+	PR tree-optimization/89430
+	* tree-ssa-phiopt.c
+	(struct name_to_bb): Rename to ref_to_bb; add a new field exp;
+	remove ssa_name_ver, store, offset fields.
+	(struct ssa_names_hasher): Rename to refs_hasher; update functions.
+	(class nontrapping_dom_walker): Rename m_seen_ssa_names to m_seen_refs.
+	(nontrapping_dom_walker::add_or_mark_expr): Extend to support ARRAY_REFs
+	and COMPONENT_REFs.
+
+2020-06-04  Andreas Schwab  <schwab@suse.de>
+
+	PR target/95154
+	* config/ia64/ia64.h (ASM_OUTPUT_FDESC): Call assemble_external.
+
+2020-06-04  Hongtao.liu  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (pmov_dst_3_lower): New mode attribute.
+	(trunc<mode><pmov_dst_3_lower>2): Refine from
+	trunc<mode><pmov_dst_3>2.
+
 2020-06-03  Vitor Guidi  <vitor.guidi@usp.br>
 
 	* match.pd (tanh/sinh -> 1/cosh): New simplification.

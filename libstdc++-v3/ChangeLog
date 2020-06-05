@@ -1,3 +1,58 @@
+2020-06-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (__detail::__ptr, __detail::__ref)
+	(__detail::__cat, __detail::__diff): Move to class scope in the
+	relevant __iterator_traits specializations.
+	(__iterator_traits<>): Use nested class templates instead of ones from
+	namespace __detail.
+	* include/bits/stl_iterator.h (__detail::__common_iter_ptr): Move to
+	class scope in iterator_traits<common_iterator<I, S>>.
+	(iterator_traits<common_iterator<I, S>>): Use nested class template
+	instead of __detail::__common_iter_ptr.
+
+2020-06-04  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_algo.h (__copy_n_a): Move to ...
+	* include/bits/stl_algobase.h (__copy_n_a): ...here. Add __strict
+	parameter.
+	(__copy_n_a(istreambuf_iterator<>, _Size, _Deque_iterator<>, bool)):
+	Declare.
+	(__niter_base(const _Safe_iterator<_Ite, _Seq,
+	random_access_iterator_tag>&)): Declare.
+	(__copy_move_a2(istreambuf_iterator<>, istreambuf_iterator<>,
+	_Deque_iterator<>)): Declare.
+	* include/bits/deque.tcc
+	(__copy_move_a2(istreambuf_iterator<>, istreambuf_iterator<>,
+	_Deque_iterator<>)): New.
+	(__copy_n_a(istreambuf_iterator<>, _Size, _Deque_iterator<>, bool)):
+	New.
+	* include/bits/streambuf_iterator.h
+	(__copy_n_a(istreambuf_iterator<>, _Size, _CharT*, bool)): Adapt.
+	* include/debug/safe_iterator.tcc (__niter_base): New.
+	* testsuite/25_algorithms/copy/streambuf_iterators/char/4.cc
+	(test03): New.
+	* testsuite/25_algorithms/copy/streambuf_iterators/char/debug/deque_neg.cc:
+	New test.
+	* testsuite/25_algorithms/copy_n/debug/istreambuf_ite_deque_neg.cc:
+	New test.
+	* testsuite/25_algorithms/copy_n/istreambuf_iterator/2.cc: New test.
+	* testsuite/25_algorithms/copy_n/istreambuf_iterator/deque.cc:
+	New test.
+
+2020-06-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algobase.h (__copy_n_fn): Only call
+	ranges::copy for positive values.
+	* include/bits/stl_algo.h (copy_n): Convert Size argument to an
+	integral type and only call __copy_n for positive values.
+	* testsuite/util/testsuite_iterators.h
+	(random_access_iterator_wrapper::operator+=): Fix range check for
+	negative values.
+	(output_container, input_container, forward_container)
+	(bidirectional_container, random_access_container): New alias
+	templates.
+	* testsuite/25_algorithms/copy_n/5.cc: New test.
+
 2020-06-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90102
