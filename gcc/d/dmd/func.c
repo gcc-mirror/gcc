@@ -902,7 +902,7 @@ void FuncDeclaration::semantic(Scope *sc)
                 {
                     //printf("\tintroducing function %s\n", toChars());
                     introducing = 1;
-                    if (cd->isCPPclass() && Target::reverseCppOverloads)
+                    if (cd->isCPPclass() && target.cpp.reverseOverloads)
                     {
                         // with dmc, overloaded functions are grouped and in reverse order
                         vtblIndex = (int)cd->vtbl.length;
@@ -1553,7 +1553,7 @@ void FuncDeclaration::semantic3(Scope *sc)
             if (f->linkage == LINKd || (f->parameters && Parameter::dim(f->parameters)))
             {
                 // Declare _argptr
-                Type *t = Type::tvalist;
+                Type *t = target.va_listType(loc, sc);
                 v_argptr = new VarDeclaration(Loc(), t, Id::_argptr, NULL);
                 v_argptr->storage_class |= STCtemp;
                 v_argptr->semantic(sc2);

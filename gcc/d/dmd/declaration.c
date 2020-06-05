@@ -1778,7 +1778,7 @@ void VarDeclaration::setFieldOffset(AggregateDeclaration *ad, unsigned *poffset,
     const d_uns64 sz = t->size(loc);
     assert(sz != SIZE_INVALID && sz < UINT32_MAX);
     unsigned memsize = (unsigned)sz;                 // size of member
-    unsigned memalignsize = Target::fieldalign(t);   // size of member for alignment purposes
+    unsigned memalignsize = target.fieldalign(t);   // size of member for alignment purposes
 
     offset = AggregateDeclaration::placeField(poffset, memsize, memalignsize, alignment,
                 &ad->structsize, &ad->alignsize, isunion);
@@ -2220,7 +2220,7 @@ TypeInfoDeclaration::TypeInfoDeclaration(Type *tinfo)
     storage_class = STCstatic | STCgshared;
     protection = Prot(PROTpublic);
     linkage = LINKc;
-    alignment = Target::ptrsize;
+    alignment = target.ptrsize;
 }
 
 TypeInfoDeclaration *TypeInfoDeclaration::create(Type *tinfo)

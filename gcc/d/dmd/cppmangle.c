@@ -131,7 +131,7 @@ class CppMangleVisitor : public Visitor
     {
         // First check the target whether some specific ABI is being followed.
         bool isFundamental;
-        if (Target::cppFundamentalType(t, isFundamental))
+        if (target.cpp.fundamentalType(t, isFundamental))
             return isFundamental;
         if (t->ty == Tenum)
         {
@@ -672,7 +672,7 @@ class CppMangleVisitor : public Visitor
             {
                 ParamsCppMangle *p = (ParamsCppMangle *)ctx;
                 CppMangleVisitor *mangler = p->mangler;
-                Type *t = Target::cppParameterType(fparam);
+                Type *t = target.cpp.parameterType(fparam);
                 if (t->ty == Tsarray)
                 {
                     // Static arrays in D are passed by value; no counterpart in C++
@@ -803,7 +803,7 @@ public:
             return error(t);
 
         // Handle any target-specific basic types.
-        if (const char *tm = Target::cppTypeMangle(t))
+        if (const char *tm = target.cpp.typeMangle(t))
         {
             // Only do substitutions for non-fundamental types.
             if (!isFundamentalType(t) || t->isConst())
@@ -862,10 +862,10 @@ public:
             case Tuns32:                c = 'j';        break;
             case Tfloat32:              c = 'f';        break;
             case Tint64:
-                c = (Target::c_longsize == 8 ? 'l' : 'x');
+                c = (target.c.longsize == 8 ? 'l' : 'x');
                 break;
             case Tuns64:
-                c = (Target::c_longsize == 8 ? 'm' : 'y');
+                c = (target.c.longsize == 8 ? 'm' : 'y');
                 break;
             case Tint128:                c = 'n';       break;
             case Tuns128:                c = 'o';       break;
@@ -899,7 +899,7 @@ public:
         CV_qualifiers(t);
 
         // Handle any target-specific vector types.
-        if (const char *tm = Target::cppTypeMangle(t))
+        if (const char *tm = target.cpp.typeMangle(t))
         {
             buf->writestring(tm);
         }
@@ -1030,7 +1030,7 @@ public:
         CV_qualifiers(t);
 
         // Handle any target-specific struct types.
-        if (const char *tm = Target::cppTypeMangle(t))
+        if (const char *tm = target.cpp.typeMangle(t))
         {
             buf->writestring(tm);
         }

@@ -799,7 +799,7 @@ void AggregateDeclaration::alignmember(
             break;
 
         case (structalign_t) STRUCTALIGN_DEFAULT:
-            // Alignment in Target::fieldalignsize must match what the
+            // Alignment in target.fieldalignsize must match what the
             // corresponding C compiler's default alignment behavior is.
             assert(size > 0 && !(size & (size - 1)));
             *poffset = (*poffset + size - 1) & ~(size - 1);
@@ -1307,7 +1307,7 @@ void StructDeclaration::finalizeSize()
         }
     }
 
-    TypeTuple *tt = Target::toArgTypes(type);
+    TypeTuple *tt = target.toArgTypes(type);
     size_t dim = tt ? tt->arguments->length : 0;
     if (dim >= 1)
     {

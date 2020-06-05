@@ -2011,7 +2011,7 @@ mark_needed (tree decl)
 unsigned
 base_vtable_offset (ClassDeclaration *cd, BaseClass *bc)
 {
-  unsigned csymoffset = Target::classinfosize;
+  unsigned csymoffset = target.classinfosize;
   unsigned interfacesize = int_size_in_bytes (vtbl_interface_type_node);
   csymoffset += cd->vtblInterfaces->length * interfacesize;
 
@@ -2020,7 +2020,7 @@ base_vtable_offset (ClassDeclaration *cd, BaseClass *bc)
       BaseClass *b = (*cd->vtblInterfaces)[i];
       if (b == bc)
 	return csymoffset;
-      csymoffset += b->sym->vtbl.length * Target::ptrsize;
+      csymoffset += b->sym->vtbl.length * target.ptrsize;
     }
 
   /* Check all overriding interface vtbl[]s.  */
@@ -2033,7 +2033,7 @@ base_vtable_offset (ClassDeclaration *cd, BaseClass *bc)
 	    {
 	      if (bc == bs)
 		return csymoffset;
-	      csymoffset += bs->sym->vtbl.length * Target::ptrsize;
+	      csymoffset += bs->sym->vtbl.length * target.ptrsize;
 	    }
 	}
     }

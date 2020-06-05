@@ -362,7 +362,7 @@ build_interface_binfo (tree super, ClassDeclaration *cd, unsigned& offset)
   /* Want RECORD_TYPE, not POINTER_TYPE.  */
   BINFO_TYPE (binfo) = TREE_TYPE (ctype);
   BINFO_INHERITANCE_CHAIN (binfo) = super;
-  BINFO_OFFSET (binfo) = size_int (offset * Target::ptrsize);
+  BINFO_OFFSET (binfo) = size_int (offset * target.ptrsize);
   BINFO_VIRTUAL_P (binfo) = 1;
 
   for (size_t i = 0; i < cd->baseclasses->length; i++, offset++)
@@ -499,7 +499,7 @@ build_vindex_ref (tree object, tree fntype, size_t index)
 
   gcc_assert (POINTER_TYPE_P (fntype));
 
-  return build_memref (fntype, result, size_int (Target::ptrsize * index));
+  return build_memref (fntype, result, size_int (target.ptrsize * index));
 }
 
 /* Return TRUE if EXP is a valid lvalue.  Lvalue references cannot be
@@ -819,7 +819,7 @@ identity_compare_p (StructDeclaration *sd)
 
       /* Check for types that may have padding.  */
       if ((tb->ty == Tcomplex80 || tb->ty == Tfloat80 || tb->ty == Timaginary80)
-	  && Target::realpad != 0)
+	  && target.realpad != 0)
 	return false;
 
       if (offset <= vd->offset)

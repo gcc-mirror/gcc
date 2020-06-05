@@ -421,7 +421,7 @@ public:
                     return;
 
                 case LINKcpp:
-                    buf->writestring(Target::toCppMangle(d));
+                    buf->writestring(target.cpp.toMangle(d));
                     return;
 
                 case LINKdefault:

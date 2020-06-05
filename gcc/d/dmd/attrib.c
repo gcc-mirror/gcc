@@ -516,7 +516,7 @@ LinkDeclaration::LinkDeclaration(LINK p, Dsymbols *decl)
         : AttribDeclaration(decl)
 {
     //printf("LinkDeclaration(linkage = %d, decl = %p)\n", p, decl);
-    linkage = (p == LINKsystem) ? Target::systemLinkage() : p;
+    linkage = (p == LINKsystem) ? target.systemLinkage() : p;
 }
 
 LinkDeclaration *LinkDeclaration::create(LINK p, Dsymbols *decl)

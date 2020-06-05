@@ -58,8 +58,8 @@ bool checkUnsafeAccess(Scope *sc, Expression *e, bool readonly, bool printmsg)
 
         if (v->type->hasPointers() && v->type->toBasetype()->ty != Tstruct)
         {
-            if ((ad->type->alignment() < (unsigned)Target::ptrsize ||
-                 (v->offset & (Target::ptrsize - 1))) &&
+            if ((ad->type->alignment() < target.ptrsize ||
+                 (v->offset & (target.ptrsize - 1))) &&
                 sc->func->setUnsafe())
             {
                 if (printmsg)

@@ -1153,7 +1153,7 @@ public:
                         fs->key = new VarDeclaration(loc, Type::tsize_t, idkey, NULL);
                         fs->key->storage_class |= STCtemp;
                     }
-                    else if (fs->key->type->ty != Tsize_t)
+                    else if (fs->key->type->ty != Type::tsize_t->ty)
                     {
                         tmp_length = new CastExp(loc, tmp_length, fs->key->type);
                     }
@@ -1585,8 +1585,8 @@ public:
                         d_uns64 keysize = taa->index->size();
                         if (keysize == SIZE_INVALID)
                             goto Lerror2;
-                        assert(keysize < UINT64_MAX - Target::ptrsize);
-                        keysize = (keysize + (Target::ptrsize- 1)) & ~(Target::ptrsize - 1);
+                        assert(keysize < UINT64_MAX - target.ptrsize);
+                        keysize = (keysize + (target.ptrsize - 1)) & ~(target.ptrsize - 1);
                         // paint delegate argument to the type runtime expects
                         if (!fldeTy[i]->equals(flde->type))
                         {
@@ -3248,7 +3248,7 @@ public:
              *  try { body } finally { _d_criticalexit(critsec.ptr); }
              */
             Identifier *id = Identifier::generateId("__critsec");
-            Type *t = Type::tint8->sarrayOf(Target::ptrsize + Target::critsecsize());
+            Type *t = Type::tint8->sarrayOf(target.ptrsize + target.critsecsize());
             VarDeclaration *tmp = new VarDeclaration(ss->loc, t, id, NULL);
             tmp->storage_class |= STCtemp | STCgshared | STCstatic;
 
@@ -3829,7 +3829,7 @@ void semantic(Catch *c, Scope *sc)
         }
         else if (cd->isCPPclass())
         {
-            if (!Target::cppExceptions)
+            if (!target.cpp.exceptions)
             {
                 error(c->loc, "catching C++ class objects not supported for this target");
                 c->errors = true;
