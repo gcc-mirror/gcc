@@ -5,6 +5,6 @@
 // { dg-additional-files map-2.map }
 
 export module foo;
-// { dg-error "mapper response" "" { target *-*-* } 0 }
+// { dg-error "failed reading mapper" "" { target *-*-* } 0 }
 
 // { dg-prune-output "not writing module" }

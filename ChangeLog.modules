@@ -1,5 +1,21 @@
 2020-06-05  Nathan Sidwell  <nathan@acm.org>
 
+	Install V1 module protocol goop
+	gcc/cp/
+	* Make-lang.in: Remove mapper-server2 hack.
+	* mapper-client.cc: Add additional mechanisms to get a server.
+	* mapper-client.h: Delete.
+	* mapper-resolver.cc: Fix file reading bugs
+	* mapper-server.cc: Original deleted.
+	* mapper-server2.cc: Renamed to mapper-server.cc.
+	* mapper.h: Adjust.
+	* module.cc: Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/bad-mapper-1.C: Adjust expected errors.
+	* g++.dg/modules/bad-mapper-2.C: Likewise.
+	* g++.dg/modules/bad-mapper-3.C: Likewise.
+	* g++.dg/modules/map-2.C: Likewise.
+
 	Add libcody as an external library
 	* libcody: Delete
 	* Makefile.def: Revert.

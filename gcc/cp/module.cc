@@ -228,7 +228,8 @@ Classes used:
 #include "attribs.h"
 #include "intl.h"
 #include "langhooks.h"
-#include "mapper-client.h"
+#define MAPPER_FOR_GCC 1
+#include "mapper.h"
 
 #if HAVE_MMAP_FILE && _POSIX_MAPPED_FILES > 0
 /* mmap, munmap.  */
@@ -3861,18 +3862,16 @@ static GTY(()) vec<tree, va_gc> *class_members;
 /********************************************************************/
 
 /* Our module mapper (created lazily).  */
-module_mapper *mapper;
+module_client *mapper;
 
-static module_mapper *make_mapper (location_t loc);
-inline module_mapper *get_mapper (location_t loc)
+static module_client *make_mapper (location_t loc);
+inline auto *get_mapper (location_t loc)
 {
-  module_mapper *res = mapper;
+  auto *res = mapper;
   if (!res)
     res = make_mapper (loc);
   return res;
 }
-static const char *mapper_import_export (const module_state *, bool export_p);
-static bool mapper_export_done (const module_state *);
 
 /********************************************************************/
 static tree
@@ -4540,7 +4539,7 @@ noisy_p ()
 /* Set the cmi repo.  Strip trailing '/', '.' becomes NULL.  */
 
 static void
-set_cmi_repo (char *r)
+set_cmi_repo (const char *r)
 {
   XDELETEVEC (cmi_repo);
   XDELETEVEC (cmi_path);
@@ -4549,17 +4548,18 @@ set_cmi_repo (char *r)
   cmi_repo = NULL;
   cmi_repo_length = 0;
 
-  if (!r)
+  if (!r || !r[0])
     return;
 
   size_t len = strlen (r);
-  if (len > 1 && IS_DIR_SEPARATOR (r[len-1]))
-    r[--len] = 0;
-  if (0 == strcmp (r, "."))
-    return;
-
   cmi_repo = XNEWVEC (char, len + 1);
   memcpy (cmi_repo, r, len + 1);
+  
+  if (len > 1 && IS_DIR_SEPARATOR (cmi_repo[len-1]))
+    len--;
+  if (len == 1 && cmi_repo[0] == '.')
+    len--;
+  cmi_repo[len] = 0;
   cmi_repo_length = len;
 }
 
@@ -13269,48 +13269,9 @@ get_module (const char *ptr)
   return mod;
 }
 
-/* Import query.  */
-
-const char *
-mapper_import_export (const module_state *import, bool export_p)
-{
-  module_mapper *mapper = get_mapper (main_source_loc);
-
-  if (!mapper->is_server ())
-    return NULL;
-
-  timevar_start (TV_MODULE_MAPPER);
-  mapper->imex_query (import->loc, import->get_flatname (), export_p);
-  const char *fname
-    = mapper->imex_response (import->loc, import->get_flatname ());
-  timevar_stop (TV_MODULE_MAPPER);
-
-  return fname;
-}
-
-/* Export done.  */
-
-bool
-mapper_export_done (const module_state *module)
-{
-  bool ok = true;
-  module_mapper *mapper = get_mapper (main_source_loc);
-
-  if (mapper->is_server ())
-    {
-      timevar_start (TV_MODULE_MAPPER);
-      mapper->send_command (module->loc, "DONE %s", module->get_flatname ());
-      timevar_stop (TV_MODULE_MAPPER);
-    }
-  else
-    ok = mapper->is_live ();
-
-  return ok;
-}
-
 /* Create a new mapper connecting to OPTION.  */
 
-module_mapper *
+module_client *
 make_mapper (location_t loc)
 {
   timevar_start (TV_MODULE_MAPPER);
@@ -13318,69 +13279,11 @@ make_mapper (location_t loc)
   if (!option)
     option = getenv ("CXX_MODULE_MAPPER");
 
-  mapper = new module_mapper ();
-
-  char const *cookie = mapper->open (loc, option, "|mapper-server");
-
-  /* String never modified in this case.  */
-  set_cmi_repo (const_cast<char *> ("gcm.cache"));
-
-  if (mapper->is_server ())
-    {
-      char *repo = NULL;
-      if (!mapper->handshake (loc, cookie ? cookie : main_input_filename, &repo))
-	mapper->close (loc);
-      if (repo)
-	set_cmi_repo (repo);
-    }
-  else if (mapper->is_file ())
-    {
-      /* A mapping file.  Read it.  */
-      dump () && dump ("Reading mapping file %s", mapper->get_name ());
-
-      bool starting = true;
-      for (int r; (r = mapper->get_response (loc)) >= 0;)
-	if (r)
-	  {
-	    char *mod = mapper->response_token (loc);
-	    bool ignore = false;
-	    char *file = NULL;
-
-	    /* Ignore non-cookie lines.  */
-	    if (cookie && 0 != strcmp (mod, cookie))
-	      ignore = true;
-	    else
-	      {
-		if (cookie)
-		  mod = mapper->response_token (loc);
-		if (mod)
-		  file = mapper->response_token (loc, true);
-	      }
-
-	    if (!mapper->response_eol (loc, ignore))
-	      continue;
-
-	    if (!file)
-	      continue;
-
-	    if (starting && 0 == strcmp (mod, "$root"))
-	      {
-		set_cmi_repo (file);
-		continue;
-	      }
-
-	    starting = false;
-	    module_state *state = get_module (mod);
-	    if (!state)
-	      mapper->response_unexpected (loc);
-	    else if (!state->filename)
-	      state->filename = xstrdup (file);
-	    else if (strcmp (state->filename, file))
-	      warning_at (loc, 0, "ignoring conflicting mapping of %qs to %qs",
-			  state->get_flatname (), file);
-	  }
-      mapper->close_file ();
-    }
+  mapper = module_client::open_module_client
+    (loc, option, &set_cmi_repo,
+     (save_decoded_options[0].opt_index == OPT_SPECIAL_program_name)
+     && save_decoded_options[0].arg != progname
+     ? save_decoded_options[0].arg : nullptr);
 
   timevar_stop (TV_MODULE_MAPPER);
 
@@ -13711,8 +13614,6 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 
 	      if (imp->filename)
 		fname = NULL;
-	      else if (!fname[0])
-		fname = mapper_import_export (imp, false);
 
 	      if (imp->is_partition ())
 		dump () && dump ("Importing elided partition %M", imp);
@@ -18403,45 +18304,40 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
   dump.push (NULL);
 
   dump () && dump ("Checking include translation '%s'", path);
-  bool res = false;
-  module_mapper *mapper = get_mapper (main_source_loc);
-  if (mapper->is_live ())
+  auto *mapper = get_mapper (main_source_loc);
+
+  size_t len = strlen (path);
+  path = canonicalize_header_name (NULL, loc, true, path, len);
+  auto packet = mapper->IncludeTranslate (path, len);
+  int res = false;
+  if (packet.GetCode () == Cody::Client::PC_MODULE_CMI)
+    res = true;
+  else if (packet.GetCode () == Cody::Client::PC_INCLUDE_TRANSLATE)
+    res = packet.GetInteger ();
+  else
+    {} // FIXME: ERROR
+
+  bool note = false;
+  if (note_include_translate < 0)
+    note = true;
+  else if (note_include_translate > 0 && res)
+    note = true;
+  else if (note_includes)
     {
-      timevar_start (TV_MODULE_MAPPER);
-
-      size_t len = strlen (path);
-      path = canonicalize_header_name (NULL, loc, true, path, len);
-      if (mapper->is_server ())
-	res = mapper->translate_include (loc, path);
-      else
+      /* We do not expect the note_includes vector to be large, so O(N)
+	 iteration.  */
+      for (unsigned ix = note_includes->length (); !note && ix--;)
 	{
-	  tree name = build_string (len, path);
-	  res = get_module_slot (name, NULL, false, false) != NULL;
+	  const char *hdr = (*note_includes)[ix];
+	  if (!strcmp (hdr, path))
+	    note = true;
 	}
-      timevar_stop (TV_MODULE_MAPPER);
-
-      bool note = false;
-      if (note_include_translate < 0)
-	note = true;
-      else if (note_include_translate > 0 && res)
-	note = true;
-      else if (note_includes)
-	{
-	  /* We do not expect the note_includes vector to be large, so O(N)
-	     iteration.  */
-	  for (unsigned ix = note_includes->length (); !note && ix--;)
-	    {
-	      const char *hdr = (*note_includes)[ix];
-	      if (!strcmp (hdr, path))
-		note = true;
-	    }
-	}
-
-      if (note)
-	inform (loc, res
-		? G_("include %qs translated to import")
-		: G_("include %qs processed textually") , path);
     }
+
+  if (note)
+    inform (loc, res
+	    ? G_("include %qs translated to import")
+	    : G_("include %qs processed textually") , path);
 
   dump () && dump (res ? "Translating include to import"
 		   : "Keeping include as include");
@@ -18578,9 +18474,12 @@ preprocess_module (module_state *module, location_t from_loc,
 	     our module state flags are inadequate.  */
 	  spans.close ();
 
-	  const char *fname = mapper_import_export (module, false);
-	  if (!module->do_import (fname, reader, true))
-	    gcc_unreachable ();
+	  auto *mapper = get_mapper (main_source_loc);
+	  auto packet = mapper->ModuleImport (module->get_flatname ());
+	  if (packet.GetCode () == Cody::Client::PC_MODULE_CMI)
+	    module->do_import (packet.GetString ().c_str (), reader, true);
+	  else
+	    {} // FIXME: Error
 
 	  /* Restore the line-map state.  */
 	  linemap_module_restore (line_table, pre_hwm);
@@ -18604,7 +18503,7 @@ preprocess_module (module_state *module, location_t from_loc,
 void
 preprocessed_module (cpp_reader *reader)
 {
-  module_mapper *mapper = get_mapper (main_source_loc);
+  auto *mapper = get_mapper (main_source_loc);
 
   spans.close ();
 
@@ -18613,51 +18512,49 @@ preprocessed_module (cpp_reader *reader)
 #define iterator hash_table<module_state_hash>::iterator
   /* using iterator = hash_table<module_state_hash>::iterator;  */
 
-  if (mapper->is_server ())
+  /* Walk the module hash, asking for the names of all unknown
+     direct imports.  */
+  timevar_start (TV_MODULE_MAPPER);
+
+  dump.push (NULL);
+  dump () && dump ("Resolving direct import names");
+
+  mapper->Cork ();
+  iterator end = modules_hash->end ();
+  for (iterator iter = modules_hash->begin (); iter != end; ++iter)
     {
-      /* Walk the module hash, asking for the names of all unknown
-	 direct imports.  */
-      timevar_start (TV_MODULE_MAPPER);
-
-      dump.push (NULL);
-      dump () && dump ("Resolving direct import names");
-
-      bool any = false;
-      iterator end = modules_hash->end ();
-      for (iterator iter = modules_hash->begin (); iter != end; ++iter)
+      module_state *module = *iter;
+      if (module->is_direct () && !module->filename)
 	{
-	  module_state *module = *iter;
-	  if (module->is_direct () && !module->filename)
-	    {
-	      if (!any)
-		mapper->cork ();
-	      any = true;
-	      mapper->imex_query (module->loc, module->get_flatname (),
-				  module->module_p
-				  && (module->is_partition ()
-				      || module->exported_p));
-	    }
+	  if (module->module_p && (module->is_partition ()
+				   || module->exported_p))
+	    mapper->ModuleExport (module->get_flatname ());
+	  else
+	    mapper->ModuleImport (module->get_flatname ());
 	}
-
-      if (any)
-	{
-	  mapper->uncork (main_source_loc);
-	  for (iterator iter = modules_hash->begin (); iter != end; ++iter)
-	    {
-	      module_state *module = *iter;
-	      if (module->is_direct () && !module->filename)
-		if (const char *fname
-		    = mapper->imex_response (module->loc,
-					     module->get_flatname ()))
-		  module->filename = xstrdup (fname);
-	    }
-	  mapper->maybe_uncork (main_source_loc);
-	}
-
-      dump.pop (0);
-
-      timevar_stop (TV_MODULE_MAPPER);
     }
+
+  auto response = mapper->Uncork ();
+  auto r_iter = response.begin ();
+  for (iterator iter = modules_hash->begin (); iter != end; ++iter)
+    {
+      module_state *module = *iter;
+      
+      if (module->is_direct () && !module->filename)
+	{
+	  Cody::Packet const &p = *r_iter;
+	  ++r_iter;
+
+	  if (p.GetCode () == Cody::Client::PC_MODULE_CMI)
+	    module->filename = xstrdup (p.GetString ().c_str ());
+	  else
+	    {} // FIXME:ERROR
+	}
+    }
+
+  dump.pop (0);
+
+  timevar_stop (TV_MODULE_MAPPER);
 
   if (mkdeps *deps = cpp_get_deps (reader))
     {
@@ -19010,7 +18907,11 @@ finish_module_processing (cpp_reader *reader)
 	}
 
       if (!errorcount)
-	mapper_export_done (state);
+	{
+	  auto *mapper = get_mapper (main_source_loc);
+
+	  mapper->ModuleCompiled (state->get_flatname ());
+	}
       else if (path)
 	{
 	  /* We failed, attempt to erase all evidence we even tried.  */
@@ -19079,10 +18980,8 @@ fini_modules ()
   if (mapper)
     {
       timevar_start (TV_MODULE_MAPPER);
-      if (mapper->is_live ())
-	mapper->close (main_source_loc);
-      delete mapper;
-      mapper = NULL;
+      module_client::close_module_client (main_source_loc, mapper);
+      mapper = nullptr;
       timevar_stop (TV_MODULE_MAPPER);
     }
   module_state_config::release ();

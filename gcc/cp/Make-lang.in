@@ -124,7 +124,8 @@ CXX_AND_OBJCXX_OBJS = \
 	cp/error.o cp/except.o cp/expr.o \
 	cp/friend.o cp/init.o \
 	cp/lambda.o cp/lex.o cp/logic.o \
-	cp/mangle.o cp/mapper-client.o cp/method.o cp/module.o \
+	cp/mangle.o cp/mapper-client.o cp/mapper-resolver.o \
+	cp/method.o cp/module.o \
 	cp/name-lookup.o cp/optimize.o \
 	cp/parser.o cp/pt.o cp/ptree.o \
 	cp/rtti.o \
@@ -138,10 +139,10 @@ $(CXX_AND_OBJCXX_OBJS): CFLAGS += -fauto-profile=cc1plus.fda
 $(CXX_AND_OBJCXX_OBJS): cc1plus.fda
 endif
 
-MAPPER_SERVER_OBJS := cp/mapper-server.o
+MAPPER_SERVER_OBJS := cp/mapper-server.o cp/mapper-resolver.o
 mapper-server$(exeext): $(MAPPER_SERVER_OBJS) $(LIBDEPS)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-	$(MAPPER_SERVER_OBJS) version.o $(LIBIBERTY) $(LIBINTL)
+	$(MAPPER_SERVER_OBJS) version.o $(CODYLIB) $(LIBIBERTY) $(LIBINTL)
 
 # Language-specific object files for C++.
 CXX_OBJS = cp/cp-lang.o c-family/stub-objc.o $(CXX_AND_OBJCXX_OBJS)
