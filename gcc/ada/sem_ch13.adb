@@ -9112,6 +9112,25 @@ package body Sem_Ch13 is
                return RList'(1 => REnt'(SLo, SHi));
             end if;
 
+         --  Others case
+
+         elsif Nkind (N) = N_Others_Choice then
+            declare
+               Choices    : constant List_Id := Others_Discrete_Choices (N);
+               Choice     : Node_Id;
+               Range_List : RList (1 .. List_Length (Choices));
+
+            begin
+               Choice := First (Choices);
+
+               for J in Range_List'Range loop
+                  Range_List (J) := REnt'(Lo_Val (Choice), Hi_Val (Choice));
+                  Next (Choice);
+               end loop;
+
+               return Range_List;
+            end;
+
          --  Static expression case
 
          elsif Is_OK_Static_Expression (N) then

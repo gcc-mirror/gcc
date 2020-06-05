@@ -998,7 +998,8 @@ package body Sem_Case is
 
       function Lit_Of (Value : Uint) return Node_Id;
       --  Returns the Node_Id for the enumeration literal corresponding to the
-      --  position given by Value within the enumeration type Choice_Type.
+      --  position given by Value within the enumeration type Choice_Type. The
+      --  returned value has its Is_Static_Expression flag set to true.
 
       ------------------
       -- Build_Choice --
@@ -1016,6 +1017,7 @@ package body Sem_Case is
             if Is_Integer_Type (Choice_Type) then
                Lit_Node := Make_Integer_Literal (Loc, Value1);
                Set_Etype (Lit_Node, Choice_Type);
+               Set_Is_Static_Expression (Lit_Node);
             else
                Lit_Node := Lit_Of (Value1);
             end if;
@@ -1028,8 +1030,10 @@ package body Sem_Case is
             if Is_Integer_Type (Choice_Type) then
                Lo := Make_Integer_Literal (Loc, Value1);
                Set_Etype (Lo, Choice_Type);
+               Set_Is_Static_Expression (Lo);
                Hi := Make_Integer_Literal (Loc, Value2);
                Set_Etype (Hi, Choice_Type);
+               Set_Is_Static_Expression (Hi);
                Lit_Node :=
                  Make_Range (Loc,
                    Low_Bound  => Lo,
