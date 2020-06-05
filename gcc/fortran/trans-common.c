@@ -1314,7 +1314,11 @@ finish_equivalences (gfc_namespace *ns)
 	      c->where = ns->proc_name->declared_at;
 	    else if (ns->is_block_data)
 	      c->where = ns->sym_root->n.sym->declared_at;
-	    strcpy (c->name, z->module);
+
+	    size_t len = strlen (z->module);
+	    gcc_assert (len < sizeof (c->name));
+	    memcpy (c->name, z->module, len);
+	    c->name[len] = '\0';
 	  }
 	else
 	  c = NULL;
