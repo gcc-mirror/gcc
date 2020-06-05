@@ -2451,7 +2451,7 @@ public:
                     sc->fieldinit[i] |= CSXhalt;
             }
 
-            if (!global.params.useAssert)
+            if (global.params.useAssert == CHECKENABLEoff)
             {
                 Expression *e = new HaltExp(exp->loc);
                 e = semantic(e, sc);

@@ -2329,7 +2329,7 @@ public:
                 needswitcherror = true;
         }
 
-        if (!sc->sw->sdefault && (!ss->isFinal || needswitcherror || global.params.useAssert))
+        if (!sc->sw->sdefault && (!ss->isFinal || needswitcherror || global.params.useAssert == CHECKENABLEon))
         {
             ss->hasNoDefault = 1;
 
@@ -2341,7 +2341,7 @@ public:
             CompoundStatement *cs;
             Statement *s;
 
-            if (global.params.useSwitchError &&
+            if (global.params.useSwitchError == CHECKENABLEon &&
                 global.params.checkAction != CHECKACTION_halt)
             {
                 if (global.params.checkAction == CHECKACTION_C)

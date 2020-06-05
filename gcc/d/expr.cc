@@ -1980,7 +1980,7 @@ public:
     tree assert_pass = void_node;
     tree assert_fail;
 
-    if (global.params.useAssert
+    if (global.params.useAssert == CHECKENABLEon
 	&& global.params.checkAction == CHECKACTION_D)
       {
 	/* Generate: ((bool) e1  ? (void)0 : _d_assert (...))
@@ -1999,7 +1999,7 @@ public:
 	/* Build a call to _d_assert().  */
 	assert_fail = d_assert_call (e->loc, libcall, tmsg);
 
-	if (global.params.useInvariants)
+	if (global.params.useInvariants == CHECKENABLEon)
 	  {
 	    /* If the condition is a D class or struct object with an invariant,
 	       call it if the condition result is true.  */
@@ -2025,7 +2025,7 @@ public:
 	      }
 	  }
       }
-    else if (global.params.useAssert
+    else if (global.params.useAssert == CHECKENABLEon
 	     && global.params.checkAction == CHECKACTION_C)
       {
 	/* Generate: __builtin_trap()  */
