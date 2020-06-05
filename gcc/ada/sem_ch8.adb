@@ -9461,9 +9461,14 @@ package body Sem_Ch8 is
 
          Set_Redundant_Use (Clause, True);
 
+         --  Do not check for redundant use if clause is generated, or in an
+         --  instance, or in a predefined unit to avoid misleading warnings
+         --  that may occur as part of a rtsfind load.
+
          if not Comes_From_Source (Clause)
            or else In_Instance
            or else not Warn_On_Redundant_Constructs
+           or else Is_Predefined_Unit (Current_Sem_Unit)
          then
             return;
          end if;
@@ -9596,10 +9601,12 @@ package body Sem_Ch8 is
                          Private_Declarations (Parent (Decl))
             then
                declare
-                  Par : constant Entity_Id := Defining_Entity (Parent (Decl));
-                  Spec : constant Node_Id  :=
-                           Specification (Unit (Cunit (Current_Sem_Unit)));
+                  Par      : constant Entity_Id :=
+                    Defining_Entity (Parent (Decl));
+                  Spec     : constant Node_Id  :=
+                    Specification (Unit (Cunit (Current_Sem_Unit)));
                   Cur_List : constant List_Id := List_Containing (Cur_Use);
+
                begin
                   if Is_Compilation_Unit (Par)
                     and then Par /= Cunit_Entity (Current_Sem_Unit)
@@ -9641,7 +9648,7 @@ package body Sem_Ch8 is
 
             Error_Msg_Sloc := Sloc (Prev_Use);
             Error_Msg_NE -- CODEFIX
-              ("& is already use-visible through previous use_clause #??",
+              ("& is already use-visible through previous use_clause #?r?",
                Redundant, Pack_Name);
          end if;
       end Note_Redundant_Use;
