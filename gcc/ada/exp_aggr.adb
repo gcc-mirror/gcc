@@ -4969,9 +4969,8 @@ package body Exp_Aggr is
          Dims : Nat;
          Ix   : Node_Id;
          Ixb  : Node_Id) return Boolean;
-      --  Convert the aggregate into a purely positional form if possible. On
-      --  entry the bounds of all dimensions are known to be static, and the
-      --  total number of components is safe enough to expand.
+      --  Convert the aggregate into a purely positional form if possible after
+      --  checking that the bounds of all dimensions are known to be static.
 
       function Is_Flat (N : Node_Id; Dims : Nat) return Boolean;
       --  Return True if the aggregate N is flat (which is not trivial in the
@@ -5476,10 +5475,6 @@ package body Exp_Aggr is
       --  compatible with the upper bound of the type, and therefore it is
       --  worth flattening such aggregates as well.
 
-      --  For now the back-end expands these aggregates into individual
-      --  assignments to the target anyway, but it is conceivable that
-      --  it will eventually be able to treat such aggregates statically???
-
       if Aggr_Size_OK (N, Typ)
         and then
           Flatten (N, Dims, First_Index (Typ), First_Index (Base_Type (Typ)))
@@ -5506,14 +5501,7 @@ package body Exp_Aggr is
             if Nkind (N) = N_Aggregate and then Present (Expressions (N)) then
                Expr := First (Expressions (N));
                while Present (Expr) loop
-                  if Nkind_In (Expr, N_Integer_Literal, N_Real_Literal)
-                    or else
-                      (Is_Entity_Name (Expr)
-                        and then Ekind (Entity (Expr)) = E_Enumeration_Literal)
-                  then
-                     null;
-
-                  else
+                  if not Compile_Time_Known_Value (Expr) then
                      Error_Msg_N
                        ("non-static object requires elaboration code??", N);
                      exit;
