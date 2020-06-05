@@ -1,3 +1,12 @@
+2020-06-04  Andreas Schwab  <schwab@suse.de>
+
+	PR target/59230
+	PR libfortran/59227
+	* config/ia64/t-softfp-compat (softfp_file_list): Filter out
+	soft-fp/divtf3.c.
+	(LIB2ADD): Add config/ia64/divtf3.c.
+	* config/ia64/divtf3.c: New file.
+
 2020-06-03  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/95480

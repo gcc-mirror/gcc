@@ -1,3 +1,70 @@
+2020-06-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 48d704f08.
+	* d-attribs.cc (build_attributes): Use new field name.
+	* d-builtins.cc (build_frontend_type): Likewise.
+	(maybe_set_builtin_1): Likewise.
+	(d_maybe_set_builtin): Likewise.
+	* d-codegen.cc (build_interface_binfo): Likewise.
+	(identity_compare_p): Likewise.
+	(lower_struct_comparison): Likewise.
+	(build_struct_comparison): Likewise.
+	(d_build_call): Likewise.
+	(build_frame_type): Likewise.
+	(build_closure): Likewise.
+	* d-compiler.cc (Compiler::paintAsType): Likewise.
+	(Compiler::loadModule): Likewise.
+	* d-incpath.cc (add_globalpaths): Likewise.
+	(add_filepaths): Likewise.
+	(add_import_paths): Likewise.
+	* d-lang.cc (deps_write): Likewise.
+	(d_parse_file): Likewise.
+	* decl.cc (gcc_attribute_p): Likewise.
+	(base_vtable_offset): Likewise.
+	(get_vtable_decl): Likewise.
+	(build_class_instance): Likewise.
+	* expr.cc (class ExprVisitor): Likewise.
+	* modules.cc (layout_moduleinfo_fields): Likewise.
+	(layout_moduleinfo): Likewise.
+	(build_module_tree): Likewise.
+	* toir.cc (class IRVisitor): Likewise.
+	* typeinfo.cc (class TypeInfoVisitor): Likewise.
+	(layout_classinfo_interfaces): Likewise.
+	* types.cc (layout_aggregate_members): Likewise.
+	(layout_aggregate_type): Likewise.
+
+2020-06-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 47ed0330f.
+
+2020-06-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (D_OBJS): Add d-compiler.o, d-ctfloat.o, d-port.o.
+	* d-frontend.cc (Port::memicmp): Move to d-port.cc.
+	(Port::strupr): Likewise.
+	(Port::isFloat32LiteralOutOfRange): Likewise.
+	(Port::isFloat64LiteralOutOfRange): Likewise.
+	(Port::readwordLE): Likewise.
+	(Port::readwordBE): Likewise.
+	(Port::readlongLE): Likewise.
+	(Port::readlongBE): Likewise.
+	(Port::valcpy): Likewise.
+	(CTFloat::fabs): Move to d-ctfloat.cc.
+	(CTFloat::ldexp): Likewise.
+	(CTFloat::isIdentical): Likewise.
+	(CTFloat::isNaN): Likewise.
+	(CTFloat::isSNaN): Likewise.
+	(CTFloat::isInfinity): Likewise.
+	(CTFloat::parse): Likewise.
+	(CTFloat::sprint): Likewise.
+	(CTFloat::hash): Likewise.
+	(Compiler::genCmain): Move to d-compiler.cc.
+	(Compiler::paintAsType): Likewise.
+	(Compiler::loadModule): Likewise.
+	* d-compiler.cc: New file.
+	* d-ctfloat.cc: New file.
+	* d-port.cc: New file.
+
 2020-06-02  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* decl.cc (DeclVisitor::build_dsymbol): New function.

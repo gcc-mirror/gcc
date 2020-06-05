@@ -1,3 +1,33 @@
+2020-06-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93310
+	* constexpr.c (cxx_eval_constant_expression) [OBJ_TYPE_REF]:
+	Evaluate OBJ_TYPE_REF_EXPR.
+
+2020-06-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95158
+	* class.c (lookup_vfn_in_binfo): New.
+	* call.c (build_over_call): Use it.
+	* cp-tree.h (resolves_to_fixed_type_p): Add default argument.
+	(lookup_vfn_in_binfo): Declare.
+
+2020-06-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95346
+	* coroutines.cc (morph_fn_to_coro): Ensure that the get-
+	return-object is constructed correctly; When it is not the
+	final return value, pass it to the CTOR of the return type
+	as an rvalue, per the standard comment.
+
+2020-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82304
+	PR c++/95307
+	* constexpr.c (cxx_eval_constant_expression): Diagnose CONVERT_EXPR
+	conversions from pointer types to arithmetic types here...
+	(cxx_eval_outermost_constant_expr): ... instead of here.
+
 2020-06-03  Mark Wielaard  <mark@klomp.org>
 
 	* parser.c (cp_lexer_safe_previous_token): New function.
