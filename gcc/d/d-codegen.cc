@@ -1749,13 +1749,13 @@ array_bounds_check (void)
 
   switch (global.params.useArrayBounds)
     {
-    case BOUNDSCHECKoff:
+    case CHECKENABLEoff:
       return false;
 
-    case BOUNDSCHECKon:
+    case CHECKENABLEon:
       return true;
 
-    case BOUNDSCHECKsafeonly:
+    case CHECKENABLEsafeonly:
       /* For D2 safe functions only.  */
       fd = d_function_chain->function;
       if (fd && fd->type->ty == Tfunction)
@@ -2376,8 +2376,8 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
      of the calling function non-locally.  So we add all parameters with nested
      refs to the function frame, this should also mean overriding methods will
      have the same frame layout when inheriting a contract.  */
-  if ((global.params.useIn && fd->frequire)
-      || (global.params.useOut && fd->fensure))
+  if ((global.params.useIn == CHECKENABLEon && fd->frequire)
+      || (global.params.useOut == CHECKENABLEon && fd->fensure))
     {
       if (fd->parameters)
 	{
@@ -2563,8 +2563,8 @@ get_frameinfo (FuncDeclaration *fd)
 
       /* In checkNestedReference, references from contracts are not added to the
 	 closureVars array, so assume all parameters referenced.  */
-      if ((global.params.useIn && fd->frequire)
-	  || (global.params.useOut && fd->fensure))
+      if ((global.params.useIn == CHECKENABLEon && fd->frequire)
+	  || (global.params.useOut == CHECKENABLEon && fd->fensure))
 	FRAMEINFO_CREATES_FRAME (ffi) = 1;
 
       /* If however `fd` is nested (deeply) in a function that creates a

@@ -1668,7 +1668,7 @@ void FuncDeclaration::semantic3(Scope *sc)
         Scope *scout = NULL;
         if (needEnsure || addPostInvariant())
         {
-            if ((needEnsure && global.params.useOut) || fpostinv)
+            if ((needEnsure && global.params.useOut == CHECKENABLEon) || fpostinv)
             {
                 returnLabel = new LabelDsymbol(Id::returnLabel);
             }
@@ -1915,7 +1915,7 @@ void FuncDeclaration::semantic3(Scope *sc)
                         error("has no return statement, but is expected to return a value of type %s", f->next->toChars());
                     else
                         error("no return exp; or assert(0); at end of function");
-                    if (global.params.useAssert &&
+                    if (global.params.useAssert == CHECKENABLEon &&
                         !global.params.useInline)
                     {
                         /* Add an assert(0, msg); where the missing return
@@ -2048,7 +2048,7 @@ void FuncDeclaration::semantic3(Scope *sc)
 
             sc2 = sc2->pop();
 
-            if (!global.params.useIn)
+            if (global.params.useIn == CHECKENABLEoff)
                 freq = NULL;
         }
 
@@ -2072,7 +2072,7 @@ void FuncDeclaration::semantic3(Scope *sc)
 
             sc2 = sc2->pop();
 
-            if (!global.params.useOut)
+            if (global.params.useOut == CHECKENABLEoff)
                 fens = NULL;
         }
 
@@ -4135,7 +4135,7 @@ bool FuncDeclaration::addPreInvariant()
     AggregateDeclaration *ad = isThis();
     ClassDeclaration *cd = ad ? ad->isClassDeclaration() : NULL;
     return (ad && !(cd && cd->isCPPclass()) &&
-            global.params.useInvariants &&
+            global.params.useInvariants == CHECKENABLEon &&
             (protection.kind == PROTprotected || protection.kind == PROTpublic || protection.kind == PROTexport) &&
             !naked);
 }
@@ -4146,7 +4146,7 @@ bool FuncDeclaration::addPostInvariant()
     ClassDeclaration *cd = ad ? ad->isClassDeclaration() : NULL;
     return (ad && !(cd && cd->isCPPclass()) &&
             ad->inv &&
-            global.params.useInvariants &&
+            global.params.useInvariants == CHECKENABLEon &&
             (protection.kind == PROTprotected || protection.kind == PROTpublic || protection.kind == PROTexport) &&
             !naked);
 }
@@ -4927,7 +4927,7 @@ bool CtorDeclaration::addPreInvariant()
 
 bool CtorDeclaration::addPostInvariant()
 {
-    return (isThis() && vthis && global.params.useInvariants);
+    return (isThis() && vthis && global.params.useInvariants == CHECKENABLEon);
 }
 
 
@@ -4995,7 +4995,7 @@ bool PostBlitDeclaration::addPreInvariant()
 
 bool PostBlitDeclaration::addPostInvariant()
 {
-    return (isThis() && vthis && global.params.useInvariants);
+    return (isThis() && vthis && global.params.useInvariants == CHECKENABLEon);
 }
 
 bool PostBlitDeclaration::isVirtual()
@@ -5067,7 +5067,7 @@ bool DtorDeclaration::overloadInsert(Dsymbol *)
 
 bool DtorDeclaration::addPreInvariant()
 {
-    return (isThis() && vthis && global.params.useInvariants);
+    return (isThis() && vthis && global.params.useInvariants == CHECKENABLEon);
 }
 
 bool DtorDeclaration::addPostInvariant()
