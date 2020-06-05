@@ -4055,7 +4055,7 @@ package body Sem_Ch3 is
             then
                null;
 
-            else
+            elsif Comes_From_Source (Id) then
                declare
                   Save_Typ : constant Entity_Id := Etype (Id);
                begin
