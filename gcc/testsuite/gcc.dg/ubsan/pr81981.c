@@ -16,6 +16,6 @@ foo (int i)
       u[0] = i;
     }
 
-  v = u[0];		/* { dg-warning "may be used uninitialized in this function" } */
-  return t[0];		/* { dg-warning "may be used uninitialized in this function" } */
+  v = u[0];		/* { dg-warning "may be used uninitialized" } */
+  return t[0];		/* { dg-warning "may be used uninitialized" } */
 }
