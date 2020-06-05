@@ -8691,7 +8691,7 @@ package body Sem_Util is
                Expr := Prefix (Expr);
                exit;
 
-               --  Check for Const where Const is a constant entity
+            --  Check for Const where Const is a constant entity
 
             elsif Is_Entity_Name (Expr)
               and then Ekind (Entity (Expr)) = E_Constant
@@ -23841,7 +23841,7 @@ package body Sem_Util is
 
                --  Follow renaming chain
 
-               if (Ekind (Ent) = E_Variable or else Ekind (Ent) = E_Constant)
+               if Ekind_In (Ent, E_Variable, E_Constant)
                  and then Present (Renamed_Object (Ent))
                then
                   Exp := Renamed_Object (Ent);
