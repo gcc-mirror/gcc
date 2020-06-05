@@ -2471,7 +2471,7 @@ vect_slp_analyze_and_verify_instance_alignment (vec_info *vinfo,
       return false;
 
   node = SLP_INSTANCE_TREE (instance);
-  if (STMT_VINFO_DATA_REF (SLP_TREE_SCALAR_STMTS (node)[0])
+  if (STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (node))
       && ! vect_slp_analyze_and_verify_node_alignment
 	     (vinfo, SLP_INSTANCE_TREE (instance)))
     return false;
