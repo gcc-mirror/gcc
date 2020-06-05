@@ -4348,7 +4348,7 @@ build_converted_constant_expr_internal (tree type, tree expr,
      and where the reference binding (if any) binds directly.  */
 
   for (conversion *c = conv;
-       conv && c->kind != ck_identity;
+       c && c->kind != ck_identity;
        c = next_conversion (c))
     {
       switch (c->kind)
@@ -4356,6 +4356,8 @@ build_converted_constant_expr_internal (tree type, tree expr,
 	  /* A conversion function is OK.  If it isn't constexpr, we'll
 	     complain later that the argument isn't constant.  */
 	case ck_user:
+	  /* List-initialization is OK.  */
+	case ck_aggr:
 	  /* The lvalue-to-rvalue conversion is OK.  */
 	case ck_rvalue:
 	  /* Array-to-pointer and function-to-pointer.  */
