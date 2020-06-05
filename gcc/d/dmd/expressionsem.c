@@ -2160,9 +2160,7 @@ public:
                     if (m <= MATCHnomatch)
                         goto Lno;
                     s->semantic(sc);
-                    if (sc->sds)
-                        s->addMember(sc, sc->sds);
-                    else if (!sc->insert(s))
+                    if (!sc->insert(s))
                         e->error("declaration %s is already defined", s->toChars());
 
                     unSpeculative(sc, s);
@@ -2194,8 +2192,6 @@ public:
              */
             if (!tup && !sc->insert(s))
                 e->error("declaration %s is already defined", s->toChars());
-            if (sc->sds)
-                s->addMember(sc, sc->sds);
 
             unSpeculative(sc, s);
         }

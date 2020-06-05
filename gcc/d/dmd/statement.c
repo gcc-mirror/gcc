@@ -419,18 +419,18 @@ Statement *toStatement(Dsymbol *s)
 
         void visit(ConditionalDeclaration *d)
         {
-            result = visitMembers(d->loc, d->include(NULL, NULL));
+            result = visitMembers(d->loc, d->include(NULL));
         }
 
         void visit(StaticForeachDeclaration *d)
         {
             assert(d->sfe && !!d->sfe->aggrfe ^ !!d->sfe->rangefe);
-            result = visitMembers(d->loc, d->include(NULL, NULL));
+            result = visitMembers(d->loc, d->include(NULL));
         }
 
         void visit(CompileDeclaration *d)
         {
-            result = visitMembers(d->loc, d->include(NULL, NULL));
+            result = visitMembers(d->loc, d->include(NULL));
         }
     };
 
@@ -993,7 +993,7 @@ Statements *ConditionalStatement::flatten(Scope *sc)
     Statement *s;
 
     //printf("ConditionalStatement::flatten()\n");
-    if (condition->include(sc, NULL))
+    if (condition->include(sc))
     {
         DebugCondition *dc = condition->isDebugCondition();
         if (dc)

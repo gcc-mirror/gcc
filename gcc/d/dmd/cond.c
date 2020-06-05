@@ -430,7 +430,7 @@ void printDepsConditional(Scope *sc, DVCondition* condition, const char* depType
 }
 
 
-int DebugCondition::include(Scope *sc, ScopeDsymbol *)
+int DebugCondition::include(Scope *sc)
 {
     //printf("DebugCondition::include() level = %d, debuglevel = %d\n", level, global.params.debuglevel);
     if (inc == 0)
@@ -609,7 +609,7 @@ VersionCondition::VersionCondition(Module *mod, unsigned level, Identifier *iden
 {
 }
 
-int VersionCondition::include(Scope *sc, ScopeDsymbol *)
+int VersionCondition::include(Scope *sc)
 {
     //printf("VersionCondition::include() level = %d, versionlevel = %d\n", level, global.params.versionlevel);
     //if (ident) printf("\tident = '%s'\n", ident->toChars());
@@ -654,7 +654,7 @@ Condition *StaticIfCondition::syntaxCopy()
     return new StaticIfCondition(loc, exp->syntaxCopy());
 }
 
-int StaticIfCondition::include(Scope *sc, ScopeDsymbol *sds)
+int StaticIfCondition::include(Scope *sc)
 {
     if (inc == 0)
     {
@@ -666,7 +666,6 @@ int StaticIfCondition::include(Scope *sc, ScopeDsymbol *sds)
         }
 
         sc = sc->push(sc->scopesym);
-        sc->sds = sds;                  // sds gets any addMember()
 
         bool errors = false;
         bool result = evalStaticCondition(sc, exp, exp, errors);

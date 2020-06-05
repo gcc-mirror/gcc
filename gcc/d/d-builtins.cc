@@ -668,7 +668,7 @@ maybe_set_builtin_1 (Dsymbol *d)
   if (ad != NULL)
     {
       /* Recursively search through attribute decls.  */
-      Dsymbols *decls = ad->include (NULL, NULL);
+      Dsymbols *decls = ad->include (NULL);
       if (decls && decls->length)
 	{
 	  for (size_t i = 0; i < decls->length; i++)

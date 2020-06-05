@@ -596,7 +596,7 @@ public:
 
     void visit(AttribDeclaration *d)
     {
-        Dsymbols *ds = d->include(NULL, NULL);
+        Dsymbols *ds = d->include(NULL);
 
         if (ds)
         {

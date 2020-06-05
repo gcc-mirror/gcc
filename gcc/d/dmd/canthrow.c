@@ -250,7 +250,7 @@ bool Dsymbol_canThrow(Dsymbol *s, FuncDeclaration *func, bool mustNotThrow)
     ad = s->isAttribDeclaration();
     if (ad)
     {
-        Dsymbols *decl = ad->include(NULL, NULL);
+        Dsymbols *decl = ad->include(NULL);
         if (decl && decl->length)
         {
             for (size_t i = 0; i < decl->length; i++)

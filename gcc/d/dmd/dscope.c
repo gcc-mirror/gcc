@@ -64,7 +64,6 @@ Scope::Scope()
     //printf("Scope::Scope() %p\n", this);
     this->_module = NULL;
     this->scopesym = NULL;
-    this->sds = NULL;
     this->enclosing = NULL;
     this->parent = NULL;
     this->sw = NULL;
@@ -151,7 +150,6 @@ Scope *Scope::push()
     //printf("Scope::push(this = %p) new = %p\n", this, s);
     assert(!(flags & SCOPEfree));
     s->scopesym = NULL;
-    s->sds = NULL;
     s->enclosing = this;
     s->slabel = NULL;
     s->nofree = 0;

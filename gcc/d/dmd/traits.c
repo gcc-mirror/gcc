@@ -119,7 +119,7 @@ static void collectUnitTests(Dsymbols *symbols, AA *uniqueUnitTests, Expressions
 
             if (attrDecl)
             {
-                Dsymbols *decl = attrDecl->include(NULL, NULL);
+                Dsymbols *decl = attrDecl->include(NULL);
                 collectUnitTests(decl, uniqueUnitTests, unitTests);
             }
         }

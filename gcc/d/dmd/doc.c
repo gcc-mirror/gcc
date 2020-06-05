@@ -926,7 +926,7 @@ void emitComment(Dsymbol *s, OutBuffer *buf, Scope *sc)
              * Hence, Ddoc omits attributes from template members.
              */
 
-            Dsymbols *d = ad->include(NULL, NULL);
+            Dsymbols *d = ad->include(NULL);
 
             if (d)
             {
@@ -962,7 +962,7 @@ void emitComment(Dsymbol *s, OutBuffer *buf, Scope *sc)
             }
 
             /* If generating doc comment, be careful because if we're inside
-             * a template, then include(NULL, NULL) will fail.
+             * a template, then include(NULL) will fail.
              */
             Dsymbols *d = cd->decl ? cd->decl : cd->elsedecl;
             for (size_t i = 0; i < d->length; i++)
