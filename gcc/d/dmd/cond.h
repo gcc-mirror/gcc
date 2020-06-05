@@ -23,7 +23,7 @@ class DebugCondition;
 class ForeachStatement;
 class ForeachRangeStatement;
 
-int findCondition(Strings *ids, Identifier *ident);
+int findCondition(Identifiers *ids, Identifier *ident);
 
 class Condition
 {
@@ -76,7 +76,6 @@ public:
 class DebugCondition : public DVCondition
 {
 public:
-    static void setGlobalLevel(unsigned level);
     static void addGlobalIdent(const char *ident);
 
     DebugCondition(Module *mod, unsigned level, Identifier *ident);
@@ -89,7 +88,6 @@ public:
 class VersionCondition : public DVCondition
 {
 public:
-    static void setGlobalLevel(unsigned level);
     static void addGlobalIdent(const char *ident);
     static void addPredefinedGlobalIdent(const char *ident);
 
