@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -421,7 +421,7 @@ public:
                     return;
 
                 case LINKcpp:
-                    buf->writestring(Target::toCppMangle(d));
+                    buf->writestring(target.cpp.toMangle(d));
                     return;
 
                 case LINKdefault:
@@ -754,7 +754,7 @@ public:
 
     void visit(ArrayLiteralExp *e)
     {
-        size_t dim = e->elements ? e->elements->dim : 0;
+        size_t dim = e->elements ? e->elements->length : 0;
         buf->printf("A%u", dim);
         for (size_t i = 0; i < dim; i++)
         {
@@ -764,7 +764,7 @@ public:
 
     void visit(AssocArrayLiteralExp *e)
     {
-        size_t dim = e->keys->dim;
+        size_t dim = e->keys->length;
         buf->printf("A%u", dim);
         for (size_t i = 0; i < dim; i++)
         {
@@ -775,7 +775,7 @@ public:
 
     void visit(StructLiteralExp *e)
     {
-        size_t dim = e->elements ? e->elements->dim : 0;
+        size_t dim = e->elements ? e->elements->length : 0;
         buf->printf("S%u", dim);
         for (size_t i = 0; i < dim; i++)
         {

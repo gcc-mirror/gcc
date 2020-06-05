@@ -353,7 +353,7 @@ enumeration literal or object.
 The function returns the representation value for the given enumeration
 value.  This will be equal to value of the ``Pos`` attribute in the
 absence of an enumeration representation clause.  This is a static
-attribute (i.e.,:the result is static if the argument is static).
+attribute (i.e., the result is static if the argument is static).
 
 ``S'Enum_Rep`` can also be used with integer types and objects,
 in which case it simply returns the integer value.  The reason for this

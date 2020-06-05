@@ -524,6 +524,12 @@ public:
     m_allocator.remove (object);
   }
 
+  inline void
+  remove_raw (void *object)
+  {
+    m_allocator.remove (object);
+  }
+
   inline size_t
   num_elts_current ()
   {

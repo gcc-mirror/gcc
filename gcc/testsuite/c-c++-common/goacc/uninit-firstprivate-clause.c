@@ -18,7 +18,7 @@ foo2 (void)
 {
   int i;
 
-#pragma acc parallel firstprivate (i) /* { dg-warning "is used uninitialized in this function" } */
+#pragma acc parallel firstprivate (i) /* { dg-warning "is used uninitialized" } */
   {
     i = 1;
   }

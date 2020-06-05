@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -33,7 +33,7 @@ int findCondition(Strings *ids, Identifier *ident)
 {
     if (ids)
     {
-        for (size_t i = 0; i < ids->dim; i++)
+        for (size_t i = 0; i < ids->length; i++)
         {
             const char *id = (*ids)[i];
 
@@ -152,7 +152,7 @@ static Statement *createForeach(StaticForeach *sfe, Loc loc, Parameters *paramet
     }
     else
     {
-        assert(sfe->rangefe && parameters->dim == 1);
+        assert(sfe->rangefe && parameters->length == 1);
         return new ForeachRangeStatement(loc, sfe->rangefe->op, (*parameters)[0],
                                          sfe->rangefe->lwr->syntaxCopy(),
                                          sfe->rangefe->upr->syntaxCopy(), s, loc);
@@ -236,7 +236,7 @@ static Expression *createTuple(Loc loc, TypeStruct *type, Expressions *e)
 
 static void lowerNonArrayAggregate(StaticForeach *sfe, Scope *sc)
 {
-    size_t nvars = sfe->aggrfe ? sfe->aggrfe->parameters->dim : 1;
+    size_t nvars = sfe->aggrfe ? sfe->aggrfe->parameters->length : 1;
     Loc aloc = sfe->aggrfe ? sfe->aggrfe->aggr->loc : sfe->rangefe->lwr->loc;
     // We need three sets of foreach loop variables because the
     // lowering contains three foreach loops.
@@ -264,7 +264,7 @@ static void lowerNonArrayAggregate(StaticForeach *sfe, Scope *sc)
         for (size_t i = 0; i < 2; i++)
         {
             Expressions *e = new Expressions();
-            for (size_t j = 0; j < pparams[0]->dim; j++)
+            for (size_t j = 0; j < pparams[0]->length; j++)
             {
                 Parameter *p = (*pparams[i])[j];
                 e->push(new IdentifierExp(aloc, p->ident));
@@ -430,7 +430,7 @@ void printDepsConditional(Scope *sc, DVCondition* condition, const char* depType
 }
 
 
-int DebugCondition::include(Scope *sc, ScopeDsymbol *)
+int DebugCondition::include(Scope *sc)
 {
     //printf("DebugCondition::include() level = %d, debuglevel = %d\n", level, global.params.debuglevel);
     if (inc == 0)
@@ -609,7 +609,7 @@ VersionCondition::VersionCondition(Module *mod, unsigned level, Identifier *iden
 {
 }
 
-int VersionCondition::include(Scope *sc, ScopeDsymbol *)
+int VersionCondition::include(Scope *sc)
 {
     //printf("VersionCondition::include() level = %d, versionlevel = %d\n", level, global.params.versionlevel);
     //if (ident) printf("\tident = '%s'\n", ident->toChars());
@@ -654,7 +654,7 @@ Condition *StaticIfCondition::syntaxCopy()
     return new StaticIfCondition(loc, exp->syntaxCopy());
 }
 
-int StaticIfCondition::include(Scope *sc, ScopeDsymbol *sds)
+int StaticIfCondition::include(Scope *sc)
 {
     if (inc == 0)
     {
@@ -666,7 +666,6 @@ int StaticIfCondition::include(Scope *sc, ScopeDsymbol *sds)
         }
 
         sc = sc->push(sc->scopesym);
-        sc->sds = sds;                  // sds gets any addMember()
 
         bool errors = false;
         bool result = evalStaticCondition(sc, exp, exp, errors);

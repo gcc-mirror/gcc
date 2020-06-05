@@ -1251,6 +1251,7 @@ package Sem_Util is
    --    * A task type
    --    * A private type with pragma Default_Initial_Condition that provides
    --      full default initialization.
+   --  This function is not used in GNATprove anymore, but is used in CodePeer.
 
    function Has_Fully_Default_Initializing_DIC_Pragma
      (Typ : Entity_Id) return Boolean;
@@ -1836,13 +1837,8 @@ package Sem_Util is
    --  null component list.
 
    function Is_Object_Image (Prefix : Node_Id) return Boolean;
-   --  Returns True if an 'Image, 'Wide_Image, or 'Wide_Wide_Image attribute
-   --  is applied to a given object or named value prefix (see below).
-
-   --  AI12-00124: The ARG has adopted the GNAT semantics of 'Img for scalar
-   --  types, so that the prefix of any 'Image attribute can be an object, a
-   --  named value, or a type, and there is no need for an argument in the
-   --  case it is an object reference.
+   --  Returns True if an 'Img, 'Image, 'Wide_Image, or 'Wide_Wide_Image
+   --  attribute is applied to an object.
 
    function Is_Object_Reference (N : Node_Id) return Boolean;
    --  Determines if the tree referenced by N represents an object. Both

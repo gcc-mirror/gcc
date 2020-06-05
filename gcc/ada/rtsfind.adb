@@ -540,87 +540,166 @@ package body Rtsfind is
    -- Get_Unit_Name --
    -------------------
 
+   --  The following subtypes include all the proper descendants of each unit
+   --  that has such descendants. For example, Ada_Calendar_Descendant includes
+   --  all the descendents of Ada.Calendar (except Ada.Calendar itself). These
+   --  are used by Get_Unit_Name to know where to change "_" to ".", and by
+   --  Is_Text_IO_Special_Package to detect the special generic pseudo-children
+   --  of [[Wide_]Wide_]Text_IO.
+
+   subtype Ada_Descendant is RTU_Id
+     range Ada_Calendar .. Ada_Wide_Wide_Text_IO_Modular_IO;
+
+   subtype Ada_Calendar_Descendant is Ada_Descendant
+     range Ada_Calendar_Delays .. Ada_Calendar_Delays;
+
+   subtype Ada_Dispatching_Descendant is Ada_Descendant
+     range Ada_Dispatching_EDF .. Ada_Dispatching_EDF;
+
+   subtype Ada_Interrupts_Descendant is Ada_Descendant range
+     Ada_Interrupts_Names .. Ada_Interrupts_Names;
+
+   subtype Ada_Numerics_Descendant is Ada_Descendant
+     range Ada_Numerics_Generic_Elementary_Functions ..
+           Ada_Numerics_Generic_Elementary_Functions;
+
+   subtype Ada_Real_Time_Descendant is Ada_Descendant
+     range Ada_Real_Time_Delays .. Ada_Real_Time_Timing_Events;
+
+   subtype Ada_Streams_Descendant is Ada_Descendant
+     range Ada_Streams_Stream_IO .. Ada_Streams_Stream_IO;
+
+   subtype Ada_Strings_Descendant is Ada_Descendant
+     range Ada_Strings_Superbounded .. Ada_Strings_Text_Output_Utils;
+
+   subtype Ada_Strings_Text_Output_Descendant is Ada_Strings_Descendant
+     range Ada_Strings_Text_Output_Utils .. Ada_Strings_Text_Output_Utils;
+
+   subtype Ada_Text_IO_Descendant is Ada_Descendant
+     range Ada_Text_IO_Decimal_IO .. Ada_Text_IO_Modular_IO;
+
+   subtype Ada_Wide_Text_IO_Descendant is Ada_Descendant
+     range Ada_Wide_Text_IO_Decimal_IO .. Ada_Wide_Text_IO_Modular_IO;
+
+   subtype Ada_Wide_Wide_Text_IO_Descendant is Ada_Descendant
+     range Ada_Wide_Wide_Text_IO_Decimal_IO ..
+           Ada_Wide_Wide_Text_IO_Modular_IO;
+
+   subtype Interfaces_Descendant is RTU_Id
+     range Interfaces_Packed_Decimal .. Interfaces_Packed_Decimal;
+
+   subtype System_Descendant is RTU_Id
+     range System_Address_Image .. System_Tasking_Stages;
+
+   subtype System_Dim_Descendant is System_Descendant
+     range System_Dim_Float_IO .. System_Dim_Integer_IO;
+
+   subtype System_Multiprocessors_Descendant is System_Descendant
+     range System_Multiprocessors_Dispatching_Domains ..
+       System_Multiprocessors_Dispatching_Domains;
+
+   subtype System_Storage_Pools_Descendant is System_Descendant
+     range System_Storage_Pools_Subpools .. System_Storage_Pools_Subpools;
+
+   subtype System_Strings_Descendant is System_Descendant
+     range System_Strings_Stream_Ops .. System_Strings_Stream_Ops;
+
+   subtype System_Tasking_Descendant is System_Descendant
+     range System_Tasking_Async_Delays .. System_Tasking_Stages;
+
+   subtype System_Tasking_Protected_Objects_Descendant is
+     System_Tasking_Descendant
+     range System_Tasking_Protected_Objects_Entries ..
+       System_Tasking_Protected_Objects_Single_Entry;
+
+   subtype System_Tasking_Restricted_Descendant is System_Tasking_Descendant
+     range System_Tasking_Restricted_Stages ..
+       System_Tasking_Restricted_Stages;
+
+   subtype System_Tasking_Async_Delays_Descendant is System_Tasking_Descendant
+     range System_Tasking_Async_Delays_Enqueue_Calendar ..
+       System_Tasking_Async_Delays_Enqueue_RT;
+
    function Get_Unit_Name (U_Id : RTU_Id) return Unit_Name_Type is
       Uname_Chars : constant String := RTU_Id'Image (U_Id);
-
    begin
       Name_Len := Uname_Chars'Length;
       Name_Buffer (1 .. Name_Len) := Uname_Chars;
       Set_Casing (All_Lower_Case);
 
-      if U_Id in Ada_Child then
+      if U_Id in Ada_Descendant then
          Name_Buffer (4) := '.';
 
-         if U_Id in Ada_Calendar_Child then
+         if U_Id in Ada_Calendar_Descendant then
             Name_Buffer (13) := '.';
 
-         elsif U_Id in Ada_Dispatching_Child then
+         elsif U_Id in Ada_Dispatching_Descendant then
             Name_Buffer (16) := '.';
 
-         elsif U_Id in Ada_Interrupts_Child then
+         elsif U_Id in Ada_Interrupts_Descendant then
             Name_Buffer (15) := '.';
 
-         elsif U_Id in Ada_Numerics_Child then
+         elsif U_Id in Ada_Numerics_Descendant then
             Name_Buffer (13) := '.';
 
-         elsif U_Id in Ada_Real_Time_Child then
+         elsif U_Id in Ada_Real_Time_Descendant then
             Name_Buffer (14) := '.';
 
-         elsif U_Id in Ada_Streams_Child then
+         elsif U_Id in Ada_Streams_Descendant then
             Name_Buffer (12) := '.';
 
-         elsif U_Id in Ada_Strings_Child then
+         elsif U_Id in Ada_Strings_Descendant then
             Name_Buffer (12) := '.';
 
-            if U_Id in Ada_Strings_Text_Output_Child then
+            if U_Id in Ada_Strings_Text_Output_Descendant then
                Name_Buffer (24) := '.';
             end if;
 
-         elsif U_Id in Ada_Text_IO_Child then
+         elsif U_Id in Ada_Text_IO_Descendant then
             Name_Buffer (12) := '.';
 
-         elsif U_Id in Ada_Wide_Text_IO_Child then
+         elsif U_Id in Ada_Wide_Text_IO_Descendant then
             Name_Buffer (17) := '.';
 
-         elsif U_Id in Ada_Wide_Wide_Text_IO_Child then
+         elsif U_Id in Ada_Wide_Wide_Text_IO_Descendant then
             Name_Buffer (22) := '.';
          end if;
 
-      elsif U_Id in Interfaces_Child then
+      elsif U_Id in Interfaces_Descendant then
          Name_Buffer (11) := '.';
 
-      elsif U_Id in System_Child then
+      elsif U_Id in System_Descendant then
          Name_Buffer (7) := '.';
 
-         if U_Id in System_Dim_Child then
+         if U_Id in System_Dim_Descendant then
             Name_Buffer (11) := '.';
          end if;
 
-         if U_Id in System_Multiprocessors_Child then
+         if U_Id in System_Multiprocessors_Descendant then
             Name_Buffer (23) := '.';
          end if;
 
-         if U_Id in System_Storage_Pools_Child then
+         if U_Id in System_Storage_Pools_Descendant then
             Name_Buffer (21) := '.';
          end if;
 
-         if U_Id in System_Strings_Child then
+         if U_Id in System_Strings_Descendant then
             Name_Buffer (15) := '.';
          end if;
 
-         if U_Id in System_Tasking_Child then
+         if U_Id in System_Tasking_Descendant then
             Name_Buffer (15) := '.';
          end if;
 
-         if U_Id in System_Tasking_Restricted_Child then
+         if U_Id in System_Tasking_Restricted_Descendant then
             Name_Buffer (26) := '.';
          end if;
 
-         if U_Id in System_Tasking_Protected_Objects_Child then
+         if U_Id in System_Tasking_Protected_Objects_Descendant then
             Name_Buffer (33) := '.';
          end if;
 
-         if U_Id in System_Tasking_Async_Delays_Child then
+         if U_Id in System_Tasking_Async_Delays_Descendant then
             Name_Buffer (28) := '.';
          end if;
       end if;
@@ -758,6 +837,37 @@ package body Rtsfind is
    begin
       return Present (E) and then E = Ent;
    end Is_RTU;
+
+   --------------------------------
+   -- Is_Text_IO_Special_Package --
+   --------------------------------
+
+   function Is_Text_IO_Special_Package (E : Entity_Id) return Boolean is
+   begin
+      pragma Assert (Is_Package_Or_Generic_Package (E));
+
+      --  ??? detection with a scope climbing might be more efficient
+
+      for U in Ada_Text_IO_Descendant loop
+         if Is_RTU (E, U) then
+            return True;
+         end if;
+      end loop;
+
+      for U in Ada_Wide_Text_IO_Descendant loop
+         if Is_RTU (E, U) then
+            return True;
+         end if;
+      end loop;
+
+      for U in Ada_Wide_Wide_Text_IO_Descendant loop
+         if Is_RTU (E, U) then
+            return True;
+         end if;
+      end loop;
+
+      return False;
+   end Is_Text_IO_Special_Package;
 
    -----------------------------
    -- Is_Text_IO_Special_Unit --

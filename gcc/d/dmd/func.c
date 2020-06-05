@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -74,9 +74,9 @@ public:
     void visit(CompileStatement *) {  }
     void visit(CompoundStatement *s)
     {
-        if (s->statements && s->statements->dim)
+        if (s->statements && s->statements->length)
         {
-            for (size_t i = 0; i < s->statements->dim; i++)
+            for (size_t i = 0; i < s->statements->length; i++)
             {
                 if ((*s->statements)[i])
                     visitStmt((*s->statements)[i]);
@@ -86,9 +86,9 @@ public:
     void visit(CompoundDeclarationStatement *s) { visit((CompoundStatement *)s); }
     void visit(UnrolledLoopStatement *s)
     {
-        if (s->statements && s->statements->dim)
+        if (s->statements && s->statements->length)
         {
-            for (size_t i = 0; i < s->statements->dim; i++)
+            for (size_t i = 0; i < s->statements->length; i++)
             {
                 if ((*s->statements)[i])
                     visitStmt((*s->statements)[i]);
@@ -177,9 +177,9 @@ public:
     {
         if (s->_body)
             visitStmt(s->_body);
-        if (s->catches && s->catches->dim)
+        if (s->catches && s->catches->length)
         {
-            for (size_t i = 0; i < s->catches->dim; i++)
+            for (size_t i = 0; i < s->catches->length; i++)
             {
                 Catch *c = (*s->catches)[i];
                 if (c && c->handler)
@@ -815,13 +815,13 @@ void FuncDeclaration::semantic(Scope *sc)
             goto Ldone;
 
         bool may_override = false;
-        for (size_t i = 0; i < cd->baseclasses->dim; i++)
+        for (size_t i = 0; i < cd->baseclasses->length; i++)
         {
             BaseClass *b = (*cd->baseclasses)[i];
             ClassDeclaration *cbd = b->type->toBasetype()->isClassHandle();
             if (!cbd)
                 continue;
-            for (size_t j = 0; j < cbd->vtbl.dim; j++)
+            for (size_t j = 0; j < cbd->vtbl.length; j++)
             {
                 FuncDeclaration *f2 = cbd->vtbl[j]->isFuncDeclaration();
                 if (!f2 || f2->ident != ident)
@@ -845,7 +845,7 @@ void FuncDeclaration::semantic(Scope *sc)
         /* Find index of existing function in base class's vtbl[] to override
          * (the index will be the same as in cd's current vtbl[])
          */
-        int vi = cd->baseClass ? findVtblIndex((Dsymbols*)&cd->baseClass->vtbl, (int)cd->baseClass->vtbl.dim)
+        int vi = cd->baseClass ? findVtblIndex((Dsymbols*)&cd->baseClass->vtbl, (int)cd->baseClass->vtbl.length)
                                : -1;
 
         bool doesoverride = false;
@@ -877,7 +877,7 @@ void FuncDeclaration::semantic(Scope *sc)
                 /* These quirky conditions mimic what VC++ appears to do
                  */
                 if (global.params.mscoff && cd->isCPPclass() &&
-                    cd->baseClass && cd->baseClass->vtbl.dim)
+                    cd->baseClass && cd->baseClass->vtbl.length)
                 {
                     /* if overriding an interface function, then this is not
                      * introducing and don't put it in the class vtbl[]
@@ -902,11 +902,11 @@ void FuncDeclaration::semantic(Scope *sc)
                 {
                     //printf("\tintroducing function %s\n", toChars());
                     introducing = 1;
-                    if (cd->isCPPclass() && Target::reverseCppOverloads)
+                    if (cd->isCPPclass() && target.cpp.reverseOverloads)
                     {
                         // with dmc, overloaded functions are grouped and in reverse order
-                        vtblIndex = (int)cd->vtbl.dim;
-                        for (int i = 0; i < (int)cd->vtbl.dim; i++)
+                        vtblIndex = (int)cd->vtbl.length;
+                        for (int i = 0; i < (int)cd->vtbl.length; i++)
                         {
                             if (cd->vtbl[i]->ident == ident && cd->vtbl[i]->parent == parent)
                             {
@@ -915,7 +915,7 @@ void FuncDeclaration::semantic(Scope *sc)
                             }
                         }
                         // shift all existing functions back
-                        for (int i = (int)cd->vtbl.dim; i > vtblIndex; i--)
+                        for (int i = (int)cd->vtbl.length; i > vtblIndex; i--)
                         {
                             FuncDeclaration *fd = cd->vtbl[i-1]->isFuncDeclaration();
                             assert(fd);
@@ -926,7 +926,7 @@ void FuncDeclaration::semantic(Scope *sc)
                     else
                     {
                         // Append to end of vtbl[]
-                        vi = (int)cd->vtbl.dim;
+                        vi = (int)cd->vtbl.length;
                         cd->vtbl.push(this);
                         vtblIndex = vi;
                     }
@@ -977,7 +977,7 @@ void FuncDeclaration::semantic(Scope *sc)
                     }
                     else
                     {
-                        int vi2 = findVtblIndex(&cd->baseClass->vtbl, (int)cd->baseClass->vtbl.dim, false);
+                        int vi2 = findVtblIndex(&cd->baseClass->vtbl, (int)cd->baseClass->vtbl.length, false);
                         if (vi2 < 0)
                             // https://issues.dlang.org/show_bug.cgi?id=17349
                             ::deprecation(loc, "cannot implicitly override base class method `%s` with `%s`; add `override` attribute",
@@ -1045,7 +1045,7 @@ void FuncDeclaration::semantic(Scope *sc)
         for (size_t i = 0; i < cd->interfaces.length; i++)
         {
             BaseClass *b = cd->interfaces.ptr[i];
-            vi = findVtblIndex((Dsymbols *)&b->sym->vtbl, (int)b->sym->vtbl.dim);
+            vi = findVtblIndex((Dsymbols *)&b->sym->vtbl, (int)b->sym->vtbl.length);
             switch (vi)
             {
                 case -1:
@@ -1106,7 +1106,7 @@ void FuncDeclaration::semantic(Scope *sc)
         {
             BaseClass *bc = NULL;
             Dsymbol *s = NULL;
-            for (size_t i = 0; i < cd->baseclasses->dim; i++)
+            for (size_t i = 0; i < cd->baseclasses->length; i++)
             {
                 bc = (*cd->baseclasses)[i];
                 s = bc->sym->search_correct(ident);
@@ -1253,7 +1253,7 @@ static bool needsFensure(FuncDeclaration *fd)
     if (fd->fensure)
         return true;
 
-    for (size_t i = 0; i < fd->foverrides.dim; i++)
+    for (size_t i = 0; i < fd->foverrides.length; i++)
     {
         FuncDeclaration *fdv = fd->foverrides[i];
 
@@ -1417,7 +1417,7 @@ void FuncDeclaration::semantic3(Scope *sc)
 
     if (frequire)
     {
-        for (size_t i = 0; i < foverrides.dim; i++)
+        for (size_t i = 0; i < foverrides.length; i++)
         {
             FuncDeclaration *fdv = foverrides[i];
 
@@ -1553,7 +1553,7 @@ void FuncDeclaration::semantic3(Scope *sc)
             if (f->linkage == LINKd || (f->parameters && Parameter::dim(f->parameters)))
             {
                 // Declare _argptr
-                Type *t = Type::tvalist;
+                Type *t = target.va_listType(loc, sc);
                 v_argptr = new VarDeclaration(Loc(), t, Id::_argptr, NULL);
                 v_argptr->storage_class |= STCtemp;
                 v_argptr->semantic(sc2);
@@ -1610,7 +1610,7 @@ void FuncDeclaration::semantic3(Scope *sc)
         // but not in parameters[].
         if (f->parameters)
         {
-            for (size_t i = 0; i < f->parameters->dim; i++)
+            for (size_t i = 0; i < f->parameters->length; i++)
             {
                 Parameter *fparam = (*f->parameters)[i];
 
@@ -1668,7 +1668,7 @@ void FuncDeclaration::semantic3(Scope *sc)
         Scope *scout = NULL;
         if (needEnsure || addPostInvariant())
         {
-            if ((needEnsure && global.params.useOut) || fpostinv)
+            if ((needEnsure && global.params.useOut == CHECKENABLEon) || fpostinv)
             {
                 returnLabel = new LabelDsymbol(Id::returnLabel);
             }
@@ -1695,8 +1695,8 @@ void FuncDeclaration::semantic3(Scope *sc)
              */
             if (ad2 && isCtorDeclaration())
             {
-                allocFieldinit(sc2, ad2->fields.dim);
-                for (size_t i = 0; i < ad2->fields.dim; i++)
+                allocFieldinit(sc2, ad2->fields.length);
+                for (size_t i = 0; i < ad2->fields.length; i++)
                 {
                     VarDeclaration *v = ad2->fields[i];
                     v->ctorinit = 0;
@@ -1737,7 +1737,7 @@ void FuncDeclaration::semantic3(Scope *sc)
 
             if (returns && !fbody->isErrorStatement())
             {
-                for (size_t i = 0; i < returns->dim; )
+                for (size_t i = 0; i < returns->length; )
                 {
                     Expression *exp = (*returns)[i]->exp;
                     if (exp->op == TOKvar && ((VarExp *)exp)->var == vresult)
@@ -1771,7 +1771,7 @@ void FuncDeclaration::semantic3(Scope *sc)
                  * ctor consts were initialized.
                  */
                 ScopeDsymbol *pd = toParent()->isScopeDsymbol();
-                for (size_t i = 0; i < pd->members->dim; i++)
+                for (size_t i = 0; i < pd->members->length; i++)
                 {
                     Dsymbol *s = (*pd->members)[i];
                     s->checkCtorConstInit();
@@ -1784,7 +1784,7 @@ void FuncDeclaration::semantic3(Scope *sc)
                 // Verify that all the ctorinit fields got initialized
                 if (!(sc2->callSuper & CSXthis_ctor))
                 {
-                    for (size_t i = 0; i < ad2->fields.dim; i++)
+                    for (size_t i = 0; i < ad2->fields.length; i++)
                     {
                         VarDeclaration *v = ad2->fields[i];
                         if (v->isThisDeclaration())
@@ -1915,7 +1915,7 @@ void FuncDeclaration::semantic3(Scope *sc)
                         error("has no return statement, but is expected to return a value of type %s", f->next->toChars());
                     else
                         error("no return exp; or assert(0); at end of function");
-                    if (global.params.useAssert &&
+                    if (global.params.useAssert == CHECKENABLEon &&
                         !global.params.useInline)
                     {
                         /* Add an assert(0, msg); where the missing return
@@ -1947,7 +1947,7 @@ void FuncDeclaration::semantic3(Scope *sc)
                 /* Cannot move this loop into NrvoWalker, because
                  * returns[i] may be in the nested delegate for foreach-body.
                  */
-                for (size_t i = 0; i < returns->dim; i++)
+                for (size_t i = 0; i < returns->length; i++)
                 {
                     ReturnStatement *rs = (*returns)[i];
                     Expression *exp = rs->exp;
@@ -2048,7 +2048,7 @@ void FuncDeclaration::semantic3(Scope *sc)
 
             sc2 = sc2->pop();
 
-            if (!global.params.useIn)
+            if (global.params.useIn == CHECKENABLEoff)
                 freq = NULL;
         }
 
@@ -2072,7 +2072,7 @@ void FuncDeclaration::semantic3(Scope *sc)
 
             sc2 = sc2->pop();
 
-            if (!global.params.useOut)
+            if (global.params.useOut == CHECKENABLEoff)
                 fens = NULL;
         }
 
@@ -2085,7 +2085,7 @@ void FuncDeclaration::semantic3(Scope *sc)
             // Merge in initialization of 'out' parameters
             if (parameters)
             {
-                for (size_t i = 0; i < parameters->dim; i++)
+                for (size_t i = 0; i < parameters->length; i++)
                 {
                     VarDeclaration *v = (*parameters)[i];
                     if (v->storage_class & STCout)
@@ -2172,7 +2172,7 @@ void FuncDeclaration::semantic3(Scope *sc)
              */
             if (parameters)
             {
-                for (size_t i = 0; i < parameters->dim; i++)
+                for (size_t i = 0; i < parameters->length; i++)
                 {
                     VarDeclaration *v = (*parameters)[i];
 
@@ -2252,7 +2252,7 @@ void FuncDeclaration::semantic3(Scope *sc)
         // Fix up forward-referenced gotos
         if (gotos)
         {
-            for (size_t i = 0; i < gotos->dim; ++i)
+            for (size_t i = 0; i < gotos->length; ++i)
             {
                 (*gotos)[i]->checkLabel();
             }
@@ -2314,8 +2314,8 @@ void FuncDeclaration::semantic3(Scope *sc)
     if (parameters)
     {
         size_t nfparams = Parameter::dim(f->parameters);
-        assert(nfparams == parameters->dim);
-        for (size_t u = 0; u < parameters->dim; u++)
+        assert(nfparams == parameters->length);
+        for (size_t u = 0; u < parameters->length; u++)
         {
             VarDeclaration *v = (*parameters)[u];
             if (v->storage_class & STCmaybescope)
@@ -2658,7 +2658,7 @@ Statement *FuncDeclaration::mergeFrequire(Statement *sf)
      *     a stack local, allocate that local immediately following the exception
      *     handler block, so it is always at the same offset from EBP.
      */
-    for (size_t i = 0; i < foverrides.dim; i++)
+    for (size_t i = 0; i < foverrides.length; i++)
     {
         FuncDeclaration *fdv = foverrides[i];
 
@@ -2715,7 +2715,7 @@ Statement *FuncDeclaration::mergeFensure(Statement *sf, Identifier *oid)
      * list for the 'this' pointer, something that would need an unknown amount
      * of tweaking of various parts of the compiler that I'd rather leave alone.
      */
-    for (size_t i = 0; i < foverrides.dim; i++)
+    for (size_t i = 0; i < foverrides.length; i++)
     {
         FuncDeclaration *fdv = foverrides[i];
 
@@ -2796,7 +2796,7 @@ int FuncDeclaration::overrides(FuncDeclaration *fd)
 }
 
 /*************************************************
- * Find index of function in vtbl[0..dim] that
+ * Find index of function in vtbl[0..length] that
  * this function overrides.
  * Prefer an exact match to a covariant one.
  * Params:
@@ -2897,7 +2897,7 @@ BaseClass *FuncDeclaration::overrideInterface()
     for (size_t i = 0; i < cd->interfaces.length; i++)
     {
         BaseClass *b = cd->interfaces.ptr[i];
-        int v = findVtblIndex((Dsymbols *)&b->sym->vtbl, (int)b->sym->vtbl.dim);
+        int v = findVtblIndex((Dsymbols *)&b->sym->vtbl, (int)b->sym->vtbl.length);
         if (v >= 0)
             return b;
     }
@@ -3790,7 +3790,7 @@ bool FuncDeclaration::isVirtualMethod()
     if (!isVirtual())
         return false;
     // If it's a final method, and does not override anything, then it is not virtual
-    if (isFinalFunc() && foverrides.dim == 0)
+    if (isFinalFunc() && foverrides.length == 0)
     {
         return false;
     }
@@ -4006,7 +4006,7 @@ bool traverseIndirections(Type *ta, Type *tb, void *p = NULL, bool reversePass =
         c.type = tb;
 
         AggregateDeclaration *sym = tb->toDsymbol(NULL)->isAggregateDeclaration();
-        for (size_t i = 0; i < sym->fields.dim; i++)
+        for (size_t i = 0; i < sym->fields.length; i++)
         {
             VarDeclaration *v = sym->fields[i];
             Type *tprmi = v->type->addMod(tb->mod);
@@ -4135,7 +4135,7 @@ bool FuncDeclaration::addPreInvariant()
     AggregateDeclaration *ad = isThis();
     ClassDeclaration *cd = ad ? ad->isClassDeclaration() : NULL;
     return (ad && !(cd && cd->isCPPclass()) &&
-            global.params.useInvariants &&
+            global.params.useInvariants == CHECKENABLEon &&
             (protection.kind == PROTprotected || protection.kind == PROTpublic || protection.kind == PROTexport) &&
             !naked);
 }
@@ -4146,7 +4146,7 @@ bool FuncDeclaration::addPostInvariant()
     ClassDeclaration *cd = ad ? ad->isClassDeclaration() : NULL;
     return (ad && !(cd && cd->isCPPclass()) &&
             ad->inv &&
-            global.params.useInvariants &&
+            global.params.useInvariants == CHECKENABLEon &&
             (protection.kind == PROTprotected || protection.kind == PROTpublic || protection.kind == PROTexport) &&
             !naked);
 }
@@ -4353,7 +4353,7 @@ bool FuncDeclaration::checkNestedReference(Scope *sc, Loc loc)
         if (fdthis != this)
         {
             bool found = false;
-            for (size_t i = 0; i < siblingCallers.dim; ++i)
+            for (size_t i = 0; i < siblingCallers.length; ++i)
             {
                 if (siblingCallers[i] == fdthis)
                     found = true;
@@ -4386,7 +4386,7 @@ void markAsNeedingClosure(Dsymbol *f, FuncDeclaration *outerFunc)
     for (Dsymbol *sx = f; sx && sx != outerFunc; sx = sx->parent)
     {
         FuncDeclaration *fy = sx->isFuncDeclaration();
-        if (fy && fy->closureVars.dim)
+        if (fy && fy->closureVars.length)
         {
             /* fy needs a closure if it has closureVars[],
              * because the frame pointer in the closure will be accessed.
@@ -4419,7 +4419,7 @@ bool checkEscapingSiblings(FuncDeclaration *f, FuncDeclaration *outerFunc, void 
 
     //printf("checkEscapingSiblings(f = %s, outerfunc = %s)\n", f->toChars(), outerFunc->toChars());
     bool bAnyClosures = false;
-    for (size_t i = 0; i < f->siblingCallers.dim; ++i)
+    for (size_t i = 0; i < f->siblingCallers.length; ++i)
     {
         FuncDeclaration *g = f->siblingCallers[i];
         if (g->isThis() || g->tookAddressOf)
@@ -4479,12 +4479,12 @@ bool FuncDeclaration::needsClosure()
     if (requiresClosure)
         goto Lyes;
 
-    for (size_t i = 0; i < closureVars.dim; i++)
+    for (size_t i = 0; i < closureVars.length; i++)
     {
         VarDeclaration *v = closureVars[i];
         //printf("\tv = %s\n", v->toChars());
 
-        for (size_t j = 0; j < v->nestedrefs.dim; j++)
+        for (size_t j = 0; j < v->nestedrefs.length; j++)
         {
             FuncDeclaration *f = v->nestedrefs[j];
             assert(f != this);
@@ -4561,11 +4561,11 @@ bool FuncDeclaration::checkClosure()
     }
 
     FuncDeclarations a;
-    for (size_t i = 0; i < closureVars.dim; i++)
+    for (size_t i = 0; i < closureVars.length; i++)
     {
         VarDeclaration *v = closureVars[i];
 
-        for (size_t j = 0; j < v->nestedrefs.dim; j++)
+        for (size_t j = 0; j < v->nestedrefs.length; j++)
         {
             FuncDeclaration *f = v->nestedrefs[j];
             assert(f != this);
@@ -4585,7 +4585,7 @@ bool FuncDeclaration::checkClosure()
         Lfound:
             for (size_t k = 0; ; k++)
             {
-                if (k == a.dim)
+                if (k == a.length)
                 {
                     a.push(f);
                     ::errorSupplemental(f->loc, "%s closes over variable %s at %s",
@@ -4609,7 +4609,7 @@ bool FuncDeclaration::checkClosure()
 
 bool FuncDeclaration::hasNestedFrameRefs()
 {
-    if (closureVars.dim)
+    if (closureVars.length)
         return true;
 
     /* If a virtual function has contracts, assume its variables are referenced
@@ -4622,9 +4622,9 @@ bool FuncDeclaration::hasNestedFrameRefs()
     if (fdrequire || fdensure)
         return true;
 
-    if (foverrides.dim && isVirtualMethod())
+    if (foverrides.length && isVirtualMethod())
     {
-        for (size_t i = 0; i < foverrides.dim; i++)
+        for (size_t i = 0; i < foverrides.length; i++)
         {
             FuncDeclaration *fdv = foverrides[i];
             if (fdv->hasNestedFrameRefs())
@@ -4927,7 +4927,7 @@ bool CtorDeclaration::addPreInvariant()
 
 bool CtorDeclaration::addPostInvariant()
 {
-    return (isThis() && vthis && global.params.useInvariants);
+    return (isThis() && vthis && global.params.useInvariants == CHECKENABLEon);
 }
 
 
@@ -4995,7 +4995,7 @@ bool PostBlitDeclaration::addPreInvariant()
 
 bool PostBlitDeclaration::addPostInvariant()
 {
-    return (isThis() && vthis && global.params.useInvariants);
+    return (isThis() && vthis && global.params.useInvariants == CHECKENABLEon);
 }
 
 bool PostBlitDeclaration::isVirtual()
@@ -5067,7 +5067,7 @@ bool DtorDeclaration::overloadInsert(Dsymbol *)
 
 bool DtorDeclaration::addPreInvariant()
 {
-    return (isThis() && vthis && global.params.useInvariants);
+    return (isThis() && vthis && global.params.useInvariants == CHECKENABLEon);
 }
 
 bool DtorDeclaration::addPostInvariant()

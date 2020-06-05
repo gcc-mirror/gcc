@@ -5524,7 +5524,7 @@ package body Exp_Ch3 is
          --  limited-with'ed package, we need to use the nonlimited view in
          --  case it has tasks.
 
-         if Ekind (Desig_Typ) in Incomplete_Kind
+         if Is_Incomplete_Type (Desig_Typ)
            and then Present (Non_Limited_View (Desig_Typ))
          then
             Desig_Typ := Non_Limited_View (Desig_Typ);
@@ -7294,10 +7294,7 @@ package body Exp_Ch3 is
    -- Expand_N_Subtype_Indication --
    ---------------------------------
 
-   --  Add a check on the range of the subtype. The static case is partially
-   --  duplicated by Process_Range_Expr_In_Decl in Sem_Ch3, but we still need
-   --  to check here for the static case in order to avoid generating
-   --  extraneous expanded code. Also deal with validity checking.
+   --  Add a check on the range of the subtype and deal with validity checking
 
    procedure Expand_N_Subtype_Indication (N : Node_Id) is
       Ran : constant Node_Id   := Range_Expression (Constraint (N));
@@ -7308,7 +7305,12 @@ package body Exp_Ch3 is
          Validity_Check_Range (Range_Expression (Constraint (N)));
       end if;
 
-      if Nkind_In (Parent (N), N_Constrained_Array_Definition, N_Slice) then
+      --  Do not duplicate the work of Process_Range_Expr_In_Decl in Sem_Ch3
+
+      if Nkind_In (Parent (N), N_Constrained_Array_Definition, N_Slice)
+        and then Nkind (Parent (Parent (N))) /= N_Full_Type_Declaration
+        and then Nkind (Parent (Parent (N))) /= N_Object_Declaration
+      then
          Apply_Range_Check (Ran, Typ);
       end if;
    end Expand_N_Subtype_Indication;

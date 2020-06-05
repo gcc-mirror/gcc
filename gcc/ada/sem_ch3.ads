@@ -23,7 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Nlists; use Nlists;
 with Types;  use Types;
 
 package Sem_Ch3 is
@@ -265,7 +264,7 @@ package Sem_Ch3 is
      (R            : Node_Id;
       T            : Entity_Id;
       Subtyp       : Entity_Id := Empty;
-      Check_List   : List_Id   := Empty_List;
+      Check_List   : List_Id   := No_List;
       R_Check_Off  : Boolean   := False;
       In_Iter_Schm : Boolean   := False);
    --  Process a range expression that appears in a declaration context. The

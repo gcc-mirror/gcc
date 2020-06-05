@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dmd/identifier.h"
 #include "dmd/module.h"
 #include "dmd/mtype.h"
+#include "dmd/target.h"
 
 #include "tree.h"
 #include "fold-const.h"
@@ -67,7 +68,7 @@ static vec<builtin_data> builtin_converted_decls;
    as casting from `C char' to `D char', which also means that `char *`
    needs to be specially handled.  */
 
-static Type *
+Type *
 build_frontend_type (tree type)
 {
   Type *dtype;
@@ -315,7 +316,7 @@ build_frontend_type (tree type)
 
 	  /* GCC generic and placeholder built-ins are marked as variadic, yet
 	     have no named parameters, and so can't be represented in D.  */
-	  if (args->dim != 0 || !varargs_p)
+	  if (args->length != 0 || !varargs_p)
 	    {
 	      dtype = TypeFunction::create (args, dtype, varargs_p, LINKc);
 	      return dtype->addMod (mod);
@@ -471,10 +472,10 @@ d_init_versions (void)
   if (global.params.useUnitTests)
     VersionCondition::addPredefinedGlobalIdent ("unittest");
 
-  if (global.params.useAssert)
+  if (global.params.useAssert == CHECKENABLEon)
     VersionCondition::addPredefinedGlobalIdent ("assert");
 
-  if (global.params.useArrayBounds == BOUNDSCHECKoff)
+  if (global.params.useArrayBounds == CHECKENABLEoff)
     VersionCondition::addPredefinedGlobalIdent ("D_NoBoundsChecks");
 
   if (global.params.betterC)
@@ -598,14 +599,12 @@ d_build_builtins_module (Module *m)
 	}
     }
 
-  /* va_list should already be built, so no need to convert to D type again.  */
-  StructDeclaration *sd = (Type::tvalist->ty == Tstruct)
-    ? ((TypeStruct *) Type::tvalist)->sym : NULL;
+  /* Expose target-specific va_list type.  */
+  Type *tvalist = target.va_listType (Loc (), NULL);
+  StructDeclaration *sd = (tvalist->ty == Tstruct)
+    ? ((TypeStruct *) tvalist)->sym : NULL;
   if (sd == NULL || !sd->isAnonymous ())
-    {
-      members->push (build_alias_declaration ("__builtin_va_list",
-					      Type::tvalist));
-    }
+    members->push (build_alias_declaration ("__builtin_va_list", tvalist));
   else
     {
       sd->ident = Identifier::idPool ("__builtin_va_list");
@@ -668,10 +667,10 @@ maybe_set_builtin_1 (Dsymbol *d)
   if (ad != NULL)
     {
       /* Recursively search through attribute decls.  */
-      Dsymbols *decls = ad->include (NULL, NULL);
-      if (decls && decls->dim)
+      Dsymbols *decls = ad->include (NULL);
+      if (decls && decls->length)
 	{
-	  for (size_t i = 0; i < decls->dim; i++)
+	  for (size_t i = 0; i < decls->length; i++)
 	    {
 	      Dsymbol *sym = (*decls)[i];
 	      maybe_set_builtin_1 (sym);
@@ -708,7 +707,7 @@ d_maybe_set_builtin (Module *m)
   if (!m || !m->members)
     return;
 
-  for (size_t i = 0; i < m->members->dim; i++)
+  for (size_t i = 0; i < m->members->length; i++)
     {
       Dsymbol *sym = (*m->members)[i];
       maybe_set_builtin_1 (sym);
@@ -1152,16 +1151,6 @@ d_define_builtins (tree va_list_ref_type_node ATTRIBUTE_UNUSED,
 void
 d_init_builtins (void)
 {
-  /* Build the "standard" abi va_list.  */
-  Type::tvalist = build_frontend_type (va_list_type_node);
-  if (!Type::tvalist)
-    sorry ("cannot represent built-in %<va_list%> type in D");
-
-  /* Map the va_list type to the D frontend Type.  This is to prevent both
-     errors in gimplification or an ICE in targetm.canonical_va_list_type.  */
-  Type::tvalist->ctype = va_list_type_node;
-  TYPE_LANG_SPECIFIC (va_list_type_node) = build_lang_type (Type::tvalist);
-
   d_build_c_type_nodes ();
   d_build_d_type_nodes ();
 

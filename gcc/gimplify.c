@@ -10396,7 +10396,8 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 		}
 	    }
 	  else if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT
-		   && code == OMP_TARGET_EXIT_DATA)
+		   && (code == OMP_TARGET_EXIT_DATA
+		       || code == OACC_EXIT_DATA))
 	    remove = true;
 	  else if (DECL_SIZE (decl)
 		   && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST

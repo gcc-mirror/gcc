@@ -164,6 +164,15 @@ package body Sem_Attr is
       Attribute_Max_Alignment_For_Allocation => True,
       others                                 => False);
 
+   --  The following array is the list of attributes defined in the Ada 2020
+   --  RM which are not defined in Ada 2012. These are recognized in Ada
+   --  95/2005/2012 modes, but are considered to be implementation defined.
+
+   Attribute_20 : constant Attribute_Class_Array := Attribute_Class_Array'(
+      Attribute_Enum_Rep                     |
+      Attribute_Enum_Val                     => True,
+      others                                 => False);
+
    --  The following array contains all attributes that imply a modification
    --  of their prefixes or result in an access value. Such prefixes can be
    --  considered as lvalues.
@@ -1421,12 +1430,12 @@ package body Sem_Attr is
       begin
          Check_SPARK_05_Restriction_On_Attribute;
 
-         --  AI12-00124: The ARG has adopted the GNAT semantics of 'Img for
+         --  AI12-0124: The ARG has adopted the GNAT semantics of 'Img for
          --  scalar types, so that the prefix can be an object, a named value,
-         --  or a type, and there is no need for an argument in this case.
+         --  or a type. If the prefix is an object, there is no argument.
 
          if Attr_Id = Attribute_Img
-           or else (Ada_Version > Ada_2005 and then Is_Object_Image (P))
+           or else (Ada_Version >= Ada_2012 and then Is_Object_Image (P))
          then
             Check_E0;
             Set_Etype (N, Str_Typ);
@@ -1456,7 +1465,7 @@ package body Sem_Attr is
               or else not Is_Type (Entity (P))
               or else not Is_Scalar_Type (P_Type)
             then
-               if Ada_Version > Ada_2005 then
+               if Ada_Version >= Ada_2012 then
                   Error_Attr_P
                     ("prefix of % attribute must be a scalar type or a scalar "
                      & "object name");
@@ -2867,12 +2876,14 @@ package body Sem_Attr is
       end if;
 
       --  Deal with Ada 2005 attributes that are implementation attributes
-      --  because they appear in a version of Ada before Ada 2005, and
-      --  similarly for Ada 2012 attributes appearing in an earlier version.
+      --  because they appear in a version of Ada before Ada 2005, ditto for
+      --  Ada 2012 and Ada 2020 attributes appearing in an earlier version.
 
       if (Attribute_05 (Attr_Id) and then Ada_Version < Ada_2005)
             or else
          (Attribute_12 (Attr_Id) and then Ada_Version < Ada_2012)
+            or else
+         (Attribute_20 (Attr_Id) and then Ada_Version < Ada_2020)
       then
          Check_Restriction (No_Implementation_Attributes, N);
       end if;
@@ -5560,6 +5571,11 @@ package body Sem_Attr is
 
       when Attribute_Reduce =>
          Check_E2;
+
+         if not Extensions_Allowed then
+            Error_Attr
+              ("% attribute only supported under -gnatX", P);
+         end if;
 
          declare
             Stream : constant Node_Id := Prefix (N);

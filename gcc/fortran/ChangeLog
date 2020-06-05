@@ -1,3 +1,10 @@
+2020-06-04  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95500
+	* trans-expr.c (gfc_conv_expr_reference): Do not dereference NULL
+	pointer.
+
 2020-06-03  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	PR fortran/95214

@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -12,7 +12,7 @@
 
 #include "root/root.h"
 #include "root/stringtable.h"
-#include "root/rmem.h" // for d_size_t
+#include "root/dcompat.h" // for d_size_t
 
 #include "arraytypes.h"
 #include "expression.h"
@@ -98,9 +98,6 @@ enum ENUMTY
     TMAX
 };
 typedef unsigned char TY;       // ENUMTY
-
-extern int Tsize_t;
-extern int Tptrdiff_t;
 
 #define SIZE_INVALID (~(d_uns64)0)   // error return from size() functions
 
@@ -193,7 +190,6 @@ public:
     static Type *tstring;               // immutable(char)[]
     static Type *twstring;              // immutable(wchar)[]
     static Type *tdstring;              // immutable(dchar)[]
-    static Type *tvalist;               // va_list alias
     static Type *terror;                // for error recovery
     static Type *tnull;                 // for null type
 

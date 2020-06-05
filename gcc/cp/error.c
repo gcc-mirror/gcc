@@ -2909,7 +2909,14 @@ dump_binary_op (cxx_pretty_printer *pp, const char *opstring, tree t,
   else
     pp_string (pp, M_("<unknown operator>"));
   pp_cxx_whitespace (pp);
-  dump_expr (pp, TREE_OPERAND (t, 1), flags | TFF_EXPR_IN_PARENS);
+  tree op1 = TREE_OPERAND (t, 1);
+  if (TREE_CODE (t) == POINTER_PLUS_EXPR
+      && TREE_CODE (op1) == INTEGER_CST
+      && tree_int_cst_sign_bit (op1))
+    /* A pointer minus an integer is represented internally as plus a very
+       large number, don't expose that to users.  */
+    op1 = convert (ssizetype, op1);
+  dump_expr (pp, op1, flags | TFF_EXPR_IN_PARENS);
   pp_cxx_right_paren (pp);
 }
 

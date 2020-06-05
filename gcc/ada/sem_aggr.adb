@@ -147,9 +147,10 @@ package body Sem_Aggr is
    --
    --  Once this new Component_Association_List is built and all the semantic
    --  checks performed, the original aggregate subtree is replaced with the
-   --  new named record aggregate just built. Note that subtree substitution is
-   --  performed with Rewrite so as to be able to retrieve the original
-   --  aggregate.
+   --  new named record aggregate just built. This new record aggregate has no
+   --  positional associations, so its Expressions field is set to No_List.
+   --  Note that subtree substitution is performed with Rewrite so as to be
+   --  able to retrieve the original aggregate.
    --
    --  The aggregate subtree manipulation performed by Resolve_Record_Aggregate
    --  yields the aggregate format expected by Gigi. Typically, this kind of
@@ -2805,7 +2806,7 @@ package body Sem_Aggr is
    begin
       if Ada_Version < Ada_2020 then
          Error_Msg_N ("delta_aggregate is an Ada 202x feature", N);
-         Error_Msg_N ("\compile with -gnatX", N);
+         Error_Msg_N ("\compile with -gnat2020", N);
       end if;
 
       if not Is_Composite_Type (Typ) then
@@ -3990,7 +3991,7 @@ package body Sem_Aggr is
 
          begin
             if Is_Record_Type (T) and then Has_Discriminants (T) then
-               New_Aggr := Make_Aggregate (Loc, New_List, New_List);
+               New_Aggr := Make_Aggregate (Loc, No_List, New_List);
                Set_Etype (New_Aggr, T);
 
                Add_Association
@@ -5043,7 +5044,7 @@ package body Sem_Aggr is
                         Expr : Node_Id;
 
                      begin
-                        Expr := Make_Aggregate (Loc, New_List, New_List);
+                        Expr := Make_Aggregate (Loc, No_List, New_List);
                         Set_Etype (Expr, Ctyp);
 
                         --  If the enclosing type has discriminants, they have

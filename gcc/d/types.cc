@@ -49,10 +49,11 @@ along with GCC; see the file COPYING3.  If not see
 bool
 valist_array_p (Type *type)
 {
-  if (Type::tvalist->ty == Tsarray)
+  Type *tvalist = target.va_listType (Loc (), NULL);
+  if (tvalist->ty == Tsarray)
     {
       Type *tb = type->toBasetype ();
-      if (same_type_p (tb, Type::tvalist))
+      if (same_type_p (tb, tvalist))
 	return true;
     }
 
@@ -268,7 +269,7 @@ layout_aggregate_members (Dsymbols *members, tree context, bool inherited_p)
 {
   size_t fields = 0;
 
-  for (size_t i = 0; i < members->dim; i++)
+  for (size_t i = 0; i < members->length; i++)
     {
       Dsymbol *sym = (*members)[i];
       VarDeclaration *var = sym->isVarDeclaration ();
@@ -285,7 +286,7 @@ layout_aggregate_members (Dsymbols *members, tree context, bool inherited_p)
 	      Dsymbols tmembers;
 	      /* No other way to coerce the underlying type out of the tuple.
 		 Frontend should have already validated this.  */
-	      for (size_t j = 0; j < td->objects->dim; j++)
+	      for (size_t j = 0; j < td->objects->length; j++)
 		{
 		  RootObject *ro = (*td->objects)[j];
 		  gcc_assert (ro->dyncast () == DYNCAST_EXPRESSION);
@@ -364,7 +365,7 @@ layout_aggregate_members (Dsymbols *members, tree context, bool inherited_p)
       AttribDeclaration *attrib = sym->isAttribDeclaration ();
       if (attrib != NULL)
 	{
-	  Dsymbols *decls = attrib->include (NULL, NULL);
+	  Dsymbols *decls = attrib->include (NULL);
 	  if (decls != NULL)
 	    {
 	      fields += layout_aggregate_members (decls, context, inherited_p);
@@ -409,7 +410,7 @@ layout_aggregate_type (AggregateDeclaration *decl, tree type,
 
 	  /* Add the vtable pointer, and optionally the monitor fields.  */
 	  InterfaceDeclaration *id = cd->isInterfaceDeclaration ();
-	  if (!id || id->vtblInterfaces->dim == 0)
+	  if (!id || id->vtblInterfaces->length == 0)
 	    {
 	      tree field = create_field_decl (vtbl_ptr_type_node, "__vptr", 1,
 					      inherited_p);
@@ -423,13 +424,13 @@ layout_aggregate_type (AggregateDeclaration *decl, tree type,
 	    {
 	      tree field = create_field_decl (ptr_type_node, "__monitor", 1,
 					      inherited_p);
-	      insert_aggregate_field (type, field, Target::ptrsize);
+	      insert_aggregate_field (type, field, target.ptrsize);
 	    }
 	}
 
       if (cd->vtblInterfaces)
 	{
-	  for (size_t i = 0; i < cd->vtblInterfaces->dim; i++)
+	  for (size_t i = 0; i < cd->vtblInterfaces->length; i++)
 	    {
 	      BaseClass *bc = (*cd->vtblInterfaces)[i];
 	      tree field = create_field_decl (vtbl_ptr_type_node, NULL, 1, 1);
@@ -442,12 +443,12 @@ layout_aggregate_type (AggregateDeclaration *decl, tree type,
     {
       size_t fields = layout_aggregate_members (base->members, type,
 						inherited_p);
-      gcc_assert (fields == base->fields.dim);
+      gcc_assert (fields == base->fields.length);
 
       /* Make sure that all fields have been created.  */
       if (!inherited_p)
 	{
-	  for (size_t i = 0; i < base->fields.dim; i++)
+	  for (size_t i = 0; i < base->fields.length; i++)
 	    {
 	      VarDeclaration *var = base->fields[i];
 	      gcc_assert (var->csym != NULL);
@@ -836,7 +837,7 @@ public:
 	tree values = NULL_TREE;
 	if (t->sym->members)
 	  {
-	    for (size_t i = 0; i < t->sym->members->dim; i++)
+	    for (size_t i = 0; i < t->sym->members->length; i++)
 	      {
 		EnumMember *member = (*t->sym->members)[i]->isEnumMember ();
 		/* Templated functions can seep through to the back-end
@@ -972,7 +973,7 @@ public:
       }
 
     /* Associate all virtual methods with the class too.  */
-    for (size_t i = 0; i < t->sym->vtbl.dim; i++)
+    for (size_t i = 0; i < t->sym->vtbl.length; i++)
       {
 	FuncDeclaration *fd = t->sym->vtbl[i]->isFuncDeclaration ();
 	tree method = fd ? get_symbol_decl (fd) : error_mark_node;

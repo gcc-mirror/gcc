@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -55,14 +55,14 @@ public:
     }
     void visit(CompoundStatement *s)
     {
-        for (size_t i = 0; i < s->statements->dim; i++)
+        for (size_t i = 0; i < s->statements->length; i++)
             if (doCond((*s->statements)[i]))
                 return;
         applyTo(s);
     }
     void visit(UnrolledLoopStatement *s)
     {
-        for (size_t i = 0; i < s->statements->dim; i++)
+        for (size_t i = 0; i < s->statements->length; i++)
             if (doCond((*s->statements)[i]))
                 return;
         applyTo(s);
@@ -124,7 +124,7 @@ public:
         if (doCond(s->_body))
             return;
 
-        for (size_t i = 0; i < s->catches->dim; i++)
+        for (size_t i = 0; i < s->catches->length; i++)
             if (doCond((*s->catches)[i]->handler))
                 return;
         applyTo(s);

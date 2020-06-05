@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -msse2" } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-final { scan-assembler "movdqa" } } */
+/* { dg-final { scan-assembler "movq\t%xmm0" } } */
 
 #include <emmintrin.h>
 __m128d reg;

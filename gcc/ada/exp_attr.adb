@@ -3732,8 +3732,6 @@ package body Exp_Attr is
       -- Image --
       -----------
 
-      --  Image attribute is handled in separate unit Exp_Imgv
-
       when Attribute_Image =>
 
          --  Leave attribute unexpanded in CodePeer mode: the gnat2scil
@@ -3743,7 +3741,7 @@ package body Exp_Attr is
             return;
          end if;
 
-         Expand_Image_Attribute (N);
+         Exp_Imgv.Expand_Image_Attribute (N);
 
       ---------
       -- Img --
@@ -3752,7 +3750,7 @@ package body Exp_Attr is
       --  X'Img is expanded to typ'Image (X), where typ is the type of X
 
       when Attribute_Img =>
-         Expand_Image_Attribute (N);
+         Exp_Imgv.Expand_Image_Attribute (N);
 
       -----------
       -- Input --
@@ -7185,6 +7183,12 @@ package body Exp_Attr is
                   Unchecked_Convert_To (Val_Typ, New_Copy_Tree (Pref)),
                 Attribute_Name => Name_Valid);
 
+            --  Required by LLVM although the sizes are the same???
+
+            if Nkind (Prefix (Expr)) = N_Unchecked_Type_Conversion then
+               Set_No_Truncation (Prefix (Expr));
+            end if;
+
          --  Validate the scalar components of an array by iterating over all
          --  dimensions of the array while checking individual components.
 
@@ -7237,8 +7241,6 @@ package body Exp_Attr is
       -- Value --
       -----------
 
-      --  Value attribute is handled in separate unit Exp_Imgv
-
       when Attribute_Value =>
          Exp_Imgv.Expand_Value_Attribute (N);
 
@@ -7258,8 +7260,6 @@ package body Exp_Attr is
       -- Wide_Image --
       ----------------
 
-      --  Wide_Image attribute is handled in separate unit Exp_Imgv
-
       when Attribute_Wide_Image =>
          --  Leave attribute unexpanded in CodePeer mode: the gnat2scil
          --  back-end knows how to handle this attribute directly.
@@ -7273,8 +7273,6 @@ package body Exp_Attr is
       ---------------------
       -- Wide_Wide_Image --
       ---------------------
-
-      --  Wide_Wide_Image attribute is handled in separate unit Exp_Imgv
 
       when Attribute_Wide_Wide_Image =>
          --  Leave attribute unexpanded in CodePeer mode: the gnat2scil
@@ -7368,8 +7366,6 @@ package body Exp_Attr is
       -- Wide_Wide_Width --
       ---------------------
 
-      --  Wide_Wide_Width attribute is handled in separate unit Exp_Imgv
-
       when Attribute_Wide_Wide_Width =>
          Exp_Imgv.Expand_Width_Attribute (N, Wide_Wide);
 
@@ -7377,16 +7373,12 @@ package body Exp_Attr is
       -- Wide_Width --
       ----------------
 
-      --  Wide_Width attribute is handled in separate unit Exp_Imgv
-
       when Attribute_Wide_Width =>
          Exp_Imgv.Expand_Width_Attribute (N, Wide);
 
       -----------
       -- Width --
       -----------
-
-      --  Width attribute is handled in separate unit Exp_Imgv
 
       when Attribute_Width =>
          Exp_Imgv.Expand_Width_Attribute (N, Normal);

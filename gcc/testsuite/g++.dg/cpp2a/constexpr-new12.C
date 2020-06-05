@@ -24,4 +24,4 @@ foo ()
   return r;
 }
 
-constexpr auto a = foo ();	// { dg-error "is not a constant expression" }
+constexpr auto a = foo ();	// { dg-error "constant expression" }

@@ -95,3 +95,6 @@ void ptr_idx_range (void)
   i = SR (3, 4);
   T (i, (int[]){ 2, 3, 4 });          // { dg-warning "array subscript \\\[3, 4] is outside array bounds of 'int\\\[3]'" }
 }
+
+/* Some of the invalid accesses above also trigger -Wuninitialized.
+   { dg-prune-output "\\\[-Wuninitialized" }  */

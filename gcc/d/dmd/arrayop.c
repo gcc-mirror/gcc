@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -421,7 +421,7 @@ Expression *buildArrayLoop(Expression *e, Parameters *fparams)
 
         void visit(Expression *e)
         {
-            Identifier *id = Identifier::generateId("c", fparams->dim);
+            Identifier *id = Identifier::generateId("c", fparams->length);
             Parameter *param = new Parameter(0, e->type, id, NULL);
             fparams->shift(param);
             result = new IdentifierExp(Loc(), id);
@@ -440,7 +440,7 @@ Expression *buildArrayLoop(Expression *e, Parameters *fparams)
 
         void visit(ArrayLiteralExp *e)
         {
-            Identifier *id = Identifier::generateId("p", fparams->dim);
+            Identifier *id = Identifier::generateId("p", fparams->length);
             Parameter *param = new Parameter(STCconst, e->type, id, NULL);
             fparams->shift(param);
             Expression *ie = new IdentifierExp(Loc(), id);
@@ -450,7 +450,7 @@ Expression *buildArrayLoop(Expression *e, Parameters *fparams)
 
         void visit(SliceExp *e)
         {
-            Identifier *id = Identifier::generateId("p", fparams->dim);
+            Identifier *id = Identifier::generateId("p", fparams->length);
             Parameter *param = new Parameter(STCconst, e->type, id, NULL);
             fparams->shift(param);
             Expression *ie = new IdentifierExp(Loc(), id);

@@ -8811,6 +8811,7 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr, bool add_clobber)
 
   if (expr->expr_type == EXPR_FUNCTION
       && ((expr->value.function.esym
+	   && expr->value.function.esym->result
 	   && expr->value.function.esym->result->attr.pointer
 	   && !expr->value.function.esym->result->attr.dimension)
 	  || (!expr->value.function.esym && !expr->ref

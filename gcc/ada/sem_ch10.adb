@@ -2706,7 +2706,7 @@ package body Sem_Ch10 is
                   if Ada_Version < Ada_2020
                     and then Warn_On_Ada_202X_Compatibility
                   then
-                     Error_Msg_N ("& is an Ada 202X unit?i?", Name (N));
+                     Error_Msg_N ("& is an Ada 202x unit?i?", Name (N));
                   end if;
             end case;
          end if;

@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -43,9 +43,6 @@ Expression *semanticY(DotTemplateInstanceExp *exp, Scope *sc, int flag);
 Expression *typeToExpression(Type *t);
 Expression *typeToExpressionHelper(TypeQualified *t, Expression *e, size_t i = 0);
 Initializer *semantic(Initializer *init, Scope *sc, Type *t, NeedInterpret needInterpret);
-
-int Tsize_t = Tuns32;
-int Tptrdiff_t = Tint32;
 
 /***************************** Type *****************************/
 
@@ -109,7 +106,6 @@ Type *Type::tvoidptr;
 Type *Type::tstring;
 Type *Type::twstring;
 Type *Type::tdstring;
-Type *Type::tvalist;
 Type *Type::basic[TMAX];
 unsigned char Type::sizeTy[TMAX];
 StringTable Type::stringtable;
@@ -262,21 +258,11 @@ void Type::_init()
     tstring = tchar->immutableOf()->arrayOf();
     twstring = twchar->immutableOf()->arrayOf();
     tdstring = tdchar->immutableOf()->arrayOf();
-    tvalist = Target::va_listType();
 
-    if (global.params.isLP64)
-    {
-        Tsize_t = Tuns64;
-        Tptrdiff_t = Tint64;
-    }
-    else
-    {
-        Tsize_t = Tuns32;
-        Tptrdiff_t = Tint32;
-    }
+    const bool isLP64 = global.params.isLP64;
 
-    tsize_t = basic[Tsize_t];
-    tptrdiff_t = basic[Tptrdiff_t];
+    tsize_t = basic[isLP64 ? Tuns64 : Tuns32];
+    tptrdiff_t = basic[isLP64 ? Tint64 : Tint32];
     thash_t = tsize_t;
 }
 
@@ -1551,9 +1537,9 @@ Type *stripDefaultArgs(Type *t)
     static Parameters *stripParams(Parameters *parameters)
     {
         Parameters *params = parameters;
-        if (params && params->dim > 0)
+        if (params && params->length > 0)
         {
-            for (size_t i = 0; i < params->dim; i++)
+            for (size_t i = 0; i < params->length; i++)
             {
                 Parameter *p = (*params)[i];
                 Type *ta = stripDefaultArgs(p->type);
@@ -1562,8 +1548,8 @@ Type *stripDefaultArgs(Type *t)
                     if (params == parameters)
                     {
                         params = new Parameters();
-                        params->setDim(parameters->dim);
-                        for (size_t j = 0; j < params->dim; j++)
+                        params->setDim(parameters->length);
+                        for (size_t j = 0; j < params->length; j++)
                             (*params)[j] = (*parameters)[j];
                     }
                     (*params)[i] = new Parameter(p->storageClass, ta, NULL, NULL);
@@ -2002,7 +1988,7 @@ Type *TypeFunction::substWildTo(unsigned)
     Parameters *params = parameters;
     if (mod & MODwild)
         params = parameters->copy();
-    for (size_t i = 0; i < params->dim; i++)
+    for (size_t i = 0; i < params->length; i++)
     {
         Parameter *p = (*params)[i];
         Type *t = p->type->substWildTo(m);
@@ -3041,7 +3027,7 @@ d_uns64 TypeBasic::size(Loc)
                         size = 8;       break;
         case Tfloat80:
         case Timaginary80:
-                        size = Target::realsize; break;
+                        size = target.realsize; break;
         case Tcomplex32:
                         size = 8;               break;
         case Tcomplex64:
@@ -3049,7 +3035,7 @@ d_uns64 TypeBasic::size(Loc)
         case Tuns128:
                         size = 16;              break;
         case Tcomplex80:
-                        size = Target::realsize * 2; break;
+                        size = target.realsize * 2; break;
 
         case Tvoid:
             //size = Type::size();      // error message
@@ -3071,7 +3057,7 @@ d_uns64 TypeBasic::size(Loc)
 
 unsigned TypeBasic::alignsize()
 {
-    return Target::alignsize(this);
+    return target.alignsize(this);
 }
 
 
@@ -3125,17 +3111,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            fvalue = Target::FloatProperties::max;
+            fvalue = target.FloatProperties.max;
             goto Lfvalue;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            fvalue = Target::DoubleProperties::max;
+            fvalue = target.DoubleProperties.max;
             goto Lfvalue;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            fvalue = Target::RealProperties::max;
+            fvalue = target.RealProperties.max;
             goto Lfvalue;
         }
     }
@@ -3200,17 +3186,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            fvalue = Target::FloatProperties::min_normal;
+            fvalue = target.FloatProperties.min_normal;
             goto Lfvalue;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            fvalue = Target::DoubleProperties::min_normal;
+            fvalue = target.DoubleProperties.min_normal;
             goto Lfvalue;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            fvalue = Target::RealProperties::min_normal;
+            fvalue = target.RealProperties.min_normal;
             goto Lfvalue;
         }
     }
@@ -3227,7 +3213,7 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tfloat32:
         case Tfloat64:
         case Tfloat80:
-            fvalue = Target::RealProperties::nan;
+            fvalue = target.RealProperties.nan;
             goto Lfvalue;
         }
     }
@@ -3244,7 +3230,7 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tfloat32:
         case Tfloat64:
         case Tfloat80:
-            fvalue = Target::RealProperties::infinity;
+            fvalue = target.RealProperties.infinity;
             goto Lfvalue;
         }
     }
@@ -3255,17 +3241,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            ivalue = Target::FloatProperties::dig;
+            ivalue = target.FloatProperties.dig;
             goto Lint;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            ivalue = Target::DoubleProperties::dig;
+            ivalue = target.DoubleProperties.dig;
             goto Lint;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            ivalue = Target::RealProperties::dig;
+            ivalue = target.RealProperties.dig;
             goto Lint;
         }
     }
@@ -3276,17 +3262,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            fvalue = Target::FloatProperties::epsilon;
+            fvalue = target.FloatProperties.epsilon;
             goto Lfvalue;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            fvalue = Target::DoubleProperties::epsilon;
+            fvalue = target.DoubleProperties.epsilon;
             goto Lfvalue;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            fvalue = Target::RealProperties::epsilon;
+            fvalue = target.RealProperties.epsilon;
             goto Lfvalue;
         }
     }
@@ -3297,17 +3283,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            ivalue = Target::FloatProperties::mant_dig;
+            ivalue = target.FloatProperties.mant_dig;
             goto Lint;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            ivalue = Target::DoubleProperties::mant_dig;
+            ivalue = target.DoubleProperties.mant_dig;
             goto Lint;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            ivalue = Target::RealProperties::mant_dig;
+            ivalue = target.RealProperties.mant_dig;
             goto Lint;
         }
     }
@@ -3318,17 +3304,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            ivalue = Target::FloatProperties::max_10_exp;
+            ivalue = target.FloatProperties.max_10_exp;
             goto Lint;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            ivalue = Target::DoubleProperties::max_10_exp;
+            ivalue = target.DoubleProperties.max_10_exp;
             goto Lint;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            ivalue = Target::RealProperties::max_10_exp;
+            ivalue = target.RealProperties.max_10_exp;
             goto Lint;
         }
     }
@@ -3339,17 +3325,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            ivalue = Target::FloatProperties::max_exp;
+            ivalue = target.FloatProperties.max_exp;
             goto Lint;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            ivalue = Target::DoubleProperties::max_exp;
+            ivalue = target.DoubleProperties.max_exp;
             goto Lint;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            ivalue = Target::RealProperties::max_exp;
+            ivalue = target.RealProperties.max_exp;
             goto Lint;
         }
     }
@@ -3360,17 +3346,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            ivalue = Target::FloatProperties::min_10_exp;
+            ivalue = target.FloatProperties.min_10_exp;
             goto Lint;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            ivalue = Target::DoubleProperties::min_10_exp;
+            ivalue = target.DoubleProperties.min_10_exp;
             goto Lint;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            ivalue = Target::RealProperties::min_10_exp;
+            ivalue = target.RealProperties.min_10_exp;
             goto Lint;
         }
     }
@@ -3381,17 +3367,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            ivalue = Target::FloatProperties::min_exp;
+            ivalue = target.FloatProperties.min_exp;
             goto Lint;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            ivalue = Target::DoubleProperties::min_exp;
+            ivalue = target.DoubleProperties.min_exp;
             goto Lint;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            ivalue = Target::RealProperties::min_exp;
+            ivalue = target.RealProperties.min_exp;
             goto Lint;
         }
     }
@@ -3514,13 +3500,13 @@ Expression *TypeBasic::defaultInit(Loc loc)
         case Tfloat32:
         case Tfloat64:
         case Tfloat80:
-            return new RealExp(loc, Target::RealProperties::snan, this);
+            return new RealExp(loc, target.RealProperties.snan, this);
 
         case Tcomplex32:
         case Tcomplex64:
         case Tcomplex80:
         {   // Can't use fvalue + I*fvalue (the im part becomes a quiet NaN).
-            complex_t cvalue = complex_t(Target::RealProperties::snan, Target::RealProperties::snan);
+            complex_t cvalue = complex_t(target.RealProperties.snan, target.RealProperties.snan);
             return new ComplexExp(loc, cvalue, this);
         }
 
@@ -3730,7 +3716,7 @@ Type *TypeVector::semantic(Loc loc, Scope *sc)
     }
     TypeSArray *t = (TypeSArray *)basetype;
     int sz = (int)t->size(loc);
-    switch (Target::isVectorTypeSupported(sz, t->nextOf()))
+    switch (target.isVectorTypeSupported(sz, t->nextOf()))
     {
     case 0: // valid
         break;
@@ -4017,9 +4003,9 @@ void TypeSArray::resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol
             dim = dim->ctfeInterpret();
             uinteger_t d = dim->toUInteger();
 
-            if (d >= td->objects->dim)
+            if (d >= td->objects->length)
             {
-                error(loc, "tuple index %llu exceeds length %u", d, td->objects->dim);
+                error(loc, "tuple index %llu exceeds length %u", d, td->objects->length);
                 *ps = NULL;
                 *pt = Type::terror;
                 return;
@@ -4091,8 +4077,8 @@ Type *TypeSArray::semantic(Loc loc, Scope *sc)
         dim = dim->ctfeInterpret();
         uinteger_t d = dim->toUInteger();
 
-        if (d >= sd->objects->dim)
-        {   error(loc, "tuple index %llu exceeds %u", d, sd->objects->dim);
+        if (d >= sd->objects->length)
+        {   error(loc, "tuple index %llu exceeds %u", d, sd->objects->length);
             return Type::terror;
         }
         RootObject *o = (*sd->objects)[(size_t)d];
@@ -4142,7 +4128,7 @@ Type *TypeSArray::semantic(Loc loc, Scope *sc)
         {
         Loverflow:
             error(loc, "%s size %llu * %llu exceeds 0x%llx size limit for static array",
-                toChars(), (unsigned long long)tbn->size(loc), (unsigned long long)d1, Target::maxStaticDataSize);
+                toChars(), (unsigned long long)tbn->size(loc), (unsigned long long)d1, target.maxStaticDataSize);
             goto Lerror;
         }
 
@@ -4166,7 +4152,7 @@ Type *TypeSArray::semantic(Loc loc, Scope *sc)
              * run on them for the size, since they may be forward referenced.
              */
             bool overflow = false;
-            if (mulu(tbn->size(loc), d2, overflow) >= Target::maxStaticDataSize || overflow)
+            if (mulu(tbn->size(loc), d2, overflow) >= target.maxStaticDataSize || overflow)
                 goto Loverflow;
         }
     }
@@ -4178,8 +4164,8 @@ Type *TypeSArray::semantic(Loc loc, Scope *sc)
             TypeTuple *tt = (TypeTuple *)tbn;
             uinteger_t d = dim->toUInteger();
 
-            if (d >= tt->arguments->dim)
-            {   error(loc, "tuple index %llu exceeds %u", d, tt->arguments->dim);
+            if (d >= tt->arguments->length)
+            {   error(loc, "tuple index %llu exceeds %u", d, tt->arguments->length);
                 goto Lerror;
             }
             Type *telem = (*tt->arguments)[(size_t)d]->type;
@@ -4405,14 +4391,14 @@ Type *TypeDArray::syntaxCopy()
 d_uns64 TypeDArray::size(Loc)
 {
     //printf("TypeDArray::size()\n");
-    return Target::ptrsize * 2;
+    return target.ptrsize * 2;
 }
 
 unsigned TypeDArray::alignsize()
 {
     // A DArray consists of two ptr-sized values, so align it on pointer size
     // boundary
-    return Target::ptrsize;
+    return target.ptrsize;
 }
 
 Type *TypeDArray::semantic(Loc loc, Scope *sc)
@@ -4604,7 +4590,7 @@ Type *TypeAArray::syntaxCopy()
 
 d_uns64 TypeAArray::size(Loc)
 {
-    return Target::ptrsize;
+    return target.ptrsize;
 }
 
 Type *TypeAArray::semantic(Loc loc, Scope *sc)
@@ -4757,9 +4743,9 @@ Type *TypeAArray::semantic(Loc loc, Scope *sc)
         if (!fhash) fhash = search_function(ClassDeclaration::object, Id::tohash)->isFuncDeclaration();
         assert(fcmp && feq && fhash);
 
-        if (feq->vtblIndex < (int)cd->vtbl.dim && cd->vtbl[feq ->vtblIndex] == feq)
+        if (feq->vtblIndex < (int)cd->vtbl.length && cd->vtbl[feq ->vtblIndex] == feq)
         {
-            if (fcmp->vtblIndex < (int)cd->vtbl.dim && cd->vtbl[fcmp->vtblIndex] != fcmp)
+            if (fcmp->vtblIndex < (int)cd->vtbl.length && cd->vtbl[fcmp->vtblIndex] != fcmp)
             {
                 const char *s = (index->toBasetype()->ty != Tclass) ? "bottom of " : "";
                 error(loc, "%sAA key type %s now requires equality rather than comparison",
@@ -4967,7 +4953,7 @@ Type *TypePointer::semantic(Loc loc, Scope *sc)
 
 d_uns64 TypePointer::size(Loc)
 {
-    return Target::ptrsize;
+    return target.ptrsize;
 }
 
 MATCH TypePointer::implicitConvTo(Type *to)
@@ -5111,7 +5097,7 @@ Type *TypeReference::semantic(Loc loc, Scope *sc)
 
 d_uns64 TypeReference::size(Loc)
 {
-    return Target::ptrsize;
+    return target.ptrsize;
 }
 
 Expression *TypeReference::dotExp(Scope *sc, Expression *e, Identifier *ident, int flag)
@@ -5303,8 +5289,8 @@ int Type::covariant(Type *t, StorageClass *pstc, bool fix17349)
     }
     else if (t1->parameters != t2->parameters)
     {
-        size_t dim1 = !t1->parameters ? 0 : t1->parameters->dim;
-        size_t dim2 = !t2->parameters ? 0 : t2->parameters->dim;
+        size_t dim1 = !t1->parameters ? 0 : t1->parameters->length;
+        size_t dim2 = !t2->parameters ? 0 : t2->parameters->length;
         if (dim1 || dim2)
             goto Ldistinct;
     }
@@ -5464,7 +5450,7 @@ Type *TypeFunction::semantic(Loc loc, Scope *sc)
     if (parameters)
     {
         tf->parameters = parameters->copy();
-        for (size_t i = 0; i < parameters->dim; i++)
+        for (size_t i = 0; i < parameters->length; i++)
         {
             void *pp = mem.xmalloc(sizeof(Parameter));
             Parameter *p = (Parameter *)memcpy(pp, (void *)(*parameters)[i], sizeof(Parameter));
@@ -5703,13 +5689,13 @@ Type *TypeFunction::semantic(Loc loc, Scope *sc)
                  * sharing of Parameter object among other functions.
                  */
                 TypeTuple *tt = (TypeTuple *)t;
-                if (tt->arguments && tt->arguments->dim)
+                if (tt->arguments && tt->arguments->length)
                 {
                     /* Propagate additional storage class from tuple parameters to their
                      * element-parameters.
                      * Make a copy, as original may be referenced elsewhere.
                      */
-                    size_t tdim = tt->arguments->dim;
+                    size_t tdim = tt->arguments->length;
                     Parameters *newparams = new Parameters();
                     newparams->setDim(tdim);
                     for (size_t j = 0; j < tdim; j++)
@@ -5752,7 +5738,7 @@ Type *TypeFunction::semantic(Loc loc, Scope *sc)
              */
             if (fparam->storageClass & STCauto)
             {
-                if (fargs && i < fargs->dim && (fparam->storageClass & STCref))
+                if (fargs && i < fargs->length && (fparam->storageClass & STCref))
                 {
                     Expression *farg = (*fargs)[i];
                     if (farg->isLvalue())
@@ -5983,7 +5969,7 @@ MATCH TypeFunction::callMatch(Type *tthis, Expressions *args, int flag)
     }
 
     size_t nparams = Parameter::dim(parameters);
-    size_t nargs = args ? args->dim : 0;
+    size_t nargs = args ? args->length : 0;
     if (nparams == nargs)
         ;
     else if (nargs > nparams)
@@ -6474,12 +6460,12 @@ Type *TypeDelegate::addStorageClass(StorageClass stc)
 
 d_uns64 TypeDelegate::size(Loc)
 {
-    return Target::ptrsize * 2;
+    return target.ptrsize * 2;
 }
 
 unsigned TypeDelegate::alignsize()
 {
-    return Target::ptrsize;
+    return target.ptrsize;
 }
 
 MATCH TypeDelegate::implicitConvTo(Type *to)
@@ -6634,8 +6620,8 @@ Type *TypeTraits::semantic(Loc, Scope *sc)
         {
             TupleExp *te = e->toTupleExp();
             Objects *elems = new Objects;
-            elems->setDim(te->exps->dim);
-            for (size_t i = 0; i < elems->dim; i++)
+            elems->setDim(te->exps->length);
+            for (size_t i = 0; i < elems->length; i++)
             {
                 Expression *src = (*te->exps)[i];
                 switch (src->op)
@@ -6717,8 +6703,8 @@ TypeQualified::TypeQualified(TY ty, Loc loc)
 void TypeQualified::syntaxCopyHelper(TypeQualified *t)
 {
     //printf("TypeQualified::syntaxCopyHelper(%s) %s\n", t->toChars(), toChars());
-    idents.setDim(t->idents.dim);
-    for (size_t i = 0; i < idents.dim; i++)
+    idents.setDim(t->idents.length);
+    for (size_t i = 0; i < idents.length; i++)
     {
         RootObject *id = t->idents[i];
         if (id->dyncast() == DYNCAST_DSYMBOL)
@@ -6817,9 +6803,9 @@ void TypeQualified::resolveTupleIndex(Loc loc, Scope *sc, Dsymbol *s,
     }
 
     const uinteger_t d = eindex->toUInteger();
-    if (d >= td->objects->dim)
+    if (d >= td->objects->length)
     {
-        ::error(loc, "tuple index %llu exceeds length %u", (ulonglong)d, (unsigned)td->objects->dim);
+        ::error(loc, "tuple index %llu exceeds length %u", (ulonglong)d, (unsigned)td->objects->length);
         *pt = Type::terror;
         return;
     }
@@ -6860,7 +6846,7 @@ void TypeQualified::resolveHelper(Loc loc, Scope *sc,
 
         s = s->toAlias();
         //printf("\t2: s = '%s' %p, kind = '%s'\n",s->toChars(), s, s->kind());
-        for (size_t i = 0; i < idents.dim; i++)
+        for (size_t i = 0; i < idents.length; i++)
         {
             RootObject *id = idents[i];
 
@@ -7205,7 +7191,7 @@ const char *TypeInstance::kind()
 
 Type *TypeInstance::syntaxCopy()
 {
-    //printf("TypeInstance::syntaxCopy() %s, %d\n", toChars(), idents.dim);
+    //printf("TypeInstance::syntaxCopy() %s, %d\n", toChars(), idents.length);
     TypeInstance *t = new TypeInstance(loc, (TemplateInstance *)tempinst->syntaxCopy(NULL));
     t->syntaxCopyHelper(this);
     t->mod = mod;
@@ -7394,7 +7380,7 @@ void TypeTypeof::resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol
             goto Lerr;
         }
     }
-    if (idents.dim == 0)
+    if (idents.length == 0)
         *pt = t;
     else
     {
@@ -7496,7 +7482,7 @@ void TypeReturn::resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol
             goto Lerr;
         }
     }
-    if (idents.dim == 0)
+    if (idents.length == 0)
         *pt = t;
     else
     {
@@ -7904,8 +7890,8 @@ Expression *TypeStruct::dotExp(Scope *sc, Expression *e, Identifier *ident, int 
             ev = extractSideEffect(sc, "__tup", &e0, ev);
 
         Expressions *exps = new Expressions;
-        exps->reserve(sym->fields.dim);
-        for (size_t i = 0; i < sym->fields.dim; i++)
+        exps->reserve(sym->fields.length);
+        for (size_t i = 0; i < sym->fields.length; i++)
         {
             VarDeclaration *v = sym->fields[i];
             Expression *ex;
@@ -8115,9 +8101,9 @@ Expression *TypeStruct::defaultInitLiteral(Loc loc)
     if (sym->sizeok != SIZEOKdone)
         return new ErrorExp();
     Expressions *structelems = new Expressions();
-    structelems->setDim(sym->fields.dim - sym->isNested());
+    structelems->setDim(sym->fields.length - sym->isNested());
     unsigned offset = 0;
-    for (size_t j = 0; j < structelems->dim; j++)
+    for (size_t j = 0; j < structelems->length; j++)
     {
         VarDeclaration *vd = sym->fields[j];
         Expression *e;
@@ -8148,7 +8134,7 @@ Expression *TypeStruct::defaultInitLiteral(Loc loc)
     /* Copy from the initializer symbol for larger symbols,
      * otherwise the literals expressed as code get excessively large.
      */
-    if (size(loc) > Target::ptrsize * 4U && !needsNested())
+    if (size(loc) > target.ptrsize * 4U && !needsNested())
         structinit->useStaticInit = true;
 
     structinit->type = this;
@@ -8176,7 +8162,7 @@ bool TypeStruct::needsNested()
     if (sym->isNested())
         return true;
 
-    for (size_t i = 0; i < sym->fields.dim; i++)
+    for (size_t i = 0; i < sym->fields.length; i++)
     {
         VarDeclaration *v = sym->fields[i];
         if (!v->isDataseg() && v->type->needsNested())
@@ -8193,7 +8179,7 @@ bool TypeStruct::isAssignable()
     /* If any of the fields are const or immutable,
      * then one cannot assign this struct.
      */
-    for (size_t i = 0; i < sym->fields.dim; i++)
+    for (size_t i = 0; i < sym->fields.length; i++)
     {
         VarDeclaration *v = sym->fields[i];
         //printf("%s [%d] v = (%s) %s, v->offset = %d, v->parent = %s", sym->toChars(), i, v->kind(), v->toChars(), v->offset, v->parent->kind());
@@ -8227,7 +8213,7 @@ bool TypeStruct::hasPointers()
     StructDeclaration *s = sym;
 
     sym->size(Loc());               // give error for forward references
-    for (size_t i = 0; i < s->fields.dim; i++)
+    for (size_t i = 0; i < s->fields.length; i++)
     {
         Declaration *d = s->fields[i];
         if (d->storage_class & STCref || d->hasPointers())
@@ -8242,7 +8228,7 @@ bool TypeStruct::hasVoidInitPointers()
     StructDeclaration *s = sym;
 
     sym->size(Loc()); // give error for forward references
-    for (size_t i = 0; i < s->fields.dim; i++)
+    for (size_t i = 0; i < s->fields.length; i++)
     {
         VarDeclaration *v = s->fields[i];
         if (v->_init && v->_init->isVoidInitializer() && v->type->hasPointers())
@@ -8272,7 +8258,7 @@ MATCH TypeStruct::implicitConvTo(Type *to)
                  * allow the conversion.
                  */
                 unsigned offset = ~0;   // dead-store to prevent spurious warning
-                for (size_t i = 0; i < sym->fields.dim; i++)
+                for (size_t i = 0; i < sym->fields.length; i++)
                 {
                     VarDeclaration *v = sym->fields[i];
                     if (i == 0)
@@ -8401,7 +8387,7 @@ Type *TypeClass::semantic(Loc, Scope *sc)
 
 d_uns64 TypeClass::size(Loc)
 {
-    return Target::ptrsize;
+    return target.ptrsize;
 }
 
 Dsymbol *TypeClass::toDsymbol(Scope *)
@@ -8465,8 +8451,8 @@ Expression *TypeClass::dotExp(Scope *sc, Expression *e, Identifier *ident, int f
             ev = extractSideEffect(sc, "__tup", &e0, ev);
 
         Expressions *exps = new Expressions;
-        exps->reserve(sym->fields.dim);
-        for (size_t i = 0; i < sym->fields.dim; i++)
+        exps->reserve(sym->fields.length);
+        for (size_t i = 0; i < sym->fields.length; i++)
         {
             VarDeclaration *v = sym->fields[i];
             // Don't include hidden 'this' pointer
@@ -8987,8 +8973,8 @@ TypeTuple::TypeTuple(Expressions *exps)
     Parameters *arguments = new Parameters;
     if (exps)
     {
-        arguments->setDim(exps->dim);
-        for (size_t i = 0; i < exps->dim; i++)
+        arguments->setDim(exps->length);
+        for (size_t i = 0; i < exps->length; i++)
         {   Expression *e = (*exps)[i];
             if (e->type->ty == Ttuple)
                 e->error("cannot form tuple of tuples");
@@ -9064,9 +9050,9 @@ bool TypeTuple::equals(RootObject *o)
     if (t->ty == Ttuple)
     {
         TypeTuple *tt = (TypeTuple *)t;
-        if (arguments->dim == tt->arguments->dim)
+        if (arguments->length == tt->arguments->length)
         {
-            for (size_t i = 0; i < tt->arguments->dim; i++)
+            for (size_t i = 0; i < tt->arguments->length; i++)
             {
                 Parameter *arg1 = (*arguments)[i];
                 Parameter *arg2 = (*tt->arguments)[i];
@@ -9085,7 +9071,7 @@ Expression *TypeTuple::getProperty(Loc loc, Identifier *ident, int flag)
 
     if (ident == Id::length)
     {
-        e = new IntegerExp(loc, arguments->dim, Type::tsize_t);
+        e = new IntegerExp(loc, arguments->length, Type::tsize_t);
     }
     else if (ident == Id::_init)
     {
@@ -9106,8 +9092,8 @@ Expression *TypeTuple::getProperty(Loc loc, Identifier *ident, int flag)
 Expression *TypeTuple::defaultInit(Loc loc)
 {
     Expressions *exps = new Expressions();
-    exps->setDim(arguments->dim);
-    for (size_t i = 0; i < arguments->dim; i++)
+    exps->setDim(arguments->length);
+    for (size_t i = 0; i < arguments->length; i++)
     {
         Parameter *p = (*arguments)[i];
         assert(p->type);
@@ -9165,9 +9151,9 @@ Type *TypeSlice::semantic(Loc loc, Scope *sc)
     upr = upr->ctfeInterpret();
     uinteger_t i2 = upr->toUInteger();
 
-    if (!(i1 <= i2 && i2 <= tt->arguments->dim))
+    if (!(i1 <= i2 && i2 <= tt->arguments->length))
     {
-        error(loc, "slice [%llu..%llu] is out of range of [0..%u]", i1, i2, tt->arguments->dim);
+        error(loc, "slice [%llu..%llu] is out of range of [0..%u]", i1, i2, tt->arguments->length);
         return Type::terror;
     }
 
@@ -9217,15 +9203,15 @@ void TypeSlice::resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol 
             uinteger_t i1 = lwr->toUInteger();
             uinteger_t i2 = upr->toUInteger();
 
-            if (!(i1 <= i2 && i2 <= td->objects->dim))
+            if (!(i1 <= i2 && i2 <= td->objects->length))
             {
-                error(loc, "slice [%llu..%llu] is out of range of [0..%u]", i1, i2, td->objects->dim);
+                error(loc, "slice [%llu..%llu] is out of range of [0..%u]", i1, i2, td->objects->length);
                 *ps = NULL;
                 *pt = Type::terror;
                 return;
             }
 
-            if (i1 == 0 && i2 == td->objects->dim)
+            if (i1 == 0 && i2 == td->objects->length)
             {
                 *ps = td;
                 return;
@@ -9236,7 +9222,7 @@ void TypeSlice::resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol 
              */
             Objects *objects = new Objects;
             objects->setDim((size_t)(i2 - i1));
-            for (size_t i = 0; i < objects->dim; i++)
+            for (size_t i = 0; i < objects->length; i++)
             {
                 (*objects)[i] = (*td->objects)[(size_t)i1 + i];
             }
@@ -9341,8 +9327,8 @@ Parameters *Parameter::arraySyntaxCopy(Parameters *parameters)
     if (parameters)
     {
         params = new Parameters();
-        params->setDim(parameters->dim);
-        for (size_t i = 0; i < params->dim; i++)
+        params->setDim(parameters->length);
+        for (size_t i = 0; i < params->length; i++)
             (*params)[i] = (*parameters)[i]->syntaxCopy();
     }
     return params;
@@ -9443,7 +9429,7 @@ int Parameter_foreach(Parameters *parameters, ForeachDg dg, void *ctx, size_t *p
 
     size_t n = pn ? *pn : 0; // take over index
     int result = 0;
-    for (size_t i = 0; i < parameters->dim; i++)
+    for (size_t i = 0; i < parameters->length; i++)
     {
         Parameter *p = (*parameters)[i];
         Type *t = p->type->toBasetype();

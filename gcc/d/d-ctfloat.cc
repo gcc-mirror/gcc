@@ -92,7 +92,7 @@ CTFloat::parse (const char *buffer, bool *overflow)
   real_from_string3 (&r.rv (), buffer, TYPE_MODE (long_double_type_node));
 
   /* Front-end checks overflow to see if the value is representable.  */
-  if (overflow && r == Target::RealProperties::infinity)
+  if (overflow && r == target.RealProperties.infinity)
     *overflow = true;
 
   return r;

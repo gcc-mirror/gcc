@@ -156,7 +156,8 @@ bool check_nul_terminated_array (tree, tree, tree = NULL_TREE);
 extern void warn_string_no_nul (location_t, const char *, tree, tree);
 extern tree unterminated_array (tree, tree * = NULL, bool * = NULL);
 extern bool builtin_with_linkage_p (tree);
-extern bool check_access (tree, tree, tree, tree, tree, tree, tree);
+extern bool check_access (tree, tree, tree, tree, tree, tree, tree,
+			  bool = true);
 
 
 #endif /* GCC_BUILTINS_H */

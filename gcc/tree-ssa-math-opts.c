@@ -121,37 +121,57 @@ along with GCC; see the file COPYING3.  If not see
    division.  */
 struct occurrence {
   /* The basic block represented by this structure.  */
-  basic_block bb;
+  basic_block bb = basic_block();
 
   /* If non-NULL, the SSA_NAME holding the definition for a reciprocal
      inserted in BB.  */
-  tree recip_def;
+  tree recip_def = tree();
 
   /* If non-NULL, the SSA_NAME holding the definition for a squared
      reciprocal inserted in BB.  */
-  tree square_recip_def;
+  tree square_recip_def = tree();
 
   /* If non-NULL, the GIMPLE_ASSIGN for a reciprocal computation that
      was inserted in BB.  */
-  gimple *recip_def_stmt;
+  gimple *recip_def_stmt = nullptr;
 
   /* Pointer to a list of "struct occurrence"s for blocks dominated
      by BB.  */
-  struct occurrence *children;
+  struct occurrence *children = nullptr;
 
   /* Pointer to the next "struct occurrence"s in the list of blocks
      sharing a common dominator.  */
-  struct occurrence *next;
+  struct occurrence *next = nullptr;
 
   /* The number of divisions that are in BB before compute_merit.  The
      number of divisions that are in BB or post-dominate it after
      compute_merit.  */
-  int num_divisions;
+  int num_divisions = 0;
 
   /* True if the basic block has a division, false if it is a common
      dominator for basic blocks that do.  If it is false and trapping
      math is active, BB is not a candidate for inserting a reciprocal.  */
-  bool bb_has_division;
+  bool bb_has_division = false;
+
+  /* Construct a struct occurrence for basic block BB, and whose
+     children list is headed by CHILDREN.  */
+  occurrence (basic_block bb, struct occurrence *children)
+  : bb (bb), children (children)
+  {
+    bb->aux = this;
+  }
+
+  /* Destroy a struct occurrence and remove it from its basic block.  */
+  ~occurrence ()
+  {
+    bb->aux = nullptr;
+  }
+
+  /* Allocate memory for a struct occurrence from OCC_POOL.  */
+  static void* operator new (size_t);
+
+  /* Return memory for a struct occurrence to OCC_POOL.  */
+  static void operator delete (void*, size_t);
 };
 
 static struct
@@ -191,23 +211,17 @@ static struct occurrence *occ_head;
 /* Allocation pool for getting instances of "struct occurrence".  */
 static object_allocator<occurrence> *occ_pool;
 
-
-
-/* Allocate and return a new struct occurrence for basic block BB, and
-   whose children list is headed by CHILDREN.  */
-static struct occurrence *
-occ_new (basic_block bb, struct occurrence *children)
+void* occurrence::operator new (size_t n)
 {
-  struct occurrence *occ;
-
-  bb->aux = occ = occ_pool->allocate ();
-  memset (occ, 0, sizeof (struct occurrence));
-
-  occ->bb = bb;
-  occ->children = children;
-  return occ;
+  gcc_assert (n == sizeof(occurrence));
+  return occ_pool->allocate_raw ();
 }
 
+void occurrence::operator delete (void *occ, size_t n)
+{
+  gcc_assert (n == sizeof(occurrence));
+  occ_pool->remove_raw (occ);
+}
 
 /* Insert NEW_OCC into our subset of the dominator tree.  P_HEAD points to a
    list of "struct occurrence"s, one per basic block, having IDOM as
@@ -259,7 +273,7 @@ insert_bb (struct occurrence *new_occ, basic_block idom,
 	  /* None of the previous blocks has DOM as a dominator: if we tail
 	     recursed, we would reexamine them uselessly. Just switch BB with
 	     DOM, and go on looking for blocks dominated by DOM.  */
-          new_occ = occ_new (dom, new_occ);
+	  new_occ = new occurrence (dom, new_occ);
 	}
 
       else
@@ -288,7 +302,7 @@ register_division_in (basic_block bb, int importance)
   occ = (struct occurrence *) bb->aux;
   if (!occ)
     {
-      occ = occ_new (bb, NULL);
+      occ = new occurrence (bb, NULL);
       insert_bb (occ, ENTRY_BLOCK_PTR_FOR_FN (cfun), &occ_head);
     }
 
@@ -518,8 +532,7 @@ free_bb (struct occurrence *occ)
   /* First get the two pointers hanging off OCC.  */
   next = occ->next;
   child = occ->children;
-  occ->bb->aux = NULL;
-  occ_pool->remove (occ);
+  delete occ;
 
   /* Now ensure that we don't recurse unless it is necessary.  */
   if (!child)

@@ -92,7 +92,8 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
            Length (Container));
    pragma Annotate (GNATprove, Inline_For_Proof, Last);
 
-   function First return Extended_Index is (Index_Type'First);
+   function First return Extended_Index is (Index_Type'First) with
+     Global => null;
    --  First index of a sequence
 
    ------------------------

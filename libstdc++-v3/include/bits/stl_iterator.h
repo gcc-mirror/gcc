@@ -1903,29 +1903,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using difference_type = iter_difference_t<_It>;
     };
 
-  namespace __detail
-  {
-    // FIXME: This has to be at namespace-scope because of PR 92103.
-    template<typename _It, typename _Sent>
-      struct __common_iter_ptr
-      {
-	using type = void;
-      };
-
-    template<typename _It, typename _Sent>
-      requires __detail::__common_iter_has_arrow<_It>
-      struct __common_iter_ptr<_It, _Sent>
-      {
-	using common_iterator = std::common_iterator<_It, _Sent>;
-
-	using type
-	  = decltype(std::declval<const common_iterator&>().operator->());
-      };
-  } // namespace __detail
-
   template<input_iterator _It, typename _Sent>
     struct iterator_traits<common_iterator<_It, _Sent>>
     {
+    private:
+      template<typename _Iter>
+	struct __ptr
+	{
+	  using type = void;
+	};
+
+      template<typename _Iter>
+	requires __detail::__common_iter_has_arrow<_Iter>
+	struct __ptr<_Iter>
+	{
+	  using _CIter = common_iterator<_Iter, _Sent>;
+	  using type = decltype(std::declval<const _CIter&>().operator->());
+	};
+
+    public:
       using iterator_concept = conditional_t<forward_iterator<_It>,
 	    forward_iterator_tag, input_iterator_tag>;
       using iterator_category = __detail::__clamp_iter_cat<
@@ -1933,7 +1929,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	forward_iterator_tag, input_iterator_tag>;
       using value_type = iter_value_t<_It>;
       using difference_type = iter_difference_t<_It>;
-      using pointer = typename __detail::__common_iter_ptr<_It, _Sent>::type;
+      using pointer = typename __ptr<_It>::type;
       using reference = iter_reference_t<_It>;
     };
 

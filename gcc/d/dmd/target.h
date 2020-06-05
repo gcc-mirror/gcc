@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 2013-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 2013-2020 by The D Language Foundation, All Rights Reserved
  * written by Iain Buclaw
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -24,55 +24,87 @@ class Type;
 class TypeTuple;
 struct OutBuffer;
 
+struct TargetC
+{
+    unsigned longsize;            // size of a C 'long' or 'unsigned long' type
+    unsigned long_doublesize;     // size of a C 'long double'
+    unsigned criticalSectionSize; // size of os critical section
+};
+
+struct TargetCPP
+{
+    bool reverseOverloads;    // with dmc and cl, overloaded functions are grouped and in reverse order
+    bool exceptions;          // set if catching C++ exceptions is supported
+    bool twoDtorInVtable;     // target C++ ABI puts deleting and non-deleting destructor into vtable
+
+    const char *toMangle(Dsymbol *s);
+    const char *typeInfoMangle(ClassDeclaration *cd);
+    const char *typeMangle(Type *t);
+    Type *parameterType(Parameter *p);
+    bool fundamentalType(const Type *t, bool& isFundamental);
+};
+
+struct TargetObjC
+{
+    bool supported;     // set if compiler can interface with Objective-C
+};
+
 struct Target
 {
-    static int ptrsize;
-    static int realsize;             // size a real consumes in memory
-    static int realpad;              // 'padding' added to the CPU real size to bring it up to realsize
-    static int realalignsize;        // alignment for reals
-    static bool reverseCppOverloads; // with dmc and cl, overloaded functions are grouped and in reverse order
-    static bool cppExceptions;       // set if catching C++ exceptions is supported
-    static int c_longsize;           // size of a C 'long' or 'unsigned long' type
-    static int c_long_doublesize;    // size of a C 'long double'
-    static int classinfosize;        // size of 'ClassInfo'
-    static unsigned long long maxStaticDataSize;  // maximum size of static data
+    // D ABI
+    unsigned ptrsize;
+    unsigned realsize;           // size a real consumes in memory
+    unsigned realpad;            // 'padding' added to the CPU real size to bring it up to realsize
+    unsigned realalignsize;      // alignment for reals
+    unsigned classinfosize;      // size of 'ClassInfo'
+    unsigned long long maxStaticDataSize;  // maximum size of static data
+
+    // C ABI
+    TargetC c;
+
+    // C++ ABI
+    TargetCPP cpp;
+
+    // Objective-C ABI
+    TargetObjC objc;
 
     template <typename T>
     struct FPTypeProperties
     {
-        static real_t max;
-        static real_t min_normal;
-        static real_t nan;
-        static real_t snan;
-        static real_t infinity;
-        static real_t epsilon;
+        real_t max;
+        real_t min_normal;
+        real_t nan;
+        real_t snan;
+        real_t infinity;
+        real_t epsilon;
 
-        static d_int64 dig;
-        static d_int64 mant_dig;
-        static d_int64 max_exp;
-        static d_int64 min_exp;
-        static d_int64 max_10_exp;
-        static d_int64 min_10_exp;
+        d_int64 dig;
+        d_int64 mant_dig;
+        d_int64 max_exp;
+        d_int64 min_exp;
+        d_int64 max_10_exp;
+        d_int64 min_10_exp;
     };
 
-    typedef FPTypeProperties<float> FloatProperties;
-    typedef FPTypeProperties<double> DoubleProperties;
-    typedef FPTypeProperties<real_t> RealProperties;
+    FPTypeProperties<float> FloatProperties;
+    FPTypeProperties<double> DoubleProperties;
+    FPTypeProperties<real_t> RealProperties;
 
-    static void _init();
+private:
+    Type *tvalist;
+
+public:
+    void _init(const Param& params);
     // Type sizes and support.
-    static unsigned alignsize(Type* type);
-    static unsigned fieldalign(Type* type);
-    static unsigned critsecsize();
-    static Type *va_listType();  // get type of va_list
-    static int isVectorTypeSupported(int sz, Type *type);
-    static bool isVectorOpSupported(Type *type, TOK op, Type *t2 = NULL);
+    unsigned alignsize(Type *type);
+    unsigned fieldalign(Type *type);
+    unsigned critsecsize();
+    Type *va_listType(const Loc &loc, Scope *sc);  // get type of va_list
+    int isVectorTypeSupported(int sz, Type *type);
+    bool isVectorOpSupported(Type *type, TOK op, Type *t2 = NULL);
     // ABI and backend.
-    static const char *toCppMangle(Dsymbol *s);
-    static const char *cppTypeInfoMangle(ClassDeclaration *cd);
-    static const char *cppTypeMangle(Type *t);
-    static Type *cppParameterType(Parameter *p);
-    static bool cppFundamentalType(const Type *t, bool& isFundamental);
-    static LINK systemLinkage();
-    static TypeTuple *toArgTypes(Type *t);
+    LINK systemLinkage();
+    TypeTuple *toArgTypes(Type *t);
 };
+
+extern Target target;

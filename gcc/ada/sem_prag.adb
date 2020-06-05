@@ -4756,7 +4756,7 @@ package body Sem_Prag is
          then
             null;
 
-         --  For Ada_2020, pre/postconditions can appear on formal subprograms
+         --  For Ada 2020, pre/postconditions can appear on formal subprograms
 
          elsif Nkind (Subp_Decl) = N_Formal_Concrete_Subprogram_Declaration
             and then Ada_Version >= Ada_2020
@@ -7487,7 +7487,7 @@ package body Sem_Prag is
             --  Attribute belongs on the base type. If the view of the type is
             --  currently private, it also belongs on the underlying type.
 
-            --  In Ada_2020, the pragma can apply to a formal type, for which
+            --  In Ada 2020, the pragma can apply to a formal type, for which
             --  there may be no underlying type.
 
             if Prag_Id = Pragma_Atomic
@@ -8020,26 +8020,38 @@ package body Sem_Prag is
             --  For the case of a record base type, also set the convention of
             --  any anonymous access types declared in the record which do not
             --  currently have a specified convention.
+            --  Similarly for an array base type and anonymous access types
+            --  components.
 
-            if Is_Record_Type (E) and then Is_Base_Type (E) then
-               declare
-                  Comp : Node_Id;
+            if Is_Base_Type (E) then
+               if Is_Record_Type (E) then
+                  declare
+                     Comp : Node_Id;
 
-               begin
-                  Comp := First_Component (E);
-                  while Present (Comp) loop
-                     if Present (Etype (Comp))
-                       and then Ekind_In (Etype (Comp),
-                                          E_Anonymous_Access_Type,
-                                          E_Anonymous_Access_Subprogram_Type)
-                       and then not Has_Convention_Pragma (Comp)
-                     then
-                        Set_Convention (Comp, C);
-                     end if;
+                  begin
+                     Comp := First_Component (E);
+                     while Present (Comp) loop
+                        if Present (Etype (Comp))
+                          and then
+                            Ekind_In (Etype (Comp),
+                                      E_Anonymous_Access_Type,
+                                      E_Anonymous_Access_Subprogram_Type)
+                          and then not Has_Convention_Pragma (Comp)
+                        then
+                           Set_Convention (Comp, C);
+                        end if;
 
-                     Next_Component (Comp);
-                  end loop;
-               end;
+                        Next_Component (Comp);
+                     end loop;
+                  end;
+
+               elsif Is_Array_Type (E)
+                 and then Ekind_In (Component_Type (E),
+                                    E_Anonymous_Access_Type,
+                                    E_Anonymous_Access_Subprogram_Type)
+               then
+                  Set_Convention (Designated_Type (Component_Type (E)), C);
+               end if;
             end if;
 
             --  Deal with incomplete/private type case, where underlying type
@@ -18316,6 +18328,20 @@ package body Sem_Prag is
                return;
             end if;
 
+            --  If invariants should be ignored, delete the pragma and then
+            --  return. We do this here, after checking for errors, and before
+            --  generating anything that has a run-time effect.
+
+            if Present (Check_Policy_List)
+              and then
+                (Policy_In_Effect (Name_Invariant) = Name_Ignore
+                   and then
+                 Policy_In_Effect (Name_Type_Invariant) = Name_Ignore)
+            then
+               Rewrite (N, Make_Null_Statement (Loc));
+               return;
+            end if;
+
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
@@ -18325,15 +18351,6 @@ package body Sem_Prag is
             --  to have invariants of its "own".
 
             Set_Has_Own_Invariants (Typ);
-
-            --  Set the Invariants_Ignored flag if that policy is in effect
-
-            Set_Invariants_Ignored (Typ,
-              Present (Check_Policy_List)
-                and then
-                  (Policy_In_Effect (Name_Invariant) = Name_Ignore
-                     and then
-                   Policy_In_Effect (Name_Type_Invariant) = Name_Ignore));
 
             --  If the invariant is class-wide, then it can be inherited by
             --  derived or interface implementing types. The type is said to
@@ -30031,7 +30048,7 @@ package body Sem_Prag is
                elsif Present (Generic_Parent (Specification (Stmt))) then
                   return Stmt;
 
-               --  Ada_2020: contract on formal subprogram
+               --  Ada 2020: contract on formal subprogram
 
                elsif Is_Generic_Actual_Subprogram (Defining_Entity (Stmt))
                  and then Ada_Version >= Ada_2020
@@ -31149,7 +31166,7 @@ package body Sem_Prag is
          Error_Msg_N ("condition is not known at compile time", Arg1x);
 
       elsif Warn_On_Unknown_Compile_Time_Warning then
-         Error_Msg_N ("?condition is not known at compile time", Arg1x);
+         Error_Msg_N ("??condition is not known at compile time", Arg1x);
       end if;
    end Validate_Compile_Time_Warning_Or_Error;
 

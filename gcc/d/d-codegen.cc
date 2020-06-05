@@ -356,16 +356,16 @@ build_class_binfo (tree super, ClassDeclaration *cd)
 tree
 build_interface_binfo (tree super, ClassDeclaration *cd, unsigned& offset)
 {
-  tree binfo = make_tree_binfo (cd->baseclasses->dim);
+  tree binfo = make_tree_binfo (cd->baseclasses->length);
   tree ctype = build_ctype (cd->type);
 
   /* Want RECORD_TYPE, not POINTER_TYPE.  */
   BINFO_TYPE (binfo) = TREE_TYPE (ctype);
   BINFO_INHERITANCE_CHAIN (binfo) = super;
-  BINFO_OFFSET (binfo) = size_int (offset * Target::ptrsize);
+  BINFO_OFFSET (binfo) = size_int (offset * target.ptrsize);
   BINFO_VIRTUAL_P (binfo) = 1;
 
-  for (size_t i = 0; i < cd->baseclasses->dim; i++, offset++)
+  for (size_t i = 0; i < cd->baseclasses->length; i++, offset++)
     {
       BaseClass *bc = (*cd->baseclasses)[i];
       BINFO_BASE_APPEND (binfo, build_interface_binfo (binfo, bc->sym, offset));
@@ -499,7 +499,7 @@ build_vindex_ref (tree object, tree fntype, size_t index)
 
   gcc_assert (POINTER_TYPE_P (fntype));
 
-  return build_memref (fntype, result, size_int (Target::ptrsize * index));
+  return build_memref (fntype, result, size_int (target.ptrsize * index));
 }
 
 /* Return TRUE if EXP is a valid lvalue.  Lvalue references cannot be
@@ -804,7 +804,7 @@ identity_compare_p (StructDeclaration *sd)
 
   unsigned offset = 0;
 
-  for (size_t i = 0; i < sd->fields.dim; i++)
+  for (size_t i = 0; i < sd->fields.length; i++)
     {
       VarDeclaration *vd = sd->fields[i];
       Type *tb = vd->type->toBasetype ();
@@ -819,7 +819,7 @@ identity_compare_p (StructDeclaration *sd)
 
       /* Check for types that may have padding.  */
       if ((tb->ty == Tcomplex80 || tb->ty == Tfloat80 || tb->ty == Timaginary80)
-	  && Target::realpad != 0)
+	  && target.realpad != 0)
 	return false;
 
       if (offset <= vd->offset)
@@ -864,7 +864,7 @@ lower_struct_comparison (tree_code code, StructDeclaration *sd,
   tree tmemcmp = NULL_TREE;
 
   /* We can skip the compare if the structs are empty.  */
-  if (sd->fields.dim == 0)
+  if (sd->fields.length == 0)
     {
       tmemcmp = build_boolop (code, integer_zero_node, integer_zero_node);
       if (TREE_SIDE_EFFECTS (t2))
@@ -885,7 +885,7 @@ lower_struct_comparison (tree_code code, StructDeclaration *sd,
       return build_boolop (code, tmemcmp, integer_zero_node);
     }
 
-  for (size_t i = 0; i < sd->fields.dim; i++)
+  for (size_t i = 0; i < sd->fields.length; i++)
     {
       VarDeclaration *vd = sd->fields[i];
       Type *type = vd->type->toBasetype ();
@@ -968,7 +968,7 @@ build_struct_comparison (tree_code code, StructDeclaration *sd,
 			 tree t1, tree t2)
 {
   /* We can skip the compare if the structs are empty.  */
-  if (sd->fields.dim == 0)
+  if (sd->fields.length == 0)
     {
       tree exp = build_boolop (code, integer_zero_node, integer_zero_node);
       if (TREE_SIDE_EFFECTS (t2))
@@ -1749,13 +1749,13 @@ array_bounds_check (void)
 
   switch (global.params.useArrayBounds)
     {
-    case BOUNDSCHECKoff:
+    case CHECKENABLEoff:
       return false;
 
-    case BOUNDSCHECKon:
+    case CHECKENABLEon:
       return true;
 
-    case BOUNDSCHECKsafeonly:
+    case CHECKENABLEsafeonly:
       /* For D2 safe functions only.  */
       fd = d_function_chain->function;
       if (fd && fd->type->ty == Tfunction)
@@ -1869,7 +1869,7 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
   if (arguments)
     {
       /* First pass, evaluated expanded tuples in function arguments.  */
-      for (size_t i = 0; i < arguments->dim; ++i)
+      for (size_t i = 0; i < arguments->length; ++i)
 	{
 	Lagain:
 	  Expression *arg = (*arguments)[i];
@@ -1889,8 +1889,8 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
       /* if _arguments[] is the first argument.  */
       size_t varargs = (tf->linkage == LINKd && tf->varargs == 1);
 
-      /* Assumes arguments->dim <= formal_args->dim if (!tf->varargs).  */
-      for (size_t i = 0; i < arguments->dim; ++i)
+      /* Assumes arguments->length <= formal_args->length if (!tf->varargs).  */
+      for (size_t i = 0; i < arguments->length; ++i)
 	{
 	  Expression *arg = (*arguments)[i];
 	  tree targ = build_expr (arg);
@@ -2376,16 +2376,16 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
      of the calling function non-locally.  So we add all parameters with nested
      refs to the function frame, this should also mean overriding methods will
      have the same frame layout when inheriting a contract.  */
-  if ((global.params.useIn && fd->frequire)
-      || (global.params.useOut && fd->fensure))
+  if ((global.params.useIn == CHECKENABLEon && fd->frequire)
+      || (global.params.useOut == CHECKENABLEon && fd->fensure))
     {
       if (fd->parameters)
 	{
-	  for (size_t i = 0; fd->parameters && i < fd->parameters->dim; i++)
+	  for (size_t i = 0; fd->parameters && i < fd->parameters->length; i++)
 	    {
 	      VarDeclaration *v = (*fd->parameters)[i];
 	      /* Remove if already in closureVars so can push to front.  */
-	      for (size_t j = i; j < fd->closureVars.dim; j++)
+	      for (size_t j = i; j < fd->closureVars.length; j++)
 		{
 		  Dsymbol *s = fd->closureVars[j];
 		  if (s == v)
@@ -2401,7 +2401,7 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
       /* Also add hidden 'this' to outer context.  */
       if (fd->vthis)
 	{
-	  for (size_t i = 0; i < fd->closureVars.dim; i++)
+	  for (size_t i = 0; i < fd->closureVars.length; i++)
 	    {
 	      Dsymbol *s = fd->closureVars[i];
 	      if (s == fd->vthis)
@@ -2414,7 +2414,7 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
 	}
     }
 
-  for (size_t i = 0; i < fd->closureVars.dim; i++)
+  for (size_t i = 0; i < fd->closureVars.length; i++)
     {
       VarDeclaration *v = fd->closureVars[i];
       tree vsym = get_symbol_decl (v);
@@ -2507,7 +2507,7 @@ build_closure (FuncDeclaration *fd)
     }
 
   /* Copy parameters that are referenced nonlocally.  */
-  for (size_t i = 0; i < fd->closureVars.dim; i++)
+  for (size_t i = 0; i < fd->closureVars.length; i++)
     {
       VarDeclaration *v = fd->closureVars[i];
 
@@ -2563,8 +2563,8 @@ get_frameinfo (FuncDeclaration *fd)
 
       /* In checkNestedReference, references from contracts are not added to the
 	 closureVars array, so assume all parameters referenced.  */
-      if ((global.params.useIn && fd->frequire)
-	  || (global.params.useOut && fd->fensure))
+      if ((global.params.useIn == CHECKENABLEon && fd->frequire)
+	  || (global.params.useOut == CHECKENABLEon && fd->fensure))
 	FRAMEINFO_CREATES_FRAME (ffi) = 1;
 
       /* If however `fd` is nested (deeply) in a function that creates a
