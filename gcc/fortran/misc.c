@@ -397,7 +397,7 @@ gfc_closest_fuzzy_match (const char *typo, char **candidates)
      likely to be meaningless.  */
   if (best)
     {
-      unsigned int cutoff = MAX (tl, strlen (best)) / 2;
+      unsigned int cutoff = MAX (tl, strlen (best));
 
       if (best_distance > cutoff)
 	{
