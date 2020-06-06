@@ -969,7 +969,7 @@ package body Exp_Attr is
       Loc     : constant Source_Ptr := Sloc (N);
       Agg     : Node_Id;
       Btyp    : constant Entity_Id := Base_Type (Typ);
-      Sub     : Entity_Id;
+      Sub     : Entity_Id          := Empty;
       Sub_Ref : Node_Id;
       E_T     : constant Entity_Id := Equivalent_Type (Btyp);
       Acc     : constant Entity_Id :=
