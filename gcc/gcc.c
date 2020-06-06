@@ -6024,19 +6024,19 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		      }
 		    temp_filename_length
 		      = dumpdir_length + suffix_length + 1;
-		    if (!outbase_length)
-		      temp_filename_length += basename_length;
-		    else
+		    if (outbase_length)
 		      temp_filename_length += outbase_length;
+		    else
+		      temp_filename_length += basename_length;
 		    tmp = (char *) alloca (temp_filename_length);
 		    if (dumpdir_length)
 		      memcpy (tmp, dumpdir, dumpdir_length);
-		    if (!outbase_length)
-		      memcpy (tmp + dumpdir_length, input_basename,
-			      basename_length);
-		    else
+		    if (outbase_length)
 		      memcpy (tmp + dumpdir_length, outbase,
 			      outbase_length);
+		    else if (basename_length)
+		      memcpy (tmp + dumpdir_length, input_basename,
+			      basename_length);
 		    memcpy (tmp + temp_filename_length - suffix_length - 1,
 			    suffix, suffix_length);
 		    if (adjusted_suffix)
