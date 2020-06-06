@@ -3577,14 +3577,24 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 {
   gcc_checking_assert (orig && TREE_CODE (orig) == FUNCTION_DECL);
 
+  *resumer = error_mark_node;
+  *destroyer = error_mark_node;
   if (!coro_function_valid_p (orig))
-    return false;
+    {
+      /* For early errors, we do not want a diagnostic about the missing
+	 ramp return value, since the user cannot fix this - a 'return' is
+	 not allowed in a coroutine.  */
+      TREE_NO_WARNING (orig) = true;
+      /* Discard the body, we can't process it further.  */
+      pop_stmt_list (DECL_SAVED_TREE (orig));
+      DECL_SAVED_TREE (orig) = push_stmt_list ();
+      return false;
+    }
 
   /* We can't validly get here with an empty statement list, since there's no
      way for the FE to decide it's a coroutine in the absence of any code.  */
   tree fnbody = pop_stmt_list (DECL_SAVED_TREE (orig));
-  if (fnbody == NULL_TREE)
-    return false;
+  gcc_checking_assert (fnbody != NULL_TREE);
 
   /* We don't have the locus of the opening brace - it's filled in later (and
      there doesn't really seem to be any easy way to get at it).
@@ -3598,7 +3608,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   if (body_start == NULL_TREE || body_start == error_mark_node)
     {
       DECL_SAVED_TREE (orig) = push_stmt_list ();
-      append_to_statement_list (DECL_SAVED_TREE (orig), &fnbody);
+      append_to_statement_list (fnbody, &DECL_SAVED_TREE (orig));
+      /* Suppress warnings about the missing return value.  */
+      TREE_NO_WARNING (orig) = true;
       return false;
     }
 
@@ -3670,13 +3682,21 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
      the coroutine promise.  */
   tree initial_await = build_init_or_final_await (fn_start, false);
   if (initial_await == error_mark_node)
-    return false;
+    {
+      /* Suppress warnings about the missing return value.  */
+      TREE_NO_WARNING (orig) = true;
+      return false;
+    }
   /* The type of the frame var for this is the type of its temp proxy.  */
   tree initial_suspend_type = TREE_TYPE (TREE_OPERAND (initial_await, 1));
 
   tree final_await = build_init_or_final_await (fn_start, true);
   if (final_await == error_mark_node)
-    return false;
+    {
+      /* Suppress warnings about the missing return value.  */
+      TREE_NO_WARNING (orig) = true;
+      return false;
+    }
 
   /* The type of the frame var for this is the type of its temp proxy.  */
   tree final_suspend_type = TREE_TYPE (TREE_OPERAND (final_await, 1));
@@ -4260,6 +4280,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
     {
       BIND_EXPR_BODY (ramp_bind) = pop_stmt_list (ramp_body);
       DECL_SAVED_TREE (orig) = newbody;
+      /* Suppress warnings about the missing return value.  */
+      TREE_NO_WARNING (orig) = true;
       return false;
     }
 
