@@ -1,3 +1,26 @@
+2020-06-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95373
+	* gfortran.dg/pr95373_1.f90: Adjust error messages.
+	* gfortran.dg/pr95373_2.f90: Adjust error message.
+
+2020-06-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95373
+	* gfortran.dg/pr95373_1.f90: New test.
+	* gfortran.dg/pr95373_2.f90: New test.
+
+2020-06-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95106
+	* gfortran.dg/equiv_11.f90: New test.
+
+2020-06-05  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95500
+	* gfortran.dg/pr95500.f90: New test.
+
 2020-06-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/94361
