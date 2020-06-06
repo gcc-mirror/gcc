@@ -1,3 +1,20 @@
+2020-06-05  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.c (gimplify_adjust_omp_clauses): Remove
+	'GOMP_MAP_STRUCT' mapping from OpenACC 'exit data' directives.
+
+2020-06-05  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Support
+	Intel Airmont, Tremont, Comet Lake, Ice Lake and Tiger Lake
+	processor families.
+
+2020-06-05  Lili Cui  <lili.cui@intel.com>
+
+	PR target/95525
+	* config/i386/i386.h (PTA_WAITPKG): Change bitmask value.
+
 2020-06-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-cores.def (zeus): Define.
