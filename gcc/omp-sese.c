@@ -937,7 +937,14 @@ worker_single_simple (basic_block from, basic_block to,
 static tree
 oacc_build_component_ref (tree obj, tree field)
 {
-  tree ret = build3 (COMPONENT_REF, TREE_TYPE (field), obj, field, NULL);
+  tree field_type = TREE_TYPE (field);
+  tree obj_type = TREE_TYPE (obj);
+  if (!ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (obj_type)))
+    field_type = build_qualified_type
+			(field_type,
+			 KEEP_QUAL_ADDR_SPACE (TYPE_QUALS (obj_type)));
+
+  tree ret = build3 (COMPONENT_REF, field_type, obj, field, NULL);
   if (TREE_THIS_VOLATILE (field))
     TREE_THIS_VOLATILE (ret) |= 1;
   if (TREE_READONLY (field))
