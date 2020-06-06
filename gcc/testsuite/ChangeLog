@@ -1,3 +1,61 @@
+2020-06-05  Martin Sebor  <msebor@redhat.com>
+
+	* g++.dg/warn/Wnonnull5.C: Temporarily remove.
+
+2020-06-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95369
+	* g++.dg/cpp2a/nontype-class38.C: New test.
+
+2020-06-05  Mark Wielaard  <mark@klomp.org>
+
+	* gcc.dg/missing-header-fixit-3.c: Add
+	-Wno-implicit-function-declaration.
+	* gcc.dg/missing-header-fixit-4.c: Add new expected output.
+	* gcc.dg/missing-header-fixit-5.c: New testcase.
+	* gcc.dg/Wbuiltin-declaration-mismatch-ignore.c: Likewise.
+
+2020-06-05  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-ptrsub2.C: New test.
+
+2020-06-05  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* c-c++-common/goacc/struct-enter-exit-data-1.c: New file.
+
+2020-06-05  Martin Sebor  <msebor@redhat.com>
+
+	* c-c++-common/goacc/uninit-use-device-clause.c: Adjust.
+	* c-c++-common/pr59223.c: Same.
+	* g++.dg/warn/Wnonnull5.C: Same.
+	* gcc.dg/pr59924.c: Same.
+	* gcc.dg/ubsan/pr81981.c: Same.
+	* gcc.dg/ubsan/pr89284.c: Same.
+	* gfortran.dg/goacc/uninit-use-device-clause.f95: Same.
+
+2020-06-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95539
+	* gcc.dg/vect/pr95539.c: New testcase.
+
+2020-06-05  Felix Yang  <felix.yang@huawei.com>
+
+	PR target/95254
+	* gcc.target/aarch64/pr95254.c: New test.
+	* gcc.target/i386/pr67609.c: Check "movq\t%xmm0" instead of "movdqa".
+
+2020-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/95535
+	* gcc.target/i386/pr95535-1.c: New test.
+	* gcc.target/i386/pr95535-2.c: New test.
+
+2020-06-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/95493
+	* g++.dg/torture/pr95493.C: New testcase.
+
 2020-06-04  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/10138

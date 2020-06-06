@@ -1,3 +1,19 @@
+2020-06-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95530
+	PR fortran/95537
+	* decl.c (gfc_match_decl_type_spec): Enlarge buffer, and enhance
+	string copy to detect buffer overflow.
+	* gfortran.h (gfc_common_head): Enlarge buffer.
+	* trans-common.c (finish_equivalences): Enhance string copy to
+	detect buffer overflow.
+
+2020-06-05  Tom Tromey  <tromey@adacore.com>
+
+	PR fortran/95509
+	* misc.c (gfc_closest_fuzzy_match): Update cutoff value
+	computation.
+
 2020-06-04  Steven G. Kargl  <kargl@gcc.gnu.org>
 	    Harald Anlauf  <anlauf@gmx.de>
 

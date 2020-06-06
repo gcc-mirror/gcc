@@ -1,3 +1,215 @@
+2020-06-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.adb (Validate_Compile_Time_Warning_Or_Error): Use ??.
+
+2020-06-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* cstand.adb (Create_Standard): Update comments.
+
+2020-06-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* scng.adb (Scan): Fix typo to take into account all future
+	versions of Ada.
+	* sem_attr.ads (Attribute_Impl_Def): Add Attribute_Reduce for
+	now.
+	* sem_attr.adb (Analyze_Attribute): Only allow 'Reduce under
+	-gnatX.
+	* snames.ads-tmpl (Name_Reduce): Update comment.
+
+2020-06-05  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_disp.adb (Expand_Interface_Thunk): Add comment about
+	gnatcov reliance on specific name used for thunks.
+
+2020-06-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Subtype_Declaration): For scalar types,
+	and for subtype declarations without a constraint, subtype
+	inherits Atomic flag from base type.
+
+2020-06-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_attributes.rst (Enum_Rep):
+	Remove extra colon.
+	* gnat_rm.texi: Regenerate.
+
+2020-06-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* atree.adb (New_Copy): Clear Has_Dynamic_Range_Check on
+	subexpression nodes.
+	* checks.adb (Append_Range_Checks): Assert that the node
+	doesn't have the Has_Dynamic_Range_Check flag set.
+	(Insert_Range_Checks): Likewise.
+	* exp_ch3.adb (Expand_N_Subtype_Indication): Do not apply
+	range checks for a full type or object declaration.
+	* sem_ch3.ads: Move with and use clauses for Nlists to...
+	(Process_Range_Expr_In_Decl): Change default to No_List for
+	the Check_List parameter.
+	* sem_ch3.adb: ...here.
+	(Process_Range_Expr_In_Decl): Likewise.  When the insertion
+	node is a declaration, only insert on the list if is present
+	when the declaration involves discriminants, and only insert
+	on the node when there is no list otherwise.
+
+2020-06-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Resolve_Record_Aggregate): Create the
+	N_Aggregate node with its Expressions field set to No_List and
+	not to an empty list.
+
+2020-06-05  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/s-os_lib.adb (Is_Dirsep): Moved from Build_Path to
+	package level to reuse.
+	(Normalize_Pathname.Final_Value): Reduce 2 'if' statements to
+	one.
+	(Normalize_Pathname.Fill_Directory): New procedure instead of
+	function Get_Directory. Remove slash to backslash conversion and
+	drive letter uppercasing on Windows.
+
+2020-06-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem.adb (Assert_Done): Relax check for main unit, as it was
+	overzealous in the case of the main unit itself.
+
+2020-06-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb, sem_ch8.adb, sem_util.adb: Use Is_Incomplete_Type
+	to make the code easier to read.
+
+2020-06-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.adb: Minor reformatting.
+	* sem_util.adb (Has_Full_Default_Initialization,
+	Is_Partially_Initialized_Type, Caller_Known_Size_Record,
+	Large_Max_Size_Mutable): Iterate with
+	First_Component/Next_Component; rename Ent to Comp.
+
+2020-06-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Aggr_Assignment_OK_For_Backend): Use
+	Expr_Rep_Value instead of Expr_Value to obtain the equivalent
+	integer value.
+	* sem_eval.ads (Expr_Value): Document more supported cases.
+	* sem_eval.adb (Expr_Rep_Value): Copy missing cases from
+	Exp_Value.
+
+2020-06-05  Bob Duff  <duff@adacore.com>
+
+	* rtsfind.adb, rtsfind.ads: Move subtypes of RTU_Id into package
+	body, because they are not needed by clients. Change "Child_" to
+	"Descendant", because grandchildren and great grandchildren are
+	involved.  Replace all the repetitive comments with a single
+	concise one.  Change the parent subtypes to be more consistent;
+	use the most specific parent.
+
+2020-06-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* rtsfind.ads, rtsfind.adb (Is_Text_IO_Special_Package): Moved
+	from the GNATprove backend to the frontend.
+
+2020-06-05  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.ads: Add comment about function only used in
+	CodePeer.
+
+2020-06-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch9.adb, (Analyze_Task_Body): After analying the task
+	body, indicate that all local variables have no delayed aspects.
+	This prevents improper later calls to
+	Check_Aspect_At_End_Of_Declarations, that would happen when the
+	constructed task_procedure body (generated during expansion) is
+	analyzed. The legality of aspect specifications that may appear
+	on local declarations has already been established, and it is in
+	general not possible to recheck them properly during expansion,
+	when visibility may not be fully established.
+
+2020-06-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/a-cofuve.ads (First): Add Global contract.
+
+2020-06-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.adb (Set_Convention_From_Pragma): Set the convention
+	of anonymous access array components.
+
+2020-06-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/a-calfor.ads, libgnat/a-catizo.ads,
+	libgnat/a-catizo.adb (Local_Time_Offset, Local_Image): New.
+	(UTC_Time_Offset): Now a renaming of Local_Time_Offset.
+
+2020-06-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Available_Full_View): New function returning
+	either the full or the underlying full view.
+	(Build_Full_Derivation): Add guard for the full view.
+	(Copy_And_Build): Retrieve the underlying full view, if any,
+	also if deriving a completion.
+	(Build_Derived_Private_Type): Use Available_Full_View throughout
+	to decide whether a full derivation must be done.
+
+2020-06-05  Bob Duff  <duff@adacore.com>
+
+	* exp_attr.adb, exp_ch11.adb, exp_imgv.adb, exp_tss.ads,
+	par-ch4.adb, sem_attr.adb, sem_util.ads: Misc cleanup.
+
+2020-06-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/a-nudira.ads, libgnat/a-nudira.adb (Random): New
+	function.
+
+2020-06-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_attr.ads (Attribute_Impl_Def): Remove Enum_Rep/Val.
+	* sem_attr.adb (Attribute_20): New, move Enum_Rep/Val here.
+	(Analyze_Attribute): Take Attribute_20 into account.
+
+2020-06-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* restrict.ads (Unit_Array): Add a-direct.
+
+2020-06-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-stopoo.ads: Mark package Pure and leave room for
+	Nonblocking once this aspect is supported.
+
+2020-06-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference) <Valid_Scalars>:
+	Set the No_Truncation flag on the unchecked conversion built for
+	scalar types.
+
+2020-06-05  Bob Duff  <duff@adacore.com>
+
+	* einfo.adb, einfo.ads, exp_util.adb: Remove Invariants_Ignored
+	flag.
+	* sem_prag.adb (Invariant): Instead of setting a flag to be
+	checked elsewhere, remove the pragma as soon as it is analyzed
+	and checked for legality.
+
+2020-06-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.ads (Apply_Length_Check): Rename Ck_Node parameter to
+	Expr.
+	(Apply_Range_Check): Likewise.
+	(Get_Range_Checks): Likewise.
+	* checks.adb (Apply_Float_Conversion_Check): Likewise.
+	(Apply_Selected_Length_Checks): Likewise.
+	(Apply_Selected_Range_Checks): Likewise.
+	(Guard_Access): Likewise.
+	(Selected_Length_Checks): Likewise.  Also avoid shadowing in
+	child procedures.
+	(Selected_Range_Checks): Likewise.
+
+2020-06-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* par-ch3.adb, par-ch4.adb, scng.adb, sem_aggr.adb,
+	sem_ch10.adb, sem_ch12.adb, sem_prag.adb: Update wording: change
+	Ada_2020 to Ada 2020 in comments and mention -gnat2020 instead
+	of -gnatX switch.
+
 2020-06-04  Arnaud Charlet  <charlet@adacore.com>
 
 	* libgnat/i-c.ads (long_long, unsigned_long_long): New

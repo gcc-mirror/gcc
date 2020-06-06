@@ -1,3 +1,20 @@
+2020-06-05  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* oacc-mem.c (goacc_exit_data_internal) <GOMP_MAP_STRUCT>: Explain
+	special handling.
+
+2020-06-05  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* oacc-mem.c (goacc_exit_data_internal) <GOMP_MAP_STRUCT>:
+	Simplify.
+
+2020-06-05  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/struct-copyout-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/struct-copyout-2.c: New test.
+
 2020-06-04  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* oacc-mem.c (goacc_exit_data_internal) <GOMP_MAP_STRUCT>:
