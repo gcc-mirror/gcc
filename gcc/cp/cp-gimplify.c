@@ -1205,7 +1205,8 @@ predeclare_vla (tree expr)
 	return expr;
       vla = TREE_TYPE (vla);
     }
-  if (TYPE_NAME (vla) || !variably_modified_type_p (vla, NULL_TREE))
+  if (vla == type || TYPE_NAME (vla)
+      || !variably_modified_type_p (vla, NULL_TREE))
     return expr;
 
   tree decl = build_decl (input_location, TYPE_DECL, NULL_TREE, vla);
