@@ -1,3 +1,8 @@
+2020-06-06  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* omp-sese.c (oacc_build_component_ref): Apply address space of
+	base object to the entire component reference.
+
 2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Option Summary): Add entries for
