@@ -535,7 +535,7 @@ TemplateDeclaration::TemplateDeclaration(Loc loc, Identifier *id,
     this->ismixin = ismixin;
     this->isstatic = true;
     this->previous = NULL;
-    this->protection = Prot(PROTundefined);
+    this->protection = Prot(Prot::undefined);
     this->instances = NULL;
 
     // Compute in advance for Ddoc's use
@@ -6164,7 +6164,7 @@ Lerror:
     // Declare each template parameter as an alias for the argument type
     Scope *paramscope = scope->push();
     paramscope->stc = 0;
-    paramscope->protection = Prot(PROTpublic);  // Bugzilla 14169: template parameters should be public
+    paramscope->protection = Prot(Prot::public_);  // Bugzilla 14169: template parameters should be public
     declareParameters(paramscope);
     paramscope->pop();
 
@@ -8408,7 +8408,7 @@ void TemplateMixin::semantic(Scope *sc)
         ScopeDsymbol *sds = (ScopeDsymbol *)sce->scopesym;
         if (sds)
         {
-            sds->importScope(this, Prot(PROTpublic));
+            sds->importScope(this, Prot(Prot::public_));
             break;
         }
     }

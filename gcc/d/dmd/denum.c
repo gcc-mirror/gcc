@@ -37,7 +37,7 @@ EnumDeclaration::EnumDeclaration(Loc loc, Identifier *id, Type *memtype)
     defaultval = NULL;
     sinit = NULL;
     isdeprecated = false;
-    protection = Prot(PROTundefined);
+    protection = Prot(Prot::undefined);
     parent = NULL;
     added = false;
     inuse = 0;
@@ -550,7 +550,7 @@ void EnumMember::semantic(Scope *sc)
 
     semanticRun = PASSsemantic;
 
-    protection = ed->isAnonymous() ? ed->protection : Prot(PROTpublic);
+    protection = ed->isAnonymous() ? ed->protection : Prot(Prot::public_);
     linkage = LINKd;
     storage_class = STCmanifest;
     userAttribDecl = ed->isAnonymous() ? ed->userAttribDecl : NULL;

@@ -75,7 +75,7 @@ Declaration::Declaration(Identifier *id)
     type = NULL;
     originalType = NULL;
     storage_class = STCundefined;
-    protection = Prot(PROTundefined);
+    protection = Prot(Prot::undefined);
     linkage = LINKdefault;
     inuse = 0;
     mangleOverride = NULL;
@@ -1830,12 +1830,12 @@ bool VarDeclaration::needThis()
 
 bool VarDeclaration::isExport() const
 {
-    return protection.kind == PROTexport;
+    return protection.kind == Prot::export_;
 }
 
 bool VarDeclaration::isImportedSymbol() const
 {
-    if (protection.kind == PROTexport && !_init &&
+    if (protection.kind == Prot::export_ && !_init &&
         (storage_class & STCstatic || parent->isModule()))
         return true;
     return false;
@@ -2218,7 +2218,7 @@ TypeInfoDeclaration::TypeInfoDeclaration(Type *tinfo)
 {
     this->tinfo = tinfo;
     storage_class = STCstatic | STCgshared;
-    protection = Prot(PROTpublic);
+    protection = Prot(Prot::public_);
     linkage = LINKc;
     alignment = target.ptrsize;
 }

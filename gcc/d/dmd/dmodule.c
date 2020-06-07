@@ -884,7 +884,7 @@ bool Module::isPackageAccessible(Package *p, Prot protection, int flags)
     if (insearch) // don't follow import cycles
         return false;
     if (flags & IgnorePrivateImports)
-        protection = Prot(PROTpublic); // only consider public imports
+        protection = Prot(Prot::public_); // only consider public imports
     insearch = true;
     bool r = ScopeDsymbol::isPackageAccessible(p, protection);
     insearch = false;

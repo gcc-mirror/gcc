@@ -739,7 +739,7 @@ void FuncDeclaration::semantic(Scope *sc)
         const char *sfunc;
         if (isStatic())
             sfunc = "static";
-        else if (protection.kind == PROTprivate || protection.kind == PROTpackage)
+        else if (protection.kind == Prot::private_ || protection.kind == Prot::package_)
             sfunc = protectionToChars(protection.kind);
         else
             sfunc = "non-virtual";
@@ -748,8 +748,8 @@ void FuncDeclaration::semantic(Scope *sc)
 
     if (isOverride() && !isVirtual())
     {
-        PROTKIND kind = prot().kind;
-        if ((kind == PROTprivate || kind == PROTpackage) && isMember())
+        Prot::Kind kind = prot().kind;
+        if ((kind == Prot::private_ || kind == Prot::package_) && isMember())
             error("%s method is not virtual and cannot override", protectionToChars(kind));
         else
             error("cannot override a non-virtual function");
@@ -868,7 +868,7 @@ void FuncDeclaration::semantic(Scope *sc)
                         if (f2)
                         {
                             f2 = f2->overloadExactMatch(type);
-                            if (f2 && f2->isFinalFunc() && f2->prot().kind != PROTprivate)
+                            if (f2 && f2->isFinalFunc() && f2->prot().kind != Prot::private_)
                                 error("cannot override final function %s", f2->toPrettyChars());
                         }
                     }
@@ -1137,7 +1137,7 @@ void FuncDeclaration::semantic(Scope *sc)
                     if (f2)
                     {
                         f2 = f2->overloadExactMatch(type);
-                        if (f2 && f2->isFinalFunc() && f2->prot().kind != PROTprivate)
+                        if (f2 && f2->isFinalFunc() && f2->prot().kind != Prot::private_)
                             error("cannot override final function %s.%s", b->sym->toChars(), f2->toPrettyChars());
                     }
                 }
@@ -1465,7 +1465,7 @@ void FuncDeclaration::semantic3(Scope *sc)
                         STCdeprecated | STCoverride |
                         STC_TYPECTOR | STCfinal | STCtls | STCgshared | STCref | STCreturn |
                         STCproperty | STCnothrow | STCpure | STCsafe | STCtrusted | STCsystem);
-        sc2->protection = Prot(PROTpublic);
+        sc2->protection = Prot(Prot::public_);
         sc2->explicitProtection = 0;
         sc2->aligndecl = NULL;
         if (this->ident != Id::require && this->ident != Id::ensure)
@@ -3755,14 +3755,14 @@ bool FuncDeclaration::isDllMain()
 
 bool FuncDeclaration::isExport() const
 {
-    return protection.kind == PROTexport;
+    return protection.kind == Prot::export_;
 }
 
 bool FuncDeclaration::isImportedSymbol() const
 {
     //printf("isImportedSymbol()\n");
     //printf("protection = %d\n", protection);
-    return (protection.kind == PROTexport) && !fbody;
+    return (protection.kind == Prot::export_) && !fbody;
 }
 
 // Determine if function goes into virtual function pointer table
@@ -3774,7 +3774,7 @@ bool FuncDeclaration::isVirtual()
 
     Dsymbol *p = toParent();
     return isMember() &&
-        !(isStatic() || protection.kind == PROTprivate || protection.kind == PROTpackage) &&
+        !(isStatic() || protection.kind == Prot::private_ || protection.kind == Prot::package_) &&
         p->isClassDeclaration() &&
         !(p->isInterfaceDeclaration() && isFinalFunc());
 }
@@ -4136,7 +4136,7 @@ bool FuncDeclaration::addPreInvariant()
     ClassDeclaration *cd = ad ? ad->isClassDeclaration() : NULL;
     return (ad && !(cd && cd->isCPPclass()) &&
             global.params.useInvariants == CHECKENABLEon &&
-            (protection.kind == PROTprotected || protection.kind == PROTpublic || protection.kind == PROTexport) &&
+            (protection.kind == Prot::protected_ || protection.kind == Prot::public_ || protection.kind == Prot::export_) &&
             !naked);
 }
 
@@ -4147,7 +4147,7 @@ bool FuncDeclaration::addPostInvariant()
     return (ad && !(cd && cd->isCPPclass()) &&
             ad->inv &&
             global.params.useInvariants == CHECKENABLEon &&
-            (protection.kind == PROTprotected || protection.kind == PROTpublic || protection.kind == PROTexport) &&
+            (protection.kind == Prot::protected_ || protection.kind == Prot::public_ || protection.kind == Prot::export_) &&
             !naked);
 }
 
@@ -4254,7 +4254,7 @@ FuncDeclaration *FuncDeclaration::genCfunc(Parameters *fparams, Type *treturn, I
     {
         tf = new TypeFunction(ParameterList(fparams), treturn, LINKc, stc);
         fd = new FuncDeclaration(Loc(), Loc(), id, STCstatic, tf);
-        fd->protection = Prot(PROTpublic);
+        fd->protection = Prot(Prot::public_);
         fd->linkage = LINKc;
 
         st->insert(fd);

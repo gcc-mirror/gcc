@@ -1537,7 +1537,7 @@ public:
 
         sc = sc->push();            // just create new scope
         sc->flags &= ~SCOPEctfe;    // temporary stop CTFE
-        sc->protection = Prot(PROTpublic);    // Bugzilla 12506
+        sc->protection = Prot(Prot::public_);    // Bugzilla 12506
 
         if (!exp->type || exp->type == Type::tvoid)
         {
