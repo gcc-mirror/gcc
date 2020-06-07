@@ -532,7 +532,7 @@ gfc_hash_value (gfc_symbol *sym)
 
   get_unique_type_string (&c[0], sym);
   len = strnlen (c, sizeof (c));
-  gcc_assert (len < sizeof (c));
+  gcc_assert ((size_t) len < sizeof (c));
 
   for (i = 0; i < len; i++)
     hash = (hash << 6) + (hash << 16) - hash + c[i];
