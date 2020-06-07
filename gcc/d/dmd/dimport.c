@@ -35,7 +35,7 @@ Import::Import(Loc loc, Identifiers *packages, Identifier *id, Identifier *alias
     this->id = id;
     this->aliasId = aliasId;
     this->isstatic = isstatic;
-    this->protection = Prot(PROTprivate); // default to private
+    this->protection = Prot(Prot::private_); // default to private
     this->pkg = NULL;
     this->mod = NULL;
 

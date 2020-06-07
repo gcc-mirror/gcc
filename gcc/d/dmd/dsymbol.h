@@ -83,24 +83,23 @@ struct Ungag
     ~Ungag() { global.gag = oldgag; }
 };
 
-enum PROTKIND
-{
-    PROTundefined,
-    PROTnone,           // no access
-    PROTprivate,
-    PROTpackage,
-    PROTprotected,
-    PROTpublic,
-    PROTexport
-};
-
 struct Prot
 {
-    PROTKIND kind;
+    enum Kind
+    {
+        undefined,
+        none,           // no access
+        private_,
+        package_,
+        protected_,
+        public_,
+        export_
+    };
+    Kind kind;
     Package *pkg;
 
     Prot();
-    Prot(PROTKIND kind);
+    Prot(Kind kind);
 
     bool isMoreRestrictiveThan(const Prot other) const;
     bool operator==(const Prot& other) const;
@@ -109,7 +108,7 @@ struct Prot
 
 // in hdrgen.c
 void protectionToBuffer(OutBuffer *buf, Prot prot);
-const char *protectionToChars(PROTKIND kind);
+const char *protectionToChars(Prot::Kind kind);
 
 /* State of symbol in winding its way through the passes of the compiler
  */
@@ -296,7 +295,7 @@ public:
 
 private:
     Dsymbols *importedScopes;   // imported Dsymbol's
-    PROTKIND *prots;            // array of PROTKIND, one for each import
+    Prot::Kind *prots;            // array of PROTKIND, one for each import
 
     BitArray accessiblePackages, privateAccessiblePackages;
 

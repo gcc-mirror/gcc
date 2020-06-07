@@ -231,7 +231,7 @@ struct PrefixAttributes
         : storageClass(STCundefined),
           depmsg(NULL),
           link(LINKdefault),
-          protection(PROTundefined),
+          protection(Prot::undefined),
           setAlignment(false),
           ealign(NULL),
           udas(NULL),
@@ -262,7 +262,7 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
             pAttrs = &attrs;
             pAttrs->comment = token.blockComment;
         }
-        PROTKIND prot;
+        Prot::Kind prot;
         StorageClass stc;
         Condition *condition;
 
@@ -731,14 +731,14 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
                 break;
             }
 
-            case TOKprivate:    prot = PROTprivate;     goto Lprot;
-            case TOKpackage:    prot = PROTpackage;     goto Lprot;
-            case TOKprotected:  prot = PROTprotected;   goto Lprot;
-            case TOKpublic:     prot = PROTpublic;      goto Lprot;
-            case TOKexport:     prot = PROTexport;      goto Lprot;
+            case TOKprivate:    prot = Prot::private_;     goto Lprot;
+            case TOKpackage:    prot = Prot::package_;     goto Lprot;
+            case TOKprotected:  prot = Prot::protected_;   goto Lprot;
+            case TOKpublic:     prot = Prot::public_;      goto Lprot;
+            case TOKexport:     prot = Prot::export_;      goto Lprot;
             Lprot:
             {
-                if (pAttrs->protection.kind != PROTundefined)
+                if (pAttrs->protection.kind != Prot::undefined)
                 {
                     if (pAttrs->protection.kind != prot)
                         error("conflicting protection attribute '%s' and '%s'",
@@ -753,7 +753,7 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
                 // optional qualified package identifier to bind
                 // protection to
                 Identifiers *pkg_prot_idents = NULL;
-                if (pAttrs->protection.kind == PROTpackage && token.value == TOKlparen)
+                if (pAttrs->protection.kind == Prot::package_ && token.value == TOKlparen)
                 {
                     pkg_prot_idents = parseQualifiedIdentifier("protection package");
 
@@ -770,14 +770,14 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
 
                 Loc attrloc = token.loc;
                 a = parseBlock(pLastDecl, pAttrs);
-                if (pAttrs->protection.kind != PROTundefined)
+                if (pAttrs->protection.kind != Prot::undefined)
                 {
-                    if (pAttrs->protection.kind == PROTpackage && pkg_prot_idents)
+                    if (pAttrs->protection.kind == Prot::package_ && pkg_prot_idents)
                         s = new ProtDeclaration(attrloc, pkg_prot_idents,  a);
                     else
                         s = new ProtDeclaration(attrloc, pAttrs->protection, a);
 
-                    pAttrs->protection = Prot(PROTundefined);
+                    pAttrs->protection = Prot(Prot::undefined);
                 }
                 break;
             }
@@ -2365,27 +2365,27 @@ BaseClasses *Parser::parseBaseClasses()
     for (; 1; nextToken())
     {
         bool prot = false;
-        Prot protection = Prot(PROTpublic);
+        Prot protection = Prot(Prot::public_);
         switch (token.value)
         {
             case TOKprivate:
                 prot = true;
-                protection = Prot(PROTprivate);
+                protection = Prot(Prot::private_);
                 nextToken();
                 break;
             case TOKpackage:
                 prot = true;
-                protection = Prot(PROTpackage);
+                protection = Prot(Prot::package_);
                 nextToken();
                 break;
             case TOKprotected:
                 prot = true;
-                protection = Prot(PROTprotected);
+                protection = Prot(Prot::protected_);
                 nextToken();
                 break;
             case TOKpublic:
                 prot = true;
-                protection = Prot(PROTpublic);
+                protection = Prot(Prot::public_);
                 nextToken();
                 break;
             default: break;

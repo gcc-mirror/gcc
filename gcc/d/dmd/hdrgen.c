@@ -3381,7 +3381,7 @@ void protectionToBuffer(OutBuffer *buf, Prot prot)
     if (p)
         buf->writestring(p);
 
-    if (prot.kind == PROTpackage && prot.pkg)
+    if (prot.kind == Prot::package_ && prot.pkg)
     {
         buf->writeByte('(');
         buf->writestring(prot.pkg->toPrettyChars(true));
@@ -3389,17 +3389,17 @@ void protectionToBuffer(OutBuffer *buf, Prot prot)
     }
 }
 
-const char *protectionToChars(PROTKIND kind)
+const char *protectionToChars(Prot::Kind kind)
 {
     switch (kind)
     {
-        case PROTundefined: return NULL;
-        case PROTnone:      return "none";
-        case PROTprivate:   return "private";
-        case PROTpackage:   return "package";
-        case PROTprotected: return "protected";
-        case PROTpublic:    return "public";
-        case PROTexport:    return "export";
+        case Prot::undefined: return NULL;
+        case Prot::none:      return "none";
+        case Prot::private_:   return "private";
+        case Prot::package_:   return "package";
+        case Prot::protected_: return "protected";
+        case Prot::public_:    return "public";
+        case Prot::export_:    return "export";
         default:            assert(0);
     }
     return NULL;    // never reached
