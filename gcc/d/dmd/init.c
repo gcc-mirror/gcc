@@ -53,7 +53,7 @@ const char *Initializer::toChars()
     OutBuffer buf;
     HdrGenState hgs;
     ::toCBuffer(this, &buf, &hgs);
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 /********************************** ErrorInitializer ***************************/

@@ -133,7 +133,7 @@ const char *Token::toChars() const
             buf.writeByte('"');
             if (postfix)
                 buf.writeByte(postfix);
-            p = buf.extractString();
+            p = buf.extractChars();
         }
             break;
 

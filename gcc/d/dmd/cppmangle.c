@@ -632,7 +632,7 @@ class CppMangleVisitor : public Visitor
                  *          ::= <prefix> <data-member-prefix>
                  */
                 prefix_name(p);
-                //printf("p: %s\n", buf.peekString());
+                //printf("p: %s\n", buf.peekChars());
 
                 if (d->isCtorDeclaration())
                 {
@@ -1110,7 +1110,7 @@ public:
     {
         buf->writestring("_ZTI");
         cpp_mangle_name(s, false);
-        return buf->extractString();
+        return buf->extractChars();
     }
 };
 
@@ -1120,7 +1120,7 @@ const char *toCppMangleItanium(Dsymbol *s)
     OutBuffer buf;
     CppMangleVisitor v(&buf, s->loc);
     v.mangleOf(s);
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 const char *cppTypeInfoMangleItanium(Dsymbol *s)
@@ -1130,5 +1130,5 @@ const char *cppTypeInfoMangleItanium(Dsymbol *s)
     buf.writestring("_ZTI");    // "TI" means typeinfo structure
     CppMangleVisitor v(&buf, s->loc);
     v.cpp_mangle_name(s, false);
-    return buf.extractString();
+    return buf.extractChars();
 }

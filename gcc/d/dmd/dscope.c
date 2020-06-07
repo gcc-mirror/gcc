@@ -661,7 +661,7 @@ void Scope::deprecation10378(Loc loc, Dsymbol *sold, Dsymbol *snew)
     else
         buf.writestring("nothing");
 
-    deprecation(loc, "%s", buf.peekString());
+    deprecation(loc, "%s", buf.peekChars());
 }
 
 Dsymbol *Scope::search_correct(Identifier *ident)

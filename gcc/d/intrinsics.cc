@@ -118,7 +118,7 @@ maybe_set_intrinsic (FuncDeclaration *decl)
 
 	  OutBuffer buf;
 	  mangleToBuffer (fd->type, &buf);
-	  tdeco = buf.extractString ();
+	  tdeco = buf.extractChars ();
 	}
 
       /* Matching the type deco may be a bit too strict, as it means that all

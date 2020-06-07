@@ -1119,7 +1119,7 @@ Lnomatch:
 
             OutBuffer buf;
             buf.printf("__%s_field_%llu", ident->toChars(), (ulonglong)i);
-            const char *name = buf.extractString();
+            const char *name = buf.extractChars();
             Identifier *id = Identifier::idPool(name);
 
             Initializer *ti;
@@ -1190,7 +1190,7 @@ Lnomatch:
         {
             OutBuffer buf;
             stcToBuffer(&buf, stc);
-            error("cannot be %s", buf.peekString());
+            error("cannot be %s", buf.peekChars());
         }
         storage_class &= ~stc;  // strip off
     }
@@ -1202,7 +1202,7 @@ Lnomatch:
         {
             OutBuffer buf;
             stcToBuffer(&buf, stc);
-            error("cannot be 'scope' and '%s'", buf.peekString());
+            error("cannot be 'scope' and '%s'", buf.peekChars());
         }
         else if (isMember())
         {
@@ -2246,7 +2246,7 @@ const char *TypeInfoDeclaration::toChars()
     buf.writestring("typeid(");
     buf.writestring(tinfo->toChars());
     buf.writeByte(')');
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 /***************************** TypeInfoConstDeclaration **********************/

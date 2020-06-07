@@ -47,7 +47,7 @@ const char *DebugSymbol::toChars()
     {
         OutBuffer buf;
         buf.printf("%d", level);
-        return buf.extractString();
+        return buf.extractChars();
     }
 }
 
@@ -137,7 +137,7 @@ const char *VersionSymbol::toChars()
     {
         OutBuffer buf;
         buf.printf("%d", level);
-        return buf.extractString();
+        return buf.extractChars();
     }
 }
 

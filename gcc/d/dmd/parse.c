@@ -803,7 +803,7 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
                     if (e)
                     {
                         buf1.printf("(%s)", e->toChars());
-                        s1 = buf1.peekString();
+                        s1 = buf1.peekChars();
                     }
                     error("redundant alignment attribute align%s", s1);
                 }
@@ -977,9 +977,9 @@ StorageClass Parser::appendStorageClass(StorageClass storageClass, StorageClass 
         OutBuffer buf;
         stcToBuffer(&buf, stc);
         if (deprec)
-            deprecation("redundant attribute '%s'", buf.peekString());
+            deprecation("redundant attribute '%s'", buf.peekChars());
         else
-            error("redundant attribute '%s'", buf.peekString());
+            error("redundant attribute '%s'", buf.peekChars());
         return storageClass | stc;
     }
 
@@ -1712,7 +1712,7 @@ Dsymbol *Parser::parseStaticCtor(PrefixAttributes *pAttrs)
     {
         OutBuffer buf;
         stcToBuffer(&buf, modStc);
-        error(loc, "static constructor cannot be %s", buf.peekString());
+        error(loc, "static constructor cannot be %s", buf.peekChars());
     }
     stc &= ~(STCstatic | STC_TYPECTOR);
 
@@ -1750,7 +1750,7 @@ Dsymbol *Parser::parseStaticDtor(PrefixAttributes *pAttrs)
     {
         OutBuffer buf;
         stcToBuffer(&buf, modStc);
-        error(loc, "static destructor cannot be %s", buf.peekString());
+        error(loc, "static destructor cannot be %s", buf.peekChars());
     }
     stc &= ~(STCstatic | STC_TYPECTOR);
 
@@ -1792,7 +1792,7 @@ Dsymbol *Parser::parseSharedStaticCtor(PrefixAttributes *pAttrs)
     {
         OutBuffer buf;
         stcToBuffer(&buf, modStc);
-        error(loc, "shared static constructor cannot be %s", buf.peekString());
+        error(loc, "shared static constructor cannot be %s", buf.peekChars());
     }
     stc &= ~(STCstatic | STC_TYPECTOR);
 
@@ -1829,7 +1829,7 @@ Dsymbol *Parser::parseSharedStaticDtor(PrefixAttributes *pAttrs)
     {
         OutBuffer buf;
         stcToBuffer(&buf, modStc);
-        error(loc, "shared static destructor cannot be %s", buf.peekString());
+        error(loc, "shared static destructor cannot be %s", buf.peekChars());
     }
     stc &= ~(STCstatic | STC_TYPECTOR);
 
@@ -4206,7 +4206,7 @@ Dsymbol *Parser::parseFunctionLiteral()
                 {
                     OutBuffer buf;
                     stcToBuffer(&buf, modStc);
-                    error("function literal cannot be %s", buf.peekString());
+                    error("function literal cannot be %s", buf.peekChars());
                 }
                 else
                     save = TOKdelegate;

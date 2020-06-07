@@ -2058,7 +2058,7 @@ const char *Expression::toChars()
     OutBuffer buf;
     HdrGenState hgs;
     toCBuffer(this, &buf, &hgs);
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 void Expression::error(const char *format, ...) const
@@ -2557,7 +2557,7 @@ bool Expression::checkPurity(Scope *sc, VarDeclaration *v)
                     MODMatchToBuffer(&ffbuf, ff->type->mod, v->type->mod);
                     MODMatchToBuffer(&vbuf, v->type->mod, ff->type->mod);
                     error("%s%s '%s' cannot access %sdata '%s'",
-                        ffbuf.peekString(), ff->kind(), ff->toPrettyChars(), vbuf.peekString(), v->toChars());
+                        ffbuf.peekChars(), ff->kind(), ff->toPrettyChars(), vbuf.peekChars(), v->toChars());
                     err = true;
                     break;
                 }
@@ -6754,7 +6754,7 @@ Expression *PrettyFuncInitExp::resolveLoc(Loc loc, Scope *sc)
         const char *funcStr = fd->Dsymbol::toPrettyChars();
         OutBuffer buf;
         functionToBufferWithIdent((TypeFunction *)fd->type, &buf, funcStr);
-        s = buf.extractString();
+        s = buf.extractChars();
     }
     else
     {
