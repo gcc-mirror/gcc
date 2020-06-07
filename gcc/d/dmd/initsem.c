@@ -182,8 +182,7 @@ public:
             TOK tok = (t->ty == Tdelegate) ? TOKdelegate : TOKfunction;
             /* Rewrite as empty delegate literal { }
             */
-            Parameters *parameters = new Parameters;
-            Type *tf = new TypeFunction(parameters, NULL, 0, LINKd);
+            Type *tf = new TypeFunction(ParameterList(), NULL, LINKd);
             FuncLiteralDeclaration *fd = new FuncLiteralDeclaration(i->loc, Loc(), tf, tok, NULL);
             fd->fbody = new CompoundStatement(i->loc, new Statements());
             fd->endloc = i->loc;

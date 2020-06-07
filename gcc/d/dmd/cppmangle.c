@@ -657,7 +657,8 @@ class CppMangleVisitor : public Visitor
         if (tf->linkage == LINKcpp) //Template args accept extern "C" symbols with special mangling
         {
             assert(tf->ty == Tfunction);
-            mangleFunctionParameters(tf->parameters, tf->varargs);
+            mangleFunctionParameters(tf->parameterList.parameters,
+                                     tf->parameterList.varargs);
         }
     }
 
@@ -982,7 +983,8 @@ public:
         if (t->isref)
             tn  = tn->referenceTo();
         tn->accept(this);
-        mangleFunctionParameters(t->parameters, t->varargs);
+        mangleFunctionParameters(t->parameterList.parameters,
+                                 t->parameterList.varargs);
         buf->writeByte('E');
         append(t);
     }

@@ -127,7 +127,7 @@ bool isCVariadicParameter(Dsymbols *a, const utf8_t *p, size_t len)
     for (size_t i = 0; i < a->length; i++)
     {
         TypeFunction *tf = isTypeFunction((*a)[i]);
-        if (tf && tf->varargs == 1 && cmp("...", p, len) == 0)
+        if (tf && tf->parameterList.varargs == VARARGvariadic && cmp("...", p, len) == 0)
             return true;
     }
     return false;
@@ -138,11 +138,11 @@ bool isCVariadicParameter(Dsymbols *a, const utf8_t *p, size_t len)
 static Parameter *isFunctionParameter(Dsymbol *s, const utf8_t *p, size_t len)
 {
     TypeFunction *tf = isTypeFunction(s);
-    if (tf && tf->parameters)
+    if (tf && tf->parameterList.parameters)
     {
-        for (size_t k = 0; k < tf->parameters->length; k++)
+        for (size_t k = 0; k < tf->parameterList.parameters->length; k++)
         {
-            Parameter *fparam = (*tf->parameters)[k];
+            Parameter *fparam = (*tf->parameterList.parameters)[k];
             if (fparam->ident && cmp(fparam->ident->toChars(), p, len) == 0)
             {
                 return fparam;
@@ -1733,7 +1733,8 @@ void ParamSection::write(Loc loc, DocComment *, Scope *sc, Dsymbols *a, OutBuffe
     TypeFunction *tf = a->length == 1 ? isTypeFunction(s) : NULL;
     if (tf)
     {
-        size_t pcount = (tf->parameters ? tf->parameters->length : 0) + (int)(tf->varargs == 1);
+        size_t pcount = (tf->parameterList.parameters ? tf->parameterList.parameters->length : 0) +
+                        (int)(tf->parameterList.varargs == VARARGvariadic);
         if (pcount != paramcount)
         {
             warning(s->loc, "Ddoc: parameter count mismatch");

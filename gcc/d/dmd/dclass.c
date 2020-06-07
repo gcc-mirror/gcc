@@ -803,7 +803,7 @@ Lancestorsdone:
         {
             //printf("Creating default this(){} for class %s\n", toChars());
             TypeFunction *btf = fd->type->toTypeFunction();
-            TypeFunction *tf = new TypeFunction(NULL, NULL, 0, LINKd, fd->storage_class);
+            TypeFunction *tf = new TypeFunction(ParameterList(), NULL, LINKd, fd->storage_class);
             tf->mod = btf->mod;
             tf->purity = btf->purity;
             tf->isnothrow = btf->isnothrow;

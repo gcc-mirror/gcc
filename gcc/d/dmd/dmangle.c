@@ -261,9 +261,9 @@ public:
         }
 
         // Write argument types
-        paramsToDecoBuffer(t->parameters);
+        paramsToDecoBuffer(t->parameterList.parameters);
         //if (buf->data[buf->offset - 1] == '@') halt();
-        buf->writeByte('Z' - t->varargs);   // mark end of arg list
+        buf->writeByte('Z' - t->parameterList.varargs);   // mark end of arg list
         if (tret != NULL)
             visitWithMask(tret, 0);
 

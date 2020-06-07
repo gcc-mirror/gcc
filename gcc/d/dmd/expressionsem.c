@@ -1653,16 +1653,16 @@ public:
             exp->td->semantic(sc);
 
             TypeFunction *tfl = (TypeFunction *)exp->fd->type;
-            size_t dim = Parameter::dim(tfl->parameters);
+            size_t dim = tfl->parameterList.length();
             if (arguments->length < dim)
             {   // Default arguments are always typed, so they don't need inference.
-                Parameter *p = Parameter::getNth(tfl->parameters, arguments->length);
+                Parameter *p = tfl->parameterList[arguments->length];
                 if (p->defaultArg)
                     dim = arguments->length;
             }
 
-            if ((!tfl->varargs && arguments->length == dim) ||
-                ( tfl->varargs && arguments->length >= dim))
+            if ((tfl->parameterList.varargs == VARARGnone && arguments->length == dim) ||
+                (tfl->parameterList.varargs != VARARGnone && arguments->length >= dim))
             {
                 Objects *tiargs = new Objects();
                 tiargs->reserve(exp->td->parameters->length);
@@ -1671,7 +1671,7 @@ public:
                 {
                     TemplateParameter *tp = (*exp->td->parameters)[i];
                     for (size_t u = 0; u < dim; u++)
-                    {   Parameter *p = Parameter::getNth(tfl->parameters, u);
+                    {   Parameter *p = tfl->parameterList[u];
                         if (p->type->ty == Tident &&
                             ((TypeIdentifier *)p->type)->ident == tp->ident)
                         {   Expression *e = (*arguments)[u];
@@ -2025,13 +2025,13 @@ public:
                         /* Generate tuple from function parameter types.
                         */
                         assert(tded->ty == Tfunction);
-                        Parameters *params = ((TypeFunction *)tded)->parameters;
-                        size_t dim = Parameter::dim(params);
+                        TypeFunction *tdedf = (TypeFunction *)tded;
+                        size_t dim = tdedf->parameterList.length();
                         Parameters *args = new Parameters;
                         args->reserve(dim);
                         for (size_t i = 0; i < dim; i++)
                         {
-                            Parameter *arg = Parameter::getNth(params, i);
+                            Parameter *arg = tdedf->parameterList[i];
                             assert(arg && arg->type);
                             /* If one of the default arguments was an error,
                                don't return an invalid tuple
@@ -2911,7 +2911,7 @@ public:
                     // lazy paramaters can be called without violating purity and safety
                     Type *tw = ve->var->type;
                     Type *tc = ve->var->type->substWildTo(MODconst);
-                    TypeFunction *tf = new TypeFunction(NULL, tc, 0, LINKd, STCsafe | STCpure);
+                    TypeFunction *tf = new TypeFunction(ParameterList(), tc, LINKd, STCsafe | STCpure);
                     (tf = (TypeFunction *)tf->semantic(exp->loc, sc))->next = tw;    // hack for bug7757
                     TypeDelegate *t = new TypeDelegate(tf);
                     ve->type = t->semantic(exp->loc, sc);
@@ -3419,7 +3419,7 @@ public:
 
                 //printf("tf = %s, args = %s\n", tf->deco, (*exp->arguments)[0]->type->deco);
                 ::error(exp->loc, "%s %s %s is not callable using argument types %s",
-                        p, exp->e1->toChars(), parametersTypeToChars(tf->parameters, tf->varargs),
+                        p, exp->e1->toChars(), parametersTypeToChars(tf->parameterList),
                         buf.peekString());
 
                 return setError();
@@ -3492,7 +3492,7 @@ public:
 
                     //printf("tf = %s, args = %s\n", tf->deco, (*exp->arguments)[0]->type->deco);
                     ::error(exp->loc, "%s %s is not callable using argument types %s",
-                            exp->e1->toChars(), parametersTypeToChars(tf->parameters, tf->varargs),
+                            exp->e1->toChars(), parametersTypeToChars(tf->parameterList),
                             buf.peekString());
 
                     exp->f = NULL;

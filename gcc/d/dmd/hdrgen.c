@@ -918,7 +918,7 @@ public:
         if (ident)
             buf->writestring(ident);
 
-        parametersToBuffer(t->parameters, t->varargs);
+        parametersToBuffer(t->parameterList.parameters, t->parameterList.varargs);
 
         /* Use postfix style for attributes
          */
@@ -988,7 +988,7 @@ public:
             }
             buf->writeByte(')');
         }
-        parametersToBuffer(t->parameters, t->varargs);
+        parametersToBuffer(t->parameterList.parameters, t->parameterList.varargs);
 
         t->inuse--;
     }
@@ -2012,7 +2012,7 @@ public:
         // Don't print tf->mod, tf->trust, and tf->linkage
         if (!f->inferRetType && tf->next)
             typeToBuffer(tf->next, NULL);
-        parametersToBuffer(tf->parameters, tf->varargs);
+        parametersToBuffer(tf->parameterList.parameters, tf->parameterList.varargs);
 
         CompoundStatement *cs = f->fbody->isCompoundStatement();
         Statement *s1;
@@ -3469,11 +3469,11 @@ void arrayObjectsToBuffer(OutBuffer *buf, Objects *objects)
     }
 }
 
-const char *parametersTypeToChars(Parameters *parameters, int varargs)
+const char *parametersTypeToChars(ParameterList pl)
 {
     OutBuffer buf;
     HdrGenState hgs;
     PrettyPrintVisitor v(&buf, &hgs);
-    v.parametersToBuffer(parameters, varargs);
+    v.parametersToBuffer(pl.parameters, pl.varargs);
     return buf.extractString();
 }

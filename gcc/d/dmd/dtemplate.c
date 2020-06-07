@@ -786,8 +786,8 @@ bool TemplateDeclaration::evaluateConstraint(
 
         scx->parent = fd;
 
-        Parameters *fparameters = tf->parameters;
-        int fvarargs = tf->varargs;
+        Parameters *fparameters = tf->parameterList.parameters;
+        VarArg fvarargs = tf->parameterList.varargs;
 
         size_t nfparams = Parameter::dim(fparameters);
         for (size_t i = 0; i < nfparams; i++)
@@ -795,7 +795,7 @@ bool TemplateDeclaration::evaluateConstraint(
             Parameter *fparam = Parameter::getNth(fparameters, i);
             fparam->storageClass &= (STCin | STCout | STCref | STClazy | STCfinal | STC_TYPECTOR | STCnodtor);
             fparam->storageClass |= STCparameter;
-            if (fvarargs == 2 && i + 1 == nfparams)
+            if (fvarargs == VARARGtypesafe && i + 1 == nfparams)
                 fparam->storageClass |= STCvariadic;
         }
         for (size_t i = 0; i < fparameters->length; i++)
@@ -943,8 +943,8 @@ MATCH TemplateDeclaration::matchWithInstance(Scope *sc, TemplateInstance *ti,
             fd->inferRetType = true;
 
             // Shouldn't run semantic on default arguments and return type.
-            for (size_t i = 0; i < tf->parameters->length; i++)
-                (*tf->parameters)[i]->defaultArg = NULL;
+            for (size_t i = 0; i < tf->parameterList.parameters->length; i++)
+                (*tf->parameterList.parameters)[i]->defaultArg = NULL;
             tf->next = NULL;
 
             // Resolve parameter types and 'auto ref's.
@@ -1110,8 +1110,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
     size_t fptupindex = IDX_NOTFOUND;
     MATCH match = MATCHexact;
     MATCH matchTiargs = MATCHexact;
-    Parameters *fparameters;            // function parameter list
-    int fvarargs;                       // function varargs
+    ParameterList fparameters; // function parameter list
     unsigned wildmatch = 0;
     size_t inferStart = 0;
 
@@ -1200,9 +1199,9 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
         //printf("tiargs matchTiargs = %d\n", matchTiargs);
     }
 
-    fparameters = fd->getParameters(&fvarargs);
-    nfparams = Parameter::dim(fparameters);     // number of function parameters
-    nfargs = fargs ? fargs->length : 0;            // number of function arguments
+    fparameters = fd->getParameterList();
+    nfparams = fparameters.length();    // number of function parameters
+    nfargs = fargs ? fargs->length : 0; // number of function arguments
 
     /* Check for match of function arguments with variadic template
      * parameter, such as:
@@ -1235,14 +1234,14 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
              */
             for (fptupindex = 0; fptupindex < nfparams; fptupindex++)
             {
-                Parameter *fparam = (*fparameters)[fptupindex];
+                Parameter *fparam = (*fparameters.parameters)[fptupindex];
                 if (fparam->type->ty != Tident)
                     continue;
                 TypeIdentifier *tid = (TypeIdentifier *)fparam->type;
                 if (!tp->ident->equals(tid->ident) || tid->idents.length)
                     continue;
 
-                if (fvarargs)           // variadic function doesn't
+                if (fparameters.varargs != VARARGnone) // variadic function doesn't
                     goto Lnomatch;      // go with variadic template
 
                 goto L1;
@@ -1320,7 +1319,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
     size_t nfargs2 = nfargs;    // nfargs + supplied defaultArgs
     for (size_t parami = 0; parami < nfparams; parami++)
     {
-        Parameter *fparam = Parameter::getNth(fparameters, parami);
+        Parameter *fparam = fparameters[parami];
 
         // Apply function parameter storage classes to parameter types
         Type *prmtype = fparam->type->addStorageClass(fparam->storageClass);
@@ -1348,7 +1347,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
                 size_t rem = 0;
                 for (size_t j = parami + 1; j < nfparams; j++)
                 {
-                    Parameter *p = Parameter::getNth(fparameters, j);
+                    Parameter *p = fparameters[j];
                     if (!reliesOnTident(p->type, parameters, inferStart))
                     {
                         Type *pt = p->type->syntaxCopy()->semantic(fd->loc, paramscope);
@@ -1432,7 +1431,8 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
                 for (size_t j = 0; j < tt_dim; j++, ++argi)
                 {
                     Parameter *p = (*tt->arguments)[j];
-                    if (j == tt_dim - 1 && fvarargs == 2 && parami + 1 == nfparams && argi < nfargs)
+                    if (j == tt_dim - 1 && fparameters.varargs == VARARGtypesafe &&
+                        parami + 1 == nfparams && argi < nfargs)
                     {
                         prmtype = p->type;
                         goto Lvarargs;
@@ -1629,7 +1629,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
                 }
             }
 
-            if (fvarargs == 2 && parami + 1 == nfparams && argi + 1 < nfargs)
+            if (fparameters.varargs == VARARGtypesafe && parami + 1 == nfparams && argi + 1 < nfargs)
                 goto Lvarargs;
 
             unsigned wm = 0;
@@ -1699,7 +1699,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
         /* The following code for variadic arguments closely
          * matches TypeFunction::callMatch()
          */
-        if (!(fvarargs == 2 && parami + 1 == nfparams))
+        if (!(fparameters.varargs == VARARGtypesafe && parami + 1 == nfparams))
             goto Lnomatch;
 
         /* Check for match with function parameter T...
@@ -1833,7 +1833,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
         ++argi;
     }
     //printf("-> argi = %d, nfargs = %d, nfargs2 = %d\n", argi, nfargs, nfargs2);
-    if (argi != nfargs2 && !fvarargs)
+    if (argi != nfargs2 && fparameters.varargs == VARARGnone)
         goto Lnomatch;
     }
 
@@ -2681,8 +2681,8 @@ FuncDeclaration *TemplateDeclaration::doHeaderInstantiation(
     Scope *scx = sc2->push();
 
     // Shouldn't run semantic on default arguments and return type.
-    for (size_t i = 0; i < tf->parameters->length; i++)
-        (*tf->parameters)[i]->defaultArg = NULL;
+    for (size_t i = 0; i < tf->parameterList.parameters->length; i++)
+        (*tf->parameterList.parameters)[i]->defaultArg = NULL;
     if (fd->isCtorDeclaration())
     {
         // For constructors, emitting return type is necessary for
@@ -2755,7 +2755,7 @@ const char *TemplateDeclaration::toChars()
         if (fd && fd->type)
         {
             TypeFunction *tf = (TypeFunction *)fd->type;
-            buf.writestring(parametersTypeToChars(tf->parameters, tf->varargs));
+            buf.writestring(parametersTypeToChars(tf->parameterList));
         }
     }
 
@@ -3537,20 +3537,20 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
             if (tparam && tparam->ty == Tfunction)
             {
                 TypeFunction *tp = (TypeFunction *)tparam;
-                if (t->varargs != tp->varargs ||
+                if (t->parameterList.varargs != tp->parameterList.varargs ||
                     t->linkage != tp->linkage)
                 {
                     result = MATCHnomatch;
                     return;
                 }
 
-                size_t nfargs = Parameter::dim(t->parameters);
-                size_t nfparams = Parameter::dim(tp->parameters);
+                size_t nfargs = t->parameterList.length();
+                size_t nfparams = tp->parameterList.length();
 
                 // bug 2579 fix: Apply function parameter storage classes to parameter types
                 for (size_t i = 0; i < nfparams; i++)
                 {
-                    Parameter *fparam = Parameter::getNth(tp->parameters, i);
+                    Parameter *fparam = tp->parameterList[i];
                     fparam->type = fparam->type->addStorageClass(fparam->storageClass);
                     fparam->storageClass &= ~(STC_TYPECTOR | STCin);
                 }
@@ -3564,7 +3564,7 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                     /* See if 'A' of the template parameter matches 'A'
                      * of the type of the last function parameter.
                      */
-                    Parameter *fparam = Parameter::getNth(tp->parameters, nfparams - 1);
+                    Parameter *fparam = tp->parameterList[nfparams - 1];
                     assert(fparam);
                     assert(fparam->type);
                     if (fparam->type->ty != Tident)
@@ -3605,7 +3605,7 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                         }
                         for (size_t i = 0; i < tuple_dim; i++)
                         {
-                            Parameter *arg = Parameter::getNth(t->parameters, nfparams - 1 + i);
+                            Parameter *arg = t->parameterList[nfparams - 1 + i];
                             if (!arg->type->equals(tup->objects[i]))
                             {
                                 result = MATCHnomatch;
@@ -3620,7 +3620,7 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                         tup->objects.setDim(tuple_dim);
                         for (size_t i = 0; i < tuple_dim; i++)
                         {
-                            Parameter *arg = Parameter::getNth(t->parameters, nfparams - 1 + i);
+                            Parameter *arg = t->parameterList[nfparams - 1 + i];
                             tup->objects[i] = arg->type;
                         }
                         (*dedtypes)[tupi] = tup;
@@ -3638,8 +3638,8 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
             L2:
                 for (size_t i = 0; i < nfparams; i++)
                 {
-                    Parameter *a = Parameter::getNth(t->parameters, i);
-                    Parameter *ap = Parameter::getNth(tp->parameters, i);
+                    Parameter *a = t->parameterList[i];
+                    Parameter *ap = tp->parameterList[i];
 
                     if (!a->isCovariant(t->isref, ap) ||
                         !deduceType(a->type, sc, ap->type, parameters, dedtypes))
@@ -4422,10 +4422,10 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                 TypeFunction *tf = (TypeFunction *)e->fd->type;
                 //printf("\ttof = %s\n", tof->toChars());
                 //printf("\ttf  = %s\n", tf->toChars());
-                size_t dim = Parameter::dim(tf->parameters);
+                size_t dim = tf->parameterList.length();
 
-                if (Parameter::dim(tof->parameters) != dim ||
-                    tof->varargs != tf->varargs)
+                if (tof->parameterList.length() != dim ||
+                    tof->parameterList.varargs != tf->parameterList.varargs)
                     return;
 
                 Objects *tiargs = new Objects();
@@ -4437,7 +4437,7 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                     size_t u = 0;
                     for (; u < dim; u++)
                     {
-                        Parameter *p = Parameter::getNth(tf->parameters, u);
+                        Parameter *p = tf->parameterList[u];
                         if (p->type->ty == Tident &&
                             ((TypeIdentifier *)p->type)->ident == tp->ident)
                         {
@@ -4445,7 +4445,7 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                         }
                     }
                     assert(u < dim);
-                    Parameter *pto = Parameter::getNth(tof->parameters, u);
+                    Parameter *pto = tof->parameterList[u];
                     if (!pto)
                         break;
                     Type *t = pto->type->syntaxCopy();  // Bugzilla 11774
@@ -4577,10 +4577,10 @@ bool reliesOnTident(Type *t, TemplateParameters *tparams, size_t iStart)
 
         void visit(TypeFunction *t)
         {
-            size_t dim = Parameter::dim(t->parameters);
+            size_t dim = t->parameterList.length();
             for (size_t i = 0; i < dim; i++)
             {
-                Parameter *fparam = Parameter::getNth(t->parameters, i);
+                Parameter *fparam = t->parameterList[i];
                 fparam->type->accept(this);
                 if (result)
                     return;
@@ -7182,7 +7182,7 @@ bool TemplateInstance::needsTypeInference(Scope *sc, int flag)
          */
         //printf("tp = %p, td->parameters->length = %d, tiargs->length = %d\n", tp, td->parameters->length, ti->tiargs->length);
         TypeFunction *tf = (TypeFunction *)fd->type;
-        if (size_t dim = Parameter::dim(tf->parameters))
+        if (size_t dim = tf->parameterList.length())
         {
             TemplateParameter *tp = td->isVariadic();
             if (tp && td->parameters->length > 1)
@@ -7201,7 +7201,7 @@ bool TemplateInstance::needsTypeInference(Scope *sc, int flag)
             for (size_t i = 0; i < dim; i++)
             {
                 // 'auto ref' needs inference.
-                if (Parameter::getNth(tf->parameters, i)->storageClass & STCauto)
+                if (tf->parameterList[i]->storageClass & STCauto)
                     return 1;
             }
         }
@@ -7904,11 +7904,11 @@ int TemplateInstance::compare(RootObject *o)
     {
         if (!fd->errors)
         {
-            Parameters *fparameters = fd->getParameters(NULL);
-            size_t nfparams = Parameter::dim(fparameters);   // Num function parameters
+            ParameterList fparameters = fd->getParameterList();
+            size_t nfparams = fparameters.length();   // Num function parameters
             for (size_t j = 0; j < nfparams; j++)
             {
-                Parameter *fparam = Parameter::getNth(fparameters, j);
+                Parameter *fparam = fparameters[j];
                 if (fparam->storageClass & STCautoref)       // if "auto ref"
                 {
                     if (!fargs)

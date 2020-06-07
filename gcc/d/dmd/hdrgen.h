@@ -46,7 +46,7 @@ void arrayObjectsToBuffer(OutBuffer *buf, Objects *objects);
 
 void moduleToBuffer(OutBuffer *buf, Module *m);
 
-const char *parametersTypeToChars(Parameters *parameters, int varargs);
+const char *parametersTypeToChars(ParameterList pl);
 
 bool stcToBuffer(OutBuffer *buf, StorageClass stc);
 const char *stcToChars(StorageClass& stc);

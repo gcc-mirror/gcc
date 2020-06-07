@@ -103,7 +103,7 @@ public:
     Dsymbol *parseUnitTest(PrefixAttributes *pAttrs);
     Dsymbol *parseNew(PrefixAttributes *pAttrs);
     Dsymbol *parseDelete(PrefixAttributes *pAttrs);
-    Parameters *parseParameters(int *pvarargs, TemplateParameters **tpl = NULL);
+    Parameters *parseParameters(VarArg *pvarargs, TemplateParameters **tpl = NULL);
     EnumDeclaration *parseEnum();
     Dsymbol *parseAggregate();
     BaseClasses *parseBaseClasses();
