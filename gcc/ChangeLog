@@ -1,3 +1,15 @@
+2020-06-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/95548
+	* ipa-devirt.c (struct odr_enum_val): Turn values to wide_int.
+	(ipa_odr_summary_write): Update streaming.
+	(ipa_odr_read_section): Update streaming.
+
+2020-06-06  Alexandre Oliva  <oliva@adacore.com>
+
+	PR driver/95456
+	* gcc.c (do_spec_1): Don't call memcpy (_, NULL, 0).
+
 2020-06-05  Thomas Schwinge  <thomas@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 

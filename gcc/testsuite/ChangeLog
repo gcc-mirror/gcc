@@ -1,3 +1,7 @@
+2020-06-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/torture/pr95548.C: New test.
+
 2020-06-05  Martin Sebor  <msebor@redhat.com>
 
 	* g++.dg/warn/Wnonnull5.C: Temporarily remove.
