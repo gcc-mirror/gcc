@@ -351,12 +351,12 @@ void gendocfile(Module *m)
         // Override with DDOCFILE specified in the sc.ini file
         char *p = getenv("DDOCFILE");
         if (p)
-            global.params.ddocfiles->shift(p);
+            global.params.ddocfiles.shift(p);
 
         // Override with the ddoc macro files from the command line
-        for (size_t i = 0; i < global.params.ddocfiles->length; i++)
+        for (size_t i = 0; i < global.params.ddocfiles.length; i++)
         {
-            FileName f((*global.params.ddocfiles)[i]);
+            FileName f(global.params.ddocfiles[i]);
             File file(&f);
             readFile(m->loc, &file);
             // BUG: convert file contents to UTF-8 before use

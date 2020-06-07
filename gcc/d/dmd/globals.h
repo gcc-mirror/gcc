@@ -145,7 +145,7 @@ struct Param
     CHECKACTION checkAction;       // action to take when bounds, asserts or switch defaults are violated
 
     DString  argv0;    // program name
-    Array<const char *> *modFileAliasStrings; // array of char*'s of -I module filename alias strings
+    Array<const char *> modFileAliasStrings; // array of char*'s of -I module filename alias strings
     Array<const char *> *imppath;     // array of char*'s of where to look for import modules
     Array<const char *> *fileImppath; // array of char*'s of where to look for file import modules
     DString objdir;    // .obj/.lib file output directory
@@ -155,7 +155,7 @@ struct Param
     bool doDocComments;  // process embedded documentation comments
     DString docdir;      // write documentation file to docdir directory
     DString docname;     // write documentation file to docname
-    Array<const char *> *ddocfiles;  // macro include files for Ddoc
+    Array<const char *> ddocfiles;  // macro include files for Ddoc
 
     bool doHdrGeneration;  // process embedded documentation comments
     DString hdrdir;        // write 'header' file to docdir directory
@@ -190,10 +190,10 @@ struct Param
     Strings runargs;    // arguments for executable
 
     // Linker stuff
-    Array<const char *> *objfiles;
-    Array<const char *> *linkswitches;
-    Array<const char *> *libfiles;
-    Array<const char *> *dllfiles;
+    Array<const char *> objfiles;
+    Array<const char *> linkswitches;
+    Array<const char *> libfiles;
+    Array<const char *> dllfiles;
     DString deffile;
     DString resfile;
     DString exefile;

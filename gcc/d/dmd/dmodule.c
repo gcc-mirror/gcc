@@ -228,7 +228,7 @@ Module *Module::load(Loc loc, Identifiers *packages, Identifier *ident)
     {
         OutBuffer buf;
         OutBuffer dotmods;
-        Array<const char *> *ms = global.params.modFileAliasStrings;
+        Array<const char *> *ms = &global.params.modFileAliasStrings;
         const size_t msdim = ms ? ms->length : 0;
 
         for (size_t i = 0; i < packages->length; i++)

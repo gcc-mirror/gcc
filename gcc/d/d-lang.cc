@@ -297,18 +297,12 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
   /* Default extern(C++) mangling to C++14.  */
   global.params.cplusplus = CppStdRevisionCpp14;
 
-  global.params.linkswitches = new Strings ();
-  global.params.libfiles = new Strings ();
-  global.params.objfiles = new Strings ();
-  global.params.ddocfiles = new Strings ();
-
   /* Warnings and deprecations are disabled by default.  */
   global.params.useDeprecated = DIAGNOSTICoff;
   global.params.warnings = DIAGNOSTICoff;
 
   global.params.imppath = new Strings ();
   global.params.fileImppath = new Strings ();
-  global.params.modFileAliasStrings = new Strings ();
 
   /* Extra GDC-specific options.  */
   d_option.fonly = NULL;
@@ -474,7 +468,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fdoc_inc_:
-      global.params.ddocfiles->push (arg);
+      global.params.ddocfiles.push (arg);
       break;
 
     case OPT_fdruntime:
@@ -502,7 +496,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fmodule_file_:
-      global.params.modFileAliasStrings->push (arg);
+      global.params.modFileAliasStrings.push (arg);
       if (!strchr (arg, '='))
 	error ("bad argument for %<-fmodule-file%>: %qs", arg);
       break;
