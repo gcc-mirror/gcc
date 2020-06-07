@@ -817,6 +817,12 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
   tree awaiter_calls = make_tree_vec (3);
   TREE_VEC_ELT (awaiter_calls, 0) = awrd_call; /* await_ready().  */
   TREE_VEC_ELT (awaiter_calls, 1) = awsp_call; /* await_suspend().  */
+  tree te = NULL_TREE;
+  if (TREE_CODE (awrs_call) == TARGET_EXPR)
+    {
+      te = awrs_call;
+      awrs_call = TREE_OPERAND (awrs_call, 1);
+    }
   TREE_VEC_ELT (awaiter_calls, 2) = awrs_call; /* await_resume().  */
 
   tree await_expr = build5_loc (loc, CO_AWAIT_EXPR,
@@ -824,7 +830,13 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
 				a, e_proxy, o, awaiter_calls,
 				build_int_cst (integer_type_node,
 					       (int) suspend_kind));
-  return convert_from_reference (await_expr);
+  if (te)
+    {
+      TREE_OPERAND (te, 1) = await_expr;
+      await_expr = te;
+    }
+  tree t = convert_from_reference (await_expr);
+  return t;
 }
 
 tree
@@ -962,8 +974,21 @@ finish_co_yield_expr (location_t kw, tree expr)
   tree op = build_co_await (kw, yield_call, CO_YIELD_SUSPEND_POINT);
   if (op != error_mark_node)
     {
-      op = build2_loc (kw, CO_YIELD_EXPR, TREE_TYPE (op), expr, op);
+      if (REFERENCE_REF_P (op))
+	op = TREE_OPERAND (op, 0);
+      /* If the await expression is wrapped in a TARGET_EXPR, then transfer
+	 that wrapper to the CO_YIELD_EXPR, since this is just a proxy for
+	 its contained await.  Otherwise, just build the CO_YIELD_EXPR.  */
+      if (TREE_CODE (op) == TARGET_EXPR)
+	{
+	  tree t = TREE_OPERAND (op, 1);
+	  t = build2_loc (kw, CO_YIELD_EXPR, TREE_TYPE (t), expr, t);
+	  TREE_OPERAND (op, 1) = t;
+	}
+      else
+	op = build2_loc (kw, CO_YIELD_EXPR, TREE_TYPE (op), expr, op);
       TREE_SIDE_EFFECTS (op) = 1;
+      op = convert_from_reference (op);
     }
 
   return op;
