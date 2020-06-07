@@ -1,3 +1,9 @@
+2020-06-06  Carl Love  <cel@us.ibm.com>
+
+	PR target/94833
+	* gcc.target/powerpc/builtins-8-p9-runnable.c (main): Add
+	additional test cases with zero vector elements.
+
 2020-06-05  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95373

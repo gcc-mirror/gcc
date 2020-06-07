@@ -1,3 +1,9 @@
+2020-06-06  Carl Love  <cel@us.ibm.com>
+
+	PR target/94833
+	* config/rs6000/vsx.md (define_expand): Fix instruction generation for
+	first_match_index_<mode>.
+
 2020-06-05  H.J. Lu  <hjl.tools@gmail.com>
 
 	* config/i386/driver-i386.c (host_detect_local_cpu): Support
