@@ -7979,7 +7979,7 @@ package body Sem_Ch4 is
       Prefix : Node_Id;
       Exprs  : List_Id) return Boolean
    is
-      Pref_Typ : constant Entity_Id := Etype (Prefix);
+      Pref_Typ : Entity_Id := Etype (Prefix);
 
       function Constant_Indexing_OK return Boolean;
       --  Constant_Indexing is legal if there is no Variable_Indexing defined
@@ -8413,6 +8413,25 @@ package body Sem_Ch4 is
 
       if Present (Generalized_Indexing (N)) then
          return True;
+      end if;
+
+      --  An explicit dereference needs to be created in the case of a prefix
+      --  that's an access.
+
+      --  It seems that this should be done elsewhere, but not clear where that
+      --  should happen. Normally Insert_Explicit_Dereference is called via
+      --  Resolve_Implicit_Dereference, called from Resolve_Indexed_Component,
+      --  but that won't be called in this case because we transform the
+      --  indexing to a call. Resolve_Call.Check_Prefixed_Call takes care of
+      --  implicit dereferencing and referencing on prefixed calls, but that
+      --  would be too late, even if we expanded to a prefix call, because
+      --  Process_Indexed_Component will flag an error before the resolution
+      --  happens. ???
+
+      if Is_Access_Type (Pref_Typ) then
+         Pref_Typ := Implicitly_Designated_Type (Pref_Typ);
+         Insert_Explicit_Dereference (Prefix);
+         Error_Msg_NW (Warn_On_Dereference, "?d?implicit dereference", N);
       end if;
 
       C_Type := Pref_Typ;
