@@ -531,7 +531,7 @@ Expression *Expression_optimize(Expression *e, int result, bool keepLvalue)
                 TypeFunction *tf = (TypeFunction *)t1;
                 for (size_t i = 0; i < e->arguments->length; i++)
                 {
-                    Parameter *p = Parameter::getNth(tf->parameters, i);
+                    Parameter *p = tf->parameterList[i];
                     bool keep = p && (p->storageClass & (STCref | STCout)) != 0;
                     expOptimize((*e->arguments)[i], WANTvalue, keep);
                 }

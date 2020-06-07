@@ -45,7 +45,7 @@ FuncDeclaration *search_toString(StructDeclaration *sd)
         static TypeFunction *tftostring;
         if (!tftostring)
         {
-            tftostring = new TypeFunction(NULL, Type::tstring, 0, LINKd);
+            tftostring = new TypeFunction(ParameterList(), Type::tstring, LINKd);
             tftostring = tftostring->merge()->toTypeFunction();
         }
 

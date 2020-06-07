@@ -969,7 +969,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
             return dimError(e, 1, dim);
 
         LINK link;
-        int varargs;
+        VarArg varargs;
         RootObject *o = (*e->args)[0];
         Type *t = isType(o);
         TypeFunction *tf = NULL;
@@ -985,7 +985,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         if (tf)
         {
             link = tf->linkage;
-            varargs = tf->varargs;
+            varargs = tf->parameterList.varargs;
         }
         else
         {
@@ -997,7 +997,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
                 return new ErrorExp();
             }
             link = fd->linkage;
-            fd->getParameters(&varargs);
+            varargs = fd->getParameterList().varargs;
         }
         const char *style;
         switch (varargs)
@@ -1034,10 +1034,10 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
             else if (t->ty == Tpointer && t->nextOf()->ty == Tfunction)
                 tf = (TypeFunction *)t->nextOf();
         }
-        Parameters* fparams;
+        ParameterList fparams;
         if (tf)
         {
-            fparams = tf->parameters;
+            fparams = tf->parameterList;
         }
         else
         {
@@ -1049,7 +1049,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
                     o->toChars(), o1->toChars());
                 return new ErrorExp();
             }
-            fparams = fd->getParameters(NULL);
+            fparams = fd->getParameterList();
         }
 
         StorageClass stc;
@@ -1064,14 +1064,14 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         }
         ex = ex->ctfeInterpret();
         uinteger_t ii = ex->toUInteger();
-        if (ii >= Parameter::dim(fparams))
+        if (ii >= fparams.length())
         {
-            e->error("parameter index must be in range 0..%u not %s", (unsigned)Parameter::dim(fparams), ex->toChars());
+            e->error("parameter index must be in range 0..%u not %s", (unsigned)fparams.length(), ex->toChars());
             return new ErrorExp();
         }
 
         unsigned n = (unsigned)ii;
-        Parameter *p = Parameter::getNth(fparams, n);
+        Parameter *p = fparams[n];
         stc = p->storageClass;
 
         // This mirrors hdrgen.visit(Parameter p)

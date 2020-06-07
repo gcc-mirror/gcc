@@ -1287,7 +1287,7 @@ static void buildEnsureRequire(FuncDeclaration *fdx)
          *   __require();
          */
         Loc loc = fdx->frequire->loc;
-        TypeFunction *tf = new TypeFunction(NULL, Type::tvoid, 0, LINKd);
+        TypeFunction *tf = new TypeFunction(ParameterList(), Type::tvoid, LINKd);
         tf->isnothrow = f->isnothrow;
         tf->isnogc = f->isnogc;
         tf->purity = f->purity;
@@ -1320,7 +1320,7 @@ static void buildEnsureRequire(FuncDeclaration *fdx)
             p = new Parameter(STCref | STCconst, f->nextOf(), fdx->outId, NULL);
             fparams->push(p);
         }
-        TypeFunction *tf = new TypeFunction(fparams, Type::tvoid, 0, LINKd);
+        TypeFunction *tf = new TypeFunction(ParameterList(fparams), Type::tvoid, LINKd);
         tf->isnothrow = f->isnothrow;
         tf->isnogc = f->isnogc;
         tf->purity = f->purity;
@@ -1519,7 +1519,7 @@ void FuncDeclaration::semantic3(Scope *sc)
         //if (vthis) printf("\tvthis->type = %s\n", vthis->type->toChars());
 
         // Declare hidden variable _arguments[] and _argptr
-        if (f->varargs == 1)
+        if (f->parameterList.varargs == VARARGvariadic)
         {
             if (f->linkage == LINKd)
             {
@@ -1550,7 +1550,7 @@ void FuncDeclaration::semantic3(Scope *sc)
                 sc2->insert(_arguments);
                 _arguments->parent = this;
             }
-            if (f->linkage == LINKd || (f->parameters && Parameter::dim(f->parameters)))
+            if (f->linkage == LINKd || f->parameterList.length())
             {
                 // Declare _argptr
                 Type *t = target.va_listType(loc, sc);
@@ -1565,7 +1565,7 @@ void FuncDeclaration::semantic3(Scope *sc)
         /* Declare all the function parameters as variables
          * and install them in parameters[]
          */
-        size_t nparams = Parameter::dim(f->parameters);
+        size_t nparams = f->parameterList.length();
         if (nparams)
         {
             /* parameters[] has all the tuples removed, as the back end
@@ -1575,7 +1575,7 @@ void FuncDeclaration::semantic3(Scope *sc)
             parameters->reserve(nparams);
             for (size_t i = 0; i < nparams; i++)
             {
-                Parameter *fparam = Parameter::getNth(f->parameters, i);
+                Parameter *fparam = f->parameterList[i];
                 Identifier *id = fparam->ident;
                 StorageClass stc = 0;
                 if (!id)
@@ -1590,7 +1590,7 @@ void FuncDeclaration::semantic3(Scope *sc)
                 VarDeclaration *v = new VarDeclaration(loc, vtype, id, NULL);
                 //printf("declaring parameter %s of type %s\n", v->toChars(), v->type->toChars());
                 stc |= STCparameter;
-                if (f->varargs == 2 && i + 1 == nparams)
+                if (f->parameterList.varargs == VARARGtypesafe && i + 1 == nparams)
                     stc |= STCvariadic;
                 if (flags & FUNCFLAGinferScope && !(fparam->storageClass & STCscope))
                     stc |= STCmaybescope;
@@ -1608,11 +1608,11 @@ void FuncDeclaration::semantic3(Scope *sc)
 
         // Declare the tuple symbols and put them in the symbol table,
         // but not in parameters[].
-        if (f->parameters)
+        if (f->parameterList.parameters)
         {
-            for (size_t i = 0; i < f->parameters->length; i++)
+            for (size_t i = 0; i < f->parameterList.parameters->length; i++)
             {
-                Parameter *fparam = (*f->parameters)[i];
+                Parameter *fparam = (*f->parameterList.parameters)[i];
 
                 if (!fparam->ident)
                     continue;                   // never used, so ignore
@@ -2313,7 +2313,7 @@ void FuncDeclaration::semantic3(Scope *sc)
     // Infer STCscope
     if (parameters)
     {
-        size_t nfparams = Parameter::dim(f->parameters);
+        size_t nfparams = f->parameterList.length();
         assert(nfparams == parameters->length);
         for (size_t u = 0; u < parameters->length; u++)
         {
@@ -2321,7 +2321,7 @@ void FuncDeclaration::semantic3(Scope *sc)
             if (v->storage_class & STCmaybescope)
             {
                 //printf("Inferring scope for %s\n", v->toChars());
-                Parameter *p = Parameter::getNth(f->parameters, u);
+                Parameter *p = f->parameterList[u];
                 v->storage_class &= ~STCmaybescope;
                 v->storage_class |= STCscope | STCscopeinferred;
                 p->storageClass |= STCscope | STCscopeinferred;
@@ -3317,7 +3317,7 @@ MATCH FuncDeclaration::leastAsSpecialized(FuncDeclaration *g)
 
     TypeFunction *tf = type->toTypeFunction();
     TypeFunction *tg = g->type->toTypeFunction();
-    size_t nfparams = Parameter::dim(tf->parameters);
+    size_t nfparams = tf->parameterList.length();
 
     /* If both functions have a 'this' pointer, and the mods are not
      * the same and g's is not const, then this is less specialized.
@@ -3342,7 +3342,7 @@ MATCH FuncDeclaration::leastAsSpecialized(FuncDeclaration *g)
     args.setDim(nfparams);
     for (size_t u = 0; u < nfparams; u++)
     {
-        Parameter *p = Parameter::getNth(tf->parameters, u);
+        Parameter *p = tf->parameterList[u];
         Expression *e;
         if (p->storageClass & (STCref | STCout))
         {
@@ -3360,7 +3360,7 @@ MATCH FuncDeclaration::leastAsSpecialized(FuncDeclaration *g)
         /* A variadic parameter list is less specialized than a
          * non-variadic one.
          */
-        if (tf->varargs && !tg->varargs)
+        if (tf->parameterList.varargs && !tg->parameterList.varargs)
             goto L1;    // less specialized
 
         return m;
@@ -3446,7 +3446,7 @@ struct FuncCandidateWalker
             TypeFunction *tf = (TypeFunction *)fd->type;
 
             ::errorSupplemental(fd->loc, "%s%s", fd->toPrettyChars(),
-                parametersTypeToChars(tf->parameters, tf->varargs));
+                parametersTypeToChars(tf->parameterList));
         }
         else
         {
@@ -3590,7 +3590,7 @@ FuncDeclaration *resolveFuncCall(Loc loc, Scope *sc, Dsymbol *s,
                             fd->ident->toChars(), fargsBuf.peekString());
                 else
                     fd->error(loc, "%s%s is not callable using argument types %s",
-                        parametersTypeToChars(tf->parameters, tf->varargs),
+                        parametersTypeToChars(tf->parameterList),
                         tf->modToChars(),
                         fargsBuf.peekString());
             }
@@ -3609,8 +3609,8 @@ FuncDeclaration *resolveFuncCall(Loc loc, Scope *sc, Dsymbol *s,
     {
         TypeFunction *tf1 = m.lastf->type->toTypeFunction();
         TypeFunction *tf2 = m.nextf->type->toTypeFunction();
-        const char *lastprms = parametersTypeToChars(tf1->parameters, tf1->varargs);
-        const char *nextprms = parametersTypeToChars(tf2->parameters, tf2->varargs);
+        const char *lastprms = parametersTypeToChars(tf1->parameterList);
+        const char *nextprms = parametersTypeToChars(tf2->parameterList);
         ::error(loc, "%s.%s called with argument types %s matches both:\n"
                      "%s:     %s%s\nand:\n%s:     %s%s",
                 s->parent->toPrettyChars(), s->ident->toChars(),
@@ -4066,10 +4066,10 @@ bool FuncDeclaration::parametersIntersect(Type *t)
 
     //printf("parametersIntersect(%s) t = %s\n", tf->toChars(), t->toChars());
 
-    size_t dim = Parameter::dim(tf->parameters);
+    size_t dim = tf->parameterList.length();
     for (size_t i = 0; i < dim; i++)
     {
-        Parameter *fparam = Parameter::getNth(tf->parameters, i);
+        Parameter *fparam = tf->parameterList[i];
         if (!fparam->type)
             continue;
         Type *tprmi = (fparam->storageClass & (STClazy | STCout | STCref))
@@ -4252,7 +4252,7 @@ FuncDeclaration *FuncDeclaration::genCfunc(Parameters *fparams, Type *treturn, I
     }
     else
     {
-        tf = new TypeFunction(fparams, treturn, 0, LINKc, stc);
+        tf = new TypeFunction(ParameterList(fparams), treturn, LINKc, stc);
         fd = new FuncDeclaration(Loc(), Loc(), id, STCstatic, tf);
         fd->protection = Prot(PROTpublic);
         fd->linkage = LINKc;
@@ -4269,11 +4269,11 @@ FuncDeclaration *FuncDeclaration::genCfunc(Parameters *fparams, Type *treturn, I
 void FuncDeclaration::checkDmain()
 {
     TypeFunction *tf = type->toTypeFunction();
-    const size_t nparams = Parameter::dim(tf->parameters);
+    const size_t nparams = tf->parameterList.length();
     bool argerr = false;
     if (nparams == 1)
     {
-        Parameter *fparam0 = Parameter::getNth(tf->parameters, 0);
+        Parameter *fparam0 = tf->parameterList[0];
         Type *t = fparam0->type->toBasetype();
         if (t->ty != Tarray ||
             t->nextOf()->ty != Tarray ||
@@ -4288,7 +4288,7 @@ void FuncDeclaration::checkDmain()
         error("must return int or void");
     else if (tf->nextOf()->ty != Tint32 && tf->nextOf()->ty != Tvoid)
         error("must return int or void, not %s", tf->nextOf()->toChars());
-    else if (tf->varargs || nparams >= 2 || argerr)
+    else if (tf->parameterList.varargs || nparams >= 2 || argerr)
         error("parameters must be main() or main(string[] args)");
 }
 
@@ -4640,20 +4640,15 @@ bool FuncDeclaration::hasNestedFrameRefs()
  * it is variadic or not.
  */
 
-Parameters *FuncDeclaration::getParameters(int *pvarargs)
+ParameterList FuncDeclaration::getParameterList()
 {
-    Parameters *fparameters = NULL;
-    int fvarargs = 0;
-
     if (type)
     {
         TypeFunction *fdtype = type->toTypeFunction();
-        fparameters = fdtype->parameters;
-        fvarargs = fdtype->varargs;
+        return fdtype->parameterList;
     }
-    if (pvarargs)
-        *pvarargs = fvarargs;
-    return fparameters;
+
+    return ParameterList();
 }
 
 
@@ -4865,11 +4860,11 @@ void CtorDeclaration::semantic(Scope *sc)
      */
     if (ad && (!parent->isTemplateInstance() || parent->isTemplateMixin()))
     {
-        const size_t dim = Parameter::dim(tf->parameters);
+        const size_t dim = tf->parameterList.length();
 
         if (StructDeclaration *sd = ad->isStructDeclaration())
         {
-            if (dim == 0 && tf->varargs == 0) // empty default ctor w/o any varargs
+            if (dim == 0 && tf->parameterList.varargs == VARARGnone) // empty default ctor w/o any varargs
             {
                 if (fbody || !(storage_class & STCdisable) || dim)
                 {
@@ -4880,10 +4875,10 @@ void CtorDeclaration::semantic(Scope *sc)
                 }
                 sd->noDefaultCtor = true;
             }
-            else if (dim == 0 && tf->varargs) // allow varargs only ctor
+            else if (dim == 0 && tf->parameterList.varargs) // allow varargs only ctor
             {
             }
-            else if (dim && Parameter::getNth(tf->parameters, 0)->defaultArg)
+            else if (dim && tf->parameterList[0]->defaultArg)
             {
                 // if the first parameter has a default argument, then the rest does as well
                 if (storage_class & STCdisable)
@@ -4898,7 +4893,7 @@ void CtorDeclaration::semantic(Scope *sc)
             }
 
         }
-        else if (dim == 0 && tf->varargs == 0)
+        else if (dim == 0 && tf->parameterList.varargs == VARARGnone)
         {
             ad->defaultCtor = this;
         }
@@ -4972,7 +4967,7 @@ void PostBlitDeclaration::semantic(Scope *sc)
     if (ident == Id::postblit && semanticRun < PASSsemantic)
         ad->postblits.push(this);
     if (!type)
-        type = new TypeFunction(NULL, Type::tvoid, false, LINKd, storage_class);
+        type = new TypeFunction(ParameterList(), Type::tvoid, LINKd, storage_class);
 
     sc = sc->push();
     sc->stc &= ~STCstatic;              // not static
@@ -5048,7 +5043,7 @@ void DtorDeclaration::semantic(Scope *sc)
     if (ident == Id::dtor && semanticRun < PASSsemantic)
         ad->dtors.push(this);
     if (!type)
-        type = new TypeFunction(NULL, Type::tvoid, false, LINKd, storage_class);
+        type = new TypeFunction(ParameterList(), Type::tvoid, LINKd, storage_class);
 
     sc = sc->push();
     sc->stc &= ~STCstatic;              // not a static destructor
@@ -5135,7 +5130,7 @@ void StaticCtorDeclaration::semantic(Scope *sc)
         return;
     }
     if (!type)
-        type = new TypeFunction(NULL, Type::tvoid, false, LINKd, storage_class);
+        type = new TypeFunction(ParameterList(), Type::tvoid, LINKd, storage_class);
 
     /* If the static ctor appears within a template instantiation,
      * it could get called multiple times by the module constructors
@@ -5261,7 +5256,7 @@ void StaticDtorDeclaration::semantic(Scope *sc)
         return;
     }
     if (!type)
-        type = new TypeFunction(NULL, Type::tvoid, false, LINKd, storage_class);
+        type = new TypeFunction(ParameterList(), Type::tvoid, LINKd, storage_class);
 
     /* If the static ctor appears within a template instantiation,
      * it could get called multiple times by the module constructors
@@ -5387,7 +5382,7 @@ void InvariantDeclaration::semantic(Scope *sc)
        )
         ad->invs.push(this);
     if (!type)
-        type = new TypeFunction(NULL, Type::tvoid, false, LINKd, storage_class);
+        type = new TypeFunction(ParameterList(), Type::tvoid, LINKd, storage_class);
 
     sc = sc->push();
     sc->stc &= ~STCstatic;              // not a static invariant
@@ -5468,7 +5463,7 @@ void UnitTestDeclaration::semantic(Scope *sc)
     if (global.params.useUnitTests)
     {
         if (!type)
-            type = new TypeFunction(NULL, Type::tvoid, false, LINKd, storage_class);
+            type = new TypeFunction(ParameterList(), Type::tvoid, LINKd, storage_class);
         Scope *sc2 = sc->push();
         sc2->linkage = LINKd;
         FuncDeclaration::semantic(sc2);
@@ -5498,7 +5493,7 @@ bool UnitTestDeclaration::addPostInvariant()
 
 /********************************* NewDeclaration ****************************/
 
-NewDeclaration::NewDeclaration(Loc loc, Loc endloc, StorageClass stc, Parameters *fparams, int varargs)
+NewDeclaration::NewDeclaration(Loc loc, Loc endloc, StorageClass stc, Parameters *fparams, VarArg varargs)
     : FuncDeclaration(loc, endloc, Id::classNew, STCstatic | stc, NULL)
 {
     this->parameters = fparams;
@@ -5536,19 +5531,19 @@ void NewDeclaration::semantic(Scope *sc)
     }
     Type *tret = Type::tvoid->pointerTo();
     if (!type)
-        type = new TypeFunction(parameters, tret, varargs, LINKd, storage_class);
+        type = new TypeFunction(ParameterList(parameters, varargs), tret, LINKd, storage_class);
 
     type = type->semantic(loc, sc);
 
     // Check that there is at least one argument of type size_t
     TypeFunction *tf = type->toTypeFunction();
-    if (Parameter::dim(tf->parameters) < 1)
+    if (tf->parameterList.length() < 1)
     {
         error("at least one argument of type size_t expected");
     }
     else
     {
-        Parameter *fparam = Parameter::getNth(tf->parameters, 0);
+        Parameter *fparam = tf->parameterList[0];
         if (!fparam->type->equals(Type::tsize_t))
             error("first argument must be type size_t, not %s", fparam->type->toChars());
     }
@@ -5614,19 +5609,19 @@ void DeleteDeclaration::semantic(Scope *sc)
         return;
     }
     if (!type)
-        type = new TypeFunction(parameters, Type::tvoid, 0, LINKd, storage_class);
+        type = new TypeFunction(ParameterList(parameters), Type::tvoid, LINKd, storage_class);
 
     type = type->semantic(loc, sc);
 
     // Check that there is only one argument of type void*
     TypeFunction *tf = type->toTypeFunction();
-    if (Parameter::dim(tf->parameters) != 1)
+    if (tf->parameterList.length() != 1)
     {
         error("one argument of type void* expected");
     }
     else
     {
-        Parameter *fparam = Parameter::getNth(tf->parameters, 0);
+        Parameter *fparam = tf->parameterList[0];
         if (!fparam->type->equals(Type::tvoid->pointerTo()))
             error("one argument of type void* expected, not %s", fparam->type->toChars());
     }

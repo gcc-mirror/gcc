@@ -144,7 +144,8 @@ declaration_type (Declaration *decl)
   /* Lazy declarations are converted to delegates.  */
   if (decl->storage_class & STClazy)
     {
-      TypeFunction *tf = TypeFunction::create (NULL, decl->type, false, LINKd);
+      TypeFunction *tf = TypeFunction::create (NULL, decl->type,
+					       VARARGnone, LINKd);
       TypeDelegate *t = TypeDelegate::create (tf);
       return build_ctype (t->merge2 ());
     }
@@ -193,7 +194,8 @@ parameter_type (Parameter *arg)
   /* Lazy parameters are converted to delegates.  */
   if (arg->storageClass & STClazy)
     {
-      TypeFunction *tf = TypeFunction::create (NULL, arg->type, false, LINKd);
+      TypeFunction *tf = TypeFunction::create (NULL, arg->type,
+					       VARARGnone, LINKd);
       TypeDelegate *t = TypeDelegate::create (tf);
       return build_ctype (t->merge2 ());
     }
@@ -1885,9 +1887,9 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 	    }
 	}
 
-      size_t nparams = Parameter::dim (tf->parameters);
+      size_t nparams = tf->parameterList.length ();
       /* if _arguments[] is the first argument.  */
-      size_t varargs = (tf->linkage == LINKd && tf->varargs == 1);
+      size_t varargs = tf->isDstyleVariadic ();
 
       /* Assumes arguments->length <= formal_args->length if (!tf->varargs).  */
       for (size_t i = 0; i < arguments->length; ++i)
@@ -1898,7 +1900,7 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 	  if (i - varargs < nparams && i >= varargs)
 	    {
 	      /* Actual arguments for declared formal arguments.  */
-	      Parameter *parg = Parameter::getNth (tf->parameters, i - varargs);
+	      Parameter *parg = tf->parameterList[i - varargs];
 	      targ = convert_for_argument (targ, parg);
 	    }
 

@@ -122,7 +122,7 @@ static void lowerArrayAggregate(StaticForeach *sfe, Scope *sc)
 
 static Expression *wrapAndCall(Loc loc, Statement *s)
 {
-    TypeFunction *tf = new TypeFunction(new Parameters(), NULL, 0, LINKdefault, 0);
+    TypeFunction *tf = new TypeFunction(ParameterList(), NULL, LINKdefault, 0);
     FuncLiteralDeclaration *fd = new FuncLiteralDeclaration(loc, loc, tf, TOKreserved, NULL);
     fd->fbody = s;
     FuncExp *fe = new FuncExp(loc, fd);

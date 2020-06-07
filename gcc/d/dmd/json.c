@@ -679,7 +679,7 @@ public:
 
         TypeFunction *tf = (TypeFunction *)d->type;
         if (tf && tf->ty == Tfunction)
-            property("parameters", tf->parameters);
+            property("parameters", tf->parameterList.parameters);
 
         property("endline", "endchar", &d->endloc);
 

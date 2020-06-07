@@ -1385,14 +1385,14 @@ bool functionParameters(Loc loc, Scope *sc, TypeFunction *tf,
     assert(arguments);
     assert(fd || tf->next);
     size_t nargs = arguments ? arguments->length : 0;
-    size_t nparams = Parameter::dim(tf->parameters);
+    size_t nparams = tf->parameterList.length();
     unsigned olderrors = global.errors;
     bool err = false;
     *prettype = Type::terror;
     Expression *eprefix = NULL;
     *peprefix = NULL;
 
-    if (nargs > nparams && tf->varargs == 0)
+    if (nargs > nparams && tf->parameterList.varargs == VARARGnone)
     {
         error(loc, "expected %llu arguments, not %llu for non-variadic function type %s", (ulonglong)nparams, (ulonglong)nargs, tf->toChars());
         return true;
@@ -1446,13 +1446,13 @@ bool functionParameters(Loc loc, Scope *sc, TypeFunction *tf,
 
         if (i < nparams)
         {
-            Parameter *p = Parameter::getNth(tf->parameters, i);
+            Parameter *p = tf->parameterList[i];
 
             if (!arg)
             {
                 if (!p->defaultArg)
                 {
-                    if (tf->varargs == 2 && i + 1 == nparams)
+                    if (tf->parameterList.varargs == VARARGtypesafe && i + 1 == nparams)
                         goto L2;
                     error(loc, "expected %llu function arguments, not %llu", (ulonglong)nparams, (ulonglong)nargs);
                     return true;
@@ -1465,7 +1465,7 @@ bool functionParameters(Loc loc, Scope *sc, TypeFunction *tf,
                 nargs++;
             }
 
-            if (tf->varargs == 2 && i + 1 == nparams)
+            if (tf->parameterList.varargs == VARARGtypesafe && i + 1 == nparams)
             {
                 //printf("\t\tvarargs == 2, p->type = '%s'\n", p->type->toChars());
                 {
@@ -1620,7 +1620,7 @@ bool functionParameters(Loc loc, Scope *sc, TypeFunction *tf,
         assert(arg);
         if (i < nparams)
         {
-            Parameter *p = Parameter::getNth(tf->parameters, i);
+            Parameter *p = tf->parameterList[i];
 
             if (!(p->storageClass & STClazy && p->type->ty == Tvoid))
             {
@@ -1733,7 +1733,7 @@ bool functionParameters(Loc loc, Scope *sc, TypeFunction *tf,
                         break;
                 }
 
-                if (tf->varargs == 1)
+                if (tf->parameterList.varargs == VARARGvariadic)
                 {
                     const char *p = tf->linkage == LINKc ? "extern(C)" : "extern(C++)";
                     if (arg->type->ty == Tarray)
@@ -1823,7 +1823,7 @@ bool functionParameters(Loc loc, Scope *sc, TypeFunction *tf,
                 lastthrow = i;
             if (firstdtor == -1 && arg->type->needsDestruction())
             {
-                Parameter *p = (i >= (ptrdiff_t)nparams ? NULL : Parameter::getNth(tf->parameters, i));
+                Parameter *p = (i >= (ptrdiff_t)nparams ? NULL : tf->parameterList[i]);
                 if (!(p && (p->storageClass & (STClazy | STCref | STCout))))
                     firstdtor = i;
             }
@@ -1853,7 +1853,7 @@ bool functionParameters(Loc loc, Scope *sc, TypeFunction *tf,
         {
             Expression *arg = (*arguments)[i];
 
-            Parameter *parameter = (i >= (ptrdiff_t)nparams ? NULL : Parameter::getNth(tf->parameters, i));
+            Parameter *parameter = (i >= (ptrdiff_t)nparams ? NULL : tf->parameterList[i]);
             const bool isRef = (parameter && (parameter->storageClass & (STCref | STCout)));
             const bool isLazy = (parameter && (parameter->storageClass & STClazy));
 
@@ -1945,7 +1945,7 @@ bool functionParameters(Loc loc, Scope *sc, TypeFunction *tf,
     //if (eprefix) printf("eprefix: %s\n", eprefix->toChars());
 
     // If D linkage and variadic, add _arguments[] as first argument
-    if (tf->linkage == LINKd && tf->varargs == 1)
+    if (tf->isDstyleVariadic())
     {
         assert(arguments->length >= nparams);
 
@@ -4678,10 +4678,10 @@ MATCH FuncExp::matchType(Type *to, Scope *sc, FuncExp **presult, int flag)
         TypeFunction *tf = (TypeFunction *)fd->type;
         //printf("\ttof = %s\n", tof->toChars());
         //printf("\ttf  = %s\n", tf->toChars());
-        size_t dim = Parameter::dim(tf->parameters);
+        size_t dim = tf->parameterList.length();
 
-        if (Parameter::dim(tof->parameters) != dim ||
-            tof->varargs != tf->varargs)
+        if (tof->parameterList.length() != dim ||
+            tof->parameterList.varargs != tf->parameterList.varargs)
             goto L1;
 
         Objects *tiargs = new Objects();
@@ -4693,7 +4693,7 @@ MATCH FuncExp::matchType(Type *to, Scope *sc, FuncExp **presult, int flag)
             size_t u = 0;
             for (; u < dim; u++)
             {
-                Parameter *p = Parameter::getNth(tf->parameters, u);
+                Parameter *p = tf->parameterList[u];
                 if (p->type->ty == Tident &&
                     ((TypeIdentifier *)p->type)->ident == tp->ident)
                 {
@@ -4701,7 +4701,7 @@ MATCH FuncExp::matchType(Type *to, Scope *sc, FuncExp **presult, int flag)
                 }
             }
             assert(u < dim);
-            Parameter *pto = Parameter::getNth(tof->parameters, u);
+            Parameter *pto = tof->parameterList[u];
             Type *t = pto->type;
             if (t->ty == Terror)
                 goto L1;
@@ -4745,7 +4745,7 @@ MATCH FuncExp::matchType(Type *to, Scope *sc, FuncExp **presult, int flag)
          */
         convertMatch = true;
 
-        TypeFunction *tfy = new TypeFunction(tfx->parameters, tof->next, tfx->varargs, tfx->linkage, STCundefined);
+        TypeFunction *tfy = new TypeFunction(tfx->parameterList, tof->next, tfx->linkage, STCundefined);
         tfy->mod = tfx->mod;
         tfy->isnothrow  = tfx->isnothrow;
         tfy->isnogc     = tfx->isnogc;

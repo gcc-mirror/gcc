@@ -1603,10 +1603,10 @@ Dsymbol *Parser::parseCtor(PrefixAttributes *pAttrs)
 
     /* Just a regular constructor
      */
-    int varargs;
+    VarArg varargs;
     Parameters *parameters = parseParameters(&varargs);
     stc = parsePostfix(stc, &udas);
-    if (varargs != 0 || Parameter::dim(parameters) != 0)
+    if (varargs != VARARGnone || Parameter::dim(parameters) != 0)
     {
         if (stc & STCstatic)
             error(loc, "constructor cannot be static");
@@ -1621,7 +1621,8 @@ Dsymbol *Parser::parseCtor(PrefixAttributes *pAttrs)
 
     Expression *constraint = tpl ? parseConstraint() : NULL;
 
-    Type *tf = new TypeFunction(parameters, NULL, varargs, linkage, stc);   // RetrunType -> auto
+    Type *tf = new TypeFunction(ParameterList(parameters, varargs),
+                                NULL, linkage, stc);   // ReturnType -> auto
     tf = tf->addSTC(stc);
 
     CtorDeclaration *f = new CtorDeclaration(loc, Loc(), stc, tf);
@@ -1929,7 +1930,7 @@ Dsymbol *Parser::parseNew(PrefixAttributes *pAttrs)
 
     nextToken();
 
-    int varargs;
+    VarArg varargs;
     Parameters *parameters = parseParameters(&varargs);
     NewDeclaration *f = new NewDeclaration(loc, Loc(), stc, parameters, varargs);
     if (pAttrs)
@@ -1951,9 +1952,9 @@ Dsymbol *Parser::parseDelete(PrefixAttributes *pAttrs)
 
     nextToken();
 
-    int varargs;
+    VarArg varargs;
     Parameters *parameters = parseParameters(&varargs);
-    if (varargs)
+    if (varargs != VARARGnone)
         error("... not allowed in delete function parameter list");
     DeleteDeclaration *f = new DeleteDeclaration(loc, Loc(), stc, parameters);
     if (pAttrs)
@@ -1966,10 +1967,10 @@ Dsymbol *Parser::parseDelete(PrefixAttributes *pAttrs)
  * Parse parameter list.
  */
 
-Parameters *Parser::parseParameters(int *pvarargs, TemplateParameters **tpl)
+Parameters *Parser::parseParameters(VarArg *pvarargs, TemplateParameters **tpl)
 {
     Parameters *parameters = new Parameters();
-    int varargs = 0;
+    VarArg varargs = VARARGnone;
     int hasdefault = 0;
 
     check(TOKlparen);
@@ -1989,7 +1990,7 @@ Parameters *Parser::parseParameters(int *pvarargs, TemplateParameters **tpl)
                     break;
 
                 case TOKdotdotdot:
-                    varargs = 1;
+                    varargs = VARARGvariadic;
                     nextToken();
                     break;
 
@@ -2076,7 +2077,7 @@ Parameters *Parser::parseParameters(int *pvarargs, TemplateParameters **tpl)
 
                         if (storageClass & (STCout | STCref))
                             error("variadic argument cannot be out or ref");
-                        varargs = 2;
+                        varargs = VARARGtypesafe;
                         parameters->push(new Parameter(storageClass, at, ai, ae));
                         nextToken();
                         break;
@@ -3406,11 +3407,12 @@ Type *Parser::parseBasicType2(Type *t)
                 TOK save = token.value;
                 nextToken();
 
-                int varargs;
+                VarArg varargs;
                 Parameters *parameters = parseParameters(&varargs);
 
                 StorageClass stc = parsePostfix(STCundefined, NULL);
-                TypeFunction *tf = new TypeFunction(parameters, t, varargs, linkage, stc);
+                TypeFunction *tf = new TypeFunction(ParameterList(parameters, varargs),
+                                                    t, linkage, stc);
                 if (stc & (STCconst | STCimmutable | STCshared | STCwild | STCreturn))
                 {
                     if (save == TOKfunction)
@@ -3572,14 +3574,15 @@ Type *Parser::parseDeclarator(Type *t, int *palt, Identifier **pident,
                     }
                 }
 
-                int varargs;
+                VarArg varargs;
                 Parameters *parameters = parseParameters(&varargs);
 
                 /* Parse const/immutable/shared/inout/nothrow/pure/return postfix
                  */
                 StorageClass stc = parsePostfix(storageClass, pudas);
                                         // merge prefix storage classes
-                Type *tf = new TypeFunction(parameters, t, varargs, linkage, stc);
+                Type *tf = new TypeFunction(ParameterList(parameters, varargs),
+                                            t, linkage, stc);
                 tf = tf->addSTC(stc);
                 if (pdisable)
                     *pdisable = stc & STCdisable ? 1 : 0;
@@ -4159,7 +4162,7 @@ Dsymbol *Parser::parseFunctionLiteral()
 
     TemplateParameters *tpl = NULL;
     Parameters *parameters = NULL;
-    int varargs = 0;
+    VarArg varargs = VARARGnone;
     Type *tret = NULL;
     StorageClass stc = 0;
     TOK save = TOKreserved;
@@ -4235,7 +4238,8 @@ Dsymbol *Parser::parseFunctionLiteral()
 
     if (!parameters)
         parameters = new Parameters();
-    TypeFunction *tf = new TypeFunction(parameters, tret, varargs, linkage, stc);
+    TypeFunction *tf = new TypeFunction(ParameterList(parameters, varargs),
+                                        tret, linkage, stc);
     tf = (TypeFunction *)tf->addSTC(stc);
     FuncLiteralDeclaration *fd = new FuncLiteralDeclaration(loc, Loc(), tf, save, NULL);
 

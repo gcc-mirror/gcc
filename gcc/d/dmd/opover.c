@@ -1923,9 +1923,9 @@ static int inferApplyArgTypesY(TypeFunction *tf, Parameters *parameters, int fla
 {   size_t nparams;
     Parameter *p;
 
-    if (Parameter::dim(tf->parameters) != 1)
+    if (tf->parameterList.length() != 1)
         goto Lnomatch;
-    p = Parameter::getNth(tf->parameters, 0);
+    p = tf->parameterList[0];
     if (p->type->ty != Tdelegate)
         goto Lnomatch;
     tf = (TypeFunction *)p->type->nextOf();
@@ -1934,8 +1934,8 @@ static int inferApplyArgTypesY(TypeFunction *tf, Parameters *parameters, int fla
     /* We now have tf, the type of the delegate. Match it against
      * the parameters, filling in missing parameter types.
      */
-    nparams = Parameter::dim(tf->parameters);
-    if (nparams == 0 || tf->varargs)
+    nparams = tf->parameterList.length();
+    if (nparams == 0 || tf->parameterList.varargs != VARARGnone)
         goto Lnomatch;          // not enough parameters
     if (parameters->length != nparams)
         goto Lnomatch;          // not enough parameters
@@ -1943,7 +1943,7 @@ static int inferApplyArgTypesY(TypeFunction *tf, Parameters *parameters, int fla
     for (size_t u = 0; u < nparams; u++)
     {
         p = (*parameters)[u];
-        Parameter *param = Parameter::getNth(tf->parameters, u);
+        Parameter *param = tf->parameterList[u];
         if (p->type)
         {
             if (!p->type->equals(param->type))

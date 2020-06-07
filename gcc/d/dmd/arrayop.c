@@ -66,7 +66,7 @@ FuncDeclaration *buildArrayOp(Identifier *ident, BinExp *exp, Scope *sc)
 
     /* Construct the function
      */
-    TypeFunction *ftype = new TypeFunction(fparams, exp->e1->type, 0, LINKc, stc);
+    TypeFunction *ftype = new TypeFunction(ParameterList(fparams), exp->e1->type, LINKc, stc);
     //printf("fd: %s %s\n", ident->toChars(), ftype->toChars());
     FuncDeclaration *fd = new FuncDeclaration(Loc(), Loc(), ident, STCundefined, ftype);
     fd->fbody = fbody;
