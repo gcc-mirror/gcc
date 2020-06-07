@@ -407,7 +407,7 @@ DebugCondition::DebugCondition(Module *mod, unsigned level, Identifier *ident)
 // Helper for printing dependency information
 void printDepsConditional(Scope *sc, DVCondition* condition, const char* depType)
 {
-    if (!global.params.moduleDeps || global.params.moduleDepsFile)
+    if (!global.params.moduleDeps || global.params.moduleDepsFile.length)
         return;
     OutBuffer *ob = global.params.moduleDeps;
     Module* imod = sc ? sc->instantiatingModule() : condition->mod;

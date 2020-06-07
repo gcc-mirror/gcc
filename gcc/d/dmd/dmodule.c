@@ -91,7 +91,7 @@ Module::Module(const char *filename, Identifier *ident, int doDocComment, int do
     nameoffset = 0;
     namelen = 0;
 
-    srcfilename = FileName::defaultExt(filename, global.mars_ext);
+    srcfilename = FileName::defaultExt(filename, global.mars_ext.ptr);
 
     if (global.run_noext && global.params.run &&
         !FileName::ext(filename) &&
@@ -101,8 +101,8 @@ Module::Module(const char *filename, Identifier *ident, int doDocComment, int do
         FileName::free(srcfilename);
         srcfilename = FileName::removeExt(filename);    // just does a mem.strdup(filename)
     }
-    else if (!FileName::equalsExt(srcfilename, global.mars_ext) &&
-        !FileName::equalsExt(srcfilename, global.hdr_ext) &&
+    else if (!FileName::equalsExt(srcfilename, global.mars_ext.ptr) &&
+        !FileName::equalsExt(srcfilename, global.hdr_ext.ptr) &&
         !FileName::equalsExt(srcfilename, "dd"))
     {
         error("source file name '%s' must have .%s extension", srcfilename, global.mars_ext);
@@ -112,13 +112,13 @@ Module::Module(const char *filename, Identifier *ident, int doDocComment, int do
     if (!FileName::absolute(srcfilename))
         srcfilePath = getcwd(NULL, 0);
 
-    objfile = setOutfile(global.params.objname, global.params.objdir, filename, global.obj_ext);
+    objfile = setOutfile(global.params.objname.ptr, global.params.objdir.ptr, filename, global.obj_ext.ptr);
 
     if (doDocComment)
         setDocfile();
 
     if (doHdrGen)
-        hdrfile = setOutfile(global.params.hdrname, global.params.hdrdir, arg, global.hdr_ext);
+        hdrfile = setOutfile(global.params.hdrname.ptr, global.params.hdrdir.ptr, arg, global.hdr_ext.ptr);
 
     //objfile = new File(objfilename);
 }
@@ -130,7 +130,7 @@ Module *Module::create(const char *filename, Identifier *ident, int doDocComment
 
 void Module::setDocfile()
 {
-    docfile = setOutfile(global.params.docname, global.params.docdir, arg, global.doc_ext);
+    docfile = setOutfile(global.params.docname.ptr, global.params.docdir.ptr, arg, global.doc_ext.ptr);
 }
 
 /*********************************************
@@ -302,7 +302,7 @@ bool Module::read(Loc loc)
         {
             ::error(loc, "cannot find source code for runtime library file 'object.d'");
             errorSupplemental(loc, "dmd might not be correctly installed. Run 'dmd -man' for installation instructions.");
-            const char *dmdConfFile = global.inifilename ? FileName::canonicalName(global.inifilename) : NULL;
+            const char *dmdConfFile = global.inifilename.length ? FileName::canonicalName(global.inifilename.ptr) : NULL;
             errorSupplemental(loc, "config file: %s", dmdConfFile ? dmdConfFile : "not found");
         }
         else
@@ -1288,11 +1288,11 @@ const char *lookForSourceFile(const char **path, const char *filename)
      */
     *path = NULL;
 
-    const char *sdi = FileName::forceExt(filename, global.hdr_ext);
+    const char *sdi = FileName::forceExt(filename, global.hdr_ext.ptr);
     if (FileName::exists(sdi) == 1)
         return sdi;
 
-    const char *sd  = FileName::forceExt(filename, global.mars_ext);
+    const char *sd  = FileName::forceExt(filename, global.mars_ext.ptr);
     if (FileName::exists(sd) == 1)
         return sd;
 

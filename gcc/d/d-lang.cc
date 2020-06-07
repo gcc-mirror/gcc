@@ -1027,8 +1027,8 @@ d_parse_file (void)
 {
   if (global.params.verbose)
     {
-      message ("binary    %s", global.params.argv0);
-      message ("version   %s", global.version);
+      message ("binary    %s", global.params.argv0.ptr);
+      message ("version   %s", global.version.ptr);
 
       if (global.params.versionids)
 	{
@@ -1300,11 +1300,12 @@ d_parse_file (void)
       OutBuffer buf;
       json_generate (&buf, &modules);
 
-      const char *name = global.params.jsonfilename;
+      const char *name = global.params.jsonfilename.ptr;
 
       if (name && (name[0] != '-' || name[1] != '\0'))
 	{
-	  const char *nameext = FileName::defaultExt (name, global.json_ext);
+	  const char *nameext
+	    = FileName::defaultExt (name, global.json_ext.ptr);
 	  File *fjson = File::create (nameext);
 	  fjson->setbuffer ((void *) buf.data, buf.offset);
 	  fjson->ref = 1;

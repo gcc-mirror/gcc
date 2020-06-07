@@ -17,6 +17,22 @@ struct DArray
 {
     size_t length;
     T *ptr;
+
+    DArray() : length(0), ptr(NULL) { }
+
+    DArray(size_t length_in, T *ptr_in)
+        : length(length_in), ptr(ptr_in) { }
+};
+
+struct DString : public DArray<const char>
+{
+    DString() : DArray<const char>() { }
+
+    DString(const char *ptr)
+        : DArray<const char>(ptr ? strlen(ptr) : 0, ptr) { }
+
+    DString(size_t length, const char *ptr)
+        : DArray<const char>(length, ptr) { }
 };
 
 /// Corresponding C++ type that maps to D size_t

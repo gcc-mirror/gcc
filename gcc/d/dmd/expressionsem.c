@@ -2373,13 +2373,13 @@ public:
             OutBuffer *ob = global.params.moduleDeps;
             Module* imod = sc->instantiatingModule();
 
-            if (!global.params.moduleDepsFile)
+            if (!global.params.moduleDepsFile.length)
                 ob->writestring("depsFile ");
             ob->writestring(imod->toPrettyChars());
             ob->writestring(" (");
             escapePath(ob, imod->srcfile->toChars());
             ob->writestring(") : ");
-            if (global.params.moduleDepsFile)
+            if (global.params.moduleDepsFile.length)
                 ob->writestring("string : ");
             ob->writestring((char *) se->string);
             ob->writestring(" (");
