@@ -618,7 +618,7 @@ void FuncDeclaration::semantic(Scope *sc)
         {
             OutBuffer buf;
             MODtoBuffer(&buf, tf->mod);
-            error("without 'this' cannot be %s", buf.peekString());
+            error("without 'this' cannot be %s", buf.peekChars());
             tf->mod = 0;    // remove qualifiers
         }
 
@@ -3258,7 +3258,7 @@ FuncDeclaration *FuncDeclaration::overloadModMatch(Loc loc, Type *tthis, bool &h
             MODMatchToBuffer(&thisBuf, tthis->mod, tf->mod);
             MODMatchToBuffer(&funcBuf, tf->mod, tthis->mod);
             ::error(loc, "%smethod %s is not callable using a %sobject",
-                funcBuf.peekString(), this->toPrettyChars(), thisBuf.peekString());
+                funcBuf.peekChars(), this->toPrettyChars(), thisBuf.peekChars());
         }
     }
 
@@ -3551,7 +3551,7 @@ FuncDeclaration *resolveFuncCall(Loc loc, Scope *sc, Dsymbol *s,
         {
             ::error(loc, "%s %s.%s cannot deduce function from argument types !(%s)%s, candidates are:",
                     td->kind(), td->parent->toPrettyChars(), td->ident->toChars(),
-                    tiargsBuf.peekString(), fargsBuf.peekString());
+                    tiargsBuf.peekChars(), fargsBuf.peekChars());
 
             // Display candidate templates (even if there are no multiple overloads)
             TemplateCandidateWalker tcw;
@@ -3562,7 +3562,7 @@ FuncDeclaration *resolveFuncCall(Loc loc, Scope *sc, Dsymbol *s,
         else if (od)
         {
             ::error(loc, "none of the overloads of '%s' are callable using argument types !(%s)%s",
-                od->ident->toChars(), tiargsBuf.peekString(), fargsBuf.peekString());
+                od->ident->toChars(), tiargsBuf.peekChars(), fargsBuf.peekChars());
         }
         else
         {
@@ -3577,22 +3577,22 @@ FuncDeclaration *resolveFuncCall(Loc loc, Scope *sc, Dsymbol *s,
                 MODMatchToBuffer(&funcBuf, tf->mod, tthis->mod);
                 if (hasOverloads)
                     ::error(loc, "none of the overloads of '%s' are callable using a %sobject, candidates are:",
-                        fd->ident->toChars(), thisBuf.peekString());
+                        fd->ident->toChars(), thisBuf.peekChars());
                 else
                     ::error(loc, "%smethod %s is not callable using a %sobject",
-                        funcBuf.peekString(), fd->toPrettyChars(), thisBuf.peekString());
+                        funcBuf.peekChars(), fd->toPrettyChars(), thisBuf.peekChars());
             }
             else
             {
                 //printf("tf = %s, args = %s\n", tf->deco, (*fargs)[0]->type->deco);
                 if (hasOverloads)
                     ::error(loc, "none of the overloads of '%s' are callable using argument types %s, candidates are:",
-                            fd->ident->toChars(), fargsBuf.peekString());
+                            fd->ident->toChars(), fargsBuf.peekChars());
                 else
                     fd->error(loc, "%s%s is not callable using argument types %s",
                         parametersTypeToChars(tf->parameterList),
                         tf->modToChars(),
-                        fargsBuf.peekString());
+                        fargsBuf.peekChars());
             }
 
             // Display candidate functions
@@ -3614,7 +3614,7 @@ FuncDeclaration *resolveFuncCall(Loc loc, Scope *sc, Dsymbol *s,
         ::error(loc, "%s.%s called with argument types %s matches both:\n"
                      "%s:     %s%s\nand:\n%s:     %s%s",
                 s->parent->toPrettyChars(), s->ident->toChars(),
-                fargsBuf.peekString(),
+                fargsBuf.peekChars(),
                 m.lastf->loc.toChars(), m.lastf->toPrettyChars(), lastprms,
                 m.nextf->loc.toChars(), m.nextf->toPrettyChars(), nextprms);
     }
@@ -3725,7 +3725,7 @@ const char *FuncDeclaration::toFullSignature()
 {
     OutBuffer buf;
     functionToBufferWithIdent(type->toTypeFunction(), &buf, toChars());
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 bool FuncDeclaration::isMain()
@@ -5421,7 +5421,7 @@ static Identifier *unitTestId(Loc loc)
 {
     OutBuffer buf;
     buf.printf("__unittestL%u_", loc.linnum);
-    return Identifier::generateId(buf.peekString());
+    return Identifier::generateId(buf.peekChars());
 }
 
 UnitTestDeclaration::UnitTestDeclaration(Loc loc, Loc endloc, StorageClass stc, char *codedoc)

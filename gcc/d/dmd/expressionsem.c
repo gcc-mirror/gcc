@@ -2678,7 +2678,7 @@ public:
                 MODMatchToBuffer(&thisBuf, e->e1->type->mod, tf->mod);
                 MODMatchToBuffer(&funcBuf, tf->mod, e->e1->type->mod);
                 e->error("%smethod %s is not callable using a %s%s",
-                    funcBuf.peekString(), f->toPrettyChars(), thisBuf.peekString(), e->e1->toChars());
+                    funcBuf.peekChars(), f->toPrettyChars(), thisBuf.peekChars(), e->e1->toChars());
                 return setError();
             }
         }
@@ -3420,7 +3420,7 @@ public:
                 //printf("tf = %s, args = %s\n", tf->deco, (*exp->arguments)[0]->type->deco);
                 ::error(exp->loc, "%s %s %s is not callable using argument types %s",
                         p, exp->e1->toChars(), parametersTypeToChars(tf->parameterList),
-                        buf.peekString());
+                        buf.peekChars());
 
                 return setError();
             }
@@ -3493,7 +3493,7 @@ public:
                     //printf("tf = %s, args = %s\n", tf->deco, (*exp->arguments)[0]->type->deco);
                     ::error(exp->loc, "%s %s is not callable using argument types %s",
                             exp->e1->toChars(), parametersTypeToChars(tf->parameterList),
-                            buf.peekString());
+                            buf.peekChars());
 
                     exp->f = NULL;
                 }
@@ -8250,7 +8250,7 @@ Expression *semanticX(DotIdExp *exp, Scope *sc)
                     }
                     OutBuffer buf;
                     mangleToBuffer(ds, &buf);
-                    const char *s = buf.extractString();
+                    const char *s = buf.extractChars();
                     Expression *e = new StringExp(exp->loc, const_cast<char*>(s), strlen(s));
                     e = semantic(e, sc);
                     return e;

@@ -307,7 +307,7 @@ public:
         buf2.reserve(32);
         Mangler v(&buf2);
         v.paramsToDecoBuffer(t->arguments);
-        const char *s = buf2.peekString();
+        const char *s = buf2.peekChars();
         int len = (int)buf2.offset;
         buf->printf("%d%.*s", len, len, s);
     }
@@ -839,7 +839,7 @@ const char *mangleExact(FuncDeclaration *fd)
         OutBuffer buf;
         Mangler v(&buf);
         v.mangleExact(fd);
-        fd->mangleString = buf.extractString();
+        fd->mangleString = buf.extractChars();
     }
     return fd->mangleString;
 }

@@ -2765,7 +2765,7 @@ const char *TemplateDeclaration::toChars()
         ::toCBuffer(constraint, &buf, &hgs);
         buf.writeByte(')');
     }
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 Prot TemplateDeclaration::prot()
@@ -7571,7 +7571,7 @@ Identifier *TemplateInstance::genIdent(Objects *args)
 
             OutBuffer bufsa;
             mangleToBuffer(sa, &bufsa);
-            const char *s = bufsa.extractString();
+            const char *s = bufsa.extractChars();
 
             /* Bugzilla 3043: if the first character of s is a digit this
              * causes ambiguity issues because the digits of the two numbers are adjacent.
@@ -7592,7 +7592,7 @@ Identifier *TemplateInstance::genIdent(Objects *args)
             assert(0);
     }
     buf.writeByte('Z');
-    id = buf.peekString();
+    id = buf.peekChars();
     //printf("\tgenIdent = %s\n", id);
     return Identifier::idPool(id);
 }
@@ -7860,14 +7860,14 @@ const char *TemplateInstance::toChars()
 {
     OutBuffer buf;
     toCBufferInstance(this, &buf);
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 const char *TemplateInstance::toPrettyCharsHelper()
 {
     OutBuffer buf;
     toCBufferInstance(this, &buf, true);
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 /*************************************
@@ -8599,5 +8599,5 @@ const char *TemplateMixin::toChars()
 {
     OutBuffer buf;
     toCBufferInstance(this, &buf);
-    return buf.extractString();
+    return buf.extractChars();
 }

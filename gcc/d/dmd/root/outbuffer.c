@@ -374,7 +374,7 @@ void OutBuffer::remove(size_t offset, size_t nbytes)
     this->offset -= nbytes;
 }
 
-char *OutBuffer::peekString()
+char *OutBuffer::peekChars()
 {
     if (!offset || data[offset-1] != '\0')
     {
@@ -384,7 +384,7 @@ char *OutBuffer::peekString()
     return (char *)data;
 }
 
-char *OutBuffer::extractString()
+char *OutBuffer::extractChars()
 {
     if (!offset || data[offset-1] != '\0')
         writeByte(0);

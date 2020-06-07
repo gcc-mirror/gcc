@@ -122,7 +122,7 @@ Loc::toChars (void) const
 	buf.printf (":%u", this->charnum);
     }
 
-  return buf.extractString ();
+  return buf.extractChars ();
 }
 
 bool

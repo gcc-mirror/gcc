@@ -203,7 +203,7 @@ Expression *arrayOp(BinExp *e, Scope *sc)
      */
     buf.writestring(e->type->toBasetype()->nextOf()->toBasetype()->mutableOf()->deco);
 
-    char *name = buf.peekString();
+    char *name = buf.peekChars();
     Identifier *ident = Identifier::idPool(name);
 
     FuncDeclaration **pFd = (FuncDeclaration **)dmd_aaGet(&arrayfuncs, (void *)ident);

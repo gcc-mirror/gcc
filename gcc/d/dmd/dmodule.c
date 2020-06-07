@@ -202,7 +202,7 @@ static void checkModFileAlias(OutBuffer *buf, OutBuffer *dotmods,
         const char *m = (*ms)[j];
         const char *q = strchr(m, '=');
         assert(q);
-        if (dotmods->offset <= (size_t)(q - m) && memcmp(dotmods->peekString(), m, q - m) == 0)
+        if (dotmods->offset <= (size_t)(q - m) && memcmp(dotmods->peekChars(), m, q - m) == 0)
         {
             buf->reset();
             size_t qlen = strlen(q + 1);
@@ -283,7 +283,7 @@ Module *Module::load(Loc loc, Identifiers *packages, Identifier *ident)
             }
         }
         buf.printf("%s\t(%s)", ident->toChars(), m->srcfile->toChars());
-        message("import    %s", buf.peekString());
+        message("import    %s", buf.peekChars());
     }
 
     m = m->parse();
@@ -1129,7 +1129,7 @@ const char *ModuleDeclaration::toChars()
         }
     }
     buf.writestring(id->toChars());
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 /* =========================== Package ===================== */

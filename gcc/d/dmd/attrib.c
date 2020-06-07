@@ -654,7 +654,7 @@ const char *ProtDeclaration::toPrettyChars(bool)
     buf.writeByte('\'');
     protectionToBuffer(&buf, protection);
     buf.writeByte('\'');
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 /********************************* AlignDeclaration ****************************/
@@ -1132,7 +1132,7 @@ void PragmaDeclaration::semantic(Scope *sc)
                 if (args->length)
                     buf.writeByte(')');
             }
-            message("pragma    %s", buf.peekString());
+            message("pragma    %s", buf.peekChars());
         }
         goto Lnodecl;
     }

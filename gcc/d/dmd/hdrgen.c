@@ -3475,5 +3475,5 @@ const char *parametersTypeToChars(ParameterList pl)
     HdrGenState hgs;
     PrettyPrintVisitor v(&buf, &hgs);
     v.parametersToBuffer(pl.parameters, pl.varargs);
-    return buf.extractString();
+    return buf.extractChars();
 }

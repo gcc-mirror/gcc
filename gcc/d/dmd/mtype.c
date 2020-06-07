@@ -1455,7 +1455,7 @@ char *MODtoChars(MOD mod)
     OutBuffer buf;
     buf.reserve(16);
     MODtoBuffer(&buf, mod);
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 /********************************
@@ -1470,7 +1470,7 @@ const char *Type::toChars()
     hgs.fullQual = (ty == Tclass && !mod);
 
     ::toCBuffer(this, &buf, NULL, &hgs);
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 char *Type::toPrettyChars(bool QualifyTypes)
@@ -1481,7 +1481,7 @@ char *Type::toPrettyChars(bool QualifyTypes)
     hgs.fullQual = QualifyTypes;
 
     ::toCBuffer(this, &buf, NULL, &hgs);
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 /*********************************
@@ -1504,7 +1504,7 @@ char *Type::modToChars()
     OutBuffer buf;
     buf.reserve(16);
     modToBuffer(&buf);
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 /** For each active modifier (MODconst, MODimmutable, etc) call fp with a
@@ -5715,7 +5715,7 @@ Type *TypeFunction::semantic(Loc loc, Scope *sc)
                             OutBuffer buf2;  stcToBuffer(&buf2, stc2);
 
                             error(loc, "incompatible parameter storage classes '%s' and '%s'",
-                                      buf1.peekString(), buf2.peekString());
+                                      buf1.peekChars(), buf2.peekChars());
                             errors = true;
                             stc = stc1 | (stc & ~(STCref | STCout | STClazy));
                         }

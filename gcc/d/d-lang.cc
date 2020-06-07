@@ -163,7 +163,7 @@ deps_write (Module *module, OutBuffer *buffer, unsigned colmax = 72)
   /* Write out make target module name.  */
   if (d_option.deps_target)
     {
-      buffer->writestring (d_option.deps_target->extractString ());
+      buffer->writestring (d_option.deps_target->extractChars ());
       column = d_option.deps_target->offset;
     }
   else
@@ -1262,7 +1262,7 @@ d_parse_file (void)
 	 to make the middle-end fully deterministic.  */
       OutBuffer buf;
       mangleToBuffer (Module::rootModule, &buf);
-      first_global_object_name = buf.extractString ();
+      first_global_object_name = buf.extractChars ();
     }
 
   /* Make dependencies.  */
