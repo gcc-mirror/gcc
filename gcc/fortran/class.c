@@ -501,8 +501,11 @@ get_unique_type_string (char *string, gfc_symbol *derived)
 static void
 get_unique_hashed_string (char *string, gfc_symbol *derived)
 {
-  char tmp[2*GFC_MAX_SYMBOL_LEN+2];
+  /* Provide sufficient space to hold "symbol.symbol_symbol".  */
+  char tmp[3*GFC_MAX_SYMBOL_LEN+3];
   get_unique_type_string (&tmp[0], derived);
+  size_t len = strnlen (tmp, sizeof (tmp));
+  gcc_assert (len < sizeof (tmp));
   /* If string is too long, use hash value in hex representation (allow for
      extra decoration, cf. gfc_build_class_symbol & gfc_find_derived_vtab).
      We need space to for 15 characters "__class_" + symbol name + "_%d_%da",
@@ -523,11 +526,13 @@ unsigned int
 gfc_hash_value (gfc_symbol *sym)
 {
   unsigned int hash = 0;
-  char c[2*(GFC_MAX_SYMBOL_LEN+1)];
+  /* Provide sufficient space to hold "symbol.symbol_symbol".  */
+  char c[3*GFC_MAX_SYMBOL_LEN+3];
   int i, len;
 
   get_unique_type_string (&c[0], sym);
-  len = strlen (c);
+  len = strnlen (c, sizeof (c));
+  gcc_assert (len < sizeof (c));
 
   for (i = 0; i < len; i++)
     hash = (hash << 6) + (hash << 16) - hash + c[i];
