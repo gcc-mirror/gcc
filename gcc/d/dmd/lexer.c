@@ -401,7 +401,7 @@ void Lexer::scan(Token *t)
                     }
                     else if (id == Id::VENDOR)
                     {
-                        t->ustring = (utf8_t *)const_cast<char *>(global.vendor);
+                        t->ustring = (utf8_t *)const_cast<char *>(global.vendor.ptr);
                         goto Lstr;
                     }
                     else if (id == Id::TIMESTAMP)
@@ -417,7 +417,7 @@ void Lexer::scan(Token *t)
                         unsigned minor = 0;
                         bool point = false;
 
-                        for (const char *p = global.version + 1; 1; p++)
+                        for (const char *p = global.version.ptr + 1; 1; p++)
                         {
                             c = *p;
                             if (isdigit((utf8_t)c))

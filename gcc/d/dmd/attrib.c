@@ -994,7 +994,7 @@ void PragmaDeclaration::semantic(Scope *sc)
             name[se->len] = 0;
             if (global.params.verbose)
                 message("library   %s", name);
-            if (global.params.moduleDeps && !global.params.moduleDepsFile)
+            if (global.params.moduleDeps && !global.params.moduleDepsFile.length)
             {
                 OutBuffer *ob = global.params.moduleDeps;
                 Module *imod = sc->instantiatingModule();
