@@ -1,3 +1,17 @@
+2020-06-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94817
+	PR c++/94829
+	PR c++/95087
+	* coroutines.cc (morph_fn_to_coro): Set unformed outline
+	functions to error_mark_node.  For early error returns suppress
+	warnings about missing ramp return values.  Fix reinstatement
+	of the function body on pre-existing initial error.  If we see
+	an early fatal error, drop the erroneous function body.
+	* decl.c (finish_function): Use the normal error path for fails
+	in the ramp function, do not try to compile the helpers if the
+	transform fails.
+
 2020-06-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/93310

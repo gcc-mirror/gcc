@@ -1,3 +1,24 @@
+2020-06-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94817
+	PR c++/94829
+	PR c++/95087
+	* g++.dg/coroutines/coro-missing-final-suspend.C: New test.
+	* g++.dg/coroutines/coro-missing-initial-suspend.C: New test.
+	* g++.dg/coroutines/coro-missing-promise-yield.C: Check for
+	continuation of compilation.
+	* g++.dg/coroutines/coro-missing-promise.C: Likewise.
+	* g++.dg/coroutines/coro-missing-ret-value.C: Likewise
+	* g++.dg/coroutines/coro-missing-ret-void.C: Likewise
+	* g++.dg/coroutines/coro-missing-ueh-3.C: Likewise
+	* g++.dg/coroutines/pr94817.C: New test.
+	* g++.dg/coroutines/pr94829.C: New test.
+	* g++.dg/coroutines/co-return-syntax-08-bad-return.C:
+	Adjust the testcase to do the compile (rather than an
+	-fsyntax-only parse).
+	* g++.dg/coroutines/coro1-ret-int-yield-int.h
+	(MISSING_INITIAL_SUSPEND, MISSING_FINAL_SUSPEND): New.
+
 2020-06-05  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95373
