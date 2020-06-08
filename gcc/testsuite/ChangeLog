@@ -1,3 +1,23 @@
+2020-06-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/parity-3.c: New test.
+	* gcc.target/i386/parity-4.c: Likewise.
+	* gcc.target/i386/parity-5.c: Likewise.
+	* gcc.target/i386/parity-6.c: Likewise.
+	* gcc.target/i386/parity-7.c: Likewise.
+	* gcc.target/i386/parity-8.c: Likewise.
+	* gcc.target/i386/parity-9.c: Likewise.
+
+2020-06-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95091
+	* gfortran.dg/pr95091.f90: New file.
+
+2020-06-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR tree-optimization/50439
+	* gfortran.dg/loop_interchange_2.f: New test.
+
 2020-06-06  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/torture/pr95548.C: New test.

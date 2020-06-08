@@ -1,3 +1,43 @@
+2020-06-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 73d8e2fec.
+	* decl.cc (get_symbol_decl): Use new Prot::Kind enum.
+	* modules.cc (get_internal_fn): Likewise.
+
+2020-06-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 108ca1bcd.
+	* d-diagnostic.cc (expand_d_format): Adjust to use extractChars().
+	* d-frontend.cc (Loc::toChars): Likewise.
+	* d-lang.cc (deps_write): Likewise.
+	(d_parse_file): Likewise.
+	* decl.cc (d_mangle_decl): Likewise.
+	* intrinsics.cc (maybe_set_intrinsic): Likewise.
+
+2020-06-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd b0df0e982.
+	* d-builtins.cc (build_frontend_type): Use VarArg for varargs_p.
+	* d-codegen.cc (declaration_type): Call TypeFunction::create with
+	argument VARARGnone.
+	(parameter_type): Likewise.
+	(d_build_call): Use new field names and member functions.
+	* d-target.cc (Target::cppParameterType): Call TypeFunction::create
+	with argument VARARGnone.
+	* types.cc (TypeVisitor::visit (TypeFunction *): Use new field names
+	and member functions.
+
+2020-06-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 1831b24ff.
+	* d-lang.cc (d_init_options): Remove initialization of updated fields.
+	(d_handle_option): Adjust for new field types.
+
+2020-06-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd cef1e7991.
+	* d-lang.cc (d_parse_file): Adjust for new field types.
+
 2020-06-05  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 740f3d1ea.
