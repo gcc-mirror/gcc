@@ -6531,7 +6531,9 @@ aarch64_layout_frame (void)
 	&& !crtl->abi->clobbers_full_reg_p (regno))
       frame.reg_offset[regno] = SLOT_REQUIRED;
 
-  /* With stack-clash, LR must be saved in non-leaf functions.  */
+  /* With stack-clash, LR must be saved in non-leaf functions.  The saving of
+     LR counts as an implicit probe which allows us to maintain the invariant
+     described in the comment at expand_prologue.  */
   gcc_assert (crtl->is_leaf
 	      || maybe_ne (frame.reg_offset[R30_REGNUM], SLOT_NOT_REQUIRED));
 
