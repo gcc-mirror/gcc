@@ -208,6 +208,7 @@
 
 2020-05-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/95242
 	* call.c (build_new_op_1): Suppress
 	warn_zero_as_null_pointer_constant across comparison of <=> result
 	to 0.
@@ -237,6 +238,37 @@
 	* constexpr.c (cxx_eval_constant_expression)
 	<case TEMPLATE_ID_EXPR>: Don't evaluate the concept when
 	constexpr evaluation is uid-sensitive.
+
+2020-05-22  Jason Merrill  <jason@redhat.com>
+
+	* cp-gimplify.c (cp_gimplify_expr) [CALL_EXPR]: Don't preevaluate
+	the function address if the call used operator syntax.
+
+2020-05-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95221
+	* cp-ubsan.c (cp_ubsan_maybe_instrument_member_call): For a virtual
+	call, instrument the OBJ_TYPE_REF.
+
+	* decl.c (compute_array_index_type_loc): Diagnose expressions
+	in a template that can't be constant.
+	* parser.c (cp_parser_direct_declarator): Don't check
+	non-constant array bounds here.
+
+	* cp-tree.h (is_rvalue_constant_expression): Declare.
+	* constexpr.c (is_rvalue_constant_expression): New.
+	* parser.c (cp_parser_constant_expression): Use it.
+	* decl.c (cp_finish_decl): Try to treat a constexpr initializer in a
+	template as constant.
+
+	* typeck.c (build_x_modify_expr): Handle error_mark_node arguments.
+
+	* decl.c (grokparms): Return NULL_TREE if any parms were erroneous.
+
+2020-05-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (finish_co_return_stmt): Revert change to use
+	finish_expr_stmt.
 
 2020-05-21  Patrick Palka  <ppalka@redhat.com>
 
