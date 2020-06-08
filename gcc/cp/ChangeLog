@@ -1,3 +1,10 @@
+2020-06-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95050
+	* coroutines.cc (build_co_await): Wrap the co_await expression
+	in a TARGET_EXPR, where needed.
+	(finish_co_yield_expr): Likewise.
+
 2020-06-06  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/94817

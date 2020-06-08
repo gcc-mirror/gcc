@@ -1,3 +1,8 @@
+2020-06-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95050
+	* g++.dg/coroutines/pr95050.C: New test.
+
 2020-06-06  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/94817
