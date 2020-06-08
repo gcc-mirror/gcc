@@ -298,6 +298,7 @@
    UNSPEC_VSX_XVCVBF16SP
    UNSPEC_VSX_XVCVSPBF16
    UNSPEC_VSX_XVCVSPSXDS
+   UNSPEC_VSX_XVCVSPHP
    UNSPEC_VSX_VSLO
    UNSPEC_VSX_EXTRACT
    UNSPEC_VSX_SXEXPDP
@@ -2184,6 +2185,15 @@
   "TARGET_P9_VECTOR"
   "xvcvhpsp %x0,%x1"
   [(set_attr "type" "vecfloat")])
+
+;; Generate xvcvsphp
+(define_insn "vsx_xvcvsphp"
+  [(set (match_operand:V4SI 0 "register_operand" "=wa")
+	(unspec:V4SI [(match_operand:V4SF 1 "vsx_register_operand" "wa")]
+		     UNSPEC_VSX_XVCVSPHP))]
+  "TARGET_P9_VECTOR"
+  "xvcvsphp %x0,%x1"
+[(set_attr "type" "vecfloat")])
 
 ;; xscvdpsp used for splat'ing a scalar to V4SF, knowing that the internal SF
 ;; format of scalars is actually DF.
