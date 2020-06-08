@@ -1012,7 +1012,7 @@ package body Sem_Case is
          --  If there is only one choice value missing between Value1 and
          --  Value2, build an integer or enumeration literal to represent it.
 
-         if (Value2 - Value1) = 0 then
+         if Value1 = Value2 then
             if Is_Integer_Type (Choice_Type) then
                Lit_Node := Make_Integer_Literal (Loc, Value1);
                Set_Etype (Lit_Node, Choice_Type);
