@@ -27054,6 +27054,7 @@ package body Sem_Util is
    -----------------------------
    -- Statically_Names_Object --
    -----------------------------
+
    function Statically_Names_Object (N : Node_Id) return Boolean is
    begin
       if Statically_Denotes_Object (N) then
@@ -27126,28 +27127,16 @@ package body Sem_Util is
             then
                return False;
             end if;
+
             declare
                Comp : constant Entity_Id :=
                  Original_Record_Component (Entity (Selector_Name (N)));
             begin
-              --  In not calling Has_Discriminant_Dependent_Constraint here,
-              --  we are anticipating a language definition fixup. The
-              --  current definition of "statically names" includes the
-              --  wording "the selector_name names a component that does
-              --  not depend on a discriminant", which suggests that this
-              --  call should not be commented out. But it appears likely
-              --  that this wording will be updated to only apply to a
-              --  component declared in a variant part. There is no need
-              --  to disallow something like
-              --    with Post => ... and then
-              --       Some_Record.Some_Discrim_Dep_Array_Component'Old (I)
-              --  since the evaluation of the 'Old prefix cannot raise an
-              --  exception. If the language is not updated, then the call
-              --  below to H_D_C_C will need to be uncommented.
+              --  AI12-0373 confirms that we should not call
+              --  Has_Discriminant_Dependent_Constraint here which would be
+              --  too strong.
 
-               if Is_Declared_Within_Variant (Comp)
-                  --  or else Has_Discriminant_Dependent_Constraint (Comp)
-               then
+               if Is_Declared_Within_Variant (Comp) then
                   return False;
                end if;
             end;
