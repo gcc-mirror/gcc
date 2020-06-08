@@ -39,6 +39,7 @@
 #include <bits/functional_hash.h>
 #if __cplusplus > 201703L
 # include <compare>
+# include <ostream>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -934,7 +935,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       public __uniq_ptr_hash<unique_ptr<_Tp, _Dp>>
     { };
 
-#if __cplusplus > 201103L
+#if __cplusplus >= 201402L
   /// @relates unique_ptr @{
 #define __cpp_lib_make_unique 201304
 
@@ -971,7 +972,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline typename _MakeUniq<_Tp>::__invalid_type
     make_unique(_Args&&...) = delete;
   // @} relates unique_ptr
-#endif
+#endif // C++14
+
+#if __cplusplus > 201703L && __cpp_concepts
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2948. unique_ptr does not define operator<< for stream output
+  /// Stream output operator for unique_ptr
+  template<typename _CharT, typename _Traits, typename _Tp, typename _Dp>
+    inline basic_ostream<_CharT, _Traits>&
+    operator<<(basic_ostream<_CharT, _Traits>& __os,
+	       const unique_ptr<_Tp, _Dp>& __p)
+    requires requires { __os << __p.get(); }
+    {
+      __os << __p.get();
+      return __os;
+    }
+#endif // C++20
 
   // @} group pointer_abstractions
 
