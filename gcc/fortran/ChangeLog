@@ -1,3 +1,15 @@
+2020-06-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95091
+	* class.c (gfc_hash_value): Add cast.
+
+2020-06-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95091
+	* class.c (get_unique_type_string, gfc_hash_value): Enlarge
+	buffers, and check whether the strings returned by
+	get_unique_type_string() fit.
+
 2020-06-05  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95530

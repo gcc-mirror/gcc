@@ -1,3 +1,26 @@
+2020-06-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (paritydi2, paritysi2): Expand reduction
+	via shift and xor to an USPEC PARITY matching a parityhi2_cmp.
+	(paritydi2_cmp, paritysi2_cmp): Delete these define_insn_and_split.
+	(parityhi2, parityqi2): New expanders.
+	(parityhi2_cmp): Implement set parity flag with xorb insn.
+	(parityqi2_cmp): Implement set parity flag with testb insn.
+	New peephole2s to use these insns (UNSPEC PARITY) when appropriate.
+
+2020-06-07  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/95018
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Override flag_cunroll_grow_size.
+
+2020-06-07  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* common.opt (flag_cunroll_grow_size): New flag.
+	* toplev.c (process_options): Set flag_cunroll_grow_size.
+	* tree-ssa-loop-ivcanon.c (pass_complete_unroll::execute):
+	Use flag_cunroll_grow_size.
+
 2020-06-06  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/95548
