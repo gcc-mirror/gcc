@@ -173,7 +173,7 @@
 	      || REGNO_REG_CLASS (REGNO (op)) == VFP_D0_D7_REGS
 	      || REGNO_REG_CLASS (REGNO (op)) == VFP_LO_REGS
 	      || (TARGET_VFPD32
-		  && REGNO_REG_CLASS (REGNO (op)) == VFP_REGS)));
+		  && REGNO_REG_CLASS (REGNO (op)) == VFP_HI_REGS)));
 })
 
 (define_predicate "vfp_hard_register_operand"
