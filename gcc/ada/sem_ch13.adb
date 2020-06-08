@@ -16016,10 +16016,12 @@ package body Sem_Ch13 is
       Match_Found : Boolean := False;
       Is_Match    : Boolean;
       Match       : Interp;
+
    begin
       if not Is_Type (Typ) then
          Error_Msg_N ("aspect can only be specified for a type", ASN);
          return;
+
       elsif not Is_First_Subtype (Typ) then
          Error_Msg_N ("aspect cannot be specified for a subtype", ASN);
          return;
@@ -16030,12 +16032,15 @@ package body Sem_Ch13 is
             Error_Msg_N ("aspect cannot be specified for a string type", ASN);
             return;
          end if;
+
          Param_Type := Standard_Wide_Wide_String;
+
       else
          if Is_Numeric_Type (Typ) then
             Error_Msg_N ("aspect cannot be specified for a numeric type", ASN);
             return;
          end if;
+
          Param_Type := Standard_String;
       end if;
 
@@ -16059,17 +16064,21 @@ package body Sem_Ch13 is
            and then Base_Type (Etype (It.Nam)) = Typ
          then
             declare
-               Params : constant List_Id :=
+               Params     : constant List_Id :=
                  Parameter_Specifications (Parent (It.Nam));
                Param_Spec : Node_Id;
                Param_Id   : Entity_Id;
+
             begin
                if List_Length (Params) = 1 then
                   Param_Spec := First (Params);
+
                   if not More_Ids (Param_Spec) then
                      Param_Id := Defining_Identifier (Param_Spec);
+
                      if Base_Type (Etype (Param_Id)) = Param_Type
-                        and then Ekind (Param_Id) = E_In_Parameter
+                       and then Ekind (Param_Id) = E_In_Parameter
+                       and then not Is_Aliased (Param_Id)
                      then
                         Is_Match := True;
                      end if;
@@ -16083,6 +16092,7 @@ package body Sem_Ch13 is
                Error_Msg_N ("aspect specification is ambiguous", ASN);
                return;
             end if;
+
             Match_Found := True;
             Match := It;
          end if;
