@@ -545,11 +545,14 @@ public:
     this->result_ = d_convert (build_ctype (e->type), result);
   }
 
-  /* Build an `and if' expression.  If the right operand expression is void,
-     then the resulting type is void.  Otherwise the result is bool.  */
+  /* Build a logical `and if' or `or if' expression.  If the right operand
+     expression is void, then the resulting type is void.  Otherwise the
+     result is bool.  */
 
-  void visit (AndAndExp *e)
+  void visit (LogicalExp *e)
   {
+    tree_code code = (e->op == TOKandand) ? TRUTH_ANDIF_EXPR : TRUTH_ORIF_EXPR;
+
     if (e->e2->type->toBasetype ()->ty != Tvoid)
       {
 	tree t1 = build_expr (e->e1);
@@ -559,39 +562,19 @@ public:
 	t2 = convert_for_condition (t2, e->e2->type);
 
 	this->result_ = d_convert (build_ctype (e->type),
-				   build_boolop (TRUTH_ANDIF_EXPR, t1, t2));
+				   build_boolop (code, t1, t2));
       }
     else
       {
 	tree t1 = convert_for_condition (build_expr (e->e1), e->e1->type);
 	tree t2 = build_expr_dtor (e->e2);
+
+	/* Invert condition for logical or if expression.  */
+	if (e->op == TOKoror)
+	  t1 = build1 (TRUTH_NOT_EXPR, d_bool_type, t1);
 
 	this->result_ = build_condition (build_ctype (e->type),
 					 t1, t2, void_node);
-      }
-  }
-
-  /* Build an `or if' expression.  If the right operand expression is void,
-     then the resulting type is void.  Otherwise the result is bool.  */
-
-  void visit (OrOrExp *e)
-  {
-    if (e->e2->type->toBasetype ()->ty != Tvoid)
-      {
-	tree t1 = convert_for_condition (build_expr (e->e1), e->e1->type);
-	tree t2 = convert_for_condition (build_expr (e->e2), e->e2->type);
-
-	this->result_ = d_convert (build_ctype (e->type),
-				   build_boolop (TRUTH_ORIF_EXPR, t1, t2));
-      }
-    else
-      {
-	tree t1 = convert_for_condition (build_expr (e->e1), e->e1->type);
-	tree t2 = build_expr_dtor (e->e2);
-	tree cond = build1 (TRUTH_NOT_EXPR, d_bool_type, t1);
-
-	this->result_ = build_condition (build_ctype (e->type),
-					 cond, t2, void_node);
       }
   }
 

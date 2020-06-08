@@ -4465,7 +4465,7 @@ public:
         result = pue->exp();
     }
 
-    void visit(AndAndExp *e)
+    void visit(LogicalExp *e)
     {
         // Check for an insidePointer expression, evaluate it if so
         interpretFourPointerRelation(pue, e);
@@ -4477,9 +4477,10 @@ public:
             return;
 
         int res;
-        if (result->isBool(false))
-            res = 0;
-        else if (isTrueBool(result))
+        const bool andand = e->op == TOKandand;
+        if (andand ? result->isBool(false) : isTrueBool(result))
+            res = !andand;
+        else if (andand ? isTrueBool(result) : result->isBool(false))
         {
             UnionExp ue2;
             result = interpret(&ue2, e->e2, istate);
@@ -4497,64 +4498,14 @@ public:
                 res = 1;
             else
             {
-                result->error("%s does not evaluate to a boolean", result->toChars());
+                result->error("`%s` does not evaluate to a boolean", result->toChars());
                 result = CTFEExp::cantexp;
                 return;
             }
         }
         else
         {
-            result->error("%s cannot be interpreted as a boolean", result->toChars());
-            result = CTFEExp::cantexp;
-            return;
-        }
-        if (goal != ctfeNeedNothing)
-        {
-            new(pue) IntegerExp(e->loc, res, e->type);
-            result = pue->exp();
-        }
-    }
-
-    void visit(OrOrExp *e)
-    {
-        // Check for an insidePointer expression, evaluate it if so
-        interpretFourPointerRelation(pue, e);
-        if (result)
-            return;
-
-        result = interpret(e->e1, istate);
-        if (exceptionOrCant(result))
-            return;
-
-        int res;
-        if (isTrueBool(result))
-            res = 1;
-        else if (result->isBool(false))
-        {
-            UnionExp ue2;
-            result = interpret(&ue2, e->e2, istate);
-            if (exceptionOrCant(result))
-                return;
-            if (result->op == TOKvoidexp)
-            {
-                assert(e->type->ty == Tvoid);
-                result = NULL;
-                return;
-            }
-            if (result->isBool(false))
-                res = 0;
-            else if (isTrueBool(result))
-                res = 1;
-            else
-            {
-                result->error("%s cannot be interpreted as a boolean", result->toChars());
-                result = CTFEExp::cantexp;
-                return;
-            }
-        }
-        else
-        {
-            result->error("%s cannot be interpreted as a boolean", result->toChars());
+            result->error("`%s` cannot be interpreted as a boolean", result->toChars());
             result = CTFEExp::cantexp;
             return;
         }
