@@ -5605,10 +5605,11 @@ package body Sem_Ch6 is
       --  in the message, and also provides the location for posting the
       --  message in the absence of a specified Err_Loc location.
 
-      function Conventions_Match
-        (Id1 : Entity_Id;
-         Id2 : Entity_Id) return Boolean;
-      --  Determine whether the conventions of arbitrary entities Id1 and Id2
+      function Conventions_Match (Id1, Id2 : Entity_Id) return Boolean;
+      --  True if the conventions of entities Id1 and Id2 match.
+
+      function Null_Exclusions_Match (F1, F2 : Entity_Id) return Boolean;
+      --  True if the null exclusions of two formals of anonymous access type
       --  match.
 
       -----------------------
@@ -5698,6 +5699,50 @@ package body Sem_Ch6 is
             return Convention (Id1) = Convention (Id2);
          end if;
       end Conventions_Match;
+
+      ---------------------------
+      -- Null_Exclusions_Match --
+      ---------------------------
+
+      function Null_Exclusions_Match (F1, F2 : Entity_Id) return Boolean is
+      begin
+         if not Is_Anonymous_Access_Type (Etype (F1))
+           or else not Is_Anonymous_Access_Type (Etype (F2))
+         then
+            return True;
+         end if;
+
+         --  AI12-0289-1: Case of controlling access parameter; False if the
+         --  partial view is untagged, the full view is tagged, and no explicit
+         --  "not null". Note that at this point, we're processing the package
+         --  body, so private/full types have been swapped. The Sloc test below
+         --  is to detect the (legal) case where F1 comes after the full type
+         --  declaration. This part is disabled pre-2005, because "not null" is
+         --  not allowed on those language versions.
+
+         if Ada_Version >= Ada_2005
+           and then Is_Controlling_Formal (F1)
+           and then not Null_Exclusion_Present (Parent (F1))
+           and then not Null_Exclusion_Present (Parent (F2))
+         then
+            declare
+               D : constant Entity_Id := Directly_Designated_Type (Etype (F1));
+               Partial_View_Of_Desig : constant Entity_Id :=
+                 Incomplete_Or_Partial_View (D);
+            begin
+               return No (Partial_View_Of_Desig)
+                 or else Is_Tagged_Type (Partial_View_Of_Desig)
+                 or else Sloc (D) < Sloc (F1);
+            end;
+
+         --  Not a controlling parameter, or one or both views have an explicit
+         --  "not null".
+
+         else
+            return Null_Exclusion_Present (Parent (F1)) =
+                   Null_Exclusion_Present (Parent (F2));
+         end if;
+      end Null_Exclusions_Match;
 
       --  Local Variables
 
@@ -5868,25 +5913,14 @@ package body Sem_Ch6 is
 
             --  Null exclusion must match
 
-            if Null_Exclusion_Present (Parent (Old_Formal))
-                 /=
-               Null_Exclusion_Present (Parent (New_Formal))
-            then
-               --  Only give error if both come from source. This should be
-               --  investigated some time, since it should not be needed ???
+            if not Null_Exclusions_Match (Old_Formal, New_Formal) then
+               Conformance_Error
+                 ("\null exclusion for& does not match", New_Formal);
 
-               if Comes_From_Source (Old_Formal)
-                    and then
-                  Comes_From_Source (New_Formal)
-               then
-                  Conformance_Error
-                    ("\null exclusion for& does not match", New_Formal);
+               --  Mark error posted on the new formal to avoid duplicated
+               --  complaint about types not matching.
 
-                  --  Mark error posted on the new formal to avoid duplicated
-                  --  complaint about types not matching.
-
-                  Set_Error_Posted (New_Formal);
-               end if;
+               Set_Error_Posted (New_Formal);
             end if;
          end if;
 
