@@ -2939,6 +2939,16 @@ stmt_could_throw_p (function *fun, gimple *stmt)
     }
 }
 
+/* Return true if STMT in function FUN must be assumed necessary because of
+   non-call exceptions.  */
+
+bool
+stmt_unremovable_because_of_non_call_eh_p (function *fun, gimple *stmt)
+{
+  return (fun->can_throw_non_call_exceptions
+	  && !fun->can_delete_dead_exceptions
+	  && stmt_could_throw_p (fun, stmt));
+}
 
 /* Return true if expression T could throw an exception.  */
 
