@@ -28,25 +28,23 @@ Expression *semantic(Expression *e, Scope *sc);
 
 bool evalStaticCondition(Scope *sc, Expression *exp, Expression *e, bool &errors)
 {
-    if (e->op == TOKandand)
+    if (e->op == TOKandand || e->op == TOKoror)
     {
-        AndAndExp *aae = (AndAndExp *)e;
+        LogicalExp *aae = (LogicalExp *)e;
         bool result = evalStaticCondition(sc, exp, aae->e1, errors);
-        if (errors || !result)
-            return false;
-        result = evalStaticCondition(sc, exp, aae->e2, errors);
-        return !errors && result;
-    }
-
-    if (e->op == TOKoror)
-    {
-        OrOrExp *ooe = (OrOrExp *)e;
-        bool result = evalStaticCondition(sc, exp, ooe->e1, errors);
         if (errors)
             return false;
-        if (result)
-            return true;
-        result = evalStaticCondition(sc, exp, ooe->e2, errors);
+        if (e->op == TOKandand)
+        {
+            if (!result)
+                return false;
+        }
+        else
+        {
+            if (result)
+                return true;
+        }
+        result = evalStaticCondition(sc, exp, aae->e2, errors);
         return !errors && result;
     }
 

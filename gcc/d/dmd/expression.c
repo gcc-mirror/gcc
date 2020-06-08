@@ -1895,7 +1895,7 @@ bool functionParameters(Loc loc, Scope *sc, TypeFunction *tf,
                     // edtor => (__gate || edtor)
                     assert(tmp->edtor);
                     Expression *e = tmp->edtor;
-                    e = new OrOrExp(e->loc, new VarExp(e->loc, gate), e);
+                    e = new LogicalExp(e->loc, TOKoror, new VarExp(e->loc, gate), e);
                     tmp->edtor = semantic(e, sc);
                     //printf("edtor: %s\n", tmp->edtor->toChars());
                 }
@@ -6457,28 +6457,12 @@ XorExp::XorExp(Loc loc, Expression *e1, Expression *e2)
 
 /************************************************************/
 
-OrOrExp::OrOrExp(Loc loc, Expression *e1, Expression *e2)
-        : BinExp(loc, TOKoror, sizeof(OrOrExp), e1, e2)
+LogicalExp::LogicalExp(Loc loc, TOK op, Expression *e1, Expression *e2)
+        : BinExp(loc, op, sizeof(LogicalExp), e1, e2)
 {
 }
 
-Expression *OrOrExp::toBoolean(Scope *sc)
-{
-    Expression *ex2 = e2->toBoolean(sc);
-    if (ex2->op == TOKerror)
-        return ex2;
-    e2 = ex2;
-    return this;
-}
-
-/************************************************************/
-
-AndAndExp::AndAndExp(Loc loc, Expression *e1, Expression *e2)
-        : BinExp(loc, TOKandand, sizeof(AndAndExp), e1, e2)
-{
-}
-
-Expression *AndAndExp::toBoolean(Scope *sc)
+Expression *LogicalExp::toBoolean(Scope *sc)
 {
     Expression *ex2 = e2->toBoolean(sc);
     if (ex2->op == TOKerror)
@@ -6591,9 +6575,9 @@ void CondExp::hookDtors(Scope *sc)
                     //printf("\t++v = %s, v->edtor = %s\n", v->toChars(), v->edtor->toChars());
                     Expression *ve = new VarExp(vcond->loc, vcond);
                     if (isThen)
-                        v->edtor = new AndAndExp(v->edtor->loc, ve, v->edtor);
+                        v->edtor = new LogicalExp(v->edtor->loc, TOKandand, ve, v->edtor);
                     else
-                        v->edtor = new OrOrExp(v->edtor->loc, ve, v->edtor);
+                        v->edtor = new LogicalExp(v->edtor->loc, TOKoror, ve, v->edtor);
                     v->edtor = semantic(v->edtor, sc);
                     //printf("\t--v = %s, v->edtor = %s\n", v->toChars(), v->edtor->toChars());
                 }

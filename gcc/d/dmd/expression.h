@@ -1350,18 +1350,10 @@ public:
     void accept(Visitor *v) { v->visit(this); }
 };
 
-class OrOrExp : public BinExp
+class LogicalExp : public BinExp
 {
 public:
-    OrOrExp(Loc loc, Expression *e1, Expression *e2);
-    Expression *toBoolean(Scope *sc);
-    void accept(Visitor *v) { v->visit(this); }
-};
-
-class AndAndExp : public BinExp
-{
-public:
-    AndAndExp(Loc loc, Expression *e1, Expression *e2);
+    LogicalExp(Loc loc, TOK op, Expression *e1, Expression *e2);
     Expression *toBoolean(Scope *sc);
     void accept(Visitor *v) { v->visit(this); }
 };

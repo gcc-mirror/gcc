@@ -7445,7 +7445,7 @@ public:
         result = exp;
     }
 
-    void visit(OrOrExp *exp)
+    void visit(LogicalExp *exp)
     {
         if (exp->type)
         {
@@ -7455,7 +7455,6 @@ public:
 
         setNoderefOperands(exp);
 
-        // same as for AndAnd
         Expression *e1x = semantic(exp->e1, sc);
 
         // for static alias this: https://issues.dlang.org/show_bug.cgi?id=17684
@@ -7471,87 +7470,9 @@ public:
             /* If in static if, don't evaluate e2 if we don't have to.
             */
             e1x = e1x->optimize(WANTvalue);
-            if (e1x->isBool(true))
+            if (e1x->isBool(exp->op == TOKoror))
             {
-                result = new IntegerExp(exp->loc, 1, Type::tbool);
-                return;
-            }
-        }
-
-        Expression *e2x = semantic(exp->e2, sc);
-        sc->mergeCallSuper(exp->loc, cs1);
-
-        // for static alias this: https://issues.dlang.org/show_bug.cgi?id=17684
-        if (e2x->op == TOKtype)
-            e2x = resolveAliasThis(sc, e2x);
-
-        e2x = resolveProperties(sc, e2x);
-
-        bool f1 = checkNonAssignmentArrayOp(e1x);
-        bool f2 = checkNonAssignmentArrayOp(e2x);
-        if (f1 || f2)
-            return setError();
-
-        // Unless the right operand is 'void', the expression is converted to 'bool'.
-        if (e2x->type->ty != Tvoid)
-            e2x = e2x->toBoolean(sc);
-
-        if (e2x->op == TOKtype || e2x->op == TOKscope)
-        {
-            exp->error("%s is not an expression", exp->e2->toChars());
-            return setError();
-        }
-        if (e1x->op == TOKerror)
-        {
-            result = e1x;
-            return;
-        }
-        if (e2x->op == TOKerror)
-        {
-            result = e2x;
-            return;
-        }
-
-        // The result type is 'bool', unless the right operand has type 'void'.
-        if (e2x->type->ty == Tvoid)
-            exp->type = Type::tvoid;
-        else
-            exp->type = Type::tbool;
-
-        exp->e1 = e1x;
-        exp->e2 = e2x;
-        result = exp;
-    }
-
-    void visit(AndAndExp *exp)
-    {
-        if (exp->type)
-        {
-            result = exp;
-            return;
-        }
-
-        setNoderefOperands(exp);
-
-        // same as for OrOr
-        Expression *e1x = semantic(exp->e1, sc);
-
-        // for static alias this: https://issues.dlang.org/show_bug.cgi?id=17684
-        if (e1x->op == TOKtype)
-            e1x = resolveAliasThis(sc, e1x);
-
-        e1x = resolveProperties(sc, e1x);
-        e1x = e1x->toBoolean(sc);
-        unsigned cs1 = sc->callSuper;
-
-        if (sc->flags & SCOPEcondition)
-        {
-            /* If in static if, don't evaluate e2 if we don't have to.
-            */
-            e1x = e1x->optimize(WANTvalue);
-            if (e1x->isBool(false))
-            {
-                result = new IntegerExp(exp->loc, 0, Type::tbool);
+                result = new IntegerExp(exp->loc, exp->op == TOKoror, Type::tbool);
                 return;
             }
         }
