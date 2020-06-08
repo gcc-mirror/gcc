@@ -9384,7 +9384,7 @@ Type *Parameter::isLazyArray()
             TypeDelegate *td = (TypeDelegate *)tel;
             TypeFunction *tf = td->next->toTypeFunction();
 
-            if (!tf->parameterList.varargs == VARARGnone && tf->parameterList.length() == 0)
+            if (tf->parameterList.varargs == VARARGnone && tf->parameterList.length() == 0)
             {
                 return tf->next;    // return type of delegate
             }
