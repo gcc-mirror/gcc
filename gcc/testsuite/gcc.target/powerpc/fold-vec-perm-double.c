@@ -14,4 +14,4 @@ testd (vector double vd2, vector double vd3, vector unsigned char vuc)
   return vec_perm (vd2, vd3, vuc);
 }
 
-/* { dg-final { scan-assembler-times "vperm" 1 } } */
+/* { dg-final { scan-assembler-times {\m(?:v|xx)permr?\M} 1 } } */

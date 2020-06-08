@@ -28,4 +28,4 @@ testui (vector unsigned int vui2, vector unsigned int vui3,
   return vec_perm (vui2, vui3, vuc);
 }
 
-/* { dg-final { scan-assembler-times "vperm" 3 } } */
+/* { dg-final { scan-assembler-times {\m(?:v|xx)permr?\M} 3 } } */
