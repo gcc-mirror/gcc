@@ -231,7 +231,7 @@ struct PrefixAttributes
         : storageClass(STCundefined),
           depmsg(NULL),
           link(LINKdefault),
-          protection(PROTundefined),
+          protection(Prot::undefined),
           setAlignment(false),
           ealign(NULL),
           udas(NULL),
@@ -262,7 +262,7 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
             pAttrs = &attrs;
             pAttrs->comment = token.blockComment;
         }
-        PROTKIND prot;
+        Prot::Kind prot;
         StorageClass stc;
         Condition *condition;
 
@@ -731,14 +731,14 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
                 break;
             }
 
-            case TOKprivate:    prot = PROTprivate;     goto Lprot;
-            case TOKpackage:    prot = PROTpackage;     goto Lprot;
-            case TOKprotected:  prot = PROTprotected;   goto Lprot;
-            case TOKpublic:     prot = PROTpublic;      goto Lprot;
-            case TOKexport:     prot = PROTexport;      goto Lprot;
+            case TOKprivate:    prot = Prot::private_;     goto Lprot;
+            case TOKpackage:    prot = Prot::package_;     goto Lprot;
+            case TOKprotected:  prot = Prot::protected_;   goto Lprot;
+            case TOKpublic:     prot = Prot::public_;      goto Lprot;
+            case TOKexport:     prot = Prot::export_;      goto Lprot;
             Lprot:
             {
-                if (pAttrs->protection.kind != PROTundefined)
+                if (pAttrs->protection.kind != Prot::undefined)
                 {
                     if (pAttrs->protection.kind != prot)
                         error("conflicting protection attribute '%s' and '%s'",
@@ -753,7 +753,7 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
                 // optional qualified package identifier to bind
                 // protection to
                 Identifiers *pkg_prot_idents = NULL;
-                if (pAttrs->protection.kind == PROTpackage && token.value == TOKlparen)
+                if (pAttrs->protection.kind == Prot::package_ && token.value == TOKlparen)
                 {
                     pkg_prot_idents = parseQualifiedIdentifier("protection package");
 
@@ -770,14 +770,14 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
 
                 Loc attrloc = token.loc;
                 a = parseBlock(pLastDecl, pAttrs);
-                if (pAttrs->protection.kind != PROTundefined)
+                if (pAttrs->protection.kind != Prot::undefined)
                 {
-                    if (pAttrs->protection.kind == PROTpackage && pkg_prot_idents)
+                    if (pAttrs->protection.kind == Prot::package_ && pkg_prot_idents)
                         s = new ProtDeclaration(attrloc, pkg_prot_idents,  a);
                     else
                         s = new ProtDeclaration(attrloc, pAttrs->protection, a);
 
-                    pAttrs->protection = Prot(PROTundefined);
+                    pAttrs->protection = Prot(Prot::undefined);
                 }
                 break;
             }
@@ -803,7 +803,7 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
                     if (e)
                     {
                         buf1.printf("(%s)", e->toChars());
-                        s1 = buf1.peekString();
+                        s1 = buf1.peekChars();
                     }
                     error("redundant alignment attribute align%s", s1);
                 }
@@ -977,9 +977,9 @@ StorageClass Parser::appendStorageClass(StorageClass storageClass, StorageClass 
         OutBuffer buf;
         stcToBuffer(&buf, stc);
         if (deprec)
-            deprecation("redundant attribute '%s'", buf.peekString());
+            deprecation("redundant attribute '%s'", buf.peekChars());
         else
-            error("redundant attribute '%s'", buf.peekString());
+            error("redundant attribute '%s'", buf.peekChars());
         return storageClass | stc;
     }
 
@@ -1603,10 +1603,10 @@ Dsymbol *Parser::parseCtor(PrefixAttributes *pAttrs)
 
     /* Just a regular constructor
      */
-    int varargs;
+    VarArg varargs;
     Parameters *parameters = parseParameters(&varargs);
     stc = parsePostfix(stc, &udas);
-    if (varargs != 0 || Parameter::dim(parameters) != 0)
+    if (varargs != VARARGnone || Parameter::dim(parameters) != 0)
     {
         if (stc & STCstatic)
             error(loc, "constructor cannot be static");
@@ -1621,7 +1621,8 @@ Dsymbol *Parser::parseCtor(PrefixAttributes *pAttrs)
 
     Expression *constraint = tpl ? parseConstraint() : NULL;
 
-    Type *tf = new TypeFunction(parameters, NULL, varargs, linkage, stc);   // RetrunType -> auto
+    Type *tf = new TypeFunction(ParameterList(parameters, varargs),
+                                NULL, linkage, stc);   // ReturnType -> auto
     tf = tf->addSTC(stc);
 
     CtorDeclaration *f = new CtorDeclaration(loc, Loc(), stc, tf);
@@ -1711,7 +1712,7 @@ Dsymbol *Parser::parseStaticCtor(PrefixAttributes *pAttrs)
     {
         OutBuffer buf;
         stcToBuffer(&buf, modStc);
-        error(loc, "static constructor cannot be %s", buf.peekString());
+        error(loc, "static constructor cannot be %s", buf.peekChars());
     }
     stc &= ~(STCstatic | STC_TYPECTOR);
 
@@ -1749,7 +1750,7 @@ Dsymbol *Parser::parseStaticDtor(PrefixAttributes *pAttrs)
     {
         OutBuffer buf;
         stcToBuffer(&buf, modStc);
-        error(loc, "static destructor cannot be %s", buf.peekString());
+        error(loc, "static destructor cannot be %s", buf.peekChars());
     }
     stc &= ~(STCstatic | STC_TYPECTOR);
 
@@ -1791,7 +1792,7 @@ Dsymbol *Parser::parseSharedStaticCtor(PrefixAttributes *pAttrs)
     {
         OutBuffer buf;
         stcToBuffer(&buf, modStc);
-        error(loc, "shared static constructor cannot be %s", buf.peekString());
+        error(loc, "shared static constructor cannot be %s", buf.peekChars());
     }
     stc &= ~(STCstatic | STC_TYPECTOR);
 
@@ -1828,7 +1829,7 @@ Dsymbol *Parser::parseSharedStaticDtor(PrefixAttributes *pAttrs)
     {
         OutBuffer buf;
         stcToBuffer(&buf, modStc);
-        error(loc, "shared static destructor cannot be %s", buf.peekString());
+        error(loc, "shared static destructor cannot be %s", buf.peekChars());
     }
     stc &= ~(STCstatic | STC_TYPECTOR);
 
@@ -1929,7 +1930,7 @@ Dsymbol *Parser::parseNew(PrefixAttributes *pAttrs)
 
     nextToken();
 
-    int varargs;
+    VarArg varargs;
     Parameters *parameters = parseParameters(&varargs);
     NewDeclaration *f = new NewDeclaration(loc, Loc(), stc, parameters, varargs);
     if (pAttrs)
@@ -1951,9 +1952,9 @@ Dsymbol *Parser::parseDelete(PrefixAttributes *pAttrs)
 
     nextToken();
 
-    int varargs;
+    VarArg varargs;
     Parameters *parameters = parseParameters(&varargs);
-    if (varargs)
+    if (varargs != VARARGnone)
         error("... not allowed in delete function parameter list");
     DeleteDeclaration *f = new DeleteDeclaration(loc, Loc(), stc, parameters);
     if (pAttrs)
@@ -1966,10 +1967,10 @@ Dsymbol *Parser::parseDelete(PrefixAttributes *pAttrs)
  * Parse parameter list.
  */
 
-Parameters *Parser::parseParameters(int *pvarargs, TemplateParameters **tpl)
+Parameters *Parser::parseParameters(VarArg *pvarargs, TemplateParameters **tpl)
 {
     Parameters *parameters = new Parameters();
-    int varargs = 0;
+    VarArg varargs = VARARGnone;
     int hasdefault = 0;
 
     check(TOKlparen);
@@ -1989,7 +1990,7 @@ Parameters *Parser::parseParameters(int *pvarargs, TemplateParameters **tpl)
                     break;
 
                 case TOKdotdotdot:
-                    varargs = 1;
+                    varargs = VARARGvariadic;
                     nextToken();
                     break;
 
@@ -2076,7 +2077,7 @@ Parameters *Parser::parseParameters(int *pvarargs, TemplateParameters **tpl)
 
                         if (storageClass & (STCout | STCref))
                             error("variadic argument cannot be out or ref");
-                        varargs = 2;
+                        varargs = VARARGtypesafe;
                         parameters->push(new Parameter(storageClass, at, ai, ae));
                         nextToken();
                         break;
@@ -2364,27 +2365,27 @@ BaseClasses *Parser::parseBaseClasses()
     for (; 1; nextToken())
     {
         bool prot = false;
-        Prot protection = Prot(PROTpublic);
+        Prot protection = Prot(Prot::public_);
         switch (token.value)
         {
             case TOKprivate:
                 prot = true;
-                protection = Prot(PROTprivate);
+                protection = Prot(Prot::private_);
                 nextToken();
                 break;
             case TOKpackage:
                 prot = true;
-                protection = Prot(PROTpackage);
+                protection = Prot(Prot::package_);
                 nextToken();
                 break;
             case TOKprotected:
                 prot = true;
-                protection = Prot(PROTprotected);
+                protection = Prot(Prot::protected_);
                 nextToken();
                 break;
             case TOKpublic:
                 prot = true;
-                protection = Prot(PROTpublic);
+                protection = Prot(Prot::public_);
                 nextToken();
                 break;
             default: break;
@@ -3406,11 +3407,12 @@ Type *Parser::parseBasicType2(Type *t)
                 TOK save = token.value;
                 nextToken();
 
-                int varargs;
+                VarArg varargs;
                 Parameters *parameters = parseParameters(&varargs);
 
                 StorageClass stc = parsePostfix(STCundefined, NULL);
-                TypeFunction *tf = new TypeFunction(parameters, t, varargs, linkage, stc);
+                TypeFunction *tf = new TypeFunction(ParameterList(parameters, varargs),
+                                                    t, linkage, stc);
                 if (stc & (STCconst | STCimmutable | STCshared | STCwild | STCreturn))
                 {
                     if (save == TOKfunction)
@@ -3572,14 +3574,15 @@ Type *Parser::parseDeclarator(Type *t, int *palt, Identifier **pident,
                     }
                 }
 
-                int varargs;
+                VarArg varargs;
                 Parameters *parameters = parseParameters(&varargs);
 
                 /* Parse const/immutable/shared/inout/nothrow/pure/return postfix
                  */
                 StorageClass stc = parsePostfix(storageClass, pudas);
                                         // merge prefix storage classes
-                Type *tf = new TypeFunction(parameters, t, varargs, linkage, stc);
+                Type *tf = new TypeFunction(ParameterList(parameters, varargs),
+                                            t, linkage, stc);
                 tf = tf->addSTC(stc);
                 if (pdisable)
                     *pdisable = stc & STCdisable ? 1 : 0;
@@ -4159,7 +4162,7 @@ Dsymbol *Parser::parseFunctionLiteral()
 
     TemplateParameters *tpl = NULL;
     Parameters *parameters = NULL;
-    int varargs = 0;
+    VarArg varargs = VARARGnone;
     Type *tret = NULL;
     StorageClass stc = 0;
     TOK save = TOKreserved;
@@ -4203,7 +4206,7 @@ Dsymbol *Parser::parseFunctionLiteral()
                 {
                     OutBuffer buf;
                     stcToBuffer(&buf, modStc);
-                    error("function literal cannot be %s", buf.peekString());
+                    error("function literal cannot be %s", buf.peekChars());
                 }
                 else
                     save = TOKdelegate;
@@ -4235,7 +4238,8 @@ Dsymbol *Parser::parseFunctionLiteral()
 
     if (!parameters)
         parameters = new Parameters();
-    TypeFunction *tf = new TypeFunction(parameters, tret, varargs, linkage, stc);
+    TypeFunction *tf = new TypeFunction(ParameterList(parameters, varargs),
+                                        tret, linkage, stc);
     tf = (TypeFunction *)tf->addSTC(stc);
     FuncLiteralDeclaration *fd = new FuncLiteralDeclaration(loc, Loc(), tf, save, NULL);
 

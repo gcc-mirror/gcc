@@ -68,7 +68,7 @@ public:
     size_t insert(size_t offset, const void *data, size_t nbytes);
     void remove(size_t offset, size_t nbytes);
     // Append terminating null if necessary and get view of internal buffer
-    char *peekString();
+    char *peekChars();
     // Append terminating null if necessary and take ownership of data
-    char *extractString();
+    char *extractChars();
 };

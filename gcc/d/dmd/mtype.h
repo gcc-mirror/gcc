@@ -126,6 +126,14 @@ extern unsigned char impcnvType2[TMAX][TMAX];
 // If !=0, give warning on implicit conversion
 extern unsigned char impcnvWarn[TMAX][TMAX];
 
+enum VarArg
+{
+    VARARGnone     = 0,  /// fixed number of arguments
+    VARARGvariadic = 1,  /// T t, ...)  can be C-style (core.stdc.stdarg) or D-style (core.vararg)
+    VARARGtypesafe = 2   /// T t ...) typesafe https://dlang.org/spec/function.html#typesafe_variadic_functions
+                         ///   or https://dlang.org/spec/function.html#typesafe_variadic_functions
+};
+
 class Type : public RootObject
 {
 public:
@@ -587,14 +595,48 @@ enum PURE
     PUREstrong = 4      // parameters are values or immutable
 };
 
+class Parameter : public RootObject
+{
+public:
+    StorageClass storageClass;
+    Type *type;
+    Identifier *ident;
+    Expression *defaultArg;
+
+    Parameter(StorageClass storageClass, Type *type, Identifier *ident, Expression *defaultArg);
+    static Parameter *create(StorageClass storageClass, Type *type, Identifier *ident, Expression *defaultArg);
+    Parameter *syntaxCopy();
+    Type *isLazyArray();
+    // kludge for template.isType()
+    int dyncast() const { return DYNCAST_PARAMETER; }
+    virtual void accept(Visitor *v) { v->visit(this); }
+
+    static Parameters *arraySyntaxCopy(Parameters *parameters);
+    static size_t dim(Parameters *parameters);
+    static Parameter *getNth(Parameters *parameters, d_size_t nth, d_size_t *pn = NULL);
+    const char *toChars();
+    bool isCovariant(bool returnByRef, const Parameter *p) const;
+    static bool isCovariantScope(bool returnByRef, StorageClass from, StorageClass to);
+};
+
+struct ParameterList
+{
+    Parameters *parameters;
+    VarArg varargs;
+
+    ParameterList(Parameters *parameters = NULL, VarArg varargs = VARARGnone);
+
+    size_t length();
+    Parameter *operator[](size_t i) { return Parameter::getNth(parameters, i); }
+};
+
 class TypeFunction : public TypeNext
 {
 public:
     // .next is the return type
 
-    Parameters *parameters;     // function parameters
-    int varargs;        // 1: T t, ...) style for variable number of arguments
-                        // 2: T t ...) style for variable number of arguments
+    ParameterList parameterList;     // function parameters
+
     bool isnothrow;     // true: nothrow
     bool isnogc;        // true: is @nogc
     bool isproperty;    // can be called without parentheses
@@ -610,13 +652,14 @@ public:
 
     int inuse;
 
-    TypeFunction(Parameters *parameters, Type *treturn, int varargs, LINK linkage, StorageClass stc = 0);
-    static TypeFunction *create(Parameters *parameters, Type *treturn, int varargs, LINK linkage, StorageClass stc = 0);
+    TypeFunction(const ParameterList &pl, Type *treturn, LINK linkage, StorageClass stc = 0);
+    static TypeFunction *create(Parameters *parameters, Type *treturn, VarArg varargs, LINK linkage, StorageClass stc = 0);
     const char *kind();
     Type *syntaxCopy();
     Type *semantic(Loc loc, Scope *sc);
     void purityLevel();
     bool hasLazyParameters();
+    bool isDstyleVariadic() const;
     bool parameterEscapes(Parameter *p);
     StorageClass parameterStorageClass(Parameter *p);
     Type *addStorageClass(StorageClass stc);
@@ -918,33 +961,6 @@ public:
 };
 
 /**************************************************************/
-
-//enum InOut { None, In, Out, InOut, Lazy };
-
-class Parameter : public RootObject
-{
-public:
-    //enum InOut inout;
-    StorageClass storageClass;
-    Type *type;
-    Identifier *ident;
-    Expression *defaultArg;
-
-    Parameter(StorageClass storageClass, Type *type, Identifier *ident, Expression *defaultArg);
-    static Parameter *create(StorageClass storageClass, Type *type, Identifier *ident, Expression *defaultArg);
-    Parameter *syntaxCopy();
-    Type *isLazyArray();
-    // kludge for template.isType()
-    int dyncast() const { return DYNCAST_PARAMETER; }
-    virtual void accept(Visitor *v) { v->visit(this); }
-
-    static Parameters *arraySyntaxCopy(Parameters *parameters);
-    static size_t dim(Parameters *parameters);
-    static Parameter *getNth(Parameters *parameters, d_size_t nth, d_size_t *pn = NULL);
-    const char *toChars();
-    bool isCovariant(bool returnByRef, const Parameter *p) const;
-    static bool isCovariantScope(bool returnByRef, StorageClass from, StorageClass to);
-};
 
 bool arrayTypeCompatible(Loc loc, Type *t1, Type *t2);
 bool arrayTypeCompatibleWithoutCasting(Type *t1, Type *t2);

@@ -4283,11 +4283,6 @@ package body Exp_Aggr is
             if Is_Overloaded (Expr) then
                return False;
 
-            elsif Nkind (Expr) = N_Aggregate
-               and then not Is_Others_Aggregate (Expr)
-            then
-               return False;
-
             elsif Nkind (Expr) = N_Allocator then
 
                --  For now, too complex to analyze
@@ -6338,10 +6333,6 @@ package body Exp_Aggr is
       --  object. (Note: we don't use a block statement because this would
       --  cause generated freeze nodes to be elaborated in the wrong scope).
 
-      --  Do not perform in-place expansion for SPARK 05 because aggregates are
-      --  expected to appear in qualified form. In-place expansion eliminates
-      --  the qualification and eventually violates this SPARK 05 restiction.
-
       --  Arrays of limited components must be built in place. The code
       --  previously excluded controlled components but this is an old
       --  oversight: the rules in 7.6 (17) are clear.
@@ -6352,7 +6343,6 @@ package body Exp_Aggr is
         and then not
           Must_Slide (Etype (Defining_Identifier (Parent_Node)), Typ)
         and then not Is_Bit_Packed_Array (Typ)
-        and then not Restriction_Check_Required (SPARK_05)
       then
          In_Place_Assign_OK_For_Declaration := True;
          Tmp := Defining_Identifier (Parent_Node);

@@ -336,6 +336,9 @@ Attribute Enum_Rep
 
 .. index:: Enum_Rep
 
+Note that this attribute is now standard in Ada 202x and is available
+as an implementation defined attribute for earlier Ada versions.
+
 For every enumeration subtype ``S``, ``S'Enum_Rep`` denotes a
 function with the following spec:
 
@@ -370,6 +373,9 @@ Attribute Enum_Val
 .. index:: Representation of enums
 
 .. index:: Enum_Val
+
+Note that this attribute is now standard in Ada 202x and is available
+as an implementation defined attribute for earlier Ada versions.
 
 For every enumeration subtype ``S``, ``S'Enum_Val`` denotes a
 function with the following spec:

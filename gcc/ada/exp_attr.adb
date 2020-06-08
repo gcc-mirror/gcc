@@ -192,10 +192,6 @@ package body Exp_Attr is
    procedure Expand_Update_Attribute (N : Node_Id);
    --  Handle the expansion of attribute Update
 
-   function Get_Index_Subtype (N : Node_Id) return Entity_Id;
-   --  Used for Last, Last, and Length, when the prefix is an array type.
-   --  Obtains the corresponding index subtype.
-
    procedure Find_Fat_Info
      (T        : Entity_Id;
       Fat_Type : out Entity_Id;
@@ -3171,21 +3167,6 @@ package body Exp_Attr is
          then
             Rewrite (N,
               Make_Integer_Literal (Loc, Enumeration_Rep (Entity (Expr))));
-
-         --  If this is a renaming of a literal, recover the representation
-         --  of the original. If it renames an expression there is nothing to
-         --  fold.
-
-         elsif Nkind (Expr) in N_Has_Entity
-           and then Ekind (Entity (Expr)) = E_Constant
-           and then Present (Renamed_Object (Entity (Expr)))
-           and then Is_Entity_Name (Renamed_Object (Entity (Expr)))
-           and then Ekind (Entity (Renamed_Object (Entity (Expr)))) =
-                      E_Enumeration_Literal
-         then
-            Rewrite (N,
-              Make_Integer_Literal (Loc,
-                Enumeration_Rep (Entity (Renamed_Object (Entity (Expr))))));
 
          --  If not constant-folded above, Enum_Type'Enum_Rep (X) or
          --  X'Enum_Rep expands to
@@ -8517,35 +8498,6 @@ package body Exp_Attr is
 
       return BT;
    end Full_Base;
-
-   -----------------------
-   -- Get_Index_Subtype --
-   -----------------------
-
-   function Get_Index_Subtype (N : Node_Id) return Node_Id is
-      P_Type : Entity_Id := Etype (Prefix (N));
-      Indx   : Node_Id;
-      J      : Int;
-
-   begin
-      if Is_Access_Type (P_Type) then
-         P_Type := Designated_Type (P_Type);
-      end if;
-
-      if No (Expressions (N)) then
-         J := 1;
-      else
-         J := UI_To_Int (Expr_Value (First (Expressions (N))));
-      end if;
-
-      Indx := First_Index (P_Type);
-      while J > 1 loop
-         Next_Index (Indx);
-         J := J - 1;
-      end loop;
-
-      return Etype (Indx);
-   end Get_Index_Subtype;
 
    -------------------------------
    -- Get_Stream_Convert_Pragma --

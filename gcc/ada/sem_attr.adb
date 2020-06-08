@@ -359,9 +359,6 @@ package body Sem_Attr is
       --  Verify that prefix of attribute N is a float type and that
       --  two attribute expressions are present
 
-      procedure Check_SPARK_05_Restriction_On_Attribute;
-      --  Issue an error in formal mode because attribute N is allowed
-
       procedure Check_Integer_Type;
       --  Verify that prefix of attribute N is an integer type
 
@@ -813,7 +810,6 @@ package body Sem_Attr is
       --  Start of processing for Analyze_Access_Attribute
 
       begin
-         Check_SPARK_05_Restriction_On_Attribute;
          Check_E0;
 
          if Nkind (P) = N_Character_Literal then
@@ -1428,8 +1424,6 @@ package body Sem_Attr is
 
       procedure Analyze_Image_Attribute (Str_Typ : Entity_Id) is
       begin
-         Check_SPARK_05_Restriction_On_Attribute;
-
          --  AI12-0124: The ARG has adopted the GNAT semantics of 'Img for
          --  scalar types, so that the prefix can be an object, a named value,
          --  or a type. If the prefix is an object, there is no argument.
@@ -2312,16 +2306,6 @@ package body Sem_Attr is
          end if;
       end Check_Scalar_Type;
 
-      ------------------------------------------
-      -- Check_SPARK_05_Restriction_On_Attribute --
-      ------------------------------------------
-
-      procedure Check_SPARK_05_Restriction_On_Attribute is
-      begin
-         Error_Msg_Name_1 := Aname;
-         Check_SPARK_05_Restriction ("attribute % is not allowed", P);
-      end Check_SPARK_05_Restriction_On_Attribute;
-
       ---------------------------
       -- Check_Standard_Prefix --
       ---------------------------
@@ -3056,21 +3040,6 @@ package body Sem_Attr is
          end if;
       end if;
 
-      --  In SPARK, attributes of private types are only allowed if the full
-      --  type declaration is visible.
-
-      --  Note: the check for Present (Entity (P)) defends against some error
-      --  conditions where the Entity field is not set.
-
-      if Is_Entity_Name (P) and then Present (Entity (P))
-        and then Is_Type (Entity (P))
-        and then Is_Private_Type (P_Type)
-        and then not In_Open_Scopes (Scope (P_Type))
-        and then not In_Spec_Expression
-      then
-         Check_SPARK_05_Restriction ("invisible attribute of type", N);
-      end if;
-
       --  Remaining processing depends on attribute
 
       case Attr_Id is
@@ -3237,12 +3206,6 @@ package body Sem_Attr is
          then
             Error_Msg_NE -- CODEFIX
               ("?r?redundant attribute, & is its own base type", N, Typ);
-         end if;
-
-         if Nkind (Parent (N)) /= N_Attribute_Reference then
-            Error_Msg_Name_1 := Aname;
-            Check_SPARK_05_Restriction
-              ("attribute% is only allowed as prefix of another attribute", P);
          end if;
 
          Set_Etype (N, Base_Type (Entity (P)));
@@ -5230,14 +5193,6 @@ package body Sem_Attr is
       when Attribute_Pos =>
          Check_Discrete_Type;
          Check_E1;
-
-         if Is_Boolean_Type (P_Type) then
-            Error_Msg_Name_1 := Aname;
-            Error_Msg_Name_2 := Chars (P_Type);
-            Check_SPARK_05_Restriction
-              ("attribute% is not allowed for type%", P);
-         end if;
-
          Resolve (E1, P_Base_Type);
          Set_Etype (N, Universal_Integer);
 
@@ -5256,14 +5211,6 @@ package body Sem_Attr is
       when Attribute_Pred =>
          Check_Scalar_Type;
          Check_E1;
-
-         if Is_Real_Type (P_Type) or else Is_Boolean_Type (P_Type) then
-            Error_Msg_Name_1 := Aname;
-            Error_Msg_Name_2 := Chars (P_Type);
-            Check_SPARK_05_Restriction
-              ("attribute% is not allowed for type%", P);
-         end if;
-
          Resolve (E1, P_Base_Type);
          Set_Etype (N, P_Base_Type);
 
@@ -6057,7 +6004,7 @@ package body Sem_Attr is
 
             --  Validate_Remote_Access_To_Class_Wide_Type for attribute
             --  Storage_Pool since this attribute is not defined for such
-            --  types (RM E.2.3(22)).
+            --  types (RM E.2.2(17)).
 
             Validate_Remote_Access_To_Class_Wide_Type (N);
 
@@ -6091,9 +6038,9 @@ package body Sem_Attr is
                Check_Type;
                Set_Etype (N, Universal_Integer);
 
-               --   Validate_Remote_Access_To_Class_Wide_Type for attribute
-               --   Storage_Size since this attribute is not defined for
-               --   such types (RM E.2.3(22)).
+               --  Validate_Remote_Access_To_Class_Wide_Type for attribute
+               --  Storage_Size since this attribute is not defined for
+               --  such types (RM E.2.2(17)).
 
                Validate_Remote_Access_To_Class_Wide_Type (N);
 
@@ -6175,14 +6122,6 @@ package body Sem_Attr is
       when Attribute_Succ =>
          Check_Scalar_Type;
          Check_E1;
-
-         if Is_Real_Type (P_Type) or else Is_Boolean_Type (P_Type) then
-            Error_Msg_Name_1 := Aname;
-            Error_Msg_Name_2 := Chars (P_Type);
-            Check_SPARK_05_Restriction
-              ("attribute% is not allowed for type%", P);
-         end if;
-
          Resolve (E1, P_Base_Type);
          Set_Etype (N, P_Base_Type);
 
@@ -6982,13 +6921,6 @@ package body Sem_Attr is
          Check_E1;
          Check_Discrete_Type;
 
-         if Is_Boolean_Type (P_Type) then
-            Error_Msg_Name_1 := Aname;
-            Error_Msg_Name_2 := Chars (P_Type);
-            Check_SPARK_05_Restriction
-              ("attribute% is not allowed for type%", P);
-         end if;
-
          --  Note, we need a range check in general, but we wait for the
          --  Resolve call to do this, since we want to let Eval_Attribute
          --  have a chance to find an static illegality first.
@@ -7090,7 +7022,6 @@ package body Sem_Attr is
       -----------
 
       when Attribute_Value =>
-         Check_SPARK_05_Restriction_On_Attribute;
          Check_E1;
          Check_Scalar_Type;
 
@@ -7181,7 +7112,6 @@ package body Sem_Attr is
       ----------------
 
       when Attribute_Wide_Value =>
-         Check_SPARK_05_Restriction_On_Attribute;
          Check_E1;
          Check_Scalar_Type;
 
@@ -7235,7 +7165,6 @@ package body Sem_Attr is
       ----------------
 
       when Attribute_Wide_Width =>
-         Check_SPARK_05_Restriction_On_Attribute;
          Check_E0;
          Check_Scalar_Type;
          Set_Etype (N, Universal_Integer);
@@ -7245,7 +7174,6 @@ package body Sem_Attr is
       -----------
 
       when Attribute_Width =>
-         Check_SPARK_05_Restriction_On_Attribute;
          Check_E0;
          Check_Scalar_Type;
          Set_Etype (N, Universal_Integer);
@@ -11316,6 +11244,7 @@ package body Sem_Attr is
                --  will be reported when resolving the call.
 
                if Attr_Id /= Attribute_Unrestricted_Access then
+                  Error_Msg_Name_1 := Aname;
                   Error_Msg_N ("prefix of % attribute must be aliased", P);
 
                --  Check for unrestricted access where expected type is a thin

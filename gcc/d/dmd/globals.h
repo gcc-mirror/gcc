@@ -144,26 +144,26 @@ struct Param
 
     CHECKACTION checkAction;       // action to take when bounds, asserts or switch defaults are violated
 
-    const char *argv0;    // program name
-    Array<const char *> *modFileAliasStrings; // array of char*'s of -I module filename alias strings
+    DString  argv0;    // program name
+    Array<const char *> modFileAliasStrings; // array of char*'s of -I module filename alias strings
     Array<const char *> *imppath;     // array of char*'s of where to look for import modules
     Array<const char *> *fileImppath; // array of char*'s of where to look for file import modules
-    const char *objdir;   // .obj/.lib file output directory
-    const char *objname;  // .obj file output name
-    const char *libname;  // .lib file output name
+    DString objdir;    // .obj/.lib file output directory
+    DString objname;   // .obj file output name
+    DString libname;   // .lib file output name
 
     bool doDocComments;  // process embedded documentation comments
-    const char *docdir;  // write documentation file to docdir directory
-    const char *docname; // write documentation file to docname
-    Array<const char *> *ddocfiles;  // macro include files for Ddoc
+    DString docdir;      // write documentation file to docdir directory
+    DString docname;     // write documentation file to docname
+    Array<const char *> ddocfiles;  // macro include files for Ddoc
 
     bool doHdrGeneration;  // process embedded documentation comments
-    const char *hdrdir;    // write 'header' file to docdir directory
-    const char *hdrname;   // write 'header' file to docname
+    DString hdrdir;        // write 'header' file to docdir directory
+    DString hdrname;       // write 'header' file to docname
     bool hdrStripPlainFunctions; // strip the bodies of plain (non-template) functions
 
     bool doJsonGeneration;    // write JSON file
-    const char *jsonfilename; // write JSON file to jsonfilename
+    DString jsonfilename;     // write JSON file to jsonfilename
 
     unsigned debuglevel;   // debug level
     Array<const char *> *debugids;     // debug identifiers
@@ -171,11 +171,11 @@ struct Param
     unsigned versionlevel; // version level
     Array<const char *> *versionids;   // version identifiers
 
-    const char *defaultlibname; // default library for non-debug builds
-    const char *debuglibname;   // default library for debug builds
-    const char *mscrtlib;       // MS C runtime library
+    DString defaultlibname;     // default library for non-debug builds
+    DString debuglibname;       // default library for debug builds
+    DString mscrtlib;           // MS C runtime library
 
-    const char *moduleDepsFile; // filename for deps output
+    DString moduleDepsFile;     // filename for deps output
     OutBuffer *moduleDeps;      // contents to be written to deps file
 
     // Hidden debug switches
@@ -190,14 +190,14 @@ struct Param
     Strings runargs;    // arguments for executable
 
     // Linker stuff
-    Array<const char *> *objfiles;
-    Array<const char *> *linkswitches;
-    Array<const char *> *libfiles;
-    Array<const char *> *dllfiles;
-    const char *deffile;
-    const char *resfile;
-    const char *exefile;
-    const char *mapfile;
+    Array<const char *> objfiles;
+    Array<const char *> linkswitches;
+    Array<const char *> libfiles;
+    Array<const char *> dllfiles;
+    DString deffile;
+    DString resfile;
+    DString exefile;
+    DString mapfile;
 };
 
 typedef unsigned structalign_t;
@@ -207,26 +207,27 @@ typedef unsigned structalign_t;
 
 struct Global
 {
-    const char *inifilename;
-    const char *mars_ext;
-    const char *obj_ext;
-    const char *lib_ext;
-    const char *dll_ext;
-    const char *doc_ext;        // for Ddoc generated files
-    const char *ddoc_ext;       // for Ddoc macro include files
-    const char *hdr_ext;        // for D 'header' import files
-    const char *json_ext;       // for JSON files
-    const char *map_ext;        // for .map files
+    DString inifilename;
+    DString mars_ext;
+    DString obj_ext;
+    DString lib_ext;
+    DString dll_ext;
+    DString doc_ext;            // for Ddoc generated files
+    DString ddoc_ext;           // for Ddoc macro include files
+    DString hdr_ext;            // for D 'header' import files
+    DString cxxhdr_ext;         // for C/C++ 'header' files
+    DString json_ext;           // for JSON files
+    DString map_ext;            // for .map files
     bool run_noext;             // allow -run sources without extensions.
 
-    const char *copyright;
-    const char *written;
+    DString copyright;
+    DString written;
     const char *main_d;         // dummy filename for dummy main()
     Array<const char *> *path;        // Array of char*'s which form the import lookup path
     Array<const char *> *filePath;    // Array of char*'s which form the file import lookup path
 
-    const char *version;     // Compiler version string
-    const char *vendor;      // Compiler backend name
+    DString version;         // Compiler version string
+    DString vendor;          // Compiler backend name
 
     Param params;
     unsigned errors;       // number of errors reported so far
@@ -238,6 +239,9 @@ struct Global
     unsigned errorLimit;
 
     void* console;         // opaque pointer to console for controlling text attributes
+
+    Array<class Identifier*>* versionids; // command line versions and predefined versions
+    Array<class Identifier*>* debugids;   // command line debug versions and predefined versions
 
     /* Start gagging. Return the current number of gagged errors
      */

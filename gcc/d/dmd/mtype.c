@@ -1455,7 +1455,7 @@ char *MODtoChars(MOD mod)
     OutBuffer buf;
     buf.reserve(16);
     MODtoBuffer(&buf, mod);
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 /********************************
@@ -1470,7 +1470,7 @@ const char *Type::toChars()
     hgs.fullQual = (ty == Tclass && !mod);
 
     ::toCBuffer(this, &buf, NULL, &hgs);
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 char *Type::toPrettyChars(bool QualifyTypes)
@@ -1481,7 +1481,7 @@ char *Type::toPrettyChars(bool QualifyTypes)
     hgs.fullQual = QualifyTypes;
 
     ::toCBuffer(this, &buf, NULL, &hgs);
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 /*********************************
@@ -1504,7 +1504,7 @@ char *Type::modToChars()
     OutBuffer buf;
     buf.reserve(16);
     modToBuffer(&buf);
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 /** For each active modifier (MODconst, MODimmutable, etc) call fp with a
@@ -1567,11 +1567,11 @@ Type *stripDefaultArgs(Type *t)
     {
         TypeFunction *tf = (TypeFunction *)t;
         Type *tret = stripDefaultArgs(tf->next);
-        Parameters *params = N::stripParams(tf->parameters);
-        if (tret == tf->next && params == tf->parameters)
+        Parameters *params = N::stripParams(tf->parameterList.parameters);
+        if (tret == tf->next && params == tf->parameterList.parameters)
             goto Lnot;
         tf = (TypeFunction *)tf->copy();
-        tf->parameters = params;
+        tf->parameterList.parameters = params;
         tf->next = tret;
         //printf("strip %s\n   <- %s\n", tf->toChars(), t->toChars());
         t = tf;
@@ -1985,24 +1985,25 @@ Type *TypeFunction::substWildTo(unsigned)
 
     assert(next);
     Type *tret = next->substWildTo(m);
-    Parameters *params = parameters;
+    Parameters *params = parameterList.parameters;
     if (mod & MODwild)
-        params = parameters->copy();
+        params = parameterList.parameters->copy();
     for (size_t i = 0; i < params->length; i++)
     {
         Parameter *p = (*params)[i];
         Type *t = p->type->substWildTo(m);
         if (t == p->type)
             continue;
-        if (params == parameters)
-            params = parameters->copy();
+        if (params == parameterList.parameters)
+            params = parameterList.parameters->copy();
         (*params)[i] = new Parameter(p->storageClass, t, NULL, NULL);
     }
-    if (next == tret && params == parameters)
+    if (next == tret && params == parameterList.parameters)
         return this;
 
     // Similar to TypeFunction::syntaxCopy;
-    TypeFunction *t = new TypeFunction(params, tret, varargs, linkage);
+    TypeFunction *t = new TypeFunction(ParameterList(params, parameterList.varargs),
+                                       tret, linkage);
     t->mod = ((mod & MODwild) ? (mod & ~MODwild) | MODconst : mod);
     t->isnothrow = isnothrow;
     t->isnogc = isnogc;
@@ -5119,14 +5120,13 @@ bool TypeReference::isZeroInit(Loc)
 
 /***************************** TypeFunction *****************************/
 
-TypeFunction::TypeFunction(Parameters *parameters, Type *treturn, int varargs, LINK linkage, StorageClass stc)
+TypeFunction::TypeFunction(const ParameterList &pl, Type *treturn, LINK linkage, StorageClass stc)
     : TypeNext(Tfunction, treturn)
 {
 //if (!treturn) *(char*)0=0;
 //    assert(treturn);
-    assert(0 <= varargs && varargs <= 2);
-    this->parameters = parameters;
-    this->varargs = varargs;
+    assert(VARARGnone <= pl.varargs && pl.varargs <= VARARGtypesafe);
+    this->parameterList = pl;
     this->linkage = linkage;
     this->inuse = 0;
     this->isnothrow = false;
@@ -5167,9 +5167,9 @@ TypeFunction::TypeFunction(Parameters *parameters, Type *treturn, int varargs, L
         this->trust = TRUSTtrusted;
 }
 
-TypeFunction *TypeFunction::create(Parameters *parameters, Type *treturn, int varargs, LINK linkage, StorageClass stc)
+TypeFunction *TypeFunction::create(Parameters *parameters, Type *treturn, VarArg varargs, LINK linkage, StorageClass stc)
 {
-    return new TypeFunction(parameters, treturn, varargs, linkage, stc);
+    return new TypeFunction(ParameterList(parameters, varargs), treturn, linkage, stc);
 }
 
 const char *TypeFunction::kind()
@@ -5180,8 +5180,9 @@ const char *TypeFunction::kind()
 Type *TypeFunction::syntaxCopy()
 {
     Type *treturn = next ? next->syntaxCopy() : NULL;
-    Parameters *params = Parameter::arraySyntaxCopy(parameters);
-    TypeFunction *t = new TypeFunction(params, treturn, varargs, linkage);
+    Parameters *parameters = Parameter::arraySyntaxCopy(parameterList.parameters);
+    TypeFunction *t = new TypeFunction(ParameterList(parameters, parameterList.varargs),
+                                       treturn, linkage);
     t->mod = mod;
     t->isnothrow = isnothrow;
     t->isnogc = isnogc;
@@ -5233,19 +5234,19 @@ int Type::covariant(Type *t, StorageClass *pstc, bool fix17349)
     t1 = (TypeFunction *)this;
     t2 = (TypeFunction *)t;
 
-    if (t1->varargs != t2->varargs)
+    if (t1->parameterList.varargs != t2->parameterList.varargs)
         goto Ldistinct;
 
-    if (t1->parameters && t2->parameters)
+    if (t1->parameterList.parameters && t2->parameterList.parameters)
     {
-        size_t dim = Parameter::dim(t1->parameters);
-        if (dim != Parameter::dim(t2->parameters))
+        size_t dim = t1->parameterList.length();
+        if (dim != t2->parameterList.length())
             goto Ldistinct;
 
         for (size_t i = 0; i < dim; i++)
         {
-            Parameter *fparam1 = Parameter::getNth(t1->parameters, i);
-            Parameter *fparam2 = Parameter::getNth(t2->parameters, i);
+            Parameter *fparam1 = t1->parameterList[i];
+            Parameter *fparam2 = t2->parameterList[i];
 
             if (!fparam1->type->equals(fparam2->type))
             {
@@ -5287,10 +5288,10 @@ int Type::covariant(Type *t, StorageClass *pstc, bool fix17349)
             notcovariant |= !fparam1->isCovariant(t1->isref, fparam2);
         }
     }
-    else if (t1->parameters != t2->parameters)
+    else if (t1->parameterList.parameters != t2->parameterList.parameters)
     {
-        size_t dim1 = !t1->parameters ? 0 : t1->parameters->length;
-        size_t dim2 = !t2->parameters ? 0 : t2->parameters->length;
+        size_t dim1 = t1->parameterList.length();
+        size_t dim2 = t2->parameterList.length();
         if (dim1 || dim2)
             goto Ldistinct;
     }
@@ -5447,14 +5448,15 @@ Type *TypeFunction::semantic(Loc loc, Scope *sc)
      * as semantic() will get called again on this.
      */
     TypeFunction *tf = copy()->toTypeFunction();
-    if (parameters)
+    if (parameterList.parameters)
     {
-        tf->parameters = parameters->copy();
-        for (size_t i = 0; i < parameters->length; i++)
+        tf->parameterList.parameters = parameterList.parameters->copy();
+        for (size_t i = 0; i < parameterList.parameters->length; i++)
         {
             void *pp = mem.xmalloc(sizeof(Parameter));
-            Parameter *p = (Parameter *)memcpy(pp, (void *)(*parameters)[i], sizeof(Parameter));
-            (*tf->parameters)[i] = p;
+            Parameter *p = (Parameter *)memcpy(pp, (void *)(*parameterList.parameters)[i],
+                                               sizeof(Parameter));
+            (*tf->parameterList.parameters)[i] = p;
         }
     }
 
@@ -5513,19 +5515,19 @@ Type *TypeFunction::semantic(Loc loc, Scope *sc)
     }
 
     unsigned char wildparams = 0;
-    if (tf->parameters)
+    if (tf->parameterList.parameters)
     {
         /* Create a scope for evaluating the default arguments for the parameters
          */
         Scope *argsc = sc->push();
         argsc->stc = 0;                 // don't inherit storage class
-        argsc->protection = Prot(PROTpublic);
+        argsc->protection = Prot(Prot::public_);
         argsc->func = NULL;
 
-        size_t dim = Parameter::dim(tf->parameters);
+        size_t dim = tf->parameterList.length();
         for (size_t i = 0; i < dim; i++)
         {
-            Parameter *fparam = Parameter::getNth(tf->parameters, i);
+            Parameter *fparam = tf->parameterList[i];
             inuse++;
             fparam->type = fparam->type->semantic(loc, argsc);
             inuse--;
@@ -5713,7 +5715,7 @@ Type *TypeFunction::semantic(Loc loc, Scope *sc)
                             OutBuffer buf2;  stcToBuffer(&buf2, stc2);
 
                             error(loc, "incompatible parameter storage classes '%s' and '%s'",
-                                      buf1.peekString(), buf2.peekString());
+                                      buf1.peekChars(), buf2.peekChars());
                             errors = true;
                             stc = stc1 | (stc & ~(STCref | STCout | STClazy));
                         }
@@ -5728,7 +5730,7 @@ Type *TypeFunction::semantic(Loc loc, Scope *sc)
                 /* Reset number of parameters, and back up one to do this fparam again,
                  * now that it is a tuple
                  */
-                dim = Parameter::dim(tf->parameters);
+                dim = tf->parameterList.length();
                 i--;
                 continue;
             }
@@ -5770,13 +5772,13 @@ Type *TypeFunction::semantic(Loc loc, Scope *sc)
     }
     tf->iswild = wildparams;
 
-    if (tf->isproperty && (tf->varargs || Parameter::dim(tf->parameters) > 2))
+    if (tf->isproperty && (tf->parameterList.varargs != VARARGnone || tf->parameterList.length() > 2))
     {
         error(loc, "properties can only have zero, one, or two parameter");
         errors = true;
     }
 
-    if (tf->varargs == 1 && tf->linkage != LINKd && Parameter::dim(tf->parameters) == 0)
+    if (tf->parameterList.varargs == VARARGvariadic && tf->linkage != LINKd && tf->parameterList.length() == 0)
     {
         error(loc, "variadic functions with non-D linkage must have at least one parameter");
         errors = true;
@@ -5880,10 +5882,10 @@ void TypeFunction::purityLevel()
 
     /* Evaluate what kind of purity based on the modifiers for the parameters
      */
-    const size_t dim = Parameter::dim(tf->parameters);
+    const size_t dim = tf->parameterList.length();
     for (size_t i = 0; i < dim; i++)
     {
-        Parameter *fparam = Parameter::getNth(tf->parameters, i);
+        Parameter *fparam = tf->parameterList[i];
         Type *t = fparam->type;
         if (!t)
             continue;
@@ -5968,13 +5970,13 @@ MATCH TypeFunction::callMatch(Type *tthis, Expressions *args, int flag)
         }
     }
 
-    size_t nparams = Parameter::dim(parameters);
+    size_t nparams = parameterList.length();
     size_t nargs = args ? args->length : 0;
     if (nparams == nargs)
         ;
     else if (nargs > nparams)
     {
-        if (varargs == 0)
+        if (parameterList.varargs == VARARGnone)
             goto Nomatch;               // too many args; no match
         match = MATCHconvert;           // match ... with a "conversion" match level
     }
@@ -5983,7 +5985,7 @@ MATCH TypeFunction::callMatch(Type *tthis, Expressions *args, int flag)
     {
         if (u >= nparams)
             break;
-        Parameter *p = Parameter::getNth(parameters, u);
+        Parameter *p = parameterList[u];
         Expression *arg = (*args)[u];
         assert(arg);
         Type *tprm = p->type;
@@ -6016,7 +6018,7 @@ MATCH TypeFunction::callMatch(Type *tthis, Expressions *args, int flag)
     {
         MATCH m;
 
-        Parameter *p = Parameter::getNth(parameters, u);
+        Parameter *p = parameterList[u];
         assert(p);
         if (u >= nargs)
         {
@@ -6107,14 +6109,14 @@ MATCH TypeFunction::callMatch(Type *tthis, Expressions *args, int flag)
         /* prefer matching the element type rather than the array
          * type when more arguments are present with T[]...
          */
-        if (varargs == 2 && u + 1 == nparams && nargs > nparams)
+        if (parameterList.varargs == VARARGtypesafe && u + 1 == nparams && nargs > nparams)
             goto L1;
 
         //printf("\tm = %d\n", m);
         if (m == MATCHnomatch)                  // if no match
         {
           L1:
-            if (varargs == 2 && u + 1 == nparams)       // if last varargs param
+            if (parameterList.varargs == VARARGtypesafe && u + 1 == nparams)       // if last varargs param
             {
                 Type *tb = p->type->toBasetype();
                 TypeSArray *tsa;
@@ -6192,14 +6194,25 @@ Nomatch:
  */
 bool TypeFunction::hasLazyParameters()
 {
-    size_t dim = Parameter::dim(parameters);
+    size_t dim = parameterList.length();
     for (size_t i = 0; i < dim; i++)
     {
-        Parameter *fparam = Parameter::getNth(parameters, i);
+        Parameter *fparam = parameterList[i];
         if (fparam->storageClass & STClazy)
             return true;
     }
     return false;
+}
+
+/*******************************
+ * Check for `extern (D) U func(T t, ...)` variadic function type,
+ * which has `_arguments[]` added as the first argument.
+ * Returns:
+ *  true if D-style variadic
+ */
+bool TypeFunction::isDstyleVariadic() const
+{
+    return linkage == LINKd && parameterList.varargs == VARARGvariadic;
 }
 
 /***************************
@@ -6254,10 +6267,10 @@ StorageClass TypeFunction::parameterStorageClass(Parameter *p)
     // See if p can escape via any of the other parameters
     if (purity == PUREweak)
     {
-        const size_t dim = Parameter::dim(parameters);
+        const size_t dim = parameterList.length();
         for (size_t i = 0; i < dim; i++)
         {
-            Parameter *fparam = Parameter::getNth(parameters, i);
+            Parameter *fparam = parameterList[i];
             Type *t = fparam->type;
             if (!t)
                 continue;
@@ -6305,7 +6318,7 @@ Type *TypeFunction::addStorageClass(StorageClass stc)
         (stc & STCsafe && t->trust < TRUSTtrusted))
     {
         // Klunky to change these
-        TypeFunction *tf = new TypeFunction(t->parameters, t->next, t->varargs, t->linkage, 0);
+        TypeFunction *tf = new TypeFunction(t->parameterList, t->next, t->linkage, 0);
         tf->mod = t->mod;
         tf->fargs = fargs;
         tf->purity = t->purity;
@@ -9298,6 +9311,22 @@ Expression *TypeNull::defaultInit(Loc)
     return new NullExp(Loc(), Type::tnull);
 }
 
+/***********************************************************
+ * Encapsulate Parameters* so .length and [i] can be used on it.
+ * https://dlang.org/spec/function.html#ParameterList
+ */
+
+ParameterList::ParameterList(Parameters *parameters, VarArg varargs)
+{
+    this->parameters = parameters;
+    this->varargs = varargs;
+}
+
+size_t ParameterList::length()
+{
+    return Parameter::dim(parameters);
+}
+
 /***************************** Parameter *****************************/
 
 Parameter::Parameter(StorageClass storageClass, Type *type, Identifier *ident, Expression *defaultArg)
@@ -9355,7 +9384,7 @@ Type *Parameter::isLazyArray()
             TypeDelegate *td = (TypeDelegate *)tel;
             TypeFunction *tf = td->next->toTypeFunction();
 
-            if (!tf->varargs && Parameter::dim(tf->parameters) == 0)
+            if (!tf->parameterList.varargs == VARARGnone && tf->parameterList.length() == 0)
             {
                 return tf->next;    // return type of delegate
             }

@@ -117,11 +117,10 @@ FuncDeclaration *hasIdentityOpAssign(AggregateDeclaration *ad, Scope *sc)
         {
             if (f->errors)
                 return NULL;
-            int varargs;
-            Parameters *fparams = f->getParameters(&varargs);
-            if (fparams->length >= 1)
+            ParameterList fparams = f->getParameterList();
+            if (fparams.length())
             {
-                Parameter *fparam0 = Parameter::getNth(fparams, 0);
+                Parameter *fparam0 = fparams[0];
                 if (fparam0->type->toDsymbol(NULL) != ad)
                     f = NULL;
             }
@@ -246,7 +245,7 @@ FuncDeclaration *buildOpAssign(StructDeclaration *sd, Scope *sc)
 
     Parameters *fparams = new Parameters;
     fparams->push(new Parameter(STCnodtor, sd->type, Id::p, NULL));
-    TypeFunction *tf = new TypeFunction(fparams, sd->handleType(), 0, LINKd, stc | STCref);
+    TypeFunction *tf = new TypeFunction(ParameterList(fparams), sd->handleType(), LINKd, stc | STCref);
 
     FuncDeclaration *fop = new FuncDeclaration(declLoc, Loc(), Id::assign, stc, tf);
     fop->storage_class |= STCinference;
@@ -505,7 +504,7 @@ FuncDeclaration *buildXopEquals(StructDeclaration *sd, Scope *sc)
                  */
                 Parameters *parameters = new Parameters;
                 parameters->push(new Parameter(STCref | STCconst, sd->type, NULL, NULL));
-                tfeqptr = new TypeFunction(parameters, Type::tbool, 0, LINKd);
+                tfeqptr = new TypeFunction(ParameterList(parameters), Type::tbool, LINKd);
                 tfeqptr->mod = MODconst;
                 tfeqptr = (TypeFunction *)tfeqptr->semantic(Loc(), &scx);
             }
@@ -534,7 +533,7 @@ FuncDeclaration *buildXopEquals(StructDeclaration *sd, Scope *sc)
     Parameters *parameters = new Parameters;
     parameters->push(new Parameter(STCref | STCconst, sd->type, Id::p, NULL));
     parameters->push(new Parameter(STCref | STCconst, sd->type, Id::q, NULL));
-    TypeFunction *tf = new TypeFunction(parameters, Type::tbool, 0, LINKd);
+    TypeFunction *tf = new TypeFunction(ParameterList(parameters), Type::tbool, LINKd);
 
     Identifier *id = Id::xopEquals;
     FuncDeclaration *fop = new FuncDeclaration(declLoc, Loc(), id, STCstatic, tf);
@@ -585,7 +584,7 @@ FuncDeclaration *buildXopCmp(StructDeclaration *sd, Scope *sc)
                  */
                 Parameters *parameters = new Parameters;
                 parameters->push(new Parameter(STCref | STCconst, sd->type, NULL, NULL));
-                tfcmpptr = new TypeFunction(parameters, Type::tint32, 0, LINKd);
+                tfcmpptr = new TypeFunction(ParameterList(parameters), Type::tint32, LINKd);
                 tfcmpptr->mod = MODconst;
                 tfcmpptr = (TypeFunction *)tfcmpptr->semantic(Loc(), &scx);
             }
@@ -619,7 +618,7 @@ FuncDeclaration *buildXopCmp(StructDeclaration *sd, Scope *sc)
     Parameters *parameters = new Parameters;
     parameters->push(new Parameter(STCref | STCconst, sd->type, Id::p, NULL));
     parameters->push(new Parameter(STCref | STCconst, sd->type, Id::q, NULL));
-    TypeFunction *tf = new TypeFunction(parameters, Type::tint32, 0, LINKd);
+    TypeFunction *tf = new TypeFunction(ParameterList(parameters), Type::tint32, LINKd);
 
     Identifier *id = Id::xopCmp;
     FuncDeclaration *fop = new FuncDeclaration(declLoc, Loc(), id, STCstatic, tf);
@@ -718,7 +717,7 @@ FuncDeclaration *buildXtoHash(StructDeclaration *sd, Scope *sc)
         static TypeFunction *tftohash;
         if (!tftohash)
         {
-            tftohash = new TypeFunction(NULL, Type::thash_t, 0, LINKd);
+            tftohash = new TypeFunction(ParameterList(), Type::thash_t, LINKd);
             tftohash->mod = MODconst;
             tftohash = (TypeFunction *)tftohash->merge();
         }
@@ -740,7 +739,8 @@ FuncDeclaration *buildXtoHash(StructDeclaration *sd, Scope *sc)
 
     Parameters *parameters = new Parameters();
     parameters->push(new Parameter(STCref | STCconst, sd->type, Id::p, NULL));
-    TypeFunction *tf = new TypeFunction(parameters, Type::thash_t, 0, LINKd, STCnothrow | STCtrusted);
+    TypeFunction *tf = new TypeFunction(ParameterList(parameters), Type::thash_t,
+                                        LINKd, STCnothrow | STCtrusted);
 
     Identifier *id = Id::xtoHash;
     FuncDeclaration *fop = new FuncDeclaration(declLoc, Loc(), id, STCstatic, tf);

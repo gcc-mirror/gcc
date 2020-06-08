@@ -4489,7 +4489,7 @@ package body Exp_Ch4 is
          Error_Msg_N ("?use of an anonymous access type allocator", N);
       end if;
 
-      --  RM E.2.3(22). We enforce that the expected type of an allocator
+      --  RM E.2.2(17). We enforce that the expected type of an allocator
       --  shall not be a remote access-to-class-wide-limited-private type
 
       --  Why is this being done at expansion time, seems clearly wrong ???
@@ -10423,6 +10423,10 @@ package body Exp_Ch4 is
       --  Apply possible constraint check
 
       Apply_Constraint_Check (Operand, Target_Type, No_Sliding => True);
+
+      --  Apply possible predicate check
+
+      Apply_Predicate_Check (Operand, Target_Type);
 
       if Do_Range_Check (Operand) then
          Generate_Range_Check (Operand, Target_Type, CE_Range_Check_Failed);

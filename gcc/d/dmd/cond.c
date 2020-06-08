@@ -29,15 +29,15 @@
 Expression *semantic(Expression *e, Scope *sc);
 bool evalStaticCondition(Scope *sc, Expression *exp, Expression *e, bool &errors);
 
-int findCondition(Strings *ids, Identifier *ident)
+int findCondition(Identifiers *ids, Identifier *ident)
 {
     if (ids)
     {
         for (size_t i = 0; i < ids->length; i++)
         {
-            const char *id = (*ids)[i];
+            Identifier *id = (*ids)[i];
 
-            if (strcmp(id, ident->toChars()) == 0)
+            if (id == ident)
                 return true;
         }
     }
@@ -122,7 +122,7 @@ static void lowerArrayAggregate(StaticForeach *sfe, Scope *sc)
 
 static Expression *wrapAndCall(Loc loc, Statement *s)
 {
-    TypeFunction *tf = new TypeFunction(new Parameters(), NULL, 0, LINKdefault, 0);
+    TypeFunction *tf = new TypeFunction(ParameterList(), NULL, LINKdefault, 0);
     FuncLiteralDeclaration *fd = new FuncLiteralDeclaration(loc, loc, tf, TOKreserved, NULL);
     fd->fbody = s;
     FuncExp *fe = new FuncExp(loc, fd);
@@ -391,16 +391,11 @@ Condition *DVCondition::syntaxCopy()
 
 /* ============================================================ */
 
-void DebugCondition::setGlobalLevel(unsigned level)
-{
-    global.params.debuglevel = level;
-}
-
 void DebugCondition::addGlobalIdent(const char *ident)
 {
-    if (!global.params.debugids)
-        global.params.debugids = new Strings();
-    global.params.debugids->push(ident);
+    if (!global.debugids)
+        global.debugids = new Identifiers();
+    global.debugids->push(Identifier::idPool(ident));
 }
 
 
@@ -412,7 +407,7 @@ DebugCondition::DebugCondition(Module *mod, unsigned level, Identifier *ident)
 // Helper for printing dependency information
 void printDepsConditional(Scope *sc, DVCondition* condition, const char* depType)
 {
-    if (!global.params.moduleDeps || global.params.moduleDepsFile)
+    if (!global.params.moduleDeps || global.params.moduleDepsFile.length)
         return;
     OutBuffer *ob = global.params.moduleDeps;
     Module* imod = sc ? sc->instantiatingModule() : condition->mod;
@@ -444,12 +439,12 @@ int DebugCondition::include(Scope *sc)
                 inc = 1;
                 definedInModule = true;
             }
-            else if (findCondition(global.params.debugids, ident))
+            else if (findCondition(global.debugids, ident))
                 inc = 1;
             else
             {   if (!mod->debugidsNot)
-                    mod->debugidsNot = new Strings();
-                mod->debugidsNot->push(ident->toChars());
+                    mod->debugidsNot = new Identifiers();
+                mod->debugidsNot->push(ident);
             }
         }
         else if (level <= global.params.debuglevel || level <= mod->debuglevel)
@@ -461,11 +456,6 @@ int DebugCondition::include(Scope *sc)
 }
 
 /* ============================================================ */
-
-void VersionCondition::setGlobalLevel(unsigned level)
-{
-    global.params.versionlevel = level;
-}
 
 static bool isReserved(const char *ident)
 {
@@ -598,9 +588,9 @@ void VersionCondition::addGlobalIdent(const char *ident)
 
 void VersionCondition::addPredefinedGlobalIdent(const char *ident)
 {
-    if (!global.params.versionids)
-        global.params.versionids = new Strings();
-    global.params.versionids->push(ident);
+    if (!global.versionids)
+        global.versionids = new Identifiers();
+    global.versionids->push(Identifier::idPool(ident));
 }
 
 
@@ -624,13 +614,13 @@ int VersionCondition::include(Scope *sc)
                 inc = 1;
                 definedInModule = true;
             }
-            else if (findCondition(global.params.versionids, ident))
+            else if (findCondition(global.versionids, ident))
                 inc = 1;
             else
             {
                 if (!mod->versionidsNot)
-                    mod->versionidsNot = new Strings();
-                mod->versionidsNot->push(ident->toChars());
+                    mod->versionidsNot = new Identifiers();
+                mod->versionidsNot->push(ident);
             }
         }
         else if (level <= global.params.versionlevel || level <= mod->versionlevel)

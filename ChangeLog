@@ -1,3 +1,7 @@
+2020-06-06  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* MAINTAINERS: Add myself as xtensa port maintainer.
+
 2020-05-28  Nicolas Bértolo  <nicolasbertolo@gmail.com>
 
 	* configure.ac: Don't require --enable-host-shared when building

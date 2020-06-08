@@ -4330,9 +4330,9 @@ package body Sem_Prag is
       procedure Set_Ravenscar_Profile (Profile : Profile_Name; N : Node_Id);
       --  Activate the set of configuration pragmas and restrictions that make
       --  up the Profile. Profile must be either GNAT_Extended_Ravenscar,
-      --  GNAT_Ravenscar_EDF, or Ravenscar. N is the corresponding pragma node,
-      --  which is used for error messages on any constructs violating the
-      --  profile.
+      --  GNAT_Ravenscar_EDF, Jorvik, or Ravenscar. N is the corresponding
+      --  pragma node, which is used for error messages on any constructs
+      --  violating the profile.
 
       ---------------------
       -- Ada_2005_Pragma --
@@ -11162,7 +11162,7 @@ package body Sem_Prag is
       --    Set required policies
 
       --      pragma Task_Dispatching_Policy (FIFO_Within_Priorities)
-      --        (For Ravenscar and GNAT_Extended_Ravenscar profiles)
+      --        (For Ravenscar, Jorvik, and GNAT_Extended_Ravenscar profiles)
       --      pragma Task_Dispatching_Policy (EDF_Across_Priorities)
       --        (For GNAT_Ravenscar_EDF profile)
       --      pragma Locking_Policy (Ceiling_Locking)
@@ -11321,7 +11321,7 @@ package body Sem_Prag is
          end if;
 
          --  Set the following restriction which was added to Ada 2012 (see
-         --  AI-0171):
+         --  AI05-0171):
          --    No_Dependence => System.Multiprocessors.Dispatching_Domains
 
          if Ada_Version >= Ada_2012 then
@@ -11346,7 +11346,32 @@ package body Sem_Prag is
               (Unit    => Nod,
                Warn    => Treat_Restrictions_As_Warnings,
                Profile => Ravenscar);
+
+            --  Set the following restriction which was added to Ada 2020,
+            --  but as a binding interpretation:
+            --     No_Dependence => Ada.Synchronous_Barriers
+            --  for Ravenscar (and therefore for Ravenscar variants) but not
+            --  for Jorvik. The unit Ada.Synchronous_Barriers was introduced
+            --  in Ada2012 (AI05-0174).
+
+            if Profile /= Jorvik then
+               Pref_Id := Make_Identifier (Loc, Name_Find ("ada"));
+               Sel_Id  := Make_Identifier (Loc, Name_Find
+                                                  ("synchronous_barriers"));
+
+               Nod :=
+                 Make_Selected_Component
+                   (Sloc          => Loc,
+                    Prefix        => Pref_Id,
+                    Selector_Name => Sel_Id);
+
+               Set_Restriction_No_Dependence
+                 (Unit    => Nod,
+                  Warn    => Treat_Restrictions_As_Warnings,
+                  Profile => Ravenscar);
+            end if;
          end if;
+
       end Set_Ravenscar_Profile;
 
    --  Start of processing for Analyze_Pragma
@@ -21313,6 +21338,9 @@ package body Sem_Prag is
             begin
                if Chars (Argx) = Name_Ravenscar then
                   Set_Ravenscar_Profile (Ravenscar, N);
+
+               elsif Chars (Argx) = Name_Jorvik then
+                  Set_Ravenscar_Profile (Jorvik, N);
 
                elsif Chars (Argx) = Name_Gnat_Extended_Ravenscar then
                   Set_Ravenscar_Profile (GNAT_Extended_Ravenscar, N);

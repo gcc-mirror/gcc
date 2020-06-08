@@ -53,6 +53,7 @@ with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch9;  use Sem_Ch9;
 with Sem_Ch11; use Sem_Ch11;
+with Sem_Ch13; use Sem_Ch13;
 with Sem_Elab; use Sem_Elab;
 with Sem_Eval; use Sem_Eval;
 with Sem_Prag; use Sem_Prag;
@@ -6236,28 +6237,37 @@ package body Exp_Ch9 is
             when N_Expanded_Name
                | N_Identifier
             =>
+
+               --  Because of N_Expanded_Name case, return Skip instead of OK.
+
                if No (Entity (N)) then
                   return Abandon;
 
                elsif Is_Universal_Numeric_Type (Entity (N)) then
-                  return OK;
+                  return Skip;
                end if;
 
                case Ekind (Entity (N)) is
                   when E_Constant
                      | E_Discriminant
-                     | E_Enumeration_Literal
+                  =>
+                     return Skip;
+
+                  when E_Enumeration_Literal
                      | E_Named_Integer
                      | E_Named_Real
                   =>
-                     return OK;
+                     if not Is_OK_Static_Expression (N) then
+                        return Abandon;
+                     end if;
+                     return Skip;
 
                   when E_Component =>
-                     return OK;
+                     return Skip;
 
                   when E_Variable =>
                      if Is_Simple_Barrier_Name (N) then
-                        return OK;
+                        return Skip;
                      end if;
 
                   when E_Function =>
@@ -6268,7 +6278,7 @@ package body Exp_Ch9 is
                      if Is_RTE (Entity (N), RE_Protected_Count)
                        or else Is_RTE (Entity (N), RE_Protected_Count_Entry)
                      then
-                        return OK;
+                        return Skip;
                      end if;
 
                   when others =>
@@ -6295,14 +6305,31 @@ package body Exp_Ch9 is
                   return OK;
                end if;
 
-            when N_Short_Circuit =>
+            when N_Short_Circuit
+              | N_If_Expression
+              | N_Case_Expression
+            =>
                return OK;
 
-            when N_Indexed_Component
-               | N_Selected_Component
-            =>
-               if not Is_Access_Type (Etype (Prefix (N))) then
-                  return OK;
+            when N_Case_Expression_Alternative =>
+               --  do not traverse Discrete_Choices subtree
+               if Is_Pure_Barrier (Expression (N)) /= Abandon then
+                  return Skip;
+               end if;
+
+            when N_Expression_With_Actions =>
+               --  this may occur in the case of a Count attribute reference
+               if Original_Node (N) /= N
+                 and then Is_Pure_Barrier (Original_Node (N)) /= Abandon
+               then
+                  return Skip;
+               end if;
+
+            when N_Membership_Test =>
+               if Is_Pure_Barrier (Left_Opnd (N)) /= Abandon
+                 and then All_Membership_Choices_Static (N)
+               then
+                  return Skip;
                end if;
 
             when N_Type_Conversion =>

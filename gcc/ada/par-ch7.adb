@@ -115,10 +115,6 @@ package body Ch7 is
       --  Dummy node to attach aspect specifications to until we properly
       --  figure out where they eventually belong.
 
-      Body_Is_Hidden_In_SPARK         : Boolean;
-      Private_Part_Is_Hidden_In_SPARK : Boolean;
-      Hidden_Region_Start             : Source_Ptr;
-
    begin
       Push_Scope_Stack;
       Scopes (Scope.Last).Etyp := E_Name;
@@ -185,25 +181,7 @@ package body Ch7 is
                Move_Aspects (From => Dummy_Node, To => Package_Node);
             end if;
 
-            --  In SPARK, a HIDE directive can be placed at the beginning of a
-            --  package implementation, thus hiding the package body from SPARK
-            --  tool-set. No violation of the SPARK restriction should be
-            --  issued on nodes in a hidden part, which is obtained by marking
-            --  such hidden parts.
-
-            if Token = Tok_SPARK_Hide then
-               Body_Is_Hidden_In_SPARK := True;
-               Hidden_Region_Start     := Token_Ptr;
-               Scan; -- past HIDE directive
-            else
-               Body_Is_Hidden_In_SPARK := False;
-            end if;
-
             Parse_Decls_Begin_End (Package_Node);
-
-            if Body_Is_Hidden_In_SPARK then
-               Set_Hidden_Part_In_SPARK (Hidden_Region_Start, Token_Ptr);
-            end if;
          end if;
 
       --  Cases other than Package_Body
@@ -303,26 +281,8 @@ package body Ch7 is
 
                   Scan; -- past PRIVATE
 
-                  if Token = Tok_SPARK_Hide then
-                     Private_Part_Is_Hidden_In_SPARK := True;
-                     Hidden_Region_Start             := Token_Ptr;
-                     Scan; -- past HIDE directive
-                  else
-                     Private_Part_Is_Hidden_In_SPARK := False;
-                  end if;
-
                   Set_Private_Declarations
                     (Specification_Node, P_Basic_Declarative_Items);
-
-                  --  In SPARK, a HIDE directive can be placed at the beginning
-                  --  of a private part, thus hiding all declarations in the
-                  --  private part from SPARK tool-set. No violation of the
-                  --  SPARK restriction should be issued on nodes in a hidden
-                  --  part, which is obtained by marking such hidden parts.
-
-                  if Private_Part_Is_Hidden_In_SPARK then
-                     Set_Hidden_Part_In_SPARK (Hidden_Region_Start, Token_Ptr);
-                  end if;
 
                   --  Deal gracefully with multiple PRIVATE parts
 

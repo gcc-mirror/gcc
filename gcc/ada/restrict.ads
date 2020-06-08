@@ -310,22 +310,6 @@ package Restrict is
 
    --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
-   procedure Check_SPARK_05_Restriction
-     (Msg   : String;
-      N     : Node_Id;
-      Force : Boolean := False);
-   --  Node N represents a construct not allowed in SPARK_05 mode. If this is
-   --  a source node, or if the restriction is forced (Force = True), and
-   --  the SPARK_05 restriction is set, then an error is issued on N. Msg
-   --  is appended to the restriction failure message.
-
-   procedure Check_SPARK_05_Restriction
-     (Msg1 : String;
-      Msg2 : String;
-      N    : Node_Id);
-   --  Same as Check_SPARK_05_Restriction except there is a continuation
-   --  message Msg2 following the initial message Msg1.
-
    procedure Check_No_Implicit_Aliasing (Obj : Node_Id);
    --  Obj is a node for which Is_Aliased_View is True, which is being used in
    --  a context (e.g. 'Access) where no implicit aliasing is allowed if the
@@ -392,10 +376,6 @@ package Restrict is
    --  pragma Restrictions_Warning, or attribute Restriction_Set. Returns
    --  True if N has the proper form for an entity name, False otherwise.
 
-   function Is_In_Hidden_Part_In_SPARK (Loc : Source_Ptr) return Boolean;
-   --  Determine if given location is covered by a hidden region range in the
-   --  SPARK hides table.
-
    function No_Exception_Handlers_Set return Boolean;
    --  Test to see if current restrictions settings specify that no exception
    --  handlers are present. This function is called by Gigi when it needs to
@@ -441,11 +421,6 @@ package Restrict is
    --  is currently in effect (set by pragma Profile, or by an appropriate set
    --  of individual Restrictions pragmas). Returns True only if all the
    --  required restrictions are set.
-
-   procedure Set_Hidden_Part_In_SPARK (Loc1, Loc2 : Source_Ptr);
-   --  Insert a new hidden region range in the SPARK hides table. The effect
-   --  is to hide any SPARK violation messages which are in the range Loc1 to
-   --  Loc2-1 (i.e. Loc2 is the first location for reenabling checks).
 
    procedure Set_Profile_Restrictions
      (P    : Profile_Name;

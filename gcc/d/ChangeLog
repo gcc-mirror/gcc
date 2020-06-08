@@ -1,3 +1,108 @@
+2020-06-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 73d8e2fec.
+	* decl.cc (get_symbol_decl): Use new Prot::Kind enum.
+	* modules.cc (get_internal_fn): Likewise.
+
+2020-06-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 108ca1bcd.
+	* d-diagnostic.cc (expand_d_format): Adjust to use extractChars().
+	* d-frontend.cc (Loc::toChars): Likewise.
+	* d-lang.cc (deps_write): Likewise.
+	(d_parse_file): Likewise.
+	* decl.cc (d_mangle_decl): Likewise.
+	* intrinsics.cc (maybe_set_intrinsic): Likewise.
+
+2020-06-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd b0df0e982.
+	* d-builtins.cc (build_frontend_type): Use VarArg for varargs_p.
+	* d-codegen.cc (declaration_type): Call TypeFunction::create with
+	argument VARARGnone.
+	(parameter_type): Likewise.
+	(d_build_call): Use new field names and member functions.
+	* d-target.cc (Target::cppParameterType): Call TypeFunction::create
+	with argument VARARGnone.
+	* types.cc (TypeVisitor::visit (TypeFunction *): Use new field names
+	and member functions.
+
+2020-06-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 1831b24ff.
+	* d-lang.cc (d_init_options): Remove initialization of updated fields.
+	(d_handle_option): Adjust for new field types.
+
+2020-06-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd cef1e7991.
+	* d-lang.cc (d_parse_file): Adjust for new field types.
+
+2020-06-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 740f3d1ea.
+	* d-lang.cc (d_handle_option): Use new fields to save debug and
+	version levels passed over command-line.
+	(d_post_options): Add them to front-end here.
+
+2020-06-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd f5638c7b8.
+	* d-builtins.cc (d_init_versions): Use new CHECKENABLE enum.
+	* d-codegen.cc (array_bounds_check): Likewise.
+	(build_frame_type): Likewise.
+	(get_frameinfo): Likewise.
+	* d-lang.cc (d_init_options): Likewise.
+	(d_init_options_struct): Don't initialize x_flag_bounds_check.
+	(d_handle_option): Use new CHECKENABLE enum.
+	(d_post_options): Likewise.  Set flag_bounds_check here.
+	* expr.cc (ExprVisitor::visit(AssertExp *)): Use new CHECKENABLE enum.
+
+2020-06-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 56f0a65c4.
+	* d-builtins.cc (build_frontend_type): Remove static.
+	(d_build_builtins_module): Use target.va_listType() to get front-end
+	type for va_list.
+	(d_init_builtins): Move creation of va_list to Target::va_listType.
+	* d-codegen.cc (build_interface_binfo): Use new target global.
+	(build_vindex_ref): Likewise.
+	(identity_compare_p): Likewise.
+	* d-ctfloat.cc (CTFloat::parse): Likewise.
+	* d-lang.cc (d_init): Likewise.
+	* d-port.cc (Port::isFloat32LiteralOutOfRange): Likewise.
+	(Port::isFloat64LiteralOutOfRange): Likewise.
+	* d-target.cc (define_float_constants): Initialize constants through a
+	reference, instead of setting globals.
+	(Target::_init): Initialize new fields instead of setting globals.
+	(Target::va_listType): Build front-end type from va_list_type_node.
+	(Target::toCppMangle): Renamed to ...
+	(TargetCPP::toMangle): ... this.
+	(Target::cppTypeInfoMangle): Renamed to ...
+	(TargetCPP::typeInfoMangle): ... this.
+	(Target::cppTypeMangle): Renamed to ...
+	(TargetCPP::typeMangle): this.
+	(Target::cppParameterType): Renamed to ...
+	(TargetCPP::parameterType): ... this.  Use target.va_listType() to get
+	front-end type for va_list.
+	(Target::cppFundamentalType): Renamed to ...
+	(TargetCPP::fundamentalType): ... this.
+	* d-tree.h (build_frontend_type): Declare.
+	* decl.cc (base_vtable_offset): Use new target global.
+	* typeinfo.cc (layout_classinfo_interfaces): Likewise.
+	(layout_cpp_typeinfo): Likewise.
+	* types.cc (valist_array_p): Use target.va_listType() to get front-end
+	type for va_list.
+	(layout_aggregate_type): Use new target global.
+
+2020-06-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 6d5bffa54.
+	* d-builtins.cc (maybe_set_builtin_1): Update call to
+	Condition::include().
+	* decl.cc (DeclVisitor::visit(AttribDeclaration *)): Likewise.
+	* types.cc (layout_aggregate_members): Likewise.
+
 2020-06-04  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 48d704f08.

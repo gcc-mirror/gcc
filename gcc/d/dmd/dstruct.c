@@ -45,7 +45,7 @@ FuncDeclaration *search_toString(StructDeclaration *sd)
         static TypeFunction *tftostring;
         if (!tftostring)
         {
-            tftostring = new TypeFunction(NULL, Type::tstring, 0, LINKd);
+            tftostring = new TypeFunction(ParameterList(), Type::tstring, LINKd);
             tftostring = tftostring->merge()->toTypeFunction();
         }
 
@@ -187,7 +187,7 @@ AggregateDeclaration::AggregateDeclaration(Loc loc, Identifier *id)
     this->loc = loc;
 
     storage_class = 0;
-    protection = Prot(PROTpublic);
+    protection = Prot(Prot::public_);
     type = NULL;
     structsize = 0;             // size of struct
     alignsize = 0;              // size of struct for alignment purposes
@@ -228,7 +228,7 @@ Scope *AggregateDeclaration::newScope(Scope *sc)
     sc2->parent = this;
     if (isUnionDeclaration())
         sc2->inunion = 1;
-    sc2->protection = Prot(PROTpublic);
+    sc2->protection = Prot(Prot::public_);
     sc2->explicitProtection = 0;
     sc2->aligndecl = NULL;
     sc2->userAttribDecl = NULL;
@@ -543,7 +543,7 @@ bool AggregateDeclaration::isDeprecated()
 
 bool AggregateDeclaration::isExport() const
 {
-    return protection.kind == PROTexport;
+    return protection.kind == Prot::export_;
 }
 
 /***************************************
@@ -925,7 +925,7 @@ void AggregateDeclaration::makeNested()
         // Emulate vthis->semantic()
         vthis->storage_class |= STCfield;
         vthis->parent = this;
-        vthis->protection = Prot(PROTpublic);
+        vthis->protection = Prot(Prot::public_);
         vthis->alignment = t->alignment();
         vthis->semanticRun = PASSsemanticdone;
 

@@ -75,7 +75,7 @@ Declaration::Declaration(Identifier *id)
     type = NULL;
     originalType = NULL;
     storage_class = STCundefined;
-    protection = Prot(PROTundefined);
+    protection = Prot(Prot::undefined);
     linkage = LINKdefault;
     inuse = 0;
     mangleOverride = NULL;
@@ -1119,7 +1119,7 @@ Lnomatch:
 
             OutBuffer buf;
             buf.printf("__%s_field_%llu", ident->toChars(), (ulonglong)i);
-            const char *name = buf.extractString();
+            const char *name = buf.extractChars();
             Identifier *id = Identifier::idPool(name);
 
             Initializer *ti;
@@ -1190,7 +1190,7 @@ Lnomatch:
         {
             OutBuffer buf;
             stcToBuffer(&buf, stc);
-            error("cannot be %s", buf.peekString());
+            error("cannot be %s", buf.peekChars());
         }
         storage_class &= ~stc;  // strip off
     }
@@ -1202,7 +1202,7 @@ Lnomatch:
         {
             OutBuffer buf;
             stcToBuffer(&buf, stc);
-            error("cannot be 'scope' and '%s'", buf.peekString());
+            error("cannot be 'scope' and '%s'", buf.peekChars());
         }
         else if (isMember())
         {
@@ -1830,12 +1830,12 @@ bool VarDeclaration::needThis()
 
 bool VarDeclaration::isExport() const
 {
-    return protection.kind == PROTexport;
+    return protection.kind == Prot::export_;
 }
 
 bool VarDeclaration::isImportedSymbol() const
 {
-    if (protection.kind == PROTexport && !_init &&
+    if (protection.kind == Prot::export_ && !_init &&
         (storage_class & STCstatic || parent->isModule()))
         return true;
     return false;
@@ -2218,7 +2218,7 @@ TypeInfoDeclaration::TypeInfoDeclaration(Type *tinfo)
 {
     this->tinfo = tinfo;
     storage_class = STCstatic | STCgshared;
-    protection = Prot(PROTpublic);
+    protection = Prot(Prot::public_);
     linkage = LINKc;
     alignment = target.ptrsize;
 }
@@ -2246,7 +2246,7 @@ const char *TypeInfoDeclaration::toChars()
     buf.writestring("typeid(");
     buf.writestring(tinfo->toChars());
     buf.writeByte(')');
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 /***************************** TypeInfoConstDeclaration **********************/

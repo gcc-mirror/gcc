@@ -147,7 +147,7 @@ get_internal_fn (tree ident)
 						   Identifier::idPool (name));
   fd->loc = Loc (mod->srcfile->toChars (), 1, 0);
   fd->parent = mod;
-  fd->protection.kind = PROTprivate;
+  fd->protection.kind = Prot::private_;
   fd->semanticRun = PASSsemantic3done;
 
   return fd;

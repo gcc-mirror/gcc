@@ -324,8 +324,9 @@ package body Sem_Eval is
    -----------------------------------------------
 
    procedure Check_Expression_Against_Static_Predicate
-     (Expr : Node_Id;
-      Typ  : Entity_Id)
+     (Expr                    : Node_Id;
+      Typ                     : Entity_Id;
+      Static_Failure_Is_Error : Boolean := False)
    is
    begin
       --  Nothing to do if expression is not known at compile time, or the
@@ -383,18 +384,28 @@ package body Sem_Eval is
       --  Here we know that the predicate will fail
 
       --  Special case of static expression failing a predicate (other than one
-      --  that was explicitly specified with a Dynamic_Predicate aspect). This
-      --  is the case where the expression is no longer considered static.
+      --  that was explicitly specified with a Dynamic_Predicate aspect). If
+      --  the expression comes from a qualified_expression or type_conversion
+      --  this is an error (Static_Failure_Is_Error); otherwise we only issue
+      --  a warning and the expression is no longer considered static.
 
       if Is_Static_Expression (Expr)
         and then not Has_Dynamic_Predicate_Aspect (Typ)
       then
-         Error_Msg_NE
-           ("??static expression fails static predicate check on &",
-            Expr, Typ);
-         Error_Msg_N
-           ("\??expression is no longer considered static", Expr);
-         Set_Is_Static_Expression (Expr, False);
+         if Static_Failure_Is_Error then
+            Error_Msg_NE
+              ("static expression fails static predicate check on &",
+               Expr, Typ);
+
+         else
+            Error_Msg_NE
+              ("??static expression fails static predicate check on &",
+               Expr, Typ);
+            Error_Msg_N
+              ("\??expression is no longer considered static", Expr);
+
+            Set_Is_Static_Expression (Expr, False);
+         end if;
 
       --  In all other cases, this is just a warning that a test will fail.
       --  It does not matter if the expression is static or not, or if the
@@ -403,6 +414,15 @@ package body Sem_Eval is
       else
          Error_Msg_NE
            ("??expression fails predicate check on &", Expr, Typ);
+
+         --  Force a check here, which is potentially a redundant check, but
+         --  this ensures a check will be done in cases where the expression
+         --  is folded, and since this is definitely a failure, extra checks
+         --  are OK.
+
+         Insert_Action (Expr,
+           Make_Predicate_Check
+             (Typ, Duplicate_Subexpr (Expr)), Suppress => All_Checks);
       end if;
    end Check_Expression_Against_Static_Predicate;
 
@@ -4011,8 +4031,13 @@ package body Sem_Eval is
 
             --  Real to integer conversion
 
-            else
+            elsif To_Be_Treated_As_Real (Source_Type) then
                Result := UR_To_Uint (Expr_Value_R (Operand));
+
+            --  Enumeration to integer conversion, aka 'Enum_Rep
+
+            else
+               Result := Expr_Rep_Value (Operand);
             end if;
 
             --  If fixed-point type (Conversion_OK must be set), then the
@@ -4056,7 +4081,6 @@ package body Sem_Eval is
       if Is_Out_Of_Range (N, Etype (N), Assume_Valid => True) then
          Out_Of_Range (N);
       end if;
-
    end Eval_Type_Conversion;
 
    -------------------

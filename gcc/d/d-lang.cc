@@ -163,7 +163,7 @@ deps_write (Module *module, OutBuffer *buffer, unsigned colmax = 72)
   /* Write out make target module name.  */
   if (d_option.deps_target)
     {
-      buffer->writestring (d_option.deps_target->extractString ());
+      buffer->writestring (d_option.deps_target->extractChars ());
       column = d_option.deps_target->offset;
     }
   else
@@ -297,18 +297,12 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
   /* Default extern(C++) mangling to C++14.  */
   global.params.cplusplus = CppStdRevisionCpp14;
 
-  global.params.linkswitches = new Strings ();
-  global.params.libfiles = new Strings ();
-  global.params.objfiles = new Strings ();
-  global.params.ddocfiles = new Strings ();
-
   /* Warnings and deprecations are disabled by default.  */
   global.params.useDeprecated = DIAGNOSTICoff;
   global.params.warnings = DIAGNOSTICoff;
 
   global.params.imppath = new Strings ();
   global.params.fileImppath = new Strings ();
-  global.params.modFileAliasStrings = new Strings ();
 
   /* Extra GDC-specific options.  */
   d_option.fonly = NULL;
@@ -443,14 +437,16 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 	  int level = integral_argument (arg);
 	  if (level != -1)
 	    {
-	      DebugCondition::setGlobalLevel (level);
+	      global.params.debuglevel = level;
 	      break;
 	    }
 	}
 
       if (Identifier::isValidIdentifier (CONST_CAST (char *, arg)))
 	{
-	  DebugCondition::addGlobalIdent (arg);
+	  if (!global.params.debugids)
+	    global.params.debugids = new Strings ();
+	  global.params.debugids->push (arg);
 	  break;
 	}
 
@@ -472,7 +468,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fdoc_inc_:
-      global.params.ddocfiles->push (arg);
+      global.params.ddocfiles.push (arg);
       break;
 
     case OPT_fdruntime:
@@ -500,7 +496,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fmodule_file_:
-      global.params.modFileAliasStrings->push (arg);
+      global.params.modFileAliasStrings.push (arg);
       if (!strchr (arg, '='))
 	error ("bad argument for %<-fmodule-file%>: %qs", arg);
       break;
@@ -582,14 +578,16 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 	  int level = integral_argument (arg);
 	  if (level != -1)
 	    {
-	      VersionCondition::setGlobalLevel (level);
+	      global.params.versionlevel = level;
 	      break;
 	    }
 	}
 
       if (Identifier::isValidIdentifier (CONST_CAST (char *, arg)))
 	{
-	  VersionCondition::addGlobalIdent (arg);
+	  if (!global.params.versionids)
+	    global.params.versionids = new Strings ();
+	  global.params.versionids->push (arg);
 	  break;
 	}
 
@@ -812,6 +810,25 @@ d_post_options (const char ** fn)
   /* Has no effect yet.  */
   global.params.pic = flag_pic != 0;
 
+  /* Add in versions given on the command line.  */
+  if (global.params.versionids)
+    {
+      for (size_t i = 0; i < global.params.versionids->length; i++)
+	{
+	  const char *s = (*global.params.versionids)[i];
+	  VersionCondition::addGlobalIdent (s);
+	}
+    }
+
+  if (global.params.debugids)
+    {
+      for (size_t i = 0; i < global.params.debugids->length; i++)
+	{
+	  const char *s = (*global.params.debugids)[i];
+	  DebugCondition::addGlobalIdent (s);
+	}
+    }
+
   if (warn_return_type == -1)
     warn_return_type = 0;
 
@@ -1004,8 +1021,8 @@ d_parse_file (void)
 {
   if (global.params.verbose)
     {
-      message ("binary    %s", global.params.argv0);
-      message ("version   %s", global.version);
+      message ("binary    %s", global.params.argv0.ptr);
+      message ("version   %s", global.version.ptr);
 
       if (global.params.versionids)
 	{
@@ -1245,7 +1262,7 @@ d_parse_file (void)
 	 to make the middle-end fully deterministic.  */
       OutBuffer buf;
       mangleToBuffer (Module::rootModule, &buf);
-      first_global_object_name = buf.extractString ();
+      first_global_object_name = buf.extractChars ();
     }
 
   /* Make dependencies.  */
@@ -1277,11 +1294,12 @@ d_parse_file (void)
       OutBuffer buf;
       json_generate (&buf, &modules);
 
-      const char *name = global.params.jsonfilename;
+      const char *name = global.params.jsonfilename.ptr;
 
       if (name && (name[0] != '-' || name[1] != '\0'))
 	{
-	  const char *nameext = FileName::defaultExt (name, global.json_ext);
+	  const char *nameext
+	    = FileName::defaultExt (name, global.json_ext.ptr);
 	  File *fjson = File::create (nameext);
 	  fjson->setbuffer ((void *) buf.data, buf.offset);
 	  fjson->ref = 1;

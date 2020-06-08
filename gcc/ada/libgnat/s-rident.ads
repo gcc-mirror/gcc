@@ -232,7 +232,6 @@ package System.Rident is
    No_Dynamic_Interrupts  : Restriction_Id renames No_Dynamic_Attachment;
    No_Requeue             : Restriction_Id renames No_Requeue_Statements;
    No_Task_Attributes     : Restriction_Id renames No_Task_Attributes_Package;
-   SPARK                  : Restriction_Id renames SPARK_05;
 
    subtype All_Restrictions is Restriction_Id range
      Simple_Barriers .. Max_Storage_At_Blocking;
@@ -382,6 +381,7 @@ package System.Rident is
       Restricted_Tasking,
       Restricted,
       Ravenscar,
+      Jorvik,
       GNAT_Extended_Ravenscar,
       GNAT_Ravenscar_EDF);
    --  Names of recognized profiles. No_Profile is used to indicate that a
@@ -542,6 +542,67 @@ package System.Rident is
                         Value =>
                           (Max_Asynchronous_Select_Nesting => 0,
                            Max_Protected_Entries           => 1,
+                           Max_Select_Alternatives         => 0,
+                           Max_Task_Entries                => 0,
+                           others                          => 0)),
+
+                     Jorvik  =>
+
+                     --  Restrictions for Jorvik profile ..
+
+                     --  Note: the table entries here only represent the
+                     --  required restriction profile for Jorvik. The
+                     --  full Jorvik profile also requires:
+
+                     --    pragma Dispatching_Policy (FIFO_Within_Priorities);
+                     --    pragma Locking_Policy (Ceiling_Locking);
+                     --    pragma Detect_Blocking;
+
+                     --  The differences between Ravenscar and Jorvik are
+                     --  as follows:
+                     --     1) Ravenscar includes restriction Simple_Barriers;
+                     --        Jorvik includes Pure_Barriers instead.
+                     --     2) The following 6 restrictions are included in
+                     --        Ravenscar but not in Jorvik:
+                     --          No_Implicit_Heap_Allocations
+                     --          No_Relative_Delay
+                     --          Max_Entry_Queue_Length => 1
+                     --          Max_Protected_Entries => 1
+                     --          No_Dependence => Ada.Calendar
+                     --          No_Dependence => Ada.Synchronous_Barriers
+                     --
+                     --  The last of those 7 (i.e., No_Dep => Ada.Synch_Bars)
+                     --  is not reflected here (see sem_prag.adb).
+
+                       (Set   =>
+                          (No_Abort_Statements             => True,
+                           No_Asynchronous_Control         => True,
+                           No_Dynamic_Attachment           => True,
+                           No_Dynamic_Priorities           => True,
+                           No_Local_Protected_Objects      => True,
+                           No_Protected_Type_Allocators    => True,
+                           No_Requeue_Statements           => True,
+                           No_Task_Allocators              => True,
+                           No_Task_Attributes_Package      => True,
+                           No_Task_Hierarchy               => True,
+                           No_Terminate_Alternatives       => True,
+                           Max_Asynchronous_Select_Nesting => True,
+                           Max_Select_Alternatives         => True,
+                           Max_Task_Entries                => True,
+
+                           --  plus these additional restrictions:
+
+                           No_Local_Timing_Events           => True,
+                           No_Select_Statements             => True,
+                           No_Specific_Termination_Handlers => True,
+                           No_Task_Termination              => True,
+                           Pure_Barriers                    => True,
+                           others                           => False),
+
+                        --  Value settings for Ravenscar (same as Restricted)
+
+                        Value =>
+                          (Max_Asynchronous_Select_Nesting => 0,
                            Max_Select_Alternatives         => 0,
                            Max_Task_Entries                => 0,
                            others                          => 0)),

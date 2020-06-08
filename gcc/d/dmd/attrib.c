@@ -596,7 +596,7 @@ ProtDeclaration::ProtDeclaration(Loc loc, Identifiers* pkg_identifiers, Dsymbols
         : AttribDeclaration(decl)
 {
     this->loc = loc;
-    this->protection.kind = PROTpackage;
+    this->protection.kind = Prot::package_;
     this->protection.pkg  = NULL;
     this->pkg_identifiers = pkg_identifiers;
 }
@@ -604,7 +604,7 @@ ProtDeclaration::ProtDeclaration(Loc loc, Identifiers* pkg_identifiers, Dsymbols
 Dsymbol *ProtDeclaration::syntaxCopy(Dsymbol *s)
 {
     assert(!s);
-    if (protection.kind == PROTpackage)
+    if (protection.kind == Prot::package_)
         return new ProtDeclaration(this->loc, pkg_identifiers, Dsymbol::arraySyntaxCopy(decl));
     else
         return new ProtDeclaration(this->loc, protection, Dsymbol::arraySyntaxCopy(decl));
@@ -629,7 +629,7 @@ void ProtDeclaration::addMember(Scope *sc, ScopeDsymbol *sds)
         pkg_identifiers = NULL;
     }
 
-    if (protection.kind == PROTpackage && protection.pkg && sc->_module)
+    if (protection.kind == Prot::package_ && protection.pkg && sc->_module)
     {
         Module *m = sc->_module;
         Package* pkg = m->parent ? m->parent->isPackage() : NULL;
@@ -648,13 +648,13 @@ const char *ProtDeclaration::kind() const
 
 const char *ProtDeclaration::toPrettyChars(bool)
 {
-    assert(protection.kind > PROTundefined);
+    assert(protection.kind > Prot::undefined);
 
     OutBuffer buf;
     buf.writeByte('\'');
     protectionToBuffer(&buf, protection);
     buf.writeByte('\'');
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 /********************************* AlignDeclaration ****************************/
@@ -994,7 +994,7 @@ void PragmaDeclaration::semantic(Scope *sc)
             name[se->len] = 0;
             if (global.params.verbose)
                 message("library   %s", name);
-            if (global.params.moduleDeps && !global.params.moduleDepsFile)
+            if (global.params.moduleDeps && !global.params.moduleDepsFile.length)
             {
                 OutBuffer *ob = global.params.moduleDeps;
                 Module *imod = sc->instantiatingModule();
@@ -1132,7 +1132,7 @@ void PragmaDeclaration::semantic(Scope *sc)
                 if (args->length)
                     buf.writeByte(')');
             }
-            message("pragma    %s", buf.peekString());
+            message("pragma    %s", buf.peekChars());
         }
         goto Lnodecl;
     }

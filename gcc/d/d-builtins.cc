@@ -282,7 +282,7 @@ build_frontend_type (tree type)
       if (dtype)
 	{
 	  tree parms = TYPE_ARG_TYPES (type);
-	  int varargs_p = 1;
+	  VarArg varargs_p = VARARGvariadic;
 
 	  Parameters *args = new Parameters;
 	  args->reserve (list_length (parms));
@@ -293,7 +293,7 @@ build_frontend_type (tree type)
 	      tree argtype = TREE_VALUE (parm);
 	      if (argtype == void_type_node)
 		{
-		  varargs_p = 0;
+		  varargs_p = VARARGnone;
 		  break;
 		}
 
@@ -316,7 +316,7 @@ build_frontend_type (tree type)
 
 	  /* GCC generic and placeholder built-ins are marked as variadic, yet
 	     have no named parameters, and so can't be represented in D.  */
-	  if (args->length != 0 || !varargs_p)
+	  if (args->length != 0 || varargs_p == VARARGnone)
 	    {
 	      dtype = TypeFunction::create (args, dtype, varargs_p, LINKc);
 	      return dtype->addMod (mod);

@@ -2863,6 +2863,10 @@ funroll-all-loops
 Common Report Var(flag_unroll_all_loops) Optimization
 Perform loop unrolling for all loops.
 
+funroll-completely-grow-size
+Undocumented Var(flag_cunroll_grow_size) Init(2) Optimization
+; Internal undocumented flag, allow size growth during complete unrolling
+
 ; Nonzero means that loop optimizer may assume that the induction variables
 ; that control loops do not overflow and that the loops with nontrivial
 ; exit condition are not infinite

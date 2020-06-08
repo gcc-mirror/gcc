@@ -801,10 +801,12 @@ const char * __gnat_gai_strerror(int errcode) {
 
 int __gnat_minus_500ms() {
 #if defined (_WIN32)
-  // Windows Server 2019 and Windows 8.0 do not need 500 millisecond socket
-  // timeout correction.
-  return !(IsWindows8OrGreater() && !IsWindowsServer()
-           || IsWindowsVersionOrGreater(10, 0, 17763));
+  // Windows 8.0 and newer do not need 500 millisecond socket timeout
+  // correction.
+  // We do not know the Windows server version without socket timeout
+  // correction for now. When we know, we can add the call for
+  // IsWindowsVersionOrGreater(10, 0, ????) into condition.
+  return !IsWindows8OrGreater() || IsWindowsServer();
 #else
    return 0;
 #endif

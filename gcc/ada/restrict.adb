@@ -39,34 +39,6 @@ with Uname;    use Uname;
 
 package body Restrict is
 
-   -------------------------------
-   -- SPARK Restriction Control --
-   -------------------------------
-
-   --  SPARK HIDE directives allow the effect of the SPARK_05 restriction to be
-   --  turned off for a specified region of code, and the following tables are
-   --  the data structures used to keep track of these regions.
-
-   --  The table contains pairs of source locations, the first being the start
-   --  location for hidden region, and the second being the end location.
-
-   --  Note that the start location is included in the hidden region, while
-   --  the end location is excluded from it. (It typically corresponds to the
-   --  next token during scanning.)
-
-   type SPARK_Hide_Entry is record
-      Start : Source_Ptr;
-      Stop  : Source_Ptr;
-   end record;
-
-   package SPARK_Hides is new Table.Table (
-     Table_Component_Type => SPARK_Hide_Entry,
-     Table_Index_Type     => Natural,
-     Table_Low_Bound      => 1,
-     Table_Initial        => 100,
-     Table_Increment      => 200,
-     Table_Name           => "SPARK Hides");
-
    --------------------------------
    -- Package Local Declarations --
    --------------------------------
@@ -511,13 +483,6 @@ package body Restrict is
          return;
       end if;
 
-      --  In SPARK 05 mode, issue an error for any use of class-wide, even if
-      --  the No_Dispatch restriction is not set.
-
-      if R = No_Dispatch then
-         Check_SPARK_05_Restriction ("class-wide is not allowed", N);
-      end if;
-
       if UI_Is_In_Int_Range (V) then
          VV := Integer (UI_To_Int (V));
       else
@@ -846,94 +811,6 @@ package body Restrict is
       end if;
    end Check_Restriction_No_Use_Of_Pragma;
 
-   --------------------------------
-   -- Check_SPARK_05_Restriction --
-   --------------------------------
-
-   procedure Check_SPARK_05_Restriction
-     (Msg   : String;
-      N     : Node_Id;
-      Force : Boolean := False)
-   is
-      Msg_Issued          : Boolean;
-      Save_Error_Msg_Sloc : Source_Ptr;
-      Onode               : constant Node_Id := Original_Node (N);
-
-   begin
-      --  Output message if Force set
-
-      if Force
-
-        --  Or if this node comes from source
-
-        or else Comes_From_Source (N)
-
-        --  Or if this is a range node which rewrites a range attribute and
-        --  the range attribute comes from source.
-
-        or else (Nkind (N) = N_Range
-                  and then Nkind (Onode) = N_Attribute_Reference
-                  and then Attribute_Name (Onode) = Name_Range
-                  and then Comes_From_Source (Onode))
-
-        --  Or this is an expression that does not come from source, which is
-        --  a rewriting of an expression that does come from source.
-
-        or else (Nkind (N) in N_Subexpr and then Comes_From_Source (Onode))
-      then
-         if Restriction_Check_Required (SPARK_05)
-           and then Is_In_Hidden_Part_In_SPARK (Sloc (N))
-         then
-            return;
-         end if;
-
-         --  Since the call to Restriction_Msg from Check_Restriction may set
-         --  Error_Msg_Sloc to the location of the pragma restriction, save and
-         --  restore the previous value of the global variable around the call.
-
-         Save_Error_Msg_Sloc := Error_Msg_Sloc;
-         Check_Restriction (Msg_Issued, SPARK_05, First_Node (N));
-         Error_Msg_Sloc := Save_Error_Msg_Sloc;
-
-         if Msg_Issued then
-            Error_Msg_F ("\\| " & Msg, N);
-         end if;
-      end if;
-   end Check_SPARK_05_Restriction;
-
-   procedure Check_SPARK_05_Restriction
-     (Msg1 : String;
-      Msg2 : String;
-      N    : Node_Id)
-   is
-      Msg_Issued          : Boolean;
-      Save_Error_Msg_Sloc : Source_Ptr;
-
-   begin
-      pragma Assert (Msg2'Length /= 0 and then Msg2 (Msg2'First) = '\');
-
-      if Comes_From_Source (Original_Node (N)) then
-         if Restriction_Check_Required (SPARK_05)
-           and then Is_In_Hidden_Part_In_SPARK (Sloc (N))
-         then
-            return;
-         end if;
-
-         --  Since the call to Restriction_Msg from Check_Restriction may set
-         --  Error_Msg_Sloc to the location of the pragma restriction, save and
-         --  restore the previous value of the global variable around the call.
-
-         Save_Error_Msg_Sloc := Error_Msg_Sloc;
-         Check_Restriction (Msg_Issued, SPARK_05, First_Node (N));
-         Error_Msg_Sloc := Save_Error_Msg_Sloc;
-
-         if Msg_Issued then
-            Error_Msg_F ("\\| " & Msg1, N);
-            Error_Msg_F (Msg2, N);
-         end if;
-      end if;
-   end Check_SPARK_05_Restriction;
-
    --------------------------------------
    -- Check_Wide_Character_Restriction --
    --------------------------------------
@@ -1020,25 +897,6 @@ package body Restrict is
 
       return Not_A_Restriction_Id;
    end Get_Restriction_Id;
-
-   --------------------------------
-   -- Is_In_Hidden_Part_In_SPARK --
-   --------------------------------
-
-   function Is_In_Hidden_Part_In_SPARK (Loc : Source_Ptr) return Boolean is
-   begin
-      --  Loop through table of hidden ranges
-
-      for J in SPARK_Hides.First .. SPARK_Hides.Last loop
-         if SPARK_Hides.Table (J).Start <= Loc
-           and then Loc < SPARK_Hides.Table (J).Stop
-         then
-            return True;
-         end if;
-      end loop;
-
-      return False;
-   end Is_In_Hidden_Part_In_SPARK;
 
    -------------------------------
    -- No_Exception_Handlers_Set --
@@ -1134,21 +992,11 @@ package body Restrict is
          when Name_No_Task_Attributes =>
             New_Name := Name_No_Task_Attributes_Package;
 
-         --  SPARK is special in that we unconditionally warn
-
-         when Name_SPARK =>
-            Error_Msg_Name_1 := Name_SPARK;
-            Error_Msg_N ("restriction identifier % is obsolescent??", N);
-            Error_Msg_Name_1 := Name_SPARK_05;
-            Error_Msg_N ("|use restriction identifier % instead??", N);
-            return Name_SPARK_05;
-
          when others =>
             return Old_Name;
       end case;
 
-      --  Output warning if we are warning on obsolescent features for all
-      --  cases other than SPARK.
+      --  Output warning if we are warning on obsolescent features.
 
       if Warn_On_Obsolescent_Feature then
          Error_Msg_Name_1 := Old_Name;
@@ -1250,8 +1098,7 @@ package body Restrict is
       --  Append given string to Msg, bumping Len appropriately
 
       procedure Id_Case (S : String; Quotes : Boolean := True);
-      --  Given a string S, case it according to current identifier casing,
-      --  except for SPARK_05 (an acronym) which is set all upper case, and
+      --  Given a string S, case it according to current identifier casing, and
       --  store in Error_Msg_String. Then append `~` to the message buffer
       --  to output the string unchanged surrounded in quotes. The quotes
       --  are suppressed if Quotes = False.
@@ -1284,13 +1131,7 @@ package body Restrict is
       begin
          Name_Buffer (1 .. S'Last) := S;
          Name_Len := S'Length;
-
-         if R = SPARK_05 then
-            Set_All_Upper_Case;
-         else
-            Set_Casing (Identifier_Casing (Get_Source_File_Index (Sloc (N))));
-         end if;
-
+         Set_Casing (Identifier_Casing (Get_Source_File_Index (Sloc (N))));
          Error_Msg_Strlen := Name_Len;
          Error_Msg_String (1 .. Name_Len) := Name_Buffer (1 .. Name_Len);
 
@@ -1442,17 +1283,6 @@ package body Restrict is
    begin
       Config_Cunit_Boolean_Restrictions := Cunit_Boolean_Restrictions_Save;
    end Save_Config_Cunit_Boolean_Restrictions;
-
-   ------------------------------
-   -- Set_Hidden_Part_In_SPARK --
-   ------------------------------
-
-   procedure Set_Hidden_Part_In_SPARK (Loc1, Loc2 : Source_Ptr) is
-   begin
-      SPARK_Hides.Increment_Last;
-      SPARK_Hides.Table (SPARK_Hides.Last).Start := Loc1;
-      SPARK_Hides.Table (SPARK_Hides.Last).Stop  := Loc2;
-   end Set_Hidden_Part_In_SPARK;
 
    ------------------------------
    -- Set_Profile_Restrictions --

@@ -1,3 +1,100 @@
+2020-06-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (paritydi2, paritysi2): Expand reduction
+	via shift and xor to an USPEC PARITY matching a parityhi2_cmp.
+	(paritydi2_cmp, paritysi2_cmp): Delete these define_insn_and_split.
+	(parityhi2, parityqi2): New expanders.
+	(parityhi2_cmp): Implement set parity flag with xorb insn.
+	(parityqi2_cmp): Implement set parity flag with testb insn.
+	New peephole2s to use these insns (UNSPEC PARITY) when appropriate.
+
+2020-06-07  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/95018
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Override flag_cunroll_grow_size.
+
+2020-06-07  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* common.opt (flag_cunroll_grow_size): New flag.
+	* toplev.c (process_options): Set flag_cunroll_grow_size.
+	* tree-ssa-loop-ivcanon.c (pass_complete_unroll::execute):
+	Use flag_cunroll_grow_size.
+
+2020-06-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/95548
+	* ipa-devirt.c (struct odr_enum_val): Turn values to wide_int.
+	(ipa_odr_summary_write): Update streaming.
+	(ipa_odr_read_section): Update streaming.
+
+2020-06-06  Alexandre Oliva  <oliva@adacore.com>
+
+	PR driver/95456
+	* gcc.c (do_spec_1): Don't call memcpy (_, NULL, 0).
+
+2020-06-05  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.c (gimplify_adjust_omp_clauses): Remove
+	'GOMP_MAP_STRUCT' mapping from OpenACC 'exit data' directives.
+
+2020-06-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95539
+	* tree-vect-data-refs.c
+	(vect_slp_analyze_and_verify_instance_alignment): Use
+	SLP_TREE_REPRESENTATIVE for the data-ref check.
+	* tree-vect-stmts.c (vectorizable_load): Reset stmt_info
+	back to the first scalar stmt rather than the
+	SLP_TREE_REPRESENTATIVE to match previous behavior.
+
+2020-06-05  Felix Yang  <felix.yang@huawei.com>
+
+	PR target/95254
+	* expr.c (emit_move_insn): Check src and dest of the copy to see
+	if one or both of them are subregs, try to remove the subregs when
+	innermode and outermode are equal in size and the mode change involves
+	an implicit round trip through memory.
+
+2020-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/95535
+	* config/i386/i386.md (*ctzsi2_zext, *clzsi2_lzcnt_zext): New
+	define_insn_and_split patterns.
+	(*ctzsi2_zext_falsedep, *clzsi2_lzcnt_zext_falsedep): New
+	define_insn patterns.
+
+2020-06-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* alloc-pool.h (object_allocator::remove_raw): New.
+	* tree-ssa-math-opts.c (struct occurrence): Use NSMDI.
+	(occurrence::occurrence): Add.
+	(occurrence::~occurrence): Likewise.
+	(occurrence::new): Likewise.
+	(occurrence::delete): Likewise.
+	(occ_new): Remove.
+	(insert_bb): Use new occurence (...) instead of occ_new.
+	(register_division_in): Likewise.
+	(free_bb): Use delete occ instead of manually removing
+	from the pool.
+
+2020-06-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/95493
+	* cfgexpand.c (expand_debug_expr): Avoid calling
+	set_mem_attributes_minus_bitpos when we were expanding
+	an SSA name.
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Remove
+	ARRAY_REF special-casing, add CONSTRUCTOR to the set of
+	special-cases we do not want MEM_EXPRs for.  Assert
+	we end up with reasonable MEM_EXPRs.
+
+2020-06-05  Lili Cui  <lili.cui@intel.com>
+
+	PR target/95525
+	* config/i386/i386.h (PTA_WAITPKG): Change bitmask value.
+
 2020-06-04  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/10138

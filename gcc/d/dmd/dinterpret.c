@@ -760,7 +760,7 @@ static Expression *interpretFunction(UnionExp *pue, FuncDeclaration *fd, InterSt
     Type *tb = fd->type->toBasetype();
     assert(tb->ty == Tfunction);
     TypeFunction *tf = (TypeFunction *)tb;
-    if (tf->varargs && arguments &&
+    if (tf->parameterList.varargs != VARARGnone && arguments &&
         ((fd->parameters && arguments->length != fd->parameters->length) || (!fd->parameters && arguments->length)))
     {
         fd->error("C-style variadic functions are not yet implemented in CTFE");
@@ -795,7 +795,7 @@ static Expression *interpretFunction(UnionExp *pue, FuncDeclaration *fd, InterSt
     for (size_t i = 0; i < dim; i++)
     {
         Expression *earg = (*arguments)[i];
-        Parameter *fparam = Parameter::getNth(tf->parameters, i);
+        Parameter *fparam = tf->parameterList[i];
 
         if (fparam->storageClass & (STCout | STCref))
         {
@@ -859,7 +859,7 @@ static Expression *interpretFunction(UnionExp *pue, FuncDeclaration *fd, InterSt
     for (size_t i = 0; i < dim; i++)
     {
         Expression *earg = eargs[i];
-        Parameter *fparam = Parameter::getNth(tf->parameters, i);
+        Parameter *fparam = tf->parameterList[i];
         VarDeclaration *v = (*fd->parameters)[i];
         ctfeStack.push(v);
 
@@ -6554,7 +6554,7 @@ Expression *interpret_aaApply(UnionExp *pue, InterState *istate, Expression *aa,
     size_t numParams = fd->parameters->length;
     assert(numParams == 1 || numParams == 2);
 
-    Parameter *fparam = Parameter::getNth(((TypeFunction *)fd->type)->parameters, numParams - 1);
+    Parameter *fparam = ((TypeFunction *)fd->type)->parameterList[numParams - 1];
     bool wantRefValue = 0 != (fparam->storageClass & (STCout | STCref));
 
     Expressions args;

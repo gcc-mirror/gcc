@@ -50,7 +50,7 @@ void Nspace::addMember(Scope *sc, ScopeDsymbol *sds)
             ScopeDsymbol *sds2 = sce->scopesym;
             if (sds2)
             {
-                sds2->importScope(this, Prot(PROTpublic));
+                sds2->importScope(this, Prot(Prot::public_));
                 break;
             }
         }

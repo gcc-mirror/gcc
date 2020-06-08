@@ -127,7 +127,7 @@ bool isCVariadicParameter(Dsymbols *a, const utf8_t *p, size_t len)
     for (size_t i = 0; i < a->length; i++)
     {
         TypeFunction *tf = isTypeFunction((*a)[i]);
-        if (tf && tf->varargs == 1 && cmp("...", p, len) == 0)
+        if (tf && tf->parameterList.varargs == VARARGvariadic && cmp("...", p, len) == 0)
             return true;
     }
     return false;
@@ -138,11 +138,11 @@ bool isCVariadicParameter(Dsymbols *a, const utf8_t *p, size_t len)
 static Parameter *isFunctionParameter(Dsymbol *s, const utf8_t *p, size_t len)
 {
     TypeFunction *tf = isTypeFunction(s);
-    if (tf && tf->parameters)
+    if (tf && tf->parameterList.parameters)
     {
-        for (size_t k = 0; k < tf->parameters->length; k++)
+        for (size_t k = 0; k < tf->parameterList.parameters->length; k++)
         {
-            Parameter *fparam = (*tf->parameters)[k];
+            Parameter *fparam = (*tf->parameterList.parameters)[k];
             if (fparam->ident && cmp(fparam->ident->toChars(), p, len) == 0)
             {
                 return fparam;
@@ -351,12 +351,12 @@ void gendocfile(Module *m)
         // Override with DDOCFILE specified in the sc.ini file
         char *p = getenv("DDOCFILE");
         if (p)
-            global.params.ddocfiles->shift(p);
+            global.params.ddocfiles.shift(p);
 
         // Override with the ddoc macro files from the command line
-        for (size_t i = 0; i < global.params.ddocfiles->length; i++)
+        for (size_t i = 0; i < global.params.ddocfiles.length; i++)
         {
-            FileName f((*global.params.ddocfiles)[i]);
+            FileName f(global.params.ddocfiles[i]);
             File file(&f);
             readFile(m->loc, &file);
             // BUG: convert file contents to UTF-8 before use
@@ -622,7 +622,7 @@ static void emitAnchor(OutBuffer *buf, Dsymbol *s, Scope *sc)
     {
         OutBuffer anc;
         emitAnchorName(&anc, s, skipNonQualScopes(sc));
-        ident = Identifier::idPool(anc.peekString());
+        ident = Identifier::idPool(anc.peekChars());
     }
     size_t *count = (size_t*)dmd_aaGet(&sc->anchorCounts, (void *)ident);
     TemplateDeclaration *td = getEponymousParent(s);
@@ -732,7 +732,7 @@ void emitMemberComments(ScopeDsymbol *sds, OutBuffer *buf, Scope *sc)
 
 void emitProtection(OutBuffer *buf, Prot prot)
 {
-    if (prot.kind != PROTundefined && prot.kind != PROTpublic)
+    if (prot.kind != Prot::undefined && prot.kind != Prot::public_)
     {
         protectionToBuffer(buf, prot);
         buf->writeByte(' ');
@@ -833,7 +833,7 @@ void emitComment(Dsymbol *s, OutBuffer *buf, Scope *sc)
                     return;
                 if (!d->type && !d->isCtorDeclaration() && !d->isAliasDeclaration())
                     return;
-                if (d->protection.kind == PROTprivate || sc->protection.kind == PROTprivate)
+                if (d->protection.kind == Prot::private_ || sc->protection.kind == Prot::private_)
                     return;
             }
             if (!com)
@@ -855,7 +855,7 @@ void emitComment(Dsymbol *s, OutBuffer *buf, Scope *sc)
             }
             else
             {
-                if (ad->prot().kind == PROTprivate || sc->protection.kind == PROTprivate)
+                if (ad->prot().kind == Prot::private_ || sc->protection.kind == Prot::private_)
                     return;
                 if (!ad->comment)
                     return;
@@ -869,7 +869,7 @@ void emitComment(Dsymbol *s, OutBuffer *buf, Scope *sc)
         void visit(TemplateDeclaration *td)
         {
             //printf("TemplateDeclaration::emitComment() '%s', kind = %s\n", td->toChars(), td->kind());
-            if (td->prot().kind == PROTprivate || sc->protection.kind == PROTprivate)
+            if (td->prot().kind == Prot::private_ || sc->protection.kind == Prot::private_)
                 return;
             if (!td->comment)
                 return;
@@ -884,7 +884,7 @@ void emitComment(Dsymbol *s, OutBuffer *buf, Scope *sc)
 
         void visit(EnumDeclaration *ed)
         {
-            if (ed->prot().kind == PROTprivate || sc->protection.kind == PROTprivate)
+            if (ed->prot().kind == Prot::private_ || sc->protection.kind == Prot::private_)
                 return;
             if (ed->isAnonymous() && ed->members)
             {
@@ -906,7 +906,7 @@ void emitComment(Dsymbol *s, OutBuffer *buf, Scope *sc)
         void visit(EnumMember *em)
         {
             //printf("EnumMember::emitComment(%p '%s'), comment = '%s'\n", em, em->toChars(), em->comment);
-            if (em->prot().kind == PROTprivate || sc->protection.kind == PROTprivate)
+            if (em->prot().kind == Prot::private_ || sc->protection.kind == Prot::private_)
                 return;
             if (!em->comment)
                 return;
@@ -1233,7 +1233,7 @@ void toDocBuffer(Dsymbol *s, OutBuffer *buf, Scope *sc)
                     buf->writestring(": ");
                     any = 1;
                 }
-                emitProtection(buf, Prot(PROTpublic));
+                emitProtection(buf, Prot(Prot::public_));
                 if (bc->sym)
                 {
                     buf->printf("$(DDOC_PSUPER_SYMBOL %s)", bc->sym->toPrettyChars());
@@ -1486,7 +1486,7 @@ void DocComment::writeSections(Scope *sc, Dsymbols *a, OutBuffer *buf)
 
         for (UnitTestDeclaration *utd = s->ddocUnittest; utd; utd = utd->ddocUnittest)
         {
-            if (utd->protection.kind == PROTprivate || !utd->comment || !utd->fbody)
+            if (utd->protection.kind == Prot::private_ || !utd->comment || !utd->fbody)
                 continue;
 
             // Strip whitespaces to avoid showing empty summary
@@ -1733,7 +1733,8 @@ void ParamSection::write(Loc loc, DocComment *, Scope *sc, Dsymbols *a, OutBuffe
     TypeFunction *tf = a->length == 1 ? isTypeFunction(s) : NULL;
     if (tf)
     {
-        size_t pcount = (tf->parameters ? tf->parameters->length : 0) + (int)(tf->varargs == 1);
+        size_t pcount = (tf->parameterList.parameters ? tf->parameterList.parameters->length : 0) +
+                        (int)(tf->parameterList.varargs == VARARGvariadic);
         if (pcount != paramcount)
         {
             warning(s->loc, "Ddoc: parameter count mismatch");

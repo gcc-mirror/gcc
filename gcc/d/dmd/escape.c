@@ -707,12 +707,12 @@ static void inferReturn(FuncDeclaration *fd, VarDeclaration *v)
     else
     {
         // Perform 'return' inference on parameter
-        if (tf->ty == Tfunction && tf->parameters)
+        if (tf->ty == Tfunction)
         {
-            const size_t dim = Parameter::dim(tf->parameters);
+            const size_t dim = tf->parameterList.length();
             for (size_t i = 0; i < dim; i++)
             {
-                Parameter *p = Parameter::getNth(tf->parameters, i);
+                Parameter *p = tf->parameterList[i];
                 if (p->ident == v->ident)
                 {
                     p->storageClass |= STCreturn;
@@ -950,14 +950,14 @@ static void escapeByValue(Expression *e, EscapeByResults *er)
                 /* j=1 if _arguments[] is first argument,
                  * skip it because it is not passed by ref
                  */
-                size_t j = (tf->linkage == LINKd && tf->varargs == 1);
+                size_t j = tf->isDstyleVariadic();
                 for (size_t i = j; i < e->arguments->length; ++i)
                 {
                     Expression *arg = (*e->arguments)[i];
-                    size_t nparams = Parameter::dim(tf->parameters);
+                    size_t nparams = tf->parameterList.length();
                     if (i - j < nparams && i >= j)
                     {
-                        Parameter *p = Parameter::getNth(tf->parameters, i - j);
+                        Parameter *p = tf->parameterList[i - j];
                         const StorageClass stc = tf->parameterStorageClass(p);
                         if ((stc & (STCscope)) && (stc & STCreturn))
                             arg->accept(this);
@@ -1146,15 +1146,15 @@ static void escapeByRef(Expression *e, EscapeByResults *er)
                     /* j=1 if _arguments[] is first argument,
                      * skip it because it is not passed by ref
                      */
-                    size_t j = (tf->linkage == LINKd && tf->varargs == 1);
+                    size_t j = tf->isDstyleVariadic();
 
                     for (size_t i = j; i < e->arguments->length; ++i)
                     {
                         Expression *arg = (*e->arguments)[i];
-                        size_t nparams = Parameter::dim(tf->parameters);
+                        size_t nparams = tf->parameterList.length();
                         if (i - j < nparams && i >= j)
                         {
-                            Parameter *p = Parameter::getNth(tf->parameters, i - j);
+                            Parameter *p = tf->parameterList[i - j];
                             const StorageClass stc = tf->parameterStorageClass(p);
                             if ((stc & (STCout | STCref)) && (stc & STCreturn))
                                 arg->accept(this);

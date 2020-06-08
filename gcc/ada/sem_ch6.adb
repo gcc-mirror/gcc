@@ -225,8 +225,6 @@ package body Sem_Ch6 is
                   Analyze_Subprogram_Specification (Specification (N));
 
    begin
-      Check_SPARK_05_Restriction ("abstract subprogram is not allowed", N);
-
       Generate_Definition (Subp_Id);
 
       --  Set the SPARK mode from the current context (may be overwritten later
@@ -1122,20 +1120,7 @@ package body Sem_Ch6 is
 
             Check_Return_Construct_Accessibility (N);
          end if;
-
-         --  RETURN only allowed in SPARK as the last statement in function
-
-         if Nkind (Parent (N)) /= N_Handled_Sequence_Of_Statements
-           and then
-             (Nkind (Parent (Parent (N))) /= N_Subprogram_Body
-               or else Present (Next (N)))
-         then
-            Check_SPARK_05_Restriction
-              ("RETURN should be the last statement in function", N);
-         end if;
-
       else
-         Check_SPARK_05_Restriction ("extended RETURN is not allowed", N);
          Obj_Decl := Last (Return_Object_Declarations (N));
 
          --  Analyze parts specific to extended_return_statement:
@@ -2223,8 +2208,6 @@ package body Sem_Ch6 is
 
       if Result_Definition (N) /= Error then
          if Nkind (Result_Definition (N)) = N_Access_Definition then
-            Check_SPARK_05_Restriction
-              ("access result is not allowed", Result_Definition (N));
 
             --  Ada 2005 (AI-254): Handle anonymous access to subprograms
 
@@ -2253,14 +2236,6 @@ package body Sem_Ch6 is
             Find_Type (Result_Definition (N));
             Typ := Entity (Result_Definition (N));
             Set_Etype (Designator, Typ);
-
-            --  Unconstrained array as result is not allowed in SPARK
-
-            if Is_Array_Type (Typ) and then not Is_Constrained (Typ) then
-               Check_SPARK_05_Restriction
-                 ("returning an unconstrained array is not allowed",
-                  Result_Definition (N));
-            end if;
 
             --  Ada 2005 (AI-231): Ensure proper usage of null exclusion
 
@@ -3071,42 +3046,6 @@ package body Sem_Ch6 is
 
             if No_Return (Id) then
                Check_Returns (HSS, 'P', Missing_Ret, Id);
-            end if;
-         end if;
-
-         --  Special checks in SPARK mode
-
-         if Nkind (Body_Spec) = N_Function_Specification then
-
-            --  In SPARK mode, last statement of a function should be a return
-
-            declare
-               Stat : constant Node_Id := Last_Source_Statement (HSS);
-            begin
-               if Present (Stat)
-                 and then not Nkind_In (Stat, N_Simple_Return_Statement,
-                                              N_Extended_Return_Statement)
-               then
-                  Check_SPARK_05_Restriction
-                    ("last statement in function should be RETURN", Stat);
-               end if;
-            end;
-
-         --  In SPARK mode, verify that a procedure has no return
-
-         elsif Nkind (Body_Spec) = N_Procedure_Specification then
-            if Present (Spec_Id) then
-               Id := Spec_Id;
-            else
-               Id := Body_Id;
-            end if;
-
-            --  Would be nice to point to return statement here, can we
-            --  borrow the Check_Returns procedure here ???
-
-            if Return_Present (Id) then
-               Check_SPARK_05_Restriction
-                 ("procedure should not have RETURN", N);
             end if;
          end if;
       end Check_Missing_Return;
@@ -4930,8 +4869,6 @@ package body Sem_Ch6 is
       if Nkind (Specification (N)) = N_Procedure_Specification
         and then Null_Present (Specification (N))
       then
-         Check_SPARK_05_Restriction ("null procedure is not allowed", N);
-
          --  Null procedures are allowed in protected types, following the
          --  recent AI12-0147.
 
@@ -5195,15 +5132,6 @@ package body Sem_Ch6 is
    --  Start of processing for Analyze_Subprogram_Specification
 
    begin
-      --  User-defined operator is not allowed in SPARK, except as a renaming
-
-      if Nkind (Defining_Unit_Name (N)) = N_Defining_Operator_Symbol
-        and then Nkind (Parent (N)) /= N_Subprogram_Renaming_Declaration
-      then
-         Check_SPARK_05_Restriction
-           ("user-defined operator is not allowed", N);
-      end if;
-
       --  Proceed with analysis. Do not emit a cross-reference entry if the
       --  specification comes from an expression function, because it may be
       --  the completion of a previous declaration. If it is not, the cross-
@@ -11563,14 +11491,6 @@ package body Sem_Ch6 is
 
          Check_Ghost_Overriding (S, Overridden_Subp);
 
-         --  Overloading is not allowed in SPARK, except for operators
-
-         if Nkind (S) /= N_Defining_Operator_Symbol then
-            Error_Msg_Sloc := Sloc (Homonym (S));
-            Check_SPARK_05_Restriction
-              ("overloading not allowed with entity#", S);
-         end if;
-
          --  If S is a derived operation for an untagged type then by
          --  definition it's not a dispatching operation (even if the parent
          --  operation was dispatching), so Check_Dispatching_Operation is not
@@ -11902,9 +11822,6 @@ package body Sem_Ch6 is
          Default := Expression (Param_Spec);
 
          if Present (Default) then
-            Check_SPARK_05_Restriction
-              ("default expression is not allowed", Default);
-
             if Out_Present (Param_Spec) then
                Error_Msg_N
                  ("default initialization only allowed for IN parameters",

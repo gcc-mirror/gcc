@@ -568,8 +568,6 @@ package body Sem_Ch8 is
       Nam : constant Node_Id   := Name (N);
 
    begin
-      Check_SPARK_05_Restriction ("exception renaming is not allowed", N);
-
       Enter_Name (Id);
       Analyze (Nam);
 
@@ -682,8 +680,6 @@ package body Sem_Ch8 is
          return;
       end if;
 
-      Check_SPARK_05_Restriction ("generic renaming is not allowed", N);
-
       Generate_Definition (New_P);
 
       if Current_Scope /= Standard_Standard then
@@ -759,12 +755,13 @@ package body Sem_Ch8 is
    -----------------------------
 
    procedure Analyze_Object_Renaming (N : Node_Id) is
-      Id  : constant Entity_Id  := Defining_Identifier (N);
-      Loc : constant Source_Ptr := Sloc (N);
-      Nam : constant Node_Id    := Name (N);
-      Dec : Node_Id;
-      T   : Entity_Id;
-      T2  : Entity_Id;
+      Id            : constant Entity_Id  := Defining_Identifier (N);
+      Loc           : constant Source_Ptr := Sloc (N);
+      Nam           : constant Node_Id    := Name (N);
+      Is_Object_Ref : Boolean := False;
+      Dec           : Node_Id;
+      T             : Entity_Id;
+      T2            : Entity_Id;
 
       procedure Check_Constrained_Object;
       --  If the nominal type is unconstrained but the renamed object is
@@ -847,18 +844,23 @@ package body Sem_Ch8 is
       begin
          Obj_Nam := Nod;
          while Present (Obj_Nam) loop
-            if Nkind_In (Obj_Nam, N_Attribute_Reference,
-                                  N_Explicit_Dereference,
-                                  N_Indexed_Component,
-                                  N_Slice)
-            then
-               Obj_Nam := Prefix (Obj_Nam);
+            case Nkind (Obj_Nam) is
+               when N_Attribute_Reference
+                  | N_Explicit_Dereference
+                  | N_Indexed_Component
+                  | N_Slice
+               =>
+                  Obj_Nam := Prefix (Obj_Nam);
 
-            elsif Nkind (Obj_Nam) = N_Selected_Component then
-               Obj_Nam := Selector_Name (Obj_Nam);
-            else
-               exit;
-            end if;
+               when N_Selected_Component =>
+                  Obj_Nam := Selector_Name (Obj_Nam);
+
+               when N_Qualified_Expression | N_Type_Conversion =>
+                  Obj_Nam := Expression (Obj_Nam);
+
+               when others =>
+                  exit;
+            end case;
          end loop;
 
          return Obj_Nam;
@@ -870,8 +872,6 @@ package body Sem_Ch8 is
       if Nam = Error then
          return;
       end if;
-
-      Check_SPARK_05_Restriction ("object renaming is not allowed", N);
 
       Set_Is_Pure (Id, Is_Pure (Current_Scope));
       Enter_Name (Id);
@@ -1016,18 +1016,6 @@ package body Sem_Ch8 is
             Mark_Ghost_Renaming (N, Entity (Nam));
          end if;
 
-         --  Reject renamings of conversions unless the type is tagged, or
-         --  the conversion is implicit (which can occur for cases of anonymous
-         --  access types in Ada 2012).
-
-         if Nkind (Nam) = N_Type_Conversion
-           and then Comes_From_Source (Nam)
-           and then not Is_Tagged_Type (T)
-         then
-            Error_Msg_N
-              ("renaming of conversion only allowed for tagged types", Nam);
-         end if;
-
          Resolve (Nam, T);
 
          --  If the renamed object is a function call of a limited type,
@@ -1063,8 +1051,8 @@ package body Sem_Ch8 is
 
          if Nkind (Nam) = N_Type_Conversion
            and then not Comes_From_Source (Nam)
-           and then Ekind (Etype (Expression (Nam))) = E_Anonymous_Access_Type
-           and then Ekind (T) /= E_Anonymous_Access_Type
+           and then Ekind (Etype (Expression (Nam))) in Anonymous_Access_Kind
+           and then Ekind (T) not in Anonymous_Access_Kind
          then
             Wrong_Type (Expression (Nam), T); -- Should we give better error???
          end if;
@@ -1268,15 +1256,7 @@ package body Sem_Ch8 is
          return;
       end if;
 
-      --  Ada 2005 (AI-327)
-
-      if Ada_Version >= Ada_2005
-        and then Nkind (Nam) = N_Attribute_Reference
-        and then Attribute_Name (Nam) = Name_Priority
-      then
-         null;
-
-      elsif Ada_Version >= Ada_2005 and then Nkind (Nam) in N_Has_Entity then
+      if Ada_Version >= Ada_2005 and then Nkind (Nam) in N_Has_Entity then
          declare
             Nam_Ent  : constant Entity_Id := Entity (Get_Object_Name (Nam));
             Nam_Decl : constant Node_Id   := Declaration_Node (Nam_Ent);
@@ -1297,7 +1277,7 @@ package body Sem_Ch8 is
                then
                   if not Can_Never_Be_Null (Etype (Nam_Ent)) then
                      Error_Msg_N
-                       ("renamed formal does not exclude `NULL` "
+                       ("object does not exclude `NULL` "
                         & "(RM 8.5.1(4.6/2))", N);
 
                   elsif In_Package_Body (Scope (Id)) then
@@ -1311,7 +1291,7 @@ package body Sem_Ch8 is
 
                elsif not Can_Never_Be_Null (Etype (Nam_Ent)) then
                   Error_Msg_N
-                    ("renamed object does not exclude `NULL` "
+                    ("object does not exclude `NULL` "
                      & "(RM 8.5.1(4.6/2))", N);
 
                --  An instance is illegal if it contains a renaming that
@@ -1328,8 +1308,7 @@ package body Sem_Ch8 is
                                             N_Raise_Constraint_Error
                then
                   Error_Msg_N
-                    ("renamed actual does not exclude `NULL` "
-                     & "(RM 8.5.1(4.6/2))", N);
+                    ("actual does not exclude `NULL` (RM 8.5.1(4.6/2))", N);
 
                --  Finally, if there is a null exclusion, the subtype mark
                --  must not be null-excluding.
@@ -1347,8 +1326,7 @@ package body Sem_Ch8 is
               and then not Can_Never_Be_Null (Etype (Nam_Ent))
             then
                Error_Msg_N
-                 ("renamed object does not exclude `NULL` "
-                  & "(RM 8.5.1(4.6/2))", N);
+                 ("object does not exclude `NULL` (RM 8.5.1(4.6/2))", N);
 
             elsif Has_Null_Exclusion (N)
               and then No (Access_Definition (N))
@@ -1375,13 +1353,33 @@ package body Sem_Ch8 is
 
       Init_Object_Size_Align (Id);
 
+      --  If N comes from source then check that the original node is an
+      --  object reference since there may have been several rewritting and
+      --  folding. Do not do this for N_Function_Call or N_Explicit_Dereference
+      --  which might correspond to rewrites of e.g. N_Selected_Component
+      --  (for example Object.Method rewriting).
+      --  If N does not come from source then assume the tree is properly
+      --  formed and accept any object reference. In such cases we do support
+      --  more cases of renamings anyway, so the actual check on which renaming
+      --  is valid is better left to the code generator as a last sanity
+      --  check.
+
+      if Comes_From_Source (N) then
+         if Nkind_In (Nam, N_Function_Call, N_Explicit_Dereference) then
+            Is_Object_Ref := Is_Object_Reference (Nam);
+         else
+            Is_Object_Ref := Is_Object_Reference (Original_Node (Nam));
+         end if;
+      else
+         Is_Object_Ref := True;
+      end if;
+
       if T = Any_Type or else Etype (Nam) = Any_Type then
          return;
 
-      --  Verify that the renamed entity is an object or a function call. It
-      --  may have been rewritten in several ways.
+      --  Verify that the renamed entity is an object or function call.
 
-      elsif Is_Object_Reference (Nam) then
+      elsif Is_Object_Ref then
          if Comes_From_Source (N) then
             if Is_Dependent_Component_Of_Mutable_Object (Nam) then
                Error_Msg_N
@@ -1400,49 +1398,15 @@ package body Sem_Ch8 is
             end if;
          end if;
 
-      --  A static function call may have been folded into a literal
+      --  Weird but legal, equivalent to renaming a function call. Illegal
+      --  if the literal is the result of constant-folding an attribute
+      --  reference that is not a function.
 
-      elsif Nkind (Original_Node (Nam)) = N_Function_Call
-
-        --  When expansion is disabled, attribute reference is not rewritten
-        --  as function call. Otherwise it may be rewritten as a conversion,
-        --  so check original node.
-
-        or else (Nkind (Original_Node (Nam)) = N_Attribute_Reference
-                  and then Is_Function_Attribute_Name
-                             (Attribute_Name (Original_Node (Nam))))
-
-        --  Weird but legal, equivalent to renaming a function call. Illegal
-        --  if the literal is the result of constant-folding an attribute
-        --  reference that is not a function.
-
-        or else (Is_Entity_Name (Nam)
-                  and then Ekind (Entity (Nam)) = E_Enumeration_Literal
-                  and then
-                    Nkind (Original_Node (Nam)) /= N_Attribute_Reference)
-
-        or else (Nkind (Nam) = N_Type_Conversion
-                  and then Is_Tagged_Type (Entity (Subtype_Mark (Nam))))
+      elsif Is_Entity_Name (Nam)
+        and then Ekind (Entity (Nam)) = E_Enumeration_Literal
+        and then Nkind (Original_Node (Nam)) /= N_Attribute_Reference
       then
          null;
-
-      elsif Nkind (Nam) = N_Type_Conversion then
-         Error_Msg_N
-           ("renaming of conversion only allowed for tagged types", Nam);
-
-      --  Ada 2005 (AI-327)
-
-      elsif Ada_Version >= Ada_2005
-        and then Nkind (Nam) = N_Attribute_Reference
-        and then Attribute_Name (Nam) = Name_Priority
-      then
-         null;
-
-      --  Allow internally generated x'Ref resulting in N_Reference node
-
-      elsif Nkind (Nam) = N_Reference then
-         null;
-
       else
          Error_Msg_N ("expect object name in renaming", Nam);
       end if;
@@ -1862,6 +1826,7 @@ package body Sem_Ch8 is
       Is_Body : Boolean)
    is
       Old_S : Entity_Id;
+      Nam   : Entity_Id;
 
       function Conforms
         (Subp : Entity_Id;
@@ -1938,7 +1903,7 @@ package body Sem_Ch8 is
       end if;
 
       if Old_S = Any_Id then
-         Error_Msg_N (" no subprogram or entry matches specification",  N);
+         Error_Msg_N ("no subprogram or entry matches specification",  N);
 
       else
          if Is_Body then
@@ -1954,6 +1919,21 @@ package body Sem_Ch8 is
 
             if not Conforms (Old_S, Mode_Conformant) then
                Error_Msg_N ("mode conformance error in renaming", N);
+            end if;
+
+            --  AI12-0204: The prefix of a prefixed view that is renamed or
+            --  passed as a formal subprogram must be renamable as an object.
+
+            Nam := Prefix (Name (N));
+
+            if Is_Object_Reference (Nam) then
+               if Is_Dependent_Component_Of_Mutable_Object (Nam) then
+                  Error_Msg_N
+                    ("illegal renaming of discriminant-dependent component",
+                     Nam);
+               end if;
+            else
+               Error_Msg_N ("expect object name in renaming", Nam);
             end if;
 
             --  Enforce the rule given in (RM 6.3.1 (10.1/2)): a prefixed
@@ -3933,8 +3913,6 @@ package body Sem_Ch8 is
    --  Start of processing for Analyze_Use_Package
 
    begin
-      Check_SPARK_05_Restriction ("use clause is not allowed", N);
-
       Set_Hidden_By_Use_Clause (N, No_Elist);
 
       --  Use clause not allowed in a spec of a predefined package declaration
@@ -7275,21 +7253,6 @@ package body Sem_Ch8 is
          return;
       end if;
 
-      --  Selector name cannot be a character literal or an operator symbol in
-      --  SPARK, except for the operator symbol in a renaming.
-
-      if Restriction_Check_Required (SPARK_05) then
-         if Nkind (Selector_Name (N)) = N_Character_Literal then
-            Check_SPARK_05_Restriction
-              ("character literal cannot be prefixed", N);
-         elsif Nkind (Selector_Name (N)) = N_Operator_Symbol
-           and then Nkind (Parent (N)) /= N_Subprogram_Renaming_Declaration
-         then
-            Check_SPARK_05_Restriction
-              ("operator symbol cannot be prefixed", N);
-         end if;
-      end if;
-
       --  If the selector already has an entity, the node has been constructed
       --  in the course of expansion, and is known to be valid. Do not verify
       --  that it is defined for the type (it may be a private component used
@@ -7744,21 +7707,6 @@ package body Sem_Ch8 is
                Error_Msg_N ("invalid prefix in selected component", P);
             end if;
          end if;
-
-         --  Selector name is restricted in SPARK
-
-         if Nkind (N) = N_Expanded_Name
-           and then Restriction_Check_Required (SPARK_05)
-         then
-            if Is_Subprogram (P_Name) then
-               Check_SPARK_05_Restriction
-                 ("prefix of expanded name cannot be a subprogram", P);
-            elsif Ekind (P_Name) = E_Loop then
-               Check_SPARK_05_Restriction
-                 ("prefix of expanded name cannot be a loop statement", P);
-            end if;
-         end if;
-
       else
          --  If prefix is not the name of an entity, it must be an expression,
          --  whose type is appropriate for a record. This is determined by
@@ -7916,10 +7864,6 @@ package body Sem_Ch8 is
          --  Base attribute, not allowed in Ada 83
 
          elsif Attribute_Name (N) = Name_Base then
-            Error_Msg_Name_1 := Name_Base;
-            Check_SPARK_05_Restriction
-              ("attribute% is only allowed as prefix of another attribute", N);
-
             if Ada_Version = Ada_83 and then Comes_From_Source (N) then
                Error_Msg_N
                  ("(Ada 83) Base attribute not allowed in subtype mark", N);

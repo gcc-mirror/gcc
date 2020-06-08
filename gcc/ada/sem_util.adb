@@ -3342,10 +3342,6 @@ package body Sem_Util is
                         Error_Msg_N
                           ("(Ada 83) decl cannot appear after body#", Decl);
                      end if;
-                  else
-                     Error_Msg_Sloc := Body_Sloc;
-                     Check_SPARK_05_Restriction
-                       ("decl cannot appear after body#", Decl);
                   end if;
                end if;
 
@@ -7536,52 +7532,6 @@ package body Sem_Util is
       Set_Homonym       (Def_Id, C);
       Append_Entity     (Def_Id, S);
       Set_Public_Status (Def_Id);
-
-      --  Declaring a homonym is not allowed in SPARK ...
-
-      if Present (C) and then Restriction_Check_Required (SPARK_05) then
-         declare
-            Enclosing_Subp : constant Node_Id := Enclosing_Subprogram (Def_Id);
-            Enclosing_Pack : constant Node_Id := Enclosing_Package (Def_Id);
-            Other_Scope    : constant Node_Id := Enclosing_Dynamic_Scope (C);
-
-         begin
-            --  ... unless the new declaration is in a subprogram, and the
-            --  visible declaration is a variable declaration or a parameter
-            --  specification outside that subprogram.
-
-            if Present (Enclosing_Subp)
-              and then Nkind_In (Parent (C), N_Object_Declaration,
-                                             N_Parameter_Specification)
-              and then not Scope_Within_Or_Same (Other_Scope, Enclosing_Subp)
-            then
-               null;
-
-            --  ... or the new declaration is in a package, and the visible
-            --  declaration occurs outside that package.
-
-            elsif Present (Enclosing_Pack)
-              and then not Scope_Within_Or_Same (Other_Scope, Enclosing_Pack)
-            then
-               null;
-
-            --  ... or the new declaration is a component declaration in a
-            --  record type definition.
-
-            elsif Nkind (Parent (Def_Id)) = N_Component_Declaration then
-               null;
-
-            --  Don't issue error for non-source entities
-
-            elsif Comes_From_Source (Def_Id)
-              and then Comes_From_Source (C)
-            then
-               Error_Msg_Sloc := Sloc (C);
-               Check_SPARK_05_Restriction
-                 ("redeclaration of identifier &#", Def_Id);
-            end if;
-         end;
-      end if;
 
       --  Warn if new entity hides an old one
 
@@ -13786,6 +13736,13 @@ package body Sem_Util is
          return Is_Tagged_Type (Etype (Obj))
            and then Is_Aliased_View (Expression (Obj));
 
+      --  Ada 202x AI12-0228
+
+      elsif Nkind (Obj) = N_Qualified_Expression
+        and then Ada_Version >= Ada_2012
+      then
+         return Is_Aliased_View (Expression (Obj));
+
       elsif Nkind (Obj) = N_Explicit_Dereference then
          return Nkind (Original_Node (Obj)) /= N_Function_Call;
 
@@ -14632,6 +14589,8 @@ package body Sem_Util is
          Deref := Prefix (Deref);
       end loop;
 
+      Deref := Original_Node (Deref);
+
       --  If the prefix is a qualified expression of a variable, then function
       --  Is_Variable will return False for that because a qualified expression
       --  denotes a constant view, so we need to get the name being qualified
@@ -14649,9 +14608,11 @@ package body Sem_Util is
 
       if Is_Variable (Object)
         or else Is_Variable (Deref)
-        or else (Ada_Version >= Ada_2005
-                  and then (Nkind (Deref) = N_Explicit_Dereference
-                             or else Is_Access_Type (Etype (Deref))))
+        or else
+          (Ada_Version >= Ada_2005
+            and then (Nkind (Deref) = N_Explicit_Dereference
+                       or else (Present (Etype (Deref))
+                                 and then Is_Access_Type (Etype (Deref)))))
       then
          if Nkind (Object) = N_Selected_Component then
 
@@ -16420,33 +16381,6 @@ package body Sem_Util is
    -------------------------
 
    function Is_Object_Reference (N : Node_Id) return Boolean is
-      function Is_Internally_Generated_Renaming (N : Node_Id) return Boolean;
-      --  Determine whether N is the name of an internally-generated renaming
-
-      --------------------------------------
-      -- Is_Internally_Generated_Renaming --
-      --------------------------------------
-
-      function Is_Internally_Generated_Renaming (N : Node_Id) return Boolean is
-         P : Node_Id;
-
-      begin
-         P := N;
-         while Present (P) loop
-            if Nkind (P) = N_Object_Renaming_Declaration then
-               return not Comes_From_Source (P);
-            elsif Is_List_Member (P) then
-               return False;
-            end if;
-
-            P := Parent (P);
-         end loop;
-
-         return False;
-      end Is_Internally_Generated_Renaming;
-
-   --  Start of processing for Is_Object_Reference
-
    begin
       if Is_Entity_Name (N) then
          return Present (Entity (N)) and then Is_Object (Entity (N));
@@ -16472,13 +16406,14 @@ package body Sem_Util is
             =>
                return Etype (N) /= Standard_Void_Type;
 
-            --  Attributes references 'Loop_Entry, 'Old, and 'Result yield
-            --  objects, even though they are not functions.
+            --  Attributes references 'Loop_Entry, 'Old, 'Priority and 'Result
+            --  yield objects, even though they are not functions.
 
             when N_Attribute_Reference =>
                return
                  Nam_In (Attribute_Name (N), Name_Loop_Entry,
                                              Name_Old,
+                                             Name_Priority,
                                              Name_Result)
                    or else Is_Function_Attribute_Name (Attribute_Name (N));
 
@@ -16501,9 +16436,19 @@ package body Sem_Util is
             --  A view conversion of a tagged object is an object reference
 
             when N_Type_Conversion =>
-               return Is_Tagged_Type (Etype (Subtype_Mark (N)))
-                 and then Is_Tagged_Type (Etype (Expression (N)))
-                 and then Is_Object_Reference (Expression (N));
+               if Ada_Version <= Ada_2012 then
+                  --  A view conversion of a tagged object is an object
+                  --  reference.
+                  return Is_Tagged_Type (Etype (Subtype_Mark (N)))
+                    and then Is_Tagged_Type (Etype (Expression (N)))
+                    and then Is_Object_Reference (Expression (N));
+
+               else
+                  --  AI12-0226: In Ada 202x a value conversion of an object is
+                  --  an object.
+
+                  return Is_Object_Reference (Expression (N));
+               end if;
 
             --  An unchecked type conversion is considered to be an object if
             --  the operand is an object (this construction arises only as a
@@ -16511,14 +16456,6 @@ package body Sem_Util is
 
             when N_Unchecked_Type_Conversion =>
                return True;
-
-            --  Allow string literals to act as objects as long as they appear
-            --  in internally-generated renamings. The expansion of iterators
-            --  may generate such renamings when the range involves a string
-            --  literal.
-
-            when N_String_Literal =>
-               return Is_Internally_Generated_Renaming (Parent (N));
 
             --  AI05-0003: In Ada 2012 a qualified expression is a name.
             --  This allows disambiguation of function calls and the use
@@ -17823,158 +17760,6 @@ package body Sem_Util is
           and then Ekind (Etype (Id)) = E_Task_Type
           and then Is_Single_Concurrent_Type (Etype (Id));
    end Is_Single_Task_Object;
-
-   -------------------------------------
-   -- Is_SPARK_05_Initialization_Expr --
-   -------------------------------------
-
-   function Is_SPARK_05_Initialization_Expr (N : Node_Id) return Boolean is
-      Is_Ok     : Boolean;
-      Expr      : Node_Id;
-      Comp_Assn : Node_Id;
-      Orig_N    : constant Node_Id := Original_Node (N);
-
-   begin
-      Is_Ok := True;
-
-      if not Comes_From_Source (Orig_N) then
-         goto Done;
-      end if;
-
-      pragma Assert (Nkind (Orig_N) in N_Subexpr);
-
-      case Nkind (Orig_N) is
-         when N_Character_Literal
-            | N_Integer_Literal
-            | N_Real_Literal
-            | N_String_Literal
-         =>
-            null;
-
-         when N_Expanded_Name
-            | N_Identifier
-         =>
-            if Is_Entity_Name (Orig_N)
-              and then Present (Entity (Orig_N))  --  needed in some cases
-            then
-               case Ekind (Entity (Orig_N)) is
-                  when E_Constant
-                     | E_Enumeration_Literal
-                     | E_Named_Integer
-                     | E_Named_Real
-                  =>
-                     null;
-
-                  when others =>
-                     if Is_Type (Entity (Orig_N)) then
-                        null;
-                     else
-                        Is_Ok := False;
-                     end if;
-               end case;
-            end if;
-
-         when N_Qualified_Expression
-            | N_Type_Conversion
-         =>
-            Is_Ok := Is_SPARK_05_Initialization_Expr (Expression (Orig_N));
-
-         when N_Unary_Op =>
-            Is_Ok := Is_SPARK_05_Initialization_Expr (Right_Opnd (Orig_N));
-
-         when N_Binary_Op
-            | N_Membership_Test
-            | N_Short_Circuit
-         =>
-            Is_Ok := Is_SPARK_05_Initialization_Expr (Left_Opnd (Orig_N))
-                       and then
-                         Is_SPARK_05_Initialization_Expr (Right_Opnd (Orig_N));
-
-         when N_Aggregate
-            | N_Extension_Aggregate
-         =>
-            if Nkind (Orig_N) = N_Extension_Aggregate then
-               Is_Ok :=
-                 Is_SPARK_05_Initialization_Expr (Ancestor_Part (Orig_N));
-            end if;
-
-            Expr := First (Expressions (Orig_N));
-            while Present (Expr) loop
-               if not Is_SPARK_05_Initialization_Expr (Expr) then
-                  Is_Ok := False;
-                  goto Done;
-               end if;
-
-               Next (Expr);
-            end loop;
-
-            Comp_Assn := First (Component_Associations (Orig_N));
-            while Present (Comp_Assn) loop
-               Expr := Expression (Comp_Assn);
-
-               --  Note: test for Present here needed for box assocation
-
-               if Present (Expr)
-                 and then not Is_SPARK_05_Initialization_Expr (Expr)
-               then
-                  Is_Ok := False;
-                  goto Done;
-               end if;
-
-               Next (Comp_Assn);
-            end loop;
-
-         when N_Attribute_Reference =>
-            if Nkind (Prefix (Orig_N)) in N_Subexpr then
-               Is_Ok := Is_SPARK_05_Initialization_Expr (Prefix (Orig_N));
-            end if;
-
-            Expr := First (Expressions (Orig_N));
-            while Present (Expr) loop
-               if not Is_SPARK_05_Initialization_Expr (Expr) then
-                  Is_Ok := False;
-                  goto Done;
-               end if;
-
-               Next (Expr);
-            end loop;
-
-         --  Selected components might be expanded named not yet resolved, so
-         --  default on the safe side. (Eg on sparklex.ads)
-
-         when N_Selected_Component =>
-            null;
-
-         when others =>
-            Is_Ok := False;
-      end case;
-
-   <<Done>>
-      return Is_Ok;
-   end Is_SPARK_05_Initialization_Expr;
-
-   ----------------------------------
-   -- Is_SPARK_05_Object_Reference --
-   ----------------------------------
-
-   function Is_SPARK_05_Object_Reference (N : Node_Id) return Boolean is
-   begin
-      if Is_Entity_Name (N) then
-         return Present (Entity (N))
-           and then
-             (Ekind_In (Entity (N), E_Constant, E_Variable)
-               or else Ekind (Entity (N)) in Formal_Kind);
-
-      else
-         case Nkind (N) is
-            when N_Selected_Component =>
-               return Is_SPARK_05_Object_Reference (Prefix (N));
-
-            when others =>
-               return False;
-         end case;
-      end if;
-   end Is_SPARK_05_Object_Reference;
 
    --------------------------------------
    -- Is_Special_Aliased_Formal_Access --
@@ -24074,19 +23859,6 @@ package body Sem_Util is
 
          Get_Decoded_Name_String (Chars (Endl));
          Set_Sloc (Endl, Sloc (Endl) + Source_Ptr (Name_Len));
-
-      else
-         --  In SPARK mode, no missing label is allowed for packages and
-         --  subprogram bodies. Detect those cases by testing whether
-         --  Process_End_Label was called for a body (Typ = 't') or a package.
-
-         if Restriction_Check_Required (SPARK_05)
-           and then (Typ = 't' or else Ekind (Ent) = E_Package)
-         then
-            Error_Msg_Node_1 := Endl;
-            Check_SPARK_05_Restriction
-              ("`END &` required", Endl, Force => True);
-         end if;
       end if;
 
       --  Now generate the e/t reference

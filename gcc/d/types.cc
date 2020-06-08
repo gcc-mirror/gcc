@@ -709,26 +709,23 @@ public:
 
        Variadic functions with D linkage have an additional hidden argument
        with the name _arguments passed to the function.  */
-    if (t->varargs == 1 && t->linkage == LINKd)
+    if (t->isDstyleVariadic ())
       {
 	tree type = build_ctype (Type::typeinfotypelist->type);
 	fnparams = chainon (fnparams, build_tree_list (0, type));
       }
 
-    if (t->parameters)
-      {
-	size_t n_args = Parameter::dim (t->parameters);
+    size_t n_args = t->parameterList.length ();
 
-	for (size_t i = 0; i < n_args; i++)
-	  {
-	    tree type = parameter_type (Parameter::getNth (t->parameters, i));
-	    fnparams = chainon (fnparams, build_tree_list (0, type));
-	  }
+    for (size_t i = 0; i < n_args; i++)
+      {
+	tree type = parameter_type (t->parameterList[i]);
+	fnparams = chainon (fnparams, build_tree_list (0, type));
       }
 
     /* When the last parameter is void_list_node, that indicates a fixed length
        parameter list, otherwise function is treated as variadic.  */
-    if (t->varargs != 1)
+    if (t->parameterList.varargs != VARARGvariadic)
       fnparams = chainon (fnparams, void_list_node);
 
     if (t->next != NULL)

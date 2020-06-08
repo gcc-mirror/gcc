@@ -867,7 +867,7 @@ Module *Dsymbol::getAccessModule()
 
 Prot Dsymbol::prot()
 {
-    return Prot(PROTpublic);
+    return Prot(Prot::public_);
 }
 
 /*************************************
@@ -1100,7 +1100,7 @@ Dsymbol *ScopeDsymbol::search(const Loc &loc, Identifier *ident, int flags)
         for (size_t i = 0; i < importedScopes->length; i++)
         {
             // If private import, don't search it
-            if ((flags & IgnorePrivateImports) && prots[i] == PROTprivate)
+            if ((flags & IgnorePrivateImports) && prots[i] == Prot::private_)
                 continue;
 
             int sflags = flags & (IgnoreErrors | IgnoreAmbiguous | IgnoreSymbolVisibility); // remember these in recursive searches
@@ -1144,7 +1144,7 @@ Dsymbol *ScopeDsymbol::search(const Loc &loc, Identifier *ident, int flags)
                      * the other.
                      */
                     if (s->isDeprecated() ||
-                        (s->prot().isMoreRestrictiveThan(s2->prot()) && s2->prot().kind != PROTnone))
+                        (s->prot().isMoreRestrictiveThan(s2->prot()) && s2->prot().kind != Prot::none))
                         s = s2;
                 }
                 else
@@ -1201,7 +1201,7 @@ Dsymbol *ScopeDsymbol::search(const Loc &loc, Identifier *ident, int flags)
             }
 
             // TODO: remove once private symbol visibility has been deprecated
-            if (!(flags & IgnoreErrors) && s->prot().kind == PROTprivate &&
+            if (!(flags & IgnoreErrors) && s->prot().kind == Prot::private_ &&
                 !s->isOverloadable() && !s->parent->isTemplateMixin() && !s->parent->isNspace())
             {
                 AliasDeclaration *ad;
@@ -1257,7 +1257,7 @@ OverloadSet *ScopeDsymbol::mergeOverloadSet(Identifier *ident, OverloadSet *os, 
             {
                 if (s2->isDeprecated() ||
                     (s2->prot().isMoreRestrictiveThan(s->prot()) &&
-                     s->prot().kind != PROTnone))
+                     s->prot().kind != Prot::none))
                 {
                     os->a[j] = s;
                 }
@@ -1294,7 +1294,7 @@ void ScopeDsymbol::importScope(Dsymbol *s, Prot protection)
             }
         }
         importedScopes->push(s);
-        prots = (PROTKIND *)mem.xrealloc(prots, importedScopes->length * sizeof(prots[0]));
+        prots = (Prot::Kind *)mem.xrealloc(prots, importedScopes->length * sizeof(prots[0]));
         prots[importedScopes->length - 1] = protection.kind;
     }
 }
@@ -1333,7 +1333,7 @@ static void bitArrayLength(BitArray *array, size_t len)
 
 void ScopeDsymbol::addAccessiblePackage(Package *p, Prot protection)
 {
-    BitArray *pary = protection.kind == PROTprivate ? &privateAccessiblePackages : &accessiblePackages;
+    BitArray *pary = protection.kind == Prot::private_ ? &privateAccessiblePackages : &accessiblePackages;
     if (pary->len <= p->tag)
         bitArrayLength(pary, p->tag + 1);
     bitArraySet(pary, p->tag);
@@ -1342,7 +1342,7 @@ void ScopeDsymbol::addAccessiblePackage(Package *p, Prot protection)
 bool ScopeDsymbol::isPackageAccessible(Package *p, Prot protection, int)
 {
     if ((p->tag < accessiblePackages.len && bitArrayGet(&accessiblePackages, p->tag)) ||
-        (protection.kind == PROTprivate && p->tag < privateAccessiblePackages.len && bitArrayGet(&privateAccessiblePackages, p->tag)))
+        (protection.kind == Prot::private_ && p->tag < privateAccessiblePackages.len && bitArrayGet(&privateAccessiblePackages, p->tag)))
         return true;
     if (importedScopes)
     {
@@ -1827,11 +1827,11 @@ Dsymbol *DsymbolTable::update(Dsymbol *s)
 
 Prot::Prot()
 {
-    this->kind = PROTundefined;
+    this->kind = Prot::undefined;
     this->pkg = NULL;
 }
 
-Prot::Prot(PROTKIND kind)
+Prot::Prot(Prot::Kind kind)
 {
     this->kind = kind;
     this->pkg = NULL;
@@ -1853,7 +1853,7 @@ bool Prot::operator==(const Prot& other) const
 {
     if (this->kind == other.kind)
     {
-        if (this->kind == PROTpackage)
+        if (this->kind == Prot::package_)
             return this->pkg == other.pkg;
         return true;
     }
@@ -1875,7 +1875,7 @@ bool Prot::isSubsetOf(const Prot& parent) const
     if (this->kind != parent.kind)
         return false;
 
-    if (this->kind == PROTpackage)
+    if (this->kind == Prot::package_)
     {
         if (!this->pkg)
             return true;

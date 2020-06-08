@@ -49,7 +49,7 @@ Identifier *fixupLabelName(Scope *sc, Identifier *ident)
         OutBuffer buf;
         buf.printf("%s%s", prefix, ident->toChars());
 
-        const char *name = buf.extractString();
+        const char *name = buf.extractChars();
         ident = Identifier::idPool(name);
     }
     return ident;
@@ -121,7 +121,7 @@ const char *Statement::toChars()
 
     OutBuffer buf;
     ::toCBuffer(this, &buf, &hgs);
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 
