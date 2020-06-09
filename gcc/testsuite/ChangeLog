@@ -1,3 +1,13 @@
+2020-06-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/95113
+	* gcc.dg/ipa/pr95113.c: New test.
+
+2020-06-08  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/92993
+	* gfortran.dg/pr92993.f90: New test.
+
 2020-06-07  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/95050

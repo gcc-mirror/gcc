@@ -1,3 +1,14 @@
+2020-06-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/95113
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Move non-call
+	exceptions check to...
+	* tree-eh.c (stmt_unremovable_because_of_non_call_eh_p): ...this
+	new function.
+	* tree-eh.h (stmt_unremovable_because_of_non_call_eh_p): Declare it.
+	* ipa-sra.c (isra_track_scalar_value_uses): Use it.  New parameter
+	fun.
+
 2020-06-05  Thomas Schwinge  <thomas@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 
