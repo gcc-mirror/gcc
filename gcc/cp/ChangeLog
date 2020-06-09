@@ -500,7 +500,7 @@
 2020-05-13  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/95020
-	* constraint.c (tsubst_requires_expr): Produce a new
+	* constraint.cc (tsubst_requires_expr): Produce a new
 	requires-expression when processing_template_decl, even if
 	template arguments are not dependent.
 
