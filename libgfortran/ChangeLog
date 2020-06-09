@@ -1,3 +1,8 @@
+2020-06-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95091
+	* io/transfer.c (finalize_transfer): Fix type in error message.
+
 2020-06-01  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR libfortran/95418

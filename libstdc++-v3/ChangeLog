@@ -1,3 +1,14 @@
+2020-06-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/default_delete/48631_neg.cc: Adjust dg-error
+	line number.
+	* testsuite/20_util/default_delete/void_neg.cc: Likewise.
+
+2020-06-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unique_ptr.h (operator<<): Define for C++20.
+	* testsuite/20_util/unique_ptr/io/lwg2948.cc: New test.
+
 2020-06-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/iterator_concepts.h (__detail::__ptr, __detail::__ref)
