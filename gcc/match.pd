@@ -6024,6 +6024,54 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (plus (CTZ:type @0) { build_one_cst (type); })))
 #endif
 
+(for ffs (BUILT_IN_FFS BUILT_IN_FFSL BUILT_IN_FFSLL
+	  BUILT_IN_FFSIMAX)
+ /* __builtin_ffs (X) == 0 -> X == 0.
+    __builtin_ffs (X) == 6 -> (X & 63) == 32.  */
+ (for cmp (eq ne)
+  (simplify
+   (cmp (ffs@2 @0) INTEGER_CST@1)
+    (with { int prec = TYPE_PRECISION (TREE_TYPE (@0)); }
+     (switch
+      (if (integer_zerop (@1))
+       (cmp @0 { build_zero_cst (TREE_TYPE (@0)); }))
+      (if (tree_int_cst_sgn (@1) < 0 || wi::to_widest (@1) > prec)
+       { constant_boolean_node (cmp == NE_EXPR ? true : false, type); })
+      (if (single_use (@2))
+       (cmp (bit_and @0 { wide_int_to_tree (TREE_TYPE (@0),
+					    wi::mask (tree_to_uhwi (@1),
+						      false, prec)); })
+	    { wide_int_to_tree (TREE_TYPE (@0),
+				wi::shifted_mask (tree_to_uhwi (@1) - 1, 1,
+						  false, prec)); }))))))
+
+ /* __builtin_ffs (X) > 6 -> X != 0 && (X & 63) == 0.  */
+ (for cmp (gt le)
+      cmp2 (ne eq)
+      cmp3 (eq ne)
+      bit_op (bit_and bit_ior)
+  (simplify
+   (cmp (ffs@2 @0) INTEGER_CST@1)
+    (with { int prec = TYPE_PRECISION (TREE_TYPE (@0)); }
+     (switch
+      (if (integer_zerop (@1))
+       (cmp2 @0 { build_zero_cst (TREE_TYPE (@0)); }))
+      (if (tree_int_cst_sgn (@1) < 0)
+       { constant_boolean_node (cmp == GT_EXPR ? true : false, type); })
+      (if (wi::to_widest (@1) >= prec)
+       { constant_boolean_node (cmp == GT_EXPR ? false : true, type); })
+      (if (wi::to_widest (@1) == prec - 1)
+       (cmp3 @0 { wide_int_to_tree (TREE_TYPE (@0),
+				    wi::shifted_mask (prec - 1, 1,
+						      false, prec)); }))
+      (if (single_use (@2))
+       (bit_op (cmp2 @0 { build_zero_cst (TREE_TYPE (@0)); })
+	       (cmp3 (bit_and @0
+			      { wide_int_to_tree (TREE_TYPE (@0),
+						  wi::mask (tree_to_uhwi (@1),
+						  false, prec)); })
+		     { build_zero_cst (TREE_TYPE (@0)); }))))))))
+
 /* Simplify:
 
      a = a1 op a2
