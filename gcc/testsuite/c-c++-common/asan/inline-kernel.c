@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fsanitize=kernel-address -c -O3 -fdump-tree-optimized" } */
+/* { dg-options "-fno-sanitize=address -fsanitize=kernel-address -c -O3 -fdump-tree-optimized" } */
 
 int x;
 
