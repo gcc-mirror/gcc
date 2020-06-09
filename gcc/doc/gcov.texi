@@ -528,7 +528,8 @@ for each line.  For example, if your program is called @file{tmp.cpp}, this
 is what you see when you use the basic @command{gcov} facility:
 
 @smallexample
-$ g++ --coverage tmp.cpp
+$ g++ --coverage tmp.cpp -c
+$ g++ --coverage tmp.o
 $ a.out
 $ gcov tmp.cpp -m
 File 'tmp.cpp'
