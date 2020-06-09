@@ -3058,4 +3058,72 @@ index 967e5f5f348..95d21b5bf9f 100644
 +
 -- 
 2.25.4
+=== 0001-configure.patch ===
+From dbe341cf6a77bb28c5fdf8b32dcb0ff1c2a27348 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Tue, 9 Jun 2020 09:39:36 +0200
+Subject: [PATCH] c++: Fix --disable-bootstrap with older g++.
 
+Previously I had AX_CXX_COMPILE_STDCXX in the gcc directory configure, which
+added -std=c++11 to CXX if needed, but then CXX is overridden from the
+toplevel directory, so it didn't have the desired effect.  Fixed by moving
+the check to the toplevel.  Currently it is only used when building GCC
+without bootstrapping; other packages that share the toplevel directory
+can adjust the condition if they also want to require C++11 support.
+
+ChangeLog:
+
+	* configure.ac: Check AX_CXX_COMPILE_STDCXX if not bootstrapping.
+	* configure: Regenerate.
+
+gcc/ChangeLog:
+
+	* aclocal.m4: Remove ax_cxx_compile_stdcxx.m4.
+	* configure.ac: Remove AX_CXX_COMPILE_STDCXX.
+	* configure: Regenerate.
+
+---
+ configure        | 999 ++++++++++++++++++++++++++++++++++++++++++++++-
+ configure.ac     |   6 +-
+ gcc/aclocal.m4   |   1 -
+ gcc/configure    | 997 +---------------------------------------------
+ gcc/configure.ac |   2 -
+ 5 files changed, 1004 insertions(+), 1001 deletions(-)
+
+diff --git a/configure b/configure
+index b7897446c70..a0c5aca9e8d 100755
+--- a/configure
++++ b/configure
+@@ -1 +1,2 @@
+ 
++
+diff --git a/configure.ac b/configure.ac
+index 59bd92a3e53..1a53ed418e4 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/aclocal.m4 b/gcc/aclocal.m4
+index e93c1535063..1737d59d1cb 100644
+--- a/gcc/aclocal.m4
++++ b/gcc/aclocal.m4
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/configure b/gcc/configure
+index 46850710424..629c7c7e153 100755
+--- a/gcc/configure
++++ b/gcc/configure
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/configure.ac b/gcc/configure.ac
+index 60d83c30771..9e7efd13ecc 100644
+--- a/gcc/configure.ac
++++ b/gcc/configure.ac
+@@ -1 +1,2 @@
+ 
++
+-- 
+2.26.2
