@@ -1602,9 +1602,14 @@ operator_rshift::op1_range (irange &r,
   tree shift;
   if (op2.singleton_p (&shift))
     {
+      // Folding the original operation may discard some impossible
+      // ranges from the LHS.
+      widest_irange lhs_refined;
+      op_rshift.fold_range (lhs_refined, type, value_range (type), op2);
+      lhs_refined.intersect (lhs);
       widest_irange shift_range (shift, shift);
       widest_irange lb, ub;
-      op_lshift.fold_range (lb, type, lhs, shift_range);
+      op_lshift.fold_range (lb, type, lhs_refined, shift_range);
       //    LHS
       // 0000 0111 = OP1 >> 3
       //
@@ -1621,7 +1626,7 @@ operator_rshift::op1_range (irange &r,
       r = lb;
       r.union_ (ub);
 
-      if (!lhs.contains_p (build_zero_cst (lhs.type ())))
+      if (!lhs_refined.contains_p (build_zero_cst (type)))
 	{
 	  mask_range.invert ();
 	  r.intersect (mask_range);
@@ -3478,6 +3483,48 @@ operator_tests ()
 			    build_int_cst (big_type, 0x8),
 			    build_int_cst (big_type, 48));
     ASSERT_TRUE (res.contains_p (val));
+  }
+
+  // unsigned: [3, MAX] = OP1 >> 1
+  {
+    widest_irange lhs (build_int_cst (unsigned_type_node, 3),
+		       TYPE_MAX_VALUE (unsigned_type_node));
+    widest_irange one (build_one_cst (unsigned_type_node),
+		       build_one_cst (unsigned_type_node));
+    widest_irange op1;
+    op_rshift.op1_range (op1, unsigned_type_node, lhs, one);
+    ASSERT_FALSE (op1.contains_p (UINT (3)));
+  }
+
+  // signed: [3, MAX] = OP1 >> 1
+  {
+    widest_irange lhs (INT (3), TYPE_MAX_VALUE (integer_type_node));
+    widest_irange one (INT (1), INT (1));
+    widest_irange op1;
+    op_rshift.op1_range (op1, integer_type_node, lhs, one);
+    ASSERT_FALSE (op1.contains_p (INT (-2)));
+  }
+
+  // This is impossible, so OP1 should be [].
+  // signed: [MIN, MIN] = OP1 >> 1
+  {
+    widest_irange lhs (TYPE_MIN_VALUE (integer_type_node),
+		       TYPE_MIN_VALUE (integer_type_node));
+    widest_irange one (INT (1), INT (1));
+    widest_irange op1;
+    op_rshift.op1_range (op1, integer_type_node, lhs, one);
+    ASSERT_TRUE (op1.undefined_p ());
+  }
+
+  // signed: ~[-1] = OP1 >> 31
+  {
+    widest_irange lhs (INT (-1), INT (-1), VR_ANTI_RANGE);
+    widest_irange shift (INT (31), INT (31));
+    widest_irange op1;
+    op_rshift.op1_range (op1, integer_type_node, lhs, shift);
+    widest_irange negatives = range_negatives (integer_type_node);
+    negatives.intersect (op1);
+    ASSERT_TRUE (negatives.undefined_p ());
   }
 }
 
