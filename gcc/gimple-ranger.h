@@ -57,6 +57,7 @@ public:
 protected:
   virtual void range_of_ssa_name (irange &r, tree name, gimple *s = NULL);
   bool range_from_import (irange &r, tree name, irange &import_range);
+  ssa_global_cache m_globals;
 private:
   typedef gimple_ranger super;
   bool non_null_deref_p (tree name, basic_block bb);
@@ -68,7 +69,6 @@ private:
   void fill_block_cache (tree name, basic_block bb, basic_block def_bb);
   void iterative_cache_update (tree name);
 
-  ssa_global_cache m_globals;
   block_range_cache m_on_entry;
   non_null_ref m_non_null;
   vec<basic_block> m_workback;
@@ -85,6 +85,7 @@ public:
   ~loop_ranger ();
   virtual void range_on_edge (irange &r, edge e, tree name);
   virtual bool range_of_phi (irange &r, gphi *phi);
+  virtual bool range_of_stmt (irange &r, gimple *stmt, tree name);
 
 private:
   typedef global_ranger super;

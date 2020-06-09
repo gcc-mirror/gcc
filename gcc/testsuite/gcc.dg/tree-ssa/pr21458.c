@@ -1,5 +1,9 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdisable-tree-evrp -fdump-tree-vrp1 -fno-rvrp-changes" } */
+/* { dg-options "-O2 -fdisable-tree-evrp -fdump-tree-vrp1" } */
+
+/* range_of_stmt will call SCEV to set global ranges for the PHI
+   results, and alter the results here.  */
+/* { dg-additional-options "-fdisable-tree-rvrp1 -fdisable-tree-rvrp2" } */
 
 extern void g (void);
 extern void bar (int);

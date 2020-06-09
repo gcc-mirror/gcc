@@ -791,6 +791,28 @@ loop_ranger::range_of_phi (irange &r, gphi *phi)
   return range_with_loop_info (r, PHI_RESULT (phi));
 }
 
+bool
+loop_ranger::range_of_stmt (irange &r, gimple *stmt, tree name)
+{
+  // If there is no global range for a PHI, start the party with
+  // whatever information SCEV may have.
+  if (gphi *phi = dyn_cast<gphi *> (stmt))
+    {
+      tree phi_result = PHI_RESULT (phi);
+      if (!POINTER_TYPE_P (TREE_TYPE (phi_result))
+	  && !m_globals.get_global_range (r, phi_result)
+	  && range_with_loop_info (r, phi_result))
+	{
+	  value_range loop_range;
+	  get_range_info (phi_result, loop_range);
+	  r.intersect (loop_range);
+	  if (!r.varying_p ())
+	    set_range_info (phi_result, r);
+	}
+    }
+  return super::range_of_stmt (r, stmt, name);
+}
+
 void
 loop_ranger::range_on_edge (irange &r, edge e, tree name)
 {
