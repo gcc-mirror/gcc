@@ -5862,7 +5862,7 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 	}
 
       /* Don't bother reversing an operator with two identical parameters.  */
-      else if (args->length () == 2 && (flags & LOOKUP_REVERSED))
+      else if (vec_safe_length (args) == 2 && (flags & LOOKUP_REVERSED))
 	{
 	  tree parmlist = TYPE_ARG_TYPES (TREE_TYPE (fn));
 	  if (same_type_p (TREE_VALUE (parmlist),
@@ -10263,7 +10263,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	  && !(flags & LOOKUP_ONLYCONVERTING)
 	  && cxx_dialect >= cxx20
 	  && CP_AGGREGATE_TYPE_P (basetype)
-	  && !user_args->is_empty ())
+	  && !vec_safe_is_empty (user_args))
 	{
 	  /* Create a CONSTRUCTOR from ARGS, e.g. {1, 2} from <1, 2>.  */
 	  tree list = build_tree_list_vec (user_args);
