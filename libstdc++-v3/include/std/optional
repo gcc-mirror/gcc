@@ -84,12 +84,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class bad_optional_access : public exception
   {
   public:
-    bad_optional_access() { }
+    bad_optional_access() = default;
+    virtual ~bad_optional_access() = default;
 
-    virtual const char* what() const noexcept override
+    const char* what() const noexcept override
     { return "bad optional access"; }
-
-    virtual ~bad_optional_access() noexcept = default;
   };
 
   void
