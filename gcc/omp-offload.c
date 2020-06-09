@@ -126,7 +126,7 @@ add_decls_addresses_to_decl_constructor (vec<tree, va_gc> *v_decls,
 	  && lookup_attribute ("omp declare target link", DECL_ATTRIBUTES (it));
 
       /* See also omp_finish_file and output_offload_tables in lto-cgraph.c.  */
-      if (!symtab_node::get (it))
+      if (!in_lto_p && !symtab_node::get (it))
 	continue;
 
       tree size = NULL_TREE;
@@ -382,14 +382,14 @@ omp_finish_file (void)
 	  tree it = (*offload_funcs)[i];
 	  /* See also add_decls_addresses_to_decl_constructor
 	     and output_offload_tables in lto-cgraph.c.  */
-	  if (!symtab_node::get (it))
+	  if (!in_lto_p && !symtab_node::get (it))
 	    continue;
 	  targetm.record_offload_symbol (it);
 	}
       for (unsigned i = 0; i < num_vars; i++)
 	{
 	  tree it = (*offload_vars)[i];
-	  if (!symtab_node::get (it))
+	  if (!in_lto_p && !symtab_node::get (it))
 	    continue;
 #ifdef ACCEL_COMPILER
 	  if (DECL_HAS_VALUE_EXPR_P (it)
