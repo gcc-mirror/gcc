@@ -84,7 +84,6 @@ public:
   loop_ranger ();
   ~loop_ranger ();
   virtual void range_on_edge (irange &r, edge e, tree name);
-  virtual bool range_of_phi (irange &r, gphi *phi);
   virtual bool range_of_stmt (irange &r, gimple *stmt, tree name);
 
 private:

@@ -774,23 +774,6 @@ loop_ranger::range_with_loop_info (irange &r, tree name)
   return false;
 }
 
-// Virtual override of global_ranger::range_of_phi() that adjusts the
-// result with loop information if available.
-
-bool
-loop_ranger::range_of_phi (irange &r, gphi *phi)
-{
-  if (super::range_of_phi (r, phi))
-    {
-      value_range loop_range;
-      if (range_with_loop_info (loop_range, PHI_RESULT (phi)))
-	r.intersect (loop_range);
-      return true;
-    }
-  // ?? Is it worth querying loop info, or should we just return false?
-  return range_with_loop_info (r, PHI_RESULT (phi));
-}
-
 bool
 loop_ranger::range_of_stmt (irange &r, gimple *stmt, tree name)
 {
