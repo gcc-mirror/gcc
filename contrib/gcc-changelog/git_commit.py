@@ -150,7 +150,7 @@ misc_files = [
 author_line_regex = \
         re.compile(r'^(?P<datetime>\d{4}-\d{2}-\d{2})\ {2}(?P<name>.*  <.*>)')
 additional_author_regex = re.compile(r'^\t(?P<spaces>\ *)?(?P<name>.*  <.*>)')
-changelog_regex = re.compile(r'^(?:[fF]or +)?([a-z0-9+-/]*)/ChangeLog:?')
+changelog_regex = re.compile(r'^(?:[fF]or +)?([a-z0-9+-/]*)ChangeLog:?')
 pr_regex = re.compile(r'\tPR (?P<component>[a-z+-]+\/)?([0-9]+)$')
 dr_regex = re.compile(r'\tDR ([0-9]+)$')
 star_prefix_regex = re.compile(r'\t\*(?P<spaces>\ *)(?P<content>.*)')
@@ -359,7 +359,8 @@ class GitCommit:
                                          % LINE_LIMIT, line))
             m = changelog_regex.match(line)
             if m:
-                last_entry = ChangeLogEntry(m.group(1), self.top_level_authors,
+                last_entry = ChangeLogEntry(m.group(1).rstrip('/'),
+                                            self.top_level_authors,
                                             self.top_level_prs)
                 self.changelog_entries.append(last_entry)
             elif self.find_changelog_location(line):
