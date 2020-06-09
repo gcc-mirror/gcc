@@ -133,7 +133,7 @@ print_usage (void)
   printf ("  -h, --help           Print this help\n");
   printf ("  -l, --long           Dump record contents too\n");
   printf ("  -p, --positions      Dump record positions\n");
-  printf ("  -r, --raw		  Print content records in raw format\n");
+  printf ("  -r, --raw            Print content records in raw format\n");
   printf ("  -v, --version        Print version number\n");
   printf ("\nFor bug reporting instructions, please see:\n%s.\n",
 	   bug_report_url);
