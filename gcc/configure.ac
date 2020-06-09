@@ -1340,6 +1340,8 @@ AC_SUBST(ZSTD_INCLUDE)
 AC_SUBST(ZSTD_LIB)
 ZSTD_CPPFLAGS=
 ZSTD_LDFLAGS=
+AC_SUBST(ZSTD_CPPFLAGS)
+AC_SUBST(ZSTD_LDFLAGS)
 AC_ARG_WITH(zstd,
 	[AS_HELP_STRING([--with-zstd=PATH],
 		[specify prefix directory for installed zstd library.
