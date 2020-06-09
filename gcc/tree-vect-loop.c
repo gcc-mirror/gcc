@@ -7373,11 +7373,6 @@ vectorizable_induction (loop_vec_info loop_vinfo,
   unsigned i;
   tree expr;
   gimple_seq stmts;
-  imm_use_iterator imm_iter;
-  use_operand_p use_p;
-  gimple *exit_phi;
-  edge latch_e;
-  tree loop_arg;
   gimple_stmt_iterator si;
 
   gphi *phi = dyn_cast <gphi *> (stmt_info->stmt);
@@ -7484,9 +7479,6 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "transform induction phi.\n");
-
-  latch_e = loop_latch_edge (iv_loop);
-  loop_arg = PHI_ARG_DEF_FROM_EDGE (phi, latch_e);
 
   step_expr = STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_info);
   gcc_assert (step_expr != NULL_TREE);
@@ -7871,40 +7863,6 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 	  prev_stmt_vinfo = new_stmt_info;
 	}
     }
-
-  if (nested_in_vect_loop)
-    {
-      /* Find the loop-closed exit-phi of the induction, and record
-         the final vector of induction results:  */
-      exit_phi = NULL;
-      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, loop_arg)
-        {
-	  gimple *use_stmt = USE_STMT (use_p);
-	  if (is_gimple_debug (use_stmt))
-	    continue;
-
-	  if (!flow_bb_inside_loop_p (iv_loop, gimple_bb (use_stmt)))
-	    {
-	      exit_phi = use_stmt;
-	      break;
-	    }
-        }
-      if (exit_phi)
-	{
-	  stmt_vec_info stmt_vinfo = loop_vinfo->lookup_stmt (exit_phi);
-	  /* FORNOW. Currently not supporting the case that an inner-loop induction
-	     is not used in the outer-loop (i.e. only outside the outer-loop).  */
-	  gcc_assert (STMT_VINFO_RELEVANT_P (stmt_vinfo)
-		      && !STMT_VINFO_LIVE_P (stmt_vinfo));
-
-	  STMT_VINFO_VEC_STMT (stmt_vinfo) = new_stmt_info;
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "vector of inductions after inner-loop:%G",
-			     new_stmt);
-	}
-    }
-
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
