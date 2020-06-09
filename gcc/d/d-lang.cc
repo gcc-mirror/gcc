@@ -293,6 +293,7 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
   global.params.hdrStripPlainFunctions = true;
   global.params.betterC = false;
   global.params.allInst = false;
+  global.params.errorLimit = flag_max_errors;
 
   /* Default extern(C++) mangling to C++14.  */
   global.params.cplusplus = CppStdRevisionCpp14;
@@ -793,7 +794,7 @@ d_post_options (const char ** fn)
 
   /* Make -fmax-errors visible to frontend's diagnostic machinery.  */
   if (global_options_set.x_flag_max_errors)
-    global.errorLimit = flag_max_errors;
+    global.params.errorLimit = flag_max_errors;
 
   if (flag_excess_precision == EXCESS_PRECISION_DEFAULT)
     flag_excess_precision = EXCESS_PRECISION_STANDARD;
