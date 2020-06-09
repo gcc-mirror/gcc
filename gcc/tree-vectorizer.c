@@ -641,6 +641,7 @@ vec_info::new_stmt_vec_info (gimple *stmt)
   STMT_VINFO_REDUC_FN (res) = IFN_LAST;
   STMT_VINFO_REDUC_IDX (res) = -1;
   STMT_VINFO_SLP_VECT_ONLY (res) = false;
+  STMT_VINFO_VEC_STMTS (res) = vNULL;
 
   if (gimple_code (stmt) == GIMPLE_PHI
       && is_loop_header_bb_p (gimple_bb (stmt)))
@@ -705,6 +706,7 @@ vec_info::free_stmt_vec_info (stmt_vec_info stmt_info)
 
   STMT_VINFO_SAME_ALIGN_REFS (stmt_info).release ();
   STMT_VINFO_SIMD_CLONE_INFO (stmt_info).release ();
+  STMT_VINFO_VEC_STMTS (stmt_info).release ();
   free (stmt_info);
 }
 

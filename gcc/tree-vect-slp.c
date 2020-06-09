@@ -3671,6 +3671,23 @@ vect_get_slp_vect_def (slp_tree slp_node, unsigned i)
     return SLP_TREE_VEC_DEFS (slp_node)[i];
 }
 
+/* Get the vectorized definitions of SLP_NODE in *VEC_DEFS.  */
+
+void
+vect_get_slp_defs (slp_tree slp_node, vec<tree> *vec_defs)
+{
+  vec_defs->create (SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node));
+  if (SLP_TREE_DEF_TYPE (slp_node) == vect_internal_def)
+    {
+      unsigned j;
+      stmt_vec_info vec_def_stmt_info;
+      FOR_EACH_VEC_ELT (SLP_TREE_VEC_STMTS (slp_node), j, vec_def_stmt_info)
+	vec_defs->quick_push (gimple_get_lhs (vec_def_stmt_info->stmt));
+    }
+  else
+    vec_defs->splice (SLP_TREE_VEC_DEFS (slp_node));
+}
+
 /* Get N vectorized definitions for SLP_NODE.  */
 
 void
@@ -3683,22 +3700,8 @@ vect_get_slp_defs (vec_info *,
   for (unsigned i = 0; i < n; ++i)
     {
       slp_tree child = SLP_TREE_CHILDREN (slp_node)[i];
-
       vec<tree> vec_defs = vNULL;
-
-      /* For each operand we check if it has vectorized definitions in a child
-	 node or we need to create them (for invariants and constants).  */
-      vec_defs.create (SLP_TREE_NUMBER_OF_VEC_STMTS (child));
-      if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
-	{
-	  unsigned j;
-	  stmt_vec_info vec_def_stmt_info;
-	  FOR_EACH_VEC_ELT (SLP_TREE_VEC_STMTS (child), j, vec_def_stmt_info)
-	    vec_defs.quick_push (gimple_get_lhs (vec_def_stmt_info->stmt));
-	}
-      else
-	vec_defs.splice (SLP_TREE_VEC_DEFS (child));
-
+      vect_get_slp_defs (child, &vec_defs);
       vec_oprnds->quick_push (vec_defs);
     }
 }

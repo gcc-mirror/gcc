@@ -3216,7 +3216,7 @@ vect_vfa_access_size (vec_info *vinfo, dr_vec_info *dr_info)
       gcc_assert (DR_GROUP_FIRST_ELEMENT (stmt_vinfo) == stmt_vinfo);
       access_size *= DR_GROUP_SIZE (stmt_vinfo) - DR_GROUP_GAP (stmt_vinfo);
     }
-  if (STMT_VINFO_VEC_STMT (stmt_vinfo)
+  if (STMT_VINFO_VEC_STMTS (stmt_vinfo).exists ()
       && (vect_supportable_dr_alignment (vinfo, dr_info, false)
 	  == dr_explicit_realign_optimized))
     {
@@ -6443,24 +6443,8 @@ vect_record_grouped_load_vectors (vec_info *vinfo, stmt_vec_info stmt_info,
         {
 	  stmt_vec_info new_stmt_info = vinfo->lookup_def (tmp_data_ref);
 	  /* We assume that if VEC_STMT is not NULL, this is a case of multiple
-	     copies, and we put the new vector statement in the first available
-	     RELATED_STMT.  */
-	  if (!STMT_VINFO_VEC_STMT (next_stmt_info))
-	    STMT_VINFO_VEC_STMT (next_stmt_info) = new_stmt_info;
-	  else
-            {
-	      stmt_vec_info prev_stmt_info
-		= STMT_VINFO_VEC_STMT (next_stmt_info);
-	      stmt_vec_info rel_stmt_info
-		= STMT_VINFO_RELATED_STMT (prev_stmt_info);
-	      while (rel_stmt_info)
-		{
-		  prev_stmt_info = rel_stmt_info;
-		  rel_stmt_info = STMT_VINFO_RELATED_STMT (rel_stmt_info);
-		}
-
-	      STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
-            }
+	     copies, and we put the new vector statement last.  */
+	  STMT_VINFO_VEC_STMTS (next_stmt_info).safe_push (new_stmt_info);
 
 	  next_stmt_info = DR_GROUP_NEXT_ELEMENT (next_stmt_info);
 	  gap_count = 1;

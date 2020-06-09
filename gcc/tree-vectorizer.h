@@ -964,9 +964,8 @@ public:
   /* The vector type to be used for the LHS of this statement.  */
   tree vectype;
 
-  /* The vectorized version of the stmt.  */
-  stmt_vec_info vectorized_stmt;
-
+  /* The vectorized stmts.  */
+  vec<stmt_vec_info> vec_stmts;
 
   /* The following is relevant only for stmts that contain a non-scalar
      data-ref (array/pointer/struct access). A GIMPLE stmt is expected to have
@@ -1127,6 +1126,8 @@ public:
 
   /* True if this is only suitable for SLP vectorization.  */
   bool slp_vect_only_p;
+
+  bool vector_stmt;
 };
 
 /* Information about a gather/scatter call.  */
@@ -1168,7 +1169,7 @@ struct gather_scatter_info {
 #define STMT_VINFO_RELEVANT(S)             (S)->relevant
 #define STMT_VINFO_LIVE_P(S)               (S)->live
 #define STMT_VINFO_VECTYPE(S)              (S)->vectype
-#define STMT_VINFO_VEC_STMT(S)             (S)->vectorized_stmt
+#define STMT_VINFO_VEC_STMTS(S)             (S)->vec_stmts
 #define STMT_VINFO_VECTORIZABLE(S)         (S)->vectorizable
 #define STMT_VINFO_DATA_REF(S)             ((S)->dr_aux.dr + 0)
 #define STMT_VINFO_GATHER_SCATTER_P(S)	   (S)->gather_scatter_p
@@ -1743,16 +1744,20 @@ extern stmt_vec_info vect_finish_stmt_generation (vec_info *,
 						  gimple_stmt_iterator *);
 extern opt_result vect_mark_stmts_to_be_vectorized (loop_vec_info, bool *);
 extern tree vect_get_store_rhs (stmt_vec_info);
-extern tree vect_get_vec_def_for_operand_1 (stmt_vec_info, enum vect_def_type);
-extern tree vect_get_vec_def_for_operand (vec_info *, tree,
-					  stmt_vec_info, tree = NULL);
-extern void vect_get_vec_defs (vec_info *, tree, tree, stmt_vec_info,
-			       vec<tree> *, vec<tree> *, slp_tree);
-extern void vect_get_vec_defs_for_stmt_copy (vec_info *,
-					     vec<tree> *, vec<tree> *);
+void vect_get_vec_defs_for_operand (vec_info *vinfo, stmt_vec_info, unsigned,
+				    tree op, vec<tree> *, tree = NULL);
+void vect_get_vec_defs (vec_info *, stmt_vec_info, slp_tree, unsigned,
+			tree, vec<tree> *,
+			tree = NULL, vec<tree> * = NULL,
+			tree = NULL, vec<tree> * = NULL,
+			tree = NULL, vec<tree> * = NULL);
+void vect_get_vec_defs (vec_info *, stmt_vec_info, slp_tree, unsigned,
+			tree, vec<tree> *, tree,
+			tree = NULL, vec<tree> * = NULL, tree = NULL,
+			tree = NULL, vec<tree> * = NULL, tree = NULL,
+			tree = NULL, vec<tree> * = NULL, tree = NULL);
 extern tree vect_init_vector (vec_info *, stmt_vec_info, tree, tree,
                               gimple_stmt_iterator *);
-extern tree vect_get_vec_def_for_stmt_copy (vec_info *, tree);
 extern tree vect_get_slp_vect_def (slp_tree, unsigned);
 extern bool vect_transform_stmt (vec_info *, stmt_vec_info,
 				 gimple_stmt_iterator *,
@@ -1895,6 +1900,7 @@ extern opt_result vect_analyze_slp (vec_info *, unsigned);
 extern bool vect_make_slp_decision (loop_vec_info);
 extern void vect_detect_hybrid_slp (loop_vec_info);
 extern void vect_optimize_slp (vec_info *);
+extern void vect_get_slp_defs (slp_tree, vec<tree> *);
 extern void vect_get_slp_defs (vec_info *, slp_tree, vec<vec<tree> > *,
 			       unsigned n = -1U);
 extern bool vect_slp_bb (basic_block);
