@@ -1,5 +1,10 @@
 2020-06-09  Michael Meissner  <meissner@linux.ibm.com>
 
+	* gcc.target/powerpc/clone3.c: New test for using 'future' with
+	the target_clones attribute.
+
+2020-06-09  Michael Meissner  <meissner@linux.ibm.com>
+
 	* lib/target-supports.exp (check_effective_target_powerpc_pcrel):
 	New.
 	(check_effective_target_powerpc_prefixed_addr): New.
