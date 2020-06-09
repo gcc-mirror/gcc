@@ -40,8 +40,13 @@
 # into the jit rule, but that needs a little bit of work
 # to do the right thing within all.cross.
 
+LIBGCCJIT_VERSION_NUM = 0
+LIBGCCJIT_MINOR_NUM = 0
+LIBGCCJIT_RELEASE_NUM = 1
+
 ifneq (,$(findstring mingw,$(target)))
-LIBGCCJIT_FILENAME = libgccjit.dll
+LIBGCCJIT_FILENAME = libgccjit-$(LIBGCCJIT_VERSION_NUM).dll
+LIBGCCJIT_IMPORT_LIB = libgccjit.dll.a
 
 jit: $(LIBGCCJIT_FILENAME) \
 	$(FULL_DRIVER_NAME)
@@ -49,9 +54,6 @@ jit: $(LIBGCCJIT_FILENAME) \
 else
 
 LIBGCCJIT_LINKER_NAME = libgccjit.so
-LIBGCCJIT_VERSION_NUM = 0
-LIBGCCJIT_MINOR_NUM = 0
-LIBGCCJIT_RELEASE_NUM = 1
 
 LIBGCCJIT_SONAME = $(LIBGCCJIT_LINKER_NAME).$(LIBGCCJIT_VERSION_NUM)
 LIBGCCJIT_FILENAME = \
@@ -102,8 +104,8 @@ endif
 jit-warn = $(STRICT_WARN)
 
 ifneq (,$(findstring mingw,$(target)))
-# Create import library libgccjit.dll.a
-LIBGCCJIT_EXTRA_OPTS = -Wl,--out-implib,$(LIBGCCJIT_FILENAME).a
+# Create import library
+LIBGCCJIT_EXTRA_OPTS = -Wl,--out-implib,$(LIBGCCJIT_IMPORT_LIB)
 else
 LIBGCCJIT_EXTRA_OPTS = $(LIBGCCJIT_VERSION_SCRIPT_OPTION) \
 	$(LIBGCCJIT_SONAME_OPTION)
@@ -308,8 +310,8 @@ jit.install-headers:
 ifneq (,$(findstring mingw,$(target)))
 jit.install-common: installdirs jit.install-headers
 # Install import library
-	$(INSTALL_PROGRAM) $(LIBGCCJIT_FILENAME).a \
-	  $(DESTDIR)$(libdir)/$(LIBGCCJIT_FILENAME).a
+	$(INSTALL_PROGRAM) $(LIBGCCJIT_IMPORT_LIB) \
+	  $(DESTDIR)$(libdir)/$(LIBGCCJIT_IMPORT_LIB)
 # Install DLL file
 	$(INSTALL_PROGRAM) $(LIBGCCJIT_FILENAME) \
 	  $(DESTDIR)$(bindir)/$(LIBGCCJIT_FILENAME)
