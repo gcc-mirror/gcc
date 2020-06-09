@@ -1,3 +1,49 @@
+2020-06-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR lto/94848
+	PR middle-end/95551
+	* omp-offload.c (add_decls_addresses_to_decl_constructor,
+	omp_finish_file): Skip removed items.
+	* lto-cgraph.c (output_offload_tables): Likewise; set force_output
+	to this node for variables and functions.
+
+2020-06-08  Jason Merrill  <jason@redhat.com>
+
+	* aclocal.m4: Remove ax_cxx_compile_stdcxx.m4.
+	* configure.ac: Remove AX_CXX_COMPILE_STDCXX.
+	* configure: Regenerate.
+
+2020-06-08  Martin Sebor  <msebor@redhat.com>
+
+	* postreload.c (reload_cse_simplify_operands): Clear first array element
+	before using it.  Assert a precondition.
+
+2020-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/95528
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Don't use
+	VEC_UNPACK*_EXPR or VEC_PACK_TRUNC_EXPR with scalar modes unless the
+	type is vector boolean.
+
+2020-06-08  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_layout_frame): Expand comments.
+
+2020-06-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/predicates.md (vfp_register_operand): Use VFP_HI_REGS
+	instead of VFP_REGS.
+
+2020-06-08  Martin Liska  <mliska@suse.cz>
+
+	* config/rs6000/vector.md: Replace FAIL with gcc_unreachable
+	in all vcond* patterns.
+
+2020-06-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* common/config/arm/arm-common.c (INCLUDE_ALGORITHM):
+	Define. No longer include <algorithm>.
+
 2020-06-07  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* config/i386/i386.md (paritydi2, paritysi2): Expand reduction

@@ -1,3 +1,16 @@
+2020-06-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/95573
+	* dmd/MERGE: Merge upstream dmd 5041e56f1.
+
+2020-06-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 955b8b36f.
+	* expr.cc (ExprVisitor::visit (AndAndExp *)): Rename type to ...
+	(ExprVisitor::visit (LogicalExp *)): ... this.  Handle both 'and if'
+	and 'or if' expression nodes.
+	(ExprVisitor::visit (OrOrExp *)): Remove.
+
 2020-06-07  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 73d8e2fec.
