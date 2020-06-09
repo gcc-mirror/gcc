@@ -209,10 +209,7 @@ package body Exp_Ch8 is
       --  needing debug info if it comes from sources because the current
       --  setting in Freeze_Entity occurs too late. ???
 
-      if Comes_From_Source (Defining_Identifier (N)) then
-         Set_Debug_Info_Needed (Defining_Identifier (N));
-      end if;
-
+      Set_Debug_Info_Defining_Id (N);
       Decl := Debug_Renaming_Declaration (N);
 
       if Present (Decl) then

@@ -11177,6 +11177,18 @@ package body Sem_Ch6 is
                      Inherit_Subprogram_Contract (E, S);
                   end if;
 
+                  --  When a dispatching operation overrides an inherited
+                  --  subprogram, it shall be subtype conformant with the
+                  --  inherited subprogram (RM 3.9.2 (10.2)).
+
+                  if Comes_From_Source (E)
+                    and then Is_Dispatching_Operation (E)
+                    and then Find_Dispatching_Type (S)
+                               = Find_Dispatching_Type (E)
+                  then
+                     Check_Subtype_Conformant (E, S);
+                  end if;
+
                   if Comes_From_Source (E) then
                      Check_Overriding_Indicator (E, S, Is_Primitive => False);
 

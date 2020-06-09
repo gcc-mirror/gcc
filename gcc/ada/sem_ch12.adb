@@ -12394,25 +12394,38 @@ package body Sem_Ch12 is
 
       --  Ada 2020: Verify that shared variable control aspects (RM C.6)
       --  that may be specified for the formal are obeyed by the actual.
+      --  If the fornal is a derived type the aspect specifications must match.
+      --  NOTE: AI12-0282 implies that matching of aspects is required between
+      --  formal and actual in all cases, but this is too restrictive.
+      --  In particular it violates a language design rule: a limited private
+      --  indefinite formal can be matched by any actual. The current code
+      --  reflects an older and more permissve version of RM C.6 (12/5).
 
       procedure Check_Shared_Variable_Control_Aspects is
       begin
          if Ada_Version >= Ada_2020 then
             if Is_Atomic (A_Gen_T) and then not Is_Atomic (Act_T) then
                Error_Msg_NE
-                  ("actual for& must be an atomic type", Actual, A_Gen_T);
+                  ("actual for& must have Atomic aspect", Actual, A_Gen_T);
+
+            elsif Is_Derived_Type (A_Gen_T)
+              and then Is_Atomic (A_Gen_T) /= Is_Atomic (Act_T)
+            then
+               Error_Msg_NE
+                  ("actual for& has different Atomic aspect", Actual, A_Gen_T);
             end if;
 
             if Is_Volatile (A_Gen_T) and then not Is_Volatile (Act_T) then
                Error_Msg_NE
-                  ("actual for& must be a Volatile type", Actual, A_Gen_T);
-            end if;
+                  ("actual for& has different Volatile aspect",
+                    Actual, A_Gen_T);
 
-            if
-              Is_Independent (A_Gen_T) and then not Is_Independent (Act_T)
+            elsif Is_Derived_Type (A_Gen_T)
+              and then Is_Volatile (A_Gen_T) /= Is_Volatile (Act_T)
             then
                Error_Msg_NE
-                 ("actual for& must be an Independent type", Actual, A_Gen_T);
+                  ("actual for& has different Volatile aspect",
+                     Actual, A_Gen_T);
             end if;
 
             --  We assume that an array type whose atomic component type
@@ -12420,43 +12433,51 @@ package body Sem_Ch12 is
             --  aspect Has_Atomic_Components. This is a reasonable inference
             --  from the intent of AI12-0282, and makes it legal to use an
             --  actual that does not have the identical aspect as the formal.
+            --  Ditto for volatile components.
 
-            if Has_Atomic_Components (A_Gen_T)
-               and then not Has_Atomic_Components (Act_T)
-            then
-               if Is_Array_Type (Act_T)
-                 and then Is_Atomic (Component_Type (Act_T))
-               then
-                  null;
-
-               else
+            declare
+               Actual_Atomic_Comp : constant Boolean :=
+               Has_Atomic_Components (Act_T)
+                      or else (Is_Array_Type (Act_T)
+                                and then Is_Atomic (Component_Type (Act_T)));
+            begin
+               if Has_Atomic_Components (A_Gen_T) /= Actual_Atomic_Comp then
                   Error_Msg_NE
-                    ("actual for& must have atomic components",
+                    ("formal and actual for& must agree on atomic components",
                        Actual, A_Gen_T);
                end if;
-            end if;
+            end;
 
-            if Has_Independent_Components (A_Gen_T)
-               and then not Has_Independent_Components (Act_T)
-            then
-               Error_Msg_NE
-                 ("actual for& must have independent components",
-                    Actual, A_Gen_T);
-            end if;
-
-            if Has_Volatile_Components (A_Gen_T)
-               and then not Has_Volatile_Components (Act_T)
-            then
-               if Is_Array_Type (Act_T)
-                 and then Is_Volatile (Component_Type (Act_T))
+            declare
+               Actual_Volatile_Comp : constant Boolean :=
+                 Has_Volatile_Components (Act_T)
+                   or else (Is_Array_Type (Act_T)
+                             and then Is_Volatile (Component_Type (Act_T)));
+            begin
+               if Has_Volatile_Components (A_Gen_T) /= Actual_Volatile_Comp
                then
-                  null;
-
-               else
                   Error_Msg_NE
                     ("actual for& must have volatile components",
                        Actual, A_Gen_T);
                end if;
+            end;
+
+            --  The following two aspects do not require exact matching,
+            --  but only one-way agreement. See RM C.6.
+
+            if Is_Independent (A_Gen_T) and then not Is_Independent (Act_T)
+            then
+               Error_Msg_NE
+                 ("actual for& must have Independent aspect specified",
+                     Actual, A_Gen_T);
+            end if;
+
+            if Has_Independent_Components (A_Gen_T)
+              and then not Has_Independent_Components (Act_T)
+            then
+               Error_Msg_NE
+                 ("actual for& must have Independent_Components specified",
+                     Actual, A_Gen_T);
             end if;
          end if;
       end Check_Shared_Variable_Control_Aspects;
@@ -13439,17 +13460,8 @@ package body Sem_Ch12 is
          --  explicitly so. If not declared limited, the actual cannot be
          --  limited (see AI05-0087).
 
-         --  Even though this AI is a binding interpretation, we enable the
-         --  check only in Ada 2012 mode, because this improper construct
-         --  shows up in user code and in existing B-tests.
-
-         if Is_Limited_Type (Act_T)
-           and then not Is_Limited_Type (A_Gen_T)
-           and then Ada_Version >= Ada_2012
-         then
-            if In_Instance then
-               null;
-            else
+         if Is_Limited_Type (Act_T) and then not Is_Limited_Type (A_Gen_T) then
+            if not In_Instance then
                Error_Msg_NE
                  ("actual for non-limited & cannot be a limited type",
                   Actual, Gen_T);
@@ -13458,30 +13470,25 @@ package body Sem_Ch12 is
             end if;
          end if;
 
-         --  Don't check Ada_Version here (for now) because AI12-0036 is
-         --  a binding interpretation; this decision may be reversed if
-         --  the situation turns out to be similar to that of the preceding
-         --  Is_Limited_Type test (see preceding comment).
+         --  Check for AI12-0036
 
          declare
             Formal_Is_Private_Extension : constant Boolean :=
               Nkind (Parent (A_Gen_T)) = N_Private_Extension_Declaration;
 
             Actual_Is_Tagged : constant Boolean := Is_Tagged_Type (Act_T);
+
          begin
             if Actual_Is_Tagged /= Formal_Is_Private_Extension then
-               if In_Instance then
-                  null;
-               else
+               if not In_Instance then
                   if Actual_Is_Tagged then
                      Error_Msg_NE
-                       ("actual for & cannot be a tagged type",
-                        Actual, Gen_T);
+                       ("actual for & cannot be a tagged type", Actual, Gen_T);
                   else
                      Error_Msg_NE
-                       ("actual for & must be a tagged type",
-                        Actual, Gen_T);
+                       ("actual for & must be a tagged type", Actual, Gen_T);
                   end if;
+
                   Abandon_Instantiation (Actual);
                end if;
             end if;

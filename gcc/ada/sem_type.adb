@@ -1021,15 +1021,17 @@ package body Sem_Type is
 
       --  Ada 2012 (AI05-0149): Allow an anonymous access type in the context
       --  of a named general access type. An implicit conversion will be
-      --  applied. For the resolution, one designated type must cover the
-      --  other.
+      --  applied. For the resolution, the designated types must match if
+      --  untagged; further, if the designated type is tagged, the designated
+      --  type of the anonymous access type shall be covered by the designated
+      --  type of the named access type.
 
       elsif Ada_Version >= Ada_2012
         and then Ekind (BT1) = E_General_Access_Type
         and then Ekind (BT2) = E_Anonymous_Access_Type
-        and then (Covers (Designated_Type (T1), Designated_Type (T2))
-                    or else
-                  Covers (Designated_Type (T2), Designated_Type (T1)))
+        and then Covers (Designated_Type (T1), Designated_Type (T2))
+        and then (Is_Class_Wide_Type (Designated_Type (T1)) >=
+                  Is_Class_Wide_Type (Designated_Type (T2)))
       then
          return True;
 

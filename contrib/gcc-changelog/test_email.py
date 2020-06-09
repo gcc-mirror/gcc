@@ -331,3 +331,8 @@ class TestGccChangelog(unittest.TestCase):
         assert len(email.errors) == 1
         msg = 'changed file not mentioned in a ChangeLog'
         assert email.errors[0].message == msg
+
+    def test_not_deduce(self):
+        email = self.from_patch_glob('0001-configure.patch')
+        assert not email.errors
+        assert len(email.changelog_entries) == 2

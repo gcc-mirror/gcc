@@ -7773,7 +7773,7 @@ Expression *Parser::parseAndAndExp()
     {
         nextToken();
         e2 = parseOrExp();
-        e = new AndAndExp(loc, e, e2);
+        e = new LogicalExp(loc, TOKandand, e, e2);
     }
     return e;
 }
@@ -7789,7 +7789,7 @@ Expression *Parser::parseOrOrExp()
     {
         nextToken();
         e2 = parseAndAndExp();
-        e = new OrOrExp(loc, e, e2);
+        e = new LogicalExp(loc, TOKoror, e, e2);
     }
     return e;
 }

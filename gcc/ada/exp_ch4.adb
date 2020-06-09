@@ -4486,7 +4486,7 @@ package body Exp_Ch4 is
                        and then Nkind (Associated_Node_For_Itype (PtrT)) =
                                   N_Object_Declaration)
       then
-         Error_Msg_N ("?use of an anonymous access type allocator", N);
+         Error_Msg_N ("??use of an anonymous access type allocator", N);
       end if;
 
       --  RM E.2.2(17). We enforce that the expected type of an allocator
@@ -6468,12 +6468,13 @@ package body Exp_Ch4 is
 
       else
          declare
-            Typ       : Entity_Id        := Etype (Rop);
-            Is_Acc    : constant Boolean := Is_Access_Type (Typ);
-            Cond      : Node_Id          := Empty;
-            New_N     : Node_Id;
-            Obj       : Node_Id          := Lop;
-            SCIL_Node : Node_Id;
+            Typ                  : Entity_Id        := Etype (Rop);
+            Is_Acc               : constant Boolean := Is_Access_Type (Typ);
+            Check_Null_Exclusion : Boolean;
+            Cond                 : Node_Id          := Empty;
+            New_N                : Node_Id;
+            Obj                  : Node_Id          := Lop;
+            SCIL_Node            : Node_Id;
 
          begin
             Remove_Side_Effects (Obj);
@@ -6549,12 +6550,19 @@ package body Exp_Ch4 is
             --  Here we have a non-scalar type
 
             if Is_Acc then
+
+               --  If the null exclusion checks are not compatible, need to
+               --  perform further checks. In other words, we cannot have
+               --  Ltyp including null and Typ excluding null. All other cases
+               --  are OK.
+
+               Check_Null_Exclusion :=
+                 Can_Never_Be_Null (Typ) and then not Can_Never_Be_Null (Ltyp);
                Typ := Designated_Type (Typ);
             end if;
 
             if not Is_Constrained (Typ) then
-               Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
-               Analyze_And_Resolve (N, Restyp);
+               Cond := New_Occurrence_Of (Standard_True, Loc);
 
             --  For the constrained array case, we have to check the subscripts
             --  for an exact match if the lengths are non-zero (the lengths
@@ -6610,19 +6618,6 @@ package body Exp_Ch4 is
                            Build_Attribute_Reference
                              (New_Occurrence_Of (Typ, Loc), Name_Last, J)));
                   end loop;
-
-                  if Is_Acc then
-                     Cond :=
-                       Make_Or_Else (Loc,
-                         Left_Opnd  =>
-                           Make_Op_Eq (Loc,
-                             Left_Opnd  => Obj,
-                             Right_Opnd => Make_Null (Loc)),
-                         Right_Opnd => Cond);
-                  end if;
-
-                  Rewrite (N, Cond);
-                  Analyze_And_Resolve (N, Restyp);
                end Check_Subscripts;
 
             --  These are the cases where constraint checks may be required,
@@ -6638,23 +6633,31 @@ package body Exp_Ch4 is
                if Has_Discriminants (Typ) then
                   Cond := Make_Op_Not (Loc,
                     Right_Opnd => Build_Discriminant_Checks (Obj, Typ));
-
-                  if Is_Acc then
-                     Cond := Make_Or_Else (Loc,
-                       Left_Opnd  =>
-                         Make_Op_Eq (Loc,
-                           Left_Opnd  => Obj,
-                           Right_Opnd => Make_Null (Loc)),
-                       Right_Opnd => Cond);
-                  end if;
-
                else
                   Cond := New_Occurrence_Of (Standard_True, Loc);
                end if;
-
-               Rewrite (N, Cond);
-               Analyze_And_Resolve (N, Restyp);
             end if;
+
+            if Is_Acc then
+               if Check_Null_Exclusion then
+                  Cond := Make_And_Then (Loc,
+                    Left_Opnd  =>
+                      Make_Op_Ne (Loc,
+                        Left_Opnd  => Obj,
+                        Right_Opnd => Make_Null (Loc)),
+                    Right_Opnd => Cond);
+               else
+                  Cond := Make_Or_Else (Loc,
+                    Left_Opnd  =>
+                      Make_Op_Eq (Loc,
+                        Left_Opnd  => Obj,
+                        Right_Opnd => Make_Null (Loc)),
+                    Right_Opnd => Cond);
+               end if;
+            end if;
+
+            Rewrite (N, Cond);
+            Analyze_And_Resolve (N, Restyp);
 
             --  Ada 2012 (AI05-0149): Handle membership tests applied to an
             --  expression of an anonymous access type. This can involve an

@@ -481,36 +481,34 @@ uw_init_context_1 (struct _Unwind_Context *context, void *outer_cfa,
 
 /* Install TARGET into CURRENT so that we can return to it.  This is a
    macro because __builtin_eh_return must be invoked in the context of
-   our caller.  */
+   our caller, and also because spilling registers of the caller before
+   the context installation may result in reload of wrong register values
+   after the context installation due to the change of the stack pointer
+   in the base save area.  This spilling may be caused by an interrupt
+   handler on baremetal host.  */
 
-#define uw_install_context(CURRENT, TARGET, FRAMES)				 \
+#define uw_install_context(CURRENT, TARGET, FRAMES)			 \
   do									 \
     {									 \
-      long offset = uw_install_context_1 ((CURRENT), (TARGET));		 \
       void *handler = __builtin_frob_return_addr ((TARGET)->ra);	 \
-      __builtin_eh_return (offset, handler);				 \
+      long i;								 \
+									 \
+      /* The eh_return insn assumes a window size of 8, so don't bother	 \
+	 copying the save areas for registers a8-a15 since they won't be \
+	 reloaded.  */							 \
+      for (i = 0; i < 2; ++i)						 \
+	{								 \
+	  _Unwind_Word *c = (CURRENT)->reg[i];				 \
+	  _Unwind_Word *t = (TARGET)->reg[i];				 \
+	  int j;							 \
+									 \
+	  if (t && c && t != c)						 \
+	    for (j = 0; j < 4; ++j)					 \
+	      *c++ = *t++;						 \
+	}								 \
+      __builtin_eh_return (0, handler);					 \
     }									 \
   while (0)
-
-static long
-uw_install_context_1 (struct _Unwind_Context *current,
-		      struct _Unwind_Context *target)
-{
-  long i;
-
-  /* The eh_return insn assumes a window size of 8, so don't bother copying
-     the save areas for registers a8-a15 since they won't be reloaded.  */
-  for (i = 0; i < 2; ++i)
-    {
-      void *c = current->reg[i];
-      void *t = target->reg[i];
-
-      if (t && c && t != c)
-	memcpy (c, t, 4 * sizeof (_Unwind_Word));
-    }
-
-  return 0;
-}
 
 static inline _Unwind_Ptr
 uw_identify_context (struct _Unwind_Context *context)

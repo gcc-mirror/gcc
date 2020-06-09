@@ -264,18 +264,26 @@ sanitize_attrs_match_for_inline_p (const_tree caller, const_tree callee)
   if (!caller || !callee)
     return true;
 
-  /* Allow inlining always_inline functions into no_sanitize_address
-     functions.  */
-  if (!sanitize_flags_p (SANITIZE_ADDRESS, caller)
-      && lookup_attribute ("always_inline", DECL_ATTRIBUTES (callee)))
+  /* Follow clang and allow inlining for always_inline functions.  */
+  if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (callee)))
     return true;
 
-  return ((sanitize_flags_p (SANITIZE_ADDRESS, caller)
-	   == sanitize_flags_p (SANITIZE_ADDRESS, callee))
-	  && (sanitize_flags_p (SANITIZE_POINTER_COMPARE, caller)
-	      == sanitize_flags_p (SANITIZE_POINTER_COMPARE, callee))
-	  && (sanitize_flags_p (SANITIZE_POINTER_SUBTRACT, caller)
-	      == sanitize_flags_p (SANITIZE_POINTER_SUBTRACT, callee)));
+  const sanitize_code codes[] =
+    {
+      SANITIZE_ADDRESS,
+      SANITIZE_THREAD,
+      SANITIZE_UNDEFINED,
+      SANITIZE_UNDEFINED_NONDEFAULT,
+      SANITIZE_POINTER_COMPARE,
+      SANITIZE_POINTER_SUBTRACT
+    };
+
+  for (unsigned i = 0; i < sizeof (codes) / sizeof (codes[0]); i++)
+    if (sanitize_flags_p (codes[i], caller)
+	!= sanitize_flags_p (codes[i], callee))
+      return false;
+
+  return true;
 }
 
 /* Used for flags where it is safe to inline when caller's value is
@@ -382,7 +390,7 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
   /* Don't inline a function with mismatched sanitization attributes. */
   else if (!sanitize_attrs_match_for_inline_p (caller->decl, callee->decl))
     {
-      e->inline_failed = CIF_ATTRIBUTE_MISMATCH;
+      e->inline_failed = CIF_SANITIZE_ATTRIBUTE_MISMATCH;
       inlinable = false;
     }
   if (!inlinable && report)

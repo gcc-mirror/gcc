@@ -733,7 +733,7 @@ package body Bindo.Elaborators is
          --  order to discover transitions of the execution flow from a unit
          --  to a unit that result in extra edges within the library graph.
 
-         Augment_Library_Graph (Inv_Graph, Lib_Graph);
+         Augment_Library_Graph (Inv_Graph);
 
          --  Create the component graph by collapsing all library items into
          --  library units and traversing the library graph.
@@ -780,7 +780,7 @@ package body Bindo.Elaborators is
          --  Otherwise the library graph contains at least one circularity
 
          else
-            Diagnose_Circularities (Inv_Graph, Lib_Graph);
+            Diagnose_Circularities (Inv_Graph);
          end if;
 
          Destroy (Inv_Graph);

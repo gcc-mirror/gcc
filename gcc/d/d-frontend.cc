@@ -55,7 +55,6 @@ Global::_init (void)
     ;
 
   this->stdmsg = stderr;
-  this->errorLimit = flag_max_errors;
 }
 
 /* Start gagging. Return the current number of gagged errors.  */

@@ -520,9 +520,9 @@ public:
     {
         assert(!fd->isFuncAliasDeclaration());
 
-        if (fd->mangleOverride)
+        if (fd->mangleOverride.length)
         {
-            buf->writestring(fd->mangleOverride);
+            buf->writestring(fd->mangleOverride.ptr);
             return;
         }
 
@@ -543,9 +543,9 @@ public:
 
     void visit(VarDeclaration *vd)
     {
-        if (vd->mangleOverride)
+        if (vd->mangleOverride.length)
         {
-            buf->writestring(vd->mangleOverride);
+            buf->writestring(vd->mangleOverride.ptr);
             return;
         }
 

@@ -70,6 +70,9 @@ class GitEmail(GitCommit):
                          strict=strict)
 
 
+# With zero arguments, process every patch file in the ./patches directory.
+# With one argument, process the named patch file.
+# Patch files must be in 'git format-patch' format.
 if __name__ == '__main__':
     if len(sys.argv) == 1:
         allfiles = []
@@ -100,3 +103,4 @@ if __name__ == '__main__':
             if not email.lines:
                 print('Error: patch contains no parsed lines', file=sys.stderr)
             email.print_errors()
+            sys.exit(1)

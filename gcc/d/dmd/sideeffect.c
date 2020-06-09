@@ -301,15 +301,10 @@ bool discardValue(Expression *e)
             return true;
 
         case TOKandand:
-        {
-            AndAndExp *aae = (AndAndExp *)e;
-            return discardValue(aae->e2);
-        }
-
         case TOKoror:
         {
-            OrOrExp *ooe = (OrOrExp *)e;
-            return discardValue(ooe->e2);
+            LogicalExp *aae = (LogicalExp  *)e;
+            return discardValue(aae->e2);
         }
 
         case TOKquestion:

@@ -1095,22 +1095,23 @@ Expression *Expression_optimize(Expression *e, int result, bool keepLvalue)
             //printf("-SliceExp::optimize() %s\n", ret->toChars());
         }
 
-        void visit(AndAndExp *e)
+        void visit(LogicalExp *e)
         {
-            //printf("AndAndExp::optimize(%d) %s\n", result, e->toChars());
+            //printf("LogicalExp::optimize(%d) %s\n", result, e->toChars());
             if (expOptimize(e->e1, WANTvalue))
                 return;
-
-            if (e->e1->isBool(false))
+            const bool oror = e->op == TOKoror;
+            if (e->e1->isBool(oror))
             {
-                // Replace with (e1, false)
-                ret = new IntegerExp(e->loc, 0, Type::tbool);
+                // Replace with (e1, oror)
+                ret = new IntegerExp(e->loc, oror, Type::tbool);
                 ret = Expression::combine(e->e1, ret);
                 if (e->type->toBasetype()->ty == Tvoid)
                 {
                     ret = new CastExp(e->loc, ret, Type::tvoid);
                     ret->type = e->type;
                 }
+                ret = ret->optimize(result);
                 return;
             }
 
@@ -1123,52 +1124,9 @@ Expression *Expression_optimize(Expression *e, int result, bool keepLvalue)
                 {
                     bool n1 = e->e1->isBool(true);
                     bool n2 = e->e2->isBool(true);
-                    ret = new IntegerExp(e->loc, n1 && n2, e->type);
+                    ret = new IntegerExp(e->loc, oror ? (n1 || n2) : (n1 && n2), e->type);
                 }
-                else if (e->e1->isBool(true))
-                {
-                    if (e->type->toBasetype()->ty == Tvoid)
-                        ret = e->e2;
-                    else
-                    {
-                        ret = new CastExp(e->loc, e->e2, e->type);
-                        ret->type = e->type;
-                    }
-                }
-            }
-        }
-
-        void visit(OrOrExp *e)
-        {
-            //printf("OrOrExp::optimize(%d) %s\n", result, e->toChars());
-            if (expOptimize(e->e1, WANTvalue))
-                return;
-
-            if (e->e1->isBool(true))
-            {
-                // Replace with (e1, true)
-                ret = new IntegerExp(e->loc, 1, Type::tbool);
-                ret = Expression::combine(e->e1, ret);
-                if (e->type->toBasetype()->ty == Tvoid)
-                {
-                    ret = new CastExp(e->loc, ret, Type::tvoid);
-                    ret->type = e->type;
-                }
-                return;
-            }
-
-            if (expOptimize(e->e2, WANTvalue))
-                return;
-
-            if (e->e1->isConst())
-            {
-                if (e->e2->isConst())
-                {
-                    bool n1 = e->e1->isBool(true);
-                    bool n2 = e->e2->isBool(true);
-                    ret = new IntegerExp(e->loc, n1 || n2, e->type);
-                }
-                else if (e->e1->isBool(false))
+                else if (e->e1->isBool(!oror))
                 {
                     if (e->type->toBasetype()->ty == Tvoid)
                         ret = e->e2;

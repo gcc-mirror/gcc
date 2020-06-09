@@ -1171,15 +1171,15 @@ package Sem_Util is
      (Typ       : Entity_Id;
       Priv_Typ  : out Entity_Id;
       Full_Typ  : out Entity_Id;
-      Full_Base : out Entity_Id;
+      UFull_Typ : out Entity_Id;
       CRec_Typ  : out Entity_Id);
-   --  Obtain the partial and full view of type Typ and in addition any extra
-   --  types the full view may have. The return entities are as follows:
+   --  Obtain the partial and full views of type Typ and in addition any extra
+   --  types the full views may have. The return entities are as follows:
    --
    --    Priv_Typ  - the partial view (a private type)
    --    Full_Typ  - the full view
-   --    Full_Base - the base type of the full view
-   --    CRec_Typ  - the corresponding record type of the full view
+   --    UFull_Typ - the underlying full view, if the full view is private
+   --    CRec_Typ  - the corresponding record type of the full views
 
    function Has_Access_Values (T : Entity_Id) return Boolean;
    --  Returns true if type or subtype T is an access type, or has a component
@@ -1872,7 +1872,8 @@ package Sem_Util is
    --  Typ is a type entity. This function returns true if this type is partly
    --  initialized, meaning that an object of the type is at least partly
    --  initialized (in particular in the record case, that at least one
-   --  component has an initialization expression). Note that initialization
+   --  component has an initialization expression, including via Default_Value
+   --  and Default_Component_Value aspects). Note that initialization
    --  resulting from the use of pragma Normalize_Scalars does not count.
    --  Include_Implicit controls whether implicit initialization of access
    --  values to null, and of discriminant values, is counted as making the
@@ -2546,6 +2547,12 @@ package Sem_Util is
    --  Inherit all invariant-related attributes form type From_Typ. Typ is the
    --  destination type.
 
+   procedure Propagate_Predicate_Attributes
+     (Typ      : Entity_Id;
+      From_Typ : Entity_Id);
+   --  Inherit some predicate-related attributes form type From_Typ. Typ is the
+   --  destination type. Probably to be completed with more attributes???
+
    procedure Record_Possible_Part_Of_Reference
      (Var_Id : Entity_Id;
       Ref    : Node_Id);
@@ -2713,6 +2720,10 @@ package Sem_Util is
    --  details). Never has any effect on T if the Debug_Info_Off flag is set.
    --  This routine should always be used instead of Set_Needs_Debug_Info to
    --  ensure that subsidiary entities are properly handled.
+
+   procedure Set_Debug_Info_Defining_Id (N : Node_Id);
+   --  Call Set_Debug_Info_Needed on Defining_Identifier (N) if it comes
+   --  from source.
 
    procedure Set_Entity_With_Checks (N : Node_Id; Val : Entity_Id);
    --  This procedure has the same calling sequence as Set_Entity, but it

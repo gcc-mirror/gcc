@@ -1,3 +1,26 @@
+2020-06-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95195
+	* gfortran.dg/namelist_97.f90: Adjust testcase.
+
+2020-06-08  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/92993
+	* gfortran.dg/pr92993.f90: New test.
+
+2020-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/95528
+	* g++.dg/opt/pr95528.C: New test.
+
+2020-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/95548
+	* g++.dg/torture/pr95548.C: Change from dg-do compile to dg-do link,
+	add return type for main, for __SIZEOF_INT128__ test with __uint128_t
+	enumerator constants and add a test with unsigned long long
+	enumerators for all targets.
+
 2020-06-07  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* gcc.target/i386/parity-3.c: New test.
@@ -1444,7 +1467,7 @@
 2020-05-13  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/95020
-	* g++/cpp2a/concepts-lambda7.C: New test.
+	* g++.dg/cpp2a/concepts-lambda7.C: New test.
 
 2020-05-13  Marek Polacek  <polacek@redhat.com>
 

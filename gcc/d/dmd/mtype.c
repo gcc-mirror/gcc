@@ -2328,6 +2328,106 @@ TypeBasic *Type::isTypeBasic()
     return NULL;
 }
 
+TypeError *Type::isTypeError()
+{
+    return ty == Terror ? (TypeError *)this : NULL;
+}
+
+TypeVector *Type::isTypeVector()
+{
+    return ty == Tvector ? (TypeVector *)this : NULL;
+}
+
+TypeSArray *Type::isTypeSArray()
+{
+    return ty == Tsarray ? (TypeSArray *)this : NULL;
+}
+
+TypeDArray *Type::isTypeDArray()
+{
+    return ty == Tarray ? (TypeDArray *)this : NULL;
+}
+
+TypeAArray *Type::isTypeAArray()
+{
+    return ty == Taarray ? (TypeAArray *)this : NULL;
+}
+
+TypePointer *Type::isTypePointer()
+{
+    return ty == Tpointer ? (TypePointer *)this : NULL;
+}
+
+TypeReference *Type::isTypeReference()
+{
+    return ty == Treference ? (TypeReference *)this : NULL;
+}
+
+TypeFunction *Type::isTypeFunction()
+{
+    return ty == Tfunction ? (TypeFunction *)this : NULL;
+}
+
+TypeDelegate *Type::isTypeDelegate()
+{
+    return ty == Tdelegate ? (TypeDelegate *)this : NULL;
+}
+
+TypeIdentifier *Type::isTypeIdentifier()
+{
+    return ty == Tident ? (TypeIdentifier *)this : NULL;
+}
+
+TypeInstance *Type::isTypeInstance()
+{
+    return ty == Tinstance ? (TypeInstance *)this : NULL;
+}
+
+TypeTypeof *Type::isTypeTypeof()
+{
+    return ty == Ttypeof ? (TypeTypeof *)this : NULL;
+}
+
+TypeReturn *Type::isTypeReturn()
+{
+    return ty == Treturn ? (TypeReturn *)this : NULL;
+}
+
+TypeStruct *Type::isTypeStruct()
+{
+    return ty == Tstruct ? (TypeStruct *)this : NULL;
+}
+
+TypeEnum *Type::isTypeEnum()
+{
+    return ty == Tenum ? (TypeEnum *)this : NULL;
+}
+
+TypeClass *Type::isTypeClass()
+{
+    return ty == Tclass ? (TypeClass *)this : NULL;
+}
+
+TypeTuple *Type::isTypeTuple()
+{
+    return ty == Ttuple ? (TypeTuple *)this : NULL;
+}
+
+TypeSlice *Type::isTypeSlice()
+{
+    return ty == Tslice ? (TypeSlice *)this : NULL;
+}
+
+TypeNull *Type::isTypeNull()
+{
+    return ty == Tnull ? (TypeNull *)this : NULL;
+}
+
+TypeTraits *Type::isTypeTraits()
+{
+    return ty == Ttraits ? (TypeTraits *)this : NULL;
+}
+
 TypeFunction *Type::toTypeFunction()
 {
     if (ty != Tfunction)
@@ -3688,7 +3788,7 @@ TypeVector::TypeVector(Type *basetype)
     this->basetype = basetype;
 }
 
-TypeVector *TypeVector::create(Loc, Type *basetype)
+TypeVector *TypeVector::create(Type *basetype)
 {
     return new TypeVector(basetype);
 }
@@ -8578,7 +8678,7 @@ L1:
             return e;
         }
 
-        if (ident == Id::__monitor)
+        if (ident == Id::__monitor && sym->hasMonitor())
         {
             /* The handle to the monitor (call it a void*)
              * *(cast(void**)e + 1)
@@ -9384,7 +9484,7 @@ Type *Parameter::isLazyArray()
             TypeDelegate *td = (TypeDelegate *)tel;
             TypeFunction *tf = td->next->toTypeFunction();
 
-            if (!tf->parameterList.varargs == VARARGnone && tf->parameterList.length() == 0)
+            if (tf->parameterList.varargs == VARARGnone && tf->parameterList.length() == 0)
             {
                 return tf->next;    // return type of delegate
             }

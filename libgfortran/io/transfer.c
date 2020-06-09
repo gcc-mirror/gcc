@@ -4127,7 +4127,7 @@ finalize_transfer (st_parameter_dt *dtp)
 	 {
 	   generate_error (&dtp->common, LIBERROR_OPTION_CONFLICT,
 			   "Namelist formatting for unit connected "
-			   "with FORM='UNFORMATTED");
+			   "with FORM='UNFORMATTED'");
 	   return;
 	 }
 

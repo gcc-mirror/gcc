@@ -1652,7 +1652,7 @@ package body Lib.Xref is
       begin
          --  Generate language name from convention
 
-         if Conv  = Convention_C then
+         if Conv = Convention_C or else Conv in Convention_C_Variadic then
             Language_Name := Name_C;
 
          elsif Conv = Convention_CPP then

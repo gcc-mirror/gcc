@@ -352,8 +352,8 @@ write_top_counters (const struct gcov_ctr_info *ci_ptr,
       gcov_type pair_count = ci_ptr->values[GCOV_TOPN_MEM_COUNTERS * i + 1];
       gcov_write_counter (ci_ptr->values[GCOV_TOPN_MEM_COUNTERS * i]);
       gcov_write_counter (pair_count);
-      for (struct gcov_kvp *node
-	   = (struct gcov_kvp *)ci_ptr->values[GCOV_TOPN_MEM_COUNTERS * i + 2];
+      gcov_type start = ci_ptr->values[GCOV_TOPN_MEM_COUNTERS * i + 2];
+      for (struct gcov_kvp *node = (struct gcov_kvp *)(intptr_t)start;
 	   node != NULL; node = node->next)
 	{
 	  gcov_write_counter (node->value);

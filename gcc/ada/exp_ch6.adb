@@ -1960,7 +1960,7 @@ package body Exp_Ch6 is
          then
             if Comes_From_Source (N) then
                Error_Msg_N
-                 ("?atomic actual passed by copy (RM C.6(19))", Actual);
+                 ("??atomic actual passed by copy (RM C.6(19))", Actual);
             end if;
             return True;
          end if;
@@ -1971,7 +1971,7 @@ package body Exp_Ch6 is
          then
             if Comes_From_Source (N) then
                Error_Msg_N
-                 ("?volatile actual passed by copy (RM C.6(19))", Actual);
+                 ("??volatile actual passed by copy (RM C.6(19))", Actual);
             end if;
             return True;
          end if;
@@ -3921,6 +3921,8 @@ package body Exp_Ch6 is
             if Present (Ass)
               and then Is_Class_Wide_Type (Etype (Name (Ass)))
             then
+               --  Move the error messages below to sem???
+
                if Is_Access_Type (Etype (Call_Node)) then
                   if Designated_Type (Etype (Call_Node)) /=
                     Root_Type (Etype (Name (Ass)))
@@ -4114,6 +4116,8 @@ package body Exp_Ch6 is
          --  The below setting of Entity is suspect, see F109-018 discussion???
 
          Set_Entity (Name (Call_Node), Parent_Subp);
+
+         --  Move this check to sem???
 
          if Is_Abstract_Subprogram (Parent_Subp)
            and then not In_Instance
@@ -7712,8 +7716,7 @@ package body Exp_Ch6 is
             --  Build_Inherit_Prims takes care of initializing these slots.
 
             elsif Is_Imported (Subp)
-               and then (Convention (Subp) = Convention_CPP
-                           or else Convention (Subp) = Convention_C)
+               and then Convention (Subp) in Convention_C_Family
             then
                null;
 

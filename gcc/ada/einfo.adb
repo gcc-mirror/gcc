@@ -3615,17 +3615,17 @@ package body Einfo is
       return Flag238 (Id);
    end Warnings_Off_Used_Unreferenced;
 
+   function Was_Hidden (Id : E) return B is
+   begin
+      return Flag196 (Id);
+   end Was_Hidden;
+
    function Wrapped_Entity (Id : E) return E is
    begin
       pragma Assert (Ekind_In (Id, E_Function, E_Procedure)
                        and then Is_Primitive_Wrapper (Id));
       return Node27 (Id);
    end Wrapped_Entity;
-
-   function Was_Hidden (Id : E) return B is
-   begin
-      return Flag196 (Id);
-   end Was_Hidden;
 
    ------------------------------
    -- Classification Functions --
@@ -8168,15 +8168,6 @@ package body Einfo is
         Ekind (Id) = E_Abstract_State and then Nkind (Parent (Id)) = N_Null;
    end Is_Null_State;
 
-   ---------------------
-   -- Is_Packed_Array --
-   ---------------------
-
-   function Is_Packed_Array (Id : E) return B is
-   begin
-      return Is_Array_Type (Id) and then Is_Packed (Id);
-   end Is_Packed_Array;
-
    -----------------------------------
    -- Is_Package_Or_Generic_Package --
    -----------------------------------
@@ -8185,6 +8176,15 @@ package body Einfo is
    begin
       return Ekind_In (Id, E_Generic_Package, E_Package);
    end Is_Package_Or_Generic_Package;
+
+   ---------------------
+   -- Is_Packed_Array --
+   ---------------------
+
+   function Is_Packed_Array (Id : E) return B is
+   begin
+      return Is_Array_Type (Id) and then Is_Packed (Id);
+   end Is_Packed_Array;
 
    ---------------
    -- Is_Prival --
@@ -8404,44 +8404,6 @@ package body Einfo is
       Set_Next_Entity (First, Second);     --  First --> Second
    end Link_Entities;
 
-   ----------------------
-   -- Model_Emin_Value --
-   ----------------------
-
-   function Model_Emin_Value (Id : E) return Uint is
-   begin
-      return Machine_Emin_Value (Id);
-   end Model_Emin_Value;
-
-   -------------------------
-   -- Model_Epsilon_Value --
-   -------------------------
-
-   function Model_Epsilon_Value (Id : E) return Ureal is
-      Radix : constant Ureal := UR_From_Uint (Machine_Radix_Value (Id));
-   begin
-      return Radix ** (1 - Model_Mantissa_Value (Id));
-   end Model_Epsilon_Value;
-
-   --------------------------
-   -- Model_Mantissa_Value --
-   --------------------------
-
-   function Model_Mantissa_Value (Id : E) return Uint is
-   begin
-      return Machine_Mantissa_Value (Id);
-   end Model_Mantissa_Value;
-
-   -----------------------
-   -- Model_Small_Value --
-   -----------------------
-
-   function Model_Small_Value (Id : E) return Ureal is
-      Radix : constant Ureal := UR_From_Uint (Machine_Radix_Value (Id));
-   begin
-      return Radix ** (Model_Emin_Value (Id) - 1);
-   end Model_Small_Value;
-
    ------------------------
    -- Machine_Emax_Value --
    ------------------------
@@ -8516,6 +8478,44 @@ package body Einfo is
             return Uint_2;
       end case;
    end Machine_Radix_Value;
+
+   ----------------------
+   -- Model_Emin_Value --
+   ----------------------
+
+   function Model_Emin_Value (Id : E) return Uint is
+   begin
+      return Machine_Emin_Value (Id);
+   end Model_Emin_Value;
+
+   -------------------------
+   -- Model_Epsilon_Value --
+   -------------------------
+
+   function Model_Epsilon_Value (Id : E) return Ureal is
+      Radix : constant Ureal := UR_From_Uint (Machine_Radix_Value (Id));
+   begin
+      return Radix ** (1 - Model_Mantissa_Value (Id));
+   end Model_Epsilon_Value;
+
+   --------------------------
+   -- Model_Mantissa_Value --
+   --------------------------
+
+   function Model_Mantissa_Value (Id : E) return Uint is
+   begin
+      return Machine_Mantissa_Value (Id);
+   end Model_Mantissa_Value;
+
+   -----------------------
+   -- Model_Small_Value --
+   -----------------------
+
+   function Model_Small_Value (Id : E) return Ureal is
+      Radix : constant Ureal := UR_From_Uint (Machine_Radix_Value (Id));
+   begin
+      return Radix ** (Model_Emin_Value (Id) - 1);
+   end Model_Small_Value;
 
    --------------------
    -- Next_Component --

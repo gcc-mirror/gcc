@@ -28,4 +28,4 @@ testuc (vector unsigned char vuc2, vector unsigned char vuc3,
   return vec_perm (vuc2, vuc3, vuc);
 }
 
-/* { dg-final { scan-assembler-times "vperm" 3 } } */
+/* { dg-final { scan-assembler-times {\m(?:v|xx)permr?\M} 3 } } */

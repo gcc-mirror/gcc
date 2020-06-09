@@ -4456,6 +4456,8 @@ package body Exp_Ch3 is
 
       procedure Check_Attr (Nam : Name_Id; TSS_Nam : TSS_Name_Type) is
       begin
+         --  Move this check to sem???
+
          if not Stream_Attribute_Available (Etype (Comp), TSS_Nam) then
             Error_Msg_Name_1 := Nam;
             Error_Msg_N
@@ -7267,9 +7269,7 @@ package body Exp_Ch3 is
             --  debug information, even though it is defined by a generated
             --  renaming that does not come from source.
 
-            if Comes_From_Source (Defining_Identifier (N)) then
-               Set_Debug_Info_Needed (Defining_Identifier (N));
-            end if;
+            Set_Debug_Info_Defining_Id (N);
 
             --  Now call the routine to generate debug info for the renaming
 
@@ -9041,6 +9041,8 @@ package body Exp_Ch3 is
                   end loop;
 
                   pragma Assert (Present (Comp));
+
+                  --  Move this check to sem???
                   Error_Msg_Node_2 := Comp;
                   Error_Msg_NE
                     ("parent type & with dynamic component & cannot be parent"

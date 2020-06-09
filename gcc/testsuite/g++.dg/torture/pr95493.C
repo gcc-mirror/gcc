@@ -1,5 +1,5 @@
 // { dg-do run }
-// { dg-additional-options "-std=c++17" }
+// { dg-additional-options "-std=c++17 -Wno-psabi -w" }
 
 struct verify
 {

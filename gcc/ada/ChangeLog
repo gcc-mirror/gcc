@@ -1,3 +1,305 @@
+2020-06-08  Steve Baird  <baird@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma.Set_Ravenscar_Profile): Add
+	appropriate call to Set_Restriction_No_Dependence if Ada_Version
+	>= Ada2012 and Profile is either Ravenscar or a GNAT-defined
+	Ravenscar variant (i.e., not Jorvik).
+
+2020-06-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch5.adb: Fix typo.
+	* sem_ch8.adb (Analyze_Renamed_Primitive_Operation): Check that
+	the prefix of a prefixed view must be renamable as an object.
+
+2020-06-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_cat.ads: Fix typo.
+	* sem_cat.adb (Validate_Remote_Access_To_Class_Wide_Type): Add
+	handling of N_Attribute_Definition_Clause.
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Call
+	Validate_Remote_Access_To_Class_Wide_Type for Storage_Size and
+	Storage_Pool.
+	* sem_attr.adb, exp_ch4.adb: Update comments.
+
+2020-06-08  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch4.adb (Analyze_One_Call): Add extra condition to the
+	predicate for deciding when a given controlled call is visible.
+
+2020-06-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_N_Attribute_Reference): Port
+	changes in frontend expander.
+
+2020-06-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (All_Membership_Choices_Static): Fix style.
+
+2020-06-08  Steve Baird  <baird@adacore.com>
+
+	* libgnat/s-rident.ads: Add Jorvik to the Profile_Name
+	enumeration type.  Add an element for Jorvik to the array
+	aggregate that is the initial value of the constant
+	Profile_Info.
+	* targparm.adb (Get_Target_Parameters): Handle "pragma Profile
+	(Jorvik);" similarly to "pragma Profile (Ravenscar);".
+	* snames.ads-tmpl: Declare Name_Jorvik Name_Id. Unlike
+	Ravenscar, Jorvik is not a pragma name and has no corresponding
+	element in the Pragma_Id enumeration type; this means that its
+	declaration must not occur between those of First_Pragma_Name
+	and Last_Pragma_Name.
+	* sem_prag.adb (Analyze_Pragma): Add call to
+	Set_Ravenscar_Profile for Jorvik, similar to the existing calls
+	for Ravenscar and the GNAT Ravenscar variants.
+
+2020-06-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch8.adb (Analyze_Object_Renaming): Update Get_Object_Name
+	to go through N_Qualified_Expression and N_Type_Conversion.  Fix
+	another case of wrong usage of E_Anonymous_Access_Type instead
+	of Anonymous_Access_Kind.
+	* sem_util.adb (Is_Dependent_Component_Of_Mutable_Object): Work
+	on the original node.
+	(Is_Aliased_View): Take into account N_Qualified_Expression.
+
+2020-06-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_eval.adb (Eval_Type_Conversion): Fix handling of
+	enumeration to integer conversions.
+	* exp_attr.adb (Expand_N_Attribute_Reference
+	[Attribute_Enum_Rep]): Remove special casing for first-level
+	renaming, best left to the general folding mechanism via
+	Eval_Type_Conversion.
+
+2020-06-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* atree.adb (New_Copy): Do not clear Has_Dynamic_Range_Check.
+	* checks.ads (Append_Range_Checks): Remove Flag_Node parameter.
+	(Insert_Range_Checks): Likewise and remove default value of
+	Static_Loc parameter.
+	* checks.adb (Append_Range_Checks): Remove Flag_Node parameter.
+	Do not test and set Has_Dynamic_Range_Check.
+	(Insert_Range_Checks): Likewise and remove default value of
+	Static_Loc parameter.
+	* csinfo.adb (CSinfo): Remove 'L' from [NEUB]_Fields pattern and
+	do not handle Has_Dynamic_Range_Check.
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Remove argument
+	in call to Insert_Range_Checks.
+	* sem_ch3.adb (Analyze_Subtype_Declaration): Do not fiddle
+	with Has_Dynamic_Range_Check.
+	(Process_Range_Expr_In_Decl): Remove argument in calls to
+	Insert_Range_Checks and Append_Range_Checks.
+	* sinfo.ads (Has_Dynamic_Range_Check): Delete.
+	(Set_Has_Dynamic_Range_Check): Likewise.
+	* sinfo.adb (Has_Dynamic_Range_Check): Delete.
+	(Set_Has_Dynamic_Range_Check): Likewise.
+	* treepr.adb (Print_Node): Do not print Has_Dynamic_Range_Check.
+
+2020-06-08  Steve Baird  <baird@adacore.com>
+
+	* sem_ch13.ads: Export new function
+	All_Membership_Choices_Static.
+	* sem_ch13.adb: Implement new function
+	All_Membership_Choices_Static.  This involves moving the
+	functions Is_Static_Choice and All_Membership_Choices_Static,
+	which were previously declared within the function
+	Is_Predicate_Static, out to library level so that they can be
+	called by the new function. The already-exisiting code in
+	Is_Predicate_Static which became the body of
+	All_Membership_Choices_Static is replaced with a call to the new
+	function in order to avoid duplication.
+	* exp_ch9.adb (Is_Pure_Barrier): Several changes needed to
+	implement rules of AI12-0290 and RM D.7's definition of
+	"pure-barrier-eligible". These changes include adding a call to
+	the new function Sem_13.All_Membership_Choices_Static, as per
+	the "see 4.9" in RM D.7(1.6/5).
+
+2020-06-08  Richard Kenner  <kenner@adacore.com>
+
+	* exp_unst.adb (Visit_Node): When visiting array attribute
+	nodes, in addition to checking the type of Get_Referenced_Object
+	of the prefix, also check the actual type of the prefix.
+
+2020-06-08  Gary Dismukes  <dismukes@adacore.com>
+
+	* checks.adb (Apply_Predicate_Check): Refine test for being in a
+	subprogram body to account for no Corresponding_Body case,
+	avoiding blowups arising due to other changes here.
+	* exp_ch4.adb (Expand_N_Qualified_Expression): Apply predicate
+	checks, if any, after constraint checks are applied.
+	* sem_eval.ads (Check_Expression_Against_Static_Predicate): Add
+	Check_Failure_Is_Error formal for conditionalizing warning vs.
+	error messages.
+	* sem_eval.adb (Check_Expression_Against_Static_Predicate):
+	Issue an error message rather than a warning when the new
+	Check_Failure_Is_Error formal is True. In the nonstatic or
+	Dynamic_Predicate case where the predicate is known to fail,
+	emit the check to ensure that folded cases get checks applied.
+	* sem_res.adb (Resolve_Qualified_Expression): Call
+	Check_Expression_Against_Static_Predicate, passing True for
+	Check_Failure_Is_Error, to ensure we reject static predicate
+	violations. Remove code that was conditionally calling
+	Apply_Predicate_Check, which is no longer needed, and that check
+	procedure shouldn't be called from a resolution routine in any
+	case. Also remove associated comment about preventing infinite
+	recursion and consistency with Resolve_Type_Conversion, since
+	that handling was already similarly removed from
+	Resolve_Type_Convesion at some point.
+	(Resolve_Type_Conversion): Add passing of True for
+	Check_Failure_Is_Error parameter on call to
+	Check_Expression_Against_Static_Predicate, to ensure that static
+	conversion cases that violate a predicate are rejected as
+	errors.
+
+2020-06-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* snames.ads-tmpl (Name_SPARK): Restore after being deleted.
+
+2020-06-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_aggr.adb, exp_ch6.adb, par-ch11.adb, par-ch6.adb,
+	par-ch7.adb, par-prag.adb, restrict.adb, restrict.ads,
+	scans.ads, scng.adb, sem_aggr.adb, sem_attr.adb, sem_ch11.adb,
+	sem_ch12.adb, sem_ch3.adb, sem_ch3.ads, sem_ch4.adb,
+	sem_ch5.adb, sem_ch6.adb, sem_ch7.adb, sem_ch8.adb, sem_ch9.adb,
+	sem_res.adb, sem_util.adb, sem_util.ads, snames.ads-tmpl,
+	gnatbind.adb, libgnat/s-rident.ads,
+	doc/gnat_rm/standard_and_implementation_defined_restrictions.rst:
+	Remove processing of SPARK_05 restriction.
+	* gnat_rm.texi: Regenerate.
+	* opt.ads: Remove processing of old checksum which is now
+	handled by gprbuild directly.
+
+2020-06-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Object): Relax rules related to null
+	exclusions and generic objects. Handle all anonymous types
+	consistently and not just E_Anonymous_Access_Type.
+	* sem_ch8.adb (Analyze_Object_Renaming): Change wording so that
+	it applies to both renamings and instantiations to avoid
+	confusion.
+
+2020-06-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/a-textio.ads (File_Mode): Fix typo in comment.
+
+2020-06-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_res.adb (Resolve_Indexed_Component): Do not give a warning
+	for a nonatomic component of an atomic array which is subject to
+	an address clause in Ada 2020 mode.
+	(Resolve_Selected_Component): Likewise for an atomic record.
+
+2020-06-08  Philippe Gil  <gil@adacore.com>
+
+	* doc/gnat_ugn/the_gnat_compilation_model.rst: in "Handling
+	Files with Multiple Units" part documents gnatname use for
+	unmodified files handling and gnatchop use for files
+	refactoring.
+	* gnat_ugn.texi: Regenerate.
+
+2020-06-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_attributes.rst:
+	Enum_Rep/Enum_Val are standard Ada 202x attributes.
+	* gnat_rm.texi: Regenerate.
+
+2020-06-08  Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb (Safe_Component): Remove code that considers as
+	unsafe components that are aggregates; such removal allows the
+	frontend to proceed and evaluate if they are safe by means of
+	invoking Safe_Aggregate.
+
+2020-06-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_N_Attribute_Reference): Apply
+	standard expansion to attributes First and Last.
+
+2020-06-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_attr.adb, exp_util.ads, exp_util.adb (Get_Index_Subtype):
+	Move from the body of Exp_Attr to Exp_Util and expose from the
+	spec.
+	* exp_spark.adb (Expand_SPARK_N_Attribute_Reference): Replace
+	duplicated code with a call to Get_Index_Subtype.
+
+2020-06-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch8.adb (Analyze_Object_Renaming): Simplify code by moving
+	many special cases to Is_Object_Reference and removing others by
+	only checking renamings coming from sources.
+	* sem_util.adb (Is_Object_Reference): Update for AI12-0226 and
+	add more regular handling of 'Priority. Remove special cases no
+	longer needed now that we are only checking renamings coming
+	from sources.
+
+2020-06-08  Claire Dross  <dross@adacore.com>
+
+	* libgnat/a-cofove.adb (Insert_Space): The computation of Index
+	generates a spurious compiler warning about a value not being in
+	range for a statically dead branch.  Silence it using pragma
+	Warnings.
+
+2020-06-08  Bob Duff  <duff@adacore.com>
+
+	* bindo-graphs.adb (function Add_Edge): Rename
+	Add_Edge_With_Return to Add_Edge; we can tell it returns because
+	it's a function, and overloading seems appropriate in this case.
+	If Activates_Task=True, and we're not going to add a new edge
+	because an existing Pred-->Succ edge already exists, then set
+	Activates_Task to True on the preexisting edge.  This ensures
+	that the message:
+	info: use pragma Restrictions (No_Entry_Calls_In_Elaboration_Code)
+	appears when appropriate, no matter in what order the edges
+	happened to be processed.
+	(procedure Add_Edge): Remove redundant assertions.
+	(Activates_Task): Other kinds of edges can have
+	Activates_Task=True.  For example, if we had a With_Edge and
+	then an Invocation_Edge with Activates_Task=True, then the
+	With_Edge has Activates_Task set to True.
+	(Add_Edge_Kind_Check): New procedure to prevent other bugs of
+	this nature. For example, if we were to sometimes call Add_Edge
+	for a Spec_Before_Body_Edge followed by Add_Edge for a
+	With_Edge, and sometimes in the other order, that would cause a
+	similar bug to what we're fixing here.
+	(Set_Is_Recorded_Edge): Val parameter is not used. Get rid of
+	it.
+	(Set_Activates_Task): New procedure to set the Activates_Task flag.
+	* bindo-graphs.ads (Library_Graph_Edge_Kind): Reorder the
+	enumeration literals to facilitate Add_Edge_Kind_Check.
+	* ali.adb (Known_ALI_Lines): The comment about "still available"
+	was wrong. Fix that by erasing the comment, and encoding the
+	relevant information in real code. Take advantage of Ada's full
+	coverage rules by removing "others =>".  Also DRY.
+
+2020-06-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch12.adb (P_Formal_Derived_Type_Definition): Handle
+	properly formal derived types that include aspect
+	specifications, so that the "with" keyword appears twice in the
+	formal type declaration.
+	* sem_ch13.adb (Has_Generic_Parent): Return true if the type
+	itself is a generic formal.
+
+2020-06-08  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* socket.c (__gnat_minus_500ms): Remove
+	IsWindowsVersionOrGreater from condition.
+
+2020-06-08  Claire Dross  <dross@adacore.com>
+
+	* libgnat/a-cfdlli.ads, libgnat/a-cfhama.ads,
+	libgnat/a-cfhase.ads, libgnat/a-cforma.ads, libgnat/a-cforse.ads
+	(Delete): Add Depends contract.
+
+2020-06-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* snames.ads-tmpl (Name_Program_Error_Check,
+	Name_Tasking_Check): New constants.
+	* types.ads (Program_Error_Check, Tasking_Check): New constants.
+	(All_Checks): Update accordingly.
+
 2020-06-05  Arnaud Charlet  <charlet@adacore.com>
 
 	* sem_prag.adb (Validate_Compile_Time_Warning_Or_Error): Use ??.
