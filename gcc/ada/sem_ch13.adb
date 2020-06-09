@@ -6442,37 +6442,31 @@ package body Sem_Ch13 is
          ---------
 
          when Attribute_CPU =>
+            pragma Assert (From_Aspect_Specification (N));
+            --  The parser forbids this clause in source code, so it must have
+            --  come from an aspect specification.
 
-            --  CPU attribute definition clause not allowed except from aspect
-            --  specification.
+            if not Is_Task_Type (U_Ent) then
+               Error_Msg_N ("CPU can only be defined for task", Nam);
 
-            if From_Aspect_Specification (N) then
-               if not Is_Task_Type (U_Ent) then
-                  Error_Msg_N ("CPU can only be defined for task", Nam);
-
-               elsif Duplicate_Clause then
-                  null;
-
-               else
-                  --  The expression must be analyzed in the special manner
-                  --  described in "Handling of Default and Per-Object
-                  --  Expressions" in sem.ads.
-
-                  --  The visibility to the components must be established
-                  --  and restored before and after analysis.
-
-                  Push_Type (U_Ent);
-                  Preanalyze_Spec_Expression (Expr, RTE (RE_CPU_Range));
-                  Pop_Type (U_Ent);
-
-                  if not Is_OK_Static_Expression (Expr) then
-                     Check_Restriction (Static_Priorities, Expr);
-                  end if;
-               end if;
+            elsif Duplicate_Clause then
+               null;
 
             else
-               Error_Msg_N
-                 ("attribute& cannot be set with definition clause", N);
+               --  The expression must be analyzed in the special manner
+               --  described in "Handling of Default and Per-Object
+               --  Expressions" in sem.ads.
+
+               --  The visibility to the components must be established
+               --  and restored before and after analysis.
+
+               Push_Type (U_Ent);
+               Preanalyze_Spec_Expression (Expr, RTE (RE_CPU_Range));
+               Pop_Type (U_Ent);
+
+               if not Is_OK_Static_Expression (Expr) then
+                  Check_Restriction (No_Dynamic_CPU_Assignment, Expr);
+               end if;
             end if;
 
          ----------------------
@@ -6536,36 +6530,30 @@ package body Sem_Ch13 is
          ------------------------
 
          when Attribute_Dispatching_Domain =>
+            pragma Assert (From_Aspect_Specification (N));
+            --  The parser forbids this clause in source code, so it must have
+            --  come from an aspect specification.
 
-            --  Dispatching_Domain attribute definition clause not allowed
-            --  except from aspect specification.
+            if not Is_Task_Type (U_Ent) then
+               Error_Msg_N
+                 ("Dispatching_Domain can only be defined for task", Nam);
 
-            if From_Aspect_Specification (N) then
-               if not Is_Task_Type (U_Ent) then
-                  Error_Msg_N
-                    ("Dispatching_Domain can only be defined for task", Nam);
-
-               elsif Duplicate_Clause then
-                  null;
-
-               else
-                  --  The expression must be analyzed in the special manner
-                  --  described in "Handling of Default and Per-Object
-                  --  Expressions" in sem.ads.
-
-                  --  The visibility to the components must be restored
-
-                  Push_Type (U_Ent);
-
-                  Preanalyze_Spec_Expression
-                    (Expr, RTE (RE_Dispatching_Domain));
-
-                  Pop_Type (U_Ent);
-               end if;
+            elsif Duplicate_Clause then
+               null;
 
             else
-               Error_Msg_N
-                 ("attribute& cannot be set with definition clause", N);
+               --  The expression must be analyzed in the special manner
+               --  described in "Handling of Default and Per-Object
+               --  Expressions" in sem.ads.
+
+               --  The visibility to the components must be restored
+
+               Push_Type (U_Ent);
+
+               Preanalyze_Spec_Expression
+                 (Expr, RTE (RE_Dispatching_Domain));
+
+               Pop_Type (U_Ent);
             end if;
 
          ------------------
@@ -6623,43 +6611,37 @@ package body Sem_Ch13 is
          ------------------------
 
          when Attribute_Interrupt_Priority =>
+            pragma Assert (From_Aspect_Specification (N));
+            --  The parser forbids this clause in source code, so it must have
+            --  come from an aspect specification.
 
-            --  Interrupt_Priority attribute definition clause not allowed
-            --  except from aspect specification.
+            if not Is_Concurrent_Type (U_Ent) then
+               Error_Msg_N
+                 ("Interrupt_Priority can only be defined for task and "
+                  & "protected object", Nam);
 
-            if From_Aspect_Specification (N) then
-               if not Is_Concurrent_Type (U_Ent) then
-                  Error_Msg_N
-                    ("Interrupt_Priority can only be defined for task and "
-                     & "protected object", Nam);
-
-               elsif Duplicate_Clause then
-                  null;
-
-               else
-                  --  The expression must be analyzed in the special manner
-                  --  described in "Handling of Default and Per-Object
-                  --  Expressions" in sem.ads.
-
-                  --  The visibility to the components must be restored
-
-                  Push_Type (U_Ent);
-
-                  Preanalyze_Spec_Expression
-                    (Expr, RTE (RE_Interrupt_Priority));
-
-                  Pop_Type (U_Ent);
-
-                  --  Check the No_Task_At_Interrupt_Priority restriction
-
-                  if Is_Task_Type (U_Ent) then
-                     Check_Restriction (No_Task_At_Interrupt_Priority, N);
-                  end if;
-               end if;
+            elsif Duplicate_Clause then
+               null;
 
             else
-               Error_Msg_N
-                 ("attribute& cannot be set with definition clause", N);
+               --  The expression must be analyzed in the special manner
+               --  described in "Handling of Default and Per-Object
+               --  Expressions" in sem.ads.
+
+               --  The visibility to the components must be restored
+
+               Push_Type (U_Ent);
+
+               Preanalyze_Spec_Expression
+                 (Expr, RTE (RE_Interrupt_Priority));
+
+               Pop_Type (U_Ent);
+
+               --  Check the No_Task_At_Interrupt_Priority restriction
+
+               if Is_Task_Type (U_Ent) then
+                  Check_Restriction (No_Task_At_Interrupt_Priority, N);
+               end if;
             end if;
 
          --------------
