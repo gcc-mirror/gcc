@@ -908,6 +908,10 @@ Stop reverse growth if the reverse probability of best edge is less than this th
 Common Joined UInteger Var(param_tree_reassoc_width) Param Optimization
 Set the maximum number of instructions executed in parallel in reassociated tree.  If 0, use the target dependent heuristic.
 
+-param=tsan-distinguish-volatile=
+Common Joined UInteger Var(param_tsan_distinguish_volatile) IntegerRange(0, 1) Param
+Emit special instrumentation for accesses to volatiles.
+
 -param=uninit-control-dep-attempts=
 Common Joined UInteger Var(param_uninit_control_dep_attempts) Init(1000) IntegerRange(1, 65536) Param Optimization
 Maximum number of nested calls to search for control dependencies during uninitialized variable analysis.
