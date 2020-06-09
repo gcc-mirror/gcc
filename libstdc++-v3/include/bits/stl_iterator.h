@@ -1307,6 +1307,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	move_iterator(const move_iterator<_Iter>& __i)
 	: _M_current(__i.base()) { }
 
+      template<typename _Iter>
+	_GLIBCXX17_CONSTEXPR
+	move_iterator& operator=(const move_iterator<_Iter>& __i)
+	{
+	  _M_current = __i.base();
+	  return *this;
+	}
+
 #if __cplusplus <= 201703L
       _GLIBCXX17_CONSTEXPR iterator_type
       base() const
