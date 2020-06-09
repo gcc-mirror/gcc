@@ -139,7 +139,12 @@ enum gomp_map_kind
     /* Decrement usage count and deallocate if zero.  */
     GOMP_MAP_RELEASE =			(GOMP_MAP_FLAG_SPECIAL_2
 					 | GOMP_MAP_DELETE),
-    /* In OpenACC, attach a pointer to a mapped struct field.  */
+    /* The attach/detach mappings below use the OMP_CLAUSE_SIZE field as a
+       bias.  This will typically be zero, except when mapping an array slice
+       with a non-zero base.  In that case the bias will indicate the
+       (positive) difference between the start of the actual mapped data and
+       the "virtual" origin of the array.
+       In OpenACC, attach a pointer to a mapped struct field.  */
     GOMP_MAP_ATTACH =			(GOMP_MAP_DEEP_COPY | 0),
     /* In OpenACC, detach a pointer to a mapped struct field.  */
     GOMP_MAP_DETACH =			(GOMP_MAP_DEEP_COPY | 1),
