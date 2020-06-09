@@ -1467,7 +1467,7 @@
 2020-05-13  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/95020
-	* g++/cpp2a/concepts-lambda7.C: New test.
+	* g++.dg/cpp2a/concepts-lambda7.C: New test.
 
 2020-05-13  Marek Polacek  <polacek@redhat.com>
 
