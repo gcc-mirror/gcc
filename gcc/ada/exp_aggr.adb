@@ -252,7 +252,7 @@ package body Exp_Aggr is
    function Aggr_Assignment_OK_For_Backend (N : Node_Id) return Boolean;
    --  Returns true if an aggregate assignment can be done by the back end
 
-   function Aggr_Size_OK (N : Node_Id; Typ : Entity_Id) return Boolean;
+   function Aggr_Size_OK (N : Node_Id) return Boolean;
    --  Very large static aggregates present problems to the back-end, and are
    --  transformed into assignments and loops. This function verifies that the
    --  total number of components of an aggregate is acceptable for rewriting
@@ -328,10 +328,10 @@ package body Exp_Aggr is
    --  is a two dimensional bit packed array with component size 1, 2, or 4.
 
    function Max_Aggregate_Size
-     (Typ          : Entity_Id;
+     (N            : Node_Id;
       Default_Size : Nat := 5000) return Nat;
-   --  Return the max size for a static aggregate of the given Typ.
-   --  Return Default_Size if no other special criteria trigger.
+   --  Return the max size for a static aggregate N. Return Default_Size if no
+   --  other special criteria trigger.
 
    function Packed_Array_Aggregate_Handled (N : Node_Id) return Boolean;
    --  Given an array aggregate, this function handles the case of a packed
@@ -593,7 +593,8 @@ package body Exp_Aggr is
    -- Aggr_Size_OK --
    ------------------
 
-   function Aggr_Size_OK (N : Node_Id; Typ : Entity_Id) return Boolean is
+   function Aggr_Size_OK (N : Node_Id) return Boolean is
+      Typ  : constant Entity_Id := Etype (N);
       Lo   : Node_Id;
       Hi   : Node_Id;
       Indx : Node_Id;
@@ -688,9 +689,9 @@ package body Exp_Aggr is
       if No (Expressions (N))
         and then No (Next (First (Component_Associations (N))))
       then
-         Max_Aggr_Size := Max_Aggregate_Size (Typ);
+         Max_Aggr_Size := Max_Aggregate_Size (N);
       else
-         Max_Aggr_Size := Max_Aggregate_Size (Typ, 500_000);
+         Max_Aggr_Size := Max_Aggregate_Size (N, 500_000);
       end if;
 
       Size := UI_From_Int (Component_Count (Component_Type (Typ)));
@@ -4955,7 +4956,7 @@ package body Exp_Aggr is
    is
       Typ                  : constant Entity_Id := Etype (N);
       Dims                 : constant Nat := Number_Dimensions (Typ);
-      Max_Others_Replicate : constant Nat := Max_Aggregate_Size (Typ);
+      Max_Others_Replicate : constant Nat := Max_Aggregate_Size (N);
 
       Static_Components : Boolean := True;
 
@@ -5475,7 +5476,7 @@ package body Exp_Aggr is
       --  compatible with the upper bound of the type, and therefore it is
       --  worth flattening such aggregates as well.
 
-      if Aggr_Size_OK (N, Typ)
+      if Aggr_Size_OK (N)
         and then
           Flatten (N, Dims, First_Index (Typ), First_Index (Base_Type (Typ)))
       then
@@ -8315,8 +8316,69 @@ package body Exp_Aggr is
    ------------------------
 
    function Max_Aggregate_Size
-     (Typ          : Entity_Id;
-      Default_Size : Nat := 5000) return Nat is
+     (N            : Node_Id;
+      Default_Size : Nat := 5000) return Nat
+   is
+      Typ : constant Entity_Id := Etype (N);
+
+      function Use_Small_Size (N : Node_Id) return Boolean;
+      --  True if we should return a very small size, which means large
+      --  aggregates will be implemented as a loop when possible (potentially
+      --  transformed to memset calls).
+
+      function Aggr_Context (N : Node_Id) return Node_Id;
+      --  Return the context in which the aggregate appears, not counting
+      --  qualified expressions and similar.
+
+      function Aggr_Context (N : Node_Id) return Node_Id is
+         Result : Node_Id := Parent (N);
+      begin
+         if Nkind_In (Result, N_Qualified_Expression,
+                              N_Type_Conversion,
+                              N_Unchecked_Type_Conversion,
+                              N_If_Expression,
+                              N_Case_Expression,
+                              N_Component_Association,
+                              N_Aggregate)
+         then
+            Result := Aggr_Context (Result);
+         end if;
+
+         return Result;
+      end Aggr_Context;
+
+      function Use_Small_Size (N : Node_Id) return Boolean is
+         C : constant Node_Id := Aggr_Context (N);
+         --  The decision depends on the context in which the aggregate occurs,
+         --  and for variable declarations, whether we are nested inside a
+         --  subprogram.
+      begin
+         case Nkind (C) is
+            --  True for assignment statements and similar
+
+            when N_Assignment_Statement
+               | N_Simple_Return_Statement
+               | N_Allocator
+               | N_Attribute_Reference
+            =>
+               return True;
+
+            --  True for nested variable declarations. False for library level
+            --  variables, and for constants (whether or not nested).
+
+            when N_Object_Declaration =>
+               return not Constant_Present (C)
+                 and then Ekind (Current_Scope) in Subprogram_Kind;
+
+            --  False for all other contexts
+
+            when others =>
+               return False;
+         end case;
+      end Use_Small_Size;
+
+   --  Start of processing for Max_Aggregate_Size
+
    begin
       --  We use a small limit in CodePeer mode where we favor loops
       --  instead of thousands of single assignments (from large aggregates).
@@ -8332,10 +8394,6 @@ package body Exp_Aggr is
       --  if components are static it is much more efficient to construct a
       --  one-dimensional equivalent array with static components.
 
-      --  Finally we also use a small limit when we're within a subprogram
-      --  since we want to favor loops (potentially transformed to memset
-      --  calls) in this context.
-
       if CodePeer_Mode then
          return 100;
       elsif Restriction_Active (No_Elaboration_Code)
@@ -8345,11 +8403,11 @@ package body Exp_Aggr is
                    and then Static_Elaboration_Desired (Current_Scope))
       then
          return 2 ** 24;
-      elsif Ekind (Current_Scope) in Subprogram_Kind then
+      elsif Use_Small_Size (N) then
          return 64;
-      else
-         return Default_Size;
       end if;
+
+      return Default_Size;
    end Max_Aggregate_Size;
 
    -----------------------
@@ -9153,7 +9211,7 @@ package body Exp_Aggr is
                   return False;
                end if;
 
-               if not Aggr_Size_OK (N, Typ) then
+               if not Aggr_Size_OK (N) then
                   return False;
                end if;
 
