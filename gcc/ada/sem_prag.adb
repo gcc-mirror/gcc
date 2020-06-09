@@ -14855,13 +14855,13 @@ package body Sem_Prag is
             Ada_2012_Pragma;
             Check_No_Identifiers;
             Check_Arg_Count (1);
+            Arg := Get_Pragma_Arg (Arg1);
 
             --  Subprogram case
 
             if Nkind (P) = N_Subprogram_Body then
                Check_In_Main_Program;
 
-               Arg := Get_Pragma_Arg (Arg1);
                Analyze_And_Resolve (Arg, Any_Integer);
 
                Ent := Defining_Unit_Name (Specification (P));
@@ -14908,7 +14908,6 @@ package body Sem_Prag is
             --  Task case
 
             elsif Nkind (P) = N_Task_Definition then
-               Arg := Get_Pragma_Arg (Arg1);
                Ent := Defining_Identifier (Parent (P));
 
                --  The expression must be analyzed in the special manner
@@ -14916,6 +14915,10 @@ package body Sem_Prag is
                --  Expressions" in sem.ads.
 
                Preanalyze_Spec_Expression (Arg, RTE (RE_CPU_Range));
+
+               if not Is_OK_Static_Expression (Arg) then
+                  Check_Restriction (No_Dynamic_CPU_Assignment, N);
+               end if;
 
             --  Anything else is incorrect
 
