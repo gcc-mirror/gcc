@@ -260,6 +260,7 @@ enum {
   CLONE_ISA_2_06,			/* ISA 2.06 (power7).  */
   CLONE_ISA_2_07,			/* ISA 2.07 (power8).  */
   CLONE_ISA_3_00,			/* ISA 3.00 (power9).  */
+  CLONE_ISA_3_1,			/* ISA 3.1 (future).  */
   CLONE_MAX
 };
 
@@ -275,6 +276,7 @@ static const struct clone_map rs6000_clone_map[CLONE_MAX] = {
   { OPTION_MASK_POPCNTD,	"arch_2_06" },	/* ISA 2.06 (power7).  */
   { OPTION_MASK_P8_VECTOR,	"arch_2_07" },	/* ISA 2.07 (power8).  */
   { OPTION_MASK_P9_VECTOR,	"arch_3_00" },	/* ISA 3.00 (power9).  */
+  { OPTION_MASK_FUTURE,		"arch_3_1" },	/* ISA 3.1 (future).  */
 };
 
 
