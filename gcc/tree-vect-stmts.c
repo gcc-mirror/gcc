@@ -11186,12 +11186,6 @@ vect_transform_stmt (vec_info *vinfo,
   gcc_assert (slp_node || !PURE_SLP_STMT (stmt_info));
   stmt_vec_info old_vec_stmt_info = STMT_VINFO_VEC_STMT (stmt_info);
 
-  loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
-  bool nested_p = (loop_vinfo
-		   && nested_in_vect_loop_p
-			(LOOP_VINFO_LOOP (loop_vinfo), stmt_info));
-
-  gimple *stmt = stmt_info->stmt;
   switch (STMT_VINFO_TYPE (stmt_info))
     {
     case type_demotion_vec_info_type:
@@ -11266,13 +11260,11 @@ vect_transform_stmt (vec_info *vinfo,
     case call_vec_info_type:
       done = vectorizable_call (vinfo, stmt_info,
 				gsi, &vec_stmt, slp_node, NULL);
-      stmt = gsi_stmt (*gsi);
       break;
 
     case call_simd_clone_vec_info_type:
       done = vectorizable_simd_clone_call (vinfo, stmt_info, gsi, &vec_stmt,
 					   slp_node, NULL);
-      stmt = gsi_stmt (*gsi);
       break;
 
     case reduc_vec_info_type:
@@ -11309,41 +11301,6 @@ vect_transform_stmt (vec_info *vinfo,
   if (slp_node)
     gcc_assert (!vec_stmt
 		&& STMT_VINFO_VEC_STMT (stmt_info) == old_vec_stmt_info);
-
-  /* Handle inner-loop stmts whose DEF is used in the loop-nest that
-     is being vectorized, but outside the immediately enclosing loop.  */
-  if (vec_stmt
-      && nested_p
-      && STMT_VINFO_TYPE (stmt_info) != reduc_vec_info_type
-      && (STMT_VINFO_RELEVANT (stmt_info) == vect_used_in_outer
-          || STMT_VINFO_RELEVANT (stmt_info) ==
-                                           vect_used_in_outer_by_reduction))
-    {
-      class loop *innerloop = LOOP_VINFO_LOOP (loop_vinfo)->inner;
-      imm_use_iterator imm_iter;
-      use_operand_p use_p;
-      tree scalar_dest;
-
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_NOTE, vect_location,
-                         "Record the vdef for outer-loop vectorization.\n");
-
-      /* Find the relevant loop-exit phi-node, and reord the vec_stmt there
-        (to be used when vectorizing outer-loop stmts that use the DEF of
-        STMT).  */
-      if (gimple_code (stmt) == GIMPLE_PHI)
-        scalar_dest = PHI_RESULT (stmt);
-      else
-        scalar_dest = gimple_get_lhs (stmt);
-
-      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, scalar_dest)
-	if (!flow_bb_inside_loop_p (innerloop, gimple_bb (USE_STMT (use_p))))
-	  {
-	    stmt_vec_info exit_phi_info
-	      = vinfo->lookup_stmt (USE_STMT (use_p));
-	    STMT_VINFO_VEC_STMT (exit_phi_info) = vec_stmt;
-	  }
-    }
 
   if (vec_stmt)
     STMT_VINFO_VEC_STMT (stmt_info) = vec_stmt;
