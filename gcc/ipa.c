@@ -561,7 +561,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	}
       else
 	gcc_assert (node->clone_of || !node->has_gimple_body_p ()
-		    || in_lto_p || DECL_RESULT (node->decl));
+		    || in_lto_p || split_outputs || DECL_RESULT (node->decl));
     }
 
   /* Inline clones might be kept around so their materializing allows further

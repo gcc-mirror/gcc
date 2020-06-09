@@ -3341,8 +3341,10 @@ static void append_split_outputs (extra_arg_storer *storer,
 	}
 
       if (have_c)
-	argv[argc++] = "-fPIE"; 
-	argv[argc++] = "-fPIC";
+	{
+	  argv[argc++] = "-fPIE";
+	  argv[argc++] = "-fPIC";
+	}
 
       argv[argc]   = NULL;
 

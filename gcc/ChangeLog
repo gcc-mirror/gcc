@@ -1,3 +1,25 @@
+2020-06-08  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* cgraphunit.c (cgraph_node::expand): Quick return if no body is
+	available.
+	(ipa_passes): Skip empty partitions.
+	* gcc.c (append_split_outputs): Fix misleading identation.
+	* ipa.c (symbol_table::remove_unreachable_nodes): Assert for
+	split_outputs.
+	* lto-cgraph.c (lto_apply_partition_mask): set body_removed when
+	body is removed.
+	* lto-partition.c: (current_working_partition): New variable.
+	* (add_symbol_to_partition): Check if insertion on correct
+	partition. Also check if nodes from the same COMDAT group are
+	mapped to the partition.
+	(union_find::print_roots): New function.
+	(ds): New variable.
+	(ds_print_roots): New function.
+	(analyse_symbol_references): New function.
+	(analyse_symbol_1): New function.
+	(int_cast): Remove.
+	(lto_max_no_alonevap_map): Replace with new algorithm.
+
 2020-06-05  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* cgraph.h (symtab_node): New attribute aux2.

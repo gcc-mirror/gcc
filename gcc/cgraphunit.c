@@ -2256,6 +2256,11 @@ cgraph_node::expand (void)
 {
   location_t saved_loc;
 
+  /* FIXME: Find out why body-removed nodes are marked for output.  */
+  if (body_removed)
+    return;
+
+
   /* We ought to not compile any inline clones.  */
   gcc_assert (!inlined_to);
 
@@ -2694,6 +2699,10 @@ ipa_passes (void)
 	  /* Run serially for now.  */
 	  for (i = 0; i < partitions; ++i)
 	    {
+	      if (ltrans_partitions[i]->symbols == 0)
+		continue; /* FIXME: Find out why we are generating empty
+			     partitions.  */
+
 	      pids[i] = fork ();
 	      if (pids[i] == 0)
 		{

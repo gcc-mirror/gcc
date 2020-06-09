@@ -124,6 +124,8 @@ add_references_to_partition (ltrans_partition part, symtab_node *node)
       }
 }
 
+static int current_working_partition = -1;
+
 /* Helper function for add_symbol_to_partition doing the actual dirty work
    of adding NODE to PART.  */
 
@@ -137,6 +139,10 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
   /* If NODE is already there, we have nothing to do.  */
   if (lto_symtab_encoder_in_partition_p (part->encoder, node))
     return true;
+
+  if (current_working_partition != node->aux2)
+    fatal_error (UNKNOWN_LOCATION, "Adding node to partition which was meant to"
+		 "be in another partition");
 
   /* non-duplicated aliases or tunks of a duplicated symbol needs to be output
      just once.
@@ -215,6 +221,10 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
 	 node1 != node; node1 = node1->same_comdat_group)
       if (!node->alias)
 	{
+	  if (node->aux2 != node1->aux2)
+	    fatal_error (UNKNOWN_LOCATION, "Nodes from the same COMDAT group in"
+			    "distinct partitions");
+
 	  bool added = add_symbol_to_partition_1 (part, node1);
 	  gcc_assert (added);
 	}
@@ -435,21 +445,125 @@ public:
       if (rank[x_root] == rank[y_root])
 	rank[x_root]++;
     }
+
+  void print_roots ()
+    {
+      int i;
+      for (i = 0; i < n; ++i)
+	printf ("%d, ", find (i));
+      printf ("\n");
+    }
 };
 
-/* Cast an void * to integer. Shall not work if sizeof (void*) greater
-   than int.  */
+static union_find *ds;
 
-static inline int int_cast (void *x)
+DEBUG_FUNCTION void ds_print_roots (void)
 {
-  union void_to_int
-    {
-      void *ptr;
-      int val;
-    } u;
+  ds->print_roots ();
+}
 
-  u.ptr = x;
-  return u.val;
+static void analyse_symbol (symtab_node *, int);
+
+static void
+analyse_symbol_references (symtab_node *node, int set)
+{
+  int i;
+  struct ipa_ref *ref = NULL;
+
+  /* Add all duplicated references to the partition.  */
+  for (i = 0; node->iterate_reference (i, ref); i++)
+    if (ref->referred->get_partitioning_class () == SYMBOL_DUPLICATE)
+      {
+	symtab_node *node1 = ref->referred;
+	analyse_symbol (node1, set);
+      }
+    /* References to a readonly variable may be constant foled into its value.
+       Recursively look into the initializers of the constant variable and add
+       references, too.  */
+    else if (is_a <varpool_node *> (ref->referred)
+	    /* && (dyn_cast <varpool_node *> (ref->referred)
+		 ->ctor_useable_for_folding_p ()))*/)
+      {
+	symtab_node *node1 = ref->referred;
+	analyse_symbol (node1, set);
+      }
+}
+
+static bool analyse_symbol_1 (symtab_node *node, int set)
+{
+  struct ipa_ref *ref;
+  symtab_node *node1;
+
+  ds->unite (node->aux2, set);
+
+  /* If NODE was already analysed, return.  */
+  if (symbol_partitioned_p (node))
+    return true;
+
+  /* Indicate that we analysed this node once.  */
+  node->aux = (void *)((size_t)node->aux + 1);
+
+  if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
+    {
+      struct cgraph_edge *e;
+
+      /* Add all inline clones and callees that are duplicated.  */
+      for (e = cnode->callees; e; e = e->next_callee)
+	if (!e->inline_failed || TREE_STATIC (e->callee->decl))
+	  analyse_symbol_1 (e->callee, set);
+	else if (e->callee->get_partitioning_class () == SYMBOL_DUPLICATE)
+	  analyse_symbol (e->callee, set);
+
+      /* Add all thunks associated with the function.  */
+      for (e = cnode->callers; e; e = e->next_caller)
+	if (e->caller->thunk.thunk_p && !e->caller->inlined_to)
+	  analyse_symbol_1 (e->caller, set);
+    }
+
+  analyse_symbol_references (node, set);
+
+  /* Add all aliases associated with the symbol.  */
+
+  FOR_EACH_ALIAS (node, ref)
+    if (!ref->referring->transparent_alias)
+      analyse_symbol_1 (ref->referring, set);
+    else
+      {
+	struct ipa_ref *ref2;
+	/* We do not need to add transparent aliases if they are not used.
+	   However we must add aliases of transparent aliases if they exist.  */
+	FOR_EACH_ALIAS (ref->referring, ref2)
+	  {
+	    /* Nested transparent aliases are not permitted.  */
+	    gcc_checking_assert (!ref2->referring->transparent_alias);
+	    analyse_symbol_1 (ref2->referring, set);
+	  }
+      }
+
+  /* Ensure that SAME_COMDAT_GROUP lists all allways added in a group.  */
+  if (node->same_comdat_group)
+    for (node1 = node->same_comdat_group;
+	 node1 != node; node1 = node1->same_comdat_group)
+      if (!node->alias)
+	{
+	  bool added = analyse_symbol_1 (node1, set);
+	  gcc_assert (added);
+	}
+  return true;
+}
+
+static void analyse_symbol (symtab_node *node, int set)
+{
+  symtab_node *node1;
+
+  
+  while ((node1 = contained_in_symbol (node)) != node)
+    {
+      ds->unite (node->aux2, node1->aux2);
+      node = node1;
+    }
+  analyse_symbol_1 (node, set);
+
 }
 
 /* Maximal partitioning with a restriction: Varnodes can't be let alone in a
@@ -460,7 +574,6 @@ void
 lto_max_no_alonevap_map (void)
 {
   symtab_node *node;
-  cgraph_node *cnode;
   int n_partitions = 0, i, n = 0, j = 0;
   int *compression;
 
@@ -468,6 +581,7 @@ lto_max_no_alonevap_map (void)
     node->aux2 = n++;
 
   union_find disjoint_sets = union_find (n);
+  ds = &disjoint_sets;
 
   /* Look for each function neighbor, checking for global-like variables that
      it references.  Complexity:
@@ -479,26 +593,8 @@ lto_max_no_alonevap_map (void)
      of a single union operation, wich is log*(n).  The fact that such sum
      is |2E|*log*(n) is a consequence from the handshake lemma.  */
 
-  FOR_EACH_FUNCTION (cnode)
-    {
-      struct ipa_ref *ref = NULL;
-      cgraph_edge *e;
-
-      for (i = 0; cnode->iterate_reference (i, ref); i++)
-	{
-	  symtab_node *node = ref->referred;
-	  if (is_a <varpool_node *> (node))
-	    disjoint_sets.unite (cnode->aux2, node->aux2);
-	}
-
-      for (e = cnode->callees; e; e = e->next_callee)
-	{
-	  cgraph_node *node = e->callee;
-	  if (TREE_STATIC (node->decl))
-	    disjoint_sets.unite (cnode->aux2, node->aux2);
-	}
-
-    }
+  FOR_EACH_SYMBOL (node)
+    analyse_symbol (node, node->aux2);
 
   /* Allocate a compression vector, where we will map each disjoint set into
      0, ..., n_partitions - 1.  Complexity: n.  */
@@ -522,6 +618,7 @@ lto_max_no_alonevap_map (void)
     {
       int root = disjoint_sets.find (i);
       node->aux2 = root;
+      node->aux = NULL;
       if (compression[root] < 0)
 	compression[root] = j++;
       i++;
@@ -535,7 +632,7 @@ lto_max_no_alonevap_map (void)
   FOR_EACH_SYMBOL (node)
     {
       int p = compression[node->aux2];
-      node->aux2 = -1;
+      current_working_partition = node->aux2;
 
       if (node->get_partitioning_class () != SYMBOL_PARTITION
 	  || symbol_partitioned_p (node))
