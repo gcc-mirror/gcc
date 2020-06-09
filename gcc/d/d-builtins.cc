@@ -211,7 +211,7 @@ build_frontend_type (tree type)
       if (dtype->nextOf ()->isTypeBasic () == NULL)
 	break;
 
-      dtype = (TypeVector::create (Loc (), dtype))->addMod (mod);
+      dtype = (TypeVector::create (dtype))->addMod (mod);
       builtin_converted_decls.safe_push (builtin_data (dtype, type));
       return dtype;
     }

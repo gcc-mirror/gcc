@@ -1100,7 +1100,7 @@ void ClassDeclaration::finalizeSize()
     {
         alignsize = target.ptrsize;
         structsize = target.ptrsize;      // allow room for __vptr
-        if (!isCPPclass())
+        if (hasMonitor())
             structsize += target.ptrsize; // allow room for __monitor
     }
 
@@ -1131,6 +1131,14 @@ void ClassDeclaration::finalizeSize()
 
     // Calculate fields[i]->overlapped
     checkOverlappedFields();
+}
+
+/**************
+ * Returns: true if there's a __monitor field
+ */
+bool ClassDeclaration::hasMonitor()
+{
+    return classKind == ClassKind::d;
 }
 
 /**********************************************************

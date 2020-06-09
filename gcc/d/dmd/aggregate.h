@@ -310,6 +310,7 @@ public:
     Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly);
     ClassDeclaration *searchBase(Identifier *ident);
     void finalizeSize();
+    bool hasMonitor();
     bool isFuncHidden(FuncDeclaration *fd);
     FuncDeclaration *findFunc(Identifier *ident, TypeFunction *tf);
     void interfaceSemantic(Scope *sc);

@@ -434,6 +434,7 @@ bool symbolIsVisible(Module *mod, Dsymbol *s)
         default:
             assert(0);
     }
+    return false;
 }
 
 /**
@@ -475,6 +476,7 @@ bool symbolIsVisible(Scope *sc, Dsymbol *s)
         default:
             assert(0);
     }
+    return false;
 }
 
 /**

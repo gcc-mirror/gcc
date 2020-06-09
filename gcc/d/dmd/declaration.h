@@ -123,7 +123,7 @@ public:
     Prot protection;
     LINK linkage;
     int inuse;                  // used to detect cycles
-    const char *mangleOverride;      // overridden symbol with pragma(mangle, "...")
+    DString mangleOverride;     // overridden symbol with pragma(mangle, "...")
 
     Declaration(Identifier *id);
     void semantic(Scope *sc);

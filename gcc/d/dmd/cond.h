@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include "ast_node.h"
 #include "globals.h"
 #include "visitor.h"
 
@@ -25,7 +26,7 @@ class ForeachRangeStatement;
 
 int findCondition(Identifiers *ids, Identifier *ident);
 
-class Condition
+class Condition : public ASTNode
 {
 public:
     Loc loc;
@@ -40,7 +41,7 @@ public:
     virtual int include(Scope *sc) = 0;
     virtual DebugCondition *isDebugCondition() { return NULL; }
     virtual VersionCondition *isVersionCondition() { return NULL; }
-    virtual void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) { v->visit(this); }
 };
 
 class StaticForeach

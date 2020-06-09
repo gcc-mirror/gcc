@@ -32,10 +32,10 @@ struct Port
     static bool isFloat64LiteralOutOfRange(const char *s);
 
     static void writelongLE(unsigned value, void *buffer);
-    static unsigned readlongLE(void *buffer);
+    static unsigned readlongLE(const void *buffer);
     static void writelongBE(unsigned value, void *buffer);
-    static unsigned readlongBE(void *buffer);
-    static unsigned readwordLE(void *buffer);
-    static unsigned readwordBE(void *buffer);
+    static unsigned readlongBE(const void *buffer);
+    static unsigned readwordLE(const void *buffer);
+    static unsigned readwordBE(const void *buffer);
     static void valcpy(void *dst, uint64_t val, size_t size);
 };
