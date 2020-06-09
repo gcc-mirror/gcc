@@ -1789,8 +1789,9 @@ c_pretty_printer::unary_expression (tree e)
 	  if (!integer_zerop (TREE_OPERAND (e, 1)))
 	    {
 	      pp_c_left_paren (this);
-	      if (!integer_onep (TYPE_SIZE_UNIT
-				 (TREE_TYPE (TREE_TYPE (TREE_OPERAND (e, 0))))))
+	      tree type = TREE_TYPE (TREE_TYPE (TREE_OPERAND (e, 0)));
+	      if (TYPE_SIZE_UNIT (type) == NULL_TREE
+		  || !integer_onep (TYPE_SIZE_UNIT (type)))
 		pp_c_type_cast (this, ptr_type_node);
 	    }
 	  pp_c_cast_expression (this, TREE_OPERAND (e, 0));
