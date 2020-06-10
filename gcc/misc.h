@@ -69,3 +69,9 @@ private:
   const irange *m_new_range;
   class vr_values *m_vr_values;
 };
+
+static inline bool
+evrp_trap_p ()
+{
+  return flag_rvrp1_changes > 0;
+}

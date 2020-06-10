@@ -347,14 +347,14 @@ public:
 
   void tmp_stats_remove_stmt (gimple *stmt, tree lhs) OVERRIDE
   {
-    if (flag_rvrp1_changes > 0)
+    if (evrp_trap_p ())
       m_gimple_state.remove (stmt, lhs);
   }
 
   void tmp_stats_changed_phi (gphi *orig_phi, gphi *new_phi) OVERRIDE
   {
     gimple *save = m_gimple_state.save (orig_phi);
-    if (flag_rvrp1_changes > 0)
+    if (evrp_trap_p ())
       m_gimple_state.trap_if_gimple_changed (new_phi);
     m_gimple_state.save (save);
   }
@@ -373,7 +373,7 @@ public:
   bool fold_stmt (gimple_stmt_iterator *gsi)
   {
     bool res = simplifier.simplify (gsi);
-    if (flag_rvrp1_changes > 0)
+    if (evrp_trap_p ())
       m_gimple_state.trap_if_gimple_changed (gsi_stmt (*gsi));
     return res;
   }
