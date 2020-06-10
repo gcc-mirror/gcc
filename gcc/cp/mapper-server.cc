@@ -28,10 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #define INCLUDE_VECTOR
 #define INCLUDE_MAP
 #define INCLUDE_SET
-#include "system.h"
-#include "version.h"
-#include "intl.h"
-#include <getopt.h>
 
 // Network
 /* Include network stuff first.  Excitingly OSX10.14 uses bcmp here, which
@@ -57,6 +53,13 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef HAVE_AF_INET6
 # define gai_strerror(X) ""
 #endif
+
+// Excitingly Darwin uses bcmp in its network headers, and we poison
+// that in our setup.
+#include "system.h"
+#include "version.h"
+#include "intl.h"
+#include <getopt.h>
 
 // Select or epoll
 #ifdef NETWORKING
@@ -399,7 +402,7 @@ do_epoll_ctl (int epoll_fd, int code, int event, int fd, unsigned data)
 #define my_epoll_ctl(EFD,C,EV,FD,CL) \
   ((EFD) >= 0 ? do_epoll_ctl (EFD,C,EV,FD,CL) : (void)0)
 #else
-#define  my_epoll_ctl(EFD,C,EV,FD,CL) ((void)(EFD), (void)(FD), (void)CL)
+#define my_epoll_ctl(EFD,C,EV,FD,CL) ((void)(EFD), (void)(FD), (void)(CL))
 #endif
 
 #ifdef NETWORKING
@@ -562,9 +565,11 @@ server (bool ipv6, int sock_fd, module_resolver *resolver)
       int event_count;
 
       if (epoll_fd >= 0)
+	{
 #ifdef HAVE_EPOLL
-	event_count = epoll_pwait (epoll_fd, events, max_events, -1, &mask);
+	  event_count = epoll_pwait (epoll_fd, events, max_events, -1, &mask);
 #endif
+	}
       else
 	{
 #if defined (HAVE_PSELECT) || defined (HAVE_SELECT)

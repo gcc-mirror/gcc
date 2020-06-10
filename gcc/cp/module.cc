@@ -3865,7 +3865,7 @@ static GTY(()) vec<tree, va_gc> *class_members;
 module_client *mapper;
 
 static module_client *make_mapper (location_t loc);
-inline auto *get_mapper (location_t loc)
+inline module_client *get_mapper (location_t loc)
 {
   auto *res = mapper;
   if (!res)

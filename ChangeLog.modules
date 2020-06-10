@@ -1,3 +1,13 @@
+2020-06-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Fixes for darwin
+	gcc/cp/
+	* mapper-server.cc: Reorder includes.
+	(server): Block scope potentially empty if clause.
+	* module.cc (get_mapper): Don't use C++14.
+	gcc/testsuite/
+	* g++.dg/modules/bad-mapper-3: Adjust error.
+
 2020-06-05  Nathan Sidwell  <nathan@acm.org>
 
 	Install V1 module protocol goop
