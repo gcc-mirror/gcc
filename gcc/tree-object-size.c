@@ -172,7 +172,7 @@ compute_object_offset (const_tree expr, const_tree var)
    is true, else null.  An object's initializer affects the object's
    size if it's a struct type with a flexible array member.  */
 
-static tree
+tree
 decl_init_size (tree decl, bool min)
 {
   tree size = DECL_SIZE_UNIT (decl);
@@ -259,6 +259,11 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 	  offset_int mem_offset;
 	  if (mem_ref_offset (pt_var).is_constant (&mem_offset))
 	    {
+	      if (*poff)
+		*poff = wide_int_to_tree (ptrdiff_type_node,
+					  mem_offset + wi::to_offset (*poff));
+	      else
+		*poff = wide_int_to_tree (ptrdiff_type_node, mem_offset);
 	      offset_int dsz = wi::sub (sz, mem_offset);
 	      if (wi::neg_p (dsz))
 		sz = 0;
@@ -413,12 +418,12 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
       bytes = compute_object_offset (TREE_OPERAND (ptr, 0), var);
       if (bytes != error_mark_node)
 	{
+	  *poff = bytes;
 	  if (TREE_CODE (bytes) == INTEGER_CST
 	      && tree_int_cst_lt (var_size, bytes))
 	    bytes = size_zero_node;
 	  else
 	    bytes = size_binop (MINUS_EXPR, var_size, bytes);
-	  *poff = bytes;
 	}
       if (var != pt_var
 	  && pt_var_size
@@ -441,7 +446,11 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
   else if (!pt_var_size)
     return false;
   else
-    bytes = pt_var_size;
+    {
+      bytes = pt_var_size;
+      if (!*poff)
+	*poff = size_zero_node;
+    }
 
   if (tree_fits_uhwi_p (bytes))
     {

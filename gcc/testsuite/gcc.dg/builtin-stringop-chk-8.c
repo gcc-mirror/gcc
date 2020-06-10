@@ -106,7 +106,7 @@ void test_memop_warn_alloc (void *p)
 
   memcpy (p, &a[0], n);   /* { dg-warning "reading between 8 and 32 bytes from a region of size 4" "memcpy from allocated" } */
 
-  memcpy (p, &a[0].a, n);   /* { dg-warning "reading between 8 and 32 bytes from a region of size 4" "memcpy from allocated" { xfail *-*-*} } */
+  memcpy (p, &a[0].a, n);   /* { dg-warning "reading between 8 and 32 bytes from a region of size " "memcpy from allocated" } */
 
   n = range (12, 32);
 
