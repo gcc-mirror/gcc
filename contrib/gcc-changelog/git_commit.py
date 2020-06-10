@@ -159,12 +159,10 @@ LINE_LIMIT = 100
 TAB_WIDTH = 8
 CO_AUTHORED_BY_PREFIX = 'co-authored-by: '
 CHERRY_PICK_PREFIX = '(cherry picked from commit '
-REVIEWED_BY_PREFIX = 'reviewed-by: '
-REVIEWED_ON_PREFIX = 'reviewed-on: '
-SIGNED_OFF_BY_PREFIX = 'signed-off-by: '
 
-REVIEW_PREFIXES = (REVIEWED_BY_PREFIX, REVIEWED_ON_PREFIX,
-                   SIGNED_OFF_BY_PREFIX)
+REVIEW_PREFIXES = ('reviewed-by: ', 'reviewed-on: ', 'signed-off-by: ',
+                   'acked-by: ', 'tested-by: ', 'reported-by: ',
+                   'suggested-by: ')
 
 
 class Error:

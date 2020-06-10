@@ -161,8 +161,9 @@ class TestGccChangelog(unittest.TestCase):
 
     def test_additional_author_list(self):
         email = self.from_patch_glob('0342')
-        assert (email.errors[1].message == 'additional author must be indented '
-                                           'with one tab and four spaces')
+        msg = 'additional author must be indented ' \
+              'with one tab and four spaces'
+        assert email.errors[1].message == msg
 
     def test_trailing_whitespaces(self):
         email = self.get_git_email('trailing-whitespaces.patch')

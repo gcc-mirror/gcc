@@ -2430,6 +2430,10 @@ Signed-off-by: Keith Packard <keithp@keithp.com>
 Reviewed-by: Keith Packard <keithp@keithp.com>
 Reviewed-on: Keith Packard <keithp@keithp.com>
 Co-Authored-by: Keith Packard <keithp@keithp.com>
+Acked-By: Keith Packard <keithp@keithp.com>
+Tested-by: Keith Packard <keithp@keithp.com>
+Reported-by: Keith Packard <keithp@keithp.com>
+Suggested-by: Keith Packard <keithp@keithp.com>
 ---
  gcc/ChangeLog            |  5 +++++
  gcc/config/riscv/riscv.c | 40 ++++++++++++++++++++++++++++++++++++++++
