@@ -3452,11 +3452,15 @@ namespace ranges
 		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	if constexpr (__detail::__is_normal_iterator<_Iter1>
-		      || __detail::__is_normal_iterator<_Iter2>)
-	  return (*this)(std::__niter_base(std::move(__first1)),
-			 std::__niter_base(std::move(__last1)),
-			 std::__niter_base(std::move(__first2)),
-			 std::__niter_base(std::move(__last2)),
+		      && same_as<_Iter1, _Sent1>)
+	  return (*this)(__first1.base(), __last1.base(),
+			 std::move(__first2), std::move(__last2),
+			 std::move(__comp),
+			 std::move(__proj1), std::move(__proj2));
+	else if constexpr (__detail::__is_normal_iterator<_Iter2>
+			   && same_as<_Iter2, _Sent2>)
+	  return (*this)(std::move(__first1), std::move(__last1),
+			 __first2.base(), __last2.base(),
 			 std::move(__comp),
 			 std::move(__proj1), std::move(__proj2));
 	else
