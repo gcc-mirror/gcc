@@ -269,7 +269,7 @@ void test_strncpy_array (Dest *pd, int i, const char* s)
   CPY (dst7, s, 7);                 /* { dg-warning "specified bound 7 equals destination size" } */
   CPY (dst7, s, sizeof dst7);       /* { dg-warning "specified bound 7 equals destination size" } */
 
-  CPY (dst2_5[0], s, sizeof dst2_5[0]); /* { dg-warning "specified bound 5 equals destination size" "bug 77293" { xfail *-*-* } } */
+  CPY (dst2_5[0], s, sizeof dst2_5[0]); /* { dg-warning "specified bound 5 equals destination size" "bug 77293" } */
   CPY (dst2_5[1], s, sizeof dst2_5[1]); /* { dg-warning "specified bound 5 equals destination size" } */
 
   /* Verify that copies that nul-terminate are not diagnosed.  */
