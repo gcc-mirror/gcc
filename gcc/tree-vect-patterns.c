@@ -5503,4 +5503,7 @@ vect_pattern_recog (vec_info *vinfo)
 				  &vect_vect_recog_func_ptrs[j], stmt_info);
 	}
     }
+
+  /* After this no more add_stmt calls are allowed.  */
+  vinfo->stmt_vec_info_ro = true;
 }

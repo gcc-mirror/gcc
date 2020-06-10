@@ -461,6 +461,7 @@ vec_info::vec_info (vec_info::vec_kind kind_in, void *target_cost_data_in,
 		    vec_info_shared *shared_)
   : kind (kind_in),
     shared (shared_),
+    stmt_vec_info_ro (false),
     target_cost_data (target_cost_data_in)
 {
   stmt_vec_infos.create (50);
@@ -619,8 +620,7 @@ vec_info::replace_stmt (gimple_stmt_iterator *gsi, stmt_vec_info stmt_info,
 {
   gimple *old_stmt = stmt_info->stmt;
   gcc_assert (!stmt_info->pattern_stmt_p && old_stmt == gsi_stmt (*gsi));
-  set_vinfo_for_stmt (old_stmt, NULL);
-  set_vinfo_for_stmt (new_stmt, stmt_info);
+  gimple_set_uid (new_stmt, gimple_uid (old_stmt));
   stmt_info->stmt = new_stmt;
   gsi_replace (gsi, new_stmt, true);
 }
@@ -666,6 +666,7 @@ vec_info::set_vinfo_for_stmt (gimple *stmt, stmt_vec_info info)
   unsigned int uid = gimple_uid (stmt);
   if (uid == 0)
     {
+      gcc_assert (!stmt_vec_info_ro);
       gcc_checking_assert (info);
       uid = stmt_vec_infos.length () + 1;
       gimple_set_uid (stmt, uid);
