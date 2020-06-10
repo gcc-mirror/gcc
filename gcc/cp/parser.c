@@ -21225,6 +21225,12 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  ref_qual = cp_parser_ref_qualifier_opt (parser);
 		  /* Parse the tx-qualifier.  */
 		  tree tx_qual = cp_parser_tx_qualifier_opt (parser);
+
+		  /* If it turned out that this is e.g. a pointer to a
+		     function, we don't want to delay noexcept parsing.  */
+		  if (declarator == NULL || declarator->kind != cdk_id)
+		    flags &= ~CP_PARSER_FLAGS_DELAY_NOEXCEPT;
+
 		  /* And the exception-specification.  */
 		  exception_specification
 		    = cp_parser_exception_specification_opt (parser,
