@@ -1,3 +1,281 @@
+2020-06-09  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (New_Overloaded_Entity): Add missing call to check
+	subtype conformance of overriding dispatching primitive.
+	* sem_eval.adb (Subtypes_Statically_Match): Handle derivations
+	of private subtypes.
+	* libgnat/g-exptty.adb, libgnat/g-exptty.ads
+	(Set_Up_Communications): Fix the profile since null-exclusion is
+	missing in the access type formals.
+	* sem_disp.ads (Check_Operation_From_Private_View): Adding
+	documentation.
+
+2020-06-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (XEINFO section): Update format description.
+	(Is_Subprogram_Or_Entry): Move pragma to regular section.
+	(Is_Subprogram_Or_Generic_Subprogram): Likewise.
+	* xeinfo.adb (Get_B4): Rename to...
+	(Get_B0): ...this.
+	(Translate_Expr): New procedure extracted from...
+	(XEinfo): ...here.  Try to apply Get_B0 first and then
+	call Translate_Expr to translate supported constructs.
+
+2020-06-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Freeze_Subprogram): Deal with convention C_Family.
+	* freeze.adb (Freeze_Profile): Likewise.  Add missing guard.
+	* sem_mech.adb (Set_Mechanisms): Likewise.
+	* lib-xref.adb (Output_Import_Export_Info): Ditto for C_Variadic.
+	* repinfo.adb (List_Subprogram_Info): Likewise.
+	* sem_prag.adb (Set_Convention_From_Pragma): Move main checks for
+	Stdcall to...
+	(Process_Convention): ...here.  Add checks for C_Variadic.
+	* snames.ads-tmpl: Add Name_C_Variadic_0 .. Name_C_Variadic_16.
+	Use consistent format for subtype declarations.
+	(Convention_Id): Add Convention_C_Variadic_0 .. C_Variadic_16
+	and move Convention_CPP up.
+	(Convention_C_Family): New subtype of Convention_Id.
+	(Convention_C_Variadic): Likewise.
+	(Foreign_Convention): Use explicit upper bound.
+	Add pragma Inline for Is_Configuration_Pragma_Name,
+	Is_Function_Attribute_Name, Is_Internal_Attribute_Name
+	and Is_Procedure_Attribute_Name.
+	* snames.adb-tmpl (Get_Convention_Id): Deal with Name_Variadic_n.
+	(Get_Convention_Name): Deal with Convention_Variadic_n.
+	* types.h (Convention_Id): New typedef.
+	* xsnamest.adb (Name2): New variable.
+	(Is_Conv): New pattern.
+	(Get_Subt1): Likewise.
+	(Get_Subt2): Likewise.
+	Output subtypes of Convention_Id into the C header file.
+
+2020-06-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch3.adb, exp_ch4.adb, exp_ch6.adb, exp_ch9.adb,
+	exp_disp.adb, exp_util.adb: Add comments related to errors that
+	should be moved to semantic analysis. Also replace "?" with "??"
+	in warning messages.
+
+2020-06-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/a-strunb__shared.ads, libgnat/a-strunb__shared.adb
+	(Reference, Unreference): No-op for Empty_Shared_String.
+	Remove unneeded calls to Reference.
+
+2020-06-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Assignment): Remove kludge for
+	AI05-0087.
+	* sem_ch12.adb (Validate_Derived_Type_Instance): Implement
+	AI05-0087 retroactively since it's a binding interpretation.
+
+2020-06-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Has_Foreign_Convention): Fix description.
+	(Component_Alignment): Move around.
+	(Has_DIC): Likewise.
+	(Has_Interrupt_Handler): Likewise.
+	(Has_Invariants): Likewise.
+	(Is_Atomic_Or_VFA): Likewise.
+	(Next_Index): Likewise.
+	(Scope_Depth): Likewise.
+	(Init_Component_Size): Likewise.
+	(Init_Component_Location): Likewise.
+	(Init_Size): Likewise.
+	(Inline Pragmas for functions): Add Corresponding_Function,
+	Corresponding_Procedure, Entry_Max_Queue_Lengths_Array,
+	Finalize_Storage_Only, Has_DIC, Has_Invariants,
+	Initialization_Statements, Is_Anonymous_Access_Type,
+	Next_Stored_Discriminant, Address_Clause, Alignment_Clause,
+	Float_Rep, Has_Foreign_Convention, Has_Non_Limited_View,
+	Is_Constant_Object, Is_Discriminal, Is_Finalizer, Is_Null_State,
+	Is_Prival, Is_Protected_Component, Is_Protected_Record_Type,
+	Is_Subprogram_Or_Entry, Is_Task_Record_Type, Size_Clause,
+	Stream_Size_Clause, Type_High_Bound, Type_Low_Bound, Known_*,
+	Unknown_*.
+	(Inline Pragmas for procedures): Add Set_Corresponding_Function,
+	Set_Corresponding_Procedure, Set_Finalize_Storage_Only,
+	Set_Float_Rep, Set_Initialization_Statements,
+	Init_Normalized_First_Bit, Init_Normalized_Position,
+	Init_Normalized_Position_Max.
+	* einfo.adb (Was_Hidden): Move around.
+	(Is_Packed_Array): Likewise.
+	(Model_Emin_Value): Likewise.
+	(Model_Epsilon_Value): Likewise.
+	(Model_Mantissa_Value): Likewise.
+	(Model_Small_Value): Likewise.
+
+2020-06-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Check_Shared_Variable_Control_Aspects): Require
+	exact match between formal and actual for aspects Atomic and
+	Volatile only for formal derived types.
+
+2020-06-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_util.adb (Side_Effect_Free): Improve handling of
+	N_Aggregate.
+
+2020-06-09  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_res.adb (Resolve_Qualified_Expression): Use Subtype_Mark
+	type.
+
+2020-06-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_aggr.adb (Max_Aggregate_Size): New function to factorize
+	code.
+	(Convert_To_Positional, Aggr_Size_OK): Use Max_Aggregate_Size.
+
+2020-06-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Set_Debug_Info_Defining_Id): New.
+	* exp_ch3.adb, exp_ch8.adb: Call Set_Debug_Info_Defining_Id when
+	relevant.
+
+2020-06-09  Justin Squirek  <squirek@adacore.com>
+
+	* einfo.ads (Returns_By_Ref): Modify documentation to reflect
+	that Returns_By_Ref can be applied to E_Subprogram_Type
+	entities.
+
+2020-06-09  Justin Squirek  <squirek@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Modify expansion
+	of 'Overlaps_Storage to take into account zero sized arrays.
+
+2020-06-09  Bob Duff  <duff@adacore.com>
+
+	* bindo-graphs.adb, bindo-graphs.ads: For each invocation graph,
+	record the corresponding library graph.
+	* bindo-writers.adb (Write_Invocation_Graph_Vertex): Print the
+	lib item name. Remove library graph parameters.
+	* bindo-augmentors.adb, bindo-augmentors.ads,
+	bindo-builders.adb, bindo-diagnostics.adb,
+	bindo-diagnostics.ads, bindo-elaborators.adb: Remove library
+	graph parameters.
+
+2020-06-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Apply_Predicate_Check): Extend trick used for
+	aggregates to qualified aggregates and object declarations
+	* einfo.ads (Has_Own_DIC): Mention the underlying full view.
+	(Has_Own_Invariants): Likewise.
+	(Has_Predicates): Likewise.
+	* exp_util.adb (Build_DIC_Procedure_Declaration): Do not deal
+	with base types explicitly but with underlying full views.
+	(Build_Invariant_Procedure_Declaration): Likewise.
+	* sem_ch13.adb (Build_Predicate_Functions): Do not deal with
+	the full view manually but call Propagate_Predicate_Attributes
+	to propagate attributes to views.
+	(Build_Predicate_Function_Declaration): Likewise.
+	* sem_ch3.adb (Build_Assertion_Bodies_For_Type): Build bodies
+	for private full views with an underlying full view.
+	(Build_Derived_Private_Type): Small comment tweak.
+	(Complete_Private_Subtype): Call Propagate_Predicate_Attributes.
+	(Process_Full_View): Do not deal with base types explicitly for
+	DIC and Invariant attributes.  Deal with underlying full views
+	for them.  Call Propagate_Predicate_Attributes and deal with
+	underlying full views for them.
+	* sem_ch7.adb (Preserve_Full_Attributes): Do not cross propagate
+	DIC and Invariant attributes between full type and its base type.
+	Propagate Predicate attributes from the full to the private view.
+	* sem_ch9.adb (Analyze_Protected_Type_Declaration): Likewise.
+	(Analyze_Task_Type_Declaration): Likewise.
+	* sem_util.ads (Get_Views): Remove Full_Base parameter and add
+	UFull_Typ parameter.
+	(Propagate_Predicate_Attributes): New procedure.
+	* sem_util.adb (Get_Views): Remove Full_Base parameter and add
+	UFull_Typ parameter.  Retrieve the Corresponding_Record_Type
+	from the underlying full view, if any.
+	(Propagate_DIC_Attributes): Remove useless tests.
+	(Propagate_Invariant_Attributes): Likewise.
+	(Propagate_Predicate_Attributes): New procedure.
+
+2020-06-09  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch5.adb (Expand_Predicated_Loop): Perserve the original
+	loop identifier within the expansion.
+
+2020-06-09  Bob Duff  <duff@adacore.com>
+
+	* bindo-graphs.ads (Library_Graph_Edge_Kind): Reorder enumerals
+	to reflect the order of adding edges. Clarify comments.
+	* bindo-graphs.adb (Add_Edge_Kind_Check): Correct the
+	assertions.  Reorder the "when"s to match the order of adding
+	edges, and therefore the order of enumerals in type
+	Library_Graph_Edge_Kind.  Change names to "Old_" and "New_" to
+	clarify what's what.  Combine Invocation_Edge into the "<="
+	test.  Fix the "raise Program_Error" message, which was
+	backwards.
+
+2020-06-09  Bob Duff  <duff@adacore.com>
+
+	* bindo-graphs.adb (Add_Edge_Kind_Check): Add the Image of the
+	old and new Kinds to the raise Program_Error message.
+
+2020-06-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Is_Visible_Component): Do not special-case
+	bodies of instances.
+
+2020-06-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch4.adb (Expand_N_In): Fix handling of null exclusion.
+
+2020-06-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Check_Shared_Variable_Control_Aspects): Require
+	exact match between formal and actual for aspects Atomic,
+	Atomic_Component, Volatile, and Volatile_Components.
+
+2020-06-09  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Add documentation for
+	the --no-separate-return switch of gnatpp.
+
+2020-06-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_warn.adb (Warn_On_Constant_Valid_Condition): Add proper
+	warning tag.
+
+2020-06-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_type.adb (Covers): Fix implementation of AI05-0149.
+	* sem_res.adb: Fix typo.
+
+2020-06-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Build_Master_Renaming): Make name in renaming
+	declaration unique by adding a numeric suffix, to prevent
+	accidental name conflict when several instantiations of a
+	package containing an access_to_incomplete type that designate
+	tasks appear in the same scope.
+
+2020-06-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnarl/a-synbar.ads, libgnarl/a-synbar.adb,
+	libgnarl/a-synbar__posix.ads, libgnarl/a-synbar__posix.adb
+	(Ada.Synchronous_Barriers): Annotate with SPARK_Mode => Off.
+
+2020-06-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_eval.adb (Eval_Relational_Op, Eval_String_Literal,
+	Eval_Type_Conversion): Relax rules on relational operators and
+	type conversions of static string types.
+
+2020-06-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Is_Partially_Initialized_Type):
+	Take Default_Value and Default_Component_Value into account.
+	* sem_ch3.adb (Analyze_Object_Declaration): Update comment.
+
+2020-06-09  Bob Duff  <duff@adacore.com>
+
+	* bindo-graphs.adb (Add_Edge_Kind_Check): Disable failing part
+	of the assertion.
+
 2020-06-08  Steve Baird  <baird@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma.Set_Ravenscar_Profile): Add

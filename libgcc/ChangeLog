@@ -1,3 +1,17 @@
+2020-06-09  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/95494
+	* libgcov-driver.c (write_top_counters): Cast first to
+	intptr_t as sizeof(*) != sizeof(gcov_type).
+	* libgcov.h (gcov_counter_set_if_null): Remove.
+	(gcov_topn_add_value): Cast first to intptr_t and update
+	linked list directly.
+
+2020-06-09  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/unwind-dw2-xtensa.c (uw_install_context): Merge
+	with uw_install_context_1.
+
 2020-06-04  Andreas Schwab  <schwab@suse.de>
 
 	PR target/59230
