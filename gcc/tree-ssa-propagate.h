@@ -124,7 +124,6 @@ class substitute_and_fold_engine
   // FIXME: These are temporarily used for keeping track of IL changes
   // for evrp.  They should be removed before merging upstream.
   virtual void tmp_stats_remove_stmt (gimple *, tree) { }
-  virtual void tmp_stats_pre_fold_bb_end (basic_block) { }
   virtual void tmp_stats_changed_phi (gphi *orig_phi ATTRIBUTE_UNUSED,
 				      gphi *new_phi ATTRIBUTE_UNUSED) { }
 };

@@ -1228,7 +1228,6 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
     }
 
   substitute_and_fold_engine->propagate_into_phi_args (bb);
-  substitute_and_fold_engine->tmp_stats_pre_fold_bb_end (bb);
 
   return NULL;
 }
