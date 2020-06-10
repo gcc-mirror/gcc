@@ -40,7 +40,7 @@ get_fresh_function_name ()
       pretty_printer pp;
       dump_generic_node (&pp, cfun->decl, 0, TDF_VOPS|TDF_MEMSYMS, false);
       const char *str = pp_formatted_text (&pp);
-      result = new char[strlen (str)];
+      result = new char[strlen (str) + 1];
       return strcpy (result, str);
     }
   result = new char[sizeof("UNKNOWN") + 1];
