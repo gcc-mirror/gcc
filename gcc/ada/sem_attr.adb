@@ -7659,9 +7659,7 @@ package body Sem_Attr is
          --  We skip evaluation if the expander is not active. This is not just
          --  an optimization. It is of key importance that we not rewrite the
          --  attribute in a generic template, since we want to pick up the
-         --  setting of the check in the instance, Testing Expander_Active
-         --  might seem an easy way of doing this, but we need to account for
-         --  ASIS needs, so check explicitly for a generic context.
+         --  setting of the check in the instance.
 
          if not Inside_A_Generic then
             declare
@@ -7719,7 +7717,11 @@ package body Sem_Attr is
       --  purpose, a string literal counts as an object (attributes of string
       --  literals can only appear in generated code).
 
-      if Is_Object_Reference (P) or else Nkind (P) = N_String_Literal then
+      if Is_Object_Reference (P)
+        or else Nkind (P) = N_String_Literal
+        or else (Is_Entity_Name (P)
+                 and then Ekind (Entity (P)) = E_Enumeration_Literal)
+      then
 
          --  For Component_Size, the prefix is an array object, and we apply
          --  the attribute to the type of the object. This is allowed for both
@@ -8416,8 +8418,8 @@ package body Sem_Attr is
       when Attribute_Constrained =>
 
          --  The expander might fold it and set the static flag accordingly,
-         --  but with expansion disabled (as in ASIS), it remains as an
-         --  attribute reference, and this reference is not static.
+         --  but with expansion disabled, it remains as an attribute reference,
+         --  and this reference is not static.
 
          Set_Is_Static_Expression (N, False);
 
@@ -8533,7 +8535,7 @@ package body Sem_Attr is
       --------------
 
       when Attribute_Enum_Val => Enum_Val : declare
-         Lit : Node_Id;
+         Lit : Entity_Id;
 
       begin
          --  We have something like Enum_Type'Enum_Val (23), so search for a

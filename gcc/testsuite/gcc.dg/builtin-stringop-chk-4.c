@@ -99,7 +99,7 @@ void test_memcpy_range (void *d, const void *s)
 
   memcpy (buf + 5, s, UR (1, 2));  /* { dg-warning "writing between 1 and 2 bytes into a region of size 0 overflows the destination" } */
 
-  memcpy (buf + size_max, s, UR (1, 2));  /* { dg-warning "writing between 1 and 2 bytes into a region of size 0 overflows the destination" "excessive pointer offset" { xfail *-*-* } } */
+  memcpy (buf + size_max, s, UR (1, 2));  /* { dg-warning "writing between 1 and 2 bytes into a region of size 0 overflows the destination" "excessive pointer offset" } */
 
   memcpy (buf, s, UR (ssize_max, size_max));   /* { dg-warning "writing \[0-9\]+ or more bytes into a region of size 5 overflows the destination" } */
   memcpy (buf, s, UR (ssize_max + 1, size_max));  /* { dg-warning "specified \(bound|size\) between \[0-9\]+ and \[0-9\]+ exceeds maximum object size" } */

@@ -152,12 +152,39 @@ extern bool target_char_cst_p (tree t, char *p);
 extern internal_fn associated_internal_fn (tree);
 extern internal_fn replacement_internal_fn (gcall *);
 
-bool check_nul_terminated_array (tree, tree, tree = NULL_TREE);
+extern bool check_nul_terminated_array (tree, tree, tree = NULL_TREE);
 extern void warn_string_no_nul (location_t, const char *, tree, tree);
 extern tree unterminated_array (tree, tree * = NULL, bool * = NULL);
 extern bool builtin_with_linkage_p (tree);
-extern bool check_access (tree, tree, tree, tree, tree, tree, tree,
-			  bool = true);
 
+/* Describes a reference to an object used in an access.  */
+struct access_ref
+{
+  access_ref (): ref ()
+  {
+    /* Set to valid.  */
+    offrng[0] = offrng[1] = 0;
+    /* Invalidate.   */
+    sizrng[0] = sizrng[1] = -1;
+  }
+
+  /* Reference to the object.  */
+  tree ref;
+
+  /* Range of offsets into and sizes of the object(s).  */
+  offset_int offrng[2];
+  offset_int sizrng[2];
+};
+
+/* Describes a pair of references used in an access by built-in
+   functions like memcpy.  */
+struct access_data
+{
+  /* Destination and source of the access.  */
+  access_ref dst, src;
+};
+
+extern bool check_access (tree, tree, tree, tree, tree, tree, tree,
+			  bool = true, const access_data * = NULL);
 
 #endif /* GCC_BUILTINS_H */

@@ -421,15 +421,6 @@ package body Sem_Ch6 is
          Relocate_Pragmas_To_Body (N);
          Analyze (N);
 
-         --  Once the aspects of the generated body have been analyzed, create
-         --  a copy for ASIS purposes and associate it with the original node.
-         --  Is this still needed???
-
-         if Has_Aspects (N) then
-            Set_Aspect_Specifications (Orig_N,
-              New_Copy_List_Tree (Aspect_Specifications (N)));
-         end if;
-
          --  Prev is the previous entity with the same name, but it is can
          --  be an unrelated spec that is not completed by the expression
          --  function. In that case the relevant entity is the one in the body.
@@ -482,15 +473,6 @@ package body Sem_Ch6 is
          Remove_Aspects (Orig_N);
 
          Analyze (N);
-
-         --  Once the aspects of the generated spec have been analyzed, create
-         --  a copy for ASIS purposes and associate it with the original node.
-         --  Is this still needed???
-
-         if Has_Aspects (N) then
-            Set_Aspect_Specifications (Orig_N,
-              New_Copy_List_Tree (Aspect_Specifications (N)));
-         end if;
 
          --  If aspect SPARK_Mode was specified on the body, it needs to be
          --  repeated both on the generated spec and the body.

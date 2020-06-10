@@ -899,13 +899,6 @@ package body Sem_Ch8 is
             T := Defining_Identifier (Dec);
             Set_Etype (Nam, T);
          end if;
-
-         --  Complete analysis of the subtype mark in any case, for ASIS use
-
-         if Present (Subtype_Mark (N)) then
-            Find_Type (Subtype_Mark (N));
-         end if;
-
       elsif Present (Subtype_Mark (N))
         or else not Present (Access_Definition (N))
       then
@@ -7595,8 +7588,7 @@ package body Sem_Ch8 is
                   --  routines, but this is too tricky for that.
 
                   --  Note that using Rewrite would be wrong, because we would
-                  --  have a tree where the original node is unanalyzed, and
-                  --  this violates the required interface for ASIS.
+                  --  have a tree where the original node is unanalyzed.
 
                   Replace (P,
                     Make_Function_Call (Sloc (P), Name => Nam));
@@ -7646,9 +7638,9 @@ package body Sem_Ch8 is
 
             --  It is not an error if the prefix is the current instance of
             --  type name, e.g. the expression of a type aspect, when it is
-            --  analyzed for ASIS use, or within a generic unit. We still
-            --  have to verify that a component of that name exists, and
-            --  decorate the node accordingly.
+            --  analyzed within a generic unit. We still have to verify that a
+            --  component of that name exists, and decorate the node
+            --  accordingly.
 
             elsif Is_Entity_Name (P) and then Is_Current_Instance (P) then
                declare

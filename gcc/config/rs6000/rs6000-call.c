@@ -172,7 +172,9 @@ static const struct
   { "arch_3_00",	PPC_FEATURE2_ARCH_3_00,		1 },
   { "ieee128",		PPC_FEATURE2_HAS_IEEE128,	1 },
   { "darn",		PPC_FEATURE2_DARN,		1 },
-  { "scv",		PPC_FEATURE2_SCV,		1 }
+  { "scv",		PPC_FEATURE2_SCV,		1 },
+  { "arch_3_1",		PPC_FEATURE2_ARCH_3_1,		1 },
+  { "mma",		PPC_FEATURE2_MMA,		1 },
 };
 
 static void altivec_init_builtins (void);

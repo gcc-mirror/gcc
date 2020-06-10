@@ -316,8 +316,8 @@ package body Exp_Aggr is
    function Max_Aggregate_Size
      (Typ          : Entity_Id;
       Default_Size : Nat := 5000) return Nat;
-   --  Return the max size for a static aggregate for the given Typ.
-   --  Return Default_Size if no other special criteria triggers.
+   --  Return the max size for a static aggregate of the given Typ.
+   --  Return Default_Size if no other special criteria trigger.
 
    function Packed_Array_Aggregate_Handled (N : Node_Id) return Boolean;
    --  Given an array aggregate, this function handles the case of a packed
@@ -4283,12 +4283,9 @@ package body Exp_Aggr is
    --  Start of processing for In_Place_Assign_OK
 
    begin
-      --  By-copy semantic cannot be guaranteed for controlled objects or
-      --  objects with discriminants.
+      --  By-copy semantic cannot be guaranteed for controlled objects
 
-      if Needs_Finalization (Etype (N))
-        or else Has_Discriminants (Etype (N))
-      then
+      if Needs_Finalization (Etype (N)) then
          return False;
 
       elsif Is_Array and then Present (Component_Associations (N)) then
@@ -4465,26 +4462,40 @@ package body Exp_Aggr is
       --  assignment.
 
       if Is_Limited_Type (Typ)
-        and then Nkind (Parent (N)) = N_Assignment_Statement
+        and then Parent_Kind = N_Assignment_Statement
       then
-         Target_Expr := New_Copy_Tree (Name (Parent (N)));
-         Insert_Actions (Parent (N),
+         Target_Expr := New_Copy_Tree (Name (Parent_Node));
+         Insert_Actions (Parent_Node,
            Build_Record_Aggr_Code (N, Typ, Target_Expr));
-         Rewrite (Parent (N), Make_Null_Statement (Loc));
+         Rewrite (Parent_Node, Make_Null_Statement (Loc));
 
       --  Do not declare a temporary to initialize an aggregate assigned to an
       --  identifier when in-place assignment is possible, preserving the
       --  by-copy semantic of aggregates. This avoids large stack usage and
       --  generates more efficient code.
 
-      elsif Nkind (Parent (N)) = N_Assignment_Statement
-        and then Nkind (Name (Parent (N))) = N_Identifier
+      elsif Parent_Kind = N_Assignment_Statement
+        and then Nkind (Name (Parent_Node)) = N_Identifier
         and then In_Place_Assign_OK (N)
       then
-         Target_Expr := New_Copy_Tree (Name (Parent (N)));
-         Insert_Actions (Parent (N),
-           Build_Record_Aggr_Code (N, Typ, Target_Expr));
-         Rewrite (Parent (N), Make_Null_Statement (Loc));
+         declare
+            Lhs : constant Node_Id := Name (Parent_Node);
+         begin
+            --  Apply discriminant check if required
+
+            if Has_Discriminants (Etype (N)) then
+               Apply_Discriminant_Check (N, Etype (Lhs), Lhs);
+            end if;
+
+            --  The check just above may have replaced the aggregate with a CE
+
+            if Nkind_In (N, N_Aggregate, N_Extension_Aggregate) then
+               Target_Expr := New_Copy_Tree (Lhs);
+               Insert_Actions (Parent_Node,
+                 Build_Record_Aggr_Code (N, Typ, Target_Expr));
+               Rewrite (Parent_Node, Make_Null_Statement (Loc));
+            end if;
+         end;
 
       else
          Temp := Make_Temporary (Loc, 'A', N);

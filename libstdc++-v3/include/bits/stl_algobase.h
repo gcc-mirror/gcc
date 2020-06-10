@@ -1313,6 +1313,25 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 						     __first2, __last2,
 						     __iter_less_iter());
 	}
+
+      template<typename _II1, typename _II2>
+	_GLIBCXX20_CONSTEXPR
+	static int
+	__3way(_II1 __first1, _II1 __last1, _II2 __first2, _II2 __last2)
+	{
+	  while (__first1 != __last1)
+	    {
+	      if (__first2 == __last2)
+		return +1;
+	      if (*__first1 < *__first2)
+		return -1;
+	      if (*__first2 < *__first1)
+		return +1;
+	      ++__first1;
+	      ++__first2;
+	    }
+	  return int(__first2 == __last2) - 1;
+	}
     };
 
   template<>
@@ -1323,21 +1342,28 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	static bool
 	__lc(const _Tp* __first1, const _Tp* __last1,
 	     const _Up* __first2, const _Up* __last2)
+	{ return __3way(__first1, __last1, __first2, __last2) < 0; }
+
+      template<typename _Tp, typename _Up>
+	_GLIBCXX20_CONSTEXPR
+	static ptrdiff_t
+	__3way(const _Tp* __first1, const _Tp* __last1,
+	       const _Up* __first2, const _Up* __last2)
 	{
 	  const size_t __len1 = __last1 - __first1;
 	  const size_t __len2 = __last2 - __first2;
 	  if (const size_t __len = std::min(__len1, __len2))
 	    if (int __result = std::__memcmp(__first1, __first2, __len))
-	      return __result < 0;
-	  return __len1 < __len2;
+	      return __result;
+	  return ptrdiff_t(__len1 - __len2);
 	}
     };
 
   template<typename _II1, typename _II2>
     _GLIBCXX20_CONSTEXPR
     inline bool
-    __lexicographical_compare_aux(_II1 __first1, _II1 __last1,
-				  _II2 __first2, _II2 __last2)
+    __lexicographical_compare_aux1(_II1 __first1, _II1 __last1,
+				   _II2 __first2, _II2 __last2)
     {
       typedef typename iterator_traits<_II1>::value_type _ValueType1;
       typedef typename iterator_traits<_II2>::value_type _ValueType2;
@@ -1359,6 +1385,67 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
       return std::__lexicographical_compare<__simple>::__lc(__first1, __last1,
 							    __first2, __last2);
     }
+
+  template<typename _Tp1, typename _Ref1, typename _Ptr1,
+	   typename _Tp2>
+    bool
+    __lexicographical_compare_aux1(
+	_GLIBCXX_STD_C::_Deque_iterator<_Tp1, _Ref1, _Ptr1>,
+	_GLIBCXX_STD_C::_Deque_iterator<_Tp1, _Ref1, _Ptr1>,
+	_Tp2*, _Tp2*);
+
+  template<typename _Tp1,
+	   typename _Tp2, typename _Ref2, typename _Ptr2>
+    bool
+    __lexicographical_compare_aux1(_Tp1*, _Tp1*,
+	_GLIBCXX_STD_C::_Deque_iterator<_Tp2, _Ref2, _Ptr2>,
+	_GLIBCXX_STD_C::_Deque_iterator<_Tp2, _Ref2, _Ptr2>);
+
+  template<typename _Tp1, typename _Ref1, typename _Ptr1,
+	   typename _Tp2, typename _Ref2, typename _Ptr2>
+    bool
+    __lexicographical_compare_aux1(
+	_GLIBCXX_STD_C::_Deque_iterator<_Tp1, _Ref1, _Ptr1>,
+	_GLIBCXX_STD_C::_Deque_iterator<_Tp1, _Ref1, _Ptr1>,
+	_GLIBCXX_STD_C::_Deque_iterator<_Tp2, _Ref2, _Ptr2>,
+	_GLIBCXX_STD_C::_Deque_iterator<_Tp2, _Ref2, _Ptr2>);
+
+  template<typename _II1, typename _II2>
+    _GLIBCXX20_CONSTEXPR
+    inline bool
+    __lexicographical_compare_aux(_II1 __first1, _II1 __last1,
+				  _II2 __first2, _II2 __last2)
+    {
+      return std::__lexicographical_compare_aux1(std::__niter_base(__first1),
+						 std::__niter_base(__last1),
+						 std::__niter_base(__first2),
+						 std::__niter_base(__last2));
+    }
+
+  template<typename _Iter1, typename _Seq1, typename _Cat1,
+	   typename _II2>
+    bool
+    __lexicographical_compare_aux(
+		const ::__gnu_debug::_Safe_iterator<_Iter1, _Seq1, _Cat1>&,
+		const ::__gnu_debug::_Safe_iterator<_Iter1, _Seq1, _Cat1>&,
+		_II2, _II2);
+
+  template<typename _II1,
+	   typename _Iter2, typename _Seq2, typename _Cat2>
+    bool
+    __lexicographical_compare_aux(
+		_II1, _II1,
+		const ::__gnu_debug::_Safe_iterator<_Iter2, _Seq2, _Cat2>&,
+		const ::__gnu_debug::_Safe_iterator<_Iter2, _Seq2, _Cat2>&);
+
+  template<typename _Iter1, typename _Seq1, typename _Cat1,
+	   typename _Iter2, typename _Seq2, typename _Cat2>
+    bool
+    __lexicographical_compare_aux(
+		const ::__gnu_debug::_Safe_iterator<_Iter1, _Seq1, _Cat1>&,
+		const ::__gnu_debug::_Safe_iterator<_Iter1, _Seq1, _Cat1>&,
+		const ::__gnu_debug::_Safe_iterator<_Iter2, _Seq2, _Cat2>&,
+		const ::__gnu_debug::_Safe_iterator<_Iter2, _Seq2, _Cat2>&);
 
   template<typename _ForwardIterator, typename _Tp, typename _Compare>
     _GLIBCXX20_CONSTEXPR
@@ -1659,10 +1746,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_requires_valid_range(__first1, __last1);
       __glibcxx_requires_valid_range(__first2, __last2);
 
-      return std::__lexicographical_compare_aux(std::__niter_base(__first1),
-						std::__niter_base(__last1),
-						std::__niter_base(__first2),
-						std::__niter_base(__last2));
+      return std::__lexicographical_compare_aux(__first1, __last1,
+						__first2, __last2);
     }
 
   /**

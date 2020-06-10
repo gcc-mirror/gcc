@@ -52,14 +52,13 @@ package body Exp_SPARK is
    -----------------------
 
    procedure Expand_SPARK_N_Attribute_Reference (N : Node_Id);
-   --  Replace occurrences of System'To_Address by calls to
-   --  System.Storage_Elements.To_Address
+   --  Perform attribute-reference-specific expansion
 
    procedure Expand_SPARK_N_Freeze_Type (E : Entity_Id);
    --  Build the DIC procedure of a type when needed, if not already done
 
    procedure Expand_SPARK_N_Loop_Statement (N : Node_Id);
-   --  Perform loop statement-specific expansion
+   --  Perform loop-statement-specific expansion
 
    procedure Expand_SPARK_N_Object_Declaration (N : Node_Id);
    --  Perform object-declaration-specific expansion
@@ -199,29 +198,6 @@ package body Exp_SPARK is
              Parameter_Associations => New_List (Expr)));
          Analyze_And_Resolve (N, Typ);
 
-      --  Whenever possible, replace a prefix which is an enumeration literal
-      --  by the corresponding literal value, just like it happens in the GNAT
-      --  expander.
-
-      elsif Attr_Id = Attribute_Enum_Rep then
-         declare
-            Exprs : constant List_Id := Expressions (N);
-         begin
-            if Is_Non_Empty_List (Exprs) then
-               Expr := First (Exprs);
-            else
-               Expr := Prefix (N);
-            end if;
-
-            --  If the argument is a literal, expand it
-
-            if Nkind (Expr) in N_Has_Entity
-              and then Ekind (Entity (Expr)) = E_Enumeration_Literal
-            then
-               Exp_Attr.Expand_N_Attribute_Reference (N);
-            end if;
-         end;
-
       elsif Attr_Id = Attribute_Object_Size
         or else Attr_Id = Attribute_Size
         or else Attr_Id = Attribute_Value_Size
@@ -289,12 +265,6 @@ package body Exp_SPARK is
             Analyze_And_Resolve (N, Standard_Boolean);
          end if;
 
-      --  For attributes First and Last simply reuse the standard expansion
-
-      elsif Attr_Id = Attribute_First
-        or else Attr_Id = Attribute_Last
-      then
-         Exp_Attr.Expand_N_Attribute_Reference (N);
       end if;
    end Expand_SPARK_N_Attribute_Reference;
 

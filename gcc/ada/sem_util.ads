@@ -1367,6 +1367,11 @@ package Sem_Util is
    --  function is used to check if "=" has to be expanded into a bunch
    --  component comparisons.
 
+   function Has_Unconstrained_Access_Discriminants
+     (Subtyp : Entity_Id) return Boolean;
+   --  Returns True if the given subtype is unconstrained and has one or more
+   --  access discriminants.
+
    function Has_Undefined_Reference (Expr : Node_Id) return Boolean;
    --  Given arbitrary expression Expr, determine whether it contains at
    --  least one name whose entity is Any_Id.
@@ -1513,6 +1518,10 @@ package Sem_Util is
    --  Obtain the invalid value for scalar type Scal_Typ as either specified by
    --  pragma Initialize_Scalars or by the binder. Return an expression created
    --  at source location Loc, which denotes the invalid value.
+
+   function Is_Access_Subprogram_Wrapper (E : Entity_Id) return Boolean;
+   --  True if E is the constructed wrapper for an access_to_subprogram
+   --  type with Pre/Postconditions.
 
    function Is_Actual_Out_Parameter (N : Node_Id) return Boolean;
    --  Determines if N is an actual parameter of out mode in a subprogram call
@@ -2251,6 +2260,12 @@ package Sem_Util is
    --  syntactic ambiguity that results from an indexing of a function call
    --  that returns an array, so that Obj.F (X, Y) may mean F (Ob) (X, Y).
 
+   function Needs_Result_Accessibility_Level
+     (Func_Id : Entity_Id) return Boolean;
+   --  Ada 2012 (AI05-0234): Return True if the function needs an implicit
+   --  parameter to identify the accessibility level of the function result
+   --  "determined by the point of call".
+
    function Needs_Simple_Initialization
      (Typ         : Entity_Id;
       Consider_IS : Boolean := True) return Boolean;
@@ -2713,6 +2728,10 @@ package Sem_Util is
    --  Establish the entity E as the currently visible definition of its
    --  associated name (i.e. the Node_Id associated with its name).
 
+   procedure Set_Debug_Info_Defining_Id (N : Node_Id);
+   --  Call Set_Debug_Info_Needed on Defining_Identifier (N) if it comes
+   --  from source.
+
    procedure Set_Debug_Info_Needed (T : Entity_Id);
    --  Sets the Debug_Info_Needed flag on entity T , and also on any entities
    --  that are needed by T (for an object, the type of the object is needed,
@@ -2720,10 +2739,6 @@ package Sem_Util is
    --  details). Never has any effect on T if the Debug_Info_Off flag is set.
    --  This routine should always be used instead of Set_Needs_Debug_Info to
    --  ensure that subsidiary entities are properly handled.
-
-   procedure Set_Debug_Info_Defining_Id (N : Node_Id);
-   --  Call Set_Debug_Info_Needed on Defining_Identifier (N) if it comes
-   --  from source.
 
    procedure Set_Entity_With_Checks (N : Node_Id; Val : Entity_Id);
    --  This procedure has the same calling sequence as Set_Entity, but it

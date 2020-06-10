@@ -282,6 +282,7 @@ package body Einfo is
 
    --    SPARK_Pragma                    Node40
 
+   --    Access_Subprogram_Wrapper       Node41
    --    Original_Protected_Subprogram   Node41
    --    SPARK_Aux_Pragma                Node41
 
@@ -737,6 +738,12 @@ package body Einfo is
                                    E_Record_Type_With_Private));
       return Node30 (Implementation_Base_Type (Id));
    end Access_Disp_Table_Elab_Flag;
+
+   function Access_Subprogram_Wrapper (Id : E) return E is
+   begin
+      pragma Assert (Ekind (Id) = E_Subprogram_Type);
+      return Node41 (Id);
+   end Access_Subprogram_Wrapper;
 
    function Activation_Record_Component (Id : E) return E is
    begin
@@ -3901,6 +3908,12 @@ package body Einfo is
       pragma Assert (Is_Tagged_Type (Id));
       Set_Node30 (Id, V);
    end Set_Access_Disp_Table_Elab_Flag;
+
+   procedure Set_Access_Subprogram_Wrapper (Id : E; V : E) is
+   begin
+      pragma Assert (Ekind (Id) = E_Subprogram_Type);
+      Set_Node41 (Id, V);
+   end Set_Access_Subprogram_Wrapper;
 
    procedure Set_Anonymous_Designated_Type (Id : E; V : E) is
    begin
@@ -11410,6 +11423,9 @@ package body Einfo is
             | E_Task_Type
          =>
             Write_Str ("SPARK_Aux_Pragma");
+
+         when E_Subprogram_Type =>
+            Write_Str ("Access_Subprogram_Wrapper");
 
          when others =>
             Write_Str ("Field41??");

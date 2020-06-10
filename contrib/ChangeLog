@@ -1,3 +1,14 @@
+2020-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gcc-changelog/git_email.py: Set exit status on error.
+
+2020-06-09  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Fix ChangeLog regex in order to
+	match the top-level ChangeLog.
+	* gcc-changelog/test_email.py: Add test.
+	* gcc-changelog/test_patches.txt: Likewise.
+
 2020-06-02  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Support foo/bar/*: patterns in

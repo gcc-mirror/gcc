@@ -21283,6 +21283,11 @@ cp_parser_direct_declarator (cp_parser* parser,
 		    /* DR 1207: 'this' is in scope after the cv-quals.  */
 		    inject_this_parameter (current_class_type, cv_quals);
 
+		  /* If it turned out that this is e.g. a pointer to a
+		     function, we don't want to delay noexcept parsing.  */
+		  if (declarator == NULL || declarator->kind != cdk_id)
+		    flags &= ~CP_PARSER_FLAGS_DELAY_NOEXCEPT;
+
 		  /* Parse the exception-specification.  */
 		  exception_specification
 		    = cp_parser_exception_specification_opt (parser,

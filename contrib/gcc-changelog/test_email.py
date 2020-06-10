@@ -20,6 +20,8 @@ import os
 import tempfile
 import unittest
 
+from git_commit import GitCommit
+
 from git_email import GitEmail
 
 import unidiff
@@ -27,6 +29,12 @@ import unidiff
 script_path = os.path.dirname(os.path.realpath(__file__))
 
 unidiff_supports_renaming = hasattr(unidiff.PatchedFile(), 'is_rename')
+
+
+NAME_STATUS1 = """
+M	gcc/ada/impunit.adb'
+R097	gcc/ada/libgnat/s-atopar.adb	gcc/ada/libgnat/s-aoinar.adb
+"""
 
 
 class TestGccChangelog(unittest.TestCase):
@@ -105,7 +113,7 @@ class TestGccChangelog(unittest.TestCase):
         email = self.from_patch_glob('0096')
         assert email.errors
         err = email.errors[0]
-        assert err.message == 'file not changed in a patch'
+        assert err.message == 'unchanged file mentioned in a ChangeLog'
         assert err.line == 'gcc/testsuite/gcc.target/aarch64/' \
                            'advsimd-intrinsics/vdot-compile-3-1.c'
 
@@ -161,8 +169,9 @@ class TestGccChangelog(unittest.TestCase):
 
     def test_additional_author_list(self):
         email = self.from_patch_glob('0342')
-        assert (email.errors[1].message == 'additional author must prepend '
-                                           'with tab and 4 spaces')
+        msg = 'additional author must be indented ' \
+              'with one tab and four spaces'
+        assert email.errors[1].message == msg
 
     def test_trailing_whitespaces(self):
         email = self.get_git_email('trailing-whitespaces.patch')
@@ -260,8 +269,8 @@ class TestGccChangelog(unittest.TestCase):
 
     def test_wrong_changelog_entry(self):
         email = self.from_patch_glob('0020-IPA-Avoid')
-        assert (email.errors[0].message
-                == 'first line should start with a tab, asterisk and space')
+        msg = 'first line should start with a tab, an asterisk and a space'
+        assert (email.errors[0].message == msg)
 
     def test_cherry_pick_format(self):
         email = self.from_patch_glob('0001-c-Alias.patch')
@@ -336,3 +345,9 @@ class TestGccChangelog(unittest.TestCase):
         email = self.from_patch_glob('0001-configure.patch')
         assert not email.errors
         assert len(email.changelog_entries) == 2
+
+    def test_parse_git_name_status(self):
+        modified_files = GitCommit.parse_git_name_status(NAME_STATUS1)
+        assert len(modified_files) == 3
+        assert modified_files[1] == ('gcc/ada/libgnat/s-atopar.adb', 'D')
+        assert modified_files[2] == ('gcc/ada/libgnat/s-aoinar.adb', 'A')

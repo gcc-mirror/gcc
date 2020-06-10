@@ -1081,7 +1081,8 @@ GNATMAKE = @GNATMAKE@
 # Libs needed (at present) just for jcf-dump.
 LDEXP_LIB = @LDEXP_LIB@
 
-ZSTD_LIB = @ZSTD_LIB@
+ZSTD_INC = @ZSTD_CPPFLAGS@
+ZSTD_LIB = @ZSTD_LDFLAGS@ @ZSTD_LIB@
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
@@ -2286,7 +2287,7 @@ CFLAGS-version.o += -DBASEVER=$(BASEVER_s) -DDATESTAMP=$(DATESTAMP_s) \
 version.o: $(REVISION) $(DATESTAMP) $(BASEVER) $(DEVPHASE)
 
 # lto-compress.o needs $(ZLIBINC) added to the include flags.
-CFLAGS-lto-compress.o += $(ZLIBINC)
+CFLAGS-lto-compress.o += $(ZLIBINC) $(ZSTD_INC)
 
 CFLAGS-lto-streamer-in.o += -DTARGET_MACHINE=\"$(target_noncanonical)\"
 

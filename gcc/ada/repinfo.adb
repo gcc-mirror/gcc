@@ -13,16 +13,10 @@
 -- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
--- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
---                                                                          --
--- As a special exception under Section 7 of GPL version 3, you are granted --
--- additional permissions described in the GCC Runtime Library Exception,   --
--- version 3.1, as published by the Free Software Foundation.               --
---                                                                          --
--- You should have received a copy of the GNU General Public License and    --
--- a copy of the GCC Runtime Library Exception along with this program;     --
--- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
--- <http://www.gnu.org/licenses/>.                                          --
+-- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
+-- for  more details.  You should have  received  a copy of the GNU General --
+-- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
+-- http://www.gnu.org/licenses for a complete copy of the license.          --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
@@ -30,23 +24,25 @@
 ------------------------------------------------------------------------------
 
 with Alloc;
-with Atree;   use Atree;
-with Casing;  use Casing;
-with Debug;   use Debug;
-with Einfo;   use Einfo;
-with Lib;     use Lib;
-with Namet;   use Namet;
-with Nlists;  use Nlists;
-with Opt;     use Opt;
-with Output;  use Output;
-with Sem_Aux; use Sem_Aux;
-with Sinfo;   use Sinfo;
-with Sinput;  use Sinput;
-with Snames;  use Snames;
-with Stringt; use Stringt;
+with Atree;    use Atree;
+with Casing;   use Casing;
+with Debug;    use Debug;
+with Einfo;    use Einfo;
+with Lib;      use Lib;
+with Namet;    use Namet;
+with Nlists;   use Nlists;
+with Opt;      use Opt;
+with Output;   use Output;
+with Sem_Aux;  use Sem_Aux;
+with Sem_Eval; use Sem_Eval;
+with Sinfo;    use Sinfo;
+with Sinput;   use Sinput;
+with Snames;   use Snames;
+with Stringt;  use Stringt;
 with Table;
-with Uname;   use Uname;
-with Urealp;  use Urealp;
+with Ttypes;
+with Uname;    use Uname;
+with Urealp;   use Urealp;
 
 with Ada.Unchecked_Conversion;
 
@@ -54,10 +50,8 @@ with GNAT.HTable;
 
 package body Repinfo is
 
-   SSU : constant := 8;
-   --  Value for Storage_Unit, we do not want to get this from TTypes, since
-   --  this introduces problematic dependencies in ASIS, and in any case this
-   --  value is assumed to be 8 for the implementation of the DDA.
+   SSU : Pos renames Ttypes.System_Storage_Unit;
+   --  Value for Storage_Unit
 
    ---------------------------------------
    -- Representation of GCC Expressions --
@@ -147,7 +141,7 @@ package body Repinfo is
    function Back_End_Layout return Boolean;
    --  Test for layout mode, True = back end, False = front end. This function
    --  is used rather than checking the configuration parameter because we do
-   --  not want Repinfo to depend on Targparm (for ASIS)
+   --  not want Repinfo to depend on Targparm.
 
    procedure List_Entities
      (Ent              : Entity_Id;
@@ -830,35 +824,8 @@ package body Repinfo is
    -------------------------
 
    procedure List_Linker_Section (Ent : Entity_Id) is
-      function Expr_Value_S (N : Node_Id) return Node_Id;
-      --  Returns the folded value of the expression. This function is called
-      --  in instances where it has already been determined that the expression
-      --  is static or its value is known at compile time. This version is used
-      --  for string types and returns the corresponding N_String_Literal node.
-      --  NOTE: This is an exact copy of Sem_Eval.Expr_Value_S. Licensing stops
-      --  Repinfo from within Sem_Eval. Once ASIS is removed, and the licenses
-      --  are modified, Repinfo should be able to rely on Sem_Eval.
-
-      ------------------
-      -- Expr_Value_S --
-      ------------------
-
-      function Expr_Value_S (N : Node_Id) return Node_Id is
-      begin
-         if Nkind (N) = N_String_Literal then
-            return N;
-         else
-            pragma Assert (Ekind (Entity (N)) = E_Constant);
-            return Expr_Value_S (Constant_Value (Entity (N)));
-         end if;
-      end Expr_Value_S;
-
-      --  Local variables
-
       Args : List_Id;
       Sect : Node_Id;
-
-   --  Start of processing for List_Linker_Section
 
    begin
       if Present (Linker_Section_Pragma (Ent)) then

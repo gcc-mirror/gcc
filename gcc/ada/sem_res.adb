@@ -3322,7 +3322,7 @@ package body Sem_Res is
 
       procedure Flag_Effectively_Volatile_Objects (Expr : Node_Id);
       --  Emit an error concerning the illegal usage of an effectively volatile
-      --  object in interfering context (SPARK RM 7.13(12)).
+      --  object in interfering context (SPARK RM 7.1.3(12)).
 
       procedure Insert_Default;
       --  If the actual is missing in a call, insert in the actuals list
@@ -6139,26 +6139,6 @@ package body Sem_Res is
 
             Get_Next_Interp (I, It);
          end loop;
-      end if;
-
-      if Is_Access_Subprogram_Type (Base_Type (Etype (Nam)))
-        and then not Is_Access_Subprogram_Type (Base_Type (Typ))
-        and then Nkind (Subp) /= N_Explicit_Dereference
-        and then Present (Parameter_Associations (N))
-      then
-         --  The prefix is a parameterless function call that returns an access
-         --  to subprogram. If parameters are present in the current call, add
-         --  add an explicit dereference. We use the base type here because
-         --  within an instance these may be subtypes.
-
-         --  The dereference is added either in Analyze_Call or here. Should
-         --  be consolidated ???
-
-         Set_Is_Overloaded (Subp, False);
-         Set_Etype (Subp, Etype (Nam));
-         Insert_Explicit_Dereference (Subp);
-         Nam := Designated_Type (Etype (Nam));
-         Resolve (Subp, Nam);
       end if;
 
       --  Check that a call to Current_Task does not occur in an entry body
@@ -13086,8 +13066,16 @@ package body Sem_Res is
                   end if;
                end if;
 
+            --  Check if the operand is deeper than the target type, taking
+            --  care to avoid the case where we are converting a result of a
+            --  function returning an anonymous access type since the "master
+            --  of the call" would be target type of the conversion in all
+            --  cases - see RM 10.3/3.
+
             elsif Type_Access_Level (Opnd_Type) >
                     Deepest_Type_Access_Level (Target_Type)
+              and then not (Nkind (Associated_Node_For_Itype (Opnd_Type)) =
+                                     N_Function_Specification)
             then
                --  In an instance, this is a run-time check, but one we know
                --  will fail, so generate an appropriate warning. The raise

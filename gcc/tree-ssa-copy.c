@@ -492,13 +492,13 @@ init_copy_prop (void)
 class copy_folder : public substitute_and_fold_engine
 {
  public:
-  tree get_value (tree) FINAL OVERRIDE;
+  tree get_value (tree, gimple *) FINAL OVERRIDE;
 };
 
 /* Callback for substitute_and_fold to get at the final copy-of values.  */
 
 tree
-copy_folder::get_value (tree name)
+copy_folder::get_value (tree name, gimple *stmt ATTRIBUTE_UNUSED)
 {
   tree val;
   if (SSA_NAME_VERSION (name) >= n_copy_of)

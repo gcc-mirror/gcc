@@ -1,3 +1,103 @@
+2020-06-09  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/ppc-auxv.h (PPC_PLATFORM_FUTURE): Allocate
+	'future' PowerPC platform.
+	(PPC_FEATURE2_ARCH_3_1): New HWCAP2 bit for ISA 3.1.
+	(PPC_FEATURE2_MMA): New HWCAP2 bit for MMA.
+	* config/rs6000/rs6000-call.c (cpu_supports_info): Add ISA 3.1 and
+	MMA HWCAP2 bits.
+	* config/rs6000/rs6000.c (CLONE_ISA_3_1): New clone support.
+	(rs6000_clone_map): Add 'future' system target_clones support.
+
+2020-06-09  Michael Kuhn  <gcc@ikkoku.de>
+
+	* Makefile.in (ZSTD_INC): Define.
+	(ZSTD_LIB): Include ZSTD_LDFLAGS.
+	(CFLAGS-lto-compress.o): Add ZSTD_INC.
+	* configure.ac (ZSTD_CPPFLAGS, ZSTD_LDFLAGS): New variables for
+	AC_SUBST.
+	* configure: Rebuilt.
+
+2020-06-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95552
+	* tree.c (walk_tree_1): Call func on the TYPE_DECL of a DECL_EXPR.
+
+2020-06-09  Marco Elver  <elver@google.com>
+
+	* params.opt: Define --param=tsan-distinguish-volatile=[0,1].
+	* sanitizer.def (BUILT_IN_TSAN_VOLATILE_READ1): Define new
+	builtin for volatile instrumentation of reads/writes.
+	(BUILT_IN_TSAN_VOLATILE_READ2): Likewise.
+	(BUILT_IN_TSAN_VOLATILE_READ4): Likewise.
+	(BUILT_IN_TSAN_VOLATILE_READ8): Likewise.
+	(BUILT_IN_TSAN_VOLATILE_READ16): Likewise.
+	(BUILT_IN_TSAN_VOLATILE_WRITE1): Likewise.
+	(BUILT_IN_TSAN_VOLATILE_WRITE2): Likewise.
+	(BUILT_IN_TSAN_VOLATILE_WRITE4): Likewise.
+	(BUILT_IN_TSAN_VOLATILE_WRITE8): Likewise.
+	(BUILT_IN_TSAN_VOLATILE_WRITE16): Likewise.
+	* tsan.c (get_memory_access_decl): Argument if access is
+	volatile. If param tsan-distinguish-volatile is non-zero, and
+	access if volatile, return volatile instrumentation decl.
+	(instrument_expr): Check if access is volatile.
+
+2020-06-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vectorizable_induction): Remove dead code.
+
+2020-06-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-offload.c (add_decls_addresses_to_decl_constructor,
+	omp_finish_file): With in_lto_p, stream out all offload-table
+	items even if the symtab_node does not exist.
+
+2020-06-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.c (vect_transform_stmt): Remove dead code.
+
+2020-06-09  Martin Liska  <mliska@suse.cz>
+
+	* gcov-dump.c (print_usage): Fix spacing for --raw option
+	in --help.
+
+2020-06-09  Martin Liska  <mliska@suse.cz>
+
+	* cif-code.def (ATTRIBUTE_MISMATCH): Rename to...
+	(SANITIZE_ATTRIBUTE_MISMATCH): ...this.
+	* ipa-inline.c (sanitize_attrs_match_for_inline_p):
+	Handle all sanitizer options.
+	(can_inline_edge_p): Use renamed CIF_* enum value.
+
+2020-06-09  Joe Ramsay  <joe.ramsay@arm.com>
+
+	* config/aarch64/aarch64-sve.md (<optab><mode>2): Add support for
+	unpacked vectors.
+	(@aarch64_pred_<optab><mode>): Add support for unpacked vectors.
+	(@aarch64_bic<mode>): Enable unpacked BIC.
+	(*bic<mode>3): Enable unpacked BIC.
+
+2020-06-09  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/95365
+	* doc/gcov.texi: Compile and link one example in 2 steps.
+
+2020-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95527
+	* match.pd (__builtin_ffs (X) cmp CST): New optimizations.
+
+2020-06-09  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/ppc-auxv.h (PPC_PLATFORM_FUTURE): Allocate
+	'future' PowerPC platform.
+	(PPC_FEATURE2_ARCH_3_1): New HWCAP2 bit for ISA 3.1.
+	(PPC_FEATURE2_MMA): New HWCAP2 bit for MMA.
+	* config/rs6000/rs6000-call.c (cpu_supports_info): Add ISA 3.1 and
+	MMA HWCAP2 bits.
+	* config/rs6000/rs6000.c (CLONE_ISA_3_1): New clone support.
+	(rs6000_clone_map): Add 'future' system target_clones support.
+
 2020-06-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR lto/94848

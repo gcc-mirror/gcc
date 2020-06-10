@@ -244,11 +244,6 @@ package body Exp_Ch6 is
    --  Expand simple return from function. In the case where we are returning
    --  from a function body this is called by Expand_N_Simple_Return_Statement.
 
-   function Has_Unconstrained_Access_Discriminants
-     (Subtyp : Entity_Id) return Boolean;
-   --  Returns True if the given subtype is unconstrained and has one or more
-   --  access discriminants.
-
    procedure Insert_Post_Call_Actions (N : Node_Id; Post_Call : List_Id);
    --  Insert the Post_Call list previously produced by routine Expand_Actuals
    --  or Expand_Call_Helper into the tree.
@@ -2385,13 +2380,76 @@ package body Exp_Ch6 is
    procedure Expand_Call (N : Node_Id) is
       Post_Call : List_Id;
 
+      --  If this is an indirect call through an Access_To_Subprogram
+      --  with contract specifications, it is rewritten as a call to
+      --  the corresponding Access_Subprogram_Wrapper with the same
+      --  actuals, whose body contains a naked indirect call (which
+      --  itself must not be rewritten, to prevent infinite recursion).
+
+      Must_Rewrite_Indirect_Call : constant Boolean :=
+        Ada_Version >= Ada_2020
+          and then Nkind (Name (N)) = N_Explicit_Dereference
+          and then Ekind (Etype (Name (N))) = E_Subprogram_Type
+          and then Present
+            (Access_Subprogram_Wrapper (Etype (Name (N))));
+
    begin
       pragma Assert (Nkind_In (N, N_Entry_Call_Statement,
                                   N_Function_Call,
                                   N_Procedure_Call_Statement));
 
-      Expand_Call_Helper (N, Post_Call);
-      Insert_Post_Call_Actions (N, Post_Call);
+      --  Check that this is not the call in the body of the wrapper.
+
+      if Must_Rewrite_Indirect_Call
+        and then (not Is_Overloadable (Current_Scope)
+             or else not Is_Access_Subprogram_Wrapper (Current_Scope))
+      then
+         declare
+            Loc : constant Source_Ptr := Sloc (N);
+            Wrapper : constant Entity_Id :=
+              Access_Subprogram_Wrapper (Etype (Name (N)));
+            Ptr      : constant Node_Id   := Prefix (Name (N));
+            Ptr_Type : constant Entity_Id := Etype (Ptr);
+            Parms    : constant List_Id   := Parameter_Associations (N);
+            Typ      : constant Entity_Id := Etype (N);
+            New_N    : Node_Id;
+
+         begin
+            --  The last actual in the call is the pointer itself.
+            --  If the aspect is inherited, convert the pointer to the
+            --  parent type that specifies the contract.
+
+            if Is_Derived_Type (Ptr_Type)
+              and then Ptr_Type /= Etype (Last_Formal (Wrapper))
+            then
+               Append
+                (Make_Type_Conversion (Loc,
+                   New_Occurrence_Of
+                    (Etype (Last_Formal (Wrapper)), Loc), Ptr),
+                   Parms);
+
+            else
+               Append (Ptr, Parms);
+            end if;
+
+            if Nkind (N) = N_Procedure_Call_Statement then
+               New_N := Make_Procedure_Call_Statement (Loc,
+                  Name  => New_Occurrence_Of (Wrapper, Loc),
+                  Parameter_Associations => Parms);
+            else
+               New_N := Make_Function_Call (Loc,
+                  Name => New_Occurrence_Of (Wrapper, Loc),
+                  Parameter_Associations => Parms);
+            end if;
+
+            Rewrite (N, New_N);
+            Analyze_And_Resolve (N, Typ);
+         end;
+
+      else
+         Expand_Call_Helper (N, Post_Call);
+         Insert_Post_Call_Actions (N, Post_Call);
+      end if;
    end Expand_Call;
 
    ------------------------
@@ -7772,32 +7830,6 @@ package body Exp_Ch6 is
       end if;
    end Freeze_Subprogram;
 
-   --------------------------------------------
-   -- Has_Unconstrained_Access_Discriminants --
-   --------------------------------------------
-
-   function Has_Unconstrained_Access_Discriminants
-     (Subtyp : Entity_Id) return Boolean
-   is
-      Discr : Entity_Id;
-
-   begin
-      if Has_Discriminants (Subtyp)
-        and then not Is_Constrained (Subtyp)
-      then
-         Discr := First_Discriminant (Subtyp);
-         while Present (Discr) loop
-            if Ekind (Etype (Discr)) = E_Anonymous_Access_Type then
-               return True;
-            end if;
-
-            Next_Discriminant (Discr);
-         end loop;
-      end if;
-
-      return False;
-   end Has_Unconstrained_Access_Discriminants;
-
    ------------------------------
    -- Insert_Post_Call_Actions --
    ------------------------------
@@ -7810,12 +7842,15 @@ package body Exp_Ch6 is
          return;
       end if;
 
-      --  Cases where the call is not a member of a statement list. This
-      --  includes the case where the call is an actual in another function
-      --  call or indexing, i.e. an expression context as well.
+      --  Cases where the call is not a member of a statement list. This also
+      --  includes the cases where the call is an actual in another function
+      --  call, or is an index, or is an operand of an if-expression, i.e. is
+      --  in an expression context.
 
       if not Is_List_Member (N)
-        or else Nkind_In (Context, N_Function_Call, N_Indexed_Component)
+        or else Nkind_In (Context, N_Function_Call,
+                                   N_If_Expression,
+                                   N_Indexed_Component)
       then
          --  In Ada 2012 the call may be a function call in an expression
          --  (since OUT and IN OUT parameters are now allowed for such calls).
@@ -7823,7 +7858,9 @@ package body Exp_Ch6 is
          --  but the constraint checks generated when subtypes of formal and
          --  actual don't match must be inserted in the form of assignments.
 
-         if Nkind (Original_Node (N)) = N_Function_Call then
+         if Nkind (N) = N_Function_Call
+           or else Nkind (Original_Node (N)) = N_Function_Call
+         then
             pragma Assert (Ada_Version >= Ada_2012);
             --  Functions with '[in] out' parameters are only allowed in Ada
             --  2012.
@@ -9425,144 +9462,6 @@ package body Exp_Ch6 is
    begin
       return Requires_Transient_Scope (Func_Typ);
    end Needs_BIP_Alloc_Form;
-
-   --------------------------------------
-   -- Needs_Result_Accessibility_Level --
-   --------------------------------------
-
-   function Needs_Result_Accessibility_Level
-     (Func_Id : Entity_Id) return Boolean
-   is
-      Func_Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
-
-      function Has_Unconstrained_Access_Discriminant_Component
-        (Comp_Typ : Entity_Id) return Boolean;
-      --  Returns True if any component of the type has an unconstrained access
-      --  discriminant.
-
-      -----------------------------------------------------
-      -- Has_Unconstrained_Access_Discriminant_Component --
-      -----------------------------------------------------
-
-      function Has_Unconstrained_Access_Discriminant_Component
-        (Comp_Typ :  Entity_Id) return Boolean
-      is
-      begin
-         if not Is_Limited_Type (Comp_Typ) then
-            return False;
-
-            --  Only limited types can have access discriminants with
-            --  defaults.
-
-         elsif Has_Unconstrained_Access_Discriminants (Comp_Typ) then
-            return True;
-
-         elsif Is_Array_Type (Comp_Typ) then
-            return Has_Unconstrained_Access_Discriminant_Component
-                     (Underlying_Type (Component_Type (Comp_Typ)));
-
-         elsif Is_Record_Type (Comp_Typ) then
-            declare
-               Comp : Entity_Id;
-
-            begin
-               Comp := First_Component (Comp_Typ);
-               while Present (Comp) loop
-                  if Has_Unconstrained_Access_Discriminant_Component
-                       (Underlying_Type (Etype (Comp)))
-                  then
-                     return True;
-                  end if;
-
-                  Next_Component (Comp);
-               end loop;
-            end;
-         end if;
-
-         return False;
-      end Has_Unconstrained_Access_Discriminant_Component;
-
-      Disable_Coextension_Cases : constant Boolean := True;
-      --  Flag used to temporarily disable a "True" result for types with
-      --  access discriminants and related coextension cases.
-
-   --  Start of processing for Needs_Result_Accessibility_Level
-
-   begin
-      --  False if completion unavailable (how does this happen???)
-
-      if not Present (Func_Typ) then
-         return False;
-
-      --  False if not a function, also handle enum-lit renames case
-
-      elsif Func_Typ = Standard_Void_Type
-        or else Is_Scalar_Type (Func_Typ)
-      then
-         return False;
-
-      --  Handle a corner case, a cross-dialect subp renaming. For example,
-      --  an Ada 2012 renaming of an Ada 2005 subprogram. This can occur when
-      --  an Ada 2005 (or earlier) unit references predefined run-time units.
-
-      elsif Present (Alias (Func_Id)) then
-
-         --  Unimplemented: a cross-dialect subp renaming which does not set
-         --  the Alias attribute (e.g., a rename of a dereference of an access
-         --  to subprogram value). ???
-
-         return Present (Extra_Accessibility_Of_Result (Alias (Func_Id)));
-
-      --  Remaining cases require Ada 2012 mode
-
-      elsif Ada_Version < Ada_2012 then
-         return False;
-
-      --  Handle the situation where a result is an anonymous access type
-      --  RM 3.10.2 (10.3/3).
-
-      elsif Ekind (Func_Typ) = E_Anonymous_Access_Type then
-         return True;
-
-      --  The following cases are related to coextensions and do not fully
-      --  cover everything mentioned in RM 3.10.2 (12) ???
-
-      --  Temporarily disabled ???
-
-      elsif Disable_Coextension_Cases then
-         return False;
-
-      --  In the case of, say, a null tagged record result type, the need for
-      --  this extra parameter might not be obvious so this function returns
-      --  True for all tagged types for compatibility reasons.
-
-      --  A function with, say, a tagged null controlling result type might
-      --  be overridden by a primitive of an extension having an access
-      --  discriminant and the overrider and overridden must have compatible
-      --  calling conventions (including implicitly declared parameters).
-
-      --  Similarly, values of one access-to-subprogram type might designate
-      --  both a primitive subprogram of a given type and a function which is,
-      --  for example, not a primitive subprogram of any type. Again, this
-      --  requires calling convention compatibility. It might be possible to
-      --  solve these issues by introducing wrappers, but that is not the
-      --  approach that was chosen.
-
-      elsif Is_Tagged_Type (Func_Typ) then
-         return True;
-
-      elsif Has_Unconstrained_Access_Discriminants (Func_Typ) then
-         return True;
-
-      elsif Has_Unconstrained_Access_Discriminant_Component (Func_Typ) then
-         return True;
-
-      --  False for all other cases
-
-      else
-         return False;
-      end if;
-   end Needs_Result_Accessibility_Level;
 
    -------------------------------------
    -- Replace_Renaming_Declaration_Id --

@@ -3159,17 +3159,8 @@ package body Exp_Attr is
             Expr := Pref;
          end if;
 
-         --  If the expression is an enumeration literal, it is replaced by the
-         --  literal value.
-
-         if Nkind (Expr) in N_Has_Entity
-           and then Ekind (Entity (Expr)) = E_Enumeration_Literal
-         then
-            Rewrite (N,
-              Make_Integer_Literal (Loc, Enumeration_Rep (Entity (Expr))));
-
-         --  If not constant-folded above, Enum_Type'Enum_Rep (X) or
-         --  X'Enum_Rep expands to
+         --  If not constant-folded, Enum_Type'Enum_Rep (X) or X'Enum_Rep
+         --  expands to
 
          --    target-type (X)
 
@@ -3185,7 +3176,7 @@ package body Exp_Attr is
          --  first convert to a small signed integer type in order not to lose
          --  the size information.
 
-         elsif Is_Enumeration_Type (Ptyp) then
+         if Is_Enumeration_Type (Ptyp) then
             Psiz := RM_Size (Base_Type (Ptyp));
 
             if Psiz < 8 then
@@ -4091,7 +4082,7 @@ package body Exp_Attr is
          elsif Is_Access_Type (Ptyp) then
             Apply_Access_Check (N);
 
-         --  For scalar type, if low bound is a reference to an entity, just
+         --  For scalar type, if high bound is a reference to an entity, just
          --  replace with a direct reference. Note that we can only have a
          --  reference to a constant entity at this stage, anything else would
          --  have already been rewritten.
@@ -4855,13 +4846,13 @@ package body Exp_Attr is
          Rewrite (N,
            Make_If_Expression (Loc, New_List (
 
-             --  Generate a check for zero sized things like a null record with
+             --  Generate a check for zero-sized things like a null record with
              --  size zero or an array with zero length since they have no
              --  opportunity of overlapping.
 
-             --  Without this check a zero-sized object can trigger a false
-             --  runtime result if its compared against another object
-             --  in its declarative region due to the zero-sized object having
+             --  Without this check, a zero-sized object can trigger a false
+             --  runtime result if it's compared against another object in
+             --  its declarative region, due to the zero-sized object having
              --  the same address.
 
              Make_Or_Else (Loc,
@@ -4882,7 +4873,7 @@ package body Exp_Attr is
 
              New_Occurrence_Of (Standard_False, Loc),
 
-             --  Non-size zero overlap check
+             --  Non-zero-size overlap check
 
              Make_If_Expression (Loc, New_List (
                Cond,

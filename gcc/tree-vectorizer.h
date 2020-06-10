@@ -138,7 +138,7 @@ struct _slp_tree {
 
   tree vectype;
   /* Vectorized stmt/s.  */
-  vec<stmt_vec_info> vec_stmts;
+  vec<gimple *> vec_stmts;
   vec<tree> vec_defs;
   /* Number of vector stmts that are created to replace the group of scalar
      stmts. It is calculated during the transformation phase as the number of
@@ -338,6 +338,8 @@ public:
 
   /* The mapping of GIMPLE UID to stmt_vec_info.  */
   vec<stmt_vec_info> stmt_vec_infos;
+  /* Whether the above mapping is complete.  */
+  bool stmt_vec_info_ro;
 
   /* The SLP graph.  */
   auto_vec<slp_instance> slp_instances;
@@ -964,9 +966,8 @@ public:
   /* The vector type to be used for the LHS of this statement.  */
   tree vectype;
 
-  /* The vectorized version of the stmt.  */
-  stmt_vec_info vectorized_stmt;
-
+  /* The vectorized stmts.  */
+  vec<gimple *> vec_stmts;
 
   /* The following is relevant only for stmts that contain a non-scalar
      data-ref (array/pointer/struct access). A GIMPLE stmt is expected to have
@@ -1168,7 +1169,7 @@ struct gather_scatter_info {
 #define STMT_VINFO_RELEVANT(S)             (S)->relevant
 #define STMT_VINFO_LIVE_P(S)               (S)->live
 #define STMT_VINFO_VECTYPE(S)              (S)->vectype
-#define STMT_VINFO_VEC_STMT(S)             (S)->vectorized_stmt
+#define STMT_VINFO_VEC_STMTS(S)            (S)->vec_stmts
 #define STMT_VINFO_VECTORIZABLE(S)         (S)->vectorizable
 #define STMT_VINFO_DATA_REF(S)             ((S)->dr_aux.dr + 0)
 #define STMT_VINFO_GATHER_SCATTER_P(S)	   (S)->gather_scatter_p
@@ -1736,23 +1737,25 @@ record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
 			   STMT_VINFO_VECTYPE (stmt_info), misalign, where);
 }
 
-extern stmt_vec_info vect_finish_replace_stmt (vec_info *,
-					       stmt_vec_info, gimple *);
-extern stmt_vec_info vect_finish_stmt_generation (vec_info *,
-						  stmt_vec_info, gimple *,
-						  gimple_stmt_iterator *);
+extern void vect_finish_replace_stmt (vec_info *, stmt_vec_info, gimple *);
+extern void vect_finish_stmt_generation (vec_info *, stmt_vec_info, gimple *,
+					 gimple_stmt_iterator *);
 extern opt_result vect_mark_stmts_to_be_vectorized (loop_vec_info, bool *);
 extern tree vect_get_store_rhs (stmt_vec_info);
-extern tree vect_get_vec_def_for_operand_1 (stmt_vec_info, enum vect_def_type);
-extern tree vect_get_vec_def_for_operand (vec_info *, tree,
-					  stmt_vec_info, tree = NULL);
-extern void vect_get_vec_defs (vec_info *, tree, tree, stmt_vec_info,
-			       vec<tree> *, vec<tree> *, slp_tree);
-extern void vect_get_vec_defs_for_stmt_copy (vec_info *,
-					     vec<tree> *, vec<tree> *);
+void vect_get_vec_defs_for_operand (vec_info *vinfo, stmt_vec_info, unsigned,
+				    tree op, vec<tree> *, tree = NULL);
+void vect_get_vec_defs (vec_info *, stmt_vec_info, slp_tree, unsigned,
+			tree, vec<tree> *,
+			tree = NULL, vec<tree> * = NULL,
+			tree = NULL, vec<tree> * = NULL,
+			tree = NULL, vec<tree> * = NULL);
+void vect_get_vec_defs (vec_info *, stmt_vec_info, slp_tree, unsigned,
+			tree, vec<tree> *, tree,
+			tree = NULL, vec<tree> * = NULL, tree = NULL,
+			tree = NULL, vec<tree> * = NULL, tree = NULL,
+			tree = NULL, vec<tree> * = NULL, tree = NULL);
 extern tree vect_init_vector (vec_info *, stmt_vec_info, tree, tree,
                               gimple_stmt_iterator *);
-extern tree vect_get_vec_def_for_stmt_copy (vec_info *, tree);
 extern tree vect_get_slp_vect_def (slp_tree, unsigned);
 extern bool vect_transform_stmt (vec_info *, stmt_vec_info,
 				 gimple_stmt_iterator *,
@@ -1867,16 +1870,16 @@ extern bool vectorizable_reduction (loop_vec_info, stmt_vec_info,
 				    stmt_vector_for_cost *);
 extern bool vectorizable_induction (loop_vec_info, stmt_vec_info,
 				    gimple_stmt_iterator *,
-				    stmt_vec_info *, slp_tree,
+				    gimple **, slp_tree,
 				    stmt_vector_for_cost *);
 extern bool vect_transform_reduction (loop_vec_info, stmt_vec_info,
 				      gimple_stmt_iterator *,
-				      stmt_vec_info *, slp_tree);
+				      gimple **, slp_tree);
 extern bool vect_transform_cycle_phi (loop_vec_info, stmt_vec_info,
-				      stmt_vec_info *,
+				      gimple **,
 				      slp_tree, slp_instance);
 extern bool vectorizable_lc_phi (loop_vec_info, stmt_vec_info,
-				 stmt_vec_info *, slp_tree);
+				 gimple **, slp_tree);
 extern bool vect_worthwhile_without_simd_p (vec_info *, tree_code);
 extern int vect_get_known_peeling_cost (loop_vec_info, int, int *,
 					stmt_vector_for_cost *,
@@ -1895,6 +1898,7 @@ extern opt_result vect_analyze_slp (vec_info *, unsigned);
 extern bool vect_make_slp_decision (loop_vec_info);
 extern void vect_detect_hybrid_slp (loop_vec_info);
 extern void vect_optimize_slp (vec_info *);
+extern void vect_get_slp_defs (slp_tree, vec<tree> *);
 extern void vect_get_slp_defs (vec_info *, slp_tree, vec<vec<tree> > *,
 			       unsigned n = -1U);
 extern bool vect_slp_bb (basic_block);

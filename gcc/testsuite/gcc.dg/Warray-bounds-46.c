@@ -66,8 +66,10 @@ void strcpy_global (void)
   T (gma.a17, 17);        // { dg-warning "'strcpy' offset 157 from the object at 'gma' is out of the bounds of referenced subobject 'a17' with type 'char\\\[17]' at offset 140" }
 
   SA (__builtin_offsetof (struct MA17, ax) == 157);
-
-  T (gma.ax, 0);          // { dg-warning "'strcpy' offset 157 from the object at 'gma' is out of the bounds of referenced subobject 'ax' with type 'char[]' at offset 157|'strcpy' offset 157 is out of the bounds \\\[0, 157] of object 'gma' with type 'struct MA17'" }
+  // GCC allows static initialization of flexible array members of
+  // non-local objects.  Verify that writing into one that may be
+  // initialized in another translation unit isn't diagnosed.  */
+  T (gma.ax, 0);          // { dg-bogus "\\\[-Warray-bounds" }
 }
 
 

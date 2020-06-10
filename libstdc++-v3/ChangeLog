@@ -1,3 +1,14 @@
+2020-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (move_iterator::operator=): Define.
+	* testsuite/24_iterators/move_iterator/dr3265.cc: New test.
+
+2020-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/optional (bad_optional_access): Define default
+	constructor and destructor as defaulted.
+	* testsuite/20_util/optional/bad_access.cc: New test.
+
 2020-06-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/default_delete/48631_neg.cc: Adjust dg-error

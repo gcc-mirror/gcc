@@ -372,6 +372,15 @@ package Einfo is
 --       on attribute 'Position applied to an object of the type; it is used by
 --       the IP routine to avoid performing this elaboration twice.
 
+--    Access_Subprogram_Wrapper (Node41)
+--       Entity created for access_to_subprogram types that have pre/post
+--       conditions. Wrapper subprogram is created when analyzing corresponding
+--       aspect, and inherits said aspects. Body of subprogram includes code
+--       to check contracts, and a direct call to the designated subprogram.
+--       The body is part of the freeze actions for the type.
+--       The Subprogram_Type created for the Access_To_Subprogram carries the
+--       Access_Subprogram_Wrapper for use in the expansion of indirect calls.
+
 --    Activation_Record_Component (Node31)
 --       Defined for E_Variable, E_Constant, E_Loop_Parameter, and formal
 --       parameter entities. Used in Opt.Unnest_Subprogram_Mode, in which case
@@ -4180,10 +4189,10 @@ package Einfo is
 --       for the function case.
 
 --    Returns_By_Ref (Flag90)
---       Defined in subprogram type entities and functions. Set if a
---       function (or an access to function type) returns a result by
---       reference, either because its return type is a by-reference-type or
---       because said function explicitly uses the secondary stack.
+--       Defined in subprogram type entities and functions. Set if a function
+--       (or an access-to-function type) returns a result by reference, either
+--       because its return type is a by-reference-type or because the function
+--       explicitly uses the secondary stack.
 
 --    Reverse_Bit_Order (Flag164) [base type only]
 --       Defined in all record type entities. Set if entity has a Bit_Order
@@ -6721,6 +6730,7 @@ package Einfo is
    --    Extra_Accessibility_Of_Result       (Node19)
    --    Directly_Designated_Type            (Node20)
    --    Extra_Formals                       (Node28)
+   --    Access_Subprogram_Wrapper           (Node41)
    --    First_Formal                        (synth)
    --    First_Formal_With_Extras            (synth)
    --    Last_Formal                         (synth)
@@ -7068,6 +7078,7 @@ package Einfo is
    function Accept_Address                      (Id : E) return L;
    function Access_Disp_Table                   (Id : E) return L;
    function Access_Disp_Table_Elab_Flag         (Id : E) return E;
+   function Access_Subprogram_Wrapper           (Id : E) return E;
    function Activation_Record_Component         (Id : E) return E;
    function Actual_Subtype                      (Id : E) return E;
    function Address_Taken                       (Id : E) return B;
@@ -7775,6 +7786,7 @@ package Einfo is
    procedure Set_Accept_Address                  (Id : E; V : L);
    procedure Set_Access_Disp_Table               (Id : E; V : L);
    procedure Set_Access_Disp_Table_Elab_Flag     (Id : E; V : E);
+   procedure Set_Access_Subprogram_Wrapper       (Id : E; V : E);
    procedure Set_Activation_Record_Component     (Id : E; V : E);
    procedure Set_Actual_Subtype                  (Id : E; V : E);
    procedure Set_Address_Taken                   (Id : E; V : B := True);
@@ -8606,6 +8618,7 @@ package Einfo is
    pragma Inline (Accept_Address);
    pragma Inline (Access_Disp_Table);
    pragma Inline (Access_Disp_Table_Elab_Flag);
+   pragma Inline (Access_Subprogram_Wrapper);
    pragma Inline (Activation_Record_Component);
    pragma Inline (Actual_Subtype);
    pragma Inline (Address_Taken);
@@ -9222,6 +9235,7 @@ package Einfo is
    pragma Inline (Set_Accept_Address);
    pragma Inline (Set_Access_Disp_Table);
    pragma Inline (Set_Access_Disp_Table_Elab_Flag);
+   pragma Inline (Set_Access_Subprogram_Wrapper);
    pragma Inline (Set_Activation_Record_Component);
    pragma Inline (Set_Actual_Subtype);
    pragma Inline (Set_Address_Taken);

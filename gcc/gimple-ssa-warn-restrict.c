@@ -1274,6 +1274,27 @@ builtin_access::strcpy_overlap ()
   return generic_overlap ();
 }
 
+/* For a BASE of array type, clamp REFOFF to at most [0, BASE_SIZE]
+   if known, or [0, MAXOBJSIZE] otherwise.  */
+
+static void
+clamp_offset (tree base, offset_int refoff[2], offset_int maxobjsize)
+{
+  if (!base || TREE_CODE (TREE_TYPE (base)) != ARRAY_TYPE)
+    return;
+
+  if (refoff[0] < 0 && refoff[1] >= 0)
+    refoff[0] = 0;
+
+  if (refoff[1] < refoff[0])
+    {
+      offset_int maxsize =  maxobjsize;
+      if (tree size = TYPE_SIZE_UNIT (TREE_TYPE (base)))
+	maxsize = wi::to_offset (size);
+
+      refoff[1] = wi::umin (refoff[1], maxsize);
+    }
+}
 
 /* Return true if DSTREF and SRCREF describe accesses that either overlap
    one another or that, in order not to overlap, would imply that the size
@@ -1312,35 +1333,12 @@ builtin_access::overlap ()
 
   /* If the base object is an array adjust the bounds of the offset
      to be non-negative and within the bounds of the array if possible.  */
-  if (dstref->base
-      && TREE_CODE (TREE_TYPE (dstref->base)) == ARRAY_TYPE)
-    {
-      if (acs.dstoff[0] < 0 && acs.dstoff[1] >= 0)
-	acs.dstoff[0] = 0;
-
-      if (acs.dstoff[1] < acs.dstoff[0])
-	{
-	  if (tree size = TYPE_SIZE_UNIT (TREE_TYPE (dstref->base)))
-	    acs.dstoff[1] = wi::umin (acs.dstoff[1], wi::to_offset (size));
-	  else
-	    acs.dstoff[1] = wi::umin (acs.dstoff[1], maxobjsize);
-	}
-    }
+  clamp_offset (dstref->base, acs.dstoff, maxobjsize);
 
   acs.srcoff[0] = srcref->offrange[0];
   acs.srcoff[1] = srcref->offrange[1];
 
-  if (srcref->base
-      && TREE_CODE (TREE_TYPE (srcref->base)) == ARRAY_TYPE)
-    {
-      if (acs.srcoff[0] < 0 && acs.srcoff[1] >= 0)
-	acs.srcoff[0] = 0;
-
-      if (tree size = TYPE_SIZE_UNIT (TREE_TYPE (srcref->base)))
-	acs.srcoff[1] = wi::umin (acs.srcoff[1], wi::to_offset (size));
-      else if (acs.srcoff[1] < acs.srcoff[0])
-	acs.srcoff[1] = wi::umin (acs.srcoff[1], maxobjsize);
-    }
+  clamp_offset (srcref->base, acs.srcoff, maxobjsize);
 
   /* When the upper bound of the offset is less than the lower bound
      the former is the result of a negative offset being represented

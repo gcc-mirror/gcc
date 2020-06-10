@@ -1297,7 +1297,7 @@ package body Sem_Ch9 is
                         Set_Analyzed (Def, False);
 
                         --  Keep the original subtree to ensure a properly
-                        --  formed tree (e.g. for ASIS use).
+                        --  formed tree.
 
                         Rewrite
                           (Discrete_Subtype_Definition (Index_Spec), Def);
@@ -3478,7 +3478,7 @@ package body Sem_Ch9 is
          --  The primitive operations of a tagged synchronized type are placed
          --  on the Corresponding_Record for proper dispatching, but are
          --  attached to the synchronized type itself when expansion is
-         --  disabled, for ASIS use.
+         --  disabled.
 
          Set_Direct_Primitive_Operations (T, New_Elmt_List);
 

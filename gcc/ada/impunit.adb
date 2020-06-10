@@ -624,9 +624,10 @@ package body Impunit is
     ("a-nubinu", T),  -- Ada.Numerics.Big_Numbers
     ("a-nbnbin", T),  -- Ada.Numerics.Big_Numbers.Big_Integers
     ("a-nbnbre", T),  -- Ada.Numerics.Big_Numbers.Big_Reals
+    ("s-aoinar", T),  -- System.Atomic_Operations.Integer_Arithmetic
+    ("s-aomoar", T),  -- System.Atomic_Operations.Modular_Arithmetic
     ("s-aotase", T),  -- System.Atomic_Operations.Test_And_Set
     ("s-atoope", T),  -- System.Atomic_Operations
-    ("s-atopar", T),  -- System.Atomic_Operations.Arithmetic
     ("s-atopex", T),  -- System.Atomic_Operations.Exchange
     ("a-stteou", T),  -- Ada.Strings.Text_Output
     ("a-stouut", T),  -- Ada.Strings.Text_Output.Utils

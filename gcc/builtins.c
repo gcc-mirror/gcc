@@ -3394,6 +3394,130 @@ warn_for_access (location_t loc, tree func, tree exp, int opt, tree range[2],
   return warned;
 }
 
+/* Issue an inform message describing the target of an access REF.
+   WRITE is set for a write access and clear for a read access.  */
+
+static void
+inform_access (const access_ref &ref, bool write)
+{
+  if (!ref.ref)
+    return;
+
+  /* Convert offset range and avoid including a zero range since it isn't
+     necessarily meaningful.  */
+  long long minoff = 0, maxoff = 0;
+  if (wi::fits_shwi_p (ref.offrng[0])
+      && wi::fits_shwi_p (ref.offrng[1]))
+    {
+      minoff = ref.offrng[0].to_shwi ();
+      maxoff = ref.offrng[1].to_shwi ();
+    }
+
+  /* Convert size range and always include it since all sizes are
+     meaningful. */
+  unsigned long long minsize = 0, maxsize = 0;
+  if (wi::fits_shwi_p (ref.sizrng[0])
+      && wi::fits_shwi_p (ref.sizrng[1]))
+    {
+      minsize = ref.sizrng[0].to_shwi ();
+      maxsize = ref.sizrng[1].to_shwi ();
+    }
+
+  char sizestr[80];
+  location_t loc;
+  tree allocfn = NULL_TREE;
+  if (TREE_CODE (ref.ref) == SSA_NAME)
+    {
+      gimple *stmt = SSA_NAME_DEF_STMT (ref.ref);
+      gcc_assert (is_gimple_call (stmt));
+      loc = gimple_location (stmt);
+      allocfn = gimple_call_fndecl (stmt);
+      if (!allocfn)
+	/* Handle calls through pointers to functions.  */
+	allocfn = gimple_call_fn (stmt);
+
+      /* SIZRNG doesn't necessarily have the same range as the allocation
+	 size determined by gimple_call_alloc_size ().  */
+
+      if (minsize == maxsize)
+	sprintf (sizestr, "%llu", minsize);
+      else
+	sprintf (sizestr, "[%llu, %llu]", minsize, maxsize);
+
+    }
+  else
+    loc = DECL_SOURCE_LOCATION (ref.ref);
+
+  if (write)
+    {
+      if (DECL_P (ref.ref))
+	{
+	  if (minoff == maxoff)
+	    {
+	      if (minoff == 0)
+		inform (loc, "destination object %qD", ref.ref);
+	      else
+		inform (loc, "at offset %lli into destination object %qD",
+			minoff, ref.ref);
+	    }
+	  else
+	    inform (loc, "at offset [%lli, %lli] into destination object %qD",
+		    minoff, maxoff, ref.ref);
+	  return;
+	}
+
+      if (minoff == maxoff)
+	{
+	  if (minoff == 0)
+	    inform (loc, "destination object of size %s allocated by %qE",
+		    sizestr, allocfn);
+	  else
+	    inform (loc,
+		    "at offset %lli into destination object of size %s "
+		    "allocated by %qE", minoff, sizestr, allocfn);
+	}
+      else
+	inform (loc,
+		"at offset [%lli, %lli] into destination object of size %s "
+		"allocated by %qE",
+		minoff, maxoff, sizestr, allocfn);
+
+      return;
+    }
+
+  if (DECL_P (ref.ref))
+    {
+      if (minoff == maxoff)
+	{
+	  if (minoff == 0)
+	    inform (loc, "source object %qD", ref.ref);
+	  else
+	    inform (loc, "at offset %lli into source object %qD",
+		    minoff, ref.ref);
+	}
+      else
+	inform (loc, "at offset [%lli, %lli] into source object %qD",
+		minoff, maxoff, ref.ref);
+      return;
+    }
+
+  if (minoff == maxoff)
+    {
+      if (minoff == 0)
+	inform (loc, "source object of size %s allocated by %qE",
+		sizestr, allocfn);
+      else
+	inform (loc,
+		"at offset %lli into source object of size %s "
+		"allocated by %qE", minoff, sizestr, allocfn);
+    }
+  else
+    inform (loc,
+	    "at offset [%lli, %lli] into source object of size %s "
+	    "allocated by %qE",
+	    minoff, maxoff, sizestr, allocfn);
+}
+
 /* Try to verify that the sizes and lengths of the arguments to a string
    manipulation function given by EXP are within valid bounds and that
    the operation does not lead to buffer overflow or read past the end.
@@ -3423,13 +3547,16 @@ warn_for_access (location_t loc, tree func, tree exp, int opt, tree range[2],
    ACCESS is true for accesses, false for simple size checks in calls
    to functions that neither read from nor write to the region.
 
+   When nonnull, PAD points to a more detailed description of the access.
+
    If the call is successfully verified as safe return true, otherwise
    return false.  */
 
 bool
 check_access (tree exp, tree, tree, tree dstwrite,
 	      tree maxread, tree srcstr, tree dstsize,
-	      bool access /* = true */)
+	      bool access /* = true */,
+	      const access_data *pad /* = NULL */)
 {
   int opt = OPT_Wstringop_overflow_;
 
@@ -3633,7 +3760,11 @@ check_access (tree exp, tree, tree, tree dstwrite,
 				    exp, range[0], range[1],
 				    dstsize));
 	  if (warned)
-	    TREE_NO_WARNING (exp) = true;
+	    {
+	      TREE_NO_WARNING (exp) = true;
+	      if (pad)
+		inform_access (pad->dst, true);
+	    }
 
 	  /* Return error when an overflow has been detected.  */
 	  return false;
@@ -3741,8 +3872,11 @@ check_access (tree exp, tree, tree, tree dstwrite,
       loc = expansion_point_location_if_in_system_header (loc);
 
       if (warn_for_access (loc, func, exp, opt, range, slen, access))
-	TREE_NO_WARNING (exp) = true;
-
+	{
+	  TREE_NO_WARNING (exp) = true;
+	  if (pad)
+	    inform_access (pad->src, false);
+	}
       return false;
     }
 
@@ -3841,185 +3975,135 @@ gimple_call_alloc_size (gimple *stmt, wide_int rng1[2] /* = NULL */,
   return wide_int_to_tree (sizetype, rng1[1]);
 }
 
-/* Helper for compute_objsize.  Returns the constant size of the DEST
-   if it refers to a variable or field and sets *PDECL to the DECL and
-   *POFF to zero.  Otherwise returns null for other nodes.  */
+/* Wrapper around the wide_int overload of get_range.  Returns the same
+   result but accepts offset_int instead.  */
 
-static tree
-addr_decl_size (tree dest, tree *pdecl, tree *poff)
+static bool
+get_range (tree x, signop sgn, offset_int r[2],
+	   const vr_values *rvals /* = NULL */)
 {
-  if (TREE_CODE (dest) == ADDR_EXPR)
-    dest = TREE_OPERAND (dest, 0);
+  wide_int wr[2];
+  if (!get_range (x, wr, rvals))
+    return false;
 
-  if (DECL_P (dest))
-    {
-      *pdecl = dest;
-      *poff = integer_zero_node;
-      if (tree size = DECL_SIZE_UNIT (dest))
-	return TREE_CODE (size) == INTEGER_CST ? size : NULL_TREE;
-    }
-
-  if (TREE_CODE (dest) == COMPONENT_REF)
-    {
-      *pdecl = TREE_OPERAND (dest, 1);
-      *poff = integer_zero_node;
-      /* Only return constant sizes for now while callers depend on it.  */
-      if (tree size = component_ref_size (dest))
-	return TREE_CODE (size) == INTEGER_CST ? size : NULL_TREE;
-    }
-
-  return NULL_TREE;
+  r[0] = offset_int::from (wr[0], sgn);
+  r[1] = offset_int::from (wr[1], sgn);
+  return true;
 }
 
-/* Helper to compute the size of the object referenced by the DEST
+/* Helper to compute the size of the object referenced by the PTR
    expression which must have pointer type, using Object Size type
    OSTYPE (only the least significant 2 bits are used).
-   Returns an estimate of the size of the object represented as
-   a sizetype constant if successful or NULL when the size cannot
-   be determined.
-   When the referenced object involves a non-constant offset in some
-   range the returned value represents the largest size given the
-   smallest non-negative offset in the range.
-   If nonnull, sets *PDECL to the decl of the referenced subobject
-   if it can be determined, or to null otherwise.  Likewise, when
-   POFF is nonnull *POFF is set to the offset into *PDECL.
+   On success, sets PREF->REF to the DECL of the referenced object
+   if it's unique, otherwise to null, PREF->OFFRNG to the range of
+   offsets into it, and PREF->SIZRNG to the range of sizes of
+   the object(s).
+   VISITED is used to avoid visiting the same PHI operand multiple
+   times, and, when nonnull, RVALS to determine range information.
+   Returns true on success, false when the size cannot be determined.
 
    The function is intended for diagnostics and should not be used
    to influence code generation or optimization.  */
 
-tree
-compute_objsize (tree dest, int ostype, tree *pdecl /* = NULL */,
-		 tree *poff /* = NULL */, const vr_values *rvals /* = NULL */)
+static bool
+compute_objsize (tree ptr, int ostype, access_ref *pref,
+		 bitmap *visited, const vr_values *rvals /* = NULL */)
 {
-  tree dummy_decl = NULL_TREE;
-  if (!pdecl)
-    pdecl = &dummy_decl;
-
-  tree dummy_off = NULL_TREE;
-  if (!poff)
-    poff = &dummy_off;
-
-  /* Only the two least significant bits are meaningful.  */
-  ostype &= 3;
-
-  if (ostype)
-    /* Except for overly permissive calls to memcpy and other raw
-       memory functions with zero OSTYPE, detect the size from simple
-       DECLs first to more reliably than compute_builtin_object_size
-       set *PDECL and *POFF.  */
-    if (tree size = addr_decl_size (dest, pdecl, poff))
-      return size;
-
-  unsigned HOST_WIDE_INT size;
-  if (compute_builtin_object_size (dest, ostype, &size, pdecl, poff))
-    return build_int_cst (sizetype, size);
-
-  if (TREE_CODE (dest) == SSA_NAME)
+  if (ostype == 0)
     {
-      gimple *stmt = SSA_NAME_DEF_STMT (dest);
-      if (is_gimple_call (stmt))
+      /* Use BOS only for raw memory functions like memcpy to get
+	 the size of the largest enclosing object.  */
+      tree off = NULL_TREE;
+      unsigned HOST_WIDE_INT size;
+      if (compute_builtin_object_size (ptr, ostype, &size, &pref->ref, &off))
 	{
-	  /* If STMT is a call to an allocation function get the size
-	     from its argument(s).  If successful, also set *PDECL to
-	     DEST for the caller to include in diagnostics.  */
-	  if (tree size = gimple_call_alloc_size (stmt))
+	  if (off)
 	    {
-	      *pdecl = dest;
-	      *poff = integer_zero_node;
-	      return size;
+	      offset_int offset = wi::to_offset (off);
+	      pref->offrng[0] += offset;
+	      pref->offrng[1] += offset;
+
+	      /* compute_builtin_object_size() returns the remaining
+		 size in PTR.  Add the offset to it to get the full
+		 size.  */
+	      pref->sizrng[0] = pref->sizrng[1] = size + offset;
 	    }
-	  return NULL_TREE;
+	  else
+	    pref->sizrng[0] = pref->sizrng[1] = size;
+	  return true;
 	}
-
-      if (!is_gimple_assign (stmt))
-	return NULL_TREE;
-
-      dest = gimple_assign_rhs1 (stmt);
-
-      tree_code code = gimple_assign_rhs_code (stmt);
-      if (code == POINTER_PLUS_EXPR)
-	{
-	  /* compute_builtin_object_size fails for addresses with
-	     non-constant offsets.  Try to determine the range of
-	     such an offset here and use it to adjust the constant
-	     size.  */
-	  tree off = gimple_assign_rhs2 (stmt);
-	  if (TREE_CODE (off) == INTEGER_CST)
-	    {
-	      if (tree size = compute_objsize (dest, ostype, pdecl, poff))
-		{
-		  wide_int wioff = wi::to_wide (off);
-		  wide_int wisiz = wi::to_wide (size);
-
-		  /* Ignore negative offsets for now.  For others,
-		     use the lower bound as the most optimistic
-		     estimate of the (remaining) size.  */
-		  if (wi::neg_p (wioff))
-		    ;
-		  else
-		    {
-		      if (*poff)
-			{
-			  *poff = fold_convert (ptrdiff_type_node, *poff);
-			  off = fold_convert (ptrdiff_type_node, *poff);
-			  *poff = size_binop (PLUS_EXPR, *poff, off);
-			}
-		      else
-			*poff = off;
-		      if (wi::ltu_p (wioff, wisiz))
-			return wide_int_to_tree (TREE_TYPE (size),
-						 wi::sub (wisiz, wioff));
-		      return size_zero_node;
-		    }
-		}
-	    }
-	  else if (TREE_CODE (off) == SSA_NAME
-		   && INTEGRAL_TYPE_P (TREE_TYPE (off)))
-	    {
-	      wide_int min, max;
-	      enum value_range_kind rng = get_range_info (off, &min, &max);
-
-	      if (rng == VR_RANGE)
-		if (tree size = compute_objsize (dest, ostype, pdecl, poff))
-		  {
-		    wide_int wisiz = wi::to_wide (size);
-
-		    /* Ignore negative offsets for now.  For others,
-		       use the lower bound as the most optimistic
-		       estimate of the (remaining)size.  */
-		    if (wi::neg_p (min) || wi::neg_p (max))
-		      ;
-		    else
-		      {
-			/* FIXME: For now, since the offset is non-constant,
-			   clear *POFF to keep it from being "misused."
-			   Eventually *POFF will need to become a range that
-			   can be properly added to the outer offset if it
-			   too is one.  */
-			*poff = NULL_TREE;
-			if (wi::ltu_p (min, wisiz))
-			  return wide_int_to_tree (TREE_TYPE (size),
-						   wi::sub (wisiz, min));
-			return size_zero_node;
-		      }
-		  }
-	    }
-	}
-      else if (code != ADDR_EXPR)
-	return NULL_TREE;
     }
 
-  /* Unless computing the largest size (for memcpy and other raw memory
-     functions), try to determine the size of the object from its type.  */
-  if (!ostype)
-    return NULL_TREE;
+  const bool addr = TREE_CODE (ptr) == ADDR_EXPR;
+  if (addr)
+    ptr = TREE_OPERAND (ptr, 0);
 
-  if (TREE_CODE (dest) == ARRAY_REF
-      || TREE_CODE (dest) == MEM_REF)
+  if (DECL_P (ptr))
     {
-      tree ref = TREE_OPERAND (dest, 0);
+      /* Bail if the reference is to the pointer itself (as opposed
+	 to what it points to).  */
+      if (!addr && POINTER_TYPE_P (TREE_TYPE (ptr)))
+	return false;
+
+      tree size = decl_init_size (ptr, false);
+      if (!size || TREE_CODE (size) != INTEGER_CST)
+	return false;
+
+      pref->ref = ptr;
+      pref->sizrng[0] = pref->sizrng[1] = wi::to_offset (size);
+      return true;
+    }
+
+  const tree_code code = TREE_CODE (ptr);
+
+  if (code == COMPONENT_REF)
+    {
+      if (ostype == 0)
+	{
+	  /* For raw memory functions like memcpy bail if the size
+	     of the enclosing object cannot be determined.  */
+	  access_ref tmpref;
+	  tree ref = TREE_OPERAND (ptr, 0);
+	  if (!compute_objsize (ref, ostype, &tmpref, visited, rvals)
+	      || !tmpref.ref)
+	    return false;
+	}
+
+      tree field = TREE_OPERAND (ptr, 1);
+      /* Bail if the reference is to the pointer itself (as opposed
+	 to what it points to).  */
+      if (!addr && POINTER_TYPE_P (TREE_TYPE (field)))
+	return false;
+
+      pref->ref = field;
+      /* Only return constant sizes for now while callers depend
+	 on it.  INT0LEN is true for interior zero-length arrays.  */
+      bool int0len = false;
+      tree size = component_ref_size (ptr, &int0len);
+      if (int0len)
+	{
+	  pref->sizrng[0] = pref->sizrng[1] = 0;
+	  return true;
+	}
+
+      if (!size || TREE_CODE (size) != INTEGER_CST)
+	return false;
+
+      pref->sizrng[0] = pref->sizrng[1] = wi::to_offset (size);
+      return true;
+    }
+
+  if (code == ARRAY_REF || code == MEM_REF)
+    {
+      tree ref = TREE_OPERAND (ptr, 0);
       tree reftype = TREE_TYPE (ref);
-      if (TREE_CODE (dest) == MEM_REF && TREE_CODE (reftype) == POINTER_TYPE)
+      if (code == ARRAY_REF
+	  && TREE_CODE (TREE_TYPE (reftype)) == POINTER_TYPE)
+	/* Avoid arrays of pointers.  FIXME: Hande pointers to arrays
+	   of known bound.  */
+	return false;
+
+      if (code == MEM_REF && TREE_CODE (reftype) == POINTER_TYPE)
 	{
 	  /* Give up for MEM_REFs of vector types; those may be synthesized
 	     from multiple assignments to consecutive data members.  See PR
@@ -4028,158 +4112,175 @@ compute_objsize (tree dest, int ostype, tree *pdecl /* = NULL */,
 	     MEM_REFs at the time they're created.  */
 	  reftype = TREE_TYPE (reftype);
 	  if (TREE_CODE (reftype) == VECTOR_TYPE)
-	    return NULL_TREE;
+	    return false;
 	}
-      tree off = TREE_OPERAND (dest, 1);
-      if (tree size = compute_objsize (ref, ostype, pdecl, poff))
+
+      if (!compute_objsize (ref, ostype, pref, visited, rvals))
+	return false;
+
+      offset_int orng[2];
+      tree off = TREE_OPERAND (ptr, 1);
+      if (!get_range (off, SIGNED, orng, rvals))
+	/* Fail unless the size of the object is zero.  */
+	return pref->sizrng[0] == 0 && pref->sizrng[0] == pref->sizrng[1];
+
+      if (TREE_CODE (ptr) == ARRAY_REF)
 	{
-	  /* If the declaration of the destination object is known
-	     to have zero size, return zero.  */
-	  if (integer_zerop (size)
-	      && *pdecl && DECL_P (*pdecl)
-	      && *poff && integer_zerop (*poff))
-	    return size_zero_node;
-
-	  /* A valid offset into a declared object cannot be negative.
-	     A zero size with a zero "inner" offset is still zero size
-	     regardless of the "other" offset OFF.  */
-	  if (*poff
-	      && ((integer_zerop (*poff) && integer_zerop (size))
-		  || (TREE_CODE (*poff) == INTEGER_CST
-		      && tree_int_cst_sgn (*poff) < 0)))
-	    return size_zero_node;
-
-	  wide_int offrng[2];
-	  if (!get_range (off, offrng, rvals))
-	    return NULL_TREE;
-
-	  /* Convert to the same precision to keep wide_int from "helpfully"
-	     crashing whenever it sees other arguments.  */
-	  const unsigned sizprec = TYPE_PRECISION (sizetype);
-	  offrng[0] = wide_int::from (offrng[0], sizprec, SIGNED);
-	  offrng[1] = wide_int::from (offrng[1], sizprec, SIGNED);
-
-	  /* Adjust SIZE either up or down by the sum of *POFF and OFF
-	     above.  */
-	  if (TREE_CODE (dest) == ARRAY_REF)
+	  /* Convert the array index range determined above to a byte
+	     offset.  */
+	  tree lowbnd = array_ref_low_bound (ptr);
+	  if (!integer_zerop (lowbnd) && tree_fits_uhwi_p (lowbnd))
 	    {
-	      tree lowbnd = array_ref_low_bound (dest);
-	      if (!integer_zerop (lowbnd) && tree_fits_uhwi_p (lowbnd))
-		{
-		  /* Adjust the offset by the low bound of the array
-		     domain (normally zero but 1 in Fortran).  */
-		  unsigned HOST_WIDE_INT lb = tree_to_uhwi (lowbnd);
-		  offrng[0] -= lb;
-		  offrng[1] -= lb;
-		}
-
-	      /* Convert the array index into a byte offset.  */
-	      tree eltype = TREE_TYPE (dest);
-	      tree tpsize = TYPE_SIZE_UNIT (eltype);
-	      if (tpsize && TREE_CODE (tpsize) == INTEGER_CST)
-		{
-		  wide_int wsz = wi::to_wide (tpsize, offrng->get_precision ());
-		  offrng[0] *= wsz;
-		  offrng[1] *= wsz;
-		}
-	      else
-		return NULL_TREE;
+	      /* Adjust the index by the low bound of the array domain
+		 (normally zero but 1 in Fortran).  */
+	      unsigned HOST_WIDE_INT lb = tree_to_uhwi (lowbnd);
+	      orng[0] -= lb;
+	      orng[1] -= lb;
 	    }
 
-	  wide_int wisize = wi::to_wide (size);
+	  tree eltype = TREE_TYPE (ptr);
+	  tree tpsize = TYPE_SIZE_UNIT (eltype);
+	  if (!tpsize || TREE_CODE (tpsize) != INTEGER_CST)
+	    return false;
 
-	  if (!*poff)
+	  offset_int sz = wi::to_offset (tpsize);
+	  orng[0] *= sz;
+	  orng[1] *= sz;
+
+	  if (TREE_CODE (eltype) == ARRAY_TYPE)
 	    {
-	      /* If the "inner" offset is unknown and the "outer" offset
-		 is either negative or less than SIZE, return the size
-		 minus the offset.  This may be overly optimistic in
-		 the first case if the inner offset happens to be less
-		 than the absolute value of the outer offset.  */
-	      if (wi::neg_p (offrng[0]))
-		return size;
-	      if (wi::ltu_p (offrng[0], wisize))
-		return build_int_cst (sizetype, (wisize - offrng[0]).to_uhwi ());
-	      return size_zero_node;
+	      pref->sizrng[0] = pref->offrng[0] + orng[0] + sz;
+	      pref->sizrng[1] = pref->offrng[1] + orng[1] + sz;
 	    }
-
-	  /* Convert to the same precision to keep wide_int from "helpfuly"
-	     crashing whenever it sees other argumments.  */
-	  offrng[0] = wide_int::from (offrng[0], sizprec, SIGNED);
-	  offrng[1] = wide_int::from (offrng[1], sizprec, SIGNED);
-
-	  tree dstoff = *poff;
-	  if (integer_zerop (*poff))
-	    *poff = off;
-	  else if (!integer_zerop (off))
-	    {
-	      *poff = fold_convert (ptrdiff_type_node, *poff);
-	      off = fold_convert (ptrdiff_type_node, off);
-	      *poff = size_binop (PLUS_EXPR, *poff, off);
-	    }
-
-	  if (!wi::neg_p (offrng[0]))
-	    {
-	      if (TREE_CODE (size) != INTEGER_CST)
-		return NULL_TREE;
-
-	      /* Return the difference between the size and the offset
-		 or zero if the offset is greater.  */
-	      wide_int wisize = wi::to_wide (size, sizprec);
-	      if (wi::ltu_p (wisize, offrng[0]))
-		return size_zero_node;
-
-	      return wide_int_to_tree (sizetype, wisize - offrng[0]);
-	    }
-
-	  wide_int dstoffrng[2];
-	  if (TREE_CODE (dstoff) == INTEGER_CST)
-	    dstoffrng[0] = dstoffrng[1] = wi::to_wide (dstoff);
-	  else if (TREE_CODE (dstoff) == SSA_NAME)
-	    {
-	      enum value_range_kind rng
-		= get_range_info (dstoff, dstoffrng, dstoffrng + 1);
-	      if (rng != VR_RANGE)
-		return NULL_TREE;
-	    }
-	  else
-	    return NULL_TREE;
-
-	  dstoffrng[0] = wide_int::from (dstoffrng[0], sizprec, SIGNED);
-	  dstoffrng[1] = wide_int::from (dstoffrng[1], sizprec, SIGNED);
-
-	  if (!wi::neg_p (dstoffrng[0]))
-	    wisize += dstoffrng[0];
-
-	  offrng[1] += dstoffrng[1];
-	  if (wi::neg_p (offrng[1]))
-	    return size_zero_node;
-
-	  return wide_int_to_tree (sizetype, wisize);
 	}
 
-      return NULL_TREE;
+      pref->offrng[0] += orng[0];
+      pref->offrng[1] += orng[1];
+
+      return true;
     }
 
-  /* Try simple DECLs not handled above.  */
-  if (tree size = addr_decl_size (dest, pdecl, poff))
-    return size;
+  if (TREE_CODE (ptr) == SSA_NAME)
+    {
+      gimple *stmt = SSA_NAME_DEF_STMT (ptr);
+      if (is_gimple_call (stmt))
+	{
+	  /* If STMT is a call to an allocation function get the size
+	     from its argument(s).  If successful, also set *PDECL to
+	     PTR for the caller to include in diagnostics.  */
+	  wide_int wr[2];
+	  if (gimple_call_alloc_size (stmt, wr, rvals))
+	    {
+	      pref->ref = ptr;
+	      pref->sizrng[0] = offset_int::from (wr[0], UNSIGNED);
+	      pref->sizrng[1] = offset_int::from (wr[1], UNSIGNED);
+	      return true;
+	    }
+	  return false;
+	}
 
-  tree type = TREE_TYPE (dest);
-  if (TREE_CODE (type) == POINTER_TYPE)
-    type = TREE_TYPE (type);
+      /* TODO: Handle PHI.  */
 
+      if (!is_gimple_assign (stmt))
+	return false;
+
+      ptr = gimple_assign_rhs1 (stmt);
+
+      tree_code code = gimple_assign_rhs_code (stmt);
+      if (TREE_CODE (TREE_TYPE (ptr)) != POINTER_TYPE)
+	/* Avoid conversions from non-pointers.  */
+	return false;
+
+      if (code == POINTER_PLUS_EXPR)
+	{
+	  /* If the the offset in the expression can be determined use
+	     it to adjust the overall offset.  Otherwise, set the overall
+	     offset to the maximum.  */
+	  offset_int orng[2];
+	  tree off = gimple_assign_rhs2 (stmt);
+	  if (!get_range (off, SIGNED, orng, rvals)
+	      || !wi::les_p (orng[0], orng[1]))
+	    {
+	      orng[0] = wi::to_offset (TYPE_MIN_VALUE (ptrdiff_type_node));
+	      orng[1] = wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node));
+	    }
+
+	  pref->offrng[0] += orng[0];
+	  pref->offrng[1] += orng[1];
+	}
+      else if (code != ADDR_EXPR)
+	return false;
+
+      return compute_objsize (ptr, ostype, pref, visited, rvals);
+    }
+
+  tree type = TREE_TYPE (ptr);
   type = TYPE_MAIN_VARIANT (type);
-  if (TREE_CODE (dest) == ADDR_EXPR)
-    dest = TREE_OPERAND (dest, 0);
+  if (TREE_CODE (ptr) == ADDR_EXPR)
+    ptr = TREE_OPERAND (ptr, 0);
 
   if (TREE_CODE (type) == ARRAY_TYPE
-      && !array_at_struct_end_p (dest))
+      && !array_at_struct_end_p (ptr))
     {
       if (tree size = TYPE_SIZE_UNIT (type))
-	return TREE_CODE (size) == INTEGER_CST ? size : NULL_TREE;
+	return get_range (size, UNSIGNED, pref->sizrng, rvals);
     }
 
-  return NULL_TREE;
+  return false;
+}
+
+/* Convenience wrapper around the above.  */
+
+static tree
+compute_objsize (tree ptr, int ostype, access_ref *pref,
+		 const vr_values *rvals = NULL)
+{
+  bitmap visited = NULL;
+
+  bool success
+    = compute_objsize (ptr, ostype, pref, &visited, rvals);
+
+  if (visited)
+    BITMAP_FREE (visited);
+
+  if (!success)
+    return NULL_TREE;
+
+  if (pref->offrng[0] < 0)
+    {
+      if (pref->offrng[1] < 0)
+	return size_zero_node;
+
+      pref->offrng[0] = 0;
+    }
+
+  if (pref->sizrng[1] < pref->offrng[0])
+    return size_zero_node;
+
+  return wide_int_to_tree (sizetype, pref->sizrng[1] - pref->offrng[0]);
+}
+
+/* Transitional wrapper around the above.  The function should be removed
+   once callers transition to one of the two above.  */
+
+tree
+compute_objsize (tree ptr, int ostype, tree *pdecl /* = NULL */,
+		 tree *poff /* = NULL */, const vr_values *rvals /* = NULL */)
+{
+  /* Set the initial offsets to zero and size to negative to indicate
+     none has been computed yet.  */
+  access_ref ref;
+  tree size = compute_objsize (ptr, ostype, &ref, rvals);
+  if (!size)
+    return NULL_TREE;
+
+  if (pdecl)
+    *pdecl = ref.ref;
+
+  if (poff)
+    *poff = wide_int_to_tree (ptrdiff_type_node, ref.offrng[ref.offrng[0] < 0]);
+
+  return size;
 }
 
 /* Helper to determine and check the sizes of the source and the destination
@@ -4196,11 +4297,12 @@ check_memop_access (tree exp, tree dest, tree src, tree size)
      try to determine the size of the largest source and destination
      object using type-0 Object Size regardless of the object size
      type specified by the option.  */
-  tree srcsize = src ? compute_objsize (src, 0) : NULL_TREE;
-  tree dstsize = compute_objsize (dest, 0);
+  access_data data;
+  tree srcsize = src ? compute_objsize (src, 0, &data.src) : NULL_TREE;
+  tree dstsize = compute_objsize (dest, 0, &data.dst);
 
   return check_access (exp, dest, src, size, /*maxread=*/NULL_TREE,
-		       srcsize, dstsize);
+		       srcsize, dstsize, true, &data);
 }
 
 /* Validate memchr arguments without performing any expansion.
@@ -4220,9 +4322,11 @@ expand_builtin_memchr (tree exp, rtx)
      of the object.  */
   if (warn_stringop_overflow)
     {
-      tree size = compute_objsize (arg1, 0);
+      access_data data;
+      tree size = compute_objsize (arg1, 0, &data.src);
       check_access (exp, /*dst=*/NULL_TREE, /*src=*/NULL_TREE, len,
-		    /*maxread=*/NULL_TREE, size, /*objsize=*/NULL_TREE);
+		    /*maxread=*/NULL_TREE, size, /*objsize=*/NULL_TREE,
+		    true, &data);
     }
 
   return NULL_RTX;
@@ -4497,10 +4601,11 @@ expand_builtin_strcat (tree exp)
      just diagnose cases when the souce string is longer than
      the destination object.  */
 
-  tree destsize = compute_objsize (dest, warn_stringop_overflow - 1);
+  access_data data;
+  tree destsize = compute_objsize (dest, warn_stringop_overflow - 1, &data.dst);
 
   check_access (exp, dest, src, /*size=*/NULL_TREE, /*maxread=*/NULL_TREE, src,
-		destsize);
+		destsize, true, &data);
 
   return NULL_RTX;
 }
@@ -4521,9 +4626,11 @@ expand_builtin_strcpy (tree exp, rtx target)
 
   if (warn_stringop_overflow)
     {
-      tree destsize = compute_objsize (dest, warn_stringop_overflow - 1);
+      access_data data;
+      tree destsize = compute_objsize (dest, warn_stringop_overflow - 1,
+				       &data.dst);
       check_access (exp, dest, src, /*size=*/NULL_TREE, /*maxread=*/NULL_TREE,
-		    src, destsize);
+		    src, destsize, true, &data);
     }
 
   if (rtx ret = expand_builtin_strcpy_args (exp, dest, src, target))
@@ -4579,9 +4686,11 @@ expand_builtin_stpcpy_1 (tree exp, rtx target, machine_mode mode)
 
   if (warn_stringop_overflow)
     {
-      tree destsize = compute_objsize (dst, warn_stringop_overflow - 1);
+      access_data data;
+      tree destsize = compute_objsize (dst, warn_stringop_overflow - 1,
+				       &data.dst);
       check_access (exp, dst, src, /*size=*/NULL_TREE, /*maxread=*/NULL_TREE,
-		    src, destsize);
+		    src, destsize, true, &data);
     }
 
   /* If return value is ignored, transform stpcpy into strcpy.  */
@@ -4690,10 +4799,12 @@ expand_builtin_stpncpy (tree exp, rtx)
   if (!check_nul_terminated_array (exp, src, len))
     return NULL_RTX;
 
+  access_data data;
   /* The size of the destination object.  */
-  tree destsize = compute_objsize (dest, warn_stringop_overflow - 1);
+  tree destsize = compute_objsize (dest, warn_stringop_overflow - 1, &data.dst);
 
-  check_access (exp, dest, src, len, /*maxread=*/NULL_TREE, src, destsize);
+  check_access (exp, dest, src, len, /*maxread=*/NULL_TREE, src, destsize,
+		true, &data);
 
   return NULL_RTX;
 }
@@ -4733,12 +4844,13 @@ check_strncat_sizes (tree exp, tree objsize)
   /* Try to verify that the destination is big enough for the shortest
      string.  */
 
+  access_data data;
   if (!objsize && warn_stringop_overflow)
     {
       /* If it hasn't been provided by __strncat_chk, try to determine
 	 the size of the destination object into which the source is
 	 being copied.  */
-      objsize = compute_objsize (dest, warn_stringop_overflow - 1);
+      objsize = compute_objsize (dest, warn_stringop_overflow - 1, &data.dst);
     }
 
   /* Add one for the terminating nul.  */
@@ -4769,10 +4881,10 @@ check_strncat_sizes (tree exp, tree objsize)
 	  && tree_int_cst_lt (maxread, srclen)))
     srclen = maxread;
 
-  /* The number of bytes to write is LEN but check_access will also
+  /* The number of bytes to write is LEN but check_access will alsoa
      check SRCLEN if LEN's value isn't known.  */
   return check_access (exp, dest, src, /*size=*/NULL_TREE, maxread, srclen,
-		       objsize);
+		       objsize, true, &data);
 }
 
 /* Similar to expand_builtin_strcat, do some very basic size validation
@@ -4810,10 +4922,11 @@ expand_builtin_strncat (tree exp, rtx)
       maxlen = lendata.maxbound;
     }
 
+  access_data data;
   /* Try to verify that the destination is big enough for the shortest
      string.  First try to determine the size of the destination object
      into which the source is being copied.  */
-  tree destsize = compute_objsize (dest, warn_stringop_overflow - 1);
+  tree destsize = compute_objsize (dest, warn_stringop_overflow - 1, &data.dst);
 
   /* Add one for the terminating nul.  */
   tree srclen = (maxlen
@@ -4843,8 +4956,8 @@ expand_builtin_strncat (tree exp, rtx)
 	  && tree_int_cst_lt (maxread, srclen)))
     srclen = maxread;
 
-  /* The number of bytes to write is SRCLEN.  */
-  check_access (exp, dest, src, NULL_TREE, maxread, srclen, destsize);
+  check_access (exp, dest, src, NULL_TREE, maxread, srclen, destsize,
+		true, &data);
 
   return NULL_RTX;
 }
@@ -4873,13 +4986,14 @@ expand_builtin_strncpy (tree exp, rtx target)
 
   if (warn_stringop_overflow)
     {
-      tree destsize = compute_objsize (dest,
-				       warn_stringop_overflow - 1);
+      access_data data;
+      tree destsize = compute_objsize (dest, warn_stringop_overflow - 1,
+				       &data.dst);
 
       /* The number of bytes to write is LEN but check_access will also
 	 check SLEN if LEN's value isn't known.  */
       check_access (exp, dest, src, len, /*maxread=*/NULL_TREE, src,
-		    destsize);
+		    destsize, true, &data);
     }
 
   /* We must be passed a constant len and src parameter.  */
@@ -5192,16 +5306,18 @@ expand_builtin_memcmp (tree exp, rtx target, bool result_eq)
 
   /* Diagnose calls where the specified length exceeds the size of either
      object.  */
-  tree size = compute_objsize (arg1, 0);
+  access_data data;
+  tree size = compute_objsize (arg1, 0, &data.src);
   no_overflow = check_access (exp, /*dst=*/NULL_TREE, /*src=*/NULL_TREE,
 			      len, /*maxread=*/NULL_TREE, size,
-			      /*objsize=*/NULL_TREE);
+			      /*objsize=*/NULL_TREE, true, &data);
   if (no_overflow)
     {
-      size = compute_objsize (arg2, 0);
+      access_data data;
+      size = compute_objsize (arg2, 0, &data.src);
       no_overflow = check_access (exp, /*dst=*/NULL_TREE, /*src=*/NULL_TREE,
 				  len,  /*maxread=*/NULL_TREE, size,
-				  /*objsize=*/NULL_TREE);
+				  /*objsize=*/NULL_TREE, true, &data);
     }
 
   /* If the specified length exceeds the size of either object, 

@@ -1,7 +1,7 @@
 /* PR tree-optimization/84095 - false-positive -Wrestrict warnings for
    strcpy within array
    { dg-do compile }
-   { dg-options "-O2 -Wrestrict -ftrack-macro-expansion=0" } */
+   { dg-options "-O2 -Wrestrict -Wno-stringop-overflow -ftrack-macro-expansion=0" } */
 
 typedef __SIZE_TYPE__ size_t;
 

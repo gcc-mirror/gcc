@@ -159,12 +159,10 @@ LINE_LIMIT = 100
 TAB_WIDTH = 8
 CO_AUTHORED_BY_PREFIX = 'co-authored-by: '
 CHERRY_PICK_PREFIX = '(cherry picked from commit '
-REVIEWED_BY_PREFIX = 'reviewed-by: '
-REVIEWED_ON_PREFIX = 'reviewed-on: '
-SIGNED_OFF_BY_PREFIX = 'signed-off-by: '
 
-REVIEW_PREFIXES = (REVIEWED_BY_PREFIX, REVIEWED_ON_PREFIX,
-                   SIGNED_OFF_BY_PREFIX)
+REVIEW_PREFIXES = ('reviewed-by: ', 'reviewed-on: ', 'signed-off-by: ',
+                   'acked-by: ', 'tested-by: ', 'reported-by: ',
+                   'suggested-by: ')
 
 
 class Error:
@@ -324,7 +322,7 @@ class GitCommit:
             t = parts[0]
             if t == 'A' or t == 'D' or t == 'M':
                 modified_files.append((parts[1], t))
-            elif t == 'R':
+            elif t.startswith('R'):
                 modified_files.append((parts[1], 'D'))
                 modified_files.append((parts[2], 'A'))
         return modified_files
@@ -377,8 +375,8 @@ class GitCommit:
                 elif additional_author_regex.match(line):
                     m = additional_author_regex.match(line)
                     if len(m.group('spaces')) != 4:
-                        msg = 'additional author must prepend with tab ' \
-                              'and 4 spaces'
+                        msg = 'additional author must be indented with '\
+                              'one tab and four spaces'
                         self.errors.append(Error(msg, line))
                     else:
                         author_tuple = (m.group('name'), None)
@@ -438,15 +436,14 @@ class GitCommit:
                     m = star_prefix_regex.match(line)
                     if m:
                         if len(m.group('spaces')) != 1:
-                            err = Error('one space should follow asterisk',
-                                        line)
-                            self.errors.append(err)
+                            msg = 'one space should follow asterisk'
+                            self.errors.append(Error(msg, line))
                         else:
                             last_entry.lines.append(line)
                     else:
                         if last_entry.is_empty:
                             msg = 'first line should start with a tab, ' \
-                                  'asterisk and space'
+                                  'an asterisk and a space'
                             self.errors.append(Error(msg, line))
                         else:
                             last_entry.lines.append(line)
@@ -527,7 +524,7 @@ class GitCommit:
         used_patterns = set()
         for entry in self.changelog_entries:
             if not entry.files:
-                msg = 'ChangeLog must contain at least one file entry'
+                msg = 'no files mentioned for ChangeLog in directory'
                 self.errors.append(Error(msg, entry.folder))
             assert not entry.folder.endswith('/')
             for file in entry.files:
@@ -540,7 +537,8 @@ class GitCommit:
                 if not self.is_changelog_filename(x[0])]
         changed_files = set(cand)
         for file in sorted(mentioned_files - changed_files):
-            self.errors.append(Error('file not changed in a patch', file))
+            msg = 'unchanged file mentioned in a ChangeLog'
+            self.errors.append(Error(msg, file))
         for file in sorted(changed_files - mentioned_files):
             if not self.in_ignored_location(file):
                 if file in self.new_files:
