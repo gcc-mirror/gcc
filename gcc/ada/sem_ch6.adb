@@ -798,44 +798,44 @@ package body Sem_Ch6 is
                                       N_Discriminant_Association)
                then
                   Expr := Expression (Assoc);
+               else
+                  Expr := Empty;
                end if;
 
                --  This anonymous access discriminant has an associated
                --  expression which needs checking.
 
-               if Nkind (Expr) = N_Attribute_Reference
+               if Present (Expr)
+                 and then Nkind (Expr) = N_Attribute_Reference
                  and then Attribute_Name (Expr) /= Name_Unrestricted_Access
                then
                   --  Obtain the object to perform static checks on by moving
                   --  up the prefixes in the expression taking into account
                   --  named access types.
 
-                  Obj := Prefix (Expr);
+                  Obj := Original_Node (Prefix (Expr));
                   while Nkind_In (Obj, N_Indexed_Component,
                                        N_Selected_Component)
                   loop
+                     Obj := Original_Node (Prefix (Obj));
+
                      --  When we encounter a named access type then we can
                      --  ignore accessibility checks on the dereference.
 
-                     if Ekind (Etype (Prefix (Obj)))
+                     if Ekind (Etype (Obj))
                           in E_Access_Type ..
                              E_Access_Protected_Subprogram_Type
                      then
-                        if Nkind (Obj) = N_Selected_Component then
-                           Obj := Selector_Name (Obj);
+                        if Nkind (Parent (Obj)) = N_Selected_Component then
+                           Obj := Selector_Name (Parent (Obj));
                         end if;
                         exit;
                      end if;
 
                      --  Skip over the explicit dereference
 
-                     if Nkind (Prefix (Obj)) = N_Explicit_Dereference then
-                        Obj := Prefix (Prefix (Obj));
-
-                     --  Otherwise move up to the next prefix
-
-                     else
-                        Obj := Prefix (Obj);
+                     if Nkind (Obj) = N_Explicit_Dereference then
+                        Obj := Original_Node (Prefix (Obj));
                      end if;
                   end loop;
 

@@ -2568,3 +2568,176 @@ index a6a5d975af3..a8082d39aca 100644
 @@ -1 +1,2 @@
 
 +
+
+=== 0001-go-in-ignored-location.patch ===
+From 81994eab700da7fea6644541c163aa0f0f3b8cf1 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Cl=C3=A9ment=20Chigot?= <chigot.c@gmail.com>
+Date: Tue, 19 May 2020 16:03:54 +0200
+Subject: libgo: update x/sys/cpu after gccgo support added
+
+Reviewed-on: https://go-review.googlesource.com/c/gofrontend/+/234597
+---
+ gcc/go/gofrontend/MERGE                       |  2 +-
+ .../sys/cpu/{cpu_aix_ppc64.go => cpu_aix.go}  |  2 +-
+ .../golang.org/x/sys/cpu/syscall_aix_gccgo.go | 27 +++++++++++++++++++
+ 3 files changed, 29 insertions(+), 2 deletions(-)
+ rename libgo/go/golang.org/x/sys/cpu/{cpu_aix_ppc64.go => cpu_aix.go} (96%)
+ create mode 100644 libgo/go/golang.org/x/sys/cpu/syscall_aix_gccgo.go
+
+diff --git a/gcc/go/gofrontend/MERGE b/gcc/go/gofrontend/MERGE
+index bc9c1f07eda..284374820b0 100644
+--- a/gcc/go/gofrontend/MERGE
++++ b/gcc/go/gofrontend/MERGE
+@@ -1 +1,2 @@
+
++
+diff --git a/libgo/go/golang.org/x/sys/cpu/cpu_aix_ppc64.go b/libgo/go/golang.org/x/sys/cpu/cpu_aix.go
+similarity index 96%
+rename from libgo/go/golang.org/x/sys/cpu/cpu_aix_ppc64.go
+rename to libgo/go/golang.org/x/sys/cpu/cpu_aix.go
+index b0ede112d4e..02d03129e50 100644
+--- a/libgo/go/golang.org/x/sys/cpu/cpu_aix_ppc64.go
++++ b/libgo/go/golang.org/x/sys/cpu/cpu_aix.go
+@@ -1 +1,2 @@
+
++
+diff --git a/libgo/go/golang.org/x/sys/cpu/syscall_aix_gccgo.go b/libgo/go/golang.org/x/sys/cpu/syscall_aix_gccgo.go
+new file mode 100644
+index 00000000000..2609cc49ae7
+--- /dev/null
++++ b/libgo/go/golang.org/x/sys/cpu/syscall_aix_gccgo.go
+@@ -0,0 +1 @@
++
+
+-- 
+2.27.0.rc0.183.gde8f92d652-goog
+=== 0001-Update-merge.sh-to-reflect.patch  ===
+From b3d566f570f4416299240b51654b70c74f6cba6a Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Mon, 25 May 2020 20:55:29 +0200
+Subject: [PATCH] Update merge.sh to reflect usage of git.
+
+After switching to GIT, we should use it in libsanitizer
+merge script. I'll do merge from master as soon as
+PR95311 gets fixed.
+
+I'm going to install the patch.
+
+libsanitizer/ChangeLog:
+
+	* LOCAL_PATCHES: Use git hash instead of SVN id.
+	* merge.sh: Use git instead of VCS.  Update paths
+	relative to upstream git repository.
+---
+ libsanitizer/LOCAL_PATCHES |  2 +-
+ libsanitizer/merge.sh      | 10 ++++------
+ 2 files changed, 5 insertions(+), 7 deletions(-)
+
+diff --git a/libsanitizer/LOCAL_PATCHES b/libsanitizer/LOCAL_PATCHES
+index 292b7a6e489..7732de3d436 100644
+--- a/libsanitizer/LOCAL_PATCHES
++++ b/libsanitizer/LOCAL_PATCHES
+@@ -1 +1,2 @@
+
++
+diff --git a/libsanitizer/merge.sh b/libsanitizer/merge.sh
+index dfa7bf3d196..3f4f1629a22 100755
+--- a/libsanitizer/merge.sh
++++ b/libsanitizer/merge.sh
+@@ -1 +1,2 @@
+
++
+ 
+-- 
+2.26.2
+=== 0001-Ada-Reuse-Is_Package_Or_Generic_Package-where-possib.patch ===
+From 557b268fffffdeb0980a17411f458eee333f55c6 Mon Sep 17 00:00:00 2001
+From: Piotr Trojanek <trojanek@adacore.com>
+Date: Thu, 12 Dec 2019 11:45:24 +0100
+Subject: [PATCH] [Ada] Reuse Is_Package_Or_Generic_Package where possible
+
+2020-05-26  Piotr Trojanek  <trojanek@adacore.com>
+
+gcc/ada/
+
+	* contracts.adb, einfo.adb, exp_ch9.adb, sem_ch12.adb,
+	sem_ch4.adb, sem_ch7.adb, sem_ch8.adb, sem_elab.adb,
+	sem_type.adb, sem_util.adb: Reuse Is_Package_Or_Generic_Package
+	where possible (similarly, reuse Is_Concurrent_Type if it was
+	possible in the same expressions).
+---
+ gcc/ada/contracts.adb |  2 +-
+ gcc/ada/einfo.adb     | 22 +++++++++++-----------
+ gcc/ada/exp_ch9.adb   |  2 +-
+ gcc/ada/sem_ch12.adb  |  2 +-
+ gcc/ada/sem_ch4.adb   |  2 +-
+ gcc/ada/sem_ch7.adb   |  6 +++---
+ gcc/ada/sem_ch8.adb   |  6 +++---
+ gcc/ada/sem_elab.adb  |  2 +-
+ gcc/ada/sem_type.adb  |  2 +-
+ gcc/ada/sem_util.adb  |  6 +++---
+ 10 files changed, 26 insertions(+), 26 deletions(-)
+
+diff --git a/gcc/ada/contracts.adb b/gcc/ada/contracts.adb
+index 981bb91..d58f136 100644
+--- a/gcc/ada/contracts.adb
++++ b/gcc/ada/contracts.adb
+@@ -0,0 +1 @@
++
+diff --git a/gcc/ada/einfo.adb b/gcc/ada/einfo.adb
+index 98b508f..1df8ed0 100644
+--- a/gcc/ada/einfo.adb
++++ b/gcc/ada/einfo.adb
+@@ -0,0 +1 @@
++
+diff --git a/gcc/ada/exp_ch9.adb b/gcc/ada/exp_ch9.adb
+index 64ac353..392a221 100644
+--- a/gcc/ada/exp_ch9.adb
++++ b/gcc/ada/exp_ch9.adb
+@@ -0,0 +1 @@
++
+diff --git a/gcc/ada/sem_ch12.adb b/gcc/ada/sem_ch12.adb
+index dc3a3c2..209e060 100644
+--- a/gcc/ada/sem_ch12.adb
++++ b/gcc/ada/sem_ch12.adb
+@@ -0,0 +1 @@
++
+diff --git a/gcc/ada/sem_ch4.adb b/gcc/ada/sem_ch4.adb
+index 5910112..702f265 100644
+--- a/gcc/ada/sem_ch4.adb
++++ b/gcc/ada/sem_ch4.adb
+@@ -0,0 +1 @@
++
+diff --git a/gcc/ada/sem_ch7.adb b/gcc/ada/sem_ch7.adb
+index 6d9a1db..f217dfd 100644
+--- a/gcc/ada/sem_ch7.adb
++++ b/gcc/ada/sem_ch7.adb
+@@ -0,0 +1 @@
++
+diff --git a/gcc/ada/sem_ch8.adb b/gcc/ada/sem_ch8.adb
+index f083f7c..7f50b40 100644
+--- a/gcc/ada/sem_ch8.adb
++++ b/gcc/ada/sem_ch8.adb
+@@ -0,0 +1 @@
++
+diff --git a/gcc/ada/sem_elab.adb b/gcc/ada/sem_elab.adb
+index f3cac46..dbf3fac 100644
+--- a/gcc/ada/sem_elab.adb
++++ b/gcc/ada/sem_elab.adb
+@@ -0,0 +1 @@
++
+diff --git a/gcc/ada/sem_type.adb b/gcc/ada/sem_type.adb
+index e5d01dd..1868568 100644
+--- a/gcc/ada/sem_type.adb
++++ b/gcc/ada/sem_type.adb
+@@ -0,0 +1 @@
++
+diff --git a/gcc/ada/sem_util.adb b/gcc/ada/sem_util.adb
+index b980b4c..c1b1d9e 100644
+--- a/gcc/ada/sem_util.adb
++++ b/gcc/ada/sem_util.adb
+@@ -0,0 +1 @@
++
+-- 
+2.1.4
+

@@ -26,9 +26,9 @@ git config alias.gcc-descr \!"f() { if test \${1:-no} = --full; then c=\${2:-mas
 git config alias.gcc-undescr \!"f() { o=\$(git config --get gcc-config.upstream); r=\$(echo \$1 | sed -n 's,^r\\([0-9]\\+\\)-[0-9]\\+\$,\\1,p'); n=\$(echo \$1 | sed -n 's,^r[0-9]\\+-\\([0-9]\\+\\)\$,\\1,p'); test -z \$r && echo Invalid id \$1 && exit 1; h=\$(git rev-parse --verify --quiet \${o:-origin}/releases/gcc-\$r); test -z \$h && h=\$(git rev-parse --verify --quiet \${o:-origin}/master); p=\$(git describe --all --match 'basepoints/gcc-'\$r \$h | sed -n 's,^\\(tags/\\)\\?basepoints/gcc-[0-9]\\+-\\([0-9]\\+\\)-g[0-9a-f]*\$,\\2,p;s,^\\(tags/\\)\\?basepoints/gcc-[0-9]\\+\$,0,p'); git rev-parse --verify \$h~\$(expr \$p - \$n); }; f"
 
 git config alias.gcc-verify '!f() { "`git rev-parse --show-toplevel`/contrib/gcc-changelog/git_check_commit.py" $@; } ; f'
-git config alias.gcc-backport '!f() { rev=$1; git cherry-pick -x $@; } ; f'
-
+git config alias.gcc-backport '!f() { "`git rev-parse --show-toplevel`/contrib/git-backport.py" $@; } ; f'
 git config alias.gcc-mklog '!f() { "`git rev-parse --show-toplevel`/contrib/mklog.py" $@; } ; f'
+git config alias.gcc-commit-mklog '!f() { GCC_FORCE_MKLOG=1 git commit "$@"; }; f'
 
 # Make diff on MD files use "(define" as a function marker.
 # Use this in conjunction with a .gitattributes file containing
@@ -126,6 +126,17 @@ echo "Local branch prefix for personal branches you want to share"
 echo "(local branches starting <prefix>/ can be pushed directly to your"
 ask "personal area on the gcc server)" $old_pfx new_pfx
 git config "gcc-config.userpfx" "$new_pfx"
+
+echo
+ask "Install prepare-commit-msg git hook for 'git commit-mklog' alias" yes dohook
+if [ "x$dohook" = xyes ]; then
+    hookdir=`git rev-parse --git-path hooks`
+    if [ -f "$hookdir/prepare-commit-msg" ]; then
+	echo " Moving existing prepare-commit-msg hook to prepare-commit-msg.bak"
+	mv "$hookdir/prepare-commit-msg" "$hookdir/prepare-commit-msg.bak"
+    fi
+    install -c "`git rev-parse --show-toplevel`/contrib/prepare-commit-msg" "$hookdir"
+fi
 
 # Scan the existing settings to see if there are any we need to rewrite.
 vendors=$(git config --get-all "remote.${upstream}.fetch" "refs/vendors/" | sed -r "s:.*refs/vendors/([^/]+)/.*:\1:" | sort | uniq)

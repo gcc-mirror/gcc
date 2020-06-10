@@ -1,3 +1,72 @@
+2020-05-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/95322
+	* include/bits/stl_iterator.h (__detail::_Common_iter_proxy):
+	Remove and instead define it ...
+	(common_iterator::_Proxy): ... here.
+	(common_iterator::operator->): Use it.
+	* testsuite/24_iterators/common_iterator/2.cc: New test.
+	* testsuite/std/ranges/adaptors/95322.cc: New test.
+
+2020-05-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/93978
+	* testsuite/std/ranges/adaptors/93978.cc: Add -Wall to
+	dg-additional-options.  Avoid unused-but-set-variable warning.
+
+2020-05-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95289
+	* include/debug/helper_functions.h (__get_distance): Only declare
+	as a constexpr function for C++14 and up.
+	* testsuite/25_algorithms/copy/debug/95289.cc: New test.
+
+	* include/bits/fs_path.h (__detail::_S_range_begin)
+	(__detail::_S_range_end, path::_S_string_from_iter): Replace with
+	overloaded function template __detail::__effective_range.
+	(__detail::__effective_range): New overloaded function template to
+	create a basic_string or basic_string_view for an effective range.
+	(__detail::__value_type_is_char): Use __detail::__effective_range.
+	Do not use remove_const on value type.
+	(__detail::__value_type_is_char_or_char8_t): Likewise.
+	(path::path(const Source&, format))
+	(path::path(const Source&, const locale&))
+	(path::operator/=(const Source&), path::append(const Source&))
+	(path::concat(const Source&)): Use __detail::__effective_range.
+	(path::_S_to_string(InputIterator, InputIterator)): New function
+	template to create a string view if possible, or string otherwise.
+	(path::_S_convert): Add overloads that convert a string returned
+	by __detail::__effective_range. Use if-constexpr to inline conversion
+	logic from all overloads of _Cvt::_S_convert.
+	(path::_S_convert_loc): Add overload that converts a string. Use
+	_S_to_string to avoid allocation when possible.
+	(path::_Cvt): Remove.
+	(path::operator+=(CharT)): Remove indirection through path::concat.
+	* include/experimental/bits/fs_path.h (path::_S_convert_loc): Add
+	overload for non-const pointers, to avoid constructing a std::string.
+	* src/c++17/fs_path.cc (path::_S_convert_loc): Replace conditional
+	compilation with call to _S_convert.
+
+	* include/bits/fs_path.h (__detail::_S_range_begin)
+	(__detail::_S_range_end): Remove unintentional static specifiers.
+	* include/experimental/bits/fs_path.h (__detail::_S_range_begin)
+	(__detail::_S_range_end): Likewise.
+
+	* include/bits/fs_path.h (filesystem::__detail::__is_encoded_char):
+	Replace alias template with variable template. Don't remove const.
+	(filesystem::__detail::__is_path_src): Replace overloaded function
+	template with variable template and specializations.
+	(filesystem::__detail::__is_path_iter_src): Replace alias template
+	with class template.
+	(filesystem::__detail::_Path): Use __is_path_src. Remove support for
+	iterator pairs.
+	(filesystem::__detail::_Path2): New alias template for checking
+	InputIterator requirements.
+	(filesystem::__detail::__constructible_from): Remove.
+	(filesystem::path): Replace _Path<Iter, Iter> with _Path2<Iter>.
+	* testsuite/27_io/filesystem/path/construct/80762.cc: Check with two
+	constructor arguments of void and void* types.
+
 2020-05-21  Matthias Kretz  <kretz@kde.org>
 
 	* testsuite/Makefile.am: Remove dup target_triplet and set tool,

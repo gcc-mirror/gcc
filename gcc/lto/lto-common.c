@@ -1955,25 +1955,19 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
       else
 	{
 	  t = lto_input_tree_1 (&ib_main, data_in, tag, 0);
-	  /* We streamed in new tree.  Add it to cache and process dref.  */
-	  if (data_in->reader_cache->nodes.length () == from + 1)
-	    {
-	      num_unshared_trees_read++;
-	      data_in->location_cache.accept_location_cache ();
-	      process_dref (data_in, t, from);
-	      if (TREE_CODE (t) == IDENTIFIER_NODE
-		  || (TREE_CODE (t) == INTEGER_CST
-		      && !TREE_OVERFLOW (t)))
-		;
-	      else
-		{
-		  lto_maybe_register_decl (data_in, t, from);
-		  process_new_tree (t, &hm, from, &total, data_in);
-		}
-	    }
+	  gcc_assert (data_in->reader_cache->nodes.length () == from + 1);
+	  num_unshared_trees_read++;
+	  data_in->location_cache.accept_location_cache ();
+	  process_dref (data_in, t, from);
+	  if (TREE_CODE (t) == IDENTIFIER_NODE
+	      || (TREE_CODE (t) == INTEGER_CST
+		  && !TREE_OVERFLOW (t)))
+	    ;
 	  else
-	    /* FIXME: It seems useless to pickle stray references.  */
-	    gcc_assert (data_in->reader_cache->nodes.length () == from);
+	    {
+	      lto_maybe_register_decl (data_in, t, from);
+	      process_new_tree (t, &hm, from, &total, data_in);
+	    }
 	}
     }
 

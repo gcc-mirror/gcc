@@ -1,3 +1,342 @@
+2020-05-27  Jeff Law  <law@redhat.com>
+
+	* config/h8300/testcompare.md (tst_extzv_1_n): Do not accept constants
+	for the primary input operand.
+	(tstsi_variable_bit_qi): Similarly.
+
+2020-05-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (mmx_pswapdv2si2): Add SSE2 alternative.
+
+2020-05-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR ipa/95320
+	* ipa-utils.h (odr_type_p): Also permit calls with
+	only flag_generate_offload set.
+
+2020-05-26  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.c (validate_switches): Add braced parameter.  Adjust all
+	callers.  Expected and skip trailing brace only if braced.
+	Return after handling one atom otherwise.
+	(DUMPS_OPTIONS): New.
+	(cpp_debug_options): Define in terms of it.
+
+2020-05-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95327
+	* tree-vect-stmts.c (vectorizable_shift): Compute op1_vectype
+	when we are not using a scalar shift.
+
+2020-05-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (*mmx_pshufd_1): New insn pattern.
+	* config/i386/i386-expand.c (ix86_vectorize_vec_perm_const):
+	Handle E_V2SImode and E_V4HImode.
+	(expand_vec_perm_even_odd_1): Handle E_V4HImode.
+	Assert that E_V2SImode is already handled.
+	(expand_vec_perm_broadcast_1): Assert that E_V2SImode
+	is already handled by standard shuffle patterns.
+
+2020-05-26  Jan Hubicka  <jh@suse.cz>
+
+	* tree.c (free_lang_data_in_type): Simpify types of TYPE_VALUES in
+	enumeral types.
+
+2020-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/95197
+	* gimplify.c (find_combined_omp_for): Move to omp-general.c.
+	* omp-general.h (find_combined_omp_for): Declare.
+	* omp-general.c: Include tree-iterator.h.
+	(find_combined_omp_for): New function, moved from gimplify.c.
+
+2020-05-26  Alexandre Oliva  <oliva@adacore.com>
+
+	* common.opt (aux_base_name): Define.
+	(dumpbase, dumpdir): Mark as Driver options.
+	(-dumpbase, -dumpdir): Likewise.
+	(dumpbase-ext, -dumpbase-ext): New.
+	(auxbase, auxbase-strip): Drop.
+	* doc/invoke.texi (-dumpbase, -dumpbase-ext, -dumpdir):
+	Document.
+	(-o): Introduce the notion of primary output, mention it
+	influences auxiliary and dump output names as well, add
+	examples.
+	(-save-temps): Adjust, move examples into -dump*.
+	(-save-temps=cwd, -save-temps=obj): Likewise.
+	(-fdump-final-insns): Adjust.
+	* dwarf2out.c (gen_producer_string): Drop auxbase and
+	auxbase_strip; add dumpbase_ext.
+	* gcc.c (enum save_temps): Add SAVE_TEMPS_DUMP.
+	(save_temps_prefix, save_temps_length): Drop.
+	(save_temps_overrides_dumpdir): New.
+	(dumpdir, dumpbase, dumpbase_ext): New.
+	(dumpdir_length, dumpdir_trailing_dash_added): New.
+	(outbase, outbase_length): New.
+	(The Specs Language): Introduce %".  Adjust %b and %B.
+	(ASM_FINAL_SPEC): Use %b.dwo for an aux output name always.
+	Precede object file with %w when it's the primary output.
+	(cpp_debug_options): Do not pass on incoming -dumpdir,
+	-dumpbase and -dumpbase-ext options; recompute them with
+	%:dumps.
+	(cc1_options): Drop auxbase with and without compare-debug;
+	use cpp_debug_options instead of dumpbase.  Mark asm output
+	with %w when it's the primary output.
+	(static_spec_functions): Drop %:compare-debug-auxbase-opt and
+	%:replace-exception.  Add %:dumps.
+	(driver_handle_option): Implement -save-temps=*/-dumpdir
+	mutual overriding logic.  Save dumpdir, dumpbase and
+	dumpbase-ext options.  Do not save output_file in
+	save_temps_prefix.
+	(adds_single_suffix_p): New.
+	(single_input_file_index): New.
+	(process_command): Combine output dir, output base name, and
+	dumpbase into dumpdir and outbase.
+	(set_collect_gcc_options): Pass a possibly-adjusted -dumpdir.
+	(do_spec_1): Optionally dumpdir instead of save_temps_prefix,
+	and outbase instead of input_basename in %b, %B and in
+	-save-temps aux files.  Handle empty argument %".
+	(driver::maybe_run_linker): Adjust dumpdir and auxbase.
+	(compare_debug_dump_opt_spec_function): Adjust gkd dump file
+	naming.  Spec-quote the computed -fdump-final-insns file name.
+	(debug_auxbase_opt): Drop.
+	(compare_debug_self_opt_spec_function): Drop auxbase-strip
+	computation.
+	(compare_debug_auxbase_opt_spec_function): Drop.
+	(not_actual_file_p): New.
+	(replace_extension_spec_func): Drop.
+	(dumps_spec_func): New.
+	(convert_white_space): Split-out parts into...
+	(quote_string, whitespace_to_convert_p): ... these.  New.
+	(quote_spec_char_p, quote_spec, quote_spec_arg): New.
+	(driver::finalize): Release and reset new variables; drop
+	removed ones.
+	* lto-wrapper.c (HAVE_TARGET_EXECUTABLE_SUFFIX): Define if...
+	(TARGET_EXECUTABLE_SUFFIX): ... is defined; define this to the
+	empty string otherwise.
+	(DUMPBASE_SUFFIX): Drop leading period.
+	(debug_objcopy): Use concat.
+	(run_gcc): Recognize -save-temps=* as -save-temps too.  Obey
+	-dumpdir.  Pass on empty dumpdir and dumpbase with a directory
+	component.  Simplify temp file names.
+	* opts.c (finish_options): Drop aux base name handling.
+	(common_handle_option): Drop auxbase-strip handling.
+	* toplev.c (print_switch_values): Drop auxbase, add
+	dumpbase-ext.
+	(process_options): Derive aux_base_name from dump_base_name
+	and dump_base_ext.
+	(lang_dependent_init): Compute dump_base_ext along with
+	dump_base_name.  Disable stack usage and callgraph-info	during
+	lto generation and compare-debug recompilation.
+
+2020-05-26  Hongtao Liu  <hongtao.liu@intel.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95211
+	PR target/95256
+	* config/i386/sse.md (<floatunssuffix>v2div2sf2): New expander.
+	(fix<fixunssuffix>_truncv2sfv2di2): Ditto.
+	(avx512dq_float<floatunssuffix>v2div2sf2): Renaming from
+	float<floatunssuffix>v2div2sf2.
+	(avx512dq_fix<fixunssuffix>_truncv2sfv2di2<mask_name>):
+	Renaming from fix<fixunssuffix>_truncv2sfv2di2<mask_name>.
+	(vec_pack<floatprefix>_float_<mode>): Adjust icode name.
+	(vec_unpack_<fixprefix>fix_trunc_lo_<mode>): Ditto.
+	(vec_unpack_<fixprefix>fix_trunc_hi_<mode>): Ditto.
+	* config/i386/i386-builtin.def: Ditto.
+	* emit-rtl.c (validate_subreg): Allow use of *paradoxical* vector
+	subregs when both omode and imode are vector mode and
+	have the same inner mode.
+
+2020-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-ssa-store-merging.c (merged_store_group::can_be_merged_into):
+	Only turn MEM_REFs into bit-field stores for small bit-field regions.
+	(imm_store_chain_info::output_merged_store): Be prepared for sources
+	with non-integral type in the bit-field insertion case.
+	(pass_store_merging::process_store): Use MAX_BITSIZE_MODE_ANY_INT as
+	the largest size for the bit-field case.
+
+2020-05-25  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (*vec_dupv2sf): Redefine as define_insn.
+	(mmx_pshufw_1): Change Yv constraint to xYw.  Correct type attribute.
+	(*vec_dupv4hi): Redefine as define_insn.
+	Remove alternative with general register input.
+	(*vec_dupv2si): Ditto.
+
+2020-05-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95309
+	* tree-vect-slp.c (vect_get_constant_vectors): Move number
+	of vector computation ...
+	(vect_slp_analyze_node_operations): ... to analysis phase.
+
+2020-05-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-out.c (lto_output_tree): Add streamer_debugging check.
+	* lto-streamer.h (streamer_debugging): New constant
+	* tree-streamer-in.c (streamer_read_tree_bitfields): Add
+	streamer_debugging check.
+	(streamer_get_pickled_tree): Likewise.
+	* tree-streamer-out.c (pack_ts_base_value_fields): Likewise.
+
+2020-05-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95308
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Generalize
+	test for TARGET_MEM_REFs.
+
+2020-05-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95295
+	* tree-ssa-loop-im.c (sm_seq_valid_bb): Compare remat stores
+	RHSes and drop to full sm_other if they are not equal.
+
+2020-05-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95271
+	* tree-vect-stmts.c (vectorizable_bswap): Update invariant SLP
+	children vector type.
+	(vectorizable_call): Pass down slp ops.
+
+2020-05-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95297
+	* tree-vect-stmts.c (vectorizable_shift): For scalar_shift_arg
+	skip updating operand 1 vector type.
+
+2020-05-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95284
+	* tree-ssa-sink.c (sink_common_stores_to_bb): Amend previous
+	fix.
+
+2020-05-25  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/95125
+	* config/i386/sse.md (sf2dfmode_lower): New mode attribute.
+	(trunc<mode><sf2dfmode_lower>2) New expander.
+	(extend<sf2dfmode_lower><mode>2): Ditto.
+
+2020-05-23 Iain Sandoe <iain@sandoe.co.uk>
+
+	* config/darwin.h (ASM_GENERATE_INTERNAL_LABEL): Make
+	ubsan_{data,type},ASAN symbols linker-visible.
+
+2020-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-out.c (DFS::DFS): Silence warning.
+
+2020-05-22  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95255
+	* config/i386/i386.md (<rounding_insn><mode>2): Do not try to
+	expand non-sse4 ROUND_ROUNDEVEN rounding via SSE support routines.
+
+2020-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-out.c (lto_output_tree): Do not stream final ref if
+	it is not needed.
+
+2020-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-section-out.c (lto_output_decl_index): Adjust dump indentation.
+	* lto-streamer-out.c (create_output_block): Fix whitespace
+	(lto_write_tree_1): Add (debug) dump.
+	(DFS::DFS): Add dump.
+	(DFS::DFS_write_tree_body): Do not dump here.
+	(lto_output_tree): Improve dumping; do not stream ref when not needed.
+	(produce_asm_for_decls): Fix whitespace.
+	* tree-streamer-out.c (streamer_write_tree_header): Add dump.
+	* tree-streamer-out.c (streamer_write_integer_cst): Add debug dump.
+
+2020-05-22  Hongtao.liu  <hongtao.liu@intel.com>
+
+	PR target/92658
+	* config/i386/sse.md (trunc<pmov_src_lower><mode>2): New expander
+	(truncv32hiv32qi2): Ditto.
+	(trunc<ssedoublemodelower><mode>2): Ditto.
+	(trunc<mode><pmov_dst_3>2): Ditto.
+	(trunc<mode><pmov_dst_mode_4>2): Ditto.
+	(truncv2div2si2): Ditto.
+	(truncv8div8qi2): Ditto.
+	(avx512f_<code>v8div16qi2): Renaming from *avx512f_<code>v8div16qi2.
+	(avx512vl_<code>v2div2si): Renaming from *avx512vl_<code>v2div2si2.
+	(avx512vl_<code><mode>v2<ssecakarnum>qi2): Renaming from
+	*avx512vl_<code><mode>v<ssescalarnum>qi2.
+
+2020-05-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/95258
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	AVX512VPOPCNTDQ.
+
+2020-05-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95268
+	* tree-ssa-sink.c (sink_common_stores_to_bb): Handle clobbers
+	properly.
+
+2020-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-streamer.c (record_common_node): Fix hash value of pre-streamed
+	nodes.
+
+2020-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-in.c (lto_read_tree): Do not stream end markers.
+	(lto_input_scc): Optimize streaming of entry lengths.
+	* lto-streamer-out.c (lto_write_tree): Do not stream end markers
+	(DFS::DFS): Optimize stremaing of entry lengths
+
+2020-05-22  Richard Biener  <rguenther@suse.de>
+
+	PR lto/95190
+	* doc/invoke.texi (flto): Document behavior of diagnostic
+	options.
+
+2020-05-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_is_simple_use): New overload.
+	(vect_maybe_update_slp_op_vectype): New.
+	* tree-vect-stmts.c (vect_is_simple_use): New overload
+	accessing operands of SLP vs. non-SLP operation transparently.
+	(vect_maybe_update_slp_op_vectype): New function updating
+	the possibly shared SLP operands vector type.
+	(vectorizable_operation): Be a bit more SLP vs non-SLP agnostic
+	using the new vect_is_simple_use overload;  update SLP invariant
+	operand nodes vector type.
+	(vectorizable_comparison): Likewise.
+	(vectorizable_call): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_condition): Likewise.
+	(vectorizable_assignment): Likewise.
+	* tree-vect-loop.c (vectorizable_reduction): Likewise.
+	* tree-vect-slp.c (vect_get_constant_vectors): Enforce
+	present SLP_TREE_VECTYPE and check it matches previous
+	behavior.
+
+2020-05-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95248
+	* tree-ssa-loop-im.c (sm_seq_valid_bb): Remove bogus early out.
+
+2020-05-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_slp_tree::_slp_tree): New.
+	(_slp_tree::~_slp_tree): Likewise.
+	* tree-vect-slp.c (_slp_tree::_slp_tree): Factor out code
+	from allocators.
+	(_slp_tree::~_slp_tree): Implement.
+	(vect_free_slp_tree): Simplify.
+	(vect_create_new_slp_node): Likewise.  Add nops parameter.
+	(vect_build_slp_tree_2): Adjust.
+	(vect_analyze_slp_instance): Likewise.
+
 2020-05-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* adjust-alignment.c: Include memmodel.h.

@@ -8224,6 +8224,7 @@ extern tree constexpr_fn_retval		(tree);
 extern tree ensure_literal_type_for_constexpr_object (tree);
 extern bool potential_constant_expression       (tree);
 extern bool is_constant_expression (tree);
+extern bool is_rvalue_constant_expression (tree);
 extern bool is_nondependent_constant_expression (tree);
 extern bool is_nondependent_static_init_expression (tree);
 extern bool is_static_init_expression    (tree);

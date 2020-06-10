@@ -1,3 +1,183 @@
+2020-05-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/95306
+	* jit.dg/all-non-failing-tests.h: Add test-builtin-memcpy.c and
+	test-pr95306-builtin-types.c.
+	* jit.dg/test-builtin-memcpy.c: New test.
+	* jit.dg/test-error-gcc_jit_context_get_builtin_function-unimplemented-type.c:
+	New test.
+	* jit.dg/test-pr95306-builtin-types.c: New test.
+
+2020-05-26  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl   <kargl@gcc.gnu.org>
+
+	PR libfortran/95104
+	* gfortran.dg/pr95104.f90: New test.
+
+2020-05-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95195
+	* gfortran.dg/namelist_97.f90: New test.
+
+2020-05-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95089
+	* gfortran.dg/pr95089.f90: New test.
+
+2020-05-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/95296
+	* jit.dg/test-error-gcc_jit_context_new_global-void-type.c: New
+	test.
+	* jit.dg/test-error-gcc_jit_function_new_local-void-type.c: New
+	test.
+	* jit.dg/test-fuzzer.c (fuzzer_init): Allow for make_random_type
+	to return NULL.
+	(get_random_type): Allow for elements in f->types to be NULL.
+
+2020-05-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/vperm-v2si.c: New test.
+	* gcc.target/i386/vperm-v4hi.c: Ditto.
+
+2020-05-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/torture/co-ret-17-void-ret-coro.C: Check for
+	promise destruction via a global variable.
+
+2020-05-26  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.misc-tests/outputs.exp: New.
+	* gcc.misc-tests/outputs-0.c: New.
+	* gcc.misc-tests/outputs-1.c: New.
+	* gcc.misc-tests/outputs-2.c: New.
+	* lib/gcc-defs.exp (gcc_adjusted_linker_flags): New.
+	(gcc_adjust_linker_flags): New.
+	(dg-additional-files-options): Call it.  Pass -dumpbase ""
+	when there are additional sources.
+	* lib/profopt.exp (profopt-execute): Pass the executable
+	suffix with -dumpbase-ext.
+	* lib/scandump.exp (dump-base): Mention -dumpbase "" use.
+	* lib/scanltranstree.exp: Adjust dump suffix expectation.
+	* lib/scanwpaipa.exp: Likewise.
+
+2020-05-26  Hongtao Liu  <hongtao.liu@intel.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr95211.c: New test.
+
+2020-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt84.adb: New test.
+
+2020-05-25  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse2-mmx-18a.c (dg-options): Remove -mno-avx512vl.
+	* gcc.target/i386/sse2-mmx-19a.c (dg-options): Remove -mno-avx.
+	* gcc.target/i386/sse2-mmx-18b.c: Remove.
+	* gcc.target/i386/sse2-mmx-18c.c: Ditto.
+	* gcc.target/i386/sse2-mmx-19b.c: Ditto.
+	* gcc.target/i386/sse2-mmx-19c.c: Ditto.
+	* gcc.target/i386/sse2-mmx-19d.c: Ditto.
+	* gcc.target/i386/sse2-mmx-19e.c: Ditto.
+
+2020-05-25  Martin Jambor  <mjambor@suse.cz>
+
+	* brig.dg/test/gimple/packed.hsail: Fix scan dump patterns.
+
+2020-05-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95308
+	* g++.dg/torture/pr95308.C: New testcase.
+
+2020-05-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95295
+	* gcc.dg/torture/pr95295-1.c: New testcase.
+	* gcc.dg/torture/pr95295-2.c: Likewise.
+	* gcc.dg/torture/pr95283.c: Likewise.
+
+2020-05-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95271
+	* gcc.dg/vect/bb-slp-pr95271.c: New testcase.
+
+2020-05-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95297
+	* g++.dg/vect/pr95297.cc: New testcase.
+	* g++.dg/vect/pr95290.cc: Likewise.
+
+2020-05-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95284
+	* g++.dg/torture/pr95284.C: New testcase.
+
+2020-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/renaming16.adb: New test.
+	* gnat.dg/renaming16_pkg.ads: New helper.
+
+2020-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/array40.adb: New test.
+	* gnat.dg/array40_pkg.ads: New helper.
+
+2020-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/array39.adb: New test.
+	* gnat.dg/array39_pkg.ads: New helper.
+	* gnat.dg/array39_pkg.adb: Likewise.
+
+2020-05-25  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr95125-avx.c: New test.
+	* gcc.target/i386/pr95125-avx512f.c: Ditto.
+
+2020-05-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95106
+	* gfortran.dg/equiv_11.f90: New test.
+
+2020-05-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94038
+	* g++.dg/warn/pr94038-3.C: New test.
+
+2020-05-22  Mark Wielaard  <mark@klomp.org>
+
+	* gcc.dg/spellcheck-stdint.c: New test.
+	* g++.dg/spellcheck-stdint.C: Likewise.
+
+2020-05-22  Mark Wielaard  <mark@klomp.org>
+
+	* gcc.dg/spellcheck-stdbool.c: New test.
+
+2020-05-22  Mark Wielaard  <mark@klomp.org>
+
+	* gcc.dg/analyzer/signal-exit.c: New testcase.
+
+2020-05-22  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95255
+	* gcc.target/i386/pr95255.c: New test.
+
+2020-05-22  Hongtao.liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr92658-avx512f.c: New test.
+	* gcc.target/i386/pr92658-avx512vl.c: Ditto.
+	* gcc.target/i386/pr92658-avx512bw-trunc.c: Ditto.
+
+2020-05-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95268
+	* g++.dg/torture/pr95268.C: New testcase.
+
+2020-05-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95248
+	* gcc.dg/torture/pr95248.c: New testcase.
+
 2020-05-21  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94038

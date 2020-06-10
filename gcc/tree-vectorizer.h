@@ -118,6 +118,9 @@ typedef struct _slp_tree *slp_tree;
 /* A computation tree of an SLP instance.  Each node corresponds to a group of
    stmts to be packed in a SIMD stmt.  */
 struct _slp_tree {
+  _slp_tree ();
+  ~_slp_tree ();
+
   /* Nodes that contain def-stmts of this node statements operands.  */
   vec<slp_tree> children;
 
@@ -1695,6 +1698,11 @@ extern bool vect_is_simple_use (tree, vec_info *, enum vect_def_type *,
 extern bool vect_is_simple_use (tree, vec_info *, enum vect_def_type *,
 				tree *, stmt_vec_info * = NULL,
 				gimple ** = NULL);
+extern bool vect_is_simple_use (vec_info *, stmt_vec_info, slp_tree,
+				unsigned, tree *, slp_tree *,
+				enum vect_def_type *,
+				tree *, stmt_vec_info * = NULL);
+extern bool vect_maybe_update_slp_op_vectype (slp_tree, tree);
 extern bool supportable_widening_operation (vec_info *,
 					    enum tree_code, stmt_vec_info,
 					    tree, tree, enum tree_code *,

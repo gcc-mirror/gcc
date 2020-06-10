@@ -53,6 +53,13 @@ along with GCC; see the file COPYING3.  If not see
    driver to lto-wrapper.  */
 #define OFFLOAD_TARGET_NAMES_ENV	"OFFLOAD_TARGET_NAMES"
 
+/* By default there is no special suffix for target executables.  */
+#ifdef TARGET_EXECUTABLE_SUFFIX
+#define HAVE_TARGET_EXECUTABLE_SUFFIX
+#else
+#define TARGET_EXECUTABLE_SUFFIX ""
+#endif
+
 enum lto_mode_d {
   LTO_MODE_NONE,			/* Not doing LTO.  */
   LTO_MODE_LTO,				/* Normal LTO.  */
@@ -126,7 +133,7 @@ maybe_unlink (const char *file)
 }
 
 /* Template of LTRANS dumpbase suffix.  */
-#define DUMPBASE_SUFFIX ".ltrans18446744073709551615"
+#define DUMPBASE_SUFFIX "ltrans18446744073709551615"
 
 /* Create decoded options from the COLLECT_GCC and COLLECT_GCC_OPTIONS
    environment.  */
@@ -1100,12 +1107,7 @@ debug_objcopy (const char *infile, bool rename)
     }
 
   if (save_temps)
-    {
-      outfile = (char *) xmalloc (strlen (orig_infile)
-				  + sizeof (".debug.temp.o") + 1);
-      strcpy (outfile, orig_infile);
-      strcat (outfile, ".debug.temp.o");
-    }
+    outfile = concat (orig_infile, ".debug.temp.o", NULL);
   else
     outfile = make_temp_file (".debug.temp.o");
   errmsg = simple_object_copy_lto_debug_sections (inobj, outfile, &err, rename);
@@ -1296,6 +1298,8 @@ run_gcc (unsigned argc, char *argv[])
   bool linker_output_rel = false;
   bool skip_debug = false;
   unsigned n_debugobj;
+  const char *dumppfx = NULL, *incoming_dumppfx = NULL;
+  static char current_dir[] = { '.', DIR_SEPARATOR, '\0' };
 
   /* Get the driver and options.  */
   collect_gcc = getenv ("COLLECT_GCC");
@@ -1407,6 +1411,10 @@ run_gcc (unsigned argc, char *argv[])
 	  linker_output = option->arg;
 	  break;
 
+	  /* We don't have to distinguish between -save-temps=* and
+	     -save-temps, -dumpdir already carries that
+	     information.  */
+	case OPT_save_temps_:
 	case OPT_save_temps:
 	  save_temps = 1;
 	  break;
@@ -1452,6 +1460,10 @@ run_gcc (unsigned argc, char *argv[])
 	  skip_debug = option->arg && !strcmp (option->arg, "0");
 	  break;
 
+	case OPT_dumpdir:
+	  incoming_dumppfx = dumppfx = option->arg;
+	  break;
+
 	default:
 	  break;
 	}
@@ -1490,32 +1502,47 @@ run_gcc (unsigned argc, char *argv[])
 	}
     }
 
-  if (linker_output)
+  if (!dumppfx)
     {
-      char *output_dir, *base, *name;
-      bool bit_bucket = strcmp (linker_output, HOST_BIT_BUCKET) == 0;
-
-      output_dir = xstrdup (linker_output);
-      base = output_dir;
-      for (name = base; *name; name++)
-	if (IS_DIR_SEPARATOR (*name))
-	  base = name + 1;
-      *base = '\0';
-
-      linker_output = &linker_output[base - output_dir];
-      if (*output_dir == '\0')
+      if (!linker_output
+	  || strcmp (linker_output, HOST_BIT_BUCKET) == 0)
+	dumppfx = "a.";
+      else
 	{
-	  static char current_dir[] = { '.', DIR_SEPARATOR, '\0' };
-	  output_dir = current_dir;
-	}
-      if (!bit_bucket)
-	{
-	  obstack_ptr_grow (&argv_obstack, "-dumpdir");
-	  obstack_ptr_grow (&argv_obstack, output_dir);
-	}
+	  const char *obase = lbasename (linker_output), *temp;
 
-      obstack_ptr_grow (&argv_obstack, "-dumpbase");
+	  /* Strip the executable extension.  */
+	  size_t blen = strlen (obase), xlen;
+	  if ((temp = strrchr (obase + 1, '.'))
+	      && (xlen = strlen (temp))
+	      && (strcmp (temp, ".exe") == 0
+#if defined(HAVE_TARGET_EXECUTABLE_SUFFIX)
+		  || strcmp (temp, TARGET_EXECUTABLE_SUFFIX) == 0
+#endif
+		  || strcmp (obase, "a.out") == 0))
+	    dumppfx = xstrndup (linker_output,
+				obase - linker_output + blen - xlen + 1);
+	  else
+	    dumppfx = concat (linker_output, ".", NULL);
+	}
     }
+
+  /* If there's no directory component in the dumppfx, add one, so
+     that, when it is used as -dumpbase, it overrides any occurrence
+     of -dumpdir that might have been passed in.  */
+  if (!dumppfx || lbasename (dumppfx) == dumppfx)
+    dumppfx = concat (current_dir, dumppfx, NULL);
+
+  /* Make sure some -dumpdir is passed, so as to get predictable
+     -dumpbase overriding semantics.  If we got an incoming -dumpdir
+     argument, we'll pass it on, so don't bother with another one
+     then.  */
+  if (!incoming_dumppfx)
+    {
+      obstack_ptr_grow (&argv_obstack, "-dumpdir");
+      obstack_ptr_grow (&argv_obstack, "");
+    }
+  obstack_ptr_grow (&argv_obstack, "-dumpbase");
 
   /* Remember at which point we can scrub args to re-use the commons.  */
   new_head_argc = obstack_object_size (&argv_obstack) / sizeof (void *);
@@ -1621,15 +1648,11 @@ cont1:
 
   if (lto_mode == LTO_MODE_LTO)
     {
-      if (linker_output)
-	{
-	  obstack_ptr_grow (&argv_obstack, linker_output);
-	  flto_out = (char *) xmalloc (strlen (linker_output)
-				       + sizeof (".lto.o") + 1);
-	  strcpy (flto_out, linker_output);
-	  strcat (flto_out, ".lto.o");
-	}
-      else
+      /* -dumpbase argument for LTO.  */
+      flto_out = concat (dumppfx, "lto.o", NULL);
+      obstack_ptr_grow (&argv_obstack, flto_out);
+
+      if (!save_temps)
 	flto_out = make_temp_file (".lto.o");
       obstack_ptr_grow (&argv_obstack, "-o");
       obstack_ptr_grow (&argv_obstack, flto_out);
@@ -1637,47 +1660,17 @@ cont1:
   else 
     {
       const char *list_option = "-fltrans-output-list=";
-      size_t list_option_len = strlen (list_option);
-      char *tmp;
 
-      if (linker_output)
-	{
-	  char *dumpbase = (char *) xmalloc (strlen (linker_output)
-					     + sizeof (".wpa") + 1);
-	  strcpy (dumpbase, linker_output);
-	  strcat (dumpbase, ".wpa");
-	  obstack_ptr_grow (&argv_obstack, dumpbase);
-	}
+      /* -dumpbase argument for WPA.  */
+      char *dumpbase = concat (dumppfx, "wpa", NULL);
+      obstack_ptr_grow (&argv_obstack, dumpbase);
 
-      if (linker_output && save_temps)
-	{
-	  ltrans_output_file = (char *) xmalloc (strlen (linker_output)
-						 + sizeof (".ltrans.out") + 1);
-	  strcpy (ltrans_output_file, linker_output);
-	  strcat (ltrans_output_file, ".ltrans.out");
-	}
+      if (save_temps)
+	ltrans_output_file = concat (dumppfx, "ltrans.out", NULL);
       else
-	{
-	  char *prefix = NULL;
-	  if (linker_output)
-	    {
-	      prefix = (char *) xmalloc (strlen (linker_output) + 2);
-	      strcpy (prefix, linker_output);
-	      strcat (prefix, ".");
-	    }
-
-	  ltrans_output_file = make_temp_file_with_prefix (prefix,
-							   ".ltrans.out");
-	  free (prefix);
-	}
-      list_option_full = (char *) xmalloc (sizeof (char) *
-		         (strlen (ltrans_output_file) + list_option_len + 1));
-      tmp = list_option_full;
-
-      obstack_ptr_grow (&argv_obstack, tmp);
-      strcpy (tmp, list_option);
-      tmp += list_option_len;
-      strcpy (tmp, ltrans_output_file);
+	ltrans_output_file = make_temp_file (".ltrans.out");
+      list_option_full = concat (list_option, ltrans_output_file, NULL);
+      obstack_ptr_grow (&argv_obstack, list_option_full);
 
       if (jobserver)
 	{
@@ -1833,16 +1826,10 @@ cont:
 	  output_name = XOBFINISH (&env_obstack, char *);
 
 	  /* Adjust the dumpbase if the linker output file was seen.  */
-	  if (linker_output)
-	    {
-	      char *dumpbase
-		  = (char *) xmalloc (strlen (linker_output)
-				      + sizeof (DUMPBASE_SUFFIX) + 1);
-	      snprintf (dumpbase,
-			strlen (linker_output) + sizeof (DUMPBASE_SUFFIX),
-			"%s.ltrans%u", linker_output, i);
-	      argv_ptr[0] = dumpbase;
-	    }
+	  int dumpbase_len = (strlen (dumppfx) + sizeof (DUMPBASE_SUFFIX));
+	  char *dumpbase = (char *) xmalloc (dumpbase_len + 1);
+	  snprintf (dumpbase, dumpbase_len, "%sltrans%u.ltrans", dumppfx, i);
+	  argv_ptr[0] = dumpbase;
 
 	  argv_ptr[1] = "-fltrans";
 	  argv_ptr[2] = "-o";

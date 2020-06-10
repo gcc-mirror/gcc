@@ -1,3 +1,22 @@
+2020-05-26  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl   <kargl@gcc.gnu.org>
+
+	PR libfortran/95104
+	* io/transfer.c (st_wait_async): Do not dereference NULL pointer.
+
+2020-05-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95195
+	* io/transfer.c (finalize_transfer): Generate runtime error for
+	namelist input/output to unformatted file.
+
+2020-05-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/95191
+	* io/async.c (async_wait_id): Generate error if ID is higher
+	than the highest current ID.
+	* runtime/error.c (translate_error): Handle LIBERROR_BAD_WAIT_ID.
+
 2020-05-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* m4/matmul.m4: Don't include <config/i386/cpuinfo.h>.  Use

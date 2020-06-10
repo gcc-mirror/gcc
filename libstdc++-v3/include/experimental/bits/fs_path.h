@@ -137,33 +137,33 @@ namespace __detail
 		     path>::type;
 
   template<typename _Source>
-    static _Source
+    inline _Source
     _S_range_begin(_Source __begin) { return __begin; }
 
   struct __null_terminated { };
 
   template<typename _Source>
-    static __null_terminated
+    inline __null_terminated
     _S_range_end(_Source) { return {}; }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    static const _CharT*
+    inline const _CharT*
     _S_range_begin(const basic_string<_CharT, _Traits, _Alloc>& __str)
     { return __str.data(); }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    static const _CharT*
+    inline const _CharT*
     _S_range_end(const basic_string<_CharT, _Traits, _Alloc>& __str)
     { return __str.data() + __str.size(); }
 
 #if __cplusplus >= 201402L
   template<typename _CharT, typename _Traits>
-    static const _CharT*
+    inline const _CharT*
     _S_range_begin(const basic_string_view<_CharT, _Traits>& __str)
     { return __str.data(); }
 
   template<typename _CharT, typename _Traits>
-    static const _CharT*
+    inline const _CharT*
     _S_range_end(const basic_string_view<_CharT, _Traits>& __str)
     { return __str.data() + __str.size(); }
 #endif
@@ -494,6 +494,13 @@ namespace __detail
     static string_type
     _S_convert_loc(const char* __first, const char* __last,
 		   const std::locale& __loc);
+
+    static string_type
+    _S_convert_loc(char* __first, char* __last, const std::locale& __loc)
+    {
+      return _S_convert_loc(const_cast<const char*>(__first),
+			    const_cast<const char*>(__last), __loc);
+    }
 
     template<typename _Iter>
       static string_type

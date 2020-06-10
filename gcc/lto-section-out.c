@@ -170,7 +170,7 @@ lto_output_decl_index (struct lto_output_stream *obs,
       index = encoder->trees.length ();
       if (streamer_dump_file)
 	{
-	  print_node_brief (streamer_dump_file, "    Encoding indexable ",
+	  print_node_brief (streamer_dump_file, "     Encoding indexable ",
 			    name, 4);
 	  fprintf (streamer_dump_file, "  as %i \n", index);
 	}

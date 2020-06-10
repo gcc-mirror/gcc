@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "file-prefix-map.h"
 #include "cgraph.h"
+#include "omp-general.h"
 
 /* Forward declarations.  */
 
@@ -852,6 +853,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       ret = GS_OK;
       if (flag_strong_eval_order == 2
 	  && CALL_EXPR_FN (*expr_p)
+	  && !CALL_EXPR_OPERATOR_SYNTAX (*expr_p)
 	  && cp_get_callee_fndecl_nofold (*expr_p) == NULL_TREE)
 	{
 	  tree fnptrtype = TREE_TYPE (CALL_EXPR_FN (*expr_p));
@@ -1650,9 +1652,70 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       *stmt_p = genericize_spaceship (*stmt_p);
       break;
 
+    case OMP_DISTRIBUTE:
+      /* Need to explicitly instantiate copy ctors on class iterators of
+	 composite distribute parallel for.  */
+      if (OMP_FOR_INIT (*stmt_p) == NULL_TREE)
+	{
+	  tree *data[4] = { NULL, NULL, NULL, NULL };
+	  tree inner = walk_tree (&OMP_FOR_BODY (*stmt_p),
+				  find_combined_omp_for, data, NULL);
+	  if (inner != NULL_TREE
+	      && TREE_CODE (inner) == OMP_FOR)
+	    {
+	      for (int i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (inner)); i++)
+		if (OMP_FOR_ORIG_DECLS (inner)
+		    && TREE_CODE (TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (inner),
+				  i)) == TREE_LIST
+		    && TREE_PURPOSE (TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (inner),
+				     i)))
+		  {
+		    tree orig = TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (inner), i);
+		    /* Class iterators aren't allowed on OMP_SIMD, so the only
+		       case we need to solve is distribute parallel for.  */
+		    gcc_assert (TREE_CODE (inner) == OMP_FOR
+				&& data[1]);
+		    tree orig_decl = TREE_PURPOSE (orig);
+		    tree c, cl = NULL_TREE;
+		    for (c = OMP_FOR_CLAUSES (inner);
+			 c; c = OMP_CLAUSE_CHAIN (c))
+		      if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_PRIVATE
+			   || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE)
+			  && OMP_CLAUSE_DECL (c) == orig_decl)
+			{
+			  cl = c;
+			  break;
+			}
+		    if (cl == NULL_TREE)
+		      {
+			for (c = OMP_PARALLEL_CLAUSES (*data[1]);
+			     c; c = OMP_CLAUSE_CHAIN (c))
+			  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_PRIVATE
+			      && OMP_CLAUSE_DECL (c) == orig_decl)
+			    {
+			      cl = c;
+			      break;
+			    }
+		      }
+		    if (cl)
+		      {
+			orig_decl = require_complete_type (orig_decl);
+			tree inner_type = TREE_TYPE (orig_decl);
+			if (orig_decl == error_mark_node)
+			  continue;
+			if (TYPE_REF_P (TREE_TYPE (orig_decl)))
+			  inner_type = TREE_TYPE (inner_type);
+
+			while (TREE_CODE (inner_type) == ARRAY_TYPE)
+			  inner_type = TREE_TYPE (inner_type);
+			get_copy_ctor (inner_type, tf_warning_or_error);
+		      }
+		}
+	    }
+	}
+      /* FALLTHRU */
     case OMP_FOR:
     case OMP_SIMD:
-    case OMP_DISTRIBUTE:
     case OMP_LOOP:
     case OACC_LOOP:
       genericize_omp_for_stmt (stmt_p, walk_subtrees, data);

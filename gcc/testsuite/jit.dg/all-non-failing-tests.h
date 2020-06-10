@@ -67,6 +67,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-builtin-memcpy.c */
+#define create_code create_code_builtin_memcpy
+#define verify_code verify_code_builtin_memcpy
+#include "test-builtin-memcpy.c"
+#undef create_code
+#undef verify_code
+
 /* test-calling-external-function.c */
 #define create_code create_code_calling_external_function
 #define verify_code verify_code_calling_external_function
@@ -220,6 +227,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-pr95306-builtin-types.c.  */
+#define create_code create_code_pr95306_builtin_types
+#define verify_code verify_code_pr95306_builtin_types
+#include "test-pr95306-builtin-types.c"
+#undef create_code
+#undef verify_code
+
 /* test-reading-struct.c */
 #define create_code create_code_reading_struct
 #define verify_code verify_code_reading_struct
@@ -318,6 +332,9 @@ const struct testcase testcases[] = {
   {"autovectorize",
    create_code_autovectorize,
    verify_code_autovectorize},
+  {"builtin-memcpy",
+   create_code_builtin_memcpy,
+   verify_code_builtin_memcpy},
   {"calling_external_function",
    create_code_calling_external_function,
    verify_code_calling_external_function},
@@ -381,6 +398,9 @@ const struct testcase testcases[] = {
   {"pr66779",
    create_code_pr66779,
    verify_code_pr66779},
+  {"pr95306_builtin_types",
+   create_code_pr95306_builtin_types,
+   verify_code_pr95306_builtin_types},
   {"reading_struct ",
    create_code_reading_struct ,
    verify_code_reading_struct },

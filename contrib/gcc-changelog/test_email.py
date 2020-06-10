@@ -33,7 +33,8 @@ class TestGccChangelog(unittest.TestCase):
 
         filename = None
         patch_lines = []
-        lines = open(os.path.join(script_path, 'test_patches.txt')).read()
+        with open(os.path.join(script_path, 'test_patches.txt')) as f:
+            lines = f.read()
         for line in lines.split('\n'):
             if line.startswith('==='):
                 if patch_lines:
@@ -276,3 +277,21 @@ class TestGccChangelog(unittest.TestCase):
     def test_dr_entry(self):
         email = self.from_patch_glob('0001-c-C-20-DR-2237.patch')
         assert email.changelog_entries[0].prs == ['DR 2237']
+
+    def test_changes_only_in_ignored_location(self):
+        email = self.from_patch_glob('0001-go-in-ignored-location.patch')
+        assert not email.errors
+
+    def test_changelog_for_ignored_location(self):
+        email = self.from_patch_glob('0001-Update-merge.sh-to-reflect.patch')
+        assert (email.changelog_entries[0].lines[0]
+                == '\t* LOCAL_PATCHES: Use git hash instead of SVN id.')
+
+    def test_multiline_file_list(self):
+        email = self.from_patch_glob(
+            '0001-Ada-Reuse-Is_Package_Or_Generic_Package-where-possib.patch')
+        assert (email.changelog_entries[0].files
+                == ['contracts.adb', 'einfo.adb', 'exp_ch9.adb',
+                    'sem_ch12.adb', 'sem_ch4.adb', 'sem_ch7.adb',
+                    'sem_ch8.adb', 'sem_elab.adb', 'sem_type.adb',
+                    'sem_util.adb'])

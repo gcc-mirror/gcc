@@ -845,30 +845,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	/* We have a DUMP_DIR_NAME, prepend that.  */
 	opts->x_dump_base_name = opts_concat (opts->x_dump_dir_name,
 					      opts->x_dump_base_name, NULL);
-      else if (opts->x_aux_base_name
-	       && strcmp (opts->x_aux_base_name, HOST_BIT_BUCKET) != 0)
-	/* AUX_BASE_NAME is set and is not the bit bucket.  If it
-	   contains a directory component, prepend those directories.
-	   Typically this places things in the same directory as the
-	   object file.  */
-	{
-	  const char *aux_base;
-
-	  base_of_path (opts->x_aux_base_name, &aux_base);
-	  if (opts->x_aux_base_name != aux_base)
-	    {
-	      int dir_len = aux_base - opts->x_aux_base_name;
-	      char *new_dump_base_name
-		= XOBNEWVEC (&opts_obstack, char,
-			     strlen (opts->x_dump_base_name) + dir_len + 1);
-
-	      /* Copy directory component from OPTS->X_AUX_BASE_NAME.  */
-	      memcpy (new_dump_base_name, opts->x_aux_base_name, dir_len);
-	      /* Append existing OPTS->X_DUMP_BASE_NAME.  */
-	      strcpy (new_dump_base_name + dir_len, opts->x_dump_base_name);
-	      opts->x_dump_base_name = new_dump_base_name;
-	    }
-	}
 
       /* It is definitely prefixed now.  */
       opts->x_dump_base_name_prefixed = true;
@@ -2344,17 +2320,6 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT_aux_info:
       opts->x_flag_gen_aux_info = 1;
-      break;
-
-    case OPT_auxbase_strip:
-      {
-	char *tmp = xstrdup (arg);
-	strip_off_ending (tmp, strlen (tmp));
-	if (tmp[0])
-	  opts->x_aux_base_name = tmp;
-	else
-	  free (tmp);
-      }
       break;
 
     case OPT_d:

@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hsa-common.h"
 #include "tree-pass.h"
 #include "omp-device-properties.h"
+#include "tree-iterator.h"
 
 enum omp_requires omp_requires_mask;
 
@@ -502,6 +503,61 @@ omp_build_barrier (tree lhs)
   if (lhs)
     gimple_call_set_lhs (g, lhs);
   return g;
+}
+
+/* Find OMP_FOR resp. OMP_SIMD with non-NULL OMP_FOR_INIT.  Also, fill in pdata
+   array, pdata[0] non-NULL if there is anything non-trivial in between,
+   pdata[1] is address of OMP_PARALLEL in between if any, pdata[2] is address
+   of OMP_FOR in between if any and pdata[3] is address of the inner
+   OMP_FOR/OMP_SIMD.  */
+
+tree
+find_combined_omp_for (tree *tp, int *walk_subtrees, void *data)
+{
+  tree **pdata = (tree **) data;
+  *walk_subtrees = 0;
+  switch (TREE_CODE (*tp))
+    {
+    case OMP_FOR:
+      if (OMP_FOR_INIT (*tp) != NULL_TREE)
+	{
+	  pdata[3] = tp;
+	  return *tp;
+	}
+      pdata[2] = tp;
+      *walk_subtrees = 1;
+      break;
+    case OMP_SIMD:
+      if (OMP_FOR_INIT (*tp) != NULL_TREE)
+	{
+	  pdata[3] = tp;
+	  return *tp;
+	}
+      break;
+    case BIND_EXPR:
+      if (BIND_EXPR_VARS (*tp)
+	  || (BIND_EXPR_BLOCK (*tp)
+	      && BLOCK_VARS (BIND_EXPR_BLOCK (*tp))))
+	pdata[0] = tp;
+      *walk_subtrees = 1;
+      break;
+    case STATEMENT_LIST:
+      if (!tsi_one_before_end_p (tsi_start (*tp)))
+	pdata[0] = tp;
+      *walk_subtrees = 1;
+      break;
+    case TRY_FINALLY_EXPR:
+      pdata[0] = tp;
+      *walk_subtrees = 1;
+      break;
+    case OMP_PARALLEL:
+      pdata[1] = tp;
+      *walk_subtrees = 1;
+      break;
+    default:
+      break;
+    }
+  return NULL_TREE;
 }
 
 /* Return maximum possible vectorization factor for the target.  */
@@ -1639,6 +1695,28 @@ omp_resolve_late_declare_variant (tree alt)
   return varentry2->variant->decl;
 }
 
+/* Hook to adjust hash tables on cgraph_node removal.  */
+
+static void
+omp_declare_variant_remove_hook (struct cgraph_node *node, void *)
+{
+  if (!node->declare_variant_alt)
+    return;
+
+  /* Drop this hash table completely.  */
+  omp_declare_variants = NULL;
+  /* And remove node from the other hash table.  */
+  if (omp_declare_variant_alt)
+    {
+      omp_declare_variant_base_entry entry;
+      entry.base = NULL;
+      entry.node = node;
+      entry.variants = NULL;
+      omp_declare_variant_alt->remove_elt_with_hash (&entry,
+						     DECL_UID (node->decl));
+    }
+}
+
 /* Try to resolve declare variant, return the variant decl if it should
    be used instead of base, or base otherwise.  */
 
@@ -1659,6 +1737,11 @@ omp_resolve_declare_variant (tree base)
 	break;
       if (TREE_CODE (TREE_PURPOSE (TREE_VALUE (attr))) != FUNCTION_DECL)
 	continue;
+      cgraph_node *node = cgraph_node::get (base);
+      /* If this is already a magic decl created by this function,
+	 don't process it again.  */
+      if (node && node->declare_variant_alt)
+	return base;
       switch (omp_context_selector_matches (TREE_VALUE (TREE_VALUE (attr))))
 	{
 	case 0:
@@ -1766,6 +1849,12 @@ omp_resolve_declare_variant (tree base)
 	      return TREE_PURPOSE (TREE_VALUE (variant1));
 	    }
 	}
+
+      static struct cgraph_node_hook_list *node_removal_hook_holder;
+      if (node_removal_hook_holder)
+	node_removal_hook_holder
+	  = symtab->add_cgraph_removal_hook (omp_declare_variant_remove_hook,
+					     NULL);
 
       if (omp_declare_variants == NULL)
 	omp_declare_variants

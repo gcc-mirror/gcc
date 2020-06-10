@@ -115,13 +115,13 @@ Pointers, `const`, and `volatile`
                                                gcc_jit_type *element_type, \
                                                int num_elements)
 
-   Given type "T", get type "T[N]" (for a constant N).
+   Given non-`void` type "T", get type "T[N]" (for a constant N).
 
 .. function::  gcc_jit_type *\
                gcc_jit_type_get_aligned (gcc_jit_type *type, \
                                          size_t alignment_in_bytes)
 
-   Given type "T", get type:
+   Given non-`void` type "T", get type:
 
    .. code-block:: c
 
@@ -243,6 +243,8 @@ You can model C `struct` types by creating :c:type:`gcc_jit_struct *` and
 
    Construct a new field, with the given type and name.
 
+   The parameter ``type`` must be non-`void`.
+
    The parameter ``name`` must be non-NULL.  The call takes a copy of the
    underlying string, so it is valid to pass in a pointer to an on-stack
    buffer.
@@ -267,6 +269,7 @@ You can model C `struct` types by creating :c:type:`gcc_jit_struct *` and
 
    This API entrypoint was added in :ref:`LIBGCCJIT_ABI_12`; you can test
    for its presence using
+
    .. code-block:: c
 
       #ifdef LIBGCCJIT_HAVE_gcc_jit_context_new_bitfield

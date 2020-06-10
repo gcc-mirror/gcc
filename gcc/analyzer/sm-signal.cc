@@ -123,13 +123,32 @@ public:
 
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
+    auto_diagnostic_group d;
     diagnostic_metadata m;
     /* CWE-479: Signal Handler Use of a Non-reentrant Function.  */
     m.add_cwe (479);
-    return warning_meta (rich_loc, m,
-			 OPT_Wanalyzer_unsafe_call_within_signal_handler,
-			 "call to %qD from within signal handler",
-			 m_unsafe_fndecl);
+    if (warning_meta (rich_loc, m,
+		      OPT_Wanalyzer_unsafe_call_within_signal_handler,
+		      "call to %qD from within signal handler",
+		      m_unsafe_fndecl))
+      {
+	/* If we know a possible alternative function, add a note
+	   suggesting the replacement.  */
+	if (const char *replacement = get_replacement_fn ())
+	  {
+	    location_t note_loc = gimple_location (m_unsafe_call);
+	    /* It would be nice to add a fixit, but the gimple call
+	       location covers the whole call expression.  It isn't
+	       currently possible to cut this down to just the call
+	       symbol.  So the fixit would replace too much.
+	       note_rich_loc.add_fixit_replace (replacement); */
+	    inform (note_loc,
+		    "%qs is a possible signal-safe alternative for %qD",
+		    replacement, m_unsafe_fndecl);
+	  }
+	return true;
+      }
+    return false;
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
@@ -156,6 +175,20 @@ private:
   const signal_state_machine &m_sm;
   const gcall *m_unsafe_call;
   tree m_unsafe_fndecl;
+
+  /* Returns a replacement function as text if it exists.  Currently
+     only "exit" has a signal-safe replacement "_exit", which does
+     slightly less, but can be used in a signal handler.  */
+  const char *
+  get_replacement_fn ()
+  {
+    gcc_assert (m_unsafe_fndecl && DECL_P (m_unsafe_fndecl));
+
+    if (id_equal ("exit", DECL_NAME (m_unsafe_fndecl)))
+      return "_exit";
+
+    return NULL;
+  }
 };
 
 /* signal_state_machine's ctor.  */
@@ -259,6 +292,7 @@ get_async_signal_unsafe_fns ()
   // TODO: populate this list more fully
   static const char * const async_signal_unsafe_fns[] = {
     /* This array must be kept sorted.  */
+    "exit",
     "fprintf",
     "free",
     "malloc",

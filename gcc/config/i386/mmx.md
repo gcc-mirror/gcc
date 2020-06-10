@@ -947,27 +947,22 @@
    (set_attr "prefix_extra" "1")
    (set_attr "mode" "V2SF")])
 
-(define_insn_and_split "*vec_dupv2sf"
+(define_insn "*vec_dupv2sf"
   [(set (match_operand:V2SF 0 "register_operand" "=y,x,Yv")
 	(vec_duplicate:V2SF
 	  (match_operand:SF 1 "register_operand" "0,0,Yv")))]
   "TARGET_MMX || TARGET_MMX_WITH_SSE"
   "@
    punpckldq\t%0, %0
-   #
-   #"
-  "TARGET_SSE && reload_completed
-   && SSE_REGNO_P (REGNO (operands[0]))"
-  [(set (match_dup 0)
-	(vec_duplicate:V4SF (match_dup 1)))]
-{
-  operands[0] = lowpart_subreg (V4SFmode, operands[0],
-				GET_MODE (operands[0]));
-}
-  [(set_attr "isa" "*,sse_noavx,avx")
+   shufps\t{$0xe0, %0, %0|%0, %0, 0xe0}
+   %vmovsldup\t{%1, %0|%0, %1}"
+  [(set_attr "isa" "*,sse_noavx,sse3")
    (set_attr "mmx_isa" "native,*,*")
-   (set_attr "type" "mmxcvt,ssemov,ssemov")
-   (set_attr "mode" "DI,TI,TI")])
+   (set_attr "type" "mmxcvt,sseshuf1,sse")
+   (set_attr "length_immediate" "*,1,*")
+   (set_attr "prefix_rep" "*,*,1")
+   (set_attr "prefix" "*,orig,maybe_vex")
+   (set_attr "mode" "DI,V4SF,V4SF")])
 
 (define_insn "*mmx_concatv2sf"
   [(set (match_operand:V2SF 0 "register_operand"     "=y,y")
@@ -1960,9 +1955,9 @@
 })
 
 (define_insn "mmx_pshufw_1"
-  [(set (match_operand:V4HI 0 "register_operand" "=y,Yv")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,xYw")
         (vec_select:V4HI
-          (match_operand:V4HI 1 "register_mmxmem_operand" "ym,Yv")
+          (match_operand:V4HI 1 "register_mmxmem_operand" "ym,xYw")
           (parallel [(match_operand 2 "const_0_to_3_operand")
                      (match_operand 3 "const_0_to_3_operand")
                      (match_operand 4 "const_0_to_3_operand")
@@ -1989,92 +1984,80 @@
 }
   [(set_attr "isa" "*,sse2")
    (set_attr "mmx_isa" "native,*")
-   (set_attr "type" "mmxcvt,sselog")
+   (set_attr "type" "mmxcvt,sselog1")
    (set_attr "length_immediate" "1")
    (set_attr "mode" "DI,TI")])
 
-(define_insn "mmx_pswapdv2si2"
-  [(set (match_operand:V2SI 0 "register_operand" "=y")
-	(vec_select:V2SI
-	  (match_operand:V2SI 1 "nonimmediate_operand" "ym")
-	  (parallel [(const_int 1) (const_int 0)])))]
-  "TARGET_3DNOW_A"
-  "pswapd\t{%1, %0|%0, %1}"
-  [(set_attr "type" "mmxcvt")
-   (set_attr "prefix_extra" "1")
-   (set_attr "mode" "DI")])
+(define_insn "*mmx_pshufd_1"
+  [(set (match_operand:V2SI 0 "register_operand" "=Yv")
+        (vec_select:V2SI
+          (match_operand:V2SI 1 "register_operand" "Yv")
+          (parallel [(match_operand 2 "const_0_to_1_operand")
+                     (match_operand 3 "const_0_to_1_operand")])))]
+  "TARGET_MMX_WITH_SSE"
+{
+  int mask = 0;
+  mask |= INTVAL (operands[2]) << 0;
+  mask |= INTVAL (operands[3]) << 2;
+  mask |= 2 << 4;
+  mask |= 3 << 6;
+  operands[2] = GEN_INT (mask);
 
-(define_insn_and_split "*vec_dupv4hi"
-  [(set (match_operand:V4HI 0 "register_operand" "=y,xYw,Yw")
+  return "%vpshufd\t{%2, %1, %0|%0, %1, %2}";
+}
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_data16" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "mode" "TI")])
+
+(define_insn "mmx_pswapdv2si2"
+  [(set (match_operand:V2SI 0 "register_operand" "=y,Yv")
+	(vec_select:V2SI
+	  (match_operand:V2SI 1 "register_mmxmem_operand" "ym,Yv")
+	  (parallel [(const_int 1) (const_int 0)])))]
+  "TARGET_3DNOW_A || TARGET_MMX_WITH_SSE"
+  "@
+   pswapd\t{%1, %0|%0, %1}
+   %vpshufd\t{$0xe1, %1, %0|%0, %1, 0xe1}";
+  [(set_attr "isa" "*,sse2")
+   (set_attr "mmx_isa" "native,*")
+   (set_attr "type" "mmxcvt,sselog1")
+   (set_attr "prefix_extra" "1,*")
+   (set_attr "prefix_data16" "*,1")
+   (set_attr "length_immediate" "*,1")
+   (set_attr "mode" "DI,TI")])
+
+(define_insn "*vec_dupv4hi"
+  [(set (match_operand:V4HI 0 "register_operand" "=y,xYw")
 	(vec_duplicate:V4HI
 	  (truncate:HI
-	    (match_operand:SI 1 "register_operand" "0,xYw,r"))))]
+	    (match_operand:SI 1 "register_operand" "0,xYw"))))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && (TARGET_SSE || TARGET_3DNOW_A)"
   "@
    pshufw\t{$0, %0, %0|%0, %0, 0}
-   #
-   #"
-  "TARGET_SSE2 && reload_completed
-   && SSE_REGNO_P (REGNO (operands[0]))"
-  [(const_int 0)]
-{
-  rtx op;
-  operands[0] = lowpart_subreg (V8HImode, operands[0],
-				GET_MODE (operands[0]));
-  if (TARGET_AVX2)
-    {
-      operands[1] = lowpart_subreg (HImode, operands[1],
-				    GET_MODE (operands[1]));
-      op = gen_rtx_VEC_DUPLICATE (V8HImode, operands[1]);
-    }
-  else
-    {
-      operands[1] = lowpart_subreg (V8HImode, operands[1],
-				    GET_MODE (operands[1]));
-      rtx mask = gen_rtx_PARALLEL (VOIDmode,
-				   gen_rtvec (8,
-					      GEN_INT (0),
-					      GEN_INT (0),
-					      GEN_INT (0),
-					      GEN_INT (0),
-					      GEN_INT (4),
-					      GEN_INT (5),
-					      GEN_INT (6),
-					      GEN_INT (7)));
+   %vpshuflw\t{$0, %1, %0|%0, %1, 0}"
+  [(set_attr "isa" "*,sse2")
+   (set_attr "mmx_isa" "native,*")
+   (set_attr "type" "mmxcvt,sselog1")
+   (set_attr "length_immediate" "1")
+   (set_attr "mode" "DI,TI")])
 
-      op = gen_rtx_VEC_SELECT (V8HImode, operands[1], mask);
-    }
-  emit_insn (gen_rtx_SET (operands[0], op));
-  DONE;
-}
-  [(set_attr "mmx_isa" "native,sse,avx")
-   (set_attr "type" "mmxcvt,sselog1,ssemov")
-   (set_attr "length_immediate" "1,1,0")
-   (set_attr "mode" "DI,TI,TI")])
 
-(define_insn_and_split "*vec_dupv2si"
-  [(set (match_operand:V2SI 0 "register_operand" "=y,x,Yv,Yw")
+(define_insn "*vec_dupv2si"
+  [(set (match_operand:V2SI 0 "register_operand" "=y,Yv")
 	(vec_duplicate:V2SI
-	  (match_operand:SI 1 "register_operand" "0,0,Yv,r")))]
+	  (match_operand:SI 1 "register_operand" "0,Yv")))]
   "TARGET_MMX || TARGET_MMX_WITH_SSE"
   "@
    punpckldq\t%0, %0
-   #
-   #
-   #"
-  "TARGET_SSE && reload_completed
-   && SSE_REGNO_P (REGNO (operands[0]))"
-  [(set (match_dup 0)
-	(vec_duplicate:V4SI (match_dup 1)))]
-{
-  operands[0] = lowpart_subreg (V4SImode, operands[0],
-				GET_MODE (operands[0]));
-}
-  [(set_attr "isa" "*,sse_noavx,avx,avx")
-   (set_attr "mmx_isa" "native,*,*,*")
-   (set_attr "type" "mmxcvt,ssemov,ssemov,ssemov")
-   (set_attr "mode" "DI,TI,TI,TI")])
+   %vpshufd\t{$0xe0, %1, %0|%0, %1, 0xe0}"
+  [(set_attr "isa" "*,sse2")
+   (set_attr "mmx_isa" "native,*")
+   (set_attr "type" "mmxcvt,sselog1")
+   (set_attr "prefix_data16" "*,1")
+   (set_attr "length_immediate" "*,1")
+   (set_attr "mode" "DI,TI")])
 
 (define_insn "*mmx_concatv2si"
   [(set (match_operand:V2SI 0 "register_operand"     "=y,y")

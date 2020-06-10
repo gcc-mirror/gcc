@@ -875,31 +875,21 @@ build_binary_op (enum tree_code op_code, tree result_type,
 
       /* If there were integral or pointer conversions on the LHS, remove
 	 them; we'll be putting them back below if needed.  Likewise for
-	 conversions between array and record types, except for justified
-	 modular types.  But don't do this if the right operand is not
-	 BLKmode (for packed arrays) unless we are not changing the mode.  */
+	 conversions between record types, except for justified modular types.
+	 But don't do this if the right operand is not BLKmode (for packed
+	 arrays) unless we are not changing the mode.  */
       while ((CONVERT_EXPR_P (left_operand)
 	      || TREE_CODE (left_operand) == VIEW_CONVERT_EXPR)
 	     && (((INTEGRAL_TYPE_P (left_type)
 		   || POINTER_TYPE_P (left_type))
-		  && (INTEGRAL_TYPE_P (TREE_TYPE
-				       (TREE_OPERAND (left_operand, 0)))
-		      || POINTER_TYPE_P (TREE_TYPE
-					 (TREE_OPERAND (left_operand, 0)))))
-		 || (((TREE_CODE (left_type) == RECORD_TYPE
-		       && !TYPE_JUSTIFIED_MODULAR_P (left_type))
-		      || TREE_CODE (left_type) == ARRAY_TYPE)
-		     && ((TREE_CODE (TREE_TYPE
-				     (TREE_OPERAND (left_operand, 0)))
-			  == RECORD_TYPE)
-			 || (TREE_CODE (TREE_TYPE
-					(TREE_OPERAND (left_operand, 0)))
-			     == ARRAY_TYPE))
+		  && (INTEGRAL_TYPE_P (operand_type (left_operand))
+		      || POINTER_TYPE_P (operand_type (left_operand))))
+		 || (TREE_CODE (left_type) == RECORD_TYPE
+		     && !TYPE_JUSTIFIED_MODULAR_P (left_type)
+		     && TREE_CODE (operand_type (left_operand)) == RECORD_TYPE
 		     && (TYPE_MODE (right_type) == BLKmode
-			 || (TYPE_MODE (left_type)
-			     == TYPE_MODE (TREE_TYPE
-					   (TREE_OPERAND
-					    (left_operand, 0))))))))
+			 || TYPE_MODE (left_type)
+			    == TYPE_MODE (operand_type (left_operand))))))
 	{
 	  left_operand = TREE_OPERAND (left_operand, 0);
 	  left_type = TREE_TYPE (left_operand);
@@ -921,8 +911,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	       && TREE_CONSTANT (TYPE_SIZE (left_type))
 	       && ((TREE_CODE (right_operand) == COMPONENT_REF
 		    && TYPE_MAIN_VARIANT (left_type)
-		       == TYPE_MAIN_VARIANT
-			  (TREE_TYPE (TREE_OPERAND (right_operand, 0))))
+		       == TYPE_MAIN_VARIANT (operand_type (right_operand)))
 		   || (TREE_CODE (right_operand) == CONSTRUCTOR
 		       && !CONTAINS_PLACEHOLDER_P
 			   (DECL_SIZE (TYPE_FIELDS (left_type)))))
@@ -976,22 +965,23 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	      || TREE_CODE (result) == ARRAY_RANGE_REF)
 	    while (handled_component_p (result))
 	      result = TREE_OPERAND (result, 0);
+
 	  else if (TREE_CODE (result) == REALPART_EXPR
 		   || TREE_CODE (result) == IMAGPART_EXPR
 		   || (CONVERT_EXPR_P (result)
 		       && (((TREE_CODE (restype)
-			     == TREE_CODE (TREE_TYPE
-					   (TREE_OPERAND (result, 0))))
-			     && (TYPE_MODE (TREE_TYPE
-					    (TREE_OPERAND (result, 0)))
-				 == TYPE_MODE (restype)))
+			     == TREE_CODE (operand_type (result))
+			     && TYPE_MODE (restype)
+				 == TYPE_MODE (operand_type (result))))
 			   || TYPE_ALIGN_OK (restype))))
 	    result = TREE_OPERAND (result, 0);
+
 	  else if (TREE_CODE (result) == VIEW_CONVERT_EXPR)
 	    {
 	      TREE_ADDRESSABLE (result) = 1;
 	      result = TREE_OPERAND (result, 0);
 	    }
+
 	  else
 	    break;
 	}

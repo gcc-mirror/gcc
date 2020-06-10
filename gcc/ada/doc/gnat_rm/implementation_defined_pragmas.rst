@@ -1094,14 +1094,14 @@ This pragma can be used to generate additional compile time
 error messages. It
 is particularly useful in generics, where errors can be issued for
 specific problematic instantiations. The first parameter is a boolean
-expression. The pragma is effective only if the value of this expression
-is known at compile time, and has the value True. The set of expressions
+expression. The pragma ensures that the value of an expression
+is known at compile time, and has the value False. The set of expressions
 whose values are known at compile time includes all static boolean
 expressions, and also other values which the compiler can determine
 at compile time (e.g., the size of a record type set by an explicit
 size representation clause, or the value of a variable which was
 initialized to a constant and is known not to have been modified).
-If these conditions are met, an error message is generated using
+If these conditions are not met, an error message is generated using
 the value given as the second argument. This string value may contain
 embedded ASCII.LF characters to break the message into multiple lines.
 
@@ -1118,7 +1118,10 @@ Syntax:
 
 
 Same as pragma Compile_Time_Error, except a warning is issued instead
-of an error message. Note that if this pragma is used in a package that
+of an error message. If switch *-gnatw_C* is used, a warning is only issued
+if the value of the expression is known to be True at compile time, not when
+the value of the expression is not known at compile time.
+Note that if this pragma is used in a package that
 is with'ed by a client, the client will get the warning even though it
 is issued by a with'ed package (normally warnings in with'ed units are
 suppressed, but this is a special exception to that rule).

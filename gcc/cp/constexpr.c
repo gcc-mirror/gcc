@@ -6485,7 +6485,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    break;
 	  }
 
-	if (!processing_template_decl)
+	if (!processing_template_decl
+	    && !uid_sensitive_constexpr_evaluation_p ())
 	  r = evaluate_concept_check (t, tf_warning_or_error);
 	else
 	  *non_constant_p = true;
@@ -8356,6 +8357,14 @@ bool
 is_constant_expression (tree t)
 {
   return potential_constant_expression_1 (t, false, true, true, tf_none);
+}
+
+/* As above, but expect an rvalue.  */
+
+bool
+is_rvalue_constant_expression (tree t)
+{
+  return potential_constant_expression_1 (t, true, true, true, tf_none);
 }
 
 /* Like above, but complain about non-constant expressions.  */

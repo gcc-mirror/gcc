@@ -72,7 +72,7 @@ create_output_block (enum lto_section_type section_type)
   struct output_block *ob = XCNEW (struct output_block);
   if (streamer_dump_file)
     fprintf (streamer_dump_file, "Creating output block for %s\n",
-	     lto_section_name [section_type]);
+	     lto_section_name[section_type]);
 
   ob->section_type = section_type;
   ob->decl_state = lto_get_out_decl_state ();
@@ -417,6 +417,14 @@ get_symbol_initial_value (lto_symtab_encoder_t encoder, tree expr)
 static void
 lto_write_tree_1 (struct output_block *ob, tree expr, bool ref_p)
 {
+  if (streamer_dump_file)
+    {
+      print_node_brief (streamer_dump_file, "     Streaming body of ",
+			expr, 4);
+      fprintf (streamer_dump_file, "  to %s\n",
+	       lto_section_name[ob->section_type]);
+    }
+
   /* Pack all the non-pointer fields in EXPR into a bitpack and write
      the resulting bitpack.  */
   streamer_write_tree_bitfields (ob, expr);
@@ -473,9 +481,6 @@ lto_write_tree (struct output_block *ob, tree expr, bool ref_p)
   streamer_write_tree_header (ob, expr);
 
   lto_write_tree_1 (ob, expr, ref_p);
-
-  /* Mark the end of EXPR.  */
-  streamer_write_zero (ob);
 }
 
 /* Emit the physical representation of tree node EXPR to output block OB,
@@ -740,6 +745,8 @@ DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 
 	  worklist_vec.pop ();
 
+	  unsigned int prev_size = ob->main_stream->total_size;
+
 	  /* Only global decl sections are considered by tree merging.  */
 	  if (ob->section_type != LTO_section_decls)
 	    {
@@ -747,6 +754,11 @@ DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 		 by itself then we do not need to stream SCC at all.  */
 	      if (worklist_vec.is_empty () && first == 0 && size == 1)
 		 return;
+	      if (streamer_dump_file)
+		{
+		  fprintf (streamer_dump_file,
+			   "     Start of LTO_trees of size %i\n", size);
+		}
 	      streamer_write_record_start (ob, LTO_trees);
 	      streamer_write_uhwi (ob, size);
 	    }
@@ -763,16 +775,35 @@ DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 
 	    {
 	      gcc_checking_assert (ob->section_type == LTO_section_decls);
+	      if (streamer_dump_file)
+		{
+		  fprintf (streamer_dump_file,
+			   "     Start of LTO_tree_scc of size %i\n", size);
+		}
 	      streamer_write_record_start (ob, LTO_tree_scc);
-	      streamer_write_uhwi (ob, size);
+	      /* In wast majority of cases scc_entry_len is 1 and size is small
+		 integer.  Use extra bit of size to stream info about
+		 exceptions.  */
+	      streamer_write_uhwi (ob, size * 2 + (scc_entry_len != 1));
+	      if (scc_entry_len != 1)
+		streamer_write_uhwi (ob, scc_entry_len);
 	      streamer_write_uhwi (ob, scc_hash);
 	    }
 	  /* Non-trivial SCCs must be packed to trees blocks so forward
 	     references work correctly.  */
 	  else if (size != 1)
 	    {
-	       streamer_write_record_start (ob, LTO_trees);
-	       streamer_write_uhwi (ob, size);
+	      if (streamer_dump_file)
+		{
+		  fprintf (streamer_dump_file,
+			   "     Start of LTO_trees of size %i\n", size);
+		}
+	      streamer_write_record_start (ob, LTO_trees);
+	      streamer_write_uhwi (ob, size);
+	    }
+	  else if (streamer_dump_file)
+	    {
+	      fprintf (streamer_dump_file, "     Streaming single tree\n");
 	    }
 
 	  /* Write size-1 SCCs without wrapping them inside SCC bundles.
@@ -783,8 +814,6 @@ DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 	    lto_output_tree_1 (ob, expr, scc_hash, ref_p, this_ref_p);
 	  else
 	    {
-	      /* Write the size of the SCC entry candidates.  */
-	      streamer_write_uhwi (ob, scc_entry_len);
 
 	      /* Write all headers and populate the streamer cache.  */
 	      for (unsigned i = 0; i < size; ++i)
@@ -807,13 +836,11 @@ DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 
 	      /* Write the bitpacks and tree references.  */
 	      for (unsigned i = 0; i < size; ++i)
-		{
-		  lto_write_tree_1 (ob, sccstack[first+i].t, ref_p);
-
-		  /* Mark the end of the tree.  */
-		  streamer_write_zero (ob);
-		}
+		lto_write_tree_1 (ob, sccstack[first+i].t, ref_p);
 	    }
+	  if (streamer_dump_file)
+	    fprintf (streamer_dump_file, "     %u bytes\n",
+		     ob->main_stream->total_size - prev_size);
 
 	  /* Finally truncate the vector.  */
 	  sccstack.truncate (first);
@@ -849,14 +876,6 @@ DFS::DFS_write_tree_body (struct output_block *ob,
   DFS_write_tree (ob, expr_state, DEST, ref_p, ref_p)
 
   enum tree_code code;
-
-  if (streamer_dump_file)
-    {
-      print_node_brief (streamer_dump_file, "    Streaming ",
-	 		expr, 4);
-      fprintf (streamer_dump_file, "  to %s\n",
-	       lto_section_name [ob->section_type]);
-    }
 
   code = TREE_CODE (expr);
 
@@ -1251,7 +1270,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
     {
       hstate.add_hwi (TYPE_MODE (t));
       /* TYPE_NO_FORCE_BLK is private to stor-layout and need
- 	 no streaming.  */
+	 no streaming.  */
       hstate.add_flag (TYPE_PACKED (t));
       hstate.add_flag (TYPE_RESTRICT (t));
       hstate.add_flag (TYPE_USER_ALIGN (t));
@@ -1694,6 +1713,10 @@ lto_output_tree (struct output_block *ob, tree expr,
 {
   unsigned ix;
   bool existed_p;
+  unsigned int size = ob->main_stream->total_size;
+  /* This is the first time we see EXPR, write all reachable
+     trees to OB.  */
+  static bool in_dfs_walk;
 
   if (expr == NULL_TREE)
     {
@@ -1710,31 +1733,38 @@ lto_output_tree (struct output_block *ob, tree expr,
   existed_p = streamer_tree_cache_lookup (ob->writer_cache, expr, &ix);
   if (existed_p)
     {
+      if (streamer_dump_file)
+	{
+	  if (in_dfs_walk)
+	    print_node_brief (streamer_dump_file, "     Streaming ref to ",
+			      expr, 4);
+	  else
+	    print_node_brief (streamer_dump_file, "   Streaming ref to ",
+			      expr, 4);
+	  fprintf (streamer_dump_file, "\n");
+	}
       /* If a node has already been streamed out, make sure that
 	 we don't write it more than once.  Otherwise, the reader
 	 will instantiate two different nodes for the same object.  */
       streamer_write_record_start (ob, LTO_tree_pickle_reference);
       streamer_write_uhwi (ob, ix);
-      streamer_write_enum (ob->main_stream, LTO_tags, LTO_NUM_TAGS,
-			   lto_tree_code_to_tag (TREE_CODE (expr)));
+      if (streamer_debugging)
+	streamer_write_enum (ob->main_stream, LTO_tags, LTO_NUM_TAGS,
+			     lto_tree_code_to_tag (TREE_CODE (expr)));
       lto_stats.num_pickle_refs_output++;
     }
   else
     {
-      /* This is the first time we see EXPR, write all reachable
-	 trees to OB.  */
-      static bool in_dfs_walk;
-
       /* Protect against recursion which means disconnect between
-         what tree edges we walk in the DFS walk and what edges
+	 what tree edges we walk in the DFS walk and what edges
 	 we stream out.  */
       gcc_assert (!in_dfs_walk);
 
       if (streamer_dump_file)
 	{
-	  print_node_brief (streamer_dump_file, "   Streaming SCC of ",
+	  print_node_brief (streamer_dump_file, "   Streaming tree ",
 			    expr, 4);
-          fprintf (streamer_dump_file, "\n");
+	  fprintf (streamer_dump_file, "\n");
 	}
 
       /* Start the DFS walk.  */
@@ -1742,7 +1772,6 @@ lto_output_tree (struct output_block *ob, tree expr,
       /* let's see ... */
       in_dfs_walk = true;
       DFS (ob, expr, ref_p, this_ref_p, false);
-      in_dfs_walk = false;
 
       /* Finally append a reference to the tree we were writing.  */
       existed_p = streamer_tree_cache_lookup (ob->writer_cache, expr, &ix);
@@ -1751,21 +1780,26 @@ lto_output_tree (struct output_block *ob, tree expr,
 	 it.  */
       if (!existed_p)
 	lto_output_tree_1 (ob, expr, 0, ref_p, this_ref_p);
-      else
+      else if (this_ref_p)
 	{
+	  if (streamer_dump_file)
+	    {
+	      print_node_brief (streamer_dump_file,
+				"   Streaming final ref to ",
+				expr, 4);
+	      fprintf (streamer_dump_file, "\n");
+	    }
 	  streamer_write_record_start (ob, LTO_tree_pickle_reference);
 	  streamer_write_uhwi (ob, ix);
 	  streamer_write_enum (ob->main_stream, LTO_tags, LTO_NUM_TAGS,
 			       lto_tree_code_to_tag (TREE_CODE (expr)));
 	}
-      if (streamer_dump_file)
-	{
-	  print_node_brief (streamer_dump_file, "   Finished SCC of ",
-			    expr, 4);
-          fprintf (streamer_dump_file, "\n\n");
-	}
+      in_dfs_walk = false;
       lto_stats.num_pickle_refs_output++;
     }
+  if (streamer_dump_file && !in_dfs_walk)
+    fprintf (streamer_dump_file, "    %u bytes\n",
+	     ob->main_stream->total_size - size);
 }
 
 
@@ -2705,7 +2739,7 @@ write_global_stream (struct output_block *ob,
 
 static void
 write_global_references (struct output_block *ob,
- 			 struct lto_tree_ref_encoder *encoder)
+			 struct lto_tree_ref_encoder *encoder)
 {
   tree t;
   uint32_t index;
@@ -3141,7 +3175,7 @@ produce_asm_for_decls (void)
       fn_out_state =
 	lto_function_decl_states[idx];
       if (streamer_dump_file)
-        fprintf (streamer_dump_file, "Outputting stream for %s\n",
+	fprintf (streamer_dump_file, "Outputting stream for %s\n",
 		 IDENTIFIER_POINTER
 		    (DECL_ASSEMBLER_NAME (fn_out_state->fn_decl)));
       lto_output_decl_state_streams (ob, fn_out_state);

@@ -18634,9 +18634,25 @@ expand_vec_perm_even_odd_1 (struct expand_vec_perm_d *d, unsigned odd)
     case E_V2DFmode:
     case E_V4SFmode:
     case E_V2DImode:
+    case E_V2SImode:
     case E_V4SImode:
       /* These are always directly implementable by expand_vec_perm_1.  */
       gcc_unreachable ();
+
+    case E_V4HImode:
+      if (d->testing_p)
+	break;
+      /* We need 2*log2(N)-1 operations to achieve odd/even
+	 with interleave. */
+      t1 = gen_reg_rtx (V4HImode);
+      emit_insn (gen_mmx_punpckhwd (t1, d->op0, d->op1));
+      emit_insn (gen_mmx_punpcklwd (d->target, d->op0, d->op1));
+      if (odd)
+	t2 = gen_mmx_punpckhwd (d->target, d->target, t1);
+      else
+	t2 = gen_mmx_punpcklwd (d->target, d->target, t1);
+      emit_insn (t2);
+      break;
 
     case E_V8HImode:
       if (TARGET_SSE4_1)
@@ -18820,6 +18836,7 @@ expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d)
     case E_V2DFmode:
     case E_V2DImode:
     case E_V4SFmode:
+    case E_V2SImode:
     case E_V4SImode:
       /* These are always implementable using standard shuffle patterns.  */
       gcc_unreachable ();
@@ -19312,6 +19329,11 @@ ix86_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
       if (d.testing_p && TARGET_SSSE3)
 	return true;
       break;
+    case E_V2SImode:
+    case E_V4HImode:
+      if (!TARGET_MMX_WITH_SSE)
+	return false;
+      break;
     case E_V2DImode:
     case E_V2DFmode:
       if (!TARGET_SSE)
@@ -19344,7 +19366,9 @@ ix86_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
       d.one_operand_p = (which != 3);
 
       /* Implementable with shufps or pshufd.  */
-      if (d.one_operand_p && (d.vmode == V4SFmode || d.vmode == V4SImode))
+      if (d.one_operand_p
+	  && (d.vmode == V4SFmode
+	      || d.vmode == V4SImode || d.vmode == V2SImode))
 	return true;
 
       /* Otherwise we have to go through the motions and see if we can
