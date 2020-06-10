@@ -3,6 +3,81 @@
 	* gcc.target/powerpc/clone3.c: New test for using 'future' with
 	the target_clones attribute.
 
+2020-06-09  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/asan/inline-kernel.c: Add missing
+	-fno-sanitize-address option.
+
+2020-06-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95552
+	* g++.dg/ext/vla23.C: New test.
+
+2020-06-09  Marco Elver  <elver@google.com>
+
+	* c-c++-common/tsan/volatile.c: New test.
+
+2020-06-09  Michael Meissner  <meissner@linux.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_powerpc_pcrel):
+	New.
+	(check_effective_target_powerpc_prefixed_addr): New.
+
+2020-06-09  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/asan/inline.c: New test.
+	* c-c++-common/asan/inline-kernel.c: New test.
+	* c-c++-common/tsan/inline.c: New test.
+	* c-c++-common/ubsan/inline.c: New test.
+
+2020-06-09  Joe Ramsay  <joe.ramsay@arm.com>
+
+	* gcc.target/aarch64/sve/logical_unpacked_abs.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_bic_1.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_bic_2.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_bic_3.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_bic_4.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_neg.c: New test.
+	* gcc.target/aarch64/sve/logical_unpacked_not.c: New test.
+
+2020-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/95580
+	* gcc.dg/pr95580.c: New test.
+
+2020-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95527
+	* gcc.dg/tree-ssa/pr95527.c: New test.
+
+2020-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/torture/pr95493.C: Add -Wno-psabi -w to dg-additional-options.
+
+2020-06-09  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* g++.target/xtensa/pr95571.C: New test.
+	* g++.target/xtensa/xtensa.exp: New testsuite.
+
+2020-06-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/fold-vec-perm-char.c: Allow both vperm/vpermr and
+	xxperm/xxpermr.
+	* gcc.target/powerpc/fold-vec-perm-double.c: Ditto.
+	* gcc.target/powerpc/fold-vec-perm-float.c: Ditto.
+	* gcc.target/powerpc/fold-vec-perm-int.c: Ditto.
+	* gcc.target/powerpc/fold-vec-perm-longlong.c: Ditto.
+	* gcc.target/powerpc/fold-vec-perm-pixel.c: Ditto.
+	* gcc.target/powerpc/fold-vec-perm-short.c: Ditto.
+	* gcc.target/powerpc/lvsl-lvsr.c: Ditto.
+	* gcc.target/powerpc/vec-mult-char-2.c: Ditto.
+	* gcc.target/powerpc/vsx-vector-6.p9.c: Also allow xxpermr.
+
+2020-06-09  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/clone3.c: New test for using 'future' with
+	the target_clones attribute.
+
 2020-06-09  Michael Meissner  <meissner@linux.ibm.com>
 
 	* lib/target-supports.exp (check_effective_target_powerpc_pcrel):

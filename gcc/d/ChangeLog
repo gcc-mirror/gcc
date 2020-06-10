@@ -1,3 +1,18 @@
+2020-06-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 13d67c575.
+	* d-builtins.cc (build_frontend_type): Update call to
+	TypeVector::create.
+	* d-frontend.cc (Global::_init): Move setting of errorLimit to ...
+	* d-lang.cc (d_init_options): ... here.  Update for new field
+	location of errorLimit.
+	(d_post_options): Likewise.
+	* d-port.cc (Port::readwordLE): Update signature.
+	(Port::readwordBE): Likewise.
+	(Port::readlongLE): Likewise.
+	(Port::readlongBE): Likewise.
+	* decl.cc (get_symbol_decl): Update for new field types.
+
 2020-06-08  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/95573

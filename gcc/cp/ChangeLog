@@ -1,3 +1,16 @@
+2020-06-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95137
+	* coroutines.cc (expand_one_await_expression): Build separate
+	DTOR trees for the awaitable object on the destroy and resume
+	paths.
+
+2020-06-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95552
+	* cp-gimplify.c (predeclare_vla): Only predeclare a VLA if it's
+	wrapped in a pointer type.
+
 2020-06-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/95369

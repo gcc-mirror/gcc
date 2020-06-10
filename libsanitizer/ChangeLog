@@ -1,3 +1,20 @@
+2020-06-09  Martin Liska  <mliska@suse.cz>
+
+	* asan/Makefile.am: Replace gnu++11 with gnu++14.
+	* interception/Makefile.am: Likewise.
+	* libbacktrace/Makefile.am: Likewise.
+	* lsan/Makefile.am: Likewise.
+	* sanitizer_common/Makefile.am: Likewise.
+	* tsan/Makefile.am: Likewise.
+	* ubsan/Makefile.am: Likewise.
+	* asan/Makefile.in: Regenerate.
+	* interception/Makefile.in: Likewise.
+	* libbacktrace/Makefile.in: Likewise.
+	* lsan/Makefile.in: Likewise.
+	* sanitizer_common/Makefile.in: Likewise.
+	* tsan/Makefile.in: Likewise.
+	* ubsan/Makefile.in: Likewise.
+
 2020-06-02  Martin Liska  <mliska@suse.cz>
 
 	* LOCAL_PATCHES: Update hash of local patches.
