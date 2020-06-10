@@ -4896,7 +4896,6 @@ vect_create_data_ref_ptr (vec_info *vinfo, stmt_vec_info stmt_info,
 		 aggr_ptr, loop, &incr_gsi, insert_after,
 		 &indx_before_incr, &indx_after_incr);
       incr = gsi_stmt (incr_gsi);
-      loop_vinfo->add_stmt (incr);
 
       /* Copy the points-to information if it exists. */
       if (DR_PTR_INFO (dr))
@@ -4926,7 +4925,6 @@ vect_create_data_ref_ptr (vec_info *vinfo, stmt_vec_info stmt_info,
 		 containing_loop, &incr_gsi, insert_after, &indx_before_incr,
 		 &indx_after_incr);
       incr = gsi_stmt (incr_gsi);
-      loop_vinfo->add_stmt (incr);
 
       /* Copy the points-to information if it exists. */
       if (DR_PTR_INFO (dr))
@@ -6407,7 +6405,7 @@ vect_transform_grouped_load (vec_info *vinfo, stmt_vec_info stmt_info,
    for each vector to the associated scalar statement.  */
 
 void
-vect_record_grouped_load_vectors (vec_info *vinfo, stmt_vec_info stmt_info,
+vect_record_grouped_load_vectors (vec_info *, stmt_vec_info stmt_info,
 				  vec<tree> result_chain)
 {
   stmt_vec_info first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
@@ -6441,10 +6439,10 @@ vect_record_grouped_load_vectors (vec_info *vinfo, stmt_vec_info stmt_info,
          DR_GROUP_SAME_DR_STMT.  */
       if (next_stmt_info)
         {
-	  stmt_vec_info new_stmt_info = vinfo->lookup_def (tmp_data_ref);
+	  gimple *new_stmt = SSA_NAME_DEF_STMT (tmp_data_ref);
 	  /* We assume that if VEC_STMT is not NULL, this is a case of multiple
 	     copies, and we put the new vector statement last.  */
-	  STMT_VINFO_VEC_STMTS (next_stmt_info).safe_push (new_stmt_info);
+	  STMT_VINFO_VEC_STMTS (next_stmt_info).safe_push (new_stmt);
 
 	  next_stmt_info = DR_GROUP_NEXT_ELEMENT (next_stmt_info);
 	  gap_count = 1;

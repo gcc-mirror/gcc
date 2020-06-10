@@ -3666,7 +3666,7 @@ tree
 vect_get_slp_vect_def (slp_tree slp_node, unsigned i)
 {
   if (SLP_TREE_VEC_STMTS (slp_node).exists ())
-    return gimple_get_lhs (SLP_TREE_VEC_STMTS (slp_node)[i]->stmt);
+    return gimple_get_lhs (SLP_TREE_VEC_STMTS (slp_node)[i]);
   else
     return SLP_TREE_VEC_DEFS (slp_node)[i];
 }
@@ -3680,9 +3680,9 @@ vect_get_slp_defs (slp_tree slp_node, vec<tree> *vec_defs)
   if (SLP_TREE_DEF_TYPE (slp_node) == vect_internal_def)
     {
       unsigned j;
-      stmt_vec_info vec_def_stmt_info;
-      FOR_EACH_VEC_ELT (SLP_TREE_VEC_STMTS (slp_node), j, vec_def_stmt_info)
-	vec_defs->quick_push (gimple_get_lhs (vec_def_stmt_info->stmt));
+      gimple *vec_def_stmt;
+      FOR_EACH_VEC_ELT (SLP_TREE_VEC_STMTS (slp_node), j, vec_def_stmt)
+	vec_defs->quick_push (gimple_get_lhs (vec_def_stmt));
     }
   else
     vec_defs->splice (SLP_TREE_VEC_DEFS (slp_node));
@@ -3880,7 +3880,7 @@ vect_transform_slp_perm_load (vec_info *vinfo,
 		  /* Generate the permute statement if necessary.  */
 		  tree first_vec = dr_chain[first_vec_index + ri];
 		  tree second_vec = dr_chain[second_vec_index + ri];
-		  stmt_vec_info perm_stmt_info;
+		  gimple *perm_stmt;
 		  if (! noop_p)
 		    {
 		      gassign *stmt = as_a <gassign *> (stmt_info->stmt);
@@ -3888,23 +3888,20 @@ vect_transform_slp_perm_load (vec_info *vinfo,
 			= vect_create_destination_var (gimple_assign_lhs (stmt),
 						       vectype);
 		      perm_dest = make_ssa_name (perm_dest);
-		      gassign *perm_stmt
+		      perm_stmt
 			= gimple_build_assign (perm_dest, VEC_PERM_EXPR,
 					       first_vec, second_vec,
 					       mask_vec);
-		      perm_stmt_info
-			= vect_finish_stmt_generation (vinfo,
-						       stmt_info, perm_stmt,
-						       gsi);
+		      vect_finish_stmt_generation (vinfo, stmt_info, perm_stmt,
+						   gsi);
 		    }
 		  else
 		    /* If mask was NULL_TREE generate the requested
 		       identity transform.  */
-		    perm_stmt_info = vinfo->lookup_def (first_vec);
+		    perm_stmt = SSA_NAME_DEF_STMT (first_vec);
 
 		  /* Store the vector statement in NODE.  */
-		  SLP_TREE_VEC_STMTS (node)[vect_stmts_counter++]
-		    = perm_stmt_info;
+		  SLP_TREE_VEC_STMTS (node)[vect_stmts_counter++] = perm_stmt;
 		}
 	    }
 
@@ -3995,8 +3992,8 @@ vect_schedule_slp_instance (vec_info *vinfo,
 	}
       if (ocode != ERROR_MARK)
 	{
-	  vec<stmt_vec_info> v0;
-	  vec<stmt_vec_info> v1;
+	  vec<gimple *> v0;
+	  vec<gimple *> v1;
 	  unsigned j;
 	  tree tmask = NULL_TREE;
 	  vect_transform_stmt (vinfo, stmt_info, &si, node, instance);
@@ -4037,11 +4034,11 @@ vect_schedule_slp_instance (vec_info *vinfo,
 	      gimple *vstmt;
 	      vstmt = gimple_build_assign (make_ssa_name (vectype),
 					   VEC_PERM_EXPR,
-					   gimple_assign_lhs (v0[j]->stmt),
-					   gimple_assign_lhs (v1[j]->stmt),
+					   gimple_assign_lhs (v0[j]),
+					   gimple_assign_lhs (v1[j]),
 					   tmask);
-	      SLP_TREE_VEC_STMTS (node).quick_push
-		(vect_finish_stmt_generation (vinfo, stmt_info, vstmt, &si));
+	      vect_finish_stmt_generation (vinfo, stmt_info, vstmt, &si);
+	      SLP_TREE_VEC_STMTS (node).quick_push (vstmt);
 	    }
 	  v0.release ();
 	  v1.release ();
@@ -4109,12 +4106,12 @@ vectorize_slp_instance_root_stmt (slp_tree node, slp_instance instance)
 
   if (SLP_TREE_NUMBER_OF_VEC_STMTS (node) == 1)
     {
-      stmt_vec_info child_stmt_info;
+      gimple *child_stmt;
       int j;
 
-      FOR_EACH_VEC_ELT (SLP_TREE_VEC_STMTS (node), j, child_stmt_info)
+      FOR_EACH_VEC_ELT (SLP_TREE_VEC_STMTS (node), j, child_stmt)
 	{
-	  tree vect_lhs = gimple_get_lhs (child_stmt_info->stmt);
+	  tree vect_lhs = gimple_get_lhs (child_stmt);
 	  tree root_lhs = gimple_get_lhs (instance->root_stmt->stmt);
 	  if (!useless_type_conversion_p (TREE_TYPE (root_lhs),
 					  TREE_TYPE (vect_lhs)))
@@ -4127,16 +4124,16 @@ vectorize_slp_instance_root_stmt (slp_tree node, slp_instance instance)
   else if (SLP_TREE_NUMBER_OF_VEC_STMTS (node) > 1)
     {
       int nelts = SLP_TREE_NUMBER_OF_VEC_STMTS (node);
-      stmt_vec_info child_stmt_info;
+      gimple *child_stmt;
       int j;
       vec<constructor_elt, va_gc> *v;
       vec_alloc (v, nelts);
 
-      FOR_EACH_VEC_ELT (SLP_TREE_VEC_STMTS (node), j, child_stmt_info)
+      FOR_EACH_VEC_ELT (SLP_TREE_VEC_STMTS (node), j, child_stmt)
 	{
 	  CONSTRUCTOR_APPEND_ELT (v,
 				  NULL_TREE,
-				  gimple_get_lhs (child_stmt_info->stmt));
+				  gimple_get_lhs (child_stmt));
 	}
       tree lhs = gimple_get_lhs (instance->root_stmt->stmt);
       tree rtype = TREE_TYPE (gimple_assign_rhs1 (instance->root_stmt->stmt));
