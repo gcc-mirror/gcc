@@ -470,6 +470,80 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __equal_aux1(__first1, __last1, __first2);
     }
 
+  template<typename _Ite1, typename _Seq1, typename _Cat1,
+	   typename _II2>
+    bool
+    __lexicographical_compare_aux(
+	const ::__gnu_debug::_Safe_iterator<_Ite1, _Seq1, _Cat1>& __first1,
+	const ::__gnu_debug::_Safe_iterator<_Ite1, _Seq1, _Cat1>& __last1,
+	_II2 __first2, _II2 __last2)
+    {
+      typename ::__gnu_debug::_Distance_traits<_Ite1>::__type __dist1;
+      __glibcxx_check_valid_range2(__first1, __last1, __dist1);
+      __glibcxx_check_valid_range(__first2, __last2);
+
+      if (__dist1.second > ::__gnu_debug::__dp_equality)
+	return std::__lexicographical_compare_aux(__first1.base(),
+						  __last1.base(),
+						  __first2, __last2);
+      return std::__lexicographical_compare_aux1(__first1, __last1,
+						 __first2, __last2);
+    }
+
+  template<typename _II1,
+	   typename _Ite2, typename _Seq2, typename _Cat2>
+    bool
+    __lexicographical_compare_aux(
+	_II1 __first1, _II1 __last1,
+	const ::__gnu_debug::_Safe_iterator<_Ite2, _Seq2, _Cat2>& __first2,
+	const ::__gnu_debug::_Safe_iterator<_Ite2, _Seq2, _Cat2>& __last2)
+    {
+      __glibcxx_check_valid_range(__first1, __last1);
+      typename ::__gnu_debug::_Distance_traits<_II1>::__type __dist2;
+      __glibcxx_check_valid_range2(__first2, __last2, __dist2);
+
+      if (__dist2.second > ::__gnu_debug::__dp_equality)
+	return std::__lexicographical_compare_aux(__first1, __last1,
+						  __first2.base(),
+						  __last2.base());
+      return std::__lexicographical_compare_aux1(__first1, __last1,
+						 __first2, __last2);
+    }
+
+  template<typename _Ite1, typename _Seq1, typename _Cat1,
+	   typename _Ite2, typename _Seq2, typename _Cat2>
+    bool
+    __lexicographical_compare_aux(
+	const ::__gnu_debug::_Safe_iterator<_Ite1, _Seq1, _Cat1>& __first1,
+	const ::__gnu_debug::_Safe_iterator<_Ite1, _Seq1, _Cat1>& __last1,
+	const ::__gnu_debug::_Safe_iterator<_Ite2, _Seq2, _Cat2>& __first2,
+	const ::__gnu_debug::_Safe_iterator<_Ite2, _Seq2, _Cat2>& __last2)
+    {
+      typename ::__gnu_debug::_Distance_traits<_Ite1>::__type __dist1;
+      __glibcxx_check_valid_range2(__first1, __last1, __dist1);
+      typename ::__gnu_debug::_Distance_traits<_Ite2>::__type __dist2;
+      __glibcxx_check_valid_range2(__first2, __last2, __dist2);
+
+      if (__dist1.second > ::__gnu_debug::__dp_equality)
+	{
+	  if (__dist2.second > ::__gnu_debug::__dp_equality)
+	    return std::__lexicographical_compare_aux(__first1.base(),
+						      __last1.base(),
+						      __first2.base(),
+						      __last2.base());
+	  return std::__lexicographical_compare_aux(__first1.base(),
+						    __last1.base(),
+						    __first2, __last2);
+	}
+
+      if (__dist2.second > ::__gnu_debug::__dp_equality)
+	return std::__lexicographical_compare_aux(__first1, __last1,
+						  __first2.base(),
+						  __last2.base());
+      return std::__lexicographical_compare_aux1(__first1, __last1,
+						 __first2, __last2);
+    }
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
