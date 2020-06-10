@@ -11279,7 +11279,23 @@ aarch64_rtx_mult_cost (rtx x, enum rtx_code code, int outer, bool speed)
   op1 = XEXP (x, 1);
 
   if (VECTOR_MODE_P (mode))
-    mode = GET_MODE_INNER (mode);
+    {
+      unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+      mode = GET_MODE_INNER (mode);
+      if (vec_flags & VEC_ADVSIMD)
+	{
+	  /* The by-element versions of the instruction have the same costs as
+	     the normal 3-vector version.  So don't add the costs of the
+	     duplicate into the costs of the multiply.  We make an assumption
+	     that the input to the VEC_DUPLICATE is already on the FP & SIMD
+	     side.  This means costing of a MUL by element pre RA is a bit
+	     optimistic.  */
+	  if (GET_CODE (op0) == VEC_DUPLICATE)
+	    op0 = XEXP (op0, 0);
+	  else if (GET_CODE (op1) == VEC_DUPLICATE)
+	    op1 = XEXP (op1, 0);
+	}
+    }
 
   /* Integer multiply/fma.  */
   if (GET_MODE_CLASS (mode) == MODE_INT)
