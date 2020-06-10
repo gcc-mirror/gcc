@@ -94,30 +94,29 @@ gfc_arith_error (arith code)
   switch (code)
     {
     case ARITH_OK:
-      p = _("Arithmetic OK at %L");
+      p = G_("Arithmetic OK at %L");
       break;
     case ARITH_OVERFLOW:
-      p = _("Arithmetic overflow at %L");
+      p = G_("Arithmetic overflow at %L");
       break;
     case ARITH_UNDERFLOW:
-      p = _("Arithmetic underflow at %L");
+      p = G_("Arithmetic underflow at %L");
       break;
     case ARITH_NAN:
-      p = _("Arithmetic NaN at %L");
+      p = G_("Arithmetic NaN at %L");
       break;
     case ARITH_DIV0:
-      p = _("Division by zero at %L");
+      p = G_("Division by zero at %L");
       break;
     case ARITH_INCOMMENSURATE:
-      p = _("Array operands are incommensurate at %L");
+      p = G_("Array operands are incommensurate at %L");
       break;
     case ARITH_ASYMMETRIC:
-      p =
-	_("Integer outside symmetric range implied by Standard Fortran at %L");
+      p = G_("Integer outside symmetric range implied by Standard Fortran"
+	     " at %L");
       break;
     case ARITH_WRONGCONCAT:
-      p =
-	_("Illegal type in character concatenation at %L");
+      p = G_("Illegal type in character concatenation at %L");
       break;
 
     default:
