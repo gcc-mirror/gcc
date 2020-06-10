@@ -322,7 +322,7 @@ class GitCommit:
             t = parts[0]
             if t == 'A' or t == 'D' or t == 'M':
                 modified_files.append((parts[1], t))
-            elif t == 'R':
+            elif t.startswith('R'):
                 modified_files.append((parts[1], 'D'))
                 modified_files.append((parts[2], 'A'))
         return modified_files

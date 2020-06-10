@@ -20,6 +20,8 @@ import os
 import tempfile
 import unittest
 
+from git_commit import GitCommit
+
 from git_email import GitEmail
 
 import unidiff
@@ -27,6 +29,12 @@ import unidiff
 script_path = os.path.dirname(os.path.realpath(__file__))
 
 unidiff_supports_renaming = hasattr(unidiff.PatchedFile(), 'is_rename')
+
+
+NAME_STATUS1 = """
+M	gcc/ada/impunit.adb'
+R097	gcc/ada/libgnat/s-atopar.adb	gcc/ada/libgnat/s-aoinar.adb
+"""
 
 
 class TestGccChangelog(unittest.TestCase):
@@ -337,3 +345,9 @@ class TestGccChangelog(unittest.TestCase):
         email = self.from_patch_glob('0001-configure.patch')
         assert not email.errors
         assert len(email.changelog_entries) == 2
+
+    def test_parse_git_name_status(self):
+        modified_files = GitCommit.parse_git_name_status(NAME_STATUS1)
+        assert len(modified_files) == 3
+        assert modified_files[1] == ('gcc/ada/libgnat/s-atopar.adb', 'D')
+        assert modified_files[2] == ('gcc/ada/libgnat/s-aoinar.adb', 'A')
