@@ -76,6 +76,7 @@ void
 highlighter::on (pretty_printer *buffer, int spc, gimple *stmt)
 {
   bool need_header = new_stmt == stmt || untainted_stmt == stmt;
+  bool removal = untainted_stmt == stmt;
   if (need_header)
     {
       pp_string (buffer, ";; (STATE) filename = ");
@@ -88,7 +89,7 @@ highlighter::on (pretty_printer *buffer, int spc, gimple *stmt)
       pp_string (buffer, ";; Original statement was: ");
       pp_gimple_stmt_1 (buffer, old_stmt, spc, TDF_SLIM);
     }
-  else if (untainted_stmt == stmt)
+  else if (removal)
     {
       pp_string (buffer, ";; Queued for removal LHS= ");
       dump_generic_node (buffer, lhs, spc, TDF_SLIM, false);
@@ -99,6 +100,13 @@ highlighter::on (pretty_printer *buffer, int spc, gimple *stmt)
       INDENT (spc);
       pp_string (buffer, ";; VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\n");
       INDENT (spc);
+      // For PHI removal, dump the PHI as well as the statement.
+      if (removal && is_a<gphi *> (new_stmt))
+	{
+	  pp_gimple_stmt_1 (buffer, new_stmt, spc, TDF_SLIM);
+	  pp_newline_and_flush (buffer);
+	  INDENT (spc);
+	}
     }
 }
 
