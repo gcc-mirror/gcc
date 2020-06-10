@@ -147,6 +147,12 @@ package Ada.Wide_Wide_Characters.Unicode is
    --  of the corresponding categories, which are the following:
    --    Separator, Space (Zs)
 
+   function Is_NFKC (U : Wide_Wide_Character) return Boolean;
+   pragma Inline (Is_NFKC);
+   --  Returns True if the Wide_Wide_Character designated by U could be present
+   --  in a string normalized to Normalization Form KC (as defined by Clause
+   --  21 of ISO/IEC 10646:2017), otherwise returns False.
+
    function Is_Non_Graphic (U : Wide_Wide_Character) return Boolean;
    function Is_Non_Graphic (C : Category)            return Boolean;
    pragma Inline (Is_Non_Graphic);
