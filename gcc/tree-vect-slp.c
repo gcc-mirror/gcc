@@ -2500,6 +2500,8 @@ vect_detect_hybrid_slp (loop_vec_info loop_vinfo)
 	   gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
+	  if (is_gimple_debug (stmt))
+	    continue;
 	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (stmt);
 	  if (STMT_VINFO_IN_PATTERN_P (stmt_info))
 	    {
@@ -2559,6 +2561,8 @@ _bb_vec_info::_bb_vec_info (gimple_stmt_iterator region_begin_in,
     {
       gimple *stmt = gsi_stmt (gsi);
       gimple_set_uid (stmt, 0);
+      if (is_gimple_debug (stmt))
+	continue;
       add_stmt (stmt);
     }
 

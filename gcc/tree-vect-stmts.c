@@ -636,6 +636,8 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo, bool *fatal)
 	}
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	{
+	  if (is_gimple_debug (gsi_stmt (si)))
+	    continue;
 	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
 	  if (dump_enabled_p ())
 	      dump_printf_loc (MSG_NOTE, vect_location,

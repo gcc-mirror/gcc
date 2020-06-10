@@ -5112,8 +5112,9 @@ vect_determine_precisions (vec_info *vinfo)
 	  basic_block bb = bbs[nbbs - i - 1];
 	  for (gimple_stmt_iterator si = gsi_last_bb (bb);
 	       !gsi_end_p (si); gsi_prev (&si))
-	    vect_determine_stmt_precisions
-	      (vinfo, vinfo->lookup_stmt (gsi_stmt (si)));
+	    if (!is_gimple_debug (gsi_stmt (si)))
+	      vect_determine_stmt_precisions
+		(vinfo, vinfo->lookup_stmt (gsi_stmt (si)));
 	}
     }
   else
@@ -5478,6 +5479,8 @@ vect_pattern_recog (vec_info *vinfo)
 	  basic_block bb = bbs[i];
 	  for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	    {
+	      if (is_gimple_debug (gsi_stmt (si)))
+		continue;
 	      stmt_vec_info stmt_info = vinfo->lookup_stmt (gsi_stmt (si));
 	      /* Scan over all generic vect_recog_xxx_pattern functions.  */
 	      for (j = 0; j < NUM_PATTERNS; j++)
@@ -5494,7 +5497,7 @@ vect_pattern_recog (vec_info *vinfo)
 	{
 	  gimple *stmt = gsi_stmt (si);
 	  stmt_vec_info stmt_info = bb_vinfo->lookup_stmt (stmt);
-	  if (stmt_info && !STMT_VINFO_VECTORIZABLE (stmt_info))
+	  if (!stmt_info || !STMT_VINFO_VECTORIZABLE (stmt_info))
 	    continue;
 
 	  /* Scan over all generic vect_recog_xxx_pattern functions.  */

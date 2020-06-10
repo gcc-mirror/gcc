@@ -342,6 +342,8 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
       for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);
 	   gsi_next (&si))
 	{
+	  if (is_gimple_debug (gsi_stmt (si)))
+	    continue;
 	  stmt_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
 	  opt_result res
 	    = vect_determine_vf_for_stmt (loop_vinfo,
@@ -847,6 +849,8 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
 	{
 	  gimple *stmt = gsi_stmt (si);
 	  gimple_set_uid (stmt, 0);
+	  if (is_gimple_debug (stmt))
+	    continue;
 	  add_stmt (stmt);
 	  /* If .GOMP_SIMD_LANE call for the current loop has 3 arguments, the
 	     third argument is the #pragma omp simd if (x) condition, when 0,
@@ -1393,6 +1397,8 @@ vect_update_vf_for_slp (loop_vec_info loop_vinfo)
       for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);
 	   gsi_next (&si))
 	{
+	  if (is_gimple_debug (gsi_stmt (si)))
+	    continue;
 	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
 	  stmt_info = vect_stmt_to_vectorize (stmt_info);
 	  if ((STMT_VINFO_RELEVANT_P (stmt_info)
@@ -1584,7 +1590,8 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 	   gsi_next (&si))
         {
 	  gimple *stmt = gsi_stmt (si);
-	  if (!gimple_clobber_p (stmt))
+	  if (!gimple_clobber_p (stmt)
+	      && !is_gimple_debug (stmt))
 	    {
 	      opt_result res
 		= vect_analyze_stmt (loop_vinfo,
@@ -2345,6 +2352,8 @@ again:
       for (gimple_stmt_iterator si = gsi_start_bb (bb);
 	   !gsi_end_p (si); gsi_next (&si))
 	{
+	  if (is_gimple_debug (gsi_stmt (si)))
+	    continue;
 	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
 	  STMT_SLP_TYPE (stmt_info) = loop_vect;
 	  if (STMT_VINFO_IN_PATTERN_P (stmt_info))
@@ -8373,6 +8382,8 @@ update_epilogue_loop_vinfo (class loop *epilogue, tree advance)
 	   !gsi_end_p (epilogue_gsi); gsi_next (&epilogue_gsi))
 	{
 	  new_stmt = gsi_stmt (epilogue_gsi);
+	  if (is_gimple_debug (new_stmt))
+	    continue;
 
 	  gcc_assert (gimple_uid (new_stmt) > 0);
 	  stmt_vinfo
