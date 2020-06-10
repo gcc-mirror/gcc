@@ -168,8 +168,14 @@ enhanced_operand_compare::operand_equal_p (const_tree op1, const_tree op2,
     {
     case CASE_LABEL_EXPR:
       return compare_operands (op1, op2, 4);
+
+      // There's a bunch of expressions that operand_equal_p do not
+      // handle.  Assume those are equal.
     case CONSTRUCTOR:
+    case WITH_SIZE_EXPR:
+    case OBJ_TYPE_REF:
       return true;
+
     case TREE_LIST:
       return (operand_equal_p (TREE_PURPOSE (op1), TREE_PURPOSE (op2), flags)
 	      && operand_equal_p (TREE_VALUE (op1), TREE_VALUE (op2), flags));
