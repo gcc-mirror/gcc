@@ -3316,7 +3316,12 @@ vect_slp_bb (basic_block bb)
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 	  if (is_gimple_debug (stmt))
-	    continue;
+	    {
+	      /* Skip leading debug stmts.  */
+	      if (gsi_stmt (region_begin) == stmt)
+		gsi_next (&region_begin);
+	      continue;
+	    }
 	  insns++;
 
 	  if (gimple_location (stmt) != UNKNOWN_LOCATION)
@@ -3325,6 +3330,8 @@ vect_slp_bb (basic_block bb)
 	  if (!vect_find_stmt_data_reference (NULL, stmt, &datarefs))
 	    break;
 	}
+      if (gsi_end_p (region_begin))
+	break;
 
       /* Skip leading unhandled stmts.  */
       if (gsi_stmt (region_begin) == gsi_stmt (gsi))
