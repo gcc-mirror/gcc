@@ -345,20 +345,6 @@ public:
     range_analyzer.enter (bb);
   }
 
-  void tmp_stats_remove_stmt (gimple *stmt, tree lhs) OVERRIDE
-  {
-    if (evrp_trap_p ())
-      m_gimple_state.remove (stmt, lhs);
-  }
-
-  void tmp_stats_changed_phi (gphi *orig_phi, gphi *new_phi) OVERRIDE
-  {
-    gimple *save = m_gimple_state.save (orig_phi);
-    if (evrp_trap_p ())
-      m_gimple_state.trap_if_gimple_changed (new_phi);
-    m_gimple_state.save (save);
-  }
-
   void pre_fold_stmt (gimple *stmt)
   {
     if (dump_file && (dump_flags & TDF_DETAILS))
@@ -366,15 +352,32 @@ public:
 	fprintf (dump_file, "Visiting stmt ");
 	print_gimple_stmt (dump_file, stmt, 0);
       }
-    m_gimple_state.save (stmt);
+    m_gimple_state.set_orig_stmt (stmt);
     range_analyzer.record_ranges_from_stmt (stmt, false);
+  }
+
+  void tmp_stats_remove_stmt (gimple *stmt, tree lhs) OVERRIDE
+  {
+    m_gimple_state.maybe_dump_differences_and_trap (stmt, lhs);
+  }
+
+  void tmp_stats_changed_phi (gphi *orig_phi, gphi *new_phi) OVERRIDE
+  {
+    gimple *save = m_gimple_state.set_orig_stmt (orig_phi);
+    m_gimple_state.maybe_dump_differences_and_trap (new_phi);
+    m_gimple_state.set_orig_stmt (save);
+  }
+
+  void tmp_stats_set_modified (bool modified) OVERRIDE
+  {
+    m_modified = modified;
   }
 
   bool fold_stmt (gimple_stmt_iterator *gsi)
   {
     bool res = simplifier.simplify (gsi);
-    if (evrp_trap_p ())
-      m_gimple_state.trap_if_gimple_changed (gsi_stmt (*gsi));
+    if (m_modified || res)
+      m_gimple_state.maybe_dump_differences_and_trap (gsi_stmt (*gsi));
     return res;
   }
 
@@ -394,6 +397,7 @@ private:
   class vr_values *vr_values;
   simplify_using_ranges simplifier;
   class gimple_state m_gimple_state;
+  bool m_modified;
 };
 
 /* Main entry point for the early vrp pass which is a simplified non-iterative

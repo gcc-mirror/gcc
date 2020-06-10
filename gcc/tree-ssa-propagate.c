@@ -1155,6 +1155,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 	 specific information.  Do this before propagating
 	 into the stmt to not disturb pass specific information.  */
       update_stmt_if_modified (stmt);
+      substitute_and_fold_engine->tmp_stats_set_modified (did_replace);
       if (substitute_and_fold_engine->fold_stmt (&i))
 	{
 	  did_replace = true;

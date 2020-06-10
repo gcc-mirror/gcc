@@ -124,133 +124,21 @@ highlighter::set (gimple *untainted_stmt,
 }
 
 //====================================================
-// enhanced_operand_compare
-//====================================================
-
-class enhanced_operand_compare : public operand_compare
-{
-public:
-  bool operand_equal_p (const_tree, const_tree, unsigned int) OVERRIDE;
-private:
-  bool compare_operands (const_tree op1, const_tree op2, unsigned n);
-};
-
-bool
-enhanced_operand_compare::compare_operands (const_tree op1, const_tree op2,
-					    unsigned n)
-{
-  for (unsigned i = 0; i < n; ++i)
-    if (!operand_equal_p (TREE_OPERAND (op1, i), TREE_OPERAND (op2, i),
-			  OEP_MATCH_SIDE_EFFECTS))
-      return false;
-  return true;
-}
-
-bool
-enhanced_operand_compare::operand_equal_p (const_tree op1, const_tree op2,
-					   unsigned int flags)
-{
-  bool r;
-  if (verify_hash_value (op1, op2, flags, &r))
-    return r;
-
-  if (op1 == op2)
-    return true;
-
-  if (!op1 || !op2)
-    return op1 == op2;
-
-  if (TREE_CODE (op1) != TREE_CODE (op2))
-    return false;
-
-  flags = OEP_MATCH_SIDE_EFFECTS | OEP_NO_HASH_CHECK;
-  switch (TREE_CODE (op1))
-    {
-    case CASE_LABEL_EXPR:
-      return compare_operands (op1, op2, 4);
-
-      // There's a bunch of expressions that operand_equal_p do not
-      // handle.  Assume those are equal.
-    case CONSTRUCTOR:
-    case WITH_SIZE_EXPR:
-    case OBJ_TYPE_REF:
-      return true;
-
-    case TREE_LIST:
-      return (operand_equal_p (TREE_PURPOSE (op1), TREE_PURPOSE (op2), flags)
-	      && operand_equal_p (TREE_VALUE (op1), TREE_VALUE (op2), flags));
-    default:
-      return operand_compare::operand_equal_p (op1, op2, flags);
-    }
-}
-
-//====================================================
-// gimple_different_p
-//====================================================
-
-static bool
-gimple_phi_different_p (gphi *orig_phi, gphi *new_phi)
-{
-  gcc_checking_assert (gimple_phi_num_args (orig_phi)
-		       == gimple_phi_num_args (new_phi));
-  for (unsigned i = 0; i < gimple_phi_num_args (orig_phi); ++i)
-    {
-      phi_arg_d *orig_arg = gimple_phi_arg (orig_phi, i);
-      phi_arg_d *new_arg = gimple_phi_arg (new_phi, i);
-      if (memcmp (orig_arg, new_arg, sizeof (phi_arg_d)))
-	return true;
-    }
-  return false;
-}
-
-static bool
-gimple_different_p (gimple *orig_stmt, gimple *new_stmt)
-{
-  if (gimple_code (orig_stmt) != gimple_code (new_stmt)
-      || orig_stmt->subcode != new_stmt->subcode)
-    return true;
-
-  if (gimple_num_ops (orig_stmt) != gimple_num_ops (new_stmt))
-    return true;
-
-  switch (gimple_code (new_stmt))
-    {
-    case GIMPLE_PHI:
-      return gimple_phi_different_p (as_a <gphi *> (orig_stmt),
-				     as_a <gphi *> (new_stmt));
-    case GIMPLE_ASM:
-      return false;
-    default:
-      break;
-    }
-
-  enhanced_operand_compare comparator;
-  for (unsigned i = 0; i < gimple_num_ops (orig_stmt); ++i)
-    {
-      tree op1 = gimple_op (orig_stmt, i);
-      tree op2 = gimple_op (new_stmt, i);
-      if (!comparator.operand_equal_p (op1, op2, 0))
-	return true;
-    }
-  return false;
-}
-
-//====================================================
 // gimple_state
 //====================================================
 
 gimple_state::gimple_state ()
 {
   orig_stmt = NULL;
-  if (const char *filename = getenv ("GIMPLE_CHANGES"))
+  out = stderr;
+  accumulate_changes = false;
+
+  // Instead of trapping, accumulate changes into the filename stored
+  // in EVRP_TRAPS.
+  if (const char *filename = getenv ("EVRP_TRAPS"))
     {
       out = fopen (filename, "a");
-      trap = false;
-    }
-  else
-    {
-      out = stderr;
-      trap = true;
+      accumulate_changes = true;
     }
 }
 
@@ -261,7 +149,7 @@ gimple_state::~gimple_state ()
 }
 
 gimple *
-gimple_state::save (gimple *stmt)
+gimple_state::set_orig_stmt (gimple *stmt)
 {
   untainted_stmt = stmt;
   gimple *prev = orig_stmt;
@@ -270,40 +158,21 @@ gimple_state::save (gimple *stmt)
 }
 
 void
-gimple_state::trap_if_gimple_changed (gimple *new_stmt)
+gimple_state::maybe_dump_differences_and_trap (gimple *new_stmt, tree lhs)
 {
-  if (is_gimple_debug (new_stmt))
-    return;
-  if (gimple_different_p (orig_stmt, new_stmt))
+  if (evrp_trap_p ())
     {
-      dump_differences (out, new_stmt);
-      if (trap)
-	gcc_unreachable ();
+      if (unseen_function_p ())
+	{
+	  fprintf (out, "===============================================\n");
+	  highlighter.set (untainted_stmt, orig_stmt, new_stmt, lhs);
+	  dump_function_to_file (current_function_decl, out, TDF_NONE);
+	  highlighter.set ();
+	}
+      if (accumulate_changes)
+	return;
+      gcc_unreachable ();
     }
-}
-
-void
-gimple_state::dump_differences (FILE *out, gimple *new_stmt, tree lhs)
-{
-  if (unseen_function_p ())
-    {
-      fprintf (out, "===================================================\n");
-      highlighter.set (untainted_stmt, orig_stmt, new_stmt, lhs);
-      dump_function_to_file (current_function_decl, out, TDF_NONE);
-      highlighter.set ();
-    }
-}
-
-void
-gimple_state::remove (gimple *stmt, tree lhs)
-{
-  // Set orig_stmt because removing PHIs seems to change the original
-  // statement.
-  gimple *prev = save (stmt);
-  dump_differences (out, NULL, lhs);
-  save (prev);
-  if (trap)
-    gcc_unreachable ();
 }
 
 //====================================================

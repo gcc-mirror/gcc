@@ -4,27 +4,24 @@
 
 // Class to report any possible changes to the IL while folding.
 //
-// When environment variable GIMPLE_CHANGES is set, it points to the
-// output file to dump any IL changes to.  If GIMPLE_CHANGES is not
-// set, any diagnostics are dumped to stderr and a trap occurs at the
-// first change.
+// When environment variable EVRP_TRAPS is set, it points to the
+// output file to dump any IL changes to.  If EVRP_TRAPS is not set,
+// any diagnostics are dumped to stderr and a trap occurs at the first
+// change.
 
 class gimple_state
 {
 public:
   gimple_state ();
   ~gimple_state ();
-  gimple *save (gimple *stmt);
-  void remove (gimple *stmt, tree lhs);
-  void trap_if_gimple_changed (gimple *new_stmt);
+  gimple *set_orig_stmt (gimple *stmt);
+  void maybe_dump_differences_and_trap (gimple *new_stmt, tree lhs = NULL);
 
 private:
-  void dump_differences (FILE *out, gimple *new_stmt, tree lhs = NULL);
-
   gimple *orig_stmt;
   gimple *untainted_stmt;
   FILE *out;
-  bool trap;
+  bool accumulate_changes;
 };
 
 // Hook for pretty printer to highlight a particular statement.
