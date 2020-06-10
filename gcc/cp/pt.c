@@ -10104,6 +10104,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	 its instantiated TEMPLATE_DECL), with this one that points to
 	 the most general template, but that's what we want.  */
 
+      // FIXME: This is incorrect as PR 95263 shows
       if (TYPE_ALIAS_P (t))
 	{
 	  /* This should already have been constructed during

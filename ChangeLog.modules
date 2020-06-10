@@ -1,5 +1,12 @@
 2020-06-10  Nathan Sidwell  <nathan@acm.org>
 
+	Merge master ac9face8d26
+	PR c++/95263
+	gcc/cp/
+	* pt.c (lookup_template_class_1): Do not apply reversion
+	gcc/testsuite/
+	* g++.dg/template/pr95263.C: New (XFAIL)
+
 	Merge master 6c8e16aea85
 
 2020-06-10  Iain Sandoe  <iain@sandoe.co.uk>
