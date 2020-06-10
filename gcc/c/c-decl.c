@@ -9720,15 +9720,18 @@ store_parm_decls_from (struct c_arg_info *arg_info)
   store_parm_decls ();
 }
 
-/* Called by walk_tree to look for and update context-less labels.  */
+/* Called by walk_tree to look for and update context-less labels
+   or labels with context in the parent function.  */
 
 static tree
 set_labels_context_r (tree *tp, int *walk_subtrees, void *data)
 {
+  tree ctx = static_cast<tree>(data);
   if (TREE_CODE (*tp) == LABEL_EXPR
-      && DECL_CONTEXT (LABEL_EXPR_LABEL (*tp)) == NULL_TREE)
+      && (DECL_CONTEXT (LABEL_EXPR_LABEL (*tp)) == NULL_TREE
+	  || DECL_CONTEXT (LABEL_EXPR_LABEL (*tp)) == DECL_CONTEXT (ctx)))
     {
-      DECL_CONTEXT (LABEL_EXPR_LABEL (*tp)) = static_cast<tree>(data);
+      DECL_CONTEXT (LABEL_EXPR_LABEL (*tp)) = ctx;
       *walk_subtrees = 0;
     }
 
@@ -9798,7 +9801,11 @@ store_parm_decls (void)
 	 gotos, labels, etc.  Because at that time the function decl
 	 for F has not been created yet, those labels do not have any
 	 function context.  But we have the fndecl now, so update the
-	 labels accordingly.  gimplify_expr would crash otherwise.  */
+	 labels accordingly.  gimplify_expr would crash otherwise.
+	 Or with nested functions the labels could be created with parent
+	 function's context, while when the statement is emitted at the
+	 start of the nested function, it needs the nested function's
+	 context.  */
       walk_tree_without_duplicates (&arg_info->pending_sizes,
 				    set_labels_context_r, fndecl);
       add_stmt (arg_info->pending_sizes);

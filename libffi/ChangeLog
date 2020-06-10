@@ -1,3 +1,7 @@
+2020-05-07  Release Manager
+
+	* GCC 10.1.0 released.
+
 2020-04-25  Maciej W. Rozycki  <macro@wdc.com>
 
 	* Makefile.am (DISTCLEANFILES): New variable.

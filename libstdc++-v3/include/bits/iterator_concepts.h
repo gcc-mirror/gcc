@@ -90,6 +90,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
       private:
 	template<typename _Tp>
+	  struct __result
+	  { using type = iter_reference_t<_Tp>; };
+
+	template<typename _Tp>
+	  requires __adl_imove<_Tp>
+	  struct __result<_Tp>
+	  { using type = decltype(iter_move(std::declval<_Tp>())); };
+
+	template<typename _Tp>
+	  requires (!__adl_imove<_Tp>)
+	  && is_lvalue_reference_v<iter_reference_t<_Tp>>
+	  struct __result<_Tp>
+	  { using type = remove_reference_t<iter_reference_t<_Tp>>&&; };
+
+	template<typename _Tp>
 	  static constexpr bool
 	  _S_noexcept()
 	  {
@@ -100,16 +115,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 
       public:
-	template<typename _Tp>
-	  requires __adl_imove<_Tp> || requires(_Tp& __e) { *__e; }
-	  constexpr decltype(auto)
+	// The result type of iter_move(std::declval<_Tp>())
+	template<std::__detail::__dereferenceable _Tp>
+	  using __type = typename __result<_Tp>::type;
+
+	template<std::__detail::__dereferenceable _Tp>
+	  constexpr __type<_Tp>
 	  operator()(_Tp&& __e) const
 	  noexcept(_S_noexcept<_Tp>())
 	  {
 	    if constexpr (__adl_imove<_Tp>)
 	      return iter_move(static_cast<_Tp&&>(__e));
-	    else if constexpr (is_reference_v<iter_reference_t<_Tp>>)
-	      return std::move(*__e);
+	    else if constexpr (is_lvalue_reference_v<iter_reference_t<_Tp>>)
+	      return static_cast<__type<_Tp>>(*__e);
 	    else
 	      return *__e;
 	  }
@@ -231,14 +249,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   namespace __detail
   {
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 3420. cpp17-iterator should check [type] looks like an iterator first
     template<typename _Iter>
-      concept __cpp17_iterator = copyable<_Iter>
-	&& requires(_Iter __it)
+      concept __cpp17_iterator = requires(_Iter __it)
 	{
 	  { *__it } -> __can_reference;
 	  { ++__it } -> same_as<_Iter&>;
 	  { *__it++ } -> __can_reference;
-	};
+	} && copyable<_Iter>;
 
     template<typename _Iter>
       concept __cpp17_input_iterator = __cpp17_iterator<_Iter>
@@ -251,7 +270,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		   typename indirectly_readable_traits<_Iter>::value_type&>;
 	  typename common_reference_t<decltype(*__it++)&&,
 		   typename indirectly_readable_traits<_Iter>::value_type&>;
-	  requires signed_integral<typename incrementable_traits<_Iter>::difference_type>;
+	  requires signed_integral<
+	    typename incrementable_traits<_Iter>::difference_type>;
 	};
 
     template<typename _Iter>

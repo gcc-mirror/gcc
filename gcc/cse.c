@@ -585,7 +585,6 @@ static void cse_insn (rtx_insn *);
 static void cse_prescan_path (struct cse_basic_block_data *);
 static void invalidate_from_clobbers (rtx_insn *);
 static void invalidate_from_sets_and_clobbers (rtx_insn *);
-static rtx cse_process_notes (rtx, rtx, bool *);
 static void cse_extended_basic_block (struct cse_basic_block_data *);
 extern void dump_class (struct table_elt*);
 static void get_cse_reg_info_1 (unsigned int regno);
@@ -6222,75 +6221,28 @@ invalidate_from_sets_and_clobbers (rtx_insn *insn)
     }
 }
 
-/* Process X, part of the REG_NOTES of an insn.  Look at any REG_EQUAL notes
-   and replace any registers in them with either an equivalent constant
-   or the canonical form of the register.  If we are inside an address,
-   only do this if the address remains valid.
+static rtx cse_process_note (rtx);
 
-   OBJECT is 0 except when within a MEM in which case it is the MEM.
+/* A simplify_replace_fn_rtx callback for cse_process_note.  Process X,
+   part of the REG_NOTES of an insn.  Replace any registers with either
+   an equivalent constant or the canonical form of the register.
+   Only replace addresses if the containing MEM remains valid.
 
-   Return the replacement for X.  */
+   Return the replacement for X, or null if it should be simplified
+   recursively.  */
 
 static rtx
-cse_process_notes_1 (rtx x, rtx object, bool *changed)
+cse_process_note_1 (rtx x, const_rtx, void *)
 {
-  enum rtx_code code = GET_CODE (x);
-  const char *fmt = GET_RTX_FORMAT (code);
-  int i;
-
-  switch (code)
+  if (MEM_P (x))
     {
-    case CONST:
-    case SYMBOL_REF:
-    case LABEL_REF:
-    CASE_CONST_ANY:
-    case PC:
-    case CC0:
-    case LO_SUM:
+      validate_change (x, &XEXP (x, 0), cse_process_note (XEXP (x, 0)), false);
       return x;
+    }
 
-    case MEM:
-      validate_change (x, &XEXP (x, 0),
-		       cse_process_notes (XEXP (x, 0), x, changed), 0);
-      return x;
-
-    case EXPR_LIST:
-      if (REG_NOTE_KIND (x) == REG_EQUAL)
-	XEXP (x, 0) = cse_process_notes (XEXP (x, 0), NULL_RTX, changed);
-      /* Fall through.  */
-
-    case INSN_LIST:
-    case INT_LIST:
-      if (XEXP (x, 1))
-	XEXP (x, 1) = cse_process_notes (XEXP (x, 1), NULL_RTX, changed);
-      return x;
-
-    case SIGN_EXTEND:
-    case ZERO_EXTEND:
-    case SUBREG:
-      {
-	rtx new_rtx = cse_process_notes (XEXP (x, 0), object, changed);
-	/* We don't substitute VOIDmode constants into these rtx,
-	   since they would impede folding.  */
-	if (GET_MODE (new_rtx) != VOIDmode)
-	  validate_change (object, &XEXP (x, 0), new_rtx, 0);
-	return x;
-      }
-
-    case UNSIGNED_FLOAT:
-      {
-	rtx new_rtx = cse_process_notes (XEXP (x, 0), object, changed);
-	/* We don't substitute negative VOIDmode constants into these rtx,
-	   since they would impede folding.  */
-	if (GET_MODE (new_rtx) != VOIDmode
-	    || (CONST_INT_P (new_rtx) && INTVAL (new_rtx) >= 0)
-	    || (CONST_DOUBLE_P (new_rtx) && CONST_DOUBLE_HIGH (new_rtx) >= 0))
-	  validate_change (object, &XEXP (x, 0), new_rtx, 0);
-	return x;
-      }
-
-    case REG:
-      i = REG_QTY (REGNO (x));
+  if (REG_P (x))
+    {
+      int i = REG_QTY (REGNO (x));
 
       /* Return a constant or a constant register.  */
       if (REGNO_QTY_VALID_P (REGNO (x)))
@@ -6309,26 +6261,19 @@ cse_process_notes_1 (rtx x, rtx object, bool *changed)
 
       /* Otherwise, canonicalize this register.  */
       return canon_reg (x, NULL);
-
-    default:
-      break;
     }
 
-  for (i = 0; i < GET_RTX_LENGTH (code); i++)
-    if (fmt[i] == 'e')
-      validate_change (object, &XEXP (x, i),
-		       cse_process_notes (XEXP (x, i), object, changed), 0);
-
-  return x;
+  return NULL_RTX;
 }
 
+/* Process X, part of the REG_NOTES of an insn.  Replace any registers in it
+   with either an equivalent constant or the canonical form of the register.
+   Only replace addresses if the containing MEM remains valid.  */
+
 static rtx
-cse_process_notes (rtx x, rtx object, bool *changed)
+cse_process_note (rtx x)
 {
-  rtx new_rtx = cse_process_notes_1 (x, object, changed);
-  if (new_rtx != x)
-    *changed = true;
-  return new_rtx;
+  return simplify_replace_fn_rtx (x, NULL_RTX, cse_process_note_1, NULL);
 }
 
 
@@ -6623,14 +6568,19 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 	    {
 	      /* Process notes first so we have all notes in canonical forms
 		 when looking for duplicate operations.  */
-	      if (REG_NOTES (insn))
-		{
-		  bool changed = false;
-		  REG_NOTES (insn) = cse_process_notes (REG_NOTES (insn),
-						        NULL_RTX, &changed);
-		  if (changed)
-		    df_notes_rescan (insn);
-		}
+	      bool changed = false;
+	      for (rtx note = REG_NOTES (insn); note; note = XEXP (note, 1))
+		if (REG_NOTE_KIND (note) == REG_EQUAL)
+		  {
+		    rtx newval = cse_process_note (XEXP (note, 0));
+		    if (newval != XEXP (note, 0))
+		      {
+			XEXP (note, 0) = newval;
+			changed = true;
+		      }
+		  }
+	      if (changed)
+		df_notes_rescan (insn);
 
 	      cse_insn (insn);
 

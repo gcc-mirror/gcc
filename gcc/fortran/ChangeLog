@@ -1,3 +1,155 @@
+2020-06-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95373
+	* primary.c (is_inquiry_ref): Move validity check of inquiry
+	references against selected Fortran standard from here...
+	(gfc_match_varspec) ...to here.
+
+2020-06-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95373
+	* primary.c (is_inquiry_ref): Check validity of inquiry
+	references against selected Fortran standard.
+
+2020-06-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95106
+	* trans-common.c (gfc_sym_mangled_common_id): Enlarge temporaries
+	for name-mangling.
+
+2020-06-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95530
+	PR fortran/95537
+	* decl.c (gfc_match_decl_type_spec): Enlarge buffer, and enhance
+	string copy to detect buffer overflow.
+	* gfortran.h (gfc_common_head): Enlarge buffer.
+	* trans-common.c (finish_equivalences): Enhance string copy to
+	detect buffer overflow.
+
+2020-06-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95090
+	* class.c (get_unique_type_string): Use buffer overrun check.
+
+2020-06-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95090
+	* class.c (get_unique_type_string): Enlarge temporary for
+	name-mangling.  Use strncpy to prevent buffer overrun.
+	(get_unique_hashed_string): Enlarge temporary.
+	(gfc_hash_value): Enlarge temporary for name-mangling.
+
+2020-06-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95090
+	* iresolve.c (gfc_get_string): Enlarge temporary for
+	name-mangling.
+
+2020-06-05  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95500
+	* trans-expr.c (gfc_conv_expr_reference): Do not dereference NULL
+	pointer.
+
+2020-06-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94361
+	* class.c (finalize_component): Use expr->finalized instead of
+	comp->finalized.
+	* gfortran.h (gfc_component): Remove finalized member.
+	(gfc_expr): Add it here instead.
+
+2020-05-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/94397
+	* match.c (gfc_match_type_spec): New variable ok initialised
+	to true. Set ok with the return value of gfc_reduce_init_expr
+	called only if the expression is not EXPR_CONSTANT and is not
+	EXPR_VARIABLE. Add !ok to the check for type not being integer
+	or the rank being greater than zero.
+
+2020-05-28  Tobias Burnus  <tobias@codesourcery.com>
+	    Mark Eggleston  <markeggleston@gnu.gcc.org>
+
+	PR fortran/50392
+	* trans-decl.c (gfc_get_symbol_decl): Remove unnecessary block
+	delimiters.  Add auxiliary variables if a label is assigned to
+	a return variable. (gfc_gat_fake_result): If the symbol has an
+	assign attribute set declaration from the symbol's backend
+	declaration.
+
+2020-05-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/95191
+	* libgfortran.h (libgfortran_error_codes): Add
+	LIBERROR_BAD_WAIT_ID.
+
+2020-05-20  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	Backported from master
+	2020-05-20  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/39695
+	* resolve.c (resolve_fl_procedure): Set name depending on
+	whether the result attribute is set.  For PROCEDURE/RESULT
+	conflict use the name in sym->ns->proc_name->name.
+	* symbol.c (gfc_add_type): Add check for function and result
+	attributes use sym->ns->proc_name->name if both are set.
+	Where the symbol cannot have a type use the name in
+	sym->ns->proc_name->name.
+
+2020-05-13  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	Backported from master
+	2020-05-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93497
+	* decl.c (char_len_param_value): Check whether character
+	length expression is of type EXPR_OP and if so simplify it.
+	* resolve.c (resolve_charlen): Reject length if it has a
+	rank.
+
+2020-05-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline
+	2020-05-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94672
+	* trans.h (gfc_conv_expr_present): Add use_saved_decl=false argument.
+	* trans-expr.c (gfc_conv_expr_present): Likewise; use DECL directly
+	and only if use_saved_decl is true, use the actual PARAM_DECL arg (saved
+	descriptor).
+	* trans-array.c (gfc_trans_dummy_array_bias): Set local 'arg.0'
+	variable to NULL if 'arg' is not present.
+	* trans-openmp.c (gfc_omp_check_optional_argument): Simplify by checking
+	'arg.0' instead of the true PARM_DECL.
+	(gfc_omp_finish_clause): Remove setting 'arg.0' to NULL.
+
+2020-05-11  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	Backported from mainline
+	2020-05-11  Janus Weil  <janus@gcc.gnu.org>
+		    Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/59107
+	* gfortran.h: Rename field resolved as resolve_symbol_called
+	and assign two 2 bits instead of 1.
+	* interface.c (check_dtio_interface1): Use new field name.
+	(gfc_find_typebound_dtio_proc): Use new field name.
+	* resolve.c (gfc_resolve_intrinsic): Replace check of the formal
+	field with resolve_symbol_called is at least 2, if it is not
+	set the field to 2.  (resolve_typebound_procedure): Use new field
+	name.  (resolve_symbol): Use new field name and check whether it
+	is at least 1, if it is not set the field to 1.
+
+2020-05-07  Release Manager
+
+	* GCC 10.1.0 released.
+
 2020-04-29  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
 
 	PR fortran/94769

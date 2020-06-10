@@ -1,3 +1,373 @@
+2020-06-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95345
+	* g++.dg/coroutines/pr95345.C: New test.
+
+2020-06-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/95113
+	* gcc.dg/ipa/pr95113.c: New test.
+
+2020-06-08  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/92993
+	* gfortran.dg/pr92993.f90: New test.
+
+2020-06-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95050
+	* g++.dg/coroutines/pr95050.C: New test.
+
+2020-06-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94817
+	PR c++/94829
+	PR c++/95087
+	* g++.dg/coroutines/coro-missing-final-suspend.C: New test.
+	* g++.dg/coroutines/coro-missing-initial-suspend.C: New test.
+	* g++.dg/coroutines/coro-missing-promise-yield.C: Check for
+	continuation of compilation.
+	* g++.dg/coroutines/coro-missing-promise.C: Likewise.
+	* g++.dg/coroutines/coro-missing-ret-value.C: Likewise
+	* g++.dg/coroutines/coro-missing-ret-void.C: Likewise
+	* g++.dg/coroutines/coro-missing-ueh-3.C: Likewise
+	* g++.dg/coroutines/pr94817.C: New test.
+	* g++.dg/coroutines/pr94829.C: New test.
+	* g++.dg/coroutines/co-return-syntax-08-bad-return.C:
+	Adjust the testcase to do the compile (rather than an
+	-fsyntax-only parse).
+	* g++.dg/coroutines/coro1-ret-int-yield-int.h
+	(MISSING_INITIAL_SUSPEND, MISSING_FINAL_SUSPEND): New.
+
+2020-06-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95373
+	* gfortran.dg/pr95373_1.f90: Adjust error messages.
+	* gfortran.dg/pr95373_2.f90: Adjust error message.
+
+2020-06-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95373
+	* gfortran.dg/pr95373_1.f90: New test.
+	* gfortran.dg/pr95373_2.f90: New test.
+
+2020-06-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95106
+	* gfortran.dg/equiv_11.f90: New test.
+
+2020-06-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95090
+	* gfortran.dg/pr95090.f90: New test.
+
+2020-06-05  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95500
+	* gfortran.dg/pr95500.f90: New test.
+
+2020-06-05  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* c-c++-common/goacc/struct-enter-exit-data-1.c: New file.
+
+2020-06-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93310
+	* g++.dg/cpp2a/constexpr-virtual16.C: New test.
+	* g++.dg/cpp2a/constexpr-virtual17.C: New test.
+	* g++.dg/cpp2a/constexpr-new12.C: Adjust diagnostic.
+
+2020-06-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95158
+	* g++.dg/template/virtual5.C: New test.
+
+2020-06-04  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp2a/concepts-partial-spec8.C: New test.
+
+2020-06-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/92103
+	* g++.dg/cpp2a/concepts-partial-spec7.C: New test.
+
+2020-06-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/92633
+	PR c++/92838
+	* g++.dg/cpp2a/concepts-lambda11.C: New test.
+	* g++.dg/cpp2a/concepts-lambda12.C: New test.
+
+2020-06-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95020
+	* g++.dg/cpp2a/concepts-lambda7.C: New test.
+
+2020-06-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94361
+	* gfortran.dg/finalize_28.f90: Adjusted free counts.
+	* gfortran.dg/finalize_33.f90: Likewise.
+	* gfortran.dg/finalize_34.f90: Likewise.
+	* gfortran.dg/finalize_35.f90: New test.
+
+2020-05-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95386
+	* g++.dg/concepts/pr95386.C: New test.
+
+2020-05-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/92652
+	PR c++/93698
+	PR c++/94128
+	* g++.dg/cpp2a/concepts-lambda8.C: New test.
+	* g++.dg/cpp2a/concepts-lambda9.C: New test.
+	* g++.dg/cpp2a/concepts-lambda10.C: New test.
+
+2020-05-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95241
+	* g++.dg/cpp0x/constexpr-array25.C: New test.
+
+2020-05-30  Patrick Palka  <ppalka@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/95181
+	* g++.dg/concepts/pr95181.C: New test.
+	* g++.dg/concepts/pr95181-2.C: New test.
+
+2020-05-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95371
+	* g++.dg/cpp2a/concepts-ttp1.C: New test.
+
+2020-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/95390
+	* gfortran.dg/findloc_8.f90: New test.
+
+2020-05-29  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/ext/tmplattr10.C: Only run in c++11.
+
+2020-05-29  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/94591
+	* gcc.c-torture/execute/pr94591.c: New test.
+
+2020-05-29  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.target/gcn/gcn.exp: New file.
+	* gcc.target/gcn/vcc-clobber.c: New file.
+
+2020-05-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/95361
+	* gcc.target/aarch64/sve/pr95361.c: New test.
+
+2020-05-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/94397
+	* gfortran.dg/pr94397.F90: New test.
+
+2020-05-28  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95355
+	* gcc.target/i386/pr95355.c: New test.
+
+2020-05-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/50392
+	* gfortran.dg/pr50392.f: New test.
+
+2020-05-27  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl   <kargl@gcc.gnu.org>
+
+	PR libfortran/95104
+	* gfortran.dg/pr95104.f90: New test.
+
+2020-05-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95319
+	* g++.dg/cpp0x/initlist-array12.C: New test.
+
+2020-05-27  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/spaceship-synth2.C: Add
+	-Wzero-as-null-pointer-constant.
+
+2020-05-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95222
+	* g++.dg/ext/tmplattr10.C: New test.
+
+2020-05-25  Jason Merrill  <jason@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_c++20_only)
+	(check_effective_target_c++20): New.
+
+2020-05-24  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95255
+	* gcc.target/i386/pr95255.c: New test.
+
+2020-05-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from mainline
+	2020-05-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/co-return-syntax-10-movable.C: New test.
+
+2020-05-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95169
+	* gcc.target/i386/pr95169.c: New test.
+
+2020-05-21  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/aarch64/target_attr_20.c: New test.
+	* gcc.target/aarch64/target_attr_21.c: New test.
+
+2020-05-20  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	Backported from master
+	2020-05-20  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/39695
+	* gfortran.dg/pr39695_1.f90: New test.
+	* gfortran.dg/pr39695_2.f90: New test.
+	* gfortran.dg/pr39695_3.f90: New test.
+	* gfortran.dg/pr39695_4.f90: New test.
+
+2020-05-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2020-05-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94635
+	* gfortran.dg/gomp/target-exit-data.f90: New.
+
+2020-05-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/94940
+	* gcc.dg/Warray-bounds-61.c: New test.
+
+2020-05-18  Doug Rupp  <rupp@adacore.com>
+
+	* gcc.target/powerpc/pr71763.c: Require powerpc_vsx_ok.
+
+2020-05-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backport from mainline
+	2020-05-06  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/94970
+	* gdc.dg/pr94970.d: New test.
+
+2020-05-13  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	Backport from master
+	2020-05-13  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/93497
+	* gfortran.dg/pr88025.f90: Change in wording of error.
+	* gfortran.dg/pr93497.f90: New test.
+	* gfortran.dg/pr93714_1.f90: Change in wording of errors.
+	* gfortran.dg/pr93714_2.f90: Change in wording of errors.
+
+2020-05-12  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2020-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/94947
+	* gcc.dg/torture/pr94947-1.c: New testcase.
+	* gcc.dg/torture/pr94947-2.c: Likewise.
+
+2020-05-12  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2020-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/92177
+	* gcc.dg/vect/bb-slp-22.c: Adjust.
+
+2020-05-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline
+	2020-05-11  Jakub Jelinek  <jakub@redhat.com>
+		    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94672
+	* gfortran.dg/gomp/pr94672.f90: New.
+	* gfortran.dg/missing_optional_dummy_6a.f90: Update scan-tree.
+
+2020-05-11  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	Backported from mainline
+	2020-05-11  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/59107
+	* gfortran.dg/pr59107.f90: New test.
+
+2020-05-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from mainline
+	2020-05-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95003
+	* g++.dg/coroutines/torture/pr95003.C: New test.
+
+2020-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94946
+	* g++.dg/ext/attr-parm-1.C: Enable the test also for lp64 x86, use
+	sysv_abi and ms_abi attributes in that case instead of fastcall and
+	no attribute.
+
+	PR c/94968
+	* gcc.dg/pr94968.c: New test.
+
+	Backported from mainline
+	2020-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94951
+	* g++.dg/warn/Wstrict-aliasing-bogus-tmpl.C: New test.
+
+	PR c++/94907
+	* g++.dg/cpp2a/spaceship-synth8.C: New test.
+
+	PR rtl-optimization/94873
+	* gcc.dg/pr94873.c: New test.
+
+	2020-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94942
+	* gcc.target/i386/pr94942.c: New test.
+
+	2020-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94842
+	* gcc.dg/pr94842.c: New test.
+
+2020-05-07  Release Manager
+
+	* GCC 10.1.0 released.
+
+2020-05-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/94941
+	* gcc.target/aarch64/sve/acle/general/unoptimized_1.c: New test.
+
+2020-04-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/94856
+	* g++.dg/ipa/pr94856.C: New test.
+
 2020-04-30  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/94886
@@ -545,7 +915,7 @@
 	* g++.dg/coroutines/torture/local-var-4.C: Rename to...
 	* g++.dg/coroutines/torture/local-var-04-hiding-nested-scopes.C: this.
 	* g++.dg/coroutines/torture/local-var-5-awaitable.C: Rename to...
-	* g++.dg/coroutines/torture/local-var-05-awaitable.C: ...this. 
+	* g++.dg/coroutines/torture/local-var-05-awaitable.C: ...this.
 
 2020-04-22 Iain Sandoe <iain@sandoe.co.uk>
 

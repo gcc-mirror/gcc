@@ -1,3 +1,42 @@
+2020-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/95390
+	* Makefile.am (i_findloc0_c): Add findloc0_i10.c.
+	(i_findloc1_c): Add findloc1_i10.c.
+	* gfortran.map (GFORTRAN_10.2): New symbol version, export
+	_gfortran_{,m,s}findloc{0,1}_c10 symbols.
+	* Makefile.in: Regenerated.
+	* generated/findloc0_c10.c: Generated.
+	* generated/findloc1_c10.c: Generated.
+
+2020-05-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR libfortran/95104
+	* io/unit.c (unlock_unit): Guard by check for NULL pointer.
+
+2020-05-27  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl   <kargl@gcc.gnu.org>
+
+	PR libfortran/95104
+	* io/transfer.c (st_wait_async): Do not dereference NULL pointer.
+
+2020-05-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/95191
+	* io/async.c (async_wait_id): Generate error if ID is higher
+	than the highest current ID.
+	* runtime/error.c (translate_error): Handle LIBERROR_BAD_WAIT_ID.
+
+2020-05-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/95119
+	* io/close.c (close_status): Add CLOSE_INVALID.
+	(st_close): Return early on invalid STATUS parameter.
+
+2020-05-07  Release Manager
+
+	* GCC 10.1.0 released.
+
 2020-04-22  Fritz Reese  <foreese@gcc.gnu.org>
 
 	* intrinsics/trigd.c, intrinsics/trigd_lib.inc, intrinsics/trigd.inc:

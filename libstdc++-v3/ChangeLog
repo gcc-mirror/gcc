@@ -1,3 +1,167 @@
+2020-05-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/95322
+	* include/bits/stl_iterator.h (__detail::_Common_iter_proxy):
+	Remove and instead define it ...
+	(common_iterator::_Proxy): ... here.
+	(common_iterator::operator->): Use it.
+	* testsuite/24_iterators/common_iterator/2.cc: New test.
+	* testsuite/std/ranges/adaptors/95322.cc: New test.
+
+2020-05-26  Alexandre Oliva  <oliva@adacore.com>
+
+	PR libstdc++/77691
+	* include/experimental/memory_resource
+	(__resource_adaptor_imp::do_allocate): Handle max_align_t on
+	x86-vxworks as on x86-solaris.
+	(__resource_adaptor_imp::do_deallocate): Likewise.
+	* testsuite/experimental/memory_resource/new_delete_resource.cc:
+	Drop xfail.
+	(BAD_MAX_ALIGN_T): Define on x86-vxworks as on x86-solaris.
+	(test03): Drop max-align test for char-aligned alloc.
+
+2020-05-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2020-05-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (__detail::_S_range_begin)
+	(__detail::_S_range_end): Remove unintentional static specifiers.
+	* include/experimental/bits/fs_path.h (__detail::_S_range_begin)
+	(__detail::_S_range_end): Likewise.
+
+2020-05-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2020-05-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95289
+	* include/debug/helper_functions.h (__get_distance): Only declare
+	as a constexpr function for C++14 and up.
+	* testsuite/25_algorithms/copy/debug/95289.cc: New test.
+
+2020-05-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2020-05-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/executor (use_future_t::use_future_t()): Fix
+	incorrect noexcept-specifier.
+	* include/experimental/internet (basic_resolver_results): Adjust
+	whitespace.
+	* include/experimental/socket (__basic_socket_impl::release): Add
+	member function.
+	(basic_socket(io_context&, const endpoint_type&)): Fix argument to
+	target constructor.
+	(basic_socket::release(), basic_socket::release(error_code&)): Add
+	missing member functions.
+	(basic_socket::is_open()): Add nodiscard attribute.
+	(basic_socket::close(error_code&)): Pass argument to base function.
+	(basic_socket_acceptor::release())
+	(basic_socket_acceptor::release(error_code&)): Add missing member
+	functions.
+	(basic_socket_acceptor::is_open()): Add nodiscard attribute.
+	(basic_socket_streambuf::error()): Add noexcept.
+	(basic_socket_iostream::error()): Likewise.
+	* testsuite/experimental/net/socket/basic_socket.cc: New test.
+
+2020-05-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2020-05-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93983
+	* include/bits/iterator_concepts.h (__detail::__cpp17_iterator):
+	Reorder constraints to avoid recursion when constructors use
+	iterator_traits (LWG 3420).
+	* testsuite/24_iterators/customization_points/lwg3420.cc: New test.
+
+2020-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2020-05-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94906
+	* src/c++17/memory_resource.cc
+	(monotonic_buffer_resource::_Chunk::release): Use size_t for shift
+	operands.
+
+	Backport from mainline
+	2020-05-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94933
+	* include/bits/stl_algobase.h (__fill_a1): Make overload for byte types
+	usable in constant expressions.
+	* testsuite/25_algorithms/fill_n/constexpr.cc: Test with bytes and
+	non-scalars.
+
+2020-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2020-05-01  Jonathan Wakely  <jwakely@redhat.com>
+		    Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/92894
+	* include/bits/iterator_concepts.h (ranges::__cust_imove::_IMove):
+	Add trait to determine return type and an alias for it.
+	(ranges::__cust_imove::_IMove::operator()): Use __result instead of
+	deduced return type.
+	* testsuite/24_iterators/customization_points/92894.cc: New test.
+	* testsuite/24_iterators/indirect_callable/92894.cc: New test.
+
+2020-05-07  Release Manager
+
+	* GCC 10.1.0 released.
+
+2020-05-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/abi/post/sparc64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/sparc64-linux-gnu/32/baseline_symbols.txt: Likewise.
+
+2020-05-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Updated.
+
+2020-05-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/abi/post/i386-solaris/baseline_symbols.txt: Regenerate.
+	* config/abi/post/i386-solaris/amd64/baseline_symbols.txt:
+	Likewise.
+	* config/abi/post/sparc-solaris/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris/sparcv9/baseline_symbols.txt:
+	Likewise.
+
+2020-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/abi.xml (abi.versioning.history): Document library
+	versions for GCC 9.[123] and 10.1 releases.
+	* doc/html/*: Regenerate.
+
+2020-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Update.
+	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Update.
+
+2020-05-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/faq.xml: Use working link for SGI STL FAQ.
+	* doc/html/*: Regenerate.
+
+2020-05-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2020-05-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94901
+	* include/std/type_traits (__is_complete_or_unbounded): Replace
+	BADNAME _T with _Tp.
+	* testsuite/17_intro/badnames.cc: New test.
+
 2020-04-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/89510

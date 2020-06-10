@@ -6734,6 +6734,8 @@ speculation_safe_value_resolve_params (location_t loc, tree orig_function,
       tree val2 = (*params)[1];
       if (TREE_CODE (TREE_TYPE (val2)) == ARRAY_TYPE)
 	val2 = default_conversion (val2);
+      if (error_operand_p (val2))
+	return false;
       if (!(TREE_TYPE (val) == TREE_TYPE (val2)
 	    || useless_type_conversion_p (TREE_TYPE (val), TREE_TYPE (val2))))
 	{
@@ -7418,7 +7420,7 @@ resolve_overloaded_builtin (location_t loc, tree function,
       {
 	tree new_function, first_param, result;
 	enum built_in_function fncode
-	  = speculation_safe_value_resolve_call (function, params);;
+	  = speculation_safe_value_resolve_call (function, params);
 
 	if (fncode == BUILT_IN_NONE)
 	  return error_mark_node;

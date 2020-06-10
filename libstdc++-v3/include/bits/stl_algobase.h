@@ -875,11 +875,20 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 
   // Specialization: for char types we can use memset.
   template<typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline typename
     __gnu_cxx::__enable_if<__is_byte<_Tp>::__value, void>::__type
     __fill_a1(_Tp* __first, _Tp* __last, const _Tp& __c)
     {
       const _Tp __tmp = __c;
+#if __cpp_lib_is_constant_evaluated
+      if (std::is_constant_evaluated())
+	{
+	  for (; __first != __last; ++__first)
+	    *__first = __tmp;
+	  return;
+	}
+#endif
       if (const size_t __len = __last - __first)
 	__builtin_memset(__first, static_cast<unsigned char>(__tmp), __len);
     }

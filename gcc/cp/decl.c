@@ -6024,8 +6024,10 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
 
   /* The initializer for an array is always a CONSTRUCTOR.  If this is the
      outermost CONSTRUCTOR and the element type is non-aggregate, we don't need
-     to build a new one.  */
+     to build a new one.  But don't reuse if not complaining; if this is
+     tentative, we might also reshape to another type (95319).  */
   bool reuse = (first_initializer_p
+		&& (complain & tf_error)
 		&& !CP_AGGREGATE_TYPE_P (elt_type)
 		&& !TREE_SIDE_EFFECTS (first_initializer_p));
   if (reuse)
@@ -7833,7 +7835,10 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	    maybe_commonize_var (decl);
 	}
 
-      if (var_definition_p && TREE_STATIC (decl))
+      if (var_definition_p
+	  /* With -fmerge-all-constants, gimplify_init_constructor
+	     might add TREE_STATIC to the variable.  */
+	  && (TREE_STATIC (decl) || flag_merge_constants >= 2))
 	{
 	  /* If a TREE_READONLY variable needs initialization
 	     at runtime, it is no longer readonly and we need to
@@ -11937,9 +11942,12 @@ grokdeclarator (const cp_declarator *declarator,
 	    attr_flags |= (int) ATTR_FLAG_FUNCTION_NEXT;
 	  if (declarator->kind == cdk_array)
 	    attr_flags |= (int) ATTR_FLAG_ARRAY_NEXT;
-	  /* Assume that any attributes that get applied late to templates will
-	     DTRT when applied to the declaration as a whole.  */
-	  tree late_attrs = splice_template_attributes (&attrs, type);
+	  tree late_attrs = NULL_TREE;
+	  if (decl_context != PARM && decl_context != TYPENAME)
+	    /* Assume that any attributes that get applied late to
+	       templates will DTRT when applied to the declaration
+	       as a whole.  */
+	    late_attrs = splice_template_attributes (&attrs, type);
 	  returned_attrs = decl_attributes (&type,
 					    chainon (returned_attrs, attrs),
 					    attr_flags);
@@ -16919,6 +16927,7 @@ finish_function (bool inline_p)
   bool coro_p = flag_coroutines
 		&& !processing_template_decl
 		&& DECL_COROUTINE_P (fndecl);
+  bool coro_emit_helpers = false;
 
   /* When we get some parse errors, we can end up without a
      current_function_decl, so cope.  */
@@ -16947,18 +16956,16 @@ finish_function (bool inline_p)
 
   if (coro_p)
     {
-      if (!morph_fn_to_coro (fndecl, &resumer, &destroyer))
-	{
-	  DECL_SAVED_TREE (fndecl) = pop_stmt_list (DECL_SAVED_TREE (fndecl));
-	  poplevel (1, 0, 1);
-	  DECL_SAVED_TREE (fndecl) = error_mark_node;
-	  return fndecl;
-	}
+      /* Only try to emit the coroutine outlined helper functions if the
+	 transforms succeeded.  Otherwise, treat errors in the same way as
+	 a regular function.  */
+      coro_emit_helpers = morph_fn_to_coro (fndecl, &resumer, &destroyer);
 
       /* We should handle coroutine IFNs in middle end lowering.  */
       cfun->coroutine_component = true;
 
-      if (use_eh_spec_block (fndecl))
+      /* Do not try to process the ramp's EH unless outlining succeeded.  */
+      if (coro_emit_helpers && use_eh_spec_block (fndecl))
 	finish_eh_spec_block (TYPE_RAISES_EXCEPTIONS
 			      (TREE_TYPE (fndecl)),
 			      current_eh_spec_block);
@@ -17212,8 +17219,9 @@ finish_function (bool inline_p)
       && !DECL_OMP_DECLARE_REDUCTION_P (fndecl))
     cp_genericize (fndecl);
 
-  /* Emit the resumer and destroyer functions now.  */
-  if (coro_p)
+  /* Emit the resumer and destroyer functions now, providing that we have
+     not encountered some fatal error.  */
+  if (coro_emit_helpers)
     {
       emit_coro_helper (resumer);
       emit_coro_helper (destroyer);

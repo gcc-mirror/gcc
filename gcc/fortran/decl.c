@@ -1077,6 +1077,11 @@ char_len_param_value (gfc_expr **expr, bool *deferred)
   if (!gfc_expr_check_typed (*expr, gfc_current_ns, false))
     return MATCH_ERROR;
 
+  /* If gfortran gets an EXPR_OP, try to simplifiy it.  This catches things
+     like CHARACTER(([1])).   */
+  if ((*expr)->expr_type == EXPR_OP)
+    gfc_simplify_expr (*expr, 1);
+
   if ((*expr)->expr_type == EXPR_FUNCTION)
     {
       if ((*expr)->ts.type == BT_INTEGER
@@ -4074,7 +4079,8 @@ match_byte_typespec (gfc_typespec *ts)
 match
 gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 {
-  char name[GFC_MAX_SYMBOL_LEN + 1];
+  /* Provide sufficient space to hold "pdtsymbol".  */
+  char name[GFC_MAX_SYMBOL_LEN + 1 + 3];
   gfc_symbol *sym, *dt_sym;
   match m;
   char c;
@@ -4264,7 +4270,11 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 	    return m;
 	  gcc_assert (!sym->attr.pdt_template && sym->attr.pdt_type);
 	  ts->u.derived = sym;
-	  strcpy (name, gfc_dt_lower_string (sym->name));
+	  const char* lower = gfc_dt_lower_string (sym->name);
+	  size_t len = strnlen (lower, sizeof (name));
+	  gcc_assert (len < sizeof (name));
+	  memcpy (name, lower, len);
+	  name[len] = '\0';
 	}
 
       if (sym && sym->attr.flavor == FL_STRUCT)

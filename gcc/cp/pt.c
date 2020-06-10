@@ -4575,7 +4575,16 @@ process_template_parm (tree list, location_t parm_loc, tree parm,
 	  /* This is for distinguishing between real templates and template
 	     template parameters */
 	  TREE_TYPE (parm) = t;
-	  TREE_TYPE (DECL_TEMPLATE_RESULT (parm)) = t;
+
+	  /* any_template_parm_r expects to be able to get the targs of a
+	     DECL_TEMPLATE_RESULT.  */
+	  tree result = DECL_TEMPLATE_RESULT (parm);
+	  TREE_TYPE (result) = t;
+	  tree args = template_parms_to_args (DECL_TEMPLATE_PARMS (parm));
+	  tree tinfo = build_template_info (parm, args);
+	  retrofit_lang_decl (result);
+	  DECL_TEMPLATE_INFO (result) = tinfo;
+
 	  decl = parm;
 	}
       else
@@ -5044,7 +5053,7 @@ process_partial_specialization (tree decl)
   if (comp_template_args (inner_args, INNERMOST_TEMPLATE_ARGS (main_args))
       && (!flag_concepts
 	  || !strictly_subsumes (current_template_constraints (),
-				 inner_args, maintmpl)))
+				 main_args, maintmpl)))
     {
       if (!flag_concepts)
         error ("partial specialization %q+D does not specialize "
@@ -13852,7 +13861,10 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
      don't substitute through the constraints; that's only done when
      they are checked.  */
   if (tree ci = get_constraints (t))
-    set_constraints (r, ci);
+    /* Unless we're regenerating a lambda, in which case we'll set the
+       lambda's constraints in tsubst_lambda_expr.  */
+    if (!lambda_fntype)
+      set_constraints (r, ci);
 
   if (DECL_FRIEND_P (t) && DECL_FRIEND_CONTEXT (t))
     SET_DECL_FRIEND_CONTEXT (r,
@@ -14609,6 +14621,11 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    if (DECL_HAS_VALUE_EXPR_P (t))
 	      {
 		tree ve = DECL_VALUE_EXPR (t);
+		/* If the DECL_VALUE_EXPR is converted to the declared type,
+		   preserve the identity so that gimplify_type_sizes works.  */
+		bool nop = (TREE_CODE (ve) == NOP_EXPR);
+		if (nop)
+		  ve = TREE_OPERAND (ve, 0);
 		ve = tsubst_expr (ve, args, complain, in_decl,
 				  /*constant_expression_p=*/false);
 		if (REFERENCE_REF_P (ve))
@@ -14616,6 +14633,10 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		    gcc_assert (TYPE_REF_P (type));
 		    ve = TREE_OPERAND (ve, 0);
 		  }
+		if (nop)
+		  ve = build_nop (type, ve);
+		else
+		  gcc_checking_assert (TREE_TYPE (ve) == type);
 		SET_DECL_VALUE_EXPR (r, ve);
 	      }
 	    if (CP_DECL_THREAD_LOCAL_P (r)
@@ -19022,6 +19043,17 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  finish_member_declaration (fn);
 	}
 
+      if (tree ci = get_constraints (oldfn))
+	{
+	  /* Substitute into the lambda's constraints.  */
+	  if (oldtmpl)
+	    ++processing_template_decl;
+	  ci = tsubst_constraint_info (ci, args, complain, in_decl);
+	  if (oldtmpl)
+	    --processing_template_decl;
+	  set_constraints (fn, ci);
+	}
+
       /* Let finish_function set this.  */
       DECL_DECLARED_CONSTEXPR_P (fn) = false;
 
@@ -19409,14 +19441,16 @@ tsubst_copy_and_build (tree t,
       {
 	/* If T was type-dependent, suppress warnings that depend on the range
 	   of the types involved.  */
-	bool was_dep = uses_template_parms (t);
+	bool was_dep = type_dependent_expression_p_push (t);
+
+	tree op0 = RECUR (TREE_OPERAND (t, 0));
+	tree op1 = RECUR (TREE_OPERAND (t, 1));
+
 	warning_sentinel s1(warn_type_limits, was_dep);
 	warning_sentinel s2(warn_div_by_zero, was_dep);
 	warning_sentinel s3(warn_logical_op, was_dep);
 	warning_sentinel s4(warn_tautological_compare, was_dep);
 
-	tree op0 = RECUR (TREE_OPERAND (t, 0));
-	tree op1 = RECUR (TREE_OPERAND (t, 1));
 	tree r = build_x_binary_op
 	  (input_location, TREE_CODE (t),
 	   op0,
@@ -24550,21 +24584,22 @@ most_specialized_partial_spec (tree target, tsubst_flags_t complain)
 
   for (t = DECL_TEMPLATE_SPECIALIZATIONS (main_tmpl); t; t = TREE_CHAIN (t))
     {
-      tree spec_args;
-      tree spec_tmpl = TREE_VALUE (t);
+      const tree ospec_tmpl = TREE_VALUE (t);
 
+      tree spec_tmpl;
       if (outer_args)
 	{
 	  /* Substitute in the template args from the enclosing class.  */
 	  ++processing_template_decl;
-	  spec_tmpl = tsubst (spec_tmpl, outer_args, tf_none, NULL_TREE);
+	  spec_tmpl = tsubst (ospec_tmpl, outer_args, tf_none, NULL_TREE);
 	  --processing_template_decl;
+	  if (spec_tmpl == error_mark_node)
+	    return error_mark_node;
 	}
+      else
+	spec_tmpl = ospec_tmpl;
 
-      if (spec_tmpl == error_mark_node)
-	return error_mark_node;
-
-      spec_args = get_partial_spec_bindings (tmpl, spec_tmpl, args);
+      tree spec_args = get_partial_spec_bindings (tmpl, spec_tmpl, args);
       if (spec_args)
 	{
 	  if (outer_args)
@@ -24573,9 +24608,9 @@ most_specialized_partial_spec (tree target, tsubst_flags_t complain)
           /* Keep the candidate only if the constraints are satisfied,
              or if we're not compiling with concepts.  */
           if (!flag_concepts
-              || constraints_satisfied_p (spec_tmpl, spec_args))
+	      || constraints_satisfied_p (ospec_tmpl, spec_args))
             {
-              list = tree_cons (spec_args, TREE_VALUE (t), list);
+	      list = tree_cons (spec_args, ospec_tmpl, list);
               TREE_TYPE (list) = TREE_TYPE (t);
             }
 	}

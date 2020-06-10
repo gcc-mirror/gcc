@@ -242,8 +242,9 @@ static tree
 gfc_sym_mangled_common_id (gfc_common_head *com)
 {
   int has_underscore;
-  char mangled_name[GFC_MAX_MANGLED_SYMBOL_LEN + 1];
-  char name[GFC_MAX_SYMBOL_LEN + 1];
+  /* Provide sufficient space to hold "symbol.eq.1234567890__".  */
+  char mangled_name[GFC_MAX_MANGLED_SYMBOL_LEN + 1 + 16];
+  char name[GFC_MAX_SYMBOL_LEN + 1 + 16];
 
   /* Get the name out of the common block pointer.  */
   strcpy (name, com->name);
@@ -1313,7 +1314,11 @@ finish_equivalences (gfc_namespace *ns)
 	      c->where = ns->proc_name->declared_at;
 	    else if (ns->is_block_data)
 	      c->where = ns->sym_root->n.sym->declared_at;
-	    strcpy (c->name, z->module);
+
+	    size_t len = strlen (z->module);
+	    gcc_assert (len < sizeof (c->name));
+	    memcpy (c->name, z->module, len);
+	    c->name[len] = '\0';
 	  }
 	else
 	  c = NULL;

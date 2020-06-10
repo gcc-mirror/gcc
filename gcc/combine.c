@@ -1485,6 +1485,7 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
 	      if ((set = single_set (temp)) != 0
 		  && (note = find_reg_equal_equiv_note (temp)) != 0
 		  && (note = XEXP (note, 0), GET_CODE (note)) != EXPR_LIST
+		  && ! side_effects_p (SET_SRC (set))
 		  /* Avoid using a register that may already been marked
 		     dead by an earlier instruction.  */
 		  && ! unmentioned_reg_p (note, SET_SRC (set))

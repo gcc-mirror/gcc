@@ -1,3 +1,211 @@
+2020-06-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95345
+	* coroutines.cc (finish_co_await_expr): Revise to allow for
+	parameter packs.
+	(finish_co_yield_expr): Likewise.
+
+2020-06-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95050
+	* coroutines.cc (build_co_await): Wrap the co_await expression
+	in a TARGET_EXPR, where needed.
+	(finish_co_yield_expr): Likewise.
+
+2020-06-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94817
+	PR c++/94829
+	PR c++/95087
+	* coroutines.cc (morph_fn_to_coro): Set unformed outline
+	functions to error_mark_node.  For early error returns suppress
+	warnings about missing ramp return values.  Fix reinstatement
+	of the function body on pre-existing initial error.  If we see
+	an early fatal error, drop the erroneous function body.
+	* decl.c (finish_function): Use the normal error path for fails
+	in the ramp function, do not try to compile the helpers if the
+	transform fails.
+
+2020-06-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93310
+	* constexpr.c (cxx_eval_constant_expression) [OBJ_TYPE_REF]:
+	Evaluate OBJ_TYPE_REF_EXPR.
+
+2020-06-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95158
+	* class.c (lookup_vfn_in_binfo): New.
+	* call.c (build_over_call): Use it.
+	* cp-tree.h (resolves_to_fixed_type_p): Add default argument.
+	(lookup_vfn_in_binfo): Declare.
+
+2020-06-04  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.c (process_partial_specialization): Pass the full set of
+	generic template arguments to strictly_subsumes.
+
+2020-06-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/92103
+	* pt.c (most_specialized_partial_spec): Reorganize the loop over
+	DECL_TEMPLATE_SPECIALIZATIONS.  Check constraints_satisfied_p on
+	the original template declaration, not on the tsubsted one.
+
+2020-06-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/92633
+	PR c++/92838
+	* pt.c (tsubst_function_decl): Don't do set_constraints when
+	regenerating a lambda.
+	(tsubst_lambda_expr): Substitute into the lambda's constraints
+	and do set_constraints here.
+
+2020-06-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95020
+	* constraint.cc (tsubst_requires_expr): Produce a new
+	requires-expression when processing_template_decl, even if
+	template arguments are not dependent.
+
+2020-05-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95386
+	* constraint.cc (satisfaction_value): Relax to accept any
+	INTEGER_CST that satisfies integer_zerop or integer_onep.
+
+2020-05-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/92652
+	PR c++/93698
+	PR c++/94128
+	* parser.c (cp_parser_requires_clause_expression): Temporarily
+	increment processing_template_decl only if it is 0.
+	(cp_parser_constraint_expression): Likewise.
+	(cp_parser_requires_expression): Likewise.
+
+2020-05-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95241
+	* constexpr.c (get_or_insert_ctor_field): Add limited support
+	for RANGE_EXPR index lookups.
+
+2020-05-30  Patrick Palka  <ppalka@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/95181
+	* class.c (add_method): Let special member function templates
+	coexist if they are not equivalently constrained, or in a class
+	template.
+
+2020-05-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95371
+	* pt.c (process_template_parm): Set DECL_TEMPLATE_INFO
+	on the DECL_TEMPLATE_RESULT.
+
+2020-05-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95319
+	* decl.c (reshape_init_array_1): Don't reuse in overload context.
+
+2020-05-27  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_new_op_1): Suppress
+	warn_zero_as_null_pointer_constant across comparison of <=> result
+	to 0.
+
+2020-05-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95222
+	* decl.c (grokdeclarator): Don't shift attributes in TYPENAME
+	context.
+
+2020-05-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90212
+	* constexpr.c (potential_constant_expression_1): In a lambda
+	function, consider a captured variable directly.
+
+2020-05-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90479
+	* init.c (get_nsdmi): Don't push_to_top_level for a local class.
+
+2020-05-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91529
+	* decl.c (cp_finish_decl): Also clear TREE_READONLY if
+	-fmerge-all-constants.
+
+2020-05-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93822
+	* pt.c (tsubst_decl): Make sure DECL_VALUE_EXPR continues to have
+	the same type as the variable.
+
+2020-05-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from mainline
+	2020-05-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (finish_co_return_stmt): Implement rules
+	from [class.copy.elision] /3.
+
+2020-05-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from mainline
+	2020-05-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95003
+	* coroutines.cc (build_actor_fn): Ensure that bind scopes
+	are marked as having side-effects where necessary.
+	(replace_statement_captures): Likewise.
+	(morph_fn_to_coro): Likewise.
+
+2020-05-08  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2020-05-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94885
+	* typeck2.c (process_init_constructor_record): Return PICFLAG_ERRONEOUS
+	if an initializer element was erroneous.
+
+2020-05-07  Marek Polacek  <polacek@redhat.com>
+	
+	Backported from mainline
+	2020-05-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94938
+	* pt.c (tsubst_copy_and_build): Call type_dependent_expression_p_push
+	instead of uses_template_parms.  Move the warning_sentinels after the
+	RECURs.
+
+2020-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2020-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94951
+	* typeck.c (cp_strict_aliasing_warning): New function.
+	(cp_build_indirect_ref_1, build_reinterpret_cast_1): Use
+	it instead of strict_aliasing_warning.
+
+	PR c++/94907
+	* method.c (defaulted_late_check): Don't call synthesize_method
+	on constexpr sfk_comparison if it has been called on it already.
+
+2020-05-07  Release Manager
+
+	* GCC 10.1.0 released.
+
+2020-05-06  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/94946
+	* decl.c (grokdeclarator): Don't splice template attributes in
+	parm context -- they can apply to the parm.
+
 2020-04-30  Jason Merrill  <jason@redhat.com>
 	    Nathan Sidwell  <nathan@acm.org>
 

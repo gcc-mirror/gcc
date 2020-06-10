@@ -3059,11 +3059,14 @@ ix86_expand_int_movcc (rtx operands[])
 	    {
 	      gcc_assert (!DECIMAL_FLOAT_MODE_P (cmp_mode));
 
-	      /* We may be reversing unordered compare to normal compare, that
-		 is not valid in general (we may convert non-trapping condition
-		 to trapping one), however on i386 we currently emit all
-		 comparisons unordered.  */
-	      new_code = reverse_condition_maybe_unordered (code);
+	      /* We may be reversing a non-trapping
+		 comparison to a trapping comparison.  */
+		  if (HONOR_NANS (cmp_mode) && flag_trapping_math
+		      && code != EQ && code != NE
+		      && code != ORDERED && code != UNORDERED)
+		    new_code = UNKNOWN;
+		  else
+		    new_code = reverse_condition_maybe_unordered (code);
 	    }
 	  else
 	    new_code = ix86_reverse_condition (code, cmp_mode);
@@ -3215,11 +3218,15 @@ ix86_expand_int_movcc (rtx operands[])
 		{
 		  gcc_assert (!DECIMAL_FLOAT_MODE_P (cmp_mode));
 
-		  /* We may be reversing unordered compare to normal compare,
-		     that is not valid in general (we may convert non-trapping
-		     condition to trapping one), however on i386 we currently
-		     emit all comparisons unordered.  */
-		  new_code = reverse_condition_maybe_unordered (code);
+		  /* We may be reversing a non-trapping
+		     comparison to a trapping comparison.  */
+		  if (HONOR_NANS (cmp_mode) && flag_trapping_math
+		      && code != EQ && code != NE
+		      && code != ORDERED && code != UNORDERED)
+		    new_code = UNKNOWN;
+		  else
+		    new_code = reverse_condition_maybe_unordered (code);
+
 		}
 	      else
 		{

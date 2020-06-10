@@ -1,3 +1,14 @@
+2020-05-07  Release Manager
+
+	* GCC 10.1.0 released.
+
+2020-05-04  Mikael Pettersson  <mikpelinux@gmail.com>
+
+	PR bootstrap/94918
+	* mingw32.h: Prevent windows.h from including emmintrin.h on Cygwin64.
+	* s-oscons-tmplt.c (Serial_Port_Descriptor): Use System.Win32.HANDLE
+	also on Cygwin.
+
 2020-03-11  Richard Wai  <richard@annexi-strayline.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Also test Is_Public on

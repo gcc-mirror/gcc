@@ -6495,8 +6495,7 @@ check_base_type (const_tree cand, const_tree base)
 			        TYPE_ATTRIBUTES (base)))
     return false;
   /* Check alignment.  */
-  if (TYPE_ALIGN (cand) == TYPE_ALIGN (base)
-      && TYPE_USER_ALIGN (cand) == TYPE_USER_ALIGN (base))
+  if (TYPE_ALIGN (cand) == TYPE_ALIGN (base))
     return true;
   /* Atomic types increase minimal alignment.  We must to do so as well
      or we get duplicated canonical types. See PR88686.  */
@@ -6531,7 +6530,6 @@ check_aligned_type (const_tree cand, const_tree base, unsigned int align)
 	  && TYPE_CONTEXT (cand) == TYPE_CONTEXT (base)
 	  /* Check alignment.  */
 	  && TYPE_ALIGN (cand) == align
-	  && TYPE_USER_ALIGN (cand) == TYPE_USER_ALIGN (base)
 	  && attribute_list_equal (TYPE_ATTRIBUTES (cand),
 				   TYPE_ATTRIBUTES (base))
 	  && check_lang_type (cand, base));
@@ -8893,7 +8891,7 @@ get_narrower (tree op, int *unsignedp_ptr)
 	return win;
       auto_vec <tree, 16> v;
       unsigned int i;
-      for (tree op = win; TREE_CODE (op) == COMPOUND_EXPR;
+      for (op = win; TREE_CODE (op) == COMPOUND_EXPR;
 	   op = TREE_OPERAND (op, 1))
 	v.safe_push (op);
       FOR_EACH_VEC_ELT_REVERSE (v, i, op)
@@ -13655,6 +13653,10 @@ component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
   if (!interior_zero_length)
     interior_zero_length = &int_0_len;
 
+  /* The object/argument referenced by the COMPONENT_REF and its type.  */
+  tree arg = TREE_OPERAND (ref, 0);
+  tree argtype = TREE_TYPE (arg);
+  /* The referenced member.  */
   tree member = TREE_OPERAND (ref, 1);
 
   tree memsize = DECL_SIZE_UNIT (member);
@@ -13666,7 +13668,7 @@ component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
 
       bool trailing = array_at_struct_end_p (ref);
       bool zero_length = integer_zerop (memsize);
-      if (!trailing && (!interior_zero_length || !zero_length))
+      if (!trailing && !zero_length)
 	/* MEMBER is either an interior array or is an array with
 	   more than one element.  */
 	return memsize;
@@ -13685,9 +13687,14 @@ component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
 		  offset_int minidx = wi::to_offset (min);
 		  offset_int maxidx = wi::to_offset (max);
 		  if (maxidx - minidx > 0)
-		    /* MEMBER is an array with more than 1 element.  */
+		    /* MEMBER is an array with more than one element.  */
 		    return memsize;
 		}
+
+      /* For a refernce to a zero- or one-element array member of a union
+	 use the size of the union instead of the size of the member.  */
+      if (TREE_CODE (argtype) == UNION_TYPE)
+	memsize = TYPE_SIZE_UNIT (argtype);
     }
 
   /* MEMBER is either a bona fide flexible array member, or a zero-length
@@ -13702,28 +13709,27 @@ component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
       if (!*interior_zero_length)
 	return NULL_TREE;
 
-      if (TREE_CODE (TREE_OPERAND (ref, 0)) != COMPONENT_REF)
+      if (TREE_CODE (arg) != COMPONENT_REF)
 	return NULL_TREE;
 
-      base = TREE_OPERAND (ref, 0);
+      base = arg;
       while (TREE_CODE (base) == COMPONENT_REF)
 	base = TREE_OPERAND (base, 0);
       baseoff = tree_to_poly_int64 (byte_position (TREE_OPERAND (ref, 1)));
     }
 
   /* BASE is the declared object of which MEMBER is either a member
-     or that is cast to REFTYPE (e.g., a char buffer used to store
-     a REFTYPE object).  */
-  tree reftype = TREE_TYPE (TREE_OPERAND (ref, 0));
+     or that is cast to ARGTYPE (e.g., a char buffer used to store
+     an ARGTYPE object).  */
   tree basetype = TREE_TYPE (base);
 
   /* Determine the base type of the referenced object.  If it's
-     the same as REFTYPE and MEMBER has a known size, return it.  */
+     the same as ARGTYPE and MEMBER has a known size, return it.  */
   tree bt = basetype;
   if (!*interior_zero_length)
     while (TREE_CODE (bt) == ARRAY_TYPE)
       bt = TREE_TYPE (bt);
-  bool typematch = useless_type_conversion_p (reftype, bt);
+  bool typematch = useless_type_conversion_p (argtype, bt);
   if (memsize && typematch)
     return memsize;
 
@@ -13739,7 +13745,7 @@ component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
 	  if (init)
 	    {
 	      memsize = TYPE_SIZE_UNIT (TREE_TYPE (init));
-	      if (tree refsize = TYPE_SIZE_UNIT (reftype))
+	      if (tree refsize = TYPE_SIZE_UNIT (argtype))
 		{
 		  /* Use the larger of the initializer size and the tail
 		     padding in the enclosing struct.  */

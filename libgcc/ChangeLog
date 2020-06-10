@@ -1,3 +1,51 @@
+2020-05-29  Dong JianQiang  <dongjianqiang2@huawei.com>
+
+	PR gcov-profile/95332
+	* libgcov-util.c (read_gcda_file): Call gcov_magic.
+	* libgcov.h (gcov_magic): Disable GCC poison.
+
+2020-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from master
+	2020-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/95212
+	* config/i386/cpuinfo.h (processor_features): Move
+	FEATURE_AVX512VP2INTERSECT after FEATURE_AVX512BF16.
+
+2020-05-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from master
+	2020-05-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/91695
+	* config/i386/cpuinfo.c (get_available_features): Fix VPCLMULQDQ
+	check.
+
+2020-05-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from master
+	2020-05-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/95212
+	PR target/95220
+	* config/i386/cpuinfo.c (get_available_features): Fix
+	FEATURE_GFNI check.  Also check FEATURE_AVX512VP2INTERSECT.
+	* config/i386/cpuinfo.h (processor_features): Add
+	FEATURE_AVX512VP2INTERSECT.
+
+2020-05-07  Release Manager
+
+	* GCC 10.1.0 released.
+
+2020-05-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/lse-init.c (init_have_lse_atomics): Use __getauxval
+	instead of getauxval.
+	(AT_HWCAP): Define.
+	(HWCAP_ATOMICS): Define.
+	Guard detection on __gnu_linux__.
+
 2020-04-27  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/rs6000/crtresfpr.S: Use .machine ppc.

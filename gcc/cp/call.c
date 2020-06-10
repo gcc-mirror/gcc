@@ -6391,6 +6391,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 		    tree rhs = integer_zero_node;
 		    if (cand->reversed ())
 		      std::swap (lhs, rhs);
+		    warning_sentinel ws (warn_zero_as_null_pointer_constant);
 		    result = build_new_op (loc, code,
 					   LOOKUP_NORMAL|LOOKUP_REWRITTEN,
 					   lhs, rhs, NULL_TREE,
@@ -8684,18 +8685,20 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	    return error_mark_node;
 	}
 
-      /* Optimize away vtable lookup if we know that this
-	 function can't be overridden.  We need to check if
-	 the context and the type where we found fn are the same,
-	 actually FN might be defined in a different class
-	 type because of a using-declaration. In this case, we
-	 do not want to perform a non-virtual call.  Note that
-	 resolves_to_fixed_type_p checks CLASSTYPE_FINAL too.  */
+      /* See if the function member or the whole class type is declared
+	 final and the call can be devirtualized.  */
       if (DECL_FINAL_P (fn)
-	  || (resolves_to_fixed_type_p (arg, 0)
-	      && same_type_ignoring_top_level_qualifiers_p
-	      (DECL_CONTEXT (fn), BINFO_TYPE (cand->conversion_path)))) 
+	  || CLASSTYPE_FINAL (TYPE_METHOD_BASETYPE (TREE_TYPE (fn))))
 	flags |= LOOKUP_NONVIRTUAL;
+
+      /* If we know the dynamic type of the object, look up the final overrider
+	 in the BINFO.  */
+      if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0
+	  && resolves_to_fixed_type_p (arg))
+	{
+	  fn = lookup_vfn_in_binfo (DECL_VINDEX (fn), cand->conversion_path);
+	  flags |= LOOKUP_NONVIRTUAL;
+	}
 
       /* [class.mfct.nonstatic]: If a nonstatic member function of a class
 	 X is called for an object that is not of type X, or of a type

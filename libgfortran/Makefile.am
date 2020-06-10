@@ -283,6 +283,7 @@ $(srcdir)/generated/findloc0_r10.c \
 $(srcdir)/generated/findloc0_r16.c \
 $(srcdir)/generated/findloc0_c4.c \
 $(srcdir)/generated/findloc0_c8.c \
+$(srcdir)/generated/findloc0_c10.c \
 $(srcdir)/generated/findloc0_c16.c
 
 i_findloc0s_c= \
@@ -301,6 +302,7 @@ $(srcdir)/generated/findloc1_r10.c \
 $(srcdir)/generated/findloc1_r16.c \
 $(srcdir)/generated/findloc1_c4.c \
 $(srcdir)/generated/findloc1_c8.c \
+$(srcdir)/generated/findloc1_c10.c \
 $(srcdir)/generated/findloc1_c16.c
 
 i_findloc1s_c= \

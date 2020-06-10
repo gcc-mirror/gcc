@@ -697,6 +697,8 @@ ix86_target_macros (void)
       cpp_assert (parse_in, "cpu=i386");
       cpp_assert (parse_in, "machine=i386");
       builtin_define_std ("i386");
+      cpp_define (parse_in, "_ILP32");
+      cpp_define (parse_in, "__ILP32__");
     }
 
   if (!TARGET_80387)

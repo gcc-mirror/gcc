@@ -1108,7 +1108,6 @@ typedef struct gfc_component
   struct gfc_typebound_proc *tb;
   /* When allocatable/pointer and in a coarray the associated token.  */
   tree caf_token;
-  bool finalized;
 }
 gfc_component;
 
@@ -1624,7 +1623,10 @@ typedef struct gfc_symbol
   /* Set if the symbol is used in a function result specification .  */
   unsigned fn_result_spec:1;
   /* Used to avoid multiple resolutions of a single symbol.  */
-  unsigned resolved:1;
+  /* = 2 if this has already been resolved as an intrinsic,
+       in gfc_resolve_intrinsic,
+     = 1 if it has been resolved in resolve_symbol.  */
+  unsigned resolve_symbol_called:2;
   /* Set if this is a module function or subroutine with the
      abreviated declaration in a submodule.  */
   unsigned abr_modproc_decl:1;
@@ -1678,7 +1680,8 @@ typedef struct gfc_common_head
   char use_assoc, saved, threadprivate;
   unsigned char omp_declare_target : 1;
   unsigned char omp_declare_target_link : 1;
-  char name[GFC_MAX_SYMBOL_LEN + 1];
+  /* Provide sufficient space to hold "symbol.eq.1234567890".  */
+  char name[GFC_MAX_SYMBOL_LEN + 1 + 14];
   struct gfc_symbol *head;
   const char* binding_label;
   int is_bind_c;
@@ -2217,6 +2220,9 @@ typedef struct gfc_expr
 
   /* Set this if the expression came from expanding an array constructor.  */
   unsigned int from_constructor : 1;
+
+  /* Set this if the expression has already been finalized.  */
+  unsigned int finalized : 1;
 
   /* If an expression comes from a Hollerith constant or compile-time
      evaluation of a transfer statement, it may have a prescribed target-

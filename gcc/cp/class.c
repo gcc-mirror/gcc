@@ -1077,12 +1077,19 @@ add_method (tree type, tree method, bool via_using)
 	{
           if (!equivalently_constrained (fn, method))
 	    {
+	      if (processing_template_decl)
+		/* We can't check satisfaction in dependent context, wait until
+		   the class is instantiated.  */
+		continue;
+
 	      special_function_kind sfk = special_memfn_p (method);
 
-	      if (sfk == sfk_none || DECL_INHERITED_CTOR (fn))
-		/* Non-special member functions coexist if they are not
-		   equivalently constrained.  A member function is not hidden
-		   by an inherited constructor.  */
+	      if (sfk == sfk_none
+		  || DECL_INHERITED_CTOR (fn)
+		  || TREE_CODE (fn) == TEMPLATE_DECL)
+		/* Member function templates and non-special member functions
+		   coexist if they are not equivalently constrained.  A member
+		   function is not hidden by an inherited constructor.  */
 		continue;
 
 	      /* P0848: For special member functions, deleted, unsatisfied, or
@@ -2436,6 +2443,20 @@ get_vcall_index (tree fn, tree type)
 
   /* There should always be an appropriate index.  */
   gcc_unreachable ();
+}
+
+/* Given a DECL_VINDEX of a virtual function found in BINFO, return the final
+   overrider at that index in the vtable.  This should only be used when we
+   know that BINFO is correct for the dynamic type of the object.  */
+
+tree
+lookup_vfn_in_binfo (tree idx, tree binfo)
+{
+  int ix = tree_to_shwi (idx);
+  if (TARGET_VTABLE_USES_DESCRIPTORS)
+    ix /= MAX (TARGET_VTABLE_USES_DESCRIPTORS, 1);
+  tree virtuals = BINFO_VIRTUALS (binfo);
+  return TREE_VALUE (chain_index (ix, virtuals));
 }
 
 /* Update an entry in the vtable for BINFO, which is in the hierarchy

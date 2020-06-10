@@ -1,3 +1,7 @@
+2020-05-07  Release Manager
+
+	* GCC 10.1.0 released.
+
 2020-04-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/94816

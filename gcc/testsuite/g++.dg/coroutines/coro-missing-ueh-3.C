@@ -12,6 +12,12 @@ bar ()
   co_return;
 }
 
+// check we have not messed up continuation of the compilation.
+template <class... Args>
+struct void_t_imp {
+  using type = void;
+};
+
 int main (int ac, char *av[]) {
   MissingUEH x = bar ();
   return 0;

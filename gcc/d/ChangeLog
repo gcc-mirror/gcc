@@ -1,3 +1,32 @@
+2020-06-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (build_frontend_type): Handle struct fields with NULL
+	DECL_NAME.  Use byte_position to get the real field offset.
+
+2020-05-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backport from mainline
+	2020-05-06  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/94970
+	* d-codegen.cc (force_target_expr): Move create_temporary_var
+	implementation inline here.
+	(create_temporary_var): Remove.
+	(maybe_temporary_var): Remove.
+	(bind_expr): Remove.
+	* d-convert.cc (d_array_convert): Use build_local_temp to generate
+	temporaries, and generate its assignment.
+	* d-tree.h (create_temporary_var): Remove.
+	(maybe_temporary_var): Remove.
+	(d_array_convert): Remove vars argument.
+	* expr.cc (ExprVisitor::visit (CatExp *)): Use build_local_temp to
+	generate temporaries, don't wrap them in a BIND_EXPR.
+	(ExprVisitor::visit (NewExp *)): Likewise.
+
+2020-05-07  Release Manager
+
+	* GCC 10.1.0 released.
+
 2020-04-30  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* gdc.texi (Options for Linking): Clarify usage of -defaultlib= and

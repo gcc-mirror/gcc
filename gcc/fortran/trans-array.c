@@ -6791,9 +6791,11 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc,
 		      && sym->attr.dummy));
   if (optional_arg)
     {
-      tmp = gfc_conv_expr_present (sym);
-      stmtInit = build3_v (COND_EXPR, tmp, stmtInit,
-			   build_empty_stmt (input_location));
+      tree zero_init = fold_convert (TREE_TYPE (tmpdesc), null_pointer_node);
+      zero_init = fold_build2_loc (input_location, MODIFY_EXPR, void_type_node,
+				   tmpdesc, zero_init);
+      tmp = gfc_conv_expr_present (sym, true);
+      stmtInit = build3_v (COND_EXPR, tmp, stmtInit, zero_init);
     }
 
   /* Cleanup code.  */

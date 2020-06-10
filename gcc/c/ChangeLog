@@ -1,3 +1,18 @@
+2020-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2020-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94842
+	* c-decl.c (set_labels_context_r): In addition to context-less
+	LABEL_DECLs adjust also LABEL_DECLs with context equal to
+	parent function if any.
+	(store_parm_decls): Adjust comment.
+
+2020-05-07  Release Manager
+
+	* GCC 10.1.0 released.
+
 2020-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR objc/94637

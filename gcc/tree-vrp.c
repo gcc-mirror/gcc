@@ -3843,15 +3843,11 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
       else
 	arrbounds[1] = wi::lrshift (maxobjsize, wi::floor_log2 (eltsize));
 
-      if (TREE_CODE (ref) == MEM_REF)
-	{
-	  /* For MEM_REF determine a tighter bound of the non-array
-	     element type.  */
-	  tree eltype = TREE_TYPE (reftype);
-	  while (TREE_CODE (eltype) == ARRAY_TYPE)
-	    eltype = TREE_TYPE (eltype);
-	  eltsize = wi::to_offset (TYPE_SIZE_UNIT (eltype));
-	}
+      /* Determine a tighter bound of the non-array element type.  */
+      tree eltype = TREE_TYPE (reftype);
+      while (TREE_CODE (eltype) == ARRAY_TYPE)
+	eltype = TREE_TYPE (eltype);
+      eltsize = wi::to_offset (TYPE_SIZE_UNIT (eltype));
     }
   else
     {
@@ -3884,27 +3880,17 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
       if (TREE_CODE (reftype) != ARRAY_TYPE)
 	reftype = build_array_type_nelts (reftype, 1);
 
-      if (TREE_CODE (ref) == MEM_REF)
+      /* Extract the element type out of MEM_REF and use its size
+	 to compute the index to print in the diagnostic; arrays
+	 in MEM_REF don't mean anything.  A type with no size like
+	 void is as good as having a size of 1.  */
+      tree type = TREE_TYPE (ref);
+      while (TREE_CODE (type) == ARRAY_TYPE)
+	type = TREE_TYPE (type);
+      if (tree size = TYPE_SIZE_UNIT (type))
 	{
-	  /* Extract the element type out of MEM_REF and use its size
-	     to compute the index to print in the diagnostic; arrays
-	     in MEM_REF don't mean anything.  A type with no size like
-	     void is as good as having a size of 1.  */
-	  tree type = TREE_TYPE (ref);
-	  while (TREE_CODE (type) == ARRAY_TYPE)
-	    type = TREE_TYPE (type);
-	  if (tree size = TYPE_SIZE_UNIT (type))
-	    {
-	      offrange[0] = offrange[0] / wi::to_offset (size);
-	      offrange[1] = offrange[1] / wi::to_offset (size);
-	    }
-	}
-      else
-	{
-	  /* For anything other than MEM_REF, compute the index to
-	     print in the diagnostic as the offset over element size.  */
-	  offrange[0] = offrange[0] / eltsize;
-	  offrange[1] = offrange[1] / eltsize;
+	  offrange[0] = offrange[0] / wi::to_offset (size);
+	  offrange[1] = offrange[1] / wi::to_offset (size);
 	}
 
       bool warned;

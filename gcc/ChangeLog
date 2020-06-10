@@ -1,3 +1,349 @@
+2020-06-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/95113
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Move non-call
+	exceptions check to...
+	* tree-eh.c (stmt_unremovable_because_of_non_call_eh_p): ...this
+	new function.
+	* tree-eh.h (stmt_unremovable_because_of_non_call_eh_p): Declare it.
+	* ipa-sra.c (isra_track_scalar_value_uses): Use it.  New parameter
+	fun.
+
+2020-06-05  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.c (gimplify_adjust_omp_clauses): Remove
+	'GOMP_MAP_STRUCT' mapping from OpenACC 'exit data' directives.
+
+2020-06-05  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Support
+	Intel Airmont, Tremont, Comet Lake, Ice Lake and Tiger Lake
+	processor families.
+
+2020-06-05  Lili Cui  <lili.cui@intel.com>
+
+	PR target/95525
+	* config/i386/i386.h (PTA_WAITPKG): Change bitmask value.
+
+2020-06-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-cores.def (zeus): Define.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi (AArch64 Options): Document zeus -mcpu option.
+
+2020-06-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR target/95420
+	* config.gcc (arm-wrs-vxworks7*): Set default cpu to generic-armv7-a.
+
+2020-05-29  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/94591
+	* config/aarch64/aarch64.c (aarch64_evpc_rev_local): Don't match
+	identity permutation.
+
+2020-05-29  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (add<mode>3_zext_dup): Change to a
+	define_expand, and rename the original to ...
+	(add<mode>3_vcc_zext_dup): ... this, and add a custom VCC operand.
+	(add<mode>3_zext_dup_exec): Likewise, with ...
+	(add<mode>3_vcc_zext_dup_exec): ... this.
+	(add<mode>3_zext_dup2): Likewise, with ...
+	(add<mode>3_zext_dup_exec): ... this.
+	(add<mode>3_zext_dup2_exec): Likewise, with ...
+	(add<mode>3_zext_dup2): ... this.
+	* config/gcn/gcn.c (gcn_expand_scalar_to_vector_address): Switch
+	addv64di3_zext* calls to use addv64di3_vcc_zext*.
+
+2020-05-29  Dong JianQiang  <dongjianqiang2@huawei.com>
+
+	PR gcov-profile/95332
+	* gcov-io.c (gcov_var::endian): Move field.
+	(from_file): Add IN_GCOV_TOOL check.
+	* gcov-io.h (gcov_magic): Ditto.
+
+2020-05-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/95361
+	* config/aarch64/aarch64.c (aarch64_expand_epilogue): Only
+	redefine the CFA if we have CFI operations.
+
+2020-05-28  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (mmx_haddsubv2sf3): Correct
+	RTL template to model horizontal subtraction and addition.
+
+2020-05-28  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95355
+	* config/i386/sse.md
+	(<mask_codefor>avx512f_<code>v16qiv16si2<mask_name>):
+	Remove %q operand modifier from insn template.
+	(avx512f_<code>v8hiv8di2<mask_name>): Ditto.
+
+2020-05-28  Martin Liska  <mliska@suse.cz>
+
+	PR web/95380
+	* doc/invoke.texi: Add missing params, remove max-once-peeled-insns and
+	rename ipcp-unit-growth to ipa-cp-unit-growth.
+
+2020-05-24  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95255
+	* config/i386/i386.md (<rounding_insn><mode>2): Do not try to
+	expand non-sse4 ROUND_ROUNDEVEN rounding via SSE support routines.
+
+2020-05-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master.
+	2020-05-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (ASM_GENERATE_INTERNAL_LABEL):
+	Make ubsan_{data,type},ASAN linker-visible.
+
+2020-05-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/95258
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	AVX512VPOPCNTDQ.
+
+2020-05-22  Richard Biener  <rguenther@suse.de>
+
+	PR lto/95190
+	* doc/invoke.texi (flto): Document behavior of diagnostic
+	options.
+
+2020-05-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95169
+	* config/i386/i386-expand.c (ix86_expand_int_movcc):
+	 Avoid reversing a non-trapping comparison to a trapping one.
+
+2020-05-21  Martin Liska  <mliska@suse.cz>
+
+	* common/config/aarch64/aarch64-common.c (aarch64_handle_option):
+	Handle OPT_moutline_atomics.
+	* config/aarch64/aarch64.c: Add outline-atomics to
+	aarch64_attributes.
+	* doc/extend.texi: Document the newly added target attribute.
+
+2020-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from master
+	2020-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/95212
+	* config/i386/i386-builtins.c (processor_features): Move
+	F_AVX512VP2INTERSECT after F_AVX512BF16.
+	(isa_names_table): Likewise.
+
+2020-05-19  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	Backport from mainline
+	2020-05-10  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config/i386/i386-c.c (ix86_target_macros): Define _ILP32 and
+	__ILP32__ for 32-bit targets.
+
+2020-05-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2020-05-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94635
+	* gimplify.c (gimplify_scan_omp_clauses): For MAP_TO_PSET with
+	OMP_TARGET_EXIT_DATA, use 'release:' unless the associated
+	item is 'delete:'.
+
+2020-05-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/94940
+	* tree-vrp.c (vrp_prop::check_mem_ref): Remove unreachable code.
+	* tree.c (component_ref_size): Correct the handling or array members
+	of unions.
+	Drop a pointless test.
+	Rename a local variable.
+
+2020-05-12  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2020-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/94947
+	* tree-ssa-structalias.c (refered_from_nonlocal_fn): Use
+	DECL_EXTERNAL || TREE_PUBLIC instead of externally_visible.
+	(refered_from_nonlocal_var): Likewise.
+	(ipa_pta_execute): Likewise.
+
+	2020-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/94947
+	* tree-ssa-structalias.c (ipa_pta_execute): Use
+	varpool_node::externally_visible_p ().
+	(refered_from_nonlocal_var): Likewise.
+
+2020-05-12  David Edelsohn  <dje.gcc@gmail.com>
+
+	Backport from mainline
+	2020-05-04  Clement Chigot  <clement.chigot@atos.net>
+		    David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000-call.c (rs6000_init_builtins): Override explicit
+	for fmodl, frexpl, ldexpl and modfl builtins.
+
+2020-05-11  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backport from mainline
+	2020-05-05  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rtems.h (RTEMS_STARTFILE_SPEC): Define if undefined.
+	(RTEMS_ENDFILE_SPEC): Likewise.
+	(STARTFILE_SPEC): Update comment.  Add RTEMS_STARTFILE_SPEC.
+	(ENDFILE_SPEC): Add RTEMS_ENDFILE_SPEC.
+	(LIB_SPECS): Support -nodefaultlibs option.
+	* config/or1k/rtems.h (RTEMS_STARTFILE_SPEC): Define.
+	(RTEMS_ENDFILE_SPEC): Likewise.
+	* config/rs6000/rtems.h (RTEMS_STARTFILE_SPEC): Likewise.
+	(RTEMS_ENDFILE_SPEC): Likewise.
+	* config/v850/rtems.h (RTEMS_STARTFILE_SPEC): Likewise.
+	(RTEMS_ENDFILE_SPEC): Likewise.
+
+2020-05-11  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2020-05-11  Martin Liska  <mliska@suse.cz>
+
+	PR c/95040
+	* common.opt: Fix typo in option description.
+
+2020-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94724
+	* tree.c (get_narrower): Reuse the op temporary instead of
+	shadowing it.
+
+2020-05-07  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_atomic_assign_expand_fenv): Use
+	TARGET_EXPR instead of MODIFY_EXPR for the first assignments to
+	fenv_var and new_fenv_var.
+
+2020-05-07  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2020-05-07  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Fix 2 optindex entries.
+
+2020-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2020-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94950
+	* config/riscv/riscv-builtins.c (riscv_atomic_assign_expand_fenv): Use
+	TARGET_EXPR instead of MODIFY_EXPR for first assignment to old_flags.
+
+	PR rtl-optimization/94873
+	* combine.c (combine_instructions): Don't optimize using REG_EQUAL
+	note if SET_SRC (set) has side-effects.
+
+	2020-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94942
+	* config/i386/mmx.md (*vec_dupv4hi): Use xYw constraints instead of Yv.
+
+	2020-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* opts.c (get_option_html_page): Instead of hardcoding a list of
+	options common between C/C++ and Fortran only use gfortran/
+	documentation for warnings that have CL_Fortran set but not
+	CL_C or CL_CXX.
+
+2020-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* BASE-VER: Set to 10.1.1.
+
+2020-05-07  Release Manager
+
+	* GCC 10.1.0 released.
+
+2020-05-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/install.texi: Replace Sun with Solaris as appropriate.
+	(Tools/packages necessary for building GCC, Perl version between
+	5.6.1 and 5.6.24): Remove Solaris 8 reference.
+	(Installing GCC: Binaries, Solaris 2 (SPARC, Intel)): Remove
+	TGCware reference.
+	(Specific, i?86-*-solaris2*): Update version references for
+	Solaris 11.3 and later.  Remove gas 2.26 caveat.
+	(Specific, *-*-solaris2*): Update version references for
+	Solaris 11.3 and later.  Remove boehm-gc reference.
+	Document GMP, MPFR caveats on Solaris 11.3.
+	(Specific, sparc-sun-solaris2*): Update Solaris 9 references.
+	(Specific, sparc64-*-solaris2*): Likewise.
+	Document --build requirement.
+
+2020-05-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac <i[34567]86-*-*>: Add --32 to tls_as_opt on Solaris.
+	* configure: Regenerate.
+
+2020-05-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/94941
+	* internal-fn.c (expand_load_lanes_optab_fn): Emit a move if the
+	chosen lhs is different from the gcall lhs.
+	(expand_mask_load_optab_fn): Likewise.
+	(expand_gather_load_optab_fn): Likewise.
+
+2020-05-04  Marek Polacek  <polacek@redhat.com>
+
+	Revert:
+	2020-04-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94775
+	* tree.c (check_base_type): Return true only if TYPE_USER_ALIGN match.
+	(check_aligned_type): Check if TYPE_USER_ALIGN match.
+
+2020-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/tilegx/tilegx.md
+	(insn_stnt<I124MODE:n>_add<I48MODE:bitsuffix>): Use <I124MODE:n>
+	rather than just <n>.
+
+2020-04-30  Alexandre Oliva <oliva@adacore.com>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document
+	the newly-introduced fileio effective target.
+
+2020-04-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/94740
+	* cse.c (cse_process_notes_1): Replace with...
+	(cse_process_note_1): ...this new function, acting as a
+	simplify_replace_fn_rtx callback to process_note.  Handle only
+	REGs and MEMs directly.  Validate the MEM if cse_process_note
+	changes its address.
+	(cse_process_notes): Replace with...
+	(cse_process_note): ...this new function.
+	(cse_extended_basic_block): Update accordingly, iterating over
+	the register notes and passing individual notes to cse_process_note.
+
+2020-04-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/94856
+	* cgraph.c (clone_of_p): Also consider thunks whih had their bodies
+	saved by the inliner and thunks which had their call inlined.
+	* ipa-inline-transform.c (save_inline_function_body): Fill in
+	former_clone_of of new body holders.
+
+2020-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* DEV-PHASE: Set to prerelease.
+
 2020-04-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* pretty-print.c (pp_take_prefix): Fix spelling in comment.
