@@ -2424,6 +2424,7 @@ expand_assign_tm (struct tm_region *region, gimple_stmt_iterator *gsi)
       if (is_gimple_reg (rhs))
 	{
 	  tree rtmp = create_tmp_var (TREE_TYPE (rhs));
+	  TREE_ADDRESSABLE (rtmp) = 1;
 	  rhs_addr = build_fold_addr_expr (rtmp);
 	  gcall = gimple_build_assign (rtmp, rhs);
 	  gsi_insert_before (gsi, gcall, GSI_SAME_STMT);
