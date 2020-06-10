@@ -12927,8 +12927,7 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
       else if (sym->attr.external)
 	gfc_error ("External %qs at %L cannot have an initializer",
 		   sym->name, &sym->declared_at);
-      else if (sym->attr.dummy
-	&& !(sym->ts.type == BT_DERIVED && sym->attr.intent == INTENT_OUT))
+      else if (sym->attr.dummy)
 	gfc_error ("Dummy %qs at %L cannot have an initializer",
 		   sym->name, &sym->declared_at);
       else if (sym->attr.intrinsic)
