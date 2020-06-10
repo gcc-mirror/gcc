@@ -85,13 +85,13 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_build_ealias);
 	  NEXT_PASS (pass_fre, true /* may_iterate */);
 
-	  NEXT_PASS (pass_ranger_vrp, false /* allow_il_changes */);
+	  NEXT_PASS (pass_ranger_vrp);
 	  /* Run copy-prop to keep evrp below from doing simple copy prop
 	     and messing up our comparison and trap phase.  */
 	  NEXT_PASS (pass_evrp_copy_prop);
 
 	  NEXT_PASS (pass_early_vrp);
-	  NEXT_PASS (pass_ranger_vrp, true /* allow_il_changes */);
+	  NEXT_PASS (pass_ranger_vrp);
 	  NEXT_PASS (pass_merge_phi);
           NEXT_PASS (pass_dse);
 	  NEXT_PASS (pass_cd_dce);

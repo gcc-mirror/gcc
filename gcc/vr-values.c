@@ -4011,7 +4011,7 @@ simplify_conversion_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
   // FIXME: This conversion has nothing to do with ranges, and the way
   // it uses global ranges versus local ranges is interfering with our
   // ability to diagnose differences between evrp and rvrp1.
-  if (evrp_trap_p ())
+  if (flag_evrp_traps)
     return false;
 
   /* Get the value-range of the inner operand.  Use get_range_info in

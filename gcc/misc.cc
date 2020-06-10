@@ -160,7 +160,7 @@ gimple_state::set_orig_stmt (gimple *stmt)
 void
 gimple_state::maybe_dump_differences_and_trap (gimple *new_stmt, tree lhs)
 {
-  if (evrp_trap_p ())
+  if (flag_evrp_traps)
     {
       if (unseen_function_p ())
 	{

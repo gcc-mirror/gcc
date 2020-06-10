@@ -973,7 +973,7 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       opts->x_flag_reorder_blocks = 1;
     }
 
-  // -frvrp-changes overrides the individual pass settings.
+  // -frvrp-changes overrides the individual -frvrp[12]-changes.
   if (opts->x_flag_rvrp_changes != -1)
     {
       opts->x_flag_rvrp1_changes = opts->x_flag_rvrp_changes;

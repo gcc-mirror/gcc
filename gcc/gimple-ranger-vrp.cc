@@ -161,20 +161,14 @@ public:
       pass++;
     }
   opt_pass *clone () { return new pass_ranger_vrp (m_ctxt); }
-  void set_pass_param (unsigned int n ATTRIBUTE_UNUSED, bool param)
-  {
-    allow_il_changes = param;
-  }
   virtual bool gate (function *)
     { return flag_tree_vrp != 0; }
   virtual unsigned int execute (function *)
     {
-      // -frvrp[12]-changes overrides pass defaults.
-      if (rvrp_pass_num == 1 && flag_rvrp1_changes != -1)
+      if (rvrp_pass_num == 1)
 	allow_il_changes = flag_rvrp1_changes;
-      if (rvrp_pass_num == 2 && flag_rvrp2_changes != -1)
+      if (rvrp_pass_num == 2)
 	allow_il_changes = flag_rvrp2_changes;
-
       return execute_ranger_vrp (allow_il_changes);
     }
 private:

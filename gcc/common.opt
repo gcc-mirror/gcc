@@ -2922,17 +2922,23 @@ fvect-cost-model
 Common Alias(fvect-cost-model=,dynamic,unlimited)
 Enables the dynamic vectorizer cost model.  Preserved for backward compatibility.
 
+frvrp1-changes
+Common Var(flag_rvrp1_changes) Init(0)
+Allow IL changes in rvrp1 pass.
+
+frvrp2-changes
+Common Var(flag_rvrp2_changes) Init(1)
+Allow IL changes in rvrp2 pass.
+
+fevrp-traps
+Common Var(flag_evrp_traps) Init(0)
+Trap on any EVRP changes to the IL.
+
 frvrp-changes
 Common Var(flag_rvrp_changes) Init(-1)
-Allow RVRP passes to make IL changes.
-
-;; Allow IL changes in rvrp1 pass.
-frvrp1-changes
-Common Var(flag_rvrp1_changes) Init(-1)
-
-;; Allow IL changes in rvrp2 pass.
-frvrp2-changes
-Common Var(flag_rvrp2_changes) Init(-1)
+Override for both -frvrp1-changes and -frvrp2-changes.  This is meant
+to be used by the testsuite to keep RVRP passes from making IL changes
+in some tests, thus making easier to test evrp functionality.
 
 ftree-vect-loop-version
 Common Ignore
