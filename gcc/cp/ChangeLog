@@ -1,3 +1,10 @@
+2020-06-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95345
+	* coroutines.cc (finish_co_await_expr): Revise to allow for
+	parameter packs.
+	(finish_co_yield_expr): Likewise.
+
 2020-06-07  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/95050

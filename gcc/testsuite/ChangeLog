@@ -1,3 +1,8 @@
+2020-06-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95345
+	* g++.dg/coroutines/pr95345.C: New test.
+
 2020-06-08  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/95113
