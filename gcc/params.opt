@@ -912,6 +912,10 @@ Set the maximum number of instructions executed in parallel in reassociated tree
 Common Joined UInteger Var(param_tsan_distinguish_volatile) IntegerRange(0, 1) Param
 Emit special instrumentation for accesses to volatiles.
 
+-param=tsan-instrument-func-entry-exit=
+Common Joined UInteger Var(param_tsan_instrument_func_entry_exit) Init(1) IntegerRange(0, 1) Param
+Emit instrumentation calls to __tsan_func_entry() and __tsan_func_exit().
+
 -param=uninit-control-dep-attempts=
 Common Joined UInteger Var(param_uninit_control_dep_attempts) Init(1000) IntegerRange(1, 65536) Param Optimization
 Maximum number of nested calls to search for control dependencies during uninitialized variable analysis.

@@ -804,7 +804,9 @@ instrument_memory_accesses (bool *cfg_changed)
 	      func_exit_seen = true;
 	    }
 	  else
-	    fentry_exit_instrument |= instrument_gimple (&gsi);
+	    fentry_exit_instrument
+	      |= (instrument_gimple (&gsi)
+		  && param_tsan_instrument_func_entry_exit);
 	}
       if (gimple_purge_dead_eh_edges (bb))
 	*cfg_changed = true;
