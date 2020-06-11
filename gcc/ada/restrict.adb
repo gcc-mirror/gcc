@@ -1354,8 +1354,6 @@ package body Restrict is
    -- Set_Restriction --
    ---------------------
 
-   --  Case of Boolean restriction
-
    procedure Set_Restriction
      (R : All_Boolean_Restrictions;
       N : Node_Id)
@@ -1394,8 +1392,6 @@ package body Restrict is
          end if;
       end if;
    end Set_Restriction;
-
-   --  Case of parameter restriction
 
    procedure Set_Restriction
      (R : All_Parameter_Restrictions;
@@ -1446,6 +1442,29 @@ package body Restrict is
       Restriction_Profile_Name (R) := No_Profile;
    end Set_Restriction;
 
+   procedure Set_Restriction
+     (R    : All_Restrictions;
+      N    : Node_Id;
+      Warn : Boolean;
+      V    : Integer := Integer'First)
+   is
+      Set : Boolean := True;
+   begin
+      if Warn and then Restriction_Active (R) then
+         Set := False;
+      end if;
+
+      if Set then
+         if R in All_Boolean_Restrictions then
+            Set_Restriction (R, N);
+         else
+            Set_Restriction (R, N, V);
+         end if;
+
+         Restriction_Warnings (R) := Warn;
+      end if;
+   end Set_Restriction;
+
    -----------------------------------
    -- Set_Restriction_No_Dependence --
    -----------------------------------
@@ -1485,7 +1504,7 @@ package body Restrict is
 
    procedure Set_Restriction_No_Use_Of_Entity
      (Entity  : Node_Id;
-      Warning : Boolean;
+      Warn    : Boolean;
       Profile : Profile_Name := No_Profile)
    is
       Nam : Node_Id;
@@ -1501,7 +1520,7 @@ package body Restrict is
 
             --  Error has precedence over warning
 
-            if not Warning then
+            if not Warn then
                No_Use_Of_Entity.Table (J).Warn := False;
             end if;
 
@@ -1511,7 +1530,7 @@ package body Restrict is
 
       --  Entry is not currently in table
 
-      No_Use_Of_Entity.Append ((Entity, Warning, Profile));
+      No_Use_Of_Entity.Append ((Entity, Warn, Profile));
 
       --  Now we need to find the direct name and set Boolean2 flag
 
@@ -1532,15 +1551,15 @@ package body Restrict is
    ------------------------------------------------
 
    procedure Set_Restriction_No_Specification_Of_Aspect
-     (N       : Node_Id;
-      Warning : Boolean)
+     (N    : Node_Id;
+      Warn : Boolean)
    is
       A_Id : constant Aspect_Id_Exclude_No_Aspect := Get_Aspect_Id (Chars (N));
 
    begin
       No_Specification_Of_Aspect_Set := True;
       No_Specification_Of_Aspects (A_Id) := Sloc (N);
-      No_Specification_Of_Aspect_Warning (A_Id) := Warning;
+      No_Specification_Of_Aspect_Warning (A_Id) := Warn;
    end Set_Restriction_No_Specification_Of_Aspect;
 
    procedure Set_Restriction_No_Specification_Of_Aspect (A_Id : Aspect_Id) is
@@ -1555,15 +1574,15 @@ package body Restrict is
    -----------------------------------------
 
    procedure Set_Restriction_No_Use_Of_Attribute
-     (N       : Node_Id;
-      Warning : Boolean)
+     (N    : Node_Id;
+      Warn : Boolean)
    is
       A_Id : constant Attribute_Id := Get_Attribute_Id (Chars (N));
 
    begin
       No_Use_Of_Attribute_Set := True;
       No_Use_Of_Attribute (A_Id) := Sloc (N);
-      No_Use_Of_Attribute_Warning (A_Id) := Warning;
+      No_Use_Of_Attribute_Warning (A_Id) := Warn;
    end Set_Restriction_No_Use_Of_Attribute;
 
    procedure Set_Restriction_No_Use_Of_Attribute (A_Id : Attribute_Id) is
@@ -1578,15 +1597,15 @@ package body Restrict is
    --------------------------------------
 
    procedure Set_Restriction_No_Use_Of_Pragma
-     (N       : Node_Id;
-      Warning : Boolean)
+     (N    : Node_Id;
+      Warn : Boolean)
    is
       A_Id : constant Pragma_Id := Get_Pragma_Id (Chars (N));
 
    begin
       No_Use_Of_Pragma_Set := True;
       No_Use_Of_Pragma (A_Id) := Sloc (N);
-      No_Use_Of_Pragma_Warning (A_Id) := Warning;
+      No_Use_Of_Pragma_Warning (A_Id) := Warn;
    end Set_Restriction_No_Use_Of_Pragma;
 
    procedure Set_Restriction_No_Use_Of_Pragma (A_Id : Pragma_Id) is
