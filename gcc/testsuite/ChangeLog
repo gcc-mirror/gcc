@@ -1,3 +1,13 @@
+2020-06-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95346
+	* g++.dg/coroutines/pr95346.C: New test.
+
+2020-06-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95562
+	* g++.dg/cpp0x/noexcept60.C: New test.
+
 2020-06-09  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/95345

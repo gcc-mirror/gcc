@@ -1,3 +1,18 @@
+2020-06-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95346
+	* coroutines.cc (morph_fn_to_coro): Ensure that the get-
+	return-object is constructed correctly; When it is not the
+	final return value, pass it to the CTOR of the return type
+	as an rvalue, per the standard comment.
+
+2020-06-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95562
+	* parser.c (cp_parser_direct_declarator): Clear
+	CP_PARSER_FLAGS_DELAY_NOEXCEPT if the declarator kind is not
+	cdk_id.
+
 2020-06-09  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/95345
