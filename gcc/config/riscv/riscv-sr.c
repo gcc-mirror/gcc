@@ -115,7 +115,7 @@ riscv_sr_match_prologue (rtx_insn **body)
       && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == UNSPEC_VOLATILE
       && (GET_CODE (XVECEXP (XVECEXP (PATTERN (insn), 0, 0), 0, 0))
 	  == CONST_INT)
-      && INTVAL (XVECEXP (XVECEXP (PATTERN (insn), 0, 0), 0, 0)) == 2)
+      && INTVAL (XVECEXP (XVECEXP (PATTERN (insn), 0, 0), 0, 0)) == 0)
     return insn;
 
   return NULL;
