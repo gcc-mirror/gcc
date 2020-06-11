@@ -3672,8 +3672,12 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
 	}
     }
 
+  decl = se->expr;
+  if (IS_CLASS_ARRAY (sym) && sym->attr.dummy && ar->as->type != AS_DEFERRED)
+    decl = sym->backend_decl;
+
   cst_offset = offset = gfc_index_zero_node;
-  add_to_offset (&cst_offset, &offset, gfc_conv_array_offset (se->expr));
+  add_to_offset (&cst_offset, &offset, gfc_conv_array_offset (decl));
 
   /* Calculate the offsets from all the dimensions.  Make sure to associate
      the final offset so that we form a chain of loop invariant summands.  */
@@ -3694,7 +3698,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
 	  indexse.expr = save_expr (indexse.expr);
 
 	  /* Lower bound.  */
-	  tmp = gfc_conv_array_lbound (se->expr, n);
+	  tmp = gfc_conv_array_lbound (decl, n);
 	  if (sym->attr.temporary)
 	    {
 	      gfc_init_se (&tmpse, se);
@@ -3718,7 +3722,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
 	     arrays.  */
 	  if (n < ar->dimen - 1 || ar->as->type != AS_ASSUMED_SIZE)
 	    {
-	      tmp = gfc_conv_array_ubound (se->expr, n);
+	      tmp = gfc_conv_array_ubound (decl, n);
 	      if (sym->attr.temporary)
 		{
 		  gfc_init_se (&tmpse, se);
@@ -3741,7 +3745,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
 	}
 
       /* Multiply the index by the stride.  */
-      stride = gfc_conv_array_stride (se->expr, n);
+      stride = gfc_conv_array_stride (decl, n);
       tmp = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
 			     indexse.expr, stride);
 
@@ -3756,6 +3760,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
   /* A pointer array component can be detected from its field decl. Fix
      the descriptor, mark the resulting variable decl and pass it to
      build_array_ref.  */
+  decl = NULL_TREE;
   if (get_CFI_desc (sym, expr, &decl, ar))
     decl = build_fold_indirect_ref_loc (input_location, decl);
   if (!expr->ts.deferred && !sym->attr.codimension
