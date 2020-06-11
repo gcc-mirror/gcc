@@ -6660,6 +6660,7 @@ package body Exp_Ch9 is
          --  must be properly set.
 
          Set_Parent (Block, Parent (N));
+         Set_Parent (Blkent, Block);
 
          --  Prepend call to Accept_Call to main statement sequence If the
          --  accept has exception handlers, the statement sequence is wrapped
