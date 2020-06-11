@@ -2675,8 +2675,6 @@ cp_fold (tree x)
 	  else
 	    x = org_x;
 	}
-      if (code == MODIFY_EXPR && TREE_CODE (x) == MODIFY_EXPR)
-	TREE_THIS_VOLATILE (x) = TREE_THIS_VOLATILE (org_x);
 
       break;
 
@@ -2930,6 +2928,12 @@ cp_fold (tree x)
 
     default:
       return org_x;
+    }
+
+  if (EXPR_P (x) && TREE_CODE (x) == code)
+    {
+      TREE_THIS_VOLATILE (x) = TREE_THIS_VOLATILE (org_x);
+      TREE_NO_WARNING (x) = TREE_NO_WARNING (org_x);
     }
 
   fold_cache->put (org_x, x);
