@@ -4442,6 +4442,18 @@ check_arglist (gfc_actual_arglist **ap, gfc_intrinsic_sym *sym,
 	  return false;
 	}
 
+      /* F2018, p. 328: An argument to an intrinsic procedure other than
+	 ASSOCIATED, NULL, or PRESENT shall be a data object.  An EXPR_NULL
+	 is not a data object.  */
+      if (actual->expr->expr_type == EXPR_NULL
+	  && (!(sym->id == GFC_ISYM_ASSOCIATED
+		|| sym->id == GFC_ISYM_NULL
+		|| sym->id == GFC_ISYM_PRESENT)))
+	{
+	  gfc_invalid_null_arg (actual->expr);
+	  return false;
+	}
+
       /* If the formal argument is INTENT([IN]OUT), check for definability.  */
       if (formal->intent == INTENT_INOUT || formal->intent == INTENT_OUT)
 	{

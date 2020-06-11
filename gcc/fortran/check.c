@@ -1431,8 +1431,8 @@ gfc_check_x_yd (gfc_expr *x, gfc_expr *y)
   return true;
 }
 
-static bool
-invalid_null_arg (gfc_expr *x)
+bool
+gfc_invalid_null_arg (gfc_expr *x)
 {
   if (x->expr_type == EXPR_NULL)
     {
@@ -1451,7 +1451,7 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
   int i;
   bool t;
 
-  if (invalid_null_arg (pointer))
+  if (gfc_invalid_null_arg (pointer))
     return false;
 
   attr1 = gfc_expr_attr (pointer);
@@ -1477,7 +1477,7 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
   if (target == NULL)
     return true;
 
-  if (invalid_null_arg (target))
+  if (gfc_invalid_null_arg (target))
     return false;
 
   if (target->expr_type == EXPR_VARIABLE || target->expr_type == EXPR_FUNCTION)
@@ -3374,7 +3374,7 @@ gfc_check_kill_sub (gfc_expr *pid, gfc_expr *sig, gfc_expr *status)
 bool
 gfc_check_kind (gfc_expr *x)
 {
-  if (invalid_null_arg (x))
+  if (gfc_invalid_null_arg (x))
     return false;
 
   if (gfc_bt_struct (x->ts.type) || x->ts.type == BT_CLASS)
@@ -3451,6 +3451,9 @@ bool
 gfc_check_len_lentrim (gfc_expr *s, gfc_expr *kind)
 {
   if (!type_check (s, 0, BT_CHARACTER))
+    return false;
+
+  if (gfc_invalid_null_arg (s))
     return false;
 
   if (!kind_check (kind, 1, BT_INTEGER))
@@ -4138,10 +4141,10 @@ gfc_check_transf_bit_intrins (gfc_actual_arglist *ap)
 bool
 gfc_check_merge (gfc_expr *tsource, gfc_expr *fsource, gfc_expr *mask)
 {
-  if (invalid_null_arg (tsource))
+  if (gfc_invalid_null_arg (tsource))
     return false;
 
-  if (invalid_null_arg (fsource))
+  if (gfc_invalid_null_arg (fsource))
     return false;
 
   if (!same_type_check (tsource, 0, fsource, 1))
@@ -5061,7 +5064,7 @@ gfc_check_shape (gfc_expr *source, gfc_expr *kind)
 {
   gfc_array_ref *ar;
 
-  if (invalid_null_arg (source))
+  if (gfc_invalid_null_arg (source))
     return false;
 
   if (source->rank == 0 || source->expr_type != EXPR_VARIABLE)
@@ -5146,7 +5149,7 @@ gfc_check_size (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 bool
 gfc_check_sizeof (gfc_expr *arg)
 {
-  if (invalid_null_arg (arg))
+  if (gfc_invalid_null_arg (arg))
     return false;
 
   if (arg->ts.type == BT_PROCEDURE)
@@ -5634,7 +5637,7 @@ gfc_check_sngl (gfc_expr *a)
 bool
 gfc_check_spread (gfc_expr *source, gfc_expr *dim, gfc_expr *ncopies)
 {
-  if (invalid_null_arg (source))
+  if (gfc_invalid_null_arg (source))
     return false;
 
   if (source->rank >= GFC_MAX_DIMENSIONS)
@@ -6167,7 +6170,7 @@ gfc_check_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
   size_t source_size;
   size_t result_size;
 
-  if (invalid_null_arg (source))
+  if (gfc_invalid_null_arg (source))
     return false;
 
   /* SOURCE shall be a scalar or array of any type.  */
@@ -6186,7 +6189,7 @@ gfc_check_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
   if (mold->ts.type == BT_BOZ && illegal_boz_arg (mold))
     return false;
 
-  if (invalid_null_arg (mold))
+  if (gfc_invalid_null_arg (mold))
     return false;
 
   /* MOLD shall be a scalar or array of any type.  */
@@ -6410,6 +6413,9 @@ bool
 gfc_check_trim (gfc_expr *x)
 {
   if (!type_check (x, 0, BT_CHARACTER))
+    return false;
+
+  if (gfc_invalid_null_arg (x))
     return false;
 
   if (!scalar_check (x, 0))
