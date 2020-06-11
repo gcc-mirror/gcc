@@ -2445,7 +2445,7 @@
      [(unspec_volatile [(match_operand 0 "const_int_operand")]
 	               UNSPECV_GPR_SAVE)])]
   ""
-  { return riscv_output_gpr_save (INTVAL (operands[0])); })
+  "call\tt0,__riscv_save_%0")
 
 (define_insn "gpr_restore"
   [(unspec_volatile [(match_operand 0 "const_int_operand")] UNSPECV_GPR_RESTORE)]

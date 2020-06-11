@@ -3951,20 +3951,6 @@ riscv_restore_reg (rtx reg, rtx mem)
   RTX_FRAME_RELATED_P (insn) = 1;
 }
 
-/* Return the code to invoke the GPR save routine.  */
-
-const char *
-riscv_output_gpr_save (unsigned mask)
-{
-  static char s[32];
-  unsigned n = riscv_save_libcall_count (mask);
-
-  ssize_t bytes = snprintf (s, sizeof (s), "call\tt0,__riscv_save_%u", n);
-  gcc_assert ((size_t) bytes < sizeof (s));
-
-  return s;
-}
-
 /* For stack frames that can't be allocated with a single ADDI instruction,
    compute the best value to initially allocate.  It must at a minimum
    allocate enough space to spill the callee-saved registers.  If TARGET_RVC,
@@ -5199,7 +5185,7 @@ riscv_gen_gpr_save_insn (struct riscv_frame_info *frame)
 
   RTVEC_ELT (vec, 0) =
     gen_rtx_UNSPEC_VOLATILE (VOIDmode,
-      gen_rtvec (1, GEN_INT (frame->mask)), UNSPECV_GPR_SAVE);
+      gen_rtvec (1, GEN_INT (count)), UNSPECV_GPR_SAVE);
 
   for (int i = 1; i < veclen; ++i)
     {
