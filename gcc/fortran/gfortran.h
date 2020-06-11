@@ -3565,6 +3565,7 @@ bool gfc_calculate_transfer_sizes (gfc_expr*, gfc_expr*, gfc_expr*,
 bool gfc_boz2int (gfc_expr *, int);
 bool gfc_boz2real (gfc_expr *, int);
 bool gfc_invalid_boz (const char *, locus *);
+bool gfc_invalid_null_arg (gfc_expr *);
 
 
 /* class.c */
