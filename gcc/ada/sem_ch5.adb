@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1847,7 +1847,7 @@ package body Sem_Ch5 is
       Save_Unblocked_Exit_Count : constant Nat := Unblocked_Exit_Count;
       --  Recursively save value of this global, will be restored on exit
 
-      Save_In_Deleted_Code : Boolean;
+      Save_In_Deleted_Code : Boolean := In_Deleted_Code;
 
       Del : Boolean := False;
       --  This flag gets set True if a True condition has been found, which
@@ -3210,8 +3210,9 @@ package body Sem_Ch5 is
         and then Is_Discrete_Type (Etype (DS))
       then
          declare
-            L : Node_Id;
-            H : Node_Id;
+            L          : Node_Id;
+            H          : Node_Id;
+            Null_Range : Boolean := False;
 
          begin
             if Nkind (DS) = N_Range then
@@ -3231,6 +3232,14 @@ package body Sem_Ch5 is
             --  null range may be detected statically.
 
             if Compile_Time_Compare (L, H, Assume_Valid => True) = GT then
+               if Compile_Time_Compare (L, H, Assume_Valid => False) = GT then
+                  --  Since we know the range of the loop is always null,
+                  --  set the appropriate flag to remove the loop entirely
+                  --  during expansion.
+
+                  Set_Is_Null_Loop (Loop_Nod);
+                  Null_Range := True;
+               end if;
 
                --  Suppress the warning if inside a generic template or
                --  instance, since in practice they tend to be dubious in these
@@ -3241,24 +3250,14 @@ package body Sem_Ch5 is
                   --  Specialize msg if invalid values could make the loop
                   --  non-null after all.
 
-                  if Compile_Time_Compare
-                       (L, H, Assume_Valid => False) = GT
-                  then
-                     --  Since we know the range of the loop is null, set the
-                     --  appropriate flag to remove the loop entirely during
-                     --  expansion.
-
-                     Set_Is_Null_Loop (Loop_Nod);
-
+                  if Null_Range then
                      if Comes_From_Source (N) then
                         Error_Msg_N
                           ("??loop range is null, loop will not execute", DS);
                      end if;
 
-                     --  Here is where the loop could execute because of
-                     --  invalid values, so issue appropriate message and in
-                     --  this case we do not set the Is_Null_Loop flag since
-                     --  the loop may execute.
+                  --  Here is where the loop could execute because of
+                  --  invalid values, so issue appropriate message.
 
                   elsif Comes_From_Source (N) then
                      Error_Msg_N
@@ -3389,35 +3388,12 @@ package body Sem_Ch5 is
       --  The following exception is raised by routine Prepare_Loop_Statement
       --  to avoid further analysis of a transformed loop.
 
-      function Disable_Constant (N : Node_Id) return Traverse_Result;
-      --  If N represents an E_Variable entity, set Is_True_Constant To False
-
-      procedure Disable_Constants is new Traverse_Proc (Disable_Constant);
-      --  Helper for Analyze_Loop_Statement, to unset Is_True_Constant on
-      --  variables referenced within an OpenACC construct.
-
       procedure Prepare_Loop_Statement
         (Iter            : Node_Id;
          Stop_Processing : out Boolean);
       --  Determine whether loop statement N with iteration scheme Iter must be
       --  transformed prior to analysis, and if so, perform it.
       --  If Stop_Processing is set to True, should stop further processing.
-
-      ----------------------
-      -- Disable_Constant --
-      ----------------------
-
-      function Disable_Constant (N : Node_Id) return Traverse_Result is
-      begin
-         if Is_Entity_Name (N)
-            and then Present (Entity (N))
-            and then Ekind (Entity (N)) = E_Variable
-         then
-            Set_Is_True_Constant (Entity (N), False);
-         end if;
-
-         return OK;
-      end Disable_Constant;
 
       ----------------------------
       -- Prepare_Loop_Statement --
@@ -3994,6 +3970,12 @@ package body Sem_Ch5 is
          Analyze_Statements (Statements (N));
       end if;
 
+      --  If the loop has no side effects, mark it for removal.
+
+      if Side_Effect_Free_Loop (N) then
+         Set_Is_Null_Loop (N);
+      end if;
+
       --  When the iteration scheme of a loop contains attribute 'Loop_Entry,
       --  the loop is transformed into a conditional block. Retrieve the loop.
 
@@ -4029,15 +4011,6 @@ package body Sem_Ch5 is
 
       if No (Iter) and then not Has_Exit (Ent) then
          Check_Unreachable_Code (Stmt);
-      end if;
-
-      --  Variables referenced within a loop subject to possible OpenACC
-      --  offloading may be implicitly written to as part of the OpenACC
-      --  transaction. Clear flags possibly conveying that they are constant,
-      --  set for example when the code does not explicitly assign them.
-
-      if Is_OpenAcc_Environment (Stmt) then
-         Disable_Constants (Stmt);
       end if;
    end Analyze_Loop_Statement;
 

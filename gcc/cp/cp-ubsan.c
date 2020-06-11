@@ -125,16 +125,11 @@ cp_ubsan_maybe_instrument_member_call (tree stmt)
     {
       /* Virtual function call: Sanitize the use of the object pointer in the
 	 OBJ_TYPE_REF, since the vtable reference will SEGV otherwise (95221).
-	 OBJ_TYPE_REF_EXPR is ptr->vptr[N] and OBJ_TYPE_REF_OBJECT is ptr.  */
+	 OBJ_TYPE_REF_EXPR is ptr->vptr[N] and OBJ_TYPE_REF_OBJECT is ptr.  But
+	 we can't be sure of finding OBJ_TYPE_REF_OBJECT in OBJ_TYPE_REF_EXPR
+	 if the latter has been optimized, so we use a COMPOUND_EXPR below.  */
       opp = &OBJ_TYPE_REF_EXPR (fn);
       op = OBJ_TYPE_REF_OBJECT (fn);
-      while (*opp != op)
-	{
-	  if (TREE_CODE (*opp) == COMPOUND_EXPR)
-	    opp = &TREE_OPERAND (*opp, 1);
-	  else
-	    opp = &TREE_OPERAND (*opp, 0);
-	}
     }
   else
     {
@@ -150,7 +145,11 @@ cp_ubsan_maybe_instrument_member_call (tree stmt)
   op = cp_ubsan_maybe_instrument_vptr (EXPR_LOCATION (stmt), op,
 				       TREE_TYPE (TREE_TYPE (op)),
 				       true, UBSAN_MEMBER_CALL);
-  if (op)
+  if (!op)
+    /* No change.  */;
+  else if (fn && TREE_CODE (fn) == OBJ_TYPE_REF)
+    *opp = cp_build_compound_expr (op, *opp, tf_none);
+  else
     *opp = op;
 }
 

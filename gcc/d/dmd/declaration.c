@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -55,7 +55,7 @@ bool checkFrameAccess(Loc loc, Scope *sc, AggregateDeclaration *ad, size_t iStar
     }
 
     bool result = false;
-    for (size_t i = iStart; i < ad->fields.dim; i++)
+    for (size_t i = iStart; i < ad->fields.length; i++)
     {
         VarDeclaration *vd = ad->fields[i];
         Type *tb = vd->type->baseElemOf();
@@ -203,7 +203,7 @@ Type *TupleDeclaration::getType()
     {
         /* It's only a type tuple if all the Object's are types
          */
-        for (size_t i = 0; i < objects->dim; i++)
+        for (size_t i = 0; i < objects->length; i++)
         {
             RootObject *o = (*objects)[i];
             if (o->dyncast() != DYNCAST_TYPE)
@@ -217,10 +217,10 @@ Type *TupleDeclaration::getType()
          */
         Types *types = (Types *)objects;
         Parameters *args = new Parameters();
-        args->setDim(objects->dim);
+        args->setDim(objects->length);
         OutBuffer buf;
         int hasdeco = 1;
-        for (size_t i = 0; i < types->dim; i++)
+        for (size_t i = 0; i < types->length; i++)
         {
             Type *t = (*types)[i];
             //printf("type = %s\n", t->toChars());
@@ -242,7 +242,7 @@ Dsymbol *TupleDeclaration::toAlias2()
 {
     //printf("TupleDeclaration::toAlias2() '%s' objects = %s\n", toChars(), objects->toChars());
 
-    for (size_t i = 0; i < objects->dim; i++)
+    for (size_t i = 0; i < objects->length; i++)
     {
         RootObject *o = (*objects)[i];
         if (Dsymbol *s = isDsymbol(o))
@@ -257,7 +257,7 @@ Dsymbol *TupleDeclaration::toAlias2()
 bool TupleDeclaration::needThis()
 {
     //printf("TupleDeclaration::needThis(%s)\n", toChars());
-    for (size_t i = 0; i < objects->dim; i++)
+    for (size_t i = 0; i < objects->length; i++)
     {
         RootObject *o = (*objects)[i];
         if (o->dyncast() == DYNCAST_EXPRESSION)
@@ -1020,19 +1020,19 @@ void VarDeclaration::semantic(Scope *sc)
 
             Expressions *exps = new Expressions();
 
-            for (size_t pos = 0; pos < iexps->dim; pos++)
+            for (size_t pos = 0; pos < iexps->length; pos++)
             {
             Lexpand1:
                 Expression *e = (*iexps)[pos];
                 Parameter *arg = Parameter::getNth(tt->arguments, pos);
                 arg->type = arg->type->semantic(loc, sc);
-                //printf("[%d] iexps->dim = %d, ", pos, iexps->dim);
+                //printf("[%d] iexps->length = %d, ", pos, iexps->length);
                 //printf("e = (%s %s, %s), ", Token::tochars[e->op], e->toChars(), e->type->toChars());
                 //printf("arg = (%s, %s)\n", arg->toChars(), arg->type->toChars());
 
                 if (e != ie)
                 {
-                if (iexps->dim > nelems)
+                if (iexps->length > nelems)
                     goto Lnomatch;
                 if (e->type->implicitConvTo(arg->type))
                     continue;
@@ -1041,7 +1041,7 @@ void VarDeclaration::semantic(Scope *sc)
                 if (e->op == TOKtuple)
                 {
                     TupleExp *te = (TupleExp *)e;
-                    if (iexps->dim - 1 + te->exps->dim > nelems)
+                    if (iexps->length - 1 + te->exps->length > nelems)
                         goto Lnomatch;
 
                     iexps->remove(pos);
@@ -1060,17 +1060,17 @@ void VarDeclaration::semantic(Scope *sc)
                     (*exps)[0] = ve;
                     expandAliasThisTuples(exps, 0);
 
-                    for (size_t u = 0; u < exps->dim ; u++)
+                    for (size_t u = 0; u < exps->length ; u++)
                     {
                     Lexpand2:
                         Expression *ee = (*exps)[u];
                         arg = Parameter::getNth(tt->arguments, pos + u);
                         arg->type = arg->type->semantic(loc, sc);
-                        //printf("[%d+%d] exps->dim = %d, ", pos, u, exps->dim);
+                        //printf("[%d+%d] exps->length = %d, ", pos, u, exps->length);
                         //printf("ee = (%s %s, %s), ", Token::tochars[ee->op], ee->toChars(), ee->type->toChars());
                         //printf("arg = (%s, %s)\n", arg->toChars(), arg->type->toChars());
 
-                        size_t iexps_dim = iexps->dim - 1 + exps->dim;
+                        size_t iexps_dim = iexps->length - 1 + exps->length;
                         if (iexps_dim > nelems)
                             goto Lnomatch;
                         if (ee->type->implicitConvTo(arg->type))
@@ -1092,7 +1092,7 @@ void VarDeclaration::semantic(Scope *sc)
                     }
                 }
             }
-            if (iexps->dim < nelems)
+            if (iexps->length < nelems)
                 goto Lnomatch;
 
             ie = new TupleExp(_init->loc, iexps);
@@ -1102,7 +1102,7 @@ Lnomatch:
         if (ie && ie->op == TOKtuple)
         {
             TupleExp *te = (TupleExp *)ie;
-            size_t tedim = te->exps->dim;
+            size_t tedim = te->exps->length;
             if (tedim != nelems)
             {
                 ::error(loc, "tuple of %d elements cannot be assigned to tuple of %d elements", (int)tedim, (int)nelems);
@@ -1493,7 +1493,7 @@ Lnomatch:
                         NewExp *ne = (NewExp *)ex;
                         if (type->toBasetype()->ty == Tclass)
                         {
-                            if (ne->newargs && ne->newargs->dim > 1)
+                            if (ne->newargs && ne->newargs->length > 1)
                             {
                                 mynew = true;
                             }
@@ -1650,7 +1650,7 @@ void VarDeclaration::semantic2(Scope *sc)
             {
                 static bool arrayHasInvalidEnumInitializer(Expressions *elems)
                 {
-                    for (size_t i = 0; i < elems->dim; i++)
+                    for (size_t i = 0; i < elems->length; i++)
                     {
                         Expression *e = (*elems)[i];
                         if (e && hasInvalidEnumInitializer(e))
@@ -1711,7 +1711,7 @@ void VarDeclaration::setFieldOffset(AggregateDeclaration *ad, unsigned *poffset,
         // If this variable was really a tuple, set the offsets for the tuple fields
         TupleDeclaration *v2 = aliassym->isTupleDeclaration();
         assert(v2);
-        for (size_t i = 0; i < v2->objects->dim; i++)
+        for (size_t i = 0; i < v2->objects->length; i++)
         {
             RootObject *o = (*v2->objects)[i];
             assert(o->dyncast() == DYNCAST_EXPRESSION);
@@ -1738,7 +1738,7 @@ void VarDeclaration::setFieldOffset(AggregateDeclaration *ad, unsigned *poffset,
         *poffset = ad->structsize;  // Bugzilla 13613
         return;
     }
-    for (size_t i = 0; i < ad->fields.dim; i++)
+    for (size_t i = 0; i < ad->fields.length; i++)
     {
         if (ad->fields[i] == this)
         {
@@ -1901,16 +1901,8 @@ bool VarDeclaration::checkNestedReference(Scope *sc, Loc loc)
         return false;
 
     // Add fdthis to nestedrefs[] if not already there
-    for (size_t i = 0; 1; i++)
-    {
-        if (i == nestedrefs.dim)
-        {
-            nestedrefs.push(fdthis);
-            break;
-        }
-        if (nestedrefs[i] == fdthis)
-            break;
-    }
+    if (!nestedrefs.contains(fdthis))
+        nestedrefs.push(fdthis);
 
     /* __require and __ensure will always get called directly,
      * so they never make outer functions closure.
@@ -1928,16 +1920,10 @@ bool VarDeclaration::checkNestedReference(Scope *sc, Loc loc)
     }
 
     // Add this to fdv->closureVars[] if not already there
-    for (size_t i = 0; 1; i++)
+    if (!sc->intypeof && !(sc->flags & SCOPEcompile))
     {
-        if (i == fdv->closureVars.dim)
-        {
-            if (!sc->intypeof && !(sc->flags & SCOPEcompile))
-                fdv->closureVars.push(this);
-            break;
-        }
-        if (fdv->closureVars[i] == this)
-            break;
+        if (!fdv->closureVars.contains(this))
+            fdv->closureVars.push(this);
     }
 
     //printf("fdthis is %s\n", fdthis->toChars());

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2015-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2015-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -213,7 +213,7 @@ package body Contracts is
       --    Initializes
       --    Part_Of (instantiation only)
 
-      elsif Ekind_In (Id, E_Generic_Package, E_Package) then
+      elsif Is_Package_Or_Generic_Package (Id) then
          if Nam_In (Prag_Nam, Name_Abstract_State,
                               Name_Initial_Condition,
                               Name_Initializes)
@@ -541,7 +541,6 @@ package body Contracts is
 
       Skip_Assert_Exprs : constant Boolean :=
                             Ekind_In (Subp_Id, E_Entry, E_Entry_Family)
-                              and then not ASIS_Mode
                               and then not GNATprove_Mode;
 
       Depends  : Node_Id := Empty;
@@ -2541,11 +2540,6 @@ package body Contracts is
       --  Do not perform expansion activity when it is not needed
 
       if not Expander_Active then
-         return;
-
-      --  ASIS requires an unaltered tree
-
-      elsif ASIS_Mode then
          return;
 
       --  GNATprove does not need the executable semantics of a contract

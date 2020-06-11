@@ -1,6 +1,6 @@
 
 // Compiler implementation of the D programming language
-// Copyright: Copyright (C) 2014-2019 by The D Language Foundation, All Rights Reserved
+// Copyright: Copyright (C) 2014-2020 by The D Language Foundation, All Rights Reserved
 // Authors: Walter Bright, http://www.digitalmars.com
 // License: http://boost.org/LICENSE_1_0.txt
 // Source: https://github.com/D-Programming-Language/dmd/blob/master/src/nspace.c
@@ -58,7 +58,7 @@ void Nspace::addMember(Scope *sc, ScopeDsymbol *sds)
         sc = sc->push(this);
         sc->linkage = LINKcpp; // namespaces default to C++ linkage
         sc->parent = this;
-        for (size_t i = 0; i < members->dim; i++)
+        for (size_t i = 0; i < members->length; i++)
         {
             Dsymbol *s = (*members)[i];
             //printf("add %s to scope %s\n", s->toChars(), toChars());
@@ -77,7 +77,7 @@ void Nspace::setScope(Scope *sc)
         sc = sc->push(this);
         sc->linkage = LINKcpp; // namespaces default to C++ linkage
         sc->parent = this;
-        for (size_t i = 0; i < members->dim; i++)
+        for (size_t i = 0; i < members->length; i++)
         {
             Dsymbol *s = (*members)[i];
             s->setScope(sc);
@@ -107,13 +107,13 @@ void Nspace::semantic(Scope *sc)
         sc->linkage = LINKcpp;          // note that namespaces imply C++ linkage
         sc->parent = this;
 
-        for (size_t i = 0; i < members->dim; i++)
+        for (size_t i = 0; i < members->length; i++)
         {
             Dsymbol *s = (*members)[i];
             s->importAll(sc);
         }
 
-        for (size_t i = 0; i < members->dim; i++)
+        for (size_t i = 0; i < members->length; i++)
         {
             Dsymbol *s = (*members)[i];
             s->semantic(sc);
@@ -133,7 +133,7 @@ void Nspace::semantic2(Scope *sc)
         assert(sc);
         sc = sc->push(this);
         sc->linkage = LINKcpp;
-        for (size_t i = 0; i < members->dim; i++)
+        for (size_t i = 0; i < members->length; i++)
         {
             Dsymbol *s = (*members)[i];
             s->semantic2(sc);
@@ -151,7 +151,7 @@ void Nspace::semantic3(Scope *sc)
     {
         sc = sc->push(this);
         sc->linkage = LINKcpp;
-        for (size_t i = 0; i < members->dim; i++)
+        for (size_t i = 0; i < members->length; i++)
         {
             Dsymbol *s = (*members)[i];
             s->semantic3(sc);
@@ -189,7 +189,7 @@ int Nspace::apply(Dsymbol_apply_ft_t fp, void *param)
 {
     if (members)
     {
-        for (size_t i = 0; i < members->dim; i++)
+        for (size_t i = 0; i < members->length; i++)
         {
             Dsymbol *s = (*members)[i];
             if (s)
@@ -208,7 +208,7 @@ bool Nspace::hasPointers()
 
     if (members)
     {
-        for (size_t i = 0; i < members->dim; i++)
+        for (size_t i = 0; i < members->length; i++)
         {
             Dsymbol *s = (*members)[i];
             //printf(" s = %s %s\n", s->kind(), s->toChars());
@@ -228,7 +228,7 @@ void Nspace::setFieldOffset(AggregateDeclaration *ad, unsigned *poffset, bool is
         semantic(NULL);         // try to resolve it
     if (members)
     {
-        for (size_t i = 0; i < members->dim; i++)
+        for (size_t i = 0; i < members->length; i++)
         {
             Dsymbol *s = (*members)[i];
             //printf("\t%s\n", s->toChars());

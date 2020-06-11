@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -787,7 +787,7 @@ UnionExp Equal(TOK op, Loc loc, Type *type, Expression *e1, Expression *e2)
         else if (e2->op == TOKarrayliteral)
         {
             ArrayLiteralExp *es2 = (ArrayLiteralExp *)e2;
-            cmp = !es2->elements || (0 == es2->elements->dim);
+            cmp = !es2->elements || (0 == es2->elements->length);
         }
         else
         {
@@ -805,7 +805,7 @@ UnionExp Equal(TOK op, Loc loc, Type *type, Expression *e1, Expression *e2)
         else if (e1->op == TOKarrayliteral)
         {
             ArrayLiteralExp *es1 = (ArrayLiteralExp *)e1;
-            cmp = !es1->elements || (0 == es1->elements->dim);
+            cmp = !es1->elements || (0 == es1->elements->length);
         }
         else
         {
@@ -835,16 +835,16 @@ UnionExp Equal(TOK op, Loc loc, Type *type, Expression *e1, Expression *e2)
         ArrayLiteralExp *es1 = (ArrayLiteralExp *)e1;
         ArrayLiteralExp *es2 = (ArrayLiteralExp *)e2;
 
-        if ((!es1->elements || !es1->elements->dim) &&
-            (!es2->elements || !es2->elements->dim))
+        if ((!es1->elements || !es1->elements->length) &&
+            (!es2->elements || !es2->elements->length))
             cmp = 1;            // both arrays are empty
         else if (!es1->elements || !es2->elements)
             cmp = 0;
-        else if (es1->elements->dim != es2->elements->dim)
+        else if (es1->elements->length != es2->elements->length)
             cmp = 0;
         else
         {
-            for (size_t i = 0; i < es1->elements->dim; i++)
+            for (size_t i = 0; i < es1->elements->length; i++)
             {
                 Expression *ee1 = es1->getElement(i);
                 Expression *ee2 = es2->getElement(i);
@@ -871,7 +871,7 @@ UnionExp Equal(TOK op, Loc loc, Type *type, Expression *e1, Expression *e2)
         StringExp *es1 = (StringExp *)e1;
         ArrayLiteralExp *es2 = (ArrayLiteralExp *)e2;
         size_t dim1 = es1->len;
-        size_t dim2 = es2->elements ? es2->elements->dim : 0;
+        size_t dim2 = es2->elements ? es2->elements->length : 0;
         if (dim1 != dim2)
             cmp = 0;
         else
@@ -899,17 +899,17 @@ UnionExp Equal(TOK op, Loc loc, Type *type, Expression *e1, Expression *e2)
 
         if (es1->sd != es2->sd)
             cmp = 0;
-        else if ((!es1->elements || !es1->elements->dim) &&
-            (!es2->elements || !es2->elements->dim))
+        else if ((!es1->elements || !es1->elements->length) &&
+            (!es2->elements || !es2->elements->length))
             cmp = 1;            // both arrays are empty
         else if (!es1->elements || !es2->elements)
             cmp = 0;
-        else if (es1->elements->dim != es2->elements->dim)
+        else if (es1->elements->length != es2->elements->length)
             cmp = 0;
         else
         {
             cmp = 1;
-            for (size_t i = 0; i < es1->elements->dim; i++)
+            for (size_t i = 0; i < es1->elements->length; i++)
             {
                 Expression *ee1 = (*es1->elements)[i];
                 Expression *ee2 = (*es2->elements)[i];
@@ -1235,7 +1235,7 @@ L1:
         StructDeclaration *sd = tb->toDsymbol(NULL)->isStructDeclaration();
         assert(sd);
         Expressions *elements = new Expressions;
-        for (size_t i = 0; i < sd->fields.dim; i++)
+        for (size_t i = 0; i < sd->fields.length; i++)
         {
             VarDeclaration *v = sd->fields[i];
             UnionExp zero;
@@ -1276,14 +1276,14 @@ UnionExp ArrayLength(Type *type, Expression *e1)
     else if (e1->op == TOKarrayliteral)
     {
         ArrayLiteralExp *ale = (ArrayLiteralExp *)e1;
-        size_t dim = ale->elements ? ale->elements->dim : 0;
+        size_t dim = ale->elements ? ale->elements->length : 0;
 
         new(&ue) IntegerExp(loc, dim, type);
     }
     else if (e1->op == TOKassocarrayliteral)
     {
         AssocArrayLiteralExp *ale = (AssocArrayLiteralExp *)e1;
-        size_t dim = ale->keys->dim;
+        size_t dim = ale->keys->length;
 
         new(&ue) IntegerExp(loc, dim, type);
     }
@@ -1353,9 +1353,9 @@ UnionExp Index(Type *type, Expression *e1, Expression *e2)
         if (e1->op == TOKarrayliteral)
         {
             ArrayLiteralExp *ale = (ArrayLiteralExp *)e1;
-            if (i >= ale->elements->dim)
+            if (i >= ale->elements->length)
             {
-                e1->error("array index %llu is out of bounds %s[0 .. %u]", i, e1->toChars(), ale->elements->dim);
+                e1->error("array index %llu is out of bounds %s[0 .. %u]", i, e1->toChars(), ale->elements->length);
                 new(&ue) ErrorExp();
             }
             else
@@ -1377,7 +1377,7 @@ UnionExp Index(Type *type, Expression *e1, Expression *e2)
         AssocArrayLiteralExp *ae = (AssocArrayLiteralExp *)e1;
         /* Search the keys backwards, in case there are duplicate keys
          */
-        for (size_t i = ae->keys->dim; i;)
+        for (size_t i = ae->keys->length; i;)
         {
             i--;
             Expression *ekey = (*ae->keys)[i];
@@ -1445,7 +1445,7 @@ UnionExp Slice(Type *type, Expression *e1, Expression *lwr, Expression *upr)
         uinteger_t ilwr = lwr->toInteger();
         uinteger_t iupr = upr->toInteger();
 
-        if (iupr > es1->elements->dim || ilwr > iupr)
+        if (iupr > es1->elements->length || ilwr > iupr)
         {
             e1->error("array slice [%llu .. %llu] is out of bounds", ilwr, iupr);
             new(&ue) ErrorExp();
@@ -1496,7 +1496,7 @@ void sliceAssignArrayLiteralFromString(ArrayLiteralExp *existingAE, StringExp *n
 void sliceAssignStringFromArrayLiteral(StringExp *existingSE, ArrayLiteralExp *newae, size_t firstIndex)
 {
     void *s = existingSE->string;
-    for (size_t j = 0; j < newae->elements->dim; j++)
+    for (size_t j = 0; j < newae->elements->length; j++)
     {
         unsigned val = (unsigned)newae->getElement(j)->toInteger();
         switch (existingSE->sz)
@@ -1686,16 +1686,16 @@ UnionExp Cat(Type *type, Expression *e1, Expression *e2)
         // [chars] ~ string --> [chars]
         StringExp *es = (StringExp *)e2;
         ArrayLiteralExp *ea = (ArrayLiteralExp *)e1;
-        size_t len = es->len + ea->elements->dim;
+        size_t len = es->len + ea->elements->length;
         Expressions * elems = new Expressions;
         elems->setDim(len);
-        for (size_t i= 0; i < ea->elements->dim; ++i)
+        for (size_t i= 0; i < ea->elements->length; ++i)
         {
             (*elems)[i] = ea->getElement(i);
         }
         new(&ue) ArrayLiteralExp(e1->loc, type, elems);
         ArrayLiteralExp *dest = (ArrayLiteralExp *)ue.exp();
-        sliceAssignArrayLiteralFromString(dest, es, ea->elements->dim);
+        sliceAssignArrayLiteralFromString(dest, es, ea->elements->length);
         assert(ue.exp()->type);
         return ue;
     }
@@ -1705,10 +1705,10 @@ UnionExp Cat(Type *type, Expression *e1, Expression *e2)
         // string ~ [chars] --> [chars]
         StringExp *es = (StringExp *)e1;
         ArrayLiteralExp *ea = (ArrayLiteralExp *)e2;
-        size_t len = es->len + ea->elements->dim;
+        size_t len = es->len + ea->elements->length;
         Expressions * elems = new Expressions;
         elems->setDim(len);
-        for (size_t i= 0; i < ea->elements->dim; ++i)
+        for (size_t i= 0; i < ea->elements->length; ++i)
         {
             (*elems)[es->len + i] = ea->getElement(i);
         }
@@ -1786,7 +1786,7 @@ UnionExp Cat(Type *type, Expression *e1, Expression *e2)
         e = ue.exp();
         if (type->toBasetype()->ty == Tsarray)
         {
-            e->type = t1->nextOf()->sarrayOf(elems->dim);
+            e->type = t1->nextOf()->sarrayOf(elems->length);
         }
         else
             e->type = type;
@@ -1812,7 +1812,7 @@ UnionExp Cat(Type *type, Expression *e1, Expression *e2)
         e = ue.exp();
         if (type->toBasetype()->ty == Tsarray)
         {
-            e->type = t1->nextOf()->sarrayOf(elems->dim);
+            e->type = t1->nextOf()->sarrayOf(elems->length);
         }
         else
             e->type = type;
@@ -1832,7 +1832,7 @@ UnionExp Cat(Type *type, Expression *e1, Expression *e2)
         e = ue.exp();
         if (type->toBasetype()->ty == Tsarray)
         {
-            e->type = e2->type->sarrayOf(elems->dim);
+            e->type = e2->type->sarrayOf(elems->length);
         }
         else
             e->type = type;
@@ -1849,7 +1849,7 @@ UnionExp Cat(Type *type, Expression *e1, Expression *e2)
         e = ue.exp();
         if (type->toBasetype()->ty == Tsarray)
         {
-            e->type = e1->type->sarrayOf(elems->dim);
+            e->type = e1->type->sarrayOf(elems->length);
         }
         else
             e->type = type;

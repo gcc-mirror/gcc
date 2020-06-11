@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,8 +49,7 @@
 
 --    4. In the case of static predicates, we need to expand out choices that
 --    correspond to the predicate for the back end. This expansion destroys
---    the list of choices, so it should be delayed to expansion time. We do
---    not want to mess up the -gnatct ASIS tree, which needs to be able to
+--    the list of choices, so it should be delayed to expansion time.
 
 --  Step 1 is performed by the generic procedure Analyze_Choices, which is
 --  called when the variant record or case statement/expression is first
@@ -66,12 +65,9 @@
 --  for predicated subtypes to accurately construct this.
 
 --  Step 4 is performed by the procedure Expand_Static_Predicates_In_Choices.
---  For case statements, this call only happens during expansion, so the tree
---  generated for ASIS does not have this expansion. For the Variant case, the
---  expansion is done in the ASIS -gnatct case, but with a proper Rewrite call
---  on the N_Variant node, so ASIS can retrieve the original. The reason we do
---  the expansion unconditionally for variants is that other processing, for
---  example for aggregates, relies on having a complete list of choices.
+--  For case statements, this call only happens during expansion. The reason
+--  we do the expansion unconditionally for variants is that other processing,
+--  for example for aggregates, relies on having a complete list of choices.
 
 --  Historical note: We used to perform all four of these functions at once in
 --  a single procedure called Analyze_Choices. This routine was called at the

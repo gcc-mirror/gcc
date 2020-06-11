@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4330,11 +4330,10 @@ package body Sem_Warn is
                --  the message if the variable is volatile, has an address
                --  clause, is aliased, or is a renaming, or is imported.
 
-               if Referenced_As_LHS_Check_Spec (E)
-                 and then No (Address_Clause (E))
-                 and then not Is_Volatile (E)
-               then
+               if Referenced_As_LHS_Check_Spec (E) then
                   if Warn_On_Modified_Unread
+                    and then No (Address_Clause (E))
+                    and then not Is_Volatile (E)
                     and then not Is_Imported (E)
                     and then not Is_Aliased (E)
                     and then No (Renamed_Object (E))

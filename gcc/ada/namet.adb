@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,11 +33,9 @@
 --  source file must be properly reflected in the C header file namet.h
 --  which is created manually from namet.ads and namet.adb.
 
-with Debug;    use Debug;
-with Opt;      use Opt;
-with Output;   use Output;
-with System;   use System;
-with Tree_IO;  use Tree_IO;
+with Debug;  use Debug;
+with Opt;    use Opt;
+with Output; use Output;
 with Widechar;
 
 with Interfaces; use Interfaces;
@@ -1728,34 +1726,6 @@ package body Namet is
    begin
       return Buf.Chars (1 .. Buf.Length);
    end To_String;
-
-   ---------------
-   -- Tree_Read --
-   ---------------
-
-   procedure Tree_Read is
-   begin
-      Name_Chars.Tree_Read;
-      Name_Entries.Tree_Read;
-
-      Tree_Read_Data
-        (Hash_Table'Address,
-         Hash_Table'Length * (Hash_Table'Component_Size / Storage_Unit));
-   end Tree_Read;
-
-   ----------------
-   -- Tree_Write --
-   ----------------
-
-   procedure Tree_Write is
-   begin
-      Name_Chars.Tree_Write;
-      Name_Entries.Tree_Write;
-
-      Tree_Write_Data
-        (Hash_Table'Address,
-         Hash_Table'Length * (Hash_Table'Component_Size / Storage_Unit));
-   end Tree_Write;
 
    ------------
    -- Unlock --

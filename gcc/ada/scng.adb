@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2181,8 +2181,8 @@ package body Scng is
 
             return;
 
-         --  Right bracket or right brace, treated as right paren
-         --  but proper aggregate delimiter in Ada_2020
+         --  Right bracket or right brace, treated as right paren but proper
+         --  aggregate delimiter in Ada 2020.
 
          when ']' | '}' =>
             if Ada_Version >= Ada_2020 then

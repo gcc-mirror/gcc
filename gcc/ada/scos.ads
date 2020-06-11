@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2009-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -162,6 +162,8 @@ package SCOs is
    --      R        extended RETURN statement
    --      S        SELECT statement
    --      W        WHILE loop statement (from WHILE to end of condition)
+   --      X        body of a degenerate subprogram (null procedure or
+   --               expression function)
 
    --      Note: for I and W, condition above is in the RM syntax sense (this
    --      condition is a decision in SCO terminology).

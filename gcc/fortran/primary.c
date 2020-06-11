@@ -2245,6 +2245,27 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	    {
 	      if (tmp)
 		{
+		  switch (tmp->u.i)
+		    {
+		    case INQUIRY_RE:
+		    case INQUIRY_IM:
+		      if (!gfc_notify_std (GFC_STD_F2008,
+					   "RE or IM part_ref at %C"))
+			return MATCH_ERROR;
+		      break;
+
+		    case INQUIRY_KIND:
+		      if (!gfc_notify_std (GFC_STD_F2003,
+					   "KIND part_ref at %C"))
+			return MATCH_ERROR;
+		      break;
+
+		    case INQUIRY_LEN:
+		      if (!gfc_notify_std (GFC_STD_F2003, "LEN part_ref at %C"))
+			return MATCH_ERROR;
+		      break;
+		    }
+
 		  if ((tmp->u.i == INQUIRY_RE || tmp->u.i == INQUIRY_IM)
 		      && primary->ts.type != BT_COMPLEX)
 		    {

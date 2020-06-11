@@ -1039,7 +1039,7 @@ stream_out_bitmap (struct lto_simple_output_block *ob,
   EXECUTE_IF_AND_IN_BITMAP (bits, ltrans_statics, 0, index, bi)
     {
       tree decl = (*reference_vars_to_consider) [index];
-      lto_output_var_decl_index (ob->decl_state, ob->main_stream, decl);
+      lto_output_var_decl_ref (ob->decl_state, ob->main_stream, decl);
     }
 }
 
@@ -1158,9 +1158,7 @@ ipa_reference_read_optimization_summary (void)
 	    fprintf (dump_file, "all module statics:");
 	  for (i = 0; i < (unsigned int)b_count; i++)
 	    {
-	      unsigned int var_index = streamer_read_uhwi (ib);
-	      tree v_decl = lto_file_decl_data_get_var_decl (file_data,
-							     var_index);
+	      tree v_decl = lto_input_var_decl_ref (ib, file_data);
 	      bool existed;
 	      bitmap_set_bit (all_module_statics,
 			      ipa_reference_var_get_or_insert_uid
@@ -1206,9 +1204,7 @@ ipa_reference_read_optimization_summary (void)
 		    (&optimization_summary_obstack);
 		  for (j = 0; j < (unsigned int)v_count; j++)
 		    {
-		      unsigned int var_index = streamer_read_uhwi (ib);
-		      tree v_decl = lto_file_decl_data_get_var_decl (file_data,
-								     var_index);
+		      tree v_decl = lto_input_var_decl_ref (ib, file_data);
 		      bitmap_set_bit (info->statics_read,
 				      ipa_reference_var_uid (v_decl));
 		      if (dump_file)
@@ -1235,9 +1231,7 @@ ipa_reference_read_optimization_summary (void)
 		    (&optimization_summary_obstack);
 		  for (j = 0; j < (unsigned int)v_count; j++)
 		    {
-		      unsigned int var_index = streamer_read_uhwi (ib);
-		      tree v_decl = lto_file_decl_data_get_var_decl (file_data,
-								     var_index);
+		      tree v_decl = lto_input_var_decl_ref (ib, file_data);
 		      bitmap_set_bit (info->statics_written,
 				      ipa_reference_var_uid (v_decl));
 		      if (dump_file)

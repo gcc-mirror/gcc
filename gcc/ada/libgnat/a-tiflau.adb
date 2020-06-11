@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -194,7 +194,7 @@ package body Ada.Text_IO.Float_Aux is
       Aft  : Field;
       Exp  : Field)
    is
-      Buf : String (1 .. 3 * Field'Last + 2);
+      Buf : String (1 .. Max_Real_Image_Length);
       Ptr : Natural := 0;
 
    begin
@@ -212,7 +212,7 @@ package body Ada.Text_IO.Float_Aux is
       Aft  : Field;
       Exp  : Field)
    is
-      Buf : String (1 .. 3 * Field'Last + 2);
+      Buf : String (1 .. Max_Real_Image_Length);
       Ptr : Natural := 0;
 
    begin

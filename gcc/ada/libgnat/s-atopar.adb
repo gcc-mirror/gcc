@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                 Copyright (C) 2019, Free Software Foundation, Inc.       --
+--                 Copyright (C) 2019-2020, Free Software Foundation, Inc.  --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -88,7 +88,7 @@ package body System.Atomic_Operations.Arithmetic is
       pragma Warnings (On);
 
    begin
-      case Item'Size is
+      case Atomic_Type'Object_Size is
          when 8      => return Atomic_Fetch_Add_1 (Item'Address, Value);
          when 16     => return Atomic_Fetch_Add_2 (Item'Address, Value);
          when 32     => return Atomic_Fetch_Add_4 (Item'Address, Value);
@@ -125,7 +125,7 @@ package body System.Atomic_Operations.Arithmetic is
       pragma Warnings (On);
 
    begin
-      case Item'Size is
+      case Atomic_Type'Object_Size is
          when 8      => return Atomic_Fetch_Sub_1 (Item'Address, Value);
          when 16     => return Atomic_Fetch_Sub_2 (Item'Address, Value);
          when 32     => return Atomic_Fetch_Sub_4 (Item'Address, Value);
@@ -139,9 +139,10 @@ package body System.Atomic_Operations.Arithmetic is
    ------------------
 
    function Is_Lock_Free (Item : aliased Atomic_Type) return Boolean is
+      pragma Unreferenced (Item);
       use type Interfaces.C.size_t;
    begin
-      return Boolean (Atomic_Always_Lock_Free (Item'Size / 8));
+      return Boolean (Atomic_Always_Lock_Free (Atomic_Type'Object_Size / 8));
    end Is_Lock_Free;
 
 end System.Atomic_Operations.Arithmetic;

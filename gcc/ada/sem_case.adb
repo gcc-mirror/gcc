@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -458,8 +458,7 @@ package body Sem_Case is
          Choice      : Node_Id;
          Choice_Hi   : Uint;
          Choice_Lo   : Uint;
-         Prev_Choice : Node_Id;
-         pragma Warnings (Off, Prev_Choice);
+         Prev_Choice : Node_Id := Empty;
          Prev_Hi     : Uint;
 
       begin
@@ -484,6 +483,8 @@ package body Sem_Case is
                      exit;
                   end if;
                end loop;
+
+               pragma Assert (Present (Prev_Choice));
 
                if Sloc (Prev_Choice) <= Sloc (Choice) then
                   Error_Msg_Sloc := Sloc (Prev_Choice);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2019, Free Software Foundation, Inc.           --
+--             Copyright (C) 2019-2020, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -343,7 +343,7 @@ package body Bindo.Diagnostics is
                                  (G     => Lib_Graph,
                                   Cycle => Cycle);
 
-      Current_Edge : Library_Graph_Edge_Id;
+      Current_Edge : Library_Graph_Edge_Id := No_Library_Graph_Edge;
       First_Edge   : Library_Graph_Edge_Id;
       Iter         : Edges_Of_Cycle_Iterator;
       Next_Edge    : Library_Graph_Edge_Id;

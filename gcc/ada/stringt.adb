@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -359,26 +359,6 @@ package body Stringt is
       Append (Buf, S);
       return To_String (Buf);
    end To_String;
-
-   ---------------
-   -- Tree_Read --
-   ---------------
-
-   procedure Tree_Read is
-   begin
-      String_Chars.Tree_Read;
-      Strings.Tree_Read;
-   end Tree_Read;
-
-   ----------------
-   -- Tree_Write --
-   ----------------
-
-   procedure Tree_Write is
-   begin
-      String_Chars.Tree_Write;
-      Strings.Tree_Write;
-   end Tree_Write;
 
    ------------
    -- Unlock --

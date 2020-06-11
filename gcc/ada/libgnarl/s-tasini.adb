@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2019, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2020, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,7 +44,6 @@ with System.Soft_Links;
 with System.Soft_Links.Tasking;
 with System.Tasking.Debug;
 with System.Tasking.Task_Attributes;
-with System.Parameters;
 
 with System.Secondary_Stack;
 pragma Elaborate_All (System.Secondary_Stack);
@@ -244,17 +243,9 @@ package body System.Tasking.Initialization is
 
          Self_ID.Deferral_Level := Self_ID.Deferral_Level + 1;
 
-         if Single_Lock then
-            Lock_RTS;
-         end if;
-
          Write_Lock (Self_ID);
          Self_ID.Pending_Action := False;
          Unlock (Self_ID);
-
-         if Single_Lock then
-            Unlock_RTS;
-         end if;
 
          --  Restore the original Deferral value
 
@@ -309,7 +300,7 @@ package body System.Tasking.Initialization is
    procedure Final_Task_Unlock (Self_ID : Task_Id) is
    begin
       pragma Assert (Self_ID.Common.Global_Task_Lock_Nesting = 1);
-      Unlock (Global_Task_Lock'Access, Global_Lock => True);
+      Unlock (Global_Task_Lock'Access);
    end Final_Task_Unlock;
 
    --------------
@@ -563,7 +554,7 @@ package body System.Tasking.Initialization is
 
       if Self_ID.Common.Global_Task_Lock_Nesting = 1 then
          Defer_Abort_Nestable (Self_ID);
-         Write_Lock (Global_Task_Lock'Access, Global_Lock => True);
+         Write_Lock (Global_Task_Lock'Access);
       end if;
    end Task_Lock;
 
@@ -593,7 +584,7 @@ package body System.Tasking.Initialization is
         Self_ID.Common.Global_Task_Lock_Nesting - 1;
 
       if Self_ID.Common.Global_Task_Lock_Nesting = 0 then
-         Unlock (Global_Task_Lock'Access, Global_Lock => True);
+         Unlock (Global_Task_Lock'Access);
          Undefer_Abort_Nestable (Self_ID);
       end if;
    end Task_Unlock;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -906,10 +906,108 @@ package body Sem_Ch8 is
             Find_Type (Subtype_Mark (N));
          end if;
 
-      elsif Present (Subtype_Mark (N)) then
-         Find_Type (Subtype_Mark (N));
-         T := Entity (Subtype_Mark (N));
-         Analyze (Nam);
+      elsif Present (Subtype_Mark (N))
+        or else not Present (Access_Definition (N))
+      then
+         if Present (Subtype_Mark (N)) then
+            Find_Type (Subtype_Mark (N));
+            T := Entity (Subtype_Mark (N));
+            Analyze (Nam);
+
+         --  AI12-0275: Case of object renaming without a subtype_mark
+
+         else
+            Analyze (Nam);
+
+            --  Normal case of no overloading in object name
+
+            if not Is_Overloaded (Nam) then
+
+               --  Catch error cases (such as attempting to rename a procedure
+               --  or package) using the shorthand form.
+
+               if No (Etype (Nam))
+                 or else Etype (Nam) = Standard_Void_Type
+               then
+                  Error_Msg_N ("object name expected in renaming", Nam);
+
+                  Set_Ekind (Id, E_Variable);
+                  Set_Etype (Id, Any_Type);
+
+                  return;
+
+               else
+                  T := Etype (Nam);
+               end if;
+
+            --  Case of overloaded name, which will be illegal if there's more
+            --  than one acceptable interpretation (such as overloaded function
+            --  calls).
+
+            else
+               declare
+                  I    : Interp_Index;
+                  I1   : Interp_Index;
+                  It   : Interp;
+                  It1  : Interp;
+                  Nam1 : Entity_Id;
+
+               begin
+                  --  More than one candidate interpretation is available
+
+                  --  Remove procedure calls, which syntactically cannot appear
+                  --  in this context, but which cannot be removed by type
+                  --  checking, because the context does not impose a type.
+
+                  Get_First_Interp (Nam, I, It);
+                  while Present (It.Typ) loop
+                     if It.Typ = Standard_Void_Type then
+                        Remove_Interp (I);
+                     end if;
+
+                     Get_Next_Interp (I, It);
+                  end loop;
+
+                  Get_First_Interp (Nam, I, It);
+                  I1  := I;
+                  It1 := It;
+
+                  --  If there's no type present, we have an error case (such
+                  --  as overloaded procedures named in the object renaming).
+
+                  if No (It.Typ) then
+                     Error_Msg_N ("object name expected in renaming", Nam);
+
+                     Set_Ekind (Id, E_Variable);
+                     Set_Etype (Id, Any_Type);
+
+                     return;
+                  end if;
+
+                  Get_Next_Interp (I, It);
+
+                  if Present (It.Typ) then
+                     Nam1  := It1.Nam;
+                     It1 := Disambiguate (Nam, I1, I, Any_Type);
+
+                     if It1 = No_Interp then
+                        Error_Msg_N ("ambiguous name in object renaming", Nam);
+
+                        Error_Msg_Sloc := Sloc (It.Nam);
+                        Error_Msg_N ("\\possible interpretation#!", Nam);
+
+                        Error_Msg_Sloc := Sloc (Nam1);
+                        Error_Msg_N ("\\possible interpretation#!", Nam);
+
+                        return;
+                     end if;
+                  end if;
+
+                  Set_Etype (Nam, It1.Typ);
+                  T := It1.Typ;
+               end;
+            end if;
+         end if;
 
          --  The object renaming declaration may become Ghost if it renames a
          --  Ghost entity.
@@ -2605,7 +2703,7 @@ package body Sem_Ch8 is
                   exit;
                end if;
 
-               F := Next_Formal (F);
+               Next_Formal (F);
             end loop;
 
             if Ekind (Formal_Spec) = E_Function
@@ -2643,7 +2741,7 @@ package body Sem_Ch8 is
                      end if;
                   end if;
 
-                  F := Next_Formal (F);
+                  Next_Formal (F);
                end loop;
             end if;
          end if;
@@ -2740,12 +2838,12 @@ package body Sem_Ch8 is
       if Nkind (Nam) = N_Attribute_Reference then
 
          --  In the case of an abstract formal subprogram association, rewrite
-         --  an actual given by a stream attribute as the name of the
-         --  corresponding stream primitive of the type.
+         --  an actual given by a stream or Put_Image attribute as the name of
+         --  the corresponding stream or Put_Image primitive of the type.
 
-         --  In a generic context the stream operations are not generated, and
-         --  this must be treated as a normal attribute reference, to be
-         --  expanded in subsequent instantiations.
+         --  In a generic context the stream and Put_Image operations are not
+         --  generated, and this must be treated as a normal attribute
+         --  reference, to be expanded in subsequent instantiations.
 
          if Is_Actual
            and then Is_Abstract_Subprogram (Formal_Spec)
@@ -2753,12 +2851,12 @@ package body Sem_Ch8 is
          then
             declare
                Prefix_Type : constant Entity_Id := Entity (Prefix (Nam));
-               Stream_Prim : Entity_Id;
+               Prim : Entity_Id;
 
             begin
-               --  The class-wide forms of the stream attributes are not
-               --  primitive dispatching operations (even though they
-               --  internally dispatch to a stream attribute).
+               --  The class-wide forms of the stream and Put_Image attributes
+               --  are not primitive dispatching operations (even though they
+               --  internally dispatch).
 
                if Is_Class_Wide_Type (Prefix_Type) then
                   Error_Msg_N
@@ -2775,20 +2873,24 @@ package body Sem_Ch8 is
 
                case Attribute_Name (Nam) is
                   when Name_Input =>
-                     Stream_Prim :=
+                     Prim :=
                        Find_Optional_Prim_Op (Prefix_Type, TSS_Stream_Input);
 
                   when Name_Output =>
-                     Stream_Prim :=
+                     Prim :=
                        Find_Optional_Prim_Op (Prefix_Type, TSS_Stream_Output);
 
                   when Name_Read =>
-                     Stream_Prim :=
+                     Prim :=
                        Find_Optional_Prim_Op (Prefix_Type, TSS_Stream_Read);
 
                   when Name_Write =>
-                     Stream_Prim :=
+                     Prim :=
                        Find_Optional_Prim_Op (Prefix_Type, TSS_Stream_Write);
+
+                  when Name_Put_Image =>
+                     Prim :=
+                       Find_Optional_Prim_Op (Prefix_Type, TSS_Put_Image);
 
                   when others =>
                      Error_Msg_N
@@ -2797,10 +2899,13 @@ package body Sem_Ch8 is
                      return;
                end case;
 
-               --  If no operation was found, and the type is limited, the user
-               --  should have defined one.
+               --  If no stream operation was found, and the type is limited,
+               --  the user should have defined one. This rule does not apply
+               --  to Put_Image.
 
-               if No (Stream_Prim) then
+               if No (Prim)
+                 and then Attribute_Name (Nam) /= Name_Put_Image
+               then
                   if Is_Limited_Type (Prefix_Type) then
                      Error_Msg_NE
                       ("stream operation not defined for type&",
@@ -2821,9 +2926,9 @@ package body Sem_Ch8 is
                declare
                   Prim_Name : constant Node_Id :=
                                 Make_Identifier (Sloc (Nam),
-                                  Chars => Chars (Stream_Prim));
+                                  Chars => Chars (Prim));
                begin
-                  Set_Entity (Prim_Name, Stream_Prim);
+                  Set_Entity (Prim_Name, Prim);
                   Rewrite (Nam, Prim_Name);
                   Analyze (Nam);
                end;
@@ -5337,7 +5442,7 @@ package body Sem_Ch8 is
                      return;
                   end if;
 
-                  Lit := Next_Literal (Lit);
+                  Next_Literal (Lit);
                end if;
             end;
          end if;
@@ -5950,7 +6055,7 @@ package body Sem_Ch8 is
 
                   --  Package or generic package is always a simple reference
 
-                  if Ekind_In (E, E_Package, E_Generic_Package) then
+                  if Is_Package_Or_Generic_Package (E) then
                      Generate_Reference (E, N, 'r');
 
                   --  Else see if we have a left hand side
@@ -8526,7 +8631,7 @@ package body Sem_Ch8 is
          while Present (Curr) loop
             Mark_Use_Type (Curr);
 
-            Curr := Next_Formal (Curr);
+            Next_Formal (Curr);
          end loop;
 
          --  Handle the return type
@@ -8779,7 +8884,7 @@ package body Sem_Ch8 is
 
       --  Set Default_Storage_Pool field of the library unit if necessary
 
-      if Ekind_In (S, E_Package, E_Generic_Package)
+      if Is_Package_Or_Generic_Package (S)
         and then
           Nkind (Parent (Unit_Declaration_Node (S))) = N_Compilation_Unit
       then
@@ -8949,7 +9054,7 @@ package body Sem_Ch8 is
 
       if Is_Child_Unit (S)
         and then Present (E)
-        and then Ekind_In (E, E_Package, E_Generic_Package)
+        and then Is_Package_Or_Generic_Package (E)
         and then
           Nkind (Parent (Unit_Declaration_Node (E))) = N_Compilation_Unit
       then
@@ -9407,7 +9512,7 @@ package body Sem_Ch8 is
                Set_Current_Use_Clause (Entity (N), Prev_Use_Clause (Curr));
             end if;
 
-            Curr := Next_Use_Clause (Curr);
+            Next_Use_Clause (Curr);
          end loop;
       end Update_Chain_In_Scope;
 

@@ -1,3 +1,21 @@
+2020-06-02  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Update hash of local patches.
+
+2020-06-02  Martin Liska  <mliska@suse.cz>
+
+	* MERGE: Merge from master.
+
+2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/95413
+	* configure: Regenerated.
+
+2020-05-29  Martin Liska  <mliska@suse.cz>
+
+	* HOWTO_MERGE: Do not mention not existing argument.
+	* README.gcc: Update LLVM repository location.
+
 2020-05-26  Martin Liska  <mliska@suse.cz>
 
 	* LOCAL_PATCHES: Use git hash instead of SVN id.

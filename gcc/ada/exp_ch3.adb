@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,6 +37,7 @@ with Exp_Ch9;  use Exp_Ch9;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Disp; use Exp_Disp;
 with Exp_Dist; use Exp_Dist;
+with Exp_Put_Image;
 with Exp_Smem; use Exp_Smem;
 with Exp_Strm; use Exp_Strm;
 with Exp_Tss;  use Exp_Tss;
@@ -265,6 +266,7 @@ package body Exp_Ch3 is
    --     typSW          provides result of 'Write attribute
    --     typSI          provides result of 'Input attribute
    --     typSO          provides result of 'Output attribute
+   --     typPI          provides result of 'Put_Image attribute
    --
    --  The following entries are additionally present for non-limited tagged
    --  types, and implement additional dispatching operations for predefined
@@ -4670,6 +4672,7 @@ package body Exp_Ch3 is
       Ent           : Entity_Id;
       Fent          : Entity_Id;
       Is_Contiguous : Boolean;
+      Index_Typ     : Entity_Id;
       Ityp          : Entity_Id;
       Last_Repval   : Uint;
       Lst           : List_Id;
@@ -4686,81 +4689,99 @@ package body Exp_Ch3 is
 
       Ent := First_Literal (Typ);
       Last_Repval := Enumeration_Rep (Ent);
-
+      Num := 1;
       Next_Literal (Ent);
+
       while Present (Ent) loop
          if Enumeration_Rep (Ent) - Last_Repval /= 1 then
             Is_Contiguous := False;
-            exit;
          else
             Last_Repval := Enumeration_Rep (Ent);
          end if;
 
+         Num := Num + 1;
          Next_Literal (Ent);
       end loop;
 
       if Is_Contiguous then
          Set_Has_Contiguous_Rep (Typ);
-         Ent := First_Literal (Typ);
-         Num := 1;
-         Lst := New_List (New_Occurrence_Of (Ent, Sloc (Ent)));
+
+         --  Now build a subtype declaration
+
+         --    subtype typI is new Natural range 0 .. num - 1
+
+         Index_Typ :=
+           Make_Defining_Identifier (Loc,
+             Chars => New_External_Name (Chars (Typ), 'I'));
+
+         Append_Freeze_Action (Typ,
+           Make_Subtype_Declaration (Loc,
+             Defining_Identifier => Index_Typ,
+             Subtype_Indication =>
+               Make_Subtype_Indication (Loc,
+                 Subtype_Mark =>
+                   New_Occurrence_Of (Standard_Natural,  Loc),
+                 Constraint  =>
+                   Make_Range_Constraint (Loc,
+                     Range_Expression =>
+                       Make_Range (Loc,
+                         Low_Bound  =>
+                           Make_Integer_Literal (Loc, 0),
+                         High_Bound =>
+                           Make_Integer_Literal (Loc, Num - 1))))));
+
+         Set_Enum_Pos_To_Rep (Typ, Index_Typ);
 
       else
          --  Build list of literal references
 
          Lst := New_List;
-         Num := 0;
-
          Ent := First_Literal (Typ);
          while Present (Ent) loop
             Append_To (Lst, New_Occurrence_Of (Ent, Sloc (Ent)));
-            Num := Num + 1;
             Next_Literal (Ent);
          end loop;
+
+         --  Now build an array declaration
+
+         --    typA : constant array (Natural range 0 .. num - 1) of typ :=
+         --             (v, v, v, v, v, ....)
+
+         Arr :=
+           Make_Defining_Identifier (Loc,
+             Chars => New_External_Name (Chars (Typ), 'A'));
+
+         Append_Freeze_Action (Typ,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Arr,
+             Constant_Present    => True,
+
+             Object_Definition   =>
+               Make_Constrained_Array_Definition (Loc,
+                 Discrete_Subtype_Definitions => New_List (
+                   Make_Subtype_Indication (Loc,
+                     Subtype_Mark =>
+                       New_Occurrence_Of (Standard_Natural, Loc),
+                     Constraint   =>
+                       Make_Range_Constraint (Loc,
+                         Range_Expression =>
+                           Make_Range (Loc,
+                             Low_Bound  =>
+                               Make_Integer_Literal (Loc, 0),
+                             High_Bound =>
+                               Make_Integer_Literal (Loc, Num - 1))))),
+
+                 Component_Definition =>
+                   Make_Component_Definition (Loc,
+                     Aliased_Present => False,
+                     Subtype_Indication => New_Occurrence_Of (Typ, Loc))),
+
+             Expression =>
+               Make_Aggregate (Loc,
+                 Expressions => Lst)));
+
+         Set_Enum_Pos_To_Rep (Typ, Arr);
       end if;
-
-      --  Now build an array declaration
-
-      --    typA : array (Natural range 0 .. num - 1) of ctype :=
-      --             (v, v, v, v, v, ....)
-
-      --  where ctype is the corresponding integer type. If the representation
-      --  is contiguous, we only keep the first literal, which provides the
-      --  offset for Pos_To_Rep computations.
-
-      Arr :=
-        Make_Defining_Identifier (Loc,
-          Chars => New_External_Name (Chars (Typ), 'A'));
-
-      Append_Freeze_Action (Typ,
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => Arr,
-          Constant_Present    => True,
-
-          Object_Definition   =>
-            Make_Constrained_Array_Definition (Loc,
-              Discrete_Subtype_Definitions => New_List (
-                Make_Subtype_Indication (Loc,
-                  Subtype_Mark => New_Occurrence_Of (Standard_Natural, Loc),
-                  Constraint   =>
-                    Make_Range_Constraint (Loc,
-                      Range_Expression =>
-                        Make_Range (Loc,
-                          Low_Bound  =>
-                            Make_Integer_Literal (Loc, 0),
-                          High_Bound =>
-                            Make_Integer_Literal (Loc, Num - 1))))),
-
-              Component_Definition =>
-                Make_Component_Definition (Loc,
-                  Aliased_Present => False,
-                  Subtype_Indication => New_Occurrence_Of (Typ, Loc))),
-
-          Expression =>
-            Make_Aggregate (Loc,
-              Expressions => Lst)));
-
-      Set_Enum_Pos_To_Rep (Typ, Arr);
 
       --  Now we build the function that converts representation values to
       --  position values. This function has the form:
@@ -4806,7 +4827,7 @@ package body Exp_Ch3 is
          if Esize (Typ) <= Standard_Integer_Size then
             Ityp := Standard_Integer;
          else
-            Ityp := Universal_Integer;
+            Ityp := Standard_Long_Long_Integer;
          end if;
 
       --  Representations are unsigned
@@ -5579,7 +5600,7 @@ package body Exp_Ch3 is
          declare
             Comp  : Entity_Id;
             First : Boolean;
-            M_Id  : Entity_Id;
+            M_Id  : Entity_Id := Empty;
             Typ   : Entity_Id;
 
          begin
@@ -5612,6 +5633,7 @@ package body Exp_Ch3 is
                   --  Reuse the same master to service any additional types
 
                   else
+                     pragma Assert (Present (M_Id));
                      Set_Master_Id (Typ, M_Id);
                   end if;
                end if;
@@ -6609,9 +6631,13 @@ package body Exp_Ch3 is
             --  An aggregate that must be built in place is not resolved and
             --  expanded until the enclosing construct is expanded. This will
             --  happen when the aggregate is limited and the declared object
-            --  has a following address clause.
+            --  has a following address clause; it happens also when generating
+            --  C code for an aggregate that has an alignment or address clause
+            --  (see Analyze_Object_Declaration).
 
-            if Is_Limited_Type (Typ) and then not Analyzed (Expr) then
+            if (Is_Limited_Type (Typ) or else Modify_Tree_For_C)
+              and then not Analyzed (Expr)
+            then
                Resolve (Expr, Typ);
             end if;
 
@@ -9559,10 +9585,9 @@ package body Exp_Ch3 is
                begin
                   --  Build equality code with a user-defined operator, if
                   --  available, and with the predefined "=" otherwise. For
-                  --  compatibility with older Ada versions, and preserve the
-                  --  workings of some ASIS tools, we also use the predefined
-                  --  operation if the component-type equality is abstract,
-                  --  rather than raising Program_Error.
+                  --  compatibility with older Ada versions, we also use the
+                  --  predefined operation if the component-type equality is
+                  --  abstract, rather than raising Program_Error.
 
                   if Ada_Version < Ada_2012 then
                      Next_Test := Make_Op_Ne (Loc, Lhs, Rhs);
@@ -9901,6 +9926,8 @@ package body Exp_Ch3 is
       --  Set to True if Tag_Typ has a primitive that renames the predefined
       --  equality operator. Used to implement (RM 8-5-4(8)).
 
+      use Exp_Put_Image;
+
    --  Start of processing for Make_Predefined_Primitive_Specs
 
    begin
@@ -9917,6 +9944,17 @@ package body Exp_Ch3 is
             Parameter_Type      => New_Occurrence_Of (Tag_Typ, Loc))),
 
         Ret_Type => Standard_Long_Long_Integer));
+
+      --  Spec of Put_Image
+
+      if Enable_Put_Image (Tag_Typ)
+        and then No (TSS (Tag_Typ, TSS_Put_Image))
+      then
+         Append_To (Res, Predef_Spec_Or_Body (Loc,
+           Tag_Typ => Tag_Typ,
+           Name    => Make_TSS_Name (Tag_Typ, TSS_Put_Image),
+           Profile => Build_Put_Image_Profile (Loc, Tag_Typ)));
+      end if;
 
       --  Specs for dispatching stream attributes
 
@@ -10216,15 +10254,13 @@ package body Exp_Ch3 is
       New_Ref  : Node_Id;
 
    begin
-      --  This expansion activity is called during analysis, but cannot
-      --  be applied in ASIS mode when other expansion is disabled.
+      --  This expansion activity is called during analysis.
 
       if Is_Tagged_Type (Typ)
        and then not Is_Class_Wide_Type (Typ)
        and then not Is_CPP_Class (Typ)
        and then Tagged_Type_Expansion
        and then Nkind (Expr) /= N_Aggregate
-       and then not ASIS_Mode
        and then (Nkind (Expr) /= N_Qualified_Expression
                   or else Nkind (Expression (Expr)) /= N_Aggregate)
       then
@@ -10429,6 +10465,8 @@ package body Exp_Ch3 is
 
       pragma Warnings (Off, Ent);
 
+      use Exp_Put_Image;
+
    begin
       pragma Assert (not Is_Interface (Tag_Typ));
 
@@ -10510,6 +10548,15 @@ package body Exp_Ch3 is
                 Attribute_Name  => Name_Size)))));
 
       Append_To (Res, Decl);
+
+      --  Body of Put_Image
+
+      if Enable_Put_Image (Tag_Typ)
+        and then No (TSS (Tag_Typ, TSS_Put_Image))
+      then
+         Build_Record_Put_Image_Procedure (Loc, Tag_Typ, Decl, Ent);
+         Append_To (Res, Decl);
+      end if;
 
       --  Bodies for Dispatching stream IO routines. We need these only for
       --  non-limited types (in the limited case there is no dispatching).

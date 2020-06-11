@@ -1050,10 +1050,12 @@ ALL_LINKERFLAGS = $(ALL_CXXFLAGS)
 
 # Build and host support libraries.
 
-# Use the "pic" build of libiberty if --enable-host-shared.
+# Use the "pic" build of libiberty if --enable-host-shared, unless we are
+# building for mingw.
+LIBIBERTY_PICDIR=$(if $(findstring mingw,$(target)),,pic)
 ifeq ($(enable_host_shared),yes)
-LIBIBERTY = ../libiberty/pic/libiberty.a
-BUILD_LIBIBERTY = $(build_libobjdir)/libiberty/pic/libiberty.a
+LIBIBERTY = ../libiberty/$(LIBIBERTY_PICDIR)/libiberty.a
+BUILD_LIBIBERTY = $(build_libobjdir)/libiberty/$(LIBIBERTY_PICDIR)/libiberty.a
 else
 LIBIBERTY = ../libiberty/libiberty.a
 BUILD_LIBIBERTY = $(build_libobjdir)/libiberty/libiberty.a
@@ -1354,6 +1356,7 @@ OBJS = \
 	ggc-common.o \
 	ggc-tests.o \
 	gimple.o \
+	gimple-array-bounds.o \
 	gimple-builder.o \
 	gimple-expr.o \
 	gimple-iterator.o \
@@ -1646,6 +1649,7 @@ OBJS = \
 	unique-ptr-tests.o \
 	valtrack.o \
 	value-range.o \
+	value-range-equiv.o \
 	value-prof.o \
 	var-tracking.o \
 	varasm.o \
@@ -1730,11 +1734,15 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
 # This symlink makes the full installation name of the driver be available
 # from within the *build* directory, for use when running the JIT library
 # from there (e.g. when running its testsuite).
-$(FULL_DRIVER_NAME): ./xgcc
+$(FULL_DRIVER_NAME): ./xgcc$(exeext)
 	rm -f $@
 	$(LN_S) $< $@
 
 #
+# SELFTEST_DEPS need to be set before including language makefile fragments.
+# Otherwise $(SELFTEST_DEPS) is empty when used from <LANG>/Make-lang.in.
+SELFTEST_DEPS = $(GCC_PASSES) stmp-int-hdrs $(srcdir)/testsuite/selftests
+
 # Language makefile fragments.
 
 # The following targets define the interface between us and the languages.
@@ -2009,8 +2017,6 @@ rest.cross: specs
 DEVNULL=$(if $(findstring mingw,$(build)),nul,/dev/null)
 SELFTEST_FLAGS = -nostdinc $(DEVNULL) -S -o $(DEVNULL) \
 	-fself-test=$(srcdir)/testsuite/selftests
-
-SELFTEST_DEPS = $(GCC_PASSES) stmp-int-hdrs $(srcdir)/testsuite/selftests
 
 # Run the selftests during the build once we have a driver and the frontend,
 # so that self-test failures are caught as early as possible.

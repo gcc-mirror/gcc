@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -909,7 +909,7 @@ package body Exp_Ch7 is
       elsif Is_Protected_Body then
          declare
             Spec      : constant Node_Id := Parent (Corresponding_Spec (N));
-            Conc_Typ  : Entity_Id;
+            Conc_Typ  : Entity_Id := Empty;
             Param     : Node_Id;
             Param_Typ : Entity_Id;
 
@@ -929,6 +929,7 @@ package body Exp_Ch7 is
             end loop;
 
             pragma Assert (Present (Param));
+            pragma Assert (Present (Conc_Typ));
 
             --  Historical note: In earlier versions of GNAT, there was code
             --  at this point to generate stuff to service entry queues. It is
@@ -5720,8 +5721,8 @@ package body Exp_Ch7 is
          Blk_Decl  : Node_Id := Empty;
          Blk_Decls : List_Id := No_List;
          Blk_Ins   : Node_Id;
-         Blk_Stmts : List_Id;
-         Loc       : Source_Ptr;
+         Blk_Stmts : List_Id := No_List;
+         Loc       : Source_Ptr := No_Location;
          Obj_Decl  : Node_Id;
 
       --  Start of processing for Process_Transients_In_Scope
@@ -5854,6 +5855,7 @@ package body Exp_Ch7 is
                --  Construct all necessary circuitry to hook and finalize a
                --  single transient object.
 
+               pragma Assert (Present (Blk_Stmts));
                Process_Transient_In_Scope
                  (Obj_Decl  => Obj_Decl,
                   Blk_Data  => Blk_Data,
@@ -5874,6 +5876,9 @@ package body Exp_Ch7 is
          --  insert it into the tree.
 
          if Present (Blk_Decl) then
+
+            pragma Assert (Present (Blk_Stmts));
+            pragma Assert (Loc /= No_Location);
 
             --  Note that this Abort_Undefer does not require a extra block or
             --  an AT_END handler because each finalization exception is caught
@@ -8285,12 +8290,12 @@ package body Exp_Ch7 is
          Ref  := Convert_Concurrent (Ref, Typ);
 
       elsif Is_Private_Type (Typ)
-        and then Present (Full_View (Typ))
-        and then Is_Concurrent_Type (Full_View (Typ))
+        and then Present (Underlying_Type (Typ))
+        and then Is_Concurrent_Type (Underlying_Type (Typ))
       then
-         Utyp := Corresponding_Record_Type (Full_View (Typ));
+         Utyp := Corresponding_Record_Type (Underlying_Type (Typ));
          Atyp := Typ;
-         Ref  := Convert_Concurrent (Ref, Full_View (Typ));
+         Ref  := Convert_Concurrent (Ref, Underlying_Type (Typ));
 
       else
          Utyp := Typ;
@@ -8426,6 +8431,15 @@ package body Exp_Ch7 is
                   Ref := Unchecked_Convert_To (Formal_Typ, Ref);
                end if;
             end;
+
+            --  If the object is unanalyzed, set its expected type for use in
+            --  Convert_View in case an additional conversion is needed.
+
+            if No (Etype (Ref))
+              and then Nkind (Ref) /= N_Unchecked_Type_Conversion
+            then
+               Set_Etype (Ref, Typ);
+            end if;
 
             Ref := Convert_View (Fin_Id, Ref);
          end if;

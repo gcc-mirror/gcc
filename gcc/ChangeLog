@@ -1,3 +1,682 @@
+2020-06-03  Vitor Guidi  <vitor.guidi@usp.br>
+
+	* match.pd (tanh/sinh -> 1/cosh): New simplification.
+
+2020-06-03  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	PR target/95347
+	* config/rs6000/rs6000.c (is_stfs_insn): Rename to
+	is_lfs_stfs_insn and make it recognize lfs as well.
+	(prefixed_store_p): Use is_lfs_stfs_insn().
+	(prefixed_load_p): Use is_lfs_stfs_insn() to recognize lfs.
+
+2020-06-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c: Include data-streamer.h, lto-streamer.h and
+	streamer-hooks.h.
+	(odr_enums): New static var.
+	(struct odr_enum_val): New struct.
+	(class odr_enum): New struct.
+	(odr_enum_map): New hashtable.
+	(odr_types_equivalent_p): Drop code testing TYPE_VALUES.
+	(add_type_duplicate): Likewise.
+	(free_odr_warning_data): Do not free TYPE_VALUES.
+	(register_odr_enum): New function.
+	(ipa_odr_summary_write): New function.
+	(ipa_odr_read_section): New function.
+	(ipa_odr_summary_read): New function.
+	(class pass_ipa_odr): New pass.
+	(make_pass_ipa_odr): New function.
+	* ipa-utils.h (register_odr_enum): Declare.
+	* lto-section-in.c: (lto_section_name): Add odr_types section.
+	* lto-streamer.h (enum lto_section_type): Add odr_types section.
+	* passes.def: Add odr_types pass.
+	* lto-streamer-out.c (DFS::DFS_write_tree_body): Do not stream
+	TYPE_VALUES.
+	(hash_tree): Likewise.
+	* tree-streamer-in.c (lto_input_ts_type_non_common_tree_pointers):
+	Likewise.
+	* tree-streamer-out.c (write_ts_type_non_common_tree_pointers):
+	Likewise.
+	* timevar.def (TV_IPA_ODR): New timervar.
+	* tree-pass.h (make_pass_ipa_odr): Declare.
+	* tree.c (free_lang_data_in_type): Regiser ODR types.
+
+2020-06-03  Romain Naour  <romain.naour@gmail.com>
+
+	* Makefile.in (SELFTEST_DEPS): Move before including language makefile
+	fragments.
+
+2020-06-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95487
+	* tree-vect-stmts.c (vectorizable_store): Use a truth type
+	for the scatter mask.
+
+2020-06-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95495
+	* tree-vect-slp.c (vect_slp_analyze_node_operations): Use
+	SLP_TREE_REPRESENTATIVE in the shift assertion.
+
+2020-06-03  Tom Tromey  <tromey@adacore.com>
+
+	* spellcheck.c (CASE_COST): New define.
+	(BASE_COST): New define.
+	(get_edit_distance): Recognize case changes.
+	(get_edit_distance_cutoff): Update.
+	(test_edit_distances): Update.
+	(get_old_cutoff): Update.
+	(test_find_closest_string): Add case sensitivity test.
+
+2020-06-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_bb_vectorization_profitable_p): Loop over
+	the cost vector to unset the visited flag on stmts.
+
+2020-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimplify.c (omp_notice_variable): Use new hook.
+	* langhooks-def.h (lhd_omp_predetermined_mapping): Declare.
+	(LANG_HOOKS_OMP_PREDETERMINED_MAPPING): Define
+	(LANG_HOOKS_DECLS): Add it.
+	* langhooks.c (lhd_omp_predetermined_sharing): Remove bogus unused attr.
+	(lhd_omp_predetermined_mapping): New.
+	* langhooks.h (struct lang_hooks_for_decls): Add new hook.
+
+2020-06-03  Jan Hubicka  <jh@suse.cz>
+
+	* lto-streamer.h (LTO_tags): Reorder so frequent tags has small indexes;
+	add LTO_first_tree_tag and LTO_first_gimple_tag.
+	(lto_tag_is_tree_code_p): Update.
+	(lto_tag_is_gimple_code_p): Update.
+	(lto_gimple_code_to_tag): Update.
+	(lto_tag_to_gimple_code): Update.
+	(lto_tree_code_to_tag): Update.
+	(lto_tag_to_tree_code): Update.
+
+2020-06-02  Felix Yang  <felix.yang@huawei.com>
+
+	PR target/95459
+	* config/aarch64/aarch64.c (aarch64_short_vector_p):
+	Leave later code to report an error if SVE is disabled.
+
+2020-06-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-cores.def (zeus): Define.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi (AArch64 Options): Document zeus -mcpu option.
+
+2020-06-02  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	PR target/95347
+	* config/rs6000/rs6000.c (prefixed_store_p): Add special case
+	for stfs.
+	(is_stfs_insn): New helper function.
+
+2020-06-02  Jan Hubicka  <jh@suse.cz>
+
+	* lto-streamer-in.c (stream_read_tree_ref): Simplify streaming of
+	references.
+	* lto-streamer-out.c (stream_write_tree_ref): Likewise.
+
+2020-06-02  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-hsa.h (CC1_SPEC): Delete.
+	* config/gcn/gcn.opt (-mlocal-symbol-id): Delete.
+	* config/gcn/mkoffload.c (main): Don't use -mlocal-symbol-id.
+
+2020-06-02  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	PR middle-end/95395
+	* optabs.c (expand_unop): Fix bits/bytes confusion in latest change.
+	* tree-pretty-print.c (dump_generic_node) <ARRAY_TYPE>: Print quals.
+
+2020-06-02  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390.c (print_operand): Emit vector alignment
+	hints for z13.
+
+2020-06-02  Martin Liska  <mliska@suse.cz>
+
+	* coverage.c (get_coverage_counts): Skip sanity check for TOP N counters
+	as they have variable number of counters.
+	* gcov-dump.c (main): Add new option -r.
+	(print_usage): Likewise.
+	(tag_counters): All new raw format.
+	* gcov-io.h (struct gcov_kvp): New.
+	(GCOV_TOPN_VALUES): Remove.
+	(GCOV_TOPN_VALUES_COUNTERS): Likewise.
+	(GCOV_TOPN_MEM_COUNTERS): New.
+	(GCOV_TOPN_DISK_COUNTERS): Likewise.
+	(GCOV_TOPN_MAXIMUM_TRACKED_VALUES): Likewise.
+	* ipa-profile.c (ipa_profile_generate_summary): Use
+	GCOV_TOPN_MAXIMUM_TRACKED_VALUES.
+	(ipa_profile_write_edge_summary): Likewise.
+	(ipa_profile_read_edge_summary): Likewise.
+	(ipa_profile): Remove usage of GCOV_TOPN_VALUES.
+	* profile.c (sort_hist_values): Sort variable number
+	of counters.
+	(compute_value_histograms): Special case for TOP N counters
+	that have dynamic number of key-value pairs.
+	* value-prof.c (dump_histogram_value): Dump variable number
+	of key-value pairs.
+	(stream_in_histogram_value): Stream in variable number
+	of key-value pairs for TOP N counter.
+	(get_nth_most_common_value): Deal with variable number
+	of key-value pairs.
+	(dump_ic_profile): Use GCOV_TOPN_MAXIMUM_TRACKED_VALUES
+	for loop iteration.
+	(gimple_find_values_to_profile): Set GCOV_TOPN_MEM_COUNTERS
+	to n_counters.
+	* doc/gcov-dump.texi: Document new -r option.
+
+2020-06-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR target/95420
+	* config.gcc (arm-wrs-vxworks7*): Set default cpu to generic-armv7-a.
+
+2020-06-01  Jeff Law  <law@torsion.usersys.redhat.com>
+
+	* lower-subreg.c (resolve_simple_move): If simplify_gen_subreg_concatn
+	returns (const_int 0) for the destination, then emit nothing.
+
+2020-06-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer.h (enum LTO_tags): Remove LTO_field_decl_ref,
+	LTO_function_decl_ref, LTO_label_decl_ref, LTO_namespace_decl_ref,
+	LTO_result_decl_ref, LTO_type_decl_ref, LTO_type_ref,
+	LTO_const_decl_ref, LTO_imported_decl_ref,
+	LTO_translation_unit_decl_ref, LTO_global_decl_ref and
+	LTO_namelist_decl_ref; add LTO_global_stream_ref.
+	* lto-streamer-in.c (lto_input_tree_ref): Simplify.
+	(lto_input_scc): Update.
+	(lto_input_tree_1): Update.
+	* lto-streamer-out.c (lto_indexable_tree_ref): Simlify.
+	* lto-streamer.c (lto_tag_name): Update.
+
+2020-06-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-reference.c (stream_out_bitmap): Use lto_output_var_decl_ref.
+	(ipa_reference_read_optimization_summary): Use lto_intput_var_decl_ref.
+	* lto-cgraph.c (lto_output_node): Likewise.
+	(lto_output_varpool_node): Likewise.
+	(output_offload_tables): Likewise.
+	(input_node): Likewise.
+	(input_varpool_node): Likewise.
+	(input_offload_tables): Likewise.
+	* lto-streamer-in.c (lto_input_tree_ref): Declare.
+	(lto_input_var_decl_ref): Declare.
+	(lto_input_fn_decl_ref): Declare.
+	* lto-streamer-out.c (lto_indexable_tree_ref): Use only one decl stream.
+	(lto_output_var_decl_index): Rename to ..
+	(lto_output_var_decl_ref): ... this.
+	(lto_output_fn_decl_index): Rename to ...
+	(lto_output_fn_decl_ref): ... this.
+	* lto-streamer.h (enum lto_decl_stream_e_t): Remove per-type streams.
+	(DEFINE_DECL_STREAM_FUNCS): Remove.
+	(lto_output_var_decl_index): Remove.
+	(lto_output_fn_decl_index): Remove.
+	(lto_output_var_decl_ref): Declare.
+	(lto_output_fn_decl_ref): Declare.
+	(lto_input_var_decl_ref): Declare.
+	(lto_input_fn_decl_ref): Declare.
+
+2020-06-01  Feng Xue  <fxue@os.amperecomputing.com>
+
+	* cgraphclones.c (materialize_all_clones): Adjust replace map dump.
+	* ipa-param-manipulation.c (ipa_dump_adjusted_parameters): Do not
+	dump infomation if there is no adjusted parameter.
+	* (ipa_param_adjustments::dump): Adjust prefix spaces for dump string.
+
+2020-06-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Makefile.in (gimple-array-bounds.o): New.
+	* tree-vrp.c: Move array bounds code...
+	* gimple-array-bounds.cc: ...here...
+	* gimple-array-bounds.h: ...and here.
+
+2020-06-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Makefile.in (OBJS): Add value-range-equiv.o.
+	* tree-vrp.c (*value_range_equiv*): Move to...
+	* value-range-equiv.cc: ...here.
+	* tree-vrp.h (class value_range_equiv): Move to...
+	* value-range-equiv.h: ...here.
+	* vr-values.h: Include value-range-equiv.h.
+
+2020-06-01  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/93429
+	* ipa-cp.c (propagate_aggs_across_jump_function): Check aggregate
+	lattice for simple pass-through by-ref argument.
+
+2020-05-31  Jeff Law  <law@redhat.com>
+
+	* lra.c (add_auto_inc_notes): Remove function.
+	* reload1.c (add_auto_inc_notes): Similarly.  Move into...
+	* rtlanal.c (add_auto_inc_notes): New function.
+	* rtl.h (add_auto_inc_notes): Add prototype.
+	* recog.c (peep2_attempt): Scan and add REG_INC notes to new insns
+	as needed.
+
+2020-05-31  Jan Hubicka  <jh@suse.cz>
+
+	* lto-section-out.c (lto_output_decl_index): Remove.
+	(lto_output_field_decl_index): Move to lto-streamer-out.c
+	(lto_output_fn_decl_index): Move to lto-streamer-out.c
+	(lto_output_namespace_decl_index): Remove.
+	(lto_output_var_decl_index): Remove.
+	(lto_output_type_decl_index): Remove.
+	(lto_output_type_ref_index): Remove.
+	* lto-streamer-out.c (output_type_ref): Remove.
+	(lto_get_index): New function.
+	(lto_output_tree_ref): Remove.
+	(lto_indexable_tree_ref): New function.
+	(lto_output_var_decl_index): Move here from lto-section-out.c; simplify.
+	(lto_output_fn_decl_index): Move here from lto-section-out.c; simplify.
+	(stream_write_tree_ref): Update.
+	(lto_output_tree): Update.
+	* lto-streamer.h (lto_output_decl_index): Remove prototype.
+	(lto_output_field_decl_index): Remove prototype.
+	(lto_output_namespace_decl_index): Remove prototype.
+	(lto_output_type_decl_index): Remove prototype.
+	(lto_output_type_ref_index): Remove prototype.
+	(lto_output_var_decl_index): Move.
+	(lto_output_fn_decl_index): Move
+
+2020-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95052
+	* expr.c (store_expr): For shortedned_string_cst, ensure temp has
+	BLKmode.
+
+2020-05-31  Jeff Law  <law@redhat.com>
+
+	* config/h8300/jumpcall.md (brabs, brabc): Disable patterns.
+
+2020-05-31  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.md (zero_extendsidi2_shifted): New.
+
+2020-05-30  Jonathan Yong  <10walls@gmail.com>
+
+	* config/i386/mingw32.h (REAL_LIBGCC_SPEC): Insert -lkernel32
+	after -lmsvcrt. This is necessary as libmsvcrt.a is not a pure
+	import library, but also contains some functions that invoke
+	others in KERNEL32.DLL.
+
+2020-05-29  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/altivec.md (altivec_vmrghw_direct): Prefer VSX form.
+	(altivec_vmrglw_direct): Ditto.
+	(altivec_vperm_<mode>_direct): Ditto.
+	(altivec_vperm_v8hiv16qi): Ditto.
+	(*altivec_vperm_<mode>_uns_internal): Ditto.
+	(*altivec_vpermr_<mode>_internal): Ditto.
+	(vperm_v8hiv4si): Ditto.
+	(vperm_v16qiv8hi): Ditto.
+
+2020-05-29  Jan Hubicka  <jh@suse.cz>
+
+	* lto-streamer-in.c (streamer_read_chain): Move here from
+	tree-streamer-in.c.
+	(stream_read_tree_ref): New.
+	(lto_input_tree_1): Simplify.
+	* lto-streamer-out.c (stream_write_tree_ref): New.
+	(lto_write_tree_1): Simplify.
+	(lto_output_tree_1): Simplify.
+	(DFS::DFS_write_tree): Simplify.
+	(streamer_write_chain): Move here from tree-stremaer-out.c.
+	* lto-streamer.h (lto_output_tree_ref): Update prototype.
+	(stream_read_tree_ref): Declare
+	(stream_write_tree_ref): Declare
+	* tree-streamer-in.c (streamer_read_chain): Update to use
+	stream_read_tree_ref.
+	(lto_input_ts_common_tree_pointers): Likewise.
+	(lto_input_ts_vector_tree_pointers): Likewise.
+	(lto_input_ts_poly_tree_pointers): Likewise.
+	(lto_input_ts_complex_tree_pointers): Likewise.
+	(lto_input_ts_decl_minimal_tree_pointers): Likewise.
+	(lto_input_ts_decl_common_tree_pointers): Likewise.
+	(lto_input_ts_decl_with_vis_tree_pointers): Likewise.
+	(lto_input_ts_field_decl_tree_pointers): Likewise.
+	(lto_input_ts_function_decl_tree_pointers): Likewise.
+	(lto_input_ts_type_common_tree_pointers): Likewise.
+	(lto_input_ts_type_non_common_tree_pointers): Likewise.
+	(lto_input_ts_list_tree_pointers): Likewise.
+	(lto_input_ts_vec_tree_pointers): Likewise.
+	(lto_input_ts_exp_tree_pointers): Likewise.
+	(lto_input_ts_block_tree_pointers): Likewise.
+	(lto_input_ts_binfo_tree_pointers): Likewise.
+	(lto_input_ts_constructor_tree_pointers): Likewise.
+	(lto_input_ts_omp_clause_tree_pointers): Likewise.
+	* tree-streamer-out.c (streamer_write_chain): Update to use
+	stream_write_tree_ref.
+	(write_ts_common_tree_pointers): Likewise.
+	(write_ts_vector_tree_pointers): Likewise.
+	(write_ts_poly_tree_pointers): Likewise.
+	(write_ts_complex_tree_pointers): Likewise.
+	(write_ts_decl_minimal_tree_pointers): Likewise.
+	(write_ts_decl_common_tree_pointers): Likewise.
+	(write_ts_decl_non_common_tree_pointers): Likewise.
+	(write_ts_decl_with_vis_tree_pointers): Likewise.
+	(write_ts_field_decl_tree_pointers): Likewise.
+	(write_ts_function_decl_tree_pointers): Likewise.
+	(write_ts_type_common_tree_pointers): Likewise.
+	(write_ts_type_non_common_tree_pointers): Likewise.
+	(write_ts_list_tree_pointers): Likewise.
+	(write_ts_vec_tree_pointers): Likewise.
+	(write_ts_exp_tree_pointers): Likewise.
+	(write_ts_block_tree_pointers): Likewise.
+	(write_ts_binfo_tree_pointers): Likewise.
+	(write_ts_constructor_tree_pointers): Likewise.
+	(write_ts_omp_clause_tree_pointers): Likewise.
+	(streamer_write_tree_body): Likewise.
+	(streamer_write_integer_cst): Likewise.
+	* tree-streamer.h (streamer_read_chain):Declare.
+	(streamer_write_chain):Declare.
+	(streamer_write_tree_body): Update prototype.
+	(streamer_write_integer_cst): Update prototype.
+
+2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/95413
+	* configure: Regenerated.
+
+2020-05-29  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (add<mode>3_vcc_zext_dup): Add early clobber.
+	(add<mode>3_vcc_zext_dup_exec): Likewise.
+	(add<mode>3_vcc_zext_dup2): Likewise.
+	(add<mode>3_vcc_zext_dup2_exec): Likewise.
+
+2020-05-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95272
+	* tree-vectorizer.h (_slp_tree::representative): Add.
+	(SLP_TREE_REPRESENTATIVE): Likewise.
+	* tree-vect-loop.c (vectorizable_reduction): Adjust SLP
+	node gathering.
+	(vectorizable_live_operation): Use the representative to
+	attach the reduction info to.
+	* tree-vect-slp.c (_slp_tree::_slp_tree): Initialize
+	SLP_TREE_REPRESENTATIVE.
+	(vect_create_new_slp_node): Likewise.
+	(slp_copy_subtree): Copy it.
+	(vect_slp_rearrange_stmts): Re-arrange even COND_EXPR stmts.
+	(vect_slp_analyze_node_operations_1): Pass the representative
+	to vect_analyze_stmt.
+	(vect_schedule_slp_instance): Pass the representative to
+	vect_transform_stmt.
+
+2020-05-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95356
+	* tree-vect-stmts.c (vectorizable_shift): Do in-place SLP
+	node hacking during analysis.
+
+2020-05-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/95362
+	* lto-streamer-out.c (lto_output_tree): Disable redundant streaming.
+
+2020-05-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95403
+	* tree-vect-stmts.c (vect_init_vector_1): Guard against NULL
+	stmt_vinfo.
+
+2020-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95315
+	* omp-general.c (omp_resolve_declare_variant): Fix up addition of
+	declare variant cgraph node removal callback.
+
+2020-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95052
+	* expr.c (store_expr): If expr_size is constant and significantly
+	larger than TREE_STRING_LENGTH, set temp to just the
+	TREE_STRING_LENGTH portion of the STRING_CST.
+
+2020-05-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95393
+	* tree-ssa-phiopt.c (minmax_replacement): Use gimple_build
+	to build the min/max expression so we simplify cases like
+	MAX(0, s) immediately.
+
+2020-05-29  Joe Ramsay  <joe.ramsay@arm.com>
+
+	* config/aarch64/aarch64-sve.md (<LOGICAL:optab><mode>3): Add support
+	for unpacked EOR, ORR, AND.
+
+2020-05-28  Nicolas Bértolo  <nicolasbertolo@gmail.com>
+
+	* Makefile.in: don't look for libiberty in the "pic" subdirectory
+	when building for Mingw. Add dependency on xgcc with the proper
+	extension.
+
+2020-05-28  Jeff Law  <law@redhat.com>
+
+	* config/h8300/logical.md (bclrhi_msx): Remove pattern.
+
+2020-05-28  Jeff Law  <law@redhat.com>
+
+	* config/h8300/logical.md (HImode H8/SX bit-and splitter): Don't
+	make a nonzero adjustment to the memory offset.
+	(b<ior,xor>hi_msx): Turn into a splitter.
+
+2020-05-28  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gimple-ssa-store-merging.c (merged_store_group::can_be_merged_into):
+	Fix off-by-one error.
+
+2020-05-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (aarch64_frame): Add a comment above
+	wb_candidate1 and wb_candidate2.
+	* config/aarch64/aarch64.c (aarch64_layout_frame): Invalidate
+	wb_candidate1 and wb_candidate2 if we decided not to use them.
+
+2020-05-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/95361
+	* config/aarch64/aarch64.c (aarch64_expand_epilogue): Assert that
+	we have at least some CFI operations when using a frame pointer.
+	Only redefine the CFA if we have CFI operations.
+
+2020-05-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_prologue_cost_for_slp): Remove
+	case for !SLP_TREE_VECTYPE.
+	(vect_slp_analyze_node_operations): Adjust.
+
+2020-05-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_slp_tree::vec_defs): Add.
+	(SLP_TREE_VEC_DEFS): Likewise.
+	* tree-vect-slp.c (_slp_tree::_slp_tree): Adjust.
+	(_slp_tree::~_slp_tree): Likewise.
+	(vect_mask_constant_operand_p): Remove unused function.
+	(vect_get_constant_vectors): Rename to...
+	(vect_create_constant_vectors): ... this.  Take the
+	invariant node as argument and code generate it.  Remove
+	dead code, remove temporary asserts.  Pass a NULL stmt_info
+	to vect_init_vector.
+	(vect_get_slp_defs): Simplify.
+	(vect_schedule_slp_instance): Code-generate externals and
+	invariants using vect_create_constant_vectors.
+
+2020-05-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.c (vect_finish_stmt_generation_1):
+	Conditionalize stmt_info use, assert the new stmt cannot throw
+	when not specified.
+	(vect_finish_stmt_generation): Adjust assert.
+
+2020-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95273
+	PR tree-optimization/95356
+	* tree-vect-stmts.c (vectorizable_shift): Adjust when and to
+	what we set the vector type of the shift operand SLP node
+	again.
+
+2020-05-28  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/arm.c (mve_vector_mem_operand): Fix unwanted
+	fall-throughs.
+
+2020-05-28  Martin Liska  <mliska@suse.cz>
+
+	PR web/95380
+	* doc/invoke.texi: Add missing params, remove max-once-peeled-insns and
+	rename ipcp-unit-growth to ipa-cp-unit-growth.
+
+2020-05-28  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (*avx512vl_<code>v2div2qi2_store_1): Rename
+	from *avx512vl_<code>v2div2qi_store and refine memory size of
+	the pattern.
+	(*avx512vl_<code>v2div2qi2_mask_store_1): Ditto.
+	(*avx512vl_<code><mode>v4qi2_store_1): Ditto.
+	(*avx512vl_<code><mode>v4qi2_mask_store_1): Ditto.
+	(*avx512vl_<code><mode>v8qi2_store_1): Ditto.
+	(*avx512vl_<code><mode>v8qi2_mask_store_1): Ditto.
+	(*avx512vl_<code><mode>v4hi2_store_1): Ditto.
+	(*avx512vl_<code><mode>v4hi2_mask_store_1): Ditto.
+	(*avx512vl_<code>v2div2hi2_store_1): Ditto.
+	(*avx512vl_<code>v2div2hi2_mask_store_1): Ditto.
+	(*avx512vl_<code>v2div2si2_store_1): Ditto.
+	(*avx512vl_<code>v2div2si2_mask_store_1): Ditto.
+	(*avx512f_<code>v8div16qi2_store_1): Ditto.
+	(*avx512f_<code>v8div16qi2_mask_store_1): Ditto.
+	(*avx512vl_<code>v2div2qi2_store_2): New define_insn_and_split.
+	(*avx512vl_<code>v2div2qi2_mask_store_2): Ditto.
+	(*avx512vl_<code><mode>v4qi2_store_2): Ditto.
+	(*avx512vl_<code><mode>v4qi2_mask_store_2): Ditto.
+	(*avx512vl_<code><mode>v8qi2_store_2): Ditto.
+	(*avx512vl_<code><mode>v8qi2_mask_store_2): Ditto.
+	(*avx512vl_<code><mode>v4hi2_store_2): Ditto.
+	(*avx512vl_<code><mode>v4hi2_mask_store_2): Ditto.
+	(*avx512vl_<code>v2div2hi2_store_2): Ditto.
+	(*avx512vl_<code>v2div2hi2_mask_store_2): Ditto.
+	(*avx512vl_<code>v2div2si2_store_2): Ditto.
+	(*avx512vl_<code>v2div2si2_mask_store_2): Ditto.
+	(*avx512f_<code>v8div16qi2_store_2): Ditto.
+	(*avx512f_<code>v8div16qi2_mask_store_2): Ditto.
+	* config/i386/i386-builtin-types.def: Adjust builtin type.
+	* config/i386/i386-expand.c: Ditto.
+	* config/i386/i386-builtin.def: Adjust builtin.
+	* config/i386/avx512fintrin.h: Ditto.
+	* config/i386/avx512vlbwintrin.h: Ditto.
+	* config/i386/avx512vlintrin.h: Ditto.
+
+2020-05-28  Dong JianQiang  <dongjianqiang2@huawei.com>
+
+	PR gcov-profile/95332
+	* gcov-io.c (gcov_var::endian): Move field.
+	(from_file): Add IN_GCOV_TOOL check.
+	* gcov-io.h (gcov_magic): Ditto.
+
+2020-05-28  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.c (xtensa_delegitimize_address): New
+	function.
+	(TARGET_DELEGITIMIZE_ADDRESS): New macro.
+
+2020-05-27  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* builtin-types.def (BT_UINT128): New primitive type.
+	(BT_FN_UINT128_UINT128): New function type.
+	* builtins.def (BUILT_IN_BSWAP128): New GCC builtin.
+	* doc/extend.texi (__builtin_bswap128): Document it.
+	* builtins.c (expand_builtin): Deal with BUILT_IN_BSWAP128.
+	(is_inexpensive_builtin): Likewise.
+	* fold-const-call.c (fold_const_call_ss): Likewise.
+	* fold-const.c (tree_call_nonnegative_warnv_p): Likewise.
+	* tree-ssa-ccp.c (evaluate_stmt): Likewise.
+	* tree-vect-stmts.c (vect_get_data_ptr_increment): Likewise.
+	(vectorizable_call): Likewise.
+	* optabs.c (expand_unop): Always use the double word path for it.
+	* tree-core.h (enum tree_index): Add TI_UINT128_TYPE.
+	* tree.h (uint128_type_node): New global type.
+	* tree.c (build_common_tree_nodes): Build it if TImode is supported.
+
+2020-05-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (*mmx_haddv2sf3): Remove SSE alternatives.
+	(mmx_hsubv2sf3): Ditto.
+	(mmx_haddsubv2sf3): New expander.
+	(*mmx_haddsubv2sf3): Rename from mmx_addsubv2sf3. Correct
+	RTL template to model horizontal subtraction and addition.
+	* config/i386/i386-builtin.def (IX86_BUILTIN_PFPNACC):
+	Update for rename.
+
+2020-05-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95355
+	* config/i386/sse.md
+	(<mask_codefor>avx512f_<code>v16qiv16si2<mask_name>):
+	Remove %q operand modifier from insn template.
+	(avx512f_<code>v8hiv8di2<mask_name>): Ditto.
+
+2020-05-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (mmx_pswapdsf2): Add SSE alternatives.
+	Enable insn pattern for TARGET_MMX_WITH_SSE.
+	(*mmx_movshdup): New insn pattern.
+	(*mmx_movsldup): Ditto.
+	(*mmx_movss): Ditto.
+	* config/i386/i386-expand.c (ix86_vectorize_vec_perm_const):
+	Handle E_V2SFmode.
+	(expand_vec_perm_movs): Handle E_V2SFmode.
+	(expand_vec_perm_even_odd): Ditto.
+	(expand_vec_perm_broadcast_1): Assert that E_V2SFmode
+	is already handled by standard shuffle patterns.
+
+2020-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95295
+	* tree-ssa-loop-im.c (sm_seq_valid_bb): Fix sinking after
+	merging stores from paths.
+
+2020-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95356
+	* tree-vect-stmts.c (vectorizable_shift): Adjust vector
+	type for the shift operand.
+
+2020-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95335
+	* tree-vect-slp.c (vect_slp_analyze_node_operations): Reset
+	lvisited for nodes made external.
+
+2020-05-27  Richard Biener  <rguenther@suse.de>
+
+	* dump-context.h (debug_dump_context): New class.
+	(dump_context): Make it friend.
+	* dumpfile.c (debug_dump_context::debug_dump_context):
+	Implement.
+	(debug_dump_context::~debug_dump_context): Likewise.
+	* tree-vect-slp.c: Include dump-context.h.
+	(vect_print_slp_tree): Dump a single SLP node.
+	(debug): New overload for slp_tree.
+	(vect_print_slp_graph): Rename from vect_print_slp_tree and
+	use that.
+	(vect_analyze_slp_instance): Adjust.
+
+2020-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95315
+	* omp-general.c (omp_declare_variant_remove_hook): New function.
+	(omp_resolve_declare_variant): Always return base if it is already
+	declare_variant_alt magic decl itself.  Register
+	omp_declare_variant_remove_hook as cgraph node removal hook.
+
 2020-05-27  Jeff Law  <law@redhat.com>
 
 	* config/h8300/testcompare.md (tst_extzv_1_n): Do not accept constants

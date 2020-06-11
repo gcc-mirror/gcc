@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -643,28 +643,31 @@ package body Exp_Disp is
       elsif TSS_Name = TSS_Deep_Finalize then
          return Uint_9;
 
+      elsif TSS_Name = TSS_Put_Image then
+         return Uint_10;
+
       --  In VM targets unconditionally allow obtaining the position associated
       --  with predefined interface primitives since in these platforms any
       --  tagged type has these primitives.
 
       elsif Ada_Version >= Ada_2005 or else not Tagged_Type_Expansion then
          if Chars (E) = Name_uDisp_Asynchronous_Select then
-            return Uint_10;
-
-         elsif Chars (E) = Name_uDisp_Conditional_Select then
             return Uint_11;
 
-         elsif Chars (E) = Name_uDisp_Get_Prim_Op_Kind then
+         elsif Chars (E) = Name_uDisp_Conditional_Select then
             return Uint_12;
 
-         elsif Chars (E) = Name_uDisp_Get_Task_Id then
+         elsif Chars (E) = Name_uDisp_Get_Prim_Op_Kind then
             return Uint_13;
 
-         elsif Chars (E) = Name_uDisp_Requeue then
+         elsif Chars (E) = Name_uDisp_Get_Task_Id then
             return Uint_14;
 
-         elsif Chars (E) = Name_uDisp_Timed_Select then
+         elsif Chars (E) = Name_uDisp_Requeue then
             return Uint_15;
+
+         elsif Chars (E) = Name_uDisp_Timed_Select then
+            return Uint_16;
          end if;
       end if;
 
@@ -4680,16 +4683,16 @@ package body Exp_Disp is
       end if;
 
       --  Ensure that the value of Max_Predef_Prims defined in a-tags is
-      --  correct. Valid values are 9 under configurable runtime or 15
+      --  correct. Valid values are 10 under configurable runtime or 16
       --  with full runtime.
 
       if RTE_Available (RE_Interface_Data) then
-         if Max_Predef_Prims /= 15 then
+         if Max_Predef_Prims /= 16 then
             Error_Msg_N ("run-time library configuration error", Typ);
             goto Leave;
          end if;
       else
-         if Max_Predef_Prims /= 9 then
+         if Max_Predef_Prims /= 10 then
             Error_Msg_N ("run-time library configuration error", Typ);
             Error_Msg_CRT ("tagged types", Typ);
             goto Leave;

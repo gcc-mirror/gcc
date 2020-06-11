@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -251,9 +251,9 @@ bool Dsymbol_canThrow(Dsymbol *s, FuncDeclaration *func, bool mustNotThrow)
     if (ad)
     {
         Dsymbols *decl = ad->include(NULL, NULL);
-        if (decl && decl->dim)
+        if (decl && decl->length)
         {
-            for (size_t i = 0; i < decl->dim; i++)
+            for (size_t i = 0; i < decl->length; i++)
             {
                 s = (*decl)[i];
                 if (Dsymbol_canThrow(s, func, mustNotThrow))
@@ -287,7 +287,7 @@ bool Dsymbol_canThrow(Dsymbol *s, FuncDeclaration *func, bool mustNotThrow)
         //printf("%s\n", tm->toChars());
         if (tm->members)
         {
-            for (size_t i = 0; i < tm->members->dim; i++)
+            for (size_t i = 0; i < tm->members->length; i++)
             {
                 Dsymbol *sm = (*tm->members)[i];
                 if (Dsymbol_canThrow(sm, func, mustNotThrow))
@@ -297,7 +297,7 @@ bool Dsymbol_canThrow(Dsymbol *s, FuncDeclaration *func, bool mustNotThrow)
     }
     else if ((td = s->isTupleDeclaration()) != NULL)
     {
-        for (size_t i = 0; i < td->objects->dim; i++)
+        for (size_t i = 0; i < td->objects->length; i++)
         {
             RootObject *o = (*td->objects)[i];
             if (o->dyncast() == DYNCAST_EXPRESSION)

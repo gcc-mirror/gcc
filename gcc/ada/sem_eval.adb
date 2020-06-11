@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -954,7 +954,7 @@ package body Sem_Eval is
                Subs := UI_To_Int (Expr_Value (First (Expressions (N))));
 
                for J in 2 .. Subs loop
-                  Indx := Next_Index (Indx);
+                  Next_Index (Indx);
                end loop;
             end if;
 

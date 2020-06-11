@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1520,12 +1520,12 @@ package body Exp_Pakd is
       Get_Base_And_Bit_Offset (Prefix (N), Base, Offset);
 
       Rewrite (N,
-        Unchecked_Convert_To (Universal_Integer,
+        Unchecked_Convert_To (Standard_Natural,
           Make_Op_Mod (Loc,
             Left_Opnd => Offset,
             Right_Opnd => Make_Integer_Literal (Loc, System_Storage_Unit))));
 
-      Analyze_And_Resolve (N, Universal_Integer);
+      Analyze_And_Resolve (N, Standard_Natural);
    end Expand_Packed_Bit_Reference;
 
    ------------------------------------

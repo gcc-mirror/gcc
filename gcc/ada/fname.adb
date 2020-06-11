@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,33 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Alloc;
-with Table;
-with Types; use Types;
-
 package body Fname is
-
-   -----------------------------
-   -- Dummy Table Definitions --
-   -----------------------------
-
-   --  The following table was used in old versions of the compiler. We retain
-   --  the declarations here for compatibility with old tree files. The new
-   --  version of the compiler does not use this table, and will write out a
-   --  dummy empty table for Tree_Write.
-
-   type SFN_Entry is record
-      U : Unit_Name_Type;
-      F : File_Name_Type;
-   end record;
-
-   package SFN_Table is new Table.Table (
-     Table_Component_Type => SFN_Entry,
-     Table_Index_Type     => Int,
-     Table_Low_Bound      => 0,
-     Table_Initial        => Alloc.SFN_Table_Initial,
-     Table_Increment      => Alloc.SFN_Table_Increment,
-     Table_Name           => "Fname_Dummy_Table");
 
    function Has_Internal_Extension (Fname : String) return Boolean;
    pragma Inline (Has_Internal_Extension);
@@ -267,23 +241,5 @@ package body Fname is
    begin
       return Result;
    end Is_Predefined_Renaming_File_Name;
-
-   ---------------
-   -- Tree_Read --
-   ---------------
-
-   procedure Tree_Read is
-   begin
-      SFN_Table.Tree_Read;
-   end Tree_Read;
-
-   ----------------
-   -- Tree_Write --
-   ----------------
-
-   procedure Tree_Write is
-   begin
-      SFN_Table.Tree_Write;
-   end Tree_Write;
 
 end Fname;

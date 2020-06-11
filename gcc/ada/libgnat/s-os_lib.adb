@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1995-2019, AdaCore                     --
+--                     Copyright (C) 1995-2020, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -574,13 +574,14 @@ package body System.OS_Lib is
                --  touch destination file at all.
 
                From := Open_Read (Name, Binary);
-               if From /= Invalid_FD then
+
+               if From = Invalid_FD then
+                  Success := False;
+               else
                   To := Open_Read_Write (Pathname, Binary);
+                  Lseek (To, 0, Seek_End);
+                  Copy (From, To);
                end if;
-
-               Lseek (To, 0, Seek_End);
-
-               Copy (From, To);
 
             --  Appending to directory, not allowed
 
@@ -1998,6 +1999,8 @@ package body System.OS_Lib is
                if Res (J) = ASCII.NUL then
 
                   --  If the string ends with \, double it
+
+                  pragma Annotate (CodePeer, Modified, Res (J - 1));
 
                   if Res (J - 1) = '\' then
                      Res (J) := '\';

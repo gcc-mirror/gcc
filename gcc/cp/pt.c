@@ -4575,7 +4575,16 @@ process_template_parm (tree list, location_t parm_loc, tree parm,
 	  /* This is for distinguishing between real templates and template
 	     template parameters */
 	  TREE_TYPE (parm) = t;
-	  TREE_TYPE (DECL_TEMPLATE_RESULT (parm)) = t;
+
+	  /* any_template_parm_r expects to be able to get the targs of a
+	     DECL_TEMPLATE_RESULT.  */
+	  tree result = DECL_TEMPLATE_RESULT (parm);
+	  TREE_TYPE (result) = t;
+	  tree args = template_parms_to_args (DECL_TEMPLATE_PARMS (parm));
+	  tree tinfo = build_template_info (parm, args);
+	  retrofit_lang_decl (result);
+	  DECL_TEMPLATE_INFO (result) = tinfo;
+
 	  decl = parm;
 	}
       else
@@ -5064,7 +5073,7 @@ process_partial_specialization (tree decl)
   if (comp_template_args (inner_args, INNERMOST_TEMPLATE_ARGS (main_args))
       && (!flag_concepts
 	  || !strictly_subsumes (current_template_constraints (),
-				 inner_args, maintmpl)))
+				 main_args, maintmpl)))
     {
       if (!flag_concepts)
         error ("partial specialization %q+D does not specialize "
@@ -13903,7 +13912,10 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
      don't substitute through the constraints; that's only done when
      they are checked.  */
   if (tree ci = get_constraints (t))
-    set_constraints (r, ci);
+    /* Unless we're regenerating a lambda, in which case we'll set the
+       lambda's constraints in tsubst_lambda_expr.  */
+    if (!lambda_fntype)
+      set_constraints (r, ci);
 
   if (DECL_FRIEND_P (t) && DECL_FRIEND_CONTEXT (t))
     SET_DECL_FRIEND_CONTEXT (r,
@@ -14691,7 +14703,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 			 && DECL_BIT_FIELD_TYPE (TREE_OPERAND (ve, 1)) == type)
 		  type = TREE_TYPE (ve);
 		else
-		  gcc_checking_assert (TREE_TYPE (ve) == type);
+		  gcc_checking_assert (TYPE_MAIN_VARIANT (TREE_TYPE (ve))
+				       == TYPE_MAIN_VARIANT (type));
 		SET_DECL_VALUE_EXPR (r, ve);
 	      }
 	    if (CP_DECL_THREAD_LOCAL_P (r)
@@ -18050,6 +18063,11 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		    if (ndecl != error_mark_node)
 		      cp_maybe_mangle_decomp (ndecl, first, cnt);
 
+		    /* In a non-template function, VLA type declarations are
+		       handled in grokdeclarator; for templates, handle them
+		       now.  */
+		    predeclare_vla (decl);
+
 		    cp_finish_decl (decl, init, const_init, NULL_TREE,
 				    constinit_p ? LOOKUP_CONSTINIT : 0);
 
@@ -19091,6 +19109,17 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      goto out;
 	    }
 	  finish_member_declaration (fn);
+	}
+
+      if (tree ci = get_constraints (oldfn))
+	{
+	  /* Substitute into the lambda's constraints.  */
+	  if (oldtmpl)
+	    ++processing_template_decl;
+	  ci = tsubst_constraint_info (ci, args, complain, in_decl);
+	  if (oldtmpl)
+	    --processing_template_decl;
+	  set_constraints (fn, ci);
 	}
 
       /* Let finish_function set this.  */
@@ -24543,21 +24572,22 @@ most_specialized_partial_spec (tree target, tsubst_flags_t complain)
 
   for (t = DECL_TEMPLATE_SPECIALIZATIONS (main_tmpl); t; t = TREE_CHAIN (t))
     {
-      tree spec_args;
-      tree spec_tmpl = TREE_VALUE (t);
+      const tree ospec_tmpl = TREE_VALUE (t);
 
+      tree spec_tmpl;
       if (outer_args)
 	{
 	  /* Substitute in the template args from the enclosing class.  */
 	  ++processing_template_decl;
-	  spec_tmpl = tsubst (spec_tmpl, outer_args, tf_none, NULL_TREE);
+	  spec_tmpl = tsubst (ospec_tmpl, outer_args, tf_none, NULL_TREE);
 	  --processing_template_decl;
+	  if (spec_tmpl == error_mark_node)
+	    return error_mark_node;
 	}
+      else
+	spec_tmpl = ospec_tmpl;
 
-      if (spec_tmpl == error_mark_node)
-	return error_mark_node;
-
-      spec_args = get_partial_spec_bindings (tmpl, spec_tmpl, args);
+      tree spec_args = get_partial_spec_bindings (tmpl, spec_tmpl, args);
       if (spec_args)
 	{
 	  if (outer_args)
@@ -24566,9 +24596,9 @@ most_specialized_partial_spec (tree target, tsubst_flags_t complain)
           /* Keep the candidate only if the constraints are satisfied,
              or if we're not compiling with concepts.  */
           if (!flag_concepts
-              || constraints_satisfied_p (spec_tmpl, spec_args))
+	      || constraints_satisfied_p (ospec_tmpl, spec_args))
             {
-              list = tree_cons (spec_args, TREE_VALUE (t), list);
+	      list = tree_cons (spec_args, ospec_tmpl, list);
               TREE_TYPE (list) = TREE_TYPE (t);
             }
 	}
@@ -25377,6 +25407,7 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
     d = DECL_CLONED_FUNCTION (d);
 
   if (DECL_TEMPLATE_INSTANTIATED (d)
+      || TREE_TYPE (d) == error_mark_node
       || (TREE_CODE (d) == FUNCTION_DECL
 	  && DECL_DEFAULTED_FN (d) && DECL_INITIAL (d))
       || DECL_TEMPLATE_SPECIALIZATION (d))

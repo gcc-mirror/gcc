@@ -3310,6 +3310,90 @@ determine_block_size (tree len, rtx len_rtx,
 			  GET_MODE_MASK (GET_MODE (len_rtx)));
 }
 
+/* For an expression EXP issue an access warning controlled by option OPT
+   with access to a region SLEN bytes in size in the RANGE of sizes.  */
+
+static bool
+warn_for_access (location_t loc, tree func, tree exp, int opt, tree range[2],
+		 tree slen, bool access)
+{
+  bool warned = false;
+
+  if (access)
+    {
+      if (tree_int_cst_equal (range[0], range[1]))
+	warned = (func
+		  ? warning_n (loc, opt, tree_to_uhwi (range[0]),
+			       "%K%qD reading %E byte from a region of size %E",
+			       "%K%qD reading %E bytes from a region of size %E",
+			       exp, func, range[0], slen)
+		  : warning_n (loc, opt, tree_to_uhwi (range[0]),
+			       "%Kreading %E byte from a region of size %E",
+			       "%Kreading %E bytes from a region of size %E",
+			       exp, range[0], slen));
+      else if (tree_int_cst_sign_bit (range[1]))
+	{
+	  /* Avoid printing the upper bound if it's invalid.  */
+	  warned = (func
+		    ? warning_at (loc, opt,
+				  "%K%qD reading %E or more bytes from a region "
+				  "of size %E",
+				  exp, func, range[0], slen)
+		    : warning_at (loc, opt,
+				  "%Kreading %E or more bytes from a region "
+				  "of size %E",
+				  exp, range[0], slen));
+	}
+      else
+	warned = (func
+		  ? warning_at (loc, opt,
+				"%K%qD reading between %E and %E bytes from "
+				"a region of size %E",
+				exp, func, range[0], range[1], slen)
+		  : warning_at (loc, opt,
+				"%Kreading between %E and %E bytes from "
+				"a region of size %E",
+				exp, range[0], range[1], slen));
+
+      return warned;
+    }
+
+  if (tree_int_cst_equal (range[0], range[1]))
+    warned = (func
+	      ? warning_n (loc, opt, tree_to_uhwi (range[0]),
+			   "%K%qD epecting %E byte in a region of size %E",
+			   "%K%qD expecting %E bytes in a region of size %E",
+			   exp, func, range[0], slen)
+	      : warning_n (loc, opt, tree_to_uhwi (range[0]),
+			   "%Kexpecting %E byte in a region of size %E",
+			   "%Kexpecting %E bytes in a region of size %E",
+			   exp, range[0], slen));
+  else if (tree_int_cst_sign_bit (range[1]))
+    {
+      /* Avoid printing the upper bound if it's invalid.  */
+      warned = (func
+		? warning_at (loc, opt,
+			      "%K%qD expecting %E or more bytes in a region "
+			      "of size %E",
+			      exp, func, range[0], slen)
+		: warning_at (loc, opt,
+			      "%Kexpecting %E or more bytes in a region "
+			      "of size %E",
+			      exp, range[0], slen));
+    }
+  else
+    warned = (func
+	      ? warning_at (loc, opt,
+			    "%K%qD expecting between %E and %E bytes in "
+			    "a region of size %E",
+			    exp, func, range[0], range[1], slen)
+	      : warning_at (loc, opt,
+			    "%Kexpectting between %E and %E bytes in "
+			    "a region of size %E",
+			    exp, range[0], range[1], slen));
+  return warned;
+}
+
 /* Try to verify that the sizes and lengths of the arguments to a string
    manipulation function given by EXP are within valid bounds and that
    the operation does not lead to buffer overflow or read past the end.
@@ -3336,12 +3420,16 @@ determine_block_size (tree len, rtx len_rtx,
    When DSTWRITE is null LEN is checked to verify that it doesn't exceed
    SIZE_MAX.
 
+   ACCESS is true for accesses, false for simple size checks in calls
+   to functions that neither read from nor write to the region.
+
    If the call is successfully verified as safe return true, otherwise
    return false.  */
 
 bool
 check_access (tree exp, tree, tree, tree dstwrite,
-	      tree maxread, tree srcstr, tree dstsize)
+	      tree maxread, tree srcstr, tree dstsize,
+	      bool access /* = true */)
 {
   int opt = OPT_Wstringop_overflow_;
 
@@ -3649,44 +3737,10 @@ check_access (tree exp, tree, tree, tree dstwrite,
       if (TREE_NO_WARNING (exp))
 	return false;
 
-      bool warned = false;
       location_t loc = tree_nonartificial_location (exp);
       loc = expansion_point_location_if_in_system_header (loc);
 
-      if (tree_int_cst_equal (range[0], range[1]))
-	warned = (func
-		  ? warning_n (loc, opt, tree_to_uhwi (range[0]),
-			       "%K%qD reading %E byte from a region of size %E",
-			       "%K%qD reading %E bytes from a region of size %E",
-			       exp, func, range[0], slen)
-		  : warning_n (loc, opt, tree_to_uhwi (range[0]),
-			       "%Kreading %E byte from a region of size %E",
-			       "%Kreading %E bytes from a region of size %E",
-			       exp, range[0], slen));
-      else if (tree_int_cst_sign_bit (range[1]))
-	{
-	  /* Avoid printing the upper bound if it's invalid.  */
-	  warned = (func
-		    ? warning_at (loc, opt,
-				  "%K%qD reading %E or more bytes from a region "
-				  "of size %E",
-				  exp, func, range[0], slen)
-		    : warning_at (loc, opt,
-				  "%Kreading %E or more bytes from a region "
-				  "of size %E",
-				  exp, range[0], slen));
-	}
-      else
-	warned = (func
-		  ? warning_at (loc, opt,
-				"%K%qD reading between %E and %E bytes from "
-				"a region of size %E",
-				exp, func, range[0], range[1], slen)
-		  : warning_at (loc, opt,
-				"%Kreading between %E and %E bytes from "
-				"a region of size %E",
-				exp, range[0], range[1], slen));
-      if (warned)
+      if (warn_for_access (loc, func, exp, opt, range, slen, access))
 	TREE_NO_WARNING (exp) = true;
 
       return false;
@@ -7988,6 +8042,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
     case BUILT_IN_BSWAP16:
     case BUILT_IN_BSWAP32:
     case BUILT_IN_BSWAP64:
+    case BUILT_IN_BSWAP128:
       target = expand_builtin_bswap (target_mode, exp, target, subtarget);
       if (target)
 	return target;
@@ -11704,6 +11759,7 @@ is_inexpensive_builtin (tree decl)
       case BUILT_IN_BSWAP16:
       case BUILT_IN_BSWAP32:
       case BUILT_IN_BSWAP64:
+      case BUILT_IN_BSWAP128:
       case BUILT_IN_CLZ:
       case BUILT_IN_CLZIMAX:
       case BUILT_IN_CLZL:

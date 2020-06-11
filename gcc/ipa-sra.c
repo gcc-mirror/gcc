@@ -795,17 +795,17 @@ get_single_param_flow_source (const isra_param_flow *param_flow)
 }
 
 /* Inspect all uses of NAME and simple arithmetic calculations involving NAME
-   in NODE and return a negative number if any of them is used for something
-   else than either an actual call argument, simple arithmetic operation or
-   debug statement.  If there are no such uses, return the number of actual
-   arguments that this parameter eventually feeds to (or zero if there is none).
-   For any such parameter, mark PARM_NUM as one of its sources.  ANALYZED is a
-   bitmap that tracks which SSA names we have already started
-   investigating.  */
+   in FUN represented with NODE and return a negative number if any of them is
+   used for something else than either an actual call argument, simple
+   arithmetic operation or debug statement.  If there are no such uses, return
+   the number of actual arguments that this parameter eventually feeds to (or
+   zero if there is none).  For any such parameter, mark PARM_NUM as one of its
+   sources.  ANALYZED is a bitmap that tracks which SSA names we have already
+   started investigating.  */
 
 static int
-isra_track_scalar_value_uses (cgraph_node *node, tree name, int parm_num,
-			      bitmap analyzed)
+isra_track_scalar_value_uses (function *fun, cgraph_node *node, tree name,
+			      int parm_num, bitmap analyzed)
 {
   int res = 0;
   imm_use_iterator imm_iter;
@@ -859,8 +859,9 @@ isra_track_scalar_value_uses (cgraph_node *node, tree name, int parm_num,
 	    }
 	  res += all_uses;
 	}
-      else if ((is_gimple_assign (stmt) && !gimple_has_volatile_ops (stmt))
-	       || gimple_code (stmt) == GIMPLE_PHI)
+      else if (!stmt_unremovable_because_of_non_call_eh_p (fun, stmt)
+	       && ((is_gimple_assign (stmt) && !gimple_has_volatile_ops (stmt))
+		   || gimple_code (stmt) == GIMPLE_PHI))
 	{
 	  tree lhs;
 	  if (gimple_code (stmt) == GIMPLE_PHI)
@@ -876,7 +877,7 @@ isra_track_scalar_value_uses (cgraph_node *node, tree name, int parm_num,
 	  gcc_assert (!gimple_vdef (stmt));
 	  if (bitmap_set_bit (analyzed, SSA_NAME_VERSION (lhs)))
 	    {
-	      int tmp = isra_track_scalar_value_uses (node, lhs, parm_num,
+	      int tmp = isra_track_scalar_value_uses (fun, node, lhs, parm_num,
 						      analyzed);
 	      if (tmp < 0)
 		{
@@ -927,7 +928,8 @@ isra_track_scalar_param_local_uses (function *fun, cgraph_node *node, tree parm,
     return true;
 
   bitmap analyzed = BITMAP_ALLOC (NULL);
-  int call_uses = isra_track_scalar_value_uses (node, name, parm_num, analyzed);
+  int call_uses = isra_track_scalar_value_uses (fun, node, name, parm_num,
+						analyzed);
   BITMAP_FREE (analyzed);
   if (call_uses < 0)
     return true;

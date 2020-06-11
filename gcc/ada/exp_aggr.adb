@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2043,12 +2043,15 @@ package body Exp_Aggr is
         and then Is_Bit_Packed_Array (Typ)
         and then Is_Modular_Integer_Type (Packed_Array_Impl_Type (Typ))
       then
-         Append_To (New_Code,
-           Make_Assignment_Statement (Loc,
-             Name       => New_Copy_Tree (Into),
-             Expression =>
-               Unchecked_Convert_To (Typ,
-                 Make_Integer_Literal (Loc, Uint_0))));
+         declare
+            Zero : constant Node_Id := Make_Integer_Literal (Loc, Uint_0);
+         begin
+            Analyze_And_Resolve (Zero, Packed_Array_Impl_Type (Typ));
+            Append_To (New_Code,
+              Make_Assignment_Statement (Loc,
+                Name       => New_Copy_Tree (Into),
+                Expression => Unchecked_Convert_To (Typ, Zero)));
+         end;
       end if;
 
       --  If the component type contains tasks, we need to build a Master
@@ -5239,7 +5242,7 @@ package body Exp_Aggr is
       --  specifically optimized for the target.
 
       function Aggr_Assignment_OK_For_Backend (N : Node_Id) return Boolean is
-         Csiz      : Uint;
+         Csiz      : Uint := No_Uint;
          Ctyp      : Entity_Id;
          Expr      : Node_Id;
          High      : Node_Id;
@@ -5336,6 +5339,8 @@ package body Exp_Aggr is
          --  Scalar types are OK if their size is a multiple of Storage_Unit
 
          elsif Is_Scalar_Type (Ctyp) then
+            pragma Assert (Csiz /= No_Uint);
+
             if Csiz mod System_Storage_Unit /= 0 then
                return False;
             end if;
@@ -5848,26 +5853,51 @@ package body Exp_Aggr is
          --       raise Constraint_Error;
          --    end if;
 
-         elsif Nb_Elements > Uint_0 then
-            Cond :=
-              Make_Op_Gt (Loc,
-                Left_Opnd  =>
-                  Make_Op_Add (Loc,
-                    Left_Opnd  =>
-                      Make_Attribute_Reference (Loc,
-                        Prefix         => New_Occurrence_Of (Ind_Typ, Loc),
-                        Attribute_Name => Name_Pos,
-                        Expressions    =>
-                          New_List
-                            (Duplicate_Subexpr_Move_Checks (Aggr_Lo))),
-                Right_Opnd => Make_Integer_Literal (Loc, Nb_Elements - 1)),
+         --  in the general case, but the following simpler test:
 
-                Right_Opnd =>
-                  Make_Attribute_Reference (Loc,
-                    Prefix         => New_Occurrence_Of (Ind_Typ, Loc),
-                    Attribute_Name => Name_Pos,
-                    Expressions    => New_List (
-                      Duplicate_Subexpr_Move_Checks (Aggr_Hi))));
+         --    [constraint_error when
+         --      Aggr_Lo + (Nb_Elements - 1) > Aggr_Hi];
+
+         --  instead if the index type is a signed integer.
+
+         elsif Nb_Elements > Uint_0 then
+            if Nb_Elements = Uint_1 then
+               Cond :=
+                 Make_Op_Gt (Loc,
+                   Left_Opnd  => Duplicate_Subexpr_Move_Checks (Aggr_Lo),
+                   Right_Opnd => Duplicate_Subexpr_Move_Checks (Aggr_Hi));
+
+            elsif Is_Signed_Integer_Type (Ind_Typ) then
+               Cond :=
+                 Make_Op_Gt (Loc,
+                   Left_Opnd  =>
+                     Make_Op_Add (Loc,
+                       Left_Opnd  => Duplicate_Subexpr_Move_Checks (Aggr_Lo),
+                       Right_Opnd =>
+                         Make_Integer_Literal (Loc, Nb_Elements - 1)),
+                   Right_Opnd => Duplicate_Subexpr_Move_Checks (Aggr_Hi));
+
+            else
+               Cond :=
+                 Make_Op_Gt (Loc,
+                   Left_Opnd  =>
+                     Make_Op_Add (Loc,
+                       Left_Opnd  =>
+                         Make_Attribute_Reference (Loc,
+                           Prefix         => New_Occurrence_Of (Ind_Typ, Loc),
+                           Attribute_Name => Name_Pos,
+                           Expressions    =>
+                             New_List
+                               (Duplicate_Subexpr_Move_Checks (Aggr_Lo))),
+                   Right_Opnd => Make_Integer_Literal (Loc, Nb_Elements - 1)),
+
+                   Right_Opnd =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => New_Occurrence_Of (Ind_Typ, Loc),
+                       Attribute_Name => Name_Pos,
+                       Expressions    => New_List (
+                         Duplicate_Subexpr_Move_Checks (Aggr_Hi))));
+            end if;
 
          --  If we are dealing with an aggregate containing an others choice
          --  and discrete choices we generate the following test:
@@ -7197,7 +7227,7 @@ package body Exp_Aggr is
 
                   Comp := First_Component (Typ);
                   while Chars (Comp) /= Name_uParent loop
-                     Comp := Next_Component (Comp);
+                     Next_Component (Comp);
                   end loop;
 
                   Parent_Name := New_Occurrence_Of (Comp, Loc);
@@ -7334,7 +7364,7 @@ package body Exp_Aggr is
                         return False;
                      end if;
 
-                     Indx := Next_Index (Indx);
+                     Next_Index (Indx);
                   end loop;
                end if;
             end;
@@ -8858,12 +8888,12 @@ package body Exp_Aggr is
                   Comp_Val := Comp_Val mod Uint_2 ** Comp_Size;
                   Val := UI_To_Int (Val + Comp_Val * Uint_2 ** Shift);
                   Shift := Shift + Incr;
-                  One_Comp := Next (One_Comp);
+                  Next (One_Comp);
                   Packed_Num := Packed_Num + 1;
                end if;
             end loop;
 
-            One_Dim := Next (One_Dim);
+            Next (One_Dim);
          end loop;
 
          if Packed_Num > 0 then

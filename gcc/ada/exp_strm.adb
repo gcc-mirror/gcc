@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -297,7 +297,7 @@ package body Exp_Strm is
         Make_Defining_Identifier (Loc,
           Chars => Make_TSS_Name_Local (Typ, TSS_Stream_Output));
 
-      Build_Stream_Procedure (Loc, Typ, Decl, Pnam, Stms, False);
+      Build_Stream_Procedure (Loc, Typ, Decl, Pnam, Stms, Outp => False);
    end Build_Array_Output_Procedure;
 
    --------------------------------
@@ -420,7 +420,7 @@ package body Exp_Strm is
       end loop;
 
       Build_Stream_Procedure
-        (Loc, Typ, Decl, Pnam, New_List (Stm), Nam = Name_Read);
+        (Loc, Typ, Decl, Pnam, New_List (Stm), Outp => Nam = Name_Read);
    end Build_Array_Read_Write_Procedure;
 
    ---------------------------------
@@ -1119,25 +1119,20 @@ package body Exp_Strm is
      (Loc            : Source_Ptr;
       Typ            : Entity_Id;
       Decl           : out Node_Id;
-      Fnam           : out Entity_Id;
-      Use_Underlying : Boolean := True)
+      Fnam           : out Entity_Id)
    is
-      B_Typ      : Entity_Id := Base_Type (Typ);
+      B_Typ      : constant Entity_Id := Underlying_Type (Base_Type (Typ));
       Cn         : Name_Id;
       Constr     : List_Id;
       Decls      : List_Id;
       Discr      : Entity_Id;
-      Discr_Elmt : Elmt_Id   := No_Elmt;
+      Discr_Elmt : Elmt_Id            := No_Elmt;
       J          : Pos;
       Obj_Decl   : Node_Id;
       Odef       : Node_Id;
       Stms       : List_Id;
 
    begin
-      if Use_Underlying then
-         B_Typ := Underlying_Type (B_Typ);
-      end if;
-
       Decls  := New_List;
       Constr := New_List;
 
@@ -1325,7 +1320,7 @@ package body Exp_Strm is
 
       Pnam := Make_Stream_Subprogram_Name (Loc, Typ, TSS_Stream_Output);
 
-      Build_Stream_Procedure (Loc, Typ, Decl, Pnam, Stms, False);
+      Build_Stream_Procedure (Loc, Typ, Decl, Pnam, Stms, Outp => False);
    end Build_Record_Or_Elementary_Output_Procedure;
 
    ---------------------------------
@@ -1590,7 +1585,7 @@ package body Exp_Strm is
       end if;
 
       Build_Stream_Procedure
-        (Loc, Typ, Decl, Pnam, Stms, Nam = Name_Read);
+        (Loc, Typ, Decl, Pnam, Stms, Outp => Nam = Name_Read);
    end Build_Record_Read_Write_Procedure;
 
    ----------------------------------

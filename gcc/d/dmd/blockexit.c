@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -75,10 +75,10 @@ int blockExit(Statement *s, FuncDeclaration *func, bool mustNotThrow)
 
         void visit(CompoundStatement *cs)
         {
-            //printf("CompoundStatement::blockExit(%p) %d result = x%X\n", cs, cs->statements->dim, result);
+            //printf("CompoundStatement::blockExit(%p) %d result = x%X\n", cs, cs->statements->length, result);
             result = BEfallthru;
             Statement *slast = NULL;
-            for (size_t i = 0; i < cs->statements->dim; i++)
+            for (size_t i = 0; i < cs->statements->length; i++)
             {
                 Statement *s = (*cs->statements)[i];
                 if (s)
@@ -124,7 +124,7 @@ int blockExit(Statement *s, FuncDeclaration *func, bool mustNotThrow)
         void visit(UnrolledLoopStatement *uls)
         {
             result = BEfallthru;
-            for (size_t i = 0; i < uls->statements->dim; i++)
+            for (size_t i = 0; i < uls->statements->length; i++)
             {
                 Statement *s = (*uls->statements)[i];
                 if (s)
@@ -356,7 +356,7 @@ int blockExit(Statement *s, FuncDeclaration *func, bool mustNotThrow)
             result = blockExit(s->_body, func, false);
 
             int catchresult = 0;
-            for (size_t i = 0; i < s->catches->dim; i++)
+            for (size_t i = 0; i < s->catches->length; i++)
             {
                 Catch *c = (*s->catches)[i];
                 if (c->type == Type::terror)

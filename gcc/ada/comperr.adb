@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -310,8 +310,8 @@ package body Comperr is
                   End_Line;
 
                   Write_Str
-                    ("| http://www.adacore.com/ " &
-                     "section 'send a report'.");
+                    ("| https://www.adacore.com/login?mode=gap " &
+                     "section 'Create New Ticket'.");
                   End_Line;
 
                   Write_Str
@@ -325,8 +325,8 @@ package body Comperr is
                   End_Line;
 
                   Write_Str
-                    ("| http://www.adacore.com/gnattracker/ " &
-                     "section 'send a report'.");
+                    ("| https://www.adacore.com/login " &
+                     "section 'Create New Ticket'.");
                   End_Line;
 
                   Write_Str

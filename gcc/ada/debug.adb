@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -125,7 +125,7 @@ package body Debug is
    --  d.E  Turn selected errors into warnings
    --  d.F  Debug mode for GNATprove
    --  d.G  Ignore calls through generic formal parameters for elaboration
-   --  d.H  GNSA mode for ASIS
+   --  d.H
    --  d.I  Do not ignore enum representation clauses in CodePeer mode
    --  d.J  Relaxed rules for pragma No_Return
    --  d.K
@@ -193,7 +193,7 @@ package body Debug is
    --  d_S
    --  d_T  Output trace information on invocation path recording
    --  d_U
-   --  d_V
+   --  d_V  Enable verifications on the expanded tree
    --  d_W
    --  d_X
    --  d_Y
@@ -892,9 +892,6 @@ package body Debug is
    --       now fixed, but we provide this debug flag to revert to the previous
    --       situation of ignoring such calls to aid in transition.
 
-   --  d.H  Sets ASIS_GNSA_Mode to True. This signals the front end to suppress
-   --       the call to gigi in ASIS_Mode.
-
    --  d.I  Do not ignore enum representation clauses in CodePeer mode.
    --       The default of ignoring representation clauses for enumeration
    --       types in CodePeer is good for the majority of Ada code, but in some
@@ -1015,8 +1012,11 @@ package body Debug is
    --       it is checked, and the progress of the recursive trace through
    --       elaboration calls at compile time.
 
-   --  d_T  The compiler outputs trance information to standard output whenever
+   --  d_T  The compiler outputs trace information to standard output whenever
    --       an invocation path is recorded.
+
+   --  d_V  Enable verification of the expanded code before calling the backend
+   --       and generate error messages on each inconsistency found.
 
    --  d1   Error messages have node numbers where possible. Normally error
    --       messages have only source locations. This option is useful when

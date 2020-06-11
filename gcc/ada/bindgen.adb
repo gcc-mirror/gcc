@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -457,7 +457,7 @@ package body Bindgen is
 
       if not Bind_For_Library and not CodePeer_Mode then
          WBI ("      procedure s_stalib_adafinal;");
-         Set_String ("      pragma Import (C, s_stalib_adafinal, ");
+         Set_String ("      pragma Import (Ada, s_stalib_adafinal, ");
          Set_String ("""system__standard_library__adafinal"");");
          Write_Statement_Buffer;
       end if;

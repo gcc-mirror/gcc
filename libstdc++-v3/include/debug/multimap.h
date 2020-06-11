@@ -59,6 +59,16 @@ namespace __debug
       template<typename _ItT, typename _SeqT, typename _CatT>
 	friend class ::__gnu_debug::_Safe_iterator;
 
+      // Reference wrapper for base class. Disambiguates multimap(const _Base&)
+      // from copy constructor by requiring a user-defined conversion.
+      // See PR libstdc++/90102.
+      struct _Base_ref
+      {
+	_Base_ref(const _Base& __r) : _M_ref(__r) { }
+
+	const _Base& _M_ref;
+      };
+
     public:
       // types:
       typedef _Key					key_type;
@@ -138,8 +148,8 @@ namespace __debug
 		__gnu_debug::__base(__last),
 	      __comp, __a) { }
 
-      multimap(const _Base& __x)
-      : _Base(__x) { }
+      multimap(_Base_ref __x)
+      : _Base(__x._M_ref) { }
 
 #if __cplusplus < 201103L
       multimap&

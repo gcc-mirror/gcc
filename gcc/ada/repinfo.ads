@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,9 +31,7 @@
 
 --  This package contains the routines to handle back annotation of the
 --  tree to fill in representation information, and also the routines used
---  by -gnatR to output this information. This unit is used both in the
---  compiler and in ASIS (it is used in ASIS as part of the implementation
---  of the Data Decomposition Annex).
+--  by -gnatR to output this information.
 
 --  WARNING: There is a C version of this package. Any changes to this
 --  source file must be properly reflected in the C header file repinfo.h
@@ -112,12 +110,12 @@ package Repinfo is
    --       in terms of the variables represented symbolically.
 
    --  Note: the extended back annotation for the dynamic case is needed only
-   --  for -gnatR3 output, and for proper operation of the ASIS DDA. Since it
-   --  can be expensive to do this back annotation (for discriminated records
-   --  with many variable-length arrays), we only do the full back annotation
-   --  in -gnatR3 mode, or ASIS mode. In any other mode, the back-end just sets
-   --  the value to Uint_Minus_1, indicating that the value of the attribute
-   --  depends on discriminant information, but not giving further details.
+   --  for -gnatR3 output. Since it can be expensive to do this back annotation
+   --  (for discriminated records with many variable-length arrays), we only do
+   --  the full back annotation in -gnatR3 mode. In any other mode, the
+   --  back-end just sets the value to Uint_Minus_1, indicating that the value
+   --  of the attribute depends on discriminant information, but not giving
+   --  further details.
 
    --  GCC expressions are represented with a Uint value that is negative.
    --  See the body of this package for details on the representation used.
@@ -129,8 +127,8 @@ package Repinfo is
    --  with a given set of discriminant values, indicates whether the variant
    --  is present for that set of values (result is True, i.e. non-zero) or
    --  not present (result is False, i.e. zero). Again, the full annotation of
-   --  this field is done only in -gnatR3 mode or in ASIS mode, and in other
-   --  modes, the value is set to Uint_Minus_1.
+   --  this field is done only in -gnatR3 mode, and in other modes, the value
+   --  is set to Uint_Minus_1.
 
    subtype Node_Ref is Uint;
    --  Subtype used for negative Uint values used to represent nodes
@@ -282,9 +280,9 @@ package Repinfo is
    --    number of elements of the value of "operands" is specified by the
    --    operands column in the line associated with the symbol in the table.
 
-   --    As documented above, the full back annotation is only done in -gnatR3
-   --    or ASIS mode. In the other cases, if the numerical expression is not
-   --    a number, then it is replaced with the "??" string.
+   --    As documented above, the full back annotation is only done in -gnatR3.
+   --    In the other cases, if the numerical expression is not a number, then
+   --    it is replaced with the "??" string.
 
    ------------------------
    -- The gigi Interface --
@@ -375,9 +373,9 @@ package Repinfo is
    --  and entity id values and the back end makes Get_Dynamic_SO_Ref
    --  calls to retrieve them.
 
-   --------------------
-   -- ASIS_Interface --
-   --------------------
+   ------------------------------
+   -- External tools Interface --
+   ------------------------------
 
    type Discrim_List is array (Pos range <>) of Uint;
    --  Type used to represent list of discriminant values
@@ -390,10 +388,6 @@ package Repinfo is
    --  as an argument value, and return it unmodified. A No_Uint value is
    --  also returned unmodified.
 
-   procedure Tree_Read;
-   --  Initializes internal tables from current tree file using the relevant
-   --  Table.Tree_Read routines.
-
    ------------------------
    -- Compiler Interface --
    ------------------------
@@ -401,10 +395,6 @@ package Repinfo is
    procedure List_Rep_Info (Bytes_Big_Endian : Boolean);
    --  Procedure to list representation information. Bytes_Big_Endian is the
    --  value from Ttypes (Repinfo cannot have a dependency on Ttypes).
-
-   procedure Tree_Write;
-   --  Writes out internal tables to current tree file using the relevant
-   --  Table.Tree_Write routines.
 
    --------------------------
    -- Debugging Procedures --

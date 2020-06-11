@@ -37,6 +37,12 @@
 		    && mve_vector_mem_operand (GET_MODE (op), XEXP (op, 0),
 					       false)")))
 
+(define_predicate "mve_scatter_memory"
+  (and (match_code "mem")
+       (match_test "TARGET_HAVE_MVE && REG_P (XEXP (op, 0))
+		    && mve_vector_mem_operand (GET_MODE (op), XEXP (op, 0),
+					       false)")))
+
 ;; True for immediates in the range of 1 to 16 for MVE.
 (define_predicate "mve_imm_16"
   (match_test "satisfies_constraint_Rd (op)"))

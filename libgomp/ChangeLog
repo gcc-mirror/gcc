@@ -1,3 +1,21 @@
+2020-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* allocator.c (omp_free): Fix up build if HAVE_SYNC_BUILTINS is not
+	defined.
+
+2020-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/alloc-4.c: New test.
+
+2020-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* allocator.c (omp_alloc): For size == 0, return NULL early.
+
+2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/95413
+	* configure: Regenerated.
+
 2020-05-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/95191

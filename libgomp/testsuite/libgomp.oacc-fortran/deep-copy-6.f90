@@ -3,6 +3,7 @@
 ! Test of attachment counters and finalize.
 
 program dtype
+  use openacc
   implicit none
   integer, parameter :: n = 512
   type mytype
@@ -36,7 +37,23 @@ program dtype
   end do
 !$acc end parallel loop
 
+  if (.not. acc_is_present(var%a(5:n - 5))) stop 11
+  if (.not. acc_is_present(var%b(5:n - 5))) stop 12
+  if (.not. acc_is_present(var)) stop 13
+  print *, "CheCKpOInT1"
+  ! { dg-output ".*CheCKpOInT1(\n|\r\n|\r)" }
 !$acc exit data copyout(var%a(5:n - 5), var%b(5:n - 5)) finalize
+  !TODO     goacc_exit_data_internal: Assertion `is_tgt_unmapped || num_mappings > 1' failed.
+  !TODO { dg-output ".*\[Aa\]ssert.*is_tgt_unmapped" { target { ! openacc_host_selected } } } ! Scan for what we expect in the "XFAILed" case (without actually XFAILing).
+  !TODO { dg-shouldfail "XFAILed" { ! openacc_host_selected } } ! ... instead of 'dg-xfail-run-if' so that 'dg-output' is evaluated at all.
+  !TODO { dg-final { if { [dg-process-target { xfail { ! openacc_host_selected } }] == "F" } { xfail "[testname-for-summary] really is XFAILed" } } } ! ... so that we still get an XFAIL visible in the log.
+  print *, "CheCKpOInT2"
+  ! { dg-output ".CheCKpOInT2(\n|\r\n|\r)" { target { openacc_host_selected } } }
+  if (acc_get_device_type() .ne. acc_device_host) then
+     if (acc_is_present(var%a(5:n - 5))) stop 21
+     if (acc_is_present(var%b(5:n - 5))) stop 22
+  end if
+  if (.not. acc_is_present(var)) stop 23
 
 !$acc end data
 

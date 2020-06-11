@@ -96,8 +96,6 @@ ensure_literal_type_for_constexpr_object (tree decl)
       if (CLASS_TYPE_P (stype) && !COMPLETE_TYPE_P (complete_type (stype)))
 	/* Don't complain here, we'll complain about incompleteness
 	   when we try to initialize the variable.  */;
-      else if (type_uses_auto (type))
-	/* We don't know the actual type yet.  */;
       else if (!literal_type_p (type))
 	{
 	  if (DECL_DECLARED_CONSTEXPR_P (decl))
@@ -3300,6 +3298,22 @@ get_or_insert_ctor_field (tree ctor, tree index, int pos_hint = -1)
     }
   else if (TREE_CODE (type) == ARRAY_TYPE || TREE_CODE (type) == VECTOR_TYPE)
     {
+      if (TREE_CODE (index) == RANGE_EXPR)
+	{
+	  /* Support for RANGE_EXPR index lookups is currently limited to
+	     accessing an existing element via POS_HINT, or appending a new
+	     element to the end of CTOR.  ??? Support for other access
+	     patterns may also be needed.  */
+	  vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (ctor);
+	  if (vec_safe_length (elts))
+	    {
+	      tree lo = TREE_OPERAND (index, 0);
+	      gcc_assert (array_index_cmp (elts->last().index, lo) < 0);
+	    }
+	  CONSTRUCTOR_APPEND_ELT (elts, index, NULL_TREE);
+	  return &elts->last();
+	}
+
       HOST_WIDE_INT i = find_array_ctor_elt (ctor, index, /*insert*/true);
       gcc_assert (i >= 0);
       constructor_elt *cep = CONSTRUCTOR_ELT (ctor, i);
@@ -6195,6 +6209,18 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	if (VOID_TYPE_P (type))
 	  return void_node;
 
+	if (TREE_CODE (t) == CONVERT_EXPR
+	    && ARITHMETIC_TYPE_P (type)
+	    && INDIRECT_TYPE_P (TREE_TYPE (op)))
+	  {
+	    if (!ctx->quiet)
+	      error_at (loc,
+			"conversion from pointer type %qT to arithmetic type "
+			"%qT in a constant expression", TREE_TYPE (op), type);
+	    *non_constant_p = true;
+	    return t;
+	  }
+
 	if (TREE_CODE (op) == PTRMEM_CST && !TYPE_PTRMEM_P (type))
 	  op = cplus_expand_constant (op);
 
@@ -6346,47 +6372,9 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       break;
 
     case OBJ_TYPE_REF:
-      {
-	/* Virtual function call.  Let the constexpr machinery figure out
-	   the dynamic type.  */
-	int token = tree_to_shwi (OBJ_TYPE_REF_TOKEN (t));
-	tree obj = OBJ_TYPE_REF_OBJECT (t);
-	obj = cxx_eval_constant_expression (ctx, obj, lval, non_constant_p,
-					    overflow_p);
-	STRIP_NOPS (obj);
-	/* We expect something in the form of &x.D.2103.D.2094; get x. */
-	if (TREE_CODE (obj) != ADDR_EXPR
-	    || !DECL_P (get_base_address (TREE_OPERAND (obj, 0))))
-	  {
-	    if (!ctx->quiet)
-	      error_at (loc, "expression %qE is not a constant expression", t);
-	    *non_constant_p = true;
-	    return t;
-	  }
-	obj = TREE_OPERAND (obj, 0);
-	while (TREE_CODE (obj) == COMPONENT_REF
-	       && DECL_FIELD_IS_BASE (TREE_OPERAND (obj, 1)))
-	  obj = TREE_OPERAND (obj, 0);
-	tree objtype = TREE_TYPE (obj);
-	if (VAR_P (obj)
-	    && DECL_NAME (obj) == heap_identifier
-	    && TREE_CODE (objtype) == ARRAY_TYPE)
-	  objtype = TREE_TYPE (objtype);
-	if (!CLASS_TYPE_P (objtype))
-	  {
-	    if (!ctx->quiet)
-	      error_at (loc, "expression %qE is not a constant expression", t);
-	    *non_constant_p = true;
-	    return t;
-	  }
-	/* Find the function decl in the virtual functions list.  TOKEN is
-	   the DECL_VINDEX that says which function we're looking for.  */
-	tree virtuals = BINFO_VIRTUALS (TYPE_BINFO (objtype));
-	if (TARGET_VTABLE_USES_DESCRIPTORS)
-	  token /= MAX (TARGET_VTABLE_USES_DESCRIPTORS, 1);
-	r = TREE_VALUE (chain_index (token, virtuals));
-	break;
-      }
+      /* Virtual function lookup.  We don't need to do anything fancy.  */
+      return cxx_eval_constant_expression (ctx, OBJ_TYPE_REF_EXPR (t),
+					   lval, non_constant_p, overflow_p);
 
     case PLACEHOLDER_EXPR:
       /* Use of the value or address of the current object.  */
@@ -6796,19 +6784,6 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
       non_constant_p = true;
     }
 
-  /* Technically we should check this for all subexpressions, but that
-     runs into problems with our internal representation of pointer
-     subtraction and the 5.19 rules are still in flux.  */
-  if (CONVERT_EXPR_CODE_P (TREE_CODE (r))
-      && ARITHMETIC_TYPE_P (TREE_TYPE (r))
-      && TREE_CODE (TREE_OPERAND (r, 0)) == ADDR_EXPR)
-    {
-      if (!allow_non_constant)
-	error ("conversion from pointer type %qT "
-	       "to arithmetic type %qT in a constant expression",
-	       TREE_TYPE (TREE_OPERAND (r, 0)), TREE_TYPE (r));
-      non_constant_p = true;
-    }
 
   if (!non_constant_p && overflow_p)
     non_constant_p = true;

@@ -13327,32 +13327,38 @@ mve_vector_mem_operand (machine_mode mode, rtx op, bool strict)
 	    if (abs (val) <= 127)
 	      return ((reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
 		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+	    return FALSE;
 	  case E_V8HImode:
 	  case E_V8HFmode:
 	    if (abs (val) <= 255)
 	      return ((reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
 		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+	    return FALSE;
 	  case E_V8QImode:
 	  case E_V4QImode:
 	    if (abs (val) <= 127)
 	      return (reg_no <= LAST_LO_REGNUM
 		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+	    return FALSE;
 	  case E_V4HImode:
 	  case E_V4HFmode:
 	    if (val % 2 == 0 && abs (val) <= 254)
 	      return (reg_no <= LAST_LO_REGNUM
 		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+	    return FALSE;
 	  case E_V4SImode:
 	  case E_V4SFmode:
 	    if (val % 4 == 0 && abs (val) <= 508)
 	      return ((reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
 		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+	    return FALSE;
 	  case E_V2DImode:
 	  case E_V2DFmode:
 	  case E_TImode:
 	    if (val % 4 == 0 && val >= 0 && val <= 1020)
 	      return ((reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
 		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+	    return FALSE;
 	  default:
 	    return FALSE;
 	}

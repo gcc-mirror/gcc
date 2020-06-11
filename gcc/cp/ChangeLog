@@ -1,3 +1,182 @@
+2020-06-03  Mark Wielaard  <mark@klomp.org>
+
+	* parser.c (cp_lexer_safe_previous_token): New function.
+	(cp_parser_error_1): Add name_hint if the previous token is
+	a string literal and next token is a CPP_NAME and we have a
+	missing header suggestion for the name.
+
+2020-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.c (process_partial_specialization): Pass the full set of
+	generic template arguments to strictly_subsumes.
+
+2020-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/92103
+	* pt.c (most_specialized_partial_spec): Reorganize the loop over
+	DECL_TEMPLATE_SPECIALIZATIONS.  Check constraints_satisfied_p on
+	the original template declaration, not on the tsubsted one.
+
+2020-06-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95345
+	* coroutines.cc (finish_co_await_expr): Revise to allow for
+	parameter packs.
+	(finish_co_yield_expr): Likewise.
+
+2020-06-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95232
+	* cp-tree.h (predeclare_vla): Declare.
+	* cp-gimplify.c (predeclare_vla): Handle getting a decl.
+	* pt.c (tsubst_expr) [DECL_EXPR]: Use it.
+
+2020-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* cp-gimplify.c (cxx_omp_predetermined_mapping): New.
+	* cp-objcp-common.h (LANG_HOOKS_OMP_PREDETERMINED_MAPPING): Redfine.
+	* cp-tree.h (cxx_omp_predetermined_mapping): Declare.
+
+2020-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95193
+	* pt.c (tsubst_decl): Relax assert.
+
+2020-06-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95050
+	* coroutines.cc (build_co_await): Wrap the co_await expression
+	in a TARGET_EXPR, where needed.
+	(finish_co_yield_expr): Likewise.
+
+2020-06-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/92633
+	PR c++/92838
+	* pt.c (tsubst_function_decl): Don't do set_constraints when
+	regenerating a lambda.
+	(tsubst_lambda_expr): Substitute into the lambda's constraints
+	and do set_constraints here.
+
+2020-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95466
+	PR c++/95311
+	PR c++/95221
+	* class.c (build_vfn_ref): Revert 95311 change.
+	* cp-ubsan.c (cp_ubsan_maybe_instrument_member_call): Build a
+	COMPOUND_EXPR.
+
+2020-06-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95350
+	* coroutines.cc (struct param_info): Remove rv_ref field.
+	(build_actor_fn): Remove specifial rvalue ref handling.
+	(morph_fn_to_coro): Likewise.
+
+2020-05-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95087
+	* coroutines.cc (morph_fn_to_coro): If we see an
+	early fatal error, drop the erroneous function body.
+
+2020-05-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (build_co_await): Remove unused
+	variable.
+	(finish_co_await_expr): Likewise.
+	(finish_co_yield_expr): Likewise; revise comment.
+
+2020-05-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (morph_fn_to_coro): Revise initialization
+	of the frame pointer to avoid an unused value.
+
+2020-05-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95386
+	* constraint.cc (satisfaction_value): Accept INTEGER_CST of any
+	boolean type.
+
+2020-05-29  Patrick Palka  <ppalka@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/95181
+	* class.c (add_method): Let special member function templates
+	coexist if they are not equivalently constrained, or in a class
+	template.
+
+2020-05-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95371
+	* pt.c (process_template_parm): Set DECL_TEMPLATE_INFO
+	on the DECL_TEMPLATE_RESULT.
+
+2020-05-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95344
+	* cp-gimplify.c (cp_fold) <case MODIFY_EXPR>: Don't set
+	TREE_THIS_VOLATILE here.
+	(cp_fold): Set it here along with TREE_NO_WARNING.
+
+2020-05-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95311
+	PR c++/95221
+	* class.c (build_vfn_ref): Don't fold the INDIRECT_REF.
+
+2020-05-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/92652
+	PR c++/93698
+	PR c++/94128
+	* parser.c (cp_parser_requires_clause_expression): Temporarily
+	increment processing_template_decl only if it is 0.
+	(cp_parser_constraint_expression): Likewise.
+	(cp_parser_requires_expression): Likewise.
+
+2020-05-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95241
+	* constexpr.c (get_or_insert_ctor_field): Add limited support
+	for RANGE_EXPR index lookups.
+
+2020-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/95328
+	* decl.c (cp_finish_decomp): Call complete_type before checking
+	COMPLETE_TYPE_P.
+
+2020-05-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94926
+	* decl.c (cp_finish_decl): Revert r9-297 change.
+	(check_static_variable_definition): Likewise.
+	* constexpr.c (ensure_literal_type_for_constexpr_object): Likewise.
+	* pt.c (instantiate_decl): Return early on type error.
+
+2020-05-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95319
+	* decl.c (reshape_init_array_1): Don't reuse in overload context.
+
+2020-05-27  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_new_op_1): Suppress
+	warn_zero_as_null_pointer_constant across comparison of <=> result
+	to 0.
+
+2020-05-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95222
+	* decl.c (grokdeclarator): Don't shift attributes in TYPENAME
+	context.
+
+2020-05-27  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/95263
+	* pt.c (lookup_template_class_1): Restore alias template mutation.
+
 2020-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/95197

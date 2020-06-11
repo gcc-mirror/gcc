@@ -6749,6 +6749,14 @@ aarch64_layout_frame (void)
 			+ frame.sve_callee_adjust
 			+ frame.final_adjust, frame.frame_size));
 
+  if (!frame.emit_frame_chain && frame.callee_adjust == 0)
+    {
+      /* We've decided not to associate any register saves with the initial
+	 stack allocation.  */
+      frame.wb_candidate1 = INVALID_REGNUM;
+      frame.wb_candidate2 = INVALID_REGNUM;
+    }
+
   frame.laid_out = true;
 }
 
@@ -8180,7 +8188,11 @@ aarch64_expand_epilogue (bool for_sibcall)
   if (callee_adjust != 0)
     aarch64_pop_regs (reg1, reg2, callee_adjust, &cfi_ops);
 
-  if (callee_adjust != 0 || maybe_gt (initial_adjust, 65536))
+  /* If we have no register restore information, the CFA must have been
+     defined in terms of the stack pointer since the end of the prologue.  */
+  gcc_assert (cfi_ops || !frame_pointer_needed);
+
+  if (cfi_ops && (callee_adjust != 0 || maybe_gt (initial_adjust, 65536)))
     {
       /* Emit delayed restores and set the CFA to be SP + initial_adjust.  */
       insn = get_last_insn ();
@@ -16358,6 +16370,7 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	}
 
       /* *(field_ptr_t)&ha = *((field_ptr_t)vr_saved_area  */
+      TREE_ADDRESSABLE (tmp_ha) = 1;
       tmp_ha = build1 (ADDR_EXPR, field_ptr_t, tmp_ha);
       addr = t;
       t = fold_convert (field_ptr_t, addr);
@@ -16788,7 +16801,8 @@ aarch64_short_vector_p (const_tree type,
     {
       /* Rely only on the type, not the mode, when processing SVE types.  */
       if (type && aarch64_some_values_include_pst_objects_p (type))
-	gcc_assert (aarch64_sve_mode_p (mode));
+	/* Leave later code to report an error if SVE is disabled.  */
+	gcc_assert (!TARGET_SVE || aarch64_sve_mode_p (mode));
       else
 	size = GET_MODE_SIZE (mode);
     }

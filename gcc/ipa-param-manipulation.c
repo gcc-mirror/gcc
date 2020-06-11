@@ -111,6 +111,9 @@ ipa_dump_adjusted_parameters (FILE *f,
   unsigned i, len = vec_safe_length (adj_params);
   bool first = true;
 
+  if (!len)
+    return;
+
   fprintf (f, "    IPA adjusted parameters: ");
   for (i = 0; i < len; i++)
     {
@@ -899,7 +902,7 @@ ipa_param_adjustments::dump (FILE *f)
   fprintf (f, "    m_always_copy_start: %i\n", m_always_copy_start);
   ipa_dump_adjusted_parameters (f, m_adj_params);
   if (m_skip_return)
-    fprintf (f, "     Will SKIP return.\n");
+    fprintf (f, "    Will SKIP return.\n");
 }
 
 /* Dump information contained in the object in textual form to stderr.  */

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -390,6 +390,9 @@ package body Sem_Attr is
       --  Validity checking for stream attribute. Nam is the TSS name of the
       --  corresponding possible defined attribute function (e.g. for the
       --  Read attribute, Nam will be TSS_Stream_Read).
+
+      procedure Check_Put_Image_Attribute;
+      --  Validity checking for Put_Image attribute
 
       procedure Check_System_Prefix;
       --  Verify that prefix of attribute N is package System
@@ -2322,6 +2325,49 @@ package body Sem_Attr is
             Error_Attr ("only allowed prefix for % attribute is Standard", P);
          end if;
       end Check_Standard_Prefix;
+
+      -------------------------------
+      -- Check_Put_Image_Attribute --
+      -------------------------------
+
+      procedure Check_Put_Image_Attribute is
+      begin
+         --  Put_Image is a procedure, and can only appear at the position of a
+         --  procedure call. If it's a list member and it's parent is a
+         --  procedure call or aggregate, then this is appearing as an actual
+         --  parameter or component association, which is wrong.
+
+         if Is_List_Member (N)
+           and then not Nkind_In (Parent (N), N_Procedure_Call_Statement,
+                                              N_Aggregate)
+         then
+            null;
+         else
+            Error_Attr
+              ("invalid context for attribute%, which is a procedure", N);
+         end if;
+
+         Check_Type;
+         Analyze_And_Resolve (E1);
+
+         --  Check that the first argument is
+         --  Ada.Strings.Text_Output.Sink'Class.
+
+         --  Note: the double call to Root_Type here is needed because the
+         --  root type of a class-wide type is the corresponding type (e.g.
+         --  X for X'Class, and we really want to go to the root.)
+
+         if Root_Type (Root_Type (Etype (E1))) /= RTE (RE_Sink) then
+            Error_Attr
+              ("expected Ada.Strings.Text_Output.Sink''Class", E1);
+         end if;
+
+         --  Check that the second argument is of the right type
+
+         Analyze (E2);
+         Resolve (E2, P_Type);
+         Check_Not_CPP_Type;
+      end Check_Put_Image_Attribute;
 
       ----------------------------
       -- Check_Stream_Attribute --
@@ -5281,6 +5327,16 @@ package body Sem_Attr is
 
          Validate_Non_Static_Attribute_Function_Call;
 
+      ---------------
+      -- Put_Image --
+      ---------------
+
+      when Attribute_Put_Image =>
+         Check_E2;
+         Check_Put_Image_Attribute;
+         Set_Etype (N, Standard_Void_Type);
+         Resolve (N, Standard_Void_Type);
+
       -----------
       -- Range --
       -----------
@@ -5513,10 +5569,10 @@ package body Sem_Attr is
                --  Prefix is a name, as for other attributes.
 
                --  If the object is a function we asume that it is not
-               --  overloaded. AI12-242 does not suggest an name resulution
-               --  rule for that case, but can suppose that the expected
-               --  type of the reduction is the expected type of the
-               --  component of the prefix.
+               --  overloaded. AI12-242 does not suggest a name resolution
+               --  rule for that case, but we can suppose that the expected
+               --  type of the reduction is the expected type of the component
+               --  of the prefix.
 
                Analyze_And_Resolve (Stream);
                Typ := Etype (Stream);
@@ -6418,7 +6474,7 @@ package body Sem_Attr is
                      end if;
                   end if;
 
-                  Rep := Next_Rep_Item (Rep);
+                  Next_Rep_Item (Rep);
                end loop;
             end if;
          end Compute_Type_Key;
@@ -6760,7 +6816,7 @@ package body Sem_Attr is
                   exit;
                end if;
 
-               Comp_Or_Discr := Next_Entity (Comp_Or_Discr);
+               Next_Entity (Comp_Or_Discr);
             end loop;
 
             --  Diagnose an illegal reference
@@ -10262,6 +10318,7 @@ package body Sem_Attr is
          | Attribute_Pool_Address
          | Attribute_Position
          | Attribute_Priority
+         | Attribute_Put_Image
          | Attribute_Read
          | Attribute_Result
          | Attribute_Scalar_Storage_Order
@@ -10678,6 +10735,7 @@ package body Sem_Attr is
 
                      if not Is_Itype (Btyp)
                        and then not Has_Convention_Pragma (Btyp)
+                       and then Convention (Entity (P)) /= Convention_Intrinsic
                      then
                         Error_Msg_FE
                           ("\probable missing pragma Convention for &",
@@ -10970,9 +11028,19 @@ package body Sem_Attr is
 
                             or else Nkind (Associated_Node_For_Itype (Btyp)) =
                                                         N_Object_Declaration)
+                 and then Attr_Id = Attribute_Access
+
+                 --  Verify that static checking is OK (namely that we aren't
+                 --  in a specific context requiring dynamic checks on
+                 --  expicitly aliased parameters), and then check the level.
+
+                 --  Otherwise a check will be generated later when the return
+                 --  statement gets expanded.
+
+                 and then not Is_Special_Aliased_Formal_Access
+                                (N, Current_Scope)
                  and then
                    Object_Access_Level (P) > Deepest_Type_Access_Level (Btyp)
-                 and then Attr_Id = Attribute_Access
                then
                   --  In an instance, this is a runtime check, but one we know
                   --  will fail, so generate an appropriate warning. As usual,

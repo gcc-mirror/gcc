@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/name-hint.h"
 #include "tree-iterator.h"
 #include "memmodel.h"
+#include "c-family/known-headers.h"
 
 /* We need to walk over decls with incomplete struct/union/enum types
    after parsing the whole translation unit.
@@ -222,6 +223,13 @@ struct GTY(()) c_parser {
   /* True if we are in a context where the Objective-C "Property attribute"
      keywords are valid.  */
   BOOL_BITFIELD objc_property_attr_context : 1;
+
+  /* Whether we have just seen/constructed a string-literal.  Set when
+     returning a string-literal from c_parser_string_literal.  Reset
+     in consume_token.  Useful when we get a parse error and see an
+     unknown token, which could have been a string-literal constant
+     macro.  */
+  BOOL_BITFIELD seen_string_literal : 1;
 
   /* Location of the last consumed token.  */
   location_t last_token_location;
@@ -853,6 +861,7 @@ c_parser_consume_token (c_parser *parser)
         }
     }
   parser->tokens_avail--;
+  parser->seen_string_literal = false;
 }
 
 /* Expect the current token to be a #pragma.  Consume it and remember
@@ -964,6 +973,25 @@ c_parser_error_richloc (c_parser *parser, const char *gmsgid,
 	  error_at (loc, "version control conflict marker in file");
 	  return true;
 	}
+    }
+
+  /* If we were parsing a string-literal and there is an unknown name
+     token right after, then check to see if that could also have been
+     a literal string by checking the name against a list of known
+     standard string literal constants defined in header files. If
+     there is one, then add that as an hint to the error message. */
+  auto_diagnostic_group d;
+  name_hint h;
+  if (parser->seen_string_literal && token->type == CPP_NAME)
+    {
+      tree name = token->value;
+      const char *token_name = IDENTIFIER_POINTER (name);
+      const char *header_hint
+	= get_c_stdlib_header_for_string_macro_name (token_name);
+      if (header_hint != NULL)
+	h = name_hint (NULL, new suggest_missing_header (token->location,
+							 token_name,
+							 header_hint));
     }
 
   c_parse_error (gmsgid,
@@ -7539,6 +7567,7 @@ c_parser_string_literal (c_parser *parser, bool translate, bool wide_ok)
   ret.original_code = STRING_CST;
   ret.original_type = NULL_TREE;
   set_c_expr_source_range (&ret, get_range_from_loc (line_table, loc));
+  parser->seen_string_literal = true;
   return ret;
 }
 
@@ -10458,21 +10487,23 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	  break;
 	case CPP_OPEN_PAREN:
 	  /* Function call.  */
-	  c_parser_consume_token (parser);
-	  for (i = 0; i < 3; i++)
-	    {
-	      sizeof_arg[i] = NULL_TREE;
-	      sizeof_arg_loc[i] = UNKNOWN_LOCATION;
-	    }
-	  literal_zero_mask = 0;
-	  if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
-	    exprlist = NULL;
-	  else
-	    exprlist = c_parser_expr_list (parser, true, false, &origtypes,
-					   sizeof_arg_loc, sizeof_arg,
-					   &arg_loc, &literal_zero_mask);
-	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
-				     "expected %<)%>");
+	  {
+	    matching_parens parens;
+	    parens.consume_open (parser);
+	    for (i = 0; i < 3; i++)
+	      {
+		sizeof_arg[i] = NULL_TREE;
+		sizeof_arg_loc[i] = UNKNOWN_LOCATION;
+	      }
+	    literal_zero_mask = 0;
+	    if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+	      exprlist = NULL;
+	    else
+	      exprlist = c_parser_expr_list (parser, true, false, &origtypes,
+					     sizeof_arg_loc, sizeof_arg,
+					     &arg_loc, &literal_zero_mask);
+	    parens.skip_until_found_close (parser);
+	  }
 	  orig_expr = expr;
 	  mark_exp_read (expr.value);
 	  if (warn_sizeof_pointer_memaccess)

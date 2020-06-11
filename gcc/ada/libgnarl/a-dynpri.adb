@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,6 @@
 
 with System.Task_Primitives.Operations;
 with System.Tasking;
-with System.Parameters;
 with System.Soft_Links;
 
 with Ada.Unchecked_Conversion;
@@ -41,7 +40,6 @@ package body Ada.Dynamic_Priorities is
    package STPO renames System.Task_Primitives.Operations;
    package SSL renames System.Soft_Links;
 
-   use System.Parameters;
    use System.Tasking;
 
    function Convert_Ids is new
@@ -103,10 +101,6 @@ package body Ada.Dynamic_Priorities is
 
       SSL.Abort_Defer.all;
 
-      if Single_Lock then
-         STPO.Lock_RTS;
-      end if;
-
       STPO.Write_Lock (Target);
 
       Target.Common.Base_Priority := Priority;
@@ -140,10 +134,6 @@ package body Ada.Dynamic_Priorities is
       end if;
 
       STPO.Unlock (Target);
-
-      if Single_Lock then
-         STPO.Unlock_RTS;
-      end if;
 
       if STPO.Self = Target and then Yield_Needed then
 

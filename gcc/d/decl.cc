@@ -101,7 +101,7 @@ gcc_attribute_p (Dsymbol *decl)
 {
   ModuleDeclaration *md = decl->getModule ()->md;
 
-  if (md && md->packages && md->packages->dim == 1)
+  if (md && md->packages && md->packages->length == 1)
     {
       if (!strcmp ((*md->packages)[0]->toChars (), "gcc")
 	  && !strcmp (md->id->toChars (), "attribute"))
@@ -129,6 +129,17 @@ public:
   DeclVisitor (void)
   {
     this->in_version_unittest_ = false;
+  }
+
+  /* Helper for generating code for the dsymbol AST class D.
+     Sets up the location of the symbol before lowering.  */
+
+  void build_dsymbol (Dsymbol *d)
+  {
+    location_t saved_location = input_location;
+    input_location = make_location_t (d->loc);
+    d->accept (this);
+    input_location = saved_location;
   }
 
   /* This should be overridden by each declaration class.  */
@@ -168,7 +179,7 @@ public:
     if (d->ident == NULL)
       {
 	/* Importing declaration list.  */
-	for (size_t i = 0; i < d->names.dim; i++)
+	for (size_t i = 0; i < d->names.length; i++)
 	  {
 	    AliasDeclaration *aliasdecl = d->aliasdecls[i];
 	    tree decl = build_import_decl (aliasdecl);
@@ -204,7 +215,7 @@ public:
 
   void visit (TupleDeclaration *d)
   {
-    for (size_t i = 0; i < d->objects->dim; i++)
+    for (size_t i = 0; i < d->objects->length; i++)
       {
 	RootObject *o = (*d->objects)[i];
 	if ((o->dyncast () == DYNCAST_EXPRESSION)
@@ -212,7 +223,7 @@ public:
 	  {
 	    Declaration *d = ((DsymbolExp *) o)->s->isDeclaration ();
 	    if (d)
-	      d->accept (this);
+	      this->build_dsymbol (d);
 	  }
       }
   }
@@ -226,11 +237,8 @@ public:
     if (!ds)
       return;
 
-    for (size_t i = 0; i < ds->dim; i++)
-      {
-	Dsymbol *s = (*ds)[i];
-	s->accept (this);
-      }
+    for (size_t i = 0; i < ds->length; i++)
+      this->build_dsymbol ((*ds)[i]);
   }
 
   /* Pragmas are a way to pass special information to the compiler and to add
@@ -277,11 +285,8 @@ public:
     if (isError (d) || !d->members)
       return;
 
-    for (size_t i = 0; i < d->members->dim; i++)
-      {
-	Dsymbol *s = (*d->members)[i];
-	s->accept (this);
-      }
+    for (size_t i = 0; i < d->members->length; i++)
+      this->build_dsymbol ((*d->members)[i]);
   }
 
   /* Templates are D's approach to generic programming.  They have no members
@@ -315,7 +320,7 @@ public:
     /* Return type is instantiated from this template declaration, walk over
        all members of the instance.  */
     if (ti && ti->tempdecl == d)
-      ti->accept (this);
+      this->build_dsymbol (ti);
   }
 
   /* Walk over all members in the instantiated template.  */
@@ -328,11 +333,8 @@ public:
     if (!d->needsCodegen ())
       return;
 
-    for (size_t i = 0; i < d->members->dim; i++)
-      {
-	Dsymbol *s = (*d->members)[i];
-	s->accept (this);
-      }
+    for (size_t i = 0; i < d->members->length; i++)
+      this->build_dsymbol ((*d->members)[i]);
   }
 
   /* Walk over all members in the mixin template scope.  */
@@ -342,11 +344,8 @@ public:
     if (isError (d)|| !d->members)
       return;
 
-    for (size_t i = 0; i < d->members->dim; i++)
-      {
-	Dsymbol *s = (*d->members)[i];
-	s->accept (this);
-      }
+    for (size_t i = 0; i < d->members->length; i++)
+      this->build_dsymbol ((*d->members)[i]);
   }
 
   /* Write out compiler generated TypeInfo, initializer and functions for the
@@ -391,24 +390,20 @@ public:
 
     d_finish_decl (d->sinit);
 
-    /* Put out the members.  */
-    for (size_t i = 0; i < d->members->dim; i++)
-      {
-	Dsymbol *member = (*d->members)[i];
-	/* There might be static ctors in the members, and they cannot
-	   be put in separate object files.  */
-	member->accept (this);
-      }
+    /* Put out the members.  There might be static constructors in the members
+       list, and they cannot be put in separate object files.  */
+    for (size_t i = 0; i < d->members->length; i++)
+      this->build_dsymbol ((*d->members)[i]);
 
     /* Put out xopEquals, xopCmp and xopHash.  */
     if (d->xeq && d->xeq != d->xerreq)
-      d->xeq->accept (this);
+      this->build_dsymbol (d->xeq);
 
     if (d->xcmp && d->xcmp != d->xerrcmp)
-      d->xcmp->accept (this);
+      this->build_dsymbol (d->xcmp);
 
     if (d->xhash)
-      d->xhash->accept (this);
+      this->build_dsymbol (d->xhash);
 
     d->semanticRun = PASSobj;
   }
@@ -420,7 +415,7 @@ public:
     bool has_errors = false;
 
     /* Finish semantic analysis of functions in vtbl[].  */
-    for (size_t i = d->vtblOffset (); i < d->vtbl.dim; i++)
+    for (size_t i = d->vtblOffset (); i < d->vtbl.length; i++)
       {
 	FuncDeclaration *fd = d->vtbl[i]->isFuncDeclaration ();
 
@@ -438,7 +433,7 @@ public:
 	/* The function fd is hidden from the view of the class.
 	   If it overlaps with any function in the vtbl[], then
 	   issue an error.  */
-	for (size_t j = 1; j < d->vtbl.dim; j++)
+	for (size_t j = 1; j < d->vtbl.length; j++)
 	  {
 	    if (j == i)
 	      continue;
@@ -502,11 +497,8 @@ public:
       return;
 
     /* Put out the members.  */
-    for (size_t i = 0; i < d->members->dim; i++)
-      {
-	Dsymbol *member = (*d->members)[i];
-	member->accept (this);
-      }
+    for (size_t i = 0; i < d->members->length; i++)
+      this->build_dsymbol ((*d->members)[i]);
 
     /* If something goes wrong during final semantic pass, don't bother with
        the rest as we may have incomplete info.  */
@@ -538,7 +530,7 @@ public:
     if (d->vtblOffset ())
       CONSTRUCTOR_APPEND_ELT (elms, size_zero_node, build_address (d->csym));
 
-    for (size_t i = d->vtblOffset (); i < d->vtbl.dim; i++)
+    for (size_t i = d->vtblOffset (); i < d->vtbl.length; i++)
       {
 	FuncDeclaration *fd = d->vtbl[i]->isFuncDeclaration ();
 
@@ -581,11 +573,8 @@ public:
       return;
 
     /* Put out the members.  */
-    for (size_t i = 0; i < d->members->dim; i++)
-      {
-	Dsymbol *member = (*d->members)[i];
-	member->accept (this);
-      }
+    for (size_t i = 0; i < d->members->length; i++)
+      this->build_dsymbol ((*d->members)[i]);
 
     /* Generate C symbols.  */
     d->csym = get_classinfo_decl (d);
@@ -594,7 +583,7 @@ public:
     if (have_typeinfo_p (Type::dtypeinfo))
       {
 	create_typeinfo (d->type, NULL);
-	d->type->vtinfo->accept (this);
+	this->build_dsymbol (d->type->vtinfo);
       }
 
     DECL_INITIAL (d->csym) = layout_classinfo (d);
@@ -669,7 +658,7 @@ public:
 
     if (d->aliassym)
       {
-	d->toAlias ()->accept (this);
+	this->build_dsymbol (d->toAlias ());
 	return;
       }
 
@@ -917,7 +906,7 @@ public:
       }
 
     /* formal function parameters.  */
-    size_t n_parameters = d->parameters ? d->parameters->dim : 0;
+    size_t n_parameters = d->parameters ? d->parameters->length : 0;
 
     for (size_t i = 0; i < n_parameters; i++)
       {
@@ -1044,7 +1033,7 @@ build_decl_tree (Dsymbol *d)
     input_location = make_location_t (Loc ("<no_file>", 1, 0));
 
   DeclVisitor v = DeclVisitor ();
-  d->accept (&v);
+  v.build_dsymbol (d);
 
   input_location = saved_location;
 }
@@ -2024,27 +2013,27 @@ base_vtable_offset (ClassDeclaration *cd, BaseClass *bc)
 {
   unsigned csymoffset = Target::classinfosize;
   unsigned interfacesize = int_size_in_bytes (vtbl_interface_type_node);
-  csymoffset += cd->vtblInterfaces->dim * interfacesize;
+  csymoffset += cd->vtblInterfaces->length * interfacesize;
 
-  for (size_t i = 0; i < cd->vtblInterfaces->dim; i++)
+  for (size_t i = 0; i < cd->vtblInterfaces->length; i++)
     {
       BaseClass *b = (*cd->vtblInterfaces)[i];
       if (b == bc)
 	return csymoffset;
-      csymoffset += b->sym->vtbl.dim * Target::ptrsize;
+      csymoffset += b->sym->vtbl.length * Target::ptrsize;
     }
 
   /* Check all overriding interface vtbl[]s.  */
   for (ClassDeclaration *cd2 = cd->baseClass; cd2; cd2 = cd2->baseClass)
     {
-      for (size_t k = 0; k < cd2->vtblInterfaces->dim; k++)
+      for (size_t k = 0; k < cd2->vtblInterfaces->length; k++)
 	{
 	  BaseClass *bs = (*cd2->vtblInterfaces)[k];
 	  if (bs->fillVtbl (cd, NULL, 0))
 	    {
 	      if (bc == bs)
 		return csymoffset;
-	      csymoffset += bs->sym->vtbl.dim * Target::ptrsize;
+	      csymoffset += bs->sym->vtbl.length * Target::ptrsize;
 	    }
 	}
     }
@@ -2065,7 +2054,7 @@ get_vtable_decl (ClassDeclaration *decl)
   tree ident = mangle_internal_decl (decl, "__vtbl", "Z");
   /* Note: Using a static array type for the VAR_DECL, the DECL_INITIAL value
      will have a different type.  However the back-end seems to accept this.  */
-  tree type = build_ctype (Type::tvoidptr->sarrayOf (decl->vtbl.dim));
+  tree type = build_ctype (Type::tvoidptr->sarrayOf (decl->vtbl.length));
 
   decl->vtblsym = declare_extern_var (ident, type);
   DECL_LANG_SPECIFIC (decl->vtblsym) = build_lang_decl (NULL);
@@ -2135,7 +2124,7 @@ build_class_instance (ClassReferenceExp *exp)
       /* Anonymous vtable interface fields are laid out before the fields of
 	 each class.  The interface offset is used to determine where to put
 	 the classinfo offset reference.  */
-      for (size_t i = 0; i < bcd->vtblInterfaces->dim; i++)
+      for (size_t i = 0; i < bcd->vtblInterfaces->length; i++)
 	{
 	  BaseClass *bc = (*bcd->vtblInterfaces)[i];
 
@@ -2162,7 +2151,7 @@ build_class_instance (ClassReferenceExp *exp)
 
       /* Generate initial values of all fields owned by current class.
 	 Use both the name and offset to find the right field.  */
-      for (size_t i = 0; i < bcd->fields.dim; i++)
+      for (size_t i = 0; i < bcd->fields.length; i++)
 	{
 	  VarDeclaration *vfield = bcd->fields[i];
 	  int index = exp->findFieldIndexByName (vfield);

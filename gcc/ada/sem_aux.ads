@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,8 +30,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Package containing utility procedures used throughout the compiler,
---  and also by ASIS so dependencies are limited to ASIS included packages.
+--  Package containing utility procedures used throughout the compiler.
 
 --  Historical note. Many of the routines here were originally in Einfo, but
 --  Einfo is supposed to be a relatively low level package dealing with the
@@ -71,16 +70,7 @@ package Sem_Aux is
 
    procedure Initialize;
    --  Called at the start of compilation of each new main source file to
-   --  initialize the allocation of the Obsolescent_Warnings table. Note that
-   --  Initialize must not be called if Tree_Read is used.
-
-   procedure Tree_Read;
-   --  Initializes Obsolescent_Warnings table from current tree file using the
-   --  relevant Table.Tree_Read routine.
-
-   procedure Tree_Write;
-   --  Writes out Obsolescent_Warnings table to current tree file using the
-   --  relevant Table.Tree_Write routine.
+   --  initialize the allocation of the Obsolescent_Warnings table.
 
    -----------------
    -- Subprograms --

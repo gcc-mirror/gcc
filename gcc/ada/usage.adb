@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -417,11 +417,6 @@ begin
 
    Write_Switch_Char ("S");
    Write_Line ("Print listing of package Standard");
-
-   --  Line for -gnatt switch
-
-   Write_Switch_Char ("t");
-   Write_Line ("Tree output file to be generated");
 
    --  Line for -gnatTnn switch
 

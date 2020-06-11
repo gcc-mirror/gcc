@@ -14,31 +14,15 @@
   [(set (match_operand:HI 0 "bit_register_indirect_operand")
 	(and:HI (match_operand:HI 1 "bit_register_indirect_operand")
 		(match_operand:HI 2 "single_zero_operand")))]
-  "TARGET_H8300SX"
+  "TARGET_H8300SX && abs (INTVAL (operands[2])) > 0xff"
   [(set (match_dup 0)
 	(and:QI (match_dup 1)
 		(match_dup 2)))]
   {
-    if (abs (INTVAL (operands[2])) > 0xFF)
-      {
-	operands[0] = adjust_address (operands[0], QImode, 0);
-	operands[1] = adjust_address (operands[1], QImode, 0);
-	operands[2] = GEN_INT ((INTVAL (operands[2])) >> 8);
-      }
-    else
-      {
-	operands[0] = adjust_address (operands[0], QImode, 1);
-	operands[1] = adjust_address (operands[1], QImode, 1);
-      }
+    operands[0] = adjust_address (operands[0], QImode, 0);
+    operands[1] = adjust_address (operands[1], QImode, 0);
+    operands[2] = GEN_INT ((INTVAL (operands[2])) >> 8);
   })
-
-(define_insn "bclrhi_msx"
-  [(set (match_operand:HI 0 "bit_register_indirect_operand" "=m")
-	(and:HI (match_operand:HI 1 "bit_register_indirect_operand" "%0")
-		(match_operand:HI 2 "single_zero_operand" "Y0")))]
-  "TARGET_H8300SX"
-  "bclr\\t%W2,%0"
-  [(set_attr "length" "8")])
 
 (define_insn "*andqi3_2"
   [(set (match_operand:QI 0 "bit_operand" "=U,rQ,r")
@@ -134,13 +118,19 @@
   { return <CODE> == IOR ? "bset\\t%V2,%0" : "bnot\\t%V2,%0"; }
   [(set_attr "length" "8")])
 
-(define_insn "b<code>hi_msx"
-  [(set (match_operand:HI 0 "bit_register_indirect_operand" "=m")
-	(ors:HI (match_operand:HI 1 "bit_register_indirect_operand" "%0")
-		(match_operand:HI 2 "single_one_operand" "Y2")))]
-  "TARGET_H8300SX"
-  { return <CODE> == IOR ? "bset\\t%V2,%0" : "bnot\\t%V2,%0"; }
-  [(set_attr "length" "8")])
+(define_split
+  [(set (match_operand:HI 0 "bit_register_indirect_operand")
+	(ors:HI (match_operand:HI 1 "bit_register_indirect_operand")
+		(match_operand:HI 2 "single_one_operand")))]
+  "TARGET_H8300SX && abs (INTVAL (operands[2])) > 0xff"
+  [(set (match_dup 0)
+	(and:QI (match_dup 1)
+		(match_dup 2)))]
+  {
+    operands[0] = adjust_address (operands[0], QImode, 0);
+    operands[1] = adjust_address (operands[1], QImode, 0);
+    operands[2] = GEN_INT ((INTVAL (operands[2])) >> 8);
+  })
 
 (define_insn "<code>qi3_1"
   [(set (match_operand:QI 0 "bit_operand" "=U,rQ")

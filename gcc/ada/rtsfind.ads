@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,10 +46,10 @@ package Rtsfind is
    --  in the package entity table. The units must be either library level
    --  package declarations, or library level subprogram declarations. Generic
    --  units, library level instantiations and subprogram bodies acting as
-   --  specs may not be referenced (all these cases could be added at the
+   --  specs must not be referenced. (All these cases could be added at the
    --  expense of additional complexity in the body of Rtsfind, but it doesn't
    --  seem worthwhile, since the implementation controls the set of units that
-   --  are referenced, and this restriction is easily met.
+   --  are referenced, and this restriction is easily met.)
 
    --  IMPORTANT NOTE: the specs of packages and procedures with'ed using
    --  this mechanism must not contain use clauses. This is because these
@@ -122,6 +122,11 @@ package Rtsfind is
       Ada_Strings_Wide_Superbounded,
       Ada_Strings_Wide_Wide_Superbounded,
       Ada_Strings_Unbounded,
+      Ada_Strings_Text_Output,
+
+      --  Children of Ada.Strings.Text_Output
+
+      Ada_Strings_Text_Output_Utils,
 
       --  Children of Ada.Text_IO (for Check_Text_IO_Special_Unit)
 
@@ -303,6 +308,8 @@ package Rtsfind is
       System_Pool_Empty,
       System_Pool_Local,
       System_Pool_Size,
+      System_Put_Images,
+      System_Put_Task_Images,
       System_Relative_Delays,
       System_RPC,
       System_Scalar_Values,
@@ -375,7 +382,7 @@ package Rtsfind is
 
    subtype Ada_Child is RTU_Id
      range Ada_Calendar .. Ada_Wide_Wide_Text_IO_Modular_IO;
-   --  Range of values for children or grand-children of Ada
+   --  Range of values for children or grandchildren of Ada
 
    subtype Ada_Calendar_Child is Ada_Child
      range Ada_Calendar_Delays .. Ada_Calendar_Delays;
@@ -403,8 +410,12 @@ package Rtsfind is
    --  Range of values for children of Ada.Streams
 
    subtype Ada_Strings_Child is Ada_Child
-     range Ada_Strings_Superbounded .. Ada_Strings_Unbounded;
-   --  Range of values for children of Ada.Strings
+     range Ada_Strings_Superbounded .. Ada_Strings_Text_Output_Utils;
+   --  Range of values for children and grandchildren of Ada.Strings
+
+   subtype Ada_Strings_Text_Output_Child is Ada_Child
+     range Ada_Strings_Text_Output_Utils .. Ada_Strings_Text_Output_Utils;
+   --  Range of values for children of Ada.Strings.Text_Output
 
    subtype Ada_Text_IO_Child is Ada_Child
      range Ada_Text_IO_Decimal_IO .. Ada_Text_IO_Modular_IO;
@@ -562,6 +573,11 @@ package Rtsfind is
      RO_WW_Super_String,                 -- Ada.Strings.Wide_Wide_Superbounded
 
      RE_Unbounded_String,                -- Ada.Strings.Unbounded
+
+     RE_Sink,                            -- Ada.Strings.Text_Output
+
+     RE_Put_UTF_8,                       -- Ada.Strings.Text_Output.Utils
+     RE_Put_Wide_Wide_String,            -- Ada.Strings.Text_Output.Utils
 
      RE_Wait_For_Release,                -- Ada.Synchronous_Barriers
 
@@ -1244,6 +1260,27 @@ package Rtsfind is
 
      RE_Stack_Bounded_Pool,              -- System.Pool_Size
 
+     RE_Put_Image_Integer,               -- System.Put_Images
+     RE_Put_Image_Long_Long_Integer,     -- System.Put_Images
+     RE_Put_Image_Unsigned,              -- System.Put_Images
+     RE_Put_Image_Long_Long_Unsigned,    -- System.Put_Images
+     RE_Put_Image_Thin_Pointer,          -- System.Put_Images
+     RE_Put_Image_Fat_Pointer,           -- System.Put_Images
+     RE_Put_Image_String,                -- System.Put_Images
+     RE_Put_Image_Wide_String,           -- System.Put_Images
+     RE_Put_Image_Wide_Wide_String,      -- System.Put_Images
+     RE_Array_Before,                    -- System.Put_Images
+     RE_Array_Between,                   -- System.Put_Images
+     RE_Array_After,                     -- System.Put_Images
+     RE_Simple_Array_Between,            -- System.Put_Images
+     RE_Record_Before,                   -- System.Put_Images
+     RE_Record_Between,                  -- System.Put_Images
+     RE_Record_After,                    -- System.Put_Images
+     RE_Put_Image_Unknown,               -- System.Put_Images
+
+     RE_Put_Image_Protected,             -- System.Put_Task_Images
+     RE_Put_Image_Task,                  -- System.Put_Task_Images
+
      RE_Do_Apc,                          -- System.RPC
      RE_Do_Rpc,                          -- System.RPC
      RE_Params_Stream_Type,              -- System.RPC
@@ -1806,6 +1843,11 @@ package Rtsfind is
      RO_WW_Super_String                  => Ada_Strings_Wide_Wide_Superbounded,
 
      RE_Unbounded_String                 => Ada_Strings_Unbounded,
+
+     RE_Sink                             => Ada_Strings_Text_Output,
+
+     RE_Put_UTF_8                        => Ada_Strings_Text_Output_Utils,
+     RE_Put_Wide_Wide_String             => Ada_Strings_Text_Output_Utils,
 
      RE_Wait_For_Release                 => Ada_Synchronous_Barriers,
 
@@ -2611,6 +2653,27 @@ package Rtsfind is
      RE_Global_Pool_32_Object            => System_Pool_32_Global,
 
      RE_Stack_Bounded_Pool               => System_Pool_Size,
+
+     RE_Put_Image_Integer                => System_Put_Images,
+     RE_Put_Image_Long_Long_Integer      => System_Put_Images,
+     RE_Put_Image_Unsigned               => System_Put_Images,
+     RE_Put_Image_Long_Long_Unsigned     => System_Put_Images,
+     RE_Put_Image_Thin_Pointer           => System_Put_Images,
+     RE_Put_Image_Fat_Pointer            => System_Put_Images,
+     RE_Put_Image_String                 => System_Put_Images,
+     RE_Put_Image_Wide_String            => System_Put_Images,
+     RE_Put_Image_Wide_Wide_String       => System_Put_Images,
+     RE_Array_Before                     => System_Put_Images,
+     RE_Array_Between                    => System_Put_Images,
+     RE_Array_After                      => System_Put_Images,
+     RE_Simple_Array_Between             => System_Put_Images,
+     RE_Record_Before                    => System_Put_Images,
+     RE_Record_Between                   => System_Put_Images,
+     RE_Record_After                     => System_Put_Images,
+     RE_Put_Image_Unknown                => System_Put_Images,
+
+     RE_Put_Image_Protected              => System_Put_Task_Images,
+     RE_Put_Image_Task                   => System_Put_Task_Images,
 
      RO_RD_Delay_For                     => System_Relative_Delays,
 

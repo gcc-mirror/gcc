@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --               Copyright (C) 1986 by University of Toronto.               --
---                      Copyright (C) 1999-2019, AdaCore                    --
+--                      Copyright (C) 1999-2020, AdaCore                    --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1460,19 +1460,9 @@ package body System.Regpat is
                  and then Expression (Parse_Pos + 1) /= ']'
                then
                   Parse_Pos := Parse_Pos + 1;
-
-                  --  Do we have a range like '\d-a' and '[:space:]-a'
-                  --  which is not a real range
-
-                  if Named_Class /= ANYOF_NONE then
-                     Set_In_Class (Bitmap, '-');
-                  else
-                     In_Range := True;
-                  end if;
-
+                  In_Range := True;
                else
                   Set_In_Class (Bitmap, Value);
-
                end if;
 
             --  Else in a character range
@@ -3275,13 +3265,13 @@ package body System.Regpat is
         (IP  : Pointer;
          Max : Natural := Natural'Last) return Natural
       is
-         Scan  : Natural := Input_Pos;
-         Last  : Natural;
-         Op    : constant Opcode := Opcode'Val (Character'Pos (Program (IP)));
-         Count : Natural;
-         C     : Character;
-         Is_First : Boolean := True;
-         Bitmap   : Character_Class;
+         Scan   : Natural := Input_Pos;
+         Last   : Natural;
+         Op     : constant Opcode :=
+           Opcode'Val (Character'Pos (Program (IP)));
+         Count  : Natural;
+         C      : Character;
+         Bitmap : Character_Class;
 
       begin
          if Max = Natural'Last or else Scan + Max - 1 > Last_In_Data then
@@ -3324,10 +3314,7 @@ package body System.Regpat is
                end loop;
 
             when ANYOF =>
-               if Is_First then
-                  Bitmap_Operand (Program, IP, Bitmap);
-                  Is_First := False;
-               end if;
+               Bitmap_Operand (Program, IP, Bitmap);
 
                while Scan <= Last
                  and then Get_From_Class (Bitmap, Data (Scan))

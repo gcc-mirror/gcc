@@ -1,3 +1,9 @@
+2020-05-28  Nicolas Bértolo  <nicolasbertolo@gmail.com>
+
+	* configure.ac: Don't require --enable-host-shared when building
+	for Mingw.
+	* configure: Regenerate.
+
 2020-05-18  Jason Merrill  <jason@redhat.com>
 
 	* configure.ac: Update bootstrap dialect to -std=c++11.

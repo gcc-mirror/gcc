@@ -15,36 +15,44 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++2a" }
+// { dg-options "-std=gnu++20" }
 // { dg-do run { target c++2a } }
 
 #include <ranges>
-#include <list>
-#include <testsuite_hooks.h>
+#include <testsuite_iterators.h>
 
-namespace ranges = std::ranges;
-namespace views = std::views;
+using __gnu_test::test_forward_range;
 
 void
 test01()
 {
-  std::list container{1, 2, 3, 4, 5};
-  auto v = (container
-	    | views::take(3)
-	    | views::transform(std::negate{})
-	    | views::common);
-  auto i = ranges::cbegin(v);
-  VERIFY( *i == -1 );
-  ++i;
-  VERIFY( *i == -2 );
-  ++i;
-  VERIFY( *i == -3 );
-  ++i;
-  VERIFY( i == ranges::end(v) );
+  // PR libstdc++/95322
+  int a[2]{1, 2};
+  test_forward_range<int> v{a};
+  auto view1 = v | std::views::take(2);
+  auto view2 = view1 | std::views::transform(std::identity{});
+  const bool eq = std::ranges::cbegin(view2) == std::ranges::end(view2);
+  VERIFY( !eq );
 }
 
-int
-main()
+void
+test02()
+{
+  using irange = test_forward_range<int>;
+
+  int a[2]{1, 2};
+  int b[3]{3, 4, 5};
+  irange u[2]{ irange{a}, irange{b} };
+  test_forward_range<irange> v{u};
+  auto view = (std::views::counted(v.begin(), 2)
+	       | std::views::transform(std::identity{})
+	       | std::views::join);
+  const bool eq = std::ranges::cbegin(view) == std::ranges::end(view);
+  VERIFY( !eq );
+}
+
+int main()
 {
   test01();
+  test02();
 }

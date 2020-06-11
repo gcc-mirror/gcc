@@ -78,6 +78,14 @@ namespace __debug
       template<typename _ItT, typename _SeqT>
 	friend class ::__gnu_debug::_Safe_local_iterator;
 
+      // Reference wrapper for base class. See PR libstdc++/90102.
+      struct _Base_ref
+      {
+	_Base_ref(const _Base& __r) : _M_ref(__r) { }
+
+	const _Base& _M_ref;
+      };
+
     public:
       typedef typename _Base::size_type			size_type;
       typedef typename _Base::hasher			hasher;
@@ -118,8 +126,8 @@ namespace __debug
 
       unordered_set(const unordered_set&) = default;
 
-      unordered_set(const _Base& __x)
-      : _Base(__x) { }
+      unordered_set(_Base_ref __x)
+      : _Base(__x._M_ref) { }
 
       unordered_set(unordered_set&&) = default;
 
@@ -646,6 +654,14 @@ namespace __debug
       template<typename _ItT, typename _SeqT>
 	friend class ::__gnu_debug::_Safe_local_iterator;
 
+      // Reference wrapper for base class. See PR libstdc++/90102.
+      struct _Base_ref
+      {
+	_Base_ref(const _Base& __r) : _M_ref(__r) { }
+
+	const _Base& _M_ref;
+      };
+
     public:
       typedef typename _Base::size_type			size_type;
       typedef typename _Base::hasher			hasher;
@@ -686,8 +702,8 @@ namespace __debug
 
       unordered_multiset(const unordered_multiset&) = default;
 
-      unordered_multiset(const _Base& __x)
-      : _Base(__x) { }
+      unordered_multiset(_Base_ref __x)
+      : _Base(__x._M_ref) { }
 
       unordered_multiset(unordered_multiset&&) = default;
 

@@ -1380,13 +1380,13 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "add<mode>3_vcc_zext_dup"
-  [(set (match_operand:V_DI 0 "register_operand"    "=   v,   v")
+  [(set (match_operand:V_DI 0 "register_operand"    "=    v,    v")
 	(plus:V_DI
 	  (zero_extend:V_DI
 	    (vec_duplicate:<VnSI>
-	      (match_operand:SI 1 "gcn_alu_operand" "  BSv, ASv")))
-	  (match_operand:V_DI 2 "gcn_alu_operand"   "  vDA, vDb")))
-   (set (match_operand:DI 3 "register_operand"	    "=SgcV,SgcV")
+	      (match_operand:SI 1 "gcn_alu_operand" "   BSv,  ASv")))
+	  (match_operand:V_DI 2 "gcn_alu_operand"   "   vDA,  vDb")))
+   (set (match_operand:DI 3 "register_operand"	    "=&SgcV,&SgcV")
 	(ltu:DI (plus:V_DI 
 		  (zero_extend:V_DI (vec_duplicate:<VnSI> (match_dup 1)))
 		  (match_dup 2))
@@ -1424,16 +1424,16 @@
   })
 
 (define_insn_and_split "add<mode>3_vcc_zext_dup_exec"
-  [(set (match_operand:V_DI 0 "register_operand"		"=   v,   v")
+  [(set (match_operand:V_DI 0 "register_operand"	      "=    v,    v")
 	(vec_merge:V_DI
 	  (plus:V_DI
 	    (zero_extend:V_DI
 	      (vec_duplicate:<VnSI>
-		(match_operand:SI 1 "gcn_alu_operand"		"  ASv, BSv")))
-	    (match_operand:V_DI 2 "gcn_alu_operand"		"  vDb, vDA"))
-	  (match_operand:V_DI 4 "gcn_register_or_unspec_operand" "  U0,  U0")
-	  (match_operand:DI 5 "gcn_exec_reg_operand"		"    e,   e")))
-   (set (match_operand:DI 3 "register_operand"			"=SgcV,SgcV")
+		(match_operand:SI 1 "gcn_alu_operand"	      "   ASv,  BSv")))
+	    (match_operand:V_DI 2 "gcn_alu_operand"	      "   vDb,  vDA"))
+	  (match_operand:V_DI 4 "gcn_register_or_unspec_operand" " U0,   U0")
+	  (match_operand:DI 5 "gcn_exec_reg_operand"	      "     e,    e")))
+   (set (match_operand:DI 3 "register_operand"		      "=&SgcV,&SgcV")
 	(and:DI
 	  (ltu:DI (plus:V_DI 
 		    (zero_extend:V_DI (vec_duplicate:<VnSI> (match_dup 1)))
@@ -1481,11 +1481,11 @@
   })
 
 (define_insn_and_split "add<mode>3_vcc_zext_dup2"
-  [(set (match_operand:V_DI 0 "register_operand"		    "=   v")
+  [(set (match_operand:V_DI 0 "register_operand"		   "=    v")
 	(plus:V_DI
 	  (zero_extend:V_DI (match_operand:<VnSI> 1 "gcn_alu_operand" " vA"))
 	  (vec_duplicate:V_DI (match_operand:DI 2 "gcn_alu_operand" " DbSv"))))
-   (set (match_operand:DI 3 "register_operand"			    "=SgcV")
+   (set (match_operand:DI 3 "register_operand"			   "=&SgcV")
 	(ltu:DI (plus:V_DI 
 		  (zero_extend:V_DI (match_dup 1))
 		  (vec_duplicate:V_DI (match_dup 2)))
@@ -1523,14 +1523,14 @@
   })
 
 (define_insn_and_split "add<mode>3_vcc_zext_dup2_exec"
-  [(set (match_operand:V_DI 0 "register_operand"		     "=   v")
+  [(set (match_operand:V_DI 0 "register_operand"		    "=    v")
 	(vec_merge:V_DI
 	  (plus:V_DI
 	    (zero_extend:V_DI (match_operand:<VnSI> 1 "gcn_alu_operand" "vA"))
 	    (vec_duplicate:V_DI (match_operand:DI 2 "gcn_alu_operand"  "BSv")))
-	  (match_operand:V_DI 4 "gcn_register_or_unspec_operand"     "   U0")
-	  (match_operand:DI 5 "gcn_exec_reg_operand"		     "    e")))
-   (set (match_operand:DI 3 "register_operand"			     "=SgcV")
+	  (match_operand:V_DI 4 "gcn_register_or_unspec_operand"    "    U0")
+	  (match_operand:DI 5 "gcn_exec_reg_operand"		    "     e")))
+   (set (match_operand:DI 3 "register_operand"			    "=&SgcV")
 	(and:DI
 	  (ltu:DI (plus:V_DI 
 		    (zero_extend:V_DI (match_dup 1))

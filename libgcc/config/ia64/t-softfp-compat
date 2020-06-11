@@ -5,3 +5,6 @@ libgcc1-tf-functions = __divxf3  _fixtfdi _fixunstfdi _floatditf
 LIB1ASMFUNCS := $(filter-out $(libgcc1-tf-functions), $(LIB1ASMFUNCS))
 libgcc1-tf-compats = $(addsuffix .S, $(libgcc1-tf-functions))
 LIB2ADD += $(addprefix $(srcdir)/config/ia64/, $(libgcc1-tf-compats))
+# Wrap divtf3.c to set the default symbol version
+softfp_file_list := $(filter-out $(srcdir)/soft-fp/divtf3.c, $(softfp_file_list))
+LIB2ADD += $(srcdir)/config/ia64/divtf3.c

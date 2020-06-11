@@ -211,6 +211,51 @@ namespace __detail
 #endif
 			 , _Val>;
 
+  // Create a string or string view from an iterator range.
+  template<typename _InputIterator>
+    inline auto
+    __string_from_range(_InputIterator __first, _InputIterator __last)
+    {
+      using _EcharT
+	= typename std::iterator_traits<_InputIterator>::value_type;
+      static_assert(__is_encoded_char<_EcharT>);
+
+#if __cpp_lib_concepts
+      constexpr bool __contiguous = std::contiguous_iterator<_InputIterator>;
+#else
+      constexpr bool __contiguous
+	= is_pointer_v<decltype(std::__niter_base(__first))>;
+#endif
+      if constexpr (__contiguous)
+	{
+	  // For contiguous iterators we can just return a string view.
+	  const auto* __f = std::__to_address(std::__niter_base(__first));
+	  const auto* __l = std::__to_address(std::__niter_base(__last));
+	  return basic_string_view<_EcharT>(__f, __l - __f);
+	}
+      else
+	// Conversion requires contiguous characters, so create a string.
+	return basic_string<_EcharT>(__first, __last);
+    }
+
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  template<typename _Tp>
+    inline std::wstring
+    __wstr_from_utf8(const _Tp& __str)
+    {
+      static_assert(std::is_same_v<typename _Tp::value_type, char>);
+      std::wstring __wstr;
+      // XXX This assumes native wide encoding is UTF-16.
+      std::codecvt_utf8_utf16<wchar_t> __wcvt;
+      const auto __p = __str.data();
+      if (!__str_codecvt_in_all(__p, __p + __str.size(), __wstr, __wcvt))
+	_GLIBCXX_THROW_OR_ABORT(filesystem_error(
+	      "Cannot convert character sequence",
+	      std::make_error_code(errc::illegal_byte_sequence)));
+      return __wstr;
+    }
+#endif
+
 } // namespace __detail
   /// @endcond
 
@@ -542,33 +587,6 @@ namespace __detail
 
     pair<const string_type*, size_t> _M_find_extension() const noexcept;
 
-    // Create a string or string view from an iterator range.
-    template<typename _InputIterator>
-      static auto
-      _S_to_string(_InputIterator __first, _InputIterator __last)
-      {
-	using _EcharT
-	  = typename std::iterator_traits<_InputIterator>::value_type;
-	static_assert(__detail::__is_encoded_char<_EcharT>);
-
-#if __cpp_lib_concepts
-	constexpr bool __contiguous = std::contiguous_iterator<_InputIterator>;
-#else
-	constexpr bool __contiguous
-	  = is_pointer_v<decltype(std::__niter_base(__first))>;
-#endif
-	if constexpr (__contiguous)
-	  {
-	    // For contiguous iterators we can just return a string view.
-	    const auto* __f = std::__to_address(std::__niter_base(__first));
-	    const auto* __l = std::__to_address(std::__niter_base(__last));
-	    return basic_string_view<_EcharT>(__f, __l - __f);
-	  }
-	else
-	  // Conversion requires contiguous characters, so create a string.
-	  return basic_string<_EcharT>(__first, __last);
-      }
-
     // path::_S_convert creates a basic_string<value_type> or
     // basic_string_view<value_type> from a range (either the effective
     // range of a Source parameter, or a pair of InputIterator parameters),
@@ -602,7 +620,7 @@ namespace __detail
     template<typename _Iter>
       static auto
       _S_convert(_Iter __first, _Iter __last)
-      { return _S_convert(_S_to_string(__first, __last)); }
+      { return _S_convert(__detail::__string_from_range(__first, __last)); }
 
     static string_type
     _S_convert_loc(const char* __first, const char* __last,
@@ -612,7 +630,7 @@ namespace __detail
       static string_type
       _S_convert_loc(_Iter __first, _Iter __last, const std::locale& __loc)
       {
-	const auto __s = _S_to_string(__first, __last);
+	const auto __s = __detail::__string_from_range(__first, __last);
 	return _S_convert_loc(__s.data(), __s.data() + __s.size(), __loc);
       }
 
@@ -738,28 +756,10 @@ namespace __detail
     {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
       if constexpr (is_same_v<_CharT, char>)
-	{
-	  // XXX This assumes native wide encoding is UTF-16.
-	  std::codecvt_utf8_utf16<path::value_type> __cvt;
-	  path::string_type __tmp;
-	  if constexpr (is_pointer_v<_InputIterator>)
-	    {
-	      if (__str_codecvt_in_all(__first, __last, __tmp, __cvt))
-		return path{ __tmp };
-	    }
-	  else
-	    {
-	      const std::string __u8str{__first, __last};
-	      const char* const __p = __u8str.data();
-	      if (__str_codecvt_in_all(__p, __p + __u8str.size(), __tmp, __cvt))
-		return path{ __tmp };
-	    }
-	  _GLIBCXX_THROW_OR_ABORT(filesystem_error(
-	      "Cannot convert character sequence",
-	      std::make_error_code(errc::illegal_byte_sequence)));
-	}
+	return path{ __detail::__wstr_from_utf8(
+	    __detail::__string_from_range(__first, __last)) };
       else
-	return path{ __first, __last };
+	return path{ __first, __last }; // constructor handles char8_t
 #else
       // This assumes native normal encoding is UTF-8.
       return path{ __first, __last };
@@ -778,21 +778,12 @@ namespace __detail
     {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
       if constexpr (is_same_v<_CharT, char>)
-	{
-	  if constexpr (is_convertible_v<const _Source&, std::string_view>)
-	    {
-	      const std::string_view __s = __source;
-	      return filesystem::u8path(__s.data(), __s.data() + __s.size());
-	    }
-	  else
-	    {
-	      std::string __s = path::_S_string_from_iter(__source);
-	      return filesystem::u8path(__s.data(), __s.data() + __s.size());
-	    }
-	}
+	return path{ __detail::__wstr_from_utf8(
+	    __detail::__effective_range(__source)) };
       else
-	return path{ __source };
+	return path{ __source }; // constructor handles char8_t
 #else
+      // This assumes native normal encoding is UTF-8.
       return path{ __source };
 #endif
     }
@@ -836,11 +827,8 @@ namespace __detail
 #ifdef _GLIBCXX_USE_CHAR8_T
 	  else if constexpr (is_same_v<_EcharT, char8_t>)
 	    {
-	      const char* __f2 = (const char*)__f;
-	      const char* __l2 = (const char*)__l;
-	      std::codecvt_utf8_utf16<wchar_t> __wcvt;
-	      if (__str_codecvt_in_all(__f2, __l2, __wstr, __wcvt))
-		return __wstr;
+	      const auto __f2 = reinterpret_cast<const char*>(__f);
+	      return __detail::__wstr_from_utf8(string_view(__f2, __l - __f));
 	    }
 #endif
 	  else // char16_t or char32_t
@@ -849,13 +837,7 @@ namespace __detail
 	      { } __cvt;
 	      std::string __str;
 	      if (__str_codecvt_out_all(__f, __l, __str, __cvt))
-		{
-		  const char* __f2 = __str.data();
-		  const char* __l2 = __f2 + __str.size();
-		  std::codecvt_utf8_utf16<wchar_t> __wcvt;
-		  if (__str_codecvt_in_all(__f2, __l2, __wstr, __wcvt))
-		    return __wstr;
-		}
+		return __detail::__wstr_from_utf8(__str);
 	    }
 #else // ! windows
 	  struct _UCvt : std::codecvt<_EcharT, char, std::mbstate_t>

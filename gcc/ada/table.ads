@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -220,13 +220,6 @@ package Table is
       procedure Restore (T : Saved_Table);
       --  Given a Saved_Table value returned by a prior call to Save, restores
       --  the table to the state it was in at the time of the Save call.
-
-      procedure Tree_Write;
-      --  Writes out contents of table using Tree_IO
-
-      procedure Tree_Read;
-      --  Initializes table by reading contents previously written with the
-      --  Tree_Write call (also using Tree_IO).
 
    private
 

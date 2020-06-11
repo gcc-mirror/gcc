@@ -33,22 +33,35 @@ struct MemoryMappingLayoutData {
 enum MacosVersion {
   MACOS_VERSION_UNINITIALIZED = 0,
   MACOS_VERSION_UNKNOWN,
-  MACOS_VERSION_LEOPARD,
-  MACOS_VERSION_SNOW_LEOPARD,
-  MACOS_VERSION_LION,
+  MACOS_VERSION_LION,  // macOS 10.7; oldest currently supported
   MACOS_VERSION_MOUNTAIN_LION,
   MACOS_VERSION_MAVERICKS,
   MACOS_VERSION_YOSEMITE,
   MACOS_VERSION_EL_CAPITAN,
   MACOS_VERSION_SIERRA,
   MACOS_VERSION_HIGH_SIERRA,
-  MACOS_VERSION_HIGH_SIERRA_DOT_RELEASE_4,
   MACOS_VERSION_MOJAVE,
   MACOS_VERSION_CATALINA,
   MACOS_VERSION_UNKNOWN_NEWER
 };
 
+struct DarwinKernelVersion {
+  u16 major;
+  u16 minor;
+
+  DarwinKernelVersion(u16 major, u16 minor) : major(major), minor(minor) {}
+
+  bool operator==(const DarwinKernelVersion &other) const {
+    return major == other.major && minor == other.minor;
+  }
+  bool operator>=(const DarwinKernelVersion &other) const {
+    return major >= other.major ||
+           (major == other.major && minor >= other.minor);
+  }
+};
+
 MacosVersion GetMacosVersion();
+DarwinKernelVersion GetDarwinKernelVersion();
 
 char **GetEnviron();
 

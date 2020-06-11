@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1138,9 +1138,10 @@ package Sem_Util is
    --  corresponding aspect.
 
    function Get_Referenced_Object (N : Node_Id) return Node_Id;
-   --  Given a node, return the renamed object if the node represents a renamed
-   --  object, otherwise return the node unchanged. The node may represent an
-   --  arbitrary expression.
+   --  Given an arbitrary node, return the renamed object if the node
+   --  represents a renamed object; otherwise return the node unchanged.
+   --  The node can represent an arbitrary expression or any other kind of
+   --  node (such as the name of a type).
 
    function Get_Renamed_Entity (E : Entity_Id) return Entity_Id;
    --  Given an entity for an exception, package, subprogram or generic unit,
@@ -1307,6 +1308,13 @@ package Sem_Util is
 
    function Has_Non_Null_Statements (L : List_Id) return Boolean;
    --  Return True if L has non-null statements
+
+   function Side_Effect_Free_Statements (L : List_Id) return Boolean;
+   --  Return True if L has no statements with side effects
+
+   function Side_Effect_Free_Loop (N : Node_Id) return Boolean;
+   --  Return True if the loop has no side effect and can therefore be
+   --  marked for removal. Return False if N is not a N_Loop_Statement.
 
    function Has_Overriding_Initialize (T : Entity_Id) return Boolean;
    --  Predicate to determine whether a controlled type has a user-defined
@@ -1983,6 +1991,17 @@ package Sem_Util is
    --  2005. This differs from Is_Object_Reference in that only variables,
    --  constants, formal parameters, and selected_components of those are
    --  valid objects in SPARK 2005.
+
+   function Is_Special_Aliased_Formal_Access
+     (Exp  : Node_Id;
+      Scop : Entity_Id) return Boolean;
+   --  Determines whether a dynamic check must be generated for explicitly
+   --  aliased formals within a function Scop for the expression Exp.
+
+   --  More specially, Is_Special_Aliased_Formal_Access checks that Exp is a
+   --  'Access attribute reference within a return statement where the ultimate
+   --  prefix is an aliased formal of Scop and that Scop returns an anonymous
+   --  access type. See RM 3.10.2 for more details.
 
    function Is_Specific_Tagged_Type (Typ : Entity_Id) return Boolean;
    --  Determine whether an arbitrary [private] type is specifically tagged

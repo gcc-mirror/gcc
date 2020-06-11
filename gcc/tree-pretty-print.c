@@ -1899,7 +1899,15 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 
     case ARRAY_TYPE:
       {
+	unsigned int quals = TYPE_QUALS (node);
 	tree tmp;
+
+	if (quals & TYPE_QUAL_ATOMIC)
+	  pp_string (pp, "atomic ");
+	if (quals & TYPE_QUAL_CONST)
+	  pp_string (pp, "const ");
+	if (quals & TYPE_QUAL_VOLATILE)
+	  pp_string (pp, "volatile ");
 
 	/* Print the innermost component type.  */
 	for (tmp = TREE_TYPE (node); TREE_CODE (tmp) == ARRAY_TYPE;

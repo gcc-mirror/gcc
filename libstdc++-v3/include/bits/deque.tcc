@@ -1065,6 +1065,57 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
       return __result;
     }
 
+  template<bool _IsMove, typename _CharT>
+    typename __gnu_cxx::__enable_if<
+      __is_char<_CharT>::__value,
+      _GLIBCXX_STD_C::_Deque_iterator<_CharT, _CharT&, _CharT*> >::__type
+    __copy_move_a2(
+	istreambuf_iterator<_CharT, char_traits<_CharT> > __first,
+	istreambuf_iterator<_CharT, char_traits<_CharT> > __last,
+	_GLIBCXX_STD_C::_Deque_iterator<_CharT, _CharT&, _CharT*> __result)
+    {
+      if (__first == __last)
+	return __result;
+
+      for (;;)
+	{
+	  const std::ptrdiff_t __len = __result._M_last - __result._M_cur;
+	  const std::ptrdiff_t __nb
+	    = std::__copy_n_a(__first, __len, __result._M_cur, false)
+	    - __result._M_cur;
+	  __result += __nb;
+
+	  if (__nb != __len)
+	    break;
+	}
+
+      return __result;
+    }
+
+  template<typename _CharT, typename _Size>
+    typename __gnu_cxx::__enable_if<
+      __is_char<_CharT>::__value,
+      _GLIBCXX_STD_C::_Deque_iterator<_CharT, _CharT&, _CharT*> >::__type
+    __copy_n_a(
+      istreambuf_iterator<_CharT, char_traits<_CharT> > __it, _Size __size,
+      _GLIBCXX_STD_C::_Deque_iterator<_CharT, _CharT&, _CharT*> __result,
+      bool __strict)
+    {
+      if (__size == 0)
+	return __result;
+
+      do
+	{
+	  const _Size __len
+	    = std::min<_Size>(__result._M_last - __result._M_cur, __size);
+	  std::__copy_n_a(__it, __len, __result._M_cur, __strict);
+	  __result += __len;
+	  __size -= __len;
+	}
+      while (__size != 0);
+      return __result;
+    }
+
   template<bool _IsMove,
 	   typename _Tp, typename _Ref, typename _Ptr, typename _OI>
     _OI

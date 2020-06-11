@@ -85,6 +85,19 @@ typedef unsigned gcov_type_unsigned __attribute__ ((mode (QI)));
 #define GCOV_LOCKED 0
 #endif
 
+#ifndef GCOV_SUPPORTS_ATOMIC
+/* Detect whether target can support atomic update of profilers.  */
+#if __SIZEOF_LONG_LONG__ == 4 && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
+#define GCOV_SUPPORTS_ATOMIC 1
+#else
+#if __SIZEOF_LONG_LONG__ == 8 && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_8
+#define GCOV_SUPPORTS_ATOMIC 1
+#else
+#define GCOV_SUPPORTS_ATOMIC 0
+#endif
+#endif
+#endif
+
 /* In libgcov we need these functions to be extern, so prefix them with
    __gcov.  In libgcov they must also be hidden so that the instance in
    the executable is not also used in a DSO.  */
@@ -147,7 +160,7 @@ extern struct gcov_info *gcov_list;
 
 /* Poison these, so they don't accidentally slip in.  */
 #pragma GCC poison gcov_write_string gcov_write_tag gcov_write_length
-#pragma GCC poison gcov_time gcov_magic
+#pragma GCC poison gcov_time
 
 #ifdef HAVE_GAS_HIDDEN
 #define ATTRIBUTE_HIDDEN  __attribute__ ((__visibility__ ("hidden")))
@@ -371,6 +384,98 @@ gcov_get_counter_target (void)
 
   return gcov_read_counter_mem ();
 #endif
+}
+
+/* Add VALUE to *COUNTER and make it with atomic operation
+   if USE_ATOMIC is true.  */
+
+static inline void
+gcov_counter_add (gcov_type *counter, gcov_type value,
+		  int use_atomic ATTRIBUTE_UNUSED)
+{
+#if GCOV_SUPPORTS_ATOMIC
+  if (use_atomic)
+    __atomic_fetch_add (counter, value, __ATOMIC_RELAXED);
+  else
+#endif
+    *counter += value;
+}
+
+/* Set NODE to memory location COUNTER and make it with atomic operation
+   if USE_ATOMIC is true.  */
+
+static inline int
+gcov_counter_set_if_null (gcov_type *counter, struct gcov_kvp *node,
+			  int use_atomic ATTRIBUTE_UNUSED)
+{
+#if GCOV_SUPPORTS_ATOMIC
+  if (use_atomic)
+    return !__sync_val_compare_and_swap (counter, NULL, (intptr_t)node);
+  else
+#endif
+    {
+      *counter = (intptr_t)node;
+      return 1;
+    }
+}
+
+/* Add key value pair VALUE:COUNT to a top N COUNTERS.  When INCREMENT_TOTAL
+   is true, add COUNT to total of the TOP counter.  If USE_ATOMIC is true,
+   do it in atomic way.  */
+
+static inline void
+gcov_topn_add_value (gcov_type *counters, gcov_type value, gcov_type count,
+		     int use_atomic, int increment_total)
+{
+  if (increment_total)
+    gcov_counter_add (&counters[0], 1, use_atomic);
+
+  struct gcov_kvp *prev_node = NULL;
+  struct gcov_kvp *minimal_node = NULL;
+  struct gcov_kvp *current_node  = (struct gcov_kvp *)counters[2];
+
+  while (current_node)
+    {
+      if (current_node->value == value)
+	{
+	  gcov_counter_add (&current_node->count, count, use_atomic);
+	  return;
+	}
+
+      if (minimal_node == NULL
+	  || current_node->count < minimal_node->count)
+	minimal_node = current_node;
+
+      prev_node = current_node;
+      current_node = current_node->next;
+    }
+
+  if (counters[1] == GCOV_TOPN_MAXIMUM_TRACKED_VALUES)
+    {
+      if (--minimal_node->count < count)
+	{
+	  minimal_node->value = value;
+	  minimal_node->count = count;
+	}
+    }
+  else
+    {
+      struct gcov_kvp *new_node
+	= (struct gcov_kvp *)xcalloc (1, sizeof (struct gcov_kvp));
+      new_node->value = value;
+      new_node->count = count;
+
+      int success = 0;
+      if (!counters[2])
+	success = gcov_counter_set_if_null (&counters[2], new_node, use_atomic);
+      else if (prev_node && !prev_node->next)
+	success = gcov_counter_set_if_null ((gcov_type *)&prev_node->next,
+					    new_node, use_atomic);
+
+      /* Increment number of nodes.  */
+      if (success)
+	gcov_counter_add (&counters[1], 1, use_atomic);
+    }
 }
 
 #endif /* !inhibit_libc */

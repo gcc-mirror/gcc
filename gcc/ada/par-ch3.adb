@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1478,6 +1478,32 @@ package body Ch3 is
          Restore_Scan_State (Scan_State);
          Append_To (Decls, P_Type_Declaration);
          Done := False;
+         return;
+
+      --  AI12-0275: Object renaming declaration without subtype_mark or
+      --  access_definition
+
+      elsif Token = Tok_Renames then
+         if Ada_Version < Ada_2020 then
+            Error_Msg_SC
+              ("object renaming without subtype is an Ada 202x feature");
+            Error_Msg_SC ("\compile with -gnatX");
+         end if;
+
+         Scan; -- past renames
+
+         Decl_Node :=
+           New_Node (N_Object_Renaming_Declaration, Ident_Sloc);
+         Set_Name (Decl_Node, P_Name);
+         Set_Defining_Identifier (Decl_Node, Idents (1));
+
+         P_Aspect_Specifications (Decl_Node, Semicolon => False);
+
+         T_Semicolon;
+
+         Append (Decl_Node, Decls);
+         Done := False;
+
          return;
 
       --  Otherwise we have an error situation

@@ -4516,7 +4516,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
   tree induction_index = NULL_TREE;
 
   if (slp_node)
-    group_size = SLP_TREE_SCALAR_STMTS (slp_node).length (); 
+    group_size = SLP_TREE_LANES (slp_node);
 
   if (nested_in_vect_loop_p (loop, stmt_info))
     {
@@ -4719,7 +4719,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
   for (unsigned i = 0; i < vec_num; i++)
     {
       if (slp_node)
-	def = gimple_get_lhs (SLP_TREE_VEC_STMTS (slp_node)[i]->stmt);
+	def = vect_get_slp_vect_def (slp_node, i);
       else
 	def = gimple_get_lhs (STMT_VINFO_VEC_STMT (rdef_info)->stmt);
       for (j = 0; j < ncopies; j++)
@@ -6192,11 +6192,17 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
     {
       slp_for_stmt_info = slp_node_instance->root;
       /* And then there's reduction chain with a conversion ...  */
-      if (SLP_TREE_SCALAR_STMTS (slp_for_stmt_info)[0] != stmt_info)
+      if (SLP_TREE_REPRESENTATIVE (slp_for_stmt_info) != stmt_info)
 	slp_for_stmt_info = SLP_TREE_CHILDREN (slp_for_stmt_info)[0];
-      gcc_assert (SLP_TREE_SCALAR_STMTS (slp_for_stmt_info)[0] == stmt_info);
+      gcc_assert (SLP_TREE_REPRESENTATIVE (slp_for_stmt_info) == stmt_info);
     }
   slp_tree *slp_op = XALLOCAVEC (slp_tree, op_type);
+  /* We need to skip an extra operand for COND_EXPRs with embedded
+     comparison.  */
+  unsigned opno_adjust = 0;
+  if (code == COND_EXPR
+      && COMPARISON_CLASS_P (gimple_assign_rhs1 (stmt)))
+    opno_adjust = 1;
   for (i = 0; i < op_type; i++)
     {
       /* The condition of COND_EXPR is checked in vectorizable_condition().  */
@@ -6207,7 +6213,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       enum vect_def_type dt;
       tree op;
       if (!vect_is_simple_use (loop_vinfo, stmt_info, slp_for_stmt_info,
-			       i, &op, &slp_op[i], &dt, &tem,
+			       i + opno_adjust, &op, &slp_op[i], &dt, &tem,
 			       &def_stmt_info))
 	{
 	  if (dump_enabled_p ())
@@ -6588,7 +6594,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	 which each SLP statement has its own initial value and in which
 	 that value needs to be repeated for every instance of the
 	 statement within the initial vector.  */
-      unsigned int group_size = SLP_TREE_SCALAR_STMTS (slp_node).length ();
+      unsigned int group_size = SLP_TREE_LANES (slp_node);
       if (!neutral_op
 	  && !can_duplicate_and_interleave_p (loop_vinfo, group_size,
 					      TREE_TYPE (vectype_out)))
@@ -7104,9 +7110,8 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
   if (slp_node)
     {
       /* The size vect_schedule_slp_instance computes is off for us.  */
-      vec_num = vect_get_num_vectors
-	  (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
-	   * SLP_TREE_SCALAR_STMTS (slp_node).length (), vectype_in);
+      vec_num = vect_get_num_vectors (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
+				      * SLP_TREE_LANES (slp_node), vectype_in);
       ncopies = 1;
     }
   else
@@ -7552,7 +7557,7 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 				   new_vec, step_vectype, NULL);
 
       /* Now generate the IVs.  */
-      unsigned group_size = SLP_TREE_SCALAR_STMTS (slp_node).length ();
+      unsigned group_size = SLP_TREE_LANES (slp_node);
       unsigned nvects = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
       unsigned elts = const_nunits * nvects;
       /* Compute the number of distinct IVs we need.  First reduce
@@ -7952,6 +7957,10 @@ vectorizable_live_operation (loop_vec_info loop_vinfo,
 	     all involved stmts together.  */
 	  else if (slp_index != 0)
 	    return true;
+	  else
+	    /* For SLP reductions the meta-info is attached to
+	       the representative.  */
+	    stmt_info = SLP_TREE_REPRESENTATIVE (slp_node);
 	}
       stmt_vec_info reduc_info = info_for_reduction (loop_vinfo, stmt_info);
       gcc_assert (reduc_info->is_reduc_info);
@@ -7989,7 +7998,7 @@ vectorizable_live_operation (loop_vec_info loop_vinfo,
     {
       gcc_assert (slp_index >= 0);
 
-      int num_scalar = SLP_TREE_SCALAR_STMTS (slp_node).length ();
+      int num_scalar = SLP_TREE_LANES (slp_node);
       int num_vec = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
 
       /* Get the last occurrence of the scalar index from the concatenation of

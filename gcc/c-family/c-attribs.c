@@ -3875,14 +3875,17 @@ append_access_attrs (tree t, tree attrs, const char *attrstr,
 	  /* Found a matching positional argument.  */
 	  if (*attrspec != pos[-1])
 	    {
+	      const char* const modestr
+		= (pos[-1] == 'r'
+		   ? "read_only"
+		   : (pos[-1] == 'w'
+		      ? "write_only"
+		      : (pos[-1] == 'x' ? "read_write" : "none")));
 	      /* Mismatch in access mode.  */
 	      auto_diagnostic_group d;
 	      if (warning (OPT_Wattributes,
 			   "attribute %qs mismatch with mode %qs",
-			   attrstr,
-			   (pos[-1] == 'r'
-			    ? "read_only"
-			    : (pos[-1] == 'w' ? "write_only" : "read_write")))
+			   attrstr, modestr)
 		  && DECL_P (t))
 		inform (DECL_SOURCE_LOCATION (t),
 			"previous declaration here");
@@ -4014,13 +4017,14 @@ handle_access_attribute (tree *node, tree name, tree args,
 	ps += 2;
     }
 
-  const bool read_only = strncmp (ps, "read_only", 9) == 0;
-  const bool write_only = strncmp (ps, "write_only", 10) == 0;
-  if (!read_only && !write_only && strncmp (ps, "read_write", 10))
+  const bool read_only = !strncmp (ps, "read_only", 9);
+  const bool write_only = !strncmp (ps, "write_only", 10);
+  const bool read_write = !strncmp (ps, "read_write", 10);
+  if (!read_only && !write_only && !read_write && strncmp (ps, "none", 4))
     {
       error ("attribute %qE invalid mode %qs; expected one of "
-	     "%qs, %qs, or %qs", name, access_str,
-	     "read_only", "read_write", "write_only");
+	     "%qs, %qs, %qs, or %qs", name, access_str,
+	     "read_only", "read_write", "write_only", "none");
       return NULL_TREE;
     }
 
@@ -4145,9 +4149,9 @@ handle_access_attribute (tree *node, tree name, tree args,
       }
   }
 
-  if (!read_only)
+  if (read_write || write_only)
     {
-      /* A read_write and write_only modes must reference non-const
+      /* Read_write and write_only modes must reference non-const
 	 arguments.  */
       if (TYPE_READONLY (TREE_TYPE (argtypes[0])))
 	{
@@ -4178,7 +4182,8 @@ handle_access_attribute (tree *node, tree name, tree args,
   /* Verify that the new attribute doesn't conflict with any existing
      attributes specified on previous declarations of the same type
      and if not, concatenate the two.  */
-  const char code = read_only ? 'r' : write_only ? 'w' : 'x';
+  const char code
+    = read_only ? 'r' : write_only ? 'w' : read_write ? 'x' : '-';
   tree new_attrs = append_access_attrs (node[0], attrs, attrstr, code, idxs);
   if (!new_attrs)
     return NULL_TREE;

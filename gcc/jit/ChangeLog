@@ -1,3 +1,77 @@
+2020-06-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/95306
+	* jit-builtins.c (builtins_manager::make_primitive_type):
+	Implement BT_CONST_VOLATILE_PTR.
+
+2020-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/95426
+	* dummy-frontend.c: Include "options.h", "stringpool.h", and
+	"attribs.h".
+	(ATTR_EXCL): New, copied from lto/lto-lang.c.
+	(attr_noreturn_exclusions): Likewise.
+	(attr_returns_twice_exclusions): Likewise.
+	(attr_const_pure_exclusions): Likewise.
+	(jit_attribute_table): Likewise, copied from lto_attribute_table.
+	(jit_format_attribute_table): Likewise, copied from
+	lto_format_attribute_table.
+	(handle_noreturn_attribute): New, copied from lto/lto-lang.c.
+	(handle_leaf_attribute): Likewise.
+	(handle_const_attribute): Likewise.
+	(handle_malloc_attribute): Likewise.
+	(handle_pure_attribute): Likewise.
+	(handle_novops_attribute): Likewise.
+	(get_nonnull_operand): Likewise.
+	(handle_nonnull_attribute): Likewise.
+	(handle_nothrow_attribute): Likewise.
+	(handle_sentinel_attribute): Likewise.
+	(handle_type_generic_attribute): Likewise.
+	(handle_transaction_pure_attribute): Likewise.
+	(handle_returns_twice_attribute): Likewise.
+	(handle_patchable_function_entry_attribute): Likewise.
+	(ignore_attribute): Likewise.
+	(handle_format_attribute): Likewise.
+	(handle_format_arg_attribute): Likewise.
+	(handle_fnspec_attribute): Likewise.
+	(LANG_HOOKS_COMMON_ATTRIBUTE_TABLE): Define.
+	(LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE): Define.
+
+2020-05-28  Nicolas Bértolo  <nicolasbertolo@gmail.com>
+
+	* Make-lang.in: Remove extra slash. Build libgccjit.dll and its
+	import library in Windows.
+	* config-lang.in: Update comment about --enable-host-shared.
+	* jit-w32.h: New file.
+	* jit-w32.c: New file.
+	(print_last_error): New function that prints the error
+	string corresponding to GetLastError().
+	(get_TOKEN_USER_current_user): Helper function used for getting
+	the SID belonging to the current user.
+	(create_directory_for_current_user): Helper function to create
+	a directory with permissions such that only the current user can
+	access it.
+	(win_mkdtemp): Create a temporary directory using Windows APIs.
+	* jit-playback.c: Do not chmod files in Windows. Use LoadLibrary,
+	FreeLibrary and GetProcAddress instead of libdl.
+	* jit-result.h, jit-result.c: Introduce result::handle_t to
+	abstract over the types used for dynamic library handles.
+	* jit-tempdir.c: Do not use mkdtemp() in Windows, use
+	win_mkdtemp().
+
+2020-05-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/95314
+	* dummy-frontend.c (LANG_HOOKS_DEEP_UNSHARING): Define to be true.
+	* jit-playback.h (gcc::jit::playback::rvalue): Mark tree node with
+	TREE_VISITED.
+
+2020-05-27  Tom Tromey  <tromey@gcc.gnu.org>
+
+	PR jit/91330
+	* docs/conf.py (texinfo_documents): Set description.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
 2020-05-26  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/95306

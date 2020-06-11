@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -76,19 +76,19 @@ public:
                 result = new ErrorInitializer();
                 return;
             }
-            size_t nfields = sd->fields.dim - sd->isNested();
+            size_t nfields = sd->fields.length - sd->isNested();
 
             //expandTuples for non-identity arguments?
 
             Expressions *elements = new Expressions();
             elements->setDim(nfields);
-            for (size_t j = 0; j < elements->dim; j++)
+            for (size_t j = 0; j < elements->length; j++)
                 (*elements)[j] = NULL;
 
             // Run semantic for explicitly given initializers
             // TODO: this part is slightly different from StructLiteralExp::semantic.
             bool errors = false;
-            for (size_t fieldi = 0, j = 0; j < i->field.dim; j++)
+            for (size_t fieldi = 0, j = 0; j < i->field.length; j++)
             {
                 if (Identifier *id = i->field[j])
                 {
@@ -177,7 +177,7 @@ public:
             result = ::semantic(ie, sc, t, needInterpret);
             return;
         }
-        else if ((t->ty == Tdelegate || (t->ty == Tpointer && t->nextOf()->ty == Tfunction)) && i->value.dim == 0)
+        else if ((t->ty == Tdelegate || (t->ty == Tpointer && t->nextOf()->ty == Tfunction)) && i->value.length == 0)
         {
             TOK tok = (t->ty == Tdelegate) ? TOKdelegate : TOKfunction;
             /* Rewrite as empty delegate literal { }
@@ -252,7 +252,7 @@ public:
         i->type = t;
 
         length = 0;
-        for (size_t j = 0; j < i->index.dim; j++)
+        for (size_t j = 0; j < i->index.length; j++)
         {
             Expression *idx = i->index[j];
             if (idx)
@@ -289,7 +289,7 @@ public:
                 i->index.remove(j);
                 i->value.remove(j);
 
-                for (size_t k = 0; k < te->exps->dim; ++k)
+                for (size_t k = 0; k < te->exps->length; ++k)
                 {
                     Expression *e = (*te->exps)[k];
                     i->index.insert(j + k, (Expression *)NULL);
@@ -381,7 +381,7 @@ public:
             return;
         }
 
-        if (i->exp->type->ty == Ttuple && ((TypeTuple *)i->exp->type)->arguments->dim == 0)
+        if (i->exp->type->ty == Ttuple && ((TypeTuple *)i->exp->type)->arguments->length == 0)
         {
             Type *et = i->exp->type;
             i->exp = new TupleExp(i->exp->loc, new Expressions());
@@ -482,7 +482,7 @@ public:
                 if (i->exp->op == TOKarrayliteral)
                 {
                     ArrayLiteralExp *ale = (ArrayLiteralExp *)i->exp;
-                    dim2 = ale->elements ? ale->elements->dim : 0;
+                    dim2 = ale->elements ? ale->elements->length : 0;
                 }
                 else if (i->exp->op == TOKslice)
                 {
@@ -558,11 +558,11 @@ public:
         if (init->isAssociativeArray())
         {
             keys = new Expressions();
-            keys->setDim(init->value.dim);
+            keys->setDim(init->value.length);
             values = new Expressions();
-            values->setDim(init->value.dim);
+            values->setDim(init->value.length);
 
-            for (size_t i = 0; i < init->value.dim; i++)
+            for (size_t i = 0; i < init->value.length; i++)
             {
                 Expression *e = init->index[i];
                 if (!e)
@@ -591,10 +591,10 @@ public:
         else
         {
             Expressions *elements = new Expressions();
-            elements->setDim(init->value.dim);
+            elements->setDim(init->value.length);
             elements->zero();
 
-            for (size_t i = 0; i < init->value.dim; i++)
+            for (size_t i = 0; i < init->value.length; i++)
             {
                 assert(!init->index[i]);  // already asserted by isAssociativeArray()
 
@@ -741,7 +741,7 @@ public:
 
     void visit(ArrayInitializer *init)
     {
-        //printf("ArrayInitializer::toExpression(), dim = %d\n", init->dim);
+        //printf("ArrayInitializer::toExpression(), dim = %d\n", init->length);
         //static int i; if (++i == 2) halt();
 
         Expressions *elements;
@@ -783,8 +783,8 @@ public:
         }
         else
         {
-            edim = (unsigned)init->value.dim;
-            for (size_t i = 0, j = 0; i < init->value.dim; i++, j++)
+            edim = (unsigned)init->value.length;
+            for (size_t i = 0, j = 0; i < init->value.length; i++, j++)
             {
                 if (init->index[i])
                 {
@@ -806,7 +806,7 @@ public:
         elements = new Expressions();
         elements->setDim(edim);
         elements->zero();
-        for (size_t i = 0, j = 0; i < init->value.dim; i++, j++)
+        for (size_t i = 0, j = 0; i < init->value.length; i++, j++)
         {
             if (init->index[i])
                 j = (size_t)(init->index[i])->toInteger();
@@ -848,7 +848,7 @@ public:
                 {
                     size_t dim = ((TypeSArray *)tn)->dim->toInteger();
                     Type *te = tn->nextOf()->toBasetype();
-                    for (size_t i = 0; i < elements->dim; i++)
+                    for (size_t i = 0; i < elements->length; i++)
                     {
                         Expression *e = (*elements)[i];
                         if (te->equals(e->type))

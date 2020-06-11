@@ -1,3 +1,134 @@
+2020-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90102
+	* include/debug/deque (deque(const _Base&)): Replace parameter
+	with a struct that wraps a const _Base&.
+	* include/debug/forward_list (forward_list(_Base_ref)): New
+	constructor.
+	* include/debug/list (list(const _Base&)): Replace parameter
+	with a struct that wraps a const _Base&.
+	* include/debug/map.h (map(const _Base&)): Likewise.
+	* include/debug/multimap.h (multimap(const _Base&)): Likewise.
+	* include/debug/multiset.h (multiset(const _Base&)): Likewise.
+	* include/debug/set.h (set(const _Base&)): Likewise.
+	* include/debug/unordered_map (unordered_map(const _Base&))
+	(unordered_multimap(const _Base&)): Likewise.
+	* include/debug/unordered_set (unordered_set(const _Base&))
+	(unordered_multiset(const _Base&)): Likewise.
+	* testsuite/23_containers/vector/cons/destructible_debug_neg.cc:
+	Adjust dg-error line number.
+	* include/debug/vector (vector(const _Base&)): Likewise.
+	* testsuite/23_containers/deque/debug/90102.cc: New test.
+	* testsuite/23_containers/forward_list/debug/90102.cc: New test.
+	* testsuite/23_containers/list/debug/90102.cc: New test.
+	* testsuite/23_containers/map/debug/90102.cc: New test.
+	* testsuite/23_containers/multimap/debug/90102.cc: New test.
+	* testsuite/23_containers/multiset/debug/90102.cc: New test.
+	* testsuite/23_containers/set/debug/90102.cc: New test.
+	* testsuite/23_containers/unordered_map/debug/90102.cc: New test.
+	* testsuite/23_containers/unordered_multimap/debug/90102.cc: New test.
+	* testsuite/23_containers/unordered_multiset/debug/90102.cc: New test.
+	* testsuite/23_containers/unordered_set/debug/90102.cc: New test.
+	* testsuite/23_containers/vector/debug/90102.cc: New test.
+
+2020-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95392
+	* include/bits/fs_path.h (path::_S_to_string): Move to
+	namespace-scope and rename to ...
+	(__detail::__string_from_range): ... this.
+	[WINDOWS] (__detail::__wstr_from_utf8): New function template to
+	convert a char sequence containing UTF-8 to wstring.
+	(path::_S_convert(Iter, Iter)): Adjust call to _S_to_string.
+	(path::_S_convert_loc(Iter, Iter, const locale&)): Likewise.
+	(u8path(InputIterator, InputIterator)) [WINDOWS]: Use
+	__string_from_range to obtain a contiguous range and
+	__wstr_from_utf8 to obtain a wide string.
+	(u8path(const Source&)) [WINDOWS]: Use __effective_range to
+	obtain a contiguous range and __wstr_from_utf8 to obtain a wide
+	string.
+	(path::_S_convert(const _EcharT*, const _EcharT)) [WINDOWS]:
+	Use __wstr_from_utf8.
+
+2020-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_iterators.h:
+	(input_iterator_wrapper::operator++(int)): Return proxy object.
+
+2020-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Document deprecation of
+	__is_nullptr_t and removal of std::allocator members.
+	* doc/html/manual/api.html: Regenerate.
+
+2020-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/containers.xml: Replace <xref> with <link>.
+	* doc/xml/manual/evolution.xml: Likewise.
+	* doc/html/manual/api.html: Regenerate.
+	* doc/html/manual/containers.html: Regenerate.
+
+2020-06-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/faq.xml: Adjust Valgrind reference and remove another.
+	* doc/html/faq.html: Regenerate.
+
+2020-06-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/policy_data_structures_biblio.xml: Remove
+	stray change.
+
+2020-06-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/policy_data_structures_biblio.xml: Switch
+	www.cs.princeton.edu to https.
+	* doc/html/manual/policy_data_structures.html: Regenerate.
+
+2020-05-31  Douglas B Rupp  <douglas.b.rupp@gmail.com>
+
+	* crossconfig.m4 (<*-vxworks>): Check for more math decls.
+	* configure: Rebuild.
+
+2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/95413
+	* configure: Regenerated.
+
+2020-05-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/95079
+	* include/bits/hashtable_policy.h (_Insert_base<>::try_emplace): New.
+	* include/bits/unordered_map.h (unordered_map<>::try_emplace): Adapt.
+	(unordered_map<>::insert_or_assign): Adapt.
+
+2020-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95282
+	* include/bits/atomic_base.h (__atomic_impl::load): Add
+	cv-qualifiers to parameter so that _Tp is deduced as the
+	unqualified type.
+	* testsuite/29_atomics/atomic_float/95282.cc: New test.
+
+2020-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95322
+	* include/std/ranges (transform_view::_Sentinel): Allow hidden
+	friends to work with _Iterator<true> and _Iterator<false>.
+	(join_view::_Sentinel): Likewise.
+	* testsuite/std/ranges/adaptors/95322.cc: New test.
+
+2020-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94354
+	* include/bits/stl_iterator.h (reverse_iterator): Fix comparison
+	operators to use the correct operations on the underlying
+	iterators.
+	* testsuite/24_iterators/reverse_iterator/rel_ops.cc: New test.
+
+2020-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/comparisons/categories/zero_neg.cc: New test.
+
 2020-05-26  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/95322

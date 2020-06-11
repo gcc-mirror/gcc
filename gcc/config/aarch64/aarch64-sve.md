@@ -4211,10 +4211,10 @@
 
 ;; Unpredicated integer binary logical operations.
 (define_insn "<optab><mode>3"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, ?w, w")
-	(LOGICAL:SVE_FULL_I
-	  (match_operand:SVE_FULL_I 1 "register_operand" "%0, w, w")
-	  (match_operand:SVE_FULL_I 2 "aarch64_sve_logical_operand" "vsl, vsl, w")))]
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?w, w")
+	(LOGICAL:SVE_I
+	  (match_operand:SVE_I 1 "register_operand" "%0, w, w")
+	  (match_operand:SVE_I 2 "aarch64_sve_logical_operand" "vsl, vsl, w")))]
   "TARGET_SVE"
   "@
    <logical>\t%0.<Vetype>, %0.<Vetype>, #%C2

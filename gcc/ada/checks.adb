@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4889,7 +4889,7 @@ package body Checks is
 
                      Indx := First_Index (Atyp);
                      for J in 2 .. Inum loop
-                        Indx := Next_Index (Indx);
+                        Next_Index (Indx);
                      end loop;
 
                      --  If the index type is a formal type or derived from
@@ -6515,9 +6515,6 @@ package body Checks is
    -- Generate_Discriminant_Check --
    ---------------------------------
 
-   --  Note: the code for this procedure is derived from the
-   --  Emit_Discriminant_Check Routine in trans.c.
-
    procedure Generate_Discriminant_Check (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
       Pref : constant Node_Id    := Prefix (N);
@@ -6847,7 +6844,7 @@ package body Checks is
                       Reason => CE_Index_Check_Failed));
                end if;
 
-               A_Idx := Next_Index (A_Idx);
+               Next_Index (A_Idx);
                Ind := Ind + 1;
                Next (Sub);
             end loop;
@@ -6874,6 +6871,10 @@ package body Checks is
       --  The action is analyzed using the default checks as modified by the
       --  given Suppress argument. Then check the converted value against the
       --  range of the target subtype.
+
+      function Is_Single_Attribute_Reference (N : Node_Id) return Boolean;
+      --  Return True if N is an expression that contains a single attribute
+      --  reference, possibly as operand among only integer literal operands.
 
       -----------------------------
       -- Convert_And_Check_Range --
@@ -6934,6 +6935,31 @@ package body Checks is
          Set_Etype (N, Target_Base_Type);
       end Convert_And_Check_Range;
 
+      -------------------------------------
+      --  Is_Single_Attribute_Reference  --
+      -------------------------------------
+
+      function Is_Single_Attribute_Reference (N : Node_Id) return Boolean is
+      begin
+         if Nkind (N) = N_Attribute_Reference then
+            return True;
+
+         elsif Nkind (N) in N_Binary_Op then
+            if Nkind (Right_Opnd (N)) = N_Integer_Literal then
+               return Is_Single_Attribute_Reference (Left_Opnd (N));
+
+            elsif Nkind (Left_Opnd (N)) = N_Integer_Literal then
+               return Is_Single_Attribute_Reference (Right_Opnd (N));
+
+            else
+               return False;
+            end if;
+
+         else
+            return False;
+         end if;
+      end Is_Single_Attribute_Reference;
+
    --  Start of processing for Generate_Range_Check
 
    begin
@@ -6982,9 +7008,10 @@ package body Checks is
       --  We skip the evaluation of attribute references because, after these
       --  runtime checks are generated, the expander may need to rewrite this
       --  node (for example, see Attribute_Max_Size_In_Storage_Elements in
-      --  Expand_N_Attribute_Reference).
+      --  Expand_N_Attribute_Reference) and, in many cases, their return type
+      --  is universal integer, which is a very large type for a temporary.
 
-      if Nkind (N) /= N_Attribute_Reference
+      if not Is_Single_Attribute_Reference (N)
         and then (not Is_Entity_Name (N)
                    or else Treat_As_Volatile (Entity (N)))
       then
@@ -8064,7 +8091,7 @@ package body Checks is
       --  Do not generate an elaboration check in compilation modes where
       --  expansion is not desirable.
 
-      if ASIS_Mode or GNATprove_Mode then
+      if GNATprove_Mode then
          return;
 
       --  Do not generate an elaboration check if all checks have been
@@ -8740,8 +8767,7 @@ package body Checks is
 
             else
                declare
-                  Rtype    : Entity_Id;
-                  pragma Warnings (Off, Rtype);
+                  Rtype    : Entity_Id := Empty;
                   New_Alts : List_Id;
                   New_Exp  : Node_Id;
 
@@ -8771,6 +8797,7 @@ package body Checks is
                       Expression   => Expression (N),
                       Alternatives => New_Alts));
 
+                  pragma Assert (Present (Rtype));
                   Reanalyze (Rtype, Suppress => True);
                end;
             end if;

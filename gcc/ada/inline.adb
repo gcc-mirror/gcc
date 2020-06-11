@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -852,7 +852,7 @@ package body Inline is
             return;
          end if;
 
-         Elmt := Next_Elmt (Elmt);
+         Next_Elmt (Elmt);
       end loop;
 
       Append_Elmt (Scop, To_Clean);
@@ -2787,7 +2787,7 @@ package body Inline is
          Expand_Cleanup_Actions (Decl);
          End_Scope;
 
-         Elmt := Next_Elmt (Elmt);
+         Next_Elmt (Elmt);
       end loop;
    end Cleanup_Scopes;
 
@@ -4103,7 +4103,15 @@ package body Inline is
 
                Reset_Dispatching_Calls (Blk);
 
-               Analyze (Blk, Suppress => All_Checks);
+               --  In GNATprove mode, always consider checks on, even for
+               --  predefined units.
+
+               if GNATprove_Mode then
+                  Analyze (Blk);
+               else
+                  Analyze (Blk, Suppress => All_Checks);
+               end if;
+
                Style_Check := Style;
             end;
 

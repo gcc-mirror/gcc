@@ -1,3 +1,23 @@
+2020-06-03  Mark Wielaard  <mark@klomp.org>
+
+	* known-headers.cc (get_cp_stdlib_header_for_string_macro_name):
+	New function.
+	* known-headers.h (get_cp_stdlib_header_for_string_macro_name):
+	New function declaration.
+
+2020-06-03  Mark Wielaard  <mark@klomp.org>
+
+	* known-headers.cc (get_string_macro_hint): New function.
+	(get_stdlib_header_for_name): Use get_string_macro_hint.
+	(get_c_stdlib_header_for_string_macro_name): New function.
+	* known-headers.h (get_c_stdlib_header_for_string_macro_name):
+	New function declaration.
+
+2020-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-common.h (c_omp_predetermined_mapping): Declare.
+	* c-omp.c (c_omp_predetermined_mapping): New.
+
 2020-05-22  Mark Wielaard  <mark@klomp.org>
 
 	* known-headers.cc (get_stdlib_header_for_name): Add a new

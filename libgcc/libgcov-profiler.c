@@ -26,17 +26,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgcov.h"
 #if !defined(inhibit_libc)
 
-/* Detect whether target can support atomic update of profilers.  */
-#if __SIZEOF_LONG_LONG__ == 4 && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
-#define GCOV_SUPPORTS_ATOMIC 1
-#else
-#if __SIZEOF_LONG_LONG__ == 8 && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_8
-#define GCOV_SUPPORTS_ATOMIC 1
-#else
-#define GCOV_SUPPORTS_ATOMIC 0
-#endif
-#endif
-
 #ifdef L_gcov_interval_profiler
 /* If VALUE is in interval <START, START + STEPS - 1>, then increases the
    corresponding counter in COUNTERS.  If the VALUE is above or below
@@ -105,51 +94,13 @@ __gcov_pow2_profiler_atomic (gcov_type *counters, gcov_type value)
 }
 #endif
 
-
 /* Tries to determine N most commons value among its inputs.  */
 
 static inline void
 __gcov_topn_values_profiler_body (gcov_type *counters, gcov_type value,
 				  int use_atomic)
 {
-  if (use_atomic)
-    __atomic_fetch_add (&counters[0], 1, __ATOMIC_RELAXED);
-  else
-    counters[0]++;
-
-  ++counters;
-
-  /* First try to find an existing value.  */
-  int empty_counter = -1;
-
-  for (unsigned i = 0; i < GCOV_TOPN_VALUES; i++)
-    if (value == counters[2 * i])
-      {
-	if (use_atomic)
-	  __atomic_fetch_add (&counters[2 * i + 1], GCOV_TOPN_VALUES,
-			      __ATOMIC_RELAXED);
-	else
-	  counters[2 * i + 1] += GCOV_TOPN_VALUES;
-	return;
-      }
-    else if (counters[2 * i + 1] <= 0)
-      empty_counter = i;
-
-  /* Find an empty slot for a new value.  */
-  if (empty_counter != -1)
-    {
-      counters[2 * empty_counter] = value;
-      counters[2 * empty_counter + 1] = GCOV_TOPN_VALUES;
-      return;
-    }
-
-  /* We haven't found an empty slot, then decrement all
-     counter values by one.  */
-  for (unsigned i = 0; i < GCOV_TOPN_VALUES; i++)
-    if (use_atomic)
-      __atomic_fetch_sub (&counters[2 * i + 1], 1, __ATOMIC_RELAXED);
-    else
-      counters[2 * i + 1]--;
+  gcov_topn_add_value (counters, value, 1, use_atomic, 1);
 }
 
 #ifdef L_gcov_topn_values_profiler

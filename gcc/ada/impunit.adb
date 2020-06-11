@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2000-2019, Free Software Foundation, Inc.        --
+--           Copyright (C) 2000-2020, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -181,6 +181,7 @@ package body Impunit is
     ("a-ssicst", F),  -- Ada.Streams.Stream_IO.C_Streams
     ("a-suteio", F),  -- Ada.Strings.Unbounded.Text_IO
     ("a-swuwti", F),  -- Ada.Strings.Wide_Unbounded.Wide_Text_IO
+    ("a-tasini", F),  -- Ada.Task_Initialization
     ("a-tiocst", F),  -- Ada.Text_IO.C_Streams
     ("a-wtcstr", F),  -- Ada.Wide_Text_IO.C_Streams
 
@@ -620,14 +621,21 @@ package body Impunit is
    --  The following units should be used only in Ada 202X mode
 
    Non_Imp_File_Names_2X : constant File_List := (
-    ("a-stteou", T),  -- Ada.Strings.Text_Output
     ("a-nubinu", T),  -- Ada.Numerics.Big_Numbers
     ("a-nbnbin", T),  -- Ada.Numerics.Big_Numbers.Big_Integers
     ("a-nbnbre", T),  -- Ada.Numerics.Big_Numbers.Big_Reals
     ("s-aotase", T),  -- System.Atomic_Operations.Test_And_Set
     ("s-atoope", T),  -- System.Atomic_Operations
     ("s-atopar", T),  -- System.Atomic_Operations.Arithmetic
-    ("s-atopex", T)); -- System.Atomic_Operations.Exchange
+    ("s-atopex", T),  -- System.Atomic_Operations.Exchange
+    ("a-stteou", T),  -- Ada.Strings.Text_Output
+    ("a-stouut", T),  -- Ada.Strings.Text_Output.Utils
+    ("a-stoubu", T),  -- Ada.Strings.Text_Output.Buffers
+    ("a-stoufi", T),  -- Ada.Strings.Text_Output.Files
+    ("a-stobfi", T),  -- Ada.Strings.Text_Output.Basic_Files
+    ("a-stobbu", T),  -- Ada.Strings.Text_Output.Bit_Buckets
+    ("a-stoufo", T)   -- Ada.Strings.Text_Output.Formatting
+   );
 
    -----------------------
    -- Alternative Units --

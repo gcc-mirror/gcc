@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -958,32 +958,7 @@ package body Sem_Type is
             --  Note: test for presence of E is defense against previous error.
 
             if No (E) then
-
-               --  If expansion is disabled the Corresponding_Record_Type may
-               --  not be available yet, so use the interface list in the
-               --  declaration directly.
-
-               if ASIS_Mode
-                 and then Nkind (Parent (BT2)) = N_Protected_Type_Declaration
-                 and then Present (Interface_List (Parent (BT2)))
-               then
-                  declare
-                     Intf : Node_Id := First (Interface_List (Parent (BT2)));
-                  begin
-                     while Present (Intf) loop
-                        if Is_Ancestor (Etype (T1), Entity (Intf)) then
-                           return True;
-                        else
-                           Next (Intf);
-                        end if;
-                     end loop;
-                  end;
-
-                  return False;
-
-               else
-                  Check_Error_Detected;
-               end if;
+               Check_Error_Detected;
 
             --  Here we have a corresponding record type
 
@@ -1383,7 +1358,7 @@ package body Sem_Type is
       begin
          return In_Same_List (Parent (Typ), Op_Decl)
            or else
-             (Ekind_In (Scop, E_Package, E_Generic_Package)
+             (Is_Package_Or_Generic_Package (Scop)
                and then List_Containing (Op_Decl) =
                               Visible_Declarations (Parent (Scop))
                and then List_Containing (Parent (Typ)) =

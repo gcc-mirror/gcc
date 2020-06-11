@@ -201,6 +201,9 @@ omp_alloc (size_t size, omp_allocator_handle_t allocator)
   size_t alignment, new_size;
   void *ptr, *ret;
 
+  if (__builtin_expect (size == 0, 0))
+    return NULL;
+
 retry:
   if (allocator == omp_null_allocator)
     {
@@ -345,7 +348,7 @@ omp_free (void *ptr, omp_allocator_handle_t allocator)
 			      MEMMODEL_RELAXED);
 #else
 	  gomp_mutex_lock (&allocator_data->lock);
-	  allocator_data->used_pool_size -= data->new_size;
+	  allocator_data->used_pool_size -= data->size;
 	  gomp_mutex_unlock (&allocator_data->lock);
 #endif
 	}

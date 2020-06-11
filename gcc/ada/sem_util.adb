@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1618,6 +1618,13 @@ package body Sem_Util is
       --  wrapper call to inherited operation.
 
       Set_Class_Wide_Clone (Spec_Id, Clone_Id);
+
+      --  Inherit debug info flag from Spec_Id to Clone_Id to allow debugging
+      --  of the class-wide clone subprogram.
+
+      if Needs_Debug_Info (Spec_Id) then
+         Set_Debug_Info_Needed (Clone_Id);
+      end if;
    end Build_Class_Wide_Clone_Decl;
 
    -----------------------------
@@ -1897,12 +1904,6 @@ package body Sem_Util is
       --  Ignore call if already constructed
 
       if Present (Elaboration_Entity (Spec_Id)) then
-         return;
-
-      --  Ignore in ASIS mode, elaboration entity is not in source and plays
-      --  no role in analysis.
-
-      elsif ASIS_Mode then
          return;
 
       --  Do not generate an elaboration entity in GNATprove move because the
@@ -2759,7 +2760,7 @@ package body Sem_Util is
                   declare
                      Count_Components   : Uint := Uint_0;
                      Num_Components     : Uint;
-                     Others_Assoc       : Node_Id;
+                     Others_Assoc       : Node_Id := Empty;
                      Others_Choice      : Node_Id := Empty;
                      Others_Box_Present : Boolean := False;
 
@@ -2843,6 +2844,8 @@ package body Sem_Util is
                            --  we analyze it silently to have available the
                            --  minimum decoration required to collect the
                            --  identifiers.
+
+                           pragma Assert (Present (Others_Assoc));
 
                            if not Expander_Active then
                               Comp_Expr := Expression (Others_Assoc);
@@ -3396,18 +3399,12 @@ package body Sem_Util is
            or else Ekind_In (Context, E_Block, E_Task_Type)
          then
             return;
-
-         --  When examining a package body, use the entity of the spec as it
-         --  carries the abstract state declarations.
-
-         elsif Ekind (Context) = E_Package_Body then
-            Context := Spec_Entity (Context);
          end if;
 
          --  Stop the traversal when a package subject to a null abstract state
          --  has been found.
 
-         if Ekind_In (Context, E_Generic_Package, E_Package)
+         if Is_Package_Or_Generic_Package (Context)
            and then Has_Null_Abstract_State (Context)
          then
             exit;
@@ -8070,8 +8067,8 @@ package body Sem_Util is
                   return;
 
                else
-                  Actual := Next_Actual (Actual);
-                  Formal := Next_Formal (Formal);
+                  Next_Actual (Actual);
+                  Next_Formal (Formal);
                end if;
             end loop;
          end if;
@@ -10185,6 +10182,7 @@ package body Sem_Util is
    begin
       R := N;
       while Is_Entity_Name (R)
+        and then Is_Object (Entity (R))
         and then Present (Renamed_Object (Entity (R)))
       loop
          R := Renamed_Object (Entity (R));
@@ -11538,7 +11536,7 @@ package body Sem_Util is
          Node := First (L);
 
          loop
-            if Nkind (Node) /= N_Null_Statement then
+            if not Nkind_In (Node, N_Null_Statement, N_Call_Marker) then
                return True;
             end if;
 
@@ -11549,6 +11547,91 @@ package body Sem_Util is
 
       return False;
    end Has_Non_Null_Statements;
+
+   ---------------------------------
+   -- Side_Effect_Free_Statements --
+   ---------------------------------
+
+   function Side_Effect_Free_Statements (L : List_Id) return Boolean is
+      Node : Node_Id;
+
+   begin
+      if Is_Non_Empty_List (L) then
+         Node := First (L);
+
+         loop
+            case Nkind (Node) is
+               when N_Null_Statement | N_Call_Marker | N_Raise_xxx_Error =>
+                  null;
+               when N_Object_Declaration =>
+                  if Present (Expression (Node))
+                    and then not Side_Effect_Free (Expression (Node))
+                  then
+                     return False;
+                  end if;
+
+               when others =>
+                  return False;
+            end case;
+
+            Next (Node);
+            exit when Node = Empty;
+         end loop;
+      end if;
+
+      return True;
+   end Side_Effect_Free_Statements;
+
+   ---------------------------
+   -- Side_Effect_Free_Loop --
+   ---------------------------
+
+   function Side_Effect_Free_Loop (N : Node_Id) return Boolean is
+      Scheme : Node_Id;
+      Spec   : Node_Id;
+      Subt   : Node_Id;
+
+   begin
+      --  If this is not a loop (e.g. because the loop has been rewritten),
+      --  then return false.
+
+      if Nkind (N) /= N_Loop_Statement then
+         return False;
+      end if;
+
+      --  First check the statements
+
+      if Side_Effect_Free_Statements (Statements (N)) then
+
+         --  Then check the loop condition/indexes
+
+         if Present (Iteration_Scheme (N)) then
+            Scheme := Iteration_Scheme (N);
+
+            if Present (Condition (Scheme))
+              or else Present (Iterator_Specification (Scheme))
+            then
+               return False;
+            elsif Present (Loop_Parameter_Specification (Scheme)) then
+               Spec := Loop_Parameter_Specification (Scheme);
+               Subt := Discrete_Subtype_Definition (Spec);
+
+               if Present (Subt) then
+                  if Nkind (Subt) = N_Range then
+                     return Side_Effect_Free (Low_Bound (Subt))
+                       and then Side_Effect_Free (High_Bound (Subt));
+                  else
+                     --  subtype indication
+
+                     return True;
+                  end if;
+               end if;
+            end if;
+         end if;
+      end if;
+
+      return False;
+   end Side_Effect_Free_Loop;
 
    ----------------------------------
    -- Has_Non_Trivial_Precondition --
@@ -11643,12 +11726,20 @@ package body Sem_Util is
 
          when N_Component_Definition
             | N_Formal_Object_Declaration
-            | N_Object_Renaming_Declaration
          =>
             if Present (Subtype_Mark (N)) then
                return Null_Exclusion_Present (N);
             else pragma Assert (Present (Access_Definition (N)));
                return Null_Exclusion_Present (Access_Definition (N));
+            end if;
+
+         when N_Object_Renaming_Declaration =>
+            if Present (Subtype_Mark (N)) then
+               return Null_Exclusion_Present (N);
+            elsif Present (Access_Definition (N)) then
+               return Null_Exclusion_Present (Access_Definition (N));
+            else
+               return False;  -- Case of no subtype in renaming (AI12-0275)
             end if;
 
          when N_Discriminant_Specification =>
@@ -12340,7 +12431,7 @@ package body Sem_Util is
                return True;
             end if;
 
-            Comp := Next_Component (Comp);
+            Next_Component (Comp);
          end loop;
       end if;
 
@@ -12978,7 +13069,7 @@ package body Sem_Util is
 
       begin
          if Present (Pkg)
-           and then Ekind_In (Pkg, E_Generic_Package, E_Package)
+           and then Is_Package_Or_Generic_Package (Pkg)
          then
             while Nkind (Pkg_Decl) /= N_Package_Specification loop
                Pkg_Decl := Parent (Pkg_Decl);
@@ -13042,7 +13133,7 @@ package body Sem_Util is
                   return Ent;
                end if;
 
-               Ent := Next_Entity (Ent);
+               Next_Entity (Ent);
             end loop;
          end;
       end if;
@@ -13269,7 +13360,7 @@ package body Sem_Util is
    procedure Insert_Explicit_Dereference (N : Node_Id) is
       New_Prefix : constant Node_Id := Relocate_Node (N);
       Ent        : Entity_Id := Empty;
-      Pref       : Node_Id;
+      Pref       : Node_Id := Empty;
       I          : Interp_Index;
       It         : Interp;
       T          : Entity_Id;
@@ -17144,6 +17235,7 @@ package body Sem_Util is
            or else TSS_Name = TSS_Stream_Output
            or else TSS_Name = TSS_Stream_Read
            or else TSS_Name = TSS_Stream_Write
+           or else TSS_Name = TSS_Put_Image
            or else Is_Predefined_Interface_Primitive (E)
          then
             return True;
@@ -17887,6 +17979,44 @@ package body Sem_Util is
       end if;
    end Is_SPARK_05_Object_Reference;
 
+   --------------------------------------
+   -- Is_Special_Aliased_Formal_Access --
+   --------------------------------------
+
+   function Is_Special_Aliased_Formal_Access
+     (Exp  : Node_Id;
+      Scop : Entity_Id) return Boolean is
+   begin
+      --  Verify the expression is an access reference to 'Access within a
+      --  return statement as this is the only time an explicitly aliased
+      --  formal has different semantics.
+
+      if Nkind (Exp) /= N_Attribute_Reference
+        or else Get_Attribute_Id (Attribute_Name (Exp)) /= Attribute_Access
+        or else Nkind (Parent (Exp)) /= N_Simple_Return_Statement
+      then
+         return False;
+      end if;
+
+      --  Check if the prefix of the reference is indeed an explicitly aliased
+      --  formal parameter for the function Scop. Additionally, we must check
+      --  that Scop returns an anonymous access type, otherwise the special
+      --  rules dictating a need for a dynamic check are not in effect.
+
+      declare
+         P_Ult : constant Node_Id := Ultimate_Prefix (Prefix (Exp));
+      begin
+         return Is_Entity_Name (P_Ult)
+           and then Is_Aliased (Entity (P_Ult))
+           and then Is_Formal  (Entity (P_Ult))
+           and then Scope (Entity (P_Ult)) = Scop
+           and then Ekind_In (Scop, E_Function,
+                                    E_Operator,
+                                    E_Subprogram_Type)
+           and then Present (Extra_Accessibility_Of_Result (Scop));
+      end;
+   end Is_Special_Aliased_Formal_Access;
+
    -----------------------------
    -- Is_Specific_Tagged_Type --
    -----------------------------
@@ -18285,7 +18415,7 @@ package body Sem_Util is
             end if;
          end if;
 
-         Idx := Next_Index (Idx);
+         Next_Index (Idx);
       end loop;
 
       return False;
@@ -20122,12 +20252,6 @@ package body Sem_Util is
       --  does not use markers.
 
       if Legacy_Elaboration_Checks then
-         return False;
-
-      --  No marker needs to be created for ASIS because ABE diagnostics and
-      --  checks are not performed in this mode.
-
-      elsif ASIS_Mode then
          return False;
 
       --  No marker needs to be created when the reference is preanalyzed
@@ -23107,20 +23231,7 @@ package body Sem_Util is
             return Type_Access_Level (Scope (E)) + 1;
 
          else
-            --  Aliased formals of functions take their access level from the
-            --  point of call, i.e. require a dynamic check. For static check
-            --  purposes, this is smaller than the level of the subprogram
-            --  itself. For procedures the aliased makes no difference.
-
-            if Is_Formal (E)
-               and then Is_Aliased (E)
-               and then Ekind (Scope (E)) = E_Function
-            then
-               return Type_Access_Level (Etype (E));
-
-            else
-               return Scope_Depth (Enclosing_Dynamic_Scope (E));
-            end if;
+            return Scope_Depth (Enclosing_Dynamic_Scope (E));
          end if;
 
       elsif Nkind_In (Obj, N_Indexed_Component, N_Selected_Component) then
@@ -24373,10 +24484,63 @@ package body Sem_Util is
    function Requires_Transient_Scope (Id : Entity_Id) return Boolean is
       Old_Result : constant Boolean := Old_Requires_Transient_Scope (Id);
 
+      procedure Ensure_Minimum_Decoration (Typ : Entity_Id);
+      --  If Typ is not frozen then add to Typ the minimum decoration required
+      --  by Requires_Transient_Scope to reliably provide its functionality;
+      --  otherwise no action is performed.
+
+      -------------------------------
+      -- Ensure_Minimum_Decoration --
+      -------------------------------
+
+      procedure Ensure_Minimum_Decoration (Typ : Entity_Id) is
+      begin
+         --  Do not set Has_Controlled_Component on a class-wide equivalent
+         --  type. See Make_CW_Equivalent_Type.
+
+         if Present (Typ)
+           and then not Is_Frozen (Typ)
+           and then (Is_Record_Type (Typ)
+                       or else Is_Concurrent_Type (Typ)
+                       or else Is_Incomplete_Or_Private_Type (Typ))
+           and then not Is_Class_Wide_Equivalent_Type (Typ)
+         then
+            declare
+               Comp : Entity_Id;
+
+            begin
+               Comp := First_Component (Typ);
+               while Present (Comp) loop
+                  if Has_Controlled_Component (Etype (Comp))
+                    or else
+                      (Chars (Comp) /= Name_uParent
+                         and then Is_Controlled (Etype (Comp)))
+                    or else
+                      (Is_Protected_Type (Etype (Comp))
+                         and then
+                           Present (Corresponding_Record_Type (Etype (Comp)))
+                         and then
+                           Has_Controlled_Component
+                             (Corresponding_Record_Type (Etype (Comp))))
+                  then
+                     Set_Has_Controlled_Component (Typ);
+                     exit;
+                  end if;
+
+                  Next_Component (Comp);
+               end loop;
+            end;
+         end if;
+      end Ensure_Minimum_Decoration;
+
+   --  Start of processing for Requires_Transient_Scope
+
    begin
       if Debug_Flag_QQ then
          return Old_Result;
       end if;
+
+      Ensure_Minimum_Decoration (Id);
 
       declare
          New_Result : constant Boolean := New_Requires_Transient_Scope (Id);
@@ -25103,7 +25267,7 @@ package body Sem_Util is
             begin
                while Present (Indx) loop
                   Set_Debug_Info_Needed_If_Not_Set (Etype (Indx));
-                  Indx := Next_Index (Indx);
+                  Next_Index (Indx);
                end loop;
             end;
 
@@ -25283,7 +25447,7 @@ package body Sem_Util is
               or else
                 (Present (Scope (Val))
                   and then Is_Implementation_Defined (Scope (Val))))
-           and then not (Ekind_In (Val, E_Package, E_Generic_Package)
+           and then not (Is_Package_Or_Generic_Package (Val)
                           and then Is_Library_Level_Entity (Val))
          then
             Check_Restriction (No_Implementation_Identifiers, Post_Node);

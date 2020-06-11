@@ -186,6 +186,8 @@ static HOST_WIDE_INT xtensa_constant_alignment (const_tree, HOST_WIDE_INT);
 static HOST_WIDE_INT xtensa_starting_frame_offset (void);
 static unsigned HOST_WIDE_INT xtensa_asan_shadow_offset (void);
 
+static rtx xtensa_delegitimize_address (rtx);
+
 
 
 /* These hooks specify assembly directives for creating certain kinds
@@ -332,6 +334,9 @@ static unsigned HOST_WIDE_INT xtensa_asan_shadow_offset (void);
 
 #undef TARGET_HAVE_SPECULATION_SAFE_VALUE
 #define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
+#undef TARGET_DELEGITIMIZE_ADDRESS
+#define TARGET_DELEGITIMIZE_ADDRESS xtensa_delegitimize_address
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4422,6 +4427,25 @@ static unsigned HOST_WIDE_INT
 xtensa_asan_shadow_offset (void)
 {
   return HOST_WIDE_INT_UC (0x10000000);
+}
+
+static rtx
+xtensa_delegitimize_address (rtx op)
+{
+  switch (GET_CODE (op))
+    {
+    case CONST:
+      return xtensa_delegitimize_address (XEXP (op, 0));
+
+    case UNSPEC:
+      if (XINT (op, 1) == UNSPEC_PLT)
+	return XVECEXP(op, 0, 0);
+      break;
+
+    default:
+      break;
+    }
+  return op;
 }
 
 #include "gt-xtensa.h"

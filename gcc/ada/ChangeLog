@@ -1,3 +1,2472 @@
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Denotes_Previous_Actual): Delete.
+	(Check_Generic_Actuals): Do not special case array types whose
+	component type denotes a previous actual.  Do not special case
+	access types whose base type is private.
+	(Check_Private_View): Remove code dealing with secondary types.
+	Do not switch the views of an array because of its component.
+	(Copy_Generic_Node): Add special handling for a comparison
+	operator on array types.
+	(Instantiate_Type): Do not special case access types whose
+	designated type is private.
+	(Set_Global_Type): Do not special case array types whose
+	component type is private.
+
+2020-06-03  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch10.adb (Process_Body_Clauses): Add loop to interate
+	through all prefixes in a use_type clause so that all packages
+	in the expanded name get examined for effectiveness.
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Check_Private_View): Clean up implementation of
+	second main case, when the generic sees the private declaration.
+
+2020-06-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/a-nbnbin.ads: Minor reformatting.
+	* libgnat/a-nbnbre.ads, libgnat/a-nbnbre.adb (Is_Valid): Add
+	convention Intrinsic. Add detection of uninitialized big reals.
+
+2020-06-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Side_Effect_Free_Statements,
+	Side_Effect_Free_Loop): New functions.
+	(Has_Non_Null_Statements): Consider N_Call_Marker as a null
+	statement.
+	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): Call
+	Set_Is_Null_Loop even inside a generic instantiation.
+	(Analyze_Loop_Statement): Mark for removal loops with no side
+	effects.
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* opt.ads (Allow_Integer_Address): Fix typo in comment.
+	* stand.ads (Standard_Address): New entity.
+	* cstand.adb (Create_Standard): Create it.
+	* sem_ch4.adb (Operator_Check): Convert the operands of an
+	operation with addresses and integers to Standard_Address
+	if pragma Allow_Integer_Address is in effect.
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-atopar.adb (Atomic_Fetch_And_Add): Make use of an
+	equivalent static expression.
+	(Atomic_Fetch_And_Subtract): Likewise.
+	(Is_Lock_Free): Likewise.
+	* libgnat/s-atopex.adb (Atomic_Exchange): Likewise.
+	(Atomic_Compare_And_Exchange): Likewise.
+	(Is_Lock_Free): Likewise.
+
+2020-06-03  Vadim Godunko  <godunko@adacore.com>
+
+	* libgnat/s-parame.ads, libgnat/s-parame__ae653.ads,
+	libgnat/s-parame__hpux.ads: Fix typos.
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Remove_Side_Effects): For a type conversion, do
+	not remove the side effects of the expression only if it is of
+	universal integer type.
+
+2020-06-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-aotase.ads, libgnat/s-atoope.ads,
+	libgnat/s-atopar.ads, libgnat/s-atopex.ads: Update header.
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Unchecked_Type_Conversion): Also fold the
+	conversion for literals of enumeration types.
+
+2020-06-03  Yannick Moy  <moy@adacore.com>
+
+	* rtsfind.adb (Load_RTU): Correctly set/reset global variable to
+	ignore SPARK_Mode in instances around loading.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Accept Off
+	without prior On.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Likewise.
+	* sem_prag.adb (Analyze_Pragma): Always take into account
+	SPARK_Mode Off.
+
+2020-06-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* frontend.adb (Frontend): Call (dummy for now) tree checker.
+	* debug.adb: Reserve -gnatd_V for the tree checker.
+	* vast.ads, vast.adb: New files.
+	* gcc-interface/Make-lang.in: Add vast.o.
+
+2020-06-03  Justin Squirek  <squirek@adacore.com>
+
+	* libgnat/a-cborse.adb, libgnat/a-cihase.adb,
+	libgnat/a-ciorse.adb, libgnat/a-coorse.adb: Modified to use
+	'Unrestricted_Access in certain cases where static accessibility
+	errors were triggered.
+	* exp_ch6.adb (Expand_Simple_Return_Statement): Add generation
+	of dynamic accessibility checks as determined by
+	Is_Special_Aliased_Formal_Access.
+	* sem_attr.adb (Resolve_Attribute): Add call to
+	Is_Special_Aliased_Formal_Access to avoid performing static
+	checks where dynamic ones are required.
+	* sem_ch6.adb (Check_Return_Obj_Accessibility): Handle renamed
+	objects within component associations requiring special
+	accessibility checks.
+	* sem_util.adb, sem_util.ads (Is_Special_Aliased_Formal_Access):
+	Created to detect the special case where an aliased formal is
+	being compared against the level of an anonymous access return
+	object.
+	(Object_Access_Level): Remove incorrect condition leading to
+	overly permissive accessibility levels being returned on
+	explicitly aliased parameters.
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Enum_Pos_To_Rep): Adjust description.
+	* exp_attr.adb (Expand_N_Attribute_Reference) <Pred>:
+	Reimplement in the case of an enumeration type with non-standard
+	but contiguous representation.
+	<Succ>: Likewise.
+	<Val>: Likewise.
+	* exp_ch3.adb (Expand_Freeze_Enumeration_Type): Count the
+	literals in the first loop.  If the representation is
+	contiguous, just build the index type of the array type and set
+	Enum_Pos_To_Rep to it.
+
+2020-06-03  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_attr.adb (Expand_Loop_Entry_Attribute): Revise loop that
+	resets the scopes of entities associated with Loop_Id to the
+	scope of the new function, so the resetting is not restricted to
+	itypes, but excludes loop parameters and the function entity
+	itself. However, this fix is believed to be incomplete and a ???
+	comment is added to indicate that.
+
+2020-06-03  Bob Duff  <duff@adacore.com>
+
+	* libgnat/s-regexp.ads: Fix comment
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference) <Enum_Rep>:
+	In the case of an enumeration type, do an intermediate
+	conversion to a small integer type.  Remove useless stuff.
+	<Finalization_Size>: Do not hardcode Universal_Integer and
+	fix a type mismatch in the assignment to the variable.
+	<Max_Size_In_Storage_Elements>: Likewise.
+	<From_Any>: Do not redefine the Ptyp local variable.
+	<To_Any>: Likewise.
+	<TypeCode>: Likewise.
+	<Pos>: Small tweaks.
+	<Val>: For an enumeration type with standard representation,
+	apply the range check to the expression of a convertion to
+	Universal_Integer, if any.  For an integer type, expand to
+	a mere conversion.
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-rannum.adb (Random_Discrete): In the 32-bit case,
+	use the same linear implementation as in the 64-bit case when
+	the type has a contiguous representation.
+
+2020-06-03  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_util.adb (Build_Class_Wide_Clone_Decl): Call
+	Set_Debug_Info_Needed to set the Needs_Debug_Info flag on
+	Clone_Id if the flag is set on Spec_Id.
+
+2020-06-03  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Expand_Inlined_Call): Do not suppress checks on
+	inlined code in GNATprove mode.
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Has_Contiguous_Rep): Fix typo in comment.
+
+2020-06-03  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb, einfo.adb, exp_aggr.adb, exp_ch4.adb, exp_ch6.adb,
+	exp_unst.adb, exp_util.adb, freeze.adb, inline.adb, repinfo.adb,
+	sem_aggr.adb, sem_attr.adb, sem_aux.adb, sem_ch13.adb,
+	sem_ch3.adb, sem_ch4.adb, sem_ch8.adb, sem_elab.adb,
+	sem_eval.adb, sem_prag.adb, sem_res.adb, sem_smem.adb,
+	sem_util.adb, treepr.adb: Replace uses of Next_ functions with
+	corresponding procedures.
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_attr.adb (Attribute_Valid): Use Standard_Long_Long_Integer
+	in lieu of Universal_Integer as large integer type.
+	* exp_ch3.adb (Expand_Freeze_Enumeration_Type): Likewise.
+
+2020-06-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-auxdec.ads (Address_Int): New.
+
+2020-06-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* aspects.adb, aspects.ads, atree.adb, atree.ads, elists.adb,
+	elists.ads, fname.adb, fname.ads, gnat1drv.adb, lib.adb,
+	lib.ads, namet.adb, namet.ads, nlists.adb, nlists.ads, opt.adb,
+	opt.ads, osint-c.adb, osint-c.ads, repinfo.adb, repinfo.ads,
+	sem_aux.adb, sem_aux.ads, sinput.adb, sinput.ads, stand.ads,
+	stringt.adb, stringt.ads, switch-c.adb, table.adb, table.ads,
+	uintp.adb, uintp.ads, urealp.adb, urealp.ads (Tree_Read,
+	Tree_Write): Remove generation of ASIS trees.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Remove -gnatt and -gnatct documentation.
+	* gnat_ugn.texi: Regenerate.
+	* tree_in.ads, tree_in.adb, tree_io.ads, tree_io.adb,
+	tree_gen.ads, tree_gen.adb, stand.adb: Remove.
+	* gcc-interface/Makefile.in, gcc-interface/Make-lang.in: Remove
+	references to tree_gen.o tree_in.o tree_io.o.
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* opt.ads (Disable_FE_Inline): Move around.
+	(Disable_FE_Inline_Always): Likewise.
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Is_Single_Attribute_Reference): New predicate.
+	(Generate_Range_Check): Do not force the evaluation if the
+	node is a single attribute reference.
+	* exp_util.adb (Side_Effect_Free_Attribute): New predicate.
+	(Side_Effect_Free) <N_Attribute_Reference>: Call it.
+	(Remove_Side_Effects): Remove the side effects of the prefix
+	for an attribute reference whose prefix is not a name.
+
+2020-06-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* switch-c.adb (Scan_Front_End_Switches): Remove processing of
+	-gnatt.
+	* usage.adb (Usage): Remove mention of -gnatt.
+
+2020-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sinfo.ads: Minor tweaks in commentary.
+
+2020-06-02  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib.ads (Compilation_Switches): Remove -auxbase from
+	comments.
+	* switch.ads (Is_Internal_GCC_Switch): Likewise.
+
+2020-06-02  Arnaud Charlet  <charlet@adacore.com>
+
+	* atree.ads, checks.adb, contracts.adb, debug.adb, einfo.ads,
+	exp_ch3.adb, exp_util.adb, expander.ads, expander.adb,
+	frontend.adb, gnat1drv.adb, itypes.adb, lib.ads, namet.ads,
+	opt.adb, opt.ads, par-prag.adb, repinfo.ads, sem_aggr.adb,
+	sem_aux.ads, sem_case.ads, sem_ch10.adb, sem_ch12.adb,
+	sem_ch13.adb, sem_ch3.adb, sem_ch4.adb, sem_ch6.adb,
+	sem_dim.adb, sem_elab.adb, sem_prag.adb, sem_prag.ads,
+	sem_res.adb, sem_type.adb, sem_util.adb, sinfo.ads, stand.ads,
+	tree_io.ads: Remove references to ASIS_Mode.
+
+2020-06-02  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Generate_Temporary): New subprogram of
+	Discrete_Range_Check that generates a temporary to facilitate
+	the C backend the code generation of the unchecked conversion
+	since the size of the source type may differ from the size of
+	the target type.
+
+2020-06-02  Arnaud Charlet  <charlet@adacore.com>
+
+	* ada_get_targ.adb: Bump copyright year.
+	* adabkend.adb: Likewise.
+	* adabkend.ads: Likewise.
+	* adadecode.c: Likewise.
+	* adadecode.h: Likewise.
+	* adaint.c: Likewise.
+	* adaint.h: Likewise.
+	* affinity.c: Likewise.
+	* ali-util.adb: Likewise.
+	* ali-util.ads: Likewise.
+	* ali.adb: Likewise.
+	* ali.ads: Likewise.
+	* alloc.ads: Likewise.
+	* argv-lynxos178-raven-cert.c: Likewise.
+	* argv.c: Likewise.
+	* aspects.adb: Likewise.
+	* aspects.ads: Likewise.
+	* atree.adb: Likewise.
+	* atree.ads: Likewise.
+	* atree.h: Likewise.
+	* aux-io.c: Likewise.
+	* back_end.adb: Likewise.
+	* back_end.ads: Likewise.
+	* bcheck.adb: Likewise.
+	* bcheck.ads: Likewise.
+	* binde.adb: Likewise.
+	* binde.ads: Likewise.
+	* binderr.adb: Likewise.
+	* binderr.ads: Likewise.
+	* bindgen.adb: Likewise.
+	* bindgen.ads: Likewise.
+	* bindo-augmentors.adb: Likewise.
+	* bindo-augmentors.ads: Likewise.
+	* bindo-builders.adb: Likewise.
+	* bindo-builders.ads: Likewise.
+	* bindo-diagnostics.adb: Likewise.
+	* bindo-diagnostics.ads: Likewise.
+	* bindo-elaborators.adb: Likewise.
+	* bindo-elaborators.ads: Likewise.
+	* bindo-graphs.adb: Likewise.
+	* bindo-graphs.ads: Likewise.
+	* bindo-units.adb: Likewise.
+	* bindo-units.ads: Likewise.
+	* bindo-validators.adb: Likewise.
+	* bindo-validators.ads: Likewise.
+	* bindo-writers.adb: Likewise.
+	* bindo-writers.ads: Likewise.
+	* bindo.adb: Likewise.
+	* bindo.ads: Likewise.
+	* bindusg.adb: Likewise.
+	* bindusg.ads: Likewise.
+	* butil.adb: Likewise.
+	* butil.ads: Likewise.
+	* cal.c: Likewise.
+	* casing.adb: Likewise.
+	* casing.ads: Likewise.
+	* ceinfo.adb: Likewise.
+	* checks.adb: Likewise.
+	* checks.ads: Likewise.
+	* cio.c: Likewise.
+	* clean.adb: Likewise.
+	* clean.ads: Likewise.
+	* comperr.adb: Likewise.
+	* comperr.ads: Likewise.
+	* contracts.adb: Likewise.
+	* contracts.ads: Likewise.
+	* csets.adb: Likewise.
+	* csets.ads: Likewise.
+	* csinfo.adb: Likewise.
+	* cstand.adb: Likewise.
+	* cstand.ads: Likewise.
+	* cstreams.c: Likewise.
+	* ctrl_c.c: Likewise.
+	* debug.adb: Likewise.
+	* debug.ads: Likewise.
+	* debug_a.adb: Likewise.
+	* debug_a.ads: Likewise.
+	* einfo.adb: Likewise.
+	* einfo.ads: Likewise.
+	* elists.adb: Likewise.
+	* elists.ads: Likewise.
+	* elists.h: Likewise.
+	* env.c: Likewise.
+	* env.h: Likewise.
+	* err_vars.ads: Likewise.
+	* errno.c: Likewise.
+	* errout.adb: Likewise.
+	* errout.ads: Likewise.
+	* erroutc.adb: Likewise.
+	* erroutc.ads: Likewise.
+	* errutil.adb: Likewise.
+	* errutil.ads: Likewise.
+	* eval_fat.adb: Likewise.
+	* eval_fat.ads: Likewise.
+	* exit.c: Likewise.
+	* exp_aggr.adb: Likewise.
+	* exp_aggr.ads: Likewise.
+	* exp_atag.adb: Likewise.
+	* exp_atag.ads: Likewise.
+	* exp_attr.adb: Likewise.
+	* exp_attr.ads: Likewise.
+	* exp_cg.adb: Likewise.
+	* exp_cg.ads: Likewise.
+	* exp_ch10.ads: Likewise.
+	* exp_ch11.adb: Likewise.
+	* exp_ch11.ads: Likewise.
+	* exp_ch12.adb: Likewise.
+	* exp_ch12.ads: Likewise.
+	* exp_ch13.adb: Likewise.
+	* exp_ch13.ads: Likewise.
+	* exp_ch2.adb: Likewise.
+	* exp_ch2.ads: Likewise.
+	* exp_ch3.adb: Likewise.
+	* exp_ch3.ads: Likewise.
+	* exp_ch4.adb: Likewise.
+	* exp_ch4.ads: Likewise.
+	* exp_ch5.adb: Likewise.
+	* exp_ch5.ads: Likewise.
+	* exp_ch6.adb: Likewise.
+	* exp_ch6.ads: Likewise.
+	* exp_ch7.adb: Likewise.
+	* exp_ch7.ads: Likewise.
+	* exp_ch8.adb: Likewise.
+	* exp_ch8.ads: Likewise.
+	* exp_ch9.adb: Likewise.
+	* exp_ch9.ads: Likewise.
+	* exp_code.adb: Likewise.
+	* exp_code.ads: Likewise.
+	* exp_dbug.adb: Likewise.
+	* exp_dbug.ads: Likewise.
+	* exp_disp.adb: Likewise.
+	* exp_disp.ads: Likewise.
+	* exp_dist.adb: Likewise.
+	* exp_dist.ads: Likewise.
+	* exp_fixd.adb: Likewise.
+	* exp_fixd.ads: Likewise.
+	* exp_imgv.adb: Likewise.
+	* exp_imgv.ads: Likewise.
+	* exp_intr.adb: Likewise.
+	* exp_intr.ads: Likewise.
+	* exp_pakd.adb: Likewise.
+	* exp_pakd.ads: Likewise.
+	* exp_prag.adb: Likewise.
+	* exp_prag.ads: Likewise.
+	* exp_sel.adb: Likewise.
+	* exp_sel.ads: Likewise.
+	* exp_smem.adb: Likewise.
+	* exp_smem.ads: Likewise.
+	* exp_spark.adb: Likewise.
+	* exp_spark.ads: Likewise.
+	* exp_strm.adb: Likewise.
+	* exp_strm.ads: Likewise.
+	* exp_tss.adb: Likewise.
+	* exp_tss.ads: Likewise.
+	* exp_unst.adb: Likewise.
+	* exp_unst.ads: Likewise.
+	* exp_util.adb: Likewise.
+	* exp_util.ads: Likewise.
+	* expander.adb: Likewise.
+	* expander.ads: Likewise.
+	* expect.c: Likewise.
+	* fe.h: Likewise.
+	* final.c: Likewise.
+	* fmap.adb: Likewise.
+	* fmap.ads: Likewise.
+	* fname-sf.adb: Likewise.
+	* fname-sf.ads: Likewise.
+	* fname-uf.adb: Likewise.
+	* fname-uf.ads: Likewise.
+	* fname.adb: Likewise.
+	* fname.ads: Likewise.
+	* freeze.adb: Likewise.
+	* freeze.ads: Likewise.
+	* frontend.adb: Likewise.
+	* frontend.ads: Likewise.
+	* get_scos.adb: Likewise.
+	* get_scos.ads: Likewise.
+	* get_targ.adb: Likewise.
+	* get_targ.ads: Likewise.
+	* ghost.adb: Likewise.
+	* ghost.ads: Likewise.
+	* gnat1drv.adb: Likewise.
+	* gnat1drv.ads: Likewise.
+	* gnatbind.adb: Likewise.
+	* gnatbind.ads: Likewise.
+	* gnatchop.adb: Likewise.
+	* gnatclean.adb: Likewise.
+	* gnatcmd.adb: Likewise.
+	* gnatcmd.ads: Likewise.
+	* gnatdll.adb: Likewise.
+	* gnatfind.adb: Likewise.
+	* gnatkr.adb: Likewise.
+	* gnatkr.ads: Likewise.
+	* gnatlink.adb: Likewise.
+	* gnatlink.ads: Likewise.
+	* gnatls.adb: Likewise.
+	* gnatls.ads: Likewise.
+	* gnatmake.adb: Likewise.
+	* gnatmake.ads: Likewise.
+	* gnatname.adb: Likewise.
+	* gnatname.ads: Likewise.
+	* gnatprep.adb: Likewise.
+	* gnatprep.ads: Likewise.
+	* gnatvsn.adb: Likewise.
+	* gnatxref.adb: Likewise.
+	* gprep.adb: Likewise.
+	* gprep.ads: Likewise.
+	* gsocket.h: Likewise.
+	* hostparm.ads: Likewise.
+	* impunit.adb: Likewise.
+	* impunit.ads: Likewise.
+	* indepsw-aix.adb: Likewise.
+	* indepsw-darwin.adb: Likewise.
+	* indepsw-gnu.adb: Likewise.
+	* indepsw.adb: Likewise.
+	* indepsw.ads: Likewise.
+	* init.c: Likewise.
+	* initialize.c: Likewise.
+	* inline.adb: Likewise.
+	* inline.ads: Likewise.
+	* itypes.adb: Likewise.
+	* itypes.ads: Likewise.
+	* krunch.adb: Likewise.
+	* krunch.ads: Likewise.
+	* layout.adb: Likewise.
+	* layout.ads: Likewise.
+	* lib-list.adb: Likewise.
+	* lib-load.adb: Likewise.
+	* lib-load.ads: Likewise.
+	* lib-sort.adb: Likewise.
+	* lib-util.adb: Likewise.
+	* lib-util.ads: Likewise.
+	* lib-writ.adb: Likewise.
+	* lib-writ.ads: Likewise.
+	* lib-xref-spark_specific.adb: Likewise.
+	* lib-xref.adb: Likewise.
+	* lib-xref.ads: Likewise.
+	* lib.adb: Likewise.
+	* lib.ads: Likewise.
+	* libgnarl/a-astaco.adb: Likewise.
+	* libgnarl/a-dispat.adb: Likewise.
+	* libgnarl/a-dynpri.adb: Likewise.
+	* libgnarl/a-etgrbu.ads: Likewise.
+	* libgnarl/a-exetim__darwin.adb: Likewise.
+	* libgnarl/a-exetim__default.ads: Likewise.
+	* libgnarl/a-exetim__mingw.adb: Likewise.
+	* libgnarl/a-exetim__mingw.ads: Likewise.
+	* libgnarl/a-exetim__posix.adb: Likewise.
+	* libgnarl/a-interr.adb: Likewise.
+	* libgnarl/a-interr.ads: Likewise.
+	* libgnarl/a-intnam.ads: Likewise.
+	* libgnarl/a-intnam__aix.ads: Likewise.
+	* libgnarl/a-intnam__darwin.ads: Likewise.
+	* libgnarl/a-intnam__dragonfly.ads: Likewise.
+	* libgnarl/a-intnam__dummy.ads: Likewise.
+	* libgnarl/a-intnam__freebsd.ads: Likewise.
+	* libgnarl/a-intnam__hpux.ads: Likewise.
+	* libgnarl/a-intnam__linux.ads: Likewise.
+	* libgnarl/a-intnam__lynxos.ads: Likewise.
+	* libgnarl/a-intnam__mingw.ads: Likewise.
+	* libgnarl/a-intnam__qnx.ads: Likewise.
+	* libgnarl/a-intnam__rtems.ads: Likewise.
+	* libgnarl/a-intnam__solaris.ads: Likewise.
+	* libgnarl/a-intnam__vxworks.ads: Likewise.
+	* libgnarl/a-reatim.adb: Likewise.
+	* libgnarl/a-reatim.ads: Likewise.
+	* libgnarl/a-retide.adb: Likewise.
+	* libgnarl/a-retide.ads: Likewise.
+	* libgnarl/a-rttiev.adb: Likewise.
+	* libgnarl/a-rttiev.ads: Likewise.
+	* libgnarl/a-synbar.adb: Likewise.
+	* libgnarl/a-synbar.ads: Likewise.
+	* libgnarl/a-synbar__posix.adb: Likewise.
+	* libgnarl/a-synbar__posix.ads: Likewise.
+	* libgnarl/a-sytaco.adb: Likewise.
+	* libgnarl/a-sytaco.ads: Likewise.
+	* libgnarl/a-tasatt.adb: Likewise.
+	* libgnarl/a-tasatt.ads: Likewise.
+	* libgnarl/a-taside.adb: Likewise.
+	* libgnarl/a-taside.ads: Likewise.
+	* libgnarl/a-taster.adb: Likewise.
+	* libgnarl/g-boubuf.adb: Likewise.
+	* libgnarl/g-boubuf.ads: Likewise.
+	* libgnarl/g-boumai.ads: Likewise.
+	* libgnarl/g-semaph.adb: Likewise.
+	* libgnarl/g-semaph.ads: Likewise.
+	* libgnarl/g-signal.adb: Likewise.
+	* libgnarl/g-signal.ads: Likewise.
+	* libgnarl/g-tastus.ads: Likewise.
+	* libgnarl/g-thread.adb: Likewise.
+	* libgnarl/g-thread.ads: Likewise.
+	* libgnarl/i-vxinco.adb: Likewise.
+	* libgnarl/i-vxinco.ads: Likewise.
+	* libgnarl/s-inmaop.ads: Likewise.
+	* libgnarl/s-inmaop__dummy.adb: Likewise.
+	* libgnarl/s-inmaop__posix.adb: Likewise.
+	* libgnarl/s-inmaop__vxworks.adb: Likewise.
+	* libgnarl/s-interr.adb: Likewise.
+	* libgnarl/s-interr.ads: Likewise.
+	* libgnarl/s-interr__dummy.adb: Likewise.
+	* libgnarl/s-interr__hwint.adb: Likewise.
+	* libgnarl/s-interr__sigaction.adb: Likewise.
+	* libgnarl/s-interr__vxworks.adb: Likewise.
+	* libgnarl/s-intman.ads: Likewise.
+	* libgnarl/s-intman__android.adb: Likewise.
+	* libgnarl/s-intman__dummy.adb: Likewise.
+	* libgnarl/s-intman__lynxos.adb: Likewise.
+	* libgnarl/s-intman__mingw.adb: Likewise.
+	* libgnarl/s-intman__posix.adb: Likewise.
+	* libgnarl/s-intman__qnx.adb: Likewise.
+	* libgnarl/s-intman__solaris.adb: Likewise.
+	* libgnarl/s-intman__susv3.adb: Likewise.
+	* libgnarl/s-intman__vxworks.adb: Likewise.
+	* libgnarl/s-intman__vxworks.ads: Likewise.
+	* libgnarl/s-linux.ads: Likewise.
+	* libgnarl/s-linux__alpha.ads: Likewise.
+	* libgnarl/s-linux__android.ads: Likewise.
+	* libgnarl/s-linux__hppa.ads: Likewise.
+	* libgnarl/s-linux__mips.ads: Likewise.
+	* libgnarl/s-linux__riscv.ads: Likewise.
+	* libgnarl/s-linux__sparc.ads: Likewise.
+	* libgnarl/s-linux__x32.ads: Likewise.
+	* libgnarl/s-mudido.adb: Likewise.
+	* libgnarl/s-mudido__affinity.adb: Likewise.
+	* libgnarl/s-osinte__aix.adb: Likewise.
+	* libgnarl/s-osinte__aix.ads: Likewise.
+	* libgnarl/s-osinte__android.adb: Likewise.
+	* libgnarl/s-osinte__android.ads: Likewise.
+	* libgnarl/s-osinte__darwin.adb: Likewise.
+	* libgnarl/s-osinte__darwin.ads: Likewise.
+	* libgnarl/s-osinte__dragonfly.adb: Likewise.
+	* libgnarl/s-osinte__dragonfly.ads: Likewise.
+	* libgnarl/s-osinte__dummy.ads: Likewise.
+	* libgnarl/s-osinte__freebsd.adb: Likewise.
+	* libgnarl/s-osinte__freebsd.ads: Likewise.
+	* libgnarl/s-osinte__gnu.adb: Likewise.
+	* libgnarl/s-osinte__gnu.ads: Likewise.
+	* libgnarl/s-osinte__hpux-dce.adb: Likewise.
+	* libgnarl/s-osinte__hpux-dce.ads: Likewise.
+	* libgnarl/s-osinte__hpux.ads: Likewise.
+	* libgnarl/s-osinte__kfreebsd-gnu.ads: Likewise.
+	* libgnarl/s-osinte__linux.ads: Likewise.
+	* libgnarl/s-osinte__lynxos178.adb: Likewise.
+	* libgnarl/s-osinte__lynxos178e.ads: Likewise.
+	* libgnarl/s-osinte__mingw.ads: Likewise.
+	* libgnarl/s-osinte__posix.adb: Likewise.
+	* libgnarl/s-osinte__qnx.adb: Likewise.
+	* libgnarl/s-osinte__qnx.ads: Likewise.
+	* libgnarl/s-osinte__rtems.adb: Likewise.
+	* libgnarl/s-osinte__rtems.ads: Likewise.
+	* libgnarl/s-osinte__solaris.adb: Likewise.
+	* libgnarl/s-osinte__solaris.ads: Likewise.
+	* libgnarl/s-osinte__vxworks.adb: Likewise.
+	* libgnarl/s-osinte__vxworks.ads: Likewise.
+	* libgnarl/s-osinte__x32.adb: Likewise.
+	* libgnarl/s-proinf.adb: Likewise.
+	* libgnarl/s-proinf.ads: Likewise.
+	* libgnarl/s-qnx.ads: Likewise.
+	* libgnarl/s-solita.adb: Likewise.
+	* libgnarl/s-solita.ads: Likewise.
+	* libgnarl/s-stusta.adb: Likewise.
+	* libgnarl/s-stusta.ads: Likewise.
+	* libgnarl/s-taasde.adb: Likewise.
+	* libgnarl/s-taasde.ads: Likewise.
+	* libgnarl/s-tadeca.adb: Likewise.
+	* libgnarl/s-tadeca.ads: Likewise.
+	* libgnarl/s-tadert.adb: Likewise.
+	* libgnarl/s-tadert.ads: Likewise.
+	* libgnarl/s-taenca.adb: Likewise.
+	* libgnarl/s-taenca.ads: Likewise.
+	* libgnarl/s-taprob.adb: Likewise.
+	* libgnarl/s-taprob.ads: Likewise.
+	* libgnarl/s-taprop.ads: Likewise.
+	* libgnarl/s-taprop__dummy.adb: Likewise.
+	* libgnarl/s-taprop__hpux-dce.adb: Likewise.
+	* libgnarl/s-taprop__linux.adb: Likewise.
+	* libgnarl/s-taprop__mingw.adb: Likewise.
+	* libgnarl/s-taprop__posix.adb: Likewise.
+	* libgnarl/s-taprop__qnx.adb: Likewise.
+	* libgnarl/s-taprop__solaris.adb: Likewise.
+	* libgnarl/s-taprop__vxworks.adb: Likewise.
+	* libgnarl/s-tarest.adb: Likewise.
+	* libgnarl/s-tarest.ads: Likewise.
+	* libgnarl/s-tasdeb.adb: Likewise.
+	* libgnarl/s-tasdeb.ads: Likewise.
+	* libgnarl/s-tasinf.adb: Likewise.
+	* libgnarl/s-tasinf.ads: Likewise.
+	* libgnarl/s-tasinf__linux.adb: Likewise.
+	* libgnarl/s-tasinf__linux.ads: Likewise.
+	* libgnarl/s-tasinf__mingw.adb: Likewise.
+	* libgnarl/s-tasinf__mingw.ads: Likewise.
+	* libgnarl/s-tasinf__solaris.adb: Likewise.
+	* libgnarl/s-tasinf__solaris.ads: Likewise.
+	* libgnarl/s-tasinf__vxworks.ads: Likewise.
+	* libgnarl/s-tasini.adb: Likewise.
+	* libgnarl/s-tasini.ads: Likewise.
+	* libgnarl/s-taskin.adb: Likewise.
+	* libgnarl/s-taskin.ads: Likewise.
+	* libgnarl/s-taspri__dummy.ads: Likewise.
+	* libgnarl/s-taspri__hpux-dce.ads: Likewise.
+	* libgnarl/s-taspri__lynxos.ads: Likewise.
+	* libgnarl/s-taspri__mingw.ads: Likewise.
+	* libgnarl/s-taspri__posix-noaltstack.ads: Likewise.
+	* libgnarl/s-taspri__posix.ads: Likewise.
+	* libgnarl/s-taspri__solaris.ads: Likewise.
+	* libgnarl/s-taspri__vxworks.ads: Likewise.
+	* libgnarl/s-tasque.adb: Likewise.
+	* libgnarl/s-tasque.ads: Likewise.
+	* libgnarl/s-tasren.adb: Likewise.
+	* libgnarl/s-tasren.ads: Likewise.
+	* libgnarl/s-tasres.ads: Likewise.
+	* libgnarl/s-tassta.adb: Likewise.
+	* libgnarl/s-tassta.ads: Likewise.
+	* libgnarl/s-tasuti.adb: Likewise.
+	* libgnarl/s-tasuti.ads: Likewise.
+	* libgnarl/s-tataat.adb: Likewise.
+	* libgnarl/s-tataat.ads: Likewise.
+	* libgnarl/s-tpinop.adb: Likewise.
+	* libgnarl/s-tpinop.ads: Likewise.
+	* libgnarl/s-tpoaal.adb: Likewise.
+	* libgnarl/s-tpoben.adb: Likewise.
+	* libgnarl/s-tpoben.ads: Likewise.
+	* libgnarl/s-tpobmu.adb: Likewise.
+	* libgnarl/s-tpobmu.ads: Likewise.
+	* libgnarl/s-tpobop.adb: Likewise.
+	* libgnarl/s-tpobop.ads: Likewise.
+	* libgnarl/s-tpopmo.adb: Likewise.
+	* libgnarl/s-tpopsp__posix-foreign.adb: Likewise.
+	* libgnarl/s-tpopsp__posix.adb: Likewise.
+	* libgnarl/s-tpopsp__solaris.adb: Likewise.
+	* libgnarl/s-tpopsp__tls.adb: Likewise.
+	* libgnarl/s-tpopsp__vxworks-rtp.adb: Likewise.
+	* libgnarl/s-tpopsp__vxworks-tls.adb: Likewise.
+	* libgnarl/s-tpopsp__vxworks.adb: Likewise.
+	* libgnarl/s-tporft.adb: Likewise.
+	* libgnarl/s-tposen.adb: Likewise.
+	* libgnarl/s-tposen.ads: Likewise.
+	* libgnarl/s-vxwext.adb: Likewise.
+	* libgnarl/s-vxwext.ads: Likewise.
+	* libgnarl/s-vxwext__kernel-smp.adb: Likewise.
+	* libgnarl/s-vxwext__kernel.adb: Likewise.
+	* libgnarl/s-vxwext__kernel.ads: Likewise.
+	* libgnarl/s-vxwext__noints.adb: Likewise.
+	* libgnarl/s-vxwext__rtp-smp.adb: Likewise.
+	* libgnarl/s-vxwext__rtp.adb: Likewise.
+	* libgnarl/s-vxwext__rtp.ads: Likewise.
+	* libgnarl/s-vxwext__vthreads.ads: Likewise.
+	* libgnarl/s-vxwork__aarch64.ads: Likewise.
+	* libgnarl/s-vxwork__arm.ads: Likewise.
+	* libgnarl/s-vxwork__ppc.ads: Likewise.
+	* libgnarl/s-vxwork__x86.ads: Likewise.
+	* libgnarl/thread.c: Likewise.
+	* libgnat/a-assert.adb: Likewise.
+	* libgnat/a-assert.ads: Likewise.
+	* libgnat/a-btgbso.adb: Likewise.
+	* libgnat/a-btgbso.ads: Likewise.
+	* libgnat/a-calari.adb: Likewise.
+	* libgnat/a-calari.ads: Likewise.
+	* libgnat/a-calcon.adb: Likewise.
+	* libgnat/a-calcon.ads: Likewise.
+	* libgnat/a-caldel.adb: Likewise.
+	* libgnat/a-caldel.ads: Likewise.
+	* libgnat/a-calend.adb: Likewise.
+	* libgnat/a-calend.ads: Likewise.
+	* libgnat/a-calfor.adb: Likewise.
+	* libgnat/a-calfor.ads: Likewise.
+	* libgnat/a-catizo.adb: Likewise.
+	* libgnat/a-cbdlli.adb: Likewise.
+	* libgnat/a-cbdlli.ads: Likewise.
+	* libgnat/a-cbhama.adb: Likewise.
+	* libgnat/a-cbhama.ads: Likewise.
+	* libgnat/a-cbhase.adb: Likewise.
+	* libgnat/a-cbhase.ads: Likewise.
+	* libgnat/a-cbmutr.adb: Likewise.
+	* libgnat/a-cbmutr.ads: Likewise.
+	* libgnat/a-cborma.adb: Likewise.
+	* libgnat/a-cborma.ads: Likewise.
+	* libgnat/a-cborse.adb: Likewise.
+	* libgnat/a-cborse.ads: Likewise.
+	* libgnat/a-cbprqu.adb: Likewise.
+	* libgnat/a-cbprqu.ads: Likewise.
+	* libgnat/a-cbsyqu.adb: Likewise.
+	* libgnat/a-cbsyqu.ads: Likewise.
+	* libgnat/a-cdlili.adb: Likewise.
+	* libgnat/a-cdlili.ads: Likewise.
+	* libgnat/a-cfdlli.adb: Likewise.
+	* libgnat/a-cfdlli.ads: Likewise.
+	* libgnat/a-cfhama.adb: Likewise.
+	* libgnat/a-cfhama.ads: Likewise.
+	* libgnat/a-cfhase.adb: Likewise.
+	* libgnat/a-cfhase.ads: Likewise.
+	* libgnat/a-cfinve.adb: Likewise.
+	* libgnat/a-cfinve.ads: Likewise.
+	* libgnat/a-cforma.adb: Likewise.
+	* libgnat/a-cforma.ads: Likewise.
+	* libgnat/a-cforse.adb: Likewise.
+	* libgnat/a-cforse.ads: Likewise.
+	* libgnat/a-cgaaso.adb: Likewise.
+	* libgnat/a-cgaaso.ads: Likewise.
+	* libgnat/a-cgarso.adb: Likewise.
+	* libgnat/a-cgcaso.adb: Likewise.
+	* libgnat/a-chacon.adb: Likewise.
+	* libgnat/a-chacon.ads: Likewise.
+	* libgnat/a-chahan.adb: Likewise.
+	* libgnat/a-chahan.ads: Likewise.
+	* libgnat/a-chlat9.ads: Likewise.
+	* libgnat/a-chtgbk.adb: Likewise.
+	* libgnat/a-chtgbk.ads: Likewise.
+	* libgnat/a-chtgbo.adb: Likewise.
+	* libgnat/a-chtgbo.ads: Likewise.
+	* libgnat/a-chtgke.adb: Likewise.
+	* libgnat/a-chtgke.ads: Likewise.
+	* libgnat/a-chtgop.adb: Likewise.
+	* libgnat/a-chtgop.ads: Likewise.
+	* libgnat/a-chzla1.ads: Likewise.
+	* libgnat/a-chzla9.ads: Likewise.
+	* libgnat/a-cidlli.adb: Likewise.
+	* libgnat/a-cidlli.ads: Likewise.
+	* libgnat/a-cihama.adb: Likewise.
+	* libgnat/a-cihama.ads: Likewise.
+	* libgnat/a-cihase.adb: Likewise.
+	* libgnat/a-cihase.ads: Likewise.
+	* libgnat/a-cimutr.adb: Likewise.
+	* libgnat/a-cimutr.ads: Likewise.
+	* libgnat/a-ciorma.adb: Likewise.
+	* libgnat/a-ciorma.ads: Likewise.
+	* libgnat/a-ciormu.adb: Likewise.
+	* libgnat/a-ciormu.ads: Likewise.
+	* libgnat/a-ciorse.adb: Likewise.
+	* libgnat/a-ciorse.ads: Likewise.
+	* libgnat/a-clrefi.adb: Likewise.
+	* libgnat/a-clrefi.ads: Likewise.
+	* libgnat/a-coboho.adb: Likewise.
+	* libgnat/a-coboho.ads: Likewise.
+	* libgnat/a-cobove.adb: Likewise.
+	* libgnat/a-cobove.ads: Likewise.
+	* libgnat/a-cofove.adb: Likewise.
+	* libgnat/a-cofove.ads: Likewise.
+	* libgnat/a-cofuba.adb: Likewise.
+	* libgnat/a-cofuba.ads: Likewise.
+	* libgnat/a-cofuma.adb: Likewise.
+	* libgnat/a-cofuma.ads: Likewise.
+	* libgnat/a-cofuse.adb: Likewise.
+	* libgnat/a-cofuse.ads: Likewise.
+	* libgnat/a-cofuve.adb: Likewise.
+	* libgnat/a-cofuve.ads: Likewise.
+	* libgnat/a-cogeso.adb: Likewise.
+	* libgnat/a-cogeso.ads: Likewise.
+	* libgnat/a-cohama.adb: Likewise.
+	* libgnat/a-cohama.ads: Likewise.
+	* libgnat/a-cohase.adb: Likewise.
+	* libgnat/a-cohase.ads: Likewise.
+	* libgnat/a-cohata.ads: Likewise.
+	* libgnat/a-coinho.adb: Likewise.
+	* libgnat/a-coinho.ads: Likewise.
+	* libgnat/a-coinho__shared.adb: Likewise.
+	* libgnat/a-coinho__shared.ads: Likewise.
+	* libgnat/a-coinve.adb: Likewise.
+	* libgnat/a-coinve.ads: Likewise.
+	* libgnat/a-colien.adb: Likewise.
+	* libgnat/a-colien.ads: Likewise.
+	* libgnat/a-colire.adb: Likewise.
+	* libgnat/a-colire.ads: Likewise.
+	* libgnat/a-comlin.adb: Likewise.
+	* libgnat/a-comlin.ads: Likewise.
+	* libgnat/a-comutr.adb: Likewise.
+	* libgnat/a-comutr.ads: Likewise.
+	* libgnat/a-conhel.adb: Likewise.
+	* libgnat/a-conhel.ads: Likewise.
+	* libgnat/a-convec.adb: Likewise.
+	* libgnat/a-convec.ads: Likewise.
+	* libgnat/a-coorma.adb: Likewise.
+	* libgnat/a-coorma.ads: Likewise.
+	* libgnat/a-coormu.adb: Likewise.
+	* libgnat/a-coormu.ads: Likewise.
+	* libgnat/a-coorse.adb: Likewise.
+	* libgnat/a-coorse.ads: Likewise.
+	* libgnat/a-coprnu.adb: Likewise.
+	* libgnat/a-coprnu.ads: Likewise.
+	* libgnat/a-crbltr.ads: Likewise.
+	* libgnat/a-crbtgk.adb: Likewise.
+	* libgnat/a-crbtgk.ads: Likewise.
+	* libgnat/a-crbtgo.adb: Likewise.
+	* libgnat/a-crbtgo.ads: Likewise.
+	* libgnat/a-crdlli.adb: Likewise.
+	* libgnat/a-crdlli.ads: Likewise.
+	* libgnat/a-csquin.ads: Likewise.
+	* libgnat/a-cuprqu.adb: Likewise.
+	* libgnat/a-cuprqu.ads: Likewise.
+	* libgnat/a-cusyqu.adb: Likewise.
+	* libgnat/a-cusyqu.ads: Likewise.
+	* libgnat/a-cwila1.ads: Likewise.
+	* libgnat/a-cwila9.ads: Likewise.
+	* libgnat/a-decima.adb: Likewise.
+	* libgnat/a-decima.ads: Likewise.
+	* libgnat/a-dhfina.adb: Likewise.
+	* libgnat/a-dhfina.ads: Likewise.
+	* libgnat/a-diocst.adb: Likewise.
+	* libgnat/a-diocst.ads: Likewise.
+	* libgnat/a-direct.adb: Likewise.
+	* libgnat/a-direct.ads: Likewise.
+	* libgnat/a-direio.adb: Likewise.
+	* libgnat/a-direio.ads: Likewise.
+	* libgnat/a-dirval.adb: Likewise.
+	* libgnat/a-dirval.ads: Likewise.
+	* libgnat/a-dirval__mingw.adb: Likewise.
+	* libgnat/a-einuoc.adb: Likewise.
+	* libgnat/a-einuoc.ads: Likewise.
+	* libgnat/a-elchha.adb: Likewise.
+	* libgnat/a-elchha.ads: Likewise.
+	* libgnat/a-elchha__vxworks-ppc-full.adb: Likewise.
+	* libgnat/a-envvar.adb: Likewise.
+	* libgnat/a-excach.adb: Likewise.
+	* libgnat/a-except.adb: Likewise.
+	* libgnat/a-except.ads: Likewise.
+	* libgnat/a-excpol.adb: Likewise.
+	* libgnat/a-excpol__abort.adb: Likewise.
+	* libgnat/a-exctra.adb: Likewise.
+	* libgnat/a-exctra.ads: Likewise.
+	* libgnat/a-exexda.adb: Likewise.
+	* libgnat/a-exexpr.adb: Likewise.
+	* libgnat/a-exextr.adb: Likewise.
+	* libgnat/a-exstat.adb: Likewise.
+	* libgnat/a-finali.adb: Likewise.
+	* libgnat/a-finali.ads: Likewise.
+	* libgnat/a-locale.adb: Likewise.
+	* libgnat/a-locale.ads: Likewise.
+	* libgnat/a-nbnbin.adb: Likewise.
+	* libgnat/a-nbnbin__gmp.adb: Likewise.
+	* libgnat/a-nbnbre.adb: Likewise.
+	* libgnat/a-ngcefu.adb: Likewise.
+	* libgnat/a-ngcoar.adb: Likewise.
+	* libgnat/a-ngcoty.adb: Likewise.
+	* libgnat/a-ngcoty.ads: Likewise.
+	* libgnat/a-ngelfu.adb: Likewise.
+	* libgnat/a-ngelfu.ads: Likewise.
+	* libgnat/a-ngrear.adb: Likewise.
+	* libgnat/a-ngrear.ads: Likewise.
+	* libgnat/a-nudira.adb: Likewise.
+	* libgnat/a-nudira.ads: Likewise.
+	* libgnat/a-nuflra.adb: Likewise.
+	* libgnat/a-nuflra.ads: Likewise.
+	* libgnat/a-numaux.ads: Likewise.
+	* libgnat/a-numaux__darwin.adb: Likewise.
+	* libgnat/a-numaux__darwin.ads: Likewise.
+	* libgnat/a-numaux__libc-x86.ads: Likewise.
+	* libgnat/a-numaux__vxworks.ads: Likewise.
+	* libgnat/a-numaux__x86.adb: Likewise.
+	* libgnat/a-numaux__x86.ads: Likewise.
+	* libgnat/a-rbtgbk.adb: Likewise.
+	* libgnat/a-rbtgbk.ads: Likewise.
+	* libgnat/a-rbtgbo.adb: Likewise.
+	* libgnat/a-rbtgbo.ads: Likewise.
+	* libgnat/a-rbtgso.adb: Likewise.
+	* libgnat/a-rbtgso.ads: Likewise.
+	* libgnat/a-sbecin.adb: Likewise.
+	* libgnat/a-sbecin.ads: Likewise.
+	* libgnat/a-sbhcin.adb: Likewise.
+	* libgnat/a-sbhcin.ads: Likewise.
+	* libgnat/a-sblcin.adb: Likewise.
+	* libgnat/a-sblcin.ads: Likewise.
+	* libgnat/a-secain.adb: Likewise.
+	* libgnat/a-secain.ads: Likewise.
+	* libgnat/a-sequio.adb: Likewise.
+	* libgnat/a-sequio.ads: Likewise.
+	* libgnat/a-sfecin.ads: Likewise.
+	* libgnat/a-sfhcin.ads: Likewise.
+	* libgnat/a-sflcin.ads: Likewise.
+	* libgnat/a-shcain.adb: Likewise.
+	* libgnat/a-shcain.ads: Likewise.
+	* libgnat/a-siocst.adb: Likewise.
+	* libgnat/a-siocst.ads: Likewise.
+	* libgnat/a-slcain.adb: Likewise.
+	* libgnat/a-slcain.ads: Likewise.
+	* libgnat/a-ssicst.adb: Likewise.
+	* libgnat/a-ssicst.ads: Likewise.
+	* libgnat/a-stboha.adb: Likewise.
+	* libgnat/a-stmaco.ads: Likewise.
+	* libgnat/a-storio.adb: Likewise.
+	* libgnat/a-strbou.adb: Likewise.
+	* libgnat/a-strbou.ads: Likewise.
+	* libgnat/a-stream.adb: Likewise.
+	* libgnat/a-stream.ads: Likewise.
+	* libgnat/a-strfix.adb: Likewise.
+	* libgnat/a-strhas.adb: Likewise.
+	* libgnat/a-strmap.adb: Likewise.
+	* libgnat/a-strmap.ads: Likewise.
+	* libgnat/a-strsea.adb: Likewise.
+	* libgnat/a-strsea.ads: Likewise.
+	* libgnat/a-strsup.adb: Likewise.
+	* libgnat/a-strsup.ads: Likewise.
+	* libgnat/a-strunb.adb: Likewise.
+	* libgnat/a-strunb.ads: Likewise.
+	* libgnat/a-strunb__shared.adb: Likewise.
+	* libgnat/a-strunb__shared.ads: Likewise.
+	* libgnat/a-ststio.adb: Likewise.
+	* libgnat/a-ststio.ads: Likewise.
+	* libgnat/a-stunau.adb: Likewise.
+	* libgnat/a-stunau.ads: Likewise.
+	* libgnat/a-stunau__shared.adb: Likewise.
+	* libgnat/a-stunha.adb: Likewise.
+	* libgnat/a-stuten.adb: Likewise.
+	* libgnat/a-stwibo.adb: Likewise.
+	* libgnat/a-stwibo.ads: Likewise.
+	* libgnat/a-stwifi.adb: Likewise.
+	* libgnat/a-stwiha.adb: Likewise.
+	* libgnat/a-stwima.adb: Likewise.
+	* libgnat/a-stwima.ads: Likewise.
+	* libgnat/a-stwise.adb: Likewise.
+	* libgnat/a-stwise.ads: Likewise.
+	* libgnat/a-stwisu.adb: Likewise.
+	* libgnat/a-stwisu.ads: Likewise.
+	* libgnat/a-stwiun.adb: Likewise.
+	* libgnat/a-stwiun.ads: Likewise.
+	* libgnat/a-stwiun__shared.adb: Likewise.
+	* libgnat/a-stwiun__shared.ads: Likewise.
+	* libgnat/a-stzbou.adb: Likewise.
+	* libgnat/a-stzbou.ads: Likewise.
+	* libgnat/a-stzfix.adb: Likewise.
+	* libgnat/a-stzhas.adb: Likewise.
+	* libgnat/a-stzmap.adb: Likewise.
+	* libgnat/a-stzmap.ads: Likewise.
+	* libgnat/a-stzsea.adb: Likewise.
+	* libgnat/a-stzsea.ads: Likewise.
+	* libgnat/a-stzsup.adb: Likewise.
+	* libgnat/a-stzsup.ads: Likewise.
+	* libgnat/a-stzunb.adb: Likewise.
+	* libgnat/a-stzunb.ads: Likewise.
+	* libgnat/a-stzunb__shared.adb: Likewise.
+	* libgnat/a-stzunb__shared.ads: Likewise.
+	* libgnat/a-suecin.adb: Likewise.
+	* libgnat/a-suecin.ads: Likewise.
+	* libgnat/a-suenco.adb: Likewise.
+	* libgnat/a-suenst.adb: Likewise.
+	* libgnat/a-suewst.adb: Likewise.
+	* libgnat/a-suezst.adb: Likewise.
+	* libgnat/a-suhcin.adb: Likewise.
+	* libgnat/a-suhcin.ads: Likewise.
+	* libgnat/a-sulcin.adb: Likewise.
+	* libgnat/a-sulcin.ads: Likewise.
+	* libgnat/a-suteio.adb: Likewise.
+	* libgnat/a-suteio.ads: Likewise.
+	* libgnat/a-suteio__shared.adb: Likewise.
+	* libgnat/a-swbwha.adb: Likewise.
+	* libgnat/a-swmwco.ads: Likewise.
+	* libgnat/a-swunau.adb: Likewise.
+	* libgnat/a-swunau.ads: Likewise.
+	* libgnat/a-swunau__shared.adb: Likewise.
+	* libgnat/a-swuwha.adb: Likewise.
+	* libgnat/a-swuwti.adb: Likewise.
+	* libgnat/a-swuwti.ads: Likewise.
+	* libgnat/a-swuwti__shared.adb: Likewise.
+	* libgnat/a-szbzha.adb: Likewise.
+	* libgnat/a-szmzco.ads: Likewise.
+	* libgnat/a-szunau.adb: Likewise.
+	* libgnat/a-szunau.ads: Likewise.
+	* libgnat/a-szunau__shared.adb: Likewise.
+	* libgnat/a-szuzha.adb: Likewise.
+	* libgnat/a-szuzti.adb: Likewise.
+	* libgnat/a-szuzti.ads: Likewise.
+	* libgnat/a-szuzti__shared.adb: Likewise.
+	* libgnat/a-tags.adb: Likewise.
+	* libgnat/a-tags.ads: Likewise.
+	* libgnat/a-teioed.adb: Likewise.
+	* libgnat/a-teioed.ads: Likewise.
+	* libgnat/a-textio.adb: Likewise.
+	* libgnat/a-textio.ads: Likewise.
+	* libgnat/a-tiboio.adb: Likewise.
+	* libgnat/a-ticoau.adb: Likewise.
+	* libgnat/a-ticoau.ads: Likewise.
+	* libgnat/a-ticoio.adb: Likewise.
+	* libgnat/a-ticoio.ads: Likewise.
+	* libgnat/a-tideau.adb: Likewise.
+	* libgnat/a-tideau.ads: Likewise.
+	* libgnat/a-tideio.adb: Likewise.
+	* libgnat/a-tideio.ads: Likewise.
+	* libgnat/a-tienau.adb: Likewise.
+	* libgnat/a-tienau.ads: Likewise.
+	* libgnat/a-tienio.adb: Likewise.
+	* libgnat/a-tifiio.adb: Likewise.
+	* libgnat/a-tiflau.adb: Likewise.
+	* libgnat/a-tiflau.ads: Likewise.
+	* libgnat/a-tiflio.adb: Likewise.
+	* libgnat/a-tiflio.ads: Likewise.
+	* libgnat/a-tigeau.adb: Likewise.
+	* libgnat/a-tigeau.ads: Likewise.
+	* libgnat/a-tigeli.adb: Likewise.
+	* libgnat/a-tiinau.adb: Likewise.
+	* libgnat/a-tiinau.ads: Likewise.
+	* libgnat/a-tiinio.adb: Likewise.
+	* libgnat/a-tiinio.ads: Likewise.
+	* libgnat/a-timoau.adb: Likewise.
+	* libgnat/a-timoau.ads: Likewise.
+	* libgnat/a-timoio.adb: Likewise.
+	* libgnat/a-timoio.ads: Likewise.
+	* libgnat/a-tiocst.adb: Likewise.
+	* libgnat/a-tiocst.ads: Likewise.
+	* libgnat/a-tirsfi.adb: Likewise.
+	* libgnat/a-tirsfi.ads: Likewise.
+	* libgnat/a-titest.adb: Likewise.
+	* libgnat/a-undesu.adb: Likewise.
+	* libgnat/a-wichha.adb: Likewise.
+	* libgnat/a-wichun.adb: Likewise.
+	* libgnat/a-wichun.ads: Likewise.
+	* libgnat/a-witeio.adb: Likewise.
+	* libgnat/a-witeio.ads: Likewise.
+	* libgnat/a-wrstfi.adb: Likewise.
+	* libgnat/a-wrstfi.ads: Likewise.
+	* libgnat/a-wtcoau.adb: Likewise.
+	* libgnat/a-wtcoau.ads: Likewise.
+	* libgnat/a-wtcoio.adb: Likewise.
+	* libgnat/a-wtcstr.adb: Likewise.
+	* libgnat/a-wtcstr.ads: Likewise.
+	* libgnat/a-wtdeau.adb: Likewise.
+	* libgnat/a-wtdeau.ads: Likewise.
+	* libgnat/a-wtdeio.adb: Likewise.
+	* libgnat/a-wtedit.adb: Likewise.
+	* libgnat/a-wtedit.ads: Likewise.
+	* libgnat/a-wtenau.adb: Likewise.
+	* libgnat/a-wtenau.ads: Likewise.
+	* libgnat/a-wtenio.adb: Likewise.
+	* libgnat/a-wtfiio.adb: Likewise.
+	* libgnat/a-wtflau.adb: Likewise.
+	* libgnat/a-wtflau.ads: Likewise.
+	* libgnat/a-wtflio.adb: Likewise.
+	* libgnat/a-wtgeau.adb: Likewise.
+	* libgnat/a-wtgeau.ads: Likewise.
+	* libgnat/a-wtinau.adb: Likewise.
+	* libgnat/a-wtinau.ads: Likewise.
+	* libgnat/a-wtinio.adb: Likewise.
+	* libgnat/a-wtmoau.adb: Likewise.
+	* libgnat/a-wtmoau.ads: Likewise.
+	* libgnat/a-wtmoio.adb: Likewise.
+	* libgnat/a-wtmoio.ads: Likewise.
+	* libgnat/a-wttest.adb: Likewise.
+	* libgnat/a-wwboio.adb: Likewise.
+	* libgnat/a-zchhan.adb: Likewise.
+	* libgnat/a-zchuni.adb: Likewise.
+	* libgnat/a-zchuni.ads: Likewise.
+	* libgnat/a-zrstfi.adb: Likewise.
+	* libgnat/a-zrstfi.ads: Likewise.
+	* libgnat/a-ztcoau.adb: Likewise.
+	* libgnat/a-ztcoio.adb: Likewise.
+	* libgnat/a-ztcstr.adb: Likewise.
+	* libgnat/a-ztcstr.ads: Likewise.
+	* libgnat/a-ztdeau.adb: Likewise.
+	* libgnat/a-ztdeau.ads: Likewise.
+	* libgnat/a-ztdeio.adb: Likewise.
+	* libgnat/a-ztedit.adb: Likewise.
+	* libgnat/a-ztedit.ads: Likewise.
+	* libgnat/a-ztenau.adb: Likewise.
+	* libgnat/a-ztenau.ads: Likewise.
+	* libgnat/a-ztenio.adb: Likewise.
+	* libgnat/a-ztexio.adb: Likewise.
+	* libgnat/a-ztexio.ads: Likewise.
+	* libgnat/a-ztfiio.adb: Likewise.
+	* libgnat/a-ztflau.adb: Likewise.
+	* libgnat/a-ztflau.ads: Likewise.
+	* libgnat/a-ztflio.adb: Likewise.
+	* libgnat/a-ztgeau.adb: Likewise.
+	* libgnat/a-ztgeau.ads: Likewise.
+	* libgnat/a-ztinau.adb: Likewise.
+	* libgnat/a-ztinau.ads: Likewise.
+	* libgnat/a-ztinio.adb: Likewise.
+	* libgnat/a-ztmoau.adb: Likewise.
+	* libgnat/a-ztmoau.ads: Likewise.
+	* libgnat/a-ztmoio.adb: Likewise.
+	* libgnat/a-zttest.adb: Likewise.
+	* libgnat/a-zzboio.adb: Likewise.
+	* libgnat/g-allein.ads: Likewise.
+	* libgnat/g-alleve.adb: Likewise.
+	* libgnat/g-alleve.ads: Likewise.
+	* libgnat/g-alleve__hard.adb: Likewise.
+	* libgnat/g-alleve__hard.ads: Likewise.
+	* libgnat/g-altcon.adb: Likewise.
+	* libgnat/g-altcon.ads: Likewise.
+	* libgnat/g-altive.ads: Likewise.
+	* libgnat/g-alveop.adb: Likewise.
+	* libgnat/g-alveop.ads: Likewise.
+	* libgnat/g-alvety.ads: Likewise.
+	* libgnat/g-alvevi.ads: Likewise.
+	* libgnat/g-arrspl.adb: Likewise.
+	* libgnat/g-arrspl.ads: Likewise.
+	* libgnat/g-awk.adb: Likewise.
+	* libgnat/g-awk.ads: Likewise.
+	* libgnat/g-binenv.adb: Likewise.
+	* libgnat/g-binenv.ads: Likewise.
+	* libgnat/g-brapre.ads: Likewise.
+	* libgnat/g-bubsor.adb: Likewise.
+	* libgnat/g-bubsor.ads: Likewise.
+	* libgnat/g-busora.adb: Likewise.
+	* libgnat/g-busora.ads: Likewise.
+	* libgnat/g-busorg.adb: Likewise.
+	* libgnat/g-busorg.ads: Likewise.
+	* libgnat/g-byorma.adb: Likewise.
+	* libgnat/g-byorma.ads: Likewise.
+	* libgnat/g-bytswa.adb: Likewise.
+	* libgnat/g-bytswa.ads: Likewise.
+	* libgnat/g-calend.adb: Likewise.
+	* libgnat/g-calend.ads: Likewise.
+	* libgnat/g-casuti.adb: Likewise.
+	* libgnat/g-casuti.ads: Likewise.
+	* libgnat/g-catiio.adb: Likewise.
+	* libgnat/g-catiio.ads: Likewise.
+	* libgnat/g-cgi.adb: Likewise.
+	* libgnat/g-cgi.ads: Likewise.
+	* libgnat/g-cgicoo.adb: Likewise.
+	* libgnat/g-cgicoo.ads: Likewise.
+	* libgnat/g-cgideb.adb: Likewise.
+	* libgnat/g-cgideb.ads: Likewise.
+	* libgnat/g-comlin.adb: Likewise.
+	* libgnat/g-comlin.ads: Likewise.
+	* libgnat/g-comver.adb: Likewise.
+	* libgnat/g-comver.ads: Likewise.
+	* libgnat/g-cppexc.adb: Likewise.
+	* libgnat/g-cppexc.ads: Likewise.
+	* libgnat/g-crc32.adb: Likewise.
+	* libgnat/g-crc32.ads: Likewise.
+	* libgnat/g-ctrl_c.adb: Likewise.
+	* libgnat/g-ctrl_c.ads: Likewise.
+	* libgnat/g-curexc.ads: Likewise.
+	* libgnat/g-debpoo.adb: Likewise.
+	* libgnat/g-debpoo.ads: Likewise.
+	* libgnat/g-debuti.adb: Likewise.
+	* libgnat/g-debuti.ads: Likewise.
+	* libgnat/g-decstr.adb: Likewise.
+	* libgnat/g-decstr.ads: Likewise.
+	* libgnat/g-deutst.ads: Likewise.
+	* libgnat/g-diopit.adb: Likewise.
+	* libgnat/g-diopit.ads: Likewise.
+	* libgnat/g-dirope.adb: Likewise.
+	* libgnat/g-dirope.ads: Likewise.
+	* libgnat/g-dynhta.adb: Likewise.
+	* libgnat/g-dynhta.ads: Likewise.
+	* libgnat/g-dyntab.adb: Likewise.
+	* libgnat/g-dyntab.ads: Likewise.
+	* libgnat/g-eacodu.adb: Likewise.
+	* libgnat/g-encstr.adb: Likewise.
+	* libgnat/g-encstr.ads: Likewise.
+	* libgnat/g-enutst.ads: Likewise.
+	* libgnat/g-excact.adb: Likewise.
+	* libgnat/g-excact.ads: Likewise.
+	* libgnat/g-except.ads: Likewise.
+	* libgnat/g-exctra.adb: Likewise.
+	* libgnat/g-exctra.ads: Likewise.
+	* libgnat/g-expect.adb: Likewise.
+	* libgnat/g-expect.ads: Likewise.
+	* libgnat/g-exptty.adb: Likewise.
+	* libgnat/g-exptty.ads: Likewise.
+	* libgnat/g-flocon.ads: Likewise.
+	* libgnat/g-forstr.adb: Likewise.
+	* libgnat/g-forstr.ads: Likewise.
+	* libgnat/g-graphs.adb: Likewise.
+	* libgnat/g-graphs.ads: Likewise.
+	* libgnat/g-heasor.adb: Likewise.
+	* libgnat/g-heasor.ads: Likewise.
+	* libgnat/g-hesora.adb: Likewise.
+	* libgnat/g-hesora.ads: Likewise.
+	* libgnat/g-hesorg.adb: Likewise.
+	* libgnat/g-hesorg.ads: Likewise.
+	* libgnat/g-htable.adb: Likewise.
+	* libgnat/g-htable.ads: Likewise.
+	* libgnat/g-io-put__vxworks.adb: Likewise.
+	* libgnat/g-io.adb: Likewise.
+	* libgnat/g-io.ads: Likewise.
+	* libgnat/g-io_aux.adb: Likewise.
+	* libgnat/g-io_aux.ads: Likewise.
+	* libgnat/g-lists.adb: Likewise.
+	* libgnat/g-lists.ads: Likewise.
+	* libgnat/g-locfil.adb: Likewise.
+	* libgnat/g-locfil.ads: Likewise.
+	* libgnat/g-mbdira.adb: Likewise.
+	* libgnat/g-mbdira.ads: Likewise.
+	* libgnat/g-mbflra.adb: Likewise.
+	* libgnat/g-mbflra.ads: Likewise.
+	* libgnat/g-md5.adb: Likewise.
+	* libgnat/g-md5.ads: Likewise.
+	* libgnat/g-memdum.adb: Likewise.
+	* libgnat/g-memdum.ads: Likewise.
+	* libgnat/g-moreex.adb: Likewise.
+	* libgnat/g-moreex.ads: Likewise.
+	* libgnat/g-os_lib.adb: Likewise.
+	* libgnat/g-os_lib.ads: Likewise.
+	* libgnat/g-pehage.adb: Likewise.
+	* libgnat/g-pehage.ads: Likewise.
+	* libgnat/g-rannum.adb: Likewise.
+	* libgnat/g-rannum.ads: Likewise.
+	* libgnat/g-regexp.adb: Likewise.
+	* libgnat/g-regexp.ads: Likewise.
+	* libgnat/g-regist.adb: Likewise.
+	* libgnat/g-regist.ads: Likewise.
+	* libgnat/g-regpat.adb: Likewise.
+	* libgnat/g-regpat.ads: Likewise.
+	* libgnat/g-rewdat.adb: Likewise.
+	* libgnat/g-rewdat.ads: Likewise.
+	* libgnat/g-sechas.adb: Likewise.
+	* libgnat/g-sechas.ads: Likewise.
+	* libgnat/g-sehamd.adb: Likewise.
+	* libgnat/g-sehamd.ads: Likewise.
+	* libgnat/g-sehash.adb: Likewise.
+	* libgnat/g-sehash.ads: Likewise.
+	* libgnat/g-sercom.adb: Likewise.
+	* libgnat/g-sercom.ads: Likewise.
+	* libgnat/g-sercom__linux.adb: Likewise.
+	* libgnat/g-sercom__mingw.adb: Likewise.
+	* libgnat/g-sestin.ads: Likewise.
+	* libgnat/g-sets.adb: Likewise.
+	* libgnat/g-sets.ads: Likewise.
+	* libgnat/g-sha1.adb: Likewise.
+	* libgnat/g-sha1.ads: Likewise.
+	* libgnat/g-sha224.ads: Likewise.
+	* libgnat/g-sha256.ads: Likewise.
+	* libgnat/g-sha384.ads: Likewise.
+	* libgnat/g-sha512.ads: Likewise.
+	* libgnat/g-shsh32.adb: Likewise.
+	* libgnat/g-shsh32.ads: Likewise.
+	* libgnat/g-shsh64.adb: Likewise.
+	* libgnat/g-shsh64.ads: Likewise.
+	* libgnat/g-shshco.adb: Likewise.
+	* libgnat/g-shshco.ads: Likewise.
+	* libgnat/g-soccon.ads: Likewise.
+	* libgnat/g-socket.adb: Likewise.
+	* libgnat/g-socket.ads: Likewise.
+	* libgnat/g-socket__dummy.adb: Likewise.
+	* libgnat/g-socket__dummy.ads: Likewise.
+	* libgnat/g-socthi.adb: Likewise.
+	* libgnat/g-socthi.ads: Likewise.
+	* libgnat/g-socthi__dummy.adb: Likewise.
+	* libgnat/g-socthi__dummy.ads: Likewise.
+	* libgnat/g-socthi__mingw.adb: Likewise.
+	* libgnat/g-socthi__mingw.ads: Likewise.
+	* libgnat/g-socthi__vxworks.adb: Likewise.
+	* libgnat/g-socthi__vxworks.ads: Likewise.
+	* libgnat/g-soliop.ads: Likewise.
+	* libgnat/g-soliop__lynxos.ads: Likewise.
+	* libgnat/g-soliop__mingw.ads: Likewise.
+	* libgnat/g-soliop__qnx.ads: Likewise.
+	* libgnat/g-soliop__solaris.ads: Likewise.
+	* libgnat/g-sothco.adb: Likewise.
+	* libgnat/g-sothco.ads: Likewise.
+	* libgnat/g-sothco__dummy.adb: Likewise.
+	* libgnat/g-sothco__dummy.ads: Likewise.
+	* libgnat/g-souinf.ads: Likewise.
+	* libgnat/g-spchge.adb: Likewise.
+	* libgnat/g-spchge.ads: Likewise.
+	* libgnat/g-speche.adb: Likewise.
+	* libgnat/g-speche.ads: Likewise.
+	* libgnat/g-spipat.adb: Likewise.
+	* libgnat/g-spipat.ads: Likewise.
+	* libgnat/g-spitbo.adb: Likewise.
+	* libgnat/g-spitbo.ads: Likewise.
+	* libgnat/g-sptabo.ads: Likewise.
+	* libgnat/g-sptain.ads: Likewise.
+	* libgnat/g-sptavs.ads: Likewise.
+	* libgnat/g-sse.ads: Likewise.
+	* libgnat/g-ssvety.ads: Likewise.
+	* libgnat/g-sthcso.adb: Likewise.
+	* libgnat/g-stheme.adb: Likewise.
+	* libgnat/g-strhas.ads: Likewise.
+	* libgnat/g-string.adb: Likewise.
+	* libgnat/g-string.ads: Likewise.
+	* libgnat/g-strspl.ads: Likewise.
+	* libgnat/g-stseme.adb: Likewise.
+	* libgnat/g-stsifd__sockets.adb: Likewise.
+	* libgnat/g-table.adb: Likewise.
+	* libgnat/g-table.ads: Likewise.
+	* libgnat/g-tasloc.adb: Likewise.
+	* libgnat/g-tasloc.ads: Likewise.
+	* libgnat/g-timsta.adb: Likewise.
+	* libgnat/g-timsta.ads: Likewise.
+	* libgnat/g-traceb.adb: Likewise.
+	* libgnat/g-traceb.ads: Likewise.
+	* libgnat/g-trasym.adb: Likewise.
+	* libgnat/g-trasym.ads: Likewise.
+	* libgnat/g-tty.adb: Likewise.
+	* libgnat/g-tty.ads: Likewise.
+	* libgnat/g-u3spch.adb: Likewise.
+	* libgnat/g-u3spch.ads: Likewise.
+	* libgnat/g-utf_32.adb: Likewise.
+	* libgnat/g-utf_32.ads: Likewise.
+	* libgnat/g-wispch.adb: Likewise.
+	* libgnat/g-wispch.ads: Likewise.
+	* libgnat/g-wistsp.ads: Likewise.
+	* libgnat/g-zspche.adb: Likewise.
+	* libgnat/g-zspche.ads: Likewise.
+	* libgnat/g-zstspl.ads: Likewise.
+	* libgnat/gnat.ads: Likewise.
+	* libgnat/i-c.adb: Likewise.
+	* libgnat/i-cexten.ads: Likewise.
+	* libgnat/i-cobol.adb: Likewise.
+	* libgnat/i-cobol.ads: Likewise.
+	* libgnat/i-cpoint.adb: Likewise.
+	* libgnat/i-cpoint.ads: Likewise.
+	* libgnat/i-cstrea.adb: Likewise.
+	* libgnat/i-cstrea.ads: Likewise.
+	* libgnat/i-cstrin.adb: Likewise.
+	* libgnat/i-cstrin.ads: Likewise.
+	* libgnat/i-fortra.adb: Likewise.
+	* libgnat/i-pacdec.adb: Likewise.
+	* libgnat/i-pacdec.ads: Likewise.
+	* libgnat/i-vxwoio.adb: Likewise.
+	* libgnat/i-vxwoio.ads: Likewise.
+	* libgnat/i-vxwork.ads: Likewise.
+	* libgnat/i-vxwork__x86.ads: Likewise.
+	* libgnat/interfac.ads: Likewise.
+	* libgnat/memtrack.adb: Likewise.
+	* libgnat/s-addima.adb: Likewise.
+	* libgnat/s-addima.ads: Likewise.
+	* libgnat/s-addope.adb: Likewise.
+	* libgnat/s-addope.ads: Likewise.
+	* libgnat/s-aotase.adb: Likewise.
+	* libgnat/s-aotase.ads: Likewise.
+	* libgnat/s-arit64.adb: Likewise.
+	* libgnat/s-arit64.ads: Likewise.
+	* libgnat/s-assert.adb: Likewise.
+	* libgnat/s-assert.ads: Likewise.
+	* libgnat/s-atacco.adb: Likewise.
+	* libgnat/s-atacco.ads: Likewise.
+	* libgnat/s-atocou.adb: Likewise.
+	* libgnat/s-atocou.ads: Likewise.
+	* libgnat/s-atocou__builtin.adb: Likewise.
+	* libgnat/s-atocou__x86.adb: Likewise.
+	* libgnat/s-atoope.ads: Likewise.
+	* libgnat/s-atopar.adb: Likewise.
+	* libgnat/s-atopar.ads: Likewise.
+	* libgnat/s-atopex.adb: Likewise.
+	* libgnat/s-atopex.ads: Likewise.
+	* libgnat/s-atopri.adb: Likewise.
+	* libgnat/s-atopri.ads: Likewise.
+	* libgnat/s-auxdec.adb: Likewise.
+	* libgnat/s-auxdec.ads: Likewise.
+	* libgnat/s-bignum.adb: Likewise.
+	* libgnat/s-bignum.ads: Likewise.
+	* libgnat/s-bitfie.ads: Likewise.
+	* libgnat/s-bitops.adb: Likewise.
+	* libgnat/s-bitops.ads: Likewise.
+	* libgnat/s-bituti.adb: Likewise.
+	* libgnat/s-bituti.ads: Likewise.
+	* libgnat/s-boarop.ads: Likewise.
+	* libgnat/s-boustr.adb: Likewise.
+	* libgnat/s-boustr.ads: Likewise.
+	* libgnat/s-bytswa.ads: Likewise.
+	* libgnat/s-carsi8.adb: Likewise.
+	* libgnat/s-carsi8.ads: Likewise.
+	* libgnat/s-carun8.adb: Likewise.
+	* libgnat/s-carun8.ads: Likewise.
+	* libgnat/s-casi16.adb: Likewise.
+	* libgnat/s-casi16.ads: Likewise.
+	* libgnat/s-casi32.adb: Likewise.
+	* libgnat/s-casi32.ads: Likewise.
+	* libgnat/s-casi64.adb: Likewise.
+	* libgnat/s-casi64.ads: Likewise.
+	* libgnat/s-casuti.adb: Likewise.
+	* libgnat/s-casuti.ads: Likewise.
+	* libgnat/s-caun16.adb: Likewise.
+	* libgnat/s-caun16.ads: Likewise.
+	* libgnat/s-caun32.adb: Likewise.
+	* libgnat/s-caun32.ads: Likewise.
+	* libgnat/s-caun64.adb: Likewise.
+	* libgnat/s-caun64.ads: Likewise.
+	* libgnat/s-chepoo.ads: Likewise.
+	* libgnat/s-commun.adb: Likewise.
+	* libgnat/s-commun.ads: Likewise.
+	* libgnat/s-conca2.adb: Likewise.
+	* libgnat/s-conca2.ads: Likewise.
+	* libgnat/s-conca3.adb: Likewise.
+	* libgnat/s-conca3.ads: Likewise.
+	* libgnat/s-conca4.adb: Likewise.
+	* libgnat/s-conca4.ads: Likewise.
+	* libgnat/s-conca5.adb: Likewise.
+	* libgnat/s-conca5.ads: Likewise.
+	* libgnat/s-conca6.adb: Likewise.
+	* libgnat/s-conca6.ads: Likewise.
+	* libgnat/s-conca7.adb: Likewise.
+	* libgnat/s-conca7.ads: Likewise.
+	* libgnat/s-conca8.adb: Likewise.
+	* libgnat/s-conca8.ads: Likewise.
+	* libgnat/s-conca9.adb: Likewise.
+	* libgnat/s-conca9.ads: Likewise.
+	* libgnat/s-crc32.adb: Likewise.
+	* libgnat/s-crc32.ads: Likewise.
+	* libgnat/s-crtl.ads: Likewise.
+	* libgnat/s-dfmkio.ads: Likewise.
+	* libgnat/s-dfmopr.ads: Likewise.
+	* libgnat/s-dgmgop.ads: Likewise.
+	* libgnat/s-diflio.adb: Likewise.
+	* libgnat/s-diflio.ads: Likewise.
+	* libgnat/s-diflmk.ads: Likewise.
+	* libgnat/s-digemk.ads: Likewise.
+	* libgnat/s-diinio.adb: Likewise.
+	* libgnat/s-diinio.ads: Likewise.
+	* libgnat/s-dilomk.ads: Likewise.
+	* libgnat/s-dim.ads: Likewise.
+	* libgnat/s-dimkio.ads: Likewise.
+	* libgnat/s-dimmks.ads: Likewise.
+	* libgnat/s-direio.adb: Likewise.
+	* libgnat/s-direio.ads: Likewise.
+	* libgnat/s-dlmkio.ads: Likewise.
+	* libgnat/s-dlmopr.ads: Likewise.
+	* libgnat/s-dmotpr.ads: Likewise.
+	* libgnat/s-dsaser.ads: Likewise.
+	* libgnat/s-dwalin.adb: Likewise.
+	* libgnat/s-dwalin.ads: Likewise.
+	* libgnat/s-elaall.adb: Likewise.
+	* libgnat/s-elaall.ads: Likewise.
+	* libgnat/s-excdeb.adb: Likewise.
+	* libgnat/s-excdeb.ads: Likewise.
+	* libgnat/s-except.adb: Likewise.
+	* libgnat/s-except.ads: Likewise.
+	* libgnat/s-excmac__arm.adb: Likewise.
+	* libgnat/s-excmac__arm.ads: Likewise.
+	* libgnat/s-excmac__gcc.adb: Likewise.
+	* libgnat/s-excmac__gcc.ads: Likewise.
+	* libgnat/s-exctab.adb: Likewise.
+	* libgnat/s-exctab.ads: Likewise.
+	* libgnat/s-exctra.adb: Likewise.
+	* libgnat/s-exctra.ads: Likewise.
+	* libgnat/s-exnint.adb: Likewise.
+	* libgnat/s-exnint.ads: Likewise.
+	* libgnat/s-exnllf.adb: Likewise.
+	* libgnat/s-exnllf.ads: Likewise.
+	* libgnat/s-exnlli.adb: Likewise.
+	* libgnat/s-exnlli.ads: Likewise.
+	* libgnat/s-expint.adb: Likewise.
+	* libgnat/s-expint.ads: Likewise.
+	* libgnat/s-explli.adb: Likewise.
+	* libgnat/s-explli.ads: Likewise.
+	* libgnat/s-expllu.adb: Likewise.
+	* libgnat/s-expllu.ads: Likewise.
+	* libgnat/s-expmod.adb: Likewise.
+	* libgnat/s-expmod.ads: Likewise.
+	* libgnat/s-expuns.adb: Likewise.
+	* libgnat/s-expuns.ads: Likewise.
+	* libgnat/s-fatflt.ads: Likewise.
+	* libgnat/s-fatgen.adb: Likewise.
+	* libgnat/s-fatgen.ads: Likewise.
+	* libgnat/s-fatlfl.ads: Likewise.
+	* libgnat/s-fatllf.ads: Likewise.
+	* libgnat/s-fatsfl.ads: Likewise.
+	* libgnat/s-ficobl.ads: Likewise.
+	* libgnat/s-filatt.ads: Likewise.
+	* libgnat/s-fileio.adb: Likewise.
+	* libgnat/s-fileio.ads: Likewise.
+	* libgnat/s-finmas.adb: Likewise.
+	* libgnat/s-finmas.ads: Likewise.
+	* libgnat/s-finroo.adb: Likewise.
+	* libgnat/s-finroo.ads: Likewise.
+	* libgnat/s-flocon.adb: Likewise.
+	* libgnat/s-flocon.ads: Likewise.
+	* libgnat/s-flocon__none.adb: Likewise.
+	* libgnat/s-fore.adb: Likewise.
+	* libgnat/s-fore.ads: Likewise.
+	* libgnat/s-gearop.adb: Likewise.
+	* libgnat/s-gearop.ads: Likewise.
+	* libgnat/s-genbig.adb: Likewise.
+	* libgnat/s-genbig.ads: Likewise.
+	* libgnat/s-geveop.adb: Likewise.
+	* libgnat/s-geveop.ads: Likewise.
+	* libgnat/s-gloloc.adb: Likewise.
+	* libgnat/s-gloloc.ads: Likewise.
+	* libgnat/s-gloloc__mingw.adb: Likewise.
+	* libgnat/s-htable.adb: Likewise.
+	* libgnat/s-htable.ads: Likewise.
+	* libgnat/s-imenne.adb: Likewise.
+	* libgnat/s-imenne.ads: Likewise.
+	* libgnat/s-imgbiu.adb: Likewise.
+	* libgnat/s-imgbiu.ads: Likewise.
+	* libgnat/s-imgboo.adb: Likewise.
+	* libgnat/s-imgboo.ads: Likewise.
+	* libgnat/s-imgcha.adb: Likewise.
+	* libgnat/s-imgcha.ads: Likewise.
+	* libgnat/s-imgdec.adb: Likewise.
+	* libgnat/s-imgdec.ads: Likewise.
+	* libgnat/s-imgenu.adb: Likewise.
+	* libgnat/s-imgenu.ads: Likewise.
+	* libgnat/s-imgint.adb: Likewise.
+	* libgnat/s-imgint.ads: Likewise.
+	* libgnat/s-imgllb.adb: Likewise.
+	* libgnat/s-imgllb.ads: Likewise.
+	* libgnat/s-imglld.adb: Likewise.
+	* libgnat/s-imglld.ads: Likewise.
+	* libgnat/s-imglli.adb: Likewise.
+	* libgnat/s-imglli.ads: Likewise.
+	* libgnat/s-imgllu.adb: Likewise.
+	* libgnat/s-imgllu.ads: Likewise.
+	* libgnat/s-imgllw.adb: Likewise.
+	* libgnat/s-imgllw.ads: Likewise.
+	* libgnat/s-imgrea.adb: Likewise.
+	* libgnat/s-imgrea.ads: Likewise.
+	* libgnat/s-imguns.adb: Likewise.
+	* libgnat/s-imguns.ads: Likewise.
+	* libgnat/s-imgwch.adb: Likewise.
+	* libgnat/s-imgwch.ads: Likewise.
+	* libgnat/s-imgwiu.adb: Likewise.
+	* libgnat/s-imgwiu.ads: Likewise.
+	* libgnat/s-io.adb: Likewise.
+	* libgnat/s-io.ads: Likewise.
+	* libgnat/s-llflex.ads: Likewise.
+	* libgnat/s-maccod.ads: Likewise.
+	* libgnat/s-mantis.adb: Likewise.
+	* libgnat/s-mantis.ads: Likewise.
+	* libgnat/s-mastop.adb: Likewise.
+	* libgnat/s-mastop.ads: Likewise.
+	* libgnat/s-memcop.ads: Likewise.
+	* libgnat/s-memory.adb: Likewise.
+	* libgnat/s-memory.ads: Likewise.
+	* libgnat/s-mmap.adb: Likewise.
+	* libgnat/s-mmap.ads: Likewise.
+	* libgnat/s-mmauni__long.ads: Likewise.
+	* libgnat/s-mmosin__mingw.adb: Likewise.
+	* libgnat/s-mmosin__mingw.ads: Likewise.
+	* libgnat/s-mmosin__unix.adb: Likewise.
+	* libgnat/s-mmosin__unix.ads: Likewise.
+	* libgnat/s-multip.adb: Likewise.
+	* libgnat/s-objrea.adb: Likewise.
+	* libgnat/s-objrea.ads: Likewise.
+	* libgnat/s-optide.adb: Likewise.
+	* libgnat/s-os_lib.adb: Likewise.
+	* libgnat/s-os_lib.ads: Likewise.
+	* libgnat/s-osprim.ads: Likewise.
+	* libgnat/s-osprim__darwin.adb: Likewise.
+	* libgnat/s-osprim__lynxos.ads: Likewise.
+	* libgnat/s-osprim__mingw.adb: Likewise.
+	* libgnat/s-osprim__posix.adb: Likewise.
+	* libgnat/s-osprim__posix2008.adb: Likewise.
+	* libgnat/s-osprim__rtems.adb: Likewise.
+	* libgnat/s-osprim__solaris.adb: Likewise.
+	* libgnat/s-osprim__unix.adb: Likewise.
+	* libgnat/s-osprim__vxworks.adb: Likewise.
+	* libgnat/s-osprim__x32.adb: Likewise.
+	* libgnat/s-osvers__vxworks-653.ads: Likewise.
+	* libgnat/s-pack03.adb: Likewise.
+	* libgnat/s-pack03.ads: Likewise.
+	* libgnat/s-pack05.adb: Likewise.
+	* libgnat/s-pack05.ads: Likewise.
+	* libgnat/s-pack06.adb: Likewise.
+	* libgnat/s-pack06.ads: Likewise.
+	* libgnat/s-pack07.adb: Likewise.
+	* libgnat/s-pack07.ads: Likewise.
+	* libgnat/s-pack09.adb: Likewise.
+	* libgnat/s-pack09.ads: Likewise.
+	* libgnat/s-pack10.adb: Likewise.
+	* libgnat/s-pack10.ads: Likewise.
+	* libgnat/s-pack11.adb: Likewise.
+	* libgnat/s-pack11.ads: Likewise.
+	* libgnat/s-pack12.adb: Likewise.
+	* libgnat/s-pack12.ads: Likewise.
+	* libgnat/s-pack13.adb: Likewise.
+	* libgnat/s-pack13.ads: Likewise.
+	* libgnat/s-pack14.adb: Likewise.
+	* libgnat/s-pack14.ads: Likewise.
+	* libgnat/s-pack15.adb: Likewise.
+	* libgnat/s-pack15.ads: Likewise.
+	* libgnat/s-pack17.adb: Likewise.
+	* libgnat/s-pack17.ads: Likewise.
+	* libgnat/s-pack18.adb: Likewise.
+	* libgnat/s-pack18.ads: Likewise.
+	* libgnat/s-pack19.adb: Likewise.
+	* libgnat/s-pack19.ads: Likewise.
+	* libgnat/s-pack20.adb: Likewise.
+	* libgnat/s-pack20.ads: Likewise.
+	* libgnat/s-pack21.adb: Likewise.
+	* libgnat/s-pack21.ads: Likewise.
+	* libgnat/s-pack22.adb: Likewise.
+	* libgnat/s-pack22.ads: Likewise.
+	* libgnat/s-pack23.adb: Likewise.
+	* libgnat/s-pack23.ads: Likewise.
+	* libgnat/s-pack24.adb: Likewise.
+	* libgnat/s-pack24.ads: Likewise.
+	* libgnat/s-pack25.adb: Likewise.
+	* libgnat/s-pack25.ads: Likewise.
+	* libgnat/s-pack26.adb: Likewise.
+	* libgnat/s-pack26.ads: Likewise.
+	* libgnat/s-pack27.adb: Likewise.
+	* libgnat/s-pack27.ads: Likewise.
+	* libgnat/s-pack28.adb: Likewise.
+	* libgnat/s-pack28.ads: Likewise.
+	* libgnat/s-pack29.adb: Likewise.
+	* libgnat/s-pack29.ads: Likewise.
+	* libgnat/s-pack30.adb: Likewise.
+	* libgnat/s-pack30.ads: Likewise.
+	* libgnat/s-pack31.adb: Likewise.
+	* libgnat/s-pack31.ads: Likewise.
+	* libgnat/s-pack33.adb: Likewise.
+	* libgnat/s-pack33.ads: Likewise.
+	* libgnat/s-pack34.adb: Likewise.
+	* libgnat/s-pack34.ads: Likewise.
+	* libgnat/s-pack35.adb: Likewise.
+	* libgnat/s-pack35.ads: Likewise.
+	* libgnat/s-pack36.adb: Likewise.
+	* libgnat/s-pack36.ads: Likewise.
+	* libgnat/s-pack37.adb: Likewise.
+	* libgnat/s-pack37.ads: Likewise.
+	* libgnat/s-pack38.adb: Likewise.
+	* libgnat/s-pack38.ads: Likewise.
+	* libgnat/s-pack39.adb: Likewise.
+	* libgnat/s-pack39.ads: Likewise.
+	* libgnat/s-pack40.adb: Likewise.
+	* libgnat/s-pack40.ads: Likewise.
+	* libgnat/s-pack41.adb: Likewise.
+	* libgnat/s-pack41.ads: Likewise.
+	* libgnat/s-pack42.adb: Likewise.
+	* libgnat/s-pack42.ads: Likewise.
+	* libgnat/s-pack43.adb: Likewise.
+	* libgnat/s-pack43.ads: Likewise.
+	* libgnat/s-pack44.adb: Likewise.
+	* libgnat/s-pack44.ads: Likewise.
+	* libgnat/s-pack45.adb: Likewise.
+	* libgnat/s-pack45.ads: Likewise.
+	* libgnat/s-pack46.adb: Likewise.
+	* libgnat/s-pack46.ads: Likewise.
+	* libgnat/s-pack47.adb: Likewise.
+	* libgnat/s-pack47.ads: Likewise.
+	* libgnat/s-pack48.adb: Likewise.
+	* libgnat/s-pack48.ads: Likewise.
+	* libgnat/s-pack49.adb: Likewise.
+	* libgnat/s-pack49.ads: Likewise.
+	* libgnat/s-pack50.adb: Likewise.
+	* libgnat/s-pack50.ads: Likewise.
+	* libgnat/s-pack51.adb: Likewise.
+	* libgnat/s-pack51.ads: Likewise.
+	* libgnat/s-pack52.adb: Likewise.
+	* libgnat/s-pack52.ads: Likewise.
+	* libgnat/s-pack53.adb: Likewise.
+	* libgnat/s-pack53.ads: Likewise.
+	* libgnat/s-pack54.adb: Likewise.
+	* libgnat/s-pack54.ads: Likewise.
+	* libgnat/s-pack55.adb: Likewise.
+	* libgnat/s-pack55.ads: Likewise.
+	* libgnat/s-pack56.adb: Likewise.
+	* libgnat/s-pack56.ads: Likewise.
+	* libgnat/s-pack57.adb: Likewise.
+	* libgnat/s-pack57.ads: Likewise.
+	* libgnat/s-pack58.adb: Likewise.
+	* libgnat/s-pack58.ads: Likewise.
+	* libgnat/s-pack59.adb: Likewise.
+	* libgnat/s-pack59.ads: Likewise.
+	* libgnat/s-pack60.adb: Likewise.
+	* libgnat/s-pack60.ads: Likewise.
+	* libgnat/s-pack61.adb: Likewise.
+	* libgnat/s-pack61.ads: Likewise.
+	* libgnat/s-pack62.adb: Likewise.
+	* libgnat/s-pack62.ads: Likewise.
+	* libgnat/s-pack63.adb: Likewise.
+	* libgnat/s-pack63.ads: Likewise.
+	* libgnat/s-parame.adb: Likewise.
+	* libgnat/s-parame.ads: Likewise.
+	* libgnat/s-parame__ae653.ads: Likewise.
+	* libgnat/s-parame__hpux.ads: Likewise.
+	* libgnat/s-parame__rtems.adb: Likewise.
+	* libgnat/s-parame__vxworks.adb: Likewise.
+	* libgnat/s-parame__vxworks.ads: Likewise.
+	* libgnat/s-parint.adb: Likewise.
+	* libgnat/s-parint.ads: Likewise.
+	* libgnat/s-pooglo.adb: Likewise.
+	* libgnat/s-pooglo.ads: Likewise.
+	* libgnat/s-pooloc.adb: Likewise.
+	* libgnat/s-pooloc.ads: Likewise.
+	* libgnat/s-poosiz.adb: Likewise.
+	* libgnat/s-poosiz.ads: Likewise.
+	* libgnat/s-powtab.ads: Likewise.
+	* libgnat/s-purexc.ads: Likewise.
+	* libgnat/s-rannum.adb: Likewise.
+	* libgnat/s-rannum.ads: Likewise.
+	* libgnat/s-ransee.adb: Likewise.
+	* libgnat/s-ransee.ads: Likewise.
+	* libgnat/s-regexp.adb: Likewise.
+	* libgnat/s-regexp.ads: Likewise.
+	* libgnat/s-regpat.adb: Likewise.
+	* libgnat/s-regpat.ads: Likewise.
+	* libgnat/s-resfil.adb: Likewise.
+	* libgnat/s-resfil.ads: Likewise.
+	* libgnat/s-restri.adb: Likewise.
+	* libgnat/s-restri.ads: Likewise.
+	* libgnat/s-rident.ads: Likewise.
+	* libgnat/s-rpc.adb: Likewise.
+	* libgnat/s-rpc.ads: Likewise.
+	* libgnat/s-scaval.adb: Likewise.
+	* libgnat/s-scaval.ads: Likewise.
+	* libgnat/s-secsta.adb: Likewise.
+	* libgnat/s-secsta.ads: Likewise.
+	* libgnat/s-sequio.adb: Likewise.
+	* libgnat/s-sequio.ads: Likewise.
+	* libgnat/s-shasto.adb: Likewise.
+	* libgnat/s-shasto.ads: Likewise.
+	* libgnat/s-soflin.adb: Likewise.
+	* libgnat/s-soflin.ads: Likewise.
+	* libgnat/s-soliin.adb: Likewise.
+	* libgnat/s-soliin.ads: Likewise.
+	* libgnat/s-sopco3.adb: Likewise.
+	* libgnat/s-sopco3.ads: Likewise.
+	* libgnat/s-sopco4.adb: Likewise.
+	* libgnat/s-sopco4.ads: Likewise.
+	* libgnat/s-sopco5.adb: Likewise.
+	* libgnat/s-sopco5.ads: Likewise.
+	* libgnat/s-spsufi.adb: Likewise.
+	* libgnat/s-spsufi.ads: Likewise.
+	* libgnat/s-stache.adb: Likewise.
+	* libgnat/s-stache.ads: Likewise.
+	* libgnat/s-stalib.adb: Likewise.
+	* libgnat/s-stalib.ads: Likewise.
+	* libgnat/s-stausa.adb: Likewise.
+	* libgnat/s-stausa.ads: Likewise.
+	* libgnat/s-stchop.adb: Likewise.
+	* libgnat/s-stchop.ads: Likewise.
+	* libgnat/s-stchop__limit.ads: Likewise.
+	* libgnat/s-stchop__rtems.adb: Likewise.
+	* libgnat/s-stchop__vxworks.adb: Likewise.
+	* libgnat/s-stoele.adb: Likewise.
+	* libgnat/s-stoele.ads: Likewise.
+	* libgnat/s-stopoo.adb: Likewise.
+	* libgnat/s-stopoo.ads: Likewise.
+	* libgnat/s-stposu.adb: Likewise.
+	* libgnat/s-stposu.ads: Likewise.
+	* libgnat/s-stratt.adb: Likewise.
+	* libgnat/s-stratt.ads: Likewise.
+	* libgnat/s-stratt__xdr.adb: Likewise.
+	* libgnat/s-strcom.adb: Likewise.
+	* libgnat/s-strcom.ads: Likewise.
+	* libgnat/s-strhas.adb: Likewise.
+	* libgnat/s-strhas.ads: Likewise.
+	* libgnat/s-string.adb: Likewise.
+	* libgnat/s-string.ads: Likewise.
+	* libgnat/s-strops.adb: Likewise.
+	* libgnat/s-strops.ads: Likewise.
+	* libgnat/s-ststop.adb: Likewise.
+	* libgnat/s-ststop.ads: Likewise.
+	* libgnat/s-tasloc.adb: Likewise.
+	* libgnat/s-tasloc.ads: Likewise.
+	* libgnat/s-thread.ads: Likewise.
+	* libgnat/s-thread__ae653.adb: Likewise.
+	* libgnat/s-traceb.adb: Likewise.
+	* libgnat/s-traceb.ads: Likewise.
+	* libgnat/s-traceb__hpux.adb: Likewise.
+	* libgnat/s-traceb__mastop.adb: Likewise.
+	* libgnat/s-traent.adb: Likewise.
+	* libgnat/s-traent.ads: Likewise.
+	* libgnat/s-trasym.adb: Likewise.
+	* libgnat/s-trasym.ads: Likewise.
+	* libgnat/s-trasym__dwarf.adb: Likewise.
+	* libgnat/s-tsmona.adb: Likewise.
+	* libgnat/s-tsmona__linux.adb: Likewise.
+	* libgnat/s-tsmona__mingw.adb: Likewise.
+	* libgnat/s-unstyp.ads: Likewise.
+	* libgnat/s-utf_32.adb: Likewise.
+	* libgnat/s-utf_32.ads: Likewise.
+	* libgnat/s-valboo.adb: Likewise.
+	* libgnat/s-valboo.ads: Likewise.
+	* libgnat/s-valcha.adb: Likewise.
+	* libgnat/s-valcha.ads: Likewise.
+	* libgnat/s-valdec.adb: Likewise.
+	* libgnat/s-valdec.ads: Likewise.
+	* libgnat/s-valenu.adb: Likewise.
+	* libgnat/s-valenu.ads: Likewise.
+	* libgnat/s-valint.adb: Likewise.
+	* libgnat/s-valint.ads: Likewise.
+	* libgnat/s-vallld.adb: Likewise.
+	* libgnat/s-vallld.ads: Likewise.
+	* libgnat/s-vallli.adb: Likewise.
+	* libgnat/s-vallli.ads: Likewise.
+	* libgnat/s-valllu.adb: Likewise.
+	* libgnat/s-valllu.ads: Likewise.
+	* libgnat/s-valrea.adb: Likewise.
+	* libgnat/s-valrea.ads: Likewise.
+	* libgnat/s-valuns.adb: Likewise.
+	* libgnat/s-valuns.ads: Likewise.
+	* libgnat/s-valuti.adb: Likewise.
+	* libgnat/s-valuti.ads: Likewise.
+	* libgnat/s-valwch.adb: Likewise.
+	* libgnat/s-valwch.ads: Likewise.
+	* libgnat/s-veboop.adb: Likewise.
+	* libgnat/s-veboop.ads: Likewise.
+	* libgnat/s-vector.ads: Likewise.
+	* libgnat/s-vercon.adb: Likewise.
+	* libgnat/s-vercon.ads: Likewise.
+	* libgnat/s-wchcnv.adb: Likewise.
+	* libgnat/s-wchcnv.ads: Likewise.
+	* libgnat/s-wchcon.adb: Likewise.
+	* libgnat/s-wchcon.ads: Likewise.
+	* libgnat/s-wchjis.adb: Likewise.
+	* libgnat/s-wchjis.ads: Likewise.
+	* libgnat/s-wchstw.adb: Likewise.
+	* libgnat/s-wchstw.ads: Likewise.
+	* libgnat/s-wchwts.adb: Likewise.
+	* libgnat/s-wchwts.ads: Likewise.
+	* libgnat/s-widboo.adb: Likewise.
+	* libgnat/s-widboo.ads: Likewise.
+	* libgnat/s-widcha.adb: Likewise.
+	* libgnat/s-widcha.ads: Likewise.
+	* libgnat/s-widenu.adb: Likewise.
+	* libgnat/s-widenu.ads: Likewise.
+	* libgnat/s-widlli.adb: Likewise.
+	* libgnat/s-widlli.ads: Likewise.
+	* libgnat/s-widllu.adb: Likewise.
+	* libgnat/s-widllu.ads: Likewise.
+	* libgnat/s-widwch.adb: Likewise.
+	* libgnat/s-widwch.ads: Likewise.
+	* libgnat/s-win32.ads: Likewise.
+	* libgnat/s-winext.ads: Likewise.
+	* libgnat/s-wwdcha.adb: Likewise.
+	* libgnat/s-wwdcha.ads: Likewise.
+	* libgnat/s-wwdenu.adb: Likewise.
+	* libgnat/s-wwdenu.ads: Likewise.
+	* libgnat/s-wwdwch.adb: Likewise.
+	* libgnat/s-wwdwch.ads: Likewise.
+	* libgnat/system-aix.ads: Likewise.
+	* libgnat/system-darwin-arm.ads: Likewise.
+	* libgnat/system-darwin-ppc.ads: Likewise.
+	* libgnat/system-darwin-x86.ads: Likewise.
+	* libgnat/system-djgpp.ads: Likewise.
+	* libgnat/system-dragonfly-x86_64.ads: Likewise.
+	* libgnat/system-freebsd.ads: Likewise.
+	* libgnat/system-hpux-ia64.ads: Likewise.
+	* libgnat/system-hpux.ads: Likewise.
+	* libgnat/system-linux-alpha.ads: Likewise.
+	* libgnat/system-linux-arm.ads: Likewise.
+	* libgnat/system-linux-hppa.ads: Likewise.
+	* libgnat/system-linux-ia64.ads: Likewise.
+	* libgnat/system-linux-m68k.ads: Likewise.
+	* libgnat/system-linux-mips.ads: Likewise.
+	* libgnat/system-linux-ppc.ads: Likewise.
+	* libgnat/system-linux-riscv.ads: Likewise.
+	* libgnat/system-linux-s390.ads: Likewise.
+	* libgnat/system-linux-sh4.ads: Likewise.
+	* libgnat/system-linux-sparc.ads: Likewise.
+	* libgnat/system-linux-x86.ads: Likewise.
+	* libgnat/system-lynxos178-ppc.ads: Likewise.
+	* libgnat/system-lynxos178-x86.ads: Likewise.
+	* libgnat/system-mingw.ads: Likewise.
+	* libgnat/system-qnx-aarch64.ads: Likewise.
+	* libgnat/system-rtems.ads: Likewise.
+	* libgnat/system-solaris-sparc.ads: Likewise.
+	* libgnat/system-solaris-x86.ads: Likewise.
+	* libgnat/system-vxworks-arm-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks-arm-rtp.ads: Likewise.
+	* libgnat/system-vxworks-arm.ads: Likewise.
+	* libgnat/system-vxworks-e500-kernel.ads: Likewise.
+	* libgnat/system-vxworks-e500-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks-e500-rtp.ads: Likewise.
+	* libgnat/system-vxworks-e500-vthread.ads: Likewise.
+	* libgnat/system-vxworks-ppc-kernel.ads: Likewise.
+	* libgnat/system-vxworks-ppc-ravenscar.ads: Likewise.
+	* libgnat/system-vxworks-ppc-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks-ppc-rtp.ads: Likewise.
+	* libgnat/system-vxworks-ppc-vthread.ads: Likewise.
+	* libgnat/system-vxworks-ppc.ads: Likewise.
+	* libgnat/system-vxworks-x86-kernel.ads: Likewise.
+	* libgnat/system-vxworks-x86-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks-x86-rtp.ads: Likewise.
+	* libgnat/system-vxworks-x86-vthread.ads: Likewise.
+	* libgnat/system-vxworks-x86.ads: Likewise.
+	* libgnat/system-vxworks7-aarch64-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-aarch64.ads: Likewise.
+	* libgnat/system-vxworks7-arm-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-arm.ads: Likewise.
+	* libgnat/system-vxworks7-e500-kernel.ads: Likewise.
+	* libgnat/system-vxworks7-e500-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-e500-rtp.ads: Likewise.
+	* libgnat/system-vxworks7-ppc-kernel.ads: Likewise.
+	* libgnat/system-vxworks7-ppc-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-ppc-rtp.ads: Likewise.
+	* libgnat/system-vxworks7-ppc64-kernel.ads: Likewise.
+	* libgnat/system-vxworks7-ppc64-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-x86-kernel.ads: Likewise.
+	* libgnat/system-vxworks7-x86-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-x86-rtp.ads: Likewise.
+	* libgnat/system-vxworks7-x86_64-kernel.ads: Likewise.
+	* libgnat/system-vxworks7-x86_64-rtp-smp.ads: Likewise.
+	* libgnat/system.ads: Likewise.
+	* link.c: Likewise.
+	* live.adb: Likewise.
+	* live.ads: Likewise.
+	* locales.c: Likewise.
+	* make.adb: Likewise.
+	* make.ads: Likewise.
+	* make_util.adb: Likewise.
+	* make_util.ads: Likewise.
+	* makeusg.adb: Likewise.
+	* makeusg.ads: Likewise.
+	* mdll-fil.adb: Likewise.
+	* mdll-fil.ads: Likewise.
+	* mdll-utl.adb: Likewise.
+	* mdll-utl.ads: Likewise.
+	* mdll.adb: Likewise.
+	* mdll.ads: Likewise.
+	* mingw32.h: Likewise.
+	* mkdir.c: Likewise.
+	* namet-sp.adb: Likewise.
+	* namet-sp.ads: Likewise.
+	* namet.adb: Likewise.
+	* namet.ads: Likewise.
+	* namet.h: Likewise.
+	* nlists.adb: Likewise.
+	* nlists.ads: Likewise.
+	* nlists.h: Likewise.
+	* opt.adb: Likewise.
+	* opt.ads: Likewise.
+	* osint-b.adb: Likewise.
+	* osint-b.ads: Likewise.
+	* osint-c.adb: Likewise.
+	* osint-c.ads: Likewise.
+	* osint-l.adb: Likewise.
+	* osint-l.ads: Likewise.
+	* osint-m.adb: Likewise.
+	* osint-m.ads: Likewise.
+	* osint.adb: Likewise.
+	* osint.ads: Likewise.
+	* output.adb: Likewise.
+	* output.ads: Likewise.
+	* par-ch10.adb: Likewise.
+	* par-ch11.adb: Likewise.
+	* par-ch12.adb: Likewise.
+	* par-ch13.adb: Likewise.
+	* par-ch2.adb: Likewise.
+	* par-ch3.adb: Likewise.
+	* par-ch4.adb: Likewise.
+	* par-ch5.adb: Likewise.
+	* par-ch6.adb: Likewise.
+	* par-ch7.adb: Likewise.
+	* par-ch8.adb: Likewise.
+	* par-ch9.adb: Likewise.
+	* par-endh.adb: Likewise.
+	* par-labl.adb: Likewise.
+	* par-load.adb: Likewise.
+	* par-prag.adb: Likewise.
+	* par-sync.adb: Likewise.
+	* par-tchk.adb: Likewise.
+	* par-util.adb: Likewise.
+	* par.adb: Likewise.
+	* par.ads: Likewise.
+	* par_sco.adb: Likewise.
+	* par_sco.ads: Likewise.
+	* pprint.adb: Likewise.
+	* pprint.ads: Likewise.
+	* prep.adb: Likewise.
+	* prep.ads: Likewise.
+	* prepcomp.adb: Likewise.
+	* prepcomp.ads: Likewise.
+	* put_scos.adb: Likewise.
+	* put_scos.ads: Likewise.
+	* raise-gcc.c: Likewise.
+	* raise.c: Likewise.
+	* raise.h: Likewise.
+	* repinfo-input.adb: Likewise.
+	* repinfo-input.ads: Likewise.
+	* repinfo.adb: Likewise.
+	* repinfo.ads: Likewise.
+	* repinfo.h: Likewise.
+	* restrict.adb: Likewise.
+	* restrict.ads: Likewise.
+	* rident.ads: Likewise.
+	* rtfinal.c: Likewise.
+	* rtinit.c: Likewise.
+	* rtsfind.adb: Likewise.
+	* rtsfind.ads: Likewise.
+	* runtime.h: Likewise.
+	* s-oscons-tmplt.c: Likewise.
+	* sa_messages.adb: Likewise.
+	* sa_messages.ads: Likewise.
+	* scans.adb: Likewise.
+	* scans.ads: Likewise.
+	* scil_ll.adb: Likewise.
+	* scil_ll.ads: Likewise.
+	* scn.adb: Likewise.
+	* scn.ads: Likewise.
+	* scng.adb: Likewise.
+	* scng.ads: Likewise.
+	* scos.adb: Likewise.
+	* scos.ads: Likewise.
+	* scos.h: Likewise.
+	* sdefault.ads: Likewise.
+	* seh_init.c: Likewise.
+	* sem.adb: Likewise.
+	* sem.ads: Likewise.
+	* sem_aggr.adb: Likewise.
+	* sem_aggr.ads: Likewise.
+	* sem_attr.adb: Likewise.
+	* sem_attr.ads: Likewise.
+	* sem_aux.adb: Likewise.
+	* sem_aux.ads: Likewise.
+	* sem_case.adb: Likewise.
+	* sem_case.ads: Likewise.
+	* sem_cat.adb: Likewise.
+	* sem_cat.ads: Likewise.
+	* sem_ch10.adb: Likewise.
+	* sem_ch10.ads: Likewise.
+	* sem_ch11.adb: Likewise.
+	* sem_ch11.ads: Likewise.
+	* sem_ch12.adb: Likewise.
+	* sem_ch12.ads: Likewise.
+	* sem_ch13.adb: Likewise.
+	* sem_ch13.ads: Likewise.
+	* sem_ch2.adb: Likewise.
+	* sem_ch2.ads: Likewise.
+	* sem_ch3.adb: Likewise.
+	* sem_ch3.ads: Likewise.
+	* sem_ch4.adb: Likewise.
+	* sem_ch4.ads: Likewise.
+	* sem_ch5.adb: Likewise.
+	* sem_ch5.ads: Likewise.
+	* sem_ch6.adb: Likewise.
+	* sem_ch6.ads: Likewise.
+	* sem_ch7.adb: Likewise.
+	* sem_ch7.ads: Likewise.
+	* sem_ch8.adb: Likewise.
+	* sem_ch8.ads: Likewise.
+	* sem_ch9.adb: Likewise.
+	* sem_ch9.ads: Likewise.
+	* sem_dim.adb: Likewise.
+	* sem_dim.ads: Likewise.
+	* sem_disp.adb: Likewise.
+	* sem_disp.ads: Likewise.
+	* sem_dist.adb: Likewise.
+	* sem_dist.ads: Likewise.
+	* sem_elab.adb: Likewise.
+	* sem_elab.ads: Likewise.
+	* sem_elim.adb: Likewise.
+	* sem_elim.ads: Likewise.
+	* sem_eval.adb: Likewise.
+	* sem_eval.ads: Likewise.
+	* sem_intr.adb: Likewise.
+	* sem_intr.ads: Likewise.
+	* sem_mech.adb: Likewise.
+	* sem_mech.ads: Likewise.
+	* sem_prag.adb: Likewise.
+	* sem_prag.ads: Likewise.
+	* sem_res.adb: Likewise.
+	* sem_res.ads: Likewise.
+	* sem_scil.adb: Likewise.
+	* sem_scil.ads: Likewise.
+	* sem_smem.adb: Likewise.
+	* sem_smem.ads: Likewise.
+	* sem_type.adb: Likewise.
+	* sem_type.ads: Likewise.
+	* sem_util.adb: Likewise.
+	* sem_util.ads: Likewise.
+	* sem_warn.adb: Likewise.
+	* sem_warn.ads: Likewise.
+	* set_targ.adb: Likewise.
+	* set_targ.ads: Likewise.
+	* sfn_scan.adb: Likewise.
+	* sfn_scan.ads: Likewise.
+	* sigtramp-armdroid.c: Likewise.
+	* sigtramp-ios.c: Likewise.
+	* sigtramp-qnx.c: Likewise.
+	* sigtramp-vxworks.c: Likewise.
+	* sigtramp.h: Likewise.
+	* sinfo-cn.adb: Likewise.
+	* sinfo-cn.ads: Likewise.
+	* sinfo.adb: Likewise.
+	* sinfo.ads: Likewise.
+	* sinput-c.adb: Likewise.
+	* sinput-c.ads: Likewise.
+	* sinput-d.adb: Likewise.
+	* sinput-d.ads: Likewise.
+	* sinput-l.adb: Likewise.
+	* sinput-l.ads: Likewise.
+	* sinput.adb: Likewise.
+	* sinput.ads: Likewise.
+	* socket.c: Likewise.
+	* spark_xrefs.adb: Likewise.
+	* spark_xrefs.ads: Likewise.
+	* sprint.adb: Likewise.
+	* sprint.ads: Likewise.
+	* stand.adb: Likewise.
+	* stand.ads: Likewise.
+	* stringt.adb: Likewise.
+	* stringt.ads: Likewise.
+	* stringt.h: Likewise.
+	* style.adb: Likewise.
+	* style.ads: Likewise.
+	* styleg.adb: Likewise.
+	* styleg.ads: Likewise.
+	* stylesw.adb: Likewise.
+	* stylesw.ads: Likewise.
+	* switch-b.adb: Likewise.
+	* switch-b.ads: Likewise.
+	* switch-c.adb: Likewise.
+	* switch-c.ads: Likewise.
+	* switch-m.adb: Likewise.
+	* switch-m.ads: Likewise.
+	* switch.adb: Likewise.
+	* switch.ads: Likewise.
+	* symbols.adb: Likewise.
+	* symbols.ads: Likewise.
+	* sysdep.c: Likewise.
+	* table.adb: Likewise.
+	* table.ads: Likewise.
+	* targext.c: Likewise.
+	* targparm.adb: Likewise.
+	* targparm.ads: Likewise.
+	* tbuild.adb: Likewise.
+	* tbuild.ads: Likewise.
+	* tempdir.adb: Likewise.
+	* tempdir.ads: Likewise.
+	* terminals.c: Likewise.
+	* tracebak.c: Likewise.
+	* tree_gen.adb: Likewise.
+	* tree_gen.ads: Likewise.
+	* tree_in.adb: Likewise.
+	* tree_in.ads: Likewise.
+	* tree_io.adb: Likewise.
+	* tree_io.ads: Likewise.
+	* treepr.adb: Likewise.
+	* treepr.ads: Likewise.
+	* ttypes.ads: Likewise.
+	* types.adb: Likewise.
+	* types.ads: Likewise.
+	* types.h: Likewise.
+	* uintp.adb: Likewise.
+	* uintp.ads: Likewise.
+	* uintp.h: Likewise.
+	* uname.adb: Likewise.
+	* uname.ads: Likewise.
+	* urealp.adb: Likewise.
+	* urealp.ads: Likewise.
+	* urealp.h: Likewise.
+	* usage.adb: Likewise.
+	* usage.ads: Likewise.
+	* validsw.adb: Likewise.
+	* validsw.ads: Likewise.
+	* warnsw.adb: Likewise.
+	* warnsw.ads: Likewise.
+	* widechar.adb: Likewise.
+	* widechar.ads: Likewise.
+	* xeinfo.adb: Likewise.
+	* xnmake.adb: Likewise.
+	* xoscons.adb: Likewise.
+	* xr_tabls.adb: Likewise.
+	* xr_tabls.ads: Likewise.
+	* xref_lib.adb: Likewise.
+	* xref_lib.ads: Likewise.
+	* xsinfo.adb: Likewise.
+	* xsnamest.adb: Likewise.
+	* xtreeprs.adb: Likewise.
+	* xutil.adb: Likewise.
+	* xutil.ads: Likewise.
+
+2020-06-02  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Set attribute
+	Expansion_Delayed on aggregates that initialize an object that
+	has aspect alignment or address clause. Done to allow ther
+	initialization by means of multiple assignments.
+	* exp_ch3.adb (Expand_N_Object_Declaration): Resolve delayed
+	aggregates. This patch complements the patch applied to
+	sem_ch3.adb
+
+2020-06-02  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb (Ensure_Minimum_Decoration): New subprogram that
+	ensures the minimum decoration required by
+	Requires_Transient_Scope() to provide its functionality when the
+	entity is not frozen.
+
+2020-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Divide): Remove code dealing with
+	the Treat_Fixed_As_Integer flag.
+	(Expand_N_Op_Multiply): Likewise.
+	* exp_fixd.adb (Build_Divide): Do the division in an integer
+	type long enough to hold both operands and convert the result
+	to the type of the LHS.  Do not set Treat_Fixed_As_Integer.
+	(Build_Multiply): Do not set Treat_Fixed_As_Integer.
+	(Build_Rem): Likewise.
+	* sem_ch4.adb (Analyze_Arithmetic_Op): Remove code dealing with
+	the Treat_Fixed_As_Integer flag.
+	(Check_Arithmetic_Pair): Likewise.
+	* sinfo.ads (Treat_Fixed_As_Integer): Delete.
+	(N_Has_Treat_Fixed_As_Integer): Likewise.
+	(Set_Treat_Fixed_As_Integer): Likewise.
+	* sinfo.adb (Treat_Fixed_As_Integer): Likewise.
+	(Set_Treat_Fixed_As_Integer): Likewise.
+	* sprint.ads (Syntax Extensions): Remove '#' special character.
+	* sprint.adb (Process_TFAI_RR_Flags): Delete.
+	(Sprint_Node_Actual) <N_Op_Divide>: Print '@' manually.
+	<N_Op_Multiply>: Likewise.
+	<N_Op_Mod>: Do not print '#'.
+	<N_Op_Rem>: Likewise.
+
+2020-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Others_Check): In the positional case, use the
+	general expression for the comparison only when needed.
+	* exp_attr.adb (Expand_Fpt_Attribute;): Use a simple conversion
+	to the target type instead of an unchecked conversion to the
+	base type to do the range check, as in the other cases.
+	(Expand_N_Attribute_Reference) <Attribute_Storage_Size>: Do the
+	Max operation in the type of the storage size variable, and use
+	Convert_To as in the other cases.
+	* tbuild.adb (Convert_To): Do not get rid of an intermediate
+	conversion to Universal_Integer here...
+	* sem_res.adb  (Simplify_Type_Conversion): ...but here instead.
+
+2020-06-02  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Update documentation
+	for --RM-style-spacing.
+
+2020-06-02  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Add documentation for
+	--[no-]compact switch.
+
+2020-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Build_Array_Aggr_Code): Set the type of the PAT
+	on the zero used to clear the array.
+	* exp_attr.adb (Expand_N_Attribute_Reference)
+	<Attribute_Alignment>: In the CW case, directly convert from the
+	alignment's type to the target type if the parent is an
+	unchecked conversion.
+	* sem_res.adb (Set_String_Literal_Subtype): In the dynamic case,
+	use the general expression for the upper bound only when needed.
+	Set the base type of the index as the type of the low bound.
+	(Simplify_Type_Conversion): Do an intermediate conversion to the
+	root type of the target type if the operand is an integer
+	literal.
+	* tbuild.adb (Convert_To): Get rid of an intermediate conversion
+	to Universal_Integer if the inner expression has integer tyoe.
+	* libgnat/a-sequio.adb (Byte_Swap): Make use of an equivalent
+	static expression in the case statement.
+
+2020-06-02  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb (Traverse_Degenerate_Subprogram): Set statement
+	code to 'X'.
+	* scos.ads: Update comment documenting SCO data.
+
+2020-06-02  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_unst.adb (Register_Subprogram): Test for Address_Taken (in
+	addition to the existing test for In_Synchonized_Unit) when
+	deciding whether to reset the Reachable flag on all subprograms
+	enclosing the subprogram being registered.
+
+2020-06-02  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch6.adb (Check_Return_Obj_Accessibility): Avoid use of
+	parent node pointers so we are not relying on expansion done in
+	GNATprove mode.
+
+2020-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference)
+	<Attribute_Alignment>: Adjust comment and compare against proper
+	type.
+
+2020-06-02  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_unst.adb (Visit_Node): When visiting array attribute
+	nodes, apply Get_Referenced_Object to the attribute prefix, to
+	handle prefixes denoting renamed objects by picking up the Etype
+	of the renamed object rather than the possibly unconstrained
+	nominal subtype of the renaming declaration's Entity.
+	* sem_util.ads (Get_Referenced_Object): Update comment to
+	clearly indicate that any kind of node can be passed to this
+	function.
+	* sem_util.adb (Get_Referenced_Object): Add test of Is_Object to
+	the condition, to allow for passing names that denote types and
+	subtypes.
+
+2020-06-02  Bob Duff  <duff@adacore.com>
+
+	* snames.ads-tmpl: Add comments explaining that enumeration
+	types have to be kept in synch with subtypes of Name_Id.
+
+2020-06-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Check_No_Hidden_State): Remove dead code.
+
+2020-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_pakd.adb (Expand_Packed_Bit_Reference): Change type of
+	reference from Universal_Integer to Standard_Natural.
+
+2020-06-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Collect_States_And_Objects): Call itself on
+	declaration of nested packages; append abstract states
+	one-by-one, so that in recursive call we do not overwrite the
+	ones that have been already collected.
+
+2020-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_atag.ads (Build_Inherit_Predefined_Prims): Change type
+	of Num_Predef_Prim parameter from Int to Nat.
+	* exp_atag.adb (Build_Range): New procedure.
+	(Build_Val): Likewise.
+	(Build_CW_Membership): Call Build_Val.
+	(Build_Get_Predefined_Prim_Op_Address): Likewise.
+	(Build_Inherit_CPP_Prims): Likewise.
+	(Build_Get_Prim_Op_Address): Likewise.
+	(Build_Set_Predefined_Prim_Op_Address): Likewise.
+	(Build_Inherit_Prims): Call Build_Range.
+	(Build_Inherit_Predefined_Prims): Likewise.  Change type of
+	Num_Predef_Prim parameter from Int to Nat.
+
+2020-06-02  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb: Two typo fixes.
+
+2020-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Replace_Discriminants): Preserve the Etype of the
+	Name of N_Variant_Part nodes when rewriting it.
+
+2020-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Signed_Integer_Type_Declaration): Change the type
+	of the bounds from Universal_Integer to Implicit_Base.
+
+2020-06-02  Arnaud Charlet  <charlet@adacore.com>
+
+	* bcheck.adb, binde.adb, bindo-diagnostics.adb, checks.adb,
+	exp_aggr.adb, exp_ch3.adb, exp_ch4.adb, exp_ch7.adb,
+	exp_ch9.adb, gnatname.adb, sem_case.adb, sem_ch13.adb,
+	sem_ch5.adb, sem_prag.adb, sem_util.adb, uintp.adb, urealp.adb,
+	xoscons.adb, xr_tabls.adb, xref_lib.adb: Initialize objects more
+	explicitly and add corresponding assertions. Remove dead code.
+	Also add a few Annotate pragmas to help static analysis.
+	* libgnat/a-caldel.adb, libgnat/a-calend.adb,
+	libgnat/a-ngcoty.adb, libgnat/a-ngelfu.adb,
+	libgnat/a-ngrear.adb, libgnat/a-strfix.adb,
+	libgnat/g-calend.adb, libgnat/g-catiio.adb,
+	libgnat/g-comlin.adb, libgnat/g-debpoo.adb,
+	libgnat/g-dirope.adb, libgnat/g-hesorg.adb,
+	libgnat/g-pehage.adb, libgnat/g-socket.adb, libgnat/i-cobol.adb,
+	libgnat/s-dwalin.adb, libgnat/s-dwalin.ads,
+	libgnat/s-fatgen.adb, libgnat/s-gearop.adb,
+	libgnat/s-genbig.adb, libgnat/s-imgrea.adb,
+	libgnat/s-os_lib.adb, libgnat/s-rannum.adb,
+	libgnat/s-regpat.adb, libgnat/s-trasym__dwarf.adb,
+	libgnat/s-valrea.adb: Ditto.
+
+2020-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Replace_Components): Rename into...
+	(Replace_Discriminants): ...this.  Replace girder discriminants
+	with non-girder ones.  Do not replace components.
+	* sem_ch13.adb (Check_Record_Representation_Clause): Deal with
+	non-girder discriminants correctly.
+
+2020-06-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib-xref-spark_specific.adb (Create_Heap): use a new variant
+	of Name_Enter to directly converts String to Make_Id.
+
+2020-06-02  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_attr.adb, par-ch4.adb, par-util.adb, scans.ads, scng.adb,
+	sem_attr.adb, sem_ch4.adb, sinfo.ads: Typo corrections and minor
+	reformatting.
+
+2020-06-02  Arnaud Charlet  <charlet@adacore.com>
+
+	* snames.ads-tmpl (Name_Img, Attribute_Img): Make it an
+	attribute returning renamable functions.
+
+2020-06-02  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb, sem_prag.ads (Set_Overflow_Mode): New procedure
+	to set overflow mode.
+
+2020-06-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* contracts.adb, einfo.adb, exp_ch9.adb, sem_ch12.adb,
+	sem_ch4.adb, sem_ch7.adb, sem_ch8.adb, sem_elab.adb,
+	sem_type.adb, sem_util.adb: Reuse Is_Package_Or_Generic_Package
+	where possible (similarly, reuse Is_Concurrent_Type if it was
+	possible in the same expressions).
+
+2020-05-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* Makefile.rtl (ADA_INCLUDE_SRCS): Replace Makefile.adalib by
+	libada.gpr and associated project files.
+	(g-debpoo.o): Add missing rule to ensure subprograms are not reordered.
+	(setup-rts): Add generation of libgnat/libgnarl.lst.
+	(LIBGNAT_SRCS): Remove thread.c which is part of libgnarl.
+	* tracebak.c, tb-gcc.c: Merged the two files to simplify dependencies.
+	* libgnarl/libgnarl.gpr, libgnat/libada.gpr,
+	libgnat/libgnat.gpr, libgnat/libgnat_common.gpr: New files.
+	* doc/gnat_ugn/the_gnat_compilation_model.rst: Makefile.adalib
+	replaced by libada.gpr.
+	* libgnat/system-mingw.ads: Remove obsolete comment.
+	* gcc-interface/Makefile.in: Remove dependency on tb-gcc.c.
+
+2020-05-27  Martin Liska  <mliska@suse.cz>
+
+	* gnatvsn.ads: Bump Library_Version to 11.
+
 2020-05-26  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	PR ada/95333

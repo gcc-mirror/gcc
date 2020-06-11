@@ -1,3 +1,26 @@
+2020-06-03  Mark Wielaard  <mark@klomp.org>
+
+	* c-parser.c (struct c_parser): Add seen_string_literal
+	bitfield.
+	(c_parser_consume_token): Reset seen_string_literal.
+	(c_parser_error_richloc): Add name_hint if seen_string_literal
+	and next token is a CPP_NAME and we have a missing header
+	suggestion for the name.
+	(c_parser_string_literal): Set seen_string_literal.
+
+2020-06-03  Mark Wielaard  <mark@klomp.org>
+
+	* c-parser.c (c_parser_postfix_expression_after_primary): Add
+	scope with matching_parens after CPP_OPEN_PAREN.
+
+2020-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-objc-common.h (LANG_HOOKS_OMP_PREDETERMINED_MAPPING): Redefine.
+
+2020-05-28  Nicolas Bértolo  <nicolasbertolo@gmail.com>
+
+	* Make-lang.in: Remove extra slash.
+
 2020-05-19  Martin Liska  <mliska@suse.cz>
 
 	* c-parser.c: Fix typo.

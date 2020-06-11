@@ -1,3 +1,78 @@
+2020-06-03  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/95214
+	PR fortran/66833
+	PR fortran/67938
+	* trans-expr.c (gfc_maybe_dereference_var): Add assumed-rank to
+	character dummy arguments list of possible attributes.
+
+2020-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* f95-lang.c (LANG_HOOKS_OMP_PREDETERMINED_MAPPING): Redefine.
+	* trans-openmp.c (gfc_omp_predetermined_mapping): New.
+	* trans.h (gfc_omp_predetermined_mapping): Declare.
+
+2020-05-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94361
+	* class.c (finalize_component): Use expr->finalized instead of
+	comp->finalized.
+	* gfortran.h (gfc_component): Remove finalized member.
+	(gfc_expr): Add it here instead.
+
+2020-05-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95373
+	* primary.c (is_inquiry_ref): Move validity check of inquiry
+	references against selected Fortran standard from here...
+	(gfc_match_varspec) ...to here.
+
+2020-05-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95090
+	* class.c (get_unique_type_string): Use buffer overrun check.
+
+2020-05-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95090
+	* class.c (get_unique_type_string): Enlarge temporary for
+	name-mangling.  Use strncpy to prevent buffer overrun.
+	(get_unique_hashed_string): Enlarge temporary.
+	(gfc_hash_value): Enlarge temporary for name-mangling.
+
+2020-05-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95373
+	* primary.c (is_inquiry_ref): Check validity of inquiry
+	references against selected Fortran standard.
+
+2020-05-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/94397
+	* match.c (gfc_match_type_spec): New variable ok initialised
+	to true. Set ok with the return value of gfc_reduce_init_expr
+	called only if the expression is not EXPR_CONSTANT and is not
+	EXPR_VARIABLE. Add !ok to the check for type not being integer
+	or the rank being greater than zero.
+
+2020-05-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95090
+	* iresolve.c (gfc_get_string): Enlarge temporary for
+	name-mangling.
+
+2020-05-27  Tobias Burnus  <tobias@codesourcery.com>
+	    Mark Eggleston  <markeggleston@gnu.gcc.org>
+
+	PR fortran/50392
+	* trans-decl.c (gfc_get_symbol_decl): Remove unnecessary block
+	delimiters.  Add auxiliary variables if a label is assigned to
+	a return variable. (gfc_gat_fake_result): If the symbol has an
+	assign attribute set declaration from the symbol's backend
+	declaration.
+
 2020-05-26  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95089

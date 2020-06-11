@@ -238,6 +238,9 @@ build_frontend_type (tree type)
       sdecl->type->ctype = type;
       sdecl->type->merge2 ();
 
+      /* Add both named and anonymous fields as members of the struct.
+	 Anonymous fields still need a name in D, so call them "__pad%d".  */
+      int anonfield_id = 0;
       sdecl->members = new Dsymbols;
 
       for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
@@ -249,12 +252,19 @@ build_frontend_type (tree type)
 	      return NULL;
 	    }
 
-	  Identifier *fident
-	    = Identifier::idPool (IDENTIFIER_POINTER (DECL_NAME (field)));
+	  Identifier *fident;
+	  if (DECL_NAME (field) == NULL_TREE)
+	    fident = Identifier::generateId ("__pad", anonfield_id++);
+	  else
+	    {
+	      const char *name = IDENTIFIER_POINTER (DECL_NAME (field));
+	      fident = Identifier::idPool (name);
+	    }
+
 	  VarDeclaration *vd = VarDeclaration::create (Loc (), ftype, fident,
 						       NULL);
 	  vd->parent = sdecl;
-	  vd->offset = tree_to_uhwi (DECL_FIELD_OFFSET (field));
+	  vd->offset = tree_to_uhwi (byte_position (field));
 	  vd->semanticRun = PASSsemanticdone;
 	  vd->csym = field;
 	  sdecl->members->push (vd);
@@ -305,7 +315,7 @@ build_frontend_type (tree type)
 
 	  /* GCC generic and placeholder built-ins are marked as variadic, yet
 	     have no named parameters, and so can't be represented in D.  */
-	  if (args->dim != 0 || !varargs_p)
+	  if (args->length != 0 || !varargs_p)
 	    {
 	      dtype = TypeFunction::create (args, dtype, varargs_p, LINKc);
 	      return dtype->addMod (mod);
@@ -659,9 +669,9 @@ maybe_set_builtin_1 (Dsymbol *d)
     {
       /* Recursively search through attribute decls.  */
       Dsymbols *decls = ad->include (NULL, NULL);
-      if (decls && decls->dim)
+      if (decls && decls->length)
 	{
-	  for (size_t i = 0; i < decls->dim; i++)
+	  for (size_t i = 0; i < decls->length; i++)
 	    {
 	      Dsymbol *sym = (*decls)[i];
 	      maybe_set_builtin_1 (sym);
@@ -698,7 +708,7 @@ d_maybe_set_builtin (Module *m)
   if (!m || !m->members)
     return;
 
-  for (size_t i = 0; i < m->members->dim; i++)
+  for (size_t i = 0; i < m->members->length; i++)
     {
       Dsymbol *sym = (*m->members)[i];
       maybe_set_builtin_1 (sym);

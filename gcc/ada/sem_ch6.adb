@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -425,6 +425,7 @@ package body Sem_Ch6 is
 
          --  Once the aspects of the generated body have been analyzed, create
          --  a copy for ASIS purposes and associate it with the original node.
+         --  Is this still needed???
 
          if Has_Aspects (N) then
             Set_Aspect_Specifications (Orig_N,
@@ -486,6 +487,7 @@ package body Sem_Ch6 is
 
          --  Once the aspects of the generated spec have been analyzed, create
          --  a copy for ASIS purposes and associate it with the original node.
+         --  Is this still needed???
 
          if Has_Aspects (N) then
             Set_Aspect_Specifications (Orig_N,
@@ -694,7 +696,7 @@ package body Sem_Ch6 is
       R_Type : constant Entity_Id := Etype (Scope_Id);
       --  Function result subtype
 
-      procedure Check_Return_Obj_Accessibility (Return_Stmt : Node_Id);
+      procedure Check_Return_Construct_Accessibility (Return_Stmt : Node_Id);
       --  Apply legality rule of 6.5 (5.9) to the access discriminants of an
       --  aggregate in a return statement.
 
@@ -702,24 +704,26 @@ package body Sem_Ch6 is
       --  Check that the return_subtype_indication properly matches the result
       --  subtype of the function, as required by RM-6.5(5.1/2-5.3/2).
 
-      ------------------------------------
-      -- Check_Return_Obj_Accessibility --
-      ------------------------------------
+      ------------------------------------------
+      -- Check_Return_Construct_Accessibility --
+      ------------------------------------------
 
-      procedure Check_Return_Obj_Accessibility (Return_Stmt : Node_Id) is
+      procedure Check_Return_Construct_Accessibility (Return_Stmt : Node_Id) is
          Assoc         : Node_Id;
          Agg           : Node_Id := Empty;
          Discr         : Entity_Id;
          Expr          : Node_Id;
          Obj           : Node_Id;
          Process_Exprs : Boolean := False;
-         Return_Obj    : Node_Id;
+         Return_Con    : Node_Id;
 
       begin
-         --  Only perform checks on record types with access discriminants
+         --  Only perform checks on record types with access discriminants and
+         --  non-internally generated functions.
 
          if not Is_Record_Type (R_Type)
            or else not Has_Discriminants (R_Type)
+           or else not Comes_From_Source (Return_Stmt)
          then
             return;
          end if;
@@ -736,32 +740,47 @@ package body Sem_Ch6 is
          --  simple return statement the expression is part of the node.
 
          if Nkind (Return_Stmt) = N_Extended_Return_Statement then
-            Return_Obj := Last (Return_Object_Declarations (Return_Stmt));
+            --  Obtain the object definition from the expanded extended return
 
-            --  We could be looking at something that's been expanded with
-            --  an initialzation procedure which we can safely ignore.
+            Return_Con := First (Return_Object_Declarations (Return_Stmt));
+            while Present (Return_Con) loop
+               --  Inspect the original node to avoid object declarations
+               --  expanded into renamings.
 
-            if Nkind (Return_Obj) /= N_Object_Declaration then
-               return;
-            end if;
+               if Nkind (Original_Node (Return_Con)) = N_Object_Declaration
+                 and then Comes_From_Source (Original_Node (Return_Con))
+               then
+                  exit;
+               end if;
+
+               Nlists.Next (Return_Con);
+            end loop;
+
+            pragma Assert (Present (Return_Con));
+
+            --  Could be dealing with a renaming
+
+            Return_Con := Original_Node (Return_Con);
          else
-            Return_Obj := Return_Stmt;
+            Return_Con := Return_Stmt;
          end if;
 
          --  We may need to check an aggregate or a subtype indication
          --  depending on how the discriminants were specified and whether
          --  we are looking at an extended return statement.
 
-         if Nkind (Return_Obj) = N_Object_Declaration
-           and then Nkind (Object_Definition (Return_Obj))
+         if Nkind (Return_Con) = N_Object_Declaration
+           and then Nkind (Object_Definition (Return_Con))
                       = N_Subtype_Indication
          then
-            Assoc := First (Constraints
-                             (Constraint (Object_Definition (Return_Obj))));
+            Assoc := Original_Node
+                       (First
+                         (Constraints
+                           (Constraint (Object_Definition (Return_Con)))));
          else
             --  Qualified expressions may be nested
 
-            Agg := Original_Node (Expression (Return_Obj));
+            Agg := Original_Node (Expression (Return_Con));
             while Nkind (Agg) = N_Qualified_Expression loop
                Agg := Original_Node (Expression (Agg));
             end loop;
@@ -811,54 +830,62 @@ package body Sem_Ch6 is
                then
                   --  Obtain the object to perform static checks on by moving
                   --  up the prefixes in the expression taking into account
-                  --  named access types.
+                  --  named access types and renamed objects within the
+                  --  expression.
 
                   Obj := Original_Node (Prefix (Expr));
-                  while Nkind_In (Obj, N_Indexed_Component,
-                                       N_Selected_Component)
                   loop
-                     Obj := Original_Node (Prefix (Obj));
+                     while Nkind_In (Obj, N_Explicit_Dereference,
+                                          N_Indexed_Component,
+                                          N_Selected_Component)
+                     loop
+                        --  When we encounter a named access type then we can
+                        --  ignore accessibility checks on the dereference.
 
-                     --  When we encounter a named access type then we can
-                     --  ignore accessibility checks on the dereference.
-
-                     if Ekind (Etype (Obj))
-                          in E_Access_Type ..
-                             E_Access_Protected_Subprogram_Type
-                     then
-                        if Nkind (Parent (Obj)) = N_Selected_Component then
-                           Obj := Selector_Name (Parent (Obj));
+                        if Ekind (Etype (Original_Node (Prefix (Obj))))
+                             in E_Access_Type ..
+                                E_Access_Protected_Subprogram_Type
+                        then
+                           if Nkind (Obj) = N_Selected_Component then
+                              Obj := Selector_Name (Obj);
+                           else
+                              Obj := Original_Node (Prefix (Obj));
+                           end if;
+                           exit;
                         end if;
-                        exit;
+
+                        Obj := Original_Node (Prefix (Obj));
+                     end loop;
+
+                     if Nkind (Obj) = N_Selected_Component then
+                        Obj := Selector_Name (Obj);
                      end if;
 
-                     --  Skip over the explicit dereference
+                     --  Check for renamings
 
-                     if Nkind (Obj) = N_Explicit_Dereference then
-                        Obj := Original_Node (Prefix (Obj));
+                     pragma Assert (Is_Entity_Name (Obj));
+
+                     if Present (Renamed_Object (Entity (Obj))) then
+                        Obj := Renamed_Object (Entity (Obj));
+                     else
+                        exit;
                      end if;
                   end loop;
 
                   --  Do not check aliased formals or function calls. A
                   --  run-time check may still be needed ???
 
-                  if Is_Entity_Name (Obj)
-                    and then Comes_From_Source (Obj)
+                  if Is_Formal (Entity (Obj))
+                    and then Is_Aliased (Entity (Obj))
                   then
-                     --  Explicitly aliased formals are allowed
+                     null;
 
-                     if Is_Formal (Entity (Obj))
-                       and then Is_Aliased (Entity (Obj))
-                     then
-                        null;
-
-                     elsif Object_Access_Level (Obj) >
-                             Scope_Depth (Scope (Scope_Id))
-                     then
-                        Error_Msg_N
-                          ("access discriminant in return aggregate would "
-                           & "be a dangling reference", Obj);
-                     end if;
+                  elsif Object_Access_Level (Obj) >
+                          Scope_Depth (Scope (Scope_Id))
+                  then
+                     Error_Msg_N
+                       ("access discriminant in return aggregate would "
+                        & "be a dangling reference", Obj);
                   end if;
                end if;
             end if;
@@ -886,7 +913,7 @@ package body Sem_Ch6 is
                end if;
             end if;
          end loop;
-      end Check_Return_Obj_Accessibility;
+      end Check_Return_Construct_Accessibility;
 
       -------------------------------------
       -- Check_Return_Subtype_Indication --
@@ -1093,7 +1120,7 @@ package body Sem_Ch6 is
             Resolve (Expr, R_Type);
             Check_Limited_Return (N, Expr, R_Type);
 
-            Check_Return_Obj_Accessibility (N);
+            Check_Return_Construct_Accessibility (N);
          end if;
 
          --  RETURN only allowed in SPARK as the last statement in function
@@ -1149,7 +1176,7 @@ package body Sem_Ch6 is
 
             Check_References (Stm_Entity);
 
-            Check_Return_Obj_Accessibility (N);
+            Check_Return_Construct_Accessibility (N);
 
             --  Check RM 6.5 (5.9/3)
 
@@ -3839,8 +3866,8 @@ package body Sem_Ch6 is
          --  the freeze actions that include the bodies. In particular, extra
          --  formals for accessibility or for return-in-place may need to be
          --  generated. Freeze nodes, if any, are inserted before the current
-         --  body. These freeze actions are also needed in ASIS mode and in
-         --  Compile_Only mode to enable the proper back-end type annotations.
+         --  body. These freeze actions are also needed in Compile_Only mode to
+         --  enable the proper back-end type annotations.
          --  They are necessary in any case to ensure proper elaboration order
          --  in gigi.
 
@@ -3849,7 +3876,6 @@ package body Sem_Ch6 is
            and then not Has_Completion (Spec_Id)
            and then Serious_Errors_Detected = 0
            and then (Expander_Active
-                      or else ASIS_Mode
                       or else Operating_Mode = Check_Semantics
                       or else Is_Ignored_Ghost_Entity (Spec_Id))
          then
@@ -4040,9 +4066,7 @@ package body Sem_Ch6 is
 
             --  Within an instance, add local renaming declarations so that
             --  gdb can retrieve the values of actuals more easily. This is
-            --  only relevant if generating code (and indeed we definitely
-            --  do not want these definitions -gnatc mode, because that would
-            --  confuse ASIS).
+            --  only relevant if generating code.
 
             if Is_Generic_Instance (Spec_Id)
               and then Is_Wrapper_Package (Current_Scope)
@@ -4265,8 +4289,7 @@ package body Sem_Ch6 is
          --  Legacy implementation (relying on front-end inlining)
 
          if not Back_End_Inlining then
-            if (Has_Pragma_Inline_Always (Spec_Id)
-                 and then not Opt.Disable_FE_Inline_Always)
+            if Has_Pragma_Inline_Always (Spec_Id)
               or else (Front_End_Inlining
                         and then not Opt.Disable_FE_Inline)
             then
@@ -4583,6 +4606,15 @@ package body Sem_Ch6 is
             end if;
 
          elsif Nkind (Parent (Parent (Spec_Id))) = N_Subprogram_Body_Stub then
+            null;
+
+         --  SPARK_Mode Off could complete no SPARK_Mode in a generic, either
+         --  as specified in source code, or because SPARK_Mode On is ignored
+         --  in an instance where the context is SPARK_Mode Off/Auto.
+
+         elsif Get_SPARK_Mode_From_Annotation (SPARK_Pragma (Body_Id)) = Off
+           and then (Is_Generic_Unit (Spec_Id) or else In_Instance)
+         then
             null;
 
          else

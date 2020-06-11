@@ -22,8 +22,11 @@ import unittest
 
 from git_email import GitEmail
 
+import unidiff
 
 script_path = os.path.dirname(os.path.realpath(__file__))
+
+unidiff_supports_renaming = hasattr(unidiff.PatchedFile(), 'is_rename')
 
 
 class TestGccChangelog(unittest.TestCase):
@@ -173,7 +176,7 @@ class TestGccChangelog(unittest.TestCase):
     def test_long_lines(self):
         email = self.get_git_email('long-lines.patch')
         assert len(email.errors) == 1
-        assert email.errors[0].message == 'line limit exceeds 100 characters'
+        assert email.errors[0].message == 'line exceeds 100 character limit'
 
     def test_new_files(self):
         email = self.from_patch_glob('0030')
@@ -295,3 +298,36 @@ class TestGccChangelog(unittest.TestCase):
                     'sem_ch12.adb', 'sem_ch4.adb', 'sem_ch7.adb',
                     'sem_ch8.adb', 'sem_elab.adb', 'sem_type.adb',
                     'sem_util.adb'])
+
+    @unittest.skipIf(not unidiff_supports_renaming,
+                     'Newer version of unidiff is needed (0.6.0+)')
+    def test_renamed_file(self):
+        email = self.from_patch_glob(
+            '0001-Ada-Add-support-for-XDR-streaming-in-the-default-run.patch')
+        assert not email.errors
+
+    def test_duplicite_author_lines(self):
+        email = self.from_patch_glob('0001-Fortran-type-is-real-kind-1.patch')
+        assert (email.changelog_entries[0].author_lines[0][0]
+                == 'Steven G. Kargl  <kargl@gcc.gnu.org>')
+        assert (email.changelog_entries[0].author_lines[1][0]
+                == 'Mark Eggleston  <markeggleston@gcc.gnu.org>')
+
+    def test_missing_change_description(self):
+        email = self.from_patch_glob('0001-Missing-change-description.patch')
+        assert len(email.errors) == 2
+        assert email.errors[0].message == 'missing description of a change'
+        assert email.errors[1].message == 'missing description of a change'
+
+    def test_libstdcxx_html_regenerated(self):
+        email = self.from_patch_glob('0001-Fix-text-of-hyperlink')
+        assert not email.errors
+        email = self.from_patch_glob('0002-libstdc-Fake-test-change-1.patch')
+        assert len(email.errors) == 1
+        msg = 'pattern doesn''t match any changed files'
+        assert email.errors[0].message == msg
+        assert email.errors[0].line == 'libstdc++-v3/doc/html/'
+        email = self.from_patch_glob('0003-libstdc-Fake-test-change-2.patch')
+        assert len(email.errors) == 1
+        msg = 'changed file not mentioned in a ChangeLog'
+        assert email.errors[0].message == msg

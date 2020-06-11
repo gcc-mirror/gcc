@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -210,7 +210,7 @@ package Opt is
    Allow_Integer_Address : Boolean := False;
    --  GNAT
    --  Allow use of integer expression in a context requiring System.Address.
-   --  Set by the use of configuration pragma Allow_Integer_Address Also set
+   --  Set by the use of configuration pragma Allow_Integer_Address. Also set
    --  in relaxed semantics mode for use by CodePeer or when -gnatd.M is used.
 
    All_Sources : Boolean := False;
@@ -222,21 +222,6 @@ package Opt is
    --  GNATBIND
    --  Set to non-null when Bind_Alternate_Main_Name is True. This value
    --  is modified as needed by Gnatbind.Scan_Bind_Arg.
-
-   ASIS_GNSA_Mode : Boolean := False;
-   --  GNAT
-   --  Enable GNSA back-end processing assuming ASIS_Mode is already set to
-   --  True. ASIS_GNSA mode suppresses the call to gigi.
-
-   ASIS_Mode : Boolean := False;
-   --  GNAT
-   --  Enable semantic checks and tree transformations that are important
-   --  for ASIS but that are usually skipped if Operating_Mode is set to
-   --  Check_Semantics. This flag does not have the corresponding option to set
-   --  it ON. It is set ON when Tree_Output is set ON, it can also be set ON
-   --  from the code of GNSA-based tool (a client may need to set ON the
-   --  Back_Annotate_Rep_Info flag in this case. At the moment this does not
-   --  make very much sense, because GNSA cannot do back annotation).
 
    Assertions_Enabled : Boolean := False;
    --  GNAT
@@ -257,9 +242,9 @@ package Opt is
    --  GNAT
    --  If set True, enables back annotation of representation information
    --  by gigi, even in -gnatc mode. This is set True by the use of -gnatR
-   --  (list representation information) or -gnatt (generate tree). It is
-   --  also set true if certain Unchecked_Conversion instantiations require
-   --  checking based on annotated values.
+   --  (list representation information). It is also set true if certain
+   --  Unchecked_Conversion instantiations require checking based on annotated
+   --  values.
 
    Back_End_Handles_Limited_Types : Boolean;
    --  This flag is set true if the back end can properly handle limited or
@@ -507,6 +492,14 @@ package Opt is
    --  PROJECT MANAGER
    --  Set to False with switch -f of gnatclean and gprclean
 
+   Disable_FE_Inline        : Boolean := False;
+   --  GNAT
+   --  Request to disable front end inlining from pragma Inline in the
+   --  presence of the -fno-inline back end flag on the command line,
+   --  regardless of any other switches that are set.
+   --  It remains the back end's reponsibility to honor -fno-inline at the
+   --  back end level.
+
    Display_Compilation_Progress : Boolean := False;
    --  GNATMAKE, GPRBUILD
    --  Set True (-d switch) to display information on progress while compiling
@@ -710,10 +703,10 @@ package Opt is
    --  Indicates the current setting of Fast_Math mode, as set by the use
    --  of a Fast_Math pragma (set True by Fast_Math (On)).
 
-   Force_ALI_Tree_File : Boolean := False;
+   Force_ALI_File : Boolean := False;
    --  GNAT
-   --  Force generation of ALI file even if errors are encountered. Also forces
-   --  generation of tree file if -gnatt is also set. Set on by use of -gnatQ.
+   --  Force generation of ALI file even if errors are encountered.
+   --  Set on by use of -gnatQ.
 
    Disable_ALI_File : Boolean := False;
    --  GNAT
@@ -854,7 +847,7 @@ package Opt is
    Ignore_Rep_Clauses : Boolean := False;
    --  GNAT
    --  Set True to ignore all representation clauses. Useful when compiling
-   --  code from foreign compilers for checking or ASIS purposes. Can be
+   --  code from foreign compilers for checking purposes. Can be
    --  set True by use of -gnatI.
 
    Ignore_SPARK_Mode_Pragmas_In_Instance : Boolean := False;
@@ -1072,6 +1065,7 @@ package Opt is
    --  to the three corresponding procedures in Osint-C. The reason for this
    --  slightly strange interface is to stop Repinfo from dragging in Osint in
    --  ASIS mode, which would include lots of unwanted units in the ASIS build.
+   --  ??? Revisit this now that ASIS mode is gone.
 
    type Create_List_File_Proc is access procedure (S : String);
    type Write_List_Info_Proc  is access procedure (S : String);
@@ -1257,11 +1251,6 @@ package Opt is
    --  Set to True with switch --single-compile-per-obj-dir. When True, there
    --  cannot be simultaneous compilations with the object files in the same
    --  object directory, if project files are used.
-
-   OpenAcc_Enabled : Boolean := False;
-   --  GNAT
-   --  Indicates whether OpenAcc pragmas should be taken into account. Set to
-   --  True by the use of -fopenacc.
 
    type Operating_Mode_Type is (Check_Syntax, Check_Semantics, Generate_Code);
    pragma Ordered (Operating_Mode_Type);
@@ -1528,15 +1517,6 @@ package Opt is
    --  with'ed indirectly. It is set True by use of either the -gnatg or
    --  -gnaty switches, but not by use of the Style_Checks pragma.
 
-   Disable_FE_Inline        : Boolean := False;
-   Disable_FE_Inline_Always : Boolean := False;
-   --  GNAT
-   --  Request to disable front end inlining from pragma Inline or pragma
-   --  Inline_Always out of the presence of the -fno-inline back end flag
-   --  on the command line, regardless of any other switches that are set.
-   --  It remains the back end's reponsibility to honor -fno-inline at the
-   --  back end level.
-
    Suppress_Control_Flow_Optimizations : Boolean := False;
    --  GNAT
    --  Set by -fpreserve-control-flow. Suppresses control flow optimizations
@@ -1657,10 +1637,6 @@ package Opt is
    --  GNAT
    --  Set True to treat pragma Restrictions as Restriction_Warnings. Set by
    --  -gnatr switch.
-
-   Tree_Output : Boolean := False;
-   --  GNAT
-   --  Set to True (-gnatt) to generate output tree file
 
    Try_Semantics : Boolean := False;
    --  GNAT
@@ -2245,42 +2221,6 @@ package Opt is
    --  this flag, see package Expander. Indeed this flag might more logically
    --  be in the spec of Expander, but it is referenced by Errout, and it
    --  really seems wrong for Errout to depend on Expander.
-
-   -----------------------
-   -- Tree I/O Routines --
-   -----------------------
-
-   procedure Tree_Read;
-   --  Reads switch settings from current tree file using Tree_Read
-
-   procedure Tree_Write;
-   --  Writes out switch settings to current tree file using Tree_Write
-
-   --------------------------
-   -- ASIS Version Control --
-   --------------------------
-
-   --  These two variables (Tree_Version_String and Tree_ASIS_Version_Number)
-   --  are supposed to be used in the GNAT/ASIS version check performed in
-   --  the ASIS code (this package is also a part of the ASIS implementation).
-   --  They are set by Tree_Read procedure, so they represent the version
-   --  number (and the version string) of the compiler which has created the
-   --  tree, and they are supposed to be compared with the corresponding values
-   --  from the Tree_IO and Gnatvsn packages which also are a part of ASIS
-   --  implementation.
-
-   Tree_Version_String : String_Access;
-   --  Used to store the compiler version string read from a tree file to check
-   --  if it is from the same date as stored in the version string in Gnatvsn.
-   --  We require that ASIS Pro can be used only with GNAT Pro, but we allow
-   --  non-Pro ASIS and ASIS-based tools to be used with any version of the
-   --  GNAT compiler. Therefore, we need the possibility to compare the dates
-   --  of the corresponding source sets, using version strings that may be
-   --  of different lengths.
-
-   Tree_ASIS_Version_Number : Int;
-   --  Used to store the ASIS version number read from a tree file to check if
-   --  it is the same as stored in the ASIS version number in Tree_IO.
 
    -----------------------------------
    -- Modes for Formal Verification --

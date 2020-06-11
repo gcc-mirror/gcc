@@ -79,16 +79,6 @@ extern unsigned int gcn_local_sym_hash (const char *name);
 #define ASM_SPEC  "-triple=amdgcn--amdhsa -mattr=-code-object-v3 "  \
 		  "%:last_arg(%{march=*:-mcpu=%*}) " \
 		  "-filetype=obj"
-/* Add -mlocal-symbol-id=<source-file-basename> unless the user (or mkoffload)
-   passes the option explicitly on the command line.  The option also causes
-   several dump-matching tests to fail in the testsuite, so the option is not
-   added when or tree dump/compare-debug options used in the testsuite are
-   present.
-   This has the potential for surprise, but a user can still use an explicit
-   -mlocal-symbol-id=<whatever> option manually together with -fdump-tree or
-   -fcompare-debug options.  */
-#define CC1_SPEC "%{!mlocal-symbol-id=*:%{!fdump-tree-*:"	\
-		 "%{!fdump-ipa-*:%{!fcompare-debug*:-mlocal-symbol-id=%b}}}}"
 #define LINK_SPEC "--pie"
 #define LIB_SPEC  "-lc"
 

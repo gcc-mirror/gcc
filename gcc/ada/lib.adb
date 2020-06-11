@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,7 +43,6 @@ with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
-with Tree_IO;  use Tree_IO;
 with Uname;    use Uname;
 with Widechar; use Widechar;
 
@@ -1253,50 +1252,6 @@ package body Lib is
    begin
       TSN := TSN + 1;
    end Synchronize_Serial_Number;
-
-   ---------------
-   -- Tree_Read --
-   ---------------
-
-   procedure Tree_Read is
-      N : Nat;
-      S : String_Ptr;
-
-   begin
-      Units.Tree_Read;
-
-      --  Read Compilation_Switches table. First release the memory occupied
-      --  by the previously loaded switches.
-
-      for J in Compilation_Switches.First .. Compilation_Switches.Last loop
-         Free (Compilation_Switches.Table (J));
-      end loop;
-
-      Tree_Read_Int (N);
-      Compilation_Switches.Set_Last (N);
-
-      for J in 1 .. N loop
-         Tree_Read_Str (S);
-         Compilation_Switches.Table (J) := S;
-      end loop;
-   end Tree_Read;
-
-   ----------------
-   -- Tree_Write --
-   ----------------
-
-   procedure Tree_Write is
-   begin
-      Units.Tree_Write;
-
-      --  Write Compilation_Switches table
-
-      Tree_Write_Int (Compilation_Switches.Last);
-
-      for J in 1 .. Compilation_Switches.Last loop
-         Tree_Write_Str (Compilation_Switches.Table (J));
-      end loop;
-   end Tree_Write;
 
    --------------------
    -- Unit_Name_Hash --

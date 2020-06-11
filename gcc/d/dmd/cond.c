@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -33,7 +33,7 @@ int findCondition(Strings *ids, Identifier *ident)
 {
     if (ids)
     {
-        for (size_t i = 0; i < ids->dim; i++)
+        for (size_t i = 0; i < ids->length; i++)
         {
             const char *id = (*ids)[i];
 
@@ -152,7 +152,7 @@ static Statement *createForeach(StaticForeach *sfe, Loc loc, Parameters *paramet
     }
     else
     {
-        assert(sfe->rangefe && parameters->dim == 1);
+        assert(sfe->rangefe && parameters->length == 1);
         return new ForeachRangeStatement(loc, sfe->rangefe->op, (*parameters)[0],
                                          sfe->rangefe->lwr->syntaxCopy(),
                                          sfe->rangefe->upr->syntaxCopy(), s, loc);
@@ -236,7 +236,7 @@ static Expression *createTuple(Loc loc, TypeStruct *type, Expressions *e)
 
 static void lowerNonArrayAggregate(StaticForeach *sfe, Scope *sc)
 {
-    size_t nvars = sfe->aggrfe ? sfe->aggrfe->parameters->dim : 1;
+    size_t nvars = sfe->aggrfe ? sfe->aggrfe->parameters->length : 1;
     Loc aloc = sfe->aggrfe ? sfe->aggrfe->aggr->loc : sfe->rangefe->lwr->loc;
     // We need three sets of foreach loop variables because the
     // lowering contains three foreach loops.
@@ -264,7 +264,7 @@ static void lowerNonArrayAggregate(StaticForeach *sfe, Scope *sc)
         for (size_t i = 0; i < 2; i++)
         {
             Expressions *e = new Expressions();
-            for (size_t j = 0; j < pparams[0]->dim; j++)
+            for (size_t j = 0; j < pparams[0]->length; j++)
             {
                 Parameter *p = (*pparams[i])[j];
                 e->push(new IdentifierExp(aloc, p->ident));
