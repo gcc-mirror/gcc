@@ -59,7 +59,9 @@ fi
 
 # Save diff to a file if requested.
 if ! [ -z "$GCC_GIT_DIFF_FILE" ]; then
-  git $cmd > "$GCC_GIT_DIFF_FILE";
+    tee="tee $GCC_GIT_DIFF_FILE"
+else
+    tee="cat"
 fi
 
-git $cmd | git gcc-mklog -c "$COMMIT_MSG_FILE"
+git $cmd | $tee | git gcc-mklog -c "$COMMIT_MSG_FILE"
