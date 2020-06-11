@@ -2811,6 +2811,12 @@ cp_fold (tree x)
       return org_x;
     }
 
+  if (EXPR_P (x) && TREE_CODE (x) == code)
+    {
+      TREE_THIS_VOLATILE (x) = TREE_THIS_VOLATILE (org_x);
+      TREE_NO_WARNING (x) = TREE_NO_WARNING (org_x);
+    }
+
   fold_cache->put (org_x, x);
   /* Prevent that we try to fold an already folded result again.  */
   if (x != org_x)
