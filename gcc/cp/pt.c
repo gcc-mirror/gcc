@@ -11208,6 +11208,16 @@ tsubst_friend_class (tree friend_tmpl, tree args)
 	  DECL_ANTICIPATED (tmpl)
 	    = DECL_ANTICIPATED (DECL_TEMPLATE_RESULT (tmpl)) = true;
 
+	  /* Substitute into and set the constraints on the new declaration.  */
+	  if (tree ci = get_constraints (friend_tmpl))
+	    {
+	      ++processing_template_decl;
+	      ci = tsubst_constraint_info (ci, args, tf_warning_or_error,
+					   DECL_FRIEND_CONTEXT (friend_tmpl));
+	      --processing_template_decl;
+	      set_constraints (tmpl, ci);
+	    }
+
 	  /* Inject this template into the enclosing namspace scope.  */
 	  tmpl = pushdecl_namespace_level (tmpl, true);
 	}
