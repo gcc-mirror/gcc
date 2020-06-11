@@ -2751,7 +2751,9 @@ check_local_shadow (tree decl)
       else if (warn_shadow_local)
 	warning_code = OPT_Wshadow_local;
       else if (warn_shadow_compatible_local
-	       && (same_type_p (TREE_TYPE (old), TREE_TYPE (decl))
+	       && ((TREE_TYPE (old)
+		    && TREE_TYPE (decl)
+		    && same_type_p (TREE_TYPE (old), TREE_TYPE (decl)))
 		   || (!dependent_type_p (TREE_TYPE (decl))
 		       && !dependent_type_p (TREE_TYPE (old))
 		       /* If the new decl uses auto, we don't yet know
