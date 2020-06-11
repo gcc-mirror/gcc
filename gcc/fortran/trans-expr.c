@@ -6244,6 +6244,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		      || gfc_expr_attr (e).allocatable)
 		    set_dtype_for_unallocated (&parmse, e);
 		  else if (e->expr_type == EXPR_VARIABLE
+			   && e->ref
+			   && e->ref->u.ar.type == AR_FULL
 			   && e->symtree->n.sym->attr.dummy
 			   && e->symtree->n.sym->as
 			   && e->symtree->n.sym->as->type == AS_ASSUMED_SIZE)
