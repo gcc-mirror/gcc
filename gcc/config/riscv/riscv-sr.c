@@ -306,6 +306,10 @@ riscv_remove_unneeded_save_restore_calls (void)
 
 	  if (CALL_P (insn))
 	    ++call_count;
+	  /* Ignore any USEs in the gpr_save pattern.  They don't prevent us
+	     from optimizing away the save call.  */
+	  else if (insn == prologue_matched)
+	    ;
 	  else
 	    {
 	      df_ref use;
