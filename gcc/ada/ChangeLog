@@ -1,3 +1,212 @@
+2020-06-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-aomoar.ads, libgnat/s-aomoar.adb: New files.
+	* libgnat/s-atopar.ads: Move...
+	* libgnat/s-aoinar.ads: Here.
+	* libgnat/s-atopar.adb: Move...
+	* libgnat/s-aoinar.adb: Here.
+	* impunit.adb: Update list of runtime files.
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS=): Adjust.
+
+2020-06-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* snames.ads-tmpl (Name_Characters_Assertion_Check,
+	Name_Containers_Assertion_Check,
+	Name_Interfaces_Assertion_Check, Name_IO_Assertion_Check,
+	Name_Numerics_Assertion_Check, Name_Strings_Assertion_Check,
+	Name_System_Assertion_Check): New constants.
+	* types.ads (Characters_Assertion_Check,
+	Containers_Assertion_Check, Interfaces_Assertion_Check,
+	IO_Assertion_Check, Numerics_Assertion_Check,
+	Strings_Assertion_Check, System_Assertion_Check): New constants.
+	(All_Checks): Update accordingly.
+
+2020-06-10  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* exp_ch3.adb (Build_Equivalent_Record_Aggregate): Return Empty
+	if Etype of record component has predicates.
+
+2020-06-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch3.adb (Build_Init_Statements): Implement the notion of
+	"require late initialization".
+
+2020-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.adb (Copy_And_Maybe_Dereference): Temporarily copy
+	the parent node of the original tree when dereferencing.
+
+2020-06-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): Add a warning when
+	two actuals in a call overlap, both are composite types that may
+	be passed by reference, and only one of them is writable.
+
+2020-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_In): Use an expression with actions to
+	insert the PE raise statement for the Unchecked_Union case.
+
+2020-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch4.adb (Analyze_Call): Use idiomatic condition.
+	* sem_res.adb (Resolve_Call): Remove obsolete code.
+
+2020-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.adb (Copy_And_Maybe_Dereference): New function.
+	(Build_Access_Record_Constraint): Use it to copy the prefix.
+	(Build_Actual_Array_Constraint): Likewise.
+	(Build_Actual_Record_Constraint): Likewise.
+
+2020-06-10  Bob Duff  <duff@adacore.com>
+
+	* sem_prag.adb (Invariant): Remove the pragma removing code.  It
+	doesn't work to remove the pragma, because various flags are set
+	during Build_Invariant_Procedure_Declaration and
+	Build_Invariant_Procedure_Body that need to be set to avoid the
+	spurious warnings.
+	* exp_util.adb (Make_Invariant_Call): Avoid calling the
+	invariant-checking procedure if the body is empty. This is an
+	optimization.
+
+2020-06-10  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Fix gnatmetric
+	switches description.
+
+2020-06-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* repinfo-input.ads, repinfo-input.adb, repinfo.adb,
+	repinfo.ads: Update header.
+
+2020-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (In_Place_Assign_OK): Do not necessarily return
+	false for a type with discriminants.
+	(Convert_To_Assignments): Use Parent_Node and Parent_Kind more
+	consistently.  In the in-place assignment case, first apply a
+	discriminant check if need be, and be prepared for a rewritten
+	aggregate as a result.
+
+2020-06-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* atree.adb, contracts.adb, debug.adb, freeze.adb,
+	repinfo-input.adb, repinfo.adb, sem_attr.adb, sem_ch10.adb,
+	sem_ch13.adb, sem_ch3.adb, sem_ch5.adb, sem_ch6.adb,
+	sem_ch8.adb, sem_ch9.adb, sem_disp.adb, sem_eval.adb,
+	sem_prag.adb: Remove more references to ASIS.
+
+2020-06-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-secsta.adb (Round_Up): Fix typo in exception
+	message.
+
+2020-06-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* par-ch4.adb (P_Membership_Test): Fix typo in a grammar rule.
+
+2020-06-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_N_Attribute_Reference): Remove
+	expansion of First and Last attributes.
+
+2020-06-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Remove folding
+	for Enum_Rep attribute.
+	* exp_spark.adb (Expand_SPARK_N_Attribute_Reference): Remove
+	duplicated code for folding Enum_Rep attribute.
+	* sem_attr.adb (Eval_Attribute): Relax condition for folding
+	Enum_Rep attribute; previously dead code is now executed when
+	the attribute prefix is an enumeration literal; refine type in
+	processing of Enum_Val.
+
+2020-06-10  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Analyze_Declarations): Adjust the machinery that
+	takes care of late body overriding of initialize, adjust,
+	finalize.  Remove ASIS mode code.
+
+2020-06-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads (Access_Subprogram_Wrapper): New attribute of
+	Subprogram_Type entities. Denotes subprogram constructed for
+	Access_To_Subprogram types that include pre- and postconditions.
+	* einfo.adb: Subprogram bodies for Access_Subprogram_Wrapper.
+	* exp_ch6.adb (Expand_Call): An indirect call through an
+	Access_To_subprogram that includes contracts is rewritten as a
+	call to the corresponding Access_ ubprogram_Wrapper. Handle
+	derived types that inherit contract from parent.
+	* sem_prag.adb (Build_Access_Subprogram_Wrapper): Build
+	subprogram declaration for subprogram that incorporates the
+	contracts of an Access_To_Subprogram type declaration. Build
+	corresponding body and attach it to freeze actions for type.
+	* sem_util.ads, sem_util.adb (Is_Access_Subprogram_Wrapper):
+	Utility that uses signature of the subprogram to determine
+	whether it is a generated wrapper for an Access_To_Subprogram
+	type.
+
+2020-06-10  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* par-ch6.adb (P_Subprogram): Make sure the specification
+	belongs to a procedure.
+
+2020-06-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (All_Membership_Choices_Static): Assert an AST
+	property documented in sinfo.ads and simplify an excessive
+	condition.
+
+2020-06-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Fix a copy-paste
+	mistake in comment.
+	* sem_res.adb (Flag_Effectively_Volatile_Objects): Fix a type in
+	the SPARK RM rule number.
+	* exp_ch4.adb, sem_util.adb: Fix style in single line comments.
+
+2020-06-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aux.ads, sem_aux.adb (Get_Low_Bound): Remove.
+
+2020-06-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* scn.adb (Determine_License): Remove.
+
+2020-06-10  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Add condition to
+	handle processing of objects initialized by a call to a function
+	return an anonymous access type.
+	* exp_ch6.adb, exp_ch6.ads
+	(Has_Unconstrained_Access_Discriminants): Moved to sem_util.adb
+	(Needs_Result_Accessibility_Level): Moved to sem_util.adb
+	* sem_util.adb, sem_util.ads
+	(Has_Unconstrained_Access_Discriminants): Moved from exp_ch6.adb
+	(Needs_Result_Accessibility_Level): Moved from exp_ch6.adb
+	* sem_res.adb (Valid_Conversion): Add condition for the special
+	case where the operand of a conversion is the result of an
+	anonymous access type
+
+2020-06-10  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* par-ch6.adb (P_Subprogram): Reject duplicate subprogram
+	declarations.
+
+2020-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Insert_Post_Call_Actions): Deal with the context
+	of an if-expression and with a call written in prefixed notation.
+
+2020-06-10  Gary Dismukes  <dismukes@adacore.com>
+
+	* einfo.ads: Minor reformatting of a comment.
+	* exp_aggr.adb: Minor reformatting and a grammar correction.
+	* exp_attr.adb: Minor reformatting and a typo fix in some
+	comments.
+	* sem_ch12.adb: Fix three typos in comments.
+
 2020-06-09  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch6.adb (New_Overloaded_Entity): Add missing call to check

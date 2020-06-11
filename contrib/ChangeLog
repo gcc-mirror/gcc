@@ -1,3 +1,22 @@
+2020-06-10  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Fix renamed files in
+	parse_git_name_status.
+	* gcc-changelog/test_email.py: Add test for it.
+
+2020-06-10  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Add more supported prefixes.
+	* gcc-changelog/test_email.py: Fix one flake8 error.
+	* gcc-changelog/test_patches.txt: Add tested for newly
+	supported prefixes.
+
+2020-06-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gcc-changelog/git_commit.py (GitCommit.parse_changelog):
+	Improve error strings.
+	* gcc-changelog/test_email.py: Update expected errors.
+
 2020-06-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* gcc-changelog/git_email.py: Set exit status on error.
