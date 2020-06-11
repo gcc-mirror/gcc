@@ -508,24 +508,24 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	  break;
 	else if (i < *decoded_options_count && j == fdecoded_options_count)
 	  {
-	    warning (0, "Extra option to -Xassembler: %s,"
-		     " dropping all -Xassembler and -Wa options.",
+	    warning (0, "Extra option to %<-Xassembler%>: %s,"
+		     " dropping all %<-Xassembler%> and %<-Wa%> options.",
 		     (*decoded_options)[i].arg);
 	    xassembler_options_error = true;
 	    break;
 	  }
 	else if (i == *decoded_options_count && j < fdecoded_options_count)
 	  {
-	    warning (0, "Extra option to -Xassembler: %s,"
-		     " dropping all -Xassembler and -Wa options.",
+	    warning (0, "Extra option to %<-Xassembler%>: %s,"
+		     " dropping all %<-Xassembler%> and %<-Wa%> options.",
 		     fdecoded_options[j].arg);
 	    xassembler_options_error = true;
 	    break;
 	  }
 	else if (strcmp ((*decoded_options)[i].arg, fdecoded_options[j].arg))
 	  {
-	    warning (0, "Options to Xassembler do not match: %s, %s,"
-		     " dropping all -Xassembler and -Wa options.",
+	    warning (0, "Options to %<-Xassembler%> do not match: %s, %s,"
+		     " dropping all %<-Xassembler%> and %<-Wa%> options.",
 		     (*decoded_options)[i].arg, fdecoded_options[j].arg);
 	    xassembler_options_error = true;
 	    break;
