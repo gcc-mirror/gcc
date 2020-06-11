@@ -65,7 +65,10 @@ enum gomp_map_kind
     /* Also internal, behaves like GOMP_MAP_TO, but additionally any
        GOMP_MAP_POINTER records consecutive after it which have addresses
        falling into that range will not be ignored if GOMP_MAP_TO_PSET wasn't
-       mapped already.  */
+       mapped already.
+       For OpenACC attach operations (e.g. copyin of struct members),
+       GOMP_MAP_TO_PSET is followed by a single GOMP_MAP_ATTACH mapping
+       instead.  */
     GOMP_MAP_TO_PSET =			(GOMP_MAP_FLAG_SPECIAL_0 | 1),
     /* Must already be present.  */
     GOMP_MAP_FORCE_PRESENT =		(GOMP_MAP_FLAG_SPECIAL_0 | 2),
