@@ -985,9 +985,15 @@ find_group_last (int pos, size_t mapnum, size_t *sizes, unsigned short *kinds)
   switch (kind0)
     {
     case GOMP_MAP_TO_PSET:
-      while (pos + 1 < mapnum && (kinds[pos + 1] & 0xff) == GOMP_MAP_POINTER)
+      if (pos + 1 < mapnum
+	  && (kinds[pos + 1] & 0xff) == GOMP_MAP_ATTACH)
+	return pos + 1;
+
+      while (pos + 1 < mapnum
+	     && (kinds[pos + 1] & 0xff) == GOMP_MAP_POINTER)
 	pos++;
-      /* We expect at least one GOMP_MAP_POINTER after a GOMP_MAP_TO_PSET.  */
+      /* We expect at least one GOMP_MAP_POINTER (if not a single
+	 GOMP_MAP_ATTACH) after a GOMP_MAP_TO_PSET.  */
       assert (pos > first_pos);
       break;
 
@@ -1002,6 +1008,9 @@ find_group_last (int pos, size_t mapnum, size_t *sizes, unsigned short *kinds)
       gomp_fatal ("unexpected mapping");
       break;
 
+    case GOMP_MAP_ATTACH:
+      break;
+
     default:
       /* GOMP_MAP_ALWAYS_POINTER can only appear directly after some other
 	 mapping.  */
@@ -1012,9 +1021,16 @@ find_group_last (int pos, size_t mapnum, size_t *sizes, unsigned short *kinds)
 	    return pos + 1;
 	}
 
+      /* We can have a single GOMP_MAP_ATTACH mapping after a to/from
+	 mapping.  */
+      if (pos + 1 < mapnum
+	  && (kinds[pos + 1] & 0xff) == GOMP_MAP_ATTACH)
+	return pos + 1;
+
       /* We can have zero or more GOMP_MAP_POINTER mappings after a to/from
 	 (etc.) mapping.  */
-      while (pos + 1 < mapnum && (kinds[pos + 1] & 0xff) == GOMP_MAP_POINTER)
+      while (pos + 1 < mapnum
+	     && (kinds[pos + 1] & 0xff) == GOMP_MAP_POINTER)
 	pos++;
     }
 
