@@ -103,11 +103,9 @@ match gfc_match_call (void);
 
 /* We want to use this function to check for a common-block-name
    that can exist in a bind statement, so removed the "static"
-   declaration of the function in match.c.
+   declaration of the function in match.c. */
  
-   TODO: should probably rename this now that it'll be globally seen to
-   gfc_match_common_name.  */
-match match_common_name (char *name);
+match gfc_match_common_name (char *name);
 
 match gfc_match_common (void);
 match gfc_match_block_data (void);
