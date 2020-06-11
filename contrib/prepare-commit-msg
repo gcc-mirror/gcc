@@ -58,8 +58,9 @@ else
 fi
 
 # Save diff to a file if requested.
-if ! [ -z "$GCC_GIT_DIFF_FILE" ]; then
-    tee="tee $GCC_GIT_DIFF_FILE"
+DIFF_FILE=$(git config gcc-config.diff-file)
+if ! [ -z "$DIFF_FILE" ]; then
+    tee="tee $DIFF_FILE"
 else
     tee="cat"
 fi
