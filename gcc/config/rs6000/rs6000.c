@@ -4988,7 +4988,7 @@ rs6000_density_test (rs6000_cost_data *data)
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 	  if (is_gimple_debug (stmt))
-	      continue;
+	    continue;
 
 	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (stmt);
 
