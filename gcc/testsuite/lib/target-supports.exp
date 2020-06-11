@@ -9537,6 +9537,7 @@ proc check_effective_target_exceptions_enabled {} {
     return [check_cached_effective_target exceptions_enabled {
 	if { [check_effective_target_exceptions] } {
 	    return [check_no_compiler_messages exceptions_enabled assembly {
+		// C++
 		void foo (void)
 		{
 		    throw 1;
