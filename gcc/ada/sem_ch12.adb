@@ -14292,6 +14292,21 @@ package body Sem_Ch12 is
 
                exit;
 
+            --  If an ancestor of the generic comes from a formal package
+            --  there is no source for the ancestor body. This is detected
+            --  by examining the scope of the ancestor and its declaration.
+            --  The body, if any is needed, will be available when the
+            --  current unit (containing a formal package) is instantiated.
+
+            elsif Nkind (True_Parent) = N_Package_Specification
+              and then Present (Generic_Parent (True_Parent))
+              and then Nkind
+                (Original_Node (Unit_Declaration_Node
+                  (Scope (Generic_Parent (True_Parent)))))
+                     = N_Formal_Package_Declaration
+            then
+               return;
+
             else
                True_Parent := Parent (True_Parent);
             end if;
