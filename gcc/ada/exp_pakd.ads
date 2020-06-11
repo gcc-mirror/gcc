@@ -86,6 +86,15 @@ package Exp_Pakd is
    --    Packed_Bytes{1,2,4} type is made on the basis of alignment needs as
    --    described above for the unconstrained case.
 
+   --  When the packed array (sub)type is specified to have the reverse scalar
+   --  storage order, the Packed_Bytes{1,2,4} references above are replaced
+   --  with Rev_Packed_Bytes{1,2,4}. This is necessary because, although the
+   --  component type is Packed_Byte and therefore endian neutral, the scalar
+   --  storage order of the new type must be compatible with that of an outer
+   --  composite type, if this composite type contains a component whose type
+   --  is the packed array (sub)type and which does not start or does not end
+   --  on a storage unit boundary.
+
    --  When a variable of packed array type is allocated, gigi will allocate
    --  the amount of space indicated by the corresponding packed array type.
    --  However, we do NOT attempt to rewrite the types of any references or

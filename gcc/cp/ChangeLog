@@ -1,3 +1,18 @@
+2020-06-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95440
+	* call.c (add_candidates): Use vec_safe_length() for
+	testing the arguments list.
+	(build_new_method_call_1): Use vec_safe_is_empty() when
+	checking for an empty args list.
+
+2020-06-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95562
+	* parser.c (cp_parser_direct_declarator): Clear
+	CP_PARSER_FLAGS_DELAY_NOEXCEPT if the declarator kind is not
+	cdk_id.
+
 2020-06-09  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/95137

@@ -1,3 +1,62 @@
+2020-06-10  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/51447
+	* gcc.c-torture/execute/pr51447.c (main): Preserve call-saved
+	register.
+
+2020-06-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95440
+	* g++.dg/coroutines/pr95440.C: New test.
+
+2020-06-10  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/95353
+	PR middle-end/92939
+	* c-c++-common/Wstringop-truncation.c: Remove an xfail.
+	* gcc.dg/Warray-bounds-46.c: Remove a bogus warning.
+	* gcc.dg/Wrestrict-9.c: Disable -Wstringop-overflow.
+	* gcc.dg/Wstringop-overflow-12.c: Remove xfails.
+	* gcc.dg/Wstringop-overflow-28.c: Same.
+	* gcc.dg/builtin-stringop-chk-4.c: Same.
+	* gcc.dg/builtin-stringop-chk-5.c: Same.
+	* gcc.dg/builtin-stringop-chk-8.c: Same.
+	* gcc.dg/strlenopt-74.c: Avoid buffer overflow.
+	* gcc.dg/Wstringop-overflow-34.c: New test.
+	* gcc.dg/Wstringop-overflow-35.c: New test.
+	* gcc.dg/Wstringop-overflow-36.c: New test.
+	* gcc.dg/Wstringop-overflow-37.c: New test.
+	* gcc.dg/Wstringop-overflow-38.c: New test.
+
+2020-06-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95576
+	* g++.dg/vect/pr95576.cc: New testcase.
+
+2020-06-10  Haijian Zhang  <z.zhanghaijian@huawei.com>
+
+	PR target/95523
+	* gcc.target/aarch64/sve/pr95523.c: New test.
+
+2020-06-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95562
+	* g++.dg/cpp0x/noexcept60.C: New test.
+
+2020-06-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/ssa-dse-30.c: Adjust test for folding of
+	memmove happening later.
+
+2020-06-10  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/asimd-mull-elem.c: New test.
+
+2020-06-10  Qian Chao  <qianchao9@huawei.com>
+
+	PR tree-optimization/95569
+	* gcc.dg/tm/pr95569.c: New test.
+
 2020-06-09  Michael Meissner  <meissner@linux.ibm.com>
 
 	* gcc.target/powerpc/clone3.c: New test for using 'future' with

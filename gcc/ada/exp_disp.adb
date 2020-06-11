@@ -1114,6 +1114,14 @@ package body Exp_Disp is
       then
          Controlling_Tag := Duplicate_Subexpr (Ctrl_Arg);
 
+      elsif Is_Access_Type (Ctrl_Typ) then
+         Controlling_Tag :=
+           Make_Selected_Component (Loc,
+             Prefix        =>
+               Make_Explicit_Dereference (Loc,
+                 Duplicate_Subexpr_Move_Checks (Ctrl_Arg)),
+             Selector_Name => New_Occurrence_Of (DTC_Entity (Subp), Loc));
+
       else
          Controlling_Tag :=
            Make_Selected_Component (Loc,
@@ -4310,6 +4318,7 @@ package body Exp_Disp is
             Append_To (Result,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => OSD,
+                Constant_Present    => True,
                 Object_Definition   =>
                   Make_Subtype_Indication (Loc,
                     Subtype_Mark =>
@@ -4347,7 +4356,7 @@ package body Exp_Disp is
                     Attribute_Name => Name_Alignment)));
 
             --  In secondary dispatch tables the Typeinfo component contains
-            --  the address of the Object Specific Data (see a-tags.ads)
+            --  the address of the Object Specific Data (see a-tags.ads).
 
             Append_To (DT_Aggr_List,
               Make_Attribute_Reference (Loc,

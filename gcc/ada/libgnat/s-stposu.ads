@@ -42,12 +42,14 @@ package System.Storage_Pools.Subpools is
 
    type Root_Storage_Pool_With_Subpools is abstract
      new Root_Storage_Pool with private;
+   pragma Preelaborable_Initialization (Root_Storage_Pool_With_Subpools);
    --  The base for all implementations of Storage_Pool_With_Subpools. This
    --  type is Limited_Controlled by derivation. To use subpools, an access
    --  type must be associated with an implementation descending from type
    --  Root_Storage_Pool_With_Subpools.
 
    type Root_Subpool is abstract tagged limited private;
+   pragma Preelaborable_Initialization (Root_Subpool);
    --  The base for all implementations of Subpool. Objects of this type are
    --  managed by the pool_with_subpools.
 

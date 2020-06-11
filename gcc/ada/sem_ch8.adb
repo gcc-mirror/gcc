@@ -501,6 +501,10 @@ package body Sem_Ch8 is
    --  Ada 2005 (AI-262): Determines if the current compilation unit has a
    --  private with on E.
 
+   function Has_Components (Typ : Entity_Id) return Boolean;
+   --  Determine if given type has components, i.e. is either a record type or
+   --  type or a type that has discriminants.
+
    function Has_Implicit_Operator (N : Node_Id) return Boolean;
    --  N is an expanded name whose selector is an operator name (e.g. P."+").
    --  declarative part contains an implicit declaration of an operator if it
@@ -514,14 +518,6 @@ package body Sem_Ch8 is
    --  profile of the renamed entity. The subtypes given in the subprogram
    --  specification are discarded and replaced with those of the renamed
    --  subprogram, which are then used to recheck the default values.
-
-   function Is_Appropriate_For_Entry_Prefix (T : Entity_Id) return Boolean;
-   --  True if it is of a task type, a protected type, or else an access to one
-   --  of these types.
-
-   function Is_Appropriate_For_Record (T : Entity_Id) return Boolean;
-   --  Prefix is appropriate for record if it is of a record type, or an access
-   --  to such.
 
    function Most_Descendant_Use_Clause
      (Clause1 : Entity_Id;
@@ -1736,6 +1732,9 @@ package body Sem_Ch8 is
          --  The prefix can be an arbitrary expression that yields a task or
          --  protected object, so it must be resolved.
 
+         if Is_Access_Type (Etype (Prefix (Nam))) then
+            Insert_Explicit_Dereference (Prefix (Nam));
+         end if;
          Resolve (Prefix (Nam), Scope (Old_S));
       end if;
 
@@ -7231,7 +7230,7 @@ package body Sem_Ch8 is
                return True;
             end if;
 
-            Clause := Next (Clause);
+            Next (Clause);
          end loop;
 
          return False;
@@ -7333,23 +7332,6 @@ package body Sem_Ch8 is
                Set_Etype (N, C_Etype);
             end;
 
-            --  If this is the name of an entry or protected operation, and
-            --  the prefix is an access type, insert an explicit dereference,
-            --  so that entry calls are treated uniformly.
-
-            if Is_Access_Type (Etype (P))
-              and then Is_Concurrent_Type (Designated_Type (Etype (P)))
-            then
-               declare
-                  New_P : constant Node_Id :=
-                            Make_Explicit_Dereference (Sloc (P),
-                              Prefix => Relocate_Node (P));
-               begin
-                  Rewrite (P, New_P);
-                  Set_Etype (P, Designated_Type (Etype (Prefix (P))));
-               end;
-            end if;
-
          --  If the selected component appears within a default expression
          --  and it has an actual subtype, the preanalysis has not yet
          --  completed its analysis, because Insert_Actions is disabled in
@@ -7393,37 +7375,16 @@ package body Sem_Ch8 is
             Write_Entity_Info (P_Type, "      "); Write_Eol;
          end if;
 
-         --  The designated type may be a limited view with no components.
-         --  Check whether the non-limited view is available, because in some
-         --  cases this will not be set when installing the context. Rewrite
-         --  the node by introducing an explicit dereference at once, and
-         --  setting the type of the rewritten prefix to the non-limited view
-         --  of the original designated type.
+         --  If the prefix's type is an access type, get to the record type
 
          if Is_Access_Type (P_Type) then
-            declare
-               Desig_Typ : constant Entity_Id :=
-                             Directly_Designated_Type (P_Type);
-
-            begin
-               if Is_Incomplete_Type (Desig_Typ)
-                 and then From_Limited_With (Desig_Typ)
-                 and then Present (Non_Limited_View (Desig_Typ))
-               then
-                  Rewrite (P,
-                    Make_Explicit_Dereference (Sloc (P),
-                      Prefix => Relocate_Node (P)));
-
-                  Set_Etype (P, Get_Full_View (Non_Limited_View (Desig_Typ)));
-                  P_Type := Etype (P);
-               end if;
-            end;
+            P_Type := Implicitly_Designated_Type (P_Type);
          end if;
 
          --  First check for components of a record object (not the
          --  result of a call, which is handled below).
 
-         if Is_Appropriate_For_Record (P_Type)
+         if Has_Components (P_Type)
            and then not Is_Overloadable (P_Name)
            and then not Is_Type (P_Name)
          then
@@ -7437,7 +7398,7 @@ package body Sem_Ch8 is
 
          --  Reference to type name in predicate/invariant expression
 
-         elsif Is_Appropriate_For_Entry_Prefix (P_Type)
+         elsif (Is_Task_Type (P_Type) or else Is_Protected_Type (P_Type))
            and then not In_Open_Scopes (P_Name)
            and then (not Is_Concurrent_Type (Etype (P_Name))
                       or else not In_Open_Scopes (Etype (P_Name)))
@@ -7616,16 +7577,6 @@ package body Sem_Ch8 is
          else
             --  Format node as expanded name, to avoid cascaded errors
 
-            --  If the limited_with transformation was applied earlier, restore
-            --  source for proper error reporting.
-
-            if not Comes_From_Source (P)
-              and then Nkind (P) = N_Explicit_Dereference
-            then
-               Rewrite (P, Prefix (P));
-               P_Type := Etype (P);
-            end if;
-
             Change_Selected_Component_To_Expanded_Name (N);
             Set_Entity (N, Any_Id);
             Set_Etype  (N, Any_Type);
@@ -7687,8 +7638,8 @@ package body Sem_Ch8 is
 
                Error_Msg_N ("invalid prefix in selected component&", P);
 
-               if Is_Access_Type (P_Type)
-                 and then Ekind (Designated_Type (P_Type)) = E_Incomplete_Type
+               if Is_Incomplete_Type (P_Type)
+                 and then Is_Access_Type (Etype (P))
                then
                   Error_Msg_N
                     ("\dereference must not be of an incomplete type "
@@ -8041,6 +7992,20 @@ package body Sem_Ch8 is
          end if;
       end if;
    end Find_Type;
+
+   --------------------
+   -- Has_Components --
+   --------------------
+
+   function Has_Components (Typ : Entity_Id) return Boolean is
+   begin
+      return Is_Record_Type (Typ)
+        or else (Is_Private_Type (Typ) and then Has_Discriminants (Typ))
+        or else (Is_Task_Type (Typ) and then Has_Discriminants (Typ))
+        or else (Is_Incomplete_Type (Typ)
+                  and then From_Limited_With (Typ)
+                  and then Is_Record_Type (Available_View (Typ)));
+   end Has_Components;
 
    ------------------------------------
    -- Has_Implicit_Character_Literal --
@@ -8484,57 +8449,6 @@ package body Sem_Ch8 is
          Next_Use_Clause (U);
       end loop;
    end Install_Use_Clauses;
-
-   -------------------------------------
-   -- Is_Appropriate_For_Entry_Prefix --
-   -------------------------------------
-
-   function Is_Appropriate_For_Entry_Prefix (T : Entity_Id) return Boolean is
-      P_Type : Entity_Id := T;
-
-   begin
-      if Is_Access_Type (P_Type) then
-         P_Type := Designated_Type (P_Type);
-      end if;
-
-      return Is_Task_Type (P_Type) or else Is_Protected_Type (P_Type);
-   end Is_Appropriate_For_Entry_Prefix;
-
-   -------------------------------
-   -- Is_Appropriate_For_Record --
-   -------------------------------
-
-   function Is_Appropriate_For_Record (T : Entity_Id) return Boolean is
-
-      function Has_Components (T1 : Entity_Id) return Boolean;
-      --  Determine if given type has components (i.e. is either a record
-      --  type or a type that has discriminants).
-
-      --------------------
-      -- Has_Components --
-      --------------------
-
-      function Has_Components (T1 : Entity_Id) return Boolean is
-      begin
-         return Is_Record_Type (T1)
-           or else (Is_Private_Type (T1) and then Has_Discriminants (T1))
-           or else (Is_Task_Type (T1) and then Has_Discriminants (T1))
-           or else (Is_Incomplete_Type (T1)
-                     and then From_Limited_With (T1)
-                     and then Present (Non_Limited_View (T1))
-                     and then Is_Record_Type
-                                (Get_Full_View (Non_Limited_View (T1))));
-      end Has_Components;
-
-   --  Start of processing for Is_Appropriate_For_Record
-
-   begin
-      return
-        Present (T)
-          and then (Has_Components (T)
-                     or else (Is_Access_Type (T)
-                               and then Has_Components (Designated_Type (T))));
-   end Is_Appropriate_For_Record;
 
    ----------------------
    -- Mark_Use_Clauses --

@@ -86,8 +86,8 @@ package System.Put_Images is
    procedure Record_Between (S : in out Sink'Class);
    procedure Record_After (S : in out Sink'Class);
 
-   procedure Put_Image_Unknown (S : in out Sink'Class);
+   procedure Put_Image_Unknown (S : in out Sink'Class; Type_Name : String);
    --  For Put_Image of types that don't have the attribute, such as type
-   --  Sink. Prints a canned string.
+   --  Sink.
 
 end System.Put_Images;

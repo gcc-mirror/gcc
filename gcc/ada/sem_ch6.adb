@@ -7340,10 +7340,10 @@ package body Sem_Ch6 is
          --  rest of the parameters.
 
          if not In_Scope then
-            Prim_Param := Next (Prim_Param);
+            Next (Prim_Param);
          end if;
 
-         Iface_Param := Next (Iface_Param);
+         Next (Iface_Param);
          while Present (Iface_Param) and then Present (Prim_Param) loop
             Iface_Id  := Defining_Identifier (Iface_Param);
             Iface_Typ := Find_Parameter_Type (Iface_Param);
@@ -11889,7 +11889,7 @@ package body Sem_Ch6 is
 
             --  A procedure cannot have an effectively volatile formal
             --  parameter of mode IN because it behaves as a constant
-            --  (SPARK RM 7.1.3(6)). -- ??? maybe 7.1.3(4)
+            --  (SPARK RM 7.1.3(4)).
 
             elsif Ekind (Scope (Formal)) = E_Procedure
               and then Ekind (Formal) = E_In_Parameter

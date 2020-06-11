@@ -24,8 +24,10 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Exp_Tss;  use Exp_Tss;
+with Exp_Util;
 with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
@@ -323,9 +325,14 @@ package body Exp_Put_Image is
          --
          --     Put_Wide_Wide_String (Sink, U_Type'Wide_Wide_Image (Item));
          --
-         --  This is a bit of a cheat; we should probably do it the other way
-         --  around (define '[[Wide_]Wide_]Image in terms of 'Put_Image). But
-         --  this is expedient for now. We can't do this:
+         --  It would be more elegant to do it the other way around (define
+         --  '[[Wide_]Wide_]Image in terms of 'Put_Image). But this is easier
+         --  to implement, because we already have support for
+         --  'Wide_Wide_Image. Furthermore, we don't want to remove the
+         --  existing support for '[[Wide_]Wide_]Image, because we don't
+         --  currently plan to support 'Put_Image on restricted runtimes.
+
+         --  We can't do this:
          --
          --     Put_UTF_8 (Sink, U_Type'Image (Item));
          --
@@ -334,26 +341,34 @@ package body Exp_Put_Image is
          --
          --  Note that this is putting a leading space for reals.
 
+         --  ???Work around the fact that Put_Image doesn't work for private
+         --  types whose full type is real.
+
+         if Is_Real_Type (U_Type) then
+            return Build_Unknown_Put_Image_Call (N);
+         end if;
+
          declare
             Image : constant Node_Id :=
               Make_Attribute_Reference (Loc,
                 Prefix => New_Occurrence_Of (U_Type, Loc),
                 Attribute_Name => Name_Wide_Wide_Image,
                 Expressions => New_List (Relocate_Node (Item)));
-         begin
-            return
+            Put_Call : constant Node_Id :=
               Make_Procedure_Call_Statement (Loc,
                 Name =>
                   New_Occurrence_Of (RTE (RE_Put_Wide_Wide_String), Loc),
                 Parameter_Associations => New_List
                   (Relocate_Node (Sink), Image));
+         begin
+            return Put_Call;
          end;
       end if;
 
       --  Unchecked-convert parameter to the required type (i.e. the type of
       --  the corresponding parameter), and call the appropriate routine.
       --  We could use a normal type conversion for scalars, but the
-      --  "unchecked" is needed for access types.
+      --  "unchecked" is needed for access and private types.
 
       declare
          Libent : constant Entity_Id := RTE (Lib_RE);
@@ -689,22 +704,12 @@ package body Exp_Put_Image is
 
       Stms : constant List_Id := New_List;
       Rdef : Node_Id;
-      Typt : Entity_Id;
-      Type_Decl : Node_Id;
+      Type_Decl : constant Node_Id :=
+        Declaration_Node (Base_Type (Underlying_Type (Typ)));
 
    --  Start of processing for Build_Record_Put_Image_Procedure
 
    begin
-      --  For the protected type case, use corresponding record
-
-      if Is_Protected_Type (Typ) then
-         Typt := Corresponding_Record_Type (Typ);
-      else
-         Typt := Typ;
-      end if;
-
-      Type_Decl := Declaration_Node (Base_Type (Underlying_Type (Typt)));
-
       Append_To (Stms,
         Make_Procedure_Call_Statement (Loc,
           Name => New_Occurrence_Of (RTE (RE_Record_Before), Loc),
@@ -804,7 +809,10 @@ package body Exp_Put_Image is
         Make_Procedure_Call_Statement (Loc,
           Name => New_Occurrence_Of (Libent, Loc),
           Parameter_Associations => New_List (
-            Relocate_Node (Sink)));
+            Relocate_Node (Sink),
+            Make_String_Literal (Loc,
+              Exp_Util.Fully_Qualified_Name_String (
+                Entity (Prefix (N)), Append_NUL => False))));
    end Build_Unknown_Put_Image_Call;
 
    ----------------------
@@ -813,7 +821,7 @@ package body Exp_Put_Image is
 
    function Enable_Put_Image (T : Entity_Id) return Boolean is
    begin
-      if True then -- ????True to disable for all types.
+      if not Debug_Flag_Underscore_Z then -- ????True to disable for all types
          return False;
       end if;
 
@@ -831,6 +839,15 @@ package body Exp_Put_Image is
       --  types are OK, even if predefined, because calls to Put_Image of
       --  scalar types are expanded inline. We certainly want to be able to use
       --  Integer'Put_Image, for example.
+
+      --  ???Work around a bug: Put_Image does not work for Remote_Types.
+      --  We check the containing package, rather than the type itself, because
+      --  we want to include types in the private part of a Remote_Types
+      --  package.
+
+      if Is_Remote_Types (Scope (T)) then
+         return False;
+      end if;
 
       --  ???Disable Put_Image on type Sink declared in
       --  Ada.Strings.Text_Output. Note that we can't call Is_RTU on

@@ -226,6 +226,12 @@ package body Sem_Res is
    --  is the context type, which is used when the operation is a protected
    --  function with no arguments, and the return value is indexed.
 
+   procedure Resolve_Implicit_Dereference (P : Node_Id);
+   --  Called when P is the prefix of an indexed component, or of a selected
+   --  component, or of a slice. If P is of an access type, we unconditionally
+   --  rewrite it as an explicit dereference. This ensures that the expander
+   --  and the code generator have a fully explicit tree to work with.
+
    procedure Resolve_Intrinsic_Operator (N : Node_Id; Typ : Entity_Id);
    --  A call to a user-defined intrinsic operator is rewritten as a call to
    --  the corresponding predefined operator, with suitable conversions. Note
@@ -3322,7 +3328,7 @@ package body Sem_Res is
 
       procedure Flag_Effectively_Volatile_Objects (Expr : Node_Id);
       --  Emit an error concerning the illegal usage of an effectively volatile
-      --  object in interfering context (SPARK RM 7.1.3(12)).
+      --  object in interfering context (SPARK RM 7.1.3(10)).
 
       procedure Insert_Default;
       --  If the actual is missing in a call, insert in the actuals list
@@ -3607,7 +3613,7 @@ package body Sem_Res is
                then
                   Error_Msg_N
                     ("volatile object cannot appear in this context (SPARK "
-                     & "RM 7.1.3(11))", N);
+                     & "RM 7.1.3(10))", N);
                   return Skip;
                end if;
             end if;
@@ -4733,7 +4739,7 @@ package body Sem_Res is
 
                --  An effectively volatile object may act as an actual when the
                --  corresponding formal is of a non-scalar effectively volatile
-               --  type (SPARK RM 7.1.3(11)).
+               --  type (SPARK RM 7.1.3(10)).
 
                if not Is_Scalar_Type (Etype (F))
                  and then Is_Effectively_Volatile (Etype (F))
@@ -4742,7 +4748,7 @@ package body Sem_Res is
 
                --  An effectively volatile object may act as an actual in a
                --  call to an instance of Unchecked_Conversion.
-               --  (SPARK RM 7.1.3(11)).
+               --  (SPARK RM 7.1.3(10)).
 
                elsif Is_Unchecked_Conversion_Instance (Nam) then
                   null;
@@ -4752,7 +4758,7 @@ package body Sem_Res is
                elsif Is_Effectively_Volatile_Object (A) then
                   Error_Msg_N
                     ("volatile object cannot act as actual in a call (SPARK "
-                     & "RM 7.1.3(11))", A);
+                     & "RM 7.1.3(10))", A);
 
                --  Otherwise the actual denotes an expression. Inspect the
                --  expression and flag each effectively volatile object with
@@ -4954,7 +4960,7 @@ package body Sem_Res is
             Expr := Next (First (Expressions (Disc_Exp)));
             if Present (Expr) then
                Check_Allocator_Discrim_Accessibility_Exprs (Expr, Alloc_Typ);
-               Expr := Next (Expr);
+               Next (Expr);
                if Present (Expr) then
                   Check_Allocator_Discrim_Accessibility_Exprs
                     (Expr, Alloc_Typ);
@@ -6369,7 +6375,6 @@ package body Sem_Res is
 
                   Set_Etype (Prefix (N), Ret_Type);
                   Set_Etype (N, Typ);
-                  Resolve_Indexed_Component (N, Typ);
 
                   if Legacy_Elaboration_Checks then
                      Check_Elab_Call (Prefix (N));
@@ -6381,6 +6386,8 @@ package body Sem_Res is
                   --  the ABE Processing phase.
 
                   Build_Call_Marker (Prefix (N));
+
+                  Resolve_Indexed_Component (N, Typ);
                end if;
             end if;
 
@@ -7537,7 +7544,7 @@ package body Sem_Res is
 
             --  An effectively volatile object subject to enabled properties
             --  Async_Writers or Effective_Reads must appear in non-interfering
-            --  context (SPARK RM 7.1.3(12)).
+            --  context (SPARK RM 7.1.3(10)).
 
             if Is_Object (E)
               and then Is_Effectively_Volatile (E)
@@ -7547,7 +7554,7 @@ package body Sem_Res is
             then
                SPARK_Msg_N
                  ("volatile object cannot appear in this context "
-                  & "(SPARK RM 7.1.3(12))", N);
+                  & "(SPARK RM 7.1.3(10))", N);
             end if;
 
             --  Check for possible elaboration issues with respect to reads of
@@ -7783,10 +7790,12 @@ package body Sem_Res is
 
       if Nkind (Entry_Name) = N_Selected_Component then
          Resolve (Prefix (Entry_Name));
+         Resolve_Implicit_Dereference (Prefix (Entry_Name));
 
       else pragma Assert (Nkind (Entry_Name) = N_Indexed_Component);
          Nam := Entity (Selector_Name (Prefix (Entry_Name)));
          Resolve (Prefix (Prefix (Entry_Name)));
+         Resolve_Implicit_Dereference (Prefix (Prefix (Entry_Name)));
          Index := First (Expressions (Entry_Name));
          Resolve (Index, Entry_Index_Type (Nam));
 
@@ -8723,6 +8732,32 @@ package body Sem_Res is
       Analyze_Dimension (N);
    end Resolve_If_Expression;
 
+   ----------------------------------
+   -- Resolve_Implicit_Dereference --
+   ----------------------------------
+
+   procedure Resolve_Implicit_Dereference (P : Node_Id) is
+      Desig_Typ : Entity_Id;
+
+   begin
+      --  In an instance the proper view may not always be correct for
+      --  private types, see e.g. Sem_Type.Covers for similar handling.
+
+      if Is_Private_Type (Etype (P))
+        and then Present (Full_View (Etype (P)))
+        and then Is_Access_Type (Full_View (Etype (P)))
+        and then In_Instance
+      then
+         Set_Etype (P, Full_View (Etype (P)));
+      end if;
+
+      if Is_Access_Type (Etype (P)) then
+         Desig_Typ := Implicitly_Designated_Type (Etype (P));
+         Insert_Explicit_Dereference (P);
+         Analyze_And_Resolve (P, Desig_Typ);
+      end if;
+   end Resolve_Implicit_Dereference;
+
    -------------------------------
    -- Resolve_Indexed_Component --
    -------------------------------
@@ -8795,12 +8830,12 @@ package body Sem_Res is
       Resolve (Name, Array_Type);
       Array_Type := Get_Actual_Subtype_If_Available (Name);
 
-      --  If prefix is access type, dereference to get real array type.
-      --  Note: we do not apply an access check because the expander always
-      --  introduces an explicit dereference, and the check will happen there.
+      --  If the prefix's type is an access type, get to the real array type.
+      --  Note: we do not apply an access check because an explicit dereference
+      --  will be introduced later, and the check will happen there.
 
       if Is_Access_Type (Array_Type) then
-         Array_Type := Designated_Type (Array_Type);
+         Array_Type := Implicitly_Designated_Type (Array_Type);
       end if;
 
       --  If name was overloaded, set component type correctly now
@@ -8840,6 +8875,7 @@ package body Sem_Res is
          end loop;
       end if;
 
+      Resolve_Implicit_Dereference (Prefix (N));
       Analyze_Dimension (N);
 
       --  Do not generate the warning on suspicious index if we are analyzing
@@ -9251,7 +9287,7 @@ package body Sem_Res is
                      end loop;
                   end if;
 
-                  Alt := Next (Alt);
+                  Next (Alt);
                end loop;
             end;
          end if;
@@ -10402,12 +10438,12 @@ package body Sem_Res is
          Generate_Reference (Entity (S), S, 'r');
       end if;
 
-      --  If prefix is an access type, the node will be transformed into an
-      --  explicit dereference during expansion. The type of the node is the
-      --  designated type of that of the prefix.
+      --  If the prefix's type is an access type, get to the real record type.
+      --  Note: we do not apply an access check because an explicit dereference
+      --  will be introduced later, and the check will happen there.
 
       if Is_Access_Type (Etype (P)) then
-         T := Designated_Type (Etype (P));
+         T := Implicitly_Designated_Type (Etype (P));
          Check_Fully_Declared_Prefix (T, P);
 
       else
@@ -10482,6 +10518,7 @@ package body Sem_Res is
             Prefix (N));
       end if;
 
+      Resolve_Implicit_Dereference (Prefix (N));
       Analyze_Dimension (N);
    end Resolve_Selected_Component;
 
@@ -10712,9 +10749,12 @@ package body Sem_Res is
 
       Resolve (Name, Array_Type);
 
+      --  If the prefix's type is an access type, get to the real array type.
+      --  Note: we do not apply an access check because an explicit dereference
+      --  will be introduced later, and the check will happen there.
+
       if Is_Access_Type (Array_Type) then
-         Apply_Access_Check (N);
-         Array_Type := Designated_Type (Array_Type);
+         Array_Type := Implicitly_Designated_Type (Array_Type);
 
          --  If the prefix is an access to an unconstrained array, we must use
          --  the actual subtype of the object to perform the index checks. The
@@ -10858,6 +10898,7 @@ package body Sem_Res is
          Warn_On_Suspicious_Index (Name, High_Bound (Drange));
       end if;
 
+      Resolve_Implicit_Dereference (Prefix (N));
       Analyze_Dimension (N);
       Eval_Slice (N);
    end Resolve_Slice;

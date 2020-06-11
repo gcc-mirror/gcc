@@ -243,7 +243,7 @@ package body Nlists is
             N := F;
             loop
                Set_List_Link (N, To);
-               N := Next (N);
+               Next (N);
                exit when No (N);
             end loop;
 
@@ -530,7 +530,7 @@ package body Nlists is
             loop
                Set_List_Link (N, LC);
                exit when N = L;
-               N := Next (N);
+               Next (N);
             end loop;
 
             if Present (Before) then
@@ -597,7 +597,7 @@ package body Nlists is
             loop
                Set_List_Link (N, LC);
                exit when N = L;
-               N := Next (N);
+               Next (N);
             end loop;
 
             if Present (After) then
@@ -699,7 +699,7 @@ package body Nlists is
       Node := First (List);
       while Present (Node) loop
          Result := Result + 1;
-         Node := Next (Node);
+         Next (Node);
       end loop;
 
       return Result;
@@ -756,7 +756,7 @@ package body Nlists is
 
          while Present (E) loop
             Append (New_Copy (E), NL);
-            E := Next (E);
+            Next (E);
          end loop;
 
          return NL;
@@ -784,7 +784,7 @@ package body Nlists is
                Append (New_Copy (E), NL);
             end if;
 
-            E := Next (E);
+            Next (E);
          end loop;
 
          return NL;
@@ -990,7 +990,7 @@ package body Nlists is
    begin
       N := Node;
       loop
-         N := Next (N);
+         Next (N);
          exit when not Nkind_In (N, N_Pragma, N_Null_Statement);
       end loop;
 
@@ -1040,7 +1040,7 @@ package body Nlists is
    begin
       Elmt := First (List);
       for J in 1 .. Index - 1 loop
-         Elmt := Next (Elmt);
+         Next (Elmt);
       end loop;
 
       return Elmt;

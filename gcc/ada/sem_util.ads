@@ -157,14 +157,12 @@ package Sem_Util is
    --  force an error).
 
    function Async_Readers_Enabled (Id : Entity_Id) return Boolean;
-   --  Given the entity of an abstract state or a variable, determine whether
-   --  Id is subject to external property Async_Readers and if it is, the
-   --  related expression evaluates to True.
+   --  Id should be the entity of a state abstraction, a variable, or a type.
+   --  Returns True iff Id is subject to external property Async_Readers.
 
    function Async_Writers_Enabled (Id : Entity_Id) return Boolean;
-   --  Given the entity of an abstract state or a variable, determine whether
-   --  Id is subject to external property Async_Writers and if it is, the
-   --  related expression evaluates to True.
+   --  Id should be the entity of a state abstraction, a variable, or a type.
+   --  Returns True iff Id is subject to external property Async_Writers.
 
    function Available_Full_View_Of_Component (T : Entity_Id) return Boolean;
    --  If at the point of declaration an array type has a private or limited
@@ -273,6 +271,27 @@ package Sem_Util is
    --  through a type-specific wrapper for all inherited subprograms that
    --  may have a modified condition.
 
+   procedure Build_Constrained_Itype
+     (N              : Node_Id;
+      Typ            : Entity_Id;
+      New_Assoc_List : List_Id);
+   --  Build a constrained itype for the newly created record aggregate N and
+   --  set it as a type of N. The itype will have Typ as its base type and
+   --  will be constrained by the values of discriminants from the component
+   --  association list New_Assoc_List.
+
+   --  ??? This code used to be pretty much a copy of Build_Subtype, but now
+   --  those two routines behave differently for types with unknown
+   --  discriminants. They are both exported in from this package in the hope
+   --  to eventually unify them (a not duplicate them even more until then).
+
+   --  ??? Performance WARNING. The current implementation creates a new itype
+   --  for all aggregates whose base type is discriminated. This means that
+   --  for record aggregates nested inside an array aggregate we will create
+   --  a new itype for each record aggregate if the array component type has
+   --  discriminants. For large aggregates this may be a problem. What should
+   --  be done in this case is to reuse itypes as much as possible.
+
    function Build_Default_Subtype
      (T : Entity_Id;
       N : Node_Id) return Entity_Id;
@@ -291,14 +310,6 @@ package Sem_Util is
    --  the compilation unit, and install it in the Elaboration_Entity field
    --  of Spec_Id, the entity for the compilation unit.
 
-   function Build_Overriding_Spec
-     (Op  : Node_Id;
-      Typ : Entity_Id) return Node_Id;
-   --  Build a subprogram specification for the wrapper of an inherited
-   --  operation with a modified pre- or postcondition (See AI12-0113).
-   --  Op is the parent operation, and Typ is the descendant type that
-   --  inherits the operation.
-
    procedure Build_Explicit_Dereference
      (Expr : Node_Id;
       Disc : Entity_Id);
@@ -307,6 +318,30 @@ package Sem_Util is
    --  type, convert N into N.Disc.all. Such expressions are always over-
    --  loaded with both interpretations, and the dereference interpretation
    --  carries the name of the reference discriminant.
+
+   function Build_Overriding_Spec
+     (Op  : Node_Id;
+      Typ : Entity_Id) return Node_Id;
+   --  Build a subprogram specification for the wrapper of an inherited
+   --  operation with a modified pre- or postcondition (See AI12-0113).
+   --  Op is the parent operation, and Typ is the descendant type that
+   --  inherits the operation.
+
+   function Build_Subtype
+     (Related_Node : Node_Id;
+      Loc          : Source_Ptr;
+      Typ          : Entity_Id;
+      Constraints  : List_Id)
+      return Entity_Id;
+   --  Typ is an array or discriminated type, Constraints is a list of
+   --  constraints that apply to Typ. This routine builds the constrained
+   --  subtype using Loc as the source location and attached this subtype
+   --  declaration to Related_Node. The returned subtype inherits predicates
+   --  from Typ.
+
+   --  ??? The routine is mostly a duplicate of Build_Constrained_Itype, so be
+   --  careful which of the two better suits your needs (and certainly do not
+   --  duplicate their code).
 
    function Cannot_Raise_Constraint_Error (Expr : Node_Id) return Boolean;
    --  Returns True if the expression cannot possibly raise Constraint_Error.
@@ -418,6 +453,19 @@ package Sem_Util is
    --  Check whether the expression is a pointer to a protected component,
    --  and the context is external to the protected operation, to warn against
    --  a possible unlocked access to data.
+
+   procedure Check_Volatility_Compatibility
+     (Id1, Id2                     : Entity_Id;
+      Description_1, Description_2 : String;
+      Srcpos_Bearer                : Node_Id);
+   --  Id1 and Id2 should each be the entity of a state abstraction, a
+   --  variable, or a type (i.e., something suitable for passing to
+   --  Async_Readers_Enabled and similar functions).
+   --  Does nothing if SPARK_Mode /= On. Otherwise, flags a legality violation
+   --  if one or more of the four volatility-related aspects is False for Id1
+   --  and True for Id2. The two descriptions are included in the error message
+   --  text; the source position for the generated message is determined by
+   --  Srcpos_Bearer.
 
    function Choice_List (N : Node_Id) return List_Id;
    --  Utility to retrieve the choices of a Component_Association or the
@@ -627,14 +675,12 @@ package Sem_Util is
    --  are looked through.
 
    function Effective_Reads_Enabled (Id : Entity_Id) return Boolean;
-   --  Given the entity of an abstract state or a variable, determine whether
-   --  Id is subject to external property Effective_Reads and if it is, the
-   --  related expression evaluates to True.
+   --  Id should be the entity of a state abstraction, a variable, or a type.
+   --  Returns True iff Id is subject to external property Effective_Reads.
 
    function Effective_Writes_Enabled (Id : Entity_Id) return Boolean;
-   --  Given the entity of an abstract state or a variable, determine whether
-   --  Id is subject to external property Effective_Writes and if it is, the
-   --  related expression evaluates to True.
+   --  Id should be the entity of a state abstraction, a variable, or a type.
+   --  Returns True iff Id is subject to external property Effective_Writes.
 
    function Enclosing_Comp_Unit_Node (N : Node_Id) return Node_Id;
    --  Returns the enclosing N_Compilation_Unit node that is the root of a
@@ -1391,6 +1437,11 @@ package Sem_Util is
       Exclude_Parents : Boolean := False) return Boolean;
    --  Returns true if the Typ_Ent implements interface Iface_Ent
 
+   function Implicitly_Designated_Type (Typ : Entity_Id) return Entity_Id;
+   --  Called when Typ is the type of the prefix of an implicit dereference.
+   --  Return the designated type of Typ, taking into account that this type
+   --  may be a limited view, when the nonlimited view is visible.
+
    function In_Assertion_Expression_Pragma (N : Node_Id) return Boolean;
    --  Returns True if node N appears within a pragma that acts as an assertion
    --  expression. See Sem_Prag for the list of qualifying pragmas.
@@ -1479,6 +1530,10 @@ package Sem_Util is
    --  component if it is known at compile time. A value of No_Uint means that
    --  either the value is not yet known before back-end processing or it is
    --  not known at compile time after back-end processing.
+
+   procedure Inherit_Predicate_Flags (Subt, Par : Entity_Id);
+   --  Propagate static and dynamic predicate flags from a parent to the
+   --  subtype in a subtype declaration with and without constraints.
 
    procedure Inherit_Rep_Item_Chain (Typ : Entity_Id; From_Typ : Entity_Id);
    --  Inherit the rep item chain of type From_Typ without clobbering any
@@ -1864,7 +1919,7 @@ package Sem_Util is
      (Context : Node_Id;
       Obj_Ref : Node_Id) return Boolean;
    --  Determine whether node Context denotes a "non-interfering context" (as
-   --  defined in SPARK RM 7.1.3(12)) where volatile reference Obj_Ref can
+   --  defined in SPARK RM 7.1.3(10)) where volatile reference Obj_Ref can
    --  safely reside.
 
    function Is_Package_Contract_Annotation (Item : Node_Id) return Boolean;
@@ -2290,6 +2345,16 @@ package Sem_Util is
    --  Copy recursively an analyzed list of nodes. Uses New_Copy_Tree defined
    --  below. As for New_Copy_Tree, it is illegal to attempt to copy extended
    --  nodes (entities) either directly or indirectly using this function.
+
+   function New_Copy_Separate_List (List : List_Id) return List_Id;
+   --  Copy recursively a list of nodes using New_Copy_Separate_Tree
+
+   function New_Copy_Separate_Tree (Source : Node_Id) return Node_Id;
+   --  Perform a deep copy of the subtree rooted at Source using New_Copy_Tree
+   --  replacing entities of local declarations by new entities. This behavior
+   --  is required by the backend to ensure entities uniqueness when a copy of
+   --  a subtree is attached to the tree. The new entities keep their original
+   --  names to facilitate debugging the tree copy.
 
    function New_Copy_Tree
      (Source           : Node_Id;

@@ -66,60 +66,72 @@ parser.add_argument('-d', '--dry-mode',
                     help='Generate patch for ChangeLog entries and do it'
                          ' even if DATESTAMP is unchanged; folder argument'
                          ' is expected')
+parser.add_argument('-c', '--current', action='store_true',
+                    help='Modify current branch (--push argument is ignored)')
 args = parser.parse_args()
 
 repo = Repo(args.git_path)
 origin = repo.remotes['origin']
 
-for ref in origin.refs:
-    assert ref.name.startswith('origin/')
-    name = ref.name[len('origin/'):]
-    if name in active_refs:
-        if name in repo.branches:
-            branch = repo.branches[name]
-        else:
-            branch = repo.create_head(name, ref).set_tracking_branch(ref)
-        print('=== Working on: %s ===' % branch, flush=True)
-        origin.pull(rebase=True)
-        branch.checkout()
-        print('branch pulled and checked out')
-        assert not repo.index.diff(None)
-        commit = branch.commit
-        commit_count = 1
-        while commit:
-            if (commit.author.email == 'gccadmin@gcc.gnu.org'
-                    and commit.message.strip() == 'Daily bump.'):
-                break
-            commit = commit.parents[0]
-            commit_count += 1
 
-        print('%d revisions since last Daily bump' % commit_count)
-        datestamp_path = os.path.join(args.git_path, 'gcc/DATESTAMP')
-        if (read_timestamp(datestamp_path) != current_timestamp
-                or args.dry_mode):
-            commits = parse_git_revisions(args.git_path, '%s..HEAD'
-                                          % commit.hexsha)
-            for git_commit in reversed(commits):
-                prepend_to_changelog_files(repo, args.git_path, git_commit,
-                                           not args.dry_mode)
-            if args.dry_mode:
-                diff = repo.git.diff('HEAD')
-                patch = os.path.join(args.dry_mode,
-                                     branch.name.split('/')[-1] + '.patch')
-                with open(patch, 'w+') as f:
-                    f.write(diff)
-                print('branch diff written to %s' % patch)
-                repo.git.checkout(force=True)
-            else:
-                # update timestamp
-                print('DATESTAMP will be changed:')
-                with open(datestamp_path, 'w+') as f:
-                    f.write(current_timestamp)
-                repo.git.add(datestamp_path)
+def update_current_branch():
+    commit = repo.head.commit
+    commit_count = 1
+    while commit:
+        if (commit.author.email == 'gccadmin@gcc.gnu.org'
+                and commit.message.strip() == 'Daily bump.'):
+            break
+        commit = commit.parents[0]
+        commit_count += 1
+
+    print('%d revisions since last Daily bump' % commit_count)
+    datestamp_path = os.path.join(args.git_path, 'gcc/DATESTAMP')
+    if (read_timestamp(datestamp_path) != current_timestamp
+            or args.dry_mode or args.current):
+        commits = parse_git_revisions(args.git_path, '%s..HEAD'
+                                      % commit.hexsha)
+        for git_commit in reversed(commits):
+            prepend_to_changelog_files(repo, args.git_path, git_commit,
+                                       not args.dry_mode)
+        if args.dry_mode:
+            diff = repo.git.diff('HEAD')
+            patch = os.path.join(args.dry_mode,
+                                 branch.name.split('/')[-1] + '.patch')
+            with open(patch, 'w+') as f:
+                f.write(diff)
+            print('branch diff written to %s' % patch)
+            repo.git.checkout(force=True)
+        else:
+            # update timestamp
+            print('DATESTAMP will be changed:')
+            with open(datestamp_path, 'w+') as f:
+                f.write(current_timestamp)
+            repo.git.add(datestamp_path)
+            if not args.current:
                 repo.index.commit('Daily bump.')
                 if args.push:
                     repo.git.push('origin', branch)
                     print('branch is pushed')
-        else:
-            print('DATESTAMP unchanged')
-        print('branch is done\n', flush=True)
+    else:
+        print('DATESTAMP unchanged')
+
+
+if args.current:
+    print('=== Working on the current branch ===', flush=True)
+    update_current_branch()
+else:
+    for ref in origin.refs:
+        assert ref.name.startswith('origin/')
+        name = ref.name[len('origin/'):]
+        if name in active_refs:
+            if name in repo.branches:
+                branch = repo.branches[name]
+            else:
+                branch = repo.create_head(name, ref).set_tracking_branch(ref)
+            print('=== Working on: %s ===' % branch, flush=True)
+            origin.pull(rebase=True)
+            branch.checkout()
+            print('branch pulled and checked out')
+            update_current_branch()
+            assert not repo.index.diff(None)
+            print('branch is done\n', flush=True)

@@ -75,6 +75,15 @@
    (S0_REGNUM			8)
    (S1_REGNUM			9)
    (S2_REGNUM			18)
+   (S3_REGNUM			19)
+   (S4_REGNUM			20)
+   (S5_REGNUM			21)
+   (S6_REGNUM			22)
+   (S7_REGNUM			23)
+   (S8_REGNUM			24)
+   (S9_REGNUM			25)
+   (S10_REGNUM			26)
+   (S11_REGNUM			27)
 
    (NORMAL_RETURN		0)
    (SIBCALL_RETURN		1)
@@ -2427,12 +2436,16 @@
   ""
   "ebreak")
 
+;; Must use the registers that we save to prevent the rename reg optimization
+;; pass from using them before the gpr_save pattern when shrink wrapping
+;; occurs.  See bug 95252 for instance.
+
 (define_insn "gpr_save"
-  [(unspec_volatile [(match_operand 0 "const_int_operand")] UNSPECV_GPR_SAVE)
-   (clobber (reg:SI T0_REGNUM))
-   (clobber (reg:SI T1_REGNUM))]
+  [(match_parallel 1 "gpr_save_operation"
+     [(unspec_volatile [(match_operand 0 "const_int_operand")]
+	               UNSPECV_GPR_SAVE)])]
   ""
-  { return riscv_output_gpr_save (INTVAL (operands[0])); })
+  "call\tt0,__riscv_save_%0")
 
 (define_insn "gpr_restore"
   [(unspec_volatile [(match_operand 0 "const_int_operand")] UNSPECV_GPR_RESTORE)]

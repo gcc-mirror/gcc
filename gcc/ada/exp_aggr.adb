@@ -743,7 +743,6 @@ package body Exp_Aggr is
 
       --  Backend processing is possible
 
-      Set_Size_Known_At_Compile_Time (Etype (N), True);
       return True;
    end Backend_Processing_Possible;
 
@@ -7790,6 +7789,9 @@ package body Exp_Aggr is
                   Typ = RTE (RE_Type_Specific_Data)
                     or else
                   Typ = RTE (RE_Tag_Table)
+                    or else
+                  (RTE_Available (RE_Object_Specific_Data)
+                     and then Typ = RTE (RE_Object_Specific_Data))
                     or else
                   (RTE_Available (RE_Interface_Data)
                      and then Typ = RTE (RE_Interface_Data))

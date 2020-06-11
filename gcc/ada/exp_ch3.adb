@@ -1998,6 +1998,20 @@ package body Exp_Ch3 is
             Append (Make_Predicate_Check (Typ, Exp), Res);
          end if;
 
+         if Nkind (Exp) = N_Allocator
+            and then Nkind (Expression (Exp)) = N_Qualified_Expression
+         then
+            declare
+               Subtype_Entity : constant Entity_Id
+                  := Entity (Subtype_Mark (Expression (Exp)));
+            begin
+               if Has_Predicates (Subtype_Entity) then
+                  Append (Make_Predicate_Check
+                     (Subtype_Entity, Expression (Expression (Exp))), Res);
+               end if;
+            end;
+         end if;
+
          return Res;
 
       exception
@@ -2243,8 +2257,9 @@ package body Exp_Ch3 is
                           Prefix         =>
                             Make_Selected_Component (Loc,
                               Prefix        =>
-                                Unchecked_Convert_To (Acc_Type,
-                                  Make_Identifier (Loc, Name_uO)),
+                                Make_Explicit_Dereference (Loc,
+                                  Unchecked_Convert_To (Acc_Type,
+                                    Make_Identifier (Loc, Name_uO))),
                               Selector_Name =>
                                 New_Occurrence_Of (Iface_Comp, Loc)),
                           Attribute_Name => Name_Position))))));

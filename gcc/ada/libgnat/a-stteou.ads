@@ -133,7 +133,7 @@ package Ada.Strings.Text_Output is
          (UTF_Encoding.Wide_Wide_Strings.Decode (UTF_8_Lines)) = UTF_8_Lines;
 
    subtype UTF_8 is UTF_8_Lines with
-     Predicate => (for all C of UTF_8 => C /= NL);
+     Predicate => (for all UTF_8_Char of UTF_8 => UTF_8_Char /= NL);
 
    Default_Indent_Amount : constant Natural := 4;
 

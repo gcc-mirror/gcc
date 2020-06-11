@@ -967,7 +967,7 @@ for (i = 0; i < n_opts; i++) {
 	checked_options[name]++
 
 	print "  if (ptr1->x_" name " != ptr2->x_" name ")"
-	print "    internal_error (\"Error: global_options are modified in local context\\n\");";
+	print "    internal_error (\"%<global_options%> are modified in local context\");";
 }
 
 print "}";

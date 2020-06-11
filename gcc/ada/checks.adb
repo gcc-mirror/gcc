@@ -3531,7 +3531,7 @@ package body Checks is
 
          --  Move to next subscript
 
-         Sub := Next (Sub);
+         Next (Sub);
       end loop;
    end Apply_Subscript_Validity_Checks;
 
@@ -3964,6 +3964,15 @@ package body Checks is
                Duplicate_Subexpr_No_Checks
                  (Aggregate_Discriminant_Val (Disc_Ent));
 
+         elsif Is_Access_Type (Etype (N)) then
+            Dref :=
+              Make_Selected_Component (Loc,
+                Prefix        =>
+                  Make_Explicit_Dereference (Loc,
+                    Duplicate_Subexpr_No_Checks (N, Name_Req => True)),
+                Selector_Name => Make_Identifier (Loc, Chars (Disc_Ent)));
+
+            Set_Is_In_Discriminant_Check (Dref);
          else
             Dref :=
               Make_Selected_Component (Loc,

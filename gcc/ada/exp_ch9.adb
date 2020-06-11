@@ -737,8 +737,9 @@ package body Exp_Ch9 is
          Renamed_Formal :=
            Make_Selected_Component (Loc,
              Prefix        =>
-               Unchecked_Convert_To (Entry_Parameters_Type (Ent),
-                 Make_Identifier (Loc, Chars (Ptr))),
+               Make_Explicit_Dereference (Loc,
+                 Unchecked_Convert_To (Entry_Parameters_Type (Ent),
+                   Make_Identifier (Loc, Chars (Ptr)))),
              Selector_Name => New_Occurrence_Of (Comp, Loc));
 
          Decl :=
@@ -2129,7 +2130,7 @@ package body Exp_Ch9 is
             if Present (First_Formal (Iface_Op))
               and then Is_Controlling_Formal (First_Formal (Iface_Op))
             then
-               Iface_Op_Param := Next (Iface_Op_Param);
+               Next (Iface_Op_Param);
             end if;
 
             Wrapper_Param := First (Wrapper_Params);
@@ -2214,7 +2215,7 @@ package body Exp_Ch9 is
          if Is_Private_Primitive_Subprogram (Subp_Id)
            and then not Has_Controlling_Result (Subp_Id)
          then
-            Formal := Next (Formal);
+            Next (Formal);
          end if;
 
          while Present (Formal) loop
@@ -4523,12 +4524,6 @@ package body Exp_Ch9 is
          Ent_Acc := Entry_Parameters_Type (Ent);
          Conctyp := Etype (Concval);
 
-         --  If prefix is an access type, dereference to obtain the task type
-
-         if Is_Access_Type (Conctyp) then
-            Conctyp := Designated_Type (Conctyp);
-         end if;
-
          --  Special case for protected subprogram calls
 
          if Is_Protected_Type (Conctyp)
@@ -6015,9 +6010,10 @@ package body Exp_Ch9 is
                   Renamed_Formal :=
                      Make_Selected_Component (Loc,
                        Prefix        =>
-                         Unchecked_Convert_To (
-                           Entry_Parameters_Type (Ent),
-                           New_Occurrence_Of (Ann, Loc)),
+                         Make_Explicit_Dereference (Loc,
+                           Unchecked_Convert_To (
+                             Entry_Parameters_Type (Ent),
+                             New_Occurrence_Of (Ann, Loc))),
                        Selector_Name =>
                          New_Occurrence_Of (Comp, Loc));
 
@@ -8124,7 +8120,7 @@ package body Exp_Ch9 is
          --       <else-statements>
          --    end if;
 
-         N_Stats := New_Copy_List_Tree (Statements (Alt));
+         N_Stats := New_Copy_Separate_List (Statements (Alt));
 
          Prepend_To (N_Stats,
            Make_Implicit_If_Statement (N,
@@ -8168,7 +8164,7 @@ package body Exp_Ch9 is
          --    <dispatching-call>;
          --    <triggering-statements>
 
-         Lim_Typ_Stmts := New_Copy_List_Tree (Statements (Alt));
+         Lim_Typ_Stmts := New_Copy_Separate_List (Statements (Alt));
          Prepend_To (Lim_Typ_Stmts, New_Copy_Tree (Blk));
 
          --  Generate:
@@ -10532,16 +10528,6 @@ package body Exp_Ch9 is
 
       Extract_Entry (N, Concval, Ename, Index);
       Conc_Typ := Etype (Concval);
-
-      --  If the prefix is an access to class-wide type, dereference to get
-      --  object and entry type.
-
-      if Is_Access_Type (Conc_Typ) then
-         Conc_Typ := Designated_Type (Conc_Typ);
-         Rewrite (Concval,
-           Make_Explicit_Dereference (Loc, Relocate_Node (Concval)));
-         Analyze_And_Resolve (Concval, Conc_Typ);
-      end if;
 
       --  Examine the scope stack in order to find nearest enclosing protected
       --  or task type. This will constitute our invocation source.

@@ -2852,7 +2852,7 @@ package body Exp_Ch7 is
                      exit;
                   end if;
 
-                  Result := Next (Result);
+                  Next (Result);
                end loop;
 
                return Result;
@@ -2895,7 +2895,7 @@ package body Exp_Ch7 is
             if No_Initialization (Decl) then
                if No (Expression (Last_Init)) then
                   loop
-                     Last_Init := Next (Last_Init);
+                     Next (Last_Init);
                      exit when No (Last_Init);
                      exit when Nkind (Last_Init) = N_Object_Declaration
                        and then Nkind (Expression (Last_Init)) = N_Reference

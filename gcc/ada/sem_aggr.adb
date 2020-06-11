@@ -85,9 +85,8 @@ package body Sem_Aggr is
       --  The node of the choice
    end record;
 
-   type Case_Table_Type is array (Nat range <>) of Case_Bounds;
-   --  Table type used by Check_Case_Choices procedure. Entry zero is not
-   --  used (reserved for the sort). Real entries start at one.
+   type Case_Table_Type is array (Pos range <>) of Case_Bounds;
+   --  Table type used by Check_Case_Choices procedure
 
    -----------------------
    -- Local Subprograms --
@@ -225,12 +224,6 @@ package body Sem_Aggr is
    --  Give possible misspelling diagnostic if Component is likely to be a
    --  misspelling of one of the components of the Assoc_List. This is called
    --  by Resolve_Aggr_Expr after producing an invalid component error message.
-
-   procedure Check_Static_Discriminated_Subtype (T : Entity_Id; V : Node_Id);
-   --  An optimization: determine whether a discriminated subtype has a static
-   --  constraint, and contains array components whose length is also static,
-   --  either because they are constrained by the discriminant, or because the
-   --  original component bounds are static.
 
    -----------------------------------------------------
    -- Subprograms used for ARRAY AGGREGATE Processing --
@@ -721,66 +714,6 @@ package body Sem_Aggr is
          end if;
       end if;
    end Check_Expr_OK_In_Limited_Aggregate;
-
-   ----------------------------------------
-   -- Check_Static_Discriminated_Subtype --
-   ----------------------------------------
-
-   procedure Check_Static_Discriminated_Subtype (T : Entity_Id; V : Node_Id) is
-      Disc : constant Entity_Id := First_Discriminant (T);
-      Comp : Entity_Id;
-      Ind  : Entity_Id;
-
-   begin
-      if Has_Record_Rep_Clause (T) then
-         return;
-
-      elsif Present (Next_Discriminant (Disc)) then
-         return;
-
-      elsif Nkind (V) /= N_Integer_Literal then
-         return;
-      end if;
-
-      Comp := First_Component (T);
-      while Present (Comp) loop
-         if Is_Scalar_Type (Etype (Comp)) then
-            null;
-
-         elsif Is_Private_Type (Etype (Comp))
-           and then Present (Full_View (Etype (Comp)))
-           and then Is_Scalar_Type (Full_View (Etype (Comp)))
-         then
-            null;
-
-         elsif Is_Array_Type (Etype (Comp)) then
-            if Is_Bit_Packed_Array (Etype (Comp)) then
-               return;
-            end if;
-
-            Ind := First_Index (Etype (Comp));
-            while Present (Ind) loop
-               if Nkind (Ind) /= N_Range
-                 or else Nkind (Low_Bound (Ind))  /= N_Integer_Literal
-                 or else Nkind (High_Bound (Ind)) /= N_Integer_Literal
-               then
-                  return;
-               end if;
-
-               Next_Index (Ind);
-            end loop;
-
-         else
-            return;
-         end if;
-
-         Next_Component (Comp);
-      end loop;
-
-      --  On exit, all components have statically known sizes
-
-      Set_Size_Known_At_Compile_Time (T);
-   end Check_Static_Discriminated_Subtype;
 
    -------------------------
    -- Is_Others_Aggregate --
@@ -1893,9 +1826,8 @@ package body Sem_Aggr is
             --  if a choice in an aggregate is a subtype indication these
             --  denote the lowest and highest values of the subtype
 
-            Table : Case_Table_Type (0 .. Case_Table_Size);
-            --  Used to sort all the different choice values. Entry zero is
-            --  reserved for sorting purposes.
+            Table : Case_Table_Type (1 .. Case_Table_Size);
+            --  Used to sort all the different choice values
 
             Single_Choice : Boolean;
             --  Set to true every time there is a single discrete choice in a
@@ -3351,7 +3283,7 @@ package body Sem_Aggr is
 
       Box_Node       : Node_Id := Empty;
       Is_Box_Present : Boolean := False;
-      Others_Box     : Integer := 0;
+      Others_Box     : Natural := 0;
       --  Ada 2005 (AI-287): Variables used in case of default initialization
       --  to provide a functionality similar to Others_Etype. Box_Present
       --  indicates that the component takes its default initialization;
@@ -3404,7 +3336,7 @@ package body Sem_Aggr is
       --  of the ancestor.
 
       function Get_Value
-        (Compon                 : Node_Id;
+        (Compon                 : Entity_Id;
          From                   : List_Id;
          Consider_Others_Choice : Boolean := False) return Node_Id;
       --  Given a record component stored in parameter Compon, this function
@@ -3460,6 +3392,8 @@ package body Sem_Aggr is
       begin
          --  If this is a box association the expression is missing, so use the
          --  Sloc of the aggregate itself for the new association.
+
+         pragma Assert (Present (Expr) xor Is_Box_Present);
 
          if Present (Expr) then
             Loc := Sloc (Expr);
@@ -3680,7 +3614,7 @@ package body Sem_Aggr is
       ---------------
 
       function Get_Value
-        (Compon                 : Node_Id;
+        (Compon                 : Entity_Id;
          From                   : List_Id;
          Consider_Others_Choice : Boolean := False) return Node_Id
       is
@@ -3872,8 +3806,6 @@ package body Sem_Aggr is
       is
          Loc : constant Source_Ptr := Sloc (N);
 
-         Needs_Box : Boolean := False;
-
          procedure Process_Component (Comp : Entity_Id);
          --  Add one component with a box association to the inner aggregate,
          --  and recurse if component is itself composite.
@@ -3899,8 +3831,12 @@ package body Sem_Aggr is
                Add_Discriminant_Values (New_Aggr, Assoc_List);
                Propagate_Discriminants (New_Aggr, Assoc_List);
 
+               Build_Constrained_Itype
+                 (New_Aggr, T, Component_Associations (New_Aggr));
             else
-               Needs_Box := True;
+               Add_Association
+                 (Comp, Empty, Component_Associations (Aggr),
+                  Is_Box_Present => True);
             end if;
          end Process_Component;
 
@@ -3950,14 +3886,6 @@ package body Sem_Aggr is
                Process_Component (Comp);
                Next_Component (Comp);
             end loop;
-         end if;
-
-         if Needs_Box then
-            Append_To (Component_Associations (Aggr),
-              Make_Component_Association (Loc,
-                Choices     => New_List (Make_Others_Choice (Loc)),
-                Expression  => Empty,
-                Box_Present => True));
          end if;
       end Propagate_Discriminants;
 
@@ -4242,7 +4170,7 @@ package body Sem_Aggr is
                   raise Unrecoverable_Error;
                end if;
 
-               Assoc := Next (Assoc);
+               Next (Assoc);
             end loop;
          end;
       end if;
@@ -4444,75 +4372,11 @@ package body Sem_Aggr is
 
       --  STEP 4: Set the Etype of the record aggregate
 
-      --  ??? This code is pretty much a copy of Sem_Ch3.Build_Subtype. That
-      --  routine should really be exported in sem_util or some such and used
-      --  in sem_ch3 and here rather than have a copy of the code which is a
-      --  maintenance nightmare.
-
-      --  ??? Performance WARNING. The current implementation creates a new
-      --  itype for all aggregates whose base type is discriminated. This means
-      --  that for record aggregates nested inside an array aggregate we will
-      --  create a new itype for each record aggregate if the array component
-      --  type has discriminants. For large aggregates this may be a problem.
-      --  What should be done in this case is to reuse itypes as much as
-      --  possible.
-
       if Has_Discriminants (Typ)
         or else (Has_Unknown_Discriminants (Typ)
                   and then Present (Underlying_Record_View (Typ)))
       then
-         Build_Constrained_Itype : declare
-            Constrs     : constant List_Id    := New_List;
-            Loc         : constant Source_Ptr := Sloc (N);
-            Def_Id      : Entity_Id;
-            Indic       : Node_Id;
-            New_Assoc   : Node_Id;
-            Subtyp_Decl : Node_Id;
-
-         begin
-            New_Assoc := First (New_Assoc_List);
-            while Present (New_Assoc) loop
-               Append_To (Constrs, Duplicate_Subexpr (Expression (New_Assoc)));
-               Next (New_Assoc);
-            end loop;
-
-            if Has_Unknown_Discriminants (Typ)
-              and then Present (Underlying_Record_View (Typ))
-            then
-               Indic :=
-                 Make_Subtype_Indication (Loc,
-                   Subtype_Mark =>
-                     New_Occurrence_Of (Underlying_Record_View (Typ), Loc),
-                   Constraint   =>
-                     Make_Index_Or_Discriminant_Constraint (Loc,
-                       Constraints => Constrs));
-            else
-               Indic :=
-                 Make_Subtype_Indication (Loc,
-                   Subtype_Mark =>
-                     New_Occurrence_Of (Base_Type (Typ), Loc),
-                   Constraint   =>
-                     Make_Index_Or_Discriminant_Constraint (Loc,
-                       Constraints => Constrs));
-            end if;
-
-            Def_Id := Create_Itype (Ekind (Typ), N);
-
-            Subtyp_Decl :=
-              Make_Subtype_Declaration (Loc,
-                Defining_Identifier => Def_Id,
-                Subtype_Indication  => Indic);
-            Set_Parent (Subtyp_Decl, Parent (N));
-
-            --  Itypes must be analyzed with checks off (see itypes.ads)
-
-            Analyze (Subtyp_Decl, Suppress => All_Checks);
-
-            Set_Etype (N, Def_Id);
-            Check_Static_Discriminated_Subtype
-              (Def_Id, Expression (First (New_Assoc_List)));
-         end Build_Constrained_Itype;
-
+         Build_Constrained_Itype (N, Typ, New_Assoc_List);
       else
          Set_Etype (N, Typ);
       end if;
@@ -4942,6 +4806,9 @@ package body Sem_Aggr is
                              (Expr, Component_Associations (Expr));
                            Propagate_Discriminants
                              (Expr, Component_Associations (Expr));
+
+                           Build_Constrained_Itype
+                             (Expr, Ctyp, Component_Associations (Expr));
 
                         else
                            declare

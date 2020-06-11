@@ -563,10 +563,6 @@ package body Sem_Ch3 is
    --  copying the record declaration for the derived base. In the tagged case
    --  the value returned is irrelevant.
 
-   procedure Inherit_Predicate_Flags (Subt, Par : Entity_Id);
-   --  Propagate static and dynamic predicate flags from a parent to the
-   --  subtype in a subtype declaration with and without constraints.
-
    function Is_EVF_Procedure (Subp : Entity_Id) return Boolean;
    --  Subsidiary to Check_Abstract_Overriding and Derive_Subprogram.
    --  Determine whether subprogram Subp is a procedure subject to pragma
@@ -1036,7 +1032,7 @@ package body Sem_Ch3 is
                Param := First (Parameter_Specifications (Def));
                while Present (Param) loop
                   Check_For_Premature_Usage (Parameter_Type (Param));
-                  Param := Next (Param);
+                  Next (Param);
                end loop;
             end if;
 
@@ -1400,6 +1396,26 @@ package body Sem_Ch3 is
          --  Clean up indication of tagged status to prevent cascaded errors
 
          Set_Is_Tagged_Type (T, False);
+      end if;
+
+      --  For SPARK, check that the designated type is compatible with
+      --  respect to volatility with the access type.
+
+      if SPARK_Mode /= Off
+         and then Comes_From_Source (T)
+      then
+         --  ??? UNIMPLEMENTED
+         --  In the case where the designated type is incomplete at this point,
+         --  performing this check here is harmless but the check will need to
+         --  be repeated when the designated type is complete.
+
+         --  The preceding call to Comes_From_Source is needed because the
+         --  FE sometimes introduces implicitly declared access types. See,
+         --  for example, the expansion of nested_po.ads in OA28-015.
+
+         Check_Volatility_Compatibility
+           (Full_Desig, T, "designated type", "access type",
+            Srcpos_Bearer => T);
       end if;
 
       Set_Etype (T, T);
@@ -7269,6 +7285,7 @@ package body Sem_Ch3 is
       Set_First_Rep_Item (Implicit_Base, First_Rep_Item (Parent_Base));
       Set_Parent         (Implicit_Base, Parent (Derived_Type));
       Set_Is_Known_Valid (Implicit_Base, Is_Known_Valid (Parent_Base));
+      Set_Is_Volatile    (Implicit_Base, Is_Volatile    (Parent_Base));
 
       --  Set RM Size for discrete type or decimal fixed-point type
       --  Ordinary fixed-point is excluded, why???
@@ -13078,10 +13095,6 @@ package body Sem_Ch3 is
       --  Ditto for access types. Makes use of previous two functions, to
       --  constrain designated type.
 
-      function Build_Subtype (T : Entity_Id; C : List_Id) return Entity_Id;
-      --  T is an array or discriminated type, C is a list of constraints
-      --  that apply to T. This routine builds the constrained subtype.
-
       function Is_Discriminant (Expr : Node_Id) return Boolean;
       --  Returns True if Expr is a discriminant
 
@@ -13101,7 +13114,7 @@ package body Sem_Ch3 is
          Scop          : Entity_Id;
 
       begin
-         --  if the original access type was not embedded in the enclosing
+         --  If the original access type was not embedded in the enclosing
          --  type definition, there is no need to produce a new access
          --  subtype. In fact every access type with an explicit constraint
          --  generates an itype whose scope is the enclosing record.
@@ -13200,6 +13213,7 @@ package body Sem_Ch3 is
                Is_Discriminant (Hi_Expr)
             then
                Need_To_Create_Itype := True;
+               exit;
             end if;
 
             Next_Index (Old_Index);
@@ -13229,7 +13243,7 @@ package body Sem_Ch3 is
                Next_Index (Old_Index);
             end loop;
 
-            return Build_Subtype (Old_Type, Constr_List);
+            return Build_Subtype (Related_Node, Loc, Old_Type, Constr_List);
 
          else
             return Old_Type;
@@ -13256,6 +13270,7 @@ package body Sem_Ch3 is
 
             if Is_Discriminant (Expr) then
                Need_To_Create_Itype := True;
+               exit;
 
             --  After expansion of discriminated task types, the value
             --  of the discriminant may be converted to a run-time type
@@ -13267,6 +13282,7 @@ package body Sem_Ch3 is
               and then Is_Discriminant (Expression (Expr))
             then
                Need_To_Create_Itype := True;
+               exit;
             end if;
 
             Next_Elmt (Old_Constraint);
@@ -13294,80 +13310,12 @@ package body Sem_Ch3 is
                Next_Elmt (Old_Constraint);
             end loop;
 
-            return Build_Subtype (Old_Type, Constr_List);
+            return Build_Subtype (Related_Node, Loc, Old_Type, Constr_List);
 
          else
             return Old_Type;
          end if;
       end Build_Constrained_Discriminated_Type;
-
-      -------------------
-      -- Build_Subtype --
-      -------------------
-
-      function Build_Subtype (T : Entity_Id; C : List_Id) return Entity_Id is
-         Indic       : Node_Id;
-         Subtyp_Decl : Node_Id;
-         Def_Id      : Entity_Id;
-         Btyp        : Entity_Id := Base_Type (T);
-
-      begin
-         --  The Related_Node better be here or else we won't be able to
-         --  attach new itypes to a node in the tree.
-
-         pragma Assert (Present (Related_Node));
-
-         --  If the view of the component's type is incomplete or private
-         --  with unknown discriminants, then the constraint must be applied
-         --  to the full type.
-
-         if Has_Unknown_Discriminants (Btyp)
-           and then Present (Underlying_Type (Btyp))
-         then
-            Btyp := Underlying_Type (Btyp);
-         end if;
-
-         Indic :=
-           Make_Subtype_Indication (Loc,
-             Subtype_Mark => New_Occurrence_Of (Btyp, Loc),
-             Constraint   => Make_Index_Or_Discriminant_Constraint (Loc, C));
-
-         Def_Id := Create_Itype (Ekind (T), Related_Node);
-
-         Subtyp_Decl :=
-           Make_Subtype_Declaration (Loc,
-             Defining_Identifier => Def_Id,
-             Subtype_Indication  => Indic);
-
-         Set_Parent (Subtyp_Decl, Parent (Related_Node));
-
-         --  Itypes must be analyzed with checks off (see package Itypes)
-
-         Analyze (Subtyp_Decl, Suppress => All_Checks);
-
-         if Is_Itype (Def_Id) and then Has_Predicates (T) then
-            Inherit_Predicate_Flags (Def_Id, T);
-
-            --  Indicate where the predicate function may be found
-
-            if Is_Itype (T) then
-               if Present (Predicate_Function (Def_Id)) then
-                  null;
-
-               elsif Present (Predicate_Function (T)) then
-                  Set_Predicate_Function (Def_Id, Predicate_Function (T));
-
-               else
-                  Set_Predicated_Parent (Def_Id, Predicated_Parent (T));
-               end if;
-
-            elsif No (Predicate_Function (Def_Id)) then
-               Set_Predicated_Parent (Def_Id, T);
-            end if;
-         end if;
-
-         return Def_Id;
-      end Build_Subtype;
 
       ---------------------
       -- Get_Discr_Value --
@@ -18482,38 +18430,6 @@ package body Sem_Ch3 is
 
       return Assoc_List;
    end Inherit_Components;
-
-   -----------------------------
-   -- Inherit_Predicate_Flags --
-   -----------------------------
-
-   procedure Inherit_Predicate_Flags (Subt, Par : Entity_Id) is
-   begin
-      if Present (Predicate_Function (Subt)) then
-         return;
-      end if;
-
-      Set_Has_Predicates (Subt, Has_Predicates (Par));
-      Set_Has_Static_Predicate_Aspect
-        (Subt, Has_Static_Predicate_Aspect (Par));
-      Set_Has_Dynamic_Predicate_Aspect
-        (Subt, Has_Dynamic_Predicate_Aspect (Par));
-
-      --  A named subtype does not inherit the predicate function of its
-      --  parent but an itype declared for a loop index needs the discrete
-      --  predicate information of its parent to execute the loop properly.
-      --  A non-discrete type may has a static predicate (for example True)
-      --  but has no static_discrete_predicate.
-
-      if Is_Itype (Subt) and then Present (Predicate_Function (Par)) then
-         Set_Subprograms_For_Type (Subt, Subprograms_For_Type (Par));
-
-         if Has_Static_Predicate (Par) and then Is_Discrete_Type (Par) then
-            Set_Static_Discrete_Predicate
-              (Subt, Static_Discrete_Predicate (Par));
-         end if;
-      end if;
-   end Inherit_Predicate_Flags;
 
    ----------------------
    -- Is_EVF_Procedure --

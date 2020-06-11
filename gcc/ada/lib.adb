@@ -1335,7 +1335,7 @@ package body Lib is
            and then (Nkind (Context_Item) /= N_With_Clause
                       or else Limited_Present (Context_Item))
          loop
-            Context_Item := Next (Context_Item);
+            Next (Context_Item);
          end loop;
 
          if Present (Context_Item) then
@@ -1359,7 +1359,7 @@ package body Lib is
                   Write_Eol;
                end if;
 
-               Context_Item := Next (Context_Item);
+               Next (Context_Item);
             end loop;
 
             Outdent;
