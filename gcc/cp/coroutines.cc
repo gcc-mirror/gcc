@@ -1490,19 +1490,13 @@ expand_one_await_expression (tree *stmt, tree *await_expr, void *d)
   tree resume_label = create_named_label_with_ctx (loc, buf, actor);
   tree empty_list = build_empty_stmt (loc);
 
-  tree dtor = NULL_TREE;
   tree await_type = TREE_TYPE (var);
-  if (needs_dtor)
-    dtor = build_special_member_call (var, complete_dtor_identifier, NULL,
-				      await_type, LOOKUP_NORMAL,
-				      tf_warning_or_error);
-
   tree stmt_list = NULL;
   tree t_expr = STRIP_NOPS (expr);
   tree r;
   tree *await_init = NULL;
   if (t_expr == var)
-    dtor = NULL_TREE;
+    needs_dtor = false;
   else
     {
       /* Initialize the var from the provided 'o' expression.  */
@@ -1617,7 +1611,12 @@ expand_one_await_expression (tree *stmt, tree *await_expr, void *d)
   destroy_label = build_stmt (loc, LABEL_EXPR, destroy_label);
   append_to_statement_list (destroy_label, &body_list);
   if (needs_dtor)
-    append_to_statement_list (dtor, &body_list);
+    {
+      tree dtor = build_special_member_call (var, complete_dtor_identifier,
+					     NULL, await_type, LOOKUP_NORMAL,
+					     tf_warning_or_error);
+      append_to_statement_list (dtor, &body_list);
+    }
   r = build1_loc (loc, GOTO_EXPR, void_type_node, data->cleanup);
   append_to_statement_list (r, &body_list);
 
@@ -1652,7 +1651,12 @@ expand_one_await_expression (tree *stmt, tree *await_expr, void *d)
   /* Get a pointer to the revised statment.  */
   tree *revised = tsi_stmt_ptr (tsi_last (stmt_list));
   if (needs_dtor)
-    append_to_statement_list (dtor, &stmt_list);
+    {
+      tree dtor = build_special_member_call (var, complete_dtor_identifier,
+					     NULL, await_type, LOOKUP_NORMAL,
+					     tf_warning_or_error);
+      append_to_statement_list (dtor, &stmt_list);
+    }
   data->index += 2;
 
   /* Replace the original statement with the expansion.  */
