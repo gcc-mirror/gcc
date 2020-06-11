@@ -5622,7 +5622,9 @@ cp_build_binary_op (const op_location_t &location,
 	{
 	  int unsigned_arg;
 	  tree arg0 = get_narrower (op0, &unsigned_arg);
-	  tree const_op1 = cp_fold_rvalue (op1);
+	  /* We're not really warning here but when we set short_shift we
+	     used fold_for_warn to fold the operand.  */
+	  tree const_op1 = fold_for_warn (op1);
 
 	  final_type = result_type;
 
