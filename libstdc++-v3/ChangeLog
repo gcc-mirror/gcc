@@ -1,3 +1,52 @@
+2020-06-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/95578
+	* include/bits/ranges_algo.h (__lexicographical_compare_fn):
+	Also check that the iterator and sentinel have the same type before
+	applying the unwrapping optimization for __normal_iterator.
+	Split the check into two, one for the first iterator/sentinel
+	pair and another for second iterator/sentinel pair.  Remove uses
+	of __niter_base, and remove uses of std::move on a
+	__normal_iterator.
+	* include/bits/ranges_algobase.h (__equal_fn): Likewise.
+	(__copy_or_move): Likewise.  Perform similar adjustments for
+	the reverse_iterator and move_iterator optimizations.  Inline
+	the checks into the if-constexprs, and use using-declarations to
+	make them less visually noisy.  Remove uses of __niter_wrap.
+	(__copy_or_move_backward): Likewise.
+	* testsuite/25_algorithms/copy/95578.cc: New test.
+	* testsuite/25_algorithms/copy_backward/95578.cc: New test.
+	* testsuite/25_algorithms/equal/95578.cc: New test.
+	* testsuite/25_algorithms/lexicographical_compare/95578.cc: New test.
+	* testsuite/25_algorithms/move/95578.cc: New test.
+	* testsuite/25_algorithms/move_backward/95578.cc: New test.
+
+2020-06-10  François Dumont  <fdumont@gcc.gnu.org>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/deque.tcc (__lex_cmp_dit): New.
+	(__lexicographical_compare_aux1): Define overloads for deque
+	iterators.
+	* include/bits/stl_algobase.h (__lexicographical_compare::__3way):
+	New static member function.
+	(__lexicographical_compare<true>::__3way): Likewise.
+	(__lexicographical_compare<true>::__lc): Use __3way.
+	(__lexicographical_compare_aux): Rename to
+	__lexicographical_compare_aux1 and declare overloads for deque
+	iterators.
+	(__lexicographical_compare_aux): Define new forwarding function
+	that calls __lexicographical_compare_aux1 and declare new overloads
+	for safe iterators.
+	(lexicographical_compare): Do not use __niter_base on
+	parameters.
+	* include/debug/safe_iterator.tcc
+	(__lexicographical_compare_aux): Define overloads for safe
+	iterators.
+	* testsuite/25_algorithms/lexicographical_compare/1.cc: Add
+	checks with random access iterators.
+	* testsuite/25_algorithms/lexicographical_compare/deque_iterators/1.cc:
+	New test.
+
 2020-06-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_iterator.h (move_iterator::operator=): Define.

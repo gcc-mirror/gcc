@@ -1,3 +1,223 @@
+2020-06-10  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/95353
+	PR middle-end/92939
+	* builtins.c (inform_access): New function.
+	(check_access): Call it.  Add argument.
+	(addr_decl_size): Remove.
+	(get_range): New function.
+	(compute_objsize): New overload.  Only use compute_builtin_object_size
+	with raw memory function.
+	(check_memop_access): Pass new argument to compute_objsize and
+	check_access.
+	(expand_builtin_memchr, expand_builtin_strcat): Same.
+	(expand_builtin_strcpy, expand_builtin_stpcpy_1): Same.
+	(expand_builtin_stpncpy, check_strncat_sizes): Same.
+	(expand_builtin_strncat, expand_builtin_strncpy): Same.
+	(expand_builtin_memcmp): Same.
+	* builtins.h (check_nul_terminated_array): Declare extern.
+	(check_access): Add argument.
+	(struct access_ref, struct access_data): New structs.
+	* gimple-ssa-warn-restrict.c (clamp_offset): New helper.
+	(builtin_access::overlap): Call it.
+	* tree-object-size.c (decl_init_size): Declare extern.
+	(addr_object_size): Correct offset computation.
+	* tree-object-size.h (decl_init_size): Declare.
+	* tree-ssa-strlen.c (handle_integral_assign): Remove a call
+	to maybe_warn_overflow when assigning to an SSA_NAME.
+
+2020-06-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_determine_vectorization_factor):
+	Skip debug stmts.
+	(_loop_vec_info::_loop_vec_info): Likewise.
+	(vect_update_vf_for_slp): Likewise.
+	(vect_analyze_loop_operations): Likewise.
+	(update_epilogue_loop_vinfo): Likewise.
+	* tree-vect-patterns.c (vect_determine_precisions): Likewise.
+	(vect_pattern_recog): Likewise.
+	* tree-vect-slp.c (vect_detect_hybrid_slp): Likewise.
+	(_bb_vec_info::_bb_vec_info): Likewise.
+	* tree-vect-stmts.c (vect_mark_stmts_to_be_vectorized):
+	Likewise.
+
+2020-06-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95576
+	* tree-vect-slp.c (vect_slp_bb): Skip leading debug stmts.
+
+2020-06-10  Haijian Zhang  <z.zhanghaijian@huawei.com>
+
+	PR target/95523
+	* config/aarch64/aarch64-sve-builtins.h
+	(sve_switcher::m_old_maximum_field_alignment): New member.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(sve_switcher::sve_switcher): Save maximum_field_alignment in
+	m_old_maximum_field_alignment and clear maximum_field_alignment.
+	(sve_switcher::~sve_switcher): Restore maximum_field_alignment.
+
+2020-06-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_slp_tree::vec_stmts): Make it a vector
+	of gimple * stmts.
+	(_stmt_vec_info::vec_stmts): Likewise.
+	(vec_info::stmt_vec_info_ro): New flag.
+	(vect_finish_replace_stmt): Adjust declaration.
+	(vect_finish_stmt_generation): Likewise.
+	(vectorizable_induction): Likewise.
+	(vect_transform_reduction): Likewise.
+	(vectorizable_lc_phi): Likewise.
+	* tree-vect-data-refs.c (vect_create_data_ref_ptr): Do not
+	allocate stmt infos for increments.
+	(vect_record_grouped_load_vectors): Adjust.
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Likewise.
+	(vectorize_fold_left_reduction): Likewise.
+	(vect_transform_reduction): Likewise.
+	(vect_transform_cycle_phi): Likewise.
+	(vectorizable_lc_phi): Likewise.
+	(vectorizable_induction): Likewise.
+	(vectorizable_live_operation): Likewise.
+	(vect_transform_loop): Likewise.
+	* tree-vect-patterns.c (vect_pattern_recog): Set stmt_vec_info_ro.
+	* tree-vect-slp.c (vect_get_slp_vect_def): Adjust.
+	(vect_get_slp_defs): Likewise.
+	(vect_transform_slp_perm_load): Likewise.
+	(vect_schedule_slp_instance): Likewise.
+	(vectorize_slp_instance_root_stmt): Likewise.
+	* tree-vect-stmts.c (vect_get_vec_defs_for_operand): Likewise.
+	(vect_finish_stmt_generation_1): Do not allocate a stmt info.
+	(vect_finish_replace_stmt): Do not return anything.
+	(vect_finish_stmt_generation): Likewise.
+	(vect_build_gather_load_calls): Adjust.
+	(vectorizable_bswap): Likewise.
+	(vectorizable_call): Likewise.
+	(vectorizable_simd_clone_call): Likewise.
+	(vect_create_vectorized_demotion_stmts): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_scan_store): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	(vectorizable_condition): Likewise.
+	(vectorizable_comparison): Likewise.
+	(vect_transform_stmt): Likewise.
+	* tree-vectorizer.c (vec_info::vec_info): Initialize
+	stmt_vec_info_ro.
+	(vec_info::replace_stmt): Copy over stmt UID rather than
+	unsetting/setting a stmt info allocating a new UID.
+	(vec_info::set_vinfo_for_stmt): Assert !stmt_vec_info_ro.
+
+2020-06-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-loop-versioning.cc (loop_versioning::name_prop::get_value):
+	Add stmt parameter.
+	* gimple-ssa-evrp.c (class evrp_folder): New.
+	(class evrp_dom_walker): Remove.
+	(execute_early_vrp): Use evrp_folder instead of evrp_dom_walker.
+	* tree-ssa-ccp.c (ccp_folder::get_value): Add stmt parameter.
+	* tree-ssa-copy.c (copy_folder::get_value): Same.
+	* tree-ssa-propagate.c (substitute_and_fold_engine::replace_uses_in):
+	Pass stmt to get_value.
+	(substitute_and_fold_engine::replace_phi_args_in): Same.
+	(substitute_and_fold_dom_walker::after_dom_children): Call
+	post_fold_bb.
+	(substitute_and_fold_dom_walker::foreach_new_stmt_in_bb): New.
+	(substitute_and_fold_dom_walker::propagate_into_phi_args): New.
+	(substitute_and_fold_dom_walker::before_dom_children): Adjust to
+	call virtual functions for folding, pre_folding, and post folding.
+	Call get_value with PHI.  Tweak dump.
+	* tree-ssa-propagate.h (class substitute_and_fold_engine):
+	New argument to get_value.
+	New virtual function pre_fold_bb.
+	New virtual function post_fold_bb.
+	New virtual function pre_fold_stmt.
+	New virtual function post_new_stmt.
+	New function propagate_into_phi_args.
+	* tree-vrp.c (vrp_folder::get_value): Add stmt argument.
+	* vr-values.c (vr_values::extract_range_from_stmt): Adjust dump
+	output.
+	(vr_values::fold_cond): New.
+	(vr_values::simplify_cond_using_ranges_1): Call fold_cond.
+	* vr-values.h (class vr_values): Add
+	simplify_cond_using_ranges_when_edge_is_known.
+
+2020-06-10  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/94910
+	* asan.c (asan_emit_stack_protection): Emit
+	also **SavedFlagPtr(FakeStack, class_id) = 0 in order to release
+	a stack frame.
+
+2020-06-10  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_rtx_mult_cost): Adjust costs for mul.
+
+2020-06-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_vfa_access_size): Adjust.
+	(vect_record_grouped_load_vectors): Likewise.
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Likewise.
+	(vectorize_fold_left_reduction): Likewise.
+	(vect_transform_reduction): Likewise.
+	(vect_transform_cycle_phi): Likewise.
+	(vectorizable_lc_phi): Likewise.
+	(vectorizable_induction): Likewise.
+	(vectorizable_live_operation): Likewise.
+	(vect_transform_loop): Likewise.
+	* tree-vect-slp.c (vect_get_slp_defs): New function, split out
+	from overload.
+	* tree-vect-stmts.c (vect_get_vec_def_for_operand_1): Remove.
+	(vect_get_vec_def_for_operand): Likewise.
+	(vect_get_vec_def_for_stmt_copy): Likewise.
+	(vect_get_vec_defs_for_stmt_copy): Likewise.
+	(vect_get_vec_defs_for_operand): New function.
+	(vect_get_vec_defs): Likewise.
+	(vect_build_gather_load_calls): Adjust.
+	(vect_get_gather_scatter_ops): Likewise.
+	(vectorizable_bswap): Likewise.
+	(vectorizable_call): Likewise.
+	(vectorizable_simd_clone_call): Likewise.
+	(vect_get_loop_based_defs): Remove.
+	(vect_create_vectorized_demotion_stmts): Adjust.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_scan_store): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	(vectorizable_condition): Likewise.
+	(vectorizable_comparison): Likewise.
+	(vect_transform_stmt): Adjust and remove no longer applicable
+	sanity checks.
+	* tree-vectorizer.c (vec_info::new_stmt_vec_info): Initialize
+	STMT_VINFO_VEC_STMTS.
+	(vec_info::free_stmt_vec_info): Relase it.
+	* tree-vectorizer.h (_stmt_vec_info::vectorized_stmt): Remove.
+	(_stmt_vec_info::vec_stmts): Add.
+	(STMT_VINFO_VEC_STMT): Remove.
+	(STMT_VINFO_VEC_STMTS): New.
+	(vect_get_vec_def_for_operand_1): Remove.
+	(vect_get_vec_def_for_operand): Likewise.
+	(vect_get_vec_defs_for_stmt_copy): Likewise.
+	(vect_get_vec_def_for_stmt_copy): Likewise.
+	(vect_get_vec_defs): New overloads.
+	(vect_get_vec_defs_for_operand): New.
+	(vect_get_slp_defs): Declare.
+
+2020-06-10  Qian Chao  <qianchao9@huawei.com>
+
+	PR tree-optimization/95569
+	* trans-mem.c (expand_assign_tm): Ensure that rtmp is marked TREE_ADDRESSABLE.
+
+2020-06-10  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/92860
+	* optc-save-gen.awk: Generate new function cl_optimization_compare.
+	* opth-gen.awk: Generate declaration of the function.
+
 2020-06-09  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/ppc-auxv.h (PPC_PLATFORM_FUTURE): Allocate

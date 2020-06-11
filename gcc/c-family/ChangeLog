@@ -1,3 +1,13 @@
+2020-06-10  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/92860
+	* c-attribs.c (handle_optimize_attribute):
+	Save global options and compare it after parsing of function
+	attribute.
+	* c-pragma.c (opt_stack::saved_global_options): New field.
+	(handle_pragma_push_options): Save global_options.
+	(handle_pragma_pop_options): Compare them after pop.
+
 2020-06-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/95580
