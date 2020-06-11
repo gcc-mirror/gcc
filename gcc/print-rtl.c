@@ -183,7 +183,8 @@ void
 print_mem_expr (FILE *outfile, const_tree expr)
 {
   fputc (' ', outfile);
-  print_generic_expr (outfile, CONST_CAST_TREE (expr), dump_flags);
+  print_generic_expr (outfile, CONST_CAST_TREE (expr),
+		      dump_flags | TDF_SLIM);
 }
 #endif
 
