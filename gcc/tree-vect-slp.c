@@ -2588,12 +2588,8 @@ _bb_vec_info::_bb_vec_info (gimple_stmt_iterator region_begin_in,
     region_begin (region_begin_in),
     region_end (region_end_in)
 {
-  gimple_stmt_iterator gsi;
-
-  for (gsi = region_begin; gsi_stmt (gsi) != gsi_stmt (region_end);
-       gsi_next (&gsi))
+  for (gimple *stmt : this->region_stmts ())
     {
-      gimple *stmt = gsi_stmt (gsi);
       gimple_set_uid (stmt, 0);
       if (is_gimple_debug (stmt))
 	continue;
@@ -2609,10 +2605,9 @@ _bb_vec_info::_bb_vec_info (gimple_stmt_iterator region_begin_in,
 
 _bb_vec_info::~_bb_vec_info ()
 {
-  for (gimple_stmt_iterator si = region_begin;
-       gsi_stmt (si) != gsi_stmt (region_end); gsi_next (&si))
+  for (gimple *stmt : this->region_stmts ())
     /* Reset region marker.  */
-    gimple_set_uid (gsi_stmt (si), -1);
+    gimple_set_uid (stmt, -1);
 
   bb->aux = NULL;
 }
@@ -3050,16 +3045,13 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo)
 static void
 vect_slp_check_for_constructors (bb_vec_info bb_vinfo)
 {
-  gimple_stmt_iterator gsi;
-
-  for (gsi = bb_vinfo->region_begin;
-       gsi_stmt (gsi) != gsi_stmt (bb_vinfo->region_end); gsi_next (&gsi))
+  for (gimple *stmt : bb_vinfo->region_stmts ())
     {
-      gassign *stmt = dyn_cast <gassign *> (gsi_stmt (gsi));
-      if (!stmt || gimple_assign_rhs_code (stmt) != CONSTRUCTOR)
+      gassign *assign = dyn_cast<gassign *> (stmt);
+      if (!assign || gimple_assign_rhs_code (assign) != CONSTRUCTOR)
 	continue;
 
-      tree rhs = gimple_assign_rhs1 (stmt);
+      tree rhs = gimple_assign_rhs1 (assign);
       if (!VECTOR_TYPE_P (TREE_TYPE (rhs))
 	  || maybe_ne (TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs)),
 		       CONSTRUCTOR_NELTS (rhs))
@@ -3067,7 +3059,7 @@ vect_slp_check_for_constructors (bb_vec_info bb_vinfo)
 	  || uniform_vector_p (rhs))
 	continue;
 
-      stmt_vec_info stmt_info = bb_vinfo->lookup_stmt (stmt);
+      stmt_vec_info stmt_info = bb_vinfo->lookup_stmt (assign);
       BB_VINFO_GROUPED_STORES (bb_vinfo).safe_push (stmt_info);
     }
 }
