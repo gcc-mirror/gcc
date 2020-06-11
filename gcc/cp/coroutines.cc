@@ -297,15 +297,14 @@ instantiate_coro_traits (tree fndecl, location_t kw)
 
   tree functyp = TREE_TYPE (fndecl);
   tree arg = DECL_ARGUMENTS (fndecl);
-  bool lambda_p = LAMBDA_FUNCTION_P (fndecl);
   tree arg_node = TYPE_ARG_TYPES (functyp);
   tree argtypes = make_tree_vec (list_length (arg_node)-1);
   unsigned p = 0;
 
   while (arg_node != NULL_TREE && !VOID_TYPE_P (TREE_VALUE (arg_node)))
     {
-      /* See PR94807, as to why we must exclude lambda here.  */
-      if (is_this_parameter (arg) && !lambda_p)
+      if (is_this_parameter (arg)
+	  || DECL_NAME (arg) == closure_identifier)
 	{
 	  /* We pass a reference to *this to the param preview.  */
 	  tree ct = TREE_TYPE (TREE_TYPE (arg));
@@ -3802,15 +3801,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  parm.frame_type = actual_type;
 
 	  parm.this_ptr = is_this_parameter (arg);
-	  /* See PR94807.  When a lambda is in a template instantiation, the
-	     closure object is named 'this' instead of '__closure'.  */
-	  if (lambda_p)
-	    {
-	      parm.lambda_cobj = DECL_NAME (arg) == closure_identifier;
-	      gcc_checking_assert (!parm.this_ptr);
-	    }
-	  else
-	    parm.lambda_cobj = false;
+	  parm.lambda_cobj = lambda_p && DECL_NAME (arg) == closure_identifier;
 
 	  parm.trivial_dtor = TYPE_HAS_TRIVIAL_DESTRUCTOR (parm.frame_type);
 	  char *buf;
@@ -3960,9 +3951,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	{
 	  param_info *parm_i = param_uses->get (arg);
 	  gcc_checking_assert (parm_i);
-	  if (parm_i->lambda_cobj)
-	    vec_safe_push (args, arg);
-	  else if (parm_i->this_ptr)
+	  if (parm_i->this_ptr || parm_i->lambda_cobj)
 	    {
 	      /* We pass a reference to *this to the allocator lookup.  */
 	      tree tt = TREE_TYPE (TREE_TYPE (arg));
@@ -4166,9 +4155,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
 	  /* Add this to the promise CTOR arguments list, accounting for
 	     refs and special handling for method this ptr.  */
-	  if (parm.lambda_cobj)
-	    vec_safe_push (promise_args, arg);
-	  else if (parm.this_ptr)
+	  if (parm.this_ptr || parm.lambda_cobj)
 	    {
 	      /* We pass a reference to *this to the param preview.  */
 	      tree tt = TREE_TYPE (arg);
