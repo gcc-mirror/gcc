@@ -764,7 +764,7 @@ process_symver_attribute (symtab_node *n)
   if (n->weakref)
     {
       error_at (DECL_SOURCE_LOCATION (n->decl),
-		"weakref cannot be versioned");
+		"%<weakref%> cannot be versioned");
       return;
     }
   if (!TREE_PUBLIC (n->decl))
