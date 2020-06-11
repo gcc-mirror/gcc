@@ -75,8 +75,9 @@ class highlighter highlighter;
 void
 highlighter::on (pretty_printer *buffer, int spc, gimple *stmt)
 {
-  bool need_header = new_stmt == stmt || untainted_stmt == stmt;
   bool removal = untainted_stmt == stmt;
+  bool found_orig_stmt = new_stmt == stmt;
+  bool need_header = found_orig_stmt || removal;
   if (need_header)
     {
       pp_string (buffer, ";; (STATE) filename = ");
@@ -84,15 +85,15 @@ highlighter::on (pretty_printer *buffer, int spc, gimple *stmt)
       pp_newline_and_flush (buffer);
       INDENT (spc);
     }
-  if (new_stmt == stmt)
-    {
-      pp_string (buffer, ";; Original statement was: ");
-      pp_gimple_stmt_1 (buffer, old_stmt, spc, TDF_SLIM);
-    }
-  else if (removal)
+  if (removal)
     {
       pp_string (buffer, ";; Queued for removal LHS= ");
       dump_generic_node (buffer, lhs, spc, TDF_SLIM, false);
+    }
+  else if (found_orig_stmt)
+    {
+      pp_string (buffer, ";; Original statement was: ");
+      pp_gimple_stmt_1 (buffer, old_stmt, spc, TDF_SLIM);
     }
   if (need_header)
     {
@@ -113,7 +114,9 @@ highlighter::on (pretty_printer *buffer, int spc, gimple *stmt)
 void
 highlighter::off (pretty_printer *buffer, int spc, gimple *stmt)
 {
-  if (new_stmt == stmt || untainted_stmt == stmt)
+  bool removal = untainted_stmt == stmt;
+  bool found_orig_stmt = new_stmt == stmt;
+  if (found_orig_stmt || removal)
     {
       pp_newline_and_flush (buffer);
       INDENT (spc);
