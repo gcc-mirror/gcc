@@ -792,8 +792,90 @@ loop_vec_info_for_loop (class loop *loop)
 typedef class _bb_vec_info : public vec_info
 {
 public:
+
+  /* GIMPLE statement iterator going from region_begin to region_end.  */
+
+  struct const_iterator
+  {
+    const_iterator (gimple_stmt_iterator _gsi) : gsi (_gsi) {}
+
+    const const_iterator &
+    operator++ ()
+    {
+      gsi_next (&gsi); return *this;
+    }
+
+    gimple *operator* () const { return gsi_stmt (gsi); }
+
+    bool
+    operator== (const const_iterator &other) const
+    {
+      return gsi_stmt (gsi) == gsi_stmt (other.gsi);
+    }
+
+    bool
+    operator!= (const const_iterator &other) const
+    {
+      return !(*this == other);
+    }
+
+    gimple_stmt_iterator gsi;
+  };
+
+  /* GIMPLE statement iterator going from region_end to region_begin.  */
+
+  struct const_reverse_iterator
+  {
+    const_reverse_iterator (gimple_stmt_iterator _gsi) : gsi (_gsi) {}
+
+    const const_reverse_iterator &
+    operator++ ()
+    {
+      gsi_prev (&gsi); return *this;
+    }
+
+    gimple *operator* () const { return gsi_stmt (gsi); }
+
+    bool
+    operator== (const const_reverse_iterator &other) const
+    {
+      return gsi_stmt (gsi) == gsi_stmt (other.gsi);
+    }
+
+    bool
+    operator!= (const const_reverse_iterator &other) const
+    {
+      return !(*this == other);
+    }
+
+    gimple_stmt_iterator gsi;
+  };
+
   _bb_vec_info (gimple_stmt_iterator, gimple_stmt_iterator, vec_info_shared *);
   ~_bb_vec_info ();
+
+  /* Returns iterator_range for range-based loop.  */
+
+  iterator_range<const_iterator>
+  region_stmts ()
+  {
+    return iterator_range<const_iterator> (region_begin, region_end);
+  }
+
+  /* Returns iterator_range for range-based loop in a reverse order.  */
+
+  iterator_range<const_reverse_iterator>
+  reverse_region_stmts ()
+  {
+    const_reverse_iterator begin = region_end;
+    if (*begin == NULL)
+      begin = const_reverse_iterator (gsi_last_bb (region_end.bb));
+    else
+      ++begin;
+
+    const_reverse_iterator end = region_begin;
+    return iterator_range<const_reverse_iterator> (begin, ++end);
+  }
 
   basic_block bb;
   gimple_stmt_iterator region_begin;
