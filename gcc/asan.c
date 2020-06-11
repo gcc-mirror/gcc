@@ -1480,6 +1480,7 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
 	  mem = adjust_address (mem, ptr_mode, offset);
 	  rtx addr = gen_reg_rtx (ptr_mode);
 	  emit_move_insn (addr, mem);
+	  addr = convert_memory_address (Pmode, addr);
 	  mem = gen_rtx_MEM (QImode, addr);
 	  emit_move_insn (mem, const0_rtx);
 	}
