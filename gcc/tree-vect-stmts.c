@@ -1655,9 +1655,9 @@ static tree permute_vec_elements (vec_info *, tree, tree, tree, stmt_vec_info,
 				  gimple_stmt_iterator *);
 
 /* Check whether a load or store statement in the loop described by
-   LOOP_VINFO is possible in a fully-masked loop.  This is testing
-   whether the vectorizer pass has the appropriate support, as well as
-   whether the target does.
+   LOOP_VINFO is possible in a loop using partial vectors.  This is
+   testing whether the vectorizer pass has the appropriate support,
+   as well as whether the target does.
 
    VLS_TYPE says whether the statement is a load or store and VECTYPE
    is the type of the vector being loaded or stored.  MEMORY_ACCESS_TYPE
@@ -1667,14 +1667,18 @@ static tree permute_vec_elements (vec_info *, tree, tree, tree, stmt_vec_info,
    its arguments.  If the load or store is conditional, SCALAR_MASK is the
    condition under which it occurs.
 
-   Clear LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P if a fully-masked loop is not
-   supported, otherwise record the required mask types.  */
+   Clear LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P if a loop using partial
+   vectors is not supported, otherwise record the required rgroup control
+   types.  */
 
 static void
-check_load_store_masking (loop_vec_info loop_vinfo, tree vectype,
-			  vec_load_store_type vls_type, int group_size,
-			  vect_memory_access_type memory_access_type,
-			  gather_scatter_info *gs_info, tree scalar_mask)
+check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
+				      vec_load_store_type vls_type,
+				      int group_size,
+				      vect_memory_access_type
+				      memory_access_type,
+				      gather_scatter_info *gs_info,
+				      tree scalar_mask)
 {
   /* Invariant loads need no special support.  */
   if (memory_access_type == VMAT_INVARIANT)
@@ -1691,8 +1695,8 @@ check_load_store_masking (loop_vec_info loop_vinfo, tree vectype,
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "can't use a fully-masked loop because the"
-			     " target doesn't have an appropriate masked"
+			     "can't operate on partial vectors because"
+			     " the target doesn't have an appropriate"
 			     " load/store-lanes instruction.\n");
 	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	  return;
@@ -1714,8 +1718,8 @@ check_load_store_masking (loop_vec_info loop_vinfo, tree vectype,
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "can't use a fully-masked loop because the"
-			     " target doesn't have an appropriate masked"
+			     "can't operate on partial vectors because"
+			     " the target doesn't have an appropriate"
 			     " gather load or scatter store instruction.\n");
 	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	  return;
@@ -1732,8 +1736,8 @@ check_load_store_masking (loop_vec_info loop_vinfo, tree vectype,
 	 scalar loop.  We need more work to support other mappings.  */
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "can't use a fully-masked loop because an access"
-			 " isn't contiguous.\n");
+			 "can't operate on partial vectors because an"
+			 " access isn't contiguous.\n");
       LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
       return;
     }
@@ -7140,8 +7144,9 @@ vectorizable_store (vec_info *vinfo,
 
       if (loop_vinfo
 	  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
-	check_load_store_masking (loop_vinfo, vectype, vls_type, group_size,
-				  memory_access_type, &gs_info, mask);
+	check_load_store_for_partial_vectors (loop_vinfo, vectype, vls_type,
+					      group_size, memory_access_type,
+					      &gs_info, mask);
 
       if (slp_node
 	  && !vect_maybe_update_slp_op_vectype (SLP_TREE_CHILDREN (slp_node)[0],
@@ -8433,8 +8438,9 @@ vectorizable_load (vec_info *vinfo,
 
       if (loop_vinfo
 	  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
-	check_load_store_masking (loop_vinfo, vectype, VLS_LOAD, group_size,
-				  memory_access_type, &gs_info, mask);
+	check_load_store_for_partial_vectors (loop_vinfo, vectype, VLS_LOAD,
+					      group_size, memory_access_type,
+					      &gs_info, mask);
 
       STMT_VINFO_TYPE (orig_stmt_info) = load_vec_info_type;
       vect_model_load_cost (vinfo, stmt_info, ncopies, vf, memory_access_type,
