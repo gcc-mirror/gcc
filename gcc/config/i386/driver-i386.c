@@ -555,7 +555,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	cpu = "pentium";
       break;
     case PROCESSOR_PENTIUMPRO:
-      cpu = get_intel_cpu (&cpu_model, &cpu_model2, cpu_features2, 0);
+      cpu = get_intel_cpu (&cpu_model, &cpu_model2, cpu_features2);
       if (cpu == NULL)
 	{
 	  if (arch)

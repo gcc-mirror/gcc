@@ -254,13 +254,12 @@ get_amd_cpu (struct __processor_model *cpu_model,
 static inline const char *
 get_intel_cpu (struct __processor_model *cpu_model,
 	       struct __processor_model2 *cpu_model2,
-	       unsigned int *cpu_features2,
-	       unsigned int brand_id)
+	       unsigned int *cpu_features2)
 {
   const char *cpu = NULL;
 
-  /* Parse family and model only for brand ID 0 and model 6. */
-  if (brand_id != 0 || cpu_model2->__cpu_family != 0x6)
+  /* Parse family and model only for model 6. */
+  if (cpu_model2->__cpu_family != 0x6)
     return cpu;
 
   switch (cpu_model2->__cpu_model)
@@ -758,7 +757,7 @@ cpu_indicator_init (struct __processor_model *cpu_model,
 
   int max_level;
   unsigned int vendor;
-  unsigned int model, family, brand_id;
+  unsigned int model, family;
   unsigned int extended_model, extended_family;
 
   /* This function needs to run just once.  */
@@ -791,7 +790,6 @@ cpu_indicator_init (struct __processor_model *cpu_model,
 
   model = (eax >> 4) & 0x0f;
   family = (eax >> 8) & 0x0f;
-  brand_id = ebx & 0xff;
   extended_model = (eax >> 12) & 0xf0;
   extended_family = (eax >> 20) & 0xff;
 
@@ -813,7 +811,7 @@ cpu_indicator_init (struct __processor_model *cpu_model,
       get_available_features (cpu_model, cpu_model2, cpu_features2,
 			      ecx, edx);
       /* Get CPU type.  */
-      get_intel_cpu (cpu_model, cpu_model2, cpu_features2, brand_id);
+      get_intel_cpu (cpu_model, cpu_model2, cpu_features2);
       cpu_model->__cpu_vendor = VENDOR_INTEL;
     }
   else if (vendor == signature_AMD_ebx)

@@ -46,7 +46,7 @@ check_detailed ()
     {
     case VENDOR_INTEL:
       assert (__builtin_cpu_is ("intel"));
-      get_intel_cpu (&cpu_model, &cpu_model2, cpu_features2, 0);
+      get_intel_cpu (&cpu_model, &cpu_model2, cpu_features2);
       break;
     case VENDOR_AMD:
       assert (__builtin_cpu_is ("amd"));
