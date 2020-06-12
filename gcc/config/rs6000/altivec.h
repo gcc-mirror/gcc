@@ -712,6 +712,8 @@ __altivec_scalar_pred(vec_any_nle,
 #define vec_splati(a)  __builtin_vec_xxspltiw (a)
 #define vec_splatid(a) __builtin_vec_xxspltid (a)
 #define vec_splati_ins(a, b, c)        __builtin_vec_xxsplti32dx (a, b, c)
+#define vec_blendv(a, b, c)    __builtin_vec_xxblend (a, b, c)
+#define vec_permx(a, b, c, d)  __builtin_vec_xxpermx (a, b, c, d)
 
 #define vec_gnb(a, b)	__builtin_vec_gnb (a, b)
 #define vec_clrl(a, b)	__builtin_vec_clrl (a, b)
