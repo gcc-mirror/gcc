@@ -667,10 +667,10 @@ package Snames is
    Name_Suppress_Debug_Info            : constant Name_Id := N + $; -- GNAT
    Name_Suppress_Initialization        : constant Name_Id := N + $; -- GNAT
    Name_System_Name                    : constant Name_Id := N + $; -- Ada 83
-   Name_Test_Case                      : constant Name_Id := N + $; -- GNAT
    Name_Task_Info                      : constant Name_Id := N + $; -- GNAT
    Name_Task_Name                      : constant Name_Id := N + $; -- GNAT
    Name_Task_Storage                   : constant Name_Id := N + $; -- GNAT
+   Name_Test_Case                      : constant Name_Id := N + $; -- GNAT
    Name_Thread_Local_Storage           : constant Name_Id := N + $; -- GNAT
    Name_Time_Slice                     : constant Name_Id := N + $; -- GNAT
    Name_Title                          : constant Name_Id := N + $; -- GNAT
@@ -2087,10 +2087,10 @@ package Snames is
       Pragma_Suppress_Debug_Info,
       Pragma_Suppress_Initialization,
       Pragma_System_Name,
-      Pragma_Test_Case,
       Pragma_Task_Info,
       Pragma_Task_Name,
       Pragma_Task_Storage,
+      Pragma_Test_Case,
       Pragma_Thread_Local_Storage,
       Pragma_Time_Slice,
       Pragma_Title,

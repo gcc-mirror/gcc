@@ -3727,18 +3727,12 @@ package body Sem_Warn is
       --  overlapping parameters that are record types or array types.
 
       --  It is also worthwhile to warn on overlaps of composite objects when
-      --  only one of the formals is (in)-out.  Note that the RM rule above is
+      --  only one of the formals is (in)-out. Note that the RM rule above is
       --  a legality rule. We choose to implement this check as a warning to
-      --  avoid major incompatibilities with legacy code. We exclude internal
-      --  sources from the warning, because subprograms in Container libraries
-      --  would be affected by the warning.
+      --  avoid major incompatibilities with legacy code.
 
       --  Note also that the rule in 6.4.1 (6.17/3), introduced by AI12-0324,
       --  is potentially more expensive to verify, and is not yet implemented.
-
-      if Is_Internal_Unit (Current_Sem_Unit) then
-         return;
-      end if;
 
       Form1 := First_Formal (Subp);
       Act1  := First_Actual (N);
@@ -3756,12 +3750,10 @@ package body Sem_Warn is
             null;
 
          else
-            Form2 := First_Formal (Subp);
-            Act2  := First_Actual (N);
+            Form2 := Next_Formal (Form1);
+            Act2  := Next_Actual (Act1);
             while Present (Form2) and then Present (Act2) loop
-               if Form1 /= Form2
-                 and then Refer_Same_Object (Act1, Act2)
-               then
+               if Refer_Same_Object (Act1, Act2) then
                   if Is_Generic_Type (Etype (Act2)) then
                      return;
                   end if;
@@ -3853,71 +3845,55 @@ package body Sem_Warn is
                           or else Error_To_Warning
                           or else Warn_Only;
 
-                        declare
-                           Act  : Node_Id;
-                           Form : Entity_Id;
+                        if Is_Elementary_Type (Etype (Act1))
+                          and then Ekind (Form2) = E_In_Parameter
+                        then
+                           null;  --  No real aliasing
 
-                        begin
-                           --  Find matching actual
+                        elsif Is_Elementary_Type (Etype (Act2))
+                          and then Ekind (Form2) = E_In_Parameter
+                        then
+                           null;  --  Ditto
 
-                           Act  := First_Actual (N);
-                           Form := First_Formal (Subp);
-                           while Act /= Act2 loop
-                              Next_Formal (Form);
-                              Next_Actual (Act);
-                           end loop;
+                        --  If the call was written in prefix notation, and
+                        --  thus its prefix before rewriting was a selected
+                        --  component, count only visible actuals in call.
 
-                           if Is_Elementary_Type (Etype (Act1))
-                             and then Ekind (Form2) = E_In_Parameter
-                           then
-                              null;  --  No real aliasing
-
-                           elsif Is_Elementary_Type (Etype (Act2))
-                             and then Ekind (Form2) = E_In_Parameter
-                           then
-                              null;  --  Ditto
-
-                           --  If the call was written in prefix notation, and
-                           --  thus its prefix before rewriting was a selected
-                           --  component, count only visible actuals in call.
-
-                           elsif Is_Entity_Name (First_Actual (N))
-                             and then Nkind (Original_Node (N)) = Nkind (N)
-                             and then Nkind (Name (Original_Node (N))) =
-                                                           N_Selected_Component
-                             and then
-                               Is_Entity_Name
-                                 (Prefix (Name (Original_Node (N))))
-                             and then
-                               Entity (Prefix (Name (Original_Node (N)))) =
-                                 Entity (First_Actual (N))
-                           then
-                              if Act1 = First_Actual (N) then
-                                 Error_Msg_FE
-                                   ("<<`IN OUT` prefix overlaps with "
-                                    & "actual for&", Act1, Form);
-
-                              else
-                                 --  For greater clarity, give name of formal
-
-                                 Error_Msg_Node_2 := Form;
-                                 Error_Msg_FE
-                                   ("<<writable actual for & overlaps with "
-                                    & "actual for&", Act1, Form);
-                              end if;
+                        elsif Is_Entity_Name (First_Actual (N))
+                          and then Nkind (Original_Node (N)) = Nkind (N)
+                          and then Nkind (Name (Original_Node (N))) =
+                                                        N_Selected_Component
+                          and then
+                            Is_Entity_Name (Prefix (Name (Original_Node (N))))
+                          and then
+                            Entity (Prefix (Name (Original_Node (N)))) =
+                              Entity (First_Actual (N))
+                        then
+                           if Act1 = First_Actual (N) then
+                              Error_Msg_FE
+                                ("<<`IN OUT` prefix overlaps with "
+                                 & "actual for&", Act1, Form2);
 
                            else
                               --  For greater clarity, give name of formal
 
-                              Error_Msg_Node_2 := Form;
-
-                              --  This is one of the messages
-
+                              Error_Msg_Node_2 := Form2;
                               Error_Msg_FE
                                 ("<<writable actual for & overlaps with "
-                                 & "actual for&", Act1, Form1);
+                                 & "actual for&", Act1, Form2);
                            end if;
-                        end;
+
+                        else
+                           --  For greater clarity, give name of formal
+
+                           Error_Msg_Node_2 := Form2;
+
+                           --  This is one of the messages
+
+                           Error_Msg_FE
+                             ("<<writable actual for & overlaps with "
+                              & "actual for&", Act1, Form1);
+                        end if;
                      end if;
                   end if;
 

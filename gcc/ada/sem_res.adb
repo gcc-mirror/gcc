@@ -4010,69 +4010,94 @@ package body Sem_Res is
               and then not Is_Class_Wide_Type (Etype (Expression (A)))
               and then not Is_Interface (Etype (A))
             then
-               if Ekind (F) = E_In_Out_Parameter
-                 and then Is_Array_Type (Etype (F))
-               then
-                  --  In a view conversion, the conversion must be legal in
-                  --  both directions, and thus both component types must be
-                  --  aliased, or neither (4.6 (8)).
-
-                  --  The extra rule in 4.6 (24.9.2) seems unduly restrictive:
-                  --  the privacy requirement should not apply to generic
-                  --  types, and should be checked in an instance. ARG query
-                  --  is in order ???
-
-                  if Has_Aliased_Components (Etype (Expression (A))) /=
-                     Has_Aliased_Components (Etype (F))
+               declare
+                  Expr_Typ : constant Entity_Id := Etype (Expression (A));
+               begin
+                  if Ekind (F) = E_In_Out_Parameter
+                    and then Is_Array_Type (Etype (F))
                   then
-                     Error_Msg_N
-                       ("both component types in a view conversion must be"
-                         & " aliased, or neither", A);
+                     --  In a view conversion, the conversion must be legal in
+                     --  both directions, and thus both component types must be
+                     --  aliased, or neither (4.6 (8)).
 
-                  --  Comment here??? what set of cases???
+                     --  The extra rule in 4.6 (24.9.2) seems unduly
+                     --  restrictive: the privacy requirement should not apply
+                     --  to generic types, and should be checked in an
+                     --  instance. ARG query is in order ???
 
-                  elsif
-                     not Same_Ancestor (Etype (F), Etype (Expression (A)))
-                  then
-                     --  Check view conv between unrelated by ref array types
-
-                     if Is_By_Reference_Type (Etype (F))
-                        or else Is_By_Reference_Type (Etype (Expression (A)))
+                     if Has_Aliased_Components (Expr_Typ) /=
+                        Has_Aliased_Components (Etype (F))
                      then
                         Error_Msg_N
-                          ("view conversion between unrelated by reference "
-                           & "array types not allowed (\'A'I-00246)", A);
+                          ("both component types in a view conversion must be"
+                            & " aliased, or neither", A);
 
-                     --  In Ada 2005 mode, check view conversion component
-                     --  type cannot be private, tagged, or volatile. Note
-                     --  that we only apply this to source conversions. The
-                     --  generated code can contain conversions which are
-                     --  not subject to this test, and we cannot extract the
-                     --  component type in such cases since it is not present.
+                     --  Comment here??? what set of cases???
 
-                     elsif Comes_From_Source (A)
-                       and then Ada_Version >= Ada_2005
-                     then
-                        declare
-                           Comp_Type : constant Entity_Id :=
-                                         Component_Type
-                                           (Etype (Expression (A)));
-                        begin
-                           if (Is_Private_Type (Comp_Type)
-                                 and then not Is_Generic_Type (Comp_Type))
-                             or else Is_Tagged_Type (Comp_Type)
-                             or else Is_Volatile (Comp_Type)
-                           then
-                              Error_Msg_N
-                                ("component type of a view conversion cannot"
-                                   & " be private, tagged, or volatile"
-                                   & " (RM 4.6 (24))",
-                                   Expression (A));
-                           end if;
-                        end;
+                     elsif not Same_Ancestor (Etype (F), Expr_Typ) then
+                        --  Check view conv between unrelated by ref array
+                        --  types.
+
+                        if Is_By_Reference_Type (Etype (F))
+                           or else Is_By_Reference_Type (Expr_Typ)
+                        then
+                           Error_Msg_N
+                             ("view conversion between unrelated by reference "
+                              & "array types not allowed (\'A'I-00246)", A);
+
+                        --  In Ada 2005 mode, check view conversion component
+                        --  type cannot be private, tagged, or volatile. Note
+                        --  that we only apply this to source conversions. The
+                        --  generated code can contain conversions which are
+                        --  not subject to this test, and we cannot extract the
+                        --  component type in such cases since it is not
+                        --  present.
+
+                        elsif Comes_From_Source (A)
+                          and then Ada_Version >= Ada_2005
+                        then
+                           declare
+                              Comp_Type : constant Entity_Id :=
+                                            Component_Type (Expr_Typ);
+                           begin
+                              if (Is_Private_Type (Comp_Type)
+                                    and then not Is_Generic_Type (Comp_Type))
+                                or else Is_Tagged_Type (Comp_Type)
+                                or else Is_Volatile (Comp_Type)
+                              then
+                                 Error_Msg_N
+                                   ("component type of a view conversion " &
+                                    "cannot be private, tagged, or volatile" &
+                                    " (RM 4.6 (24))",
+                                    Expression (A));
+                              end if;
+                           end;
+                        end if;
                      end if;
+
+                  --  AI12-0074
+                  --  Check 6.4.1: If the mode is out, the actual parameter is
+                  --  a view conversion, and the type of the formal parameter
+                  --  is a scalar type that has the Default_Value aspect
+                  --  specified, then
+                  --    - there shall exist a type (other than a root numeric
+                  --      type) that is an ancestor of both the target type and
+                  --      the operand type; and
+                  --    - the type of the operand of the conversion shall have
+                  --      the Default_Value aspect specified.
+
+                  elsif Ekind (F) = E_Out_Parameter
+                    and then Is_Scalar_Type (Etype (F))
+                    and then Present (Default_Aspect_Value (Etype (F)))
+                    and then
+                      (not Same_Ancestor (Etype (F), Expr_Typ)
+                         or else No (Default_Aspect_Value (Expr_Typ)))
+                  then
+                     Error_Msg_N
+                       ("view conversion between unrelated types with "
+                        & "Default_Value not allowed (RM 6.4.1)", A);
                   end if;
-               end if;
+               end;
 
                --  Resolve expression if conversion is all OK
 
@@ -6098,8 +6123,7 @@ package body Sem_Res is
       --  can be an arbitrary expression with special resolution rules.
 
       elsif Nkind_In (Subp, N_Selected_Component, N_Indexed_Component)
-        or else (Is_Entity_Name (Subp)
-                  and then Ekind_In (Entity (Subp), E_Entry, E_Entry_Family))
+        or else (Is_Entity_Name (Subp) and then Is_Entry (Entity (Subp)))
       then
          Resolve_Entry_Call (N, Typ);
 
@@ -7371,6 +7395,10 @@ package body Sem_Res is
       --  Determine whether node Context denotes an assignment statement or an
       --  object declaration whose expression is node Expr.
 
+      function Is_Attribute_Expression (Expr : Node_Id) return Boolean;
+      --  Determine whether Expr is part of an N_Attribute_Reference
+      --  expression.
+
       ----------------------------------------
       -- Is_Assignment_Or_Object_Expression --
       ----------------------------------------
@@ -7412,6 +7440,24 @@ package body Sem_Res is
             return False;
          end if;
       end Is_Assignment_Or_Object_Expression;
+
+      -----------------------------
+      -- Is_Attribute_Expression --
+      -----------------------------
+
+      function Is_Attribute_Expression (Expr : Node_Id) return Boolean is
+         N : Node_Id := Expr;
+      begin
+         while Present (N) loop
+            if Nkind (N) = N_Attribute_Reference then
+               return True;
+            end if;
+
+            N := Parent (N);
+         end loop;
+
+         return False;
+      end Is_Attribute_Expression;
 
       --  Local variables
 
@@ -7483,8 +7529,8 @@ package body Sem_Res is
       --  array types (i.e. bounds and length) are legal.
 
       elsif Ekind (E) = E_Out_Parameter
-        and then (Nkind (Parent (N)) /= N_Attribute_Reference
-                   or else Is_Scalar_Type (Etype (E)))
+        and then (Is_Scalar_Type (Etype (E))
+                   or else not Is_Attribute_Expression (Parent (N)))
 
         and then (Nkind (Parent (N)) in N_Op
                    or else Nkind (Parent (N)) = N_Explicit_Dereference
@@ -7937,7 +7983,7 @@ package body Sem_Res is
          end;
       end if;
 
-      if Ekind_In (Nam, E_Entry, E_Entry_Family)
+      if Is_Entry (Nam)
         and then Present (Contract_Wrapper (Nam))
         and then Current_Scope /= Contract_Wrapper (Nam)
       then
@@ -8008,7 +8054,7 @@ package body Sem_Res is
 
       Generate_Reference (Nam, Entry_Name, 's');
 
-      if Ekind_In (Nam, E_Entry, E_Entry_Family) then
+      if Is_Entry (Nam) then
          Check_Potentially_Blocking_Operation (N);
       end if;
 
@@ -8090,6 +8136,13 @@ package body Sem_Res is
       then
          Establish_Transient_Scope (N, Manage_Sec_Stack => True);
       end if;
+
+      --  Now we know that this is not a call to a function that returns an
+      --  array type; moreover, we know the name of the called entry. Detect
+      --  overlapping actuals, just like for a subprogram call.
+
+      Warn_On_Overlapping_Actuals (Nam, N);
+
    end Resolve_Entry_Call;
 
    -------------------------
@@ -12429,6 +12482,18 @@ package body Sem_Res is
       --  are not rechecked because type visbility may lead to spurious errors,
       --  but conversions in an actual for a formal object must be checked.
 
+      function Is_Discrim_Of_Bad_Access_Conversion_Argument
+        (Expr : Node_Id) return Boolean;
+      --  Implicit anonymous-to-named access type conversions are not allowed
+      --  if the "statically deeper than" relationship does not apply to the
+      --  type of the conversion operand. See RM 8.6(28.1) and AARM 8.6(28.d).
+      --  We deal with most such cases elsewhere so that we can emit more
+      --  specific error messages (e.g., if the operand is an access parameter
+      --  or a saooaaat (stand-alone object of an anonymous access type)), but
+      --  here is where we catch the case where the operand is an access
+      --  discriminant selected from a dereference of another such "bad"
+      --  conversion argument.
+
       function Valid_Tagged_Conversion
         (Target_Type : Entity_Id;
          Opnd_Type   : Entity_Id) return Boolean;
@@ -12530,6 +12595,74 @@ package body Sem_Res is
             return True;
          end if;
       end In_Instance_Code;
+
+      --------------------------------------------------
+      -- Is_Discrim_Of_Bad_Access_Conversion_Argument --
+      --------------------------------------------------
+
+      function Is_Discrim_Of_Bad_Access_Conversion_Argument
+        (Expr : Node_Id) return Boolean
+      is
+         Exp_Type : Entity_Id := Base_Type (Etype (Expr));
+         pragma Assert (Is_Access_Type (Exp_Type));
+
+         Associated_Node : Node_Id;
+         Deref_Prefix : Node_Id;
+      begin
+         if not Is_Anonymous_Access_Type (Exp_Type) then
+            return False;
+         end if;
+
+         pragma Assert (Is_Itype (Exp_Type));
+         Associated_Node := Associated_Node_For_Itype (Exp_Type);
+
+         if Nkind (Associated_Node) /= N_Discriminant_Specification then
+            return False; -- not the type of an access discriminant
+         end if;
+
+         --  return False if Expr not of form <prefix>.all.Some_Component
+
+         if (Nkind (Expr) /= N_Selected_Component)
+           or else (Nkind (Prefix (Expr)) /= N_Explicit_Dereference)
+         then
+            --  conditional expressions, declare expressions ???
+            return False;
+         end if;
+
+         Deref_Prefix := Prefix (Prefix (Expr));
+         Exp_Type := Base_Type (Etype (Deref_Prefix));
+
+         --  The "statically deeper relationship" does not apply
+         --  to generic formal access types, so a prefix of such
+         --  a type is a "bad" prefix.
+
+         if Is_Generic_Formal (Exp_Type) then
+            return True;
+
+         --  The "statically deeper relationship" does apply to
+         --  any other named access type.
+
+         elsif not Is_Anonymous_Access_Type (Exp_Type) then
+            return False;
+         end if;
+
+         pragma Assert (Is_Itype (Exp_Type));
+         Associated_Node := Associated_Node_For_Itype (Exp_Type);
+
+         --  The "statically deeper relationship" applies to some
+         --  anonymous access types and not to others. Return
+         --  True for the cases where it does not apply. Also check
+         --  recursively for the
+         --     <prefix>.all.Access_Discrim.all.Access_Discrim case,
+         --  where the correct result depends on <prefix>.
+
+         return Nkind_In (Associated_Node,
+           N_Procedure_Specification, -- access parameter
+           N_Function_Specification,  -- access parameter
+           N_Object_Declaration       -- saooaaat
+           )
+           or else Is_Discrim_Of_Bad_Access_Conversion_Argument (Deref_Prefix);
+      end Is_Discrim_Of_Bad_Access_Conversion_Argument;
 
       ----------------------------
       -- Valid_Array_Conversion --
@@ -13080,13 +13213,10 @@ package body Sem_Res is
                         & "not allowed", Operand);
                      return False;
 
-                  --  This is a case where there's an enclosing object whose
-                  --  to which the "statically deeper than" relationship does
-                  --  not apply (such as an access discriminant selected from
-                  --  a dereference of an access parameter).
+                  --  Detect access discriminant values that are illegal
+                  --  implicit anonymous-to-named access conversion operands.
 
-                  elsif Object_Access_Level (Operand)
-                          = Scope_Depth (Standard_Standard)
+                  elsif Is_Discrim_Of_Bad_Access_Conversion_Argument (Operand)
                   then
                      Conversion_Error_N
                        ("implicit conversion of anonymous access value "

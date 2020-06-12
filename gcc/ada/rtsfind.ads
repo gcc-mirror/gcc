@@ -173,6 +173,7 @@ package Rtsfind is
       --  Children of System
 
       System_Address_Image,
+      System_Address_To_Access_Conversions,
       System_Arith_64,
       System_AST_Handling,
       System_Assertions,
@@ -1376,6 +1377,7 @@ package Rtsfind is
      RE_I_C,                             -- System.Stream_Attributes
      RE_I_F,                             -- System.Stream_Attributes
      RE_I_I,                             -- System.Stream_Attributes
+     RE_I_I24,                           -- System.Stream_Attributes
      RE_I_LF,                            -- System.Stream_Attributes
      RE_I_LI,                            -- System.Stream_Attributes
      RE_I_LLF,                           -- System.Stream_Attributes
@@ -1388,6 +1390,7 @@ package Rtsfind is
      RE_I_SSU,                           -- System.Stream_Attributes
      RE_I_SU,                            -- System.Stream_Attributes
      RE_I_U,                             -- System.Stream_Attributes
+     RE_I_U24,                           -- System.Stream_Attributes
      RE_I_WC,                            -- System.Stream_Attributes
      RE_I_WWC,                           -- System.Stream_Attributes
 
@@ -1397,6 +1400,7 @@ package Rtsfind is
      RE_W_C,                             -- System.Stream_Attributes
      RE_W_F,                             -- System.Stream_Attributes
      RE_W_I,                             -- System.Stream_Attributes
+     RE_W_I24,                           -- System.Stream_Attributes
      RE_W_LF,                            -- System.Stream_Attributes
      RE_W_LI,                            -- System.Stream_Attributes
      RE_W_LLF,                           -- System.Stream_Attributes
@@ -1409,6 +1413,7 @@ package Rtsfind is
      RE_W_SSU,                           -- System.Stream_Attributes
      RE_W_SU,                            -- System.Stream_Attributes
      RE_W_U,                             -- System.Stream_Attributes
+     RE_W_U24,                           -- System.Stream_Attributes
      RE_W_WC,                            -- System.Stream_Attributes
      RE_W_WWC,                           -- System.Stream_Attributes
 
@@ -2653,6 +2658,7 @@ package Rtsfind is
      RE_I_C                              => System_Stream_Attributes,
      RE_I_F                              => System_Stream_Attributes,
      RE_I_I                              => System_Stream_Attributes,
+     RE_I_I24                            => System_Stream_Attributes,
      RE_I_LF                             => System_Stream_Attributes,
      RE_I_LI                             => System_Stream_Attributes,
      RE_I_LLF                            => System_Stream_Attributes,
@@ -2665,6 +2671,7 @@ package Rtsfind is
      RE_I_SSU                            => System_Stream_Attributes,
      RE_I_SU                             => System_Stream_Attributes,
      RE_I_U                              => System_Stream_Attributes,
+     RE_I_U24                            => System_Stream_Attributes,
      RE_I_WC                             => System_Stream_Attributes,
      RE_I_WWC                            => System_Stream_Attributes,
 
@@ -2674,6 +2681,7 @@ package Rtsfind is
      RE_W_C                              => System_Stream_Attributes,
      RE_W_F                              => System_Stream_Attributes,
      RE_W_I                              => System_Stream_Attributes,
+     RE_W_I24                            => System_Stream_Attributes,
      RE_W_LF                             => System_Stream_Attributes,
      RE_W_LI                             => System_Stream_Attributes,
      RE_W_LLF                            => System_Stream_Attributes,
@@ -2686,6 +2694,7 @@ package Rtsfind is
      RE_W_SSU                            => System_Stream_Attributes,
      RE_W_SU                             => System_Stream_Attributes,
      RE_W_U                              => System_Stream_Attributes,
+     RE_W_U24                            => System_Stream_Attributes,
      RE_W_WC                             => System_Stream_Attributes,
      RE_W_WWC                            => System_Stream_Attributes,
 

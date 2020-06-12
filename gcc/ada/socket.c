@@ -801,14 +801,26 @@ const char * __gnat_gai_strerror(int errcode) {
 
 int __gnat_minus_500ms() {
 #if defined (_WIN32)
-  // Windows 8.0 and newer do not need 500 millisecond socket timeout
-  // correction.
-  // We do not know the Windows server version without socket timeout
-  // correction for now. When we know, we can add the call for
-  // IsWindowsVersionOrGreater(10, 0, ????) into condition.
-  return !IsWindows8OrGreater() || IsWindowsServer();
+  // Windows Server 2019 and Windows 8.0 do not need 500 millisecond socket
+  // timeout correction.
+  if (IsWindowsServer()) {
+    OSVERSIONINFO osvi;
+    ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
+    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+    // Documentation proposes to use IsWindowsVersionOrGreater(10, 0, 17763)
+    // but it does not compare by the build number (last parameter). See
+    // regression test for RC03-012 in fixedbugs, there are some code to
+    // investigate Windows version API behavior.
+    GetVersionEx(&osvi);
+    return osvi.dwMajorVersion < 10
+        || osvi.dwMajorVersion == 10
+        && osvi.dwMinorVersion == 0
+        && osvi.dwBuildNumber < 17763;
+  } else {
+    return !IsWindows8OrGreater();
+  }
 #else
-   return 0;
+  return 0;
 #endif
 }
 

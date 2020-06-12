@@ -1350,21 +1350,21 @@ begin
          | Pragma_Convention
          | Pragma_Deadline_Floor
          | Pragma_Debug_Policy
-         | Pragma_Depends
-         | Pragma_Detect_Blocking
          | Pragma_Default_Initial_Condition
          | Pragma_Default_Scalar_Storage_Order
          | Pragma_Default_Storage_Pool
+         | Pragma_Depends
+         | Pragma_Detect_Blocking
          | Pragma_Disable_Atomic_Synchronization
          | Pragma_Discard_Names
          | Pragma_Dispatching_Domain
          | Pragma_Effective_Reads
          | Pragma_Effective_Writes
-         | Pragma_Eliminate
          | Pragma_Elaborate
          | Pragma_Elaborate_All
          | Pragma_Elaborate_Body
          | Pragma_Elaboration_Checks
+         | Pragma_Eliminate
          | Pragma_Enable_Atomic_Synchronization
          | Pragma_Export
          | Pragma_Export_Function
@@ -1376,8 +1376,8 @@ begin
          | Pragma_Extensions_Visible
          | Pragma_External
          | Pragma_External_Name_Casing
-         | Pragma_Favor_Top_Level
          | Pragma_Fast_Math
+         | Pragma_Favor_Top_Level
          | Pragma_Finalize_Storage_Only
          | Pragma_Ghost
          | Pragma_Global
@@ -1402,8 +1402,8 @@ begin
          | Pragma_Interface
          | Pragma_Interface_Name
          | Pragma_Interrupt_Handler
-         | Pragma_Interrupt_State
          | Pragma_Interrupt_Priority
+         | Pragma_Interrupt_State
          | Pragma_Invariant
          | Pragma_Keep_Names
          | Pragma_License
@@ -1437,9 +1437,9 @@ begin
          | Pragma_No_Tagged_Streams
          | Pragma_Normalize_Scalars
          | Pragma_Obsolescent
-         | Pragma_Ordered
          | Pragma_Optimize
          | Pragma_Optimize_Alignment
+         | Pragma_Ordered
          | Pragma_Overflow_Mode
          | Pragma_Overriding_Renamings
          | Pragma_Pack
@@ -1469,6 +1469,8 @@ begin
          | Pragma_Pure
          | Pragma_Pure_Function
          | Pragma_Queuing_Policy
+         | Pragma_Rational
+         | Pragma_Ravenscar
          | Pragma_Refined_Depends
          | Pragma_Refined_Global
          | Pragma_Refined_Post
@@ -1477,10 +1479,8 @@ begin
          | Pragma_Remote_Access_Type
          | Pragma_Remote_Call_Interface
          | Pragma_Remote_Types
-         | Pragma_Restricted_Run_Time
-         | Pragma_Rational
-         | Pragma_Ravenscar
          | Pragma_Rename_Pragma
+         | Pragma_Restricted_Run_Time
          | Pragma_Reviewable
          | Pragma_Secondary_Stack_Size
          | Pragma_Share_Generic
@@ -1490,9 +1490,9 @@ begin
          | Pragma_Short_Descriptors
          | Pragma_Simple_Storage_Pool_Type
          | Pragma_SPARK_Mode
+         | Pragma_Static_Elaboration_Desired
          | Pragma_Storage_Size
          | Pragma_Storage_Unit
-         | Pragma_Static_Elaboration_Desired
          | Pragma_Stream_Convert
          | Pragma_Subtitle
          | Pragma_Suppress
@@ -1522,12 +1522,12 @@ begin
          | Pragma_Unsuppress
          | Pragma_Unused
          | Pragma_Use_VADS_Size
+         | Pragma_Validity_Checks
          | Pragma_Volatile
          | Pragma_Volatile_Components
          | Pragma_Volatile_Full_Access
          | Pragma_Volatile_Function
          | Pragma_Weak_External
-         | Pragma_Validity_Checks
       =>
          null;
 

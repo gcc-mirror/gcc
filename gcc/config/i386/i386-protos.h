@@ -89,6 +89,8 @@ extern const char *output_fp_compare (rtx_insn *, rtx*, bool, bool);
 extern const char *output_adjust_stack_and_probe (rtx);
 extern const char *output_probe_stack_range (rtx, rtx);
 
+extern void ix86_output_patchable_area (unsigned int, bool);
+
 extern void ix86_expand_clear (rtx);
 extern void ix86_expand_move (machine_mode, rtx[]);
 extern void ix86_expand_vector_move (machine_mode, rtx[]);
@@ -378,6 +380,7 @@ class rtl_opt_pass;
 
 extern rtl_opt_pass *make_pass_insert_vzeroupper (gcc::context *);
 extern rtl_opt_pass *make_pass_stv (gcc::context *);
-extern rtl_opt_pass *make_pass_insert_endbranch (gcc::context *);
+extern rtl_opt_pass *make_pass_insert_endbr_and_patchable_area
+  (gcc::context *);
 extern rtl_opt_pass *make_pass_remove_partial_avx_dependency
   (gcc::context *);

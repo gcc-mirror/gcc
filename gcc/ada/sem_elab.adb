@@ -75,8 +75,8 @@ package body Sem_Elab is
    --  The access-before-elaboration (ABE) mechanism implemented in this unit
    --  has the following objectives:
    --
-   --    * Diagnose at compile-time or install run-time checks to prevent ABE
-   --      access to data and behaviour.
+   --    * Diagnose at compile time or install run-time checks to prevent ABE
+   --      access to data and behavior.
    --
    --      The high-level idea is to accurately diagnose ABE issues within a
    --      single unit because the ABE mechanism can inspect the whole unit.
@@ -111,7 +111,7 @@ package body Sem_Elab is
    --    * Dynamic model - This is the most permissive of the three models.
    --      When the dynamic model is in effect, the mechanism diagnoses and
    --      installs run-time checks to detect ABE issues in the main unit.
-   --      The behaviour of this model is identical to that specified by the
+   --      The behavior of this model is identical to that specified by the
    --      Ada RM. This model is enabled with switch -gnatE.
    --
    --    Static model - This is the middle ground of the three models. When
@@ -122,7 +122,7 @@ package body Sem_Elab is
    --      the prior elaboration of withed units. This is the default model.
    --
    --    * SPARK model - This is the most conservative of the three models and
-   --      impelements the semantics defined in SPARK RM 7.7. The SPARK model
+   --      implements the semantics defined in SPARK RM 7.7. The SPARK model
    --      is in effect only when a context resides in a SPARK_Mode On region,
    --      otherwise the mechanism falls back to one of the previous models.
    --
@@ -186,7 +186,7 @@ package body Sem_Elab is
    --
    --  * Library level - A type of enclosing level. A scenario or target is at
    --    the library level if it appears in a package library unit, ignoring
-   --    enclosng packages.
+   --    enclosing packages.
    --
    --  * Non-library-level encapsulator - A construct that cannot be elaborated
    --    on its own and requires elaboration by a top-level scenario.
@@ -400,7 +400,7 @@ package body Sem_Elab is
    --  capture the target and relevant attributes of the original call.
    --
    --  The diagnostics of the ABE mechanism depend on accurate source locations
-   --  to determine the spacial relation of nodes.
+   --  to determine the spatial relation of nodes.
 
    -----------------------------------------
    -- Suppression of elaboration warnings --
@@ -590,7 +590,7 @@ package body Sem_Elab is
    --  -gnatH   legacy elaboration checking mode enabled
    --
    --           When this switch is in effect, the pre-18.x ABE model becomes
-   --           the defacto ABE model. This ammounts to cutting off all entry
+   --           the de facto ABE model. This amounts to cutting off all entry
    --           points into the new ABE mechanism, and giving full control to
    --           the old ABE mechanism.
    --
@@ -1952,6 +1952,18 @@ package body Sem_Elab is
    pragma Inline (Compilation_Unit);
    --  Return the N_Compilation_Unit node of unit Unit_Id
 
+   function Elaboration_Phase_Active return Boolean;
+   pragma Inline (Elaboration_Phase_Active);
+   --  Determine whether the elaboration phase of the compilation has started
+
+   procedure Error_Preelaborated_Call (N : Node_Id);
+   --  Give an error or warning for a non-static/non-preelaborable call in a
+   --  preelaborated unit.
+
+   procedure Finalize_All_Data_Structures;
+   pragma Inline (Finalize_All_Data_Structures);
+   --  Destroy all internal data structures
+
    function Find_Enclosing_Instance (N : Node_Id) return Node_Id;
    pragma Inline (Find_Enclosing_Instance);
    --  Find the declaration or body of the nearest expanded instance which
@@ -1971,14 +1983,6 @@ package body Sem_Elab is
    pragma Inline (First_Formal_Type);
    --  Return the type of subprogram Subp_Id's first formal parameter. If the
    --  subprogram lacks formal parameters, return Empty.
-
-   function Elaboration_Phase_Active return Boolean;
-   pragma Inline (Elaboration_Phase_Active);
-   --  Determine whether the elaboration phase of the compilation has started
-
-   procedure Finalize_All_Data_Structures;
-   pragma Inline (Finalize_All_Data_Structures);
-   --  Destroy all internal data structures
 
    function Has_Body (Pack_Decl : Node_Id) return Boolean;
    pragma Inline (Has_Body);
@@ -3745,6 +3749,15 @@ package body Sem_Elab is
       Set_Is_SPARK_Mode_On_Node (Marker, Is_SPARK_Mode_On_Node (N));
       Set_Target                (Marker, Subp_Id);
 
+      --  Ada 2020 (AI12-0175): Calls to certain functions that are essentially
+      --  unchecked conversions are preelaborable.
+
+      if Ada_Version >= Ada_2020 then
+         Set_Is_Preelaborable_Call (Marker, Is_Preelaborable_Construct (N));
+      else
+         Set_Is_Preelaborable_Call (Marker, False);
+      end if;
+
       --  The marker is inserted prior to the original call. This placement has
       --  several desirable effects:
 
@@ -4878,6 +4891,8 @@ package body Sem_Elab is
                        (Marker, Elaboration_Checks_OK (Attr_Rep));
             Set_Is_Elaboration_Warnings_OK_Node
                        (Marker, Elaboration_Warnings_OK (Attr_Rep));
+            Set_Is_Preelaborable_Call
+                       (Marker, False);
             Set_Is_Source_Call
                        (Marker, Comes_From_Source (Attr));
             Set_Is_SPARK_Mode_On_Node
@@ -5671,7 +5686,7 @@ package body Sem_Elab is
 
          --  Ensure that the unit with the target body is elaborated prior to
          --  the main unit. The implicit Elaborate[_All] is generated only when
-         --  the call has elaboration checks enabled. This behaviour parallels
+         --  the call has elaboration checks enabled. This behavior parallels
          --  that of the old ABE mechanism.
 
          if Elaboration_Checks_OK (Call_Rep) then
@@ -6071,7 +6086,7 @@ package body Sem_Elab is
 
          --  Ensure that the unit with the generic body is elaborated prior
          --  to the main unit. No implicit pragma has to be generated if the
-         --  instantiation has elaboration checks suppressed. This behaviour
+         --  instantiation has elaboration checks suppressed. This behavior
          --  parallels that of the old ABE mechanism.
 
          if Elaboration_Checks_OK (Inst_Rep) then
@@ -8095,7 +8110,7 @@ package body Sem_Elab is
       begin
          --  Nothing to do when the need for prior elaboration came from a
          --  partial finalization routine which occurs in an initialization
-         --  context. This behaviour parallels that of the old ABE mechanism.
+         --  context. This behavior parallels that of the old ABE mechanism.
 
          if In_State.Within_Partial_Finalization then
             return;
@@ -8838,6 +8853,29 @@ package body Sem_Elab is
       return Elaboration_Phase = Active;
    end Elaboration_Phase_Active;
 
+   ------------------------------
+   -- Error_Preelaborated_Call --
+   ------------------------------
+
+   procedure Error_Preelaborated_Call (N : Node_Id) is
+   begin
+      --  This is a warning in GNAT mode allowing such calls to be used in the
+      --  predefined library units with appropriate care.
+
+      Error_Msg_Warn := GNAT_Mode;
+
+      --  Ada 2020 (AI12-0175): Calls to certain functions that are essentially
+      --  unchecked conversions are preelaborable.
+
+      if Ada_Version >= Ada_2020 then
+         Error_Msg_N
+           ("<<non-preelaborable call not allowed in preelaborated unit", N);
+      else
+         Error_Msg_N
+           ("<<non-static call not allowed in preelaborated unit", N);
+      end if;
+   end Error_Preelaborated_Call;
+
    ----------------------------------
    -- Finalize_All_Data_Structures --
    ----------------------------------
@@ -9206,7 +9244,7 @@ package body Sem_Elab is
       begin
          --  Avoid cascaded errors if there were previous serious infractions.
          --  As a result the scenario will not be treated as a guaranteed ABE.
-         --  This behaviour parallels that of the old ABE mechanism.
+         --  This behavior parallels that of the old ABE mechanism.
 
          if Serious_Errors_Detected > 0 then
             return False;
@@ -11894,6 +11932,7 @@ package body Sem_Elab is
          Set_Is_Elaboration_Checks_OK_Node   (Marker, False);
          Set_Is_Elaboration_Warnings_OK_Node (Marker, False);
          Set_Is_Ignored_Ghost_Node           (Marker, False);
+         Set_Is_Preelaborable_Call           (Marker, False);
          Set_Is_Source_Call                  (Marker, False);
          Set_Is_SPARK_Mode_On_Node           (Marker, False);
 
@@ -11933,6 +11972,7 @@ package body Sem_Elab is
          Set_Is_Elaboration_Checks_OK_Node   (Marker, False);
          Set_Is_Elaboration_Warnings_OK_Node (Marker, False);
          Set_Is_Ignored_Ghost_Node           (Marker, False);
+         Set_Is_Preelaborable_Call           (Marker, False);
          Set_Is_Source_Call                  (Marker, False);
          Set_Is_SPARK_Mode_On_Node           (Marker, False);
 
@@ -13758,6 +13798,11 @@ package body Sem_Elab is
          if not Is_Source_Call (Call) then
             return;
 
+         --  Nothing to do when the call is preelaborable by definition
+
+         elsif Is_Preelaborable_Call (Call) then
+            return;
+
          --  Library-level calls are always considered because they are part of
          --  the associated unit's elaboration actions.
 
@@ -13779,13 +13824,10 @@ package body Sem_Elab is
             return;
          end if;
 
-         --  The call appears within a preelaborated unit. Emit a warning only
-         --  for internal uses, otherwise this is an error.
+         --  If the call appears within a preelaborated unit, give an error
 
          if In_Preelaborated_Context (Call) then
-            Error_Msg_Warn := GNAT_Mode;
-            Error_Msg_N
-              ("<<non-static call not allowed in preelaborated unit", Call);
+            Error_Preelaborated_Call (Call);
          end if;
       end Check_Preelaborated_Call;
 
@@ -14907,7 +14949,7 @@ package body Sem_Elab is
             return False;
 
          --  Assignments are ignored in GNAT mode on the assumption that
-         --  they are ABE-safe. This behaviour parallels that of the old
+         --  they are ABE-safe. This behavior parallels that of the old
          --  ABE mechanism.
 
          elsif GNAT_Mode then
@@ -17506,17 +17548,17 @@ package body Sem_Elab is
             --  Complain if ref that comes from source in preelaborated unit
             --  and we are not inside a subprogram (i.e. we are in elab code).
 
+            --  Ada 2020 (AI12-0175): Calls to certain functions that are
+            --  essentially unchecked conversions are preelaborable.
+
             if Comes_From_Source (N)
               and then In_Preelaborated_Unit
               and then not In_Inlined_Body
               and then Nkind (N) /= N_Attribute_Reference
+              and then not (Ada_Version >= Ada_2020
+                             and then Is_Preelaborable_Construct (N))
             then
-               --  This is a warning in GNAT mode allowing such calls to be
-               --  used in the predefined library with appropriate care.
-
-               Error_Msg_Warn := GNAT_Mode;
-               Error_Msg_N
-                 ("<<non-static call not allowed in preelaborated unit", N);
+               Error_Preelaborated_Call (N);
                return;
             end if;
 

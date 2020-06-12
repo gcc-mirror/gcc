@@ -24,7 +24,6 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
-with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util;
@@ -32,6 +31,7 @@ with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
+with Opt;      use Opt;
 with Rtsfind;  use Rtsfind;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Util; use Sem_Util;
@@ -43,6 +43,9 @@ with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
 
 package body Exp_Put_Image is
+
+   Tagged_Put_Image_Enabled : constant Boolean := False;
+   --  ???Set True to enable Put_Image for at least some tagged types
 
    -----------------------
    -- Local Subprograms --
@@ -341,9 +344,6 @@ package body Exp_Put_Image is
          --
          --  Note that this is putting a leading space for reals.
 
-         --  ???Work around the fact that Put_Image doesn't work for private
-         --  types whose full type is real.
-
          if Is_Real_Type (U_Type) then
             return Build_Unknown_Put_Image_Call (N);
          end if;
@@ -620,9 +620,7 @@ package body Exp_Put_Image is
       procedure Append_Component_Attr (Clist : List_Id; C : Entity_Id) is
          Component_Typ : constant Entity_Id := Put_Image_Base_Type (Etype (C));
       begin
-         if Ekind (C) /= E_Void
-           and then Enable_Put_Image (Component_Typ)
-         then
+         if Ekind (C) /= E_Void then
             Append_To (Clist,
               Make_Attribute_Reference (Loc,
                 Prefix         => New_Occurrence_Of (Component_Typ, Loc),
@@ -819,12 +817,8 @@ package body Exp_Put_Image is
    -- Enable_Put_Image --
    ----------------------
 
-   function Enable_Put_Image (T : Entity_Id) return Boolean is
+   function Enable_Put_Image (Typ : Entity_Id) return Boolean is
    begin
-      if not Debug_Flag_Underscore_Z then -- ????True to disable for all types
-         return False;
-      end if;
-
       --  There's a bit of a chicken&egg problem. The compiler is likely to
       --  have trouble if we refer to the Put_Image of Sink itself, because
       --  Sink is part of the parameter profile:
@@ -840,12 +834,43 @@ package body Exp_Put_Image is
       --  scalar types are expanded inline. We certainly want to be able to use
       --  Integer'Put_Image, for example.
 
-      --  ???Work around a bug: Put_Image does not work for Remote_Types.
-      --  We check the containing package, rather than the type itself, because
-      --  we want to include types in the private part of a Remote_Types
-      --  package.
+      --  ???Temporarily disable to work around bugs:
+      --
+      --  Put_Image does not work for Remote_Types. We check the containing
+      --  package, rather than the type itself, because we want to include
+      --  types in the private part of a Remote_Types package.
+      --
+      --  Put_Image on tagged types triggers some bugs.
+      --
+      --  Put_Image doesn't work for private types whose full type is real.
+      --  Disable for all real types, for simplicity.
+      --
+      --  Put_Image doesn't work for access-to-protected types, because of
+      --  confusion over their size. Disable for all access-to-subprogram
+      --  types, just in case.
 
-      if Is_Remote_Types (Scope (T)) then
+      if Is_Remote_Types (Scope (Typ))
+        or else (Is_Tagged_Type (Typ) and then In_Predefined_Unit (Typ))
+        or else (Is_Tagged_Type (Typ) and then not Tagged_Put_Image_Enabled)
+        or else Is_Real_Type (Typ)
+        or else Is_Access_Subprogram_Type (Typ)
+      then
+         return False;
+      end if;
+
+      --  End of workarounds.
+
+      --  No sense in generating code for Put_Image if there are errors. This
+      --  avoids certain cascade errors.
+
+      if Total_Errors_Detected > 0 then
+         return False;
+      end if;
+
+      --  If type Sink is unavailable in this runtime, disable Put_Image
+      --  altogether.
+
+      if No_Run_Time_Mode or else not RTE_Available (RE_Sink) then
          return False;
       end if;
 
@@ -856,17 +881,27 @@ package body Exp_Put_Image is
       --  predefined types.
 
       declare
-         Parent_Scope : constant Entity_Id := Scope (Scope (T));
+         Parent_Scope : constant Entity_Id := Scope (Scope (Typ));
       begin
          if Present (Parent_Scope)
            and then Is_RTU (Parent_Scope, Ada_Strings)
-           and then Chars (Scope (T)) = Name_Find ("text_output")
+           and then Chars (Scope (Typ)) = Name_Find ("text_output")
          then
             return False;
          end if;
       end;
 
-      return Is_Scalar_Type (T) or else not In_Predefined_Unit (T);
+      --  Disable for CPP types, because the components are unavailable on the
+      --  Ada side.
+
+      if Is_Tagged_Type (Typ)
+        and then Convention (Typ) = Convention_CPP
+        and then Is_CPP_Class (Root_Type (Typ))
+      then
+         return False;
+      end if;
+
+      return Is_Scalar_Type (Typ) or else not In_Predefined_Unit (Typ);
    end Enable_Put_Image;
 
    ---------------------------------
@@ -892,9 +927,40 @@ package body Exp_Put_Image is
       return Make_Defining_Identifier (Loc, Sname);
    end Make_Put_Image_Name;
 
-   ----------------------
+   ------------------
+   -- Preload_Sink --
+   ------------------
+
+   procedure Preload_Sink (Compilation_Unit : Node_Id) is
+   begin
+      --  We can't call RTE (RE_Sink) for at least some predefined units,
+      --  because it would introduce cyclic dependences. The package where Sink
+      --  is declared, for example, and things it depends on.
+      --
+      --  It's only needed for tagged types, so don't do it unless Put_Image is
+      --  enabled for tagged types, and we've seen a tagged type. Note that
+      --  Tagged_Seen is set True by the parser if the "tagged" reserved word
+      --  is seen; this flag tells us whether we have any tagged types.
+      --
+      --  Don't do it if type Sink is unavailable in the runtime.
+
+      if not In_Predefined_Unit (Compilation_Unit)
+        and then Tagged_Put_Image_Enabled
+        and then Tagged_Seen
+        and then not No_Run_Time_Mode
+        and then RTE_Available (RE_Sink)
+      then
+         declare
+            Ignore : constant Entity_Id := RTE (RE_Sink);
+         begin
+            null;
+         end;
+      end if;
+   end Preload_Sink;
+
+   -------------------------
    -- Put_Image_Base_Type --
-   ----------------------
+   -------------------------
 
    function Put_Image_Base_Type (E : Entity_Id) return Entity_Id is
    begin

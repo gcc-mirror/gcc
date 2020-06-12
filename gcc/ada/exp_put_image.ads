@@ -38,8 +38,9 @@ package Exp_Put_Image is
    --  are calls to T'Put_Image in different units, there will be duplicates;
    --  each unit will get a copy of the T'Put_Image procedure.
 
-   function Enable_Put_Image (T : Entity_Id) return Boolean;
-   --  True if Put_Image should be enabled for type T
+   function Enable_Put_Image (Typ : Entity_Id) return Boolean;
+   --  True if the predefined Put_Image should be enabled for type T. Put_Image
+   --  is always enabled if there is a user-specified one.
 
    function Build_Put_Image_Profile
      (Loc : Source_Ptr; Typ : Entity_Id) return List_Id;
@@ -83,5 +84,11 @@ package Exp_Put_Image is
 
    function Build_Unknown_Put_Image_Call (N : Node_Id) return Node_Id;
    --  Build a call to Put_Image_Unknown
+
+   procedure Preload_Sink (Compilation_Unit : Node_Id);
+   --  Call RTE (RE_Sink) if necessary, to load the packages involved in
+   --  Put_Image. We need to do this explicitly, fairly early during
+   --  compilation, because otherwise it happens during freezing, which
+   --  triggers visibility bugs in generic instantiations.
 
 end Exp_Put_Image;

@@ -10868,6 +10868,20 @@ package body Sem_Ch3 is
             end if;
          end if;
 
+         --  Ada 2005 (AI95-0414) and Ada 2020 (AI12-0269): Diagnose failure to
+         --  match No_Return in parent, but do it unconditionally in Ada 95 too
+         --  for procedures, since this is our pragma.
+
+         if Present (Overridden_Operation (Subp))
+           and then No_Return (Overridden_Operation (Subp))
+           and then not No_Return (Subp)
+         then
+            Error_Msg_N ("overriding subprogram & must be No_Return", Subp);
+            Error_Msg_N
+              ("\since overridden subprogram is No_Return (RM 6.5.1(6/2))",
+               Subp);
+         end if;
+
          --  If the operation is a wrapper for a synchronized primitive, it
          --  may be called indirectly through a dispatching select. We assume
          --  that it will be referenced elsewhere indirectly, and suppress
@@ -13098,8 +13112,8 @@ package body Sem_Ch3 is
       function Is_Discriminant (Expr : Node_Id) return Boolean;
       --  Returns True if Expr is a discriminant
 
-      function Get_Discr_Value (Discrim : Entity_Id) return Node_Id;
-      --  Find the value of discriminant Discrim in Constraint
+      function Get_Discr_Value (Discr_Expr : Node_Id) return Node_Id;
+      --  Find the value of a discriminant named by Discr_Expr in Constraints
 
       -----------------------------------
       -- Build_Constrained_Access_Type --
@@ -13321,7 +13335,11 @@ package body Sem_Ch3 is
       -- Get_Discr_Value --
       ---------------------
 
-      function Get_Discr_Value (Discrim : Entity_Id) return Node_Id is
+      function Get_Discr_Value (Discr_Expr : Node_Id) return Node_Id is
+         Discr_Id : constant Entity_Id := Entity (Discr_Expr);
+         --  Entity of a discriminant that appear as a standalone expression in
+         --  the constraint of a component.
+
          D : Entity_Id;
          E : Elmt_Id;
 
@@ -13337,9 +13355,9 @@ package body Sem_Ch3 is
          E := First_Elmt (Constraints);
 
          while Present (D) loop
-            if D = Entity (Discrim)
-              or else D = CR_Discriminant (Entity (Discrim))
-              or else Corresponding_Discriminant (D) = Entity (Discrim)
+            if D = Discr_Id
+              or else D = CR_Discriminant (Discr_Id)
+              or else Corresponding_Discriminant (D) = Discr_Id
             then
                return Node (E);
             end if;
@@ -13359,12 +13377,12 @@ package body Sem_Ch3 is
          --  be present when the component is a discriminated task type?
 
          if Is_Derived_Type (Typ)
-           and then Scope (Entity (Discrim)) = Etype (Typ)
+           and then Scope (Discr_Id) = Etype (Typ)
          then
             D := First_Discriminant (Etype (Typ));
             E := First_Elmt (Constraints);
             while Present (D) loop
-               if D = Entity (Discrim) then
+               if D = Discr_Id then
                   return Node (E);
                end if;
 
@@ -15450,9 +15468,9 @@ package body Sem_Ch3 is
       end if;
 
       --  No_Return must be inherited properly. If this is overridden in the
-      --  case of a dispatching operation, then a check is made in Sem_Disp
-      --  that the overriding operation is also No_Return (no such check is
-      --  required for the case of non-dispatching operation.
+      --  case of a dispatching operation, then the check is made later in
+      --  Check_Abstract_Overriding that the overriding operation is also
+      --  No_Return (no such check is required for the nondispatching case).
 
       Set_No_Return (New_Subp, No_Return (Parent_Subp));
 

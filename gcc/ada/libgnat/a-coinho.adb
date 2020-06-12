@@ -304,6 +304,30 @@ package body Ada.Containers.Indefinite_Holders is
       end;
    end Replace_Element;
 
+   ----------
+   -- Swap --
+   ----------
+
+   procedure Swap (Left, Right : in out Holder) is
+   begin
+      if Left.Busy /= 0 then
+         raise Program_Error with "attempt to tamper with elements";
+      end if;
+
+      if Right.Busy /= 0 then
+         raise Program_Error with "attempt to tamper with elements";
+      end if;
+
+      if Left.Element /= Right.Element then
+         declare
+            Tmp : constant Element_Access := Left.Element;
+         begin
+            Left.Element := Right.Element;
+            Right.Element := Tmp;
+         end;
+      end if;
+   end Swap;
+
    ---------------
    -- To_Holder --
    ---------------

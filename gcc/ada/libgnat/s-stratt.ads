@@ -53,6 +53,12 @@ package System.Stream_Attributes is
 
    subtype SEC is Ada.Streams.Stream_Element_Count;
 
+   type Integer_24 is range -2 ** 23 .. 2 ** 23 - 1;
+   for Integer_24'Size use 24;
+
+   type Unsigned_24 is mod 2 ** 24;
+   for Unsigned_24'Size use 24;
+
    --  Enumeration types are usually transferred using the routine for the
    --  corresponding integer. The exception is that special routines are
    --  provided for Boolean and the character types, in case the protocol
@@ -104,6 +110,7 @@ package System.Stream_Attributes is
    function I_C   (Stream : not null access RST) return Character;
    function I_F   (Stream : not null access RST) return Float;
    function I_I   (Stream : not null access RST) return Integer;
+   function I_I24 (Stream : not null access RST) return Integer_24;
    function I_LF  (Stream : not null access RST) return Long_Float;
    function I_LI  (Stream : not null access RST) return Long_Integer;
    function I_LLF (Stream : not null access RST) return Long_Long_Float;
@@ -117,6 +124,7 @@ package System.Stream_Attributes is
                                                    UST.Short_Short_Unsigned;
    function I_SU  (Stream : not null access RST) return UST.Short_Unsigned;
    function I_U   (Stream : not null access RST) return UST.Unsigned;
+   function I_U24 (Stream : not null access RST) return Unsigned_24;
    function I_WC  (Stream : not null access RST) return Wide_Character;
    function I_WWC (Stream : not null access RST) return Wide_Wide_Character;
 
@@ -135,6 +143,7 @@ package System.Stream_Attributes is
    procedure W_C   (Stream : not null access RST; Item : Character);
    procedure W_F   (Stream : not null access RST; Item : Float);
    procedure W_I   (Stream : not null access RST; Item : Integer);
+   procedure W_I24 (Stream : not null access RST; Item : Integer_24);
    procedure W_LF  (Stream : not null access RST; Item : Long_Float);
    procedure W_LI  (Stream : not null access RST; Item : Long_Integer);
    procedure W_LLF (Stream : not null access RST; Item : Long_Long_Float);
@@ -149,6 +158,7 @@ package System.Stream_Attributes is
                                                     UST.Short_Short_Unsigned);
    procedure W_SU  (Stream : not null access RST; Item : UST.Short_Unsigned);
    procedure W_U   (Stream : not null access RST; Item : UST.Unsigned);
+   procedure W_U24 (Stream : not null access RST; Item : Unsigned_24);
    procedure W_WC  (Stream : not null access RST; Item : Wide_Character);
    procedure W_WWC (Stream : not null access RST; Item : Wide_Wide_Character);
 

@@ -1,3 +1,327 @@
+2020-06-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_res.adb (Resolve_Implicit_Dereference): In an instance,
+	reset the type of the prefix if it is private before building
+	the dereference.
+
+2020-06-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Safe_Unchecked_Type_Conversion): Add missing
+	Is_Type guard before calling Has_Discriminants on Etype.
+
+2020-06-11  Bob Duff  <duff@adacore.com>
+
+	* libgnat/a-nbnbin__gmp.adb: There's no Optional_Big_Integer
+	anymore.  Invalid_Big_Integer is not used.
+	Greatest_Common_Divisor returns Big_Positive.
+
+2020-06-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Get_Value): Refine type of the Compon parameter.
+
+2020-06-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Resolve_Record_Aggregate): Refine type of
+	Others_Box.
+
+2020-06-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb, exp_ch7.adb, exp_ch9.adb, exp_smem.adb, lib.adb,
+	nlists.adb, sem.adb, sem_aggr.adb, sem_ch3.adb, sem_ch6.adb,
+	sem_ch8.adb, sem_dim.adb, sem_res.adb, sem_util.adb,
+	sem_warn.adb: Replace uses of Next function with procedure.
+
+2020-06-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_pakd.ads: Add paragraph about scalar storage order.
+	* exp_pakd.adb (Install_PAT): Do not set the scalar storage
+	order of the PAT here but...
+	(Set_PB_Type): ...here instead and...
+	(Create_Packed_Array_Impl_Type): ...here as well.
+	* rtsfind.ads (RE_Id): Add RE_Rev_Packed_Bytes{1,2,4}.
+	(RE_Unit_Table): Likewise.
+	* libgnat/s-unstyp.ads (Rev_Packed_Bytes1): New derived type.
+	(Rev_Packed_Bytes2): Likewise.
+	(Rev_Packed_Bytes4): Likewise.
+
+2020-06-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch4.adb, sem_ch6.adb, sem_res.adb, sem_util.ads: Fix
+	references to SPARK RM 7.1.3 rule numbers.
+
+2020-06-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): Simplify code,
+	remove inner predicate Is_Covered_Formal, preserve warning for
+	two overlapping composite types when only one is writable, and
+	for two overlapping and writable elementary types.
+
+2020-06-11  Steve Baird  <baird@adacore.com>
+
+	* contracts.adb (Add_Contract_Item): Support specifying
+	volatility refinement aspects for types.
+	(Analyze_Contracts): Add call to Analyze_Type_Contract in the
+	case of a contract for a type.
+	(Freeze_Contracts): Add call to Analyze_Type_Contract in the
+	case of a contract for a type.
+	(Check_Type_Or_Object_External_Properties): A new procedure
+	which performs the work that needs to be done for both object
+	declarations and types.
+	(Analyze_Object_Contract): Add a call to
+	Check_Type_Or_Object_External_Properties and remove the code in
+	this procedure which did much of the work that is now performed
+	by that call.
+	(Analyze_Type_Contract): Implement this new routine as nothing
+	more than a call to Check_Type_Or_Object_External_Properties.
+	* contracts.ads: Update comment for Add_Contract_To_Item because
+	types can have contracts.  Follow (questionable) precedent and
+	declare new routine Analyze_Type_Contract as visible (following
+	example of Analyze_Object_Contract), despite the fact that it is
+	never called from outside of the package where it is declared.
+	* einfo.adb (Contract, Set_Contract): Id argument can be a type;
+	support this case.
+	(Write_Field34_Name): Field name is "contract" for a type.
+	* einfo.ads: Update comment describing Contract attribute.
+	* sem_ch3.adb (Build_Derived_Numeric_Type): Is_Volatile should
+	return same answer for all subtypes of a given type. Thus, when
+	building the base type for something like type Volatile_1_To_10
+	is range 1 .. 10 with Volatile; that basetype should be marked
+	as being volatile.
+	(Access_Type_Declaration): Add SPARK-specific legality check
+	that the designated type of an access type shall be compatible
+	with respect to volatility with the access type.
+	* sem_ch12.adb (Check_Shared_Variable_Control_Aspects): Add
+	SPARK-specific legality check that an actual type parameter in
+	an instantiation shall be compatible with respect to volatility
+	with the corresponding formal type.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Perform checks
+	for aspect specs for the 4 volatility refinement aspects that
+	were already being performed for all language-defined aspects.
+	* sem_prag.adb (Analyze_External_Property_In_Decl_Part,
+	Analyze_Pragma): External properties (other than No_Caching) may
+	be specified for a type, including a generic formal type.
+	* sem_util.ads: Declare new subprograms - Async_Readers_Enabled,
+	Async_Writers_Enabled, Effective_Reads, Effective_Writes, and
+	Check_Volatility_Compatibility.
+	* sem_util.adb (Async_Readers_Enabled, Async_Writers_Enabled,
+	Effective_Reads, Effective_Writes): Initial implementation of
+	new functions for querying aspect values.
+	(Check_Volatility_Compatibility): New procedure intended for use
+	in checking all SPARK legality rules of the form "<> shall be
+	compatible with respect to volatility with <>".
+	(Has_Enabled_Property): Update comment because Item_Id can be a
+	type.  Change name of nested Variable_Has_Enabled_Property
+	function to Type_Or_Variable_Has_Enabled_Property; add a
+	parameter to that function because recursion may be needed,
+	e.g., in the case of a derived typ).  Cope with the case where
+	the argument to Has_Enabled_Property is a type.
+
+2020-06-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Add_Association): Add assertion about the formal
+	parameters.
+	(Propagate_Discriminants): Always add an explicit component
+	association, so that an "others => <>" association is never
+	needed.
+
+2020-06-11  Bob Duff  <duff@adacore.com>
+
+	* exp_put_image.adb (Build_Elementary_Put_Image_Call): If the
+	underlying type is real, call Put_Image_Unknown.
+	(Build_Unknown_Put_Image_Call): Pass the type name to
+	Put_Image_Unknown.
+	* libgnat/s-putima.ads, libgnat/s-putima.adb
+	(Put_Image_Unknown): Add Type_Name parameter.  Remove
+	overly-detailed documentation of what it does; better to leave
+	it open.
+
+2020-06-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch3.adb (Build_Constrained_Array_Type,
+	Build_Constrained_Discriminated_Type): Skip unnecessary loop
+	iterations.
+
+2020-06-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Build_Constrained_Itype): Move to Sem_Util.
+	* sem_ch3.adb (Build_Subtype, Inherit_Predicate_Flags): Move...
+	* sem_util.adb (Build_Subtype): Here.  Add parameters for
+	references to objects previously declared in enclosing scopes.
+	(Inherit_Predicate_Flags): And here, because it is called by
+	Build_Subtype.
+	* sem_util.ads (Build_Overriding_Spec): Reorder alphabetically.
+	(Build_Subtype): Moved from Sem_Ch3; comments updated.
+	(Build_Constrained_Itype): Moved from Sem_Aggr; comments
+	updated.
+
+2020-06-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Case_Table_Type): Change index type from Nat to
+	Pos.
+
+2020-06-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Build_Constrained_Itype): Previously a declare
+	block, now a separate procedure; the only change is that now
+	New_Assoc_List might include components and an others clause,
+	which we ignore (while we deal with discriminants exactly as we
+	did before); extend a ??? comment about how this routine is
+	different from the Build_Subtype
+	(Resolve_Record_Aggregate): Create a constrained itype not just
+	for the outermost record aggregate, but for its inner record
+	aggregates as well.
+
+2020-06-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Build_Discriminant_Checks): Build an explicit
+	dereference when the type is an access type.
+	* exp_atag.adb (Build_CW_Membership): Add explicit dereferences.
+	(Build_Get_Access_Level): Likewise.
+	(Build_Get_Alignment): Likewise.
+	(Build_Inherit_Prims): Likewise.
+	(Build_Get_Transportable): Likewise.
+	(Build_Set_Size_Function): Likewise.
+	* exp_ch3.adb (Build_Offset_To_Top_Function): Likewise.
+	* exp_ch4.adb (Expand_Allocator_Expression): Likewise.
+	(Expand_N_Indexed_Component ): Remove code dealing with implicit
+	dereferences.
+	(Expand_N_Selected_Component): Likewise.
+	(Expand_N_Slice): Likewise.
+	* exp_ch9.adb (Add_Formal_Renamings): Add explicit dereference.
+	(Expand_Accept_Declarations): Likewise.
+	(Build_Simple_Entry_Call): Remove code dealing with implicit
+	dereferences.
+	(Expand_N_Requeue_Statement): Likewise.
+	* exp_disp.adb (Expand_Dispatching_Call): Build an explicit
+	dereference when the controlling type is an access type.
+	* exp_spark.adb (Expand_SPARK_N_Selected_Component): Delete.
+	(Expand_SPARK_N_Slice_Or_Indexed_Component): Likewise.
+	(Expand_SPARK): Do not call them.
+	* sem_ch4.adb (Process_Implicit_Dereference_Prefix): Delete.
+	(Process_Indexed_Component): Call Implicitly_Designated_Type
+	to get the designated type for an implicit dereference.
+	(Analyze_Overloaded_Selected_Component): Do not insert an
+	explicit dereference here.
+	(Analyze_Selected_Component): Likewise.
+	(Analyze_Slice): Call Implicitly_Designated_Type to get the
+	designated type for an implicit dereference.
+	* sem_ch8.adb (Has_Components): New predicate extracted from...
+	(Is_Appropriate_For_Record): ...this.  Delete.
+	(Is_Appropriate_For_Entry_Prefix): Likewise.
+	(Analyze_Renamed_Entry): Deal with implicit dereferences.
+	(Find_Selected_Component): Do not insert an explicit dereference
+	here.  Call Implicitly_Designated_Type to get the designated type
+	for an implicit dereference.  Call Has_Components, Is_Task_Type
+	and Is_Protected_Type directly.  Adjust test for error.
+	* sem_res.adb (Resolve_Implicit_Dereference): New procedure.
+	(Resolve_Call): Call Resolve_Indexed_Component last.
+	(Resolve_Entry): Call Resolve_Implicit_Dereference on the prefix.
+	(Resolve_Indexed_Component): Call Implicitly_Designated_Type to
+	get the designated type for an implicit dereference and
+	Resolve_Implicit_Dereference on the prefix at the end.
+	(Resolve_Selected_Component): Likewise.
+	(Resolve_Slice): Likewise.  Do not apply access checks here.
+	* sem_util.ads (Implicitly_Designated_Type): Declare.
+	* sem_util.adb (Copy_And_Maybe_Dereference): Simplify.
+	(Implicitly_Designated_Type): New function.
+	(Object_Access_Level): Fix typo.
+	* sem_warn.adb (Check_Unset_Reference): Test Comes_From_Source
+	on the original node.
+
+2020-06-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_disp.adb: Minor reformatting.
+	* exp_aggr.adb (Is_Static_Dispatch_Table_Aggregate): Recognize
+	aggregates of the Ada.Tags.Object_Specific_Data type as static.
+	* sem_aggr.adb (Check_Static_Discriminated_Subtype): Deconstruct
+	and do not call it from Build_Constrained_Itype.
+
+2020-06-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_disp.adb (Make_Secondary_DT): Internally generated OSD
+	tables are now constant.
+
+2020-06-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb (Backend_Processing_Possible): Remove useless
+	call.
+
+2020-06-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* opt.ads (Building_Static_Dispatch_Tables): Fix punctuation in
+	comment.
+
+2020-06-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-stposu.ads (Root_Storage_Pool_With_Subpools,
+	Root_Subpool): Mark with Preelaborable_Initialization.
+
+2020-06-11  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Conditional_Entry_Call): Replace call to
+	New_Copy_List by calls to the new routine
+	New_Copy_Separate_List.
+	* sem_util.ads (New_Copy_Separate_List, New_Copy_Separate_Tree):
+	New routines.
+	* sem_util.adb (New_Copy_Separate_List, New_Copy_Separate_Tree):
+	New routines.
+	(New_Copy_Tree): Extend the machinery that detects syntactic
+	nodes to handle lists of indentifiers with field More_Ids;
+	otherwise such nodes are erroneously handled as semantic nodes.
+	Copy aspect specifications attached to nodes.
+	* sem_ch12.adb (Copy_Generic_Node): Protect reading attribute
+	Etype.
+
+2020-06-11  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Do not set the
+	Has_Predicates flag when the Predicate_Failure aspect is seen.
+	It is legal (but pointless) to use this aspect without a
+	predicate.  If we set the flag, we generate a half-baked
+	Predicate procedure, and if that procedure is nested, it causes
+	unnesting to crash.
+
+2020-06-11  Bob Duff  <duff@adacore.com>
+
+	* exp_put_image.adb (Build_Record_Put_Image_Procedure): Remove
+	special processing of protected types, because those are handled
+	by Build_Protected_Put_Image_Call.
+	(Enable_Put_Image): Use the switch -gnatd_z to control enabling
+	of Put_Image. Disable Put_Image for types in Remote_Types
+	packages.
+	* debug.adb: Document -gnatd_z switch.
+	* exp_imgv.adb, libgnat/a-stteou.ads, opt.ads: Minor cleanups.
+
+2020-06-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): Add label to the
+	outer loop and use it in the exit statement.
+
+2020-06-11  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* exp_ch3.adb (Build_Assignment): Generate predicate check if
+	subtype mark has predicate.
+
+2020-06-11  Justin Squirek  <squirek@adacore.com>
+
+	* sem_util.adb (Expand_N_Attribute_Reference): Use original
+	nodes where required to avoid looking at the expanded tree.
+
+2020-06-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/a-catizo.ads, libgnat/a-nbnbin.ads,
+	libgnat/a-nbnbre.ads, libgnat/a-nubinu.ads,
+	libgnat/s-aoinar.ads, libgnat/s-aomoar.ads,
+	libgnat/s-aotase.ads, libgnat/s-stopoo.ads: Remove aspects that
+	we will not implement.
+
+2020-06-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-aoinar.adb (Atomic_Fetch_And_Add,
+	Atomic_Fetch_And_Subtract): Add fallback using
+	compare-and-exchange, in case the integer type does not map to a
+	machine type.
+
 2020-06-10  Arnaud Charlet  <charlet@adacore.com>
 
 	* libgnat/s-aomoar.ads, libgnat/s-aomoar.adb: New files.

@@ -3720,8 +3720,8 @@ package Einfo is
 --       pragma No_Component_Reordering applies.
 
 --    No_Return (Flag113)
---       Defined in all entities. Always false except in the case of procedures
---       and generic procedures for which a pragma No_Return is given.
+--       Defined in all entities. Set for subprograms and generic subprograms
+--       to which a valid aspect or pragma No_Return applies.
 
 --    No_Strict_Aliasing (Flag136) [base type only]
 --       Defined in access types. Set to direct the backend to avoid any

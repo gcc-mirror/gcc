@@ -19814,7 +19814,7 @@ package body Sem_Prag is
                   raise Pragma_Exit;
                end if;
 
-               --  Loop to find matching procedures
+               --  Loop to find matching procedures or functions (Ada 2020)
 
                E := Entity (Id);
 
@@ -19822,8 +19822,13 @@ package body Sem_Prag is
                while Present (E)
                  and then Scope (E) = Current_Scope
                loop
-                  if Ekind_In (E, E_Generic_Procedure, E_Procedure) then
+                  --  Ada 2020 (AI12-0269): A function can be No_Return
 
+                  if Ekind_In (E, E_Generic_Procedure, E_Procedure)
+                    or else (Ada_Version >= Ada_2020
+                              and then
+                             Ekind_In (E, E_Generic_Function, E_Function))
+                  then
                      --  Check that the pragma is not applied to a body.
                      --  First check the specless body case, to give a
                      --  different error message. These checks do not apply
@@ -19905,6 +19910,11 @@ package body Sem_Prag is
                     and then From_Aspect_Specification (N)
                   then
                      Set_No_Return (Entity (Id));
+
+                  elsif Ada_Version >= Ada_2020 then
+                     Error_Pragma_Arg
+                       ("no subprogram& found for pragma%", Arg);
+
                   else
                      Error_Pragma_Arg ("no procedure& found for pragma%", Arg);
                   end if;
@@ -30866,11 +30876,11 @@ package body Sem_Prag is
       Pragma_Deadline_Floor                 => -1,
       Pragma_Debug                          => -1,
       Pragma_Debug_Policy                   =>  0,
-      Pragma_Detect_Blocking                =>  0,
       Pragma_Default_Initial_Condition      => -1,
       Pragma_Default_Scalar_Storage_Order   =>  0,
       Pragma_Default_Storage_Pool           =>  0,
       Pragma_Depends                        => -1,
+      Pragma_Detect_Blocking                =>  0,
       Pragma_Disable_Atomic_Synchronization =>  0,
       Pragma_Discard_Names                  =>  0,
       Pragma_Dispatching_Domain             => -1,
@@ -30892,9 +30902,9 @@ package body Sem_Prag is
       Pragma_Extensions_Allowed             =>  0,
       Pragma_Extensions_Visible             =>  0,
       Pragma_External                       => -1,
-      Pragma_Favor_Top_Level                =>  0,
       Pragma_External_Name_Casing           =>  0,
       Pragma_Fast_Math                      =>  0,
+      Pragma_Favor_Top_Level                =>  0,
       Pragma_Finalize_Storage_Only          =>  0,
       Pragma_Ghost                          =>  0,
       Pragma_Global                         => -1,
@@ -30958,9 +30968,9 @@ package body Sem_Prag is
       Pragma_Obsolescent                    =>  0,
       Pragma_Optimize                       =>  0,
       Pragma_Optimize_Alignment             =>  0,
+      Pragma_Ordered                        =>  0,
       Pragma_Overflow_Mode                  =>  0,
       Pragma_Overriding_Renamings           =>  0,
-      Pragma_Ordered                        =>  0,
       Pragma_Pack                           =>  0,
       Pragma_Page                           =>  0,
       Pragma_Part_Of                        =>  0,
@@ -30968,7 +30978,6 @@ package body Sem_Prag is
       Pragma_Passive                        =>  0,
       Pragma_Persistent_BSS                 =>  0,
       Pragma_Polling                        =>  0,
-      Pragma_Prefix_Exception_Messages      =>  0,
       Pragma_Post                           => -1,
       Pragma_Postcondition                  => -1,
       Pragma_Post_Class                     => -1,
@@ -30978,6 +30987,7 @@ package body Sem_Prag is
       Pragma_Predicate_Failure              => -1,
       Pragma_Preelaborable_Initialization   => -1,
       Pragma_Preelaborate                   =>  0,
+      Pragma_Prefix_Exception_Messages      =>  0,
       Pragma_Pre_Class                      => -1,
       Pragma_Priority                       => -1,
       Pragma_Priority_Specific_Dispatching  =>  0,
@@ -30996,35 +31006,35 @@ package body Sem_Prag is
       Pragma_Refined_Post                   => -1,
       Pragma_Refined_State                  => -1,
       Pragma_Relative_Deadline              =>  0,
-      Pragma_Rename_Pragma                  =>  0,
       Pragma_Remote_Access_Type             => -1,
       Pragma_Remote_Call_Interface          => -1,
       Pragma_Remote_Types                   => -1,
+      Pragma_Rename_Pragma                  =>  0,
       Pragma_Restricted_Run_Time            =>  0,
       Pragma_Restriction_Warnings           =>  0,
       Pragma_Restrictions                   =>  0,
       Pragma_Reviewable                     => -1,
       Pragma_Secondary_Stack_Size           => -1,
-      Pragma_Short_Circuit_And_Or           =>  0,
       Pragma_Share_Generic                  =>  0,
       Pragma_Shared                         =>  0,
       Pragma_Shared_Passive                 =>  0,
+      Pragma_Short_Circuit_And_Or           =>  0,
       Pragma_Short_Descriptors              =>  0,
       Pragma_Simple_Storage_Pool_Type       =>  0,
       Pragma_Source_File_Name               =>  0,
       Pragma_Source_File_Name_Project       =>  0,
       Pragma_Source_Reference               =>  0,
       Pragma_SPARK_Mode                     =>  0,
+      Pragma_Static_Elaboration_Desired     =>  0,
       Pragma_Storage_Size                   => -1,
       Pragma_Storage_Unit                   =>  0,
-      Pragma_Static_Elaboration_Desired     =>  0,
       Pragma_Stream_Convert                 =>  0,
       Pragma_Style_Checks                   =>  0,
       Pragma_Subtitle                       =>  0,
       Pragma_Suppress                       =>  0,
-      Pragma_Suppress_Exception_Locations   =>  0,
       Pragma_Suppress_All                   =>  0,
       Pragma_Suppress_Debug_Info            =>  0,
+      Pragma_Suppress_Exception_Locations   =>  0,
       Pragma_Suppress_Initialization        =>  0,
       Pragma_System_Name                    =>  0,
       Pragma_Task_Dispatching_Policy        =>  0,

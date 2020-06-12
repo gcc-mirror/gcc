@@ -23,7 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
@@ -56,7 +55,6 @@ with Sem_Ch11; use Sem_Ch11;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Elab; use Sem_Elab;
 with Sem_Eval; use Sem_Eval;
-with Sem_Prag; use Sem_Prag;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
@@ -3491,177 +3489,6 @@ package body Exp_Ch9 is
       Set_Master_Id (Ptr_Typ, Master_Id);
    end Build_Master_Renaming;
 
-   -----------------------------------------
-   -- Build_Private_Protected_Declaration --
-   -----------------------------------------
-
-   function Build_Private_Protected_Declaration
-     (N : Node_Id) return Entity_Id
-   is
-      procedure Analyze_Pragmas (From : Node_Id);
-      --  Analyze all pragmas which follow arbitrary node From
-
-      procedure Move_Pragmas (From : Node_Id; To : Node_Id);
-      --  Find all suitable source pragmas at the top of subprogram body From's
-      --  declarations and insert them after arbitrary node To.
-      --
-      --  Very similar to Move_Pragmas in sem_ch6 ???
-
-      ---------------------
-      -- Analyze_Pragmas --
-      ---------------------
-
-      procedure Analyze_Pragmas (From : Node_Id) is
-         Decl : Node_Id;
-
-      begin
-         Decl := Next (From);
-         while Present (Decl) loop
-            if Nkind (Decl) = N_Pragma then
-               Analyze_Pragma (Decl);
-
-            --  No candidate pragmas are available for analysis
-
-            else
-               exit;
-            end if;
-
-            Next (Decl);
-         end loop;
-      end Analyze_Pragmas;
-
-      ------------------
-      -- Move_Pragmas --
-      ------------------
-
-      procedure Move_Pragmas (From : Node_Id; To : Node_Id) is
-         Decl       : Node_Id;
-         Insert_Nod : Node_Id;
-         Next_Decl  : Node_Id;
-
-      begin
-         pragma Assert (Nkind (From) = N_Subprogram_Body);
-
-         --  The pragmas are moved in an order-preserving fashion
-
-         Insert_Nod := To;
-
-         --  Inspect the declarations of the subprogram body and relocate all
-         --  candidate pragmas.
-
-         Decl := First (Declarations (From));
-         while Present (Decl) loop
-
-            --  Preserve the following declaration for iteration purposes, due
-            --  to possible relocation of a pragma.
-
-            Next_Decl := Next (Decl);
-
-            --  We add an exception here for Unreferenced pragmas since the
-            --  internally generated spec gets analyzed within
-            --  Build_Private_Protected_Declaration and will lead to spurious
-            --  warnings due to the way references are checked.
-
-            if Nkind (Decl) = N_Pragma
-              and then Pragma_Name_Unmapped (Decl) /= Name_Unreferenced
-            then
-               Remove (Decl);
-               Insert_After (Insert_Nod, Decl);
-               Insert_Nod := Decl;
-
-            --  Skip internally generated code
-
-            elsif not Comes_From_Source (Decl) then
-               null;
-
-            --  No candidate pragmas are available for relocation
-
-            else
-               exit;
-            end if;
-
-            Decl := Next_Decl;
-         end loop;
-      end Move_Pragmas;
-
-      --  Local variables
-
-      Body_Id  : constant Entity_Id  := Defining_Entity (N);
-      Loc      : constant Source_Ptr := Sloc (N);
-      Decl     : Node_Id;
-      Formal   : Entity_Id;
-      Formals  : List_Id;
-      Spec     : Node_Id;
-      Spec_Id  : Entity_Id;
-
-   --  Start of processing for Build_Private_Protected_Declaration
-
-   begin
-      Formal := First_Formal (Body_Id);
-
-      --  The protected operation always has at least one formal, namely the
-      --  object itself, but it is only placed in the parameter list if
-      --  expansion is enabled.
-
-      if Present (Formal) or else Expander_Active then
-         Formals := Copy_Parameter_List (Body_Id);
-      else
-         Formals := No_List;
-      end if;
-
-      Spec_Id :=
-        Make_Defining_Identifier (Sloc (Body_Id),
-          Chars => Chars (Body_Id));
-
-      --  Indicate that the entity comes from source, to ensure that cross-
-      --  reference information is properly generated. The body itself is
-      --  rewritten during expansion, and the body entity will not appear in
-      --  calls to the operation.
-
-      Set_Comes_From_Source (Spec_Id, True);
-
-      if Nkind (Specification (N)) = N_Procedure_Specification then
-         Spec :=
-           Make_Procedure_Specification (Loc,
-              Defining_Unit_Name       => Spec_Id,
-              Parameter_Specifications => Formals);
-      else
-         Spec :=
-           Make_Function_Specification (Loc,
-             Defining_Unit_Name       => Spec_Id,
-             Parameter_Specifications => Formals,
-             Result_Definition        =>
-               New_Occurrence_Of (Etype (Body_Id), Loc));
-      end if;
-
-      Decl := Make_Subprogram_Declaration (Loc, Specification => Spec);
-      Set_Corresponding_Body (Decl, Body_Id);
-      Set_Corresponding_Spec (N,    Spec_Id);
-
-      Insert_Before (N, Decl);
-
-      --  Associate all aspects and pragmas of the body with the spec. This
-      --  ensures that these annotations apply to the initial declaration of
-      --  the subprogram body.
-
-      Move_Aspects (From => N, To => Decl);
-      Move_Pragmas (From => N, To => Decl);
-
-      Analyze (Decl);
-
-      --  The analysis of the spec may generate pragmas which require manual
-      --  analysis. Since the generation of the spec and the relocation of the
-      --  annotations is driven by the expansion of the stand-alone body, the
-      --  pragmas will not be analyzed in a timely manner. Do this now.
-
-      Analyze_Pragmas (Decl);
-
-      Set_Convention     (Spec_Id, Convention_Protected);
-      Set_Has_Completion (Spec_Id);
-
-      return Spec_Id;
-   end Build_Private_Protected_Declaration;
-
    ---------------------------
    -- Build_Protected_Entry --
    ---------------------------
@@ -6134,12 +5961,12 @@ package body Exp_Ch9 is
       --  If so, barrier may not be properly synchronized.
 
       function Is_Pure_Barrier (N : Node_Id) return Traverse_Result;
-      --  Check whether N follows the Pure_Barriers restriction. Return OK if
+      --  Check whether N meets the Pure_Barriers restriction. Return OK if
       --  so.
 
-      function Is_Simple_Barrier_Name (N : Node_Id) return Boolean;
-      --  Check whether entity name N denotes a component of the protected
-      --  object. This is used to check the Simple_Barrier restriction.
+      function Is_Simple_Barrier (N : Node_Id) return Boolean;
+      --  Check whether N meets the Simple_Barriers restriction. Return OK if
+      --  so.
 
       ----------------------
       -- Is_Global_Entity --
@@ -6191,14 +6018,25 @@ package body Exp_Ch9 is
       procedure Check_Unprotected_Barrier is
         new Traverse_Proc (Is_Global_Entity);
 
-      ----------------------------
-      -- Is_Simple_Barrier_Name --
-      ----------------------------
+      -----------------------
+      -- Is_Simple_Barrier --
+      -----------------------
 
-      function Is_Simple_Barrier_Name (N : Node_Id) return Boolean is
+      function Is_Simple_Barrier (N : Node_Id) return Boolean is
          Renamed : Node_Id;
 
       begin
+         if Is_Static_Expression (N) then
+            return True;
+         elsif Ada_Version >= Ada_2020
+           and then Nkind_In (N, N_Selected_Component, N_Indexed_Component)
+           and then Statically_Names_Object (N)
+         then
+            --  Restriction relaxed in Ada2020 to allow statically named
+            --  subcomponents.
+            return Is_Simple_Barrier (Prefix (N));
+         end if;
+
          --  Check if the name is a component of the protected object. If
          --  the expander is active, the component has been transformed into a
          --  renaming of _object.all.component. Original_Node is needed in case
@@ -6221,10 +6059,12 @@ package body Exp_Ch9 is
               Present (Renamed)
                 and then Nkind (Renamed) = N_Selected_Component
                 and then Chars (Prefix (Prefix (Renamed))) = Name_uObject;
+         elsif not Is_Entity_Name (N) then
+            return False;
          else
             return Is_Protected_Component (Entity (N));
          end if;
-      end Is_Simple_Barrier_Name;
+      end Is_Simple_Barrier;
 
       ---------------------
       -- Is_Pure_Barrier --
@@ -6265,7 +6105,7 @@ package body Exp_Ch9 is
                      return Skip;
 
                   when E_Variable =>
-                     if Is_Simple_Barrier_Name (N) then
+                     if Is_Simple_Barrier (N) then
                         return Skip;
                      end if;
 
@@ -6309,6 +6149,13 @@ package body Exp_Ch9 is
               | N_Case_Expression
             =>
                return OK;
+
+            when N_Indexed_Component | N_Selected_Component =>
+               if Statically_Names_Object (N) then
+                  return Is_Pure_Barrier (Prefix (N));
+               else
+                  return Abandon;
+               end if;
 
             when N_Case_Expression_Alternative =>
                --  do not traverse Discrete_Choices subtree
@@ -6368,6 +6215,12 @@ package body Exp_Ch9 is
          return;
       end if;
 
+      --  Prevent cascaded errors
+
+      if Nkind (Cond) = N_Error then
+         return;
+      end if;
+
       --  The body of the entry barrier must be analyzed in the context of the
       --  protected object, but its scope is external to it, just as any other
       --  unprotected version of a protected operation. The specification has
@@ -6397,22 +6250,25 @@ package body Exp_Ch9 is
          Analyze_And_Resolve (Cond, Any_Boolean);
       end if;
 
-      --  Check Pure_Barriers restriction
+      --  Check Simple_Barriers and Pure_Barriers restrictions.
+      --  Note that it is safe to be calling Check_Restriction from here, even
+      --  though this is part of the expander, since Expand_Entry_Barrier is
+      --  called from Sem_Ch9 even in -gnatc mode.
 
-      if Check_Pure_Barriers (Cond) = Abandon then
-         Check_Restriction (Pure_Barriers, Cond);
+      if not Is_Simple_Barrier (Cond) then
+         --  flag restriction violation
+         Check_Restriction (Simple_Barriers, Cond);
       end if;
 
-      --  The Ravenscar profile restricts barriers to simple variables declared
-      --  within the protected object. We also allow Boolean constants, since
-      --  these appear in several published examples and are also allowed by
-      --  other compilers.
+      if Check_Pure_Barriers (Cond) = Abandon then
+         --  flag restriction violation
+         Check_Restriction (Pure_Barriers, Cond);
 
-      --  Note that after analysis variables in this context will be replaced
-      --  by the corresponding prival, that is to say a renaming of a selected
-      --  component of the form _Object.Var. If expansion is disabled, as
-      --  within a generic, we check that the entity appears in the current
-      --  scope.
+         --  Emit warning if barrier contains global entities and is thus
+         --  potentially unsynchronized (if Pure_Barriers restrictions
+         --  are met then no need to check for this).
+         Check_Unprotected_Barrier (Cond);
+      end if;
 
       if Is_Entity_Name (Cond) then
          Cond_Id := Entity (Cond);
@@ -6433,25 +6289,12 @@ package body Exp_Ch9 is
             Set_Declarations (Func_Body, Empty_List);
          end if;
 
-         if Cond_Id = Standard_False or else Cond_Id = Standard_True then
-            return;
-
-         elsif Is_Simple_Barrier_Name (Cond) then
-            return;
-         end if;
+         --  Note that after analysis variables in this context will be
+         --  replaced by the corresponding prival, that is to say a renaming
+         --  of a selected component of the form _Object.Var. If expansion is
+         --  disabled, as within a generic, we check that the entity appears in
+         --  the current scope.
       end if;
-
-      --  It is not a boolean variable or literal, so check the restriction.
-      --  Note that it is safe to be calling Check_Restriction from here, even
-      --  though this is part of the expander, since Expand_Entry_Barrier is
-      --  called from Sem_Ch9 even in -gnatc mode.
-
-      Check_Restriction (Simple_Barriers, Cond);
-
-      --  Emit warning if barrier contains global entities and is thus
-      --  potentially unsynchronized.
-
-      Check_Unprotected_Barrier (Cond);
    end Expand_Entry_Barrier;
 
    ------------------------------
@@ -8630,6 +8473,7 @@ package body Exp_Ch9 is
       Disp_Op_Body : Node_Id;
       New_Op_Body  : Node_Id;
       Op_Body      : Node_Id;
+      Op_Decl      : Node_Id;
       Op_Id        : Entity_Id;
 
       function Build_Dispatching_Subprogram_Body
@@ -8766,51 +8610,46 @@ package body Exp_Ch9 is
                   Current_Node := New_Op_Body;
                   Analyze (New_Op_Body);
 
-                  --  Build the corresponding protected operation. It may
-                  --  appear that this is needed only if this is a visible
-                  --  operation of the type, or if it is an interrupt handler,
-                  --  and this was the strategy used previously in GNAT.
-
-                  --  However, the operation may be exported through a 'Access
-                  --  to an external caller. This is the common idiom in code
-                  --  that uses the Ada 2005 Timing_Events package. As a result
-                  --  we need to produce the protected body for both visible
-                  --  and private operations, as well as operations that only
-                  --  have a body in the source, and for which we create a
-                  --  declaration in the protected body itself.
+                  --  Build the corresponding protected operation. This is
+                  --  needed only if this is a public or private operation of
+                  --  the type.
 
                   if Present (Corresponding_Spec (Op_Body)) then
-                     if Lock_Free_Active then
-                        New_Op_Body :=
-                          Build_Lock_Free_Protected_Subprogram_Body
-                            (Op_Body, Pid, Specification (New_Op_Body));
-                     else
-                        New_Op_Body :=
-                          Build_Protected_Subprogram_Body
-                            (Op_Body, Pid, Specification (New_Op_Body));
-                     end if;
+                     Op_Decl :=
+                       Unit_Declaration_Node (Corresponding_Spec (Op_Body));
 
-                     Insert_After (Current_Node, New_Op_Body);
-                     Analyze (New_Op_Body);
+                     if Nkind (Parent (Op_Decl)) = N_Protected_Definition then
+                        if Lock_Free_Active then
+                           New_Op_Body :=
+                             Build_Lock_Free_Protected_Subprogram_Body
+                               (Op_Body, Pid, Specification (New_Op_Body));
+                        else
+                           New_Op_Body :=
+                             Build_Protected_Subprogram_Body (
+                               Op_Body, Pid, Specification (New_Op_Body));
+                        end if;
 
-                     Current_Node := New_Op_Body;
+                        Insert_After (Current_Node, New_Op_Body);
+                        Analyze (New_Op_Body);
+                        Current_Node := New_Op_Body;
 
-                     --  Generate an overriding primitive operation body for
-                     --  this subprogram if the protected type implements an
-                     --  interface.
+                        --  Generate an overriding primitive operation body for
+                        --  this subprogram if the protected type implements
+                        --  an interface.
 
-                     if Ada_Version >= Ada_2005
-                       and then
-                         Present (Interfaces (Corresponding_Record_Type (Pid)))
-                     then
-                        Disp_Op_Body :=
-                          Build_Dispatching_Subprogram_Body
-                            (Op_Body, Pid, New_Op_Body);
+                        if Ada_Version >= Ada_2005
+                          and then Present (Interfaces (
+                                     Corresponding_Record_Type (Pid)))
+                        then
+                           Disp_Op_Body :=
+                             Build_Dispatching_Subprogram_Body (
+                               Op_Body, Pid, New_Op_Body);
 
-                        Insert_After (Current_Node, Disp_Op_Body);
-                        Analyze (Disp_Op_Body);
+                           Insert_After (Current_Node, Disp_Op_Body);
+                           Analyze (Disp_Op_Body);
 
-                        Current_Node := Disp_Op_Body;
+                           Current_Node := Disp_Op_Body;
+                        end if;
                      end if;
                   end if;
                end if;

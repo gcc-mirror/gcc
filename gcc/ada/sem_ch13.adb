@@ -2270,6 +2270,17 @@ package body Sem_Ch13 is
                   end if;
             end case;
 
+            --  Check 13.1(9.2/5): A representation aspect of a subtype or type
+            --  shall not be specified (whether by a representation item or an
+            --  aspect_specification) before the type is completely defined
+            --  (see 3.11.1).
+
+            if Is_Representation_Aspect (A_Id)
+              and then Rep_Item_Too_Early (E, N)
+            then
+               goto Continue;
+            end if;
+
             --  Processing based on specific aspect
 
             case A_Id is
@@ -4759,9 +4770,10 @@ package body Sem_Ch13 is
                end if;
 
             else
-               if  Has_Implicit_Dereference (Ret_Type)
+               if Has_Implicit_Dereference (Ret_Type)
                  and then not
-                   Is_Access_Constant (Etype (First_Discriminant (Ret_Type)))
+                   Is_Access_Constant
+                     (Etype (Get_Reference_Discriminant (Ret_Type)))
                then
                   Illegal_Indexing
                     ("constant indexing must return an access to constant");
@@ -6592,19 +6604,19 @@ package body Sem_Ch13 is
             elsif Is_Elementary_Type (U_Ent) then
                if Size /= System_Storage_Unit
                  and then Size /= System_Storage_Unit * 2
+                 and then Size /= System_Storage_Unit * 3
                  and then Size /= System_Storage_Unit * 4
                  and then Size /= System_Storage_Unit * 8
                then
-                  Error_Msg_Uint_1 := UI_From_Int (System_Storage_Unit);
                   Error_Msg_N
-                    ("stream size for elementary type must be a power of 2 "
-                     & "and at least ^", N);
+                    ("stream size for elementary type must be 8, 16, 24, " &
+                     "32 or 64", N);
 
                elsif RM_Size (U_Ent) > Size then
                   Error_Msg_Uint_1 := RM_Size (U_Ent);
                   Error_Msg_N
-                    ("stream size for elementary type must be a power of 2 "
-                     & "and at least ^", N);
+                    ("stream size for elementary type must be 8, 16, 24, " &
+                     "32 or 64 and at least ^", N);
                end if;
 
                Set_Has_Stream_Size_Clause (U_Ent);

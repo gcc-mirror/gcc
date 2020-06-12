@@ -2178,6 +2178,10 @@ package Opt is
    --  be in the spec of Expander, but it is referenced by Errout, and it
    --  really seems wrong for Errout to depend on Expander.
 
+   Tagged_Seen : Boolean := False;
+   --  Set True by the parser if the "tagged" reserved word is seen. This is
+   --  needed in Exp_Put_Image (see that package for documentation).
+
    -----------------------------------
    -- Modes for Formal Verification --
    -----------------------------------

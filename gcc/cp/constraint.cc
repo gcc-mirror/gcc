@@ -1075,6 +1075,19 @@ associate_classtype_constraints (tree type)
 	 original declaration.  */
       if (tree orig_ci = get_constraints (decl))
         {
+	  if (int extra_levels = (TMPL_PARMS_DEPTH (current_template_parms)
+				  - TMPL_ARGS_DEPTH (TYPE_TI_ARGS (type))))
+	    {
+	      /* If there is a discrepancy between the current template depth
+		 and the template depth of the original declaration, then we
+		 must be redeclaring a class template as part of a friend
+		 declaration within another class template.  Before matching
+		 constraints, we need to reduce the template parameter level
+		 within the current constraints via substitution.  */
+	      tree outer_gtargs = template_parms_to_args (current_template_parms);
+	      TREE_VEC_LENGTH (outer_gtargs) = extra_levels;
+	      ci = tsubst_constraint_info (ci, outer_gtargs, tf_none, NULL_TREE);
+	    }
           if (!equivalent_constraints (ci, orig_ci))
             {
 	      error ("%qT does not match original declaration", type);

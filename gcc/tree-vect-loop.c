@@ -802,7 +802,7 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     vectorization_factor (0),
     max_vectorization_factor (0),
     mask_skip_niters (NULL_TREE),
-    mask_compare_type (NULL_TREE),
+    rgroup_compare_type (NULL_TREE),
     simd_if_cond (NULL_TREE),
     unaligned_dr (NULL),
     peeling_for_alignment (0),
@@ -963,23 +963,17 @@ vect_get_max_nscalars_per_iter (loop_vec_info loop_vinfo)
   return res;
 }
 
-/* Each statement in LOOP_VINFO can be masked where necessary.  Check
-   whether we can actually generate the masks required.  Return true if so,
-   storing the type of the scalar IV in LOOP_VINFO_MASK_COMPARE_TYPE.  */
+/* Calculate the minimum precision necessary to represent:
 
-static bool
-vect_verify_full_masking (loop_vec_info loop_vinfo)
+      MAX_NITERS * FACTOR
+
+   as an unsigned integer, where MAX_NITERS is the maximum number of
+   loop header iterations for the original scalar form of LOOP_VINFO.  */
+
+static unsigned
+vect_min_prec_for_max_niters (loop_vec_info loop_vinfo, unsigned int factor)
 {
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  unsigned int min_ni_width;
-  unsigned int max_nscalars_per_iter
-    = vect_get_max_nscalars_per_iter (loop_vinfo);
-
-  /* Use a normal loop if there are no statements that need masking.
-     This only happens in rare degenerate cases: it means that the loop
-     has no loads, no stores, and no live-out values.  */
-  if (LOOP_VINFO_MASKS (loop_vinfo).is_empty ())
-    return false;
 
   /* Get the maximum number of iterations that is representable
      in the counter type.  */
@@ -991,17 +985,36 @@ vect_verify_full_masking (loop_vec_info loop_vinfo)
   if (max_loop_iterations (loop, &max_back_edges))
     max_ni = wi::smin (max_ni, max_back_edges + 1);
 
-  /* Account for rgroup masks, in which each bit is replicated N times.  */
-  max_ni *= max_nscalars_per_iter;
+  /* Work out how many bits we need to represent the limit.  */
+  return wi::min_precision (max_ni * factor, UNSIGNED);
+}
+
+/* Each statement in LOOP_VINFO can be masked where necessary.  Check
+   whether we can actually generate the masks required.  Return true if so,
+   storing the type of the scalar IV in LOOP_VINFO_RGROUP_COMPARE_TYPE.  */
+
+static bool
+vect_verify_full_masking (loop_vec_info loop_vinfo)
+{
+  unsigned int min_ni_width;
+  unsigned int max_nscalars_per_iter
+    = vect_get_max_nscalars_per_iter (loop_vinfo);
+
+  /* Use a normal loop if there are no statements that need masking.
+     This only happens in rare degenerate cases: it means that the loop
+     has no loads, no stores, and no live-out values.  */
+  if (LOOP_VINFO_MASKS (loop_vinfo).is_empty ())
+    return false;
 
   /* Work out how many bits we need to represent the limit.  */
-  min_ni_width = wi::min_precision (max_ni, UNSIGNED);
+  min_ni_width
+    = vect_min_prec_for_max_niters (loop_vinfo, max_nscalars_per_iter);
 
   /* Find a scalar mode for which WHILE_ULT is supported.  */
   opt_scalar_int_mode cmp_mode_iter;
   tree cmp_type = NULL_TREE;
   tree iv_type = NULL_TREE;
-  widest_int iv_limit = vect_iv_limit_for_full_masking (loop_vinfo);
+  widest_int iv_limit = vect_iv_limit_for_partial_vectors (loop_vinfo);
   unsigned int iv_precision = UINT_MAX;
 
   if (iv_limit != -1)
@@ -1054,8 +1067,8 @@ vect_verify_full_masking (loop_vec_info loop_vinfo)
   if (!cmp_type)
     return false;
 
-  LOOP_VINFO_MASK_COMPARE_TYPE (loop_vinfo) = cmp_type;
-  LOOP_VINFO_MASK_IV_TYPE (loop_vinfo) = iv_type;
+  LOOP_VINFO_RGROUP_COMPARE_TYPE (loop_vinfo) = cmp_type;
+  LOOP_VINFO_RGROUP_IV_TYPE (loop_vinfo) = iv_type;
   return true;
 }
 
@@ -1624,6 +1637,27 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
   return opt_result::success ();
 }
 
+/* Return true if we know that the iteration count is smaller than the
+   vectorization factor.  Return false if it isn't, or if we can't be sure
+   either way.  */
+
+static bool
+vect_known_niters_smaller_than_vf (loop_vec_info loop_vinfo)
+{
+  unsigned int assumed_vf = vect_vf_for_cost (loop_vinfo);
+
+  HOST_WIDE_INT max_niter;
+  if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
+    max_niter = LOOP_VINFO_INT_NITERS (loop_vinfo);
+  else
+    max_niter = max_stmt_executions_int (LOOP_VINFO_LOOP (loop_vinfo));
+
+  if (max_niter != -1 && (unsigned HOST_WIDE_INT) max_niter < assumed_vf)
+    return true;
+
+  return false;
+}
+
 /* Analyze the cost of the loop described by LOOP_VINFO.  Decide if it
    is worthwhile to vectorize.  Return 1 if definitely yes, 0 if
    definitely no, or -1 if it's worth retrying.  */
@@ -1638,15 +1672,7 @@ vect_analyze_loop_costing (loop_vec_info loop_vinfo)
      counts less than the vectorization factor.  */
   if (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
     {
-      HOST_WIDE_INT max_niter;
-
-      if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
-	max_niter = LOOP_VINFO_INT_NITERS (loop_vinfo);
-      else
-	max_niter = max_stmt_executions_int (loop);
-
-      if (max_niter != -1
-	  && (unsigned HOST_WIDE_INT) max_niter < assumed_vf)
+      if (vect_known_niters_smaller_than_vf (loop_vinfo))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -6794,8 +6820,8 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "can't use a fully-masked loop because no"
-			     " conditional operation is available.\n");
+			     "can't operate on partial vectors because"
+			     " no conditional operation is available.\n");
 	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	}
       else if (reduction_type == FOLD_LEFT_REDUCTION
@@ -6806,8 +6832,8 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "can't use a fully-masked loop because no"
-			     " conditional operation is available.\n");
+			     "can't operate on partial vectors because"
+			     " no conditional operation is available.\n");
 	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	}
       else
@@ -7886,25 +7912,26 @@ vectorizable_live_operation (loop_vec_info loop_vinfo,
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "can't use a fully-masked loop because "
-				 "the target doesn't support extract last "
-				 "reduction.\n");
+				 "can't operate on partial vectors "
+				 "because the target doesn't support extract "
+				 "last reduction.\n");
 	      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	    }
 	  else if (slp_node)
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "can't use a fully-masked loop because an "
-				 "SLP statement is live after the loop.\n");
+				 "can't operate on partial vectors "
+				 "because an SLP statement is live after "
+				 "the loop.\n");
 	      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	    }
 	  else if (ncopies > 1)
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "can't use a fully-masked loop because"
-				 " ncopies is greater than 1.\n");
+				 "can't operate on partial vectors "
+				 "because ncopies is greater than 1.\n");
 	      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	    }
 	  else
@@ -9056,12 +9083,13 @@ optimize_mask_stores (class loop *loop)
 }
 
 /* Decide whether it is possible to use a zero-based induction variable
-   when vectorizing LOOP_VINFO with a fully-masked loop.  If it is,
-   return the value that the induction variable must be able to hold
-   in order to ensure that the loop ends with an all-false mask.
+   when vectorizing LOOP_VINFO with partial vectors.  If it is, return
+   the value that the induction variable must be able to hold in order
+   to ensure that the rgroups eventually have no active vector elements.
    Return -1 otherwise.  */
+
 widest_int
-vect_iv_limit_for_full_masking (loop_vec_info loop_vinfo)
+vect_iv_limit_for_partial_vectors (loop_vec_info loop_vinfo)
 {
   tree niters_skip = LOOP_VINFO_MASK_SKIP_NITERS (loop_vinfo);
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);

@@ -1562,6 +1562,9 @@ ix86_asm_output_function_label (FILE *asm_out_file, const char *fname,
 {
   bool is_ms_hook = ix86_function_ms_hook_prologue (decl);
 
+  if (cfun)
+    cfun->machine->function_label_emitted = true;
+
   if (is_ms_hook)
     {
       int i, filler_count = (TARGET_64BIT ? 32 : 16);
@@ -9365,6 +9368,38 @@ ix86_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED)
 	  if (NOTE_KIND (insn) == NOTE_INSN_DELETED_DEBUG_LABEL)
 	    CODE_LABEL_NUMBER (insn) = -1;
     }
+}
+
+/* Implement TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY.  */
+
+void
+ix86_print_patchable_function_entry (FILE *file,
+				     unsigned HOST_WIDE_INT patch_area_size,
+				     bool record_p)
+{
+  if (cfun->machine->function_label_emitted)
+    {
+      /* NB: When ix86_print_patchable_function_entry is called after
+	 function table has been emitted, we have inserted or queued
+	 a pseudo UNSPECV_PATCHABLE_AREA instruction at the proper
+	 place.  There is nothing to do here.  */
+      return;
+    }
+
+  default_print_patchable_function_entry (file, patch_area_size,
+					  record_p);
+}
+
+/* Output patchable area.  NB: default_print_patchable_function_entry
+   isn't available in i386.md.  */
+
+void
+ix86_output_patchable_area (unsigned int patch_area_size,
+			    bool record_p)
+{
+  default_print_patchable_function_entry (asm_out_file,
+					  patch_area_size,
+					  record_p);
 }
 
 /* Return a scratch register to use in the split stack prologue.  The
@@ -20418,8 +20453,16 @@ current_fentry_section (const char **name)
 void
 x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 {
-  if (cfun->machine->endbr_queued_at_entrance)
-    fprintf (file, "\t%s\n", TARGET_64BIT ? "endbr64" : "endbr32");
+  if (cfun->machine->insn_queued_at_entrance)
+    {
+      if (cfun->machine->insn_queued_at_entrance == TYPE_ENDBR)
+	fprintf (file, "\t%s\n", TARGET_64BIT ? "endbr64" : "endbr32");
+      unsigned int patch_area_size
+	= crtl->patch_area_size - crtl->patch_area_entry;
+      if (patch_area_size)
+	ix86_output_patchable_area (patch_area_size,
+				    crtl->patch_area_entry == 0);
+    }
 
   const char *mcount_name = MCOUNT_NAME;
 
@@ -23018,6 +23061,10 @@ ix86_run_selftests (void)
 
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE ix86_output_function_epilogue
+
+#undef TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY
+#define TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY \
+  ix86_print_patchable_function_entry
 
 #undef TARGET_ENCODE_SECTION_INFO
 #ifndef SUBTARGET_ENCODE_SECTION_INFO

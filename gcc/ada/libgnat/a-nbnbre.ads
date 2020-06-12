@@ -13,8 +13,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+pragma Ada_2020;
+
 with Ada.Numerics.Big_Numbers.Big_Integers;
-with Ada.Streams;
+
+with Ada.Strings.Text_Output; use Ada.Strings.Text_Output;
 
 --  Note that some Ada 2020 aspects are commented out since they are not
 --  supported yet.
@@ -22,9 +25,9 @@ with Ada.Streams;
 package Ada.Numerics.Big_Numbers.Big_Reals
   with Preelaborate
 is
-   type Big_Real is private;
---   with Real_Literal => From_String,
---        Put_Image    => Put_Image;
+   type Big_Real is private with
+--    Real_Literal => From_String,
+     Put_Image    => Put_Image;
 
    function Is_Valid (Arg : Big_Real) return Boolean
      with Convention => Intrinsic;
@@ -105,9 +108,7 @@ is
 
    function From_Quotient_String (Arg : String) return Big_Real;
 
-   procedure Put_Image
-     (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
-      Arg    : Big_Real);
+   procedure Put_Image (S : in out Sink'Class; V : Big_Real);
 
    function "+" (L : Big_Real) return Big_Real;
 

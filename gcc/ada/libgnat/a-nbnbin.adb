@@ -29,8 +29,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+pragma Ada_2020;
+
 with Ada.Unchecked_Deallocation;
-with Ada.Characters.Conversions; use Ada.Characters.Conversions;
+with Ada.Strings.Text_Output.Utils;
 
 with Interfaces; use Interfaces;
 
@@ -290,11 +292,12 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- Put_Image --
    ---------------
 
-   procedure Put_Image
-     (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
-      Arg    : Big_Integer) is
+   procedure Put_Image (S : in out Sink'Class; V : Big_Integer) is
+      --  This is implemented in terms of To_String. It might be more elegant
+      --  and more efficient to do it the other way around, but this is the
+      --  most expedient implementation for now.
    begin
-      Wide_Wide_String'Write (Stream, To_Wide_Wide_String (To_String (Arg)));
+      Strings.Text_Output.Utils.Put_UTF_8 (S, To_String (V));
    end Put_Image;
 
    ---------

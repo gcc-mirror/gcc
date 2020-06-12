@@ -40,6 +40,10 @@ package body Ada.Strings.Text_Output.Utils is
    procedure Adjust_Column (S : in out Sink'Class) with Inline;
    --  Adjust the column for a non-NL character.
 
+   procedure Put_UTF_8_Outline (S : in out Sink'Class; Item : UTF_8);
+   --  Out-of-line portion of Put_UTF_8. This exists solely to make Put_UTF_8
+   --  small enough to reasonably inline it.
+
    procedure Full (S : in out Sink'Class) is
    begin
       pragma Assert (S.Last = S.Chunk_Length);
@@ -132,16 +136,9 @@ package body Ada.Strings.Text_Output.Utils is
       end if;
    end Put_Wide_Wide_Character;
 
-   procedure Put_UTF_8 (S : in out Sink'Class; Item : UTF_8) is
+   procedure Put_UTF_8_Outline (S : in out Sink'Class; Item : UTF_8) is
    begin
-      Adjust_Column (S);
-
-      if S.Last + Item'Length < S.Chunk_Length then
-         --  Item fits in current chunk
-
-         S.Cur_Chunk.Chars (S.Last + 1 .. S.Last + Item'Length) := Item;
-         S.Last := S.Last + Item'Length;
-      elsif S.Last + Item'Length = S.Chunk_Length then
+      if S.Last + Item'Length = S.Chunk_Length then
          --  Item fits exactly in current chunk
 
          S.Cur_Chunk.Chars (S.Last + 1 .. S.Last + Item'Length) := Item;
@@ -167,6 +164,20 @@ package body Ada.Strings.Text_Output.Utils is
             Put_UTF_8 (S, Left); -- This will call Full.
             Put_UTF_8 (S, Right); -- This might call Full, but probably not.
          end;
+      end if;
+   end Put_UTF_8_Outline;
+
+   procedure Put_UTF_8 (S : in out Sink'Class; Item : UTF_8) is
+   begin
+      Adjust_Column (S);
+
+      if S.Last + Item'Length < S.Chunk_Length then
+         --  Item fits in current chunk
+
+         S.Cur_Chunk.Chars (S.Last + 1 .. S.Last + Item'Length) := Item;
+         S.Last := S.Last + Item'Length;
+      else
+         Put_UTF_8_Outline (S, Item);
       end if;
    end Put_UTF_8;
 

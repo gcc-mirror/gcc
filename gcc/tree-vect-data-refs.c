@@ -1129,6 +1129,35 @@ vect_update_misalignment_for_peel (dr_vec_info *dr_info,
   SET_DR_MISALIGNMENT (dr_info, DR_MISALIGNMENT_UNKNOWN);
 }
 
+/* Return true if alignment is relevant for DR_INFO.  */
+
+static bool
+vect_relevant_for_alignment_p (dr_vec_info *dr_info)
+{
+  stmt_vec_info stmt_info = dr_info->stmt;
+
+  if (!STMT_VINFO_RELEVANT_P (stmt_info))
+    return false;
+
+  /* For interleaving, only the alignment of the first access matters.  */
+  if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
+      && DR_GROUP_FIRST_ELEMENT (stmt_info) != stmt_info)
+    return false;
+
+  /* Scatter-gather and invariant accesses continue to address individual
+     scalars, so vector-level alignment is irrelevant.  */
+  if (STMT_VINFO_GATHER_SCATTER_P (stmt_info)
+      || integer_zerop (DR_STEP (dr_info->dr)))
+    return false;
+
+  /* Strided accesses perform only component accesses, alignment is
+     irrelevant for them.  */
+  if (STMT_VINFO_STRIDED_P (stmt_info)
+      && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
+    return false;
+
+  return true;
+}
 
 /* Function verify_data_ref_alignment
 
@@ -1169,20 +1198,7 @@ vect_verify_datarefs_alignment (loop_vec_info vinfo)
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
       dr_vec_info *dr_info = vinfo->lookup_dr (dr);
-      stmt_vec_info stmt_info = dr_info->stmt;
-
-      if (!STMT_VINFO_RELEVANT_P (stmt_info))
-	continue;
-
-      /* For interleaving, only the alignment of the first access matters.   */
-      if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
-	  && DR_GROUP_FIRST_ELEMENT (stmt_info) != stmt_info)
-	continue;
-
-      /* Strided accesses perform only component accesses, alignment is
-	 irrelevant for them.  */
-      if (STMT_VINFO_STRIDED_P (stmt_info)
-	  && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
+      if (!vect_relevant_for_alignment_p (dr_info))
 	continue;
 
       opt_result res = verify_data_ref_alignment (vinfo, dr_info);
@@ -1415,20 +1431,7 @@ vect_get_peeling_costs_all_drs (loop_vec_info loop_vinfo,
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
       dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
-      stmt_vec_info stmt_info = dr_info->stmt;
-      if (!STMT_VINFO_RELEVANT_P (stmt_info))
-	continue;
-
-      /* For interleaving, only the alignment of the first access
-         matters.  */
-      if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
-	  && DR_GROUP_FIRST_ELEMENT (stmt_info) != stmt_info)
-	continue;
-
-      /* Strided accesses perform only component accesses, alignment is
-         irrelevant for them.  */
-      if (STMT_VINFO_STRIDED_P (stmt_info)
-	  && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
+      if (!vect_relevant_for_alignment_p (dr_info))
 	continue;
 
       int save_misalignment;
@@ -1548,17 +1551,7 @@ vect_peeling_supportable (loop_vec_info loop_vinfo, dr_vec_info *dr0_info,
 	continue;
 
       dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
-      stmt_vec_info stmt_info = dr_info->stmt;
-      /* For interleaving, only the alignment of the first access
-	 matters.  */
-      if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
-	  && DR_GROUP_FIRST_ELEMENT (stmt_info) != stmt_info)
-	continue;
-
-      /* Strided accesses perform only component accesses, alignment is
-	 irrelevant for them.  */
-      if (STMT_VINFO_STRIDED_P (stmt_info)
-	  && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
+      if (!vect_relevant_for_alignment_p (dr_info))
 	continue;
 
       save_misalignment = DR_MISALIGNMENT (dr_info);
@@ -2197,21 +2190,13 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       FOR_EACH_VEC_ELT (datarefs, i, dr)
         {
 	  dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
-	  stmt_vec_info stmt_info = dr_info->stmt;
-
-	  /* For interleaving, only the alignment of the first access
-	     matters.  */
 	  if (aligned_access_p (dr_info)
-	      || (STMT_VINFO_GROUPED_ACCESS (stmt_info)
-		  && DR_GROUP_FIRST_ELEMENT (stmt_info) != stmt_info))
+	      || !vect_relevant_for_alignment_p (dr_info))
 	    continue;
 
+	  stmt_vec_info stmt_info = dr_info->stmt;
 	  if (STMT_VINFO_STRIDED_P (stmt_info))
 	    {
-	      /* Strided loads perform only component accesses, alignment is
-		 irrelevant for them.  */
-	      if (!STMT_VINFO_GROUPED_ACCESS (stmt_info))
-		continue;
 	      do_versioning = false;
 	      break;
 	    }
