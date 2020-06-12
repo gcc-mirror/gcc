@@ -9925,7 +9925,8 @@ vectorizable_condition (vec_info *vinfo,
   FOR_EACH_VEC_ELT (vec_oprnds0, i, vec_cond_lhs)
     {
       vec_then_clause = vec_oprnds2[i];
-      vec_else_clause = vec_oprnds3[i];
+      if (reduction_type != EXTRACT_LAST_REDUCTION)
+	vec_else_clause = vec_oprnds3[i];
 
       if (swap_cond_operands)
 	std::swap (vec_then_clause, vec_else_clause);
