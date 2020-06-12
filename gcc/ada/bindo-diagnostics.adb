@@ -25,7 +25,6 @@
 
 with Binderr;  use Binderr;
 with Debug;    use Debug;
-with Restrict; use Restrict;
 with Rident;   use Rident;
 with Types;    use Types;
 
@@ -1144,7 +1143,7 @@ package body Bindo.Diagnostics is
       --  within the task body on a select or accept statement, eliminating
       --  subsequent invocation edges, thus breaking the cycle.
 
-      if not Restriction_Active (No_Entry_Calls_In_Elaboration_Code)
+      if not Cumulative_Restrictions.Set (No_Entry_Calls_In_Elaboration_Code)
         and then Contains_Task_Activation (G, Cycle)
       then
          Error_Msg_Info
