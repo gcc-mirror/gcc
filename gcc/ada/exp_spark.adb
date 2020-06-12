@@ -400,13 +400,16 @@ package body Exp_SPARK is
          --  flag as the compiler assumes attributes always fit in this type.
          --  Since in SPARK_Mode we do not take Storage_Error into account, we
          --  cannot make this assumption and need to produce a check.
-         --  ??? It should be enough to add this check for attributes 'Length
-         --  and 'Range_Length when the type is as big as Long_Long_Integer.
+         --  ??? It should be enough to add this check for attributes
+         --  'Length, 'Range_Length and 'Pos when the type is as big
+         --  as Long_Long_Integer.
 
          declare
             Typ : Entity_Id;
          begin
-            if Attr_Id = Attribute_Range_Length then
+            if Attr_Id = Attribute_Range_Length
+              or else Attr_Id = Attribute_Pos
+            then
                Typ := Etype (Prefix (N));
 
             elsif Attr_Id = Attribute_Length then
@@ -421,6 +424,9 @@ package body Exp_SPARK is
             if Present (Typ)
               and then RM_Size (Typ) = RM_Size (Standard_Long_Long_Integer)
             then
+               --  ??? This should rather be a range check, but this would
+               --  crash GNATprove which somehow recovers the proper kind
+               --  of check anyway.
                Set_Do_Overflow_Check (N);
             end if;
          end;
