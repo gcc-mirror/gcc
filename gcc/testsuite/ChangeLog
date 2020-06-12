@@ -1,3 +1,24 @@
+2020-06-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95344
+	* c-c++-common/Wparentheses-2.c: New test.
+
+2020-06-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95560
+	* g++.dg/warn/Wshadow-compatible-local-3.C: New test.
+
+2020-06-11  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl   <kargl@gcc.gnu.org>
+
+	PR fortran/95611
+	* gfortran.dg/pr95611.f90: New file.
+
+2020-06-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95091
+	* gfortran.dg/pr95091.f90: New file.
+
 2020-06-06  Carl Love  <cel@us.ibm.com>
 
 	PR target/94833

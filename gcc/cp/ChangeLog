@@ -1,3 +1,16 @@
+2020-06-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95344
+	* cp-gimplify.c (cp_fold) <case MODIFY_EXPR>: Don't set
+	TREE_THIS_VOLATILE here.
+	(cp_fold): Set it here along with TREE_NO_WARNING.
+
+2020-06-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95560
+	* name-lookup.c (check_local_shadow): Check if types are
+	non-null before calling same_type_p.
+
 2020-05-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/90212
