@@ -1,3 +1,49 @@
+2020-06-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95560
+	* name-lookup.c (check_local_shadow): Check if types are
+	non-null before calling same_type_p.
+
+2020-06-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95066
+	* decl.c (duplicate_decls): Set DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P.
+
+2020-06-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94937
+	* cvt.c (cp_get_fndecl_from_callee): Return NULL_TREE if the function
+	type is not INDIRECT_TYPE_P.
+	* decl.c (omp_declare_variant_finalize_one): Call
+	cp_get_callee_fndecl_nofold instead of looking for the function decl
+	manually.
+
+2020-06-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95344
+	* cp-gimplify.c (cp_fold) <case MODIFY_EXPR>: Don't set
+	TREE_THIS_VOLATILE here.
+	(cp_fold): Set it here along with TREE_NO_WARNING.
+
+2020-06-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94955
+	* typeck.c (cp_build_binary_op): Use fold_for_warn instead of
+	cp_fold_rvalue.
+
+2020-06-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90915
+	* parser.c (cp_parser_has_attribute_expression): Sorry on a
+	type-dependent argument.
+
+2020-06-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95137
+	* coroutines.cc (expand_one_await_expression): Build separate
+	DTOR trees for the awaitable object on the destroy and resume
+	paths.
+
 2020-06-10  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/95346

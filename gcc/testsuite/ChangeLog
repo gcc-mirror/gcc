@@ -1,3 +1,45 @@
+2020-06-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95560
+	* g++.dg/warn/Wshadow-local-3.C: New test.
+
+2020-06-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95066
+	* g++.dg/cpp2a/explicit16.C: New test.
+
+2020-06-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94937
+	* g++.dg/cpp1z/constexpr-if34.C: New test.
+	* g++.dg/cpp2a/is-constant-evaluated10.C: New test.
+
+2020-06-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95344
+	* c-c++-common/Wparentheses-2.c: New test.
+
+2020-06-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94955
+	* g++.dg/cpp0x/constexpr-shift2.C: New test.
+
+2020-06-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90915
+	* g++.dg/ext/builtin-has-attribute.C: New test.
+
+2020-06-11  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl   <kargl@gcc.gnu.org>
+
+	PR fortran/95611
+	* gfortran.dg/pr95611.f90: New file.
+
+2020-06-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95091
+	* gfortran.dg/pr95091.f90: New file.
+
 2020-06-10  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/95346

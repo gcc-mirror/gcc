@@ -1,3 +1,26 @@
+2020-06-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/95578
+	* include/bits/ranges_algo.h (__lexicographical_compare_fn):
+	Also check that the iterator and sentinel have the same type before
+	applying the unwrapping optimization for __normal_iterator.
+	Split the check into two, one for the first iterator/sentinel
+	pair and another for second iterator/sentinel pair.  Remove uses
+	of __niter_base, and remove uses of std::move on a
+	__normal_iterator.
+	* include/bits/ranges_algobase.h (__equal_fn): Likewise.
+	(__copy_or_move): Likewise.  Perform similar adjustments for
+	the reverse_iterator and move_iterator optimizations.  Inline
+	the checks into the if-constexprs, and use using-declarations to
+	make them less visually noisy.  Remove uses of __niter_wrap.
+	(__copy_or_move_backward): Likewise.
+	* testsuite/25_algorithms/copy/95578.cc: New test.
+	* testsuite/25_algorithms/copy_backward/95578.cc: New test.
+	* testsuite/25_algorithms/equal/95578.cc: New test.
+	* testsuite/25_algorithms/lexicographical_compare/95578.cc: New test.
+	* testsuite/25_algorithms/move/95578.cc: New test.
+	* testsuite/25_algorithms/move_backward/95578.cc: New test.
+
 2020-05-28  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/95322
