@@ -12871,6 +12871,10 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
           template_parm_level_and_index (parm_pack, &level, &idx);
           if (level <= levels)
             arg_pack = TMPL_ARG (args, level, idx);
+
+	  if (arg_pack && TREE_CODE (arg_pack) == TEMPLATE_TYPE_PARM
+	      && TEMPLATE_TYPE_PARAMETER_PACK (arg_pack))
+	    arg_pack = NULL_TREE;
         }
 
       orig_arg = arg_pack;
@@ -24145,7 +24149,15 @@ more_specialized_fn (tree pat1, tree pat2, int len)
 
   /* If both deductions succeed, the partial ordering selects the more
      constrained template.  */
-  if (!lose1 && !lose2)
+  /* P2113: If the corresponding template-parameters of the
+     template-parameter-lists are not equivalent ([temp.over.link]) or if
+     the function parameters that positionally correspond between the two
+     templates are not of the same type, neither template is more
+     specialized than the other.  */
+  if (!lose1 && !lose2
+      && comp_template_parms (DECL_TEMPLATE_PARMS (pat1),
+			      DECL_TEMPLATE_PARMS (pat2))
+      && compparms (origs1, origs2))
     {
       int winner = more_constrained (decl1, decl2);
       if (winner > 0)
