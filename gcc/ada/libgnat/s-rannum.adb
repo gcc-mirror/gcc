@@ -86,6 +86,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Strings.Text_Output.Utils;
 with Ada.Unchecked_Conversion;
 
 with System.Random_Seed;
@@ -638,6 +639,16 @@ is
 
       return Result;
    end Image;
+
+   ---------------
+   -- Put_Image --
+   ---------------
+
+   procedure Put_Image
+     (S : in out Strings.Text_Output.Sink'Class; V : State) is
+   begin
+      Strings.Text_Output.Utils.Put_String (S, Image (V));
+   end Put_Image;
 
    -----------
    -- Value --

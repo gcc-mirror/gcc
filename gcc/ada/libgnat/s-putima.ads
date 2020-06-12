@@ -47,6 +47,8 @@ package System.Put_Images is
    --  after them. See Exp_Put_Image in the compiler for details of these
    --  calls.
 
+   pragma Preelaborate;
+
    subtype Sink is Ada.Strings.Text_Output.Sink;
 
    procedure Put_Image_Integer (S : in out Sink'Class; X : Integer);
