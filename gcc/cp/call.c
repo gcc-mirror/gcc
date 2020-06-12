@@ -11435,12 +11435,13 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 	return winner;
     }
 
-  /* Concepts: ... or, if not that, F1 is more constrained than F2.
+  /* Concepts: F1 and F2 are non-template functions with the same
+     parameter-type-lists, and F1 is more constrained than F2 according to the
+     partial ordering of constraints described in 13.5.4.  */
 
-     FIXME: For function templates with no winner, this subsumption may
-     be computed a separate time.  This needs to be validated, and if
-     so, the redundant check removed.  */
-  if (flag_concepts && DECL_P (cand1->fn) && DECL_P (cand2->fn))
+  if (flag_concepts && DECL_P (cand1->fn) && DECL_P (cand2->fn)
+      && !cand1->template_decl && !cand2->template_decl
+      && cand_parms_match (cand1, cand2))
     {
       winner = more_constrained (cand1->fn, cand2->fn);
       if (winner)
