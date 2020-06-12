@@ -5569,6 +5569,39 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
     RS6000_BTI_unsigned_V1TI, RS6000_BTI_unsigned_V1TI,
     RS6000_BTI_unsigned_V1TI, RS6000_BTI_unsigned_V1TI },
 
+  /* The overloaded XXPERMX definitions are handled specially because the
+     fourth unsigned char operand is not encoded in this table.  */
+  {  P10_BUILTIN_VEC_XXPERMX, P10_BUILTIN_VXXPERMX,
+     RS6000_BTI_V16QI, RS6000_BTI_V16QI, RS6000_BTI_V16QI,
+     RS6000_BTI_unsigned_V16QI },
+  {  P10_BUILTIN_VEC_XXPERMX, P10_BUILTIN_VXXPERMX,
+     RS6000_BTI_unsigned_V16QI, RS6000_BTI_unsigned_V16QI,
+     RS6000_BTI_unsigned_V16QI, RS6000_BTI_unsigned_V16QI },
+  {  P10_BUILTIN_VEC_XXPERMX, P10_BUILTIN_VXXPERMX,
+     RS6000_BTI_V8HI, RS6000_BTI_V8HI, RS6000_BTI_V8HI,
+     RS6000_BTI_unsigned_V16QI },
+  {  P10_BUILTIN_VEC_XXPERMX, P10_BUILTIN_VXXPERMX,
+     RS6000_BTI_unsigned_V8HI, RS6000_BTI_unsigned_V8HI,
+     RS6000_BTI_unsigned_V8HI, RS6000_BTI_unsigned_V16QI },
+  {  P10_BUILTIN_VEC_XXPERMX, P10_BUILTIN_VXXPERMX,
+     RS6000_BTI_V4SI, RS6000_BTI_V4SI, RS6000_BTI_V4SI,
+     RS6000_BTI_unsigned_V16QI },
+  {  P10_BUILTIN_VEC_XXPERMX, P10_BUILTIN_VXXPERMX,
+     RS6000_BTI_unsigned_V4SI, RS6000_BTI_unsigned_V4SI,
+     RS6000_BTI_unsigned_V4SI, RS6000_BTI_unsigned_V16QI },
+  {  P10_BUILTIN_VEC_XXPERMX, P10_BUILTIN_VXXPERMX,
+     RS6000_BTI_V2DI, RS6000_BTI_V2DI, RS6000_BTI_V2DI,
+     RS6000_BTI_unsigned_V16QI },
+  {  P10_BUILTIN_VEC_XXPERMX, P10_BUILTIN_VXXPERMX,
+     RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V2DI,
+     RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V16QI },
+  {  P10_BUILTIN_VEC_XXPERMX, P10_BUILTIN_VXXPERMX,
+     RS6000_BTI_V4SF, RS6000_BTI_V4SF, RS6000_BTI_V4SF,
+     RS6000_BTI_unsigned_V16QI },
+  {  P10_BUILTIN_VEC_XXPERMX, P10_BUILTIN_VXXPERMX,
+     RS6000_BTI_V2DF, RS6000_BTI_V2DF, RS6000_BTI_V2DF,
+     RS6000_BTI_unsigned_V16QI },
+
   { P10_BUILTIN_VEC_EXTRACTL, P10_BUILTIN_VEXTRACTBL,
     RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V16QI,
     RS6000_BTI_unsigned_V16QI, RS6000_BTI_UINTQI },
@@ -5709,6 +5742,37 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
     RS6000_BTI_UINTSI },
   { P10_BUILTIN_VEC_XXSPLTI32DX, P10_BUILTIN_VXXSPLTI32DX_V4SF,
     RS6000_BTI_V4SF, RS6000_BTI_V4SF, RS6000_BTI_UINTQI, RS6000_BTI_float },
+
+  {  P10_BUILTIN_VEC_XXBLEND, P10_BUILTIN_VXXBLEND_V16QI,
+     RS6000_BTI_V16QI, RS6000_BTI_V16QI, RS6000_BTI_V16QI,
+     RS6000_BTI_unsigned_V16QI },
+  {  P10_BUILTIN_VEC_XXBLEND, P10_BUILTIN_VXXBLEND_V16QI,
+     RS6000_BTI_unsigned_V16QI, RS6000_BTI_unsigned_V16QI,
+     RS6000_BTI_unsigned_V16QI, RS6000_BTI_unsigned_V16QI },
+  {  P10_BUILTIN_VEC_XXBLEND, P10_BUILTIN_VXXBLEND_V8HI,
+     RS6000_BTI_V8HI, RS6000_BTI_V8HI, RS6000_BTI_V8HI,
+     RS6000_BTI_unsigned_V8HI },
+  {  P10_BUILTIN_VEC_XXBLEND, P10_BUILTIN_VXXBLEND_V8HI,
+     RS6000_BTI_unsigned_V8HI, RS6000_BTI_unsigned_V8HI,
+     RS6000_BTI_unsigned_V8HI, RS6000_BTI_unsigned_V8HI },
+  {  P10_BUILTIN_VEC_XXBLEND, P10_BUILTIN_VXXBLEND_V4SI,
+     RS6000_BTI_V4SI, RS6000_BTI_V4SI, RS6000_BTI_V4SI,
+     RS6000_BTI_unsigned_V4SI },
+  {  P10_BUILTIN_VEC_XXBLEND, P10_BUILTIN_VXXBLEND_V4SI,
+     RS6000_BTI_unsigned_V4SI, RS6000_BTI_unsigned_V4SI,
+     RS6000_BTI_unsigned_V4SI, RS6000_BTI_unsigned_V4SI },
+  {  P10_BUILTIN_VEC_XXBLEND, P10_BUILTIN_VXXBLEND_V2DI,
+     RS6000_BTI_V2DI, RS6000_BTI_V2DI, RS6000_BTI_V2DI,
+     RS6000_BTI_unsigned_V2DI },
+  {  P10_BUILTIN_VEC_XXBLEND, P10_BUILTIN_VXXBLEND_V2DI,
+     RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V2DI,
+     RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V2DI },
+  {  P10_BUILTIN_VEC_XXBLEND, P10_BUILTIN_VXXBLEND_V4SF,
+     RS6000_BTI_V4SF, RS6000_BTI_V4SF, RS6000_BTI_V4SF,
+     RS6000_BTI_unsigned_V4SI },
+  {  P10_BUILTIN_VEC_XXBLEND, P10_BUILTIN_VXXBLEND_V2DF,
+     RS6000_BTI_V2DF, RS6000_BTI_V2DF, RS6000_BTI_V2DF,
+     RS6000_BTI_unsigned_V2DI },
 
   { P10_BUILTIN_VEC_SRDB, P10_BUILTIN_VSRDB_V16QI,
     RS6000_BTI_V16QI, RS6000_BTI_V16QI,
@@ -10162,6 +10226,19 @@ rs6000_expand_quaternop_builtin (enum insn_code icode, tree exp, rtx target)
 	  return CONST0_RTX (tmode);
 	}
     }
+
+  else if (icode == CODE_FOR_xxpermx)
+    {
+      /* Only allow 3-bit unsigned literals.  */
+      STRIP_NOPS (arg3);
+      if (TREE_CODE (arg3) != INTEGER_CST
+	  || TREE_INT_CST_LOW (arg3) & ~0x7)
+	{
+	  error ("argument 4 must be a 3-bit unsigned literal");
+	  return CONST0_RTX (tmode);
+	}
+    }
+
   else if (icode == CODE_FOR_vreplace_elt_v4si
 	   || icode == CODE_FOR_vreplace_elt_v4sf)
    {
@@ -13847,11 +13924,16 @@ builtin_quaternary_function_type (machine_mode mode_ret,
   tree function_type = NULL;
 
   static tree v2udi_type = builtin_mode_to_type[V2DImode][1];
+  static tree v16uqi_type = builtin_mode_to_type[V16QImode][1];
   static tree uchar_type = builtin_mode_to_type[QImode][1];
 
   static tree xxeval_type =
     build_function_type_list (v2udi_type, v2udi_type, v2udi_type,
 			      v2udi_type, uchar_type, NULL_TREE);
+
+  static tree xxpermx_type =
+    build_function_type_list (v2udi_type, v2udi_type, v2udi_type,
+			      v16uqi_type, uchar_type, NULL_TREE);
 
   switch (builtin) {
 
@@ -13862,6 +13944,15 @@ builtin_quaternary_function_type (machine_mode mode_ret,
 		&& (mode_arg2 == V2DImode)
 		&& (mode_arg3 == QImode));
     function_type = xxeval_type;
+    break;
+
+  case P10_BUILTIN_VXXPERMX:
+    gcc_assert ((mode_ret == V2DImode)
+		&& (mode_arg0 == V2DImode)
+		&& (mode_arg1 == V2DImode)
+		&& (mode_arg2 == V16QImode)
+		&& (mode_arg3 == QImode));
+    function_type = xxpermx_type;
     break;
 
   default:
@@ -14059,6 +14150,10 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
     case P10_BUILTIN_VREPLACE_ELT_UV2DI:
     case P10_BUILTIN_VREPLACE_UN_UV4SI:
     case P10_BUILTIN_VREPLACE_UN_UV2DI:
+    case P10_BUILTIN_VXXBLEND_V16QI:
+    case P10_BUILTIN_VXXBLEND_V8HI:
+    case P10_BUILTIN_VXXBLEND_V4SI:
+    case P10_BUILTIN_VXXBLEND_V2DI:
       h.uns_p[0] = 1;
       h.uns_p[1] = 1;
       h.uns_p[2] = 1;

@@ -2782,6 +2782,15 @@ BU_P10V_1 (VXXSPLTID, "vxxspltidp", CONST, xxspltidp_v2df)
 BU_P10V_3 (VXXSPLTI32DX_V4SI, "vxxsplti32dx_v4si", CONST, xxsplti32dx_v4si)
 BU_P10V_3 (VXXSPLTI32DX_V4SF, "vxxsplti32dx_v4sf", CONST, xxsplti32dx_v4sf)
 
+BU_P10V_3 (VXXBLEND_V16QI, "xxblend_v16qi", CONST, xxblend_v16qi)
+BU_P10V_3 (VXXBLEND_V8HI, "xxblend_v8hi", CONST, xxblend_v8hi)
+BU_P10V_3 (VXXBLEND_V4SI, "xxblend_v4si", CONST, xxblend_v4si)
+BU_P10V_3 (VXXBLEND_V2DI, "xxblend_v2di", CONST, xxblend_v2di)
+BU_P10V_3 (VXXBLEND_V4SF, "xxblend_v4sf", CONST, xxblend_v4sf)
+BU_P10V_3 (VXXBLEND_V2DF, "xxblend_v2df", CONST, xxblend_v2df)
+
+BU_P10V_4 (VXXPERMX, "xxpermx", CONST, xxpermx)
+
 BU_P10V_1 (VSTRIBR, "vstribr", CONST, vstrir_v16qi)
 BU_P10V_1 (VSTRIHR, "vstrihr", CONST, vstrir_v8hi)
 BU_P10V_1 (VSTRIBL, "vstribl", CONST, vstril_v16qi)
@@ -2852,6 +2861,8 @@ BU_P10_OVERLOAD_1 (VEXTRACTM, "vextractm")
 BU_P10_OVERLOAD_1 (XXSPLTIW, "xxspltiw")
 BU_P10_OVERLOAD_1 (XXSPLTID, "xxspltid")
 BU_P10_OVERLOAD_3 (XXSPLTI32DX, "xxsplti32dx")
+BU_P10_OVERLOAD_3 (XXBLEND, "xxblend")
+BU_P10_OVERLOAD_4 (XXPERMX, "xxpermx")
 
 /* 1 argument crypto functions.  */
 BU_CRYPTO_1 (VSBOX,		"vsbox",	  CONST, crypto_vsbox_v2di)

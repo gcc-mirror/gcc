@@ -21228,6 +21228,69 @@ result.  The other words of argument 1 are unchanged.
 
 @findex vec_splati_ins
 
+Vector Blend Variable
+
+@smallexample
+@exdent vector signed char vec_blendv (vector signed char, vector signed char,
+vector unsigned char);
+@exdent vector unsigned char vec_blendv (vector unsigned char,
+vector unsigned char, vector unsigned char);
+@exdent vector signed short vec_blendv (vector signed short,
+vector signed short, vector unsigned short);
+@exdent vector unsigned short vec_blendv (vector unsigned short,
+vector unsigned short, vector unsigned short);
+@exdent vector signed int vec_blendv (vector signed int, vector signed int,
+vector unsigned int);
+@exdent vector unsigned int vec_blendv (vector unsigned int,
+vector unsigned int, vector unsigned int);
+@exdent vector signed long long vec_blendv (vector signed long long,
+vector signed long long, vector unsigned long long);
+@exdent vector unsigned long long vec_blendv (vector unsigned long long,
+vector unsigned long long, vector unsigned long long);
+@exdent vector float vec_blendv (vector float, vector float,
+vector unsigned int);
+@exdent vector double vec_blendv (vector double, vector double,
+vector unsigned long long);
+@end smallexample
+
+Blend the first and second argument vectors according to the sign bits of the
+corresponding elements of the third argument vector.  This is similar to the
+@code{vsel} and @code{xxsel} instructions but for bigger elements.
+
+@findex vec_blendv
+
+Vector Permute Extended
+
+@smallexample
+@exdent vector signed char vec_permx (vector signed char, vector signed char,
+vector unsigned char, const int);
+@exdent vector unsigned char vec_permx (vector unsigned char,
+vector unsigned char, vector unsigned char, const int);
+@exdent vector signed short vec_permx (vector signed short,
+vector signed short, vector unsigned char, const int);
+@exdent vector unsigned short vec_permx (vector unsigned short,
+vector unsigned short, vector unsigned char, const int);
+@exdent vector signed int vec_permx (vector signed int, vector signed int,
+vector unsigned char, const int);
+@exdent vector unsigned int vec_permx (vector unsigned int,
+vector unsigned int, vector unsigned char, const int);
+@exdent vector signed long long vec_permx (vector signed long long,
+vector signed long long, vector unsigned char, const int);
+@exdent vector unsigned long long vec_permx (vector unsigned long long,
+vector unsigned long long, vector unsigned char, const int);
+@exdent vector float (vector float, vector float, vector unsigned char,
+const int);
+@exdent vector double (vector double, vector double, vector unsigned char,
+const int);
+@end smallexample
+
+Perform a partial permute of the first two arguments, which form a 32-byte
+section of an emulated vector up to 256 bytes wide, using the partial permute
+control vector in the third argument.  The fourth argument (constrained to
+values of 0-7) identifies which 32-byte section of the emulated vector is
+contained in the first two arguments.
+@findex vec_permx
+
 @smallexample
 @exdent vector unsigned long long int
 @exdent vec_pext (vector unsigned long long int, vector unsigned long long int)
