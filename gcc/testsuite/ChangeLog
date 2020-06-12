@@ -1,3 +1,62 @@
+2020-06-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/93467
+	* g++.dg/cpp2a/concepts-friend6.C: New test.
+	* g++.dg/cpp2a/concepts-friend7.C: New test.
+
+2020-06-11  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl   <kargl@gcc.gnu.org>
+
+	PR fortran/95611
+	* gfortran.dg/pr95611.f90: New file.
+
+2020-06-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95544
+	* gfortran.dg/pr95544.f90: New file.
+
+2020-06-11  Tamar Christina  <tamar.christina@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_exceptions_enabled):
+	Mark as C++ test input.
+
+2020-06-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95503
+	* gfortran.dg/pr95503.f90: New test.
+
+2020-06-11  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/95331
+	* gfortran.dg/PR95331.f90: New test.
+
+2020-06-11  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/abi/pure-virtual1.C: XFAIL AIX.
+
+2020-06-11  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/spellcheck-inttypes.c: Don't include inttypes.h on AIX.
+
+2020-06-11  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/52351
+	PR fortran/85868
+	* gfortran.dg/coarray_lib_comm_1.f90: Adjust match test for
+	the newly generated descriptor.
+	* gfortran.dg/PR85868A.f90: New test.
+	* gfortran.dg/PR85868B.f90: New test.
+
+2020-06-11  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/94022
+	* gfortran.dg/PR94022.f90: New test.
+
+2020-06-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/pr95252.c: New.
+
 2020-06-10  Alexandre Oliva  <oliva@adacore.com>
 
 	PR rtl-optimization/51447

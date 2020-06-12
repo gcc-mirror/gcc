@@ -1,3 +1,14 @@
+2020-06-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94749
+	* include/bits/istream.tcc (basic_istream::ignore(streamsize, CharT)):
+	Only discard an extra character if we didn't already reach the
+	maximum number.
+	* src/c++98/istream.cc (istream::ignore(streamsiz, char))
+	(wistream::ignore(streamsize, wchar_t)): Likewise.
+	* testsuite/27_io/basic_istream/ignore/char/94749.cc: New test.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/94749.cc: New test.
+
 2020-06-10  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/95578

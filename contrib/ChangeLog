@@ -1,3 +1,24 @@
+2020-06-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* prepare-commit-msg: Use the gcc-config.mklog-hook-type Git
+	config key instead of the GCC_FORCE_MKLOG environment variable.
+	Optionally disable generating a new ChangeLog template for
+	amended commits when the existing log is still OK.
+
+2020-06-11  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Add --curent argument.
+
+2020-06-11  Martin Liska  <mliska@suse.cz>
+
+	* prepare-commit-msg: Replace ENV variable with a git config
+	value.
+
+2020-06-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* prepare-commit-msg: Use 'tee' to save the diff to a file
+	instead of running 'git diff' twice.
+
 2020-06-10  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Fix renamed files in
