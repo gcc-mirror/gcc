@@ -212,7 +212,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #define __cpp_lib_atomic_flag_test 201907L
 
     _GLIBCXX_ALWAYS_INLINE bool
-    test(memory_order __m = memory_order_seq_cst) noexcept
+    test(memory_order __m = memory_order_seq_cst) const noexcept
     {
       __atomic_flag_data_type __v;
       __atomic_load(&_M_i, &__v, int(__m));
@@ -220,7 +220,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     _GLIBCXX_ALWAYS_INLINE bool
-    test(memory_order __m = memory_order_seq_cst) volatile noexcept
+    test(memory_order __m = memory_order_seq_cst) const volatile noexcept
     {
       __atomic_flag_data_type __v;
       __atomic_load(&_M_i, &__v, int(__m));
