@@ -6878,14 +6878,18 @@ package body Exp_Aggr is
       New_Indexed_Subp    : Node_Id := Empty;
       Assign_Indexed_Subp : Node_Id := Empty;
 
-      procedure Expand_Iterated_Component (Comp : Node_Id);
-
       Aggr_Code : constant List_Id   := New_List;
       Temp      : constant Entity_Id := Make_Temporary (Loc, 'C', N);
 
       Comp      : Node_Id;
       Decl      : Node_Id;
       Init_Stat : Node_Id;
+
+      procedure Expand_Iterated_Component (Comp : Node_Id);
+      --  Handle iterated_component_association and iterated_Element
+      --  association by generating a loop over the specified range,
+      --  given either by a loop parameter specification or an iterator
+      --  specification.
 
       -------------------------------
       -- Expand_Iterated_Component --
@@ -6946,6 +6950,7 @@ package body Exp_Aggr is
                           Iteration_Scheme => L_Iteration_Scheme,
                           Statements       => Stats);
          Append (Loop_Stat, Aggr_Code);
+
       end Expand_Iterated_Component;
 
    begin
@@ -6968,11 +6973,16 @@ package body Exp_Aggr is
            Name => New_Occurrence_Of (Temp, Loc),
            Expression => New_Occurrence_Of (Entity (Empty_Subp), Loc));
       end if;
+
       Append (Init_Stat, Aggr_Code);
 
-      --  First case: positional aggregate
+      ---------------------------
+      --  Positional aggregate --
+      ---------------------------
 
-      if Present (Add_Unnamed_Subp) then
+      if Present (Add_Unnamed_Subp)
+        and then No (Assign_Indexed_Subp)
+      then
          if Present (Expressions (N)) then
             declare
                Insert : constant Entity_Id := Entity (Add_Unnamed_Subp);
@@ -6993,13 +7003,17 @@ package body Exp_Aggr is
             end;
          end if;
 
-         --  iterated component associations may be present.
+         --  Iterated component associations may also be present.
 
          Comp := First (Component_Associations (N));
          while Present (Comp) loop
             Expand_Iterated_Component (Comp);
             Next (Comp);
          end loop;
+
+      ---------------------
+      -- Named_Aggregate --
+      ---------------------
 
       elsif Present (Add_Named_Subp) then
          declare
@@ -7033,6 +7047,235 @@ package body Exp_Aggr is
 
                Next (Comp);
             end loop;
+         end;
+
+      -----------------------
+      -- Indexed_Aggregate --
+      -----------------------
+
+      elsif Present (Assign_Indexed_Subp) then
+         declare
+            Insert : constant Entity_Id := Entity (Assign_Indexed_Subp);
+            Index_Type : constant Entity_Id :=
+               Etype (Next_Formal (First_Formal (Insert)));
+
+            function Aggregate_Size return Int;
+            --  Compute number of entries in aggregate, including choices
+            --  that cover a range, as well as iterated constructs.
+
+            function  Expand_Range_Component
+              (Rng  : Node_Id;
+               Expr : Node_Id) return Node_Id;
+            --  Transform a component assoication with a range into an
+            --  explicit loop. If the choice is a subtype name, it is
+            --  rewritten as a range with the corresponding bounds, which
+            --  are known to be static.
+
+            Comp   : Node_Id;
+            Index  : Node_Id;
+            Pos    : Int := 0;
+            Stat   : Node_Id;
+            Key    : Node_Id;
+            Size   : Int := 0;
+
+            -----------------------------
+            -- Expand_Raange_Component --
+            -----------------------------
+
+            function Expand_Range_Component
+              (Rng  : Node_Id;
+               Expr : Node_Id) return Node_Id
+            is
+               Loop_Id : constant Entity_Id :=
+                 Make_Temporary (Loc, 'T');
+
+               L_Iteration_Scheme : Node_Id;
+               Stats              : List_Id;
+
+            begin
+               L_Iteration_Scheme :=
+                 Make_Iteration_Scheme (Loc,
+                   Loop_Parameter_Specification =>
+                     Make_Loop_Parameter_Specification (Loc,
+                       Defining_Identifier => Loop_Id,
+                       Discrete_Subtype_Definition => New_Copy_Tree (Rng)));
+
+               Stats := New_List
+                 (Make_Procedure_Call_Statement (Loc,
+                    Name =>
+                      New_Occurrence_Of (Entity (Assign_Indexed_Subp), Loc),
+                    Parameter_Associations =>
+                      New_List (New_Occurrence_Of (Temp, Loc),
+                        New_Occurrence_Of (Loop_Id, Loc),
+                        New_Copy_Tree (Expr))));
+
+               return  Make_Implicit_Loop_Statement
+                         (Node             => N,
+                          Identifier       => Empty,
+                          Iteration_Scheme => L_Iteration_Scheme,
+                          Statements       => Stats);
+            end Expand_Range_Component;
+
+            --------------------
+            -- Aggregate_Size --
+            --------------------
+
+            function Aggregate_Size return Int is
+               Comp   : Node_Id;
+               Choice : Node_Id;
+               Lo, Hi : Node_Id;
+               Siz     : Int := 0;
+
+               procedure Add_Range_Size;
+               --  Compute size of component association given by
+               --  range or subtype name.
+
+               procedure Add_Range_Size is
+               begin
+                  if Nkind (Lo) = N_Integer_Literal then
+                     Siz := Siz + UI_To_Int (Intval (Hi))
+                       - UI_To_Int (Intval (Lo)) + 1;
+                  end if;
+               end Add_Range_Size;
+
+            begin
+               if Present (Expressions (N)) then
+                  Siz := List_Length (Expressions (N));
+               end if;
+
+               if Present (Component_Associations (N)) then
+                  Comp := First (Component_Associations (N));
+                  while Present (Comp) loop
+                     Choice := First (Choices (Comp));
+
+                     while Present (Choice) loop
+                        Analyze (Choice);
+
+                        if Nkind (Choice) = N_Range then
+                           Lo := Low_Bound (Choice);
+                           Hi := High_Bound (Choice);
+                           Add_Range_Size;
+
+                        elsif Is_Entity_Name (Choice)
+                          and then Is_Type (Entity (Choice))
+                        then
+                           Lo := Type_Low_Bound (Entity (Choice));
+                           Hi := Type_High_Bound (Entity (Choice));
+                           Add_Range_Size;
+                           Rewrite (Choice,
+                             Make_Range (Loc,
+                               New_Copy_Tree (Lo),
+                               New_Copy_Tree (Hi)));
+
+                        else
+                           Resolve (Choice, Index_Type);
+                           Siz := Siz + 1;
+                        end if;
+
+                        Next (Choice);
+                     end loop;
+                     Next (Comp);
+                  end loop;
+               end if;
+
+               return Siz;
+            end Aggregate_Size;
+
+         begin
+            Size := Aggregate_Size;
+            if Size > 0 then
+
+               --  Modify the call to the constructor to allocate the
+               --  required size for the aggregwte : call the provided
+               --  constructor rather than the Empty aggregate.
+
+               Index :=  Make_Op_Add (Loc,
+                 Left_Opnd => New_Copy_Tree (Type_Low_Bound (Index_Type)),
+                 Right_Opnd => Make_Integer_Literal (Loc, Size - 1));
+
+               Set_Expression (Init_Stat,
+                  Make_Function_Call (Loc,
+                    Name =>
+                      New_Occurrence_Of (Entity (New_Indexed_Subp), Loc),
+                    Parameter_Associations =>
+                      New_List (
+                         New_Copy_Tree (Type_Low_Bound (Index_Type)),
+                         Index)));
+            end if;
+
+            if Present (Expressions (N)) then
+               Comp := First (Expressions (N));
+
+               while Present (Comp) loop
+
+                  --  Compute index position for successive components
+                  --  in the list of expressions, and use the indexed
+                  --  assignment procedure for each.
+
+                  Index := Make_Op_Add (Loc,
+                    Left_Opnd => Type_Low_Bound (Index_Type),
+                    Right_Opnd => Make_Integer_Literal (Loc, Pos));
+
+                  Stat := Make_Procedure_Call_Statement (Loc,
+                    Name => New_Occurrence_Of (Insert, Loc),
+                    Parameter_Associations =>
+                      New_List (New_Occurrence_Of (Temp, Loc),
+                      Index,
+                      New_Copy_Tree (Comp)));
+
+                  Pos := Pos + 1;
+
+                  Append (Stat, Aggr_Code);
+                  Next (Comp);
+               end loop;
+            end if;
+
+            if Present (Component_Associations (N)) then
+               Comp := First (Component_Associations (N));
+
+               --  The choice may be a static value, or a range with
+               --  static bounds.
+
+               while Present (Comp) loop
+                  if Nkind (Comp) = N_Component_Association then
+                     Key := First (Choices (Comp));
+                     while Present (Key) loop
+
+                        --  If the expression is a box, the corresponding
+                        --  component (s) is left uninitialized.
+
+                        if Box_Present (Comp) then
+                           goto Next_Key;
+
+                        elsif Nkind (Key) = N_Range then
+
+                           --  Create loop for tne specified range,
+                           --  with copies of the expression.
+
+                           Stat :=
+                             Expand_Range_Component (Key, Expression (Comp));
+
+                        else
+                           Stat := Make_Procedure_Call_Statement (Loc,
+                             Name => New_Occurrence_Of
+                                (Entity (Assign_Indexed_Subp), Loc),
+                                Parameter_Associations =>
+                                  New_List (New_Occurrence_Of (Temp, Loc),
+                                  New_Copy_Tree (Key),
+                                  New_Copy_Tree (Expression (Comp))));
+                        end if;
+
+                        Append (Stat, Aggr_Code);
+
+                        <<Next_Key>>
+                        Next (Key);
+                     end loop;
+                  else
+                     Error_Msg_N ("iterated associations peding", N);
+                  end if;
+                  Next (Comp);
+               end loop;
+            end if;
          end;
       end if;
 
