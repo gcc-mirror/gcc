@@ -1829,7 +1829,6 @@ struct param_info
   tree frame_type;   /* The type used to represent this parm in the frame.  */
   tree orig_type;    /* The original type of the parm (not as passed).  */
   bool by_ref;       /* Was passed by reference.  */
-  bool rv_ref;       /* Was an rvalue reference.  */
   bool pt_ref;       /* Was a pointer to object.  */
   bool trivial_dtor; /* The frame type has a trivial DTOR.  */
   bool this_ptr;     /* Is 'this' */
@@ -2098,12 +2097,6 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 	   back to the type expected.  */
 	  if (parm.pt_ref)
 	    fld_idx = build1_loc (loc, CONVERT_EXPR, TREE_TYPE (arg), fld_idx);
-
-	  /* We expect an rvalue ref. here.  */
-	  if (parm.rv_ref)
-	    fld_idx = convert_to_reference (DECL_ARG_TYPE (arg), fld_idx,
-					    CONV_STATIC, LOOKUP_NORMAL,
-					    NULL_TREE, tf_warning_or_error);
 
 	  int i;
 	  tree *puse;
@@ -3792,15 +3785,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  if (actual_type == NULL_TREE)
 	    actual_type = error_mark_node;
 	  parm.orig_type = actual_type;
-	  parm.by_ref = parm.rv_ref = parm.pt_ref = false;
-	  if (TREE_CODE (actual_type) == REFERENCE_TYPE
-	      && TYPE_REF_IS_RVALUE (DECL_ARG_TYPE (arg)))
-	    {
-	      parm.rv_ref = true;
-	      actual_type = TREE_TYPE (actual_type);
-	      parm.frame_type = actual_type;
-	    }
-	  else if (TREE_CODE (actual_type) == REFERENCE_TYPE)
+	  parm.by_ref = parm.pt_ref = false;
+	  if (TREE_CODE (actual_type) == REFERENCE_TYPE)
 	    {
 	      /* If the user passes by reference, then we will save the
 		 pointer to the original.  As noted in
@@ -3808,16 +3794,12 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 		 referenced item ends and then the coroutine is resumed,
 		 we have UB; well, the user asked for it.  */
 	      actual_type = build_pointer_type (TREE_TYPE (actual_type));
-	      parm.frame_type = actual_type;
 	      parm.pt_ref = true;
 	    }
 	  else if (TYPE_REF_P (DECL_ARG_TYPE (arg)))
-	    {
-	      parm.by_ref = true;
-	      parm.frame_type = actual_type;
-	    }
-	  else
-	    parm.frame_type = actual_type;
+	    parm.by_ref = true;
+
+	  parm.frame_type = actual_type;
 
 	  parm.this_ptr = is_this_parameter (arg);
 	  /* See PR94807.  When a lambda is in a template instantiation, the
@@ -4204,17 +4186,16 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	    }
 	  else if (parm.by_ref)
 	    vec_safe_push (promise_args, fld_idx);
-	  else if (parm.rv_ref)
-	    vec_safe_push (promise_args, rvalue (fld_idx));
 	  else
 	    vec_safe_push (promise_args, arg);
 
 	  if (TYPE_NEEDS_CONSTRUCTING (parm.frame_type))
 	    {
 	      vec<tree, va_gc> *p_in;
-	      if (parm.by_ref
-		  && classtype_has_non_deleted_move_ctor (parm.frame_type)
-		  && !classtype_has_non_deleted_copy_ctor (parm.frame_type))
+	      if (CLASS_TYPE_P (parm.frame_type)
+		  && classtype_has_non_deleted_move_ctor (parm.frame_type))
+		p_in = make_tree_vector_single (move (arg));
+	      else if (lvalue_p (arg))
 		p_in = make_tree_vector_single (rvalue (arg));
 	      else
 		p_in = make_tree_vector_single (arg);
@@ -4227,9 +4208,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	    }
 	  else
 	    {
-	      if (parm.rv_ref)
-		r = convert_from_reference (arg);
-	      else if (!same_type_p (parm.frame_type, DECL_ARG_TYPE (arg)))
+	      if (!same_type_p (parm.frame_type, DECL_ARG_TYPE (arg)))
 		r = build1_loc (DECL_SOURCE_LOCATION (arg), CONVERT_EXPR,
 				parm.frame_type, arg);
 	      else
