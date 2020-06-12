@@ -292,43 +292,13 @@ typedef const char * (*insn_output_fn) (rtx *, rtx_insn *);
 
 struct insn_gen_fn
 {
-  typedef rtx_insn * (*f0) (void);
-  typedef rtx_insn * (*f1) (rtx);
-  typedef rtx_insn * (*f2) (rtx, rtx);
-  typedef rtx_insn * (*f3) (rtx, rtx, rtx);
-  typedef rtx_insn * (*f4) (rtx, rtx, rtx, rtx);
-  typedef rtx_insn * (*f5) (rtx, rtx, rtx, rtx, rtx);
-  typedef rtx_insn * (*f6) (rtx, rtx, rtx, rtx, rtx, rtx);
-  typedef rtx_insn * (*f7) (rtx, rtx, rtx, rtx, rtx, rtx, rtx);
-  typedef rtx_insn * (*f8) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
-  typedef rtx_insn * (*f9) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
-  typedef rtx_insn * (*f10) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
-  typedef rtx_insn * (*f11) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
-  typedef rtx_insn * (*f12) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
-  typedef rtx_insn * (*f13) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
-  typedef rtx_insn * (*f14) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
-  typedef rtx_insn * (*f15) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
-  typedef rtx_insn * (*f16) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
-
   typedef void (*stored_funcptr) (void);
 
-  rtx_insn * operator () (void) const { return ((f0)func) (); }
-  rtx_insn * operator () (rtx a0) const { return ((f1)func) (a0); }
-  rtx_insn * operator () (rtx a0, rtx a1) const { return ((f2)func) (a0, a1); }
-  rtx_insn * operator () (rtx a0, rtx a1, rtx a2) const { return ((f3)func) (a0, a1, a2); }
-  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3) const { return ((f4)func) (a0, a1, a2, a3); }
-  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4) const { return ((f5)func) (a0, a1, a2, a3, a4); }
-  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5) const { return ((f6)func) (a0, a1, a2, a3, a4, a5); }
-  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6) const { return ((f7)func) (a0, a1, a2, a3, a4, a5, a6); }
-  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7) const { return ((f8)func) (a0, a1, a2, a3, a4, a5, a6, a7); }
-  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7, rtx a8) const { return ((f9)func) (a0, a1, a2, a3, a4, a5, a6, a7, a8); }
-  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7, rtx a8, rtx a9) const { return ((f10)func) (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9); }
-  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7, rtx a8, rtx a9, rtx a10) const { return ((f11)func) (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10); }
-  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7, rtx a8, rtx a9, rtx a10, rtx a11) const { return ((f12)func) (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11); }
-  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7, rtx a8, rtx a9, rtx a10, rtx a11, rtx a12) const { return ((f13)func) (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12); }
-  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7, rtx a8, rtx a9, rtx a10, rtx a11, rtx a12, rtx a13) const { return ((f14)func) (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13); }
-  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7, rtx a8, rtx a9, rtx a10, rtx a11, rtx a12, rtx a13, rtx a14) const { return ((f15)func) (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14); }
-  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7, rtx a8, rtx a9, rtx a10, rtx a11, rtx a12, rtx a13, rtx a14, rtx a15) const { return ((f16)func) (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15); }
+  template<typename ...Ts>
+  rtx_insn *operator() (Ts... args...) const
+  {
+    return ((rtx_insn *(*) (decltype(args, NULL_RTX)...)) func) (args...);
+  }
 
   // This is for compatibility of code that invokes functions like
   //   (*funcptr) (arg)
