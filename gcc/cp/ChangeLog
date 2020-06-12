@@ -1,3 +1,20 @@
+2020-06-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/93467
+	* constraint.cc (associate_classtype_constraints): If there is a
+	discrepancy between the current template depth and the template
+	depth of the original declaration, then adjust the template
+	parameter depth within the current constraints appropriately.
+	* pt.c (tsubst_friend_class): Substitute into and set the
+	constraints on the injected declaration.
+
+2020-06-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (instantiate_coro_traits): Pass a reference
+	to lambda closure objects to traits instantiation.
+	(morph_fn_to_coro): Likewise for promise parameter
+	preview and allocator lookup.
+
 2020-06-10  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/95440

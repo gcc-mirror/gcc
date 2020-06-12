@@ -1,3 +1,120 @@
+2020-06-11  Martin Liska  <mliska@suse.cz>
+
+	* config/rs6000/rs6000.c (rs6000_density_test): Fix GNU coding
+	style.
+
+2020-06-11  Martin Liska  <mliska@suse.cz>
+
+	PR target/95627
+	* config/rs6000/rs6000.c (rs6000_density_test): Skip debug
+	statements.
+
+2020-06-11  Martin Liska  <mliska@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/95634
+	* asan.c (asan_emit_stack_protection): Fix emission for ilp32
+	by using Pmode instead of ptr_mode.
+
+2020-06-11  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* tree-vect-loop-manip.c (vect_set_loop_mask): Renamed to ...
+	(vect_set_loop_control): ... this.
+	(vect_maybe_permute_loop_masks): Rename rgroup_masks related things.
+	(vect_set_loop_masks_directly): Renamed to ...
+	(vect_set_loop_controls_directly): ... this.  Also rename some
+	variables with ctrl instead of mask.  Rename vect_set_loop_mask to
+	vect_set_loop_control.
+	(vect_set_loop_condition_masked): Rename rgroup_masks related things.
+	Also rename some variables with ctrl instead of mask.
+	* tree-vect-loop.c (release_vec_loop_masks): Renamed to ...
+	(release_vec_loop_controls): ... this.  Rename rgroup_masks related
+	things.
+	(_loop_vec_info::~_loop_vec_info): Rename release_vec_loop_masks to
+	release_vec_loop_controls.
+	(can_produce_all_loop_masks_p): Rename rgroup_masks related things.
+	(vect_get_max_nscalars_per_iter): Likewise.
+	(vect_estimate_min_profitable_iters): Likewise.
+	(vect_record_loop_mask): Likewise.
+	(vect_get_loop_mask): Likewise.
+	* tree-vectorizer.h (struct rgroup_masks): Renamed to ...
+	(struct rgroup_controls): ... this.  Also rename mask_type
+	to type and rename masks to controls.
+
+2020-06-11  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* tree-vect-loop-manip.c (vect_set_loop_condition): Rename
+	LOOP_VINFO_FULLY_MASKED_P to LOOP_VINFO_USING_PARTIAL_VECTORS_P.
+	(vect_gen_vector_loop_niters): Likewise.
+	(vect_do_peeling): Likewise.
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Rename
+	fully_masked_p to using_partial_vectors_p.
+	(vect_analyze_loop_costing): Rename LOOP_VINFO_FULLY_MASKED_P to
+	LOOP_VINFO_USING_PARTIAL_VECTORS_P.
+	(determine_peel_for_niter): Likewise.
+	(vect_estimate_min_profitable_iters): Likewise.
+	(vect_transform_loop): Likewise.
+	* tree-vectorizer.h (LOOP_VINFO_FULLY_MASKED_P): Updated.
+	(LOOP_VINFO_USING_PARTIAL_VECTORS_P): New macro.
+
+2020-06-11  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Rename
+	can_fully_mask_p to can_use_partial_vectors_p.
+	(vect_analyze_loop_2): Rename LOOP_VINFO_CAN_FULLY_MASK_P to
+	LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P.  Rename saved_can_fully_mask_p
+	to saved_can_use_partial_vectors_p.
+	(vectorizable_reduction): Rename LOOP_VINFO_CAN_FULLY_MASK_P to
+	LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P.
+	(vectorizable_live_operation): Likewise.
+	* tree-vect-stmts.c (permute_vec_elements): Likewise.
+	(check_load_store_masking): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	(vectorizable_condition): Likewise.
+	* tree-vectorizer.h (LOOP_VINFO_CAN_FULLY_MASK_P): Renamed to ...
+	(LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P): ... this.
+	(_loop_vec_info): Rename can_fully_mask_p to can_use_partial_vectors_p.
+
+2020-06-11  Martin Liska  <mliska@suse.cz>
+
+	* optc-save-gen.awk: Quote error string.
+
+2020-06-11  Alexandre Oliva  <oliva@adacore.com>
+
+	* print-rtl.c (print_mem_expr): Enable TDF_SLIM in dump_flags.
+
+2020-06-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-protos.h (riscv_output_gpr_save): Remove.
+	* config/riscv/riscv-sr.c (riscv_sr_match_prologue): Update
+	value.
+	* config/riscv/riscv.c (riscv_output_gpr_save): Remove.
+	* config/riscv/riscv.md (gpr_save): Update output asm pattern.
+
+2020-06-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/predicates.md (gpr_save_operation): New.
+	* config/riscv/riscv-protos.h (riscv_gen_gpr_save_insn): New.
+	(riscv_gpr_save_operation_p): Ditto.
+	* config/riscv/riscv-sr.c (riscv_remove_unneeded_save_restore_calls):
+	Ignore USEs for gpr_save patter.
+	* config/riscv/riscv.c (gpr_save_reg_order): New.
+	(riscv_expand_prologue): Use riscv_gen_gpr_save_insn to gen gpr_save.
+	(riscv_gen_gpr_save_insn): New.
+	(riscv_gpr_save_operation_p): Ditto.
+	* config/riscv/riscv.md (S3_REGNUM): New.
+	(S4_REGNUM): Ditto.
+	(S5_REGNUM): Ditto.
+	(S6_REGNUM): Ditto.
+	(S7_REGNUM): Ditto.
+	(S8_REGNUM): Ditto.
+	(S9_REGNUM): Ditto.
+	(S10_REGNUM): Ditto.
+	(S11_REGNUM): Ditto.
+	(gpr_save): Model USEs correctly.
+
 2020-06-10  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/95353

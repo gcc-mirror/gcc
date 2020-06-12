@@ -1,3 +1,49 @@
+2020-06-11  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl   <kargl@gcc.gnu.org>
+
+	PR fortran/95611
+	* decl.c (access_attr_decl): Use correct symbol in error message.
+
+2020-06-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95544
+	* check.c (invalid_null_arg): Rename to gfc_invalid_null_arg.
+	(gfc_check_associated, gfc_check_kind, gfc_check_merge)
+	(gfc_check_shape, gfc_check_size, gfc_check_spread)
+	(gfc_check_transfer): Adjust.
+	(gfc_check_len_lentrim, gfc_check_trim): Check for NULL() argument.
+	* gfortran.h: Declare gfc_invalid_null_arg ().
+	* intrinsic.c (check_arglist): Check for NULL() argument.
+
+2020-06-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95503
+	* expr.c (gfc_check_pointer_assign): Skip contiguity check of rhs
+	of pointer assignment if lhs cannot be simply contiguous.
+
+2020-06-11  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/95331
+	* trans-array.c (gfc_conv_array_ref): For class array dummy
+	arguments use the transformed descriptor in sym->backend_decl
+	instead of the original descriptor.
+
+2020-06-11  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/52351
+	PR fortran/85868
+	* trans-array.c (gfc_conv_expr_descriptor): Enable the
+	creation of a new descriptor with the correct one based
+	indexing for array sections.  Rework array descriptor
+	indexing offset calculation.
+
+2020-06-11  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/94022
+	* trans-expr.c (gfc_conv_procedure_call): In the case of
+	assumed-size arrays ensure that the reference is to a full array.
+
 2020-06-07  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95091
