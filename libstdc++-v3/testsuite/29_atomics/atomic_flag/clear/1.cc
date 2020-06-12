@@ -25,9 +25,9 @@ int main()
 {
   std::atomic_flag f = ATOMIC_FLAG_INIT;
 
-  f.clear(); // set to false
+  f.clear();                           // set to false
+  VERIFY( false == f.test_and_set() ); // return true
+  VERIFY( true == f.test_and_set() );  // return true
+  f.clear();                           // set to false
   VERIFY( false == f.test_and_set() ); // return previous false, set to true
-  VERIFY( true == f.test_and_set() ); // return true
-
-  return 0;
 }
