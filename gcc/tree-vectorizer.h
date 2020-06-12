@@ -545,9 +545,10 @@ public:
      elements that should be false in the first mask).  */
   tree mask_skip_niters;
 
-  /* Type of the variables to use in the WHILE_ULT call for fully-masked
-     loops.  */
-  tree mask_compare_type;
+  /* The type that the loop control IV should be converted to before
+     testing which of the VF scalars are active and inactive.
+     Only meaningful if LOOP_VINFO_USING_PARTIAL_VECTORS_P.  */
+  tree rgroup_compare_type;
 
   /* For #pragma omp simd if (x) loops the x expression.  If constant 0,
      the loop should not be vectorized, if constant non-zero, simd_if_cond
@@ -556,9 +557,9 @@ public:
      is false and vectorized loop otherwise.  */
   tree simd_if_cond;
 
-  /* Type of the IV to use in the WHILE_ULT call for fully-masked
-     loops.  */
-  tree iv_type;
+  /* The type that the vector loop control IV should have when
+     LOOP_VINFO_USING_PARTIAL_VECTORS_P is true.  */
+  tree rgroup_iv_type;
 
   /* Unknown DRs according to which loop was peeled.  */
   class dr_vec_info *unaligned_dr;
@@ -710,8 +711,8 @@ public:
 #define LOOP_VINFO_MAX_VECT_FACTOR(L)      (L)->max_vectorization_factor
 #define LOOP_VINFO_MASKS(L)                (L)->masks
 #define LOOP_VINFO_MASK_SKIP_NITERS(L)     (L)->mask_skip_niters
-#define LOOP_VINFO_MASK_COMPARE_TYPE(L)    (L)->mask_compare_type
-#define LOOP_VINFO_MASK_IV_TYPE(L)         (L)->iv_type
+#define LOOP_VINFO_RGROUP_COMPARE_TYPE(L)  (L)->rgroup_compare_type
+#define LOOP_VINFO_RGROUP_IV_TYPE(L)       (L)->rgroup_iv_type
 #define LOOP_VINFO_PTR_MASK(L)             (L)->ptr_mask
 #define LOOP_VINFO_LOOP_NEST(L)            (L)->shared->loop_nest
 #define LOOP_VINFO_DATAREFS(L)             (L)->shared->datarefs
@@ -1847,7 +1848,7 @@ extern tree vect_create_addr_base_for_vector_ref (vec_info *,
 						  tree, tree = NULL_TREE);
 
 /* In tree-vect-loop.c.  */
-extern widest_int vect_iv_limit_for_full_masking (loop_vec_info loop_vinfo);
+extern widest_int vect_iv_limit_for_partial_vectors (loop_vec_info loop_vinfo);
 /* Used in tree-vect-loop-manip.c */
 extern void determine_peel_for_niter (loop_vec_info);
 /* Used in gimple-loop-interchange.c and tree-parloops.c.  */

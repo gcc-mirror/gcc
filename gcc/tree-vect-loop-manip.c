@@ -420,8 +420,8 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
 				 rgroup_controls *rgc, tree niters,
 				 tree niters_skip, bool might_wrap_p)
 {
-  tree compare_type = LOOP_VINFO_MASK_COMPARE_TYPE (loop_vinfo);
-  tree iv_type = LOOP_VINFO_MASK_IV_TYPE (loop_vinfo);
+  tree compare_type = LOOP_VINFO_RGROUP_COMPARE_TYPE (loop_vinfo);
+  tree iv_type = LOOP_VINFO_RGROUP_IV_TYPE (loop_vinfo);
   tree ctrl_type = rgc->type;
   unsigned int nscalars_per_iter = rgc->max_nscalars_per_iter;
   poly_uint64 nscalars_per_ctrl = TYPE_VECTOR_SUBPARTS (ctrl_type);
@@ -644,15 +644,15 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
    final gcond.  */
 
 static gcond *
-vect_set_loop_condition_masked (class loop *loop, loop_vec_info loop_vinfo,
-				tree niters, tree final_iv,
-				bool niters_maybe_zero,
-				gimple_stmt_iterator loop_cond_gsi)
+vect_set_loop_condition_partial_vectors (class loop *loop,
+					 loop_vec_info loop_vinfo, tree niters,
+					 tree final_iv, bool niters_maybe_zero,
+					 gimple_stmt_iterator loop_cond_gsi)
 {
   gimple_seq preheader_seq = NULL;
   gimple_seq header_seq = NULL;
 
-  tree compare_type = LOOP_VINFO_MASK_COMPARE_TYPE (loop_vinfo);
+  tree compare_type = LOOP_VINFO_RGROUP_COMPARE_TYPE (loop_vinfo);
   unsigned int compare_precision = TYPE_PRECISION (compare_type);
   tree orig_niters = niters;
 
@@ -678,7 +678,7 @@ vect_set_loop_condition_masked (class loop *loop, loop_vec_info loop_vinfo,
   else
     niters = gimple_convert (&preheader_seq, compare_type, niters);
 
-  widest_int iv_limit = vect_iv_limit_for_full_masking (loop_vinfo);
+  widest_int iv_limit = vect_iv_limit_for_partial_vectors (loop_vinfo);
 
   /* Iterate over all the rgroups and fill in their controls.  We could use
      the first control from any rgroup for the loop condition; here we
@@ -748,14 +748,13 @@ vect_set_loop_condition_masked (class loop *loop, loop_vec_info loop_vinfo,
   return cond_stmt;
 }
 
-/* Like vect_set_loop_condition, but handle the case in which there
-   are no loop masks.  */
+/* Like vect_set_loop_condition, but handle the case in which the vector
+   loop handles exactly VF scalars per iteration.  */
 
 static gcond *
-vect_set_loop_condition_unmasked (class loop *loop, tree niters,
-				  tree step, tree final_iv,
-				  bool niters_maybe_zero,
-				  gimple_stmt_iterator loop_cond_gsi)
+vect_set_loop_condition_normal (class loop *loop, tree niters, tree step,
+				tree final_iv, bool niters_maybe_zero,
+				gimple_stmt_iterator loop_cond_gsi)
 {
   tree indx_before_incr, indx_after_incr;
   gcond *cond_stmt;
@@ -914,13 +913,14 @@ vect_set_loop_condition (class loop *loop, loop_vec_info loop_vinfo,
   gimple_stmt_iterator loop_cond_gsi = gsi_for_stmt (orig_cond);
 
   if (loop_vinfo && LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
-    cond_stmt = vect_set_loop_condition_masked (loop, loop_vinfo, niters,
-						final_iv, niters_maybe_zero,
-						loop_cond_gsi);
+    cond_stmt = vect_set_loop_condition_partial_vectors (loop, loop_vinfo,
+							 niters, final_iv,
+							 niters_maybe_zero,
+							 loop_cond_gsi);
   else
-    cond_stmt = vect_set_loop_condition_unmasked (loop, niters, step,
-						  final_iv, niters_maybe_zero,
-						  loop_cond_gsi);
+    cond_stmt = vect_set_loop_condition_normal (loop, niters, step, final_iv,
+						niters_maybe_zero,
+						loop_cond_gsi);
 
   /* Remove old loop exit test.  */
   stmt_vec_info orig_cond_info;
@@ -1775,7 +1775,7 @@ void
 vect_prepare_for_masked_peels (loop_vec_info loop_vinfo)
 {
   tree misalign_in_elems;
-  tree type = LOOP_VINFO_MASK_COMPARE_TYPE (loop_vinfo);
+  tree type = LOOP_VINFO_RGROUP_COMPARE_TYPE (loop_vinfo);
 
   gcc_assert (vect_use_loop_mask_for_alignment_p (loop_vinfo));
 
