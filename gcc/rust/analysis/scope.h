@@ -47,6 +47,8 @@ public:
     return toplevel;
   }
 
+  std ::map<std::string, T> Peek () { return scopeStack.back (); }
+
 private:
   std::vector<std::map<std::string, T> > scopeStack;
 };

@@ -5,8 +5,85 @@
 namespace Rust {
 namespace Analysis {
 
+class TypeScoping
+{
+public:
+  TypeScoping () {}
+
+  ~TypeScoping () {}
+
+  void Push ()
+  {
+    functionScope.Push ();
+    localsPerBlock.Push ();
+    structsPerBlock.Push ();
+    typeScope.Push ();
+  }
+
+  void Pop ()
+  {
+    functionScope.Pop ();
+    localsPerBlock.Pop ();
+    structsPerBlock.Pop ();
+    typeScope.Pop ();
+  }
+
+  void InsertFunction (std::string ident, AST::Function *fn)
+  {
+    functionScope.Insert (ident, fn);
+  }
+
+  bool LookupFunction (std::string ident, AST::Function **fn)
+  {
+    return functionScope.Lookup (ident, fn);
+  }
+
+  void InsertLocal (std::string ident, AST::LetStmt *let)
+  {
+    localsPerBlock.Insert (ident, let);
+  }
+
+  bool LookupLocal (std::string ident, AST::LetStmt **let)
+  {
+    return localsPerBlock.Lookup (ident, let);
+  }
+
+  std ::map<std::string, AST::LetStmt *> PeekLocals ()
+  {
+    return localsPerBlock.Peek ();
+  }
+
+  void InsertStruct (std::string ident, AST::StructStruct *s)
+  {
+    structsPerBlock.Insert (ident, s);
+  }
+
+  bool LookupStruct (std::string ident, AST::StructStruct **s)
+  {
+    return structsPerBlock.Lookup (ident, s);
+  }
+
+  void InsertType (std::string ident, AST::Type *s)
+  {
+    typeScope.Insert (ident, s);
+  }
+
+  bool LookupType (std::string ident, AST::Type **s)
+  {
+    return typeScope.Lookup (ident, s);
+  }
+
+private:
+  Scope<AST::Function *> functionScope;
+  Scope<AST::LetStmt *> localsPerBlock;
+  Scope<AST::StructStruct *> structsPerBlock;
+  Scope<AST::Type *> typeScope;
+};
+
 class TypeResolution : public Resolution
 {
+  friend class TypeScoping;
+
 public:
   ~TypeResolution ();
   static bool Resolve (AST::Crate &crate, TopLevelScan &toplevel);
@@ -223,9 +300,7 @@ private:
   AST::Function *lookupFndecl (AST::Expr *expr);
   bool isTypeInScope (AST::Type *type, Location locus);
 
-  Scope<AST::Function *> functionScope;
-  Scope<AST::LetStmt *> localsPerBlock;
-  Scope<AST::StructStruct *> structsPerBlock;
+  TypeScoping scope;
 };
 
 } // namespace Analysis

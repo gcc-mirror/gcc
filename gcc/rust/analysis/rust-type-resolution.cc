@@ -12,7 +12,7 @@
       segs.push_back (::std::move (typePath));                                 \
       auto bType = new AST::TypePath (::std::move (segs),                      \
 				      Linemap::unknown_location (), false);    \
-      _S.Insert (_X, bType);                                                   \
+      _S.InsertType (_X, bType);                                               \
     }                                                                          \
   while (0)
 
@@ -22,28 +22,35 @@ namespace Analysis {
 TypeResolution::TypeResolution (AST::Crate &crate, TopLevelScan &toplevel)
   : Resolution (crate, toplevel)
 {
-  functionScope.Push ();
+  scope.Push ();
 
   // push all builtin types - this is probably too basic for future needs
-  ADD_BUILTIN_TYPE ("u8", typeScope);
-  ADD_BUILTIN_TYPE ("u16", typeScope);
-  ADD_BUILTIN_TYPE ("u32", typeScope);
-  ADD_BUILTIN_TYPE ("u64", typeScope);
+  ADD_BUILTIN_TYPE ("u8", scope);
+  ADD_BUILTIN_TYPE ("u16", scope);
+  ADD_BUILTIN_TYPE ("u32", scope);
+  ADD_BUILTIN_TYPE ("u64", scope);
 
-  ADD_BUILTIN_TYPE ("i8", typeScope);
-  ADD_BUILTIN_TYPE ("i16", typeScope);
-  ADD_BUILTIN_TYPE ("i32", typeScope);
-  ADD_BUILTIN_TYPE ("i64", typeScope);
+  ADD_BUILTIN_TYPE ("i8", scope);
+  ADD_BUILTIN_TYPE ("i16", scope);
+  ADD_BUILTIN_TYPE ("i32", scope);
+  ADD_BUILTIN_TYPE ("i64", scope);
 
-  ADD_BUILTIN_TYPE ("f32", typeScope);
-  ADD_BUILTIN_TYPE ("f64", typeScope);
+  ADD_BUILTIN_TYPE ("f32", scope);
+  ADD_BUILTIN_TYPE ("f64", scope);
 
-  ADD_BUILTIN_TYPE ("char", typeScope);
-  ADD_BUILTIN_TYPE ("str", typeScope);
-  ADD_BUILTIN_TYPE ("bool", typeScope);
+  ADD_BUILTIN_TYPE ("char", scope);
+  ADD_BUILTIN_TYPE ("str", scope);
+  ADD_BUILTIN_TYPE ("bool", scope);
+
+  // now its the crate scope
+  scope.Push ();
 }
 
-TypeResolution::~TypeResolution () { functionScope.Pop (); }
+TypeResolution::~TypeResolution ()
+{
+  scope.Pop (); // crate
+  scope.Pop (); // builtins
+}
 
 bool
 TypeResolution::Resolve (AST::Crate &crate, TopLevelScan &toplevel)
@@ -96,13 +103,7 @@ TypeResolution::typesAreCompatible (AST::Type *lhs, AST::Type *rhs,
     }
 
   AST::Type *val = NULL;
-  if (!typeScope.Lookup (lhsTypeStr, &val))
-    {
-      rust_error_at (locus, "unknown type");
-      return false;
-    }
-
-  return true;
+  return scope.LookupType (lhsTypeStr, &val);
 }
 
 bool
@@ -121,13 +122,7 @@ TypeResolution::isTypeInScope (AST::Type *type, Location locus)
   typeComparisonBuffer.pop_back ();
 
   AST::Type *val = NULL;
-  if (!typeScope.Lookup (t, &val))
-    {
-      rust_error_at (locus, "unknown type");
-      return false;
-    }
-
-  return true;
+  return scope.LookupType (t, &val);
 }
 
 AST::Function *
@@ -162,7 +157,7 @@ void
 TypeResolution::visit (AST::IdentifierExpr &ident_expr)
 {
   AST::Type *type = NULL;
-  bool ok = scope.Lookup (ident_expr.ident, &type);
+  bool ok = scope.LookupType (ident_expr.ident, &type);
   if (!ok)
     {
       rust_error_at (ident_expr.locus, "unknown identifier");
@@ -190,7 +185,7 @@ TypeResolution::visit (AST::PathInExpression &path)
 {
   // look up in the functionScope else lookup in the toplevel scan
   AST::Function *fndecl = NULL;
-  if (functionScope.Lookup (path.as_string (), &fndecl))
+  if (scope.LookupFunction (path.as_string (), &fndecl))
     {
       functionLookup.push_back (fndecl);
       return;
@@ -282,7 +277,7 @@ TypeResolution::visit (AST::LiteralExpr &expr)
     }
 
   AST::Type *val = NULL;
-  bool ok = typeScope.Lookup (type, &val);
+  bool ok = scope.LookupType (type, &val);
   if (ok)
     typeBuffer.push_back (val);
   else
@@ -516,9 +511,18 @@ TypeResolution::visit (AST::FieldAccessExpr &expr)
 void
 TypeResolution::visit (AST::ClosureExprInner &expr)
 {}
+
 void
 TypeResolution::visit (AST::BlockExpr &expr)
-{}
+{
+  scope.Push ();
+  for (auto &stmt : expr.statements)
+    {
+      stmt->accept_vis (*this);
+    }
+  scope.Pop ();
+}
+
 void
 TypeResolution::visit (AST::ClosureExprInnerTyped &expr)
 {}
@@ -564,15 +568,27 @@ TypeResolution::visit (AST::WhileLetLoopExpr &expr)
 void
 TypeResolution::visit (AST::ForLoopExpr &expr)
 {}
+
 void
 TypeResolution::visit (AST::IfExpr &expr)
-{}
+{
+  expr.vis_if_block (*this);
+}
+
 void
 TypeResolution::visit (AST::IfExprConseqElse &expr)
-{}
+{
+  expr.vis_if_block (*this);
+  expr.vis_else_block (*this);
+}
+
 void
 TypeResolution::visit (AST::IfExprConseqIf &expr)
-{}
+{
+  expr.vis_if_block (*this);
+  expr.vis_conseq_if_expr (*this);
+}
+
 void
 TypeResolution::visit (AST::IfExprConseqIfLet &expr)
 {}
@@ -647,11 +663,10 @@ TypeResolution::visit (AST::Function &function)
 {
   // always emit the function with return type in the event of nil return type
   // its  a marker for a void function
-  scope.Insert (function.function_name, function.return_type.get ());
-  functionScope.Insert (function.function_name, &function);
-
-  functionScope.Push ();
+  scope.InsertType (function.function_name, function.return_type.get ());
+  scope.InsertFunction (function.function_name, &function);
   scope.Push ();
+
   for (auto &param : function.function_params)
     {
       if (!isTypeInScope (param.type.get (), param.locus))
@@ -667,7 +682,7 @@ TypeResolution::visit (AST::Function &function)
 
       auto paramName = letPatternBuffer.back ();
       letPatternBuffer.pop_back ();
-      scope.Insert (paramName.variable_ident, param.type.get ());
+      scope.InsertType (paramName.variable_ident, param.type.get ());
     }
 
   // ensure the return type is resolved
@@ -683,8 +698,11 @@ TypeResolution::visit (AST::Function &function)
       stmt->accept_vis (*this);
     }
 
+  auto localMap = scope.PeekLocals ();
+  for (auto &[_, value] : localMap)
+    function.locals.push_back (value);
+
   scope.Pop ();
-  functionScope.Pop ();
 }
 
 void
@@ -705,7 +723,7 @@ TypeResolution::visit (AST::StructStruct &struct_item)
 	}
     }
 
-  structsPerBlock.Insert (struct_item.struct_name, &struct_item);
+  scope.InsertStruct (struct_item.struct_name, &struct_item);
 }
 
 void
@@ -886,6 +904,7 @@ TypeResolution::visit (AST::EmptyStmt &stmt)
 void
 TypeResolution::visit (AST::LetStmt &stmt)
 {
+  scope.InsertLocal (stmt.as_string (), &stmt);
   if (!stmt.has_init_expr () && !stmt.has_type ())
     {
       rust_error_at (stmt.locus,
@@ -942,10 +961,9 @@ TypeResolution::visit (AST::LetStmt &stmt)
 
   // get all the names part of this declaration and add the types to the scope
   stmt.variables_pattern->accept_vis (*this);
-  for (auto it = letPatternBuffer.begin (); it != letPatternBuffer.end (); it++)
-    {
-      scope.Insert (it->variable_ident, inferedType);
-    }
+  for (auto &pattern : letPatternBuffer)
+    scope.InsertType (pattern.variable_ident, inferedType);
+
   letPatternBuffer.clear ();
 }
 
@@ -957,7 +975,16 @@ TypeResolution::visit (AST::ExprStmtWithoutBlock &stmt)
 
 void
 TypeResolution::visit (AST::ExprStmtWithBlock &stmt)
-{}
+{
+  scope.Push ();
+  stmt.expr->accept_vis (*this);
+  auto localMap = scope.PeekLocals ();
+  for (auto &[_, value] : localMap)
+    {
+      stmt.locals.push_back (value);
+    }
+  scope.Pop ();
+}
 
 // rust-type.h
 void
