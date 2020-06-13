@@ -1,3 +1,319 @@
+2020-06-12  Steve Baird  <baird@adacore.com>
+
+	* sem_res.adb (Valid_Conversion): The simpler cases of
+	violations of the aforementioned 8.6 rule are already handled
+	correctly. These include cases where the operand of the type
+	conversion is an access parameter or a stand-alone object of an
+	anonymous access type. Add code to detect violations where the
+	operand of the type conversion is an access discriminant whose
+	accessibility level is tied to one of the other simpler cases.
+	This is implemented in a new function,
+	Valid_Conversion.Is_Discrim_Of_Bad_Access_Conversion_Argument,
+	which is called in place of the previous test.
+
+2020-06-12  Bob Duff  <duff@adacore.com>
+
+	* exp_attr.adb (Put_Image): Remove assertion. This assertion is
+	False in mixed-Ada-version programs.
+	* exp_put_image.adb (Tagged_Put_Image_Enabled): New flag to make
+	it easy to experiment with Put_Image on tagged types. False in
+	this version.
+	(Enable_Put_Image): Enable in pre-2020.  Workarounds: Disable
+	for tagged types if Tagged_Put_Image_Enabled is False. Disable
+	for access-to-subprogram types.  Disable if errors have been
+	detected, or Sink is unavailable.
+	(Preload_Sink): Move all conditionals here, from Sem_Ch10, so
+	they can be nearby related code in Enable_Put_Image.  Load Sink
+	only if we have seen a tagged type.  This removes the dilemma
+	about calling Preload_Sink when compiling the compiler, which
+	caused unwanted dependences.
+	* exp_put_image.ads (Preload_Sink): New formal Compilation_Unit,
+	needed to move all conditionals here, from Sem_Ch10.
+	* libgnat/a-stouut.adb (Put_UTF_8): Make this suitable for
+	inlining, so we don't get warnings about inlining in some tests.
+	And so it can be inlined!
+	* opt.ads (Tagged_Seen): New flag (see Preload_Sink).
+	* scng.adb (Scan): Set new Tagged_Seen flag.
+	* sem_ch10.adb (Analyze_Compilation_Unit): Move conditionals and
+	comments regarding Preload_Sink into Preload_Sink.
+
+2020-06-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): Check for AI12-0074.
+
+2020-06-12  Olivier Hainque  <hainque@adacore.com>
+
+	* libgnat/s-secsta.ads (Memory_Alignment): New constant, memory
+	alignment for chunks and allocated blocks. Initialize to
+	Standard'Maximum_Alignment * 2.
+	(Chunk_Memory): Use it.
+	* libgnat/s-secsta.adb (Round_Up): Likewise.
+
+2020-06-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* par-prag.adb: Fix ordering.
+	* snames.ads-tmpl (Name_Test_Case, Pragma_Test_Case): Likewise.
+	* sem_prag.adb (Sig_Flags): Likewise.
+
+2020-06-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_res.adb (Resolve_Entity_Name): Fix handling of expressions
+	containing array attributes wrt Ada 83 detection.
+
+2020-06-12  Steve Baird  <baird@adacore.com>
+
+	* sem_util.ads, sem_util.adb: Define 3 new Boolean-valued
+	functions - Statically_Denotes_Entity,
+	Statically_Denotes_Object, and Statically_Names_Object. The
+	first two were taken from sem_attr.adb. The term "statically
+	names" is defined in the Ada RM and the new function
+	Statically_Names_Object is intended to reflect that definition,
+	or more precisely, as described in a comment in the code, to
+	reflect the expected future definition of that term.
+	* sem_attr.adb: Delete functions Statically_Denotes_Object and
+	Statically_Denotes_Entity; these two functions have been moved
+	to package Sem_Util. Replace call to Statically_Denotes_Object
+	with a call to Statically_Names_Object as per AI12-0217 (a
+	binding interpretation, so no Ada_Version check).
+	* exp_ch9.adb (Expand_Entry_Barrier.Is_Simple_Barrier): Change
+	name of function (it was previously Is_Simple_Barrier_Name)
+	because the function should return True in the case of a static
+	expression; implement this requirement.  Change function to
+	include a call to Statically_Names_Object so that, for Ada_2020
+	and later, it will return True for appropriate subcomponent
+	names.
+	(Expand_Entry_Barrier.Is_Pure_Barrier): Handle
+	N_Indexed_Component and N_Selected_Component cases by calling
+	Statically_Names_Object.
+	(Expand_Entry_Barrier): Reorganize to treat Simple_Barriers and
+	Pure_Barriers more uniformly.  Prevent cascaded errors.
+
+2020-06-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Find_Matching_Actual): Add guard on search loops
+	to detect a compilation error when using a compiler built
+	without assertions.
+	(Instantiate_Formal_Subprogram): Create a new subprogram name
+	for the actual only if formal has contract aspects and expansion
+	is enabled.
+
+2020-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb: Add with and use clauses for Sem_Mech.
+	(Get_Base_Object): New function to get the base object of a node.
+	(In_Place_Assign_OK): Add Target_Object parameter.  Deal with a
+	qualified expression on entry.  Remove short-circuit for array
+	aggregates with a single "others" choice.  Do not look into the
+	components of the aggregate if the parent is an allocator.
+	(Check_Component): Add T_OK parameter and rewrite.
+	(Safe_Component): Invoke Check_Component with T_OK set to False.
+	(Convert_To_Assignments): Try to use an in-place assignment for
+	any target; for that, call Get_Base_Object on the target and pass
+	the result to In_Place_Assign_OK.
+	(Expand_Array_Aggregate): Use Parent_Kind and Parent_Node more
+	consistently.  For an assignment, call Get_Base_Object on the
+	target and pass the result to In_Place_Assign_OK.
+
+2020-06-12  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* socket.c (__gnat_minus_500ms): Use GetVersionEx to detect
+	Windows Server version.
+	* libgnat/g-sothco.ads (Minus_500ms_Windows_Timeout): Remade to
+	Boolean constant.
+	* libgnat/g-socket.adb (Set_Socket_Option): Use
+	Minus_500ms_Windows_Timeout constant instead of function call.
+
+2020-06-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/a-coinho.ads, libgnat/a-coinho.adb,
+	libgnat/a-coinho__shared.ads, libgnat/a-coinho__shared.adb
+	(Swap): New procedure.
+
+2020-06-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch6.adb (Expand_N_Subprogram_Declaration): Do nothing for
+	a subprogram declared in a protected body.
+	* exp_ch9.ads, exp_ch9.adb
+	(Build_Private_Protected_Declaration): Moved to sem_ch6.adb.
+	(Expand_N_Protected_Body): Do nothing for a subprogram declared
+	in a protected body.
+	* sem_ch6.adb (Build_Internal_Protected_Declaration): Moved from
+	exp_ch9.adb and renamed and fixed to ensure in particular that
+	such subprograms have convention Intrinsic and have no protected
+	version.
+	(Analyze_Subprogram_Body_Helper): Call
+	Build_Internal_Protected_Declaration.
+	(Move_Pragmas): Moved up and merged with the more general
+	version from Build_Private_Protected_Declaration. We only want
+	to copy selected pragmas, most pragmas are not suitable for a
+	copy on the spec.
+
+2020-06-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Check_Overriding_Indicatior): Reject an
+	overriding indicator on a subprogram declared within a protected
+	body.
+
+2020-06-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* contracts.adb, einfo.adb, sem_ch4.adb, sem_ch6.adb,
+	sem_res.adb, sem_util.adb: Replace Ekind_In with Is_Entry.
+
+2020-06-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_Entry_Call): Add call to
+	Warn_On_Overlapping_Actuals.
+
+2020-06-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* aspects.ads (Is_Representation_Aspect): New array.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Check
+	13.1(9.2/5) for representation aspects.
+
+2020-06-12  Bob Duff  <duff@adacore.com>
+
+	* exp_put_image.ads, exp_put_image.adb (Preload_Sink): Procedure
+	for preloading type Sink.  This has the side effect of loading
+	various dependents, including Ada.Strings.UTF_Encoding.
+	(Enable_Put_Image): Disable Put_Image in pre-2020 versions of
+	Ada.  This limitation can probably be lifted later.  Enable for
+	tagged types except in predefined units.  Disable for CPP types;
+	Put_Image is legal, just prints the type name.
+	* sem_attr.adb (Check_Put_Image_Attribute): Don't complain about
+	Put_Image of CPP types; instead call the "unknown" version of
+	Put_Image.
+	* sem_ch10.adb (Analyze_Compilation_Unit): Call Preload_Sink.
+
+2020-06-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): Simplify.
+
+2020-06-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): Remove suppression
+	for internal units.
+
+2020-06-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_strm.adb (Build_Elementary_Input_Call): Add support for 24
+	bits elementary types.
+	* rtsfind.ads: Add 24 bits integer streaming routines.
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause
+	[Attribute_Stream_Size]): Add support for 24 bits elementary
+	types.
+	* libgnat/s-stratt.ads, libgnat/s-stratt.adb,
+	libgnat/s-stratt__xdr.adb: Add support for signed and unsigned
+	24 bits integers.
+
+2020-06-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch3.adb (Get_Discr_Value): Cleanup.
+
+2020-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* rtsfind.ads (RTU_Id): Add System_Address_To_Access_Conversions.
+	* sem_elab.adb (Elaboration_Phase_Active): Alphabetize.
+	(Finalize_All_Data_Structures): Likewise.
+	(Error_Preelaborated_Call): New procedure.
+	(Build_Call_Marker): Set Is_Preelaborable_Call flag in marker.
+	(Build_Access_Marker): Likewise.
+	(Build_Subprogram_Invocation): Likewise.
+	(Build_Task_Activation): Likewise.
+	(Check_Preelaborated_Call): Return when the call is preelaborable.
+	Call Error_Preelaborated_Call to give the error otherwise.
+	(Check_Elab_Call): Likewise.
+	* sem_util.adb (Is_Preelaborable_Function): New predicate.
+	(Is_Non_Preelaborable_Construct.Visit): Recurse on the
+	Explicit_Actual_Parameter field of N_Parameter_Association.
+	(Is_Non_Preelaborable_Construct.Visit_Subexpression): In Ada 2020,
+	for a call to a preelaborable function, visit the parameter list;
+	otherwise, raise Non_Preelaborable exception.
+	(Is_Preelaborable_Construct): Likewise, but recursively check the
+	parameters instead and return false upon failure, otherwise true.
+	* sinfo.ads (Is_Preelaborable_Call): New flag in call marker nodes.
+	(Is_Preelaborable_Call): New inline function.
+	(Set_Is_Preelaborable_Call): New inline procedure.
+	* sinfo.adb (Is_Preelaborable_Call): New inline function.
+	(Set_Is_Preelaborable_Call): New inline procedure.
+
+2020-06-12  Bob Duff  <duff@adacore.com>
+
+	* stringt.ads: Remove "use System;".
+
+2020-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch4.adb (Try_Container_Indexing): Replace call to
+	First_Discriminant by Get_Reference_Discriminant to get the
+	reference discriminant.
+	* sem_ch13.adb (Check_Indexing_Functions): Likewise.
+	* sem_ch5.adb (Preanalyze_Range): Call Get_Reference_Discriminant
+	to get the reference discriminant.
+	* sem_util.adb (Is_OK_Variable_For_Out_Formal): Treat all
+	Ada 2012 implicit dereferences in only one place.
+	(Is_Variable): Minor tweak.
+
+2020-06-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Has_Contracts): New predicate to check whether a
+	formal subprogram carries an aspect specification for a pre- or
+	postcondition.
+	(Build_Subprogram_Wrappers): If actual is overloaded, create a
+	new name to be used in call inside wrapper body. This names
+	carries the interpretations of the actual, and is resolved when
+	the body is analyzed.
+	(Build_Subprogram_Body_Wrapper): Use this generated name in
+	call.
+	(Build_Subprogram_Decl_Wrapper): Build profile of wrapper from
+	the profile of formal, and reset type entities for subsequent
+	analysis.
+
+2020-06-12  Bob Duff  <duff@adacore.com>
+
+	* debug.adb: Remove usage of -gnatd_z.
+	* exp_attr.adb, exp_put_image.ads, exp_put_image.adb: Clean up
+	the enable/disable code. If Put_Image is disabled for a type,
+	systematically call the "unknown" version.  Improve comments.
+	Consolidate workarounds.  Remove usage of -gnatd_z.
+
+2020-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_elab.adb: Fix typos in comments.
+
+2020-06-12  Justin Squirek  <squirek@adacore.com>
+
+	* sem_util.adb (Object_Access_Level): Add processing of implicit
+	dereferences.
+
+2020-06-12  Bob Duff  <duff@adacore.com>
+
+	* libgnat/a-nbnbin.adb, libgnat/a-nbnbin.ads,
+	libgnat/a-nbnbin__gmp.adb, libgnat/a-nbnbre.adb,
+	libgnat/a-nbnbre.ads: Update Put_Image, and uncomment the aspect
+	specification.  Add pragmas Ada_2020.
+	* libgnat/a-stouut.ads, libgnat/a-stteou.ads: Add Preelaborate,
+	because the Big_Numbers packages have Preelaborate, and now
+	depend on these Text_Output packages.
+
+2020-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (No_Return): Document it for all subprograms.
+	* einfo.adb (Set_No_Return): Adjust assertion accordingly.
+	* sem_ch3.adb (Check_Abstract_Overriding): Implement the
+	check prescribed by RM 6.5.1(6/2) here instead of...
+	(Derive_Subprogram): Adjust comment accordingly.
+	* sem_disp.adb (Override_Dispatching_Operation): ...here.
+	Remove superfluous return statement.
+	* sem_ch6.adb (Check_No_Return_Expression): New procedure.
+	(Analyze_Function_Return): Call it to implement the check
+	prescribed by AI12-0269 for simple return statements of
+	No_Return functions, and also checks extended statements.
+	(Analyze_Return_Statement): Only give an error on a return
+	statement in No_Return procedures.  Use idiomatic form.
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Adjust error
+	message for No_Return renaming subprogram.
+	* sem_prag.adb (Analyze_Pragma) <Pragma_No_Return>: Accept
+	it on functions and generic functions in Ada 2020.
+
 2020-06-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_res.adb (Resolve_Implicit_Dereference): In an instance,
