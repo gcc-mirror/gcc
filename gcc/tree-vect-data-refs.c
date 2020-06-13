@@ -1189,19 +1189,19 @@ verify_data_ref_alignment (vec_info *vinfo, dr_vec_info *dr_info)
    handled with respect to alignment.  */
 
 opt_result
-vect_verify_datarefs_alignment (loop_vec_info vinfo)
+vect_verify_datarefs_alignment (loop_vec_info loop_vinfo)
 {
-  vec<data_reference_p> datarefs = vinfo->shared->datarefs;
+  vec<data_reference_p> datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
   struct data_reference *dr;
   unsigned int i;
 
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
-      dr_vec_info *dr_info = vinfo->lookup_dr (dr);
+      dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
       if (!vect_relevant_for_alignment_p (dr_info))
 	continue;
 
-      opt_result res = verify_data_ref_alignment (vinfo, dr_info);
+      opt_result res = verify_data_ref_alignment (loop_vinfo, dr_info);
       if (!res)
 	return res;
     }
@@ -2379,28 +2379,28 @@ vect_find_same_alignment_drs (vec_info *vinfo, data_dependence_relation *ddr)
    Return FALSE if a data reference is found that cannot be vectorized.  */
 
 opt_result
-vect_analyze_data_refs_alignment (loop_vec_info vinfo)
+vect_analyze_data_refs_alignment (loop_vec_info loop_vinfo)
 {
   DUMP_VECT_SCOPE ("vect_analyze_data_refs_alignment");
 
   /* Mark groups of data references with same alignment using
      data dependence information.  */
-  vec<ddr_p> ddrs = vinfo->shared->ddrs;
+  vec<ddr_p> ddrs = LOOP_VINFO_DDRS (loop_vinfo);
   struct data_dependence_relation *ddr;
   unsigned int i;
 
   FOR_EACH_VEC_ELT (ddrs, i, ddr)
-    vect_find_same_alignment_drs (vinfo, ddr);
+    vect_find_same_alignment_drs (loop_vinfo, ddr);
 
-  vec<data_reference_p> datarefs = vinfo->shared->datarefs;
+  vec<data_reference_p> datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
   struct data_reference *dr;
 
-  vect_record_base_alignments (vinfo);
+  vect_record_base_alignments (loop_vinfo);
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
-      dr_vec_info *dr_info = vinfo->lookup_dr (dr);
+      dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
       if (STMT_VINFO_VECTORIZABLE (dr_info->stmt))
-	vect_compute_data_ref_alignment (vinfo, dr_info);
+	vect_compute_data_ref_alignment (loop_vinfo, dr_info);
     }
 
   return opt_result::success ();
