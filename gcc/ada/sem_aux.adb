@@ -711,11 +711,11 @@ package body Sem_Aux is
 
    begin
       pragma Assert
-        (Nkind_In (N, N_Aspect_Specification,
-                      N_Attribute_Definition_Clause,
-                      N_Enumeration_Representation_Clause,
-                      N_Pragma,
-                      N_Record_Representation_Clause));
+        (Nkind (N) in N_Aspect_Specification
+                    | N_Attribute_Definition_Clause
+                    | N_Enumeration_Representation_Clause
+                    | N_Pragma
+                    | N_Record_Representation_Clause);
 
       Item := First_Rep_Item (E);
       while Present (Item) loop
@@ -877,13 +877,9 @@ package body Sem_Aux is
 
    function Is_Body (N : Node_Id) return Boolean is
    begin
-      return
-        Nkind (N) in N_Body_Stub
-          or else Nkind_In (N, N_Entry_Body,
-                               N_Package_Body,
-                               N_Protected_Body,
-                               N_Subprogram_Body,
-                               N_Task_Body);
+      return Nkind (N) in
+        N_Body_Stub       | N_Entry_Body | N_Package_Body | N_Protected_Body |
+        N_Subprogram_Body | N_Task_Body;
    end Is_Body;
 
    ---------------------
@@ -1072,8 +1068,7 @@ package body Sem_Aux is
          Kind := Nkind (Original_Node (Parent (E)));
 
          return
-           Nkind_In (Kind, N_Formal_Object_Declaration,
-                           N_Formal_Type_Declaration)
+           Kind in N_Formal_Object_Declaration | N_Formal_Type_Declaration
              or else Is_Formal_Subprogram (E)
              or else
                (Ekind (E) = E_Package

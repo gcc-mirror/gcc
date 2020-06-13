@@ -1907,7 +1907,7 @@ package body Ch4 is
                      Logop := P_Logical_Operator;
                      Restore_Scan_State (Scan_State); -- to comma/semicolon
 
-                     if Nkind_In (Logop, N_And_Then, N_Or_Else) then
+                     if Logop in N_And_Then | N_Or_Else then
                         Scan; -- past comma/semicolon
 
                         if Com then

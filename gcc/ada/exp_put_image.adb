@@ -645,8 +645,8 @@ package body Exp_Put_Image is
             --  with no components there is no need to handle it.
 
             while Present (Item) loop
-               if Nkind_In (Item, N_Component_Declaration,
-                                  N_Discriminant_Specification)
+               if Nkind (Item) in
+                    N_Component_Declaration | N_Discriminant_Specification
                  and then
                    ((Chars (Defining_Identifier (Item)) = Name_uParent
                        and then not Is_Interface

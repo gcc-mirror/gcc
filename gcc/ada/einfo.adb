@@ -726,17 +726,17 @@ package body Einfo is
 
    function Access_Disp_Table (Id : E) return L is
    begin
-      pragma Assert (Ekind_In (Id, E_Record_Subtype,
-                                   E_Record_Type,
-                                   E_Record_Type_With_Private));
+      pragma Assert (Ekind (Id) in E_Record_Subtype
+                                 | E_Record_Type
+                                 | E_Record_Type_With_Private);
       return Elist16 (Implementation_Base_Type (Id));
    end Access_Disp_Table;
 
    function Access_Disp_Table_Elab_Flag (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Record_Subtype,
-                                   E_Record_Type,
-                                   E_Record_Type_With_Private));
+      pragma Assert (Ekind (Id) in E_Record_Subtype
+                                 | E_Record_Type
+                                 | E_Record_Type_With_Private);
       return Node30 (Implementation_Base_Type (Id));
    end Access_Disp_Table_Elab_Flag;
 
@@ -748,19 +748,19 @@ package body Einfo is
 
    function Activation_Record_Component (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant,
-                                   E_In_Parameter,
-                                   E_In_Out_Parameter,
-                                   E_Loop_Parameter,
-                                   E_Out_Parameter,
-                                   E_Variable));
+      pragma Assert (Ekind (Id) in E_Constant
+                                 | E_In_Parameter
+                                 | E_In_Out_Parameter
+                                 | E_Loop_Parameter
+                                 | E_Out_Parameter
+                                 | E_Variable);
       return Node31 (Id);
    end Activation_Record_Component;
 
    function Actual_Subtype (Id : E) return E is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Constant, E_Variable, E_Generic_In_Out_Parameter)
+        (Ekind (Id) in E_Constant | E_Variable | E_Generic_In_Out_Parameter
            or else Is_Formal (Id));
       return Node17 (Id);
    end Actual_Subtype;
@@ -781,10 +781,10 @@ package body Einfo is
    begin
       pragma Assert (Is_Type (Id)
                        or else Is_Formal (Id)
-                       or else Ekind_In (Id, E_Loop_Parameter,
-                                             E_Constant,
-                                             E_Exception,
-                                             E_Variable));
+                       or else Ekind (Id) in E_Loop_Parameter
+                                           | E_Constant
+                                           | E_Exception
+                                           | E_Variable);
       return Uint14 (Id);
    end Alignment;
 
@@ -796,16 +796,16 @@ package body Einfo is
 
    function Anonymous_Masters (Id : E) return L is
    begin
-      pragma Assert (Ekind_In (Id, E_Function,
-                                   E_Package,
-                                   E_Procedure,
-                                   E_Subprogram_Body));
+      pragma Assert (Ekind (Id) in E_Function
+                                 | E_Package
+                                 | E_Procedure
+                                 | E_Subprogram_Body);
       return Elist29 (Id);
    end Anonymous_Masters;
 
    function Anonymous_Object (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Protected_Type, E_Task_Type));
+      pragma Assert (Ekind (Id) in E_Protected_Type | E_Task_Type);
       return Node30 (Id);
    end Anonymous_Object;
 
@@ -872,7 +872,7 @@ package body Einfo is
 
    function BIP_Initialization_Call (Id : E) return N is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      pragma Assert (Ekind (Id) in E_Constant | E_Variable);
       return Node29 (Id);
    end BIP_Initialization_Call;
 
@@ -906,19 +906,19 @@ package body Einfo is
 
    function Cloned_Subtype (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Record_Subtype, E_Class_Wide_Subtype));
+      pragma Assert (Ekind (Id) in E_Record_Subtype | E_Class_Wide_Subtype);
       return Node16 (Id);
    end Cloned_Subtype;
 
    function Component_Bit_Offset (Id : E) return U is
    begin
-      pragma Assert (Ekind_In (Id, E_Component, E_Discriminant));
+      pragma Assert (Ekind (Id) in E_Component | E_Discriminant);
       return Uint11 (Id);
    end Component_Bit_Offset;
 
    function Component_Clause (Id : E) return N is
    begin
-      pragma Assert (Ekind_In (Id, E_Component, E_Discriminant));
+      pragma Assert (Ekind (Id) in E_Component | E_Discriminant);
       return Node13 (Id);
    end Component_Clause;
 
@@ -975,7 +975,7 @@ package body Einfo is
 
    function Corresponding_Record_Component (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Component, E_Discriminant));
+      pragma Assert (Ekind (Id) in E_Component | E_Discriminant);
       return Node21 (Id);
    end Corresponding_Record_Component;
 
@@ -1147,8 +1147,7 @@ package body Einfo is
 
    function Dispatch_Table_Wrappers (Id : E) return L is
    begin
-      pragma Assert (Ekind_In (Id, E_Record_Type,
-                                   E_Record_Subtype));
+      pragma Assert (Ekind (Id) in E_Record_Type | E_Record_Subtype);
       return Elist26 (Implementation_Base_Type (Id));
    end Dispatch_Table_Wrappers;
 
@@ -1166,14 +1165,14 @@ package body Einfo is
 
    function DT_Position (Id : E) return U is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure)
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure
                        and then Present (DTC_Entity (Id)));
       return Uint15 (Id);
    end DT_Position;
 
    function DTC_Entity (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
       return Node16 (Id);
    end DTC_Entity;
 
@@ -1188,7 +1187,7 @@ package body Einfo is
       pragma Assert
         (Is_Subprogram (Id)
            or else
-         Ekind_In (Id, E_Entry, E_Entry_Family, E_Package)
+         Ekind (Id) in E_Entry | E_Entry_Family | E_Package
            or else
          Is_Generic_Unit (Id));
       return Node13 (Id);
@@ -1199,7 +1198,7 @@ package body Einfo is
       pragma Assert
         (Is_Subprogram (Id)
            or else
-         Ekind_In (Id, E_Entry, E_Entry_Family, E_Package)
+         Ekind (Id) in E_Entry | E_Entry_Family | E_Package
            or else
          Is_Generic_Unit (Id));
       return Flag174 (Id);
@@ -1207,7 +1206,7 @@ package body Einfo is
 
    function Encapsulating_State (Id : E) return N is
    begin
-      pragma Assert (Ekind_In (Id, E_Abstract_State, E_Constant, E_Variable));
+      pragma Assert (Ekind (Id) in E_Abstract_State | E_Constant | E_Variable);
       return Node32 (Id);
    end Encapsulating_State;
 
@@ -1257,40 +1256,40 @@ package body Einfo is
    function Contains_Ignored_Ghost_Code (Id : E) return B is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Block,
-                       E_Function,
-                       E_Generic_Function,
-                       E_Generic_Package,
-                       E_Generic_Procedure,
-                       E_Package,
-                       E_Package_Body,
-                       E_Procedure,
-                       E_Subprogram_Body));
+        (Ekind (Id) in E_Block
+                     | E_Function
+                     | E_Generic_Function
+                     | E_Generic_Package
+                     | E_Generic_Procedure
+                     | E_Package
+                     | E_Package_Body
+                     | E_Procedure
+                     | E_Subprogram_Body);
       return Flag279 (Id);
    end Contains_Ignored_Ghost_Code;
 
    function Contract (Id : E) return N is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Protected_Type,      --  concurrent types
-                       E_Task_Body,
-                       E_Task_Type)
+        (Ekind (Id) in E_Protected_Type       --  concurrent types
+                     | E_Task_Body
+                     | E_Task_Type
            or else
-         Ekind_In (Id, E_Constant,            --  objects
-                       E_Variable)
+         Ekind (Id) in E_Constant             --  objects
+                     | E_Variable
            or else
-         Ekind_In (Id, E_Entry,               --  overloadable
-                       E_Entry_Family,
-                       E_Function,
-                       E_Generic_Function,
-                       E_Generic_Procedure,
-                       E_Operator,
-                       E_Procedure,
-                       E_Subprogram_Body)
+         Ekind (Id) in E_Entry                --  overloadable
+                     | E_Entry_Family
+                     | E_Function
+                     | E_Generic_Function
+                     | E_Generic_Procedure
+                     | E_Operator
+                     | E_Procedure
+                     | E_Subprogram_Body
            or else
-         Ekind_In (Id, E_Generic_Package,     --  packages
-                       E_Package,
-                       E_Package_Body)
+         Ekind (Id) in E_Generic_Package      --  packages
+                     | E_Package
+                     | E_Package_Body
            or else
          Is_Type (Id)                         --  types
            or else
@@ -1336,13 +1335,12 @@ package body Einfo is
    function Equivalent_Type (Id : E) return E is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Class_Wide_Type,
-                       E_Class_Wide_Subtype,
-                       E_Access_Subprogram_Type,
-                       E_Access_Protected_Subprogram_Type,
-                       E_Anonymous_Access_Protected_Subprogram_Type,
-                       E_Access_Subprogram_Type,
-                       E_Exception_Type));
+        (Ekind (Id) in E_Class_Wide_Type
+                     | E_Class_Wide_Subtype
+                     | E_Access_Subprogram_Type
+                     | E_Access_Protected_Subprogram_Type
+                     | E_Anonymous_Access_Protected_Subprogram_Type
+                     | E_Exception_Type);
       return Node18 (Id);
    end Equivalent_Type;
 
@@ -1354,13 +1352,14 @@ package body Einfo is
    function Extra_Accessibility (Id : E) return E is
    begin
       pragma Assert
-        (Is_Formal (Id) or else Ekind_In (Id, E_Variable, E_Constant));
+        (Is_Formal (Id) or else Ekind (Id) in E_Variable | E_Constant);
       return Node13 (Id);
    end Extra_Accessibility;
 
    function Extra_Accessibility_Of_Result (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Operator, E_Subprogram_Type));
+      pragma Assert
+        (Ekind (Id) in E_Function | E_Operator | E_Subprogram_Type);
       return Node19 (Id);
    end Extra_Accessibility_Of_Result;
 
@@ -1379,9 +1378,9 @@ package body Einfo is
    begin
       pragma Assert
         (Is_Overloadable (Id)
-           or else Ekind_In (Id, E_Entry_Family,
-                                 E_Subprogram_Body,
-                                 E_Subprogram_Type));
+           or else Ekind (Id) in E_Entry_Family
+                               | E_Subprogram_Body
+                               | E_Subprogram_Type);
       return Node28 (Id);
    end Extra_Formals;
 
@@ -1405,7 +1404,7 @@ package body Einfo is
 
    function Finalizer (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Package, E_Package_Body));
+      pragma Assert (Ekind (Id) in E_Package | E_Package_Body);
       return Node28 (Id);
    end Finalizer;
 
@@ -1681,7 +1680,7 @@ package body Einfo is
 
    function Has_Missing_Return (Id : E) return B is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Generic_Function));
+      pragma Assert (Ekind (Id) in E_Function | E_Generic_Function);
       return Flag142 (Id);
    end Has_Missing_Return;
 
@@ -2015,23 +2014,23 @@ package body Einfo is
    function Ignore_SPARK_Mode_Pragmas (Id : E) return B is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Protected_Body,      --  concurrent types
-                       E_Protected_Type,
-                       E_Task_Body,
-                       E_Task_Type)
+        (Ekind (Id) in E_Protected_Body      --  concurrent types
+                     | E_Protected_Type
+                     | E_Task_Body
+                     | E_Task_Type
           or else
-         Ekind_In (Id, E_Entry,               --  overloadable
-                       E_Entry_Family,
-                       E_Function,
-                       E_Generic_Function,
-                       E_Generic_Procedure,
-                       E_Operator,
-                       E_Procedure,
-                       E_Subprogram_Body)
+         Ekind (Id) in E_Entry               --  overloadable
+                     | E_Entry_Family
+                     | E_Function
+                     | E_Generic_Function
+                     | E_Generic_Procedure
+                     | E_Operator
+                     | E_Procedure
+                     | E_Subprogram_Body
            or else
-         Ekind_In (Id, E_Generic_Package,     --  packages
-                       E_Package,
-                       E_Package_Body));
+         Ekind (Id) in E_Generic_Package     --  packages
+                     | E_Package
+                     | E_Package_Body);
       return Flag301 (Id);
    end Ignore_SPARK_Mode_Pragmas;
 
@@ -2077,7 +2076,7 @@ package body Einfo is
 
    function Initialization_Statements (Id : E) return N is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      pragma Assert (Ekind (Id) in E_Constant | E_Variable);
       return Node28 (Id);
    end Initialization_Statements;
 
@@ -2155,7 +2154,7 @@ package body Einfo is
 
    function Is_Called (Id : E) return B is
    begin
-      pragma Assert (Ekind_In (Id, E_Procedure, E_Function, E_Package));
+      pragma Assert (Ekind (Id) in E_Procedure | E_Function | E_Package);
       return Flag102 (Id);
    end Is_Called;
 
@@ -2244,7 +2243,7 @@ package body Einfo is
 
    function Is_DIC_Procedure (Id : E) return B is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
       return Flag132 (Id);
    end Is_DIC_Procedure;
 
@@ -2314,7 +2313,7 @@ package body Einfo is
 
    function Is_Finalized_Transient (Id : E) return B is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Loop_Parameter, E_Variable));
+      pragma Assert (Ekind (Id) in E_Constant | E_Loop_Parameter | E_Variable);
       return Flag252 (Id);
    end Is_Finalized_Transient;
 
@@ -2335,7 +2334,7 @@ package body Einfo is
 
    function Is_Generic_Actual_Subprogram (Id : E) return B is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
       return Flag274 (Id);
    end Is_Generic_Actual_Subprogram;
 
@@ -2382,7 +2381,7 @@ package body Einfo is
 
    function Is_Ignored_Transient (Id : E) return B is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Loop_Parameter, E_Variable));
+      pragma Assert (Ekind (Id) in E_Constant | E_Loop_Parameter | E_Variable);
       return Flag295 (Id);
    end Is_Ignored_Transient;
 
@@ -2409,7 +2408,7 @@ package body Einfo is
 
    function Is_Initial_Condition_Procedure (Id : E) return B is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
       return Flag302 (Id);
    end Is_Initial_Condition_Procedure;
 
@@ -2420,7 +2419,7 @@ package body Einfo is
 
    function Is_Inlined_Always (Id : E) return B is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
       return Flag1 (Id);
    end Is_Inlined_Always;
 
@@ -2453,7 +2452,7 @@ package body Einfo is
 
    function Is_Invariant_Procedure (Id : E) return B is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
       return Flag257 (Id);
    end Is_Invariant_Procedure;
 
@@ -2555,7 +2554,7 @@ package body Einfo is
 
    function Is_Partial_Invariant_Procedure (Id : E) return B is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
       return Flag292 (Id);
    end Is_Partial_Invariant_Procedure;
 
@@ -2567,13 +2566,13 @@ package body Einfo is
 
    function Is_Predicate_Function (Id : E) return B is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
       return Flag255 (Id);
    end Is_Predicate_Function;
 
    function Is_Predicate_Function_M (Id : E) return B is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
       return Flag256 (Id);
    end Is_Predicate_Function_M;
 
@@ -2590,7 +2589,7 @@ package body Einfo is
 
    function Is_Primitive_Wrapper (Id : E) return B is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
       return Flag195 (Id);
    end Is_Primitive_Wrapper;
 
@@ -2607,7 +2606,7 @@ package body Einfo is
 
    function Is_Private_Primitive (Id : E) return B is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
       return Flag245 (Id);
    end Is_Private_Primitive;
 
@@ -2793,7 +2792,7 @@ package body Einfo is
 
    function Last_Aggregate_Assignment (Id : E) return N is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      pragma Assert (Ekind (Id) in E_Constant | E_Variable);
       return Node30 (Id);
    end Last_Aggregate_Assignment;
 
@@ -2904,7 +2903,7 @@ package body Einfo is
    begin
       pragma Assert
         (Is_Overloadable (Id)
-           or else Ekind_In (Id, E_Subprogram_Type, E_Entry_Family));
+           or else Ekind (Id) in E_Subprogram_Type | E_Entry_Family);
       return Flag22 (Id);
    end Needs_No_Actuals;
 
@@ -2984,19 +2983,19 @@ package body Einfo is
 
    function Normalized_First_Bit (Id : E) return U is
    begin
-      pragma Assert (Ekind_In (Id, E_Component, E_Discriminant));
+      pragma Assert (Ekind (Id) in E_Component | E_Discriminant);
       return Uint8 (Id);
    end Normalized_First_Bit;
 
    function Normalized_Position (Id : E) return U is
    begin
-      pragma Assert (Ekind_In (Id, E_Component, E_Discriminant));
+      pragma Assert (Ekind (Id) in E_Component | E_Discriminant);
       return Uint14 (Id);
    end Normalized_Position;
 
    function Normalized_Position_Max (Id : E) return U is
    begin
-      pragma Assert (Ekind_In (Id, E_Component, E_Discriminant));
+      pragma Assert (Ekind (Id) in E_Component | E_Discriminant);
       return Uint10 (Id);
    end Normalized_Position_Max;
 
@@ -3009,14 +3008,14 @@ package body Einfo is
    function Optimize_Alignment_Space (Id : E) return B is
    begin
       pragma Assert
-        (Is_Type (Id) or else Ekind_In (Id, E_Constant, E_Variable));
+        (Is_Type (Id) or else Ekind (Id) in E_Constant | E_Variable);
       return Flag241 (Id);
    end Optimize_Alignment_Space;
 
    function Optimize_Alignment_Time (Id : E) return B is
    begin
       pragma Assert
-        (Is_Type (Id) or else Ekind_In (Id, E_Constant, E_Variable));
+        (Is_Type (Id) or else Ekind (Id) in E_Constant | E_Variable);
       return Flag242 (Id);
    end Optimize_Alignment_Time;
 
@@ -3039,7 +3038,7 @@ package body Einfo is
 
    function Original_Record_Component (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Void, E_Component, E_Discriminant));
+      pragma Assert (Ekind (Id) in E_Void | E_Component | E_Discriminant);
       return Node22 (Id);
    end Original_Record_Component;
 
@@ -3074,7 +3073,7 @@ package body Einfo is
 
    function Part_Of_Constituents (Id : E) return L is
    begin
-      pragma Assert (Ekind_In (Id, E_Abstract_State, E_Variable));
+      pragma Assert (Ekind (Id) in E_Abstract_State | E_Variable);
       return Elist10 (Id);
    end Part_Of_Constituents;
 
@@ -3098,18 +3097,17 @@ package body Einfo is
 
    function Postconditions_Proc (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Entry,
-                                   E_Entry_Family,
-                                   E_Function,
-                                   E_Procedure));
+      pragma Assert
+        (Ekind (Id) in E_Entry | E_Entry_Family | E_Function | E_Procedure);
       return Node14 (Id);
    end Postconditions_Proc;
 
    function Predicated_Parent (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Array_Subtype,
-                                   E_Record_Subtype,
-                                   E_Record_Subtype_With_Private));
+      pragma Assert
+        (Ekind (Id) in E_Array_Subtype  |
+                       E_Record_Subtype |
+                       E_Record_Subtype_With_Private);
       return Node38 (Id);
    end Predicated_Parent;
 
@@ -3132,7 +3130,7 @@ package body Einfo is
 
    function Prival_Link (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      pragma Assert (Ekind (Id) in E_Constant | E_Variable);
       return Node20 (Id);
    end Prival_Link;
 
@@ -3156,16 +3154,14 @@ package body Einfo is
 
    function Protected_Subprogram (Id : E) return N is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
       return Node39 (Id);
    end Protected_Subprogram;
 
    function Protection_Object (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Entry,
-                                   E_Entry_Family,
-                                   E_Function,
-                                   E_Procedure));
+      pragma Assert
+        (Ekind (Id) in E_Entry | E_Entry_Family | E_Function | E_Procedure);
       return Node23 (Id);
    end Protection_Object;
 
@@ -3215,20 +3211,19 @@ package body Einfo is
 
    function Related_Expression (Id : E) return N is
    begin
-      pragma Assert (Ekind (Id) in Type_Kind
-                       or else Ekind_In (Id, E_Constant, E_Variable));
+      pragma Assert (Ekind (Id) in Type_Kind | E_Constant | E_Variable);
       return Node24 (Id);
    end Related_Expression;
 
    function Related_Instance (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Package, E_Package_Body));
+      pragma Assert (Ekind (Id) in E_Package | E_Package_Body);
       return Node15 (Id);
    end Related_Instance;
 
    function Related_Type (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Component, E_Constant, E_Variable));
+      pragma Assert (Ekind (Id) in E_Component | E_Constant | E_Variable);
       return Node27 (Id);
    end Related_Type;
 
@@ -3332,7 +3327,7 @@ package body Einfo is
 
    function Size_Check_Code (Id : E) return N is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      pragma Assert (Ekind (Id) in E_Constant | E_Variable);
       return Node19 (Id);
    end Size_Check_Code;
 
@@ -3355,51 +3350,51 @@ package body Einfo is
    function SPARK_Aux_Pragma (Id : E) return N is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Protected_Type,      --  concurrent types
-                       E_Task_Type)
+        (Ekind (Id) in E_Protected_Type      --  concurrent types
+                     | E_Task_Type
            or else
-         Ekind_In (Id, E_Generic_Package,     --  packages
-                       E_Package,
-                       E_Package_Body));
+         Ekind (Id) in E_Generic_Package     --  packages
+                     | E_Package
+                     | E_Package_Body);
       return Node41 (Id);
    end SPARK_Aux_Pragma;
 
    function SPARK_Aux_Pragma_Inherited (Id : E) return B is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Protected_Type,      --  concurrent types
-                       E_Task_Type)
+        (Ekind (Id) in E_Protected_Type      --  concurrent types
+                     | E_Task_Type
            or else
-         Ekind_In (Id, E_Generic_Package,     --  packages
-                       E_Package,
-                       E_Package_Body));
+         Ekind (Id) in E_Generic_Package     --  packages
+                     | E_Package
+                     | E_Package_Body);
       return Flag266 (Id);
    end SPARK_Aux_Pragma_Inherited;
 
    function SPARK_Pragma (Id : E) return N is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Constant,            --  objects
-                       E_Variable)
+        (Ekind (Id) in E_Constant            --  objects
+                     | E_Variable
           or else
-         Ekind_In (Id, E_Abstract_State,      --  overloadable
-                       E_Entry,
-                       E_Entry_Family,
-                       E_Function,
-                       E_Generic_Function,
-                       E_Generic_Procedure,
-                       E_Operator,
-                       E_Procedure,
-                       E_Subprogram_Body)
+         Ekind (Id) in E_Abstract_State      --  overloadable
+                     | E_Entry
+                     | E_Entry_Family
+                     | E_Function
+                     | E_Generic_Function
+                     | E_Generic_Procedure
+                     | E_Operator
+                     | E_Procedure
+                     | E_Subprogram_Body
            or else
-         Ekind_In (Id, E_Generic_Package,     --  packages
-                       E_Package,
-                       E_Package_Body)
+         Ekind (Id) in E_Generic_Package     --  packages
+                     | E_Package
+                     | E_Package_Body
            or else
-         Ekind (Id) = E_Void                  --  special purpose
+         Ekind (Id) = E_Void                 --  special purpose
            or else
-         Ekind_In (Id, E_Protected_Body,      --  types
-                       E_Task_Body)
+         Ekind (Id) in E_Protected_Body      --  types
+                     | E_Task_Body
            or else
          Is_Type (Id));
       return Node40 (Id);
@@ -3408,27 +3403,27 @@ package body Einfo is
    function SPARK_Pragma_Inherited (Id : E) return B is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Constant,            --  objects
-                       E_Variable)
+        (Ekind (Id) in E_Constant            --  objects
+                     | E_Variable
           or else
-         Ekind_In (Id, E_Abstract_State,      --  overloadable
-                       E_Entry,
-                       E_Entry_Family,
-                       E_Function,
-                       E_Generic_Function,
-                       E_Generic_Procedure,
-                       E_Operator,
-                       E_Procedure,
-                       E_Subprogram_Body)
+         Ekind (Id) in E_Abstract_State      --  overloadable
+                     | E_Entry
+                     | E_Entry_Family
+                     | E_Function
+                     | E_Generic_Function
+                     | E_Generic_Procedure
+                     | E_Operator
+                     | E_Procedure
+                     | E_Subprogram_Body
            or else
-         Ekind_In (Id, E_Generic_Package,     --  packages
-                       E_Package,
-                       E_Package_Body)
+         Ekind (Id) in E_Generic_Package     --  packages
+                     | E_Package
+                     | E_Package_Body
            or else
-         Ekind (Id) = E_Void                  --  special purpose
+         Ekind (Id) = E_Void                 --  special purpose
            or else
-         Ekind_In (Id, E_Protected_Body,      --  types
-                       E_Task_Body)
+         Ekind (Id) in E_Protected_Body      --  types
+                     | E_Task_Body
            or else
          Is_Type (Id));
       return Flag265 (Id);
@@ -3466,9 +3461,8 @@ package body Einfo is
 
    function Status_Flag_Or_Transient_Decl (Id : E) return N is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant,
-                                   E_Loop_Parameter,
-                                   E_Variable));
+      pragma Assert
+        (Ekind (Id) in E_Constant | E_Loop_Parameter | E_Variable);
       return Node15 (Id);
    end Status_Flag_Or_Transient_Decl;
 
@@ -3559,7 +3553,7 @@ package body Einfo is
 
    function Thunk_Entity (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure)
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure
                       and then Is_Thunk (Id));
       return Node31 (Id);
    end Thunk_Entity;
@@ -3640,7 +3634,7 @@ package body Einfo is
 
    function Wrapped_Entity (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure)
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure
                        and then Is_Primitive_Wrapper (Id));
       return Node27 (Id);
    end Wrapped_Entity;
@@ -3945,16 +3939,15 @@ package body Einfo is
 
    procedure Set_Anonymous_Masters (Id : E; V : L) is
    begin
-      pragma Assert (Ekind_In (Id, E_Function,
-                                   E_Package,
-                                   E_Procedure,
-                                   E_Subprogram_Body));
+      pragma Assert
+        (Ekind (Id)
+           in E_Function | E_Package | E_Procedure | E_Subprogram_Body);
       Set_Elist29 (Id, V);
    end Set_Anonymous_Masters;
 
    procedure Set_Anonymous_Object (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Protected_Type, E_Task_Type));
+      pragma Assert (Ekind (Id) in E_Protected_Type | E_Task_Type);
       Set_Node30 (Id, V);
    end Set_Anonymous_Object;
 
@@ -3981,19 +3974,20 @@ package body Einfo is
 
    procedure Set_Activation_Record_Component (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant,
-                                   E_In_Parameter,
-                                   E_In_Out_Parameter,
-                                   E_Loop_Parameter,
-                                   E_Out_Parameter,
-                                   E_Variable));
+      pragma Assert
+        (Ekind (Id) in E_Constant
+                     | E_In_Parameter
+                     | E_In_Out_Parameter
+                     | E_Loop_Parameter
+                     | E_Out_Parameter
+                     | E_Variable);
       Set_Node31 (Id, V);
    end Set_Activation_Record_Component;
 
    procedure Set_Actual_Subtype (Id : E; V : E) is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Constant, E_Variable, E_Generic_In_Out_Parameter)
+        (Ekind (Id) in E_Constant | E_Variable | E_Generic_In_Out_Parameter
            or else Is_Formal (Id));
       Set_Node17 (Id, V);
    end Set_Actual_Subtype;
@@ -4014,10 +4008,10 @@ package body Einfo is
    begin
       pragma Assert (Is_Type (Id)
                        or else Is_Formal (Id)
-                       or else Ekind_In (Id, E_Loop_Parameter,
-                                             E_Constant,
-                                             E_Exception,
-                                             E_Variable));
+                       or else Ekind (Id) in E_Loop_Parameter
+                                           | E_Constant
+                                           | E_Exception
+                                           | E_Variable);
       Set_Uint14 (Id, V);
    end Set_Alignment;
 
@@ -4062,7 +4056,7 @@ package body Einfo is
 
    procedure Set_BIP_Initialization_Call (Id : E; V : N) is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      pragma Assert (Ekind (Id) in E_Constant | E_Variable);
       Set_Node29 (Id, V);
    end Set_BIP_Initialization_Call;
 
@@ -4103,19 +4097,19 @@ package body Einfo is
 
    procedure Set_Cloned_Subtype (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Record_Subtype, E_Class_Wide_Subtype));
+      pragma Assert (Ekind (Id) in E_Record_Subtype | E_Class_Wide_Subtype);
       Set_Node16 (Id, V);
    end Set_Cloned_Subtype;
 
    procedure Set_Component_Bit_Offset (Id : E; V : U) is
    begin
-      pragma Assert (Ekind_In (Id, E_Component, E_Discriminant));
+      pragma Assert (Ekind (Id) in E_Component | E_Discriminant);
       Set_Uint11 (Id, V);
    end Set_Component_Bit_Offset;
 
    procedure Set_Component_Clause (Id : E; V : N) is
    begin
-      pragma Assert (Ekind_In (Id, E_Component, E_Discriminant));
+      pragma Assert (Ekind (Id) in E_Component | E_Discriminant);
       Set_Node13 (Id, V);
    end Set_Component_Clause;
 
@@ -4134,46 +4128,46 @@ package body Einfo is
    procedure Set_Contains_Ignored_Ghost_Code (Id : E; V : B := True) is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Block,
-                       E_Function,
-                       E_Generic_Function,
-                       E_Generic_Package,
-                       E_Generic_Procedure,
-                       E_Package,
-                       E_Package_Body,
-                       E_Procedure,
-                       E_Subprogram_Body));
+        (Ekind (Id) in E_Block
+                     | E_Function
+                     | E_Generic_Function
+                     | E_Generic_Package
+                     | E_Generic_Procedure
+                     | E_Package
+                     | E_Package_Body
+                     | E_Procedure
+                     | E_Subprogram_Body);
       Set_Flag279 (Id, V);
    end Set_Contains_Ignored_Ghost_Code;
 
    procedure Set_Contract (Id : E; V : N) is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Protected_Type,      --  concurrent types
-                       E_Task_Body,
-                       E_Task_Type)
+        (Ekind (Id) in E_Protected_Type      --  concurrent types
+                     | E_Task_Body
+                     | E_Task_Type
            or else
-         Ekind_In (Id, E_Constant,            --  objects
-                       E_Variable)
+         Ekind (Id) in E_Constant            --  objects
+                     | E_Variable
            or else
-         Ekind_In (Id, E_Entry,               --  overloadable
-                       E_Entry_Family,
-                       E_Function,
-                       E_Generic_Function,
-                       E_Generic_Procedure,
-                       E_Operator,
-                       E_Procedure,
-                       E_Subprogram_Body)
+         Ekind (Id) in E_Entry               --  overloadable
+                     | E_Entry_Family
+                     | E_Function
+                     | E_Generic_Function
+                     | E_Generic_Procedure
+                     | E_Operator
+                     | E_Procedure
+                     | E_Subprogram_Body
            or else
-         Ekind_In (Id, E_Generic_Package,     --  packages
-                       E_Package,
-                       E_Package_Body)
+         Ekind (Id) in E_Generic_Package     --  packages
+                     | E_Package
+                     | E_Package_Body
 
            or else
-         Is_Type (Id)                         -- types
+         Is_Type (Id)                        -- types
 
            or else
-         Ekind (Id) = E_Void);                --  special purpose
+         Ekind (Id) = E_Void);               --  special purpose
       Set_Node34 (Id, V);
    end Set_Contract;
 
@@ -4219,13 +4213,13 @@ package body Einfo is
 
    procedure Set_Corresponding_Protected_Entry (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Void, E_Subprogram_Body));
+      pragma Assert (Ekind (Id) in E_Void | E_Subprogram_Body);
       Set_Node18 (Id, V);
    end Set_Corresponding_Protected_Entry;
 
    procedure Set_Corresponding_Record_Component (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Component, E_Discriminant));
+      pragma Assert (Ekind (Id) in E_Component | E_Discriminant);
       Set_Node21 (Id, V);
    end Set_Corresponding_Record_Component;
 
@@ -4308,7 +4302,7 @@ package body Einfo is
    procedure Set_Delay_Subprogram_Descriptors (Id : E; V : B := True) is
    begin
       pragma Assert
-        (Is_Subprogram (Id) or else Ekind_In (Id, E_Package, E_Package_Body));
+        (Is_Subprogram (Id) or else Ekind (Id) in E_Package | E_Package_Body);
 
       Set_Flag50 (Id, V);
    end Set_Delay_Subprogram_Descriptors;
@@ -4416,13 +4410,13 @@ package body Einfo is
 
    procedure Set_DT_Position (Id : E; V : U) is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
       Set_Uint15 (Id, V);
    end Set_DT_Position;
 
    procedure Set_DTC_Entity (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
       Set_Node16 (Id, V);
    end Set_DTC_Entity;
 
@@ -4437,7 +4431,7 @@ package body Einfo is
       pragma Assert
         (Is_Subprogram (Id)
            or else
-         Ekind_In (Id, E_Entry, E_Entry_Family, E_Package)
+         Ekind (Id) in E_Entry | E_Entry_Family | E_Package
            or else
          Is_Generic_Unit (Id));
       Set_Node13 (Id, V);
@@ -4448,7 +4442,7 @@ package body Einfo is
       pragma Assert
         (Is_Subprogram (Id)
            or else
-         Ekind_In (Id, E_Entry, E_Entry_Family, E_Package)
+         Ekind (Id) in E_Entry | E_Entry_Family | E_Package
            or else
          Is_Generic_Unit (Id));
       Set_Flag174 (Id, V);
@@ -4456,7 +4450,7 @@ package body Einfo is
 
    procedure Set_Encapsulating_State (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Abstract_State, E_Constant, E_Variable));
+      pragma Assert (Ekind (Id) in E_Abstract_State | E_Constant | E_Variable);
       Set_Node32 (Id, V);
    end Set_Encapsulating_State;
 
@@ -4535,12 +4529,12 @@ package body Einfo is
    procedure Set_Equivalent_Type (Id : E; V : E) is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Class_Wide_Type,
-                       E_Class_Wide_Subtype,
-                       E_Access_Protected_Subprogram_Type,
-                       E_Anonymous_Access_Protected_Subprogram_Type,
-                       E_Access_Subprogram_Type,
-                       E_Exception_Type));
+        (Ekind (Id) in E_Class_Wide_Type
+                     | E_Class_Wide_Subtype
+                     | E_Access_Protected_Subprogram_Type
+                     | E_Anonymous_Access_Protected_Subprogram_Type
+                     | E_Access_Subprogram_Type
+                     | E_Exception_Type);
       Set_Node18 (Id, V);
    end Set_Equivalent_Type;
 
@@ -4552,13 +4546,14 @@ package body Einfo is
    procedure Set_Extra_Accessibility (Id : E; V : E) is
    begin
       pragma Assert
-        (Is_Formal (Id) or else Ekind_In (Id, E_Variable, E_Constant));
+        (Is_Formal (Id) or else Ekind (Id) in E_Variable | E_Constant);
       Set_Node13 (Id, V);
    end Set_Extra_Accessibility;
 
    procedure Set_Extra_Accessibility_Of_Result (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Operator, E_Subprogram_Type));
+      pragma Assert
+        (Ekind (Id) in E_Function | E_Operator | E_Subprogram_Type);
       Set_Node19 (Id, V);
    end Set_Extra_Accessibility_Of_Result;
 
@@ -4577,9 +4572,9 @@ package body Einfo is
    begin
       pragma Assert
         (Is_Overloadable (Id)
-           or else Ekind_In (Id, E_Entry_Family,
-                                 E_Subprogram_Body,
-                                 E_Subprogram_Type));
+           or else Ekind (Id) in E_Entry_Family
+                               | E_Subprogram_Body
+                               | E_Subprogram_Type);
       Set_Node28 (Id, V);
    end Set_Extra_Formals;
 
@@ -4597,7 +4592,7 @@ package body Einfo is
 
    procedure Set_Finalizer (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Package, E_Package_Body));
+      pragma Assert (Ekind (Id) in E_Package | E_Package_Body);
       Set_Node28 (Id, V);
    end Set_Finalizer;
 
@@ -4650,7 +4645,7 @@ package body Einfo is
    procedure Set_From_Limited_With (Id : E; V : B := True) is
    begin
       pragma Assert
-        (Is_Type (Id) or else Ekind_In (Id, E_Abstract_State, E_Package));
+        (Is_Type (Id) or else Ekind (Id) in E_Abstract_State | E_Package);
       Set_Flag159 (Id, V);
    end Set_From_Limited_With;
 
@@ -4812,10 +4807,8 @@ package body Einfo is
 
    procedure Set_Has_Expanded_Contract (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind_In (Id, E_Entry,
-                                   E_Entry_Family,
-                                   E_Function,
-                                   E_Procedure));
+      pragma Assert
+        (Ekind (Id) in E_Entry | E_Entry_Family | E_Function | E_Procedure);
       Set_Flag240 (Id, V);
    end Set_Has_Expanded_Contract;
 
@@ -4870,7 +4863,7 @@ package body Einfo is
 
    procedure Set_Has_Initial_Value (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind_In (Id, E_Variable, E_Out_Parameter));
+      pragma Assert (Ekind (Id) in E_Variable | E_Out_Parameter);
       Set_Flag219 (Id, V);
    end Set_Has_Initial_Value;
 
@@ -4893,7 +4886,7 @@ package body Einfo is
 
    procedure Set_Has_Missing_Return (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Generic_Function));
+      pragma Assert (Ekind (Id) in E_Function | E_Generic_Function);
       Set_Flag142 (Id, V);
    end Set_Has_Missing_Return;
 
@@ -4923,7 +4916,7 @@ package body Einfo is
    procedure Set_Has_Out_Or_In_Out_Parameter (Id : E; V : B := True) is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Entry, E_Entry_Family)
+        (Ekind (Id) in E_Entry | E_Entry_Family
           or else Is_Subprogram_Or_Generic_Subprogram (Id));
       Set_Flag110 (Id, V);
    end Set_Has_Out_Or_In_Out_Parameter;
@@ -5247,23 +5240,23 @@ package body Einfo is
    procedure Set_Ignore_SPARK_Mode_Pragmas (Id : E; V : B := True) is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Protected_Body,      --  concurrent types
-                       E_Protected_Type,
-                       E_Task_Body,
-                       E_Task_Type)
+        (Ekind (Id) in E_Protected_Body      --  concurrent types
+                     | E_Protected_Type
+                     | E_Task_Body
+                     | E_Task_Type
           or else
-         Ekind_In (Id, E_Entry,               --  overloadable
-                       E_Entry_Family,
-                       E_Function,
-                       E_Generic_Function,
-                       E_Generic_Procedure,
-                       E_Operator,
-                       E_Procedure,
-                       E_Subprogram_Body)
+         Ekind (Id) in E_Entry               --  overloadable
+                     | E_Entry_Family
+                     | E_Function
+                     | E_Generic_Function
+                     | E_Generic_Procedure
+                     | E_Operator
+                     | E_Procedure
+                     | E_Subprogram_Body
            or else
-         Ekind_In (Id, E_Generic_Package,     --  packages
-                       E_Package,
-                       E_Package_Body));
+         Ekind (Id) in E_Generic_Package     --  packages
+                     | E_Package
+                     | E_Package_Body);
       Set_Flag301 (Id, V);
    end Set_Ignore_SPARK_Mode_Pragmas;
 
@@ -5278,7 +5271,7 @@ package body Einfo is
       pragma Assert
         (Is_Internal (Id)
            and then Is_Hidden (Id)
-           and then (Ekind_In (Id, E_Procedure, E_Function)));
+           and then (Ekind (Id) in E_Procedure | E_Function));
       Set_Node25 (Id, V);
    end Set_Interface_Alias;
 
@@ -5310,7 +5303,7 @@ package body Einfo is
       --  an aggregate used as the initialization expression for an object
       --  declaration, and this occurs before the Ekind for the object is set.
 
-      pragma Assert (Ekind_In (Id, E_Void, E_Constant, E_Variable));
+      pragma Assert (Ekind (Id) in E_Void | E_Constant | E_Variable);
       Set_Node28 (Id, V);
    end Set_Initialization_Statements;
 
@@ -5397,7 +5390,7 @@ package body Einfo is
 
    procedure Set_Is_Called (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind_In (Id, E_Procedure, E_Function, E_Package));
+      pragma Assert (Ekind (Id) in E_Procedure | E_Function | E_Package);
       Set_Flag102 (Id, V);
    end Set_Is_Called;
 
@@ -5569,7 +5562,7 @@ package body Einfo is
 
    procedure Set_Is_Finalized_Transient (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Loop_Parameter, E_Variable));
+      pragma Assert (Ekind (Id) in E_Constant | E_Loop_Parameter | E_Variable);
       Set_Flag252 (Id, V);
    end Set_Is_Finalized_Transient;
 
@@ -5591,7 +5584,7 @@ package body Einfo is
 
    procedure Set_Is_Generic_Actual_Subprogram (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
       Set_Flag274 (Id, V);
    end Set_Is_Generic_Actual_Subprogram;
 
@@ -5619,7 +5612,7 @@ package body Einfo is
 
    procedure Set_Is_Hidden_Non_Overridden_Subpgm (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
       Set_Flag2 (Id, V);
    end Set_Is_Hidden_Non_Overridden_Subpgm;
 
@@ -5639,7 +5632,7 @@ package body Einfo is
 
    procedure Set_Is_Ignored_Transient (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Loop_Parameter, E_Variable));
+      pragma Assert (Ekind (Id) in E_Constant | E_Loop_Parameter | E_Variable);
       Set_Flag295 (Id, V);
    end Set_Is_Ignored_Transient;
 
@@ -5666,7 +5659,7 @@ package body Einfo is
 
    procedure Set_Is_Initial_Condition_Procedure (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
       Set_Flag302 (Id, V);
    end Set_Is_Initial_Condition_Procedure;
 
@@ -5677,7 +5670,7 @@ package body Einfo is
 
    procedure Set_Is_Inlined_Always (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
       Set_Flag1 (Id, V);
    end Set_Is_Inlined_Always;
 
@@ -5804,7 +5797,7 @@ package body Einfo is
 
    procedure Set_Is_Param_Block_Component_Type (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind_In (Id, E_Void, E_General_Access_Type));
+      pragma Assert (Ekind (Id) in E_Void | E_General_Access_Type);
       Set_Flag215 (Id, V);
    end Set_Is_Param_Block_Component_Type;
 
@@ -5828,7 +5821,7 @@ package body Einfo is
 
    procedure Set_Is_Predicate_Function_M (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
       Set_Flag256 (Id, V);
    end Set_Is_Predicate_Function_M;
 
@@ -5845,7 +5838,7 @@ package body Einfo is
 
    procedure Set_Is_Primitive_Wrapper (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
       Set_Flag195 (Id, V);
    end Set_Is_Primitive_Wrapper;
 
@@ -5862,7 +5855,7 @@ package body Einfo is
 
    procedure Set_Is_Private_Primitive (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
       Set_Flag245 (Id, V);
    end Set_Is_Private_Primitive;
 
@@ -5936,16 +5929,14 @@ package body Einfo is
    begin
       pragma Assert
         (Is_Type (Id)
-           or else Ekind_In (Id, E_Exception,
-                                 E_Variable,
-                                 E_Constant,
-                                 E_Void));
+           or else
+             Ekind (Id) in E_Exception | E_Variable | E_Constant | E_Void);
       Set_Flag28 (Id, V);
    end Set_Is_Statically_Allocated;
 
    procedure Set_Is_Tag (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind_In (Id, E_Component, E_Constant, E_Variable));
+      pragma Assert (Ekind (Id) in E_Component | E_Constant | E_Variable);
       Set_Flag78 (Id, V);
    end Set_Is_Tag;
 
@@ -6002,7 +5993,7 @@ package body Einfo is
    procedure Set_Is_Uplevel_Referenced_Entity (Id : E; V : B := True) is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Constant, E_Loop_Parameter, E_Variable)
+        (Ekind (Id) in E_Constant | E_Loop_Parameter | E_Variable
           or else Is_Formal (Id)
           or else Is_Type (Id));
       Set_Flag283 (Id, V);
@@ -6059,7 +6050,7 @@ package body Einfo is
 
    procedure Set_Last_Aggregate_Assignment (Id : E; V : N) is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      pragma Assert (Ekind (Id) in E_Constant | E_Variable);
       Set_Node30 (Id, V);
    end Set_Last_Aggregate_Assignment;
 
@@ -6171,7 +6162,7 @@ package body Einfo is
    begin
       pragma Assert
         (Is_Overloadable (Id)
-           or else Ekind_In (Id, E_Subprogram_Type, E_Entry_Family));
+           or else Ekind (Id) in E_Subprogram_Type | E_Entry_Family);
       Set_Flag22 (Id, V);
    end Set_Needs_No_Actuals;
 
@@ -6237,7 +6228,7 @@ package body Einfo is
    begin
       pragma Assert
         (Ekind (Id) in Incomplete_Kind
-          or else Ekind_In (Id, E_Abstract_State, E_Class_Wide_Type));
+          or else Ekind (Id) in E_Abstract_State | E_Class_Wide_Type);
       Set_Node19 (Id, V);
    end Set_Non_Limited_View;
 
@@ -6251,19 +6242,19 @@ package body Einfo is
 
    procedure Set_Normalized_First_Bit (Id : E; V : U) is
    begin
-      pragma Assert (Ekind_In (Id, E_Component, E_Discriminant));
+      pragma Assert (Ekind (Id) in E_Component | E_Discriminant);
       Set_Uint8 (Id, V);
    end Set_Normalized_First_Bit;
 
    procedure Set_Normalized_Position (Id : E; V : U) is
    begin
-      pragma Assert (Ekind_In (Id, E_Component, E_Discriminant));
+      pragma Assert (Ekind (Id) in E_Component | E_Discriminant);
       Set_Uint14 (Id, V);
    end Set_Normalized_Position;
 
    procedure Set_Normalized_Position_Max (Id : E; V : U) is
    begin
-      pragma Assert (Ekind_In (Id, E_Component, E_Discriminant));
+      pragma Assert (Ekind (Id) in E_Component | E_Discriminant);
       Set_Uint10 (Id, V);
    end Set_Normalized_Position_Max;
 
@@ -6276,14 +6267,14 @@ package body Einfo is
    procedure Set_Optimize_Alignment_Space (Id : E; V : B := True) is
    begin
       pragma Assert
-        (Is_Type (Id) or else Ekind_In (Id, E_Constant, E_Variable));
+        (Is_Type (Id) or else Ekind (Id) in E_Constant | E_Variable);
       Set_Flag241 (Id, V);
    end Set_Optimize_Alignment_Space;
 
    procedure Set_Optimize_Alignment_Time (Id : E; V : B := True) is
    begin
       pragma Assert
-        (Is_Type (Id) or else Ekind_In (Id, E_Constant, E_Variable));
+        (Is_Type (Id) or else Ekind (Id) in E_Constant | E_Variable);
       Set_Flag242 (Id, V);
    end Set_Optimize_Alignment_Time;
 
@@ -6301,13 +6292,13 @@ package body Einfo is
 
    procedure Set_Original_Protected_Subprogram (Id : E; V : N) is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
       Set_Node41 (Id, V);
    end Set_Original_Protected_Subprogram;
 
    procedure Set_Original_Record_Component (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Void, E_Component, E_Discriminant));
+      pragma Assert (Ekind (Id) in E_Void | E_Component | E_Discriminant);
       Set_Node22 (Id, V);
    end Set_Original_Record_Component;
 
@@ -6324,7 +6315,7 @@ package body Einfo is
 
    procedure Set_Package_Instantiation (Id : E; V : N) is
    begin
-      pragma Assert (Ekind_In (Id, E_Void, E_Generic_Package, E_Package));
+      pragma Assert (Ekind (Id) in E_Void | E_Generic_Package | E_Package);
       Set_Node26 (Id, V);
    end Set_Package_Instantiation;
 
@@ -6342,7 +6333,7 @@ package body Einfo is
 
    procedure Set_Part_Of_Constituents (Id : E; V : L) is
    begin
-      pragma Assert (Ekind_In (Id, E_Abstract_State, E_Variable));
+      pragma Assert (Ekind (Id) in E_Abstract_State | E_Variable);
       Set_Elist10 (Id, V);
    end Set_Part_Of_Constituents;
 
@@ -6366,18 +6357,16 @@ package body Einfo is
 
    procedure Set_Postconditions_Proc (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Entry,
-                                   E_Entry_Family,
-                                   E_Function,
-                                   E_Procedure));
+      pragma Assert
+        (Ekind (Id) in E_Entry | E_Entry_Family | E_Function | E_Procedure);
       Set_Node14 (Id, V);
    end Set_Postconditions_Proc;
 
    procedure Set_Predicated_Parent (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Array_Subtype,
-                                   E_Record_Subtype,
-                                   E_Record_Subtype_With_Private));
+      pragma Assert (Ekind (Id) in E_Array_Subtype
+                                 | E_Record_Subtype
+                                 | E_Record_Subtype_With_Private);
       Set_Node38 (Id, V);
    end Set_Predicated_Parent;
 
@@ -6401,7 +6390,7 @@ package body Einfo is
 
    procedure Set_Prival_Link (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      pragma Assert (Ekind (Id) in E_Constant | E_Variable);
       Set_Node20 (Id, V);
    end Set_Prival_Link;
 
@@ -6430,16 +6419,16 @@ package body Einfo is
 
    procedure Set_Protected_Subprogram (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
       Set_Node39 (Id, V);
    end Set_Protected_Subprogram;
 
    procedure Set_Protection_Object (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Entry,
-                                   E_Entry_Family,
-                                   E_Function,
-                                   E_Procedure));
+      pragma Assert (Ekind (Id) in E_Entry
+                                 | E_Entry_Family
+                                 | E_Function
+                                 | E_Procedure);
       Set_Node23 (Id, V);
    end Set_Protection_Object;
 
@@ -6489,20 +6478,20 @@ package body Einfo is
 
    procedure Set_Related_Expression (Id : E; V : N) is
    begin
-      pragma Assert (Ekind (Id) in Type_Kind
-                       or else Ekind_In (Id, E_Constant, E_Variable, E_Void));
+      pragma Assert
+        (Ekind (Id) in Type_Kind | E_Constant | E_Variable | E_Void);
       Set_Node24 (Id, V);
    end Set_Related_Expression;
 
    procedure Set_Related_Instance (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Package, E_Package_Body));
+      pragma Assert (Ekind (Id) in E_Package | E_Package_Body);
       Set_Node15 (Id, V);
    end Set_Related_Instance;
 
    procedure Set_Related_Type (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Component, E_Constant, E_Variable));
+      pragma Assert (Ekind (Id) in E_Component | E_Constant | E_Variable);
       Set_Node27 (Id, V);
    end Set_Related_Type;
 
@@ -6610,7 +6599,7 @@ package body Einfo is
 
    procedure Set_Size_Check_Code (Id : E; V : N) is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      pragma Assert (Ekind (Id) in E_Constant | E_Variable);
       Set_Node19 (Id, V);
    end Set_Size_Check_Code;
 
@@ -6633,51 +6622,51 @@ package body Einfo is
    procedure Set_SPARK_Aux_Pragma (Id : E; V : N) is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Protected_Type,      --  concurrent types
-                       E_Task_Type)
+        (Ekind (Id) in E_Protected_Type      --  concurrent types
+                     | E_Task_Type
            or else
-         Ekind_In (Id, E_Generic_Package,     --  packages
-                       E_Package,
-                       E_Package_Body));
+         Ekind (Id) in E_Generic_Package     --  packages
+                     | E_Package
+                     | E_Package_Body);
       Set_Node41 (Id, V);
    end Set_SPARK_Aux_Pragma;
 
    procedure Set_SPARK_Aux_Pragma_Inherited (Id : E; V : B := True) is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Protected_Type,      --  concurrent types
-                       E_Task_Type)
+        (Ekind (Id) in E_Protected_Type      --  concurrent types
+                     | E_Task_Type
            or else
-         Ekind_In (Id, E_Generic_Package,     --  packages
-                       E_Package,
-                       E_Package_Body));
+         Ekind (Id) in E_Generic_Package     --  packages
+                     | E_Package
+                     | E_Package_Body);
       Set_Flag266 (Id, V);
    end Set_SPARK_Aux_Pragma_Inherited;
 
    procedure Set_SPARK_Pragma (Id : E; V : N) is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Constant,            --  objects
-                       E_Variable)
+        (Ekind (Id) in E_Constant            --  objects
+                     | E_Variable
           or else
-         Ekind_In (Id, E_Abstract_State,      --  overloadable
-                       E_Entry,
-                       E_Entry_Family,
-                       E_Function,
-                       E_Generic_Function,
-                       E_Generic_Procedure,
-                       E_Operator,
-                       E_Procedure,
-                       E_Subprogram_Body)
+         Ekind (Id) in E_Abstract_State      --  overloadable
+                     | E_Entry
+                     | E_Entry_Family
+                     | E_Function
+                     | E_Generic_Function
+                     | E_Generic_Procedure
+                     | E_Operator
+                     | E_Procedure
+                     | E_Subprogram_Body
            or else
-         Ekind_In (Id, E_Generic_Package,     --  packages
-                       E_Package,
-                       E_Package_Body)
+         Ekind (Id) in E_Generic_Package     --  packages
+                     | E_Package
+                     | E_Package_Body
            or else
-         Ekind (Id) = E_Void                  --  special purpose
+         Ekind (Id) = E_Void                 --  special purpose
            or else
-         Ekind_In (Id, E_Protected_Body,      --  types
-                       E_Task_Body)
+         Ekind (Id) in E_Protected_Body      --  types
+                     | E_Task_Body
            or else
          Is_Type (Id));
       Set_Node40 (Id, V);
@@ -6686,27 +6675,27 @@ package body Einfo is
    procedure Set_SPARK_Pragma_Inherited (Id : E; V : B := True) is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Constant,            --  objects
-                       E_Variable)
+        (Ekind (Id) in E_Constant            --  objects
+                     | E_Variable
           or else
-         Ekind_In (Id, E_Abstract_State,      --  overloadable
-                       E_Entry,
-                       E_Entry_Family,
-                       E_Function,
-                       E_Generic_Function,
-                       E_Generic_Procedure,
-                       E_Operator,
-                       E_Procedure,
-                       E_Subprogram_Body)
+         Ekind (Id) in E_Abstract_State      --  overloadable
+                     | E_Entry
+                     | E_Entry_Family
+                     | E_Function
+                     | E_Generic_Function
+                     | E_Generic_Procedure
+                     | E_Operator
+                     | E_Procedure
+                     | E_Subprogram_Body
            or else
-         Ekind_In (Id, E_Generic_Package,     --  packages
-                       E_Package,
-                       E_Package_Body)
+         Ekind (Id) in E_Generic_Package     --  packages
+                     | E_Package
+                     | E_Package_Body
            or else
-         Ekind (Id) = E_Void                  --  special purpose
+         Ekind (Id) = E_Void                 --  special purpose
            or else
-         Ekind_In (Id, E_Protected_Body,      --  types
-                       E_Task_Body)
+         Ekind (Id) in E_Protected_Body      --  types
+                     | E_Task_Body
            or else
          Is_Type (Id));
       Set_Flag265 (Id, V);
@@ -6749,9 +6738,9 @@ package body Einfo is
 
    procedure Set_Status_Flag_Or_Transient_Decl (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant,
-                                   E_Loop_Parameter,
-                                   E_Variable));
+      pragma Assert (Ekind (Id) in E_Constant
+                                 | E_Loop_Parameter
+                                 | E_Variable);
       Set_Node15 (Id, V);
    end Set_Status_Flag_Or_Transient_Decl;
 
@@ -6846,7 +6835,7 @@ package body Einfo is
 
    procedure Set_Thunk_Entity (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure)
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure
                        and then Is_Thunk (Id));
       Set_Node31 (Id, V);
    end Set_Thunk_Entity;
@@ -6928,7 +6917,7 @@ package body Einfo is
 
    procedure Set_Wrapped_Entity (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure)
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure
                        and then Is_Primitive_Wrapper (Id));
       Set_Node27 (Id, V);
    end Set_Wrapped_Entity;
@@ -7348,7 +7337,7 @@ package body Einfo is
       end if;
 
       loop
-         if Nkind_In (P, N_Selected_Component, N_Expanded_Name)
+         if Nkind (P) in N_Selected_Component | N_Expanded_Name
            or else (Nkind (P) = N_Defining_Program_Unit_Name
                      and then Is_Child_Unit (Id))
          then
@@ -7464,7 +7453,7 @@ package body Einfo is
 
       Comp_Id := First_Entity (Id);
       while Present (Comp_Id) loop
-         exit when Ekind_In (Comp_Id, E_Component, E_Discriminant);
+         exit when Ekind (Comp_Id) in E_Component | E_Discriminant;
          Next_Entity (Comp_Id);
       end loop;
 
@@ -7482,9 +7471,9 @@ package body Einfo is
       pragma Assert
         (Is_Generic_Subprogram (Id)
            or else Is_Overloadable (Id)
-           or else Ekind_In (Id, E_Entry_Family,
-                                 E_Subprogram_Body,
-                                 E_Subprogram_Type));
+           or else Ekind (Id) in E_Entry_Family
+                               | E_Subprogram_Body
+                               | E_Subprogram_Type);
 
       if Ekind (Id) = E_Enumeration_Literal then
          return Empty;
@@ -7523,9 +7512,9 @@ package body Einfo is
       pragma Assert
         (Is_Generic_Subprogram (Id)
            or else Is_Overloadable (Id)
-           or else Ekind_In (Id, E_Entry_Family,
-                                 E_Subprogram_Body,
-                                 E_Subprogram_Type));
+           or else Ekind (Id) in E_Entry_Family
+                               | E_Subprogram_Body
+                               | E_Subprogram_Type);
 
       if Ekind (Id) = E_Enumeration_Literal then
          return Empty;
@@ -8095,7 +8084,7 @@ package body Einfo is
 
    function Is_Constant_Object (Id : E) return B is
    begin
-      return Ekind_In (Id, E_Constant, E_In_Parameter, E_Loop_Parameter);
+      return Ekind (Id) in E_Constant | E_In_Parameter | E_Loop_Parameter;
    end Is_Constant_Object;
 
    -------------------
@@ -8113,7 +8102,7 @@ package body Einfo is
 
    function Is_Discriminal (Id : E) return B is
    begin
-      return Ekind_In (Id, E_Constant, E_In_Parameter)
+      return Ekind (Id) in E_Constant | E_In_Parameter
                and then Present (Discriminal_Link (Id));
    end Is_Discriminal;
 
@@ -8175,7 +8164,7 @@ package body Einfo is
    function Is_Elaboration_Target (Id : Entity_Id) return Boolean is
    begin
       return
-        Ekind_In (Id, E_Constant, E_Package, E_Variable)
+        Ekind (Id) in E_Constant | E_Package | E_Variable
           or else Is_Entry        (Id)
           or else Is_Generic_Unit (Id)
           or else Is_Subprogram   (Id)
@@ -8223,7 +8212,7 @@ package body Einfo is
 
    function Is_Package_Or_Generic_Package (Id : E) return B is
    begin
-      return Ekind_In (Id, E_Generic_Package, E_Package);
+      return Ekind (Id) in E_Generic_Package | E_Package;
    end Is_Package_Or_Generic_Package;
 
    ---------------------
@@ -8241,7 +8230,7 @@ package body Einfo is
 
    function Is_Prival (Id : E) return B is
    begin
-      return Ekind_In (Id, E_Constant, E_Variable)
+      return Ekind (Id) in E_Constant | E_Variable
                and then Present (Prival_Link (Id));
    end Is_Prival;
 
@@ -8434,9 +8423,9 @@ package body Einfo is
    begin
       pragma Assert
         (Is_Overloadable (Id)
-          or else Ekind_In (Id, E_Entry_Family,
-                                E_Subprogram_Body,
-                                E_Subprogram_Type));
+          or else Ekind (Id) in E_Entry_Family
+                              | E_Subprogram_Body
+                              | E_Subprogram_Type);
 
       if Ekind (Id) = E_Enumeration_Literal then
          return Empty;
@@ -8607,7 +8596,7 @@ package body Einfo is
    begin
       Comp_Id := Next_Entity (Id);
       while Present (Comp_Id) loop
-         exit when Ekind_In (Comp_Id, E_Component, E_Discriminant);
+         exit when Ekind (Comp_Id) in E_Component | E_Discriminant;
          Next_Entity (Comp_Id);
       end loop;
 
@@ -8945,9 +8934,9 @@ package body Einfo is
       then
          Typ := Full_View (Id);
 
-      elsif Ekind_In (Id, E_Array_Subtype,
-                          E_Record_Subtype,
-                          E_Record_Subtype_With_Private)
+      elsif Ekind (Id) in E_Array_Subtype
+                        | E_Record_Subtype
+                        | E_Record_Subtype_With_Private
         and then Present (Predicated_Parent (Id))
       then
          Typ := Predicated_Parent (Id);
@@ -11499,7 +11488,7 @@ package body Einfo is
    begin
       N := Next_Entity (N);
       while Present (N) loop
-         exit when Ekind_In (N, E_Component, E_Discriminant);
+         exit when Ekind (N) in E_Component | E_Discriminant;
          N := Next_Entity (N);
       end loop;
    end Proc_Next_Component_Or_Discriminant;

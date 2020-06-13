@@ -626,8 +626,8 @@ package body Sem_Eval is
             --  Determine if the out-of-range violation constitutes a warning
             --  or an error based on context, according to RM 4.9 (34/3).
 
-            elsif Nkind_In (Original_Node (N), N_Type_Conversion,
-                                               N_Qualified_Expression)
+            elsif Nkind (Original_Node (N)) in
+                    N_Type_Conversion | N_Qualified_Expression
               and then Comes_From_Source (Original_Node (N))
             then
                Apply_Compile_Time_Constraint_Error
@@ -958,7 +958,7 @@ package body Sem_Eval is
          --  Fixup only required for First/Last attribute reference
 
          if Nkind (N) = N_Attribute_Reference
-           and then Nam_In (Attribute_Name (N), Name_First, Name_Last)
+           and then Attribute_Name (N) in Name_First | Name_Last
          then
             Xtyp := Etype (Prefix (N));
 
@@ -1111,8 +1111,8 @@ package body Sem_Eval is
          --  Values are the same if they refer to the same entity and the
          --  entity is nonvolatile.
 
-         elsif Nkind_In (Lf, N_Identifier, N_Expanded_Name)
-           and then Nkind_In (Rf, N_Identifier, N_Expanded_Name)
+         elsif Nkind (Lf) in N_Identifier | N_Expanded_Name
+           and then Nkind (Rf) in N_Identifier | N_Expanded_Name
            and then Entity (Lf) = Entity (Rf)
 
            --  If the entity is a discriminant, the two expressions may be
@@ -1154,9 +1154,9 @@ package body Sem_Eval is
 
          elsif Nkind (Lf) = N_Attribute_Reference
            and then Attribute_Name (Lf) = Attribute_Name (Rf)
-           and then Nam_In (Attribute_Name (Lf), Name_First, Name_Last)
-           and then Nkind_In (Prefix (Lf), N_Identifier, N_Expanded_Name)
-           and then Nkind_In (Prefix (Rf), N_Identifier, N_Expanded_Name)
+           and then Attribute_Name (Lf) in Name_First | Name_Last
+           and then Nkind (Prefix (Lf)) in N_Identifier | N_Expanded_Name
+           and then Nkind (Prefix (Rf)) in N_Identifier | N_Expanded_Name
            and then Entity (Prefix (Lf)) = Entity (Prefix (Rf))
            and then Is_Same_Subscript (Expressions (Lf), Expressions (Rf))
          then
@@ -1849,11 +1849,8 @@ package body Sem_Eval is
 
          --  Other literals and NULL are known at compile time
 
-         elsif
-            Nkind_In (K, N_Character_Literal,
-                         N_Real_Literal,
-                         N_String_Literal,
-                         N_Null)
+         elsif K in
+           N_Character_Literal | N_Real_Literal | N_String_Literal | N_Null
          then
             return True;
          end if;
@@ -2830,11 +2827,11 @@ package body Sem_Eval is
          --  so we can safely ignore these cases.
 
          return
-           Nkind_In (Context, N_Attribute_Definition_Clause,
-                              N_Attribute_Reference,
-                              N_Modular_Type_Definition,
-                              N_Number_Declaration,
-                              N_Signed_Integer_Type_Definition);
+           Nkind (Context) in N_Attribute_Definition_Clause
+                            | N_Attribute_Reference
+                            | N_Modular_Type_Definition
+                            | N_Number_Declaration
+                            | N_Signed_Integer_Type_Definition;
       end In_Any_Integer_Context;
 
       --  Local variables
@@ -2857,10 +2854,10 @@ package body Sem_Eval is
       --  Check_Non_Static_Context on an expanded literal may lead to spurious
       --  and misleading warnings.
 
-      if (Nkind_In (Par, N_Case_Expression_Alternative, N_If_Expression)
+      if (Nkind (Par) in N_Case_Expression_Alternative | N_If_Expression
            or else Nkind (Par) not in N_Subexpr)
-        and then (not Nkind_In (Par, N_Case_Expression_Alternative,
-                                     N_If_Expression)
+        and then (Nkind (Par) not in N_Case_Expression_Alternative
+                                   | N_If_Expression
                    or else Comes_From_Source (N))
         and then not In_Any_Integer_Context (Par)
       then
@@ -3720,7 +3717,7 @@ package body Sem_Eval is
       if Is_Array_Type (Left_Typ)
         and then Left_Typ /= Any_Composite
         and then Number_Dimensions (Left_Typ) = 1
-        and then Nkind_In (N, N_Op_Eq, N_Op_Ne)
+        and then Nkind (N) in N_Op_Eq | N_Op_Ne
       then
          if Raises_Constraint_Error (Left)
               or else
@@ -3775,7 +3772,7 @@ package body Sem_Eval is
          if Is_String_Type (Left_Typ) then
             if Ada_Version < Ada_2020
               and then (Comes_From_Source (N)
-                         or else not Nkind_In (N, N_Op_Eq, N_Op_Ne))
+                         or else Nkind (N) not in N_Op_Eq | N_Op_Ne)
             then
                Is_Static_Expression := False;
                Set_Is_Static_Expression (N, False);
@@ -5005,7 +5002,7 @@ package body Sem_Eval is
 
    function Get_String_Val (N : Node_Id) return Node_Id is
    begin
-      if Nkind_In (N, N_String_Literal, N_Character_Literal) then
+      if Nkind (N) in N_String_Literal | N_Character_Literal then
          return N;
       else
          pragma Assert (Is_Entity_Name (N));
@@ -6593,8 +6590,8 @@ package body Sem_Eval is
          if Can_Never_Be_Null (T1) /= Can_Never_Be_Null (T2) then
             return False;
 
-         elsif Ekind_In (T1, E_Access_Subprogram_Type,
-                             E_Anonymous_Access_Subprogram_Type)
+         elsif Ekind (T1) in E_Access_Subprogram_Type
+                           | E_Anonymous_Access_Subprogram_Type
          then
             return
               Subtype_Conformant
@@ -7302,9 +7299,8 @@ package body Sem_Eval is
             --  Flag array cases
 
             elsif Is_Array_Type (E) then
-               if not Nam_In (Attribute_Name (N), Name_First,
-                                                  Name_Last,
-                                                  Name_Length)
+               if Attribute_Name (N)
+                    not in Name_First | Name_Last | Name_Length
                then
                   Error_Msg_N
                     ("!static array attribute must be Length, First, or Last "

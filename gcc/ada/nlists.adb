@@ -991,7 +991,7 @@ package body Nlists is
       N := Node;
       loop
          Next (N);
-         exit when not Nkind_In (N, N_Pragma, N_Null_Statement);
+         exit when Nkind (N) not in N_Pragma | N_Null_Statement;
       end loop;
 
       return N;

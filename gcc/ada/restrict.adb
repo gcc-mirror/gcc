@@ -237,7 +237,7 @@ package body Restrict is
 
       --  For type conversion, check converted expression
 
-      elsif Nkind_In (Obj, N_Unchecked_Type_Conversion, N_Type_Conversion) then
+      elsif Nkind (Obj) in N_Unchecked_Type_Conversion | N_Type_Conversion then
          Check_No_Implicit_Aliasing (Expression (Obj));
          return;
 
@@ -746,7 +746,7 @@ package body Restrict is
                            and then Chars (Scope (Ent)) = Name_Ada
                            and then Scope (Scope (Ent)) = Standard_Standard)
                then
-                  if Nkind_In (Expr, N_Identifier, N_Operator_Symbol)
+                  if Nkind (Expr) in N_Identifier | N_Operator_Symbol
                     and then Chars (Ent) = Chars (Expr)
                   then
                      Error_Msg_Node_1 := N;
@@ -763,7 +763,7 @@ package body Restrict is
 
                --  Here if at outer level of entity name in table
 
-               elsif Nkind_In (Expr, N_Identifier, N_Operator_Symbol) then
+               elsif Nkind (Expr) in N_Identifier | N_Operator_Symbol then
                   exit;
 
                --  Here if neither at the outer level
@@ -977,7 +977,7 @@ package body Restrict is
              and then
            OK_No_Use_Of_Entity_Name (Selector_Name (N));
 
-      elsif Nkind_In (N, N_Identifier, N_Operator_Symbol) then
+      elsif Nkind (N) in N_Identifier | N_Operator_Symbol then
          return True;
 
       else
@@ -1258,15 +1258,15 @@ package body Restrict is
 
    function Same_Entity (E1, E2 : Node_Id) return Boolean is
    begin
-      if Nkind_In (E1, N_Identifier, N_Operator_Symbol)
+      if Nkind (E1) in N_Identifier | N_Operator_Symbol
            and then
-         Nkind_In (E2, N_Identifier, N_Operator_Symbol)
+         Nkind (E2) in N_Identifier | N_Operator_Symbol
       then
          return Chars (E1) = Chars (E2);
 
-      elsif Nkind_In (E1, N_Selected_Component, N_Expanded_Name)
+      elsif Nkind (E1) in N_Selected_Component | N_Expanded_Name
               and then
-            Nkind_In (E2, N_Selected_Component, N_Expanded_Name)
+            Nkind (E2) in N_Selected_Component | N_Expanded_Name
       then
          return Same_Unit (Prefix (E1), Prefix (E2))
                   and then
@@ -1285,9 +1285,9 @@ package body Restrict is
       if Nkind (U1) = N_Identifier and then Nkind (U2) = N_Identifier then
          return Chars (U1) = Chars (U2);
 
-      elsif Nkind_In (U1, N_Selected_Component, N_Expanded_Name)
+      elsif Nkind (U1) in N_Selected_Component | N_Expanded_Name
               and then
-            Nkind_In (U2, N_Selected_Component, N_Expanded_Name)
+            Nkind (U2) in N_Selected_Component | N_Expanded_Name
       then
          return Same_Unit (Prefix (U1), Prefix (U2))
                   and then
@@ -1534,13 +1534,13 @@ package body Restrict is
 
       --  Now we need to find the direct name and set Boolean2 flag
 
-      if Nkind_In (Entity, N_Identifier, N_Operator_Symbol) then
+      if Nkind (Entity) in N_Identifier | N_Operator_Symbol then
          Nam := Entity;
 
       else
          pragma Assert (Nkind (Entity) = N_Selected_Component);
          Nam := Selector_Name (Entity);
-         pragma Assert (Nkind_In (Nam, N_Identifier, N_Operator_Symbol));
+         pragma Assert (Nkind (Nam) in N_Identifier | N_Operator_Symbol);
       end if;
 
       Set_Name_Table_Boolean2 (Chars (Nam), True);

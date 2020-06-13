@@ -1452,17 +1452,14 @@ package body Exp_Ch5 is
       L_Prefix_Comp : constant Boolean :=
         --  True if the left-hand side is a slice of a component or slice
         Nkind (Name (N)) = N_Slice
-        and then Nkind_In (Prefix (Name (N)),
-                           N_Selected_Component,
-                           N_Indexed_Component,
-                           N_Slice);
+          and then Nkind (Prefix (Name (N))) in
+                     N_Selected_Component | N_Indexed_Component | N_Slice;
       R_Prefix_Comp : constant Boolean :=
         --  Likewise for the right-hand side
         Nkind (Expression (N)) = N_Slice
-        and then Nkind_In (Prefix (Expression (N)),
-                           N_Selected_Component,
-                           N_Indexed_Component,
-                           N_Slice);
+          and then Nkind (Prefix (Expression (N))) in
+                     N_Selected_Component | N_Indexed_Component | N_Slice;
+
    begin
       --  Determine whether Copy_Bitfield is appropriate (will work, and will
       --  be more efficient than component-by-component copy). Copy_Bitfield
@@ -1899,8 +1896,8 @@ package body Exp_Ch5 is
          --  We know the underlying type is a record, but its current view
          --  may be private. We must retrieve the usable record declaration.
 
-         if Nkind_In (Decl, N_Private_Type_Declaration,
-                            N_Private_Extension_Declaration)
+         if Nkind (Decl) in N_Private_Type_Declaration
+                          | N_Private_Extension_Declaration
            and then Present (Full_View (R_Typ))
          then
             RDef := Type_Definition (Declaration_Node (Full_View (R_Typ)));
@@ -2260,7 +2257,7 @@ package body Exp_Ch5 is
       --  Since P is going to be evaluated more than once, any subscripts
       --  in P must have their evaluation forced.
 
-      if Nkind_In (Lhs, N_Indexed_Component, N_Selected_Component)
+      if Nkind (Lhs) in N_Indexed_Component | N_Selected_Component
         and then Is_Ref_To_Bit_Packed_Array (Prefix (Lhs))
       then
          declare
@@ -2296,8 +2293,7 @@ package body Exp_Ch5 is
             loop
                Set_Analyzed (Exp, False);
 
-               if Nkind_In (Exp, N_Indexed_Component,
-                                 N_Selected_Component)
+               if Nkind (Exp) in N_Indexed_Component | N_Selected_Component
                then
                   Exp := Prefix (Exp);
                else
@@ -2865,8 +2861,8 @@ package body Exp_Ch5 is
             Actual_Rhs : Node_Id := Rhs;
 
          begin
-            while Nkind_In (Actual_Rhs, N_Type_Conversion,
-                                        N_Qualified_Expression)
+            while Nkind (Actual_Rhs) in
+                    N_Type_Conversion | N_Qualified_Expression
             loop
                Actual_Rhs := Expression (Actual_Rhs);
             end loop;
@@ -2940,7 +2936,7 @@ package body Exp_Ch5 is
                --  Skip this if left-hand side is an array or record component
                --  and elementary component validity checks are suppressed.
 
-               if Nkind_In (Lhs, N_Selected_Component, N_Indexed_Component)
+               if Nkind (Lhs) in N_Selected_Component | N_Indexed_Component
                  and then not Validity_Check_Components
                then
                   null;
@@ -3791,9 +3787,9 @@ package body Exp_Ch5 is
                      Else_Expr : constant Node_Id := Expression (Else_Stm);
 
                   begin
-                     if Nkind_In (Then_Expr, N_Expanded_Name, N_Identifier)
+                     if Nkind (Then_Expr) in N_Expanded_Name | N_Identifier
                           and then
-                        Nkind_In (Else_Expr, N_Expanded_Name, N_Identifier)
+                        Nkind (Else_Expr) in N_Expanded_Name | N_Identifier
                      then
                         if Entity (Then_Expr) = Standard_True
                           and then Entity (Else_Expr) = Standard_False

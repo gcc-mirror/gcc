@@ -283,11 +283,11 @@ package body Freeze is
 
         and then
           (Present (Interface_Name (Renamed_Subp))
-            or else Nam_In (Chars (Renamed_Subp), Name_Rotate_Left,
-                                                  Name_Rotate_Right,
-                                                  Name_Shift_Left,
-                                                  Name_Shift_Right,
-                                                  Name_Shift_Right_Arithmetic))
+            or else Chars (Renamed_Subp) in Name_Rotate_Left
+                                          | Name_Rotate_Right
+                                          | Name_Shift_Left
+                                          | Name_Shift_Right
+                                          | Name_Shift_Right_Arithmetic)
       then
          Set_Interface_Name (Ent, Interface_Name (Renamed_Subp));
 
@@ -412,7 +412,7 @@ package body Freeze is
       --  as we need to check other conditions for creating a body to inline
       --  in that case, which are controlled in Analyze_Subprogram_Body_Helper.
 
-      if Ekind_In (Old_S, E_Function, E_Procedure)
+      if Ekind (Old_S) in E_Function | E_Procedure
         and then Nkind (Decl) = N_Subprogram_Declaration
         and then not Is_Generic_Instance (Old_S)
         and then not GNATprove_Mode
@@ -1894,8 +1894,8 @@ package body Freeze is
                end if;
 
             elsif Ekind (E) in Task_Kind
-              and then Nkind_In (Parent (E), N_Single_Task_Declaration,
-                                             N_Task_Type_Declaration)
+              and then Nkind (Parent (E)) in
+                         N_Single_Task_Declaration | N_Task_Type_Declaration
             then
                Push_Scope (E);
                Freeze_All (First_Entity (E), After);
@@ -1986,15 +1986,15 @@ package body Freeze is
                   --  current package, but this body does not freeze incomplete
                   --  types that may be declared in this private part.
 
-                  if (Nkind_In (Bod, N_Entry_Body,
-                                     N_Package_Body,
-                                     N_Protected_Body,
-                                     N_Subprogram_Body,
-                                     N_Task_Body)
-                        or else Nkind (Bod) in N_Body_Stub)
+                  if Comes_From_Source (Bod)
+                    and then Nkind (Bod) in N_Entry_Body
+                                          | N_Package_Body
+                                          | N_Protected_Body
+                                          | N_Subprogram_Body
+                                          | N_Task_Body
+                                          | N_Body_Stub
                     and then
                       List_Containing (After) = List_Containing (Parent (E))
-                    and then Comes_From_Source (Bod)
                   then
                      Error_Msg_Sloc := Sloc (Next (After));
                      Error_Msg_NE
@@ -2373,8 +2373,7 @@ package body Freeze is
          begin
             case Nkind (N) is
                when N_Attribute_Reference =>
-                  if Nam_In (Attribute_Name (N), Name_Access,
-                                                 Name_Unchecked_Access)
+                  if Attribute_Name (N) in Name_Access | Name_Unchecked_Access
                     and then Is_Entity_Name (Prefix (N))
                     and then Is_Type (Entity (Prefix (N)))
                     and then Entity (Prefix (N)) = E
@@ -4140,7 +4139,7 @@ package body Freeze is
 
             --  Handle the component and discriminant case
 
-            if Ekind_In (Comp, E_Component, E_Discriminant) then
+            if Ekind (Comp) in E_Component | E_Discriminant then
                declare
                   CC : constant Node_Id := Component_Clause (Comp);
 
@@ -5203,7 +5202,7 @@ package body Freeze is
             --  case, both the body and imported function utilize the same
             --  type.
 
-            if Ekind_In (E, E_Function, E_Generic_Function) then
+            if Ekind (E) in E_Function | E_Generic_Function then
                Stmt :=
                  Make_Simple_Return_Statement (Loc,
                    Expression =>
@@ -5573,10 +5572,9 @@ package body Freeze is
 
                begin
                   while Present (Prag) loop
-                     if Nam_In (Pragma_Name_Unmapped (Prag),
-                                Name_Post,
-                                Name_Postcondition,
-                                Name_Refined_Post)
+                     if Pragma_Name_Unmapped (Prag) in Name_Post
+                                                     | Name_Postcondition
+                                                     | Name_Refined_Post
                      then
                         Exp :=
                           Expression
@@ -5673,7 +5671,7 @@ package body Freeze is
 
             --  Remaining step is to layout objects
 
-            if Ekind_In (E, E_Variable, E_Constant, E_Loop_Parameter)
+            if Ekind (E) in E_Variable | E_Constant | E_Loop_Parameter
               or else Is_Formal (E)
             then
                Layout_Object (E);
@@ -5684,7 +5682,7 @@ package body Freeze is
             --  statement, move them back now directly within the enclosing
             --  statement sequence.
 
-            if Ekind_In (E, E_Constant, E_Variable)
+            if Ekind (E) in E_Constant | E_Variable
               and then not Has_Delayed_Freeze (E)
             then
                Explode_Initialization_Compound_Statement (E);
@@ -6045,7 +6043,7 @@ package body Freeze is
          --  for the case of a private type with record extension (we will do
          --  that later when the full type is frozen).
 
-         elsif Ekind_In (E, E_Record_Type, E_Record_Subtype) then
+         elsif Ekind (E) in E_Record_Type | E_Record_Subtype then
             if not In_Generic_Scope (E) then
                Freeze_Record_Type (E);
             end if;
@@ -6625,9 +6623,9 @@ package body Freeze is
 
                   begin
                      pragma Assert
-                       (Nam_In (Op_Name, Name_Allocate,
-                                         Name_Deallocate,
-                                         Name_Storage_Size));
+                       (Op_Name in Name_Allocate
+                                 | Name_Deallocate
+                                 | Name_Storage_Size);
 
                      Error_Msg_Name_1 := Op_Name;
 
@@ -6639,7 +6637,7 @@ package body Freeze is
 
                      Op := Get_Name_Entity_Id (Op_Name);
                      while Present (Op) loop
-                        if Ekind_In (Op, E_Function, E_Procedure)
+                        if Ekind (Op) in E_Function | E_Procedure
                           and then Scope (Op) = Current_Scope
                         then
                            Formal := First_Entity (Op);
@@ -6770,7 +6768,7 @@ package body Freeze is
             Check_Strict_Alignment (E);
          end if;
 
-         if Ekind_In (E, E_Record_Type, E_Record_Subtype) then
+         if Ekind (E) in E_Record_Type | E_Record_Subtype then
             declare
                RC : constant Node_Id := Get_Record_Representation_Clause (E);
             begin
@@ -7499,7 +7497,7 @@ package body Freeze is
 
                   --  The case we are looking for is an enumeration literal
 
-                  if Nkind_In (N, N_Identifier, N_Character_Literal)
+                  if Nkind (N) in N_Identifier | N_Character_Literal
                     and then Is_Enumeration_Type (Etype (N))
                   then
                      --  If enumeration literal appears directly as the choice,
@@ -7874,8 +7872,8 @@ package body Freeze is
 
          function Clone_Id (Node : Node_Id) return Traverse_Result is
          begin
-            if Nkind_In (Node, N_Iterator_Specification,
-                               N_Loop_Parameter_Specification)
+            if Nkind (Node) in
+                 N_Iterator_Specification | N_Loop_Parameter_Specification
             then
                Set_Defining_Identifier
                  (Node, New_Copy (Defining_Identifier (Node)));
@@ -7966,7 +7964,7 @@ package body Freeze is
 
             --  Check that the enclosing record type can be frozen
 
-            if Ekind_In (Entity (Node), E_Component, E_Discriminant) then
+            if Ekind (Entity (Node)) in E_Component | E_Discriminant then
                Check_And_Freeze_Type (Scope (Entity (Node)));
             end if;
 
@@ -8833,7 +8831,7 @@ package body Freeze is
 
          --  Check attribute Extra_Accessibility_Of_Result
 
-         if Ekind_In (E, E_Function, E_Subprogram_Type)
+         if Ekind (E) in E_Function | E_Subprogram_Type
            and then Needs_Result_Accessibility_Level (E)
            and then No (Extra_Accessibility_Of_Result (E))
          then
@@ -9234,11 +9232,11 @@ package body Freeze is
             --  directly.
 
             if Nkind (Dcopy) = N_Identifier
-              or else Nkind_In (Dcopy, N_Expanded_Name,
-                                       N_Integer_Literal,
-                                       N_Character_Literal,
-                                       N_String_Literal,
-                                       N_Real_Literal)
+              or else Nkind (Dcopy) in N_Expanded_Name
+                                     | N_Integer_Literal
+                                     | N_Character_Literal
+                                     | N_String_Literal
+                                     | N_Real_Literal
               or else (Nkind (Dcopy) = N_Attribute_Reference
                         and then Attribute_Name (Dcopy) = Name_Null_Parameter)
               or else Known_Null (Dcopy)

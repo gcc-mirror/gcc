@@ -154,7 +154,7 @@ package body Contracts is
       --    Refined_Post
 
       elsif Is_Entry_Body (Id) then
-         if Nam_In (Prag_Nam, Name_Refined_Depends, Name_Refined_Global) then
+         if Prag_Nam in Name_Refined_Depends | Name_Refined_Global then
             Add_Classification;
 
          elsif Prag_Nam = Name_Refined_Post then
@@ -179,31 +179,31 @@ package body Contracts is
       --    Volatile_Function
 
       elsif Is_Entry_Declaration (Id)
-        or else Ekind_In (Id, E_Function,
-                              E_Generic_Function,
-                              E_Generic_Procedure,
-                              E_Procedure)
+        or else Ekind (Id) in E_Function
+                            | E_Generic_Function
+                            | E_Generic_Procedure
+                            | E_Procedure
       then
-         if Nam_In (Prag_Nam, Name_Attach_Handler, Name_Interrupt_Handler)
-           and then Ekind_In (Id, E_Generic_Procedure, E_Procedure)
+         if Prag_Nam in Name_Attach_Handler | Name_Interrupt_Handler
+           and then Ekind (Id) in E_Generic_Procedure | E_Procedure
          then
             Add_Classification;
 
-         elsif Nam_In (Prag_Nam, Name_Depends,
-                                 Name_Extensions_Visible,
-                                 Name_Global)
+         elsif Prag_Nam in Name_Depends
+                         | Name_Extensions_Visible
+                         | Name_Global
          then
             Add_Classification;
 
          elsif Prag_Nam = Name_Volatile_Function
-           and then Ekind_In (Id, E_Function, E_Generic_Function)
+           and then Ekind (Id) in E_Function | E_Generic_Function
          then
             Add_Classification;
 
-         elsif Nam_In (Prag_Nam, Name_Contract_Cases, Name_Test_Case) then
+         elsif Prag_Nam in Name_Contract_Cases | Name_Test_Case then
             Add_Contract_Test_Case;
 
-         elsif Nam_In (Prag_Nam, Name_Postcondition, Name_Precondition) then
+         elsif Prag_Nam in Name_Postcondition | Name_Precondition then
             Add_Pre_Post_Condition;
 
          --  The pragma is not a proper contract item
@@ -219,9 +219,9 @@ package body Contracts is
       --    Part_Of (instantiation only)
 
       elsif Is_Package_Or_Generic_Package (Id) then
-         if Nam_In (Prag_Nam, Name_Abstract_State,
-                              Name_Initial_Condition,
-                              Name_Initializes)
+         if Prag_Nam in Name_Abstract_State
+                      | Name_Initial_Condition
+                      | Name_Initializes
          then
             Add_Classification;
 
@@ -256,14 +256,14 @@ package body Contracts is
       elsif Is_Type (Id) then
          declare
             Is_OK : constant Boolean :=
-              Nam_In (Prag_Nam, Name_Async_Readers,
-                                Name_Async_Writers,
-                                Name_Effective_Reads,
-                                Name_Effective_Writes)
+              Prag_Nam in Name_Async_Readers
+                        | Name_Async_Writers
+                        | Name_Effective_Reads
+                        | Name_Effective_Writes
               or else (Ekind (Id) = E_Task_Type
-                         and Nam_In (Prag_Nam, Name_Part_Of,
-                                               Name_Depends,
-                                               Name_Global))
+                         and Prag_Nam in Name_Part_Of
+                                       | Name_Depends
+                                       | Name_Global)
               or else (Ekind (Id) = E_Protected_Type
                          and Prag_Nam = Name_Part_Of);
          begin
@@ -285,12 +285,12 @@ package body Contracts is
       --    Refined_Post
 
       elsif Ekind (Id) = E_Subprogram_Body then
-         if Nam_In (Prag_Nam, Name_Refined_Depends, Name_Refined_Global) then
+         if Prag_Nam in Name_Refined_Depends | Name_Refined_Global then
             Add_Classification;
 
-         elsif Nam_In (Prag_Nam, Name_Postcondition,
-                                 Name_Precondition,
-                                 Name_Refined_Post)
+         elsif Prag_Nam in Name_Postcondition
+                         | Name_Precondition
+                         | Name_Refined_Post
          then
             Add_Pre_Post_Condition;
 
@@ -305,7 +305,7 @@ package body Contracts is
       --    Refined_Global
 
       elsif Ekind (Id) = E_Task_Body then
-         if Nam_In (Prag_Nam, Name_Refined_Depends, Name_Refined_Global) then
+         if Prag_Nam in Name_Refined_Depends | Name_Refined_Global then
             Add_Classification;
 
          --  The pragma is not a proper contract item
@@ -331,15 +331,15 @@ package body Contracts is
       --    Part_Of
 
       elsif Ekind (Id) = E_Variable then
-         if Nam_In (Prag_Nam, Name_Async_Readers,
-                              Name_Async_Writers,
-                              Name_Constant_After_Elaboration,
-                              Name_Depends,
-                              Name_Effective_Reads,
-                              Name_Effective_Writes,
-                              Name_Global,
-                              Name_No_Caching,
-                              Name_Part_Of)
+         if Prag_Nam in Name_Async_Readers
+                      | Name_Async_Writers
+                      | Name_Constant_After_Elaboration
+                      | Name_Depends
+                      | Name_Effective_Reads
+                      | Name_Effective_Writes
+                      | Name_Global
+                      | Name_No_Caching
+                      | Name_Part_Of
          then
             Add_Classification;
 
@@ -367,10 +367,10 @@ package body Contracts is
 
          --  Entry or subprogram declarations
 
-         if Nkind_In (Decl, N_Abstract_Subprogram_Declaration,
-                            N_Entry_Declaration,
-                            N_Generic_Subprogram_Declaration,
-                            N_Subprogram_Declaration)
+         if Nkind (Decl) in N_Abstract_Subprogram_Declaration
+                          | N_Entry_Declaration
+                          | N_Generic_Subprogram_Declaration
+                          | N_Subprogram_Declaration
          then
             declare
                Subp_Id : constant Entity_Id := Defining_Entity (Decl);
@@ -392,7 +392,7 @@ package body Contracts is
 
          --  Entry or subprogram bodies
 
-         elsif Nkind_In (Decl, N_Entry_Body, N_Subprogram_Body) then
+         elsif Nkind (Decl) in N_Entry_Body | N_Subprogram_Body then
             Analyze_Entry_Or_Subprogram_Body_Contract (Defining_Entity (Decl));
 
          --  Objects
@@ -407,8 +407,8 @@ package body Contracts is
 
          --  Protected units
 
-         elsif Nkind_In (Decl, N_Protected_Type_Declaration,
-                               N_Single_Protected_Declaration)
+         elsif Nkind (Decl) in N_Protected_Type_Declaration
+                             | N_Single_Protected_Declaration
          then
             Analyze_Protected_Contract (Defining_Entity (Decl));
 
@@ -419,8 +419,8 @@ package body Contracts is
 
          --  Task units
 
-         elsif Nkind_In (Decl, N_Single_Task_Declaration,
-                               N_Task_Type_Declaration)
+         elsif Nkind (Decl) in N_Single_Task_Declaration
+                             | N_Task_Type_Declaration
          then
             Analyze_Task_Contract (Defining_Entity (Decl));
 
@@ -459,11 +459,11 @@ package body Contracts is
             end;
          end if;
 
-         if Nkind_In (Decl, N_Full_Type_Declaration,
-                            N_Private_Type_Declaration,
-                            N_Task_Type_Declaration,
-                            N_Protected_Type_Declaration,
-                            N_Formal_Type_Declaration)
+         if Nkind (Decl) in N_Full_Type_Declaration
+                          | N_Private_Type_Declaration
+                          | N_Task_Type_Declaration
+                          | N_Protected_Type_Declaration
+                          | N_Formal_Type_Declaration
          then
             Analyze_Type_Contract (Defining_Identifier (Decl));
          end if;
@@ -528,7 +528,7 @@ package body Contracts is
       --  subprograms.
 
       if SPARK_Mode = On
-        and then Ekind_In (Body_Id, E_Function, E_Generic_Function)
+        and then Ekind (Body_Id) in E_Function | E_Generic_Function
         and then Comes_From_Source (Spec_Id)
         and then not Is_Volatile_Function (Body_Id)
       then
@@ -737,7 +737,7 @@ package body Contracts is
       --  processed after the analysis of the related subprogram declaration.
 
       if SPARK_Mode = On
-        and then Ekind_In (Subp_Id, E_Function, E_Generic_Function)
+        and then Ekind (Subp_Id) in E_Function | E_Generic_Function
         and then Comes_From_Source (Subp_Id)
         and then not Is_Volatile_Function (Subp_Id)
       then
@@ -2882,12 +2882,9 @@ package body Contracts is
 
       function Causes_Contract_Freezing (N : Node_Id) return Boolean is
       begin
-         return Nkind_In (N, N_Entry_Body,
-                             N_Package_Body,
-                             N_Protected_Body,
-                             N_Subprogram_Body,
-                             N_Subprogram_Body_Stub,
-                             N_Task_Body);
+         return Nkind (N) in
+           N_Entry_Body      | N_Package_Body         | N_Protected_Body |
+           N_Subprogram_Body | N_Subprogram_Body_Stub | N_Task_Body;
       end Causes_Contract_Freezing;
 
       ----------------------
@@ -2922,10 +2919,10 @@ package body Contracts is
 
             --  Entry or subprogram declarations
 
-            elsif Nkind_In (Decl, N_Abstract_Subprogram_Declaration,
-                                  N_Entry_Declaration,
-                                  N_Generic_Subprogram_Declaration,
-                                  N_Subprogram_Declaration)
+            elsif Nkind (Decl) in N_Abstract_Subprogram_Declaration
+                                | N_Entry_Declaration
+                                | N_Generic_Subprogram_Declaration
+                                | N_Subprogram_Declaration
             then
                Analyze_Entry_Or_Subprogram_Contract
                  (Subp_Id   => Defining_Entity (Decl),
@@ -2940,8 +2937,8 @@ package body Contracts is
 
             --  Protected units
 
-            elsif Nkind_In (Decl, N_Protected_Type_Declaration,
-                                  N_Single_Protected_Declaration)
+            elsif Nkind (Decl) in N_Protected_Type_Declaration
+                                | N_Single_Protected_Declaration
             then
                Analyze_Protected_Contract (Defining_Entity (Decl));
 
@@ -2952,17 +2949,17 @@ package body Contracts is
 
             --  Task units
 
-            elsif Nkind_In (Decl, N_Single_Task_Declaration,
-                                  N_Task_Type_Declaration)
+            elsif Nkind (Decl) in N_Single_Task_Declaration
+                                | N_Task_Type_Declaration
             then
                Analyze_Task_Contract (Defining_Entity (Decl));
             end if;
 
-            if Nkind_In (Decl, N_Full_Type_Declaration,
-                               N_Private_Type_Declaration,
-                               N_Task_Type_Declaration,
-                               N_Protected_Type_Declaration,
-                               N_Formal_Type_Declaration)
+            if Nkind (Decl) in N_Full_Type_Declaration
+                             | N_Private_Type_Declaration
+                             | N_Task_Type_Declaration
+                             | N_Protected_Type_Declaration
+                             | N_Formal_Type_Declaration
             then
                Analyze_Type_Contract (Defining_Identifier (Decl));
             end if;

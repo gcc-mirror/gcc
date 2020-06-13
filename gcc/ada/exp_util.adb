@@ -5064,7 +5064,7 @@ package body Exp_Util is
    -----------------------------------------
 
    procedure Expand_Static_Predicates_In_Choices (N : Node_Id) is
-      pragma Assert (Nkind_In (N, N_Case_Statement_Alternative, N_Variant));
+      pragma Assert (Nkind (N) in N_Case_Statement_Alternative | N_Variant);
 
       Choices : constant List_Id := Discrete_Choices (N);
 
@@ -5842,7 +5842,7 @@ package body Exp_Util is
    begin
       S := Scop;
       while Present (S) loop
-         if Ekind_In (S, E_Entry, E_Entry_Family, E_Function, E_Procedure)
+         if Ekind (S) in E_Entry | E_Entry_Family | E_Function | E_Procedure
            and then Present (Protection_Object (S))
          then
             return Protection_Object (S);
@@ -5920,8 +5920,8 @@ package body Exp_Util is
          Par := N;
          Top := N;
          while Present (Par) loop
-            if Nkind_In (Original_Node (Par), N_Case_Expression,
-                                              N_If_Expression)
+            if Nkind (Original_Node (Par)) in
+                 N_Case_Expression | N_If_Expression
             then
                Top := Par;
 
@@ -5942,13 +5942,13 @@ package body Exp_Util is
          Par := Top;
          while Present (Par) loop
             if Is_List_Member (Par)
-              and then not Nkind_In (Par, N_Component_Association,
-                                          N_Discriminant_Association,
-                                          N_Parameter_Association,
-                                          N_Pragma_Argument_Association)
-              and then not Nkind_In (Parent (Par), N_Function_Call,
-                                                   N_Procedure_Call_Statement,
-                                                   N_Entry_Call_Statement)
+              and then Nkind (Par) not in N_Component_Association
+                                        | N_Discriminant_Association
+                                        | N_Parameter_Association
+                                        | N_Pragma_Argument_Association
+              and then Nkind (Parent (Par)) not in N_Function_Call
+                                                 | N_Procedure_Call_Statement
+                                                 | N_Entry_Call_Statement
 
             then
                return Par;
@@ -5971,7 +5971,7 @@ package body Exp_Util is
             --  Keep climbing past various operators
 
             if Nkind (Parent (Par)) in N_Op
-              or else Nkind_In (Parent (Par), N_And_Then, N_Or_Else)
+              or else Nkind (Parent (Par)) in N_And_Then | N_Or_Else
             then
                Par := Parent (Par);
             else
@@ -6009,11 +6009,11 @@ package body Exp_Util is
 
          while Present (Par) loop
             if Par = Wrapped_Node
-              or else Nkind_In (Par, N_Assignment_Statement,
-                                     N_Object_Declaration,
-                                     N_Pragma,
-                                     N_Procedure_Call_Statement,
-                                     N_Simple_Return_Statement)
+              or else Nkind (Par) in N_Assignment_Statement
+                                   | N_Object_Declaration
+                                   | N_Pragma
+                                   | N_Procedure_Call_Statement
+                                   | N_Simple_Return_Statement
             then
                return Par;
 
@@ -6276,10 +6276,9 @@ package body Exp_Util is
             --  Deal with conversions, qualifications, and expressions with
             --  actions.
 
-            while Nkind_In (Cond,
-                    N_Type_Conversion,
-                    N_Qualified_Expression,
-                    N_Expression_With_Actions)
+            while Nkind (Cond) in N_Type_Conversion
+                                | N_Qualified_Expression
+                                | N_Expression_With_Actions
             loop
                Cond := Expression (Cond);
             end loop;
@@ -6289,7 +6288,7 @@ package body Exp_Util is
 
          --  Deal with AND THEN and AND cases
 
-         if Nkind_In (Cond, N_And_Then, N_Op_And) then
+         if Nkind (Cond) in N_And_Then | N_Op_And then
 
             --  Don't ever try to invert a condition that is of the form of an
             --  AND or AND THEN (since we are not doing sufficiently general
@@ -6365,10 +6364,9 @@ package body Exp_Util is
 
             return;
 
-         elsif Nkind_In (Cond,
-                 N_Type_Conversion,
-                 N_Qualified_Expression,
-                 N_Expression_With_Actions)
+         elsif Nkind (Cond) in N_Type_Conversion
+                             | N_Qualified_Expression
+                             | N_Expression_With_Actions
          then
             Cond := Expression (Cond);
 
@@ -7265,7 +7263,7 @@ package body Exp_Util is
                --  actions should be inserted outside the complete record
                --  declaration.
 
-               elsif Nkind_In (Parent (P), N_Variant, N_Record_Definition) then
+               elsif Nkind (Parent (P)) in N_Variant | N_Record_Definition then
                   null;
 
                --  Do not insert freeze nodes within the loop generated for
@@ -7653,8 +7651,8 @@ package body Exp_Util is
          P := Parent (P);
 
          if Is_List_Member (P) then
-            exit when Nkind_In (Parent (P), N_Package_Specification,
-                                            N_Subprogram_Body);
+            exit when Nkind (Parent (P)) in
+                        N_Package_Specification | N_Subprogram_Body;
 
             --  Special handling for handled sequence of statements, we must
             --  insert in the statements not the exception handlers!
@@ -7874,8 +7872,8 @@ package body Exp_Util is
             if Nkind (Result) = N_Explicit_Dereference then
                Result := Prefix (Result);
 
-            elsif Nkind_In (Result, N_Type_Conversion,
-                                    N_Unchecked_Type_Conversion)
+            elsif Nkind (Result) in
+                    N_Type_Conversion | N_Unchecked_Type_Conversion
             then
                Result := Expression (Result);
 
@@ -8125,7 +8123,7 @@ package body Exp_Util is
 
                if Nkind (N) = N_Identifier
                  and then Present (Entity (N))
-                 and then Ekind_In (Entity (N), E_Constant, E_Variable)
+                 and then Ekind (Entity (N)) in E_Constant | E_Variable
                then
                   Ren_Obj := Entity (N);
                   return Abandon;
@@ -8332,7 +8330,7 @@ package body Exp_Util is
       end if;
 
       return
-        Ekind_In (Obj_Id, E_Constant, E_Variable)
+        Ekind (Obj_Id) in E_Constant | E_Variable
           and then Needs_Finalization (Desig)
           and then Requires_Transient_Scope (Desig)
           and then Nkind (Rel_Node) /= N_Simple_Return_Statement
@@ -8758,7 +8756,7 @@ package body Exp_Util is
          return Is_Ref_To_Bit_Packed_Array (Renamed_Object (Entity (N)));
       end if;
 
-      if Nkind_In (N, N_Indexed_Component, N_Selected_Component) then
+      if Nkind (N) in N_Indexed_Component | N_Selected_Component then
          if Is_Bit_Packed_Array (Etype (Prefix (N))) then
             Result := True;
          else
@@ -8800,7 +8798,7 @@ package body Exp_Util is
       then
          return True;
 
-      elsif Nkind_In (N, N_Indexed_Component, N_Selected_Component) then
+      elsif Nkind (N) in N_Indexed_Component | N_Selected_Component then
          return Is_Ref_To_Bit_Packed_Slice (Prefix (N));
 
       else
@@ -8818,7 +8816,7 @@ package body Exp_Util is
    begin
       if Kind = N_Object_Renaming_Declaration then
          return True;
-      elsif Nkind_In (Kind, N_Indexed_Component, N_Selected_Component) then
+      elsif Kind in N_Indexed_Component | N_Selected_Component then
          return Is_Renamed_Object (Pnod);
       else
          return False;
@@ -8976,7 +8974,7 @@ package body Exp_Util is
 
       --  True if volatile component
 
-      elsif Nkind_In (N, N_Indexed_Component, N_Selected_Component) then
+      elsif Nkind (N) in N_Indexed_Component | N_Selected_Component then
          if (Is_Entity_Name (Prefix (N))
               and then Has_Volatile_Components (Entity (Prefix (N))))
            or else (Present (Etype (Prefix (N)))
@@ -11005,7 +11003,7 @@ package body Exp_Util is
          =>
             --  Check the "then statements" for elsif parts and if statements
 
-            if Nkind_In (N, N_Elsif_Part, N_If_Statement)
+            if Nkind (N) in N_Elsif_Part | N_If_Statement
               and then not Is_Empty_List (Then_Statements (N))
               and then not Are_Wrapped (Then_Statements (N))
               and then Requires_Cleanup_Actions
@@ -11022,9 +11020,8 @@ package body Exp_Util is
             --  Check the "else statements" for conditional entry calls, if
             --  statements and selective accepts.
 
-            if Nkind_In (N, N_Conditional_Entry_Call,
-                            N_If_Statement,
-                            N_Selective_Accept)
+            if Nkind (N) in
+                 N_Conditional_Entry_Call | N_If_Statement | N_Selective_Accept
               and then not Is_Empty_List (Else_Statements (N))
               and then not Are_Wrapped (Else_Statements (N))
               and then Requires_Cleanup_Actions
@@ -11556,7 +11553,7 @@ package body Exp_Util is
          --  by the expression it renames, which would defeat the purpose of
          --  removing the side effect.
 
-         if Nkind_In (Exp, N_Selected_Component, N_Indexed_Component)
+         if Nkind (Exp) in N_Selected_Component | N_Indexed_Component
            and then Has_Non_Standard_Rep (Etype (Prefix (Exp)))
          then
             null;
@@ -11983,8 +11980,8 @@ package body Exp_Util is
                --  and view swaps, the parent type is taken from the formal
                --  parameter of the subprogram being called.
 
-               if Nkind_In (Context, N_Function_Call,
-                                     N_Procedure_Call_Statement)
+               if Nkind (Context) in
+                    N_Function_Call | N_Procedure_Call_Statement
                  and then No (Type_Map.Get (Entity (Name (Context))))
                then
                   New_Ref :=
@@ -12150,9 +12147,8 @@ package body Exp_Util is
       Lib_Level : Boolean) return Boolean
    is
       At_Lib_Level : constant Boolean :=
-                       Lib_Level
-                         and then Nkind_In (N, N_Package_Body,
-                                               N_Package_Specification);
+        Lib_Level
+          and then Nkind (N) in N_Package_Body | N_Package_Specification;
       --  N is at the library level if the top-most context is a package and
       --  the path taken to reach N does not include nonpackage constructs.
 
@@ -12529,8 +12525,8 @@ package body Exp_Util is
 
       if (Nkind (Pexp) = N_Assignment_Statement
            and then Expression (Pexp) = Exp)
-        or else Nkind_In (Pexp, N_Object_Declaration,
-                                N_Object_Renaming_Declaration)
+        or else Nkind (Pexp)
+                  in N_Object_Declaration | N_Object_Renaming_Declaration
       then
          return True;
 
@@ -12786,10 +12782,9 @@ package body Exp_Util is
                Set_Entity_Current_Value (Right_Opnd (Cond));
             end if;
 
-         elsif Nkind_In (Cond,
-                 N_Type_Conversion,
-                 N_Qualified_Expression,
-                 N_Expression_With_Actions)
+         elsif Nkind (Cond) in N_Type_Conversion
+                             | N_Qualified_Expression
+                             | N_Expression_With_Actions
          then
             Set_Expression_Current_Value (Expression (Cond));
 
@@ -12862,7 +12857,7 @@ package body Exp_Util is
             if Nkind (N) = N_Subprogram_Body
               and then Address_Taken (Spec_Id)
               and then
-                Ekind_In (Scope (Spec_Id), E_Block, E_Procedure, E_Function)
+                Ekind (Scope (Spec_Id)) in E_Block | E_Procedure | E_Function
             then
                declare
                   Loc   : constant Source_Ptr := Sloc (N);
@@ -13086,7 +13081,7 @@ package body Exp_Util is
          elsif Is_Entity_Name (N) then
             return Ekind (Entity (N)) = E_In_Parameter;
 
-         elsif Nkind_In (N, N_Indexed_Component, N_Selected_Component) then
+         elsif Nkind (N) in N_Indexed_Component | N_Selected_Component then
             return Within_In_Parameter (Prefix (N));
 
          else
@@ -13167,9 +13162,7 @@ package body Exp_Util is
             --  explicit dereference, then the designated object could
             --  be modified by an assignment.
 
-            if Nkind_In (RO, N_Indexed_Component,
-                             N_Explicit_Dereference)
-            then
+            if Nkind (RO) in N_Indexed_Component | N_Explicit_Dereference then
                return False;
 
             --  A selected component must have a safe prefix
@@ -13698,8 +13691,7 @@ package body Exp_Util is
 
       Par := Parent (N);
       while Present (Par) loop
-         if Nkind_In (Original_Node (Par), N_Case_Expression,
-                                           N_If_Expression)
+         if Nkind (Original_Node (Par)) in N_Case_Expression | N_If_Expression
          then
             return True;
 

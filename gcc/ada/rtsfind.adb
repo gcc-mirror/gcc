@@ -904,9 +904,9 @@ package body Rtsfind is
       return
         Nkind (Prf) = N_Identifier
           and then
-            Nam_In (Chars (Prf), Name_Text_IO,
-                                 Name_Wide_Text_IO,
-                                 Name_Wide_Wide_Text_IO)
+            Chars (Prf) in Name_Text_IO
+                         | Name_Wide_Text_IO
+                         | Name_Wide_Wide_Text_IO
           and then Nkind (Sel) = N_Identifier
           and then Chars (Sel) in Text_IO_Package_Name;
    end Is_Text_IO_Special_Unit;

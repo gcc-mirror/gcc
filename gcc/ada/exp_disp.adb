@@ -389,8 +389,8 @@ package body Exp_Disp is
             --  Handle full type declarations and derivations of library level
             --  tagged types
 
-            elsif Nkind_In (D, N_Full_Type_Declaration,
-                               N_Derived_Type_Definition)
+            elsif Nkind (D) in
+                    N_Full_Type_Declaration | N_Derived_Type_Definition
               and then Is_Library_Level_Tagged_Type (Defining_Entity (D))
               and then Ekind (Defining_Entity (D)) /= E_Record_Subtype
               and then not Is_Private_Type (Defining_Entity (D))
@@ -1223,9 +1223,8 @@ package body Exp_Disp is
          --  the corresponding object or parameter declaration
 
          elsif Nkind (Controlling_Tag) = N_Identifier
-           and then Nkind_In (Parent (Entity (Controlling_Tag)),
-                              N_Object_Declaration,
-                              N_Parameter_Specification)
+           and then Nkind (Parent (Entity (Controlling_Tag))) in
+                      N_Object_Declaration | N_Parameter_Specification
          then
             Set_SCIL_Controlling_Tag (SCIL_Node,
               Parent (Entity (Controlling_Tag)));
@@ -1235,9 +1234,8 @@ package body Exp_Disp is
 
          elsif Nkind (Controlling_Tag) = N_Explicit_Dereference
             and then Nkind (Prefix (Controlling_Tag)) = N_Identifier
-            and then Nkind_In (Parent (Entity (Prefix (Controlling_Tag))),
-                               N_Object_Declaration,
-                               N_Parameter_Specification)
+            and then Nkind (Parent (Entity (Prefix (Controlling_Tag)))) in
+                       N_Object_Declaration | N_Parameter_Specification
          then
             Set_SCIL_Controlling_Tag (SCIL_Node,
               Parent (Entity (Prefix (Controlling_Tag))));
@@ -8562,7 +8560,7 @@ package body Exp_Disp is
 
       --  Propagate the value to the wrapped subprogram (if one is present)
 
-      if Ekind_In (Prim, E_Function, E_Procedure)
+      if Ekind (Prim) in E_Function | E_Procedure
         and then Is_Primitive_Wrapper (Prim)
         and then Present (Wrapped_Entity (Prim))
         and then Is_Dispatching_Operation (Wrapped_Entity (Prim))
@@ -8595,7 +8593,7 @@ package body Exp_Disp is
 
       --  Propagate the value to the wrapped subprogram (if one is present)
 
-      if Ekind_In (Prim, E_Function, E_Procedure)
+      if Ekind (Prim) in E_Function | E_Procedure
         and then Is_Primitive_Wrapper (Prim)
         and then Present (Wrapped_Entity (Prim))
         and then Is_Dispatching_Operation (Wrapped_Entity (Prim))
@@ -8732,7 +8730,7 @@ package body Exp_Disp is
             --  If the DTC_Entity attribute is already set we can also output
             --  the name of the interface covered by this primitive (if any).
 
-            if Ekind_In (Alias (Prim), E_Function, E_Procedure)
+            if Ekind (Alias (Prim)) in E_Function | E_Procedure
               and then Present (DTC_Entity (Alias (Prim)))
               and then Is_Interface (Scope (DTC_Entity (Alias (Prim))))
             then

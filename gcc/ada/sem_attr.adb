@@ -786,7 +786,7 @@ package body Sem_Attr is
                (Nkind (Par) = N_Component_Association
                  or else Nkind (Par) in N_Subexpr)
             loop
-               if Nkind_In (Par, N_Aggregate, N_Extension_Aggregate) then
+               if Nkind (Par) in N_Aggregate | N_Extension_Aggregate then
                   if Etype (Par) = Typ then
                      Set_Has_Self_Reference (Par);
 
@@ -988,9 +988,10 @@ package body Sem_Attr is
 
                   if not In_Spec_Expression
                     and then not Has_Completion (Scop)
-                    and then not
-                      Nkind_In (Parent (N), N_Discriminant_Association,
-                                            N_Index_Or_Discriminant_Constraint)
+                    and then
+                      Nkind (Parent (N)) not in
+                        N_Discriminant_Association |
+                        N_Index_Or_Discriminant_Constraint
                   then
                      Error_Msg_N
                        ("current instance attribute must appear alone", N);
@@ -1113,8 +1114,7 @@ package body Sem_Attr is
                   Kill_Current_Values (Ent);
                   exit;
 
-               elsif Nkind_In (PP, N_Selected_Component,
-                                   N_Indexed_Component)
+               elsif Nkind (PP) in N_Selected_Component | N_Indexed_Component
                then
                   PP := Prefix (PP);
 
@@ -1168,10 +1168,10 @@ package body Sem_Attr is
          begin
             --  The "Name" argument of pragma Check denotes a postcondition
 
-            if Nam_In (Nam, Name_Post,
-                            Name_Post_Class,
-                            Name_Postcondition,
-                            Name_Refined_Post)
+            if Nam in Name_Post
+                    | Name_Post_Class
+                    | Name_Postcondition
+                    | Name_Refined_Post
             then
                null;
 
@@ -1317,7 +1317,7 @@ package body Sem_Attr is
 
          Prag := N;
          while Present (Prag) loop
-            if Nkind_In (Prag, N_Aspect_Specification, N_Pragma) then
+            if Nkind (Prag) in N_Aspect_Specification | N_Pragma then
                exit;
 
             --  Prevent the search from going too far
@@ -1332,7 +1332,7 @@ package body Sem_Attr is
          --  The attribute is allowed to appear only in postcondition-like
          --  aspects or pragmas.
 
-         if Nkind_In (Prag, N_Aspect_Specification, N_Pragma) then
+         if Nkind (Prag) in N_Aspect_Specification | N_Pragma then
             if Nkind (Prag) = N_Aspect_Specification then
                Prag_Nam := Chars (Identifier (Prag));
             else
@@ -1348,7 +1348,7 @@ package body Sem_Attr is
             --  Attribute 'Result is allowed to appear in aspect or pragma
             --  [Refined_]Depends (SPARK RM 6.1.5(11)).
 
-            elsif Nam_In (Prag_Nam, Name_Depends, Name_Refined_Depends)
+            elsif Prag_Nam in Name_Depends | Name_Refined_Depends
               and then Aname = Name_Result
             then
                null;
@@ -1361,10 +1361,10 @@ package body Sem_Attr is
             then
                null;
 
-            elsif Nam_In (Prag_Nam, Name_Post,
-                                    Name_Post_Class,
-                                    Name_Postcondition,
-                                    Name_Refined_Post)
+            elsif Prag_Nam in Name_Post
+                            | Name_Post_Class
+                            | Name_Postcondition
+                            | Name_Refined_Post
             then
                null;
 
@@ -1408,14 +1408,14 @@ package body Sem_Attr is
          then
             null;
 
-         elsif not Nkind_In (Subp_Decl, N_Abstract_Subprogram_Declaration,
-                                        N_Entry_Declaration,
-                                        N_Expression_Function,
-                                        N_Generic_Subprogram_Declaration,
-                                        N_Subprogram_Body,
-                                        N_Subprogram_Body_Stub,
-                                        N_Subprogram_Declaration,
-                                        N_Subprogram_Renaming_Declaration)
+         elsif Nkind (Subp_Decl) not in N_Abstract_Subprogram_Declaration
+                                      | N_Entry_Declaration
+                                      | N_Expression_Function
+                                      | N_Generic_Subprogram_Declaration
+                                      | N_Subprogram_Body
+                                      | N_Subprogram_Body_Stub
+                                      | N_Subprogram_Declaration
+                                      | N_Subprogram_Renaming_Declaration
          then
             return;
          end if;
@@ -1905,9 +1905,9 @@ package body Sem_Attr is
             --  the prefix of another attribute. Error is posted on parent.
 
             if Nkind (Parent (N)) = N_Attribute_Reference
-              and then Nam_In (Attribute_Name (Parent (N)), Name_Address,
-                                                            Name_Code_Address,
-                                                            Name_Access)
+              and then Attribute_Name (Parent (N)) in Name_Address
+                                                    | Name_Code_Address
+                                                    | Name_Access
             then
                Error_Msg_Name_1 := Attribute_Name (Parent (N));
                Error_Msg_N ("illegal prefix for % attribute", Parent (N));
@@ -2366,8 +2366,8 @@ package body Sem_Attr is
          --  parameter or component association, which is wrong.
 
          if Is_List_Member (N)
-           and then not Nkind_In (Parent (N), N_Procedure_Call_Statement,
-                                              N_Aggregate)
+           and then Nkind (Parent (N)) not in
+                      N_Procedure_Call_Statement | N_Aggregate
          then
             null;
          else
@@ -2423,8 +2423,8 @@ package body Sem_Attr is
             null;
 
          elsif Is_List_Member (N)
-           and then not Nkind_In (Parent (N), N_Procedure_Call_Statement,
-                                              N_Aggregate)
+           and then Nkind (Parent (N)) not in
+                      N_Procedure_Call_Statement | N_Aggregate
          then
             null;
 
@@ -2662,7 +2662,7 @@ package body Sem_Attr is
          if Nkind (Nod) = N_Identifier then
             return;
 
-         elsif Nkind_In (Nod, N_Selected_Component, N_Expanded_Name) then
+         elsif Nkind (Nod) in N_Selected_Component | N_Expanded_Name then
             Check_Unit_Name (Prefix (Nod));
 
             if Nkind (Selector_Name (Nod)) = N_Identifier then
@@ -3032,7 +3032,7 @@ package body Sem_Attr is
          --  parameterless call. Entry attributes are handled specially below.
 
          if Is_Entity_Name (P)
-           and then not Nam_In (Aname, Name_Count, Name_Caller)
+           and then Aname not in Name_Count | Name_Caller
          then
             Check_Parameterless_Call (P);
          end if;
@@ -3043,7 +3043,7 @@ package body Sem_Attr is
             --  primitive entry wrappers, the attributes Count, and Caller
             --  require a context check
 
-            if Nam_In (Aname, Name_Count, Name_Caller) then
+            if Aname in Name_Count | Name_Caller then
                declare
                   Count : Natural := 0;
                   I     : Interp_Index;
@@ -3341,7 +3341,7 @@ package body Sem_Attr is
       begin
          Check_E0;
 
-         if Nkind_In (P, N_Identifier, N_Expanded_Name) then
+         if Nkind (P) in N_Identifier | N_Expanded_Name then
             Ent := Entity (P);
 
             if not Is_Entry (Ent) then
@@ -3411,7 +3411,7 @@ package body Sem_Attr is
          Check_E0;
 
          if Nkind (P) = N_Attribute_Reference
-           and then Nam_In (Attribute_Name (P), Name_Elab_Body, Name_Elab_Spec)
+           and then Attribute_Name (P) in Name_Elab_Body | Name_Elab_Spec
          then
             null;
 
@@ -3598,7 +3598,7 @@ package body Sem_Attr is
       begin
          Check_E0;
 
-         if Nkind_In (P, N_Identifier, N_Expanded_Name) then
+         if Nkind (P) in N_Identifier | N_Expanded_Name then
             Ent := Entity (P);
 
             if Ekind (Ent) /= E_Entry then
@@ -3664,10 +3664,10 @@ package body Sem_Attr is
                exit;
 
             elsif Ekind (Scope (Ent)) in Task_Kind
-              and then not Ekind_In (S, E_Block,
-                                        E_Entry,
-                                        E_Entry_Family,
-                                        E_Loop)
+              and then Ekind (S) not in E_Block
+                                      | E_Entry
+                                      | E_Entry_Family
+                                      | E_Loop
             then
                Error_Attr ("Attribute % cannot appear in inner unit", N);
 
@@ -4538,12 +4538,13 @@ package body Sem_Attr is
             --  that the pragma appears in an appropriate loop location.
 
             if Nkind (Original_Node (Stmt)) = N_Pragma
-              and then Nam_In (Pragma_Name_Unmapped (Original_Node (Stmt)),
-                               Name_Loop_Invariant,
-                               Name_Loop_Variant,
-                               Name_Assert,
-                               Name_Assert_And_Cut,
-                               Name_Assume)
+              and then
+                Pragma_Name_Unmapped (Original_Node (Stmt))
+                  in Name_Loop_Invariant
+                   | Name_Loop_Variant
+                   | Name_Assert
+                   | Name_Assert_And_Cut
+                   | Name_Assume
             then
                Encl_Prag := Original_Node (Stmt);
 
@@ -4606,7 +4607,7 @@ package body Sem_Attr is
 
             if Ekind (Scop) = E_Loop and then Scop = Loop_Id then
                exit;
-            elsif Ekind_In (Scop, E_Block, E_Loop, E_Return_Statement) then
+            elsif Ekind (Scop) in E_Block | E_Loop | E_Return_Statement then
                null;
             else
                Error_Attr
@@ -5000,8 +5001,7 @@ package body Sem_Attr is
                --  another attribute 'Old.
 
                if Nkind (Nod) = N_Attribute_Reference
-                 and then Nam_In (Attribute_Name (Nod), Name_Old,
-                                                        Name_Result)
+                 and then Attribute_Name (Nod) in Name_Old | Name_Result
                then
                   Error_Msg_Name_1 := Attribute_Name (Nod);
                   Error_Msg_Name_2 := Name_Old;
@@ -5146,7 +5146,7 @@ package body Sem_Attr is
             then
                Pref_Id := Entity (Name (P));
 
-               if Ekind_In (Spec_Id, E_Function, E_Generic_Function)
+               if Ekind (Spec_Id) in E_Function | E_Generic_Function
                  and then Pref_Id = Spec_Id
                then
                   Error_Msg_Warn := SPARK_Mode /= On;
@@ -5432,7 +5432,7 @@ package body Sem_Attr is
 
             elsif Nkind (Subp_Spec) = N_Function_Specification
               and then Present (Generic_Parent (Subp_Spec))
-              and then Ekind_In (Pref_Id, E_Generic_Function, E_Function)
+              and then Ekind (Pref_Id) in E_Generic_Function | E_Function
             then
                if Generic_Parent (Subp_Spec) = Pref_Id then
                   return True;
@@ -5538,7 +5538,7 @@ package body Sem_Attr is
                --  functions, or the prefix must be generic and the spec
                --  must be nongeneric (i.e. it must denote an instance).
 
-               if (Ekind_In (Pref_Id, E_Function, E_Generic_Function)
+               if (Ekind (Pref_Id) in E_Function | E_Generic_Function
                     and then Ekind (Pref_Id) = Ekind (Spec_Id))
                  or else
                    (Ekind (Pref_Id) = E_Generic_Function
@@ -6615,7 +6615,7 @@ package body Sem_Attr is
                   Negative := False;
                end if;
 
-               if not Nkind_In (Expr, N_Integer_Literal, N_Real_Literal) then
+               if Nkind (Expr) not in N_Integer_Literal | N_Real_Literal then
                   Error_Attr
                     ("named number for % attribute must be simple literal", N);
                end if;
@@ -7814,8 +7814,7 @@ package body Sem_Attr is
                begin
                   --  P'Enum_Rep case
 
-                  if Ekind_In (Entity (P), E_Constant,
-                                           E_Enumeration_Literal)
+                  if Ekind (Entity (P)) in E_Constant | E_Enumeration_Literal
                   then
                      Enum_Expr := P;
 
@@ -8111,7 +8110,7 @@ package body Sem_Attr is
 
       --  Second foldable possibility is an array object (RM 4.9(8))
 
-      elsif Ekind_In (P_Entity, E_Variable, E_Constant)
+      elsif Ekind (P_Entity) in E_Variable | E_Constant
         and then Is_Array_Type (Etype (P_Entity))
         and then (not Is_Generic_Type (Etype (P_Entity)))
       then
@@ -10482,10 +10481,10 @@ package body Sem_Attr is
       --  An exception is the GNAT attribute Constrained_Array which is
       --  defined to be a static attribute in all cases.
 
-      if Nkind_In (N, N_Integer_Literal,
-                      N_Real_Literal,
-                      N_Character_Literal,
-                      N_String_Literal)
+      if Nkind (N) in N_Integer_Literal
+                    | N_Real_Literal
+                    | N_Character_Literal
+                    | N_String_Literal
         or else (Is_Entity_Name (N)
                   and then Ekind (Entity (N)) = E_Enumeration_Literal)
       then
@@ -10592,8 +10591,8 @@ package body Sem_Attr is
 
             if Is_Record_Type (Current_Scope)
               and then
-                Nkind_In (Parent (N), N_Discriminant_Association,
-                                      N_Index_Or_Discriminant_Constraint)
+                Nkind (Parent (N)) in N_Discriminant_Association
+                                    | N_Index_Or_Discriminant_Constraint
             then
                Indic := Parent (Parent (N));
                while Present (Indic)
@@ -10656,14 +10655,12 @@ package body Sem_Attr is
 
          begin
             loop
-               if Nkind_In (PP, N_Selected_Component,
-                                N_Indexed_Component)
-               then
+               if Nkind (PP) in N_Selected_Component | N_Indexed_Component then
                   PP := Prefix (PP);
 
                elsif Comes_From_Source (PP)
-                 and then Nkind_In (PP, N_Type_Conversion,
-                                        N_Unchecked_Type_Conversion)
+                 and then Nkind (PP) in N_Type_Conversion
+                                      | N_Unchecked_Type_Conversion
                  and then Is_Array_Type (Etype (PP))
                then
                   return False;
@@ -10671,9 +10668,8 @@ package body Sem_Attr is
                elsif Comes_From_Source (PP)
                  and then Nkind (PP) = N_Qualified_Expression
                  and then Is_Array_Type (Etype (PP))
-                 and then Nkind_In (Original_Node (Expression (PP)),
-                             N_Aggregate,
-                             N_Extension_Aggregate)
+                 and then Nkind (Original_Node (Expression (PP))) in
+                            N_Aggregate | N_Extension_Aggregate
                then
                   return False;
 
@@ -10793,7 +10789,7 @@ package body Sem_Attr is
             --  test, which breaks several filed tests???
 
             if Ekind (Typ) = E_Anonymous_Access_Type
-              and then Nkind_In (Parent (N), N_Op_Eq, N_Op_Ne)
+              and then Nkind (Parent (N)) in N_Op_Eq | N_Op_Ne
               and then False
             then
                Error_Msg_N ("need unique type to resolve 'Access", N);
@@ -10894,10 +10890,10 @@ package body Sem_Attr is
                --  also be accessibility checks on those, this is where the
                --  checks can eventually be centralized ???
 
-               if Ekind_In (Btyp, E_Access_Protected_Subprogram_Type,
-                                  E_Access_Subprogram_Type,
-                                  E_Anonymous_Access_Protected_Subprogram_Type,
-                                  E_Anonymous_Access_Subprogram_Type)
+               if Ekind (Btyp) in E_Access_Protected_Subprogram_Type
+                                | E_Access_Subprogram_Type
+                                | E_Anonymous_Access_Protected_Subprogram_Type
+                                | E_Anonymous_Access_Subprogram_Type
                then
                   --  Deal with convention mismatch
 
@@ -11413,8 +11409,8 @@ package body Sem_Attr is
                end if;
             end if;
 
-            if Ekind_In (Btyp, E_Access_Protected_Subprogram_Type,
-                               E_Anonymous_Access_Protected_Subprogram_Type)
+            if Ekind (Btyp) in E_Access_Protected_Subprogram_Type
+                             | E_Anonymous_Access_Protected_Subprogram_Type
             then
                if Is_Entity_Name (P)
                  and then not Is_Protected_Type (Scope (Entity (P)))
@@ -11451,8 +11447,8 @@ package body Sem_Attr is
                   Check_Internal_Protected_Use (N, Entity (P));
                end if;
 
-            elsif Ekind_In (Btyp, E_Access_Subprogram_Type,
-                                  E_Anonymous_Access_Subprogram_Type)
+            elsif Ekind (Btyp) in E_Access_Subprogram_Type
+                                | E_Anonymous_Access_Subprogram_Type
               and then Ekind (Etype (N)) = E_Access_Protected_Subprogram_Type
             then
                Error_Msg_F ("context requires a non-protected subprogram", P);
@@ -11594,7 +11590,7 @@ package body Sem_Attr is
                     and then Comes_From_Source (Subp_Id)
                     and then Comes_From_Source (N)
                     and then In_Open_Scopes (Scop)
-                    and then Ekind_In (Scop, E_Block, E_Procedure, E_Function)
+                    and then Ekind (Scop) in E_Block | E_Procedure | E_Function
                     and then not Has_Completion (Subp_Id)
                     and then No (Elaboration_Entity (Subp_Id))
                     and then Nkind (Subp_Decl) = N_Subprogram_Declaration

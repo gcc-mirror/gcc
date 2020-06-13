@@ -793,8 +793,8 @@ package body Sem_Cat is
          if Ekind (E) in Subprogram_Kind then
             Declaration := Unit_Declaration_Node (E);
 
-            if Nkind_In (Declaration, N_Subprogram_Body,
-                                      N_Subprogram_Renaming_Declaration)
+            if Nkind (Declaration) in
+                 N_Subprogram_Body | N_Subprogram_Renaming_Declaration
             then
                Specification := Corresponding_Spec (Declaration);
             end if;
@@ -1003,7 +1003,7 @@ package body Sem_Cat is
       --  Body of RCI unit does not need validation
 
       if Is_Remote_Call_Interface (E)
-        and then Nkind_In (N, N_Package_Body, N_Subprogram_Body)
+        and then Nkind (N) in N_Package_Body | N_Subprogram_Body
       then
          return;
       end if;
@@ -1506,8 +1506,8 @@ package body Sem_Cat is
 
             null;
 
-         elsif Ekind_In (Param_Type, E_Anonymous_Access_Type,
-                                     E_Anonymous_Access_Subprogram_Type)
+         elsif Ekind (Param_Type) in E_Anonymous_Access_Type
+                                   | E_Anonymous_Access_Subprogram_Type
          then
             --  From RM E.2.2(14), no anonymous access parameter other than
             --  controlling ones may be used (because an anonymous access
@@ -1583,9 +1583,9 @@ package body Sem_Cat is
                  ("limited type not allowed in rci unit", Parent (E));
                Explain_Limited_Type (E, Parent (E));
 
-            elsif Ekind_In (E, E_Generic_Function,
-                               E_Generic_Package,
-                               E_Generic_Procedure)
+            elsif Ekind (E) in E_Generic_Function
+                             | E_Generic_Package
+                             | E_Generic_Procedure
             then
                Error_Msg_N ("generic declaration not allowed in rci unit",
                  Parent (E));
