@@ -1,3 +1,35 @@
+2020-06-12  Marco Elver  <elver@google.com>
+
+	* c-c++-common/tsan/func_entry_exit.c: New test.
+	* c-c++-common/tsan/func_entry_exit_disabled.c: New test.
+
+2020-06-12  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-44.c: New testcase.
+
+2020-06-12  Felix Yang  <felix.yang@huawei.com>
+
+	PR tree-optimization/95570
+	* gcc.dg/vect/pr95570.c: New test.
+
+2020-06-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/rep_clause8.adb: Update error location.
+
+2020-06-12  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/prune.exp (prune_gcc_output): Match any executable name
+	in collect messages.
+
+2020-06-12  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/93492
+	* gcc.target/i386/pr93492-1.c: New test.
+	* gcc.target/i386/pr93492-2.c: Likewise.
+	* gcc.target/i386/pr93492-3.c: Likewise.
+	* gcc.target/i386/pr93492-4.c: Likewise.
+	* gcc.target/i386/pr93492-5.c: Likewise.
+
 2020-06-11  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/93467

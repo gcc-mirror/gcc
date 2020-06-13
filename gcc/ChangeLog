@@ -1,3 +1,133 @@
+2020-06-12  Marco Elver  <elver@google.com>
+
+	* gimplify.c (gimplify_function_tree): Optimize and do not emit
+	IFN_TSAN_FUNC_EXIT in a finally block if we do not need it.
+	* params.opt: Add --param=tsan-instrument-func-entry-exit=.
+	* tsan.c (instrument_memory_accesses): Make
+	fentry_exit_instrument bool depend on new param.
+
+2020-06-12  Felix Yang  <felix.yang@huawei.com>
+
+	PR tree-optimization/95570
+	* tree-vect-data-refs.c (vect_relevant_for_alignment_p): New function.
+	(vect_verify_datarefs_alignment): Call it to filter out data references
+	in the loop whose alignment is irrelevant.
+	(vect_get_peeling_costs_all_drs): Likewise.
+	(vect_peeling_supportable): Likewise.
+	(vect_enhance_data_refs_alignment): Likewise.
+
+2020-06-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95633
+	* tree-vect-stmts.c (vectorizable_condition): Properly
+	guard the vec_else_clause access with EXTRACT_LAST_REDUCTION.
+
+2020-06-12  Martin Liška  <mliska@suse.cz>
+
+	* cgraphunit.c (process_symver_attribute): Wrap weakref keyword.
+	* dbgcnt.c (dbg_cnt_set_limit_by_index): Do not print extra new
+	line.
+	* lto-wrapper.c (merge_and_complain): Wrap option names.
+
+2020-06-12  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* tree-vect-loop-manip.c (vect_set_loop_controls_directly): Rename
+	LOOP_VINFO_MASK_COMPARE_TYPE to LOOP_VINFO_RGROUP_COMPARE_TYPE.  Rename
+	LOOP_VINFO_MASK_IV_TYPE to LOOP_VINFO_RGROUP_IV_TYPE.
+	(vect_set_loop_condition_masked): Renamed to ...
+	(vect_set_loop_condition_partial_vectors): ... this.  Rename
+	LOOP_VINFO_MASK_COMPARE_TYPE to LOOP_VINFO_RGROUP_COMPARE_TYPE.  Rename
+	vect_iv_limit_for_full_masking to vect_iv_limit_for_partial_vectors.
+	(vect_set_loop_condition_unmasked): Renamed to ...
+	(vect_set_loop_condition_normal): ... this.
+	(vect_set_loop_condition): Rename vect_set_loop_condition_unmasked to
+	vect_set_loop_condition_normal.  Rename vect_set_loop_condition_masked
+	to vect_set_loop_condition_partial_vectors.
+	(vect_prepare_for_masked_peels): Rename LOOP_VINFO_MASK_COMPARE_TYPE
+	to LOOP_VINFO_RGROUP_COMPARE_TYPE.
+	* tree-vect-loop.c (vect_known_niters_smaller_than_vf): New, factored
+	out from ...
+	(vect_analyze_loop_costing): ... this.
+	(_loop_vec_info::_loop_vec_info): Rename mask_compare_type to
+	compare_type.
+	(vect_min_prec_for_max_niters): New, factored out from ...
+	(vect_verify_full_masking): ... this.  Rename
+	vect_iv_limit_for_full_masking to vect_iv_limit_for_partial_vectors.
+	Rename LOOP_VINFO_MASK_COMPARE_TYPE to LOOP_VINFO_RGROUP_COMPARE_TYPE.
+	Rename LOOP_VINFO_MASK_IV_TYPE to LOOP_VINFO_RGROUP_IV_TYPE.
+	(vectorizable_reduction): Update some dumpings with partial
+	vectors instead of fully-masked.
+	(vectorizable_live_operation): Likewise.
+	(vect_iv_limit_for_full_masking): Renamed to ...
+	(vect_iv_limit_for_partial_vectors): ... this.
+	* tree-vect-stmts.c (check_load_store_masking): Renamed to ...
+	(check_load_store_for_partial_vectors): ... this.  Update some
+	dumpings with partial vectors instead of fully-masked.
+	(vectorizable_store): Rename check_load_store_masking to
+	check_load_store_for_partial_vectors.
+	(vectorizable_load): Likewise.
+	* tree-vectorizer.h (LOOP_VINFO_MASK_COMPARE_TYPE): Renamed to ...
+	(LOOP_VINFO_RGROUP_COMPARE_TYPE): ... this.
+	(LOOP_VINFO_MASK_IV_TYPE): Renamed to ...
+	(LOOP_VINFO_RGROUP_IV_TYPE): ... this.
+	(vect_iv_limit_for_full_masking): Renamed to ...
+	(vect_iv_limit_for_partial_vectors): this.
+	(_loop_vec_info): Rename mask_compare_type to rgroup_compare_type.
+	Rename iv_type to rgroup_iv_type.
+
+2020-06-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* recog.h (insn_gen_fn::f0, insn_gen_fn::f1, insn_gen_fn::f2)
+	(insn_gen_fn::f3, insn_gen_fn::f4, insn_gen_fn::f5, insn_gen_fn::f6)
+	(insn_gen_fn::f7, insn_gen_fn::f8, insn_gen_fn::f9, insn_gen_fn::f10)
+	(insn_gen_fn::f11, insn_gen_fn::f12, insn_gen_fn::f13)
+	(insn_gen_fn::f14, insn_gen_fn::f15, insn_gen_fn::f16): Delete.
+	(insn_gen_fn::operator()): Replace overloaded definitions with
+	a parameter-pack version.
+
+2020-06-12  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/93492
+	* config/i386/i386-features.c (rest_of_insert_endbranch):
+	Renamed to ...
+	(rest_of_insert_endbr_and_patchable_area): Change return type
+	to void. Add need_endbr and patchable_area_size arguments.
+	Don't call timevar_push nor timevar_pop.  Replace
+	endbr_queued_at_entrance with insn_queued_at_entrance.  Insert
+	UNSPECV_PATCHABLE_AREA for patchable area.
+	(pass_data_insert_endbranch): Renamed to ...
+	(pass_data_insert_endbr_and_patchable_area): This.  Change
+	pass name to endbr_and_patchable_area.
+	(pass_insert_endbranch): Renamed to ...
+	(pass_insert_endbr_and_patchable_area): This.  Add need_endbr
+	and patchable_area_size;.
+	(pass_insert_endbr_and_patchable_area::gate): Set and check
+	need_endbr and patchable_area_size.
+	(pass_insert_endbr_and_patchable_area::execute): Call
+	timevar_push and timevar_pop.  Pass need_endbr and
+	patchable_area_size to rest_of_insert_endbr_and_patchable_area.
+	(make_pass_insert_endbranch): Renamed to ...
+	(make_pass_insert_endbr_and_patchable_area): This.
+	* config/i386/i386-passes.def: Replace pass_insert_endbranch
+	with pass_insert_endbr_and_patchable_area.
+	* config/i386/i386-protos.h (ix86_output_patchable_area): New.
+	(make_pass_insert_endbranch): Renamed to ...
+	(make_pass_insert_endbr_and_patchable_area): This.
+	* config/i386/i386.c (ix86_asm_output_function_label): Set
+	function_label_emitted to true.
+	(ix86_print_patchable_function_entry): New function.
+	(ix86_output_patchable_area): Likewise.
+	(x86_function_profiler): Replace endbr_queued_at_entrance with
+	insn_queued_at_entrance.  Generate ENDBR only for TYPE_ENDBR.
+	Call ix86_output_patchable_area to generate patchable area if
+	needed.
+	(TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY): New.
+	* config/i386/i386.h (queued_insn_type): New.
+	(machine_function): Add function_label_emitted.  Replace
+	endbr_queued_at_entrance with insn_queued_at_entrance.
+	* config/i386/i386.md (UNSPECV_PATCHABLE_AREA): New.
+	(patchable_area): New.
+
 2020-06-11  Martin Liska  <mliska@suse.cz>
 
 	* config/rs6000/rs6000.c (rs6000_density_test): Fix GNU coding
