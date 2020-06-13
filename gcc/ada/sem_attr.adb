@@ -1457,16 +1457,11 @@ package body Sem_Attr is
 
          procedure Check_Image_Type (Image_Type : Entity_Id) is
          begin
-            if Ada_Version >= Ada_2020 then
-               null; -- all types are OK
-            elsif not Is_Scalar_Type (Image_Type) then
-               if Ada_Version >= Ada_2012 then
-                  Error_Attr_P
-                    ("prefix of % attribute must be a scalar type or a scalar "
-                       & "object name");
-               else
-                  Error_Attr_P ("prefix of % attribute must be a scalar type");
-               end if;
+            if Ada_Version < Ada_2020
+              and then not Is_Scalar_Type (Image_Type)
+            then
+               Error_Msg_Ada_2020_Feature ("|nonscalar ''Image", Sloc (P));
+               Error_Attr;
             end if;
          end Check_Image_Type;
 
@@ -1483,7 +1478,7 @@ package body Sem_Attr is
             Check_Image_Type (Etype (P));
 
             if Attr_Id /= Attribute_Img and then Ada_Version < Ada_2012 then
-               Error_Attr_P ("prefix of % attribute must be a scalar type");
+               Error_Msg_Ada_2012_Feature ("|Object''Image", Sloc (P));
             end if;
          else
             Check_E1;
