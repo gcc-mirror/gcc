@@ -546,8 +546,8 @@ package body Exp_Unst is
 
                   --  Attribute or indexed component case
 
-                  elsif Nkind_In (N, N_Attribute_Reference,
-                                     N_Indexed_Component)
+                  elsif Nkind (N) in
+                          N_Attribute_Reference | N_Indexed_Component
                   then
                      Note_Uplevel_Bound (Prefix (N), Ref);
 
@@ -601,8 +601,8 @@ package body Exp_Unst is
 
                   --  Explicit dereference and selected component case
 
-                  elsif Nkind_In (N, N_Explicit_Dereference,
-                                     N_Selected_Component)
+                  elsif Nkind (N) in
+                          N_Explicit_Dereference | N_Selected_Component
                   then
                      Note_Uplevel_Bound (Prefix (N), Ref);
 
@@ -786,7 +786,7 @@ package body Exp_Unst is
                then
                   return;
 
-               elsif Ekind_In (Callee, E_Entry, E_Entry_Family) then
+               elsif Ekind (Callee) in E_Entry | E_Entry_Family then
                   return;
                end if;
 
@@ -1271,9 +1271,9 @@ package body Exp_Unst is
                         --  references to global declarations.
 
                        and then
-                         (Ekind_In (Ent, E_Constant,
-                                         E_Loop_Parameter,
-                                         E_Variable)
+                         (Ekind (Ent) in E_Constant
+                                       | E_Loop_Parameter
+                                       | E_Variable
 
                            --  Formals are interesting, but not if being used
                            --  as mere names of parameters for name notation
@@ -2131,9 +2131,9 @@ package body Exp_Unst is
                                  --  N_Loop_Parameter_Specification or to
                                  --  an N_Iterator_Specification.
 
-                                 if Nkind_In
-                                      (Ins, N_Iterator_Specification,
-                                            N_Loop_Parameter_Specification)
+                                 if Nkind (Ins) in
+                                      N_Iterator_Specification |
+                                      N_Loop_Parameter_Specification
                                  then
                                     --  Quantified expression are rewritten as
                                     --  loops during expansion.
@@ -2366,9 +2366,8 @@ package body Exp_Unst is
                --  processing this dereference
 
                if Opt.Modify_Tree_For_C
-                 and then Nkind_In (Parent (UPJ.Ref),
-                            N_Type_Conversion,
-                            N_Unchecked_Type_Conversion)
+                 and then Nkind (Parent (UPJ.Ref)) in
+                            N_Type_Conversion | N_Unchecked_Type_Conversion
                then
                   Force_Evaluation (UPJ.Ref, Mode => Strict);
                end if;
@@ -2554,7 +2553,7 @@ package body Exp_Unst is
 
       function Search_Subprograms (N : Node_Id) return Traverse_Result is
       begin
-         if Nkind_In (N, N_Subprogram_Body, N_Subprogram_Body_Stub) then
+         if Nkind (N) in N_Subprogram_Body | N_Subprogram_Body_Stub then
             declare
                Spec_Id : constant Entity_Id := Unique_Defining_Entity (N);
 

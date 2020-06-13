@@ -746,13 +746,12 @@ package body Sem_Dist is
       --  we are generating code.
 
       if Comes_From_Source (P)
-        and then Is_Record_Type (ET)
-        and then (Is_Remote_Call_Interface (ET)
-                   or else Is_Remote_Types (ET))
-        and then Present (Corresponding_Remote_Type (ET))
-        and then Nkind_In (Parent (Parent (P)), N_Procedure_Call_Statement,
-                                                N_Indexed_Component)
         and then Expander_Active
+        and then Is_Record_Type (ET)
+        and then (Is_Remote_Call_Interface (ET) or else Is_Remote_Types (ET))
+        and then Present (Corresponding_Remote_Type (ET))
+        and then Nkind (Parent (Parent (P))) in
+                   N_Procedure_Call_Statement | N_Indexed_Component
       then
          RAS_E_Dereference (P);
          return True;

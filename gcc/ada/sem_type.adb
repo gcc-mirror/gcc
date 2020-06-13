@@ -1039,8 +1039,8 @@ package body Sem_Type is
       --  An Access_To_Subprogram is compatible with itself, or with an
       --  anonymous type created for an attribute reference Access.
 
-      elsif Ekind_In (BT1, E_Access_Subprogram_Type,
-                           E_Access_Protected_Subprogram_Type)
+      elsif Ekind (BT1) in E_Access_Subprogram_Type
+                         | E_Access_Protected_Subprogram_Type
         and then Is_Access_Type (T2)
         and then (not Comes_From_Source (T1)
                    or else not Comes_From_Source (T2))
@@ -1055,8 +1055,8 @@ package body Sem_Type is
       --  with itself, or with an anonymous type created for an attribute
       --  reference Access.
 
-      elsif Ekind_In (BT1, E_Anonymous_Access_Subprogram_Type,
-                           E_Anonymous_Access_Protected_Subprogram_Type)
+      elsif Ekind (BT1) in E_Anonymous_Access_Subprogram_Type
+                         | E_Anonymous_Access_Protected_Subprogram_Type
         and then Is_Access_Type (T2)
         and then (not Comes_From_Source (T1)
                    or else not Comes_From_Source (T2))
@@ -1106,7 +1106,7 @@ package body Sem_Type is
       --  imposed by context.
 
       elsif Ekind (T2) = E_Access_Attribute_Type
-        and then Ekind_In (BT1, E_General_Access_Type, E_Access_Type)
+        and then Ekind (BT1) in E_General_Access_Type | E_Access_Type
         and then Covers (Designated_Type (T1), Designated_Type (T2))
       then
          --  If the target type is a RACW type while the source is an access
@@ -1599,10 +1599,10 @@ package body Sem_Type is
                  and then Is_Overloaded (Act1)
                  and then
                    (Nkind (Act1) in N_Unary_Op
-                     or else Nkind_In (Left_Opnd (Act1), N_Integer_Literal,
-                                                         N_Real_Literal))
-                 and then Nkind_In (Right_Opnd (Act1), N_Integer_Literal,
-                                                       N_Real_Literal)
+                     or else Nkind (Left_Opnd (Act1)) in
+                               N_Integer_Literal | N_Real_Literal)
+                 and then Nkind (Right_Opnd (Act1)) in
+                            N_Integer_Literal | N_Real_Literal
                  and then Has_Compatible_Type (Act1, Standard_Boolean)
                  and then Etype (F1) = Standard_Boolean
                then
@@ -1627,8 +1627,8 @@ package body Sem_Type is
                   elsif Present (Act2)
                     and then Nkind (Act2) in N_Op
                     and then Is_Overloaded (Act2)
-                    and then Nkind_In (Right_Opnd (Act2), N_Integer_Literal,
-                                                          N_Real_Literal)
+                    and then Nkind (Right_Opnd (Act2)) in
+                               N_Integer_Literal | N_Real_Literal
                     and then Has_Compatible_Type (Act2, Standard_Boolean)
                   then
                      --  The preference rule on the first actual is not
@@ -2094,7 +2094,7 @@ package body Sem_Type is
            and then not In_Instance
          then
             if Is_Fixed_Point_Type (Typ)
-              and then Nam_In (Chars (Nam1), Name_Op_Multiply, Name_Op_Divide)
+              and then Chars (Nam1) in Name_Op_Multiply | Name_Op_Divide
               and then
                 (Ada_Version = Ada_83
                   or else (Ada_Version >= Ada_2012
@@ -2114,7 +2114,7 @@ package body Sem_Type is
             --  declared in the same declarative list as the type. The node
             --  may be an operator or a function call.
 
-            elsif Nam_In (Chars (Nam1), Name_Op_Eq, Name_Op_Ne)
+            elsif Chars (Nam1) in Name_Op_Eq | Name_Op_Ne
               and then Ada_Version >= Ada_2005
               and then Etype (User_Subp) = Standard_Boolean
               and then Is_Anonymous_Access_Type (Operand_Type)
@@ -3105,7 +3105,7 @@ package body Sem_Type is
       elsif Num = 1 then
          T1 := Etype (New_First_F);
 
-         if Nam_In (Op_Name, Name_Op_Subtract, Name_Op_Add, Name_Op_Abs) then
+         if Op_Name in Name_Op_Subtract | Name_Op_Add | Name_Op_Abs then
             return Base_Type (T1) = Base_Type (T)
               and then Is_Numeric_Type (T);
 
@@ -3123,24 +3123,23 @@ package body Sem_Type is
          T1 := Etype (New_First_F);
          T2 := Etype (Next_Formal (New_First_F));
 
-         if Nam_In (Op_Name, Name_Op_And, Name_Op_Or, Name_Op_Xor) then
+         if Op_Name in Name_Op_And | Name_Op_Or | Name_Op_Xor then
             return Base_Type (T1) = Base_Type (T2)
               and then Base_Type (T1) = Base_Type (T)
               and then Valid_Boolean_Arg (Base_Type (T));
 
-         elsif Nam_In (Op_Name, Name_Op_Eq, Name_Op_Ne) then
+         elsif Op_Name in Name_Op_Eq | Name_Op_Ne then
             return Base_Type (T1) = Base_Type (T2)
               and then not Is_Limited_Type (T1)
               and then Is_Boolean_Type (T);
 
-         elsif Nam_In (Op_Name, Name_Op_Lt, Name_Op_Le,
-                                Name_Op_Gt, Name_Op_Ge)
+         elsif Op_Name in Name_Op_Lt | Name_Op_Le | Name_Op_Gt | Name_Op_Ge
          then
             return Base_Type (T1) = Base_Type (T2)
               and then Valid_Comparison_Arg (T1)
               and then Is_Boolean_Type (T);
 
-         elsif Nam_In (Op_Name, Name_Op_Add, Name_Op_Subtract) then
+         elsif Op_Name in Name_Op_Add | Name_Op_Subtract then
             return Base_Type (T1) = Base_Type (T2)
               and then Base_Type (T1) = Base_Type (T)
               and then Is_Numeric_Type (T);
@@ -3193,7 +3192,7 @@ package body Sem_Type is
                         and then Is_Floating_Point_Type (T2)
                         and then Base_Type (T2) = Base_Type (T));
 
-         elsif Nam_In (Op_Name, Name_Op_Mod, Name_Op_Rem) then
+         elsif Op_Name in Name_Op_Mod | Name_Op_Rem then
             return Base_Type (T1) = Base_Type (T2)
               and then Base_Type (T1) = Base_Type (T)
               and then Is_Integer_Type (T);
@@ -3423,26 +3422,26 @@ package body Sem_Type is
       then
          return T2;
 
-      elsif Ekind_In (B1, E_Access_Subprogram_Type,
-                          E_Access_Protected_Subprogram_Type)
+      elsif Ekind (B1) in E_Access_Subprogram_Type
+                        | E_Access_Protected_Subprogram_Type
         and then Ekind (Designated_Type (B1)) /= E_Subprogram_Type
         and then Is_Access_Type (T2)
       then
          return T2;
 
-      elsif Ekind_In (B2, E_Access_Subprogram_Type,
-                          E_Access_Protected_Subprogram_Type)
+      elsif Ekind (B2) in E_Access_Subprogram_Type
+                        | E_Access_Protected_Subprogram_Type
         and then Ekind (Designated_Type (B2)) /= E_Subprogram_Type
         and then Is_Access_Type (T1)
       then
          return T1;
 
-      elsif Ekind_In (T1, E_Allocator_Type, E_Access_Attribute_Type)
+      elsif Ekind (T1) in E_Allocator_Type | E_Access_Attribute_Type
         and then Is_Access_Type (T2)
       then
          return T2;
 
-      elsif Ekind_In (T2, E_Allocator_Type, E_Access_Attribute_Type)
+      elsif Ekind (T2) in E_Allocator_Type | E_Access_Attribute_Type
         and then Is_Access_Type (T1)
       then
          return T1;

@@ -985,7 +985,7 @@ package body Sem_Ch13 is
             function Find_Type (N : Node_Id) return Traverse_Result is
             begin
                if N = Typ
-                 or else (Nkind_In (N, N_Identifier, N_Expanded_Name)
+                 or else (Nkind (N) in N_Identifier | N_Expanded_Name
                            and then Present (Entity (N))
                            and then Entity (N) = Typ)
                then
@@ -1587,11 +1587,11 @@ package body Sem_Ch13 is
          --    package body Pack is
          --       pragma Prag;
 
-         if Nkind_In (N, N_Entry_Body,
-                         N_Package_Body,
-                         N_Protected_Body,
-                         N_Subprogram_Body,
-                         N_Task_Body)
+         if Nkind (N) in N_Entry_Body
+                       | N_Package_Body
+                       | N_Protected_Body
+                       | N_Subprogram_Body
+                       | N_Task_Body
          then
             Decls := Declarations (N);
 
@@ -1611,8 +1611,8 @@ package body Sem_Ch13 is
          --    package Pack is
          --       pragma Prag;
 
-         elsif Nkind_In (N, N_Generic_Package_Declaration,
-                            N_Package_Declaration)
+         elsif Nkind (N) in N_Generic_Package_Declaration
+                          | N_Package_Declaration
          then
             Decls := Visible_Declarations (Specification (N));
 
@@ -2098,10 +2098,9 @@ package body Sem_Ch13 is
                   begin
                      while Present (Disc) loop
                         if Chars (Expr) = Chars (Disc)
-                          and then Ekind_In
-                            (Etype (Disc),
-                             E_Anonymous_Access_Subprogram_Type,
-                             E_Anonymous_Access_Type)
+                          and then Ekind (Etype (Disc)) in
+                            E_Anonymous_Access_Subprogram_Type |
+                            E_Anonymous_Access_Type
                         then
                            Set_Has_Implicit_Dereference (E);
                            Set_Has_Implicit_Dereference (Disc);
@@ -2169,7 +2168,7 @@ package body Sem_Ch13 is
                begin
                   --  The relaxed parameter is a formal parameter
 
-                  if Nkind_In (Param, N_Identifier, N_Expanded_Name) then
+                  if Nkind (Param) in N_Identifier | N_Expanded_Name then
                      Analyze (Param);
 
                      declare
@@ -2203,7 +2202,7 @@ package body Sem_Ch13 is
                      begin
                         if Present (Pref)
                           and then
-                            Nkind_In (Pref, N_Identifier, N_Expanded_Name)
+                            Nkind (Pref) in N_Identifier | N_Expanded_Name
                           and then
                             Entity (Pref) = Subp_Id
                         then
@@ -2586,11 +2585,11 @@ package body Sem_Ch13 is
             begin
                --  Check valid declarations for 'Yield
 
-               if (Nkind_In (N, N_Abstract_Subprogram_Declaration,
-                                N_Entry_Declaration,
-                                N_Generic_Subprogram_Declaration,
-                                N_Subprogram_Declaration)
-                     or else Nkind (N) in N_Formal_Subprogram_Declaration)
+               if Nkind (N) in N_Abstract_Subprogram_Declaration
+                             | N_Entry_Declaration
+                             | N_Generic_Subprogram_Declaration
+                             | N_Subprogram_Declaration
+                             | N_Formal_Subprogram_Declaration
                  and then not Within_Protected_Type (E)
                then
                   null;
@@ -3243,8 +3242,7 @@ package body Sem_Ch13 is
                   | Aspect_Interrupt_Priority
                   | Aspect_Priority
                =>
-                  if Nkind_In (N, N_Subprogram_Body,
-                                  N_Subprogram_Declaration)
+                  if Nkind (N) in N_Subprogram_Body | N_Subprogram_Declaration
                   then
                      --  Analyze the aspect expression
 
@@ -3434,8 +3432,8 @@ package body Sem_Ch13 is
                      Context := Instance_Spec (Context);
                   end if;
 
-                  if Nkind_In (Context, N_Generic_Package_Declaration,
-                                        N_Package_Declaration)
+                  if Nkind (Context) in N_Generic_Package_Declaration
+                                      | N_Package_Declaration
                   then
                      Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
@@ -3661,8 +3659,8 @@ package body Sem_Ch13 is
                      Context := Instance_Spec (Context);
                   end if;
 
-                  if Nkind_In (Context, N_Generic_Package_Declaration,
-                                        N_Package_Declaration)
+                  if Nkind (Context) in N_Generic_Package_Declaration
+                                      | N_Package_Declaration
                   then
                      Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
@@ -3709,8 +3707,8 @@ package body Sem_Ch13 is
                      Context := Instance_Spec (Context);
                   end if;
 
-                  if Nkind_In (Context, N_Generic_Package_Declaration,
-                                        N_Package_Declaration)
+                  if Nkind (Context) in N_Generic_Package_Declaration
+                                      | N_Package_Declaration
                   then
                      Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
@@ -3811,8 +3809,8 @@ package body Sem_Ch13 is
                --  Part_Of
 
                when Aspect_Part_Of =>
-                  if Nkind_In (N, N_Object_Declaration,
-                                  N_Package_Instantiation)
+                  if Nkind (N) in N_Object_Declaration
+                                | N_Package_Instantiation
                     or else Is_Single_Concurrent_Type_Declaration (N)
                   then
                      Make_Aitem_Pragma
@@ -4204,7 +4202,7 @@ package body Sem_Ch13 is
 
                   if Class_Present (Aspect)
                     and then Is_Concurrent_Type (Current_Scope)
-                    and then Ekind_In (E, E_Entry, E_Function, E_Procedure)
+                    and then Ekind (E) in E_Entry | E_Function | E_Procedure
                   then
                      Error_Msg_Name_1 := Original_Aspect_Pragma_Name (Aspect);
                      Error_Msg_N
@@ -4449,8 +4447,8 @@ package body Sem_Ch13 is
 
                   if A_Id in Library_Unit_Aspects
                     and then
-                      Nkind_In (N, N_Package_Declaration,
-                                   N_Generic_Package_Declaration)
+                      Nkind (N) in N_Package_Declaration
+                                 | N_Generic_Package_Declaration
                     and then Nkind (Parent (N)) /= N_Compilation_Unit
 
                     --  Aspect is legal on a local instantiation of a library-
@@ -4672,7 +4670,7 @@ package body Sem_Ch13 is
             --  When delay is not required and the context is a package or a
             --  subprogram body, insert the pragma in the body declarations.
 
-            elsif Nkind_In (N, N_Package_Body, N_Subprogram_Body) then
+            elsif Nkind (N) in N_Package_Body | N_Subprogram_Body then
                if No (Declarations (N)) then
                   Set_Declarations (N, New_List);
                end if;
@@ -6000,7 +5998,7 @@ package body Sem_Ch13 is
             if Ignore_Rep_Clauses then
                Set_Address_Taken (U_Ent);
 
-               if Ekind_In (U_Ent, E_Variable, E_Constant) then
+               if Ekind (U_Ent) in E_Variable | E_Constant then
                   Record_Rep_Item (U_Ent, N);
                end if;
 
@@ -6079,7 +6077,7 @@ package body Sem_Ch13 is
 
             --  Case of address clause for an object
 
-            elsif Ekind_In (U_Ent, E_Constant, E_Variable) then
+            elsif Ekind (U_Ent) in E_Constant | E_Variable then
                declare
                   Expr  : constant Node_Id := Expression (N);
                   O_Ent : Entity_Id;
@@ -7183,7 +7181,7 @@ package body Sem_Ch13 is
                   Nam);
                return;
 
-            elsif not Ekind_In (U_Ent, E_Access_Type, E_General_Access_Type)
+            elsif Ekind (U_Ent) not in E_Access_Type | E_General_Access_Type
             then
                Error_Msg_N
                  ("storage pool can only be given for access types", Nam);
@@ -7586,10 +7584,10 @@ package body Sem_Ch13 is
          while Present (Decl) loop
             DeclO := Original_Node (Decl);
             if Comes_From_Source (DeclO)
-              and not Nkind_In (DeclO, N_Pragma,
-                                       N_Use_Package_Clause,
-                                       N_Use_Type_Clause,
-                                       N_Implicit_Label_Declaration)
+              and Nkind (DeclO) not in N_Pragma
+                                     | N_Use_Package_Clause
+                                     | N_Use_Type_Clause
+                                     | N_Implicit_Label_Declaration
             then
                Error_Msg_N
                  ("this declaration not allowed in machine code subprogram",
@@ -7618,9 +7616,8 @@ package body Sem_Ch13 is
                null;
 
             elsif Comes_From_Source (StmtO)
-              and then not Nkind_In (StmtO, N_Pragma,
-                                            N_Label,
-                                            N_Code_Statement)
+              and then Nkind (StmtO) not in
+                         N_Pragma | N_Label | N_Code_Statement
             then
                Error_Msg_N
                  ("this statement is not allowed in machine code subprogram",
@@ -9142,7 +9139,7 @@ package body Sem_Ch13 is
 
          --  Identifier (other than static expression) case
 
-         else pragma Assert (Nkind_In (N, N_Expanded_Name, N_Identifier));
+         else pragma Assert (Nkind (N) in N_Expanded_Name | N_Identifier);
 
             --  Type case
 
@@ -10001,11 +9998,10 @@ package body Sem_Ch13 is
                -------------------------------------
 
                function Reset_Quantified_Variable_Scope
-                 (N : Node_Id) return Traverse_Result
-               is
+                 (N : Node_Id) return Traverse_Result is
                begin
-                  if Nkind_In (N, N_Iterator_Specification,
-                                  N_Loop_Parameter_Specification)
+                  if Nkind (N) in N_Iterator_Specification
+                                | N_Loop_Parameter_Specification
                   then
                      Set_Scope (Defining_Identifier (N),
                        Predicate_Function (Typ));
@@ -10983,12 +10979,12 @@ package body Sem_Ch13 is
 
                --  Otherwise look at the identifier and see if it is OK
 
-               if Ekind_In (Ent, E_Named_Integer, E_Named_Real)
+               if Ekind (Ent) in E_Named_Integer | E_Named_Real
                  or else Is_Type (Ent)
                then
                   return;
 
-               elsif Ekind_In (Ent, E_Constant, E_In_Parameter) then
+               elsif Ekind (Ent) in E_Constant | E_In_Parameter then
 
                   --  This is the case where we must have Ent defined before
                   --  U_Ent. Clearly if they are in different units this
@@ -11070,10 +11066,10 @@ package body Sem_Ch13 is
                Check_Expr_Constants (Prefix (Nod));
 
             when N_Attribute_Reference =>
-               if Nam_In (Attribute_Name (Nod), Name_Address,
-                                                Name_Access,
-                                                Name_Unchecked_Access,
-                                                Name_Unrestricted_Access)
+               if Attribute_Name (Nod) in Name_Address
+                                        | Name_Access
+                                        | Name_Unchecked_Access
+                                        | Name_Unrestricted_Access
                then
                   Check_At_Constant_Address (Prefix (Nod));
 
@@ -11292,7 +11288,7 @@ package body Sem_Ch13 is
             --  record, both at location zero. This seems a bit strange, but
             --  it seems to happen in some circumstances, perhaps on an error.
 
-            if Nam_In (Chars (C1_Ent), Name_uTag, Name_uTag) then
+            if Chars (C1_Ent) = Name_uTag then
                return;
             end if;
 
@@ -11687,7 +11683,7 @@ package body Sem_Ch13 is
             Parent_Last_Bit := UI_From_Int (System_Address_Size - 1);
             Pcomp := First_Entity (Tagged_Parent);
             while Present (Pcomp) loop
-               if Ekind_In (Pcomp, E_Discriminant, E_Component) then
+               if Ekind (Pcomp) in E_Discriminant | E_Component then
                   if Component_Bit_Offset (Pcomp) /= No_Uint
                     and then Known_Static_Esize (Pcomp)
                   then
@@ -11919,7 +11915,7 @@ package body Sem_Ch13 is
             --  This latter test is repeated recursively up the variant tree.
 
             Main_Component_Loop : while Present (C1_Ent) loop
-               if not Ekind_In (C1_Ent, E_Component, E_Discriminant) then
+               if Ekind (C1_Ent) not in E_Component | E_Discriminant then
                   goto Continue_Main_Component_Loop;
                end if;
 
@@ -11950,8 +11946,8 @@ package body Sem_Ch13 is
                   --  but be careful not to flag a non-girder discriminant
                   --  and the girder discriminant it renames as overlapping.
 
-                  if Nkind_In (Clist, N_Full_Type_Declaration,
-                                      N_Private_Type_Declaration)
+                  if Nkind (Clist) in N_Full_Type_Declaration
+                                    | N_Private_Type_Declaration
                   then
                      if Has_Discriminants (Defining_Identifier (Clist)) then
                         C2_Ent :=
@@ -12306,7 +12302,7 @@ package body Sem_Ch13 is
             --  The subprogram is inherited (implicitly declared), it does not
             --  override and does not cover a primitive of an interface.
 
-            if Ekind_In (Subp_Id, E_Function, E_Procedure)
+            if Ekind (Subp_Id) in E_Function | E_Procedure
               and then Present (Alias (Subp_Id))
               and then No (Interface_Alias (Subp_Id))
               and then No (Overridden_Operation (Subp_Id))
@@ -13062,9 +13058,8 @@ package body Sem_Ch13 is
             return Entity (Rep_Item);
 
          else
-            pragma Assert (Nkind_In (Rep_Item,
-                                     N_Attribute_Definition_Clause,
-                                     N_Pragma));
+            pragma Assert
+              (Nkind (Rep_Item) in N_Attribute_Definition_Clause | N_Pragma);
             return Entity (Name (Rep_Item));
          end if;
       end Rep_Item_Entity;
@@ -13488,7 +13483,7 @@ package body Sem_Ch13 is
       --  20. A call to a predefined boolean logical operator, where each
       --  operand is predicate-static.
 
-      elsif (Nkind_In (Expr, N_Op_And, N_Op_Or, N_Op_Xor)
+      elsif (Nkind (Expr) in N_Op_And | N_Op_Or | N_Op_Xor
               and then Is_Predicate_Static (Left_Opnd (Expr), Nam)
               and then Is_Predicate_Static (Right_Opnd (Expr), Nam))
         or else
@@ -14352,7 +14347,7 @@ package body Sem_Ch13 is
          --  A self-referential aspect is illegal if it forces freezing the
          --  entity before the corresponding pragma has been analyzed.
 
-         if Nkind_In (N, N_Attribute_Definition_Clause, N_Pragma)
+         if Nkind (N) in N_Attribute_Definition_Clause | N_Pragma
            and then From_Aspect_Specification (N)
          then
             Error_Msg_NE
@@ -14478,8 +14473,8 @@ package body Sem_Ch13 is
          declare
             Pname : constant Name_Id := Pragma_Name (N);
          begin
-            if Nam_In (Pname, Name_Convention, Name_Import,   Name_Export,
-                              Name_External,   Name_Interface)
+            if Pname in Name_Convention | Name_Import | Name_Export
+                      | Name_External   | Name_Interface
             then
                return False;
             end if;

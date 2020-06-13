@@ -4149,7 +4149,7 @@ package body Exp_Ch4 is
          --  we avoid never-ending loops expanding them, and we also ensure
          --  the back end never receives nonbinary modular type expressions.
 
-         if Nkind_In (Nkind (N), N_Op_And, N_Op_Or, N_Op_Xor) then
+         if Nkind (N) in N_Op_And | N_Op_Or | N_Op_Xor then
             Set_Left_Opnd (Op_Expr,
               Unchecked_Convert_To (Standard_Unsigned,
                 New_Copy_Tree (Left_Opnd (N))));
@@ -4532,11 +4532,11 @@ package body Exp_Ch4 is
          --  lifetime of the object must be associated with the named access
          --  type. Use the finalization-related attributes of this type.
 
-         if Nkind_In (Parent (N), N_Type_Conversion,
-                                  N_Unchecked_Type_Conversion)
-           and then Ekind_In (Etype (Parent (N)), E_Access_Subtype,
-                                                  E_Access_Type,
-                                                  E_General_Access_Type)
+         if Nkind (Parent (N)) in N_Type_Conversion
+                                | N_Unchecked_Type_Conversion
+           and then Ekind (Etype (Parent (N))) in E_Access_Subtype
+                                                | E_Access_Type
+                                                | E_General_Access_Type
          then
             Rel_Typ := Etype (Parent (N));
          else
@@ -5084,8 +5084,8 @@ package body Exp_Ch4 is
                                 New_Occurrence_Of
                                   (Entity (Nam), Sloc (Nam)), T);
 
-                        elsif Nkind_In (Nam, N_Indexed_Component,
-                                             N_Selected_Component)
+                        elsif Nkind (Nam) in N_Indexed_Component
+                                           | N_Selected_Component
                           and then Is_Entity_Name (Prefix (Nam))
                         then
                            Decls :=
@@ -5355,7 +5355,7 @@ package body Exp_Ch4 is
       --  to which it applies has a static predicate aspect, do not expand,
       --  because it will be converted to the proper predicate form later.
 
-      if Ekind_In (Current_Scope, E_Function, E_Procedure)
+      if Ekind (Current_Scope) in E_Function | E_Procedure
         and then Is_Predicate_Function (Current_Scope)
       then
          In_Predicate := True;
@@ -6224,8 +6224,8 @@ package body Exp_Ch4 is
                --  to consider???
 
                loop
-                  if Nkind_In (Obj_Ref, N_Type_Conversion,
-                                        N_Unchecked_Type_Conversion)
+                  if Nkind (Obj_Ref) in
+                       N_Type_Conversion | N_Unchecked_Type_Conversion
                   then
                      Obj_Ref := Expression (Obj_Ref);
                   else
@@ -7081,9 +7081,9 @@ package body Exp_Ch4 is
                return;
 
             elsif Nkind (Parnt) = N_Attribute_Reference
-              and then Nam_In (Attribute_Name (Parnt), Name_Address,
-                                                       Name_Bit,
-                                                       Name_Size)
+              and then Attribute_Name (Parnt) in Name_Address
+                                               | Name_Bit
+                                               | Name_Size
               and then Prefix (Parnt) = Child
             then
                return;
@@ -8440,13 +8440,12 @@ package body Exp_Ch4 is
       --  records because there may be padding or undefined fields.
 
       elsif Unnest_Subprogram_Mode
-        and then Ekind_In (Typl, E_Class_Wide_Type,
-                                 E_Class_Wide_Subtype,
-                                 E_Access_Subprogram_Type,
-                                 E_Access_Protected_Subprogram_Type,
-                                 E_Anonymous_Access_Protected_Subprogram_Type,
-                                 E_Access_Subprogram_Type,
-                                 E_Exception_Type)
+        and then Ekind (Typl) in E_Class_Wide_Type
+                               | E_Class_Wide_Subtype
+                               | E_Access_Subprogram_Type
+                               | E_Access_Protected_Subprogram_Type
+                               | E_Anonymous_Access_Protected_Subprogram_Type
+                               | E_Exception_Type
         and then Present (Equivalent_Type (Typl))
         and then Is_Record_Type (Equivalent_Type (Typl))
       then
@@ -8759,7 +8758,7 @@ package body Exp_Ch4 is
          --  too tricky to combine the overflow check at the parent level.
 
          if not Ovflo
-           and then Nkind_In (Parent (N), N_Op_Divide, N_Op_Multiply)
+           and then Nkind (Parent (N)) in N_Op_Divide | N_Op_Multiply
          then
             declare
                P : constant Node_Id := Parent (N);
@@ -9792,13 +9791,12 @@ package body Exp_Ch4 is
 
       if Is_Elementary_Type (Typ)
         and then Sloc (Entity (N)) = Standard_Location
-        and then not (Ekind_In (Typ, E_Class_Wide_Type,
-                                E_Class_Wide_Subtype,
-                                E_Access_Subprogram_Type,
-                                E_Access_Protected_Subprogram_Type,
-                                E_Anonymous_Access_Protected_Subprogram_Type,
-                                E_Access_Subprogram_Type,
-                                E_Exception_Type)
+        and then not (Ekind (Typ) in E_Class_Wide_Type
+                              | E_Class_Wide_Subtype
+                              | E_Access_Subprogram_Type
+                              | E_Access_Protected_Subprogram_Type
+                              | E_Anonymous_Access_Protected_Subprogram_Type
+                              | E_Exception_Type
                         and then Present (Equivalent_Type (Typ))
                         and then Is_Record_Type (Equivalent_Type (Typ)))
       then
@@ -9978,7 +9976,7 @@ package body Exp_Ch4 is
 
          --  Special case the negation of a binary operation
 
-         elsif Nkind_In (Opnd, N_Op_And, N_Op_Or, N_Op_Xor)
+         elsif Nkind (Opnd) in N_Op_And | N_Op_Or | N_Op_Xor
            and then Safe_In_Place_Array_Op
                       (Name (Parent (N)), Left_Opnd (Opnd), Right_Opnd (Opnd))
          then
@@ -11153,9 +11151,9 @@ package body Exp_Ch4 is
             --  since these are additional cases that do can appear on
             --  procedure actuals.
 
-            elsif Nkind_In (Par, N_Type_Conversion,
-                                 N_Parameter_Association,
-                                 N_Qualified_Expression)
+            elsif Nkind (Par) in N_Type_Conversion
+                               | N_Parameter_Association
+                               | N_Qualified_Expression
             then
                Par := Parent (Par);
 
@@ -11885,7 +11883,7 @@ package body Exp_Ch4 is
 
       function Has_Extra_Accessibility (Id : Entity_Id) return Boolean is
       begin
-         if Is_Formal (Id) or else Ekind_In (Id, E_Constant, E_Variable) then
+         if Is_Formal (Id) or else Ekind (Id) in E_Constant | E_Variable then
             return Present (Effective_Extra_Accessibility (Id));
          else
             return False;
@@ -12135,9 +12133,9 @@ package body Exp_Ch4 is
                       or else Attribute_Name (Original_Node (N)) = Name_Access)
          then
             if not Comes_From_Source (N)
-              and then Nkind_In (Parent (N), N_Function_Call,
-                                             N_Parameter_Association,
-                                             N_Procedure_Call_Statement)
+              and then Nkind (Parent (N)) in N_Function_Call
+                                           | N_Parameter_Association
+                                           | N_Procedure_Call_Statement
               and then Is_Interface (Designated_Type (Target_Type))
               and then Is_Class_Wide_Type (Designated_Type (Target_Type))
             then
@@ -12752,7 +12750,7 @@ package body Exp_Ch4 is
 
             exit when No (Comp);
 
-            exit when Ekind_In (Comp, E_Discriminant, E_Component)
+            exit when Ekind (Comp) in E_Discriminant | E_Component
               and then not (
 
               --  Skip inherited components
@@ -13530,13 +13528,9 @@ package body Exp_Ch4 is
            --  value and unary negation. Unary "+" is omitted since it is a
            --  no-op and thus can't overflow.
 
-           and then Nkind_In (Operand, N_Op_Abs,
-                                       N_Op_Add,
-                                       N_Op_Divide,
-                                       N_Op_Expon,
-                                       N_Op_Minus,
-                                       N_Op_Multiply,
-                                       N_Op_Subtract);
+           and then Nkind (Operand) in
+                      N_Op_Abs   | N_Op_Add      | N_Op_Divide | N_Op_Expon |
+                      N_Op_Minus | N_Op_Multiply | N_Op_Subtract;
    end Integer_Promotion_Possible;
 
    ------------------------------
@@ -14746,9 +14740,9 @@ package body Exp_Ch4 is
       --  transient object.
 
    begin
-      pragma Assert (Nkind_In (Expr, N_Case_Expression,
-                                     N_Expression_With_Actions,
-                                     N_If_Expression));
+      pragma Assert (Nkind (Expr) in N_Case_Expression
+                                   | N_Expression_With_Actions
+                                   | N_If_Expression);
 
       --  When the context is a Boolean evaluation, all three nodes capture the
       --  result of their computation in a local temporary:
@@ -14815,7 +14809,7 @@ package body Exp_Ch4 is
       --      <or>
       --    Hook := Obj_Id'Unrestricted_Access;
 
-      if Ekind_In (Obj_Id, E_Constant, E_Variable)
+      if Ekind (Obj_Id) in E_Constant | E_Variable
         and then Present (Last_Aggregate_Assignment (Obj_Id))
       then
          Hook_Insert := Last_Aggregate_Assignment (Obj_Id);
@@ -14949,7 +14943,7 @@ package body Exp_Ch4 is
          elsif Is_Entity_Name (Op) then
             return Is_Unaliased (Op);
 
-         elsif Nkind_In (Op, N_Indexed_Component, N_Selected_Component) then
+         elsif Nkind (Op) in N_Indexed_Component | N_Selected_Component then
             return Is_Unaliased (Prefix (Op));
 
          elsif Nkind (Op) = N_Slice then

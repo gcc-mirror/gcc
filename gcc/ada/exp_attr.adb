@@ -533,10 +533,7 @@ package body Exp_Attr is
          --  Comes_From_Source is not correct because this will eliminate the
          --  components within the corresponding record of a protected type.
 
-         if Nam_In (Field_Nam, Name_uObject,
-                               Name_uParent,
-                               Name_uTag)
-         then
+         if Field_Nam in Name_uObject | Name_uParent | Name_uTag then
             null;
 
          --  Do not process fields without any scalar components
@@ -2030,8 +2027,8 @@ package body Exp_Attr is
 
       if Is_Protected_Self_Reference (Pref)
         and then not
-          (Nkind_In (Parent (N), N_Index_Or_Discriminant_Constraint,
-                                 N_Discriminant_Association)
+          (Nkind (Parent (N)) in N_Index_Or_Discriminant_Constraint
+                               | N_Discriminant_Association
             and then Nkind (Parent (Parent (Parent (Parent (N))))) =
                                                       N_Component_Definition)
 
@@ -2100,9 +2097,9 @@ package body Exp_Attr is
 
             begin
                Obj_Name := N;
-               while Nkind_In (Obj_Name, N_Selected_Component,
-                                         N_Indexed_Component,
-                                         N_Slice)
+               while Nkind (Obj_Name) in N_Selected_Component
+                                       | N_Indexed_Component
+                                       | N_Slice
                loop
                   Obj_Name := Prefix (Obj_Name);
                end loop;
@@ -2270,7 +2267,7 @@ package body Exp_Attr is
 
                         begin
                            Subp := Current_Scope;
-                           while Ekind_In (Subp, E_Loop, E_Block) loop
+                           while Ekind (Subp) in E_Loop | E_Block loop
                               Subp := Scope (Subp);
                            end loop;
 
@@ -7666,7 +7663,7 @@ package body Exp_Attr is
          Cnam := Name_Last;
       end if;
 
-      if not Nkind_In (P, N_Assignment_Statement, N_Object_Declaration)
+      if Nkind (P) not in N_Assignment_Statement | N_Object_Declaration
         or else not Suppress_Assignment_Checks (P)
       then
          Insert_Action (N,

@@ -520,7 +520,7 @@ package body Exp_Prag is
                --  that the failure is not at the point of occurrence of the
                --  pragma, unlike the other Check cases.
 
-               elsif Nam_In (Nam, Name_Precondition, Name_Postcondition) then
+               elsif Nam in Name_Precondition | Name_Postcondition then
                   Get_Name_String (Nam);
                   Insert_Str_In_Name_Buffer ("failed ", 1);
                   Add_Str_To_Name_Buffer (" from ");

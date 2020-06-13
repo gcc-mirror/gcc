@@ -534,7 +534,7 @@ package body Exp_Aggr is
       --  Strip away any conversions from the expression as they simply
       --  qualify the real expression.
 
-      while Nkind_In (Expr, N_Unchecked_Type_Conversion, N_Type_Conversion)
+      while Nkind (Expr) in N_Unchecked_Type_Conversion | N_Type_Conversion
       loop
          Expr := Expression (Expr);
       end loop;
@@ -855,8 +855,8 @@ package body Exp_Aggr is
             Expr : Node_Id := Original_Node (N);
 
          begin
-            while Nkind_In (Expr, N_Type_Conversion,
-                                  N_Unchecked_Type_Conversion)
+            while Nkind (Expr) in
+                    N_Type_Conversion | N_Unchecked_Type_Conversion
             loop
                Expr := Original_Node (Expression (Expr));
             end loop;
@@ -1554,9 +1554,9 @@ package body Exp_Aggr is
             --  the initialization expression denotes. An unanalyzed function
             --  call may appear as an identifier or an indexed component.
 
-            if Nkind_In (Expr, N_Function_Call,
-                               N_Identifier,
-                               N_Indexed_Component)
+            if Nkind (Expr) in N_Function_Call
+                             | N_Identifier
+                             | N_Indexed_Component
               and then not Analyzed (Expr)
             then
                Preanalyze_And_Resolve (Expr, Comp_Typ);
@@ -1737,7 +1737,7 @@ package body Exp_Aggr is
          --  default initialized components (otherwise Expr_Q is not present).
 
          if Present (Expr_Q)
-           and then Nkind_In (Expr_Q, N_Aggregate, N_Extension_Aggregate)
+           and then Nkind (Expr_Q) in N_Aggregate | N_Extension_Aggregate
          then
             --  At this stage the Expression may not have been analyzed yet
             --  because the array aggregate code has not been updated to use
@@ -3064,9 +3064,9 @@ package body Exp_Aggr is
          --  the initialization expression denotes. Unanalyzed function calls
          --  may appear as identifiers or indexed components.
 
-         if Nkind_In (Init_Expr, N_Function_Call,
-                                 N_Identifier,
-                                 N_Indexed_Component)
+         if Nkind (Init_Expr) in N_Function_Call
+                               | N_Identifier
+                               | N_Indexed_Component
            and then not Analyzed (Init_Expr)
          then
             Preanalyze_And_Resolve (Init_Expr, Comp_Typ);
@@ -3490,8 +3490,8 @@ package body Exp_Aggr is
             --  qualified).
 
             elsif Is_Limited_Type (Etype (Ancestor))
-              and then Nkind_In (Unqualify (Ancestor), N_Aggregate,
-                                                       N_Extension_Aggregate)
+              and then Nkind (Unqualify (Ancestor)) in
+                         N_Aggregate | N_Extension_Aggregate
             then
                Ancestor_Is_Expression := True;
 
@@ -3523,8 +3523,8 @@ package body Exp_Aggr is
                --  If the ancestor part is an aggregate, force its full
                --  expansion, which was delayed.
 
-               if Nkind_In (Unqualify (Ancestor), N_Aggregate,
-                                                  N_Extension_Aggregate)
+               if Nkind (Unqualify (Ancestor)) in
+                    N_Aggregate | N_Extension_Aggregate
                then
                   Set_Analyzed (Ancestor, False);
                   Set_Analyzed (Expression (Ancestor), False);
@@ -4783,7 +4783,7 @@ package body Exp_Aggr is
       Parent_Node : Node_Id;
 
    begin
-      pragma Assert (Nkind_In (N, N_Aggregate, N_Extension_Aggregate));
+      pragma Assert (Nkind (N) in N_Aggregate | N_Extension_Aggregate);
       pragma Assert (not Is_Static_Dispatch_Table_Aggregate (N));
       pragma Assert (Is_Record_Type (Typ));
 
@@ -4897,7 +4897,7 @@ package body Exp_Aggr is
 
             --  The check just above may have replaced the aggregate with a CE
 
-            if Nkind_In (N, N_Aggregate, N_Extension_Aggregate) then
+            if Nkind (N) in N_Aggregate | N_Extension_Aggregate then
                Target_Expr := New_Copy_Tree (Lhs);
                Insert_Actions (Parent_Node,
                  Build_Record_Aggr_Code (N, Typ, Target_Expr));
@@ -6189,7 +6189,7 @@ package body Exp_Aggr is
          if Is_Entity_Name (N) then
             return True;
 
-         elsif Nkind_In (N, N_Explicit_Dereference, N_Selected_Component)
+         elsif Nkind (N) in N_Explicit_Dereference | N_Selected_Component
            and then Safe_Left_Hand_Side (Prefix (N))
          then
             return True;
@@ -6701,7 +6701,7 @@ package body Exp_Aggr is
          if Needs_Finalization (Typ)
            and then Is_Entity_Name (Target)
            and then Present (Entity (Target))
-           and then Ekind_In (Entity (Target), E_Constant, E_Variable)
+           and then Ekind (Entity (Target)) in E_Constant | E_Variable
          then
             Set_Last_Aggregate_Assignment (Entity (Target), Last (Aggr_Code));
          end if;
@@ -8099,8 +8099,8 @@ package body Exp_Aggr is
       begin
          Aggr := N;
          while Present (Parent (Aggr))
-           and then Nkind_In (Parent (Aggr), N_Aggregate,
-                                             N_Component_Association)
+           and then Nkind (Parent (Aggr)) in
+                      N_Aggregate | N_Component_Association
          loop
             Aggr := Parent (Aggr);
          end loop;
@@ -8146,8 +8146,8 @@ package body Exp_Aggr is
       --  aggregates for C++ imported types must be expanded.
 
       elsif Ada_Version >= Ada_2005 and then Is_Limited_View (Typ) then
-         if not Nkind_In (Parent (N), N_Component_Association,
-                                      N_Object_Declaration)
+         if Nkind (Parent (N)) not in
+              N_Component_Association | N_Object_Declaration
          then
             Convert_To_Assignments (N, Typ);
 
@@ -8257,7 +8257,7 @@ package body Exp_Aggr is
    begin
       R := Get_Referenced_Object (N);
 
-      while Nkind_In (R, N_Indexed_Component, N_Selected_Component, N_Slice)
+      while Nkind (R) in N_Indexed_Component | N_Selected_Component | N_Slice
       loop
          R := Get_Referenced_Object (Prefix (R));
       end loop;
@@ -8279,7 +8279,7 @@ package body Exp_Aggr is
       Expr  : Node_Id;
 
    begin
-      pragma Assert (Nkind_In (N, N_Aggregate, N_Extension_Aggregate));
+      pragma Assert (Nkind (N) in N_Aggregate | N_Extension_Aggregate);
 
       if No (Comps) then
          return False;
@@ -8307,7 +8307,7 @@ package body Exp_Aggr is
          Expr := Expression (C);
 
          if Present (Expr)
-           and then Nkind_In (Expr, N_Aggregate, N_Extension_Aggregate)
+           and then Nkind (Expr) in N_Aggregate | N_Extension_Aggregate
            and then Has_Default_Init_Comps (Expr)
          then
             return True;
@@ -8360,7 +8360,7 @@ package body Exp_Aggr is
          Kind := Nkind (Node);
       end if;
 
-      if not Nkind_In (Kind, N_Aggregate, N_Extension_Aggregate) then
+      if Kind not in N_Aggregate | N_Extension_Aggregate then
          return False;
       else
          return Expansion_Delayed (Node);
@@ -8532,7 +8532,7 @@ package body Exp_Aggr is
       if Needs_Finalization (Typ)
         and then Is_Entity_Name (Target)
         and then Present (Entity (Target))
-        and then Ekind_In (Entity (Target), E_Constant, E_Variable)
+        and then Ekind (Entity (Target)) in E_Constant | E_Variable
       then
          Set_Last_Aggregate_Assignment (Entity (Target), Last (Aggr_Code));
       end if;
@@ -8576,13 +8576,13 @@ package body Exp_Aggr is
       function Aggr_Context (N : Node_Id) return Node_Id is
          Result : Node_Id := Parent (N);
       begin
-         if Nkind_In (Result, N_Qualified_Expression,
-                              N_Type_Conversion,
-                              N_Unchecked_Type_Conversion,
-                              N_If_Expression,
-                              N_Case_Expression,
-                              N_Component_Association,
-                              N_Aggregate)
+         if Nkind (Result) in N_Qualified_Expression
+                            | N_Type_Conversion
+                            | N_Unchecked_Type_Conversion
+                            | N_If_Expression
+                            | N_Case_Expression
+                            | N_Component_Association
+                            | N_Aggregate
          then
             Result := Aggr_Context (Result);
          end if;
@@ -9370,7 +9370,7 @@ package body Exp_Aggr is
 
       function Is_Static_Component (Nod : Node_Id) return Boolean is
       begin
-         if Nkind_In (Nod, N_Integer_Literal, N_Real_Literal) then
+         if Nkind (Nod) in N_Integer_Literal | N_Real_Literal then
             return True;
 
          elsif Is_Entity_Name (Nod)

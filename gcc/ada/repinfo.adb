@@ -527,9 +527,9 @@ package body Repinfo is
 
                   List_Entities (E, Bytes_Big_Endian, True);
 
-               elsif Ekind_In (E, E_Entry,
-                                  E_Entry_Family,
-                                  E_Subprogram_Type)
+               elsif Ekind (E) in E_Entry
+                                | E_Entry_Family
+                                | E_Subprogram_Type
                then
                   if List_Representation_Info_Mechanisms then
                      List_Subprogram_Info (E);
@@ -558,9 +558,9 @@ package body Repinfo is
 
                --  Note that formals are not annotated so we skip them here
 
-               elsif Ekind_In (E, E_Constant,
-                                  E_Loop_Parameter,
-                                  E_Variable)
+               elsif Ekind (E) in E_Constant
+                                | E_Loop_Parameter
+                                | E_Variable
                then
                   if List_Representation_Info >= 2 then
                      List_Object_Info (E);
@@ -578,12 +578,12 @@ package body Repinfo is
 
                --  Recurse into bodies
 
-               elsif Ekind_In (E, E_Package_Body,
-                                  E_Protected_Body,
-                                  E_Protected_Type,
-                                  E_Subprogram_Body,
-                                  E_Task_Body,
-                                  E_Task_Type)
+               elsif Ekind (E) in E_Package_Body
+                                | E_Protected_Body
+                                | E_Protected_Type
+                                | E_Subprogram_Body
+                                | E_Task_Body
+                                | E_Task_Type
                then
                   List_Entities (E, Bytes_Big_Endian);
 

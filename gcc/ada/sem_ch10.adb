@@ -413,8 +413,8 @@ package body Sem_Ch10 is
 
                elsif Nkind (Cont_Item) = N_Pragma
                  and then
-                   Nam_In (Pragma_Name_Unmapped (Cont_Item),
-                           Name_Elaborate, Name_Elaborate_All)
+                   Pragma_Name_Unmapped (Cont_Item)
+                     in Name_Elaborate | Name_Elaborate_All
                  and then not Used_Type_Or_Elab
                then
                   Prag_Unit :=
@@ -724,8 +724,8 @@ package body Sem_Ch10 is
 
             --  Verify that the library unit is a package declaration
 
-            if not Nkind_In (Unit (Lib_Unit), N_Package_Declaration,
-                                              N_Generic_Package_Declaration)
+            if Nkind (Unit (Lib_Unit)) not in
+                 N_Package_Declaration | N_Generic_Package_Declaration
             then
                Error_Msg_N
                  ("no legal package declaration for package body", N);
@@ -952,8 +952,8 @@ package body Sem_Ch10 is
       --  Analyze the contract of a [generic] subprogram that acts as a
       --  compilation unit after all compilation pragmas have been analyzed.
 
-      if Nkind_In (Unit_Node, N_Generic_Subprogram_Declaration,
-                              N_Subprogram_Declaration)
+      if Nkind (Unit_Node) in
+           N_Generic_Subprogram_Declaration | N_Subprogram_Declaration
       then
          Analyze_Entry_Or_Subprogram_Contract (Defining_Entity (Unit_Node));
       end if;
@@ -998,10 +998,10 @@ package body Sem_Ch10 is
       --  next compilation, which is either the main unit or some other unit
       --  in the context.
 
-      if Nkind_In (Unit_Node, N_Package_Declaration,
-                              N_Package_Renaming_Declaration,
-                              N_Subprogram_Declaration)
-        or else Nkind (Unit_Node) in N_Generic_Declaration
+      if Nkind (Unit_Node) in N_Package_Declaration
+                            | N_Package_Renaming_Declaration
+                            | N_Subprogram_Declaration
+                            | N_Generic_Declaration
         or else (Nkind (Unit_Node) = N_Subprogram_Body
                   and then Acts_As_Spec (Unit_Node))
       then
@@ -1149,9 +1149,9 @@ package body Sem_Ch10 is
          --  are triggered by these subprograms.
 
          if GNATprove_Mode
-           and then Nkind_In (Unit_Node, N_Function_Instantiation,
-                                         N_Procedure_Instantiation,
-                                         N_Subprogram_Body)
+           and then Nkind (Unit_Node) in N_Function_Instantiation
+                                       | N_Procedure_Instantiation
+                                       | N_Subprogram_Body
          then
             declare
                Spec : Node_Id;
@@ -1190,10 +1190,10 @@ package body Sem_Ch10 is
       --  units manufactured by the compiler never need elab checks.
 
       if Comes_From_Source (N)
-        and then Nkind_In (Unit_Node, N_Package_Declaration,
-                                      N_Generic_Package_Declaration,
-                                      N_Subprogram_Declaration,
-                                      N_Generic_Subprogram_Declaration)
+        and then Nkind (Unit_Node) in N_Package_Declaration
+                                    | N_Generic_Package_Declaration
+                                    | N_Subprogram_Declaration
+                                    | N_Generic_Subprogram_Declaration
       then
          declare
             Loc  : constant Source_Ptr       := Sloc (N);
@@ -1478,10 +1478,10 @@ package body Sem_Ch10 is
                --  Verify that the illegal contexts given in 10.1.2 (18/2) are
                --  properly rejected, including renaming declarations.
 
-               if not Nkind_In (Ukind, N_Package_Declaration,
-                                       N_Subprogram_Declaration)
-                 and then Ukind not in N_Generic_Declaration
-                 and then Ukind not in N_Generic_Instantiation
+               if Ukind not in N_Package_Declaration
+                             | N_Subprogram_Declaration
+                             | N_Generic_Declaration
+                             | N_Generic_Instantiation
                then
                   Error_Msg_N ("limited with_clause not allowed here", Item);
 
@@ -1536,10 +1536,9 @@ package body Sem_Ch10 is
                         if Item /= It
                           and then Nkind (It) = N_With_Clause
                           and then not Limited_Present (It)
-                          and then
-                            Nkind_In (Unit (Library_Unit (It)),
-                                      N_Package_Declaration,
-                                      N_Package_Renaming_Declaration)
+                          and then Nkind (Unit (Library_Unit (It))) in
+                                     N_Package_Declaration |
+                                     N_Package_Renaming_Declaration
                         then
                            if Nkind (Unit (Library_Unit (It))) =
                                                       N_Package_Declaration
@@ -2022,9 +2021,8 @@ package body Sem_Ch10 is
       --  Verify that the identifier for the stub is unique within this
       --  declarative part.
 
-      if Nkind_In (Parent (N), N_Block_Statement,
-                               N_Package_Body,
-                               N_Subprogram_Body)
+      if Nkind (Parent (N)) in
+           N_Block_Statement | N_Package_Body | N_Subprogram_Body
       then
          Decl := First (Declarations (Parent (N)));
          while Present (Decl) and then Decl /= N loop
@@ -2361,8 +2359,7 @@ package body Sem_Ch10 is
                Remove_Scope;
             end if;
 
-            if Nkind_In (Unit (Lib_Spec), N_Package_Body,
-                                          N_Subprogram_Body)
+            if Nkind (Unit (Lib_Spec)) in N_Package_Body | N_Subprogram_Body
             then
                Remove_Context (Library_Unit (Lib_Spec));
             end if;
@@ -2655,9 +2652,8 @@ package body Sem_Ch10 is
          if Nkind (Nam) = N_Selected_Component
            and then Nkind (Prefix (Nam)) = N_Identifier
            and then Chars (Prefix (Nam)) = Name_Gnat
-           and then Nam_In (Chars (Selector_Name (Nam)),
-                            Name_Most_Recent_Exception,
-                            Name_Exception_Traces)
+           and then Chars (Selector_Name (Nam))
+                      in Name_Most_Recent_Exception | Name_Exception_Traces
          then
             Check_Restriction (No_Exception_Propagation, N);
             Special_Exception_Package_Used := True;
@@ -2967,7 +2963,7 @@ package body Sem_Ch10 is
    --  Start of processing for Check_Private_Child_Unit
 
    begin
-      if Nkind_In (Lib_Unit, N_Package_Body, N_Subprogram_Body) then
+      if Nkind (Lib_Unit) in N_Package_Body | N_Subprogram_Body then
          Curr_Unit := Defining_Entity (Unit (Library_Unit (N)));
          Par_Lib   := Curr_Unit;
 
@@ -3074,7 +3070,7 @@ package body Sem_Ch10 is
 
                elsif Curr_Private
                  or else Private_Present (Item)
-                 or else Nkind_In (Lib_Unit, N_Package_Body, N_Subunit)
+                 or else Nkind (Lib_Unit) in N_Package_Body | N_Subunit
                  or else (Nkind (Lib_Unit) = N_Subprogram_Body
                            and then not Acts_As_Spec (Parent (Lib_Unit)))
                then
@@ -3101,11 +3097,9 @@ package body Sem_Ch10 is
       Kind : constant Node_Kind := Nkind (Par);
 
    begin
-      if Nkind_In (Kind, N_Package_Body,
-                         N_Subprogram_Body,
-                         N_Task_Body,
-                         N_Protected_Body)
-        and then Nkind_In (Parent (Par), N_Compilation_Unit, N_Subunit)
+      if Kind in
+           N_Package_Body | N_Subprogram_Body | N_Task_Body | N_Protected_Body
+        and then Nkind (Parent (Par)) in N_Compilation_Unit | N_Subunit
       then
          null;
 
@@ -3202,11 +3196,11 @@ package body Sem_Ch10 is
       --  on a child unit implies that the implicit with on the parent is also
       --  private.
 
-      if Nkind_In (Unit (N), N_Generic_Package_Declaration,
-                             N_Package_Declaration,
-                             N_Generic_Subprogram_Declaration,
-                             N_Subprogram_Declaration,
-                             N_Subprogram_Body)
+      if Nkind (Unit (N)) in N_Generic_Package_Declaration
+                           | N_Package_Declaration
+                           | N_Generic_Subprogram_Declaration
+                           | N_Subprogram_Declaration
+                           | N_Subprogram_Body
       then
          Set_Private_Present (Withn, Private_Present (Item));
       end if;
@@ -3715,10 +3709,10 @@ package body Sem_Ch10 is
          Install_Siblings (Defining_Entity (Unit (Library_Unit (N))), N);
       end if;
 
-      if Nkind_In (Lib_Unit, N_Generic_Package_Declaration,
-                             N_Generic_Subprogram_Declaration,
-                             N_Package_Declaration,
-                             N_Subprogram_Declaration)
+      if Nkind (Lib_Unit) in N_Generic_Package_Declaration
+                           | N_Generic_Subprogram_Declaration
+                           | N_Package_Declaration
+                           | N_Subprogram_Declaration
       then
          if Is_Child_Spec (Lib_Unit) then
             Lib_Parent := Defining_Entity (Unit (Parent_Spec (Lib_Unit)));
@@ -3908,9 +3902,8 @@ package body Sem_Ch10 is
          elsif Private_Present (Parent (Item))
             or else Curr_Private
             or else Private_Present (Item)
-            or else Nkind_In (Unit (Parent (Item)), N_Package_Body,
-                                                    N_Subprogram_Body,
-                                                    N_Subunit)
+            or else Nkind (Unit (Parent (Item))) in
+                      N_Package_Body | N_Subprogram_Body | N_Subunit
          then
             --  Current unit is private, of descendant of a private unit
 
@@ -4068,9 +4061,8 @@ package body Sem_Ch10 is
             then
                if not Private_Present (Item)
                  or else Private_Present (N)
-                 or else Nkind_In (Unit (N), N_Package_Body,
-                                             N_Subprogram_Body,
-                                             N_Subunit)
+                 or else Nkind (Unit (N)) in
+                           N_Package_Body | N_Subprogram_Body | N_Subunit
                then
                   Install_Limited_With_Clause (Item);
                end if;
@@ -4162,9 +4154,9 @@ package body Sem_Ch10 is
       end if;
 
       if Ekind (P_Name) = E_Generic_Package
-        and then not Nkind_In (Lib_Unit, N_Generic_Subprogram_Declaration,
-                                         N_Generic_Package_Declaration)
-        and then Nkind (Lib_Unit) not in N_Generic_Renaming_Declaration
+        and then Nkind (Lib_Unit) not in N_Generic_Subprogram_Declaration
+                                       | N_Generic_Package_Declaration
+                                       | N_Generic_Renaming_Declaration
       then
          Error_Msg_N
            ("child of a generic package must be a generic unit", Lib_Unit);
@@ -4627,17 +4619,17 @@ package body Sem_Ch10 is
                --  Save for subsequent examination of import pragmas.
 
                if Comes_From_Source (Decl)
-                 and then (Nkind_In (Decl, N_Subprogram_Declaration,
-                                           N_Subprogram_Renaming_Declaration,
-                                           N_Generic_Subprogram_Declaration))
+                 and then (Nkind (Decl) in N_Subprogram_Declaration
+                                         | N_Subprogram_Renaming_Declaration
+                                         | N_Generic_Subprogram_Declaration)
                then
                   Append_Elmt (Defining_Entity (Decl), Subp_List);
 
                --  Package declaration of generic package declaration. We need
                --  to recursively examine nested declarations.
 
-               elsif Nkind_In (Decl, N_Package_Declaration,
-                                     N_Generic_Package_Declaration)
+               elsif Nkind (Decl) in N_Package_Declaration
+                                   | N_Generic_Package_Declaration
                then
                   Check_Declarations (Specification (Decl));
 
@@ -4657,14 +4649,14 @@ package body Sem_Ch10 is
             Decl := First (Private_Declarations (Spec));
             while Present (Decl) loop
                if Comes_From_Source (Decl)
-                 and then (Nkind_In (Decl, N_Subprogram_Declaration,
-                                           N_Subprogram_Renaming_Declaration,
-                                           N_Generic_Subprogram_Declaration))
+                 and then Nkind (Decl) in N_Subprogram_Declaration
+                                        | N_Subprogram_Renaming_Declaration
+                                        | N_Generic_Subprogram_Declaration
                then
                   Append_Elmt (Defining_Entity (Decl), Subp_List);
 
-               elsif Nkind_In (Decl, N_Package_Declaration,
-                                     N_Generic_Package_Declaration)
+               elsif Nkind (Decl) in N_Package_Declaration
+                                   | N_Generic_Package_Declaration
                then
                   Check_Declarations (Specification (Decl));
 
@@ -4899,8 +4891,8 @@ package body Sem_Ch10 is
             --  corresponding spec, otherwise follow pointer to parent spec.
 
             if Present (Library_Unit (Aux_Unit))
-              and then Nkind_In (Unit (Aux_Unit),
-                                 N_Package_Body, N_Subprogram_Body)
+              and then Nkind (Unit (Aux_Unit)) in
+                         N_Package_Body | N_Subprogram_Body
             then
                if Aux_Unit = Library_Unit (Aux_Unit) then
 
@@ -5551,7 +5543,7 @@ package body Sem_Ch10 is
       E1 : constant Entity_Id := Defining_Entity (Unit (U1));
       E2 : Entity_Id;
    begin
-      if Nkind_In (Unit (U2), N_Package_Body, N_Subprogram_Body) then
+      if Nkind (Unit (U2)) in N_Package_Body | N_Subprogram_Body then
          E2 := Defining_Entity (Unit (Library_Unit (U2)));
          return Is_Ancestor_Package (E1, E2);
       else
@@ -6058,12 +6050,12 @@ package body Sem_Ch10 is
 
             --  Types
 
-            elsif Nkind_In (Decl, N_Full_Type_Declaration,
-                                  N_Incomplete_Type_Declaration,
-                                  N_Private_Extension_Declaration,
-                                  N_Private_Type_Declaration,
-                                  N_Protected_Type_Declaration,
-                                  N_Task_Type_Declaration)
+            elsif Nkind (Decl) in N_Full_Type_Declaration
+                                | N_Incomplete_Type_Declaration
+                                | N_Private_Extension_Declaration
+                                | N_Private_Type_Declaration
+                                | N_Protected_Type_Declaration
+                                | N_Task_Type_Declaration
             then
                Def_Id := Defining_Entity (Decl);
 
@@ -6082,8 +6074,8 @@ package body Sem_Ch10 is
                      (Nkind (Def) = N_Derived_Type_Definition
                         and then Present (Record_Extension_Part (Def)));
 
-               elsif Nkind_In (Decl, N_Incomplete_Type_Declaration,
-                                     N_Private_Type_Declaration)
+               elsif Nkind (Decl) in N_Incomplete_Type_Declaration
+                                   | N_Private_Type_Declaration
                then
                   Is_Tagged := Tagged_Present (Decl);
 
@@ -6365,7 +6357,7 @@ package body Sem_Ch10 is
       then
          Set_Body_Needed_For_SAL (Unit_Name);
 
-      elsif Ekind_In (Unit_Name, E_Generic_Procedure, E_Generic_Function) then
+      elsif Ekind (Unit_Name) in E_Generic_Procedure | E_Generic_Function then
          Set_Body_Needed_For_SAL (Unit_Name);
 
       elsif Is_Subprogram (Unit_Name)

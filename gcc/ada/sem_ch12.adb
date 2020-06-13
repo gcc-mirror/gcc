@@ -1573,9 +1573,9 @@ package body Sem_Ch12 is
                         (Defining_Unit_Name (Specification (Analyzed_Formal)));
 
                when N_Formal_Package_Declaration =>
-                  exit when Nkind_In (Kind, N_Formal_Package_Declaration,
-                                            N_Generic_Package_Declaration,
-                                            N_Package_Declaration);
+                  exit when Kind in N_Formal_Package_Declaration
+                                  | N_Generic_Package_Declaration
+                                  | N_Package_Declaration;
 
                when N_Use_Package_Clause
                   | N_Use_Type_Clause
@@ -1589,10 +1589,10 @@ package body Sem_Ch12 is
 
                   exit when
                     Kind not in N_Formal_Subprogram_Declaration
-                      and then not Nkind_In (Kind, N_Subprogram_Declaration,
-                                                   N_Freeze_Entity,
-                                                   N_Null_Statement,
-                                                   N_Itype_Reference)
+                      and then Kind not in N_Subprogram_Declaration
+                                         | N_Freeze_Entity
+                                         | N_Null_Statement
+                                         | N_Itype_Reference
                       and then Chars (Defining_Identifier (Formal)) =
                                Chars (Defining_Identifier (Analyzed_Formal));
             end case;
@@ -2103,10 +2103,10 @@ package body Sem_Ch12 is
 
                            S := Current_Scope;
                            while Present (S) loop
-                              if Ekind_In (S, E_Block,
-                                              E_Function,
-                                              E_Loop,
-                                              E_Procedure)
+                              if Ekind (S) in E_Block
+                                            | E_Function
+                                            | E_Loop
+                                            | E_Procedure
                               then
                                  Needs_Freezing := False;
                                  exit;
@@ -2250,9 +2250,9 @@ package body Sem_Ch12 is
       if Nkind (Def) = N_Constrained_Array_Definition then
          DSS := First (Discrete_Subtype_Definitions (Def));
          while Present (DSS) loop
-            if Nkind_In (DSS, N_Subtype_Indication,
-                              N_Range,
-                              N_Attribute_Reference)
+            if Nkind (DSS) in N_Subtype_Indication
+                            | N_Range
+                            | N_Attribute_Reference
             then
                Error_Msg_N ("only a subtype mark is allowed in a formal", DSS);
             end if;
@@ -5032,7 +5032,7 @@ package body Sem_Ch12 is
          while Present (S) and then S /= Standard_Standard loop
             if Is_Generic_Instance (S)
               and then (In_Package_Body (S)
-                         or else Ekind_In (S, E_Procedure, E_Function))
+                         or else Ekind (S) in E_Procedure | E_Function)
             then
                --  We still have to remove the entities of the enclosing
                --  instance from direct visibility.
@@ -5201,7 +5201,7 @@ package body Sem_Ch12 is
                Set_Is_Generic_Instance (Inst, True);
 
                if In_Package_Body (Inst)
-                 or else Ekind_In (S, E_Procedure, E_Function)
+                 or else Ekind (S) in E_Procedure | E_Function
                then
                   E := First_Entity (Instances (J));
                   while Present (E) loop
@@ -5974,7 +5974,7 @@ package body Sem_Ch12 is
       if Nkind (Assoc) /= Nkind (N) then
          return Assoc;
 
-      elsif Nkind_In (Assoc, N_Aggregate, N_Extension_Aggregate) then
+      elsif Nkind (Assoc) in N_Aggregate | N_Extension_Aggregate then
          return Assoc;
 
       else
@@ -5994,11 +5994,11 @@ package body Sem_Ch12 is
 
          if (Nkind (Assoc) = N_Identifier or else Nkind (Assoc) in N_Op)
            and then Present (Associated_Node (Assoc))
-           and then (Nkind_In (Associated_Node (Assoc), N_Function_Call,
-                                                        N_Explicit_Dereference,
-                                                        N_Integer_Literal,
-                                                        N_Real_Literal,
-                                                        N_String_Literal))
+           and then Nkind (Associated_Node (Assoc)) in N_Function_Call
+                                                     | N_Explicit_Dereference
+                                                     | N_Integer_Literal
+                                                     | N_Real_Literal
+                                                     | N_String_Literal
          then
             Assoc := Associated_Node (Assoc);
          end if;
@@ -6506,9 +6506,9 @@ package body Sem_Ch12 is
          if Kind = N_Formal_Type_Declaration then
             return;
 
-         elsif Nkind_In (Kind, N_Formal_Object_Declaration,
-                               N_Formal_Package_Declaration)
-           or else Kind in N_Formal_Subprogram_Declaration
+         elsif Kind in N_Formal_Object_Declaration
+                     | N_Formal_Package_Declaration
+                     | N_Formal_Subprogram_Declaration
          then
             null;
 
@@ -6701,9 +6701,8 @@ package body Sem_Ch12 is
          --  If the formal entity comes from a formal declaration, it was
          --  defaulted in the formal package, and no check is needed on it.
 
-         elsif Nkind_In (Original_Node (Parent (E2)),
-                         N_Formal_Object_Declaration,
-                         N_Formal_Type_Declaration)
+         elsif Nkind (Original_Node (Parent (E2))) in
+                 N_Formal_Object_Declaration | N_Formal_Type_Declaration
          then
             --  If the formal is a tagged type the corresponding class-wide
             --  type has been generated as well, and it must be skipped.
@@ -7958,11 +7957,11 @@ package body Sem_Ch12 is
 
       --  Special casing for identifiers and other entity names and operators
 
-      if Nkind_In (New_N, N_Character_Literal,
-                          N_Expanded_Name,
-                          N_Identifier,
-                          N_Operator_Symbol)
-        or else Nkind (New_N) in N_Op
+      if Nkind (New_N) in N_Character_Literal
+                        | N_Expanded_Name
+                        | N_Identifier
+                        | N_Operator_Symbol
+                        | N_Op
       then
          if not Instantiating then
 
@@ -8006,10 +8005,9 @@ package body Sem_Ch12 is
                end if;
 
             elsif No (Ent)
-              or else
-                not Nkind_In (Ent, N_Defining_Identifier,
-                                   N_Defining_Character_Literal,
-                                   N_Defining_Operator_Symbol)
+              or else Nkind (Ent) not in N_Defining_Identifier
+                                       | N_Defining_Character_Literal
+                                       | N_Defining_Operator_Symbol
               or else No (Scope (Ent))
               or else
                 (Scope (Ent) = Current_Instantiated_Parent.Gen_Id
@@ -8176,9 +8174,9 @@ package body Sem_Ch12 is
                   then
                      Set_Entity (New_N, Entity (Name (Assoc)));
 
-                  elsif Nkind_In (Assoc, N_Defining_Identifier,
-                                         N_Defining_Character_Literal,
-                                         N_Defining_Operator_Symbol)
+                  elsif Nkind (Assoc) in N_Defining_Identifier
+                                       | N_Defining_Character_Literal
+                                       | N_Defining_Operator_Symbol
                     and then Expander_Active
                   then
                      --  Inlining case: we are copying a tree that contains
@@ -8387,7 +8385,7 @@ package body Sem_Ch12 is
             Set_Assignment_OK (Name (New_N), True);
          end if;
 
-      elsif Nkind_In (N, N_Aggregate, N_Extension_Aggregate) then
+      elsif Nkind (N) in N_Aggregate | N_Extension_Aggregate then
          if not Instantiating then
             Set_Associated_Node (N, New_N);
 
@@ -8507,7 +8505,7 @@ package body Sem_Ch12 is
          --  Do not copy Comment or Ident pragmas their content is relevant to
          --  the generic unit, not to the instantiating unit.
 
-         if Nam_In (Pragma_Name_Unmapped (N), Name_Comment, Name_Ident) then
+         if Pragma_Name_Unmapped (N) in Name_Comment | Name_Ident then
             New_N := Make_Null_Statement (Sloc (N));
 
          --  Do not copy pragmas generated from aspects because the pragmas do
@@ -8527,7 +8525,7 @@ package body Sem_Ch12 is
             Copy_Descendants;
          end if;
 
-      elsif Nkind_In (N, N_Integer_Literal, N_Real_Literal) then
+      elsif Nkind (N) in N_Integer_Literal | N_Real_Literal then
 
          --  No descendant fields need traversing
 
@@ -9226,10 +9224,10 @@ package body Sem_Ch12 is
 
       else
          Inst := Next (Decl);
-         while not Nkind_In (Inst, N_Formal_Package_Declaration,
-                                   N_Function_Instantiation,
-                                   N_Package_Instantiation,
-                                   N_Procedure_Instantiation)
+         while Nkind (Inst) not in N_Formal_Package_Declaration
+                                 | N_Function_Instantiation
+                                 | N_Package_Instantiation
+                                 | N_Procedure_Instantiation
          loop
             Next (Inst);
          end loop;
@@ -9522,7 +9520,7 @@ package body Sem_Ch12 is
          while Present (P)
            and then Nkind (Parent (P)) /= N_Compilation_Unit
          loop
-            if Nkind_In (P, N_Package_Body, N_Subprogram_Body) then
+            if Nkind (P) in N_Package_Body | N_Subprogram_Body then
                if Nkind (Parent (P)) = N_Subunit then
                   return Corresponding_Stub (Parent (P));
                else
@@ -9620,8 +9618,8 @@ package body Sem_Ch12 is
                   --  the current scope as well.
 
                   elsif Present (Next (N))
-                    and then Nkind_In (Next (N), N_Subprogram_Body,
-                                                 N_Package_Body)
+                    and then Nkind (Next (N)) in N_Subprogram_Body
+                                               | N_Package_Body
                     and then Comes_From_Source (Next (N))
                   then
                      null;
@@ -9835,8 +9833,8 @@ package body Sem_Ch12 is
 
       Must_Delay :=
         (Gen_Unit = Act_Unit
-          and then (Nkind_In (Gen_Unit, N_Generic_Package_Declaration,
-                                        N_Package_Declaration)
+          and then (Nkind (Gen_Unit) in N_Generic_Package_Declaration
+                                      | N_Package_Declaration
                      or else (Gen_Unit = Body_Unit
                                and then True_Sloc (N, Act_Unit) <
                                           Sloc (Orig_Body)))
@@ -9907,7 +9905,7 @@ package body Sem_Ch12 is
             --  Freeze package enclosing instance of inner generic after
             --  instance of enclosing generic.
 
-            elsif Nkind_In (Parent (N), N_Package_Body, N_Subprogram_Body)
+            elsif Nkind (Parent (N)) in N_Package_Body | N_Subprogram_Body
               and then In_Same_Declarative_Part
                          (Parent (Freeze_Node (Par)), Parent (N))
             then
@@ -10910,10 +10908,10 @@ package body Sem_Ch12 is
          end if;
 
          if (Present (Act_E) and then Is_Overloadable (Act_E))
-           or else Nkind_In (Act, N_Attribute_Reference,
-                                  N_Indexed_Component,
-                                  N_Character_Literal,
-                                  N_Explicit_Dereference)
+           or else Nkind (Act) in N_Attribute_Reference
+                                | N_Indexed_Component
+                                | N_Character_Literal
+                                | N_Explicit_Dereference
          then
             return;
          end if;
@@ -11012,10 +11010,10 @@ package body Sem_Ch12 is
          Nam := Actual;
 
       elsif Present (Default_Name (Formal)) then
-         if not Nkind_In (Default_Name (Formal), N_Attribute_Reference,
-                                                 N_Selected_Component,
-                                                 N_Indexed_Component,
-                                                 N_Character_Literal)
+         if Nkind (Default_Name (Formal)) not in N_Attribute_Reference
+                                               | N_Selected_Component
+                                               | N_Indexed_Component
+                                               | N_Character_Literal
            and then Present (Entity (Default_Name (Formal)))
          then
             Nam := New_Occurrence_Of (Entity (Default_Name (Formal)), Loc);
@@ -11588,8 +11586,8 @@ package body Sem_Ch12 is
 
       if Ada_Version >= Ada_2005
         and then Present (Actual_Decl)
-        and then Nkind_In (Actual_Decl, N_Formal_Object_Declaration,
-                                        N_Object_Declaration)
+        and then Nkind (Actual_Decl) in N_Formal_Object_Declaration
+                                      | N_Object_Declaration
         and then Nkind (Analyzed_Formal) = N_Formal_Object_Declaration
         and then not Has_Null_Exclusion (Actual_Decl)
         and then Has_Null_Exclusion (Analyzed_Formal)
@@ -12652,8 +12650,8 @@ package body Sem_Ch12 is
                                  Root_Type (Act_T)))
 
            or else
-             (Ekind_In (Gen_T, E_Anonymous_Access_Subprogram_Type,
-                               E_Anonymous_Access_Type)
+             (Ekind (Gen_T) in E_Anonymous_Access_Subprogram_Type
+                             | E_Anonymous_Access_Type
                and then Ekind (Act_T) = Ekind (Gen_T)
                and then Subtypes_Statically_Match
                           (Designated_Type (Gen_T), Designated_Type (Act_T)));
@@ -14052,8 +14050,8 @@ package body Sem_Ch12 is
             Set_Generic_Parent_Type (Decl_Node, Ancestor);
          end if;
 
-      elsif Nkind_In (Def, N_Formal_Private_Type_Definition,
-                           N_Formal_Incomplete_Type_Definition)
+      elsif Nkind (Def) in N_Formal_Private_Type_Definition
+                         | N_Formal_Incomplete_Type_Definition
       then
          Set_Generic_Parent_Type (Decl_Node, A_Gen_T);
       end if;
@@ -14204,8 +14202,8 @@ package body Sem_Ch12 is
             --  For a subprogram instantiation, omit instantiations intrinsic
             --  operations (Unchecked_Conversions, etc.) that have no bodies.
 
-            elsif Nkind_In (Decl, N_Function_Instantiation,
-                                  N_Procedure_Instantiation)
+            elsif Nkind (Decl) in N_Function_Instantiation
+                                | N_Procedure_Instantiation
               and then not Is_Intrinsic_Subprogram (Entity (Name (Decl)))
             then
                Append_Elmt (Decl, Previous_Instances);
@@ -14447,10 +14445,10 @@ package body Sem_Ch12 is
                                           (Last (Visible_Declarations
                                             (Specification (Info.Act_Decl))));
                               begin
-                                 while Nkind_In (Decl,
-                                   N_Null_Statement,
-                                   N_Pragma,
-                                   N_Subprogram_Renaming_Declaration)
+                                 while Nkind (Decl) in
+                                   N_Null_Statement                  |
+                                   N_Pragma                          |
+                                   N_Subprogram_Renaming_Declaration
                                  loop
                                     Decl := Prev (Decl);
                                  end loop;
@@ -15169,9 +15167,9 @@ package body Sem_Ch12 is
          --  explicitly now, in order to remain consistent with the view of the
          --  parent type.
 
-         if Ekind_In (Typ, E_Private_Type,
-                           E_Limited_Private_Type,
-                           E_Record_Type_With_Private)
+         if Ekind (Typ) in E_Private_Type
+                         | E_Limited_Private_Type
+                         | E_Record_Type_With_Private
          then
             Dep_Elmt := First_Elmt (Private_Dependents (Typ));
             while Present (Dep_Elmt) loop
@@ -15658,9 +15656,9 @@ package body Sem_Ch12 is
             --  preserve in this case, since the expansion will be redone in
             --  the instance.
 
-            if not Nkind_In (E, N_Defining_Character_Literal,
-                                N_Defining_Identifier,
-                                N_Defining_Operator_Symbol)
+            if Nkind (E) not in N_Defining_Character_Literal
+                              | N_Defining_Identifier
+                              | N_Defining_Operator_Symbol
             then
                Set_Associated_Node (N, Empty);
                Set_Etype (N, Empty);
@@ -15751,7 +15749,7 @@ package body Sem_Ch12 is
          --  its value. Otherwise the folding will happen in any instantiation.
 
          elsif Nkind (Parent (N)) = N_Selected_Component
-           and then Nkind_In (Parent (N2), N_Integer_Literal, N_Real_Literal)
+           and then Nkind (Parent (N2)) in N_Integer_Literal | N_Real_Literal
          then
             if Present (Entity (Original_Node (Parent (N2))))
               and then Is_Global (Entity (Original_Node (Parent (N2))))
@@ -16053,12 +16051,12 @@ package body Sem_Ch12 is
             --  global references within their aspects due to the timing of
             --  annotation analysis.
 
-            if Nkind_In (Nod, N_Generic_Package_Declaration,
-                              N_Generic_Subprogram_Declaration,
-                              N_Package_Body,
-                              N_Package_Body_Stub,
-                              N_Subprogram_Body,
-                              N_Subprogram_Body_Stub)
+            if Nkind (Nod) in N_Generic_Package_Declaration
+                            | N_Generic_Subprogram_Declaration
+                            | N_Package_Body
+                            | N_Package_Body_Stub
+                            | N_Subprogram_Body
+                            | N_Subprogram_Body_Stub
             then
                --  Since the capture of global references is done on the
                --  unanalyzed generic template, there is no information around
@@ -16248,7 +16246,7 @@ package body Sem_Ch12 is
                --  constant folding which will be repeated in the instance.
                --  Is this still needed???
 
-               elsif Nkind_In (N2, N_Integer_Literal, N_Real_Literal)
+               elsif Nkind (N2) in N_Integer_Literal | N_Real_Literal
                  and then Is_Entity_Name (Original_Node (N2))
                then
                   Set_Associated_Node (N, Original_Node (N2));
@@ -16350,9 +16348,9 @@ package body Sem_Ch12 is
 
                --  The operator was folded into a literal
 
-               elsif Nkind_In (N2, N_Integer_Literal,
-                                   N_Real_Literal,
-                                   N_String_Literal)
+               elsif Nkind (N2) in N_Integer_Literal
+                                 | N_Real_Literal
+                                 | N_String_Literal
                then
                   if Present (Original_Node (N2))
                     and then Nkind (Original_Node (N2)) = Nkind (N)
@@ -16462,12 +16460,12 @@ package body Sem_Ch12 is
 
          --  Aggregates
 
-         elsif Nkind_In (N, N_Aggregate, N_Extension_Aggregate) then
+         elsif Nkind (N) in N_Aggregate | N_Extension_Aggregate then
             Save_References_In_Aggregate (N);
 
          --  Character literals, operator symbols
 
-         elsif Nkind_In (N, N_Character_Literal, N_Operator_Symbol) then
+         elsif Nkind (N) in N_Character_Literal | N_Operator_Symbol then
             Save_References_In_Char_Lit_Or_Op_Symbol (N);
 
          --  Defining identifiers

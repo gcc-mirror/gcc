@@ -569,10 +569,9 @@ package body Lib.Xref is
                P := Parent (P);
 
                if Nkind (P) = N_Pragma then
-                  if Nam_In (Pragma_Name_Unmapped (P),
-                             Name_Warnings,
-                             Name_Unmodified,
-                             Name_Unreferenced)
+                  if Pragma_Name_Unmapped (P) in Name_Warnings
+                                               | Name_Unmodified
+                                               | Name_Unreferenced
                   then
                      return False;
                   end if;
@@ -911,7 +910,7 @@ package body Lib.Xref is
             --  since the attribute acts as an anonymous alias of the function
             --  result and not as a real reference to the function.
 
-            elsif Ekind_In (E, E_Function, E_Generic_Function)
+            elsif Ekind (E) in E_Function | E_Generic_Function
               and then Is_Entity_Name (N)
               and then Is_Attribute_Result (Parent (N))
             then
@@ -1006,18 +1005,18 @@ package body Lib.Xref is
 
         and then Typ /= ' '
       then
-         if Nkind_In (N, N_Identifier,
-                         N_Defining_Identifier,
-                         N_Defining_Operator_Symbol,
-                         N_Operator_Symbol,
-                         N_Defining_Character_Literal)
-           or else Nkind (N) in N_Op
+         if Nkind (N) in N_Identifier
+                       | N_Defining_Identifier
+                       | N_Defining_Operator_Symbol
+                       | N_Operator_Symbol
+                       | N_Defining_Character_Literal
+                       | N_Op
            or else (Nkind (N) = N_Character_Literal
                      and then Sloc (Entity (N)) /= Standard_Location)
          then
             Nod := N;
 
-         elsif Nkind_In (N, N_Expanded_Name, N_Selected_Component) then
+         elsif Nkind (N) in N_Expanded_Name | N_Selected_Component then
             Nod := Selector_Name (N);
 
          else
@@ -1135,7 +1134,7 @@ package body Lib.Xref is
             --  reads/writes of private protected components) and not worth the
             --  effort.
 
-            if Ekind_In (Ent, E_Abstract_State, E_Constant, E_Variable)
+            if Ekind (Ent) in E_Abstract_State | E_Constant | E_Variable
               and then Present (Encapsulating_State (Ent))
               and then Is_Single_Concurrent_Object (Encapsulating_State (Ent))
             then
@@ -2314,15 +2313,15 @@ package body Lib.Xref is
                   --  Special handling for access parameters and objects and
                   --  components of an anonymous access type.
 
-                  if Ekind_In (Etype (XE.Key.Ent),
-                               E_Anonymous_Access_Type,
-                               E_Anonymous_Access_Subprogram_Type,
-                               E_Anonymous_Access_Protected_Subprogram_Type)
+                  if Ekind (Etype (XE.Key.Ent)) in
+                               E_Anonymous_Access_Type
+                             | E_Anonymous_Access_Subprogram_Type
+                             | E_Anonymous_Access_Protected_Subprogram_Type
                   then
                      if Is_Formal (XE.Key.Ent)
                        or else
-                         Ekind_In
-                           (XE.Key.Ent, E_Variable, E_Constant, E_Component)
+                         Ekind (XE.Key.Ent) in
+                           E_Variable | E_Constant | E_Component
                      then
                         Ctyp := 'p';
                      end if;

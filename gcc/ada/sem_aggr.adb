@@ -960,24 +960,24 @@ package body Sem_Aggr is
             if Nkind (Parent (N)) = N_Assignment_Statement
               or else Inside_Init_Proc
               or else (Is_Constrained (Typ)
-                        and then Nkind_In (Parent (N),
-                                           N_Parameter_Association,
-                                           N_Function_Call,
-                                           N_Procedure_Call_Statement,
-                                           N_Generic_Association,
-                                           N_Formal_Object_Declaration,
-                                           N_Simple_Return_Statement,
-                                           N_Object_Declaration,
-                                           N_Component_Declaration,
-                                           N_Parameter_Specification,
-                                           N_Qualified_Expression,
-                                           N_Reference,
-                                           N_Aggregate,
-                                           N_Extension_Aggregate,
-                                           N_Component_Association,
-                                           N_Case_Expression_Alternative,
-                                           N_If_Expression,
-                                           N_Expression_With_Actions))
+                        and then Nkind (Parent (N)) in
+                                   N_Parameter_Association
+                                 | N_Function_Call
+                                 | N_Procedure_Call_Statement
+                                 | N_Generic_Association
+                                 | N_Formal_Object_Declaration
+                                 | N_Simple_Return_Statement
+                                 | N_Object_Declaration
+                                 | N_Component_Declaration
+                                 | N_Parameter_Specification
+                                 | N_Qualified_Expression
+                                 | N_Reference
+                                 | N_Aggregate
+                                 | N_Extension_Aggregate
+                                 | N_Component_Association
+                                 | N_Case_Expression_Alternative
+                                 | N_If_Expression
+                                 | N_Expression_With_Actions)
             then
                Aggr_Resolved :=
                  Resolve_Array_Aggregate
@@ -1424,7 +1424,7 @@ package body Sem_Aggr is
 
                if Is_Character_Type (Component_Typ)
                  and then No (Next_Index (Nxt_Ind))
-                 and then Nkind_In (Expr, N_String_Literal, N_Operator_Symbol)
+                 and then Nkind (Expr) in N_String_Literal | N_Operator_Symbol
                then
                   --  A string literal used in a multidimensional array
                   --  aggregate in place of the final one-dimensional
@@ -1698,8 +1698,8 @@ package body Sem_Aggr is
 
                   if Ada_Version = Ada_83
                     and then Assoc /= First (Component_Associations (N))
-                    and then Nkind_In (Parent (N), N_Assignment_Statement,
-                                                   N_Object_Declaration)
+                    and then Nkind (Parent (N)) in
+                               N_Assignment_Statement | N_Object_Declaration
                   then
                      Error_Msg_N
                        ("(Ada 83) illegal context for OTHERS choice", N);
@@ -3253,9 +3253,9 @@ package body Sem_Aggr is
          --  The ancestor must be a call or an aggregate, but a call may
          --  have been expanded into a temporary, so check original node.
 
-         elsif Nkind_In (Anc, N_Aggregate,
-                              N_Extension_Aggregate,
-                              N_Function_Call)
+         elsif Nkind (Anc) in N_Aggregate
+                            | N_Extension_Aggregate
+                            | N_Function_Call
          then
             return True;
 
@@ -4185,7 +4185,7 @@ package body Sem_Aggr is
          function Has_Expansion_Delayed (Expr : Node_Id) return Boolean is
          begin
             return
-               (Nkind_In (Expr, N_Aggregate, N_Extension_Aggregate)
+               (Nkind (Expr) in N_Aggregate | N_Extension_Aggregate
                  and then Present (Etype (Expr))
                  and then Is_Record_Type (Etype (Expr))
                  and then Expansion_Delayed (Expr))

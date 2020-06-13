@@ -780,7 +780,7 @@ package body Sem_Ch8 is
          Subt : Entity_Id;
 
       begin
-         if Nkind_In (Nam, N_Function_Call, N_Explicit_Dereference)
+         if Nkind (Nam) in N_Function_Call | N_Explicit_Dereference
            and then Is_Composite_Type (Typ)
            and then not Is_Constrained (Typ)
            and then not Has_Unknown_Discriminants (Typ)
@@ -788,7 +788,7 @@ package body Sem_Ch8 is
          then
             --  If Actual_Subtype is already set, nothing to do
 
-            if Ekind_In (Id, E_Variable, E_Constant)
+            if Ekind (Id) in E_Variable | E_Constant
               and then Present (Actual_Subtype (Id))
             then
                null;
@@ -1354,7 +1354,7 @@ package body Sem_Ch8 is
       --  check.
 
       if Comes_From_Source (N) then
-         if Nkind_In (Nam, N_Function_Call, N_Explicit_Dereference) then
+         if Nkind (Nam) in N_Function_Call | N_Explicit_Dereference then
             Is_Object_Ref := Is_Object_Reference (Nam);
          else
             Is_Object_Ref := Is_Object_Reference (Original_Node (Nam));
@@ -2103,7 +2103,7 @@ package body Sem_Ch8 is
             --  Generate:
             --    return Subp_Id (Actuals);
 
-            if Ekind_In (Subp_Id, E_Function, E_Operator) then
+            if Ekind (Subp_Id) in E_Function | E_Operator then
                return
                  Make_Simple_Return_Statement (Loc,
                    Expression =>
@@ -2135,7 +2135,7 @@ package body Sem_Ch8 is
             Formal   : Node_Id;
 
          begin
-            pragma Assert (Ekind_In (Subp_Id, E_Function, E_Operator));
+            pragma Assert (Ekind (Subp_Id) in E_Function | E_Operator);
 
             --  Build the actual parameters of the call
 
@@ -2502,7 +2502,7 @@ package body Sem_Ch8 is
          --  dispatching call to the wrapped function is known during proof.
 
          if GNATprove_Mode
-           and then Ekind_In (Ren_Id, E_Function, E_Operator)
+           and then Ekind (Ren_Id) in E_Function | E_Operator
          then
             New_Spec := Build_Spec (Ren_Id);
             Body_Decl :=
@@ -3376,7 +3376,7 @@ package body Sem_Ch8 is
          --  Guard against previous errors, and omit renamings of predefined
          --  operators.
 
-         elsif not Ekind_In (Old_S, E_Function, E_Procedure) then
+         elsif Ekind (Old_S) not in E_Function | E_Procedure then
             null;
 
          elsif Requires_Overriding (Old_S)
@@ -4238,10 +4238,9 @@ package body Sem_Ch8 is
       elsif Present (Expressions (Nam)) then
          Error_Msg_N ("illegal expressions in attribute reference", Nam);
 
-      elsif
-        Nam_In (Aname, Name_Compose, Name_Exponent, Name_Leading_Part,
-                       Name_Pos,     Name_Round,    Name_Scaling,
-                       Name_Val)
+      elsif Aname in Name_Compose | Name_Exponent | Name_Leading_Part |
+                     Name_Pos     | Name_Round    | Name_Scaling      |
+                     Name_Val
       then
          if Nkind (N) = N_Subprogram_Renaming_Declaration
            and then Present (Corresponding_Formal_Spec (N))
@@ -4505,8 +4504,8 @@ package body Sem_Ch8 is
       elsif Is_Concurrent_Type (Scope (E)) then
          P := Parent (N);
          while Present (P)
-           and then not Nkind_In (P, N_Parameter_Specification,
-                                     N_Component_Declaration)
+           and then Nkind (P) not in
+             N_Parameter_Specification | N_Component_Declaration
          loop
             P := Parent (P);
          end loop;
@@ -4744,8 +4743,8 @@ package body Sem_Ch8 is
             Pop_Scope;
 
             while not (Is_List_Member (Decl))
-              or else Nkind_In (Parent (Decl), N_Protected_Definition,
-                                               N_Task_Definition)
+              or else Nkind (Parent (Decl)) in N_Protected_Definition
+                                             | N_Task_Definition
             loop
                Decl := Parent (Decl);
             end loop;
@@ -5524,7 +5523,7 @@ package body Sem_Ch8 is
                --  is Put or Put_Line, then add a special error message (since
                --  this is a very common error for beginners to make).
 
-               if Nam_In (Chars (N), Name_Put, Name_Put_Line) then
+               if Chars (N) in Name_Put | Name_Put_Line then
                   Error_Msg_N -- CODEFIX
                     ("\\possible missing `WITH Ada.Text_'I'O; " &
                      "USE Ada.Text_'I'O`!", N);
@@ -6109,9 +6108,9 @@ package body Sem_Ch8 is
             if Ada_Version >= Ada_2012
               and then
                 (Nkind (Parent (N)) in N_Subexpr
-                  or else Nkind_In (Parent (N), N_Assignment_Statement,
-                                                N_Object_Declaration,
-                                                N_Parameter_Association))
+                  or else Nkind (Parent (N)) in N_Assignment_Statement
+                                              | N_Object_Declaration
+                                              | N_Parameter_Association)
             then
                Check_Implicit_Dereference (N, Etype (E));
             end if;
@@ -6198,13 +6197,13 @@ package body Sem_Ch8 is
          Par := Nod;
          while Present (Par) loop
             if Nkind (Par) = N_Pragma then
-               if Nam_In (Pragma_Name_Unmapped (Par),
-                          Name_Abstract_State,
-                          Name_Depends,
-                          Name_Global,
-                          Name_Initializes,
-                          Name_Refined_Depends,
-                          Name_Refined_Global)
+               if Pragma_Name_Unmapped (Par)
+                    in Name_Abstract_State
+                     | Name_Depends
+                     | Name_Global
+                     | Name_Initializes
+                     | Name_Refined_Depends
+                     | Name_Refined_Global
                then
                   return True;
 
@@ -6305,7 +6304,7 @@ package body Sem_Ch8 is
             --  The non-limited view may itself be incomplete, in which case
             --  get the full view if available.
 
-            elsif Ekind_In (Id, E_Incomplete_Type, E_Class_Wide_Type)
+            elsif Ekind (Id) in E_Incomplete_Type | E_Class_Wide_Type
               and then From_Limited_With (Id)
               and then Present (Non_Limited_View (Id))
               and then Scope (Non_Limited_View (Id)) = P_Name
@@ -6359,7 +6358,7 @@ package body Sem_Ch8 is
       end;
 
       if No (Id)
-        and then Ekind_In (P_Name, E_Procedure, E_Function)
+        and then Ekind (P_Name) in E_Procedure | E_Function
         and then Is_Generic_Instance (P_Name)
       then
          --  Expanded name denotes entity in (instance of) generic subprogram.
@@ -6490,9 +6489,7 @@ package body Sem_Ch8 is
 
                         exit when S = Standard_Standard;
 
-                        if Ekind_In (S, E_Function,
-                                        E_Package,
-                                        E_Procedure)
+                        if Ekind (S) in E_Function | E_Package | E_Procedure
                         then
                            P :=
                              Generic_Parent (Specification
@@ -7499,7 +7496,7 @@ package body Sem_Ch8 is
             --  The subprogram may be a renaming (of an enclosing scope) as
             --  in the case of the name of the generic within an instantiation.
 
-            if Ekind_In (P_Name, E_Procedure, E_Function)
+            if Ekind (P_Name) in E_Procedure | E_Function
               and then Present (Alias (P_Name))
               and then Is_Generic_Instance (Alias (P_Name))
             then
@@ -8458,7 +8455,7 @@ package body Sem_Ch8 is
 
          pragma Assert (No (Old_F));
 
-         if Ekind_In (Old_S, E_Function, E_Enumeration_Literal) then
+         if Ekind (Old_S) in E_Function | E_Enumeration_Literal then
             Set_Etype (New_S, Etype (Old_S));
          end if;
       end if;
@@ -8659,7 +8656,7 @@ package body Sem_Ch8 is
       --  Use clauses in and of themselves do not count as a "use" of a
       --  package.
 
-      if Nkind_In (Parent (Id), N_Use_Package_Clause, N_Use_Type_Clause) then
+      if Nkind (Parent (Id)) in N_Use_Package_Clause | N_Use_Type_Clause then
          return;
       end if;
 
@@ -8681,11 +8678,11 @@ package body Sem_Ch8 is
          --  Mark primitives
 
          elsif (Ekind (Id) in Overloadable_Kind
-                 or else Ekind_In (Id, E_Generic_Function,
-                                       E_Generic_Procedure))
+                 or else Ekind (Id) in
+                           E_Generic_Function | E_Generic_Procedure)
            and then (Is_Potentially_Use_Visible (Id)
                       or else Is_Intrinsic_Subprogram (Id)
-                      or else (Ekind_In (Id, E_Function, E_Procedure)
+                      or else (Ekind (Id) in E_Function | E_Procedure
                                 and then Is_Generic_Actual_Subprogram (Id)))
          then
             Mark_Parameters (Id);
@@ -8721,7 +8718,7 @@ package body Sem_Ch8 is
             --  Ignore fully qualified names as they do not count as a "use" of
             --  a package.
 
-            if Nkind_In (Id, N_Identifier, N_Operator_Symbol)
+            if Nkind (Id) in N_Identifier | N_Operator_Symbol
               or else (Present (Prefix (Id))
                          and then Scope (Entity (Id)) /= Entity (Prefix (Id)))
             then
@@ -10255,7 +10252,7 @@ package body Sem_Ch8 is
                            & "use_type_clause #??", Clause1, T);
                         return;
 
-                     elsif Nkind_In (Unit2, N_Package_Body, N_Subprogram_Body)
+                     elsif Nkind (Unit2) in N_Package_Body | N_Subprogram_Body
                        and then Nkind (Unit1) /= Nkind (Unit2)
                        and then Nkind (Unit1) /= N_Subunit
                      then

@@ -120,10 +120,9 @@ package body SCIL_LL is
                null;
 
             when N_SCIL_Membership_Test =>
-               pragma Assert (Nkind_In (N, N_Identifier,
-                                           N_And_Then,
-                                           N_Or_Else,
-                                           N_Expression_With_Actions));
+               pragma Assert
+                 (Nkind (N) in N_Identifier | N_And_Then | N_Or_Else |
+                               N_Expression_With_Actions);
                null;
 
             when others =>

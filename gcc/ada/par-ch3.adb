@@ -123,11 +123,12 @@ package body Ch3 is
 
    procedure Check_Restricted_Expression (N : Node_Id) is
    begin
-      if Nkind_In (N, N_Op_And, N_Op_Or, N_Op_Xor, N_And_Then, N_Or_Else) then
+      if Nkind (N) in N_Op_And | N_Op_Or | N_Op_Xor | N_And_Then | N_Or_Else
+      then
          Check_Restricted_Expression (Left_Opnd (N));
          Check_Restricted_Expression (Right_Opnd (N));
 
-      elsif Nkind_In (N, N_In, N_Not_In)
+      elsif Nkind (N) in N_In | N_Not_In
         and then Paren_Count (N) = 0
       then
          Error_Msg_N ("|this expression must be parenthesized!", N);
@@ -4777,7 +4778,7 @@ package body Ch3 is
             --  Complete declaration of mangled subprogram body, for better
             --  recovery if analysis is attempted.
 
-            if Nkind_In (Decl, N_Subprogram_Body, N_Package_Body, N_Task_Body)
+            if Nkind (Decl) in N_Subprogram_Body | N_Package_Body | N_Task_Body
               and then No (Handled_Statement_Sequence (Decl))
             then
                Set_Handled_Statement_Sequence (Decl,
