@@ -1,3 +1,17 @@
+2020-06-12  Martin Liska  <mliska@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/95634
+	* asan.c (asan_emit_stack_protection): Fix emission for ilp32
+	by using Pmode instead of ptr_mode.
+
+2020-06-12  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/94910
+	* asan.c (asan_emit_stack_protection): Emit
+	also **SavedFlagPtr(FakeStack, class_id) = 0 in order to release
+	a stack frame.
+
 2020-06-06  Carl Love  <cel@us.ibm.com>
 
 	PR target/94833
