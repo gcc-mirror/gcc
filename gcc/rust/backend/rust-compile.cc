@@ -1004,9 +1004,42 @@ Compilation::visit (AST::Function &function)
 void
 Compilation::visit (AST::TypeAlias &type_alias)
 {}
+
 void
 Compilation::visit (AST::StructStruct &struct_item)
-{}
+{
+  std::vector<Backend::Btyped_identifier> fields;
+  for (auto &field : struct_item.fields)
+    {
+      translatedType = NULL;
+      field.field_type->accept_vis (*this);
+      if (translatedType == NULL)
+	{
+	  rust_fatal_error (
+	    struct_item.locus /* StructField is mi sing locus */,
+	    "failed to compile struct field");
+	  return;
+	}
+
+      fields.push_back (Backend::Btyped_identifier (
+	field.field_name, translatedType,
+	struct_item.locus /* StructField is mi sing locus */));
+    }
+
+  auto compiledStruct
+    = backend->placeholder_struct_type (struct_item.struct_name,
+					struct_item.locus);
+  bool ok = backend->set_placeholder_struct_type (compiledStruct, fields);
+  if (!ok)
+    {
+      rust_fatal_error (struct_item.locus, "failed to compile struct");
+      return;
+    }
+
+  type_decls.push_back (compiledStruct);
+  scope.InsertType (struct_item.struct_name, compiledStruct);
+}
+
 void
 Compilation::visit (AST::TupleStruct &tuple_struct)
 {}

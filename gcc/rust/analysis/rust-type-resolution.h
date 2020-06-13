@@ -224,6 +224,8 @@ private:
   bool isTypeInScope (AST::Type *type, Location locus);
 
   Scope<AST::Function *> functionScope;
+  Scope<AST::LetStmt *> localsPerBlock;
+  Scope<AST::StructStruct *> structsPerBlock;
 };
 
 } // namespace Analysis

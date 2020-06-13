@@ -1577,7 +1577,7 @@ protected:
 // Rust base struct declaration AST node - abstract base class
 class Struct : public VisItem
 {
-protected:
+public:
   // protected to enable access by derived classes - allows better as_string
   Identifier struct_name;
 
@@ -1590,7 +1590,6 @@ protected:
 
   Location locus;
 
-public:
   // Returns whether struct has generic parameters.
   inline bool has_generics () const { return !generic_params.empty (); }
 
@@ -1653,7 +1652,7 @@ protected:
 // A single field in a struct
 struct StructField
 {
-private:
+public:
   // bool has_outer_attributes;
   ::std::vector<Attribute> outer_attrs;
 
@@ -1666,7 +1665,6 @@ private:
 
   // should this store location info?
 
-public:
   // Returns whether struct field has any outer attributes.
   inline bool has_outer_attributes () const { return !outer_attrs.empty (); }
 
@@ -1725,10 +1723,10 @@ public:
 // Rust struct declaration with true struct type AST node
 class StructStruct : public Struct
 {
+public:
   ::std::vector<StructField> fields;
   bool is_unit;
 
-public:
   ::std::string as_string () const;
 
   // Mega-constructor with all possible fields

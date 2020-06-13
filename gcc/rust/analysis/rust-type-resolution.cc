@@ -690,9 +690,24 @@ TypeResolution::visit (AST::Function &function)
 void
 TypeResolution::visit (AST::TypeAlias &type_alias)
 {}
+
 void
 TypeResolution::visit (AST::StructStruct &struct_item)
-{}
+{
+  for (auto &field : struct_item.fields)
+    {
+      if (!isTypeInScope (field.field_type.get (),
+			  Linemap::unknown_location ()))
+	{
+	  rust_fatal_error (Linemap::unknown_location (),
+			    "unknown type in struct field");
+	  return;
+	}
+    }
+
+  structsPerBlock.Insert (struct_item.struct_name, &struct_item);
+}
+
 void
 TypeResolution::visit (AST::TupleStruct &tuple_struct)
 {}
