@@ -1843,7 +1843,7 @@ vect_dissolve_slp_only_groups (loop_vec_info loop_vinfo)
 
   DUMP_VECT_SCOPE ("vect_dissolve_slp_only_groups");
 
-  vec<data_reference_p> datarefs = loop_vinfo->shared->datarefs;
+  vec<data_reference_p> datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
       gcc_assert (DR_REF (dr));
@@ -8478,7 +8478,7 @@ update_epilogue_loop_vinfo (class loop *epilogue, tree advance)
     }
 
   struct data_reference *dr;
-  vec<data_reference_p> datarefs = epilogue_vinfo->shared->datarefs;
+  vec<data_reference_p> datarefs = LOOP_VINFO_DATAREFS (epilogue_vinfo);
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
       orig_stmt = DR_STMT (dr);
