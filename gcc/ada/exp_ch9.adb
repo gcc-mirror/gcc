@@ -3576,8 +3576,40 @@ package body Exp_Ch9 is
 
       if Present (Ins_Nod) then
          Context := Ins_Nod;
+
       elsif Is_Itype (Ptr_Typ) then
          Context := Associated_Node_For_Itype (Ptr_Typ);
+
+         --  When the context references a discriminant or a component of a
+         --  private type and we are processing declarations in the private
+         --  part of the enclosing package, we must insert the master renaming
+         --  before the full declaration of the private type; otherwise the
+         --  master renaming would be inserted in the public part of the
+         --  package (and hence before the declaration of _master).
+
+         if In_Private_Part (Current_Scope) then
+            declare
+               Ctx : Node_Id := Context;
+
+            begin
+               if Nkind (Context) = N_Discriminant_Specification then
+                  Ctx := Parent (Ctx);
+               else
+                  while Nkind_In (Ctx, N_Component_Declaration,
+                                       N_Component_List)
+                  loop
+                     Ctx := Parent (Ctx);
+                  end loop;
+               end if;
+
+               if Nkind_In (Ctx, N_Private_Type_Declaration,
+                                 N_Private_Extension_Declaration)
+               then
+                  Context := Parent (Full_View (Defining_Identifier (Ctx)));
+               end if;
+            end;
+         end if;
+
       else
          Context := Parent (Ptr_Typ);
       end if;
