@@ -1,3 +1,12 @@
+2020-06-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95350
+	* g++.dg/coroutines/torture/func-params-08.C: Adjust test to
+	reflect that all rvalue refs are dangling.
+	* g++.dg/coroutines/torture/func-params-09-awaitable-parms.C:
+	Likewise.
+	* g++.dg/coroutines/pr95350.C: New test.
+
 2020-06-11  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/95560
