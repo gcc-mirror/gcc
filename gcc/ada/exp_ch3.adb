@@ -5898,7 +5898,10 @@ package body Exp_Ch3 is
                Typ := Etype (Comp);
 
                if Ekind (Typ) = E_Anonymous_Access_Type
-                 and then Has_Task (Available_View (Designated_Type (Typ)))
+                 and then
+                   (Has_Task (Available_View (Designated_Type (Typ)))
+                      or else
+                    Might_Have_Tasks (Available_View (Designated_Type (Typ))))
                  and then No (Master_Id (Typ))
                then
                   --  Ensure that the record or array type have a _master
