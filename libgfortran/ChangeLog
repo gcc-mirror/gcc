@@ -1,3 +1,9 @@
+2020-06-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/95313
+	* io/write.c (ztoa_big): Disable -Wstringop-overflow for one
+	line.
+
 2020-06-08  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95091

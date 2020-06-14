@@ -1,3 +1,18 @@
+2020-06-13  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/builtin-stringop-chk-5.c: Make assertions independent of
+	data model.
+
+2020-06-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/finalize_36.f90: Remove accidentally
+	committed test case.
+
+2020-06-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/95313
+	* gfortran.dg/finalize_36.f90: New file.
+
 2020-06-12  Marco Elver  <elver@google.com>
 
 	* c-c++-common/tsan/func_entry_exit.c: New test.
