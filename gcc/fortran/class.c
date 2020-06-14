@@ -479,19 +479,11 @@ gfc_class_initializer (gfc_typespec *ts, gfc_expr *init_expr)
 static void
 get_unique_type_string (char *string, gfc_symbol *derived)
 {
-  /* Provide sufficient space to hold "Pdtsymbol".  */
-  char dt_name[GFC_MAX_SYMBOL_LEN+4];
+  const char *dt_name;
   if (derived->attr.unlimited_polymorphic)
-    strcpy (dt_name, "STAR");
+    dt_name = "STAR";
   else
-    {
-      const char *upper = gfc_dt_upper_string (derived->name);
-      size_t len = strnlen (upper, sizeof (dt_name));
-      if (len >= sizeof (dt_name))
-	gfc_internal_error ("get_unique_type_string: identifier overflow");
-      memcpy (dt_name, upper, len);
-      dt_name[len] = '\0';
-    }
+    dt_name = gfc_dt_upper_string (derived->name);
   if (derived->attr.unlimited_polymorphic)
     sprintf (string, "_%s", dt_name);
   else if (derived->module)
