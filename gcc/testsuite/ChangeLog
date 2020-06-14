@@ -1,3 +1,14 @@
+2020-06-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95440
+	* g++.dg/coroutines/pr95440.C: New test.
+
+2020-06-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/93467
+	* g++.dg/cpp2a/concepts-friend6.C: New test.
+	* g++.dg/cpp2a/concepts-friend7.C: New test.
+
 2020-06-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/95350
