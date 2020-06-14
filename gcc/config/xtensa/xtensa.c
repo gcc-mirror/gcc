@@ -275,7 +275,7 @@ static rtx xtensa_delegitimize_address (rtx);
 #define TARGET_SECONDARY_RELOAD xtensa_secondary_reload
 
 #undef TARGET_HAVE_TLS
-#define TARGET_HAVE_TLS (TARGET_THREADPTR && HAVE_AS_TLS)
+#define TARGET_HAVE_TLS HAVE_AS_TLS
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM xtensa_cannot_force_const_mem
@@ -602,7 +602,7 @@ constantpool_mem_p (rtx op)
 static bool
 xtensa_tls_symbol_p (rtx x)
 {
-  if (! TARGET_HAVE_TLS)
+  if (! targetm.have_tls)
     return false;
 
   return GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (x) != 0;
@@ -2025,7 +2025,7 @@ xtensa_mode_dependent_address_p (const_rtx addr,
 bool
 xtensa_tls_referenced_p (rtx x)
 {
-  if (! TARGET_HAVE_TLS)
+  if (! targetm.have_tls)
     return false;
 
   subrtx_iterator::array_type array;
@@ -2221,6 +2221,9 @@ xtensa_option_override (void)
 
   if (xtensa_windowed_abi == -1)
     xtensa_windowed_abi = TARGET_WINDOWED_ABI_DEFAULT;
+
+  if (! TARGET_THREADPTR)
+    targetm.have_tls = false;
 
   /* Use CONST16 in the absence of L32R.
      Set it in the TARGET_OPTION_OVERRIDE to avoid dependency on xtensa
