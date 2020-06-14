@@ -6643,7 +6643,7 @@ gfc_check_random_seed (gfc_expr *size, gfc_expr *put, gfc_expr *get)
 	gfc_error ("Size of %qs argument of %qs intrinsic at %L "
 		   "too small (%i/%i)",
 		   gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
-		   where, (int) mpz_get_ui (put_size), seed_size);
+		   &put->where, (int) mpz_get_ui (put_size), seed_size);
     }
 
   if (get != NULL)
@@ -6675,7 +6675,7 @@ gfc_check_random_seed (gfc_expr *size, gfc_expr *put, gfc_expr *get)
 	gfc_error ("Size of %qs argument of %qs intrinsic at %L "
 		   "too small (%i/%i)",
 		   gfc_current_intrinsic_arg[2]->name, gfc_current_intrinsic,
-		   where, (int) mpz_get_ui (get_size), seed_size);
+		   &get->where, (int) mpz_get_ui (get_size), seed_size);
     }
 
   /* RANDOM_SEED may not have more than one non-optional argument.  */
