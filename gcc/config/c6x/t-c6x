@@ -42,3 +42,7 @@ $(srcdir)/config/c6x/c6x-tables.opt: $(srcdir)/config/c6x/genopt.sh \
   $(srcdir)/config/c6x/c6x-isas.def
 	$(SHELL) $(srcdir)/config/c6x/genopt.sh $(srcdir)/config/c6x > \
 		$(srcdir)/config/c6x/c6x-tables.opt
+
+c6x-rust.o: $(srcdir)/config/c6x/c6x-rust.c \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_COMMON_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

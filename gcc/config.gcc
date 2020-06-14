@@ -578,6 +578,7 @@ v850*-*-*)
 	;;
 tic6x-*-*)
 	cpu_type=c6x
+	rust_target_objs="c6x-rust.o"
 	extra_headers="c6x_intrinsics.h"
 	extra_options="${extra_options} c6x/c6x-tables.opt"
 	;;
