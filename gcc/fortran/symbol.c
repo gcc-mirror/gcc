@@ -4059,6 +4059,7 @@ gfc_free_namespace (gfc_namespace *ns)
 {
   gfc_namespace *p, *q;
   int i;
+  gfc_was_finalized *f;
 
   if (ns == NULL)
     return;
@@ -4091,6 +4092,17 @@ gfc_free_namespace (gfc_namespace *ns)
     gfc_free_interface (ns->op[i]);
 
   gfc_free_data (ns->data);
+
+  /* Free all the expr + component combinations that have been
+     finalized.  */
+  f = ns->was_finalized;
+  while (f)
+    {
+      gfc_was_finalized* current = f;
+      f = f->next;
+      free (current);
+    }
+
   p = ns->contained;
   free (ns);
 
