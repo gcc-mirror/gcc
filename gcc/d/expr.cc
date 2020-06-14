@@ -2820,7 +2820,8 @@ public:
 
     /* Generate: _d_assocarrayliteralTX (ti, keys, vals);  */
     tree keys = d_array_value (build_ctype (ta->index->arrayOf ()),
-			       size_int (e->keys->length), build_address (akeys));
+			       size_int (e->keys->length),
+			       build_address (akeys));
     tree vals = d_array_value (build_ctype (ta->next->arrayOf ()),
 			       size_int (e->values->length),
 			       build_address (avals));
