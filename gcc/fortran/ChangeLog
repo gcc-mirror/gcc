@@ -1,3 +1,30 @@
+2020-06-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/42122
+	* dump-parse-tree.c (gfc_dump_global_symbols):  If the symroot is
+	empty, just output "empty".
+
+2020-06-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95088
+	* class.c (get_unique_type_string): Replace use of fixed size
+	buffer by internally passing a pointer to strings.
+
+2020-06-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* check.c (gfc_check_random_seed): Always use locations
+	from get and put arguments for error messages.
+
+2020-06-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94109
+	* class.c (finalize_component): Return early if finalization has
+	already happened for expression and component within namespace.
+	* gfortran.h (gfc_was_finalized): New type.
+	(gfc_namespace): Add member was_finalzed.
+	(gfc_expr): Remove finalized.
+	* symbol.c (gfc_free_namespace): Free was_finalized.
+
 2020-06-11  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl   <kargl@gcc.gnu.org>
 
