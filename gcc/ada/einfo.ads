@@ -1813,8 +1813,8 @@ package Einfo is
 --       See documentation in backend for further details.
 
 --    Has_Nested_Subprogram (Flag282)
---      Defined in subprogram entities. Set for a subprogram which contains at
---      least one nested subprogram.
+--       Defined in subprogram entities. Set for a subprogram which contains at
+--       least one nested subprogram.
 
 --    Has_Non_Limited_View (synth)
 --       Defined in E_Incomplete_Type, E_Incomplete_Subtype, E_Class_Wide_Type,
@@ -3184,6 +3184,10 @@ package Einfo is
 --       Applies to all entities, true for record types and subtypes,
 --       includes class-wide types and subtypes (which are also records).
 
+--    Is_Relaxed_Initialization_State (synthesized)
+--       Applies to all entities, true for abstract states that are subject to
+--       option Relaxed_Initialization.
+
 --    Is_Remote_Call_Interface (Flag62)
 --       Defined in all entities. Set in E_Package and E_Generic_Package
 --       entities to which a pragma Remote_Call_Interface is applied, and
@@ -4180,6 +4184,10 @@ package Einfo is
 --       RM-6.5(4/2). Note that a (simple) return statement within an
 --       extended_return_statement applies to the extended_return_statement,
 --       even though it causes the whole function to return.
+--       Also defined in special E_Block entities built as E_Return_Statement
+--       for extended return statements and attached to the block statement
+--       by Expand_N_Extended_Return_Statement before being turned into an
+--       E_Block by semantic analysis.
 
 --    Return_Present (Flag54)
 --       Defined in function and generic function entities. Set if the
@@ -5832,6 +5840,7 @@ package Einfo is
    --    Has_Null_Visible_Refinement         (synth)
    --    Is_External_State                   (synth)
    --    Is_Null_State                       (synth)
+   --    Is_Relaxed_Initialization_State     (synth)
    --    Is_Synchronized_State               (synth)
    --    Partial_Refinement_Constituents     (synth)
 
@@ -5912,6 +5921,7 @@ package Einfo is
    --    (plus type attributes)
 
    --  E_Block
+   --    Return_Applies_To                   (Node8)
    --    Block_Node                          (Node11)
    --    First_Entity                        (Node17)
    --    Last_Entity                         (Node20)
@@ -7669,6 +7679,7 @@ package Einfo is
    function Is_Protected_Component              (Id : E) return B;
    function Is_Protected_Interface              (Id : E) return B;
    function Is_Protected_Record_Type            (Id : E) return B;
+   function Is_Relaxed_Initialization_State     (Id : E) return B;
    function Is_Standard_Character_Type          (Id : E) return B;
    function Is_Standard_String_Type             (Id : E) return B;
    function Is_String_Type                      (Id : E) return B;

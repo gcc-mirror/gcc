@@ -515,14 +515,12 @@ AC_SUBST(solaris_ld_v2_maps)
 # This is after config.host so we can augment tmake_file.
 case ${host} in
 xtensa*-*)
-  cat > conftest.c <<EOF
-	#ifdef __XTENSA_CALL0_ABI__
-	#error
-	#endif
-EOF
-  if AC_TRY_COMMAND(${CC-cc} -E -o conftest.i conftest.c 1>&AS_MESSAGE_LOG_FD); then
-      tmake_file="${tmake_file} xtensa/t-windowed"
-  fi
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+		     [#ifdef __XTENSA_CALL0_ABI__
+		      #error
+		      #endif
+		      ])],
+		      [tmake_file="${tmake_file} xtensa/t-windowed"])
   ;;
 esac
 

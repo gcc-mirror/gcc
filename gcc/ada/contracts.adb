@@ -1067,10 +1067,10 @@ package body Contracts is
             Analyze_External_Property_In_Decl_Part (Prag, NC_Val);
          end if;
 
-         --  The anonymous object created for a single concurrent type carries
-         --  pragmas Depends and Globat of the type.
+         --  The anonymous object created for a single task type carries
+         --  pragmas Depends and Global of the type.
 
-         if Is_Single_Concurrent_Object (Obj_Id) then
+         if Is_Single_Task_Object (Obj_Id) then
 
             --  Analyze Global first, as Depends may mention items classified
             --  in the global categorization.

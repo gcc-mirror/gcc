@@ -11658,12 +11658,24 @@
    (set_attr "prefix" "orig,maybe_evex")
    (set_attr "mode" "TI")])
 
-(define_expand "mul<mode>3<mask_name>"
+(define_expand "mulv8qi3"
+  [(set (match_operand:V8QI 0 "register_operand")
+	(mult:V8QI (match_operand:V8QI 1 "register_operand")
+		   (match_operand:V8QI 2 "register_operand")))]
+  "TARGET_AVX512VL && TARGET_AVX512BW"
+{
+  gcc_assert (ix86_expand_vecmul_qihi (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "mul<mode>3"
   [(set (match_operand:VI1_AVX512 0 "register_operand")
 	(mult:VI1_AVX512 (match_operand:VI1_AVX512 1 "register_operand")
 		       (match_operand:VI1_AVX512 2 "register_operand")))]
-  "TARGET_SSE2 && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
+  "TARGET_SSE2"
 {
+  if (ix86_expand_vecmul_qihi (operands[0], operands[1], operands[2]))
+    DONE;
   ix86_expand_vecop_qihi (MULT, operands[0], operands[1], operands[2]);
   DONE;
 })

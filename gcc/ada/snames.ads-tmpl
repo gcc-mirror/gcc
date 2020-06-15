@@ -148,6 +148,7 @@ package Snames is
    Name_Dimension_System               : constant Name_Id := N + $;
    Name_Disable_Controlled             : constant Name_Id := N + $;
    Name_Dynamic_Predicate              : constant Name_Id := N + $;
+   Name_Relaxed_Initialization         : constant Name_Id := N + $;
    Name_Static_Predicate               : constant Name_Id := N + $;
    Name_Synchronization                : constant Name_Id := N + $;
    Name_Unimplemented                  : constant Name_Id := N + $;
@@ -953,6 +954,7 @@ package Snames is
    Name_Has_Tagged_Values              : constant Name_Id := N + $; -- GNAT
    Name_Identity                       : constant Name_Id := N + $;
    Name_Implicit_Dereference           : constant Name_Id := N + $; -- GNAT
+   Name_Initialized                    : constant Name_Id := N + $; -- GNAT
    Name_Integer_Value                  : constant Name_Id := N + $; -- GNAT
    Name_Invalid_Value                  : constant Name_Id := N + $; -- GNAT
    Name_Iterator_Element               : constant Name_Id := N + $; -- GNAT
@@ -1636,6 +1638,7 @@ package Snames is
       Attribute_Has_Tagged_Values,
       Attribute_Identity,
       Attribute_Implicit_Dereference,
+      Attribute_Initialized,
       Attribute_Integer_Value,
       Attribute_Invalid_Value,
       Attribute_Iterator_Element,

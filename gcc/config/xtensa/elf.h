@@ -47,7 +47,9 @@ along with GCC; see the file COPYING3.  If not see
   %{mlongcalls:--longcalls} \
   %{mno-longcalls:--no-longcalls} \
   %{mauto-litpools:--auto-litpools} \
-  %{mno-auto-litpools:--no-auto-litpools}"
+  %{mno-auto-litpools:--no-auto-litpools} \
+  %{mabi=windowed:--abi-windowed} \
+  %{mabi=call0:--abi-call0}"
 
 #undef LIB_SPEC
 #define LIB_SPEC "-lc -lsim -lc -lhandlers-sim -lhal"
@@ -65,7 +67,9 @@ along with GCC; see the file COPYING3.  If not see
   %{!shared: \
     %{!static: \
       %{rdynamic:-export-dynamic} \
-    %{static:-static}}}"
+    %{static:-static}}} \
+  %{mabi=windowed:--abi-windowed} \
+  %{mabi=call0:--abi-call0}"
 
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX	"."

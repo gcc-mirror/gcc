@@ -570,10 +570,10 @@ package body Rtsfind is
      range Ada_Streams_Stream_IO .. Ada_Streams_Stream_IO;
 
    subtype Ada_Strings_Descendant is Ada_Descendant
-     range Ada_Strings_Superbounded .. Ada_Strings_Text_Output_Utils;
+     range Ada_Strings_Superbounded .. Ada_Strings_Text_Output_Buffers;
 
    subtype Ada_Strings_Text_Output_Descendant is Ada_Strings_Descendant
-     range Ada_Strings_Text_Output_Utils .. Ada_Strings_Text_Output_Utils;
+     range Ada_Strings_Text_Output_Utils .. Ada_Strings_Text_Output_Buffers;
 
    subtype Ada_Text_IO_Descendant is Ada_Descendant
      range Ada_Text_IO_Decimal_IO .. Ada_Text_IO_Modular_IO;

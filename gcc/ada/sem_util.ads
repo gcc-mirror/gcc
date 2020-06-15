@@ -574,9 +574,10 @@ package Sem_Util is
    --  Find the currently visible definition for a given identifier, that is to
    --  say the first entry in the visibility chain for the Chars of N.
 
+   function Current_Entity_In_Scope (N : Name_Id) return Entity_Id;
    function Current_Entity_In_Scope (N : Node_Id) return Entity_Id;
-   --  Find whether there is a previous definition for identifier N in the
-   --  current scope. Because declarations for a scope are not necessarily
+   --  Find whether there is a previous definition for name or identifier N in
+   --  the current scope. Because declarations for a scope are not necessarily
    --  contiguous (e.g. for packages) the first entry on the visibility chain
    --  for N is not necessarily in the current scope.
 
@@ -1380,6 +1381,11 @@ package Sem_Util is
    --  Check if a type has a (sub)component of a private type that has not
    --  yet received a full declaration.
 
+   function Has_Relaxed_Initialization (E : Entity_Id) return Boolean;
+   --  Returns True iff entity E, which can be either a type, a variable, an
+   --  abstract state or a function, is subject to the Relaxed_Initialization
+   --  aspect.
+
    function Has_Signed_Zeros (E : Entity_Id) return Boolean;
    --  Determines if the floating-point type E supports signed zeros.
    --  Returns False if E is not a floating-point type.
@@ -1573,6 +1579,10 @@ package Sem_Util is
    --  Obtain the invalid value for scalar type Scal_Typ as either specified by
    --  pragma Initialize_Scalars or by the binder. Return an expression created
    --  at source location Loc, which denotes the invalid value.
+
+   function Is_Anonymous_Access_Actual (N : Node_Id) return Boolean;
+   --  Determine if N is used as an actual for a call whose corresponding
+   --  formal is of an anonymous access type.
 
    function Is_Access_Subprogram_Wrapper (E : Entity_Id) return Boolean;
    --  True if E is the constructed wrapper for an access_to_subprogram
@@ -1999,9 +2009,6 @@ package Sem_Util is
 
    function Is_Renamed_Entry (Proc_Nam : Entity_Id) return Boolean;
    --  Return True if Proc_Nam is a procedure renaming of an entry
-
-   function Is_Renaming_Declaration (N : Node_Id) return Boolean;
-   --  Determine whether arbitrary node N denotes a renaming declaration
 
    function Is_Reversible_Iterator (Typ : Entity_Id) return Boolean;
    --  AI05-0139-2: Check whether Typ is derived from the predefined interface

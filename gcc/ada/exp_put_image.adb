@@ -27,6 +27,7 @@ with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util;
+with Debug;    use Debug;
 with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
@@ -44,7 +45,7 @@ with Uintp;    use Uintp;
 
 package body Exp_Put_Image is
 
-   Tagged_Put_Image_Enabled : constant Boolean := False;
+   Tagged_Put_Image_Enabled : Boolean renames Debug_Flag_Underscore_Z;
    --  ???Set True to enable Put_Image for at least some tagged types
 
    -----------------------
@@ -313,7 +314,11 @@ package body Exp_Put_Image is
          end if;
 
       elsif Is_Access_Type (U_Type) then
-         if P_Size = System_Address_Size then
+         if Is_Access_Protected_Subprogram_Type (U_Type) then
+            Lib_RE := RE_Put_Image_Access_Prot_Subp;
+         elsif Is_Access_Subprogram_Type (U_Type) then
+            Lib_RE := RE_Put_Image_Access_Subp;
+         elsif P_Size = System_Address_Size then
             Lib_RE := RE_Put_Image_Thin_Pointer;
          else
             pragma Assert (P_Size = 2 * System_Address_Size);
@@ -343,10 +348,6 @@ package body Exp_Put_Image is
          --  types uses the character encoding of the source file.
          --
          --  Note that this is putting a leading space for reals.
-
-         if Is_Real_Type (U_Type) then
-            return Build_Unknown_Put_Image_Call (N);
-         end if;
 
          declare
             Image : constant Node_Id :=
@@ -410,18 +411,21 @@ package body Exp_Put_Image is
 
       --  Convert parameter to the required type (i.e. the type of the
       --  corresponding parameter), and call the appropriate routine.
+      --  We set the Conversion_OK flag in case the type is private.
 
       declare
          Libent : constant Entity_Id := RTE (Lib_RE);
+         Conv   : constant Node_Id :=
+           OK_Convert_To
+            (Etype (Next_Formal (First_Formal (Libent))),
+             Relocate_Node (Item));
       begin
          return
            Make_Procedure_Call_Statement (Loc,
              Name => New_Occurrence_Of (Libent, Loc),
              Parameter_Associations => New_List (
                Relocate_Node (Sink),
-               Convert_To
-                (Etype (Next_Formal (First_Formal (Libent))),
-                 Relocate_Node (Item))));
+               Conv));
       end;
    end Build_String_Put_Image_Call;
 
@@ -585,24 +589,11 @@ package body Exp_Put_Image is
             --  selector, since there are cases in which we make a reference
             --  to a hidden discriminant that is not visible.
 
-            --  If the enclosing record is an unchecked_union, we use the
-            --  default expressions for the discriminant (it must exist)
-            --  because we cannot generate a reference to it, given that it is
-            --  not stored. ????This seems unfriendly. It should just print
-            --  "(unchecked union)" instead. (Note that this code is
-            --  unreachable -- see exp_attr.)
-
-            if Is_Unchecked_Union (Scope (Entity (Name (VP)))) then
-               D_Ref :=
-                 New_Copy_Tree
-                   (Discriminant_Default_Value (Entity (Name (VP))));
-            else
-               D_Ref :=
-                  Make_Selected_Component (Loc,
-                    Prefix        => Make_Identifier (Loc, Name_V),
-                    Selector_Name =>
-                      New_Occurrence_Of (Entity (Name (VP)), Loc));
-            end if;
+            D_Ref :=
+               Make_Selected_Component (Loc,
+                 Prefix        => Make_Identifier (Loc, Name_V),
+                 Selector_Name =>
+                   New_Occurrence_Of (Entity (Name (VP)), Loc));
 
             Append_To (Result,
               Make_Case_Statement (Loc,
@@ -715,8 +706,6 @@ package body Exp_Put_Image is
             (Make_Identifier (Loc, Name_S))));
 
       --  Generate Put_Images for the discriminants of the type
-      --  If the type is an unchecked union, use the default values of
-      --  the discriminants, because they are not stored.
 
       Append_List_To (Stms,
         Make_Component_Attributes (Discriminant_Specifications (Type_Decl)));
@@ -841,19 +830,10 @@ package body Exp_Put_Image is
       --  types in the private part of a Remote_Types package.
       --
       --  Put_Image on tagged types triggers some bugs.
-      --
-      --  Put_Image doesn't work for private types whose full type is real.
-      --  Disable for all real types, for simplicity.
-      --
-      --  Put_Image doesn't work for access-to-protected types, because of
-      --  confusion over their size. Disable for all access-to-subprogram
-      --  types, just in case.
 
       if Is_Remote_Types (Scope (Typ))
         or else (Is_Tagged_Type (Typ) and then In_Predefined_Unit (Typ))
         or else (Is_Tagged_Type (Typ) and then not Tagged_Put_Image_Enabled)
-        or else Is_Real_Type (Typ)
-        or else Is_Access_Subprogram_Type (Typ)
       then
          return False;
       end if;
@@ -901,7 +881,15 @@ package body Exp_Put_Image is
          return False;
       end if;
 
-      return Is_Scalar_Type (Typ) or else not In_Predefined_Unit (Typ);
+      --  Disable for unchecked unions, because there is no way to know the
+      --  discriminant value, and therefore no way to know which components
+      --  should be printed.
+
+      if Is_Unchecked_Union (Typ) then
+         return False;
+      end if;
+
+      return True;
    end Enable_Put_Image;
 
    ---------------------------------
@@ -927,6 +915,79 @@ package body Exp_Put_Image is
       return Make_Defining_Identifier (Loc, Sname);
    end Make_Put_Image_Name;
 
+   function Image_Should_Call_Put_Image (N : Node_Id) return Boolean is
+   begin
+      if Ada_Version < Ada_2020 then
+         return False;
+      end if;
+
+      --  In Ada 2020, T'Image calls T'Put_Image if there is an explicit
+      --  aspect_specification for Put_Image, or if U_Type'Image is illegal
+      --  in pre-2020 versions of Ada.
+
+      declare
+         U_Type : constant Entity_Id := Underlying_Type (Entity (Prefix (N)));
+      begin
+         if Present (TSS (U_Type, TSS_Put_Image)) then
+            return True;
+         end if;
+
+         return not Is_Scalar_Type (U_Type);
+      end;
+   end Image_Should_Call_Put_Image;
+
+   function Build_Image_Call (N : Node_Id) return Node_Id is
+      --  For T'Image (X) Generate an Expression_With_Actions node:
+      --
+      --     do
+      --        S : Buffer := New_Buffer;
+      --        U_Type'Put_Image (S, X);
+      --        Result : constant String := Get (S);
+      --        Destroy (S);
+      --     in Result end
+      --
+      --  where U_Type is the underlying type, as needed to bypass privacy.
+
+      Loc : constant Source_Ptr := Sloc (N);
+      U_Type : constant Entity_Id := Underlying_Type (Entity (Prefix (N)));
+      Sink_Entity : constant Entity_Id :=
+        Make_Defining_Identifier (Loc, Chars => New_Internal_Name ('S'));
+      Sink_Decl : constant Node_Id :=
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Sink_Entity,
+          Object_Definition =>
+            New_Occurrence_Of (RTE (RE_Buffer), Loc),
+          Expression =>
+            Make_Function_Call (Loc,
+              Name => New_Occurrence_Of (RTE (RE_New_Buffer), Loc),
+              Parameter_Associations => Empty_List));
+      Put_Im : constant Node_Id :=
+        Make_Attribute_Reference (Loc,
+          Prefix         => New_Occurrence_Of (U_Type, Loc),
+          Attribute_Name => Name_Put_Image,
+          Expressions    => New_List (
+            New_Occurrence_Of (Sink_Entity, Loc),
+            New_Copy_Tree (First (Expressions (N)))));
+      Result_Entity : constant Entity_Id :=
+        Make_Defining_Identifier (Loc, Chars => New_Internal_Name ('R'));
+      Result_Decl : constant Node_Id :=
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Result_Entity,
+          Object_Definition =>
+            New_Occurrence_Of (Stand.Standard_String, Loc),
+          Expression =>
+            Make_Function_Call (Loc,
+              Name => New_Occurrence_Of (RTE (RE_Get), Loc),
+              Parameter_Associations => New_List (
+                New_Occurrence_Of (Sink_Entity, Loc))));
+      Image : constant Node_Id :=
+        Make_Expression_With_Actions (Loc,
+          Actions => New_List (Sink_Decl, Put_Im, Result_Decl),
+          Expression => New_Occurrence_Of (Result_Entity, Loc));
+   begin
+      return Image;
+   end Build_Image_Call;
+
    ------------------
    -- Preload_Sink --
    ------------------
@@ -941,6 +1002,12 @@ package body Exp_Put_Image is
       --  enabled for tagged types, and we've seen a tagged type. Note that
       --  Tagged_Seen is set True by the parser if the "tagged" reserved word
       --  is seen; this flag tells us whether we have any tagged types.
+      --  It's unfortunate to have this Tagged_Seen processing so scattered
+      --  about, but we need to know if there are tagged types where this is
+      --  called in Analyze_Compilation_Unit, before we have analyzed any type
+      --  declarations. This mechanism also prevents doing RTE (RE_Sink) when
+      --  compiling the compiler itself. Packages Ada.Strings.Text_Output and
+      --  friends are not included in the compiler.
       --
       --  Don't do it if type Sink is unavailable in the runtime.
 

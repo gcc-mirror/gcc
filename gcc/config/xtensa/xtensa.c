@@ -183,6 +183,8 @@ static unsigned int xtensa_hard_regno_nregs (unsigned int, machine_mode);
 static bool xtensa_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool xtensa_modes_tieable_p (machine_mode, machine_mode);
 static HOST_WIDE_INT xtensa_constant_alignment (const_tree, HOST_WIDE_INT);
+static bool xtensa_can_eliminate (const int from ATTRIBUTE_UNUSED,
+				  const int to);
 static HOST_WIDE_INT xtensa_starting_frame_offset (void);
 static unsigned HOST_WIDE_INT xtensa_asan_shadow_offset (void);
 
@@ -273,7 +275,7 @@ static rtx xtensa_delegitimize_address (rtx);
 #define TARGET_SECONDARY_RELOAD xtensa_secondary_reload
 
 #undef TARGET_HAVE_TLS
-#define TARGET_HAVE_TLS (TARGET_THREADPTR && HAVE_AS_TLS)
+#define TARGET_HAVE_TLS HAVE_AS_TLS
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM xtensa_cannot_force_const_mem
@@ -325,6 +327,9 @@ static rtx xtensa_delegitimize_address (rtx);
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT xtensa_constant_alignment
+
+#undef TARGET_CAN_ELIMINATE
+#define TARGET_CAN_ELIMINATE xtensa_can_eliminate
 
 #undef TARGET_STARTING_FRAME_OFFSET
 #define TARGET_STARTING_FRAME_OFFSET xtensa_starting_frame_offset
@@ -597,7 +602,7 @@ constantpool_mem_p (rtx op)
 static bool
 xtensa_tls_symbol_p (rtx x)
 {
-  if (! TARGET_HAVE_TLS)
+  if (! targetm.have_tls)
     return false;
 
   return GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (x) != 0;
@@ -2020,7 +2025,7 @@ xtensa_mode_dependent_address_p (const_rtx addr,
 bool
 xtensa_tls_referenced_p (rtx x)
 {
-  if (! TARGET_HAVE_TLS)
+  if (! targetm.have_tls)
     return false;
 
   subrtx_iterator::array_type array;
@@ -2213,6 +2218,12 @@ xtensa_option_override (void)
 {
   int regno;
   machine_mode mode;
+
+  if (xtensa_windowed_abi == -1)
+    xtensa_windowed_abi = TARGET_WINDOWED_ABI_DEFAULT;
+
+  if (! TARGET_THREADPTR)
+    targetm.have_tls = false;
 
   /* Use CONST16 in the absence of L32R.
      Set it in the TARGET_OPTION_OVERRIDE to avoid dependency on xtensa
@@ -4409,6 +4420,17 @@ xtensa_constant_alignment (const_tree exp, HOST_WIDE_INT align)
       && !optimize_size)
     return MAX (align, BITS_PER_WORD);
   return align;
+}
+
+static bool
+xtensa_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
+{
+  gcc_assert (from == ARG_POINTER_REGNUM || from == FRAME_POINTER_REGNUM);
+
+  /* If we need a frame pointer, ARG_POINTER_REGNUM and FRAME_POINTER_REGNUM
+     can only eliminate to HARD_FRAME_POINTER_REGNUM.  */
+  return to == HARD_FRAME_POINTER_REGNUM
+    || (!frame_pointer_needed && to == STACK_POINTER_REGNUM);
 }
 
 /* Implement TARGET_STARTING_FRAME_OFFSET.  */

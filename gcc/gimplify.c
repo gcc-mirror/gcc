@@ -15011,7 +15011,8 @@ gimplify_function_tree (tree fndecl)
       bind = new_bind;
     }
 
-  if (sanitize_flags_p (SANITIZE_THREAD))
+  if (sanitize_flags_p (SANITIZE_THREAD)
+      && param_tsan_instrument_func_entry_exit)
     {
       gcall *call = gimple_build_call_internal (IFN_TSAN_FUNC_EXIT, 0);
       gimple *tf = gimple_build_try (seq, call, GIMPLE_TRY_FINALLY);

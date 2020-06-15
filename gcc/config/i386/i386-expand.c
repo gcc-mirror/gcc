@@ -19466,6 +19466,71 @@ ix86_expand_vec_interleave (rtx targ, rtx op0, rtx op1, bool high_p)
   gcc_assert (ok);
 }
 
+/* Optimize vector MUL generation for V8QI, V16QI and V32QI
+   under TARGET_AVX512BW. i.e. for v16qi a * b, it has
+
+   vpmovzxbw ymm2, xmm0
+   vpmovzxbw ymm3, xmm1
+   vpmullw   ymm4, ymm2, ymm3
+   vpmovwb   xmm0, ymm4
+
+   it would take less instructions than ix86_expand_vecop_qihi.
+   Return true if success.  */
+
+bool
+ix86_expand_vecmul_qihi (rtx dest, rtx op1, rtx op2)
+{
+  machine_mode himode, qimode = GET_MODE (dest);
+  rtx hop1, hop2, hdest;
+  rtx (*gen_extend)(rtx, rtx);
+  rtx (*gen_truncate)(rtx, rtx);
+
+  /* There's no V64HImode multiplication instruction.  */
+  if (qimode == E_V64QImode)
+    return false;
+
+  /* vpmovwb only available under AVX512BW.  */
+  if (!TARGET_AVX512BW)
+    return false;
+  if ((qimode == V8QImode || qimode == V16QImode)
+      && !TARGET_AVX512VL)
+    return false;
+  /* Not generate zmm instruction when prefer 128/256 bit vector width.  */
+  if (qimode == V32QImode
+      && (TARGET_PREFER_AVX128 || TARGET_PREFER_AVX256))
+    return false;
+
+  switch (qimode)
+    {
+    case E_V8QImode:
+      himode = V8HImode;
+      gen_extend = gen_zero_extendv8qiv8hi2;
+      gen_truncate = gen_truncv8hiv8qi2;
+      break;
+    case E_V16QImode:
+      himode = V16HImode;
+      gen_extend = gen_zero_extendv16qiv16hi2;
+      gen_truncate = gen_truncv16hiv16qi2;
+      break;
+    case E_V32QImode:
+      himode = V32HImode;
+      gen_extend = gen_zero_extendv32qiv32hi2;
+      gen_truncate = gen_truncv32hiv32qi2;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  hop1 = gen_reg_rtx (himode);
+  hop2 = gen_reg_rtx (himode);
+  hdest = gen_reg_rtx (himode);
+  emit_insn (gen_extend (hop1, op1));
+  emit_insn (gen_extend (hop2, op2));
+  emit_insn (gen_rtx_SET (hdest, simplify_gen_binary (MULT, himode,
+						      hop1, hop2)));
+  emit_insn (gen_truncate (dest, hdest));
+  return true;
+}
 
 /* Expand a vector operation CODE for a V*QImode in terms of the
    same operation on V*HImode.  */

@@ -2758,6 +2758,9 @@ propagate_subaccesses_from_rhs (struct access *lacc, struct access *racc)
 	}
       if (!lacc->first_child && !racc->first_child)
 	{
+	  /* We are about to change the access type from aggregate to scalar,
+	     so we need to put the reverse flag onto the access, if any.  */
+	  const bool reverse = TYPE_REVERSE_STORAGE_ORDER (lacc->type);
 	  tree t = lacc->base;
 
 	  lacc->type = racc->type;
@@ -2772,9 +2775,12 @@ propagate_subaccesses_from_rhs (struct access *lacc, struct access *racc)
 	      lacc->expr = build_ref_for_model (EXPR_LOCATION (lacc->base),
 						lacc->base, lacc->offset,
 						racc, NULL, false);
+	      if (TREE_CODE (lacc->expr) == MEM_REF)
+		REF_REVERSE_STORAGE_ORDER (lacc->expr) = reverse;
 	      lacc->grp_no_warning = true;
 	      lacc->grp_same_access_path = false;
 	    }
+	  lacc->reverse = reverse;
 	}
       return ret;
     }

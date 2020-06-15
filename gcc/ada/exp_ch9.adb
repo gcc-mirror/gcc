@@ -928,6 +928,12 @@ package body Exp_Ch9 is
    --  Start of processing for Build_Activation_Chain_Entity
 
    begin
+      --  No action needed if the run-time has no tasking support
+
+      if Global_No_Tasking then
+         return;
+      end if;
+
       --  Activation chain is never used for sequential elaboration policy, see
       --  comment for Create_Restricted_Task_Sequential in s-tarest.ads).
 
@@ -1127,9 +1133,9 @@ package body Exp_Ch9 is
       Ren_Decl     : Node_Id;
 
    begin
-      --  Nothing to do if there is no task hierarchy
+      --  No action needed if the run-time has no tasking support
 
-      if Restriction_Active (No_Task_Hierarchy) then
+      if Global_No_Tasking then
          return;
       end if;
 
@@ -1168,21 +1174,7 @@ package body Exp_Ch9 is
       then
          begin
             Set_Has_Master_Entity (Master_Scope);
-
-            --  Generate:
-            --    _master : constant Integer := Current_Master.all;
-
-            Master_Decl :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier =>
-                  Make_Defining_Identifier (Loc, Name_uMaster),
-                Constant_Present    => True,
-                Object_Definition   =>
-                  New_Occurrence_Of (Standard_Integer, Loc),
-                Expression          =>
-                  Make_Explicit_Dereference (Loc,
-                    New_Occurrence_Of (RTE (RE_Current_Master), Loc)));
-
+            Master_Decl := Build_Master_Declaration (Loc);
             Insert_Action (Find_Hook_Context (Related_Node), Master_Decl);
             Analyze (Master_Decl);
 
@@ -1694,6 +1686,65 @@ package body Exp_Ch9 is
 
       return Ecount;
    end Build_Entry_Count_Expression;
+
+   ------------------------------
+   -- Build_Master_Declaration --
+   ------------------------------
+
+   function Build_Master_Declaration (Loc : Source_Ptr) return Node_Id is
+      Master_Decl : Node_Id;
+
+   begin
+      --  Generate a dummy master if tasks or tasking hierarchies are
+      --  prohibited.
+
+      --    _Master : constant Master_Id := 3;
+
+      if not Tasking_Allowed
+        or else Restrictions.Set (No_Task_Hierarchy)
+        or else not RTE_Available (RE_Current_Master)
+      then
+         declare
+            Expr : Node_Id;
+
+         begin
+            --  RE_Library_Task_Level is not always available in configurable
+            --  RunTime
+
+            if not RTE_Available (RE_Library_Task_Level) then
+               Expr := Make_Integer_Literal (Loc, Uint_3);
+            else
+               Expr := New_Occurrence_Of (RTE (RE_Library_Task_Level), Loc);
+            end if;
+
+            Master_Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier =>
+                  Make_Defining_Identifier (Loc, Name_uMaster),
+                Constant_Present    => True,
+                Object_Definition   =>
+                  New_Occurrence_Of (Standard_Integer, Loc),
+                Expression          => Expr);
+         end;
+
+      --  Generate:
+      --    _master : constant Integer := Current_Master.all;
+
+      else
+         Master_Decl :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier =>
+               Make_Defining_Identifier (Loc, Name_uMaster),
+             Constant_Present    => True,
+             Object_Definition   =>
+               New_Occurrence_Of (Standard_Integer, Loc),
+             Expression          =>
+               Make_Explicit_Dereference (Loc,
+                 New_Occurrence_Of (RTE (RE_Current_Master), Loc)));
+      end if;
+
+      return Master_Decl;
+   end Build_Master_Declaration;
 
    ---------------------------
    -- Build_Parameter_Block --
@@ -3345,10 +3396,38 @@ package body Exp_Ch9 is
       Par        : Node_Id;
 
    begin
+      --  No action needed if the run-time has no tasking support
+
+      if Global_No_Tasking then
+         return;
+      end if;
+
       if Is_Itype (Obj_Or_Typ) then
          Par := Associated_Node_For_Itype (Obj_Or_Typ);
       else
          Par := Parent (Obj_Or_Typ);
+      end if;
+
+      --  For transient scopes check if the master entity is already defined
+
+      if Is_Type (Obj_Or_Typ)
+        and then Ekind (Scope (Obj_Or_Typ)) = E_Block
+        and then Is_Internal (Scope (Obj_Or_Typ))
+      then
+         declare
+            Master_Scope : constant Entity_Id :=
+                             Find_Master_Scope (Obj_Or_Typ);
+         begin
+            if Has_Master_Entity (Master_Scope)
+              or else Is_Finalizer (Master_Scope)
+            then
+               return;
+            end if;
+
+            if Present (Current_Entity_In_Scope (Name_uMaster)) then
+               return;
+            end if;
+         end;
       end if;
 
       --  When creating a master for a record component which is either a task
@@ -3368,31 +3447,16 @@ package body Exp_Ch9 is
          Find_Enclosing_Context (Par, Context, Context_Id, Decls);
       end if;
 
-      --  Nothing to do if the context already has a master
+      --  Nothing to do if the context already has a master; internally built
+      --  finalizers don't need a master.
 
-      if Has_Master_Entity (Context_Id) then
-         return;
-
-      --  Nothing to do if tasks or tasking hierarchies are prohibited
-
-      elsif Restriction_Active (No_Tasking)
-        or else Restriction_Active (No_Task_Hierarchy)
+      if Has_Master_Entity (Context_Id)
+        or else Is_Finalizer (Context_Id)
       then
          return;
       end if;
 
-      --  Create a master, generate:
-      --    _Master : constant Master_Id := Current_Master.all;
-
-      Decl :=
-        Make_Object_Declaration (Loc,
-          Defining_Identifier =>
-            Make_Defining_Identifier (Loc, Name_uMaster),
-          Constant_Present    => True,
-          Object_Definition   => New_Occurrence_Of (RTE (RE_Master_Id), Loc),
-          Expression          =>
-            Make_Explicit_Dereference (Loc,
-              New_Occurrence_Of (RTE (RE_Current_Master), Loc)));
+      Decl := Build_Master_Declaration (Loc);
 
       --  The master is inserted at the start of the declarative list of the
       --  context.
@@ -3448,11 +3512,9 @@ package body Exp_Ch9 is
       Master_Id   : Entity_Id;
 
    begin
-      --  Nothing to do if tasks or tasking hierarchies are prohibited
+      --  No action needed if the run-time has no tasking support
 
-      if Restriction_Active (No_Tasking)
-        or else Restriction_Active (No_Task_Hierarchy)
-      then
+      if Global_No_Tasking then
          return;
       end if;
 
@@ -4794,9 +4856,10 @@ package body Exp_Ch9 is
       Chain := Activation_Chain_Entity (Owner);
 
       --  Nothing to do when there are no tasks to activate. This is indicated
-      --  by a missing activation chain entity.
+      --  by a missing activation chain entity; also skip generating it when
+      --  it is a ghost entity.
 
-      if No (Chain) then
+      if No (Chain) or else Is_Ignored_Ghost_Entity (Chain) then
          return;
       end if;
 
@@ -13312,8 +13375,7 @@ package body Exp_Ch9 is
       if Ada_Version >= Ada_2005 then
          while Is_Internal (S) loop
             if Nkind (Parent (S)) = N_Block_Statement
-              and then
-                Nkind (Original_Node (Parent (S))) = N_Procedure_Call_Statement
+              and then Has_Master_Entity (S)
             then
                exit;
 

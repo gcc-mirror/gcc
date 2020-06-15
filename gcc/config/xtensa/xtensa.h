@@ -64,7 +64,8 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_ABSOLUTE_LITERALS XSHAL_USE_ABSOLUTE_LITERALS
 #define TARGET_THREADPTR	XCHAL_HAVE_THREADPTR
 #define TARGET_LOOPS	        XCHAL_HAVE_LOOPS
-#define TARGET_WINDOWED_ABI	(XSHAL_ABI == XTHAL_ABI_WINDOWED)
+#define TARGET_WINDOWED_ABI_DEFAULT (XSHAL_ABI == XTHAL_ABI_WINDOWED)
+#define TARGET_WINDOWED_ABI	xtensa_windowed_abi
 #define TARGET_DEBUG		XCHAL_HAVE_DEBUG
 #define TARGET_L32R		XCHAL_HAVE_L32R
 
@@ -314,8 +315,13 @@ extern int leaf_function;
 #define STACK_POINTER_REGNUM (GP_REG_FIRST + 1)
 
 /* Base register for access to local variables of the function.  */
-#define HARD_FRAME_POINTER_REGNUM (GP_REG_FIRST + \
-				   (TARGET_WINDOWED_ABI ? 7 : 15))
+#define HARD_FRAME_POINTER_REGNUM \
+  (TARGET_WINDOWED_ABI \
+   ? XTENSA_WINDOWED_HARD_FRAME_POINTER_REGNUM \
+   : XTENSA_CALL0_HARD_FRAME_POINTER_REGNUM)
+
+#define XTENSA_WINDOWED_HARD_FRAME_POINTER_REGNUM (GP_REG_FIRST + 7)
+#define XTENSA_CALL0_HARD_FRAME_POINTER_REGNUM (GP_REG_FIRST + 15)
 
 /* The register number of the frame pointer register, which is used to
    access automatic variables in the stack frame.  For Xtensa, this
@@ -434,12 +440,17 @@ enum reg_class
 			      || (flag_sanitize & SANITIZE_ADDRESS) != 0)
 
 /* The ARG_POINTER and FRAME_POINTER are not real Xtensa registers, so
-   they are eliminated to either the stack pointer or hard frame pointer.  */
-#define ELIMINABLE_REGS							\
-{{ ARG_POINTER_REGNUM,		STACK_POINTER_REGNUM},			\
- { ARG_POINTER_REGNUM,		HARD_FRAME_POINTER_REGNUM},		\
- { FRAME_POINTER_REGNUM,	STACK_POINTER_REGNUM},			\
- { FRAME_POINTER_REGNUM,	HARD_FRAME_POINTER_REGNUM}}
+   they are eliminated to either the stack pointer or hard frame pointer.
+   Since hard frame pointer is different register in windowed and call0
+   ABIs list them both and only allow real HARD_FRAME_POINTER_REGNUM in
+   TARGET_CAN_ELIMINATE.  */
+#define ELIMINABLE_REGS							    \
+{{ ARG_POINTER_REGNUM,		STACK_POINTER_REGNUM},			    \
+ { ARG_POINTER_REGNUM,		XTENSA_WINDOWED_HARD_FRAME_POINTER_REGNUM}, \
+ { ARG_POINTER_REGNUM,		XTENSA_CALL0_HARD_FRAME_POINTER_REGNUM},    \
+ { FRAME_POINTER_REGNUM,	STACK_POINTER_REGNUM},			    \
+ { FRAME_POINTER_REGNUM,	XTENSA_WINDOWED_HARD_FRAME_POINTER_REGNUM}, \
+ { FRAME_POINTER_REGNUM,	XTENSA_CALL0_HARD_FRAME_POINTER_REGNUM}}
 
 /* Specify the initial difference between the specified pair of registers.  */
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\

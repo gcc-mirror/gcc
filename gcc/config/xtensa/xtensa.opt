@@ -45,3 +45,14 @@ Relax literals in assembler and place them automatically in the text section.
 mserialize-volatile
 Target Report Mask(SERIALIZE_VOLATILE)
 -mno-serialize-volatile	Do not serialize volatile memory references with MEMW instructions.
+
+TargetVariable
+int xtensa_windowed_abi = -1
+
+mabi=call0
+Target Report RejectNegative Var(xtensa_windowed_abi, 0)
+Use call0 ABI.
+
+mabi=windowed
+Target Report RejectNegative Var(xtensa_windowed_abi, 1)
+Use windowed registers ABI.

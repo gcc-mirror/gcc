@@ -43,7 +43,7 @@ package Ada.Strings.Text_Output.Formatting is
    type Template is new UTF_8;
    procedure Put
      (S : in out Sink'Class; T : Template;
-      X1, X2, X3, X4, X5, X6 : UTF_8 := "");
+      X1, X2, X3, X4, X5, X6 : UTF_8_Lines := "");
    --  Prints the template as is, except for the following escape sequences:
    --    "\n" is end of line.
    --    "\i" indents by the default amount, and "\o" outdents.
@@ -51,23 +51,23 @@ package Ada.Strings.Text_Output.Formatting is
    --    "\1" is replaced with X1, and similarly for 2, 3, ....
    --    "\\" is "\".
 
-   --  Note that the template is not type UTF_8, to avoid this sort of thing:
+   --  Note that the template is not type String, to avoid this sort of thing:
    --
    --      https://xkcd.com/327/
 
    procedure Put
      (T : Template;
-      X1, X2, X3, X4, X5, X6 : UTF_8 := "");
+      X1, X2, X3, X4, X5, X6 : UTF_8_Lines := "");
    --  Sends to standard output
 
    procedure Err
      (T : Template;
-      X1, X2, X3, X4, X5, X6 : UTF_8 := "");
+      X1, X2, X3, X4, X5, X6 : UTF_8_Lines := "");
    --  Sends to standard error
 
    function Format
      (T : Template;
-      X1, X2, X3, X4, X5, X6 : UTF_8 := "")
+      X1, X2, X3, X4, X5, X6 : UTF_8_Lines := "")
      return UTF_8_Lines;
    --  Returns a UTF-8-encoded String
 

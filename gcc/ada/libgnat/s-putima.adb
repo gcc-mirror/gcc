@@ -118,16 +118,20 @@ package body System.Put_Images is
    generic
       type Designated (<>) is private;
       type Pointer is access all Designated;
-   procedure Put_Image_Pointer (S : in out Sink'Class; X : Pointer);
+   procedure Put_Image_Pointer
+     (S : in out Sink'Class; X : Pointer; Type_Kind : String);
 
-   procedure Put_Image_Pointer (S : in out Sink'Class; X : Pointer) is
+   procedure Put_Image_Pointer
+     (S : in out Sink'Class; X : Pointer; Type_Kind : String)
+   is
       function Cast is new Unchecked_Conversion
         (System.Address, Unsigned_Address);
    begin
       if X = null then
          Put_UTF_8 (S, "null");
       else
-         Put_UTF_8 (S, "(access ");
+         Put_UTF_8 (S, "(");
+         Put_UTF_8 (S, Type_Kind);
          Hex.Put_Image (S, Cast (X.all'Address));
          Put_UTF_8 (S, ")");
       end if;
@@ -135,24 +139,53 @@ package body System.Put_Images is
 
    procedure Thin_Instance is new Put_Image_Pointer (Byte, Thin_Pointer);
    procedure Put_Image_Thin_Pointer
-     (S : in out Sink'Class; X : Thin_Pointer) renames Thin_Instance;
+     (S : in out Sink'Class; X : Thin_Pointer)
+   is
+   begin
+      Thin_Instance (S, X, "access");
+   end Put_Image_Thin_Pointer;
+
    procedure Fat_Instance is new Put_Image_Pointer (Byte_String, Fat_Pointer);
    procedure Put_Image_Fat_Pointer
-     (S : in out Sink'Class; X : Fat_Pointer) renames Fat_Instance;
+     (S : in out Sink'Class; X : Fat_Pointer)
+   is
+   begin
+      Fat_Instance (S, X, "access");
+   end Put_Image_Fat_Pointer;
+
+   procedure Put_Image_Access_Subp (S : in out Sink'Class; X : Thin_Pointer) is
+   begin
+      Thin_Instance (S, X, "access subprogram");
+   end Put_Image_Access_Subp;
+
+   procedure Put_Image_Access_Prot_Subp
+     (S : in out Sink'Class; X : Thin_Pointer)
+   is
+   begin
+      Thin_Instance (S, X, "access protected subprogram");
+   end Put_Image_Access_Prot_Subp;
 
    procedure Put_Image_String (S : in out Sink'Class; X : String) is
    begin
-      --  ????We should double double quotes, and maybe do something nice with
-      --  control characters.
       Put_UTF_8 (S, """");
-      Put_String (S, X);
+      for C of X loop
+         if C = '"' then
+            Put_UTF_8 (S, """");
+         end if;
+         Put_Character (S, C);
+      end loop;
       Put_UTF_8 (S, """");
    end Put_Image_String;
 
    procedure Put_Image_Wide_String (S : in out Sink'Class; X : Wide_String) is
    begin
       Put_UTF_8 (S, """");
-      Put_Wide_String (S, X);
+      for C of X loop
+         if C = '"' then
+            Put_UTF_8 (S, """");
+         end if;
+         Put_Wide_Character (S, C);
+      end loop;
       Put_UTF_8 (S, """");
    end Put_Image_Wide_String;
 
@@ -160,7 +193,12 @@ package body System.Put_Images is
      (S : in out Sink'Class; X : Wide_Wide_String) is
    begin
       Put_UTF_8 (S, """");
-      Put_Wide_Wide_String (S, X);
+      for C of X loop
+         if C = '"' then
+            Put_UTF_8 (S, """");
+         end if;
+         Put_Wide_Wide_Character (S, C);
+      end loop;
       Put_UTF_8 (S, """");
    end Put_Image_Wide_Wide_String;
 

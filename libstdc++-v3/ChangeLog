@@ -1,3 +1,20 @@
+2020-06-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/29_atomics/atomic_flag/clear/1.cc: Also test clear()
+	when the value is currently set.
+	* testsuite/29_atomics/atomic_flag/test_and_set/explicit.cc:
+	Actually check the return value.
+	* testsuite/29_atomics/atomic_flag/test_and_set/implicit.cc:
+	Likewise.
+
+2020-06-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_base.h (atomic_flag::test): Add missing
+	const qualifiers.
+	* testsuite/29_atomics/atomic_flag/test/explicit.cc: Add
+	dg-options and verify results of test function.
+	* testsuite/29_atomics/atomic_flag/test/implicit.cc: Likewise.
+
 2020-06-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/94749

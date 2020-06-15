@@ -479,19 +479,11 @@ gfc_class_initializer (gfc_typespec *ts, gfc_expr *init_expr)
 static void
 get_unique_type_string (char *string, gfc_symbol *derived)
 {
-  /* Provide sufficient space to hold "Pdtsymbol".  */
-  char dt_name[GFC_MAX_SYMBOL_LEN+4];
+  const char *dt_name;
   if (derived->attr.unlimited_polymorphic)
-    strcpy (dt_name, "STAR");
+    dt_name = "STAR";
   else
-    {
-      const char *upper = gfc_dt_upper_string (derived->name);
-      size_t len = strnlen (upper, sizeof (dt_name));
-      if (len >= sizeof (dt_name))
-	gfc_internal_error ("get_unique_type_string: identifier overflow");
-      memcpy (dt_name, upper, len);
-      dt_name[len] = '\0';
-    }
+    dt_name = gfc_dt_upper_string (derived->name);
   if (derived->attr.unlimited_polymorphic)
     sprintf (string, "_%s", dt_name);
   else if (derived->module)
@@ -920,12 +912,18 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
 {
   gfc_expr *e;
   gfc_ref *ref;
+  gfc_was_finalized *f;
 
   if (!comp_is_finalizable (comp))
     return;
 
-  if (expr->finalized)
-    return;
+  /* If this expression with this component has been finalized
+     already in this namespace, there is nothing to do.  */
+  for (f = sub_ns->was_finalized; f; f = f->next)
+    {
+      if (f->e == expr && f->c == comp)
+	return;
+    }
 
   e = gfc_copy_expr (expr);
   if (!e->ref)
@@ -1055,7 +1053,13 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
 			    sub_ns);
       gfc_free_expr (e);
     }
-  expr->finalized = 1;
+
+  /* Record that this was finalized already in this namespace.  */
+  f = sub_ns->was_finalized;
+  sub_ns->was_finalized = XCNEW (gfc_was_finalized);
+  sub_ns->was_finalized->e = expr;
+  sub_ns->was_finalized->c = comp;
+  sub_ns->was_finalized->next = f;
 }
 
 

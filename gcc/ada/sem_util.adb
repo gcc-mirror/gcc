@@ -6119,14 +6119,14 @@ package body Sem_Util is
    -- Current_Entity_In_Scope --
    -----------------------------
 
-   function Current_Entity_In_Scope (N : Node_Id) return Entity_Id is
+   function Current_Entity_In_Scope (N : Name_Id) return Entity_Id is
       E  : Entity_Id;
       CS : constant Entity_Id := Current_Scope;
 
       Transient_Case : constant Boolean := Scope_Is_Transient;
 
    begin
-      E := Get_Name_Entity_Id (Chars (N));
+      E := Get_Name_Entity_Id (N);
       while Present (E)
         and then Scope (E) /= CS
         and then (not Transient_Case or else Scope (E) /= Scope (CS))
@@ -6135,6 +6135,15 @@ package body Sem_Util is
       end loop;
 
       return E;
+   end Current_Entity_In_Scope;
+
+   -----------------------------
+   -- Current_Entity_In_Scope --
+   -----------------------------
+
+   function Current_Entity_In_Scope (N : Node_Id) return Entity_Id is
+   begin
+      return Current_Entity_In_Scope (Chars (N));
    end Current_Entity_In_Scope;
 
    -------------------
@@ -12424,6 +12433,124 @@ package body Sem_Util is
       end if;
    end Has_Private_Component;
 
+   --------------------------------
+   -- Has_Relaxed_Initialization --
+   --------------------------------
+
+   function Has_Relaxed_Initialization (E : Entity_Id) return Boolean is
+
+      function Denotes_Relaxed_Parameter
+        (Expr  : Node_Id;
+         Param : Entity_Id)
+         return Boolean;
+      --  Returns True iff expression Expr denotes a formal parameter or
+      --  function Param (through its attribute Result).
+
+      -------------------------------
+      -- Denotes_Relaxed_Parameter --
+      -------------------------------
+
+      function Denotes_Relaxed_Parameter
+        (Expr  : Node_Id;
+         Param : Entity_Id)
+         return Boolean
+      is
+      begin
+         if Nkind_In (Expr, N_Identifier, N_Expanded_Name) then
+            return Entity (Expr) = Param;
+         else
+            pragma Assert (Is_Attribute_Result (Expr));
+            return Entity (Prefix (Expr)) = Param;
+         end if;
+      end Denotes_Relaxed_Parameter;
+
+   --  Start of processing for Has_Relaxed_Initialization
+
+   begin
+      --  When analyzing, we checked all syntax legality rules for the aspect
+      --  Relaxed_Initialization, but didn't store the property anywhere (e.g.
+      --  as an Einfo flag). To query the property we look directly at the AST,
+      --  but now without any syntactic checks.
+
+      case Ekind (E) is
+         --  Abstract states have option Relaxed_Initialization
+
+         when E_Abstract_State =>
+            return Is_Relaxed_Initialization_State (E);
+
+         --  Variables have this aspect attached directly
+
+         when E_Variable =>
+            return Has_Aspect (E, Aspect_Relaxed_Initialization);
+
+         --  Types have this aspect attached directly (though we only allow it
+         --  to be specified for the first subtype).
+
+         when Type_Kind =>
+            pragma Assert (Is_First_Subtype (E));
+            return Has_Aspect (E, Aspect_Relaxed_Initialization);
+
+         --  Formal parameters and functions have the Relaxed_Initialization
+         --  aspect attached to the subprogram entity and must be listed in
+         --  the aspect expression.
+
+         when Formal_Kind
+            | E_Function
+         =>
+            declare
+               Subp_Id     : Entity_Id;
+               Aspect_Expr : Node_Id;
+               Param_Expr  : Node_Id;
+
+            begin
+               if Is_Formal (E) then
+                  Subp_Id := Scope (E);
+               else
+                  Subp_Id := E;
+               end if;
+
+               if Has_Aspect (Subp_Id, Aspect_Relaxed_Initialization) then
+                  Aspect_Expr :=
+                    Find_Value_Of_Aspect
+                      (Subp_Id, Aspect_Relaxed_Initialization);
+
+                  --  Aspect expression is either an aggregate, e.g.:
+                  --
+                  --    function F (X : Integer) return Integer
+                  --      with Relaxed_Initialization => (X, F'Result);
+
+                  if Nkind (Aspect_Expr) = N_Aggregate then
+
+                     Param_Expr := First (Expressions (Aspect_Expr));
+
+                     while Present (Param_Expr) loop
+                        if Denotes_Relaxed_Parameter (Param_Expr, E) then
+                           return True;
+                        end if;
+
+                        Next (Param_Expr);
+                     end loop;
+
+                     return False;
+
+                  --  or it is a single identifier, e.g.:
+                  --
+                  --    function F (X : Integer) return Integer
+                  --      with Relaxed_Initialization => X;
+
+                  else
+                     return Denotes_Relaxed_Parameter (Aspect_Expr, E);
+                  end if;
+               else
+                  return False;
+               end if;
+            end;
+
+         when others =>
+            raise Program_Error;
+      end case;
+   end Has_Relaxed_Initialization;
+
    ----------------------
    -- Has_Signed_Zeros --
    ----------------------
@@ -14052,6 +14179,28 @@ package body Sem_Util is
          return Invalid_Integer_Value;
       end if;
    end Invalid_Scalar_Value;
+
+   --------------------------------
+   -- Is_Anonymous_Access_Actual --
+   --------------------------------
+
+   function Is_Anonymous_Access_Actual (N : Node_Id) return Boolean is
+      Par : Node_Id;
+   begin
+      if Ekind (Etype (N)) /= E_Anonymous_Access_Type then
+         return False;
+      end if;
+
+      Par := Parent (N);
+      while Present (Par)
+        and then Nkind_In (Par, N_Case_Expression,
+                                N_If_Expression,
+                                N_Parameter_Association)
+      loop
+         Par := Parent (Par);
+      end loop;
+      return Nkind (Par) in N_Subprogram_Call;
+   end Is_Anonymous_Access_Actual;
 
    -----------------------------
    -- Is_Actual_Out_Parameter --
@@ -16033,7 +16182,7 @@ package body Sem_Util is
         and then not Is_Dispatching_Operation (Subp)
         and then Needs_Finalization (Etype (Subp))
         and then not Is_Class_Wide_Type (Etype (Subp))
-        and then not (Has_Invariants (Etype (Subp)))
+        and then not Has_Invariants (Etype (Subp))
         and then Present (Subprogram_Body (Subp))
         and then Was_Expression_Function (Subprogram_Body (Subp))
       then
@@ -16797,13 +16946,6 @@ package body Sem_Util is
 
    function Is_Object_Image (Prefix : Node_Id) return Boolean is
    begin
-      --  When the type of the prefix is not scalar, then the prefix is not
-      --  valid in any scenario.
-
-      if not Is_Scalar_Type (Etype (Prefix)) then
-         return False;
-      end if;
-
       --  Here we test for the case that the prefix is not a type and assume
       --  if it is not then it must be a named value or an object reference.
       --  This is because the parser always checks that prefixes of attributes
@@ -18080,28 +18222,6 @@ package body Sem_Util is
 
       return False;
    end Is_Renamed_Entry;
-
-   -----------------------------
-   -- Is_Renaming_Declaration --
-   -----------------------------
-
-   function Is_Renaming_Declaration (N : Node_Id) return Boolean is
-   begin
-      case Nkind (N) is
-         when N_Exception_Renaming_Declaration
-            | N_Generic_Function_Renaming_Declaration
-            | N_Generic_Package_Renaming_Declaration
-            | N_Generic_Procedure_Renaming_Declaration
-            | N_Object_Renaming_Declaration
-            | N_Package_Renaming_Declaration
-            | N_Subprogram_Renaming_Declaration
-          =>
-            return True;
-
-         when others =>
-            return False;
-      end case;
-   end Is_Renaming_Declaration;
 
    ----------------------------
    -- Is_Reversible_Iterator --

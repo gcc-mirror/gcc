@@ -451,7 +451,8 @@ class TypeInfoVisitor : public Visitor
 	    gcc_assert (voffset != 0u);
 	    value = build_offset (csym, size_int (voffset));
 
-	    CONSTRUCTOR_APPEND_ELT (v, size_int (1), size_int (id->vtbl.length));
+	    CONSTRUCTOR_APPEND_ELT (v, size_int (1),
+				    size_int (id->vtbl.length));
 	    CONSTRUCTOR_APPEND_ELT (v, size_int (2), value);
 	  }
 
@@ -1218,7 +1219,8 @@ layout_classinfo_interfaces (ClassDeclaration *decl)
 
 	  if (id->vtbl.length && offset != ~0u)
 	    {
-	      tree vtbldomain = build_index_type (size_int (id->vtbl.length - 1));
+	      tree vtbldomain
+		= build_index_type (size_int (id->vtbl.length - 1));
 	      tree vtbltype = build_array_type (vtable_entry_type, vtbldomain);
 
 	      field = create_field_decl (vtbltype, NULL, 1, 1);
@@ -1242,7 +1244,8 @@ layout_classinfo_interfaces (ClassDeclaration *decl)
 	      if (type == tinfo_types[TK_CLASSINFO_TYPE])
 		type = copy_aggregate_type (type);
 
-	      tree vtbldomain = build_index_type (size_int (id->vtbl.length - 1));
+	      tree vtbldomain
+		= build_index_type (size_int (id->vtbl.length - 1));
 	      tree vtbltype = build_array_type (vtable_entry_type, vtbldomain);
 
 	      tree field = create_field_decl (vtbltype, NULL, 1, 1);

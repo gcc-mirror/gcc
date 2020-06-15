@@ -1164,7 +1164,7 @@ package body Treepr is
 
             if Raises_Constraint_Error (N) then
                Print_Str (Prefix_Str_Char);
-               Print_Str ("Raise_Constraint_Error = True");
+               Print_Str ("Raises_Constraint_Error = True");
                Print_Eol;
             end if;
 

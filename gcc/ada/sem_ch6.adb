@@ -51,7 +51,6 @@ with Nmake;     use Nmake;
 with Opt;       use Opt;
 with Output;    use Output;
 with Restrict;  use Restrict;
-with Rident;    use Rident;
 with Rtsfind;   use Rtsfind;
 with Sem;       use Sem;
 with Sem_Aux;   use Sem_Aux;
@@ -1251,20 +1250,31 @@ package body Sem_Ch6 is
 
          --  The return value is converted to the return type of the function,
          --  which implies a predicate check if the return type is predicated.
+         --  We do not apply the check for an extended return statement because
+         --  Analyze_Object_Declaration has already done it on Obj_Decl above.
          --  We do not apply the check to a case expression because it will
          --  be expanded into a series of return statements, each of which
          --  will receive a predicate check.
 
-         if Nkind (Expr) /= N_Case_Expression then
+         if Nkind (N) /= N_Extended_Return_Statement
+           and then Nkind (Expr) /= N_Case_Expression
+         then
             Apply_Predicate_Check (Expr, R_Type);
          end if;
 
          --  Ada 2005 (AI-318-02): When the result type is an anonymous access
          --  type, apply an implicit conversion of the expression to that type
          --  to force appropriate static and run-time accessibility checks.
+         --  But we want to apply the checks to an extended return statement
+         --  only once, i.e. not to the simple return statement generated at
+         --  the end of its expansion because, prior to leaving the function,
+         --  the accessibility level of the return object changes to be a level
+         --  determined by the point of call (RM 3.10.2(10.8/3).
 
          if Ada_Version >= Ada_2005
            and then Ekind (R_Type) = E_Anonymous_Access_Type
+           and then (Nkind (N) = N_Extended_Return_Statement
+                     or else not Comes_From_Extended_Return_Statement (N))
          then
             Rewrite (Expr, Convert_To (R_Type, Relocate_Node (Expr)));
             Analyze_And_Resolve (Expr, R_Type);
@@ -2928,22 +2938,8 @@ package body Sem_Ch6 is
                            and then
                          Is_Limited_Record (Designated_Type (Etype (Scop)))))
            and then Expander_Active
-
-           --  Avoid cases with no tasking support
-
-           and then RTE_Available (RE_Current_Master)
-           and then not Restriction_Active (No_Task_Hierarchy)
          then
-            Decl :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier =>
-                  Make_Defining_Identifier (Loc, Name_uMaster),
-                Constant_Present => True,
-                Object_Definition =>
-                  New_Occurrence_Of (RTE (RE_Master_Id), Loc),
-                Expression =>
-                  Make_Explicit_Dereference (Loc,
-                    New_Occurrence_Of (RTE (RE_Current_Master), Loc)));
+            Decl := Build_Master_Declaration (Loc);
 
             if Present (Declarations (N)) then
                Prepend (Decl, Declarations (N));
@@ -8566,6 +8562,9 @@ package body Sem_Ch6 is
                  Add_Extra_Formal
                    (E, RTE (RE_Master_Id),
                     E, BIP_Formal_Suffix (BIP_Task_Master));
+
+               Set_Has_Master_Entity (E);
+
                Discard :=
                  Add_Extra_Formal
                    (E, RTE (RE_Activation_Chain_Access),
@@ -10626,8 +10625,9 @@ package body Sem_Ch6 is
                              ("\move subprogram to the visible part"
                               & " (RM 3.9.3(10))", S);
 
-                        --  AI05-0073: extend this test to the case of a
-                        --  function with a controlling access result.
+                        --  Ada 2012 (AI05-0073): Extend this check to the case
+                        --  of a function whose result subtype is defined by an
+                        --  access_definition designating specific tagged type.
 
                         elsif Ekind (Etype (S)) = E_Anonymous_Access_Type
                           and then Is_Tagged_Type (Designated_Type (Etype (S)))

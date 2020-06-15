@@ -2001,6 +2001,11 @@ package body Sem_Prag is
                Push_Scope (Spec_Id);
 
                if Ekind (Spec_Id) = E_Task_Type then
+
+                  --  Task discriminants cannot appear in the [Refined_]Depends
+                  --  contract, but must be present for the analysis so that we
+                  --  can reject them with an informative error message.
+
                   if Has_Discriminants (Spec_Id) then
                      Install_Discriminants (Spec_Id);
                   end if;
@@ -2791,6 +2796,11 @@ package body Sem_Prag is
             Push_Scope (Spec_Id);
 
             if Ekind (Spec_Id) = E_Task_Type then
+
+               --  Task discriminants cannot appear in the [Refined_]Global
+               --  contract, but must be present for the analysis so that we
+               --  can reject them with an informative error message.
+
                if Has_Discriminants (Spec_Id) then
                   Install_Discriminants (Spec_Id);
                end if;
@@ -10683,6 +10693,55 @@ package body Sem_Prag is
                   else
                      Add_To_Config_Boolean_Restrictions (No_Elaboration_Code);
                   end if;
+
+               --  Special processing for No_Tasking restriction
+
+               elsif R_Id = No_Tasking then
+
+                  --  Handle global configuration pragmas
+
+                  if No (Cunit (Main_Unit)) then
+                     Set_Global_No_Tasking;
+
+                  --  Handle package System, which may be loaded by rtsfind as
+                  --  a consequence of loading some other run-time unit.
+
+                  else
+                     declare
+                        C_Node : constant Entity_Id :=
+                                   Cunit (Current_Sem_Unit);
+                        C_Ent  : constant Entity_Id :=
+                                   Cunit_Entity (Current_Sem_Unit);
+                        Loc_Str : constant String :=
+                                    Build_Location_String (Sloc (C_Ent));
+                        Ref_Str : constant String := "system.ads";
+                        Ref_Len : constant Positive := Ref_Str'Length;
+
+                     begin
+                        pragma Assert (Loc_Str'First = 1);
+                        pragma Assert (Loc_Str'First = Ref_Str'First);
+
+                        if Nkind (Unit (C_Node)) = N_Package_Declaration
+                          and then Chars (C_Ent) = Name_System
+
+                           --  Handle child packages named foo-system.ads
+
+                          and then Loc_Str'Length > Ref_Str'Length
+                          and then Loc_Str (Loc_Str'First .. Ref_Len)
+                                     = Ref_Str (Ref_Str'First .. Ref_Len)
+
+                           --  ... and ensure that package System has not
+                           --  been previously loaded. Done to ensure that
+                           --  the above checks do not have any corner case
+                           --  (since they are performed without semantic
+                           --  information).
+
+                          and then not RTU_Loaded (Rtsfind.System)
+                        then
+                           Set_Global_No_Tasking;
+                        end if;
+                     end;
+                  end if;
                end if;
 
                --  If this is a warning, then set the warning unless we already
@@ -11798,7 +11857,7 @@ package body Sem_Prag is
          --    SIMPLE_OPTION
          --  | NAME_VALUE_OPTION
 
-         --  SIMPLE_OPTION ::= Ghost | Synchronous
+         --  SIMPLE_OPTION ::= Ghost | Relaxed_Initialization | Synchronous
 
          --  NAME_VALUE_OPTION ::=
          --    Part_Of => ABSTRACT_STATE
@@ -11868,15 +11927,16 @@ package body Sem_Prag is
             is
                --  Flags used to verify the consistency of options
 
-               AR_Seen          : Boolean := False;
-               AW_Seen          : Boolean := False;
-               ER_Seen          : Boolean := False;
-               EW_Seen          : Boolean := False;
-               External_Seen    : Boolean := False;
-               Ghost_Seen       : Boolean := False;
-               Others_Seen      : Boolean := False;
-               Part_Of_Seen     : Boolean := False;
-               Synchronous_Seen : Boolean := False;
+               AR_Seen                     : Boolean := False;
+               AW_Seen                     : Boolean := False;
+               ER_Seen                     : Boolean := False;
+               EW_Seen                     : Boolean := False;
+               External_Seen               : Boolean := False;
+               Ghost_Seen                  : Boolean := False;
+               Others_Seen                 : Boolean := False;
+               Part_Of_Seen                : Boolean := False;
+               Relaxed_Initialization_Seen : Boolean := False;
+               Synchronous_Seen            : Boolean := False;
 
                --  Flags used to store the static value of all external states'
                --  expressions.
@@ -12356,6 +12416,12 @@ package body Sem_Prag is
                         elsif Chars (Opt) = Name_Synchronous then
                            Check_Duplicate_Option (Opt, Synchronous_Seen);
                            Check_Ghost_Synchronous;
+
+                        --  Relaxed_Initialization
+
+                        elsif Chars (Opt) = Name_Relaxed_Initialization then
+                           Check_Duplicate_Option
+                             (Opt, Relaxed_Initialization_Seen);
 
                         --  Option Part_Of without an encapsulating state is
                         --  illegal (SPARK RM 7.1.4(8)).

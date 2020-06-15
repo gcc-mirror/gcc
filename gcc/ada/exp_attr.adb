@@ -3603,6 +3603,7 @@ package body Exp_Attr is
 
          --    (X'address = Y'address)
          --      and then (X'Size = Y'Size)
+         --      and then (X'Size /= 0)      (AI12-0077)
 
          --  If both arguments have the same Etype the second conjunct can be
          --  omitted.
@@ -3622,27 +3623,39 @@ package body Exp_Attr is
              Attribute_Name => Name_Size,
              Prefix         => New_Copy_Tree (X));
 
-         Y_Size :=
-           Make_Attribute_Reference (Loc,
-             Attribute_Name => Name_Size,
-             Prefix         => New_Copy_Tree (Y));
-
          if Etype (X) = Etype (Y) then
             Rewrite (N,
-              Make_Op_Eq (Loc,
-                Left_Opnd  => X_Addr,
-                Right_Opnd => Y_Addr));
-         else
-            Rewrite (N,
-              Make_Op_And (Loc,
+              Make_And_Then (Loc,
                 Left_Opnd  =>
                   Make_Op_Eq (Loc,
                     Left_Opnd  => X_Addr,
                     Right_Opnd => Y_Addr),
                 Right_Opnd =>
-                  Make_Op_Eq (Loc,
+                  Make_Op_Ne (Loc,
                     Left_Opnd  => X_Size,
-                    Right_Opnd => Y_Size)));
+                    Right_Opnd => Make_Integer_Literal (Loc, 0))));
+         else
+            Y_Size :=
+              Make_Attribute_Reference (Loc,
+                Attribute_Name => Name_Size,
+                Prefix         => New_Copy_Tree (Y));
+
+            Rewrite (N,
+              Make_And_Then (Loc,
+                Left_Opnd  =>
+                  Make_Op_Eq (Loc,
+                    Left_Opnd  => X_Addr,
+                    Right_Opnd => Y_Addr),
+                Right_Opnd =>
+                  Make_And_Then (Loc,
+                    Left_Opnd  =>
+                      Make_Op_Eq (Loc,
+                        Left_Opnd  => X_Size,
+                        Right_Opnd => Y_Size),
+                    Right_Opnd =>
+                      Make_Op_Ne (Loc,
+                        Left_Opnd  => New_Copy_Tree (X_Size),
+                        Right_Opnd => Make_Integer_Literal (Loc, 0)))));
          end if;
 
          Analyze_And_Resolve (N, Standard_Boolean);
@@ -3723,6 +3736,25 @@ package body Exp_Attr is
 
       when Attribute_Img =>
          Exp_Imgv.Expand_Image_Attribute (N);
+
+      -----------------
+      -- Initialized --
+      -----------------
+
+      --  For execution, we could either implement an approximation of this
+      --  aspect, or use Valid_Scalars as a first approximation. For now we do
+      --  the latter.
+
+      when Attribute_Initialized =>
+         Rewrite
+           (N,
+            Make_Attribute_Reference
+              (Sloc           => Loc,
+               Prefix         => Pref,
+               Attribute_Name => Name_Valid_Scalars,
+               Expressions    => Exprs));
+
+         Analyze_And_Resolve (N);
 
       -----------
       -- Input --
@@ -5492,20 +5524,7 @@ package body Exp_Attr is
                Analyze (N);
                return;
 
-            --  ???It would be nice to call Build_String_Put_Image_Call below
-            --  if U_Type is a standard string type, but it currently generates
-            --  something like:
-            --
-            --     Put_Image_String (Sink, String (X));
-            --
-            --  so if X is of a private type whose full type is "new String",
-            --  then the type conversion is illegal. To fix that, we would need
-            --  to do unchecked conversions of access values, taking care to
-            --  deal with thin and fat pointers properly. For now, we just fall
-            --  back to Build_Array_Put_Image_Procedure in these cases, so the
-            --  following says "Root_Type (Entity (Pref))" instead of "U_Type".
-
-            elsif Is_Standard_String_Type (Root_Type (Entity (Pref))) then
+            elsif Is_Standard_String_Type (U_Type) then
                Rewrite (N, Build_String_Put_Image_Call (N));
                Analyze (N);
                return;
@@ -5545,21 +5564,6 @@ package body Exp_Attr is
 
             else
                pragma Assert (Is_Record_Type (U_Type));
-
-               --  Program_Error is raised when calling the default
-               --  implementation of the Put_Image attribute of an
-               --  Unchecked_Union type. ???It would be friendlier to print a
-               --  canned string. See handling of unchecked unions in
-               --  exp_put_image.adb (which is not reachable).
-
-               if Is_Unchecked_Union (Base_Type (U_Type)) then
-                  Rewrite (N,
-                    Make_Raise_Program_Error (Loc,
-                      Reason => PE_Unchecked_Union_Restriction));
-                  Set_Etype (N, Standard_Void_Type);
-                  return;
-               end if;
-
                Build_Record_Put_Image_Procedure
                  (Loc, Full_Base (U_Type), Decl, Pname);
                Insert_Action (N, Decl);
