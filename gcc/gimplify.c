@@ -4865,10 +4865,6 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
     case QUAL_UNION_TYPE:
     case ARRAY_TYPE:
       {
-	struct gimplify_init_ctor_preeval_data preeval_data;
-	HOST_WIDE_INT num_ctor_elements, num_nonzero_elements;
-	HOST_WIDE_INT num_unique_nonzero_elements;
-	bool cleared, complete_p, valid_const_initializer;
 	/* Use readonly data for initializers of this or smaller size
 	   regardless of the num_nonzero_elements / num_unique_nonzero_elements
 	   ratio.  */
@@ -4876,6 +4872,17 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	/* If num_nonzero_elements / num_unique_nonzero_elements ratio
 	   is smaller than this, use readonly data.  */
 	const int unique_nonzero_ratio = 8;
+	/* True if a single access of the object must be ensured.  This is the
+	   case if the target is volatile, the type is non-addressable and more
+	   than one field need to be assigned.  */
+	const bool ensure_single_access
+	  = TREE_THIS_VOLATILE (object)
+	    && !TREE_ADDRESSABLE (type)
+	    && vec_safe_length (elts) > 1;
+	struct gimplify_init_ctor_preeval_data preeval_data;
+	HOST_WIDE_INT num_ctor_elements, num_nonzero_elements;
+	HOST_WIDE_INT num_unique_nonzero_elements;
+	bool cleared, complete_p, valid_const_initializer;
 
 	/* Aggregate types must lower constructors to initialization of
 	   individual elements.  The exception is that a CONSTRUCTOR node
@@ -4914,6 +4921,7 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  {
 	    if (notify_temp_creation)
 	      return GS_ERROR;
+
 	    DECL_INITIAL (object) = ctor;
 	    TREE_STATIC (object) = 1;
 	    if (!DECL_NAME (object))
@@ -4960,6 +4968,10 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		 && num_nonzero_elements < num_ctor_elements / 4)
 	  /* If there are "lots" of zeros, it's more efficient to clear
 	     the memory and then set the nonzero elements.  */
+	  cleared = true;
+	else if (ensure_single_access && num_nonzero_elements == 0)
+	  /* If a single access to the target must be ensured and all elements
+	     are zero, then it's optimal to clear whatever their number.  */
 	  cleared = true;
 	else
 	  cleared = false;
@@ -5029,13 +5041,14 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	      }
 	  }
 
-	/* If the target is volatile, we have non-zero elements and more than
-	   one field to assign, initialize the target from a temporary.  */
-	if (TREE_THIS_VOLATILE (object)
-	    && !TREE_ADDRESSABLE (type)
-	    && (num_nonzero_elements > 0 || !cleared)
-	    && vec_safe_length (elts) > 1)
+	/* If a single access to the target must be ensured and there are
+	   nonzero elements or the zero elements are not assigned en masse,
+	   initialize the target from a temporary.  */
+	if (ensure_single_access && (num_nonzero_elements > 0 || !cleared))
 	  {
+	    if (notify_temp_creation)
+	      return GS_ERROR;
+
 	    tree temp = create_tmp_var (TYPE_MAIN_VARIANT (type));
 	    TREE_OPERAND (*expr_p, 0) = temp;
 	    *expr_p = build2 (COMPOUND_EXPR, TREE_TYPE (*expr_p),
@@ -5243,14 +5256,20 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 	{
 	case VAR_DECL:
 	  /* If we're assigning from a read-only variable initialized with
-	     a constructor, do the direct assignment from the constructor,
-	     but only if neither source nor target are volatile since this
-	     latter assignment might end up being done on a per-field basis.  */
-	  if (DECL_INITIAL (*from_p)
-	      && TREE_READONLY (*from_p)
+	     a constructor and not volatile, do the direct assignment from
+	     the constructor, but only if the target is not volatile either
+	     since this latter assignment might end up being done on a per
+	     field basis.  However, if the target is volatile and the type
+	     is aggregate and non-addressable, gimplify_init_constructor
+	     knows that it needs to ensure a single access to the target
+	     and it will return GS_OK only in this case.  */
+	  if (TREE_READONLY (*from_p)
+	      && DECL_INITIAL (*from_p)
+	      && TREE_CODE (DECL_INITIAL (*from_p)) == CONSTRUCTOR
 	      && !TREE_THIS_VOLATILE (*from_p)
-	      && !TREE_THIS_VOLATILE (*to_p)
-	      && TREE_CODE (DECL_INITIAL (*from_p)) == CONSTRUCTOR)
+	      && (!TREE_THIS_VOLATILE (*to_p)
+		  || (AGGREGATE_TYPE_P (TREE_TYPE (*to_p))
+		      && !TREE_ADDRESSABLE (TREE_TYPE (*to_p)))))
 	    {
 	      tree old_from = *from_p;
 	      enum gimplify_status subret;
