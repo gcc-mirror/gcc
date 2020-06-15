@@ -196,7 +196,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (std::is_constant_evaluated())
 	{
 	  if (__s1 > __s2 && __s1 < __s2 + __n)
-	    std::copy_backward(__s2, __s2 + __n, __s1);
+	    std::copy_backward(__s2, __s2 + __n, __s1 + __n);
 	  else
 	    std::copy(__s2, __s2 + __n, __s1);
 	  return __s1;
