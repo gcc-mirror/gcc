@@ -2632,7 +2632,6 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   HOST_WIDE_INT saved_processing_template_decl;
   bool deleted_p = false;
   bool constexpr_p = false;
-  bool friend_p = (kind == sfk_comparison && DECL_FRIEND_P (pattern_fn));
   tree inherited_ctor = (kind == sfk_inheriting_constructor
 			 ? pattern_fn : NULL_TREE);
 
@@ -2640,11 +2639,39 @@ implicitly_declare_fn (special_function_kind kind, tree type,
      lazily, we may be creating the declaration for a member of TYPE
      while in some completely different context.  However, TYPE will
      never be a dependent class (because we never want to do lookups
-     for implicitly defined functions in a dependent class).
-     Furthermore, we must set PROCESSING_TEMPLATE_DECL to zero here
+     for implicitly defined functions in a dependent class).  */
+  gcc_assert (!dependent_type_p (type));
+
+  /* If the member-specification does not explicitly declare any member or
+     friend named operator==, an == operator function is declared
+     implicitly for each three-way comparison operator function defined as
+     defaulted in the member-specification, with the same access and
+     function-definition and in the same class scope as the respective
+     three-way comparison operator function, except that the return type is
+     replaced with bool and the declarator-id is replaced with
+     operator==.
+
+     [Note: Such an implicitly-declared == operator for a class X is
+     defined as defaulted in the definition of X and has the same
+     parameter-declaration-clause and trailing requires-clause as the
+     respective three-way comparison operator. It is declared with friend,
+     virtual, constexpr, or consteval if the three-way comparison operator
+     function is so declared. If the three-way comparison operator function
+     has no noexcept-specifier, the implicitly-declared == operator
+     function has an implicit exception specification (14.5) that may
+     differ from the implicit exception specification of the three-way
+     comparison operator function. --end note]  */
+  if (kind == sfk_comparison)
+    {
+      fn = copy_fndecl_with_name (pattern_fn, ovl_op_identifier (EQ_EXPR));
+      DECL_ARTIFICIAL (fn) = 1;
+      TREE_TYPE (fn) = change_return_type (boolean_type_node, TREE_TYPE (fn));
+      return fn;
+    }
+
+  /* Furthermore, we must set PROCESSING_TEMPLATE_DECL to zero here
      because we only create clones for constructors and destructors
      when not in a template.  */
-  gcc_assert (!dependent_type_p (type));
   saved_processing_template_decl = processing_template_decl;
   processing_template_decl = 0;
 
@@ -2706,35 +2733,6 @@ implicitly_declare_fn (special_function_kind kind, tree type,
       break;
     }
 
-    case sfk_comparison:
-      /* If the class definition does not explicitly declare an == operator
-	 function, but declares a defaulted three-way comparison operator
-	 function, an == operator function is declared implicitly with the same
-	 access as the three-way comparison operator function.
-
-	 The implicitly-declared == operator for a class X is an inline member
-	 and is defined as defaulted in the definition of X.
-
-	 If the three-way comparison operator function is declared as a
-	 non-static const member, the implicitly-declared == operator function
-	 is a member of the form
-
-	   bool X::operator==(const X&) const;
-
-	 Otherwise, the implicitly-declared == operator function is of the form
-
-	   friend bool operator==(const X&, const X&); */
-      /* No other comparison operator is implicitly declared.  */
-      name = ovl_op_identifier (false, EQ_EXPR);
-      return_type = boolean_type_node;
-      rhs_parm_type = cp_build_qualified_type (type, TYPE_QUAL_CONST);
-      rhs_parm_type = cp_build_reference_type (rhs_parm_type, false);
-      parameter_types = tree_cons (NULL_TREE, rhs_parm_type, parameter_types);
-      if (friend_p)
-	parameter_types = tree_cons (NULL_TREE, rhs_parm_type, parameter_types);
-      this_quals = TYPE_QUAL_CONST;
-      break;
-
     default:
       gcc_unreachable ();
     }
@@ -2752,10 +2750,9 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   else if (cxx_dialect >= cxx11)
     {
       raises = noexcept_deferred_spec;
-      if (kind != sfk_comparison)
-	synthesized_method_walk (type, kind, const_p, NULL, &trivial_p,
-				 &deleted_p, &constexpr_p, false,
-				 &inherited_ctor, inherited_parms);
+      synthesized_method_walk (type, kind, const_p, NULL, &trivial_p,
+			       &deleted_p, &constexpr_p, false,
+			       &inherited_ctor, inherited_parms);
     }
   else
     synthesized_method_walk (type, kind, const_p, &raises, &trivial_p,
@@ -2777,14 +2774,9 @@ implicitly_declare_fn (special_function_kind kind, tree type,
     type_set_nontrivial_flag (type, kind);
 
   /* Create the function.  */
-  if (friend_p)
-    fn_type = build_function_type (return_type, parameter_types);
-  else
-    {
-      tree this_type = cp_build_qualified_type (type, this_quals);
-      fn_type = build_method_type_directly (this_type, return_type,
-					    parameter_types);
-    }
+  tree this_type = cp_build_qualified_type (type, this_quals);
+  fn_type = build_method_type_directly (this_type, return_type,
+					parameter_types);
 
   if (raises)
     {
@@ -2796,12 +2788,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
 	gcc_assert (seen_error ());
     }
   fn = build_lang_decl (FUNCTION_DECL, name, fn_type);
-  if (kind == sfk_comparison)
-    {
-      DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (pattern_fn);
-      DECL_MAYBE_DELETED (fn) = true;
-    }
-  else if (kind != sfk_inheriting_constructor)
+  if (kind != sfk_inheriting_constructor)
     DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (TYPE_NAME (type));
 
   if (IDENTIFIER_OVL_OP_P (name))
@@ -2829,13 +2816,6 @@ implicitly_declare_fn (special_function_kind kind, tree type,
       retrofit_lang_decl (decl);
       DECL_PARM_INDEX (decl) = DECL_PARM_LEVEL (decl) = 1;
       DECL_ARGUMENTS (fn) = decl;
-      if (friend_p)
-	{
-	  /* The second parm of friend op==.  */
-	  tree decl2 = copy_decl (decl);
-	  DECL_CHAIN (decl) = decl2;
-	  DECL_PARM_INDEX (decl2) = 2;
-	}
     }
   else if (kind == sfk_inheriting_constructor)
     {
@@ -2861,17 +2841,12 @@ implicitly_declare_fn (special_function_kind kind, tree type,
       constexpr_p = DECL_DECLARED_CONSTEXPR_P (inherited_ctor);
     }
 
-  if (friend_p)
-    DECL_CONTEXT (fn) = DECL_CONTEXT (pattern_fn);
-  else
-    {
-      /* Add the "this" parameter.  */
-      this_parm = build_this_parm (fn, fn_type, this_quals);
-      DECL_CHAIN (this_parm) = DECL_ARGUMENTS (fn);
-      DECL_ARGUMENTS (fn) = this_parm;
+  /* Add the "this" parameter.  */
+  this_parm = build_this_parm (fn, fn_type, this_quals);
+  DECL_CHAIN (this_parm) = DECL_ARGUMENTS (fn);
+  DECL_ARGUMENTS (fn) = this_parm;
 
-      grokclassfn (type, fn, kind == sfk_destructor ? DTOR_FLAG : NO_SPECIAL);
-    }
+  grokclassfn (type, fn, kind == sfk_destructor ? DTOR_FLAG : NO_SPECIAL);
 
   DECL_IN_AGGR_P (fn) = 1;
   DECL_ARTIFICIAL (fn) = 1;
@@ -2887,12 +2862,6 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   set_linkage_according_to_type (type, fn);
   if (TREE_PUBLIC (fn))
     DECL_COMDAT (fn) = 1;
-  if (kind == sfk_comparison && !friend_p)
-    {
-      /* The implicit op== has the same access as the op<=>.  */
-      TREE_PRIVATE (fn) = TREE_PRIVATE (pattern_fn);
-      TREE_PROTECTED (fn) = TREE_PROTECTED (pattern_fn);
-    }
   rest_of_decl_compilation (fn, namespace_bindings_p (), at_eof);
   gcc_assert (!TREE_USED (fn));
 
