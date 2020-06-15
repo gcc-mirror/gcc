@@ -1,3 +1,9 @@
+2020-06-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94109
+	* gfortran.dg/finalize_34.f90: Adjust free counts.
+	* gfortran.dg/finalize_36.f90: New test.
+
 2020-06-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/94361
