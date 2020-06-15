@@ -6190,9 +6190,13 @@ package body Sem_Ch13 is
                   --  Issue an unconditional warning for a constant overlaying
                   --  a variable. For the reverse case, we will issue it only
                   --  if the variable is modified.
+                  --  Within a generic unit an In_Parameter is a constant.
+                  --  It can be instantiated with a variable, in which case
+                  --  there will be a warning on the instance.
 
                   if Ekind (U_Ent) = E_Constant
                     and then Present (O_Ent)
+                    and then Ekind (O_Ent) /= E_Generic_In_Parameter
                     and then not Overlays_Constant (U_Ent)
                     and then Address_Clause_Overlay_Warnings
                   then
