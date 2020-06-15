@@ -5187,7 +5187,7 @@ riscv_gen_gpr_save_insn (struct riscv_frame_info *frame)
     gen_rtx_UNSPEC_VOLATILE (VOIDmode,
       gen_rtvec (1, GEN_INT (count)), UNSPECV_GPR_SAVE);
 
-  for (int i = 1; i < veclen; ++i)
+  for (unsigned i = 1; i < veclen; ++i)
     {
       unsigned regno = gpr_save_reg_order[i];
       rtx reg = gen_rtx_REG (Pmode, regno);
@@ -5215,9 +5215,9 @@ riscv_gen_gpr_save_insn (struct riscv_frame_info *frame)
 bool
 riscv_gpr_save_operation_p (rtx op)
 {
-  HOST_WIDE_INT len = XVECLEN (op, 0);
+  unsigned len = XVECLEN (op, 0);
   gcc_assert (len <= ARRAY_SIZE (gpr_save_reg_order));
-  for (int i = 0; i < len; i++)
+  for (unsigned i = 0; i < len; i++)
     {
       rtx elt = XVECEXP (op, 0, i);
       if (i == 0)
