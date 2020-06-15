@@ -1,3 +1,61 @@
+2020-06-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95544
+	* gfortran.dg/pr95544.f90: New file.
+
+2020-06-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93366
+	* gfortran.dg/pr93366.f90: New test.
+
+2020-06-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95503
+	* gfortran.dg/pr95503.f90: New test.
+
+2020-06-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94109
+	* gfortran.dg/finalize_34.f90: Adjust free counts.
+	* gfortran.dg/finalize_36.f90: New test.
+
+2020-06-14  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp0x/initlist-array12.C: Fix the definition of
+	initializer_list for ilp32 target.
+
+2020-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/95580
+	* gcc.dg/pr95580.c: New test.
+
+2020-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/95528
+	* g++.dg/opt/pr95528.C: New test.
+
+2020-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/95328
+	* g++.dg/cpp1z/decomp53.C: New test.
+
+2020-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95108
+	* gcc.dg/gomp/pr95108.c: New test.
+
+2020-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/95080
+	* g++.dg/opt/pr95080.C: New test.
+
+2020-06-14  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR testsuite/95575
+	* lib/gdc-utils.exp (gdc-do-test): Re-add $subdir link and inclusion
+	in filename.
+
 2020-06-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/95440

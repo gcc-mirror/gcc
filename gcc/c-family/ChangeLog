@@ -1,3 +1,9 @@
+2020-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/95580
+	* c-pretty-print.c (c_pretty_printer::unary_expression): Handle the
+	case when MEM_REF's first argument has type pointer to incomplete type.
+
 202-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/94968

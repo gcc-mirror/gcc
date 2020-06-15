@@ -1067,6 +1067,10 @@ output_offload_tables (void)
 
   for (unsigned i = 0; i < vec_safe_length (offload_funcs); i++)
     {
+      symtab_node *node = symtab_node::get ((*offload_funcs)[i]);
+      if (!node)
+	continue;
+      node->force_output = true;
       streamer_write_enum (ob->main_stream, LTO_symtab_tags,
 			   LTO_symtab_last_tag, LTO_symtab_unavail_node);
       lto_output_fn_decl_index (ob->decl_state, ob->main_stream,
@@ -1075,6 +1079,10 @@ output_offload_tables (void)
 
   for (unsigned i = 0; i < vec_safe_length (offload_vars); i++)
     {
+      symtab_node *node = symtab_node::get ((*offload_vars)[i]);
+      if (!node)
+	continue;
+      node->force_output = true;
       streamer_write_enum (ob->main_stream, LTO_symtab_tags,
 			   LTO_symtab_last_tag, LTO_symtab_variable);
       lto_output_var_decl_index (ob->decl_state, ob->main_stream,

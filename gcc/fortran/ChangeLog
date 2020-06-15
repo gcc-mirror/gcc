@@ -1,3 +1,41 @@
+2020-06-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95544
+	* check.c (invalid_null_arg): Rename to gfc_invalid_null_arg.
+	(gfc_check_associated, gfc_check_kind, gfc_check_merge)
+	(gfc_check_shape, gfc_check_size, gfc_check_spread)
+	(gfc_check_transfer): Adjust.
+	(gfc_check_len_lentrim, gfc_check_trim): Check for NULL() argument.
+	* gfortran.h: Declare gfc_invalid_null_arg ().
+	* intrinsic.c (check_arglist): Check for NULL() argument.
+
+2020-06-14  Steve Kargl  <kargl@gcc.gnu.org>
+	    Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93366
+	* check.c (gfc_check_associated, invalid_null_arg): Factorize
+	check for presence of invalid NULL() argument.
+	(gfc_check_kind, gfc_check_merge, gfc_check_shape)
+	(gfc_check_sizeof, gfc_check_spread, gfc_check_transfer): Use this
+	check for presence of invalid NULL() arguments.
+
+2020-06-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95503
+	* expr.c (gfc_check_pointer_assign): Skip contiguity check of rhs
+	of pointer assignment if lhs cannot be simply contiguous.
+
+2020-06-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94109
+	* class.c (finalize_component): Return early if finalization has
+	already happened for expression and component within namespace.
+	* gfortran.h (gfc_was_finalized): New type.
+	(gfc_namespace): Add member was_finalzed.
+	(gfc_expr): Remove finalized.
+	* symbol.c (gfc_free_namespace): Free was_finalized.
+
 2020-06-11  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl   <kargl@gcc.gnu.org>
 

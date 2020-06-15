@@ -22,4 +22,4 @@ program main
   use testmodule
   type(evtlist_type), dimension(10) :: a
 end program main
-! { dg-final  { scan-tree-dump-times "__builtin_free" 12 "original" } }
+! { dg-final  { scan-tree-dump-times "__builtin_free" 24 "original" } }
