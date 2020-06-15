@@ -5639,6 +5639,36 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
     RS6000_BTI_unsigned_V4SI, RS6000_BTI_unsigned_V4SI,
     RS6000_BTI_unsigned_V4SI, RS6000_BTI_UINTQI },
 
+  { P10_BUILTIN_VEC_REPLACE_ELT, P10_BUILTIN_VREPLACE_ELT_UV4SI,
+    RS6000_BTI_unsigned_V4SI, RS6000_BTI_unsigned_V4SI,
+    RS6000_BTI_UINTSI, RS6000_BTI_UINTQI },
+  { P10_BUILTIN_VEC_REPLACE_ELT, P10_BUILTIN_VREPLACE_ELT_V4SI,
+    RS6000_BTI_V4SI, RS6000_BTI_V4SI, RS6000_BTI_INTSI, RS6000_BTI_INTQI },
+  { P10_BUILTIN_VEC_REPLACE_ELT, P10_BUILTIN_VREPLACE_ELT_V4SF,
+    RS6000_BTI_V4SF, RS6000_BTI_V4SF, RS6000_BTI_float, RS6000_BTI_INTQI },
+  { P10_BUILTIN_VEC_REPLACE_ELT, P10_BUILTIN_VREPLACE_ELT_UV2DI,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V2DI,
+    RS6000_BTI_UINTDI, RS6000_BTI_UINTQI },
+  { P10_BUILTIN_VEC_REPLACE_ELT, P10_BUILTIN_VREPLACE_ELT_V2DI,
+    RS6000_BTI_V2DI, RS6000_BTI_V2DI, RS6000_BTI_INTDI, RS6000_BTI_INTQI },
+  { P10_BUILTIN_VEC_REPLACE_ELT, P10_BUILTIN_VREPLACE_ELT_V2DF,
+    RS6000_BTI_V2DF, RS6000_BTI_V2DF, RS6000_BTI_double, RS6000_BTI_INTQI },
+
+  { P10_BUILTIN_VEC_REPLACE_UN, P10_BUILTIN_VREPLACE_UN_UV4SI,
+    RS6000_BTI_unsigned_V4SI, RS6000_BTI_unsigned_V4SI,
+    RS6000_BTI_UINTSI, RS6000_BTI_UINTQI },
+  { P10_BUILTIN_VEC_REPLACE_UN, P10_BUILTIN_VREPLACE_UN_V4SI,
+    RS6000_BTI_V4SI, RS6000_BTI_V4SI, RS6000_BTI_INTSI, RS6000_BTI_INTQI },
+  { P10_BUILTIN_VEC_REPLACE_UN, P10_BUILTIN_VREPLACE_UN_V4SF,
+    RS6000_BTI_V4SF, RS6000_BTI_V4SF, RS6000_BTI_float, RS6000_BTI_INTQI },
+  { P10_BUILTIN_VEC_REPLACE_UN, P10_BUILTIN_VREPLACE_UN_UV2DI,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V2DI,
+    RS6000_BTI_UINTDI, RS6000_BTI_UINTQI },
+  { P10_BUILTIN_VEC_REPLACE_UN, P10_BUILTIN_VREPLACE_UN_V2DI,
+    RS6000_BTI_V2DI, RS6000_BTI_V2DI, RS6000_BTI_INTDI, RS6000_BTI_INTQI },
+  { P10_BUILTIN_VEC_REPLACE_UN, P10_BUILTIN_VREPLACE_UN_V2DF,
+    RS6000_BTI_V2DF, RS6000_BTI_V2DF, RS6000_BTI_double, RS6000_BTI_INTQI },
+
   { P10_BUILTIN_VEC_VSTRIL, P10_BUILTIN_VSTRIBL,
     RS6000_BTI_unsigned_V16QI, RS6000_BTI_unsigned_V16QI, 0, 0 },
   { P10_BUILTIN_VEC_VSTRIL, P10_BUILTIN_VSTRIBL,
@@ -10066,6 +10096,33 @@ rs6000_expand_quaternop_builtin (enum insn_code icode, tree exp, rtx target)
 	  return CONST0_RTX (tmode);
 	}
     }
+  else if (icode == CODE_FOR_vreplace_elt_v4si
+	   || icode == CODE_FOR_vreplace_elt_v4sf)
+   {
+     /* Check whether the 3rd argument is an integer constant in the range
+	0 to 3 inclusive.  */
+     STRIP_NOPS (arg2);
+     if (TREE_CODE (arg2) != INTEGER_CST
+	 || !IN_RANGE (TREE_INT_CST_LOW (arg2), 0, 3))
+	{
+	  error ("argument 3 must be in the range 0 to 3");
+	  return CONST0_RTX (tmode);
+	}
+   }
+
+  else if (icode == CODE_FOR_vreplace_un_v4si
+	   || icode == CODE_FOR_vreplace_un_v4sf)
+   {
+     /* Check whether the 3rd argument is an integer constant in the range
+	0 to 12 inclusive.  */
+     STRIP_NOPS (arg2);
+     if (TREE_CODE (arg2) != INTEGER_CST
+	 || !IN_RANGE(TREE_INT_CST_LOW (arg2), 0, 12))
+	{
+	  error ("argument 3 must be in the range 0 to 12");
+	  return CONST0_RTX (tmode);
+	}
+   }
 
   if (target == 0
       || GET_MODE (target) != tmode
@@ -13912,6 +13969,10 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
     case P10_BUILTIN_VINSERTVPRBL:
     case P10_BUILTIN_VINSERTVPRHL:
     case P10_BUILTIN_VINSERTVPRWL:
+    case P10_BUILTIN_VREPLACE_ELT_UV4SI:
+    case P10_BUILTIN_VREPLACE_ELT_UV2DI:
+    case P10_BUILTIN_VREPLACE_UN_UV4SI:
+    case P10_BUILTIN_VREPLACE_UN_UV2DI:
       h.uns_p[0] = 1;
       h.uns_p[1] = 1;
       h.uns_p[2] = 1;

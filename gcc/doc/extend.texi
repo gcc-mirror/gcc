@@ -21090,6 +21090,56 @@ Note that some fairly anomalous results can be generated if the byte index is
 not aligned on an element boundary for the sort of element being inserted.
 @findex vec_inserth
 
+Vector Replace Element
+@smallexample
+@exdent vector signed int vec_replace_elt (vector signed int, signed int,
+const int);
+@exdent vector unsigned int vec_replace_elt (vector unsigned int,
+unsigned int, const int);
+@exdent vector float vec_replace_elt (vector float, float, const int);
+@exdent vector signed long long vec_replace_elt (vector signed long long,
+signed long long, const int);
+@exdent vector unsigned long long vec_replace_elt (vector unsigned long long,
+unsigned long long, const int);
+@exdent vector double rec_replace_elt (vector double, double, const int);
+@end smallexample
+The third argument (constrained to [0,3]) identifies the natural-endian
+element number of the first argument that will be replaced by the second
+argument to produce the result.  The other elements of the first argument will
+remain unchanged in the result.
+
+If it's desirable to insert a word at an unaligned position, use
+vec_replace_unaligned instead.
+
+@findex vec_replace_element
+
+Vector Replace Unaligned
+@smallexample
+@exdent vector unsigned char vec_replace_unaligned (vector unsigned char,
+signed int, const int);
+@exdent vector unsigned char vec_replace_unaligned (vector unsigned char,
+unsigned int, const int);
+@exdent vector unsigned char vec_replace_unaligned (vector unsigned char,
+float, const int);
+@exdent vector unsigned char vec_replace_unaligned (vector unsigned char,
+signed long long, const int);
+@exdent vector unsigned char vec_replace_unaligned (vector unsigned char,
+unsigned long long, const int);
+@exdent vector unsigned char vec_replace_unaligned (vector unsigned char,
+double, const int);
+@end smallexample
+
+The second argument replaces a portion of the first argument to produce the
+result, with the rest of the first argument unchanged in the result.  The
+third argument identifies the byte index (using left-to-right, or big-endian
+order) where the high-order byte of the second argument will be placed, with
+the remaining bytes of the second argument placed naturally "to the right"
+of the high-order byte.
+
+The programmer is responsible for understanding the endianness issues involved
+with the first argument and the result.
+@findex vec_replace_unaligned
+
 @smallexample
 @exdent vector unsigned long long int
 @exdent vec_pext (vector unsigned long long int, vector unsigned long long int)
