@@ -1292,7 +1292,7 @@ public:
 
   void visit (GccAsmStatement *s)
   {
-    StringExp *insn = (StringExp *)s->insn;
+    StringExp *insn = s->insn->toStringExp ();
     tree outputs = NULL_TREE;
     tree inputs = NULL_TREE;
     tree clobbers = NULL_TREE;
@@ -1307,7 +1307,7 @@ public:
 	    const char *sname = name ? name->toChars () : NULL;
 	    tree id = name ? build_string (strlen (sname), sname) : NULL_TREE;
 
-	    StringExp *constr = (StringExp *)(*s->constraints)[i];
+	    StringExp *constr = (*s->constraints)[i]->toStringExp ();
 	    const char *cstring = (const char *)(constr->len
 						 ? constr->string : "");
 	    tree str = build_string (constr->len, cstring);
@@ -1333,7 +1333,7 @@ public:
       {
 	for (size_t i = 0; i < s->clobbers->length; i++)
 	  {
-	    StringExp *clobber = (StringExp *)(*s->clobbers)[i];
+	    StringExp *clobber = (*s->clobbers)[i]->toStringExp ();
 	    const char *cstring = (const char *)(clobber->len
 						 ? clobber->string : "");
 
