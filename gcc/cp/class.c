@@ -3266,7 +3266,12 @@ add_implicitly_declared_members (tree t, tree* access_decls,
 	  do_friend (NULL_TREE, DECL_NAME (eq), eq,
 		     NULL_TREE, NO_SPECIAL, true);
 	else
-	  add_method (t, eq, false);
+	  {
+	    add_method (t, eq, false);
+	    DECL_CHAIN (eq) = TYPE_FIELDS (t);
+	    TYPE_FIELDS (t) = eq;
+	  }
+	maybe_add_class_template_decl_list (t, eq, DECL_FRIEND_P (space));
       }
 
   while (*access_decls)
@@ -4687,37 +4692,13 @@ check_methods (tree t)
     }
 }
 
-/* FN is a constructor or destructor.  Clone the declaration to create
-   a specialized in-charge or not-in-charge version, as indicated by
-   NAME.  */
-
-static tree
-build_clone (tree fn, tree name)
+tree
+copy_fndecl_with_name (tree fn, tree name)
 {
   /* Copy the function.  */
   tree clone = copy_decl (fn);
   /* Reset the function name.  */
   DECL_NAME (clone) = name;
-  /* Remember where this function came from.  */
-  DECL_ABSTRACT_ORIGIN (clone) = fn;
-
-  /* Make it easy to find the CLONE given the FN.  Note the
-     template_result of a template will be chained this way too.  */
-  DECL_CHAIN (clone) = DECL_CHAIN (fn);
-  DECL_CHAIN (fn) = clone;
-
-  /* If this is a template, do the rest on the DECL_TEMPLATE_RESULT.  */
-  if (TREE_CODE (clone) == TEMPLATE_DECL)
-    {
-      tree result = build_clone (DECL_TEMPLATE_RESULT (clone), name);
-      DECL_TEMPLATE_RESULT (clone) = result;
-
-      DECL_TEMPLATE_INFO (result) = copy_node (DECL_TEMPLATE_INFO (result));
-      DECL_TI_TEMPLATE (result) = clone;
-
-      TREE_TYPE (clone) = TREE_TYPE (result);
-      return clone;
-    }
 
   if (flag_concepts)
     /* Clone constraints.  */
@@ -4725,7 +4706,6 @@ build_clone (tree fn, tree name)
       set_constraints (clone, copy_node (ci));
 
   SET_DECL_ASSEMBLER_NAME (clone, NULL_TREE);
-  DECL_CLONED_FUNCTION (clone) = fn;
   /* There's no pending inline data for this function.  */
   DECL_PENDING_INLINE_INFO (clone) = NULL;
   DECL_PENDING_INLINE_P (clone) = 0;
@@ -4736,6 +4716,14 @@ build_clone (tree fn, tree name)
       DECL_VIRTUAL_P (clone) = 0;
       DECL_VINDEX (clone) = NULL_TREE;
     }
+  else if (IDENTIFIER_OVL_OP_P (name))
+    {
+      const ovl_op_info_t *ovl_op = IDENTIFIER_OVL_OP_INFO (name);
+      DECL_OVERLOADED_OPERATOR_CODE_RAW (clone) = ovl_op->ovl_op_code;
+    }
+
+  if (DECL_VIRTUAL_P (clone))
+    IDENTIFIER_VIRTUAL_P (name) = true;
 
   bool ctor_omit_inherited_parms_p = ctor_omit_inherited_parms (clone);
   if (ctor_omit_inherited_parms_p)
@@ -4807,7 +4795,47 @@ build_clone (tree fn, tree name)
 
   /* Create the RTL for this function.  */
   SET_DECL_RTL (clone, NULL);
-  rest_of_decl_compilation (clone, /*top_level=*/1, at_eof);
+  rest_of_decl_compilation (clone, namespace_bindings_p (), at_eof);
+
+  return clone;
+}
+
+/* FN is a constructor or destructor.  Clone the declaration to create
+   a specialized in-charge or not-in-charge version, as indicated by
+   NAME.  */
+
+static tree
+build_clone (tree fn, tree name)
+{
+  tree clone;
+
+  /* If this is a template, do the rest on the DECL_TEMPLATE_RESULT.  */
+  if (TREE_CODE (fn) == TEMPLATE_DECL)
+    {
+      clone = copy_decl (fn);
+      DECL_NAME (clone) = name;
+
+      tree result = build_clone (DECL_TEMPLATE_RESULT (clone), name);
+      DECL_TEMPLATE_RESULT (clone) = result;
+
+      DECL_TEMPLATE_INFO (result) = copy_node (DECL_TEMPLATE_INFO (result));
+      DECL_TI_TEMPLATE (result) = clone;
+
+      TREE_TYPE (clone) = TREE_TYPE (result);
+    }
+  else
+    {
+      clone = copy_fndecl_with_name (fn, name);
+      DECL_CLONED_FUNCTION (clone) = fn;
+    }
+
+  /* Remember where this function came from.  */
+  DECL_ABSTRACT_ORIGIN (clone) = fn;
+
+  /* Make it easy to find the CLONE given the FN.  Note the
+     template_result of a template will be chained this way too.  */
+  DECL_CHAIN (clone) = DECL_CHAIN (fn);
+  DECL_CHAIN (fn) = clone;
 
   return clone;
 }
