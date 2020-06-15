@@ -19532,6 +19532,105 @@ ix86_expand_vecmul_qihi (rtx dest, rtx op1, rtx op2)
   return true;
 }
 
+/* Expand a vector operation shift by constant for a V*QImode in terms of the
+   same operation on V*HImode. Return true if success. */
+bool
+ix86_expand_vec_shift_qihi_constant (enum rtx_code code, rtx dest, rtx op1, rtx op2)
+{
+  machine_mode qimode, himode;
+  unsigned int and_constant, xor_constant;
+  HOST_WIDE_INT shift_amount;
+  rtx vec_const_and, vec_const_xor;
+  rtx tmp, op1_subreg;
+  rtx (*gen_shift) (rtx, rtx, rtx);
+  rtx (*gen_and) (rtx, rtx, rtx);
+  rtx (*gen_xor) (rtx, rtx, rtx);
+  rtx (*gen_sub) (rtx, rtx, rtx);
+
+  /* Only optimize shift by constant.  */
+  if (!CONST_INT_P (op2))
+    return false;
+
+  qimode = GET_MODE (dest);
+  shift_amount = INTVAL (op2);
+  /* Do nothing when shift amount greater equal 8.  */
+  if (shift_amount > 7)
+    return false;
+
+  gcc_assert (code == ASHIFT || code == ASHIFTRT || code == LSHIFTRT);
+  /* Record sign bit.  */
+  xor_constant = 1 << (8 - shift_amount - 1);
+
+  /* Zero upper/lower bits shift from left/right element.  */
+  and_constant
+    = (code == ASHIFT ? 256 - (1 << shift_amount)
+       : (1 << (8 - shift_amount)) - 1);
+
+  switch (qimode)
+    {
+    case V16QImode:
+      himode = V8HImode;
+      gen_shift =
+	((code == ASHIFT)
+	 ? gen_ashlv8hi3
+	 : (code == ASHIFTRT) ? gen_ashrv8hi3 : gen_lshrv8hi3);
+      gen_and = gen_andv16qi3;
+      gen_xor = gen_xorv16qi3;
+      gen_sub = gen_subv16qi3;
+      break;
+    case V32QImode:
+      himode = V16HImode;
+      gen_shift =
+	((code == ASHIFT)
+	 ? gen_ashlv16hi3
+	 : (code == ASHIFTRT) ? gen_ashrv16hi3 : gen_lshrv16hi3);
+      gen_and = gen_andv32qi3;
+      gen_xor = gen_xorv32qi3;
+      gen_sub = gen_subv32qi3;
+      break;
+    case V64QImode:
+      himode = V32HImode;
+      gen_shift =
+	((code == ASHIFT)
+	 ? gen_ashlv32hi3
+	 : (code == ASHIFTRT) ? gen_ashrv32hi3 : gen_lshrv32hi3);
+      gen_and = gen_andv64qi3;
+      gen_xor = gen_xorv64qi3;
+      gen_sub = gen_subv64qi3;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  tmp = gen_reg_rtx (himode);
+  vec_const_and = gen_reg_rtx (qimode);
+  op1_subreg = lowpart_subreg (himode, op1, qimode);
+
+  /* For ASHIFT and LSHIFTRT, perform operation like
+     vpsllw/vpsrlw $shift_amount, %op1, %dest.
+     vpand %vec_const_and, %dest.  */
+  emit_insn (gen_shift (tmp, op1_subreg, op2));
+  emit_move_insn (dest, simplify_gen_subreg (qimode, tmp, himode, 0));
+  emit_move_insn (vec_const_and,
+		  ix86_build_const_vector (qimode, true,
+					   GEN_INT (and_constant)));
+  emit_insn (gen_and (dest, dest, vec_const_and));
+
+  /* For ASHIFTRT, perform extra operation like
+     vpxor %vec_const_xor, %dest, %dest
+     vpsubb %vec_const_xor, %dest, %dest  */
+  if (code == ASHIFTRT)
+    {
+      vec_const_xor = gen_reg_rtx (qimode);
+      emit_move_insn (vec_const_xor,
+		      ix86_build_const_vector (qimode, true,
+					       GEN_INT (xor_constant)));
+      emit_insn (gen_xor (dest, dest, vec_const_xor));
+      emit_insn (gen_sub (dest, dest, vec_const_xor));
+    }
+  return true;
+}
+
 /* Expand a vector operation CODE for a V*QImode in terms of the
    same operation on V*HImode.  */
 

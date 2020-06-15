@@ -206,6 +206,7 @@ extern void ix86_expand_round_sse4 (rtx, rtx);
 
 extern bool ix86_expand_vecmul_qihi (rtx, rtx, rtx);
 extern void ix86_expand_vecop_qihi (enum rtx_code, rtx, rtx, rtx);
+extern bool ix86_expand_vec_shift_qihi_constant (enum rtx_code, rtx, rtx, rtx);
 
 extern rtx ix86_split_stack_guard (void);
 
