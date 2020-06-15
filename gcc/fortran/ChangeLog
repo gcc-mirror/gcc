@@ -1,3 +1,19 @@
+2020-06-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95503
+	* expr.c (gfc_check_pointer_assign): Skip contiguity check of rhs
+	of pointer assignment if lhs cannot be simply contiguous.
+
+2020-06-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94109
+	* class.c (finalize_component): Return early if finalization has
+	already happened for expression and component within namespace.
+	* gfortran.h (gfc_was_finalized): New type.
+	(gfc_namespace): Add member was_finalzed.
+	(gfc_expr): Remove finalized.
+	* symbol.c (gfc_free_namespace): Free was_finalized.
+
 2020-06-11  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl   <kargl@gcc.gnu.org>
 
