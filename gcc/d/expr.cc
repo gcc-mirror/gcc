@@ -90,9 +90,15 @@ class ExprVisitor : public Visitor
 
   bool lvalue_p (Expression *e)
   {
-    return ((e->op != TOKslice && e->isLvalue ())
-	    || (e->op == TOKslice && ((UnaExp *) e)->e1->isLvalue ())
-	    || (e->op == TOKcast && ((UnaExp *) e)->e1->isLvalue ()));
+    SliceExp *se = e->isSliceExp ();
+    if (se != NULL && se->e1->isLvalue ())
+      return true;
+
+    CastExp *ce = e->isCastExp ();
+    if (ce != NULL && ce->e1->isLvalue ())
+      return true;
+
+    return (e->op != TOKslice && e->isLvalue ());
   }
 
   /* Build an expression of code CODE, data type TYPE, and operands ARG0 and
@@ -174,7 +180,7 @@ class ExprVisitor : public Visitor
     Expression *e1b = e1;
     while (e1b->op == TOKcast)
       {
-	CastExp *ce = (CastExp *) e1b;
+	CastExp *ce = e1b->isCastExp ();
 	gcc_assert (same_type_p (ce->type, ce->to));
 	e1b = ce->e1;
       }
@@ -679,7 +685,7 @@ public:
 	  {
 	    if (ex->op == TOKcat)
 	      {
-		ex = ((CatExp *) ex)->e1;
+		ex = ex->isCatExp ()->e1;
 		ndims++;
 	      }
 	  }
@@ -696,7 +702,7 @@ public:
 	for (Expression *oe = ce->e2; oe != NULL;
 	     (ce->e1->op != TOKcat
 	      ? (oe = ce->e1)
-	      : (ce = (CatExp *)ce->e1, oe = ce->e2)))
+	      : (ce = ce->e1->isCatExp (), oe = ce->e2)))
 	  {
 	    tree arg = d_array_convert (etype, oe);
 	    tree index = size_int (dim);
@@ -790,7 +796,7 @@ public:
 	   Strip off casts just incase anyway.  */
 	while (e1b->op == TOKcast)
 	  {
-	    CastExp *ce = (CastExp *) e1b;
+	    CastExp *ce = e1b->isCastExp ();
 	    gcc_assert (same_type_p (ce->type, ce->to));
 	    e1b = ce->e1;
 	  }
@@ -883,7 +889,7 @@ public:
     if (e->e1->op == TOKarraylength)
       {
 	/* Assignment to an array's length property; resize the array.  */
-	ArrayLengthExp *ale = (ArrayLengthExp *) e->e1;
+	ArrayLengthExp *ale = e->e1->isArrayLengthExp ();
 	tree newlength = convert_expr (build_expr (e->e2), e->e2->type,
 				       Type::tsize_t);
 	tree ptr = build_address (build_expr (ale->e1));
@@ -904,7 +910,7 @@ public:
     /* Look for array[] = n;  */
     if (e->e1->op == TOKslice)
       {
-	SliceExp *se = (SliceExp *) e->e1;
+	SliceExp *se = e->e1->isSliceExp ();
 	Type *stype = se->e1->type->toBasetype ();
 	Type *etype = stype->nextOf ()->toBasetype ();
 
@@ -998,7 +1004,7 @@ public:
 	gcc_assert (e->op == TOKconstruct || e->op == TOKblit);
 	gcc_assert (e->e1->op == TOKvar);
 
-	Declaration *decl = ((VarExp *) e->e1)->var;
+	Declaration *decl = e->e1->isVarExp ()->var;
 	if (decl->storage_class & (STCout | STCref))
 	  {
 	    tree t2 = convert_for_assignment (build_expr (e->e2),
@@ -1443,7 +1449,7 @@ public:
 
 	if (e->e1->op == TOKvar)
 	  {
-	    VarDeclaration *v = ((VarExp *) e->e1)->var->isVarDeclaration ();
+	    VarDeclaration *v = e->e1->isVarExp ()->var->isVarDeclaration ();
 	    if (v && v->onstack)
 	      {
 		libcall = tb1->isClassHandle ()->isInterfaceDeclaration ()
@@ -1588,19 +1594,19 @@ public:
 
     if (e->e1->op == TOKadd)
       {
-	BinExp *be = (BinExp *) e->e1;
-	if (be->e1->op == TOKaddress
-	    && be->e2->isConst () && be->e2->type->isintegral ())
+	AddExp *ae = e->e1->isAddExp ();
+	if (ae->e1->op == TOKaddress
+	    && ae->e2->isConst () && ae->e2->type->isintegral ())
 	  {
-	    Expression *ae = ((AddrExp *) be->e1)->e1;
-	    tnext = ae->type->toBasetype ();
-	    result = build_expr (ae);
-	    offset = be->e2->toUInteger ();
+	    Expression *ex = ae->e1->isAddrExp ()->e1;
+	    tnext = ex->type->toBasetype ();
+	    result = build_expr (ex);
+	    offset = ae->e2->toUInteger ();
 	  }
       }
     else if (e->e1->op == TOKsymoff)
       {
-	SymOffExp *se = (SymOffExp *) e->e1;
+	SymOffExp *se = e->e1->isSymOffExp ();
 	if (!declaration_reference_p (se->var))
 	  {
 	    tnext = se->var->type->toBasetype ();
@@ -1652,7 +1658,7 @@ public:
        Taking the address of a struct literal is otherwise illegal.  */
     if (e->e1->op == TOKstructliteral)
       {
-	StructLiteralExp *sle = ((StructLiteralExp *) e->e1)->origin;
+	StructLiteralExp *sle = e->e1->isStructLiteralExp ()->origin;
 	gcc_assert (sle != NULL);
 
 	/* Build the reference symbol, the decl is built first as the
@@ -1690,21 +1696,21 @@ public:
     /* Calls to delegates can sometimes look like this.  */
     if (e1b->op == TOKcomma)
       {
-	e1b = ((CommaExp *) e1b)->e2;
+	e1b = e1b->isCommaExp ()->e2;
 	gcc_assert (e1b->op == TOKvar);
 
-	Declaration *var = ((VarExp *) e1b)->var;
+	Declaration *var = e1b->isVarExp ()->var;
 	gcc_assert (var->isFuncDeclaration () && !var->needThis ());
       }
 
     if (e1b->op == TOKdotvar && tb->ty != Tdelegate)
       {
-	DotVarExp *dve = (DotVarExp *) e1b;
+	DotVarExp *dve = e1b->isDotVarExp ();
 
 	/* Don't modify the static initializer for struct literals.  */
 	if (dve->e1->op == TOKstructliteral)
 	  {
-	    StructLiteralExp *sle = (StructLiteralExp *) dve->e1;
+	    StructLiteralExp *sle = dve->e1->isStructLiteralExp ();
 	    sle->useStaticInit = false;
 	  }
 
@@ -1767,7 +1773,7 @@ public:
 	    /* This gets the true function type, getting the function type
 	       from e1->type can sometimes be incorrect, such as when calling
 	       a 'ref' return function.  */
-	    tf = get_function_type (((DotVarExp *) e1b)->var->type);
+	    tf = get_function_type (e1b->isDotVarExp ()->var->type);
 	  }
 	else
 	  tf = get_function_type (tb);
@@ -1784,7 +1790,7 @@ public:
       }
     else if (e1b->op == TOKvar)
       {
-	FuncDeclaration *fd = ((VarExp *) e1b)->var->isFuncDeclaration ();
+	FuncDeclaration *fd = e1b->isVarExp ()->var->isFuncDeclaration ();
 	gcc_assert (fd != NULL);
 	tf = get_function_type (fd->type);
 
@@ -2145,7 +2151,7 @@ public:
   void visit (SymOffExp *e)
   {
     /* Build the address and offset of the symbol.  */
-    size_t soffset = ((SymOffExp *) e)->offset;
+    size_t soffset = e->isSymOffExp ()->offset;
     tree result = get_decl_tree (e->var);
     TREE_USED (result) = 1;
 
@@ -2956,7 +2962,7 @@ public:
     /* First handle array literal expressions.  */
     if (e->e1->op == TOKarrayliteral)
       {
-	ArrayLiteralExp *ale = ((ArrayLiteralExp *) e->e1);
+	ArrayLiteralExp *ale = e->e1->isArrayLiteralExp ();
 	vec<constructor_elt, va_gc> *elms = NULL;
 	bool constant_p = true;
 
