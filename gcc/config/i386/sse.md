@@ -19863,7 +19863,8 @@
       gen = (<CODE> == LSHIFTRT ? gen_xop_shlv16qi3 : gen_xop_shav16qi3);
       emit_insn (gen (operands[0], operands[1], tmp));
     }
-  else
+  else if (!ix86_expand_vec_shift_qihi_constant (<CODE>, operands[0],
+						operands[1], operands[2]))
     ix86_expand_vecop_qihi (<CODE>, operands[0], operands[1], operands[2]);
   DONE;
 })
