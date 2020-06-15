@@ -1,3 +1,24 @@
+2020-06-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (instantiate_coro_traits): Pass a reference
+	to lambda closure objects to traits instantiation.
+	(morph_fn_to_coro): Likewise for promise parameter
+	preview and allocator lookup.
+
+2020-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/95328
+	* decl.c (cp_finish_decomp): Call complete_type before checking
+	COMPLETE_TYPE_P.
+
+2020-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/95197
+	* cp-gimplify.c: Include omp-general.h.
+	(cp_genericize_r) <case OMP_DISTRIBUTE>: For class iteration
+	variables in composite distribute parallel for, instantiate copy
+	ctor of their types.
+
 2020-06-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/95440
