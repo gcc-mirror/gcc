@@ -277,7 +277,7 @@ build_attributes (Expressions *eattrs)
 	  return error_mark_node;
 	}
 
-      StringExp *se = (StringExp*) e0;
+      StringExp *se = e0->toStringExp ();
       gcc_assert (se->sz == 1);
 
       /* Empty string attribute, just ignore it.  */
