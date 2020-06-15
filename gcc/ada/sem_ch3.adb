@@ -10763,12 +10763,7 @@ package body Sem_Ch3 is
          --  AI12-0042: Test for rule in 7.3.2(6.1/4), that requires overriding
          --  of a visible private primitive inherited from an ancestor with
          --  the aspect Type_Invariant'Class, unless the inherited primitive
-         --  is abstract. (The test for the extension occurring in a different
-         --  scope than the ancestor is to avoid requiring overriding when
-         --  extending in the same scope, because the inherited primitive will
-         --  also be private in that case, which looks like an unhelpful
-         --  restriction that may break reasonable code, though the rule
-         --  appears to apply in the same-scope case as well???)
+         --  is abstract.
 
          elsif not Is_Abstract_Subprogram (Subp)
            and then not Comes_From_Source (Subp) -- An inherited subprogram
@@ -10778,7 +10773,6 @@ package body Sem_Ch3 is
            and then Present (Get_Pragma (Etype (T), Pragma_Invariant))
            and then Class_Present (Get_Pragma (Etype (T), Pragma_Invariant))
            and then Is_Private_Primitive (Alias_Subp)
-           and then Scope (Subp) /= Scope (Alias_Subp)
          then
             Error_Msg_NE
               ("inherited private primitive & must be overridden", T, Subp);
@@ -15732,7 +15726,9 @@ package body Sem_Ch3 is
                    --  AI12-0042: Set Requires_Overriding when a type extension
                    --  inherits a private operation that is visible at the
                    --  point of extension (Has_Private_Ancestor is False) from
-                   --  an ancestor that has Type_Invariant'Class.
+                   --  an ancestor that has Type_Invariant'Class, and when the
+                   --  type extension is in a visible part (the latter as
+                   --  clarified by AI12-0382).
 
                    or else
                      (not Has_Private_Ancestor (Derived_Type)
@@ -15742,7 +15738,8 @@ package body Sem_Ch3 is
                        and then
                          Class_Present
                            (Get_Pragma (Parent_Type, Pragma_Invariant))
-                       and then Is_Private_Primitive (Parent_Subp)))
+                       and then Is_Private_Primitive (Parent_Subp)
+                       and then In_Visible_Part (Scope (Derived_Type))))
 
         and then No (Actual_Subp)
       then
