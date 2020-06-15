@@ -32,7 +32,7 @@ template<typename CT>
 
 #ifndef __cpp_lib_constexpr_char_traits
 # error Feature-test macro for constexpr char_traits is missing
-#elif __cpp_lib_constexpr_char_traits != 201611
+#elif __cpp_lib_constexpr_char_traits != 201811
 # error Feature-test macro for constexpr char_traits has the wrong value
 #endif
 
