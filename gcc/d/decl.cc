@@ -218,12 +218,11 @@ public:
     for (size_t i = 0; i < d->objects->length; i++)
       {
 	RootObject *o = (*d->objects)[i];
-	if ((o->dyncast () == DYNCAST_EXPRESSION)
-	    && ((Expression *) o)->op == TOKdsymbol)
+	if (o->dyncast () == DYNCAST_EXPRESSION)
 	  {
-	    Declaration *d = ((DsymbolExp *) o)->s->isDeclaration ();
-	    if (d)
-	      this->build_dsymbol (d);
+	    DsymbolExp *de = ((Expression *) o)->isDsymbolExp ();
+	    if (de != NULL && de->s->isDeclaration ())
+	      this->build_dsymbol (de->s);
 	  }
       }
   }
@@ -2239,7 +2238,7 @@ layout_class_initializer (ClassDeclaration *cd)
   Expression *e = ne->ctfeInterpret ();
   gcc_assert (e->op == TOKclassreference);
 
-  return build_class_instance ((ClassReferenceExp *) e);
+  return build_class_instance (e->isClassReferenceExp ());
 }
 
 tree

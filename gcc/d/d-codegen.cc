@@ -1874,7 +1874,7 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 
 	  if (arg->op == TOKcomma)
 	    {
-	      CommaExp *ce = (CommaExp *) arg;
+	      CommaExp *ce = arg->isCommaExp ();
 	      tree tce = build_expr (ce->e1);
 	      saved_args = compound_expr (saved_args, tce);
 	      (*arguments)[i] = ce->e2;

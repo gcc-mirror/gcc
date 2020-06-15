@@ -88,7 +88,7 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
   else if (expr->op == TOKarrayliteral)
     {
       /* Build array as VECTOR_CST, assumes EXPR is constant.  */
-      Expressions *elements = ((ArrayLiteralExp *) expr)->elements;
+      Expressions *elements = expr->isArrayLiteralExp ()->elements;
       vec<constructor_elt, va_gc> *elms = NULL;
 
       vec_safe_reserve (elms, elements->length);
@@ -136,7 +136,7 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
       Expression *e = d_eval_constant_expression (cst);
       gcc_assert (e != NULL && e->op == TOKvector);
 
-      return ((VectorExp *) e)->e1;
+      return e->isVectorExp ()->e1;
     }
   else
     {

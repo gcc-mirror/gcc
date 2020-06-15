@@ -292,7 +292,7 @@ layout_aggregate_members (Dsymbols *members, tree context, bool inherited_p)
 		  gcc_assert (ro->dyncast () == DYNCAST_EXPRESSION);
 		  Expression *e = (Expression *) ro;
 		  gcc_assert (e->op == TOKdsymbol);
-		  DsymbolExp *se = (DsymbolExp *) e;
+		  DsymbolExp *se = e->isDsymbolExp ();
 
 		  tmembers.push (se->s);
 		}

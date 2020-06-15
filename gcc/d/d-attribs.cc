@@ -268,7 +268,7 @@ build_attributes (Expressions *eattrs)
       /* Should now have a struct `Attribute("attrib", "value", ...)'
 	 initializer list.  */
       gcc_assert (attr->op == TOKstructliteral);
-      Expressions *elems = ((StructLiteralExp*) attr)->elements;
+      Expressions *elems = attr->isStructLiteralExp ()->elements;
       Expression *e0 = (*elems)[0];
 
       if (e0->op != TOKstring)
@@ -300,10 +300,10 @@ build_attributes (Expressions *eattrs)
       for (size_t j = 1; j < elems->length; j++)
 	{
 	  Expression *e = (*elems)[j];
+	  StringExp *s = e->isStringExp ();
 	  tree t;
-	  if (e->op == TOKstring && ((StringExp *) e)->sz == 1)
+	  if (s != NULL && s->sz == 1)
 	    {
-	      StringExp *s = (StringExp *) e;
 	      const char *string = (const char *)(s->len ? s->string : "");
 	      t = build_string (s->len, string);
 	    }
