@@ -1045,8 +1045,7 @@ public:
 
     if (sd->xhash)
       {
-	TypeFunction *tf = (TypeFunction *) sd->xhash->type;
-	gcc_assert (tf->ty == Tfunction);
+	TypeFunction *tf = sd->xhash->type->toTypeFunction ();
 	if (!tf->isnothrow || tf->trust == TRUSTsystem)
 	  {
 	    warning (sd->xhash->loc, "toHash() must be declared as "

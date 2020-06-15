@@ -1006,7 +1006,7 @@ public:
 	return;
       }
 
-    TypeFunction *tf = (TypeFunction *)this->func_->type;
+    TypeFunction *tf = this->func_->type->toTypeFunction ();
     Type *type = this->func_->tintro != NULL
       ? this->func_->tintro->nextOf () : tf->nextOf ();
 
