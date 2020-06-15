@@ -1,3 +1,24 @@
+2020-06-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95088
+	* gfortran.dg/pr95088.f90: New file.
+
+2020-06-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/random_seed_4.f90: New test.
+
+2020-06-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94109
+	* gfortran.dg/finalize_34.f90: Adjust free counts.
+	* gfortran.dg/finalize_36.f90: New test.
+
+2020-06-14  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR testsuite/95575
+	* lib/gdc-utils.exp (gdc-do-test): Re-add $subdir link and inclusion
+	in filename.
+
 2020-06-13  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/builtin-stringop-chk-5.c: Make assertions independent of
