@@ -9338,6 +9338,7 @@ grokfndecl (tree ctype,
 	    special_function_kind sfk,
 	    bool funcdef_flag,
 	    bool late_return_type_p,
+	    int initialized,
 	    int template_count,
 	    tree in_namespace,
 	    tree* attrlist,
@@ -9381,7 +9382,7 @@ grokfndecl (tree ctype,
       /* C++20 CA378: Remove non-templated constrained functions.  */
       if (ci && !flag_concepts_ts
 	  && (!processing_template_decl
-	      || (friendp && !memtmpl && !funcdef_flag)))
+	      || (friendp && !memtmpl && !initialized && !funcdef_flag)))
 	{
 	  error_at (location, "constraints on a non-templated function");
 	  ci = NULL_TREE;
@@ -13267,6 +13268,7 @@ grokdeclarator (const cp_declarator *declarator,
 				       | (8 * consteval_p),
 			       initialized == SD_DELETED, sfk,
 			       funcdef_flag, late_return_type_p,
+			       initialized,
 			       template_count, in_namespace,
 			       attrlist, id_loc);
             decl = set_virt_specifiers (decl, virt_specifiers);
@@ -13576,6 +13578,7 @@ grokdeclarator (const cp_declarator *declarator,
                            sfk,
                            funcdef_flag,
 			   late_return_type_p,
+			   initialized,
 			   template_count, in_namespace, attrlist,
 			   id_loc);
 	if (decl == NULL_TREE)

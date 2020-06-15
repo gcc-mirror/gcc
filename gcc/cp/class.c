@@ -3266,7 +3266,12 @@ add_implicitly_declared_members (tree t, tree* access_decls,
 	  do_friend (NULL_TREE, DECL_NAME (eq), eq,
 		     NULL_TREE, NO_SPECIAL, true);
 	else
-	  add_method (t, eq, false);
+	  {
+	    add_method (t, eq, false);
+	    DECL_CHAIN (eq) = TYPE_FIELDS (t);
+	    TYPE_FIELDS (t) = eq;
+	  }
+	maybe_add_class_template_decl_list (t, eq, DECL_FRIEND_P (space));
       }
 
   while (*access_decls)
@@ -4685,6 +4690,114 @@ check_methods (tree t)
       else if (move_fn_p (fn))
 	TYPE_HAS_COMPLEX_MOVE_ASSIGN (t) = true;
     }
+}
+
+tree
+copy_fndecl_with_name (tree fn, tree name)
+{
+  /* Copy the function.  */
+  tree clone = copy_decl (fn);
+  /* Reset the function name.  */
+  DECL_NAME (clone) = name;
+
+  if (flag_concepts)
+    /* Clone constraints.  */
+    if (tree ci = get_constraints (fn))
+      set_constraints (clone, copy_node (ci));
+
+  SET_DECL_ASSEMBLER_NAME (clone, NULL_TREE);
+  /* There's no pending inline data for this function.  */
+  DECL_PENDING_INLINE_INFO (clone) = NULL;
+  DECL_PENDING_INLINE_P (clone) = 0;
+
+  /* The base-class destructor is not virtual.  */
+  if (name == base_dtor_identifier)
+    {
+      DECL_VIRTUAL_P (clone) = 0;
+      DECL_VINDEX (clone) = NULL_TREE;
+    }
+  else if (IDENTIFIER_OVL_OP_P (name))
+    {
+      const ovl_op_info_t *ovl_op = IDENTIFIER_OVL_OP_INFO (name);
+      DECL_OVERLOADED_OPERATOR_CODE_RAW (clone) = ovl_op->ovl_op_code;
+    }
+
+  if (DECL_VIRTUAL_P (clone))
+    IDENTIFIER_VIRTUAL_P (name) = true;
+
+  bool ctor_omit_inherited_parms_p = ctor_omit_inherited_parms (clone);
+  if (ctor_omit_inherited_parms_p)
+    gcc_assert (DECL_HAS_IN_CHARGE_PARM_P (clone));
+
+  /* If there was an in-charge parameter, drop it from the function
+     type.  */
+  if (DECL_HAS_IN_CHARGE_PARM_P (clone))
+    {
+      tree basetype = TYPE_METHOD_BASETYPE (TREE_TYPE (clone));
+      tree parmtypes = TYPE_ARG_TYPES (TREE_TYPE (clone));
+      /* Skip the `this' parameter.  */
+      parmtypes = TREE_CHAIN (parmtypes);
+      /* Skip the in-charge parameter.  */
+      parmtypes = TREE_CHAIN (parmtypes);
+      /* And the VTT parm, in a complete [cd]tor.  */
+      if (DECL_HAS_VTT_PARM_P (fn)
+	  && ! DECL_NEEDS_VTT_PARM_P (clone))
+	parmtypes = TREE_CHAIN (parmtypes);
+      if (ctor_omit_inherited_parms_p)
+	{
+	  /* If we're omitting inherited parms, that just leaves the VTT.  */
+	  gcc_assert (DECL_NEEDS_VTT_PARM_P (clone));
+	  parmtypes = tree_cons (NULL_TREE, vtt_parm_type, void_list_node);
+	}
+      TREE_TYPE (clone)
+	= build_method_type_directly (basetype,
+				      TREE_TYPE (TREE_TYPE (clone)),
+				      parmtypes);
+      TREE_TYPE (clone)
+	= cp_build_type_attribute_variant (TREE_TYPE (clone),
+					   TYPE_ATTRIBUTES (TREE_TYPE (fn)));
+      TREE_TYPE (clone)
+	= cxx_copy_lang_qualifiers (TREE_TYPE (clone), TREE_TYPE (fn));
+    }
+
+  /* Copy the function parameters.  */
+  DECL_ARGUMENTS (clone) = copy_list (DECL_ARGUMENTS (clone));
+  /* Remove the in-charge parameter.  */
+  if (DECL_HAS_IN_CHARGE_PARM_P (clone))
+    {
+      DECL_CHAIN (DECL_ARGUMENTS (clone))
+	= DECL_CHAIN (DECL_CHAIN (DECL_ARGUMENTS (clone)));
+      DECL_HAS_IN_CHARGE_PARM_P (clone) = 0;
+    }
+  /* And the VTT parm, in a complete [cd]tor.  */
+  if (DECL_HAS_VTT_PARM_P (fn))
+    {
+      if (DECL_NEEDS_VTT_PARM_P (clone))
+	DECL_HAS_VTT_PARM_P (clone) = 1;
+      else
+	{
+	  DECL_CHAIN (DECL_ARGUMENTS (clone))
+	    = DECL_CHAIN (DECL_CHAIN (DECL_ARGUMENTS (clone)));
+	  DECL_HAS_VTT_PARM_P (clone) = 0;
+	}
+    }
+
+  /* A base constructor inheriting from a virtual base doesn't get the
+     arguments.  */
+  if (ctor_omit_inherited_parms_p)
+    DECL_CHAIN (DECL_CHAIN (DECL_ARGUMENTS (clone))) = NULL_TREE;
+
+  for (tree parms = DECL_ARGUMENTS (clone); parms; parms = DECL_CHAIN (parms))
+    {
+      DECL_CONTEXT (parms) = clone;
+      cxx_dup_lang_specific_decl (parms);
+    }
+
+  /* Create the RTL for this function.  */
+  SET_DECL_RTL (clone, NULL);
+  rest_of_decl_compilation (clone, namespace_bindings_p (), at_eof);
+
+  return clone;
 }
 
 /* FN is a constructor or destructor.  Clone the declaration to create
