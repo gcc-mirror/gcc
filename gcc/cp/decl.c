@@ -2035,6 +2035,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       DECL_FINAL_P (newdecl) |= DECL_FINAL_P (olddecl);
       DECL_OVERRIDE_P (newdecl) |= DECL_OVERRIDE_P (olddecl);
       DECL_THIS_STATIC (newdecl) |= DECL_THIS_STATIC (olddecl);
+      DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P (newdecl)
+	|= DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P (olddecl);
       if (DECL_OVERLOADED_OPERATOR_P (olddecl))
 	DECL_OVERLOADED_OPERATOR_CODE_RAW (newdecl)
 	  = DECL_OVERLOADED_OPERATOR_CODE_RAW (olddecl);
@@ -7299,17 +7301,7 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
   if (variant == error_mark_node && !processing_template_decl)
     return true;
 
-  variant = cp_get_callee (variant);
-  if (variant)
-    {
-      if (TREE_CODE (variant) == FUNCTION_DECL)
-	;
-      else if (TREE_TYPE (variant) && INDIRECT_TYPE_P (TREE_TYPE (variant)))
-	variant = cp_get_fndecl_from_callee (variant, false);
-      else
-	variant = NULL_TREE;
-    }
-
+  variant = cp_get_callee_fndecl_nofold (variant);
   input_location = save_loc;
 
   if (variant)

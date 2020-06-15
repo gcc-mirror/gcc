@@ -3100,7 +3100,7 @@ purge_dead_edges (basic_block bb)
   bool found;
   edge_iterator ei;
 
-  if (DEBUG_INSN_P (insn) && insn != BB_HEAD (bb))
+  if ((DEBUG_INSN_P (insn) || NOTE_P (insn)) && insn != BB_HEAD (bb))
     do
       insn = PREV_INSN (insn);
     while ((DEBUG_INSN_P (insn) || NOTE_P (insn)) && insn != BB_HEAD (bb));

@@ -8677,7 +8677,12 @@ cp_parser_has_attribute_expression (cp_parser *parser)
   location_t atloc = cp_lexer_peek_token (parser->lexer)->location;
   if (tree attr = cp_parser_gnu_attribute_list (parser, /*exactly_one=*/true))
     {
-      if (oper != error_mark_node)
+      if (oper == error_mark_node)
+	/* Nothing.  */;
+      else if (type_dependent_expression_p (oper))
+	sorry_at (atloc, "%<__builtin_has_attribute%> with dependent argument "
+		  "not supported yet");
+      else
 	{
 	  /* Fold constant expressions used in attributes first.  */
 	  cp_check_const_attributes (attr);
@@ -21225,6 +21230,12 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  ref_qual = cp_parser_ref_qualifier_opt (parser);
 		  /* Parse the tx-qualifier.  */
 		  tree tx_qual = cp_parser_tx_qualifier_opt (parser);
+
+		  /* If it turned out that this is e.g. a pointer to a
+		     function, we don't want to delay noexcept parsing.  */
+		  if (declarator == NULL || declarator->kind != cdk_id)
+		    flags &= ~CP_PARSER_FLAGS_DELAY_NOEXCEPT;
+
 		  /* And the exception-specification.  */
 		  exception_specification
 		    = cp_parser_exception_specification_opt (parser,

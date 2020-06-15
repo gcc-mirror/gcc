@@ -1490,19 +1490,13 @@ expand_one_await_expression (tree *stmt, tree *await_expr, void *d)
   tree resume_label = create_named_label_with_ctx (loc, buf, actor);
   tree empty_list = build_empty_stmt (loc);
 
-  tree dtor = NULL_TREE;
   tree await_type = TREE_TYPE (var);
-  if (needs_dtor)
-    dtor = build_special_member_call (var, complete_dtor_identifier, NULL,
-				      await_type, LOOKUP_NORMAL,
-				      tf_warning_or_error);
-
   tree stmt_list = NULL;
   tree t_expr = STRIP_NOPS (expr);
   tree r;
   tree *await_init = NULL;
   if (t_expr == var)
-    dtor = NULL_TREE;
+    needs_dtor = false;
   else
     {
       /* Initialize the var from the provided 'o' expression.  */
@@ -1617,7 +1611,12 @@ expand_one_await_expression (tree *stmt, tree *await_expr, void *d)
   destroy_label = build_stmt (loc, LABEL_EXPR, destroy_label);
   append_to_statement_list (destroy_label, &body_list);
   if (needs_dtor)
-    append_to_statement_list (dtor, &body_list);
+    {
+      tree dtor = build_special_member_call (var, complete_dtor_identifier,
+					     NULL, await_type, LOOKUP_NORMAL,
+					     tf_warning_or_error);
+      append_to_statement_list (dtor, &body_list);
+    }
   r = build1_loc (loc, GOTO_EXPR, void_type_node, data->cleanup);
   append_to_statement_list (r, &body_list);
 
@@ -1652,7 +1651,12 @@ expand_one_await_expression (tree *stmt, tree *await_expr, void *d)
   /* Get a pointer to the revised statment.  */
   tree *revised = tsi_stmt_ptr (tsi_last (stmt_list));
   if (needs_dtor)
-    append_to_statement_list (dtor, &stmt_list);
+    {
+      tree dtor = build_special_member_call (var, complete_dtor_identifier,
+					     NULL, await_type, LOOKUP_NORMAL,
+					     tf_warning_or_error);
+      append_to_statement_list (dtor, &stmt_list);
+    }
   data->index += 2;
 
   /* Replace the original statement with the expansion.  */
@@ -1825,7 +1829,6 @@ struct param_info
   tree frame_type;   /* The type used to represent this parm in the frame.  */
   tree orig_type;    /* The original type of the parm (not as passed).  */
   bool by_ref;       /* Was passed by reference.  */
-  bool rv_ref;       /* Was an rvalue reference.  */
   bool pt_ref;       /* Was a pointer to object.  */
   bool trivial_dtor; /* The frame type has a trivial DTOR.  */
   bool this_ptr;     /* Is 'this' */
@@ -2094,12 +2097,6 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 	   back to the type expected.  */
 	  if (parm.pt_ref)
 	    fld_idx = build1_loc (loc, CONVERT_EXPR, TREE_TYPE (arg), fld_idx);
-
-	  /* We expect an rvalue ref. here.  */
-	  if (parm.rv_ref)
-	    fld_idx = convert_to_reference (DECL_ARG_TYPE (arg), fld_idx,
-					    CONV_STATIC, LOOKUP_NORMAL,
-					    NULL_TREE, tf_warning_or_error);
 
 	  int i;
 	  tree *puse;
@@ -3788,15 +3785,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  if (actual_type == NULL_TREE)
 	    actual_type = error_mark_node;
 	  parm.orig_type = actual_type;
-	  parm.by_ref = parm.rv_ref = parm.pt_ref = false;
-	  if (TREE_CODE (actual_type) == REFERENCE_TYPE
-	      && TYPE_REF_IS_RVALUE (DECL_ARG_TYPE (arg)))
-	    {
-	      parm.rv_ref = true;
-	      actual_type = TREE_TYPE (actual_type);
-	      parm.frame_type = actual_type;
-	    }
-	  else if (TREE_CODE (actual_type) == REFERENCE_TYPE)
+	  parm.by_ref = parm.pt_ref = false;
+	  if (TREE_CODE (actual_type) == REFERENCE_TYPE)
 	    {
 	      /* If the user passes by reference, then we will save the
 		 pointer to the original.  As noted in
@@ -3804,16 +3794,12 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 		 referenced item ends and then the coroutine is resumed,
 		 we have UB; well, the user asked for it.  */
 	      actual_type = build_pointer_type (TREE_TYPE (actual_type));
-	      parm.frame_type = actual_type;
 	      parm.pt_ref = true;
 	    }
 	  else if (TYPE_REF_P (DECL_ARG_TYPE (arg)))
-	    {
-	      parm.by_ref = true;
-	      parm.frame_type = actual_type;
-	    }
-	  else
-	    parm.frame_type = actual_type;
+	    parm.by_ref = true;
+
+	  parm.frame_type = actual_type;
 
 	  parm.this_ptr = is_this_parameter (arg);
 	  /* See PR94807.  When a lambda is in a template instantiation, the
@@ -4200,17 +4186,16 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	    }
 	  else if (parm.by_ref)
 	    vec_safe_push (promise_args, fld_idx);
-	  else if (parm.rv_ref)
-	    vec_safe_push (promise_args, rvalue (fld_idx));
 	  else
 	    vec_safe_push (promise_args, arg);
 
 	  if (TYPE_NEEDS_CONSTRUCTING (parm.frame_type))
 	    {
 	      vec<tree, va_gc> *p_in;
-	      if (parm.by_ref
-		  && classtype_has_non_deleted_move_ctor (parm.frame_type)
-		  && !classtype_has_non_deleted_copy_ctor (parm.frame_type))
+	      if (CLASS_TYPE_P (parm.frame_type)
+		  && classtype_has_non_deleted_move_ctor (parm.frame_type))
+		p_in = make_tree_vector_single (move (arg));
+	      else if (lvalue_p (arg))
 		p_in = make_tree_vector_single (rvalue (arg));
 	      else
 		p_in = make_tree_vector_single (arg);
@@ -4223,9 +4208,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	    }
 	  else
 	    {
-	      if (parm.rv_ref)
-		r = convert_from_reference (arg);
-	      else if (!same_type_p (parm.frame_type, DECL_ARG_TYPE (arg)))
+	      if (!same_type_p (parm.frame_type, DECL_ARG_TYPE (arg)))
 		r = build1_loc (DECL_SOURCE_LOCATION (arg), CONVERT_EXPR,
 				parm.frame_type, arg);
 	      else
@@ -4308,7 +4291,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
     }
 
   tree gro_context_body = push_stmt_list ();
-  bool gro_is_void_p = VOID_TYPE_P (TREE_TYPE (get_ro));
+  tree gro_type = TREE_TYPE (get_ro);
+  bool gro_is_void_p = VOID_TYPE_P (gro_type);
 
   tree gro, gro_bind_vars = NULL_TREE;
   /* We have to sequence the call to get_return_object before initial
@@ -4317,15 +4301,21 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
     finish_expr_stmt (get_ro);
   else
     {
-      gro = build_lang_decl (VAR_DECL, get_identifier ("coro.gro"),
-			      TREE_TYPE (get_ro));
+      gro = build_lang_decl (VAR_DECL, get_identifier ("coro.gro"), gro_type);
       DECL_CONTEXT (gro) = current_scope ();
       add_decl_expr (gro);
       gro_bind_vars = gro;
-
-      r = build2_loc (fn_start, INIT_EXPR, TREE_TYPE (gro), gro, get_ro);
-      r = coro_build_cvt_void_expr_stmt (r, fn_start);
-      add_stmt (r);
+      if (TYPE_NEEDS_CONSTRUCTING (gro_type))
+	{
+	  vec<tree, va_gc> *arg = make_tree_vector_single (get_ro);
+	  r = build_special_member_call (gro, complete_ctor_identifier,
+					 &arg, gro_type, LOOKUP_NORMAL,
+					 tf_warning_or_error);
+	  release_tree_vector (arg);
+	}
+      else
+	r = build2_loc (fn_start, INIT_EXPR, gro_type, gro, get_ro);
+      finish_expr_stmt (r);
     }
 
   /* Initialize the resume_idx_name to 0, meaning "not started".  */
@@ -4359,28 +4349,43 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   /* Switch to using 'input_location' as the loc, since we're now more
      logically doing things related to the end of the function.  */
 
-  /* The ramp is done, we just need the return value.  */
-  if (!same_type_p (TREE_TYPE (get_ro), fn_return_type))
-    {
-      /* construct the return value with a single GRO param, if it's not
-	 void.  */
-      vec<tree, va_gc> *args = NULL;
-      vec<tree, va_gc> **arglist = NULL;
-      if (!gro_is_void_p)
-	{
-	  args = make_tree_vector_single (gro);
-	  arglist = &args;
-	}
-      r = build_special_member_call (NULL_TREE,
-				     complete_ctor_identifier, arglist,
-				     fn_return_type, LOOKUP_NORMAL,
-				     tf_warning_or_error);
-      r = build_cplus_new (fn_return_type, r, tf_warning_or_error);
-    }
-  else if (!gro_is_void_p)
-    r = rvalue (gro); /* The GRO is the return value.  */
-  else
+  /* The ramp is done, we just need the return value.
+     [dcl.fct.def.coroutine] / 7
+     The expression promise.get_return_object() is used to initialize the
+     glvalue result or prvalue result object of a call to a coroutine.
+
+     If the 'get return object' is non-void, then we built it before the
+     promise was constructed.  We now supply a reference to that var,
+     either as the return value (if it's the same type) or to the CTOR
+     for an object of the return type.  */
+  if (gro_is_void_p)
     r = NULL_TREE;
+  else
+    r = rvalue (gro);
+
+  if (!same_type_p (gro_type, fn_return_type))
+    {
+      /* The return object is , even if the gro is void.  */
+      if (CLASS_TYPE_P (fn_return_type))
+	{
+	  vec<tree, va_gc> *args = NULL;
+	  vec<tree, va_gc> **arglist = NULL;
+	  if (!gro_is_void_p)
+	    {
+	      args = make_tree_vector_single (r);
+	      arglist = &args;
+	    }
+	  r = build_special_member_call (NULL_TREE,
+					 complete_ctor_identifier, arglist,
+					 fn_return_type, LOOKUP_NORMAL,
+					 tf_warning_or_error);
+	  r = build_cplus_new (fn_return_type, r, tf_warning_or_error);
+	  if (args)
+	    release_tree_vector (args);
+	}
+      else /* ??? suppose we have non-class return and void gro?  */
+	r = build1_loc (input_location, CONVERT_EXPR, fn_return_type, r);
+    }
 
   finish_return_stmt (r);
 
