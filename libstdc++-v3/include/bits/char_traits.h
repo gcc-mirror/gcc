@@ -236,7 +236,14 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201703L
-#define __cpp_lib_constexpr_char_traits 201611
+
+#if __cplusplus == 201703L
+// Unofficial macro indicating P0426R1 support
+# define __cpp_lib_constexpr_char_traits 201611L
+#else
+// Also support P1032R1 in C++20
+# define __cpp_lib_constexpr_char_traits 201811L
+#endif
 
   /**
    *  @brief Determine whether the characters of a NULL-terminated
