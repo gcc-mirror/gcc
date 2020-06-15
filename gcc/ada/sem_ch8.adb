@@ -918,7 +918,8 @@ package body Sem_Ch8 is
                if No (Etype (Nam))
                  or else Etype (Nam) = Standard_Void_Type
                then
-                  Error_Msg_N ("object name expected in renaming", Nam);
+                  Error_Msg_N
+                    ("object name or value expected in renaming", Nam);
 
                   Set_Ekind (Id, E_Variable);
                   Set_Etype (Id, Any_Type);
@@ -965,7 +966,8 @@ package body Sem_Ch8 is
                   --  as overloaded procedures named in the object renaming).
 
                   if No (It.Typ) then
-                     Error_Msg_N ("object name expected in renaming", Nam);
+                     Error_Msg_N
+                       ("object name or value expected in renaming", Nam);
 
                      Set_Ekind (Id, E_Variable);
                      Set_Etype (Id, Any_Type);
@@ -995,6 +997,12 @@ package body Sem_Ch8 is
                   Set_Etype (Nam, It1.Typ);
                   T := It1.Typ;
                end;
+            end if;
+
+            if Etype (Nam) = Standard_Exception_Type then
+               Error_Msg_N
+                 ("exception requires a subtype mark in renaming", Nam);
+               return;
             end if;
          end if;
 
@@ -1396,8 +1404,19 @@ package body Sem_Ch8 is
         and then Nkind (Original_Node (Nam)) /= N_Attribute_Reference
       then
          null;
-      else
-         Error_Msg_N ("expect object name in renaming", Nam);
+
+      --  A named number can only be renamed without a subtype mark
+
+      elsif Nkind (Nam) in N_Real_Literal | N_Integer_Literal
+        and then Present (Subtype_Mark (N))
+        and then Present (Original_Entity (Nam))
+      then
+         Error_Msg_N ("incompatible types in renaming", Nam);
+
+      --  AI12-0383: Names that denote values can be renamed
+
+      elsif Ada_Version < Ada_2020 then
+         Error_Msg_N ("value in renaming requires -gnat2020", Nam);
       end if;
 
       Set_Etype (Id, T2);
