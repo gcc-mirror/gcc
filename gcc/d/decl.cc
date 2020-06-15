@@ -449,26 +449,14 @@ public:
 
 	    if (fd->leastAsSpecialized (fd2) || fd2->leastAsSpecialized (fd))
 	      {
-		TypeFunction *tf = (TypeFunction *) fd->type;
-		if (tf->ty == Tfunction)
-		  {
-		    error_at (make_location_t (fd->loc), "use of %qs",
-			      fd->toPrettyChars ());
-		    inform (make_location_t (fd2->loc), "is hidden by %qs",
-			    fd2->toPrettyChars ());
-		    inform (make_location_t (d->loc),
-			    "use %<alias %s = %s.%s;%> to introduce base class "
-			    "overload set", fd->toChars (),
-			    fd->parent->toChars (), fd->toChars ());
-		  }
-		else
-		  {
-		    error_at (make_location_t (fd->loc), "use of %qs",
-			      fd->toPrettyChars ());
-		    inform (make_location_t (fd2->loc), "is hidden by %qs",
-			      fd2->toPrettyChars ());
-		  }
-
+		error_at (make_location_t (fd->loc), "use of %qs",
+			  fd->toPrettyChars ());
+		inform (make_location_t (fd2->loc), "is hidden by %qs",
+			fd2->toPrettyChars ());
+		inform (make_location_t (d->loc),
+			"use %<alias %s = %s.%s;%> to introduce base class "
+			"overload set", fd->toChars (),
+			fd->parent->toChars (), fd->toChars ());
 		has_errors = true;
 		break;
 	      }
