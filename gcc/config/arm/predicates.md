@@ -155,6 +155,18 @@
 	      || REGNO (op) >= FIRST_PSEUDO_REGISTER));
 })
 
+;; Low core register, or any pseudo.
+(define_predicate "arm_low_register_operand"
+  (match_code "reg,subreg")
+{
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+
+  return (REG_P (op)
+	  && (REGNO (op) <= LAST_LO_REGNUM
+	      || REGNO (op) >= FIRST_PSEUDO_REGISTER));
+})
+
 (define_predicate "arm_general_adddi_operand"
   (ior (match_operand 0 "arm_general_register_operand")
        (and (match_code "const_int")
