@@ -12029,6 +12029,19 @@ package body Sem_Ch12 is
          end if;
 
          Restore_Hidden_Primitives (Vis_Prims_List);
+
+         --  Restore the private views that were made visible when the body of
+         --  the instantiation was created. Note that, in the case where one of
+         --  these private views is declared in the parent, there is a nesting
+         --  issue with the calls to Install_Parent and Remove_Parent made in
+         --  between above with In_Body set to True, because these calls also
+         --  want to swap and restore this private view respectively. In this
+         --  case, the call to Install_Parent does nothing, but the call to
+         --  Remove_Parent does restore the private view, thus undercutting the
+         --  call to Restore_Private_Views. That's OK under the condition that
+         --  the two mechanisms swap exactly the same entities, in particular
+         --  the private entities dependent on the primary private entities.
+
          Restore_Private_Views (Act_Decl_Id);
 
          --  Remove the current unit from visibility if this is an instance
@@ -16680,19 +16693,9 @@ package body Sem_Ch12 is
       end if;
 
       while Present (Priv_Elmt) loop
-         Priv_Sub := (Node (Priv_Elmt));
+         Priv_Sub := Node (Priv_Elmt);
 
-         --  We avoid flipping the subtype if the Etype of its full view is
-         --  private because this would result in a malformed subtype. This
-         --  occurs when the Etype of the subtype full view is the full view of
-         --  the base type (and since the base types were just switched, the
-         --  subtype is pointing to the wrong view). This is currently the case
-         --  for tagged record types, access types (maybe more?) and needs to
-         --  be resolved. ???
-
-         if Present (Full_View (Priv_Sub))
-           and then not Is_Private_Type (Etype (Full_View (Priv_Sub)))
-         then
+         if Present (Full_View (Priv_Sub)) then
             Prepend_Elmt (Full_View (Priv_Sub), Exchanged_Views);
             Exchange_Declarations (Priv_Sub);
          end if;
