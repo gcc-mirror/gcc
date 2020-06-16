@@ -1911,7 +1911,6 @@ ifeq ($(strip $(filter-out lynxos178%,$(target_os))),)
   endif
   ifeq ($(strip $(filter-out %86, $(target_cpu))),)
     LIBGNAT_TARGET_PAIRS +=  system.ads<libgnat/system-lynxos178-x86.ads
-    LIBGNAT_TARGET_PAIRS += $(X86_TARGET_PAIRS)
   endif
 
   ifeq ($(strip $(filter-out lynxos178e,$(target_os))),)
