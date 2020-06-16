@@ -1,3 +1,86 @@
+2020-06-15  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gimplify.c (gimplify_init_constructor) <AGGREGATE_TYPE>: Declare
+	new ENSURE_SINGLE_ACCESS constant and move variables down.  If it is
+	true and all elements are zero, then always clear.  Return GS_ERROR
+	if a temporary would be created for it and NOTIFY_TEMP_CREATION set.
+	(gimplify_modify_expr_rhs) <VAR_DECL>: If the target is volatile but
+	the type is aggregate non-addressable, ask gimplify_init_constructor
+	whether it can generate a single access to the target.
+
+2020-06-15  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* tree-sra.c (propagate_subaccesses_from_rhs): When a non-scalar
+	access on the LHS is replaced with a scalar access, propagate the
+	TYPE_REVERSE_STORAGE_ORDER flag of the type of the original access.
+
+2020-06-15  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.c (TARGET_HAVE_TLS): Remove
+	TARGET_THREADPTR reference.
+	(xtensa_tls_symbol_p, xtensa_tls_referenced_p): Use
+	targetm.have_tls instead of TARGET_HAVE_TLS.
+	(xtensa_option_override): Set targetm.have_tls to false in
+	configurations without THREADPTR.
+
+2020-06-15  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/elf.h (ASM_SPEC, LINK_SPEC): Pass ABI switch to
+	assembler/linker.
+	* config/xtensa/linux.h (ASM_SPEC, LINK_SPEC): Ditto.
+	* config/xtensa/uclinux.h (ASM_SPEC, LINK_SPEC): Ditto.
+	* config/xtensa/xtensa.c (xtensa_option_override): Initialize
+	xtensa_windowed_abi if needed.
+	* config/xtensa/xtensa.h (TARGET_WINDOWED_ABI_DEFAULT): New
+	macro.
+	(TARGET_WINDOWED_ABI): Redefine to xtensa_windowed_abi.
+	* config/xtensa/xtensa.opt (xtensa_windowed_abi): New target
+	option variable.
+	(mabi=call0, mabi=windowed): New options.
+	* doc/invoke.texi: Document new -mabi= Xtensa-specific options.
+
+2020-06-15  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.c (xtensa_can_eliminate): New function.
+	(TARGET_CAN_ELIMINATE): New macro.
+	* config/xtensa/xtensa.h
+	(XTENSA_WINDOWED_HARD_FRAME_POINTER_REGNUM)
+	(XTENSA_CALL0_HARD_FRAME_POINTER_REGNUM): New macros.
+	(HARD_FRAME_POINTER_REGNUM): Define using
+	XTENSA_*_HARD_FRAME_POINTER_REGNUM.
+	(ELIMINABLE_REGS): Replace lines with HARD_FRAME_POINTER_REGNUM
+	by lines with XTENSA_WINDOWED_HARD_FRAME_POINTER_REGNUM and
+	XTENSA_CALL0_HARD_FRAME_POINTER_REGNUM.
+
+2020-06-15  Felix Yang  <felix.yang@huawei.com>
+
+	* tree-vect-data-refs.c (vect_verify_datarefs_alignment): Rename
+	parameter to loop_vinfo and update uses.  Use LOOP_VINFO_DATAREFS
+	when possible.
+	(vect_analyze_data_refs_alignment): Likewise, and use LOOP_VINFO_DDRS
+	when possible.
+	* tree-vect-loop.c (vect_dissolve_slp_only_groups): Use
+	LOOP_VINFO_DATAREFS when possible.
+	(update_epilogue_loop_vinfo): Likewise.
+
+2020-06-15  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.c (riscv_gen_gpr_save_insn): Change type to
+	unsigned for i.
+	(riscv_gpr_save_operation_p): Change type to unsigned for i and
+	len.
+
+2020-06-15   Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/95488
+	* config/i386/i386-expand.c (ix86_expand_vecmul_qihi): New
+	function.
+	* config/i386/i386-protos.h (ix86_expand_vecmul_qihi): Declare.
+	* config/i386/sse.md (mul<mode>3): Drop mask_name since
+	there's no real simd int8 multiplication instruction with
+	mask. Also optimize it under TARGET_AVX512BW.
+	(mulv8qi3): New expander.
+
 2020-06-12  Marco Elver  <elver@google.com>
 
 	* gimplify.c (gimplify_function_tree): Optimize and do not emit

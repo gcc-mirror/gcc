@@ -1,3 +1,9 @@
+2020-06-16  Nicolas Bértolo  <nicolasbertolo@gmail.com>
+
+	* Make-lang.in: Always define version, minor and release
+	numbers. Create the Windows shared library as
+	libgccjit-$(LIBGCCJIT_VERSION_NUM).dll.
+
 2020-06-03  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/95306
