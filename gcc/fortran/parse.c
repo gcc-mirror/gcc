@@ -849,7 +849,7 @@ decode_omp_directive (void)
   /* match is for directives that should be recognized only if
      -fopenmp, matchs for directives that should be recognized
      if either -fopenmp or -fopenmp-simd.
-     Handle only the directives allowed in PURE/ELEMENTAL procedures
+     Handle only the directives allowed in PURE procedures
      first (those also shall not turn off implicit pure).  */
   switch (c)
     {
@@ -868,7 +868,7 @@ decode_omp_directive (void)
   if (flag_openmp && gfc_pure (NULL))
     {
       gfc_error_now ("OpenMP directives other than SIMD or DECLARE TARGET "
-		     "at %C may not appear in PURE or ELEMENTAL procedures");
+		     "at %C may not appear in PURE procedures");
       gfc_error_recovery ();
       return ST_NONE;
     }
