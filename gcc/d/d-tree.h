@@ -560,6 +560,7 @@ extern tree build_memref (tree, tree, tree);
 extern tree build_array_set (tree, tree, tree);
 extern tree build_array_from_val (Type *, tree);
 extern tree void_okay_p (tree);
+extern tree build_array_bounds_call (const Loc &);
 extern tree build_bounds_condition (const Loc &, tree, tree, bool);
 extern bool array_bounds_check (void);
 extern tree bind_expr (tree, tree);

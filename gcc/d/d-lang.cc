@@ -285,6 +285,7 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
   global.params.useOut = CHECKENABLEdefault;
   global.params.useArrayBounds = CHECKENABLEdefault;
   global.params.useSwitchError = CHECKENABLEdefault;
+  global.params.checkAction = CHECKACTION_D;
   global.params.useModuleInfo = true;
   global.params.useTypeInfo = true;
   global.params.useExceptions = true;
@@ -775,7 +776,7 @@ d_post_options (const char ** fn)
       if (!global_options_set.x_flag_exceptions)
 	global.params.useExceptions = false;
 
-      global.params.checkAction = CHECKACTION_halt;
+      global.params.checkAction = CHECKACTION_C;
     }
 
   /* Keep in sync with existing -fbounds-check flag.  */

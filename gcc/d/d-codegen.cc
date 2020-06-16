@@ -1712,6 +1712,26 @@ void_okay_p (tree t)
   return t;
 }
 
+/* Builds a CALL_EXPR at location LOC in the source file to execute when an
+   array bounds check fails.  */
+
+tree
+build_array_bounds_call (const Loc &loc)
+{
+  switch (global.params.checkAction)
+    {
+    case CHECKACTION_D:
+      return d_assert_call (loc, LIBCALL_ARRAY_BOUNDS);
+
+    case CHECKACTION_C:
+    case CHECKACTION_halt:
+      return build_call_expr (builtin_decl_explicit (BUILT_IN_TRAP), 0);
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Builds a bounds condition checking that INDEX is between 0 and LEN.
    The condition returns the INDEX if true, or throws a RangeError.
    If INCLUSIVE, we allow INDEX == LEN to return true also.  */
@@ -1731,9 +1751,7 @@ build_bounds_condition (const Loc& loc, tree index, tree len, bool inclusive)
   tree condition = fold_build2 (inclusive ? GT_EXPR : GE_EXPR,
 				d_bool_type, index, len);
   /* Terminate the program with a trap if no D runtime present.  */
-  tree boundserr = (global.params.checkAction == CHECKACTION_D)
-    ? d_assert_call (loc, LIBCALL_ARRAY_BOUNDS)
-    : build_call_expr (builtin_decl_explicit (BUILT_IN_TRAP), 0);
+  tree boundserr = build_array_bounds_call (loc);
 
   return build_condition (TREE_TYPE (index), condition, boundserr, index);
 }
