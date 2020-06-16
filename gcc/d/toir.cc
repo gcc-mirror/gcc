@@ -564,14 +564,14 @@ public:
   {
     this->start_scope (level_cond);
 
-    /* Build the outer 'if' condition, which may produce temporaries
+    /* Build the outer `if' condition, which may produce temporaries
        requiring scope destruction.  */
     tree ifcond = convert_for_condition (build_expr_dtor (s->condition),
 					 s->condition->type);
     tree ifbody = void_node;
     tree elsebody = void_node;
 
-    /* Build the 'then' branch.  */
+    /* Build the `then' branch.  */
     if (s->ifbody)
       {
 	push_stmt_list ();
@@ -579,7 +579,7 @@ public:
 	ifbody = pop_stmt_list ();
       }
 
-    /* Now build the 'else' branch, which may have nested 'else if' parts.  */
+    /* Now build the `else' branch, which may have nested `else if' parts.  */
     if (s->elsebody)
       {
 	push_stmt_list ();
@@ -627,7 +627,7 @@ public:
 	this->pop_continue_label (lcontinue);
       }
 
-    /* Build the outer 'while' condition, which may produce temporaries
+    /* Build the outer `while' condition, which may produce temporaries
        requiring scope destruction.  */
     tree exitcond = convert_for_condition (build_expr_dtor (s->condition),
 					   s->condition->type);
@@ -885,7 +885,7 @@ public:
 	  {
 	    tree defaultlabel = this->lookup_label (s->sdefault);
 
-	    /* The default label is the last 'else' block.  */
+	    /* The default label is the last `else' block.  */
 	    if (s->hasVars)
 	      {
 		this->do_jump (defaultlabel);
@@ -917,7 +917,7 @@ public:
 
     SWITCH_BREAK_LABEL_P (lbreak) = 1;
 
-    /* If the switch had any 'break' statements, emit the label now.  */
+    /* If the switch had any `break' statements, emit the label now.  */
     this->pop_break_label (lbreak);
     this->finish_scope ();
   }
@@ -968,7 +968,7 @@ public:
       this->build_stmt (s->statement);
   }
 
-  /* Implements 'goto default' by jumping to the label associated with
+  /* Implements `goto default' by jumping to the label associated with
      the DefaultStatement in a switch block.  */
 
   void visit (GotoDefaultStatement *s)
@@ -977,7 +977,7 @@ public:
     this->do_jump (label);
   }
 
-  /* Implements 'goto case' by jumping to the label associated with the
+  /* Implements `goto case' by jumping to the label associated with the
      CaseStatement in a switch block.  */
 
   void visit (GotoCaseStatement *s)
@@ -1112,7 +1112,7 @@ public:
 
     if (s->wthis)
       {
-	/* Perform initialisation of the 'with' handle.  */
+	/* Perform initialisation of the `with' handle.  */
 	ExpInitializer *ie = s->wthis->_init->isExpInitializer ();
 	gcc_assert (ie != NULL);
 
@@ -1127,7 +1127,7 @@ public:
     this->finish_scope ();
   }
 
-  /* Implements 'throw Object'.  Frontend already checks that the object
+  /* Implements `throw Object'.  Frontend already checks that the object
      thrown is a class type, but does not check if it is derived from
      Object.  Foreign objects are not currently supported at run-time.  */
 
@@ -1432,7 +1432,7 @@ public:
        optimization, this could be unset when building in release mode.  */
     ASM_VOLATILE_P (exp) = 1;
 
-    /* If the function has been annotated with 'pragma(inline)', then mark
+    /* If the function has been annotated with `pragma(inline)', then mark
        the asm expression as being inline as well.  */
     if (this->func_->inlining == PINLINEalways)
       ASM_INLINE_P (exp) = 1;

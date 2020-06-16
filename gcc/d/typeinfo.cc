@@ -456,7 +456,7 @@ class TypeInfoVisitor : public Visitor
 	    CONSTRUCTOR_APPEND_ELT (v, size_int (2), value);
 	  }
 
-	/* The 'this' offset.  */
+	/* The `this' offset.  */
 	CONSTRUCTOR_APPEND_ELT (v, size_int (3), size_int (b->offset));
 
 	/* Add to the array of interfaces.  */
@@ -1483,7 +1483,7 @@ create_typeinfo (Type *type, Module *mod)
 	  /* Kinds of TypeInfo that add one extra pointer field.  */
 	  if (tk == TK_SHARED_TYPE)
 	    {
-	      /* Does both 'shared' and 'shared const'.  */
+	      /* Does both `shared' and `shared const'.  */
 	      t->vtinfo = TypeInfoSharedDeclaration::create (t);
 	      ident = Identifier::idPool ("TypeInfo_Shared");
 	    }

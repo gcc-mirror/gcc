@@ -859,7 +859,7 @@ public:
 
     /* Special arguments...  */
 
-    /* 'this' parameter:
+    /* `this' parameter:
        For nested functions, D still generates a vthis, but it
        should not be referenced in any expression.  */
     if (d->vthis)
@@ -1205,7 +1205,7 @@ get_symbol_decl (Declaration *decl)
 	}
       else if (fd->isThis ())
 	{
-	  /* Add an extra argument for the 'this' parameter.  The handle type is
+	  /* Add an extra argument for the `this' parameter.  The handle type is
 	     used even if there is no debug info.  It is needed to make sure
 	     virtual member functions are not called statically.  */
 	  AggregateDeclaration *ad = fd->isMember2 ();
@@ -1226,11 +1226,11 @@ get_symbol_decl (Declaration *decl)
 	}
       else if (fd->isMain () || fd->isCMain ())
 	{
-	  /* The main function is named 'D main' to distinguish from C main.  */
+	  /* The main function is named `D main' to distinguish from C main.  */
 	  if (fd->isMain ())
 	    DECL_NAME (decl->csym) = get_identifier (fd->toPrettyChars (true));
 
-	  /* 'void main' is implicitly converted to returning an int.  */
+	  /* `void main' is implicitly converted to returning an int.  */
 	  newfntype = build_function_type (d_int_type, TYPE_ARG_TYPES (fntype));
 	}
 
@@ -1253,14 +1253,14 @@ get_symbol_decl (Declaration *decl)
 	  DECL_NO_INLINE_WARNING_P (decl->csym) = 1;
 	}
 
-      /* In [pragma/inline], functions decorated with 'pragma(inline)' affects
+      /* In [pragma/inline], functions decorated with `pragma(inline)' affects
 	 whether they are inlined or not.  */
       if (fd->inlining == PINLINEalways)
 	DECL_DECLARED_INLINE_P (decl->csym) = 1;
       else if (fd->inlining == PINLINEnever)
 	DECL_UNINLINABLE (decl->csym) = 1;
 
-      /* Function was declared 'naked'.  */
+      /* Function was declared `naked'.  */
       if (fd->naked)
 	{
 	  insert_decl_attribute (decl->csym, "naked");
@@ -1466,7 +1466,7 @@ get_decl_tree (Declaration *decl)
 			    DECL_LANG_FRAME_FIELD (t));
     }
 
-  /* Get the non-local 'this' value by going through parent link
+  /* Get the non-local `this' value by going through parent link
      of nested classes, this routine pretty much undoes what
      getRightThis in the frontend removes from codegen.  */
   if (vd->parent != fd && vd->isThisDeclaration ())
@@ -1501,9 +1501,9 @@ get_decl_tree (Declaration *decl)
 	  fd = outer->isFuncDeclaration ();
 	  while (fd != NULL)
 	    {
-	      /* If outer function creates a closure, then the 'this'
+	      /* If outer function creates a closure, then the `this'
 		 value would be the closure pointer, and the real
-		 'this' the first field of that closure.  */
+		 `this' the first field of that closure.  */
 	      tree ff = get_frameinfo (fd);
 	      if (FRAMEINFO_CREATES_FRAME (ff))
 		{
@@ -1900,7 +1900,7 @@ start_function (FuncDeclaration *fd)
   cfun->language = ggc_cleared_alloc<language_function> ();
   cfun->language->function = fd;
 
-  /* Default chain value is 'null' unless parent found.  */
+  /* Default chain value is `null' unless parent found.  */
   cfun->language->static_chain = null_pointer_node;
 
   /* Find module for this function.  */
@@ -2194,7 +2194,7 @@ build_new_class_expr (ClassReferenceExp *expr)
 
 /* Get the VAR_DECL of the static initializer symbol for the struct/class DECL.
    If this does not yet exist, create it.  The static initializer data is
-   accessible via TypeInfo, and is also used in 'new class' and default
+   accessible via TypeInfo, and is also used in `new class' and default
    initializing struct literals.  */
 
 tree

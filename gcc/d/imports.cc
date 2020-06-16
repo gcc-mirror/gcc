@@ -202,7 +202,7 @@ build_import_decl (Dsymbol *d)
       input_location = saved_location;
     }
 
-  /* Not all visitors set 'isym'.  */
+  /* Not all visitors set `isym'.  */
   return d->isym ? d->isym : NULL_TREE;
 }
 

@@ -222,7 +222,7 @@ build_frontend_type (tree type)
 	Identifier::idPool (IDENTIFIER_POINTER (TYPE_IDENTIFIER (type))) : NULL;
 
       /* Neither the `object' and `gcc.builtins' modules will not exist when
-	 this is called.  Use a stub 'object' module parent in the meantime.
+	 this is called.  Use a stub `object' module parent in the meantime.
 	 If `gcc.builtins' is later imported, the parent will be overridden
 	 with the correct module symbol.  */
       static Identifier *object = Identifier::idPool ("object");

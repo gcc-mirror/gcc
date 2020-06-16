@@ -106,7 +106,7 @@ same_type_p (Type *t1, Type *t2)
   return false;
 }
 
-/* Returns 'Object' type which all D classes are derived from.  */
+/* Returns `Object' type which all D classes are derived from.  */
 
 Type *
 get_object_type (void)
@@ -204,7 +204,7 @@ insert_type_modifiers (tree type, unsigned mod)
 
   tree qualtype = build_qualified_type (type, quals);
 
-  /* Mark whether the type is qualified 'shared'.  */
+  /* Mark whether the type is qualified `shared'.  */
   if (mod & MODshared)
     TYPE_SHARED (qualtype) = 1;
 
