@@ -99,7 +99,7 @@ Port::isFloat64LiteralOutOfRange (const char *buffer)
 unsigned
 Port::readwordLE (const void *buffer)
 {
-  const unsigned char *p = (const unsigned char*) buffer;
+  const unsigned char *p = (const unsigned char *) buffer;
 
   return ((unsigned) p[1] << 8) | (unsigned) p[0];
 }
@@ -109,7 +109,7 @@ Port::readwordLE (const void *buffer)
 unsigned
 Port::readwordBE (const void *buffer)
 {
-  const unsigned char *p = (const unsigned char*) buffer;
+  const unsigned char *p = (const unsigned char *) buffer;
 
   return ((unsigned) p[0] << 8) | (unsigned) p[1];
 }
@@ -119,7 +119,7 @@ Port::readwordBE (const void *buffer)
 unsigned
 Port::readlongLE (const void *buffer)
 {
-  const unsigned char *p = (const unsigned char*) buffer;
+  const unsigned char *p = (const unsigned char *) buffer;
 
   return (((unsigned) p[3] << 24)
 	  | ((unsigned) p[2] << 16)
@@ -132,7 +132,7 @@ Port::readlongLE (const void *buffer)
 unsigned
 Port::readlongBE (const void *buffer)
 {
-  const unsigned char *p = (const unsigned char*) buffer;
+  const unsigned char *p = (const unsigned char *) buffer;
 
   return (((unsigned) p[0] << 24)
 	  | ((unsigned) p[1] << 16)

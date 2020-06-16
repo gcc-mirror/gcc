@@ -254,7 +254,7 @@ build_attributes (Expressions *eattrs)
 	continue;
 
       /* Attribute symbol must come from the `gcc.attribute' module.  */
-      Dsymbol *mod = (Dsymbol*) sym->getModule ();
+      Dsymbol *mod = (Dsymbol *) sym->getModule ();
       if (!(strcmp (mod->toChars (), "attribute") == 0
 	    && mod->parent != NULL
 	    && strcmp (mod->parent->toChars (), "gcc") == 0
@@ -643,7 +643,7 @@ d_handle_forceinline_attribute (tree *node, tree name,
       tree attributes = DECL_ATTRIBUTES (*node);
 
       /* Push attribute always_inline.  */
-      if (! lookup_attribute ("always_inline", attributes))
+      if (!lookup_attribute ("always_inline", attributes))
 	DECL_ATTRIBUTES (*node) = tree_cons (get_identifier ("always_inline"),
 					     NULL_TREE, attributes);
 
@@ -692,7 +692,7 @@ d_handle_target_attribute (tree *node, tree name, tree args, int flags,
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
-  else if (! targetm.target_option.valid_attribute_p (*node, name, args, flags))
+  else if (!targetm.target_option.valid_attribute_p (*node, name, args, flags))
     *no_add_attrs = true;
 
   return NULL_TREE;
@@ -713,7 +713,7 @@ d_handle_noclone_attribute (tree *node, tree name,
       tree attributes = DECL_ATTRIBUTES (*node);
 
       /* Push attribute noclone.  */
-      if (! lookup_attribute ("noclone", attributes))
+      if (!lookup_attribute ("noclone", attributes))
 	DECL_ATTRIBUTES (*node) = tree_cons (get_identifier ("noclone"),
 					     NULL_TREE, attributes);
     }
@@ -810,7 +810,7 @@ d_handle_alias_attribute (tree *node, tree ARG_UNUSED (name),
       /* A static variable declaration is always a tentative definition,
 	 but the alias is a non-tentative definition which overrides.  */
       || (TREE_CODE (decl) != FUNCTION_DECL
-	  && ! TREE_PUBLIC (decl) && DECL_INITIAL (decl)))
+	  && !TREE_PUBLIC (decl) && DECL_INITIAL (decl)))
     {
       error ("%q+D defined both normally and as %qE attribute", decl, name);
       *no_add_attrs = true;

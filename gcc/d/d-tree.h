@@ -41,7 +41,7 @@ struct Scope;
 struct Loc;
 
 template <typename TYPE> struct Array;
-typedef Array<Expression *> Expressions;
+typedef Array <Expression *> Expressions;
 
 /* Usage of TREE_LANG_FLAG_?:
    0: METHOD_CALL_EXPR
@@ -234,13 +234,13 @@ struct GTY(()) language_function
 
   /* Stack of statement lists being collected while we are
      compiling the function.  */
-  vec<tree, va_gc> *stmt_list;
+  vec <tree, va_gc> *stmt_list;
 
   /* Variables that are in scope that will need destruction later.  */
-  vec<tree, va_gc> *vars_in_scope;
+  vec <tree, va_gc> *vars_in_scope;
 
   /* Table of all used or defined labels in the function.  */
-  hash_map<Statement *, d_label_entry> *labels;
+  hash_map <Statement *, d_label_entry> *labels;
 };
 
 /* The D front end types have not been integrated into the GCC garbage
@@ -536,7 +536,7 @@ extern tree build_struct_comparison (tree_code, StructDeclaration *,
 				     tree, tree);
 extern tree build_array_struct_comparison (tree_code, StructDeclaration *,
 					   tree, tree, tree);
-extern tree build_struct_literal (tree, vec<constructor_elt, va_gc> *);
+extern tree build_struct_literal (tree, vec <constructor_elt, va_gc> *);
 extern tree component_ref (tree, tree);
 extern tree build_assign (tree_code, tree, tree);
 extern tree modify_expr (tree, tree);

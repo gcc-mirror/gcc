@@ -125,7 +125,7 @@ Loc::toChars (void) const
 }
 
 bool
-Loc::equals (const Loc& loc)
+Loc::equals (const Loc &loc)
 {
   if (this->linnum != loc.linnum || this->charnum != loc.charnum)
     return false;

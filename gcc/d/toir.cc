@@ -68,7 +68,7 @@ pop_binding_label (Statement * const &, d_label_entry *ent, binding_level *bl)
    go out of scope.  Queue them in LABELS.  */
 
 bool
-pop_label (Statement * const &, d_label_entry *ent, vec<tree> &labels)
+pop_label (Statement * const &, d_label_entry *ent, vec <tree> &labels)
 {
   if (!ent->bc_label)
     {
@@ -93,7 +93,7 @@ void
 push_binding_level (level_kind kind)
 {
   /* Add it to the front of currently active scopes stack.  */
-  binding_level *new_level = ggc_cleared_alloc<binding_level> ();
+  binding_level *new_level = ggc_cleared_alloc <binding_level> ();
   new_level->level_chain = current_binding_level;
   new_level->kind = kind;
 
@@ -103,8 +103,8 @@ push_binding_level (level_kind kind)
 static int
 cmp_labels (const void *p1, const void *p2)
 {
-  const tree *l1 = (const tree *)p1;
-  const tree *l2 = (const tree *)p2;
+  const tree *l1 = (const tree *) p1;
+  const tree *l2 = (const tree *) p2;
   return DECL_UID (*l1) - DECL_UID (*l2);
 }
 
@@ -131,8 +131,9 @@ pop_binding_level (void)
       /* Pop all the labels declared in the function.  */
       if (d_function_chain->labels)
 	{
-	  auto_vec<tree> labels;
-	  d_function_chain->labels->traverse<vec<tree> &, &pop_label> (labels);
+	  auto_vec <tree> labels;
+	  d_function_chain->labels->traverse <vec <tree> &,
+					      &pop_label> (labels);
 	  d_function_chain->labels->empty ();
 	  labels.qsort (cmp_labels);
 	  for (unsigned i = 0; i < labels.length (); ++i)
@@ -149,7 +150,7 @@ pop_binding_level (void)
       if (d_function_chain && d_function_chain->labels)
 	{
 	  language_function *f = d_function_chain;
-	  f->labels->traverse<binding_level *, &pop_binding_label> (level);
+	  f->labels->traverse <binding_level *, &pop_binding_label> (level);
 	}
 
       current_binding_level->blocks
@@ -292,7 +293,7 @@ public:
     tree block = pop_binding_level ();
     tree body = pop_stmt_list ();
 
-    if (! BLOCK_VARS (block))
+    if (!BLOCK_VARS (block))
       return body;
 
     tree bind = build3 (BIND_EXPR, void_type_node,
@@ -371,9 +372,9 @@ public:
     gcc_assert (ent != NULL);
 
     /* If the label hasn't been defined yet, defer checking.  */
-    if (! DECL_INITIAL (ent->label))
+    if (!DECL_INITIAL (ent->label))
       {
-	d_label_use_entry *fwdref = ggc_alloc<d_label_use_entry> ();
+	d_label_use_entry *fwdref = ggc_alloc <d_label_use_entry> ();
 	fwdref->level = current_binding_level;
 	fwdref->statement = from;
 	fwdref->next = ent->fwdrefs;
@@ -446,7 +447,7 @@ public:
     if (!d_function_chain->labels)
       {
 	d_function_chain->labels
-	  = hash_map<Statement *, d_label_entry>::create_ggc (13);
+	  = hash_map <Statement *, d_label_entry>::create_ggc (13);
       }
 
     d_label_entry *ent = d_function_chain->labels->get (s);
@@ -461,7 +462,7 @@ public:
 	DECL_MODE (decl) = VOIDmode;
 
 	/* Create new empty slot.  */
-	ent = ggc_cleared_alloc<d_label_entry> ();
+	ent = ggc_cleared_alloc <d_label_entry> ();
 	ent->statement = s;
 	ent->label = decl;
 
@@ -813,7 +814,7 @@ public:
 	/* Apparently the backend is supposed to sort and set the indexes
 	   on the case array, have to change them to be usable.  */
 	Type *satype = condtype->sarrayOf (s->cases->length);
-	vec<constructor_elt, va_gc> *elms = NULL;
+	vec <constructor_elt, va_gc> *elms = NULL;
 
 	s->cases->sort ();
 
