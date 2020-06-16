@@ -11532,10 +11532,6 @@ perform_instantiation_time_access_checks (tree tmpl, tree targs)
 	tree diag_decl = chk->diag_decl;
 	tree type_scope = TREE_TYPE (chk->binfo);
 
-	if (uses_template_parms (decl)
-	    || (TREE_CODE (decl) == FIELD_DECL
-		&& uses_template_parms (DECL_CONTEXT (decl))))
-	  decl = tsubst_copy (decl, targs, tf_error, NULL_TREE);
 	if (uses_template_parms (type_scope))
 	  type_scope = tsubst (type_scope, targs, tf_error, NULL_TREE);
 
