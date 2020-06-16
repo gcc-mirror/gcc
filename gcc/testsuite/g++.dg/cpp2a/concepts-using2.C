@@ -10,7 +10,7 @@ template <typename b> using g = typename f<b>::e;
 struct b;
 template <typename b> struct f { using e = b; };
 template <typename ai> struct m { typedef g<ai> aj; };
-template <typename b> class n { typedef typename m<b>::aj e; };
+template <typename b> struct n { typedef typename m<b>::aj e; };
 template <typename b> using an = typename n<b>::e;
 template <typename> constexpr bool ao = c<true>::d;
 template <typename> constexpr bool i = c<1>::d;
@@ -38,7 +38,7 @@ template <typename da> concept de = dd<da>;
 struct {
   template <de da, typename b> void operator()(da, b);
 } di;
-class p {
+struct p {
   void begin();
 };
 template <typename> using df = p;

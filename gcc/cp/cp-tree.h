@@ -6339,9 +6339,6 @@ class access_failure_info
 };
 
 extern void complain_about_access		(tree, tree, bool);
-extern bool enforce_access			(tree, tree, tree,
-						 tsubst_flags_t,
-						 access_failure_info *afi = NULL);
 extern void push_defarg_context			(tree);
 extern void pop_defarg_context			(void);
 extern tree convert_default_arg			(tree, tree, tree, int,
@@ -6939,7 +6936,6 @@ extern tree make_pack_expansion                 (tree, tsubst_flags_t = tf_warni
 extern bool check_for_bare_parameter_packs      (tree, location_t = UNKNOWN_LOCATION);
 extern tree build_template_info			(tree, tree);
 extern tree get_template_info			(const_tree);
-extern vec<qualified_typedef_usage_t, va_gc> *get_types_needing_access_check (tree);
 extern int template_class_depth			(tree);
 extern int is_specialization_of			(tree, tree);
 extern bool is_specialization_of_friend		(tree, tree);
@@ -7257,8 +7253,6 @@ extern void finish_mem_initializers		(tree);
 extern tree check_template_template_default_arg (tree);
 extern bool expand_or_defer_fn_1		(tree);
 extern void expand_or_defer_fn			(tree);
-extern void add_typedef_to_current_template_for_access_check (tree, tree,
-							      location_t);
 extern bool check_accessibility_of_qualified_id (tree, tree, tree, tsubst_flags_t);
 extern tree finish_qualified_id_expr		(tree, tree, bool, bool,
 						 bool, bool, tsubst_flags_t);

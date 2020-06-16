@@ -6,7 +6,7 @@ template <typename> struct A { typedef int type; };
 struct B {
   typedef __SIZE_TYPE__ H;
 };
-template <typename> class allocator : B {};
+template <typename> class allocator : public B {};
 template <typename _Alloc> struct C {
   template <typename T>
   static typename T::H foo(T *);

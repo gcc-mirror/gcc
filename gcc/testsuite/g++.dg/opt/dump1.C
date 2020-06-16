@@ -396,7 +396,7 @@ namespace std __attribute__ ((__visibility__ ("default")))
     ;
   template<typename _Signature>
     class function;
-  class _Function_base
+  struct _Function_base
   {
     template<typename _Functor>
       class _Base_manager
