@@ -19452,7 +19452,8 @@ package body Sem_Prag is
             --  Otherwise the pragma is associated with an illegal construct
 
             else
-               Error_Pragma ("pragma % must apply to a protected entry");
+               Error_Pragma
+                 ("pragma % must apply to a protected entry declaration");
                return;
             end if;
 
