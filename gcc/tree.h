@@ -1465,6 +1465,11 @@ class auto_suppress_location_wrappers
   != UNKNOWN_LOCATION)
 #define OMP_CLAUSE_LOCATION(NODE)  (OMP_CLAUSE_CHECK (NODE))->omp_clause.locus
 
+/* True on OMP_FOR and other OpenMP/OpenACC looping constructs if the loop nest
+   is non-rectangular.  */
+#define OMP_FOR_NON_RECTANGULAR(NODE) \
+  (OMP_LOOPING_CHECK (NODE)->base.private_flag)
+
 /* True on an OMP_SECTION statement that was the last lexical member.
    This status is meaningful in the implementation of lastprivate.  */
 #define OMP_SECTION_LAST(NODE) \

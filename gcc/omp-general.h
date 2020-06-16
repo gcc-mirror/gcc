@@ -43,11 +43,16 @@ enum oacc_loop_flags {
 };
 
 /* A structure holding the elements of:
-   for (V = N1; V cond N2; V += STEP) [...] */
+   for (V = N1; V cond N2; V += STEP) [...]
+   or for non-rectangular loops:
+   for (V = M1 * W + N1; V cond M2 * W + N2; V += STEP;
+   where W is V of the OUTER-th loop (e.g. for OUTER 1 it is the
+   the index of the immediately surrounding loop).  */
 
 struct omp_for_data_loop
 {
-  tree v, n1, n2, step;
+  tree v, n1, n2, step, m1, m2;
+  int outer;
   enum tree_code cond_code;
 };
 
@@ -64,6 +69,7 @@ struct omp_for_data
   int ordered;
   bool have_nowait, have_ordered, simd_schedule, have_reductemp;
   bool have_pointer_condtemp, have_scantemp, have_nonctrl_scantemp;
+  bool non_rect;
   int lastprivate_conditional;
   unsigned char sched_modifiers;
   enum omp_clause_schedule_kind sched_kind;

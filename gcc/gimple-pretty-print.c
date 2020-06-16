@@ -1512,8 +1512,11 @@ dump_gimple_omp_for (pretty_printer *buffer, const gomp_for *gs, int spc,
 	  dump_generic_node (buffer, gimple_omp_for_index (gs, i), spc,
 			     flags, false);
 	  pp_string (buffer, " = ");
-	  dump_generic_node (buffer, gimple_omp_for_initial (gs, i), spc,
-			     flags, false);
+	  tree init = gimple_omp_for_initial (gs, i);
+	  if (TREE_CODE (init) != TREE_VEC)
+	    dump_generic_node (buffer, init, spc, flags, false);
+	  else
+	    dump_omp_loop_non_rect_expr (buffer, init, spc, flags);
 	  pp_string (buffer, "; ");
 
 	  dump_generic_node (buffer, gimple_omp_for_index (gs, i), spc,
@@ -1540,8 +1543,11 @@ dump_gimple_omp_for (pretty_printer *buffer, const gomp_for *gs, int spc,
 	      gcc_unreachable ();
 	    }
 	  pp_space (buffer);
-	  dump_generic_node (buffer, gimple_omp_for_final (gs, i), spc,
-			     flags, false);
+	  tree cond = gimple_omp_for_final (gs, i);
+	  if (TREE_CODE (cond) != TREE_VEC)
+	    dump_generic_node (buffer, cond, spc, flags, false);
+	  else
+	    dump_omp_loop_non_rect_expr (buffer, cond, spc, flags);
 	  pp_string (buffer, "; ");
 
 	  dump_generic_node (buffer, gimple_omp_for_index (gs, i), spc,

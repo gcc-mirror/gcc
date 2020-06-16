@@ -1196,7 +1196,7 @@ extern void c_finish_omp_taskyield (location_t);
 extern tree c_finish_omp_for (location_t, enum tree_code, tree, tree, tree,
 			      tree, tree, tree, tree, bool);
 extern bool c_omp_check_loop_iv (tree, tree, walk_tree_lh);
-extern bool c_omp_check_loop_iv_exprs (location_t, tree, tree, tree, tree,
+extern bool c_omp_check_loop_iv_exprs (location_t, tree, int, tree, tree, tree,
 				       walk_tree_lh);
 extern tree c_finish_oacc_wait (location_t, tree, tree);
 extern tree c_oacc_split_loop_clauses (tree, tree *, bool);

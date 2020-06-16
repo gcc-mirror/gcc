@@ -6532,14 +6532,22 @@ expand_omp_for (struct omp_region *region, gimple *inner_stmt)
     loops_state_set (LOOPS_NEED_FIXUP);
 
   if (gimple_omp_for_kind (fd.for_stmt) == GF_OMP_FOR_KIND_SIMD)
-    expand_omp_simd (region, &fd);
+    {
+      if (fd.non_rect)
+	sorry_at (gimple_location (fd.for_stmt),
+		  "non-rectangular %<simd%> not supported yet");
+      expand_omp_simd (region, &fd);
+    }
   else if (gimple_omp_for_kind (fd.for_stmt) == GF_OMP_FOR_KIND_OACC_LOOP)
     {
-      gcc_assert (!inner_stmt);
+      gcc_assert (!inner_stmt && !fd.non_rect);
       expand_oacc_for (region, &fd);
     }
   else if (gimple_omp_for_kind (fd.for_stmt) == GF_OMP_FOR_KIND_TASKLOOP)
     {
+      if (fd.non_rect)
+	sorry_at (gimple_location (fd.for_stmt),
+		  "non-rectangular %<taskloop%> not supported yet");
       if (gimple_omp_for_combined_into_p (fd.for_stmt))
 	expand_omp_taskloop_for_inner (region, &fd, inner_stmt);
       else
@@ -6548,6 +6556,9 @@ expand_omp_for (struct omp_region *region, gimple *inner_stmt)
   else if (fd.sched_kind == OMP_CLAUSE_SCHEDULE_STATIC
 	   && !fd.have_ordered)
     {
+      if (fd.non_rect)
+	sorry_at (gimple_location (fd.for_stmt),
+		  "non-rectangular OpenMP loops not supported yet");
       if (fd.chunk_size == NULL)
 	expand_omp_for_static_nochunk (region, &fd, inner_stmt);
       else
@@ -6560,7 +6571,7 @@ expand_omp_for (struct omp_region *region, gimple *inner_stmt)
       tree sched_arg = NULL_TREE;
 
       gcc_assert (gimple_omp_for_kind (fd.for_stmt)
-		  == GF_OMP_FOR_KIND_FOR);
+		  == GF_OMP_FOR_KIND_FOR && !fd.non_rect);
       if (fd.chunk_size == NULL
 	  && fd.sched_kind == OMP_CLAUSE_SCHEDULE_STATIC)
 	fd.chunk_size = integer_zero_node;

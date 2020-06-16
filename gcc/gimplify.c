@@ -11182,7 +11182,26 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
   switch (TREE_CODE (for_stmt))
     {
     case OMP_FOR:
+      if (OMP_FOR_NON_RECTANGULAR (inner_for_stmt ? inner_for_stmt : for_stmt))
+	{
+	  if (omp_find_clause (OMP_FOR_CLAUSES (for_stmt),
+			       OMP_CLAUSE_SCHEDULE))
+	    error_at (EXPR_LOCATION (for_stmt),
+		      "%qs clause may not appear on non-rectangular %qs",
+		      "schedule", "for");
+	  if (omp_find_clause (OMP_FOR_CLAUSES (for_stmt), OMP_CLAUSE_ORDERED))
+	    error_at (EXPR_LOCATION (for_stmt),
+		      "%qs clause may not appear on non-rectangular %qs",
+		      "ordered", "for");
+	}
+      break;
     case OMP_DISTRIBUTE:
+      if (OMP_FOR_NON_RECTANGULAR (inner_for_stmt ? inner_for_stmt : for_stmt)
+	  && omp_find_clause (OMP_FOR_CLAUSES (for_stmt),
+			      OMP_CLAUSE_DIST_SCHEDULE))
+	error_at (EXPR_LOCATION (for_stmt),
+		  "%qs clause may not appear on non-rectangular %qs",
+		  "dist_schedule", "distribute");
       break;
     case OACC_LOOP:
       ort = ORT_ACC;
@@ -11757,8 +11776,18 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
       else
 	var = decl;
 
-      tret = gimplify_expr (&TREE_OPERAND (t, 1), &for_pre_body, NULL,
-			    is_gimple_val, fb_rvalue, false);
+      if (TREE_CODE (TREE_OPERAND (t, 1)) == TREE_VEC)
+	{
+	  tree lb = TREE_OPERAND (t, 1);
+	  tret = gimplify_expr (&TREE_VEC_ELT (lb, 1), &for_pre_body, NULL,
+				is_gimple_val, fb_rvalue, false);
+	  ret = MIN (ret, tret);
+	  tret = gimplify_expr (&TREE_VEC_ELT (lb, 2), &for_pre_body, NULL,
+				is_gimple_val, fb_rvalue, false);
+	}
+      else
+	tret = gimplify_expr (&TREE_OPERAND (t, 1), &for_pre_body, NULL,
+			      is_gimple_val, fb_rvalue, false);
       ret = MIN (ret, tret);
       if (ret == GS_ERROR)
 	return ret;
@@ -11768,8 +11797,18 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
       gcc_assert (COMPARISON_CLASS_P (t));
       gcc_assert (TREE_OPERAND (t, 0) == decl);
 
-      tret = gimplify_expr (&TREE_OPERAND (t, 1), &for_pre_body, NULL,
-			    is_gimple_val, fb_rvalue, false);
+      if (TREE_CODE (TREE_OPERAND (t, 1)) == TREE_VEC)
+	{
+	  tree ub = TREE_OPERAND (t, 1);
+	  tret = gimplify_expr (&TREE_VEC_ELT (ub, 1), &for_pre_body, NULL,
+				is_gimple_val, fb_rvalue, false);
+	  ret = MIN (ret, tret);
+	  tret = gimplify_expr (&TREE_VEC_ELT (ub, 2), &for_pre_body, NULL,
+				is_gimple_val, fb_rvalue, false);
+	}
+      else
+	tret = gimplify_expr (&TREE_OPERAND (t, 1), &for_pre_body, NULL,
+			      is_gimple_val, fb_rvalue, false);
       ret = MIN (ret, tret);
 
       /* Handle OMP_FOR_INCR.  */
@@ -11911,6 +11950,20 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 		pop_gimplify_context (bind);
 	      }
 	}
+      if (OMP_FOR_NON_RECTANGULAR (for_stmt) && var != decl)
+	for (int j = i + 1; j < TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)); j++)
+	  {
+	    t = TREE_VEC_ELT (OMP_FOR_INIT (for_stmt), j);
+	    gcc_assert (TREE_CODE (t) == MODIFY_EXPR);
+	    if (TREE_CODE (TREE_OPERAND (t, 1)) == TREE_VEC
+		&& TREE_VEC_ELT (TREE_OPERAND (t, 1), 0) == decl)
+	      TREE_VEC_ELT (TREE_OPERAND (t, 1), 0) = var;
+	    t = TREE_VEC_ELT (OMP_FOR_COND (for_stmt), j);
+	    gcc_assert (COMPARISON_CLASS_P (t));
+	    if (TREE_CODE (TREE_OPERAND (t, 1)) == TREE_VEC
+		&& TREE_VEC_ELT (TREE_OPERAND (t, 1), 0) == decl)
+	      TREE_VEC_ELT (TREE_OPERAND (t, 1), 0) = var;
+	  }
     }
 
   BITMAP_FREE (has_decl_expr);
@@ -11955,6 +12008,27 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	t = TREE_VEC_ELT (OMP_FOR_INCR (for_stmt), i);
 	TREE_OPERAND (t, 1) = copy_node (TREE_OPERAND (t, 1));
 	TREE_OPERAND (TREE_OPERAND (t, 1), 0) = var;
+	if (OMP_FOR_NON_RECTANGULAR (for_stmt))
+	  for (int j = i + 1;
+	       j < TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)); j++)
+	    {
+	      t = TREE_VEC_ELT (OMP_FOR_INIT (for_stmt), j);
+	      gcc_assert (TREE_CODE (t) == MODIFY_EXPR);
+	      if (TREE_CODE (TREE_OPERAND (t, 1)) == TREE_VEC
+		  && TREE_VEC_ELT (TREE_OPERAND (t, 1), 0) == decl)
+		{
+		  TREE_OPERAND (t, 1) = copy_node (TREE_OPERAND (t, 1));
+		  TREE_VEC_ELT (TREE_OPERAND (t, 1), 0) = var;
+		}
+	      t = TREE_VEC_ELT (OMP_FOR_COND (for_stmt), j);
+	      gcc_assert (COMPARISON_CLASS_P (t));
+	      if (TREE_CODE (TREE_OPERAND (t, 1)) == TREE_VEC
+		  && TREE_VEC_ELT (TREE_OPERAND (t, 1), 0) == decl)
+		{
+		  TREE_OPERAND (t, 1) = copy_node (TREE_OPERAND (t, 1));
+		  TREE_VEC_ELT (TREE_OPERAND (t, 1), 0) = var;
+		}
+	  }
       }
 
   gimplify_adjust_omp_clauses (pre_p, for_body,

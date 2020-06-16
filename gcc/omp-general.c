@@ -201,6 +201,7 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
   fd->have_pointer_condtemp = false;
   fd->have_scantemp = false;
   fd->have_nonctrl_scantemp = false;
+  fd->non_rect = false;
   fd->lastprivate_conditional = 0;
   fd->tiling = NULL_TREE;
   fd->collapse = 1;
@@ -330,12 +331,45 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 		  || TREE_CODE (TREE_TYPE (loop->v)) == POINTER_TYPE);
       var = TREE_CODE (loop->v) == SSA_NAME ? SSA_NAME_VAR (loop->v) : loop->v;
       loop->n1 = gimple_omp_for_initial (for_stmt, i);
+      loop->m1 = NULL_TREE;
+      loop->m2 = NULL_TREE;
+      loop->outer = 0;
+      if (TREE_CODE (loop->n1) == TREE_VEC)
+	{
+	  for (int j = i - 1; j >= 0; j--)
+	    if (TREE_VEC_ELT (loop->n1, 0) == gimple_omp_for_index (for_stmt, j))
+	      {
+		loop->outer = i - j;
+		break;
+	      }
+	  gcc_assert (loop->outer);
+	  loop->m1 = TREE_VEC_ELT (loop->n1, 1);
+	  loop->n1 = TREE_VEC_ELT (loop->n1, 2);
+	  fd->non_rect = true;
+	}
 
       loop->cond_code = gimple_omp_for_cond (for_stmt, i);
       loop->n2 = gimple_omp_for_final (for_stmt, i);
       gcc_assert (loop->cond_code != NE_EXPR
 		  || (gimple_omp_for_kind (for_stmt)
 		      != GF_OMP_FOR_KIND_OACC_LOOP));
+      if (TREE_CODE (loop->n2) == TREE_VEC)
+	{
+	  if (loop->outer)
+	    gcc_assert (TREE_VEC_ELT (loop->n2, 0)
+			== gimple_omp_for_index (for_stmt, i - loop->outer));
+	  else
+	    for (int j = i - 1; j >= 0; j--)
+	      if (TREE_VEC_ELT (loop->n2, 0) == gimple_omp_for_index (for_stmt, j))
+		{
+		  loop->outer = i - j;
+		  break;
+		}
+	  gcc_assert (loop->outer);
+	  loop->m2 = TREE_VEC_ELT (loop->n2, 1);
+	  loop->n2 = TREE_VEC_ELT (loop->n2, 2);
+	  fd->non_rect = true;
+	}
 
       t = gimple_omp_for_incr (for_stmt, i);
       gcc_assert (TREE_OPERAND (t, 0) == var);
@@ -357,6 +391,10 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 	      = build_nonstandard_integer_type
 		  (TYPE_PRECISION (TREE_TYPE (loop->v)), 1);
 	}
+      else if (loop->m1 || loop->m2)
+	/* Non-rectangular loops should use static schedule and no
+	   ordered clause.  */
+	gcc_unreachable ();
       else if (iter_type != long_long_unsigned_type_node)
 	{
 	  if (POINTER_TYPE_P (TREE_TYPE (loop->v)))
@@ -406,13 +444,18 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 
       if (collapse_count && *collapse_count == NULL)
 	{
-	  t = fold_binary (loop->cond_code, boolean_type_node,
-			   fold_convert (TREE_TYPE (loop->v), loop->n1),
-			   fold_convert (TREE_TYPE (loop->v), loop->n2));
+	  if (loop->m1 || loop->m2)
+	    t = NULL_TREE;
+	  else
+	    t = fold_binary (loop->cond_code, boolean_type_node,
+			     fold_convert (TREE_TYPE (loop->v), loop->n1),
+			     fold_convert (TREE_TYPE (loop->v), loop->n2));
 	  if (t && integer_zerop (t))
 	    count = build_zero_cst (long_long_unsigned_type_node);
 	  else if ((i == 0 || count != NULL_TREE)
 		   && TREE_CODE (TREE_TYPE (loop->v)) == INTEGER_TYPE
+		   && loop->m1 == NULL_TREE
+		   && loop->m2 == NULL_TREE
 		   && TREE_CONSTANT (loop->n1)
 		   && TREE_CONSTANT (loop->n2)
 		   && TREE_CODE (loop->step) == INTEGER_CST)
@@ -486,6 +529,9 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
       fd->loop.n1 = build_int_cst (TREE_TYPE (fd->loop.v), 0);
       fd->loop.n2 = *collapse_count;
       fd->loop.step = build_int_cst (TREE_TYPE (fd->loop.v), 1);
+      fd->loop.m1 = NULL_TREE;
+      fd->loop.m2 = NULL_TREE;
+      fd->loop.outer = 0;
       fd->loop.cond_code = LT_EXPR;
     }
   else if (loops)
