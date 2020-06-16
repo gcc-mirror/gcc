@@ -1,3 +1,9 @@
+2020-06-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR lto/94848
+	PR middle-end/95551
+	* testsuite/libgomp.fortran/target-var.f90: New test.
+
 2020-06-05  Thomas Schwinge  <thomas@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 
