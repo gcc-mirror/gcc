@@ -14782,6 +14782,7 @@ c_parser_omp_clause_schedule (c_parser *parser, tree list)
 
   c = build_omp_clause (loc, OMP_CLAUSE_SCHEDULE);
 
+  location_t comma = UNKNOWN_LOCATION;
   while (c_parser_next_token_is (parser, CPP_NAME))
     {
       tree kind = c_parser_peek_token (parser)->value;
@@ -14794,16 +14795,22 @@ c_parser_omp_clause_schedule (c_parser *parser, tree list)
 	modifiers |= OMP_CLAUSE_SCHEDULE_NONMONOTONIC;
       else
 	break;
+      comma = UNKNOWN_LOCATION;
       c_parser_consume_token (parser);
       if (nmodifiers++ == 0
 	  && c_parser_next_token_is (parser, CPP_COMMA))
-	c_parser_consume_token (parser);
+	{
+	  comma = c_parser_peek_token (parser)->location;
+	  c_parser_consume_token (parser);
+	}
       else
 	{
 	  c_parser_require (parser, CPP_COLON, "expected %<:%>");
 	  break;
 	}
     }
+  if (comma != UNKNOWN_LOCATION)
+    error_at (comma, "expected %<:%>");
 
   if ((modifiers & (OMP_CLAUSE_SCHEDULE_MONOTONIC
 		    | OMP_CLAUSE_SCHEDULE_NONMONOTONIC))
