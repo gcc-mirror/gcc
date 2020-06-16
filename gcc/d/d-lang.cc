@@ -1271,6 +1271,7 @@ d_parse_file (void)
   if (d_option.deps)
     {
       OutBuffer buf;
+      FILE *deps_stream;
 
       for (size_t i = 0; i < modules.length; i++)
 	deps_write (modules[i], &buf);
@@ -1281,13 +1282,25 @@ d_parse_file (void)
 
       if (d_option.deps_filename)
 	{
-	  File *fdeps = File::create (d_option.deps_filename);
-	  fdeps->setbuffer ((void *) buf.data, buf.offset);
-	  fdeps->ref = 1;
-	  writeFile (Loc (), fdeps);
+	  deps_stream = fopen (d_option.deps_filename, "w");
+	  if (!deps_stream)
+	    {
+	      fatal_error (input_location, "opening dependency file %s: %m",
+			   d_option.deps_filename);
+	      goto had_errors;
+	    }
 	}
       else
-	message ("%.*s", (int) buf.offset, (char *) buf.data);
+	deps_stream = stdout;
+
+      fprintf (deps_stream, "%s", buf.peekChars ());
+
+      if (deps_stream != stdout
+	  && (ferror (deps_stream) || fclose (deps_stream)))
+	{
+	  fatal_error (input_location, "closing dependency file %s: %m",
+		       d_option.deps_filename);
+	}
     }
 
   /* Generate JSON files.  */
@@ -1297,18 +1310,27 @@ d_parse_file (void)
       json_generate (&buf, &modules);
 
       const char *name = global.params.jsonfilename.ptr;
+      FILE *json_stream;
 
       if (name && (name[0] != '-' || name[1] != '\0'))
 	{
 	  const char *nameext
 	    = FileName::defaultExt (name, global.json_ext.ptr);
-	  File *fjson = File::create (nameext);
-	  fjson->setbuffer ((void *) buf.data, buf.offset);
-	  fjson->ref = 1;
-	  writeFile (Loc (), fjson);
+	  json_stream = fopen (nameext, "w");
+	  if (!json_stream)
+	    {
+	      fatal_error (input_location, "opening json file %s: %m", nameext);
+	      goto had_errors;
+	    }
 	}
       else
-	message ("%.*s", (int) buf.offset, (char *) buf.data);
+	json_stream = stdout;
+
+      fprintf (json_stream, "%s", buf.peekChars ());
+
+      if (json_stream != stdout
+	  && (ferror (json_stream) || fclose (json_stream)))
+	fatal_error (input_location, "closing json file %s: %m", name);
     }
 
   /* Generate Ddoc files.  */
