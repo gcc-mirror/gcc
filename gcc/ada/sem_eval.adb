@@ -1001,7 +1001,7 @@ package body Sem_Eval is
                     (Is_Known_Valid (Entity (Opnd))
                       or else Ekind (Entity (Opnd)) = E_In_Parameter
                       or else
-                        (Ekind (Entity (Opnd)) in Object_Kind
+                        (Is_Object (Entity (Opnd))
                           and then Present (Current_Value (Entity (Opnd))))))
            or else Is_OK_Static_Expression (Opnd);
       end Is_Known_Valid_Operand;
@@ -5616,6 +5616,84 @@ package body Sem_Eval is
       end if;
    end Out_Of_Range;
 
+   ---------------------------
+   -- Predicates_Compatible --
+   ---------------------------
+
+   function Predicates_Compatible (T1, T2 : Entity_Id) return Boolean is
+
+      function T2_Rep_Item_Applies_To_T1 (Nam : Name_Id) return Boolean;
+      --  Return True if the rep item for Nam is either absent on T2 or also
+      --  applies to T1.
+
+      -------------------------------
+      -- T2_Rep_Item_Applies_To_T1 --
+      -------------------------------
+
+      function T2_Rep_Item_Applies_To_T1 (Nam : Name_Id) return Boolean is
+         Rep_Item : constant Node_Id := Get_Rep_Item (T2, Nam);
+
+      begin
+         return No (Rep_Item) or else Get_Rep_Item (T1, Nam) = Rep_Item;
+      end T2_Rep_Item_Applies_To_T1;
+
+   --  Start of processing for Predicates_Compatible
+
+   begin
+      if Ada_Version < Ada_2012 then
+         return True;
+
+      --  If T2 has no predicates, there is no compatibility issue
+
+      elsif not Has_Predicates (T2) then
+         return True;
+
+      --  T2 has predicates, if T1 has none then we defer to the static check
+
+      elsif not Has_Predicates (T1) then
+         null;
+
+      --  Both T2 and T1 have predicates, check that all predicates that apply
+      --  to T2 apply also to T1 (RM 4.9.1(9/3)).
+
+      elsif T2_Rep_Item_Applies_To_T1 (Name_Static_Predicate)
+        and then T2_Rep_Item_Applies_To_T1 (Name_Dynamic_Predicate)
+        and then T2_Rep_Item_Applies_To_T1 (Name_Predicate)
+      then
+         return True;
+      end if;
+
+      --  Implement the static check prescribed by RM 4.9.1(10/3)
+
+      if Is_Static_Subtype (T1) and then Is_Static_Subtype (T2) then
+         --  We just need to query Interval_Lists for discrete types
+
+         if Is_Discrete_Type (T1) and then Is_Discrete_Type (T2) then
+            declare
+               Interval_List1 : constant Interval_Lists.Discrete_Interval_List
+                 := Interval_Lists.Type_Intervals (T1);
+               Interval_List2 : constant Interval_Lists.Discrete_Interval_List
+                 := Interval_Lists.Type_Intervals (T2);
+            begin
+               return Interval_Lists.Is_Subset (Interval_List1, Interval_List2)
+                 and then not (Has_Predicates (T1)
+                                and then not Predicate_Checks_Suppressed (T2)
+                                and then Predicate_Checks_Suppressed (T1));
+            end;
+
+         else
+            --  TBD: Implement Interval_Lists for real types
+
+            return False;
+         end if;
+
+      --  If either subtype is not static, the predicates are not compatible
+
+      else
+         return False;
+      end if;
+   end Predicates_Compatible;
+
    ----------------------
    -- Predicates_Match --
    ----------------------
@@ -5885,9 +5963,19 @@ package body Sem_Eval is
       Formal_Derived_Matching : Boolean := False) return Boolean
    is
    begin
+      --  A type is always statically compatible with itself
+
+      if T1 = T2 then
+         return True;
+
+      --  Not compatible if predicates are not compatible
+
+      elsif not Predicates_Compatible (T1, T2) then
+         return False;
+
       --  Scalar types
 
-      if Is_Scalar_Type (T1) then
+      elsif Is_Scalar_Type (T1) then
 
          --  Definitely compatible if we match
 

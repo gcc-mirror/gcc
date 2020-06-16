@@ -1449,27 +1449,6 @@ struct GTY (()) tree_lambda_expr
   int discriminator;
 };
 
-/* A (typedef,context,usage location) triplet.
-   It represents a typedef used through a
-   context at a given source location.
-   e.g.
-   struct foo {
-     typedef int myint;
-   };
-
-   struct bar {
-    foo::myint v; // #1<-- this location.
-   };
-
-   In bar, the triplet will be (myint, foo, #1).
-   */
-struct GTY(()) qualified_typedef_usage_s {
-  tree typedef_decl;
-  tree context;
-  location_t locus;
-};
-typedef struct qualified_typedef_usage_s qualified_typedef_usage_t;
-
 /* Non-zero if this template specialization has access violations that
    should be rechecked when the function is instantiated outside argument
    deduction.  */
@@ -1489,11 +1468,24 @@ typedef struct qualified_typedef_usage_s qualified_typedef_usage_t;
 #define TINFO_VAR_DECLARED_CONSTINIT(NODE) \
   (TREE_LANG_FLAG_2 (TEMPLATE_INFO_CHECK (NODE)))
 
+/* The representation of a deferred access check.  */
+
+struct GTY(()) deferred_access_check {
+  /* The base class in which the declaration is referenced. */
+  tree binfo;
+  /* The declaration whose access must be checked.  */
+  tree decl;
+  /* The declaration that should be used in the error message.  */
+  tree diag_decl;
+  /* The location of this access.  */
+  location_t loc;
+};
+
 struct GTY(()) tree_template_info {
   struct tree_base base;
   tree tmpl;
   tree args;
-  vec<qualified_typedef_usage_t, va_gc> *typedefs_needing_access_checking;
+  vec<deferred_access_check, va_gc> *deferred_access_checks;
 };
 
 // Constraint information for a C++ declaration. Constraint information is
@@ -3532,14 +3524,15 @@ struct GTY(()) lang_decl {
   ? int_cst_value (NON_DEFAULT_TEMPLATE_ARGS_COUNT (NODE)) \
   : TREE_VEC_LENGTH (INNERMOST_TEMPLATE_ARGS (NODE))
 #endif
-/* The list of typedefs - used in the template - that need
-   access checking at template instantiation time.
+
+/* The list of access checks that were deferred during parsing
+   which need to be performed at template instantiation time.
 
    FIXME this should be associated with the TEMPLATE_DECL, not the
    TEMPLATE_INFO.  */
-#define TI_TYPEDEFS_NEEDING_ACCESS_CHECKING(NODE) \
+#define TI_DEFERRED_ACCESS_CHECKS(NODE) \
   ((struct tree_template_info*)TEMPLATE_INFO_CHECK \
-     (NODE))->typedefs_needing_access_checking
+     (NODE))->deferred_access_checks
 
 /* We use TREE_VECs to hold template arguments.  If there is only one
    level of template arguments, then the TREE_VEC contains the
@@ -6339,9 +6332,6 @@ class access_failure_info
 };
 
 extern void complain_about_access		(tree, tree, bool);
-extern bool enforce_access			(tree, tree, tree,
-						 tsubst_flags_t,
-						 access_failure_info *afi = NULL);
 extern void push_defarg_context			(tree);
 extern void pop_defarg_context			(void);
 extern tree convert_default_arg			(tree, tree, tree, int,
@@ -6939,7 +6929,6 @@ extern tree make_pack_expansion                 (tree, tsubst_flags_t = tf_warni
 extern bool check_for_bare_parameter_packs      (tree, location_t = UNKNOWN_LOCATION);
 extern tree build_template_info			(tree, tree);
 extern tree get_template_info			(const_tree);
-extern vec<qualified_typedef_usage_t, va_gc> *get_types_needing_access_check (tree);
 extern int template_class_depth			(tree);
 extern int is_specialization_of			(tree, tree);
 extern bool is_specialization_of_friend		(tree, tree);
@@ -7094,19 +7083,6 @@ extern int shared_member_p			(tree);
 extern bool any_dependent_bases_p (tree = current_nonlambda_class_type ());
 extern bool maybe_check_overriding_exception_spec (tree, tree);
 
-/* The representation of a deferred access check.  */
-
-struct GTY(()) deferred_access_check {
-  /* The base class in which the declaration is referenced. */
-  tree binfo;
-  /* The declaration whose access must be checked.  */
-  tree decl;
-  /* The declaration that should be used in the error message.  */
-  tree diag_decl;
-  /* The location of this access.  */
-  location_t loc;
-};
-
 /* in semantics.c */
 extern void push_deferring_access_checks	(deferring_kind);
 extern void resume_deferring_access_checks	(void);
@@ -7257,8 +7233,6 @@ extern void finish_mem_initializers		(tree);
 extern tree check_template_template_default_arg (tree);
 extern bool expand_or_defer_fn_1		(tree);
 extern void expand_or_defer_fn			(tree);
-extern void add_typedef_to_current_template_for_access_check (tree, tree,
-							      location_t);
 extern bool check_accessibility_of_qualified_id (tree, tree, tree, tsubst_flags_t);
 extern tree finish_qualified_id_expr		(tree, tree, bool, bool,
 						 bool, bool, tsubst_flags_t);

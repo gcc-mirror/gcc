@@ -827,21 +827,6 @@ accessible_p (tree type, tree decl, bool consider_local_p)
   if (current_function_decl && DECL_THUNK_P (current_function_decl))
     return 1;
 
-  /* In a template declaration, we cannot be sure whether the
-     particular specialization that is instantiated will be a friend
-     or not.  Therefore, all access checks are deferred until
-     instantiation.  However, PROCESSING_TEMPLATE_DECL is set in the
-     parameter list for a template (because we may see dependent types
-     in default arguments for template parameters), and access
-     checking should be performed in the outermost parameter list.  */
-  if (processing_template_decl
-      /* FIXME CWG has been talking about doing access checking in the context
-	 of the constraint-expression, rather than the constrained declaration,
-	 in which case we would want to remove this test.  */
-      && !processing_constraint_expression_p ()
-      && (!processing_template_parmlist || processing_template_decl > 1))
-    return 1;
-
   tree otype = NULL_TREE;
   if (!TYPE_P (type))
     {

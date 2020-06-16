@@ -14,7 +14,7 @@ namespace std __attribute__ ((__visibility__ ("default")))
   typedef basic_ostream<char> ostream;
   template<typename _CharT, typename _InIter = istreambuf_iterator<_CharT> >
       class num_get;
-  class locale   {
+  struct locale   {
       class facet;
   };
   class locale::facet   {

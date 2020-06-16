@@ -206,7 +206,7 @@ package body Make is
 
    procedure Add_Library_Search_Dir (Path : String);
    --  Call Add_Lib_Search_Dir with an absolute directory path. If Path is
-   --  relative path,, it is relative to the current working directory.
+   --  relative path, it is relative to the current working directory.
 
    procedure Add_Source_Search_Dir (Path : String);
    --  Call Add_Src_Search_Dir with an absolute directory path. If Path is a

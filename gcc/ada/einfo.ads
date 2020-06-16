@@ -538,7 +538,7 @@ package Einfo is
 --    Block_Node (Node11)
 --       Defined in block entities. Points to the identifier in the
 --       Block_Statement itself. Used when retrieving the block construct
---       for finalization purposes, The block entity has an implicit label
+--       for finalization purposes, the block entity has an implicit label
 --       declaration in the enclosing declarative part, and has otherwise
 --       no direct connection in the tree with the block statement. The
 --       link is to the identifier (which is an occurrence of the entity)

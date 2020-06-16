@@ -1269,7 +1269,7 @@ package body Sem_Ch6 is
          --  only once, i.e. not to the simple return statement generated at
          --  the end of its expansion because, prior to leaving the function,
          --  the accessibility level of the return object changes to be a level
-         --  determined by the point of call (RM 3.10.2(10.8/3).
+         --  determined by the point of call (RM 3.10.2(10.8/3)).
 
          if Ada_Version >= Ada_2005
            and then Ekind (R_Type) = E_Anonymous_Access_Type
@@ -5464,9 +5464,7 @@ package body Sem_Ch6 is
                           N_Formal_Abstract_Subprogram_Declaration,
                           N_Subprogram_Renaming_Declaration)
          then
-            if Is_Abstract_Type (Etype (Designator))
-              and then not Is_Interface (Etype (Designator))
-            then
+            if Is_Abstract_Type (Etype (Designator)) then
                Error_Msg_N
                  ("function that returns abstract type must be abstract", N);
 
@@ -9403,6 +9401,28 @@ package body Sem_Ch6 is
          end if;
       end FCO;
 
+      function User_Defined_Numeric_Literal_Mismatch return Boolean;
+      --  Usually literals with the same value like 12345 and 12_345
+      --  or 123.0 and 123.00 conform, but not if they are
+      --  user-defined literals.
+
+      -------------------------------------------
+      -- User_Defined_Numeric_Literal_Mismatch --
+      -------------------------------------------
+
+      function User_Defined_Numeric_Literal_Mismatch return Boolean is
+         E1_Is_User_Defined : constant Boolean :=
+           not Nkind_In (Given_E1, N_Integer_Literal, N_Real_Literal);
+         E2_Is_User_Defined : constant Boolean :=
+           not Nkind_In (Given_E2, N_Integer_Literal, N_Real_Literal);
+      begin
+         pragma Assert (E1_Is_User_Defined = E2_Is_User_Defined);
+
+         return E1_Is_User_Defined and then
+           not String_Equal (String_From_Numeric_Literal (E1),
+                             String_From_Numeric_Literal (E2));
+      end User_Defined_Numeric_Literal_Mismatch;
+
       --  Local variables
 
       Result : Boolean;
@@ -9664,7 +9684,8 @@ package body Sem_Ch6 is
                  FCL (Expressions (E1), Expressions (E2));
 
             when N_Integer_Literal =>
-               return (Intval (E1) = Intval (E2));
+               return (Intval (E1) = Intval (E2))
+                 and then not User_Defined_Numeric_Literal_Mismatch;
 
             when N_Null =>
                return True;
@@ -9750,7 +9771,8 @@ package body Sem_Ch6 is
                  FCE (High_Bound (E1), High_Bound (E2));
 
             when N_Real_Literal =>
-               return (Realval (E1) = Realval (E2));
+               return (Realval (E1) = Realval (E2))
+                 and then not User_Defined_Numeric_Literal_Mismatch;
 
             when N_Selected_Component =>
                return

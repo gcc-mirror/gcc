@@ -997,7 +997,7 @@ package body Einfo is
 
    function Current_Value (Id : E) return N is
    begin
-      pragma Assert (Ekind (Id) in Object_Kind);
+      pragma Assert (Is_Object (Id));
       return Node9 (Id);
    end Current_Value;
 

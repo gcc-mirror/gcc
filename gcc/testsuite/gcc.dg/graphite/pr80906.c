@@ -25,5 +25,4 @@ ec (int lh[][2])
   return c5 + m3;
 }
 
-/* We cannot perform a required store motion.  */
-/* { dg-final { scan-tree-dump "isl AST to Gimple succeeded" "graphite" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "isl AST to Gimple succeeded" "graphite" } } */

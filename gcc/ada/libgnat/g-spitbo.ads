@@ -126,7 +126,7 @@ package GNAT.Spitbol is
       Len : Natural;
       Pad : Character := ' ') return VString;
    --  If the length of Str is greater than or equal to Len, then Str is
-   --  returned unchanged. Otherwise, The value returned is obtained by
+   --  returned unchanged. Otherwise, the value returned is obtained by
    --  concatenating Length (Str) - Len instances of the Pad character to
    --  the left hand side.
 
@@ -155,7 +155,7 @@ package GNAT.Spitbol is
       Len : Natural;
       Pad : Character := ' ') return VString;
    --  If the length of Str is greater than or equal to Len, then Str is
-   --  returned unchanged. Otherwise, The value returned is obtained by
+   --  returned unchanged. Otherwise, the value returned is obtained by
    --  concatenating Length (Str) - Len instances of the Pad character to
    --  the right hand side.
 

@@ -254,6 +254,11 @@ package body Sem_Ch3 is
    --  circularity issues in Gigi. We create an incomplete type for the record
    --  declaration, which is the designated type of the anonymous access.
 
+   procedure Check_Constraining_Discriminant (New_Disc, Old_Disc : Entity_Id);
+   --  Check that, if a new discriminant is used in a constraint defining the
+   --  parent subtype of a derivation, its subtype is statically compatible
+   --  with the subtype of the corresponding parent discriminant (RM 3.7(15)).
+
    procedure Check_Delta_Expression (E : Node_Id);
    --  Check that the expression represented by E is suitable for use as a
    --  delta expression, i.e. it is of real type and is static.
@@ -776,7 +781,7 @@ package body Sem_Ch3 is
          --  be available in the scope that encloses the protected declaration.
          --  Otherwise the type is in the scope enclosing the subprogram.
 
-         --  If the function has formals, The return type of a subprogram
+         --  If the function has formals, the return type of a subprogram
          --  declaration is analyzed in the scope of the subprogram (see
          --  Process_Formals) and thus the protected type, if present, is
          --  the scope of the current function scope.
@@ -6906,14 +6911,13 @@ package body Sem_Ch3 is
                   Error_Msg_NE
                     ("new discriminant& must constrain old one", N, New_Disc);
 
-               elsif not
-                 Subtypes_Statically_Compatible
-                   (Etype (New_Disc),
-                    Etype (Corresponding_Discriminant (New_Disc)))
-               then
-                  Error_Msg_NE
-                    ("& not statically compatible with parent discriminant",
-                      N, New_Disc);
+               --  If a new discriminant is used in the constraint, then its
+               --  subtype must be statically compatible with the subtype of
+               --  the parent discriminant (RM 3.7(15)).
+
+               else
+                  Check_Constraining_Discriminant
+                    (New_Disc, Corresponding_Discriminant (New_Disc));
                end if;
 
                Next_Discriminant (New_Disc);
@@ -9087,41 +9091,13 @@ package body Sem_Ch3 is
                end if;
 
                --  If a new discriminant is used in the constraint, then its
-               --  subtype must be statically compatible with the parent
-               --  discriminant's subtype (3.7(15)).
+               --  subtype must be statically compatible with the subtype of
+               --  the parent discriminant (RM 3.7(15)).
 
-               --  However, if the record contains an array constrained by
-               --  the discriminant but with some different bound, the compiler
-               --  tries to create a smaller range for the discriminant type.
-               --  (See exp_ch3.Adjust_Discriminants). In this case, where
-               --  the discriminant type is a scalar type, the check must use
-               --  the original discriminant type in the parent declaration.
-
-               declare
-                  Corr_Disc : constant Entity_Id :=
-                                Corresponding_Discriminant (Discrim);
-                  Disc_Type : constant Entity_Id := Etype (Discrim);
-                  Corr_Type : Entity_Id;
-
-               begin
-                  if Present (Corr_Disc) then
-                     if Is_Scalar_Type (Disc_Type) then
-                        Corr_Type :=
-                           Entity (Discriminant_Type (Parent (Corr_Disc)));
-                     else
-                        Corr_Type := Etype (Corr_Disc);
-                     end if;
-
-                     if not
-                        Subtypes_Statically_Compatible (Disc_Type, Corr_Type)
-                     then
-                        Error_Msg_N
-                          ("subtype must be compatible "
-                           & "with parent discriminant",
-                           Discrim);
-                     end if;
-                  end if;
-               end;
+               if Present (Corresponding_Discriminant (Discrim)) then
+                  Check_Constraining_Discriminant
+                    (Discrim, Corresponding_Discriminant (Discrim));
+               end if;
 
                Next_Discriminant (Discrim);
             end loop;
@@ -11622,6 +11598,41 @@ package body Sem_Ch3 is
          Next_Entity (E);
       end loop;
    end Check_Completion;
+
+   -------------------------------------
+   -- Check_Constraining_Discriminant --
+   -------------------------------------
+
+   procedure Check_Constraining_Discriminant (New_Disc, Old_Disc : Entity_Id)
+   is
+      New_Type : constant Entity_Id := Etype (New_Disc);
+      Old_Type : Entity_Id;
+
+   begin
+      --  If the record type contains an array constrained by the discriminant
+      --  but with some different bound, the compiler tries to create a smaller
+      --  range for the discriminant type (see exp_ch3.Adjust_Discriminants).
+      --  In this case, where the discriminant type is a scalar type, the check
+      --  must use the original discriminant type in the parent declaration.
+
+      if Is_Scalar_Type (New_Type) then
+         Old_Type := Entity (Discriminant_Type (Parent (Old_Disc)));
+      else
+         Old_Type := Etype (Old_Disc);
+      end if;
+
+      if not Subtypes_Statically_Compatible (New_Type, Old_Type) then
+         Error_Msg_N
+           ("subtype must be statically compatible with parent discriminant",
+            New_Disc);
+
+         if not Predicates_Compatible (New_Type, Old_Type) then
+            Error_Msg_N
+              ("\subtype predicate is not compatible with parent discriminant",
+               New_Disc);
+         end if;
+      end if;
+   end Check_Constraining_Discriminant;
 
    ------------------------------------
    -- Check_CPP_Type_Has_No_Defaults --

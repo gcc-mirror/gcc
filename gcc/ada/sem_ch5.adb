@@ -2241,7 +2241,7 @@ package body Sem_Ch5 is
          begin
 
             --  If the domain of iteration is an array component that depends
-            --  on a discriminant, create actual subtype for it. preanalysis
+            --  on a discriminant, create actual subtype for it. Preanalysis
             --  does not generate the actual subtype of a selected component.
 
             if Nkind (Iter_Name) = N_Selected_Component
@@ -2456,7 +2456,7 @@ package body Sem_Ch5 is
 
                Check_Subtype_Indication (Etype (Def_Id));
 
-            --  For a predefined container, The type of the loop variable is
+            --  For a predefined container, the type of the loop variable is
             --  the Iterator_Element aspect of the container type.
 
             else
@@ -3885,7 +3885,7 @@ package body Sem_Ch5 is
                   Enter_Name (Id);
                end if;
 
-               --  In an element iterator, The loop parameter is a variable if
+               --  In an element iterator, the loop parameter is a variable if
                --  the domain of iteration (container or array) is a variable.
 
                if not Of_Present (I_Spec)

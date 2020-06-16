@@ -27,8 +27,8 @@ package Ada.Numerics.Big_Numbers.Big_Integers
   with Preelaborate
 is
    type Big_Integer is private with
-   --  Integer_Literal => From_String,
-     Put_Image => Put_Image;
+     Integer_Literal => From_String,
+     Put_Image       => Put_Image;
 
    function Is_Valid (Arg : Big_Integer) return Boolean
      with Convention => Intrinsic;

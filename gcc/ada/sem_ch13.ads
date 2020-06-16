@@ -345,6 +345,10 @@ package Sem_Ch13 is
    --  for First, Next, and Has_Element. Optionally an Element primitive may
    --  also be defined.
 
+   procedure Validate_Literal_Aspect (Typ : Entity_Id; ASN : Node_Id);
+   --  Check legality of Integer_Literal, Real_Literal, and String_Literal
+   --  aspect specifications.
+
    procedure Install_Discriminants (E : Entity_Id);
    --  Make visible the discriminants of type entity E
 

@@ -245,13 +245,20 @@ package Sem is
 
    In_Assertion_Expr : Nat := 0;
    --  This is set non-zero if we are within the expression of an assertion
-   --  pragma or aspect. It is a counter which is incremented at the start of
-   --  expanding such an expression, and decremented on completion of expanding
-   --  that expression. Probably a boolean would be good enough, since we think
-   --  that such expressions cannot nest, but that might not be true in the
-   --  future (e.g. if let expressions are added to Ada) so we prepare for that
-   --  future possibility by making it a counter. As with In_Spec_Expression,
-   --  it must be recursively saved and restored for a Semantics call.
+   --  pragma or aspect. It is incremented at the start of expanding such an
+   --  expression, and decremented on completion of expanding that
+   --  expression. This needs to be a counter, rather than a Boolean, because
+   --  assertions can contain declare_expressions, which can contain
+   --  assertions. As with In_Spec_Expression, it must be recursively saved and
+   --  restored for a Semantics call.
+
+   In_Declare_Expr : Nat := 0;
+   --  This is set non-zero if we are within a declare_expression. It is
+   --  incremented at the start of expanding such an expression, and
+   --  decremented on completion of expanding that expression. This needs to be
+   --  a counter, rather than a Boolean, because declare_expressions can
+   --  nest. As with In_Spec_Expression, it must be recursively saved and
+   --  restored for a Semantics call.
 
    In_Compile_Time_Warning_Or_Error : Boolean := False;
    --  Switch to indicate that we are validating a pragma Compile_Time_Warning

@@ -1,3 +1,28 @@
+2020-06-15  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gnat.dg/aggr30.ads, gnat.dg/aggr30.adb: New test.
+
+2020-06-15  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gnat.dg/opt85.ads, gnat.dg/opt85.adb: New test.
+
+2020-06-15  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* gcc.target/xtensa/mabi-call0.c: New test.
+	* gcc.target/xtensa/mabi-windowed.c: New test.
+
+2020-06-15  Martin Jambor  <mjambor@suse.cz>
+
+	* lib/brig.exp (brig_target_compile): Strip hsail extension when
+	gnerating the name of the binary brig file.
+
+2020-06-15   Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512bw-pr95488-1.c: New test.
+	* gcc.target/i386/avx512bw-pr95488-2.c: Ditto.
+	* gcc.target/i386/avx512vl-pr95488-1.c: Ditto.
+	* gcc.target/i386/avx512vl-pr95488-2.c: Ditto.
+
 2020-06-14  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95088

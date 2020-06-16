@@ -4918,11 +4918,16 @@ package body Exp_Util is
 
    procedure Evaluate_Name (Nam : Node_Id) is
    begin
-      --  For an attribute reference or an indexed component, evaluate the
-      --  prefix, which is itself a name, recursively, and then force the
-      --  evaluation of all the subscripts (or attribute expressions).
-
       case Nkind (Nam) is
+         --  For an aggregate, force its evaluation
+
+         when N_Aggregate =>
+            Force_Evaluation (Nam);
+
+         --  For an attribute reference or an indexed component, evaluate the
+         --  prefix, which is itself a name, recursively, and then force the
+         --  evaluation of all the subscripts (or attribute expressions).
+
          when N_Attribute_Reference
             | N_Indexed_Component
          =>
@@ -4953,21 +4958,17 @@ package body Exp_Util is
          when N_Explicit_Dereference =>
             Force_Evaluation (Prefix (Nam));
 
-         --  For a function call, we evaluate the call
+         --  For a function call, we evaluate the call; same for an operator
 
-         when N_Function_Call =>
+         when N_Function_Call
+            | N_Op
+         =>
             Force_Evaluation (Nam);
 
-         --  For a qualified expression, we evaluate the underlying object
-         --  name if any, otherwise we force the evaluation of the underlying
-         --  expression.
+         --  For a qualified expression, we evaluate the expression
 
          when N_Qualified_Expression =>
-            if Is_Object_Reference (Expression (Nam)) then
-               Evaluate_Name (Expression (Nam));
-            else
-               Force_Evaluation (Expression (Nam));
-            end if;
+            Evaluate_Name (Expression (Nam));
 
          --  For a selected component, we simply evaluate the prefix
 
@@ -4989,9 +4990,11 @@ package body Exp_Util is
          when N_Type_Conversion =>
             Evaluate_Name (Expression (Nam));
 
-         --  The remaining cases are direct name, operator symbol and character
-         --  literal. In all these cases, we do nothing, since we want to
-         --  reevaluate each time the renamed object is used.
+         --  The remaining cases are direct name and character literal. In all
+         --  these cases, we do nothing, since we want to reevaluate each time
+         --  the renamed object is used. ??? There are more remaining cases, at
+         --  least in the GNATprove_Mode, where this routine is called in more
+         --  contexts than in GNAT.
 
          when others =>
             null;
@@ -6393,7 +6396,7 @@ package body Exp_Util is
 
       --  Immediate return, nothing doing, if this is not an object
 
-      if Ekind (Ent) not in Object_Kind then
+      if not Is_Object (Ent) then
          return;
       end if;
 

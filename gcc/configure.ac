@@ -5108,6 +5108,11 @@ configured with --enable-newlib-nano-formatted-io.])
       [	vl %v24,0(%r15),3 ],,
       [AC_DEFINE(HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS, 1,
 	  [Define if your assembler supports vl/vst/vlm/vstm with an optional alignment hint argument.])])
+    gcc_GAS_CHECK_FEATURE([vector load/store alignment hints on z13],
+      gcc_cv_as_s390_vector_loadstore_alignment_hints_on_z13,, [-mzarch -march=z13],
+      [	vl %v24,0(%r15),3 ],,
+      [AC_DEFINE(HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS_ON_Z13, 1,
+	  [Define if your assembler supports vl/vst/vlm/vstm with an optional alignment hint argument on z13.])])
 
     ;;
 esac

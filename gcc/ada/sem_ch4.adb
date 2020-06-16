@@ -2216,18 +2216,94 @@ package body Sem_Ch4 is
    -- Analyze_Expression_With_Actions --
    -------------------------------------
 
+   --  Start of processing for Analyze_Quantified_Expression
+
    procedure Analyze_Expression_With_Actions (N : Node_Id) is
+
+      procedure Check_Action_OK (A : Node_Id);
+      --  Check that the action is something that is allows as a declare_item
+      --  of a declare_expression, except the checks are suppressed for
+      --  generated code.
+
+      procedure Check_Action_OK (A : Node_Id) is
+      begin
+         if not Comes_From_Source (N) or else not Comes_From_Source (A) then
+            return; -- Allow anything in generated code
+         end if;
+
+         case Nkind (A) is
+            when N_Object_Declaration =>
+               if Nkind (Object_Definition (A)) = N_Access_Definition then
+                  Error_Msg_N
+                    ("anonymous access type not allowed in declare_expression",
+                     Object_Definition (A));
+               end if;
+
+               if Aliased_Present (A) then
+                  Error_Msg_N ("aliased not allowed in declare_expression", A);
+               end if;
+
+               if Constant_Present (A)
+                 and then not Is_Limited_Type (Etype (Defining_Identifier (A)))
+               then
+                  return; -- nonlimited constants are OK
+               end if;
+
+            when N_Object_Renaming_Declaration =>
+               if Present (Access_Definition (A)) then
+                  Error_Msg_N
+                    ("anonymous access type not allowed in declare_expression",
+                     Access_Definition (A));
+               end if;
+
+               if not Is_Limited_Type (Etype (Defining_Identifier (A))) then
+                  return; -- ???For now; the RM rule is a bit more complicated
+               end if;
+
+            when others =>
+               null; -- Nothing else allowed, not even pragmas
+         end case;
+
+         Error_Msg_N ("object renaming or constant declaration expected", A);
+      end Check_Action_OK;
+
       A : Node_Id;
+      EWA_Scop : Entity_Id;
+
+   --  Start of processing for Analyze_Expression_With_Actions
 
    begin
+      --  Create a scope, which is needed to provide proper visibility of the
+      --  declare_items.
+
+      EWA_Scop := New_Internal_Entity (E_Block, Current_Scope, Sloc (N), 'B');
+      Set_Etype  (EWA_Scop, Standard_Void_Type);
+      Set_Scope  (EWA_Scop, Current_Scope);
+      Set_Parent (EWA_Scop, N);
+      Push_Scope (EWA_Scop);
+
+      --  If this Expression_With_Actions node comes from source, then it
+      --  represents a declare_expression; increment the counter to take note
+      --  of that.
+
+      if Comes_From_Source (N) then
+         In_Declare_Expr := In_Declare_Expr + 1;
+      end if;
+
       A := First (Actions (N));
       while Present (A) loop
          Analyze (A);
+         Check_Action_OK (A);
          Next (A);
       end loop;
 
       Analyze_Expression (Expression (N));
       Set_Etype (N, Etype (Expression (N)));
+      End_Scope;
+
+      if Comes_From_Source (N) then
+         In_Declare_Expr := In_Declare_Expr - 1;
+      end if;
    end Analyze_Expression_With_Actions;
 
    ---------------------------
@@ -2965,6 +3041,8 @@ package body Sem_Ch4 is
          end if;
       end Analyze_Set_Membership;
 
+      Op : Node_Id;
+
    --  Start of processing for Analyze_Membership_Op
 
    begin
@@ -3011,17 +3089,20 @@ package body Sem_Ch4 is
            and then Has_Compatible_Type (R, Etype (L))
          then
             if Nkind (N) = N_In then
-               Rewrite (N,
-                 Make_Op_Eq (Loc,
-                   Left_Opnd  => L,
-                   Right_Opnd => R));
+               Op := Make_Op_Eq (Loc, Left_Opnd  => L, Right_Opnd => R);
             else
-               Rewrite (N,
-                 Make_Op_Ne (Loc,
-                   Left_Opnd  => L,
-                   Right_Opnd => R));
+               Op := Make_Op_Ne (Loc, Left_Opnd  => L, Right_Opnd => R);
             end if;
 
+            if Is_Record_Or_Limited_Type (Etype (L)) then
+
+               --  We reset the Entity in order to use the primitive equality
+               --  of the type, as per RM 4.5.2 (28.1/4).
+
+               Set_Entity (Op, Empty);
+            end if;
+
+            Rewrite (N, Op);
             Analyze (N);
             return;
 
@@ -3198,7 +3279,7 @@ package body Sem_Ch4 is
       --  When the type Address is a visible integer type, and the DEC
       --  system extension is visible, the predefined operator may be
       --  hidden as well, by one of the address operations in auxdec.
-      --  Finally, The abstract operations on address do not hide the
+      --  Finally, the abstract operations on address do not hide the
       --  predefined operator (this is the purpose of making them abstract).
 
       -----------------------------------
@@ -3210,20 +3291,30 @@ package body Sem_Ch4 is
          T2 : Entity_Id) return Boolean
       is
          function Common_Type (T : Entity_Id) return Entity_Id;
-         --  Find non-private full view if any, without going to ancestor type
-         --  (as opposed to Underlying_Type).
+         --  Find non-private underlying full view if any, without going to
+         --  ancestor type (as opposed to Underlying_Type).
 
          -----------------
          -- Common_Type --
          -----------------
 
          function Common_Type (T : Entity_Id) return Entity_Id is
+            CT : Entity_Id;
+
          begin
-            if Is_Private_Type (T) and then Present (Full_View (T)) then
-               return Base_Type (Full_View (T));
-            else
-               return Base_Type (T);
+            CT := T;
+
+            if Is_Private_Type (CT) and then Present (Full_View (CT)) then
+               CT := Full_View (CT);
             end if;
+
+            if Is_Private_Type (CT)
+              and then Present (Underlying_Full_View (CT))
+            then
+               CT := Underlying_Full_View (CT);
+            end if;
+
+            return Base_Type (CT);
          end Common_Type;
 
       --  Start of processing for Compatible_Types_In_Predicate
@@ -5595,54 +5686,47 @@ package body Sem_Ch4 is
 
    procedure Analyze_User_Defined_Binary_Op
      (N     : Node_Id;
-      Op_Id : Entity_Id)
-   is
+      Op_Id : Entity_Id) is
    begin
-      --  Only do analysis if the operator Comes_From_Source, since otherwise
-      --  the operator was generated by the expander, and all such operators
-      --  always refer to the operators in package Standard.
+      declare
+         F1 : constant Entity_Id := First_Formal (Op_Id);
+         F2 : constant Entity_Id := Next_Formal (F1);
 
-      if Comes_From_Source (N) then
-         declare
-            F1 : constant Entity_Id := First_Formal (Op_Id);
-            F2 : constant Entity_Id := Next_Formal (F1);
+      begin
+         --  Verify that Op_Id is a visible binary function. Note that since
+         --  we know Op_Id is overloaded, potentially use visible means use
+         --  visible for sure (RM 9.4(11)).
 
-         begin
-            --  Verify that Op_Id is a visible binary function. Note that since
-            --  we know Op_Id is overloaded, potentially use visible means use
-            --  visible for sure (RM 9.4(11)).
+         if Ekind (Op_Id) = E_Function
+           and then Present (F2)
+           and then (Is_Immediately_Visible (Op_Id)
+                      or else Is_Potentially_Use_Visible (Op_Id))
+           and then Has_Compatible_Type (Left_Opnd (N), Etype (F1))
+           and then Has_Compatible_Type (Right_Opnd (N), Etype (F2))
+         then
+            Add_One_Interp (N, Op_Id, Etype (Op_Id));
 
-            if Ekind (Op_Id) = E_Function
-              and then Present (F2)
-              and then (Is_Immediately_Visible (Op_Id)
-                         or else Is_Potentially_Use_Visible (Op_Id))
-              and then Has_Compatible_Type (Left_Opnd (N), Etype (F1))
-              and then Has_Compatible_Type (Right_Opnd (N), Etype (F2))
-            then
-               Add_One_Interp (N, Op_Id, Etype (Op_Id));
+            --  If the left operand is overloaded, indicate that the current
+            --  type is a viable candidate. This is redundant in most cases,
+            --  but for equality and comparison operators where the context
+            --  does not impose a type on the operands, setting the proper
+            --  type is necessary to avoid subsequent ambiguities during
+            --  resolution, when both user-defined and predefined operators
+            --  may be candidates.
 
-               --  If the left operand is overloaded, indicate that the current
-               --  type is a viable candidate. This is redundant in most cases,
-               --  but for equality and comparison operators where the context
-               --  does not impose a type on the operands, setting the proper
-               --  type is necessary to avoid subsequent ambiguities during
-               --  resolution, when both user-defined and predefined operators
-               --  may be candidates.
-
-               if Is_Overloaded (Left_Opnd (N)) then
-                  Set_Etype (Left_Opnd (N), Etype (F1));
-               end if;
-
-               if Debug_Flag_E then
-                  Write_Str ("user defined operator ");
-                  Write_Name (Chars (Op_Id));
-                  Write_Str (" on node ");
-                  Write_Int (Int (N));
-                  Write_Eol;
-               end if;
+            if Is_Overloaded (Left_Opnd (N)) then
+               Set_Etype (Left_Opnd (N), Etype (F1));
             end if;
-         end;
-      end if;
+
+            if Debug_Flag_E then
+               Write_Str ("user defined operator ");
+               Write_Name (Chars (Op_Id));
+               Write_Str (" on node ");
+               Write_Int (Int (N));
+               Write_Eol;
+            end if;
+         end if;
+      end;
    end Analyze_User_Defined_Binary_Op;
 
    -----------------------------------
@@ -8460,7 +8544,9 @@ package body Sem_Ch4 is
       --  Transform Obj.Operation (X, Y, ...) into Operation (Obj, X, Y ...).
       --  Call_Node is the resulting subprogram call, Node_To_Replace is
       --  either N or the parent of N, and Subprog is a reference to the
-      --  subprogram we are trying to match.
+      --  subprogram we are trying to match. Note that the transformation
+      --  may be partially destructive for the parent of N, so it needs to
+      --  be undone in the case where Try_Object_Operation returns false.
 
       function Try_Class_Wide_Operation
         (Call_Node       : Node_Id;
@@ -8731,7 +8817,7 @@ package body Sem_Ch4 is
             --  example:
             --            Some_Subprogram (..., Obj.Operation, ...)
 
-            and then Name (Parent_Node) = N
+            and then N = Name (Parent_Node)
          then
             Node_To_Replace := Parent_Node;
 
@@ -9769,8 +9855,20 @@ package body Sem_Ch4 is
          return True;
 
       else
-         --  There was no candidate operation, so report it as an error
-         --  in the caller: Analyze_Selected_Component.
+         --  There was no candidate operation, but Analyze_Selected_Component
+         --  may continue the analysis so we need to undo the change possibly
+         --  made to the Parent of N earlier by Transform_Object_Operation.
+
+         declare
+            Parent_Node : constant Node_Id := Parent (N);
+
+         begin
+            if Node_To_Replace = Parent_Node then
+               Remove (First (Parameter_Associations (New_Call_Node)));
+               Set_Parent
+                 (Parameter_Associations (New_Call_Node), Parent_Node);
+            end if;
+         end;
 
          return False;
       end if;

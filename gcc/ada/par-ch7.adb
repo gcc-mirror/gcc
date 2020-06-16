@@ -265,7 +265,8 @@ package body Ch7 is
 
                Set_Defining_Unit_Name (Specification_Node, Name_Node);
                Set_Visible_Declarations
-                 (Specification_Node, P_Basic_Declarative_Items);
+                 (Specification_Node,
+                  P_Basic_Declarative_Items (Declare_Expression => False));
 
                if Token = Tok_Private then
                   Error_Msg_Col := Scopes (Scope.Last).Ecol;
@@ -282,7 +283,8 @@ package body Ch7 is
                   Scan; -- past PRIVATE
 
                   Set_Private_Declarations
-                    (Specification_Node, P_Basic_Declarative_Items);
+                    (Specification_Node,
+                     P_Basic_Declarative_Items (Declare_Expression => False));
 
                   --  Deal gracefully with multiple PRIVATE parts
 
@@ -290,8 +292,10 @@ package body Ch7 is
                      Error_Msg_SC
                        ("only one private part allowed per package");
                      Scan; -- past PRIVATE
-                     Append_List (P_Basic_Declarative_Items,
-                       Private_Declarations (Specification_Node));
+                     Append_List
+                       (P_Basic_Declarative_Items
+                          (Declare_Expression => False),
+                        Private_Declarations (Specification_Node));
                   end loop;
                end if;
 

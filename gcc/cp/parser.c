@@ -29118,16 +29118,12 @@ cp_parser_template_declaration_after_parameters (cp_parser* parser,
     decl = cp_parser_concept_definition (parser);
   else
     {
-      /* There are no access checks when parsing a template, as we do not
-	 know if a specialization will be a friend.  */
-      push_deferring_access_checks (dk_no_check);
       cp_token *token = cp_lexer_peek_token (parser->lexer);
       decl = cp_parser_single_declaration (parser,
 					   checks,
 					   member_p,
                                            /*explicit_specialization_p=*/false,
 					   &friend_p);
-      pop_deferring_access_checks ();
 
       /* If this is a member template declaration, let the front
 	 end know.  */
@@ -35868,6 +35864,7 @@ cp_parser_omp_clause_schedule (cp_parser *parser, tree list, location_t location
 
   c = build_omp_clause (location, OMP_CLAUSE_SCHEDULE);
 
+  location_t comma = UNKNOWN_LOCATION;
   while (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
     {
       tree id = cp_lexer_peek_token (parser->lexer)->u.value;
@@ -35880,16 +35877,22 @@ cp_parser_omp_clause_schedule (cp_parser *parser, tree list, location_t location
 	modifiers |= OMP_CLAUSE_SCHEDULE_NONMONOTONIC;
       else
 	break;
+      comma = UNKNOWN_LOCATION;
       cp_lexer_consume_token (parser->lexer);
       if (nmodifiers++ == 0
 	  && cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
-	cp_lexer_consume_token (parser->lexer);
+	{
+	  comma = cp_lexer_peek_token (parser->lexer)->location;
+	  cp_lexer_consume_token (parser->lexer);
+	}
       else
 	{
 	  cp_parser_require (parser, CPP_COLON, RT_COLON);
 	  break;
 	}
     }
+  if (comma != UNKNOWN_LOCATION)
+    error_at (comma, "expected %<:%>");
 
   if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
     {

@@ -1568,7 +1568,36 @@ dump_mem_ref (pretty_printer *pp, tree node, int spc, dump_flags_t flags)
 	}
       pp_right_bracket (pp);
     }
- }
+}
+
+/* Helper function for dump_generic_node.  Dump INIT or COND expression for
+   OpenMP loop non-rectangular iterators.  */
+
+void
+dump_omp_loop_non_rect_expr (pretty_printer *pp, tree node, int spc,
+			     dump_flags_t flags)
+{
+  gcc_assert (TREE_CODE (node) == TREE_VEC);
+  dump_generic_node (pp, TREE_VEC_ELT (node, 0), spc, flags, false);
+  pp_string (pp, " * ");
+  if (op_prio (TREE_VEC_ELT (node, 1)) <= op_code_prio (MULT_EXPR))
+    {
+      pp_left_paren (pp);
+      dump_generic_node (pp, TREE_VEC_ELT (node, 1), spc, flags, false);
+      pp_right_paren (pp);
+    }
+  else
+    dump_generic_node (pp, TREE_VEC_ELT (node, 1), spc, flags, false);
+  pp_string (pp, " + ");
+  if (op_prio (TREE_VEC_ELT (node, 1)) <= op_code_prio (PLUS_EXPR))
+    {
+      pp_left_paren (pp);
+      dump_generic_node (pp, TREE_VEC_ELT (node, 2), spc, flags, false);
+      pp_right_paren (pp);
+    }
+  else
+    dump_generic_node (pp, TREE_VEC_ELT (node, 2), spc, flags, false);
+}
 
 /* Dump the node NODE on the pretty_printer PP, SPC spaces of
    indent.  FLAGS specifies details to show in the dump (see TDF_* in
@@ -3418,13 +3447,34 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 		  spc += 2;
 		  newline_and_indent (pp, spc);
 		  pp_string (pp, "for (");
-		  dump_generic_node (pp,
-				     TREE_VEC_ELT (OMP_FOR_INIT (node), i),
-				     spc, flags, false);
+		  tree init = TREE_VEC_ELT (OMP_FOR_INIT (node), i);
+		  if (TREE_CODE (init) != MODIFY_EXPR
+		      || TREE_CODE (TREE_OPERAND (init, 1)) != TREE_VEC)
+		    dump_generic_node (pp, init, spc, flags, false);
+		  else
+		    {
+		      dump_generic_node (pp, TREE_OPERAND (init, 0),
+					 spc, flags, false);
+		      pp_string (pp, " = ");
+		      dump_omp_loop_non_rect_expr (pp, TREE_OPERAND (init, 1),
+						   spc, flags);
+		    }
 		  pp_string (pp, "; ");
-		  dump_generic_node (pp,
-				     TREE_VEC_ELT (OMP_FOR_COND (node), i),
-				     spc, flags, false);
+		  tree cond = TREE_VEC_ELT (OMP_FOR_COND (node), i);
+		  if (!COMPARISON_CLASS_P (cond)
+		      || TREE_CODE (TREE_OPERAND (cond, 1)) != TREE_VEC)
+		    dump_generic_node (pp, cond, spc, flags, false);
+		  else
+		    {
+		      dump_generic_node (pp, TREE_OPERAND (cond, 0),
+					 spc, flags, false);
+		      const char *op = op_symbol (cond);
+		      pp_space (pp);
+		      pp_string (pp, op);
+		      pp_space (pp);
+		      dump_omp_loop_non_rect_expr (pp, TREE_OPERAND (cond, 1),
+						   spc, flags);
+		    }
 		  pp_string (pp, "; ");
 		  dump_generic_node (pp,
 				     TREE_VEC_ELT (OMP_FOR_INCR (node), i),

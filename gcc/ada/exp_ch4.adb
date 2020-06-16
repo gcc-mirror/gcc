@@ -12280,9 +12280,11 @@ package body Exp_Ch4 is
          --  Special processing is required if there is a change of
          --  representation (from enumeration representation clauses).
 
-         if not Same_Representation (Target_Type, Operand_Type) then
+         if not Same_Representation (Target_Type, Operand_Type)
+           and then not Conversion_OK (N)
+         then
 
-            --  Convert: x(y) to x'val (ytyp'val (y))
+            --  Convert: x(y) to x'val (ytyp'pos (y))
 
             Rewrite (N,
               Make_Attribute_Reference (Loc,
@@ -12716,6 +12718,14 @@ package body Exp_Ch4 is
               Make_Op_Eq (Sloc (Alt),
                 Left_Opnd  => L,
                 Right_Opnd => R);
+
+            if Is_Record_Or_Limited_Type (Etype (Alt)) then
+
+               --  We reset the Entity in order to use the primitive equality
+               --  of the type, as per RM 4.5.2 (28.1/4).
+
+               Set_Entity (Cond, Empty);
+            end if;
          end if;
 
          return Cond;

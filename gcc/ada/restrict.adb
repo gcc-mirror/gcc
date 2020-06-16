@@ -35,6 +35,7 @@ with Opt;      use Opt;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Stand;    use Stand;
+with Targparm; use Targparm;
 with Uname;    use Uname;
 
 package body Restrict is
@@ -908,7 +909,8 @@ package body Restrict is
 
    function Global_No_Tasking return Boolean is
    begin
-      return Global_Restriction_No_Tasking;
+      return Global_Restriction_No_Tasking
+        or else Targparm.Restrictions_On_Target.Set (No_Tasking);
    end Global_No_Tasking;
 
    -------------------------------

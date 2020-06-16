@@ -5216,7 +5216,10 @@ bool
 riscv_gpr_save_operation_p (rtx op)
 {
   unsigned len = XVECLEN (op, 0);
-  gcc_assert (len <= ARRAY_SIZE (gpr_save_reg_order));
+
+  if (len > ARRAY_SIZE (gpr_save_reg_order))
+    return false;
+
   for (unsigned i = 0; i < len; i++)
     {
       rtx elt = XVECEXP (op, 0, i);

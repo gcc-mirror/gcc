@@ -11344,9 +11344,9 @@
 ;; [uqrshll_di]
 ;;
 (define_insn "mve_uqrshll_sat<supf>_di"
-  [(set (match_operand:DI 0 "arm_general_register_operand" "+r")
-	(unspec:DI [(match_operand:DI 1 "arm_general_register_operand" "r")
-		    (match_operand:SI 2 "s_register_operand" "r")]
+  [(set (match_operand:DI 0 "arm_low_register_operand" "=l")
+	(unspec:DI [(match_operand:DI 1 "arm_low_register_operand" "0")
+		    (match_operand:SI 2 "register_operand" "r")]
 	 UQRSHLLQ))]
   "TARGET_HAVE_MVE"
   "uqrshll%?\\t%Q1, %R1, #<supf>, %2"
@@ -11356,9 +11356,9 @@
 ;; [sqrshrl_di]
 ;;
 (define_insn "mve_sqrshrl_sat<supf>_di"
-  [(set (match_operand:DI 0 "arm_general_register_operand" "+r")
-	(unspec:DI [(match_operand:DI 1 "arm_general_register_operand" "r")
-		    (match_operand:SI 2 "s_register_operand" "r")]
+  [(set (match_operand:DI 0 "arm_low_register_operand" "=l")
+	(unspec:DI [(match_operand:DI 1 "arm_low_register_operand" "0")
+		    (match_operand:SI 2 "register_operand" "r")]
 	 SQRSHRLQ))]
   "TARGET_HAVE_MVE"
   "sqrshrl%?\\t%Q1, %R1, #<supf>, %2"
@@ -11368,9 +11368,9 @@
 ;; [uqrshl_si]
 ;;
 (define_insn "mve_uqrshl_si"
-  [(set (match_operand:SI 0 "arm_general_register_operand" "+r")
-	(unspec:SI [(match_operand:SI 1 "arm_general_register_operand" "r")
-		    (match_operand:SI 2 "s_register_operand" "r")]
+  [(set (match_operand:SI 0 "arm_general_register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "arm_general_register_operand" "0")
+		    (match_operand:SI 2 "register_operand" "r")]
 	 UQRSHL))]
   "TARGET_HAVE_MVE"
   "uqrshl%?\\t%1, %2"
@@ -11380,9 +11380,9 @@
 ;; [sqrshr_si]
 ;;
 (define_insn "mve_sqrshr_si"
-  [(set (match_operand:SI 0 "arm_general_register_operand" "+r")
-	(unspec:SI [(match_operand:SI 1 "arm_general_register_operand" "r")
-		    (match_operand:SI 2 "s_register_operand" "r")]
+  [(set (match_operand:SI 0 "arm_general_register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "arm_general_register_operand" "0")
+		    (match_operand:SI 2 "register_operand" "r")]
 	 SQRSHR))]
   "TARGET_HAVE_MVE"
   "sqrshr%?\\t%1, %2"
@@ -11392,9 +11392,9 @@
 ;; [uqshll_di]
 ;;
 (define_insn "mve_uqshll_di"
-  [(set (match_operand:DI 0 "arm_general_register_operand" "+r")
-	(us_ashift:DI (match_operand:DI 1 "arm_general_register_operand" "r")
-		      (match_operand:SI 2 "arm_reg_or_long_shift_imm" "rPg")))]
+  [(set (match_operand:DI 0 "arm_low_register_operand" "=l")
+	(us_ashift:DI (match_operand:DI 1 "arm_low_register_operand" "0")
+		      (match_operand:SI 2 "immediate_operand" "Pg")))]
   "TARGET_HAVE_MVE"
   "uqshll%?\\t%Q1, %R1, %2"
   [(set_attr "predicable" "yes")])
@@ -11403,9 +11403,9 @@
 ;; [urshrl_di]
 ;;
 (define_insn "mve_urshrl_di"
-  [(set (match_operand:DI 0 "arm_general_register_operand" "+r")
-	(unspec:DI [(match_operand:DI 1 "arm_general_register_operand" "r")
-		    (match_operand:SI 2 "arm_reg_or_long_shift_imm" "rPg")]
+  [(set (match_operand:DI 0 "arm_low_register_operand" "=l")
+	(unspec:DI [(match_operand:DI 1 "arm_low_register_operand" "0")
+		    (match_operand:SI 2 "immediate_operand" "Pg")]
 	 URSHRL))]
   "TARGET_HAVE_MVE"
   "urshrl%?\\t%Q1, %R1, %2"
@@ -11415,9 +11415,9 @@
 ;; [uqshl_si]
 ;;
 (define_insn "mve_uqshl_si"
-  [(set (match_operand:SI 0 "arm_general_register_operand" "+r")
-	(us_ashift:SI (match_operand:SI 1 "arm_general_register_operand" "r")
-		      (match_operand:SI 2 "arm_reg_or_long_shift_imm" "rPg")))]
+  [(set (match_operand:SI 0 "arm_general_register_operand" "=r")
+	(us_ashift:SI (match_operand:SI 1 "arm_general_register_operand" "0")
+		      (match_operand:SI 2 "immediate_operand" "Pg")))]
   "TARGET_HAVE_MVE"
   "uqshl%?\\t%1, %2"
   [(set_attr "predicable" "yes")])
@@ -11426,9 +11426,9 @@
 ;; [urshr_si]
 ;;
 (define_insn "mve_urshr_si"
-  [(set (match_operand:SI 0 "arm_general_register_operand" "+r")
-	(unspec:SI [(match_operand:SI 1 "arm_general_register_operand" "r")
-		    (match_operand:SI 2 "arm_reg_or_long_shift_imm" "rPg")]
+  [(set (match_operand:SI 0 "arm_general_register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "arm_general_register_operand" "0")
+		    (match_operand:SI 2 "immediate_operand" "Pg")]
 	 URSHR))]
   "TARGET_HAVE_MVE"
   "urshr%?\\t%1, %2"
@@ -11438,9 +11438,9 @@
 ;; [sqshl_si]
 ;;
 (define_insn "mve_sqshl_si"
-  [(set (match_operand:SI 0 "arm_general_register_operand" "+r")
-	(ss_ashift:SI (match_operand:DI 1 "arm_general_register_operand" "r")
-		      (match_operand:SI 2 "arm_reg_or_long_shift_imm" "rPg")))]
+  [(set (match_operand:SI 0 "arm_general_register_operand" "=r")
+	(ss_ashift:SI (match_operand:DI 1 "arm_general_register_operand" "0")
+		      (match_operand:SI 2 "immediate_operand" "Pg")))]
   "TARGET_HAVE_MVE"
   "sqshl%?\\t%1, %2"
   [(set_attr "predicable" "yes")])
@@ -11449,9 +11449,9 @@
 ;; [srshr_si]
 ;;
 (define_insn "mve_srshr_si"
-  [(set (match_operand:SI 0 "arm_general_register_operand" "+r")
-	(unspec:SI [(match_operand:DI 1 "arm_general_register_operand" "r")
-		    (match_operand:SI 2 "arm_reg_or_long_shift_imm" "rPg")]
+  [(set (match_operand:SI 0 "arm_general_register_operand" "=r")
+	(unspec:SI [(match_operand:DI 1 "arm_general_register_operand" "0")
+		    (match_operand:SI 2 "immediate_operand" "Pg")]
 	 SRSHR))]
   "TARGET_HAVE_MVE"
   "srshr%?\\t%1, %2"
@@ -11461,9 +11461,9 @@
 ;; [srshrl_di]
 ;;
 (define_insn "mve_srshrl_di"
-  [(set (match_operand:DI 0 "arm_general_register_operand" "+r")
-	(unspec:DI [(match_operand:DI 1 "arm_general_register_operand" "r")
-		    (match_operand:SI 2 "arm_reg_or_long_shift_imm" "rPg")]
+  [(set (match_operand:DI 0 "arm_low_register_operand" "=l")
+	(unspec:DI [(match_operand:DI 1 "arm_low_register_operand" "0")
+		    (match_operand:SI 2 "immediate_operand" "Pg")]
 	 SRSHRL))]
   "TARGET_HAVE_MVE"
   "srshrl%?\\t%Q1, %R1, %2"
@@ -11473,9 +11473,9 @@
 ;; [sqshll_di]
 ;;
 (define_insn "mve_sqshll_di"
-  [(set (match_operand:DI 0 "arm_general_register_operand" "+r")
-	(ss_ashift:DI (match_operand:DI 1 "arm_general_register_operand" "r")
-		      (match_operand:SI 2 "arm_reg_or_long_shift_imm" "rPg")))]
+  [(set (match_operand:DI 0 "arm_low_register_operand" "=l")
+	(ss_ashift:DI (match_operand:DI 1 "arm_low_register_operand" "0")
+		      (match_operand:SI 2 "immediate_operand" "Pg")))]
   "TARGET_HAVE_MVE"
   "sqshll%?\\t%Q1, %R1, %2"
   [(set_attr "predicable" "yes")])

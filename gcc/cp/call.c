@@ -7083,42 +7083,6 @@ complain_about_access (tree decl, tree diag_decl, bool issue_error)
     }
 }
 
-/* If the current scope isn't allowed to access DECL along
-   BASETYPE_PATH, give an error.  The most derived class in
-   BASETYPE_PATH is the one used to qualify DECL. DIAG_DECL is
-   the declaration to use in the error diagnostic.  */
-
-bool
-enforce_access (tree basetype_path, tree decl, tree diag_decl,
-		tsubst_flags_t complain, access_failure_info *afi)
-{
-  gcc_assert (TREE_CODE (basetype_path) == TREE_BINFO);
-
-  if (flag_new_inheriting_ctors
-      && DECL_INHERITED_CTOR (decl))
-    {
-      /* 7.3.3/18: The additional constructors are accessible if they would be
-	 accessible when used to construct an object of the corresponding base
-	 class.  */
-      decl = strip_inheriting_ctors (decl);
-      basetype_path = lookup_base (basetype_path, DECL_CONTEXT (decl),
-				   ba_any, NULL, complain);
-    }
-
-  if (!accessible_p (basetype_path, decl, true))
-    {
-      if (flag_new_inheriting_ctors)
-	diag_decl = strip_inheriting_ctors (diag_decl);
-      if (complain & tf_error)
-	complain_about_access (decl, diag_decl, true);
-      if (afi)
-	afi->record_access_failure (basetype_path, decl, diag_decl);
-      return false;
-    }
-
-  return true;
-}
-
 /* Initialize a temporary of type TYPE with EXPR.  The FLAGS are a
    bitwise or of LOOKUP_* values.  If any errors are warnings are
    generated, set *DIAGNOSTIC_FN to "error" or "warning",

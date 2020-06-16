@@ -109,13 +109,13 @@ package body Urealp is
 
    function Decimal_Exponent_Hi (V : Ureal) return Int;
    --  Returns an estimate of the exponent of Val represented as a normalized
-   --  decimal number (non-zero digit before decimal point), The estimate is
+   --  decimal number (non-zero digit before decimal point), the estimate is
    --  either correct, or high, but never low. The accuracy of the estimate
    --  affects only the efficiency of the comparison routines.
 
    function Decimal_Exponent_Lo (V : Ureal) return Int;
    --  Returns an estimate of the exponent of Val represented as a normalized
-   --  decimal number (non-zero digit before decimal point), The estimate is
+   --  decimal number (non-zero digit before decimal point), the estimate is
    --  either correct, or low, but never high. The accuracy of the estimate
    --  affects only the efficiency of the comparison routines.
 

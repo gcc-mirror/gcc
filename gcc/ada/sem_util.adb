@@ -16978,9 +16978,8 @@ package body Sem_Util is
             --  Note that predefined operators are functions as well, and so
             --  are attributes that are (can be renamed as) functions.
 
-            when N_Binary_Op
-               | N_Function_Call
-               | N_Unary_Op
+            when N_Function_Call
+               | N_Op
             =>
                return Etype (N) /= Standard_Void_Type;
 
@@ -17040,12 +17039,21 @@ package body Sem_Util is
             --  of aggregates in more contexts.
 
             when N_Qualified_Expression =>
-               if Ada_Version <  Ada_2012 then
-                  return False;
-               else
-                  return Is_Object_Reference (Expression (N))
-                    or else Nkind (Expression (N)) = N_Aggregate;
-               end if;
+               return Ada_Version >= Ada_2012
+                 and then Is_Object_Reference (Expression (N));
+
+            --  In Ada 95 an aggregate is an object reference
+
+            when N_Aggregate =>
+               return Ada_Version >= Ada_95;
+
+            --  A string literal is not an object reference, but it might come
+            --  from rewriting of an object reference, e.g. from folding of an
+            --  aggregate.
+
+            when N_String_Literal =>
+               return Is_Rewrite_Substitution (N)
+                 and then Is_Object_Reference (Original_Node (N));
 
             when others =>
                return False;
@@ -26711,6 +26719,63 @@ package body Sem_Util is
 
       return Statically_Names_Object (Prefix (N));
    end Statically_Names_Object;
+
+   ---------------------------------
+   -- String_From_Numeric_Literal --
+   ---------------------------------
+
+   function String_From_Numeric_Literal (N : Node_Id) return String_Id is
+      Loc     : constant Source_Ptr        := Sloc (N);
+      Sbuffer : constant Source_Buffer_Ptr :=
+                  Source_Text (Get_Source_File_Index (Loc));
+      Src_Ptr : Source_Ptr := Loc;
+
+      C : Character  := Sbuffer (Src_Ptr);
+      --  Current source program character
+
+      function Belongs_To_Numeric_Literal (C : Character) return Boolean;
+      --  Return True if C belongs to the numeric literal
+
+      --------------------------------
+      -- Belongs_To_Numeric_Literal --
+      --------------------------------
+
+      function Belongs_To_Numeric_Literal (C : Character) return Boolean is
+      begin
+         case C is
+            when '0' .. '9'
+               | '_' | '.' | 'e' | '#' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F'
+            =>
+               return True;
+
+            --  Make sure '+' or '-' is part of an exponent
+
+            when '+' | '-' =>
+               declare
+                  Prev_C : constant Character := Sbuffer (Src_Ptr - 1);
+               begin
+                  return Prev_C = 'e' or else Prev_C = 'E';
+               end;
+
+            --  Other characters cannot belong to a numeric literal
+
+            when others =>
+               return False;
+         end case;
+      end Belongs_To_Numeric_Literal;
+
+   --  Start of processing for String_From_Numeric_Literal
+
+   begin
+      Start_String;
+      while Belongs_To_Numeric_Literal (C) loop
+         Store_String_Char (C);
+         Src_Ptr := Src_Ptr + 1;
+         C       := Sbuffer (Src_Ptr);
+      end loop;
+
+      return End_String;
+   end String_From_Numeric_Literal;
 
    --------------------------------------
    -- Subject_To_Loop_Entry_Attributes --
