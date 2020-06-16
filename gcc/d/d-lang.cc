@@ -73,7 +73,7 @@ struct d_option_data
   bool deps_skip_system;	    /* -MM  */
   const char *deps_filename;	    /* -M[M]D  */
   const char *deps_filename_user;   /* -MF <arg>  */
-  OutBuffer *deps_target;	    /* -M[QT] <arg> */
+  vec <const char *> deps_target;   /* -M[QT] <arg> */
   bool deps_phony;		    /* -MP  */
 
   bool stdinc;			    /* -nostdinc  */
@@ -104,16 +104,13 @@ static GTY(()) vec<tree, va_gc> *global_declarations;
 static void
 deps_add_target (const char *target, bool quoted)
 {
-  if (!d_option.deps_target)
-    d_option.deps_target = new OutBuffer ();
-  else
-    d_option.deps_target->writeByte (' ');
-
-  d_option.deps_target->reserve (strlen (target));
+  obstack buffer;
+  gcc_obstack_init (&buffer);
 
   if (!quoted)
     {
-      d_option.deps_target->writestring (target);
+      obstack_grow (&buffer, target, strlen (target));
+      d_option.deps_target.safe_push ((const char *) obstack_finish (&buffer));
       return;
     }
 
@@ -125,31 +122,59 @@ deps_add_target (const char *target, bool quoted)
 	case ' ':
 	case '\t':
 	  for (const char *q = p - 1; target <= q && *q == '\\';  q--)
-	    d_option.deps_target->writeByte ('\\');
-	  d_option.deps_target->writeByte ('\\');
+	    obstack_1grow (&buffer, '\\');
+	  obstack_1grow (&buffer, '\\');
 	  break;
 
 	case '$':
-	  d_option.deps_target->writeByte ('$');
+	  obstack_1grow (&buffer, '$');
 	  break;
 
 	case '#':
-	  d_option.deps_target->writeByte ('\\');
+	  obstack_1grow (&buffer, '\\');
 	  break;
 
 	default:
 	  break;
 	}
 
-      d_option.deps_target->writeByte (*p);
+      obstack_1grow (&buffer, *p);
     }
+
+  d_option.deps_target.safe_push ((const char *) obstack_finish (&buffer));
 }
 
-/* Write out all dependencies of a given MODULE to the specified BUFFER.
+/* Write STR, with a leading space to BUFFER, updating COLUMN as appropriate.
    COLMAX is the number of columns to word-wrap at (0 means don't wrap).  */
 
 static void
-deps_write (Module *module, OutBuffer *buffer, unsigned colmax = 72)
+deps_write_string (const char *str, obstack *buffer, unsigned &column,
+		   unsigned colmax = 72)
+{
+  unsigned size = strlen (str);
+
+  if (column != 0)
+    {
+      if (colmax && column + size > colmax)
+	{
+	  obstack_grow (buffer, " \\\n ", 4);
+	  column = 1;
+	}
+      else
+	{
+	  obstack_1grow (buffer, ' ');
+	  column++;
+	}
+    }
+
+  column += size;
+  obstack_grow (buffer, str, size);
+}
+
+/* Write out all dependencies of a given MODULE to the specified BUFFER.  */
+
+static void
+deps_write (Module *module, obstack *buffer)
 {
   hash_set <const char *> seen_modules;
   vec <const char *> dependencies = vNULL;
@@ -161,18 +186,15 @@ deps_write (Module *module, OutBuffer *buffer, unsigned colmax = 72)
   unsigned column = 0;
 
   /* Write out make target module name.  */
-  if (d_option.deps_target)
+  if (d_option.deps_target.length ())
     {
-      buffer->writestring (d_option.deps_target->extractChars ());
-      column = d_option.deps_target->offset;
+      for (unsigned i = 0; i < d_option.deps_target.length (); i++)
+	deps_write_string (d_option.deps_target[i], buffer, column);
     }
   else
-    {
-      buffer->writestring (module->objfile->name->str);
-      column = buffer->offset;
-    }
+    deps_write_string (module->objfile->name->str, buffer, column);
 
-  buffer->writestring (":");
+  obstack_1grow (buffer, ':');
   column++;
 
   /* Search all modules for file dependencies.  */
@@ -236,33 +258,17 @@ deps_write (Module *module, OutBuffer *buffer, unsigned colmax = 72)
 
   /* Write out all make dependencies.  */
   for (size_t i = 0; i < dependencies.length (); i++)
-    {
-      const char *str = dependencies[i];
-      unsigned size = strlen (str);
-      column += size;
+    deps_write_string (dependencies[i], buffer, column);
 
-      if (colmax && column > colmax)
-	{
-	  buffer->writestring (" \\\n ");
-	  column = size + 1;
-	}
-      else
-	{
-	  buffer->writestring (" ");
-	  column++;
-	}
-
-      buffer->writestring (str);
-    }
-
-  buffer->writenl ();
+  obstack_1grow (buffer, '\n');
 
   /* Write out all phony targets.  */
   for (size_t i = 0; i < phonylist.length (); i++)
     {
-      buffer->writenl ();
-      buffer->writestring (phonylist[i]);
-      buffer->writestring (":\n");
+      const char *str = phonylist[i];
+      obstack_1grow (buffer, '\n');
+      obstack_grow (buffer, str, strlen (str));
+      obstack_grow (buffer, ":\n", 2);
     }
 }
 
@@ -314,7 +320,7 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
   d_option.deps_skip_system = false;
   d_option.deps_filename = NULL;
   d_option.deps_filename_user = NULL;
-  d_option.deps_target = NULL;
+  d_option.deps_target = vNULL;
   d_option.deps_phony = false;
   d_option.stdinc = true;
 }
@@ -1270,11 +1276,13 @@ d_parse_file (void)
   /* Make dependencies.  */
   if (d_option.deps)
     {
-      OutBuffer buf;
+      obstack buffer;
       FILE *deps_stream;
 
+      gcc_obstack_init (&buffer);
+
       for (size_t i = 0; i < modules.length; i++)
-	deps_write (modules[i], &buf);
+	deps_write (modules[i], &buffer);
 
       /* -MF <arg> overrides -M[M]D.  */
       if (d_option.deps_filename_user)
@@ -1293,7 +1301,7 @@ d_parse_file (void)
       else
 	deps_stream = stdout;
 
-      fprintf (deps_stream, "%s", buf.peekChars ());
+      fprintf (deps_stream, "%s", (char *) obstack_finish (&buffer));
 
       if (deps_stream != stdout
 	  && (ferror (deps_stream) || fclose (deps_stream)))

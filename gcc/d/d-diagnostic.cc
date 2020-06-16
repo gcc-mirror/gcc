@@ -36,21 +36,21 @@ along with GCC; see the file COPYING3.  If not see
    `...`: text within backticks gets quoted as '%<...%>'.
    %-10s: left-justify format flag is removed leaving '%s' remaining.
    %02x: zero-padding format flag is removed leaving '%x' remaining.
-   %X: uppercase unsigned hexadecimals are rewritten as '%x'.
-
-   The result should be freed by the caller.  */
+   %X: uppercase unsigned hexadecimals are rewritten as '%x'.  */
 
 static char *
 expand_d_format (const char *format)
 {
-  OutBuffer buf;
+  obstack buf;
   bool inbacktick = false;
+
+  gcc_obstack_init (&buf);
 
   for (const char *p = format; *p;)
     {
       while (*p != '\0' && *p != '%' && *p != '`')
 	{
-	  buf.writeByte (*p);
+	  obstack_1grow (&buf, *p);
 	  p++;
 	}
 
@@ -62,12 +62,12 @@ expand_d_format (const char *format)
 	  /* Text enclosed by `...` are translated as a quoted string.  */
 	  if (inbacktick)
 	    {
-	      buf.writestring ("%>");
+	      obstack_grow (&buf, "%>", 2);
 	      inbacktick = false;
 	    }
 	  else
 	    {
-	      buf.writestring ("%<");
+	      obstack_grow (&buf, "%<", 2);
 	      inbacktick = true;
 	    }
 	  p++;
@@ -75,7 +75,7 @@ expand_d_format (const char *format)
 	}
 
       /* Check the conversion specification for unhandled flags.  */
-      buf.writeByte (*p);
+      obstack_1grow (&buf, *p);
       p++;
 
     Lagain:
@@ -100,7 +100,7 @@ expand_d_format (const char *format)
 
 	case 'X':
 	  /* Hex format only supports lower-case.  */
-	  buf.writeByte ('x');
+	  obstack_1grow (&buf, 'x');
 	  p++;
 	  break;
 
@@ -110,7 +110,8 @@ expand_d_format (const char *format)
     }
 
   gcc_assert (!inbacktick);
-  return buf.extractChars ();
+  obstack_1grow (&buf, '\0');
+  return (char *) obstack_finish (&buf);
 }
 
 /* Helper routine for all error routines.  Reports a diagnostic specified by
@@ -136,7 +137,6 @@ d_diagnostic_report_diagnostic (const Loc& loc, int opt, const char *format,
 	diagnostic.option_index = opt;
 
       diagnostic_report_diagnostic (global_dc, &diagnostic);
-      free (xformat);
     }
   else
     {
