@@ -1,3 +1,20 @@
+2020-06-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/char_traits.h (__cpp_lib_constexpr_char_traits):
+	Update value for C++20.
+	* include/std/version (__cpp_lib_constexpr_char_traits): Likewise.
+	* testsuite/21_strings/char_traits/requirements/constexpr_functions_c++17.cc:
+	Update expected value.
+	* testsuite/21_strings/char_traits/requirements/constexpr_functions_c++20.cc:
+	Likewise.
+
+2020-06-15  Paul Keir  <paul.keir@uws.ac.uk>
+
+	* include/bits/char_traits.h (char_traits::move): constexpr move with
+	overlap was using copy_backward incorrectly.
+	* testsuite/21_strings/char_traits/requirements/constexpr_functions_c++20.cc:
+	New test.
+
 2020-06-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/29_atomics/atomic_flag/clear/1.cc: Also test clear()
