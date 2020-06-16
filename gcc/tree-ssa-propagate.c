@@ -1035,7 +1035,8 @@ substitute_and_fold_engine::propagate_into_phi_args (basic_block bb)
 	      || virtual_operand_p (arg))
 	    continue;
 	  tree val = get_value (arg, phi);
-	  if (val && may_propagate_copy (arg, val))
+	  if (val && is_gimple_min_invariant (val)
+	      && may_propagate_copy (arg, val))
 	    propagate_value (use_p, val);
 	}
     }
