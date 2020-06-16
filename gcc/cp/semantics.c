@@ -295,12 +295,12 @@ enforce_access (tree basetype_path, tree decl, tree diag_decl,
 	  return true;
 
 	/* Defer this access check until instantiation time.  */
-	qualified_typedef_usage_t typedef_usage;
-	typedef_usage.typedef_decl = decl;
-	typedef_usage.context = TREE_TYPE (basetype_path);
-	typedef_usage.locus = input_location;
-	vec_safe_push (TI_TYPEDEFS_NEEDING_ACCESS_CHECKING (template_info),
-		       typedef_usage);
+	deferred_access_check access_check;
+	access_check.binfo = basetype_path;
+	access_check.decl = decl;
+	access_check.diag_decl = diag_decl;
+	access_check.loc = input_location;
+	vec_safe_push (TI_DEFERRED_ACCESS_CHECKS (template_info), access_check);
 	return true;
       }
 

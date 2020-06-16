@@ -215,7 +215,7 @@ static bool any_template_arguments_need_structural_equality_p (tree);
 static bool dependent_type_p_r (tree);
 static tree tsubst_copy	(tree, tree, tsubst_flags_t, tree);
 static tree tsubst_decl (tree, tree, tsubst_flags_t);
-static void perform_typedefs_access_check (tree tmpl, tree targs);
+static void perform_instantiation_time_access_checks (tree, tree);
 static tree listify (tree);
 static tree listify_autos (tree, tree);
 static tree tsubst_template_parm (tree, tree, tsubst_flags_t);
@@ -11512,46 +11512,38 @@ apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
     }
 }
 
-/* Perform (or defer) access check for typedefs that were referenced
-   from within the template TMPL code.
-   This is a subroutine of instantiate_decl and instantiate_class_template.
-   TMPL is the template to consider and TARGS is the list of arguments of
-   that template.  */
+/* The template TMPL is being instantiated with the template arguments TARGS.
+   Perform the access checks that we deferred when parsing the template.  */
 
 static void
-perform_typedefs_access_check (tree tmpl, tree targs)
+perform_instantiation_time_access_checks (tree tmpl, tree targs)
 {
   unsigned i;
-  qualified_typedef_usage_t *iter;
+  deferred_access_check *chk;
 
-  if (!tmpl
-      || (!CLASS_TYPE_P (tmpl)
-	  && TREE_CODE (tmpl) != FUNCTION_DECL))
+  if (!CLASS_TYPE_P (tmpl) && TREE_CODE (tmpl) != FUNCTION_DECL)
     return;
 
-  if (vec<qualified_typedef_usage_t, va_gc> *tdefs
-      = TI_TYPEDEFS_NEEDING_ACCESS_CHECKING (get_template_info (tmpl)))
-    FOR_EACH_VEC_ELT (*tdefs, i, iter)
+  if (vec<deferred_access_check, va_gc> *access_checks
+      = TI_DEFERRED_ACCESS_CHECKS (get_template_info (tmpl)))
+    FOR_EACH_VEC_ELT (*access_checks, i, chk)
       {
-	tree type_decl = iter->typedef_decl;
-	tree type_scope = iter->context;
+	tree decl = chk->decl;
+	tree diag_decl = chk->diag_decl;
+	tree type_scope = TREE_TYPE (chk->binfo);
 
-	if (!type_decl || !type_scope || !CLASS_TYPE_P (type_scope))
-	  continue;
-
-	if (uses_template_parms (type_decl)
-	    || (TREE_CODE (type_decl) == FIELD_DECL
-		&& uses_template_parms (DECL_CONTEXT (type_decl))))
-	  type_decl = tsubst_copy (type_decl, targs, tf_error, NULL_TREE);
+	if (uses_template_parms (decl)
+	    || (TREE_CODE (decl) == FIELD_DECL
+		&& uses_template_parms (DECL_CONTEXT (decl))))
+	  decl = tsubst_copy (decl, targs, tf_error, NULL_TREE);
 	if (uses_template_parms (type_scope))
 	  type_scope = tsubst (type_scope, targs, tf_error, NULL_TREE);
 
 	/* Make access check error messages point to the location
 	   of the use of the typedef.  */
-	iloc_sentinel ils (iter->locus);
+	iloc_sentinel ils (chk->loc);
 	perform_or_defer_access_check (TYPE_BINFO (type_scope),
-				       type_decl, type_decl,
-				       tf_warning_or_error);
+				       decl, diag_decl, tf_warning_or_error);
       }
 }
 
@@ -12080,11 +12072,7 @@ instantiate_class_template_1 (tree type)
      definitions or default arguments, of the class member functions,
      member classes, static data members and member templates....  */
 
-  /* Some typedefs referenced from within the template code need to be access
-     checked at template instantiation time, i.e now. These types were
-     added to the template at parsing time. Let's get those and perform
-     the access checks then.  */
-  perform_typedefs_access_check (pattern, args);
+  perform_instantiation_time_access_checks (pattern, args);
   perform_deferred_access_checks (tf_warning_or_error);
   pop_nested_class ();
   maximum_field_alignment = saved_maximum_field_alignment;
@@ -25631,12 +25619,8 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
       else
 	start_preparsed_function (d, NULL_TREE, SF_PRE_PARSED);
 
-      /* Some typedefs referenced from within the template code need to be
-	 access checked at template instantiation time, i.e now. These
-	 types were added to the template at parsing time. Let's get those
-	 and perform the access checks then.  */
-      perform_typedefs_access_check (DECL_TEMPLATE_RESULT (td),
-				     args);
+      perform_instantiation_time_access_checks (DECL_TEMPLATE_RESULT (td),
+						args);
 
       /* Create substitution entries for the parameters.  */
       register_parameter_specializations (code_pattern, d);
