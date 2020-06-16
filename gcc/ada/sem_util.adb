@@ -14337,6 +14337,16 @@ package body Sem_Util is
       return Nkind (Par) in N_Subprogram_Call;
    end Is_Anonymous_Access_Actual;
 
+   ------------------------
+   -- Is_Access_Variable --
+   ------------------------
+
+   function Is_Access_Variable (E : Entity_Id) return Boolean is
+   begin
+      return Is_Access_Object_Type (E)
+        and then not Is_Access_Constant (E);
+   end Is_Access_Variable;
+
    -----------------------------
    -- Is_Actual_Out_Parameter --
    -----------------------------
@@ -19149,9 +19159,12 @@ package body Sem_Util is
          then
             return True;
 
-         --  A constant is a synchronized object by default
+         --  A constant is a synchronized object by default, unless its type is
+         --  access-to-variable type.
 
-         elsif Ekind (Id) = E_Constant then
+         elsif Ekind (Id) = E_Constant
+           and then not Is_Access_Variable (Etype (Id))
+         then
             return True;
 
          --  A variable is a synchronized object if it is subject to pragma

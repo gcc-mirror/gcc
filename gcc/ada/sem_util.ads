@@ -1596,6 +1596,9 @@ package Sem_Util is
    --  True if E is the constructed wrapper for an access_to_subprogram
    --  type with Pre/Postconditions.
 
+   function Is_Access_Variable (E : Entity_Id) return Boolean;
+   --  Determines if type E is an access-to-variable
+
    function Is_Actual_In_Out_Parameter (N : Node_Id) return Boolean;
    --  Determines if N is an actual parameter of in-out mode in a subprogram
    --  call.
@@ -2166,7 +2169,7 @@ package Sem_Util is
    --  such, the object must be
    --    * Of a type that yields a synchronized object
    --    * An atomic object with enabled Async_Writers
-   --    * A constant
+   --    * A constant not of access-to-variable type
    --    * A variable subject to pragma Constant_After_Elaboration
 
    function Is_Synchronized_Tagged_Type (E : Entity_Id) return Boolean;
