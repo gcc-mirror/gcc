@@ -622,7 +622,7 @@ convert_for_assignment (tree expr, Type *etype, Type *totype)
 	  tree ctor = build_constructor (build_ctype (totype), NULL);
 	  if (count)
 	    {
-	      vec<constructor_elt, va_gc> *ce = NULL;
+	      vec <constructor_elt, va_gc> *ce = NULL;
 	      tree index = build2 (RANGE_EXPR, build_ctype (Type::tsize_t),
 				   size_zero_node, size_int (count - 1));
 	      tree value = convert_for_assignment (expr, etype, sa_type->next);

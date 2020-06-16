@@ -42,9 +42,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "d-target.h"
 
 
-static GTY(()) vec<tree, va_gc> *gcc_builtins_functions = NULL;
-static GTY(()) vec<tree, va_gc> *gcc_builtins_libfuncs = NULL;
-static GTY(()) vec<tree, va_gc> *gcc_builtins_types = NULL;
+static GTY(()) vec <tree, va_gc> *gcc_builtins_functions = NULL;
+static GTY(()) vec <tree, va_gc> *gcc_builtins_libfuncs = NULL;
+static GTY(()) vec <tree, va_gc> *gcc_builtins_types = NULL;
 
 /* Record built-in types and their associated decls for re-use when
    generating the `gcc.builtins' module.  */
@@ -60,7 +60,7 @@ struct builtin_data
   { }
 };
 
-static vec<builtin_data> builtin_converted_decls;
+static vec <builtin_data> builtin_converted_decls;
 
 /* Build D frontend type from tree TYPE type given.  This will set the
    back-end type symbol directly for complex types to save build_ctype()

@@ -95,7 +95,7 @@ struct binding_level *global_binding_level;
 static GTY(()) tree global_context;
 
 /* Array of all global declarations to pass back to the middle-end.  */
-static GTY(()) vec<tree, va_gc> *global_declarations;
+static GTY(()) vec <tree, va_gc> *global_declarations;
 
 /* Support for GCC-style command-line make dependency generation.
    Adds TARGET to the make dependencies target buffer.
@@ -366,7 +366,7 @@ d_init (void)
   Objc::_init ();
 
   /* Back-end init.  */
-  global_binding_level = ggc_cleared_alloc<binding_level> ();
+  global_binding_level = ggc_cleared_alloc <binding_level> ();
   current_binding_level = global_binding_level;
 
   /* This allows the code in d-builtins.cc to not have to worry about
@@ -1142,7 +1142,7 @@ d_parse_file (void)
       unsigned errors = global.startGagging ();
       Module *m = Module::load (Loc (), NULL, Identifier::idPool ("__main"));
 
-      if (! global.endGagging (errors))
+      if (!global.endGagging (errors))
 	{
 	  m->importedFrom = m;
 	  modules.push (m);
@@ -1774,7 +1774,7 @@ d_tree_node_structure (lang_tree_node *t)
 struct lang_type *
 build_lang_type (Type *t)
 {
-  struct lang_type *lt = ggc_cleared_alloc<struct lang_type> ();
+  struct lang_type *lt = ggc_cleared_alloc <struct lang_type> ();
   lt->type = t;
   return lt;
 }
@@ -1788,11 +1788,11 @@ build_lang_decl (Declaration *d)
      there's no associated frontend symbol to refer to (yet).  If the symbol
      appears later in the compilation, then the slot will be re-used.  */
   if (d == NULL)
-    return ggc_cleared_alloc<struct lang_decl> ();
+    return ggc_cleared_alloc <struct lang_decl> ();
 
   struct lang_decl *ld = (d->csym) ? DECL_LANG_SPECIFIC (d->csym) : NULL;
   if (ld == NULL)
-    ld = ggc_cleared_alloc<struct lang_decl> ();
+    ld = ggc_cleared_alloc <struct lang_decl> ();
 
   if (ld->decl == NULL)
     ld->decl = d;
@@ -1806,10 +1806,10 @@ build_lang_decl (Declaration *d)
 static void
 d_dup_lang_specific_decl (tree node)
 {
-  if (! DECL_LANG_SPECIFIC (node))
+  if (!DECL_LANG_SPECIFIC (node))
     return;
 
-  struct lang_decl *ld = ggc_alloc<struct lang_decl> ();
+  struct lang_decl *ld = ggc_alloc <struct lang_decl> ();
   memcpy (ld, DECL_LANG_SPECIFIC (node), sizeof (struct lang_decl));
   DECL_LANG_SPECIFIC (node) = ld;
 }

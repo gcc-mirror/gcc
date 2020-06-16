@@ -44,7 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Return the GCC location for the D frontend location LOC.  */
 
 location_t
-make_location_t (const Loc& loc)
+make_location_t (const Loc &loc)
 {
   location_t gcc_location = input_location;
 
@@ -241,7 +241,7 @@ build_integer_cst (dinteger_t value, tree type)
 /* Build REAL_CST of type TOTYPE with the value VALUE.  */
 
 tree
-build_float_cst (const real_t& value, Type *totype)
+build_float_cst (const real_t &value, Type *totype)
 {
   real_t new_value;
   TypeBasic *tb = totype->isTypeBasic ();
@@ -293,7 +293,7 @@ tree
 d_array_value (tree type, tree len, tree data)
 {
   tree len_field, ptr_field;
-  vec<constructor_elt, va_gc> *ce = NULL;
+  vec <constructor_elt, va_gc> *ce = NULL;
 
   gcc_assert (TYPE_DYNAMIC_ARRAY (type));
   len_field = TYPE_FIELDS (type);
@@ -356,7 +356,7 @@ build_class_binfo (tree super, ClassDeclaration *cd)
    This function makes assumptions about interface layout.  */
 
 tree
-build_interface_binfo (tree super, ClassDeclaration *cd, unsigned& offset)
+build_interface_binfo (tree super, ClassDeclaration *cd, unsigned &offset)
 {
   tree binfo = make_tree_binfo (cd->baseclasses->length);
   tree ctype = build_ctype (cd->type);
@@ -421,7 +421,7 @@ build_delegate_cst (tree method, tree object, Type *type)
       TYPE_DELEGATE (ctype) = 1;
     }
 
-  vec<constructor_elt, va_gc> *ce = NULL;
+  vec <constructor_elt, va_gc> *ce = NULL;
   CONSTRUCTOR_APPEND_ELT (ce, TYPE_FIELDS (ctype), object);
   CONSTRUCTOR_APPEND_ELT (ce, TREE_CHAIN (TYPE_FIELDS (ctype)), method);
 
@@ -445,7 +445,7 @@ build_method_call (tree callee, tree object, Type *type)
 /* Extract callee and object from T and return in to CALLEE and OBJECT.  */
 
 void
-extract_from_method_call (tree t, tree& callee, tree& object)
+extract_from_method_call (tree t, tree &callee, tree &object)
 {
   gcc_assert (METHOD_CALL_EXPR (t));
   object = CONSTRUCTOR_ELT (t, 0)->value;
@@ -1094,13 +1094,13 @@ build_array_struct_comparison (tree_code code, StructDeclaration *sd,
    matches the layout of TYPE.  */
 
 tree
-build_struct_literal (tree type, vec<constructor_elt, va_gc> *init)
+build_struct_literal (tree type, vec <constructor_elt, va_gc> *init)
 {
   /* If the initializer was empty, use default zero initialization.  */
   if (vec_safe_is_empty (init))
     return build_constructor (type, NULL);
 
-  vec<constructor_elt, va_gc> *ve = NULL;
+  vec <constructor_elt, va_gc> *ve = NULL;
   HOST_WIDE_INT offset = 0;
   bool constant_p = true;
   bool finished = false;
@@ -1685,7 +1685,7 @@ build_array_from_val (Type *type, tree val)
     val = build_array_from_val (type->nextOf (), val);
 
   size_t dims = type->isTypeSArray ()->dim->toInteger ();
-  vec<constructor_elt, va_gc> *elms = NULL;
+  vec <constructor_elt, va_gc> *elms = NULL;
   vec_safe_reserve (elms, dims);
 
   val = d_convert (etype, val);
@@ -1737,7 +1737,7 @@ build_array_bounds_call (const Loc &loc)
    If INCLUSIVE, we allow INDEX == LEN to return true also.  */
 
 tree
-build_bounds_condition (const Loc& loc, tree index, tree len, bool inclusive)
+build_bounds_condition (const Loc &loc, tree index, tree len, bool inclusive)
 {
   if (!array_bounds_check ())
     return index;
@@ -1873,7 +1873,7 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
     }
 
   /* Build the argument list for the call.  */
-  vec<tree, va_gc> *args = NULL;
+  vec <tree, va_gc> *args = NULL;
   tree saved_args = NULL_TREE;
 
   /* If this is a delegate call or a nested function being called as
@@ -1976,7 +1976,7 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 /* Builds a call to AssertError or AssertErrorMsg.  */
 
 tree
-d_assert_call (const Loc& loc, libcall_fn libcall, tree msg)
+d_assert_call (const Loc &loc, libcall_fn libcall, tree msg)
 {
   tree file;
   tree line = size_int (loc.linnum);
@@ -2202,7 +2202,7 @@ get_frame_for_symbol (Dsymbol *sym)
 	      tree fields = TYPE_FIELDS (type);
 	      /* The `this' field comes immediately after the `__chain'.  */
 	      tree thisfield = chain_index (1, fields);
-	      vec<constructor_elt, va_gc> *ve = NULL;
+	      vec <constructor_elt, va_gc> *ve = NULL;
 
 	      tree framefields = TYPE_FIELDS (FRAMEINFO_TYPE (ffo));
 	      frame_ref = build_deref (frame_ref);

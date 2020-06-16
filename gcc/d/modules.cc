@@ -76,15 +76,15 @@ static tree stop_minfo_node;
 
 struct GTY(()) module_info
 {
-  vec<tree, va_gc> *ctors;
-  vec<tree, va_gc> *dtors;
-  vec<tree, va_gc> *ctorgates;
+  vec <tree, va_gc> *ctors;
+  vec <tree, va_gc> *dtors;
+  vec <tree, va_gc> *ctorgates;
 
-  vec<tree, va_gc> *sharedctors;
-  vec<tree, va_gc> *shareddtors;
-  vec<tree, va_gc> *sharedctorgates;
+  vec <tree, va_gc> *sharedctors;
+  vec <tree, va_gc> *shareddtors;
+  vec <tree, va_gc> *sharedctorgates;
 
-  vec<tree, va_gc> *unitTests;
+  vec <tree, va_gc> *unitTests;
 };
 
 /* These must match the values in libdruntime/object_.d.  */
@@ -122,8 +122,8 @@ static Module *current_module_decl;
 
 /* Static constructors and destructors (not D `static this').  */
 
-static GTY(()) vec<tree, va_gc> *static_ctor_list;
-static GTY(()) vec<tree, va_gc> *static_dtor_list;
+static GTY(()) vec <tree, va_gc> *static_ctor_list;
+static GTY(()) vec <tree, va_gc> *static_dtor_list;
 
 /* Returns an internal function identified by IDENT.  This is used
    by both module initialization and dso handlers.  */
@@ -180,8 +180,8 @@ build_internal_fn (tree ident, tree expr)
    all variables in GATES, then calls the list of functions in FUNCTIONS.  */
 
 static tree
-build_funcs_gates_fn (tree ident, vec<tree, va_gc> *functions,
-		      vec<tree, va_gc> *gates)
+build_funcs_gates_fn (tree ident, vec <tree, va_gc> *functions,
+		      vec <tree, va_gc> *gates)
 {
   tree expr_list = NULL_TREE;
 
@@ -365,7 +365,7 @@ build_dso_cdtor_fn (bool ctor_p)
   tree dso_type = get_compiler_dso_type ();
   tree dso = build_local_temp (dso_type);
 
-  vec<constructor_elt, va_gc> *ve = NULL;
+  vec <constructor_elt, va_gc> *ve = NULL;
   CONSTRUCTOR_APPEND_ELT (ve, NULL_TREE, build_integer_cst (1, size_type_node));
   CONSTRUCTOR_APPEND_ELT (ve, NULL_TREE, build_address (dso_slot_node));
   CONSTRUCTOR_APPEND_ELT (ve, NULL_TREE, build_address (start_minfo_node));
@@ -465,7 +465,7 @@ register_moduleinfo (Module *decl, tree minfo)
    position.  No alignment is taken into account, all fields are packed.  */
 
 static void
-layout_moduleinfo_field (tree type, tree rec_type, HOST_WIDE_INT& offset)
+layout_moduleinfo_field (tree type, tree rec_type, HOST_WIDE_INT &offset)
 {
   tree field = create_field_decl (type, NULL, 1, 1);
   insert_aggregate_field (rec_type, field, offset);
@@ -603,7 +603,7 @@ layout_moduleinfo (Module *decl)
   /* Put out the two named fields in a ModuleInfo decl:
 	uint flags;
 	uint index;  */
-  vec<constructor_elt, va_gc> *minit = NULL;
+  vec <constructor_elt, va_gc> *minit = NULL;
 
   CONSTRUCTOR_APPEND_ELT (minit, NULL_TREE,
 			  build_integer_cst (flags, d_uint_type));
@@ -649,7 +649,7 @@ layout_moduleinfo (Module *decl)
 
   if (flags & MIimportedModules)
     {
-      vec<constructor_elt, va_gc> *elms = NULL;
+      vec <constructor_elt, va_gc> *elms = NULL;
       tree satype = make_array_type (Type::tvoidptr, aimports_dim);
       size_t idx = 0;
 
@@ -671,7 +671,7 @@ layout_moduleinfo (Module *decl)
 
   if (flags & MIlocalClasses)
     {
-      vec<constructor_elt, va_gc> *elms = NULL;
+      vec <constructor_elt, va_gc> *elms = NULL;
       tree satype = make_array_type (Type::tvoidptr, aclasses.length);
 
       for (size_t i = 0; i < aclasses.length; i++)

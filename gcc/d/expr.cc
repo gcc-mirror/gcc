@@ -695,7 +695,7 @@ public:
 	tree var = build_local_temp (make_array_type (targselem, ndims));
 
 	/* Loop through each concatenation from right to left.  */
-	vec<constructor_elt, va_gc> *elms = NULL;
+	vec <constructor_elt, va_gc> *elms = NULL;
 	CatExp *ce = e;
 	int dim = ndims - 1;
 
@@ -2465,7 +2465,7 @@ public:
 	    /* Multidimensional array allocations.  */
 	    tree tarray = make_array_type (Type::tsize_t, e->arguments->length);
 	    tree var = build_local_temp (tarray);
-	    vec<constructor_elt, va_gc> *elms = NULL;
+	    vec <constructor_elt, va_gc> *elms = NULL;
 
 	    /* Get the base element type for the array, generating the
 	       initializer for the dims parameter along the way.  */
@@ -2591,7 +2591,7 @@ public:
     if (tb->ty == Tsarray)
       {
 	/* Turn the string into a constructor for the static array.  */
-	vec<constructor_elt, va_gc> *elms = NULL;
+	vec <constructor_elt, va_gc> *elms = NULL;
 	vec_safe_reserve (elms, e->len);
 	tree etype = TREE_TYPE (type);
 
@@ -2677,7 +2677,7 @@ public:
 
     /* Build an expression that assigns the expressions in ELEMENTS to
        a constructor.  */
-    vec<constructor_elt, va_gc> *elms = NULL;
+    vec <constructor_elt, va_gc> *elms = NULL;
     vec_safe_reserve (elms, e->elements->length);
     bool constant_p = true;
     tree saved_elems = NULL_TREE;
@@ -2784,7 +2784,7 @@ public:
 
     /* Build an expression that assigns all expressions in KEYS
        to a constructor.  */
-    vec<constructor_elt, va_gc> *kelts = NULL;
+    vec <constructor_elt, va_gc> *kelts = NULL;
     vec_safe_reserve (kelts, e->keys->length);
     for (size_t i = 0; i < e->keys->length; i++)
       {
@@ -2797,7 +2797,7 @@ public:
     tree akeys = build_constructor (tkeys, kelts);
 
     /* Do the same with all expressions in VALUES.  */
-    vec<constructor_elt, va_gc> *velts = NULL;
+    vec <constructor_elt, va_gc> *velts = NULL;
     vec_safe_reserve (velts, e->values->length);
     for (size_t i = 0; i < e->values->length; i++)
       {
@@ -2822,7 +2822,7 @@ public:
 
     /* Return an associative array pointed to by MEM.  */
     tree aatype = build_ctype (ta);
-    vec<constructor_elt, va_gc> *ce = NULL;
+    vec <constructor_elt, va_gc> *ce = NULL;
     CONSTRUCTOR_APPEND_ELT (ce, TYPE_FIELDS (aatype), mem);
 
     this->result_ = build_nop (build_ctype (e->type),
@@ -2850,7 +2850,7 @@ public:
 
     /* Build a constructor that assigns the expressions in ELEMENTS
        at each field index that has been filled in.  */
-    vec<constructor_elt, va_gc> *ve = NULL;
+    vec <constructor_elt, va_gc> *ve = NULL;
     tree saved_elems = NULL_TREE;
 
     /* CTFE may fill the hidden pointer by NullExp.  */
@@ -2961,7 +2961,7 @@ public:
     if (e->e1->op == TOKarrayliteral)
       {
 	ArrayLiteralExp *ale = e->e1->isArrayLiteralExp ();
-	vec<constructor_elt, va_gc> *elms = NULL;
+	vec <constructor_elt, va_gc> *elms = NULL;
 	bool constant_p = true;
 
 	vec_safe_reserve (elms, ale->elements->length);

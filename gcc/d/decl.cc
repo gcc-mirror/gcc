@@ -63,7 +63,7 @@ const char *
 d_mangle_decl (Dsymbol *decl)
 {
   if (decl->isFuncDeclaration ())
-    return mangleExact ((FuncDeclaration *)decl);
+    return mangleExact ((FuncDeclaration *) decl);
   else
     {
       OutBuffer buf;
@@ -511,7 +511,7 @@ public:
     d_finish_decl (d->csym);
 
     /* Put out the vtbl[].  */
-    vec<constructor_elt, va_gc> *elms = NULL;
+    vec <constructor_elt, va_gc> *elms = NULL;
 
     /* First entry is ClassInfo reference.  */
     if (d->vtblOffset ())
@@ -521,7 +521,7 @@ public:
       {
 	FuncDeclaration *fd = d->vtbl[i]->isFuncDeclaration ();
 
-	if (fd && (fd->fbody || !d->isAbstract()))
+	if (fd && (fd->fbody || !d->isAbstract ()))
 	  {
 	    CONSTRUCTOR_APPEND_ELT (elms, size_int (i),
 				    build_address (get_symbol_decl (fd)));
@@ -1897,7 +1897,7 @@ start_function (FuncDeclaration *fd)
   else
     cfun->function_end_locus = DECL_SOURCE_LOCATION (fndecl);
 
-  cfun->language = ggc_cleared_alloc<language_function> ();
+  cfun->language = ggc_cleared_alloc <language_function> ();
   cfun->language->function = fd;
 
   /* Default chain value is `null' unless parent found.  */
@@ -2097,7 +2097,7 @@ build_class_instance (ClassReferenceExp *exp)
 {
   ClassDeclaration *cd = exp->originalClass ();
   tree type = TREE_TYPE (build_ctype (exp->value->stype));
-  vec<constructor_elt, va_gc> *ve = NULL;
+  vec <constructor_elt, va_gc> *ve = NULL;
 
   /* The set base vtable field.  */
   tree vptr = build_address (get_vtable_decl (cd));

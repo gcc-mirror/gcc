@@ -1683,12 +1683,12 @@ public:
   void visit (TypeAArray *t)
   {
     t->index->accept (this);
-    visit ((TypeNext *)t);
+    visit ((TypeNext *) t);
   }
 
   void visit (TypeFunction *t)
   {
-    visit ((TypeNext *)t);
+    visit ((TypeNext *) t);
   }
 
   void visit (TypeStruct *t)

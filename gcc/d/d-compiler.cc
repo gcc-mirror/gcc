@@ -89,7 +89,7 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
     {
       /* Build array as VECTOR_CST, assumes EXPR is constant.  */
       Expressions *elements = expr->isArrayLiteralExp ()->elements;
-      vec<constructor_elt, va_gc> *elms = NULL;
+      vec <constructor_elt, va_gc> *elms = NULL;
 
       vec_safe_reserve (elms, elements->length);
       for (size_t i = 0; i < elements->length; i++)
