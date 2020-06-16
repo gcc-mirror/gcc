@@ -29118,16 +29118,12 @@ cp_parser_template_declaration_after_parameters (cp_parser* parser,
     decl = cp_parser_concept_definition (parser);
   else
     {
-      /* There are no access checks when parsing a template, as we do not
-	 know if a specialization will be a friend.  */
-      push_deferring_access_checks (dk_no_check);
       cp_token *token = cp_lexer_peek_token (parser->lexer);
       decl = cp_parser_single_declaration (parser,
 					   checks,
 					   member_p,
                                            /*explicit_specialization_p=*/false,
 					   &friend_p);
-      pop_deferring_access_checks ();
 
       /* If this is a member template declaration, let the front
 	 end know.  */
