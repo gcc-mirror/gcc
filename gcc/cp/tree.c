@@ -4384,7 +4384,7 @@ bool
 zero_init_expr_p (tree t)
 {
   tree type = TREE_TYPE (t);
-  if (!type || dependent_type_p (type))
+  if (!type || uses_template_parms (type))
     return false;
   if (zero_init_p (type))
     return initializer_zerop (t);
