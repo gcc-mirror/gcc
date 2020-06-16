@@ -1218,9 +1218,7 @@ public:
 
 	if (!e->indexIsInBounds && array_bounds_check ())
 	  {
-	    tree tassert = (global.params.checkAction == CHECKACTION_D)
-	      ? d_assert_call (e->loc, LIBCALL_ARRAY_BOUNDS)
-	      : build_call_expr (builtin_decl_explicit (BUILT_IN_TRAP), 0);
+	    tree tassert = build_array_bounds_call (e->loc);
 
 	    result = d_save_expr (result);
 	    result = build_condition (TREE_TYPE (result),
