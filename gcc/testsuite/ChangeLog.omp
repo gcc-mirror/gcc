@@ -1,3 +1,18 @@
+2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
+	2020-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/loop-6.c: New test.
+	* gcc.dg/gomp/loop-1.c: Don't expect diagnostics on valid
+	non-rectangular loops.
+	* gcc.dg/gomp/loop-2.c: New test.
+	* g++.dg/gomp/loop-1.C: Don't expect diagnostics on valid
+	non-rectangular loops.
+	* g++.dg/gomp/loop-2.C: Likewise.
+	* g++.dg/gomp/loop-5.C: New test.
+	* g++.dg/gomp/loop-6.C: New test.
+
 2021-01-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline

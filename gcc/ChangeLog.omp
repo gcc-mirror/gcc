@@ -1,3 +1,30 @@
+2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
+	2020-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_FOR_NON_RECTANGULAR): Define.
+	* gimplify.c (gimplify_omp_for): Diagnose schedule, ordered
+	or dist_schedule clause on non-rectangular loops.  Handle
+	gimplification of non-rectangular lb/b expressions.  When changing
+	iteration variable, adjust also non-rectangular lb/b expressions
+	referencing that.
+	* omp-general.h (struct omp_for_data_loop): Add m1, m2 and outer
+	members.
+	(struct omp_for_data): Add non_rect member.
+	* omp-general.c (omp_extract_for_data): Handle non-rectangular
+	loops.  Fill in non_rect, m1, m2 and outer.
+	* omp-low.c (lower_omp_for): Handle non-rectangular lb/b expressions.
+	* omp-expand.c (expand_omp_for): Emit sorry_at for unsupported
+	non-rectangular loop cases and assert for cases that can't be
+	non-rectangular.
+	* tree-pretty-print.c (dump_mem_ref): Formatting fix.
+	(dump_omp_loop_non_rect_expr): New function.
+	(dump_generic_node): Handle non-rectangular OpenMP loops.
+	* tree-pretty-print.h (dump_omp_loop_non_rect_expr): Declare.
+	* gimple-pretty-print.c (dump_gimple_omp_for): Handle non-rectangular
+	OpenMP loops.
+
 2021-01-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline

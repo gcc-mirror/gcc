@@ -75,12 +75,12 @@ f1 (int x)
     for (j = 0; j < 16; j++)
       ;
   #pragma omp for collapse(2)
-  for (i = 0; i < 16; i = i + 2) /* { dg-error "initializer expression refers to iteration variable" } */
+  for (i = 0; i < 16; i = i + 2)
     for (j = i; j < 16; j += 2)
       ;
   #pragma omp for collapse(2)
   for (i = 0; i < 16; i = i + 2)
-    for (j = i + 3; j < 16; j += 2) /* { dg-error "initializer expression refers to iteration variable" } */
+    for (j = i + 3; j < 16; j += 2)
       ;
   #pragma omp for collapse(2)
   for (i = 0; i < 16; i++)
@@ -92,11 +92,11 @@ f1 (int x)
       ;
   #pragma omp for collapse(2)
   for (i = 0; i < 16; i++)
-    for (j = 0; j < i; j++) /* { dg-error "condition expression refers to iteration variable" } */
+    for (j = 0; j < i; j++)
       ;
   #pragma omp for collapse(2)
   for (i = 0; i < 16; i++)
-    for (j = 0; j < i + 4; j++) /* { dg-error "condition expression refers to iteration variable" } */
+    for (j = 0; j < i + 4; j++)
       ;
   #pragma omp for collapse(2)
   for (i = 0; i < j + 4; i++) /* { dg-error "condition expression refers to iteration variable" } */
@@ -209,12 +209,12 @@ f2 (int x)
     for (int j = 0; j < 16; j += 2)
       ;
   #pragma omp for collapse(2)
-  for (int i = 0; i < 16; i = i + 2) /* { dg-error "initializer expression refers to iteration variable" } */
+  for (int i = 0; i < 16; i = i + 2)
     for (int j = i; j < 16; j += 2)
       ;
   #pragma omp for collapse(2)
   for (int i = 0; i < 16; i = i + 2)
-    for (int j = i + 3; j < 16; j += 2) /* { dg-error "initializer expression refers to iteration variable" } */
+    for (int j = i + 3; j < 16; j += 2)
       ;
   #pragma omp for collapse(2)
   for (int i = 0; i < 16; i++)
@@ -226,11 +226,11 @@ f2 (int x)
       ;
   #pragma omp for collapse(2)
   for (int i = 0; i < 16; i++)
-    for (int j = 0; j < i; j++) /* { dg-error "condition expression refers to iteration variable" } */
+    for (int j = 0; j < i; j++)
       ;
   #pragma omp for collapse(2)
   for (int i = 0; i < 16; i++)
-    for (int j = 0; j < i + 4; j++) /* { dg-error "condition expression refers to iteration variable" } */
+    for (int j = 0; j < i + 4; j++)
       ;
   #pragma omp for collapse(2)
   for (int i = 0; i < 16; i++)

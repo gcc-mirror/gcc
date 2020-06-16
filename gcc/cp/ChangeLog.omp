@@ -1,3 +1,15 @@
+2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
+	2020-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.c (handle_omp_for_class_iterator): Adjust
+	c_omp_check_loop_iv_exprs caller.
+	(finish_omp_for): Likewise.  Don't call fold_build_cleanup_point_expr
+	before calling c_finish_omp_for and c_omp_check_loop_iv, move it
+	after those calls.
+	* pt.c (tsubst_omp_for_iterator): Handle non-rectangular loops.
+
 2021-01-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
