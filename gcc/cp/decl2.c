@@ -838,7 +838,17 @@ grokfield (const cp_declarator *declarator,
       && TREE_CHAIN (init) == NULL_TREE)
     init = NULL_TREE;
 
-  value = grokdeclarator (declarator, declspecs, FIELD, init != 0, &attrlist);
+  int initialized;
+  if (init == ridpointers[(int)RID_DELETE])
+    initialized = SD_DELETED;
+  else if (init == ridpointers[(int)RID_DEFAULT])
+    initialized = SD_DEFAULTED;
+  else if (init)
+    initialized = SD_INITIALIZED;
+  else
+    initialized = SD_UNINITIALIZED;
+
+  value = grokdeclarator (declarator, declspecs, FIELD, initialized, &attrlist);
   if (! value || value == error_mark_node)
     /* friend or constructor went bad.  */
     return error_mark_node;
@@ -916,18 +926,8 @@ grokfield (const cp_declarator *declarator,
 	{
 	  if (init == ridpointers[(int)RID_DELETE])
 	    {
-	      if (friendp && decl_defined_p (value))
-		{
-		  error ("redefinition of %q#D", value);
-		  inform (DECL_SOURCE_LOCATION (value),
-			  "%q#D previously defined here", value);
-		}
-	      else
-		{
-		  DECL_DELETED_FN (value) = 1;
-		  DECL_DECLARED_INLINE_P (value) = 1;
-		  DECL_INITIAL (value) = error_mark_node;
-		}
+	      DECL_DELETED_FN (value) = 1;
+	      DECL_DECLARED_INLINE_P (value) = 1;
 	    }
 	  else if (init == ridpointers[(int)RID_DEFAULT])
 	    {
@@ -936,6 +936,9 @@ grokfield (const cp_declarator *declarator,
 		  DECL_DEFAULTED_FN (value) = 1;
 		  DECL_INITIALIZED_IN_CLASS_P (value) = 1;
 		  DECL_DECLARED_INLINE_P (value) = 1;
+		  /* grokfndecl set this to error_mark_node, but we want to
+		     leave it unset until synthesize_method.  */
+		  DECL_INITIAL (value) = NULL_TREE;
 		}
 	    }
 	  else if (TREE_CODE (init) == DEFERRED_PARSE)
