@@ -82,7 +82,7 @@ d_decl_context (Dsymbol *dsym)
 	  return build_import_decl (parent);
 	}
 
-      /* Declarations marked as 'static' or '__gshared' are never
+      /* Declarations marked as `static' or `__gshared' are never
 	 part of any context except at module level.  */
       if (decl != NULL && decl->isDataseg ())
 	continue;
@@ -164,7 +164,7 @@ declaration_type (Declaration *decl)
   if (declaration_reference_p (decl))
     return build_reference_type (type);
 
-  /* The 'this' parameter is always const.  */
+  /* The `this' parameter is always const.  */
   if (decl->isThisDeclaration ())
     return insert_type_modifiers (type, MODconst);
 
@@ -1830,7 +1830,7 @@ call_by_alias_p (FuncDeclaration *caller, FuncDeclaration *callee)
 }
 
 /* Entry point for call routines.  Builds a function call to FD.
-   OBJECT is the 'this' reference passed and ARGS are the arguments to FD.  */
+   OBJECT is the `this' reference passed and ARGS are the arguments to FD.  */
 
 tree
 d_build_call_expr (FuncDeclaration *fd, tree object, Expressions *arguments)
@@ -1839,7 +1839,7 @@ d_build_call_expr (FuncDeclaration *fd, tree object, Expressions *arguments)
 		       build_address (get_symbol_decl (fd)), object, arguments);
 }
 
-/* Builds a CALL_EXPR of type TF to CALLABLE.  OBJECT holds the 'this' pointer,
+/* Builds a CALL_EXPR of type TF to CALLABLE.  OBJECT holds the `this' pointer,
    ARGUMENTS are evaluated in left to right order, saved and promoted
    before passing.  */
 
@@ -2044,7 +2044,7 @@ build_float_modulus (tree type, tree arg0, tree arg1)
 }
 
 /* Build a function type whose first argument is a pointer to BASETYPE,
-   which is to be used for the 'vthis' context parameter for TYPE.
+   which is to be used for the `vthis' context parameter for TYPE.
    The base type may be a record for member functions, or a void for
    nested functions and delegates.  */
 
@@ -2085,7 +2085,7 @@ get_frame_for_symbol (Dsymbol *sym)
       /* Check that the nested function is properly defined.  */
       if (!fd->fbody)
 	{
-	  /* Should instead error on line that references 'fd'.  */
+	  /* Should instead error on line that references `fd'.  */
 	  error_at (make_location_t (fd->loc), "nested function missing body");
 	  return null_pointer_node;
 	}
@@ -2181,7 +2181,7 @@ get_frame_for_symbol (Dsymbol *sym)
     {
       tree frame_ref = get_framedecl (thisfd, fdparent);
 
-      /* If 'thisfd' is a derived member function, then 'fdparent' is the
+      /* If `thisfd' is a derived member function, then `fdparent' is the
 	 overridden member function in the base class.  Even if there's a
 	 closure environment, we should give the original stack data as the
 	 nested function frame.  */
@@ -2195,12 +2195,12 @@ get_frame_for_symbol (Dsymbol *sym)
 	  if (cdo->isBaseOf (cd, &offset) && offset != 0)
 	    {
 	      /* Generate a new frame to pass to the overriden function that
-		 has the 'this' pointer adjusted.  */
+		 has the `this' pointer adjusted.  */
 	      gcc_assert (offset != OFFSET_RUNTIME);
 
 	      tree type = FRAMEINFO_TYPE (get_frameinfo (fdoverride));
 	      tree fields = TYPE_FIELDS (type);
-	      /* The 'this' field comes immediately after the '__chain'.  */
+	      /* The `this' field comes immediately after the `__chain'.  */
 	      tree thisfield = chain_index (1, fields);
 	      vec<constructor_elt, va_gc> *ve = NULL;
 
@@ -2263,7 +2263,7 @@ d_nested_struct (StructDeclaration *sd)
 
 
 /* Starting from the current function FD, try to find a suitable value of
-   'this' in nested function instances.  A suitable 'this' value is an
+   `this' in nested function instances.  A suitable `this' value is an
    instance of OCD or a class that has OCD as a base.  */
 
 static tree
@@ -2301,7 +2301,7 @@ find_this_tree (ClassDeclaration *ocd)
   return NULL_TREE;
 }
 
-/* Retrieve the outer class/struct 'this' value of DECL from
+/* Retrieve the outer class/struct `this' value of DECL from
    the current function.  */
 
 tree
@@ -2327,7 +2327,7 @@ build_vthis (AggregateDeclaration *decl)
 	  outer = ((TemplateInstance *) outer->parent)->enclosing;
 	}
 
-      /* For outer classes, get a suitable 'this' value.
+      /* For outer classes, get a suitable `this' value.
 	 For outer functions, get a suitable frame/closure pointer.  */
       ClassDeclaration *cdo = outer->isClassDeclaration ();
       FuncDeclaration *fdo = outer->isFuncDeclaration ();
@@ -2412,7 +2412,7 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
 	    }
 	}
 
-      /* Also add hidden 'this' to outer context.  */
+      /* Also add hidden `this' to outer context.  */
       if (fd->vthis)
 	{
 	  for (size_t i = 0; i < fd->closureVars.length; i++)
@@ -2542,7 +2542,7 @@ build_closure (FuncDeclaration *fd)
 }
 
 /* Return the frame of FD.  This could be a static chain or a closure
-   passed via the hidden 'this' pointer.  */
+   passed via the hidden `this' pointer.  */
 
 tree
 get_frameinfo (FuncDeclaration *fd)

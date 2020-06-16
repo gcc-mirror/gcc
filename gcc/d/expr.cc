@@ -1739,7 +1739,7 @@ public:
 		    thisexp = TREE_OPERAND (thisexp, 1);
 		  }
 
-		/* Want reference to 'this' object.  */
+		/* Want reference to `this' object.  */
 		if (!POINTER_TYPE_P (TREE_TYPE (thisexp)))
 		  thisexp = build_address (thisexp);
 
@@ -1770,7 +1770,7 @@ public:
 	  {
 	    /* This gets the true function type, getting the function type
 	       from e1->type can sometimes be incorrect, such as when calling
-	       a 'ref' return function.  */
+	       a `ref' return function.  */
 	    tf = get_function_type (e1b->isDotVarExp ()->var->type);
 	  }
 	else
@@ -1794,7 +1794,7 @@ public:
 
 	if (fd->isNested ())
 	  {
-	    /* Maybe re-evaluate symbol storage treating 'fd' as public.  */
+	    /* Maybe re-evaluate symbol storage treating `fd' as public.  */
 	    if (call_by_alias_p (d_function_chain->function, fd))
 	      TREE_PUBLIC (callee) = 1;
 
@@ -2099,7 +2099,7 @@ public:
   {
     Type *ftype = e->type->toBasetype ();
 
-    /* This check is for lambda's, remove 'vthis' as function isn't nested.  */
+    /* This check is for lambda's, remove `vthis' as function isn't nested.  */
     if (e->fd->tok == TOKreserved && ftype->ty == Tpointer)
       {
 	e->fd->tok = TOKfunction;
