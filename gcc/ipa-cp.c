@@ -1304,6 +1304,26 @@ initialize_node_lattices (struct cgraph_node *node)
       }
 }
 
+/* Return true iff X and Y should be considered equal values by IPA-CP.  */
+
+static bool
+values_equal_for_ipcp_p (tree x, tree y)
+{
+  gcc_checking_assert (x != NULL_TREE && y != NULL_TREE);
+
+  if (x == y)
+    return true;
+
+  if (TREE_CODE (x) == ADDR_EXPR
+      && TREE_CODE (y) == ADDR_EXPR
+      && TREE_CODE (TREE_OPERAND (x, 0)) == CONST_DECL
+      && TREE_CODE (TREE_OPERAND (y, 0)) == CONST_DECL)
+    return operand_equal_p (DECL_INITIAL (TREE_OPERAND (x, 0)),
+			    DECL_INITIAL (TREE_OPERAND (y, 0)), 0);
+  else
+    return operand_equal_p (x, y, 0);
+}
+
 /* Return the result of a (possibly arithmetic) operation on the constant
    value INPUT.  OPERAND is 2nd operand for binary operation.  RES_TYPE is
    the type of the parameter to which the result is passed.  Return
@@ -1320,6 +1340,14 @@ ipa_get_jf_arith_result (enum tree_code opcode, tree input, tree operand,
     return input;
   if (!is_gimple_ip_invariant (input))
     return NULL_TREE;
+
+  if (opcode == ASSERT_EXPR)
+    {
+      if (values_equal_for_ipcp_p (input, operand))
+	return input;
+      else
+	return NULL_TREE;
+    }
 
   if (!res_type)
     {
@@ -1751,26 +1779,6 @@ ipcp_verify_propagated_values (void)
 	    }
 	}
     }
-}
-
-/* Return true iff X and Y should be considered equal values by IPA-CP.  */
-
-static bool
-values_equal_for_ipcp_p (tree x, tree y)
-{
-  gcc_checking_assert (x != NULL_TREE && y != NULL_TREE);
-
-  if (x == y)
-    return true;
-
-  if (TREE_CODE (x) ==  ADDR_EXPR
-      && TREE_CODE (y) ==  ADDR_EXPR
-      && TREE_CODE (TREE_OPERAND (x, 0)) == CONST_DECL
-      && TREE_CODE (TREE_OPERAND (y, 0)) == CONST_DECL)
-    return operand_equal_p (DECL_INITIAL (TREE_OPERAND (x, 0)),
-			    DECL_INITIAL (TREE_OPERAND (y, 0)), 0);
-  else
-    return operand_equal_p (x, y, 0);
 }
 
 /* Return true iff X and Y should be considered equal contexts by IPA-CP.  */
