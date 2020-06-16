@@ -31,6 +31,12 @@
 	      || REGNO_REG_CLASS (REGNO (op)) != NO_REGS));
 })
 
+(define_predicate "mve_memory_operand"
+  (and (match_code "mem")
+       (match_test "TARGET_32BIT
+		    && mve_vector_mem_operand (GET_MODE (op), XEXP (op, 0),
+					       false)")))
+
 ;; True for immediates in the range of 1 to 16 for MVE.
 (define_predicate "mve_imm_16"
   (match_test "satisfies_constraint_Rd (op)"))
