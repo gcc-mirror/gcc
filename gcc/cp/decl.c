@@ -2067,13 +2067,19 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		    "previous declaration of %qD", olddecl);
 	}
 
+      /* [dcl.fct.def.delete] A deleted definition of a function shall be the
+	 first declaration of the function or, for an explicit specialization
+	 of a function template, the first declaration of that
+	 specialization.  */
       if (!(DECL_TEMPLATE_INSTANTIATION (olddecl)
 	    && DECL_TEMPLATE_SPECIALIZATION (newdecl)))
 	{
 	  if (DECL_DELETED_FN (newdecl))
 	    {
 	      auto_diagnostic_group d;
-	      error_at (newdecl_loc, "deleted definition of %qD", newdecl);
+	      pedwarn (newdecl_loc, OPT_Wpedantic,
+		       "deleted definition of %qD is not first declaration",
+		       newdecl);
 	      inform (olddecl_loc,
 		      "previous declaration of %qD", olddecl);
 	    }
