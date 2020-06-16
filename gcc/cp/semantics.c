@@ -294,6 +294,13 @@ enforce_access (tree basetype_path, tree decl, tree diag_decl,
 	     assume it'll be accessible at instantiation time.  */
 	  return true;
 
+	/* Access of a dependent decl should be rechecked after tsubst'ing
+	   into the user of the decl, rather than explicitly deferring the
+	   check here.  */
+	gcc_assert (!uses_template_parms (decl));
+	if (TREE_CODE (decl) == FIELD_DECL)
+	  gcc_assert (!uses_template_parms (DECL_CONTEXT (decl)));
+
 	/* Defer this access check until instantiation time.  */
 	deferred_access_check access_check;
 	access_check.binfo = basetype_path;
