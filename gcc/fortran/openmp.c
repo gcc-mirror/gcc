@@ -2537,6 +2537,14 @@ gfc_match_oacc_routine (void)
     /* Something has gone wrong, possibly a syntax error.  */
     goto cleanup;
 
+  if (gfc_pure (NULL) && c && (c->gang || c->worker || c->vector))
+    {
+      gfc_error ("!$ACC ROUTINE with GANG, WORKER, or VECTOR clause is not "
+		 "permitted in PURE procedure at %C");
+      goto cleanup;
+    }
+
+
   if (n)
     n->clauses = c;
   else if (gfc_current_ns->oacc_routine)
