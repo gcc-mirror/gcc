@@ -9726,8 +9726,7 @@ package body Exp_Ch6 is
       --  declaration.
 
       Anon_Type := Create_Itype (E_Anonymous_Access_Type, Function_Call);
-      Set_Directly_Designated_Type (Anon_Type,
-        Designated_Type (Etype (Allocator)));
+      Set_Directly_Designated_Type (Anon_Type, Etype (BIP_Func_Call));
       Set_Etype (Anon_Type, Anon_Type);
       Build_Class_Wide_Master (Anon_Type);
 
@@ -9757,7 +9756,12 @@ package body Exp_Ch6 is
         (Allocator     => Expression (Tmp_Decl),
          Function_Call => Expression (Expression (Tmp_Decl)));
 
-      Rewrite (Allocator, New_Occurrence_Of (Tmp_Id, Loc));
+      --  Add a conversion to displace the pointer to the allocated object
+      --  to reference the corresponding dispatch table.
+
+      Rewrite (Allocator,
+        Convert_To (Etype (Allocator),
+          New_Occurrence_Of (Tmp_Id, Loc)));
    end Make_Build_In_Place_Iface_Call_In_Allocator;
 
    ---------------------------------------------------------
