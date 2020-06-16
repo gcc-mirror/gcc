@@ -3,14 +3,14 @@
 
 pure real function foo (a, b)
   real, intent(in) :: a, b
-!$omp taskwait				! { dg-error "may not appear in PURE or ELEMENTAL" }
+!$omp taskwait				! { dg-error "may not appear in PURE" }
   foo = a + b
 end function foo
 pure function bar (a, b)
   real, intent(in) :: a(8), b(8)
   real :: bar(8)
   integer :: i
-!$omp do simd				! { dg-error "may not appear in PURE or ELEMENTAL" }
+!$omp do simd				! { dg-error "may not appear in PURE" }
   do i = 1, 8
     bar(i) = a(i) + b(i)
   end do
@@ -19,26 +19,38 @@ pure function baz (a, b)
   real, intent(in) :: a(8), b(8)
   real :: baz(8)
   integer :: i
-!$omp do				! { dg-error "may not appear in PURE or ELEMENTAL" }
+!$omp do				! { dg-error "may not appear in PURE" }
   do i = 1, 8
     baz(i) = a(i) + b(i)
   end do
-!$omp end do				! { dg-error "may not appear in PURE or ELEMENTAL" }
+!$omp end do				! { dg-error "may not appear in PURE" }
 end function baz
 pure real function baz2 (a, b)
   real, intent(in) :: a, b
-!$omp target map(from:baz2)		! { dg-error "may not appear in PURE or ELEMENTAL" }
+!$omp target map(from:baz2)		! { dg-error "may not appear in PURE" }
   baz2 = a + b
-!$omp end target			! { dg-error "may not appear in PURE or ELEMENTAL" }
+!$omp end target			! { dg-error "may not appear in PURE" }
 end function baz2
+! ELEMENTAL implies PURE
 elemental real function fooe (a, b)
   real, intent(in) :: a, b
-!$omp taskyield				! { dg-error "may not appear in PURE or ELEMENTAL" }
+!$omp taskyield				! { dg-error "may not appear in PURE" }
   fooe = a + b
 end function fooe
 elemental real function baze (a, b)
   real, intent(in) :: a, b
-!$omp target map(from:baz)		! { dg-error "may not appear in PURE or ELEMENTAL" }
+!$omp target map(from:baz)		! { dg-error "may not appear in PURE" }
   baze = a + b
-!$omp end target			! { dg-error "may not appear in PURE or ELEMENTAL" }
+!$omp end target			! { dg-error "may not appear in PURE" }
 end function baze
+elemental impure real function fooei (a, b)
+  real, intent(in) :: a, b
+!$omp taskyield				! { dg-bogus "may not appear in PURE" }
+  fooe = a + b
+end function fooei
+elemental impure real function bazei (a, b)
+  real, intent(in) :: a, b
+!$omp target map(from:baz)		! { dg-bogus "may not appear in PURE" }
+  baze = a + b
+!$omp end target			! { dg-bogus "may not appear in PURE" }
+end function bazei
