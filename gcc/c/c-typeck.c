@@ -71,6 +71,9 @@ int in_sizeof;
 /* The level of nesting inside "typeof".  */
 int in_typeof;
 
+/* True when parsing OpenMP loop expressions.  */
+bool c_in_omp_for;
+
 /* The argument of last parsed sizeof expression, only to be tested
    if expr.original_code == SIZEOF_EXPR.  */
 tree c_last_sizeof_arg;
@@ -6209,15 +6212,20 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
   if (!(is_atomic_op && modifycode != NOP_EXPR))
     {
       tree rhs_semantic_type = NULL_TREE;
-      if (TREE_CODE (newrhs) == EXCESS_PRECISION_EXPR)
+      if (!c_in_omp_for)
 	{
-	  rhs_semantic_type = TREE_TYPE (newrhs);
-	  newrhs = TREE_OPERAND (newrhs, 0);
+	  if (TREE_CODE (newrhs) == EXCESS_PRECISION_EXPR)
+	    {
+	      rhs_semantic_type = TREE_TYPE (newrhs);
+	      newrhs = TREE_OPERAND (newrhs, 0);
+	    }
+	  npc = null_pointer_constant_p (newrhs);
+	  newrhs = c_fully_fold (newrhs, false, NULL);
+	  if (rhs_semantic_type)
+	    newrhs = build1 (EXCESS_PRECISION_EXPR, rhs_semantic_type, newrhs);
 	}
-      npc = null_pointer_constant_p (newrhs);
-      newrhs = c_fully_fold (newrhs, false, NULL);
-      if (rhs_semantic_type)
-	newrhs = build1 (EXCESS_PRECISION_EXPR, rhs_semantic_type, newrhs);
+      else
+	npc = null_pointer_constant_p (newrhs);
       newrhs = convert_for_assignment (location, rhs_loc, lhstype, newrhs,
 				       rhs_origtype, ic_assign, npc,
 				       NULL_TREE, NULL_TREE, 0);
@@ -7745,12 +7753,15 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 
   STRIP_TYPE_NOPS (inside_init);
 
-  if (TREE_CODE (inside_init) == EXCESS_PRECISION_EXPR)
+  if (!c_in_omp_for)
     {
-      semantic_type = TREE_TYPE (inside_init);
-      inside_init = TREE_OPERAND (inside_init, 0);
+      if (TREE_CODE (inside_init) == EXCESS_PRECISION_EXPR)
+	{
+	  semantic_type = TREE_TYPE (inside_init);
+	  inside_init = TREE_OPERAND (inside_init, 0);
+	}
+      inside_init = c_fully_fold (inside_init, require_constant, &maybe_const);
     }
-  inside_init = c_fully_fold (inside_init, require_constant, &maybe_const);
 
   /* Initialization of an array of chars from a string constant
      optionally enclosed in braces.  */
@@ -12475,7 +12486,7 @@ build_binary_op (location_t location, enum tree_code code,
 	  converted = 1;
 	  resultcode = xresultcode;
 
-	  if (c_inhibit_evaluation_warnings == 0)
+	  if (c_inhibit_evaluation_warnings == 0 && !c_in_omp_for)
 	    {
 	      bool op0_maybe_const = true;
 	      bool op1_maybe_const = true;

@@ -7594,6 +7594,8 @@ c_parser_expr_no_commas (c_parser *parser, struct c_expr *after,
   struct c_expr lhs, rhs, ret;
   enum tree_code code;
   location_t op_location, exp_location;
+  bool save_in_omp_for = c_in_omp_for;
+  c_in_omp_for = false;
   gcc_assert (!after || c_dialect_objc ());
   lhs = c_parser_conditional_expression (parser, after, omp_atomic_lhs);
   op_location = c_parser_peek_token (parser)->location;
@@ -7633,6 +7635,7 @@ c_parser_expr_no_commas (c_parser *parser, struct c_expr *after,
       code = BIT_IOR_EXPR;
       break;
     default:
+      c_in_omp_for = save_in_omp_for;
       return lhs;
     }
   c_parser_consume_token (parser);
@@ -7652,6 +7655,7 @@ c_parser_expr_no_commas (c_parser *parser, struct c_expr *after,
       ret.original_code = ERROR_MARK;
     }
   ret.original_type = NULL;
+  c_in_omp_for = save_in_omp_for;
   return ret;
 }
 
@@ -18119,8 +18123,10 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
 	  if (i > 0)
 	    vec_safe_push (for_block, c_begin_compound_stmt (true));
 	  this_pre_body = push_stmt_list ();
+	  c_in_omp_for = true;
 	  c_parser_declaration_or_fndef (parser, true, true, true, true, true,
 					 NULL, vNULL);
+	  c_in_omp_for = false;
 	  if (this_pre_body)
 	    {
 	      this_pre_body = pop_stmt_list (this_pre_body);
@@ -18158,9 +18164,11 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
 	  init_exp = c_parser_expr_no_commas (parser, NULL);
 	  init_exp = default_function_array_read_conversion (init_loc,
 							     init_exp);
+	  c_in_omp_for = true;
 	  init = build_modify_expr (init_loc, decl, decl_exp.original_type,
 				    NOP_EXPR, init_loc, init_exp.value,
 				    init_exp.original_type);
+	  c_in_omp_for = false;
 	  init = c_process_expr_stmt (init_loc, init);
 
 	  c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
@@ -18181,19 +18189,13 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
       if (c_parser_next_token_is_not (parser, CPP_SEMICOLON))
 	{
 	  location_t cond_loc = c_parser_peek_token (parser)->location;
+	  c_in_omp_for = true;
 	  struct c_expr cond_expr
 	    = c_parser_binary_expression (parser, NULL, NULL_TREE);
+          c_in_omp_for = false;
 
 	  cond = cond_expr.value;
 	  cond = c_objc_common_truthvalue_conversion (cond_loc, cond);
-	  if (COMPARISON_CLASS_P (cond))
-	    {
-	      tree op0 = TREE_OPERAND (cond, 0), op1 = TREE_OPERAND (cond, 1);
-	      op0 = c_fully_fold (op0, false, NULL);
-	      op1 = c_fully_fold (op1, false, NULL);
-	      TREE_OPERAND (cond, 0) = op0;
-	      TREE_OPERAND (cond, 1) = op1;
-	    }
 	  switch (cond_expr.original_code)
 	    {
 	    case GT_EXPR:
@@ -18337,8 +18339,10 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
      an error from the initialization parsing.  */
   if (!fail)
     {
+      c_in_omp_for = true;
       stmt = c_finish_omp_for (loc, code, declv, NULL, initv, condv,
 			       incrv, body, pre_body, true);
+      c_in_omp_for = false;
 
       /* Check for iterators appearing in lb, b or incr expressions.  */
       if (stmt && !c_omp_check_loop_iv (stmt, declv, NULL))
@@ -18347,6 +18351,40 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
       if (stmt)
 	{
 	  add_stmt (stmt);
+
+	  for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (stmt)); i++)
+	    {
+	      tree init = TREE_VEC_ELT (OMP_FOR_INIT (stmt), i);
+	      gcc_assert (TREE_CODE (init) == MODIFY_EXPR);
+	      tree decl = TREE_OPERAND (init, 0);
+	      tree cond = TREE_VEC_ELT (OMP_FOR_COND (stmt), i);
+	      gcc_assert (COMPARISON_CLASS_P (cond));
+	      gcc_assert (TREE_OPERAND (cond, 0) == decl);
+
+	      tree op0 = TREE_OPERAND (init, 1);
+	      if (!OMP_FOR_NON_RECTANGULAR (stmt)
+		  || TREE_CODE (op0) != TREE_VEC)
+		TREE_OPERAND (init, 1) = c_fully_fold (op0, false, NULL);
+	      else
+		{
+		  TREE_VEC_ELT (op0, 1)
+		    = c_fully_fold (TREE_VEC_ELT (op0, 1), false, NULL);
+		  TREE_VEC_ELT (op0, 2)
+		    = c_fully_fold (TREE_VEC_ELT (op0, 2), false, NULL);
+		}
+
+	      tree op1 = TREE_OPERAND (cond, 1);
+	      if (!OMP_FOR_NON_RECTANGULAR (stmt)
+		  || TREE_CODE (op1) != TREE_VEC)
+		TREE_OPERAND (cond, 1) = c_fully_fold (op1, false, NULL);
+	      else
+		{
+		  TREE_VEC_ELT (op1, 1)
+		    = c_fully_fold (TREE_VEC_ELT (op1, 1), false, NULL);
+		  TREE_VEC_ELT (op1, 2)
+		    = c_fully_fold (TREE_VEC_ELT (op1, 2), false, NULL);
+		}
+	    }
 
 	  if (cclauses != NULL
 	      && cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL] != NULL)
