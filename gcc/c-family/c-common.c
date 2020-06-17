@@ -6903,6 +6903,7 @@ get_atomic_generic_size (location_t loc, tree function,
 {
   unsigned int n_param;
   unsigned int n_model;
+  unsigned int outputs = 0; // bitset of output parameters
   unsigned int x;
   int size_0;
   tree type_0;
@@ -6913,15 +6914,22 @@ get_atomic_generic_size (location_t loc, tree function,
     case BUILT_IN_ATOMIC_EXCHANGE:
       n_param = 4;
       n_model = 1;
+      outputs = 5;
       break;
     case BUILT_IN_ATOMIC_LOAD:
+      n_param = 3;
+      n_model = 1;
+      outputs = 2;
+      break;
     case BUILT_IN_ATOMIC_STORE:
       n_param = 3;
       n_model = 1;
+      outputs = 1;
       break;
     case BUILT_IN_ATOMIC_COMPARE_EXCHANGE:
       n_param = 6;
       n_model = 2;
+      outputs = 3;
       break;
     default:
       gcc_unreachable ();
@@ -7010,6 +7018,39 @@ get_atomic_generic_size (location_t loc, tree function,
 		    function);
 	  return 0;
 	}
+
+      {
+	auto_diagnostic_group d;
+	int quals = TYPE_QUALS (TREE_TYPE (type));
+	/* Must not write to an argument of a const-qualified type.  */
+	if (outputs & (1 << x) && quals & TYPE_QUAL_CONST)
+	  {
+	    if (c_dialect_cxx ())
+	      {
+		error_at (loc, "argument %d of %qE must not be a pointer to "
+			  "a %<const%> type", x + 1, function);
+		return 0;
+	      }
+	    else
+	      pedwarn (loc, OPT_Wincompatible_pointer_types, "argument %d "
+		       "of %qE discards %<const%> qualifier", x + 1,
+		       function);
+	  }
+	/* Only the first argument is allowed to be volatile.  */
+	if (x > 0 && quals & TYPE_QUAL_VOLATILE)
+	  {
+	    if (c_dialect_cxx ())
+	      {
+		error_at (loc, "argument %d of %qE must not be a pointer to "
+			  "a %<volatile%> type", x + 1, function);
+		return 0;
+	      }
+	    else
+	      pedwarn (loc, OPT_Wincompatible_pointer_types, "argument %d "
+		       "of %qE discards %<volatile%> qualifier", x + 1,
+		       function);
+	  }
+      }
     }
 
   /* Check memory model parameters for validity.  */
