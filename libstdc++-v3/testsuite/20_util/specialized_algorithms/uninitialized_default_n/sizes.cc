@@ -18,25 +18,14 @@
 // { dg-do run { target c++11 } }
 
 #include <memory>
-#include <algorithm>
 #include <testsuite_hooks.h>
-
-struct Value
-{
-  int value = 0x1234;
-};
 
 void
 test01()
 {
-  alignas(Value) unsigned char buf[3 * sizeof(Value) + 1];
-  std::fill(std::begin(buf), std::end(buf), 0xff);
-  const auto p = reinterpret_cast<Value*>(buf);
-  std::__uninitialized_default_n(p, 2.0001);
-  VERIFY( p[0].value == 0x1234 );
-  VERIFY( p[1].value == 0x1234 );
-  VERIFY( p[2].value == 0x1234 );
-  VERIFY( *std::prev(std::end(buf)) == 0xff );
+  int i[3];
+  auto j = std::__uninitialized_default_n(i, 2.0001);
+  VERIFY( j == (i + 3) );
 }
 
 void
@@ -52,16 +41,10 @@ test02()
     int operator>(void*) { return value != 0; }
   };
 
-  alignas(Value) unsigned char buf[4 * sizeof(Value) + 1];
-  std::fill(std::begin(buf), std::end(buf), 0xff);
-  const auto p = reinterpret_cast<Value*>(buf);
+  int i[3];
   Size n = {4};
-  std::__uninitialized_default_n(p, n);
-  VERIFY( p[0].value == 0x1234 );
-  VERIFY( p[1].value == 0x1234 );
-  VERIFY( p[2].value == 0x1234 );
-  VERIFY( p[3].value == 0x1234 );
-  VERIFY( *std::prev(std::end(buf)) == 0xff );
+  auto j = std::__uninitialized_default_n(i, n);
+  VERIFY( j == (i + 4) );
 }
 
 int
