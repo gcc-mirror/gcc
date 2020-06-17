@@ -273,19 +273,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typedef typename iterator_traits<_ForwardIterator>::value_type
 	_ValueType;
+
+      // Trivial types do not need a constructor to begin their lifetime,
+      // so try to use std::fill_n to benefit from its memmove optimization.
+      // For arbitrary class types and floating point types we can't assume
+      // that __n > 0 and std::__size_to_integer(__n) > 0 are equivalent,
+      // so only use std::fill_n when _Size is already an integral type.
 #if __cplusplus < 201103L
-      const bool __assignable = true;
+      const bool __can_fill = __is_integer<_Size>::__value;
 #else
-      // Trivial types can have deleted copy constructor, but the std::fill
+      // Trivial types can have deleted copy constructor, but the std::fill_n
       // optimization that uses memmove would happily "copy" them anyway.
       static_assert(is_constructible<_ValueType, const _Tp&>::value,
 	  "result type must be constructible from input type");
 
-      // Trivial types can have deleted assignment, so using std::fill
-      // would be ill-formed. Require assignability before using std::fill:
-      const bool __assignable = is_copy_assignable<_ValueType>::value;
+      // Trivial types can have deleted assignment, so using std::fill_n
+      // would be ill-formed. Require assignability before using std::fill_n:
+      constexpr bool __can_fill
+	= __and_<is_integral<_Size>, is_copy_assignable<_ValueType>>::value;
 #endif
-      return __uninitialized_fill_n<__is_trivial(_ValueType) && __assignable>::
+      return __uninitialized_fill_n<__is_trivial(_ValueType) && __can_fill>::
 	__uninit_fill_n(__first, __n, __x);
     }
 
@@ -615,11 +622,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typedef typename iterator_traits<_ForwardIterator>::value_type
 	_ValueType;
-      // trivial types can have deleted assignment
-      const bool __assignable = is_copy_assignable<_ValueType>::value;
+      // See uninitialized_fill_n for the conditions for using std::fill_n.
+      constexpr bool __can_fill
+	= __and_<is_integral<_Size>, is_copy_assignable<_ValueType>>::value;
 
       return __uninitialized_default_n_1<__is_trivial(_ValueType)
-				       && __assignable>::
+					 && __can_fill>::
 	__uninit_default_n(__first, __n);
     }
 
