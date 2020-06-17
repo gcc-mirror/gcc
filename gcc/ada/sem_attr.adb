@@ -10783,19 +10783,6 @@ package body Sem_Attr is
                end;
             end if;
 
-            --  The following comes from a query concerning improper use of
-            --  universal_access in equality tests involving anonymous access
-            --  types. Another good reason for 'Ref, but for now disable the
-            --  test, which breaks several filed tests???
-
-            if Ekind (Typ) = E_Anonymous_Access_Type
-              and then Nkind (Parent (N)) in N_Op_Eq | N_Op_Ne
-              and then False
-            then
-               Error_Msg_N ("need unique type to resolve 'Access", N);
-               Error_Msg_N ("\qualify attribute with some access type", N);
-            end if;
-
             --  Case where prefix is an entity name
 
             if Is_Entity_Name (P) then
