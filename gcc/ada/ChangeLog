@@ -1,3 +1,279 @@
+2020-06-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sinfo.ads (Conversion_OK): Document use for 'Pos and 'Val.
+	* exp_attr.adb (Get_Integer_Type): New function returning a
+	small integer type appropriate for an enumeration type.
+	(Expand_N_Attribute_Reference) <Attribute_Enum_Rep>: Call it.
+	<Attribute_Pos>: For an enumeration type with a standard
+	representation, expand to a conversion with Conversion_OK.
+	<Attribute_Val>: Likewise.
+	* exp_ch4.adb (Expand_N_Type_Conversion): Do not expand when
+	the target is an enumeration type and Conversion_OK is set.
+
+2020-06-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch4.adb (Common_Type): Go to Underlying_Full_View, if any.
+
+2020-06-16  Richard Kenner  <kenner@adacore.com>
+
+	* exp_unst.adb (Subp_Index): Change way we detect internal
+	protected subprograms.
+
+2020-06-16  Richard Kenner  <kenner@adacore.com>
+
+	* comperr.adb (Compiler_Abort): Clarify message displayed to
+	customers.
+
+2020-06-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb, doc/gnat_ugn/the_gnat_compilation_model.rst,
+	einfo.ads, exp_ch5.adb, exp_ch7.adb, lib-xref.ads,
+	libgnat/g-spitbo.ads, make.adb, sem_aux.adb, sem_ch3.adb,
+	sem_ch4.adb, sem_ch5.adb, urealp.adb: Fix wrong casing.
+	* gnat_ugn.texi: Regenerate.
+
+2020-06-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.adb, exp_spark.adb, exp_util.adb, sem_eval.adb: Replace
+	"Ekind ... in Object_Kind" with "Is_Object (...)".
+
+2020-06-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): Fix typo in
+	comment.
+
+2020-06-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.adb (Evaluate_Name): Force evaluation of aggregates;
+	recursively evaluate expression of a qualified expression; fix
+	location of the comment for an attribute referenced and an
+	indexed component.
+
+2020-06-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Freeze_Expression): Use consistent style and
+	formatting in a couple of cases.
+
+2020-06-16  Steve Baird  <baird@adacore.com>
+
+	* libgnat/a-nbnbin.ads, libgnat/a-nbnbre.ads: Uncomment the
+	commented-out Integer_Literal aspect specification for type
+	Big_Integer.
+
+2020-06-16  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.adb (BIP_Suffix_Kind, Check_BIP_Actuals,
+	Is_Build_In_Place_Entity): New subprograms.
+	(Make_Build_In_Place_Call_In_Allocator,
+	Make_Build_In_Place_Call_In_Anonymous_Context,
+	Make_Build_In_Place_Call_In_Assignment,
+	Make_Build_In_Place_Call_In_Object_Declaration): Add assertions.
+	(Needs_BIP_Task_Actuals): Add missing support for thunks.
+	(Expand_Actuals): Ensure that the BIP call has available an
+	activation chain and the _master variable.
+	* exp_ch9.adb (Find_Enclosing_Context): Initialize the list of
+	declarations of empty blocks when the _master variable must be
+	declared and the list was not available.
+
+2020-06-16  Bob Duff  <duff@adacore.com>
+
+	* par-ch4.adb (P_Case_Expression): Move to be local.
+	(P_Declare_Expression): New parsing routine.
+	(P_Unparen_Cond_Expr_Etc): New name for
+	P_Unparen_Cond_Case_Quant_Expression which was missing one case
+	in its name (iterated component association), and we're adding a
+	new case (declare expression), so lets use "Etc" instead of
+	trying to pack all those things into the name.  Add call to
+	P_Declare_Expression, and check for missing parens.
+	(P_Expression_If_OK, P_Expression_Or_Range_Attribute_If_OK): Add
+	Tok_Declare.
+	* par.adb (P_Basic_Declarative_Items): Add parameter
+	Declare_Expression so we can tailor the error message about
+	incorrect bodies.
+	(P_Case_Expression): Move to body.
+	* par-ch3.adb (P_Basic_Declarative_Items): Tailor the error
+	message about incorrect bodies.
+	* par-ch7.adb (P_Package): Pass Declare_Expression => False to
+	P_Basic_Declarative_Items.
+	* sem.ads (In_Declare_Expr): Counter used to determine whether
+	we are analyzing a declare_expression. Needed to give errors
+	about things that are not allowed in declare_expression, such as
+	the 'Access attribute.
+	* sem.adb (Do_Analyze): Save/restore In_Declare_Expr.
+	* sem_ch4.adb (Analyze_Expression_With_Actions): Give this node
+	its own scope.  That seems better in general, but it is
+	necessary for declare_expressions.  For example, an identifier
+	declared in a declare_expression should not clash with the same
+	identifier in an outer scope.  If this is a declare_expression,
+	indicated by Comes_From_Source, then check legality rules, and
+	incr/decr In_Declare_Expr.
+	* sem_aggr.adb (Resolve_Aggregate): Allow an applicable index
+	constraint for a declare_expression, so if its expression is an
+	array aggregate, it can have "others => ...".
+	* sem_attr.adb (Analyze_Access_Attribute): Disallow these
+	attributes in declare_expressions. Add comment to make it clear
+	that Unrestricted_Access is included.
+	* sinfo.ads, sinfo.adb, atree.ads, atree.adb: Remove the
+	now-incorrect comment in sinfo.ads that says
+	N_Expression_With_Actions has no proper scope.  Add 17-parameter
+	versions of Nkind_In.  Remove the 16-parameter versions of
+	Nkind_In.
+
+2020-06-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_aux.ads, sem_aux.adb (Is_Record_Or_Limited_Type): New
+	function.
+	* exp_ch4.adb, sem_ch4.adb (Analyze_Membership_Op,
+	Expand_Set_Membership.Make_Cond): Choose between primitive and
+	predefined equality for membership tests.
+
+2020-06-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): Simplify code and
+	implement AI12-0216 which clarifies the conditions under which
+	overlapping actuals in a call are illegal. If proper warnings
+	are enabled, GNAT also emits warnings in legal cases of
+	overlopping actuals.
+
+2020-06-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Freeze_Expression): Stop climbing the parent chain
+	at a N_{Case,If}_Expression node for a type or an entity that
+	does not come from source.
+
+2020-06-16  Steve Baird  <baird@adacore.com>
+
+	* snames.ads-tmpl: Define names of the three new aspects.
+	* aspects.ads: Define the three new aspects.
+	* sem_util.ads, sem_util.adb, sem_dim.adb: Move the function
+	String_From_Numeric_Literal from being declared in the body of
+	package Sem_Dim to being declared in the visible part of package
+	Sem_Util.
+	* sem_ch13.ads, sem_ch13.adb: Declare new visible procedure
+	Validate_Literal_Aspect. This is where most of the legality
+	checking occurs for an aspect specification for one of the three
+	new aspects, as well as resolution of the subprogram named in
+	the aspect specification. Follow example of other aspects (e.g.,
+	Validate_Literal_Aspect is called in much the same way as
+	Validate_Iterable_Aspect in Analyze_Aspects_At_Freeze_Point; a
+	small amount of legality checking is performed in
+	Analyze_One_Aspect in much the same way as for Default_Value or
+	Default_Component_Value aspects). Most of the work is done in
+	Validate_Literal_Aspect.
+	* contracts.adb (Add_Contract_Item): Call
+	Validate_Literal_Aspect in much the same way that
+	Validate_Iterable_Aspect was already being called.
+	* sem_res.adb (Resolve): Rewrite a literal as a call if it is a
+	user-defined literal.  This is where the dynamic semantics of
+	the 3 new aspects are implemented.
+	* sem_ch6.adb (Fully_Conformant_Expressions): Two numeric
+	literals that have different text but the same value (e.g.,
+	12345 and 12_345) do not conform if they are user-defined
+	literals. Introduce a new function
+	User_Defined_Numeric_Literal_Mismatch to avoid duplication in
+	making this check.
+	* sem_type.adb (Has_Compatible_Type): A numeric literal can be
+	compatible with a non-numeric type (and a string literal can be
+	compatible with a non-string type) if it can be interpreted as a
+	user-defined literal.
+
+2020-06-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_aggr.adb (Resolve_Extension_Aggregate): Fix implementation
+	of AI05-0115 by checking the correct type.
+
+2020-06-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Specification): Generate error
+	message for functions returning interfaces.
+
+2020-06-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Membership_Entry): Relax assertion to also
+	recognize qualified identifiers.
+
+2020-06-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.adb (Evaluate_Name): Force evaluation of operators.
+
+2020-06-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch4.adb (Analyze_Membership_Op): Reset entity of equality
+	nodes for membership tests with singletons.
+	(Analyze_User_Defined_Binary_Op): Always perform the analysis
+	since nodes coming from the expander also may refer to non
+	standard operators as part of membership expansion.
+	* exp_ch4.adb (Expand_Set_Membership.Make_Cond): Reset entity of
+	equality node.
+	* sem_type.ads: Fix typo in comment.
+
+2020-06-16  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Add
+	Check_Not_Incomplete_Type call.
+
+2020-06-16  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch6.adb: Add closing paren in a comment.
+	* sem_util.adb: Correct comment typo (aggreate => aggregate).
+
+2020-06-16  Javier Miranda  <miranda@adacore.com>
+
+	* sem_prag.adb (Process_Restrictions_Or_Restriction_Warnings):
+	Code cleanup.
+
+2020-06-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (In_Expanded_Body): Remove unreachable code.
+	(Freeze_Expression): Rename a couple of local variables.
+	In the case of an expanded body, also freeze locally the
+	entities declared in a nested block.
+
+2020-06-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch4.adb (Transform_Object_Operation): Document that it
+	may be partially destructive for the parent of the node.
+	(Try_Object_Operation): Undo the changes made above on failure.
+
+2020-06-16  Javier Miranda  <miranda@adacore.com>
+
+	* restrict.adb (Global_No_Tasking): Adding
+	Targparm.Restrictions_On_Target Fixes regressions with zfp.
+
+2020-06-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb: (Freeze_Expression, In_Expanded_Body): Treat the
+	generated body of an expression function like other bodies
+	generated during expansion (e.g. stream subprograms) so that
+	those bodies are not treated as freezing points. Handle properly
+	other global references in such completions.
+
+2020-06-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch8.adb (Analyze_Object_Renaming): Remove trivially
+	useless initialization of Is_Object_Reference.
+	* sem_util.adb (Is_Object_Reference): Simplify detection of
+	binary and unary operators; literally implement rules about
+	aggregates and qualified expressions; recognize string literals
+	as object references.
+
+2020-06-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Validate_Derived_Type_Instance): Reword error
+	message for 12.5.1(8) subclause and add secondary message if
+	the incompatibility comes from the predicates.
+	* sem_ch3.adb (Check_Constraining_Discriminant): New procedure
+	to give the error required by the 3.7(15) subclause.  Mention
+	"statically" in the error message and add secondary message
+	if the incompatibility comes from the predicates.
+	(Build_Derived_Concurrent_Type): Call it when a new discriminant
+	constrains an old one.
+	(Build_Derived_Record_Type): Likewise.
+	* sem_eval.ads (Predicates_Compatible): Declare.
+	* sem_eval.adb (Predicates_Compatible): New function to implement
+	the compatibility of predicates specified by the 4.9.1 clause.
+	(Subtypes_Statically_Compatible): Call it.
+
 2020-06-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_eval.ads (Predicates_Match): Fix description.

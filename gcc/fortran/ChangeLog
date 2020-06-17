@@ -1,3 +1,20 @@
+2020-06-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parse.c (decode_oacc_directive): Permit 'acc routine' also
+	inside pure procedures.
+	* openmp.c (gfc_match_oacc_routine): Inside pure procedures
+	do not permit gang, worker or vector clauses.
+
+2020-06-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parse.c (decode_omp_directive): Remove "or ELEMENTAL"
+	from "in PURE" error message also for -fopenmp-simd.
+
+2020-06-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parse.c (decode_omp_directive): Remove "or ELEMENTAL"
+	from "in PURE" error message.
+
 2020-06-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/42122

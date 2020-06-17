@@ -1,3 +1,141 @@
+2020-06-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-attribs.cc (handle_noreturn_attribute): Remove names of unused
+	function parameters.
+	(handle_leaf_attribute): Likewise.
+	(handle_const_attribute): Likewise.
+	(handle_malloc_attribute): Likewise.
+	(handle_pure_attribute): Likewise.
+	(handle_novops_attribute): Likewise.
+	(handle_nonnull_attribute): Likewise.
+	(handle_nothrow_attribute): Likewise.
+	(handle_type_generic_attribute): Likewise.
+	(handle_transaction_pure_attribute): Likewise.
+	(handle_returns_twice_attribute): Likewise.
+	(handle_fnspec_attribute): Likewise.
+	(handle_always_inline_attribute): Likewise.
+	(d_handle_noinline_attribute): Likewise.
+	(d_handle_forceinline_attribute): Likewise.
+	(d_handle_flatten_attribute): Likewise.
+	(d_handle_noclone_attribute): Likewise.
+	(d_handle_section_attribute): Likewise.
+	(d_handle_alias_attribute): Likewise.
+	(d_handle_weak_attribute): Likewise.
+
+2020-06-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-attribs.cc: Update code formatting in a consistant style.
+	* d-builtins.cc: Likewise.
+	* d-codegen.cc: Likewise.
+	* d-compiler.cc: Likewise.
+	* d-convert.cc: Likewise.
+	* d-diagnostic.cc: Likewise.
+	* d-frontend.cc: Likewise.
+	* d-lang.cc: Likewise.
+	* d-longdouble.cc: Likewise.
+	* d-port.cc: Likewise.
+	* d-spec.cc: Likewise.
+	* d-tree.h: Likewise.
+	* decl.cc: Likewise.
+	* expr.cc: Likewise.
+	* longdouble.h: Likewise.
+	* modules.cc: Likewise.
+	* toir.cc: Likewise.
+	* typeinfo.cc: Likewise.
+
+2020-06-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc: Update quotation formatting of comments.
+	* d-codegen.cc: Likewise.
+	* d-lang.cc: Likewise.
+	* decl.cc: Likewise.
+	* expr.cc: Likewise.
+	* imports.cc: Likewise.
+	* runtime.cc: Likewise.
+	* toir.cc: Likewise.
+	* typeinfo.cc: Likewise.
+	* types.cc: Likewise.
+
+2020-06-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-diagnostic.cc (expand_d_format): Replace OutBuffer with obstack.
+	(d_diagnostic_report_diagnostic): Don't free xformat.
+	* d-lang.cc (struct d_option_data): Change deps_target type from
+	OutBuffer to vec <const char *>.
+	(deps_add_target): Update to push each target to deps_target.
+	(deps_write_string): New function.
+	(deps_write): Change buffer type to obstack* and remove colmax.
+	(d_init_options): Update initialization of deps_target.
+	(d_parse_file): Replace OutBuffer with obstack.
+
+2020-06-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (d_parse_file): Replace uses of File with FILE.
+
+2020-06-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (build_array_bounds_call): New function.
+	(build_bounds_condition): Use build_array_bounds_call.
+	* d-lang.cc (d_init_options): Explicitly set default check action to
+	CHECKACTION_D.
+	(d_post_options): Set check action to CHECKACTION_C if the flag
+	-fno-druntime was seen.
+	* d-tree.h (build_array_bounds_call): Declare.
+	* expr.cc (ExprVisitor::visit (AssertExp *)): Use
+	build_array_bounds_call.
+
+2020-06-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-attribs.cc (build_attributes): Use toStringExp instead of cast.
+	* toir.cc (IRVisitor::visit): Likewise.
+
+2020-06-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-attribs.cc (build_attributes): Use isXxxxExp helpers instead of
+	explicit casts.
+	* d-codegen.cc (d_build_call): Likewise.
+	* d-compiler.cc (Compiler::paintAsType): Likewise.
+	* decl.cc (ExprVisitor::visit): Likewise.
+	(layout_class_initializer): Likewise.
+	* expr.cc (ExprVisitor::lvalue_p): Likewise
+	(ExprVisitor::visit): Likewise.
+	* types.cc (layout_aggregate_members): Likewise.
+
+2020-06-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-frontend.cc (eval_builtin): Use toTypeFunction instead of cast.
+	* decl.cc (DeclVisitor::visit): Likewise.
+	* toir.cc (IRVisitor::visit): Likewise.
+	* typeinfo.cc (TypeInfoVisitor::visit): Likewise.
+
+2020-06-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (d_eval_constant_expression): Use isTypeXxxx helpers
+	instead of explicit casts.
+	(d_build_builtins_module): Likewise.
+	* d-codegen.cc (get_array_length): Likewise.
+	(identity_compare_p): Likewise.
+	(lower_struct_comparison): Likewise.
+	(build_array_from_val): Likewise.
+	(array_bounds_check): Likewise.
+	(get_function_type): Likewise.
+	(d_build_call): Likewise.
+	* d-compiler.cc (Compiler::paintAsType): Likewise.
+	* d-convert.cc (convert_expr): Likewise.
+	(convert_for_assignment): Likewise.
+	* d-lang.cc (d_classify_record): Likewise.
+	(d_build_eh_runtime_type): Likewise.
+	* decl.cc (DeclVisitor::visit): Likewise.
+	* expr.cc (ExprVisitor::needs_postblit): Likewise.
+	(ExprVisitor::needs_dtor): Likewise.
+	(ExprVisitor::visit): Likewise.
+	* imports.cc (ImportVisitor::visit): Likewise.
+	* typeinfo.cc (get_typeinfo_kind): Likewise.
+	(TypeInfoVisitor::visit): Likewise.
+	(TypeDeclInfoVisitor::visit): Likewise.
+	* types.cc (merge_aggregate_types): Likewise.
+	(TypeVisitor::visit): Likewise.
+
 2020-06-14  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* expr.cc (ExprVisitor::visit (AssocArrayLiteralExp *)): Fix line
