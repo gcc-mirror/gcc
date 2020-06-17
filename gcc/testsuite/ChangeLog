@@ -1,3 +1,8 @@
+2020-06-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95678
+	* g++.dg/cpp0x/dependent3.C: New test.
+
 2020-06-14  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95503
