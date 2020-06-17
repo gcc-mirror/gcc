@@ -359,6 +359,10 @@ struct kv_pair
   const ValueType value;	/* the value of the name */
 };
 
+/* Alias of the first type, ignoring the second.  */
+template<typename T1, typename T2>
+using first_type = T1;
+
 #else
 
 struct _dont_use_rtx_here_;

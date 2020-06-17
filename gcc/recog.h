@@ -295,9 +295,10 @@ struct insn_gen_fn
   typedef void (*stored_funcptr) (void);
 
   template<typename ...Ts>
-  rtx_insn *operator() (Ts... args...) const
+  rtx_insn *operator() (Ts... args) const
   {
-    return ((rtx_insn *(*) (decltype(args, NULL_RTX)...)) func) (args...);
+    typedef rtx_insn *(*funcptr) (first_type<rtx, Ts>...);
+    return ((funcptr) func) (args...);
   }
 
   // This is for compatibility of code that invokes functions like
