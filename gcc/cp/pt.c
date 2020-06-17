@@ -19633,6 +19633,8 @@ tsubst_copy_and_build (tree t,
 
 	if (placement == NULL_TREE)
 	  placement_vec = NULL;
+	else if (placement == error_mark_node)
+	  RETURN (error_mark_node);
 	else
 	  {
 	    placement_vec = make_tree_vector ();
