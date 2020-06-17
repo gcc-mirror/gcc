@@ -33,9 +33,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the compiler version of this unit
-
-pragma Compiler_Unit_Warning;
+--  This is the runtime version of this unit (not used during GNAT build)
 
 package Interfaces is
    pragma No_Elaboration_Code_All;
@@ -82,89 +80,103 @@ package Interfaces is
 
    function Shift_Left
      (Value  : Unsigned_8;
-      Amount : Natural) return Unsigned_8;
+      Amount : Natural) return Unsigned_8
+      with Import, Convention => Intrinsic, Static;
 
    function Shift_Right
      (Value  : Unsigned_8;
-      Amount : Natural) return Unsigned_8;
+      Amount : Natural) return Unsigned_8
+      with Import, Convention => Intrinsic, Static;
 
    function Shift_Right_Arithmetic
      (Value  : Unsigned_8;
-      Amount : Natural) return Unsigned_8;
+      Amount : Natural) return Unsigned_8
+      with Import, Convention => Intrinsic, Static;
 
    function Rotate_Left
      (Value  : Unsigned_8;
-      Amount : Natural) return Unsigned_8;
+      Amount : Natural) return Unsigned_8
+      with Import, Convention => Intrinsic, Static;
 
    function Rotate_Right
      (Value  : Unsigned_8;
-      Amount : Natural) return Unsigned_8;
+      Amount : Natural) return Unsigned_8
+      with Import, Convention => Intrinsic, Static;
 
    function Shift_Left
      (Value  : Unsigned_16;
-      Amount : Natural) return Unsigned_16;
+      Amount : Natural) return Unsigned_16
+      with Import, Convention => Intrinsic, Static;
 
    function Shift_Right
      (Value  : Unsigned_16;
-      Amount : Natural) return Unsigned_16;
+      Amount : Natural) return Unsigned_16
+      with Import, Convention => Intrinsic, Static;
 
    function Shift_Right_Arithmetic
      (Value  : Unsigned_16;
-      Amount : Natural) return Unsigned_16;
+      Amount : Natural) return Unsigned_16
+      with Import, Convention => Intrinsic, Static;
 
    function Rotate_Left
      (Value  : Unsigned_16;
-      Amount : Natural) return Unsigned_16;
+      Amount : Natural) return Unsigned_16
+      with Import, Convention => Intrinsic, Static;
 
    function Rotate_Right
      (Value  : Unsigned_16;
-      Amount : Natural) return Unsigned_16;
+      Amount : Natural) return Unsigned_16
+      with Import, Convention => Intrinsic, Static;
 
    function Shift_Left
      (Value  : Unsigned_32;
-      Amount : Natural) return Unsigned_32;
+      Amount : Natural) return Unsigned_32
+      with Import, Convention => Intrinsic, Static;
 
    function Shift_Right
      (Value  : Unsigned_32;
-      Amount : Natural) return Unsigned_32;
+      Amount : Natural) return Unsigned_32
+      with Import, Convention => Intrinsic, Static;
 
    function Shift_Right_Arithmetic
      (Value  : Unsigned_32;
-      Amount : Natural) return Unsigned_32;
+      Amount : Natural) return Unsigned_32
+      with Import, Convention => Intrinsic, Static;
 
    function Rotate_Left
      (Value  : Unsigned_32;
-      Amount : Natural) return Unsigned_32;
+      Amount : Natural) return Unsigned_32
+      with Import, Convention => Intrinsic, Static;
 
    function Rotate_Right
      (Value  : Unsigned_32;
-      Amount : Natural) return Unsigned_32;
+      Amount : Natural) return Unsigned_32
+      with Import, Convention => Intrinsic, Static;
 
    function Shift_Left
      (Value  : Unsigned_64;
-      Amount : Natural) return Unsigned_64;
+      Amount : Natural) return Unsigned_64
+      with Import, Convention => Intrinsic, Static;
 
    function Shift_Right
      (Value  : Unsigned_64;
-      Amount : Natural) return Unsigned_64;
+      Amount : Natural) return Unsigned_64
+      with Import, Convention => Intrinsic, Static;
 
    function Shift_Right_Arithmetic
      (Value  : Unsigned_64;
-      Amount : Natural) return Unsigned_64;
+      Amount : Natural) return Unsigned_64
+      with Import, Convention => Intrinsic, Static;
 
    function Rotate_Left
      (Value  : Unsigned_64;
-      Amount : Natural) return Unsigned_64;
+      Amount : Natural) return Unsigned_64
+      with Import, Convention => Intrinsic, Static;
 
    function Rotate_Right
      (Value  : Unsigned_64;
-      Amount : Natural) return Unsigned_64;
-
-   pragma Import (Intrinsic, Shift_Left);
-   pragma Import (Intrinsic, Shift_Right);
-   pragma Import (Intrinsic, Shift_Right_Arithmetic);
-   pragma Import (Intrinsic, Rotate_Left);
-   pragma Import (Intrinsic, Rotate_Right);
+      Amount : Natural) return Unsigned_64
+      with Import, Convention => Intrinsic, Static;
 
    --  IEEE Floating point types
 

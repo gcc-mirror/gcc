@@ -18835,16 +18835,21 @@ package body Sem_Util is
 
    function Is_Static_Function (Subp : Entity_Id) return Boolean is
    begin
-      return Has_Aspect (Subp, Aspect_Static)
+      --  Always return False for pre Ada 2020 to e.g. ignore the Static
+      --  aspect in package Interfaces for Ada_Version < 2020 and also
+      --  for efficiency.
+
+      return Ada_Version >= Ada_2020
+        and then Has_Aspect (Subp, Aspect_Static)
         and then
           (No (Find_Value_Of_Aspect (Subp, Aspect_Static))
             or else Is_True (Static_Boolean
                                (Find_Value_Of_Aspect (Subp, Aspect_Static))));
    end Is_Static_Function;
 
-   ------------------------------
-   --  Is_Static_Function_Call --
-   ------------------------------
+   -----------------------------
+   -- Is_Static_Function_Call --
+   -----------------------------
 
    function Is_Static_Function_Call (Call : Node_Id) return Boolean is
       function Has_All_Static_Actuals (Call : Node_Id) return Boolean;
