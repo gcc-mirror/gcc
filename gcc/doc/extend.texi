@@ -2527,7 +2527,7 @@ the @code{memcpy} function.
 
 @smallexample
 __attribute__ ((access (read_only, 1))) int puts (const char*);
-__attribute__ ((access (read_only, 1, 2))) void* memcpy (void*, const void*, size_t);
+__attribute__ ((access (read_only, 2, 3))) void* memcpy (void*, const void*, size_t);
 @end smallexample
 
 The @code{read_write} access mode applies to arguments of pointer types
