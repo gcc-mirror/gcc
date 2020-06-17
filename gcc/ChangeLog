@@ -1,3 +1,83 @@
+2020-06-16  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/95649
+	* tree-ssa-propagate.c (propagate_into_phi_args): Do not propagate unless
+	value is a constant.
+
+2020-06-16  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config.in: Regenerate.
+	* config/s390/s390.c (print_operand): Emit vector alignment hints
+	for target z13, if AS accepts them.  For other targets the logic
+	stays the same.
+	* config/s390/s390.h (TARGET_VECTOR_LOADSTORE_ALIGNMENT_HINTS): Define
+	macro.
+	* configure: Regenerate.
+	* configure.ac: Check HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS_ON_Z13.
+
+2020-06-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/arm_mve.h (__arm_vaddq_m_n_s8): Correct the intrinsic
+	arguments.
+	(__arm_vaddq_m_n_s32): Likewise.
+	(__arm_vaddq_m_n_s16): Likewise.
+	(__arm_vaddq_m_n_u8): Likewise.
+	(__arm_vaddq_m_n_u32): Likewise.
+	(__arm_vaddq_m_n_u16): Likewise.
+	(__arm_vaddq_m): Modify polymorphic variant.
+
+2020-06-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/mve.md (mve_uqrshll_sat<supf>_di): Correct the predicate
+	and constraint of all the operands.
+	(mve_sqrshrl_sat<supf>_di): Likewise.
+	(mve_uqrshl_si): Likewise.
+	(mve_sqrshr_si): Likewise.
+	(mve_uqshll_di): Likewise.
+	(mve_urshrl_di): Likewise.
+	(mve_uqshl_si): Likewise.
+	(mve_urshr_si): Likewise.
+	(mve_sqshl_si): Likewise.
+	(mve_srshr_si): Likewise.
+	(mve_srshrl_di): Likewise.
+	(mve_sqshll_di): Likewise.
+	* config/arm/predicates.md (arm_low_register_operand): Define.
+
+2020-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_FOR_NON_RECTANGULAR): Define.
+	* gimplify.c (gimplify_omp_for): Diagnose schedule, ordered
+	or dist_schedule clause on non-rectangular loops.  Handle
+	gimplification of non-rectangular lb/b expressions.  When changing
+	iteration variable, adjust also non-rectangular lb/b expressions
+	referencing that.
+	* omp-general.h (struct omp_for_data_loop): Add m1, m2 and outer
+	members.
+	(struct omp_for_data): Add non_rect member.
+	* omp-general.c (omp_extract_for_data): Handle non-rectangular
+	loops.  Fill in non_rect, m1, m2 and outer.
+	* omp-low.c (lower_omp_for): Handle non-rectangular lb/b expressions.
+	* omp-expand.c (expand_omp_for): Emit sorry_at for unsupported
+	non-rectangular loop cases and assert for cases that can't be
+	non-rectangular.
+	* tree-pretty-print.c (dump_mem_ref): Formatting fix.
+	(dump_omp_loop_non_rect_expr): New function.
+	(dump_generic_node): Handle non-rectangular OpenMP loops.
+	* tree-pretty-print.h (dump_omp_loop_non_rect_expr): Declare.
+	* gimple-pretty-print.c (dump_gimple_omp_for): Handle non-rectangular
+	OpenMP loops.
+
+2020-06-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/95690
+	* varasm.c (build_constant_desc): Remove set_mem_attributes call.
+
+2020-06-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/95683
+	* config/riscv/riscv.c (riscv_gpr_save_operation_p): Remove
+	assertion and turn it into a early exit check.
+
 2020-06-15  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	* gimplify.c (gimplify_init_constructor) <AGGREGATE_TYPE>: Declare

@@ -1,3 +1,21 @@
+2020-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_expr_no_commas): Save, clear and restore
+	c_in_omp_for.
+	(c_parser_omp_for_loop): Set c_in_omp_for around some calls to avoid
+	premature c_fully_fold.  Defer explicit c_fully_fold calls to after
+	c_finish_omp_for.
+	* c-tree.h (c_in_omp_for): Declare.
+	* c-typeck.c (c_in_omp_for): Define.
+	(build_modify_expr): Avoid c_fully_fold if c_in_omp_for.
+	(digest_init): Likewise.
+	(build_binary_op): Likewise.
+
+2020-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_schedule): Reject modifier separated
+	from kind by comma rather than colon.
+
 2020-06-05  Mark Wielaard  <mark@klomp.org>
 
 	* c-decl.c (implicit_decl_warning): When warned and olddecl is

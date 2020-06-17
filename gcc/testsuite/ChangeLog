@@ -1,3 +1,112 @@
+2020-06-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* g++.dg/torture/pr95493-1.C: New test.
+
+2020-06-16  Aldy Hernandez  <aldyh@redhat.com>
+
+	* g++.dg/tree-ssa/pr95649.C: New test.
+	* gcc.dg/tree-ssa/pr95649.c: New test.
+
+2020-06-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc/pure-elemental-procedures-2.f90: New test.
+
+2020-06-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/pr79154-simd.f90: New test.
+
+2020-06-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95369
+	* g++.dg/cpp2a/desig11.C: Adjust dg-error.
+	* g++.dg/cpp2a/desig16.C: New test.
+
+2020-06-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95560
+	* g++.dg/warn/Wshadow-local-3.C: New test.
+
+2020-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/asan/inline.c: Add -ffat-lto-objects to dg-options.
+	* c-c++-common/asan/inline-kernel.c: Likewise.
+	* c-c++-common/ubsan/inline.c: Likewise.
+
+2020-06-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/mve_vaddq_m.c: New test.
+
+2020-06-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/mve_scalar_shifts1.c: New test.
+	* gcc.target/arm/mve/intrinsics/mve_scalar_shifts2.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_scalar_shifts3.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_scalar_shifts4.c: Likewise.
+
+2020-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/loop-6.c: New test.
+	* gcc.dg/gomp/loop-1.c: Don't expect diagnostics on valid
+	non-rectangular loops.
+	* gcc.dg/gomp/loop-2.c: New test.
+	* g++.dg/gomp/loop-1.C: Don't expect diagnostics on valid
+	non-rectangular loops.
+	* g++.dg/gomp/loop-2.C: Likewise.
+	* g++.dg/gomp/loop-5.C: New test.
+	* g++.dg/gomp/loop-6.C: New test.
+
+2020-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/schedule-modifiers-2.c: New test.
+
+2020-06-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/95622
+	* lib/target-supports.exp (check_effective_target_offloading_enabled):
+	New.
+	* c-c++-common/goacc/kernels-alias-ipa-pta-2.c: Use it for xfail.
+	* c-c++-common/goacc/kernels-alias-ipa-pta-4.c: Likewise.
+	* c-c++-common/goacc/kernels-alias-ipa-pta.c: Likewise.
+
+2020-06-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/pr79154-1.f90: Update dg-*;
+	add an impure elemental example.
+	* gfortran.dg/gomp/pr79154-2.f90: Likewise.
+
+2020-06-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/41437
+	PR c++/47346
+	* g++.dg/cpp2a/concepts-using2.C: Adjust.
+	* g++.dg/lto/20081219_1.C: Adjust.
+	* g++.dg/lto/20091002-1_0.C: Adjust.
+	* g++.dg/lto/pr65475c_0.C: Adjust.
+	* g++.dg/opt/dump1.C: Adjust.
+	* g++.dg/other/pr53574.C: Adjust.
+	* g++.dg/template/access30.C: New test.
+	* g++.dg/template/access31.C: New test.
+	* g++.dg/wrappers/wrapper-around-type-pack-expansion.C: Adjust.
+
+2020-06-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/95690
+	* gfortran.dg/pr95690.f90: New testcase.
+
+2020-06-16  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR tree-optimization/94988
+	* gcc.dg/graphite/pr80906.c: Un-XFAIL.
+
+2020-06-16  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.dg/lto/pr52634_0.c: Further adjust 'dg-lto-options'.
+
+2020-06-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/95683
+	* gcc.target/riscv/pr95683.c: New.
+
 2020-06-15  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	* gnat.dg/aggr30.ads, gnat.dg/aggr30.adb: New test.
