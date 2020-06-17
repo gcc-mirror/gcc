@@ -1349,11 +1349,11 @@ package body Ada.Containers.Ordered_Maps is
       Node : constant Node_Access := Key_Ops.Find (Container.Tree, Key);
 
    begin
+      TE_Check (Container.Tree.TC);
+
       if Checks and then Node = null then
          raise Constraint_Error with "key not in map";
       end if;
-
-      TE_Check (Container.Tree.TC);
 
       Node.Key := Key;
       Node.Element := New_Item;
@@ -1369,6 +1369,8 @@ package body Ada.Containers.Ordered_Maps is
       New_Item  : Element_Type)
    is
    begin
+      TE_Check (Container.Tree.TC);
+
       if Checks and then Position.Node = null then
          raise Constraint_Error with
            "Position cursor of Replace_Element equals No_Element";
@@ -1379,8 +1381,6 @@ package body Ada.Containers.Ordered_Maps is
          raise Program_Error with
            "Position cursor of Replace_Element designates wrong map";
       end if;
-
-      TE_Check (Container.Tree.TC);
 
       pragma Assert (Vet (Container.Tree, Position.Node),
                      "Position cursor of Replace_Element is bad");

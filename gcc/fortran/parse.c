@@ -639,19 +639,9 @@ decode_oacc_directive (void)
 
   gfc_matching_function = false;
 
-  if (gfc_pure (NULL))
-    {
-      gfc_error_now ("OpenACC directives at %C may not appear in PURE "
-		     "procedures");
-      gfc_error_recovery ();
-      return ST_NONE;
-    }
-
   if (gfc_current_state () == COMP_FUNCTION
       && gfc_current_block ()->result->ts.kind == -1)
     spec_only = true;
-
-  gfc_unset_implicit_pure (NULL);
 
   old_locus = gfc_current_locus;
 
@@ -660,6 +650,21 @@ decode_oacc_directive (void)
      first character.  */
 
   c = gfc_peek_ascii_char ();
+
+  switch (c)
+    {
+    case 'r':
+      matcha ("routine", gfc_match_oacc_routine, ST_OACC_ROUTINE);
+      break;
+    }
+
+  gfc_unset_implicit_pure (NULL);
+  if (gfc_pure (NULL))
+    {
+      gfc_error_now ("OpenACC directives other than ROUTINE may not appear in PURE "
+		     "procedures at %C");
+      goto error_handling;
+    }
 
   switch (c)
     {
@@ -704,9 +709,6 @@ decode_oacc_directive (void)
       break;
     case 'l':
       matcha ("loop", gfc_match_oacc_loop, ST_OACC_LOOP);
-      break;
-    case 'r':
-      match ("routine", gfc_match_oacc_routine, ST_OACC_ROUTINE);
       break;
     case 's':
       matcha ("serial loop", gfc_match_oacc_serial_loop, ST_OACC_SERIAL_LOOP);
@@ -1078,8 +1080,7 @@ decode_omp_directive (void)
       if (!flag_openmp && gfc_pure (NULL))
 	{
 	  gfc_error_now ("OpenMP directives other than SIMD or DECLARE TARGET "
-			 "at %C may not appear in PURE or ELEMENTAL "
-			 "procedures");
+			 "at %C may not appear in PURE procedures");
 	  reject_statement ();
 	  gfc_error_recovery ();
 	  return ST_NONE;

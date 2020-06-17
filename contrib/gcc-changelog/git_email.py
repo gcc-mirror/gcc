@@ -67,7 +67,7 @@ class GitEmail(GitCommit):
                 t = 'M'
             modified_files.append((target, t))
         super().__init__(None, date, author, body, modified_files,
-                         strict=strict)
+                         strict=strict, commit_to_date_hook=lambda x: date)
 
 
 # With zero arguments, process every patch file in the ./patches directory.

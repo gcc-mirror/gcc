@@ -88,8 +88,8 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
   else if (expr->op == TOKarrayliteral)
     {
       /* Build array as VECTOR_CST, assumes EXPR is constant.  */
-      Expressions *elements = ((ArrayLiteralExp *) expr)->elements;
-      vec<constructor_elt, va_gc> *elms = NULL;
+      Expressions *elements = expr->isArrayLiteralExp ()->elements;
+      vec <constructor_elt, va_gc> *elms = NULL;
 
       vec_safe_reserve (elms, elements->length);
       for (size_t i = 0; i < elements->length; i++)
@@ -111,7 +111,7 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
 	}
 
       /* Build vector type.  */
-      int nunits = ((TypeSArray *) expr->type)->dim->toUInteger ();
+      int nunits = expr->type->isTypeSArray ()->dim->toUInteger ();
       Type *telem = expr->type->nextOf ();
       tree vectype = build_vector_type (build_ctype (telem), nunits);
 
@@ -127,7 +127,7 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
     {
       /* Interpret value as a vector of the same size,
 	 then return the array literal.  */
-      int nunits = ((TypeSArray *) type)->dim->toUInteger ();
+      int nunits = type->isTypeSArray ()->dim->toUInteger ();
       Type *elem = type->nextOf ();
       tree vectype = build_vector_type (build_ctype (elem), nunits);
 
@@ -136,7 +136,7 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
       Expression *e = d_eval_constant_expression (cst);
       gcc_assert (e != NULL && e->op == TOKvector);
 
-      return ((VectorExp *) e)->e1;
+      return e->isVectorExp ()->e1;
     }
   else
     {

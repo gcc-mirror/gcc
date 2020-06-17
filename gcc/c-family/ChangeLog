@@ -1,3 +1,19 @@
+2020-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_omp_check_loop_iv_exprs): Add an int argument.
+	* c-omp.c (struct c_omp_check_loop_iv_data): Add maybe_nonrect and
+	idx members.
+	(c_omp_is_loop_iterator): New function.
+	(c_omp_check_loop_iv_r): Use it.  Add support for silent scanning
+	if outer loop iterator is present.  Perform duplicate checking through
+	hash_set in the function rather than expecting caller to do that.
+	Pass NULL instead of d->ppset to walk_tree_1.
+	(c_omp_check_nonrect_loop_iv): New function.
+	(c_omp_check_loop_iv): Use it.  Fill in new members, allow
+	non-rectangular loop forms, diagnose multiple associated loops with
+	the same iterator.  Pass NULL instead of &pset to walk_tree_1.
+	(c_omp_check_loop_iv_exprs): Likewise.
+
 2020-06-10  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/92860

@@ -39,8 +39,8 @@ proc clean-gcov-file { testcase suffix } {
 proc clean-gcov { testcase } {
     clean-gcov-file $testcase "gcno"
     clean-gcov-file $testcase "gcda"
-    clean-gcov-file $testcase "gcov"
     clean-gcov-file $testcase "h.gcov"
+    remote_file host delete "$testcase.gcov"
 }
 
 #

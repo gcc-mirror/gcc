@@ -11,4 +11,4 @@ int main()
   return 0;
 }
 
-/* { dg-final { run-gcov remove-gcda gcov-pr94029.c } } */
+/* { dg-final { run-gcov gcov-pr94029.c } } */

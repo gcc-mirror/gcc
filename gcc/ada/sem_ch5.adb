@@ -995,7 +995,7 @@ package body Sem_Ch5 is
         and then (Nkind (Rhs) /= N_Function_Call
                    or else Nkind (N) /= N_Block_Statement)
       then
-         --  Assignment verifies that the length of the Lsh and Rhs are equal,
+         --  Assignment verifies that the length of the Lhs and Rhs are equal,
          --  but of course the indexes do not have to match. If the right-hand
          --  side is a type conversion to an unconstrained type, a length check
          --  is performed on the expression itself during expansion. In rare
@@ -1003,7 +1003,7 @@ package body Sem_Ch5 is
          --  with a different representation, triggering incorrect code in the
          --  back end.
 
-         Apply_Length_Check (Rhs, Etype (Lhs));
+         Apply_Length_Check_On_Assignment (Rhs, Etype (Lhs), Lhs);
 
       else
          --  Discriminant checks are applied in the course of expansion
@@ -2214,8 +2214,8 @@ package body Sem_Ch5 is
 
       --  If the domain of iteration is an expression, create a declaration for
       --  it, so that finalization actions are introduced outside of the loop.
-      --  The declaration must be a renaming because the body of the loop may
-      --  assign to elements.
+      --  The declaration must be a renaming (both in GNAT and GNATprove
+      --  modes), because the body of the loop may assign to elements.
 
       if not Is_Entity_Name (Iter_Name)
 
@@ -2224,14 +2224,15 @@ package body Sem_Ch5 is
         --  doing expansion.
 
         and then (Nkind (Parent (N)) /= N_Quantified_Expression
-                   or else Operating_Mode = Check_Semantics)
+                   or else (Operating_Mode = Check_Semantics
+                            and then not GNATprove_Mode))
 
         --  Do not perform this expansion when expansion is disabled, where the
         --  temporary may hide the transformation of a selected component into
         --  a prefixed function call, and references need to see the original
         --  expression.
 
-        and then Expander_Active
+        and then (Expander_Active or GNATprove_Mode)
       then
          declare
             Id    : constant Entity_Id := Make_Temporary (Loc, 'R', Iter_Name);
@@ -2319,6 +2320,7 @@ package body Sem_Ch5 is
 
             Insert_Actions (Parent (Parent (N)), New_List (Decl));
             Rewrite (Name (N), New_Occurrence_Of (Id, Loc));
+            Analyze (Name (N));
             Set_Etype (Id, Typ);
             Set_Etype (Name (N), Typ);
          end;

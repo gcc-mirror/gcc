@@ -3698,14 +3698,14 @@ package body Sem_Warn is
       --  out to C that is known to denote the same object (RM 6.4.1(6.15/3))
       --  This has been clarified in AI12-0216 to indicate that the illegality
       --  only occurs if both formals are of an elementary type, because of the
-      --  non-determinism on the write-back of the corresponding actuals.
+      --  nondeterminism on the write-back of the corresponding actuals.
       --  Earlier versions of the language made it illegal if only one of the
       --  actuals was an elementary parameter that overlapped a composite
       --  actual, and both were writable.
 
       --  If appropriate warning switch is set, we also report warnings on
       --  overlapping parameters that are composite types. Users find these
-      --  warnings useful, and they used in style guides.
+      --  warnings useful, and they are used in style guides.
 
       --  It is also worthwhile to warn on overlaps of composite objects when
       --  only one of the formals is (in)-out. Note that the RM rule above is

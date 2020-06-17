@@ -219,7 +219,7 @@ build_libcall_decl (const char *name, d_libcall_type return_type,
   bool varargs = false;
   tree fntype;
 
-  /* Add parameter types, using 'void' as the last parameter type
+  /* Add parameter types, using `void' as the last parameter type
      to mean this function accepts a variable list of arguments.  */
   va_list ap;
   va_start (ap, nparams);

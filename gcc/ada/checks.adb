@@ -2220,6 +2220,34 @@ package body Checks is
         (Expr, Target_Typ, Source_Typ, Do_Static => False);
    end Apply_Length_Check;
 
+   --------------------------------------
+   -- Apply_Length_Check_On_Assignment --
+   --------------------------------------
+
+   procedure Apply_Length_Check_On_Assignment
+     (Expr       : Node_Id;
+      Target_Typ : Entity_Id;
+      Target     : Node_Id;
+      Source_Typ : Entity_Id := Empty)
+   is
+      Assign : constant Node_Id := Parent (Target);
+
+   begin
+      --  No check is needed for the initialization of an object whose
+      --  nominal subtype is unconstrained.
+
+      if Is_Constr_Subt_For_U_Nominal (Target_Typ)
+        and then Nkind (Parent (Assign)) = N_Freeze_Entity
+        and then Is_Entity_Name (Target)
+        and then Entity (Target) = Entity (Parent (Assign))
+      then
+         return;
+      end if;
+
+      Apply_Selected_Length_Checks
+        (Expr, Target_Typ, Source_Typ, Do_Static => False);
+   end Apply_Length_Check_On_Assignment;
+
    -------------------------------------
    -- Apply_Parameter_Aliasing_Checks --
    -------------------------------------
@@ -3793,6 +3821,11 @@ package body Checks is
 
    begin
       if Inside_A_Generic then
+         return;
+
+      --  Nothing to do if the result type is universal integer
+
+      elsif Typ = Universal_Integer then
          return;
 
       --  Nothing to do if checks are suppressed
@@ -7001,12 +7034,12 @@ package body Checks is
          return;
       end if;
 
-      --  Here a check is needed. If the expander is not active, or if we are
-      --  in GNATProve mode, then simply set the Do_Range_Check flag and we
-      --  are done. In both these cases, we just want to see the range check
-      --  flag set, we do not want to generate the explicit range check code.
+      --  Here a check is needed. If the expander is not active (which is also
+      --  the case in GNATprove mode), then simply set the Do_Range_Check flag
+      --  and we are done. We just want to see the range check flag set, we do
+      --  not want to generate the explicit range check code.
 
-      if GNATprove_Mode or else not Expander_Active then
+      if not Expander_Active then
          Set_Do_Range_Check (N);
          return;
       end if;

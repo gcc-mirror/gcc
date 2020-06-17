@@ -1792,6 +1792,12 @@ package body Sem_Ch13 is
             procedure Analyze_Aspect_Relaxed_Initialization;
             --  Perform analysis of aspect Relaxed_Initialization
 
+            procedure Analyze_Aspect_Yield;
+            --  Perform analysis of aspect Yield
+
+            procedure Analyze_Aspect_Static;
+            --  Ada 202x (AI12-0075): Perform analysis of aspect Static
+
             procedure Make_Aitem_Pragma
               (Pragma_Argument_Associations : List_Id;
                Pragma_Name                  : Name_Id);
@@ -2213,19 +2219,37 @@ package body Sem_Ch13 is
                --  Will be set to True if we need to restore the scope table
                --  after analyzing the aspect expression.
 
+               Prev_Id : Entity_Id;
+
             --  Start of processing for Analyze_Aspect_Relaxed_Initialization
 
             begin
                --  Set name of the aspect for error messages
                Error_Msg_Name_1 := Nam;
 
-               --  Annotation of a type; no aspect expression is allowed
+               --  Annotation of a type; no aspect expression is allowed.
+               --  For a private type, the aspect must be attached to the
+               --  partial view.
+               --
                --  ??? Once the exact rule for this aspect is ready, we will
                --  likely reject concurrent types, etc., so let's keep the code
                --  for types and variable separate.
 
                if Is_First_Subtype (E) then
-                  if Present (Expr) then
+                  Prev_Id := Incomplete_Or_Partial_View (E);
+                  if Present (Prev_Id) then
+
+                     --  Aspect may appear on the full view of an incomplete
+                     --  type because the incomplete declaration cannot have
+                     --  any aspects.
+
+                     if Ekind (Prev_Id) = E_Incomplete_Type then
+                        null;
+                     else
+                        Error_Msg_N ("aspect % must apply to partial view", N);
+                     end if;
+
+                  elsif Present (Expr) then
                      Error_Msg_N ("illegal aspect % expression", Expr);
                   end if;
 
@@ -2233,6 +2257,19 @@ package body Sem_Ch13 is
 
                elsif Ekind (E) = E_Variable then
                   if Present (Expr) then
+                     Error_Msg_N ("illegal aspect % expression", Expr);
+                  end if;
+
+               --  Annotation of a constant; no aspect expression is allowed.
+               --  For a deferred constant, the aspect must be attached to the
+               --  partial view.
+
+               elsif Ekind (E) = E_Constant then
+                  if Present (Incomplete_Or_Partial_View (E)) then
+                     Error_Msg_N
+                       ("aspect % must apply to deferred constant", N);
+
+                  elsif Present (Expr) then
                      Error_Msg_N ("illegal aspect % expression", Expr);
                   end if;
 
@@ -2308,6 +2345,220 @@ package body Sem_Ch13 is
                   Error_Msg_N ("inappropriate entity for aspect %", E);
                end if;
             end Analyze_Aspect_Relaxed_Initialization;
+
+            ---------------------------
+            -- Analyze_Aspect_Static --
+            ---------------------------
+
+            procedure Analyze_Aspect_Static is
+            begin
+               if Ada_Version < Ada_2020 then
+                  Error_Msg_N
+                    ("aspect % is an Ada 202x feature", Aspect);
+                  Error_Msg_N ("\compile with -gnat2020", Aspect);
+
+                  return;
+
+               --  The aspect applies only to expression functions that
+               --  statisfy the requirements for a static expression function
+               --  (such as having an expression that is predicate-static).
+
+               elsif not Is_Expression_Function (E) then
+                  Error_Msg_N
+                    ("aspect % requires expression function", Aspect);
+
+                  return;
+
+               --  Ada 202x (AI12-0075): Check that the function satisfies
+               --  several requirements of static expression functions as
+               --  specified in RM 6.8(5.1-5.8). Note that some of the
+               --  requirements given there are checked elsewhere.
+
+               else
+                  --  The expression of the expression function must be a
+                  --  potentially static expression (RM 202x 6.8(3.2-3.4)).
+                  --  That's checked in Sem_Ch6.Analyze_Expression_Function.
+
+                  --  The function must not contain any calls to itself, which
+                  --  is checked in Sem_Res.Resolve_Call.
+
+                  --  Each formal must be of mode in and have a static subtype
+
+                  declare
+                     Formal : Entity_Id := First_Formal (E);
+                  begin
+                     while Present (Formal) loop
+                        if Ekind (Formal) /= E_In_Parameter then
+                           Error_Msg_N
+                             ("aspect % requires formals of mode IN",
+                              Aspect);
+
+                           return;
+                        end if;
+
+                        if not Is_Static_Subtype (Etype (Formal)) then
+                           Error_Msg_N
+                             ("aspect % requires formals with static subtypes",
+                              Aspect);
+
+                           return;
+                        end if;
+
+                        Next_Formal (Formal);
+                     end loop;
+                  end;
+
+                  --  The function's result subtype must be a static subtype
+
+                  if not Is_Static_Subtype (Etype (E)) then
+                     Error_Msg_N
+                       ("aspect % requires function with result of "
+                        & "a static subtype",
+                        Aspect);
+
+                     return;
+                  end if;
+
+                  --  Check that the function does not have any applicable
+                  --  precondition or postcondition expression.
+
+                  for Asp in Pre_Post_Aspects loop
+                     if Has_Aspect (E, Asp) then
+                        Error_Msg_N
+                          ("this aspect not allowed for static expression "
+                             & "functions", Find_Aspect (E, Asp));
+
+                        return;
+                     end if;
+                  end loop;
+
+                  --  ??? TBD: Must check that "for result type R, if the
+                  --  function is a boundary entity for type R (see 7.3.2),
+                  --  no type invariant applies to type R; if R has a
+                  --  component type C, a similar rule applies to C."
+               end if;
+
+               --  Preanalyze the expression (if any) when the aspect resides
+               --  in a generic unit. (Is this generic-related code necessary
+               --  for this aspect? It's modeled on what's done for aspect
+               --  Disable_Controlled. ???)
+
+               if Inside_A_Generic then
+                  if Present (Expr) then
+                     Preanalyze_And_Resolve (Expr, Any_Boolean);
+                  end if;
+
+               --  Otherwise the aspect resides in a nongeneric context
+
+               else
+                  --  When the expression statically evaluates to True, the
+                  --  expression function is treated as a static function.
+                  --  Otherwise the aspect appears without an expression and
+                  --  defaults to True.
+
+                  if Present (Expr) then
+                     Analyze_And_Resolve (Expr, Any_Boolean);
+
+                     --  Error if the boolean expression is not static
+
+                     if not Is_OK_Static_Expression (Expr) then
+                        Error_Msg_N
+                          ("expression of aspect % must be static", Aspect);
+                     end if;
+                  end if;
+               end if;
+            end Analyze_Aspect_Static;
+
+            --------------------------
+            -- Analyze_Aspect_Yield --
+            --------------------------
+
+            procedure Analyze_Aspect_Yield is
+               Expr_Value : Boolean := False;
+
+            begin
+               --  Check valid declarations for 'Yield
+
+               if (Nkind_In (N, N_Abstract_Subprogram_Declaration,
+                                N_Entry_Declaration,
+                                N_Generic_Subprogram_Declaration,
+                                N_Subprogram_Declaration)
+                     or else Nkind (N) in N_Formal_Subprogram_Declaration)
+                 and then not Within_Protected_Type (E)
+               then
+                  null;
+
+               elsif Within_Protected_Type (E) then
+                  Error_Msg_N
+                    ("aspect% not applicable to protected operations", Id);
+                  return;
+
+               else
+                  Error_Msg_N
+                    ("aspect% only applicable to subprogram and entry "
+                     & "declarations", Id);
+                  return;
+               end if;
+
+               --  Evaluate its static expression (if available); otherwise it
+               --  defaults to True.
+
+               if No (Expr) then
+                  Expr_Value := True;
+
+               --  Otherwise it must have a static boolean expression
+
+               else
+                  if Inside_A_Generic then
+                     Preanalyze_And_Resolve (Expr, Any_Boolean);
+                  else
+                     Analyze_And_Resolve (Expr, Any_Boolean);
+                  end if;
+
+                  if Is_OK_Static_Expression (Expr) then
+                     if Is_True (Static_Boolean (Expr)) then
+                        Expr_Value := True;
+                     end if;
+                  else
+                     Error_Msg_N
+                       ("expression of aspect % must be static", Aspect);
+                  end if;
+               end if;
+
+               if Expr_Value then
+
+                  --  Adding minimum decoration to generic subprograms to set
+                  --  the Yield attribute (since at this stage it may not be
+                  --  set; see Analyze_Generic_Subprogram_Declaration).
+
+                  if Nkind (N) in N_Generic_Subprogram_Declaration
+                    and then Ekind (E) = E_Void
+                  then
+                     if Nkind (Specification (N)) = N_Function_Specification
+                     then
+                        Set_Ekind (E, E_Function);
+                     else
+                        Set_Ekind (E, E_Procedure);
+                     end if;
+                  end if;
+
+                  Set_Has_Yield_Aspect (E);
+               end if;
+
+               --  If the Yield aspect is specified for a dispatching
+               --  subprogram that inherits the aspect, the specified
+               --  value shall be confirming.
+
+               if Present (Expr)
+                 and then Is_Dispatching_Operation (E)
+                 and then Present (Overridden_Operation (E))
+                 and then Has_Yield_Aspect (Overridden_Operation (E))
+                            /= Is_True (Static_Boolean (Expr))
+               then
+                  Error_Msg_N ("specification of inherited aspect% can only " &
+                               "confirm parent value", Id);
+               end if;
+            end Analyze_Aspect_Yield;
 
             -----------------------
             -- Make_Aitem_Pragma --
@@ -4057,6 +4308,18 @@ package body Sem_Ch13 is
                   elsif A_Id = Aspect_Disable_Controlled then
                      Analyze_Aspect_Disable_Controlled;
                      goto Continue;
+
+                  --  Ada 202x (AI12-0075): static expression functions
+
+                  elsif A_Id = Aspect_Static then
+                     Analyze_Aspect_Static;
+                     goto Continue;
+
+                  --  Ada 2020 (AI12-0279)
+
+                  elsif A_Id = Aspect_Yield then
+                     Analyze_Aspect_Yield;
+                     goto Continue;
                   end if;
 
                   --  Library unit aspects require special handling in the case
@@ -4909,6 +5172,8 @@ package body Sem_Ch13 is
          procedure Check_Inherited_Indexing;
          --  For a derived type, check that no indexing aspect is specified
          --  for the type if it is also inherited
+         --  AI12-0160: verify that an indexing cannot be specified for
+         --  a derived type unless it is specified for the parent.
 
          procedure Check_One_Function (Subp : Entity_Id);
          --  Check one possible interpretation. Sets Indexing_Found True if a
@@ -4923,15 +5188,21 @@ package body Sem_Ch13 is
          ------------------------------
 
          procedure Check_Inherited_Indexing is
-            Inherited : Node_Id;
+            Inherited      : Node_Id;
+            Other_Indexing : Node_Id;
 
          begin
             if Attr = Name_Constant_Indexing then
                Inherited :=
                  Find_Aspect (Etype (Ent), Aspect_Constant_Indexing);
+               Other_Indexing :=
+                 Find_Aspect (Etype (Ent), Aspect_Variable_Indexing);
+
             else pragma Assert (Attr = Name_Variable_Indexing);
                Inherited :=
                   Find_Aspect (Etype (Ent), Aspect_Variable_Indexing);
+               Other_Indexing :=
+                 Find_Aspect (Etype (Ent), Aspect_Constant_Indexing);
             end if;
 
             if Present (Inherited) then
@@ -4944,6 +5215,16 @@ package body Sem_Ch13 is
                elsif Aspect_Rep_Item (Inherited) = N then
                   null;
 
+               --  Check if this is a confirming specification. The name
+               --  may be overloaded between the parent operation and the
+               --  inherited one, so we check that the Chars fields match.
+
+               elsif Is_Entity_Name (Expression (Inherited))
+                 and then Chars (Entity (Expression (Inherited))) =
+                    Chars (Entity (Expression (N)))
+               then
+                  Indexing_Found := True;
+
                --  Indicate the operation that must be overridden, rather than
                --  redefining the indexing aspect.
 
@@ -4954,6 +5235,15 @@ package body Sem_Ch13 is
                     ("!override & instead",
                      N, Entity (Expression (Inherited)));
                end if;
+
+            --  If not inherited and the parent has another indexing function
+            --  this is illegal, because it leads to inconsistent results in
+            --  class-wide calls.
+
+            elsif Present (Other_Indexing) then
+               Error_Msg_N
+                 ("cannot specify indexing operation on derived type"
+                   & " if not specified for parent", N);
             end if;
          end Check_Inherited_Indexing;
 
@@ -4976,7 +5266,12 @@ package body Sem_Ch13 is
                   --  Indexing function can't be declared elsewhere
 
                   Illegal_Indexing
-                    ("indexing function must be declared in scope of type&");
+                    ("indexing function must be declared"
+                      & " in scope of type&");
+               end if;
+
+               if Is_Derived_Type (Ent) then
+                  Check_Inherited_Indexing;
                end if;
 
                return;

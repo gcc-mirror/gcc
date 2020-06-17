@@ -929,9 +929,8 @@ print_version (void)
   fprintf (stdout, "Copyright %s 2020 Free Software Foundation, Inc.\n",
 	   _("(C)"));
   fnotice (stdout,
-	   _("This is free software; see the source for copying conditions.\n"
-	     "There is NO warranty; not even for MERCHANTABILITY or \n"
-	     "FITNESS FOR A PARTICULAR PURPOSE.\n\n"));
+	   _("This is free software; see the source for copying conditions.  There is NO\n\
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"));
   exit (SUCCESS_EXIT_CODE);
 }
 

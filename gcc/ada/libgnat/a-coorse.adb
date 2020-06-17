@@ -1641,12 +1641,12 @@ package body Ada.Containers.Ordered_Sets is
         Element_Keys.Find (Container.Tree, New_Item);
 
    begin
+      TE_Check (Container.Tree.TC);
+
       if Checks and then Node = null then
          raise Constraint_Error with
            "attempt to replace element not in set";
       end if;
-
-      TE_Check (Container.Tree.TC);
 
       Node.Element := New_Item;
    end Replace;

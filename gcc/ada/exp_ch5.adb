@@ -441,7 +441,7 @@ package body Exp_Ch5 is
       --  respect to the right-hand side as given, not a possible underlying
       --  renamed object, since this would generate incorrect extra checks.
 
-      Apply_Length_Check (Rhs, L_Type);
+      Apply_Length_Check_On_Assignment (Rhs, L_Type, Lhs);
 
       --  We start by assuming that the move can be done in either direction,
       --  i.e. that the two sides are completely disjoint.
@@ -3741,7 +3741,7 @@ package body Exp_Ch5 is
                --  specific to pure if statements, however (see
                --  Sem_Ch5.Analyze_If_Statement).
 
-               Set_Comes_From_Source (New_If, Comes_From_Source (N));
+               Preserve_Comes_From_Source (New_If, N);
                return;
 
             --  No special processing for that elsif part, move to next

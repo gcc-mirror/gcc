@@ -2071,8 +2071,7 @@ package body Atree is
 
    procedure Preserve_Comes_From_Source (NewN, OldN : Node_Id) is
    begin
-      Nodes.Table (NewN).Comes_From_Source :=
-        Nodes.Table (OldN).Comes_From_Source;
+      Set_Comes_From_Source (NewN, Comes_From_Source (OldN));
    end Preserve_Comes_From_Source;
 
    ----------------------

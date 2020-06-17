@@ -5442,7 +5442,7 @@ get_rtx_code (enum tree_code tcode, bool unsignedp)
    first comparison operand for insn ICODE.  Do not generate the
    compare instruction itself.  */
 
-static rtx
+rtx
 vector_compare_rtx (machine_mode cmp_mode, enum tree_code tcode,
 		    tree t_op0, tree t_op1, bool unsignedp,
 		    enum insn_code icode, unsigned int opno)
@@ -5807,128 +5807,6 @@ expand_vec_perm_var (machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
   if (tmp)
     tmp = gen_lowpart (mode, tmp);
   return tmp;
-}
-
-/* Generate insns for a VEC_COND_EXPR with mask, given its TYPE and its
-   three operands.  */
-
-rtx
-expand_vec_cond_mask_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
-			   rtx target)
-{
-  class expand_operand ops[4];
-  machine_mode mode = TYPE_MODE (vec_cond_type);
-  machine_mode mask_mode = TYPE_MODE (TREE_TYPE (op0));
-  enum insn_code icode = get_vcond_mask_icode (mode, mask_mode);
-  rtx mask, rtx_op1, rtx_op2;
-
-  if (icode == CODE_FOR_nothing)
-    return 0;
-
-  mask = expand_normal (op0);
-  rtx_op1 = expand_normal (op1);
-  rtx_op2 = expand_normal (op2);
-
-  mask = force_reg (mask_mode, mask);
-  rtx_op1 = force_reg (GET_MODE (rtx_op1), rtx_op1);
-
-  create_output_operand (&ops[0], target, mode);
-  create_input_operand (&ops[1], rtx_op1, mode);
-  create_input_operand (&ops[2], rtx_op2, mode);
-  create_input_operand (&ops[3], mask, mask_mode);
-  expand_insn (icode, 4, ops);
-
-  return ops[0].value;
-}
-
-/* Generate insns for a VEC_COND_EXPR, given its TYPE and its
-   three operands.  */
-
-rtx
-expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
-		      rtx target)
-{
-  class expand_operand ops[6];
-  enum insn_code icode;
-  rtx comparison, rtx_op1, rtx_op2;
-  machine_mode mode = TYPE_MODE (vec_cond_type);
-  machine_mode cmp_op_mode;
-  bool unsignedp;
-  tree op0a, op0b;
-  enum tree_code tcode;
-
-  if (COMPARISON_CLASS_P (op0))
-    {
-      op0a = TREE_OPERAND (op0, 0);
-      op0b = TREE_OPERAND (op0, 1);
-      tcode = TREE_CODE (op0);
-    }
-  else
-    {
-      gcc_assert (VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (op0)));
-      if (get_vcond_mask_icode (mode, TYPE_MODE (TREE_TYPE (op0)))
-	  != CODE_FOR_nothing)
-	return expand_vec_cond_mask_expr (vec_cond_type, op0, op1,
-					  op2, target);
-      /* Fake op0 < 0.  */
-      else
-	{
-	  gcc_assert (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (op0)))
-		      == MODE_VECTOR_INT);
-	  op0a = op0;
-	  op0b = build_zero_cst (TREE_TYPE (op0));
-	  tcode = LT_EXPR;
-	}
-    }
-  cmp_op_mode = TYPE_MODE (TREE_TYPE (op0a));
-  unsignedp = TYPE_UNSIGNED (TREE_TYPE (op0a));
-
-
-  gcc_assert (known_eq (GET_MODE_SIZE (mode), GET_MODE_SIZE (cmp_op_mode))
-	      && known_eq (GET_MODE_NUNITS (mode),
-			   GET_MODE_NUNITS (cmp_op_mode)));
-
-  icode = get_vcond_icode (mode, cmp_op_mode, unsignedp);
-  if (icode == CODE_FOR_nothing)
-    {
-      if (tcode == LT_EXPR
-	  && op0a == op0
-	  && TREE_CODE (op0) == VECTOR_CST)
-	{
-	  /* A VEC_COND_EXPR condition could be folded from EQ_EXPR/NE_EXPR
-	     into a constant when only get_vcond_eq_icode is supported.
-	     Verify < 0 and != 0 behave the same and change it to NE_EXPR.  */
-	  unsigned HOST_WIDE_INT nelts;
-	  if (!VECTOR_CST_NELTS (op0).is_constant (&nelts))
-	    {
-	      if (VECTOR_CST_STEPPED_P (op0))
-		return 0;
-	      nelts = vector_cst_encoded_nelts (op0);
-	    }
-	  for (unsigned int i = 0; i < nelts; ++i)
-	    if (tree_int_cst_sgn (vector_cst_elt (op0, i)) == 1)
-	      return 0;
-	  tcode = NE_EXPR;
-	}
-      if (tcode == EQ_EXPR || tcode == NE_EXPR)
-	icode = get_vcond_eq_icode (mode, cmp_op_mode);
-      if (icode == CODE_FOR_nothing)
-	return 0;
-    }
-
-  comparison = vector_compare_rtx (VOIDmode, tcode, op0a, op0b, unsignedp,
-				   icode, 4);
-  rtx_op1 = expand_normal (op1);
-  rtx_op2 = expand_normal (op2);
-
-  create_output_operand (&ops[0], target, mode);
-  create_input_operand (&ops[1], rtx_op1, mode);
-  create_input_operand (&ops[2], rtx_op2, mode);
-  create_fixed_operand (&ops[3], comparison);
-  create_fixed_operand (&ops[4], XEXP (comparison, 0));
-  create_fixed_operand (&ops[5], XEXP (comparison, 1));
-  expand_insn (icode, 6, ops);
-  return ops[0].value;
 }
 
 /* Generate VEC_SERIES_EXPR <OP0, OP1>, returning a value of mode VMODE.

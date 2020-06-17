@@ -3772,6 +3772,17 @@ package body Sem_Ch8 is
          Analyze_Aspect_Specifications (N, New_S);
       end if;
 
+      --  AI12-0279
+
+      if Is_Actual
+        and then Has_Yield_Aspect (Formal_Spec)
+        and then not Has_Yield_Aspect (Old_S)
+      then
+         Error_Msg_Name_1 := Name_Yield;
+         Error_Msg_N
+           ("actual subprogram& must have aspect% to match formal", Name (N));
+      end if;
+
       Ada_Version := Save_AV;
       Ada_Version_Pragma := Save_AVP;
       Ada_Version_Explicit := Save_AV_Exp;
@@ -7162,10 +7173,10 @@ package body Sem_Ch8 is
       --  is an array type we may already have a usable subtype for it, so we
       --  can use it rather than generating a new one, because the bounds
       --  will be the values of the discriminants and not discriminant refs.
-      --  This simplifies value tracing in GNATProve. For consistency, both
+      --  This simplifies value tracing in GNATprove. For consistency, both
       --  the entity name and the subtype come from the constrained component.
 
-      --  This is only used in GNATProve mode: when generating code it may be
+      --  This is only used in GNATprove mode: when generating code it may be
       --  necessary to create an itype in the scope of use of the selected
       --  component, e.g. in the context of a expanded record equality.
 

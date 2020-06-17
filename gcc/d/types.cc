@@ -106,7 +106,7 @@ same_type_p (Type *t1, Type *t2)
   return false;
 }
 
-/* Returns 'Object' type which all D classes are derived from.  */
+/* Returns `Object' type which all D classes are derived from.  */
 
 Type *
 get_object_type (void)
@@ -204,7 +204,7 @@ insert_type_modifiers (tree type, unsigned mod)
 
   tree qualtype = build_qualified_type (type, quals);
 
-  /* Mark whether the type is qualified 'shared'.  */
+  /* Mark whether the type is qualified `shared'.  */
   if (mod & MODshared)
     TYPE_SHARED (qualtype) = 1;
 
@@ -292,7 +292,7 @@ layout_aggregate_members (Dsymbols *members, tree context, bool inherited_p)
 		  gcc_assert (ro->dyncast () == DYNCAST_EXPRESSION);
 		  Expression *e = (Expression *) ro;
 		  gcc_assert (e->op == TOKdsymbol);
-		  DsymbolExp *se = (DsymbolExp *) e;
+		  DsymbolExp *se = e->isDsymbolExp ();
 
 		  tmembers.push (se->s);
 		}
@@ -498,9 +498,9 @@ merge_aggregate_types (Type *type, tree deco)
   AggregateDeclaration *sym;
 
   if (type->ty == Tstruct)
-    sym = ((TypeStruct *) type)->sym;
+    sym = type->isTypeStruct ()->sym;
   else if (type->ty == Tclass)
-    sym = ((TypeClass *) type)->sym;
+    sym = type->isTypeClass ()->sym;
   else
     gcc_unreachable ();
 
@@ -671,7 +671,7 @@ public:
 
   void visit (TypeVector *t)
   {
-    int nunits = ((TypeSArray *) t->basetype)->dim->toUInteger ();
+    int nunits = t->basetype->isTypeSArray ()->dim->toUInteger ();
     tree inner = build_ctype (t->elementType ());
 
     /* Same rationale as void static arrays.  */

@@ -56,7 +56,7 @@ enum phobos_action
   /* libgphobos is needed and should be linked statically.  */
   PHOBOS_STATIC,
   /* libgphobos is needed and should be linked dynamically.  */
-  PHOBOS_DYNAMIC,
+  PHOBOS_DYNAMIC
 };
 
 static phobos_action phobos_library = PHOBOS_DEFAULT;

@@ -1333,8 +1333,7 @@ package body Sem_Attr is
                null;
 
             --  Attribute 'Result is allowed to appear in aspect
-            --  Relaxed_Initialization (??? add reference to SPARK RM once this
-            --  attribute is described there).
+            --  Relaxed_Initialization (SPARK RM 6.10).
 
             elsif Prag_Nam = Name_Relaxed_Initialization
               and then Aname = Name_Result

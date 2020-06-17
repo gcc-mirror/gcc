@@ -125,7 +125,7 @@ Loc::toChars (void) const
 }
 
 bool
-Loc::equals (const Loc& loc)
+Loc::equals (const Loc &loc)
 {
   if (this->linnum != loc.linnum || this->charnum != loc.charnum)
     return false;
@@ -177,7 +177,7 @@ eval_builtin (Loc loc, FuncDeclaration *fd, Expressions *arguments)
   gcc_assert (fndecl_built_in_p (decl)
 	      || DECL_INTRINSIC_CODE (decl) != INTRINSIC_NONE);
 
-  TypeFunction *tf = (TypeFunction *) fd->type;
+  TypeFunction *tf = fd->type->toTypeFunction ();
   Expression *e = NULL;
   input_location = make_location_t (loc);
 

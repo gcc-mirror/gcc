@@ -7421,7 +7421,7 @@ Syntax:
   DETAILS ::= static_string_EXPRESSION
   DETAILS ::= On | Off, static_string_EXPRESSION
 
-  TOOL_NAME ::= GNAT | GNATProve
+  TOOL_NAME ::= GNAT | GNATprove
 
   REASON ::= Reason => STRING_LITERAL {& STRING_LITERAL}
 

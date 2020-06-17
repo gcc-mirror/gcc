@@ -3197,12 +3197,16 @@ package body Sem_Ch10 is
       Set_Library_Unit       (Withn, Parent (Unit_Declaration_Node (Ent)));
       Set_Parent_With        (Withn);
 
-      --  If the unit is a package or generic package declaration, a private_
-      --  with_clause on a child unit implies that the implicit with on the
-      --  parent is also private.
+      --  If the unit is a [generic] package or subprogram declaration
+      --  (including a subprogram body acting as spec), a private_with_clause
+      --  on a child unit implies that the implicit with on the parent is also
+      --  private.
 
       if Nkind_In (Unit (N), N_Generic_Package_Declaration,
-                             N_Package_Declaration)
+                             N_Package_Declaration,
+                             N_Generic_Subprogram_Declaration,
+                             N_Subprogram_Declaration,
+                             N_Subprogram_Body)
       then
          Set_Private_Present (Withn, Private_Present (Item));
       end if;

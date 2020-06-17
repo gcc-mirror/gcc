@@ -522,8 +522,8 @@ package body Einfo is
    --    Known_To_Have_Preelab_Init      Flag207
    --    Must_Have_Preelab_Init          Flag208
    --    Is_Return_Object                Flag209
-   --    Elaborate_Body_Desirable        Flag210
 
+   --    Elaborate_Body_Desirable        Flag210
    --    Has_Static_Discriminants        Flag211
    --    Has_Pragma_Unreferenced_Objects Flag212
    --    Requires_Overriding             Flag213
@@ -533,8 +533,8 @@ package body Einfo is
    --    Suppress_Value_Tracking_On_Call Flag217
    --    Is_Primitive                    Flag218
    --    Has_Initial_Value               Flag219
-   --    Has_Dispatch_Table              Flag220
 
+   --    Has_Dispatch_Table              Flag220
    --    Has_Pragma_Preelab_Init         Flag221
    --    Used_As_Generic_Actual          Flag222
    --    Is_Descendant_Of_Address        Flag223
@@ -544,8 +544,8 @@ package body Einfo is
    --    Referenced_As_Out_Parameter     Flag227
    --    Has_Thunks                      Flag228
    --    Can_Use_Internal_Rep            Flag229
-   --    Has_Pragma_Inline_Always        Flag230
 
+   --    Has_Pragma_Inline_Always        Flag230
    --    Renamed_In_Spec                 Flag231
    --    Has_Own_Invariants              Flag232
    --    Has_Pragma_Unmodified           Flag233
@@ -555,8 +555,8 @@ package body Einfo is
    --    Warnings_Off_Used_Unmodified    Flag237
    --    Warnings_Off_Used_Unreferenced  Flag238
    --    No_Reordering                   Flag239
-   --    Has_Expanded_Contract           Flag240
 
+   --    Has_Expanded_Contract           Flag240
    --    Optimize_Alignment_Space        Flag241
    --    Optimize_Alignment_Time         Flag242
    --    Overlays_Constant               Flag243
@@ -566,8 +566,8 @@ package body Einfo is
    --    OK_To_Rename                    Flag247
    --    Has_Inheritable_Invariants      Flag248
    --    Is_Safe_To_Reevaluate           Flag249
-   --    Has_Predicates                  Flag250
 
+   --    Has_Predicates                  Flag250
    --    Has_Implicit_Dereference        Flag251
    --    Is_Finalized_Transient          Flag252
    --    Disable_Controlled              Flag253
@@ -577,8 +577,8 @@ package body Einfo is
    --    Is_Invariant_Procedure          Flag257
    --    Has_Dynamic_Predicate_Aspect    Flag258
    --    Has_Static_Predicate_Aspect     Flag259
-   --    Has_Loop_Entry_Attributes       Flag260
 
+   --    Has_Loop_Entry_Attributes       Flag260
    --    Has_Delayed_Rep_Aspects         Flag261
    --    May_Inherit_Delayed_Rep_Aspects Flag262
    --    Has_Visible_Refinement          Flag263
@@ -588,8 +588,8 @@ package body Einfo is
    --    Has_Shift_Operator              Flag267
    --    Is_Independent                  Flag268
    --    Has_Static_Predicate            Flag269
-   --    Stores_Attribute_Old_Prefix     Flag270
 
+   --    Stores_Attribute_Old_Prefix     Flag270
    --    Has_Protected                   Flag271
    --    SSO_Set_Low_By_Default          Flag272
    --    SSO_Set_High_By_Default         Flag273
@@ -599,8 +599,8 @@ package body Einfo is
    --    Is_Checked_Ghost_Entity         Flag277
    --    Is_Ignored_Ghost_Entity         Flag278
    --    Contains_Ignored_Ghost_Code     Flag279
-   --    Partial_View_Has_Unknown_Discr  Flag280
 
+   --    Partial_View_Has_Unknown_Discr  Flag280
    --    Is_Static_Type                  Flag281
    --    Has_Nested_Subprogram           Flag282
    --    Is_Uplevel_Referenced_Entity    Flag283
@@ -610,8 +610,8 @@ package body Einfo is
    --    Rewritten_For_C                 Flag287
    --    Predicates_Ignored              Flag288
    --    Has_Timing_Event                Flag289
-   --    Is_Class_Wide_Clone             Flag290
 
+   --    Is_Class_Wide_Clone             Flag290
    --    Has_Inherited_Invariants        Flag291
    --    Is_Partial_Invariant_Procedure  Flag292
    --    Is_Actual_Subtype               Flag293
@@ -621,8 +621,8 @@ package body Einfo is
    --    Is_Entry_Wrapper                Flag297
    --    Is_Underlying_Full_View         Flag298
    --    Body_Needed_For_Inlining        Flag299
-   --    Has_Private_Extension           Flag300
 
+   --    Has_Private_Extension           Flag300
    --    Ignore_SPARK_Mode_Pragmas       Flag301
    --    Is_Initial_Condition_Procedure  Flag302
    --    Suppress_Elaboration_Warnings   Flag303
@@ -630,8 +630,8 @@ package body Einfo is
    --    Is_Activation_Record            Flag305
    --    Needs_Activation_Record         Flag306
    --    Is_Loop_Parameter               Flag307
+   --    Has_Yield_Aspect                Flag308
 
-   --    (unused)                        Flag308
    --    (unused)                        Flag309
 
    --  Note: Flag310-317 are defined in atree.ads/adb, but not yet in atree.h
@@ -1988,6 +1988,11 @@ package body Einfo is
    begin
       return Flag182 (Id);
    end Has_Xref_Entry;
+
+   function Has_Yield_Aspect (Id : E) return B is
+   begin
+      return Flag308 (Id);
+   end Has_Yield_Aspect;
 
    function Hiding_Loop_Variable (Id : E) return E is
    begin
@@ -5192,6 +5197,13 @@ package body Einfo is
       Set_Flag182 (Id, V);
    end Set_Has_Xref_Entry;
 
+   procedure Set_Has_Yield_Aspect (Id : E; V : B := True) is
+   begin
+      pragma Assert
+        (Is_Entry (Id) or else Is_Subprogram_Or_Generic_Subprogram (Id));
+      Set_Flag308 (Id, V);
+   end Set_Has_Yield_Aspect;
+
    procedure Set_Hiding_Loop_Variable (Id : E; V : E) is
    begin
       pragma Assert (Ekind (Id) = E_Variable);
@@ -8256,8 +8268,7 @@ package body Einfo is
    function Is_Relaxed_Initialization_State (Id : E) return B is
    begin
       --  To qualify, the abstract state must appear with simple option
-      --  "Relaxed_Initialization" (??? add reference to SPARK RM once the
-      --  Relaxed_Initialization aspect is described there).
+      --  "Relaxed_Initialization" (SPARK RM 6.10).
 
       return
         Ekind (Id) = E_Abstract_State
@@ -9813,6 +9824,7 @@ package body Einfo is
       W ("Has_Visible_Refinement",          Flag263 (Id));
       W ("Has_Volatile_Components",         Flag87  (Id));
       W ("Has_Xref_Entry",                  Flag182 (Id));
+      W ("Has_Yield_Aspect",                Flag308 (Id));
       W ("Ignore_SPARK_Mode_Pragmas",       Flag301 (Id));
       W ("In_Package_Body",                 Flag48  (Id));
       W ("In_Private_Part",                 Flag45  (Id));

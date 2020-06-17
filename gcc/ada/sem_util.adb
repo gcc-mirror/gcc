@@ -5846,7 +5846,14 @@ package body Sem_Util is
          --  will happen when something is evaluated if it never will be
          --  evaluated.
 
-         if not Is_Statically_Unevaluated (N) then
+         --  Suppress error reporting when checking that the expression of a
+         --  static expression function is a potentially static expression,
+         --  because we don't want additional errors being reported during the
+         --  preanalysis of the expression (see Analyze_Expression_Function).
+
+         if not Is_Statically_Unevaluated (N)
+           and then not Checking_Potentially_Static_Expression
+         then
             if Present (Ent) then
                Error_Msg_NEL (Msgc (1 .. Msgl), N, Ent, Eloc);
             else
@@ -10168,6 +10175,16 @@ package body Sem_Util is
      (Typ : Entity_Id;
       Nam : Name_Id) return Entity_Id
    is
+      pragma Assert
+        (Is_Type (Typ)
+         and then
+         Nam_In (Nam, Name_Element,
+                      Name_First,
+                      Name_Has_Element,
+                      Name_Last,
+                      Name_Next,
+                      Name_Previous));
+
       Funcs : constant Node_Id := Find_Value_Of_Aspect (Typ, Aspect_Iterable);
       Assoc : Node_Id;
 
@@ -12478,13 +12495,20 @@ package body Sem_Util is
          when E_Abstract_State =>
             return Is_Relaxed_Initialization_State (E);
 
+         --  Constants have this aspect attached directly; for deferred
+         --  constants, the aspect is attached to the partial view.
+
+         when E_Constant =>
+            return Has_Aspect (E, Aspect_Relaxed_Initialization);
+
          --  Variables have this aspect attached directly
 
          when E_Variable =>
             return Has_Aspect (E, Aspect_Relaxed_Initialization);
 
          --  Types have this aspect attached directly (though we only allow it
-         --  to be specified for the first subtype).
+         --  to be specified for the first subtype). For private types, the
+         --  aspect is attached to the partial view.
 
          when Type_Kind =>
             pragma Assert (Is_First_Subtype (E));
@@ -18441,6 +18465,73 @@ package body Sem_Util is
         Nkind (N) in N_Statement_Other_Than_Procedure_Call
           or else Nkind (N) = N_Procedure_Call_Statement;
    end Is_Statement;
+
+   ------------------------------------
+   --  Is_Static_Expression_Function --
+   ------------------------------------
+
+   function Is_Static_Expression_Function (Subp : Entity_Id) return Boolean is
+   begin
+      return Is_Expression_Function (Subp)
+        and then Has_Aspect (Subp, Aspect_Static)
+        and then
+          (No (Find_Value_Of_Aspect (Subp, Aspect_Static))
+            or else Is_True (Static_Boolean
+                               (Find_Value_Of_Aspect (Subp, Aspect_Static))));
+   end Is_Static_Expression_Function;
+
+   -----------------------------------------
+   --  Is_Static_Expression_Function_Call --
+   -----------------------------------------
+
+   function Is_Static_Expression_Function_Call (Call : Node_Id) return Boolean
+   is
+
+      function Has_All_Static_Actuals (Call : Node_Id) return Boolean;
+      --  Return whether all actual parameters of Call are static expressions
+
+      function Has_All_Static_Actuals (Call : Node_Id) return Boolean is
+         Actual        : Node_Id := First_Actual (Call);
+         String_Result : constant Boolean :=
+                           Is_String_Type (Etype (Entity (Name (Call))));
+
+      begin
+         while Present (Actual) loop
+            if not Is_Static_Expression (Actual) then
+
+               --  ??? In the string-returning case we want to avoid a call
+               --  being made to Establish_Transient_Scope in Resolve_Call,
+               --  but at the point where that's tested for (which now includes
+               --  a call to test Is_Static_Expression_Function_Call), the
+               --  actuals of the call haven't been resolved, so expressions
+               --  of the actuals may not have been marked Is_Static_Expression
+               --  yet, so we force them to be resolved here, so we can tell if
+               --  they're static. Calling Resolve here is admittedly a kludge,
+               --  and we limit this call to string-returning cases. ???
+
+               if String_Result then
+                  Resolve (Actual);
+               end if;
+
+               --  Test flag again in case it's now True due to above Resolve
+
+               if not Is_Static_Expression (Actual) then
+                  return False;
+               end if;
+            end if;
+
+            Next_Actual (Actual);
+         end loop;
+
+         return True;
+      end Has_All_Static_Actuals;
+
+   begin
+      return Nkind (Call) = N_Function_Call
+        and then Is_Entity_Name (Name (Call))
+        and then Is_Static_Expression_Function (Entity (Name (Call)))
+        and then Has_All_Static_Actuals (Call);
+   end Is_Static_Expression_Function_Call;
 
    ----------------------------------------
    --  Is_Subcomponent_Of_Atomic_Object  --

@@ -207,6 +207,7 @@ package Aspects is
       Aspect_Remote_Access_Type,            -- GNAT
       Aspect_Shared,                        -- GNAT (equivalent to Atomic)
       Aspect_Simple_Storage_Pool_Type,      -- GNAT
+      Aspect_Static,
       Aspect_Suppress_Debug_Info,           -- GNAT
       Aspect_Suppress_Initialization,       -- GNAT
       Aspect_Thread_Local_Storage,          -- GNAT
@@ -217,7 +218,8 @@ package Aspects is
       Aspect_Unreferenced_Objects,          -- GNAT
       Aspect_Volatile,
       Aspect_Volatile_Components,
-      Aspect_Volatile_Full_Access);         -- GNAT
+      Aspect_Volatile_Full_Access,          -- GNAT
+      Aspect_Yield);
 
    subtype Aspect_Id_Exclude_No_Aspect is
      Aspect_Id range Aspect_Id'Succ (No_Aspect) .. Aspect_Id'Last;
@@ -554,6 +556,7 @@ package Aspects is
       Aspect_Remote_Access_Type           => False,
       Aspect_Shared                       => True,
       Aspect_Simple_Storage_Pool_Type     => True,
+      Aspect_Static                       => False,
       Aspect_Suppress_Debug_Info          => False,
       Aspect_Suppress_Initialization      => False,
       Aspect_Thread_Local_Storage         => True,
@@ -564,7 +567,8 @@ package Aspects is
       Aspect_Unreferenced_Objects         => False,
       Aspect_Volatile                     => True,
       Aspect_Volatile_Components          => True,
-      Aspect_Volatile_Full_Access         => True);
+      Aspect_Volatile_Full_Access         => True,
+      Aspect_Yield                        => False);
 
    -----------------------------------------
    -- Table Linking Names and Aspect_Id's --
@@ -679,6 +683,7 @@ package Aspects is
       Aspect_Size                         => Name_Size,
       Aspect_Small                        => Name_Small,
       Aspect_SPARK_Mode                   => Name_SPARK_Mode,
+      Aspect_Static                       => Name_Static,
       Aspect_Static_Predicate             => Name_Static_Predicate,
       Aspect_Storage_Pool                 => Name_Storage_Pool,
       Aspect_Storage_Size                 => Name_Storage_Size,
@@ -706,7 +711,8 @@ package Aspects is
       Aspect_Volatile_Full_Access         => Name_Volatile_Full_Access,
       Aspect_Volatile_Function            => Name_Volatile_Function,
       Aspect_Warnings                     => Name_Warnings,
-      Aspect_Write                        => Name_Write);
+      Aspect_Write                        => Name_Write,
+      Aspect_Yield                        => Name_Yield);
 
    function Get_Aspect_Id (Name : Name_Id) return Aspect_Id;
    pragma Inline (Get_Aspect_Id);
@@ -934,11 +940,13 @@ package Aspects is
       Aspect_Refined_State                => Never_Delay,
       Aspect_Relaxed_Initialization       => Never_Delay,
       Aspect_SPARK_Mode                   => Never_Delay,
+      Aspect_Static                       => Never_Delay,
       Aspect_Synchronization              => Never_Delay,
       Aspect_Test_Case                    => Never_Delay,
       Aspect_Unimplemented                => Never_Delay,
       Aspect_Volatile_Function            => Never_Delay,
       Aspect_Warnings                     => Never_Delay,
+      Aspect_Yield                        => Never_Delay,
 
       Aspect_Alignment                    => Rep_Aspect,
       Aspect_Atomic                       => Rep_Aspect,

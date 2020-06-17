@@ -569,6 +569,15 @@ package Checks is
    --  processes it as described above for consistency with the other routines
    --  in this section.
 
+   procedure Apply_Length_Check_On_Assignment
+     (Expr       : Node_Id;
+      Target_Typ : Entity_Id;
+      Target     : Node_Id;
+      Source_Typ : Entity_Id := Empty);
+   --  Similar to Apply_Length_Check, but takes the target of an assignment for
+   --  which the check is to be done. Used to filter out specific cases where
+   --  the check is superfluous.
+
    procedure Apply_Range_Check
      (Expr       : Node_Id;
       Target_Typ : Entity_Id;

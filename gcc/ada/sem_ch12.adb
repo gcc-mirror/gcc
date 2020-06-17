@@ -1718,7 +1718,7 @@ package body Sem_Ch12 is
                         Assoc_List);
 
                      --  For a defaulted in_parameter, create an entry in the
-                     --  the list of defaulted actuals, for GNATProve use. Do
+                     --  the list of defaulted actuals, for GNATprove use. Do
                      --  not included these defaults for an instance nested
                      --  within a generic, because the defaults are also used
                      --  in the analysis of the enclosing generic, and only
@@ -1928,7 +1928,7 @@ package body Sem_Ch12 is
                   end if;
 
                   --  If this is a nested generic, preserve default for later
-                  --  instantiations. We do this as well for GNATProve use,
+                  --  instantiations. We do this as well for GNATprove use,
                   --  so that the list of generic associations is complete.
 
                   if No (Match) and then Box_Present (Formal) then
@@ -5456,7 +5456,7 @@ package body Sem_Ch12 is
 
          --  Subprogram instance comes from source only if generic does
 
-         Set_Comes_From_Source (Act_Decl_Id, Comes_From_Source (Gen_Unit));
+         Preserve_Comes_From_Source (Act_Decl_Id, Gen_Unit);
 
          --  If the instance is a child unit, mark the Id accordingly. Mark
          --  the anonymous entity as well, which is the real subprogram and
@@ -11898,7 +11898,7 @@ package body Sem_Ch12 is
 
          Act_Body_Id :=
            Make_Defining_Identifier (Sloc (Act_Decl_Id), Chars (Act_Decl_Id));
-         Set_Comes_From_Source (Act_Body_Id, Comes_From_Source (Act_Decl_Id));
+         Preserve_Comes_From_Source (Act_Body_Id, Act_Decl_Id);
 
          --  Some attributes of spec entity are not inherited by body entity
 
@@ -12265,7 +12265,7 @@ package body Sem_Ch12 is
          Act_Body_Id :=
            Make_Defining_Identifier (Sloc (Act_Decl_Id), Chars (Act_Decl_Id));
 
-         Set_Comes_From_Source (Act_Body_Id, Comes_From_Source (Act_Decl_Id));
+         Preserve_Comes_From_Source (Act_Body_Id, Act_Decl_Id);
          Set_Defining_Unit_Name (Specification (Act_Body), Act_Body_Id);
 
          Set_Corresponding_Spec (Act_Body, Act_Decl_Id);

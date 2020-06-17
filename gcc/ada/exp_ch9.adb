@@ -826,6 +826,16 @@ package body Exp_Ch9 is
       Insert_Before (Last (Statements (Stats)), Call);
       Analyze (Call);
 
+      --  Ada 2020 (AI12-0279)
+
+      if Has_Yield_Aspect (Entity (Entry_Direct_Name (Astat)))
+        and then RTE_Available (RE_Yield)
+      then
+         Insert_Action_After (Call,
+           Make_Procedure_Call_Statement (Loc,
+             New_Occurrence_Of (RTE (RE_Yield), Loc)));
+      end if;
+
       --  If exception handlers are present, then append Complete_Rendezvous
       --  calls to the handlers, and construct the required outer block. As
       --  above, the Sloc is copied from the last statement in the sequence.
@@ -838,6 +848,17 @@ package body Exp_Ch9 is
                 (Sloc (Last (Statements (Hand))), RE_Complete_Rendezvous);
             Append (Call, Statements (Hand));
             Analyze (Call);
+
+            --  Ada 2020 (AI12-0279)
+
+            if Has_Yield_Aspect (Entity (Entry_Direct_Name (Astat)))
+              and then RTE_Available (RE_Yield)
+            then
+               Insert_Action_After (Call,
+                 Make_Procedure_Call_Statement (Loc,
+                   New_Occurrence_Of (RTE (RE_Yield), Loc)));
+            end if;
+
             Next (Hand);
          end loop;
 
@@ -861,6 +882,16 @@ package body Exp_Ch9 is
       --  We handle Abort_Signal to make sure that we properly catch the abort
       --  case and wake up the caller.
 
+      Call :=
+        Make_Procedure_Call_Statement (Sloc (Stats),
+          Name                   => New_Occurrence_Of (
+            RTE (RE_Exceptional_Complete_Rendezvous), Sloc (Stats)),
+          Parameter_Associations => New_List (
+            Make_Function_Call (Sloc (Stats),
+              Name =>
+                New_Occurrence_Of
+                  (RTE (RE_Get_GNAT_Exception), Sloc (Stats)))));
+
       Ohandle := Make_Others_Choice (Loc);
       Set_All_Others (Ohandle);
 
@@ -869,15 +900,17 @@ package body Exp_Ch9 is
           Make_Implicit_Exception_Handler (Loc,
             Exception_Choices => New_List (Ohandle),
 
-            Statements => New_List (
-              Make_Procedure_Call_Statement (Sloc (Stats),
-                Name                   => New_Occurrence_Of (
-                  RTE (RE_Exceptional_Complete_Rendezvous), Sloc (Stats)),
-                Parameter_Associations => New_List (
-                  Make_Function_Call (Sloc (Stats),
-                    Name =>
-                      New_Occurrence_Of
-                        (RTE (RE_Get_GNAT_Exception), Sloc (Stats)))))))));
+            Statements => New_List (Call))));
+
+      --  Ada 2020 (AI12-0279)
+
+      if Has_Yield_Aspect (Entity (Entry_Direct_Name (Astat)))
+        and then RTE_Available (RE_Yield)
+      then
+         Insert_Action_After (Call,
+           Make_Procedure_Call_Statement (Loc,
+             New_Occurrence_Of (RTE (RE_Yield), Loc)));
+      end if;
 
       Set_Parent (New_S, Astat); -- temp parent for Analyze call
       Analyze_Exception_Handlers (Exception_Handlers (New_S));
@@ -3900,6 +3933,13 @@ package body Exp_Ch9 is
 
       Set_Is_Eliminated (New_Id, Is_Eliminated (Def_Id));
 
+      --  It seems we should set Has_Nested_Subprogram here, but instead we
+      --  currently set it in Expand_N_Protected_Body, because the entity
+      --  created here isn't the one that Corresponding_Spec of the body
+      --  will later be set to, and that's the entity where it's needed. ???
+
+      Set_Has_Nested_Subprogram (New_Id, Has_Nested_Subprogram (Def_Id));
+
       if Nkind (Specification (Decl)) = N_Procedure_Specification then
          New_Spec :=
            Make_Procedure_Specification (Loc,
@@ -6548,6 +6588,16 @@ package body Exp_Ch9 is
 
          Analyze (N);
 
+         --  Ada 2020 (AI12-0279)
+
+         if Has_Yield_Aspect (Eent)
+           and then RTE_Available (RE_Yield)
+         then
+            Insert_Action_After (N,
+              Make_Procedure_Call_Statement (Loc,
+                New_Occurrence_Of (RTE (RE_Yield), Loc)));
+         end if;
+
          --  Discard Entry_Address that was created for it, so it will not be
          --  emitted if this accept statement is in the statement part of a
          --  delay alternative.
@@ -8673,9 +8723,31 @@ package body Exp_Ch9 is
                   Current_Node := New_Op_Body;
                   Analyze (New_Op_Body);
 
+                  --  When the original protected body has nested subprograms,
+                  --  the new body also has them, so set the flag accordingly
+                  --  and reset the scopes of the top-level nested subprograms
+                  --  and other declaration entities so that they now refer to
+                  --  the new body's entity. (It would preferable to do this
+                  --  within Build_Protected_Sub_Specification, which is called
+                  --  from Build_Unprotected_Subprogram_Body, but the needed
+                  --  subprogram entity isn't available via Corresponding_Spec
+                  --  until after the above Analyze call.)
+
+                  if Has_Nested_Subprogram (Corresponding_Spec (Op_Body)) then
+                     Set_Has_Nested_Subprogram
+                       (Corresponding_Spec (New_Op_Body));
+
+                     Reset_Scopes_To
+                       (New_Op_Body, Corresponding_Spec (New_Op_Body));
+                  end if;
+
                   --  Build the corresponding protected operation. This is
                   --  needed only if this is a public or private operation of
                   --  the type.
+
+                  --  Why do we need to test for Corresponding_Spec being
+                  --  present here when it's assumed to be set further above
+                  --  in the Is_Eliminated test???
 
                   if Present (Corresponding_Spec (Op_Body)) then
                      Op_Decl :=
@@ -10842,7 +10914,23 @@ package body Exp_Ch9 is
          --  Accept with no body (followed by trailing statements)
 
          else
-            Alt_Stats := Empty_List;
+            declare
+               Entry_Id : constant Entity_Id :=
+                           Entity (Entry_Direct_Name (Accept_Statement (Alt)));
+            begin
+               --  Ada 2020 (AI12-0279)
+
+               if Has_Yield_Aspect (Entry_Id)
+                 and then RTE_Available (RE_Yield)
+               then
+                  Alt_Stats :=
+                    New_List (
+                      Make_Procedure_Call_Statement (Sloc (Proc),
+                        New_Occurrence_Of (RTE (RE_Yield), Sloc (Proc))));
+               else
+                  Alt_Stats := Empty_List;
+               end if;
+            end;
          end if;
 
          Ensure_Statement_Present (Sloc (Astmt), Alt);

@@ -870,21 +870,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { __atomic_store(__ptr, std::__addressof(__t), int(__m)); }
 
     template<typename _Tp>
-      _GLIBCXX_ALWAYS_INLINE _Tp
-      load(const volatile _Tp* __ptr, memory_order __m) noexcept
+      _GLIBCXX_ALWAYS_INLINE _Val<_Tp>
+      load(const _Tp* __ptr, memory_order __m) noexcept
       {
 	alignas(_Tp) unsigned char __buf[sizeof(_Tp)];
-	_Tp* __dest = reinterpret_cast<_Tp*>(__buf);
+	auto* __dest = reinterpret_cast<_Val<_Tp>*>(__buf);
 	__atomic_load(__ptr, __dest, int(__m));
 	return *__dest;
       }
 
     template<typename _Tp>
-      _GLIBCXX_ALWAYS_INLINE _Tp
+      _GLIBCXX_ALWAYS_INLINE _Val<_Tp>
       exchange(_Tp* __ptr, _Val<_Tp> __desired, memory_order __m) noexcept
       {
         alignas(_Tp) unsigned char __buf[sizeof(_Tp)];
-	_Tp* __dest = reinterpret_cast<_Tp*>(__buf);
+	auto* __dest = reinterpret_cast<_Val<_Tp>*>(__buf);
 	__atomic_exchange(__ptr, std::__addressof(__desired), __dest, int(__m));
 	return *__dest;
       }

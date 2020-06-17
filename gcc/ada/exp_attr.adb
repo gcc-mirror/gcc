@@ -1756,17 +1756,17 @@ package body Exp_Attr is
       begin
          --  We need to accommodate unsigned values
 
-         if Siz < 8 then
-            Int_Typ := Standard_Integer_8;
+         if Siz < RM_Size (Standard_Short_Short_Integer) then
+            Int_Typ := Standard_Short_Short_Integer;
 
-         elsif Siz < 16 then
-            Int_Typ := Standard_Integer_16;
+         elsif Siz < RM_Size (Standard_Short_Integer) then
+            Int_Typ := Standard_Short_Integer;
 
-         elsif Siz < 32 then
-            Int_Typ := Standard_Integer_32;
+         elsif Siz < RM_Size (Standard_Integer) then
+            Int_Typ := Standard_Integer;
 
          else
-            Int_Typ := Standard_Integer_64;
+            Int_Typ := Standard_Long_Long_Integer;
          end if;
 
          return Int_Typ;
@@ -3398,42 +3398,80 @@ package body Exp_Attr is
          Analyze_And_Resolve (N, Typ);
       end Finalization_Size;
 
-      -----------
-      -- First --
-      -----------
+      -----------------
+      -- First, Last --
+      -----------------
 
-      when Attribute_First =>
-
+      when Attribute_First
+         | Attribute_Last
+      =>
          --  If the prefix type is a constrained packed array type which
          --  already has a Packed_Array_Impl_Type representation defined, then
-         --  replace this attribute with a direct reference to 'First of the
-         --  appropriate index subtype (since otherwise the back end will try
-         --  to give us the value of 'First for this implementation type).
+         --  replace this attribute with a direct reference to the attribute of
+         --  the appropriate index subtype (since otherwise the back end will
+         --  try to give us the value of 'First for this implementation type).
 
          if Is_Constrained_Packed_Array (Ptyp) then
             Rewrite (N,
               Make_Attribute_Reference (Loc,
-                Attribute_Name => Name_First,
+                Attribute_Name => Attribute_Name (N),
                 Prefix         =>
                   New_Occurrence_Of (Get_Index_Subtype (N), Loc)));
             Analyze_And_Resolve (N, Typ);
+
+         --  For a constrained array type, if the bound is a reference to an
+         --  entity which is not a discriminant, just replace with a direct
+         --  reference. Note that this must be in keeping with what is done
+         --  for scalar types in order for range checks to be elided in loops.
+
+         --  However, avoid doing it if the array type is public because, in
+         --  this case, we effectively rely on the back end to create public
+         --  symbols with consistent names across units for the array bounds.
+
+         elsif Is_Array_Type (Ptyp)
+           and then Is_Constrained (Ptyp)
+           and then not Is_Public (Ptyp)
+         then
+            declare
+               Bnd : Node_Id;
+
+            begin
+               if Id = Attribute_First then
+                  Bnd := Type_Low_Bound (Get_Index_Subtype (N));
+               else
+                  Bnd := Type_High_Bound (Get_Index_Subtype (N));
+               end if;
+
+               if Is_Entity_Name (Bnd)
+                 and then Ekind (Entity (Bnd)) /= E_Discriminant
+               then
+                  Rewrite (N, New_Occurrence_Of (Entity (Bnd), Loc));
+               end if;
+            end;
 
          --  For access type, apply access check as needed
 
          elsif Is_Access_Type (Ptyp) then
             Apply_Access_Check (N);
 
-         --  For scalar type, if low bound is a reference to an entity, just
+         --  For scalar type, if the bound is a reference to an entity, just
          --  replace with a direct reference. Note that we can only have a
          --  reference to a constant entity at this stage, anything else would
          --  have already been rewritten.
 
          elsif Is_Scalar_Type (Ptyp) then
             declare
-               Lo : constant Node_Id := Type_Low_Bound (Ptyp);
+               Bnd : Node_Id;
+
             begin
-               if Is_Entity_Name (Lo) then
-                  Rewrite (N, New_Occurrence_Of (Entity (Lo), Loc));
+               if Id = Attribute_First then
+                  Bnd := Type_Low_Bound (Ptyp);
+               else
+                  Bnd := Type_High_Bound (Ptyp);
+               end if;
+
+               if Is_Entity_Name (Bnd) then
+                  Rewrite (N, New_Occurrence_Of (Entity (Bnd), Loc));
                end if;
             end;
          end if;
@@ -4102,45 +4140,6 @@ package body Exp_Attr is
          --  resolved to establish its proper type.
 
          Analyze_And_Resolve (N);
-
-      ----------
-      -- Last --
-      ----------
-
-      when Attribute_Last =>
-
-         --  If the prefix type is a constrained packed array type which
-         --  already has a Packed_Array_Impl_Type representation defined, then
-         --  replace this attribute with a direct reference to 'Last of the
-         --  appropriate index subtype (since otherwise the back end will try
-         --  to give us the value of 'Last for this implementation type).
-
-         if Is_Constrained_Packed_Array (Ptyp) then
-            Rewrite (N,
-              Make_Attribute_Reference (Loc,
-                Attribute_Name => Name_Last,
-                Prefix => New_Occurrence_Of (Get_Index_Subtype (N), Loc)));
-            Analyze_And_Resolve (N, Typ);
-
-         --  For access type, apply access check as needed
-
-         elsif Is_Access_Type (Ptyp) then
-            Apply_Access_Check (N);
-
-         --  For scalar type, if high bound is a reference to an entity, just
-         --  replace with a direct reference. Note that we can only have a
-         --  reference to a constant entity at this stage, anything else would
-         --  have already been rewritten.
-
-         elsif Is_Scalar_Type (Ptyp) then
-            declare
-               Hi : constant Node_Id := Type_High_Bound (Ptyp);
-            begin
-               if Is_Entity_Name (Hi) then
-                  Rewrite (N, New_Occurrence_Of (Entity (Hi), Loc));
-               end if;
-            end;
-         end if;
 
       --------------
       -- Last_Bit --

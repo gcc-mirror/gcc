@@ -63,7 +63,7 @@ const char *
 d_mangle_decl (Dsymbol *decl)
 {
   if (decl->isFuncDeclaration ())
-    return mangleExact ((FuncDeclaration *)decl);
+    return mangleExact ((FuncDeclaration *) decl);
   else
     {
       OutBuffer buf;
@@ -218,12 +218,11 @@ public:
     for (size_t i = 0; i < d->objects->length; i++)
       {
 	RootObject *o = (*d->objects)[i];
-	if ((o->dyncast () == DYNCAST_EXPRESSION)
-	    && ((Expression *) o)->op == TOKdsymbol)
+	if (o->dyncast () == DYNCAST_EXPRESSION)
 	  {
-	    Declaration *d = ((DsymbolExp *) o)->s->isDeclaration ();
-	    if (d)
-	      this->build_dsymbol (d);
+	    DsymbolExp *de = ((Expression *) o)->isDsymbolExp ();
+	    if (de != NULL && de->s->isDeclaration ())
+	      this->build_dsymbol (de->s);
 	  }
       }
   }
@@ -313,9 +312,9 @@ public:
     TemplateInstance *ti = NULL;
 
     if (tb->ty == Tstruct)
-      ti = ((TypeStruct *) tb)->sym->isInstantiated ();
+      ti = tb->isTypeStruct ()->sym->isInstantiated ();
     else if (tb->ty == Tclass)
-      ti = ((TypeClass *) tb)->sym->isInstantiated ();
+      ti = tb->isTypeClass ()->sym->isInstantiated ();
 
     /* Return type is instantiated from this template declaration, walk over
        all members of the instance.  */
@@ -449,26 +448,14 @@ public:
 
 	    if (fd->leastAsSpecialized (fd2) || fd2->leastAsSpecialized (fd))
 	      {
-		TypeFunction *tf = (TypeFunction *) fd->type;
-		if (tf->ty == Tfunction)
-		  {
-		    error_at (make_location_t (fd->loc), "use of %qs",
-			      fd->toPrettyChars ());
-		    inform (make_location_t (fd2->loc), "is hidden by %qs",
-			    fd2->toPrettyChars ());
-		    inform (make_location_t (d->loc),
-			    "use %<alias %s = %s.%s;%> to introduce base class "
-			    "overload set", fd->toChars (),
-			    fd->parent->toChars (), fd->toChars ());
-		  }
-		else
-		  {
-		    error_at (make_location_t (fd->loc), "use of %qs",
-			      fd->toPrettyChars ());
-		    inform (make_location_t (fd2->loc), "is hidden by %qs",
-			      fd2->toPrettyChars ());
-		  }
-
+		error_at (make_location_t (fd->loc), "use of %qs",
+			  fd->toPrettyChars ());
+		inform (make_location_t (fd2->loc), "is hidden by %qs",
+			fd2->toPrettyChars ());
+		inform (make_location_t (d->loc),
+			"use %<alias %s = %s.%s;%> to introduce base class "
+			"overload set", fd->toChars (),
+			fd->parent->toChars (), fd->toChars ());
 		has_errors = true;
 		break;
 	      }
@@ -524,7 +511,7 @@ public:
     d_finish_decl (d->csym);
 
     /* Put out the vtbl[].  */
-    vec<constructor_elt, va_gc> *elms = NULL;
+    vec <constructor_elt, va_gc> *elms = NULL;
 
     /* First entry is ClassInfo reference.  */
     if (d->vtblOffset ())
@@ -534,7 +521,7 @@ public:
       {
 	FuncDeclaration *fd = d->vtbl[i]->isFuncDeclaration ();
 
-	if (fd && (fd->fbody || !d->isAbstract()))
+	if (fd && (fd->fbody || !d->isAbstract ()))
 	  {
 	    CONSTRUCTOR_APPEND_ELT (elms, size_int (i),
 				    build_address (get_symbol_decl (fd)));
@@ -620,7 +607,7 @@ public:
     if (have_typeinfo_p (Type::dtypeinfo))
       create_typeinfo (d->type, NULL);
 
-    TypeEnum *tc = (TypeEnum *) d->type;
+    TypeEnum *tc = d->type->isTypeEnum ();
     if (tc->sym->members && !d->type->isZeroInit ())
       {
 	/* Generate static initializer.  */
@@ -717,11 +704,8 @@ public:
 	  }
 	else
 	  {
-	    if (d->type->ty == Tstruct)
-	      {
-		StructDeclaration *sd = ((TypeStruct *) d->type)->sym;
-		DECL_INITIAL (decl) = layout_struct_initializer (sd);
-	      }
+	    if (TypeStruct *ts = d->type->isTypeStruct ())
+	      DECL_INITIAL (decl) = layout_struct_initializer (ts->sym);
 	    else
 	      {
 		Expression *e = d->type->defaultInitLiteral (d->loc);
@@ -813,9 +797,8 @@ public:
       return;
 
     /* Check if any errors occurred when running semantic.  */
-    if (d->type->ty == Tfunction)
+    if (TypeFunction *tf = d->type->isTypeFunction ())
       {
-	TypeFunction *tf = (TypeFunction *) d->type;
 	if (tf->next == NULL || tf->next->ty == Terror)
 	  return;
       }
@@ -876,7 +859,7 @@ public:
 
     /* Special arguments...  */
 
-    /* 'this' parameter:
+    /* `this' parameter:
        For nested functions, D still generates a vthis, but it
        should not be referenced in any expression.  */
     if (d->vthis)
@@ -1222,7 +1205,7 @@ get_symbol_decl (Declaration *decl)
 	}
       else if (fd->isThis ())
 	{
-	  /* Add an extra argument for the 'this' parameter.  The handle type is
+	  /* Add an extra argument for the `this' parameter.  The handle type is
 	     used even if there is no debug info.  It is needed to make sure
 	     virtual member functions are not called statically.  */
 	  AggregateDeclaration *ad = fd->isMember2 ();
@@ -1243,11 +1226,11 @@ get_symbol_decl (Declaration *decl)
 	}
       else if (fd->isMain () || fd->isCMain ())
 	{
-	  /* The main function is named 'D main' to distinguish from C main.  */
+	  /* The main function is named `D main' to distinguish from C main.  */
 	  if (fd->isMain ())
 	    DECL_NAME (decl->csym) = get_identifier (fd->toPrettyChars (true));
 
-	  /* 'void main' is implicitly converted to returning an int.  */
+	  /* `void main' is implicitly converted to returning an int.  */
 	  newfntype = build_function_type (d_int_type, TYPE_ARG_TYPES (fntype));
 	}
 
@@ -1270,14 +1253,14 @@ get_symbol_decl (Declaration *decl)
 	  DECL_NO_INLINE_WARNING_P (decl->csym) = 1;
 	}
 
-      /* In [pragma/inline], functions decorated with 'pragma(inline)' affects
+      /* In [pragma/inline], functions decorated with `pragma(inline)' affects
 	 whether they are inlined or not.  */
       if (fd->inlining == PINLINEalways)
 	DECL_DECLARED_INLINE_P (decl->csym) = 1;
       else if (fd->inlining == PINLINEnever)
 	DECL_UNINLINABLE (decl->csym) = 1;
 
-      /* Function was declared 'naked'.  */
+      /* Function was declared `naked'.  */
       if (fd->naked)
 	{
 	  insert_decl_attribute (decl->csym, "naked");
@@ -1483,7 +1466,7 @@ get_decl_tree (Declaration *decl)
 			    DECL_LANG_FRAME_FIELD (t));
     }
 
-  /* Get the non-local 'this' value by going through parent link
+  /* Get the non-local `this' value by going through parent link
      of nested classes, this routine pretty much undoes what
      getRightThis in the frontend removes from codegen.  */
   if (vd->parent != fd && vd->isThisDeclaration ())
@@ -1518,9 +1501,9 @@ get_decl_tree (Declaration *decl)
 	  fd = outer->isFuncDeclaration ();
 	  while (fd != NULL)
 	    {
-	      /* If outer function creates a closure, then the 'this'
+	      /* If outer function creates a closure, then the `this'
 		 value would be the closure pointer, and the real
-		 'this' the first field of that closure.  */
+		 `this' the first field of that closure.  */
 	      tree ff = get_frameinfo (fd);
 	      if (FRAMEINFO_CREATES_FRAME (ff))
 		{
@@ -1914,10 +1897,10 @@ start_function (FuncDeclaration *fd)
   else
     cfun->function_end_locus = DECL_SOURCE_LOCATION (fndecl);
 
-  cfun->language = ggc_cleared_alloc<language_function> ();
+  cfun->language = ggc_cleared_alloc <language_function> ();
   cfun->language->function = fd;
 
-  /* Default chain value is 'null' unless parent found.  */
+  /* Default chain value is `null' unless parent found.  */
   cfun->language->static_chain = null_pointer_node;
 
   /* Find module for this function.  */
@@ -2114,7 +2097,7 @@ build_class_instance (ClassReferenceExp *exp)
 {
   ClassDeclaration *cd = exp->originalClass ();
   tree type = TREE_TYPE (build_ctype (exp->value->stype));
-  vec<constructor_elt, va_gc> *ve = NULL;
+  vec <constructor_elt, va_gc> *ve = NULL;
 
   /* The set base vtable field.  */
   tree vptr = build_address (get_vtable_decl (cd));
@@ -2211,7 +2194,7 @@ build_new_class_expr (ClassReferenceExp *expr)
 
 /* Get the VAR_DECL of the static initializer symbol for the struct/class DECL.
    If this does not yet exist, create it.  The static initializer data is
-   accessible via TypeInfo, and is also used in 'new class' and default
+   accessible via TypeInfo, and is also used in `new class' and default
    initializing struct literals.  */
 
 tree
@@ -2255,7 +2238,7 @@ layout_class_initializer (ClassDeclaration *cd)
   Expression *e = ne->ctfeInterpret ();
   gcc_assert (e->op == TOKclassreference);
 
-  return build_class_instance ((ClassReferenceExp *) e);
+  return build_class_instance (e->isClassReferenceExp ());
 }
 
 tree

@@ -3587,7 +3587,7 @@ package body Ch4 is
    function P_Declare_Expression return Node_Id is
       Loc : constant Source_Ptr := Token_Ptr;
    begin
-      Scan; -- past IF
+      Scan; -- past DECLARE
 
       declare
          Actions : constant List_Id := P_Basic_Declarative_Items

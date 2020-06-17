@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Debug;    use Debug;
 with Elists;   use Elists;
@@ -1633,6 +1634,42 @@ package body Sem_Disp is
                Decl := Last (Actions (F_Node));
                Analyze (Decl);
             end if;
+         end;
+      end if;
+
+      --  AI12-0279: If the Yield aspect is specified for a dispatching
+      --  subprogram that inherits the aspect, the specified value shall
+      --  be confirming.
+
+      if Is_Dispatching_Operation (Subp)
+        and then Is_Primitive_Wrapper (Subp)
+        and then Present (Wrapped_Entity (Subp))
+        and then Comes_From_Source (Wrapped_Entity (Subp))
+        and then Present (Overridden_Operation (Subp))
+        and then Has_Yield_Aspect (Overridden_Operation (Subp))
+                   /= Has_Yield_Aspect (Wrapped_Entity (Subp))
+      then
+         declare
+            W_Ent  : constant Entity_Id := Wrapped_Entity (Subp);
+            W_Decl : constant Node_Id := Parent (W_Ent);
+            Asp    : Node_Id;
+
+         begin
+            if Present (Aspect_Specifications (W_Decl)) then
+               Asp := First (Aspect_Specifications (W_Decl));
+               while Present (Asp) loop
+                  if Chars (Identifier (Asp)) = Name_Yield then
+                     Error_Msg_Name_1 := Name_Yield;
+                     Error_Msg_N
+                       ("specification of inherited aspect% can only confirm "
+                        & "parent value", Asp);
+                  end if;
+
+                  Next (Asp);
+               end loop;
+            end if;
+
+            Set_Has_Yield_Aspect (Wrapped_Entity (Subp));
          end;
       end if;
 
