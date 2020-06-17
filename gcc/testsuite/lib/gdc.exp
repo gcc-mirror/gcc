@@ -69,12 +69,19 @@ proc gdc_version { } {
 
 proc gdc_include_flags { paths } {
     global srcdir
+    global GDC_INCLUDE_CXX_FLAGS
     global TESTING_IN_BUILD_TREE
 
     set flags ""
 
     if { [is_remote host] || ![info exists TESTING_IN_BUILD_TREE] } {
 	return "${flags}"
+    }
+
+    if [info exists GDC_INCLUDE_CXX_FLAGS] {
+	set include_cxx_flags $GDC_INCLUDE_CXX_FLAGS
+    } else {
+	set include_cxx_flags 0
     }
 
     set gccpath ${paths}
@@ -88,11 +95,13 @@ proc gdc_include_flags { paths } {
     append flags "-I${srcdir}/../../libphobos/src "
 
     # For the tests that mix C++ and D, need to know where headers are located.
-    set odir [lookfor_file ${gccpath} libstdc++-v3]
-    if { ${odir} != "" } {
-	set cxxflags [exec sh ${odir}/scripts/testsuite_flags --build-includes]
-	set idx [lsearch $cxxflags "-nostdinc++"]
-	append flags [lreplace $cxxflags $idx $idx]
+    if $include_cxx_flags {
+	set odir [lookfor_file ${gccpath} libstdc++-v3]
+	if { ${odir} != "" && [file exists ${odir}/scripts/testsuite_flags] } {
+	    set cxxflags [exec sh ${odir}/scripts/testsuite_flags --build-includes]
+	    set idx [lsearch $cxxflags "-nostdinc++"]
+	    append flags [lreplace $cxxflags $idx $idx]
+	}
     }
 
     return "$flags"
@@ -106,6 +115,7 @@ proc gdc_link_flags { paths } {
     global srcdir
     global ld_library_path
     global GDC_UNDER_TEST
+    global GDC_INCLUDE_CXX_FLAGS
     global shlib_ext
     global SHARED_OPTION
 
@@ -116,6 +126,12 @@ proc gdc_link_flags { paths } {
     set shlib_ext [get_shlib_extension]
     set SHARED_OPTION ""
     verbose "shared lib extension: $shlib_ext"
+
+    if [info exists GDC_INCLUDE_CXX_FLAGS] {
+	set include_cxx_flags $GDC_INCLUDE_CXX_FLAGS
+    } else {
+	set include_cxx_flags 0
+    }
 
     if { $gccpath != "" } {
 	# Path to libgphobos.spec.
@@ -130,16 +146,11 @@ proc gdc_link_flags { paths } {
 	    append flags "-L${gccpath}/libphobos/src/.libs "
 	    append ld_library_path ":${gccpath}/libphobos/src/.libs"
 	}
-	if { [file exists "${gccpath}/libphobos/libdruntime/.libs/libgdruntime.a"] \
-	     || [file exists "${gccpath}/libphobos/libdruntime/.libs/libgdruntime.${shlib_ext}"] } {
-	    append flags "-L${gccpath}/libphobos/libdruntime/.libs "
-	    append ld_library_path ":${gccpath}/libphobos/libdruntime/.libs"
-	}
 	# Static linking is default. If only the shared lib is available adjust
 	# flags to always use it. If both are available, set SHARED_OPTION which
 	# will be added to PERMUTE_ARGS
-	if { [file exists "${gccpath}/libphobos/libdruntime/.libs/libgdruntime.${shlib_ext}"] } {
-	    if { [file exists "${gccpath}/libphobos/libdruntime/.libs/libgdruntime.a"] } {
+	if { [file exists "${gccpath}/libphobos/src/.libs/libgphobos.${shlib_ext}"] } {
+	    if { [file exists "${gccpath}/libphobos/src/.libs/libgphobos.a"] } {
 		set SHARED_OPTION "-shared-libphobos"
 	    } else {
 		append flags "-shared-libphobos "
@@ -148,11 +159,13 @@ proc gdc_link_flags { paths } {
 	if [file exists "${gccpath}/libiberty/libiberty.a"] {
 	    append flags "-L${gccpath}/libiberty "
 	}
-	# For the tests that mix C++ and D, we should try and handle this better.
-	if { [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.a"] \
-	     || [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.${shlib_ext}"] } {
-	    append flags "-L${gccpath}/libstdc++-v3/src/.libs "
-	    append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
+	# For the tests that mix C++ and D, need to know where library is located.
+	if $include_cxx_flags {
+	    if { [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.a"] \
+		 || [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.${shlib_ext}"] } {
+		append flags "-L${gccpath}/libstdc++-v3/src/.libs "
+		append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
+	    }
 	}
 	append ld_library_path [gcc-set-multilib-library-path $GDC_UNDER_TEST]
     } else {
@@ -163,14 +176,16 @@ proc gdc_link_flags { paths } {
 	    append flags "-B${libphobos} -L${libphobos} "
 	    append ld_library_path ":${libphobos}"
 	}
-	set libdruntime [lookfor_file ${tool_root_dir} libgdruntime]
-	if { $libdruntime != "" } {
-	    append flags "-L${libdruntime} "
-	    append ld_library_path ":${libdruntime}"
-	}
 	set libiberty [lookfor_file ${tool_root_dir} libiberty]
 	if { $libiberty != "" } {
 	    append flags "-L${libiberty} "
+	}
+	if $include_cxx_flags {
+	    set libstdcpp [lookfor_file ${tool_root_dir} libstdc++]
+	    if { $libstdcpp != "" } {
+		append flags "-L${libstdcpp} "
+		append ld_library_path ":${libstdcpp}"
+	    }
 	}
     }
 
@@ -184,18 +199,14 @@ proc gdc_link_flags { paths } {
 #
 
 proc gdc_init { args } {
-    global subdir
     global gdc_initialized
     global base_dir
     global tmpdir
     global libdir
     global gluefile wrap_flags
-    global objdir srcdir
-    global ALWAYS_DFLAGS
-    global TOOL_EXECUTABLE TOOL_OPTIONS
+    global TOOL_EXECUTABLE
     global GDC_UNDER_TEST
     global TESTING_IN_BUILD_TREE
-    global TEST_ALWAYS_FLAGS
     global gcc_warning_prefix
     global gcc_error_prefix
 
@@ -231,31 +242,6 @@ proc gdc_init { args } {
 
     gdc_maybe_build_wrapper "${tmpdir}/d-testglue.o"
 
-    set ALWAYS_DFLAGS ""
-
-    # TEST_ALWAYS_FLAGS are flags that should be passed to every
-    # compilation.  They are passed first to allow individual
-    # tests to override them.
-    if [info exists TEST_ALWAYS_FLAGS] {
-	lappend ALWAYS_DFLAGS "additional_flags=$TEST_ALWAYS_FLAGS"
-    }
-
-    if ![is_remote host] {
-	if [info exists TOOL_OPTIONS] {
-	    lappend ALWAYS_DFLAGS "additional_flags=[gdc_include_flags [get_multilibs ${TOOL_OPTIONS}] ]"
-	    lappend ALWAYS_DFLAGS "ldflags=[gdc_link_flags [get_multilibs ${TOOL_OPTIONS}] ]"
-	} else {
-	    lappend ALWAYS_DFLAGS "additional_flags=[gdc_include_flags [get_multilibs] ]"
-	    lappend ALWAYS_DFLAGS "ldflags=[gdc_link_flags [get_multilibs] ]"
-	}
-    }
-
-    if [info exists TOOL_OPTIONS] {
-	lappend ALWAYS_DFLAGS "additional_flags=$TOOL_OPTIONS"
-    }
-
-    verbose -log "ALWAYS_DFLAGS set to $ALWAYS_DFLAGS"
-
     set gcc_warning_prefix "warning:"
     set gcc_error_prefix "(fatal )?error:"
 
@@ -269,18 +255,44 @@ proc gdc_init { args } {
 proc gdc_target_compile { source dest type options } {
     global tmpdir
     global gluefile wrap_flags
-    global ALWAYS_DFLAGS
     global GDC_UNDER_TEST
+    global TOOL_OPTIONS
+    global TEST_ALWAYS_FLAGS
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
 	lappend options "libs=${gluefile}"
 	lappend options "ldflags=${wrap_flags}"
     }
 
+    set always_dflags ""
+
+    # TEST_ALWAYS_FLAGS are flags that should be passed to every
+    # compilation.  They are passed first to allow individual
+    # tests to override them.
+    if [info exists TEST_ALWAYS_FLAGS] {
+	lappend always_dflags "additional_flags=$TEST_ALWAYS_FLAGS"
+    }
+
+    if ![is_remote host] {
+	if [info exists TOOL_OPTIONS] {
+	    lappend always_dflags "additional_flags=[gdc_include_flags [get_multilibs ${TOOL_OPTIONS}] ]"
+	    lappend always_dflags "ldflags=[gdc_link_flags [get_multilibs ${TOOL_OPTIONS}] ]"
+	} else {
+	    lappend always_dflags "additional_flags=[gdc_include_flags [get_multilibs] ]"
+	    lappend always_dflags "ldflags=[gdc_link_flags [get_multilibs] ]"
+	}
+    }
+
+    if [info exists TOOL_OPTIONS] {
+	lappend always_dflags "additional_flags=$TOOL_OPTIONS"
+    }
+
+    verbose "always_dflags set to: $always_dflags"
+
     lappend options "timeout=[timeout_value]"
     lappend options "compiler=$GDC_UNDER_TEST"
 
-    set options [concat "$ALWAYS_DFLAGS" $options]
+    set options [concat "$always_dflags" $options]
     set options [dg-additional-files-options $options $source]
     return [target_compile $source $dest $type $options]
 }

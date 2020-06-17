@@ -21,5 +21,5 @@ test2 (struct b *bptr1, union c *cptr, int i, int j)
   cptr->b.a[j].v1=1;
   return bptr1->a[i].v1;
 }
-/* { dg-final { scan-tree-dump-times "return 123" 1 "optimized"} } */
+/* { dg-final { scan-tree-dump-times "return 123" 1 "optimized"  { xfail *-*-* } } } */
 /* { dg-final { scan-tree-dump-not "return 124" "optimized"} } */

@@ -171,7 +171,7 @@ proc schedule-cleanups { opts } {
 	verbose "dg-keep-saved-temps ${keep_saved_temps_suffixes}" 2
     }
     # -save-temps -> cleanup-saved-temps()
-    if [regexp -- {(^|\s+)-save-temps(\s+|$)} $opts] {
+    if [regexp -- {(^|\s+)-?-save-temps(\s+|$)} $opts] {
 	verbose "Cleanup -save-temps seen" 4
 	if [info exists keep_saved_temps_suffixes] {
 	    append finalcode "cleanup-saved-temps ${keep_saved_temps_suffixes}\n"
@@ -940,6 +940,7 @@ if { [info procs saved-dg-test] == [list] } {
 	global set_compiler_env_var
 	global saved_compiler_env_var
 	global keep_saved_temps_suffixes
+	global nn_line_numbers_enabled
 	global multiline_expected_outputs
 	global freeform_regexps
 	global save_linenr_varnames
@@ -967,6 +968,7 @@ if { [info procs saved-dg-test] == [list] } {
 	if [info exists testname_with_flags] {
 	    unset testname_with_flags
 	}
+	set nn_line_numbers_enabled 0
 	set multiline_expected_outputs []
 	set freeform_regexps []
 

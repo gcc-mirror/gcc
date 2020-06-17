@@ -150,6 +150,7 @@ enum predication_index
 enum type_class_index
 {
   TYPE_bool,
+  TYPE_bfloat,
   TYPE_float,
   TYPE_signed,
   TYPE_unsigned,
@@ -416,6 +417,8 @@ public:
 					     type_suffix_index);
   bool require_derived_scalar_type (unsigned int, type_class_index,
 				    unsigned int = SAME_SIZE);
+  bool require_matching_pointer_type (unsigned int, unsigned int,
+				      type_suffix_index);
   bool require_integer_immediate (unsigned int);
 
   vector_type_index infer_vector_base_type (unsigned int);
@@ -430,12 +433,13 @@ public:
   bool check_num_arguments (unsigned int);
   bool check_gp_argument (unsigned int, unsigned int &, unsigned int &);
   tree resolve_unary (type_class_index = SAME_TYPE_CLASS,
-		      unsigned int = SAME_SIZE);
+		      unsigned int = SAME_SIZE, bool = false);
   tree resolve_uniform (unsigned int, unsigned int = 0);
   tree resolve_uniform_opt_n (unsigned int);
   tree finish_opt_n_resolution (unsigned int, unsigned int, type_suffix_index,
 				type_class_index = SAME_TYPE_CLASS,
-				unsigned int = SAME_SIZE);
+				unsigned int = SAME_SIZE,
+				type_suffix_index = NUM_TYPE_SUFFIXES);
 
   tree resolve ();
 
@@ -493,6 +497,7 @@ public:
   tree fold_contiguous_base (gimple_seq &, tree);
   tree load_store_cookie (tree);
 
+  gimple *redirect_call (const function_instance &);
   gimple *fold_to_pfalse ();
   gimple *fold_to_ptrue ();
   gimple *fold_to_vl_pred (unsigned int);
@@ -522,6 +527,7 @@ public:
 
   bool overlaps_input_p (rtx);
 
+  rtx convert_to_pmode (rtx);
   rtx get_contiguous_base (machine_mode);
   rtx get_fallback_value (machine_mode, unsigned int,
 			  unsigned int, unsigned int &);
@@ -536,7 +542,7 @@ public:
   void add_fixed_operand (rtx);
   rtx generate_insn (insn_code);
 
-  void prepare_gather_address_operands (unsigned int);
+  void prepare_gather_address_operands (unsigned int, bool = true);
   void prepare_prefetch_operands ();
   void add_ptrue_hint (unsigned int, machine_mode);
   void rotate_inputs_left (unsigned int, unsigned int);
@@ -554,7 +560,6 @@ public:
   rtx map_to_rtx_codes (rtx_code, rtx_code, int,
 			unsigned int = DEFAULT_MERGE_ARGNO);
   rtx map_to_unspecs (int, int, int, unsigned int = DEFAULT_MERGE_ARGNO);
-  rtx expand_signed_unpred_op (rtx_code, rtx_code);
 
   /* The function call expression.  */
   tree call_expr;
@@ -653,6 +658,8 @@ public:
 
 private:
   unsigned long m_old_isa_flags;
+  unsigned int m_old_maximum_field_alignment;
+  bool m_old_general_regs_only;
   bool m_old_have_regs_of_mode[MAX_MACHINE_MODE];
 };
 

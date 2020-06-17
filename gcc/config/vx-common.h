@@ -99,12 +99,14 @@ along with GCC; see the file COPYING3.  If not see
 
 /* ------------------------ Misc configuration bits ----------------------  */
 
-/* VxWorks cannot have dots in constructor labels, because it uses a
-   mutant variation of collect2 that generates C code instead of
-   assembly.  Thus each constructor label must be a legitimate C
-   symbol.  FIXME: Have VxWorks use real collect2 instead.  */
-#undef NO_DOLLAR_IN_LABEL
-#define NO_DOT_IN_LABEL
+#ifndef TARGET_VXWORKS7
+/* VxWorks, prior to version 7, could not have dots in constructor
+   labels, because it used a mutant variation of collect2 that
+   generates C code instead of assembly.  Thus each constructor label
+   had to be a legitimate C symbol.  */
+# undef NO_DOLLAR_IN_LABEL
+# define NO_DOT_IN_LABEL
+#endif
 
 /* Kernel mode doesn't have ctors/dtors, but RTP mode does.  */
 #define TARGET_HAVE_CTORS_DTORS false

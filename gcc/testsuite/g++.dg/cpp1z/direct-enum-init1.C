@@ -54,7 +54,7 @@ foo ()
   C c3 { 8L };		// { dg-error "cannot convert 'long int' to 'C' in initialization" "" { target c++14_down } }
   B b4 {short (c + 5)};	// { dg-error "invalid conversion from 'short int' to 'B'" "" { target c++14_down } }
   B b5 {c + 5};		// { dg-error "invalid conversion from 'int' to 'B'" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of \[^\n\r]* from 'int' to 'short int'" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of \[^\n\r]* from 'int' to 'short int'" "" { target { c++17 && { ! short_eq_int } } } .-1 }
   C c4 { ll };		// { dg-error "cannot convert 'long long int' to 'C' in initialization" "" { target c++14_down } }
 			// { dg-error "narrowing conversion of 'll' from 'long long int' to 'int'" "" { target c++17 } .-1 }
   C c5 {short (c + 5)};	// { dg-error "cannot convert 'short int' to 'C' in initialization" "" { target c++14_down } }
@@ -120,7 +120,7 @@ foo2 ()
   C c3 { 8L };		// { dg-error "cannot convert 'long int' to 'C' in initialization" "" { target c++14_down } }
   B b4 {short (c + 5)};	// { dg-error "invalid conversion from 'short int' to 'B'" "" { target c++14_down } }
   B b5 {c + 5};		// { dg-error "invalid conversion from 'int' to 'B'" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of \[^\n\r]* from 'int' to 'short int'" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of \[^\n\r]* from 'int' to 'short int'" "" { target { c++17 && { ! short_eq_int } } } .-1 }
   C c4 { ll };		// { dg-error "cannot convert 'long long int' to 'C' in initialization" "" { target c++14_down } }
 			// { dg-error "narrowing conversion of 'll' from 'long long int' to 'int'" "" { target c++17 } .-1 }
   C c5 {short (c + 5)};	// { dg-error "cannot convert 'short int' to 'C' in initialization" "" { target c++14_down } }
@@ -188,7 +188,7 @@ foo3 ()
   J c3 { 8L };		// { dg-error "cannot convert 'long int' to 'C' in initialization" "" { target c++14_down } }
   I b4 {short (c + 5)};	// { dg-error "invalid conversion from 'short int' to 'B'" "" { target c++14_down } }
   I b5 {c + 5};		// { dg-error "invalid conversion from 'int' to 'B'" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of \[^\n\r]* from 'int' to 'short int'" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of \[^\n\r]* from 'int' to 'short int'" "" { target { c++17 && { ! short_eq_int } } } .-1 }
   J c4 { ll };		// { dg-error "cannot convert 'long long int' to 'C' in initialization" "" { target c++14_down } }
 			// { dg-error "narrowing conversion of 'll' from 'long long int' to 'int'" "" { target c++17 } .-1 }
   J c5 {short (c + 5)};	// { dg-error "cannot convert 'short int' to 'C' in initialization" "" { target c++14_down } }

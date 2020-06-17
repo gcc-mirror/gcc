@@ -57,8 +57,6 @@
 (define_subst_attr "mask_avx512vl_condition" "mask" "1" "TARGET_AVX512VL")
 (define_subst_attr "mask_avx512bw_condition" "mask" "1" "TARGET_AVX512BW")
 (define_subst_attr "mask_avx512dq_condition" "mask" "1" "TARGET_AVX512DQ")
-(define_subst_attr "store_mask_constraint" "mask" "vm" "v")
-(define_subst_attr "store_mask_predicate" "mask" "nonimmediate_operand" "register_operand")
 (define_subst_attr "mask_prefix" "mask" "vex" "evex")
 (define_subst_attr "mask_prefix2" "mask" "maybe_vex" "evex")
 (define_subst_attr "mask_prefix3" "mask" "orig,vex" "evex,evex")
@@ -74,6 +72,18 @@
 	  (match_dup 1)
 	  (match_operand:SUBST_V 2 "nonimm_or_0_operand" "0C")
 	  (match_operand:<avx512fmaskmode> 3 "register_operand" "Yk")))])
+
+(define_subst_attr "merge_mask_name" "merge_mask" "" "_merge_mask")
+(define_subst_attr "merge_mask_operand3" "merge_mask" "" "%{%3%}")
+(define_subst "merge_mask"
+  [(set (match_operand:SUBST_V 0)
+        (match_operand:SUBST_V 1))]
+  "TARGET_AVX512F"
+  [(set (match_dup 0)
+        (vec_merge:SUBST_V
+	  (match_dup 1)
+	  (match_dup 0)
+	  (match_operand:<avx512fmaskmode> 2 "register_operand" "Yk")))])
 
 (define_subst_attr "mask_scalar_merge_name" "mask_scalar_merge" "" "_mask")
 (define_subst_attr "mask_scalar_merge_operand3" "mask_scalar_merge" "" "%{%3%}")

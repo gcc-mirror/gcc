@@ -156,3 +156,21 @@ enum
     SO_PEERGROUPS              = 59,
     SO_ZEROCOPY                = 60,
 }
+
+enum : uint
+{
+    MSG_TRYHARD      = 0x04,
+    MSG_PROXY        = 0x10,
+    MSG_DONTWAIT     = 0x40,
+    MSG_FIN          = 0x200,
+    MSG_SYN          = 0x400,
+    MSG_CONFIRM      = 0x800,
+    MSG_RST          = 0x1000,
+    MSG_ERRQUEUE     = 0x2000,
+    MSG_MORE         = 0x8000,
+    MSG_WAITFORONE   = 0x10000,
+    MSG_BATCH        = 0x40000,
+    MSG_ZEROCOPY     = 0x4000000,
+    MSG_FASTOPEN     = 0x20000000,
+    MSG_CMSG_CLOEXEC = 0x40000000
+}

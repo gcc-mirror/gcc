@@ -230,7 +230,7 @@ cgraph_externally_visible_p (struct cgraph_node *node,
 
   if (node->resolution == LDPR_PREVAILING_DEF_IRONLY)
     return false;
-  /* When doing LTO or whole program, we can bring COMDAT functoins static.
+  /* When doing LTO or whole program, we can bring COMDAT functions static.
      This improves code quality and we know we will duplicate them at most twice
      (in the case that we are not using plugin and link with object file
       implementing same COMDAT)  */
@@ -509,7 +509,7 @@ optimize_weakref (symtab_node *node)
 
   if (dump_file)
     fprintf (dump_file, "Optimizing weakref %s %s\n",
-	     node->name(),
+	     node->dump_name (),
 	     static_alias ? "as static alias" : "as transparent alias");
 
   if (static_alias)
@@ -632,8 +632,10 @@ function_and_variable_visibility (bool whole_program)
 	continue;
 
       cgraph_node *alias = 0;
-      for (cgraph_edge *e = node->callees; e; e = e->next_callee)
+      cgraph_edge *next_edge;
+      for (cgraph_edge *e = node->callees; e; e = next_edge)
 	{
+	  next_edge = e->next_callee;
 	  /* Recursive function calls usually can't be interposed.  */
 
 	  if (!e->recursive_p ())
@@ -649,7 +651,7 @@ function_and_variable_visibility (bool whole_program)
 	  if (gimple_has_body_p (e->caller->decl))
 	    {
 	      push_cfun (DECL_STRUCT_FUNCTION (e->caller->decl));
-	      e->redirect_call_stmt_to_callee ();
+	      cgraph_edge::redirect_call_stmt_to_callee (e);
 	      pop_cfun ();
 	    }
 	}
@@ -780,7 +782,7 @@ function_and_variable_visibility (bool whole_program)
 		  if (gimple_has_body_p (e->caller->decl))
 		    {
 		      push_cfun (DECL_STRUCT_FUNCTION (e->caller->decl));
-		      e->redirect_call_stmt_to_callee ();
+		      cgraph_edge::redirect_call_stmt_to_callee (e);
 		      pop_cfun ();
 		    }
 		}
@@ -876,17 +878,17 @@ function_and_variable_visibility (bool whole_program)
       fprintf (dump_file, "\nMarking local functions:");
       FOR_EACH_DEFINED_FUNCTION (node)
 	if (node->local)
-	  fprintf (dump_file, " %s", node->name ());
+	  fprintf (dump_file, " %s", node->dump_name ());
       fprintf (dump_file, "\n\n");
       fprintf (dump_file, "\nMarking externally visible functions:");
       FOR_EACH_DEFINED_FUNCTION (node)
 	if (node->externally_visible)
-	  fprintf (dump_file, " %s", node->name ());
+	  fprintf (dump_file, " %s", node->dump_name ());
       fprintf (dump_file, "\n\n");
       fprintf (dump_file, "\nMarking externally visible variables:");
       FOR_EACH_DEFINED_VARIABLE (vnode)
 	if (vnode->externally_visible)
-	  fprintf (dump_file, " %s", vnode->name ());
+	  fprintf (dump_file, " %s", vnode->dump_name ());
       fprintf (dump_file, "\n\n");
     }
   symtab->function_flags_ready = true;

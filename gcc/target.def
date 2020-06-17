@@ -1519,7 +1519,7 @@ in its second parameter.",
 void, (rtx_insn *insn, int x),
 hook_void_rtx_insn_int)
 
-/* The following member value is a a function that returns true is
+/* The following member value is a function that returns true is
    dispatch schedling is supported in hardware and condition passed
    as the second parameter is true.  */
 DEFHOOK
@@ -1694,7 +1694,7 @@ DEFHOOK
 "This hook should check the launch dimensions provided for an OpenACC\n\
 compute region, or routine.  Defaulted values are represented as -1\n\
 and non-constant values as 0.  The @var{fn_level} is negative for the\n\
-function corresponding to the compute region.  For a routine is is the\n\
+function corresponding to the compute region.  For a routine it is the\n\
 outermost level at which partitioned execution may be spawned.  The hook\n\
 should verify non-default values.  If DECL is NULL, global defaults\n\
 are being validated and unspecified defaults should be filled in.\n\
@@ -2030,8 +2030,8 @@ DEFHOOK
  "return value should be viewed as a tentative cost that may later be "
  "revised.",
  unsigned,
- (void *data, int count, enum vect_cost_for_stmt kind,
-  class _stmt_vec_info *stmt_info, int misalign,
+ (class vec_info *, void *data, int count, enum vect_cost_for_stmt kind,
+  class _stmt_vec_info *stmt_info, tree vectype, int misalign,
   enum vect_cost_model_location where),
  default_add_stmt_cost)
 
@@ -2675,7 +2675,7 @@ DEFHOOK
  with @code{CC} for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.\n\
  The insns to prepare the compare are saved in @var{prep_seq} and the compare\n\
  insns are saved in @var{gen_seq}.  They will be emitted when all the\n\
- compares in the the conditional comparision are generated without error.\n\
+ compares in the conditional comparision are generated without error.\n\
  @var{code} is the @code{rtx_code} of the compare for @var{op0} and @var{op1}.",
  rtx, (rtx_insn **prep_seq, rtx_insn **gen_seq, int code, tree op0, tree op1),
  NULL)
@@ -3411,6 +3411,29 @@ must have move patterns for this mode.",
  hook_bool_mode_false)
 
 DEFHOOK
+(compatible_vector_types_p,
+ "Return true if there is no target-specific reason for treating\n\
+vector types @var{type1} and @var{type2} as distinct types.  The caller\n\
+has already checked for target-independent reasons, meaning that the\n\
+types are known to have the same mode, to have the same number of elements,\n\
+and to have what the caller considers to be compatible element types.\n\
+\n\
+The main reason for defining this hook is to reject pairs of types\n\
+that are handled differently by the target's calling convention.\n\
+For example, when a new @var{N}-bit vector architecture is added\n\
+to a target, the target may want to handle normal @var{N}-bit\n\
+@code{VECTOR_TYPE} arguments and return values in the same way as\n\
+before, to maintain backwards compatibility.  However, it may also\n\
+provide new, architecture-specific @code{VECTOR_TYPE}s that are passed\n\
+and returned in a more efficient way.  It is then important to maintain\n\
+a distinction between the ``normal'' @code{VECTOR_TYPE}s and the new\n\
+architecture-specific ones.\n\
+\n\
+The default implementation returns true, which is correct for most targets.",
+ bool, (const_tree type1, const_tree type2),
+ hook_bool_const_tree_const_tree_true)
+
+DEFHOOK
 (vector_alignment,
  "This hook can be used to define the alignment for a vector of type\n\
 @var{type}, in order to comply with a platform ABI.  The default is to\n\
@@ -3693,10 +3716,10 @@ of spill registers and print a fatal error message.",
    target is constrainted to use post-reload comparison elimination.  */
 DEFHOOKPOD
 (flags_regnum,
- "If the target has a dedicated flags register, and it needs to use the\
- post-reload comparison elimination pass, then this value should be set\
- appropriately.",
- unsigned int, INVALID_REGNUM)
+ "If the target has a dedicated flags register, and it needs to use the\n\
+post-reload comparison elimination pass, or the delay slot filler pass,\n\
+then this value should be set appropriately.",
+unsigned int, INVALID_REGNUM)
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be
@@ -3823,6 +3846,17 @@ candidate as a replacement for the if-convertible sequence described in\n\
 @code{if_info}.",
 bool, (rtx_insn *seq, struct noce_if_info *if_info),
 default_noce_conversion_profitable_p)
+
+/* Return true if new_addr should be preferred over the existing address used by
+   memref in insn.  */
+DEFHOOK
+(new_address_profitable_p,
+ "Return @code{true} if it is profitable to replace the address in\n\
+@var{memref} with @var{new_addr}.  This allows targets to prevent the\n\
+scheduler from undoing address optimizations.  The instruction containing the\n\
+memref is @var{insn}.  The default implementation returns @code{true}.",
+bool, (rtx memref, rtx_insn * insn, rtx new_addr),
+default_new_address_profitable_p)
 
 DEFHOOK
 (estimated_poly_value,

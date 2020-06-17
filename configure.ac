@@ -23,6 +23,7 @@ m4_include(config/acx.m4)
 m4_include(config/override.m4)
 m4_include(config/proginstall.m4)
 m4_include(config/elf.m4)
+m4_include(config/ax_cxx_compile_stdcxx.m4)
 m4_include([libtool.m4])
 m4_include([ltoptions.m4])
 m4_include([ltsugar.m4])
@@ -139,7 +140,7 @@ host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktr
 # binutils, gas and ld appear in that order because it makes sense to run
 # "make check" in that particular order.
 # If --enable-gold is used, "gold" may replace "ld".
-host_tools="texinfo flex bison binutils gas ld fixincludes gcc cgen sid sim gdb gprof etc expect dejagnu m4 utils guile fastjar gnattools libcc1 gotools"
+host_tools="texinfo flex bison binutils gas ld fixincludes gcc cgen sid sim gdb gdbserver gprof etc expect dejagnu m4 utils guile fastjar gnattools libcc1 gotools"
 
 # these libraries are built for the target environment, and are built after
 # the host libraries and the host tools (which may be a cross compiler)
@@ -512,7 +513,7 @@ if test x$enable_libgomp = x ; then
 	;;
     *-*-darwin* | *-*-aix*)
 	;;
-    nvptx*-*-*)
+    nvptx*-*-* | amdgcn*-*-*)
 	;;
     *)
 	noconfigdirs="$noconfigdirs target-libgomp"
@@ -666,6 +667,10 @@ if test "${ENABLE_LIBSTDCXX}" = "default" ; then
   case "${target}" in
     *-*-vxworks*)
       # VxWorks uses the Dinkumware C++ library.
+      noconfigdirs="$noconfigdirs target-libstdc++-v3"
+      ;;
+    amdgcn*-*-*)
+      # Not ported/fails to build when using newlib.
       noconfigdirs="$noconfigdirs target-libstdc++-v3"
       ;;
     arm*-wince-pe*)
@@ -854,6 +859,22 @@ case "${target}" in
     unsupported_languages="$unsupported_languages go"
     ;;
 esac
+
+# Only allow gdbserver on some systems.
+if test -d ${srcdir}/gdbserver; then
+    if test x$enable_gdbserver = x; then
+	AC_MSG_CHECKING([for gdbserver support])
+	if (srcdir=${srcdir}/gdbserver; \
+		. ${srcdir}/configure.srv; \
+		test -n "$UNSUPPORTED")
+	then
+	    AC_MSG_RESULT([no])
+	    noconfigdirs="$noconfigdirs gdbserver"
+	else
+	    AC_MSG_RESULT([yes])
+	fi
+    fi
+fi
 
 # Disable libgo for some systems where it is known to not work.
 # For testing, you can easily override this with --enable-libgo.
@@ -1188,6 +1209,9 @@ case "${target}" in
     noconfigdirs="$noconfigdirs ld gas gdb gprof sim"
     noconfigdirs="$noconfigdirs $target_libraries"
     ;;
+  pdp11-*-*)
+    noconfigdirs="$noconfigdirs gdb gprof"
+    ;;
   powerpc-*-aix*)
     # copied from rs6000-*-* entry
     noconfigdirs="$noconfigdirs gprof"
@@ -1439,10 +1463,13 @@ case "$have_compiler:$host:$target:$enable_bootstrap" in
     ;;
 esac
 
-# When bootstrapping with GCC, build stage 1 in C++98 mode to ensure that a
-# C++98 compiler can still start the bootstrap.
+# When bootstrapping with GCC, build stage 1 in C++11 mode to ensure that a
+# C++11 compiler can still start the bootstrap.  Otherwise, if building GCC,
+# require C++11 (or higher).
 if test "$enable_bootstrap:$GXX" = "yes:yes"; then
-  CXX="$CXX -std=gnu++98"
+  CXX="$CXX -std=c++11"
+elif test "$have_compiler" = yes; then
+  AX_CXX_COMPILE_STDCXX(11)
 fi
 
 # Used for setting $lt_cv_objdir
@@ -2056,9 +2083,14 @@ if test -d ${srcdir}/gcc; then
         esac
 
         # Disable jit if -enable-host-shared not specified
-        case ${add_this_lang}:${language}:${host_shared} in
-          yes:jit:no)
-	    # PR jit/64780: explicitly specify --enable-host-shared
+        # but not if building for Mingw. All code in Windows
+        # is position independent code (PIC).
+        case $target in
+          *mingw*) ;;
+          *)
+          case ${add_this_lang}:${language}:${host_shared} in
+            yes:jit:no)
+	           # PR jit/64780: explicitly specify --enable-host-shared
 	    AC_MSG_ERROR([
 Enabling language "jit" requires --enable-host-shared.
 
@@ -2069,16 +2101,18 @@ If you want to build both the jit and the regular compiler, it is often
 best to do this via two separate configure/builds, in separate
 directories, to avoid imposing the performance cost of
 --enable-host-shared on the regular compiler.])
-	    ;;
-          all:jit:no)
-	    AC_MSG_WARN([--enable-host-shared required to build $language])
-            add_this_lang=unsupported
-            ;;
-          *:jit:no)
-            # Silently disable.
-            add_this_lang=unsupported
-            ;;
-	esac
+	            ;;
+            all:jit:no)
+	      AC_MSG_WARN([--enable-host-shared required to build $language])
+              add_this_lang=unsupported
+              ;;
+            *:jit:no)
+              # Silently disable.
+              add_this_lang=unsupported
+              ;;
+	        esac
+          ;;
+        esac
 
         # Disable a language that is unsupported by the target.
 	case "${add_this_lang}: $unsupported_languages " in
@@ -2816,13 +2850,17 @@ esac
 CONFIGURE_GDB_TK=`echo ${GDB_TK} | sed s/-all-/-configure-/g`
 INSTALL_GDB_TK=`echo ${GDB_TK} | sed s/-all-/-install-/g`
 
-# gdb depends on gnulib, but as nothing else does, only include it if
-# gdb is built.
-if echo " ${configdirs} " | grep " gdb " > /dev/null 2>&1 ; then
-  # The Makefile provides the ordering, so it's enough here to add
-  # gnulib to the list.
-  configdirs="${configdirs} gnulib"
-fi
+# gdb and gdbserver depend on gnulib and gdbsupport, but as nothing
+# else does, only include them if one of these is built.  The Makefile
+# provides the ordering, so it's enough here to add to the list.
+case " ${configdirs} " in
+  *\ gdb\ *)
+    configdirs="${configdirs} gnulib gdbsupport"
+    ;;
+  *\ gdbserver\ *)
+    configdirs="${configdirs} gnulib gdbsupport"
+    ;;
+esac
 
 # Strip out unwanted targets.
 

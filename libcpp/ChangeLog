@@ -1,3 +1,193 @@
+2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/95413
+	* configure: Regenerated.
+
+2020-05-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* Makefile.in (AR): Substitute @AR@.
+	* configure.ac (CHECK_PROG AR): New.
+	* configure: Regenerate.
+
+2020-05-20  Nathan Sidwell  <nathan@acm.org>
+
+	* internal.h (typedef _cpp_file): Delete, unnecessary in C++.
+	(enum _cpp_find_file_kind): New.
+	(_cpp_find_file): Use it, not 3 bools.
+	* files.c (_cpp_find_file): Use _cpp_find_file_kind enum, not
+	bools.
+	(cpp_make_system_header): Break overly long line.
+	(_cpp_stack_include, _cpp_fake_include)
+	(_cpp_do_file_change, _cpp_compare_file_date, _cpp_has_header): Adjust.
+	* init.c (cpp_read_main): Adjust _cpp_find_file call.
+
+2020-05-18  Nathan Sidwell  <nathan@acm.org>
+
+	* include/cpplib.h (cpp_get_otions, cpp_get_callbacks)
+	(cpp_get_deps): Mark as PURE.
+	* include/line-map.h (get_combined_adhoc_loc)
+	(get_location_from_adhoc_loc, get_pure_location): Reformat decls.
+	* internal.h (struct lexer_state): Clarify comment.
+	* system.h: Remove now-unneeded bool hackery.
+	* files.c (_cpp_find_file): Store LOC not highest_location.
+
+	PR preprocessor/95149
+	* lex.c (struct lit_accum): New.
+	(bufring_append): Replace by lit_accum::append.
+	(lex_raw_string): Reimplement, using fragments of the old version.
+	(lex_string): Adjust lex_raw_string call.
+
+	PR preprocessor/95182
+	* macro.c (collect_args): Preserve EOFif we fell out of the main
+	file.
+	(cpp_get_token_1): Reformat a couple of short lines.
+
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2020-05-13  Jason Merrill  <jason@redhat.com>
+
+	* include/cpplib.h (enum c_lang): Change CXX2A to CXX20.
+	* init.c, lex.c: Adjust.
+
+2020-05-12  Nathan Sidwell  <nathan@acm.org>
+
+	EOF location is at end of file
+	PR preprocessor/95013
+	* lex.c (lex_raw_string): Process line notes before incrementing.
+	Correct incrementing condition.  Adjust for new
+	_cpp_get_fresh_line EOF behaviour.
+	(_cpp_get_fresh_line): Do not pop buffer at EOF, increment line
+	instead.
+	(_cpp_lex_direct): Adjust for new _cpp_get_fresh_line behaviour.
+	(cpp_directive_only_process): Assert we got a fresh line.
+	* traditional.c (_cpp_read_logical_line_trad): Adjust for new
+	_cpp_get_fresh_line behaviour.
+
+2020-05-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.in (CET_HOST_FLAGS): New.
+	(COMPILER): Add $(CET_HOST_FLAGS).
+	* configure.ac: Add GCC_CET_HOST_FLAGS(CET_HOST_FLAGS) and
+	AC_SUBST(CET_HOST_FLAGS).  Clear CET_HOST_FLAGS if jit isn't
+	enabled.
+	* aclocal.m4: Regenerated.
+	* configure: Likewise.
+
+2020-05-08  Nathan Sidwell  <nathan@acm.org>
+
+	Reimplement directives only processing, support raw literals.
+	* directives-only.c: Delete.
+	* Makefile.in (libcpp_a_OBJS, libcpp_a_SOURCES): Remove it.
+	* include/cpplib.h (enum CPP_DO_task): New enum.
+	(cpp_directive_only_preprocess): Declare.
+	* internal.h (_cpp_dir_only_callbacks): Delete.
+	(_cpp_preprocess_dir_only): Delete.
+	* lex.c (do_peek_backslask, do_peek_next, do_peek_prev): New.
+	(cpp_directives_only_process): New implementation.
+
+2020-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Partially implement P1042R1: __VA_OPT__ wording clarifications
+	PR preprocessor/92319
+	* macro.c (expand_arg): Move declarations before vaopt_state
+	definition.
+	(class vaopt_state): Move enum update_type definition earlier.  Remove
+	m_allowed member, add m_arg and m_update members.
+	(vaopt_state::vaopt_state): Change last argument from bool any_args
+	to macro_arg *arg, initialize m_arg and m_update instead of m_allowed.
+	(vaopt_state::update): When bumping m_state from 1 to 2 and m_update
+	is ERROR, determine if __VA_ARGS__ expansion has any non-CPP_PADDING
+	tokens and set m_update to INCLUDE if it has any, DROP otherwise.
+	Return m_update instead of m_allowed ? INCLUDE : DROP in m_state >= 2.
+	(replace_args, create_iso_definition): Adjust last argument to
+	vaopt_state ctor.
+
+2020-02-05  Martin Sebor  <msebor@redhat.com>
+
+	* include/cpplib.h (cpp_builtin_type): Remove trailing comma to
+	avoid pedantic warnings in C++ 98 mode.
+
+2020-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* macro.c (builtin_has_include): Diagnose __has_include* use outside
+	of preprocessing directives.
+
+	PR preprocessor/93545
+	* macro.c (cpp_get_token_no_padding): New function.
+	(builtin_has_include): Use it instead of cpp_get_token.  Don't check
+	SEEN_EOL.
+
+2020-02-01  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* configure: Regenerate.
+
+2020-01-28  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/93452
+	* internal.h (struct spec_nodes): Drop n__has_include{,_next}.
+	* directives.c (lex_macro_node): Don't check __has_include redef.
+	* expr.c (eval_token): Drop __has_include eval.
+	(parse_has_include): Move to ...
+	* macro.c (builtin_has_include): ... here.
+	(_cpp_builtin_macro_text): Eval __has_include{,_next}.
+	* include/cpplib.h (enum cpp_builtin_type): Add BT_HAS_INCLUDE{,_NEXT}.
+	* init.c (builtin_array): Add them.
+	(cpp_init_builtins): Drop __has_include{,_next} init here ...
+	* pch.c (cpp_read_state): ... and here.
+	* traditional.c (enum ls): Drop has_include states ...
+	(_cpp_scan_out_logical_line): ... and here.
+
+2020-01-27  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* configure: Regenerate.
+
+2020-01-24  Nathan Sidwell  <nathan@acm.org>
+
+	* expr.c (parse_has_include): Remove bogus controlling macro code.
+
+2020-01-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/80005
+	* include/cpplib.h (BT_HAS_ATTRIBUTE): Fix comment.
+	* internal.h (struct lexer_state): Delete in__has_include field.
+	(struct spec_nodes): Rename n__has_include{,_next}__ fields.
+	(_cpp_defined_macro_p): New.
+	(_cpp_find_file): Add has_include parm.
+	* directives.c (lex_macro_node): Combine defined,
+	__has_inline{,_next} checking.
+	(do_ifdef, do_ifndef): Use _cpp_defined_macro_p.
+	(_cpp_init_directives): Refactor.
+	* expr.c (parse_defined): Use _cpp_defined_macro_p.
+	(eval_token): Adjust parse_has_include calls.
+	(parse_has_include): Add OP parameter.  Reimplement.
+	* files.c (_cpp_find_file): Add HAS_INCLUDE parm.  Use it to
+	inhibit error message.
+	(_cpp_stack_include): Adjust _cpp_find_file call.
+	(_cpp_fake_include, _cpp_compare_file_date): Likewise.
+	(open_file_failed): Remove in__has_include check.
+	(_cpp_has_header): Adjust _cpp_find_file call.
+	* identifiers.c (_cpp_init_hashtable): Don't init
+	__has_include{,_next} here ...
+	* init.c (cpp_init_builtins): ... init them here.  Define as
+	macros.
+	(cpp_read_main_file): Adjust _cpp_find_file call.
+	* pch.c (cpp_read_state): Adjust __has_include{,_next} access.
+	* traditional.c (_cpp_scan_out_locgical_line): Likewise.
+
+	PR preprocessor/93306
+	* expr.c (parse_has_include): Refactor.  Check skip_eval before
+	looking.
+
+2020-01-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (class diagnostic_path): New forward decl.
+	(rich_location::get_path): New accessor.
+	(rich_location::set_path): New function.
+	(rich_location::m_path): New field.
+	* line-map.c (rich_location::rich_location): Initialize m_path.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

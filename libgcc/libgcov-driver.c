@@ -301,16 +301,18 @@ merge_one_data (const char *filename,
           if (!merge)
             continue;
 
-          tag = gcov_read_unsigned ();
-          length = gcov_read_unsigned ();
-          if (tag != GCOV_TAG_FOR_COUNTER (t_ix)
-              || length != GCOV_TAG_COUNTER_LENGTH (ci_ptr->num))
-            goto read_mismatch;
-          (*merge) (ci_ptr->values, ci_ptr->num);
-          ci_ptr++;
-        }
+	  tag = gcov_read_unsigned ();
+	  length = gcov_read_unsigned ();
+	  if (tag != GCOV_TAG_FOR_COUNTER (t_ix)
+	      || (length != GCOV_TAG_COUNTER_LENGTH (ci_ptr->num)
+		  && t_ix != GCOV_COUNTER_V_TOPN
+		  && t_ix != GCOV_COUNTER_V_INDIR))
+	    goto read_mismatch;
+	  (*merge) (ci_ptr->values, ci_ptr->num);
+	  ci_ptr++;
+	}
       if ((error = gcov_is_error ()))
-        goto read_error;
+	goto read_error;
     }
 
   if (tag)
@@ -327,6 +329,37 @@ read_error:
   gcov_error (GCOV_PROF_PREFIX "%s merging\n", filename,
               error < 0 ? "Overflow": "Error");
   return -1;
+}
+
+/* Store all TOP N counters where each has a dynamic length.  */
+
+static void
+write_top_counters (const struct gcov_ctr_info *ci_ptr,
+		    unsigned t_ix,
+		    gcov_unsigned_t n_counts)
+{
+  unsigned counters = n_counts / GCOV_TOPN_MEM_COUNTERS;
+  gcc_assert (n_counts % GCOV_TOPN_MEM_COUNTERS == 0);
+  unsigned pair_total = 0;
+  for (unsigned i = 0; i < counters; i++)
+    pair_total += ci_ptr->values[GCOV_TOPN_MEM_COUNTERS * i + 1];
+  unsigned disk_size = GCOV_TOPN_DISK_COUNTERS * counters + 2 * pair_total;
+  gcov_write_tag_length (GCOV_TAG_FOR_COUNTER (t_ix),
+			 GCOV_TAG_COUNTER_LENGTH (disk_size));
+
+  for (unsigned i = 0; i < counters; i++)
+    {
+      gcov_type pair_count = ci_ptr->values[GCOV_TOPN_MEM_COUNTERS * i + 1];
+      gcov_write_counter (ci_ptr->values[GCOV_TOPN_MEM_COUNTERS * i]);
+      gcov_write_counter (pair_count);
+      gcov_type start = ci_ptr->values[GCOV_TOPN_MEM_COUNTERS * i + 2];
+      for (struct gcov_kvp *node = (struct gcov_kvp *)(intptr_t)start;
+	   node != NULL; node = node->next)
+	{
+	  gcov_write_counter (node->value);
+	  gcov_write_counter (node->count);
+	}
+    }
 }
 
 /* Write counters in GI_PTR and the summary in PRG to a gcda file. In
@@ -388,11 +421,18 @@ write_one_data (const struct gcov_info *gi_ptr,
             continue;
 
           n_counts = ci_ptr->num;
-          gcov_write_tag_length (GCOV_TAG_FOR_COUNTER (t_ix),
-                                 GCOV_TAG_COUNTER_LENGTH (n_counts));
-          c_ptr = ci_ptr->values;
-          while (n_counts--)
-            gcov_write_counter (*c_ptr++);
+
+	  if (gi_ptr->merge[t_ix] == __gcov_merge_topn)
+	    write_top_counters (ci_ptr, t_ix, n_counts);
+	  else
+	    {
+	      gcov_write_tag_length (GCOV_TAG_FOR_COUNTER (t_ix),
+				     GCOV_TAG_COUNTER_LENGTH (n_counts));
+	      c_ptr = ci_ptr->values;
+	      while (n_counts--)
+		gcov_write_counter (*c_ptr++);
+	    }
+
           ci_ptr++;
         }
       if (buffered)
@@ -429,7 +469,6 @@ dump_one_gcov (struct gcov_info *gi_ptr, struct gcov_filename *gf,
   struct gcov_summary summary = {};
   int error;
   gcov_unsigned_t tag;
-
   fn_buffer = 0;
 
   error = gcov_exit_open_gcda_file (gi_ptr, gf);

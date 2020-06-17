@@ -351,6 +351,10 @@ func (t *rtype) PkgPath() string {
 	return t.uncommonType.PkgPath()
 }
 
+func (t *rtype) hasName() bool {
+	return t.uncommonType != nil && t.uncommonType.name != nil
+}
+
 func (t *rtype) Name() string {
 	return t.uncommonType.Name()
 }
@@ -574,7 +578,7 @@ func directlyAssignable(T, V *rtype) bool {
 
 	// Otherwise at least one of T and V must not be defined
 	// and they must have the same kind.
-	if T.Name() != "" && V.Name() != "" || T.Kind() != V.Kind() {
+	if T.hasName() && V.hasName() || T.Kind() != V.Kind() {
 		return false
 	}
 

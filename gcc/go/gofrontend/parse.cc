@@ -2200,7 +2200,7 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
 	       p != til.end();
 	       ++p)
 	    exprs->push_back(this->id_to_expression(p->name(), p->location(),
-						    true));
+						    true, false));
 
 	  Expression_list* more_exprs =
 	    this->expression_list(NULL, true, may_be_composite_lit);
@@ -2651,7 +2651,7 @@ Parse::operand(bool may_be_sink, bool* is_parenthesized)
     case Token::TOKEN_IMAGINARY:
       {
 	mpfr_t zero;
-	mpfr_init_set_ui(zero, 0, GMP_RNDN);
+	mpfr_init_set_ui(zero, 0, MPFR_RNDN);
 	mpc_t val;
 	mpc_init2(val, mpc_precision);
 	mpc_set_fr_fr(val, zero, *token->imaginary_value(), MPC_RNDNN);
@@ -2820,7 +2820,7 @@ Parse::composite_lit(Type* type, int depth, Location location)
 	      Gogo* gogo = this->gogo_;
 	      val = this->id_to_expression(gogo->pack_hidden_name(identifier,
 								  is_exported),
-					   id_location, false);
+					   id_location, false, true);
 	      is_name = true;
 	    }
 	  else
@@ -2876,9 +2876,6 @@ Parse::composite_lit(Type* type, int depth, Location location)
 	      vals = newvals;
 	    }
 	  has_keys = true;
-
-	  if (val->unknown_expression() != NULL)
-	    val->unknown_expression()->set_is_composite_literal_key();
 
 	  vals->push_back(val);
 
@@ -3345,12 +3342,22 @@ Parse::call(Expression* func)
 
 Expression*
 Parse::id_to_expression(const std::string& name, Location location,
-			bool is_lhs)
+			bool is_lhs, bool is_composite_literal_key)
 {
   Named_object* in_function;
   Named_object* named_object = this->gogo_->lookup(name, &in_function);
   if (named_object == NULL)
-    named_object = this->gogo_->add_unknown_name(name, location);
+    {
+      if (is_composite_literal_key)
+	{
+	  // This is a composite literal key, which means that it
+	  // could just be a struct field name, so avoid confusiong by
+	  // not adding it to the bindings.  We'll look up the name
+	  // later during the lowering phase if necessary.
+	  return Expression::make_composite_literal_key(name, location);
+	}
+      named_object = this->gogo_->add_unknown_name(name, location);
+    }
 
   if (in_function != NULL
       && in_function != this->gogo_->current_function()
@@ -5167,7 +5174,7 @@ Parse::send_or_recv_stmt(bool* is_send, Expression** channel, Expression** val,
 
 	  *val = this->id_to_expression(gogo->pack_hidden_name(recv_var,
 							       is_rv_exported),
-					recv_var_loc, true);
+					recv_var_loc, true, false);
 	  saw_comma = true;
 	}
       else

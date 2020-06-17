@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1131,12 +1131,6 @@ package body Treepr is
                Print_Eol;
             end if;
 
-            if Has_Dynamic_Range_Check (N) then
-               Print_Str (Prefix_Str_Char);
-               Print_Str ("Has_Dynamic_Range_Check = True");
-               Print_Eol;
-            end if;
-
             if Is_Controlling_Actual (N) then
                Print_Str (Prefix_Str_Char);
                Print_Str ("Is_Controlling_Actual = True");
@@ -1170,7 +1164,7 @@ package body Treepr is
 
             if Raises_Constraint_Error (N) then
                Print_Str (Prefix_Str_Char);
-               Print_Str ("Raise_Constraint_Error = True");
+               Print_Str ("Raises_Constraint_Error = True");
                Print_Eol;
             end if;
 
@@ -2185,7 +2179,7 @@ package body Treepr is
                Nod := N;
                while Present (Nod) loop
                   Visit_Descendant (Union_Id (Next_Entity (Nod)));
-                  Nod := Next_Entity (Nod);
+                  Next_Entity (Nod);
                end loop;
             end;
          end if;

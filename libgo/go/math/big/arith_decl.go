@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // +build ignore
-// +build !math_big_pure_go
+// +build !math_big_pure_go,!riscv64
 
 package big
 

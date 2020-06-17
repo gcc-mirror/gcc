@@ -292,7 +292,7 @@ type (
 		Rbrack token.Pos // position of "]"
 	}
 
-	// An SliceExpr node represents an expression followed by slice indices.
+	// A SliceExpr node represents an expression followed by slice indices.
 	SliceExpr struct {
 		X      Expr      // expression
 		Lbrack token.Pos // position of "["
@@ -634,7 +634,7 @@ type (
 	BlockStmt struct {
 		Lbrace token.Pos // position of "{"
 		List   []Stmt
-		Rbrace token.Pos // position of "}"
+		Rbrace token.Pos // position of "}", if any (may be absent due to syntax error)
 	}
 
 	// An IfStmt node represents an if statement.
@@ -662,7 +662,7 @@ type (
 		Body   *BlockStmt // CaseClauses only
 	}
 
-	// An TypeSwitchStmt node represents a type switch statement.
+	// A TypeSwitchStmt node represents a type switch statement.
 	TypeSwitchStmt struct {
 		Switch token.Pos  // position of "switch" keyword
 		Init   Stmt       // initialization statement; or nil
@@ -678,7 +678,7 @@ type (
 		Body  []Stmt    // statement list; or nil
 	}
 
-	// An SelectStmt node represents a select statement.
+	// A SelectStmt node represents a select statement.
 	SelectStmt struct {
 		Select token.Pos  // position of "select" keyword
 		Body   *BlockStmt // CommClauses only
@@ -757,7 +757,15 @@ func (s *BranchStmt) End() token.Pos {
 	}
 	return token.Pos(int(s.TokPos) + len(s.Tok.String()))
 }
-func (s *BlockStmt) End() token.Pos { return s.Rbrace + 1 }
+func (s *BlockStmt) End() token.Pos {
+	if s.Rbrace.IsValid() {
+		return s.Rbrace + 1
+	}
+	if n := len(s.List); n > 0 {
+		return s.List[n-1].End()
+	}
+	return s.Lbrace + 1
+}
 func (s *IfStmt) End() token.Pos {
 	if s.Else != nil {
 		return s.Else.End()

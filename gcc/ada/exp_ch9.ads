@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,6 +55,12 @@ package Exp_Ch9 is
    --  interface, ensure that the designated type has a _master and generate
    --  a renaming of the said master to service the access type.
 
+   function Build_Master_Declaration (Loc : Source_Ptr) return Node_Id;
+   --  For targets supporting tasks, generate:
+   --      _Master : constant Integer := Current_Master.all;
+   --  For targets where tasks or tasking hierarchies are prohibited, generate:
+   --      _Master : constant Master_Id := 3;
+
    procedure Build_Master_Entity (Obj_Or_Typ : Entity_Id);
    --  Given the name of an object or a type which is either a task, contains
    --  tasks or designates tasks, create a _master in the appropriate scope
@@ -71,17 +77,6 @@ package Exp_Ch9 is
    --
    --  where _master denotes the task master of the enclosing context. Ins_Nod
    --  is used to provide a specific insertion node for the renaming.
-
-   function Build_Private_Protected_Declaration (N : Node_Id) return Entity_Id;
-   --  A subprogram body without a previous spec that appears in a protected
-   --  body must be expanded separately to create a subprogram declaration
-   --  for it, in order to resolve internal calls to it from other protected
-   --  operations. It would seem that no locking version of the operation is
-   --  needed, but in fact, in Ada 2005 the subprogram may be used in a call-
-   --  back, and therefore a protected version of the operation must be
-   --  generated as well.
-   --
-   --  Possibly factor this with Exp_Dist.Copy_Specification ???
 
    function Build_Protected_Sub_Specification
      (N        : Node_Id;

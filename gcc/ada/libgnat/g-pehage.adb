@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2019, AdaCore                     --
+--                     Copyright (C) 2002-2020, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -622,6 +622,7 @@ package body GNAT.Perfect_Hash_Generators is
             E := Get_Edges (J);
 
             if Get_Graph (E.Y) = -1 then
+               pragma Assert (NK /= 0);
                Set_Graph (E.Y, (E.Key - Get_Graph (X)) mod NK);
                Assign (E.Y);
             end if;
@@ -2201,6 +2202,8 @@ package body GNAT.Perfect_Hash_Generators is
          --  in the position selection.
 
          for J in S'Range loop
+            pragma Annotate (CodePeer, Modified, S (J));
+
             if S (J).First = S (J).Last then
                F := S (J).First;
                L := S (J).Last;
@@ -2359,6 +2362,10 @@ package body GNAT.Perfect_Hash_Generators is
 
             for P in 1 .. Last_Sel_Pos - 1 loop
                if Max_Diff_Sel_Pos < Sel_Position (P) then
+                  pragma Annotate
+                    (CodePeer, False_Positive,
+                     "test always false", "false positive?");
+
                   Sel_Position (P + 1 .. Last_Sel_Pos) :=
                     Sel_Position (P .. Last_Sel_Pos - 1);
                   Sel_Position (P) := Max_Diff_Sel_Pos;
@@ -2525,6 +2532,7 @@ package body GNAT.Perfect_Hash_Generators is
             for J in 0 .. T1_Len - 1 loop
                exit when Word (J + 1) = ASCII.NUL;
                R := Get_Table (Table, J, Get_Used_Char (Word (J + 1)));
+               pragma Assert (NV /= 0);
                S := (S + R) mod NV;
             end loop;
 
@@ -2532,6 +2540,7 @@ package body GNAT.Perfect_Hash_Generators is
             for J in 0 .. T1_Len - 1 loop
                exit when Word (J + 1) = ASCII.NUL;
                R := Get_Table (Table, J, 0);
+               pragma Assert (NV /= 0);
                S := (S + R * Character'Pos (Word (J + 1))) mod NV;
             end loop;
       end case;

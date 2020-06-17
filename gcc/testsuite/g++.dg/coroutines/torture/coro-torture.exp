@@ -1,0 +1,25 @@
+# This harness is for tests that should be run at all optimisation levels.
+
+load_lib g++-dg.exp
+load_lib torture-options.exp
+
+global DG_TORTURE_OPTIONS LTO_TORTURE_OPTIONS 
+
+# If a testcase doesn't have special options, use these.
+global DEFAULT_CXXFLAGS
+if ![info exists DEFAULT_CXXFLAGS] then {
+    set DEFAULT_CXXFLAGS " -pedantic-errors -Wno-long-long"
+}
+
+set DEFAULT_COROFLAGS $DEFAULT_CXXFLAGS
+lappend DEFAULT_COROFLAGS "-fcoroutines" "-std=c++17"
+
+dg-init
+torture-init
+
+set-torture-options [concat $DG_TORTURE_OPTIONS $LTO_TORTURE_OPTIONS]
+
+gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.C]] "" $DEFAULT_COROFLAGS
+
+torture-finish
+dg-finish

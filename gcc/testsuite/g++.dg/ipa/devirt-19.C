@@ -2,8 +2,7 @@
    Previously we were failing by considering CLOBBER statement to be
    a type change.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-ipa-cp -fipa-cp-clone"  } */
-/* { dg-additional-options "-Wno-return-type"  } */
+/* { dg-options "-O2 -fdump-ipa-cp -fipa-cp-clone -Wno-return-type"  } */
 
 struct A {
   void operator==(const A &);

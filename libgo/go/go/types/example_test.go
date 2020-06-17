@@ -5,7 +5,7 @@
 // Only run where builders (build.golang.org) have
 // access to compiled packages for import.
 //
-// +build ignore,!arm,!arm64,!nacl
+// +build !arm,!arm64
 
 package types_test
 
@@ -77,7 +77,7 @@ func Unused() { {}; {{ var x int; _ = x }} } // make sure empty block scopes get
 	rx := regexp.MustCompile(` 0x[a-fA-F0-9]*`)
 	fmt.Println(rx.ReplaceAllString(buf.String(), ""))
 
-	// Output:
+	// no output for gccgo--can't import "fmt"
 	// package "temperature" scope {
 	// .  const temperature.Boiling temperature.Celsius
 	// .  type temperature.Celsius float64
@@ -147,7 +147,7 @@ func (c *Celsius) SetF(f float64) { *c = Celsius(f - 32 / 9 * 5) }
 		fmt.Println()
 	}
 
-	// Output:
+	// no output for gccgo--can't import "fmt"
 	// Method set of temperature.Celsius:
 	// method (temperature.Celsius) String() string
 	//

@@ -843,6 +843,7 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
   tree ctree;
   tree var;
   tree tmp;
+  int dim;
 
   /* The intrinsic type needs to be converted to a temporary
      CLASS object.  */
@@ -892,6 +893,16 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
 	  parmse->ss = ss;
 	  parmse->use_offset = 1;
 	  gfc_conv_expr_descriptor (parmse, e);
+
+	  /* Array references with vector subscripts and non-variable expressions
+	     need be converted to a one-based descriptor.  */
+	  if (e->expr_type != EXPR_VARIABLE)
+	    {
+	      for (dim = 0; dim < e->rank; ++dim)
+		gfc_conv_shift_descriptor_lbound (&parmse->pre, parmse->expr,
+						  dim, gfc_index_one_node);
+	    }
+
 	  if (class_ts.u.derived->components->as->rank != e->rank)
 	    {
 	      tmp = fold_build1_loc (input_location, VIEW_CONVERT_EXPR,
@@ -1628,7 +1639,7 @@ gfc_copy_se_loopvars (gfc_se * dest, gfc_se * src)
 
    Care must be taken when multiple se are created with the same parent.
    The child se must be kept in sync.  The easiest way is to delay creation
-   of a child se until after after the previous se has been translated.  */
+   of a child se until after the previous se has been translated.  */
 
 void
 gfc_init_se (gfc_se * se, gfc_se * parent)
@@ -1701,12 +1712,12 @@ gfc_make_safe_expr (gfc_se * se)
    Also used for arguments to procedures with multiple entry points.  */
 
 tree
-gfc_conv_expr_present (gfc_symbol * sym)
+gfc_conv_expr_present (gfc_symbol * sym, bool use_saved_desc)
 {
-  tree decl, cond;
+  tree decl, orig_decl, cond;
 
   gcc_assert (sym->attr.dummy);
-  decl = gfc_get_symbol_decl (sym);
+  orig_decl = decl = gfc_get_symbol_decl (sym);
 
   /* Intrinsic scalars with VALUE attribute which are passed by value
      use a hidden argument to denote the present status.  */
@@ -1733,10 +1744,13 @@ gfc_conv_expr_present (gfc_symbol * sym)
       return cond;
     }
 
-  if (TREE_CODE (decl) != PARM_DECL)
+  /* Assumed-shape arrays use a local variable for the array data;
+     the actual PARAM_DECL is in a saved decl.  As the local variable
+     is NULL, it can be checked instead, unless use_saved_desc is
+     requested.  */
+
+  if (use_saved_desc && TREE_CODE (decl) != PARM_DECL)
     {
-      /* Array parameters use a temporary descriptor, we want the real
-         parameter.  */
       gcc_assert (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl))
              || GFC_ARRAY_TYPE_P (TREE_TYPE (decl)));
       decl = GFC_DECL_SAVED_DESCRIPTOR (decl);
@@ -1750,9 +1764,12 @@ gfc_conv_expr_present (gfc_symbol * sym)
      we thus also need to check the array descriptor.  For BT_CLASS, it
      can also occur for scalars and F2003 due to type->class wrapping and
      class->class wrapping.  Note further that BT_CLASS always uses an
-     array descriptor for arrays, also for explicit-shape/assumed-size.  */
+     array descriptor for arrays, also for explicit-shape/assumed-size.
+     For assumed-rank arrays, no local variable is generated, hence,
+     the following also applies with !use_saved_desc.  */
 
-  if (!sym->attr.allocatable
+  if ((use_saved_desc || TREE_CODE (orig_decl) == PARM_DECL)
+      && !sym->attr.allocatable
       && ((sym->ts.type != BT_CLASS && !sym->attr.pointer)
 	  || (sym->ts.type == BT_CLASS
 	      && !CLASS_DATA (sym)->attr.allocatable
@@ -2334,8 +2351,12 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
       else
 	tmp = build_fold_indirect_ref_loc (input_location,
 				       se->expr);
-      tmp = gfc_build_array_ref (tmp, start.expr, NULL);
-      se->expr = gfc_build_addr_expr (type, tmp);
+      /* For BIND(C), a BT_CHARACTER is not an ARRAY_TYPE.  */
+      if (TREE_CODE (TREE_TYPE (tmp)) == ARRAY_TYPE)
+	{
+	  tmp = gfc_build_array_ref (tmp, start.expr, NULL);
+	  se->expr = gfc_build_addr_expr (type, tmp);
+	}
     }
 
   /* Length = end + 1 - start.  */
@@ -2592,7 +2613,8 @@ gfc_maybe_dereference_var (gfc_symbol *sym, tree var, bool descriptor_only_p,
     {
       /* Dereference character pointer dummy arguments
 	 or results.  */
-      if ((sym->attr.pointer || sym->attr.allocatable)
+      if ((sym->attr.pointer || sym->attr.allocatable
+	   || (sym->as && sym->as->type == AS_ASSUMED_RANK))
 	  && (sym->attr.dummy
 	      || sym->attr.function
 	      || sym->attr.result))
@@ -6222,6 +6244,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		      || gfc_expr_attr (e).allocatable)
 		    set_dtype_for_unallocated (&parmse, e);
 		  else if (e->expr_type == EXPR_VARIABLE
+			   && e->ref
+			   && e->ref->u.ar.type == AR_FULL
 			   && e->symtree->n.sym->attr.dummy
 			   && e->symtree->n.sym->as
 			   && e->symtree->n.sym->as->type == AS_ASSUMED_SIZE)
@@ -8789,6 +8813,7 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr, bool add_clobber)
 
   if (expr->expr_type == EXPR_FUNCTION
       && ((expr->value.function.esym
+	   && expr->value.function.esym->result
 	   && expr->value.function.esym->result->attr.pointer
 	   && !expr->value.function.esym->result->attr.dimension)
 	  || (!expr->value.function.esym && !expr->ref
@@ -9808,9 +9833,13 @@ arrayfunc_assign_needs_temporary (gfc_expr * expr1, gfc_expr * expr2)
 
   /* If we have reached here with an intrinsic function, we do not
      need a temporary except in the particular case that reallocation
-     on assignment is active and the lhs is allocatable and a target.  */
+     on assignment is active and the lhs is allocatable and a target,
+     or a pointer which may be a subref pointer.  FIXME: The last
+     condition can go away when we use span in the intrinsics
+     directly.*/
   if (expr2->value.function.isym)
-    return (flag_realloc_lhs && sym->attr.allocatable && sym->attr.target);
+    return (flag_realloc_lhs && sym->attr.allocatable && sym->attr.target)
+      || (sym->attr.pointer && sym->attr.subref_array_pointer);
 
   /* If the LHS is a dummy, we need a temporary if it is not
      INTENT(OUT).  */

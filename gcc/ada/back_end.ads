@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -67,7 +67,6 @@ package Back_End is
    --  default for all of these in Opt is False).
    --
    --    Opt.Disable_FE_Inline
-   --    Opt.Disable_FE_Inline_Always
    --    Opt.Suppress_Control_Float_Optimizations
    --    Opt.Generate_SCO
    --    Opt.Generate_SCO_Instance_Table

@@ -1574,7 +1574,7 @@ separate_decls_in_region_name (tree name, name_to_copy_table_type *name_copies,
   if (!dslot->to)
     {
       var_copy = create_tmp_var (TREE_TYPE (var), get_name (var));
-      DECL_GIMPLE_REG_P (var_copy) = DECL_GIMPLE_REG_P (var);
+      DECL_NOT_GIMPLE_REG_P (var_copy) = DECL_NOT_GIMPLE_REG_P (var);
       dslot->uid = uid;
       dslot->to = var_copy;
 
@@ -2202,7 +2202,6 @@ create_loop_fn (location_t loc)
   DECL_ARGUMENTS (decl) = t;
 
   allocate_struct_function (decl, false);
-  DECL_STRUCT_FUNCTION (decl)->last_clique = act_cfun->last_clique;
 
   /* The call to allocate_struct_function clobbers CFUN, so we need to restore
      it.  */

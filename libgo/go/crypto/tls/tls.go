@@ -4,10 +4,6 @@
 
 // Package tls partially implements TLS 1.2, as specified in RFC 5246,
 // and TLS 1.3, as specified in RFC 8446.
-//
-// TLS 1.3 is available on an opt-out basis in Go 1.13. To disable
-// it, set the GODEBUG environment variable (comma-separated key=value
-// options) such that it includes "tls13=0".
 package tls
 
 // BUG(agl): The crypto/tls package only implements some countermeasures
@@ -79,8 +75,9 @@ func NewListener(inner net.Listener, config *Config) net.Listener {
 // The configuration config must be non-nil and must include
 // at least one certificate or else set GetCertificate.
 func Listen(network, laddr string, config *Config) (net.Listener, error) {
-	if config == nil || (len(config.Certificates) == 0 && config.GetCertificate == nil) {
-		return nil, errors.New("tls: neither Certificates nor GetCertificate set in Config")
+	if config == nil || len(config.Certificates) == 0 &&
+		config.GetCertificate == nil && config.GetConfigForClient == nil {
+		return nil, errors.New("tls: neither Certificates, GetCertificate, nor GetConfigForClient set in Config")
 	}
 	l, err := net.Listen(network, laddr)
 	if err != nil {
@@ -119,9 +116,10 @@ func DialWithDialer(dialer *net.Dialer, network, addr string, config *Config) (*
 
 	if timeout != 0 {
 		errChannel = make(chan error, 2)
-		time.AfterFunc(timeout, func() {
+		timer := time.AfterFunc(timeout, func() {
 			errChannel <- timeoutError{}
 		})
+		defer timer.Stop()
 	}
 
 	rawConn, err := dialer.Dial(network, addr)

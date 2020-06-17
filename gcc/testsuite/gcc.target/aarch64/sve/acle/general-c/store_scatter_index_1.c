@@ -18,7 +18,7 @@ f1 (svbool_t pg, signed char *s8_ptr, short *s16_ptr,
   svst1_scatter_index (pg, s32_ptr, s32, s32, 0); /* { dg-error {too many arguments to function 'svst1_scatter_index'} } */
   svst1_scatter_index (0, s32_ptr, s32, s32); /* { dg-error {passing 'int' to argument 1 of 'svst1_scatter_index', which expects 'svbool_t'} } */
   svst1_scatter_index (pg, 0, s32, s32);
-  svst1_scatter_index (pg, (int *) 0, s32, s32);
+  svst1_scatter_index (pg, (int32_t *) 0, s32, s32);
   svst1_scatter_index (pg, void_ptr, s32, s32);
   svst1_scatter_index (pg, s_ptr, s32, s32); /* { dg-warning "passing argument 2 of 'svst1_scatter_s32index_s32' from incompatible pointer type" } */
   svst1_scatter_index (pg, f32_ptr, s32, s32); /* { dg-warning "passing argument 2 of 'svst1_scatter_s32index_s32' from incompatible pointer type" } */

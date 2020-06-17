@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,7 +73,6 @@ package body Ada.Strings.Unbounded is
       --  Result is an empty string, reuse shared empty string
 
       if DL = 0 then
-         Reference (Empty_Shared_String'Access);
          DR := Empty_Shared_String'Access;
 
       --  Left string is empty, return Right string
@@ -112,7 +111,6 @@ package body Ada.Strings.Unbounded is
       --  Result is an empty string, reuse shared empty string
 
       if DL = 0 then
-         Reference (Empty_Shared_String'Access);
          DR := Empty_Shared_String'Access;
 
       --  Right is an empty string, return Left string
@@ -145,7 +143,6 @@ package body Ada.Strings.Unbounded is
       --  Result is an empty string, reuse shared one
 
       if DL = 0 then
-         Reference (Empty_Shared_String'Access);
          DR := Empty_Shared_String'Access;
 
       --  Left is empty string, return Right string
@@ -214,7 +211,6 @@ package body Ada.Strings.Unbounded is
       --  Result is an empty string, reuse shared empty string
 
       if Left = 0 then
-         Reference (Empty_Shared_String'Access);
          DR := Empty_Shared_String'Access;
 
       --  Otherwise, allocate new shared string and fill it
@@ -244,7 +240,6 @@ package body Ada.Strings.Unbounded is
       --  Result is an empty string, reuse shared empty string
 
       if DL = 0 then
-         Reference (Empty_Shared_String'Access);
          DR := Empty_Shared_String'Access;
 
       --  Otherwise, allocate new shared string and fill it
@@ -277,7 +272,6 @@ package body Ada.Strings.Unbounded is
       --  Result is an empty string, reuse shared empty string
 
       if DL = 0 then
-         Reference (Empty_Shared_String'Access);
          DR := Empty_Shared_String'Access;
 
       --  Coefficient is one, just return string itself
@@ -506,7 +500,6 @@ package body Ada.Strings.Unbounded is
       --  Empty string requested, return shared empty string
 
       if Max_Length = 0 then
-         Reference (Empty_Shared_String'Access);
          return Empty_Shared_String'Access;
 
       --  Otherwise, allocate requested space (and probably some more room)
@@ -701,7 +694,6 @@ package body Ada.Strings.Unbounded is
          --  Result is an empty string, reuse shared empty string
 
          if DL = 0 then
-            Reference (Empty_Shared_String'Access);
             DR := Empty_Shared_String'Access;
 
          --  Otherwise, allocate new shared string and fill it
@@ -743,7 +735,6 @@ package body Ada.Strings.Unbounded is
          --  Result is empty, reuse shared empty string
 
          if DL = 0 then
-            Reference (Empty_Shared_String'Access);
             Source.Reference := Empty_Shared_String'Access;
             Unreference (SR);
 
@@ -801,7 +792,6 @@ package body Ada.Strings.Unbounded is
          --  effects if a program references an already-finalized object.
 
          Object.Reference := Null_Unbounded_String.Reference;
-         Reference (Object.Reference);
          Unreference (SR);
       end if;
    end Finalize;
@@ -862,7 +852,6 @@ package body Ada.Strings.Unbounded is
       --  Result is empty, reuse shared empty string
 
       if Count = 0 then
-         Reference (Empty_Shared_String'Access);
          DR := Empty_Shared_String'Access;
 
       --  Length of the string is the same as requested, reuse source shared
@@ -912,7 +901,6 @@ package body Ada.Strings.Unbounded is
       --  Result is empty, reuse empty shared string
 
       if Count = 0 then
-         Reference (Empty_Shared_String'Access);
          Source.Reference := Empty_Shared_String'Access;
          Unreference (SR);
 
@@ -1090,7 +1078,6 @@ package body Ada.Strings.Unbounded is
       --  Result is empty, reuse empty shared string
 
       if DL = 0 then
-         Reference (Empty_Shared_String'Access);
          DR := Empty_Shared_String'Access;
 
       --  Inserted string is empty, reuse source shared string
@@ -1132,7 +1119,6 @@ package body Ada.Strings.Unbounded is
       --  Result is empty string, reuse empty shared string
 
       if DL = 0 then
-         Reference (Empty_Shared_String'Access);
          Source.Reference := Empty_Shared_String'Access;
          Unreference (SR);
 
@@ -1197,7 +1183,6 @@ package body Ada.Strings.Unbounded is
       --  Result is empty string, reuse empty shared string
 
       if DL = 0 then
-         Reference (Empty_Shared_String'Access);
          DR := Empty_Shared_String'Access;
 
       --  Result is same as source string, reuse source shared string
@@ -1241,7 +1226,6 @@ package body Ada.Strings.Unbounded is
       --  Result is empty string, reuse empty shared string
 
       if DL = 0 then
-         Reference (Empty_Shared_String'Access);
          Source.Reference := Empty_Shared_String'Access;
          Unreference (SR);
 
@@ -1276,6 +1260,10 @@ package body Ada.Strings.Unbounded is
 
    procedure Reference (Item : not null Shared_String_Access) is
    begin
+      if Item = Empty_Shared_String'Access then
+         return;
+      end if;
+
       System.Atomic_Counters.Increment (Item.Counter);
    end Reference;
 
@@ -1348,7 +1336,6 @@ package body Ada.Strings.Unbounded is
          --  Result is empty string, reuse empty shared string
 
          if DL = 0 then
-            Reference (Empty_Shared_String'Access);
             DR := Empty_Shared_String'Access;
 
          --  Otherwise allocate new shared string and fill it
@@ -1397,7 +1384,6 @@ package body Ada.Strings.Unbounded is
          --  Result is empty string, reuse empty shared string
 
          if DL = 0 then
-            Reference (Empty_Shared_String'Access);
             Source.Reference := Empty_Shared_String'Access;
             Unreference (SR);
 
@@ -1442,7 +1428,6 @@ package body Ada.Strings.Unbounded is
       --  In case of empty string, reuse empty shared string
 
       if Source'Length = 0 then
-         Reference (Empty_Shared_String'Access);
          Target.Reference := Empty_Shared_String'Access;
 
       else
@@ -1504,7 +1489,6 @@ package body Ada.Strings.Unbounded is
       --  For empty result reuse empty shared string
 
       if Count = 0 then
-         Reference (Empty_Shared_String'Access);
          DR := Empty_Shared_String'Access;
 
       --  Result is whole source string, reuse source shared string
@@ -1576,7 +1560,6 @@ package body Ada.Strings.Unbounded is
       --  Result is empty string, reuse empty shared string
 
       if Count = 0 then
-         Reference (Empty_Shared_String'Access);
          Source.Reference := Empty_Shared_String'Access;
          Unreference (SR);
 
@@ -1619,7 +1602,6 @@ package body Ada.Strings.Unbounded is
 
    begin
       if Source'Length = 0 then
-         Reference (Empty_Shared_String'Access);
          DR := Empty_Shared_String'Access;
 
       else
@@ -1636,7 +1618,6 @@ package body Ada.Strings.Unbounded is
 
    begin
       if Length = 0 then
-         Reference (Empty_Shared_String'Access);
          DR := Empty_Shared_String'Access;
 
       else
@@ -1662,7 +1643,6 @@ package body Ada.Strings.Unbounded is
       --  Nothing to translate, reuse empty shared string
 
       if SR.Last = 0 then
-         Reference (Empty_Shared_String'Access);
          DR := Empty_Shared_String'Access;
 
       --  Otherwise, allocate new shared string and fill it
@@ -1726,7 +1706,6 @@ package body Ada.Strings.Unbounded is
       --  Nothing to translate, reuse empty shared string
 
       if SR.Last = 0 then
-         Reference (Empty_Shared_String'Access);
          DR := Empty_Shared_String'Access;
 
       --  Otherwise, allocate new shared string and fill it
@@ -1813,7 +1792,6 @@ package body Ada.Strings.Unbounded is
       --  All blanks, reuse empty shared string
 
       if Low = 0 then
-         Reference (Empty_Shared_String'Access);
          DR := Empty_Shared_String'Access;
 
       else
@@ -1867,7 +1845,6 @@ package body Ada.Strings.Unbounded is
       --  All blanks, reuse empty shared string
 
       if Low = 0 then
-         Reference (Empty_Shared_String'Access);
          Source.Reference := Empty_Shared_String'Access;
          Unreference (SR);
 
@@ -1929,7 +1906,6 @@ package body Ada.Strings.Unbounded is
       --  string.
 
       if Low = 0 then
-         Reference (Empty_Shared_String'Access);
          DR := Empty_Shared_String'Access;
 
       else
@@ -1940,7 +1916,6 @@ package body Ada.Strings.Unbounded is
          --  is empty, reuse empty shared string.
 
          if High = 0 or else DL = 0 then
-            Reference (Empty_Shared_String'Access);
             DR := Empty_Shared_String'Access;
 
          --  Otherwise, allocate new shared string and fill it
@@ -1973,7 +1948,6 @@ package body Ada.Strings.Unbounded is
       --  string.
 
       if Low = 0 then
-         Reference (Empty_Shared_String'Access);
          Source.Reference := Empty_Shared_String'Access;
          Unreference (SR);
 
@@ -1985,7 +1959,6 @@ package body Ada.Strings.Unbounded is
          --  is empty, reuse empty shared string.
 
          if High = 0 or else DL = 0 then
-            Reference (Empty_Shared_String'Access);
             Source.Reference := Empty_Shared_String'Access;
             Unreference (SR);
 
@@ -2029,7 +2002,6 @@ package body Ada.Strings.Unbounded is
       --  Result is empty slice, reuse empty shared string
 
       elsif Low > High then
-         Reference (Empty_Shared_String'Access);
          DR := Empty_Shared_String'Access;
 
       --  Otherwise, allocate new shared string and fill it
@@ -2064,7 +2036,6 @@ package body Ada.Strings.Unbounded is
       --  Result is empty slice, reuse empty shared string
 
       elsif Low > High then
-         Reference (Empty_Shared_String'Access);
          Target.Reference := Empty_Shared_String'Access;
          Unreference (TR);
 
@@ -2101,14 +2072,12 @@ package body Ada.Strings.Unbounded is
       Aux : Shared_String_Access := Item;
 
    begin
+      if Aux = Empty_Shared_String'Access then
+         return;
+      end if;
+
       if System.Atomic_Counters.Decrement (Aux.Counter) then
-
-         --  Reference counter of Empty_Shared_String should never reach
-         --  zero. We check here in case it wraps around.
-
-         if Aux /= Empty_Shared_String'Access then
-            Free (Aux);
-         end if;
+         Free (Aux);
       end if;
    end Unreference;
 

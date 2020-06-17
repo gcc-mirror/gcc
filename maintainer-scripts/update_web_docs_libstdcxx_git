@@ -1,0 +1,48 @@
+#!/bin/bash
+
+
+# "sh update_web_docs_libstdcxx_git"
+# Checks out a copy of the libstdc++-v3 "inner" documentation and puts
+# it in the onlinedocs area.  For an initial description of "inner"
+# docs, see the thread starting with 
+#     http://gcc.gnu.org/ml/libstdc++/2000-11/msg00475.html
+#####################################################################
+
+GITROOT=${GITROOT:-"/git/gcc.git"}
+GETTHIS='libstdc++-v3/doc/html'
+WWWDIR=/www/gcc/htdocs/onlinedocs/libstdc++
+#WWWDIR=/tmp/fake-onlinedocs-testing
+
+
+## No more changes should be needed.  Ha, right, whatever.
+#####################################################################
+
+FILTER="newer or same age version exists|0 blocks"
+
+PATH=/usr/local/bin:$PATH
+export GITROOT
+
+test -d $WWWDIR || /bin/mkdir $WWWDIR
+test -d $WWWDIR || { echo something is very wrong ; exit 1; }
+
+WORKDIR=/tmp/v3-doc-update.$$
+/bin/rm -rf $WORKDIR
+/bin/mkdir $WORKDIR
+cd $WORKDIR
+
+
+# checkout all the HTML files, get down into an interesting directory
+git -C $GITROOT archive master $GETTHIS | tar xf -
+cd $GETTHIS
+
+# copy the tree to the onlinedocs area, preserve directory structure
+find . -depth -print | cpio -pd $WWWDIR 2>&1 | egrep -v "$FILTER"
+
+err=${PIPESTATUS[1]}
+if [ $err -gt 0 ]; then
+    printf "\nCopying failed with error code %d.\n" $err
+fi
+
+cd /
+/bin/rm -rf $WORKDIR
+

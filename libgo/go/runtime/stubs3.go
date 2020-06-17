@@ -4,4 +4,4 @@
 
 package runtime
 
-func nanotime() int64
+func nanotime1() int64

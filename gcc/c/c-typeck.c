@@ -71,6 +71,9 @@ int in_sizeof;
 /* The level of nesting inside "typeof".  */
 int in_typeof;
 
+/* True when parsing OpenMP loop expressions.  */
+bool c_in_omp_for;
+
 /* The argument of last parsed sizeof expression, only to be tested
    if expr.original_code == SIZEOF_EXPR.  */
 tree c_last_sizeof_arg;
@@ -353,7 +356,28 @@ c_vla_type_p (const_tree t)
     return true;
   return false;
 }
-
+
+/* If NTYPE is a type of a non-variadic function with a prototype
+   and OTYPE is a type of a function without a prototype and ATTRS
+   contains attribute format, diagnosess and removes it from ATTRS.
+   Returns the result of build_type_attribute_variant of NTYPE and
+   the (possibly) modified ATTRS.  */
+
+static tree
+build_functype_attribute_variant (tree ntype, tree otype, tree attrs)
+{
+  if (!prototype_p (otype)
+      && prototype_p (ntype)
+      && lookup_attribute ("format", attrs))
+    {
+      warning_at (input_location, OPT_Wattributes,
+		  "%qs attribute cannot be applied to a function that "
+		  "does not take variable arguments", "format");
+      attrs = remove_attribute ("format", attrs);
+    }
+  return build_type_attribute_variant (ntype, attrs);
+
+}
 /* Return the composite type of two compatible types.
 
    We assume that comptypes has already been done and returned
@@ -504,9 +528,9 @@ composite_type (tree t1, tree t2)
 
 	/* Save space: see if the result is identical to one of the args.  */
 	if (valtype == TREE_TYPE (t1) && !TYPE_ARG_TYPES (t2))
-	  return build_type_attribute_variant (t1, attributes);
+	  return build_functype_attribute_variant (t1, t2, attributes);
 	if (valtype == TREE_TYPE (t2) && !TYPE_ARG_TYPES (t1))
-	  return build_type_attribute_variant (t2, attributes);
+	  return build_functype_attribute_variant (t2, t1, attributes);
 
 	/* Simple way if one arg fails to specify argument types.  */
 	if (TYPE_ARG_TYPES (t1) == NULL_TREE)
@@ -5709,10 +5733,14 @@ build_c_cast (location_t loc, tree type, tree expr)
 {
   tree value;
 
+  bool int_operands = EXPR_INT_CONST_OPERANDS (expr);
+
   if (TREE_CODE (expr) == EXCESS_PRECISION_EXPR)
     expr = TREE_OPERAND (expr, 0);
 
   value = expr;
+  if (int_operands)
+    value = remove_c_maybe_const_expr (value);
 
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
@@ -5942,6 +5970,14 @@ build_c_cast (location_t loc, tree type, tree expr)
 	       || TREE_CODE (expr) == REAL_CST
 	       || TREE_CODE (expr) == COMPLEX_CST)))
       value = build1 (NOP_EXPR, type, value);
+
+  /* If the expression has integer operands and so can occur in an
+     unevaluated part of an integer constant expression, ensure the
+     return value reflects this.  */
+  if (int_operands
+      && INTEGRAL_TYPE_P (type)
+      && !EXPR_INT_CONST_OPERANDS (value))
+    value = note_integer_operands (value);
 
   protected_set_expr_location (value, loc);
   return value;
@@ -6176,15 +6212,20 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
   if (!(is_atomic_op && modifycode != NOP_EXPR))
     {
       tree rhs_semantic_type = NULL_TREE;
-      if (TREE_CODE (newrhs) == EXCESS_PRECISION_EXPR)
+      if (!c_in_omp_for)
 	{
-	  rhs_semantic_type = TREE_TYPE (newrhs);
-	  newrhs = TREE_OPERAND (newrhs, 0);
+	  if (TREE_CODE (newrhs) == EXCESS_PRECISION_EXPR)
+	    {
+	      rhs_semantic_type = TREE_TYPE (newrhs);
+	      newrhs = TREE_OPERAND (newrhs, 0);
+	    }
+	  npc = null_pointer_constant_p (newrhs);
+	  newrhs = c_fully_fold (newrhs, false, NULL);
+	  if (rhs_semantic_type)
+	    newrhs = build1 (EXCESS_PRECISION_EXPR, rhs_semantic_type, newrhs);
 	}
-      npc = null_pointer_constant_p (newrhs);
-      newrhs = c_fully_fold (newrhs, false, NULL);
-      if (rhs_semantic_type)
-	newrhs = build1 (EXCESS_PRECISION_EXPR, rhs_semantic_type, newrhs);
+      else
+	npc = null_pointer_constant_p (newrhs);
       newrhs = convert_for_assignment (location, rhs_loc, lhstype, newrhs,
 				       rhs_origtype, ic_assign, npc,
 				       NULL_TREE, NULL_TREE, 0);
@@ -7712,12 +7753,15 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 
   STRIP_TYPE_NOPS (inside_init);
 
-  if (TREE_CODE (inside_init) == EXCESS_PRECISION_EXPR)
+  if (!c_in_omp_for)
     {
-      semantic_type = TREE_TYPE (inside_init);
-      inside_init = TREE_OPERAND (inside_init, 0);
+      if (TREE_CODE (inside_init) == EXCESS_PRECISION_EXPR)
+	{
+	  semantic_type = TREE_TYPE (inside_init);
+	  inside_init = TREE_OPERAND (inside_init, 0);
+	}
+      inside_init = c_fully_fold (inside_init, require_constant, &maybe_const);
     }
-  inside_init = c_fully_fold (inside_init, require_constant, &maybe_const);
 
   /* Initialization of an array of chars from a string constant
      optionally enclosed in braces.  */
@@ -8726,7 +8770,7 @@ pop_init_level (location_t loc, int implicit,
 	 the element, after verifying there is just one.  */
       if (vec_safe_is_empty (constructor_elements))
 	{
-	  if (!constructor_erroneous)
+	  if (!constructor_erroneous && constructor_type != error_mark_node)
 	    error_init (loc, "empty scalar initializer");
 	  ret.value = error_mark_node;
 	}
@@ -8803,13 +8847,19 @@ set_designator (location_t loc, bool array,
   enum tree_code subcode;
 
   /* Don't die if an entire brace-pair level is superfluous
-     in the containing level.  */
-  if (constructor_type == NULL_TREE)
+     in the containing level, or for an erroneous type.  */
+  if (constructor_type == NULL_TREE || constructor_type == error_mark_node)
     return true;
 
   /* If there were errors in this designator list already, bail out
      silently.  */
   if (designator_erroneous)
+    return true;
+
+  /* Likewise for an initializer for a variable-size type.  Those are
+     diagnosed in digest_init.  */
+  if (COMPLETE_TYPE_P (constructor_type)
+      && TREE_CODE (TYPE_SIZE (constructor_type)) != INTEGER_CST)
     return true;
 
   if (!designator_depth)
@@ -9922,8 +9972,14 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
     }
 
   /* Ignore elements of a brace group if it is entirely superfluous
-     and has already been diagnosed.  */
-  if (constructor_type == NULL_TREE)
+     and has already been diagnosed, or if the type is erroneous.  */
+  if (constructor_type == NULL_TREE || constructor_type == error_mark_node)
+    return;
+
+  /* Ignore elements of an initializer for a variable-size type.
+     Those are diagnosed in digest_init.  */
+  if (COMPLETE_TYPE_P (constructor_type)
+      && !poly_int_tree_p (TYPE_SIZE (constructor_type)))
     return;
 
   if (!implicit && warn_designated_init && !was_designated
@@ -12430,7 +12486,7 @@ build_binary_op (location_t location, enum tree_code code,
 	  converted = 1;
 	  resultcode = xresultcode;
 
-	  if (c_inhibit_evaluation_warnings == 0)
+	  if (c_inhibit_evaluation_warnings == 0 && !c_in_omp_for)
 	    {
 	      bool op0_maybe_const = true;
 	      bool op1_maybe_const = true;
@@ -15162,7 +15218,8 @@ c_build_qualified_type (tree type, int type_quals, tree orig_qual_type,
 		   : build_qualified_type (type, type_quals));
   /* A variant type does not inherit the list of incomplete vars from the
      type main variant.  */
-  if (RECORD_OR_UNION_TYPE_P (var_type)
+  if ((RECORD_OR_UNION_TYPE_P (var_type)
+       || TREE_CODE (var_type) == ENUMERAL_TYPE)
       && TYPE_MAIN_VARIANT (var_type) != var_type)
     C_TYPE_INCOMPLETE_VARS (var_type) = 0;
   return var_type;

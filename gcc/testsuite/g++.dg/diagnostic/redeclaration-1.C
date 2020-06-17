@@ -1,5 +1,5 @@
 void
-foo (int i)
+foo (int i) // { dg-message "10:.int i. previously declared here" }
 {
   int i  // { dg-error "7:declaration of .int i. shadows a parameter" }
     (0);

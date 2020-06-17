@@ -57,11 +57,11 @@
    as a consequence.
 
    See  "Efficient Field-sensitive pointer analysis for C" by "David
-   J. Pearce and Paul H. J. Kelly and Chris Hankin, at
+   J. Pearce and Paul H. J. Kelly and Chris Hankin", at
    http://citeseer.ist.psu.edu/pearce04efficient.html
 
    Also see "Ultra-fast Aliasing Analysis using CLA: A Million Lines
-   of C Code in a Second" by ""Nevin Heintze and Olivier Tardieu" at
+   of C Code in a Second" by "Nevin Heintze and Olivier Tardieu" at
    http://citeseer.ist.psu.edu/heintze01ultrafast.html
 
    There are three types of real constraint expressions, DEREF,
@@ -84,7 +84,7 @@
    Each variable for a structure field has
 
    1. "size", that tells the size in bits of that field.
-   2. "fullsize, that tells the size in bits of the entire structure.
+   2. "fullsize", that tells the size in bits of the entire structure.
    3. "offset", that tells the offset in bits from the beginning of the
    structure to this field.
 
@@ -188,7 +188,7 @@
 
    We probably should compute a per-function unit-ESCAPE solution
    propagating it simply like the clobber / uses solutions.  The
-   solution can go alongside the non-IPA espaced solution and be
+   solution can go alongside the non-IPA escaped solution and be
    used to query which vars escape the unit through a function.
    This is also required to make the escaped-HEAP trick work in IPA mode.
 
@@ -5008,11 +5008,12 @@ find_func_aliases (struct function *fn, gimple *origt)
 		   || code == FLOOR_MOD_EXPR
 		   || code == ROUND_MOD_EXPR)
 	    /* Division and modulo transfer the pointer from the LHS.  */
-	    get_constraint_for_rhs (gimple_assign_rhs1 (t), &rhsc);
-	  else if ((CONVERT_EXPR_CODE_P (code)
-		    && !(POINTER_TYPE_P (gimple_expr_type (t))
-			 && !POINTER_TYPE_P (TREE_TYPE (rhsop))))
+	    get_constraint_for_ptr_offset (gimple_assign_rhs1 (t),
+					   NULL_TREE, &rhsc);
+	  else if (CONVERT_EXPR_CODE_P (code)
 		   || gimple_assign_single_p (t))
+	    /* See through conversions, single RHS are handled by
+	       get_constraint_for_rhs.  */
 	    get_constraint_for_rhs (rhsop, &rhsc);
 	  else if (code == COND_EXPR)
 	    {
@@ -5031,14 +5032,16 @@ find_func_aliases (struct function *fn, gimple *origt)
 	    ;
 	  else
 	    {
-	      /* All other operations are merges.  */
+	      /* All other operations are possibly offsetting merges.  */
 	      auto_vec<ce_s, 4> tmp;
 	      struct constraint_expr *rhsp;
 	      unsigned i, j;
-	      get_constraint_for_rhs (gimple_assign_rhs1 (t), &rhsc);
+	      get_constraint_for_ptr_offset (gimple_assign_rhs1 (t),
+					     NULL_TREE, &rhsc);
 	      for (i = 2; i < gimple_num_ops (t); ++i)
 		{
-		  get_constraint_for_rhs (gimple_op (t, i), &tmp);
+		  get_constraint_for_ptr_offset (gimple_op (t, i),
+						 NULL_TREE, &tmp);
 		  FOR_EACH_VEC_ELT (tmp, j, rhsp)
 		    rhsc.safe_push (*rhsp);
 		  tmp.truncate (0);
@@ -8082,7 +8085,8 @@ refered_from_nonlocal_fn (struct cgraph_node *node, void *data)
 {
   bool *nonlocal_p = (bool *)data;
   *nonlocal_p |= (node->used_from_other_partition
-		  || node->externally_visible
+		  || DECL_EXTERNAL (node->decl)
+		  || TREE_PUBLIC (node->decl)
 		  || node->force_output
 		  || lookup_attribute ("noipa", DECL_ATTRIBUTES (node->decl)));
   return false;
@@ -8094,7 +8098,8 @@ refered_from_nonlocal_var (struct varpool_node *node, void *data)
 {
   bool *nonlocal_p = (bool *)data;
   *nonlocal_p |= (node->used_from_other_partition
-		  || node->externally_visible
+		  || DECL_EXTERNAL (node->decl)
+		  || TREE_PUBLIC (node->decl)
 		  || node->force_output);
   return false;
 }
@@ -8143,7 +8148,8 @@ ipa_pta_execute (void)
 	 For local functions we see all callers and thus do not need initial
 	 constraints for parameters.  */
       bool nonlocal_p = (node->used_from_other_partition
-			 || node->externally_visible
+			 || DECL_EXTERNAL (node->decl)
+			 || TREE_PUBLIC (node->decl)
 			 || node->force_output
 			 || lookup_attribute ("noipa",
 					      DECL_ATTRIBUTES (node->decl)));
@@ -8157,7 +8163,8 @@ ipa_pta_execute (void)
 	  && from != constraints.length ())
 	{
 	  fprintf (dump_file,
-		   "Generating intial constraints for %s", node->name ());
+		   "Generating initial constraints for %s",
+		   node->dump_name ());
 	  if (DECL_ASSEMBLER_NAME_SET_P (node->decl))
 	    fprintf (dump_file, " (%s)",
 		     IDENTIFIER_POINTER
@@ -8183,8 +8190,9 @@ ipa_pta_execute (void)
 
       /* For the purpose of IPA PTA unit-local globals are not
          escape points.  */
-      bool nonlocal_p = (var->used_from_other_partition
-			 || var->externally_visible
+      bool nonlocal_p = (DECL_EXTERNAL (var->decl)
+			 || TREE_PUBLIC (var->decl)
+			 || var->used_from_other_partition
 			 || var->force_output);
       var->call_for_symbol_and_aliases (refered_from_nonlocal_var,
 					&nonlocal_p, true);
@@ -8214,7 +8222,7 @@ ipa_pta_execute (void)
       if (dump_file)
 	{
 	  fprintf (dump_file,
-		   "Generating constraints for %s", node->name ());
+		   "Generating constraints for %s", node->dump_name ());
 	  if (DECL_ASSEMBLER_NAME_SET_P (node->decl))
 	    fprintf (dump_file, " (%s)",
 		     IDENTIFIER_POINTER

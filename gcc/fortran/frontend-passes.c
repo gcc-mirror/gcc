@@ -3190,7 +3190,7 @@ matmul_lhs_realloc (gfc_expr *c, gfc_expr *a, gfc_expr *b,
   gcc_assert (ar && ar->type == AR_FULL);
 
   /* c comes in as a full ref.  Change it into a copy and make it into an
-     element ref so it has the right form for for ALLOCATE.  In the same
+     element ref so it has the right form for ALLOCATE.  In the same
      switch statement, also generate the size comparison for the secod IF
      statement.  */
 
@@ -5258,6 +5258,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	      WALK_SUBEXPR (co->ext.dt->extra_comma);
 	      break;
 
+	    case EXEC_OACC_ATOMIC:
 	    case EXEC_OMP_ATOMIC:
 	      in_omp_atomic = true;
 	      break;

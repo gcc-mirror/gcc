@@ -120,6 +120,7 @@ struct mangled_decl_hash : ggc_remove <tree>
     return candidate == name;
   }
 
+  static const bool empty_zero_p = true;
   static inline void mark_empty (value_type &p) {p = NULL_TREE;}
   static inline bool is_empty (value_type p) {return !p;}
 
@@ -1172,6 +1173,9 @@ is_late_template_attribute (tree attr, tree decl)
       && is_attribute_p ("omp declare simd", name))
     return true;
 
+  if (args == error_mark_node)
+    return false;
+
   /* An attribute pack is clearly dependent.  */
   if (args && PACK_EXPANSION_P (args))
     return true;
@@ -1190,8 +1194,7 @@ is_late_template_attribute (tree attr, tree decl)
 	  && identifier_p (t))
 	continue;
 
-      if (value_dependent_expression_p (t)
-	  || type_dependent_expression_p (t))
+      if (value_dependent_expression_p (t))
 	return true;
     }
 
@@ -1228,7 +1231,7 @@ is_late_template_attribute (tree attr, tree decl)
    the declaration itself is dependent, so all attributes should be applied
    at instantiation time.  */
 
-static tree
+tree
 splice_template_attributes (tree *attr_p, tree decl)
 {
   tree *p = attr_p;
@@ -2328,26 +2331,30 @@ static tree
 min_vis_r (tree *tp, int *walk_subtrees, void *data)
 {
   int *vis_p = (int *)data;
+  int this_vis = VISIBILITY_DEFAULT;
   if (! TYPE_P (*tp))
-    {
-      *walk_subtrees = 0;
-    }
+    *walk_subtrees = 0;
+  else if (typedef_variant_p (*tp))
+    /* Look through typedefs despite cp_walk_subtrees.  */
+    this_vis = type_visibility (DECL_ORIGINAL_TYPE (TYPE_NAME (*tp)));
   else if (OVERLOAD_TYPE_P (*tp)
 	   && !TREE_PUBLIC (TYPE_MAIN_DECL (*tp)))
     {
-      *vis_p = VISIBILITY_ANON;
-      return *tp;
+      this_vis = VISIBILITY_ANON;
+      *walk_subtrees = 0;
     }
-  else if (CLASS_TYPE_P (*tp)
-	   && CLASSTYPE_VISIBILITY (*tp) > *vis_p)
-    *vis_p = CLASSTYPE_VISIBILITY (*tp);
+  else if (CLASS_TYPE_P (*tp))
+    {
+      this_vis = CLASSTYPE_VISIBILITY (*tp);
+      *walk_subtrees = 0;
+    }
   else if (TREE_CODE (*tp) == ARRAY_TYPE
 	   && uses_template_parms (TYPE_DOMAIN (*tp)))
-    {
-      int evis = expr_visibility (TYPE_MAX_VALUE (TYPE_DOMAIN (*tp)));
-      if (evis > *vis_p)
-	*vis_p = evis;
-    }
+    this_vis = expr_visibility (TYPE_MAX_VALUE (TYPE_DOMAIN (*tp)));
+
+  if (this_vis > *vis_p)
+    *vis_p = this_vis;
+
   return NULL;
 }
 
@@ -2526,6 +2533,21 @@ determine_visibility (tree decl)
     }
   else if (DECL_LANG_SPECIFIC (decl) && DECL_USE_TEMPLATE (decl))
     template_decl = decl;
+
+  if (TREE_CODE (decl) == TYPE_DECL
+      && LAMBDA_TYPE_P (TREE_TYPE (decl))
+      && CLASSTYPE_LAMBDA_EXPR (TREE_TYPE (decl)) != error_mark_node)
+    if (tree extra = LAMBDA_TYPE_EXTRA_SCOPE (TREE_TYPE (decl)))
+      {
+	/* The lambda's visibility is limited by that of its extra
+	   scope.  */
+	int vis = 0;
+	if (TYPE_P (extra))
+	  vis = type_visibility (extra);
+	else
+	  vis = expr_visibility (extra);
+	constrain_visibility (decl, vis, false);
+      }
 
   /* If DECL is a member of a class, visibility specifiers on the
      class can influence the visibility of the DECL.  */
@@ -3213,6 +3235,33 @@ build_cleanup (tree decl)
   return clean;
 }
 
+/* GUARD is a helper variable for DECL; make them have the same linkage and
+   visibility.  */
+
+void
+copy_linkage (tree guard, tree decl)
+{
+  TREE_PUBLIC (guard) = TREE_PUBLIC (decl);
+  TREE_STATIC (guard) = TREE_STATIC (decl);
+  DECL_COMMON (guard) = DECL_COMMON (decl);
+  DECL_COMDAT (guard) = DECL_COMDAT (decl);
+  if (TREE_STATIC (guard))
+    {
+      CP_DECL_THREAD_LOCAL_P (guard) = CP_DECL_THREAD_LOCAL_P (decl);
+      set_decl_tls_model (guard, DECL_TLS_MODEL (decl));
+      if (DECL_ONE_ONLY (decl))
+	make_decl_one_only (guard, cxx_comdat_group (guard));
+      if (TREE_PUBLIC (decl))
+	DECL_WEAK (guard) = DECL_WEAK (decl);
+      /* Also check vague_linkage_p, as DECL_WEAK and DECL_ONE_ONLY might not
+	 be set until import_export_decl at EOF.  */
+      if (vague_linkage_p (decl))
+	comdat_linkage (guard);
+      DECL_VISIBILITY (guard) = DECL_VISIBILITY (decl);
+      DECL_VISIBILITY_SPECIFIED (guard) = DECL_VISIBILITY_SPECIFIED (decl);
+    }
+}
+
 /* Returns the initialization guard variable for the variable DECL,
    which has static storage duration.  */
 
@@ -3235,18 +3284,7 @@ get_guard (tree decl)
 			  VAR_DECL, sname, guard_type);
 
       /* The guard should have the same linkage as what it guards.  */
-      TREE_PUBLIC (guard) = TREE_PUBLIC (decl);
-      TREE_STATIC (guard) = TREE_STATIC (decl);
-      DECL_COMMON (guard) = DECL_COMMON (decl);
-      DECL_COMDAT (guard) = DECL_COMDAT (decl);
-      CP_DECL_THREAD_LOCAL_P (guard) = CP_DECL_THREAD_LOCAL_P (decl);
-      set_decl_tls_model (guard, DECL_TLS_MODEL (decl));
-      if (DECL_ONE_ONLY (decl))
-	make_decl_one_only (guard, cxx_comdat_group (guard));
-      if (TREE_PUBLIC (decl))
-	DECL_WEAK (guard) = DECL_WEAK (decl);
-      DECL_VISIBILITY (guard) = DECL_VISIBILITY (decl);
-      DECL_VISIBILITY_SPECIFIED (guard) = DECL_VISIBILITY_SPECIFIED (decl);
+      copy_linkage (guard, decl);
 
       DECL_ARTIFICIAL (guard) = 1;
       DECL_IGNORED_P (guard) = 1;
@@ -5482,17 +5520,6 @@ mark_used (tree decl, tsubst_flags_t complain)
     used_types_insert (DECL_CONTEXT (decl));
 
   if (TREE_CODE (decl) == FUNCTION_DECL
-      && DECL_MAYBE_DELETED (decl))
-    {
-      /* ??? Switch other defaulted functions to use DECL_MAYBE_DELETED?  */
-      gcc_assert (special_function_p (decl) == sfk_comparison);
-
-      ++function_depth;
-      synthesize_method (decl);
-      --function_depth;
-    }
-
-  if (TREE_CODE (decl) == FUNCTION_DECL
       && !maybe_instantiate_noexcept (decl, complain))
     return false;
 
@@ -5633,7 +5660,7 @@ mark_used (tree decl, tsubst_flags_t complain)
       /* Remember the current location for a function we will end up
 	 synthesizing.  Then we can inform the user where it was
 	 required in the case of error.  */
-      if (DECL_ARTIFICIAL (decl))
+      if (decl_remember_implicit_trigger_p (decl))
 	DECL_SOURCE_LOCATION (decl) = input_location;
 
       /* Synthesizing an implicitly defined member function will result in

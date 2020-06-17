@@ -1,5 +1,5 @@
 // PR c++/92878 - Parenthesized init of aggregates in new-expression.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // Test new TYPE(...).
 
 int f ();

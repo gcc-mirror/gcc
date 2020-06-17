@@ -1739,3 +1739,69 @@ control_warning_option (unsigned int opt_index, int kind, const char *arg,
 	}
     }
 }
+
+/* Parse options in COLLECT_GCC_OPTIONS and push them on ARGV_OBSTACK.
+   Store number of arguments into ARGC_P.  */
+
+void
+parse_options_from_collect_gcc_options (const char *collect_gcc_options,
+					obstack *argv_obstack,
+					int *argc_p)
+{
+  char *argv_storage = xstrdup (collect_gcc_options);
+  int j, k;
+
+  for (j = 0, k = 0; argv_storage[j] != '\0'; ++j)
+    {
+      if (argv_storage[j] == '\'')
+	{
+	  obstack_ptr_grow (argv_obstack, &argv_storage[k]);
+	  ++j;
+	  do
+	    {
+	      if (argv_storage[j] == '\0')
+		fatal_error (input_location,
+			     "malformed %<COLLECT_GCC_OPTIONS%>");
+	      else if (strncmp (&argv_storage[j], "'\\''", 4) == 0)
+		{
+		  argv_storage[k++] = '\'';
+		  j += 4;
+		}
+	      else if (argv_storage[j] == '\'')
+		break;
+	      else
+		argv_storage[k++] = argv_storage[j++];
+	    }
+	  while (1);
+	  argv_storage[k++] = '\0';
+	}
+    }
+
+  obstack_ptr_grow (argv_obstack, NULL);
+  *argc_p = obstack_object_size (argv_obstack) / sizeof (void *) - 1;
+}
+
+/* Prepend -Xassembler for each option in COLLECT_AS_OPTIONS,
+   and push on O.  */
+
+void prepend_xassembler_to_collect_as_options (const char *collect_as_options,
+					       obstack *o)
+{
+  obstack opts_obstack;
+  int opts_count;
+
+  obstack_init (&opts_obstack);
+  parse_options_from_collect_gcc_options (collect_as_options,
+					  &opts_obstack, &opts_count);
+  const char **assembler_opts = XOBFINISH (&opts_obstack, const char **);
+
+  for (int i = 0; i < opts_count; i++)
+    {
+      obstack_grow (o, " '-Xassembler' ",
+		    strlen (" '-Xassembler' "));
+      const char *opt = assembler_opts[i];
+      obstack_1grow (o, '\'');
+      obstack_grow (o, opt, strlen (opt));
+      obstack_1grow (o, '\'');
+    }
+}

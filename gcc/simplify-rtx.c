@@ -1824,6 +1824,9 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
   if (CONST_SCALAR_INT_P (op) && is_a <scalar_int_mode> (mode, &result_mode))
     {
       unsigned int width = GET_MODE_PRECISION (result_mode);
+      if (width > MAX_BITSIZE_MODE_ANY_INT)
+	return 0;
+
       wide_int result;
       scalar_int_mode imode = (op_mode == VOIDmode
 			       ? result_mode
@@ -1968,6 +1971,9 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 	   && is_int_mode (mode, &result_mode))
     {
       unsigned int width = GET_MODE_PRECISION (result_mode);
+      if (width > MAX_BITSIZE_MODE_ANY_INT)
+	return 0;
+
       /* Although the overflow semantics of RTL's FIX and UNSIGNED_FIX
 	 operators are intentionally left unspecified (to ease implementation
 	 by target backends), for consistency, this routine implements the
@@ -2209,6 +2215,53 @@ mask_to_comparison (int mask)
     }
 }
 
+/* Return true if CODE is valid for comparisons of mode MODE, false
+   otherwise.
+
+   It is always safe to return false, even if the code was valid for the
+   given mode as that will merely suppress optimizations.  */
+
+static bool
+comparison_code_valid_for_mode (enum rtx_code code, enum machine_mode mode)
+{
+  switch (code)
+    {
+      /* These are valid for integral, floating and vector modes.  */
+      case NE:
+      case EQ:
+      case GE:
+      case GT:
+      case LE:
+      case LT:
+	return (INTEGRAL_MODE_P (mode)
+		|| FLOAT_MODE_P (mode)
+		|| VECTOR_MODE_P (mode));
+
+      /* These are valid for floating point modes.  */
+      case LTGT:
+      case UNORDERED:
+      case ORDERED:
+      case UNEQ:
+      case UNGE:
+      case UNGT:
+      case UNLE:
+      case UNLT:
+	return FLOAT_MODE_P (mode);
+
+      /* These are filtered out in simplify_logical_operation, but
+	 we check for them too as a matter of safety.   They are valid
+	 for integral and vector modes.  */
+      case GEU:
+      case GTU:
+      case LEU:
+      case LTU:
+	return INTEGRAL_MODE_P (mode) || VECTOR_MODE_P (mode);
+
+      default:
+	gcc_unreachable ();
+    }
+}
+				       
 /* Simplify a logical operation CODE with result mode MODE, operating on OP0
    and OP1, which should be both relational operations.  Return 0 if no such
    simplification is possible.  */
@@ -2245,6 +2298,10 @@ simplify_logical_relational_operation (enum rtx_code code, machine_mode mode,
     return const_true_rtx;
 
   code = mask_to_comparison (mask);
+
+  /* Many comparison codes are only valid for certain mode classes.  */
+  if (!comparison_code_valid_for_mode (code, mode))
+    return 0;
 
   op0 = XEXP (op1, 0);
   op1 = XEXP (op1, 1);
@@ -3641,9 +3698,21 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	{
 	  rtx tmp = gen_int_shift_amount
 	    (inner_mode, INTVAL (XEXP (SUBREG_REG (op0), 1)) + INTVAL (op1));
-	  tmp = simplify_gen_binary (code, inner_mode,
-				     XEXP (SUBREG_REG (op0), 0),
-				     tmp);
+
+	 /* Combine would usually zero out the value when combining two
+	    local shifts and the range becomes larger or equal to the mode.
+	    However since we fold away one of the shifts here combine won't
+	    see it so we should immediately zero the result if it's out of
+	    range.  */
+	 if (code == LSHIFTRT
+	     && INTVAL (tmp) >= GET_MODE_BITSIZE (inner_mode))
+	  tmp = const0_rtx;
+	 else
+	   tmp = simplify_gen_binary (code,
+				      inner_mode,
+				      XEXP (SUBREG_REG (op0), 0),
+				      tmp);
+
 	  return lowpart_subreg (int_mode, tmp, inner_mode);
 	}
 
@@ -4422,7 +4491,8 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
   scalar_int_mode int_mode;
   if (is_a <scalar_int_mode> (mode, &int_mode)
       && CONST_SCALAR_INT_P (op0)
-      && CONST_SCALAR_INT_P (op1))
+      && CONST_SCALAR_INT_P (op1)
+      && GET_MODE_PRECISION (int_mode) <= MAX_BITSIZE_MODE_ANY_INT)
     {
       wide_int result;
       wi::overflow_type overflow;

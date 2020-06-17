@@ -4,6 +4,7 @@
 
 // Package utf8 implements functions and constants to support text encoded in
 // UTF-8. It includes functions to translate between runes and UTF-8 byte sequences.
+// See https://en.wikipedia.org/wiki/UTF-8
 package utf8
 
 // The conditions RuneError==unicode.ReplacementChar and
@@ -13,7 +14,7 @@ package utf8
 // Numbers fundamental to the encoding.
 const (
 	RuneError = '\uFFFD'     // the "error" Rune or "Unicode replacement character"
-	RuneSelf  = 0x80         // characters below Runeself are represented as themselves in a single byte.
+	RuneSelf  = 0x80         // characters below RuneSelf are represented as themselves in a single byte.
 	MaxRune   = '\U0010FFFF' // Maximum valid Unicode code point.
 	UTFMax    = 4            // maximum number of bytes of a UTF-8 encoded Unicode character.
 )

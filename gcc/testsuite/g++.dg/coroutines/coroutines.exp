@@ -1,0 +1,50 @@
+#   Copyright (C) 2018-2020 Free Software Foundation, Inc.
+
+# Contributed by Iain Sandoe <iain@sandoe.co.uk> under contract to Facebook.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Test C++ coroutines, requires c++17; doesn't, at present, seem much 
+# point in repeating these for other versions.
+
+# Load support procs.
+load_lib g++-dg.exp
+
+# If a testcase doesn't have special options, use these.
+global DEFAULT_CXXFLAGS
+if ![info exists DEFAULT_CXXFLAGS] then {
+    set DEFAULT_CXXFLAGS " -pedantic-errors -Wno-long-long"
+}
+
+set DEFAULT_COROFLAGS $DEFAULT_CXXFLAGS
+lappend DEFAULT_COROFLAGS "-std=c++20"
+
+dg-init
+
+# Run the tests.
+# g++-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] \
+#        "" $DEFAULT_COROFLAGS
+
+foreach test [lsort [find $srcdir/$subdir {*.[CH]}]] {
+    if [runtest_file_p $runtests $test] {
+        set nshort [file tail [file dirname $test]]/[file tail $test]
+        verbose "Testing $nshort $DEFAULT_COROFLAGS" 1
+        dg-test $test "" $DEFAULT_COROFLAGS
+        set testcase [string range $test [string length "$srcdir/"] end]
+    }
+}
+
+# done.
+dg-finish

@@ -105,6 +105,11 @@
    port.  */
 #define TARGET_PTRMEMFUNC_VBIT_LOCATION ptrmemfunc_vbit_in_delta
 
+
+/* Emit calls to libgcc helpers for atomic operations for runtime detection
+   of LSE instructions.  */
+#define TARGET_OUTLINE_ATOMICS (aarch64_flag_outline_atomics)
+
 /* Align definitions of arrays, unions and structures so that
    initializations and copies can be made more efficient.  This is not
    ABI-changing, so it only affects places where we can see the
@@ -211,6 +216,12 @@ extern unsigned aarch64_architecture_version;
 /* Brain half-precision floating-point (BFloat16) Extension.  */
 #define AARCH64_FL_BF16	      (1ULL << 36)
 
+/* 32-bit Floating-point Matrix Multiply (F32MM) extensions.  */
+#define AARCH64_FL_F32MM      (1ULL << 37)
+
+/* 64-bit Floating-point Matrix Multiply (F64MM) extensions.  */
+#define AARCH64_FL_F64MM      (1ULL << 38)
+
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
 
@@ -248,6 +259,10 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_F16		   (aarch64_isa_flags & AARCH64_FL_F16)
 #define AARCH64_ISA_SVE            (aarch64_isa_flags & AARCH64_FL_SVE)
 #define AARCH64_ISA_SVE2	   (aarch64_isa_flags & AARCH64_FL_SVE2)
+#define AARCH64_ISA_SVE2_AES	   (aarch64_isa_flags & AARCH64_FL_SVE2_AES)
+#define AARCH64_ISA_SVE2_BITPERM  (aarch64_isa_flags & AARCH64_FL_SVE2_BITPERM)
+#define AARCH64_ISA_SVE2_SHA3	   (aarch64_isa_flags & AARCH64_FL_SVE2_SHA3)
+#define AARCH64_ISA_SVE2_SM4	   (aarch64_isa_flags & AARCH64_FL_SVE2_SM4)
 #define AARCH64_ISA_V8_3	   (aarch64_isa_flags & AARCH64_FL_V8_3)
 #define AARCH64_ISA_DOTPROD	   (aarch64_isa_flags & AARCH64_FL_DOTPROD)
 #define AARCH64_ISA_AES	           (aarch64_isa_flags & AARCH64_FL_AES)
@@ -263,6 +278,8 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_MEMTAG	   (aarch64_isa_flags & AARCH64_FL_MEMTAG)
 #define AARCH64_ISA_V8_6	   (aarch64_isa_flags & AARCH64_FL_V8_6)
 #define AARCH64_ISA_I8MM	   (aarch64_isa_flags & AARCH64_FL_I8MM)
+#define AARCH64_ISA_F32MM	   (aarch64_isa_flags & AARCH64_FL_F32MM)
+#define AARCH64_ISA_F64MM	   (aarch64_isa_flags & AARCH64_FL_F64MM)
 #define AARCH64_ISA_BF16	   (aarch64_isa_flags & AARCH64_FL_BF16)
 
 /* Crypto is an optional extension to AdvSIMD.  */
@@ -297,10 +314,22 @@ extern unsigned aarch64_architecture_version;
 #define TARGET_DOTPROD (TARGET_SIMD && AARCH64_ISA_DOTPROD)
 
 /* SVE instructions, enabled through +sve.  */
-#define TARGET_SVE (AARCH64_ISA_SVE)
+#define TARGET_SVE (!TARGET_GENERAL_REGS_ONLY && AARCH64_ISA_SVE)
 
 /* SVE2 instructions, enabled through +sve2.  */
-#define TARGET_SVE2 (AARCH64_ISA_SVE2)
+#define TARGET_SVE2 (TARGET_SVE && AARCH64_ISA_SVE2)
+
+/* SVE2 AES instructions, enabled through +sve2-aes.  */
+#define TARGET_SVE2_AES (TARGET_SVE2 && AARCH64_ISA_SVE2_AES)
+
+/* SVE2 BITPERM instructions, enabled through +sve2-bitperm.  */
+#define TARGET_SVE2_BITPERM (TARGET_SVE2 && AARCH64_ISA_SVE2_BITPERM)
+
+/* SVE2 SHA3 instructions, enabled through +sve2-sha3.  */
+#define TARGET_SVE2_SHA3 (TARGET_SVE2 && AARCH64_ISA_SVE2_SHA3)
+
+/* SVE2 SM4 instructions, enabled through +sve2-sm4.  */
+#define TARGET_SVE2_SM4 (TARGET_SVE2 && AARCH64_ISA_SVE2_SM4)
 
 /* ARMv8.3-A features.  */
 #define TARGET_ARMV8_3	(AARCH64_ISA_V8_3)
@@ -325,10 +354,20 @@ extern unsigned aarch64_architecture_version;
 
 /* I8MM instructions are enabled through +i8mm.  */
 #define TARGET_I8MM (AARCH64_ISA_I8MM)
+#define TARGET_SVE_I8MM (TARGET_SVE && AARCH64_ISA_I8MM)
+
+/* F32MM instructions are enabled through +f32mm.  */
+#define TARGET_F32MM (AARCH64_ISA_F32MM)
+#define TARGET_SVE_F32MM (TARGET_SVE && AARCH64_ISA_F32MM)
+
+/* F64MM instructions are enabled through +f64mm.  */
+#define TARGET_F64MM (AARCH64_ISA_F64MM)
+#define TARGET_SVE_F64MM (TARGET_SVE && AARCH64_ISA_F64MM)
 
 /* BF16 instructions are enabled through +bf16.  */
 #define TARGET_BF16_FP (AARCH64_ISA_BF16)
 #define TARGET_BF16_SIMD (AARCH64_ISA_BF16 && TARGET_SIMD)
+#define TARGET_SVE_BF16 (TARGET_SVE && AARCH64_ISA_BF16)
 
 /* Make sure this is always defined so we don't have to check for ifdefs
    but rather use normal ifs.  */
@@ -803,6 +842,23 @@ struct GTY (()) aarch64_frame
   /* Store FP,LR and setup a frame pointer.  */
   bool emit_frame_chain;
 
+  /* In each frame, we can associate up to two register saves with the
+     initial stack allocation.  This happens in one of two ways:
+
+     (1) Using an STR or STP with writeback to perform the initial
+	 stack allocation.  When EMIT_FRAME_CHAIN, the registers will
+	 be those needed to create a frame chain.
+
+	 Indicated by CALLEE_ADJUST != 0.
+
+     (2) Using a separate STP to set up the frame record, after the
+	 initial stack allocation but before setting up the frame pointer.
+	 This is used if the offset is too large to use writeback.
+
+	 Indicated by CALLEE_ADJUST == 0 && EMIT_FRAME_CHAIN.
+
+     These fields indicate which registers we've decided to handle using
+     (1) or (2), or INVALID_REGNUM if none.  */
   unsigned wb_candidate1;
   unsigned wb_candidate2;
 
@@ -819,6 +875,7 @@ typedef struct GTY (()) machine_function
   struct aarch64_frame frame;
   /* One entry for each hard register.  */
   bool reg_is_wrapped_separately[LAST_SAVED_REGNUM];
+  bool label_is_assembled;
 } machine_function;
 #endif
 
@@ -983,14 +1040,8 @@ typedef struct
    if given data not on the nominal alignment.  */
 #define STRICT_ALIGNMENT		TARGET_STRICT_ALIGN
 
-/* Define this macro to be non-zero if accessing less than a word of
-   memory is no faster than accessing a word of memory, i.e., if such
-   accesses require more than one instruction or if there is no
-   difference in cost.
-   Although there's no difference in instruction count or cycles,
-   in AArch64 we don't want to expand to a sub-word to a 64-bit access
-   if we don't have to, for power-saving reasons.  */
-#define SLOW_BYTE_ACCESS		0
+/* Enable wide bitfield accesses for more efficient bitfield code.  */
+#define SLOW_BYTE_ACCESS 1
 
 #define NO_FUNCTION_CSE	1
 
@@ -1010,12 +1061,10 @@ typedef struct
 
 #define SELECT_CC_MODE(OP, X, Y)	aarch64_select_cc_mode (OP, X, Y)
 
-#define REVERSIBLE_CC_MODE(MODE) 1
-
-#define REVERSE_CONDITION(CODE, MODE)		\
-  (((MODE) == CCFPmode || (MODE) == CCFPEmode)	\
-   ? reverse_condition_maybe_unordered (CODE)	\
-   : reverse_condition (CODE))
+/* Having an integer comparison mode guarantees that we can use
+   reverse_condition, but the usual restrictions apply to floating-point
+   comparisons.  */
+#define REVERSIBLE_CC_MODE(MODE) ((MODE) != CCFPmode && (MODE) != CCFPEmode)
 
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
   ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE), 2)
@@ -1120,13 +1169,13 @@ extern enum aarch64_code_model aarch64_cmodel;
 #define AARCH64_VALID_SIMD_DREG_MODE(MODE) \
   ((MODE) == V2SImode || (MODE) == V4HImode || (MODE) == V8QImode \
    || (MODE) == V2SFmode || (MODE) == V4HFmode || (MODE) == DImode \
-   || (MODE) == DFmode)
+   || (MODE) == DFmode || (MODE) == V4BFmode)
 
 /* Modes valid for AdvSIMD Q registers.  */
 #define AARCH64_VALID_SIMD_QREG_MODE(MODE) \
   ((MODE) == V4SImode || (MODE) == V8HImode || (MODE) == V16QImode \
    || (MODE) == V4SFmode || (MODE) == V8HFmode || (MODE) == V2DImode \
-   || (MODE) == V2DFmode)
+   || (MODE) == V2DFmode || (MODE) == V8BFmode)
 
 #define ENDIAN_LANE_N(NUNITS, N) \
   (BYTES_BIG_ENDIAN ? NUNITS - 1 - N : N)
@@ -1173,6 +1222,11 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    need it in many places in the backend.  Defined in aarch64-builtins.c.  */
 extern tree aarch64_fp16_type_node;
 extern tree aarch64_fp16_ptr_type_node;
+
+/* This type is the user-visible __bf16, and a pointer to that type.  Defined
+   in aarch64-builtins.c.  */
+extern tree aarch64_bf16_type_node;
+extern tree aarch64_bf16_ptr_type_node;
 
 /* The generic unwind code in libgcc does not initialize the frame pointer.
    So in order to unwind a function using a frame pointer, the very first

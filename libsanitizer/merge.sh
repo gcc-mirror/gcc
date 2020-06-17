@@ -4,8 +4,6 @@
 
 # This script merges libsanitizer sources from upstream.
 
-VCS=${1:-svn}
-
 get_upstream() {
   rm -rf upstream
   git clone https://github.com/llvm/llvm-project.git upstream
@@ -33,7 +31,7 @@ change_comment_headers() {
 # This function merges changes from the directory upstream_path to
 # the directory  local_path.
 merge() {
-  upstream_path=upstream/$1
+  upstream_path=upstream/compiler-rt/$1
   local_path=$2
   change_comment_headers $upstream_path
   echo MERGE: $upstream_path
@@ -47,10 +45,10 @@ merge() {
     elif [ -f $upstream_path/$f ]; then
       echo "FOUND IN UPSTREAM :" $f
       cp -v $upstream_path/$f $local_path
-      $VCS add $local_path/$f
+      git add $local_path/$f
     elif [ -f $local_path/$f ]; then
       echo "FOUND IN LOCAL    :" $f
-      $VCS rm $local_path/$f
+      git rm $local_path/$f
     fi
   done
 
@@ -76,7 +74,7 @@ merge lib/ubsan ubsan
 
 # Need to merge lib/builtins/assembly.h file:
 mkdir -p builtins
-cp -v upstream/lib/builtins/assembly.h builtins/assembly.h
+cp -v upstream/compiler-rt/lib/builtins/assembly.h builtins/assembly.h
 
 rm -rf upstream
 

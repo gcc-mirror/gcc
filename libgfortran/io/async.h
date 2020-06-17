@@ -229,44 +229,44 @@
 
 #if ASYNC_IO
 
+/* au->lock has to be held when calling this macro.  */
+
 #define SIGNAL(advcond) do{						\
-    INTERN_LOCK (&(advcond)->lock);					\
     (advcond)->pending = 1;						\
     DEBUG_PRINTF ("%s%-75s %20s():%-5d %18p\n", aio_prefix, DEBUG_ORANGE "SIGNAL: " DEBUG_NORM \
 		 #advcond, __FUNCTION__, __LINE__, (void *) advcond);	\
-    T_ERROR (__gthread_cond_broadcast, &(advcond)->signal);		\
-    INTERN_UNLOCK (&(advcond)->lock);					\
+    T_ERROR (__gthread_cond_broadcast, &(advcond)->signal);			\
   } while (0)
+
+/* Has to be entered with mutex locked.  */
 
 #define WAIT_SIGNAL_MUTEX(advcond, condition, mutex) do{		\
     __label__ finish;		       					\
-    INTERN_LOCK (&((advcond)->lock));					\
     DEBUG_PRINTF ("%s%-75s %20s():%-5d %18p\n", aio_prefix, DEBUG_BLUE "WAITING: " DEBUG_NORM \
 		 #advcond, __FUNCTION__, __LINE__, (void *) advcond);	\
-    if ((advcond)->pending || (condition)){				\
-      UNLOCK (mutex);							\
+    if ((advcond)->pending || (condition))				\
       goto finish;							\
-    }									\
-    UNLOCK (mutex);							\
-     while (!__gthread_cond_wait(&(advcond)->signal, &(advcond)->lock)) {	\
-       { int cond;							\
-	 LOCK (mutex); cond = condition; UNLOCK (mutex);	\
-	   if (cond){							\
-	     DEBUG_PRINTF ("%s%-75s %20s():%-5d %18p\n", aio_prefix, DEBUG_ORANGE "REC: " DEBUG_NORM \
-		  #advcond,  __FUNCTION__, __LINE__, (void *)advcond);	\
-	   break;				      			\
-        }							\
+    while (1)								\
+      {									\
+	int err_ret = __gthread_cond_wait(&(advcond)->signal, mutex);	\
+	if (err_ret) internal_error (NULL, "WAIT_SIGNAL_MUTEX failed");	\
+	if (condition)							\
+	  {								\
+	    DEBUG_PRINTF ("%s%-75s %20s():%-5d %18p\n", aio_prefix, DEBUG_ORANGE \
+			  "REC: " DEBUG_NORM				\
+			  #advcond,  __FUNCTION__, __LINE__, (void *)advcond); \
+	    break;				      			\
+	  }								\
       }									\
-    }									\
   finish:								\
-		 (advcond)->pending = 0;				\
-		 INTERN_UNLOCK (&((advcond)->lock));			\
-		 } while (0)
+    (advcond)->pending = 0;						\
+    UNLOCK (mutex);							\
+  } while (0)
+
+/* au->lock has to be held when calling this macro.  */
 
 #define REVOKE_SIGNAL(advcond) do{		\
-    INTERN_LOCK (&(advcond)->lock);		\
     (advcond)->pending = 0;			\
-    INTERN_UNLOCK (&(advcond)->lock);		\
   } while (0)
 
 #else
@@ -330,7 +330,6 @@ struct adv_cond
 {
 #if ASYNC_IO
   int pending;
-  __gthread_mutex_t lock;
   __gthread_cond_t signal;
 #endif
 };

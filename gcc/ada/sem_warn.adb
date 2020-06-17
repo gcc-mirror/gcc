@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1835,7 +1835,7 @@ package body Sem_Warn is
          elsif Nkind (Pref) = N_Explicit_Dereference then
             return True;
 
-            --  If prefix is itself a component reference or slice check prefix
+         --  If prefix is itself a component reference or slice check prefix
 
          elsif Nkind (Pref) = N_Slice
            or else Nkind (Pref) = N_Indexed_Component
@@ -1872,7 +1872,7 @@ package body Sem_Warn is
       --  have a reference from generated code, it is bogus (e.g. calls to init
       --  procs to set default discriminant values).
 
-      if not Comes_From_Source (N) then
+      if not Comes_From_Source (Original_Node (N)) then
          return;
       end if;
 
@@ -3386,11 +3386,11 @@ package body Sem_Warn is
 
          if True_Result then
             Error_Msg_N
-              ("condition can only be False if invalid values present??", Op);
+              ("condition can only be False if invalid values present?c?", Op);
 
          elsif False_Result then
             Error_Msg_N
-              ("condition can only be True if invalid values present??", Op);
+              ("condition can only be True if invalid values present?c?", Op);
          end if;
       end if;
    end Warn_On_Constant_Valid_Condition;
@@ -3643,9 +3643,6 @@ package body Sem_Warn is
    ---------------------------------
 
    procedure Warn_On_Overlapping_Actuals (Subp : Entity_Id; N : Node_Id) is
-      function Is_Covered_Formal (Formal : Node_Id) return Boolean;
-      --  Return True if Formal is covered by the rule
-
       function Refer_Same_Object
         (Act1 : Node_Id;
          Act2 : Node_Id) return Boolean;
@@ -3656,19 +3653,6 @@ package body Sem_Warn is
       --  two names statically denotes a renaming declaration whose renamed
       --  object_name is known to refer to the same object as the other name
       --  (RM 6.4.1(6.11/3))
-
-      -----------------------
-      -- Is_Covered_Formal --
-      -----------------------
-
-      function Is_Covered_Formal (Formal : Node_Id) return Boolean is
-      begin
-         return
-           Ekind_In (Formal, E_Out_Parameter, E_In_Out_Parameter)
-             and then (Is_Elementary_Type (Etype (Formal))
-                        or else Is_Record_Type (Etype (Formal))
-                        or else Is_Array_Type (Etype (Formal)));
-      end Is_Covered_Formal;
 
       -----------------------
       -- Refer_Same_Object --
@@ -3690,9 +3674,6 @@ package body Sem_Warn is
       Act2      : Node_Id;
       Form1     : Entity_Id;
       Form2     : Entity_Id;
-      Warn_Only : Boolean;
-      --  GNAT warns on overlapping in-out parameters of any type, not just for
-      --  elementary in-out parameters (as specified in RM 6.4.1 (15/3-17/3)).
 
    --  Start of processing for Warn_On_Overlapping_Actuals
 
@@ -3701,29 +3682,6 @@ package body Sem_Warn is
       if Ada_Version < Ada_2012 and then not Warn_On_Overlap then
          return;
       end if;
-
-      --  The call is illegal only if there are at least two in-out parameters
-      --  of the same elementary type.
-
-      Warn_Only := True;
-      Form1 := First_Formal (Subp);
-      while Present (Form1) loop
-         Form2 := Next_Formal (Form1);
-         while Present (Form2) loop
-            if Is_Elementary_Type (Etype (Form1))
-              and then Is_Elementary_Type (Etype (Form2))
-              and then Ekind (Form1) /= E_In_Parameter
-              and then Ekind (Form2) /= E_In_Parameter
-            then
-               Warn_Only := False;
-               exit;
-            end if;
-
-            Next_Formal (Form2);
-         end loop;
-
-         Next_Formal (Form1);
-      end loop;
 
       --  Exclude calls rewritten as enumeration literals
 
@@ -3738,91 +3696,137 @@ package body Sem_Warn is
       --  N that is passed as a parameter of mode in out or out to the call C,
       --  there is no other name among the other parameters of mode in out or
       --  out to C that is known to denote the same object (RM 6.4.1(6.15/3))
+      --  This has been clarified in AI12-0216 to indicate that the illegality
+      --  only occurs if both formals are of an elementary type, because of the
+      --  non-determinism on the write-back of the corresponding actuals.
+      --  Earlier versions of the language made it illegal if only one of the
+      --  actuals was an elementary parameter that overlapped a composite
+      --  actual, and both were writable.
 
       --  If appropriate warning switch is set, we also report warnings on
-      --  overlapping parameters that are record types or array types.
+      --  overlapping parameters that are composite types. Users find these
+      --  warnings useful, and they used in style guides.
+
+      --  It is also worthwhile to warn on overlaps of composite objects when
+      --  only one of the formals is (in)-out. Note that the RM rule above is
+      --  a legality rule. We choose to implement this check as a warning to
+      --  avoid major incompatibilities with legacy code.
+
+      --  Note also that the rule in 6.4.1 (6.17/3), introduced by AI12-0324,
+      --  is potentially more expensive to verify, and is not yet implemented.
 
       Form1 := First_Formal (Subp);
       Act1  := First_Actual (N);
       while Present (Form1) and then Present (Act1) loop
-         if Is_Covered_Formal (Form1) then
-            Form2 := First_Formal (Subp);
-            Act2  := First_Actual (N);
+         if Is_Generic_Type (Etype (Act1)) then
+            return;
+         end if;
+
+         --  One of the formals must be either (in)-out or composite.
+         --  The other must be (in)-out.
+
+         if Is_Elementary_Type (Etype (Act1))
+           and then Ekind (Form1) = E_In_Parameter
+         then
+            null;
+
+         else
+            Form2 := Next_Formal (Form1);
+            Act2  := Next_Actual (Act1);
             while Present (Form2) and then Present (Act2) loop
-               if Form1 /= Form2
-                 and then Is_Covered_Formal (Form2)
-                 and then Refer_Same_Object (Act1, Act2)
-               then
+               if Refer_Same_Object (Act1, Act2) then
+                  if Is_Generic_Type (Etype (Act2)) then
+                     return;
+                  end if;
+
+                  --  First case : two writable elementary parameters
+                  --  that overlap.
+
+                  if (Is_Elementary_Type (Etype (Form1))
+                    and then Is_Elementary_Type (Etype (Form2))
+                    and then Ekind (Form1) /= E_In_Parameter
+                    and then Ekind (Form2) /= E_In_Parameter)
+
+                  --  Second case : two composite parameters that overlap,
+                  --  one of which is writable.
+
+                    or else (Is_Composite_Type (Etype (Form1))
+                     and then Is_Composite_Type (Etype (Form2))
+                     and then (Ekind (Form1) /= E_In_Parameter
+                       or else Ekind (Form2) /= E_In_Parameter))
+
+                  --  Third case : an elementary writable parameter that
+                  --  overlaps a composite one.
+
+                    or else (Is_Elementary_Type (Etype (Form1))
+                     and then Ekind (Form1) /= E_In_Parameter
+                     and then Is_Composite_Type (Etype (Form2)))
+
+                   or else (Is_Elementary_Type (Etype (Form2))
+                     and then Ekind (Form2) /= E_In_Parameter
+                     and then Is_Composite_Type (Etype (Form1)))
+                  then
+
                   --  Guard against previous errors
 
-                  if Error_Posted (N)
-                    or else No (Etype (Act1))
-                    or else No (Etype (Act2))
-                  then
-                     null;
+                     if Error_Posted (N)
+                       or else No (Etype (Act1))
+                       or else No (Etype (Act2))
+                     then
+                        null;
 
-                  --  If the actual is a function call in prefix notation,
-                  --  there is no real overlap.
+                     --  If the actual is a function call in prefix notation,
+                     --  there is no real overlap.
 
-                  elsif Nkind (Act2) = N_Function_Call then
-                     null;
+                     elsif Nkind (Act2) = N_Function_Call then
+                        null;
 
-                  --  If type is not by-copy, assume that aliasing is intended
+                     --  If type is explicitly not by-copy, assume that
+                     --  aliasing is intended.
 
-                  elsif
-                    Present (Underlying_Type (Etype (Form1)))
-                      and then
-                        (Is_By_Reference_Type (Underlying_Type (Etype (Form1)))
-                          or else
-                            Convention (Underlying_Type (Etype (Form1))) =
-                                              Convention_Ada_Pass_By_Reference)
-                  then
-                     null;
+                     elsif
+                       Present (Underlying_Type (Etype (Form1)))
+                         and then
+                           (Is_By_Reference_Type
+                             (Underlying_Type (Etype (Form1)))
+                             or else
+                               Convention (Underlying_Type (Etype (Form1))) =
+                                            Convention_Ada_Pass_By_Reference)
+                     then
+                        null;
 
-                  --  Under Ada 2012 we only report warnings on overlapping
-                  --  arrays and record types if switch is set.
+                     --  Under Ada 2012 we only report warnings on overlapping
+                     --  arrays and record types if switch is set.
 
-                  elsif Ada_Version >= Ada_2012
-                    and then not Is_Elementary_Type (Etype (Form1))
-                    and then not Warn_On_Overlap
-                  then
-                     null;
+                     elsif Ada_Version >= Ada_2012
+                       and then not Is_Elementary_Type (Etype (Form1))
+                       and then not Warn_On_Overlap
+                     then
+                        null;
 
-                  --  Here we may need to issue overlap message
+                     --  Here we may need to issue overlap message
 
-                  else
-                     Error_Msg_Warn :=
+                     else
+                        Error_Msg_Warn :=
 
-                       --  Overlap checking is an error only in Ada 2012. For
-                       --  earlier versions of Ada, this is a warning.
+                          --  Overlap checking is an error only in Ada 2012.
+                          --  For earlier versions of Ada, this is a warning.
 
-                       Ada_Version < Ada_2012
+                          Ada_Version < Ada_2012
 
-                       --  Overlap is only illegal in Ada 2012 in the case of
-                       --  elementary types (passed by copy). For other types,
-                       --  we always have a warning in all Ada versions.
+                          --  Overlap is only illegal in Ada 2012 in the case
+                          --  of elementary types (passed by copy). For other
+                          --  types we always have a warning in all versions.
+                          --  This is clarified by AI12-0216.
 
-                       or else not Is_Elementary_Type (Etype (Form1))
+                          or else not
+                           (Is_Elementary_Type (Etype (Form1))
+                            and then Is_Elementary_Type (Etype (Form2)))
 
-                       --  debug flag -gnatd.E changes the error to a warning
-                       --  even in Ada 2012 mode.
+                          --  debug flag -gnatd.E changes the error to a
+                          --  warning even in Ada 2012 mode.
 
-                       or else Error_To_Warning
-                       or else Warn_Only;
-
-                     declare
-                        Act  : Node_Id;
-                        Form : Entity_Id;
-
-                     begin
-                        --  Find matching actual
-
-                        Act  := First_Actual (N);
-                        Form := First_Formal (Subp);
-                        while Act /= Act2 loop
-                           Next_Formal (Form);
-                           Next_Actual (Act);
-                        end loop;
+                          or else Error_To_Warning;
 
                         if Is_Elementary_Type (Etype (Act1))
                           and then Ekind (Form2) = E_In_Parameter
@@ -3836,12 +3840,12 @@ package body Sem_Warn is
 
                         --  If the call was written in prefix notation, and
                         --  thus its prefix before rewriting was a selected
-                        --  component, count only visible actuals in the call.
+                        --  component, count only visible actuals in call.
 
                         elsif Is_Entity_Name (First_Actual (N))
                           and then Nkind (Original_Node (N)) = Nkind (N)
                           and then Nkind (Name (Original_Node (N))) =
-                                                         N_Selected_Component
+                                                        N_Selected_Component
                           and then
                             Is_Entity_Name (Prefix (Name (Original_Node (N))))
                           and then
@@ -3851,21 +3855,21 @@ package body Sem_Warn is
                            if Act1 = First_Actual (N) then
                               Error_Msg_FE
                                 ("<<`IN OUT` prefix overlaps with "
-                                 & "actual for&", Act1, Form);
+                                 & "actual for&", Act1, Form2);
 
                            else
                               --  For greater clarity, give name of formal
 
-                              Error_Msg_Node_2 := Form;
+                              Error_Msg_Node_2 := Form2;
                               Error_Msg_FE
                                 ("<<writable actual for & overlaps with "
-                                 & "actual for&", Act1, Form);
+                                 & "actual for&", Act1, Form2);
                            end if;
 
                         else
                            --  For greater clarity, give name of formal
 
-                           Error_Msg_Node_2 := Form;
+                           Error_Msg_Node_2 := Form2;
 
                            --  This is one of the messages
 
@@ -3873,7 +3877,7 @@ package body Sem_Warn is
                              ("<<writable actual for & overlaps with "
                               & "actual for&", Act1, Form1);
                         end if;
-                     end;
+                     end if;
                   end if;
 
                   return;
@@ -4330,11 +4334,10 @@ package body Sem_Warn is
                --  the message if the variable is volatile, has an address
                --  clause, is aliased, or is a renaming, or is imported.
 
-               if Referenced_As_LHS_Check_Spec (E)
-                 and then No (Address_Clause (E))
-                 and then not Is_Volatile (E)
-               then
+               if Referenced_As_LHS_Check_Spec (E) then
                   if Warn_On_Modified_Unread
+                    and then No (Address_Clause (E))
+                    and then not Is_Volatile (E)
                     and then not Is_Imported (E)
                     and then not Is_Aliased (E)
                     and then No (Renamed_Object (E))
@@ -4690,7 +4693,7 @@ package body Sem_Warn is
                               return;
                            end if;
 
-                           X := Next (X);
+                           Next (X);
                         end loop;
                      end if;
                   end if;

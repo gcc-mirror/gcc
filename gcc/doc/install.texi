@@ -238,18 +238,20 @@ described below.
 
 @heading Tools/packages necessary for building GCC
 @table @asis
-@item ISO C++98 compiler
-Necessary to bootstrap GCC, although versions of GCC prior
-to 4.8 also allow bootstrapping with a ISO C89 compiler and versions
-of GCC prior to 3.4 also allow bootstrapping with a traditional
-(K&R) C compiler.
+@item ISO C++11 compiler
+Necessary to bootstrap GCC.
+
+Versions of GCC prior to 11 also allow bootstrapping with an ISO C++98
+compiler, versions of GCC prior to 4.8 also allow bootstrapping with a
+ISO C89 compiler, and versions of GCC prior to 3.4 also allow
+bootstrapping with a traditional (K&R) C compiler.
 
 To build all languages in a cross-compiler or other configuration where
 3-stage bootstrap is not performed, you need to start with an existing
-GCC binary (version 3.4 or later) because source code for language
+GCC binary (version 4.8 or later) because source code for language
 frontends other than C might use GCC extensions.
 
-Note that to bootstrap GCC with versions of GCC earlier than 3.4, you
+Note that to bootstrap GCC with versions of GCC earlier than 4.8, you
 may need to use @option{--disable-stage1-checking}, though
 bootstrapping the compiler with such earlier compilers is strongly
 discouraged.
@@ -349,15 +351,15 @@ systems' @command{tar} programs will also work, only try GNU
 
 Necessary when targeting Darwin, building @samp{libstdc++},
 and not using @option{--disable-symvers}.
-Necessary when targeting Solaris 2 with Sun @command{ld} and not using
-@option{--disable-symvers}.  The bundled @command{perl} in Solaris@tie{}8
-and up works.
+Necessary when targeting Solaris 2 with Solaris @command{ld} and not using
+@option{--disable-symvers}.
 
 Necessary when regenerating @file{Makefile} dependencies in libiberty.
 Necessary when regenerating @file{libiberty/functions.texi}.
 Necessary when generating manpages from Texinfo manuals.
-Used by various scripts to generate some files included in SVN (mainly
-Unicode-related and rarely changing) from source tables.
+Used by various scripts to generate some files included in the source
+repository (mainly Unicode-related and rarely changing) from source
+tables.
 
 Used by @command{automake}.
 
@@ -482,8 +484,8 @@ Necessary to regenerate the top level @file{Makefile.in} file from
 Necessary when modifying @file{*.l} files.
 
 Necessary to build GCC during development because the generated output
-files are not included in the SVN repository.  They are included in
-releases.
+files are not included in the version-controlled source repository.
+They are included in releases.
 
 @item Texinfo version 4.7 (or later)
 
@@ -495,7 +497,7 @@ create printable documentation in DVI or PDF format.  Texinfo version
 4.8 or later is required for @command{make pdf}.
 
 Necessary to build GCC documentation during development because the
-generated output files are not included in the SVN repository.  They are
+generated output files are not included in the repository.  They are
 included in releases.
 
 @item @TeX{} (any working version)
@@ -509,10 +511,10 @@ DVI or PDF files, respectively.
 Necessary to regenerate @file{jit/docs/_build/texinfo} from the @file{.rst}
 files in the directories below @file{jit/docs}.
 
-@item SVN (any version)
+@item git (any version)
 @itemx SSH (any version)
 
-Necessary to access the SVN repository.  Public releases and weekly
+Necessary to access the source repository.  Public releases and weekly
 snapshots of the development sources are also available via HTTPS@.
 
 @item GNU diffutils version 2.7 (or later)
@@ -547,7 +549,7 @@ own sources.
 @cindex Downloading GCC
 @cindex Downloading the Source
 
-GCC is distributed via @uref{http://gcc.gnu.org/svn.html,,SVN} and via
+GCC is distributed via @uref{http://gcc.gnu.org/git.html,,git} and via
 HTTPS as tarballs compressed with @command{gzip} or @command{bzip2}.
 
 Please refer to the @uref{http://gcc.gnu.org/releases.html,,releases web page}
@@ -606,9 +608,10 @@ for both native and cross targets.
 We use @var{srcdir} to refer to the toplevel source directory for
 GCC; we use @var{objdir} to refer to the toplevel build/object directory.
 
-If you obtained the sources via SVN, @var{srcdir} must refer to the top
-@file{gcc} directory, the one where the @file{MAINTAINERS} file can be
-found, and not its @file{gcc} subdirectory, otherwise the build will fail.
+If you obtained the sources by cloning the repository, @var{srcdir}
+must refer to the top @file{gcc} directory, the one where the
+@file{MAINTAINERS} file can be found, and not its @file{gcc}
+subdirectory, otherwise the build will fail.
 
 If either @var{srcdir} or @var{objdir} is located on an automounted NFS
 file system, the shell's built-in @command{pwd} command will return
@@ -681,6 +684,19 @@ You are of course welcome to forward bugs reported to you to the FSF,
 if you determine that they are not bugs in your modifications.
 
 The default value refers to the FSF's GCC bug tracker.
+
+@item --with-documentation-root-url=@var{url}
+Specify the URL root that contains GCC option documentation.  The @var{url}
+should end with a @code{/} character.
+
+The default value is @uref{https://gcc.gnu.org/onlinedocs/,,https://gcc.gnu.org/onlinedocs/}.
+
+@item --with-changes-root-url=@var{url}
+Specify the URL root that contains information about changes in GCC
+releases like @code{gcc-@var{version}/changes.html}.
+The @var{url} should end with a @code{/} character.
+
+The default value is @uref{https://gcc.gnu.org/,,https://gcc.gnu.org/}.
 
 @end table
 
@@ -1001,7 +1017,7 @@ is the target system triple, such as @samp{sparc-sun-solaris2.7}, and
 @item
 If the target system is the same that you are building on, check
 operating system specific directories (e.g.@: @file{/usr/ccs/bin} on
-Sun Solaris 2).
+Solaris 2).
 
 @item
 Check in the @env{PATH} for a tool whose name is prefixed by the
@@ -1543,7 +1559,7 @@ with @option{--enable-bootstrap}.
 @item --enable-generated-files-in-srcdir
 Neither the .c and .h files that are generated from Bison and flex nor the
 info manuals and man pages that are built from the .texi files are present
-in the SVN development tree.  When building GCC from that development tree,
+in the repository development tree.  When building GCC from that development tree,
 or from one of our snapshots, those generated files are placed in your
 build directory, which allows for the source to be in a readonly
 directory.
@@ -1837,41 +1853,50 @@ final releases.  The specific files which get @option{-Werror} are
 controlled by the Makefiles.
 
 @item --enable-checking
+@itemx --disable-checking
 @itemx --enable-checking=@var{list}
-When you specify this option, the compiler is built to perform internal
-consistency checks of the requested complexity.  This does not change the
-generated code, but adds error checking within the compiler.  This will
-slow down the compiler and may only work properly if you are building
-the compiler with GCC@.  This is @samp{yes,extra} by default when building
-from SVN or snapshots, but @samp{release} for releases.  The default
-for building the stage1 compiler is @samp{yes}.  More control
-over the checks may be had by specifying @var{list}.  The categories of
-checks available are @samp{yes} (most common checks
-@samp{assert,misc,tree,gc,rtlflag,runtime}), @samp{no} (no checks at
-all), @samp{all} (all but @samp{valgrind}), @samp{release} (cheapest
-checks @samp{assert,runtime}) or @samp{none} (same as @samp{no}).
-Individual checks can be enabled with these flags @samp{assert},
-@samp{df}, @samp{fold}, @samp{gc}, @samp{gcac}, @samp{misc}, @samp{rtl},
-@samp{rtlflag}, @samp{runtime}, @samp{tree}, @samp{extra} and @samp{valgrind}.
-@samp{extra} adds for @samp{misc} checking extra checks that might affect
-code generation and should therefore not differ between stage1 and later
-stages.
+This option controls performing internal consistency checks in the compiler.
+It does not change the generated code, but adds error checking of the
+requested complexity.  This slows down the compiler and may only work
+properly if you are building the compiler with GCC@.
 
-The @samp{valgrind} check requires the external @command{valgrind}
-simulator, available from @uref{http://valgrind.org/}.  The
-@samp{df}, @samp{rtl}, @samp{gcac} and @samp{valgrind} checks are very expensive.
-To disable all checking, @samp{--disable-checking} or
-@samp{--enable-checking=none} must be explicitly requested.  Disabling
-assertions will make the compiler and runtime slightly faster but
-increase the risk of undetected internal errors causing wrong code to be
-generated.
+When the option is not specified, the active set of checks depends on context.
+Namely, bootstrap stage 1 defaults to @samp{--enable-checking=yes}, builds
+from release branches or release archives default to
+@samp{--enable-checking=release}, and otherwise
+@samp{--enable-checking=yes,extra} is used.  When the option is
+specified without a @var{list}, the result is the same as
+@samp{--enable-checking=yes}.  Likewise, @samp{--disable-checking} is
+equivalent to @samp{--enable-checking=no}.
+
+The categories of checks available in @var{list} are @samp{yes} (most common
+checks @samp{assert,misc,gc,gimple,rtlflag,runtime,tree,types}), @samp{no}
+(no checks at all), @samp{all} (all but @samp{valgrind}), @samp{release}
+(cheapest checks @samp{assert,runtime}) or @samp{none} (same as @samp{no}).
+@samp{release} checks are always on and to disable them
+@samp{--disable-checking} or @samp{--enable-checking=no[,<other checks>]}
+must be explicitly requested.  Disabling assertions makes the compiler and
+runtime slightly faster but increases the risk of undetected internal errors
+causing wrong code to be generated.
+
+Individual checks can be enabled with these flags: @samp{assert}, @samp{df},
+@samp{extra}, @samp{fold}, @samp{gc}, @samp{gcac}, @samp{gimple},
+@samp{misc}, @samp{rtl}, @samp{rtlflag}, @samp{runtime}, @samp{tree},
+@samp{types} and @samp{valgrind}.  @samp{extra} extends @samp{misc}
+checking with extra checks that might affect code generation and should
+therefore not differ between stage1 and later stages in bootstrap.
+
+The @samp{valgrind} check requires the external @command{valgrind} simulator,
+available from @uref{http://valgrind.org/}.  The @samp{rtl} checks are
+expensive and the @samp{df}, @samp{gcac} and @samp{valgrind} checks are very
+expensive.
 
 @item --disable-stage1-checking
 @itemx --enable-stage1-checking
 @itemx --enable-stage1-checking=@var{list}
-If no @option{--enable-checking} option is specified the stage1
-compiler will be built with @samp{yes} checking enabled, otherwise
-the stage1 checking flags are the same as specified by
+This option affects only bootstrap build.  If no @option{--enable-checking}
+option is specified the stage1 compiler is built with @samp{yes} checking
+enabled, otherwise the stage1 checking flags are the same as specified by
 @option{--enable-checking}.  To build the stage1 compiler with
 different checking options use @option{--enable-stage1-checking}.
 The list of checking options is the same as for @option{--enable-checking}.
@@ -2093,10 +2118,19 @@ GLIBC 2.11 or above, otherwise disabled.
 Tells GCC to use @var{choice} as the default for @option{-fdiagnostics-color=}
 option (if not used explicitly on the command line).  @var{choice}
 can be one of @samp{never}, @samp{auto}, @samp{always}, and @samp{auto-if-env}
-where @samp{auto} is the default.  @samp{auto-if-env} means that
-@option{-fdiagnostics-color=auto} will be the default if @code{GCC_COLORS}
-is present and non-empty in the environment, and
+where @samp{auto} is the default.  @samp{auto-if-env} makes
+@option{-fdiagnostics-color=auto} the default if @env{GCC_COLORS}
+is present and non-empty in the environment of the compiler, and
 @option{-fdiagnostics-color=never} otherwise.
+
+@item --with-diagnostics-urls=@var{choice}
+Tells GCC to use @var{choice} as the default for @option{-fdiagnostics-urls=}
+option (if not used explicitly on the command line).  @var{choice}
+can be one of @samp{never}, @samp{auto}, @samp{always}, and @samp{auto-if-env}
+where @samp{auto} is the default.  @samp{auto-if-env} makes
+@option{-fdiagnostics-urls=auto} the default if @env{GCC_URLS}
+or @env{TERM_URLS} is present and non-empty in the environment of the
+compiler, and @option{-fdiagnostics-urls=never} otherwise.
 
 @item --enable-lto
 @itemx --disable-lto
@@ -2205,6 +2239,10 @@ target if target binutils supported.
 The following options only apply to building cross compilers.
 
 @table @code
+@item --with-toolexeclibdir=@var{dir}
+Specify the installation directory for libraries built with a cross compiler.
+The default is @option{$@{gcc_tooldir@}/lib}.
+
 @item --with-sysroot
 @itemx --with-sysroot=@var{dir}
 Tells GCC to consider @var{dir} as the root of a tree that contains
@@ -2322,7 +2360,7 @@ multilibs for @samp{double}, whereas the second option implies
 that @samp{long double} --- and hence also @samp{double} --- is always
 32@tie{}bits wide.
 
-@item --with-double-comparison=@{tristate|3|bool|2|libf7@}
+@item --with-double-comparison=@{tristate|bool|libf7@}
 Only supported for the AVR target since version@tie{}10.
 Specify what result format is returned by library functions that
 compare 64-bit floating point values (@code{DFmode}).
@@ -2436,6 +2474,37 @@ default locations.
 The following options apply to the build of the D runtime library.
 
 @table @code
+@item --enable-libphobos-checking
+@itemx --disable-libphobos-checking
+@itemx --enable-libphobos-checking=@var{list}
+This option controls whether run-time checks and contracts are compiled into
+the D runtime library.  When the option is not specified, the library is built
+with @samp{release} checking.  When the option is specified without a
+@var{list}, the result is the same as @samp{--enable-libphobos-checking=yes}.
+Likewise, @samp{--disable-libphobos-checking} is equivalent to
+@samp{--enable-libphobos-checking=no}.
+
+The categories of checks available in @var{list} are @samp{yes} (compiles
+libphobos with @option{-fno-release}), @samp{no} (compiles libphobos with
+@option{-frelease}), @samp{all} (same as @samp{yes}), @samp{none} or
+@samp{release} (same as @samp{no}).
+
+Individual checks available in @var{list} are @samp{assert} (compiles libphobos
+with an extra option @option{-fassert}).
+
+@item --with-libphobos-druntime-only
+@itemx --with-libphobos-druntime-only=@var{choice}
+Specify whether to build only the core D runtime library (druntime), or both
+the core and standard library (phobos) into libphobos.  This is useful for
+targets that have full support in druntime, but no or incomplete support
+in phobos.  @var{choice} can be one of @samp{auto}, @samp{yes}, and @samp{no}
+where @samp{auto} is the default.
+
+When the option is not specified, the default choice @samp{auto} means that it
+is inferred whether the target has support for the phobos standard library.
+When the option is specified without a @var{choice},  the result is the same as
+@samp{--with-libphobos-druntime-only=yes}.
+
 @item --with-target-system-zlib
 Use installed @samp{zlib} rather than that included with GCC@.  This needs
 to be available for each multilib variant, unless configured with
@@ -2495,7 +2564,7 @@ that type mismatches occur, this could be the cause.
 
 The solution is not to use such a directory for building GCC@.
 
-Similarly, when building from SVN or snapshots, or if you modify
+Similarly, when building from the source repository or snapshots, or if you modify
 @file{*.l} files, you need the Flex lexical analyzer generator
 installed.  If you do not modify @file{*.l} files, releases contain
 the Flex-generated files and you do not need Flex installed to build
@@ -2503,7 +2572,7 @@ them.  There is still one Flex-based lexical analyzer (part of the
 build machinery, not of GCC itself) that is used even if you only
 build the C front end.
 
-When building from SVN or snapshots, or if you modify Texinfo
+When building from the source repository or snapshots, or if you modify Texinfo
 documentation, you need version 4.7 or later of Texinfo installed if you
 want Info documentation to be regenerated.  Releases contain Info
 documentation pre-built for the unmodified documentation in the release.
@@ -3250,7 +3319,7 @@ AIX:
 @itemize
 @item
 @uref{http://www.bullfreeware.com,,Bull's Open Source Software Archive for
-for AIX 5L and AIX 6};
+for AIX 6 and AIX 7};
 
 @item
 @uref{http://www.perzl.org/aix/,,AIX Open Source Packages (AIX5L AIX 6.1
@@ -3272,9 +3341,6 @@ Solaris 2 (SPARC, Intel):
 @itemize
 @item
 @uref{https://www.opencsw.org/,,OpenCSW}
-
-@item
-@uref{http://jupiterrise.com/tgcware/,,TGCware}
 @end itemize
 
 @item
@@ -3548,22 +3614,22 @@ This is a synonym for @samp{x86_64-*-solaris2*}.
 @html
 <hr />
 @end html
-@anchor{amdgcn-unknown-amdhsa}
-@heading amdgcn-unknown-amdhsa
+@anchor{amdgcn-x-amdhsa}
+@heading amdgcn-*-amdhsa
 AMD GCN GPU target.
 
 Instead of GNU Binutils, you will need to install LLVM 6, or later, and copy
-@file{bin/llvm-mc} to @file{amdgcn-unknown-amdhsa/bin/as},
-@file{bin/lld} to @file{amdgcn-unknown-amdhsa/bin/ld},
-@file{bin/llvm-nm} to @file{amdgcn-unknown-amdhsa/bin/nm}, and
-@file{bin/llvm-ar} to both @file{bin/amdgcn-unknown-amdhsa-ar} and
-@file{bin/amdgcn-unknown-amdhsa-ranlib}.
+@file{bin/llvm-mc} to @file{amdgcn-amdhsa/bin/as},
+@file{bin/lld} to @file{amdgcn-amdhsa/bin/ld},
+@file{bin/llvm-nm} to @file{amdgcn-amdhsa/bin/nm}, and
+@file{bin/llvm-ar} to both @file{bin/amdgcn-amdhsa-ar} and
+@file{bin/amdgcn-amdhsa-ranlib}.
 
 Use Newlib (2019-01-16, or newer).
 
 To run the binaries, install the HSA Runtime from the
 @uref{https://rocm.github.io,,ROCm Platform}, and use
-@file{libexec/gcc/amdhsa-unknown-amdhsa/@var{version}/gcn-run} to launch them
+@file{libexec/gcc/amdhsa-amdhsa/@var{version}/gcn-run} to launch them
 on the GPU.
 
 @html
@@ -3980,29 +4046,27 @@ found on @uref{http://www.bitwizard.nl/sig11/,,www.bitwizard.nl}.
 @end html
 @anchor{ix86-x-solaris2}
 @heading i?86-*-solaris2*
-Use this for Solaris 11 or later on x86 and x86-64 systems.  Starting
+Use this for Solaris 11.3 or later on x86 and x86-64 systems.  Starting
 with GCC 4.7, there is also a 64-bit @samp{amd64-*-solaris2*} or
 @samp{x86_64-*-solaris2*} configuration that corresponds to
 @samp{sparcv9-sun-solaris2*}.
 
 It is recommended that you configure GCC to use the GNU assembler.  The
-versions included in Solaris 11, from GNU binutils 2.19 or
-newer (also available as @file{/usr/bin/gas} and
+versions included in Solaris 11.3, from GNU binutils 2.23.1 or
+newer (available as @file{/usr/bin/gas} and
 @file{/usr/gnu/bin/as}), work fine.  The current version, from GNU
-binutils 2.32, is known to work, but the version from GNU binutils 2.26
-must be avoided.  Recent versions of the Solaris assembler in
-@file{/usr/ccs/bin/as} work almost as well, though.
-@c FIXME: as patch requirements?
+binutils 2.34, is known to work.  Recent versions of the Solaris assembler in
+@file{/usr/bin/as} work almost as well, though.
 
-For linking, the Solaris linker, is preferred.  If you want to use the GNU
-linker instead, the version in Solaris 11, from GNU binutils 2.19 or
-newer (also in @file{/usr/gnu/bin/ld} and @file{/usr/bin/gld}), works,
-as does the latest version, from GNU binutils 2.32.
+For linking, the Solaris linker is preferred.  If you want to use the GNU
+linker instead, the version in Solaris 11.3, from GNU binutils 2.23.1 or
+newer (in @file{/usr/gnu/bin/ld} and @file{/usr/bin/gld}), works,
+as does the latest version, from GNU binutils 2.34.
 
 To use GNU @command{as}, configure with the options
 @option{--with-gnu-as --with-as=@//usr/@/gnu/@/bin/@/as}.  It may be necessary
 to configure with @option{--without-gnu-ld --with-ld=@//usr/@/ccs/@/bin/@/ld} to
-guarantee use of Sun @command{ld}.
+guarantee use of Solaris @command{ld}.
 @c FIXME: why --without-gnu-ld --with-ld?
 
 @html
@@ -4521,8 +4585,7 @@ This configuration is intended for embedded systems.
 @heading riscv32-*-elf
 The RISC-V RV32 instruction set.
 This configuration is intended for embedded systems.
-This (and all other RISC-V) targets are supported upstream as of the
-binutils 2.28 release.
+This (and all other RISC-V) targets require the binutils 2.30 release.
 
 @html
 <hr />
@@ -4530,8 +4593,7 @@ binutils 2.28 release.
 @anchor{riscv32-x-linux}
 @heading riscv32-*-linux
 The RISC-V RV32 instruction set running GNU/Linux.
-This (and all other RISC-V) targets are supported upstream as of the
-binutils 2.28 release.
+This (and all other RISC-V) targets require the binutils 2.30 release.
 
 @html
 <hr />
@@ -4540,8 +4602,7 @@ binutils 2.28 release.
 @heading riscv64-*-elf
 The RISC-V RV64 instruction set.
 This configuration is intended for embedded systems.
-This (and all other RISC-V) targets are supported upstream as of the
-binutils 2.28 release.
+This (and all other RISC-V) targets require the binutils 2.30 release.
 
 @html
 <hr />
@@ -4549,8 +4610,7 @@ binutils 2.28 release.
 @anchor{riscv64-x-linux}
 @heading riscv64-*-linux
 The RISC-V RV64 instruction set running GNU/Linux.
-This (and all other RISC-V) targets are supported upstream as of the
-binutils 2.28 release.
+This (and all other RISC-V) targets require the binutils 2.30 release.
 
 @html
 <hr />
@@ -4594,13 +4654,14 @@ Support for Solaris 10 has been removed in GCC 10.  Support for Solaris
 9 has been removed in GCC 5.  Support for Solaris 8 has been removed in
 GCC 4.8.  Support for Solaris 7 has been removed in GCC 4.6.
 
-Solaris 11 provides GCC 4.5.2, 4.7.3, and 4.8.2 as
-@command{/usr/gcc/4.5/bin/gcc} or similar.  Alternatively,
+Solaris 11.3 provides GCC 4.5.2, 4.7.3, and 4.8.2 as
+@command{/usr/gcc/4.5/bin/gcc} or similar.  Newer Solaris versions
+provide one or more of GCC 5, 7, and 9.  Alternatively,
 you can install a pre-built GCC to bootstrap and install GCC.  See the
 @uref{binaries.html,,binaries page} for details.
 
 The Solaris 2 @command{/bin/sh} will often fail to configure
-@samp{libstdc++-v3}or @samp{boehm-gc}.  We therefore recommend using the
+@samp{libstdc++-v3}.  We therefore recommend using the
 following initial sequence of commands
 
 @smallexample
@@ -4621,24 +4682,24 @@ Trying to use the linker and other tools in
 For example, the linker may hang indefinitely.  The fix is to remove
 @file{/usr/ucb} from your @env{PATH}.
 
-The build process works more smoothly with the legacy Sun tools so, if you
+The build process works more smoothly with the legacy Solaris tools so, if you
 have @file{/usr/xpg4/bin} in your @env{PATH}, we recommend that you place
 @file{/usr/bin} before @file{/usr/xpg4/bin} for the duration of the build.
 
 We recommend the use of the Solaris assembler or the GNU assembler, in
 conjunction with the Solaris linker.  The GNU @command{as}
-versions included in Solaris 11,
-from GNU binutils 2.19 or newer (also in @file{/usr/bin/gas} and
+versions included in Solaris 11.3,
+from GNU binutils 2.23.1 or newer (in @file{/usr/bin/gas} and
 @file{/usr/gnu/bin/as}), are known to work.
-The current version, from GNU binutils 2.32,
+The current version, from GNU binutils 2.34,
 is known to work as well.  Note that your mileage may vary
 if you use a combination of the GNU tools and the Solaris tools: while the
-combination GNU @command{as} + Sun @command{ld} should reasonably work,
-the reverse combination Sun @command{as} + GNU @command{ld} may fail to
+combination GNU @command{as} + Solaris @command{ld} should reasonably work,
+the reverse combination Solaris @command{as} + GNU @command{ld} may fail to
 build or cause memory corruption at runtime in some cases for C++ programs.
 @c FIXME: still?
 GNU @command{ld} usually works as well.  Again, the current
-version (2.32) is known to work, but generally lacks platform specific
+version (2.34) is known to work, but generally lacks platform specific
 features, so better stay with Solaris @command{ld}.  To use the LTO linker
 plugin (@option{-fuse-linker-plugin}) with GNU @command{ld}, GNU
 binutils @emph{must} be configured with @option{--enable-largefile}.
@@ -4648,6 +4709,21 @@ you need to have any version of GNU @command{c++filt}, which is part of
 GNU binutils.  @samp{libstdc++} symbol versioning will be disabled if no
 appropriate version is found.  Solaris @command{c++filt} from the Solaris
 Studio compilers does @emph{not} work.
+
+The versions of the GNU Multiple Precision Library (GMP), the MPFR
+library and the MPC library bundled with Solaris 11.3 and later are
+usually recent enough to match GCC's requirements.  There are two
+caveats:
+
+@itemize @bullet
+@item
+While the version of the GMP library in Solaris 11.3 works with GCC, you
+need to configure with @option{--with-gmp-include=/usr/include/gmp}.
+
+@item
+The version of the MPFR libary included in Solaris 11.3 is too old; you
+need to provide a more recent one.
+@end itemize
 
 @html
 <hr />
@@ -4670,7 +4746,7 @@ in @uref{prerequisites.html,,the prerequisites}.
 @anchor{sparc-sun-solaris2}
 @heading sparc-sun-solaris2*
 When GCC is configured to use GNU binutils 2.14 or later, the binaries
-produced are smaller than the ones produced using Sun's native tools;
+produced are smaller than the ones produced using Solaris native tools;
 this difference is quite significant for binaries containing debugging
 information.
 
@@ -4686,10 +4762,10 @@ When configuring the GNU Multiple Precision Library (GMP), the MPFR
 library or the MPC library on a Solaris 7 or later system, the canonical
 target triplet must be specified as the @command{build} parameter on the
 configure line.  This target triplet can be obtained by invoking @command{./config.guess} in the toplevel source directory of GCC (and
-not that of GMP or MPFR or MPC).  For example on a Solaris 9 system:
+not that of GMP or MPFR or MPC).  For example on a Solaris 11 system:
 
 @smallexample
-% ./configure --build=sparc-sun-solaris2.9 --prefix=xxx
+% ./configure --build=sparc-sun-solaris2.11 --prefix=xxx
 @end smallexample
 
 @html
@@ -4703,13 +4779,20 @@ not that of GMP or MPFR or MPC).  For example on a Solaris 9 system:
 @end html
 @anchor{sparc64-x-solaris2}
 @heading sparc64-*-solaris2*
+When configuring a 64-bit-default GCC on Solaris/SPARC, you must use a
+build compiler that generates 64-bit code, either by default or by
+specifying @samp{CC='gcc -m64' CXX='gcc-m64'} to @command{configure}.
+Additionally, you @emph{must} pass @option{--build=sparc64-sun-solaris2.11}
+or @option{--build=sparcv9-sun-solaris2.11} because @file{config.guess}
+misdetects this situation, which can cause build failures.
+
 When configuring the GNU Multiple Precision Library (GMP), the MPFR
 library or the MPC library, the canonical target triplet must be specified
 as the @command{build} parameter on the configure line.  For example
-on a Solaris 9 system:
+on a Solaris 11 system:
 
 @smallexample
-% ./configure --build=sparc64-sun-solaris2.9 --prefix=xxx
+% ./configure --build=sparc64-sun-solaris2.11 --prefix=xxx
 @end smallexample
 
 @html
@@ -4817,7 +4900,7 @@ can generate 64-bit x86-64 code with the @option{-m64} switch.  Since
 GCC 4.7, there is also a configuration that defaults to 64-bit code, but
 can generate 32-bit code with @option{-m32}.  To configure and build
 this way, you have to provide all support libraries like @file{libgmp}
-as 64-bit code, configure with @option{--target=x86_64-pc-solaris2.1x}
+as 64-bit code, configure with @option{--target=x86_64-pc-solaris2.11}
 and @samp{CC=gcc -m64}.
 
 @html

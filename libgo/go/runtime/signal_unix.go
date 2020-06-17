@@ -42,6 +42,38 @@ const (
 	_SIG_IGN uintptr = 1
 )
 
+// sigPreempt is the signal used for non-cooperative preemption.
+//
+// There's no good way to choose this signal, but there are some
+// heuristics:
+//
+// 1. It should be a signal that's passed-through by debuggers by
+// default. On Linux, this is SIGALRM, SIGURG, SIGCHLD, SIGIO,
+// SIGVTALRM, SIGPROF, and SIGWINCH, plus some glibc-internal signals.
+//
+// 2. It shouldn't be used internally by libc in mixed Go/C binaries
+// because libc may assume it's the only thing that can handle these
+// signals. For example SIGCANCEL or SIGSETXID.
+//
+// 3. It should be a signal that can happen spuriously without
+// consequences. For example, SIGALRM is a bad choice because the
+// signal handler can't tell if it was caused by the real process
+// alarm or not (arguably this means the signal is broken, but I
+// digress). SIGUSR1 and SIGUSR2 are also bad because those are often
+// used in meaningful ways by applications.
+//
+// 4. We need to deal with platforms without real-time signals (like
+// macOS), so those are out.
+//
+// We use SIGURG because it meets all of these criteria, is extremely
+// unlikely to be used by an application for its "real" meaning (both
+// because out-of-band data is basically unused and because SIGURG
+// doesn't report which socket has the condition, making it pretty
+// useless), and even if it is, the application has to be ready for
+// spurious SIGURG. SIGIO wouldn't be a bad choice either, but is more
+// likely to be used for real.
+const sigPreempt = _SIGURG
+
 // Stores the signal handlers registered before Go installed its own.
 // These signal handlers will be invoked in cases where Go doesn't want to
 // handle a particular signal (e.g., signal occurred on a non-Go thread).
@@ -251,10 +283,26 @@ func setProcessCPUProfiler(hz int32) {
 		}
 	} else {
 		// If the Go signal handler should be disabled by default,
-		// disable it if it is enabled.
+		// switch back to the signal handler that was installed
+		// when we enabled profiling. We don't try to handle the case
+		// of a program that changes the SIGPROF handler while Go
+		// profiling is enabled.
+		//
+		// If no signal handler was installed before, then start
+		// ignoring SIGPROF signals. We do this, rather than change
+		// to SIG_DFL, because there may be a pending SIGPROF
+		// signal that has not yet been delivered to some other thread.
+		// If we change to SIG_DFL here, the program will crash
+		// when that SIGPROF is delivered. We assume that programs
+		// that use profiling don't want to crash on a stray SIGPROF.
+		// See issue 19320.
 		if !sigInstallGoHandler(_SIGPROF) {
 			if atomic.Cas(&handlingSig[_SIGPROF], 1, 0) {
-				setsig(_SIGPROF, atomic.Loaduintptr(&fwdSig[_SIGPROF]))
+				h := atomic.Loaduintptr(&fwdSig[_SIGPROF])
+				if h == _SIG_DFL {
+					h = _SIG_IGN
+				}
+				setsig(_SIGPROF, h)
 			}
 		}
 	}
@@ -283,6 +331,52 @@ func sigpipe() {
 	dieFromSignal(_SIGPIPE)
 }
 
+// doSigPreempt handles a preemption signal on gp.
+func doSigPreempt(gp *g, ctxt *sigctxt, sigpc uintptr) {
+	// Check if this G wants to be preempted and is safe to
+	// preempt.
+	if wantAsyncPreempt(gp) && isAsyncSafePoint(gp, sigpc) {
+		// Inject a call to asyncPreempt.
+		// ctxt.pushCall(funcPC(asyncPreempt))
+		throw("pushCall not implemented")
+	}
+
+	// Acknowledge the preemption.
+	atomic.Xadd(&gp.m.preemptGen, 1)
+	atomic.Store(&gp.m.signalPending, 0)
+}
+
+// gccgo-specific definition.
+const pushCallSupported = false
+
+const preemptMSupported = pushCallSupported
+
+// preemptM sends a preemption request to mp. This request may be
+// handled asynchronously and may be coalesced with other requests to
+// the M. When the request is received, if the running G or P are
+// marked for preemption and the goroutine is at an asynchronous
+// safe-point, it will preempt the goroutine. It always atomically
+// increments mp.preemptGen after handling a preemption request.
+func preemptM(mp *m) {
+	if !pushCallSupported {
+		// This architecture doesn't support ctxt.pushCall
+		// yet, so doSigPreempt won't work.
+		return
+	}
+	if GOOS == "darwin" && (GOARCH == "arm" || GOARCH == "arm64") && !iscgo {
+		// On darwin, we use libc calls, and cgo is required on ARM and ARM64
+		// so we have TLS set up to save/restore G during C calls. If cgo is
+		// absent, we cannot save/restore G in TLS, and if a signal is
+		// received during C execution we cannot get the G. Therefore don't
+		// send signals.
+		// This can only happen in the go_bootstrap program (otherwise cgo is
+		// required).
+		return
+	}
+	// signalM(mp, sigPreempt)
+	throw("signalM not implemented")
+}
+
 // sigtrampgo is called from the signal handler function, sigtramp,
 // written in assembly code.
 // This is called by the signal handler, and the world may be stopped.
@@ -306,6 +400,16 @@ func sigtrampgo(sig uint32, info *_siginfo_t, ctx unsafe.Pointer) {
 			sigprofNonGo(pc)
 			return
 		}
+		if sig == sigPreempt && preemptMSupported && debug.asyncpreemptoff == 0 {
+			// This is probably a signal from preemptM sent
+			// while executing Go code but received while
+			// executing non-Go code.
+			// We got past sigfwdgo, so we know that there is
+			// no non-Go signal handler for sigPreempt.
+			// The default behavior for sigPreempt is to ignore
+			// the signal, so badsignal will be a no-op anyway.
+			return
+		}
 		badsignal(uintptr(sig), &c)
 		return
 	}
@@ -313,6 +417,183 @@ func sigtrampgo(sig uint32, info *_siginfo_t, ctx unsafe.Pointer) {
 	setg(g.m.gsignal)
 	sighandler(sig, info, ctx, g)
 	setg(g)
+}
+
+// crashing is the number of m's we have waited for when implementing
+// GOTRACEBACK=crash when a signal is received.
+var crashing int32
+
+// testSigtrap and testSigusr1 are used by the runtime tests. If
+// non-nil, it is called on SIGTRAP/SIGUSR1. If it returns true, the
+// normal behavior on this signal is suppressed.
+var testSigtrap func(info *_siginfo_t, ctxt *sigctxt, gp *g) bool
+var testSigusr1 func(gp *g) bool
+
+// sighandler is invoked when a signal occurs. The global g will be
+// set to a gsignal goroutine and we will be running on the alternate
+// signal stack. The parameter g will be the value of the global g
+// when the signal occurred. The sig, info, and ctxt parameters are
+// from the system signal handler: they are the parameters passed when
+// the SA is passed to the sigaction system call.
+//
+// The garbage collector may have stopped the world, so write barriers
+// are not allowed.
+//
+//go:nowritebarrierrec
+func sighandler(sig uint32, info *_siginfo_t, ctxt unsafe.Pointer, gp *g) {
+	_g_ := getg()
+	c := &sigctxt{info, ctxt}
+
+	sigfault, sigpc := getSiginfo(info, ctxt)
+
+	if sig == _SIGURG && usestackmaps {
+		// We may be signaled to do a stack scan.
+		// The signal delivery races with enter/exitsyscall.
+		// We may be on g0 stack now. gp.m.curg is the g we
+		// want to scan.
+		// If we're not on g stack, give up. The sender will
+		// try again later.
+		// If we're not stopped at a safepoint (doscanstack will
+		// return false), also give up.
+		if s := readgstatus(gp.m.curg); s == _Gscansyscall {
+			if gp == gp.m.curg {
+				if doscanstack(gp, (*gcWork)(unsafe.Pointer(gp.scangcw))) {
+					gp.gcScannedSyscallStack = true
+				}
+			}
+			gp.m.curg.scangcw = 0
+			notewakeup(&gp.m.scannote)
+			return
+		}
+	}
+
+	if sig == _SIGPROF {
+		sigprof(sigpc, gp, _g_.m)
+		return
+	}
+
+	if sig == _SIGTRAP && testSigtrap != nil && testSigtrap(info, (*sigctxt)(noescape(unsafe.Pointer(c))), gp) {
+		return
+	}
+
+	if sig == _SIGUSR1 && testSigusr1 != nil && testSigusr1(gp) {
+		return
+	}
+
+	if sig == sigPreempt {
+		// Might be a preemption signal.
+		doSigPreempt(gp, c, sigpc)
+		// Even if this was definitely a preemption signal, it
+		// may have been coalesced with another signal, so we
+		// still let it through to the application.
+	}
+
+	flags := int32(_SigThrow)
+	if sig < uint32(len(sigtable)) {
+		flags = sigtable[sig].flags
+	}
+	if flags&_SigPanic != 0 && gp.throwsplit {
+		// We can't safely sigpanic because it may grow the
+		// stack. Abort in the signal handler instead.
+		flags = (flags &^ _SigPanic) | _SigThrow
+	}
+	if isAbortPC(sigpc) {
+		// On many architectures, the abort function just
+		// causes a memory fault. Don't turn that into a panic.
+		flags = _SigThrow
+	}
+	if c.sigcode() != _SI_USER && flags&_SigPanic != 0 {
+		// Emulate gc by passing arguments out of band,
+		// although we don't really have to.
+		gp.sig = sig
+		gp.sigcode0 = uintptr(c.sigcode())
+		gp.sigcode1 = sigfault
+		gp.sigpc = sigpc
+
+		setg(gp)
+
+		// All signals were blocked due to the sigaction mask;
+		// unblock them.
+		var set sigset
+		sigfillset(&set)
+		sigprocmask(_SIG_UNBLOCK, &set, nil)
+
+		sigpanic()
+		throw("sigpanic returned")
+	}
+
+	if c.sigcode() == _SI_USER || flags&_SigNotify != 0 {
+		if sigsend(sig) {
+			return
+		}
+	}
+
+	if c.sigcode() == _SI_USER && signal_ignored(sig) {
+		return
+	}
+
+	if flags&_SigKill != 0 {
+		dieFromSignal(sig)
+	}
+
+	if flags&_SigThrow == 0 {
+		return
+	}
+
+	_g_.m.throwing = 1
+	_g_.m.caughtsig.set(gp)
+
+	if crashing == 0 {
+		startpanic_m()
+	}
+
+	if sig < uint32(len(sigtable)) {
+		print(sigtable[sig].name, "\n")
+	} else {
+		print("Signal ", sig, "\n")
+	}
+
+	print("PC=", hex(sigpc), " m=", _g_.m.id, " sigcode=", c.sigcode(), "\n")
+	if _g_.m.lockedg != 0 && _g_.m.ncgo > 0 && gp == _g_.m.g0 {
+		print("signal arrived during cgo execution\n")
+		gp = _g_.m.lockedg.ptr()
+	}
+	print("\n")
+
+	level, _, docrash := gotraceback()
+	if level > 0 {
+		goroutineheader(gp)
+		traceback(0)
+		if crashing == 0 {
+			tracebackothers(gp)
+			print("\n")
+		}
+		dumpregs(info, ctxt)
+	}
+
+	if docrash {
+		crashing++
+		if crashing < mcount()-int32(extraMCount) {
+			// There are other m's that need to dump their stacks.
+			// Relay SIGQUIT to the next m by sending it to the current process.
+			// All m's that have already received SIGQUIT have signal masks blocking
+			// receipt of any signals, so the SIGQUIT will go to an m that hasn't seen it yet.
+			// When the last m receives the SIGQUIT, it will fall through to the call to
+			// crash below. Just in case the relaying gets botched, each m involved in
+			// the relay sleeps for 5 seconds and then does the crash/exit itself.
+			// In expected operation, the last m has received the SIGQUIT and run
+			// crash/exit and the process is gone, all long before any of the
+			// 5-second sleeps have finished.
+			print("\n-----\n\n")
+			raiseproc(_SIGQUIT)
+			usleep(5 * 1000 * 1000)
+		}
+		crash()
+	}
+
+	printDebugLog()
+
+	exit(2)
 }
 
 // sigpanic turns a synchronous signal into a run-time panic.
@@ -551,11 +832,22 @@ func signalDuringFork(sig uint32) {
 	throw("signal received during fork")
 }
 
+var badginsignalMsg = "fatal: bad g in signal handler\n"
+
 // This runs on a foreign stack, without an m or a g. No stack split.
 //go:nosplit
 //go:norace
 //go:nowritebarrierrec
 func badsignal(sig uintptr, c *sigctxt) {
+	if !iscgo && !cgoHasExtraM {
+		// There is no extra M. needm will not be able to grab
+		// an M. Instead of hanging, just crash.
+		// Cannot call split-stack function as there is no G.
+		s := stringStructOf(&badginsignalMsg)
+		write(2, s.str, int32(s.len))
+		exit(2)
+		*(*uintptr)(unsafe.Pointer(uintptr(123))) = 2
+	}
 	needm(0)
 	if !sigsend(uint32(sig)) {
 		// A foreign thread received the signal sig, and the
@@ -596,6 +888,13 @@ func sigfwdgo(sig uint32, info *_siginfo_t, ctx unsafe.Pointer) bool {
 		return true
 	}
 
+	// This function and its caller sigtrampgo assumes SIGPIPE is delivered on the
+	// originating thread. This property does not hold on macOS (golang.org/issue/33384),
+	// so we have no choice but to ignore SIGPIPE.
+	if GOOS == "darwin" && sig == _SIGPIPE {
+		return true
+	}
+
 	// If there is no handler to forward to, no need to forward.
 	if fwdFn == _SIG_DFL {
 		return false
@@ -610,8 +909,9 @@ func sigfwdgo(sig uint32, info *_siginfo_t, ctx unsafe.Pointer) bool {
 		return false
 	}
 	// Determine if the signal occurred inside Go code. We test that:
-	//   (1) we were in a goroutine (i.e., m.curg != nil), and
-	//   (2) we weren't in CGO.
+	//   (1) we weren't in VDSO page,
+	//   (2) we were in a goroutine (i.e., m.curg != nil), and
+	//   (3) we weren't in CGO.
 	g := getg()
 	if g != nil && g.m != nil && g.m.curg != nil && !g.m.incgo {
 		return false
@@ -687,13 +987,15 @@ func minitSignals() {
 // stack to the gsignal stack. If the alternate signal stack is set
 // for the thread (the case when a non-Go thread sets the alternate
 // signal stack and then calls a Go function) then set the gsignal
-// stack to the alternate signal stack. Record which choice was made
-// in newSigstack, so that it can be undone in unminit.
+// stack to the alternate signal stack. We also set the alternate
+// signal stack to the gsignal stack if cgo is not used (regardless
+// of whether it is already set). Record which choice was made in
+// newSigstack, so that it can be undone in unminit.
 func minitSignalStack() {
 	_g_ := getg()
 	var st _stack_t
 	sigaltstack(nil, &st)
-	if st.ss_flags&_SS_DISABLE != 0 {
+	if st.ss_flags&_SS_DISABLE != 0 || !iscgo {
 		signalstack(_g_.m.gsignalstack, _g_.m.gsignalstacksize)
 		_g_.m.newSigstack = true
 	} else {

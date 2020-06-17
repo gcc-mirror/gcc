@@ -1,5 +1,5 @@
 
-/* Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+/* Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
  * (See accompanying file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -374,7 +374,7 @@ void OutBuffer::remove(size_t offset, size_t nbytes)
     this->offset -= nbytes;
 }
 
-char *OutBuffer::peekString()
+char *OutBuffer::peekChars()
 {
     if (!offset || data[offset-1] != '\0')
     {
@@ -384,7 +384,7 @@ char *OutBuffer::peekString()
     return (char *)data;
 }
 
-char *OutBuffer::extractString()
+char *OutBuffer::extractChars()
 {
     if (!offset || data[offset-1] != '\0')
         writeByte(0);

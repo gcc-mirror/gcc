@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "auto-profile.h"
 #include "profile.h"
+#include "diagnostic.h"
 
 #include "gcov-io.c"
 
@@ -265,7 +266,7 @@ read_counts_file (void)
 	  else if (entry->lineno_checksum != lineno_checksum
 		   || entry->cfg_checksum != cfg_checksum)
 	    {
-	      error ("Profile data for function %u is corrupted", fn_ident);
+	      error ("profile data for function %u is corrupted", fn_ident);
 	      error ("checksum is (%x,%x) instead of (%x,%x)",
 		     entry->lineno_checksum, entry->cfg_checksum,
 		     lineno_checksum, cfg_checksum);
@@ -344,8 +345,11 @@ get_coverage_counts (unsigned counter, unsigned cfg_checksum,
 	 can do about it.  */
       return NULL;
     }
-  
-  if (entry->cfg_checksum != cfg_checksum || entry->n_counts != n_counts)
+
+  if (entry->cfg_checksum != cfg_checksum
+      || (counter != GCOV_COUNTER_V_INDIR
+	  && counter != GCOV_COUNTER_V_TOPN
+	  && entry->n_counts != n_counts))
     {
       static int warned = 0;
       bool warning_printed = false;
@@ -1199,6 +1203,11 @@ coverage_obj_finish (vec<constructor_elt, va_gc> *ctor)
 void
 coverage_init (const char *filename)
 {
+#if HAVE_DOS_BASED_FILE_SYSTEM
+  const char *separator = "\\";
+#else
+  const char *separator = "/";
+#endif
   int len = strlen (filename);
   int prefix_len = 0;
 
@@ -1215,25 +1224,25 @@ coverage_init (const char *filename)
 	 of filename in order to prevent file path clashing.  */
       if (profile_data_prefix)
 	{
-#if HAVE_DOS_BASED_FILE_SYSTEM
-	  const char *separator = "\\";
-#else
-	  const char *separator = "/";
-#endif
 	  filename = concat (getpwd (), separator, filename, NULL);
+	  if (profile_prefix_path)
+	    {
+	      if (!strncmp (filename, profile_prefix_path,
+			    strlen (profile_prefix_path)))
+		{
+		  filename += strlen (profile_prefix_path);
+		  while (*filename == *separator)
+		    filename++;
+		}
+	      else
+		warning (0, "filename %qs does not start with profile "
+			 "prefix %qs", filename, profile_prefix_path);
+	    }
 	  filename = mangle_path (filename);
 	  len = strlen (filename);
 	}
       else
 	profile_data_prefix = getpwd ();
-    }
-  else if (profile_data_prefix != NULL)
-    {
-      /* when filename is a absolute path, we also need to mangle the full
-      path of filename to prevent the profiling data being stored into a
-      different path than that specified by profile_data_prefix.  */
-      filename = mangle_path (filename);
-      len = strlen (filename);
     }
 
   if (profile_data_prefix)
@@ -1246,7 +1255,7 @@ coverage_init (const char *filename)
   if (profile_data_prefix)
     {
       memcpy (da_file_name, profile_data_prefix, prefix_len);
-      da_file_name[prefix_len++] = '/';
+      da_file_name[prefix_len++] = *separator;
     }
   memcpy (da_file_name + prefix_len, filename, len);
   strcpy (da_file_name + prefix_len + len, GCOV_DATA_SUFFIX);

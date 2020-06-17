@@ -1,0 +1,55 @@
+#  Copyright (C) 2020 Free Software Foundation, Inc.
+
+#  This file is part of GCC.
+#
+#  GCC is free software; you can redistribute it and/or modify it under
+#  the terms of the GNU General Public License as published by the Free
+#  Software Foundation; either version 3, or (at your option) any later
+#  version.
+#
+#  GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+#  WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+#  for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with GCC; see the file COPYING3.  If not see
+#  <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Load support procs.
+load_lib gfortran-dg.exp
+load_lib gfortran.exp
+
+# If the analyzer has not been enabled, bail.
+if { ![check_effective_target_analyzer] } {
+    return
+}
+
+global DEFAULT_FFLAGS
+if [info exists DEFAULT_FFLAGS] then {
+  set save_default_fflags $DEFAULT_FFLAGS
+}
+
+# If a testcase doesn't have special options, use these.
+set DEFAULT_FFLAGS "-fanalyzer -fdiagnostics-path-format=separate-events -Wanalyzer-too-complex -fanalyzer-call-summaries"
+
+# Initialize `dg'.
+dg-init
+
+# Main loop.
+
+gfortran_init
+
+gfortran-dg-runtest [lsort \
+       [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ] ] "" $DEFAULT_FFLAGS
+
+# All done.
+dg-finish
+
+if [info exists save_default_fflags] {
+  set DEFAULT_FFLAGS $save_default_fflags
+} else {
+  unset DEFAULT_FFLAGS
+}

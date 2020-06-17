@@ -42,37 +42,14 @@ along with GCC; see the file COPYING3.  If not see
 /* Implements the Target interface defined by the front end.
    Used for retrieving target-specific information.  */
 
-/* Type size information used by frontend.  */
-int Target::ptrsize;
-int Target::c_longsize;
-int Target::realsize;
-int Target::realpad;
-int Target::realalignsize;
-bool Target::reverseCppOverloads;
-bool Target::cppExceptions;
-int Target::classinfosize;
-unsigned long long Target::maxStaticDataSize;
-
-/* Floating-point constants for for .max, .min, and other properties.  */
-template <typename T> real_t Target::FPTypeProperties<T>::max;
-template <typename T> real_t Target::FPTypeProperties<T>::min_normal;
-template <typename T> real_t Target::FPTypeProperties<T>::nan;
-template <typename T> real_t Target::FPTypeProperties<T>::snan;
-template <typename T> real_t Target::FPTypeProperties<T>::infinity;
-template <typename T> real_t Target::FPTypeProperties<T>::epsilon;
-template <typename T> d_int64 Target::FPTypeProperties<T>::dig;
-template <typename T> d_int64 Target::FPTypeProperties<T>::mant_dig;
-template <typename T> d_int64 Target::FPTypeProperties<T>::max_exp;
-template <typename T> d_int64 Target::FPTypeProperties<T>::min_exp;
-template <typename T> d_int64 Target::FPTypeProperties<T>::max_10_exp;
-template <typename T> d_int64 Target::FPTypeProperties<T>::min_10_exp;
+Target target;
 
 
 /* Initialize the floating-point constants for TYPE.  */
 
 template <typename T>
 static void
-define_float_constants (tree type)
+define_float_constants (T &f, tree type)
 {
   const double log10_2 = 0.30102999566398119521;
   char buf[128];
@@ -83,106 +60,109 @@ define_float_constants (tree type)
 
   /* The largest representable value that's not infinity.  */
   get_max_float (fmt, buf, sizeof (buf), false);
-  real_from_string (&T::max.rv (), buf);
+  real_from_string (&f.max.rv (), buf);
 
   /* The smallest representable normalized value that's not 0.  */
   snprintf (buf, sizeof (buf), "0x1p%d", fmt->emin - 1);
-  real_from_string (&T::min_normal.rv (), buf);
+  real_from_string (&f.min_normal.rv (), buf);
 
   /* Floating-point NaN.  */
-  real_nan (&T::nan.rv (), "", 1, mode);
+  real_nan (&f.nan.rv (), "", 1, mode);
 
   /* Signalling floating-point NaN.  */
-  real_nan (&T::snan.rv (), "", 0, mode);
+  real_nan (&f.snan.rv (), "", 0, mode);
 
   /* Floating-point +Infinity if the target supports infinities.  */
-  real_inf (&T::infinity.rv ());
+  real_inf (&f.infinity.rv ());
 
   /* The smallest increment to the value 1.  */
   if (fmt->pnan < fmt->p)
     snprintf (buf, sizeof (buf), "0x1p%d", fmt->emin - fmt->p);
   else
     snprintf (buf, sizeof (buf), "0x1p%d", 1 - fmt->p);
-  real_from_string (&T::epsilon.rv (), buf);
+  real_from_string (&f.epsilon.rv (), buf);
 
   /* The number of decimal digits of precision.  */
-  T::dig = (fmt->p - 1) * log10_2;
+  f.dig = (fmt->p - 1) * log10_2;
 
   /* The number of bits in mantissa.  */
-  T::mant_dig = fmt->p;
+  f.mant_dig = fmt->p;
 
   /* The maximum int value such that 2** (value-1) is representable.  */
-  T::max_exp = fmt->emax;
+  f.max_exp = fmt->emax;
 
   /* The minimum int value such that 2** (value-1) is representable as a
      normalized value.  */
-  T::min_exp = fmt->emin;
+  f.min_exp = fmt->emin;
 
   /* The maximum int value such that 10**value is representable.  */
-  T::max_10_exp = fmt->emax * log10_2;
+  f.max_10_exp = fmt->emax * log10_2;
 
   /* The minimum int value such that 10**value is representable as a
      normalized value.  */
-  T::min_10_exp = (fmt->emin - 1) * log10_2;
+  f.min_10_exp = (fmt->emin - 1) * log10_2;
 }
 
 /* Initialize all variables of the Target structure.  */
 
 void
-Target::_init (void)
+Target::_init (const Param &)
 {
   /* Map D frontend type and sizes to GCC back-end types.  */
-  Target::ptrsize = (POINTER_SIZE / BITS_PER_UNIT);
-  Target::realsize = int_size_in_bytes (long_double_type_node);
-  Target::realpad = (Target::realsize -
-		     (TYPE_PRECISION (long_double_type_node) / BITS_PER_UNIT));
-  Target::realalignsize = TYPE_ALIGN_UNIT (long_double_type_node);
+  this->ptrsize = (POINTER_SIZE / BITS_PER_UNIT);
+  this->realsize = int_size_in_bytes (long_double_type_node);
+  this->realpad = (this->realsize -
+		   (TYPE_PRECISION (long_double_type_node) / BITS_PER_UNIT));
+  this->realalignsize = TYPE_ALIGN_UNIT (long_double_type_node);
 
   /* Size of run-time TypeInfo object.  */
-  Target::classinfosize = 19 * Target::ptrsize;
+  this->classinfosize = 19 * this->ptrsize;
 
   /* Much of the dmd front-end uses ints for sizes and offsets, and cannot
      handle any larger data type without some pervasive rework.  */
-  Target::maxStaticDataSize = tree_to_shwi (TYPE_MAX_VALUE (integer_type_node));
+  this->maxStaticDataSize = tree_to_shwi (TYPE_MAX_VALUE (integer_type_node));
 
   /* Define what type to use for size_t, ptrdiff_t.  */
-  if (Target::ptrsize == 8)
+  if (this->ptrsize == 8)
     {
       global.params.isLP64 = true;
-      Tsize_t = Tuns64;
-      Tptrdiff_t = Tint64;
+      Type::tsize_t = Type::basic[Tuns64];
+      Type::tptrdiff_t = Type::basic[Tint64];
     }
-  else if (Target::ptrsize == 4)
+  else if (this->ptrsize == 4)
     {
-      Tsize_t = Tuns32;
-      Tptrdiff_t = Tint32;
+      Type::tsize_t = Type::basic[Tuns32];
+      Type::tptrdiff_t = Type::basic[Tint32];
     }
-  else if (Target::ptrsize == 2)
+  else if (this->ptrsize == 2)
     {
-      Tsize_t = Tuns16;
-      Tptrdiff_t = Tint16;
+      Type::tsize_t = Type::basic[Tuns16];
+      Type::tptrdiff_t = Type::basic[Tint16];
     }
   else
     sorry ("D does not support pointers on this target.");
 
-  Type::tsize_t = Type::basic[Tsize_t];
-  Type::tptrdiff_t = Type::basic[Tptrdiff_t];
   Type::thash_t = Type::tsize_t;
 
   /* Set-up target C ABI.  */
-  Target::c_longsize = int_size_in_bytes (long_integer_type_node);
+  this->c.longsize = int_size_in_bytes (long_integer_type_node);
+  this->c.long_doublesize = int_size_in_bytes (long_double_type_node);
 
   /* Set-up target C++ ABI.  */
-  Target::reverseCppOverloads = false;
-  Target::cppExceptions = true;
+  this->cpp.reverseOverloads = false;
+  this->cpp.exceptions = true;
+  this->cpp.twoDtorInVtable = true;
+
+  /* Set-up target Objective-C ABI.  */
+  this->objc.supported = false;
 
   /* Initialize all compile-time properties for floating-point types.
      Should ensure that our real_t type is able to represent real_value.  */
   gcc_assert (sizeof (real_t) >= sizeof (real_value));
 
-  define_float_constants <Target::FloatProperties> (float_type_node);
-  define_float_constants <Target::DoubleProperties> (double_type_node);
-  define_float_constants <Target::RealProperties> (long_double_type_node);
+  define_float_constants (this->FloatProperties, float_type_node);
+  define_float_constants (this->DoubleProperties, double_type_node);
+  define_float_constants (this->RealProperties, long_double_type_node);
 
   /* Commonly used floating-point constants.  */
   const machine_mode mode = TYPE_MODE (long_double_type_node);
@@ -238,9 +218,22 @@ Target::critsecsize (void)
 /* Returns a Type for the va_list type of the target.  */
 
 Type *
-Target::va_listType (void)
+Target::va_listType (const Loc &, Scope *)
 {
-  return Type::tvalist;
+  if (this->tvalist)
+    return this->tvalist;
+
+  /* Build the "standard" abi va_list.  */
+  this->tvalist = build_frontend_type (va_list_type_node);
+  if (!this->tvalist)
+    sorry ("cannot represent built-in %<va_list%> type in D");
+
+  /* Map the va_list type to the D frontend Type.  This is to prevent both
+     errors in gimplification or an ICE in targetm.canonical_va_list_type.  */
+  this->tvalist->ctype = va_list_type_node;
+  TYPE_LANG_SPECIFIC (va_list_type_node) = build_lang_type (this->tvalist);
+
+  return this->tvalist;
 }
 
 /* Checks whether the target supports a vector type with total size SZ
@@ -335,7 +328,7 @@ Target::isVectorOpSupported (Type *type, TOK op, Type *)
 /* Return the symbol mangling of S for C++ linkage.  */
 
 const char *
-Target::toCppMangle (Dsymbol *s)
+TargetCPP::toMangle (Dsymbol *s)
 {
   return toCppMangleItanium (s);
 }
@@ -343,7 +336,7 @@ Target::toCppMangle (Dsymbol *s)
 /* Return the symbol mangling of CD for C++ linkage.  */
 
 const char *
-Target::cppTypeInfoMangle (ClassDeclaration *cd)
+TargetCPP::typeInfoMangle (ClassDeclaration *cd)
 {
   return cppTypeInfoMangleItanium (cd);
 }
@@ -352,7 +345,7 @@ Target::cppTypeInfoMangle (ClassDeclaration *cd)
    In all other cases, return NULL.  */
 
 const char *
-Target::cppTypeMangle (Type *type)
+TargetCPP::typeMangle (Type *type)
 {
   if (type->isTypeBasic () || type->ty == Tvector || type->ty == Tstruct)
     {
@@ -367,7 +360,7 @@ Target::cppTypeMangle (Type *type)
    ARG to an extern(C++) function.  */
 
 Type *
-Target::cppParameterType (Parameter *arg)
+TargetCPP::parameterType (Parameter *arg)
 {
   Type *t = arg->type->merge2 ();
   if (arg->storageClass & (STCout | STCref))
@@ -375,16 +368,17 @@ Target::cppParameterType (Parameter *arg)
   else if (arg->storageClass & STClazy)
     {
       /* Mangle as delegate.  */
-      Type *td = TypeFunction::create (NULL, t, 0, LINKd);
+      Type *td = TypeFunction::create (NULL, t, VARARGnone, LINKd);
       td = TypeDelegate::create (td);
       t = t->merge2 ();
     }
 
   /* Could be a va_list, which we mangle as a pointer.  */
-  if (t->ty == Tsarray && Type::tvalist->ty == Tsarray)
+  Type *tvalist = target.va_listType (Loc (), NULL);
+  if (t->ty == Tsarray && tvalist->ty == Tsarray)
     {
       Type *tb = t->toBasetype ()->mutableOf ();
-      if (tb == Type::tvalist)
+      if (tb == tvalist)
 	{
 	  tb = t->nextOf ()->pointerTo ();
 	  t = tb->castMod (t->mod);
@@ -398,7 +392,7 @@ Target::cppParameterType (Parameter *arg)
    in IS_FUNDAMENTAL and returns true if the parameter was set.  */
 
 bool
-Target::cppFundamentalType (const Type *, bool &)
+TargetCPP::fundamentalType (const Type *, bool &)
 {
   return false;
 }
@@ -409,4 +403,16 @@ LINK
 Target::systemLinkage (void)
 {
   return LINKc;
+}
+
+/* Generate a TypeTuple of the equivalent types used to determine if a
+   function argument of the given type can be passed in registers.
+   The results of this are highly platform dependent, and intended
+   primarly for use in implementing va_arg() with RTTI.  */
+
+TypeTuple *
+Target::toArgTypes (Type *)
+{
+  /* Not implemented, however this is not currently used anywhere.  */
+  return NULL;
 }

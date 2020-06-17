@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -124,10 +124,10 @@ int utfStride(const utf8_t *p);
 // Workaround for missing Parameter instance for variadic params. (it's unnecessary to instantiate one).
 bool isCVariadicParameter(Dsymbols *a, const utf8_t *p, size_t len)
 {
-    for (size_t i = 0; i < a->dim; i++)
+    for (size_t i = 0; i < a->length; i++)
     {
         TypeFunction *tf = isTypeFunction((*a)[i]);
-        if (tf && tf->varargs == 1 && cmp("...", p, len) == 0)
+        if (tf && tf->parameterList.varargs == VARARGvariadic && cmp("...", p, len) == 0)
             return true;
     }
     return false;
@@ -138,11 +138,11 @@ bool isCVariadicParameter(Dsymbols *a, const utf8_t *p, size_t len)
 static Parameter *isFunctionParameter(Dsymbol *s, const utf8_t *p, size_t len)
 {
     TypeFunction *tf = isTypeFunction(s);
-    if (tf && tf->parameters)
+    if (tf && tf->parameterList.parameters)
     {
-        for (size_t k = 0; k < tf->parameters->dim; k++)
+        for (size_t k = 0; k < tf->parameterList.parameters->length; k++)
         {
-            Parameter *fparam = (*tf->parameters)[k];
+            Parameter *fparam = (*tf->parameterList.parameters)[k];
             if (fparam->ident && cmp(fparam->ident->toChars(), p, len) == 0)
             {
                 return fparam;
@@ -173,7 +173,7 @@ static Dsymbol *getEponymousMember(TemplateDeclaration *td)
  */
 static Parameter *isEponymousFunctionParameter(Dsymbols *a, const utf8_t *p, size_t len)
 {
-    for (size_t i = 0; i < a->dim; i++)
+    for (size_t i = 0; i < a->length; i++)
     {
         TemplateDeclaration *td = (*a)[i]->isTemplateDeclaration();
         if (td && td->onemember)
@@ -351,12 +351,12 @@ void gendocfile(Module *m)
         // Override with DDOCFILE specified in the sc.ini file
         char *p = getenv("DDOCFILE");
         if (p)
-            global.params.ddocfiles->shift(p);
+            global.params.ddocfiles.shift(p);
 
         // Override with the ddoc macro files from the command line
-        for (size_t i = 0; i < global.params.ddocfiles->dim; i++)
+        for (size_t i = 0; i < global.params.ddocfiles.length; i++)
         {
-            FileName f((*global.params.ddocfiles)[i]);
+            FileName f(global.params.ddocfiles[i]);
             File file(&f);
             readFile(m->loc, &file);
             // BUG: convert file contents to UTF-8 before use
@@ -622,7 +622,7 @@ static void emitAnchor(OutBuffer *buf, Dsymbol *s, Scope *sc)
     {
         OutBuffer anc;
         emitAnchorName(&anc, s, skipNonQualScopes(sc));
-        ident = Identifier::idPool(anc.peekString());
+        ident = Identifier::idPool(anc.peekChars());
     }
     size_t *count = (size_t*)dmd_aaGet(&sc->anchorCounts, (void *)ident);
     TemplateDeclaration *td = getEponymousParent(s);
@@ -668,7 +668,7 @@ static void expandTemplateMixinComments(TemplateMixin *tm, OutBuffer *buf, Scope
         tm->tempdecl->isTemplateDeclaration() : NULL;
     if (td && td->members)
     {
-        for (size_t i = 0; i < td->members->dim; i++)
+        for (size_t i = 0; i < td->members->length; i++)
         {
             Dsymbol *sm = (*td->members)[i];
             TemplateMixin *tmc = sm->isTemplateMixin();
@@ -705,7 +705,7 @@ void emitMemberComments(ScopeDsymbol *sds, OutBuffer *buf, Scope *sc)
 
     sc = sc->push(sds);
 
-    for (size_t i = 0; i < sds->members->dim; i++)
+    for (size_t i = 0; i < sds->members->length; i++)
     {
         Dsymbol *s = (*sds->members)[i];
         //printf("\ts = '%s'\n", s->toChars());
@@ -732,7 +732,7 @@ void emitMemberComments(ScopeDsymbol *sds, OutBuffer *buf, Scope *sc)
 
 void emitProtection(OutBuffer *buf, Prot prot)
 {
-    if (prot.kind != PROTundefined && prot.kind != PROTpublic)
+    if (prot.kind != Prot::undefined && prot.kind != Prot::public_)
     {
         protectionToBuffer(buf, prot);
         buf->writeByte(' ');
@@ -774,7 +774,7 @@ void emitComment(Dsymbol *s, OutBuffer *buf, Scope *sc)
             {
                 // Put the declaration signatures as the document 'title'
                 buf->writestring(ddoc_decl_s);
-                for (size_t i = 0; i < dc->a.dim; i++)
+                for (size_t i = 0; i < dc->a.length; i++)
                 {
                     Dsymbol *sx = dc->a[i];
 
@@ -833,7 +833,7 @@ void emitComment(Dsymbol *s, OutBuffer *buf, Scope *sc)
                     return;
                 if (!d->type && !d->isCtorDeclaration() && !d->isAliasDeclaration())
                     return;
-                if (d->protection.kind == PROTprivate || sc->protection.kind == PROTprivate)
+                if (d->protection.kind == Prot::private_ || sc->protection.kind == Prot::private_)
                     return;
             }
             if (!com)
@@ -855,7 +855,7 @@ void emitComment(Dsymbol *s, OutBuffer *buf, Scope *sc)
             }
             else
             {
-                if (ad->prot().kind == PROTprivate || sc->protection.kind == PROTprivate)
+                if (ad->prot().kind == Prot::private_ || sc->protection.kind == Prot::private_)
                     return;
                 if (!ad->comment)
                     return;
@@ -869,7 +869,7 @@ void emitComment(Dsymbol *s, OutBuffer *buf, Scope *sc)
         void visit(TemplateDeclaration *td)
         {
             //printf("TemplateDeclaration::emitComment() '%s', kind = %s\n", td->toChars(), td->kind());
-            if (td->prot().kind == PROTprivate || sc->protection.kind == PROTprivate)
+            if (td->prot().kind == Prot::private_ || sc->protection.kind == Prot::private_)
                 return;
             if (!td->comment)
                 return;
@@ -884,11 +884,11 @@ void emitComment(Dsymbol *s, OutBuffer *buf, Scope *sc)
 
         void visit(EnumDeclaration *ed)
         {
-            if (ed->prot().kind == PROTprivate || sc->protection.kind == PROTprivate)
+            if (ed->prot().kind == Prot::private_ || sc->protection.kind == Prot::private_)
                 return;
             if (ed->isAnonymous() && ed->members)
             {
-                for (size_t i = 0; i < ed->members->dim; i++)
+                for (size_t i = 0; i < ed->members->length; i++)
                 {
                     Dsymbol *s = (*ed->members)[i];
                     emitComment(s, buf, sc);
@@ -906,7 +906,7 @@ void emitComment(Dsymbol *s, OutBuffer *buf, Scope *sc)
         void visit(EnumMember *em)
         {
             //printf("EnumMember::emitComment(%p '%s'), comment = '%s'\n", em, em->toChars(), em->comment);
-            if (em->prot().kind == PROTprivate || sc->protection.kind == PROTprivate)
+            if (em->prot().kind == Prot::private_ || sc->protection.kind == Prot::private_)
                 return;
             if (!em->comment)
                 return;
@@ -926,11 +926,11 @@ void emitComment(Dsymbol *s, OutBuffer *buf, Scope *sc)
              * Hence, Ddoc omits attributes from template members.
              */
 
-            Dsymbols *d = ad->include(NULL, NULL);
+            Dsymbols *d = ad->include(NULL);
 
             if (d)
             {
-                for (size_t i = 0; i < d->dim; i++)
+                for (size_t i = 0; i < d->length; i++)
                 {
                     Dsymbol *s = (*d)[i];
                     //printf("AttribDeclaration::emitComment %s\n", s->toChars());
@@ -962,10 +962,10 @@ void emitComment(Dsymbol *s, OutBuffer *buf, Scope *sc)
             }
 
             /* If generating doc comment, be careful because if we're inside
-             * a template, then include(NULL, NULL) will fail.
+             * a template, then include(NULL) will fail.
              */
             Dsymbols *d = cd->decl ? cd->decl : cd->elsedecl;
-            for (size_t i = 0; i < d->dim; i++)
+            for (size_t i = 0; i < d->length; i++)
             {
                 Dsymbol *s = (*d)[i];
                 emitComment(s, buf, sc);
@@ -1067,9 +1067,9 @@ void toDocBuffer(Dsymbol *s, OutBuffer *buf, Scope *sc)
             if (d->isVarDeclaration() && td)
             {
                 buf->writeByte('(');
-                if (td->origParameters && td->origParameters->dim)
+                if (td->origParameters && td->origParameters->length)
                 {
-                    for (size_t i = 0; i < td->origParameters->dim; i++)
+                    for (size_t i = 0; i < td->origParameters->length; i++)
                     {
                         if (i)
                             buf->writestring(", ");
@@ -1219,7 +1219,7 @@ void toDocBuffer(Dsymbol *s, OutBuffer *buf, Scope *sc)
                 buf->printf("%s %s", cd->kind(), cd->toChars());
             }
             int any = 0;
-            for (size_t i = 0; i < cd->baseclasses->dim; i++)
+            for (size_t i = 0; i < cd->baseclasses->length; i++)
             {
                 BaseClass *bc = (*cd->baseclasses)[i];
 
@@ -1233,7 +1233,7 @@ void toDocBuffer(Dsymbol *s, OutBuffer *buf, Scope *sc)
                     buf->writestring(": ");
                     any = 1;
                 }
-                emitProtection(buf, Prot(PROTpublic));
+                emitProtection(buf, Prot(Prot::public_));
                 if (bc->sym)
                 {
                     buf->printf("$(DDOC_PSUPER_SYMBOL %s)", bc->sym->toPrettyChars());
@@ -1288,7 +1288,7 @@ DocComment *DocComment::parse(Dsymbol *s, const utf8_t *comment)
 
     dc->parseSections(comment);
 
-    for (size_t i = 0; i < dc->sections.dim; i++)
+    for (size_t i = 0; i < dc->sections.length; i++)
     {
         Section *sec = dc->sections[i];
 
@@ -1444,7 +1444,7 @@ void DocComment::parseSections(const utf8_t *comment)
 
 void DocComment::writeSections(Scope *sc, Dsymbols *a, OutBuffer *buf)
 {
-    assert(a->dim);
+    assert(a->length);
 
     //printf("DocComment::writeSections()\n");
     Loc loc = (*a)[0]->loc;
@@ -1458,7 +1458,7 @@ void DocComment::writeSections(Scope *sc, Dsymbols *a, OutBuffer *buf)
     buf->writestring("$(DDOC_SECTIONS ");
     size_t offset2 = buf->offset;
 
-    for (size_t i = 0; i < sections.dim; i++)
+    for (size_t i = 0; i < sections.length; i++)
     {
         Section *sec = sections[i];
         if (sec->nooutput)
@@ -1478,7 +1478,7 @@ void DocComment::writeSections(Scope *sc, Dsymbols *a, OutBuffer *buf)
             sec->write(loc, this, sc, a, buf);
     }
 
-    for (size_t i = 0; i < a->dim; i++)
+    for (size_t i = 0; i < a->length; i++)
     {
         Dsymbol *s = (*a)[i];
         if (Dsymbol *td = getEponymousParent(s))
@@ -1486,7 +1486,7 @@ void DocComment::writeSections(Scope *sc, Dsymbols *a, OutBuffer *buf)
 
         for (UnitTestDeclaration *utd = s->ddocUnittest; utd; utd = utd->ddocUnittest)
         {
-            if (utd->protection.kind == PROTprivate || !utd->comment || !utd->fbody)
+            if (utd->protection.kind == Prot::private_ || !utd->comment || !utd->fbody)
                 continue;
 
             // Strip whitespaces to avoid showing empty summary
@@ -1528,7 +1528,7 @@ void DocComment::writeSections(Scope *sc, Dsymbols *a, OutBuffer *buf)
 
 void Section::write(Loc loc, DocComment *, Scope *sc, Dsymbols *a, OutBuffer *buf)
 {
-    assert(a->dim);
+    assert(a->length);
 
     if (namelen)
     {
@@ -1579,7 +1579,7 @@ void Section::write(Loc loc, DocComment *, Scope *sc, Dsymbols *a, OutBuffer *bu
 
 void ParamSection::write(Loc loc, DocComment *, Scope *sc, Dsymbols *a, OutBuffer *buf)
 {
-    assert(a->dim);
+    assert(a->length);
     Dsymbol *s = (*a)[0];   // test
 
     const utf8_t *p = body;
@@ -1730,10 +1730,11 @@ void ParamSection::write(Loc loc, DocComment *, Scope *sc, Dsymbols *a, OutBuffe
         goto L1;                // write out last one
     buf->writestring(")\n");
 
-    TypeFunction *tf = a->dim == 1 ? isTypeFunction(s) : NULL;
+    TypeFunction *tf = a->length == 1 ? isTypeFunction(s) : NULL;
     if (tf)
     {
-        size_t pcount = (tf->parameters ? tf->parameters->dim : 0) + (int)(tf->varargs == 1);
+        size_t pcount = (tf->parameterList.parameters ? tf->parameterList.parameters->length : 0) +
+                        (int)(tf->parameterList.varargs == VARARGvariadic);
         if (pcount != paramcount)
         {
             warning(s->loc, "Ddoc: parameter count mismatch");
@@ -2109,7 +2110,7 @@ Lno:
 
 bool isIdentifier(Dsymbols *a, const utf8_t *p, size_t len)
 {
-    for (size_t i = 0; i < a->dim; i++)
+    for (size_t i = 0; i < a->length; i++)
     {
         const char *s = (*a)[i]->ident->toChars();
         if (cmp(s, p, len) == 0)
@@ -2156,7 +2157,7 @@ TypeFunction *isTypeFunction(Dsymbol *s)
 
 Parameter *isFunctionParameter(Dsymbols *a, const utf8_t *p, size_t len)
 {
-    for (size_t i = 0; i < a->dim; i++)
+    for (size_t i = 0; i < a->length; i++)
     {
         Parameter *fparam = isFunctionParameter((*a)[i], p, len);
         if (fparam)
@@ -2172,7 +2173,7 @@ Parameter *isFunctionParameter(Dsymbols *a, const utf8_t *p, size_t len)
 
 TemplateParameter *isTemplateParameter(Dsymbols *a, const utf8_t *p, size_t len)
 {
-    for (size_t i = 0; i < a->dim; i++)
+    for (size_t i = 0; i < a->length; i++)
     {
         TemplateDeclaration *td = (*a)[i]->isTemplateDeclaration();
         // Check for the parent, if the current symbol is not a template declaration.
@@ -2180,7 +2181,7 @@ TemplateParameter *isTemplateParameter(Dsymbols *a, const utf8_t *p, size_t len)
             td = getEponymousParent((*a)[i]);
         if (td && td->origParameters)
         {
-            for (size_t k = 0; k < td->origParameters->dim; k++)
+            for (size_t k = 0; k < td->origParameters->length; k++)
             {
                 TemplateParameter *tp = (*td->origParameters)[k];
                 if (tp->ident && cmp(tp->ident->toChars(), p, len) == 0)
@@ -2222,7 +2223,7 @@ bool isReservedName(utf8_t *str, size_t len)
 
 void highlightText(Scope *sc, Dsymbols *a, OutBuffer *buf, size_t offset)
 {
-    Dsymbol *s = a->dim ? (*a)[0] : NULL;   // test
+    Dsymbol *s = a->length ? (*a)[0] : NULL;   // test
 
     //printf("highlightText()\n");
 

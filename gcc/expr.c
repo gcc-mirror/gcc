@@ -3692,6 +3692,11 @@ emit_move_multi_word (machine_mode mode, rtx x, rtx y)
   need_clobber = false;
   for (i = 0; i < CEIL (mode_size, UNITS_PER_WORD); i++)
     {
+      /* Do not generate code for a move if it would go entirely
+	 to the non-existing bits of a paradoxical subreg.  */
+      if (undefined_operand_subword_p (x, i))
+	continue;
+
       rtx xpart = operand_subword (x, i, 1, mode);
       rtx ypart;
 
@@ -3808,6 +3813,80 @@ emit_move_insn (rtx x, rtx y)
 
   gcc_assert (mode != BLKmode
 	      && (GET_MODE (y) == mode || GET_MODE (y) == VOIDmode));
+
+  /* If we have a copy that looks like one of the following patterns:
+       (set (subreg:M1 (reg:M2 ...)) (subreg:M1 (reg:M2 ...)))
+       (set (subreg:M1 (reg:M2 ...)) (mem:M1 ADDR))
+       (set (mem:M1 ADDR) (subreg:M1 (reg:M2 ...)))
+       (set (subreg:M1 (reg:M2 ...)) (constant C))
+     where mode M1 is equal in size to M2, try to detect whether the
+     mode change involves an implicit round trip through memory.
+     If so, see if we can avoid that by removing the subregs and
+     doing the move in mode M2 instead.  */
+
+  rtx x_inner = NULL_RTX;
+  rtx y_inner = NULL_RTX;
+
+  auto candidate_subreg_p = [&](rtx subreg) {
+    return (REG_P (SUBREG_REG (subreg))
+	    && known_eq (GET_MODE_SIZE (GET_MODE (SUBREG_REG (subreg))),
+			 GET_MODE_SIZE (GET_MODE (subreg)))
+	    && optab_handler (mov_optab, GET_MODE (SUBREG_REG (subreg)))
+	       != CODE_FOR_nothing);
+  };
+
+  auto candidate_mem_p = [&](machine_mode innermode, rtx mem) {
+    return (!targetm.can_change_mode_class (innermode, GET_MODE (mem), ALL_REGS)
+	    && !push_operand (mem, GET_MODE (mem))
+	    /* Not a candiate if innermode requires too much alignment.  */
+	    && (MEM_ALIGN (mem) >= GET_MODE_ALIGNMENT (innermode)
+		|| targetm.slow_unaligned_access (GET_MODE (mem),
+						  MEM_ALIGN (mem))
+		|| !targetm.slow_unaligned_access (innermode,
+						   MEM_ALIGN (mem))));
+  };
+
+  if (SUBREG_P (x) && candidate_subreg_p (x))
+    x_inner = SUBREG_REG (x);
+
+  if (SUBREG_P (y) && candidate_subreg_p (y))
+    y_inner = SUBREG_REG (y);
+
+  if (x_inner != NULL_RTX
+      && y_inner != NULL_RTX
+      && GET_MODE (x_inner) == GET_MODE (y_inner)
+      && !targetm.can_change_mode_class (GET_MODE (x_inner), mode, ALL_REGS))
+    {
+      x = x_inner;
+      y = y_inner;
+      mode = GET_MODE (x_inner);
+    }
+  else if (x_inner != NULL_RTX
+	   && MEM_P (y)
+	   && candidate_mem_p (GET_MODE (x_inner), y))
+    {
+      x = x_inner;
+      y = adjust_address (y, GET_MODE (x_inner), 0);
+      mode = GET_MODE (x_inner);
+    }
+  else if (y_inner != NULL_RTX
+	   && MEM_P (x)
+	   && candidate_mem_p (GET_MODE (y_inner), x))
+    {
+      x = adjust_address (x, GET_MODE (y_inner), 0);
+      y = y_inner;
+      mode = GET_MODE (y_inner);
+    }
+  else if (x_inner != NULL_RTX
+	   && CONSTANT_P (y)
+	   && !targetm.can_change_mode_class (GET_MODE (x_inner),
+					      mode, ALL_REGS)
+	   && (y_inner = simplify_subreg (GET_MODE (x_inner), y, mode, 0)))
+    {
+      x = x_inner;
+      y = y_inner;
+      mode = GET_MODE (x_inner);
+    }
 
   if (CONSTANT_P (y))
     {
@@ -5578,6 +5657,7 @@ store_expr (tree exp, rtx target, int call_param_p,
   rtx temp;
   rtx alt_rtl = NULL_RTX;
   location_t loc = curr_insn_location ();
+  bool shortened_string_cst = false;
 
   if (VOID_TYPE_P (TREE_TYPE (exp)))
     {
@@ -5744,10 +5824,40 @@ store_expr (tree exp, rtx target, int call_param_p,
       /* If we want to use a nontemporal or a reverse order store, force the
 	 value into a register first.  */
       tmp_target = nontemporal || reverse ? NULL_RTX : target;
-      temp = expand_expr_real (exp, tmp_target, GET_MODE (target),
+      tree rexp = exp;
+      if (TREE_CODE (exp) == STRING_CST
+	  && tmp_target == target
+	  && GET_MODE (target) == BLKmode
+	  && TYPE_MODE (TREE_TYPE (exp)) == BLKmode)
+	{
+	  rtx size = expr_size (exp);
+	  if (CONST_INT_P (size)
+	      && size != const0_rtx
+	      && (UINTVAL (size)
+		  > ((unsigned HOST_WIDE_INT) TREE_STRING_LENGTH (exp) + 32)))
+	    {
+	      /* If the STRING_CST has much larger array type than
+		 TREE_STRING_LENGTH, only emit the TREE_STRING_LENGTH part of
+		 it into the rodata section as the code later on will use
+		 memset zero for the remainder anyway.  See PR95052.  */
+	      tmp_target = NULL_RTX;
+	      rexp = copy_node (exp);
+	      tree index
+		= build_index_type (size_int (TREE_STRING_LENGTH (exp) - 1));
+	      TREE_TYPE (rexp) = build_array_type (TREE_TYPE (TREE_TYPE (exp)),
+						   index);
+	      shortened_string_cst = true;
+	    }
+	}
+      temp = expand_expr_real (rexp, tmp_target, GET_MODE (target),
 			       (call_param_p
 				? EXPAND_STACK_PARM : EXPAND_NORMAL),
 			       &alt_rtl, false);
+      if (shortened_string_cst)
+	{
+	  gcc_assert (MEM_P (temp));
+	  temp = change_address (temp, BLKmode, NULL_RTX);
+	}
     }
 
   /* If TEMP is a VOIDmode constant and the mode of the type of EXP is not
@@ -5758,6 +5868,7 @@ store_expr (tree exp, rtx target, int call_param_p,
       && TREE_CODE (exp) != ERROR_MARK
       && GET_MODE (target) != TYPE_MODE (TREE_TYPE (exp)))
     {
+      gcc_assert (!shortened_string_cst);
       if (GET_MODE_CLASS (GET_MODE (target))
 	  != GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (exp)))
 	  && known_eq (GET_MODE_BITSIZE (GET_MODE (target)),
@@ -5810,6 +5921,7 @@ store_expr (tree exp, rtx target, int call_param_p,
     {
       if (GET_MODE (temp) != GET_MODE (target) && GET_MODE (temp) != VOIDmode)
 	{
+	  gcc_assert (!shortened_string_cst);
 	  if (GET_MODE (target) == BLKmode)
 	    {
 	      /* Handle calls that return BLKmode values in registers.  */
@@ -5895,6 +6007,8 @@ store_expr (tree exp, rtx target, int call_param_p,
 		emit_label (label);
 	    }
 	}
+      else if (shortened_string_cst)
+	gcc_unreachable ();
       /* Handle calls that return values in multiple non-contiguous locations.
 	 The Irix 6 ABI has examples of this.  */
       else if (GET_CODE (target) == PARALLEL)
@@ -5924,6 +6038,8 @@ store_expr (tree exp, rtx target, int call_param_p,
 	    emit_move_insn (target, temp);
 	}
     }
+  else
+    gcc_assert (!shortened_string_cst);
 
   return NULL_RTX;
 }

@@ -16,154 +16,216 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
+define help-gcc-hooks
+help help-gcc-hooks
+end
+
+document help-gcc-hooks
+GCC gdbinit file introduces several debugging shorthands:
+
+    pr [rtx], prl [rtx], prc [rtx], pi [rtx_insn],
+    pt [tree], pct [tree], ptc [tree], trt [tree],
+    pgs [tree], pge [tree], pdn [tree], ptn [tree],
+    pgg [gimple], pgq [gimple_seq],
+    pmz [mpz_t],
+    pdd [dw_die_ref],
+    pbm [bitmap],
+    pel [location_t],
+    pp, pbs, pcfun
+
+They are generally implemented by calling a function that prints to stderr,
+and therefore will not work when the compiler is not executing.
+
+Most shorthands accept an optional argument. When it is not supplied,
+they use value in GDB register $, i.e. the last printed value.
+end
+
 define pp
-call debug ($)
+eval "set $debug_arg = $%s", $argc ? "arg0" : ""
+call debug ($debug_arg)
 end
 
 document pp
-Print a representation of the GCC data structure that is $.
-Works only when an inferior is executing.
+GCC hook: pp [any]
+Print a representation of any GCC data structure for which an instance of
+overloaded function 'debug' is available.
+See also 'help-gcc-hooks'.
 end
 
 define pr
-call debug_rtx ($)
+eval "set $debug_arg = $%s", $argc ? "arg0" : ""
+call debug_rtx ($debug_arg)
 end
 
 document pr
-Print the full structure of the rtx that is $.
-Works only when an inferior is executing.
+GCC hook: pr [rtx]
+Print the full structure of given rtx.
+See also 'help-gcc-hooks'.
 end
 
 define prl
-call debug_rtx_list ($, debug_rtx_count)
+eval "set $debug_arg = $%s", $argc ? "arg0" : ""
+call debug_rtx_list ($debug_arg, debug_rtx_count)
 end
 
 document prl
-Print the full structure of all rtx insns beginning at $.
-Works only when an inferior is executing.
+GCC hook: prl [rtx]
+Print the full structure of all rtx insns beginning at given rtx.
 Uses variable debug_rtx_count to control number of insns printed:
-  debug_rtx_count > 0: print from $ on.
-  debug_rtx_count < 0: print a window around $.
+  debug_rtx_count > 0: print from given rtx on.
+  debug_rtx_count < 0: print a window around given rtx.
 
 There is also debug_rtx_find (rtx, uid) that will scan a list for UID and print
 it using debug_rtx_list. Usage example: set $foo=debug_rtx_find(first, 42)
 end
 
 define pt
-call debug_tree ($)
+eval "set $debug_arg = $%s", $argc ? "arg0" : ""
+call debug_tree ($debug_arg)
 end
 
 document pt
-Print the full structure of the tree that is $.
-Works only when an inferior is executing.
+GCC hook: pt [tree]
+Print the full structure of given tree.
+See also 'help-gcc-hooks'.
 end
 
 define pct
-call debug_c_tree ($)
+eval "set $debug_arg = $%s", $argc ? "arg0" : ""
+call debug_c_tree ($debug_arg)
 end
 
 document pct
-Print the tree that is $ in C syntax.
-Works only when an inferior is executing.
+GCC hook: pct [tree]
+Print given tree in C syntax.
+See also 'help-gcc-hooks'.
 end
 
 define pgg
-call debug_gimple_stmt ($)
+eval "set $debug_arg = $%s", $argc ? "arg0" : ""
+call debug_gimple_stmt ($debug_arg)
 end
 
 document pgg
-Print the Gimple statement that is $ in C syntax.
-Works only when an inferior is executing.
+GCC hook: pgg [gimple]
+Print given GIMPLE statement in C syntax.
+See also 'help-gcc-hooks'.
 end
 
 define pgq
-call debug_gimple_seq ($)
+eval "set $debug_arg = $%s", $argc ? "arg0" : ""
+call debug_gimple_seq ($debug_arg)
 end
 
 document pgq
-Print the Gimple sequence that is $ in C syntax.
-Works only when an inferior is executing.
+GCC hook: pgq [gimple_seq]
+Print given GIMPLE sequence in C syntax.
+See also 'help-gcc-hooks'.
 end
 
 define pgs
-call debug_generic_stmt ($)
+eval "set $debug_arg = $%s", $argc ? "arg0" : ""
+call debug_generic_stmt ($debug_arg)
 end
 
 document pgs
-Print the statement that is $ in C syntax.
-Works only when an inferior is executing.
+GCC hook: pgs [tree]
+Print given GENERIC statement in C syntax.
+See also 'help-gcc-hooks'.
 end
 
 define pge
-call debug_generic_expr ($)
+eval "set $debug_arg = $%s", $argc ? "arg0" : ""
+call debug_generic_expr ($debug_arg)
 end
 
 document pge
-Print the expression that is $ in C syntax.
-Works only when an inferior is executing.
+GCC hook: pge [tree]
+Print given GENERIC expression in C syntax.
+See also 'help-gcc-hooks'.
 end
 
 define pmz
-call mpz_out_str(stderr, 10, $)
+eval "set $debug_arg = $%s", $argc ? "arg0" : ""
+call mpz_out_str(stderr, 10, $debug_arg)
 end
 
 document pmz
-Print the mpz value that is $
-Works only when an inferior is executing.
+GCC hook: pmz [mpz_t]
+Print given mpz value.
+See also 'help-gcc-hooks'.
 end
 
 define ptc
-output (enum tree_code) $.base.code
+eval "set $debug_arg = $%s", $argc ? "arg0" : ""
+output (enum tree_code) $debug_arg.base.code
 echo \n
 end
 
 document ptc
-Print the tree-code of the tree node that is $.
+GCC hook: ptc [tree]
+Print the tree-code of given tree node.
+See also 'help-gcc-hooks'.
 end
 
 define pdn
-output $.decl_minimal.name->identifier.id.str
+eval "set $debug_arg = $%s", $argc ? "arg0" : ""
+output $debug_arg.decl_minimal.name->identifier.id.str
 echo \n
 end
 
 document pdn
-Print the name of the decl-node that is $.
+GCC hook: pdn [tree]
+Print the name of given decl-node.
+See also 'help-gcc-hooks'.
 end
 
 define ptn
-output $.type.name->decl_minimal.name->identifier.id.str
+eval "set $debug_arg = $%s", $argc ? "arg0" : ""
+output $debug_arg.type.name->decl_minimal.name->identifier.id.str
 echo \n
 end
 
 document ptn
-Print the name of the type-node that is $.
+GCC hook: ptn [tree]
+Print the name of given type-node.
+See also 'help-gcc-hooks'.
 end
 
 define pdd
-call debug_dwarf_die ($)
+eval "set $debug_arg = $%s", $argc ? "arg0" : ""
+call debug_dwarf_die ($debug_arg)
 end
 
 document pdd
-Print the dw_die_ref that is in $.
+GCC hook: pdd [dw_die_ref]
+Print given dw_die_ref.
+See also 'help-gcc-hooks'.
 end
 
 define prc
-output (enum rtx_code) $.code
+eval "set $debug_arg = $%s", $argc ? "arg0" : ""
+output (enum rtx_code) $debug_arg.code
 echo \ (
-output $.mode
+output $debug_arg.mode
 echo )\n
 end
 
 document prc
-Print the rtx-code and machine mode of the rtx that is $.
+GCC hook: prc [rtx]
+Print the rtx-code and machine mode of given rtx.
+See also 'help-gcc-hooks'.
 end
 
 define pi
-print $.u.fld[0].rt_rtx@7
+eval "set $debug_arg = $%s", $argc ? "arg0" : ""
+print $debug_arg.u.fld[0].rt_rtx@7
 end
 
 document pi
-Print the fields of an instruction that is $.
+GCC hook: pi [rtx_insn]
+Print the fields of given RTL instruction.
+See also 'help-gcc-hooks'.
 end
 
 define pbs
@@ -176,20 +238,26 @@ including the global binding level.
 end
 
 define pbm
-call bitmap_print (stderr, $, "", "\n")
+eval "set $debug_arg = $%s", $argc ? "arg0" : ""
+call bitmap_print (stderr, $debug_arg, "", "\n")
 end
 
 document pbm
-Dump the bitmap that is in $ as a comma-separated list of numbers.
+GCC hook: pbm [bitmap]
+Dump given bitmap as a comma-separated list of numbers.
+See also 'help-gcc-hooks'.
 end
 
 define pel
-output expand_location ($)
+eval "set $debug_arg = $%s", $argc ? "arg0" : ""
+output expand_location ($debug_arg)
 echo \n
 end
 
 document pel
-Print expanded location of $.
+GCC hook: pel [location_t]
+Print given location.
+See also 'help-gcc-hooks'.
 end
 
 define pcfun
@@ -202,11 +270,14 @@ Print current function.
 end
 
 define trt
-print ($.typed.type)
+eval "set $debug_arg = $%s", $argc ? "arg0" : ""
+print ($debug_arg.typed.type)
 end
 
 document trt
-Print TREE_TYPE of the tree node that is $
+GCC hook: trt [tree]
+Print TREE_TYPE of given tree node.
+See also 'help-gcc-hooks'.
 end
 
 define break-on-diagnostic
@@ -217,6 +288,16 @@ document break-on-diagnostic
 Put a breakpoint on diagnostic_show_locus, called whenever a diagnostic
 is emitted (as opposed to those warnings that are suppressed by
 command-line options).
+end
+
+define break-on-saved-diagnostic
+break ana::diagnostic_manager::add_diagnostic
+end
+
+document break-on-saved-diagnostic
+Put a breakpoint on ana::diagnostic_manager::add_diagnostic, called within
+the analyzer whenever a diagnostic is saved for later de-duplication and
+possible emission.
 end
 
 define reload-gdbhooks

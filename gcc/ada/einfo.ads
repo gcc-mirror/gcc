@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -111,12 +111,14 @@ package Einfo is
 
 --     The function spec must be on a single line
 
---     There can only be a single statement, contained on a single line,
---     not counting any pragma Assert statements.
+--     There can only be a single return statement, not counting any pragma
+--     Assert statements, possibly followed by a comment.
 
---     This single statement must either be a function call with simple,
---     single token arguments, or it must be a membership test of the form
---     a in b, where a and b are single tokens.
+--     This single statement must either contain a function call with simple,
+--     single token arguments, or it must contain a membership test of the form
+--     a in b, where a and b are single tokens, or it must contain an equality
+--     or inequality test of single tokens, or it must contain a disjunction of
+--     the preceding constructs.
 
 --  For functions that are not inlined, there is no restriction on the body,
 --  and XEINFO generates a direct reference in the C header file which allows
@@ -370,6 +372,15 @@ package Einfo is
 --       on attribute 'Position applied to an object of the type; it is used by
 --       the IP routine to avoid performing this elaboration twice.
 
+--    Access_Subprogram_Wrapper (Node41)
+--       Entity created for access_to_subprogram types that have pre/post
+--       conditions. Wrapper subprogram is created when analyzing corresponding
+--       aspect, and inherits said aspects. Body of subprogram includes code
+--       to check contracts, and a direct call to the designated subprogram.
+--       The body is part of the freeze actions for the type.
+--       The Subprogram_Type created for the Access_To_Subprogram carries the
+--       Access_Subprogram_Wrapper for use in the expansion of indirect calls.
+
 --    Activation_Record_Component (Node31)
 --       Defined for E_Variable, E_Constant, E_Loop_Parameter, and formal
 --       parameter entities. Used in Opt.Unnest_Subprogram_Mode, in which case
@@ -527,7 +538,7 @@ package Einfo is
 --    Block_Node (Node11)
 --       Defined in block entities. Points to the identifier in the
 --       Block_Statement itself. Used when retrieving the block construct
---       for finalization purposes, The block entity has an implicit label
+--       for finalization purposes, the block entity has an implicit label
 --       declaration in the enclosing declarative part, and has otherwise
 --       no direct connection in the tree with the block statement. The
 --       link is to the identifier (which is an occurrence of the entity)
@@ -733,9 +744,9 @@ package Einfo is
 
 --    Contract (Node34)
 --       Defined in constant, entry, entry family, operator, [generic] package,
---       package body, protected type, [generic] subprogram, subprogram body,
---       variable and task type entities. Points to the contract of the entity,
---       holding various assertion items and data classifiers.
+--       package body, protected unit, [generic] subprogram, subprogram body,
+--       variable, task unit, and type entities. Points to the contract of the
+--       entity, holding various assertion items and data classifiers.
 
 --    Contract_Wrapper (Node25)
 --       Defined in entry and entry family entities. Set only when the entry
@@ -973,7 +984,7 @@ package Einfo is
 --       list is always empty.
 --       When expansion is disabled the corresponding record type of a
 --       synchronized type is not constructed. In that case, such types
---       carry this attribute directly, for ASIS use.
+--       carry this attribute directly.
 
 --    Directly_Designated_Type (Node20)
 --       Defined in access types. This field points to the type that is
@@ -1217,14 +1228,16 @@ package Einfo is
 --       for the same literal.
 
 --    Enum_Pos_To_Rep (Node23)
---       Defined in enumeration types (but not enumeration subtypes). Set to
---       Empty unless the enumeration type has a non-standard representation
---       (i.e. at least one literal has a representation value different from
---       its pos value). In this case, Enum_Pos_To_Rep is the entity for an
---       array constructed when the type is frozen that maps Pos values to
---       corresponding Rep values. The index type of this array is Natural,
---       and the component type is a suitable integer type that holds the
---       full range of representation values.
+--       Defined in enumeration types, but not enumeration subtypes. Set to
+--       Empty unless the enumeration type has a non-standard representation,
+--       i.e. at least one literal has a representation value different from
+--       its position value. In this case, the alternative is the following:
+--       if the representation is not contiguous, then Enum_Pos_To_Rep is the
+--       entity for an array constant built when the type is frozen that maps
+--       Pos values to corresponding Rep values, whose index type is Natural
+--       and whose component type is the enumeration type itself; or else, if
+--       the representation is contiguous, then Enum_Pos_To_Rep is the entity
+--       of the index type defined above.
 
 --    Equivalent_Type (Node18)
 --       Defined in class wide types and subtypes, access to protected
@@ -1575,7 +1588,7 @@ package Einfo is
 --       in sem_aux is used to test for this case.
 
 --    Has_Contiguous_Rep (Flag181)
---       Defined in enumeration types. Set if the type as a representation
+--       Defined in enumeration types. Set if the type has a representation
 --       clause whose entries are successive integers.
 
 --    Has_Controlled_Component (Flag43) [base type only]
@@ -1679,9 +1692,10 @@ package Einfo is
 --       rewritten into something else and subsequently reanalyzed/expanded.
 
 --    Has_Foreign_Convention (synthesized)
---       Applies to all entities. Determines if the Convention for the
---       entity is a foreign convention (i.e. is other than Convention_Ada,
---       Convention_Intrinsic, Convention_Entry or Convention_Protected).
+--       Applies to all entities. Determines if the Convention for the entity
+--       is a foreign convention, i.e. non-native: other than Convention_Ada,
+--       Convention_Intrinsic, Convention_Entry, Convention_Protected,
+--       Convention_Stubbed and Convention_Ada_Pass_By_(Copy,Reference).
 
 --    Has_Forward_Instantiation (Flag175)
 --       Defined in package entities. Set for packages that instantiate local
@@ -1799,8 +1813,8 @@ package Einfo is
 --       See documentation in backend for further details.
 
 --    Has_Nested_Subprogram (Flag282)
---      Defined in subprogram entities. Set for a subprogram which contains at
---      least one nested subprogram.
+--       Defined in subprogram entities. Set for a subprogram which contains at
+--       least one nested subprogram.
 
 --    Has_Non_Limited_View (synth)
 --       Defined in E_Incomplete_Type, E_Incomplete_Subtype, E_Class_Wide_Type,
@@ -1846,12 +1860,16 @@ package Einfo is
 
 --    Has_Own_DIC (Flag3) [base type only]
 --       Defined in all type entities. Set for a private type and its full view
---       when the type is subject to pragma Default_Initial_Condition.
+--       (and its underlying full view, if the full view is itsef private) when
+--       the type is subject to pragma Default_Initial_Condition.
 
 --    Has_Own_Invariants (Flag232) [base type only]
 --       Defined in all type entities. Set on any type that defines at least
---       one invariant of its own. The flag is also set on the full view of a
---       private type for completeness.
+--       one invariant of its own.
+
+--       Note: this flag is set on both partial and full view of types to which
+--       an Invariant pragma or aspect applies, and on the underlying full view
+--       if the full view is private.
 
 --    Has_Partial_Visible_Refinement (Flag296)
 --       Defined in E_Abstract_State entities. Set when a state has at least
@@ -1971,7 +1989,8 @@ package Einfo is
 --       Predicate aspect from its parent or progenitor types.
 --
 --       Note: this flag is set on both partial and full view of types to which
---       a Predicate pragma or aspect applies.
+--       a Predicate pragma or aspect applies, and on the underlying full view
+--       if the full view is private.
 
 --    Has_Primitive_Operations (Flag120) [base type only]
 --       Defined in all type entities. Set if at least one primitive operation
@@ -2266,11 +2285,6 @@ package Einfo is
 --       Defined in record types and subtypes. List of abstract interfaces
 --       implemented by a tagged type that are not already implemented by the
 --       ancestors (Ada 2005: AI-251).
-
---    Invariants_Ignored (Flag308)
---       Defined on all types. Indicates whether the type declaration is in
---       a context where Assertion_Policy is Ignore, in which case no checks
---       (static or dynamic) must be generated for objects of the type.
 
 --    Invariant_Procedure (synthesized)
 --       Defined in types and subtypes. Set for private types and their full
@@ -3170,6 +3184,10 @@ package Einfo is
 --       Applies to all entities, true for record types and subtypes,
 --       includes class-wide types and subtypes (which are also records).
 
+--    Is_Relaxed_Initialization_State (synthesized)
+--       Applies to all entities, true for abstract states that are subject to
+--       option Relaxed_Initialization.
+
 --    Is_Remote_Call_Interface (Flag62)
 --       Defined in all entities. Set in E_Package and E_Generic_Package
 --       entities to which a pragma Remote_Call_Interface is applied, and
@@ -3706,8 +3724,8 @@ package Einfo is
 --       pragma No_Component_Reordering applies.
 
 --    No_Return (Flag113)
---       Defined in all entities. Always false except in the case of procedures
---       and generic procedures for which a pragma No_Return is given.
+--       Defined in all entities. Set for subprograms and generic subprograms
+--       to which a valid aspect or pragma No_Return applies.
 
 --    No_Strict_Aliasing (Flag136) [base type only]
 --       Defined in access types. Set to direct the backend to avoid any
@@ -4166,6 +4184,10 @@ package Einfo is
 --       RM-6.5(4/2). Note that a (simple) return statement within an
 --       extended_return_statement applies to the extended_return_statement,
 --       even though it causes the whole function to return.
+--       Also defined in special E_Block entities built as E_Return_Statement
+--       for extended return statements and attached to the block statement
+--       by Expand_N_Extended_Return_Statement before being turned into an
+--       E_Block by semantic analysis.
 
 --    Return_Present (Flag54)
 --       Defined in function and generic function entities. Set if the
@@ -4175,9 +4197,10 @@ package Einfo is
 --       for the function case.
 
 --    Returns_By_Ref (Flag90)
---       Defined in function entities. Set if the function returns the result
---       by reference, either because its return type is a by-reference-type
---       or because the function explicitly uses the secondary stack.
+--       Defined in subprogram type entities and functions. Set if a function
+--       (or an access-to-function type) returns a result by reference, either
+--       because its return type is a by-reference-type or because the function
+--       explicitly uses the secondary stack.
 
 --    Reverse_Bit_Order (Flag164) [base type only]
 --       Defined in all record type entities. Set if entity has a Bit_Order
@@ -5817,6 +5840,7 @@ package Einfo is
    --    Has_Null_Visible_Refinement         (synth)
    --    Is_External_State                   (synth)
    --    Is_Null_State                       (synth)
+   --    Is_Relaxed_Initialization_State     (synth)
    --    Is_Synchronized_State               (synth)
    --    Partial_Refinement_Constituents     (synth)
 
@@ -5897,6 +5921,7 @@ package Einfo is
    --    (plus type attributes)
 
    --  E_Block
+   --    Return_Applies_To                   (Node8)
    --    Block_Node                          (Node11)
    --    First_Entity                        (Node17)
    --    Last_Entity                         (Node20)
@@ -6715,10 +6740,12 @@ package Einfo is
    --    Extra_Accessibility_Of_Result       (Node19)
    --    Directly_Designated_Type            (Node20)
    --    Extra_Formals                       (Node28)
+   --    Access_Subprogram_Wrapper           (Node41)
    --    First_Formal                        (synth)
    --    First_Formal_With_Extras            (synth)
    --    Last_Formal                         (synth)
    --    Number_Formals                      (synth)
+   --    Returns_By_Ref                      (Flag90)
    --    (plus type attributes)
 
    --  E_Task_Body
@@ -7061,6 +7088,7 @@ package Einfo is
    function Accept_Address                      (Id : E) return L;
    function Access_Disp_Table                   (Id : E) return L;
    function Access_Disp_Table_Elab_Flag         (Id : E) return E;
+   function Access_Subprogram_Wrapper           (Id : E) return E;
    function Activation_Record_Component         (Id : E) return E;
    function Actual_Subtype                      (Id : E) return E;
    function Address_Taken                       (Id : E) return B;
@@ -7087,7 +7115,6 @@ package Einfo is
    function Class_Wide_Clone                    (Id : E) return E;
    function Class_Wide_Type                     (Id : E) return E;
    function Cloned_Subtype                      (Id : E) return E;
-   function Component_Alignment                 (Id : E) return C;
    function Component_Bit_Offset                (Id : E) return U;
    function Component_Clause                    (Id : E) return N;
    function Component_Size                      (Id : E) return U;
@@ -7195,7 +7222,6 @@ package Einfo is
    function Has_Delayed_Aspects                 (Id : E) return B;
    function Has_Delayed_Freeze                  (Id : E) return B;
    function Has_Delayed_Rep_Aspects             (Id : E) return B;
-   function Has_DIC                             (Id : E) return B;
    function Has_Discriminants                   (Id : E) return B;
    function Has_Dispatch_Table                  (Id : E) return B;
    function Has_Dynamic_Predicate_Aspect        (Id : E) return B;
@@ -7212,8 +7238,6 @@ package Einfo is
    function Has_Inherited_DIC                   (Id : E) return B;
    function Has_Inherited_Invariants            (Id : E) return B;
    function Has_Initial_Value                   (Id : E) return B;
-   function Has_Interrupt_Handler               (Id : E) return B;
-   function Has_Invariants                      (Id : E) return B;
    function Has_Loop_Entry_Attributes           (Id : E) return B;
    function Has_Machine_Radix_Clause            (Id : E) return B;
    function Has_Master_Entity                   (Id : E) return B;
@@ -7287,7 +7311,6 @@ package Einfo is
    function Interface_Alias                     (Id : E) return E;
    function Interface_Name                      (Id : E) return N;
    function Interfaces                          (Id : E) return L;
-   function Invariants_Ignored                  (Id : E) return B;
    function Is_Abstract_Subprogram              (Id : E) return B;
    function Is_Abstract_Type                    (Id : E) return B;
    function Is_Access_Constant                  (Id : E) return B;
@@ -7298,7 +7321,6 @@ package Einfo is
    function Is_Aliased                          (Id : E) return B;
    function Is_Asynchronous                     (Id : E) return B;
    function Is_Atomic                           (Id : E) return B;
-   function Is_Atomic_Or_VFA                    (Id : E) return B;
    function Is_Bit_Packed_Array                 (Id : E) return B;
    function Is_Called                           (Id : E) return B;
    function Is_Character_Type                   (Id : E) return B;
@@ -7621,6 +7643,7 @@ package Einfo is
    function Aft_Value                           (Id : E) return U;
    function Alignment_Clause                    (Id : E) return N;
    function Base_Type                           (Id : E) return E;
+   function Component_Alignment                 (Id : E) return C;
    function Declaration_Node                    (Id : E) return N;
    function Designated_Type                     (Id : E) return E;
    function First_Component                     (Id : E) return E;
@@ -7628,14 +7651,18 @@ package Einfo is
    function First_Formal                        (Id : E) return E;
    function First_Formal_With_Extras            (Id : E) return E;
    function Has_Attach_Handler                  (Id : E) return B;
+   function Has_DIC                             (Id : E) return B;
    function Has_Entries                         (Id : E) return B;
    function Has_Foreign_Convention              (Id : E) return B;
+   function Has_Interrupt_Handler               (Id : E) return B;
+   function Has_Invariants                      (Id : E) return B;
    function Has_Non_Limited_View                (Id : E) return B;
    function Has_Non_Null_Abstract_State         (Id : E) return B;
    function Has_Non_Null_Visible_Refinement     (Id : E) return B;
    function Has_Null_Abstract_State             (Id : E) return B;
    function Has_Null_Visible_Refinement         (Id : E) return B;
    function Implementation_Base_Type            (Id : E) return E;
+   function Is_Atomic_Or_VFA                    (Id : E) return B;
    function Is_Base_Type                        (Id : E) return B;
    function Is_Boolean_Type                     (Id : E) return B;
    function Is_Constant_Object                  (Id : E) return B;
@@ -7652,6 +7679,7 @@ package Einfo is
    function Is_Protected_Component              (Id : E) return B;
    function Is_Protected_Interface              (Id : E) return B;
    function Is_Protected_Record_Type            (Id : E) return B;
+   function Is_Relaxed_Initialization_State     (Id : E) return B;
    function Is_Standard_Character_Type          (Id : E) return B;
    function Is_Standard_String_Type             (Id : E) return B;
    function Is_String_Type                      (Id : E) return B;
@@ -7674,6 +7702,7 @@ package Einfo is
    function Next_Discriminant                   (Id : E) return E;
    function Next_Formal                         (Id : E) return E;
    function Next_Formal_With_Extras             (Id : E) return E;
+   function Next_Index                          (Id : N) return N;
    function Next_Literal                        (Id : E) return E;
    function Next_Stored_Discriminant            (Id : E) return E;
    function Number_Dimensions                   (Id : E) return Pos;
@@ -7687,6 +7716,7 @@ package Einfo is
    function Safe_Emax_Value                     (Id : E) return U;
    function Safe_First_Value                    (Id : E) return R;
    function Safe_Last_Value                     (Id : E) return R;
+   function Scope_Depth                         (Id : E) return U;
    function Scope_Depth_Set                     (Id : E) return B;
    function Size_Clause                         (Id : E) return N;
    function Stream_Size_Clause                  (Id : E) return N;
@@ -7767,6 +7797,7 @@ package Einfo is
    procedure Set_Accept_Address                  (Id : E; V : L);
    procedure Set_Access_Disp_Table               (Id : E; V : L);
    procedure Set_Access_Disp_Table_Elab_Flag     (Id : E; V : E);
+   procedure Set_Access_Subprogram_Wrapper       (Id : E; V : E);
    procedure Set_Activation_Record_Component     (Id : E; V : E);
    procedure Set_Actual_Subtype                  (Id : E; V : E);
    procedure Set_Address_Taken                   (Id : E; V : B := True);
@@ -7991,7 +8022,6 @@ package Einfo is
    procedure Set_Interface_Alias                 (Id : E; V : E);
    procedure Set_Interface_Name                  (Id : E; V : N);
    procedure Set_Interfaces                      (Id : E; V : L);
-   procedure Set_Invariants_Ignored              (Id : E; V : B := True);
    procedure Set_Is_Abstract_Subprogram          (Id : E; V : B := True);
    procedure Set_Is_Abstract_Type                (Id : E; V : B := True);
    procedure Set_Is_Access_Constant              (Id : E; V : B := True);
@@ -8301,8 +8331,8 @@ package Einfo is
    --  entities whose Ekind has not been set yet).
 
    procedure Init_Alignment                (Id : E; V : Int);
-   procedure Init_Component_Size           (Id : E; V : Int);
    procedure Init_Component_Bit_Offset     (Id : E; V : Int);
+   procedure Init_Component_Size           (Id : E; V : Int);
    procedure Init_Digits_Value             (Id : E; V : Int);
    procedure Init_Esize                    (Id : E; V : Int);
    procedure Init_Normalized_First_Bit     (Id : E; V : Int);
@@ -8311,14 +8341,22 @@ package Einfo is
    procedure Init_RM_Size                  (Id : E; V : Int);
 
    procedure Init_Alignment                (Id : E);
-   procedure Init_Component_Size           (Id : E);
    procedure Init_Component_Bit_Offset     (Id : E);
+   procedure Init_Component_Size           (Id : E);
    procedure Init_Digits_Value             (Id : E);
    procedure Init_Esize                    (Id : E);
    procedure Init_Normalized_First_Bit     (Id : E);
    procedure Init_Normalized_Position      (Id : E);
    procedure Init_Normalized_Position_Max  (Id : E);
    procedure Init_RM_Size                  (Id : E);
+
+   procedure Init_Component_Location (Id : E);
+   --  Initializes all fields describing the location of a component
+   --  (Normalized_Position, Component_Bit_Offset, Normalized_First_Bit,
+   --  Normalized_Position_Max, Esize) to all be Unknown.
+
+   procedure Init_Size (Id : E; V : Int);
+   --  Initialize both the Esize and RM_Size fields of E to V
 
    procedure Init_Size_Align (Id : E);
    --  This procedure initializes both size fields and the alignment
@@ -8327,14 +8365,6 @@ package Einfo is
    procedure Init_Object_Size_Align (Id : E);
    --  Same as Init_Size_Align except RM_Size field (which is only for types)
    --  is unaffected.
-
-   procedure Init_Size (Id : E; V : Int);
-   --  Initialize both the Esize and RM_Size fields of E to V
-
-   procedure Init_Component_Location (Id : E);
-   --  Initializes all fields describing the location of a component
-   --  (Normalized_Position, Component_Bit_Offset, Normalized_First_Bit,
-   --  Normalized_Position_Max, Esize) to all be Unknown.
 
    ---------------
    -- Iterators --
@@ -8522,17 +8552,8 @@ package Einfo is
    --  NOTE: No updates are done to the First_Entity and Last_Entity fields
    --  of the scope.
 
-   function Next_Index (Id : Node_Id) return Node_Id;
-   --  Given an index from a previous call to First_Index or Next_Index,
-   --  returns a node representing the occurrence of the next index subtype,
-   --  or Empty if there are no more index subtypes.
-
    procedure Remove_Entity (Id : Entity_Id);
    --  Remove entity Id from the entity chain of its scope
-
-   function Scope_Depth (Id : Entity_Id) return Uint;
-   --  Returns the scope depth value of the Id, unless the Id is a record
-   --  type, in which case it returns the scope depth of the record scope.
 
    function Subtype_Kind (K : Entity_Kind) return Entity_Kind;
    --  Given an entity_kind K this function returns the entity_kind
@@ -8595,9 +8616,9 @@ package Einfo is
    --  the given field, depending on the Ekind. No blanks or end of lines are
    --  output, just the characters of the field name.
 
-   --------------------
-   -- Inline Pragmas --
-   --------------------
+   ----------------------------------
+   -- Inline Pragmas for functions --
+   ----------------------------------
 
    --  Note that these inline pragmas are referenced by the XEINFO utility
    --  program in preparing the corresponding C header, and only those
@@ -8608,6 +8629,7 @@ package Einfo is
    pragma Inline (Accept_Address);
    pragma Inline (Access_Disp_Table);
    pragma Inline (Access_Disp_Table_Elab_Flag);
+   pragma Inline (Access_Subprogram_Wrapper);
    pragma Inline (Activation_Record_Component);
    pragma Inline (Actual_Subtype);
    pragma Inline (Address_Taken);
@@ -8644,6 +8666,8 @@ package Einfo is
    pragma Inline (Corresponding_Concurrent_Type);
    pragma Inline (Corresponding_Discriminant);
    pragma Inline (Corresponding_Equality);
+   pragma Inline (Corresponding_Function);
+   pragma Inline (Corresponding_Procedure);
    pragma Inline (Corresponding_Protected_Entry);
    pragma Inline (Corresponding_Record_Component);
    pragma Inline (Corresponding_Record_Type);
@@ -8692,6 +8716,7 @@ package Einfo is
    pragma Inline (Entry_Formal);
    pragma Inline (Entry_Index_Constant);
    pragma Inline (Entry_Index_Type);
+   pragma Inline (Entry_Max_Queue_Lengths_Array);
    pragma Inline (Entry_Parameters_Type);
    pragma Inline (Enum_Pos_To_Rep);
    pragma Inline (Enumeration_Pos);
@@ -8704,6 +8729,7 @@ package Einfo is
    pragma Inline (Extra_Constrained);
    pragma Inline (Extra_Formal);
    pragma Inline (Extra_Formals);
+   pragma Inline (Finalize_Storage_Only);
    pragma Inline (Finalization_Master);
    pragma Inline (Finalizer);
    pragma Inline (First_Entity);
@@ -8736,6 +8762,7 @@ package Einfo is
    pragma Inline (Has_Delayed_Aspects);
    pragma Inline (Has_Delayed_Freeze);
    pragma Inline (Has_Delayed_Rep_Aspects);
+   pragma Inline (Has_DIC);
    pragma Inline (Has_Discriminants);
    pragma Inline (Has_Dispatch_Table);
    pragma Inline (Has_Dynamic_Predicate_Aspect);
@@ -8752,6 +8779,7 @@ package Einfo is
    pragma Inline (Has_Inherited_DIC);
    pragma Inline (Has_Inherited_Invariants);
    pragma Inline (Has_Initial_Value);
+   pragma Inline (Has_Invariants);
    pragma Inline (Has_Loop_Entry_Attributes);
    pragma Inline (Has_Machine_Radix_Clause);
    pragma Inline (Has_Master_Entity);
@@ -8820,11 +8848,11 @@ package Einfo is
    pragma Inline (In_Package_Body);
    pragma Inline (In_Private_Part);
    pragma Inline (In_Use);
+   pragma Inline (Initialization_Statements);
    pragma Inline (Inner_Instances);
    pragma Inline (Interface_Alias);
    pragma Inline (Interface_Name);
    pragma Inline (Interfaces);
-   pragma Inline (Invariants_Ignored);
    pragma Inline (Is_Abstract_Subprogram);
    pragma Inline (Is_Abstract_Type);
    pragma Inline (Is_Access_Constant);
@@ -8837,6 +8865,7 @@ package Einfo is
    pragma Inline (Is_Ada_2012_Only);
    pragma Inline (Is_Aggregate_Type);
    pragma Inline (Is_Aliased);
+   pragma Inline (Is_Anonymous_Access_Type);
    pragma Inline (Is_Array_Type);
    pragma Inline (Is_Assignable);
    pragma Inline (Is_Asynchronous);
@@ -8973,6 +9002,8 @@ package Einfo is
    pragma Inline (Is_Static_Type);
    pragma Inline (Is_Statically_Allocated);
    pragma Inline (Is_Subprogram);
+   pragma Inline (Is_Subprogram_Or_Entry);
+   pragma Inline (Is_Subprogram_Or_Generic_Subprogram);
    pragma Inline (Is_Tag);
    pragma Inline (Is_Tagged_Type);
    pragma Inline (Is_Task_Type);
@@ -9019,6 +9050,7 @@ package Einfo is
    pragma Inline (Next_Index);
    pragma Inline (Next_Inlined_Subprogram);
    pragma Inline (Next_Literal);
+   pragma Inline (Next_Stored_Discriminant);
    pragma Inline (No_Dynamic_Predicate_On_Actual);
    pragma Inline (No_Pool_Assigned);
    pragma Inline (No_Predicate_On_Actual);
@@ -9137,17 +9169,84 @@ package Einfo is
    pragma Inline (Was_Hidden);
    pragma Inline (Wrapped_Entity);
 
-   pragma Inline (Init_Alignment);
-   pragma Inline (Init_Component_Bit_Offset);
-   pragma Inline (Init_Component_Size);
-   pragma Inline (Init_Digits_Value);
-   pragma Inline (Init_Esize);
-   pragma Inline (Init_RM_Size);
+   --  END XEINFO INLINES
+
+   --  The following Inline pragmas are *not* read by XEINFO when building the
+   --  C version of this interface automatically (so the C version will end up
+   --  making out of line calls). The pragma scan in XEINFO will be terminated
+   --  on encountering the END XEINFO INLINES line. We inline things here which
+   --  are small, but not of the canonical attribute access/set format that can
+   --  be handled by XEINFO.
+
+   pragma Inline (Address_Clause);
+   pragma Inline (Alignment_Clause);
+   pragma Inline (Base_Type);
+   pragma Inline (Float_Rep);
+   pragma Inline (Has_Foreign_Convention);
+   pragma Inline (Has_Non_Limited_View);
+   pragma Inline (Is_Base_Type);
+   pragma Inline (Is_Boolean_Type);
+   pragma Inline (Is_Constant_Object);
+   pragma Inline (Is_Controlled);
+   pragma Inline (Is_Discriminal);
+   pragma Inline (Is_Entity_Name);
+   pragma Inline (Is_Finalizer);
+   pragma Inline (Is_Null_State);
+   pragma Inline (Is_Package_Or_Generic_Package);
+   pragma Inline (Is_Packed_Array);
+   pragma Inline (Is_Prival);
+   pragma Inline (Is_Protected_Component);
+   pragma Inline (Is_Protected_Record_Type);
+   pragma Inline (Is_String_Type);
+   pragma Inline (Is_Task_Record_Type);
+   pragma Inline (Is_Volatile);
+   pragma Inline (Is_Wrapper_Package);
+   pragma Inline (Scope_Depth);
+   pragma Inline (Scope_Depth_Set);
+   pragma Inline (Size_Clause);
+   pragma Inline (Stream_Size_Clause);
+   pragma Inline (Type_High_Bound);
+   pragma Inline (Type_Low_Bound);
+
+   pragma Inline (Known_Alignment);
+   pragma Inline (Known_Component_Bit_Offset);
+   pragma Inline (Known_Component_Size);
+   pragma Inline (Known_Esize);
+   pragma Inline (Known_Normalized_First_Bit);
+   pragma Inline (Known_Normalized_Position);
+   pragma Inline (Known_Normalized_Position_Max);
+   pragma Inline (Known_RM_Size);
+
+   pragma Inline (Known_Static_Component_Bit_Offset);
+   pragma Inline (Known_Static_Component_Size);
+   pragma Inline (Known_Static_Esize);
+   pragma Inline (Known_Static_Normalized_First_Bit);
+   pragma Inline (Known_Static_Normalized_Position);
+   pragma Inline (Known_Static_Normalized_Position_Max);
+   pragma Inline (Known_Static_RM_Size);
+
+   pragma Inline (Unknown_Alignment);
+   pragma Inline (Unknown_Component_Bit_Offset);
+   pragma Inline (Unknown_Component_Size);
+   pragma Inline (Unknown_Esize);
+   pragma Inline (Unknown_Normalized_First_Bit);
+   pragma Inline (Unknown_Normalized_Position);
+   pragma Inline (Unknown_Normalized_Position_Max);
+   pragma Inline (Unknown_RM_Size);
+
+   -----------------------------------
+   -- Inline Pragmas for procedures --
+   -----------------------------------
+
+   --  The following inline pragmas are *not* referenced by the XEINFO utility
+   --  program in preparing the corresponding C header, and therefore do *not*
+   --  need to meet the requirements documented in the section on XEINFO.
 
    pragma Inline (Set_Abstract_States);
    pragma Inline (Set_Accept_Address);
    pragma Inline (Set_Access_Disp_Table);
    pragma Inline (Set_Access_Disp_Table_Elab_Flag);
+   pragma Inline (Set_Access_Subprogram_Wrapper);
    pragma Inline (Set_Activation_Record_Component);
    pragma Inline (Set_Actual_Subtype);
    pragma Inline (Set_Address_Taken);
@@ -9184,6 +9283,8 @@ package Einfo is
    pragma Inline (Set_Corresponding_Concurrent_Type);
    pragma Inline (Set_Corresponding_Discriminant);
    pragma Inline (Set_Corresponding_Equality);
+   pragma Inline (Set_Corresponding_Function);
+   pragma Inline (Set_Corresponding_Procedure);
    pragma Inline (Set_Corresponding_Protected_Entry);
    pragma Inline (Set_Corresponding_Record_Component);
    pragma Inline (Set_Corresponding_Record_Type);
@@ -9243,6 +9344,7 @@ package Einfo is
    pragma Inline (Set_Extra_Constrained);
    pragma Inline (Set_Extra_Formal);
    pragma Inline (Set_Extra_Formals);
+   pragma Inline (Set_Finalize_Storage_Only);
    pragma Inline (Set_Finalization_Master);
    pragma Inline (Set_Finalizer);
    pragma Inline (Set_First_Entity);
@@ -9251,6 +9353,7 @@ package Einfo is
    pragma Inline (Set_First_Literal);
    pragma Inline (Set_First_Private_Entity);
    pragma Inline (Set_First_Rep_Item);
+   pragma Inline (Set_Float_Rep);
    pragma Inline (Set_Freeze_Node);
    pragma Inline (Set_From_Limited_With);
    pragma Inline (Set_Full_View);
@@ -9358,11 +9461,11 @@ package Einfo is
    pragma Inline (Set_In_Package_Body);
    pragma Inline (Set_In_Private_Part);
    pragma Inline (Set_In_Use);
+   pragma Inline (Set_Initialization_Statements);
    pragma Inline (Set_Inner_Instances);
    pragma Inline (Set_Interface_Alias);
    pragma Inline (Set_Interface_Name);
    pragma Inline (Set_Interfaces);
-   pragma Inline (Set_Invariants_Ignored);
    pragma Inline (Set_Is_Abstract_Subprogram);
    pragma Inline (Set_Is_Abstract_Type);
    pragma Inline (Set_Is_Access_Constant);
@@ -9627,31 +9730,14 @@ package Einfo is
    pragma Inline (Set_Was_Hidden);
    pragma Inline (Set_Wrapped_Entity);
 
-   --  END XEINFO INLINES
-
-   --  The following Inline pragmas are *not* read by xeinfo when building the
-   --  C version of this interface automatically (so the C version will end up
-   --  making out of line calls). The pragma scan in xeinfo will be terminated
-   --  on encountering the END XEINFO INLINES line. We inline things here which
-   --  are small, but not of the canonical attribute access/set format that can
-   --  be handled by xeinfo.
-
-   pragma Inline (Base_Type);
-   pragma Inline (Is_Base_Type);
-   pragma Inline (Is_Boolean_Type);
-   pragma Inline (Is_Controlled);
-   pragma Inline (Is_Entity_Name);
-   pragma Inline (Is_Package_Or_Generic_Package);
-   pragma Inline (Is_Packed_Array);
-   pragma Inline (Is_String_Type);
-   pragma Inline (Is_Subprogram_Or_Generic_Subprogram);
-   pragma Inline (Is_Volatile);
-   pragma Inline (Is_Wrapper_Package);
-   pragma Inline (Known_RM_Size);
-   pragma Inline (Known_Static_Component_Bit_Offset);
-   pragma Inline (Known_Static_RM_Size);
-   pragma Inline (Scope_Depth);
-   pragma Inline (Scope_Depth_Set);
-   pragma Inline (Unknown_RM_Size);
+   pragma Inline (Init_Alignment);
+   pragma Inline (Init_Component_Bit_Offset);
+   pragma Inline (Init_Component_Size);
+   pragma Inline (Init_Digits_Value);
+   pragma Inline (Init_Esize);
+   pragma Inline (Init_Normalized_First_Bit);
+   pragma Inline (Init_Normalized_Position);
+   pragma Inline (Init_Normalized_Position_Max);
+   pragma Inline (Init_RM_Size);
 
 end Einfo;

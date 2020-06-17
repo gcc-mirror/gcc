@@ -68,6 +68,9 @@
 #define hi_UP    E_HImode
 #define hf_UP    E_HFmode
 #define qi_UP    E_QImode
+#define bf_UP    E_BFmode
+#define v4bf_UP  E_V4BFmode
+#define v8bf_UP  E_V8BFmode
 #define UP(X) X##_UP
 
 #define SIMD_MAX_BUILTIN_ARGS 5
@@ -107,6 +110,9 @@ enum aarch64_type_qualifiers
   /* Lane indices selected in pairs. - must be in range, and flipped for
      bigendian.  */
   qualifier_lane_pair_index = 0x800,
+  /* Lane indices selected in quadtuplets. - must be in range, and flipped for
+     bigendian.  */
+  qualifier_lane_quadtup_index = 0x1000,
 };
 
 typedef struct
@@ -169,10 +175,19 @@ aarch64_types_ternopu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
       qualifier_unsigned, qualifier_unsigned };
 #define TYPES_TERNOPU (aarch64_types_ternopu_qualifiers)
 static enum aarch64_type_qualifiers
+aarch64_types_ternopu_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned,
+      qualifier_unsigned, qualifier_lane_index };
+#define TYPES_TERNOPU_LANE (aarch64_types_ternopu_lane_qualifiers)
+static enum aarch64_type_qualifiers
 aarch64_types_ternopu_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned,
       qualifier_unsigned, qualifier_immediate };
 #define TYPES_TERNOPUI (aarch64_types_ternopu_imm_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_ternop_ssus_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_unsigned, qualifier_none };
+#define TYPES_TERNOP_SSUS (aarch64_types_ternop_ssus_qualifiers)
 
 
 static enum aarch64_type_qualifiers
@@ -190,6 +205,19 @@ aarch64_types_quadopu_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
       qualifier_unsigned, qualifier_lane_index };
 #define TYPES_QUADOPU_LANE (aarch64_types_quadopu_lane_qualifiers)
+
+static enum aarch64_type_qualifiers
+aarch64_types_quadopssus_lane_quadtup_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_unsigned,
+      qualifier_none, qualifier_lane_quadtup_index };
+#define TYPES_QUADOPSSUS_LANE_QUADTUP \
+	(aarch64_types_quadopssus_lane_quadtup_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_quadopsssu_lane_quadtup_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none,
+      qualifier_unsigned, qualifier_lane_quadtup_index };
+#define TYPES_QUADOPSSSU_LANE_QUADTUP \
+	(aarch64_types_quadopsssu_lane_quadtup_qualifiers)
 
 static enum aarch64_type_qualifiers
 aarch64_types_quadopu_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -347,6 +375,12 @@ aarch64_types_storestruct_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define VAR14(T, X, MAP, A, B, C, D, E, F, G, H, I, J, K, L, M, N) \
   VAR13 (T, X, MAP, A, B, C, D, E, F, G, H, I, J, K, L, M) \
   VAR1 (T, X, MAP, N)
+#define VAR15(T, X, MAP, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O) \
+  VAR14 (T, X, MAP, A, B, C, D, E, F, G, H, I, J, K, L, M, N) \
+  VAR1 (T, X, MAP, O)
+#define VAR16(T, X, MAP, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P) \
+  VAR15 (T, X, MAP, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O) \
+  VAR1 (T, X, MAP, P)
 
 #include "aarch64-builtin-iterators.h"
 
@@ -511,6 +545,7 @@ const char *aarch64_scalar_builtin_types[] = {
   "__builtin_aarch64_simd_oi",
   "__builtin_aarch64_simd_ci",
   "__builtin_aarch64_simd_xi",
+  "__builtin_aarch64_simd_bf",
   NULL
 };
 
@@ -567,6 +602,10 @@ static tree aarch64_simd_intXI_type_node = NULL_TREE;
    across the back-end.  */
 tree aarch64_fp16_type_node = NULL_TREE;
 tree aarch64_fp16_ptr_type_node = NULL_TREE;
+
+/* Back-end node type for brain float (bfloat) types.  */
+tree aarch64_bf16_type_node = NULL_TREE;
+tree aarch64_bf16_ptr_type_node = NULL_TREE;
 
 /* Wrapper around add_builtin_function.  NAME is the name of the built-in
    function, TYPE is the function type, and CODE is the function subcode
@@ -659,6 +698,8 @@ aarch64_simd_builtin_std_type (machine_mode mode,
       return float_type_node;
     case E_DFmode:
       return double_type_node;
+    case E_BFmode:
+      return aarch64_bf16_type_node;
     default:
       gcc_unreachable ();
     }
@@ -750,6 +791,10 @@ aarch64_init_simd_builtin_types (void)
   aarch64_simd_types[Float64x1_t].eltype = double_type_node;
   aarch64_simd_types[Float64x2_t].eltype = double_type_node;
 
+  /* Init Bfloat vector types with underlying __bf16 type.  */
+  aarch64_simd_types[Bfloat16x4_t].eltype = aarch64_bf16_type_node;
+  aarch64_simd_types[Bfloat16x8_t].eltype = aarch64_bf16_type_node;
+
   for (i = 0; i < nelts; i++)
     {
       tree eltype = aarch64_simd_types[i].eltype;
@@ -814,6 +859,8 @@ aarch64_init_simd_builtin_scalar_types (void)
 					     "__builtin_aarch64_simd_poly128");
   (*lang_hooks.types.register_builtin_type) (intTI_type_node,
 					     "__builtin_aarch64_simd_ti");
+  (*lang_hooks.types.register_builtin_type) (aarch64_bf16_type_node,
+					     "__builtin_aarch64_simd_bf");
   /* Unsigned integer types for various mode sizes.  */
   (*lang_hooks.types.register_builtin_type) (unsigned_intQI_type_node,
 					     "__builtin_aarch64_simd_uqi");
@@ -1059,6 +1106,19 @@ aarch64_init_fp16_types (void)
   aarch64_fp16_ptr_type_node = build_pointer_type (aarch64_fp16_type_node);
 }
 
+/* Initialize the backend REAL_TYPE type supporting bfloat types.  */
+static void
+aarch64_init_bf16_types (void)
+{
+  aarch64_bf16_type_node = make_node (REAL_TYPE);
+  TYPE_PRECISION (aarch64_bf16_type_node) = 16;
+  SET_TYPE_MODE (aarch64_bf16_type_node, BFmode);
+  layout_type (aarch64_bf16_type_node);
+
+  lang_hooks.types.register_builtin_type (aarch64_bf16_type_node, "__bf16");
+  aarch64_bf16_ptr_type_node = build_pointer_type (aarch64_bf16_type_node);
+}
+
 /* Pointer authentication builtins that will become NOP on legacy platform.
    Currently, these builtins are for internal use only (libgcc EH unwinder).  */
 
@@ -1214,6 +1274,8 @@ aarch64_general_init_builtins (void)
 
   aarch64_init_fp16_types ();
 
+  aarch64_init_bf16_types ();
+
   if (TARGET_SIMD)
     aarch64_init_simd_builtins ();
 
@@ -1260,6 +1322,7 @@ typedef enum
   SIMD_ARG_LANE_INDEX,
   SIMD_ARG_STRUCT_LOAD_STORE_LANE_INDEX,
   SIMD_ARG_LANE_PAIR_INDEX,
+  SIMD_ARG_LANE_QUADTUP_INDEX,
   SIMD_ARG_STOP
 } builtin_simd_arg;
 
@@ -1349,9 +1412,25 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 		  op[opc] = gen_int_mode (ENDIAN_LANE_N (nunits / 2, lane),
 					  SImode);
 		}
-	      /* Fall through - if the lane index isn't a constant then
-		 the next case will error.  */
-	      /* FALLTHRU */
+	      /* If the lane index isn't a constant then error out.  */
+	      goto constant_arg;
+	    case SIMD_ARG_LANE_QUADTUP_INDEX:
+	      /* Must be a previous operand into which this is an index and
+		 index is restricted to nunits / 4.  */
+	      gcc_assert (opc > 0);
+	      if (CONST_INT_P (op[opc]))
+		{
+		  machine_mode vmode = insn_data[icode].operand[opc - 1].mode;
+		  unsigned int nunits
+		    = GET_MODE_NUNITS (vmode).to_constant ();
+		  aarch64_simd_lane_bounds (op[opc], 0, nunits / 4, exp);
+		  /* Keep to GCC-vector-extension lane indices in the RTL.  */
+		  int lane = INTVAL (op[opc]);
+		  op[opc] = gen_int_mode (ENDIAN_LANE_N (nunits / 4, lane),
+					  SImode);
+		}
+	      /* If the lane index isn't a constant then error out.  */
+	      goto constant_arg;
 	    case SIMD_ARG_CONSTANT:
 constant_arg:
 	      if (!(*insn_data[icode].operand[opc].predicate)
@@ -1464,6 +1543,8 @@ aarch64_simd_expand_builtin (int fcode, tree exp, rtx target)
 	args[k] = SIMD_ARG_LANE_INDEX;
       else if (d->qualifiers[qualifiers_k] & qualifier_lane_pair_index)
 	args[k] = SIMD_ARG_LANE_PAIR_INDEX;
+      else if (d->qualifiers[qualifiers_k] & qualifier_lane_quadtup_index)
+	args[k] = SIMD_ARG_LANE_QUADTUP_INDEX;
       else if (d->qualifiers[qualifiers_k] & qualifier_struct_load_store_lane_index)
 	args[k] = SIMD_ARG_STRUCT_LOAD_STORE_LANE_INDEX;
       else if (d->qualifiers[qualifiers_k] & qualifier_immediate)
@@ -1942,17 +2023,13 @@ aarch64_builtin_vectorized_function (unsigned int fn, tree type_out,
 				     tree type_in)
 {
   machine_mode in_mode, out_mode;
-  unsigned HOST_WIDE_INT in_n, out_n;
 
   if (TREE_CODE (type_out) != VECTOR_TYPE
       || TREE_CODE (type_in) != VECTOR_TYPE)
     return NULL_TREE;
 
-  out_mode = TYPE_MODE (TREE_TYPE (type_out));
-  in_mode = TYPE_MODE (TREE_TYPE (type_in));
-  if (!TYPE_VECTOR_SUBPARTS (type_out).is_constant (&out_n)
-      || !TYPE_VECTOR_SUBPARTS (type_in).is_constant (&in_n))
-    return NULL_TREE;
+  out_mode = TYPE_MODE (type_out);
+  in_mode = TYPE_MODE (type_in);
 
 #undef AARCH64_CHECK_BUILTIN_MODE
 #define AARCH64_CHECK_BUILTIN_MODE(C, N) 1
@@ -1968,8 +2045,7 @@ aarch64_builtin_vectorized_function (unsigned int fn, tree type_out,
     {
 #undef AARCH64_CHECK_BUILTIN_MODE
 #define AARCH64_CHECK_BUILTIN_MODE(C, N) \
-  (out_mode == N##Fmode && out_n == C \
-   && in_mode == N##Fmode && in_n == C)
+  (out_mode == V##C##N##Fmode && in_mode == V##C##N##Fmode)
     CASE_CFN_FLOOR:
       return AARCH64_FIND_FRINT_VARIANT (floor);
     CASE_CFN_CEIL:
@@ -1984,8 +2060,7 @@ aarch64_builtin_vectorized_function (unsigned int fn, tree type_out,
       return AARCH64_FIND_FRINT_VARIANT (sqrt);
 #undef AARCH64_CHECK_BUILTIN_MODE
 #define AARCH64_CHECK_BUILTIN_MODE(C, N) \
-  (out_mode == SImode && out_n == C \
-   && in_mode == N##Imode && in_n == C)
+  (out_mode == V##C##SImode && in_mode == V##C##N##Imode)
     CASE_CFN_CLZ:
       {
 	if (AARCH64_CHECK_BUILTIN_MODE (4, S))
@@ -2002,8 +2077,7 @@ aarch64_builtin_vectorized_function (unsigned int fn, tree type_out,
       }
 #undef AARCH64_CHECK_BUILTIN_MODE
 #define AARCH64_CHECK_BUILTIN_MODE(C, N) \
-  (out_mode == N##Imode && out_n == C \
-   && in_mode == N##Fmode && in_n == C)
+  (out_mode == V##C##N##Imode && in_mode == V##C##N##Fmode)
     CASE_CFN_IFLOOR:
     CASE_CFN_LFLOOR:
     CASE_CFN_LLFLOOR:
@@ -2239,10 +2313,12 @@ aarch64_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   mask_sr = build_int_cst (unsigned_type_node,
 			   ~(AARCH64_FE_ALL_EXCEPT));
 
-  ld_fenv_cr = build2 (MODIFY_EXPR, unsigned_type_node,
-		       fenv_cr, build_call_expr (get_fpcr, 0));
-  ld_fenv_sr = build2 (MODIFY_EXPR, unsigned_type_node,
-		       fenv_sr, build_call_expr (get_fpsr, 0));
+  ld_fenv_cr = build4 (TARGET_EXPR, unsigned_type_node,
+		       fenv_cr, build_call_expr (get_fpcr, 0),
+		       NULL_TREE, NULL_TREE);
+  ld_fenv_sr = build4 (TARGET_EXPR, unsigned_type_node,
+		       fenv_sr, build_call_expr (get_fpsr, 0),
+		       NULL_TREE, NULL_TREE);
 
   masked_fenv_cr = build2 (BIT_AND_EXPR, unsigned_type_node, fenv_cr, mask_cr);
   masked_fenv_sr = build2 (BIT_AND_EXPR, unsigned_type_node, fenv_sr, mask_sr);
@@ -2274,8 +2350,9 @@ aarch64_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
        __atomic_feraiseexcept (new_fenv_var);  */
 
   new_fenv_var = create_tmp_var_raw (unsigned_type_node);
-  reload_fenv = build2 (MODIFY_EXPR, unsigned_type_node,
-			new_fenv_var, build_call_expr (get_fpsr, 0));
+  reload_fenv = build4 (TARGET_EXPR, unsigned_type_node,
+			new_fenv_var, build_call_expr (get_fpsr, 0),
+			NULL_TREE, NULL_TREE);
   restore_fnenv = build_call_expr (set_fpsr, 1, fenv_sr);
   atomic_feraiseexcept = builtin_decl_implicit (BUILT_IN_ATOMIC_FERAISEEXCEPT);
   update_call = build_call_expr (atomic_feraiseexcept, 1,

@@ -78,9 +78,9 @@ const char *profile_quality_display_names[] =
   "estimated locally",
   "estimated locally, globally 0",
   "estimated locally, globally 0 adjusted",
-  "adjusted",
-  "auto FDO",
   "guessed",
+  "auto FDO",
+  "adjusted",
   "precise"
 };
 
@@ -445,4 +445,13 @@ profile_probability::combine_with_count (profile_count count1,
 	   + other * count2.probability_in (count1 + count2);
   else
     return *this * even () + other * even ();
+}
+
+/* Return probability as sreal in range [0, 1].  */
+
+sreal
+profile_probability::to_sreal () const
+{
+  gcc_checking_assert (initialized_p ());
+  return ((sreal)m_val) >> (n_bits - 2);
 }

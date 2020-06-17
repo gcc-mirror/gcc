@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2016-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2016-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -92,7 +92,8 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
            Length (Container));
    pragma Annotate (GNATprove, Inline_For_Proof, Last);
 
-   function First return Extended_Index is (Index_Type'First);
+   function First return Extended_Index is (Index_Type'First) with
+     Global => null;
    --  First index of a sequence
 
    ------------------------

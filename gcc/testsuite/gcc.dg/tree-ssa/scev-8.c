@@ -3,6 +3,12 @@
 
 int *a;
 
+#if __SIZEOF_INT__ == __SIZEOF_SHORT__
+typedef char small_t;
+#else
+typedef short small_t;
+#endif
+
 int
 foo1 (long long s, long long l)
 {
@@ -10,7 +16,7 @@ foo1 (long long s, long long l)
 
   for (i = s; i < l; i++)
     {
-      a[(short)i] = 0;
+      a[(small_t)i] = 0;
     }
   return 0;
 }
@@ -59,4 +65,4 @@ foo4 (unsigned char s, unsigned char l)
 }
 
 /* Address of array references are not scevs.  */
-/* { dg-final { scan-tree-dump-not "  Type:\\tADDRESS\n  Use \[0-9\].\[0-9\]:" "ivopts" } } */
+/* { dg-final { scan-tree-dump-not "  Type:\\tREFERENCE ADDRESS\n" "ivopts" } } */

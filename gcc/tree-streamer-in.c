@@ -69,10 +69,10 @@ input_identifier (class data_in *data_in, class lto_input_block *ib)
 }
 
 
-/* Read a chain of tree nodes from input block IB. DATA_IN contains
+/* Read a chain of tree nodes from input block IB.  DATA_IN contains
    tables and descriptors for the file being read.  */
 
-tree
+static tree
 streamer_read_chain (class lto_input_block *ib, class data_in *data_in)
 {
   tree first, prev, curr;
@@ -81,7 +81,7 @@ streamer_read_chain (class lto_input_block *ib, class data_in *data_in)
   first = prev = NULL_TREE;
   do
     {
-      curr = stream_read_tree (ib, data_in);
+      curr = stream_read_tree_ref (ib, data_in);
       if (prev)
 	TREE_CHAIN (prev) = curr;
       else
@@ -236,7 +236,7 @@ unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
   DECL_USER_ALIGN (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_PRESERVE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_EXTERNAL (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_GIMPLE_REG_P (expr) = (unsigned) bp_unpack_value (bp, 1);
+  DECL_NOT_GIMPLE_REG_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   SET_DECL_ALIGN (expr, (unsigned) bp_unpack_var_len_unsigned (bp));
 #ifdef ACCEL_COMPILER
   if (DECL_ALIGN (expr) > targetm.absolute_biggest_alignment)
@@ -256,6 +256,7 @@ unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       DECL_PACKED (expr) = (unsigned) bp_unpack_value (bp, 1);
       DECL_NONADDRESSABLE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
       DECL_PADDING_P (expr) = (unsigned) bp_unpack_value (bp, 1);
+      DECL_FIELD_ABI_IGNORED (expr) = (unsigned) bp_unpack_value (bp, 1);
       expr->decl_common.off_align = bp_unpack_value (bp, 8);
     }
 
@@ -343,6 +344,7 @@ unpack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
   DECL_DISREGARD_INLINE_LIMITS (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_PURE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_LOOPING_CONST_OR_PURE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
+  DECL_IS_REPLACEABLE_OPERATOR (expr) = (unsigned) bp_unpack_value (bp, 1);
   unsigned int fcode = 0;
   if (cl != NOT_BUILT_IN)
     {
@@ -485,9 +487,13 @@ streamer_read_tree_bitfields (class lto_input_block *ib,
 
   /* The first word in BP contains the code of the tree that we
      are about to read.  */
-  code = (enum tree_code) bp_unpack_value (&bp, 16);
-  lto_tag_check (lto_tree_code_to_tag (code),
-		 lto_tree_code_to_tag (TREE_CODE (expr)));
+  if (streamer_debugging)
+    {
+      code = (enum tree_code) bp_unpack_value (&bp, 16);
+      lto_tag_check (lto_tree_code_to_tag (code),
+		     lto_tree_code_to_tag (TREE_CODE (expr)));
+    }
+  code = TREE_CODE (expr);
 
   /* Note that all these functions are highly sensitive to changes in
      the types and sizes of each of the fields being packed.  */
@@ -645,7 +651,7 @@ lto_input_ts_common_tree_pointers (class lto_input_block *ib,
 				   class data_in *data_in, tree expr)
 {
   if (TREE_CODE (expr) != IDENTIFIER_NODE)
-    TREE_TYPE (expr) = stream_read_tree (ib, data_in);
+    TREE_TYPE (expr) = stream_read_tree_ref (ib, data_in);
 }
 
 
@@ -659,7 +665,7 @@ lto_input_ts_vector_tree_pointers (class lto_input_block *ib,
 {
   unsigned int count = vector_cst_encoded_nelts (expr);
   for (unsigned int i = 0; i < count; ++i)
-    VECTOR_CST_ENCODED_ELT (expr, i) = stream_read_tree (ib, data_in);
+    VECTOR_CST_ENCODED_ELT (expr, i) = stream_read_tree_ref (ib, data_in);
 }
 
 
@@ -672,7 +678,7 @@ lto_input_ts_poly_tree_pointers (class lto_input_block *ib,
 				 class data_in *data_in, tree expr)
 {
   for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
-    POLY_INT_CST_COEFF (expr, i) = stream_read_tree (ib, data_in);
+    POLY_INT_CST_COEFF (expr, i) = stream_read_tree_ref (ib, data_in);
 }
 
 
@@ -684,8 +690,8 @@ static void
 lto_input_ts_complex_tree_pointers (class lto_input_block *ib,
 				    class data_in *data_in, tree expr)
 {
-  TREE_REALPART (expr) = stream_read_tree (ib, data_in);
-  TREE_IMAGPART (expr) = stream_read_tree (ib, data_in);
+  TREE_REALPART (expr) = stream_read_tree_ref (ib, data_in);
+  TREE_IMAGPART (expr) = stream_read_tree_ref (ib, data_in);
 }
 
 
@@ -697,8 +703,8 @@ static void
 lto_input_ts_decl_minimal_tree_pointers (class lto_input_block *ib,
 					 class data_in *data_in, tree expr)
 {
-  DECL_NAME (expr) = stream_read_tree (ib, data_in);
-  DECL_CONTEXT (expr) = stream_read_tree (ib, data_in);
+  DECL_NAME (expr) = stream_read_tree_ref (ib, data_in);
+  DECL_CONTEXT (expr) = stream_read_tree_ref (ib, data_in);
 }
 
 
@@ -710,19 +716,19 @@ static void
 lto_input_ts_decl_common_tree_pointers (class lto_input_block *ib,
 					class data_in *data_in, tree expr)
 {
-  DECL_SIZE (expr) = stream_read_tree (ib, data_in);
-  DECL_SIZE_UNIT (expr) = stream_read_tree (ib, data_in);
-  DECL_ATTRIBUTES (expr) = stream_read_tree (ib, data_in);
-  DECL_ABSTRACT_ORIGIN (expr) = stream_read_tree (ib, data_in);
+  DECL_SIZE (expr) = stream_read_tree_ref (ib, data_in);
+  DECL_SIZE_UNIT (expr) = stream_read_tree_ref (ib, data_in);
+  DECL_ATTRIBUTES (expr) = stream_read_tree_ref (ib, data_in);
+  DECL_ABSTRACT_ORIGIN (expr) = stream_read_tree_ref (ib, data_in);
 
   if ((VAR_P (expr) || TREE_CODE (expr) == PARM_DECL)
       && DECL_HAS_VALUE_EXPR_P (expr))
-    SET_DECL_VALUE_EXPR (expr, stream_read_tree (ib, data_in));
+    SET_DECL_VALUE_EXPR (expr, stream_read_tree_ref (ib, data_in));
 
   if (VAR_P (expr)
       && DECL_HAS_DEBUG_EXPR_P (expr))
     {
-      tree dexpr = stream_read_tree (ib, data_in);
+      tree dexpr = stream_read_tree_ref (ib, data_in);
       if (dexpr)
 	SET_DECL_DEBUG_EXPR (expr, dexpr);
     }
@@ -750,7 +756,7 @@ lto_input_ts_decl_with_vis_tree_pointers (class lto_input_block *ib,
 {
   tree id;
 
-  id = stream_read_tree (ib, data_in);
+  id = stream_read_tree_ref (ib, data_in);
   if (id)
     {
       gcc_assert (TREE_CODE (id) == IDENTIFIER_NODE);
@@ -767,10 +773,10 @@ static void
 lto_input_ts_field_decl_tree_pointers (class lto_input_block *ib,
 				       class data_in *data_in, tree expr)
 {
-  DECL_FIELD_OFFSET (expr) = stream_read_tree (ib, data_in);
-  DECL_BIT_FIELD_TYPE (expr) = stream_read_tree (ib, data_in);
-  DECL_BIT_FIELD_REPRESENTATIVE (expr) = stream_read_tree (ib, data_in);
-  DECL_FIELD_BIT_OFFSET (expr) = stream_read_tree (ib, data_in);
+  DECL_FIELD_OFFSET (expr) = stream_read_tree_ref (ib, data_in);
+  DECL_BIT_FIELD_TYPE (expr) = stream_read_tree_ref (ib, data_in);
+  DECL_BIT_FIELD_REPRESENTATIVE (expr) = stream_read_tree_ref (ib, data_in);
+  DECL_FIELD_BIT_OFFSET (expr) = stream_read_tree_ref (ib, data_in);
 }
 
 
@@ -783,11 +789,12 @@ lto_input_ts_function_decl_tree_pointers (class lto_input_block *ib,
 					  class data_in *data_in, tree expr)
 {
   /* DECL_STRUCT_FUNCTION is loaded on demand by cgraph_get_body.  */
-  DECL_FUNCTION_PERSONALITY (expr) = stream_read_tree (ib, data_in);
+  DECL_FUNCTION_PERSONALITY (expr) = stream_read_tree_ref (ib, data_in);
 #ifndef ACCEL_COMPILER
-  DECL_FUNCTION_SPECIFIC_TARGET (expr) = stream_read_tree (ib, data_in);
+  DECL_FUNCTION_SPECIFIC_TARGET (expr) = stream_read_tree_ref (ib, data_in);
 #endif
-  DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr) = stream_read_tree (ib, data_in);
+  DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr)
+    = stream_read_tree_ref (ib, data_in);
 #ifdef ACCEL_COMPILER
   {
     tree opts = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr);
@@ -813,16 +820,16 @@ static void
 lto_input_ts_type_common_tree_pointers (class lto_input_block *ib,
 					class data_in *data_in, tree expr)
 {
-  TYPE_SIZE (expr) = stream_read_tree (ib, data_in);
-  TYPE_SIZE_UNIT (expr) = stream_read_tree (ib, data_in);
-  TYPE_ATTRIBUTES (expr) = stream_read_tree (ib, data_in);
-  TYPE_NAME (expr) = stream_read_tree (ib, data_in);
+  TYPE_SIZE (expr) = stream_read_tree_ref (ib, data_in);
+  TYPE_SIZE_UNIT (expr) = stream_read_tree_ref (ib, data_in);
+  TYPE_ATTRIBUTES (expr) = stream_read_tree_ref (ib, data_in);
+  TYPE_NAME (expr) = stream_read_tree_ref (ib, data_in);
   /* Do not stream TYPE_POINTER_TO or TYPE_REFERENCE_TO.  They will be
      reconstructed during fixup.  */
   /* Do not stream TYPE_NEXT_VARIANT, we reconstruct the variant lists
      during fixup.  */
-  TYPE_MAIN_VARIANT (expr) = stream_read_tree (ib, data_in);
-  TYPE_CONTEXT (expr) = stream_read_tree (ib, data_in);
+  TYPE_MAIN_VARIANT (expr) = stream_read_tree_ref (ib, data_in);
+  TYPE_CONTEXT (expr) = stream_read_tree_ref (ib, data_in);
   /* TYPE_CANONICAL gets re-computed during type merging.  */
   TYPE_CANONICAL (expr) = NULL_TREE;
 }
@@ -836,19 +843,17 @@ lto_input_ts_type_non_common_tree_pointers (class lto_input_block *ib,
 					    class data_in *data_in,
 					    tree expr)
 {
-  if (TREE_CODE (expr) == ENUMERAL_TYPE)
-    TYPE_VALUES (expr) = stream_read_tree (ib, data_in);
-  else if (TREE_CODE (expr) == ARRAY_TYPE)
-    TYPE_DOMAIN (expr) = stream_read_tree (ib, data_in);
+  if (TREE_CODE (expr) == ARRAY_TYPE)
+    TYPE_DOMAIN (expr) = stream_read_tree_ref (ib, data_in);
   else if (RECORD_OR_UNION_TYPE_P (expr))
     TYPE_FIELDS (expr) = streamer_read_chain (ib, data_in);
   else if (TREE_CODE (expr) == FUNCTION_TYPE
 	   || TREE_CODE (expr) == METHOD_TYPE)
-    TYPE_ARG_TYPES (expr) = stream_read_tree (ib, data_in);
+    TYPE_ARG_TYPES (expr) = stream_read_tree_ref (ib, data_in);
 
   if (!POINTER_TYPE_P (expr))
-    TYPE_MIN_VALUE_RAW (expr) = stream_read_tree (ib, data_in);
-  TYPE_MAX_VALUE_RAW (expr) = stream_read_tree (ib, data_in);
+    TYPE_MIN_VALUE_RAW (expr) = stream_read_tree_ref (ib, data_in);
+  TYPE_MAX_VALUE_RAW (expr) = stream_read_tree_ref (ib, data_in);
 }
 
 
@@ -860,9 +865,9 @@ static void
 lto_input_ts_list_tree_pointers (class lto_input_block *ib,
 				 class data_in *data_in, tree expr)
 {
-  TREE_PURPOSE (expr) = stream_read_tree (ib, data_in);
-  TREE_VALUE (expr) = stream_read_tree (ib, data_in);
-  TREE_CHAIN (expr) = stream_read_tree (ib, data_in);
+  TREE_PURPOSE (expr) = stream_read_tree_ref (ib, data_in);
+  TREE_VALUE (expr) = stream_read_tree_ref (ib, data_in);
+  TREE_CHAIN (expr) = stream_read_tree_ref (ib, data_in);
 }
 
 
@@ -879,7 +884,7 @@ lto_input_ts_vec_tree_pointers (class lto_input_block *ib,
   /* Note that TREE_VEC_LENGTH was read by streamer_alloc_tree to
      instantiate EXPR.  */
   for (i = 0; i < TREE_VEC_LENGTH (expr); i++)
-    TREE_VEC_ELT (expr, i) = stream_read_tree (ib, data_in);
+    TREE_VEC_ELT (expr, i) = stream_read_tree_ref (ib, data_in);
 }
 
 
@@ -896,9 +901,9 @@ lto_input_ts_exp_tree_pointers (class lto_input_block *ib,
   tree block;
 
   for (i = 0; i < TREE_OPERAND_LENGTH (expr); i++)
-    TREE_OPERAND (expr, i) = stream_read_tree (ib, data_in);
+    TREE_OPERAND (expr, i) = stream_read_tree_ref (ib, data_in);
 
-  block = stream_read_tree (ib, data_in);
+  block = stream_read_tree_ref (ib, data_in);
 
   /* TODO: Block is stored in the locus information.  It may make more sense to
      to make it go via the location cache.  */
@@ -920,8 +925,8 @@ lto_input_ts_block_tree_pointers (class lto_input_block *ib,
 {
   BLOCK_VARS (expr) = streamer_read_chain (ib, data_in);
 
-  BLOCK_SUPERCONTEXT (expr) = stream_read_tree (ib, data_in);
-  BLOCK_ABSTRACT_ORIGIN (expr) = stream_read_tree (ib, data_in);
+  BLOCK_SUPERCONTEXT (expr) = stream_read_tree_ref (ib, data_in);
+  BLOCK_ABSTRACT_ORIGIN (expr) = stream_read_tree_ref (ib, data_in);
   /* We may end up prevailing a decl with DECL_ORIGIN (t) != t here
      which breaks the invariant that BLOCK_ABSTRACT_ORIGIN is the
      ultimate origin.  Fixup here.
@@ -973,14 +978,14 @@ lto_input_ts_binfo_tree_pointers (class lto_input_block *ib,
      list on the writer side.  */
   do
     {
-      t = stream_read_tree (ib, data_in);
+      t = stream_read_tree_ref (ib, data_in);
       if (t)
 	BINFO_BASE_BINFOS (expr)->quick_push (t);
     }
   while (t);
 
-  BINFO_OFFSET (expr) = stream_read_tree (ib, data_in);
-  BINFO_VTABLE (expr) = stream_read_tree (ib, data_in);
+  BINFO_OFFSET (expr) = stream_read_tree_ref (ib, data_in);
+  BINFO_VTABLE (expr) = stream_read_tree_ref (ib, data_in);
 
   /* Do not walk BINFO_INHERITANCE_CHAIN, BINFO_SUBVTT_INDEX,
      BINFO_BASE_ACCESSES and BINFO_VPTR_INDEX; these are used by C++ FE
@@ -1001,8 +1006,8 @@ lto_input_ts_constructor_tree_pointers (class lto_input_block *ib,
   for (i = 0; i < CONSTRUCTOR_NELTS (expr); i++)
     {
       constructor_elt e;
-      e.index = stream_read_tree (ib, data_in);
-      e.value = stream_read_tree (ib, data_in);
+      e.index = stream_read_tree_ref (ib, data_in);
+      e.value = stream_read_tree_ref (ib, data_in);
       (*CONSTRUCTOR_ELTS (expr))[i] = e;
     }
 }
@@ -1019,8 +1024,8 @@ lto_input_ts_omp_clause_tree_pointers (class lto_input_block *ib,
   int i;
 
   for (i = 0; i < omp_clause_num_ops[OMP_CLAUSE_CODE (expr)]; i++)
-    OMP_CLAUSE_OPERAND (expr, i) = stream_read_tree (ib, data_in);
-  OMP_CLAUSE_CHAIN (expr) = stream_read_tree (ib, data_in);
+    OMP_CLAUSE_OPERAND (expr, i) = stream_read_tree_ref (ib, data_in);
+  OMP_CLAUSE_CHAIN (expr) = stream_read_tree_ref (ib, data_in);
 }
 
 
@@ -1105,11 +1110,14 @@ streamer_get_pickled_tree (class lto_input_block *ib, class data_in *data_in)
   enum LTO_tags expected_tag;
 
   ix = streamer_read_uhwi (ib);
-  expected_tag = streamer_read_enum (ib, LTO_tags, LTO_NUM_TAGS);
-
   result = streamer_tree_cache_get_tree (data_in->reader_cache, ix);
-  gcc_assert (result
-              && TREE_CODE (result) == lto_tag_to_tree_code (expected_tag));
+
+  if (streamer_debugging)
+    {
+      expected_tag = streamer_read_enum (ib, LTO_tags, LTO_NUM_TAGS);
+      gcc_assert (result
+		  && TREE_CODE (result) == lto_tag_to_tree_code (expected_tag));
+    }
 
   return result;
 }

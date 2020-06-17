@@ -1,4 +1,4 @@
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template <class T, class U>
 concept C = requires (T t, U u) { t + u; }; // { dg-message "in requirements" }

@@ -79,7 +79,7 @@ pop_field_alignment (void)
       free (entry);
     }
   else
-    error ("too many %<#pragma options%> align=reset");
+    error ("too many %<#pragma options align=reset%>");
 }
 
 /* Handlers for Darwin-specific pragmas.  */
@@ -809,7 +809,8 @@ darwin_cfstring_ref_p (const_tree strp)
     tn = DECL_NAME (tn);
   return (tn 
 	  && IDENTIFIER_POINTER (tn)
-	  && !strncmp (IDENTIFIER_POINTER (tn), "CFStringRef", 8));
+	  && !strncmp (IDENTIFIER_POINTER (tn), "CFStringRef",
+		       strlen ("CFStringRef")));
 }
 
 /* At present the behavior of this is undefined and it does nothing.  */

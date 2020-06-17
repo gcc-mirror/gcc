@@ -92,8 +92,7 @@ func (gcToolchain) gc(b *Builder, a *Action, archive string, importcfg []byte, s
 	if a.buildID != "" {
 		gcargs = append(gcargs, "-buildid", a.buildID)
 	}
-	platform := cfg.Goos + "/" + cfg.Goarch
-	if p.Internal.OmitDebug || platform == "nacl/amd64p32" || cfg.Goos == "plan9" || cfg.Goarch == "wasm" {
+	if p.Internal.OmitDebug || cfg.Goos == "plan9" || cfg.Goarch == "wasm" {
 		gcargs = append(gcargs, "-dwarf=false")
 	}
 	if strings.HasPrefix(runtimeVersion, "go1") && !strings.Contains(os.Args[0], "go_bootstrap") {
@@ -228,8 +227,8 @@ func (a *Action) trimpath() string {
 	// For "go build -trimpath", rewrite package source directory
 	// to a file system-independent path (just the import path).
 	if cfg.BuildTrimpath {
-		if m := a.Package.Module; m != nil {
-			rewrite += ";" + m.Dir + "=>" + m.Path + "@" + m.Version
+		if m := a.Package.Module; m != nil && m.Version != "" {
+			rewrite += ";" + a.Package.Dir + "=>" + m.Path + "@" + m.Version + strings.TrimPrefix(a.Package.ImportPath, m.Path)
 		} else {
 			rewrite += ";" + a.Package.Dir + "=>" + a.Package.ImportPath
 		}

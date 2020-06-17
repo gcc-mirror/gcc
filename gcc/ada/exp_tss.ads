@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -94,6 +94,7 @@ package Exp_Tss is
    TSS_Stream_Output      : constant TNT := "SO";  -- Stream Output attribute
    TSS_Stream_Read        : constant TNT := "SR";  -- Stream Read attribute
    TSS_Stream_Write       : constant TNT := "SW";  -- Stream Write attribute
+   TSS_Put_Image          : constant TNT := "PI";  -- Put_Image attribute
    TSS_To_Any             : constant TNT := "TA";  -- PolyORB/DSA To_Any
    TSS_TypeCode           : constant TNT := "TC";  -- PolyORB/DSA TypeCode
 
@@ -116,6 +117,7 @@ package Exp_Tss is
       TSS_Stream_Output,
       TSS_Stream_Read,
       TSS_Stream_Write,
+      TSS_Put_Image,
       TSS_To_Any,
       TSS_TypeCode);
 
@@ -168,12 +170,9 @@ package Exp_Tss is
    --  be explicitly frozen, so the N_Freeze_Entity node always exists).
 
    function TSS (Typ : Entity_Id; Nam : TSS_Name_Type) return Entity_Id;
-   --  Finds the TSS with the given name associated with the given type
-   --  If no such TSS exists, then Empty is returned;
-
    function TSS (Typ : Entity_Id; Nam : Name_Id) return Entity_Id;
-   --  Finds the TSS with the given name associated with the given type. If
-   --  no such TSS exists, then Empty is returned.
+   --  Finds the TSS with the given name associated with the given type.
+   --  If no such TSS exists, then Empty is returned.
 
    function Same_TSS (E1, E2 : Entity_Id) return Boolean;
    --  Returns True if E1 and E2 are the same kind of TSS, even if the names

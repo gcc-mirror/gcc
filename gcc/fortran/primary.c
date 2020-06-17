@@ -433,7 +433,7 @@ match_boz_constant (gfc_expr **result)
 
   if (x_hex
       && gfc_invalid_boz ("Hexadecimal constant at %L uses "
-			  "nonstandard syntax", &gfc_current_locus))
+			  "nonstandard X instead of Z", &gfc_current_locus))
     return MATCH_ERROR;
 
   old_loc = gfc_current_locus;
@@ -2241,8 +2241,49 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	  if (inquiry)
 	    sym = NULL;
 
-	  if (sep == '%' && primary->ts.type != BT_UNKNOWN)
-	    intrinsic = true;
+	  if (sep == '%')
+	    {
+	      if (tmp)
+		{
+		  switch (tmp->u.i)
+		    {
+		    case INQUIRY_RE:
+		    case INQUIRY_IM:
+		      if (!gfc_notify_std (GFC_STD_F2008,
+					   "RE or IM part_ref at %C"))
+			return MATCH_ERROR;
+		      break;
+
+		    case INQUIRY_KIND:
+		      if (!gfc_notify_std (GFC_STD_F2003,
+					   "KIND part_ref at %C"))
+			return MATCH_ERROR;
+		      break;
+
+		    case INQUIRY_LEN:
+		      if (!gfc_notify_std (GFC_STD_F2003, "LEN part_ref at %C"))
+			return MATCH_ERROR;
+		      break;
+		    }
+
+		  if ((tmp->u.i == INQUIRY_RE || tmp->u.i == INQUIRY_IM)
+		      && primary->ts.type != BT_COMPLEX)
+		    {
+			gfc_error ("The RE or IM part_ref at %C must be "
+				   "applied to a COMPLEX expression");
+			return MATCH_ERROR;
+		    }
+		  else if (tmp->u.i == INQUIRY_LEN
+			   && primary->ts.type != BT_CHARACTER)
+		    {
+			gfc_error ("The LEN part_ref at %C must be applied "
+				   "to a CHARACTER expression");
+			return MATCH_ERROR;
+		    }
+		}
+	      if (primary->ts.type != BT_UNKNOWN)
+		intrinsic = true;
+	    }
 	}
       else
 	inquiry = false;
@@ -3661,6 +3702,7 @@ gfc_match_rvalue (gfc_expr **result)
 	  gfc_error ("The leftmost part-ref in a data-ref cannot be a "
 		     "function reference at %C");
 	  m = MATCH_ERROR;
+	  break;
 	}
 
       m = MATCH_YES;

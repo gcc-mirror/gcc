@@ -1,3 +1,41 @@
+2020-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/92008
+	* configure.ac: Remove HAVE_BISON3 AC_DEFINE.
+	* Makefile.in (HEADERS): Add plural-config.h.
+	(.y.c): Also create plural-config.h.
+	(dcigettext.o loadmsgcat.o plural.o plural-exp.o): Also depend
+	on plural-config.h.
+	(plural-config.h): Depend on plural.c.
+	* plural-exp.h: Include plural-config.h.  Use USE_BISON3 instead
+	of HAVE_BISON3.
+	* plural.y: Use USE_BISON3 instead of HAVE_BISON3.
+	* configure: Regenerated.
+	* plural.c: Regenerated.
+	* config.h.in: Regenerated.
+	* plural-config.h: Generated.
+
+	PR bootstrap/92008
+	* configure.ac: Add check for bison >= 3, AC_DEFINE HAVE_BISON3
+	and AC_SUBST BISON3_YES and BISON3_NO.
+	* Makefile.in (.y.c): Prefix $(YACC) invocation with @BISON3_NO@,
+	add @BISON3_YES@ prefixed rule to adjust the *.y source using sed
+	and adjust output afterwards.
+	* plural-exp.h (PLURAL_PARSE): If HAVE_BISON3 is defined, use
+	struct parse_args * type for arg instead of void *.
+	* plural.y: Add magic /* BISON3 ... */ comments with bison >= 3
+	directives.
+	(YYLEX_PARAM, YYPARSE_PARAM): Don't define if HAVE_BISON3 is defined.
+	(yylex, yyerror): Adjust prototypes and definitions if HAVE_BISON3
+	is defined.
+	* plural.c: Regenerated.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+
+2020-02-01  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* configure: Regenerate.
+
 2018-11-07  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 
         * configure: Regenerated.

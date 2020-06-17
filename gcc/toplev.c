@@ -796,8 +796,8 @@ print_switch_values (print_switch_fn_type print_fn)
 	case OPT_o:
 	case OPT_d:
 	case OPT_dumpbase:
+	case OPT_dumpbase_ext:
 	case OPT_dumpdir:
-	case OPT_auxbase:
 	case OPT_quiet:
 	case OPT_version:
 	  /* Ignore these.  */
@@ -972,7 +972,7 @@ output_stack_usage_1 (FILE *cf)
       stack_usage += current_function_dynamic_stack_size;
     }
 
-  if (flag_callgraph_info & CALLGRAPH_INFO_STACK_USAGE)
+  if (cf && flag_callgraph_info & CALLGRAPH_INFO_STACK_USAGE)
     fprintf (cf, "\\n" HOST_WIDE_INT_PRINT_DEC " bytes (%s)",
 	     stack_usage,
 	     stack_usage_kind_str[stack_usage_kind]);
@@ -1181,6 +1181,10 @@ general_init (const char *argv0, bool init_signals)
     = global_options_init.x_flag_diagnostics_show_line_numbers;
   global_dc->show_cwe
     = global_options_init.x_flag_diagnostics_show_cwe;
+  global_dc->path_format
+    = (enum diagnostic_path_format)global_options_init.x_flag_diagnostics_path_format;
+  global_dc->show_path_depths
+    = global_options_init.x_flag_diagnostics_show_path_depths;
   global_dc->show_option_requested
     = global_options_init.x_flag_diagnostics_show_option;
   global_dc->min_margin_width
@@ -1406,11 +1410,19 @@ process_options (void)
   /* Set aux_base_name if not already set.  */
   if (aux_base_name)
     ;
-  else if (main_input_filename)
+  else if (dump_base_name)
     {
-      char *name = xstrdup (lbasename (main_input_filename));
+      const char *name = dump_base_name;
+      int nlen, len;
 
-      strip_off_ending (name, strlen (name));
+      if (dump_base_ext && (len = strlen (dump_base_ext))
+	  && (nlen = strlen (name)) && nlen > len
+	  && strcmp (name + nlen - len, dump_base_ext) == 0)
+	{
+	  char *p = xstrndup (name, nlen - len);
+	  name = p;
+	}
+
       aux_base_name = name;
     }
   else
@@ -1469,6 +1481,11 @@ process_options (void)
      be done.  */
   if (flag_unroll_all_loops)
     flag_unroll_loops = 1;
+
+  /* Allow cunroll to grow size accordingly.  */
+  if (flag_cunroll_grow_size == AUTODETECT_VALUE)
+    flag_cunroll_grow_size
+      = flag_unroll_loops || flag_peel_loops || optimize >= 3;
 
   /* web and rename-registers help when run after loop unrolling.  */
   if (flag_web == AUTODETECT_VALUE)
@@ -1850,6 +1867,9 @@ process_options (void)
     hash_table_sanitize_eq_limit
       = param_hash_table_verification_limit;
 
+  if (flag_large_source_files)
+    line_table->default_range_bits = 0;
+
   /* Please don't change global_options after this point, those changes won't
      be reflected in optimization_{default,current}_node.  */
 }
@@ -1957,8 +1977,21 @@ static int
 lang_dependent_init (const char *name)
 {
   location_t save_loc = input_location;
-  if (dump_base_name == 0)
-    dump_base_name = name && name[0] ? name : "gccdump";
+  if (!dump_base_name)
+    {
+      dump_base_name = name && name[0] ? name : "gccdump";
+
+      /* We do not want to derive a non-empty dumpbase-ext from an
+	 explicit -dumpbase argument, only from a defaulted
+	 dumpbase.  */
+      if (!dump_base_ext)
+	{
+	  const char *base = lbasename (dump_base_name);
+	  const char *ext = strrchr (base, '.');
+	  if (ext)
+	    dump_base_ext = ext;
+	}
+    }
 
   /* Other front-end initialization.  */
   input_location = BUILTINS_LOCATION;
@@ -1970,20 +2003,25 @@ lang_dependent_init (const char *name)
     {
       init_asm_output (name);
 
-      /* If stack usage information is desired, open the output file.  */
-      if (flag_stack_usage && !flag_generate_lto)
-	stack_usage_file = open_auxiliary_file ("su");
-
-      /* If call graph information is desired, open the output file.  */
-      if (flag_callgraph_info && !flag_generate_lto)
+      if (!flag_generate_lto && !flag_compare_debug)
 	{
-	  callgraph_info_file = open_auxiliary_file ("ci");
-	  /* Write the file header.  */
-	  fprintf (callgraph_info_file,
-		   "graph: { title: \"%s\"\n", main_input_filename);
-	  bitmap_obstack_initialize (NULL);
-	  callgraph_info_external_printed = BITMAP_ALLOC (NULL);
+	  /* If stack usage information is desired, open the output file.  */
+	  if (flag_stack_usage)
+	    stack_usage_file = open_auxiliary_file ("su");
+
+	  /* If call graph information is desired, open the output file.  */
+	  if (flag_callgraph_info)
+	    {
+	      callgraph_info_file = open_auxiliary_file ("ci");
+	      /* Write the file header.  */
+	      fprintf (callgraph_info_file,
+		       "graph: { title: \"%s\"\n", main_input_filename);
+	      bitmap_obstack_initialize (NULL);
+	      callgraph_info_external_printed = BITMAP_ALLOC (NULL);
+	    }
 	}
+      else
+	flag_stack_usage = flag_callgraph_info = false;
     }
 
   /* This creates various _DECL nodes, so needs to be called after the

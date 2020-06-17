@@ -112,8 +112,26 @@ version (CRuntime_Glibc)
 }
 else version (CRuntime_Musl)
 {
-    alias c_long     blksize_t;
-    alias c_ulong    nlink_t;
+    version (AArch64)
+    {
+        alias int    blksize_t;
+        alias uint   nlink_t;
+    }
+    else version (MIPS64)
+    {
+        alias c_long blksize_t;
+        alias uint   nlink_t;
+    }
+    else version (RISCV64)
+    {
+        alias int    blksize_t;
+        alias uint   nlink_t;
+    }
+    else
+    {
+        alias c_long blksize_t;
+        alias c_ulong nlink_t;
+    }
     alias long       dev_t;
     alias long       blkcnt_t;
     alias ulong      ino_t;
@@ -834,7 +852,7 @@ else version (Darwin)
 {
     version (D_LP64)
     {
-        enum __PTHREAD_SIZE__               = 1168;
+        enum __PTHREAD_SIZE__               = 8176;
         enum __PTHREAD_ATTR_SIZE__          = 56;
         enum __PTHREAD_MUTEXATTR_SIZE__     = 8;
         enum __PTHREAD_MUTEX_SIZE__         = 56;
@@ -846,7 +864,7 @@ else version (Darwin)
     }
     else
     {
-        enum __PTHREAD_SIZE__               = 596;
+        enum __PTHREAD_SIZE__               = 4088;
         enum __PTHREAD_ATTR_SIZE__          = 36;
         enum __PTHREAD_MUTEXATTR_SIZE__     = 8;
         enum __PTHREAD_MUTEX_SIZE__         = 40;

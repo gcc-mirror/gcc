@@ -79,6 +79,20 @@ inline namespace v1
     not_found = 4
   };
 
+} // namespace v1
+} // namespace net
+} // namespace experimental
+
+  template<>
+    struct is_error_code_enum<experimental::net::v1::socket_errc>
+    : public true_type {};
+
+namespace experimental
+{
+namespace net
+{
+inline namespace v1
+{
   const error_category& socket_category() noexcept
   {
     struct __cat : error_category
@@ -108,39 +122,13 @@ inline namespace v1
   make_error_condition(socket_errc __e) noexcept
   { return error_condition(static_cast<int>(__e), socket_category()); }
 
-  template<typename _Tp, typename = __void_t<>>
-    struct __is_endpoint_impl : false_type
-    { };
 
-  // Check Endpoint requirements.
-  template<typename _Tp>
-    auto
-    __endpoint_reqs(const _Tp* __a = 0)
-    -> enable_if_t<__and_<
-      is_default_constructible<_Tp>,
-      __is_value_constructible<_Tp>,
-      is_same<decltype(__a->__protocol()), typename _Tp::protocol_type>
-      >::value,
-    __void_t< typename _Tp::protocol_type::endpoint >>;
-
-  template<typename _Tp>
-    struct __is_endpoint_impl<_Tp, decltype(__endpoint_reqs<_Tp>())>
-    : true_type
-    { };
-
-  template<typename _Tp>
-    struct __is_endpoint : __is_endpoint_impl<_Tp>
-    { };
-
-  // TODO Endpoint reqs for extensible implementations
-  // TODO _Protocol reqs
-  // TODO AcceptableProtocol reqs
   // TODO GettableSocket reqs
   // TODO SettableSocket reqs
   // TODO BooleanSocketOption reqs
   // TODO IntegerSocketOption reqs
-  // TODO _IoControlCommand reqs
-  // TODO _ConnectCondition reqs
+  // TODO IoControlCommand reqs
+  // TODO ConnectCondition reqs
 
   /** @brief Sockets
    * @{
@@ -584,6 +572,13 @@ inline namespace v1
 	  }
       }
 
+      native_handle_type release(error_code& __ec)
+      {
+	__glibcxx_assert(is_open());
+	cancel(__ec);
+	return std::exchange(_M_sockfd, -1);
+      }
+
       template<typename _SettableSocketOption>
 	void
 	set_option(const _SettableSocketOption& __option, error_code& __ec)
@@ -635,7 +630,7 @@ inline namespace v1
 #ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	socklen_t __endpoint_len = __endpoint.capacity();
 	if (::getsockname(_M_sockfd, (sockaddr*)__endpoint.data(),
-                          &__endpoint_len) == -1)
+			  &__endpoint_len) == -1)
 	  {
 	    __ec.assign(errno, generic_category());
 	    return endpoint_type{};
@@ -687,10 +682,13 @@ inline namespace v1
     public:
       // types:
 
-      typedef io_context::executor_type executor_type;
-      typedef int native_handle_type;
-      typedef _Protocol protocol_type;
-      typedef typename protocol_type::endpoint endpoint_type;
+      using executor_type = io_context::executor_type;
+      using native_handle_type = int;
+      using protocol_type = _Protocol;
+      using endpoint_type = typename protocol_type::endpoint;
+
+      static_assert(__detail::__protocol<protocol_type>,
+		    "protocol_type meets the Protocol requirements");
 
       // basic_socket operations:
 
@@ -721,11 +719,18 @@ inline namespace v1
 	     error_code& __ec)
       { __base::assign(__protocol, __native_socket, __ec); }
 
-      bool is_open() const noexcept { return __base::is_open(); }
+      native_handle_type release()
+      { return release(__throw_on_error{"basic_socket::release"}); }
+
+      native_handle_type release(error_code& __ec)
+      { return __base::release(__ec); }
+
+      _GLIBCXX_NODISCARD bool
+      is_open() const noexcept { return __base::is_open(); }
 
       void close() { close(__throw_on_error{"basic_socket::close"}); }
 
-      void close(error_code& __ec) { __base::close(); }
+      void close(error_code& __ec) { __base::close(__ec); }
 
       void cancel() { cancel(__throw_on_error{"basic_socket::cancel"}); }
 
@@ -884,7 +889,7 @@ inline namespace v1
 #ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	socklen_t __endpoint_len = __endpoint.capacity();
 	if (::getpeername(this->_M_sockfd, (sockaddr*)__endpoint.data(),
-                          &__endpoint_len)
+			  &__endpoint_len)
 	    == -1)
 	  {
 	    __ec.assign(errno, generic_category());
@@ -907,13 +912,13 @@ inline namespace v1
       void
       connect(const endpoint_type& __endpoint, error_code& __ec)
       {
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	if (!is_open())
 	  {
 	    open(__endpoint.protocol(), __ec);
 	    if (__ec)
 	      return;
 	  }
-#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	if (::connect(native_handle(), (const sockaddr*)__endpoint.data(),
 		      __endpoint.size()) == -1)
 	  __ec.assign(errno, generic_category());
@@ -942,7 +947,7 @@ inline namespace v1
                   auto __a = get_associated_allocator(
                       __init.completion_handler, std::allocator<void>());
                   __ex.post(
-                      [__h=std::move(__init.completion_handler), __ec]
+                      [__h = std::move(__init.completion_handler), __ec]
                       () mutable
                       { __h(__ec); }, __a);
 		  return __init.result.get();
@@ -1015,7 +1020,7 @@ inline namespace v1
       { open(__protocol); }
 
       basic_socket(io_context& __ctx, const endpoint_type& __endpoint)
-      : basic_socket(std::addressof(__ctx), __endpoint.protocol())
+      : basic_socket(__ctx, __endpoint.protocol())
       { bind(__endpoint); }
 
       basic_socket(io_context& __ctx, const protocol_type& __protocol,
@@ -1053,9 +1058,9 @@ inline namespace v1
     public:
       // types:
 
-      typedef int native_handle_type;
-      typedef _Protocol protocol_type;
-      typedef typename protocol_type::endpoint endpoint_type;
+      using native_handle_type = int;
+      using protocol_type = _Protocol;
+      using endpoint_type = typename protocol_type::endpoint;
 
       // construct / copy / destroy:
 
@@ -1506,9 +1511,9 @@ inline namespace v1
     public:
       // types:
 
-      typedef int native_handle_type;
-      typedef _Protocol protocol_type;
-      typedef typename protocol_type::endpoint endpoint_type;
+      using native_handle_type = int;
+      using protocol_type = _Protocol;
+      using endpoint_type = typename protocol_type::endpoint;
 
       // construct / copy / destroy:
 
@@ -1819,11 +1824,14 @@ inline namespace v1
     public:
       // types:
 
-      typedef io_context::executor_type executor_type;
-      typedef int native_handle_type;
-      typedef _AcceptableProtocol protocol_type;
-      typedef typename protocol_type::endpoint endpoint_type;
-      typedef typename protocol_type::socket socket_type;
+      using executor_type = io_context::executor_type;
+      using native_handle_type = int;
+      using protocol_type = _AcceptableProtocol;
+      using endpoint_type = typename protocol_type::endpoint;
+      using socket_type = typename protocol_type::socket;
+
+      static_assert(__detail::__acceptable_protocol<protocol_type>,
+		    "protocol_type meets the AcceptableProtocol requirements");
 
       // construct / copy / destroy:
 
@@ -1904,7 +1912,13 @@ inline namespace v1
 	     error_code& __ec)
       { __base::assign(__protocol, __native_acceptor, __ec); }
 
-      bool
+      native_handle_type release()
+      { return release(__throw_on_error{"basic_socket_acceptor::release"}); }
+
+      native_handle_type release(error_code& __ec)
+      { return __base::release(__ec); }
+
+      _GLIBCXX_NODISCARD bool
       is_open() const noexcept { return __base::is_open(); }
 
       void
@@ -2263,12 +2277,12 @@ inline namespace v1
     public:
       // types:
 
-      typedef _Protocol protocol_type;
-      typedef typename protocol_type::endpoint endpoint_type;
-      typedef _Clock clock_type;
-      typedef typename clock_type::time_point time_point;
-      typedef typename clock_type::duration duration;
-      typedef _WaitTraits wait_traits_type;
+      using protocol_type = _Protocol;
+      using endpoint_type = typename protocol_type::endpoint;
+      using clock_type = _Clock;
+      using time_point = typename clock_type::time_point;
+      using duration = typename clock_type::duration;
+      using wait_traits_type = _WaitTraits;
 
       // construct / copy / destroy:
 
@@ -2299,7 +2313,8 @@ inline namespace v1
       basic_socket_streambuf* close(); // TODO
 
       basic_socket<protocol_type>& socket() { return _M_socket; }
-      error_code error() const { return _M_ec; }
+
+      error_code error() const noexcept { return _M_ec; }
 
       time_point expiry() const { return _M_expiry; }
 
@@ -2341,12 +2356,12 @@ inline namespace v1
     public:
       // types:
 
-      typedef _Protocol protocol_type;
-      typedef typename protocol_type::endpoint endpoint_type;
-      typedef _Clock clock_type;
-      typedef typename clock_type::time_point time_point;
-      typedef typename clock_type::duration duration;
-      typedef _WaitTraits wait_traits_type;
+      using protocol_type = _Protocol;
+      using endpoint_type = typename protocol_type::endpoint;
+      using clock_type = _Clock;
+      using time_point = typename clock_type::time_point;
+      using duration = typename clock_type::duration;
+      using wait_traits_type = _WaitTraits;
 
       // construct / copy / destroy:
 
@@ -2411,7 +2426,7 @@ inline namespace v1
       { return const_cast<__streambuf_type*>(std::addressof(_M_sb)); }
 
       basic_socket<protocol_type>& socket() { return rdbuf()->socket(); }
-      error_code error() const { return rdbuf()->error(); }
+      error_code error() const noexcept { return rdbuf()->error(); }
 
       time_point expiry() const { return rdbuf()->expiry(); }
       void expires_at(const time_point& __t) { rdbuf()->expires_at(__t); }
@@ -2601,10 +2616,6 @@ inline namespace v1
 } // namespace v1
 } // namespace net
 } // namespace experimental
-
-  template<>
-    struct is_error_code_enum<experimental::net::v1::socket_errc>
-    : public true_type {};
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

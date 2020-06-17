@@ -4,7 +4,9 @@
 
 package syscall
 
-import "unsafe"
+import (
+	"unsafe"
+)
 
 func (ts *StTimespec) Unix() (sec int64, nsec int64) {
 	return int64(ts.Sec), int64(ts.Nsec)
@@ -23,5 +25,9 @@ func direntReclen(buf []byte) (uint64, bool) {
 }
 
 func direntNamlen(buf []byte) (uint64, bool) {
-	return readInt(buf, unsafe.Offsetof(Dirent{}.Namlen), unsafe.Sizeof(Dirent{}.Namlen))
+	reclen, ok := direntReclen(buf)
+	if !ok {
+		return 0, false
+	}
+	return reclen - uint64(unsafe.Offsetof(Dirent{}.Name)), true
 }

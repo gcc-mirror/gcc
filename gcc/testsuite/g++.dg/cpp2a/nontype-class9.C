@@ -1,5 +1,5 @@
 // PR c++/88216
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template <class T, class U> struct same;
 template <class T> struct same<T,T> {};

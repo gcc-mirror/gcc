@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -77,37 +77,40 @@ package Exp_Disp is
    --      TSS_Deep_Finalize (9) - implementation of the finalization
    --      operation Finalize for any non-limited tagged type.
 
-   --      _Disp_Asynchronous_Select (10) - used in the expansion of ATC with
+   --      Put_Image (10) - implementation of Put_Image attribute for any
+   --      tagged type.
+
+   --      _Disp_Asynchronous_Select (11) - used in the expansion of ATC with
    --      dispatching triggers. Null implementation for limited interfaces,
    --      full body generation for types that implement limited interfaces,
    --      not generated for the rest of the cases. See Expand_N_Asynchronous_
    --      Select in Exp_Ch9 for more information.
 
-   --      _Disp_Conditional_Select (11) - used in the expansion of conditional
+   --      _Disp_Conditional_Select (12) - used in the expansion of conditional
    --      selects with dispatching triggers. Null implementation for limited
    --      interfaces, full body generation for types that implement limited
    --      interfaces, not generated for the rest of the cases. See Expand_N_
    --      Conditional_Entry_Call in Exp_Ch9 for more information.
 
-   --      _Disp_Get_Prim_Op_Kind (12) - helper routine used in the expansion
+   --      _Disp_Get_Prim_Op_Kind (13) - helper routine used in the expansion
    --      of ATC with dispatching triggers. Null implementation for limited
    --      interfaces, full body generation for types that implement limited
    --      interfaces, not generated for the rest of the cases.
 
-   --      _Disp_Get_Task_Id (13) - helper routine used in the expansion of
+   --      _Disp_Get_Task_Id (14) - helper routine used in the expansion of
    --      Abort, attributes 'Callable and 'Terminated for task interface
    --      class-wide types. Full body generation for task types, null
    --      implementation for limited interfaces, not generated for the rest
    --      of the cases. See Expand_N_Attribute_Reference in Exp_Attr and
    --      Expand_N_Abort_Statement in Exp_Ch9 for more information.
 
-   --      _Disp_Requeue (14) - used in the expansion of dispatching requeue
+   --      _Disp_Requeue (15) - used in the expansion of dispatching requeue
    --      statements. Null implementation is provided for protected, task
    --      and synchronized interfaces. Protected and task types implementing
    --      concurrent interfaces receive full bodies. See Expand_N_Requeue_
    --      Statement in Exp_Ch9 for more information.
 
-   --      _Disp_Timed_Select (15) - used in the expansion of timed selects
+   --      _Disp_Timed_Select (16) - used in the expansion of timed selects
    --      with dispatching triggers. Null implementation for limited
    --      interfaces, full body generation for types that implement limited
    --      interfaces, not generated for the rest of the cases. See Expand_N_
@@ -139,11 +142,13 @@ package Exp_Disp is
    --      Update the value of constant Max_Predef_Prims in a-tags.ads to
    --      indicate the new number of PPOs.
 
+   --      Update Exp_Disp.Default_Prim_Op_Position.
+
    --      Introduce a new predefined name for the new PPO in Snames.ads and
    --      Snames.adb.
 
    --      Categorize the new PPO name as predefined by adding an entry in
-   --      Is_Predefined_Dispatching_Operation in Exp_Disp.
+   --      Is_Predefined_Dispatching_Operation in Sem_Util and Exp_Cg.
 
    --      Generate the specification of the new PPO in Make_Predefined_
    --      Primitive_Spec in Exp_Ch3.adb. The Is_Internal flag of the defining
@@ -156,16 +161,8 @@ package Exp_Disp is
    --      If the new PPO requires a thunk, add an entry in Freeze_Subprogram
    --      in Exp_Ch6.adb.
 
-   --      When generating calls to a PPO, use Find_Prim_Op from Exp_Util.ads
+   --      When generating calls to a PPO, use Find_Prim_Op from exp_util.ads
    --      to retrieve the entity of the operation directly.
-
-   --  Number of predefined primitive operations added by the Expander
-   --  for a tagged type. If more predefined primitive operations are
-   --  added, the following items must be changed:
-
-   --    Ada.Tags.Max_Predef_Prims         - indirect use
-   --    Exp_Disp.Default_Prim_Op_Position - indirect use
-   --    Exp_Disp.Set_All_DT_Position      - direct   use
 
    procedure Apply_Tag_Checks (Call_Node : Node_Id);
    --  Generate checks required on dispatching calls

@@ -440,7 +440,7 @@ ipa_get_jf_ancestor_type_preserved (struct ipa_jump_func *jfunc)
 struct GTY(()) ipa_param_descriptor
 {
   /* In analysis and modification phase, this is the PARAM_DECL of this
-     parameter, in IPA LTO phase, this is the type of the the described
+     parameter, in IPA LTO phase, this is the type of the described
      parameter or NULL if not known.  Do not read this field directly but
      through ipa_get_param and ipa_get_type as appropriate.  */
   tree decl_or_type;
@@ -740,7 +740,7 @@ struct GTY(()) ipa_agg_replacement_value
   HOST_WIDE_INT offset;
   /* The constant value.  */
   tree value;
-  /* The paramter index.  */
+  /* The parameter index.  */
   int index;
   /* Whether the value was passed by reference.  */
   bool by_ref;

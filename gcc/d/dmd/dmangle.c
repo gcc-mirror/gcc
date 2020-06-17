@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -80,6 +80,7 @@ void initTypeMangle()
     mangleChar[Tslice] = "@";
     mangleChar[Treturn] = "@";
     mangleChar[Tvector] = "@";
+    mangleChar[Ttraits] = "@";
 
     mangleChar[Tnull] = "n";    // same as TypeNone
 
@@ -260,9 +261,9 @@ public:
         }
 
         // Write argument types
-        paramsToDecoBuffer(t->parameters);
+        paramsToDecoBuffer(t->parameterList.parameters);
         //if (buf->data[buf->offset - 1] == '@') halt();
-        buf->writeByte('Z' - t->varargs);   // mark end of arg list
+        buf->writeByte('Z' - t->parameterList.varargs);   // mark end of arg list
         if (tret != NULL)
             visitWithMask(tret, 0);
 
@@ -306,7 +307,7 @@ public:
         buf2.reserve(32);
         Mangler v(&buf2);
         v.paramsToDecoBuffer(t->arguments);
-        const char *s = buf2.peekString();
+        const char *s = buf2.peekChars();
         int len = (int)buf2.offset;
         buf->printf("%d%.*s", len, len, s);
     }
@@ -420,7 +421,7 @@ public:
                     return;
 
                 case LINKcpp:
-                    buf->writestring(Target::toCppMangle(d));
+                    buf->writestring(target.cpp.toMangle(d));
                     return;
 
                 case LINKdefault:
@@ -519,9 +520,9 @@ public:
     {
         assert(!fd->isFuncAliasDeclaration());
 
-        if (fd->mangleOverride)
+        if (fd->mangleOverride.length)
         {
-            buf->writestring(fd->mangleOverride);
+            buf->writestring(fd->mangleOverride.ptr);
             return;
         }
 
@@ -542,9 +543,9 @@ public:
 
     void visit(VarDeclaration *vd)
     {
-        if (vd->mangleOverride)
+        if (vd->mangleOverride.length)
         {
-            buf->writestring(vd->mangleOverride);
+            buf->writestring(vd->mangleOverride.ptr);
             return;
         }
 
@@ -753,7 +754,7 @@ public:
 
     void visit(ArrayLiteralExp *e)
     {
-        size_t dim = e->elements ? e->elements->dim : 0;
+        size_t dim = e->elements ? e->elements->length : 0;
         buf->printf("A%u", dim);
         for (size_t i = 0; i < dim; i++)
         {
@@ -763,7 +764,7 @@ public:
 
     void visit(AssocArrayLiteralExp *e)
     {
-        size_t dim = e->keys->dim;
+        size_t dim = e->keys->length;
         buf->printf("A%u", dim);
         for (size_t i = 0; i < dim; i++)
         {
@@ -774,7 +775,7 @@ public:
 
     void visit(StructLiteralExp *e)
     {
-        size_t dim = e->elements ? e->elements->dim : 0;
+        size_t dim = e->elements ? e->elements->length : 0;
         buf->printf("S%u", dim);
         for (size_t i = 0; i < dim; i++)
         {
@@ -838,7 +839,7 @@ const char *mangleExact(FuncDeclaration *fd)
         OutBuffer buf;
         Mangler v(&buf);
         v.mangleExact(fd);
-        fd->mangleString = buf.extractString();
+        fd->mangleString = buf.extractChars();
     }
     return fd->mangleString;
 }

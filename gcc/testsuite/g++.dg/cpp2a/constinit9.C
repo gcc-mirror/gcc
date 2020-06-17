@@ -1,5 +1,5 @@
 // PR c++/91360 - Implement C++20 P1143R2: constinit
-// { dg-do run { target c++2a } }
+// { dg-do run { target c++20 } }
 // A run-time test.
 
 constexpr int foo (int x) { return x; }

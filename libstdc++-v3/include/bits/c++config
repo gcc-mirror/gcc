@@ -78,6 +78,7 @@
 //   _GLIBCXX_USE_DEPRECATED
 //   _GLIBCXX_DEPRECATED
 //   _GLIBCXX17_DEPRECATED
+//   _GLIBCXX20_DEPRECATED( string-literal )
 #ifndef _GLIBCXX_USE_DEPRECATED
 # define _GLIBCXX_USE_DEPRECATED 1
 #endif
@@ -92,6 +93,12 @@
 # define _GLIBCXX17_DEPRECATED [[__deprecated__]]
 #else
 # define _GLIBCXX17_DEPRECATED
+#endif
+
+#if defined(__DEPRECATED) && (__cplusplus > 201703L)
+# define _GLIBCXX20_DEPRECATED(MSG) [[deprecated(MSG)]]
+#else
+# define _GLIBCXX20_DEPRECATED(MSG)
 #endif
 
 // Macros for ABI tag attributes.
@@ -659,6 +666,8 @@ namespace std
 // PSTL configuration
 
 #if __cplusplus >= 201703L
+// This header is not installed for freestanding:
+#if __has_include(<pstl/pstl_config.h>)
 // Preserved here so we have some idea which version of upstream we've pulled in
 // #define PSTL_VERSION 9000
 
@@ -677,6 +686,7 @@ namespace std
 # define _PSTL_ASSERT_MSG(_Condition, _Message) __glibcxx_assert(_Condition)
 
 #include <pstl/pstl_config.h>
+#endif // __has_include
+#endif // C++17
 
-#endif
 // End of prewritten config; the settings discovered at configure time follow.

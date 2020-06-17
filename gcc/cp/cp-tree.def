@@ -574,6 +574,30 @@ DEFTREECODE (DISJ_CONSTR, "disj_constr", tcc_expression, 2)
    CHECK_CONSTR_ARGUMENTS are the template arguments */
 DEFTREECODE (CHECK_CONSTR, "check_constr", tcc_expression, 2)
 
+/* The co_await expression is used to support coroutines.
+
+  Op 0 is the cast expresssion (potentially modified by the
+  promise "await_transform()" method).
+  Op1 is a proxy for the temp / coro frame slot 'e' value.
+  Op2 is the initialiser for Op1 (Op0, potentially modified by any
+  applicable 'co_await' operator).
+  Op3 is a vector of the [0] e.ready, [1] e.suspend and [2] e.resume calls.
+  Op4 is a mode : 0 (await) 1 (yield) 2 (initial) 3 (final) */
+DEFTREECODE (CO_AWAIT_EXPR, "co_await", tcc_expression, 5)
+
+/* The co_yield expression is used to support coroutines.
+
+   Op0 is the original expr (for use in diagnostics)
+   Op2 is the co_await derived from this. */
+DEFTREECODE (CO_YIELD_EXPR, "co_yield", tcc_expression, 2)
+
+/* The co_return expression is used to support coroutines.
+
+   Op0 is the original expr, can be void (for use in diagnostics)
+   Op1 is the promise return_xxxx call for for the expression given. */
+
+DEFTREECODE (CO_RETURN_EXPR, "co_return", tcc_statement, 2)
+
 /*
 Local variables:
 mode:c

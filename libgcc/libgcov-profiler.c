@@ -26,17 +26,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgcov.h"
 #if !defined(inhibit_libc)
 
-/* Detect whether target can support atomic update of profilers.  */
-#if __SIZEOF_LONG_LONG__ == 4 && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
-#define GCOV_SUPPORTS_ATOMIC 1
-#else
-#if __SIZEOF_LONG_LONG__ == 8 && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_8
-#define GCOV_SUPPORTS_ATOMIC 1
-#else
-#define GCOV_SUPPORTS_ATOMIC 0
-#endif
-#endif
-
 #ifdef L_gcov_interval_profiler
 /* If VALUE is in interval <START, START + STEPS - 1>, then increases the
    corresponding counter in COUNTERS.  If the VALUE is above or below
@@ -105,51 +94,13 @@ __gcov_pow2_profiler_atomic (gcov_type *counters, gcov_type value)
 }
 #endif
 
-
 /* Tries to determine N most commons value among its inputs.  */
 
 static inline void
 __gcov_topn_values_profiler_body (gcov_type *counters, gcov_type value,
 				  int use_atomic)
 {
-  if (use_atomic)
-    __atomic_fetch_add (&counters[0], 1, __ATOMIC_RELAXED);
-  else
-    counters[0]++;
-
-  ++counters;
-
-  /* We have GCOV_TOPN_VALUES as we can keep multiple values
-     next to each other.  */
-  unsigned sindex = 0;
-
-  for (unsigned i = 0; i < GCOV_TOPN_VALUES; i++)
-    {
-      if (value == counters[2 * i])
-	{
-	  if (use_atomic)
-	    __atomic_fetch_add (&counters[2 * i + 1], 1, __ATOMIC_RELAXED);
-	  else
-	    counters[2 * i + 1]++;
-	  return;
-	}
-      else if (counters[2 * i + 1] == 0)
-	{
-	  /* We found an empty slot.  */
-	  counters[2 * i] = value;
-	  counters[2 * i + 1] = 1;
-	  return;
-	}
-
-      if (counters[2 * i + 1] < counters[2 * sindex + 1])
-	sindex = i;
-    }
-
-  /* We haven't found an empty slot, then decrement the smallest.  */
-  if (use_atomic)
-    __atomic_fetch_sub (&counters[2 * sindex + 1], 1, __ATOMIC_RELAXED);
-  else
-    counters[2 * sindex + 1]--;
+  gcov_topn_add_value (counters, value, 1, use_atomic, 1);
 }
 
 #ifdef L_gcov_topn_values_profiler
@@ -199,8 +150,9 @@ struct indirect_call_tuple __gcov_indirect_call;
    as a pointer to a function.  */
 
 /* Tries to determine the most common value among its inputs. */
-void
-__gcov_indirect_call_profiler_v4 (gcov_type value, void* cur_func)
+static inline void
+__gcov_indirect_call_profiler_body (gcov_type value, void *cur_func,
+				    int use_atomic)
 {
   /* If the C++ virtual tables contain function descriptors then one
      function may have multiple descriptors and we need to dereference
@@ -208,10 +160,26 @@ __gcov_indirect_call_profiler_v4 (gcov_type value, void* cur_func)
   if (cur_func == __gcov_indirect_call.callee
       || (__LIBGCC_VTABLE_USES_DESCRIPTORS__
 	  && *(void **) cur_func == *(void **) __gcov_indirect_call.callee))
-    __gcov_topn_values_profiler_body (__gcov_indirect_call.counters, value, 0);
+    __gcov_topn_values_profiler_body (__gcov_indirect_call.counters, value,
+				      use_atomic);
 
   __gcov_indirect_call.callee = NULL;
 }
+
+void
+__gcov_indirect_call_profiler_v4 (gcov_type value, void *cur_func)
+{
+  __gcov_indirect_call_profiler_body (value, cur_func, 0);
+}
+
+#if GCOV_SUPPORTS_ATOMIC
+void
+__gcov_indirect_call_profiler_v4_atomic (gcov_type value, void *cur_func)
+{
+  __gcov_indirect_call_profiler_body (value, cur_func, 1);
+}
+#endif
+
 #endif
 
 #ifdef L_gcov_time_profiler

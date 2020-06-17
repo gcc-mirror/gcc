@@ -165,11 +165,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return _M_base.compare_exchange_strong(__i1, __i2, __m); }
   };
 
+#if __cplusplus <= 201703L
+# define _GLIBCXX20_INIT(I)
+#else
+# define _GLIBCXX20_INIT(I) = I
+#endif
 
   /**
    *  @brief Generic atomic type, primary class template.
    *
-   *  @tparam _Tp  Type to be made atomic, must be trivally copyable.
+   *  @tparam _Tp  Type to be made atomic, must be trivially copyable.
    */
   template<typename _Tp>
     struct atomic
@@ -185,7 +190,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr int _S_alignment
         = _S_min_alignment > alignof(_Tp) ? _S_min_alignment : alignof(_Tp);
 
-      alignas(_S_alignment) _Tp _M_i;
+      alignas(_S_alignment) _Tp _M_i _GLIBCXX20_INIT(_Tp());
 
       static_assert(__is_trivially_copyable(_Tp),
 		    "std::atomic requires a trivially copyable type");
@@ -193,8 +198,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(sizeof(_Tp) > 0,
 		    "Incomplete or zero-sized types are not supported");
 
+#if __cplusplus > 201703L
+      static_assert(is_copy_constructible_v<_Tp>);
+      static_assert(is_move_constructible_v<_Tp>);
+      static_assert(is_copy_assignable_v<_Tp>);
+      static_assert(is_move_assignable_v<_Tp>);
+#endif
+
     public:
-      atomic() noexcept = default;
+      atomic() = default;
       ~atomic() noexcept = default;
       atomic(const atomic&) = delete;
       atomic& operator=(const atomic&) = delete;
@@ -348,7 +360,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return compare_exchange_strong(__e, __i, __m,
                                        __cmpexch_failure_order(__m)); }
     };
-
+#undef _GLIBCXX20_INIT
 
   /// Partial specialization for pointer types.
   template<typename _Tp>
@@ -1472,6 +1484,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return atomic_fetch_xor_explicit(__a, __i, memory_order_seq_cst); }
 
 #if __cplusplus > 201703L
+#define __cpp_lib_atomic_float 201711L
   template<>
     struct atomic<float> : __atomic_float<float>
     {

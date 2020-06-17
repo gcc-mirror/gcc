@@ -694,7 +694,7 @@ public:
   char *
   get_dump_file_name (struct dump_file_info *dfi, int part = -1) const;
 
-  int
+  void
   dump_switch_p (const char *arg);
 
   /* Start a dump for PHASE. Store user-supplied dump flags in

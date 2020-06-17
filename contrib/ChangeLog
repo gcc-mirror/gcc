@@ -1,3 +1,446 @@
+2020-06-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* prepare-commit-msg: Use the gcc-config.mklog-hook-type Git
+	config key instead of the GCC_FORCE_MKLOG environment variable.
+	Optionally disable generating a new ChangeLog template for
+	amended commits when the existing log is still OK.
+
+2020-06-11  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Add --curent argument.
+
+2020-06-11  Martin Liska  <mliska@suse.cz>
+
+	* prepare-commit-msg: Replace ENV variable with a git config
+	value.
+
+2020-06-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* prepare-commit-msg: Use 'tee' to save the diff to a file
+	instead of running 'git diff' twice.
+
+2020-06-10  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Fix renamed files in
+	parse_git_name_status.
+	* gcc-changelog/test_email.py: Add test for it.
+
+2020-06-10  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Add more supported prefixes.
+	* gcc-changelog/test_email.py: Fix one flake8 error.
+	* gcc-changelog/test_patches.txt: Add tested for newly
+	supported prefixes.
+
+2020-06-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gcc-changelog/git_commit.py (GitCommit.parse_changelog):
+	Improve error strings.
+	* gcc-changelog/test_email.py: Update expected errors.
+
+2020-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gcc-changelog/git_email.py: Set exit status on error.
+
+2020-06-09  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Fix ChangeLog regex in order to
+	match the top-level ChangeLog.
+	* gcc-changelog/test_email.py: Add test.
+	* gcc-changelog/test_patches.txt: Likewise.
+
+2020-06-02  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Support foo/bar/*: patterns in
+	wildcard_prefixes locations.
+	* gcc-changelog/test_email.py: Test it.
+	* gcc-changelog/test_patches.txt: Add 3 new patches.
+
+2020-06-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gcc-changelog/git_commit.py (ignored_prefixes): Add
+	gcc/testsuite/gdc.test/.
+
+2020-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gcc-changelog/test_email.py (TestGccChangelog.test_long_lines):
+	Update expected error message.
+
+2020-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gcc-changelog/git_commit.py (GitCommit.parse_changelog): Fix
+	grammar.
+
+2020-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* prepare-commit-msg: Do nothing if the mklog.py script isn't
+	present.
+
+2020-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gcc-changelog/git_commit.py (GitCommit.check_mentioned_files):
+	Improve error text.
+
+2020-05-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config-list.mk (LIST): Add v850e1-elf.
+
+2020-05-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config-list.mk (LIST): Add or1k-elf, or1k-linux-*, and or1k-rtems.
+
+2020-05-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config-list.mk (LIST): Remove arm-wrs-vxworks.
+
+2020-05-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config-list.mk (LIST): Remove cris-linux, crisv32-elf, and
+	crisv32-linux.
+
+2020-05-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config-list.mk (LIST): Add pru-elf.
+
+2020-05-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config-list.mk (LIST): Remove rs6000-ibm-aix5.3.0.
+
+2020-05-29  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Find empty change descriptions.
+	* gcc-changelog/test_email.py: New test.
+	* gcc-changelog/test_patches.txt: New patch that tests that.
+
+2020-05-29  Martin Liska  <mliska@suse.cz>
+
+	* git-backport.py: The script did 'git co HEAD~' when
+	there was no modified ChangeLog file in a successful
+	git cherry pick.
+	Run cherry-pick --continue without editor.
+
+2020-05-29  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Properly
+	handle duplicite authors.
+	* gcc-changelog/test_email.py: New test.
+	* gcc-changelog/test_patches.txt: New patch.
+
+2020-05-28  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc-changelog/git_email.py (GitEmail.__init__): Interpret file
+	renamings as a file deletion plus a file addition.
+	* gcc-changelog/git_repository.py (parse_git_revisions):
+	Likewise.
+	* gcc-changelog/test_email.py: New testcase.
+	* gcc-changelog/test_patches.txt: New testcase.
+
+2020-05-28  Martin Liska  <mliska@suse.cz>
+
+	* check-params-in-docs.py: Update to new format
+	of help.  Apply flake8 corrections.
+
+2020-05-28  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Support renaming of files.
+	One needs unidiff 0.6.0+.
+	* test_mklog.py: Test it.
+
+2020-05-27  Martin Liska  <mliska@suse.cz>
+
+	* gcc-git-customization.sh: Use git-backport.py to drop
+	all changes for ChangeLog files.
+	* git-backport.py: New file.
+
+2020-05-27  Martin Liska  <mliska@suse.cz>
+
+	* gcc-git-customization.sh: Rename
+	commit-mklog to gcc-commit-mklog.
+
+2020-05-27  Martin Liska  <mliska@suse.cz>
+
+	* prepare-commit-msg: Save diff to a file if
+	the GCC_GIT_DIFF_FILE variable is set.
+
+2020-05-26  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc-changelog/git_commit.py (ChangeLogEntry): Handle entries
+	with multi-line file lists.
+	* gcc-changelog/test_email.py: New testcase.
+	* gcc-changelog/test_patches.txt: Likewise.
+
+2020-05-26  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc-changelog/git_update_version.py: Close file objects after
+	use.
+	* gcc-changelog/git_email.py: Likewise.
+	* gcc-changelog/test_email.py: Likewise.
+
+2020-05-26  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Add 2 new options.
+
+2020-05-26  Alexandre Oliva  <oliva@gnu.org>
+
+	* gcc-changelog/git_commit.py (changelog_regex): Accept optional
+	'for' prefix.
+
+2020-05-26  Alexandre Oliva  <oliva@adacore.com>
+
+	* compare-debug: Adjust for .gkd files named as dump files,
+	with the source suffix rather than the object suffix.
+
+2020-05-26  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Parse changelog entries for
+	ignored locations.
+	* gcc-changelog/test_email.py: Add new test for it.
+	* gcc-changelog/test_patches.txt: Likewise.
+
+2020-05-26  Jason Merrill  <jason@redhat.com>
+
+	* prepare-commit-msg: New file.
+	* gcc-git-customization.sh: Install it.  Add commit-mklog alias.
+	* mklog.py: Add new option -c which appends
+	to a ChangeLog file.
+
+2020-05-25  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Add trailing '/'
+	for libdruntime.  Allow empty changelog for
+	only ignored files.
+	* gcc-changelog/test_email.py: New test for go
+	patch in ignored location.
+	* gcc-changelog/test_patches.txt: Add test.
+
+2020-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_commit.py: Add trailing / to
+	gcc/testsuite/go.test/test and replace gcc/go/frontend/
+	with gcc/go/gofrontend/ in ignored locations.
+
+2020-05-22  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Add gcc/testsuite/go.test/test
+	to ignored locations.
+
+2020-05-21  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Prepare the script, the
+	only missing piece is pushing of the updated branches.
+
+2020-05-21  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Support DR entries/
+	* gcc-changelog/test_email.py: New test for it.
+	* gcc-changelog/test_patches.txt: New patch for it.
+
+2020-05-21  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Support DR parsing.
+	* test_mklog.py: New test for DR parsing.
+
+2020-05-20  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Add author_tuple
+	only if not present in author_lines.
+	* gcc-changelog/test_email.py: New test.
+	* gcc-changelog/test_patches.txt: Add new patch.
+
+2020-05-20  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Refactor to make flake8 happy.
+	* gcc-changelog/test_email.py: Add new test.
+	* gcc-changelog/test_patches.txt: Add new patch.
+
+2020-05-20  Frederik Harwath  <frederik@codesourcery.com>
+
+	* gcc-changelog/git_commit.py: Skip over lines starting
+	with "Reviewed-by: ", "Reviewed-on: ", or "Signed-off-by: "
+
+2020-05-20  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_check_commit.py: Change
+	--allow-non-strict-mode to --non-strict-mode.
+
+2020-05-20  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Support cherry pick
+	prefix.
+	* gcc-changelog/test_email.py: Test it.
+	* gcc-changelog/test_patches.txt: Add new patch.
+	* gcc-git-customization.sh: Add gcc-backport.
+
+2020-05-19  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Use REST API for bug title downloading.
+
+2020-05-19  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Add param use_commit_ts
+	for to_changelog_entries.
+	* gcc-changelog/git_update_version.py: Se use_commit_ts to True.
+
+2020-05-19  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Skip GTY for struct names.  Make flake8 happy.
+	* test_mklog.py: Add test for GTY.
+
+2020-05-19  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py:
+	Fill up entries in reverse order.
+
+2020-05-19  Martin Liska  <mliska@suse.cz>
+
+	* gcc-git-customization.sh: Add
+	alias.gcc-mklog new hook.
+	* mklog.py: New file.
+	* test_mklog.py: New file.
+
+2020-05-19  Martin Liska  <mliska@suse.cz>
+
+	* legacy/mklog: Moved from mklog.
+	* legacy/mklog.pl: Moved from mklog.pl.
+
+2020-05-19  Martin Liska  <mliska@suse.cz>
+
+	* gcc-git-customization.sh: Add gcc-verify alias
+	that uses contrib/gcc-changelog/git_check_commit.py.
+
+2020-05-15  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* dg-extract-results.py: Handle GDB specific test types.
+	* dg-extract-results.sh: Likewise.
+
+2020-05-14  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/test_email.py: New file.
+	* gcc-changelog/test_patches.txt: New file.
+
+2020-05-13  Patrick Palka  <ppalka@redhat.com>
+
+	* vimrc: Reduce textwidth to 72 for Git commit messages.
+
+2020-05-13  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_check_commit.py: Add default argument HEAD
+	for revisions and improve error message output.
+
+2020-05-13  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Restore print_output syntax
+	in git_commit.py.
+
+2020-05-13  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_check_commit.py: New file.
+	* gcc-changelog/git_commit.py: New file.
+	* gcc-changelog/git_email.py: New file.
+	* gcc-changelog/git_repository.py: New file.
+	* gcc-changelog/git_update_version.py: New file.
+
+2020-04-17  Martin Liska  <mliska@suse.cz>
+
+	* vimrc: We do not want to modify tab options
+	for Python files.
+
+2020-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/92008
+	* gcc_update: Add intl/plural.y dependency for intl/plural-config.h.
+
+2020-04-03  Martin Liska  <mliska@suse.cz>
+
+	* gcc-git-customization.sh: Search for the pattern
+	at line beginning only.
+
+2020-01-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc-git-customization.sh: Use users/<pfx> for the personal remote
+	rather than just <pfx>.  Convert existing personal branches to the
+	new remote.
+	* git-add-user-branch.sh: New file.
+
+2020-01-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	* git-add-vendor-branch.sh: New file.
+
+2020-01-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc-git-customization.sh: Check that user-supplied remote
+	name exists before continuting.  Use a separate remotes for the
+	personal commit area.  Convert existing personal and vendor
+	fetch rules to new layout.
+	* git-fetch-vendor.sh: New vendor layout.  Add --enable-push
+	option.
+
+2020-01-17  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc_update <git revision>: Use git log "--pretty=tformat:%p:%t:%H",
+	not "--pretty=%p:%t:%H".
+
+2020-01-16  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc-git-customization.sh: Avoid double expansion.
+
+2020-01-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc-git-customization.sh: Check that user.name and user.email
+	are set.  Use $(cmd) instead of `cmd`.  Fix variable quoting when
+	using eval.
+
+2020-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-git-customization.sh: Verify the id to be printed is ancestor of
+	the corresponding remote release branch (or master), otherwise print
+	nothing.
+
+2020-01-15  Segher Boessenkool  <segher@kernel.crashing.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-git-customization.sh: Change uses to use in comment.
+
+2020-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-git-customization.sh: Handle output of older git which doesn't
+	print tags/ prefixes before branchpoint/gcc-.
+
+2010-01-15  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc-git-customization.sh: Explain why we want the user's
+	upstream account name.  Don't add push rules.  Check if push rules
+	have been added and suggest that they should be removed.
+	* git-fetch-vendor.sh: Don't add push rules.
+
+2010-01-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2010-01-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc-git-customization.sh: Add back the default rule that
+	is lost by adding a custom push rule.
+	* git-fetch-vendor.sh: Likewise, also remove '+' from push specs.
+
+2010-01-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc-git-customization.sh: Add back the default rule that
+	is lost by adding a custom push rule.
+	* git-fetch-vendor.sh: Likewise, also remove '+' from push specs.
+
+2010-01-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* contrib/git-fetch-vendor.sh: New file.
+
+2020-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* contrib/gcc-git-customization.sh: Add git gcc-descr and gcc-undescr
+	aliases.
+
+2010-01-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc-git-customization.sh: New file.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* update-copyright.py: Add Mentor Graphics Corporation and Yoshinori

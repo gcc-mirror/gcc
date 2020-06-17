@@ -648,18 +648,6 @@ gfc_match_use (void)
 	  if (type == INTERFACE_USER_OP)
 	    new_use->op = INTRINSIC_USER;
 
-	  st = gfc_find_symtree (gfc_current_ns->sym_root, name);
-	  if (st && type != INTERFACE_USER_OP)
-	    {
-	      if (m == MATCH_YES)
-		gfc_error ("Symbol %qs at %L conflicts with the rename symbol "
-			   "at %L", name, &st->n.sym->declared_at, &loc);
-	      else
-		gfc_error ("Symbol %qs at %L conflicts with the symbol "
-			   "at %L", name, &st->n.sym->declared_at, &loc);
-	      goto cleanup;
-	    }
-
 	  if (use_list->only_flag)
 	    {
 	      if (m != MATCH_YES)
@@ -689,6 +677,20 @@ gfc_match_use (void)
 		goto syntax;
 	      if (m == MATCH_ERROR)
 		goto cleanup;
+	    }
+
+	  st = gfc_find_symtree (gfc_current_ns->sym_root, name);
+	  if (st && type != INTERFACE_USER_OP
+	      && (st->n.sym->module != use_list->module_name
+		  || strcmp (st->n.sym->name, new_use->use_name) != 0))
+	    {
+	      if (m == MATCH_YES)
+		gfc_error ("Symbol %qs at %L conflicts with the rename symbol "
+			   "at %L", name, &st->n.sym->declared_at, &loc);
+	      else
+		gfc_error ("Symbol %qs at %L conflicts with the symbol "
+			   "at %L", name, &st->n.sym->declared_at, &loc);
+	      goto cleanup;
 	    }
 
 	  if (strcmp (new_use->use_name, use_list->module_name) == 0
@@ -743,7 +745,7 @@ cleanup:
    ordered pair whose first element is the ancestor module name and
    whose second element is the submodule name. 'Submodule_name' is
    used for the submodule filename and uses '@' as a separator, whilst
-   the name of the symbol for the module uses '.' as a a separator.
+   the name of the symbol for the module uses '.' as a separator.
    The reasons for these choices are:
    (i) To follow another leading brand in the submodule filenames;
    (ii) Since '.' is not particularly visible in the filenames; and
@@ -4568,7 +4570,9 @@ static void
 load_operator_interfaces (void)
 {
   const char *p;
-  char name[GFC_MAX_SYMBOL_LEN + 1], module[GFC_MAX_SYMBOL_LEN + 1];
+  /* "module" must be large enough for the case of submodules in which the name
+     has the form module.submodule */
+  char name[GFC_MAX_SYMBOL_LEN + 1], module[2 * GFC_MAX_SYMBOL_LEN + 2];
   gfc_user_op *uop;
   pointer_info *pi = NULL;
   int n, i;
@@ -4624,7 +4628,9 @@ static void
 load_generic_interfaces (void)
 {
   const char *p;
-  char name[GFC_MAX_SYMBOL_LEN + 1], module[GFC_MAX_SYMBOL_LEN + 1];
+  /* "module" must be large enough for the case of submodules in which the name
+     has the form module.submodule */
+  char name[GFC_MAX_SYMBOL_LEN + 1], module[2 * GFC_MAX_SYMBOL_LEN + 2];
   gfc_symbol *sym;
   gfc_interface *generic = NULL, *gen = NULL;
   int n, i, renamed;
@@ -5040,7 +5046,7 @@ load_needed (pointer_info *p)
   sym->attr.use_assoc = 1;
 
   /* Unliked derived types, a STRUCTURE may share names with other symbols.
-     We greedily converted the the symbol name to lowercase before we knew its
+     We greedily converted the symbol name to lowercase before we knew its
      type, so now we must fix it. */
   if (sym->attr.flavor == FL_STRUCT)
     sym->name = gfc_dt_upper_string (sym->name);

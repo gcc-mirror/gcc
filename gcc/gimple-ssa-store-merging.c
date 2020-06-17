@@ -61,7 +61,7 @@
    record the surrounding bit region, i.e. bits that could be stored in
    a read-modify-write operation when storing the bit-field.  Record store
    chains to different bases in a hash_map (m_stores) and make sure to
-   terminate such chains when appropriate (for example when when the stored
+   terminate such chains when appropriate (for example when the stored
    values get used subsequently).
    These stores can be a result of structure element initializers, array stores
    etc.  A store_immediate_info object is recorded for every such store.
@@ -315,7 +315,8 @@ verify_symbolic_number_p (struct symbolic_number *n, gimple *stmt)
 
   lhs_type = gimple_expr_type (stmt);
 
-  if (TREE_CODE (lhs_type) != INTEGER_TYPE)
+  if (TREE_CODE (lhs_type) != INTEGER_TYPE
+      && TREE_CODE (lhs_type) != ENUMERAL_TYPE)
     return false;
 
   if (TYPE_PRECISION (lhs_type) != TYPE_PRECISION (n->type))
@@ -848,11 +849,11 @@ find_bswap_or_nop (gimple *stmt, struct symbolic_number *n, bool *bswap)
 {
   /* The last parameter determines the depth search limit.  It usually
      correlates directly to the number n of bytes to be touched.  We
-     increase that number by log2(n) + 1 here in order to also
+     increase that number by 2 * (log2(n) + 1) here in order to also
      cover signed -> unsigned conversions of the src operand as can be seen
      in libgcc, and for initial shift/and operation of the src operand.  */
   int limit = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (gimple_expr_type (stmt)));
-  limit += 1 + (int) ceil_log2 ((unsigned HOST_WIDE_INT) limit);
+  limit += 2 * (1 + (int) ceil_log2 ((unsigned HOST_WIDE_INT) limit));
   gimple *ins_stmt = find_bswap_or_nop_1 (stmt, n, limit);
 
   if (!ins_stmt)
@@ -1475,66 +1476,6 @@ dump_char_array (FILE *fd, unsigned char *ptr, unsigned int len)
   fprintf (fd, "\n");
 }
 
-/* Shift left the bytes in PTR of SZ elements by AMNT bits, carrying over the
-   bits between adjacent elements.  AMNT should be within
-   [0, BITS_PER_UNIT).
-   Example, AMNT = 2:
-   00011111|11100000 << 2 = 01111111|10000000
-   PTR[1]  | PTR[0]         PTR[1]  | PTR[0].  */
-
-static void
-shift_bytes_in_array (unsigned char *ptr, unsigned int sz, unsigned int amnt)
-{
-  if (amnt == 0)
-    return;
-
-  unsigned char carry_over = 0U;
-  unsigned char carry_mask = (~0U) << (unsigned char) (BITS_PER_UNIT - amnt);
-  unsigned char clear_mask = (~0U) << amnt;
-
-  for (unsigned int i = 0; i < sz; i++)
-    {
-      unsigned prev_carry_over = carry_over;
-      carry_over = (ptr[i] & carry_mask) >> (BITS_PER_UNIT - amnt);
-
-      ptr[i] <<= amnt;
-      if (i != 0)
-	{
-	  ptr[i] &= clear_mask;
-	  ptr[i] |= prev_carry_over;
-	}
-    }
-}
-
-/* Like shift_bytes_in_array but for big-endian.
-   Shift right the bytes in PTR of SZ elements by AMNT bits, carrying over the
-   bits between adjacent elements.  AMNT should be within
-   [0, BITS_PER_UNIT).
-   Example, AMNT = 2:
-   00011111|11100000 >> 2 = 00000111|11111000
-   PTR[0]  | PTR[1]         PTR[0]  | PTR[1].  */
-
-static void
-shift_bytes_in_array_right (unsigned char *ptr, unsigned int sz,
-			    unsigned int amnt)
-{
-  if (amnt == 0)
-    return;
-
-  unsigned char carry_over = 0U;
-  unsigned char carry_mask = ~(~0U << amnt);
-
-  for (unsigned int i = 0; i < sz; i++)
-    {
-      unsigned prev_carry_over = carry_over;
-      carry_over = ptr[i] & carry_mask;
-
-      carry_over <<= (unsigned char) BITS_PER_UNIT - amnt;
-      ptr[i] >>= amnt;
-      ptr[i] |= prev_carry_over;
-    }
-}
-
 /* Clear out LEN bits starting from bit START in the byte array
    PTR.  This clears the bits to the *right* from START.
    START must be within [0, BITS_PER_UNIT) and counts starting from
@@ -1793,7 +1734,7 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
   /* Create the shifted version of EXPR.  */
   if (!BYTES_BIG_ENDIAN)
     {
-      shift_bytes_in_array (tmpbuf, byte_size, shift_amnt);
+      shift_bytes_in_array_left (tmpbuf, byte_size, shift_amnt);
       if (shift_amnt == 0)
 	byte_size--;
     }
@@ -1926,19 +1867,22 @@ merged_store_group::can_be_merged_into (store_immediate_info *info)
   if (stores[0]->rhs_code == BIT_INSERT_EXPR && info->rhs_code == INTEGER_CST)
     return true;
 
-  /* We can turn MEM_REF into BIT_INSERT_EXPR for bit-field stores.  */
+  /* We can turn MEM_REF into BIT_INSERT_EXPR for bit-field stores, but do it
+     only for small regions since this can generate a lot of instructions.  */
   if (info->rhs_code == MEM_REF
       && (stores[0]->rhs_code == INTEGER_CST
 	  || stores[0]->rhs_code == BIT_INSERT_EXPR)
       && info->bitregion_start == stores[0]->bitregion_start
-      && info->bitregion_end == stores[0]->bitregion_end)
+      && info->bitregion_end == stores[0]->bitregion_end
+      && info->bitregion_end - info->bitregion_start <= MAX_FIXED_MODE_SIZE)
     return true;
 
   if (stores[0]->rhs_code == MEM_REF
       && (info->rhs_code == INTEGER_CST
 	  || info->rhs_code == BIT_INSERT_EXPR)
       && info->bitregion_start == stores[0]->bitregion_start
-      && info->bitregion_end == stores[0]->bitregion_end)
+      && info->bitregion_end == stores[0]->bitregion_end
+      && info->bitregion_end - info->bitregion_start <= MAX_FIXED_MODE_SIZE)
     return true;
 
   return false;
@@ -2219,6 +2163,8 @@ pass_store_merging::terminate_all_aliasing_chains (imm_store_chain_info
     return false;
 
   tree store_lhs = gimple_store_p (stmt) ? gimple_get_lhs (stmt) : NULL_TREE;
+  ao_ref store_lhs_ref;
+  ao_ref_init (&store_lhs_ref, store_lhs);
   for (imm_store_chain_info *next = m_stores_head, *cur = next; cur; cur = next)
     {
       next = cur->next;
@@ -2233,9 +2179,12 @@ pass_store_merging::terminate_all_aliasing_chains (imm_store_chain_info
       FOR_EACH_VEC_ELT (cur->m_store_info, i, info)
 	{
 	  tree lhs = gimple_assign_lhs (info->stmt);
-	  if (ref_maybe_used_by_stmt_p (stmt, lhs)
-	      || stmt_may_clobber_ref_p (stmt, lhs)
-	      || (store_lhs && refs_output_dependent_p (store_lhs, lhs)))
+	  ao_ref lhs_ref;
+	  ao_ref_init (&lhs_ref, lhs);
+	  if (ref_maybe_used_by_stmt_p (stmt, &lhs_ref)
+	      || stmt_may_clobber_ref_p_1 (stmt, &lhs_ref)
+	      || (store_lhs && refs_may_alias_p_1 (&store_lhs_ref,
+						   &lhs_ref, false)))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
@@ -2425,8 +2374,9 @@ gather_bswap_load_refs (vec<tree> *refs, tree val)
 /* Check if there are any stores in M_STORE_INFO after index I
    (where M_STORE_INFO must be sorted by sort_by_bitpos) that overlap
    a potential group ending with END that have their order
-   smaller than LAST_ORDER.  RHS_CODE is the kind of store in the
-   group.  Return true if there are no such stores.
+   smaller than LAST_ORDER.  ALL_INTEGER_CST_P is true if
+   all the stores already merged and the one under consideration
+   have rhs_code of INTEGER_CST.  Return true if there are no such stores.
    Consider:
      MEM[(long long int *)p_28] = 0;
      MEM[(long long int *)p_28 + 8B] = 0;
@@ -2449,13 +2399,13 @@ gather_bswap_load_refs (vec<tree> *refs, tree val)
    the MEM[(long long int *)p_28 + 8B] = 0; would now be before it,
    so we need to refuse merging MEM[(long long int *)p_28 + 8B] = 0;
    into the group.  That way it will be its own store group and will
-   not be touched.  If RHS_CODE is INTEGER_CST and there are overlapping
+   not be touched.  If ALL_INTEGER_CST_P and there are overlapping
    INTEGER_CST stores, those are mergeable using merge_overlapping,
    so don't return false for those.  */
 
 static bool
 check_no_overlap (vec<store_immediate_info *> m_store_info, unsigned int i,
-		  enum tree_code rhs_code, unsigned int last_order,
+		  bool all_integer_cst_p, unsigned int last_order,
 		  unsigned HOST_WIDE_INT end)
 {
   unsigned int len = m_store_info.length ();
@@ -2465,7 +2415,7 @@ check_no_overlap (vec<store_immediate_info *> m_store_info, unsigned int i,
       if (info->bitpos >= end)
 	break;
       if (info->order < last_order
-	  && (rhs_code != INTEGER_CST || info->rhs_code != INTEGER_CST))
+	  && (!all_integer_cst_p || info->rhs_code != INTEGER_CST))
 	return false;
     }
   return true;
@@ -2488,6 +2438,7 @@ imm_store_chain_info::try_coalesce_bswap (merged_store_group *merged_store,
   for (unsigned int i = first + 1; i < len; ++i)
     {
       if (m_store_info[i]->bitpos != m_store_info[first]->bitpos + width
+	  || m_store_info[i]->lp_nr != merged_store->lp_nr
 	  || m_store_info[i]->ins_stmt == NULL)
 	return false;
       width += m_store_info[i]->bitsize;
@@ -2618,7 +2569,7 @@ imm_store_chain_info::try_coalesce_bswap (merged_store_group *merged_store,
   if (n.base_addr == NULL_TREE && !is_gimple_val (n.src))
     return false;
 
-  if (!check_no_overlap (m_store_info, last, LROTATE_EXPR, last_order, end))
+  if (!check_no_overlap (m_store_info, last, false, last_order, end))
     return false;
 
   /* Don't handle memory copy this way if normal non-bswap processing
@@ -2735,6 +2686,7 @@ imm_store_chain_info::coalesce_immediate_stores ()
       if (info->bitpos == merged_store->start + merged_store->width
 	  && merged_store->stores.length () == 1
 	  && merged_store->stores[0]->ins_stmt != NULL
+	  && info->lp_nr == merged_store->lp_nr
 	  && info->ins_stmt != NULL)
 	{
 	  unsigned int try_size;
@@ -2768,7 +2720,14 @@ imm_store_chain_info::coalesce_immediate_stores ()
 	       |---store 2---|
 	 Overlapping stores.  */
       else if (IN_RANGE (info->bitpos, merged_store->start,
-			 merged_store->start + merged_store->width - 1))
+			 merged_store->start + merged_store->width - 1)
+	       /* |---store 1---||---store 2---|
+		  Handle also the consecutive INTEGER_CST stores case here,
+		  as we have here the code to deal with overlaps.  */
+	       || (info->bitregion_start <= merged_store->bitregion_end
+		   && info->rhs_code == INTEGER_CST
+		   && merged_store->only_constants
+		   && merged_store->can_be_merged_into (info)))
 	{
 	  /* Only allow overlapping stores of constants.  */
 	  if (info->rhs_code == INTEGER_CST
@@ -2780,8 +2739,7 @@ imm_store_chain_info::coalesce_immediate_stores ()
 	      unsigned HOST_WIDE_INT end
 		= MAX (merged_store->start + merged_store->width,
 		       info->bitpos + info->bitsize);
-	      if (check_no_overlap (m_store_info, i, INTEGER_CST,
-				    last_order, end))
+	      if (check_no_overlap (m_store_info, i, true, last_order, end))
 		{
 		  /* check_no_overlap call above made sure there are no
 		     overlapping stores with non-INTEGER_CST rhs_code
@@ -2821,7 +2779,8 @@ imm_store_chain_info::coalesce_immediate_stores ()
 			    break;
 			  if (info2->order < try_order)
 			    {
-			      if (info2->rhs_code != INTEGER_CST)
+			      if (info2->rhs_code != INTEGER_CST
+				  || info2->lp_nr != merged_store->lp_nr)
 				{
 				  /* Normally check_no_overlap makes sure this
 				     doesn't happen, but if end grows below,
@@ -2839,6 +2798,7 @@ imm_store_chain_info::coalesce_immediate_stores ()
 					      info2->bitpos + info2->bitsize);
 			    }
 			  else if (info2->rhs_code == INTEGER_CST
+				   && info2->lp_nr == merged_store->lp_nr
 				   && !last_iter)
 			    {
 			      max_order = MAX (max_order, info2->order + 1);
@@ -2934,7 +2894,7 @@ imm_store_chain_info::coalesce_immediate_stores ()
 	      std::swap (info->ops[0], info->ops[1]);
 	      info->ops_swapped_p = true;
 	    }
-	  if (check_no_overlap (m_store_info, i, info->rhs_code,
+	  if (check_no_overlap (m_store_info, i, false,
 				MAX (merged_store->last_order, info->order),
 				MAX (merged_store->start + merged_store->width,
 				     info->bitpos + info->bitsize)))
@@ -4215,6 +4175,15 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
 		  const HOST_WIDE_INT end_gap
 		    = (try_bitpos + try_size) - (info->bitpos + info->bitsize);
 		  tree tem = info->ops[0].val;
+		  if (!INTEGRAL_TYPE_P (TREE_TYPE (tem)))
+		    {
+		      const unsigned HOST_WIDE_INT size
+			= tree_to_uhwi (TYPE_SIZE (TREE_TYPE (tem)));
+		      tree integer_type
+			= build_nonstandard_integer_type (size, UNSIGNED);
+		      tem = gimple_build (&seq, loc, VIEW_CONVERT_EXPR,
+					  integer_type, tem);
+		    }
 		  if (TYPE_PRECISION (TREE_TYPE (tem)) <= info->bitsize)
 		    {
 		      tree bitfield_type
@@ -4711,8 +4680,8 @@ pass_store_merging::process_store (gimple *stmt)
 {
   tree lhs = gimple_assign_lhs (stmt);
   tree rhs = gimple_assign_rhs1 (stmt);
-  poly_uint64 bitsize, bitpos;
-  poly_uint64 bitregion_start, bitregion_end;
+  poly_uint64 bitsize, bitpos = 0;
+  poly_uint64 bitregion_start = 0, bitregion_end = 0;
   tree base_addr
     = mem_valid_for_store_merging (lhs, &bitsize, &bitpos,
 				   &bitregion_start, &bitregion_end);
@@ -4831,7 +4800,7 @@ pass_store_merging::process_store (gimple *stmt)
 	  && bitsize.is_constant (&const_bitsize)
 	  && ((const_bitsize % BITS_PER_UNIT) != 0
 	      || !multiple_p (bitpos, BITS_PER_UNIT))
-	  && const_bitsize <= 64)
+	  && const_bitsize <= MAX_FIXED_MODE_SIZE)
 	{
 	  /* Bypass a conversion to the bit-field type.  */
 	  if (!bit_not_p
@@ -5087,11 +5056,11 @@ verify_array_eq (unsigned char *x, unsigned char *y, unsigned int n)
     }
 }
 
-/* Test shift_bytes_in_array and that it carries bits across between
+/* Test shift_bytes_in_array_left and that it carries bits across between
    bytes correctly.  */
 
 static void
-verify_shift_bytes_in_array (void)
+verify_shift_bytes_in_array_left (void)
 {
    /* byte 1   | byte 0
       00011111 | 11100000.  */
@@ -5100,13 +5069,13 @@ verify_shift_bytes_in_array (void)
   memcpy (in, orig, sizeof orig);
 
   unsigned char expected[2] = { 0x80, 0x7f };
-  shift_bytes_in_array (in, sizeof (in), 2);
+  shift_bytes_in_array_left (in, sizeof (in), 2);
   verify_array_eq (in, expected, sizeof (in));
 
   memcpy (in, orig, sizeof orig);
   memcpy (expected, orig, sizeof orig);
   /* Check that shifting by zero doesn't change anything.  */
-  shift_bytes_in_array (in, sizeof (in), 0);
+  shift_bytes_in_array_left (in, sizeof (in), 0);
   verify_array_eq (in, expected, sizeof (in));
 
 }
@@ -5191,7 +5160,7 @@ verify_clear_bit_region_be (void)
 void
 store_merging_c_tests (void)
 {
-  verify_shift_bytes_in_array ();
+  verify_shift_bytes_in_array_left ();
   verify_shift_bytes_in_array_right ();
   verify_clear_bit_region ();
   verify_clear_bit_region_be ();

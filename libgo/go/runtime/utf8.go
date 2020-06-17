@@ -13,7 +13,7 @@ import _ "unsafe" // For go:linkname.
 // Numbers fundamental to the encoding.
 const (
 	runeError = '\uFFFD'     // the "error" Rune or "Unicode replacement character"
-	runeSelf  = 0x80         // characters below Runeself are represented as themselves in a single byte.
+	runeSelf  = 0x80         // characters below runeSelf are represented as themselves in a single byte.
 	maxRune   = '\U0010FFFF' // Maximum valid Unicode code point.
 )
 

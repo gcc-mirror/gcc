@@ -239,6 +239,16 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_ASM_OUTPUT_IDENT
 #define TARGET_ASM_OUTPUT_IDENT default_asm_output_ident_directive
 
+/* We always want jump tables in the text section:
+   * for PIC code, we need the subtracted symbol to be defined at
+     assembly-time.
+   * for mdynamic-no-pic, we cannot support jump tables in the .const
+     section for weak functions, this looks to ld64 like direct access
+     to the weak symbol from an anonymous atom.  */
+
+#undef JUMP_TABLES_IN_TEXT_SECTION
+#define JUMP_TABLES_IN_TEXT_SECTION 1
+
 /* Darwin profiling -- call mcount.
    If we need a stub, then we unconditionally mark it as used.  */
 #undef FUNCTION_PROFILER
@@ -340,3 +350,8 @@ along with GCC; see the file COPYING3.  If not see
       = darwin_init_cfstring_builtins ((unsigned) (IX86_BUILTIN_CFSTRING)); \
     darwin_rename_builtins ();						\
   } while(0)
+
+/* Define the shadow offset for asan.  */
+#undef SUBTARGET_SHADOW_OFFSET
+#define SUBTARGET_SHADOW_OFFSET	\
+  (TARGET_LP64 ? HOST_WIDE_INT_1 << 44 : HOST_WIDE_INT_1 << 29)

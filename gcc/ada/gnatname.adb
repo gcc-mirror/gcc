@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -681,6 +681,8 @@ procedure Gnatname is
                                              Sources.Last
                               loop
                                  Current_Source := Sources.Table (Index);
+                                 pragma Annotate
+                                   (CodePeer, Modified, Current_Source);
 
                                  if Opt.Verbose_Mode then
                                     if Current_Source.Spec then

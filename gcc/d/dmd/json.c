@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -394,7 +394,7 @@ public:
 
     void property(const char *name, Parameters *parameters)
     {
-        if (parameters == NULL || parameters->dim == 0)
+        if (parameters == NULL || parameters->length == 0)
             return;
 
         propertyStart(name);
@@ -402,7 +402,7 @@ public:
 
         if (parameters)
         {
-            for (size_t i = 0; i < parameters->dim; i++)
+            for (size_t i = 0; i < parameters->length; i++)
             {
                 Parameter *p = (*parameters)[i];
                 objectStart();
@@ -438,7 +438,7 @@ public:
             property("kind", s->kind());
         }
 
-        if (s->prot().kind != PROTpublic)   // TODO: How about package(names)?
+        if (s->prot().kind != Prot::public_)   // TODO: How about package(names)?
             property("protection", protectionToChars(s->prot().kind));
 
         if (EnumMember *em = s->isEnumMember())
@@ -454,6 +454,8 @@ public:
 
     void jsonProperties(Declaration *d)
     {
+        if (d->storage_class & STClocal)
+            return;
         jsonProperties((Dsymbol *)d);
 
         propertyStorageClass("storageClass", d->storage_class);
@@ -510,7 +512,7 @@ public:
 
         propertyStart("members");
         arrayStart();
-        for (size_t i = 0; i < s->members->dim; i++)
+        for (size_t i = 0; i < s->members->length; i++)
         {
             (*s->members)[i]->accept(this);
         }
@@ -528,9 +530,9 @@ public:
 
         propertyStart("name");
         stringStart();
-        if (s->packages && s->packages->dim)
+        if (s->packages && s->packages->length)
         {
-            for (size_t i = 0; i < s->packages->dim; i++)
+            for (size_t i = 0; i < s->packages->length; i++)
             {
                 Identifier *pid = (*s->packages)[i];
                 stringPart(pid->toChars());
@@ -544,14 +546,14 @@ public:
         property("kind", s->kind());
         property("comment", (const char *)s->comment);
         property("line", "char", &s->loc);
-        if (s->prot().kind != PROTpublic)
+        if (s->prot().kind != Prot::public_)
             property("protection", protectionToChars(s->prot().kind));
         if (s->aliasId)
             property("alias", s->aliasId->toChars());
 
         bool hasRenamed = false;
         bool hasSelective = false;
-        for (size_t i = 0; i < s->aliases.dim; i++)
+        for (size_t i = 0; i < s->aliases.length; i++)
         {
             // avoid empty "renamed" and "selective" sections
             if (hasRenamed && hasSelective)
@@ -567,7 +569,7 @@ public:
             // import foo : alias1 = target1;
             propertyStart("renamed");
             objectStart();
-            for (size_t i = 0; i < s->aliases.dim; i++)
+            for (size_t i = 0; i < s->aliases.length; i++)
             {
                 Identifier *name = s->names[i];
                 Identifier *alias = s->aliases[i];
@@ -581,7 +583,7 @@ public:
             // import foo : target1;
             propertyStart("selective");
             arrayStart();
-            for (size_t i = 0; i < s->names.dim; i++)
+            for (size_t i = 0; i < s->names.length; i++)
             {
                 Identifier *name = s->names[i];
                 if (!s->aliases[i]) item(name->toChars());
@@ -594,11 +596,11 @@ public:
 
     void visit(AttribDeclaration *d)
     {
-        Dsymbols *ds = d->include(NULL, NULL);
+        Dsymbols *ds = d->include(NULL);
 
         if (ds)
         {
-            for (size_t i = 0; i < ds->dim; i++)
+            for (size_t i = 0; i < ds->length; i++)
             {
                 Dsymbol *s = (*ds)[i];
                 s->accept(this);
@@ -658,7 +660,7 @@ public:
         {
             propertyStart("members");
             arrayStart();
-            for (size_t i = 0; i < d->members->dim; i++)
+            for (size_t i = 0; i < d->members->length; i++)
             {
                 Dsymbol *s = (*d->members)[i];
                 s->accept(this);
@@ -677,15 +679,15 @@ public:
 
         TypeFunction *tf = (TypeFunction *)d->type;
         if (tf && tf->ty == Tfunction)
-            property("parameters", tf->parameters);
+            property("parameters", tf->parameterList.parameters);
 
         property("endline", "endchar", &d->endloc);
 
-        if (d->foverrides.dim)
+        if (d->foverrides.length)
         {
             propertyStart("overrides");
             arrayStart();
-            for (size_t i = 0; i < d->foverrides.dim; i++)
+            for (size_t i = 0; i < d->foverrides.length; i++)
             {
                 FuncDeclaration *fd = d->foverrides[i];
                 item(fd->toPrettyChars());
@@ -719,7 +721,7 @@ public:
 
         propertyStart("parameters");
         arrayStart();
-        for (size_t i = 0; i < d->parameters->dim; i++)
+        for (size_t i = 0; i < d->parameters->length; i++)
         {
             TemplateParameter *s = (*d->parameters)[i];
             objectStart();
@@ -784,7 +786,7 @@ public:
 
         propertyStart("members");
         arrayStart();
-        for (size_t i = 0; i < d->members->dim; i++)
+        for (size_t i = 0; i < d->members->length; i++)
         {
             Dsymbol *s = (*d->members)[i];
             s->accept(this);
@@ -800,7 +802,7 @@ public:
         {
             if (d->members)
             {
-                for (size_t i = 0; i < d->members->dim; i++)
+                for (size_t i = 0; i < d->members->length; i++)
                 {
                     Dsymbol *s = (*d->members)[i];
                     s->accept(this);
@@ -819,7 +821,7 @@ public:
         {
             propertyStart("members");
             arrayStart();
-            for (size_t i = 0; i < d->members->dim; i++)
+            for (size_t i = 0; i < d->members->length; i++)
             {
                 Dsymbol *s = (*d->members)[i];
                 s->accept(this);
@@ -843,6 +845,8 @@ public:
 
     void visit(VarDeclaration *d)
     {
+        if (d->storage_class & STClocal)
+            return;
         objectStart();
 
         jsonProperties(d);
@@ -875,7 +879,7 @@ void json_generate(OutBuffer *buf, Modules *modules)
     ToJsonVisitor json(buf);
 
     json.arrayStart();
-    for (size_t i = 0; i < modules->dim; i++)
+    for (size_t i = 0; i < modules->length; i++)
     {
         Module *m = (*modules)[i];
         if (global.params.verbose)

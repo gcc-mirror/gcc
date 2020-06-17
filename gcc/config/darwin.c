@@ -1354,9 +1354,7 @@ darwin_mergeable_constant_section (tree exp,
   machine_mode mode = DECL_MODE (exp);
   unsigned int modesize = GET_MODE_BITSIZE (mode);
 
-  if (DARWIN_SECTION_ANCHORS
-      && flag_section_anchors
-      && zsize)
+  if (zsize)
     return darwin_sections[zobj_const_section];
 
   if (flag_merge_constants
@@ -1586,8 +1584,23 @@ machopic_select_section (tree decl,
 	  && DECL_WEAK (decl)
 	  && !lookup_attribute ("weak_import", DECL_ATTRIBUTES (decl)));
 
-  zsize = (DECL_P (decl)
+  /* Darwin pads zero-sized objects with at least one byte, so that the ld64
+     atom model is preserved (objects must have distinct regions starting with
+     a unique linker-visible symbol).
+     In order to support section anchors, we need to move objects with zero
+     size into sections which are marked as "no section anchors"; the padded
+     objects, obviously, have real sizes that differ from their DECL sizes.  */
+  zsize = DARWIN_SECTION_ANCHORS && flag_section_anchors;
+
+  /* In the streaming of LTO symbol data, we might have a situation where the
+     var is incomplete or layout not finished (DECL_SIZE_UNIT is NULL_TREE).
+     We cannot tell if it is zero-sized then, but we can get the section
+     category correct so that nm reports the right kind of section
+     (e.g. BSS c.f. data).  */
+  zsize = (zsize
+	   && DECL_P (decl)
 	   && (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == CONST_DECL)
+	   && DECL_SIZE_UNIT (decl)
 	   && tree_to_uhwi (DECL_SIZE_UNIT (decl)) == 0);
 
   one = DECL_P (decl)
@@ -1635,15 +1648,11 @@ machopic_select_section (tree decl,
 	  else
 	    base_section = darwin_sections[data_coal_section];
 	}
-      else if (DARWIN_SECTION_ANCHORS
-	       && flag_section_anchors
-	       && zsize)
+      else if (zsize)
 	{
 	  /* If we're doing section anchors, then punt zero-sized objects into
 	     their own sections so that they don't interfere with offset
-	     computation for the remaining vars.  This does not need to be done
-	     for stuff in mergeable sections, since these are ineligible for
-	     anchors.  */
+	     computation for the remaining vars.  */
 	  if (ro)
 	    base_section = darwin_sections[zobj_const_data_section];
 	  else
@@ -3302,7 +3311,8 @@ darwin_override_options (void)
   else if (DARWIN_X86 && darwin_symbol_stubs && TARGET_64BIT)
     {
       inform (input_location,
-	      "%<-mpic-symbol-stubs%> is not required for 64b code (ignored)");
+	      "%<-mpic-symbol-stubs%> is not required for 64-bit code "
+	      "(ignored)");
       darwin_symbol_stubs = false;
     }
 

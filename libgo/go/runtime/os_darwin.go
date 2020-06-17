@@ -6,24 +6,6 @@ package runtime
 
 import "unsafe"
 
-//extern pipe
-func libcPipe([2]int32) int32
-
-func pipe() (r, w int32, e int32) {
-	var p [2]int32
-	r := libcPipe(noescape(unsafe.Pointer(&p)))
-	if r < 0 {
-		e = int32(errno())
-	}
-	return p[0], p[1], e
-}
-
-//go:nosplit
-func setNonblock(fd int32) {
-	flags := fcntlUintptr(uintptr(fd), _F_GETFL, 0)
-	fcntlUintptr(uintptr(fd), _F_SETFL, flags|_O_NONBLOCK)
-}
-
 type mOS struct {
 	initialized bool
 	mutex       pthreadmutex

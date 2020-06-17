@@ -14,7 +14,8 @@ static unsigned int __attribute__ ((optimize ("O2"))) acc_gang ()
 {
   if (acc_on_device ((int) acc_device_host))
     return 0;
-  else if (acc_on_device ((int) acc_device_nvidia))
+  else if (acc_on_device ((int) acc_device_nvidia)
+	   || acc_on_device ((int) acc_device_radeon))
     return __builtin_goacc_parlevel_id (GOMP_DIM_GANG);
   else
     __builtin_abort ();
@@ -25,7 +26,8 @@ static unsigned int __attribute__ ((optimize ("O2"))) acc_worker ()
 {
   if (acc_on_device ((int) acc_device_host))
     return 0;
-  else if (acc_on_device ((int) acc_device_nvidia))
+  else if (acc_on_device ((int) acc_device_nvidia)
+	   || acc_on_device ((int) acc_device_radeon))
     return __builtin_goacc_parlevel_id (GOMP_DIM_WORKER);
   else
     __builtin_abort ();
@@ -36,7 +38,8 @@ static unsigned int __attribute__ ((optimize ("O2"))) acc_vector ()
 {
   if (acc_on_device ((int) acc_device_host))
     return 0;
-  else if (acc_on_device ((int) acc_device_nvidia))
+  else if (acc_on_device ((int) acc_device_nvidia)
+	   || acc_on_device ((int) acc_device_radeon))
     return __builtin_goacc_parlevel_id (GOMP_DIM_VECTOR);
   else
     __builtin_abort ();
@@ -282,6 +285,12 @@ int main ()
 	  /* The GCC nvptx back end enforces num_workers (32).  */
 	  workers_actual = 32;
 	}
+      else if (acc_on_device (acc_device_radeon))
+	{
+	  /* The GCC GCN back end is limited to num_workers (16).
+	     Temporarily set this to 1 until multiple workers are permitted. */
+	  workers_actual = 1; // 16;
+	}
       else
 	__builtin_abort ();
 #pragma acc loop worker reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
@@ -328,6 +337,11 @@ int main ()
 	  /* We're actually executing with num_workers (32).  */
 	  /* workers_actual = 32; */
 	}
+      else if (acc_on_device (acc_device_radeon))
+	{
+	  /* The GCC GCN back end is limited to num_workers (16).  */
+	  workers_actual = 16;
+	}
       else
 	__builtin_abort ();
 #pragma acc loop worker reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
@@ -366,6 +380,11 @@ int main ()
 	{
 	  /* The GCC nvptx back end enforces vector_length (32).  */
 	  vectors_actual = 1024;
+	}
+      else if (acc_on_device (acc_device_radeon))
+	{
+	  /* The GCC GCN back end enforces vector_length (1): autovectorize. */
+	  vectors_actual = 1;
 	}
       else
 	__builtin_abort ();
@@ -407,6 +426,13 @@ int main ()
 	  /* The GCC nvptx back end enforces vector_length (32).  */
 	  vectors_actual = 32;
 	}
+      else if (acc_on_device (acc_device_radeon))
+	{
+	  /* Because of the way vectors are implemented for GCN, a vector loop
+	     containing a seq routine call will not vectorize calls to that
+	     routine.  Hence, we'll only get one "vector".  */
+	  vectors_actual = 1;
+	}
       else
 	__builtin_abort ();
 #pragma acc loop vector reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
@@ -433,6 +459,9 @@ int main ()
        in the following case.  So, limit ourselves here.  */
     if (acc_get_device_type () == acc_device_nvidia)
       gangs = 3;
+    /* Similar appears to be true for GCN.  */
+    if (acc_get_device_type () == acc_device_radeon)
+      gangs = 3;
     int gangs_actual = gangs;
 #define WORKERS 3
     int workers_actual = WORKERS;
@@ -458,6 +487,13 @@ int main ()
 	{
 	  /* The GCC nvptx back end enforces vector_length (32).  */
 	  vectors_actual = 32;
+	}
+      else if (acc_on_device (acc_device_radeon))
+	{
+	  /* Temporary setting, until multiple workers are permitted.  */
+	  workers_actual = 1;
+	  /* See above comments about GCN vectors_actual.  */
+	  vectors_actual = 1;
 	}
       else
 	__builtin_abort ();

@@ -705,6 +705,7 @@ enable_gcov
 enable_vtable_verify
 with_aix_soname
 enable_version_specific_runtime_libs
+with_toolexeclibdir
 with_slibdir
 enable_maintainer_mode
 with_build_libsubdir
@@ -1352,7 +1353,7 @@ Optional Features:
 			enable decimal float extension to C.  Selecting 'bid'
 			or 'dpd' choses which decimal floating point format
 			to use
-  --enable-cet            enable Intel CET in target libraries [default=no]
+  --enable-cet            enable Intel CET in target libraries [default=auto]
   --enable-explicit-exception-frame-registration
                           register exception tables explicitly at module
                           start, for use e.g. for compatibility with
@@ -1369,6 +1370,9 @@ Optional Packages:
   --with-aix-soname=aix|svr4|both
                           shared library versioning (aka "SONAME") variant to
                           provide on AIX
+  --with-toolexeclibdir=DIR
+                          install libraries built with a cross compiler within
+                          DIR
   --with-slibdir=DIR      shared libraries in DIR LIBDIR
   --with-build-libsubdir=DIR  Directory where to find libraries for build system
   --with-system-libunwind use installed libunwind
@@ -2464,6 +2468,22 @@ fi
 $as_echo "$version_specific_libs" >&6; }
 
 
+# Check whether --with-toolexeclibdir was given.
+if test "${with_toolexeclibdir+set}" = set; then :
+  withval=$with_toolexeclibdir; case ${with_toolexeclibdir} in
+  /)
+    ;;
+  */)
+    with_toolexeclibdir=`echo $with_toolexeclibdir | sed 's,/$,,'`
+    ;;
+esac
+else
+  with_toolexeclibdir=no
+fi
+
+
+
+
 # Check whether --with-slibdir was given.
 if test "${with_slibdir+set}" = set; then :
   withval=$with_slibdir; slibdir="$with_slibdir"
@@ -2471,7 +2491,14 @@ else
   if test "${version_specific_libs}" = yes; then
   slibdir='$(libsubdir)'
 elif test -n "$with_cross_host" && test x"$with_cross_host" != x"no"; then
-  slibdir='$(exec_prefix)/$(host_noncanonical)/lib'
+  case ${with_toolexeclibdir} in
+    no)
+      slibdir='$(exec_prefix)/$(host_noncanonical)/lib'
+      ;;
+    *)
+      slibdir=${with_toolexeclibdir}
+      ;;
+  esac
 else
   slibdir='$(libdir)'
 fi
@@ -2701,7 +2728,14 @@ case ${version_specific_libs} in
        test x"$with_cross_host" != x"no"; then
       # Install a library built with a cross compiler in tooldir, not libdir.
       toolexecdir='$(exec_prefix)/$(target_noncanonical)'
-      toolexeclibdir='$(toolexecdir)/lib'
+      case ${with_toolexeclibdir} in
+	no)
+	  toolexeclibdir='$(toolexecdir)/lib'
+	  ;;
+	*)
+	  toolexeclibdir=${with_toolexeclibdir}
+	  ;;
+      esac
     else
       toolexecdir='$(libdir)/gcc-lib/$(target_noncanonical)'
       toolexeclibdir='$(libdir)'
@@ -3519,11 +3553,11 @@ done
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-
+#include <stdio.h>
 int
 main ()
 {
-
+printf ("hello world\n");
   ;
   return 0;
 }
@@ -4866,19 +4900,22 @@ if test "${enable_cet+set}" = set; then :
                           esac
 
 else
-  enable_cet=no
+  enable_cet=auto
 fi
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for CET support" >&5
 $as_echo_n "checking for CET support... " >&6; }
 
+# NB: Avoid nested save_CFLAGS and save_LDFLAGS.
 case "$host" in
   i[34567]86-*-linux* | x86_64-*-linux*)
     case "$enable_cet" in
       auto)
 	# Check if target supports multi-byte NOPs
 	# and if assembler supports CET insn.
+	cet_save_CFLAGS="$CFLAGS"
+	CFLAGS="$CFLAGS -fcf-protection"
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -4902,6 +4939,7 @@ else
   enable_cet=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	CFLAGS="$cet_save_CFLAGS"
 	;;
       yes)
 	# Check if assembler supports CET.
@@ -5292,19 +5330,17 @@ esac
 # This is after config.host so we can augment tmake_file.
 case ${host} in
 xtensa*-*)
-  cat > conftest.c <<EOF
-	#ifdef __XTENSA_CALL0_ABI__
-	#error
-	#endif
-EOF
-  if { ac_try='${CC-cc} -E -o conftest.i conftest.c 1>&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }; then
-      tmake_file="${tmake_file} xtensa/t-windowed"
-  fi
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#ifdef __XTENSA_CALL0_ABI__
+		      #error
+		      #endif
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  tmake_file="${tmake_file} xtensa/t-windowed"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
   ;;
 esac
 
@@ -5491,6 +5527,46 @@ $as_echo "$libgcc_cv_as_avx" >&6; }
   if test x$libgcc_cv_as_avx = xyes; then
 
 $as_echo "#define HAVE_AS_AVX 1" >>confdefs.h
+
+  fi
+  ;;
+esac
+
+
+
+case "${target}" in
+aarch64*-*-*)
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if the assembler supports LSE" >&5
+$as_echo_n "checking if the assembler supports LSE... " >&6; }
+if ${libgcc_cv_as_lse+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+			asm(".arch armv8-a+lse\n\tcas w0, w1, [x2]");
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libgcc_cv_as_lse=yes
+else
+  libgcc_cv_as_lse=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcc_cv_as_lse" >&5
+$as_echo "$libgcc_cv_as_lse" >&6; }
+  if test x$libgcc_cv_as_lse = xyes; then
+
+$as_echo "#define HAVE_AS_LSE 1" >>confdefs.h
 
   fi
   ;;

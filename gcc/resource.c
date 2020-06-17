@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "target.h"
 #include "rtl.h"
 #include "df.h"
 #include "memmodel.h"
@@ -1215,6 +1216,11 @@ init_resource_info (rtx_insn *epilogue_insn)
 	break;
     }
 
+  /* Filter-out the flags register from those additionally required
+     registers. */
+  if (targetm.flags_regnum != INVALID_REGNUM)
+    CLEAR_HARD_REG_BIT (end_of_function_needs.regs, targetm.flags_regnum);
+
   /* Allocate and initialize the tables used by mark_target_live_regs.  */
   target_hash_table = XCNEWVEC (struct target_info *, TARGET_HASH_PRIME);
   bb_ticks = XCNEWVEC (int, last_basic_block_for_fn (cfun));
@@ -1282,7 +1288,26 @@ clear_hashed_info_for_insn (rtx_insn *insn)
 	tinfo->block = -1;
     }
 }
-
+
+/* Clear any hashed information that we have stored for instructions
+   between INSN and the next BARRIER that follow a JUMP or a LABEL.  */
+
+void
+clear_hashed_info_until_next_barrier (rtx_insn *insn)
+{
+  while (insn && !BARRIER_P (insn))
+    {
+      if (JUMP_P (insn) || LABEL_P (insn))
+	{
+	  rtx_insn *next = next_active_insn (insn);
+	  if (next)
+	    clear_hashed_info_for_insn (next);
+	}
+
+      insn = next_nonnote_insn (insn);
+    }
+}
+
 /* Increment the tick count for the basic block that contains INSN.  */
 
 void

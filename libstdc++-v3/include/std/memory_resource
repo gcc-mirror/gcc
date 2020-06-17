@@ -33,13 +33,13 @@
 
 #if __cplusplus >= 201703L
 
-#include <limits>			// numeric_limits
 #include <memory>			// align, allocator_arg_t, __uses_alloc
 #include <utility>			// pair, index_sequence
 #include <vector>			// vector
 #include <cstddef>			// size_t, max_align_t, byte
 #include <shared_mutex>			// shared_mutex
 #include <bits/functexcept.h>
+#include <bits/int_limits.h>
 #include <debug/assertions.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -61,6 +61,7 @@ namespace pmr
   template<typename _Tp>
     class polymorphic_allocator;
 #else // C++20
+# define __cpp_lib_polymorphic_allocator 201902L
   template<typename _Tp = std::byte>
     class polymorphic_allocator;
 #endif
@@ -88,7 +89,7 @@ namespace pmr
   public:
     memory_resource() = default;
     memory_resource(const memory_resource&) = default;
-    virtual ~memory_resource() = default;
+    virtual ~memory_resource(); // key function
 
     memory_resource& operator=(const memory_resource&) = default;
 
@@ -122,10 +123,11 @@ namespace pmr
   operator==(const memory_resource& __a, const memory_resource& __b) noexcept
   { return &__a == &__b || __a.is_equal(__b); }
 
+#if __cpp_impl_three_way_comparison < 201907L
   inline bool
   operator!=(const memory_resource& __a, const memory_resource& __b) noexcept
   { return !(__a == __b); }
-
+#endif
 
   // C++17 23.12.3 Class template polymorphic_allocator
   template<typename _Tp>
@@ -166,8 +168,8 @@ namespace pmr
       allocate(size_t __n)
       __attribute__((__returns_nonnull__))
       {
-	if (__n > (numeric_limits<size_t>::max() / sizeof(_Tp)))
-	  std::__throw_bad_alloc();
+	if (__n > (__detail::__int_limits<size_t>::max() / sizeof(_Tp)))
+	  _GLIBCXX_THROW_OR_ABORT(bad_array_new_length());
 	return static_cast<_Tp*>(_M_resource->allocate(__n * sizeof(_Tp),
 						       alignof(_Tp)));
       }
@@ -178,7 +180,7 @@ namespace pmr
       { _M_resource->deallocate(__p, __n * sizeof(_Tp), alignof(_Tp)); }
 
 #if __cplusplus > 201703L
-      void*
+      [[nodiscard]] void*
       allocate_bytes(size_t __nbytes,
 		     size_t __alignment = alignof(max_align_t))
       { return _M_resource->allocate(__nbytes, __alignment); }
@@ -189,11 +191,11 @@ namespace pmr
       { _M_resource->deallocate(__p, __nbytes, __alignment); }
 
       template<typename _Up>
-	_Up*
+	[[nodiscard]] _Up*
 	allocate_object(size_t __n = 1)
 	{
-	  if ((std::numeric_limits<size_t>::max() / sizeof(_Up)) < __n)
-	    __throw_length_error("polymorphic_allocator::allocate_object");
+	  if ((__detail::__int_limits<size_t>::max() / sizeof(_Up)) < __n)
+	    _GLIBCXX_THROW_OR_ABORT(bad_array_new_length());
 	  return static_cast<_Up*>(allocate_bytes(__n * sizeof(_Up),
 						  alignof(_Up)));
 	}
@@ -204,7 +206,7 @@ namespace pmr
 	{ deallocate_bytes(__p, __n * sizeof(_Up), alignof(_Up)); }
 
       template<typename _Up, typename... _CtorArgs>
-	_Up*
+	[[nodiscard]] _Up*
 	new_object(_CtorArgs&&... __ctor_args)
 	{
 	  _Up* __p = allocate_object<_Up>();
@@ -362,12 +364,13 @@ namespace pmr
 	       const polymorphic_allocator<_Tp2>& __b) noexcept
     { return *__a.resource() == *__b.resource(); }
 
+#if __cpp_impl_three_way_comparison < 201907L
   template<typename _Tp1, typename _Tp2>
     inline bool
     operator!=(const polymorphic_allocator<_Tp1>& __a,
 	       const polymorphic_allocator<_Tp2>& __b) noexcept
     { return !(__a == __b); }
-
+#endif
 
   /// Parameters for tuning a pool resource's behaviour.
   struct pool_options
@@ -600,7 +603,7 @@ namespace pmr
 
     monotonic_buffer_resource(const monotonic_buffer_resource&) = delete;
 
-    virtual ~monotonic_buffer_resource() { release(); }
+    virtual ~monotonic_buffer_resource(); // key function
 
     monotonic_buffer_resource&
     operator=(const monotonic_buffer_resource&) = delete;

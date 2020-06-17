@@ -129,7 +129,10 @@ create_iv (tree base, tree step, tree var, class loop *loop,
      immediately after a statement whose location is known.  */
   if (after)
     {
-      if (gsi_end_p (*incr_pos))
+      if (gsi_end_p (*incr_pos)
+	  || (is_gimple_debug (gsi_stmt (*incr_pos))
+	      && gsi_bb (*incr_pos)
+	      && gsi_end_p (gsi_last_nondebug_bb (gsi_bb (*incr_pos)))))
 	{
 	  edge e = single_succ_edge (gsi_bb (*incr_pos));
 	  gimple_set_location (stmt, e->goto_locus);
@@ -138,8 +141,11 @@ create_iv (tree base, tree step, tree var, class loop *loop,
     }
   else
     {
-      if (!gsi_end_p (*incr_pos))
-	gimple_set_location (stmt, gimple_location (gsi_stmt (*incr_pos)));
+      gimple_stmt_iterator gsi = *incr_pos;
+      if (!gsi_end_p (gsi) && is_gimple_debug (gsi_stmt (gsi)))
+	gsi_next_nondebug (&gsi);
+      if (!gsi_end_p (gsi))
+	gimple_set_location (stmt, gimple_location (gsi_stmt (gsi)));
       gsi_insert_before (incr_pos, stmt, GSI_NEW_STMT);
     }
 

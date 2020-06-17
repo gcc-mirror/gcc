@@ -98,13 +98,19 @@ void test_strcpy_new_char_array (size_t n)
 
 #ifdef __INT16_TYPE__
 
+// Hack around PR 92829.
+#define XUR(min, max) \
+  (++idx, (vals[idx] < min || max < vals[idx] ? min : vals[idx]))
+
 typedef __INT16_TYPE__ int16_t;
 
-void test_strcpy_new_int16_t (size_t n)
+void test_strcpy_new_int16_t (size_t n, const size_t vals[])
 {
-  size_t r_0_1 = UR (0, 1);
-  size_t r_1_2 = UR (1, 2);
-  size_t r_2_3 = UR (2, 3);
+  size_t idx = 0;
+
+  size_t r_0_1 = XUR (0, 1);
+  size_t r_1_2 = XUR (1, 2);
+  size_t r_2_3 = XUR (2, 3);
 
   T (S (0), new int16_t[r_0_1]);
   T (S (1), new int16_t[r_0_1]);
@@ -122,7 +128,7 @@ void test_strcpy_new_int16_t (size_t n)
   T (S (6), new int16_t[r_2_3]);      // { dg-warning "\\\[-Wstringop-overflow" }
   T (S (9), new int16_t[r_2_3]);      // { dg-warning "\\\[-Wstringop-overflow" }
 
-  size_t r_2_smax = UR (2, SIZE_MAX);
+  size_t r_2_smax = XUR (2, SIZE_MAX);
   T (S (0), new int16_t[r_2_smax]);
   T (S (1), new int16_t[r_2_smax]);
   T (S (2), new int16_t[r_2_smax]);

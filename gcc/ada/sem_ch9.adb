@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -706,7 +706,6 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Check_SPARK_05_Restriction ("abort statement is not allowed", N);
 
       T_Name := First (Names (N));
       while Present (T_Name) loop
@@ -777,7 +776,6 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Check_SPARK_05_Restriction ("accept statement is not allowed", N);
 
       --  Entry name is initialized to Any_Id. It should get reset to the
       --  matching entry entity. An error is signalled if it is not reset.
@@ -1019,7 +1017,6 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Check_SPARK_05_Restriction ("select statement is not allowed", N);
       Check_Restriction (Max_Asynchronous_Select_Nesting, N);
       Check_Restriction (No_Select_Statements, N);
 
@@ -1065,7 +1062,6 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Check_SPARK_05_Restriction ("select statement is not allowed", N);
       Check_Restriction (No_Select_Statements, N);
 
       --  Ada 2005 (AI-345): The trigger may be a dispatching call
@@ -1163,7 +1159,6 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Check_SPARK_05_Restriction ("delay statement is not allowed", N);
       Check_Restriction (No_Relative_Delay, N);
       Check_Restriction (No_Delay, N);
       Check_Potentially_Blocking_Operation (N);
@@ -1189,7 +1184,6 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Check_SPARK_05_Restriction ("delay statement is not allowed", N);
       Check_Restriction (No_Delay, N);
       Check_Potentially_Blocking_Operation (N);
       Analyze_And_Resolve (E);
@@ -1303,7 +1297,7 @@ package body Sem_Ch9 is
                         Set_Analyzed (Def, False);
 
                         --  Keep the original subtree to ensure a properly
-                        --  formed tree (e.g. for ASIS use).
+                        --  formed tree.
 
                         Rewrite
                           (Discrete_Subtype_Definition (Index_Spec), Def);
@@ -1505,7 +1499,6 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Check_SPARK_05_Restriction ("entry call is not allowed", N);
 
       if Present (Pragmas_Before (N)) then
          Analyze_List (Pragmas_Before (N));
@@ -1956,7 +1949,6 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Check_SPARK_05_Restriction ("protected definition is not allowed", N);
       Analyze_Declarations (Visible_Declarations (N));
 
       if Present (Private_Declarations (N))
@@ -2258,6 +2250,11 @@ package body Sem_Ch9 is
 
          Propagate_Invariant_Attributes (T, From_Typ => Def_Id);
 
+         --  Propagate predicate-related attributes from the private type to
+         --  the protected type.
+
+         Propagate_Predicate_Attributes (T, From_Typ => Def_Id);
+
          --  Create corresponding record now, because some private dependents
          --  may be subtypes of the partial view.
 
@@ -2312,7 +2309,6 @@ package body Sem_Ch9 is
          Warnings => True);
 
       Tasking_Used := True;
-      Check_SPARK_05_Restriction ("requeue statement is not allowed", N);
       Check_Restriction (No_Requeue_Statements, N);
       Check_Unreachable_Code (N);
 
@@ -2606,7 +2602,6 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Check_SPARK_05_Restriction ("select statement is not allowed", N);
       Check_Restriction (No_Select_Statements, N);
 
       --  Loop to analyze alternatives
@@ -2993,6 +2988,24 @@ package body Sem_Ch9 is
          else
             Set_First_Private_Entity (Spec_Id, First_Entity (Spec_Id));
          end if;
+
+         --  The entity list of the current scope now includes entities in
+         --  the spec as well as the body. Their declarations will become
+         --  part of the statement sequence of the task body procedure that
+         --  is built during expansion. Indicate that aspect specifications
+         --  for these entities need not be rechecked. The guards on
+         --  Check_Aspect_At_End_Of_Declarations are not sufficient to
+         --  suppress these checks, because the declarations come from source.
+
+         declare
+            Priv : Entity_Id := First_Private_Entity (Spec_Id);
+
+         begin
+            while Present (Priv) loop
+               Set_Has_Delayed_Aspects (Priv, False);
+               Next_Entity (Priv);
+            end loop;
+         end;
       end if;
 
       --  Mark all handlers as not suitable for local raise optimization,
@@ -3050,7 +3063,6 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Check_SPARK_05_Restriction ("task definition is not allowed", N);
 
       if Present (Visible_Declarations (N)) then
          Analyze_Declarations (Visible_Declarations (N));
@@ -3239,6 +3251,11 @@ package body Sem_Ch9 is
 
          Propagate_Invariant_Attributes (T, From_Typ => Def_Id);
 
+         --  Propagate predicate-related attributes from the private type to
+         --  task type.
+
+         Propagate_Predicate_Attributes (T, From_Typ => Def_Id);
+
          --  Create corresponding record now, because some private dependents
          --  may be subtypes of the partial view.
 
@@ -3292,7 +3309,6 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Check_SPARK_05_Restriction ("select statement is not allowed", N);
       Check_Restriction (No_Select_Statements, N);
 
       --  Ada 2005 (AI-345): The trigger may be a dispatching call
@@ -3462,7 +3478,7 @@ package body Sem_Ch9 is
          --  The primitive operations of a tagged synchronized type are placed
          --  on the Corresponding_Record for proper dispatching, but are
          --  attached to the synchronized type itself when expansion is
-         --  disabled, for ASIS use.
+         --  disabled.
 
          Set_Direct_Primitive_Operations (T, New_Elmt_List);
 

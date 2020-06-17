@@ -10,6 +10,7 @@ import (
 	"bufio"
 	"bytes"
 	"compress/gzip"
+	"compress/zlib"
 	"context"
 	"crypto/tls"
 	"encoding/json"
@@ -28,10 +29,11 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"reflect"
+	"regexp"
 	"runtime"
 	"runtime/debug"
-	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -1504,6 +1506,7 @@ func TestTLSServer(t *testing.T) {
 }
 
 func TestServeTLS(t *testing.T) {
+	CondSkipHTTP2(t)
 	// Not parallel: uses global test hooks.
 	defer afterTest(t)
 	defer SetTestHookServerServe(nil)
@@ -1654,6 +1657,7 @@ func TestAutomaticHTTP2_ListenAndServe_GetCertificate(t *testing.T) {
 }
 
 func testAutomaticHTTP2_ListenAndServe(t *testing.T, tlsConf *tls.Config) {
+	CondSkipHTTP2(t)
 	// Not parallel: uses global test hooks.
 	defer afterTest(t)
 	defer SetTestHookServerServe(nil)
@@ -2627,7 +2631,7 @@ func TestRedirect(t *testing.T) {
 
 // Test that Redirect sets Content-Type header for GET and HEAD requests
 // and writes a short HTML body, unless the request already has a Content-Type header.
-func TestRedirect_contentTypeAndBody(t *testing.T) {
+func TestRedirectContentTypeAndBody(t *testing.T) {
 	type ctHeader struct {
 		Values []string
 	}
@@ -2906,7 +2910,7 @@ func TestStripPrefix(t *testing.T) {
 }
 
 // https://golang.org/issue/18952.
-func TestStripPrefix_notModifyRequest(t *testing.T) {
+func TestStripPrefixNotModifyRequest(t *testing.T) {
 	h := StripPrefix("/foo", NotFoundHandler())
 	req := httptest.NewRequest("GET", "/foo/bar", nil)
 	h.ServeHTTP(httptest.NewRecorder(), req)
@@ -4111,14 +4115,49 @@ func TestServerConnState(t *testing.T) {
 			panic("intentional panic")
 		},
 	}
+
+	// A stateLog is a log of states over the lifetime of a connection.
+	type stateLog struct {
+		active   net.Conn // The connection for which the log is recorded; set to the first connection seen in StateNew.
+		got      []ConnState
+		want     []ConnState
+		complete chan<- struct{} // If non-nil, closed when either 'got' is equal to 'want', or 'got' is no longer a prefix of 'want'.
+	}
+	activeLog := make(chan *stateLog, 1)
+
+	// wantLog invokes doRequests, then waits for the resulting connection to
+	// either pass through the sequence of states in want or enter a state outside
+	// of that sequence.
+	wantLog := func(doRequests func(), want ...ConnState) {
+		t.Helper()
+		complete := make(chan struct{})
+		activeLog <- &stateLog{want: want, complete: complete}
+
+		doRequests()
+
+		timer := time.NewTimer(5 * time.Second)
+		select {
+		case <-timer.C:
+			t.Errorf("Timed out waiting for connection to change state.")
+		case <-complete:
+			timer.Stop()
+		}
+		sl := <-activeLog
+		if !reflect.DeepEqual(sl.got, sl.want) {
+			t.Errorf("Request(s) produced unexpected state sequence.\nGot:  %v\nWant: %v", sl.got, sl.want)
+		}
+		// Don't return sl to activeLog: we don't expect any further states after
+		// this point, and want to keep the ConnState callback blocked until the
+		// next call to wantLog.
+	}
+
 	ts := httptest.NewUnstartedServer(HandlerFunc(func(w ResponseWriter, r *Request) {
 		handler[r.URL.Path](w, r)
 	}))
-	defer ts.Close()
-
-	var mu sync.Mutex // guard stateLog and connID
-	var stateLog = map[int][]ConnState{}
-	var connID = map[net.Conn]int{}
+	defer func() {
+		activeLog <- &stateLog{} // If the test failed, allow any remaining ConnState callbacks to complete.
+		ts.Close()
+	}()
 
 	ts.Config.ErrorLog = log.New(ioutil.Discard, "", 0)
 	ts.Config.ConnState = func(c net.Conn, state ConnState) {
@@ -4126,20 +4165,27 @@ func TestServerConnState(t *testing.T) {
 			t.Errorf("nil conn seen in state %s", state)
 			return
 		}
-		mu.Lock()
-		defer mu.Unlock()
-		id, ok := connID[c]
-		if !ok {
-			id = len(connID) + 1
-			connID[c] = id
+		sl := <-activeLog
+		if sl.active == nil && state == StateNew {
+			sl.active = c
+		} else if sl.active != c {
+			t.Errorf("unexpected conn in state %s", state)
+			activeLog <- sl
+			return
 		}
-		stateLog[id] = append(stateLog[id], state)
+		sl.got = append(sl.got, state)
+		if sl.complete != nil && (len(sl.got) >= len(sl.want) || !reflect.DeepEqual(sl.got, sl.want[:len(sl.got)])) {
+			close(sl.complete)
+			sl.complete = nil
+		}
+		activeLog <- sl
 	}
-	ts.Start()
 
+	ts.Start()
 	c := ts.Client()
 
 	mustGet := func(url string, headers ...string) {
+		t.Helper()
 		req, err := NewRequest("GET", url, nil)
 		if err != nil {
 			t.Fatal(err)
@@ -4160,26 +4206,33 @@ func TestServerConnState(t *testing.T) {
 		}
 	}
 
-	mustGet(ts.URL + "/")
-	mustGet(ts.URL + "/close")
+	wantLog(func() {
+		mustGet(ts.URL + "/")
+		mustGet(ts.URL + "/close")
+	}, StateNew, StateActive, StateIdle, StateActive, StateClosed)
 
-	mustGet(ts.URL + "/")
-	mustGet(ts.URL+"/", "Connection", "close")
+	wantLog(func() {
+		mustGet(ts.URL + "/")
+		mustGet(ts.URL+"/", "Connection", "close")
+	}, StateNew, StateActive, StateIdle, StateActive, StateClosed)
 
-	mustGet(ts.URL + "/hijack")
-	mustGet(ts.URL + "/hijack-panic")
+	wantLog(func() {
+		mustGet(ts.URL + "/hijack")
+	}, StateNew, StateActive, StateHijacked)
 
-	// New->Closed
-	{
+	wantLog(func() {
+		mustGet(ts.URL + "/hijack-panic")
+	}, StateNew, StateActive, StateHijacked)
+
+	wantLog(func() {
 		c, err := net.Dial("tcp", ts.Listener.Addr().String())
 		if err != nil {
 			t.Fatal(err)
 		}
 		c.Close()
-	}
+	}, StateNew, StateClosed)
 
-	// New->Active->Closed
-	{
+	wantLog(func() {
 		c, err := net.Dial("tcp", ts.Listener.Addr().String())
 		if err != nil {
 			t.Fatal(err)
@@ -4189,10 +4242,9 @@ func TestServerConnState(t *testing.T) {
 		}
 		c.Read(make([]byte, 1)) // block until server hangs up on us
 		c.Close()
-	}
+	}, StateNew, StateActive, StateClosed)
 
-	// New->Idle->Closed
-	{
+	wantLog(func() {
 		c, err := net.Dial("tcp", ts.Listener.Addr().String())
 		if err != nil {
 			t.Fatal(err)
@@ -4208,47 +4260,7 @@ func TestServerConnState(t *testing.T) {
 			t.Fatal(err)
 		}
 		c.Close()
-	}
-
-	want := map[int][]ConnState{
-		1: {StateNew, StateActive, StateIdle, StateActive, StateClosed},
-		2: {StateNew, StateActive, StateIdle, StateActive, StateClosed},
-		3: {StateNew, StateActive, StateHijacked},
-		4: {StateNew, StateActive, StateHijacked},
-		5: {StateNew, StateClosed},
-		6: {StateNew, StateActive, StateClosed},
-		7: {StateNew, StateActive, StateIdle, StateClosed},
-	}
-	logString := func(m map[int][]ConnState) string {
-		var b bytes.Buffer
-		var keys []int
-		for id := range m {
-			keys = append(keys, id)
-		}
-		sort.Ints(keys)
-		for _, id := range keys {
-			fmt.Fprintf(&b, "Conn %d: ", id)
-			for _, s := range m[id] {
-				fmt.Fprintf(&b, "%s ", s)
-			}
-			b.WriteString("\n")
-		}
-		return b.String()
-	}
-
-	for i := 0; i < 5; i++ {
-		time.Sleep(time.Duration(i) * 50 * time.Millisecond)
-		mu.Lock()
-		match := reflect.DeepEqual(stateLog, want)
-		mu.Unlock()
-		if match {
-			return
-		}
-	}
-
-	mu.Lock()
-	t.Errorf("Unexpected events.\nGot log:\n%s\n   Want:\n%s\n", logString(stateLog), logString(want))
-	mu.Unlock()
+	}, StateNew, StateActive, StateIdle, StateClosed)
 }
 
 func TestServerKeepAlivesEnabled(t *testing.T) {
@@ -4347,7 +4359,7 @@ func TestCloseWrite(t *testing.T) {
 
 // This verifies that a handler can Flush and then Hijack.
 //
-// An similar test crashed once during development, but it was only
+// A similar test crashed once during development, but it was only
 // testing this tangentially and temporarily until another TODO was
 // fixed.
 //
@@ -4755,6 +4767,10 @@ func TestServerValidatesHeaders(t *testing.T) {
 		{"foo\xffbar: foo\r\n", 400},                         // binary in header
 		{"foo\x00bar: foo\r\n", 400},                         // binary in header
 		{"Foo: " + strings.Repeat("x", 1<<21) + "\r\n", 431}, // header too large
+		// Spaces between the header key and colon are not allowed.
+		// See RFC 7230, Section 3.2.4.
+		{"Foo : bar\r\n", 400},
+		{"Foo\t: bar\r\n", 400},
 
 		{"foo: foo foo\r\n", 200},    // LWS space is okay
 		{"foo: foo\tfoo\r\n", 200},   // LWS tab is okay
@@ -6117,6 +6133,39 @@ func TestServerContextsHTTP2(t *testing.T) {
 	}
 }
 
+// Issue 35750: check ConnContext not modifying context for other connections
+func TestConnContextNotModifyingAllContexts(t *testing.T) {
+	setParallel(t)
+	defer afterTest(t)
+	type connKey struct{}
+	ts := httptest.NewUnstartedServer(HandlerFunc(func(rw ResponseWriter, r *Request) {
+		rw.Header().Set("Connection", "close")
+	}))
+	ts.Config.ConnContext = func(ctx context.Context, c net.Conn) context.Context {
+		if got := ctx.Value(connKey{}); got != nil {
+			t.Errorf("in ConnContext, unexpected context key = %#v", got)
+		}
+		return context.WithValue(ctx, connKey{}, "conn")
+	}
+	ts.Start()
+	defer ts.Close()
+
+	var res *Response
+	var err error
+
+	res, err = ts.Client().Get(ts.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+
+	res, err = ts.Client().Get(ts.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+}
+
 // Issue 30710: ensure that as per the spec, a server responds
 // with 501 Not Implemented for unsupported transfer-encodings.
 func TestUnsupportedTransferEncodingsReturn501(t *testing.T) {
@@ -6154,6 +6203,217 @@ func TestUnsupportedTransferEncodingsReturn501(t *testing.T) {
 		if string(gotBody) != wantBody {
 			t.Errorf("%q. body\ngot\n%q\nwant\n%q", badTE, gotBody, wantBody)
 		}
+	}
+}
+
+func TestContentEncodingNoSniffing_h1(t *testing.T) {
+	testContentEncodingNoSniffing(t, h1Mode)
+}
+
+func TestContentEncodingNoSniffing_h2(t *testing.T) {
+	testContentEncodingNoSniffing(t, h2Mode)
+}
+
+// Issue 31753: don't sniff when Content-Encoding is set
+func testContentEncodingNoSniffing(t *testing.T, h2 bool) {
+	setParallel(t)
+	defer afterTest(t)
+
+	type setting struct {
+		name string
+		body []byte
+
+		// setting contentEncoding as an interface instead of a string
+		// directly, so as to differentiate between 3 states:
+		//    unset, empty string "" and set string "foo/bar".
+		contentEncoding interface{}
+		wantContentType string
+	}
+
+	settings := []*setting{
+		{
+			name:            "gzip content-encoding, gzipped", // don't sniff.
+			contentEncoding: "application/gzip",
+			wantContentType: "",
+			body: func() []byte {
+				buf := new(bytes.Buffer)
+				gzw := gzip.NewWriter(buf)
+				gzw.Write([]byte("doctype html><p>Hello</p>"))
+				gzw.Close()
+				return buf.Bytes()
+			}(),
+		},
+		{
+			name:            "zlib content-encoding, zlibbed", // don't sniff.
+			contentEncoding: "application/zlib",
+			wantContentType: "",
+			body: func() []byte {
+				buf := new(bytes.Buffer)
+				zw := zlib.NewWriter(buf)
+				zw.Write([]byte("doctype html><p>Hello</p>"))
+				zw.Close()
+				return buf.Bytes()
+			}(),
+		},
+		{
+			name:            "no content-encoding", // must sniff.
+			wantContentType: "application/x-gzip",
+			body: func() []byte {
+				buf := new(bytes.Buffer)
+				gzw := gzip.NewWriter(buf)
+				gzw.Write([]byte("doctype html><p>Hello</p>"))
+				gzw.Close()
+				return buf.Bytes()
+			}(),
+		},
+		{
+			name:            "phony content-encoding", // don't sniff.
+			contentEncoding: "foo/bar",
+			body:            []byte("doctype html><p>Hello</p>"),
+		},
+		{
+			name:            "empty but set content-encoding",
+			contentEncoding: "",
+			wantContentType: "audio/mpeg",
+			body:            []byte("ID3"),
+		},
+	}
+
+	for _, tt := range settings {
+		t.Run(tt.name, func(t *testing.T) {
+			cst := newClientServerTest(t, h2, HandlerFunc(func(rw ResponseWriter, r *Request) {
+				if tt.contentEncoding != nil {
+					rw.Header().Set("Content-Encoding", tt.contentEncoding.(string))
+				}
+				rw.Write(tt.body)
+			}))
+			defer cst.close()
+
+			res, err := cst.c.Get(cst.ts.URL)
+			if err != nil {
+				t.Fatalf("Failed to fetch URL: %v", err)
+			}
+			defer res.Body.Close()
+
+			if g, w := res.Header.Get("Content-Encoding"), tt.contentEncoding; g != w {
+				if w != nil { // The case where contentEncoding was set explicitly.
+					t.Errorf("Content-Encoding mismatch\n\tgot:  %q\n\twant: %q", g, w)
+				} else if g != "" { // "" should be the equivalent when the contentEncoding is unset.
+					t.Errorf("Unexpected Content-Encoding %q", g)
+				}
+			}
+
+			if g, w := res.Header.Get("Content-Type"), tt.wantContentType; g != w {
+				t.Errorf("Content-Type mismatch\n\tgot:  %q\n\twant: %q", g, w)
+			}
+		})
+	}
+}
+
+// Issue 30803: ensure that TimeoutHandler logs spurious
+// WriteHeader calls, for consistency with other Handlers.
+func TestTimeoutHandlerSuperfluousLogs(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping in short mode")
+	}
+
+	setParallel(t)
+	defer afterTest(t)
+
+	pc, curFile, _, _ := runtime.Caller(0)
+	curFileBaseName := filepath.Base(curFile)
+	testFuncName := runtime.FuncForPC(pc).Name()
+
+	timeoutMsg := "timed out here!"
+
+	tests := []struct {
+		name        string
+		mustTimeout bool
+		wantResp    string
+	}{
+		{
+			name:     "return before timeout",
+			wantResp: "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n",
+		},
+		{
+			name:        "return after timeout",
+			mustTimeout: true,
+			wantResp: fmt.Sprintf("HTTP/1.1 503 Service Unavailable\r\nContent-Length: %d\r\n\r\n%s",
+				len(timeoutMsg), timeoutMsg),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			exitHandler := make(chan bool, 1)
+			defer close(exitHandler)
+			lastLine := make(chan int, 1)
+
+			sh := HandlerFunc(func(w ResponseWriter, r *Request) {
+				w.WriteHeader(404)
+				w.WriteHeader(404)
+				w.WriteHeader(404)
+				w.WriteHeader(404)
+				_, _, line, _ := runtime.Caller(0)
+				lastLine <- line
+				<-exitHandler
+			})
+
+			if !tt.mustTimeout {
+				exitHandler <- true
+			}
+
+			logBuf := new(bytes.Buffer)
+			srvLog := log.New(logBuf, "", 0)
+			// When expecting to timeout, we'll keep the duration short.
+			dur := 20 * time.Millisecond
+			if !tt.mustTimeout {
+				// Otherwise, make it arbitrarily long to reduce the risk of flakes.
+				dur = 10 * time.Second
+			}
+			th := TimeoutHandler(sh, dur, timeoutMsg)
+			cst := newClientServerTest(t, h1Mode /* the test is protocol-agnostic */, th, optWithServerLog(srvLog))
+			defer cst.close()
+
+			res, err := cst.c.Get(cst.ts.URL)
+			if err != nil {
+				t.Fatalf("Unexpected error: %v", err)
+			}
+
+			// Deliberately removing the "Date" header since it is highly ephemeral
+			// and will cause failure if we try to match it exactly.
+			res.Header.Del("Date")
+			res.Header.Del("Content-Type")
+
+			// Match the response.
+			blob, _ := httputil.DumpResponse(res, true)
+			if g, w := string(blob), tt.wantResp; g != w {
+				t.Errorf("Response mismatch\nGot\n%q\n\nWant\n%q", g, w)
+			}
+
+			// Given 4 w.WriteHeader calls, only the first one is valid
+			// and the rest should be reported as the 3 spurious logs.
+			logEntries := strings.Split(strings.TrimSpace(logBuf.String()), "\n")
+			if g, w := len(logEntries), 3; g != w {
+				blob, _ := json.MarshalIndent(logEntries, "", "  ")
+				t.Fatalf("Server logs count mismatch\ngot %d, want %d\n\nGot\n%s\n", g, w, blob)
+			}
+
+			lastSpuriousLine := <-lastLine
+			firstSpuriousLine := lastSpuriousLine - 3
+			// Now ensure that the regexes match exactly.
+			//      "http: superfluous response.WriteHeader call from <fn>.func\d.\d (<curFile>:lastSpuriousLine-[1, 3]"
+			for i, logEntry := range logEntries {
+				wantLine := firstSpuriousLine + i
+				pat := fmt.Sprintf("^http: superfluous response.WriteHeader call from %s.func\\d+.\\d+ \\(%s:%d\\)$",
+					testFuncName, curFileBaseName, wantLine)
+				re := regexp.MustCompile(pat)
+				if !re.MatchString(logEntry) {
+					t.Errorf("Log entry mismatch\n\t%s\ndoes not match\n\t%s", logEntry, pat)
+				}
+			}
+		})
 	}
 }
 

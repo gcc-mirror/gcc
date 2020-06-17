@@ -104,7 +104,7 @@ void test05()
 {
   using namespace std;
 
-  int a[] { 0, 1, 2, 3, 4 };
+  int a[] = { 0, 1, 2, 3, 4 };
   deque<int, __gnu_cxx::new_allocator<int> > d1(a, a + 5);
   deque<int, __gnu_cxx::malloc_allocator<int> > d2(a, a + 5);
 

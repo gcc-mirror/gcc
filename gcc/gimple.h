@@ -1615,7 +1615,7 @@ extern alias_set_type gimple_get_alias_set (tree);
 extern bool gimple_ior_addresses_taken (bitmap, gimple *);
 extern bool gimple_builtin_call_types_compatible_p (const gimple *, tree);
 extern combined_fn gimple_call_combined_fn (const gimple *);
-extern bool gimple_call_operator_delete_p (const gcall *);
+extern bool gimple_call_replaceable_operator_delete_p (const gcall *);
 extern bool gimple_call_builtin_p (const gimple *);
 extern bool gimple_call_builtin_p (const gimple *, enum built_in_class);
 extern bool gimple_call_builtin_p (const gimple *, enum built_in_function);
@@ -1633,6 +1633,8 @@ extern void gimple_seq_discard (gimple_seq);
 extern void maybe_remove_unused_call_args (struct function *, gimple *);
 extern bool gimple_inexpensive_call_p (gcall *);
 extern bool stmt_can_terminate_bb_p (gimple *);
+extern location_t gimple_or_expr_nonartificial_location (gimple *, tree);
+
 
 /* Formal (expression) temporary table handling: multiple occurrences of
    the same scalar expression are evaluated into the same temporary.  */
@@ -4726,6 +4728,18 @@ is_gimple_debug (const gimple *gs)
 }
 
 
+/* Return the first nondebug statement in GIMPLE sequence S.  */
+
+static inline gimple *
+gimple_seq_first_nondebug_stmt (gimple_seq s)
+{
+  gimple_seq_node n = gimple_seq_first (s);
+  while (n && is_gimple_debug (n))
+    n = n->next;
+  return n;
+}
+
+
 /* Return the last nondebug statement in GIMPLE sequence S.  */
 
 static inline gimple *
@@ -4735,7 +4749,7 @@ gimple_seq_last_nondebug_stmt (gimple_seq s)
   for (n = gimple_seq_last (s);
        n && is_gimple_debug (n);
        n = n->prev)
-    if (n->prev == s)
+    if (n == s)
       return NULL;
   return n;
 }

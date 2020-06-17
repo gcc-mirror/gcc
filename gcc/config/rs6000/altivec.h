@@ -182,7 +182,7 @@
 #define vec_recipdiv __builtin_vec_recipdiv
 #define vec_rlmi __builtin_vec_rlmi
 #define vec_vrlnm __builtin_vec_rlnm
-#define vec_rlnm(a,b,c) (__builtin_vec_rlnm((a),((b)<<8)|(c)))
+#define vec_rlnm(a,b,c) (__builtin_vec_rlnm((a),((c)<<8)|(b)))
 #define vec_rsqrt __builtin_vec_rsqrt
 #define vec_rsqrte __builtin_vec_rsqrte
 #define vec_signed __builtin_vec_vsigned
@@ -685,5 +685,31 @@ __altivec_scalar_pred(vec_any_nle,
 /* This also accepts a type for its parameter, so it is not enough
    to #define vec_step to __builtin_vec_step.  */
 #define vec_step(x) __builtin_vec_step (* (__typeof__ (x) *) 0)
+
+#ifdef _ARCH_PWR_FUTURE
+/* May modify these macro definitions if future capabilities overload
+   with support for different vector argument and result types.  */
+#define vec_cntlzm(a, b)	__builtin_altivec_vclzdm (a, b)
+#define vec_cnttzm(a, b)	__builtin_altivec_vctzdm (a, b)
+#define vec_pdep(a, b)	__builtin_altivec_vpdepd (a, b)
+#define vec_pext(a, b)	__builtin_altivec_vpextd (a, b)
+#define vec_cfuge(a, b)	__builtin_altivec_vcfuged (a, b)
+#define vec_genpcvm(a, b)	__builtin_vec_xxgenpcvm (a, b)
+
+/* Overloaded built-in functions for future architecture.  */
+#define vec_extractl(a, b, c)	__builtin_vec_extractl (a, b, c)
+#define vec_extracth(a, b, c)	__builtin_vec_extracth (a, b, c)
+
+#define vec_gnb(a, b)	__builtin_vec_gnb (a, b)
+#define vec_clrl(a, b)	__builtin_vec_clrl (a, b)
+#define vec_clrr(a, b)	__builtin_vec_clrr (a, b)
+#define vec_ternarylogic(a, b, c, d)	__builtin_vec_xxeval (a, b, c, d)
+
+#define vec_strir(a)	__builtin_vec_strir (a)
+#define vec_stril(a)	__builtin_vec_stril (a)
+
+#define vec_strir_p(a)	__builtin_vec_strir_p (a)
+#define vec_stril_p(a)	__builtin_vec_stril_p (a)
+#endif
 
 #endif /* _ALTIVEC_H */

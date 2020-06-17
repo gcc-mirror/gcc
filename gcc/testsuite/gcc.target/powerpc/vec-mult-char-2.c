@@ -18,4 +18,4 @@ vector signed char vmulsi(vector signed char v,
 
 /* { dg-final { scan-assembler-times "vmulesb" 2 } } */
 /* { dg-final { scan-assembler-times "vmulosb" 2 } } */
-/* { dg-final { scan-assembler-times "vperm" 2 } } */
+/* { dg-final { scan-assembler-times {\m(?:v|xx)permr?\M} 2 } } */

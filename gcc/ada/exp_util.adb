@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -223,6 +223,10 @@ package body Exp_Util is
    --  Lib_Level is True when the list comes from a construct at the library
    --  level, and False otherwise. Nested_Constructs is True when any nested
    --  packages declared in L must be processed, and False otherwise.
+
+   function Side_Effect_Free_Attribute (Name : Name_Id) return Boolean;
+   --  Return True if the evaluation of the given attribute is considered
+   --  side-effect free, independently of its prefix and expressions.
 
    -------------------------------------
    -- Activate_Atomic_Synchronization --
@@ -1292,6 +1296,7 @@ package body Exp_Util is
                --  of the type. In the case of an inherited condition for an
                --  overriding operation, both the operation and the function
                --  are given by primitive wrappers.
+               --  Move this check to sem???
 
                if Ekind (New_E) = E_Function
                  and then Is_Primitive_Wrapper (New_E)
@@ -1322,6 +1327,7 @@ package body Exp_Util is
 
             --  Check that there are no calls left to abstract operations if
             --  the current subprogram is not abstract.
+            --  Move this check to sem???
 
             if Nkind (Parent (N)) = N_Function_Call
               and then N = Name (Parent (N))
@@ -1634,43 +1640,6 @@ package body Exp_Util is
          DIC_Proc : constant Entity_Id := DIC_Procedure (DIC_Typ);
          Obj_Id   : constant Entity_Id := First_Formal (DIC_Proc);
 
-         procedure Preanalyze_Own_DIC_For_ASIS;
-         --  Preanalyze the original DIC expression of an aspect or a source
-         --  pragma for ASIS.
-
-         ---------------------------------
-         -- Preanalyze_Own_DIC_For_ASIS --
-         ---------------------------------
-
-         procedure Preanalyze_Own_DIC_For_ASIS is
-            Expr : Node_Id := Empty;
-
-         begin
-            --  The DIC pragma is a source construct, preanalyze the original
-            --  expression of the pragma.
-
-            if Comes_From_Source (DIC_Prag) then
-               Expr := DIC_Expr;
-
-            --  Otherwise preanalyze the expression of the corresponding aspect
-
-            elsif Present (DIC_Asp) then
-               Expr := Expression (DIC_Asp);
-            end if;
-
-            --  The expression must be subjected to the same substitutions as
-            --  the copy used in the generation of the runtime check.
-
-            if Present (Expr) then
-               Replace_Type_References
-                 (Expr   => Expr,
-                  Typ    => DIC_Typ,
-                  Obj_Id => Obj_Id);
-
-               Preanalyze_Assert_Expression (Expr, Any_Boolean);
-            end if;
-         end Preanalyze_Own_DIC_For_ASIS;
-
          --  Local variables
 
          Typ_Decl : constant Node_Id := Declaration_Node (DIC_Typ);
@@ -1715,12 +1684,6 @@ package body Exp_Util is
 
          if Present (DIC_Asp) then
             Set_Entity (Identifier (DIC_Asp), New_Copy_Tree (Expr));
-         end if;
-
-         --  Preanalyze the original DIC expression for ASIS
-
-         if ASIS_Mode then
-            Preanalyze_Own_DIC_For_ASIS;
          end if;
 
          --  Once the DIC assertion expression is fully processed, add a check
@@ -1951,11 +1914,11 @@ package body Exp_Util is
          Set_Corresponding_Spec (Proc_Body, Proc_Id);
 
          --  The body should not be inserted into the tree when the context
-         --  is ASIS or a generic unit because it is not part of the template.
+         --  is a generic unit because it is not part of the template.
          --  Note that the body must still be generated in order to resolve the
          --  DIC assertion expression.
 
-         if ASIS_Mode or Inside_A_Generic then
+         if Inside_A_Generic then
             null;
 
          --  Semi-insert the body into the tree for GNATprove by setting its
@@ -2000,9 +1963,6 @@ package body Exp_Util is
       CRec_Typ : Entity_Id;
       --  The corresponding record type of Full_Typ
 
-      Full_Base : Entity_Id;
-      --  The base type of Full_Typ
-
       Full_Typ : Entity_Id;
       --  The full view of working type
 
@@ -2011,6 +1971,9 @@ package body Exp_Util is
 
       Priv_Typ : Entity_Id;
       --  The partial view of working type
+
+      UFull_Typ : Entity_Id;
+      --  The underlying full view of Full_Typ
 
       Work_Typ : Entity_Id;
       --  The working type
@@ -2102,13 +2065,13 @@ package body Exp_Util is
 
       --  Obtain all views of the input type
 
-      Get_Views (Work_Typ, Priv_Typ, Full_Typ, Full_Base, CRec_Typ);
+      Get_Views (Work_Typ, Priv_Typ, Full_Typ, UFull_Typ, CRec_Typ);
 
-      --  Associate the DIC procedure and various relevant flags with all views
+      --  Associate the DIC procedure and various flags with all views
 
       Propagate_DIC_Attributes (Priv_Typ,  From_Typ => Work_Typ);
       Propagate_DIC_Attributes (Full_Typ,  From_Typ => Work_Typ);
-      Propagate_DIC_Attributes (Full_Base, From_Typ => Work_Typ);
+      Propagate_DIC_Attributes (UFull_Typ, From_Typ => Work_Typ);
       Propagate_DIC_Attributes (CRec_Typ,  From_Typ => Work_Typ);
 
       --  The declaration of the DIC procedure must be inserted after the
@@ -2158,9 +2121,9 @@ package body Exp_Util is
                     New_Occurrence_Of (Work_Typ, Loc)))));
 
       --  The declaration should not be inserted into the tree when the context
-      --  is ASIS or a generic unit because it is not part of the template.
+      --  is a generic unit because it is not part of the template.
 
-      if ASIS_Mode or Inside_A_Generic then
+      if Inside_A_Generic then
          null;
 
       --  Semi-insert the declaration into the tree for GNATprove by setting
@@ -2335,9 +2298,8 @@ package body Exp_Util is
                   --  Generate:
                   --    <Comp_Typ>Invariant (_object (<Indices>));
 
-                  --  Note that the invariant procedure may have a null body if
-                  --  assertions are disabled or Assertion_Policy Ignore is in
-                  --  effect.
+                  --  The invariant procedure has a null body if assertions are
+                  --  disabled or Assertion_Policy Ignore is in effect.
 
                   if not Has_Null_Body (Proc_Id) then
                      Append_New_To (Comp_Checks,
@@ -2775,7 +2737,6 @@ package body Exp_Util is
          Checks    : in out List_Id;
          Priv_Item : Node_Id := Empty)
       is
-         ASIS_Expr     : Node_Id;
          Expr          : Node_Id;
          Prag          : Node_Id;
          Prag_Asp      : Node_Id;
@@ -2852,23 +2813,6 @@ package body Exp_Util is
 
                if Present (Prag_Asp) then
                   Set_Entity (Identifier (Prag_Asp), New_Copy_Tree (Expr));
-               end if;
-
-               --  Analyze the original invariant expression for ASIS
-
-               if ASIS_Mode then
-                  ASIS_Expr := Empty;
-
-                  if Comes_From_Source (Prag) then
-                     ASIS_Expr := Prag_Expr;
-                  elsif Present (Prag_Asp) then
-                     ASIS_Expr := Expression (Prag_Asp);
-                  end if;
-
-                  if Present (ASIS_Expr) then
-                     Replace_Type_References (ASIS_Expr, T, Obj_Id);
-                     Preanalyze_Assert_Expression (ASIS_Expr, Any_Boolean);
-                  end if;
                end if;
 
                Add_Invariant_Check (Prag, Expr, Checks);
@@ -3069,7 +3013,7 @@ package body Exp_Util is
             if Produced_Component_Check and then Has_Unchecked_Union (T) then
                Error_Msg_NE
                  ("invariants cannot be checked on components of "
-                  & "unchecked_union type &?", Comp_Id, T);
+                  & "unchecked_union type &??", Comp_Id, T);
             end if;
          end Process_Record_Component;
 
@@ -3144,11 +3088,18 @@ package body Exp_Util is
    begin
       Work_Typ := Typ;
 
+      --  Do not process the underlying full view of a private type. There is
+      --  no way to get back to the partial view, plus the body will be built
+      --  by the full view or the base type.
+
+      if Is_Underlying_Full_View (Work_Typ) then
+         return;
+
       --  The input type denotes the implementation base type of a constrained
       --  array type. Work with the first subtype as all invariant pragmas are
       --  on its rep item chain.
 
-      if Ekind (Work_Typ) = E_Array_Type and then Is_Itype (Work_Typ) then
+      elsif Ekind (Work_Typ) = E_Array_Type and then Is_Itype (Work_Typ) then
          Work_Typ := First_Subtype (Work_Typ);
 
       --  The input type denotes the corresponding record type of a protected
@@ -3428,11 +3379,11 @@ package body Exp_Util is
       Set_Corresponding_Spec (Proc_Body, Proc_Id);
 
       --  The body should not be inserted into the tree when the context is
-      --  ASIS or a generic unit because it is not part of the template. Note
+      --  a generic unit because it is not part of the template. Note
       --  that the body must still be generated in order to resolve the
       --  invariants.
 
-      if ASIS_Mode or Inside_A_Generic then
+      if Inside_A_Generic then
          null;
 
       --  Semi-insert the body into the tree for GNATprove by setting its
@@ -3477,9 +3428,6 @@ package body Exp_Util is
       CRec_Typ : Entity_Id;
       --  The corresponding record type of Full_Typ
 
-      Full_Base : Entity_Id;
-      --  The base type of Full_Typ
-
       Full_Typ : Entity_Id;
       --  The full view of working type
 
@@ -3491,6 +3439,9 @@ package body Exp_Util is
 
       Priv_Typ : Entity_Id;
       --  The partial view of working type
+
+      UFull_Typ : Entity_Id;
+      --  The underlying full view of Full_Typ
 
       Work_Typ : Entity_Id;
       --  The working type
@@ -3577,13 +3528,13 @@ package body Exp_Util is
 
       --  Obtain all views of the input type
 
-      Get_Views (Work_Typ, Priv_Typ, Full_Typ, Full_Base, CRec_Typ);
+      Get_Views (Work_Typ, Priv_Typ, Full_Typ, UFull_Typ, CRec_Typ);
 
-      --  Associate the invariant procedure with all views
+      --  Associate the invariant procedure and various flags with all views
 
       Propagate_Invariant_Attributes (Priv_Typ,  From_Typ => Work_Typ);
       Propagate_Invariant_Attributes (Full_Typ,  From_Typ => Work_Typ);
-      Propagate_Invariant_Attributes (Full_Base, From_Typ => Work_Typ);
+      Propagate_Invariant_Attributes (UFull_Typ, From_Typ => Work_Typ);
       Propagate_Invariant_Attributes (CRec_Typ,  From_Typ => Work_Typ);
 
       --  The declaration of the invariant procedure is inserted after the
@@ -3663,9 +3614,9 @@ package body Exp_Util is
                   Parameter_Type      => New_Occurrence_Of (Obj_Typ, Loc)))));
 
       --  The declaration should not be inserted into the tree when the context
-      --  is ASIS or a generic unit because it is not part of the template.
+      --  is a generic unit because it is not part of the template.
 
-      if ASIS_Mode or Inside_A_Generic then
+      if Inside_A_Generic then
          null;
 
       --  Semi-insert the declaration into the tree for GNATprove by setting
@@ -4967,11 +4918,16 @@ package body Exp_Util is
 
    procedure Evaluate_Name (Nam : Node_Id) is
    begin
-      --  For an attribute reference or an indexed component, evaluate the
-      --  prefix, which is itself a name, recursively, and then force the
-      --  evaluation of all the subscripts (or attribute expressions).
-
       case Nkind (Nam) is
+         --  For an aggregate, force its evaluation
+
+         when N_Aggregate =>
+            Force_Evaluation (Nam);
+
+         --  For an attribute reference or an indexed component, evaluate the
+         --  prefix, which is itself a name, recursively, and then force the
+         --  evaluation of all the subscripts (or attribute expressions).
+
          when N_Attribute_Reference
             | N_Indexed_Component
          =>
@@ -5002,21 +4958,17 @@ package body Exp_Util is
          when N_Explicit_Dereference =>
             Force_Evaluation (Prefix (Nam));
 
-         --  For a function call, we evaluate the call
+         --  For a function call, we evaluate the call; same for an operator
 
-         when N_Function_Call =>
+         when N_Function_Call
+            | N_Op
+         =>
             Force_Evaluation (Nam);
 
-         --  For a qualified expression, we evaluate the underlying object
-         --  name if any, otherwise we force the evaluation of the underlying
-         --  expression.
+         --  For a qualified expression, we evaluate the expression
 
          when N_Qualified_Expression =>
-            if Is_Object_Reference (Expression (Nam)) then
-               Evaluate_Name (Expression (Nam));
-            else
-               Force_Evaluation (Expression (Nam));
-            end if;
+            Evaluate_Name (Expression (Nam));
 
          --  For a selected component, we simply evaluate the prefix
 
@@ -5038,9 +4990,11 @@ package body Exp_Util is
          when N_Type_Conversion =>
             Evaluate_Name (Expression (Nam));
 
-         --  The remaining cases are direct name, operator symbol and character
-         --  literal. In all these cases, we do nothing, since we want to
-         --  reevaluate each time the renamed object is used.
+         --  The remaining cases are direct name and character literal. In all
+         --  these cases, we do nothing, since we want to reevaluate each time
+         --  the renamed object is used. ??? There are more remaining cases, at
+         --  least in the GNATprove_Mode, where this routine is called in more
+         --  contexts than in GNAT.
 
          when others =>
             null;
@@ -6442,7 +6396,7 @@ package body Exp_Util is
 
       --  Immediate return, nothing doing, if this is not an object
 
-      if Ekind (Ent) not in Object_Kind then
+      if not Is_Object (Ent) then
          return;
       end if;
 
@@ -6631,6 +6585,35 @@ package body Exp_Util is
          Process_Current_Value_Condition (Condition (CV), Sens);
       end;
    end Get_Current_Value_Condition;
+
+   -----------------------
+   -- Get_Index_Subtype --
+   -----------------------
+
+   function Get_Index_Subtype (N : Node_Id) return Node_Id is
+      P_Type : Entity_Id := Etype (Prefix (N));
+      Indx   : Node_Id;
+      J      : Int;
+
+   begin
+      if Is_Access_Type (P_Type) then
+         P_Type := Designated_Type (P_Type);
+      end if;
+
+      if No (Expressions (N)) then
+         J := 1;
+      else
+         J := UI_To_Int (Expr_Value (First (Expressions (N))));
+      end if;
+
+      Indx := First_Index (P_Type);
+      while J > 1 loop
+         Next_Index (Indx);
+         J := J - 1;
+      end loop;
+
+      return Etype (Indx);
+   end Get_Index_Subtype;
 
    ---------------------
    -- Get_Stream_Size --
@@ -9379,18 +9362,15 @@ package body Exp_Util is
    function Make_Invariant_Call (Expr : Node_Id) return Node_Id is
       Loc : constant Source_Ptr := Sloc (Expr);
       Typ : constant Entity_Id  := Base_Type (Etype (Expr));
-
-      Proc_Id : Entity_Id;
-
-   begin
       pragma Assert (Has_Invariants (Typ));
-
-      Proc_Id := Invariant_Procedure (Typ);
+      Proc_Id : constant Entity_Id := Invariant_Procedure (Typ);
       pragma Assert (Present (Proc_Id));
+   begin
+      --  The invariant procedure has a null body if assertions are disabled or
+      --  Assertion_Policy Ignore is in effect. In that case, generate a null
+      --  statement instead of a call to the invariant procedure.
 
-      --  Ignore the invariant if that policy is in effect
-
-      if Invariants_Ignored (Typ) then
+      if Has_Null_Body (Proc_Id) then
          return Make_Null_Statement (Loc);
       else
          return
@@ -9606,7 +9586,7 @@ package body Exp_Util is
                       (Next (First (Pragma_Argument_Associations (Item))));
                end if;
 
-               Item := Next_Rep_Item (Item);
+               Next_Rep_Item (Item);
             end loop;
 
             return Empty;
@@ -9666,11 +9646,6 @@ package body Exp_Util is
          procedure Replace_Subtype_Reference (N : Node_Id) is
          begin
             Rewrite (N, New_Copy_Tree (Expr));
-
-            --  We want to treat the node as if it comes from source, so that
-            --  ASIS will not ignore it.
-
-            Set_Comes_From_Source (N, True);
          end Replace_Subtype_Reference;
 
          procedure Replace_Subtype_References is
@@ -9896,7 +9871,7 @@ package body Exp_Util is
                 Low_Bound  => New_Occurrence_Of (Low_Bound,  Loc),
                 High_Bound => New_Occurrence_Of (High_Bound, Loc)));
 
-            Index_Typ := Next_Index (Index_Typ);
+            Next_Index (Index_Typ);
          end loop;
 
       elsif Is_Class_Wide_Type (Unc_Typ) then
@@ -11372,6 +11347,21 @@ package body Exp_Util is
 
       Scope_Suppress.Suppress := (others => True);
 
+      --  If this is a side-effect free attribute reference whose expressions
+      --  are also side-effect free and whose prefix is not a name, remove the
+      --  side effects of the prefix. A copy of the prefix is required in this
+      --  case and it is better not to make an additional one for the attribute
+      --  itself, because the return type of many of them is universal integer,
+      --  which is a very large type for a temporary.
+
+      if Nkind (Exp) = N_Attribute_Reference
+        and then Side_Effect_Free_Attribute (Attribute_Name (Exp))
+        and then Side_Effect_Free (Expressions (Exp), Name_Req, Variable_Ref)
+        and then not Is_Name_Reference (Prefix (Exp))
+      then
+         Remove_Side_Effects (Prefix (Exp), Name_Req, Variable_Ref);
+         goto Leave;
+
       --  If this is an elementary or a small not-by-reference record type, and
       --  we need to capture the value, just make a constant; this is cheap and
       --  objects of both kinds of types can be bit aligned, so it might not be
@@ -11382,12 +11372,12 @@ package body Exp_Util is
       --  anyway, see below). Also do it if we have a volatile reference and
       --  Name_Req is not set (see comments for Side_Effect_Free).
 
-      if (Is_Elementary_Type (Exp_Type)
-           or else (Is_Record_Type (Exp_Type)
-                     and then Known_Static_RM_Size (Exp_Type)
-                     and then RM_Size (Exp_Type) <= 64
-                     and then not Has_Discriminants (Exp_Type)
-                     and then not Is_By_Reference_Type (Exp_Type)))
+      elsif (Is_Elementary_Type (Exp_Type)
+              or else (Is_Record_Type (Exp_Type)
+                        and then Known_Static_RM_Size (Exp_Type)
+                        and then RM_Size (Exp_Type) <= 64
+                        and then not Has_Discriminants (Exp_Type)
+                        and then not Is_By_Reference_Type (Exp_Type)))
         and then (Variable_Ref
                    or else (not Is_Name_Reference (Exp)
                              and then Nkind (Exp) /= N_Type_Conversion)
@@ -11475,12 +11465,15 @@ package body Exp_Util is
          goto Leave;
 
       --  If this is a type conversion, leave the type conversion and remove
-      --  the side effects in the expression. This is important in several
-      --  circumstances: for change of representations, and also when this is a
-      --  view conversion to a smaller object, where gigi can end up creating
-      --  its own temporary of the wrong size.
+      --  side effects in the expression, unless it is of universal integer,
+      --  which is a very large type for a temporary. This is important in
+      --  several circumstances: for change of representations and also when
+      --  this is a view conversion to a smaller object, where gigi can end
+      --  up creating its own temporary of the wrong size.
 
-      elsif Nkind (Exp) = N_Type_Conversion then
+      elsif Nkind (Exp) = N_Type_Conversion
+        and then Etype (Expression (Exp)) /= Universal_Integer
+      then
          Remove_Side_Effects (Expression (Exp), Name_Req, Variable_Ref);
 
          --  Generating C code the type conversion of an access to constrained
@@ -12117,13 +12110,8 @@ package body Exp_Util is
       procedure Replace_Type_Ref (N : Node_Id) is
       begin
          --  Decorate the reference to Typ even though it may be rewritten
-         --  further down. This is done for two reasons:
-
-         --    * ASIS has all necessary semantic information in the original
-         --      tree.
-
-         --    * Routines which examine properties of the Original_Node have
-         --      some semantic information.
+         --  further down. This is done so that routines which examine
+         --  properties of the Original_Node have some semantic information.
 
          if Nkind (N) = N_Identifier then
             Set_Entity (N, Typ);
@@ -12566,13 +12554,10 @@ package body Exp_Util is
       elsif Nkind (Pexp) = N_Selected_Component
         and then Prefix (Pexp) = Exp
       then
-         if No (Etype (Pexp)) then
-            return True;
-         else
-            return
-              not Has_Discriminants (Etype (Pexp))
-                or else Is_Constrained (Etype (Pexp));
-         end if;
+         return No (Etype (Pexp))
+           or else not Is_Type (Etype (Pexp))
+           or else not Has_Discriminants (Etype (Pexp))
+           or else Is_Constrained (Etype (Pexp));
       end if;
 
       --  Set the output type, this comes from Etype if it is set, otherwise we
@@ -13244,58 +13229,18 @@ package body Exp_Util is
 
       case Nkind (N) is
 
-         --  An attribute reference is side effect free if its expressions
-         --  are side effect free and its prefix is side effect free or
-         --  is an entity reference.
-
-         --  Is this right? what about x'first where x is a variable???
+         --  An attribute reference is side-effect free if its expressions
+         --  are side-effect free and its prefix is side-effect free or is
+         --  an entity reference.
 
          when N_Attribute_Reference =>
-            Attribute_Reference : declare
-
-               function Side_Effect_Free_Attribute
-                 (Attribute_Name : Name_Id) return Boolean;
-               --  Returns True if evaluation of the given attribute is
-               --  considered side-effect free (independent of prefix and
-               --  arguments).
-
-               --------------------------------
-               -- Side_Effect_Free_Attribute --
-               --------------------------------
-
-               function Side_Effect_Free_Attribute
-                 (Attribute_Name : Name_Id) return Boolean
-               is
-               begin
-                  case Attribute_Name is
-                     when Name_Input =>
-                        return False;
-
-                     when Name_Image
-                        | Name_Img
-                        | Name_Wide_Image
-                        | Name_Wide_Wide_Image
-                     =>
-                        --  CodePeer doesn't want to see replicated copies of
-                        --  'Image calls.
-
-                        return not CodePeer_Mode;
-
-                     when others =>
-                        return True;
-                  end case;
-               end Side_Effect_Free_Attribute;
-
-            --  Start of processing for Attribute_Reference
-
-            begin
-               return
-                 Side_Effect_Free (Expressions (N), Name_Req, Variable_Ref)
-                   and then Side_Effect_Free_Attribute (Attribute_Name (N))
-                   and then (Is_Entity_Name (Prefix (N))
-                              or else Side_Effect_Free
-                                        (Prefix (N), Name_Req, Variable_Ref));
-            end Attribute_Reference;
+            return Side_Effect_Free_Attribute (Attribute_Name (N))
+                     and then
+                   Side_Effect_Free (Expressions (N), Name_Req, Variable_Ref)
+                     and then
+                   (Is_Entity_Name (Prefix (N))
+                      or else
+                    Side_Effect_Free (Prefix (N), Name_Req, Variable_Ref));
 
          --  A binary operator is side effect free if and both operands are
          --  side effect free. For this purpose binary operators include
@@ -13416,6 +13361,12 @@ package body Exp_Util is
          =>
             return True;
 
+         --  An aggregate is side effect free if all its values are compile
+         --  time known.
+
+         when N_Aggregate =>
+            return Compile_Time_Known_Aggregate (N);
+
          --  We consider that anything else has side effects. This is a bit
          --  crude, but we are pretty close for most common cases, and we
          --  are certainly correct (i.e. we never return True when the
@@ -13453,6 +13404,30 @@ package body Exp_Util is
          return True;
       end if;
    end Side_Effect_Free;
+
+   --------------------------------
+   -- Side_Effect_Free_Attribute --
+   --------------------------------
+
+   function Side_Effect_Free_Attribute (Name : Name_Id) return Boolean is
+   begin
+      case Name is
+         when Name_Input =>
+            return False;
+
+         when Name_Image
+            | Name_Img
+            | Name_Wide_Image
+            | Name_Wide_Wide_Image
+         =>
+            --  CodePeer doesn't want to see replicated copies of 'Image calls
+
+            return not CodePeer_Mode;
+
+         when others =>
+            return True;
+      end case;
+   end Side_Effect_Free_Attribute;
 
    ----------------------------------
    -- Silly_Boolean_Array_Not_Test --

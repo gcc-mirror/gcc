@@ -128,7 +128,8 @@ do_31div (unsigned long a, unsigned long b)
      i.e. "a - (b - 1) == (a - b) + 1".  */
   b--;
 
-#define DS __asm__ ("dstep %2,%0" : "=r" (a) : "0" (a), "r" (b))
+#define DS __asm__ ("dstep %2,%0" : "=r" (a) : "0" (a), "r" (b)); \
+ __attribute__ ((__fallthrough__))
 
   switch (quot_digits)
     {

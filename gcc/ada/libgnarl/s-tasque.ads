@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---         Copyright (C) 1992-2019, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2020, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,13 +38,10 @@ package System.Tasking.Queuing is
    procedure Broadcast_Program_Error
      (Self_ID      : Task_Id;
       Object       : POE.Protection_Entries_Access;
-      Pending_Call : Entry_Call_Link;
-      RTS_Locked   : Boolean := False);
+      Pending_Call : Entry_Call_Link);
    --  Raise Program_Error in all tasks calling the protected entries of Object
    --  The exception will not be raised immediately for the calling task; it
    --  will be deferred until it calls Check_Exception.
-   --  RTS_Locked indicates whether the global RTS lock is taken (only
-   --  relevant if Single_Lock is True).
 
    procedure Enqueue (E : in out Entry_Queue; Call : Entry_Call_Link);
    --  Enqueue Call at the end of entry_queue E

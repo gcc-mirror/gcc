@@ -691,10 +691,10 @@ lm32_setup_incoming_varargs (cumulative_args_t cum_v,
   else
     {
       /* this is the common case, we have been passed details setup
-         for the last named argument, we want to skip over the
-         registers, if any used in passing this named paramter in
-         order to determine which is the first registers used to pass
-         anonymous arguments.  */
+	 for the last named argument, we want to skip over the
+	 registers, if any used in passing this named parameter in
+	 order to determine which is the first registers used to pass
+	 anonymous arguments.  */
       int size = arg.promoted_size_in_bytes ();
 
       first_anon_arg =

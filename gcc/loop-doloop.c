@@ -397,6 +397,42 @@ add_test (rtx cond, edge *e, basic_block dest)
   return true;
 }
 
+/* Fold (add -1; zero_ext; add +1) operations to zero_ext if not wrapping. i.e:
+
+   73: r145:SI=r123:DI#0-0x1
+   74: r144:DI=zero_extend (r145:SI)
+   75: r143:DI=r144:DI+0x1
+   ...
+   31: r135:CC=cmp (r123:DI,0)
+   72: {pc={(r143:DI!=0x1)?L70:pc};r143:DI=r143:DI-0x1;...}
+
+   r123:DI#0-0x1 is param count derived from loop->niter_expr equal to number of
+   loop iterations, if loop iterations expression doesn't overflow, then
+   (zero_extend (r123:DI#0-1))+1 can be simplified to zero_extend.  */
+
+static rtx
+doloop_simplify_count (class loop *loop, scalar_int_mode mode, rtx count)
+{
+  widest_int iterations;
+  if (GET_CODE (count) == ZERO_EXTEND)
+    {
+      rtx extop0 = XEXP (count, 0);
+      if (GET_CODE (extop0) == PLUS)
+	{
+	  rtx addop0 = XEXP (extop0, 0);
+	  rtx addop1 = XEXP (extop0, 1);
+
+	  if (get_max_loop_iterations (loop, &iterations)
+	      && wi::ltu_p (iterations, GET_MODE_MASK (GET_MODE (addop0)))
+	      && addop1 == constm1_rtx)
+	    return simplify_gen_unary (ZERO_EXTEND, mode, addop0,
+				       GET_MODE (addop0));
+	}
+    }
+
+  return simplify_gen_binary (PLUS, mode, count, const1_rtx);
+}
+
 /* Modify the loop to use the low-overhead looping insn where LOOP
    describes the loop, DESC describes the number of iterations of the
    loop, and DOLOOP_INSN is the low-overhead looping insn to emit at the
@@ -477,7 +513,7 @@ doloop_modify (class loop *loop, class niter_desc *desc,
     }
 
   if (increment_count)
-    count = simplify_gen_binary (PLUS, mode, count, const1_rtx);
+    count = doloop_simplify_count (loop, mode, count);
 
   /* Insert initialization of the count register into the loop header.  */
   start_sequence ();

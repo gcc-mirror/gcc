@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1996-2019, Free Software Foundation, Inc.          --
+--         Copyright (C) 1996-2020, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GARLIC is free software;  you can redistribute it and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -139,40 +139,47 @@ package body System.Stream_Attributes is
 
    SSI_L : constant := 1;
    SI_L  : constant := 2;
+   I24_L : constant := 3;
    I_L   : constant := 4;
    LI_L  : constant := 8;
    LLI_L : constant := 8;
 
    subtype XDR_S_SSI is SEA (1 .. SSI_L);
    subtype XDR_S_SI  is SEA (1 .. SI_L);
+   subtype XDR_S_I24 is SEA (1 .. I24_L);
    subtype XDR_S_I   is SEA (1 .. I_L);
    subtype XDR_S_LI  is SEA (1 .. LI_L);
    subtype XDR_S_LLI is SEA (1 .. LLI_L);
 
    function Short_Short_Integer_To_XDR_S_SSI is
-      new Ada.Unchecked_Conversion (Short_Short_Integer, XDR_S_SSI);
+     new Ada.Unchecked_Conversion (Short_Short_Integer, XDR_S_SSI);
    function XDR_S_SSI_To_Short_Short_Integer is
-      new Ada.Unchecked_Conversion (XDR_S_SSI, Short_Short_Integer);
+     new Ada.Unchecked_Conversion (XDR_S_SSI, Short_Short_Integer);
 
    function Short_Integer_To_XDR_S_SI is
-      new Ada.Unchecked_Conversion (Short_Integer, XDR_S_SI);
+     new Ada.Unchecked_Conversion (Short_Integer, XDR_S_SI);
    function XDR_S_SI_To_Short_Integer is
-      new Ada.Unchecked_Conversion (XDR_S_SI, Short_Integer);
+     new Ada.Unchecked_Conversion (XDR_S_SI, Short_Integer);
+
+   function Integer_To_XDR_S_I24 is
+     new Ada.Unchecked_Conversion (Integer_24, XDR_S_I24);
+   function XDR_S_I24_To_Integer is
+     new Ada.Unchecked_Conversion (XDR_S_I24, Integer_24);
 
    function Integer_To_XDR_S_I is
-      new Ada.Unchecked_Conversion (Integer, XDR_S_I);
+     new Ada.Unchecked_Conversion (Integer, XDR_S_I);
    function XDR_S_I_To_Integer is
      new Ada.Unchecked_Conversion (XDR_S_I, Integer);
 
    function Long_Long_Integer_To_XDR_S_LI is
-      new Ada.Unchecked_Conversion (Long_Long_Integer, XDR_S_LI);
+     new Ada.Unchecked_Conversion (Long_Long_Integer, XDR_S_LI);
    function XDR_S_LI_To_Long_Long_Integer is
-      new Ada.Unchecked_Conversion (XDR_S_LI, Long_Long_Integer);
+     new Ada.Unchecked_Conversion (XDR_S_LI, Long_Long_Integer);
 
    function Long_Long_Integer_To_XDR_S_LLI is
-      new Ada.Unchecked_Conversion (Long_Long_Integer, XDR_S_LLI);
+     new Ada.Unchecked_Conversion (Long_Long_Integer, XDR_S_LLI);
    function XDR_S_LLI_To_Long_Long_Integer is
-      new Ada.Unchecked_Conversion (XDR_S_LLI, Long_Long_Integer);
+     new Ada.Unchecked_Conversion (XDR_S_LLI, Long_Long_Integer);
 
    --  An XDR unsigned integer is a 32-bit datum that encodes a nonnegative
    --  integer in the range [0,4294967295]. It is represented by an unsigned
@@ -187,12 +194,14 @@ package body System.Stream_Attributes is
 
    SSU_L : constant := 1;
    SU_L  : constant := 2;
+   U24_L : constant := 3;
    U_L   : constant := 4;
    LU_L  : constant := 8;
    LLU_L : constant := 8;
 
    subtype XDR_S_SSU is SEA (1 .. SSU_L);
    subtype XDR_S_SU  is SEA (1 .. SU_L);
+   subtype XDR_S_U24 is SEA (1 .. U24_L);
    subtype XDR_S_U   is SEA (1 .. U_L);
    subtype XDR_S_LU  is SEA (1 .. LU_L);
    subtype XDR_S_LLU is SEA (1 .. LLU_L);
@@ -200,26 +209,32 @@ package body System.Stream_Attributes is
    type XDR_SSU is mod BB ** SSU_L;
    type XDR_SU  is mod BB ** SU_L;
    type XDR_U   is mod BB ** U_L;
+   type XDR_U24 is mod BB ** U24_L;
 
    function Short_Unsigned_To_XDR_S_SU is
-      new Ada.Unchecked_Conversion (Short_Unsigned, XDR_S_SU);
+     new Ada.Unchecked_Conversion (Short_Unsigned, XDR_S_SU);
    function XDR_S_SU_To_Short_Unsigned is
-      new Ada.Unchecked_Conversion (XDR_S_SU, Short_Unsigned);
+     new Ada.Unchecked_Conversion (XDR_S_SU, Short_Unsigned);
+
+   function Unsigned_To_XDR_S_U24 is
+     new Ada.Unchecked_Conversion (Unsigned_24, XDR_S_U24);
+   function XDR_S_U24_To_Unsigned is
+     new Ada.Unchecked_Conversion (XDR_S_U24, Unsigned_24);
 
    function Unsigned_To_XDR_S_U is
-      new Ada.Unchecked_Conversion (Unsigned, XDR_S_U);
+     new Ada.Unchecked_Conversion (Unsigned, XDR_S_U);
    function XDR_S_U_To_Unsigned is
-      new Ada.Unchecked_Conversion (XDR_S_U, Unsigned);
+     new Ada.Unchecked_Conversion (XDR_S_U, Unsigned);
 
    function Long_Long_Unsigned_To_XDR_S_LU is
-      new Ada.Unchecked_Conversion (Long_Long_Unsigned, XDR_S_LU);
+     new Ada.Unchecked_Conversion (Long_Long_Unsigned, XDR_S_LU);
    function XDR_S_LU_To_Long_Long_Unsigned is
-      new Ada.Unchecked_Conversion (XDR_S_LU, Long_Long_Unsigned);
+     new Ada.Unchecked_Conversion (XDR_S_LU, Long_Long_Unsigned);
 
    function Long_Long_Unsigned_To_XDR_S_LLU is
-      new Ada.Unchecked_Conversion (Long_Long_Unsigned, XDR_S_LLU);
+     new Ada.Unchecked_Conversion (Long_Long_Unsigned, XDR_S_LLU);
    function XDR_S_LLU_To_Long_Long_Unsigned is
-      new Ada.Unchecked_Conversion (XDR_S_LLU, Long_Long_Unsigned);
+     new Ada.Unchecked_Conversion (XDR_S_LLU, Long_Long_Unsigned);
 
    --  The standard defines the floating-point data type "float" (32 bits
    --  or 4 bytes). The encoding used is the IEEE standard for normalized
@@ -483,6 +498,40 @@ package body System.Stream_Attributes is
          end if;
       end if;
    end I_I;
+
+   -----------
+   -- I_I24 --
+   -----------
+
+   function I_I24 (Stream : not null access RST) return Integer_24 is
+      S : XDR_S_I24;
+      L : SEO;
+      U : XDR_U24 := 0;
+
+   begin
+      Ada.Streams.Read (Stream.all, S, L);
+
+      if L /= S'Last then
+         raise Data_Error;
+
+      elsif Optimize_Integers then
+         return XDR_S_I24_To_Integer (S);
+
+      else
+         for N in S'Range loop
+            U := U * BB + XDR_U24 (S (N));
+         end loop;
+
+         --  Test sign and apply two complement notation
+
+         if S (1) < BL then
+            return Integer_24 (U);
+
+         else
+            return Integer_24 (-((XDR_U24'Last xor U) + 1));
+         end if;
+      end if;
+   end I_I24;
 
    ----------
    -- I_LF --
@@ -1042,6 +1091,33 @@ package body System.Stream_Attributes is
       end if;
    end I_U;
 
+   -----------
+   -- I_U24 --
+   -----------
+
+   function I_U24 (Stream : not null access RST) return Unsigned_24 is
+      S : XDR_S_U24;
+      L : SEO;
+      U : XDR_U24 := 0;
+
+   begin
+      Ada.Streams.Read (Stream.all, S, L);
+
+      if L /= S'Last then
+         raise Data_Error;
+
+      elsif Optimize_Integers then
+         return XDR_S_U24_To_Unsigned (S);
+
+      else
+         for N in S'Range loop
+            U := U * BB + XDR_U24 (S (N));
+         end loop;
+
+         return Unsigned_24 (U);
+      end if;
+   end I_U24;
+
    ----------
    -- I_WC --
    ----------
@@ -1288,6 +1364,38 @@ package body System.Stream_Attributes is
 
       Ada.Streams.Write (Stream.all, S);
    end W_I;
+
+   -----------
+   -- W_I24 --
+   -----------
+
+   procedure W_I24 (Stream : not null access RST; Item : Integer_24) is
+      S : XDR_S_I24;
+      U : XDR_U24;
+
+   begin
+      if Optimize_Integers then
+         S := Integer_To_XDR_S_I24 (Item);
+
+      else
+         --  Test sign and apply two complement notation
+
+         U := (if Item < 0
+               then XDR_U24'Last xor XDR_U24 (-(Item + 1))
+               else XDR_U24 (Item));
+
+         for N in reverse S'Range loop
+            S (N) := SE (U mod BB);
+            U := U / BB;
+         end loop;
+
+         if U /= 0 then
+            raise Data_Error;
+         end if;
+      end if;
+
+      Ada.Streams.Write (Stream.all, S);
+   end W_I24;
 
    ----------
    -- W_LF --
@@ -1845,6 +1953,32 @@ package body System.Stream_Attributes is
 
       Ada.Streams.Write (Stream.all, S);
    end W_U;
+
+   -----------
+   -- W_U24 --
+   -----------
+
+   procedure W_U24 (Stream : not null access RST; Item : Unsigned_24) is
+      S : XDR_S_U24;
+      U : XDR_U24 := XDR_U24 (Item);
+
+   begin
+      if Optimize_Integers then
+         S := Unsigned_To_XDR_S_U24 (Item);
+
+      else
+         for N in reverse S'Range loop
+            S (N) := SE (U mod BB);
+            U := U / BB;
+         end loop;
+
+         if U /= 0 then
+            raise Data_Error;
+         end if;
+      end if;
+
+      Ada.Streams.Write (Stream.all, S);
+   end W_U24;
 
    ----------
    -- W_WC --

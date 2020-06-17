@@ -37,6 +37,7 @@
       integer, parameter :: acc_device_kind = 4
 
 !     Keep in sync with include/gomp-constants.h.
+      integer (acc_device_kind), parameter :: acc_device_current = -1
       integer (acc_device_kind), parameter :: acc_device_none = 0
       integer (acc_device_kind), parameter :: acc_device_default = 1
       integer (acc_device_kind), parameter :: acc_device_host = 2
@@ -44,7 +45,24 @@
 !     removed.
       integer (acc_device_kind), parameter :: acc_device_not_host = 4
       integer (acc_device_kind), parameter :: acc_device_nvidia = 5
-      integer (acc_device_kind), parameter :: acc_device_gcn = 8
+      integer (acc_device_kind), parameter :: acc_device_radeon = 8
+
+      integer, parameter :: acc_device_property_kind = 4
+! OpenACC 2.6/2.7/3.0 used acc_device_property; in a spec update the
+! missing '_kind' was added for consistency.  For backward compatibility, keep:
+      integer, parameter :: acc_device_property                         &
+     &    = acc_device_property_kind
+
+      integer (acc_device_property_kind), parameter ::                  &
+     &    acc_property_memory = 1
+      integer (acc_device_property_kind), parameter ::                  &
+     &    acc_property_free_memory = 2
+      integer (acc_device_property_kind), parameter ::                  &
+     &    acc_property_name = int(Z'10001')
+      integer (acc_device_property_kind), parameter ::                  &
+     &    acc_property_vendor = int(Z'10002')
+      integer (acc_device_property_kind), parameter ::                  &
+     &    acc_property_driver = int(Z'10003')
 
       integer, parameter :: acc_handle_kind = 4
 
@@ -52,20 +70,20 @@
       integer (acc_handle_kind), parameter :: acc_async_noval = -1
       integer (acc_handle_kind), parameter :: acc_async_sync = -2
 
-      integer, parameter :: openacc_version = 201306
+      integer, parameter :: openacc_version = 201711
 
       interface acc_get_num_devices
-        function acc_get_num_devices_h (d)
+        function acc_get_num_devices_h (devicetype)
           import acc_device_kind
           integer acc_get_num_devices_h
-          integer (acc_device_kind) d
+          integer (acc_device_kind) devicetype
         end function
       end interface
 
       interface acc_set_device_type
-        subroutine acc_set_device_type_h (d)
+        subroutine acc_set_device_type_h (devicetype)
           import acc_device_kind
-          integer (acc_device_kind) d
+          integer (acc_device_kind) devicetype
         end subroutine
       end interface
 
@@ -77,25 +95,50 @@
       end interface
 
       interface acc_set_device_num
-        subroutine acc_set_device_num_h (n, d)
+        subroutine acc_set_device_num_h (devicenum, devicetype)
           import acc_device_kind
-          integer n
-          integer (acc_device_kind) d
+          integer devicenum
+          integer (acc_device_kind) devicetype
         end subroutine
       end interface
 
       interface acc_get_device_num
-        function acc_get_device_num_h (d)
+        function acc_get_device_num_h (devicetype)
           import acc_device_kind
           integer acc_get_device_num_h
-          integer (acc_device_kind) d
+          integer (acc_device_kind) devicetype
         end function
       end interface
 
+      interface acc_get_property
+        function acc_get_property_h (devicenum, devicetype,             &
+     &                               property)
+          use iso_c_binding, only: c_size_t
+          import acc_device_kind, acc_device_property_kind
+          implicit none (type, external)
+          integer (c_size_t) :: acc_get_property_h
+          integer, value :: devicenum
+          integer (acc_device_kind), value :: devicetype
+          integer (acc_device_property_kind), value :: property
+        end function
+      end interface
+
+      interface acc_get_property_string
+        subroutine acc_get_property_string_h (devicenum, devicetype,    &
+     &                                        property, string)
+          import acc_device_kind, acc_device_property_kind
+          implicit none (type, external)
+          integer, value :: devicenum
+          integer (acc_device_kind), value :: devicetype
+          integer (acc_device_property_kind), value :: property
+          character (*) :: string
+        end subroutine
+      end interface
+
       interface acc_async_test
-        function acc_async_test_h (a)
+        function acc_async_test_h (arg)
           logical acc_async_test_h
-          integer a
+          integer arg
         end function
       end interface
 
@@ -106,8 +149,8 @@
       end interface
 
       interface acc_wait
-        subroutine acc_wait_h (a)
-          integer a
+        subroutine acc_wait_h (arg)
+          integer arg
         end subroutine
       end interface
 
@@ -117,8 +160,8 @@
       end interface
 
       interface acc_wait_async
-        subroutine acc_wait_async_h (a1, a2)
-          integer a1, a2
+        subroutine acc_wait_async_h (arg, async)
+          integer arg, async
         end subroutine
       end interface
 
@@ -134,8 +177,8 @@
       end interface
 
       interface acc_wait_all_async
-        subroutine acc_wait_all_async_h (a)
-          integer a
+        subroutine acc_wait_all_async_h (async)
+          integer async
         end subroutine
       end interface
 
@@ -167,14 +210,14 @@
       interface acc_copyin
         subroutine acc_copyin_32_h (a, len)
           use iso_c_binding, only: c_int32_t
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int32_t) len
         end subroutine
 
         subroutine acc_copyin_64_h (a, len)
           use iso_c_binding, only: c_int64_t
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int64_t) len
         end subroutine
@@ -187,14 +230,14 @@
       interface acc_present_or_copyin
         subroutine acc_present_or_copyin_32_h (a, len)
           use iso_c_binding, only: c_int32_t
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int32_t) len
         end subroutine
 
         subroutine acc_present_or_copyin_64_h (a, len)
           use iso_c_binding, only: c_int64_t
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int64_t) len
         end subroutine
@@ -213,14 +256,14 @@
       interface acc_create
         subroutine acc_create_32_h (a, len)
           use iso_c_binding, only: c_int32_t
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int32_t) len
         end subroutine
 
         subroutine acc_create_64_h (a, len)
           use iso_c_binding, only: c_int64_t
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int64_t) len
         end subroutine
@@ -233,14 +276,14 @@
       interface acc_present_or_create
         subroutine acc_present_or_create_32_h (a, len)
           use iso_c_binding, only: c_int32_t
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int32_t) len
         end subroutine
 
         subroutine acc_present_or_create_64_h (a, len)
           use iso_c_binding, only: c_int64_t
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int64_t) len
         end subroutine
@@ -259,14 +302,14 @@
       interface acc_copyout
         subroutine acc_copyout_32_h (a, len)
           use iso_c_binding, only: c_int32_t
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int32_t) len
         end subroutine
 
         subroutine acc_copyout_64_h (a, len)
           use iso_c_binding, only: c_int64_t
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int64_t) len
         end subroutine
@@ -279,14 +322,14 @@
       interface acc_copyout_finalize
         subroutine acc_copyout_finalize_32_h (a, len)
           use iso_c_binding, only: c_int32_t
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int32_t) len
         end subroutine
 
         subroutine acc_copyout_finalize_64_h (a, len)
           use iso_c_binding, only: c_int64_t
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int64_t) len
         end subroutine
@@ -299,14 +342,14 @@
       interface acc_delete
         subroutine acc_delete_32_h (a, len)
           use iso_c_binding, only: c_int32_t
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int32_t) len
         end subroutine
 
         subroutine acc_delete_64_h (a, len)
           use iso_c_binding, only: c_int64_t
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int64_t) len
         end subroutine
@@ -319,14 +362,14 @@
       interface acc_delete_finalize
         subroutine acc_delete_finalize_32_h (a, len)
           use iso_c_binding, only: c_int32_t
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int32_t) len
         end subroutine
 
         subroutine acc_delete_finalize_64_h (a, len)
           use iso_c_binding, only: c_int64_t
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int64_t) len
         end subroutine
@@ -339,14 +382,14 @@
       interface acc_update_device
         subroutine acc_update_device_32_h (a, len)
           use iso_c_binding, only: c_int32_t
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int32_t) len
         end subroutine
 
         subroutine acc_update_device_64_h (a, len)
           use iso_c_binding, only: c_int64_t
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int64_t) len
         end subroutine
@@ -359,14 +402,14 @@
       interface acc_update_self
         subroutine acc_update_self_32_h (a, len)
           use iso_c_binding, only: c_int32_t
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int32_t) len
         end subroutine
 
         subroutine acc_update_self_64_h (a, len)
           use iso_c_binding, only: c_int64_t
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int64_t) len
         end subroutine
@@ -385,7 +428,7 @@
         function acc_is_present_32_h (a, len)
           use iso_c_binding, only: c_int32_t
           logical acc_is_present_32_h
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int32_t) len
         end function
@@ -393,7 +436,7 @@
         function acc_is_present_64_h (a, len)
           use iso_c_binding, only: c_int64_t
           logical acc_is_present_64_h
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int64_t) len
         end function
@@ -411,7 +454,7 @@
         subroutine acc_copyin_async_32_h (a, len, async)
           use iso_c_binding, only: c_int32_t
           import acc_handle_kind
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int32_t) len
           integer (acc_handle_kind) async
@@ -420,7 +463,7 @@
         subroutine acc_copyin_async_64_h (a, len, async)
           use iso_c_binding, only: c_int64_t
           import acc_handle_kind
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int64_t) len
           integer (acc_handle_kind) async
@@ -437,7 +480,7 @@
         subroutine acc_create_async_32_h (a, len, async)
           use iso_c_binding, only: c_int32_t
           import acc_handle_kind
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int32_t) len
           integer (acc_handle_kind) async
@@ -446,7 +489,7 @@
         subroutine acc_create_async_64_h (a, len, async)
           use iso_c_binding, only: c_int64_t
           import acc_handle_kind
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int64_t) len
           integer (acc_handle_kind) async
@@ -463,7 +506,7 @@
         subroutine acc_copyout_async_32_h (a, len, async)
           use iso_c_binding, only: c_int32_t
           import acc_handle_kind
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int32_t) len
           integer (acc_handle_kind) async
@@ -472,7 +515,7 @@
         subroutine acc_copyout_async_64_h (a, len, async)
           use iso_c_binding, only: c_int64_t
           import acc_handle_kind
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int64_t) len
           integer (acc_handle_kind) async
@@ -489,7 +532,7 @@
         subroutine acc_delete_async_32_h (a, len, async)
           use iso_c_binding, only: c_int32_t
           import acc_handle_kind
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int32_t) len
           integer (acc_handle_kind) async
@@ -498,7 +541,7 @@
         subroutine acc_delete_async_64_h (a, len, async)
           use iso_c_binding, only: c_int64_t
           import acc_handle_kind
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int64_t) len
           integer (acc_handle_kind) async
@@ -515,7 +558,7 @@
         subroutine acc_update_device_async_32_h (a, len, async)
           use iso_c_binding, only: c_int32_t
           import acc_handle_kind
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int32_t) len
           integer (acc_handle_kind) async
@@ -524,7 +567,7 @@
         subroutine acc_update_device_async_64_h (a, len, async)
           use iso_c_binding, only: c_int64_t
           import acc_handle_kind
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int64_t) len
           integer (acc_handle_kind) async
@@ -541,7 +584,7 @@
         subroutine acc_update_self_async_32_h (a, len, async)
           use iso_c_binding, only: c_int32_t
           import acc_handle_kind
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int32_t) len
           integer (acc_handle_kind) async
@@ -550,7 +593,7 @@
         subroutine acc_update_self_async_64_h (a, len, async)
           use iso_c_binding, only: c_int64_t
           import acc_handle_kind
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+!GCC$ ATTRIBUTES NO_ARG_CHECK :: a
           type (*), dimension (*) :: a
           integer (c_int64_t) len
           integer (acc_handle_kind) async

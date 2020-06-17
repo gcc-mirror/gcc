@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -123,7 +123,7 @@ public:
     Prot protection;
     LINK linkage;
     int inuse;                  // used to detect cycles
-    const char *mangleOverride;      // overridden symbol with pragma(mangle, "...")
+    DString mangleOverride;     // overridden symbol with pragma(mangle, "...")
 
     Declaration(Identifier *id);
     void semantic(Scope *sc);
@@ -664,7 +664,7 @@ public:
     void buildResultVar(Scope *sc, Type *tret);
     Statement *mergeFrequire(Statement *);
     Statement *mergeFensure(Statement *, Identifier *oid);
-    Parameters *getParameters(int *pvarargs);
+    ParameterList getParameterList();
 
     static FuncDeclaration *genCfunc(Parameters *args, Type *treturn, const char *name, StorageClass stc=0);
     static FuncDeclaration *genCfunc(Parameters *args, Type *treturn, Identifier *id, StorageClass stc=0);
@@ -866,9 +866,9 @@ class NewDeclaration : public FuncDeclaration
 {
 public:
     Parameters *parameters;
-    int varargs;
+    VarArg varargs;
 
-    NewDeclaration(Loc loc, Loc endloc, StorageClass stc, Parameters *arguments, int varargs);
+    NewDeclaration(Loc loc, Loc endloc, StorageClass stc, Parameters *arguments, VarArg varargs);
     Dsymbol *syntaxCopy(Dsymbol *);
     void semantic(Scope *sc);
     const char *kind() const;

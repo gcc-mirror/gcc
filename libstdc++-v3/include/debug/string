@@ -635,7 +635,7 @@ namespace __gnu_debug
 	  __glibcxx_check_insert_range(__p, __first, __last, __dist);
 
 	  typename _Base::iterator __res;
-#if _GLIBCXX_USE_CXX11_ABI
+#if _GLIBCXX_USE_CXX11_ABI && __cplusplus >= 201103
 	  if (__dist.second >= __dp_sign)
 	    __res = _Base::insert(__p.base(), __gnu_debug::__unsafe(__first),
 				  __gnu_debug::__unsafe(__last));

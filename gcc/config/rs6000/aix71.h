@@ -49,8 +49,8 @@ do {									\
     }									\
   if (rs6000_current_cmodel != CMODEL_SMALL)				\
     {									\
-      TARGET_NO_FP_IN_TOC = 0;						\
-      TARGET_NO_SUM_IN_TOC = 0;						\
+      TARGET_NO_FP_IN_TOC = 1;						\
+      TARGET_NO_SUM_IN_TOC = 1;						\
     }									\
   if (rs6000_current_cmodel == CMODEL_MEDIUM)				\
     {									\
@@ -162,6 +162,7 @@ do {									\
    %{!maix64:%{!shared:%{g*:-lg}}}\
    %{fprofile-arcs|fprofile-generate*|coverage:-lpthreads}\
    %{mpe:-L%R/usr/lpp/ppe.poe/lib -lmpi -lvtd}\
+   %{mlong-double-128:-lc128}\
    %{pthread:-lpthreads} -lc"
 
 #undef LINK_SPEC

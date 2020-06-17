@@ -1,4 +1,5 @@
 // { dg-do compile { target c++11 } }
+// { dg-additional-options "-Wno-deprecated-declarations" { target c++2a } }
 
 // [basic.types]/10:
 // Scalar types, standard-layout class types (Clause 9), arrays of such

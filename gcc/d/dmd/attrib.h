@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -28,7 +28,7 @@ public:
     Dsymbols *decl;     // array of Dsymbol's
 
     AttribDeclaration(Dsymbols *decl);
-    virtual Dsymbols *include(Scope *sc, ScopeDsymbol *sds);
+    virtual Dsymbols *include(Scope *sc);
     int apply(Dsymbol_apply_ft_t fp, void *param);
     static Scope *createNewScope(Scope *sc,
         StorageClass newstc, LINK linkage, CPPMANGLE cppmangle, Prot protection,
@@ -180,7 +180,7 @@ public:
     ConditionalDeclaration(Condition *condition, Dsymbols *decl, Dsymbols *elsedecl);
     Dsymbol *syntaxCopy(Dsymbol *s);
     bool oneMember(Dsymbol **ps, Identifier *ident);
-    Dsymbols *include(Scope *sc, ScopeDsymbol *sds);
+    Dsymbols *include(Scope *sc);
     void addComment(const utf8_t *comment);
     void setScope(Scope *sc);
     void accept(Visitor *v) { v->visit(this); }
@@ -191,10 +191,11 @@ class StaticIfDeclaration : public ConditionalDeclaration
 public:
     ScopeDsymbol *scopesym;
     bool addisdone;
+    bool onStack;
 
     StaticIfDeclaration(Condition *condition, Dsymbols *decl, Dsymbols *elsedecl);
     Dsymbol *syntaxCopy(Dsymbol *s);
-    Dsymbols *include(Scope *sc, ScopeDsymbol *sds);
+    Dsymbols *include(Scope *sc);
     void addMember(Scope *sc, ScopeDsymbol *sds);
     void setScope(Scope *sc);
     void importAll(Scope *sc);
@@ -203,17 +204,19 @@ public:
     void accept(Visitor *v) { v->visit(this); }
 };
 
-class StaticForeachDeclaration : public ConditionalDeclaration
+class StaticForeachDeclaration : public AttribDeclaration
 {
 public:
     StaticForeach *sfe;
     ScopeDsymbol *scopesym;
+    bool onStack;
     bool cached;
     Dsymbols *cache;
 
+    StaticForeachDeclaration(StaticForeach *sfe, Dsymbols *decl);
     Dsymbol *syntaxCopy(Dsymbol *s);
     bool oneMember(Dsymbol **ps, Identifier *ident);
-    Dsymbols *include(Scope *sc, ScopeDsymbol *sds);
+    Dsymbols *include(Scope *sc);
     void addMember(Scope *sc, ScopeDsymbol *sds);
     void addComment(const utf8_t *comment);
     void setScope(Scope *sc);
@@ -223,14 +226,16 @@ public:
     void accept(Visitor *v) { v->visit(this); }
 };
 
-class ForwardingAttribDeclaration : AttribDeclaration
+class ForwardingAttribDeclaration : public AttribDeclaration
 {
 public:
     ForwardingScopeDsymbol *sym;
 
+    ForwardingAttribDeclaration(Dsymbols *decl);
     Scope *newScope(Scope *sc);
     void addMember(Scope *sc, ScopeDsymbol *sds);
     ForwardingAttribDeclaration *isForwardingAttribDeclaration() { return this; }
+    void accept(Visitor *v) { v->visit(this); }
 };
 
 // Mixin declarations

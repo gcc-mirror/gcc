@@ -25,7 +25,7 @@ test01()
 {
   using A = std::atomic<float>;
   static_assert( std::is_standard_layout_v<A> );
-  static_assert( std::is_trivially_default_constructible_v<A> );
+  static_assert( !std::is_trivially_default_constructible_v<A> );
   static_assert( std::is_trivially_destructible_v<A> );
   static_assert( std::is_same_v<A::value_type, float> );
   static_assert( std::is_same_v<A::difference_type, A::value_type> );
@@ -41,7 +41,7 @@ test02()
 {
   using A = std::atomic<double>;
   static_assert( std::is_standard_layout_v<A> );
-  static_assert( std::is_trivially_default_constructible_v<A> );
+  static_assert( !std::is_trivially_default_constructible_v<A> );
   static_assert( std::is_trivially_destructible_v<A> );
   static_assert( std::is_same_v<A::value_type, double> );
   static_assert( std::is_same_v<A::difference_type, A::value_type> );
@@ -57,7 +57,7 @@ test03()
 {
   using A = std::atomic<long double>;
   static_assert( std::is_standard_layout_v<A> );
-  static_assert( std::is_trivially_default_constructible_v<A> );
+  static_assert( !std::is_trivially_default_constructible_v<A> );
   static_assert( std::is_trivially_destructible_v<A> );
   static_assert( std::is_same_v<A::value_type, long double> );
   static_assert( std::is_same_v<A::difference_type, A::value_type> );

@@ -185,6 +185,21 @@
   BUILTIN_VQ_HSI (TERNOP, sqdmlal2_n, 0)
   BUILTIN_VQ_HSI (TERNOP, sqdmlsl2_n, 0)
 
+  BUILTIN_VD_BHSI (BINOP, intrinsic_vec_smult_lo_, 0)
+  BUILTIN_VD_BHSI (BINOPU, intrinsic_vec_umult_lo_, 0)
+
+  BUILTIN_VQW (BINOP, vec_widen_smult_hi_, 10)
+  BUILTIN_VQW (BINOPU, vec_widen_umult_hi_, 10)
+
+  BUILTIN_VD_HSI (TERNOP_LANE, vec_smult_lane_, 0)
+  BUILTIN_VD_HSI (QUADOP_LANE, vec_smlal_lane_, 0)
+  BUILTIN_VD_HSI (TERNOP_LANE, vec_smult_laneq_, 0)
+  BUILTIN_VD_HSI (QUADOP_LANE, vec_smlal_laneq_, 0)
+  BUILTIN_VD_HSI (TERNOPU_LANE, vec_umult_lane_, 0)
+  BUILTIN_VD_HSI (QUADOPU_LANE, vec_umlal_lane_, 0)
+  BUILTIN_VD_HSI (TERNOPU_LANE, vec_umult_laneq_, 0)
+  BUILTIN_VD_HSI (QUADOPU_LANE, vec_umlal_laneq_, 0)
+
   BUILTIN_VSD_HSI (BINOP, sqdmull, 0)
   BUILTIN_VSD_HSI (TERNOP_LANE, sqdmull_lane, 0)
   BUILTIN_VSD_HSI (TERNOP_LANE, sqdmull_laneq, 0)
@@ -212,10 +227,15 @@
   /* Implemented by aarch64_<sur><dotprod>{_lane}{q}<dot_mode>.  */
   BUILTIN_VB (TERNOP, sdot, 0)
   BUILTIN_VB (TERNOPU, udot, 0)
+  BUILTIN_VB (TERNOP_SSUS, usdot, 0)
   BUILTIN_VB (QUADOP_LANE, sdot_lane, 0)
   BUILTIN_VB (QUADOPU_LANE, udot_lane, 0)
   BUILTIN_VB (QUADOP_LANE, sdot_laneq, 0)
   BUILTIN_VB (QUADOPU_LANE, udot_laneq, 0)
+  BUILTIN_VB (QUADOPSSUS_LANE_QUADTUP, usdot_lane, 0)
+  BUILTIN_VB (QUADOPSSUS_LANE_QUADTUP, usdot_laneq, 0)
+  BUILTIN_VB (QUADOPSSSU_LANE_QUADTUP, sudot_lane, 0)
+  BUILTIN_VB (QUADOPSSSU_LANE_QUADTUP, sudot_laneq, 0)
 
   /* Implemented by aarch64_fcadd<rot><mode>.   */
   BUILTIN_VHSDF (BINOP, fcadd90, 0)
@@ -682,3 +702,30 @@
   BUILTIN_VSFDF (UNOP, frint32x, 0)
   BUILTIN_VSFDF (UNOP, frint64z, 0)
   BUILTIN_VSFDF (UNOP, frint64x, 0)
+
+  /* Implemented by aarch64_bfdot{_lane}{q}<mode>.  */
+  VAR2 (TERNOP, bfdot, 0, v2sf, v4sf)
+  VAR2 (QUADOP_LANE_PAIR, bfdot_lane, 0, v2sf, v4sf)
+  VAR2 (QUADOP_LANE_PAIR, bfdot_laneq, 0, v2sf, v4sf)
+
+  /* Implemented by aarch64_bfmmlaqv4sf  */
+  VAR1 (TERNOP, bfmmlaq, 0, v4sf)
+
+  /* Implemented by aarch64_bfmlal<bt>{_lane{q}}v4sf  */
+  VAR1 (TERNOP, bfmlalb, 0, v4sf)
+  VAR1 (TERNOP, bfmlalt, 0, v4sf)
+  VAR1 (QUADOP_LANE, bfmlalb_lane, 0, v4sf)
+  VAR1 (QUADOP_LANE, bfmlalt_lane, 0, v4sf)
+  VAR1 (QUADOP_LANE, bfmlalb_lane_q, 0, v4sf)
+  VAR1 (QUADOP_LANE, bfmlalt_lane_q, 0, v4sf)
+
+  /* Implemented by aarch64_simd_<sur>mmlav16qi.  */
+  VAR1 (TERNOP, simd_smmla, 0, v16qi)
+  VAR1 (TERNOPU, simd_ummla, 0, v16qi)
+  VAR1 (TERNOP_SSUS, simd_usmmla, 0, v16qi)
+
+  /* Implemented by aarch64_bfcvtn{q}{2}<mode>  */
+  VAR1 (UNOP, bfcvtn, 0, v4bf)
+  VAR1 (UNOP, bfcvtn_q, 0, v8bf)
+  VAR1 (BINOP, bfcvtn2, 0, v8bf)
+  VAR1 (UNOP, bfcvt, 0, bf)

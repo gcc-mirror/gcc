@@ -42,7 +42,7 @@ static json::array *cur_children_array;
 
 /* Generate a JSON object for LOC.  */
 
-static json::object *
+json::value *
 json_from_expanded_location (location_t loc)
 {
   expanded_location exploc = expand_location (loc);
@@ -232,6 +232,13 @@ json_end_diagnostic (diagnostic_context *context, diagnostic_info *diagnostic,
       json::object *metadata_obj = json_from_metadata (diagnostic->metadata);
       diag_obj->set ("metadata", metadata_obj);
     }
+
+  const diagnostic_path *path = richloc->get_path ();
+  if (path && context->make_json_for_path)
+    {
+      json::value *path_value = context->make_json_for_path (context, path);
+      diag_obj->set ("path", path_value);
+    }
 }
 
 /* No-op implementation of "begin_group_cb" for JSON output.  */
@@ -288,6 +295,7 @@ diagnostic_output_format_init (diagnostic_context *context,
 	context->begin_group_cb = json_begin_group;
 	context->end_group_cb =  json_end_group;
 	context->final_cb =  json_final_cb;
+	context->print_path = NULL; /* handled in json_end_diagnostic.  */
 
 	/* The metadata is handled in JSON format, rather than as text.  */
 	context->show_cwe = false;

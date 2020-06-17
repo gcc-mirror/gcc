@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 // REQUIRED_ARGS:
 // EXTRA_FILES: extra-files/test15.txt
 

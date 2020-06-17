@@ -47,6 +47,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "jit-builtins.h"
 #include "jit-tempdir.h"
 
+#ifdef _WIN32
+#include "jit-w32.h"
+#endif
+
 /* Compare with gcc/c-family/c-common.h: DECL_C_BIT_FIELD,
    SET_DECL_C_BIT_FIELD.
    These are redefined here to avoid depending from the C frontend.  */
@@ -88,7 +92,6 @@ playback::context::context (recording::context *ctxt)
   : log_user (ctxt->get_logger ()),
     m_recording_ctxt (ctxt),
     m_tempdir (NULL),
-    m_char_array_type_node (NULL),
     m_const_char_ptr (NULL)
 {
   JIT_LOG_SCOPE (get_logger ());
@@ -670,9 +673,14 @@ playback::rvalue *
 playback::context::
 new_string_literal (const char *value)
 {
-  tree t_str = build_string (strlen (value), value);
-  gcc_assert (m_char_array_type_node);
-  TREE_TYPE (t_str) = m_char_array_type_node;
+  /* Compare with c-family/c-common.c: fix_string_type.  */
+  size_t len = strlen (value);
+  tree i_type = build_index_type (size_int (len));
+  tree a_type = build_array_type (char_type_node, i_type);
+  /* build_string len parameter must include NUL terminator when
+     building C strings.  */
+  tree t_str = build_string (len + 1, value);
+  TREE_TYPE (t_str) = a_type;
 
   /* Convert to (const char*), loosely based on
      c/c-typeck.c: array_to_pointer_conversion,
@@ -2155,8 +2163,10 @@ playback::compile_to_file::copy_file (const char *src_path,
 
   gcc_assert (total_sz_in == total_sz_out);
   if (get_logger ())
-    get_logger ()->log ("total bytes copied: %ld", total_sz_out);
+    get_logger ()->log ("total bytes copied: %zu", total_sz_out);
 
+  /* fchmod does not exist in Windows. */
+#ifndef _WIN32
   /* Set the permissions of the copy to those of the original file,
      in particular the "executable" bits.  */
   if (fchmod (fileno (f_out), stat_buf.st_mode) == -1)
@@ -2164,6 +2174,7 @@ playback::compile_to_file::copy_file (const char *src_path,
 	       "error setting mode of %s: %s",
 	       dst_path,
 	       xstrerror (errno));
+#endif
 
   fclose (f_out);
 }
@@ -2640,10 +2651,19 @@ dlopen_built_dso ()
 {
   JIT_LOG_SCOPE (get_logger ());
   auto_timevar load_timevar (get_timer (), TV_LOAD);
-  void *handle = NULL;
-  const char *error = NULL;
+  result::handle handle = NULL;
   result *result_obj = NULL;
 
+#ifdef _WIN32
+  /* Clear any existing error.  */
+  SetLastError(0);
+
+  handle = LoadLibrary(m_tempdir->get_path_so_file ());
+  if (GetLastError() != 0)  {
+    print_last_error();
+  }
+#else
+  const char *error = NULL;
   /* Clear any existing error.  */
   dlerror ();
 
@@ -2652,6 +2672,8 @@ dlopen_built_dso ()
   if ((error = dlerror()) != NULL)  {
     add_error (NULL, "%s", error);
   }
+#endif
+
   if (handle)
     {
       /* We've successfully dlopened the result; create a
@@ -2701,10 +2723,6 @@ playback::context::
 replay ()
 {
   JIT_LOG_SCOPE (get_logger ());
-  /* Adapted from c-common.c:c_common_nodes_and_builtins.  */
-  tree array_domain_type = build_index_type (size_int (200));
-  m_char_array_type_node
-    = build_array_type (char_type_node, array_domain_type);
 
   m_const_char_ptr
     = build_pointer_type (build_qualified_type (char_type_node,

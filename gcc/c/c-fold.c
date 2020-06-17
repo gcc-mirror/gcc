@@ -346,6 +346,7 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
     case UNGT_EXPR:
     case UNGE_EXPR:
     case UNEQ_EXPR:
+    case MEM_REF:
       /* Binary operations evaluating both arguments (increment and
 	 decrement are binary internally in GCC).  */
       orig_op0 = op0 = TREE_OPERAND (expr, 0);
@@ -373,6 +374,7 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 	ret = fold (expr);
       if (TREE_OVERFLOW_P (ret)
 	  && !TREE_OVERFLOW_P (op0)
+	  && !(BINARY_CLASS_P (op0) && TREE_OVERFLOW_P (TREE_OPERAND (op0, 1)))
 	  && !TREE_OVERFLOW_P (op1))
 	overflow_warning (EXPR_LOC_OR_LOC (expr, input_location), ret, expr);
       if (code == LSHIFT_EXPR
@@ -435,6 +437,14 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 	      || TREE_CODE (TREE_TYPE (orig_op0)) == FIXED_POINT_TYPE)
 	  && TREE_CODE (TREE_TYPE (orig_op1)) == INTEGER_TYPE)
 	warn_for_div_by_zero (loc, op1);
+      if (code == MEM_REF
+	  && ret != expr
+	  && TREE_CODE (ret) == MEM_REF)
+	{
+	  TREE_READONLY (ret) = TREE_READONLY (expr);
+	  TREE_SIDE_EFFECTS (ret) = TREE_SIDE_EFFECTS (expr);
+	  TREE_THIS_VOLATILE (ret) = TREE_THIS_VOLATILE (expr);
+	}
       goto out;
 
     case ADDR_EXPR:

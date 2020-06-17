@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,9 @@ with Types; use Types;
 with Uintp; use Uintp;
 
 package Sem_Ch13 is
+   function All_Membership_Choices_Static (Expr : Node_Id) return Boolean;
+   --  Given a membership test, returns True iff all choices are static.
+
    procedure Analyze_At_Clause                          (N : Node_Id);
    procedure Analyze_Attribute_Definition_Clause        (N : Node_Id);
    procedure Analyze_Enumeration_Representation_Clause  (N : Node_Id);
@@ -341,6 +344,10 @@ package Sem_Ch13 is
    --  aggregate, and each entry must denote a function with the proper syntax
    --  for First, Next, and Has_Element. Optionally an Element primitive may
    --  also be defined.
+
+   procedure Validate_Literal_Aspect (Typ : Entity_Id; ASN : Node_Id);
+   --  Check legality of Integer_Literal, Real_Literal, and String_Literal
+   --  aspect specifications.
 
    procedure Install_Discriminants (E : Entity_Id);
    --  Make visible the discriminants of type entity E

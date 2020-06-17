@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 2013-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 2013-2020 by The D Language Foundation, All Rights Reserved
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
  * http://www.boost.org/LICENSE_1_0.txt
@@ -81,6 +81,7 @@ class TypeClass;
 class TypeTuple;
 class TypeSlice;
 class TypeNull;
+class TypeTraits;
 
 class Dsymbol;
 
@@ -107,6 +108,7 @@ class StaticIfDeclaration;
 class CompileDeclaration;
 class StaticForeachDeclaration;
 class UserAttributeDeclaration;
+class ForwardingAttribDeclaration;
 
 class ScopeDsymbol;
 class TemplateDeclaration;
@@ -267,8 +269,7 @@ class UshrExp;
 class AndExp;
 class OrExp;
 class XorExp;
-class OrOrExp;
-class AndAndExp;
+class LogicalExp;
 class CmpExp;
 class InExp;
 class RemoveExp;
@@ -373,6 +374,7 @@ public:
     virtual void visit(TypeTuple *t) { visit((Type *)t); }
     virtual void visit(TypeSlice *t) { visit((TypeNext *)t); }
     virtual void visit(TypeNull *t) { visit((Type *)t); }
+    virtual void visit(TypeTraits *t) { visit((Type *)t); }
 
     virtual void visit(Dsymbol *) { assert(0); }
 
@@ -399,6 +401,7 @@ public:
     virtual void visit(StaticForeachDeclaration *s) { visit((AttribDeclaration *)s); }
     virtual void visit(CompileDeclaration *s) { visit((AttribDeclaration *)s); }
     virtual void visit(UserAttributeDeclaration *s) { visit((AttribDeclaration *)s); }
+    virtual void visit(ForwardingAttribDeclaration *s) { visit((AttribDeclaration *)s); }
 
     virtual void visit(ScopeDsymbol *s) { visit((Dsymbol *)s); }
     virtual void visit(TemplateDeclaration *s) { visit((ScopeDsymbol *)s); }
@@ -559,8 +562,7 @@ public:
     virtual void visit(AndExp *e) { visit((BinExp *)e); }
     virtual void visit(OrExp *e) { visit((BinExp *)e); }
     virtual void visit(XorExp *e) { visit((BinExp *)e); }
-    virtual void visit(OrOrExp *e) { visit((BinExp *)e); }
-    virtual void visit(AndAndExp *e) { visit((BinExp *)e); }
+    virtual void visit(LogicalExp *e) { visit((BinExp *)e); }
     virtual void visit(CmpExp *e) { visit((BinExp *)e); }
     virtual void visit(InExp *e) { visit((BinExp *)e); }
     virtual void visit(RemoveExp *e) { visit((BinExp *)e); }

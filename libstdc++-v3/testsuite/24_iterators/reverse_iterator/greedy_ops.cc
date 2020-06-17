@@ -24,7 +24,7 @@ void test01()
   typedef std::reverse_iterator<greedy_ops::X*> iterator_type;
 
   iterator_type it;
-  
+
   it == it;
   it != it;
   it < it;
@@ -36,10 +36,4 @@ void test01()
 #endif
   1 + it;
   it + 1;
-}
-
-int main() 
-{ 
-  test01();
-  return 0;
 }

@@ -58,6 +58,8 @@ static bool rs6000_save_toc_in_prologue_p (void);
 
 static rs6000_stack_t stack_info;
 
+/* Set if HARD_FRAM_POINTER_REGNUM is really needed.  */
+static bool frame_pointer_needed_indeed = false;
 
 /* Label number of label created for -mrelocatable, to call to so we can
    get the address of the GOT section */
@@ -909,7 +911,7 @@ rs6000_stack_info (void)
   else if (frame_pointer_needed)
     info->push_p = 1;
 
-  else if (TARGET_XCOFF && write_symbols != NO_DEBUG)
+  else if (TARGET_XCOFF && write_symbols != NO_DEBUG && !flag_compare_debug)
     info->push_p = 1;
 
   else
@@ -1547,7 +1549,7 @@ rs6000_emit_probe_stack_range_stack_clash (HOST_WIDE_INT orig_size,
 
   /* If explicitly requested,
        or the rounded size is not the same as the original size
-       or the the rounded size is greater than a page,
+       or the rounded size is greater than a page,
      then we will need a copy of the original stack pointer.  */
   if (rounded_size != orig_size
       || rounded_size > probe_interval
@@ -1604,20 +1606,34 @@ rs6000_emit_probe_stack_range_stack_clash (HOST_WIDE_INT orig_size,
       rtx end_addr
 	= copy_reg ? gen_rtx_REG (Pmode, 0) : gen_rtx_REG (Pmode, 12);
       rtx rs = GEN_INT (-rounded_size);
-      rtx_insn *insn;
-      if (add_operand (rs, Pmode))
-	insn = emit_insn (gen_add3_insn (end_addr, stack_pointer_rtx, rs));
+      rtx_insn *insn = gen_add3_insn (end_addr, stack_pointer_rtx, rs);
+      if (insn == NULL)
+	{
+	  emit_move_insn (end_addr, rs);
+	  insn = gen_add3_insn (end_addr, end_addr, stack_pointer_rtx);
+	  gcc_assert (insn);
+	}
+      bool add_note = false;
+      if (!NONJUMP_INSN_P (insn) || NEXT_INSN (insn))
+	add_note = true;
       else
 	{
-	  emit_move_insn (end_addr, GEN_INT (-rounded_size));
-	  insn = emit_insn (gen_add3_insn (end_addr, end_addr,
-					   stack_pointer_rtx));
-	  /* Describe the effect of INSN to the CFI engine.  */
-	  add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-			gen_rtx_SET (end_addr,
-				     gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-						   rs)));
+	  rtx set = single_set (insn);
+	  if (set == NULL_RTX
+	      || SET_DEST (set) != end_addr
+	      || GET_CODE (SET_SRC (set)) != PLUS
+	      || XEXP (SET_SRC (set), 0) != stack_pointer_rtx
+	      || XEXP (SET_SRC (set), 1) != rs)
+	    add_note = true;
 	}
+      insn = emit_insn (insn);
+      /* Describe the effect of INSN to the CFI engine, unless it
+	 is a single insn that describes it itself.  */
+      if (add_note)
+	add_reg_note (insn, REG_FRAME_RELATED_EXPR,
+		      gen_rtx_SET (end_addr,
+				   gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+						 rs)));
       RTX_FRAME_RELATED_P (insn) = 1;
 
       /* Emit the loop.  */
@@ -2721,9 +2737,9 @@ void
 rs6000_emit_prologue_components (sbitmap components)
 {
   rs6000_stack_t *info = rs6000_stack_info ();
-  rtx ptr_reg = gen_rtx_REG (Pmode, frame_pointer_needed
-			     ? HARD_FRAME_POINTER_REGNUM
-			     : STACK_POINTER_REGNUM);
+  rtx ptr_reg = gen_rtx_REG (Pmode, frame_pointer_needed_indeed
+				      ? HARD_FRAME_POINTER_REGNUM
+				      : STACK_POINTER_REGNUM);
 
   machine_mode reg_mode = Pmode;
   int reg_size = TARGET_32BIT ? 4 : 8;
@@ -2801,9 +2817,9 @@ void
 rs6000_emit_epilogue_components (sbitmap components)
 {
   rs6000_stack_t *info = rs6000_stack_info ();
-  rtx ptr_reg = gen_rtx_REG (Pmode, frame_pointer_needed
-			     ? HARD_FRAME_POINTER_REGNUM
-			     : STACK_POINTER_REGNUM);
+  rtx ptr_reg = gen_rtx_REG (Pmode, frame_pointer_needed_indeed
+				      ? HARD_FRAME_POINTER_REGNUM
+				      : STACK_POINTER_REGNUM);
 
   machine_mode reg_mode = Pmode;
   int reg_size = TARGET_32BIT ? 4 : 8;
@@ -2982,7 +2998,10 @@ rs6000_emit_prologue (void)
                            && (lookup_attribute ("no_split_stack",
                                                  DECL_ATTRIBUTES (cfun->decl))
                                == NULL));
- 
+
+  frame_pointer_needed_indeed
+    = frame_pointer_needed && df_regs_ever_live_p (HARD_FRAME_POINTER_REGNUM);
+
   /* Offset to top of frame for frame_reg and sp respectively.  */
   HOST_WIDE_INT frame_off = 0;
   HOST_WIDE_INT sp_off = 0;
@@ -3644,7 +3663,7 @@ rs6000_emit_prologue (void)
     }
 
   /* Set frame pointer, if needed.  */
-  if (frame_pointer_needed)
+  if (frame_pointer_needed_indeed)
     {
       insn = emit_move_insn (gen_rtx_REG (Pmode, HARD_FRAME_POINTER_REGNUM),
 			     sp_reg_rtx);
@@ -4520,7 +4539,7 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
     }
   /* If we have a frame pointer, we can restore the old stack pointer
      from it.  */
-  else if (frame_pointer_needed)
+  else if (frame_pointer_needed_indeed)
     {
       frame_reg_rtx = sp_reg_rtx;
       if (DEFAULT_ABI == ABI_V4)

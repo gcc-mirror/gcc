@@ -162,7 +162,7 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
       if (dump_file)
 	fprintf (dump_file,
 		 "Symbol node %s now used in multiple partitions\n",
-		 node->name ());
+		 node->dump_name ());
     }
   node->aux = (void *)((size_t)node->aux + 1);
 
@@ -471,6 +471,7 @@ void
 lto_balanced_map (int n_lto_partitions, int max_partition_size)
 {
   int n_varpool_nodes = 0, varpool_pos = 0, best_varpool_pos = 0;
+  int best_noreorder_pos = 0;
   auto_vec <cgraph_node *> order (symtab->cgraph_count);
   auto_vec<cgraph_node *> noreorder;
   auto_vec<varpool_node *> varpool_order;
@@ -515,10 +516,10 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
     {
       for (unsigned i = 0; i < order.length (); i++)
 	fprintf (dump_file, "Balanced map symbol order:%s:%u\n",
-		 order[i]->name (), order[i]->tp_first_run);
+		 order[i]->dump_name (), order[i]->tp_first_run);
       for (unsigned i = 0; i < noreorder.length (); i++)
 	fprintf (dump_file, "Balanced map symbol no_reorder:%s:%u\n",
-		 noreorder[i]->name (), noreorder[i]->tp_first_run);
+		 noreorder[i]->dump_name (), noreorder[i]->tp_first_run);
     }
 
   /* Collect all variables that should not be reordered.  */
@@ -732,12 +733,13 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 	  best_i = i;
 	  best_n_nodes = lto_symtab_encoder_size (partition->encoder);
 	  best_varpool_pos = varpool_pos;
+	  best_noreorder_pos = noreorder_pos;
 	}
       if (dump_file)
-	fprintf (dump_file, "Step %i: added %s/%i, size %i, "
+	fprintf (dump_file, "Step %i: added %s, size %i, "
 		 "cost %" PRId64 "/%" PRId64 " "
 		 "best %" PRId64 "/%" PRId64", step %i\n", i,
-		 order[i]->name (), order[i]->order,
+		 order[i]->dump_name (),
 		 partition->insns, cost, internal,
 		 best_cost, best_internal, best_i);
       /* Partition is too large, unwind into step when best cost was reached and
@@ -752,6 +754,7 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 			 i - best_i, best_i);
 	      undo_partition (partition, best_n_nodes);
 	      varpool_pos = best_varpool_pos;
+	      noreorder_pos = best_noreorder_pos;
 	    }
 	  gcc_assert (best_size == partition->insns);
 	  i = best_i;
@@ -995,7 +998,7 @@ promote_symbol (symtab_node *node)
   DECL_VISIBILITY_SPECIFIED (node->decl) = true;
   if (dump_file)
     fprintf (dump_file,
-	     "Promoting as hidden: %s (%s)\n", node->name (),
+	     "Promoting as hidden: %s (%s)\n", node->dump_name (),
 	     IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->decl)));
 
   /* Promoting a symbol also promotes all transparent aliases with exception
@@ -1079,7 +1082,7 @@ rename_statics (lto_symtab_encoder_t encoder, symtab_node *node)
 
   if (dump_file)
     fprintf (dump_file,
-	    "Renaming statics with asm name: %s\n", node->name ());
+	    "Renaming statics with asm name: %s\n", node->dump_name ());
 
   /* Assign every symbol in the set that shares the same ASM name an unique
      mangled name.  */

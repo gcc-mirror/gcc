@@ -1,14 +1,13 @@
-// { dg-do run { target c++2a } }
-// { dg-additional-options "-fconcepts-ts" }
+// { dg-do run { target c++20 } }
 
 template<class, class> constexpr bool is_same_v = false;
 template<class T> constexpr bool is_same_v<T, T> = true;
 
 template<class T, class U>
-concept bool Same = is_same_v<T, U>;
+concept Same = is_same_v<T, U>;
 
 template<class T, class U>
-concept bool Diff = requires(T& t, U& u) { u - t; };
+concept Diff = requires(T& t, U& u) { u - t; };
 
 template<class I, class S>
 int distance(I, S) { return 0; }

@@ -347,6 +347,10 @@ sem_item::compare_referenced_symbol_properties (symtab_node *used_by,
       if (DECL_IS_OPERATOR_NEW_P (n1->decl)
 	  != DECL_IS_OPERATOR_NEW_P (n2->decl))
 	return return_false_with_msg ("operator new flags are different");
+
+      if (DECL_IS_REPLACEABLE_OPERATOR (n1->decl)
+	  != DECL_IS_REPLACEABLE_OPERATOR (n2->decl))
+	return return_false_with_msg ("replaceable operator flags are different");
     }
 
   /* Merging two definitions with a reference to equivalent vtables, but
@@ -3322,12 +3326,12 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count,
 	      {
 		dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
 				 "Semantic equality hit:%s->%s\n",
-				 xstrdup_for_dump (source->node->name ()),
-				 xstrdup_for_dump (alias->node->name ()));
+				 source->node->dump_name (),
+				 alias->node->dump_name ());
 		dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
 				 "Assembler symbol names:%s->%s\n",
-				 xstrdup_for_dump (source->node->asm_name ()),
-				 xstrdup_for_dump (alias->node->asm_name ()));
+				 source->node->dump_asm_name (),
+				 alias->node->dump_asm_name ());
 	      }
 
 	    if (lookup_attribute ("no_icf", DECL_ATTRIBUTES (alias->decl)))
@@ -3390,7 +3394,7 @@ set_alias_uids (symtab_node *n, int uid)
     {
       if (dump_file)
 	fprintf (dump_file, "  Setting points-to UID of [%s] as %d\n",
-		 xstrdup_for_dump (ref->referring->asm_name ()), uid);
+		 ref->referring->dump_asm_name (), uid);
 
       SET_DECL_PT_UID (ref->referring->decl, uid);
       set_alias_uids (ref->referring, uid);

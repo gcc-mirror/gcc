@@ -35,11 +35,11 @@ proc prune_gcc_output { text } {
     regsub -all "(^|\n)\[^\n\]*(: )?At (top level|global scope):\[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*:   (recursively )?required \[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*:   . skipping \[0-9\]* instantiation contexts \[^\n\]*" $text "" text
-    regsub -all "(^|\n)\[^\n\]*:   in constexpr expansion \[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*:   in .constexpr. expansion \[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*:   in requirements \[^\n\]*" $text "" text
     regsub -all "(^|\n)    inlined from \[^\n\]*" $text "" text
-    regsub -all "(^|\n)collect2: error: ld returned \[^\n\]*" $text "" text
-    regsub -all "(^|\n)collect: re(compiling|linking)\[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*: error: ld returned \[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*: re(compiling|linking)\[^\n\]*" $text "" text
     regsub -all "(^|\n)Please submit.*instructions\[^\n\]*" $text "" text
     regsub -all "(^|\n)\[0-9\]\[0-9\]* errors\." $text "" text
     regsub -all "(^|\n)(In file included|\[ \]+from)\[^\n\]*" $text "" text
@@ -74,6 +74,10 @@ proc prune_gcc_output { text } {
     # Ignore harmless warnings from Xcode 4.0.
     regsub -all "(^|\n)\[^\n\]*ld: warning: could not create compact unwind for\[^\n\]*" $text "" text
 
+    # If dg-enable-nn-line-numbers was provided, then obscure source-margin
+    # line numbers by converting them to "NN" form.
+    set text [maybe-handle-nn-line-numbers $text]
+    
     # Call into multiline.exp to handle any multiline output directives.
     set text [handle-multiline-outputs $text]
 

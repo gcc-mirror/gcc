@@ -62,6 +62,10 @@ ADJUST_ALIGNMENT (VNx8BI, 2);
 ADJUST_ALIGNMENT (VNx4BI, 2);
 ADJUST_ALIGNMENT (VNx2BI, 2);
 
+/* Bfloat16 modes.  */
+FLOAT_MODE (BF, 2, 0);
+ADJUST_FLOAT_FORMAT (BF, &arm_bfloat_half_format);
+
 VECTOR_MODES (INT, 8);        /*       V8QI V4HI V2SI.  */
 VECTOR_MODES (INT, 16);       /* V16QI V8HI V4SI V2DI.  */
 VECTOR_MODES (FLOAT, 8);      /*                 V2SF.  */
@@ -89,6 +93,7 @@ INT_MODE (XI, 64);
   ADJUST_NUNITS (VH##HI, aarch64_sve_vg * NVECS * 4); \
   ADJUST_NUNITS (VS##SI, aarch64_sve_vg * NVECS * 2); \
   ADJUST_NUNITS (VD##DI, aarch64_sve_vg * NVECS); \
+  ADJUST_NUNITS (VH##BF, aarch64_sve_vg * NVECS * 4); \
   ADJUST_NUNITS (VH##HF, aarch64_sve_vg * NVECS * 4); \
   ADJUST_NUNITS (VS##SF, aarch64_sve_vg * NVECS * 2); \
   ADJUST_NUNITS (VD##DF, aarch64_sve_vg * NVECS); \
@@ -97,6 +102,7 @@ INT_MODE (XI, 64);
   ADJUST_ALIGNMENT (VH##HI, 16); \
   ADJUST_ALIGNMENT (VS##SI, 16); \
   ADJUST_ALIGNMENT (VD##DI, 16); \
+  ADJUST_ALIGNMENT (VH##BF, 16); \
   ADJUST_ALIGNMENT (VH##HF, 16); \
   ADJUST_ALIGNMENT (VS##SF, 16); \
   ADJUST_ALIGNMENT (VD##DF, 16);

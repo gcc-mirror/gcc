@@ -35,3 +35,21 @@ void bar()
     void nested() { }
     static assert(__traits(getLinkage, typeof(&nested)) == "D");
 }
+
+class FooD {}
+interface FooDInterface {}
+extern (C++) class FooCpp {}
+extern (C++) struct FooCppStruct {}
+extern (C++) interface FooCppInterface {}
+
+static assert(__traits(getLinkage, FooD) == "D");
+static assert(__traits(getLinkage, FooDInterface) == "D");
+static assert(__traits(getLinkage, FooCpp) == "C++");
+static assert(__traits(getLinkage, FooCppStruct) == "C++");
+static assert(__traits(getLinkage, FooCppInterface) == "C++");
+
+version (D_ObjectiveC)
+{
+    extern (Objective-C) interface FooObjC {}
+    static assert(__traits(getLinkage, FooObjC) == "Objective-C");
+}

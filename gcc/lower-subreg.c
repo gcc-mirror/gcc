@@ -1087,12 +1087,21 @@ resolve_simple_move (rtx set, rtx_insn *insn)
 	emit_clobber (dest);
 
       for (i = 0; i < words; ++i)
-	emit_move_insn (simplify_gen_subreg_concatn (word_mode, dest,
-						     dest_mode,
-						     i * UNITS_PER_WORD),
-			simplify_gen_subreg_concatn (word_mode, src,
-						     orig_mode,
-						     i * UNITS_PER_WORD));
+	{
+	  rtx t = simplify_gen_subreg_concatn (word_mode, dest,
+					       dest_mode,
+					       i * UNITS_PER_WORD);
+	  /* simplify_gen_subreg_concatn can return (const_int 0) for
+	     some sub-objects of paradoxical subregs.  As a source operand,
+	     that's fine.  As a destination it must be avoided.  Those are
+	     supposed to be don't care bits, so we can just drop that store
+	     on the floor.  */
+	  if (t != CONST0_RTX (word_mode))
+	    emit_move_insn (t,
+			    simplify_gen_subreg_concatn (word_mode, src,
+							 orig_mode,
+							 i * UNITS_PER_WORD));
+	}
     }
 
   if (real_dest != NULL_RTX)
@@ -1150,6 +1159,10 @@ resolve_clobber (rtx pat, rtx_insn *insn)
   int ret;
 
   reg = XEXP (pat, 0);
+  /* For clobbers we can look through paradoxical subregs which
+     we do not handle in simplify_gen_subreg_concatn.  */
+  if (paradoxical_subreg_p (reg))
+    reg = SUBREG_REG (reg);
   if (!resolve_reg_p (reg) && !resolve_subreg_p (reg))
     return false;
 
@@ -1844,8 +1857,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_split_wide_types
-					  && !flag_split_wide_types_early; }
+  virtual bool gate (function *) { return flag_split_wide_types; }
   virtual unsigned int execute (function *)
     {
       decompose_multiword_subregs (true);

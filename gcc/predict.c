@@ -76,10 +76,6 @@ enum predictor_reason
 static const char *reason_messages[] = {"", " (ignored)",
     " (single edge duplicate)", " (edge pair duplicate)"};
 
-/* real constants: 0, 1, 1-1/REG_BR_PROB_BASE, REG_BR_PROB_BASE,
-		   1/REG_BR_PROB_BASE, 0.5, BB_FREQ_MAX.  */
-static sreal real_almost_one, real_br_prob_base,
-	     real_inv_br_prob_base, real_one_half, real_bb_freq_max;
 
 static void combine_predictions_for_insn (rtx_insn *, basic_block);
 static void dump_prediction (FILE *, enum br_predictor, int, basic_block,
@@ -761,7 +757,6 @@ dump_prediction (FILE *file, enum br_predictor predictor, int probability,
       && bb->count.precise_p ()
       && reason == REASON_NONE)
     {
-      gcc_assert (e->count ().precise_p ());
       fprintf (file, ";;heuristics;%s;%" PRId64 ";%" PRId64 ";%.1f;\n",
 	       predictor_info[predictor].name,
 	       bb->count.to_gcov_type (), e->count ().to_gcov_type (),
@@ -1372,7 +1367,7 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
 
 
   /* If we have only one successor which is unknown, we can compute missing
-     probablity.  */
+     probability.  */
   if (nunknown == 1)
     {
       profile_probability prob = profile_probability::always ();
@@ -3267,7 +3262,8 @@ public:
    TOVISIT, starting in HEAD.  */
 
 static void
-propagate_freq (basic_block head, bitmap tovisit)
+propagate_freq (basic_block head, bitmap tovisit,
+		sreal max_cyclic_prob)
 {
   basic_block bb;
   basic_block last;
@@ -3323,22 +3319,14 @@ propagate_freq (basic_block head, bitmap tovisit)
 
 	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    if (EDGE_INFO (e)->back_edge)
-	      {
-		cyclic_probability += EDGE_INFO (e)->back_edge_prob;
-	      }
+	      cyclic_probability += EDGE_INFO (e)->back_edge_prob;
 	    else if (!(e->flags & EDGE_DFS_BACK))
 	      {
-		/*  frequency += (e->probability
-				  * BLOCK_INFO (e->src)->frequency /
-				  REG_BR_PROB_BASE);  */
-
 		/* FIXME: Graphite is producing edges with no profile. Once
 		   this is fixed, drop this.  */
 		sreal tmp = e->probability.initialized_p () ?
-			    e->probability.to_reg_br_prob_base () : 0;
-		tmp *= BLOCK_INFO (e->src)->frequency;
-		tmp *= real_inv_br_prob_base;
-		frequency += tmp;
+			    e->probability.to_sreal () : 0;
+		frequency += tmp * BLOCK_INFO (e->src)->frequency;
 	      }
 
 	  if (cyclic_probability == 0)
@@ -3347,14 +3335,29 @@ propagate_freq (basic_block head, bitmap tovisit)
 	    }
 	  else
 	    {
-	      if (cyclic_probability > real_almost_one)
-		cyclic_probability = real_almost_one;
+	      if (cyclic_probability > max_cyclic_prob)
+		{
+		  if (dump_file)
+		    fprintf (dump_file,
+			     "cyclic probability of bb %i is %f (capped to %f)"
+			     "; turning freq %f",
+			     bb->index, cyclic_probability.to_double (),
+			     max_cyclic_prob.to_double (),
+			     frequency.to_double ());
+			
+		  cyclic_probability = max_cyclic_prob;
+		}
+	      else if (dump_file)
+		fprintf (dump_file,
+			 "cyclic probability of bb %i is %f; turning freq %f",
+			 bb->index, cyclic_probability.to_double (),
+			 frequency.to_double ());
 
-	      /* BLOCK_INFO (bb)->frequency = frequency
-					      / (1 - cyclic_probability) */
-
-	      cyclic_probability = sreal (1) - cyclic_probability;
-	      BLOCK_INFO (bb)->frequency = frequency / cyclic_probability;
+	      BLOCK_INFO (bb)->frequency = frequency
+				 / (sreal (1) - cyclic_probability);
+	      if (dump_file)
+		fprintf (dump_file, " to %f\n",
+			 BLOCK_INFO (bb)->frequency.to_double ());
 	    }
 	}
 
@@ -3363,16 +3366,11 @@ propagate_freq (basic_block head, bitmap tovisit)
       e = find_edge (bb, head);
       if (e)
 	{
-	  /* EDGE_INFO (e)->back_edge_prob
-	     = ((e->probability * BLOCK_INFO (bb)->frequency)
-	     / REG_BR_PROB_BASE); */
-
 	  /* FIXME: Graphite is producing edges with no profile. Once
 	     this is fixed, drop this.  */
 	  sreal tmp = e->probability.initialized_p () ?
-		      e->probability.to_reg_br_prob_base () : 0;
-	  tmp *= BLOCK_INFO (bb)->frequency;
-	  EDGE_INFO (e)->back_edge_prob = tmp * real_inv_br_prob_base;
+		      e->probability.to_sreal () : 0;
+	  EDGE_INFO (e)->back_edge_prob = tmp * BLOCK_INFO (bb)->frequency;
 	}
 
       /* Propagate to successor blocks.  */
@@ -3397,7 +3395,7 @@ propagate_freq (basic_block head, bitmap tovisit)
 /* Estimate frequencies in loops at same nest level.  */
 
 static void
-estimate_loops_at_level (class loop *first_loop)
+estimate_loops_at_level (class loop *first_loop, sreal max_cyclic_prob)
 {
   class loop *loop;
 
@@ -3408,7 +3406,7 @@ estimate_loops_at_level (class loop *first_loop)
       unsigned i;
       auto_bitmap tovisit;
 
-      estimate_loops_at_level (loop->inner);
+      estimate_loops_at_level (loop->inner, max_cyclic_prob);
 
       /* Find current loop back edge and mark it.  */
       e = loop_latch_edge (loop);
@@ -3418,7 +3416,7 @@ estimate_loops_at_level (class loop *first_loop)
       for (i = 0; i < loop->num_nodes; i++)
 	bitmap_set_bit (tovisit, bbs[i]->index);
       free (bbs);
-      propagate_freq (loop->header, tovisit);
+      propagate_freq (loop->header, tovisit, max_cyclic_prob);
     }
 }
 
@@ -3429,17 +3427,19 @@ estimate_loops (void)
 {
   auto_bitmap tovisit;
   basic_block bb;
+  sreal max_cyclic_prob = (sreal)1
+			   - (sreal)1 / (param_max_predicted_iterations + 1);
 
   /* Start by estimating the frequencies in the loops.  */
   if (number_of_loops (cfun) > 1)
-    estimate_loops_at_level (current_loops->tree_root->inner);
+    estimate_loops_at_level (current_loops->tree_root->inner, max_cyclic_prob);
 
   /* Now propagate the frequencies through all the blocks.  */
   FOR_ALL_BB_FN (bb, cfun)
     {
       bitmap_set_bit (tovisit, bb->index);
     }
-  propagate_freq (ENTRY_BLOCK_PTR_FOR_FN (cfun), tovisit);
+  propagate_freq (ENTRY_BLOCK_PTR_FOR_FN (cfun), tovisit, max_cyclic_prob);
 }
 
 /* Drop the profile for NODE to guessed, and update its frequency based on
@@ -3845,21 +3845,6 @@ estimate_bb_frequencies (bool force)
   if (force || profile_status_for_fn (cfun) != PROFILE_READ
       || !update_max_bb_count ())
     {
-      static int real_values_initialized = 0;
-
-      if (!real_values_initialized)
-        {
-	  real_values_initialized = 1;
-	  real_br_prob_base = REG_BR_PROB_BASE;
-	  /* Scaling frequencies up to maximal profile count may result in
-	     frequent overflows especially when inlining loops.
-	     Small scalling results in unnecesary precision loss.  Stay in
-	     the half of the (exponential) range.  */
-	  real_bb_freq_max = (uint64_t)1 << (profile_count::n_bits / 2);
-	  real_one_half = sreal (1, -1);
-	  real_inv_br_prob_base = sreal (1) / real_br_prob_base;
-	  real_almost_one = sreal (1) - real_inv_br_prob_base;
-	}
 
       mark_dfs_back_edges ();
 
@@ -3880,10 +3865,10 @@ estimate_bb_frequencies (bool force)
 		 this is fixed, drop this.  */
 	      if (e->probability.initialized_p ())
 	        EDGE_INFO (e)->back_edge_prob
-		   = e->probability.to_reg_br_prob_base ();
+		   = e->probability.to_sreal ();
 	      else
-		EDGE_INFO (e)->back_edge_prob = REG_BR_PROB_BASE / 2;
-	      EDGE_INFO (e)->back_edge_prob *= real_inv_br_prob_base;
+		/* back_edge_prob = 0.5 */
+		EDGE_INFO (e)->back_edge_prob = sreal (1, -1);
 	    }
 	}
 
@@ -3896,14 +3881,18 @@ estimate_bb_frequencies (bool force)
 	if (freq_max < BLOCK_INFO (bb)->frequency)
 	  freq_max = BLOCK_INFO (bb)->frequency;
 
-      freq_max = real_bb_freq_max / freq_max;
+      /* Scaling frequencies up to maximal profile count may result in
+	 frequent overflows especially when inlining loops.
+	 Small scalling results in unnecesary precision loss.  Stay in
+	 the half of the (exponential) range.  */
+      freq_max = (sreal (1) << (profile_count::n_bits / 2)) / freq_max;
       if (freq_max < 16)
 	freq_max = 16;
       profile_count ipa_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa ();
       cfun->cfg->count_max = profile_count::uninitialized ();
       FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
 	{
-	  sreal tmp = BLOCK_INFO (bb)->frequency * freq_max + real_one_half;
+	  sreal tmp = BLOCK_INFO (bb)->frequency * freq_max + sreal (1, -1);
 	  profile_count count = profile_count::from_gcov_type (tmp.to_int ());	
 
 	  /* If we have profile feedback in which this function was never

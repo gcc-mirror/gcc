@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                            (Windows Version)                             --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -184,11 +184,6 @@ private
    --  The default mapping preserves the standard 31 priorities of the Ada
    --  model, but maps them using compression onto the 7 priority levels
    --  available in NT and on the 16 priority levels available in 2000/XP.
-
-   --  To replace the default values of the Underlying_Priorities mapping,
-   --  copy this source file into your build directory, edit the file to
-   --  reflect your desired behavior, and recompile using Makefile.adalib
-   --  which can be found under the adalib directory of your gnat installation
 
    pragma Linker_Options ("-Wl,--stack=0x2000000");
    --  This is used to change the default stack (32 MB) size for non tasking

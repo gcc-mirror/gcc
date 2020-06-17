@@ -21,7 +21,7 @@ baz (int i)
 {
   const bool&& a = id<S[3]>{false, true, false}[i].s
 		   ? : id<S[4]>{true, false, true, false}[i].s;
-  if (S::c != (i ? 3 : 4))
+  if (S::c != (i ? 0 : 4))
     __builtin_abort ();
 }
 

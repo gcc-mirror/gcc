@@ -1214,12 +1214,14 @@ cxx_pretty_printer::expression (tree t)
       {
 	tree args = ARGUMENT_PACK_ARGS (t);
 	int i, len = TREE_VEC_LENGTH (args);
+	pp_cxx_left_brace (this);
 	for (i = 0; i < len; ++i)
 	  {
 	    if (i > 0)
 	      pp_cxx_separate_with (this, ',');
 	    expression (TREE_VEC_ELT (args, i));
 	  }
+	pp_cxx_right_brace (this);
       }
       break;
 
@@ -1323,6 +1325,7 @@ cxx_pretty_printer::declaration_specifiers (tree t)
 /* simple-type-specifier:
       ::(opt) nested-name-specifier(opt) type-name
       ::(opt) nested-name-specifier(opt) template(opt) template-id
+      decltype-specifier
       char
       wchar_t
       bool
@@ -1358,7 +1361,14 @@ cxx_pretty_printer::simple_type_specifier (tree t)
     case TYPENAME_TYPE:
       pp_cxx_ws_string (this, "typename");
       pp_cxx_nested_name_specifier (this, TYPE_CONTEXT (t));
-      pp_cxx_unqualified_id (this, TYPE_NAME (t));
+      pp_cxx_unqualified_id (this, TYPENAME_TYPE_FULLNAME (t));
+      break;
+
+    case DECLTYPE_TYPE:
+      pp_cxx_ws_string (this, "decltype");
+      pp_cxx_left_paren (this);
+      this->expression (DECLTYPE_TYPE_EXPR (t));
+      pp_cxx_right_paren (this);
       break;
 
     default:
@@ -1387,6 +1397,7 @@ pp_cxx_type_specifier_seq (cxx_pretty_printer *pp, tree t)
     case TEMPLATE_TEMPLATE_PARM:
     case TYPE_DECL:
     case BOUND_TEMPLATE_TEMPLATE_PARM:
+    case DECLTYPE_TYPE:
       pp_cxx_cv_qualifier_seq (pp, t);
       pp->simple_type_specifier (t);
       break;
@@ -1395,13 +1406,6 @@ pp_cxx_type_specifier_seq (cxx_pretty_printer *pp, tree t)
       pp_cxx_type_specifier_seq (pp, TREE_TYPE (t));
       pp_cxx_space_for_pointer_operator (pp, TREE_TYPE (t));
       pp_cxx_nested_name_specifier (pp, TYPE_METHOD_BASETYPE (t));
-      break;
-
-    case DECLTYPE_TYPE:
-      pp_cxx_ws_string (pp, "decltype");
-      pp_cxx_left_paren (pp);
-      pp->expression (DECLTYPE_TYPE_EXPR (t));
-      pp_cxx_right_paren (pp);
       break;
 
     case RECORD_TYPE:
@@ -1530,7 +1534,7 @@ pp_cxx_parameter_declaration_clause (cxx_pretty_printer *pp, tree t)
     }
   bool first = true;
 
-  /* Skip artificial parameter for nonstatic member functions.  */
+  /* Skip artificial parameter for non-static member functions.  */
   if (TREE_CODE (t) == METHOD_TYPE)
     types = TREE_CHAIN (types);
 
@@ -1797,6 +1801,7 @@ cxx_pretty_printer::direct_abstract_declarator (tree t)
     case TEMPLATE_TEMPLATE_PARM:
     case BOUND_TEMPLATE_TEMPLATE_PARM:
     case UNBOUND_CLASS_TEMPLATE:
+    case DECLTYPE_TYPE:
       break;
 
     default:
@@ -1837,6 +1842,21 @@ cxx_pretty_printer::type_id (tree t)
     case TYPE_PACK_EXPANSION:
       type_id (PACK_EXPANSION_PATTERN (t));
       pp_cxx_ws_string (this, "...");
+      break;
+
+    case TYPE_ARGUMENT_PACK:
+      {
+	tree args = ARGUMENT_PACK_ARGS (t);
+	int len = TREE_VEC_LENGTH (args);
+	pp_cxx_left_brace (this);
+	for (int i = 0; i < len; ++i)
+	  {
+	    if (i > 0)
+	      pp_cxx_separate_with (this, ',');
+	    type_id (TREE_VEC_ELT (args, i));
+	  }
+	pp_cxx_right_brace (this);
+      }
       break;
 
     default:
@@ -2861,9 +2881,14 @@ pp_cxx_check_constraint (cxx_pretty_printer *pp, tree t)
 /* Output the "[with ...]" clause for a parameter mapping of an atomic
    constraint.   */
 
-static void
+void
 pp_cxx_parameter_mapping (cxx_pretty_printer *pp, tree map)
 {
+  pp_cxx_whitespace (pp);
+  pp_cxx_left_bracket (pp);
+  pp->translate_string ("with");
+  pp_cxx_whitespace (pp);
+
   for (tree p = map; p; p = TREE_CHAIN (p))
     {
       tree parm = TREE_VALUE (p);
@@ -2886,6 +2911,8 @@ pp_cxx_parameter_mapping (cxx_pretty_printer *pp, tree map)
       if (TREE_CHAIN (p) != NULL_TREE)
 	pp_cxx_separate_with (pp, ';');
     }
+
+  pp_cxx_right_bracket (pp);
 }
 
 void
@@ -2897,14 +2924,7 @@ pp_cxx_atomic_constraint (cxx_pretty_printer *pp, tree t)
   /* Emit the parameter mapping.  */
   tree map = ATOMIC_CONSTR_MAP (t);
   if (map && map != error_mark_node)
-    {
-      pp_cxx_whitespace (pp);
-      pp_cxx_left_bracket (pp);
-      pp->translate_string ("with");
-      pp_cxx_whitespace (pp);
-      pp_cxx_parameter_mapping (pp, map);
-      pp_cxx_right_bracket (pp);
-   }
+    pp_cxx_parameter_mapping (pp, map);
 }
 
 void

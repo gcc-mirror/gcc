@@ -1028,7 +1028,7 @@ struct tls_index
 }
 
 extern(C) void* __tls_get_addr(tls_index* ti) nothrow @nogc;
-extern(C) void* __tls_get_addr_internal(tls_index* ti) nothrow @nogc;
+extern(C) void* __ibmz_get_tls_offset(tls_index *ti) nothrow @nogc;
 
 /* The dynamic thread vector (DTV) pointers may point 0x8000 past the start of
  * each TLS block. This is at least true for PowerPC and Mips platforms.
@@ -1084,11 +1084,15 @@ void[] getTLSRange(size_t mod, size_t sz) nothrow @nogc
 
         // base offset
         auto ti = tls_index(mod, 0);
-        version (IBMZ_Any)
+        version (CRuntime_Musl)
+            return (__tls_get_addr(&ti)-TLS_DTV_OFFSET)[0 .. sz];
+        else version (IBMZ_Any)
         {
-            auto idx = cast(void *)__tls_get_addr_internal(&ti)
-                + cast(ulong)__builtin_thread_pointer();
-            return idx[0 .. sz];
+            // IBM Z only provides __tls_get_offset instead of __tls_get_addr
+            // which returns an offset relative to the thread pointer.
+            auto addr = __ibmz_get_tls_offset(&ti);
+            addr = addr + cast(c_ulong)__builtin_thread_pointer();
+            return addr[0 .. sz];
         }
         else
             return (__tls_get_addr(&ti)-TLS_DTV_OFFSET)[0 .. sz];

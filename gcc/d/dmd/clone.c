@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -117,11 +117,10 @@ FuncDeclaration *hasIdentityOpAssign(AggregateDeclaration *ad, Scope *sc)
         {
             if (f->errors)
                 return NULL;
-            int varargs;
-            Parameters *fparams = f->getParameters(&varargs);
-            if (fparams->dim >= 1)
+            ParameterList fparams = f->getParameterList();
+            if (fparams.length())
             {
-                Parameter *fparam0 = Parameter::getNth(fparams, 0);
+                Parameter *fparam0 = fparams[0];
                 if (fparam0->type->toDsymbol(NULL) != ad)
                     f = NULL;
             }
@@ -153,7 +152,7 @@ bool needOpAssign(StructDeclaration *sd)
     /* If any of the fields need an opAssign, then we
      * need it too.
      */
-    for (size_t i = 0; i < sd->fields.dim; i++)
+    for (size_t i = 0; i < sd->fields.length; i++)
     {
         VarDeclaration *v = sd->fields[i];
         if (v->storage_class & STCref)
@@ -220,7 +219,7 @@ FuncDeclaration *buildOpAssign(StructDeclaration *sd, Scope *sc)
     // check for it.
     // In this event, it will be reflected by having `stc` (opAssign's
     // storage class) include `STCdisabled`.
-    for (size_t i = 0; i < sd->fields.dim; i++)
+    for (size_t i = 0; i < sd->fields.length; i++)
     {
         VarDeclaration *v = sd->fields[i];
         if (v->storage_class & STCref)
@@ -246,7 +245,7 @@ FuncDeclaration *buildOpAssign(StructDeclaration *sd, Scope *sc)
 
     Parameters *fparams = new Parameters;
     fparams->push(new Parameter(STCnodtor, sd->type, Id::p, NULL));
-    TypeFunction *tf = new TypeFunction(fparams, sd->handleType(), 0, LINKd, stc | STCref);
+    TypeFunction *tf = new TypeFunction(ParameterList(fparams), sd->handleType(), LINKd, stc | STCref);
 
     FuncDeclaration *fop = new FuncDeclaration(declLoc, Loc(), Id::assign, stc, tf);
     fop->storage_class |= STCinference;
@@ -294,7 +293,7 @@ FuncDeclaration *buildOpAssign(StructDeclaration *sd, Scope *sc)
          * In both cases, it will change the parent context.
          */
         //printf("\tmemberwise copy\n");
-        for (size_t i = 0; i < sd->fields.dim; i++)
+        for (size_t i = 0; i < sd->fields.length; i++)
         {
             VarDeclaration *v = sd->fields[i];
             // this.v = s.v;
@@ -361,7 +360,7 @@ bool needOpEquals(StructDeclaration *sd)
     /* If any of the fields has an opEquals, then we
      * need it too.
      */
-    for (size_t i = 0; i < sd->fields.dim; i++)
+    for (size_t i = 0; i < sd->fields.length; i++)
     {
         VarDeclaration *v = sd->fields[i];
         if (v->storage_class & STCref)
@@ -505,7 +504,7 @@ FuncDeclaration *buildXopEquals(StructDeclaration *sd, Scope *sc)
                  */
                 Parameters *parameters = new Parameters;
                 parameters->push(new Parameter(STCref | STCconst, sd->type, NULL, NULL));
-                tfeqptr = new TypeFunction(parameters, Type::tbool, 0, LINKd);
+                tfeqptr = new TypeFunction(ParameterList(parameters), Type::tbool, LINKd);
                 tfeqptr->mod = MODconst;
                 tfeqptr = (TypeFunction *)tfeqptr->semantic(Loc(), &scx);
             }
@@ -534,7 +533,7 @@ FuncDeclaration *buildXopEquals(StructDeclaration *sd, Scope *sc)
     Parameters *parameters = new Parameters;
     parameters->push(new Parameter(STCref | STCconst, sd->type, Id::p, NULL));
     parameters->push(new Parameter(STCref | STCconst, sd->type, Id::q, NULL));
-    TypeFunction *tf = new TypeFunction(parameters, Type::tbool, 0, LINKd);
+    TypeFunction *tf = new TypeFunction(ParameterList(parameters), Type::tbool, LINKd);
 
     Identifier *id = Id::xopEquals;
     FuncDeclaration *fop = new FuncDeclaration(declLoc, Loc(), id, STCstatic, tf);
@@ -585,7 +584,7 @@ FuncDeclaration *buildXopCmp(StructDeclaration *sd, Scope *sc)
                  */
                 Parameters *parameters = new Parameters;
                 parameters->push(new Parameter(STCref | STCconst, sd->type, NULL, NULL));
-                tfcmpptr = new TypeFunction(parameters, Type::tint32, 0, LINKd);
+                tfcmpptr = new TypeFunction(ParameterList(parameters), Type::tint32, LINKd);
                 tfcmpptr->mod = MODconst;
                 tfcmpptr = (TypeFunction *)tfcmpptr->semantic(Loc(), &scx);
             }
@@ -619,7 +618,7 @@ FuncDeclaration *buildXopCmp(StructDeclaration *sd, Scope *sc)
     Parameters *parameters = new Parameters;
     parameters->push(new Parameter(STCref | STCconst, sd->type, Id::p, NULL));
     parameters->push(new Parameter(STCref | STCconst, sd->type, Id::q, NULL));
-    TypeFunction *tf = new TypeFunction(parameters, Type::tint32, 0, LINKd);
+    TypeFunction *tf = new TypeFunction(ParameterList(parameters), Type::tint32, LINKd);
 
     Identifier *id = Id::xopCmp;
     FuncDeclaration *fop = new FuncDeclaration(declLoc, Loc(), id, STCstatic, tf);
@@ -666,7 +665,7 @@ bool needToHash(StructDeclaration *sd)
     /* If any of the fields has an opEquals, then we
      * need it too.
      */
-    for (size_t i = 0; i < sd->fields.dim; i++)
+    for (size_t i = 0; i < sd->fields.length; i++)
     {
         VarDeclaration *v = sd->fields[i];
         if (v->storage_class & STCref)
@@ -718,7 +717,7 @@ FuncDeclaration *buildXtoHash(StructDeclaration *sd, Scope *sc)
         static TypeFunction *tftohash;
         if (!tftohash)
         {
-            tftohash = new TypeFunction(NULL, Type::thash_t, 0, LINKd);
+            tftohash = new TypeFunction(ParameterList(), Type::thash_t, LINKd);
             tftohash->mod = MODconst;
             tftohash = (TypeFunction *)tftohash->merge();
         }
@@ -740,7 +739,8 @@ FuncDeclaration *buildXtoHash(StructDeclaration *sd, Scope *sc)
 
     Parameters *parameters = new Parameters();
     parameters->push(new Parameter(STCref | STCconst, sd->type, Id::p, NULL));
-    TypeFunction *tf = new TypeFunction(parameters, Type::thash_t, 0, LINKd, STCnothrow | STCtrusted);
+    TypeFunction *tf = new TypeFunction(ParameterList(parameters), Type::thash_t,
+                                        LINKd, STCnothrow | STCtrusted);
 
     Identifier *id = Id::xtoHash;
     FuncDeclaration *fop = new FuncDeclaration(declLoc, Loc(), id, STCstatic, tf);
@@ -785,16 +785,16 @@ FuncDeclaration *buildPostBlit(StructDeclaration *sd, Scope *sc)
         return NULL;
 
     StorageClass stc = STCsafe | STCnothrow | STCpure | STCnogc;
-    Loc declLoc = sd->postblits.dim ? sd->postblits[0]->loc : sd->loc;
+    Loc declLoc = sd->postblits.length ? sd->postblits[0]->loc : sd->loc;
     Loc loc = Loc();    // internal code should have no loc to prevent coverage
 
-    for (size_t i = 0; i < sd->postblits.dim; i++)
+    for (size_t i = 0; i < sd->postblits.length; i++)
     {
         stc |= sd->postblits[i]->storage_class & STCdisable;
     }
 
     Statements *a = new Statements();
-    for (size_t i = 0; i < sd->fields.dim && !(stc & STCdisable); i++)
+    for (size_t i = 0; i < sd->fields.length && !(stc & STCdisable); i++)
     {
         VarDeclaration *v = sd->fields[i];
         if (v->storage_class & STCref)
@@ -918,7 +918,7 @@ FuncDeclaration *buildPostBlit(StructDeclaration *sd, Scope *sc)
     }
 
     // Build our own "postblit" which executes a, but only if needed.
-    if (a->dim || (stc & STCdisable))
+    if (a->length || (stc & STCdisable))
     {
         //printf("Building __fieldPostBlit()\n");
         PostBlitDeclaration *dd = new PostBlitDeclaration(declLoc, Loc(), stc, Id::__fieldPostblit);
@@ -931,7 +931,7 @@ FuncDeclaration *buildPostBlit(StructDeclaration *sd, Scope *sc)
     }
 
     FuncDeclaration *xpostblit = NULL;
-    switch (sd->postblits.dim)
+    switch (sd->postblits.length)
     {
         case 0:
             break;
@@ -943,7 +943,7 @@ FuncDeclaration *buildPostBlit(StructDeclaration *sd, Scope *sc)
         default:
             Expression *e = NULL;
             stc = STCsafe | STCnothrow | STCpure | STCnogc;
-            for (size_t i = 0; i < sd->postblits.dim; i++)
+            for (size_t i = 0; i < sd->postblits.length; i++)
             {
                 FuncDeclaration *fd = sd->postblits[i];
                 stc = mergeFuncAttrs(stc, fd);
@@ -990,11 +990,11 @@ FuncDeclaration *buildDtor(AggregateDeclaration *ad, Scope *sc)
         return NULL;
 
     StorageClass stc = STCsafe | STCnothrow | STCpure | STCnogc;
-    Loc declLoc = ad->dtors.dim ? ad->dtors[0]->loc : ad->loc;
+    Loc declLoc = ad->dtors.length ? ad->dtors[0]->loc : ad->loc;
     Loc loc = Loc();    // internal code should have no loc to prevent coverage
 
     Expression *e = NULL;
-    for (size_t i = 0; i < ad->fields.dim; i++)
+    for (size_t i = 0; i < ad->fields.length; i++)
     {
         VarDeclaration *v = ad->fields[i];
         if (v->storage_class & STCref)
@@ -1078,7 +1078,7 @@ FuncDeclaration *buildDtor(AggregateDeclaration *ad, Scope *sc)
     }
 
     FuncDeclaration *xdtor = NULL;
-    switch (ad->dtors.dim)
+    switch (ad->dtors.length)
     {
         case 0:
             break;
@@ -1090,7 +1090,7 @@ FuncDeclaration *buildDtor(AggregateDeclaration *ad, Scope *sc)
         default:
             e = NULL;
             stc = STCsafe | STCnothrow | STCpure | STCnogc;
-            for (size_t i = 0; i < ad->dtors.dim; i++)
+            for (size_t i = 0; i < ad->dtors.length; i++)
             {
                 FuncDeclaration *fd = ad->dtors[i];
                 stc = mergeFuncAttrs(stc, fd);
@@ -1138,7 +1138,7 @@ FuncDeclaration *buildInv(AggregateDeclaration *ad, Scope *sc)
     Loc declLoc = ad->loc;
     Loc loc = Loc();    // internal code should have no loc to prevent coverage
 
-    switch (ad->invs.dim)
+    switch (ad->invs.length)
     {
         case 0:
             return NULL;
@@ -1150,7 +1150,7 @@ FuncDeclaration *buildInv(AggregateDeclaration *ad, Scope *sc)
         default:
             Expression *e = NULL;
             StorageClass stcx = 0;
-            for (size_t i = 0; i < ad->invs.dim; i++)
+            for (size_t i = 0; i < ad->invs.length; i++)
             {
                 stc = mergeFuncAttrs(stc, ad->invs[i]);
                 if (stc & STCdisable)

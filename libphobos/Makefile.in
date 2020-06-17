@@ -15,7 +15,7 @@
 @SET_MAKE@
 
 # Makefile for the toplevel directory of the D Standard library.
-# Copyright (C) 2006-2019 Free Software Foundation, Inc.
+# Copyright (C) 2006-2020 Free Software Foundation, Inc.
 #
 # GCC is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -111,6 +111,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/override.m4 \
+	$(top_srcdir)/../config/toolexeclibdir.m4 \
 	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
 	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
 	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/acinclude.m4 \
@@ -204,8 +205,10 @@ CC = @CC@
 CCAS = @CCAS@
 CCASFLAGS = @CCASFLAGS@
 CC_FOR_BUILD = @CC_FOR_BUILD@
+CET_FLAGS = @CET_FLAGS@
 CFLAGS = @CFLAGS@
 CFLAGS_FOR_BUILD = @CFLAGS_FOR_BUILD@
+CHECKING_DFLAGS = @CHECKING_DFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
@@ -228,7 +231,6 @@ EXEEXT = @EXEEXT@
 FGREP = @FGREP@
 GDC = @GDC@
 GDCFLAGS = @GDCFLAGS@
-GDCFLAGSX = @GDCFLAGSX@
 GREP = @GREP@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
@@ -271,6 +273,7 @@ SHELL = @SHELL@
 SPEC_PHOBOS_DEPS = @SPEC_PHOBOS_DEPS@
 STRIP = @STRIP@
 VERSION = @VERSION@
+WARN_DFLAGS = @WARN_DFLAGS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -349,14 +352,14 @@ AM_MAKEFLAGS = \
 	"AR_FLAGS=$(AR_FLAGS)" \
 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
 	"CC_FOR_TARGET=$(CC_FOR_TARGET)" \
-	"CCASFLAGS=$(CCASFLAGS)" \
-	"CFLAGS=$(CFLAGS)" \
-	"CXXFLAGS=$(CXXFLAGS)" \
+	"CCASFLAGS=$(CCASFLAGS) $(CET_FLAGS)" \
+	"CFLAGS=$(CFLAGS) $(CET_FLAGS)" \
+	"CXXFLAGS=$(CXXFLAGS) $(CET_FLAGS)" \
 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
-	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" \
+	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET) $(CET_FLAGS)" \
 	"GDC_FOR_TARGET=$(GDC_FOR_TARGET)" \
 	"GDC=$(GDC)" \
-	"GDCFLAGS=$(GDCFLAGS)" \
+	"GDCFLAGS=$(GDCFLAGS) $(CET_FLAGS)" \
 	"INSTALL=$(INSTALL)" \
 	"INSTALL_DATA=$(INSTALL_DATA)" \
 	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" \

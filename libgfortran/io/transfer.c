@@ -4123,6 +4123,14 @@ finalize_transfer (st_parameter_dt *dtp)
   if ((dtp->u.p.ionml != NULL)
       && (cf & IOPARM_DT_HAS_NAMELIST_NAME) != 0)
     {
+       if (dtp->u.p.current_unit->flags.form == FORM_UNFORMATTED)
+	 {
+	   generate_error (&dtp->common, LIBERROR_OPTION_CONFLICT,
+			   "Namelist formatting for unit connected "
+			   "with FORM='UNFORMATTED'");
+	   return;
+	 }
+
        dtp->u.p.namelist_mode = 1;
        if ((cf & IOPARM_DT_NAMELIST_READ_MODE) != 0)
 	 namelist_read (dtp);
@@ -4492,7 +4500,7 @@ void
 st_wait_async (st_parameter_wait *wtp)
 {
   gfc_unit *u = find_unit (wtp->common.unit);
-  if (ASYNC_IO && u->au)
+  if (ASYNC_IO && u && u->au)
     {
       if (wtp->common.flags & IOPARM_WAIT_HAS_ID)
 	async_wait_id (&(wtp->common), u->au, *wtp->id);

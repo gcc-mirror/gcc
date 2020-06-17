@@ -3343,10 +3343,7 @@ plugin_get_expr_type (cc1_plugin::connection *self,
   if (op0)
     type = TREE_TYPE (op0);
   else
-    {
-      type = make_decltype_auto ();
-      AUTO_IS_DECLTYPE (type) = true;
-    }
+    type = make_decltype_auto ();
   return convert_out (ctx->preserve (type));
 }
 

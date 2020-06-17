@@ -30,8 +30,23 @@ sub(int i)
 {
   a -= i;
 }
+void
+add2(int i)
+{
+  a -= 2*i;
+}
+void
+sub2(int i)
+{
+  a -= 2*i;
+}
+void
+nothing(int i)
+{
+  a -= i;
+}
 __attribute__ ((externally_visible))
-void (*p[2])(int)={add, sub};
+void (*p[5])(int)={add, sub, add2, sub2, nothing};
 #else
 int
 main()

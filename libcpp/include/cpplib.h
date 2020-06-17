@@ -173,7 +173,7 @@ enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_GNUC11, CLK_GNUC17, CLK_GNUC2X,
 	     CLK_STDC2X,
 	     CLK_GNUCXX, CLK_CXX98, CLK_GNUCXX11, CLK_CXX11,
 	     CLK_GNUCXX14, CLK_CXX14, CLK_GNUCXX17, CLK_CXX17,
-	     CLK_GNUCXX2A, CLK_CXX2A, CLK_ASM};
+	     CLK_GNUCXX20, CLK_CXX20, CLK_ASM};
 
 /* Payload of a NUMBER, STRING, CHAR or COMMENT token.  */
 struct GTY(()) cpp_string {
@@ -484,7 +484,7 @@ struct cpp_options
   /* Nonzero for C2X decimal floating-point constants.  */
   unsigned char dfp_constants;
 
-  /* Nonzero for C++2a __VA_OPT__ feature.  */
+  /* Nonzero for C++20 __VA_OPT__ feature.  */
   unsigned char va_opt;
 
   /* Nonzero for the '::' token.  */
@@ -859,8 +859,10 @@ enum cpp_builtin_type
   BT_PRAGMA,			/* `_Pragma' operator */
   BT_TIMESTAMP,			/* `__TIMESTAMP__' */
   BT_COUNTER,			/* `__COUNTER__' */
-  BT_HAS_ATTRIBUTE,		/* `__has_attribute__(x)' */
-  BT_HAS_BUILTIN		/* `__has_builtin(x)' */
+  BT_HAS_ATTRIBUTE,		/* `__has_attribute(x)' */
+  BT_HAS_BUILTIN,		/* `__has_builtin(x)' */
+  BT_HAS_INCLUDE,		/* `__has_include(x)' */
+  BT_HAS_INCLUDE_NEXT		/* `__has_include_next(x)' */
 };
 
 #define CPP_HASHNODE(HNODE)	((cpp_hashnode *) (HNODE))
@@ -967,10 +969,10 @@ extern void cpp_set_include_chains (cpp_reader *, cpp_dir *, cpp_dir *, int);
    call cpp_finish on that reader.  You can either edit the callbacks
    through the pointer returned from cpp_get_callbacks, or set them
    with cpp_set_callbacks.  */
-extern cpp_options *cpp_get_options (cpp_reader *);
-extern cpp_callbacks *cpp_get_callbacks (cpp_reader *);
+extern cpp_options *cpp_get_options (cpp_reader *) ATTRIBUTE_PURE;
+extern cpp_callbacks *cpp_get_callbacks (cpp_reader *) ATTRIBUTE_PURE;
 extern void cpp_set_callbacks (cpp_reader *, cpp_callbacks *);
-extern class mkdeps *cpp_get_deps (cpp_reader *);
+extern class mkdeps *cpp_get_deps (cpp_reader *) ATTRIBUTE_PURE;
 
 /* This function reads the file, but does not start preprocessing.  It
    returns the name of the original file; this is the same as the
@@ -1302,6 +1304,18 @@ extern int cpp_read_state (cpp_reader *, const char *, FILE *,
 /* In lex.c */
 extern void cpp_force_token_locations (cpp_reader *, location_t);
 extern void cpp_stop_forcing_token_locations (cpp_reader *);
+enum CPP_DO_task
+{
+  CPP_DO_print,
+  CPP_DO_location,
+  CPP_DO_token
+};
+
+extern void cpp_directive_only_process (cpp_reader *pfile,
+					void *data,
+					void (*cb) (cpp_reader *,
+						    CPP_DO_task,
+						    void *data, ...));
 
 /* In expr.c */
 extern enum cpp_ttype cpp_userdef_string_remove_type

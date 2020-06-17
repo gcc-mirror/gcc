@@ -22,7 +22,6 @@
 #include <system_error>
 #include <testsuite_error.h>
 
-// unspecified bool operator positive tests
 int main()
 {
   std::error_code e1;

@@ -1,7 +1,7 @@
 // PR c++/88095
 // Test class non-type template parameters for literal operator templates.
 // Validate handling of failed class template argument deduction.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 namespace std {
 using size_t = decltype(sizeof(int));

@@ -49,23 +49,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits>
     class istreambuf_iterator
     : public iterator<input_iterator_tag, _CharT, typename _Traits::off_type,
-		      _CharT*,
-#if __cplusplus >= 201103L
-    // LWG 445.
-		      _CharT>
-#else
-		      _CharT&>
-#endif
+		      _CharT*, _CharT>
     {
     public:
       // Types:
       //@{
       /// Public typedefs
-#if __cplusplus > 201703L
+#if __cplusplus < 201103L
+      typedef _CharT& reference; // Changed to _CharT by LWG 445
+#elif __cplusplus > 201703L
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 3188. istreambuf_iterator::pointer should not be unspecified
       using pointer = void;
 #endif
+
       typedef _CharT					char_type;
       typedef _Traits					traits_type;
       typedef typename _Traits::int_type		int_type;
@@ -85,11 +82,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__copy_move_a2(istreambuf_iterator<_CharT2>,
 		       istreambuf_iterator<_CharT2>, _CharT2*);
 
-#if __cplusplus >= 201103L
       template<typename _CharT2, typename _Size>
-	friend __enable_if_t<__is_char<_CharT2>::__value, _CharT2*>
-	__copy_n_a(istreambuf_iterator<_CharT2>, _Size, _CharT2*);
-#endif
+	friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value,
+					       _CharT2*>::__type
+	__copy_n_a(istreambuf_iterator<_CharT2>, _Size, _CharT2*, bool);
 
       template<typename _CharT2>
 	friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value,
@@ -117,6 +113,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ///  Construct end of input stream iterator.
       _GLIBCXX_CONSTEXPR istreambuf_iterator() _GLIBCXX_USE_NOEXCEPT
       : _M_sbuf(0), _M_c(traits_type::eof()) { }
+
+#if __cplusplus > 201703L && __cpp_lib_concepts
+      constexpr istreambuf_iterator(default_sentinel_t) noexcept
+      : istreambuf_iterator() { }
+#endif
 
 #if __cplusplus >= 201103L
       istreambuf_iterator(const istreambuf_iterator&) noexcept = default;
@@ -212,6 +213,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	const int_type __eof = traits_type::eof();
 	return traits_type::eq_int_type(__c, __eof);
       }
+
+#if __cplusplus > 201703L && __cpp_lib_concepts
+      friend bool
+      operator==(const istreambuf_iterator& __i, default_sentinel_t __s)
+      { return __i._M_at_eof(); }
+#endif
     };
 
   template<typename _CharT, typename _Traits>
@@ -388,10 +395,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __result;
     }
 
-#if __cplusplus >= 201103L
   template<typename _CharT, typename _Size>
-    __enable_if_t<__is_char<_CharT>::__value, _CharT*>
-    __copy_n_a(istreambuf_iterator<_CharT> __it, _Size __n, _CharT* __result)
+    typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value,
+				    _CharT*>::__type
+    __copy_n_a(istreambuf_iterator<_CharT> __it, _Size __n, _CharT* __result,
+	       bool __strict __attribute__((__unused__)))
     {
       if (__n == 0)
 	return __result;
@@ -401,12 +409,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      ._M_iterator(__it));
       _CharT* __beg = __result;
       __result += __it._M_sbuf->sgetn(__beg, __n);
-      __glibcxx_requires_cond(__result - __beg == __n,
+      __glibcxx_requires_cond(!__strict || __result - __beg == __n,
 			      _M_message(__gnu_debug::__msg_inc_istreambuf)
 			      ._M_iterator(__it));
       return __result;
     }
-#endif // C++11
 
   template<typename _CharT>
     typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value,

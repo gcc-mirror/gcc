@@ -1,6 +1,6 @@
 # Test support for go mod -edit to set language version.
 
-[gccgo] stop
+[gccgo] skip
 
 env GO111MODULE=on
 ! go build
@@ -8,6 +8,13 @@ stderr 'type aliases only supported as of'
 go mod edit -go=1.9
 grep 'go 1.9' go.mod
 go build
+
+# Reverting the version should force a rebuild and error instead of using
+# the cached 1.9 build. (https://golang.org/issue/37804)
+go mod edit -go=1.8
+! go build
+stderr 'type aliases only supported as of'
+
 
 -- go.mod --
 module m

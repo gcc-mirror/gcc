@@ -665,14 +665,14 @@ a link step.
 
 @table @gcctabopt
 
-@item -defaultlib @var{libname}
-@cindex @option{-defaultlib}
+@item -defaultlib=@var{libname}
+@cindex @option{-defaultlib=}
 Specify the library to use instead of libphobos when linking.  Options
 specifying the linkage of libphobos, such as @option{-static-libphobos}
 or @option{-shared-libphobos}, are ignored.
 
-@item -debuglib
-@cindex @option{-debuglib}
+@item -debuglib=@var{libname}
+@cindex @option{-debuglib=}
 Specify the debug library to use instead of libphobos when linking.
 This option has no effect unless the @option{-g} option was also given
 on the command line.  Options specifying the linkage of libphobos, such

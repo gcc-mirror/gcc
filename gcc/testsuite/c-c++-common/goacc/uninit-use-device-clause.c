@@ -8,7 +8,7 @@ foo (void)
 {
   int i;
 
-#pragma acc host_data use_device(i) /* { dg-warning "is used uninitialized in this function" "" { xfail *-*-* } } */
+#pragma acc host_data use_device(i) /* { dg-warning "is used uninitialized" "" { xfail *-*-* } } */
   {
   }
 }

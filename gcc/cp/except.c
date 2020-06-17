@@ -821,7 +821,8 @@ build_throw (location_t loc, tree exp)
       if (type_build_dtor_call (TREE_TYPE (object)))
 	{
 	  tree dtor_fn = lookup_fnfields (TYPE_BINFO (TREE_TYPE (object)),
-					  complete_dtor_identifier, 0);
+					  complete_dtor_identifier, 0,
+					  tf_warning_or_error);
 	  dtor_fn = BASELINK_FUNCTIONS (dtor_fn);
 	  mark_used (dtor_fn);
 	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (object)))
@@ -1117,6 +1118,8 @@ check_noexcept_r (tree *tp, int * /*walk_subtrees*/, void * /*data*/)
 
          We could use TREE_NOTHROW (t) for !TREE_PUBLIC fns, though... */
       tree fn = cp_get_callee (t);
+      if (concept_check_p (fn))
+	return NULL_TREE;
       tree type = TREE_TYPE (fn);
       gcc_assert (INDIRECT_TYPE_P (type));
       type = TREE_TYPE (type);
@@ -1158,18 +1161,25 @@ struct GTY(()) pending_noexcept {
 static GTY(()) vec<pending_noexcept, va_gc> *pending_noexcept_checks;
 
 /* FN is a FUNCTION_DECL that caused a noexcept-expr to be false.  Warn if
-   it can't throw.  */
+   it can't throw.
+
+   TODO: Consider extending -Wnoexcept to do something like walk_subtrees in the
+   case of a defaulted function that obtained a noexcept(false) spec.  */
 
 static void
 maybe_noexcept_warning (tree fn)
 {
-  if (TREE_NOTHROW (fn))
+  if (TREE_NOTHROW (fn)
+      && (!DECL_IN_SYSTEM_HEADER (fn)
+	  || global_dc->dc_warn_system_headers))
     {
-      warning (OPT_Wnoexcept, "noexcept-expression evaluates to %<false%> "
-	       "because of a call to %qD", fn);
-      warning_at (DECL_SOURCE_LOCATION (fn), OPT_Wnoexcept,
-		  "but %qD does not throw; perhaps "
-		  "it should be declared %<noexcept%>", fn);
+      temp_override<bool> s (global_dc->dc_warn_system_headers, true);
+      auto_diagnostic_group d;
+      if (warning (OPT_Wnoexcept, "noexcept-expression evaluates to %<false%> "
+		   "because of a call to %qD", fn))
+	inform (DECL_SOURCE_LOCATION (fn),
+		"but %qD does not throw; perhaps "
+		"it should be declared %<noexcept%>", fn);
     }
 }
 
@@ -1293,10 +1303,8 @@ build_noexcept_spec (tree expr, tsubst_flags_t complain)
   if (TREE_CODE (expr) != DEFERRED_NOEXCEPT
       && !value_dependent_expression_p (expr))
     {
-      expr = instantiate_non_dependent_expr_sfinae (expr, complain);
-      /* Don't let convert_like_real create more template codes.  */
-      processing_template_decl_sentinel s;
       expr = build_converted_constant_bool_expr (expr, complain);
+      expr = instantiate_non_dependent_expr_sfinae (expr, complain);
       expr = cxx_constant_value (expr);
     }
   if (TREE_CODE (expr) == INTEGER_CST)
@@ -1320,6 +1328,78 @@ build_noexcept_spec (tree expr, tsubst_flags_t complain)
 	   being reused in another scope (c++/84045).  */
 	expr = strip_typedefs_expr (expr);
       return build_tree_list (expr, NULL_TREE);
+    }
+}
+
+/* If the current function has a cleanup that might throw, and the return value
+   has a non-trivial destructor, return a MODIFY_EXPR to set
+   current_retval_sentinel so that we know that the return value needs to be
+   destroyed on throw.  Otherwise, returns NULL_TREE.  */
+
+tree
+maybe_set_retval_sentinel ()
+{
+  if (processing_template_decl)
+    return NULL_TREE;
+  tree retval = DECL_RESULT (current_function_decl);
+  if (!TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (retval)))
+    return NULL_TREE;
+  if (!cp_function_chain->throwing_cleanup)
+    return NULL_TREE;
+
+  if (!current_retval_sentinel)
+    {
+      /* Just create the temporary now, maybe_splice_retval_cleanup
+	 will do the rest.  */
+      current_retval_sentinel = create_temporary_var (boolean_type_node);
+      DECL_INITIAL (current_retval_sentinel) = boolean_false_node;
+      pushdecl_outermost_localscope (current_retval_sentinel);
+    }
+
+  return build2 (MODIFY_EXPR, boolean_type_node,
+		 current_retval_sentinel, boolean_true_node);
+}
+
+/* COMPOUND_STMT is the STATEMENT_LIST for the current function body.  If
+   current_retval_sentinel was set in this function, wrap the body in a
+   CLEANUP_STMT to destroy the return value on throw.  */
+
+void
+maybe_splice_retval_cleanup (tree compound_stmt)
+{
+  /* If need_retval_cleanup set current_retval_sentinel, wrap the function body
+     in a CLEANUP_STMT to handle destroying the return value.  */
+  if (!DECL_CONSTRUCTOR_P (current_function_decl)
+      && !DECL_DESTRUCTOR_P (current_function_decl)
+      && current_retval_sentinel)
+    {
+      location_t loc = DECL_SOURCE_LOCATION (current_function_decl);
+
+      /* Add a DECL_EXPR for current_retval_sentinel.  */
+      tree_stmt_iterator iter = tsi_start (compound_stmt);
+      tree retval = DECL_RESULT (current_function_decl);
+      tree decl_expr = build_stmt (loc, DECL_EXPR, current_retval_sentinel);
+      tsi_link_before (&iter, decl_expr, TSI_SAME_STMT);
+
+      /* Skip past other decls, they can't contain a return.  */
+      while (TREE_CODE (tsi_stmt (iter)) == DECL_EXPR)
+	tsi_next (&iter);
+      gcc_assert (!tsi_end_p (iter));
+
+      /* Wrap the rest of the STATEMENT_LIST in a CLEANUP_STMT.  */
+      tree stmts = NULL_TREE;
+      while (!tsi_end_p (iter))
+	{
+	  append_to_statement_list_force (tsi_stmt (iter), &stmts);
+	  tsi_delink (&iter);
+	}
+      tree dtor = build_cleanup (retval);
+      tree cond = build3 (COND_EXPR, void_type_node, current_retval_sentinel,
+			  dtor, void_node);
+      tree cleanup = build_stmt (loc, CLEANUP_STMT,
+				 stmts, cond, retval);
+      CLEANUP_EH_ONLY (cleanup) = true;
+      append_to_statement_list_force (cleanup, &compound_stmt);
     }
 }
 

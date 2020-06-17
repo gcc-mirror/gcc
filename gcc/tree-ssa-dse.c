@@ -36,6 +36,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "alias.h"
 #include "tree-ssa-loop.h"
 #include "tree-ssa-dse.h"
+#include "builtins.h"
+#include "gimple-fold.h"
+#include "gimplify.h"
 
 /* This file implements dead store elimination.
 
@@ -85,7 +88,7 @@ static bitmap need_eh_cleanup;
 /* STMT is a statement that may write into memory.  Analyze it and
    initialize WRITE to describe how STMT affects memory.
 
-   Return TRUE if the the statement was analyzed, FALSE otherwise.
+   Return TRUE if the statement was analyzed, FALSE otherwise.
 
    It is always safe to return FALSE.  But typically better optimziation
    can be achieved by analyzing more statements.  */
@@ -144,7 +147,7 @@ initialize_ao_ref_for_dse (gimple *stmt, ao_ref *write)
   return false;
 }
 
-/* Given REF from the the alias oracle, return TRUE if it is a valid
+/* Given REF from the alias oracle, return TRUE if it is a valid
    memory reference for dead store elimination, false otherwise.
 
    In particular, the reference must have a known base, known maximum
@@ -420,29 +423,38 @@ decrement_count (gimple *stmt, int decrement)
   gcc_assert (TREE_CODE (*countp) == INTEGER_CST);
   *countp = wide_int_to_tree (TREE_TYPE (*countp), (TREE_INT_CST_LOW (*countp)
 						    - decrement));
-
 }
 
 static void
 increment_start_addr (gimple *stmt, tree *where, int increment)
 {
+  if (tree lhs = gimple_call_lhs (stmt))
+    if (where == gimple_call_arg_ptr (stmt, 0))
+      {
+	gassign *newop = gimple_build_assign (lhs, unshare_expr (*where));
+	gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+	gsi_insert_after (&gsi, newop, GSI_SAME_STMT);
+	gimple_call_set_lhs (stmt, NULL_TREE);
+	update_stmt (stmt);
+      }
+
   if (TREE_CODE (*where) == SSA_NAME)
     {
       tree tem = make_ssa_name (TREE_TYPE (*where));
       gassign *newop
-        = gimple_build_assign (tem, POINTER_PLUS_EXPR, *where,
+	= gimple_build_assign (tem, POINTER_PLUS_EXPR, *where,
 			       build_int_cst (sizetype, increment));
       gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
       gsi_insert_before (&gsi, newop, GSI_SAME_STMT);
       *where = tem;
-      update_stmt (gsi_stmt (gsi));
+      update_stmt (stmt);
       return;
     }
 
   *where = build_fold_addr_expr (fold_build2 (MEM_REF, char_type_node,
-                                             *where,
-                                             build_int_cst (ptr_type_node,
-                                                            increment)));
+					      *where,
+					      build_int_cst (ptr_type_node,
+							     increment)));
 }
 
 /* STMT is builtin call that writes bytes in bitmap ORIG, some bytes are dead
@@ -456,56 +468,115 @@ increment_start_addr (gimple *stmt, tree *where, int increment)
 static void
 maybe_trim_memstar_call (ao_ref *ref, sbitmap live, gimple *stmt)
 {
+  int head_trim, tail_trim;
   switch (DECL_FUNCTION_CODE (gimple_call_fndecl (stmt)))
     {
+    case BUILT_IN_STRNCPY:
+    case BUILT_IN_STRNCPY_CHK:
+      compute_trims (ref, live, &head_trim, &tail_trim, stmt);
+      if (head_trim)
+	{
+	  /* Head trimming of strncpy is only possible if we can
+	     prove all bytes we would trim are non-zero (or we could
+	     turn the strncpy into memset if there must be zero
+	     among the head trimmed bytes).  If we don't know anything
+	     about those bytes, the presence or absence of '\0' bytes
+	     in there will affect whether it acts for the non-trimmed
+	     bytes as memset or memcpy/strncpy.  */
+	  c_strlen_data lendata = { };
+	  int orig_head_trim = head_trim;
+	  tree srcstr = gimple_call_arg (stmt, 1);
+	  if (!get_range_strlen (srcstr, &lendata, /*eltsize=*/1)
+	      || !tree_fits_uhwi_p (lendata.minlen))
+	    head_trim = 0;
+	  else if (tree_to_uhwi (lendata.minlen) < (unsigned) head_trim)
+	    {
+	      head_trim = tree_to_uhwi (lendata.minlen);
+	      if ((orig_head_trim & (UNITS_PER_WORD - 1)) == 0)
+		head_trim &= ~(UNITS_PER_WORD - 1);
+	    }
+	  if (orig_head_trim != head_trim
+	      && dump_file
+	      && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file,
+		     "  Adjusting strncpy trimming to (head = %d,"
+		     " tail = %d)\n", head_trim, tail_trim);
+	}
+      goto do_memcpy;
+
     case BUILT_IN_MEMCPY:
     case BUILT_IN_MEMMOVE:
-    case BUILT_IN_STRNCPY:
     case BUILT_IN_MEMCPY_CHK:
     case BUILT_IN_MEMMOVE_CHK:
-    case BUILT_IN_STRNCPY_CHK:
-      {
-	int head_trim, tail_trim;
-	compute_trims (ref, live, &head_trim, &tail_trim, stmt);
+      compute_trims (ref, live, &head_trim, &tail_trim, stmt);
 
-	/* Tail trimming is easy, we can just reduce the count.  */
-        if (tail_trim)
-	  decrement_count (stmt, tail_trim);
+    do_memcpy:
+      /* Tail trimming is easy, we can just reduce the count.  */
+      if (tail_trim)
+	decrement_count (stmt, tail_trim);
 
-	/* Head trimming requires adjusting all the arguments.  */
-        if (head_trim)
-          {
-	    tree *dst = gimple_call_arg_ptr (stmt, 0);
-	    increment_start_addr (stmt, dst, head_trim);
-	    tree *src = gimple_call_arg_ptr (stmt, 1);
-	    increment_start_addr (stmt, src, head_trim);
-	    decrement_count (stmt, head_trim);
-	  }
-        break;
-      }
+      /* Head trimming requires adjusting all the arguments.  */
+      if (head_trim)
+	{
+	  /* For __*_chk need to adjust also the last argument.  */
+	  if (gimple_call_num_args (stmt) == 4)
+	    {
+	      tree size = gimple_call_arg (stmt, 3);
+	      if (!tree_fits_uhwi_p (size))
+		break;
+	      if (!integer_all_onesp (size))
+		{
+		  unsigned HOST_WIDE_INT sz = tree_to_uhwi (size);
+		  if (sz < (unsigned) head_trim)
+		    break;
+		  tree arg = wide_int_to_tree (TREE_TYPE (size),
+					       sz - head_trim);
+		  gimple_call_set_arg (stmt, 3, arg);
+		}
+	    }
+	  tree *dst = gimple_call_arg_ptr (stmt, 0);
+	  increment_start_addr (stmt, dst, head_trim);
+	  tree *src = gimple_call_arg_ptr (stmt, 1);
+	  increment_start_addr (stmt, src, head_trim);
+	  decrement_count (stmt, head_trim);
+	}
+      break;
 
     case BUILT_IN_MEMSET:
     case BUILT_IN_MEMSET_CHK:
-      {
-	int head_trim, tail_trim;
-	compute_trims (ref, live, &head_trim, &tail_trim, stmt);
+      compute_trims (ref, live, &head_trim, &tail_trim, stmt);
 
-	/* Tail trimming is easy, we can just reduce the count.  */
-        if (tail_trim)
-	  decrement_count (stmt, tail_trim);
+      /* Tail trimming is easy, we can just reduce the count.  */
+      if (tail_trim)
+	decrement_count (stmt, tail_trim);
 
-	/* Head trimming requires adjusting all the arguments.  */
-        if (head_trim)
-          {
-	    tree *dst = gimple_call_arg_ptr (stmt, 0);
-	    increment_start_addr (stmt, dst, head_trim);
-	    decrement_count (stmt, head_trim);
-	  }
-	break;
-      }
+      /* Head trimming requires adjusting all the arguments.  */
+      if (head_trim)
+	{
+	  /* For __*_chk need to adjust also the last argument.  */
+	  if (gimple_call_num_args (stmt) == 4)
+	    {
+	      tree size = gimple_call_arg (stmt, 3);
+	      if (!tree_fits_uhwi_p (size))
+		break;
+	      if (!integer_all_onesp (size))
+		{
+		  unsigned HOST_WIDE_INT sz = tree_to_uhwi (size);
+		  if (sz < (unsigned) head_trim)
+		    break;
+		  tree arg = wide_int_to_tree (TREE_TYPE (size),
+					       sz - head_trim);
+		  gimple_call_set_arg (stmt, 3, arg);
+		}
+	    }
+	  tree *dst = gimple_call_arg_ptr (stmt, 0);
+	  increment_start_addr (stmt, dst, head_trim);
+	  decrement_count (stmt, head_trim);
+	}
+      break;
 
-      default:
-	break;
+    default:
+      break;
     }
 }
 
@@ -597,6 +668,17 @@ dse_optimize_redundant_stores (gimple *stmt)
 {
   int cnt = 0;
 
+  /* TBAA state of STMT, if it is a call it is effectively alias-set zero.  */
+  alias_set_type earlier_set = 0;
+  alias_set_type earlier_base_set = 0;
+  if (is_gimple_assign (stmt))
+    {
+      ao_ref lhs_ref;
+      ao_ref_init (&lhs_ref, gimple_assign_lhs (stmt));
+      earlier_set = ao_ref_alias_set (&lhs_ref);
+      earlier_base_set = ao_ref_base_alias_set (&lhs_ref);
+    }
+
   /* We could do something fairly complex and look through PHIs
      like DSE_CLASSIFY_STORE, but it doesn't seem to be worth
      the effort.
@@ -637,10 +719,27 @@ dse_optimize_redundant_stores (gimple *stmt)
 	    {
 	      gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
 	      if (is_gimple_assign (use_stmt))
-		delete_dead_or_redundant_assignment (&gsi, "redundant",
-						     need_eh_cleanup);
+		{
+		  ao_ref lhs_ref;
+		  ao_ref_init (&lhs_ref, gimple_assign_lhs (use_stmt));
+		  if ((earlier_set == ao_ref_alias_set (&lhs_ref)
+		       || alias_set_subset_of (ao_ref_alias_set (&lhs_ref),
+					       earlier_set))
+		      && (earlier_base_set == ao_ref_base_alias_set (&lhs_ref)
+			  || alias_set_subset_of
+			       (ao_ref_base_alias_set (&lhs_ref),
+						  earlier_base_set)))
+		    delete_dead_or_redundant_assignment (&gsi, "redundant",
+							 need_eh_cleanup);
+		}
 	      else if (is_gimple_call (use_stmt))
-		delete_dead_or_redundant_call (&gsi, "redundant");
+		{
+		  if ((earlier_set == 0
+		       || alias_set_subset_of (0, earlier_set))
+		      && (earlier_base_set == 0
+			  || alias_set_subset_of (0, earlier_base_set)))
+		  delete_dead_or_redundant_call (&gsi, "redundant");
+		}
 	      else
 		gcc_unreachable ();
 	    }

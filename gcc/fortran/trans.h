@@ -23,8 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "predict.h"  /* For enum br_predictor and PRED_*.  */
 
-/* Mangled symbols take the form __module__name.  */
-#define GFC_MAX_MANGLED_SYMBOL_LEN  (GFC_MAX_SYMBOL_LEN*2+4)
+/* Mangled symbols take the form __module__name or __module.submodule__name.  */
+#define GFC_MAX_MANGLED_SYMBOL_LEN  (GFC_MAX_SYMBOL_LEN*3+5)
 
 /* Struct for holding a block of statements.  It should be treated as an
    opaque entity and not modified directly.  This allows us to change the
@@ -561,7 +561,7 @@ void gfc_trans_common (gfc_namespace *);
 void gfc_conv_structure (gfc_se *, gfc_expr *, int);
 
 /* Return an expression which determines if a dummy parameter is present.  */
-tree gfc_conv_expr_present (gfc_symbol *);
+tree gfc_conv_expr_present (gfc_symbol *, bool use_saved_decl = false);
 /* Convert a missing, dummy argument into a null or zero.  */
 void gfc_conv_missing_dummy (gfc_se *, gfc_expr *, gfc_typespec, int);
 
@@ -803,6 +803,7 @@ tree gfc_omp_check_optional_argument (tree, bool);
 tree gfc_omp_array_data (tree, bool);
 bool gfc_omp_privatize_by_reference (const_tree);
 enum omp_clause_default_kind gfc_omp_predetermined_sharing (tree);
+enum omp_clause_defaultmap_kind gfc_omp_predetermined_mapping (tree);
 tree gfc_omp_report_decl (tree);
 tree gfc_omp_clause_default_ctor (tree, tree, tree);
 tree gfc_omp_clause_copy_ctor (tree, tree, tree);

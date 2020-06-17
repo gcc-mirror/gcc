@@ -2414,7 +2414,15 @@ assign_parm_find_data_types (struct assign_parm_data_all *all, tree parm,
 {
   int unsignedp;
 
+#ifndef BROKEN_VALUE_INITIALIZATION
   *data = assign_parm_data_one ();
+#else
+  /* Old versions of GCC used to miscompile the above by only initializing
+     the members with explicit constructors and copying garbage
+     to the other members.  */
+  assign_parm_data_one zero_data = {};
+  *data = zero_data;
+#endif
 
   /* NAMED_ARG is a misnomer.  We really mean 'non-variadic'. */
   if (!cfun->stdarg)
@@ -3905,9 +3913,8 @@ gimplify_parameters (gimple_seq *cleanup)
 		     as we'll query that flag during gimplification.  */
 		  if (TREE_ADDRESSABLE (parm))
 		    TREE_ADDRESSABLE (local) = 1;
-		  else if (TREE_CODE (type) == COMPLEX_TYPE
-			   || TREE_CODE (type) == VECTOR_TYPE)
-		    DECL_GIMPLE_REG_P (local) = 1;
+		  if (DECL_NOT_GIMPLE_REG_P (parm))
+		    DECL_NOT_GIMPLE_REG_P (local) = 1;
 
 		  if (!is_gimple_reg (local)
 		      && flag_stack_reuse != SR_NONE)

@@ -781,7 +781,7 @@ fr30_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
      are sufficient argument registers available (or if no registers
      are needed because the parameter must be passed on the stack)
      then return zero, as this parameter does not require partial
-     register, partial stack stack space.  */
+     register, partial stack space.  */
   if (*cum + fr30_num_arg_regs (arg) <= FR30_NUM_ARG_REGS)
     return 0;
   

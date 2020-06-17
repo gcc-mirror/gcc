@@ -1,6 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-details" } */
-/* { dg-additional-options "-msse4.2" } */
+/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-details -msse4.2" } */
 
 #define ubyte unsigned char
 #define byte char

@@ -188,6 +188,12 @@ const char *main_input_basename
 Variable
 int main_input_baselength
 
+; The base name used for auxiliary output files.
+; dump_base_name minus dump_base_ext.
+
+Variable
+const char *aux_base_name
+
 ; Which options have been printed by --help.
 Variable
 char *help_printed
@@ -252,10 +258,13 @@ Common Separate Alias(d)
 Common Joined Alias(d)
 
 -dumpbase
-Common Separate Alias(dumpbase)
+Driver Common Separate Alias(dumpbase)
+
+-dumpbase-ext
+Driver Common Separate Alias(dumpbase-ext)
 
 -dumpdir
-Common Separate Alias(dumpdir)
+Driver Common Separate Alias(dumpdir)
 
 -entry
 Driver Separate Alias(e)
@@ -601,6 +610,10 @@ Wframe-larger-than=
 Common RejectNegative Joined Host_Wide_Int ByteSize Warning Var(warn_frame_larger_than_size) Init(HOST_WIDE_INT_MAX)
 -Wframe-larger-than=<byte-size>	Warn if a function's stack frame requires in excess of <byte-size>.
 
+Wno-frame-larger-than
+Common Alias(Wframe-larger-than=,18446744073709551615EiB,none) Warning
+Disable -Wframe-larger-than= warning.  Equivalent to -Wframe-larger-than=<SIZE_MAX> or larger.
+
 Wfree-nonheap-object
 Common Var(warn_free_nonheap_object) Init(1) Warning
 Warn when attempting to free a non-heap object.
@@ -630,6 +643,10 @@ Common RejectNegative Joined Warning Undocumented Alias(Wlarger-than=)
 Wlarger-than=
 Common RejectNegative Joined Host_Wide_Int ByteSize Warning Var(warn_larger_than_size) Init(HOST_WIDE_INT_MAX)
 -Wlarger-than=<byte-size>	Warn if an object's size exceeds <byte-size>.
+
+Wno-larger-than
+Common Alias(Wlarger-than=,18446744073709551615EiB,none) Warning
+Disable -Wlarger-than= warning.  Equivalent to -Wlarger-than=<SIZE_MAX> or larger.
 
 Wnonnull-compare
 Var(warn_nonnull_compare) Warning
@@ -703,6 +720,10 @@ Warn when not issuing stack smashing protection for some reason.
 Wstack-usage=
 Common Joined RejectNegative Host_Wide_Int ByteSize Var(warn_stack_usage) Warning Init(HOST_WIDE_INT_MAX)
 -Wstack-usage=<byte-size>	Warn if stack usage might exceed <byte-size>.
+
+Wno-stack-usage
+Common Alias(Wstack-usage=,18446744073709551615EiB,none) Warning
+Disable Wstack-usage= warning.  Equivalent to Wstack-usage=<SIZE_MAX> or larger.
 
 Wstrict-aliasing
 Common Warning
@@ -840,12 +861,6 @@ Common Separate Var(aux_info_file_name)
 aux-info=
 Common Joined Alias(aux-info)
 
-auxbase
-Common Separate RejectDriver Var(aux_base_name)
-
-auxbase-strip
-Common Separate RejectDriver
-
 coverage
 Driver
 
@@ -857,11 +872,15 @@ Common Joined
 -d<letters>	Enable dumps from specific passes of the compiler.
 
 dumpbase
-Common Separate Var(dump_base_name)
+Driver Common Separate Var(dump_base_name)
 -dumpbase <file>	Set the file basename to be used for dumps.
 
+dumpbase-ext
+Driver Common Separate Var(dump_base_ext)
+-dumpbase-ext .<ext>    Drop a trailing .<ext> from the dump basename to name auxiliary output files.
+
 dumpdir
-Common Separate Var(dump_dir_name)
+Driver Common Separate Var(dump_dir_name)
 -dumpdir <dir>	Set the directory name to be used for dumps.
 
 dumpmachine
@@ -988,6 +1007,10 @@ Common RejectNegative Joined Var(str_align_loops) Optimization
 fallow-store-data-races
 Common Report Var(flag_store_data_races) Optimization
 Allow the compiler to introduce new data races on stores.
+
+fanalyzer
+Common Var(flag_analyzer)
+Enable static analysis pass.
 
 fargument-alias
 Common Ignore
@@ -1192,11 +1215,11 @@ Common RejectNegative Joined Var(common_deferred_options) Defer
 
 fdebug-prefix-map=
 Common Joined RejectNegative Var(common_deferred_options) Defer
--fdebug-prefix-map=<old>=<new> Map one directory name to another in debug information.
+-fdebug-prefix-map=<old>=<new>	Map one directory name to another in debug information.
 
 ffile-prefix-map=
 Common Joined RejectNegative Var(common_deferred_options) Defer
--ffile-prefix-map=<old>=<new> Map one directory name to another in compilation result.
+-ffile-prefix-map=<old>=<new>	Map one directory name to another in compilation result.
 
 fdebug-types-section
 Common Report Var(flag_debug_types_section) Init(0)
@@ -1307,7 +1330,7 @@ Enum(diagnostic_url_rule) String(auto) Value(DIAGNOSTICS_URL_AUTO)
 
 fdiagnostics-format=
 Common Joined RejectNegative Enum(diagnostics_output_format)
--fdiagnostics-format=[text|json] Select output format.
+-fdiagnostics-format=[text|json]	Select output format.
 
 ; Required for these enum values.
 SourceInclude
@@ -1338,17 +1361,37 @@ fdiagnostics-show-cwe
 Common Var(flag_diagnostics_show_cwe) Init(1)
 Print CWE identifiers for diagnostic messages, where available.
 
+fdiagnostics-path-format=
+Common Joined RejectNegative Var(flag_diagnostics_path_format) Enum(diagnostic_path_format) Init(DPF_INLINE_EVENTS)
+Specify how to print any control-flow path associated with a diagnostic.
+
+Enum
+Name(diagnostic_path_format) Type(int)
+
+EnumValue
+Enum(diagnostic_path_format) String(none) Value(DPF_NONE)
+
+EnumValue
+Enum(diagnostic_path_format) String(separate-events) Value(DPF_SEPARATE_EVENTS)
+
+EnumValue
+Enum(diagnostic_path_format) String(inline-events) Value(DPF_INLINE_EVENTS)
+
+fdiagnostics-show-path-depths
+Common Var(flag_diagnostics_show_path_depths) Init(0)
+Show stack depths of events in paths.
+
 fdiagnostics-minimum-margin-width=
 Common Joined UInteger Var(diagnostics_minimum_margin_width) Init(6)
 Set minimum width of left margin of source code when showing source.
 
 fdisable-
 Common Joined RejectNegative Var(common_deferred_options) Defer
--fdisable-[tree|rtl|ipa]-<pass>=range1+range2 disables an optimization pass.
+-fdisable-[tree|rtl|ipa]-<pass>=range1+range2	Disable an optimization pass.
 
 fenable-
 Common Joined RejectNegative Var(common_deferred_options) Defer
--fenable-[tree|rtl|ipa]-<pass>=range1+range2 enables an optimization pass.
+-fenable-[tree|rtl|ipa]-<pass>=range1+range2	Enable an optimization pass.
 
 fdump-
 Common Joined RejectNegative Var(common_deferred_options) Defer
@@ -1466,7 +1509,7 @@ Common Report Var(flag_finite_math_only) Optimization SetByCombined
 Assume no NaNs or infinities are generated.
 
 ffinite-loops
-Common Report Var(flag_finite_loops) Optimization
+Common Report Var(flag_finite_loops) Optimization Init(0)
 Assume that loops with an exit will terminate and not loop indefinitely.
 
 ffixed-
@@ -1572,6 +1615,11 @@ instructions.
 fkeep-gc-roots-live
 Common Undocumented Report Var(flag_keep_gc_roots_live) Optimization
 ; Always keep a pointer to a live memory block
+
+flarge-source-files
+Common Report Var(flag_large_source_files) Init(0)
+Improve GCC's ability to track column numbers in large source files,
+at the expense of slower compilation.
 
 floop-parallelize-all
 Common Report Var(flag_loop_parallelize_all) Optimization
@@ -1731,11 +1779,11 @@ Instrument function entry and exit with profiling calls.
 
 finstrument-functions-exclude-function-list=
 Common RejectNegative Joined
--finstrument-functions-exclude-function-list=name,...  Do not instrument listed functions.
+-finstrument-functions-exclude-function-list=name,...	Do not instrument listed functions.
 
 finstrument-functions-exclude-file-list=
 Common RejectNegative Joined
--finstrument-functions-exclude-file-list=filename,...  Do not instrument functions listed in files.
+-finstrument-functions-exclude-file-list=filename,...	Do not instrument functions listed in files.
 
 fipa-cp
 Common Report Var(flag_ipa_cp) Optimization
@@ -1996,11 +2044,11 @@ Support synchronous non-call exceptions.
 
 foffload=
 Common Driver Joined MissingArgError(options or targets missing after %qs)
--foffload=<targets>=<options>  Specify offloading targets and options for them.
+-foffload=<targets>=<options>	Specify offloading targets and options for them.
 
 foffload-abi=
 Common Joined RejectNegative Enum(offload_abi) Var(flag_offload_abi) Init(OFFLOAD_ABI_UNSET)
--foffload-abi=[lp64|ilp32]     Set the ABI to use in an offload compiler.
+-foffload-abi=[lp64|ilp32]	Set the ABI to use in an offload compiler.
 
 Enum
 Name(offload_abi) Type(enum offload_abi) UnknownError(unknown offload ABI %qs)
@@ -2145,6 +2193,22 @@ Common Joined RejectNegative Var(flag_profile_exclude_files)
 Instrument only functions from files where names do not match all the regular expressions (separated by a semi-colon).
 
 Enum
+Name(profile_reproducibility) Type(enum profile_reproducibility) UnknownError(unknown profile reproducibility method %qs)
+
+EnumValue
+Enum(profile_reproducibility) String(serial) Value(PROFILE_REPRODUCIBILITY_SERIAL)
+
+EnumValue
+Enum(profile_reproducibility) String(parallel-runs) Value(PROFILE_REPRODUCIBILITY_PARALLEL_RUNS)
+
+EnumValue
+Enum(profile_reproducibility) String(multithreaded) Value(PROFILE_REPRODUCIBILITY_MULTITHREADED)
+
+fprofile-reproducible
+Common Joined RejectNegative Var(flag_profile_reproducible) Enum(profile_reproducibility) Init(PROFILE_REPRODUCIBILITY_SERIAL)
+-fprofile-reproducible=[serial|parallel-runs|multithreaded]	Control level of reproducibility of profile gathered by -fprofile-generate.
+
+Enum
 Name(profile_update) Type(enum profile_update) UnknownError(unknown profile update method %qs)
 
 EnumValue
@@ -2155,6 +2219,10 @@ Enum(profile_update) String(atomic) Value(PROFILE_UPDATE_ATOMIC)
 
 EnumValue
 Enum(profile_update) String(prefer-atomic) Value(PROFILE_UPDATE_PREFER_ATOMIC)
+
+fprofile-prefix-path=
+Common Joined RejectNegative Var(profile_prefix_path)
+Remove prefix from absolute path before mangling name for -fprofile-generate= and -fprofile-use=.
 
 fprofile-generate
 Common
@@ -2794,6 +2862,10 @@ Perform loop unrolling when iteration count is known.
 funroll-all-loops
 Common Report Var(flag_unroll_all_loops) Optimization
 Perform loop unrolling for all loops.
+
+funroll-completely-grow-size
+Undocumented Var(flag_cunroll_grow_size) Init(2) Optimization
+; Internal undocumented flag, allow size growth during complete unrolling
 
 ; Nonzero means that loop optimizer may assume that the induction variables
 ; that control loops do not overflow and that the loops with nontrivial

@@ -56,7 +56,7 @@ check_warn_node_versionable (cgraph_node *node)
     {
       warning_at (EXPR_LOCATION (node->decl), OPT_Whsa,
 		  "could not emit HSAIL for function %s: function cannot be "
-		  "cloned", node->name ());
+		  "cloned", node->dump_name ());
       return false;
     }
   return true;
@@ -98,7 +98,7 @@ process_hsa_functions (void)
 
 	  if (dump_file)
 	    fprintf (dump_file, "Created a new HSA clone: %s, type: %s\n",
-		     clone->name (),
+		     clone->dump_name (),
 		     s->m_kind == HSA_KERNEL ? "kernel" : "function");
 	}
       else if (hsa_callable_function_p (node->decl)
@@ -120,7 +120,7 @@ process_hsa_functions (void)
 
 	  if (dump_file)
 	    fprintf (dump_file, "Created a new HSA function clone: %s\n",
-		     clone->name ());
+		     clone->dump_name ());
 	}
     }
 
@@ -141,8 +141,8 @@ process_hsa_functions (void)
 		  if (dump_file)
 		    fprintf (dump_file,
 			     "Redirecting edge to HSA function: %s->%s\n",
-			     xstrdup_for_dump (e->caller->name ()),
-			     xstrdup_for_dump (e->callee->name ()));
+			     e->caller->dump_name (),
+			     e->callee->dump_name ());
 		}
 	    }
 

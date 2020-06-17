@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,6 +36,9 @@ package Sem_Aggr is
 
    function Is_Others_Aggregate (Aggr : Node_Id) return Boolean;
    --  Returns True is aggregate Aggr consists of a single OTHERS choice
+
+   function Is_Single_Aggregate (Aggr : Node_Id) return Boolean;
+   --  Returns True is aggregate Aggr consists of a single choice
 
    --  WARNING: There is a matching C declaration of this subprogram in fe.h
 

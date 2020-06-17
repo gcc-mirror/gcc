@@ -1323,7 +1323,7 @@ thread_across_edge (gcond *dummy_cond,
     /* If E->dest has abnormal outgoing edges, then there's no guarantee
        we can safely redirect any of the edges.  Just punt those cases.  */
     FOR_EACH_EDGE (taken_edge, ei, e->dest->succs)
-      if (taken_edge->flags & EDGE_ABNORMAL)
+      if (taken_edge->flags & EDGE_COMPLEX)
 	{
 	  const_and_copies->pop_to_marker ();
           avail_exprs_stack->pop_to_marker ();

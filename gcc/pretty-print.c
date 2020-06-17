@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "pretty-print.h"
 #include "diagnostic-color.h"
+#include "diagnostic-event-id.h"
 #include "selftest.h"
 
 #if HAVE_ICONV
@@ -1019,6 +1020,8 @@ pp_indent (pretty_printer *pp)
     pp_space (pp);
 }
 
+static const char *get_end_url_string (pretty_printer *);
+
 /* The following format specifiers are recognized as being client independent:
    %d, %i: (signed) integer in base ten.
    %u: unsigned integer in base ten.
@@ -1037,8 +1040,11 @@ pp_indent (pretty_printer *pp)
    %%: '%'.
    %<: opening quote.
    %>: closing quote.
+   %{: URL start.  Consumes a const char * argument for the URL.
+   %}: URL end.    Does not consume any arguments.
    %': apostrophe (should only be used in untranslated messages;
        translations should use appropriate punctuation directly).
+   %@: diagnostic_event_id_ptr, for which event_id->known_p () must be true.
    %.*s: a substring the length of which is specified by an argument
 	 integer.
    %Ns: likewise, but length specified as constant in the format string.
@@ -1049,7 +1055,7 @@ pp_indent (pretty_printer *pp)
    Arguments can be used sequentially, or through %N$ resp. *N$
    notation Nth argument after the format string.  If %N$ / *N$
    notation is used, it must be used for all arguments, except %m, %%,
-   %<, %> and %', which may not have a number, as they do not consume
+   %<, %>, %} and %', which may not have a number, as they do not consume
    an argument.  When %M$.*N$s is used, M must be N + 1.  (This may
    also be written %M$.*s, provided N is not otherwise used.)  The
    format string must have conversion specifiers with argument numbers
@@ -1082,7 +1088,7 @@ pp_format (pretty_printer *pp, text_info *text)
   /* Formatting phase 1: split up TEXT->format_spec into chunks in
      pp_buffer (PP)->args[].  Even-numbered chunks are to be output
      verbatim, odd-numbered chunks are format specifiers.
-     %m, %%, %<, %>, and %' are replaced with the appropriate text at
+     %m, %%, %<, %>, %} and %' are replaced with the appropriate text at
      this point.  */
 
   memset (formatters, 0, sizeof formatters);
@@ -1128,6 +1134,15 @@ pp_format (pretty_printer *pp, text_info *text)
 	case '\'':
 	  obstack_grow (&buffer->chunk_obstack,
 			close_quote, strlen (close_quote));
+	  p++;
+	  continue;
+
+	case '}':
+	  {
+	    const char *endurlstr = get_end_url_string (pp);
+	    obstack_grow (&buffer->chunk_obstack, endurlstr,
+			  strlen (endurlstr));
+	  }
 	  p++;
 	  continue;
 
@@ -1428,6 +1443,25 @@ pp_format (pretty_printer *pp, text_info *text)
 	  }
 	  break;
 
+	case '@':
+	  {
+	    /* diagnostic_event_id_t *.  */
+	    diagnostic_event_id_ptr event_id
+	      = va_arg (*text->args_ptr, diagnostic_event_id_ptr);
+	    gcc_assert (event_id->known_p ());
+
+	    pp_string (pp, colorize_start (pp_show_color (pp), "path"));
+	    pp_character (pp, '(');
+	    pp_decimal_int (pp, event_id->one_based ());
+	    pp_character (pp, ')');
+	    pp_string (pp, colorize_stop (pp_show_color (pp)));
+	  }
+	  break;
+
+	case '{':
+	  pp_begin_url (pp, va_arg (*text->args_ptr, const char *));
+	  break;
+
 	default:
 	  {
 	    bool ok;
@@ -1561,7 +1595,7 @@ pp_set_prefix (pretty_printer *pp, char *prefix)
 }
 
 /* Take ownership of PP's prefix, setting it to NULL.
-   This allows clients to save, overide, and then restore an existing
+   This allows clients to save, override, and then restore an existing
    prefix, without it being free-ed.  */
 
 char *
@@ -1630,7 +1664,7 @@ pretty_printer::pretty_printer (int maximum_length)
     need_newline (),
     translate_identifiers (true),
     show_color (),
-    show_urls (false)
+    url_format (URL_FORMAT_NONE)
 {
   pp_line_cutoff (this) = maximum_length;
   /* By default, we emit prefixes once per message.  */
@@ -1653,7 +1687,7 @@ pretty_printer::pretty_printer (const pretty_printer &other)
   need_newline (other.need_newline),
   translate_identifiers (other.translate_identifiers),
   show_color (other.show_color),
-  show_urls (other.show_urls)
+  url_format (other.url_format)
 {
   pp_line_cutoff (this) = maximum_length;
   /* By default, we emit prefixes once per message.  */
@@ -2154,8 +2188,42 @@ identifier_to_locale (const char *ident)
 void
 pp_begin_url (pretty_printer *pp, const char *url)
 {
-  if (pp->show_urls)
-    pp_printf (pp, "\33]8;;%s\a", url);
+  switch (pp->url_format)
+    {
+    case URL_FORMAT_NONE:
+      break;
+    case URL_FORMAT_ST:
+      pp_string (pp, "\33]8;;");
+      pp_string (pp, url);
+      pp_string (pp, "\33\\");
+      break;
+    case URL_FORMAT_BEL:
+      pp_string (pp, "\33]8;;");
+      pp_string (pp, url);
+      pp_string (pp, "\a");
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Helper function for pp_end_url and pp_format, return the "close URL" escape
+   sequence string.  */
+
+static const char *
+get_end_url_string (pretty_printer *pp)
+{
+  switch (pp->url_format)
+    {
+    case URL_FORMAT_NONE:
+      return "";
+    case URL_FORMAT_ST:
+      return "\33]8;;\33\\";
+    case URL_FORMAT_BEL:
+      return "\33]8;;\a";
+    default:
+      gcc_unreachable ();
+    }
 }
 
 /* If URL-printing is enabled, write a "close URL" escape sequence to PP.  */
@@ -2163,8 +2231,8 @@ pp_begin_url (pretty_printer *pp, const char *url)
 void
 pp_end_url (pretty_printer *pp)
 {
-  if (pp->show_urls)
-    pp_string (pp, "\33]8;;\a");
+  if (pp->url_format != URL_FORMAT_NONE)
+    pp_string (pp, get_end_url_string (pp));
 }
 
 #if CHECKING_P
@@ -2338,6 +2406,21 @@ test_pp_format ()
   assert_pp_format_colored (SELFTEST_LOCATION,
 			    "`\33[01m\33[Kfoo\33[m\33[K' 12345678", "%qs %x",
 			    "foo", 0x12345678);
+  /* Verify "%@".  */
+  {
+    diagnostic_event_id_t first (2);
+    diagnostic_event_id_t second (7);
+
+    ASSERT_PP_FORMAT_2 ("first `free' at (3); second `free' at (8)",
+			"first %<free%> at %@; second %<free%> at %@",
+			&first, &second);
+    assert_pp_format_colored
+      (SELFTEST_LOCATION,
+       "first `[01m[Kfree[m[K' at [01;36m[K(3)[m[K;"
+       " second `[01m[Kfree[m[K' at [01;36m[K(8)[m[K",
+       "first %<free%> at %@; second %<free%> at %@",
+       &first, &second);
+  }
 
   /* Verify %Z.  */
   int v[] = { 1, 2, 3 }; 
@@ -2458,7 +2541,7 @@ test_urls ()
 {
   {
     pretty_printer pp;
-    pp.show_urls = false;
+    pp.url_format = URL_FORMAT_NONE;
     pp_begin_url (&pp, "http://example.com");
     pp_string (&pp, "This is a link");
     pp_end_url (&pp);
@@ -2468,7 +2551,17 @@ test_urls ()
 
   {
     pretty_printer pp;
-    pp.show_urls = true;
+    pp.url_format = URL_FORMAT_ST;
+    pp_begin_url (&pp, "http://example.com");
+    pp_string (&pp, "This is a link");
+    pp_end_url (&pp);
+    ASSERT_STREQ ("\33]8;;http://example.com\33\\This is a link\33]8;;\33\\",
+		  pp_formatted_text (&pp));
+  }
+
+  {
+    pretty_printer pp;
+    pp.url_format = URL_FORMAT_BEL;
     pp_begin_url (&pp, "http://example.com");
     pp_string (&pp, "This is a link");
     pp_end_url (&pp);

@@ -44,13 +44,14 @@ module openacc_kinds
   integer, parameter :: acc_device_kind = int32
 
   ! Keep in sync with include/gomp-constants.h.
+  integer (acc_device_kind), parameter :: acc_device_current = -1
   integer (acc_device_kind), parameter :: acc_device_none = 0
   integer (acc_device_kind), parameter :: acc_device_default = 1
   integer (acc_device_kind), parameter :: acc_device_host = 2
   ! integer (acc_device_kind), parameter :: acc_device_host_nonshm = 3 removed.
   integer (acc_device_kind), parameter :: acc_device_not_host = 4
   integer (acc_device_kind), parameter :: acc_device_nvidia = 5
-  integer (acc_device_kind), parameter :: acc_device_gcn = 8
+  integer (acc_device_kind), parameter :: acc_device_radeon = 8
 
 end module openacc_kinds
 
@@ -59,19 +60,19 @@ module openacc_internal
   implicit none
 
   interface
-    function acc_on_device_h (d)
+    function acc_on_device_h (devicetype)
       import
-      integer (acc_device_kind) d
+      integer (acc_device_kind) devicetype
       logical acc_on_device_h
     end function
   end interface
 
   interface
-    function acc_on_device_l (d) &
+    function acc_on_device_l (devicetype) &
         bind (C, name = "acc_on_device")
       use iso_c_binding, only: c_int
       integer (c_int) :: acc_on_device_l
-      integer (c_int), value :: d
+      integer (c_int), value :: devicetype
     end function
   end interface
 end module openacc_internal
@@ -86,7 +87,7 @@ module openacc
   ! From openacc_kinds
   public :: acc_device_kind
   public :: acc_device_none, acc_device_default, acc_device_host
-  public :: acc_device_not_host, acc_device_nvidia, acc_device_gcn
+  public :: acc_device_not_host, acc_device_nvidia, acc_device_radeon
 
   public :: acc_on_device
 
@@ -96,14 +97,10 @@ module openacc
 
 end module openacc
 
-function acc_on_device_h (d)
+function acc_on_device_h (devicetype)
   use openacc_internal, only: acc_on_device_l
   use openacc_kinds
-  integer (acc_device_kind) d
+  integer (acc_device_kind) devicetype
   logical acc_on_device_h
-  if (acc_on_device_l (d) .eq. 1) then
-    acc_on_device_h = .TRUE.
-  else
-    acc_on_device_h = .FALSE.
-  end if
+  acc_on_device_h = acc_on_device_l (devicetype) /= 0
 end function

@@ -846,6 +846,17 @@ check_for_inc_dec_1 (insn_info_t insn_info)
   if (note)
     return for_each_inc_dec (PATTERN (insn), emit_inc_dec_insn_before,
 			     insn_info) == 0;
+
+  /* Punt on stack pushes, those don't have REG_INC notes and we are
+     unprepared to deal with distribution of REG_ARGS_SIZE notes etc.  */
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
+    {
+      const_rtx x = *iter;
+      if (GET_RTX_CLASS (GET_CODE (x)) == RTX_AUTOINC)
+	return false;
+    }
+
   return true;
 }
 
@@ -866,6 +877,17 @@ check_for_inc_dec (rtx_insn *insn)
   if (note)
     return for_each_inc_dec (PATTERN (insn), emit_inc_dec_insn_before,
 			     &insn_info) == 0;
+
+  /* Punt on stack pushes, those don't have REG_INC notes and we are
+     unprepared to deal with distribution of REG_ARGS_SIZE notes etc.  */
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
+    {
+      const_rtx x = *iter;
+      if (GET_RTX_CLASS (GET_CODE (x)) == RTX_AUTOINC)
+	return false;
+    }
+
   return true;
 }
 
@@ -1540,9 +1562,12 @@ record_store (rtx body, bb_info_t bb_info)
 					 width)
 	      /* We can only remove the later store if the earlier aliases
 		 at least all accesses the later one.  */
-	      && (MEM_ALIAS_SET (mem) == MEM_ALIAS_SET (s_info->mem)
-		  || alias_set_subset_of (MEM_ALIAS_SET (mem),
-					  MEM_ALIAS_SET (s_info->mem))))
+	      && ((MEM_ALIAS_SET (mem) == MEM_ALIAS_SET (s_info->mem)
+		   || alias_set_subset_of (MEM_ALIAS_SET (mem),
+					   MEM_ALIAS_SET (s_info->mem)))
+		  && (!MEM_EXPR (s_info->mem)
+		      || refs_same_for_tbaa_p (MEM_EXPR (s_info->mem),
+					       MEM_EXPR (mem)))))
 	    {
 	      if (GET_MODE (mem) == BLKmode)
 		{
@@ -1977,16 +2002,30 @@ replace_read (store_info *store_info, insn_info_t store_insn,
 	 point.  This does occasionally happen, see PR 37922.  */
       bitmap regs_set = BITMAP_ALLOC (&reg_obstack);
 
-      for (this_insn = insns; this_insn != NULL_RTX; this_insn = NEXT_INSN (this_insn))
-	note_stores (this_insn, look_for_hardregs, regs_set);
+      for (this_insn = insns;
+	   this_insn != NULL_RTX; this_insn = NEXT_INSN (this_insn))
+	{
+	  if (insn_invalid_p (this_insn, false))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, " -- replacing the loaded MEM with ");
+		  print_simple_rtl (dump_file, read_reg);
+		  fprintf (dump_file, " led to an invalid instruction\n");
+		}
+	      BITMAP_FREE (regs_set);
+	      return false;
+	    }
+	  note_stores (this_insn, look_for_hardregs, regs_set);
+	}
 
       bitmap_and_into (regs_set, regs_live);
       if (!bitmap_empty_p (regs_set))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
-	      fprintf (dump_file,
-		       "abandoning replacement because sequence clobbers live hardregs:");
+	      fprintf (dump_file, "abandoning replacement because sequence "
+				  "clobbers live hardregs:");
 	      df_print_regset (dump_file, regs_set);
 	    }
 
@@ -1994,6 +2033,19 @@ replace_read (store_info *store_info, insn_info_t store_insn,
 	  return false;
 	}
       BITMAP_FREE (regs_set);
+    }
+
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, *loc, NONCONST)
+    {
+      const_rtx x = *iter;
+      if (GET_RTX_CLASS (GET_CODE (x)) == RTX_AUTOINC)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, " -- replacing the MEM failed due to address "
+				"side-effects\n");
+	  return false;
+	}
     }
 
   if (validate_change (read_insn->insn, loc, read_reg, 0))

@@ -40,6 +40,8 @@ static const struct default_options avr_option_optimization_table[] =
     { OPT_LEVELS_ALL, OPT_fcaller_saves, NULL, 0 },
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_mgas_isr_prologues, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_mmain_is_OS_task, NULL, 1 },
+    // Stick to the "old" placement of the subreg lowering pass.
+    { OPT_LEVELS_1_PLUS, OPT_fsplit_wide_types_early, NULL, 1 },
     /* Allow optimizer to introduce store data races. This used to be the
        default -- it was changed because bigger targets did not see any
        performance decrease. For the AVR though, disallowing data races
@@ -94,7 +96,7 @@ avr_handle_option (struct gcc_options *opts, struct gcc_options*,
         {
 #if !defined (HAVE_DOUBLE32)
           error_at (loc, "option %<-mdouble=32%> is only available if "
-                    "configured %<--with-double={|32|32,64|64,32}%>");
+                    "configured %<--with-double={32|32,64|64,32}%>");
 #endif
         }
       else
@@ -119,9 +121,9 @@ avr_handle_option (struct gcc_options *opts, struct gcc_options*,
         {
 #if !defined (HAVE_LONG_DOUBLE32)
           error_at (loc, "option %<-mlong-double=32%> is only available if "
-                    "configured %<--with-long-double={|32|32,64|64,32}%>, "
+                    "configured %<--with-long-double={32|32,64|64,32}%>, "
                     "or %<--with-long-double=double%> together with "
-                    "%<--with-double={|32|32,64|64,32}%>");
+                    "%<--with-double={32|32,64|64,32}%>");
 #endif
           opts->x_avr_double = 32;
         }

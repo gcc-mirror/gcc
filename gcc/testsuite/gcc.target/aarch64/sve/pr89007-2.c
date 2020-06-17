@@ -1,5 +1,5 @@
 /* { dg-do assemble { target aarch64_asm_sve_ok } } */
-/* { dg-options "-O -ftree-vectorize -march=armv8.2-a+sve --save-temps" } */
+/* { dg-options "-O -ftree-vectorize -march=armv8.2-a+sve -msve-vector-bits=512 --save-temps" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 #define N 1024

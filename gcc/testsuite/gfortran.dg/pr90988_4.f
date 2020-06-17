@@ -1,4 +1,5 @@
 c { dg-do compile }
+c { dg-require-visibility "" }
        module foo
           implicit none
           real a,b,c

@@ -140,7 +140,7 @@ get_typeinfo_kind (Type *type)
       return TK_TYPELIST_TYPE;
 
     case Tclass:
-      if (((TypeClass *) type)->sym->isInterfaceDeclaration ())
+      if (type->isTypeClass ()->sym->isInterfaceDeclaration ())
 	return TK_INTERFACE_TYPE;
       else
 	return TK_CLASSINFO_TYPE;
@@ -341,8 +341,28 @@ class TypeInfoVisitor : public Visitor
 {
   using Visitor::visit;
 
-  tree type_;
+  tree decl_;
   vec<constructor_elt, va_gc> *init_;
+
+  /* Build an internal comdat symbol for the manifest constant VALUE, so that
+     its address can be taken.  */
+
+  tree internal_reference (tree value)
+  {
+    /* Use the typeinfo decl name as a prefix for the internal symbol.  */
+    const char *prefix = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (this->decl_));
+    tree decl = build_artificial_decl (TREE_TYPE (value), value, prefix);
+
+    /* The internal pointer reference should be public, but not visible outside
+       the compilation unit.  */
+    DECL_EXTERNAL (decl) = 0;
+    TREE_PUBLIC (decl) = 1;
+    DECL_VISIBILITY (decl) = VISIBILITY_INTERNAL;
+    d_comdat_linkage (decl);
+    d_pushdecl (decl);
+
+    return decl;
+  }
 
   /* Add VALUE to the constructor values list.  */
 
@@ -364,10 +384,8 @@ class TypeInfoVisitor : public Visitor
     TREE_STATIC (value) = 1;
 
     /* Taking the address, so assign the literal to a static var.  */
-    tree decl = build_artificial_decl (TREE_TYPE (value), value);
+    tree decl = this->internal_reference (value);
     TREE_READONLY (decl) = 1;
-    DECL_EXTERNAL (decl) = 0;
-    d_pushdecl (decl);
 
     value = d_array_value (build_ctype (Type::tchar->arrayOf ()),
 			   size_int (len), build_address (decl));
@@ -399,7 +417,7 @@ class TypeInfoVisitor : public Visitor
 
     /* Put out the offset to where vtblInterfaces are written.  */
     tree value = d_array_value (array_type_node,
-				size_int (cd->vtblInterfaces->dim),
+				size_int (cd->vtblInterfaces->length),
 				build_offset (csym, size_int (offset)));
     this->layout_field (value);
 
@@ -412,7 +430,7 @@ class TypeInfoVisitor : public Visitor
 	size_t offset;  */
     vec<constructor_elt, va_gc> *elms = NULL;
 
-    for (size_t i = 0; i < cd->vtblInterfaces->dim; i++)
+    for (size_t i = 0; i < cd->vtblInterfaces->length; i++)
       {
 	BaseClass *b = (*cd->vtblInterfaces)[i];
 	ClassDeclaration *id = b->sym;
@@ -433,11 +451,12 @@ class TypeInfoVisitor : public Visitor
 	    gcc_assert (voffset != 0u);
 	    value = build_offset (csym, size_int (voffset));
 
-	    CONSTRUCTOR_APPEND_ELT (v, size_int (1), size_int (id->vtbl.dim));
+	    CONSTRUCTOR_APPEND_ELT (v, size_int (1),
+				    size_int (id->vtbl.length));
 	    CONSTRUCTOR_APPEND_ELT (v, size_int (2), value);
 	  }
 
-	/* The 'this' offset.  */
+	/* The `this' offset.  */
 	CONSTRUCTOR_APPEND_ELT (v, size_int (3), size_int (b->offset));
 
 	/* Add to the array of interfaces.  */
@@ -445,7 +464,7 @@ class TypeInfoVisitor : public Visitor
 	CONSTRUCTOR_APPEND_ELT (elms, size_int (i), value);
       }
 
-    tree domain = size_int (cd->vtblInterfaces->dim - 1);
+    tree domain = size_int (cd->vtblInterfaces->length - 1);
     tree arrtype = build_array_type (vtbl_interface_type_node,
 				     build_index_type (domain));
     return build_constructor (arrtype, elms);
@@ -465,7 +484,7 @@ class TypeInfoVisitor : public Visitor
     vec<constructor_elt, va_gc> *elms = NULL;
     FuncDeclarations bvtbl;
 
-    if (id->vtbl.dim == 0 || base_vtable_offset (cd, bs) == ~0u)
+    if (id->vtbl.length == 0 || base_vtable_offset (cd, bs) == ~0u)
       return;
 
     /* Fill bvtbl with the functions we want to put out.  */
@@ -482,7 +501,7 @@ class TypeInfoVisitor : public Visitor
 	CONSTRUCTOR_APPEND_ELT (elms, size_zero_node, value);
       }
 
-    for (size_t i = id->vtblOffset () ? 1 : 0; i < id->vtbl.dim; i++)
+    for (size_t i = id->vtblOffset () ? 1 : 0; i < id->vtbl.length; i++)
       {
 	FuncDeclaration *fd = (cd == bcd) ? bs->vtbl[i] : bvtbl[i];
 	if (fd != NULL)
@@ -492,7 +511,7 @@ class TypeInfoVisitor : public Visitor
 	  }
       }
 
-    tree vtbldomain = build_index_type (size_int (id->vtbl.dim - 1));
+    tree vtbldomain = build_index_type (size_int (id->vtbl.length - 1));
     tree vtbltype = build_array_type (vtable_entry_type, vtbldomain);
     tree value = build_constructor (vtbltype, elms);
     this->layout_field (value);
@@ -500,9 +519,9 @@ class TypeInfoVisitor : public Visitor
 
 
 public:
-  TypeInfoVisitor (tree type)
+  TypeInfoVisitor (tree decl)
   {
-    this->type_ = type;
+    this->decl_ = decl;
     this->init_ = NULL;
   }
 
@@ -510,7 +529,7 @@ public:
 
   tree result (void)
   {
-    return build_struct_literal (this->type_, this->init_);
+    return build_struct_literal (TREE_TYPE (this->decl_), this->init_);
   }
 
   /* Layout of TypeInfo is:
@@ -600,8 +619,7 @@ public:
 
   void visit (TypeInfoEnumDeclaration *d)
   {
-    gcc_assert (d->tinfo->ty == Tenum);
-    TypeEnum *ti = (TypeEnum *) d->tinfo;
+    TypeEnum *ti = d->tinfo->isTypeEnum ();
     EnumDeclaration *ed = ti->sym;
 
     /* The vtable for TypeInfo_Enum.  */
@@ -633,8 +651,7 @@ public:
 
   void visit (TypeInfoPointerDeclaration *d)
   {
-    gcc_assert (d->tinfo->ty == Tpointer);
-    TypePointer *ti = (TypePointer *) d->tinfo;
+    TypePointer *ti = d->tinfo->isTypePointer ();
 
     /* The vtable for TypeInfo_Pointer.  */
     this->layout_base (Type::typeinfopointer);
@@ -650,8 +667,7 @@ public:
 
   void visit (TypeInfoArrayDeclaration *d)
   {
-    gcc_assert (d->tinfo->ty == Tarray);
-    TypeDArray *ti = (TypeDArray *) d->tinfo;
+    TypeDArray *ti = d->tinfo->isTypeDArray ();
 
     /* The vtable for TypeInfo_Array.  */
     this->layout_base (Type::typeinfoarray);
@@ -668,8 +684,7 @@ public:
 
   void visit (TypeInfoStaticArrayDeclaration *d)
   {
-    gcc_assert (d->tinfo->ty == Tsarray);
-    TypeSArray *ti = (TypeSArray *) d->tinfo;
+    TypeSArray *ti = d->tinfo->isTypeSArray ();
 
     /* The vtable for TypeInfo_StaticArray.  */
     this->layout_base (Type::typeinfostaticarray);
@@ -689,8 +704,7 @@ public:
 
   void visit (TypeInfoAssociativeArrayDeclaration *d)
   {
-    gcc_assert (d->tinfo->ty == Taarray);
-    TypeAArray *ti = (TypeAArray *) d->tinfo;
+    TypeAArray *ti = d->tinfo->isTypeAArray ();
 
     /* The vtable for TypeInfo_AssociativeArray.  */
     this->layout_base (Type::typeinfoassociativearray);
@@ -709,8 +723,7 @@ public:
 
   void visit (TypeInfoVectorDeclaration *d)
   {
-    gcc_assert (d->tinfo->ty == Tvector);
-    TypeVector *ti = (TypeVector *) d->tinfo;
+    TypeVector *ti = d->tinfo->isTypeVector ();
 
     /* The vtable for TypeInfo_Vector.  */
     this->layout_base (Type::typeinfovector);
@@ -727,8 +740,8 @@ public:
 
   void visit (TypeInfoFunctionDeclaration *d)
   {
-    gcc_assert (d->tinfo->ty == Tfunction && d->tinfo->deco != NULL);
-    TypeFunction *ti = (TypeFunction *) d->tinfo;
+    TypeFunction *ti = d->tinfo->isTypeFunction ();
+    gcc_assert (ti->deco != NULL);
 
     /* The vtable for TypeInfo_Function.  */
     this->layout_base (Type::typeinfofunction);
@@ -748,8 +761,8 @@ public:
 
   void visit (TypeInfoDelegateDeclaration *d)
   {
-    gcc_assert (d->tinfo->ty == Tdelegate && d->tinfo->deco != NULL);
-    TypeDelegate *ti = (TypeDelegate *) d->tinfo;
+    TypeDelegate *ti = d->tinfo->isTypeDelegate ();
+    gcc_assert (ti->deco != NULL);
 
     /* The vtable for TypeInfo_Delegate.  */
     this->layout_base (Type::typeinfodelegate);
@@ -782,8 +795,7 @@ public:
 
   void visit (TypeInfoClassDeclaration *d)
   {
-    gcc_assert (d->tinfo->ty == Tclass);
-    TypeClass *ti = (TypeClass *) d->tinfo;
+    TypeClass *ti = d->tinfo->isTypeClass ();
     ClassDeclaration *cd = ti->sym;
 
     /* The vtable for ClassInfo.  */
@@ -809,12 +821,12 @@ public:
 	this->layout_string (name);
 
 	/* The vtable of the class declaration.  */
-	value = d_array_value (array_type_node, size_int (cd->vtbl.dim),
+	value = d_array_value (array_type_node, size_int (cd->vtbl.length),
 			       build_address (get_vtable_decl (cd)));
 	this->layout_field (value);
 
 	/* Array of base interfaces that have their own vtable.  */
-	if (cd->vtblInterfaces->dim)
+	if (cd->vtblInterfaces->length)
 	  interfaces = this->layout_interfaces (cd);
 	else
 	  this->layout_field (null_array_node);
@@ -866,7 +878,7 @@ public:
 	    if (!bcd->members)
 	      continue;
 
-	    for (size_t i = 0; i < bcd->members->dim; i++)
+	    for (size_t i = 0; i < bcd->members->length; i++)
 	      {
 		Dsymbol *sm = (*bcd->members)[i];
 		if (sm->hasPointers ())
@@ -915,7 +927,7 @@ public:
 	this->layout_field (null_array_node);
 
 	/* Array of base interfaces that have their own vtable.  */
-	if (cd->vtblInterfaces->dim)
+	if (cd->vtblInterfaces->length)
 	  interfaces = this->layout_interfaces (cd);
 	else
 	  this->layout_field (null_array_node);
@@ -956,13 +968,13 @@ public:
     if (!cd->isInterfaceDeclaration ())
       {
 	/* Put out this class' interface vtables[].  */
-	for (size_t i = 0; i < cd->vtblInterfaces->dim; i++)
+	for (size_t i = 0; i < cd->vtblInterfaces->length; i++)
 	  this->layout_base_vtable (cd, cd, i);
 
 	/* Put out the overriding interface vtables[].  */
 	for (ClassDeclaration *bcd = cd->baseClass; bcd; bcd = bcd->baseClass)
 	  {
-	    for (size_t i = 0; i < bcd->vtblInterfaces->dim; i++)
+	    for (size_t i = 0; i < bcd->vtblInterfaces->length; i++)
 	      this->layout_base_vtable (cd, bcd, i);
 	  }
       }
@@ -975,8 +987,7 @@ public:
 
   void visit (TypeInfoInterfaceDeclaration *d)
   {
-    gcc_assert (d->tinfo->ty == Tclass);
-    TypeClass *ti = (TypeClass *) d->tinfo;
+    TypeClass *ti = d->tinfo->isTypeClass ();
 
     if (!ti->sym->vclassinfo)
       ti->sym->vclassinfo = TypeInfoClassDeclaration::create (ti);
@@ -1009,8 +1020,7 @@ public:
 
   void visit (TypeInfoStructDeclaration *d)
   {
-    gcc_assert (d->tinfo->ty == Tstruct);
-    TypeStruct *ti = (TypeStruct *) d->tinfo;
+    TypeStruct *ti = d->tinfo->isTypeStruct ();
     StructDeclaration *sd = ti->sym;
 
     /* The vtable for TypeInfo_Struct.  */
@@ -1035,8 +1045,7 @@ public:
 
     if (sd->xhash)
       {
-	TypeFunction *tf = (TypeFunction *) sd->xhash->type;
-	gcc_assert (tf->ty == Tfunction);
+	TypeFunction *tf = sd->xhash->type->toTypeFunction ();
 	if (!tf->isnothrow || tf->trust == TRUSTsystem)
 	  {
 	    warning (sd->xhash->loc, "toHash() must be declared as "
@@ -1109,35 +1118,27 @@ public:
 
   void visit (TypeInfoTupleDeclaration *d)
   {
-    gcc_assert (d->tinfo->ty == Ttuple);
-    TypeTuple *ti = (TypeTuple *) d->tinfo;
+    TypeTuple *ti = d->tinfo->isTypeTuple ();
 
     /* The vtable for TypeInfo_Tuple.  */
     this->layout_base (Type::typeinfotypelist);
 
     /* TypeInfo[] elements;  */
-    Type *satype = Type::tvoidptr->sarrayOf (ti->arguments->dim);
+    Type *satype = Type::tvoidptr->sarrayOf (ti->arguments->length);
     vec<constructor_elt, va_gc> *elms = NULL;
-    for (size_t i = 0; i < ti->arguments->dim; i++)
+    for (size_t i = 0; i < ti->arguments->length; i++)
       {
 	Parameter *arg = (*ti->arguments)[i];
 	CONSTRUCTOR_APPEND_ELT (elms, size_int (i),
 				build_typeinfo (d->loc, arg->type));
       }
     tree ctor = build_constructor (build_ctype (satype), elms);
-    tree decl = build_artificial_decl (TREE_TYPE (ctor), ctor);
+    tree decl = this->internal_reference (ctor);
 
-    /* The internal pointer reference should be public, but not visible outside
-       the compilation unit, as it's referencing COMDAT decls.  */
-    TREE_PUBLIC (decl) = 1;
-    DECL_VISIBILITY (decl) = VISIBILITY_INTERNAL;
-    DECL_COMDAT (decl) = 1;
-
-    tree length = size_int (ti->arguments->dim);
+    tree length = size_int (ti->arguments->length);
     tree ptr = build_address (decl);
     this->layout_field (d_array_value (array_type_node, length, ptr));
 
-    d_pushdecl (decl);
     rest_of_decl_compilation (decl, 1, 0);
   }
 };
@@ -1152,8 +1153,7 @@ layout_typeinfo (TypeInfoDeclaration *d)
   if (!Type::dtypeinfo)
     create_frontend_tinfo_types ();
 
-  tree type = TREE_TYPE (get_typeinfo_decl (d));
-  TypeInfoVisitor v = TypeInfoVisitor (type);
+  TypeInfoVisitor v = TypeInfoVisitor (get_typeinfo_decl (d));
   d->accept (&v);
   return v.result ();
 }
@@ -1168,8 +1168,7 @@ layout_classinfo (ClassDeclaration *cd)
     create_frontend_tinfo_types ();
 
   TypeInfoClassDeclaration *d = TypeInfoClassDeclaration::create (cd->type);
-  tree type = TREE_TYPE (get_classinfo_decl (cd));
-  TypeInfoVisitor v = TypeInfoVisitor (type);
+  TypeInfoVisitor v = TypeInfoVisitor (get_classinfo_decl (cd));
   d->accept (&v);
   return v.result ();
 }
@@ -1184,7 +1183,7 @@ layout_classinfo_interfaces (ClassDeclaration *decl)
   tree type = tinfo_types[TK_CLASSINFO_TYPE];
   size_t structsize = int_size_in_bytes (type);
 
-  if (decl->vtblInterfaces->dim)
+  if (decl->vtblInterfaces->length)
     {
       size_t interfacesize = int_size_in_bytes (vtbl_interface_type_node);
       tree field;
@@ -1193,28 +1192,29 @@ layout_classinfo_interfaces (ClassDeclaration *decl)
 
       /* First layout the static array of Interface, which provides information
 	 about the vtables that follow.  */
-      tree domain = size_int (decl->vtblInterfaces->dim - 1);
+      tree domain = size_int (decl->vtblInterfaces->length - 1);
       tree arrtype = build_array_type (vtbl_interface_type_node,
 				       build_index_type (domain));
       field = create_field_decl (arrtype, NULL, 1, 1);
       insert_aggregate_field (type, field, structsize);
-      structsize += decl->vtblInterfaces->dim * interfacesize;
+      structsize += decl->vtblInterfaces->length * interfacesize;
 
       /* For each interface, layout each vtable.  */
-      for (size_t i = 0; i < decl->vtblInterfaces->dim; i++)
+      for (size_t i = 0; i < decl->vtblInterfaces->length; i++)
 	{
 	  BaseClass *b = (*decl->vtblInterfaces)[i];
 	  ClassDeclaration *id = b->sym;
 	  unsigned offset = base_vtable_offset (decl, b);
 
-	  if (id->vtbl.dim && offset != ~0u)
+	  if (id->vtbl.length && offset != ~0u)
 	    {
-	      tree vtbldomain = build_index_type (size_int (id->vtbl.dim - 1));
+	      tree vtbldomain
+		= build_index_type (size_int (id->vtbl.length - 1));
 	      tree vtbltype = build_array_type (vtable_entry_type, vtbldomain);
 
 	      field = create_field_decl (vtbltype, NULL, 1, 1);
 	      insert_aggregate_field (type, field, offset);
-	      structsize += id->vtbl.dim * Target::ptrsize;
+	      structsize += id->vtbl.length * target.ptrsize;
 	    }
 	}
     }
@@ -1222,30 +1222,31 @@ layout_classinfo_interfaces (ClassDeclaration *decl)
   /* Layout the arrays of overriding interface vtables.  */
   for (ClassDeclaration *bcd = decl->baseClass; bcd; bcd = bcd->baseClass)
     {
-      for (size_t i = 0; i < bcd->vtblInterfaces->dim; i++)
+      for (size_t i = 0; i < bcd->vtblInterfaces->length; i++)
 	{
 	  BaseClass *b = (*bcd->vtblInterfaces)[i];
 	  ClassDeclaration *id = b->sym;
 	  unsigned offset = base_vtable_offset (decl, b);
 
-	  if (id->vtbl.dim && offset != ~0u)
+	  if (id->vtbl.length && offset != ~0u)
 	    {
 	      if (type == tinfo_types[TK_CLASSINFO_TYPE])
 		type = copy_aggregate_type (type);
 
-	      tree vtbldomain = build_index_type (size_int (id->vtbl.dim - 1));
+	      tree vtbldomain
+		= build_index_type (size_int (id->vtbl.length - 1));
 	      tree vtbltype = build_array_type (vtable_entry_type, vtbldomain);
 
 	      tree field = create_field_decl (vtbltype, NULL, 1, 1);
 	      insert_aggregate_field (type, field, offset);
-	      structsize += id->vtbl.dim * Target::ptrsize;
+	      structsize += id->vtbl.length * target.ptrsize;
 	    }
 	}
     }
 
   /* Update the type size and record mode for the classinfo type.  */
   if (type != tinfo_types[TK_CLASSINFO_TYPE])
-    finish_aggregate_type (structsize, TYPE_ALIGN_UNIT (type), type, NULL);
+    finish_aggregate_type (structsize, TYPE_ALIGN_UNIT (type), type);
 
   return type;
 }
@@ -1311,8 +1312,7 @@ public:
 
   void visit (TypeInfoClassDeclaration *tid)
   {
-    gcc_assert (tid->tinfo->ty == Tclass);
-    TypeClass *tc = (TypeClass *) tid->tinfo;
+    TypeClass *tc = tid->tinfo->isTypeClass ();
     tid->csym = get_classinfo_decl (tc->sym);
   }
 };
@@ -1406,7 +1406,7 @@ layout_cpp_typeinfo (ClassDeclaration *cd)
 
   /* Let C++ do the RTTI generation, and just reference the symbol as
      extern, knowing the underlying type is not required.  */
-  const char *ident = Target::cppTypeInfoMangle (cd);
+  const char *ident = target.cpp.typeInfoMangle (cd);
   tree typeinfo = declare_extern_var (get_identifier (ident),
 				      unknown_type_node);
   TREE_READONLY (typeinfo) = 1;
@@ -1483,7 +1483,7 @@ create_typeinfo (Type *type, Module *mod)
 	  /* Kinds of TypeInfo that add one extra pointer field.  */
 	  if (tk == TK_SHARED_TYPE)
 	    {
-	      /* Does both 'shared' and 'shared const'.  */
+	      /* Does both `shared' and `shared const'.  */
 	      t->vtinfo = TypeInfoSharedDeclaration::create (t);
 	      ident = Identifier::idPool ("TypeInfo_Shared");
 	    }
@@ -1683,12 +1683,12 @@ public:
   void visit (TypeAArray *t)
   {
     t->index->accept (this);
-    visit ((TypeNext *)t);
+    visit ((TypeNext *) t);
   }
 
   void visit (TypeFunction *t)
   {
-    visit ((TypeNext *)t);
+    visit ((TypeNext *) t);
   }
 
   void visit (TypeStruct *t)
@@ -1723,7 +1723,7 @@ public:
     if (!t->arguments)
       return;
 
-    for (size_t i = 0; i < t->arguments->dim; i++)
+    for (size_t i = 0; i < t->arguments->length; i++)
       {
 	Type *tprm = (*t->arguments)[i]->type;
 	if (tprm)

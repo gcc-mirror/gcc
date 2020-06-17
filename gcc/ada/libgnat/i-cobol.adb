@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -239,11 +239,6 @@ package body Interfaces.COBOL is
                Result := Result * 10 +
                            (COBOL_Character'Pos (K) -
                              COBOL_Character'Pos (COBOL_Digits'First));
-
-            elsif K in COBOL_Plus_Digits then
-               Result := Result * 10 +
-                           (COBOL_Character'Pos (K) -
-                             COBOL_Character'Pos (COBOL_Plus_Digits'First));
 
             elsif K in COBOL_Minus_Digits then
                Result := Result * 10 +

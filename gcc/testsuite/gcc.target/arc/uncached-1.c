@@ -8,4 +8,4 @@ int get_stat (void)
   return *status;
 }
 
-/* { dg-final { scan-assembler-times "ld\.di" 1 } } */
+/* { dg-final { scan-assembler-times "ld\.di" 2 } } */

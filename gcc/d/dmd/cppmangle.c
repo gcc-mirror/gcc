@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -88,7 +88,7 @@ class CppMangleVisitor : public Visitor
     int find(RootObject *p)
     {
         //printf("find %p %d %s\n", p, p.dyncast(), p ? p.toChars() : NULL);
-        for (size_t i = 0; i < components.dim; i++)
+        for (size_t i = 0; i < components.length; i++)
         {
             if (p == components[i])
                 return (int)i;
@@ -131,7 +131,7 @@ class CppMangleVisitor : public Visitor
     {
         // First check the target whether some specific ABI is being followed.
         bool isFundamental;
-        if (Target::cppFundamentalType(t, isFundamental))
+        if (target.cpp.fundamentalType(t, isFundamental))
             return isFundamental;
         if (t->ty == Tenum)
         {
@@ -166,7 +166,7 @@ class CppMangleVisitor : public Visitor
         if (!ti)                // could happen if std::basic_string is not a template
             return;
         buf->writeByte('I');
-        for (size_t i = 0; i < ti->tiargs->dim; i++)
+        for (size_t i = 0; i < ti->tiargs->length; i++)
         {
             RootObject *o = (*ti->tiargs)[i];
             TemplateDeclaration *td = ti->tempdecl->isTemplateDeclaration();
@@ -184,7 +184,7 @@ class CppMangleVisitor : public Visitor
                 buf->writeByte('I');     // argument pack
 
                 // mangle the rest of the arguments as types
-                for (size_t j = i; j < ti->tiargs->dim; j++)
+                for (size_t j = i; j < ti->tiargs->length; j++)
                 {
                     Type *t = isType((*ti->tiargs)[j]);
                     assert(t);
@@ -261,7 +261,7 @@ class CppMangleVisitor : public Visitor
                     fatal();
                 }
             }
-            else if(tp->isTemplateThisParameter())
+            else if (tp->isTemplateThisParameter())
             {
                 ti->error("Internal Compiler Error: C++ `%s` template this parameter is not supported", o->toChars());
                 fatal();
@@ -365,7 +365,7 @@ class CppMangleVisitor : public Visitor
         if (!ti)
             return false;
         Dsymbol *q = getQualifier(ti);
-        return isStd(q) && ti->tiargs->dim == 1 && isChar((*ti->tiargs)[0]);
+        return isStd(q) && ti->tiargs->length == 1 && isChar((*ti->tiargs)[0]);
     }
 
     /***
@@ -376,7 +376,7 @@ class CppMangleVisitor : public Visitor
      */
     bool char_std_char_traits_char(TemplateInstance *ti, const char *st)
     {
-        if (ti->tiargs->dim == 2 &&
+        if (ti->tiargs->length == 2 &&
             isChar((*ti->tiargs)[0]) &&
             isChar_traits_char((*ti->tiargs)[1]))
         {
@@ -411,7 +411,7 @@ class CppMangleVisitor : public Visitor
                         if (s->ident == Id::basic_string)
                         {
                             // ::std::basic_string<char, ::std::char_traits<char>, ::std::allocator<char>>
-                            if (ti->tiargs->dim == 3 &&
+                            if (ti->tiargs->length == 3 &&
                                 isChar((*ti->tiargs)[0]) &&
                                 isChar_traits_char((*ti->tiargs)[1]) &&
                                 isAllocator_char((*ti->tiargs)[2]))
@@ -491,7 +491,7 @@ class CppMangleVisitor : public Visitor
                 else if (s->ident == Id::basic_string)
                 {
                     // ::std::basic_string<char, ::std::char_traits<char>, ::std::allocator<char>>
-                    if (ti->tiargs->dim == 3 &&
+                    if (ti->tiargs->length == 3 &&
                         isChar((*ti->tiargs)[0]) &&
                         isChar_traits_char((*ti->tiargs)[1]) &&
                         isAllocator_char((*ti->tiargs)[2]))
@@ -632,7 +632,7 @@ class CppMangleVisitor : public Visitor
                  *          ::= <prefix> <data-member-prefix>
                  */
                 prefix_name(p);
-                //printf("p: %s\n", buf.peekString());
+                //printf("p: %s\n", buf.peekChars());
 
                 if (d->isCtorDeclaration())
                 {
@@ -657,7 +657,8 @@ class CppMangleVisitor : public Visitor
         if (tf->linkage == LINKcpp) //Template args accept extern "C" symbols with special mangling
         {
             assert(tf->ty == Tfunction);
-            mangleFunctionParameters(tf->parameters, tf->varargs);
+            mangleFunctionParameters(tf->parameterList.parameters,
+                                     tf->parameterList.varargs);
         }
     }
 
@@ -672,7 +673,7 @@ class CppMangleVisitor : public Visitor
             {
                 ParamsCppMangle *p = (ParamsCppMangle *)ctx;
                 CppMangleVisitor *mangler = p->mangler;
-                Type *t = Target::cppParameterType(fparam);
+                Type *t = target.cpp.parameterType(fparam);
                 if (t->ty == Tsarray)
                 {
                     // Static arrays in D are passed by value; no counterpart in C++
@@ -803,7 +804,7 @@ public:
             return error(t);
 
         // Handle any target-specific basic types.
-        if (const char *tm = Target::cppTypeMangle(t))
+        if (const char *tm = target.cpp.typeMangle(t))
         {
             // Only do substitutions for non-fundamental types.
             if (!isFundamentalType(t) || t->isConst())
@@ -862,10 +863,10 @@ public:
             case Tuns32:                c = 'j';        break;
             case Tfloat32:              c = 'f';        break;
             case Tint64:
-                c = (Target::c_longsize == 8 ? 'l' : 'x');
+                c = (target.c.longsize == 8 ? 'l' : 'x');
                 break;
             case Tuns64:
-                c = (Target::c_longsize == 8 ? 'm' : 'y');
+                c = (target.c.longsize == 8 ? 'm' : 'y');
                 break;
             case Tint128:                c = 'n';       break;
             case Tuns128:                c = 'o';       break;
@@ -899,7 +900,7 @@ public:
         CV_qualifiers(t);
 
         // Handle any target-specific vector types.
-        if (const char *tm = Target::cppTypeMangle(t))
+        if (const char *tm = target.cpp.typeMangle(t))
         {
             buf->writestring(tm);
         }
@@ -982,7 +983,8 @@ public:
         if (t->isref)
             tn  = tn->referenceTo();
         tn->accept(this);
-        mangleFunctionParameters(t->parameters, t->varargs);
+        mangleFunctionParameters(t->parameterList.parameters,
+                                 t->parameterList.varargs);
         buf->writeByte('E');
         append(t);
     }
@@ -1030,7 +1032,7 @@ public:
         CV_qualifiers(t);
 
         // Handle any target-specific struct types.
-        if (const char *tm = Target::cppTypeMangle(t))
+        if (const char *tm = target.cpp.typeMangle(t))
         {
             buf->writestring(tm);
         }
@@ -1108,7 +1110,7 @@ public:
     {
         buf->writestring("_ZTI");
         cpp_mangle_name(s, false);
-        return buf->extractString();
+        return buf->extractChars();
     }
 };
 
@@ -1118,7 +1120,7 @@ const char *toCppMangleItanium(Dsymbol *s)
     OutBuffer buf;
     CppMangleVisitor v(&buf, s->loc);
     v.mangleOf(s);
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 const char *cppTypeInfoMangleItanium(Dsymbol *s)
@@ -1128,5 +1130,5 @@ const char *cppTypeInfoMangleItanium(Dsymbol *s)
     buf.writestring("_ZTI");    // "TI" means typeinfo structure
     CppMangleVisitor v(&buf, s->loc);
     v.cpp_mangle_name(s, false);
-    return buf.extractString();
+    return buf.extractChars();
 }

@@ -1203,6 +1203,7 @@ get_expr_source_range (tree expr)
 }
 
 extern void protected_set_expr_location (tree, location_t);
+extern void protected_set_expr_location_if_unset (tree, location_t);
 
 extern tree maybe_wrap_with_location (tree, location_t);
 
@@ -1464,6 +1465,11 @@ class auto_suppress_location_wrappers
   != UNKNOWN_LOCATION)
 #define OMP_CLAUSE_LOCATION(NODE)  (OMP_CLAUSE_CHECK (NODE))->omp_clause.locus
 
+/* True on OMP_FOR and other OpenMP/OpenACC looping constructs if the loop nest
+   is non-rectangular.  */
+#define OMP_FOR_NON_RECTANGULAR(NODE) \
+  (OMP_LOOPING_CHECK (NODE)->base.private_flag)
+
 /* True on an OMP_SECTION statement that was the last lexical member.
    This status is meaningful in the implementation of lastprivate.  */
 #define OMP_SECTION_LAST(NODE) \
@@ -1626,6 +1632,11 @@ class auto_suppress_location_wrappers
    variable.  */
 #define OMP_CLAUSE_MAP_IN_REDUCTION(NODE) \
   TREE_PRIVATE (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP))
+
+/* True on an OMP_CLAUSE_USE_DEVICE_PTR with an OpenACC 'if_present'
+   clause.  */
+#define OMP_CLAUSE_USE_DEVICE_PTR_IF_PRESENT(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_USE_DEVICE_PTR)->base.public_flag)
 
 #define OMP_CLAUSE_PROC_BIND_KIND(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_PROC_BIND)->omp_clause.subcode.proc_bind_kind)
@@ -1990,6 +2001,8 @@ class auto_suppress_location_wrappers
 
 extern machine_mode element_mode (const_tree);
 extern machine_mode vector_type_mode (const_tree);
+extern unsigned int vector_element_bits (const_tree);
+extern tree vector_element_bits_tree (const_tree);
 
 /* The "canonical" type for this type node, which is used by frontends to
    compare the type for equality with another type.  If two types are
@@ -2640,8 +2653,8 @@ extern machine_mode vector_type_mode (const_tree);
    they are killing assignments.  Thus the variable may now
    be treated as a GIMPLE register, and use real instead of
    virtual ops in SSA form.  */
-#define DECL_GIMPLE_REG_P(DECL) \
-  DECL_COMMON_CHECK (DECL)->decl_common.gimple_reg_flag
+#define DECL_NOT_GIMPLE_REG_P(DECL) \
+  DECL_COMMON_CHECK (DECL)->decl_common.not_gimple_reg_flag
 
 extern tree decl_value_expr_lookup (tree);
 extern void decl_value_expr_insert (tree, tree);
@@ -2743,6 +2756,13 @@ extern void decl_value_expr_insert (tree, tree);
 
 /* In a FIELD_DECL, indicates this field should be bit-packed.  */
 #define DECL_PACKED(NODE) (FIELD_DECL_CHECK (NODE)->base.u.bits.packed_flag)
+
+/* In a FIELD_DECL, indicates this field should be ignored for ABI decisions
+   like passing/returning containing struct by value.
+   Set for C++17 empty base artificial FIELD_DECLs as well as
+   empty [[no_unique_address]] non-static data members.  */
+#define DECL_FIELD_ABI_IGNORED(NODE) \
+  (FIELD_DECL_CHECK (NODE)->decl_common.decl_flag_0)
 
 /* Nonzero in a FIELD_DECL means it is a bit field, and must be accessed
    specially.  */
@@ -3031,6 +3051,11 @@ set_function_decl_type (tree decl, function_decl_type t, bool set)
     FUNCTION_DECL_DECL_TYPE (decl) = NONE;
 }
 
+/* Nonzero in a FUNCTION_DECL means this function is a replaceable
+   function (like replaceable operators new or delete).  */
+#define DECL_IS_REPLACEABLE_OPERATOR(NODE)\
+   (FUNCTION_DECL_CHECK (NODE)->function_decl.replaceable_operator)
+
 /* Nonzero in a FUNCTION_DECL means this function should be treated as
    C++ operator new, meaning that it returns a pointer for which we
    should not use type based aliasing.  */
@@ -3038,7 +3063,7 @@ set_function_decl_type (tree decl, function_decl_type t, bool set)
   (FUNCTION_DECL_CHECK (NODE)->function_decl.decl_type == OPERATOR_NEW)
 
 #define DECL_IS_REPLACEABLE_OPERATOR_NEW_P(NODE) \
-  (DECL_IS_OPERATOR_NEW_P (NODE) && DECL_IS_MALLOC (NODE))
+  (DECL_IS_OPERATOR_NEW_P (NODE) && DECL_IS_REPLACEABLE_OPERATOR (NODE))
 
 #define DECL_SET_IS_OPERATOR_NEW(NODE, VAL) \
   set_function_decl_type (FUNCTION_DECL_CHECK (NODE), OPERATOR_NEW, VAL)
@@ -3047,6 +3072,9 @@ set_function_decl_type (tree decl, function_decl_type t, bool set)
    C++ operator delete.  */
 #define DECL_IS_OPERATOR_DELETE_P(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->function_decl.decl_type == OPERATOR_DELETE)
+
+#define DECL_IS_REPLACEABLE_OPERATOR_DELETE_P(NODE) \
+  (DECL_IS_OPERATOR_DELETE_P (NODE) && DECL_IS_REPLACEABLE_OPERATOR (NODE))
 
 #define DECL_SET_IS_OPERATOR_DELETE(NODE, VAL) \
   set_function_decl_type (FUNCTION_DECL_CHECK (NODE), OPERATOR_DELETE, VAL)
@@ -4014,6 +4042,7 @@ tree_strip_any_location_wrapper (tree exp)
 #define uint16_type_node		global_trees[TI_UINT16_TYPE]
 #define uint32_type_node		global_trees[TI_UINT32_TYPE]
 #define uint64_type_node		global_trees[TI_UINT64_TYPE]
+#define uint128_type_node		global_trees[TI_UINT128_TYPE]
 
 #define void_node			global_trees[TI_VOID]
 
@@ -4620,7 +4649,6 @@ extern hashval_t type_hash_canon_hash (tree);
 extern tree type_hash_canon (unsigned int, tree);
 
 extern tree convert (tree, tree);
-extern unsigned int expr_align (const_tree);
 extern tree size_in_bytes_loc (location_t, const_tree);
 inline tree
 size_in_bytes (const_tree t)
@@ -4678,9 +4706,10 @@ extern tree nreverse (tree);
 
 extern int list_length (const_tree);
 
-/* Returns the first FIELD_DECL in a type.  */
+/* Returns the first/last FIELD_DECL in a RECORD_TYPE.  */
 
-extern tree first_field (const_tree);
+extern tree first_field (const_tree) ATTRIBUTE_NONNULL (1);
+extern tree last_field (const_tree) ATTRIBUTE_NONNULL (1);
 
 /* Given an initializer INIT, return TRUE if INIT is zero or some
    aggregate of zeros.  Otherwise return FALSE.  If NONZERO is not
@@ -5604,6 +5633,31 @@ builtin_decl_declared_p (enum built_in_function fncode)
   gcc_checking_assert (BUILTIN_VALID_P (fncode));
   return (builtin_info[uns_fncode].decl != NULL_TREE
 	  && builtin_info[uns_fncode].declared_p);
+}
+
+/* Determine if the function identified by FNDECL is one that
+   makes sense to match by name, for those places where we detect
+   "magic" functions by name.
+
+   Return true if FNDECL has a name and is an extern fndecl at file scope.
+   FNDECL must be a non-NULL decl.
+
+   Avoid using this, as it's generally better to use attributes rather
+   than to check for functions by name.  */
+
+static inline bool
+maybe_special_function_p (const_tree fndecl)
+{
+  tree name_decl = DECL_NAME (fndecl);
+  if (name_decl
+      /* Exclude functions not at the file scope, or not `extern',
+	 since they are not the magic functions we would otherwise
+	 think they are.  */
+      && (DECL_CONTEXT (fndecl) == NULL_TREE
+	  || TREE_CODE (DECL_CONTEXT (fndecl)) == TRANSLATION_UNIT_DECL)
+      && TREE_PUBLIC (fndecl))
+    return true;
+  return false;
 }
 
 /* Return true if T (assumed to be a DECL) is a global variable.

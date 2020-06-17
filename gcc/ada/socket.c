@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 2003-2019, Free Software Foundation, Inc.         *
+ *          Copyright (C) 2003-2020, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -803,10 +803,24 @@ int __gnat_minus_500ms() {
 #if defined (_WIN32)
   // Windows Server 2019 and Windows 8.0 do not need 500 millisecond socket
   // timeout correction.
-  return !(IsWindows8OrGreater() && !IsWindowsServer()
-           || IsWindowsVersionOrGreater(10, 0, 17763));
+  if (IsWindowsServer()) {
+    OSVERSIONINFO osvi;
+    ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
+    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+    // Documentation proposes to use IsWindowsVersionOrGreater(10, 0, 17763)
+    // but it does not compare by the build number (last parameter). See
+    // regression test for RC03-012 in fixedbugs, there are some code to
+    // investigate Windows version API behavior.
+    GetVersionEx(&osvi);
+    return osvi.dwMajorVersion < 10
+        || osvi.dwMajorVersion == 10
+        && osvi.dwMinorVersion == 0
+        && osvi.dwBuildNumber < 17763;
+  } else {
+    return !IsWindows8OrGreater();
+  }
 #else
-   return 0;
+  return 0;
 #endif
 }
 

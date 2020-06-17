@@ -28,6 +28,10 @@
 ;; registers.
 (define_mode_iterator ANY64 [DI DF V8QI V4HI V4HF V2SI V2SF])
 
+;; Additional definition of ANY64 that also includes the special V4BF mode.
+;; BFmode is allowed only on define_split between ARM registers.
+(define_mode_iterator ANY64_BF [DI DF V8QI V4HI V4BF V4HF V2SI V2SF])
+
 (define_mode_iterator ANY128 [V2DI V2DF V16QI V8HI V4SI V4SF])
 
 ;; A list of integer modes that are up to one word long
@@ -62,6 +66,20 @@
 ;; Integer and float modes supported by Neon and IWMMXT.
 (define_mode_iterator VALL [V2DI V2SI V4HI V8QI V2SF V4SI V8HI V16QI V4SF])
 
+;; Integer and float modes supported by Neon, IWMMXT and MVE, used by
+;; arithmetic epxand patterns.
+(define_mode_iterator VNIM [V16QI V8HI V4SI V4SF])
+
+;; Integer and float modes supported by Neon and IWMMXT but not MVE, used by
+;; arithmetic epxand patterns.
+(define_mode_iterator VNINOTM [V2SI V4HI V8QI V2SF V2DI])
+
+;; Integer and float modes supported by Neon, IWMMXT and MVE.
+(define_mode_iterator VNIM1 [V16QI V8HI V4SI V4SF V2DI])
+
+;; Integer and float modes supported by Neon and IWMMXT but not MVE.
+(define_mode_iterator VNINOTM1 [V2SI V4HI V8QI V2SF])
+
 ;; Integer and float modes supported by Neon and IWMMXT, except V2DI.
 (define_mode_iterator VALLW [V2SI V4HI V8QI V2SF V4SI V8HI V16QI V4SF])
 
@@ -78,10 +96,20 @@
 (define_mode_iterator VD_RE [V8QI V4HI V2SI V2SF DI])
 
 ;; Double-width vector modes plus 64-bit elements.
-(define_mode_iterator VDX [V8QI V4HI V4HF V2SI V2SF DI])
+(define_mode_iterator VDX [V8QI V4HI V4HF V4BF V2SI V2SF DI])
+
+;; Double-width vector modes plus 64-bit elements, including V4BF.
+(define_mode_iterator VDXBF [V8QI V4HI V4HF (V4BF "TARGET_BF16_SIMD") V2SI V2SF DI])
+
+;; Double-width vector modes plus 64-bit elements, V4BF and V8BF.
+(define_mode_iterator VDXBF2 [V8QI V4HI V4HF V2SI V2SF DI (V4BF "TARGET_BF16_SIMD") (V8BF ("TARGET_BF16_SIMD"))])
+
+;; Double-width vector modes plus 64-bit elements,
+;; with V4BFmode added, suitable for moves.
+(define_mode_iterator VDXMOV [V8QI V4HI V4HF V4BF V2SI V2SF DI])
 
 ;; Double-width vector modes, with V4HF - for vldN_lane and vstN_lane.
-(define_mode_iterator VD_LANE [V8QI V4HI V4HF V2SI V2SF])
+(define_mode_iterator VD_LANE [V8QI V4HI V4HF V4BF V2SI V2SF])
 
 ;; Double-width vector modes without floating-point elements.
 (define_mode_iterator VDI [V8QI V4HI V2SI])
@@ -92,20 +120,30 @@
 ;; Quad-width vector modes, including V8HF.
 (define_mode_iterator VQ2 [V16QI V8HI V8HF V4SI V4SF])
 
+;; Quad-width vector modes, including V8BF.
+(define_mode_iterator VQ2BF [V16QI V8HI V8HF (V8BF "TARGET_BF16_SIMD") V4SI V4SF])
+
 ;; Quad-width vector modes with 16- or 32-bit elements
 (define_mode_iterator VQ_HS [V8HI V8HF V4SI V4SF])
 
 ;; Quad-width vector modes plus 64-bit elements.
-(define_mode_iterator VQX [V16QI V8HI V8HF V4SI V4SF V2DI])
+(define_mode_iterator VQX [V16QI V8HI V8HF V8BF V4SI V4SF V2DI])
+
+;; Quad-width vector modes plus 64-bit elements.
+(define_mode_iterator VQX_NOBF [V16QI V8HI V8HF V4SI V4SF V2DI])
+
+;; Quad-width vector modes plus 64-bit elements and V8BF.
+(define_mode_iterator VQXBF [V16QI V8HI V8HF (V8BF "TARGET_BF16_SIMD") V4SI V4SF V2DI])
 
 ;; Quad-width vector modes without floating-point elements.
 (define_mode_iterator VQI [V16QI V8HI V4SI])
 
-;; Quad-width vector modes, with TImode added, for moves.
-(define_mode_iterator VQXMOV [V16QI V8HI V8HF V4SI V4SF V2DI TI])
+;; Quad-width vector modes, with TImode and V8BFmode added, suitable for moves.
+(define_mode_iterator VQXMOV [V16QI V8HI V8HF V8BF V4SI V4SF V2DI TI])
 
 ;; Opaque structure types wider than TImode.
-(define_mode_iterator VSTRUCT [EI OI CI XI])
+(define_mode_iterator VSTRUCT [(EI "!TARGET_HAVE_MVE") OI
+			       (CI "!TARGET_HAVE_MVE") XI])
 
 ;; Opaque structure types used in table lookups (except vtbl1/vtbx1).
 (define_mode_iterator VTAB [TI EI OI])
@@ -145,7 +183,7 @@
 
 ;; Vector modes, including 64-bit integer elements.
 (define_mode_iterator VDQX [V8QI V16QI V4HI V8HI V2SI V4SI
-			    V4HF V8HF V2SF V4SF DI V2DI])
+			    V4HF V8HF V4BF V8BF V2SF V4SF DI V2DI])
 
 ;; Vector modes including 64-bit integer elements, but no floats.
 (define_mode_iterator VDQIX [V8QI V16QI V4HI V8HI V2SI V4SI DI V2DI])
@@ -201,6 +239,16 @@
 ;; Vector modes for 16-bit floating-point support.
 (define_mode_iterator VH [V8HF V4HF])
 
+;; 16-bit floating-point vector modes suitable for moving (includes BFmode).
+(define_mode_iterator VHFBF [V8HF V4HF V4BF V8BF])
+
+;; 16-bit floating-point vector modes suitable for moving (includes BFmode,
+;; without V8HF ).
+(define_mode_iterator VHFBF_split [V4HF V4BF V8BF])
+
+;; 16-bit floating-point scalar modes suitable for moving (includes BFmode).
+(define_mode_iterator HFBF [HF BF])
+
 ;; Iterators used for fixed-point support.
 (define_mode_iterator FIXED [QQ HQ SQ UQQ UHQ USQ HA SA UHA USA])
 
@@ -214,6 +262,10 @@
 
 ;; Modes for polynomial or float values.
 (define_mode_iterator VPF [V8QI V16QI V2SF V4SF])
+
+;; Modes for BF16 convert instructions.
+(define_mode_iterator VBFCVT [V4BF V8BF])
+(define_mode_iterator VBFCVTM [V2SI SF])
 
 ;;----------------------------------------------------------------------------
 ;; Code iterators
@@ -466,10 +518,18 @@
 
 (define_int_iterator DOTPROD [UNSPEC_DOT_S UNSPEC_DOT_U])
 
+(define_int_iterator DOTPROD_I8MM [UNSPEC_DOT_US UNSPEC_DOT_SU])
+
 (define_int_iterator VFMLHALVES [UNSPEC_VFML_LO UNSPEC_VFML_HI])
 
 (define_int_iterator VCADD [UNSPEC_VCADD90 UNSPEC_VCADD270])
 (define_int_iterator VCMLA [UNSPEC_VCMLA UNSPEC_VCMLA90 UNSPEC_VCMLA180 UNSPEC_VCMLA270])
+
+(define_int_iterator MATMUL [UNSPEC_MATMUL_S UNSPEC_MATMUL_U UNSPEC_MATMUL_US])
+
+(define_int_iterator BF_MA [UNSPEC_BFMAB UNSPEC_BFMAT])
+
+(define_int_iterator CDE_VCX [UNSPEC_VCDE UNSPEC_VCDEA])
 
 ;;----------------------------------------------------------------------------
 ;; Mode attributes
@@ -484,6 +544,9 @@
 
 ;; vtbl<n> suffix for NEON vector modes.
 (define_mode_attr VTAB_n [(TI "2") (EI "3") (OI "4")])
+
+;; fp16 or bf16 marker for 16-bit float modes.
+(define_mode_attr fporbf [(HF "fp16") (BF "bf16")])
 
 ;; (Opposite) mode to convert to/from for NEON mode conversions.
 (define_mode_attr V_CVTTO [(V2SI "V2SF") (V2SF "V2SI")
@@ -501,6 +564,7 @@
 (define_mode_attr V_elem [(V8QI "QI") (V16QI "QI")
 			  (V4HI "HI") (V8HI "HI")
 			  (V4HF "HF") (V8HF "HF")
+			  (V4BF "BF") (V8BF "BF")
                           (V2SI "SI") (V4SI "SI")
                           (V2SF "SF") (V4SF "SF")
                           (DI "DI")   (V2DI "DI")])
@@ -509,6 +573,7 @@
 (define_mode_attr V_elem_l [(V8QI "qi") (V16QI "qi")
 			    (V4HI "hi") (V8HI "hi")
 			    (V4HF "hf") (V8HF "hf")
+			    (V4BF "bf") (V8BF "bf")
 			    (V2SI "si") (V4SI "si")
 			    (V2SF "sf") (V4SF "sf")
 			    (DI "di")   (V2DI "di")])
@@ -526,6 +591,7 @@
 (define_mode_attr V_two_elem [(V8QI "HI")   (V16QI "HI")
                               (V4HI "SI")   (V8HI "SI")
                               (V4HF "SF")   (V8HF "SF")
+                              (V4BF "BF")   (V8BF "BF")
                               (V2SI "V2SI") (V4SI "V2SI")
                               (V2SF "V2SF") (V4SF "V2SF")
                               (DI "V2DI")   (V2DI "V2DI")])
@@ -546,6 +612,7 @@
 (define_mode_attr V_three_elem [(V8QI "BLK") (V16QI "BLK")
                                 (V4HI "BLK") (V8HI "BLK")
                                 (V4HF "BLK") (V8HF "BLK")
+                                (V4BF "BLK") (V8BF "BLK")
                                 (V2SI "BLK") (V4SI "BLK")
                                 (V2SF "BLK") (V4SF "BLK")
                                 (DI "EI")    (V2DI "EI")])
@@ -554,6 +621,7 @@
 (define_mode_attr V_four_elem [(V8QI "SI")   (V16QI "SI")
                                (V4HI "V4HI") (V8HI "V4HI")
                                (V4HF "V4HF") (V8HF "V4HF")
+                               (V4BF "V4BF") (V8BF "V4BF")
                                (V2SI "V4SI") (V4SI "V4SI")
                                (V2SF "V4SF") (V4SF "V4SF")
                                (DI "OI")     (V2DI "OI")])
@@ -562,10 +630,11 @@
 (define_mode_attr V_reg [(V8QI "P") (V16QI "q")
 			 (V4HI "P") (V8HI  "q")
 			 (V4HF "P") (V8HF  "q")
+			 (V4BF "P") (V8BF  "q")
 			 (V2SI "P") (V4SI  "q")
 			 (V2SF "P") (V4SF  "q")
 			 (DI   "P") (V2DI  "q")
-			 (V2HF "") (SF   "")
+			 (V2HF "") (SF   "") (SI "")
 			 (DF    "P") (HF   "")])
 
 ;; Output template to select the high VFP register of a mult-register value.
@@ -592,7 +661,8 @@
 (define_mode_attr V_HALF [(V16QI "V8QI") (V8HI "V4HI")
 			  (V8HF "V4HF") (V4SI  "V2SI")
 			  (V4SF "V2SF") (V2DF "DF")
-			  (V2DI "DI") (V4HF "HF")])
+			  (V2DI "DI") (V4HF "HF")
+			  (V4BF "BF") (V8BF  "V4BF")])
 
 ;; Same, but lower-case.
 (define_mode_attr V_half [(V16QI "v8qi") (V8HI "v4hi")
@@ -603,7 +673,7 @@
 (define_mode_attr V_DOUBLE [(V8QI "V16QI") (V4HI "V8HI")
 			    (V2SI "V4SI") (V4HF "V8HF")
 			    (V2SF "V4SF") (DF "V2DF")
-			    (DI "V2DI")])
+			    (DI "V2DI")   (V4BF "V8BF")])
 
 ;; Same, but lower-case.
 (define_mode_attr V_double [(V8QI "v16qi") (V4HI "v8hi")
@@ -622,6 +692,7 @@
 					(V4SI "V2SI") (V4SF "V2SF")
 					(V8QI "V8QI") (V4HI "V4HI")
 					(V2SI "V2SI") (V2SF "V2SF")
+					(V8BF "V4BF") (V4BF "V4BF")
 					(V8HF "V4HF") (V4HF "V4HF")])
 
 ;; Mode of result of comparison operations (and bit-select operand 1).
@@ -629,6 +700,7 @@
 				(V4HI "V4HI") (V8HI  "V8HI")
                                 (V2SI "V2SI") (V4SI  "V4SI")
 				(V4HF "V4HI") (V8HF  "V8HI")
+				(V4BF "V4HI") (V8BF  "V8HI")
                                 (V2SF "V2SI") (V4SF  "V4SI")
                                 (DI   "DI")   (V2DI  "V2DI")])
 
@@ -670,6 +742,7 @@
                  (V4HI "u16") (V8HI "u16")
                              (V2SI "32") (V4SI "32")
                              (V4HF "u16") (V8HF "u16")
+                             (V4BF "u16") (V8BF "u16")
                              (V2SF "32") (V4SF "32")])
 
 (define_mode_attr V_sz_elem [(V8QI "8")  (V16QI "8")
@@ -677,6 +750,7 @@
 			     (V2SI "32") (V4SI  "32")
 			     (DI   "64") (V2DI  "64")
 			     (V4HF "16") (V8HF "16")
+			     (V4BF "16") (V8BF "16")
 			     (V2SF "32") (V4SF  "32")])
 
 (define_mode_attr V_elem_ch [(V8QI "b")  (V16QI "b")
@@ -715,6 +789,12 @@
                            (V2SF "") (V4SF "")
                            (DI "_neon") (V2DI "")])
 
+;; To select the low 64 bits of a vector.
+(define_mode_attr V_bf_low [(V4BF "P") (V8BF "e")])
+
+;; To generate intermediate modes for BF16 scalar convert.
+(define_mode_attr V_bf_cvt_m [(V2SI "BF") (SF "V2SI")])
+
 
 ;; Scalars to be presented to scalar multiplication instructions
 ;; must satisfy the following constraints.
@@ -747,10 +827,12 @@
 			    (V2SI "true") (V4SI  "false")
 			    (V2SF "true") (V4SF  "false")
 			    (DI   "true") (V2DI  "false")
+			    (V4BF "true") (V8BF  "false")
 			    (V4HF "true") (V8HF  "false")])
 
 (define_mode_attr V_mode_nunits [(V8QI "8") (V16QI "16")
 				 (V4HF "4") (V8HF "8")
+				 (V4BF "4") (V8BF "8")
                                  (V4HI "4") (V8HI "8")
                                  (V2SI "2") (V4SI "4")
                                  (V2SF "2") (V4SF "4")
@@ -804,6 +886,7 @@
 		     (V4HF "") (V8HF "_q")
 		     (V2SF "") (V4SF "_q")
 		     (V4HF "") (V8HF "_q")
+		     (V4BF "") (V8BF "_q")
 		     (DI "")   (V2DI "_q")
 		     (DF "")   (V2DF "_q")
 		     (HF "")])
@@ -812,6 +895,11 @@
 
 (define_mode_attr VSI2QI [(V2SI "V8QI") (V4SI "V16QI")])
 (define_mode_attr vsi2qi [(V2SI "v8qi") (V4SI "v16qi")])
+
+(define_mode_attr VSF2BF [(V2SF "V4BF") (V4SF "V8BF")])
+
+(define_mode_attr cde_suffix [(SI "") (DI "d")])
+(define_mode_attr cde_dest [(SI "%0") (DI "%0, %H0")])
 
 ;;----------------------------------------------------------------------------
 ;; Code attributes
@@ -920,7 +1008,9 @@
   (UNSPEC_VRSRA_S_N "s") (UNSPEC_VRSRA_U_N "u")
   (UNSPEC_VCVTH_S "s") (UNSPEC_VCVTH_U "u")
   (UNSPEC_DOT_S "s") (UNSPEC_DOT_U "u")
+  (UNSPEC_DOT_US "us") (UNSPEC_DOT_SU "su")
   (UNSPEC_SSAT16 "s") (UNSPEC_USAT16 "u")
+  (UNSPEC_MATMUL_S "s") (UNSPEC_MATMUL_U "u") (UNSPEC_MATMUL_US "us")
 ])
 
 (define_int_attr vfml_half
@@ -1089,6 +1179,9 @@
 			    (UNSPEC_SMUADX "smuadx") (UNSPEC_SSAT16 "ssat16")
 			    (UNSPEC_USAT16 "usat16")])
 
+(define_int_attr mmla_sfx [(UNSPEC_MATMUL_S "s8") (UNSPEC_MATMUL_U "u8")
+			   (UNSPEC_MATMUL_US "s8")])
+
 ;; Both kinds of return insn.
 (define_code_iterator RETURNS [return simple_return])
 (define_code_attr return_str [(return "") (simple_return "simple_")])
@@ -1151,6 +1244,15 @@
 (define_int_attr MRRC [(VUNSPEC_MRRC "MRRC") (VUNSPEC_MRRC2 "MRRC2")])
 
 (define_int_attr opsuffix [(UNSPEC_DOT_S "s8")
-			   (UNSPEC_DOT_U "u8")])
+			   (UNSPEC_DOT_U "u8")
+			   (UNSPEC_DOT_US "s8")
+			   (UNSPEC_DOT_SU "u8")
+			   ])
 
 (define_int_attr smlaw_op [(UNSPEC_SMLAWB "smlawb") (UNSPEC_SMLAWT "smlawt")])
+
+;; An iterator for VFMA<bt>
+(define_int_attr bt [(UNSPEC_BFMAB "b") (UNSPEC_BFMAT "t")])
+
+;; An iterator for CDE MVE accumulator/non-accumulator versions.
+(define_int_attr a [(UNSPEC_VCDE "") (UNSPEC_VCDEA "a")])

@@ -1253,25 +1253,36 @@ scalar_chain::convert ()
   return converted_insns;
 }
 
-/* Return 1 if INSN uses or defines a hard register.
-   Hard register uses in a memory address are ignored.
-   Clobbers and flags definitions are ignored.  */
+/* Return the SET expression if INSN doesn't reference hard register.
+   Return NULL if INSN uses or defines a hard register, excluding
+   pseudo register pushes, hard register uses in a memory address,
+   clobbers and flags definitions.  */
 
-static bool
-has_non_address_hard_reg (rtx_insn *insn)
+static rtx
+pseudo_reg_set (rtx_insn *insn)
 {
+  rtx set = single_set (insn);
+  if (!set)
+    return NULL;
+
+  /* Check pseudo register push first. */
+  if (REG_P (SET_SRC (set))
+      && !HARD_REGISTER_P (SET_SRC (set))
+      && push_operand (SET_DEST (set), GET_MODE (SET_DEST (set))))
+    return set;
+
   df_ref ref;
   FOR_EACH_INSN_DEF (ref, insn)
     if (HARD_REGISTER_P (DF_REF_REAL_REG (ref))
 	&& !DF_REF_FLAGS_IS_SET (ref, DF_REF_MUST_CLOBBER)
 	&& DF_REF_REGNO (ref) != FLAGS_REG)
-      return true;
+      return NULL;
 
   FOR_EACH_INSN_USE (ref, insn)
     if (!DF_REF_REG_MEM_P (ref) && HARD_REGISTER_P (DF_REF_REAL_REG (ref)))
-      return true;
+      return NULL;
 
-  return false;
+  return set;
 }
 
 /* Check if comparison INSN may be transformed
@@ -1345,12 +1356,9 @@ convertible_comparison_p (rtx_insn *insn, enum machine_mode mode)
 static bool
 general_scalar_to_vector_candidate_p (rtx_insn *insn, enum machine_mode mode)
 {
-  rtx def_set = single_set (insn);
+  rtx def_set = pseudo_reg_set (insn);
 
   if (!def_set)
-    return false;
-
-  if (has_non_address_hard_reg (insn))
     return false;
 
   rtx src = SET_SRC (def_set);
@@ -1442,12 +1450,9 @@ general_scalar_to_vector_candidate_p (rtx_insn *insn, enum machine_mode mode)
 static bool
 timode_scalar_to_vector_candidate_p (rtx_insn *insn)
 {
-  rtx def_set = single_set (insn);
+  rtx def_set = pseudo_reg_set (insn);
 
   if (!def_set)
-    return false;
-
-  if (has_non_address_hard_reg (insn))
     return false;
 
   rtx src = SET_SRC (def_set);
@@ -1764,31 +1769,35 @@ convert_scalars_to_vector (bool timode_p)
 
      (set (reg:V2DF R) (reg:V2DF R))
 
-   which preserves the low 128 bits but clobbers the upper bits.
-   For a dead register we just use:
-
-     (clobber (reg:V2DF R))
-
-   which invalidates any previous contents of R and stops R from becoming
-   live across the vzeroupper in future.  */
+   which preserves the low 128 bits but clobbers the upper bits.  */
 
 static void
 ix86_add_reg_usage_to_vzeroupper (rtx_insn *insn, bitmap live_regs)
 {
   rtx pattern = PATTERN (insn);
   unsigned int nregs = TARGET_64BIT ? 16 : 8;
-  rtvec vec = rtvec_alloc (nregs + 1);
-  RTVEC_ELT (vec, 0) = XVECEXP (pattern, 0, 0);
+  unsigned int npats = nregs;
   for (unsigned int i = 0; i < nregs; ++i)
     {
       unsigned int regno = GET_SSE_REGNO (i);
+      if (!bitmap_bit_p (live_regs, regno))
+	npats--;
+    }
+  if (npats == 0)
+    return;
+  rtvec vec = rtvec_alloc (npats + 1);
+  RTVEC_ELT (vec, 0) = XVECEXP (pattern, 0, 0);
+  for (unsigned int i = 0, j = 0; i < nregs; ++i)
+    {
+      unsigned int regno = GET_SSE_REGNO (i);
+      if (!bitmap_bit_p (live_regs, regno))
+	continue;
       rtx reg = gen_rtx_REG (V2DImode, regno);
-      if (bitmap_bit_p (live_regs, regno))
-	RTVEC_ELT (vec, i + 1) = gen_rtx_SET (reg, reg);
-      else
-	RTVEC_ELT (vec, i + 1) = gen_rtx_CLOBBER (VOIDmode, reg);
+      ++j;
+      RTVEC_ELT (vec, j) = gen_rtx_SET (reg, reg);
     }
   XVEC (pattern, 0) = vec;
+  INSN_CODE (insn) = -1;
   df_insn_rescan (insn);
 }
 
@@ -1937,42 +1946,82 @@ make_pass_stv (gcc::context *ctxt)
   return new pass_stv (ctxt);
 }
 
-/* Inserting ENDBRANCH instructions.  */
+/* Inserting ENDBR and pseudo patchable-area instructions.  */
 
-static unsigned int
-rest_of_insert_endbranch (void)
+static void
+rest_of_insert_endbr_and_patchable_area (bool need_endbr,
+					 unsigned int patchable_area_size)
 {
-  timevar_push (TV_MACH_DEP);
-
-  rtx cet_eb;
+  rtx endbr;
   rtx_insn *insn;
+  rtx_insn *endbr_insn = NULL;
   basic_block bb;
 
-  /* Currently emit EB if it's a tracking function, i.e. 'nocf_check' is
-     absent among function attributes.  Later an optimization will be
-     introduced to make analysis if an address of a static function is
-     taken.  A static function whose address is not taken will get a
-     nocf_check attribute.  This will allow to reduce the number of EB.  */
-
-  if (!lookup_attribute ("nocf_check",
-			 TYPE_ATTRIBUTES (TREE_TYPE (cfun->decl)))
-      && (!flag_manual_endbr
-	  || lookup_attribute ("cf_check",
-			       DECL_ATTRIBUTES (cfun->decl)))
-      && !cgraph_node::get (cfun->decl)->only_called_directly_p ())
+  if (need_endbr)
     {
-      /* Queue ENDBR insertion to x86_function_profiler.  */
-      if (crtl->profile && flag_fentry)
-	cfun->machine->endbr_queued_at_entrance = true;
-      else
+      /* Currently emit EB if it's a tracking function, i.e. 'nocf_check'
+	 is absent among function attributes.  Later an optimization will
+	 be introduced to make analysis if an address of a static function
+	 is taken.  A static function whose address is not taken will get
+	 a nocf_check attribute.  This will allow to reduce the number of
+	 EB.  */
+      if (!lookup_attribute ("nocf_check",
+			     TYPE_ATTRIBUTES (TREE_TYPE (cfun->decl)))
+	  && (!flag_manual_endbr
+	      || lookup_attribute ("cf_check",
+				   DECL_ATTRIBUTES (cfun->decl)))
+	  && (!cgraph_node::get (cfun->decl)->only_called_directly_p ()
+	      || ix86_cmodel == CM_LARGE
+	      || ix86_cmodel == CM_LARGE_PIC
+	      || flag_force_indirect_call
+	      || (TARGET_DLLIMPORT_DECL_ATTRIBUTES
+		  && DECL_DLLIMPORT_P (cfun->decl))))
 	{
-	  cet_eb = gen_nop_endbr ();
-
-	  bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
-	  insn = BB_HEAD (bb);
-	  emit_insn_before (cet_eb, insn);
+	  if (crtl->profile && flag_fentry)
+	    {
+	      /* Queue ENDBR insertion to x86_function_profiler.
+		 NB: Any patchable-area insn will be inserted after
+		 ENDBR.  */
+	      cfun->machine->insn_queued_at_entrance = TYPE_ENDBR;
+	    }
+	  else
+	    {
+	      endbr = gen_nop_endbr ();
+	      bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
+	      rtx_insn *insn = BB_HEAD (bb);
+	      endbr_insn = emit_insn_before (endbr, insn);
+	    }
 	}
     }
+
+  if (patchable_area_size)
+    {
+      if (crtl->profile && flag_fentry)
+	{
+	  /* Queue patchable-area insertion to x86_function_profiler.
+	     NB: If there is a queued ENDBR, x86_function_profiler
+	     will also handle patchable-area.  */
+	  if (!cfun->machine->insn_queued_at_entrance)
+	    cfun->machine->insn_queued_at_entrance = TYPE_PATCHABLE_AREA;
+	}
+      else
+	{
+	  rtx patchable_area
+	    = gen_patchable_area (GEN_INT (patchable_area_size),
+				  GEN_INT (crtl->patch_area_entry == 0));
+	  if (endbr_insn)
+	    emit_insn_after (patchable_area, endbr_insn);
+	  else
+	    {
+	      bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
+	      insn = BB_HEAD (bb);
+	      emit_insn_before (patchable_area, insn);
+	    }
+	}
+    }
+
+  if (!need_endbr)
+    return;
 
   bb = 0;
   FOR_EACH_BB_FN (bb, cfun)
@@ -1982,7 +2031,6 @@ rest_of_insert_endbranch (void)
 	{
 	  if (CALL_P (insn))
 	    {
-	      bool need_endbr;
 	      need_endbr = find_reg_note (insn, REG_SETJMP, NULL) != NULL;
 	      if (!need_endbr && !SIBLING_CALL_P (insn))
 		{
@@ -2013,8 +2061,8 @@ rest_of_insert_endbranch (void)
 	      /* Generate ENDBRANCH after CALL, which can return more than
 		 twice, setjmp-like functions.  */
 
-	      cet_eb = gen_nop_endbr ();
-	      emit_insn_after_setloc (cet_eb, insn, INSN_LOCATION (insn));
+	      endbr = gen_nop_endbr ();
+	      emit_insn_after_setloc (endbr, insn, INSN_LOCATION (insn));
 	      continue;
 	    }
 
@@ -2044,31 +2092,30 @@ rest_of_insert_endbranch (void)
 		  dest_blk = e->dest;
 		  insn = BB_HEAD (dest_blk);
 		  gcc_assert (LABEL_P (insn));
-		  cet_eb = gen_nop_endbr ();
-		  emit_insn_after (cet_eb, insn);
+		  endbr = gen_nop_endbr ();
+		  emit_insn_after (endbr, insn);
 		}
 	      continue;
 	    }
 
 	  if (LABEL_P (insn) && LABEL_PRESERVE_P (insn))
 	    {
-	      cet_eb = gen_nop_endbr ();
-	      emit_insn_after (cet_eb, insn);
+	      endbr = gen_nop_endbr ();
+	      emit_insn_after (endbr, insn);
 	      continue;
 	    }
 	}
     }
 
-  timevar_pop (TV_MACH_DEP);
-  return 0;
+  return;
 }
 
 namespace {
 
-const pass_data pass_data_insert_endbranch =
+const pass_data pass_data_insert_endbr_and_patchable_area =
 {
   RTL_PASS, /* type.  */
-  "cet", /* name.  */
+  "endbr_and_patchable_area", /* name.  */
   OPTGROUP_NONE, /* optinfo_flags.  */
   TV_MACH_DEP, /* tv_id.  */
   0, /* properties_required.  */
@@ -2078,32 +2125,41 @@ const pass_data pass_data_insert_endbranch =
   0, /* todo_flags_finish.  */
 };
 
-class pass_insert_endbranch : public rtl_opt_pass
+class pass_insert_endbr_and_patchable_area : public rtl_opt_pass
 {
 public:
-  pass_insert_endbranch (gcc::context *ctxt)
-    : rtl_opt_pass (pass_data_insert_endbranch, ctxt)
+  pass_insert_endbr_and_patchable_area (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_insert_endbr_and_patchable_area, ctxt)
   {}
 
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return ((flag_cf_protection & CF_BRANCH));
+      need_endbr = (flag_cf_protection & CF_BRANCH) != 0;
+      patchable_area_size = crtl->patch_area_size - crtl->patch_area_entry;
+      return need_endbr || patchable_area_size;
     }
 
   virtual unsigned int execute (function *)
     {
-      return rest_of_insert_endbranch ();
+      timevar_push (TV_MACH_DEP);
+      rest_of_insert_endbr_and_patchable_area (need_endbr,
+					       patchable_area_size);
+      timevar_pop (TV_MACH_DEP);
+      return 0;
     }
 
-}; // class pass_insert_endbranch
+private:
+  bool need_endbr;
+  unsigned int patchable_area_size;
+}; // class pass_insert_endbr_and_patchable_area
 
 } // anon namespace
 
 rtl_opt_pass *
-make_pass_insert_endbranch (gcc::context *ctxt)
+make_pass_insert_endbr_and_patchable_area (gcc::context *ctxt)
 {
-  return new pass_insert_endbranch (ctxt);
+  return new pass_insert_endbr_and_patchable_area (ctxt);
 }
 
 /* At entry of the nearest common dominator for basic blocks with
@@ -2221,7 +2277,7 @@ remove_partial_avx_dependency (void)
       loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
       /* Generate a vxorps at entry of the nearest dominator for basic
-	 blocks with conversions, which is in the the fake loop that
+	 blocks with conversions, which is in the fake loop that
 	 contains the whole function, so that there is only a single
 	 vxorps in the whole function.   */
       bb = nearest_common_dominator_for_set (CDI_DOMINATORS,
@@ -2738,26 +2794,16 @@ make_resolver_func (const tree default_decl,
 		    const tree ifunc_alias_decl,
 		    basic_block *empty_bb)
 {
-  char *resolver_name;
-  tree decl, type, decl_name, t;
+  tree decl, type, t;
 
-  /* IFUNC's have to be globally visible.  So, if the default_decl is
-     not, then the name of the IFUNC should be made unique.  */
-  if (TREE_PUBLIC (default_decl) == 0)
-    {
-      char *ifunc_name = make_unique_name (default_decl, "ifunc", true);
-      symtab->change_decl_assembler_name (ifunc_alias_decl,
-					  get_identifier (ifunc_name));
-      XDELETEVEC (ifunc_name);
-    }
-
-  resolver_name = make_unique_name (default_decl, "resolver", false);
+  /* Create resolver function name based on default_decl.  */
+  tree decl_name = clone_function_name (default_decl, "resolver");
+  const char *resolver_name = IDENTIFIER_POINTER (decl_name);
 
   /* The resolver function should return a (void *). */
   type = build_function_type_list (ptr_type_node, NULL_TREE);
 
   decl = build_fn_decl (resolver_name, type);
-  decl_name = get_identifier (resolver_name);
   SET_DECL_ASSEMBLER_NAME (decl, decl_name);
 
   DECL_NAME (decl) = decl_name;
@@ -2784,6 +2830,9 @@ make_resolver_func (const tree default_decl,
       DECL_COMDAT (decl) = 1;
       make_decl_one_only (decl, DECL_ASSEMBLER_NAME (decl));
     }
+  else
+    TREE_PUBLIC (ifunc_alias_decl) = 0;
+
   /* Build result decl and add to function_decl. */
   t = build_decl (UNKNOWN_LOCATION, RESULT_DECL, NULL_TREE, ptr_type_node);
   DECL_CONTEXT (t) = decl;
@@ -2809,7 +2858,6 @@ make_resolver_func (const tree default_decl,
 
   /* Create the alias for dispatch to resolver here.  */
   cgraph_node::create_same_body_alias (ifunc_alias_decl, decl);
-  XDELETEVEC (resolver_name);
   return decl;
 }
 

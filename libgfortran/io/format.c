@@ -954,7 +954,9 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 	    }
 	  tail->u.real.d = fmt->value;
 	  
-	  /* Look for optional exponent */
+	  /* Look for optional exponent, not allowed for FMT_D */
+	  if (t == FMT_D)
+	    break;
 	  u = format_lex (fmt);
 	  if (u != FMT_E)
 	    fmt->saved_token = u;

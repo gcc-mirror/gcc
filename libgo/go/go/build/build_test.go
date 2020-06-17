@@ -7,6 +7,7 @@ package build
 import (
 	"internal/testenv"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -297,7 +298,7 @@ func TestShellSafety(t *testing.T) {
 		result                  bool
 	}{
 		{"-I${SRCDIR}/../include", "/projects/src/issue 11868", "-I/projects/src/issue 11868/../include", true},
-		{"-I${SRCDIR}", "wtf$@%", "-Iwtf$@%", true},
+		{"-I${SRCDIR}", "~wtf$@%^", "-I~wtf$@%^", true},
 		{"-X${SRCDIR}/1,${SRCDIR}/2", "/projects/src/issue 11868", "-X/projects/src/issue 11868/1,/projects/src/issue 11868/2", true},
 		{"-I/tmp -I/tmp", "/tmp2", "-I/tmp -I/tmp", true},
 		{"-I/tmp", "/tmp/[0]", "-I/tmp", true},
@@ -321,7 +322,15 @@ func TestShellSafety(t *testing.T) {
 func TestImportDirNotExist(t *testing.T) {
 	testenv.MustHaveGoBuild(t) // really must just have source
 	ctxt := Default
-	ctxt.GOPATH = ""
+
+	emptyDir, err := ioutil.TempDir("", t.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(emptyDir)
+
+	ctxt.GOPATH = emptyDir
+	ctxt.Dir = emptyDir
 
 	tests := []struct {
 		label        string
@@ -333,20 +342,38 @@ func TestImportDirNotExist(t *testing.T) {
 		{"Import(full, FindOnly)", "go/build/doesnotexist", "", FindOnly},
 		{"Import(local, FindOnly)", "./doesnotexist", filepath.Join(ctxt.GOROOT, "src/go/build"), FindOnly},
 	}
-	for _, test := range tests {
-		p, err := ctxt.Import(test.path, test.srcDir, test.mode)
-		if err == nil || !strings.HasPrefix(err.Error(), "cannot find package") {
-			t.Errorf(`%s got error: %q, want "cannot find package" error`, test.label, err)
-		}
-		// If an error occurs, build.Import is documented to return
-		// a non-nil *Package containing partial information.
-		if p == nil {
-			t.Fatalf(`%s got nil p, want non-nil *Package`, test.label)
-		}
-		// Verify partial information in p.
-		if p.ImportPath != "go/build/doesnotexist" {
-			t.Errorf(`%s got p.ImportPath: %q, want "go/build/doesnotexist"`, test.label, p.ImportPath)
-		}
+
+	defer os.Setenv("GO111MODULE", os.Getenv("GO111MODULE"))
+
+	for _, GO111MODULE := range []string{"off", "on"} {
+		t.Run("GO111MODULE="+GO111MODULE, func(t *testing.T) {
+			os.Setenv("GO111MODULE", GO111MODULE)
+
+			for _, test := range tests {
+				p, err := ctxt.Import(test.path, test.srcDir, test.mode)
+
+				errOk := (err != nil && strings.HasPrefix(err.Error(), "cannot find package"))
+				wantErr := `"cannot find package" error`
+				if test.srcDir == "" {
+					if err != nil && strings.Contains(err.Error(), "is not in GOROOT") {
+						errOk = true
+					}
+					wantErr = `"cannot find package" or "is not in GOROOT" error`
+				}
+				if !errOk {
+					t.Errorf("%s got error: %q, want %s", test.label, err, wantErr)
+				}
+				// If an error occurs, build.Import is documented to return
+				// a non-nil *Package containing partial information.
+				if p == nil {
+					t.Fatalf(`%s got nil p, want non-nil *Package`, test.label)
+				}
+				// Verify partial information in p.
+				if p.ImportPath != "go/build/doesnotexist" {
+					t.Errorf(`%s got p.ImportPath: %q, want "go/build/doesnotexist"`, test.label, p.ImportPath)
+				}
+			}
+		})
 	}
 }
 
@@ -421,6 +448,47 @@ func TestImportVendorParentFailure(t *testing.T) {
 	}
 }
 
+// Check that a package is loaded in module mode if GO111MODULE=on, even when
+// no go.mod file is present. It should fail to resolve packages outside std.
+// Verifies golang.org/issue/34669.
+func TestImportPackageOutsideModule(t *testing.T) {
+	testenv.MustHaveGoBuild(t)
+
+	// Disable module fetching for this test so that 'go list' fails quickly
+	// without trying to find the latest version of a module.
+	defer os.Setenv("GOPROXY", os.Getenv("GOPROXY"))
+	os.Setenv("GOPROXY", "off")
+
+	// Create a GOPATH in a temporary directory. We don't use testdata
+	// because it's in GOROOT, which interferes with the module heuristic.
+	gopath, err := ioutil.TempDir("", "gobuild-notmodule")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(gopath)
+	if err := os.MkdirAll(filepath.Join(gopath, "src/example.com/p"), 0777); err != nil {
+		t.Fatal(err)
+	}
+	if err := ioutil.WriteFile(filepath.Join(gopath, "src/example.com/p/p.go"), []byte("package p"), 0666); err != nil {
+		t.Fatal(err)
+	}
+
+	defer os.Setenv("GO111MODULE", os.Getenv("GO111MODULE"))
+	os.Setenv("GO111MODULE", "on")
+	defer os.Setenv("GOPATH", os.Getenv("GOPATH"))
+	os.Setenv("GOPATH", gopath)
+	ctxt := Default
+	ctxt.GOPATH = gopath
+	ctxt.Dir = filepath.Join(gopath, "src/example.com/p")
+
+	want := "cannot find module providing package"
+	if _, err := ctxt.Import("example.com/p", gopath, FindOnly); err == nil {
+		t.Fatal("importing package when no go.mod is present succeeded unexpectedly")
+	} else if errStr := err.Error(); !strings.Contains(errStr, want) {
+		t.Fatalf("error when importing package when no go.mod is present: got %q; want %q", errStr, want)
+	}
+}
+
 func TestImportDirTarget(t *testing.T) {
 	testenv.MustHaveGoBuild(t) // really must just have source
 	ctxt := Default
@@ -447,5 +515,58 @@ func TestIssue23594(t *testing.T) {
 
 	if p.Doc != "Correct" {
 		t.Fatalf("incorrectly set .Doc to %q", p.Doc)
+	}
+}
+
+// TestMissingImportErrorRepetition checks that when an unknown package is
+// imported, the package path is only shown once in the error.
+// Verifies golang.org/issue/34752.
+func TestMissingImportErrorRepetition(t *testing.T) {
+	testenv.MustHaveGoBuild(t) // need 'go list' internally
+	tmp, err := ioutil.TempDir("", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tmp)
+	if err := ioutil.WriteFile(filepath.Join(tmp, "go.mod"), []byte("module m"), 0666); err != nil {
+		t.Fatal(err)
+	}
+	defer os.Setenv("GO111MODULE", os.Getenv("GO111MODULE"))
+	os.Setenv("GO111MODULE", "on")
+	defer os.Setenv("GOPROXY", os.Getenv("GOPROXY"))
+	os.Setenv("GOPROXY", "off")
+	defer os.Setenv("GONOPROXY", os.Getenv("GONOPROXY"))
+	os.Setenv("GONOPROXY", "none")
+
+	ctxt := Default
+	ctxt.Dir = tmp
+
+	pkgPath := "example.com/hello"
+	_, err = ctxt.Import(pkgPath, tmp, FindOnly)
+	if err == nil {
+		t.Fatal("unexpected success")
+	}
+	// Don't count the package path with a URL like https://...?go-get=1.
+	// See golang.org/issue/35986.
+	errStr := strings.ReplaceAll(err.Error(), "://"+pkgPath+"?go-get=1", "://...?go-get=1")
+	if n := strings.Count(errStr, pkgPath); n != 1 {
+		t.Fatalf("package path %q appears in error %d times; should appear once\nerror: %v", pkgPath, n, err)
+	}
+}
+
+// TestCgoImportsIgnored checks that imports in cgo files are not included
+// in the imports list when cgo is disabled.
+// Verifies golang.org/issue/35946.
+func TestCgoImportsIgnored(t *testing.T) {
+	ctxt := Default
+	ctxt.CgoEnabled = false
+	p, err := ctxt.ImportDir("testdata/cgo_disabled", 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, path := range p.Imports {
+		if path == "should/be/ignored" {
+			t.Errorf("found import %q in ignored cgo file", path)
+		}
 	}
 }

@@ -79,7 +79,7 @@ enum gomp_map_kind
     /* OpenACC link.  */
     GOMP_MAP_LINK =			(GOMP_MAP_FLAG_SPECIAL_1 | 2),
     /* Use device data if present, fall back to host address otherwise.  */
-    GOMP_MAP_IF_PRESENT =			(GOMP_MAP_FLAG_SPECIAL_1 | 3),
+    GOMP_MAP_IF_PRESENT =		(GOMP_MAP_FLAG_SPECIAL_1 | 3),
     /* Do not map, copy bits for firstprivate instead.  */
     GOMP_MAP_FIRSTPRIVATE =		(GOMP_MAP_FLAG_SPECIAL | 0),
     /* Similarly, but store the value in the pointer rather than
@@ -101,6 +101,10 @@ enum gomp_map_kind
     GOMP_MAP_FORCE_FROM =		(GOMP_MAP_FLAG_FORCE | GOMP_MAP_FROM),
     /* ..., and copy to and from device.  */
     GOMP_MAP_FORCE_TOFROM =		(GOMP_MAP_FLAG_FORCE | GOMP_MAP_TOFROM),
+    /* Like GOMP_MAP_USE_DEVICE_PTR above, translate a host to a device
+       address.  If translation fails because the target is not mapped,
+       continue using the host address. */
+    GOMP_MAP_USE_DEVICE_PTR_IF_PRESENT = (GOMP_MAP_FLAG_SPECIAL_2 | 0),
     /* If not already present, allocate.  And unconditionally copy to
        device.  */
     GOMP_MAP_ALWAYS_TO =		(GOMP_MAP_FLAG_SPECIAL_2 | GOMP_MAP_TO),
@@ -194,21 +198,6 @@ enum gomp_map_kind
 
 #define GOMP_DEVICE_ICV			-1
 #define GOMP_DEVICE_HOST_FALLBACK	-2
-
-/* Device property codes.  Keep in sync with
-   libgomp/{openacc.h,openacc.f90}:acc_device_property_t */
-/* Start from 1 to catch uninitialized use.  */
-enum gomp_device_property
-  {
-   GOMP_DEVICE_PROPERTY_MEMORY =	1,
-   GOMP_DEVICE_PROPERTY_FREE_MEMORY = 	2,
-   GOMP_DEVICE_PROPERTY_NAME =		0x10001,
-   GOMP_DEVICE_PROPERTY_VENDOR =	0x10002,
-   GOMP_DEVICE_PROPERTY_DRIVER =	0x10003
-  };
-
-/* Internal property mask to tell numeric and string values apart.  */
-#define GOMP_DEVICE_PROPERTY_STRING_MASK	0x10000
 
 /* GOMP_task/GOMP_taskloop* flags argument.  */
 #define GOMP_TASK_FLAG_UNTIED		(1 << 0)

@@ -31,11 +31,11 @@ consteval consteval int f11 () { return 0; }	// { dg-error "duplicate 'consteval
 struct U { consteval ~U () {} };	// { dg-error "a destructor cannot be 'consteval'" }
 struct V { consteval int v = 5; };	// { dg-error "non-static data member 'v' declared 'consteval'" }
 struct W { consteval static int w; };	// { dg-error "static data member 'w' declared 'consteval'" }
-int i = sizeof (&f6);			// { dg-error "taking address of an immediate function 'consteval int f6\\(int\\)'" }
-using j = decltype (&f6);		// { dg-error "taking address of an immediate function 'consteval int f6\\(int\\)'" }
-int k = sizeof (f6 (d));		// { dg-error "the value of 'd' is not usable in a constant expression" }
-using l = decltype (f6 (d));		// { dg-error "the value of 'd' is not usable in a constant expression" }
-bool m = noexcept (f6 (d));		// { dg-error "the value of 'd' is not usable in a constant expression" }
+int i = sizeof (&f6);			// { dg-bogus "taking address of an immediate function 'consteval int f6\\(int\\)'" }
+using j = decltype (&f6);		// { dg-bogus "taking address of an immediate function 'consteval int f6\\(int\\)'" }
+int k = sizeof (f6 (d));		// { dg-bogus "the value of 'd' is not usable in a constant expression" }
+using l = decltype (f6 (d));		// { dg-bogus "the value of 'd' is not usable in a constant expression" }
+bool m = noexcept (f6 (d));		// { dg-bogus "the value of 'd' is not usable in a constant expression" }
 namespace std {
 using size_t = decltype (sizeof (0));
 }

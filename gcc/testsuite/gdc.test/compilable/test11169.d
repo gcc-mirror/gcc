@@ -43,3 +43,18 @@ void main()
     static assert(!__traits(compiles, { auto b = new B2(); }));
     static assert(!__traits(compiles, { auto b = new B3(); }));
 }
+
+class B : A
+{
+    // __traits(isAbstractClass) is not usable in static if condition.
+       static assert (!__traits(isAbstractClass, typeof(this)));
+
+    override void foo()
+    {
+    }
+}
+
+void main2()
+{
+    B b = new B();
+}

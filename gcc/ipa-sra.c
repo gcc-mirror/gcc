@@ -83,7 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "cfganal.h"
 #include "tree-streamer.h"
-
+#include "internal-fn.h"
 
 /* Bits used to track size of an aggregate in bytes interprocedurally.  */
 #define ISRA_ARG_SIZE_LIMIT_BITS 16
@@ -795,17 +795,17 @@ get_single_param_flow_source (const isra_param_flow *param_flow)
 }
 
 /* Inspect all uses of NAME and simple arithmetic calculations involving NAME
-   in NODE and return a negative number if any of them is used for something
-   else than either an actual call argument, simple arithmetic operation or
-   debug statement.  If there are no such uses, return the number of actual
-   arguments that this parameter eventually feeds to (or zero if there is none).
-   For any such parameter, mark PARM_NUM as one of its sources.  ANALYZED is a
-   bitmap that tracks which SSA names we have already started
-   investigating.  */
+   in FUN represented with NODE and return a negative number if any of them is
+   used for something else than either an actual call argument, simple
+   arithmetic operation or debug statement.  If there are no such uses, return
+   the number of actual arguments that this parameter eventually feeds to (or
+   zero if there is none).  For any such parameter, mark PARM_NUM as one of its
+   sources.  ANALYZED is a bitmap that tracks which SSA names we have already
+   started investigating.  */
 
 static int
-isra_track_scalar_value_uses (cgraph_node *node, tree name, int parm_num,
-			      bitmap analyzed)
+isra_track_scalar_value_uses (function *fun, cgraph_node *node, tree name,
+			      int parm_num, bitmap analyzed)
 {
   int res = 0;
   imm_use_iterator imm_iter;
@@ -859,8 +859,9 @@ isra_track_scalar_value_uses (cgraph_node *node, tree name, int parm_num,
 	    }
 	  res += all_uses;
 	}
-      else if ((is_gimple_assign (stmt) && !gimple_has_volatile_ops (stmt))
-	       || gimple_code (stmt) == GIMPLE_PHI)
+      else if (!stmt_unremovable_because_of_non_call_eh_p (fun, stmt)
+	       && ((is_gimple_assign (stmt) && !gimple_has_volatile_ops (stmt))
+		   || gimple_code (stmt) == GIMPLE_PHI))
 	{
 	  tree lhs;
 	  if (gimple_code (stmt) == GIMPLE_PHI)
@@ -876,7 +877,7 @@ isra_track_scalar_value_uses (cgraph_node *node, tree name, int parm_num,
 	  gcc_assert (!gimple_vdef (stmt));
 	  if (bitmap_set_bit (analyzed, SSA_NAME_VERSION (lhs)))
 	    {
-	      int tmp = isra_track_scalar_value_uses (node, lhs, parm_num,
+	      int tmp = isra_track_scalar_value_uses (fun, node, lhs, parm_num,
 						      analyzed);
 	      if (tmp < 0)
 		{
@@ -927,7 +928,8 @@ isra_track_scalar_param_local_uses (function *fun, cgraph_node *node, tree parm,
     return true;
 
   bitmap analyzed = BITMAP_ALLOC (NULL);
-  int call_uses = isra_track_scalar_value_uses (node, name, parm_num, analyzed);
+  int call_uses = isra_track_scalar_value_uses (fun, node, name, parm_num,
+						analyzed);
   BITMAP_FREE (analyzed);
   if (call_uses < 0)
     return true;
@@ -1281,7 +1283,9 @@ allocate_access (gensum_param_desc *desc,
 }
 
 /* In what context scan_expr_access has been called, whether it deals with a
-   load, a function argument, or a store.  */
+   load, a function argument, or a store.  Please note that in rare
+   circumstances when it is not clear if the access is a load or store,
+   ISRA_CTX_STORE is used too.  */
 
 enum isra_scan_context {ISRA_CTX_LOAD, ISRA_CTX_ARG, ISRA_CTX_STORE};
 
@@ -1870,15 +1874,27 @@ scan_function (cgraph_node *node, struct function *fun)
 	    case GIMPLE_CALL:
 	      {
 		unsigned argument_count = gimple_call_num_args (stmt);
-		scan_call_info call_info;
-		call_info.cs = node->get_edge (stmt);
-		call_info.argument_count = argument_count;
+		isra_scan_context ctx = ISRA_CTX_ARG;
+		scan_call_info call_info, *call_info_p = &call_info;
+		if (gimple_call_internal_p (stmt))
+		  {
+		    call_info_p = NULL;
+		    ctx = ISRA_CTX_LOAD;
+		    internal_fn ifn = gimple_call_internal_fn (stmt);
+		    if (internal_store_fn_p (ifn))
+		      ctx = ISRA_CTX_STORE;
+		  }
+		else
+		  {
+		    call_info.cs = node->get_edge (stmt);
+		    call_info.argument_count = argument_count;
+		  }
 
 		for (unsigned i = 0; i < argument_count; i++)
 		  {
 		    call_info.arg_idx = i;
 		    scan_expr_access (gimple_call_arg (stmt, i), stmt,
-				      ISRA_CTX_ARG, bb, &call_info);
+				      ctx, bb, call_info_p);
 		  }
 
 		tree lhs = gimple_call_lhs (stmt);
@@ -2279,7 +2295,9 @@ process_scan_results (cgraph_node *node, struct function *fun,
       if (!desc->by_ref || optimize_function_for_size_p (fun))
 	param_size_limit = cur_param_size;
       else
-	param_size_limit = param_ipa_sra_ptr_growth_factor * cur_param_size;
+	  param_size_limit
+	    = opt_for_fn (node->decl,
+			  param_ipa_sra_ptr_growth_factor) * cur_param_size;
       if (nonarg_acc_size > param_size_limit
 	  || (!desc->by_ref && nonarg_acc_size == param_size_limit))
 	{
@@ -2499,7 +2517,7 @@ ipa_sra_summarize_function (cgraph_node *node)
 	  bb_dereferences = XCNEWVEC (HOST_WIDE_INT,
 				      by_ref_count
 				      * last_basic_block_for_fn (fun));
-	  aa_walking_limit = param_ipa_max_aa_steps;
+	  aa_walking_limit = opt_for_fn (node->decl, param_ipa_max_aa_steps);
 	  scan_function (node, fun);
 
 	  if (dump_file)
@@ -2895,10 +2913,14 @@ ipa_sra_ipa_function_checks (cgraph_node *node)
 
 struct caller_issues
 {
+  /* The candidate being considered.  */
+  cgraph_node *candidate;
   /* There is a thunk among callers.  */
   bool thunk;
   /* Call site with no available information.  */
   bool unknown_callsite;
+  /* Call from outside the the candidate's comdat group.  */
+  bool call_from_outside_comdat;
   /* There is a bit-aligned load into one of non-gimple-typed arguments. */
   bool bit_aligned_aggregate_argument;
 };
@@ -2918,6 +2940,13 @@ check_for_caller_issues (struct cgraph_node *node, void *data)
 	  issues->thunk = true;
 	  /* TODO: We should be able to process at least some types of
 	     thunks.  */
+	  return true;
+	}
+      if (issues->candidate->calls_comdat_local
+	  && issues->candidate->same_comdat_group
+	  && !issues->candidate->in_same_comdat_group_p (cs->caller))
+	{
+	  issues->call_from_outside_comdat = true;
 	  return true;
 	}
 
@@ -2942,6 +2971,7 @@ check_all_callers_for_issues (cgraph_node *node)
 {
   struct caller_issues issues;
   memset (&issues, 0, sizeof (issues));
+  issues.candidate = node;
 
   node->call_for_symbol_and_aliases (check_for_caller_issues, &issues, true);
   if (issues.unknown_callsite)
@@ -2958,6 +2988,13 @@ check_all_callers_for_issues (cgraph_node *node)
 	fprintf (dump_file, "A call of %s is through thunk, which are not"
 		 " handled yet.  Disabling all modifications.\n",
 		 node->dump_name ());
+      return true;
+    }
+  if (issues.call_from_outside_comdat)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Function would become private comdat called "
+		 "outside of its comdat group.\n");
       return true;
     }
 
@@ -3246,16 +3283,17 @@ all_callee_accesses_present_p (isra_param_desc *param_desc,
 enum acc_prop_kind {ACC_PROP_DONT, ACC_PROP_COPY, ACC_PROP_CERTAIN};
 
 
-/* Attempt to propagate all definite accesses from ARG_DESC to PARAM_DESC, if
-   they would not violate some constraint there.  If successful, return NULL,
-   otherwise return the string reason for failure (which can be written to the
-   dump file).  DELTA_OFFSET is the known offset of the actual argument withing
-   the formal parameter (so of ARG_DESCS within PARAM_DESCS), ARG_SIZE is the
-   size of the actual argument or zero, if not known. In case of success, set
-   *CHANGE_P to true if propagation actually changed anything.  */
+/* Attempt to propagate all definite accesses from ARG_DESC to PARAM_DESC,
+   (which belongs to CALLER) if they would not violate some constraint there.
+   If successful, return NULL, otherwise return the string reason for failure
+   (which can be written to the dump file).  DELTA_OFFSET is the known offset
+   of the actual argument withing the formal parameter (so of ARG_DESCS within
+   PARAM_DESCS), ARG_SIZE is the size of the actual argument or zero, if not
+   known. In case of success, set *CHANGE_P to true if propagation actually
+   changed anything.  */
 
 static const char *
-pull_accesses_from_callee (isra_param_desc *param_desc,
+pull_accesses_from_callee (cgraph_node *caller, isra_param_desc *param_desc,
 			   isra_param_desc *arg_desc,
 			   unsigned delta_offset, unsigned arg_size,
 			   bool *change_p)
@@ -3335,7 +3373,7 @@ pull_accesses_from_callee (isra_param_desc *param_desc,
       return NULL;
 
     if ((prop_count + pclen
-	 > (unsigned) param_ipa_sra_max_replacements)
+	 > (unsigned) opt_for_fn (caller->decl, param_ipa_sra_max_replacements))
 	|| size_would_violate_limit_p (param_desc,
 				       param_desc->size_reached + prop_size))
       return "propagating accesses would violate the count or size limit";
@@ -3455,7 +3493,8 @@ param_splitting_across_edge (cgraph_edge *cs)
 	  else
 	    {
 	      const char *pull_failure
-		= pull_accesses_from_callee (param_desc, arg_desc, 0, 0, &res);
+		= pull_accesses_from_callee (cs->caller, param_desc, arg_desc,
+					     0, 0, &res);
 	      if (pull_failure)
 		{
 		  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3516,7 +3555,7 @@ param_splitting_across_edge (cgraph_edge *cs)
 	  else
 	    {
 	      const char *pull_failure
-		= pull_accesses_from_callee (param_desc, arg_desc,
+		= pull_accesses_from_callee (cs->caller, param_desc, arg_desc,
 					     ipf->unit_offset,
 					     ipf->unit_size, &res);
 	      if (pull_failure)
@@ -3675,6 +3714,17 @@ push_param_adjustments_for_index (isra_func_summary *ifs, unsigned base_index,
     }
 }
 
+/* Worker for all call_for_symbol_thunks_and_aliases.  Set calls_comdat_local
+   flag of all callers of NODE.  */
+
+static bool
+mark_callers_calls_comdat_local (struct cgraph_node *node, void *)
+{
+  for (cgraph_edge *cs = node->callers; cs; cs = cs->next_caller)
+    cs->caller->calls_comdat_local = true;
+  return false;
+}
+
 
 /* Do final processing of results of IPA propagation regarding NODE, clone it
    if appropriate.  */
@@ -3759,8 +3809,12 @@ process_isra_node_results (cgraph_node *node,
     = node->create_virtual_clone (callers, NULL, new_adjustments, "isra",
 				  suffix_counter);
   suffix_counter++;
-  if (node->same_comdat_group)
-    new_node->add_to_same_comdat_group (node);
+  if (node->calls_comdat_local && node->same_comdat_group)
+    {
+      new_node->add_to_same_comdat_group (node);
+      new_node->call_for_symbol_and_aliases (mark_callers_calls_comdat_local,
+					     NULL, true);
+    }
   new_node->calls_comdat_local = node->calls_comdat_local;
 
   if (dump_file)

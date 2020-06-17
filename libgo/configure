@@ -633,6 +633,8 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+HAVE_STATIC_LINK_FALSE
+HAVE_STATIC_LINK_TRUE
 HAVE_STAT_TIMESPEC_FALSE
 HAVE_STAT_TIMESPEC_TRUE
 STRUCT_EPOLL_EVENT_FD_OFFSET
@@ -849,6 +851,7 @@ enable_fast_install
 enable_libtool_lock
 enable_werror
 enable_version_specific_runtime_libs
+with_toolexeclibdir
 with_libffi
 with_libatomic
 with_system_libunwind
@@ -1503,6 +1506,9 @@ Optional Packages:
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
   --with-pic              try to use only PIC/non-PIC objects [default=use
                           both]
+  --with-toolexeclibdir=DIR
+                          install libraries built with a cross compiler within
+                          DIR
   --without-libffi        don't use libffi
   --without-libatomic     don't use libatomic
   --with-system-libunwind use installed libunwind
@@ -2544,7 +2550,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 ac_config_headers="$ac_config_headers config.h"
 
 
-libtool_VERSION=15:0:0
+libtool_VERSION=16:0:0
 
 
 # Default to --enable-multilib
@@ -11486,7 +11492,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11489 "configure"
+#line 11495 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11592,7 +11598,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11595 "configure"
+#line 11601 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13800,6 +13806,22 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $version_specific_libs" >&5
 $as_echo "$version_specific_libs" >&6; }
 
+
+# Check whether --with-toolexeclibdir was given.
+if test "${with_toolexeclibdir+set}" = set; then :
+  withval=$with_toolexeclibdir; case ${with_toolexeclibdir} in
+  /)
+    ;;
+  */)
+    with_toolexeclibdir=`echo $with_toolexeclibdir | sed 's,/$,,'`
+    ;;
+esac
+else
+  with_toolexeclibdir=no
+fi
+
+
+
 # Version-specific runtime libs processing.
 if test $version_specific_libs = yes; then
   glibgo_toolexecdir='${libdir}/gcc/${host_alias}'
@@ -13811,7 +13833,14 @@ fi
 if test -n "$with_cross_host" &&
    test x"$with_cross_host" != x"no"; then
   nover_glibgo_toolexecdir='${exec_prefix}/${host_alias}'
-  nover_glibgo_toolexeclibdir='${toolexecdir}/lib'
+  case ${with_toolexeclibdir} in
+    no)
+      nover_glibgo_toolexeclibdir='${toolexecdir}/lib'
+      ;;
+    *)
+      nover_glibgo_toolexeclibdir=${with_toolexeclibdir}
+      ;;
+  esac
 else
   nover_glibgo_toolexecdir='${libdir}/gcc/${host_alias}'
   nover_glibgo_toolexeclibdir='${libdir}'
@@ -15761,6 +15790,44 @@ $as_echo "#define HAVE_AS_X86_AES 1" >>confdefs.h
 
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether -static is supported" >&5
+$as_echo_n "checking whether -static is supported... " >&6; }
+if ${libgo_cv_ld_static+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  LDFLAGS_hold=$LDFLAGS
+LDFLAGS="$LDFLAGS -static"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  libgo_cv_ld_static=yes
+else
+  libgo_cv_ld_static=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LDFLAGS=$LDFLAGS_hold
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_ld_static" >&5
+$as_echo "$libgo_cv_ld_static" >&6; }
+ if test "$libgo_cv_ld_static" = yes; then
+  HAVE_STATIC_LINK_TRUE=
+  HAVE_STATIC_LINK_FALSE='#'
+else
+  HAVE_STATIC_LINK_TRUE='#'
+  HAVE_STATIC_LINK_FALSE=
+fi
+
+
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -16079,6 +16146,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_STAT_TIMESPEC_TRUE}" && test -z "${HAVE_STAT_TIMESPEC_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_STAT_TIMESPEC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_STATIC_LINK_TRUE}" && test -z "${HAVE_STATIC_LINK_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_STATIC_LINK\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

@@ -1,5 +1,5 @@
 /* nodiscard attribute tests  */
-/* { dg-do compile { target c++2a } } */
+/* { dg-do compile { target c++20 } } */
 /* { dg-options "-O -ftrack-macro-expansion=0" } */
 
 struct A { [[nodiscard("bad constructor")]] A() {} };

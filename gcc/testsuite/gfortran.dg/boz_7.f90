@@ -7,6 +7,6 @@
 !
 integer :: k, m
 integer :: j = z'000abc' ! { dg-error "BOZ used outside a DATA statement" }
-data k/x'0003'/ ! { dg-error "nonstandard syntax" }
+data k/x'0003'/ ! { dg-error "nonstandard X instead of Z" }
 data m/'0003'z/ ! { dg-error "nonstandard postfix" }
 end

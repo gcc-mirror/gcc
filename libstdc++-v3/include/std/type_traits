@@ -197,8 +197,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Helper functions that return false_type for incomplete classes,
   // incomplete unions and arrays of known bound from those.
 
-  template <typename _T, size_t = sizeof(_T)>
-    constexpr true_type __is_complete_or_unbounded(__type_identity<_T>)
+  template <typename _Tp, size_t = sizeof(_Tp)>
+    constexpr true_type __is_complete_or_unbounded(__type_identity<_Tp>)
     { return {}; }
 
   template <typename _TypeIdentity,
@@ -622,6 +622,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 	  >;
 
+  // Check if a type is one of the signed or unsigned integer types.
+  template<typename _Tp>
+    using __is_standard_integer
+      = __or_<__is_signed_integer<_Tp>, __is_unsigned_integer<_Tp>>;
 
   // __void_t (std::void_t for C++11)
   template<typename...> using __void_t = void;
@@ -685,10 +689,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	"template argument must be a complete class or an unbounded array");
     };
 
-  /// is_pod
+  /// is_pod (deprecated in C++20)
   // Could use is_standard_layout && is_trivial instead of the builtin.
   template<typename _Tp>
-    struct is_pod
+    struct
+    _GLIBCXX20_DEPRECATED("use is_standard_layout && is_trivial instead")
+    is_pod
     : public integral_constant<bool, __is_pod(_Tp)>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
@@ -955,61 +961,47 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	"template argument must be a complete class or an unbounded array");
     };
 
-  template<typename _Tp>
-    struct __is_nt_default_constructible_atom
-    : public integral_constant<bool, noexcept(_Tp())>
+  template<bool, typename _Tp, typename... _Args>
+    struct __is_nt_constructible_impl
+    : public false_type
     { };
-
-  template<typename _Tp, bool = is_array<_Tp>::value>
-    struct __is_nt_default_constructible_impl;
-
-  template<typename _Tp>
-    struct __is_nt_default_constructible_impl<_Tp, true>
-    : public __and_<__is_array_known_bounds<_Tp>,
-		    __is_nt_default_constructible_atom<typename
-                      remove_all_extents<_Tp>::type>>
-    { };
-
-  template<typename _Tp>
-    struct __is_nt_default_constructible_impl<_Tp, false>
-    : public __is_nt_default_constructible_atom<_Tp>
-    { };
-
-  template<typename _Tp>
-    using __is_nothrow_default_constructible_impl
-      = __and_<__is_constructible_impl<_Tp>,
-	       __is_nt_default_constructible_impl<_Tp>>;
-
-  /// is_nothrow_default_constructible
-  template<typename _Tp>
-    struct is_nothrow_default_constructible
-    : public __is_nothrow_default_constructible_impl<_Tp>::type
-    {
-      static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
-	"template argument must be a complete class or an unbounded array");
-    };
 
   template<typename _Tp, typename... _Args>
-    struct __is_nt_constructible_impl
-    : public integral_constant<bool, noexcept(_Tp(declval<_Args>()...))>
+    struct __is_nt_constructible_impl<true, _Tp, _Args...>
+    : public __bool_constant<noexcept(_Tp(std::declval<_Args>()...))>
     { };
 
   template<typename _Tp, typename _Arg>
-    struct __is_nt_constructible_impl<_Tp, _Arg>
-    : public integral_constant<bool,
-                               noexcept(static_cast<_Tp>(declval<_Arg>()))>
+    struct __is_nt_constructible_impl<true, _Tp, _Arg>
+    : public __bool_constant<noexcept(static_cast<_Tp>(std::declval<_Arg>()))>
     { };
 
   template<typename _Tp>
-    struct __is_nt_constructible_impl<_Tp>
-    : public __is_nothrow_default_constructible_impl<_Tp>
+    struct __is_nt_constructible_impl<true, _Tp>
+    : public __bool_constant<noexcept(_Tp())>
     { };
 
-  template<typename _Tp, typename... _Args>
-    struct __is_nothrow_constructible_impl
-    : public __and_<__is_constructible_impl<_Tp, _Args...>,
-		    __is_nt_constructible_impl<_Tp, _Args...>>
+  template<typename _Tp, size_t _Num>
+    struct __is_nt_constructible_impl<true, _Tp[_Num]>
+    : public __bool_constant<noexcept(typename remove_all_extents<_Tp>::type())>
     { };
+
+#if __cpp_aggregate_paren_init
+  template<typename _Tp, size_t _Num, typename _Arg>
+    struct __is_nt_constructible_impl<true, _Tp[_Num], _Arg>
+    : public __is_nt_constructible_impl<true, _Tp, _Arg>
+    { };
+
+  template<typename _Tp, size_t _Num, typename... _Args>
+    struct __is_nt_constructible_impl<true, _Tp[_Num], _Args...>
+    : public __and_<__is_nt_constructible_impl<true, _Tp, _Args>...>
+    { };
+#endif
+
+  template<typename _Tp, typename... _Args>
+    using __is_nothrow_constructible_impl
+      = __is_nt_constructible_impl<__is_constructible(_Tp, _Args...),
+				   _Tp, _Args...>;
 
   /// is_nothrow_constructible
   template<typename _Tp, typename... _Args>
@@ -1019,6 +1011,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
     };
+
+  /// is_nothrow_default_constructible
+  template<typename _Tp>
+    struct is_nothrow_default_constructible
+    : public __is_nothrow_constructible_impl<_Tp>::type
+    {
+      static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
+	"template argument must be a complete class or an unbounded array");
+    };
+
 
   template<typename _Tp, bool = __is_referenceable<_Tp>::value>
     struct __is_nothrow_copy_constructible_impl;
@@ -1446,6 +1448,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __is_convertible_helper<_From, _To>::type
     { };
 
+  // helper trait for unique_ptr<T[]>, shared_ptr<T[]>, and span<T, N>
+  template<typename _ToElementType, typename _FromElementType>
+    using __is_array_convertible
+      = is_convertible<_FromElementType(*)[], _ToElementType(*)[]>;
+
   template<typename _From, typename _To,
            bool = __or_<is_void<_From>, is_function<_To>,
                         is_array<_To>>::value>
@@ -1475,11 +1482,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 #pragma GCC diagnostic pop
 
-  // helper trait for unique_ptr<T[]>, shared_ptr<T[]>, and span<T, N>
-  template<typename _ToElementType, typename _FromElementType>
-    using __is_array_convertible
-      = is_convertible<_FromElementType(*)[], _ToElementType(*)[]>;
-
   // is_nothrow_convertible for C++11
   template<typename _From, typename _To>
     struct __is_nothrow_convertible
@@ -1487,6 +1489,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
 #if __cplusplus > 201703L
+#define __cpp_lib_is_nothrow_convertible 201806L
   /// is_nothrow_convertible
   template<typename _From, typename _To>
     struct is_nothrow_convertible
@@ -3077,8 +3080,12 @@ template <typename _Tp>
     is_trivially_copyable<_Tp>::value;
 template <typename _Tp>
   inline constexpr bool is_standard_layout_v = is_standard_layout<_Tp>::value;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 template <typename _Tp>
+  _GLIBCXX20_DEPRECATED("use is_standard_layout_v && is_trivial_v instead")
   inline constexpr bool is_pod_v = is_pod<_Tp>::value;
+#pragma GCC diagnostic pop
 template <typename _Tp>
   inline constexpr bool is_literal_type_v = is_literal_type<_Tp>::value;
 template <typename _Tp>
@@ -3215,6 +3222,8 @@ template <typename _From, typename _To>
 #endif // C++17
 
 #if __cplusplus > 201703L
+#define __cpp_lib_remove_cvref 201711L
+
   /// Remove references and cv-qualifiers.
   template<typename _Tp>
     struct remove_cvref
@@ -3225,12 +3234,15 @@ template <typename _From, typename _To>
   template<typename _Tp>
     using remove_cvref_t = __remove_cvref_t<_Tp>;
 
+#define __cpp_lib_type_identity 201806L
   /// Identity metafunction.
   template<typename _Tp>
     struct type_identity { using type = _Tp; };
 
   template<typename _Tp>
     using type_identity_t = typename type_identity<_Tp>::type;
+
+#define __cpp_lib_unwrap_ref 201811L
 
   /// Unwrap a reference_wrapper
   template<typename _Tp>

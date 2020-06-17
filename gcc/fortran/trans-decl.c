@@ -1552,6 +1552,9 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       sym->ts.u.cl->backend_decl = build_fold_indirect_ref (sym->ts.u.cl->backend_decl);
     }
 
+  if (is_CFI_desc (sym, NULL))
+    gfc_defer_symbol_init (sym);
+
   fun_or_res = byref && (sym->attr.result
 			 || (sym->attr.function && sym->ts.deferred));
   if ((sym->attr.dummy && ! sym->attr.function) || fun_or_res)
@@ -1679,15 +1682,17 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 
       TREE_USED (sym->backend_decl) = 1;
       if (sym->attr.assign && GFC_DECL_ASSIGN (sym->backend_decl) == 0)
-	{
-	  gfc_add_assign_aux_vars (sym);
-	}
+	gfc_add_assign_aux_vars (sym);
 
       if (sym->ts.type == BT_CLASS && sym->backend_decl)
 	GFC_DECL_CLASS(sym->backend_decl) = 1;
 
      return sym->backend_decl;
     }
+
+  if (sym->result == sym && sym->attr.assign
+      && GFC_DECL_ASSIGN (sym->backend_decl) == 0)
+    gfc_add_assign_aux_vars (sym);
 
   if (sym->backend_decl)
     return sym->backend_decl;
@@ -2642,8 +2647,8 @@ create_function_arglist (gfc_symbol * sym)
 	      || f->sym->ts.u.cl->backend_decl == length)
 	    {
 	      if (POINTER_TYPE_P (len_type))
-		f->sym->ts.u.cl->backend_decl =
-			build_fold_indirect_ref_loc (input_location, length);
+		f->sym->ts.u.cl->backend_decl
+		  = build_fold_indirect_ref_loc (input_location, length);
 	      else if (f->sym->ts.u.cl->backend_decl == NULL)
 		gfc_create_string_length (f->sym);
 
@@ -2674,6 +2679,8 @@ create_function_arglist (gfc_symbol * sym)
           DECL_ARG_TYPE (tmp) = boolean_type_node;
           TREE_READONLY (tmp) = 1;
           gfc_finish_decl (tmp);
+
+	  hidden_typelist = TREE_CHAIN (hidden_typelist);
 	}
 
       /* For non-constant length array arguments, make sure they use
@@ -3190,6 +3197,9 @@ gfc_get_fake_result_decl (gfc_symbol * sym, int parent_flag)
     parent_fake_result_decl = build_tree_list (NULL, decl);
   else
     current_fake_result_decl = build_tree_list (NULL, decl);
+
+  if (sym->attr.assign)
+    DECL_LANG_SPECIFIC (decl) = DECL_LANG_SPECIFIC (sym->backend_decl);
 
   return decl;
 }
@@ -3763,12 +3773,17 @@ gfc_build_builtin_function_decls (void)
 	get_identifier (PREFIX("internal_unpack")), ".wR",
 	void_type_node, 2, pvoid_type_node, pvoid_type_node);
 
+  /* These two builtins write into what the first argument points to and
+     read from what the second argument points to, but we can't use R
+     for that, because the directly pointed structure contains a pointer
+     which is copied into the descriptor pointed by the first argument,
+     effectively escaping that way.  See PR92123.  */
   gfor_fndecl_cfi_to_gfc = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("cfi_desc_to_gfc_desc")), ".ww",
+	get_identifier (PREFIX("cfi_desc_to_gfc_desc")), ".w.",
 	void_type_node, 2, pvoid_type_node, ppvoid_type_node);
 
   gfor_fndecl_gfc_to_cfi = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("gfc_desc_to_cfi_desc")), ".wR",
+	get_identifier (PREFIX("gfc_desc_to_cfi_desc")), ".w.",
 	void_type_node, 2, ppvoid_type_node, pvoid_type_node);
 
   gfor_fndecl_associated = gfc_build_library_function_decl_with_spec (
@@ -4398,6 +4413,8 @@ convert_CFI_desc (gfc_wrapped_block * block, gfc_symbol *sym)
      while CFI_desc is the descriptor itself.  */
   if (DECL_LANG_SPECIFIC (sym->backend_decl))
     CFI_desc = GFC_DECL_SAVED_DESCRIPTOR (sym->backend_decl);
+  else if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (TREE_TYPE (sym->backend_decl))))
+    CFI_desc = sym->backend_decl;
   else
     CFI_desc = NULL;
 
@@ -6060,7 +6077,7 @@ generate_local_decl (gfc_symbol * sym)
       /* Unused procedure passed as dummy argument.  */
       if (sym->attr.flavor == FL_PROCEDURE)
 	{
-	  if (!sym->attr.referenced)
+	  if (!sym->attr.referenced && !sym->attr.artificial)
 	    {
 	      if (warn_unused_dummy_argument)
 		gfc_warning (OPT_Wunused_dummy_argument,

@@ -160,7 +160,7 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
      -- if T is a scalar type, the storage is set to the value of zero
 	converted to T.
 
-     -- if T is a non-union class type, the storage for each nonstatic
+     -- if T is a non-union class type, the storage for each non-static
 	data member and each base-class subobject is zero-initialized.
 
      -- if T is a union type, the storage for its first data member is
@@ -585,16 +585,18 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
 	  DECL_INSTANTIATING_NSDMI_P (member) = 1;
 
 	  bool pushed = false;
-	  if (!currently_open_class (DECL_CONTEXT (member)))
+	  tree ctx = DECL_CONTEXT (member);
+	  if (!currently_open_class (ctx)
+	      && !LOCAL_CLASS_P (ctx))
 	    {
 	      push_to_top_level ();
-	      push_nested_class (DECL_CONTEXT (member));
+	      push_nested_class (ctx);
 	      pushed = true;
 	    }
 
 	  gcc_checking_assert (!processing_template_decl);
 
-	  inject_this_parameter (DECL_CONTEXT (member), TYPE_UNQUALIFIED);
+	  inject_this_parameter (ctx, TYPE_UNQUALIFIED);
 
 	  start_lambda_scope (member);
 
@@ -655,6 +657,10 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
   if (simple_target)
     init = TARGET_EXPR_INITIAL (init);
   init = break_out_target_exprs (init, /*loc*/true);
+  if (in_ctor && init && TREE_CODE (init) == TARGET_EXPR)
+    /* This expresses the full initialization, prevent perform_member_init from
+       calling another constructor (58162).  */
+    TARGET_EXPR_DIRECT_INIT_P (init) = true;
   if (simple_target && TREE_CODE (init) != CONSTRUCTOR)
     /* Now put it back so C++17 copy elision works.  */
     init = get_target_expr (init);
@@ -797,6 +803,20 @@ perform_member_init (tree member, tree init)
 		    member);
     }
 
+  if (array_of_unknown_bound_p (type))
+    {
+      maybe_reject_flexarray_init (member, init);
+      return;
+    }
+
+  if (init && TREE_CODE (init) == TREE_LIST
+      && (DIRECT_LIST_INIT_P (TREE_VALUE (init))
+	  /* FIXME C++20 parenthesized aggregate init (PR 92812).  */
+	  || !(/* cxx_dialect >= cxx20 ? CP_AGGREGATE_TYPE_P (type) */
+	       /* :  */CLASS_TYPE_P (type))))
+    init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
+					    tf_warning_or_error);
+
   if (init == void_type_node)
     {
       /* mem() means value-initialization.  */
@@ -828,12 +848,7 @@ perform_member_init (tree member, tree init)
     }
   else if (init
 	   && (TYPE_REF_P (type)
-	       /* Pre-digested NSDMI.  */
-	       || (((TREE_CODE (init) == CONSTRUCTOR
-		     && TREE_TYPE (init) == type)
-		    /* { } mem-initializer.  */
-		    || (TREE_CODE (init) == TREE_LIST
-			&& DIRECT_LIST_INIT_P (TREE_VALUE (init))))
+	       || (TREE_CODE (init) == CONSTRUCTOR
 		   && (CP_AGGREGATE_TYPE_P (type)
 		       || is_std_init_list (type)))))
     {
@@ -843,10 +858,7 @@ perform_member_init (tree member, tree init)
 	 persists until the constructor exits."  */
       unsigned i; tree t;
       releasing_vec cleanups;
-      if (TREE_CODE (init) == TREE_LIST)
-	init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
-						tf_warning_or_error);
-      if (TREE_TYPE (init) != type)
+      if (!same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (init), type))
 	{
 	  if (BRACE_ENCLOSED_INITIALIZER_P (init)
 	      && CP_AGGREGATE_TYPE_P (type))
@@ -854,6 +866,11 @@ perform_member_init (tree member, tree init)
 	  init = digest_init (type, init, tf_warning_or_error);
 	}
       if (init == error_mark_node)
+	return;
+      if (DECL_SIZE (member) && integer_zerop (DECL_SIZE (member))
+	  && !TREE_SIDE_EFFECTS (init))
+	/* Don't add trivial initialization of an empty base/field, as they
+	   might not be ordered the way the back-end expects.  */
 	return;
       /* A FIELD_DECL doesn't really have a suitable lifetime, but
 	 make_temporary_var_for_ref_to_temp will treat it as automatic and
@@ -872,23 +889,6 @@ perform_member_init (tree member, tree init)
     {
       if (TREE_CODE (type) == ARRAY_TYPE)
 	{
-	  if (init)
-	    {
-	      /* Check to make sure the member initializer is valid and
-		 something like a CONSTRUCTOR in: T a[] = { 1, 2 } and
-		 if it isn't, return early to avoid triggering another
-		 error below.  */
-	      if (maybe_reject_flexarray_init (member, init))
-		return;
-
-	      if (TREE_CODE (init) != TREE_LIST || TREE_CHAIN (init))
-		init = error_mark_node;
-	      else
-		init = TREE_VALUE (init);
-
-	      if (BRACE_ENCLOSED_INITIALIZER_P (init))
-		init = digest_init (type, init, tf_warning_or_error);
-	    }
 	  if (init == NULL_TREE
 	      || same_type_ignoring_top_level_qualifiers_p (type,
 							    TREE_TYPE (init)))
@@ -958,16 +958,10 @@ perform_member_init (tree member, tree init)
 						      /*using_new=*/false,
 						      /*complain=*/true);
 	}
-      else if (TREE_CODE (init) == TREE_LIST)
-	/* There was an explicit member initialization.  Do some work
-	   in that case.  */
-	init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
-						tf_warning_or_error);
 
       maybe_warn_list_ctor (member, init);
 
-      /* Reject a member initializer for a flexible array member.  */
-      if (init && !maybe_reject_flexarray_init (member, init))
+      if (init)
 	finish_expr_stmt (cp_build_modify_expr (input_location, decl,
 						INIT_EXPR, init,
 						tf_warning_or_error));
@@ -2227,8 +2221,8 @@ build_offset_ref (tree type, tree member, bool address_p,
       /* If MEMBER is non-static, then the program has fallen afoul of
 	 [expr.prim]:
 
-	   An id-expression that denotes a nonstatic data member or
-	   nonstatic member function of a class can only be used:
+	   An id-expression that denotes a non-static data member or
+	   non-static member function of a class can only be used:
 
 	   -- as part of a class member access (_expr.ref_) in which the
 	   object-expression refers to the member's class or a class
@@ -2236,8 +2230,8 @@ build_offset_ref (tree type, tree member, bool address_p,
 
 	   -- to form a pointer to member (_expr.unary.op_), or
 
-	   -- in the body of a nonstatic member function of that class or
-	   of a class derived from that class (_class.mfct.nonstatic_), or
+	   -- in the body of a non-static member function of that class or
+	   of a class derived from that class (_class.mfct.non-static_), or
 
 	   -- in a mem-initializer for a constructor for that class or for
 	   a class derived from that class (_class.base.init_).  */
@@ -2915,7 +2909,7 @@ build_new_constexpr_heap_type (tree elt_type, tree cookie_size, tree full_size)
 static tree
 maybe_wrap_new_for_constexpr (tree alloc_call, tree elt_type, tree cookie_size)
 {
-  if (cxx_dialect < cxx2a)
+  if (cxx_dialect < cxx20)
     return alloc_call;
 
   if (current_function_decl != NULL_TREE
@@ -3282,7 +3276,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       /* Create the argument list.  */
       vec_safe_insert (*placement, 0, size);
       /* Do name-lookup to find the appropriate operator.  */
-      fns = lookup_fnfields (elt_type, fnname, /*protect=*/2);
+      fns = lookup_fnfields (elt_type, fnname, /*protect=*/2, complain);
       if (fns == NULL_TREE)
 	{
 	  if (complain & tf_error)
@@ -3524,13 +3518,17 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	  explicit_value_init_p = true;
 	}
 
-      if (processing_template_decl && explicit_value_init_p)
+      if (processing_template_decl)
 	{
+	  /* Avoid an ICE when converting to a base in build_simple_base_path.
+	     We'll throw this all away anyway, and build_new will create
+	     a NEW_EXPR.  */
+	  tree t = fold_convert (build_pointer_type (elt_type), data_addr);
 	  /* build_value_init doesn't work in templates, and we don't need
 	     the initializer anyway since we're going to throw it away and
 	     rebuild it at instantiation time, so just build up a single
 	     constructor call to get any appropriate diagnostics.  */
-	  init_expr = cp_build_fold_indirect_ref (data_addr);
+	  init_expr = cp_build_fold_indirect_ref (t);
 	  if (type_build_ctor_call (elt_type))
 	    init_expr = build_special_member_call (init_expr,
 						   complete_ctor_identifier,
@@ -3613,7 +3611,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 		 means allocate an int, and initialize it with 10.
 
 		 In C++20, also handle `new A(1, 2)'.  */
-	      if (cxx_dialect >= cxx2a
+	      if (cxx_dialect >= cxx20
 		  && AGGREGATE_TYPE_P (type)
 		  && (*init)->length () > 1)
 		{
@@ -4078,7 +4076,9 @@ build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
     }
 
   body = loop;
-  if (!deallocate_expr)
+  if (deallocate_expr == error_mark_node)
+    return error_mark_node;
+  else if (!deallocate_expr)
     ;
   else if (!body)
     body = deallocate_expr;
@@ -4442,6 +4442,8 @@ build_vec_init (tree base, tree maxindex, tree init,
 	    errors = true;
 	  if (try_const)
 	    {
+	      if (!field)
+		field = size_int (idx);
 	      tree e = maybe_constant_init (one_init);
 	      if (reduced_constant_expression_p (e))
 		{
@@ -4993,7 +4995,9 @@ build_delete (location_t loc, tree otype, tree addr,
       return expr;
     }
 
-  if (do_delete)
+  if (do_delete == error_mark_node)
+    return error_mark_node;
+  else if (do_delete)
     {
       tree do_delete_call_expr = extract_call_expr (do_delete);
       if (TREE_CODE (do_delete_call_expr) == CALL_EXPR)

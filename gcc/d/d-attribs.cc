@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 
+#include "dmd/attrib.h"
 #include "dmd/declaration.h"
 #include "dmd/mtype.h"
 
@@ -52,6 +53,7 @@ static tree handle_type_generic_attribute (tree *, tree, tree, int, bool *);
 static tree handle_transaction_pure_attribute (tree *, tree, tree, int, bool *);
 static tree handle_returns_twice_attribute (tree *, tree, tree, int, bool *);
 static tree handle_fnspec_attribute (tree *, tree, tree, int, bool *);
+static tree handle_always_inline_attribute (tree *, tree, tree, int, bool *);
 
 /* D attribute handlers for user defined attributes.  */
 static tree d_handle_noinline_attribute (tree *, tree, tree, int, bool *);
@@ -137,6 +139,8 @@ const attribute_spec d_langhook_common_attribute_table[] =
 	     handle_type_generic_attribute, NULL),
   ATTR_SPEC ("fn spec", 1, 1, false, true, true, false,
 	     handle_fnspec_attribute, NULL),
+  ATTR_SPEC ("always_inline", 0, 0, true,  false, false, false,
+	     handle_always_inline_attribute, NULL),
   ATTR_SPEC (NULL, 0, 0, false, false, false, false, NULL, NULL),
 };
 
@@ -231,7 +235,7 @@ uda_attribute_p (const char *name)
    `gcc.attribute.Attribute'.  This symbol is internally recognized by the
    compiler and maps them to their equivalent GCC attribute.  */
 
-tree
+static tree
 build_attributes (Expressions *eattrs)
 {
   if (!eattrs)
@@ -241,7 +245,7 @@ build_attributes (Expressions *eattrs)
 
   tree attribs = NULL_TREE;
 
-  for (size_t i = 0; i < eattrs->dim; i++)
+  for (size_t i = 0; i < eattrs->length; i++)
     {
       Expression *attr = (*eattrs)[i];
       Dsymbol *sym = attr->type->toDsymbol (0);
@@ -250,7 +254,7 @@ build_attributes (Expressions *eattrs)
 	continue;
 
       /* Attribute symbol must come from the `gcc.attribute' module.  */
-      Dsymbol *mod = (Dsymbol*) sym->getModule ();
+      Dsymbol *mod = (Dsymbol *) sym->getModule ();
       if (!(strcmp (mod->toChars (), "attribute") == 0
 	    && mod->parent != NULL
 	    && strcmp (mod->parent->toChars (), "gcc") == 0
@@ -264,7 +268,7 @@ build_attributes (Expressions *eattrs)
       /* Should now have a struct `Attribute("attrib", "value", ...)'
 	 initializer list.  */
       gcc_assert (attr->op == TOKstructliteral);
-      Expressions *elems = ((StructLiteralExp*) attr)->elements;
+      Expressions *elems = attr->isStructLiteralExp ()->elements;
       Expression *e0 = (*elems)[0];
 
       if (e0->op != TOKstring)
@@ -273,7 +277,7 @@ build_attributes (Expressions *eattrs)
 	  return error_mark_node;
 	}
 
-      StringExp *se = (StringExp*) e0;
+      StringExp *se = e0->toStringExp ();
       gcc_assert (se->sz == 1);
 
       /* Empty string attribute, just ignore it.  */
@@ -293,13 +297,13 @@ build_attributes (Expressions *eattrs)
       /* Chain all attribute arguments together.  */
       tree args = NULL_TREE;
 
-      for (size_t j = 1; j < elems->dim; j++)
+      for (size_t j = 1; j < elems->length; j++)
 	{
 	  Expression *e = (*elems)[j];
+	  StringExp *s = e->isStringExp ();
 	  tree t;
-	  if (e->op == TOKstring && ((StringExp *) e)->sz == 1)
+	  if (s != NULL && s->sz == 1)
 	    {
-	      StringExp *s = (StringExp *) e;
 	      const char *string = (const char *)(s->len ? s->string : "");
 	      t = build_string (s->len, string);
 	    }
@@ -316,15 +320,39 @@ build_attributes (Expressions *eattrs)
   return attribs;
 }
 
-/* Built-in attribute handlers.  */
+/* If any GCC attributes are found in the declaration SYM, apply them to the
+   type or decl NODE.  */
+
+void
+apply_user_attributes (Dsymbol *sym, tree node)
+{
+  if (!sym->userAttribDecl)
+    {
+      if (DECL_P (node) && DECL_ATTRIBUTES (node) != NULL)
+	decl_attributes (&node, DECL_ATTRIBUTES (node), 0);
+
+      return;
+    }
+
+  location_t saved_location = input_location;
+  input_location = make_location_t (sym->loc);
+
+  Expressions *attrs = sym->userAttribDecl->getAttributes ();
+  decl_attributes (&node, build_attributes (attrs),
+		   TYPE_P (node) ? ATTR_FLAG_TYPE_IN_PLACE : 0);
+
+  input_location = saved_location;
+}
+
+/* Built-in attribute handlers.
+   These functions take the arguments:
+   (tree *node, tree name, tree args, int flags, bool *no_add_attrs)  */
 
 /* Handle a "noreturn" attribute; arguments as in
    struct attribute_spec.handler.  */
 
 static tree
-handle_noreturn_attribute (tree *node, tree ARG_UNUSED (name),
-			   tree ARG_UNUSED (args), int ARG_UNUSED (flags),
-			   bool * ARG_UNUSED (no_add_attrs))
+handle_noreturn_attribute (tree *node, tree, tree, int, bool *)
 {
   tree type = TREE_TYPE (*node);
 
@@ -346,9 +374,7 @@ handle_noreturn_attribute (tree *node, tree ARG_UNUSED (name),
    struct attribute_spec.handler.  */
 
 static tree
-handle_leaf_attribute (tree *node, tree name,
-		       tree ARG_UNUSED (args),
-		       int ARG_UNUSED (flags), bool *no_add_attrs)
+handle_leaf_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
 {
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
@@ -368,9 +394,7 @@ handle_leaf_attribute (tree *node, tree name,
    struct attribute_spec.handler.  */
 
 static tree
-handle_const_attribute (tree *node, tree ARG_UNUSED (name),
-			tree ARG_UNUSED (args), int ARG_UNUSED (flags),
-			bool * ARG_UNUSED (no_add_attrs))
+handle_const_attribute (tree *node, tree, tree, int, bool *)
 {
   tree type = TREE_TYPE (*node);
 
@@ -392,9 +416,7 @@ handle_const_attribute (tree *node, tree ARG_UNUSED (name),
    struct attribute_spec.handler.  */
 
 tree
-handle_malloc_attribute (tree *node, tree ARG_UNUSED (name),
-			 tree ARG_UNUSED (args), int ARG_UNUSED (flags),
-			 bool * ARG_UNUSED (no_add_attrs))
+handle_malloc_attribute (tree *node, tree, tree, int, bool *)
 {
   gcc_assert (TREE_CODE (*node) == FUNCTION_DECL
 	      && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (*node))));
@@ -406,9 +428,7 @@ handle_malloc_attribute (tree *node, tree ARG_UNUSED (name),
    struct attribute_spec.handler.  */
 
 static tree
-handle_pure_attribute (tree *node, tree ARG_UNUSED (name),
-		       tree ARG_UNUSED (args), int ARG_UNUSED (flags),
-		       bool * ARG_UNUSED (no_add_attrs))
+handle_pure_attribute (tree *node, tree, tree, int, bool *)
 {
   gcc_assert (TREE_CODE (*node) == FUNCTION_DECL);
   DECL_PURE_P (*node) = 1;
@@ -419,9 +439,7 @@ handle_pure_attribute (tree *node, tree ARG_UNUSED (name),
    struct attribute_spec.handler.  */
 
 static tree
-handle_novops_attribute (tree *node, tree ARG_UNUSED (name),
-			 tree ARG_UNUSED (args), int ARG_UNUSED (flags),
-			 bool * ARG_UNUSED (no_add_attrs))
+handle_novops_attribute (tree *node, tree, tree, int, bool *)
 {
   gcc_assert (TREE_CODE (*node) == FUNCTION_DECL);
   DECL_IS_NOVOPS (*node) = 1;
@@ -445,9 +463,7 @@ get_nonnull_operand (tree arg_num_expr, unsigned HOST_WIDE_INT *valp)
 /* Handle the "nonnull" attribute.  */
 
 static tree
-handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
-			  tree args, int ARG_UNUSED (flags),
-			  bool * ARG_UNUSED (no_add_attrs))
+handle_nonnull_attribute (tree *node, tree, tree args, int, bool *)
 {
   tree type = *node;
 
@@ -497,9 +513,7 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
    struct attribute_spec.handler.  */
 
 static tree
-handle_nothrow_attribute (tree *node, tree ARG_UNUSED (name),
-			  tree ARG_UNUSED (args), int ARG_UNUSED (flags),
-			  bool * ARG_UNUSED (no_add_attrs))
+handle_nothrow_attribute (tree *node, tree, tree, int, bool *)
 {
   gcc_assert (TREE_CODE (*node) == FUNCTION_DECL);
   TREE_NOTHROW (*node) = 1;
@@ -509,9 +523,7 @@ handle_nothrow_attribute (tree *node, tree ARG_UNUSED (name),
 /* Handle a "type_generic" attribute.  */
 
 static tree
-handle_type_generic_attribute (tree *node, tree ARG_UNUSED (name),
-			       tree ARG_UNUSED (args), int ARG_UNUSED (flags),
-			       bool * ARG_UNUSED (no_add_attrs))
+handle_type_generic_attribute (tree *node, tree, tree, int, bool *)
 {
   /* Ensure we have a function type.  */
   gcc_assert (TREE_CODE (*node) == FUNCTION_TYPE);
@@ -525,10 +537,7 @@ handle_type_generic_attribute (tree *node, tree ARG_UNUSED (name),
 /* Handle a "transaction_pure" attribute.  */
 
 static tree
-handle_transaction_pure_attribute (tree *node, tree ARG_UNUSED (name),
-				   tree ARG_UNUSED (args),
-				   int ARG_UNUSED (flags),
-				   bool * ARG_UNUSED (no_add_attrs))
+handle_transaction_pure_attribute (tree *node, tree, tree, int, bool *)
 {
   /* Ensure we have a function type.  */
   gcc_assert (TREE_CODE (*node) == FUNCTION_TYPE);
@@ -539,10 +548,7 @@ handle_transaction_pure_attribute (tree *node, tree ARG_UNUSED (name),
 /* Handle a "returns_twice" attribute.  */
 
 static tree
-handle_returns_twice_attribute (tree *node, tree ARG_UNUSED (name),
-				tree ARG_UNUSED (args),
-				int ARG_UNUSED (flags),
-				bool * ARG_UNUSED (no_add_attrs))
+handle_returns_twice_attribute (tree *node, tree, tree, int, bool *)
 {
   gcc_assert (TREE_CODE (*node) == FUNCTION_DECL);
 
@@ -555,9 +561,7 @@ handle_returns_twice_attribute (tree *node, tree ARG_UNUSED (name),
    struct attribute_spec.handler.  */
 
 tree
-handle_fnspec_attribute (tree *node ATTRIBUTE_UNUSED, tree ARG_UNUSED (name),
-			 tree args, int ARG_UNUSED (flags),
-			 bool *no_add_attrs ATTRIBUTE_UNUSED)
+handle_fnspec_attribute (tree *, tree, tree args, int, bool *)
 {
   gcc_assert (args
 	      && TREE_CODE (TREE_VALUE (args)) == STRING_CST
@@ -565,14 +569,26 @@ handle_fnspec_attribute (tree *node ATTRIBUTE_UNUSED, tree ARG_UNUSED (name),
   return NULL_TREE;
 }
 
-/* Language specific attribute handlers.  */
+/* Handle a "always_inline" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_always_inline_attribute (tree *node, tree, tree, int, bool *)
+{
+  gcc_assert (TREE_CODE (*node) == FUNCTION_DECL);
+
+  return NULL_TREE;
+}
+
+/* Language specific attribute handlers.
+   These functions take the arguments:
+   (tree *node, tree name, tree args, int flags, bool *no_add_attrs)  */
 
 /* Handle a "noinline" attribute.  */
 
 static tree
-d_handle_noinline_attribute (tree *node, tree name,
-			     tree ARG_UNUSED (args),
-			     int ARG_UNUSED (flags), bool *no_add_attrs)
+d_handle_noinline_attribute (tree *node, tree name, tree, int,
+			     bool *no_add_attrs)
 {
   Type *t = TYPE_LANG_FRONTEND (TREE_TYPE (*node));
 
@@ -590,9 +606,7 @@ d_handle_noinline_attribute (tree *node, tree name,
 /* Handle a "forceinline" attribute.  */
 
 static tree
-d_handle_forceinline_attribute (tree *node, tree name,
-				tree ARG_UNUSED (args),
-				int ARG_UNUSED (flags),
+d_handle_forceinline_attribute (tree *node, tree name, tree, int,
 				bool *no_add_attrs)
 {
   Type *t = TYPE_LANG_FRONTEND (TREE_TYPE (*node));
@@ -602,7 +616,7 @@ d_handle_forceinline_attribute (tree *node, tree name,
       tree attributes = DECL_ATTRIBUTES (*node);
 
       /* Push attribute always_inline.  */
-      if (! lookup_attribute ("always_inline", attributes))
+      if (!lookup_attribute ("always_inline", attributes))
 	DECL_ATTRIBUTES (*node) = tree_cons (get_identifier ("always_inline"),
 					     NULL_TREE, attributes);
 
@@ -622,9 +636,8 @@ d_handle_forceinline_attribute (tree *node, tree name,
 /* Handle a "flatten" attribute.  */
 
 static tree
-d_handle_flatten_attribute (tree *node, tree name,
-			    tree args ATTRIBUTE_UNUSED,
-			    int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
+d_handle_flatten_attribute (tree *node, tree name, tree, int,
+			    bool *no_add_attrs)
 {
   Type *t = TYPE_LANG_FRONTEND (TREE_TYPE (*node));
 
@@ -651,7 +664,7 @@ d_handle_target_attribute (tree *node, tree name, tree args, int flags,
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
-  else if (! targetm.target_option.valid_attribute_p (*node, name, args, flags))
+  else if (!targetm.target_option.valid_attribute_p (*node, name, args, flags))
     *no_add_attrs = true;
 
   return NULL_TREE;
@@ -660,10 +673,8 @@ d_handle_target_attribute (tree *node, tree name, tree args, int flags,
 /* Handle a "noclone" attribute.  */
 
 static tree
-d_handle_noclone_attribute (tree *node, tree name,
-				tree ARG_UNUSED (args),
-				int ARG_UNUSED (flags),
-				bool *no_add_attrs)
+d_handle_noclone_attribute (tree *node, tree name, tree, int,
+			    bool *no_add_attrs)
 {
   Type *t = TYPE_LANG_FRONTEND (TREE_TYPE (*node));
 
@@ -672,7 +683,7 @@ d_handle_noclone_attribute (tree *node, tree name,
       tree attributes = DECL_ATTRIBUTES (*node);
 
       /* Push attribute noclone.  */
-      if (! lookup_attribute ("noclone", attributes))
+      if (!lookup_attribute ("noclone", attributes))
 	DECL_ATTRIBUTES (*node) = tree_cons (get_identifier ("noclone"),
 					     NULL_TREE, attributes);
     }
@@ -689,8 +700,8 @@ d_handle_noclone_attribute (tree *node, tree name,
    struct attribute_spec.handler.  */
 
 static tree
-d_handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
-			    int ARG_UNUSED (flags), bool *no_add_attrs)
+d_handle_section_attribute (tree *node, tree, tree args, int,
+			    bool *no_add_attrs)
 {
   tree decl = *node;
 
@@ -750,9 +761,8 @@ d_handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
    struct attribute_spec.handler.  */
 
 static tree
-d_handle_alias_attribute (tree *node, tree ARG_UNUSED (name),
-			  tree args, int ARG_UNUSED (flags),
-			  bool *no_add_attrs ATTRIBUTE_UNUSED)
+d_handle_alias_attribute (tree *node, tree name, tree args, int,
+			  bool *no_add_attrs)
 {
   tree decl = *node;
 
@@ -769,7 +779,7 @@ d_handle_alias_attribute (tree *node, tree ARG_UNUSED (name),
       /* A static variable declaration is always a tentative definition,
 	 but the alias is a non-tentative definition which overrides.  */
       || (TREE_CODE (decl) != FUNCTION_DECL
-	  && ! TREE_PUBLIC (decl) && DECL_INITIAL (decl)))
+	  && !TREE_PUBLIC (decl) && DECL_INITIAL (decl)))
     {
       error ("%q+D defined both normally and as %qE attribute", decl, name);
       *no_add_attrs = true;
@@ -809,10 +819,7 @@ d_handle_alias_attribute (tree *node, tree ARG_UNUSED (name),
    struct attribute_spec.handler.  */
 
 static tree
-d_handle_weak_attribute (tree *node, tree name,
-			 tree ARG_UNUSED (args),
-			 int ARG_UNUSED (flags),
-			 bool * ARG_UNUSED (no_add_attrs))
+d_handle_weak_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
 {
   if (TREE_CODE (*node) == FUNCTION_DECL
       && DECL_DECLARED_INLINE_P (*node))

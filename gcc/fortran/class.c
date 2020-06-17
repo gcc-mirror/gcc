@@ -479,11 +479,11 @@ gfc_class_initializer (gfc_typespec *ts, gfc_expr *init_expr)
 static void
 get_unique_type_string (char *string, gfc_symbol *derived)
 {
-  char dt_name[GFC_MAX_SYMBOL_LEN+1];
+  const char *dt_name;
   if (derived->attr.unlimited_polymorphic)
-    strcpy (dt_name, "STAR");
+    dt_name = "STAR";
   else
-    strcpy (dt_name, gfc_dt_upper_string (derived->name));
+    dt_name = gfc_dt_upper_string (derived->name);
   if (derived->attr.unlimited_polymorphic)
     sprintf (string, "_%s", dt_name);
   else if (derived->module)
@@ -501,8 +501,11 @@ get_unique_type_string (char *string, gfc_symbol *derived)
 static void
 get_unique_hashed_string (char *string, gfc_symbol *derived)
 {
-  char tmp[2*GFC_MAX_SYMBOL_LEN+2];
+  /* Provide sufficient space to hold "symbol.symbol_symbol".  */
+  char tmp[3*GFC_MAX_SYMBOL_LEN+3];
   get_unique_type_string (&tmp[0], derived);
+  size_t len = strnlen (tmp, sizeof (tmp));
+  gcc_assert (len < sizeof (tmp));
   /* If string is too long, use hash value in hex representation (allow for
      extra decoration, cf. gfc_build_class_symbol & gfc_find_derived_vtab).
      We need space to for 15 characters "__class_" + symbol name + "_%d_%da",
@@ -523,11 +526,13 @@ unsigned int
 gfc_hash_value (gfc_symbol *sym)
 {
   unsigned int hash = 0;
-  char c[2*(GFC_MAX_SYMBOL_LEN+1)];
+  /* Provide sufficient space to hold "symbol.symbol_symbol".  */
+  char c[3*GFC_MAX_SYMBOL_LEN+3];
   int i, len;
 
   get_unique_type_string (&c[0], sym);
-  len = strlen (c);
+  len = strnlen (c, sizeof (c));
+  gcc_assert ((size_t) len < sizeof (c));
 
   for (i = 0; i < len; i++)
     hash = (hash << 6) + (hash << 16) - hash + c[i];
@@ -907,12 +912,18 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
 {
   gfc_expr *e;
   gfc_ref *ref;
+  gfc_was_finalized *f;
 
   if (!comp_is_finalizable (comp))
     return;
 
-  if (comp->finalized)
-    return;
+  /* If this expression with this component has been finalized
+     already in this namespace, there is nothing to do.  */
+  for (f = sub_ns->was_finalized; f; f = f->next)
+    {
+      if (f->e == expr && f->c == comp)
+	return;
+    }
 
   e = gfc_copy_expr (expr);
   if (!e->ref)
@@ -1002,6 +1013,7 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
 	}
       else
 	(*code) = cond;
+
     }
   else if (comp->ts.type == BT_DERIVED
 	    && comp->ts.u.derived->f2k_derived
@@ -1041,7 +1053,13 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
 			    sub_ns);
       gfc_free_expr (e);
     }
-  comp->finalized = true;
+
+  /* Record that this was finalized already in this namespace.  */
+  f = sub_ns->was_finalized;
+  sub_ns->was_finalized = XCNEW (gfc_was_finalized);
+  sub_ns->was_finalized->e = expr;
+  sub_ns->was_finalized->c = comp;
+  sub_ns->was_finalized->next = f;
 }
 
 
@@ -1574,7 +1592,7 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
     }
 
   /* No wrapper of the ancestor and no own FINAL subroutines and allocatable
-     components: Return a NULL() expression; we defer this a bit to have have
+     components: Return a NULL() expression; we defer this a bit to have
      an interface declaration.  */
   if ((!ancestor_wrapper || ancestor_wrapper->expr_type == EXPR_NULL)
       && !derived->attr.alloc_comp

@@ -43,6 +43,21 @@ extern "C" void *memalign(std::size_t boundary, std::size_t size);
 using std::new_handler;
 using std::bad_alloc;
 
+#if ! _GLIBCXX_HOSTED
+extern "C"
+{
+# if _GLIBCXX_HAVE_ALIGNED_ALLOC
+  void *aligned_alloc(size_t alignment, size_t size);
+# elif _GLIBCXX_HAVE__ALIGNED_MALLOC
+  void *_aligned_malloc(size_t size, size_t alignment);
+# elif _GLIBCXX_HAVE_POSIX_MEMALIGN
+  void *posix_memalign(void **, size_t alignment, size_t size);
+# elif _GLIBCXX_HAVE_MEMALIGN
+  void *memalign(size_t alignment, size_t size);
+# endif
+}
+#endif
+
 namespace __gnu_cxx {
 #if _GLIBCXX_HAVE_ALIGNED_ALLOC
 using ::aligned_alloc;
@@ -100,7 +115,7 @@ operator new (std::size_t sz, std::align_val_t al)
 
   /* Alignment must be a power of two.  */
   /* XXX This should be checked by the compiler (PR 86878).  */
-  if (__builtin_expect (!std::__ispow2(align), false))
+  if (__builtin_expect (!std::__has_single_bit(align), false))
     _GLIBCXX_THROW_OR_ABORT(bad_alloc());
 
   /* malloc (0) is unpredictable; avoid it.  */

@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 import std.math;
 
 extern(C) int printf(const char*, ...);
@@ -919,8 +920,7 @@ int main()
     }
     else
     {
-        pragma(msg, "arrayop.d:test1 Test skipped because arrayop evaluation"
-                    " order is ill-defined. See GDC issue #8");
+        //pragma(msg, "Test skipped because arrayop evaluation order is ill-defined.");
     }
     test3();
     test4();

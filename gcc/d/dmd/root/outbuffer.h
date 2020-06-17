@@ -1,5 +1,5 @@
 
-/* Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+/* Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
  * http://www.boost.org/LICENSE_1_0.txt
@@ -68,7 +68,7 @@ public:
     size_t insert(size_t offset, const void *data, size_t nbytes);
     void remove(size_t offset, size_t nbytes);
     // Append terminating null if necessary and get view of internal buffer
-    char *peekString();
+    char *peekChars();
     // Append terminating null if necessary and take ownership of data
-    char *extractString();
+    char *extractChars();
 };

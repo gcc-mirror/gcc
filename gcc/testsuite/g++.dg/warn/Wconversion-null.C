@@ -6,6 +6,9 @@
 void g(int) {}
 void g(long) {}
 void g(long long) {}
+#ifdef __MSP430X_LARGE__
+void g(__int20) {}
+#endif
 extern void g(void*);
 
 template <int I>
@@ -24,6 +27,11 @@ void l(long) {}
 
 template <>
 void l(long long) {}
+
+#ifdef __MSP430X_LARGE__
+template <>
+void l(__int20) {}
+#endif
 
 int main()
 {

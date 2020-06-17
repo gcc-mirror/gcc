@@ -458,7 +458,15 @@ gcn_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	    || (!((regno - FIRST_SGPR_REG) & 1) && sgpr_2reg_mode_p (mode))
 	    || (((regno - FIRST_SGPR_REG) & 3) == 0 && mode == TImode));
   if (VGPR_REGNO_P (regno))
-    return (vgpr_1reg_mode_p (mode) || vgpr_2reg_mode_p (mode)
+    /* Vector instructions do not care about the alignment of register
+       pairs, but where there is no 64-bit instruction, many of the
+       define_split do not work if the input and output registers partially
+       overlap.  We tried to fix this with early clobber and match
+       constraints, but it was bug prone, added complexity, and conflicts
+       with the 'U0' constraints on vec_merge.
+       Therefore, we restrict ourselved to aligned registers.  */
+    return (vgpr_1reg_mode_p (mode)
+	    || (!((regno - FIRST_VGPR_REG) & 1) && vgpr_2reg_mode_p (mode))
 	    /* TImode is used by DImode compare_and_swap.  */
 	    || mode == TImode);
   return false;
@@ -992,9 +1000,19 @@ gcn_vec_constant (machine_mode mode, int a)
     return CONST2_RTX (mode);*/
 
   int units = GET_MODE_NUNITS (mode);
-  rtx tem = gen_int_mode (a, GET_MODE_INNER (mode));
-  rtvec v = rtvec_alloc (units);
+  machine_mode innermode = GET_MODE_INNER (mode);
 
+  rtx tem;
+  if (FLOAT_MODE_P (innermode))
+    {
+      REAL_VALUE_TYPE rv;
+      real_from_integer (&rv, NULL, a, SIGNED);
+      tem = const_double_from_real_value (rv, innermode);
+    }
+  else
+    tem = gen_int_mode (a, innermode);
+
+  rtvec v = rtvec_alloc (units);
   for (int i = 0; i < units; ++i)
     RTVEC_ELT (v, i) = tem;
 
@@ -1768,9 +1786,10 @@ gcn_expand_scalar_to_vector_address (machine_mode mode, rtx exec, rtx mem,
 
   if (AS_FLAT_P (as))
     {
+      rtx vcc = gen_rtx_REG (DImode, CC_SAVE_REG);
+
       if (REG_P (tmp))
 	{
-	  rtx vcc = gen_rtx_REG (DImode, CC_SAVE_REG);
 	  rtx mem_base_lo = gcn_operand_part (DImode, mem_base, 0);
 	  rtx mem_base_hi = gcn_operand_part (DImode, mem_base, 1);
 	  rtx tmphi = gcn_operand_part (V64DImode, tmp, 1);
@@ -1791,17 +1810,17 @@ gcn_expand_scalar_to_vector_address (machine_mode mode, rtx exec, rtx mem,
 					      vcc, vcc, undef_v64si, exec));
 	    }
 	  else
-	    emit_insn (gen_addv64di3_zext_dup (tmp, mem_base_lo, tmp));
+	    emit_insn (gen_addv64di3_vcc_zext_dup (tmp, mem_base_lo, tmp, vcc));
 	}
       else
 	{
 	  tmp = gen_reg_rtx (V64DImode);
 	  if (exec)
-	    emit_insn (gen_addv64di3_zext_dup2_exec (tmp, tmplo, mem_base,
-						     gcn_gen_undef (V64DImode),
-						     exec));
+	    emit_insn (gen_addv64di3_vcc_zext_dup2_exec
+		       (tmp, tmplo, mem_base, vcc, gcn_gen_undef (V64DImode),
+			exec));
 	  else
-	    emit_insn (gen_addv64di3_zext_dup2 (tmp, tmplo, mem_base));
+	    emit_insn (gen_addv64di3_vcc_zext_dup2 (tmp, tmplo, mem_base, vcc));
 	}
 
       new_base = tmp;
@@ -1843,15 +1862,6 @@ rtx
 gcn_expand_scaled_offsets (addr_space_t as, rtx base, rtx offsets, rtx scale,
 			   bool unsigned_p, rtx exec)
 {
-  /* Convert the offsets to V64SImode.
-     TODO: more conversions will be needed when more types are vectorized. */
-  if (GET_MODE (offsets) == V64DImode)
-    {
-      rtx tmp = gen_reg_rtx (V64SImode);
-      emit_insn (gen_truncv64div64si2 (tmp, offsets));
-      offsets = tmp;
-    }
-
   rtx tmpsi = gen_reg_rtx (V64SImode);
   rtx tmpdi = gen_reg_rtx (V64DImode);
   rtx undefsi = exec ? gcn_gen_undef (V64SImode) : NULL;
@@ -2561,8 +2571,6 @@ gcn_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
     case omp_device_arch:
       return strcmp (name, "gcn") == 0;
     case omp_device_isa:
-      if (strcmp (name, "carrizo") == 0)
-	return gcn_arch == PROCESSOR_CARRIZO;
       if (strcmp (name, "fiji") == 0)
 	return gcn_arch == PROCESSOR_FIJI;
       if (strcmp (name, "gfx900") == 0)
@@ -4114,7 +4122,7 @@ char *
 gcn_expand_dpp_shr_insn (machine_mode mode, const char *insn,
 			 int unspec, int shift)
 {
-  static char buf[64];
+  static char buf[128];
   const char *dpp;
   const char *vcc_in = "";
   const char *vcc_out = "";
@@ -4155,7 +4163,13 @@ gcn_expand_dpp_shr_insn (machine_mode mode, const char *insn,
       gcc_unreachable ();
     }
 
-  sprintf (buf, "%s\t%%0%s, %%1, %%2%s %s", insn, vcc_out, vcc_in, dpp);
+  if (unspec == UNSPEC_MOV_DPP_SHR && vgpr_2reg_mode_p (mode))
+    sprintf (buf, "%s\t%%L0, %%L1 %s\n\t%s\t%%H0, %%H1 %s",
+	     insn, dpp, insn, dpp);
+  else if (unspec == UNSPEC_MOV_DPP_SHR)
+    sprintf (buf, "%s\t%%0, %%1 %s", insn, dpp);
+  else
+    sprintf (buf, "%s\t%%0%s, %%1, %%2%s %s", insn, vcc_out, vcc_in, dpp);
 
   return buf;
 }
@@ -4169,7 +4183,28 @@ gcn_expand_dpp_shr_insn (machine_mode mode, const char *insn,
 rtx
 gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
 {
-  rtx tmp = gen_reg_rtx (mode);
+  machine_mode orig_mode = mode;
+  bool use_moves = (((unspec == UNSPEC_SMIN_DPP_SHR
+		      || unspec == UNSPEC_SMAX_DPP_SHR
+		      || unspec == UNSPEC_UMIN_DPP_SHR
+		      || unspec == UNSPEC_UMAX_DPP_SHR)
+		     && mode == V64DImode)
+		    || (unspec == UNSPEC_PLUS_DPP_SHR
+			&& mode == V64DFmode));
+  rtx_code code = (unspec == UNSPEC_SMIN_DPP_SHR ? SMIN
+		   : unspec == UNSPEC_SMAX_DPP_SHR ? SMAX
+		   : unspec == UNSPEC_UMIN_DPP_SHR ? UMIN
+		   : unspec == UNSPEC_UMAX_DPP_SHR ? UMAX
+		   : unspec == UNSPEC_PLUS_DPP_SHR ? PLUS
+		   : UNKNOWN);
+  bool use_extends = ((unspec == UNSPEC_SMIN_DPP_SHR
+		       || unspec == UNSPEC_SMAX_DPP_SHR
+		       || unspec == UNSPEC_UMIN_DPP_SHR
+		       || unspec == UNSPEC_UMAX_DPP_SHR)
+		      && (mode == V64QImode
+			  || mode == V64HImode));
+  bool unsignedp = (unspec == UNSPEC_UMIN_DPP_SHR
+		    || unspec == UNSPEC_UMAX_DPP_SHR);
   bool use_plus_carry = unspec == UNSPEC_PLUS_DPP_SHR
 			&& GET_MODE_CLASS (mode) == MODE_VECTOR_INT
 			&& (TARGET_GCN3 || mode == V64DImode);
@@ -4177,36 +4212,60 @@ gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
   if (use_plus_carry)
     unspec = UNSPEC_PLUS_CARRY_DPP_SHR;
 
+  if (use_extends)
+    {
+      rtx tmp = gen_reg_rtx (V64SImode);
+      convert_move (tmp, src, unsignedp);
+      src = tmp;
+      mode = V64SImode;
+    }
+
   /* Perform reduction by first performing the reduction operation on every
      pair of lanes, then on every pair of results from the previous
      iteration (thereby effectively reducing every 4 lanes) and so on until
      all lanes are reduced.  */
+  rtx in, out = src;
   for (int i = 0, shift = 1; i < 6; i++, shift <<= 1)
     {
       rtx shift_val = gen_rtx_CONST_INT (VOIDmode, shift);
-      rtx insn = gen_rtx_SET (tmp,
-			      gen_rtx_UNSPEC (mode,
-					      gen_rtvec (3,
-							 src, src, shift_val),
-					      unspec));
+      in = out;
+      out = gen_reg_rtx (mode);
 
-      /* Add clobber for instructions that set the carry flags.  */
-      if (use_plus_carry)
+      if (use_moves)
 	{
-	  rtx clobber = gen_rtx_CLOBBER (VOIDmode,
-					 gen_rtx_REG (DImode, VCC_REG));
-	  insn = gen_rtx_PARALLEL (VOIDmode,
-				   gen_rtvec (2, insn, clobber));
+	  rtx tmp = gen_reg_rtx (mode);
+	  emit_insn (gen_dpp_move (mode, tmp, in, shift_val));
+	  emit_insn (gen_rtx_SET (out, gen_rtx_fmt_ee (code, mode, tmp, in)));
 	}
+      else
+	{
+	  rtx insn = gen_rtx_SET (out,
+				  gen_rtx_UNSPEC (mode,
+						  gen_rtvec (3, in, in,
+							     shift_val),
+						  unspec));
 
-      emit_insn (insn);
+	  /* Add clobber for instructions that set the carry flags.  */
+	  if (use_plus_carry)
+	    {
+	      rtx clobber = gen_rtx_CLOBBER (VOIDmode,
+					     gen_rtx_REG (DImode, VCC_REG));
+	      insn = gen_rtx_PARALLEL (VOIDmode,
+				       gen_rtvec (2, insn, clobber));
+	    }
 
-      /* The source operands for every iteration after the first
-	   should be TMP.  */
-      src = tmp;
+	  emit_insn (insn);
+	}
     }
 
-  return tmp;
+  if (use_extends)
+    {
+      rtx tmp = gen_reg_rtx (orig_mode);
+      convert_move (tmp, out, unsignedp);
+      out = tmp;
+    }
+
+  return out;
 }
 
 /* Implement TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST.  */
@@ -5435,7 +5494,9 @@ print_operand_address (FILE *file, rtx mem)
    b - print operand size as untyped operand (b8/b16/b32/b64)
    B - print operand size as SI/DI untyped operand (b32/b32/b32/b64)
    i - print operand size as untyped operand (i16/b32/i64)
+   I - print operand size as SI/DI untyped operand(i32/b32/i64)
    u - print operand size as untyped operand (u16/u32/u64)
+   U - print operand size as SI/DI untyped operand(u32/u64)
    o - print operand size as memory access size for loads
        (ubyte/ushort/dword/dwordx2/wordx3/dwordx4)
    s - print operand size as memory access size for stores
@@ -5530,9 +5591,12 @@ print_operand (FILE *file, rtx x, int code)
       fputs (")", file);
       return;
     case 'i':
+    case 'I':
     case 'u':
+    case 'U':
       {
 	bool signed_p = code == 'i';
+	bool min32_p = code == 'I' || code == 'U';
 	const char *s = "";
 	machine_mode mode = GET_MODE (x);
 	if (VECTOR_MODE_P (mode))
@@ -5561,6 +5625,21 @@ print_operand (FILE *file, rtx x, int code)
 	      break;
 	    case 8:
 	      s = "_f64";
+	      break;
+	    default:
+	      output_operand_lossage ("invalid operand %%xn code");
+	      return;
+	    }
+	else if (min32_p)
+	  switch (GET_MODE_SIZE (mode))
+	    {
+	    case 1:
+	    case 2:
+	    case 4:
+	      s = signed_p ? "_i32" : "_u32";
+	      break;
+	    case 8:
+	      s = signed_p ? "_i64" : "_u64";
 	      break;
 	    default:
 	      output_operand_lossage ("invalid operand %%xn code");
@@ -5928,6 +6007,24 @@ print_operand (FILE *file, rtx x, int code)
 	    break;
 	  case UNORDERED:
 	    s = "_u_";
+	    break;
+	  case UNEQ:
+	    s = "_nlg_";
+	    break;
+	  case UNGE:
+	    s = "_nlt_";
+	    break;
+	  case UNGT:
+	    s = "_nle_";
+	    break;
+	  case UNLE:
+	    s = "_ngt_";
+	    break;
+	  case UNLT:
+	    s = "_nge_";
+	    break;
+	  case LTGT:
+	    s = "_lg_";
 	    break;
 	  default:
 	    output_operand_lossage ("invalid %%xn code");

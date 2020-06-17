@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -652,7 +652,7 @@ package body Freeze is
                   while Present (Rep)
                     and then Next_Rep_Item (Rep) /= Addr
                   loop
-                     Rep := Next_Rep_Item (Rep);
+                     Next_Rep_Item (Rep);
                   end loop;
                end if;
 
@@ -1957,7 +1957,7 @@ package body Freeze is
                         Check_Aspect_At_End_Of_Declarations (Ritem);
                      end if;
 
-                     Ritem := Next_Rep_Item (Ritem);
+                     Next_Rep_Item (Ritem);
                   end loop;
                end;
             end if;
@@ -3674,9 +3674,7 @@ package body Freeze is
 
             if Warn_On_Export_Import
               and then Comes_From_Source (E)
-              and then (Convention (E) = Convention_C
-                          or else
-                        Convention (E) = Convention_CPP)
+              and then Convention (E) in Convention_C_Family
               and then (Is_Imported (E) or else Is_Exported (E))
               and then Convention (E) /= Convention (Formal)
               and then not Has_Warnings_Off (E)
@@ -3823,9 +3821,8 @@ package body Freeze is
             --  Check suspicious return type for C function
 
             if Warn_On_Export_Import
-              and then (Convention (E) = Convention_C
-                          or else
-                        Convention (E) = Convention_CPP)
+              and then Comes_From_Source (E)
+              and then Convention (E) in Convention_C_Family
               and then (Is_Imported (E) or else Is_Exported (E))
             then
                --  Check suspicious return of fat C pointer
@@ -4225,14 +4222,6 @@ package body Freeze is
                      --  have sufficient info on size and rep clauses.
 
                      elsif CodePeer_Mode then
-                        null;
-
-                     --  Omit check if component has a generic type. This can
-                     --  happen in an instantiation within a generic in ASIS
-                     --  mode, where we force freeze actions without full
-                     --  expansion.
-
-                     elsif Is_Generic_Type (Etype (Comp)) then
                         null;
 
                      --  Do the check
@@ -7082,8 +7071,9 @@ package body Freeze is
       function In_Expanded_Body (N : Node_Id) return Boolean;
       --  Given an N_Handled_Sequence_Of_Statements node N, determines whether
       --  it is the handled statement sequence of an expander-generated
-      --  subprogram (init proc, stream subprogram, or renaming as body).
-      --  If so, this is not a freezing context.
+      --  subprogram: init proc, stream subprogram, renaming as body, or body
+      --  created for an expression function. If so, this is not a freezing
+      --  context and the entity will be frozen at a later point.
 
       -----------------------------------------
       -- Find_Aggregate_Component_Desig_Type --
@@ -7124,18 +7114,18 @@ package body Freeze is
       ----------------------
 
       function In_Expanded_Body (N : Node_Id) return Boolean is
-         P  : Node_Id;
+         P  : constant Node_Id := Parent (N);
          Id : Entity_Id;
 
       begin
-         if Nkind (N) = N_Subprogram_Body then
-            P := N;
-         else
-            P := Parent (N);
-         end if;
-
          if Nkind (P) /= N_Subprogram_Body then
             return False;
+
+         --  AI12-0157: An expression function that is a completion is a freeze
+         --  point. If the body is the result of expansion, it is not.
+
+         elsif Was_Expression_Function (P) then
+            return not Comes_From_Source (P);
 
          else
             Id := Defining_Unit_Name (Specification (P));
@@ -7149,9 +7139,8 @@ package body Freeze is
                          or else Is_TSS (Id, TSS_Stream_Output)
                          or else Is_TSS (Id, TSS_Stream_Read)
                          or else Is_TSS (Id, TSS_Stream_Write)
-                         or else Nkind_In (Original_Node (P),
-                                           N_Subprogram_Renaming_Declaration,
-                                           N_Expression_Function))
+                         or else Nkind (Original_Node (P)) =
+                                             N_Subprogram_Renaming_Declaration)
             then
                return True;
             else
@@ -7390,10 +7379,16 @@ package body Freeze is
                return;
             end if;
 
-            exit when
-              Nkind (Parent_P) = N_Subprogram_Body
+            --  If the parent is a subprogram body, the candidate insertion
+            --  point is just ahead of it.
+
+            if  Nkind (Parent_P) = N_Subprogram_Body
                 and then Unique_Defining_Entity (Parent_P) =
-                           Freeze_Outside_Subp;
+                           Freeze_Outside_Subp
+            then
+               P := Parent_P;
+               exit;
+            end if;
 
             P := Parent_P;
          end loop;
@@ -7515,53 +7510,57 @@ package body Freeze is
 
                   if In_Expanded_Body (Parent_P) then
                      declare
-                        Subp : constant Node_Id := Parent (Parent_P);
-                        Spec : Entity_Id;
+                        Subp_Body : constant Node_Id := Parent (Parent_P);
+                        Spec_Id   : Entity_Id;
 
                      begin
                         --  Freeze the entity only when it is declared inside
-                        --  the body of the expander generated procedure.
-                        --  This case is recognized by the scope of the entity
-                        --  or its type, which is either the spec for some
-                        --  enclosing body, or (in the case of init_procs,
-                        --  for which there are no separate specs) the current
-                        --  scope.
+                        --  the body of the expander generated procedure. This
+                        --  case is recognized by the subprogram scope of the
+                        --  entity or its type, which is either the spec of an
+                        --  enclosing body, or (in the case of init_procs for
+                        --  which there is no separate spec) the current scope.
 
-                        if Nkind (Subp) = N_Subprogram_Body then
-                           Spec := Corresponding_Spec (Subp);
+                        if Nkind (Subp_Body) = N_Subprogram_Body then
+                           declare
+                              S : Entity_Id;
 
-                           if (Present (Typ) and then Scope (Typ) = Spec)
-                                or else
-                              (Present (Nam) and then Scope (Nam) = Spec)
-                           then
-                              exit;
+                           begin
+                              Spec_Id := Corresponding_Spec (Subp_Body);
 
-                           elsif Present (Typ)
-                             and then Scope (Typ) = Current_Scope
-                             and then Defining_Entity (Subp) = Current_Scope
-                           then
-                              exit;
-                           end if;
+                              if Present (Typ) then
+                                 S := Scope (Typ);
+                              elsif Present (Nam) then
+                                 S := Scope (Nam);
+                              else
+                                 S := Standard_Standard;
+                              end if;
+
+                              while S /= Standard_Standard
+                                and then not Is_Subprogram (S)
+                              loop
+                                 S := Scope (S);
+                              end loop;
+
+                              if S = Spec_Id then
+                                 exit;
+
+                              elsif Present (Typ)
+                                and then Scope (Typ) = Current_Scope
+                                and then
+                                  Defining_Entity (Subp_Body) = Current_Scope
+                              then
+                                 exit;
+                              end if;
+                           end;
                         end if;
 
-                        --  An expression function may act as a completion of
-                        --  a function declaration. As such, it can reference
-                        --  entities declared between the two views:
+                        --  If the entity is not frozen by an expression
+                        --  function that is not a completion, continue
+                        --  climbing the tree.
 
-                        --     Hidden [];                             -- 1
-                        --     function F return ...;
-                        --     private
-                        --        function Hidden return ...;
-                        --        function F return ... is (Hidden);  -- 2
-
-                        --  Refering to the example above, freezing the
-                        --  expression of F (2) would place Hidden's freeze
-                        --  node (1) in the wrong place. Avoid explicit
-                        --  freezing and let the usual scenarios do the job
-                        --  (for example, reaching the end of the private
-                        --  declarations, or a call to F.)
-
-                        if Nkind (Original_Node (Subp)) = N_Expression_Function
+                        if Nkind (Subp_Body) = N_Subprogram_Body
+                          and then Was_Expression_Function (Subp_Body)
                         then
                            null;
 
@@ -7625,21 +7624,22 @@ package body Freeze is
                --  case of array types.
 
                when N_Expression_With_Actions =>
-                  if Is_List_Member (P)
-                    and then List_Containing (P) = Actions (Parent_P)
-                  then
-                     exit;
-                  end if;
+                  exit when Is_List_Member (P)
+                    and then List_Containing (P) = Actions (Parent_P);
 
-               --  Note: N_Loop_Statement is a special case. A type that
-               --  appears in the source can never be frozen in a loop (this
-               --  occurs only because of a loop expanded by the expander), so
-               --  we keep on going. Otherwise we terminate the search. Same
-               --  is true of any entity which comes from source. (if they
-               --  have predefined type, that type does not appear to come
-               --  from source, but the entity should not be frozen here).
+               --  N_Loop_Statement is a special case: a type that appears in
+               --  the source can never be frozen in a loop (this occurs only
+               --  because of a loop expanded by the expander), so we keep on
+               --  going. Otherwise we terminate the search. Same is true of
+               --  any entity which comes from source (if it has a predefined
+               --  type, this type does not appear to come from source, but the
+               --  entity should not be frozen here). The reasoning can also be
+               --  applied to if-expressions and case-expressions.
 
-               when N_Loop_Statement =>
+               when N_Loop_Statement
+                  | N_If_Expression
+                  | N_Case_Expression
+               =>
                   exit when not Comes_From_Source (Etype (N))
                     and then (No (Nam) or else not Comes_From_Source (Nam));
 

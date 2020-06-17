@@ -64,7 +64,6 @@ typedef struct rs6000_stack {
 extern int need_toc_init;
 extern char toc_label_name[10];
 extern int rs6000_pic_labelno;
-extern section *toc_section;
 
 #ifdef USING_ELFOS_H
 extern const char *rs6000_machine;
@@ -187,7 +186,5 @@ extern bool rs6000_passes_long_double;
 extern bool rs6000_passes_vector;
 extern bool rs6000_returns_struct;
 extern bool cpu_builtin_p;
-extern GTY(()) tree builtin_mode_to_type[MAX_MACHINE_MODE][2];
-extern GTY(()) tree altivec_builtin_mask_for_load;
 
 #endif

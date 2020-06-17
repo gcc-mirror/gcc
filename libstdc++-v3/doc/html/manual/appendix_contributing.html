@@ -68,7 +68,7 @@
       <code class="email">&lt;<a class="email" href="mailto:assign@gnu.org">assign@gnu.org</a>&gt;</code>, please CC the libstdc++
       maintainers above so that progress can be monitored.
     </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="list.getting"></a>Getting Sources</h3></div></div></div><p>
-      <a class="link" href="http://gcc.gnu.org/svnwrite.html" target="_top">Getting write access
+      <a class="link" href="https://gcc.gnu.org/gitwrite.html" target="_top">Getting write access
 	(look for "Write after approval")</a>
     </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="list.patches"></a>Submitting Patches</h3></div></div></div><p>
       Every patch must have several pieces of information before it can be
@@ -90,14 +90,12 @@
 	  easily and simply show the existing error or test new
 	  functionality.
 	</p></li><li class="listitem"><p>
-	  The patch itself. If you are accessing the SVN
-	  repository use <span class="command"><strong>svn update; svn diff NEW</strong></span>;
-	  else, use <span class="command"><strong>diff -cp OLD NEW</strong></span> ... If your
+	  The patch itself. If you are using the Git repository use
+	  <span class="command"><strong>git diff</strong></span> or <span class="command"><strong>git format-patch</strong></span>
+	  to produce a patch;
+	  otherwise, use <span class="command"><strong>diff -cp OLD NEW</strong></span>. If your
 	  version of diff does not support these options, then get the
-	  latest version of GNU
-	  diff. The <a class="link" href="http://gcc.gnu.org/wiki/SvnTricks" target="_top">SVN
-	  Tricks</a> wiki page has information on customising the
-	  output of <code class="code">svn diff</code>.
+	  latest version of GNU diff.
 	</p></li><li class="listitem"><p>
 	  When you have all these pieces, bundle them up in a
 	  mail message and send it to libstdc++@gcc.gnu.org. All

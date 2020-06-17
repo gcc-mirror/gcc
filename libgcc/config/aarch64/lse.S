@@ -48,8 +48,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
  * separately to minimize code size.
  */
 
+#include "auto-target.h"
+
 /* Tell the assembler to accept LSE instructions.  */
+#ifdef HAVE_AS_LSE
 	.arch armv8-a+lse
+#else
+	.arch armv8-a
+#endif
 
 /* Declare the symbol gating the LSE implementations.  */
 	.hidden	__aarch64_have_lse_atomics
@@ -58,12 +64,19 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if SIZE == 1
 # define S     b
 # define UXT   uxtb
+# define B     0x00000000
 #elif SIZE == 2
 # define S     h
 # define UXT   uxth
+# define B     0x40000000
 #elif SIZE == 4 || SIZE == 8 || SIZE == 16
 # define S
 # define UXT   mov
+# if SIZE == 4
+#  define B    0x80000000
+# elif SIZE == 8
+#  define B    0xc0000000
+# endif
 #else
 # error
 #endif
@@ -72,18 +85,26 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # define SUFF  _relax
 # define A
 # define L
+# define M     0x000000
+# define N     0x000000
 #elif MODEL == 2
 # define SUFF  _acq
 # define A     a
 # define L
+# define M     0x400000
+# define N     0x800000
 #elif MODEL == 3
 # define SUFF  _rel
 # define A
 # define L     l
+# define M     0x008000
+# define N     0x400000
 #elif MODEL == 4
 # define SUFF  _acq_rel
 # define A     a
 # define L     l
+# define M     0x408000
+# define N     0xc00000
 #else
 # error
 #endif
@@ -144,9 +165,13 @@ STARTFN	NAME(cas)
 	JUMP_IF_NOT_LSE	8f
 
 #if SIZE < 16
-#define CAS	glue4(cas, A, L, S)
+#ifdef HAVE_AS_LSE
+# define CAS	glue4(cas, A, L, S)	s(0), s(1), [x2]
+#else
+# define CAS	.inst 0x08a07c41 + B + M
+#endif
 
-	CAS		s(0), s(1), [x2]
+	CAS		/* s(0), s(1), [x2] */
 	ret
 
 8:	UXT		s(tmp0), s(0)
@@ -160,9 +185,13 @@ STARTFN	NAME(cas)
 #else
 #define LDXP	glue3(ld, A, xp)
 #define STXP	glue3(st, L, xp)
-#define CASP	glue3(casp, A, L)
+#ifdef HAVE_AS_LSE
+# define CASP	glue3(casp, A, L)	x0, x1, x2, x3, [x4]
+#else
+# define CASP	.inst 0x48207c82 + M
+#endif
 
-	CASP		x0, x1, x2, x3, [x4]
+	CASP		/* x0, x1, x2, x3, [x4] */
 	ret
 
 8:	mov		x(tmp0), x0
@@ -181,12 +210,16 @@ ENDFN	NAME(cas)
 #endif
 
 #ifdef L_swp
-#define SWP	glue4(swp, A, L, S)
+#ifdef HAVE_AS_LSE
+# define SWP	glue4(swp, A, L, S)	s(0), s(0), [x1]
+#else
+# define SWP	.inst 0x38208020 + B + N
+#endif
 
 STARTFN	NAME(swp)
 	JUMP_IF_NOT_LSE	8f
 
-	SWP		s(0), s(0), [x1]
+	SWP		/* s(0), s(0), [x1] */
 	ret
 
 8:	mov		s(tmp0), s(0)
@@ -204,24 +237,32 @@ ENDFN	NAME(swp)
 #ifdef L_ldadd
 #define LDNM	ldadd
 #define OP	add
+#define OPN	0x0000
 #elif defined(L_ldclr)
 #define LDNM	ldclr
 #define OP	bic
+#define OPN	0x1000
 #elif defined(L_ldeor)
 #define LDNM	ldeor
 #define OP	eor
+#define OPN	0x2000
 #elif defined(L_ldset)
 #define LDNM	ldset
 #define OP	orr
+#define OPN	0x3000
 #else
 #error
 #endif
-#define LDOP	glue4(LDNM, A, L, S)
+#ifdef HAVE_AS_LSE
+# define LDOP	glue4(LDNM, A, L, S)	s(0), s(0), [x1]
+#else
+# define LDOP	.inst 0x38200020 + OPN + B + N
+#endif
 
 STARTFN	NAME(LDNM)
 	JUMP_IF_NOT_LSE	8f
 
-	LDOP		s(0), s(0), [x1]
+	LDOP		/* s(0), s(0), [x1] */
 	ret
 
 8:	mov		s(tmp0), s(0)

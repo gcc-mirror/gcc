@@ -62,5 +62,5 @@ test_simduid2 (int j, int b)
   return c2;
 }
 
-/* { dg-final { scan-ipa-dump "Semantic equality hit:test_simduid1->test_simduid2" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:test_simduid1/\[0-9+\]+->test_simduid2/\[0-9+\]+" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Equal symbols: 1" "icf"  } } */

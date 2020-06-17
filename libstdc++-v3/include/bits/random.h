@@ -33,9 +33,6 @@
 
 #include <vector>
 #include <bits/uniform_int_dist.h>
-#if __cplusplus > 201703L
-# include <concepts>
-#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -51,17 +48,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
-#ifdef __cpp_lib_concepts
-  /// Requirements for a uniform random bit generator.
-  template<typename _Gen>
-    concept uniform_random_bit_generator
-      = invocable<_Gen&> && unsigned_integral<invoke_result_t<_Gen&>>
-      && requires
-      {
-	{ _Gen::min() } -> same_as<invoke_result_t<_Gen&>>;
-	{ _Gen::max() } -> same_as<invoke_result_t<_Gen&>>;
-      };
-#endif
+  // std::uniform_random_bit_generator is defined in <bits/uniform_int_dist.h>
 
   /**
    * @brief A function template for converting the output of a (integral)
@@ -3720,13 +3707,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @returns The input stream with @p __x extracted or in an error state.
    */
   template<typename _CharT, typename _Traits>
-    std::basic_istream<_CharT, _Traits>&
+    inline std::basic_istream<_CharT, _Traits>&
     operator>>(std::basic_istream<_CharT, _Traits>& __is,
 	       std::bernoulli_distribution& __x)
     {
       double __p;
-      __is >> __p;
-      __x.param(bernoulli_distribution::param_type(__p));
+      if (__is >> __p)
+	__x.param(bernoulli_distribution::param_type(__p));
       return __is;
     }
 

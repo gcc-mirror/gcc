@@ -180,3 +180,10 @@ LIBGCCJIT_ABI_12 {
   global:
     gcc_jit_context_new_bitfield;
 } LIBGCCJIT_ABI_11;
+
+LIBGCCJIT_ABI_13 {
+  global:
+    gcc_jit_version_major;
+    gcc_jit_version_minor;
+    gcc_jit_version_patchlevel;
+} LIBGCCJIT_ABI_12;

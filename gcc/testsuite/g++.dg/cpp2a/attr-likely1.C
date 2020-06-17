@@ -1,4 +1,4 @@
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // { dg-additional-options -fdump-tree-gimple }
 // { dg-final { scan-tree-dump-times "hot label" 5 "gimple" } }
 // { dg-final { scan-tree-dump-times "cold label" 3 "gimple" } }

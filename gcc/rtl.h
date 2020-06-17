@@ -331,6 +331,7 @@ struct GTY((desc("0"), tag("0"),
      1 in a MEM if it cannot trap.
      1 in a CALL_INSN logically equivalent to
        ECF_LOOPING_CONST_OR_PURE and DECL_LOOPING_CONST_OR_PURE_P.
+     1 in a VALUE is SP_DERIVED_VALUE_P in cselib.c.
      Dumped as "/c" in RTL dumps.  */
   unsigned int call : 1;
   /* 1 in a REG, MEM, or CONCAT if the value is set at most once, anywhere.
@@ -3428,6 +3429,7 @@ extern rtx single_set_2 (const rtx_insn *, const_rtx);
 extern bool contains_symbol_ref_p (const_rtx);
 extern bool contains_symbolic_reference_p (const_rtx);
 extern bool contains_constant_pool_address_p (const_rtx);
+extern void add_auto_inc_notes (rtx_insn *, rtx);
 
 /* Handle the cheap and common cases inline for performance.  */
 
@@ -3499,7 +3501,7 @@ extern void add_args_size_note (rtx_insn *, poly_int64);
 extern void add_shallow_copy_of_reg_note (rtx_insn *, rtx);
 extern rtx duplicate_reg_note (rtx);
 extern void remove_note (rtx_insn *, const_rtx);
-extern bool remove_reg_equal_equiv_notes (rtx_insn *);
+extern bool remove_reg_equal_equiv_notes (rtx_insn *, bool = false);
 extern void remove_reg_equal_equiv_notes_for_regno (unsigned int);
 extern int side_effects_p (const_rtx);
 extern int volatile_refs_p (const_rtx);

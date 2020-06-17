@@ -11,7 +11,9 @@
 #define NAME(X) X
 #endif
 
+#ifndef N
 #define N 1024
+#endif
 
 void __attribute__ ((noinline, noclone))
 NAME(f2) (TYPE *__restrict a, TYPE *__restrict b, TYPE *__restrict c)

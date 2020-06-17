@@ -212,20 +212,20 @@ struct cpu_branch_cost
 /* Control approximate alternatives to certain FP operators.  */
 #define AARCH64_APPROX_MODE(MODE) \
   ((MIN_MODE_FLOAT <= (MODE) && (MODE) <= MAX_MODE_FLOAT) \
-   ? (1 << ((MODE) - MIN_MODE_FLOAT)) \
+   ? ((uint64_t) 1 << ((MODE) - MIN_MODE_FLOAT)) \
    : (MIN_MODE_VECTOR_FLOAT <= (MODE) && (MODE) <= MAX_MODE_VECTOR_FLOAT) \
-     ? (1 << ((MODE) - MIN_MODE_VECTOR_FLOAT \
-	      + MAX_MODE_FLOAT - MIN_MODE_FLOAT + 1)) \
+     ? ((uint64_t) 1 << ((MODE) - MIN_MODE_VECTOR_FLOAT \
+			 + MAX_MODE_FLOAT - MIN_MODE_FLOAT + 1)) \
      : (0))
-#define AARCH64_APPROX_NONE (0)
-#define AARCH64_APPROX_ALL (-1)
+#define AARCH64_APPROX_NONE ((uint64_t) 0)
+#define AARCH64_APPROX_ALL (~(uint64_t) 0)
 
 /* Allowed modes for approximations.  */
 struct cpu_approx_modes
 {
-  const unsigned int division;		/* Division.  */
-  const unsigned int sqrt;		/* Square root.  */
-  const unsigned int recip_sqrt;	/* Reciprocal square root.  */
+  const uint64_t division;	/* Division.  */
+  const uint64_t sqrt;		/* Square root.  */
+  const uint64_t recip_sqrt;	/* Reciprocal square root.  */
 };
 
 /* Cache prefetch settings for prefetch-loop-arrays.  */
@@ -550,8 +550,8 @@ bool aarch64_simd_valid_immediate (rtx, struct simd_immediate_info *,
 			enum simd_immediate_check w = AARCH64_CHECK_MOV);
 rtx aarch64_check_zero_based_sve_index_immediate (rtx);
 bool aarch64_sve_index_immediate_p (rtx);
-bool aarch64_sve_arith_immediate_p (rtx, bool);
-bool aarch64_sve_sqadd_sqsub_immediate_p (rtx, bool);
+bool aarch64_sve_arith_immediate_p (machine_mode, rtx, bool);
+bool aarch64_sve_sqadd_sqsub_immediate_p (machine_mode, rtx, bool);
 bool aarch64_sve_bitmask_immediate_p (rtx);
 bool aarch64_sve_dup_immediate_p (rtx);
 bool aarch64_sve_cmp_immediate_p (rtx, bool);
@@ -560,6 +560,7 @@ bool aarch64_sve_float_mul_immediate_p (rtx);
 bool aarch64_split_dimode_const_store (rtx, rtx);
 bool aarch64_symbolic_address_p (rtx);
 bool aarch64_uimm12_shift (HOST_WIDE_INT);
+int aarch64_movk_shift (const wide_int_ref &, const wide_int_ref &);
 bool aarch64_use_return_insn_p (void);
 const char *aarch64_output_casesi (rtx *);
 
@@ -582,6 +583,7 @@ rtx aarch64_simd_gen_const_vector_dup (machine_mode, HOST_WIDE_INT);
 bool aarch64_simd_mem_operand_p (rtx);
 bool aarch64_sve_ld1r_operand_p (rtx);
 bool aarch64_sve_ld1rq_operand_p (rtx);
+bool aarch64_sve_ld1ro_operand_p (rtx, scalar_mode);
 bool aarch64_sve_ldff1_operand_p (rtx);
 bool aarch64_sve_ldnf1_operand_p (rtx);
 bool aarch64_sve_ldr_operand_p (rtx);
@@ -714,6 +716,7 @@ namespace aarch64_sve {
 			   tree, unsigned int, tree *);
   gimple *gimple_fold_builtin (unsigned int, gimple_stmt_iterator *, gcall *);
   rtx expand_builtin (unsigned int, tree, rtx);
+  tree handle_arm_sve_vector_bits_attribute (tree *, tree, tree, int, bool *);
 #ifdef GCC_TARGET_H
   bool verify_type_context (location_t, type_context_kind, const_tree, bool);
 #endif

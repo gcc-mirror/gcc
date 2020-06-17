@@ -1,4 +1,4 @@
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 // Change in grammar for the expression trailing `requires`.
 template<typename T>

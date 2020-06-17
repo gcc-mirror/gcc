@@ -115,7 +115,7 @@ riscv_sr_match_prologue (rtx_insn **body)
       && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == UNSPEC_VOLATILE
       && (GET_CODE (XVECEXP (XVECEXP (PATTERN (insn), 0, 0), 0, 0))
 	  == CONST_INT)
-      && XINT (XVECEXP (XVECEXP (PATTERN (insn), 0, 0), 0, 0), 0) == 2)
+      && INTVAL (XVECEXP (XVECEXP (PATTERN (insn), 0, 0), 0, 0)) == 0)
     return insn;
 
   return NULL;
@@ -306,6 +306,10 @@ riscv_remove_unneeded_save_restore_calls (void)
 
 	  if (CALL_P (insn))
 	    ++call_count;
+	  /* Ignore any USEs in the gpr_save pattern.  They don't prevent us
+	     from optimizing away the save call.  */
+	  else if (insn == prologue_matched)
+	    ;
 	  else
 	    {
 	      df_ref use;

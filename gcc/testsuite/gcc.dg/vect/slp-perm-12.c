@@ -49,4 +49,4 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target vect_perm } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target { vect_perm && vect_hw_misalign } } } } */

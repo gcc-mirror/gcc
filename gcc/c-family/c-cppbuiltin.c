@@ -876,12 +876,6 @@ c_cpp_builtins (cpp_reader *pfile)
   /* For stddef.h.  They require macros defined in c-common.c.  */
   c_stddef_cpp_builtins ();
 
-  /* Set include test macros for all C/C++ (not for just C++11 etc.)
-     The builtins __has_include__ and __has_include_next__ are defined
-     in libcpp.  */
-  cpp_define (pfile, "__has_include(STR)=__has_include__(STR)");
-  cpp_define (pfile, "__has_include_next(STR)=__has_include_next__(STR)");
-
   if (c_dialect_cxx ())
     {
       if (flag_weak && SUPPORTS_ONE_ONLY)
@@ -994,7 +988,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	}
       if (cxx_dialect > cxx17)
 	{
-	  /* Set feature test macros for C++2a.  */
+	  /* Set feature test macros for C++20.  */
 	  cpp_define (pfile, "__cpp_init_captures=201803L");
 	  cpp_define (pfile, "__cpp_generic_lambdas=201707L");
 	  cpp_define (pfile, "__cpp_designated_initializers=201707L");
@@ -1012,11 +1006,13 @@ c_cpp_builtins (cpp_reader *pfile)
 	}
       if (flag_concepts)
         {
-          if (cxx_dialect >= cxx2a)
+	  if (cxx_dialect >= cxx20)
             cpp_define (pfile, "__cpp_concepts=201907L");
           else
             cpp_define (pfile, "__cpp_concepts=201507L");
         }
+      if (flag_coroutines)
+	cpp_define (pfile, "__cpp_impl_coroutine=201902L"); /* n4861, DIS */
       if (flag_tm)
 	/* Use a value smaller than the 201505 specified in
 	   the TS, since we don't yet support atomic_cancel.  */
@@ -1439,7 +1435,7 @@ c_cpp_builtins (cpp_reader *pfile)
     cpp_define (pfile, "__SSP__=1");
 
   if (flag_openacc)
-    cpp_define (pfile, "_OPENACC=201306");
+    cpp_define (pfile, "_OPENACC=201711");
 
   if (flag_openmp)
     cpp_define (pfile, "_OPENMP=201511");

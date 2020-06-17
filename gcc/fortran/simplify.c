@@ -1107,6 +1107,91 @@ gfc_simplify_asin (gfc_expr *x)
 }
 
 
+/* Convert radians to degrees, i.e., x * 180 / pi.  */
+
+static void
+rad2deg (mpfr_t x)
+{
+  mpfr_t tmp;
+
+  mpfr_init (tmp);
+  mpfr_const_pi (tmp, GFC_RND_MODE);
+  mpfr_mul_ui (x, x, 180, GFC_RND_MODE);
+  mpfr_div (x, x, tmp, GFC_RND_MODE);
+  mpfr_clear (tmp);
+}
+
+
+/* Simplify ACOSD(X) where the returned value has units of degree.  */
+
+gfc_expr *
+gfc_simplify_acosd (gfc_expr *x)
+{
+  gfc_expr *result;
+
+  if (x->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  if (mpfr_cmp_si (x->value.real, 1) > 0
+      || mpfr_cmp_si (x->value.real, -1) < 0)
+    {
+      gfc_error ("Argument of ACOSD at %L must be between -1 and 1",
+		 &x->where);
+      return &gfc_bad_expr;
+    }
+
+  result = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
+  mpfr_acos (result->value.real, x->value.real, GFC_RND_MODE);
+  rad2deg (result->value.real);
+
+  return range_check (result, "ACOSD");
+}
+
+
+/* Simplify asind (x) where the returned value has units of degree. */
+
+gfc_expr *
+gfc_simplify_asind (gfc_expr *x)
+{
+  gfc_expr *result;
+
+  if (x->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  if (mpfr_cmp_si (x->value.real, 1) > 0
+      || mpfr_cmp_si (x->value.real, -1) < 0)
+    {
+      gfc_error ("Argument of ASIND at %L must be between -1 and 1",
+		 &x->where);
+      return &gfc_bad_expr;
+    }
+
+  result = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
+  mpfr_asin (result->value.real, x->value.real, GFC_RND_MODE);
+  rad2deg (result->value.real);
+
+  return range_check (result, "ASIND");
+}
+
+
+/* Simplify atand (x) where the returned value has units of degree. */
+
+gfc_expr *
+gfc_simplify_atand (gfc_expr *x)
+{
+  gfc_expr *result;
+
+  if (x->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
+  mpfr_atan (result->value.real, x->value.real, GFC_RND_MODE);
+  rad2deg (result->value.real);
+
+  return range_check (result, "ATAND");
+}
+
+
 gfc_expr *
 gfc_simplify_asinh (gfc_expr *x)
 {
@@ -1208,8 +1293,8 @@ gfc_simplify_atan2 (gfc_expr *y, gfc_expr *x)
 
   if (mpfr_zero_p (y->value.real) && mpfr_zero_p (x->value.real))
     {
-      gfc_error ("If first argument of ATAN2 %L is zero, then the "
-		 "second argument must not be zero", &x->where);
+      gfc_error ("If first argument of ATAN2 at %L is zero, then the "
+		 "second argument must not be zero", &y->where);
       return &gfc_bad_expr;
     }
 
@@ -1736,150 +1821,31 @@ gfc_simplify_conjg (gfc_expr *e)
   return range_check (result, "CONJG");
 }
 
-/* Return the simplification of the constant expression in icall, or NULL
-   if the expression is not constant.  */
 
-static gfc_expr *
-simplify_trig_call (gfc_expr *icall)
-{
-  gfc_isym_id func = icall->value.function.isym->id;
-  gfc_expr *x = icall->value.function.actual->expr;
-
-  /* The actual simplifiers will return NULL for non-constant x.  */
-  switch (func)
-    {
-    case GFC_ISYM_ACOS:
-      return gfc_simplify_acos (x);
-    case GFC_ISYM_ASIN:
-      return gfc_simplify_asin (x);
-    case GFC_ISYM_ATAN:
-      return gfc_simplify_atan (x);
-    case GFC_ISYM_COS:
-      return gfc_simplify_cos (x);
-    case GFC_ISYM_COTAN:
-      return gfc_simplify_cotan (x);
-    case GFC_ISYM_SIN:
-      return gfc_simplify_sin (x);
-    case GFC_ISYM_TAN:
-      return gfc_simplify_tan (x);
-    default:
-      gfc_internal_error ("in simplify_trig_call(): Bad intrinsic");
-    }
-}
-
-/* Convert a floating-point number from radians to degrees.  */
-
-static void
-degrees_f (mpfr_t x, mpfr_rnd_t rnd_mode)
-{
-  mpfr_t tmp;
-  mpfr_init (tmp);
-
-  /* Set x = x % 2pi to avoid offsets with large angles.  */
-  mpfr_const_pi (tmp, rnd_mode);
-  mpfr_mul_ui (tmp, tmp, 2, rnd_mode);
-  mpfr_fmod (tmp, x, tmp, rnd_mode);
-
-  /* Set x = x * 180.  */
-  mpfr_mul_ui (x, x, 180, rnd_mode);
-
-  /* Set x = x / pi.  */
-  mpfr_const_pi (tmp, rnd_mode);
-  mpfr_div (x, x, tmp, rnd_mode);
-
-  mpfr_clear (tmp);
-}
-
-/* Convert a floating-point number from degrees to radians.  */
-
-static void
-radians_f (mpfr_t x, mpfr_rnd_t rnd_mode)
-{
-  mpfr_t tmp;
-  mpfr_init (tmp);
-
-  /* Set x = x % 360 to avoid offsets with large angles.  */
-  mpfr_set_ui (tmp, 360, rnd_mode);
-  mpfr_fmod (tmp, x, tmp, rnd_mode);
-
-  /* Set x = x * pi.  */
-  mpfr_const_pi (tmp, rnd_mode);
-  mpfr_mul (x, x, tmp, rnd_mode);
-
-  /* Set x = x / 180.  */
-  mpfr_div_ui (x, x, 180, rnd_mode);
-
-  mpfr_clear (tmp);
-}
-
-
-/* Convert argument to radians before calling a trig function.  */
-
-gfc_expr *
-gfc_simplify_trigd (gfc_expr *icall)
-{
-  gfc_expr *arg;
-
-  arg = icall->value.function.actual->expr;
-
-  if (arg->ts.type != BT_REAL)
-    gfc_internal_error ("in gfc_simplify_trigd(): Bad type");
-
-  if (arg->expr_type == EXPR_CONSTANT)
-    /* Convert constant to radians before passing off to simplifier.  */
-    radians_f (arg->value.real, GFC_RND_MODE);
-
-  /* Let the usual simplifier take over - we just simplified the arg.  */
-  return simplify_trig_call (icall);
-}
-
-/* Convert result of an inverse trig function to degrees.  */
-
-gfc_expr *
-gfc_simplify_atrigd (gfc_expr *icall)
-{
-  gfc_expr *result;
-
-  if (icall->value.function.actual->expr->ts.type != BT_REAL)
-    gfc_internal_error ("in gfc_simplify_atrigd(): Bad type");
-
-  /* See if another simplifier has work to do first.  */
-  result = simplify_trig_call (icall);
-
-  if (result && result->expr_type == EXPR_CONSTANT)
-    {
-      /* Convert constant to degrees after passing off to actual simplifier.  */
-      degrees_f (result->value.real, GFC_RND_MODE);
-      return result;
-    }
-
-  /* Let gfc_resolve_atrigd take care of the non-constant case.  */
-  return NULL;
-}
-
-/* Convert the result of atan2 to degrees.  */
+/* Simplify atan2d (x) where the unit is degree.  */
 
 gfc_expr *
 gfc_simplify_atan2d (gfc_expr *y, gfc_expr *x)
 {
   gfc_expr *result;
 
-  if (x->ts.type != BT_REAL || y->ts.type != BT_REAL)
-    gfc_internal_error ("in gfc_simplify_atan2d(): Bad type");
+  if (x->expr_type != EXPR_CONSTANT || y->expr_type != EXPR_CONSTANT)
+    return NULL;
 
-  if (x->expr_type == EXPR_CONSTANT && y->expr_type == EXPR_CONSTANT)
+  if (mpfr_zero_p (y->value.real) && mpfr_zero_p (x->value.real))
     {
-      result = gfc_simplify_atan2 (y, x);
-      if (result != NULL)
-	{
-	  degrees_f (result->value.real, GFC_RND_MODE);
-	  return result;
-	}
+      gfc_error ("If first argument of ATAN2D at %L is zero, then the "
+		 "second argument must not be zero", &y->where);
+      return &gfc_bad_expr;
     }
 
-  /* Let gfc_resolve_atan2d take care of the non-constant case.  */
-  return NULL;
+  result = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
+  mpfr_atan2 (result->value.real, y->value.real, x->value.real, GFC_RND_MODE);
+  rad2deg (result->value.real);
+
+  return range_check (result, "ATAN2D");
 }
+
 
 gfc_expr *
 gfc_simplify_cos (gfc_expr *x)
@@ -1907,6 +1873,101 @@ gfc_simplify_cos (gfc_expr *x)
     }
 
   return range_check (result, "COS");
+}
+
+
+static void
+deg2rad (mpfr_t x)
+{
+  mpfr_t d2r;
+
+  mpfr_init (d2r);
+  mpfr_const_pi (d2r, GFC_RND_MODE);
+  mpfr_div_ui (d2r, d2r, 180, GFC_RND_MODE);
+  mpfr_mul (x, x, d2r, GFC_RND_MODE);
+  mpfr_clear (d2r);
+}
+
+
+/* Simplification routines for SIND, COSD, TAND.  */
+#include "trigd_fe.inc"
+
+
+/* Simplify COSD(X) where X has the unit of degree.  */
+
+gfc_expr *
+gfc_simplify_cosd (gfc_expr *x)
+{
+  gfc_expr *result;
+
+  if (x->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
+  mpfr_set (result->value.real, x->value.real, GFC_RND_MODE);
+  simplify_cosd (result->value.real);
+
+  return range_check (result, "COSD");
+}
+
+
+/* Simplify SIND(X) where X has the unit of degree.  */
+
+gfc_expr *
+gfc_simplify_sind (gfc_expr *x)
+{
+  gfc_expr *result;
+
+  if (x->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
+  mpfr_set (result->value.real, x->value.real, GFC_RND_MODE);
+  simplify_sind (result->value.real);
+
+  return range_check (result, "SIND");
+}
+
+
+/* Simplify TAND(X) where X has the unit of degree.  */
+
+gfc_expr *
+gfc_simplify_tand (gfc_expr *x)
+{
+  gfc_expr *result;
+
+  if (x->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
+  mpfr_set (result->value.real, x->value.real, GFC_RND_MODE);
+  simplify_tand (result->value.real);
+
+  return range_check (result, "TAND");
+}
+
+
+/* Simplify COTAND(X) where X has the unit of degree.  */
+
+gfc_expr *
+gfc_simplify_cotand (gfc_expr *x)
+{
+  gfc_expr *result;
+
+  if (x->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  /* Implement COTAND = -TAND(x+90).
+     TAND offers correct exact values for multiples of 30 degrees.
+     This implementation is also compatible with the behavior of some legacy
+     compilers.  Keep this consistent with gfc_conv_intrinsic_cotand.  */
+  result = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
+  mpfr_set (result->value.real, x->value.real, GFC_RND_MODE);
+  mpfr_add_ui (result->value.real, result->value.real, 90, GFC_RND_MODE);
+  simplify_tand (result->value.real);
+  mpfr_neg (result->value.real, result->value.real, GFC_RND_MODE);
+
+  return range_check (result, "COTAND");
 }
 
 
@@ -4096,6 +4157,7 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 {
   gfc_ref *ref;
   gfc_array_spec *as;
+  ar_type type = AR_UNKNOWN;
   int d;
 
   if (array->ts.type == BT_CLASS)
@@ -4108,6 +4170,10 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
       goto done;
     }
 
+  /* Do not attempt to resolve if error has already been issued.  */
+  if (array->symtree->n.sym->error)
+    return NULL;
+
   /* Follow any component references.  */
   as = array->symtree->n.sym->as;
   for (ref = array->ref; ref; ref = ref->next)
@@ -4115,6 +4181,7 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
       switch (ref->type)
 	{
 	case REF_ARRAY:
+	  type = ref->u.ar.type;
 	  switch (ref->u.ar.type)
 	    {
 	    case AR_ELEMENT:
@@ -4168,7 +4235,7 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
       int k;
 
       /* UBOUND(ARRAY) is not valid for an assumed-size array.  */
-      if (upper && as && as->type == AS_ASSUMED_SIZE)
+      if (upper && type == AR_FULL && as && as->type == AS_ASSUMED_SIZE)
 	{
 	  /* An error message will be emitted in
 	     check_assumed_size_reference (resolve.c).  */
@@ -4186,7 +4253,11 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 
 	      for (j = 0; j < d; j++)
 		gfc_free_expr (bounds[j]);
-	      return bounds[d];
+
+	      if (gfc_seen_div0)
+		return &gfc_bad_expr;
+	      else
+		return bounds[d];
 	    }
 	}
 
@@ -5497,7 +5568,7 @@ simplify_findloc_nodim (gfc_expr *result, gfc_expr *value, gfc_expr *array,
   bool continue_loop;
   bool ma;
 
-  for (i = 0; i<array->rank; i++)
+  for (i = 0; i < array->rank; i++)
     res[i] = -1;
 
   /* Shortcut for constant .FALSE. MASK.  */
@@ -5540,7 +5611,7 @@ simplify_findloc_nodim (gfc_expr *result, gfc_expr *value, gfc_expr *array,
 
 	  if (ma && gfc_compare_expr (a, value, INTRINSIC_EQ) == 0)
 	    {
-	      for (i = 0; i<array->rank; i++)
+	      for (i = 0; i < array->rank; i++)
 		res[i] = count[i];
 	      if (!back_val)
 		goto finish;
@@ -5565,9 +5636,9 @@ simplify_findloc_nodim (gfc_expr *result, gfc_expr *value, gfc_expr *array,
 	} while (count[n] == extent[n]);
     }
 
- finish:
+finish:
   result_ctor = gfc_constructor_first (result->value.constructor);
-  for (i = 0; i<array->rank; i++)
+  for (i = 0; i < array->rank; i++)
     {
       gfc_expr *r_expr;
       r_expr = result_ctor->expr;
@@ -7228,6 +7299,8 @@ gfc_simplify_shape (gfc_expr *source, gfc_expr *kind)
     return NULL;
 
   result = gfc_get_array_expr (BT_INTEGER, k, &source->where);
+  result->shape = gfc_get_shape (1);
+  mpz_init (result->shape[0]);
 
   if (source->rank == 0)
     return result;
@@ -7283,6 +7356,8 @@ gfc_simplify_shape (gfc_expr *source, gfc_expr *kind)
 
   if (t)
     gfc_clear_shape (shape, source->rank);
+
+  mpz_set_si (result->shape[0], source->rank);
 
   return result;
 }
@@ -7779,6 +7854,8 @@ gfc_simplify_sum (gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
 }
 
 
+/* Simplify COTAN(X) where X has the unit of radian.  */
+
 gfc_expr *
 gfc_simplify_cotan (gfc_expr *x)
 {
@@ -7800,8 +7877,8 @@ gfc_simplify_cotan (gfc_expr *x)
       /* There is no builtin mpc_cot, so compute cot = cos / sin.  */
       val = &result->value.complex;
       mpc_init2 (swp, mpfr_get_default_prec ());
-      mpc_cos (swp, x->value.complex, GFC_MPC_RND_MODE);
-      mpc_sin (*val, x->value.complex, GFC_MPC_RND_MODE);
+      mpc_sin_cos (*val, swp, x->value.complex, GFC_MPC_RND_MODE,
+		   GFC_MPC_RND_MODE);
       mpc_div (*val, swp, *val, GFC_MPC_RND_MODE);
       mpc_clear (swp);
       break;

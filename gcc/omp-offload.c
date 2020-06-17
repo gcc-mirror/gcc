@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "cfgloop.h"
+#include "context.h"
 
 /* Describe the OpenACC looping structure of a function.  The entire
    function is held in a 'NULL' loop.  */
@@ -124,6 +125,10 @@ add_decls_addresses_to_decl_constructor (vec<tree, va_gc> *v_decls,
 #endif
 	  && lookup_attribute ("omp declare target link", DECL_ATTRIBUTES (it));
 
+      /* See also omp_finish_file and output_offload_tables in lto-cgraph.c.  */
+      if (!in_lto_p && !symtab_node::get (it))
+	continue;
+
       tree size = NULL_TREE;
       if (is_var)
 	size = fold_convert (const_ptr_type_node, DECL_SIZE_UNIT (it));
@@ -158,6 +163,166 @@ add_decls_addresses_to_decl_constructor (vec<tree, va_gc> *v_decls,
     }
 }
 
+/* Return true if DECL is a function for which its references should be
+   analyzed.  */
+
+static bool
+omp_declare_target_fn_p (tree decl)
+{
+  return (TREE_CODE (decl) == FUNCTION_DECL
+	  && lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl))
+	  && !lookup_attribute ("omp declare target host",
+				DECL_ATTRIBUTES (decl))
+	  && (!flag_openacc
+	      || oacc_get_fn_attrib (decl) == NULL_TREE));
+}
+
+/* Return true if DECL Is a variable for which its initializer references
+   should be analyzed.  */
+
+static bool
+omp_declare_target_var_p (tree decl)
+{
+  return (VAR_P (decl)
+	  && lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl))
+	  && !lookup_attribute ("omp declare target link",
+				DECL_ATTRIBUTES (decl)));
+}
+
+/* Helper function for omp_discover_implicit_declare_target, called through
+   walk_tree.  Mark referenced FUNCTION_DECLs implicitly as
+   declare target to.  */
+
+static tree
+omp_discover_declare_target_tgt_fn_r (tree *tp, int *walk_subtrees, void *data)
+{
+  if (TREE_CODE (*tp) == FUNCTION_DECL
+      && !omp_declare_target_fn_p (*tp)
+      && !lookup_attribute ("omp declare target host", DECL_ATTRIBUTES (*tp)))
+    {
+      tree id = get_identifier ("omp declare target");
+      if (!DECL_EXTERNAL (*tp) && DECL_SAVED_TREE (*tp))
+	((vec<tree> *) data)->safe_push (*tp);
+      DECL_ATTRIBUTES (*tp) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (*tp));
+      symtab_node *node = symtab_node::get (*tp);
+      if (node != NULL)
+	{
+	  node->offloadable = 1;
+	  if (ENABLE_OFFLOADING)
+	    g->have_offload = true;
+	}
+    }
+  else if (TYPE_P (*tp))
+    *walk_subtrees = 0;
+  /* else if (TREE_CODE (*tp) == OMP_TARGET)
+       {
+	 if (tree dev = omp_find_clause (OMP_TARGET_CLAUSES (*tp)))
+	   if (OMP_DEVICE_ANCESTOR (dev))
+	     *walk_subtrees = 0;
+       } */
+  return NULL_TREE;
+}
+
+/* Similarly, but ignore references outside of OMP_TARGET regions.  */
+
+static tree
+omp_discover_declare_target_fn_r (tree *tp, int *walk_subtrees, void *data)
+{
+  if (TREE_CODE (*tp) == OMP_TARGET)
+    {
+      /* And not OMP_DEVICE_ANCESTOR.  */
+      walk_tree_without_duplicates (&OMP_TARGET_BODY (*tp),
+				    omp_discover_declare_target_tgt_fn_r,
+				    data);
+      *walk_subtrees = 0;
+    }
+  else if (TYPE_P (*tp))
+    *walk_subtrees = 0;
+  return NULL_TREE;
+}
+
+/* Helper function for omp_discover_implicit_declare_target, called through
+   walk_tree.  Mark referenced FUNCTION_DECLs implicitly as
+   declare target to.  */
+
+static tree
+omp_discover_declare_target_var_r (tree *tp, int *walk_subtrees, void *data)
+{
+  if (TREE_CODE (*tp) == FUNCTION_DECL)
+    return omp_discover_declare_target_tgt_fn_r (tp, walk_subtrees, data);
+  else if (VAR_P (*tp)
+	   && is_global_var (*tp)
+	   && !omp_declare_target_var_p (*tp))
+    {
+      tree id = get_identifier ("omp declare target");
+      if (lookup_attribute ("omp declare target link", DECL_ATTRIBUTES (*tp)))
+	{
+	  error_at (DECL_SOURCE_LOCATION (*tp),
+		    "%qD specified both in declare target %<link%> and "
+		    "implicitly in %<to%> clauses", *tp);
+	  DECL_ATTRIBUTES (*tp)
+	    = remove_attribute ("omp declare target link", DECL_ATTRIBUTES (*tp));
+	}
+      if (TREE_STATIC (*tp) && DECL_INITIAL (*tp))
+	((vec<tree> *) data)->safe_push (*tp);
+      DECL_ATTRIBUTES (*tp) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (*tp));
+      symtab_node *node = symtab_node::get (*tp);
+      if (node != NULL && !node->offloadable)
+	{
+	  node->offloadable = 1;
+	  if (ENABLE_OFFLOADING)
+	    {
+	      g->have_offload = true;
+	      if (is_a <varpool_node *> (node))
+		vec_safe_push (offload_vars, node->decl);
+	    }
+	}
+    }
+  else if (TYPE_P (*tp))
+    *walk_subtrees = 0;
+  return NULL_TREE;
+}
+
+/* Perform the OpenMP implicit declare target to discovery.  */
+
+void
+omp_discover_implicit_declare_target (void)
+{
+  cgraph_node *node;
+  varpool_node *vnode;
+  auto_vec<tree> worklist;
+
+  FOR_EACH_DEFINED_FUNCTION (node)
+    if (DECL_SAVED_TREE (node->decl))
+      {
+        if (omp_declare_target_fn_p (node->decl))
+	  worklist.safe_push (node->decl);
+	else if (DECL_STRUCT_FUNCTION (node->decl)
+		 && DECL_STRUCT_FUNCTION (node->decl)->has_omp_target)
+	  worklist.safe_push (node->decl);
+      }
+  FOR_EACH_STATIC_INITIALIZER (vnode)
+    if (omp_declare_target_var_p (vnode->decl))
+      worklist.safe_push (vnode->decl);
+  while (!worklist.is_empty ())
+    {
+      tree decl = worklist.pop ();
+      if (VAR_P (decl))
+	walk_tree_without_duplicates (&DECL_INITIAL (decl),
+				      omp_discover_declare_target_var_r,
+				      &worklist);
+      else if (omp_declare_target_fn_p (decl))
+	walk_tree_without_duplicates (&DECL_SAVED_TREE (decl),
+				      omp_discover_declare_target_tgt_fn_r,
+				      &worklist);
+      else
+	walk_tree_without_duplicates (&DECL_SAVED_TREE (decl),
+				      omp_discover_declare_target_fn_r,
+				      &worklist);
+    }
+}
+
+
 /* Create new symbols containing (address, size) pairs for global variables,
    marked with "omp declare target" attribute, as well as addresses for the
    functions, which are outlined offloading regions.  */
@@ -180,7 +345,7 @@ omp_finish_file (void)
       add_decls_addresses_to_decl_constructor (offload_vars, v_v);
 
       tree vars_decl_type = build_array_type_nelts (pointer_sized_int_node,
-						    num_vars * 2);
+						    vec_safe_length (v_v));
       tree funcs_decl_type = build_array_type_nelts (pointer_sized_int_node,
 						     num_funcs);
       SET_TYPE_ALIGN (vars_decl_type, TYPE_ALIGN (pointer_sized_int_node));
@@ -215,12 +380,30 @@ omp_finish_file (void)
       for (unsigned i = 0; i < num_funcs; i++)
 	{
 	  tree it = (*offload_funcs)[i];
+	  /* See also add_decls_addresses_to_decl_constructor
+	     and output_offload_tables in lto-cgraph.c.  */
+	  if (!in_lto_p && !symtab_node::get (it))
+	    continue;
 	  targetm.record_offload_symbol (it);
 	}
       for (unsigned i = 0; i < num_vars; i++)
 	{
 	  tree it = (*offload_vars)[i];
-	  targetm.record_offload_symbol (it);
+	  if (!in_lto_p && !symtab_node::get (it))
+	    continue;
+#ifdef ACCEL_COMPILER
+	  if (DECL_HAS_VALUE_EXPR_P (it)
+	      && lookup_attribute ("omp declare target link",
+				   DECL_ATTRIBUTES (it)))
+	    {
+	      tree value_expr = DECL_VALUE_EXPR (it);
+	      tree link_ptr_decl = TREE_OPERAND (value_expr, 0);
+	      targetm.record_offload_symbol (link_ptr_decl);
+	      varpool_node::finalize_decl (link_ptr_decl);
+	    }
+	  else
+#endif
+	    targetm.record_offload_symbol (it);
 	}
     }
 }
@@ -1893,12 +2076,28 @@ execute_omp_device_lower ()
   bool regimplify = false;
   basic_block bb;
   gimple_stmt_iterator gsi;
+  bool calls_declare_variant_alt
+    = cgraph_node::get (cfun->decl)->calls_declare_variant_alt;
   FOR_EACH_BB_FN (bb, cfun)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
 	gimple *stmt = gsi_stmt (gsi);
-	if (!is_gimple_call (stmt) || !gimple_call_internal_p (stmt))
+	if (!is_gimple_call (stmt))
 	  continue;
+	if (!gimple_call_internal_p (stmt))
+	  {
+	    if (calls_declare_variant_alt)
+	      if (tree fndecl = gimple_call_fndecl (stmt))
+		{
+		  tree new_fndecl = omp_resolve_declare_variant (fndecl);
+		  if (new_fndecl != fndecl)
+		    {
+		      gimple_call_set_fndecl (stmt, new_fndecl);
+		      update_stmt (stmt);
+		    }
+		}
+	    continue;
+	  }
 	tree lhs = gimple_call_lhs (stmt), rhs = NULL_TREE;
 	tree type = lhs ? TREE_TYPE (lhs) : integer_type_node;
 	switch (gimple_call_internal_fn (stmt))
@@ -1992,7 +2191,9 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *fun)
     {
-      return !(fun->curr_properties & PROP_gimple_lomp_dev);
+      return (!(fun->curr_properties & PROP_gimple_lomp_dev)
+	      || (flag_openmp
+		  && cgraph_node::get (fun->decl)->calls_declare_variant_alt));
     }
   virtual unsigned int execute (function *)
     {

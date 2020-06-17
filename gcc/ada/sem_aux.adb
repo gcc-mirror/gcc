@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -234,7 +234,7 @@ package body Sem_Aux is
       --  either because the tag must be ahead of them.
 
       if Chars (Ent) = Name_uTag then
-         Ent := Next_Entity (Ent);
+         Next_Entity (Ent);
       end if;
 
       --  Skip all hidden stored discriminants if any
@@ -243,7 +243,7 @@ package body Sem_Aux is
          exit when Ekind (Ent) = E_Discriminant
            and then not Is_Completely_Hidden (Ent);
 
-         Ent := Next_Entity (Ent);
+         Next_Entity (Ent);
       end loop;
 
       --  Call may be on a private type with unknown discriminants, in which
@@ -297,7 +297,7 @@ package body Sem_Aux is
                return True;
             end if;
 
-            Ent := Next_Entity (Ent);
+            Next_Entity (Ent);
          end loop;
 
          return False;
@@ -313,14 +313,14 @@ package body Sem_Aux is
       Ent := First_Entity (Typ);
 
       if Chars (Ent) = Name_uTag then
-         Ent := Next_Entity (Ent);
+         Next_Entity (Ent);
       end if;
 
       if Has_Completely_Hidden_Discriminant (Ent) then
          while Present (Ent) loop
             exit when Ekind (Ent) = E_Discriminant
               and then Is_Completely_Hidden (Ent);
-            Ent := Next_Entity (Ent);
+            Next_Entity (Ent);
          end loop;
       end if;
 
@@ -344,8 +344,8 @@ package body Sem_Aux is
       --  predefined integer types. If the type is formal, it is also a first
       --  subtype, and its base type has no freeze node. On the other hand, a
       --  subtype of a generic formal is not its own first subtype. Its base
-      --  type, if anonymous, is attached to the formal type decl. from which
-      --  the first subtype is obtained.
+      --  type, if anonymous, is attached to the formal type declaration from
+      --  which the first subtype is obtained.
 
       if No (F) then
          if B = Base_Type (Standard_Integer) then
@@ -423,7 +423,7 @@ package body Sem_Aux is
             return Comp;
          end if;
 
-         Comp := Next_Entity (Comp);
+         Next_Entity (Comp);
       end loop;
 
       --  No tag component found
@@ -484,19 +484,6 @@ package body Sem_Aux is
 
       return Id;
    end Get_Called_Entity;
-
-   -------------------
-   -- Get_Low_Bound --
-   -------------------
-
-   function Get_Low_Bound (E : Entity_Id) return Node_Id is
-   begin
-      if Ekind (E) = E_String_Literal_Subtype then
-         return String_Literal_Low_Bound (E);
-      else
-         return Type_Low_Bound (E);
-      end if;
-   end Get_Low_Bound;
 
    ------------------
    -- Get_Rep_Item --
@@ -735,7 +722,7 @@ package body Sem_Aux is
             return True;
          end if;
 
-         Item := Next_Rep_Item (Item);
+         Next_Rep_Item (Item);
       end loop;
 
       return False;
@@ -984,7 +971,7 @@ package body Sem_Aux is
                      return True;
                   end if;
 
-                  C := Next_Component (C);
+                  Next_Component (C);
                end loop;
             end;
 
@@ -1216,7 +1203,7 @@ package body Sem_Aux is
                      return True;
                   end if;
 
-                  C := Next_Component (C);
+                  Next_Component (C);
                end loop;
             end;
 
@@ -1315,7 +1302,7 @@ package body Sem_Aux is
                      return True;
                   end if;
 
-                  C := Next_Component (C);
+                  Next_Component (C);
                end loop;
             end;
 
@@ -1342,6 +1329,15 @@ package body Sem_Aux is
                     and then Nkind (Parent (Unit_Declaration_Node (E))) =
                                N_Protected_Definition);
    end Is_Protected_Operation;
+
+   -------------------------------
+   -- Is_Record_Or_Limited_Type --
+   -------------------------------
+
+   function Is_Record_Or_Limited_Type (Typ : Entity_Id) return Boolean is
+   begin
+      return Is_Record_Type (Typ) or else Is_Limited_Type (Typ);
+   end Is_Record_Or_Limited_Type;
 
    ----------------------
    -- Nearest_Ancestor --
@@ -1427,7 +1423,7 @@ package body Sem_Aux is
             return Comp;
          end if;
 
-         Comp := Next_Entity (Comp);
+         Next_Entity (Comp);
       end loop;
 
       --  No tag component found
@@ -1456,7 +1452,7 @@ package body Sem_Aux is
 
       while Present (Comp) loop
          N := N + 1;
-         Comp := Next_Component_Or_Discriminant (Comp);
+         Next_Component_Or_Discriminant (Comp);
       end loop;
 
       return N;
@@ -1473,7 +1469,7 @@ package body Sem_Aux is
    begin
       while Present (Discr) loop
          N := N + 1;
-         Discr := Next_Discriminant (Discr);
+         Next_Discriminant (Discr);
       end loop;
 
       return N;
@@ -1649,24 +1645,6 @@ package body Sem_Aux is
 
       return N;
    end Subprogram_Specification;
-
-   ---------------
-   -- Tree_Read --
-   ---------------
-
-   procedure Tree_Read is
-   begin
-      Obsolescent_Warnings.Tree_Read;
-   end Tree_Read;
-
-   ----------------
-   -- Tree_Write --
-   ----------------
-
-   procedure Tree_Write is
-   begin
-      Obsolescent_Warnings.Tree_Write;
-   end Tree_Write;
 
    --------------------
    -- Ultimate_Alias --

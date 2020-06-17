@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_VR_VALUES_H
 #define GCC_VR_VALUES_H
 
+#include "value-range-equiv.h"
 #include "gimple-range-gori.h"
 
 class simplify_using_ranges
@@ -49,7 +50,7 @@ private:
   bool simplify_bit_ops_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_min_or_max_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_cond_using_ranges_1 (gcond *);
-  bool simplify_cond_using_ranges_when_edge_is_known (gcond *);
+  bool fold_cond (gcond *);
   bool simplify_switch_using_ranges (gswitch *);
   bool simplify_float_conversion_using_ranges (gimple_stmt_iterator *,
 					       gimple *);

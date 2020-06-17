@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-iconv "latin1" } */
 /* { dg-options "-std=c99 -g -finput-charset=latin1" } */
 /* { dg-final { scan-file ucnid-16-utf8.s "²" } } */
 

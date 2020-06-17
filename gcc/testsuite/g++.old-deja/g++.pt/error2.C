@@ -9,7 +9,7 @@ public:
 
 void f ()
 {
-  Test<void> c; // { dg-error "no match" }
+  Test<void> c; // { dg-message "required" }
 }
 
 

@@ -10,7 +10,7 @@ AC_INIT(package-unused, version-unused,, libgo)
 AC_CONFIG_SRCDIR(Makefile.am)
 AC_CONFIG_HEADER(config.h)
 
-libtool_VERSION=15:0:0
+libtool_VERSION=16:0:0
 AC_SUBST(libtool_VERSION)
 
 AM_ENABLE_MULTILIB(, ..)
@@ -80,6 +80,8 @@ AC_ARG_ENABLE([version-specific-runtime-libs],
   [version_specific_libs=no])
 AC_MSG_RESULT($version_specific_libs)
 
+GCC_WITH_TOOLEXECLIBDIR
+
 # Version-specific runtime libs processing.
 if test $version_specific_libs = yes; then
   glibgo_toolexecdir='${libdir}/gcc/${host_alias}'
@@ -91,7 +93,14 @@ fi
 if test -n "$with_cross_host" &&
    test x"$with_cross_host" != x"no"; then
   nover_glibgo_toolexecdir='${exec_prefix}/${host_alias}'
-  nover_glibgo_toolexeclibdir='${toolexecdir}/lib'
+  case ${with_toolexeclibdir} in
+    no)
+      nover_glibgo_toolexeclibdir='${toolexecdir}/lib'
+      ;;
+    *)
+      nover_glibgo_toolexeclibdir=${with_toolexeclibdir}
+      ;;
+  esac
 else
   nover_glibgo_toolexecdir='${libdir}/gcc/${host_alias}'
   nover_glibgo_toolexeclibdir='${libdir}'
@@ -871,6 +880,17 @@ if test "x$libgo_cv_as_x86_aes" = xyes; then
   AC_DEFINE(HAVE_AS_X86_AES, 1,
 	    [Define if your assembler supports AES instructions.])
 fi
+
+dnl Test whether the linker supports the -static option.
+AC_CACHE_CHECK([whether -static is supported],
+[libgo_cv_ld_static],
+[LDFLAGS_hold=$LDFLAGS
+LDFLAGS="$LDFLAGS -static"
+AC_LINK_IFELSE([AC_LANG_PROGRAM(,)],
+[libgo_cv_ld_static=yes],
+[libgo_cv_ld_static=no])
+LDFLAGS=$LDFLAGS_hold])
+AM_CONDITIONAL(HAVE_STATIC_LINK, test "$libgo_cv_ld_static" = yes)
 
 AC_CACHE_SAVE
 

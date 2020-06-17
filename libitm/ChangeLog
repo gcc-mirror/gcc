@@ -1,3 +1,49 @@
+2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/95413
+	* configure: Regenerated.
+
+2020-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/95147
+	* configure: Regenerated.
+
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2020-05-12  Nathan Sidwell  <nathan@acm.org>
+
+	Fix throw specifiers on interface.
+	* libitm/libitm.h (_ITM_NOTHROW): Define.
+	(_ITM_cxa_allocate_exception, _ITM_cxa_free_exception)
+	(_ITM_cxa_begin_catch): Use it.
+	* eh_cpp.cc: Add throw() to __cxa_allocate_exception,
+	__cxa_free_exception, __cxa_begin_catch, __cxa_tm_cleanup,
+	__cxa_get_globals.
+	(_ITM_cxa_allocate_exception, _ITM_cxa_free_exception)
+	(_ITM_cxa_begin_catch): Likewise.
+
+2020-05-05  Nathan Sidwell  <nathan@acm.org>
+
+	* testsuite/lib/libitm.exp (libitm_init): Add
+	-fdiagnostics-color=never to options.
+
+2020-02-12  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libstdc++/79193
+	PR libstdc++/88999
+
+	* configure: Regenerated.
+
+2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure.ac: Handle `--with-toolexeclibdir='.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

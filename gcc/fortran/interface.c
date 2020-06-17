@@ -1529,7 +1529,7 @@ gfc_check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 
 bool
 gfc_check_result_characteristics (gfc_symbol *s1, gfc_symbol *s2,
-			      char *errmsg, int err_len)
+				  char *errmsg, int err_len)
 {
   gfc_symbol *r1, *r2;
 
@@ -1695,11 +1695,15 @@ bool
 gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 			int generic_flag, int strict_flag,
 			char *errmsg, int err_len,
-			const char *p1, const char *p2)
+			const char *p1, const char *p2,
+			bool *bad_result_characteristics)
 {
   gfc_formal_arglist *f1, *f2;
 
   gcc_assert (name2 != NULL);
+
+  if (bad_result_characteristics)
+    *bad_result_characteristics = false;
 
   if (s1->attr.function && (s2->attr.subroutine
       || (!s2->attr.function && s2->ts.type == BT_UNKNOWN
@@ -1726,7 +1730,11 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 	  /* If both are functions, check result characteristics.  */
 	  if (!gfc_check_result_characteristics (s1, s2, errmsg, err_len)
 	      || !gfc_check_result_characteristics (s2, s1, errmsg, err_len))
-	    return false;
+	    {
+	      if (bad_result_characteristics)
+		*bad_result_characteristics = true;
+	      return false;
+	    }
 	}
 
       if (s1->attr.pure && !s2->attr.pure)
@@ -2223,7 +2231,7 @@ argument_rank_mismatch (const char *name, locus *where,
 		       where, where_formal, rank1);
       else
 	gfc_error_opt (0, "Rank mismatch between actual argument at %L "
-		       "and actual argument at %L (rank-%d and rank-%d", where,
+		       "and actual argument at %L (rank-%d and rank-%d)", where,
 		       where_formal, rank1, rank2);
     }
 }
@@ -2660,8 +2668,8 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	{
 	  if (formal->attr.artificial)
 	    gfc_error ("Element of assumed-shape or pointer array "
-		       "as actual argument at %L can not correspond to "
-		       "actual argument at %L ",
+		       "as actual argument at %L cannot correspond to "
+		       "actual argument at %L",
 		       &actual->where, &formal->declared_at);
 	  else
 	    gfc_error ("Element of assumed-shape or pointer "
@@ -3798,8 +3806,16 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
      explicitly declared at all if requested.  */
   if (sym->attr.if_source == IFSRC_UNKNOWN && !sym->attr.is_iso_c)
     {
+      bool has_implicit_none_export = false;
       implicit = true;
-      if (sym->ns->has_implicit_none_export && sym->attr.proc == PROC_UNKNOWN)
+      if (sym->attr.proc == PROC_UNKNOWN)
+	for (gfc_namespace *ns = sym->ns; ns; ns = ns->parent)
+	  if (ns->has_implicit_none_export)
+	    {
+	      has_implicit_none_export = true;
+	      break;
+	    }
+      if (has_implicit_none_export)
 	{
 	  const char *guessed
 	    = gfc_lookup_function_fuzzy (sym->name, sym->ns->sym_root);
@@ -4999,6 +5015,9 @@ check_dtio_interface1 (gfc_symbol *derived, gfc_symtree *tb_io_st,
     gfc_error ("DTIO procedure %qs at %L must be a subroutine",
 	       dtio_sub->name, &dtio_sub->declared_at);
 
+  if (!dtio_sub->resolve_symbol_called)
+    gfc_resolve_formal_arglist (dtio_sub);
+
   arg_num = 0;
   for (formal = dtio_sub->formal; formal; formal = formal->next)
     arg_num++;
@@ -5016,7 +5035,6 @@ check_dtio_interface1 (gfc_symbol *derived, gfc_symtree *tb_io_st,
 		 dtio_sub->name, &dtio_sub->declared_at);
       return;
     }
-
 
   /* Now go through the formal arglist.  */
   arg_num = 1;
@@ -5131,7 +5149,8 @@ gfc_find_typebound_dtio_proc (gfc_symbol *derived, bool write, bool formatted)
   gfc_symtree *tb_io_st = NULL;
   bool t = false;
 
-  if (!derived || !derived->resolved || derived->attr.flavor != FL_DERIVED)
+  if (!derived || !derived->resolve_symbol_called
+      || derived->attr.flavor != FL_DERIVED)
     return NULL;
 
   /* Try to find a typebound DTIO binding.  */
@@ -5307,7 +5326,6 @@ gfc_get_formal_from_actual_arglist (gfc_symbol *sym,
 	      s->ts.is_iso_c = 0;
 	      s->ts.is_c_interop = 0;
 	      s->attr.flavor = FL_VARIABLE;
-	      s->attr.artificial = 1;
 	      if (a->expr->rank > 0)
 		{
 		  s->attr.dimension = 1;
@@ -5322,6 +5340,7 @@ gfc_get_formal_from_actual_arglist (gfc_symbol *sym,
 		s->maybe_array = maybe_dummy_array_arg (a->expr);
 	    }
 	  s->attr.dummy = 1;
+	  s->attr.artificial = 1;
 	  s->declared_at = a->expr->where;
 	  s->attr.intent = INTENT_UNKNOWN;
 	  (*f)->sym = s;

@@ -89,158 +89,6 @@ Syntax:
 For the semantics of this pragma, see the entry for aspect ``Abstract_State`` in
 the SPARK 2014 Reference Manual, section 7.1.4.
 
-Pragma Acc_Parallel
-===================
-Syntax:
-
-.. code-block:: ada
-
-  pragma Acc_Parallel [( ACC_PARALLEL_CLAUSE [, ACC_PARALLEL_CLAUSE... ])];
-
-  ACC_PARALLEL_CLAUSE ::=
-      Acc_If        => boolean_EXPRESSION
-    | Acc_Private   => IDENTIFIERS
-    | Async         => integer_EXPRESSION
-    | Copy          => IDENTIFIERS
-    | Copy_In       => IDENTIFIERS
-    | Copy_Out      => IDENTIFIERS
-    | Create        => IDENTIFIERS
-    | Default       => None
-    | Device_Ptr    => IDENTIFIERS
-    | First_Private => IDENTIFIERS
-    | Num_Gangs     => integer_EXPRESSION
-    | Num_Workers   => integer_EXPRESSION
-    | Present       => IDENTIFIERS
-    | Reduction     => (REDUCTION_RECORD)
-    | Vector_Length => integer_EXPRESSION
-    | Wait          => INTEGERS
-
-  REDUCTION_RECORD ::=
-      "+"   => IDENTIFIERS
-    | "*"   => IDENTIFIERS
-    | "min" => IDENTIFIERS
-    | "max" => IDENTIFIERS
-    | "or"  => IDENTIFIERS
-    | "and" => IDENTIFIERS
-
-  IDENTIFIERS ::=
-    | IDENTIFIER
-    | (IDENTIFIER, IDENTIFIERS)
-
-  INTEGERS ::=
-    | integer_EXPRESSION
-    | (integer_EXPRESSION, INTEGERS)
-
-Requires the :switch:`-fopenacc` flag.
-
-Equivalent to the ``parallel`` directive of the OpenAcc standard. This pragma
-should be placed in loops. It offloads the content of the loop to an
-accelerator device.
-
-For more information about the effect of the clauses, see the OpenAcc
-specification.
-
-Pragma Acc_Loop
-===============
-Syntax:
-
-.. code-block:: ada
-
-  pragma Acc_Loop [( ACC_LOOP_CLAUSE [, ACC_LOOP_CLAUSE... ])];
-
-  ACC_LOOP_CLAUSE ::=
-      Auto
-    | Collapse        => INTEGER_LITERAL
-    | Gang            [=> GANG_ARG]
-    | Independent
-    | Private         => IDENTIFIERS
-    | Reduction       => (REDUCTION_RECORD)
-    | Seq
-    | Tile            => SIZE_EXPRESSION
-    | Vector          [=> integer_EXPRESSION]
-    | Worker          [=> integer_EXPRESSION]
-
-  GANG_ARG ::=
-      integer_EXPRESSION
-    | Static => SIZE_EXPRESSION
-
-  SIZE_EXPRESSION ::=
-      *
-    | integer_EXPRESSION
-
-Requires the :switch:`-fopenacc` flag.
-
-Equivalent to the ``loop`` directive of the OpenAcc standard. This pragma
-should be placed in for loops after the "Acc_Parallel" pragma. It tells the
-compiler how to parallelize the loop.
-
-For more information about the effect of the clauses, see the OpenAcc
-specification.
-
-Pragma Acc_Kernels
-==================
-Syntax:
-
-.. code-block:: ada
-
-  pragma Acc_Kernels [( ACC_KERNELS_CLAUSE [, ACC_KERNELS_CLAUSE...])];
-
-  ACC_KERNELS_CLAUSE ::=
-      Acc_If        => boolean_EXPRESSION
-    | Async         => integer_EXPRESSION
-    | Copy          => IDENTIFIERS
-    | Copy_In       => IDENTIFIERS
-    | Copy_Out      => IDENTIFIERS
-    | Create        => IDENTIFIERS
-    | Default       => None
-    | Device_Ptr    => IDENTIFIERS
-    | Num_Gangs     => integer_EXPRESSION
-    | Num_Workers   => integer_EXPRESSION
-    | Present       => IDENTIFIERS
-    | Vector_Length => integer_EXPRESSION
-    | Wait          => INTEGERS
-
-  IDENTIFIERS ::=
-    | IDENTIFIER
-    | (IDENTIFIER, IDENTIFIERS)
-
-  INTEGERS ::=
-    | integer_EXPRESSION
-    | (integer_EXPRESSION, INTEGERS)
-
-Requires the :switch:`-fopenacc` flag.
-
-Equivalent to the kernels directive of the OpenAcc standard. This pragma should
-be placed in loops.
-
-For more information about the effect of the clauses, see the OpenAcc
-specification.
-
-Pragma Acc_Data
-===============
-Syntax:
-
-.. code-block:: ada
-
-  pragma Acc_Data ([ ACC_DATA_CLAUSE [, ACC_DATA_CLAUSE...]]);
-
-  ACC_DATA_CLAUSE ::=
-      Copy          => IDENTIFIERS
-    | Copy_In       => IDENTIFIERS
-    | Copy_Out      => IDENTIFIERS
-    | Create        => IDENTIFIERS
-    | Device_Ptr    => IDENTIFIERS
-    | Present       => IDENTIFIERS
-
-Requires the :switch:`-fopenacc` flag.
-
-Equivalent to the ``data`` directive of the OpenAcc standard. This pragma
-should be placed in loops.
-
-For more information about the effect of the clauses, see the OpenAcc
-specification.
-
-
 Pragma Ada_83
 =============
 
@@ -1094,14 +942,14 @@ This pragma can be used to generate additional compile time
 error messages. It
 is particularly useful in generics, where errors can be issued for
 specific problematic instantiations. The first parameter is a boolean
-expression. The pragma is effective only if the value of this expression
-is known at compile time, and has the value True. The set of expressions
+expression. The pragma ensures that the value of an expression
+is known at compile time, and has the value False. The set of expressions
 whose values are known at compile time includes all static boolean
 expressions, and also other values which the compiler can determine
 at compile time (e.g., the size of a record type set by an explicit
 size representation clause, or the value of a variable which was
 initialized to a constant and is known not to have been modified).
-If these conditions are met, an error message is generated using
+If these conditions are not met, an error message is generated using
 the value given as the second argument. This string value may contain
 embedded ASCII.LF characters to break the message into multiple lines.
 
@@ -1118,7 +966,10 @@ Syntax:
 
 
 Same as pragma Compile_Time_Error, except a warning is issued instead
-of an error message. Note that if this pragma is used in a package that
+of an error message. If switch *-gnatw_C* is used, a warning is only issued
+if the value of the expression is known to be True at compile time, not when
+the value of the expression is not known at compile time.
+Note that if this pragma is used in a package that
 is with'ed by a client, the client will get the warning even though it
 is issued by a with'ed package (normally warnings in with'ed units are
 suppressed, but this is a special exception to that rule).

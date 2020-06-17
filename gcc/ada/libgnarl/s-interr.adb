@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2019, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2020, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1288,11 +1288,6 @@ package body System.Interrupts is
 
       loop
          System.Tasking.Initialization.Defer_Abort (Self_ID);
-
-         if Single_Lock then
-            POP.Lock_RTS;
-         end if;
-
          POP.Write_Lock (Self_ID);
 
          if User_Handler (Interrupt).H = null
@@ -1327,10 +1322,6 @@ package body System.Interrupts is
             Self_ID.Common.State := Interrupt_Server_Blocked_On_Event_Flag;
             POP.Unlock (Self_ID);
 
-            if Single_Lock then
-               POP.Unlock_RTS;
-            end if;
-
             --  Avoid race condition when terminating application and
             --  System.Parameters.No_Abort is True.
 
@@ -1347,18 +1338,9 @@ package body System.Interrupts is
                --  Inform the Interrupt_Manager of wakeup from above sigwait
 
                POP.Abort_Task (Interrupt_Manager_ID);
-
-               if Single_Lock then
-                  POP.Lock_RTS;
-               end if;
-
                POP.Write_Lock (Self_ID);
 
             else
-               if Single_Lock then
-                  POP.Lock_RTS;
-               end if;
-
                POP.Write_Lock (Self_ID);
 
                if Ret_Interrupt /= Interrupt then
@@ -1383,17 +1365,7 @@ package body System.Interrupts is
                      --  RTS calls should not be made with self being locked
 
                      POP.Unlock (Self_ID);
-
-                     if Single_Lock then
-                        POP.Unlock_RTS;
-                     end if;
-
                      Tmp_Handler.all;
-
-                     if Single_Lock then
-                        POP.Lock_RTS;
-                     end if;
-
                      POP.Write_Lock (Self_ID);
 
                   elsif User_Entry (Interrupt).T /= Null_Task then
@@ -1402,20 +1374,12 @@ package body System.Interrupts is
 
                      --  RTS calls should not be made with self being locked
 
-                     if Single_Lock then
-                        POP.Unlock_RTS;
-                     end if;
-
                      POP.Unlock (Self_ID);
 
                      System.Tasking.Rendezvous.Call_Simple
                        (Tmp_ID, Tmp_Entry_Index, System.Null_Address);
 
                      POP.Write_Lock (Self_ID);
-
-                     if Single_Lock then
-                        POP.Lock_RTS;
-                     end if;
 
                   else
                      --  This is a situation that this task wakes up receiving
@@ -1432,11 +1396,6 @@ package body System.Interrupts is
          end if;
 
          POP.Unlock (Self_ID);
-
-         if Single_Lock then
-            POP.Unlock_RTS;
-         end if;
-
          System.Tasking.Initialization.Undefer_Abort (Self_ID);
 
          if Self_ID.Pending_Action then

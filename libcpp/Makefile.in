@@ -25,7 +25,7 @@ srcdir = @srcdir@
 top_builddir = .
 VPATH = @srcdir@
 INSTALL = @INSTALL@
-AR = ar
+AR = @AR@
 ARFLAGS = cru
 ACLOCAL = @ACLOCAL@
 AUTOCONF = @AUTOCONF@
@@ -58,6 +58,7 @@ CXXDEPMODE = @CXXDEPMODE@
 DEPDIR = @DEPDIR@
 NOEXCEPTION_FLAGS = @noexception_flags@
 PICFLAG = @PICFLAG@
+CET_HOST_FLAGS = @CET_HOST_FLAGS@
 
 datarootdir = @datarootdir@
 datadir = @datadir@
@@ -73,9 +74,10 @@ depcomp = $(SHELL) $(srcdir)/../depcomp
 INCLUDES = -I$(srcdir) -I. -I$(srcdir)/../include @INCINTL@ \
 	-I$(srcdir)/include
 
-ALL_CFLAGS = $(CFLAGS) $(WARN_CFLAGS) $(INCLUDES) $(CPPFLAGS) $(PICFLAG)
+ALL_CFLAGS = $(CFLAGS) $(WARN_CFLAGS) $(INCLUDES) $(CPPFLAGS) $(PICFLAG) \
+	$(CET_HOST_FLAGS)
 ALL_CXXFLAGS = $(CXXFLAGS) $(WARN_CXXFLAGS) $(NOEXCEPTION_FLAGS) $(INCLUDES) \
-	$(CPPFLAGS) $(PICFLAG)
+	$(CPPFLAGS) $(PICFLAG) $(CET_HOST_FLAGS)
 
 # The name of the compiler to use.
 COMPILER = $(CXX)
@@ -83,11 +85,11 @@ COMPILER_FLAGS = $(ALL_CXXFLAGS)
 DEPMODE = $(CXXDEPMODE)
 
 
-libcpp_a_OBJS = charset.o directives.o directives-only.o errors.o \
+libcpp_a_OBJS = charset.o directives.o errors.o \
 	expr.o files.o identifiers.o init.o lex.o line-map.o macro.o \
 	mkdeps.o pch.o symtab.o traditional.o
 
-libcpp_a_SOURCES = charset.c directives.c directives-only.c errors.c \
+libcpp_a_SOURCES = charset.c directives.c errors.c \
 	expr.c files.c identifiers.c init.c lex.c line-map.c macro.c \
 	mkdeps.c pch.c symtab.c traditional.c
 

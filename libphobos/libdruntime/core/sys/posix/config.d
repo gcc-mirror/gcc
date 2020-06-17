@@ -61,21 +61,27 @@ version (CRuntime_Glibc)
     enum __USE_REENTRANT     = _REENTRANT;
 
     version (D_LP64)
-        enum __WORDSIZE=64;
+        enum __WORDSIZE = 64;
     else
-        enum __WORDSIZE=32;
+        enum __WORDSIZE = 32;
 }
 else version (CRuntime_Musl)
 {
+    // off_t is always 64 bits on Musl
     enum _FILE_OFFSET_BITS   = 64;
 
+    // Not present in Musl sources
     enum __REDIRECT          = false;
 
+    // Those three are irrelevant for Musl as it always uses 64 bits off_t
     enum __USE_FILE_OFFSET64 = _FILE_OFFSET_BITS == 64;
     enum __USE_LARGEFILE     = __USE_FILE_OFFSET64 && !__REDIRECT;
     enum __USE_LARGEFILE64   = __USE_FILE_OFFSET64 && !__REDIRECT;
 
-    enum __WORDSIZE=64;
+    version (D_LP64)
+        enum __WORDSIZE = 64;
+    else
+        enum __WORDSIZE = 32;
 }
 else version (CRuntime_UClibc)
 {
@@ -103,13 +109,19 @@ else version (CRuntime_UClibc)
     enum __USE_REENTRANT     = _REENTRANT;
 
     version (D_LP64)
-        enum __WORDSIZE=64;
+        enum __WORDSIZE = 64;
     else
-        enum __WORDSIZE=32;
+        enum __WORDSIZE = 32;
 }
 else version (CRuntime_Bionic)
 {
-    enum __USE_GNU           = false;
+    enum _GNU_SOURCE         = false;
+    enum __USE_GNU           = _GNU_SOURCE;
+
+    version (D_LP64)
+        enum __WORDSIZE = 64;
+    else
+        enum __WORDSIZE = 32;
 }
 else version (OpenBSD)
 {

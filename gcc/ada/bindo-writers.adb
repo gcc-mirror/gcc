@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2019, Free Software Foundation, Inc.           --
+--             Copyright (C) 2019-2020, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -927,6 +927,10 @@ package body Bindo.Writers is
         (G      : Invocation_Graph;
          Vertex : Invocation_Graph_Vertex_Id)
       is
+         Lib_Graph : constant Library_Graph := Get_Lib_Graph (G);
+
+         B : constant Library_Graph_Vertex_Id := Body_Vertex (G, Vertex);
+         S : constant Library_Graph_Vertex_Id := Spec_Vertex (G, Vertex);
       begin
          pragma Assert (Present (G));
          pragma Assert (Present (Vertex));
@@ -938,8 +942,9 @@ package body Bindo.Writers is
          Write_Eol;
 
          Write_Str ("  Body_Vertex (LGV_Id_");
-         Write_Int (Int (Body_Vertex (G, Vertex)));
-         Write_Str (")");
+         Write_Int (Int (B));
+         Write_Str (") name = ");
+         Write_Name (Name (Lib_Graph, B));
          Write_Eol;
 
          Write_Str ("  Construct (IC_Id_");
@@ -948,8 +953,9 @@ package body Bindo.Writers is
          Write_Eol;
 
          Write_Str ("  Spec_Vertex (LGV_Id_");
-         Write_Int (Int (Spec_Vertex (G, Vertex)));
-         Write_Str (")");
+         Write_Int (Int (S));
+         Write_Str (") name = ");
+         Write_Name (Name (Lib_Graph, S));
          Write_Eol;
 
          Write_Invocation_Graph_Edges (G, Vertex);

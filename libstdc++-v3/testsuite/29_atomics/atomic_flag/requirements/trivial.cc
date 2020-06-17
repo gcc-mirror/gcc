@@ -22,6 +22,10 @@
 
 void test01()
 {
+#if __cplusplus <= 201703L
   __gnu_test::has_trivial_cons_dtor test;
+#else
+  __gnu_test::has_trivial_dtor test;
+#endif
   test.operator()<std::atomic_flag>();
 }

@@ -58,7 +58,7 @@ extern void free_numbers_of_iterations_estimates (class loop *);
 extern void free_numbers_of_iterations_estimates (function *);
 extern tree simplify_replace_tree (tree, tree,
 				   tree, tree (*)(tree, void *) = NULL,
-				   void * = NULL);
+				   void * = NULL, bool do_fold = true);
 extern void substitute_in_loop_info (class loop *, tree, tree);
 
 #endif /* GCC_TREE_SSA_LOOP_NITER_H */

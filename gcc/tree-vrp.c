@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "optabs-tree.h"
 #include "gimple-pretty-print.h"
-#include "diagnostic-core.h"
 #include "flags.h"
 #include "fold-const.h"
 #include "stor-layout.h"
@@ -42,13 +41,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
 #include "tree-cfg.h"
-#include "tree-dfa.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-ssa-loop-niter.h"
 #include "tree-ssa-loop.h"
 #include "tree-into-ssa.h"
 #include "tree-ssa.h"
-#include "intl.h"
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
 #include "tree-ssa-propagate.h"
@@ -67,227 +64,103 @@ along with GCC; see the file COPYING3.  If not see
 #include "vr-values.h"
 #include "builtins.h"
 #include "range-op.h"
+#include "value-range-equiv.h"
+#include "gimple-array-bounds.h"
 
 /* Set of SSA names found live during the RPO traversal of the function
    for still active basic-blocks.  */
-static sbitmap *live;
+class live_names
+{
+public:
+  live_names ();
+  ~live_names ();
+  void set (tree, basic_block);
+  void clear (tree, basic_block);
+  void merge (basic_block dest, basic_block src);
+  bool live_on_block_p (tree, basic_block);
+  bool live_on_edge_p (tree, edge);
+  bool block_has_live_names_p (basic_block);
+  void clear_block (basic_block);
+
+private:
+  sbitmap *live;
+  unsigned num_blocks;
+  void init_bitmap_if_needed (basic_block);
+};
 
 void
-value_range_equiv::set_equiv (bitmap equiv)
+live_names::init_bitmap_if_needed (basic_block bb)
 {
-  if (undefined_p () || varying_p ())
-    equiv = NULL;
-  /* Since updating the equivalence set involves deep copying the
-     bitmaps, only do it if absolutely necessary.
-
-     All equivalence bitmaps are allocated from the same obstack.  So
-     we can use the obstack associated with EQUIV to allocate vr->equiv.  */
-  if (m_equiv == NULL
-      && equiv != NULL)
-    m_equiv = BITMAP_ALLOC (equiv->obstack);
-
-  if (equiv != m_equiv)
+  unsigned i = bb->index;
+  if (!live[i])
     {
-      if (equiv && !bitmap_empty_p (equiv))
-	bitmap_copy (m_equiv, equiv);
-      else
-	bitmap_clear (m_equiv);
+      live[i] = sbitmap_alloc (num_ssa_names);
+      bitmap_clear (live[i]);
     }
 }
-
-/* Initialize value_range.  */
-
-void
-value_range_equiv::set (tree min, tree max, bitmap equiv,
-			value_range_kind kind)
-{
-  value_range::set (min, max, kind);
-  set_equiv (equiv);
-  if (flag_checking)
-    check ();
-}
-
-value_range_equiv::value_range_equiv (tree min, tree max, bitmap equiv,
-				      value_range_kind kind)
-{
-  m_discriminator = VRANGE_KIND_INT_WITH_EQUIVS;
-  m_equiv = NULL;
-  set (min, max, equiv, kind);
-}
-
-value_range_equiv::value_range_equiv (const value_range &other)
-{
-  m_discriminator = VRANGE_KIND_INT_WITH_EQUIVS;
-  m_equiv = NULL;
-  set (other.min(), other.max (), NULL, other.kind ());
-}
-
-/* Like set, but keep the equivalences in place.  */
-
-void
-value_range_equiv::update (tree min, tree max, value_range_kind kind)
-{
-  set (min, max,
-       (kind != VR_UNDEFINED && kind != VR_VARYING) ? m_equiv : NULL, kind);
-}
-
-/* Copy value_range in FROM into THIS while avoiding bitmap sharing.
-
-   Note: The code that avoids the bitmap sharing looks at the existing
-   this->m_equiv, so this function cannot be used to initalize an
-   object.  Use the constructors for initialization.  */
-
-void
-value_range_equiv::deep_copy (const value_range_equiv *from)
-{
-  set (from->min (), from->max (), from->m_equiv, from->m_kind);
-}
-
-void
-value_range_equiv::move (value_range_equiv *from)
-{
-  set (from->min (), from->max (), NULL, from->m_kind);
-  m_equiv = from->m_equiv;
-  from->m_equiv = NULL;
-}
-
-void
-value_range_equiv::check ()
-{
-  value_range::check ();
-  switch (m_kind)
-    {
-    case VR_UNDEFINED:
-    case VR_VARYING:
-      gcc_assert (!m_equiv || bitmap_empty_p (m_equiv));
-    default:;
-    }
-}
-
-/* Return true if the bitmaps B1 and B2 are equal.  */
-
-static bool
-vrp_bitmap_equal_p (const_bitmap b1, const_bitmap b2)
-{
-  return (b1 == b2
-	  || ((!b1 || bitmap_empty_p (b1))
-	      && (!b2 || bitmap_empty_p (b2)))
-	  || (b1 && b2
-	      && bitmap_equal_p (b1, b2)));
-}
-
-/* Returns TRUE if THIS == OTHER.  Ignores the equivalence bitmap if
-   IGNORE_EQUIVS is TRUE.  */
 
 bool
-value_range_equiv::equal_p (const value_range_equiv &other,
-			    bool ignore_equivs) const
+live_names::block_has_live_names_p (basic_block bb)
 {
-  return (value_range::equal_p (other)
-	  && (ignore_equivs
-	      || vrp_bitmap_equal_p (m_equiv, other.m_equiv)));
+  unsigned i = bb->index;
+  return live[i] && bitmap_empty_p (live[i]);
 }
 
 void
-value_range_equiv::set_undefined ()
+live_names::clear_block (basic_block bb)
 {
-  set (NULL, NULL, NULL, VR_UNDEFINED);
-}
-
-void
-value_range_equiv::set_varying (tree type)
-{
-  value_range::set_varying (type);
-  equiv_clear ();
-}
-
-void
-value_range_equiv::equiv_clear ()
-{
-  if (m_equiv)
-    bitmap_clear (m_equiv);
-}
-
-/* Add VAR and VAR's equivalence set (VAR_VR) to the equivalence
-   bitmap.  If no equivalence table has been created, OBSTACK is the
-   obstack to use (NULL for the default obstack).
-
-   This is the central point where equivalence processing can be
-   turned on/off.  */
-
-void
-value_range_equiv::equiv_add (const_tree var,
-			      const value_range_equiv *var_vr,
-			      bitmap_obstack *obstack)
-{
-  if (!m_equiv)
-    m_equiv = BITMAP_ALLOC (obstack);
-  unsigned ver = SSA_NAME_VERSION (var);
-  bitmap_set_bit (m_equiv, ver);
-  if (var_vr && var_vr->m_equiv)
-    bitmap_ior_into (m_equiv, var_vr->m_equiv);
-}
-
-void
-value_range_equiv::dump (FILE *file) const
-{
-  value_range::dump (file);
-  if ((m_kind == VR_RANGE || m_kind == VR_ANTI_RANGE)
-      && m_equiv)
+  unsigned i = bb->index;
+  if (live[i])
     {
-      bitmap_iterator bi;
-      unsigned i, c = 0;
-
-      fprintf (file, "  EQUIVALENCES: { ");
-
-      EXECUTE_IF_SET_IN_BITMAP (m_equiv, 0, i, bi)
-	{
-	  print_generic_expr (file, ssa_name (i));
-	  fprintf (file, " ");
-	  c++;
-	}
-
-      fprintf (file, "} (%u elements)", c);
+      sbitmap_free (live[i]);
+      live[i] = NULL;
     }
 }
 
 void
-value_range_equiv::dump () const
+live_names::merge (basic_block dest, basic_block src)
 {
-  dump (stderr);
+  init_bitmap_if_needed (dest);
+  init_bitmap_if_needed (src);
+  bitmap_ior (live[dest->index], live[dest->index], live[src->index]);
 }
 
 void
-dump_value_range (FILE *file, const value_range_equiv *vr)
+live_names::set (tree name, basic_block bb)
 {
-  if (!vr)
-    fprintf (file, "[]");
-  else
-    vr->dump (file);
+  init_bitmap_if_needed (bb);
+  bitmap_set_bit (live[bb->index], SSA_NAME_VERSION (name));
 }
 
-DEBUG_FUNCTION void
-debug (const value_range_equiv *vr)
+void
+live_names::clear (tree name, basic_block bb)
 {
-  dump_value_range (stderr, vr);
-  fprintf (stderr, "\n");
+  unsigned i = bb->index;
+  if (live[i])
+    bitmap_clear_bit (live[i], SSA_NAME_VERSION (name));
 }
 
-DEBUG_FUNCTION void
-debug (const value_range_equiv &vr)
+live_names::live_names ()
 {
-  dump_value_range (stderr, &vr);
-  fprintf (stderr, "\n");
+  num_blocks = last_basic_block_for_fn (cfun);
+  live = XCNEWVEC (sbitmap, num_blocks);
 }
 
-/* Return true if the SSA name NAME is live on the edge E.  */
-
-static bool
-live_on_edge (edge e, tree name)
+live_names::~live_names ()
 {
-  return (live[e->dest->index]
-	  && bitmap_bit_p (live[e->dest->index], SSA_NAME_VERSION (name)));
+  for (unsigned i = 0; i < num_blocks; ++i)
+    if (live[i])
+      sbitmap_free (live[i]);
+  XDELETEVEC (live);
 }
+
+bool
+live_names::live_on_block_p (tree name, basic_block bb)
+{
+  return (live[bb->index]
+	  && bitmap_bit_p (live[bb->index], SSA_NAME_VERSION (name)));
+}
+
 
 /* Location information for ASSERT_EXPRs.  Each instance of this
    structure describes an ASSERT_EXPR for an SSA name.  Since a single
@@ -319,14 +192,130 @@ struct assert_locus
   assert_locus *next;
 };
 
-/* If bit I is present, it means that SSA name N_i has a list of
-   assertions that should be inserted in the IL.  */
-static bitmap need_assert_for;
+class vrp_insert
+{
+public:
+  vrp_insert (struct function *fn) : fun (fn) { }
 
-/* Array of locations lists where to insert assertions.  ASSERTS_FOR[I]
-   holds a list of ASSERT_LOCUS_T nodes that describe where
-   ASSERT_EXPRs for SSA name N_I should be inserted.  */
-static assert_locus **asserts_for;
+  /* Traverse the flowgraph looking for conditional jumps to insert range
+     expressions.  These range expressions are meant to provide information
+     to optimizations that need to reason in terms of value ranges.  They
+     will not be expanded into RTL.  See method implementation comment
+     for example.  */
+  void insert_range_assertions ();
+
+  /* Convert range assertion expressions into the implied copies and
+     copy propagate away the copies.  */
+  void remove_range_assertions ();
+
+  /* Dump all the registered assertions for all the names to FILE.  */
+  void dump (FILE *);
+
+  /* Dump all the registered assertions for NAME to FILE.  */
+  void dump (FILE *file, tree name);
+
+  /* Dump all the registered assertions for NAME to stderr.  */
+  void debug (tree name)
+  {
+    dump (stderr, name);
+  }
+
+  /* Dump all the registered assertions for all the names to stderr.  */
+  void debug ()
+  {
+    dump (stderr);
+  }
+
+private:
+  /* Set of SSA names found live during the RPO traversal of the function
+     for still active basic-blocks.  */
+  live_names live;
+
+  /* Function to work on.  */
+  struct function *fun;
+
+  /* If bit I is present, it means that SSA name N_i has a list of
+     assertions that should be inserted in the IL.  */
+  bitmap need_assert_for;
+
+  /* Array of locations lists where to insert assertions.  ASSERTS_FOR[I]
+     holds a list of ASSERT_LOCUS_T nodes that describe where
+     ASSERT_EXPRs for SSA name N_I should be inserted.  */
+  assert_locus **asserts_for;
+
+  /* Finish found ASSERTS for E and register them at GSI.  */
+  void finish_register_edge_assert_for (edge e, gimple_stmt_iterator gsi,
+					vec<assert_info> &asserts);
+
+  /* Determine whether the outgoing edges of BB should receive an
+     ASSERT_EXPR for each of the operands of BB's LAST statement.  The
+     last statement of BB must be a SWITCH_EXPR.
+
+     If any of the sub-graphs rooted at BB have an interesting use of
+     the predicate operands, an assert location node is added to the
+     list of assertions for the corresponding operands.  */
+  void find_switch_asserts (basic_block bb, gswitch *last);
+
+  /* Do an RPO walk over the function computing SSA name liveness
+     on-the-fly and deciding on assert expressions to insert.  */
+  void find_assert_locations ();
+
+  /* Traverse all the statements in block BB looking for statements that
+     may generate useful assertions for the SSA names in their operand.
+     See method implementation comentary for more information.  */
+  void find_assert_locations_in_bb (basic_block bb);
+
+  /* Determine whether the outgoing edges of BB should receive an
+     ASSERT_EXPR for each of the operands of BB's LAST statement.
+     The last statement of BB must be a COND_EXPR.
+
+     If any of the sub-graphs rooted at BB have an interesting use of
+     the predicate operands, an assert location node is added to the
+     list of assertions for the corresponding operands.  */
+  void find_conditional_asserts (basic_block bb, gcond *last);
+
+  /* Process all the insertions registered for every name N_i registered
+     in NEED_ASSERT_FOR.  The list of assertions to be inserted are
+     found in ASSERTS_FOR[i].  */
+  void process_assert_insertions ();
+
+  /* If NAME doesn't have an ASSERT_EXPR registered for asserting
+     'EXPR COMP_CODE VAL' at a location that dominates block BB or
+     E->DEST, then register this location as a possible insertion point
+     for ASSERT_EXPR <NAME, EXPR COMP_CODE VAL>.
+
+     BB, E and SI provide the exact insertion point for the new
+     ASSERT_EXPR.  If BB is NULL, then the ASSERT_EXPR is to be inserted
+     on edge E.  Otherwise, if E is NULL, the ASSERT_EXPR is inserted on
+     BB.  If SI points to a COND_EXPR or a SWITCH_EXPR statement, then E
+     must not be NULL.  */
+  void register_new_assert_for (tree name, tree expr,
+				enum tree_code comp_code,
+				tree val, basic_block bb,
+				edge e, gimple_stmt_iterator si);
+
+  /* Given a COND_EXPR COND of the form 'V OP W', and an SSA name V,
+     create a new SSA name N and return the assertion assignment
+     'N = ASSERT_EXPR <V, V OP W>'.  */
+  gimple *build_assert_expr_for (tree cond, tree v);
+
+  /* Create an ASSERT_EXPR for NAME and insert it in the location
+     indicated by LOC.  Return true if we made any edge insertions.  */
+  bool process_assert_insertions_for (tree name, assert_locus *loc);
+
+  /* Qsort callback for sorting assert locations.  */
+  template <bool stable> static int compare_assert_loc (const void *,
+							const void *);
+};
+
+/* Return true if the SSA name NAME is live on the edge E.  */
+
+bool
+live_names::live_on_edge_p (tree name, edge e)
+{
+  return live_on_block_p (name, e->dest);
+}
+
 
 /* VR_TYPE describes a range with mininum value *MIN and maximum
    value *MAX.  Restrict the range to the set of values that have
@@ -398,15 +387,6 @@ intersect_range_with_nonzero_bits (enum value_range_kind vr_type,
       gcc_checking_assert (wi::le_p (*min, *max, sgn));
     }
   return vr_type;
-}
-
-void
-value_range_equiv::set (tree val)
-{
-  gcc_assert (TREE_CODE (val) == SSA_NAME || is_gimple_min_invariant (val));
-  if (TREE_OVERFLOW_P (val))
-    val = drop_tree_overflow (val);
-  set (val, val);
 }
 
 /* Return true if max and min of VR are INTEGER_CST.  It's not necessary
@@ -1282,8 +1262,8 @@ range_fold_unary_expr (value_range *vr,
    create a new SSA name N and return the assertion assignment
    'N = ASSERT_EXPR <V, V OP W>'.  */
 
-static gimple *
-build_assert_expr_for (tree cond, tree v)
+gimple *
+vrp_insert::build_assert_expr_for (tree cond, tree v)
 {
   tree a;
   gassign *assertion;
@@ -1362,16 +1342,10 @@ infer_value_range (gimple *stmt, tree op, tree_code *comp_code_p, tree *val_p)
   return false;
 }
 
-
-void dump_asserts_for (FILE *, tree);
-void debug_asserts_for (tree);
-void dump_all_asserts (FILE *);
-void debug_all_asserts (void);
-
 /* Dump all the registered assertions for NAME to FILE.  */
 
 void
-dump_asserts_for (FILE *file, tree name)
+vrp_insert::dump (FILE *file, tree name)
 {
   assert_locus *loc;
 
@@ -1402,37 +1376,18 @@ dump_asserts_for (FILE *file, tree name)
   fprintf (file, "\n");
 }
 
-
-/* Dump all the registered assertions for NAME to stderr.  */
-
-DEBUG_FUNCTION void
-debug_asserts_for (tree name)
-{
-  dump_asserts_for (stderr, name);
-}
-
-
 /* Dump all the registered assertions for all the names to FILE.  */
 
 void
-dump_all_asserts (FILE *file)
+vrp_insert::dump (FILE *file)
 {
   unsigned i;
   bitmap_iterator bi;
 
   fprintf (file, "\nASSERT_EXPRs to be inserted\n\n");
   EXECUTE_IF_SET_IN_BITMAP (need_assert_for, 0, i, bi)
-    dump_asserts_for (file, ssa_name (i));
+    dump (file, ssa_name (i));
   fprintf (file, "\n");
-}
-
-
-/* Dump all the registered assertions for all the names to stderr.  */
-
-DEBUG_FUNCTION void
-debug_all_asserts (void)
-{
-  dump_all_asserts (stderr);
 }
 
 /* Dump assert_info structure.  */
@@ -1505,13 +1460,13 @@ add_assert_info (vec<assert_info> &asserts,
    BB.  If SI points to a COND_EXPR or a SWITCH_EXPR statement, then E
    must not be NULL.  */
 
-static void
-register_new_assert_for (tree name, tree expr,
-			 enum tree_code comp_code,
-			 tree val,
-			 basic_block bb,
-			 edge e,
-			 gimple_stmt_iterator si)
+void
+vrp_insert::register_new_assert_for (tree name, tree expr,
+				   enum tree_code comp_code,
+				   tree val,
+				   basic_block bb,
+				   edge e,
+				   gimple_stmt_iterator si)
 {
   assert_locus *n, *loc, *last_loc;
   basic_block dest_bb;
@@ -2618,14 +2573,14 @@ register_edge_assert_for (tree name, edge e,
 
 /* Finish found ASSERTS for E and register them at GSI.  */
 
-static void
-finish_register_edge_assert_for (edge e, gimple_stmt_iterator gsi,
-				 vec<assert_info> &asserts)
+void
+vrp_insert::finish_register_edge_assert_for (edge e, gimple_stmt_iterator gsi,
+					   vec<assert_info> &asserts)
 {
   for (unsigned i = 0; i < asserts.length (); ++i)
     /* Only register an ASSERT_EXPR if NAME was found in the sub-graph
        reachable from E.  */
-    if (live_on_edge (e, asserts[i].name))
+    if (live.live_on_edge_p (asserts[i].name, e))
       register_new_assert_for (asserts[i].name, asserts[i].expr,
 			       asserts[i].comp_code, asserts[i].val,
 			       NULL, e, gsi);
@@ -2641,8 +2596,8 @@ finish_register_edge_assert_for (edge e, gimple_stmt_iterator gsi,
    the predicate operands, an assert location node is added to the
    list of assertions for the corresponding operands.  */
 
-static void
-find_conditional_asserts (basic_block bb, gcond *last)
+void
+vrp_insert::find_conditional_asserts (basic_block bb, gcond *last)
 {
   gimple_stmt_iterator bsi;
   tree op;
@@ -2715,8 +2670,8 @@ compare_case_labels (const void *p1, const void *p2)
    the predicate operands, an assert location node is added to the
    list of assertions for the corresponding operands.  */
 
-static void
-find_switch_asserts (basic_block bb, gswitch *last)
+void
+vrp_insert::find_switch_asserts (basic_block bb, gswitch *last)
 {
   gimple_stmt_iterator bsi;
   tree op;
@@ -2740,7 +2695,7 @@ find_switch_asserts (basic_block bb, gswitch *last)
   for (idx = 0; idx < n; ++idx)
     {
       ci[idx].expr = gimple_switch_label (last, idx);
-      ci[idx].bb = label_to_block (cfun, CASE_LABEL (ci[idx].expr));
+      ci[idx].bb = label_to_block (fun, CASE_LABEL (ci[idx].expr));
     }
   edge default_edge = find_edge (bb, ci[0].bb);
   qsort (ci, n, sizeof (struct case_info), compare_case_labels);
@@ -2795,7 +2750,7 @@ find_switch_asserts (basic_block bb, gswitch *last)
 
   XDELETEVEC (ci);
 
-  if (!live_on_edge (default_edge, op))
+  if (!live.live_on_edge_p (op, default_edge))
     return;
 
   /* Now register along the default label assertions that correspond to the
@@ -2925,8 +2880,8 @@ find_switch_asserts (basic_block bb, gswitch *last)
    dominator tree, only the location dominating all the dereference of
    P_4 will receive an ASSERT_EXPR.  */
 
-static void
-find_assert_locations_1 (basic_block bb, sbitmap live)
+void
+vrp_insert::find_assert_locations_in_bb (basic_block bb)
 {
   gimple *last;
 
@@ -2969,7 +2924,7 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
 
 	  /* If op is not live beyond this stmt, do not bother to insert
 	     asserts for it.  */
-	  if (!bitmap_bit_p (live, SSA_NAME_VERSION (op)))
+	  if (!live.live_on_block_p (op, bb))
 	    continue;
 
 	  /* If OP is used in such a way that we can infer a value
@@ -3002,7 +2957,7 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
 		      /* Note we want to register the assert for the
 			 operand of the NOP_EXPR after SI, not after the
 			 conversion.  */
-		      if (bitmap_bit_p (live, SSA_NAME_VERSION (t)))
+		      if (live.live_on_block_p (t, bb))
 			register_new_assert_for (t, t, comp_code, value,
 						 bb, NULL, si);
 		    }
@@ -3014,9 +2969,9 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
 
       /* Update live.  */
       FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_USE)
-	bitmap_set_bit (live, SSA_NAME_VERSION (op));
+	live.set (op, bb);
       FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_DEF)
-	bitmap_clear_bit (live, SSA_NAME_VERSION (op));
+	live.clear (op, bb);
     }
 
   /* Traverse all PHI nodes in BB, updating live.  */
@@ -3035,25 +2990,24 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
 	{
 	  tree arg = USE_FROM_PTR (arg_p);
 	  if (TREE_CODE (arg) == SSA_NAME)
-	    bitmap_set_bit (live, SSA_NAME_VERSION (arg));
+	    live.set (arg, bb);
 	}
 
-      bitmap_clear_bit (live, SSA_NAME_VERSION (res));
+      live.clear (res, bb);
     }
 }
 
 /* Do an RPO walk over the function computing SSA name liveness
    on-the-fly and deciding on assert expressions to insert.  */
 
-static void
-find_assert_locations (void)
+void
+vrp_insert::find_assert_locations (void)
 {
-  int *rpo = XNEWVEC (int, last_basic_block_for_fn (cfun));
-  int *bb_rpo = XNEWVEC (int, last_basic_block_for_fn (cfun));
-  int *last_rpo = XCNEWVEC (int, last_basic_block_for_fn (cfun));
+  int *rpo = XNEWVEC (int, last_basic_block_for_fn (fun));
+  int *bb_rpo = XNEWVEC (int, last_basic_block_for_fn (fun));
+  int *last_rpo = XCNEWVEC (int, last_basic_block_for_fn (fun));
   int rpo_cnt, i;
 
-  live = XCNEWVEC (sbitmap, last_basic_block_for_fn (cfun));
   rpo_cnt = pre_and_rev_post_order_compute (NULL, rpo, false);
   for (i = 0; i < rpo_cnt; ++i)
     bb_rpo[rpo[i]] = i;
@@ -3074,35 +3028,22 @@ find_assert_locations (void)
 	    continue;
 	  tree arg = gimple_phi_arg_def (phi, j);
 	  if (TREE_CODE (arg) == SSA_NAME)
-	    {
-	      if (live[i] == NULL)
-		{
-		  live[i] = sbitmap_alloc (num_ssa_names);
-		  bitmap_clear (live[i]);
-		}
-	      bitmap_set_bit (live[i], SSA_NAME_VERSION (arg));
-	    }
+	    live.set (arg, loop->latch);
 	}
     }
 
   for (i = rpo_cnt - 1; i >= 0; --i)
     {
-      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, rpo[i]);
+      basic_block bb = BASIC_BLOCK_FOR_FN (fun, rpo[i]);
       edge e;
       edge_iterator ei;
 
-      if (!live[rpo[i]])
-	{
-	  live[rpo[i]] = sbitmap_alloc (num_ssa_names);
-	  bitmap_clear (live[rpo[i]]);
-	}
-
       /* Process BB and update the live information with uses in
          this block.  */
-      find_assert_locations_1 (bb, live[rpo[i]]);
+      find_assert_locations_in_bb (bb);
 
       /* Merge liveness into the predecessor blocks and free it.  */
-      if (!bitmap_empty_p (live[rpo[i]]))
+      if (!live.block_has_live_names_p (bb))
 	{
 	  int pred_rpo = i;
 	  FOR_EACH_EDGE (e, ei, bb->preds)
@@ -3111,12 +3052,7 @@ find_assert_locations (void)
 	      if ((e->flags & EDGE_DFS_BACK) || pred == ENTRY_BLOCK)
 		continue;
 
-	      if (!live[pred])
-		{
-		  live[pred] = sbitmap_alloc (num_ssa_names);
-		  bitmap_clear (live[pred]);
-		}
-	      bitmap_ior (live[pred], live[pred], live[rpo[i]]);
+	      live.merge (e->src, bb);
 
 	      if (bb_rpo[pred] < pred_rpo)
 		pred_rpo = bb_rpo[pred];
@@ -3127,36 +3063,25 @@ find_assert_locations (void)
 	  last_rpo[rpo[i]] = pred_rpo;
 	}
       else
-	{
-	  sbitmap_free (live[rpo[i]]);
-	  live[rpo[i]] = NULL;
-	}
+	live.clear_block (bb);
 
       /* We can free all successors live bitmaps if all their
          predecessors have been visited already.  */
       FOR_EACH_EDGE (e, ei, bb->succs)
-	if (last_rpo[e->dest->index] == i
-	    && live[e->dest->index])
-	  {
-	    sbitmap_free (live[e->dest->index]);
-	    live[e->dest->index] = NULL;
-	  }
+	if (last_rpo[e->dest->index] == i)
+	  live.clear_block (e->dest);
     }
 
   XDELETEVEC (rpo);
   XDELETEVEC (bb_rpo);
   XDELETEVEC (last_rpo);
-  for (i = 0; i < last_basic_block_for_fn (cfun); ++i)
-    if (live[i])
-      sbitmap_free (live[i]);
-  XDELETEVEC (live);
 }
 
 /* Create an ASSERT_EXPR for NAME and insert it in the location
    indicated by LOC.  Return true if we made any edge insertions.  */
 
-static bool
-process_assert_insertions_for (tree name, assert_locus *loc)
+bool
+vrp_insert::process_assert_insertions_for (tree name, assert_locus *loc)
 {
   /* Build the comparison expression NAME_i COMP_CODE VAL.  */
   gimple *stmt;
@@ -3220,8 +3145,8 @@ process_assert_insertions_for (tree name, assert_locus *loc)
    on the other side some pointers might be NULL.  */
 
 template <bool stable>
-static int
-compare_assert_loc (const void *pa, const void *pb)
+int
+vrp_insert::compare_assert_loc (const void *pa, const void *pb)
 {
   assert_locus * const a = *(assert_locus * const *)pa;
   assert_locus * const b = *(assert_locus * const *)pb;
@@ -3288,8 +3213,8 @@ compare_assert_loc (const void *pa, const void *pb)
    in NEED_ASSERT_FOR.  The list of assertions to be inserted are
    found in ASSERTS_FOR[i].  */
 
-static void
-process_assert_insertions (void)
+void
+vrp_insert::process_assert_insertions ()
 {
   unsigned i;
   bitmap_iterator bi;
@@ -3297,7 +3222,7 @@ process_assert_insertions (void)
   int num_asserts = 0;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    dump_all_asserts (dump_file);
+    dump (dump_file);
 
   EXECUTE_IF_SET_IN_BITMAP (need_assert_for, 0, i, bi)
     {
@@ -3378,7 +3303,7 @@ process_assert_insertions (void)
   if (update_edges_p)
     gsi_commit_edge_inserts ();
 
-  statistics_counter_event (cfun, "Number of ASSERT_EXPR expressions inserted",
+  statistics_counter_event (fun, "Number of ASSERT_EXPR expressions inserted",
 			    num_asserts);
 }
 
@@ -3415,8 +3340,8 @@ process_assert_insertions (void)
    take in different paths of the code, simply by checking the reaching
    definition of 'x'.  */
 
-static void
-insert_range_assertions (void)
+void
+vrp_insert::insert_range_assertions (void)
 {
   need_assert_for = BITMAP_ALLOC (NULL);
   asserts_for = XCNEWVEC (assert_locus *, num_ssa_names);
@@ -3442,18 +3367,18 @@ insert_range_assertions (void)
 
 class vrp_prop : public ssa_propagation_engine
 {
- public:
+public:
   enum ssa_prop_result visit_stmt (gimple *, edge *, tree *) FINAL OVERRIDE;
   enum ssa_prop_result visit_phi (gphi *) FINAL OVERRIDE;
 
-  void vrp_initialize (void);
+  struct function *fun;
+
+  void vrp_initialize (struct function *);
   void vrp_finalize (class vrp_folder *, bool);
-  void check_all_array_refs (void);
-  bool check_array_ref (location_t, tree, bool);
-  bool check_mem_ref (location_t, tree, bool);
-  void search_for_addr_array (tree, location_t);
 
   class vr_values vr_values;
+
+private:
   /* Temporary delegator to minimize code churn.  */
   const value_range_equiv *get_value_range (const_tree op)
     { return vr_values.get_value_range (op); }
@@ -3471,676 +3396,6 @@ class vrp_prop : public ssa_propagation_engine
   void extract_range_from_phi_node (gphi *phi, value_range_equiv *vr)
     { vr_values.extract_range_from_phi_node (phi, vr); }
 };
-/* Checks one ARRAY_REF in REF, located at LOCUS. Ignores flexible arrays
-   and "struct" hacks. If VRP can determine that the
-   array subscript is a constant, check if it is outside valid
-   range. If the array subscript is a RANGE, warn if it is
-   non-overlapping with valid range.
-   IGNORE_OFF_BY_ONE is true if the ARRAY_REF is inside a ADDR_EXPR.
-   Returns true if a warning has been issued.  */
-
-bool
-vrp_prop::check_array_ref (location_t location, tree ref,
-			   bool ignore_off_by_one)
-{
-  if (TREE_NO_WARNING (ref))
-    return false;
-
-  tree low_sub = TREE_OPERAND (ref, 1);
-  tree up_sub = low_sub;
-  tree up_bound = array_ref_up_bound (ref);
-
-  /* Referenced decl if one can be determined.  */
-  tree decl = NULL_TREE;
-
-  /* Set for accesses to interior zero-length arrays.  */
-  bool interior_zero_len = false;
-
-  tree up_bound_p1;
-
-  if (!up_bound
-      || TREE_CODE (up_bound) != INTEGER_CST
-      || (warn_array_bounds < 2
-	  && array_at_struct_end_p (ref)))
-    {
-      /* Accesses to trailing arrays via pointers may access storage
-	 beyond the types array bounds.  For such arrays, or for flexible
-	 array members, as well as for other arrays of an unknown size,
-	 replace the upper bound with a more permissive one that assumes
-	 the size of the largest object is PTRDIFF_MAX.  */
-      tree eltsize = array_ref_element_size (ref);
-
-      if (TREE_CODE (eltsize) != INTEGER_CST
-	  || integer_zerop (eltsize))
-	{
-	  up_bound = NULL_TREE;
-	  up_bound_p1 = NULL_TREE;
-	}
-      else
-	{
-	  tree ptrdiff_max = TYPE_MAX_VALUE (ptrdiff_type_node);
-	  tree maxbound = ptrdiff_max;
-	  tree arg = TREE_OPERAND (ref, 0);
-
-	  const bool compref = TREE_CODE (arg) == COMPONENT_REF;
-	  if (compref)
-	    {
-	      /* Try to determine the size of the trailing array from
-		 its initializer (if it has one).  */
-	      if (tree refsize = component_ref_size (arg, &interior_zero_len))
-		if (TREE_CODE (refsize) == INTEGER_CST)
-		  maxbound = refsize;
-	    }
-
-	  if (maxbound == ptrdiff_max)
-	    {
-	      /* Try to determine the size of the base object.  Avoid
-		 COMPONENT_REF already tried above.  Using its DECL_SIZE
-		 size wouldn't necessarily be correct if the reference is
-		 to its flexible array member initialized in a different
-		 translation unit.  */
-	      poly_int64 off;
-	      if (tree base = get_addr_base_and_unit_offset (arg, &off))
-		{
-		  if (!compref && DECL_P (base))
-		    if (tree basesize = DECL_SIZE_UNIT (base))
-		      if (TREE_CODE (basesize) == INTEGER_CST)
-			{
-			  maxbound = basesize;
-			  decl = base;
-			}
-
-		  if (known_gt (off, 0))
-		    maxbound = wide_int_to_tree (sizetype,
-						 wi::sub (wi::to_wide (maxbound),
-							  off));
-		}
-	    }
-	  else
-	    maxbound = fold_convert (sizetype, maxbound);
-
-	  up_bound_p1 = int_const_binop (TRUNC_DIV_EXPR, maxbound, eltsize);
-
-	  if (up_bound_p1 != NULL_TREE)
-	    up_bound = int_const_binop (MINUS_EXPR, up_bound_p1,
-					build_int_cst (ptrdiff_type_node, 1));
-	  else
-	    up_bound = NULL_TREE;
-	}
-    }
-  else
-    up_bound_p1 = int_const_binop (PLUS_EXPR, up_bound,
-				   build_int_cst (TREE_TYPE (up_bound), 1));
-
-  tree low_bound = array_ref_low_bound (ref);
-
-  tree artype = TREE_TYPE (TREE_OPERAND (ref, 0));
-
-  bool warned = false;
-
-  /* Empty array.  */
-  if (up_bound && tree_int_cst_equal (low_bound, up_bound_p1))
-    warned = warning_at (location, OPT_Warray_bounds,
-			 "array subscript %E is outside array bounds of %qT",
-			 low_sub, artype);
-
-  const value_range_equiv *vr = NULL;
-  if (TREE_CODE (low_sub) == SSA_NAME)
-    {
-      vr = get_value_range (low_sub);
-      if (!vr->undefined_p () && !vr->varying_p ())
-        {
-          low_sub = vr->kind () == VR_RANGE ? vr->max () : vr->min ();
-          up_sub = vr->kind () == VR_RANGE ? vr->min () : vr->max ();
-        }
-    }
-
-  if (warned)
-    ; /* Do nothing.  */
-  else if (vr && vr->kind () == VR_ANTI_RANGE)
-    {
-      if (up_bound
-	  && TREE_CODE (up_sub) == INTEGER_CST
-          && (ignore_off_by_one
-	      ? tree_int_cst_lt (up_bound, up_sub)
-	      : tree_int_cst_le (up_bound, up_sub))
-          && TREE_CODE (low_sub) == INTEGER_CST
-          && tree_int_cst_le (low_sub, low_bound))
-	warned = warning_at (location, OPT_Warray_bounds,
-			     "array subscript [%E, %E] is outside "
-			     "array bounds of %qT",
-			     low_sub, up_sub, artype);
-    }
-  else if (up_bound
-	   && TREE_CODE (up_sub) == INTEGER_CST
-	   && (ignore_off_by_one
-	       ? !tree_int_cst_le (up_sub, up_bound_p1)
-	       : !tree_int_cst_le (up_sub, up_bound)))
-    warned = warning_at (location, OPT_Warray_bounds,
-			 "array subscript %E is above array bounds of %qT",
-			 up_sub, artype);
-  else if (TREE_CODE (low_sub) == INTEGER_CST
-           && tree_int_cst_lt (low_sub, low_bound))
-    warned = warning_at (location, OPT_Warray_bounds,
-			 "array subscript %E is below array bounds of %qT",
-			 low_sub, artype);
-
-  if (!warned && interior_zero_len)
-    warned = warning_at (location, OPT_Wzero_length_bounds,
-			 (TREE_CODE (low_sub) == INTEGER_CST
-			  ? G_("array subscript %E is outside the bounds "
-			       "of an interior zero-length array %qT")
-			  : G_("array subscript %qE is outside the bounds "
-			       "of an interior zero-length array %qT")),
-			 low_sub, artype);
-
-  if (warned)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "Array bound warning for ");
-	  dump_generic_expr (MSG_NOTE, TDF_SLIM, ref);
-	  fprintf (dump_file, "\n");
-	}
-
-      ref = decl ? decl : TREE_OPERAND (ref, 0);
-
-      tree rec = NULL_TREE;
-      if (TREE_CODE (ref) == COMPONENT_REF)
-	{
-	  /* For a reference to a member of a struct object also mention
-	     the object if it's known.  It may be defined in a different
-	     function than the out-of-bounds access.  */
-	  rec = TREE_OPERAND (ref, 0);
-	  if (!VAR_P (rec))
-	    rec = NULL_TREE;
-	  ref = TREE_OPERAND (ref, 1);
-	}
-
-      if (DECL_P (ref))
-	inform (DECL_SOURCE_LOCATION (ref), "while referencing %qD", ref);
-      if (rec && DECL_P (rec))
-	inform (DECL_SOURCE_LOCATION (rec), "defined here %qD", rec);
-
-      TREE_NO_WARNING (ref) = 1;
-    }
-
-  return warned;
-}
-
-/* Checks one MEM_REF in REF, located at LOCATION, for out-of-bounds
-   references to string constants.  If VRP can determine that the array
-   subscript is a constant, check if it is outside valid range.
-   If the array subscript is a RANGE, warn if it is non-overlapping
-   with valid range.
-   IGNORE_OFF_BY_ONE is true if the MEM_REF is inside an ADDR_EXPR
-   (used to allow one-past-the-end indices for code that takes
-   the address of the just-past-the-end element of an array).
-   Returns true if a warning has been issued.  */
-
-bool
-vrp_prop::check_mem_ref (location_t location, tree ref,
-			 bool ignore_off_by_one)
-{
-  if (TREE_NO_WARNING (ref))
-    return false;
-
-  tree arg = TREE_OPERAND (ref, 0);
-  /* The constant and variable offset of the reference.  */
-  tree cstoff = TREE_OPERAND (ref, 1);
-  tree varoff = NULL_TREE;
-
-  const offset_int maxobjsize = tree_to_shwi (max_object_size ());
-
-  /* The array or string constant bounds in bytes.  Initially set
-     to [-MAXOBJSIZE - 1, MAXOBJSIZE]  until a tighter bound is
-     determined.  */
-  offset_int arrbounds[2] = { -maxobjsize - 1, maxobjsize };
-
-  /* The minimum and maximum intermediate offset.  For a reference
-     to be valid, not only does the final offset/subscript must be
-     in bounds but all intermediate offsets should be as well.
-     GCC may be able to deal gracefully with such out-of-bounds
-     offsets so the checking is only enbaled at -Warray-bounds=2
-     where it may help detect bugs in uses of the intermediate
-     offsets that could otherwise not be detectable.  */
-  offset_int ioff = wi::to_offset (fold_convert (ptrdiff_type_node, cstoff));
-  offset_int extrema[2] = { 0, wi::abs (ioff) };
-
-  /* The range of the byte offset into the reference.  */
-  offset_int offrange[2] = { 0, 0 };
-
-  const value_range_equiv *vr = NULL;
-
-  /* Determine the offsets and increment OFFRANGE for the bounds of each.
-     The loop computes the range of the final offset for expressions such
-     as (A + i0 + ... + iN)[CSTOFF] where i0 through iN are SSA_NAMEs in
-     some range.  */
-  const unsigned limit = param_ssa_name_def_chain_limit;
-  for (unsigned n = 0; TREE_CODE (arg) == SSA_NAME && n < limit; ++n)
-    {
-      gimple *def = SSA_NAME_DEF_STMT (arg);
-      if (!is_gimple_assign (def))
-	break;
-
-      tree_code code = gimple_assign_rhs_code (def);
-      if (code == POINTER_PLUS_EXPR)
-	{
-	  arg = gimple_assign_rhs1 (def);
-	  varoff = gimple_assign_rhs2 (def);
-	}
-      else if (code == ASSERT_EXPR)
-	{
-	  arg = TREE_OPERAND (gimple_assign_rhs1 (def), 0);
-	  continue;
-	}
-      else
-	return false;
-
-      /* VAROFF should always be a SSA_NAME here (and not even
-	 INTEGER_CST) but there's no point in taking chances.  */
-      if (TREE_CODE (varoff) != SSA_NAME)
-	break;
-
-      vr = get_value_range (varoff);
-      if (!vr || vr->undefined_p () || vr->varying_p ())
-	break;
-
-      if (!vr->constant_p ())
-        break;
-
-      if (vr->kind () == VR_RANGE)
-	{
-	  offset_int min
-	    = wi::to_offset (fold_convert (ptrdiff_type_node, vr->min ()));
-	  offset_int max
-	    = wi::to_offset (fold_convert (ptrdiff_type_node, vr->max ()));
-	  if (min < max)
-	    {
-	      offrange[0] += min;
-	      offrange[1] += max;
-	    }
-	  else
-	    {
-	      /* When MIN >= MAX, the offset is effectively in a union
-		 of two ranges: [-MAXOBJSIZE -1, MAX] and [MIN, MAXOBJSIZE].
-		 Since there is no way to represent such a range across
-		 additions, conservatively add [-MAXOBJSIZE -1, MAXOBJSIZE]
-		 to OFFRANGE.  */
-	      offrange[0] += arrbounds[0];
-	      offrange[1] += arrbounds[1];
-	    }
-	}
-      else
-	{
-	  /* For an anti-range, analogously to the above, conservatively
-	     add [-MAXOBJSIZE -1, MAXOBJSIZE] to OFFRANGE.  */
-	  offrange[0] += arrbounds[0];
-	  offrange[1] += arrbounds[1];
-	}
-
-      /* Keep track of the minimum and maximum offset.  */
-      if (offrange[1] < 0 && offrange[1] < extrema[0])
-	extrema[0] = offrange[1];
-      if (offrange[0] > 0 && offrange[0] > extrema[1])
-	extrema[1] = offrange[0];
-
-      if (offrange[0] < arrbounds[0])
-	offrange[0] = arrbounds[0];
-
-      if (offrange[1] > arrbounds[1])
-	offrange[1] = arrbounds[1];
-    }
-
-  if (TREE_CODE (arg) == ADDR_EXPR)
-    {
-      arg = TREE_OPERAND (arg, 0);
-      if (TREE_CODE (arg) != STRING_CST
-	  && TREE_CODE (arg) != PARM_DECL
-	  && TREE_CODE (arg) != VAR_DECL)
-	return false;
-    }
-  else
-    return false;
-
-  /* The type of the object being referred to.  It can be an array,
-     string literal, or a non-array type when the MEM_REF represents
-     a reference/subscript via a pointer to an object that is not
-     an element of an array.  Incomplete types are excluded as well
-     because their size is not known.  */
-  tree reftype = TREE_TYPE (arg);
-  if (POINTER_TYPE_P (reftype)
-      || !COMPLETE_TYPE_P (reftype)
-      || TREE_CODE (TYPE_SIZE_UNIT (reftype)) != INTEGER_CST)
-    return false;
-
-  /* Except in declared objects, references to trailing array members
-     of structs and union objects are excluded because MEM_REF doesn't
-     make it possible to identify the member where the reference
-     originated.  */
-  if (RECORD_OR_UNION_TYPE_P (reftype)
-      && (!VAR_P (arg)
-	  || (DECL_EXTERNAL (arg) && array_at_struct_end_p (ref))))
-    return false;
-
-  arrbounds[0] = 0;
-
-  offset_int eltsize;
-  if (TREE_CODE (reftype) == ARRAY_TYPE)
-    {
-      eltsize = wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (reftype)));
-      if (tree dom = TYPE_DOMAIN (reftype))
-	{
-	  tree bnds[] = { TYPE_MIN_VALUE (dom), TYPE_MAX_VALUE (dom) };
-	  if (TREE_CODE (arg) == COMPONENT_REF)
-	    {
-	      offset_int size = maxobjsize;
-	      if (tree fldsize = component_ref_size (arg))
-		size = wi::to_offset (fldsize);
-	      arrbounds[1] = wi::lrshift (size, wi::floor_log2 (eltsize));
-	    }
-	  else if (array_at_struct_end_p (arg) || !bnds[0] || !bnds[1])
-	    arrbounds[1] = wi::lrshift (maxobjsize, wi::floor_log2 (eltsize));
-	  else
-	    arrbounds[1] = (wi::to_offset (bnds[1]) - wi::to_offset (bnds[0])
-			    + 1) * eltsize;
-	}
-      else
-	arrbounds[1] = wi::lrshift (maxobjsize, wi::floor_log2 (eltsize));
-
-      if (TREE_CODE (ref) == MEM_REF)
-	{
-	  /* For MEM_REF determine a tighter bound of the non-array
-	     element type.  */
-	  tree eltype = TREE_TYPE (reftype);
-	  while (TREE_CODE (eltype) == ARRAY_TYPE)
-	    eltype = TREE_TYPE (eltype);
-	  eltsize = wi::to_offset (TYPE_SIZE_UNIT (eltype));
-	}
-    }
-  else
-    {
-      eltsize = 1;
-      tree size = TYPE_SIZE_UNIT (reftype);
-      if (VAR_P (arg))
-	if (tree initsize = DECL_SIZE_UNIT (arg))
-	  if (tree_int_cst_lt (size, initsize))
-	    size = initsize;
-
-      arrbounds[1] = wi::to_offset (size);
-    }
-
-  offrange[0] += ioff;
-  offrange[1] += ioff;
-
-  /* Compute the more permissive upper bound when IGNORE_OFF_BY_ONE
-     is set (when taking the address of the one-past-last element
-     of an array) but always use the stricter bound in diagnostics. */
-  offset_int ubound = arrbounds[1];
-  if (ignore_off_by_one)
-    ubound += 1;
-
-  if (arrbounds[0] == arrbounds[1]
-      || offrange[0] >= ubound
-      || offrange[1] < arrbounds[0])
-    {
-      /* Treat a reference to a non-array object as one to an array
-	 of a single element.  */
-      if (TREE_CODE (reftype) != ARRAY_TYPE)
-	reftype = build_array_type_nelts (reftype, 1);
-
-      if (TREE_CODE (ref) == MEM_REF)
-	{
-	  /* Extract the element type out of MEM_REF and use its size
-	     to compute the index to print in the diagnostic; arrays
-	     in MEM_REF don't mean anything.  A type with no size like
-	     void is as good as having a size of 1.  */
-	  tree type = TREE_TYPE (ref);
-	  while (TREE_CODE (type) == ARRAY_TYPE)
-	    type = TREE_TYPE (type);
-	  if (tree size = TYPE_SIZE_UNIT (type))
-	    {
-	      offrange[0] = offrange[0] / wi::to_offset (size);
-	      offrange[1] = offrange[1] / wi::to_offset (size);
-	    }
-	}
-      else
-	{
-	  /* For anything other than MEM_REF, compute the index to
-	     print in the diagnostic as the offset over element size.  */
-	  offrange[0] = offrange[0] / eltsize;
-	  offrange[1] = offrange[1] / eltsize;
-	}
-
-      bool warned;
-      if (offrange[0] == offrange[1])
-	warned = warning_at (location, OPT_Warray_bounds,
-			     "array subscript %wi is outside array bounds "
-			     "of %qT",
-			     offrange[0].to_shwi (), reftype);
-      else
-	warned = warning_at (location, OPT_Warray_bounds,
-			     "array subscript [%wi, %wi] is outside "
-			     "array bounds of %qT",
-			     offrange[0].to_shwi (),
-			     offrange[1].to_shwi (), reftype);
-      if (warned && DECL_P (arg))
-	inform (DECL_SOURCE_LOCATION (arg), "while referencing %qD", arg);
-
-      if (warned)
-	TREE_NO_WARNING (ref) = 1;
-      return warned;
-    }
-
-  if (warn_array_bounds < 2)
-    return false;
-
-  /* At level 2 check also intermediate offsets.  */
-  int i = 0;
-  if (extrema[i] < -arrbounds[1] || extrema[i = 1] > ubound)
-    {
-      HOST_WIDE_INT tmpidx = extrema[i].to_shwi () / eltsize.to_shwi ();
-
-      if (warning_at (location, OPT_Warray_bounds,
-		      "intermediate array offset %wi is outside array bounds "
-		      "of %qT", tmpidx, reftype))
-	{
-	  TREE_NO_WARNING (ref) = 1;
-	  return true;
-	}
-    }
-
-  return false;
-}
-
-/* Searches if the expr T, located at LOCATION computes
-   address of an ARRAY_REF, and call check_array_ref on it.  */
-
-void
-vrp_prop::search_for_addr_array (tree t, location_t location)
-{
-  /* Check each ARRAY_REF and MEM_REF in the reference chain. */
-  do
-    {
-      bool warned = false;
-      if (TREE_CODE (t) == ARRAY_REF)
-	warned = check_array_ref (location, t, true /*ignore_off_by_one*/);
-      else if (TREE_CODE (t) == MEM_REF)
-	warned = check_mem_ref (location, t, true /*ignore_off_by_one*/);
-
-      if (warned)
-	TREE_NO_WARNING (t) = true;
-
-      t = TREE_OPERAND (t, 0);
-    }
-  while (handled_component_p (t) || TREE_CODE (t) == MEM_REF);
-
-  if (TREE_CODE (t) != MEM_REF
-      || TREE_CODE (TREE_OPERAND (t, 0)) != ADDR_EXPR
-      || TREE_NO_WARNING (t))
-    return;
-
-  tree tem = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
-  tree low_bound, up_bound, el_sz;
-  if (TREE_CODE (TREE_TYPE (tem)) != ARRAY_TYPE
-      || TREE_CODE (TREE_TYPE (TREE_TYPE (tem))) == ARRAY_TYPE
-      || !TYPE_DOMAIN (TREE_TYPE (tem)))
-    return;
-
-  low_bound = TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (tem)));
-  up_bound = TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (tem)));
-  el_sz = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (tem)));
-  if (!low_bound
-      || TREE_CODE (low_bound) != INTEGER_CST
-      || !up_bound
-      || TREE_CODE (up_bound) != INTEGER_CST
-      || !el_sz
-      || TREE_CODE (el_sz) != INTEGER_CST)
-    return;
-
-  offset_int idx;
-  if (!mem_ref_offset (t).is_constant (&idx))
-    return;
-
-  bool warned = false;
-  idx = wi::sdiv_trunc (idx, wi::to_offset (el_sz));
-  if (idx < 0)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "Array bound warning for ");
-	  dump_generic_expr (MSG_NOTE, TDF_SLIM, t);
-	  fprintf (dump_file, "\n");
-	}
-      warned = warning_at (location, OPT_Warray_bounds,
-			   "array subscript %wi is below "
-			   "array bounds of %qT",
-			   idx.to_shwi (), TREE_TYPE (tem));
-    }
-  else if (idx > (wi::to_offset (up_bound)
-		  - wi::to_offset (low_bound) + 1))
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "Array bound warning for ");
-	  dump_generic_expr (MSG_NOTE, TDF_SLIM, t);
-	  fprintf (dump_file, "\n");
-	}
-      warned = warning_at (location, OPT_Warray_bounds,
-			   "array subscript %wu is above "
-			   "array bounds of %qT",
-			   idx.to_uhwi (), TREE_TYPE (tem));
-    }
-
-  if (warned)
-    {
-      if (DECL_P (t))
-	inform (DECL_SOURCE_LOCATION (t), "while referencing %qD", t);
-
-      TREE_NO_WARNING (t) = 1;
-    }
-}
-
-/* walk_tree() callback that checks if *TP is
-   an ARRAY_REF inside an ADDR_EXPR (in which an array
-   subscript one outside the valid range is allowed). Call
-   check_array_ref for each ARRAY_REF found. The location is
-   passed in DATA.  */
-
-static tree
-check_array_bounds (tree *tp, int *walk_subtree, void *data)
-{
-  tree t = *tp;
-  struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
-  location_t location;
-
-  if (EXPR_HAS_LOCATION (t))
-    location = EXPR_LOCATION (t);
-  else
-    location = gimple_location (wi->stmt);
-
-  *walk_subtree = TRUE;
-
-  bool warned = false;
-  vrp_prop *vrp_prop = (class vrp_prop *)wi->info;
-  if (TREE_CODE (t) == ARRAY_REF)
-    warned = vrp_prop->check_array_ref (location, t, false/*ignore_off_by_one*/);
-  else if (TREE_CODE (t) == MEM_REF)
-    warned = vrp_prop->check_mem_ref (location, t, false /*ignore_off_by_one*/);
-  else if (TREE_CODE (t) == ADDR_EXPR)
-    {
-      vrp_prop->search_for_addr_array (t, location);
-      *walk_subtree = FALSE;
-    }
-  /* Propagate the no-warning bit to the outer expression.  */
-  if (warned)
-    TREE_NO_WARNING (t) = true;
-
-  return NULL_TREE;
-}
-
-/* A dom_walker subclass for use by vrp_prop::check_all_array_refs,
-   to walk over all statements of all reachable BBs and call
-   check_array_bounds on them.  */
-
-class check_array_bounds_dom_walker : public dom_walker
-{
- public:
-  check_array_bounds_dom_walker (vrp_prop *prop)
-    : dom_walker (CDI_DOMINATORS,
-		  /* Discover non-executable edges, preserving EDGE_EXECUTABLE
-		     flags, so that we can merge in information on
-		     non-executable edges from vrp_folder .  */
-		  REACHABLE_BLOCKS_PRESERVING_FLAGS),
-      m_prop (prop) {}
-  ~check_array_bounds_dom_walker () {}
-
-  edge before_dom_children (basic_block) FINAL OVERRIDE;
-
- private:
-  vrp_prop *m_prop;
-};
-
-/* Implementation of dom_walker::before_dom_children.
-
-   Walk over all statements of BB and call check_array_bounds on them,
-   and determine if there's a unique successor edge.  */
-
-edge
-check_array_bounds_dom_walker::before_dom_children (basic_block bb)
-{
-  gimple_stmt_iterator si;
-  for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
-    {
-      gimple *stmt = gsi_stmt (si);
-      struct walk_stmt_info wi;
-      if (!gimple_has_location (stmt)
-	  || is_gimple_debug (stmt))
-	continue;
-
-      memset (&wi, 0, sizeof (wi));
-
-      wi.info = m_prop;
-
-      walk_gimple_op (stmt, check_array_bounds, &wi);
-    }
-
-  /* Determine if there's a unique successor edge, and if so, return
-     that back to dom_walker, ensuring that we don't visit blocks that
-     became unreachable during the VRP propagation
-     (PR tree-optimization/83312).  */
-  return find_taken_edge (bb, NULL_TREE);
-}
-
-/* Walk over all statements of all reachable BBs and call check_array_bounds
-   on them.  */
-
-void
-vrp_prop::check_all_array_refs ()
-{
-  check_array_bounds_dom_walker w (this);
-  w.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
-}
 
 /* Return true if all imm uses of VAR are either in STMT, or
    feed (optionally through a chain of single imm uses) GIMPLE_COND
@@ -4247,8 +3502,8 @@ maybe_set_nonzero_bits (edge e, tree var)
    any pass.  This is made somewhat more complex by the need for
    multiple ranges to be associated with one SSA_NAME.  */
 
-static void
-remove_range_assertions (void)
+void
+vrp_insert::remove_range_assertions ()
 {
   basic_block bb;
   gimple_stmt_iterator si;
@@ -4260,7 +3515,7 @@ remove_range_assertions (void)
   /* Note that the BSI iterator bump happens at the bottom of the
      loop and no bump is necessary if we're removing the statement
      referenced by the current BSI.  */
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     for (si = gsi_after_labels (bb), is_unreachable = -1; !gsi_end_p (si);)
       {
 	gimple *stmt = gsi_stmt (si);
@@ -4384,11 +3639,12 @@ stmt_interesting_for_vrp (gimple *stmt)
 /* Initialization required by ssa_propagate engine.  */
 
 void
-vrp_prop::vrp_initialize ()
+vrp_prop::vrp_initialize (struct function *fn)
 {
   basic_block bb;
+  fun = fn;
 
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     {
       for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);
 	   gsi_next (&si))
@@ -4650,119 +3906,6 @@ vrp_prop::visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
   return (*taken_edge_p) ? SSA_PROP_INTERESTING : SSA_PROP_VARYING;
 }
 
-void
-value_range_equiv::intersect (const vrange &vother)
-{
-  if (!is_a <const value_range_equiv *> (&vother))
-    {
-      irange::intersect (vother);
-      return;
-    }
-  const value_range_equiv *other = as_a <const value_range_equiv *> (&vother);
-  gcc_checking_assert (other != NULL);
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "Intersecting\n  ");
-      dump_value_range (dump_file, this);
-      fprintf (dump_file, "\nand\n  ");
-      dump_value_range (dump_file, other);
-      fprintf (dump_file, "\n");
-    }
-
-  /* If THIS is varying we want to pick up equivalences from OTHER.
-     Just special-case this here rather than trying to fixup after the
-     fact.  */
-  if (this->varying_p ())
-    this->deep_copy (other);
-  else
-    {
-      value_range tem = intersect_helper (this, other);
-      this->update (tem.min (), tem.max (), tem.kind ());
-
-      /* If the result is VR_UNDEFINED there is no need to mess with
-	 equivalencies.  */
-      if (!undefined_p ())
-	{
-	  /* The resulting set of equivalences for range intersection
-	     is the union of the two sets.  */
-	  if (m_equiv && other->m_equiv && m_equiv != other->m_equiv)
-	    bitmap_ior_into (m_equiv, other->m_equiv);
-	  else if (other->m_equiv && !m_equiv)
-	    {
-	      /* All equivalence bitmaps are allocated from the same
-		 obstack.  So we can use the obstack associated with
-		 VR to allocate this->m_equiv.  */
-	      m_equiv = BITMAP_ALLOC (other->m_equiv->obstack);
-	      bitmap_copy (m_equiv, other->m_equiv);
-	    }
-	}
-    }
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "to\n  ");
-      dump_value_range (dump_file, this);
-      fprintf (dump_file, "\n");
-    }
-}
-
-void
-value_range_equiv::intersect (const value_range_equiv *other)
-{
-  intersect (*other);
-}
-
-void
-value_range_equiv::union_ (const vrange &vother)
-{
-  if (!is_a <const value_range_equiv *> (&vother))
-    {
-      irange::union_ (vother);
-      return;
-    }
-  const value_range_equiv *other = as_a <const value_range_equiv *> (&vother);
-  gcc_checking_assert (other != NULL);
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "Meeting\n  ");
-      dump_value_range (dump_file, this);
-      fprintf (dump_file, "\nand\n  ");
-      dump_value_range (dump_file, other);
-      fprintf (dump_file, "\n");
-    }
-
-  /* If THIS is undefined we want to pick up equivalences from OTHER.
-     Just special-case this here rather than trying to fixup after the fact.  */
-  if (this->undefined_p ())
-    this->deep_copy (other);
-  else
-    {
-      gcc_checking_assert (other->simple_ranges_p ());
-      value_range tem = union_helper (this, (const value_range *) other);
-      this->update (tem.min (), tem.max (), tem.kind ());
-
-      /* The resulting set of equivalences is always the intersection of
-	 the two sets.  */
-      if (this->m_equiv && other->m_equiv && this->m_equiv != other->m_equiv)
-	bitmap_and_into (this->m_equiv, other->m_equiv);
-      else if (this->m_equiv && !other->m_equiv)
-	bitmap_clear (this->m_equiv);
-    }
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "to\n  ");
-      dump_value_range (dump_file, this);
-      fprintf (dump_file, "\n");
-    }
-}
-
-void
-value_range_equiv::union_ (const value_range_equiv *other)
-{
-  union_ (*other);
-}
-
 /* Visit all arguments for PHI node PHI that flow through executable
    edges.  If a valid value range can be derived from all the incoming
    value ranges, set a new range for the LHS of PHI.  */
@@ -4801,10 +3944,13 @@ class vrp_folder : public substitute_and_fold_engine
     : substitute_and_fold_engine (/* Fold all stmts.  */ true),
       m_vr_values (v), simplifier (v)
     {  }
-  tree get_value (tree, gimple *) FINAL OVERRIDE;
+  tree get_value (tree, gimple *stmt) FINAL OVERRIDE;
   bool fold_stmt (gimple_stmt_iterator *) FINAL OVERRIDE;
-  bool fold_predicate_in (gimple_stmt_iterator *);
 
+  class vr_values *m_vr_values;
+
+private:
+  bool fold_predicate_in (gimple_stmt_iterator *);
   /* Delegators.  */
   tree vrp_evaluate_conditional (tree_code code, tree op0,
 				 tree op1, gimple *stmt)
@@ -4814,8 +3960,6 @@ class vrp_folder : public substitute_and_fold_engine
  tree op_with_constant_singleton_value_range (tree op)
     { return m_vr_values->op_with_constant_singleton_value_range (op); }
 
-private:
-  vr_values *m_vr_values;
   simplify_using_ranges simplifier;
 };
 
@@ -5157,7 +4301,7 @@ vrp_dom_walker::after_dom_children (basic_block bb)
    for later realization.  */
 
 static void
-identify_jump_threads (class vr_values *vr_values)
+identify_jump_threads (struct function *fun, class vr_values *vr_values)
 {
   /* Ugh.  When substituting values earlier in this pass we can
      wipe the dominance information.  So rebuild the dominator
@@ -5182,7 +4326,7 @@ identify_jump_threads (class vr_values *vr_values)
 
   vrp_dom_walker walker (CDI_DOMINATORS, equiv_stack, avail_exprs_stack);
   walker.vr_values = vr_values;
-  walker.walk (cfun->cfg->x_entry_block_ptr);
+  walker.walk (fun->cfg->x_entry_block_ptr);
 
   /* We do not actually update the CFG or SSA graphs at this point as
      ASSERT_EXPRs are still in the IL and cfg cleanup code does not yet
@@ -5237,12 +4381,15 @@ vrp_prop::vrp_finalize (vrp_folder *folder, bool warn_array_bounds_p)
      check_array_bounds_dom_walker's ctor; vrp_folder may clear
      it from some edges.  */
   if (warn_array_bounds && warn_array_bounds_p)
-    set_all_edges_as_executable (cfun);
+    set_all_edges_as_executable (fun);
 
   folder->substitute_and_fold ();
 
   if (warn_array_bounds && warn_array_bounds_p)
-    check_all_array_refs ();
+    {
+      array_bounds_checker array_checker (fun, &vr_values);
+      array_checker.check ();
+    }
 }
 
 /* Main entry point to VRP (Value Range Propagation).  This pass is
@@ -5290,7 +4437,7 @@ vrp_prop::vrp_finalize (vrp_folder *folder, bool warn_array_bounds_p)
    probabilities to aid branch prediction.  */
 
 static unsigned int
-execute_vrp (bool warn_array_bounds_p)
+execute_vrp (struct function *fun, bool warn_array_bounds_p)
 {
 
   loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
@@ -5300,7 +4447,8 @@ execute_vrp (bool warn_array_bounds_p)
   /* ???  This ends up using stale EDGE_DFS_BACK for liveness computation.
      Inserting assertions may split edges which will invalidate
      EDGE_DFS_BACK.  */
-  insert_range_assertions ();
+  vrp_insert assert_engine (fun);
+  assert_engine.insert_range_assertions ();
 
   threadedge_initialize_values ();
 
@@ -5308,7 +4456,7 @@ execute_vrp (bool warn_array_bounds_p)
   mark_dfs_back_edges ();
 
   class vrp_prop vrp_prop;
-  vrp_prop.vrp_initialize ();
+  vrp_prop.vrp_initialize (fun);
   vrp_prop.ssa_propagate ();
   /* Instantiate the folder here, so that edge cleanups happen at the
      end of this function.  */
@@ -5317,7 +4465,7 @@ execute_vrp (bool warn_array_bounds_p)
 
   /* We must identify jump threading opportunities before we release
      the datastructures built by VRP.  */
-  identify_jump_threads (&vrp_prop.vr_values);
+  identify_jump_threads (fun, &vrp_prop.vr_values);
 
   /* A comparison of an SSA_NAME against a constant where the SSA_NAME
      was set by a type conversion can often be rewritten to use the
@@ -5327,7 +4475,7 @@ execute_vrp (bool warn_array_bounds_p)
      So that transformation is not performed until after jump threading
      is complete.  */
   basic_block bb;
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     {
       gimple *last = last_stmt (bb);
       if (last && gimple_code (last) == GIMPLE_COND)
@@ -5335,12 +4483,12 @@ execute_vrp (bool warn_array_bounds_p)
 				      as_a <gcond *> (last));
     }
 
-  free_numbers_of_iterations_estimates (cfun);
+  free_numbers_of_iterations_estimates (fun);
 
   /* ASSERT_EXPRs must be removed before finalizing jump threads
      as finalizing jump threads calls the CFG cleanup code which
      does not properly handle ASSERT_EXPRs.  */
-  remove_range_assertions ();
+  assert_engine.remove_range_assertions ();
 
   /* If we exposed any new variables, go ahead and put them into
      SSA form now, before we handle jump threading.  This simplifies
@@ -5394,8 +4542,8 @@ public:
       warn_array_bounds_p = param;
     }
   virtual bool gate (function *) { return flag_tree_vrp != 0; }
-  virtual unsigned int execute (function *)
-    { return execute_vrp (warn_array_bounds_p); }
+  virtual unsigned int execute (function *fun)
+    { return execute_vrp (fun, warn_array_bounds_p); }
 
  private:
   bool warn_array_bounds_p;

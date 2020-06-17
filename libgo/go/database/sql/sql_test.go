@@ -629,7 +629,8 @@ func TestPoolExhaustOnCancel(t *testing.T) {
 		go func() {
 			rows, err := db.Query("SELECT|people|name,photo|")
 			if err != nil {
-				t.Fatalf("Query: %v", err)
+				t.Errorf("Query: %v", err)
+				return
 			}
 			rows.Close()
 			saturateDone.Done()
@@ -637,6 +638,9 @@ func TestPoolExhaustOnCancel(t *testing.T) {
 	}
 
 	saturate.Wait()
+	if t.Failed() {
+		t.FailNow()
+	}
 	state = 2
 
 	// Now cancel the request while it is waiting.
@@ -3783,7 +3787,7 @@ func (c *ctxOnlyConn) ExecContext(ctx context.Context, q string, args []driver.N
 // TestQueryExecContextOnly ensures drivers only need to implement QueryContext
 // and ExecContext methods.
 func TestQueryExecContextOnly(t *testing.T) {
-	// Ensure connection does not implment non-context interfaces.
+	// Ensure connection does not implement non-context interfaces.
 	var connType driver.Conn = &ctxOnlyConn{}
 	if _, ok := connType.(driver.Execer); ok {
 		t.Fatalf("%T must not implement driver.Execer", connType)

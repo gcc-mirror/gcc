@@ -1934,7 +1934,8 @@ number_of_iterations_cond (class loop *loop,
 
 tree
 simplify_replace_tree (tree expr, tree old, tree new_tree,
-		       tree (*valueize) (tree, void*), void *context)
+		       tree (*valueize) (tree, void*), void *context,
+		       bool do_fold)
 {
   unsigned i, n;
   tree ret = NULL_TREE, e, se;
@@ -1966,7 +1967,7 @@ simplify_replace_tree (tree expr, tree old, tree new_tree,
   for (i = 0; i < n; i++)
     {
       e = TREE_OPERAND (expr, i);
-      se = simplify_replace_tree (e, old, new_tree, valueize, context);
+      se = simplify_replace_tree (e, old, new_tree, valueize, context, do_fold);
       if (e == se)
 	continue;
 
@@ -1976,7 +1977,7 @@ simplify_replace_tree (tree expr, tree old, tree new_tree,
       TREE_OPERAND (ret, i) = se;
     }
 
-  return (ret ? fold (ret) : expr);
+  return (ret ? (do_fold ? fold (ret) : ret) : expr);
 }
 
 /* Expand definitions of ssa names in EXPR as long as they are simple
@@ -2833,7 +2834,7 @@ finite_loop_p (class loop *loop)
       return true;
     }
 
-  if (flag_finite_loops)
+  if (loop->finite_p)
     {
       unsigned i;
       vec<edge> exits = get_loop_exit_edges (loop);

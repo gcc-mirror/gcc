@@ -2254,9 +2254,14 @@ extern int frame_pointer_needed;
 #define RS6000_BTC_UNARY	0x00000001	/* normal unary function.  */
 #define RS6000_BTC_BINARY	0x00000002	/* normal binary function.  */
 #define RS6000_BTC_TERNARY	0x00000003	/* normal ternary function.  */
-#define RS6000_BTC_PREDICATE	0x00000004	/* predicate function.  */
-#define RS6000_BTC_ABS		0x00000005	/* Altivec/VSX ABS function.  */
+#define RS6000_BTC_QUATERNARY	0x00000004	/* normal quaternary
+						   function. */
+
+#define RS6000_BTC_PREDICATE	0x00000005	/* predicate function.  */
+#define RS6000_BTC_ABS		0x00000006	/* Altivec/VSX ABS
+						   function.  */
 #define RS6000_BTC_DST		0x00000007	/* Altivec DST function.  */
+
 #define RS6000_BTC_TYPE_MASK	0x0000000f	/* Mask to isolate types */
 
 #define RS6000_BTC_MISC		0x00000000	/* No special attributes.  */
@@ -2304,6 +2309,8 @@ extern int frame_pointer_needed;
 #define RS6000_BTM_POWERPC64	MASK_POWERPC64	/* 64-bit registers.  */
 #define RS6000_BTM_FLOAT128	MASK_FLOAT128_KEYWORD /* IEEE 128-bit float.  */
 #define RS6000_BTM_FLOAT128_HW	MASK_FLOAT128_HW /* IEEE 128-bit float h/w.  */
+#define RS6000_BTM_FUTURE	MASK_FUTURE
+
 
 #define RS6000_BTM_COMMON	(RS6000_BTM_ALTIVEC			\
 				 | RS6000_BTM_VSX			\
@@ -2332,6 +2339,7 @@ extern int frame_pointer_needed;
 #undef RS6000_BUILTIN_1
 #undef RS6000_BUILTIN_2
 #undef RS6000_BUILTIN_3
+#undef RS6000_BUILTIN_4
 #undef RS6000_BUILTIN_A
 #undef RS6000_BUILTIN_D
 #undef RS6000_BUILTIN_H
@@ -2342,6 +2350,7 @@ extern int frame_pointer_needed;
 #define RS6000_BUILTIN_1(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_2(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_3(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
+#define RS6000_BUILTIN_4(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_A(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_D(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_H(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
@@ -2359,6 +2368,7 @@ enum rs6000_builtins
 #undef RS6000_BUILTIN_1
 #undef RS6000_BUILTIN_2
 #undef RS6000_BUILTIN_3
+#undef RS6000_BUILTIN_4
 #undef RS6000_BUILTIN_A
 #undef RS6000_BUILTIN_D
 #undef RS6000_BUILTIN_H
@@ -2490,6 +2500,10 @@ extern GTY(()) tree rs6000_builtin_types[RS6000_BTI_MAX];
 extern GTY(()) tree rs6000_builtin_decls[RS6000_BUILTIN_COUNT];
 
 #ifndef USED_FOR_TARGET
+extern GTY(()) tree builtin_mode_to_type[MAX_MACHINE_MODE][2];
+extern GTY(()) tree altivec_builtin_mask_for_load;
+extern GTY(()) section *toc_section;
+
 /* A C structure for machine-specific, per-function data.
    This is added to the cfun structure.  */
 typedef struct GTY(()) machine_function
@@ -2558,7 +2572,7 @@ typedef struct GTY(()) machine_function
 #define FINAL_PRESCAN_INSN(INSN, OPERANDS, NOPERANDS)			\
 do									\
   {									\
-    if (TARGET_PREFIXED_ADDR)						\
+    if (TARGET_PREFIXED)						\
       rs6000_final_prescan_insn (INSN, OPERANDS, NOPERANDS);		\
   }									\
 while (0)
@@ -2568,7 +2582,7 @@ while (0)
 #define ASM_OUTPUT_OPCODE(STREAM, OPCODE)				\
   do									\
     {									\
-     if (TARGET_PREFIXED_ADDR)						\
+     if (TARGET_PREFIXED)						\
        rs6000_asm_output_opcode (STREAM);				\
     }									\
   while (0)

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -118,14 +118,14 @@ package body Debug is
    --  d.y  Disable implicit pragma Elaborate_All on task bodies
    --  d.z  Restore previous support for frontend handling of Inline_Always
 
-   --  d.A  Read/write Aspect_Specifications hash table to tree
+   --  d.A
    --  d.B  Generate a bug box on abort_statement
    --  d.C  Generate concatenation call, do not generate inline code
    --  d.D  Disable errors on use of overriding keyword in Ada 95 mode
    --  d.E  Turn selected errors into warnings
    --  d.F  Debug mode for GNATprove
    --  d.G  Ignore calls through generic formal parameters for elaboration
-   --  d.H  GNSA mode for ASIS
+   --  d.H
    --  d.I  Do not ignore enum representation clauses in CodePeer mode
    --  d.J  Relaxed rules for pragma No_Return
    --  d.K
@@ -170,7 +170,7 @@ package body Debug is
    --  d_w
    --  d_x
    --  d_y
-   --  d_z
+   --  d_z  Enable Put_Image on tagged types
 
    --  d_A  Stop generation of ALI file
    --  d_B
@@ -193,7 +193,7 @@ package body Debug is
    --  d_S
    --  d_T  Output trace information on invocation path recording
    --  d_U
-   --  d_V
+   --  d_V  Enable verifications on the expanded tree
    --  d_W
    --  d_X
    --  d_Y
@@ -847,11 +847,6 @@ package body Debug is
    --       handling of Inline_Always by the front end on such targets. For the
    --       targets that do not use the GCC back end, this switch is ignored.
 
-   --  d.A  There seems to be a problem with ASIS if we activate the circuit
-   --       for reading and writing the aspect specification hash table, so
-   --       for now, this is controlled by the debug flag d.A. The hash table
-   --       is only written and read if this flag is set.
-
    --  d.B  Generate a bug box when we see an abort_statement, even though
    --       there is no bug. Useful for testing Comperr.Compiler_Abort: write
    --       some code containing an abort_statement, and compile it with
@@ -891,9 +886,6 @@ package body Debug is
    --       when doing the analysis for the static elaboration model. This is
    --       now fixed, but we provide this debug flag to revert to the previous
    --       situation of ignoring such calls to aid in transition.
-
-   --  d.H  Sets ASIS_GNSA_Mode to True. This signals the front end to suppress
-   --       the call to gigi in ASIS_Mode.
 
    --  d.I  Do not ignore enum representation clauses in CodePeer mode.
    --       The default of ignoring representation clauses for enumeration
@@ -1001,6 +993,9 @@ package body Debug is
    --       a call to routine Ada.Synchronous_Task_Control.Suspend_Until_True
    --       or Ada.Synchronous_Barriers.Wait_For_Release.
 
+   --  d_z  Enable the default Put_Image on tagged types that are not
+   --       predefined.
+
    --  d_A  Do not generate ALI files by setting Opt.Disable_ALI_File.
 
    --  d_F  The compiler encodes the full path from an invocation construct to
@@ -1015,8 +1010,11 @@ package body Debug is
    --       it is checked, and the progress of the recursive trace through
    --       elaboration calls at compile time.
 
-   --  d_T  The compiler outputs trance information to standard output whenever
+   --  d_T  The compiler outputs trace information to standard output whenever
    --       an invocation path is recorded.
+
+   --  d_V  Enable verification of the expanded code before calling the backend
+   --       and generate error messages on each inconsistency found.
 
    --  d1   Error messages have node numbers where possible. Normally error
    --       messages have only source locations. This option is useful when

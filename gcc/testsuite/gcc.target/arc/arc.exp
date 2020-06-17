@@ -122,6 +122,15 @@ proc check_effective_target_dpfp { } {
     }]
 }
 
+# Return 1 if this is a compiler supporting LL64 option.
+proc check_effective_target_ll64 { } {
+    return [check_no_compiler_messages ll64 assembly {
+	#if !defined(__ARC_LL64__)
+	#error No ARC LL64
+	#endif
+    }]
+}
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {

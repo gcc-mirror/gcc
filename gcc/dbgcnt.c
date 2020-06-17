@@ -126,7 +126,7 @@ dbg_cnt_set_limit_by_index (enum debug_counter index, const char *name,
       if (t1.first <= t2.second)
 	{
 	  error ("Interval overlap of %<-fdbg-cnt=%s%>: [%u, %u] and "
-		 "[%u, %u]\n", name, t2.first, t2.second, t1.first, t1.second);
+		 "[%u, %u]", name, t2.first, t2.second, t1.first, t1.second);
 	  return false;
 	}
     }

@@ -45,6 +45,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-inline.h"
 #include "case-cfn-macros.h"
+#include "tree-eh.h"
+#include "gimple-fold.h"
 
 static unsigned int tree_ssa_phiopt_worker (bool, bool, bool);
 static bool two_value_replacement (basic_block, basic_block, edge, gphi *,
@@ -1056,7 +1058,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
   gimple *cond;
   edge true_edge, false_edge;
   enum tree_code code;
-  bool emtpy_or_with_defined_p = true;
+  bool empty_or_with_defined_p = true;
 
   /* If the type says honor signed zeros we cannot do this
      optimization.  */
@@ -1075,7 +1077,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	{
 	  if (gimple_code (stmt) != GIMPLE_PREDICT
 	      && gimple_code (stmt) != GIMPLE_NOP)
-	    emtpy_or_with_defined_p = false;
+	    empty_or_with_defined_p = false;
 	  continue;
 	}
       /* Now try to adjust arg0 or arg1 according to the computation
@@ -1085,7 +1087,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	     && jump_function_from_stmt (&arg0, stmt))
 	    || (lhs == arg1
 		&& jump_function_from_stmt (&arg1, stmt)))
-	emtpy_or_with_defined_p = false;
+	empty_or_with_defined_p = false;
     }
 
   cond = last_stmt (cond_bb);
@@ -1137,7 +1139,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
       /* If the middle basic block was empty or is defining the
 	 PHI arguments and this is a single phi where the args are different
 	 for the edges e0 and e1 then we can remove the middle basic block. */
-      if (emtpy_or_with_defined_p
+      if (empty_or_with_defined_p
 	  && single_non_singleton_phi_for_edges (phi_nodes (gimple_bb (phi)),
 						 e0, e1) == phi)
 	{
@@ -1255,7 +1257,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
       && profile_status_for_fn (cfun) != PROFILE_ABSENT
       && EDGE_PRED (middle_bb, 0)->probability < profile_probability::even ()
       /* If assign is cheap, there is no point avoiding it.  */
-      && estimate_num_insns (bb_seq (middle_bb), &eni_time_weights)
+      && estimate_num_insns_seq (bb_seq (middle_bb), &eni_time_weights)
 	 >= 3 * estimate_num_insns (cond, &eni_time_weights))
     return 0;
 
@@ -1363,7 +1365,6 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 {
   tree result, type, rhs;
   gcond *cond;
-  gassign *new_stmt;
   edge true_edge, false_edge;
   enum tree_code cmp, minmax, ass_code;
   tree smaller, alt_smaller, larger, alt_larger, arg_true, arg_false;
@@ -1687,19 +1688,20 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
       gsi_move_before (&gsi_from, &gsi);
     }
 
-  /* Create an SSA var to hold the min/max result.  If we're the only
-     things setting the target PHI, then we  can clone the PHI
-     variable.  Otherwise we must create a new one.  */
-  result = PHI_RESULT (phi);
-  if (EDGE_COUNT (gimple_bb (phi)->preds) == 2)
-    result = duplicate_ssa_name (result, NULL);
-  else
-    result = make_ssa_name (TREE_TYPE (result));
-
   /* Emit the statement to compute min/max.  */
-  new_stmt = gimple_build_assign (result, minmax, arg0, arg1);
+  gimple_seq stmts = NULL;
+  tree phi_result = PHI_RESULT (phi);
+  result = gimple_build (&stmts, minmax, TREE_TYPE (phi_result), arg0, arg1);
+  /* Duplicate range info if we're the only things setting the target PHI.  */
+  if (!gimple_seq_empty_p (stmts)
+      && EDGE_COUNT (gimple_bb (phi)->preds) == 2
+      && !POINTER_TYPE_P (TREE_TYPE (phi_result))
+      && SSA_NAME_RANGE_INFO (phi_result))
+    duplicate_ssa_name_range_info (result, SSA_NAME_RANGE_TYPE (phi_result),
+				   SSA_NAME_RANGE_INFO (phi_result));
+
   gsi = gsi_last_bb (cond_bb);
-  gsi_insert_before (&gsi, new_stmt, GSI_NEW_STMT);
+  gsi_insert_seq_before (&gsi, stmts, GSI_NEW_STMT);
 
   replace_phi_edge_with_variable (cond_bb, e1, phi, result);
 
@@ -1985,26 +1987,33 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
 
    ??? We currently are very conservative and assume that a load might
    trap even if a store doesn't (write-only memory).  This probably is
-   overly conservative.  */
+   overly conservative.
 
-/* A hash-table of SSA_NAMEs, and in which basic block an MEM_REF
-   through it was seen, which would constitute a no-trap region for
-   same accesses.  */
-struct name_to_bb
+   We currently support a special case that for !TREE_ADDRESSABLE automatic
+   variables, it could ignore whether something is a load or store because the
+   local stack should be always writable.  */
+
+/* A hash-table of references (MEM_REF/ARRAY_REF/COMPONENT_REF), and in which
+   basic block an *_REF through it was seen, which would constitute a
+   no-trap region for same accesses.
+
+   Size is needed to support 2 MEM_REFs of different types, like
+   MEM<double>(s_1) and MEM<long>(s_1), which would compare equal with
+   OEP_ADDRESS_OF.  */
+struct ref_to_bb
 {
-  unsigned int ssa_name_ver;
+  tree exp;
+  HOST_WIDE_INT size;
   unsigned int phase;
-  bool store;
-  HOST_WIDE_INT offset, size;
   basic_block bb;
 };
 
 /* Hashtable helpers.  */
 
-struct ssa_names_hasher : free_ptr_hash <name_to_bb>
+struct refs_hasher : free_ptr_hash<ref_to_bb>
 {
-  static inline hashval_t hash (const name_to_bb *);
-  static inline bool equal (const name_to_bb *, const name_to_bb *);
+  static inline hashval_t hash (const ref_to_bb *);
+  static inline bool equal (const ref_to_bb *, const ref_to_bb *);
 };
 
 /* Used for quick clearing of the hash-table when we see calls.
@@ -2014,28 +2023,29 @@ static unsigned int nt_call_phase;
 /* The hash function.  */
 
 inline hashval_t
-ssa_names_hasher::hash (const name_to_bb *n)
+refs_hasher::hash (const ref_to_bb *n)
 {
-  return n->ssa_name_ver ^ (((hashval_t) n->store) << 31)
-         ^ (n->offset << 6) ^ (n->size << 3);
+  inchash::hash hstate;
+  inchash::add_expr (n->exp, hstate, OEP_ADDRESS_OF);
+  hstate.add_hwi (n->size);
+  return hstate.end ();
 }
 
 /* The equality function of *P1 and *P2.  */
 
 inline bool
-ssa_names_hasher::equal (const name_to_bb *n1, const name_to_bb *n2)
+refs_hasher::equal (const ref_to_bb *n1, const ref_to_bb *n2)
 {
-  return n1->ssa_name_ver == n2->ssa_name_ver
-         && n1->store == n2->store
-         && n1->offset == n2->offset
-         && n1->size == n2->size;
+  return operand_equal_p (n1->exp, n2->exp, OEP_ADDRESS_OF)
+	 && n1->size == n2->size;
 }
 
 class nontrapping_dom_walker : public dom_walker
 {
 public:
   nontrapping_dom_walker (cdi_direction direction, hash_set<tree> *ps)
-    : dom_walker (direction), m_nontrapping (ps), m_seen_ssa_names (128) {}
+    : dom_walker (direction), m_nontrapping (ps), m_seen_refs (128)
+  {}
 
   virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
@@ -2052,7 +2062,7 @@ private:
   hash_set<tree> *m_nontrapping;
 
   /* The hash table for remembering what we've seen.  */
-  hash_table<ssa_names_hasher> m_seen_ssa_names;
+  hash_table<refs_hasher> m_seen_refs;
 };
 
 /* Called by walk_dominator_tree, when entering the block BB.  */
@@ -2101,65 +2111,68 @@ nontrapping_dom_walker::after_dom_children (basic_block bb)
 }
 
 /* We see the expression EXP in basic block BB.  If it's an interesting
-   expression (an MEM_REF through an SSA_NAME) possibly insert the
-   expression into the set NONTRAP or the hash table of seen expressions.
-   STORE is true if this expression is on the LHS, otherwise it's on
-   the RHS.  */
+   expression of:
+     1) MEM_REF
+     2) ARRAY_REF
+     3) COMPONENT_REF
+   possibly insert the expression into the set NONTRAP or the hash table
+   of seen expressions.  STORE is true if this expression is on the LHS,
+   otherwise it's on the RHS.  */
 void
 nontrapping_dom_walker::add_or_mark_expr (basic_block bb, tree exp, bool store)
 {
   HOST_WIDE_INT size;
 
-  if (TREE_CODE (exp) == MEM_REF
-      && TREE_CODE (TREE_OPERAND (exp, 0)) == SSA_NAME
-      && tree_fits_shwi_p (TREE_OPERAND (exp, 1))
+  if ((TREE_CODE (exp) == MEM_REF || TREE_CODE (exp) == ARRAY_REF
+       || TREE_CODE (exp) == COMPONENT_REF)
       && (size = int_size_in_bytes (TREE_TYPE (exp))) > 0)
     {
-      tree name = TREE_OPERAND (exp, 0);
-      struct name_to_bb map;
-      name_to_bb **slot;
-      struct name_to_bb *n2bb;
+      struct ref_to_bb map;
+      ref_to_bb **slot;
+      struct ref_to_bb *r2bb;
       basic_block found_bb = 0;
 
-      /* Try to find the last seen MEM_REF through the same
-         SSA_NAME, which can trap.  */
-      map.ssa_name_ver = SSA_NAME_VERSION (name);
-      map.phase = 0;
-      map.bb = 0;
-      map.store = store;
-      map.offset = tree_to_shwi (TREE_OPERAND (exp, 1));
+      if (!store)
+	{
+	  tree base = get_base_address (exp);
+	  /* Only record a LOAD of a local variable without address-taken, as
+	     the local stack is always writable.  This allows cselim on a STORE
+	     with a dominating LOAD.  */
+	  if (!auto_var_p (base) || TREE_ADDRESSABLE (base))
+	    return;
+	}
+
+      /* Try to find the last seen *_REF, which can trap.  */
+      map.exp = exp;
       map.size = size;
+      slot = m_seen_refs.find_slot (&map, INSERT);
+      r2bb = *slot;
+      if (r2bb && r2bb->phase >= nt_call_phase)
+	found_bb = r2bb->bb;
 
-      slot = m_seen_ssa_names.find_slot (&map, INSERT);
-      n2bb = *slot;
-      if (n2bb && n2bb->phase >= nt_call_phase)
-        found_bb = n2bb->bb;
-
-      /* If we've found a trapping MEM_REF, _and_ it dominates EXP
-         (it's in a basic block on the path from us to the dominator root)
+      /* If we've found a trapping *_REF, _and_ it dominates EXP
+	 (it's in a basic block on the path from us to the dominator root)
 	 then we can't trap.  */
       if (found_bb && (((size_t)found_bb->aux) & 1) == 1)
 	{
 	  m_nontrapping->add (exp);
 	}
       else
-        {
+	{
 	  /* EXP might trap, so insert it into the hash table.  */
-	  if (n2bb)
+	  if (r2bb)
 	    {
-	      n2bb->phase = nt_call_phase;
-	      n2bb->bb = bb;
+	      r2bb->phase = nt_call_phase;
+	      r2bb->bb = bb;
 	    }
 	  else
 	    {
-	      n2bb = XNEW (struct name_to_bb);
-	      n2bb->ssa_name_ver = SSA_NAME_VERSION (name);
-	      n2bb->phase = nt_call_phase;
-	      n2bb->bb = bb;
-	      n2bb->store = store;
-	      n2bb->offset = map.offset;
-	      n2bb->size = size;
-	      *slot = n2bb;
+	      r2bb = XNEW (struct ref_to_bb);
+	      r2bb->phase = nt_call_phase;
+	      r2bb->bb = bb;
+	      r2bb->exp = exp;
+	      r2bb->size = size;
+	      *slot = r2bb;
 	    }
 	}
     }
@@ -2237,10 +2250,13 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
      whose value is not available readily, which we want to avoid.  */
   if (!nontrap->contains (lhs))
     {
-      /* If LHS is a local variable without address-taken, we could
+      /* If LHS is an access to a local variable without address-taken
+	 (or when we allow data races) and known not to trap, we could
 	 always safely move down the store.  */
       tree base = get_base_address (lhs);
-      if (!auto_var_p (base) || TREE_ADDRESSABLE (base))
+      if (!auto_var_p (base)
+	  || (TREE_ADDRESSABLE (base) && !flag_store_data_races)
+	  || tree_could_trap_p (lhs))
 	return false;
     }
 

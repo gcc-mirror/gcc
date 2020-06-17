@@ -96,7 +96,7 @@ or1k port		Stafford Horne		<shorne@gmail.com>
 pdp11 port		Paul Koning		<ni1d@arrl.net>
 powerpcspe port		Andrew Jenner		<andrew@codesourcery.com>
 riscv port		Kito Cheng		<kito.cheng@gmail.com>
-riscv port		Palmer Dabbelt		<palmer@sifive.com>
+riscv port		Palmer Dabbelt		<palmer@dabbelt.com>
 riscv port		Andrew Waterman		<andrew@sifive.com>
 riscv port		Jim Wilson		<jimw@sifive.com>
 rs6000/powerpc port	David Edelsohn		<dje.gcc@gmail.com>
@@ -118,6 +118,7 @@ visium port		Eric Botcazou		<ebotcazou@libertysurf.fr>
 x86-64 port		Jan Hubicka		<hubicka@ucw.cz>
 xstormy16 port		Nick Clifton		<nickc@redhat.com>
 xtensa port		Sterling Augustine	<augustine.sterling@gmail.com>
+xtensa port		Max Filippov		<jcmvbkbc@gmail.com>
 
 			OS Port Maintainers	(OS alphabetical order)
 
@@ -255,6 +256,8 @@ check in changes outside of the parts of the compiler they maintain.
 
 arc port		Andrew Burgess		<andrew.burgess@embecosm.com>
 arc port		Claudiu Zissulescu	<claziss@synopsys.com>
+callgraph		Martin Liska		<mliska@suse.cz>
+callgraph		Martin Jambor		<mjambor@suse.cz>
 C front end		Marek Polacek		<polacek@redhat.com>
 dataflow		Paolo Bonzini		<bonzini@gnu.org>
 dataflow		Seongbae Park		<seongbae.park@gmail.com>
@@ -351,6 +354,7 @@ William Cohen					<wcohen@redhat.com>
 Michael Collison				<michael.collison@arm.com>
 Josh Conner					<joshconner@google.com>
 R. Kelley Cook					<kcook@gcc.gnu.org>
+Alex Coplan					<alex.coplan@arm.com>
 Andrea Corallo					<andrea.corallo@arm.com>
 Christian Cornelssen				<ccorn@cs.tu-berlin.de>
 Ludovic Courtès					<ludo@gnu.org>
@@ -380,7 +384,6 @@ Chris Fairles					<cfairles@gcc.gnu.org>
 Alessandro Fanfarillo				<fanfarillo.gcc@gmail.com>
 Changpeng Fang					<changpeng.fang@amd.com>
 Li Feng						<nemokingdom@gmail.com>
-Max Filippov					<jcmvbkbc@gmail.com>
 Thomas Fitzsimmons				<fitzsim@redhat.com>
 Alexander Fomin					<afomin.mailbox@gmail.com>
 Brian Ford					<ford@vss.fsi.com>
@@ -429,6 +432,7 @@ Falk Hueffner					<falk@debian.org>
 Andrew John Hughes				<gnu_andrew@member.fsf.org>
 Dominique d'Humieres				<dominiq@lps.ens.fr>
 Andy Hutchinson					<hutchinsonandy@aim.com>
+Joel Hutton					<joel.hutton@arm.com>
 Lewis Hyatt					<lhyatt@gmail.com>
 Naveen H.S					<naveenh@marvell.com>
 Roland Illig					<roland.illig@gmx.de>
@@ -495,6 +499,7 @@ Carl Love					<cel@us.ibm.com>
 Martin v. Löwis					<loewis@informatik.hu-berlin.de>
 H.J. Lu						<hjl.tools@gmail.com>
 Xiong Hu Luo					<luoxhu@linux.vnet.ibm.com>
+Bin Bin Lv					<shlb@linux.ibm.com>
 Christophe Lyon					<christophe.lyon@st.com>
 Luis Machado					<luisgpm@br.ibm.com>
 Ziga Mahkovec					<ziga.mahkovec@klika.si>
@@ -539,6 +544,7 @@ Peter O'Gorman					<pogma@thewrittenword.com>
 Andrea Ornstein					<andrea.ornstein@st.com>
 Maxim Ostapenko					<m.ostapenko@samsung.com>
 Patrick Palka					<ppalka@gcc.gnu.org>
+Srinath Parvathaneni				<srinath.parvathaneni@arm.com>
 Devang Patel					<dpatel@apple.com>
 Andris Pavenis					<andris.pavenis@iki.fi>
 Fernando Pereira				<pronesto@gmail.com>
@@ -577,6 +583,7 @@ Trevor Saunders					<tbsaunde+gcc@tbsaunde.org>
 Aaron Sawdey					<acsawdey@linux.ibm.com>
 Roger Sayle					<roger@eyesopen.com>
 Will Schmidt					<will_schmidt@vnet.ibm.com>
+Stefan Schulze Frielinghaus			<stefansf@linux.ibm.com>
 Tilo Schwarz					<tilo@tilo-schwarz.de>
 Martin Sebor					<msebor@gcc.gnu.org>
 Svein Seldal					<svein@dev.seldal.com>
@@ -592,7 +599,7 @@ Jan Sjodin					<jan.sjodin@amd.com>
 Trevor Smigiel					<trevor_smigiel@playstation.sony.com>
 Edward Smith-Rowland				<3dw4rd@verizon.net>
 Jayant Sonar					<rsonar.jayant@gmail.com>
-Anatoly Sokolov					<aesok@post.ru>
+Anatoly Sokolov					<aesok@dol.ru>
 Michael Sokolov					<msokolov@ivan.Harhan.ORG>
 Richard Stallman				<rms@gnu.org>
 Basile Starynkevitch				<basile@starynkevitch.net>

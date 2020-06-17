@@ -72,6 +72,7 @@ fixincludes/configure: fixincludes/configure.ac fixincludes/aclocal.m4
 fixincludes/config.h.in: fixincludes/configure.ac fixincludes/aclocal.m4
 # intl library
 intl/plural.c: intl/plural.y
+intl/plural-config.h: intl/plural.y
 intl/configure: intl/configure.ac intl/aclocal.m4
 intl/config.h.in: intl/configure.ac intl/aclocal.m4
 # Now, proceed to gcc automatically generated files
@@ -82,7 +83,6 @@ gcc/fixinc/fixincl.x: gcc/fixinc/fixincl.tpl gcc/fixinc/inclhack.def
 gcc/config/aarch64/aarch64-tune.md: gcc/config/aarch64/aarch64-cores.def gcc/config/aarch64/gentune.sh
 gcc/config/arm/arm-tune.md: gcc/config/arm/arm-cpus.in gcc/config/arm/parsecpu.awk
 gcc/config/arm/arm-tables.opt: gcc/config/arm/arm-cpus.in gcc/config/arm/parsecpu.awk
-gcc/config/avr/t-multilib: gcc/config/avr/avr-mcus.def gcc/config/avr/genmultilib.awk
 gcc/config/c6x/c6x-tables.opt: gcc/config/c6x/c6x-isas.def gcc/config/c6x/genopt.sh
 gcc/config/c6x/c6x-sched.md: gcc/config/c6x/c6x-sched.md.in gcc/config/c6x/gensched.sh
 gcc/config/c6x/c6x-mult.md: gcc/config/c6x/c6x-mult.md.in gcc/config/c6x/genmult.sh
@@ -331,7 +331,7 @@ case $vcs_type in
             exit 1
 	fi
 
-	revision=`$GCC_GIT log -n1 --pretty=%p:%t:%H`
+	revision=`$GCC_GIT log -n1 --pretty=tformat:%p:%t:%H`
 	branch=`$GCC_GIT name-rev --name-only HEAD || :`
 	;;    
 

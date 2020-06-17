@@ -25,7 +25,7 @@
 #include <memory_resource>
 #include <algorithm>			// lower_bound, rotate
 #include <atomic>
-#include <bit>				// __ceil2, __log2p1
+#include <bit>				// has_single_bit, bit_ceil, bit_width
 #include <new>
 #if ATOMIC_POINTER_LOCK_FREE != 2
 # include <bits/std_mutex.h>	// std::mutex, std::lock_guard
@@ -37,6 +37,10 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 namespace pmr
 {
+  // This was defined inline in 9.1 and 9.2 so code compiled by those
+  // versions will not use this symbol.
+  memory_resource::~memory_resource() = default;
+
   namespace
   {
     class newdel_res_t final : public memory_resource
@@ -167,6 +171,10 @@ namespace pmr
 
   // Member functions for std::pmr::monotonic_buffer_resource
 
+  // This was defined inline in 9.1 and 9.2 so code compiled by those
+  // versions will not use this symbol.
+  monotonic_buffer_resource::~monotonic_buffer_resource() { release(); }
+
   // Memory allocated by the upstream resource is managed in a linked list
   // of _Chunk objects. A _Chunk object recording the size and alignment of
   // the allocated block and a pointer to the previous chunk is placed
@@ -181,7 +189,7 @@ namespace pmr
     allocate(memory_resource* __r, size_t __size, size_t __align,
 	     _Chunk*& __head)
     {
-      __size = std::__ceil2(__size + sizeof(_Chunk));
+      __size = std::__bit_ceil(__size + sizeof(_Chunk));
 
       if constexpr (alignof(_Chunk) > 1)
 	{
@@ -220,8 +228,8 @@ namespace pmr
 	  if (__ch->_M_canary != (__ch->_M_size | __ch->_M_align))
 	    return; // buffer overflow detected!
 
-	  size_t __size = (1u << __ch->_M_size);
-	  size_t __align = (1u << __ch->_M_align);
+	  size_t __size = (size_t)1 << __ch->_M_size;
+	  size_t __align = (size_t)1 << __ch->_M_align;
 	  void* __start = (char*)(__ch + 1) - __size;
 	  __r->deallocate(__start, __size, __align);
 	}
@@ -229,8 +237,8 @@ namespace pmr
 
   private:
     _Chunk(size_t __size, size_t __align, _Chunk* __next) noexcept
-    : _M_size(std::__log2p1(__size) - 1),
-      _M_align(std::__log2p1(__align) - 1)
+    : _M_size(std::__bit_width(__size) - 1),
+      _M_align(std::__bit_width(__align) - 1)
     {
       __builtin_memcpy(_M_next, &__next, sizeof(__next));
       _M_canary = _M_size | _M_align;
@@ -422,7 +430,7 @@ namespace pmr
   private:
     static constexpr unsigned _S_size_digits
       = (numeric_limits<size_type>::digits
-	  + std::__log2p1(bits_per_word) - 1) / 2;
+	  + std::__bit_width(bits_per_word) - 1) / 2;
 
     word* _M_words = nullptr;
     // Number of blocks represented by the bitset:
@@ -545,7 +553,7 @@ namespace pmr
     // Alignment must be a power-of-two so we only need to use enough bits
     // to store the power, not the actual value:
     static constexpr unsigned _S_alignbits
-      = std::__log2p1((unsigned)numeric_limits<size_t>::digits - 1);
+      = std::__bit_width((unsigned)numeric_limits<size_t>::digits - 1);
     // Use the remaining bits to store the size:
     static constexpr unsigned _S_sizebits
       = numeric_limits<size_t>::digits - _S_alignbits;
@@ -556,7 +564,7 @@ namespace pmr
 
     big_block(size_t bytes, size_t alignment)
     : _M_size(alloc_size(bytes) >> _S_alignbits),
-      _M_align_exp(std::__log2p1(alignment) - 1u)
+      _M_align_exp(std::__bit_width(alignment) - 1u)
     { }
 
     void* pointer = nullptr;
@@ -678,7 +686,7 @@ namespace pmr
       const size_t __words = (__blocks + __bits - 1) / __bits;
       const size_t __block_size = block_size();
       size_t __bytes = __blocks * __block_size + __words * sizeof(word);
-      size_t __alignment = std::__ceil2(__block_size);
+      size_t __alignment = std::__bit_ceil(__block_size);
       void* __p = __r->allocate(__bytes, __alignment);
       __try
 	{
@@ -705,7 +713,7 @@ namespace pmr
 
     void release(memory_resource* __r)
     {
-      const size_t __alignment = std::__ceil2(block_size());
+      const size_t __alignment = std::__bit_ceil(block_size());
       for (auto& __c : _M_chunks)
 	if (__c._M_p)
 	  __r->deallocate(__c._M_p, __c._M_bytes, __alignment);
@@ -886,7 +894,7 @@ namespace pmr
     else
       {
 	// Round to preferred granularity
-	static_assert(std::__ispow2(pool_sizes[0]));
+	static_assert(std::__has_single_bit(pool_sizes[0]));
 	constexpr size_t mask = pool_sizes[0] - 1;
 	opts.largest_required_pool_block += mask;
 	opts.largest_required_pool_block &= ~mask;
@@ -1035,7 +1043,8 @@ namespace pmr
    * exposition as _M_tpools[_M_key]).
    * The first element, _M_tpools[0], contains "orphaned chunks" which were
    * allocated by a thread which has since exited, and so there is no
-   * _M_tpools[_M_key] for that thread.
+   * _M_tpools[_M_key] for that thread. Orphaned chunks are never reused,
+   * they're only held in _M_tpools[0] so they can be deallocated.
    * A thread can access its own thread-specific set of pools via _M_key
    * while holding a shared lock on _M_mx. Accessing _M_impl._M_unpooled
    * or _M_tpools[0] or any other thread's _M_tpools[_M_key] requires an
@@ -1044,6 +1053,10 @@ namespace pmr
    * any dereference of that pointer requires an exclusive lock.
    * The _M_impl._M_opts and _M_impl._M_npools members are immutable,
    * and can safely be accessed concurrently.
+   *
+   * In a single-threaded program (i.e. __gthread_active_p() == false)
+   * the pool resource only needs one set of pools and never has orphaned
+   * chunks, so just uses _M_tpools[0] directly, and _M_tpools->next is null.
    */
 
   extern "C" {
@@ -1084,14 +1097,16 @@ namespace pmr
     void move_nonempty_chunks()
     {
       __glibcxx_assert(pools);
+      __glibcxx_assert(__gthread_active_p());
       if (!pools)
 	return;
-      memory_resource* r = owner.upstream_resource();
+      memory_resource* const r = owner.upstream_resource();
+      auto* const shared = owner._M_tpools->pools;
       // move all non-empty chunks to the shared _TPools
       for (int i = 0; i < owner._M_impl._M_npools; ++i)
 	for (auto& c : pools[i]._M_chunks)
 	  if (!c.empty())
-	    owner._M_tpools->pools[i]._M_chunks.insert(std::move(c), r);
+	    shared[i]._M_chunks.insert(std::move(c), r);
     }
 
     synchronized_pool_resource& owner;
@@ -1125,8 +1140,9 @@ namespace pmr
 			     memory_resource* upstream)
   : _M_impl(opts, upstream)
   {
-    if (int err = __gthread_key_create(&_M_key, destroy_TPools))
-      __throw_system_error(err);
+    if (__gthread_active_p())
+      if (int err = __gthread_key_create(&_M_key, destroy_TPools))
+	__throw_system_error(err);
     exclusive_lock l(_M_mx);
     _M_tpools = _M_alloc_shared_tpools(l);
   }
@@ -1135,7 +1151,8 @@ namespace pmr
   synchronized_pool_resource::~synchronized_pool_resource()
   {
     release();
-    __gthread_key_delete(_M_key); // does not run destroy_TPools
+    if (__gthread_active_p())
+      __gthread_key_delete(_M_key); // does not run destroy_TPools
   }
 
   void
@@ -1144,8 +1161,11 @@ namespace pmr
     exclusive_lock l(_M_mx);
     if (_M_tpools)
       {
-	__gthread_key_delete(_M_key); // does not run destroy_TPools
-	__gthread_key_create(&_M_key, destroy_TPools);
+	if (__gthread_active_p())
+	  {
+	    __gthread_key_delete(_M_key); // does not run destroy_TPools
+	    __gthread_key_create(&_M_key, destroy_TPools);
+	  }
 	polymorphic_allocator<_TPools> a(upstream_resource());
 	// destroy+deallocate each _TPools
 	do
@@ -1167,10 +1187,11 @@ namespace pmr
   synchronized_pool_resource::_M_thread_specific_pools() noexcept
   {
     __pool_resource::_Pool* pools = nullptr;
+    __glibcxx_assert(__gthread_active_p());
     if (auto tp = static_cast<_TPools*>(__gthread_getspecific(_M_key)))
       {
-      pools = tp->pools;
-      __glibcxx_assert(tp->pools);
+	pools = tp->pools;
+	// __glibcxx_assert(tp->pools);
       }
     return pools;
   }
@@ -1181,24 +1202,34 @@ namespace pmr
   do_allocate(size_t bytes, size_t alignment)
   {
     const auto block_size = std::max(bytes, alignment);
-    if (block_size <= _M_impl._M_opts.largest_required_pool_block)
+    const pool_options opts = _M_impl._M_opts;
+    if (block_size <= opts.largest_required_pool_block)
       {
 	const ptrdiff_t index = pool_index(block_size, _M_impl._M_npools);
-	memory_resource* const r = upstream_resource();
-	const pool_options opts = _M_impl._M_opts;
-	{
-	  // Try to allocate from the thread-specific pool
-	  shared_lock l(_M_mx);
-	  if (auto pools = _M_thread_specific_pools()) // [[likely]]
-	    {
-	      // Need exclusive lock to replenish so use try_allocate:
-	      if (void* p = pools[index].try_allocate())
-		return p;
-	      // Need to take exclusive lock and replenish pool.
-	    }
-	  // Need to allocate or replenish thread-specific pools using
-	  // upstream resource, so need to hold exclusive lock.
-	}
+	if (__gthread_active_p())
+	  {
+	    // Try to allocate from the thread-specific pool.
+	    shared_lock l(_M_mx);
+	    if (auto pools = _M_thread_specific_pools()) // [[likely]]
+	      {
+		// Need exclusive lock to replenish so use try_allocate:
+		if (void* p = pools[index].try_allocate())
+		  return p;
+		// Need to take exclusive lock and replenish pool.
+	      }
+	    // Need to allocate or replenish thread-specific pools using
+	    // upstream resource, so need to hold exclusive lock.
+	  }
+	else // single-threaded
+	  {
+	    if (!_M_tpools) // [[unlikely]]
+	      {
+		exclusive_lock dummy(_M_mx);
+		_M_tpools = _M_alloc_shared_tpools(dummy);
+	      }
+	    return _M_tpools->pools[index].allocate(upstream_resource(), opts);
+	  }
+
 	// N.B. Another thread could call release() now lock is not held.
 	exclusive_lock excl(_M_mx);
 	if (!_M_tpools) // [[unlikely]]
@@ -1206,7 +1237,7 @@ namespace pmr
 	auto pools = _M_thread_specific_pools();
 	if (!pools)
 	  pools = _M_alloc_tpools(excl)->pools;
-	return pools[index].allocate(r, opts);
+	return pools[index].allocate(upstream_resource(), opts);
       }
     exclusive_lock l(_M_mx);
     return _M_impl.allocate(bytes, alignment); // unpooled allocation
@@ -1222,30 +1253,45 @@ namespace pmr
       {
 	const ptrdiff_t index = pool_index(block_size, _M_impl._M_npools);
 	__glibcxx_assert(index != -1);
-	{
-	  shared_lock l(_M_mx);
-	  auto pools = _M_thread_specific_pools();
-	  if (pools)
-	    {
-	      // No need to lock here, no other thread is accessing this pool.
-	      if (pools[index].deallocate(upstream_resource(), p))
-		return;
-	    }
-	  // Block might have come from a different thread's pool,
-	  // take exclusive lock and check every pool.
-	}
+	if (__gthread_active_p())
+	  {
+	    shared_lock l(_M_mx);
+	    if (auto pools = _M_thread_specific_pools())
+	      {
+		// No need to lock here, no other thread is accessing this pool.
+		if (pools[index].deallocate(upstream_resource(), p))
+		  return;
+	      }
+	    // Block might have come from a different thread's pool,
+	    // take exclusive lock and check every pool.
+	  }
+	else // single-threaded
+	  {
+	    __glibcxx_assert(_M_tpools != nullptr);
+	    if (_M_tpools) // [[likely]]
+	      _M_tpools->pools[index].deallocate(upstream_resource(), p);
+	    return;
+	  }
+
 	// TODO store {p, bytes, alignment} somewhere and defer returning
 	// the block to the correct thread-specific pool until we next
 	// take the exclusive lock.
+
 	exclusive_lock excl(_M_mx);
+	auto my_pools = _M_thread_specific_pools();
 	for (_TPools* t = _M_tpools; t != nullptr; t = t->next)
 	  {
-	    if (t->pools) // [[likely]]
-	      {
-		if (t->pools[index].deallocate(upstream_resource(), p))
-		  return;
-	      }
+	    if (t->pools != my_pools)
+	      if (t->pools) // [[likely]]
+		{
+		  if (t->pools[index].deallocate(upstream_resource(), p))
+		    return;
+		}
 	  }
+	// Not necessarily an error to reach here, release() could have been
+	// called on another thread between releasing the shared lock and
+	// acquiring the exclusive lock.
+	return;
       }
     exclusive_lock l(_M_mx);
     _M_impl.deallocate(p, bytes, alignment);
@@ -1257,6 +1303,7 @@ namespace pmr
   -> _TPools*
   {
     __glibcxx_assert(_M_tpools != nullptr);
+    __glibcxx_assert(__gthread_active_p());
     // dump_list(_M_tpools);
     polymorphic_allocator<_TPools> a(upstream_resource());
     _TPools* p = a.allocate(1);

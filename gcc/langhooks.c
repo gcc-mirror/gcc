@@ -160,16 +160,17 @@ lhd_set_decl_assembler_name (tree decl)
 
      Can't use just the variable's own name for a variable whose scope
      is less than the whole compilation.  Concatenate a distinguishing
-     number - we use the DECL_UID.  */
+     number.  */
 
   if (TREE_PUBLIC (decl) || DECL_FILE_SCOPE_P (decl))
     id = targetm.mangle_decl_assembler_name (decl, DECL_NAME (decl));
   else
     {
       const char *name = IDENTIFIER_POINTER (DECL_NAME (decl));
+      static unsigned long num;
       char *label;
 
-      ASM_FORMAT_PRIVATE_NAME (label, name, DECL_UID (decl));
+      ASM_FORMAT_PRIVATE_NAME (label, name, num++);
       id = get_identifier (label);
     }
 
@@ -578,11 +579,22 @@ lhd_expr_to_decl (tree expr, bool *tc ATTRIBUTE_UNUSED, bool *se ATTRIBUTE_UNUSE
    predetermined, OMP_CLAUSE_DEFAULT_UNSPECIFIED otherwise.  */
 
 enum omp_clause_default_kind
-lhd_omp_predetermined_sharing (tree decl ATTRIBUTE_UNUSED)
+lhd_omp_predetermined_sharing (tree decl)
 {
   if (DECL_ARTIFICIAL (decl))
     return OMP_CLAUSE_DEFAULT_SHARED;
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
+}
+
+/* Return sharing kind if OpenMP mapping attribute of DECL is
+   predetermined, OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED otherwise.  */
+
+enum omp_clause_defaultmap_kind
+lhd_omp_predetermined_mapping (tree decl)
+{
+  if (DECL_ARTIFICIAL (decl))
+    return OMP_CLAUSE_DEFAULTMAP_TO;
+  return OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED;
 }
 
 /* Generate code to copy SRC to DST.  */

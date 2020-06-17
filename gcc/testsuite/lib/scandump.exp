@@ -32,6 +32,9 @@ proc dump-suffix { arg } {
 proc dump-base { args } {
     set src [lindex $args 0]
     set dumpbase_suf [lindex $args 1]
+    # The dump basename may vary depending on the output name, on
+    # whether there are multiple sources.  We use -dumpbase "" in
+    # gcc-defs to base compilation dumps only on the source basename.
     set dumpbase $src
     if { [string length $dumpbase_suf] != 0 } {
 	regsub {[.][^.]*$} $src $dumpbase_suf dumpbase
@@ -70,6 +73,7 @@ proc scan-dump { args } {
     set output_file "[glob -nocomplain $dumpbase.[lindex $args 2]]"
     if { $output_file == "" } {
 	verbose -log "$testcase: dump file does not exist"
+	verbose -log "dump file: $dumpbase.$suf"
 	unresolved "$testname"
 	return
     }

@@ -1,5 +1,5 @@
 // Example from P0732.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 namespace std {
   using size_t = decltype(sizeof(1));

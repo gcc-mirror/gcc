@@ -70,7 +70,7 @@ DEF_TUNE (X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY, "sse_partial_reg_dependency",
    upper part undefined.  */
 DEF_TUNE (X86_TUNE_SSE_SPLIT_REGS, "sse_split_regs", m_ATHLON_K8)
 
-/* X86_TUNE_PARTIAL_FLAG_REG_STALL: this flag disables use of of flags
+/* X86_TUNE_PARTIAL_FLAG_REG_STALL: this flag disables use of flags
    set by instructions affecting just some flags (in particular shifts).
    This is because Core2 resolves dependencies on whole flags register
    and such sequences introduce false dependency on previous instruction
@@ -366,15 +366,15 @@ DEF_TUNE (X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL, "sse_unaligned_load_optimal",
 	  | m_INTEL | m_GOLDMONT | m_GOLDMONT_PLUS
 	  | m_TREMONT | m_AMDFAM10 | m_BDVER | m_BTVER | m_ZNVER | m_GENERIC)
 
-/* X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL: Use movups for misaligned stores instead
-   of a sequence loading registers by parts.  */
+/* X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL: Use movups for misaligned stores
+   instead of a sequence loading registers by parts.  */
 DEF_TUNE (X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL, "sse_unaligned_store_optimal",
 	  m_NEHALEM | m_SANDYBRIDGE | m_CORE_AVX2 | m_SILVERMONT | m_KNL | m_KNM
 	  | m_INTEL | m_GOLDMONT | m_GOLDMONT_PLUS
 	  | m_TREMONT | m_BDVER | m_ZNVER | m_GENERIC)
 
-/* Use packed single precision instructions where posisble.  I.e. movups instead
-   of movupd.  */
+/* X86_TUNE_SSE_PACKED_SINGLE_INSN_OPTIMAL: Use packed single
+   precision 128bit instructions instead of double where possible.   */
 DEF_TUNE (X86_TUNE_SSE_PACKED_SINGLE_INSN_OPTIMAL, "sse_packed_single_insn_optimal",
 	  m_BDVER | m_ZNVER)
 

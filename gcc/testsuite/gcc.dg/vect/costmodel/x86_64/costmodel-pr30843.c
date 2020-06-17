@@ -20,6 +20,6 @@ void dacP98FillRGBMap (unsigned char *pBuffer)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "vectorization not profitable" 1 "vect" { target vect_interleave
-} } } */
-
+/* Even with SSE2 we should only generate one IV for the induction.  */
+/* { dg-final { scan-tree-dump-times "# vect_vec_iv" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */

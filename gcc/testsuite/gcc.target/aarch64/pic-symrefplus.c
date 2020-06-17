@@ -1,5 +1,6 @@
 /* { dg-options "-O2 -mcmodel=small -fPIC -fno-builtin" }  */
 /* { dg-do compile } */
+/* { dg-require-effective-target fpic } */
 
 typedef long unsigned int size_t;
 enum

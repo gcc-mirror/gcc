@@ -575,7 +575,7 @@ found_main:;
 		break;
 	      case R_AMDGPU_REL64:
 		/* FIXME
-		   LLD seems to emit REL64 where the the assembler has ABS64.
+		   LLD seems to emit REL64 where the assembler has ABS64.
 		   This is clearly wrong because it's not what the compiler
 		   is expecting.  Let's assume, for now, that it's a bug.
 		   In any case, GCN kernels are always self contained and

@@ -4,6 +4,10 @@
 
 package runtime
 
+import (
+	_ "unsafe" // for go:linkname
+)
+
 // Frames may be used to get function/file/line information for a
 // slice of PC values returned by Callers.
 type Frames struct {
@@ -79,7 +83,7 @@ func (ci *Frames) Next() (frame Frame, more bool) {
 
 	// Subtract 1 from PC to undo the 1 we added in callback in
 	// go-callers.c.
-	function, file, line, _ := funcfileline(pc-1, int32(i))
+	function, file, line, _ := funcfileline(pc-1, int32(i), more)
 	if function == "" && file == "" {
 		return Frame{}, more
 	}
@@ -108,6 +112,33 @@ func (ci *Frames) Next() (frame Frame, more bool) {
 	return frame, more
 }
 
+//go:noescape
+// pcInlineCallers is written in C.
+func pcInlineCallers(pc uintptr, locbuf *location, max int32) int32
+
+// runtime_expandFinalInlineFrame expands the final pc in stk to include all
+// "callers" if pc is inline.
+//
+//go:linkname runtime_expandFinalInlineFrame runtime..z2fpprof.runtime_expandFinalInlineFrame
+func runtime_expandFinalInlineFrame(stk []uintptr) []uintptr {
+	if len(stk) == 0 {
+		return stk
+	}
+	pc := stk[len(stk)-1]
+	tracepc := pc - 1
+
+	var locbuf [_TracebackMaxFrames]location
+	n := pcInlineCallers(tracepc, &locbuf[0], int32(len(locbuf)))
+
+	// Returning the same PC several times causes Frame.Next to do
+	// the right thing.
+	for i := int32(1); i < n; i++ {
+		stk = append(stk, pc)
+	}
+
+	return stk
+}
+
 // NOTE: Func does not expose the actual unexported fields, because we return *Func
 // values to users, and we want to keep them from being able to overwrite the data
 // with (say) *f = Func{}.
@@ -127,7 +158,7 @@ type Func struct {
 // the a *Func describing the innermost function, but with an entry
 // of the outermost function.
 func FuncForPC(pc uintptr) *Func {
-	name, _, _, _ := funcfileline(pc, -1)
+	name, _, _, _ := funcfileline(pc, -1, false)
 	if name == "" {
 		return nil
 	}
@@ -156,7 +187,7 @@ func (f *Func) Entry() uintptr {
 // The result will not be accurate if pc is not a program
 // counter within f.
 func (f *Func) FileLine(pc uintptr) (file string, line int) {
-	_, file, line, _ = funcfileline(pc, -1)
+	_, file, line, _ = funcfileline(pc, -1, false)
 	return file, line
 }
 
@@ -230,5 +261,5 @@ func demangleSymbol(s string) string {
 }
 
 // implemented in go-caller.c
-func funcfileline(uintptr, int32) (string, string, int, int)
+func funcfileline(uintptr, int32, bool) (string, string, int, int)
 func funcentry(uintptr) uintptr

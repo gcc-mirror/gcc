@@ -696,6 +696,10 @@ gfc_match_data (void)
 	  /* F2008:C567 (R536) A data-i-do-object or a variable that appears
 	     as a data-stmt-object shall not be an object designator in which
 	     a pointer appears other than as the entire rightmost part-ref.  */
+	  if (!e->ref && e->ts.type == BT_DERIVED
+	      && e->symtree->n.sym->attr.pointer)
+	    goto partref;
+
 	  ref = e->ref;
 	  if (e->symtree->n.sym->ts.type == BT_DERIVED
 	      && e->symtree->n.sym->attr.pointer
@@ -715,6 +719,22 @@ gfc_match_data (void)
 
       new_data->next = gfc_current_ns->data;
       gfc_current_ns->data = new_data;
+
+      /* A BOZ literal constant cannot appear in a structure constructor.
+	 Check for that here for a data statement value.  */
+      if (new_data->value->expr->ts.type == BT_DERIVED
+	  && new_data->value->expr->value.constructor)
+	{
+	  gfc_constructor *c;
+	  c = gfc_constructor_first (new_data->value->expr->value.constructor);
+	  for (; c; c = gfc_constructor_next (c))
+	    if (c->expr->ts.type == BT_BOZ)
+	      {
+		gfc_error ("BOZ literal constant at %L cannot appear in a "
+			   "structure constructor", &c->expr->where);
+		return MATCH_ERROR;
+	      }
+	}
 
       if (gfc_match_eos () == MATCH_YES)
 	break;
@@ -928,8 +948,6 @@ done:
 static bool
 merge_array_spec (gfc_array_spec *from, gfc_array_spec *to, bool copy)
 {
-  int i, j;
-
   if ((from->type == AS_ASSUMED_RANK && to->corank)
       || (to->type == AS_ASSUMED_RANK && from->corank))
     {
@@ -944,18 +962,18 @@ merge_array_spec (gfc_array_spec *from, gfc_array_spec *to, bool copy)
       to->cray_pointee = from->cray_pointee;
       to->cp_was_assumed = from->cp_was_assumed;
 
-      for (i = 0; i < to->corank; i++)
+      for (int i = to->corank - 1; i >= 0; i--)
 	{
 	  /* Do not exceed the limits on lower[] and upper[].  gfortran
 	     cleans up elsewhere.  */
-	  j = from->rank + i;
+	  int j = from->rank + i;
 	  if (j >= GFC_MAX_DIMENSIONS)
 	    break;
 
 	  to->lower[j] = to->lower[i];
 	  to->upper[j] = to->upper[i];
 	}
-      for (i = 0; i < from->rank; i++)
+      for (int i = 0; i < from->rank; i++)
 	{
 	  if (copy)
 	    {
@@ -974,23 +992,24 @@ merge_array_spec (gfc_array_spec *from, gfc_array_spec *to, bool copy)
       to->corank = from->corank;
       to->cotype = from->cotype;
 
-      for (i = 0; i < from->corank; i++)
+      for (int i = 0; i < from->corank; i++)
 	{
 	  /* Do not exceed the limits on lower[] and upper[].  gfortran
 	     cleans up elsewhere.  */
-	  j = to->rank + i;
+	  int k = from->rank + i;
+	  int j = to->rank + i;
 	  if (j >= GFC_MAX_DIMENSIONS)
 	    break;
 
 	  if (copy)
 	    {
-	      to->lower[j] = gfc_copy_expr (from->lower[i]);
-	      to->upper[j] = gfc_copy_expr (from->upper[i]);
+	      to->lower[j] = gfc_copy_expr (from->lower[k]);
+	      to->upper[j] = gfc_copy_expr (from->upper[k]);
 	    }
 	  else
 	    {
-	      to->lower[j] = from->lower[i];
-	      to->upper[j] = from->upper[i];
+	      to->lower[j] = from->lower[k];
+	      to->upper[j] = from->upper[k];
 	    }
 	}
     }
@@ -1057,6 +1076,11 @@ char_len_param_value (gfc_expr **expr, bool *deferred)
 
   if (!gfc_expr_check_typed (*expr, gfc_current_ns, false))
     return MATCH_ERROR;
+
+  /* If gfortran gets an EXPR_OP, try to simplifiy it.  This catches things
+     like CHARACTER(([1])).   */
+  if ((*expr)->expr_type == EXPR_OP)
+    gfc_simplify_expr (*expr, 1);
 
   if ((*expr)->expr_type == EXPR_FUNCTION)
     {
@@ -2583,6 +2607,14 @@ variable_decl (int elem)
 	      gfc_free_expr (e);
 	    }
 
+	  if (not_constant && e->ts.type != BT_INTEGER)
+	    {
+	      gfc_error ("Explicit array shape at %C must be constant of "
+			 "INTEGER type and not %s type",
+			 gfc_basic_typename (e->ts.type));
+	      m = MATCH_ERROR;
+	      goto cleanup;
+	    }
 	  if (not_constant)
 	    {
 	      gfc_error ("Explicit shaped array with nonconstant bounds at %C");
@@ -2885,6 +2917,15 @@ variable_decl (int elem)
     }
 
   if (gfc_current_state () == COMP_DERIVED
+      && initializer && initializer->ts.type == BT_HOLLERITH)
+    {
+      gfc_error ("Initialization of structure component with a HOLLERITH "
+		 "constant at %L is not allowed", &initializer->where);
+      m = MATCH_ERROR;
+      goto cleanup;
+    }
+
+  if (gfc_current_state () == COMP_DERIVED
       && gfc_current_block ()->attr.pdt_template)
     {
       gfc_symbol *param;
@@ -2914,7 +2955,16 @@ variable_decl (int elem)
 	  goto cleanup;
 	}
       else if (param && initializer)
-	param->value = gfc_copy_expr (initializer);
+	{
+	  if (initializer->ts.type == BT_BOZ)
+	    {
+	      gfc_error ("BOZ literal constant at %L cannot appear as an "
+			 "initializer", &initializer->where);
+	      m = MATCH_ERROR;
+      	      goto cleanup;
+	    }
+	  param->value = gfc_copy_expr (initializer);
+	}
     }
 
   /* Before adding a possible initilizer, do a simple check for compatibility
@@ -3699,8 +3749,9 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
       if (kind_expr)
 	{
 	  /* Try simplification even for LEN expressions.  */
+	  bool ok;
 	  gfc_resolve_expr (kind_expr);
-	  gfc_simplify_expr (kind_expr, 1);
+	  ok = gfc_simplify_expr (kind_expr, 1);
 	  /* Variable expressions seem to default to BT_PROCEDURE.
 	     TODO find out why this is and fix it.  */
 	  if (kind_expr->ts.type != BT_INTEGER
@@ -3709,6 +3760,12 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	      gfc_error ("The parameter expression at %C must be of "
 		         "INTEGER type and not %s type",
 			 gfc_basic_typename (kind_expr->ts.type));
+	      goto error_return;
+	    }
+	  if (kind_expr->ts.type == BT_INTEGER && !ok)
+	    {
+	      gfc_error ("The parameter expression at %C does not "
+			 "simplify to an INTEGER constant");
 	      goto error_return;
 	    }
 
@@ -4037,7 +4094,8 @@ match_byte_typespec (gfc_typespec *ts)
 match
 gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 {
-  char name[GFC_MAX_SYMBOL_LEN + 1];
+  /* Provide sufficient space to hold "pdtsymbol".  */
+  char name[GFC_MAX_SYMBOL_LEN + 1 + 3];
   gfc_symbol *sym, *dt_sym;
   match m;
   char c;
@@ -4227,7 +4285,11 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 	    return m;
 	  gcc_assert (!sym->attr.pdt_template && sym->attr.pdt_type);
 	  ts->u.derived = sym;
-	  strcpy (name, gfc_dt_lower_string (sym->name));
+	  const char* lower = gfc_dt_lower_string (sym->name);
+	  size_t len = strnlen (lower, sizeof (name));
+	  gcc_assert (len < sizeof (name));
+	  memcpy (name, lower, len);
+	  name[len] = '\0';
 	}
 
       if (sym && sym->attr.flavor == FL_STRUCT)
@@ -5384,15 +5446,19 @@ match_attr_spec (void)
       if (d == DECL_STATIC && seen[DECL_SAVE])
 	continue;
 
-      if (gfc_current_state () == COMP_DERIVED
+      if (gfc_comp_struct (gfc_current_state ())
 	  && d != DECL_DIMENSION && d != DECL_CODIMENSION
 	  && d != DECL_POINTER   && d != DECL_PRIVATE
 	  && d != DECL_PUBLIC && d != DECL_CONTIGUOUS && d != DECL_NONE)
 	{
+	  bool is_derived = gfc_current_state () == COMP_DERIVED;
 	  if (d == DECL_ALLOCATABLE)
 	    {
-	      if (!gfc_notify_std (GFC_STD_F2003, "ALLOCATABLE "
-				   "attribute at %C in a TYPE definition"))
+	      if (!gfc_notify_std (GFC_STD_F2003, is_derived
+				   ? G_("ALLOCATABLE attribute at %C in a "
+					"TYPE definition")
+				   : G_("ALLOCATABLE attribute at %C in a "
+					"STRUCTURE definition")))
 		{
 		  m = MATCH_ERROR;
 		  goto cleanup;
@@ -5400,8 +5466,11 @@ match_attr_spec (void)
 	    }
 	  else if (d == DECL_KIND)
 	    {
-	      if (!gfc_notify_std (GFC_STD_F2003, "KIND "
-				   "attribute at %C in a TYPE definition"))
+	      if (!gfc_notify_std (GFC_STD_F2003, is_derived
+				   ? G_("KIND attribute at %C in a "
+					"TYPE definition")
+				   : G_("KIND attribute at %C in a "
+					"STRUCTURE definition")))
 		{
 		  m = MATCH_ERROR;
 		  goto cleanup;
@@ -5424,8 +5493,11 @@ match_attr_spec (void)
 	    }
 	  else if (d == DECL_LEN)
 	    {
-	      if (!gfc_notify_std (GFC_STD_F2003, "LEN "
-				   "attribute at %C in a TYPE definition"))
+	      if (!gfc_notify_std (GFC_STD_F2003, is_derived
+				   ? G_("LEN attribute at %C in a "
+					"TYPE definition")
+				   : G_("LEN attribute at %C in a "
+					"STRUCTURE definition")))
 		{
 		  m = MATCH_ERROR;
 		  goto cleanup;
@@ -5448,8 +5520,10 @@ match_attr_spec (void)
 	    }
 	  else
 	    {
-	      gfc_error ("Attribute at %L is not allowed in a TYPE definition",
-			 &seen_at[d]);
+	      gfc_error (is_derived ? G_("Attribute at %L is not allowed in a "
+					 "TYPE definition")
+				    : G_("Attribute at %L is not allowed in a "
+					 "STRUCTURE definition"), &seen_at[d]);
 	      m = MATCH_ERROR;
 	      goto cleanup;
 	    }
@@ -8999,7 +9073,7 @@ access_attr_decl (gfc_statement st)
 	  else
 	    {
 	      gfc_error ("Access specification of the .%s. operator at %C "
-			 "has already been specified", sym->name);
+			 "has already been specified", uop->name);
 	      goto done;
 	    }
 
@@ -9675,13 +9749,20 @@ gfc_match_submod_proc (void)
   if (get_proc_name (name, &sym, false))
     return MATCH_ERROR;
 
-  /* Make sure that the result field is appropriately filled, even though
-     the result symbol will be replaced later on.  */
+  /* Make sure that the result field is appropriately filled.  */
   if (sym->tlink && sym->tlink->attr.function)
     {
-      if (sym->tlink->result
-	  && sym->tlink->result != sym->tlink)
-	sym->result= sym->tlink->result;
+      if (sym->tlink->result && sym->tlink->result != sym->tlink)
+	{
+	  sym->result = sym->tlink->result;
+	  if (!sym->result->attr.use_assoc)
+	    {
+	      gfc_symtree *st = gfc_new_symtree (&gfc_current_ns->sym_root,
+						 sym->result->name);
+	      st->n.sym = sym->result;
+	      sym->result->refs++;
+	    }
+	}
       else
 	sym->result = sym;
     }

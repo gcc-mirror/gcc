@@ -128,7 +128,7 @@ echo ${rev} > VERSION
 (cd ${NEWDIR}/src && find . -name '*.go' -print) | while read f; do
   skip=false
   case "$f" in
-  ./cmd/buildid/* | ./cmd/cgo/* | ./cmd/go/* | ./cmd/gofmt/* | ./cmd/testjson/* | ./cmd/vet/* | ./cmd/internal/browser/* | ./cmd/internal/buildid/* | ./cmd/internal/edit/* | ./cmd/internal/objabi/* | ./cmd/internal/testj2on/* | ./cmd/internal/sys/* | ./cmd/vendor/golang.org/x/tools/* )
+  ./cmd/buildid/* | ./cmd/cgo/* | ./cmd/go/* | ./cmd/gofmt/* | ./cmd/testjson/* | ./cmd/vet/* | ./cmd/internal/browser/* | ./cmd/internal/buildid/* | ./cmd/internal/edit/* | ./cmd/internal/objabi/* | ./cmd/internal/testj2on/* | ./cmd/internal/sys/* | ./cmd/vendor/golang.org/x/tools/* | ./cmd/vendor/golang.org/x/mod/* | ./cmd/vendor/golang.org/x/xerrors/* | ./cmd/vendor/golang.org/x/crypto/ed25519)
     ;;
   ./cmd/*)
     skip=true
@@ -150,7 +150,7 @@ done
 (cd ${NEWDIR}/src && find . -name testdata -print) | while read d; do
   skip=false
   case "$d" in
-  ./cmd/buildid/* | ./cmd/cgo/* | ./cmd/go/* | ./cmd/gofmt/* | ./cmd/testjson/* | ./cmd/vet/* | ./cmd/internal/browser/* | ./cmd/internal/buildid/* | ./cmd/internal/edit/* | ./cmd/internal/objabi/* | ./cmd/internal/testj2on/* | ./cmd/internal/sys/* | ./cmd/vendor/golang.org/x/tools/* )
+  ./cmd/buildid/* | ./cmd/cgo/* | ./cmd/go/* | ./cmd/gofmt/* | ./cmd/testjson/* | ./cmd/vet/* | ./cmd/internal/browser/* | ./cmd/internal/buildid/* | ./cmd/internal/diff/* | ./cmd/internal/edit/* | ./cmd/internal/objabi/* | ./cmd/internal/testj2on/* | ./cmd/internal/sys/* | ./cmd/vendor/golang.org/x/tools/*)
     ;;
   ./cmd/*)
     skip=true
@@ -165,7 +165,7 @@ done
 
   oldtd=${OLDDIR}/src/$d
   newtd=${NEWDIR}/src/$d
-  libgofile=go/`echo $d | sed -e 's|cmd/vendor/|/|' | sed -e 's|/vendor/|/|'`
+  libgotd=go/`echo $d | sed -e 's|cmd/vendor/|/|' | sed -e 's|/vendor/|/|'`
   if ! test -d ${oldtd}; then
     echo "merge.sh: $d: NEWDIR"
     continue

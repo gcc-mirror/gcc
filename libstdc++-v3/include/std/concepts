@@ -30,7 +30,7 @@
 #ifndef _GLIBCXX_CONCEPTS
 #define _GLIBCXX_CONCEPTS 1
 
-#if __cplusplus > 201703L && __cpp_concepts
+#if __cplusplus > 201703L && __cpp_concepts >= 201907L
 
 #pragma GCC system_header
 
@@ -47,7 +47,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#define __cpp_lib_concepts 201806L
+#define __cpp_lib_concepts 202002L
 
   // [concepts.lang], language-related concepts
 
@@ -251,34 +251,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     concept copyable = copy_constructible<_Tp> && movable<_Tp>
-      && assignable_from<_Tp&, const _Tp&>;
+      && assignable_from<_Tp&, _Tp&> && assignable_from<_Tp&, const _Tp&>
+      && assignable_from<_Tp&, const _Tp>;
 
   template<typename _Tp>
     concept semiregular = copyable<_Tp> && default_initializable<_Tp>;
 
   // [concepts.compare], comparison concepts
 
-  /// [concept.boolean], concept boolean
-  template<typename _Bp>
-    concept boolean
-      = movable<remove_cvref_t<_Bp>>
-      && requires(__detail::__cref<_Bp> __b1, __detail::__cref<_Bp> __b2,
-		  const bool __a) {
-	{ __b1 } -> convertible_to<bool>;
-	{ !__b1 } -> convertible_to<bool>;
-	{ __b1 && __b2 } -> same_as<bool>;
-	{ __b1 && __a  } -> same_as<bool>;
-	{ __a  && __b2 } -> same_as<bool>;
-	{ __b1 || __b2 } -> same_as<bool>;
-	{ __b1 || __a  } -> same_as<bool>;
-	{ __a  || __b2 } -> same_as<bool>;
-	{ __b1 == __b2 } -> convertible_to<bool>;
-	{ __b1 == __a  } -> convertible_to<bool>;
-	{ __a  == __b2 } -> convertible_to<bool>;
-	{ __b1 != __b2 } -> convertible_to<bool>;
-	{ __b1 != __a  } -> convertible_to<bool>;
-	{ __a  != __b2 } -> convertible_to<bool>;
-      };
+  // [concept.booleantestable], Boolean testability
+  namespace __detail
+  {
+    template<typename _Tp>
+      concept __boolean_testable_impl = convertible_to<_Tp, bool>;
+
+    template<typename _Tp>
+      concept __boolean_testable
+	= __boolean_testable_impl<_Tp>
+	  && requires(_Tp&& __t)
+	  { { !static_cast<_Tp&&>(__t) } -> __boolean_testable_impl; };
+  } // namespace __detail
 
   // [concept.equalitycomparable], concept equality_comparable
 
@@ -287,10 +279,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Tp, typename _Up>
       concept __weakly_eq_cmp_with
 	= requires(__detail::__cref<_Tp> __t, __detail::__cref<_Up> __u) {
-	  { __t == __u } -> boolean;
-	  { __t != __u } -> boolean;
-	  { __u == __t } -> boolean;
-	  { __u != __t } -> boolean;
+	  { __t == __u } -> __boolean_testable;
+	  { __t != __u } -> __boolean_testable;
+	  { __u == __t } -> __boolean_testable;
+	  { __u != __t } -> __boolean_testable;
 	};
   } // namespace __detail
 
@@ -305,34 +297,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						__detail::__cref<_Up>>>
       && __detail::__weakly_eq_cmp_with<_Tp, _Up>;
 
+  namespace __detail
+  {
+    template<typename _Tp, typename _Up>
+      concept __partially_ordered_with
+	= requires(const remove_reference_t<_Tp>& __t,
+		   const remove_reference_t<_Up>& __u) {
+	  { __t <  __u } -> __boolean_testable;
+	  { __t >  __u } -> __boolean_testable;
+	  { __t <= __u } -> __boolean_testable;
+	  { __t >= __u } -> __boolean_testable;
+	  { __u <  __t } -> __boolean_testable;
+	  { __u >  __t } -> __boolean_testable;
+	  { __u <= __t } -> __boolean_testable;
+	  { __u >= __t } -> __boolean_testable;
+	};
+  } // namespace __detail
+
   // [concept.totallyordered], concept totally_ordered
   template<typename _Tp>
     concept totally_ordered
       = equality_comparable<_Tp>
-      && requires(__detail::__cref<_Tp> __a, __detail::__cref<_Tp> __b) {
-	{ __a <  __b } -> boolean;
-	{ __a >  __b } -> boolean;
-	{ __a <= __b } -> boolean;
-	{ __a >= __b } -> boolean;
-      };
+      && __detail::__partially_ordered_with<_Tp, _Tp>;
 
   template<typename _Tp, typename _Up>
     concept totally_ordered_with
       = totally_ordered<_Tp> && totally_ordered<_Up>
-      && common_reference_with<__detail::__cref<_Tp>, __detail::__cref<_Up>>
+      && equality_comparable_with<_Tp, _Up>
       && totally_ordered<common_reference_t<__detail::__cref<_Tp>,
 					    __detail::__cref<_Up>>>
-      && equality_comparable_with<_Tp, _Up>
-      && requires(__detail::__cref<_Tp> __t, __detail::__cref<_Up> __u) {
-	{ __t <  __u } -> boolean;
-	{ __t >  __u } -> boolean;
-	{ __t <= __u } -> boolean;
-	{ __t >= __u } -> boolean;
-	{ __u <  __t } -> boolean;
-	{ __u >  __t } -> boolean;
-	{ __u <= __t } -> boolean;
-	{ __u >= __t } -> boolean;
-      };
+      && __detail::__partially_ordered_with<_Tp, _Up>;
 
   template<typename _Tp>
     concept regular = semiregular<_Tp> && equality_comparable<_Tp>;
@@ -350,7 +344,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// [concept.predicate], concept predicate
   template<typename _Fn, typename... _Args>
     concept predicate = regular_invocable<_Fn, _Args...>
-      && boolean<invoke_result_t<_Fn, _Args...>>;
+      && __detail::__boolean_testable<invoke_result_t<_Fn, _Args...>>;
 
   /// [concept.relation], concept relation
   template<typename _Rel, typename _Tp, typename _Up>

@@ -195,6 +195,38 @@ else version (X86)
     private alias haveSSE = core.cpuid.sse;
 }
 
+version (D_SoftFloat)
+{
+    // Some soft float implementations may support IEEE floating flags.
+    // The implementation here supports hardware flags only and is so currently
+    // only available for supported targets.
+}
+else version (X86_Any)   version = IeeeFlagsSupport;
+else version (PPC_Any)   version = IeeeFlagsSupport;
+else version (RISCV_Any) version = IeeeFlagsSupport;
+else version (MIPS_Any)  version = IeeeFlagsSupport;
+else version (ARM_Any)   version = IeeeFlagsSupport;
+
+// Struct FloatingPointControl is only available if hardware FP units are available.
+version (D_HardFloat)
+{
+    // FloatingPointControl.clearExceptions() depends on version IeeeFlagsSupport
+    version (IeeeFlagsSupport) version = FloatingPointControlSupport;
+}
+
+version (GNU)
+{
+    // The compiler can unexpectedly rearrange floating point operations and
+    // access to the floating point status flags when optimizing. This means
+    // ieeeFlags tests cannot be reliably checked in optimized code.
+    // See https://github.com/ldc-developers/ldc/issues/888
+}
+else
+{
+    version = IeeeFlagsUnittest;
+    version = FloatingPointControlUnittest;
+}
+
 version (unittest)
 {
     import core.stdc.stdio; // : sprintf;
@@ -1817,19 +1849,9 @@ real exp(real x) @trusted pure nothrow @nogc
         if (isNaN(x))
             return x;
         if (x > OF)
-        {
-            if (__ctfe)
-                return real.infinity;
-            else
-                return real.max * copysign(real.max, real.infinity);
-        }
+            return real.infinity;
         if (x < UF)
-        {
-            if (__ctfe)
-                return 0.0;
-            else
-                return real.min_normal * copysign(real.min_normal, 0.0);
-        }
+            return 0.0;
 
         // Express: e^^x = e^^g * 2^^n
         //   = e^^g * e^^(n * LOG2E)
@@ -2102,12 +2124,7 @@ L_largenegative:
         // Special cases. Raises an overflow flag, except in the case
         // for CTFE, where there are no hardware controls.
         if (x > OF)
-        {
-            if (__ctfe)
-                return real.infinity;
-            else
-                return real.max * copysign(real.max, real.infinity);
-        }
+            return real.infinity;
         if (x == 0.0)
             return x;
         if (x < UF)
@@ -2402,19 +2419,9 @@ private real exp2Impl(real x) @nogc @trusted pure nothrow
     if (isNaN(x))
         return x;
     if (x > OF)
-    {
-        if (__ctfe)
-            return real.infinity;
-        else
-            return real.max * copysign(real.max, real.infinity);
-    }
+        return real.infinity;
     if (x < UF)
-    {
-        if (__ctfe)
-            return 0.0;
-        else
-            return real.min_normal * copysign(real.min_normal, 0.0);
-    }
+        return 0.0;
 
     // Separate into integer and fractional parts.
     int n = cast(int) floor(x + 0.5);
@@ -2453,10 +2460,13 @@ private real exp2Impl(real x) @nogc @trusted pure nothrow
 
 @system unittest
 {
-    FloatingPointControl ctrl;
-    if (FloatingPointControl.hasExceptionTraps)
-        ctrl.disableExceptions(FloatingPointControl.allExceptions);
-    ctrl.rounding = FloatingPointControl.roundToNearest;
+    version (FloatingPointControlSupport)
+    {
+        FloatingPointControl ctrl;
+        if (FloatingPointControl.hasExceptionTraps)
+            ctrl.disableExceptions(FloatingPointControl.allExceptions);
+        ctrl.rounding = FloatingPointControl.roundToNearest;
+    }
 
     static if (real.mant_dig == 113)
     {
@@ -2519,49 +2529,42 @@ private real exp2Impl(real x) @nogc @trusted pure nothrow
 
     const minEqualDecimalDigits = real.dig - 3;
     real x;
-    IeeeFlags f;
+    version (IeeeFlagsSupport) IeeeFlags f;
     foreach (ref pair; exptestpoints)
     {
-        resetIeeeFlags();
+        version (IeeeFlagsSupport) resetIeeeFlags();
         x = exp(pair[0]);
-        f = ieeeFlags;
         assert(equalsDigit(x, pair[1], minEqualDecimalDigits));
-
-        version (IeeeFlagsSupport)
-        {
-            // Check the overflow bit
-            if (x == real.infinity)
-            {
-                // don't care about the overflow bit if input was inf
-                // (e.g., the LLVM intrinsic doesn't set it on Linux x86_64)
-                assert(pair[0] == real.infinity || f.overflow);
-            }
-            else
-                assert(!f.overflow);
-            // Check the underflow bit
-            assert(f.underflow == (fabs(x) < real.min_normal));
-            // Invalid and div by zero shouldn't be affected.
-            assert(!f.invalid);
-            assert(!f.divByZero);
-        }
     }
+
     // Ideally, exp(0) would not set the inexact flag.
     // Unfortunately, fldl2e sets it!
     // So it's not realistic to avoid setting it.
     assert(exp(0.0L) == 1.0);
 
     // NaN propagation. Doesn't set flags, bcos was already NaN.
-    resetIeeeFlags();
-    x = exp(real.nan);
-    f = ieeeFlags;
-    assert(isIdentical(abs(x), real.nan));
-    assert(f.flags == 0);
+    version (IeeeFlagsSupport)
+    {
+        resetIeeeFlags();
+        x = exp(real.nan);
+        f = ieeeFlags;
+        assert(isIdentical(abs(x), real.nan));
+        assert(f.flags == 0);
 
-    resetIeeeFlags();
-    x = exp(-real.nan);
-    f = ieeeFlags;
-    assert(isIdentical(abs(x), real.nan));
-    assert(f.flags == 0);
+        resetIeeeFlags();
+        x = exp(-real.nan);
+        f = ieeeFlags;
+        assert(isIdentical(abs(x), real.nan));
+        assert(f.flags == 0);
+    }
+    else
+    {
+        x = exp(real.nan);
+        assert(isIdentical(abs(x), real.nan));
+
+        x = exp(-real.nan);
+        assert(isIdentical(abs(x), real.nan));
+    }
 
     x = exp(NaN(0x123));
     assert(isIdentical(x, NaN(0x123)));
@@ -4678,6 +4681,10 @@ real remquo(real x, real y, out int n) @trusted nothrow @nogc  /// ditto
         assert(0, "remquo not implemented");
 }
 
+
+version (IeeeFlagsSupport)
+{
+
 /** IEEE exception status flags ('sticky bits')
 
  These flags indicate that an exceptional floating-point condition has occurred.
@@ -4760,7 +4767,7 @@ private:
                     uint result = void;
                     asm pure nothrow @nogc
                     {
-                        "vmrs %0, FPSCR; and %0, %0, #0x1F;" : "=r" result;
+                        "vmrs %0, FPSCR; and %0, %0, #0x1F;" : "=r" (result);
                     }
                     return result;
                 }
@@ -4774,7 +4781,7 @@ private:
                     uint result = void;
                     asm pure nothrow @nogc
                     {
-                        "frflags %0" : "=r" result;
+                        "frflags %0" : "=r" (result);
                     }
                     return result;
                 }
@@ -4813,13 +4820,14 @@ private:
         else
             assert(0, "Not yet supported");
     }
+
     static void resetIeeeFlags() @nogc
     {
         version (GNU)
         {
             version (X86_Any)
             {
-                asm pure nothrow @nogc
+                asm nothrow @nogc
                 {
                     "fnclex";
                 }
@@ -4828,12 +4836,12 @@ private:
                 if (haveSSE)
                 {
                     uint mxcsr;
-                    asm pure nothrow @nogc
+                    asm nothrow @nogc
                     {
                         "stmxcsr %0" : "=m" (mxcsr);
                     }
                     mxcsr &= ~EXCEPTIONS_MASK;
-                    asm pure nothrow @nogc
+                    asm nothrow @nogc
                     {
                         "ldmxcsr %0" : : "m" (mxcsr);
                     }
@@ -4847,7 +4855,7 @@ private:
                 {
                     uint old = FloatingPointControl.getControlState();
                     old &= ~0b11111; // http://infocenter.arm.com/help/topic/com.arm.doc.ddi0408i/Chdfifdc.html
-                    asm pure nothrow @nogc
+                    asm nothrow @nogc
                     {
                         "vmsr FPSCR, %0" : : "r" (old);
                     }
@@ -4860,9 +4868,9 @@ private:
                 else
                 {
                     uint newValues = 0x0;
-                    asm pure nothrow @nogc
+                    asm nothrow @nogc
                     {
-                        "fsflags %0" : : "r" newValues;
+                        "fsflags %0" : : "r" (newValues);
                     }
                 }
             }
@@ -4872,7 +4880,7 @@ private:
         else
         version (InlineAsm_X86_Any)
         {
-            asm pure nothrow @nogc
+            asm nothrow @nogc
             {
                 fnclex;
             }
@@ -4935,27 +4943,25 @@ public:
 }
 
 ///
-version (GNU)
-{
-    // ieeeFlags test disabled, see LDC Issue #888.
-}
-else
+version (IeeeFlagsUnittest)
 @system unittest
 {
     static void func() {
         int a = 10 * 10;
     }
-
-    real a=3.5;
+    pragma(inline, false) static void blockopt(ref real x) {}
+    real a = 3.5;
     // Set all the flags to zero
     resetIeeeFlags();
     assert(!ieeeFlags.divByZero);
+    blockopt(a); // avoid constant propagation by the optimizer
     // Perform a division by zero.
-    a/=0.0L;
+    a /= 0.0L;
     assert(a == real.infinity);
     assert(ieeeFlags.divByZero);
+    blockopt(a); // avoid constant propagation by the optimizer
     // Create a NaN
-    a*=0.0L;
+    a *= 0.0L;
     assert(ieeeFlags.invalid);
     assert(isNaN(a));
 
@@ -4966,11 +4972,7 @@ else
     assert(ieeeFlags == f);
 }
 
-version (GNU)
-{
-    // ieeeFlags test disabled, see LDC Issue #888.
-}
-else
+version (IeeeFlagsUnittest)
 @system unittest
 {
     import std.meta : AliasSeq;
@@ -5017,27 +5019,6 @@ else
     }
 }
 
-version (X86_Any)
-{
-    version = IeeeFlagsSupport;
-}
-else version (PPC_Any)
-{
-    version = IeeeFlagsSupport;
-}
-else version (RISCV_Any)
-{
-    version = IeeeFlagsSupport;
-}
-else version (MIPS_Any)
-{
-    version = IeeeFlagsSupport;
-}
-else version (ARM_Any)
-{
-    version = IeeeFlagsSupport;
-}
-
 /// Set all of the floating-point status flags to false.
 void resetIeeeFlags() @nogc { IeeeFlags.resetIeeeFlags(); }
 
@@ -5046,6 +5027,12 @@ void resetIeeeFlags() @nogc { IeeeFlags.resetIeeeFlags(); }
 {
    return IeeeFlags(IeeeFlags.getIeeeFlags());
 }
+
+} // IeeeFlagsSupport
+
+
+version (FloatingPointControlSupport)
+{
 
 /** Control the Floating point hardware
 
@@ -5418,7 +5405,10 @@ private:
     // Clear all pending exceptions
     static void clearExceptions() @nogc
     {
-        resetIeeeFlags();
+        version (IeeeFlagsSupport)
+            resetIeeeFlags();
+        else
+            static assert(false, "Not implemented for this architecture");
     }
 
     // Read from the control register
@@ -5431,7 +5421,7 @@ private:
                 ControlState cont;
                 asm pure nothrow @nogc
                 {
-                    "fstcw %0" : "=m" cont;
+                    "fstcw %0" : "=m" (cont);
                 }
                 return cont;
             }
@@ -5440,7 +5430,7 @@ private:
                 ControlState cont;
                 asm pure nothrow @nogc
                 {
-                    "mrs %0, FPCR;" : "=r" cont;
+                    "mrs %0, FPCR;" : "=r" (cont);
                 }
                 return cont;
             }
@@ -5453,7 +5443,7 @@ private:
                 {
                     asm pure nothrow @nogc
                     {
-                        "vmrs %0, FPSCR" : "=r" cont;
+                        "vmrs %0, FPSCR" : "=r" (cont);
                     }
                 }
                 return cont;
@@ -5467,7 +5457,7 @@ private:
                     ControlState cont;
                     asm pure nothrow @nogc
                     {
-                        "frcsr %0" : "=r" cont;
+                        "frcsr %0" : "=r" (cont);
                     }
                     return cont;
                 }
@@ -5479,7 +5469,7 @@ private:
         version (D_InlineAsm_X86)
         {
             short cont;
-            asm nothrow @nogc
+            asm pure nothrow @nogc
             {
                 xor EAX, EAX;
                 fstcw cont;
@@ -5490,7 +5480,7 @@ private:
         version (D_InlineAsm_X86_64)
         {
             short cont;
-            asm nothrow @nogc
+            asm pure nothrow @nogc
             {
                 xor RAX, RAX;
                 fstcw cont;
@@ -5508,18 +5498,18 @@ private:
         {
             version (X86_Any)
             {
-                asm pure nothrow @nogc
+                asm nothrow @nogc
                 {
-                    "fclex; fldcw %0" : : "m" newState;
+                    "fclex; fldcw %0" : : "m" (newState);
                 }
 
                 // Also update MXCSR, SSE's control register.
                 if (haveSSE)
                 {
                     uint mxcsr;
-                    asm pure nothrow @nogc
+                    asm nothrow @nogc
                     {
-                        "stmxcsr %0" : "=m" mxcsr;
+                        "stmxcsr %0" : "=m" (mxcsr);
                     }
 
                     /* In the FPU control register, rounding mode is in bits 10 and
@@ -5532,15 +5522,15 @@ private:
                     mxcsr &= ~(allExceptions << 7);            // delete old masks
                     mxcsr |= (newState & allExceptions) << 7;  // write new exception masks
 
-                    asm pure nothrow @nogc
+                    asm nothrow @nogc
                     {
-                        "ldmxcsr %0" : : "m" mxcsr;
+                        "ldmxcsr %0" : : "m" (mxcsr);
                     }
                 }
             }
             else version (AArch64)
             {
-                asm pure nothrow @nogc
+                asm nothrow @nogc
                 {
                     "msr FPCR, %0;" : : "r" (newState);
                 }
@@ -5551,7 +5541,7 @@ private:
                    return;
                 else
                 {
-                    asm pure nothrow @nogc
+                    asm nothrow @nogc
                     {
                         "vmsr FPSCR, %0" : : "r" (newState);
                     }
@@ -5563,7 +5553,7 @@ private:
                     return;
                 else
                 {
-                    asm pure nothrow @nogc
+                    asm nothrow @nogc
                     {
                         "fscsr %0" : : "r" (newState);
                     }
@@ -5605,7 +5595,7 @@ private:
     }
 }
 
-version (D_HardFloat) @system unittest
+@system unittest
 {
     void ensureDefaults()
     {
@@ -5642,45 +5632,63 @@ version (D_HardFloat) @system unittest
     ensureDefaults();
 }
 
-version (D_HardFloat) @system unittest // rounding
+version (FloatingPointControlUnittest)
+@system unittest // rounding
 {
     import std.meta : AliasSeq;
 
     foreach (T; AliasSeq!(float, double, real))
     {
-        FloatingPointControl fpctrl;
+        /* Be careful with changing the rounding mode, it interferes
+         * with common subexpressions. Changing rounding modes should
+         * be done with separate functions that are not inlined.
+         */
 
-        fpctrl.rounding = FloatingPointControl.roundUp;
-        T u = 1;
-        u += 0.1;
+        {
+            static T addRound(T)(uint rm)
+            {
+                pragma(inline, false) static void blockopt(ref T x) {}
+                pragma(inline, false);
+                FloatingPointControl fpctrl;
+                fpctrl.rounding = rm;
+                T x = 1;
+                blockopt(x); // avoid constant propagation by the optimizer
+                x += 0.1;
+                return x;
+            }
 
-        fpctrl.rounding = FloatingPointControl.roundDown;
-        T d = 1;
-        d += 0.1;
+            T u = addRound!(T)(FloatingPointControl.roundUp);
+            T d = addRound!(T)(FloatingPointControl.roundDown);
+            T z = addRound!(T)(FloatingPointControl.roundToZero);
 
-        fpctrl.rounding = FloatingPointControl.roundToZero;
-        T z = 1;
-        z += 0.1;
+            assert(u > d);
+            assert(z == d);
+        }
 
-        assert(u > d);
-        assert(z == d);
+        {
+            static T subRound(T)(uint rm)
+            {
+                pragma(inline, false) static void blockopt(ref T x) {}
+                pragma(inline, false);
+                FloatingPointControl fpctrl;
+                fpctrl.rounding = rm;
+                T x = -1;
+                blockopt(x); // avoid constant propagation by the optimizer
+                x -= 0.1;
+                return x;
+            }
 
-        fpctrl.rounding = FloatingPointControl.roundUp;
-        u = -1;
-        u -= 0.1;
+            T u = subRound!(T)(FloatingPointControl.roundUp);
+            T d = subRound!(T)(FloatingPointControl.roundDown);
+            T z = subRound!(T)(FloatingPointControl.roundToZero);
 
-        fpctrl.rounding = FloatingPointControl.roundDown;
-        d = -1;
-        d -= 0.1;
-
-        fpctrl.rounding = FloatingPointControl.roundToZero;
-        z = -1;
-        z -= 0.1;
-
-        assert(u > d);
-        assert(z == u);
+            assert(u > d);
+            assert(z == u);
+        }
     }
 }
+
+} // FloatingPointControlSupport
 
 
 /*********************************

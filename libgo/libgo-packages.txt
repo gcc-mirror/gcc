@@ -72,12 +72,12 @@ go/printer
 go/scanner
 go/token
 go/types
+golang.org/x/crypto/chacha20
 golang.org/x/crypto/chacha20poly1305
 golang.org/x/crypto/cryptobyte
 golang.org/x/crypto/cryptobyte/asn1
 golang.org/x/crypto/curve25519
 golang.org/x/crypto/hkdf
-golang.org/x/crypto/internal/chacha20
 golang.org/x/crypto/internal/subtle
 golang.org/x/crypto/poly1305
 golang.org/x/net/dns/dnsmessage
@@ -96,6 +96,7 @@ hash/adler32
 hash/crc32
 hash/crc64
 hash/fnv
+hash/maphash
 html
 html/template
 image
@@ -116,11 +117,13 @@ internal/goversion
 internal/lazyregexp
 internal/lazytemplate
 internal/nettrace
+internal/obscuretestdata
 internal/oserror
 internal/poll
 internal/race
 internal/reflectlite
 internal/singleflight
+internal/syscall/execenv
 internal/syscall/unix
 internal/testenv
 internal/testlog

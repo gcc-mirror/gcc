@@ -164,3 +164,90 @@ unittest
     }
 }
 
+/*************************************
+ * Round argument to a specific precision.
+ *
+ * D language types specify only a minimum precision, not a maximum. The
+ * `toPrec()` function forces rounding of the argument `f` to the precision
+ * of the specified floating point type `T`.
+ * The rounding mode used is inevitably target-dependent, but will be done in
+ * a way to maximize accuracy. In most cases, the default is round-to-nearest.
+ *
+ * Params:
+ *      T = precision type to round to
+ *      f = value to convert
+ * Returns:
+ *      f in precision of type `T`
+ */
+@safe pure nothrow
+T toPrec(T:float)(float f) { pragma(inline, false); return f; }
+/// ditto
+@safe pure nothrow
+T toPrec(T:float)(double f) { pragma(inline, false); return cast(T) f; }
+/// ditto
+@safe pure nothrow
+T toPrec(T:float)(real f)  { pragma(inline, false); return cast(T) f; }
+/// ditto
+@safe pure nothrow
+T toPrec(T:double)(float f) { pragma(inline, false); return f; }
+/// ditto
+@safe pure nothrow
+T toPrec(T:double)(double f) { pragma(inline, false); return f; }
+/// ditto
+@safe pure nothrow
+T toPrec(T:double)(real f)  { pragma(inline, false); return cast(T) f; }
+/// ditto
+@safe pure nothrow
+T toPrec(T:real)(float f) { pragma(inline, false); return f; }
+/// ditto
+@safe pure nothrow
+T toPrec(T:real)(double f) { pragma(inline, false); return f; }
+/// ditto
+@safe pure nothrow
+T toPrec(T:real)(real f)  { pragma(inline, false); return f; }
+
+@safe unittest
+{
+    // Test all instantiations work with all combinations of float.
+    float f = 1.1f;
+    double d = 1.1;
+    real r = 1.1L;
+    f = toPrec!float(f + f);
+    f = toPrec!float(d + d);
+    f = toPrec!float(r + r);
+    d = toPrec!double(f + f);
+    d = toPrec!double(d + d);
+    d = toPrec!double(r + r);
+    r = toPrec!real(f + f);
+    r = toPrec!real(d + d);
+    r = toPrec!real(r + r);
+
+    // Comparison tests.
+    bool approxEqual(T)(T lhs, T rhs)
+    {
+        return fabs((lhs - rhs) / rhs) <= 1e-2 || fabs(lhs - rhs) <= 1e-5;
+    }
+
+    enum real PIR = 0xc.90fdaa22168c235p-2;
+    enum double PID = 0x1.921fb54442d18p+1;
+    enum float PIF = 0x1.921fb6p+1;
+    static assert(approxEqual(toPrec!float(PIR), PIF));
+    static assert(approxEqual(toPrec!double(PIR), PID));
+    static assert(approxEqual(toPrec!real(PIR), PIR));
+    static assert(approxEqual(toPrec!float(PID), PIF));
+    static assert(approxEqual(toPrec!double(PID), PID));
+    static assert(approxEqual(toPrec!real(PID), PID));
+    static assert(approxEqual(toPrec!float(PIF), PIF));
+    static assert(approxEqual(toPrec!double(PIF), PIF));
+    static assert(approxEqual(toPrec!real(PIF), PIF));
+
+    assert(approxEqual(toPrec!float(PIR), PIF));
+    assert(approxEqual(toPrec!double(PIR), PID));
+    assert(approxEqual(toPrec!real(PIR), PIR));
+    assert(approxEqual(toPrec!float(PID), PIF));
+    assert(approxEqual(toPrec!double(PID), PID));
+    assert(approxEqual(toPrec!real(PID), PID));
+    assert(approxEqual(toPrec!float(PIF), PIF));
+    assert(approxEqual(toPrec!double(PIF), PIF));
+    assert(approxEqual(toPrec!real(PIF), PIF));
+}

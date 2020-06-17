@@ -514,12 +514,12 @@ set_internal_unit (st_parameter_dt *dtp, gfc_unit *iunit, int kind)
   iunit->flags.form = FORM_FORMATTED;
   iunit->flags.pad = PAD_YES;
   iunit->flags.status = STATUS_UNSPECIFIED;
-  iunit->flags.sign = SIGN_UNSPECIFIED;
+  iunit->flags.sign = SIGN_PROCDEFINED;
   iunit->flags.decimal = DECIMAL_POINT;
   iunit->flags.delim = DELIM_UNSPECIFIED;
   iunit->flags.encoding = ENCODING_DEFAULT;
   iunit->flags.async = ASYNC_NO;
-  iunit->flags.round = ROUND_UNSPECIFIED;
+  iunit->flags.round = ROUND_PROCDEFINED;
 
   /* Initialize the data transfer parameters.  */
 
@@ -627,12 +627,12 @@ init_units (void)
       u->flags.blank = BLANK_NULL;
       u->flags.pad = PAD_YES;
       u->flags.position = POSITION_ASIS;
-      u->flags.sign = SIGN_UNSPECIFIED;
+      u->flags.sign = SIGN_PROCDEFINED;
       u->flags.decimal = DECIMAL_POINT;
       u->flags.delim = DELIM_UNSPECIFIED;
       u->flags.encoding = ENCODING_DEFAULT;
       u->flags.async = ASYNC_NO;
-      u->flags.round = ROUND_UNSPECIFIED;
+      u->flags.round = ROUND_PROCDEFINED;
       u->flags.share = SHARE_UNSPECIFIED;
       u->flags.cc = CC_LIST;
 
@@ -658,12 +658,12 @@ init_units (void)
       u->flags.status = STATUS_OLD;
       u->flags.blank = BLANK_NULL;
       u->flags.position = POSITION_ASIS;
-      u->flags.sign = SIGN_UNSPECIFIED;
+      u->flags.sign = SIGN_PROCDEFINED;
       u->flags.decimal = DECIMAL_POINT;
       u->flags.delim = DELIM_UNSPECIFIED;
       u->flags.encoding = ENCODING_DEFAULT;
       u->flags.async = ASYNC_NO;
-      u->flags.round = ROUND_UNSPECIFIED;
+      u->flags.round = ROUND_PROCDEFINED;
       u->flags.share = SHARE_UNSPECIFIED;
       u->flags.cc = CC_LIST;
 
@@ -689,11 +689,11 @@ init_units (void)
       u->flags.status = STATUS_OLD;
       u->flags.blank = BLANK_NULL;
       u->flags.position = POSITION_ASIS;
-      u->flags.sign = SIGN_UNSPECIFIED;
+      u->flags.sign = SIGN_PROCDEFINED;
       u->flags.decimal = DECIMAL_POINT;
       u->flags.encoding = ENCODING_DEFAULT;
       u->flags.async = ASYNC_NO;
-      u->flags.round = ROUND_UNSPECIFIED;
+      u->flags.round = ROUND_PROCDEFINED;
       u->flags.share = SHARE_UNSPECIFIED;
       u->flags.cc = CC_LIST;
 
@@ -767,9 +767,12 @@ close_unit_1 (gfc_unit *u, int locked)
 void
 unlock_unit (gfc_unit *u)
 {
-  NOTE ("unlock_unit = %d", u->unit_number);
-  UNLOCK (&u->lock);
-  NOTE ("unlock_unit done");
+  if (u)
+    {
+      NOTE ("unlock_unit = %d", u->unit_number);
+      UNLOCK (&u->lock);
+      NOTE ("unlock_unit done");
+    }
 }
 
 /* close_unit()-- Close a unit.  The stream is closed, and any memory

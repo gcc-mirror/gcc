@@ -1140,7 +1140,8 @@ fully_constant_expression (pre_expr e)
 
 static tree
 translate_vuse_through_block (vec<vn_reference_op_s> operands,
-			      alias_set_type set, tree type, tree vuse,
+			      alias_set_type set, alias_set_type base_set,
+			      tree type, tree vuse,
 			      basic_block phiblock,
 			      basic_block block, bool *same_valid)
 {
@@ -1156,7 +1157,8 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
     return vuse;
 
   unsigned int cnt = param_sccvn_max_alias_queries_per_access;
-  use_oracle = ao_ref_init_from_vn_reference (&ref, set, type, operands);
+  use_oracle = ao_ref_init_from_vn_reference (&ref, set, base_set,
+					      type, operands);
 
   /* Use the alias-oracle to find either the PHI node in this block,
      the first VUSE used in this block that is equivalent to vuse or
@@ -1535,7 +1537,8 @@ phi_translate_1 (bitmap_set_t dest,
 	  {
 	    newvuse = translate_vuse_through_block (newoperands.exists ()
 						    ? newoperands : operands,
-						    ref->set, ref->type,
+						    ref->set, ref->base_set,
+						    ref->type,
 						    vuse, phiblock, pred,
 						    changed
 						    ? NULL : &same_valid);
@@ -1551,6 +1554,7 @@ phi_translate_1 (bitmap_set_t dest,
 	    unsigned int new_val_id;
 
 	    tree result = vn_reference_lookup_pieces (newvuse, ref->set,
+						      ref->base_set,
 						      ref->type,
 						      newoperands.exists ()
 						      ? newoperands : operands,
@@ -1608,7 +1612,7 @@ phi_translate_1 (bitmap_set_t dest,
 		if (!newoperands.exists ())
 		  newoperands = operands.copy ();
 		newref = vn_reference_insert_pieces (newvuse, ref->set,
-						     ref->type,
+						     ref->base_set, ref->type,
 						     newoperands,
 						     result, new_val_id);
 		newoperands = vNULL;
@@ -1827,8 +1831,8 @@ value_dies_in_block_x (pre_expr expr, basic_block block)
 
       /* Init ref only if we really need it.  */
       if (ref.base == NULL_TREE
-	  && !ao_ref_init_from_vn_reference (&ref, refx->set, refx->type,
-					     refx->operands))
+	  && !ao_ref_init_from_vn_reference (&ref, refx->set, refx->base_set,
+					     refx->type, refx->operands))
 	{
 	  res = true;
 	  break;
@@ -2811,7 +2815,8 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 	      unsigned HOST_WIDE_INT hmisalign
 		= args.length () == 3 ? tree_to_uhwi (args[2]) : 0;
 	      if ((halign & (halign - 1)) == 0
-		  && (hmisalign & ~(halign - 1)) == 0)
+		  && (hmisalign & ~(halign - 1)) == 0
+		  && (unsigned int)halign != 0)
 		set_ptr_info_alignment (get_ptr_info (forcedname),
 					halign, hmisalign);
 	    }
@@ -3914,12 +3919,16 @@ compute_avail (void)
 		  case VN_REFERENCE:
 		    {
 		      tree rhs1 = gimple_assign_rhs1 (stmt);
-		      alias_set_type set = get_alias_set (rhs1);
+		      ao_ref rhs1_ref;
+		      ao_ref_init (&rhs1_ref, rhs1);
+		      alias_set_type set = ao_ref_alias_set (&rhs1_ref);
+		      alias_set_type base_set
+			= ao_ref_base_alias_set (&rhs1_ref);
 		      vec<vn_reference_op_s> operands
 			= vn_reference_operands_for_lookup (rhs1);
 		      vn_reference_t ref;
 		      vn_reference_lookup_pieces (gimple_vuse (stmt), set,
-						  TREE_TYPE (rhs1),
+						  base_set, TREE_TYPE (rhs1),
 						  operands, &ref, VN_WALK);
 		      if (!ref)
 			{

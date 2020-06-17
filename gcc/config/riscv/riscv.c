@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "builtins.h"
 #include "predict.h"
+#include "tree-pass.h"
 
 /* True if X is an UNSPEC wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
@@ -331,6 +332,14 @@ static const struct attribute_spec riscv_attribute_table[] =
 
   /* The last attribute spec is set to be NULL.  */
   { NULL,	0,  0, false, false, false, false, NULL, NULL }
+};
+
+/* Order for the CLOBBERs/USEs of gpr_save.  */
+static const unsigned gpr_save_reg_order[] = {
+  INVALID_REGNUM, T0_REGNUM, T1_REGNUM, RETURN_ADDR_REGNUM,
+  S0_REGNUM, S1_REGNUM, S2_REGNUM, S3_REGNUM, S4_REGNUM,
+  S5_REGNUM, S6_REGNUM, S7_REGNUM, S8_REGNUM, S9_REGNUM,
+  S10_REGNUM, S11_REGNUM
 };
 
 /* A table describing all the processors GCC knows about.  */
@@ -848,6 +857,52 @@ riscv_legitimate_address_p (machine_mode mode, rtx x, bool strict_p)
   return riscv_classify_address (&addr, x, mode, strict_p);
 }
 
+/* Return true if hard reg REGNO can be used in compressed instructions.  */
+
+static bool
+riscv_compressed_reg_p (int regno)
+{
+  /* x8-x15/f8-f15 are compressible registers.  */
+  return (TARGET_RVC && (IN_RANGE (regno, GP_REG_FIRST + 8, GP_REG_FIRST + 15)
+	  || IN_RANGE (regno, FP_REG_FIRST + 8, FP_REG_FIRST + 15)));
+}
+
+/* Return true if x is an unsigned 5-bit immediate scaled by 4.  */
+
+static bool
+riscv_compressed_lw_offset_p (rtx x)
+{
+  return (CONST_INT_P (x)
+	  && (INTVAL (x) & 3) == 0
+	  && IN_RANGE (INTVAL (x), 0, CSW_MAX_OFFSET));
+}
+
+/* Return true if load/store from/to address x can be compressed.  */
+
+static bool
+riscv_compressed_lw_address_p (rtx x)
+{
+  struct riscv_address_info addr;
+  bool result = riscv_classify_address (&addr, x, GET_MODE (x),
+					reload_completed);
+
+  /* Before reload, assuming all load/stores of valid addresses get compressed
+     gives better code size than checking if the address is reg + small_offset
+     early on.  */
+  if (result && !reload_completed)
+    return true;
+
+  /* Return false if address is not compressed_reg + small_offset.  */
+  if (!result
+      || addr.type != ADDRESS_REG
+      || (!riscv_compressed_reg_p (REGNO (addr.reg))
+	    && addr.reg != stack_pointer_rtx)
+      || !riscv_compressed_lw_offset_p (addr.offset))
+    return false;
+
+  return result;
+}
+
 /* Return the number of instructions needed to load or store a value
    of mode MODE at address X.  Return 0 if X isn't valid for MODE.
    Assume that multiword moves may need to be split into word moves
@@ -1257,9 +1312,12 @@ riscv_legitimize_tls_address (rtx loc)
   rtx dest, tp, tmp;
   enum tls_model model = SYMBOL_REF_TLS_MODEL (loc);
 
+#if 0
+  /* TLS copy relocs are now deprecated and should not be used.  */
   /* Since we support TLS copy relocs, non-PIC TLS accesses may all use LE.  */
   if (!flag_pic)
     model = TLS_MODEL_LOCAL_EXEC;
+#endif
 
   switch (model)
     {
@@ -1305,6 +1363,24 @@ riscv_force_address (rtx x, machine_mode mode)
   return x;
 }
 
+/* Modify base + offset so that offset fits within a compressed load/store insn
+   and the excess is added to base.  */
+
+static rtx
+riscv_shorten_lw_offset (rtx base, HOST_WIDE_INT offset)
+{
+  rtx addr, high;
+  /* Leave OFFSET as an unsigned 5-bit offset scaled by 4 and put the excess
+     into HIGH.  */
+  high = GEN_INT (offset & ~CSW_MAX_OFFSET);
+  offset &= CSW_MAX_OFFSET;
+  if (!SMALL_OPERAND (INTVAL (high)))
+    high = force_reg (Pmode, high);
+  base = force_reg (Pmode, gen_rtx_PLUS (Pmode, high, base));
+  addr = plus_constant (Pmode, base, offset);
+  return addr;
+}
+
 /* This function is used to implement LEGITIMIZE_ADDRESS.  If X can
    be legitimized in a way that the generic machinery might not expect,
    return a new address, otherwise return NULL.  MODE is the mode of
@@ -1323,7 +1399,7 @@ riscv_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
   if (riscv_split_symbol (NULL, x, mode, &addr, FALSE))
     return riscv_force_address (addr, mode);
 
-  /* Handle BASE + OFFSET using riscv_add_offset.  */
+  /* Handle BASE + OFFSET.  */
   if (GET_CODE (x) == PLUS && CONST_INT_P (XEXP (x, 1))
       && INTVAL (XEXP (x, 1)) != 0)
     {
@@ -1332,7 +1408,14 @@ riscv_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 
       if (!riscv_valid_base_register_p (base, mode, false))
 	base = copy_to_mode_reg (Pmode, base);
-      addr = riscv_add_offset (NULL, base, offset);
+      if (optimize_function_for_size_p (cfun)
+	  && (strcmp (current_pass->name, "shorten_memrefs") == 0)
+	  && mode == SImode)
+	/* Convert BASE + LARGE_OFFSET into NEW_BASE + SMALL_OFFSET to allow
+	   possible compressed load/store.  */
+	addr = riscv_shorten_lw_offset (base, offset);
+      else
+	addr = riscv_add_offset (NULL, base, offset);
       return riscv_force_address (addr, mode);
     }
 
@@ -1639,7 +1722,10 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 
     case ZERO_EXTRACT:
       /* This is an SImode shift.  */
-      if (outer_code == SET && (INTVAL (XEXP (x, 2)) > 0)
+      if (outer_code == SET
+	  && CONST_INT_P (XEXP (x, 1))
+	  && CONST_INT_P (XEXP (x, 2))
+	  && (INTVAL (XEXP (x, 2)) > 0)
 	  && (INTVAL (XEXP (x, 1)) + INTVAL (XEXP (x, 2)) == 32))
 	{
 	  *total = COSTS_N_INSNS (SINGLE_SHIFT_COST);
@@ -1697,10 +1783,15 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       return false;
 
     case UNEQ:
-    case LTGT:
       /* (FEQ(A, A) & FEQ(B, B)) compared against FEQ(A, B).  */
       mode = GET_MODE (XEXP (x, 0));
       *total = tune_info->fp_add[mode == DFmode] + COSTS_N_INSNS (3);
+      return false;
+
+    case LTGT:
+      /* (FLT(A, A) || FGT(B, B)).  */
+      mode = GET_MODE (XEXP (x, 0));
+      *total = tune_info->fp_add[mode == DFmode] + COSTS_N_INSNS (2);
       return false;
 
     case UNGE:
@@ -1822,6 +1913,11 @@ riscv_address_cost (rtx addr, machine_mode mode,
 		    addr_space_t as ATTRIBUTE_UNUSED,
 		    bool speed ATTRIBUTE_UNUSED)
 {
+  /* When optimizing for size, make uncompressible 32-bit addresses more
+   * expensive so that compressible 32-bit addresses are preferred.  */
+  if (TARGET_RVC && !speed && riscv_mshorten_memrefs && mode == SImode
+      && !riscv_compressed_lw_address_p (addr))
+    return riscv_address_insns (addr, mode, false) + 1;
   return riscv_address_insns (addr, mode, false);
 }
 
@@ -1911,7 +2007,7 @@ riscv_output_move (rtx dest, rtx src)
   if (dest_code == REG && GP_REG_P (REGNO (dest)))
     {
       if (src_code == REG && FP_REG_P (REGNO (src)))
-	return dbl_p ? "fmv.x.d\t%0,%1" : "fmv.x.s\t%0,%1";
+	return dbl_p ? "fmv.x.d\t%0,%1" : "fmv.x.w\t%0,%1";
 
       if (src_code == MEM)
 	switch (GET_MODE_SIZE (mode))
@@ -1948,7 +2044,7 @@ riscv_output_move (rtx dest, rtx src)
 	  if (FP_REG_P (REGNO (dest)))
 	    {
 	      if (!dbl_p)
-		return "fmv.s.x\t%0,%z1";
+		return "fmv.w.x\t%0,%z1";
 	      if (TARGET_64BIT)
 		return "fmv.d.x\t%0,%z1";
 	      /* in RV32, we can emulate fmv.d.x %0, x0 using fcvt.d.w */
@@ -2233,9 +2329,8 @@ riscv_emit_float_compare (enum rtx_code *code, rtx *op0, rtx *op1)
       break;
 
     case UNEQ:
-    case LTGT:
       /* ordered(a, b) > (a == b) */
-      *code = fp_code == LTGT ? GTU : EQ;
+      *code = EQ;
       tmp0 = riscv_force_binary (word_mode, EQ, cmp_op0, cmp_op0);
       tmp1 = riscv_force_binary (word_mode, EQ, cmp_op1, cmp_op1);
       *op0 = riscv_force_binary (word_mode, AND, tmp0, tmp1);
@@ -2284,6 +2379,14 @@ riscv_emit_float_compare (enum rtx_code *code, rtx *op0, rtx *op1)
     case GT:
       /* We have instructions for these cases.  */
       *op0 = riscv_force_binary (word_mode, fp_code, cmp_op0, cmp_op1);
+      *op1 = const0_rtx;
+      break;
+
+    case LTGT:
+      /* (a < b) | (a > b) */
+      tmp0 = riscv_force_binary (word_mode, LT, cmp_op0, cmp_op1);
+      tmp1 = riscv_force_binary (word_mode, GT, cmp_op0, cmp_op1);
+      *op0 = riscv_force_binary (word_mode, IOR, tmp0, tmp1);
       *op1 = const0_rtx;
       break;
 
@@ -3188,7 +3291,8 @@ riscv_print_operand_reloc (FILE *file, rtx op, bool hi_reloc)
 	break;
 
       default:
-	gcc_unreachable ();
+	output_operand_lossage ("invalid use of '%%%c'", hi_reloc ? 'h' : 'R');
+	return;
     }
 
   fprintf (file, "%s(", reloc);
@@ -3394,6 +3498,43 @@ riscv_select_section (tree decl, int reloc,
     default:
       return default_elf_select_section (decl, reloc, align);
     }
+}
+
+/* Switch to the appropriate section for output of DECL.  */
+
+static void
+riscv_unique_section (tree decl, int reloc)
+{
+  const char *prefix = NULL;
+  bool one_only = DECL_ONE_ONLY (decl) && !HAVE_COMDAT_GROUP;
+
+  switch (categorize_decl_for_section (decl, reloc))
+    {
+    case SECCAT_SRODATA:
+      prefix = one_only ? ".sr" : ".srodata";
+      break;
+
+    default:
+      break;
+    }
+  if (prefix)
+    {
+      const char *name, *linkonce;
+      char *string;
+
+      name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+      name = targetm.strip_name_encoding (name);
+
+      /* If we're using one_only, then there needs to be a .gnu.linkonce
+	 prefix to the section name.  */
+      linkonce = one_only ? ".gnu.linkonce" : "";
+
+      string = ACONCAT ((linkonce, prefix, ".", name, NULL));
+
+      set_decl_section_name (decl, string);
+      return;
+    }
+  default_unique_section (decl, reloc);
 }
 
 /* Return a section for X, handling small data. */
@@ -3810,20 +3951,6 @@ riscv_restore_reg (rtx reg, rtx mem)
   RTX_FRAME_RELATED_P (insn) = 1;
 }
 
-/* Return the code to invoke the GPR save routine.  */
-
-const char *
-riscv_output_gpr_save (unsigned mask)
-{
-  static char s[32];
-  unsigned n = riscv_save_libcall_count (mask);
-
-  ssize_t bytes = snprintf (s, sizeof (s), "call\tt0,__riscv_save_%u", n);
-  gcc_assert ((size_t) bytes < sizeof (s));
-
-  return s;
-}
-
 /* For stack frames that can't be allocated with a single ADDI instruction,
    compute the best value to initially allocate.  It must at a minimum
    allocate enough space to spill the callee-saved registers.  If TARGET_RVC,
@@ -3936,9 +4063,9 @@ riscv_expand_prologue (void)
       rtx dwarf = NULL_RTX;
       dwarf = riscv_adjust_libcall_cfi_prologue ();
 
-      frame->mask = 0; /* Temporarily fib that we need not save GPRs.  */
       size -= frame->save_libcall_adjustment;
-      insn = emit_insn (gen_gpr_save (GEN_INT (mask)));
+      insn = emit_insn (riscv_gen_gpr_save_insn (frame));
+      frame->mask = 0; /* Temporarily fib that we need not save GPRs.  */
 
       RTX_FRAME_RELATED_P (insn) = 1;
       REG_NOTES (insn) = dwarf;
@@ -4647,6 +4774,7 @@ riscv_option_override (void)
     error ("%<-mriscv-attribute%> RISC-V ELF attribute requires GNU as 2.32"
 	   " [%<-mriscv-attribute%>]");
 #endif
+
 }
 
 /* Implement TARGET_CONDITIONAL_REGISTER_USAGE.  */
@@ -4686,9 +4814,9 @@ riscv_conditional_register_usage (void)
 static int
 riscv_register_priority (int regno)
 {
-  /* Favor x8-x15/f8-f15 to improve the odds of RVC instruction selection.  */
-  if (TARGET_RVC && (IN_RANGE (regno, GP_REG_FIRST + 8, GP_REG_FIRST + 15)
-		     || IN_RANGE (regno, FP_REG_FIRST + 8, FP_REG_FIRST + 15)))
+  /* Favor compressed registers to improve the odds of RVC instruction
+     selection.  */
+  if (riscv_compressed_reg_p (regno))
     return 1;
 
   return 0;
@@ -5017,6 +5145,106 @@ riscv_reorg (void)
     riscv_remove_unneeded_save_restore_calls ();
 }
 
+/* Return nonzero if register FROM_REGNO can be renamed to register
+   TO_REGNO.  */
+
+bool
+riscv_hard_regno_rename_ok (unsigned from_regno ATTRIBUTE_UNUSED,
+			    unsigned to_regno)
+{
+  /* Interrupt functions can only use registers that have already been
+     saved by the prologue, even if they would normally be
+     call-clobbered.  */
+  return !cfun->machine->interrupt_handler_p || df_regs_ever_live_p (to_regno);
+}
+
+/* Implement TARGET_NEW_ADDRESS_PROFITABLE_P.  */
+
+bool
+riscv_new_address_profitable_p (rtx memref, rtx_insn *insn, rtx new_addr)
+{
+  /* Prefer old address if it is less expensive.  */
+  addr_space_t as = MEM_ADDR_SPACE (memref);
+  bool speed = optimize_bb_for_speed_p (BLOCK_FOR_INSN (insn));
+  int old_cost = address_cost (XEXP (memref, 0), GET_MODE (memref), as, speed);
+  int new_cost = address_cost (new_addr, GET_MODE (memref), as, speed);
+  return new_cost <= old_cost;
+}
+
+/* Helper function for generating gpr_save pattern.  */
+
+rtx
+riscv_gen_gpr_save_insn (struct riscv_frame_info *frame)
+{
+  unsigned count = riscv_save_libcall_count (frame->mask);
+  /* 1 for unspec 2 for clobber t0/t1 and 1 for ra.  */
+  unsigned veclen = 1 + 2 + 1 + count;
+  rtvec vec = rtvec_alloc (veclen);
+
+  gcc_assert (veclen <= ARRAY_SIZE (gpr_save_reg_order));
+
+  RTVEC_ELT (vec, 0) =
+    gen_rtx_UNSPEC_VOLATILE (VOIDmode,
+      gen_rtvec (1, GEN_INT (count)), UNSPECV_GPR_SAVE);
+
+  for (unsigned i = 1; i < veclen; ++i)
+    {
+      unsigned regno = gpr_save_reg_order[i];
+      rtx reg = gen_rtx_REG (Pmode, regno);
+      rtx elt;
+
+      /* t0 and t1 are CLOBBERs, others are USEs.  */
+      if (i < 3)
+	elt = gen_rtx_CLOBBER (Pmode, reg);
+      else
+	elt = gen_rtx_USE (Pmode, reg);
+
+      RTVEC_ELT (vec, i) = elt;
+    }
+
+  /* Largest number of caller-save register must set in mask if we are
+     not using __riscv_save_0.  */
+  gcc_assert ((count == 0) ||
+	      BITSET_P (frame->mask, gpr_save_reg_order[veclen - 1]));
+
+  return gen_rtx_PARALLEL (VOIDmode, vec);
+}
+
+/* Return true if it's valid gpr_save pattern.  */
+
+bool
+riscv_gpr_save_operation_p (rtx op)
+{
+  unsigned len = XVECLEN (op, 0);
+
+  if (len > ARRAY_SIZE (gpr_save_reg_order))
+    return false;
+
+  for (unsigned i = 0; i < len; i++)
+    {
+      rtx elt = XVECEXP (op, 0, i);
+      if (i == 0)
+	{
+	  /* First element in parallel is unspec.  */
+	  if (GET_CODE (elt) != UNSPEC_VOLATILE
+	      || GET_CODE (XVECEXP (elt, 0, 0)) != CONST_INT
+	      || XINT (elt, 1) != UNSPECV_GPR_SAVE)
+	    return false;
+	}
+      else
+	{
+	  /* Two CLOBBER and USEs, must check the order.  */
+	  unsigned expect_code = i < 3 ? CLOBBER : USE;
+	  if (GET_CODE (elt) != expect_code
+	      || !REG_P (XEXP (elt, 1))
+	      || (REGNO (XEXP (elt, 1)) != gpr_save_reg_order[i]))
+	    return false;
+	}
+	break;
+    }
+  return true;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -5131,6 +5359,9 @@ riscv_reorg (void)
 #undef TARGET_ASM_SELECT_SECTION
 #define TARGET_ASM_SELECT_SECTION riscv_select_section
 
+#undef TARGET_ASM_UNIQUE_SECTION
+#define TARGET_ASM_UNIQUE_SECTION riscv_unique_section
+
 #undef TARGET_ASM_SELECT_RTX_SECTION
 #define TARGET_ASM_SELECT_RTX_SECTION  riscv_elf_select_rtx_section
 
@@ -5193,6 +5424,9 @@ riscv_reorg (void)
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG riscv_reorg
+
+#undef TARGET_NEW_ADDRESS_PROFITABLE_P
+#define TARGET_NEW_ADDRESS_PROFITABLE_P riscv_new_address_profitable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

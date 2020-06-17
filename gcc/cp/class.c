@@ -1077,11 +1077,19 @@ add_method (tree type, tree method, bool via_using)
 	{
           if (!equivalently_constrained (fn, method))
 	    {
+	      if (processing_template_decl)
+		/* We can't check satisfaction in dependent context, wait until
+		   the class is instantiated.  */
+		continue;
+
 	      special_function_kind sfk = special_memfn_p (method);
 
-	      if (sfk == sfk_none)
-		/* Non-special member functions coexist if they are not
-		   equivalently constrained.  */
+	      if (sfk == sfk_none
+		  || DECL_INHERITED_CTOR (fn)
+		  || TREE_CODE (fn) == TEMPLATE_DECL)
+		/* Member function templates and non-special member functions
+		   coexist if they are not equivalently constrained.  A member
+		   function is not hidden by an inherited constructor.  */
 		continue;
 
 	      /* P0848: For special member functions, deleted, unsatisfied, or
@@ -2437,6 +2445,20 @@ get_vcall_index (tree fn, tree type)
   gcc_unreachable ();
 }
 
+/* Given a DECL_VINDEX of a virtual function found in BINFO, return the final
+   overrider at that index in the vtable.  This should only be used when we
+   know that BINFO is correct for the dynamic type of the object.  */
+
+tree
+lookup_vfn_in_binfo (tree idx, tree binfo)
+{
+  int ix = tree_to_shwi (idx);
+  if (TARGET_VTABLE_USES_DESCRIPTORS)
+    ix /= MAX (TARGET_VTABLE_USES_DESCRIPTORS, 1);
+  tree virtuals = BINFO_VIRTUALS (binfo);
+  return TREE_VALUE (chain_index (ix, virtuals));
+}
+
 /* Update an entry in the vtable for BINFO, which is in the hierarchy
    dominated by T.  FN is the old function; VIRTUALS points to the
    corresponding position in the new BINFO_VIRTUALS list.  IX is the index
@@ -3240,7 +3262,11 @@ add_implicitly_declared_members (tree t, tree* access_decls,
       {
 	tree eq = implicitly_declare_fn (sfk_comparison, t, false, space,
 					 NULL_TREE);
-	add_method (t, eq, false);
+	if (DECL_FRIEND_P (space))
+	  do_friend (NULL_TREE, DECL_NAME (eq), eq,
+		     NULL_TREE, NO_SPECIAL, true);
+	else
+	  add_method (t, eq, false);
       }
 
   while (*access_decls)
@@ -3284,7 +3310,7 @@ enum_min_precision (tree type)
     enum_to_min_precision = hash_map<tree, int>::create_ggc (37);
 
   bool existed;
-  int prec = enum_to_min_precision->get_or_insert (type, &existed);
+  int &prec = enum_to_min_precision->get_or_insert (type, &existed);
   if (existed)
     return prec;
 
@@ -3656,7 +3682,7 @@ check_field_decls (tree t, tree *access_decls,
 	    {
 	      /* ARM $12.6.2: [A member initializer list] (or, for an
 		 aggregate, initialization by a brace-enclosed list) is the
-		 only way to initialize nonstatic const and reference
+		 only way to initialize non-static const and reference
 		 members.  */
 	      TYPE_HAS_COMPLEX_COPY_ASSIGN (t) = 1;
 	      TYPE_HAS_COMPLEX_MOVE_ASSIGN (t) = 1;
@@ -3779,7 +3805,7 @@ check_field_decls (tree t, tree *access_decls,
 	    {
 	      /* ARM $12.6.2: [A member initializer list] (or, for an
 		 aggregate, initialization by a brace-enclosed list) is the
-		 only way to initialize nonstatic const and reference
+		 only way to initialize non-static const and reference
 		 members.  */
 	      TYPE_HAS_COMPLEX_COPY_ASSIGN (t) = 1;
 	      TYPE_HAS_COMPLEX_MOVE_ASSIGN (t) = 1;
@@ -3794,7 +3820,7 @@ check_field_decls (tree t, tree *access_decls,
 	    | CLASSTYPE_READONLY_FIELDS_NEED_INIT (type));
 	}
 
-      /* Core issue 80: A nonstatic data member is required to have a
+      /* Core issue 80: A non-static data member is required to have a
 	 different name from the class iff the class has a
 	 user-declared constructor.  */
       if (constructor_name_p (DECL_NAME (field), t)
@@ -3833,13 +3859,13 @@ check_field_decls (tree t, tree *access_decls,
 	  if (! TYPE_HAS_COPY_CTOR (t))
 	    {
 	      warning (OPT_Weffc__,
-		       "  but does not override %<%T(const %T&)%>", t, t);
+		       "  but does not declare %<%T(const %T&)%>", t, t);
 	      if (!TYPE_HAS_COPY_ASSIGN (t))
 		warning (OPT_Weffc__, "  or %<operator=(const %T&)%>", t);
 	    }
 	  else if (! TYPE_HAS_COPY_ASSIGN (t))
 	    warning (OPT_Weffc__,
-		     "  but does not override %<operator=(const %T&)%>", t);
+		     "  but does not declare %<operator=(const %T&)%>", t);
 	  inform (DECL_SOURCE_LOCATION (pointer_member),
 		  "pointer member %q+D declared here", pointer_member);
 	}
@@ -4510,6 +4536,7 @@ build_base_field (record_layout_info rli, tree binfo, tree access,
 	  DECL_FIELD_OFFSET (decl) = BINFO_OFFSET (binfo);
 	  DECL_FIELD_BIT_OFFSET (decl) = bitsize_zero_node;
 	  SET_DECL_OFFSET_ALIGN (decl, BITS_PER_UNIT);
+	  DECL_FIELD_ABI_IGNORED (decl) = 1;
 	}
 
       /* An empty virtual base causes a class to be non-empty
@@ -4895,8 +4922,8 @@ adjust_clone_args (tree decl)
 	      break;
 	    }
 
-	  gcc_assert (same_type_p (TREE_TYPE (decl_parms),
-				   TREE_TYPE (clone_parms)));
+	  gcc_checking_assert (same_type_p (TREE_VALUE (decl_parms),
+					    TREE_VALUE (clone_parms)));
 
 	  if (TREE_PURPOSE (decl_parms) && !TREE_PURPOSE (clone_parms))
 	    {
@@ -5154,12 +5181,10 @@ in_class_defaulted_default_constructor (tree t)
 bool
 user_provided_p (tree fn)
 {
-  if (TREE_CODE (fn) == TEMPLATE_DECL)
-    return true;
-  else
-    return (!DECL_ARTIFICIAL (fn)
-	    && !(DECL_INITIALIZED_IN_CLASS_P (fn)
-		 && (DECL_DEFAULTED_FN (fn) || DECL_DELETED_FN (fn))));
+  fn = STRIP_TEMPLATE (fn);
+  return (!DECL_ARTIFICIAL (fn)
+	  && !(DECL_INITIALIZED_IN_CLASS_P (fn)
+	       && (DECL_DEFAULTED_FN (fn) || DECL_DELETED_FN (fn))));
 }
 
 /* Returns true iff class T has a user-provided constructor.  */
@@ -5310,7 +5335,7 @@ trivial_default_constructor_is_constexpr (tree t)
        struct S { int i; constexpr S() = default; };
 
      should work.  */
-  return (cxx_dialect >= cxx2a
+  return (cxx_dialect >= cxx20
 	  || is_really_empty_class (t, /*ignore_vptr*/true));
 }
 
@@ -5438,6 +5463,19 @@ classtype_has_non_deleted_move_ctor (tree t)
     lazily_declare_fn (sfk_move_constructor, t);
   for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
     if (move_fn_p (*iter) && !DECL_DELETED_FN (*iter))
+      return true;
+  return false;
+}
+
+/* True iff T has a copy constructor that is not deleted.  */
+
+bool
+classtype_has_non_deleted_copy_ctor (tree t)
+{
+  if (CLASSTYPE_LAZY_COPY_CTOR (t))
+    lazily_declare_fn (sfk_copy_constructor, t);
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
+    if (copy_fn_p (*iter) && !DECL_DELETED_FN (*iter))
       return true;
   return false;
 }
@@ -5627,7 +5665,7 @@ type_requires_array_cookie (tree type)
      a cookie.  */
   fns = lookup_fnfields (TYPE_BINFO (type),
 			 ovl_op_identifier (false, VEC_DELETE_EXPR),
-			 /*protect=*/0);
+			 /*protect=*/0, tf_warning_or_error);
   /* If there are no `operator []' members, or the lookup is
      ambiguous, then we don't need a cookie.  */
   if (!fns || fns == error_mark_node)
@@ -5674,7 +5712,7 @@ finalize_literal_type_property (tree t)
     CLASSTYPE_LITERAL_P (t) = false;
   else if (CLASSTYPE_LITERAL_P (t)
 	   && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
-	   && (cxx_dialect < cxx2a || !type_maybe_constexpr_destructor (t)))
+	   && (cxx_dialect < cxx20 || !type_maybe_constexpr_destructor (t)))
     CLASSTYPE_LITERAL_P (t) = false;
   else if (CLASSTYPE_LITERAL_P (t) && LAMBDA_TYPE_P (t))
     CLASSTYPE_LITERAL_P (t) = (cxx_dialect >= cxx17);
@@ -5728,7 +5766,7 @@ explain_non_literal_class (tree t)
     inform (UNKNOWN_LOCATION,
 	    "  %qT is a closure type, which is only literal in "
 	    "C++17 and later", t);
-  else if (cxx_dialect < cxx2a && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
+  else if (cxx_dialect < cxx20 && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
     inform (UNKNOWN_LOCATION, "  %q+T has a non-trivial destructor", t);
   else if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
 	   && !type_maybe_constexpr_destructor (t))
@@ -5876,7 +5914,7 @@ check_bases_and_members (tree t)
      Again, other conditions for being an aggregate are checked
      elsewhere.  */
   CLASSTYPE_NON_AGGREGATE (t)
-    |= ((cxx_dialect < cxx2a
+    |= ((cxx_dialect < cxx20
 	 ? type_has_user_provided_or_explicit_constructor (t)
 	 : TYPE_HAS_USER_CONSTRUCTOR (t))
 	|| TYPE_POLYMORPHIC_P (t));
@@ -6506,7 +6544,10 @@ layout_class_type (tree t, tree *virtuals_p)
 	  SET_DECL_MODE (field, TYPE_MODE (type));
 	}
       else if (might_overlap && is_empty_class (type))
-	layout_empty_base_or_field (rli, field, empty_base_offsets);
+	{
+	  DECL_FIELD_ABI_IGNORED (field) = 1;
+	  layout_empty_base_or_field (rli, field, empty_base_offsets);
+	}
       else
 	layout_nonempty_base_or_field (rli, field, NULL_TREE,
 				       empty_base_offsets);
@@ -6687,6 +6728,10 @@ layout_class_type (tree t, tree *virtuals_p)
 
   /* If we didn't end up needing an as-base type, don't use it.  */
   if (CLASSTYPE_AS_BASE (t) != t
+      /* If T's CLASSTYPE_AS_BASE is TYPE_USER_ALIGN, but T is not,
+	 replacing the as-base type would change CLASSTYPE_USER_ALIGN,
+	 causing us to lose the user-specified alignment as in PR94050.  */
+      && TYPE_USER_ALIGN (t) == TYPE_USER_ALIGN (CLASSTYPE_AS_BASE (t))
       && tree_int_cst_equal (TYPE_SIZE (t),
 			     TYPE_SIZE (CLASSTYPE_AS_BASE (t))))
     CLASSTYPE_AS_BASE (t) = t;
@@ -7137,6 +7182,8 @@ check_flexarrays (tree t, flexmems_t *fmem /* = NULL */,
   /* Is the type unnamed (and therefore a member of it potentially
      an anonymous struct or union)?  */
   bool maybe_anon_p = TYPE_UNNAMED_P (t);
+  if (tree ctx = maybe_anon_p ? TYPE_CONTEXT (t) : NULL_TREE)
+    maybe_anon_p = RECORD_OR_UNION_TYPE_P (ctx);
 
   /* Search the members of the current (possibly derived) class, skipping
      unnamed structs and unions since those could be anonymous.  */
@@ -7473,7 +7520,7 @@ finish_struct (tree t, tree attributes)
       /* Remember current #pragma pack value.  */
       TYPE_PRECISION (t) = maximum_field_alignment;
 
-      if (cxx_dialect < cxx2a)
+      if (cxx_dialect < cxx20)
 	{
 	  if (!CLASSTYPE_NON_AGGREGATE (t)
 	      && type_has_user_provided_or_explicit_constructor (t))
@@ -8080,7 +8127,7 @@ resolve_address_of_overloaded_function (tree target_type,
        member functions match targets of type "pointer-to-member
        function;" the function type of the pointer to member is used to
        select the member function from the set of overloaded member
-       functions.  If a nonstatic member function is selected, the
+       functions.  If a non-static member function is selected, the
        reference to the overloaded function name is required to have the
        form of a pointer to member as described in 5.3.1.
 

@@ -348,11 +348,17 @@ check_new_reg_p (int reg ATTRIBUTE_UNUSED, int new_reg,
   /* See whether it accepts all modes that occur in
      definition and uses.  */
   for (tmp = this_head->first; tmp; tmp = tmp->next_use)
-    if ((!targetm.hard_regno_mode_ok (new_reg, GET_MODE (*tmp->loc))
-	 && ! DEBUG_INSN_P (tmp->insn))
-	|| call_clobbered_in_chain_p (this_head, GET_MODE (*tmp->loc),
-				      new_reg))
-      return false;
+    {
+      /* Completely ignore DEBUG_INSNs, otherwise we can get
+	 -fcompare-debug failures.  */
+      if (DEBUG_INSN_P (tmp->insn))
+	continue;
+
+      if (!targetm.hard_regno_mode_ok (new_reg, GET_MODE (*tmp->loc))
+	  || call_clobbered_in_chain_p (this_head, GET_MODE (*tmp->loc),
+					new_reg))
+	return false;
+    }
 
   return true;
 }

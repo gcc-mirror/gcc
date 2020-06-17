@@ -1,5 +1,5 @@
 // C++20 NB comment US115
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template <class T> concept Any = true;
 

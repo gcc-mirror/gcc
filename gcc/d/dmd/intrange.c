@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by KennyTM
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -610,7 +610,7 @@ IntRange IntRange::operator/(const IntRange& rhs) const
     {
         r.imax.value--;
     }
-    else if(r.imin.value == 0)
+    else if (r.imin.value == 0)
     {
         r.imin.value++;
     }

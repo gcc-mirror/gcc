@@ -500,7 +500,7 @@ worse_state (enum pure_const_state_e *state, bool *looping,
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Dropping state to PURE because call to %s may not "
-		 "bind to current def.\n", to->name ());
+		 "bind to current def.\n", to->dump_name ());
       state2 = IPA_PURE;
     }
   *state = MAX (*state, state2);
@@ -874,7 +874,7 @@ check_retval_uses (tree retval, gimple *stmt)
 {  \
   if (dump_file && (dump_flags & TDF_DETAILS))  \
     fprintf (dump_file, "\n%s is not a malloc candidate, reason: %s\n", \
-	     (node->name()), (reason));  \
+	     (node->dump_name ()), (reason));  \
   return false;  \
 }
 
@@ -1037,7 +1037,7 @@ analyze_function (struct cgraph_node *fn, bool ipa)
   if (dump_file)
     {
       fprintf (dump_file, "\n\n local analysis of %s\n ",
-	       fn->name ());
+	       fn->dump_name ());
     }
 
   push_cfun (DECL_STRUCT_FUNCTION (decl));
@@ -1157,11 +1157,14 @@ funct_state_summary_t::insert (cgraph_node *node, funct_state_d *state)
 /* Called when new clone is inserted to callgraph late.  */
 
 void
-funct_state_summary_t::duplicate (cgraph_node *, cgraph_node *,
+funct_state_summary_t::duplicate (cgraph_node *, cgraph_node *dst,
 				  funct_state_d *src_data,
 				  funct_state_d *dst_data)
 {
   new (dst_data) funct_state_d (*src_data);
+  if (dst_data->malloc_state == STATE_MALLOC
+      && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (dst->decl))))
+    dst_data->malloc_state = STATE_MALLOC_BOTTOM;
 }
 
 
@@ -1657,7 +1660,7 @@ propagate_pure_const (void)
 	  w->nonfreeing_fn = !can_free;
 	  if (!can_free && dump_file)
 	    fprintf (dump_file, "Function found not to call free: %s\n",
-		     w->name ());
+		     w->dump_name ());
 
 	  if (w_l->state_previously_known != IPA_NEITHER
 	      && this_state > w_l->state_previously_known)
@@ -1688,7 +1691,7 @@ propagate_pure_const (void)
 		    if (dump_file)
 		      fprintf (dump_file, "Function found to be %sconst: %s\n",
 			       this_looping ? "looping " : "",
-			       w->name ());
+			       w->dump_name ());
 		  }
 		/* Turning constructor or destructor to non-looping const/pure
 		   enables us to possibly remove the function completely.  */
@@ -1703,7 +1706,7 @@ propagate_pure_const (void)
 		      fprintf (dump_file,
 			       "Declaration updated to be %sconst: %s\n",
 			       this_looping ? "looping " : "",
-			       w->name ());
+			       w->dump_name ());
 		    remove_p |= has_cdtor;
 		  }
 		break;
@@ -1715,7 +1718,7 @@ propagate_pure_const (void)
 		    if (dump_file)
 		      fprintf (dump_file, "Function found to be %spure: %s\n",
 			       this_looping ? "looping " : "",
-			       w->name ());
+			       w->dump_name ());
 		  }
 		if (this_looping)
 		  has_cdtor = false;
@@ -1728,7 +1731,7 @@ propagate_pure_const (void)
 		      fprintf (dump_file,
 			       "Declaration updated to be %spure: %s\n",
 			       this_looping ? "looping " : "",
-			       w->name ());
+			       w->dump_name ());
 		    remove_p |= has_cdtor;
 		  }
 		break;
@@ -1844,7 +1847,7 @@ propagate_nothrow (void)
 		  w->set_nothrow_flag (true);
 		  if (dump_file)
 		    fprintf (dump_file, "Function found to be nothrow: %s\n",
-			     w->name ());
+			     w->dump_name ());
 		}
 	    }
 	  else if (can_throw && !TREE_NOTHROW (w->decl))
@@ -1873,7 +1876,7 @@ dump_malloc_lattice (FILE *dump_file, const char *s)
     {
       funct_state fs = funct_state_summaries->get (node);
       if (fs)
-	fprintf (dump_file, "%s: %s\n", node->name (),
+	fprintf (dump_file, "%s: %s\n", node->dump_name (),
 		 malloc_state_names[fs->malloc_state]);
     }
 }
@@ -1970,7 +1973,7 @@ propagate_malloc (void)
 	  {
 	    if (dump_file && (dump_flags & TDF_DETAILS))
 	      fprintf (dump_file, "Function %s found to be malloc\n",
-		       node->name ());
+		       node->dump_name ());
 
 	    bool malloc_decl_p = DECL_IS_MALLOC (node->decl);
 	    node->set_malloc_flag (true);
@@ -2199,7 +2202,7 @@ pass_local_pure_const::execute (function *fun)
       changed = true;
       if (dump_file)
 	fprintf (dump_file, "Function found to be malloc: %s\n",
-		 node->name ());
+		 node->dump_name ());
     }
 
   free (l);

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mstrict-align -O3" } */
+/* { dg-options "-mstrict-align -O3 -fcommon" } */
 
 struct test_struct_s
 {

@@ -1,5 +1,5 @@
 // PR c++/88337 - Implement P1327R1: Allow dynamic_cast/typeid in constexpr.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // Test HINT = -3 (SRC is a multiple public non-virtual base of DST).
 
 struct A { virtual void a() {} };

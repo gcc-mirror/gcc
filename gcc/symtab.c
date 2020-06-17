@@ -473,6 +473,17 @@ symtab_node::add_to_same_comdat_group (symtab_node *old_node)
 	;
       n->same_comdat_group = this;
     }
+
+  cgraph_node *n;
+  if (comdat_local_p ()
+      && (n = dyn_cast <cgraph_node *> (this)) != NULL)
+    {
+      for (cgraph_edge *e = n->callers; e; e = e->next_caller)
+	if (e->caller->inlined_to)
+	  e->caller->inlined_to->calls_comdat_local = true;
+	else
+	  e->caller->calls_comdat_local = true;
+    }
 }
 
 /* Dissolve the same_comdat_group list in which NODE resides.  */
@@ -605,6 +616,7 @@ symtab_node::create_reference (symtab_node *referred_node,
   ref->referred = referred_node;
   ref->stmt = stmt;
   ref->lto_stmt_uid = 0;
+  ref->speculative_id = 0;
   ref->use = use_type;
   ref->speculative = 0;
 
@@ -658,10 +670,12 @@ symtab_node::clone_references (symtab_node *node)
     {
       bool speculative = ref->speculative;
       unsigned int stmt_uid = ref->lto_stmt_uid;
+      unsigned int spec_id = ref->speculative_id;
 
       ref2 = create_reference (ref->referred, ref->use, ref->stmt);
       ref2->speculative = speculative;
       ref2->lto_stmt_uid = stmt_uid;
+      ref2->speculative_id = spec_id;
     }
 }
 
@@ -676,10 +690,12 @@ symtab_node::clone_referring (symtab_node *node)
     {
       bool speculative = ref->speculative;
       unsigned int stmt_uid = ref->lto_stmt_uid;
+      unsigned int spec_id = ref->speculative_id;
 
       ref2 = ref->referring->create_reference (this, ref->use, ref->stmt);
       ref2->speculative = speculative;
       ref2->lto_stmt_uid = stmt_uid;
+      ref2->speculative_id = spec_id;
     }
 }
 
@@ -690,11 +706,13 @@ symtab_node::clone_reference (ipa_ref *ref, gimple *stmt)
 {
   bool speculative = ref->speculative;
   unsigned int stmt_uid = ref->lto_stmt_uid;
+  unsigned int spec_id = ref->speculative_id;
   ipa_ref *ref2;
 
   ref2 = create_reference (ref->referred, ref->use, stmt);
   ref2->speculative = speculative;
   ref2->lto_stmt_uid = stmt_uid;
+  ref2->speculative_id = spec_id;
   return ref2;
 }
 
@@ -749,6 +767,7 @@ symtab_node::clear_stmts_in_references (void)
       {
 	r->stmt = NULL;
 	r->lto_stmt_uid = 0;
+	r->speculative_id = 0;
       }
 }
 
@@ -781,11 +800,10 @@ symtab_node::dump_references (FILE *file)
   int i;
   for (i = 0; iterate_reference (i, ref); i++)
     {
-      fprintf (file, "%s (%s)",
-	       ref->referred->dump_asm_name (),
-	       ipa_ref_use_name [ref->use]);
+      fprintf (file, "%s (%s) ", ref->referred->dump_asm_name (),
+	       ipa_ref_use_name[ref->use]);
       if (ref->speculative)
-	fprintf (file, " (speculative)");
+	fprintf (file, "(speculative) ");
     }
   fprintf (file, "\n");
 }
@@ -799,11 +817,10 @@ symtab_node::dump_referring (FILE *file)
   int i;
   for (i = 0; iterate_referring(i, ref); i++)
     {
-      fprintf (file, "%s (%s)",
-	       ref->referring->dump_asm_name (),
-	       ipa_ref_use_name [ref->use]);
+      fprintf (file, "%s (%s) ", ref->referring->dump_asm_name (),
+	       ipa_ref_use_name[ref->use]);
       if (ref->speculative)
-	fprintf (file, " (speculative)");
+	fprintf (file, "(speculative) ");
     }
   fprintf (file, "\n");
 }
@@ -1859,7 +1876,7 @@ symtab_node::noninterposable_alias (void)
   symtab_node *node = ultimate_alias_target ();
   gcc_assert (!node->alias && !node->weakref);
   node->call_for_symbol_and_aliases (symtab_node::noninterposable_alias,
-				   (void *)&new_node, true);
+				     (void *)&new_node, true);
   if (new_node)
     return new_node;
 
@@ -1870,7 +1887,17 @@ symtab_node::noninterposable_alias (void)
   /* Otherwise create a new one.  */
   new_decl = copy_node (node->decl);
   DECL_DLLIMPORT_P (new_decl) = 0;
-  DECL_NAME (new_decl) = clone_function_name (node->decl, "localalias");
+  tree name = clone_function_name (node->decl, "localalias");
+  if (!flag_wpa)
+    {
+      unsigned long num = 0;
+      /* In the rare case we already have a localalias, but the above
+	 node->call_for_symbol_and_aliases call didn't find any suitable,
+	 iterate until we find one not used yet.  */
+      while (symtab_node::get_for_asmname (name))
+	name = clone_function_name (node->decl, "localalias", num++);
+    }
+  DECL_NAME (new_decl) = name;
   if (TREE_CODE (new_decl) == FUNCTION_DECL)
     DECL_STRUCT_FUNCTION (new_decl) = NULL;
   DECL_INITIAL (new_decl) = NULL;
@@ -2043,22 +2070,22 @@ symtab_node::nonzero_address ()
      bind to NULL. This is on by default on embedded targets only.
 
      Otherwise all non-WEAK symbols must be defined and thus non-NULL or
-     linking fails.  Important case of WEAK we want to do well are comdats.
-     Those are handled by later check for definition.
+     linking fails.  Important case of WEAK we want to do well are comdats,
+     which also must be defined somewhere.
 
      When parsing, beware the cases when WEAK attribute is added later.  */
-  if (!DECL_WEAK (decl)
+  if ((!DECL_WEAK (decl) || DECL_COMDAT (decl))
       && flag_delete_null_pointer_checks)
     {
       refuse_visibility_changes = true;
       return true;
     }
 
-  /* If target is defined and either comdat or not extern, we know it will be
+  /* If target is defined and not extern, we know it will be
      output and thus it will bind to non-NULL.
      Play safe for flag_delete_null_pointer_checks where weak definition may
      be re-defined by NULL.  */
-  if (definition && (!DECL_EXTERNAL (decl) || DECL_COMDAT (decl))
+  if (definition && !DECL_EXTERNAL (decl)
       && (flag_delete_null_pointer_checks || !DECL_WEAK (decl)))
     {
       if (!DECL_WEAK (decl))

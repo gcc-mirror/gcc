@@ -128,10 +128,16 @@ struct omp_context
      corresponding tracking loop iteration variables.  */
   hash_map<tree, tree> *lastprivate_conditional_map;
 
-  /* A tree_list of the reduction clauses in this context.  */
+  /* A tree_list of the reduction clauses in this context. This is
+    only used for checking the consistency of OpenACC reduction
+    clauses in scan_omp_for and is not guaranteed to contain a valid
+    value outside of this function. */
   tree local_reduction_clauses;
 
-  /* A tree_list of the reduction clauses in outer contexts.  */
+  /* A tree_list of the reduction clauses in outer contexts. This is
+    only used for checking the consistency of OpenACC reduction
+    clauses in scan_omp_for and is not guaranteed to contain a valid
+    value outside of this function. */
   tree outer_reduction_clauses;
 
   /* Nesting depth of this context.  Used to beautify error messages re
@@ -477,18 +483,30 @@ use_pointer_for_field (tree decl, omp_context *shared_ctx)
 	  omp_context *up;
 
 	  for (up = shared_ctx->outer; up; up = up->outer)
-	    if (is_taskreg_ctx (up) && maybe_lookup_decl (decl, up))
+	    if ((is_taskreg_ctx (up)
+		 || (gimple_code (up->stmt) == GIMPLE_OMP_TARGET
+		     && is_gimple_omp_offloaded (up->stmt)))
+		&& maybe_lookup_decl (decl, up))
 	      break;
 
 	  if (up)
 	    {
 	      tree c;
 
-	      for (c = gimple_omp_taskreg_clauses (up->stmt);
-		   c; c = OMP_CLAUSE_CHAIN (c))
-		if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SHARED
-		    && OMP_CLAUSE_DECL (c) == decl)
-		  break;
+	      if (gimple_code (up->stmt) == GIMPLE_OMP_TARGET)
+		{
+		  for (c = gimple_omp_target_clauses (up->stmt);
+		       c; c = OMP_CLAUSE_CHAIN (c))
+		    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+			&& OMP_CLAUSE_DECL (c) == decl)
+		      break;
+		}
+	      else
+		for (c = gimple_omp_taskreg_clauses (up->stmt);
+		     c; c = OMP_CLAUSE_CHAIN (c))
+		  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SHARED
+		      && OMP_CLAUSE_DECL (c) == decl)
+		    break;
 
 	      if (c)
 		goto maybe_mark_addressable_and_ret;
@@ -919,8 +937,6 @@ new_omp_context (gimple *stmt, omp_context *outer_ctx)
       ctx->outer = outer_ctx;
       ctx->cb = outer_ctx->cb;
       ctx->cb.block = NULL;
-      ctx->local_reduction_clauses = NULL;
-      ctx->outer_reduction_clauses = ctx->outer_reduction_clauses;
       ctx->depth = outer_ctx->depth + 1;
     }
   else
@@ -936,8 +952,6 @@ new_omp_context (gimple *stmt, omp_context *outer_ctx)
       ctx->cb.transform_call_graph_edges = CB_CGE_MOVE;
       ctx->cb.adjust_array_error_bounds = true;
       ctx->cb.dont_remap_vla_if_no_change = true;
-      ctx->local_reduction_clauses = NULL;
-      ctx->outer_reduction_clauses = NULL;
       ctx->depth = 1;
     }
 
@@ -3781,7 +3795,14 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       break;
 
     case GIMPLE_OMP_TARGET:
-      scan_omp_target (as_a <gomp_target *> (stmt), ctx);
+      if (is_gimple_omp_offloaded (stmt))
+	{
+	  taskreg_nesting_level++;
+	  scan_omp_target (as_a <gomp_target *> (stmt), ctx);
+	  taskreg_nesting_level--;
+	}
+      else
+	scan_omp_target (as_a <gomp_target *> (stmt), ctx);
       break;
 
     case GIMPLE_OMP_TEAMS:
@@ -10301,7 +10322,6 @@ lower_omp_for_scan (gimple_seq *body_p, gimple_seq *dlist, gomp_for *stmt,
   gimple_seq_add_stmt (body_p, g);
 
   tree cplx = create_tmp_var (build_complex_type (unsigned_type_node, false));
-  DECL_GIMPLE_REG_P (cplx) = 1;
   g = gimple_build_call_internal (IFN_MUL_OVERFLOW, 2, thread_nump1, twok);
   gimple_call_set_lhs (g, cplx);
   gimple_seq_add_stmt (body_p, g);
@@ -10553,13 +10573,31 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   for (i = 0; i < gimple_omp_for_collapse (stmt); i++)
     {
       rhs_p = gimple_omp_for_initial_ptr (stmt, i);
-      if (!is_gimple_min_invariant (*rhs_p))
+      if (TREE_CODE (*rhs_p) == TREE_VEC)
+	{
+	  if (!is_gimple_min_invariant (TREE_VEC_ELT (*rhs_p, 1)))
+	    TREE_VEC_ELT (*rhs_p, 1)
+	      = get_formal_tmp_var (TREE_VEC_ELT (*rhs_p, 1), &cnt_list);
+	  if (!is_gimple_min_invariant (TREE_VEC_ELT (*rhs_p, 2)))
+	    TREE_VEC_ELT (*rhs_p, 1)
+	      = get_formal_tmp_var (TREE_VEC_ELT (*rhs_p, 2), &cnt_list);
+	}
+      else if (!is_gimple_min_invariant (*rhs_p))
 	*rhs_p = get_formal_tmp_var (*rhs_p, &cnt_list);
       else if (TREE_CODE (*rhs_p) == ADDR_EXPR)
 	recompute_tree_invariant_for_addr_expr (*rhs_p);
 
       rhs_p = gimple_omp_for_final_ptr (stmt, i);
-      if (!is_gimple_min_invariant (*rhs_p))
+      if (TREE_CODE (*rhs_p) == TREE_VEC)
+	{
+	  if (!is_gimple_min_invariant (TREE_VEC_ELT (*rhs_p, 1)))
+	    TREE_VEC_ELT (*rhs_p, 1)
+	      = get_formal_tmp_var (TREE_VEC_ELT (*rhs_p, 1), &cnt_list);
+	  if (!is_gimple_min_invariant (TREE_VEC_ELT (*rhs_p, 2)))
+	    TREE_VEC_ELT (*rhs_p, 1)
+	      = get_formal_tmp_var (TREE_VEC_ELT (*rhs_p, 2), &cnt_list);
+	}
+      else if (!is_gimple_min_invariant (*rhs_p))
 	*rhs_p = get_formal_tmp_var (*rhs_p, &cnt_list);
       else if (TREE_CODE (*rhs_p) == ADDR_EXPR)
 	recompute_tree_invariant_for_addr_expr (*rhs_p);
@@ -12006,6 +12044,15 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		tkind = GOMP_MAP_FIRSTPRIVATE_INT;
 		x = build_sender_ref (ovar, ctx);
 	      }
+
+	    if (is_gimple_omp_oacc (ctx->stmt))
+	      {
+		gcc_assert (tkind == GOMP_MAP_USE_DEVICE_PTR);
+
+		if (OMP_CLAUSE_USE_DEVICE_PTR_IF_PRESENT (c))
+		  tkind = GOMP_MAP_USE_DEVICE_PTR_IF_PRESENT;
+	      }
+
 	    type = TREE_TYPE (ovar);
 	    if (lang_hooks.decls.omp_array_data (ovar, true))
 	      var = lang_hooks.decls.omp_array_data (ovar, false);

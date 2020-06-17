@@ -258,7 +258,7 @@ check_speculations_1 (cgraph_node *n, vec<cgraph_edge *> *new_edges,
 	    edge_set->add (new_edges->pop ());
 	  edge_set->remove (e);
 
-	  e->resolve_speculation (NULL);
+	  cgraph_edge::resolve_speculation (e, NULL);
 	  speculation_removed = true;
 	}
       else if (!e->inline_failed)
@@ -504,14 +504,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
   if (callee->calls_comdat_local)
     to->calls_comdat_local = true;
   else if (to->calls_comdat_local && comdat_local)
-    {
-      struct cgraph_edge *se = to->callees;
-      for (; se; se = se->next_callee)
-	if (se->inline_failed && se->callee->comdat_local_p ())
-	  break;
-      if (se == NULL)
-	to->calls_comdat_local = false;
-    }
+    to->calls_comdat_local = to->check_calls_comdat_local_p ();
 
   /* FIXME: This assert suffers from roundoff errors, disable it for GCC 5
      and revisit it after conversion to sreals in GCC 6.
@@ -538,6 +531,11 @@ inline_call (struct cgraph_edge *e, bool update_original,
   return new_edges_found;
 }
 
+/* For each node that was made the holder of function body by
+   save_inline_function_body, this summary contains pointer to the previous
+   holder of the body.  */
+
+function_summary <tree *> *ipa_saved_clone_sources;
 
 /* Copy function body of NODE and redirect all inline clones to it.
    This is done before inline plan is applied to NODE when there are
@@ -553,7 +551,7 @@ save_inline_function_body (struct cgraph_node *node)
 
   if (dump_file)
     fprintf (dump_file, "\nSaving body of %s for later reuse\n",
-	     node->name ());
+	     node->dump_name ());
  
   gcc_assert (node == cgraph_node::get (node->decl));
 
@@ -595,6 +593,22 @@ save_inline_function_body (struct cgraph_node *node)
       first_clone->next_sibling_clone = NULL;
       gcc_assert (!first_clone->prev_sibling_clone);
     }
+
+  tree prev_body_holder = node->decl;
+  if (!ipa_saved_clone_sources)
+    ipa_saved_clone_sources = new function_summary <tree *> (symtab);
+  else
+    {
+      tree *p = ipa_saved_clone_sources->get (node);
+      if (p)
+	{
+	  prev_body_holder = *p;
+	  gcc_assert (prev_body_holder);
+	}
+    }
+  *ipa_saved_clone_sources->get_create (first_clone) = prev_body_holder;
+  first_clone->former_clone_of
+    = node->former_clone_of ? node->former_clone_of : node->decl;
   first_clone->clone_of = NULL;
 
   /* Now node in question has no clones.  */
@@ -712,7 +726,7 @@ inline_transform (struct cgraph_node *node)
       if (!e->inline_failed)
 	has_inline = true;
       next = e->next_callee;
-      e->redirect_call_stmt_to_callee ();
+      cgraph_edge::redirect_call_stmt_to_callee (e);
     }
   node->remove_all_references ();
 

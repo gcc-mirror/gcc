@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-eh.h"
 #include "builtins.h"
 #include "cfgloop.h"
+#include "attribs.h"
 
 #include "ipa-icf-gimple.h"
 
@@ -395,6 +396,8 @@ func_checker::compare_loops (basic_block bb1, basic_block bb2)
     return return_false_with_msg ("dont_vectorize");
   if (l1->force_vectorize != l2->force_vectorize)
     return return_false_with_msg ("force_vectorize");
+  if (l1->finite_p != l2->finite_p)
+    return return_false_with_msg ("finite_p");
   if (l1->unroll != l2->unroll)
     return return_false_with_msg ("unroll");
   if (!compare_variable_decl (l1->simduid, l2->simduid))
@@ -568,6 +571,9 @@ func_checker::compare_gimple_call (gcall *s1, gcall *s2)
       || (fntype1 && !types_compatible_p (fntype1, fntype2)))
     return return_false_with_msg ("call function types are not compatible");
 
+  if (fntype1 && fntype2 && comp_type_attributes (fntype1, fntype2) != 1)
+    return return_false_with_msg ("different fntype attributes");
+
   tree chain1 = gimple_call_chain (s1);
   tree chain2 = gimple_call_chain (s2);
   if ((chain1 && !chain2)
@@ -620,8 +626,8 @@ func_checker::compare_gimple_assign (gimple *s1, gimple *s2)
       arg1 = gimple_op (s1, i);
       arg2 = gimple_op (s2, i);
 
-      /* LHS types of NOP_EXPR must be compatible.  */
-      if (CONVERT_EXPR_CODE_P (code1) && i == 0)
+      /* Compare types for LHS.  */
+      if (i == 0)
 	{
 	  if (!compatible_types_p (TREE_TYPE (arg1), TREE_TYPE (arg2)))
 	    return return_false_with_msg ("GIMPLE NOP LHS type mismatch");

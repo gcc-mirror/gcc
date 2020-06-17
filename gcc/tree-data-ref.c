@@ -1751,7 +1751,7 @@ create_ifn_alias_checks (tree *cond_expr,
     return false;
 
   /* Make sure that both DRs access the same pattern of bytes,
-     with a constant length and and step.  */
+     with a constant length and step.  */
   poly_uint64 seg_len;
   if (!operand_equal_p (dr_a.seg_len, dr_b.seg_len, 0)
       || !poly_int_tree_p (dr_a.seg_len, &seg_len)
@@ -4821,17 +4821,19 @@ build_classic_dist_vector_1 (struct data_dependence_relation *ddr,
   return true;
 }
 
-/* Return true when the DDR contains only constant access functions.  */
+/* Return true when the DDR contains only invariant access functions wrto. loop
+   number LNUM.  */
 
 static bool
-constant_access_functions (const struct data_dependence_relation *ddr)
+invariant_access_functions (const struct data_dependence_relation *ddr,
+			    int lnum)
 {
   unsigned i;
   subscript *sub;
 
   FOR_EACH_VEC_ELT (DDR_SUBSCRIPTS (ddr), i, sub)
-    if (!evolution_function_is_constant_p (SUB_ACCESS_FN (sub, 0))
-	|| !evolution_function_is_constant_p (SUB_ACCESS_FN (sub, 1)))
+    if (!evolution_function_is_invariant_p (SUB_ACCESS_FN (sub, 0), lnum)
+	|| !evolution_function_is_invariant_p (SUB_ACCESS_FN (sub, 1), lnum))
       return false;
 
   return true;
@@ -5030,7 +5032,7 @@ build_classic_dist_vector (struct data_dependence_relation *ddr,
       dist_v = lambda_vector_new (DDR_NB_LOOPS (ddr));
       save_dist_v (ddr, dist_v);
 
-      if (constant_access_functions (ddr))
+      if (invariant_access_functions (ddr, loop_nest->num))
 	add_distance_for_zero_overlaps (ddr);
 
       if (DDR_NB_LOOPS (ddr) > 1)

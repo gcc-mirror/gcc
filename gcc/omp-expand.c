@@ -6029,8 +6029,8 @@ expand_oacc_for (struct omp_region *region, struct omp_for_data *fd)
   basic_block cont_bb = region->cont; /* BB ending in OMP_CONTINUE  */
   basic_block bottom_bb = NULL;
 
-  /* entry_bb has two sucessors; the branch edge is to the exit
-     block,  fallthrough edge to body.  */
+  /* entry_bb has two successors; the branch edge is to the exit
+     block, fallthrough edge to body.  */
   gcc_assert (EDGE_COUNT (entry_bb->succs) == 2
 	      && BRANCH_EDGE (entry_bb)->dest == exit_bb);
 
@@ -6532,14 +6532,22 @@ expand_omp_for (struct omp_region *region, gimple *inner_stmt)
     loops_state_set (LOOPS_NEED_FIXUP);
 
   if (gimple_omp_for_kind (fd.for_stmt) == GF_OMP_FOR_KIND_SIMD)
-    expand_omp_simd (region, &fd);
+    {
+      if (fd.non_rect)
+	sorry_at (gimple_location (fd.for_stmt),
+		  "non-rectangular %<simd%> not supported yet");
+      expand_omp_simd (region, &fd);
+    }
   else if (gimple_omp_for_kind (fd.for_stmt) == GF_OMP_FOR_KIND_OACC_LOOP)
     {
-      gcc_assert (!inner_stmt);
+      gcc_assert (!inner_stmt && !fd.non_rect);
       expand_oacc_for (region, &fd);
     }
   else if (gimple_omp_for_kind (fd.for_stmt) == GF_OMP_FOR_KIND_TASKLOOP)
     {
+      if (fd.non_rect)
+	sorry_at (gimple_location (fd.for_stmt),
+		  "non-rectangular %<taskloop%> not supported yet");
       if (gimple_omp_for_combined_into_p (fd.for_stmt))
 	expand_omp_taskloop_for_inner (region, &fd, inner_stmt);
       else
@@ -6548,6 +6556,9 @@ expand_omp_for (struct omp_region *region, gimple *inner_stmt)
   else if (fd.sched_kind == OMP_CLAUSE_SCHEDULE_STATIC
 	   && !fd.have_ordered)
     {
+      if (fd.non_rect)
+	sorry_at (gimple_location (fd.for_stmt),
+		  "non-rectangular OpenMP loops not supported yet");
       if (fd.chunk_size == NULL)
 	expand_omp_for_static_nochunk (region, &fd, inner_stmt);
       else
@@ -6560,7 +6571,7 @@ expand_omp_for (struct omp_region *region, gimple *inner_stmt)
       tree sched_arg = NULL_TREE;
 
       gcc_assert (gimple_omp_for_kind (fd.for_stmt)
-		  == GF_OMP_FOR_KIND_FOR);
+		  == GF_OMP_FOR_KIND_FOR && !fd.non_rect);
       if (fd.chunk_size == NULL
 	  && fd.sched_kind == OMP_CLAUSE_SCHEDULE_STATIC)
 	fd.chunk_size = integer_zero_node;
@@ -8418,7 +8429,9 @@ expand_omp_target (struct omp_region *region)
 					      i_async));
 	  }
 	if (t_async)
-	  args.safe_push (t_async);
+	  args.safe_push (force_gimple_operand_gsi (&gsi, t_async, true,
+						    NULL_TREE, true,
+						    GSI_SAME_STMT));
 
 	/* Save the argument index, and ... */
 	unsigned t_wait_idx = args.length ();
@@ -8431,9 +8444,12 @@ expand_omp_target (struct omp_region *region)
 	for (; c; c = OMP_CLAUSE_CHAIN (c))
 	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_WAIT)
 	    {
-	      args.safe_push (fold_convert_loc (OMP_CLAUSE_LOCATION (c),
-						integer_type_node,
-						OMP_CLAUSE_WAIT_EXPR (c)));
+	      tree arg = fold_convert_loc (OMP_CLAUSE_LOCATION (c),
+					   integer_type_node,
+					   OMP_CLAUSE_WAIT_EXPR (c));
+	      arg = force_gimple_operand_gsi (&gsi, arg, true, NULL_TREE, true,
+					      GSI_SAME_STMT);
+	      args.safe_push (arg);
 	      num_waits++;
 	    }
 

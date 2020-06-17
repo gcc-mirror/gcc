@@ -1,7 +1,6 @@
 // PR ipa/63587
 // { dg-do compile { target c++11 } }
-// { dg-options "-O2" }
-// { dg-additional-options "-Wno-return-type" }
+// { dg-options "-O2 -Wno-return-type" }
 
 namespace boost {
 class basic_cstring

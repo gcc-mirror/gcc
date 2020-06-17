@@ -102,12 +102,28 @@ static void issue7978c(uint32_t *sync) {
 // #include'd twice.  No runtime test; just make sure it compiles.
 #include "issue8331.h"
 
+// issue 8945
+
+typedef void (*PFunc8945)();
+extern PFunc8945 func8945; // definition is in test.go
+
 // issue 20910
 void callMulti(void);
 
 // issue 28772 part 2 - part 1 in issuex.go
 #define issue28772Constant2 2
 
+
+// issue 31891
+typedef struct {
+	long obj;
+} Issue31891A;
+
+typedef struct {
+	long obj;
+} Issue31891B;
+
+void callIssue31891(void);
 */
 import "C"
 
@@ -503,6 +519,13 @@ func test7978(t *testing.T) {
 
 var issue8331Var C.issue8331
 
+// issue 8945
+
+//export Test8945
+func Test8945() {
+	_ = C.func8945
+}
+
 // issue 20910
 
 //export multi
@@ -517,3 +540,15 @@ func test20910(t *testing.T) {
 // issue 28772 part 2
 
 const issue28772Constant2 = C.issue28772Constant2
+
+// issue 31891
+
+//export useIssue31891A
+func useIssue31891A(c *C.Issue31891A) {}
+
+//export useIssue31891B
+func useIssue31891B(c *C.Issue31891B) {}
+
+func test31891(t *testing.T) {
+	C.callIssue31891()
+}

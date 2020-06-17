@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build ignore
-
 package ioutil_test
 
 import (
@@ -52,6 +50,29 @@ func ExampleTempDir() {
 	tmpfn := filepath.Join(dir, "tmpfile")
 	if err := ioutil.WriteFile(tmpfn, content, 0666); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func ExampleTempDir_suffix() {
+	parentDir := os.TempDir()
+	logsDir, err := ioutil.TempDir(parentDir, "*-logs")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.RemoveAll(logsDir) // clean up
+
+	// Logs can be cleaned out earlier if needed by searching
+	// for all directories whose suffix ends in *-logs.
+	globPattern := filepath.Join(parentDir, "*-logs")
+	matches, err := filepath.Glob(globPattern)
+	if err != nil {
+		log.Fatalf("Failed to match %q: %v", globPattern, err)
+	}
+
+	for _, match := range matches {
+		if err := os.RemoveAll(match); err != nil {
+			log.Printf("Failed to remove %q: %v", match, err)
+		}
 	}
 }
 

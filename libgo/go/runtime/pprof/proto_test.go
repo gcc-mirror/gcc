@@ -118,9 +118,9 @@ func TestConvertCPUProfile(t *testing.T) {
 
 	b := []uint64{
 		3, 0, 500, // hz = 500
-		5, 0, 10, uint64(addr1), uint64(addr1 + 2), // 10 samples in addr1
-		5, 0, 40, uint64(addr2), uint64(addr2 + 2), // 40 samples in addr2
-		5, 0, 10, uint64(addr1), uint64(addr1 + 2), // 10 samples in addr1
+		5, 0, 10, uint64(addr1 + 1), uint64(addr1 + 2), // 10 samples in addr1
+		5, 0, 40, uint64(addr2 + 1), uint64(addr2 + 2), // 40 samples in addr2
+		5, 0, 10, uint64(addr1 + 1), uint64(addr1 + 2), // 10 samples in addr1
 	}
 	p, err := translateCPUProfile(b)
 	if err != nil {
@@ -360,6 +360,17 @@ func TestMapping(t *testing.T) {
 					continue
 				}
 			}
+
+			if traceback == "Go+C" {
+				// The test code was arranged to have PCs from C and
+				// they are not symbolized.
+				// Check no Location containing those unsymbolized PCs contains multiple lines.
+				for i, loc := range prof.Location {
+					if !symbolized(loc) && len(loc.Line) > 1 {
+						t.Errorf("Location[%d] contains unsymbolized PCs and multiple lines: %v", i, loc)
+					}
+				}
+			}
 		})
 	}
 }
@@ -411,5 +422,18 @@ func TestFakeMapping(t *testing.T) {
 			t.Errorf("mapping %+v has HasFunctions=false, but all referenced locations from this lapping were symbolized successfully", m)
 			continue
 		}
+	}
+}
+
+// Make sure the profiler can handle an empty stack trace.
+// See issue 37967.
+func TestEmptyStack(t *testing.T) {
+	b := []uint64{
+		3, 0, 500, // hz = 500
+		3, 0, 10, // 10 samples with an empty stack trace
+	}
+	_, err := translateCPUProfile(b)
+	if err != nil {
+		t.Fatalf("translating profile: %v", err)
 	}
 }

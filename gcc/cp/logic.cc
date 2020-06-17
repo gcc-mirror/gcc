@@ -238,7 +238,7 @@ struct formula
 
   formula (tree t)
   {
-    /* This should call emplace_back(). There's a an extra copy being
+    /* This should call emplace_back(). There's an extra copy being
        invoked by using push_back().  */
     m_clauses.push_back (t);
     m_current = m_clauses.begin ();
@@ -355,7 +355,7 @@ atomic_p (tree t)
 
 /* Recursively count the number of clauses produced when converting T
    to DNF. Returns a pair containing the number of clauses and a bool
-   value signifying that the the tree would be rewritten as a result of
+   value signifying that the tree would be rewritten as a result of
    distributing. In general, a conjunction for which this flag is set
    is considered a disjunction for the purpose of counting.  */
 
@@ -421,7 +421,7 @@ dnf_size_r (tree t)
       /* Matches constraints of the form P /\ Q, possibly resulting
          in the distribution of one side over the other. When both
          P and Q are disjunctions, the number of clauses are multiplied.
-         When only one of P and Q is a disjunction, the the number of
+	 When only one of P and Q is a disjunction, the number of
          clauses are added. Otherwise, neither side is a disjunction and
          no clauses are created.  */
       if (disjunction_p (lhs))
@@ -463,7 +463,7 @@ dnf_size_r (tree t)
 
 /* Recursively count the number of clauses produced when converting T
    to CNF. Returns a pair containing the number of clauses and a bool
-   value signifying that the the tree would be rewritten as a result of
+   value signifying that the tree would be rewritten as a result of
    distributing. In general, a disjunction for which this flag is set
    is considered a conjunction for the purpose of counting.  */
 
@@ -488,7 +488,7 @@ cnf_size_r (tree t)
       /* Matches constraints of the form P \/ Q, possibly resulting
          in the distribution of one side over the other. When both
          P and Q are conjunctions, the number of clauses are multiplied.
-         When only one of P and Q is a conjunction, the the number of
+	 When only one of P and Q is a conjunction, the number of
          clauses are added. Otherwise, neither side is a conjunction and
          no clauses are created.  */
       if (disjunction_p (lhs))

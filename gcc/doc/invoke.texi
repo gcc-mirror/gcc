@@ -153,6 +153,7 @@ listing and explanation of the binary and decimal byte size prefixes.
 * Diagnostic Message Formatting Options:: Controlling how diagnostics should
                         be formatted.
 * Warning Options::     How picky should the compiler be?
+* Static Analyzer Options:: More expensive warnings.
 * Debugging Options::   Producing debuggable code.
 * Optimize Options::    How much optimization?
 * Instrumentation Options:: Enabling profiling and extra run-time error checking.
@@ -184,7 +185,9 @@ in the following sections.
 @table @emph
 @item Overall Options
 @xref{Overall Options,,Options Controlling the Kind of Output}.
-@gccoptlist{-c  -S  -E  -o @var{file}  -x @var{language}  @gol
+@gccoptlist{-c  -S  -E  -o @var{file} @gol
+-dumpbase @var{dumpbase}  -dumpbase-ext @var{auxdropsuf} @gol
+-dumpdir @var{dumppfx}  -x @var{language}  @gol
 -v  -###  --help@r{[}=@var{class}@r{[},@dots{}@r{]]}  --target-help  --version @gol
 -pass-exit-codes  -pipe  -specs=@var{file}  -wrapper  @gol
 @@@var{file}  -ffile-prefix-map=@var{old}=@var{new}  @gol
@@ -230,20 +233,26 @@ in the following sections.
 -fvisibility-inlines-hidden @gol
 -fvisibility-ms-compat @gol
 -fext-numeric-literals @gol
--Wabi=@var{n}  -Wabi-tag  -Wcomma-subscript  -Wconversion-null @gol
--Wctor-dtor-privacy @gol
+-Wabi-tag  -Wcatch-value  -Wcatch-value=@var{n} @gol
+-Wno-class-conversion  -Wclass-memaccess @gol
+-Wcomma-subscript  -Wconditionally-supported @gol
+-Wno-conversion-null  -Wctor-dtor-privacy  -Wno-delete-incomplete @gol
 -Wdelete-non-virtual-dtor  -Wdeprecated-copy  -Wdeprecated-copy-dtor @gol
--Wliteral-suffix -Wmismatched-tags @gol
--Wmultiple-inheritance  -Wno-init-list-lifetime @gol
--Wnamespaces  -Wnarrowing @gol
--Wpessimizing-move  -Wredundant-move -Wredundant-tags @gol
--Wnoexcept  -Wnoexcept-type  -Wclass-memaccess @gol
--Wnon-virtual-dtor  -Wreorder  -Wregister @gol
--Weffc++  -Wstrict-null-sentinel  -Wtemplates @gol
+-Weffc++  -Wextra-semi  -Wno-inaccessible-base @gol
+-Wno-inherited-variadic-ctor  -Wno-init-list-lifetime @gol
+-Wno-invalid-offsetof  -Wno-literal-suffix  -Wmismatched-tags @gol
+-Wmultiple-inheritance  -Wnamespaces  -Wnarrowing @gol
+-Wnoexcept  -Wnoexcept-type  -Wnon-virtual-dtor @gol
+-Wpessimizing-move  -Wno-placement-new  -Wplacement-new=@var{n} @gol
+-Wredundant-move -Wredundant-tags @gol
+-Wreorder  -Wregister @gol
+-Wstrict-null-sentinel  -Wno-subobject-linkage  -Wtemplates @gol
 -Wno-non-template-friend  -Wold-style-cast @gol
--Woverloaded-virtual  -Wno-pmf-conversions @gol
--Wno-class-conversion  -Wno-terminate @gol
--Wsign-promo  -Wvirtual-inheritance  -Wvolatile}
+-Woverloaded-virtual  -Wno-pmf-conversions -Wsign-promo @gol
+-Wsized-deallocation  -Wsuggest-final-methods @gol
+-Wsuggest-final-types  -Wsuggest-override  @gol
+-Wno-terminate  -Wuseless-cast  -Wvirtual-inheritance  @gol
+-Wno-virtual-move-assign  -Wvolatile  -Wzero-as-null-pointer-constant}
 
 @item Objective-C and Objective-C++ Language Options
 @xref{Objective-C and Objective-C++ Dialect Options,,Options Controlling
@@ -263,7 +272,7 @@ Objective-C and Objective-C++ Dialects}.
 -freplace-objc-classes @gol
 -fzero-link @gol
 -gen-decls @gol
--Wassign-intercept @gol
+-Wassign-intercept  -Wno-property-assign-default @gol
 -Wno-protocol  -Wselector @gol
 -Wstrict-selector-match @gol
 -Wundeclared-selector}
@@ -281,97 +290,138 @@ Objective-C and Objective-C++ Dialects}.
 -fdiagnostics-minimum-margin-width=@var{width} @gol
 -fdiagnostics-parseable-fixits  -fdiagnostics-generate-patch @gol
 -fdiagnostics-show-template-tree  -fno-elide-type @gol
+-fdiagnostics-path-format=@r{[}none@r{|}separate-events@r{|}inline-events@r{]} @gol
+-fdiagnostics-show-path-depths @gol
 -fno-show-column}
 
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
 @gccoptlist{-fsyntax-only  -fmax-errors=@var{n}  -Wpedantic @gol
 -pedantic-errors @gol
--w  -Wextra  -Wall  -Waddress  -Waddress-of-packed-member @gol
--Waggregate-return  -Waligned-new @gol
--Walloc-zero  -Walloc-size-larger-than=@var{byte-size} @gol
+-w  -Wextra  -Wall  -Wabi=@var{n} @gol
+-Waddress  -Wno-address-of-packed-member  -Waggregate-return @gol
+-Walloc-size-larger-than=@var{byte-size}  -Walloc-zero @gol
 -Walloca  -Walloca-larger-than=@var{byte-size} @gol
--Wno-aggressive-loop-optimizations  -Warray-bounds  -Warray-bounds=@var{n} @gol
--Wno-attributes  -Wattribute-alias=@var{n}  @gol
--Wbool-compare  -Wbool-operation @gol
+-Wno-aggressive-loop-optimizations @gol
+-Warith-conversion @gol
+-Warray-bounds  -Warray-bounds=@var{n} @gol
+-Wno-attributes  -Wattribute-alias=@var{n} -Wno-attribute-alias @gol
+-Wno-attribute-warning  -Wbool-compare  -Wbool-operation @gol
 -Wno-builtin-declaration-mismatch @gol
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat @gol
 -Wc11-c2x-compat @gol
 -Wc++-compat  -Wc++11-compat  -Wc++14-compat  -Wc++17-compat  @gol
 -Wc++20-compat  @gol
 -Wcast-align  -Wcast-align=strict  -Wcast-function-type  -Wcast-qual  @gol
--Wchar-subscripts  -Wcatch-value  -Wcatch-value=@var{n} @gol
--Wclobbered  -Wcomment  -Wconditionally-supported @gol
--Wconversion  -Wcoverage-mismatch  -Wno-cpp  -Wdangling-else  -Wdate-time @gol
--Wdelete-incomplete @gol
--Wno-attribute-warning @gol
+-Wchar-subscripts @gol
+-Wclobbered  -Wcomment @gol
+-Wconversion  -Wno-coverage-mismatch  -Wno-cpp @gol
+-Wdangling-else  -Wdate-time @gol
 -Wno-deprecated  -Wno-deprecated-declarations  -Wno-designated-init @gol
 -Wdisabled-optimization @gol
--Wno-discarded-qualifiers  -Wno-discarded-array-qualifiers @gol
+-Wno-discarded-array-qualifiers  -Wno-discarded-qualifiers @gol
 -Wno-div-by-zero  -Wdouble-promotion @gol
 -Wduplicated-branches  -Wduplicated-cond @gol
--Wempty-body  -Wenum-compare  -Wenum-conversion @gol
--Wno-endif-labels  -Wexpansion-to-defined @gol
--Werror  -Werror=*  -Wextra-semi  -Wfatal-errors @gol
--Wfloat-equal  -Wformat  -Wformat=2 @gol
+-Wempty-body  -Wno-endif-labels  -Wenum-compare  -Wenum-conversion @gol
+-Werror  -Werror=*  -Wexpansion-to-defined  -Wfatal-errors @gol
+-Wfloat-conversion  -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wno-format-contains-nul  -Wno-format-extra-args  @gol
 -Wformat-nonliteral  -Wformat-overflow=@var{n} @gol
 -Wformat-security  -Wformat-signedness  -Wformat-truncation=@var{n} @gol
 -Wformat-y2k  -Wframe-address @gol
 -Wframe-larger-than=@var{byte-size}  -Wno-free-nonheap-object @gol
--Wjump-misses-init @gol
--Whsa  -Wif-not-aligned @gol
--Wignored-qualifiers  -Wignored-attributes  -Wincompatible-pointer-types @gol
+-Wno-hsa  -Wno-if-not-aligned  -Wno-ignored-attributes @gol
+-Wignored-qualifiers  -Wno-incompatible-pointer-types @gol
 -Wimplicit  -Wimplicit-fallthrough  -Wimplicit-fallthrough=@var{n} @gol
--Wimplicit-function-declaration  -Wimplicit-int @gol
--Winaccessible-base @gol
+-Wno-implicit-function-declaration  -Wno-implicit-int @gol
 -Winit-self  -Winline  -Wno-int-conversion  -Wint-in-bool-context @gol
--Wno-int-to-pointer-cast  -Winvalid-memory-model  -Wno-invalid-offsetof @gol
--Wzero-length-bounds @gol
--Winvalid-pch  -Wlarger-than=@var{byte-size} @gol
--Wlogical-op  -Wlogical-not-parentheses  -Wlong-long @gol
--Wmain  -Wmaybe-uninitialized  -Wmemset-elt-size  -Wmemset-transposed-args @gol
+-Wno-int-to-pointer-cast  -Wno-invalid-memory-model @gol
+-Winvalid-pch  -Wjump-misses-init  -Wlarger-than=@var{byte-size} @gol
+-Wlogical-not-parentheses  -Wlogical-op  -Wlong-long @gol
+-Wno-lto-type-mismatch -Wmain  -Wmaybe-uninitialized @gol
+-Wmemset-elt-size  -Wmemset-transposed-args @gol
 -Wmisleading-indentation  -Wmissing-attributes  -Wmissing-braces @gol
 -Wmissing-field-initializers  -Wmissing-format-attribute @gol
--Wmissing-include-dirs  -Wmissing-noreturn  -Wmissing-profile @gol
+-Wmissing-include-dirs  -Wmissing-noreturn  -Wno-missing-profile @gol
 -Wno-multichar  -Wmultistatement-macros  -Wnonnull  -Wnonnull-compare @gol
 -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]} @gol
--Wnull-dereference  -Wodr  -Wno-overflow  -Wopenmp-simd  @gol
--Woverride-init-side-effects  -Woverlength-strings @gol
--Wpacked  -Wpacked-bitfield-compat -Wpacked-not-aligned  -Wpadded @gol
+-Wnull-dereference  -Wno-odr  -Wopenmp-simd  @gol
+-Wno-overflow  -Woverlength-strings  -Wno-override-init-side-effects @gol
+-Wpacked  -Wno-packed-bitfield-compat  -Wpacked-not-aligned  -Wpadded @gol
 -Wparentheses  -Wno-pedantic-ms-format @gol
--Wplacement-new  -Wplacement-new=@var{n} @gol
--Wpointer-arith  -Wpointer-compare  -Wno-pointer-to-int-cast @gol
+-Wpointer-arith  -Wno-pointer-compare  -Wno-pointer-to-int-cast @gol
 -Wno-pragmas  -Wno-prio-ctor-dtor  -Wredundant-decls @gol
--Wrestrict  -Wno-return-local-addr @gol
--Wreturn-type  -Wsequence-point  -Wshadow  -Wno-shadow-ivar @gol
--Wshadow=global  -Wshadow=local  -Wshadow=compatible-local @gol
--Wshift-overflow  -Wshift-overflow=@var{n} @gol
--Wshift-count-negative  -Wshift-count-overflow  -Wshift-negative-value @gol
--Wsign-compare  -Wsign-conversion  -Wfloat-conversion @gol
--Wno-scalar-storage-order  -Wsizeof-pointer-div @gol
--Wsizeof-pointer-memaccess  -Wsizeof-array-argument @gol
+-Wrestrict  -Wno-return-local-addr  -Wreturn-type @gol
+-Wno-scalar-storage-order  -Wsequence-point @gol
+-Wshadow  -Wshadow=global  -Wshadow=local  -Wshadow=compatible-local @gol
+-Wno-shadow-ivar @gol
+-Wno-shift-count-negative  -Wno-shift-count-overflow  -Wshift-negative-value @gol
+-Wno-shift-overflow  -Wshift-overflow=@var{n} @gol
+-Wsign-compare  -Wsign-conversion @gol
+-Wno-sizeof-array-argument @gol
+-Wsizeof-pointer-div  -Wsizeof-pointer-memaccess @gol
 -Wstack-protector  -Wstack-usage=@var{byte-size}  -Wstrict-aliasing @gol
 -Wstrict-aliasing=n  -Wstrict-overflow  -Wstrict-overflow=@var{n} @gol
 -Wstring-compare @gol
--Wstringop-overflow=@var{n}  -Wstringop-truncation  -Wsubobject-linkage @gol
+-Wstringop-overflow=@var{n}  -Wno-stringop-truncation @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}malloc@r{]} @gol
--Wsuggest-final-types @gol  -Wsuggest-final-methods  -Wsuggest-override @gol
--Wswitch  -Wswitch-bool  -Wswitch-default  -Wswitch-enum @gol
--Wswitch-unreachable  -Wsync-nand @gol
+-Wswitch  -Wno-switch-bool  -Wswitch-default  -Wswitch-enum @gol
+-Wno-switch-outside-range  -Wno-switch-unreachable  -Wsync-nand @gol
 -Wsystem-headers  -Wtautological-compare  -Wtrampolines  -Wtrigraphs @gol
 -Wtype-limits  -Wundef @gol
 -Wuninitialized  -Wunknown-pragmas @gol
--Wunsuffixed-float-constants  -Wunused  -Wunused-function @gol
--Wunused-label  -Wunused-local-typedefs  -Wunused-macros @gol
+-Wunsuffixed-float-constants  -Wunused @gol
+-Wunused-but-set-parameter  -Wunused-but-set-variable @gol
+-Wunused-const-variable  -Wunused-const-variable=@var{n} @gol
+-Wunused-function  -Wunused-label  -Wunused-local-typedefs @gol
+-Wunused-macros @gol
 -Wunused-parameter  -Wno-unused-result @gol
 -Wunused-value  -Wunused-variable @gol
--Wunused-const-variable  -Wunused-const-variable=@var{n} @gol
--Wunused-but-set-parameter  -Wunused-but-set-variable @gol
--Wuseless-cast  -Wvariadic-macros  -Wvector-operation-performance @gol
--Wvla  -Wvla-larger-than=@var{byte-size}  -Wvolatile-register-var @gol
--Wwrite-strings @gol
--Wzero-as-null-pointer-constant}
+-Wno-varargs  -Wvariadic-macros @gol
+-Wvector-operation-performance @gol
+-Wvla  -Wvla-larger-than=@var{byte-size}  -Wno-vla-larger-than @gol
+-Wvolatile-register-var  -Wwrite-strings @gol
+-Wzero-length-bounds}
+
+@item Static Analyzer Options
+@gccoptlist{
+-fanalyzer @gol
+-fanalyzer-call-summaries @gol
+-fanalyzer-checker=@var{name} @gol
+-fanalyzer-fine-grained @gol
+-fanalyzer-state-merge @gol
+-fanalyzer-state-purge @gol
+-fanalyzer-transitivity @gol
+-fanalyzer-verbose-edges @gol
+-fanalyzer-verbose-state-changes @gol
+-fanalyzer-verbosity=@var{level} @gol
+-fdump-analyzer @gol
+-fdump-analyzer-stderr @gol
+-fdump-analyzer-callgraph @gol
+-fdump-analyzer-exploded-graph @gol
+-fdump-analyzer-exploded-nodes @gol
+-fdump-analyzer-exploded-nodes-2 @gol
+-fdump-analyzer-exploded-nodes-3 @gol
+-fdump-analyzer-state-purge @gol
+-fdump-analyzer-supergraph @gol
+-Wno-analyzer-double-fclose @gol
+-Wno-analyzer-double-free @gol
+-Wno-analyzer-exposure-through-output-file @gol
+-Wno-analyzer-file-leak @gol
+-Wno-analyzer-free-of-non-heap @gol
+-Wno-analyzer-malloc-leak @gol
+-Wno-analyzer-null-argument @gol
+-Wno-analyzer-null-dereference @gol
+-Wno-analyzer-possible-null-argument @gol
+-Wno-analyzer-possible-null-dereference @gol
+-Wno-analyzer-stale-setjmp-buffer @gol
+-Wno-analyzer-tainted-array-index @gol
+-Wanalyzer-too-complex @gol
+-Wno-analyzer-unsafe-call-within-signal-handler @gol
+-Wno-analyzer-use-after-free @gol
+-Wno-analyzer-use-of-pointer-in-stale-stack-frame @gol
+-Wno-analyzer-use-of-uninitialized-value @gol
+}
 
 @item C and Objective-C-only Warning Options
 @gccoptlist{-Wbad-function-cast  -Wmissing-declarations @gol
@@ -501,8 +551,9 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-p  -pg  -fprofile-arcs  --coverage  -ftest-coverage @gol
 -fprofile-abs-path @gol
 -fprofile-dir=@var{path}  -fprofile-generate  -fprofile-generate=@var{path} @gol
--fprofile-note=@var{path}  -fprofile-update=@var{method} @gol
--fprofile-filter-files=@var{regex}  -fprofile-exclude-files=@var{regex} @gol
+-fprofile-note=@var{path} -fprofile-prefix-path=@var{path} @gol
+-fprofile-update=@var{method} -fprofile-filter-files=@var{regex} @gol
+-fprofile-exclude-files=@var{regex} -fprofile-reproducibility @gol
 -fsanitize=@var{style}  -fsanitize-recover  -fsanitize-recover=@var{style} @gol
 -fasan-shadow-offset=@var{number}  -fsanitize-sections=@var{s1},@var{s2},... @gol
 -fsanitize-undefined-trap-on-error  -fbounds-check @gol
@@ -525,8 +576,8 @@ Objective-C and Objective-C++ Dialects}.
 -dD  -dI  -dM  -dN  -dU @gol
 -fdebug-cpp  -fdirectives-only  -fdollars-in-identifiers  @gol
 -fexec-charset=@var{charset}  -fextended-identifiers  @gol
--finput-charset=@var{charset}  -fmacro-prefix-map=@var{old}=@var{new}  @gol
--fmax-include-depth=@var{depth} @gol
+-finput-charset=@var{charset}  -flarge-source-files  @gol
+-fmacro-prefix-map=@var{old}=@var{new} -fmax-include-depth=@var{depth} @gol
 -fno-canonical-system-headers  -fpch-deps  -fpch-preprocess  @gol
 -fpreprocessed  -ftabstop=@var{width}  -ftrack-macro-expansion  @gol
 -fwide-exec-charset=@var{charset}  -fworking-directory @gol
@@ -729,7 +780,7 @@ Objective-C and Objective-C++ Dialects}.
 -mn_flash=@var{size}  -mno-interrupts @gol
 -mmain-is-OS_task  -mrelax  -mrmw  -mstrict-X  -mtiny-stack @gol
 -mfract-convert-truncate @gol
--mshort-calls  -nodevicelib @gol
+-mshort-calls  -nodevicelib  -nodevicespecs @gol
 -Waddr-space-convert  -Wmisspelled-isr}
 
 @emph{Blackfin Options}
@@ -813,7 +864,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{eBPF Options}
 @gccoptlist{-mbig-endian -mlittle-endian -mkernel=@var{version}
--mframe-limit=@var{bytes}}
+-mframe-limit=@var{bytes} -mxbpf}
 
 @emph{FR30 Options}
 @gccoptlist{-msmall-model  -mno-lsim}
@@ -1080,6 +1131,7 @@ See RS/6000 and PowerPC Options.
 -mpreferred-stack-boundary=@var{num} @gol
 -msmall-data-limit=@var{N-bytes} @gol
 -msave-restore  -mno-save-restore @gol
+-mshorten-memrefs  -mno-shorten-memrefs @gol
 -mstrict-align  -mno-strict-align @gol
 -mcmodel=medlow  -mcmodel=medany @gol
 -mexplicit-relocs  -mno-explicit-relocs @gol
@@ -1148,7 +1200,8 @@ See RS/6000 and PowerPC Options.
 -mfloat128  -mno-float128  -mfloat128-hardware  -mno-float128-hardware @gol
 -mgnu-attribute  -mno-gnu-attribute @gol
 -mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{reg} @gol
--mstack-protector-guard-offset=@var{offset} -mpcrel -mno-pcrel}
+-mstack-protector-guard-offset=@var{offset} -mprefixed -mno-prefixed @gol
+-mpcrel -mno-pcrel}
 
 @emph{RX Options}
 @gccoptlist{-m64bit-doubles  -m32bit-doubles  -fpu  -nofpu@gol
@@ -1174,7 +1227,8 @@ See RS/6000 and PowerPC Options.
 -msmall-exec  -mno-small-exec  -mmvcle  -mno-mvcle @gol
 -m64  -m31  -mdebug  -mno-debug  -mesa  -mzarch @gol
 -mhtm  -mvx  -mzvector @gol
--mtpf-trace  -mno-tpf-trace  -mfused-madd  -mno-fused-madd @gol
+-mtpf-trace  -mno-tpf-trace  -mtpf-trace-skip  -mno-tpf-trace-skip @gol
+-mfused-madd  -mno-fused-madd @gol
 -mwarn-framesize  -mwarn-dynamicstack  -mstack-size  -mstack-guard @gol
 -mhotpatch=@var{halfwords},@var{halfwords}}
 
@@ -1293,7 +1347,7 @@ See RS/6000 and PowerPC Options.
 -mshstk -mmanual-endbr -mforce-indirect-call  -mavx512vbmi2 -mavx512bf16 -menqcmd @gol
 -mvpclmulqdq  -mavx512bitalg  -mmovdiri  -mmovdir64b  -mavx512vpopcntdq @gol
 -mavx5124fmaps  -mavx512vnni  -mavx5124vnniw  -mprfchw  -mrdpid @gol
--mrdseed  -msgx -mavx512vp2intersect@gol
+-mrdseed  -msgx -mavx512vp2intersect -mserialize -mtsxldtrk@gol
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg} @gol
 -mmemcpy-strategy=@var{strategy}  -mmemset-strategy=@var{strategy} @gol
@@ -1332,7 +1386,8 @@ See RS/6000 and PowerPC Options.
 -mtext-section-literals  -mno-text-section-literals @gol
 -mauto-litpools  -mno-auto-litpools @gol
 -mtarget-align  -mno-target-align @gol
--mlongcalls  -mno-longcalls}
+-mlongcalls  -mno-longcalls @gol
+-mabi=@var{abi-type}}
 
 @emph{zSeries Options}
 See S/390 and zSeries Options.
@@ -1550,9 +1605,9 @@ Input files that don't require preprocessing are ignored.
 @cindex output file option
 @item -o @var{file}
 @opindex o
-Place output in file @var{file}.  This applies to whatever
-sort of output is being produced, whether it be an executable file,
-an object file, an assembler file or preprocessed C code.
+Place the primary output in file @var{file}.  This applies to whatever
+sort of output is being produced, whether it be an executable file, an
+object file, an assembler file or preprocessed C code.
 
 If @option{-o} is not specified, the default is to put an executable
 file in @file{a.out}, the object file for
@@ -1560,6 +1615,314 @@ file in @file{a.out}, the object file for
 assembler file in @file{@var{source}.s}, a precompiled header file in
 @file{@var{source}.@var{suffix}.gch}, and all preprocessed C source on
 standard output.
+
+Though @option{-o} names only the primary output, it also affects the
+naming of auxiliary and dump outputs.  See the examples below.  Unless
+overridden, both auxiliary outputs and dump outputs are placed in the
+same directory as the primary output.  In auxiliary outputs, the suffix
+of the input file is replaced with that of the auxiliary output file
+type; in dump outputs, the suffix of the dump file is appended to the
+input file suffix.  In compilation commands, the base name of both
+auxiliary and dump outputs is that of the primary output; in compile and
+link commands, the primary output name, minus the executable suffix, is
+combined with the input file name.  If both share the same base name,
+disregarding the suffix, the result of the combination is that base
+name, otherwise, they are concatenated, separated by a dash.
+
+@smallexample
+gcc -c foo.c ...
+@end smallexample
+
+will use @file{foo.o} as the primary output, and place aux outputs and
+dumps next to it, e.g., aux file @file{foo.dwo} for
+@option{-gsplit-dwarf}, and dump file @file{foo.c.???r.final} for
+@option{-fdump-rtl-final}.
+
+If a non-linker output file is explicitly specified, aux and dump files
+by default take the same base name:
+
+@smallexample
+gcc -c foo.c -o dir/foobar.o ...
+@end smallexample
+
+will name aux outputs @file{dir/foobar.*} and dump outputs
+@file{dir/foobar.c.*}.
+
+A linker output will instead prefix aux and dump outputs:
+
+@smallexample
+gcc foo.c bar.c -o dir/foobar ...
+@end smallexample
+
+will generally name aux outputs @file{dir/foobar-foo.*} and
+@file{dir/foobar-bar.*}, and dump outputs @file{dir/foobar-foo.c.*} and
+@file{dir/foobar-bar.c.*}.
+
+The one exception to the above is when the executable shares the base
+name with the single input:
+
+@smallexample
+gcc foo.c -o dir/foo ...
+@end smallexample
+
+in which case aux outputs are named @file{dir/foo.*} and dump outputs
+named @file{dir/foo.c.*}.
+
+The location and the names of auxiliary and dump outputs can be adjusted
+by the options @option{-dumpbase}, @option{-dumpbase-ext},
+@option{-dumpdir}, @option{-save-temps=cwd}, and
+@option{-save-temps=obj}.
+
+
+@item -dumpbase @var{dumpbase}
+@opindex dumpbase
+This option sets the base name for auxiliary and dump output files.  It
+does not affect the name of the primary output file.  Intermediate
+outputs, when preserved, are not regarded as primary outputs, but as
+auxiliary outputs:
+
+@smallexample
+gcc -save-temps -S foo.c
+@end smallexample
+
+saves the (no longer) temporary preprocessed file in @file{foo.i}, and
+then compiles to the (implied) output file @file{foo.s}, whereas:
+
+@smallexample
+gcc -save-temps -dumpbase save-foo -c foo.c
+@end smallexample
+
+preprocesses to in @file{save-foo.i}, compiles to @file{save-foo.s} (now
+an intermediate, thus auxiliary output), and then assembles to the
+(implied) output file @file{foo.o}.
+
+Absent this option, dump and aux files take their names from the input
+file, or from the (non-linker) output file, if one is explicitly
+specified: dump output files (e.g. those requested by @option{-fdump-*}
+options) with the input name suffix, and aux output files (those
+requested by other non-dump options, e.g. @code{-save-temps},
+@code{-gsplit-dwarf}, @code{-fcallgraph-info}) without it.
+
+Similar suffix differentiation of dump and aux outputs can be attained
+for explicitly-given @option{-dumpbase basename.suf} by also specifying
+@option{-dumpbase-ext .suf}.
+
+If @var{dumpbase} is explicitly specified with any directory component,
+any @var{dumppfx} specification (e.g. @option{-dumpdir} or
+@option{-save-temps=*}) is ignored, and instead of appending to it,
+@var{dumpbase} fully overrides it:
+
+@smallexample
+gcc foo.c -c -o dir/foo.o -dumpbase alt/foo \
+  -dumpdir pfx- -save-temps=cwd ...
+@end smallexample
+
+creates auxiliary and dump outputs named @file{alt/foo.*}, disregarding
+@file{dir/} in @option{-o}, the @file{./} prefix implied by
+@option{-save-temps=cwd}, and @file{pfx-} in @option{-dumpdir}.
+
+When @option{-dumpbase} is specified in a command that compiles multiple
+inputs, or that compiles and then links, it may be combined with
+@var{dumppfx}, as specified under @option{-dumpdir}.  Then, each input
+file is compiled using the combined @var{dumppfx}, and default values
+for @var{dumpbase} and @var{auxdropsuf} are computed for each input
+file:
+
+@smallexample
+gcc foo.c bar.c -c -dumpbase main ...
+@end smallexample
+
+creates @file{foo.o} and @file{bar.o} as primary outputs, and avoids
+overwriting the auxiliary and dump outputs by using the @var{dumpbase}
+as a prefix, creating auxiliary and dump outputs named @file{main-foo.*}
+and @file{main-bar.*}.
+
+An empty string specified as @var{dumpbase} avoids the influence of the
+output basename in the naming of auxiliary and dump outputs during
+compilation, computing default values :
+
+@smallexample
+gcc -c foo.c -o dir/foobar.o -dumpbase '' ...
+@end smallexample
+
+will name aux outputs @file{dir/foo.*} and dump outputs
+@file{dir/foo.c.*}.  Note how their basenames are taken from the input
+name, but the directory still defaults to that of the output.
+
+The empty-string dumpbase does not prevent the use of the output
+basename for outputs during linking:
+
+@smallexample
+gcc foo.c bar.c -o dir/foobar -dumpbase '' -flto ...
+@end smallexample
+
+The compilation of the source files will name auxiliary outputs
+@file{dir/foo.*} and @file{dir/bar.*}, and dump outputs
+@file{dir/foo.c.*} and @file{dir/bar.c.*}.  LTO recompilation during
+linking will use @file{dir/foobar.} as the prefix for dumps and
+auxiliary files.
+
+
+@item -dumpbase-ext @var{auxdropsuf}
+@opindex dumpbase-ext
+When forming the name of an auxiliary (but not a dump) output file, drop
+trailing @var{auxdropsuf} from @var{dumpbase} before appending any
+suffixes.  If not specified, this option defaults to the suffix of a
+default @var{dumpbase}, i.e., the suffix of the input file when
+@option{-dumpbase} is not present in the command line, or @var{dumpbase}
+is combined with @var{dumppfx}.
+
+@smallexample
+gcc foo.c -c -o dir/foo.o -dumpbase x-foo.c -dumpbase-ext .c ...
+@end smallexample
+
+creates @file{dir/foo.o} as the main output, and generates auxiliary
+outputs in @file{dir/x-foo.*}, taking the location of the primary
+output, and dropping the @file{.c} suffix from the @var{dumpbase}.  Dump
+outputs retain the suffix: @file{dir/x-foo.c.*}.
+
+This option is disregarded if it does not match the suffix of a
+specified @var{dumpbase}, except as an alternative to the executable
+suffix when appending the linker output base name to @var{dumppfx}, as
+specified below:
+
+@smallexample
+gcc foo.c bar.c -o main.out -dumpbase-ext .out ...
+@end smallexample
+
+creates @file{main.out} as the primary output, and avoids overwriting
+the auxiliary and dump outputs by using the executable name minus
+@var{auxdropsuf} as a prefix, creating auxiliary outputs named
+@file{main-foo.*} and @file{main-bar.*} and dump outputs named
+@file{main-foo.c.*} and @file{main-bar.c.*}.
+
+
+@item -dumpdir @var{dumppfx}
+@opindex dumpdir
+When forming the name of an auxiliary or dump output file, use
+@var{dumppfx} as a prefix:
+
+@smallexample
+gcc -dumpdir pfx- -c foo.c ...
+@end smallexample
+
+creates @file{foo.o} as the primary output, and auxiliary outputs named
+@file{pfx-foo.*}, combining the given @var{dumppfx} with the default
+@var{dumpbase} derived from the default primary output, derived in turn
+from the input name.  Dump outputs also take the input name suffix:
+@file{pfx-foo.c.*}.
+
+If @var{dumppfx} is to be used as a directory name, it must end with a
+directory separator:
+
+@smallexample
+gcc -dumpdir dir/ -c foo.c -o obj/bar.o ...
+@end smallexample
+
+creates @file{obj/bar.o} as the primary output, and auxiliary outputs
+named @file{dir/bar.*}, combining the given @var{dumppfx} with the
+default @var{dumpbase} derived from the primary output name.  Dump
+outputs also take the input name suffix: @file{dir/bar.c.*}.
+
+It defaults to the location of the output file; options
+@option{-save-temps=cwd} and @option{-save-temps=obj} override this
+default, just like an explicit @option{-dumpdir} option.  In case
+multiple such options are given, the last one prevails:
+
+@smallexample
+gcc -dumpdir pfx- -c foo.c -save-temps=obj ...
+@end smallexample
+
+outputs @file{foo.o}, with auxiliary outputs named @file{foo.*} because
+@option{-save-temps=*} overrides the @var{dumppfx} given by the earlier
+@option{-dumpdir} option.  It does not matter that @option{=obj} is the
+default for @option{-save-temps}, nor that the output directory is
+implicitly the current directory.  Dump outputs are named
+@file{foo.c.*}.
+
+When compiling from multiple input files, if @option{-dumpbase} is
+specified, @var{dumpbase}, minus a @var{auxdropsuf} suffix, and a dash
+are appended to (or override, if containing any directory components) an
+explicit or defaulted @var{dumppfx}, so that each of the multiple
+compilations gets differently-named aux and dump outputs.
+
+@smallexample
+gcc foo.c bar.c -c -dumpdir dir/pfx- -dumpbase main ...
+@end smallexample
+
+outputs auxiliary dumps to @file{dir/pfx-main-foo.*} and
+@file{dir/pfx-main-bar.*}, appending @var{dumpbase}- to @var{dumppfx}.
+Dump outputs retain the input file suffix: @file{dir/pfx-main-foo.c.*}
+and @file{dir/pfx-main-bar.c.*}, respectively.  Contrast with the
+single-input compilation:
+
+@smallexample
+gcc foo.c -c -dumpdir dir/pfx- -dumpbase main ...
+@end smallexample
+
+that, applying @option{-dumpbase} to a single source, does not compute
+and append a separate @var{dumpbase} per input file.  Its auxiliary and
+dump outputs go in @file{dir/pfx-main.*}.
+
+When compiling and then linking from multiple input files, a defaulted
+or explicitly specified @var{dumppfx} also undergoes the @var{dumpbase}-
+transformation above (e.g. the compilation of @file{foo.c} and
+@file{bar.c} above, but without @option{-c}).  If neither
+@option{-dumpdir} nor @option{-dumpbase} are given, the linker output
+base name, minus @var{auxdropsuf}, if specified, or the executable
+suffix otherwise, plus a dash is appended to the default @var{dumppfx}
+instead.  Note, however, that unlike earlier cases of linking:
+
+@smallexample
+gcc foo.c bar.c -dumpdir dir/pfx- -o main ...
+@end smallexample
+
+does not append the output name @file{main} to @var{dumppfx}, because
+@option{-dumpdir} is explicitly specified.  The goal is that the
+explicitly-specified @var{dumppfx} may contain the specified output name
+as part of the prefix, if desired; only an explicitly-specified
+@option{-dumpbase} would be combined with it, in order to avoid simply
+discarding a meaningful option.
+
+When compiling and then linking from a single input file, the linker
+output base name will only be appended to the default @var{dumppfx} as
+above if it does not share the base name with the single input file
+name.  This has been covered in single-input linking cases above, but
+not with an explicit @option{-dumpdir} that inhibits the combination,
+even if overridden by @option{-save-temps=*}:
+
+@smallexample
+gcc foo.c -dumpdir alt/pfx- -o dir/main.exe -save-temps=cwd ...
+@end smallexample
+
+Auxiliary outputs are named @file{foo.*}, and dump outputs
+@file{foo.c.*}, in the current working directory as ultimately requested
+by @option{-save-temps=cwd}.
+
+Summing it all up for an intuitive though slightly imprecise data flow:
+the primary output name is broken into a directory part and a basename
+part; @var{dumppfx} is set to the former, unless overridden by
+@option{-dumpdir} or @option{-save-temps=*}, and @var{dumpbase} is set
+to the latter, unless overriden by @option{-dumpbase}.  If there are
+multiple inputs or linking, this @var{dumpbase} may be combined with
+@var{dumppfx} and taken from each input file.  Auxiliary output names
+for each input are formed by combining @var{dumppfx}, @var{dumpbase}
+minus suffix, and the auxiliary output suffix; dump output names are
+only different in that the suffix from @var{dumpbase} is retained.
+
+When it comes to auxiliary and dump outputs created during LTO
+recompilation, a combination of @var{dumppfx} and @var{dumpbase}, as
+given or as derived from the linker output name but not from inputs,
+even in cases in which this combination would not otherwise be used as
+such, is passed down with a trailing period replacing the compiler-added
+dash, if any, as a @option{-dumpdir} option to @command{lto-wrapper};
+being involved in linking, this program does not normally get any
+@option{-dumpbase} and @option{-dumpbase-ext}, and it ignores them.
+
+When running sub-compilers, @command{lto-wrapper} appends LTO stage
+names to the received @var{dumppfx}, ensures it contains a directory
+component so that it overrides any @option{-dumpdir}, and passes that as
+@option{-dumpbase} to sub-compilers.
 
 @item -v
 @opindex v
@@ -1616,7 +1979,8 @@ option.
 @item @var{language}
 Display the options supported for @var{language}, where
 @var{language} is the name of one of the languages supported in this
-version of GCC@.
+version of GCC@.  If an option is supported by all languages, one needs
+to select @samp{common} class.
 
 @item @samp{common}
 Display the options that are common to all languages.
@@ -2017,13 +2381,15 @@ The name @samp{c++1z} is deprecated.
 GNU dialect of @option{-std=c++17}.
 The name @samp{gnu++1z} is deprecated.
 
-@item c++2a
-The next revision of the ISO C++ standard, tentatively planned for
+@item c++20
+@itemx c++2a
+The next revision of the ISO C++ standard, planned for
 2020.  Support is highly experimental, and will almost certainly
 change in incompatible ways in future releases.
 
-@item gnu++2a
-GNU dialect of @option{-std=c++2a}.  Support is highly experimental,
+@item gnu++20
+@itemx gnu++2a
+GNU dialect of @option{-std=c++20}.  Support is highly experimental,
 and will almost certainly change in incompatible ways in future
 releases.
 @end table
@@ -2188,7 +2554,7 @@ freestanding and hosted environments.
 Enable handling of OpenACC directives @code{#pragma acc} in C/C++ and
 @code{!$acc} in Fortran.  When @option{-fopenacc} is specified, the
 compiler generates accelerated code according to the OpenACC Application
-Programming Interface v2.0 @w{@uref{https://www.openacc.org}}.  This option
+Programming Interface v2.6 @w{@uref{https://www.openacc.org}}.  This option
 implies @option{-pthread}, and thus is only supported on targets that
 have support for @option{-pthread}.
 
@@ -2569,6 +2935,10 @@ of a loop too many expressions need to be evaluated, the resulting constexpr
 evaluation might take too long.
 The default is 33554432 (1<<25).
 
+@item -fcoroutines
+@opindex fcoroutines
+Enable support for the C++ coroutines extension (experimental).
+
 @item -fno-elide-constructors
 @opindex fno-elide-constructors
 @opindex felide-constructors
@@ -2876,6 +3246,19 @@ option exists only for testing, and should not be used by end-users;
 it results in inferior code and has no benefits.  This option may
 be removed in a future release of G++.
 
+@item -fext-numeric-literals @r{(C++ and Objective-C++ only)}
+@opindex fext-numeric-literals
+@opindex fno-ext-numeric-literals
+Accept imaginary, fixed-point, or machine-defined
+literal number suffixes as GNU extensions.
+When this option is turned off these suffixes are treated
+as C++11 user-defined literal numeric suffixes.
+This is on by default for all pre-C++11 dialects and all GNU dialects:
+@option{-std=c++98}, @option{-std=gnu++98}, @option{-std=gnu++11},
+@option{-std=gnu++14}.
+This option is off by default
+for ISO C++11 onwards (@option{-std=c++11}, ...).
+
 @item -nostdinc++
 @opindex nostdinc++
 Do not search for header files in the standard directories specific to
@@ -2883,136 +3266,9 @@ C++, but do still search the other standard directories.  (This option
 is used when building the C++ library.)
 @end table
 
-In addition, these optimization, warning, and code generation options
-have meanings only for C++ programs:
+In addition, these warning options have meanings only for C++ programs:
 
 @table @gcctabopt
-@item -Wabi @r{(C, Objective-C, C++ and Objective-C++ only)}
-@opindex Wabi
-@opindex Wno-abi
-Warn when G++ it generates code that is probably not compatible with
-the vendor-neutral C++ ABI@.  Since G++ now defaults to updating the
-ABI with each major release, normally @option{-Wabi} will warn only if
-there is a check added later in a release series for an ABI issue
-discovered since the initial release.  @option{-Wabi} will warn about
-more things if an older ABI version is selected (with
-@option{-fabi-version=@var{n}}).
-
-@option{-Wabi} can also be used with an explicit version number to
-warn about compatibility with a particular @option{-fabi-version}
-level, e.g.@: @option{-Wabi=2} to warn about changes relative to
-@option{-fabi-version=2}.
-
-If an explicit version number is provided and
-@option{-fabi-compat-version} is not specified, the version number
-from this option is used for compatibility aliases.  If no explicit
-version number is provided with this option, but
-@option{-fabi-compat-version} is specified, that version number is
-used for ABI warnings.
-
-Although an effort has been made to warn about
-all such cases, there are probably some cases that are not warned about,
-even though G++ is generating incompatible code.  There may also be
-cases where warnings are emitted even though the code that is generated
-is compatible.
-
-You should rewrite your code to avoid these warnings if you are
-concerned about the fact that code generated by G++ may not be binary
-compatible with code generated by other compilers.
-
-Known incompatibilities in @option{-fabi-version=2} (which was the
-default from GCC 3.4 to 4.9) include:
-
-@itemize @bullet
-
-@item
-A template with a non-type template parameter of reference type was
-mangled incorrectly:
-@smallexample
-extern int N;
-template <int &> struct S @{@};
-void n (S<N>) @{2@}
-@end smallexample
-
-This was fixed in @option{-fabi-version=3}.
-
-@item
-SIMD vector types declared using @code{__attribute ((vector_size))} were
-mangled in a non-standard way that does not allow for overloading of
-functions taking vectors of different sizes.
-
-The mangling was changed in @option{-fabi-version=4}.
-
-@item
-@code{__attribute ((const))} and @code{noreturn} were mangled as type
-qualifiers, and @code{decltype} of a plain declaration was folded away.
-
-These mangling issues were fixed in @option{-fabi-version=5}.
-
-@item
-Scoped enumerators passed as arguments to a variadic function are
-promoted like unscoped enumerators, causing @code{va_arg} to complain.
-On most targets this does not actually affect the parameter passing
-ABI, as there is no way to pass an argument smaller than @code{int}.
-
-Also, the ABI changed the mangling of template argument packs,
-@code{const_cast}, @code{static_cast}, prefix increment/decrement, and
-a class scope function used as a template argument.
-
-These issues were corrected in @option{-fabi-version=6}.
-
-@item
-Lambdas in default argument scope were mangled incorrectly, and the
-ABI changed the mangling of @code{nullptr_t}.
-
-These issues were corrected in @option{-fabi-version=7}.
-
-@item
-When mangling a function type with function-cv-qualifiers, the
-un-qualified function type was incorrectly treated as a substitution
-candidate.
-
-This was fixed in @option{-fabi-version=8}, the default for GCC 5.1.
-
-@item
-@code{decltype(nullptr)} incorrectly had an alignment of 1, leading to
-unaligned accesses.  Note that this did not affect the ABI of a
-function with a @code{nullptr_t} parameter, as parameters have a
-minimum alignment.
-
-This was fixed in @option{-fabi-version=9}, the default for GCC 5.2.
-
-@item
-Target-specific attributes that affect the identity of a type, such as
-ia32 calling conventions on a function type (stdcall, regparm, etc.),
-did not affect the mangled name, leading to name collisions when
-function pointers were used as template arguments.
-
-This was fixed in @option{-fabi-version=10}, the default for GCC 6.1.
-
-@end itemize
-
-It also warns about psABI-related changes.  The known psABI changes at this
-point include:
-
-@itemize @bullet
-
-@item
-For SysV/x86-64, unions with @code{long double} members are 
-passed in memory as specified in psABI.  For example:
-
-@smallexample
-union U @{
-  long double ld;
-  int i;
-@};
-@end smallexample
-
-@noindent
-@code{union U} is always passed in memory.
-
-@end itemize
-
 @item -Wabi-tag @r{(C++ and Objective-C++ only)}
 @opindex Wabi-tag
 @opindex Wabi-tag
@@ -3111,14 +3367,14 @@ the variable declaration statement.
 
 @end itemize
 
-@item -Wliteral-suffix @r{(C++ and Objective-C++ only)}
+@item -Wno-literal-suffix @r{(C++ and Objective-C++ only)}
 @opindex Wliteral-suffix
 @opindex Wno-literal-suffix
-Warn when a string or character literal is followed by a ud-suffix which does
-not begin with an underscore.  As a conforming extension, GCC treats such
-suffixes as separate preprocessing tokens in order to maintain backwards
-compatibility with code that uses formatting macros from @code{<inttypes.h>}.
-For example:
+Do not warn when a string or character literal is followed by a
+ud-suffix which does not begin with an underscore.  As a conforming
+extension, GCC treats such suffixes as separate preprocessing tokens
+in order to maintain backwards compatibility with code that uses
+formatting macros from @code{<inttypes.h>}.  For example:
 
 @smallexample
 #define __STDC_FORMAT_MACROS
@@ -3133,20 +3389,12 @@ int main() @{
 
 In this case, @code{PRId64} is treated as a separate preprocessing token.
 
-Additionally, warn when a user-defined literal operator is declared with
-a literal suffix identifier that doesn't begin with an underscore. Literal
-suffix identifiers that don't begin with an underscore are reserved for
-future standardization.
+This option also controls warnings when a user-defined literal
+operator is declared with a literal suffix identifier that doesn't
+begin with an underscore. Literal suffix identifiers that don't begin
+with an underscore are reserved for future standardization.
 
-This warning is enabled by default.
-
-@item -Wlto-type-mismatch
-@opindex Wlto-type-mismatch
-@opindex Wno-lto-type-mismatch
-
-During the link-time optimization warn about type mismatches in
-global declarations from different compilation units.
-Requires @option{-flto} to be enabled.  Enabled by default.
+These warnings are enabled by default.
 
 @item -Wno-narrowing @r{(C++ and Objective-C++ only)}
 @opindex Wnarrowing
@@ -3329,33 +3577,37 @@ This warning is enabled by @option{-Wextra}.
 @opindex Wno-redundant-tags
 Warn about redundant class-key and enum-key in references to class types
 and enumerated types in contexts where the key can be eliminated without
-causing an ambiguity.  For example
+causing an ambiguity.  For example:
 
 @smallexample
 struct foo;
-struct foo *p;   // -Wredundant-tags, keyword struct can be eliminated
-
-void foo ();   // "hides" struct foo
-void bar (struct foo&);   // no warning, keyword struct cannot be eliminated
+struct foo *p;   // warn that keyword struct can be eliminated
 @end smallexample
 
-@item -fext-numeric-literals @r{(C++ and Objective-C++ only)}
-@opindex fext-numeric-literals
-@opindex fno-ext-numeric-literals
-Accept imaginary, fixed-point, or machine-defined
-literal number suffixes as GNU extensions.
-When this option is turned off these suffixes are treated
-as C++11 user-defined literal numeric suffixes.
-This is on by default for all pre-C++11 dialects and all GNU dialects:
-@option{-std=c++98}, @option{-std=gnu++98}, @option{-std=gnu++11},
-@option{-std=gnu++14}.
-This option is off by default
-for ISO C++11 onwards (@option{-std=c++11}, ...).
-@end table
+@noindent
+On the other hand, in this example there is no warning:
 
-The following @option{-W@dots{}} options are not affected by @option{-Wall}.
+@smallexample
+struct foo;
+void foo ();   // "hides" struct foo
+void bar (struct foo&);  // no warning, keyword struct is necessary
+@end smallexample
 
-@table @gcctabopt
+@item -Wno-subobject-linkage @r{(C++ and Objective-C++ only)}
+@opindex Wsubobject-linkage
+@opindex Wno-subobject-linkage
+Do not warn
+if a class type has a base or a field whose type uses the anonymous
+namespace or depends on a type with no linkage.  If a type A depends on
+a type B with no or internal linkage, defining it in multiple
+translation units would be an ODR violation because the meaning of B
+is different in each translation unit.  If A only appears in a single
+translation unit, the best way to silence the warning is to give it
+internal linkage by putting it in an anonymous namespace as well.  The
+compiler doesn't give this warning for types defined in the main .C
+file, as those are unlikely to have multiple definitions.
+@option{-Wsubobject-linkage} is enabled by default.
+
 @item -Weffc++ @r{(C++ and Objective-C++ only)}
 @opindex Weffc++
 @opindex Wno-effc++
@@ -3518,6 +3770,16 @@ enforce that rule.  The warning is inactive inside a system header file,
 such as the STL, so one can still use the STL.  One may also define
 classes that indirectly use virtual inheritance.
 
+@item -Wno-virtual-move-assign
+@opindex Wvirtual-move-assign
+@opindex Wno-virtual-move-assign
+Suppress warnings about inheriting from a virtual base with a
+non-trivial C++11 move assignment operator.  This is dangerous because
+if the virtual base is reachable along more than one path, it is
+moved multiple times, which can mean both objects end up in the
+moved-from state.  If the move assignment operator is written to avoid
+moving from a moved-from object, this warning can be disabled.
+
 @item -Wnamespaces
 @opindex Wnamespaces
 @opindex Wno-namespaces
@@ -3535,7 +3797,7 @@ result in a call to @code{terminate}.
 @item -Wno-class-conversion @r{(C++ and Objective-C++ only)}
 @opindex Wno-class-conversion
 @opindex Wclass-conversion
-Disable the warning about the case when a conversion function converts an
+Do not warn when a conversion function converts an
 object to the same type, to a base class of that type, or to void; such
 a conversion function will never be called.
 
@@ -3552,6 +3814,193 @@ non-class type, @code{volatile}-qualified function return type,
 @code{volatile}-qualified type.  This usage was deprecated in C++20.
 
 Enabled by default with @option{-std=c++2a}.
+
+@item -Wzero-as-null-pointer-constant @r{(C++ and Objective-C++ only)}
+@opindex Wzero-as-null-pointer-constant
+@opindex Wno-zero-as-null-pointer-constant
+Warn when a literal @samp{0} is used as null pointer constant.  This can
+be useful to facilitate the conversion to @code{nullptr} in C++11.
+
+@item -Waligned-new
+@opindex Waligned-new
+@opindex Wno-aligned-new
+Warn about a new-expression of a type that requires greater alignment
+than the @code{alignof(std::max_align_t)} but uses an allocation
+function without an explicit alignment parameter. This option is
+enabled by @option{-Wall}.
+
+Normally this only warns about global allocation functions, but
+@option{-Waligned-new=all} also warns about class member allocation
+functions.
+
+@item -Wno-placement-new
+@itemx -Wplacement-new=@var{n}
+@opindex Wplacement-new
+@opindex Wno-placement-new
+Warn about placement new expressions with undefined behavior, such as
+constructing an object in a buffer that is smaller than the type of
+the object.  For example, the placement new expression below is diagnosed
+because it attempts to construct an array of 64 integers in a buffer only
+64 bytes large.
+@smallexample
+char buf [64];
+new (buf) int[64];
+@end smallexample
+This warning is enabled by default.
+
+@table @gcctabopt
+@item -Wplacement-new=1
+This is the default warning level of @option{-Wplacement-new}.  At this
+level the warning is not issued for some strictly undefined constructs that
+GCC allows as extensions for compatibility with legacy code.  For example,
+the following @code{new} expression is not diagnosed at this level even
+though it has undefined behavior according to the C++ standard because
+it writes past the end of the one-element array.
+@smallexample
+struct S @{ int n, a[1]; @};
+S *s = (S *)malloc (sizeof *s + 31 * sizeof s->a[0]);
+new (s->a)int [32]();
+@end smallexample
+
+@item -Wplacement-new=2
+At this level, in addition to diagnosing all the same constructs as at level
+1, a diagnostic is also issued for placement new expressions that construct
+an object in the last member of structure whose type is an array of a single
+element and whose size is less than the size of the object being constructed.
+While the previous example would be diagnosed, the following construct makes
+use of the flexible member array extension to avoid the warning at level 2.
+@smallexample
+struct S @{ int n, a[]; @};
+S *s = (S *)malloc (sizeof *s + 32 * sizeof s->a[0]);
+new (s->a)int [32]();
+@end smallexample
+
+@end table
+
+@item -Wcatch-value
+@itemx -Wcatch-value=@var{n} @r{(C++ and Objective-C++ only)}
+@opindex Wcatch-value
+@opindex Wno-catch-value
+Warn about catch handlers that do not catch via reference.
+With @option{-Wcatch-value=1} (or @option{-Wcatch-value} for short)
+warn about polymorphic class types that are caught by value.
+With @option{-Wcatch-value=2} warn about all class types that are caught
+by value. With @option{-Wcatch-value=3} warn about all types that are
+not caught by reference. @option{-Wcatch-value} is enabled by @option{-Wall}.
+
+@item -Wconditionally-supported @r{(C++ and Objective-C++ only)}
+@opindex Wconditionally-supported
+@opindex Wno-conditionally-supported
+Warn for conditionally-supported (C++11 [intro.defs]) constructs.
+
+@item -Wno-delete-incomplete @r{(C++ and Objective-C++ only)}
+@opindex Wdelete-incomplete
+@opindex Wno-delete-incomplete
+Do not warn when deleting a pointer to incomplete type, which may cause
+undefined behavior at runtime.  This warning is enabled by default.
+
+@item -Wextra-semi @r{(C++, Objective-C++ only)}
+@opindex Wextra-semi
+@opindex Wno-extra-semi
+Warn about redundant semicolons after in-class function definitions.
+
+@item -Wno-inaccessible-base @r{(C++, Objective-C++ only)}
+@opindex Winaccessible-base
+@opindex Wno-inaccessible-base
+This option controls warnings
+when a base class is inaccessible in a class derived from it due to
+ambiguity.  The warning is enabled by default.
+Note that the warning for ambiguous virtual
+bases is enabled by the @option{-Wextra} option.
+@smallexample
+@group
+struct A @{ int a; @};
+
+struct B : A @{ @};
+
+struct C : B, A @{ @};
+@end group
+@end smallexample
+
+@item -Wno-inherited-variadic-ctor
+@opindex Winherited-variadic-ctor
+@opindex Wno-inherited-variadic-ctor
+Suppress warnings about use of C++11 inheriting constructors when the
+base class inherited from has a C variadic constructor; the warning is
+on by default because the ellipsis is not inherited.
+
+@item -Wno-invalid-offsetof @r{(C++ and Objective-C++ only)}
+@opindex Wno-invalid-offsetof
+@opindex Winvalid-offsetof
+Suppress warnings from applying the @code{offsetof} macro to a non-POD
+type.  According to the 2014 ISO C++ standard, applying @code{offsetof}
+to a non-standard-layout type is undefined.  In existing C++ implementations,
+however, @code{offsetof} typically gives meaningful results.
+This flag is for users who are aware that they are
+writing nonportable code and who have deliberately chosen to ignore the
+warning about it.
+
+The restrictions on @code{offsetof} may be relaxed in a future version
+of the C++ standard.
+
+@item -Wsized-deallocation @r{(C++ and Objective-C++ only)}
+@opindex Wsized-deallocation
+@opindex Wno-sized-deallocation
+Warn about a definition of an unsized deallocation function
+@smallexample
+void operator delete (void *) noexcept;
+void operator delete[] (void *) noexcept;
+@end smallexample
+without a definition of the corresponding sized deallocation function
+@smallexample
+void operator delete (void *, std::size_t) noexcept;
+void operator delete[] (void *, std::size_t) noexcept;
+@end smallexample
+or vice versa.  Enabled by @option{-Wextra} along with
+@option{-fsized-deallocation}.
+
+@item -Wsuggest-final-types
+@opindex Wno-suggest-final-types
+@opindex Wsuggest-final-types
+Warn about types with virtual methods where code quality would be improved
+if the type were declared with the C++11 @code{final} specifier,
+or, if possible,
+declared in an anonymous namespace. This allows GCC to more aggressively
+devirtualize the polymorphic calls. This warning is more effective with
+link-time optimization,
+where the information about the class hierarchy graph is
+more complete.
+
+@item -Wsuggest-final-methods
+@opindex Wno-suggest-final-methods
+@opindex Wsuggest-final-methods
+Warn about virtual methods where code quality would be improved if the method
+were declared with the C++11 @code{final} specifier,
+or, if possible, its type were
+declared in an anonymous namespace or with the @code{final} specifier.
+This warning is
+more effective with link-time optimization, where the information about the
+class hierarchy graph is more complete. It is recommended to first consider
+suggestions of @option{-Wsuggest-final-types} and then rebuild with new
+annotations.
+
+@item -Wsuggest-override
+@opindex Wsuggest-override
+@opindex Wno-suggest-override
+Warn about overriding virtual functions that are not marked with the
+@code{override} keyword.
+
+@item -Wuseless-cast @r{(C++ and Objective-C++ only)}
+@opindex Wuseless-cast
+@opindex Wno-useless-cast
+Warn when an expression is casted to its own type.
+
+@item -Wno-conversion-null @r{(C++ and Objective-C++ only)}
+@opindex Wconversion-null
+@opindex Wno-conversion-null
+Do not warn for conversions between @code{NULL} and non-pointer
+types. @option{-Wconversion-null} is enabled by default.
+
 @end table
 
 @node Objective-C and Objective-C++ Dialect Options
@@ -3747,6 +4196,12 @@ file named @file{@var{sourcename}.decl}.
 Warn whenever an Objective-C assignment is being intercepted by the
 garbage collector.
 
+@item -Wno-property-assign-default @r{(Objective-C and Objective-C++ only)}
+@opindex Wproperty-assign-default
+@opindex Wno-property-assign-default
+Do not warn if a property for an Objective-C object has no assign
+semantics specified.
+
 @item -Wno-protocol @r{(Objective-C and Objective-C++ only)}
 @opindex Wno-protocol
 @opindex Wprotocol
@@ -3855,7 +4310,8 @@ or @samp{auto}.  The default depends on how the compiler has been configured,
 it can be any of the above @var{WHEN} options or also @samp{never}
 if @env{GCC_COLORS} environment variable isn't present in the environment,
 and @samp{auto} otherwise.
-@samp{auto} means to use color only when the standard error is a terminal.
+@samp{auto} makes GCC use color only when the standard error is a terminal,
+and when not executing in an emacs shell.
 The forms @option{-fdiagnostics-color} and @option{-fno-diagnostics-color} are
 aliases for @option{-fdiagnostics-color=always} and
 @option{-fdiagnostics-color=never}, respectively.
@@ -3886,7 +4342,7 @@ for 88-color and 256-color modes background colors.
 The default @env{GCC_COLORS} is
 @smallexample
 error=01;31:warning=01;35:note=01;36:range1=32:range2=34:locus=01:\
-quote=01:fixit-insert=32:fixit-delete=31:\
+quote=01:path=01;36:fixit-insert=32:fixit-delete=31:\
 diff-filename=01:diff-hunk=32:diff-delete=31:diff-insert=32:\
 type-diff=01;32
 @end smallexample
@@ -3909,6 +4365,12 @@ SGR substring for warning: markers.
 @item note=
 @vindex note GCC_COLORS @r{capability}
 SGR substring for note: markers.
+
+@item path=
+@vindex path GCC_COLORS @r{capability}
+SGR substring for colorizing paths of control-flow events as printed
+via @option{-fdiagnostics-path-format=}, such as the identifiers of
+individual events and lines indicating interprocedural calls and returns.
 
 @item range1=
 @vindex range1 GCC_COLORS @r{capability}
@@ -3962,14 +4424,46 @@ arguments in the C++ frontend.
 @item -fdiagnostics-urls[=@var{WHEN}]
 @opindex fdiagnostics-urls
 @cindex urls
+@vindex GCC_URLS @r{environment variable}
+@vindex TERM_URLS @r{environment variable}
 Use escape sequences to embed URLs in diagnostics.  For example, when
 @option{-fdiagnostics-show-option} emits text showing the command-line
 option controlling a diagnostic, embed a URL for documentation of that
 option.
 
 @var{WHEN} is @samp{never}, @samp{always}, or @samp{auto}.
-The default is @samp{auto}, which means to use URL escape sequences only
-when the standard error is a terminal.
+@samp{auto} makes GCC use URL escape sequences only when the standard error
+is a terminal, and when not executing in an emacs shell or any graphical
+terminal which is known to be incompatible with this feature, see below.
+
+The default depends on how the compiler has been configured.
+It can be any of the above @var{WHEN} options.
+
+GCC can also be configured (via the
+@option{--with-diagnostics-urls=auto-if-env} configure-time option)
+so that the default is affected by environment variables.
+Under such a configuration, GCC defaults to using @samp{auto}
+if either @env{GCC_URLS} or @env{TERM_URLS} environment variables are
+present and non-empty in the environment of the compiler, or @samp{never}
+if neither are.
+
+However, even with @option{-fdiagnostics-urls=always} the behavior is
+dependent on those environment variables:
+If @env{GCC_URLS} is set to empty or @samp{no}, do not embed URLs in
+diagnostics.  If set to @samp{st}, URLs use ST escape sequences.
+If set to @samp{bel}, the default, URLs use BEL escape sequences.
+Any other non-empty value enables the feature.
+If @env{GCC_URLS} is not set, use @env{TERM_URLS} as a fallback.
+Note: ST is an ANSI escape sequence, string terminator @samp{ESC \},
+BEL is an ASCII character, CTRL-G that usually sounds like a beep.
+
+At this time GCC tries to detect also a few terminals that are known to
+not implement the URL feature, and have bugs or at least had bugs in
+some versions that are still in use, where the URL escapes are likely
+to misbehave, i.e. print garbage on the screen.
+That list is currently xfce4-terminal, certain known to be buggy
+gnome-terminal versions, the linux console, and mingw.
+This check can be skipped with the @option{-fdiagnostics-urls=always}.
 
 @item -fno-diagnostics-show-option
 @opindex fno-diagnostics-show-option
@@ -4011,7 +4505,8 @@ the vertical bars and the ``char *'' and ``long int'' text).
 @opindex fdiagnostics-show-cwe
 Diagnostic messages can optionally have an associated
 @url{https://cwe.mitre.org/index.html, CWE} identifier.
-GCC itself does not do this for any of its diagnostics, but plugins may do so.
+GCC itself only provides such metadata for some of the @option{-fanalyzer}
+diagnostics.  GCC plugins may also provide diagnostics with such metadata.
 By default, if this information is present, it will be printed with
 the diagnostic.  This option suppresses the printing of this metadata.
 
@@ -4119,6 +4614,114 @@ simplify the error message.  For example:
 Specifying the @option{-fno-elide-type} flag suppresses that behavior.
 This flag also affects the output of the
 @option{-fdiagnostics-show-template-tree} flag.
+
+@item -fdiagnostics-path-format=@var{KIND}
+@opindex fdiagnostics-path-format
+Specify how to print paths of control-flow events for diagnostics that
+have such a path associated with them.
+
+@var{KIND} is @samp{none}, @samp{separate-events}, or @samp{inline-events},
+the default.
+
+@samp{none} means to not print diagnostic paths.
+
+@samp{separate-events} means to print a separate ``note'' diagnostic for
+each event within the diagnostic.  For example:
+
+@smallexample
+test.c:29:5: error: passing NULL as argument 1 to 'PyList_Append' which requires a non-NULL parameter
+test.c:25:10: note: (1) when 'PyList_New' fails, returning NULL
+test.c:27:3: note: (2) when 'i < count'
+test.c:29:5: note: (3) when calling 'PyList_Append', passing NULL from (1) as argument 1
+@end smallexample
+
+@samp{inline-events} means to print the events ``inline'' within the source
+code.  This view attempts to consolidate the events into runs of
+sufficiently-close events, printing them as labelled ranges within the source.
+
+For example, the same events as above might be printed as:
+
+@smallexample
+  'test': events 1-3
+    |
+    |   25 |   list = PyList_New(0);
+    |      |          ^~~~~~~~~~~~~
+    |      |          |
+    |      |          (1) when 'PyList_New' fails, returning NULL
+    |   26 |
+    |   27 |   for (i = 0; i < count; i++) @{
+    |      |   ~~~
+    |      |   |
+    |      |   (2) when 'i < count'
+    |   28 |     item = PyLong_FromLong(random());
+    |   29 |     PyList_Append(list, item);
+    |      |     ~~~~~~~~~~~~~~~~~~~~~~~~~
+    |      |     |
+    |      |     (3) when calling 'PyList_Append', passing NULL from (1) as argument 1
+    |
+@end smallexample
+
+Interprocedural control flow is shown by grouping the events by stack frame,
+and using indentation to show how stack frames are nested, pushed, and popped.
+
+For example:
+
+@smallexample
+  'test': events 1-2
+    |
+    |  133 | @{
+    |      | ^
+    |      | |
+    |      | (1) entering 'test'
+    |  134 |   boxed_int *obj = make_boxed_int (i);
+    |      |                    ~~~~~~~~~~~~~~~~~~
+    |      |                    |
+    |      |                    (2) calling 'make_boxed_int'
+    |
+    +--> 'make_boxed_int': events 3-4
+           |
+           |  120 | @{
+           |      | ^
+           |      | |
+           |      | (3) entering 'make_boxed_int'
+           |  121 |   boxed_int *result = (boxed_int *)wrapped_malloc (sizeof (boxed_int));
+           |      |                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+           |      |                                    |
+           |      |                                    (4) calling 'wrapped_malloc'
+           |
+           +--> 'wrapped_malloc': events 5-6
+                  |
+                  |    7 | @{
+                  |      | ^
+                  |      | |
+                  |      | (5) entering 'wrapped_malloc'
+                  |    8 |   return malloc (size);
+                  |      |          ~~~~~~~~~~~~~
+                  |      |          |
+                  |      |          (6) calling 'malloc'
+                  |
+    <-------------+
+    |
+ 'test': event 7
+    |
+    |  138 |   free_boxed_int (obj);
+    |      |   ^~~~~~~~~~~~~~~~~~~~
+    |      |   |
+    |      |   (7) calling 'free_boxed_int'
+    |
+(etc)
+@end smallexample
+
+@item -fdiagnostics-show-path-depths
+@opindex fdiagnostics-show-path-depths
+This option provides additional information when printing control-flow paths
+associated with a diagnostic.
+
+If this is option is provided then the stack depth will be printed for
+each run of events within @option{-fdiagnostics-path-format=separate-events}.
+
+This is intended for use by GCC developers and plugin developers when
+debugging diagnostics that report interprocedural control flow.
 
 @item -fno-show-column
 @opindex fno-show-column
@@ -4315,6 +4918,53 @@ to but not including @code{next} with @code{string}'s value.  Deletions
 are expressed via an empty value for @code{string}, insertions by
 having @code{start} equal @code{next}.
 
+If the diagnostic has a path of control-flow events associated with it,
+it has a @code{path} array of objects representing the events.  Each
+event object has a @code{description} string, a @code{location} object,
+along with a @code{function} string and a @code{depth} number for
+representing interprocedural paths.  The @code{function} represents the
+current function at that event, and the @code{depth} represents the
+stack depth relative to some baseline: the higher, the more frames are
+within the stack.
+
+For example, the intraprocedural example shown for
+@option{-fdiagnostics-path-format=} might have this JSON for its path:
+
+@smallexample
+    "path": [
+        @{
+            "depth": 0,
+            "description": "when 'PyList_New' fails, returning NULL",
+            "function": "test",
+            "location": @{
+                "column": 10,
+                "file": "test.c",
+                "line": 25
+            @}
+        @},
+        @{
+            "depth": 0,
+            "description": "when 'i < count'",
+            "function": "test",
+            "location": @{
+                "column": 3,
+                "file": "test.c",
+                "line": 27
+            @}
+        @},
+        @{
+            "depth": 0,
+            "description": "when calling 'PyList_Append', passing NULL from (1) as argument 1",
+            "function": "test",
+            "location": @{
+                "column": 5,
+                "file": "test.c",
+                "line": 29
+            @}
+        @}
+    ]
+@end smallexample
+
 @end table
 
 @node Warning Options
@@ -4393,6 +5043,8 @@ example, @option{-Wno-implicit}.  This manual lists only one of the
 two forms, whichever is not the default.  For further
 language-specific options also refer to @ref{C++ Dialect Options} and
 @ref{Objective-C and Objective-C++ Dialect Options}.
+Additional warnings can be produced by enabling the static analyzer;
+@xref{Static Analyzer Options}.
 
 Some options, such as @option{-Wall} and @option{-Wextra}, turn on other
 options, such as @option{-Wunused}, which may turn on further options,
@@ -4411,6 +5063,11 @@ produced for @option{-Wno-unknown-warning} unless other diagnostics
 are being produced.  This allows the use of new @option{-Wno-} options
 with old compilers, but if something goes wrong, the compiler
 warns that an unrecognized option is present.
+
+The effectiveness of some warnings depends on optimizations also being
+enabled. For example @option{-Wsuggest-final-types} is more effective
+with link-time optimization and @option{-Wmaybe-uninitialized} does not
+warn at all unless optimization is enabled.
 
 @table @gcctabopt
 @item -Wpedantic
@@ -4491,12 +5148,13 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wenum-compare @r{(in C/ObjC; this is on by default in C++)} @gol
 -Wenum-conversion @r{in C/ObjC;} @gol
 -Wformat   @gol
+-Wformat-overflow  @gol
+-Wformat-truncation  @gol
 -Wint-in-bool-context  @gol
 -Wimplicit @r{(C and Objective-C only)} @gol
 -Wimplicit-int @r{(C and Objective-C only)} @gol
 -Wimplicit-function-declaration @r{(C and Objective-C only)} @gol
 -Winit-self @r{(only for C++)} @gol
--Wzero-length-bounds @gol
 -Wlogical-not-parentheses @gol
 -Wmain @r{(only for C/ObjC and unless} @option{-ffreestanding}@r{)}  @gol
 -Wmaybe-uninitialized @gol
@@ -4531,7 +5189,8 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wunused-label     @gol
 -Wunused-value     @gol
 -Wunused-variable  @gol
--Wvolatile-register-var}
+-Wvolatile-register-var  @gol
+-Wzero-length-bounds}
 
 Note that some warning flags are not implied by @option{-Wall}.  Some of
 them warn about constructions that users generally do not consider
@@ -4598,6 +5257,137 @@ of a derived class.
 
 @end itemize
 
+@item -Wabi @r{(C, Objective-C, C++ and Objective-C++ only)}
+@opindex Wabi
+@opindex Wno-abi
+
+Warn about code affected by ABI changes.  This includes code that may
+not be compatible with the vendor-neutral C++ ABI as well as the psABI
+for the particular target.
+
+Since G++ now defaults to updating the ABI with each major release,
+normally @option{-Wabi} warns only about C++ ABI compatibility
+problems if there is a check added later in a release series for an
+ABI issue discovered since the initial release.  @option{-Wabi} warns
+about more things if an older ABI version is selected (with
+@option{-fabi-version=@var{n}}).
+
+@option{-Wabi} can also be used with an explicit version number to
+warn about C++ ABI compatibility with a particular @option{-fabi-version}
+level, e.g.@: @option{-Wabi=2} to warn about changes relative to
+@option{-fabi-version=2}.
+
+If an explicit version number is provided and
+@option{-fabi-compat-version} is not specified, the version number
+from this option is used for compatibility aliases.  If no explicit
+version number is provided with this option, but
+@option{-fabi-compat-version} is specified, that version number is
+used for C++ ABI warnings.
+
+Although an effort has been made to warn about
+all such cases, there are probably some cases that are not warned about,
+even though G++ is generating incompatible code.  There may also be
+cases where warnings are emitted even though the code that is generated
+is compatible.
+
+You should rewrite your code to avoid these warnings if you are
+concerned about the fact that code generated by G++ may not be binary
+compatible with code generated by other compilers.
+
+Known incompatibilities in @option{-fabi-version=2} (which was the
+default from GCC 3.4 to 4.9) include:
+
+@itemize @bullet
+
+@item
+A template with a non-type template parameter of reference type was
+mangled incorrectly:
+@smallexample
+extern int N;
+template <int &> struct S @{@};
+void n (S<N>) @{2@}
+@end smallexample
+
+This was fixed in @option{-fabi-version=3}.
+
+@item
+SIMD vector types declared using @code{__attribute ((vector_size))} were
+mangled in a non-standard way that does not allow for overloading of
+functions taking vectors of different sizes.
+
+The mangling was changed in @option{-fabi-version=4}.
+
+@item
+@code{__attribute ((const))} and @code{noreturn} were mangled as type
+qualifiers, and @code{decltype} of a plain declaration was folded away.
+
+These mangling issues were fixed in @option{-fabi-version=5}.
+
+@item
+Scoped enumerators passed as arguments to a variadic function are
+promoted like unscoped enumerators, causing @code{va_arg} to complain.
+On most targets this does not actually affect the parameter passing
+ABI, as there is no way to pass an argument smaller than @code{int}.
+
+Also, the ABI changed the mangling of template argument packs,
+@code{const_cast}, @code{static_cast}, prefix increment/decrement, and
+a class scope function used as a template argument.
+
+These issues were corrected in @option{-fabi-version=6}.
+
+@item
+Lambdas in default argument scope were mangled incorrectly, and the
+ABI changed the mangling of @code{nullptr_t}.
+
+These issues were corrected in @option{-fabi-version=7}.
+
+@item
+When mangling a function type with function-cv-qualifiers, the
+un-qualified function type was incorrectly treated as a substitution
+candidate.
+
+This was fixed in @option{-fabi-version=8}, the default for GCC 5.1.
+
+@item
+@code{decltype(nullptr)} incorrectly had an alignment of 1, leading to
+unaligned accesses.  Note that this did not affect the ABI of a
+function with a @code{nullptr_t} parameter, as parameters have a
+minimum alignment.
+
+This was fixed in @option{-fabi-version=9}, the default for GCC 5.2.
+
+@item
+Target-specific attributes that affect the identity of a type, such as
+ia32 calling conventions on a function type (stdcall, regparm, etc.),
+did not affect the mangled name, leading to name collisions when
+function pointers were used as template arguments.
+
+This was fixed in @option{-fabi-version=10}, the default for GCC 6.1.
+
+@end itemize
+
+This option also enables warnings about psABI-related changes.
+The known psABI changes at this point include:
+
+@itemize @bullet
+
+@item
+For SysV/x86-64, unions with @code{long double} members are
+passed in memory as specified in psABI.  Prior to GCC 4.4, this was not
+the case.  For example:
+
+@smallexample
+union U @{
+  long double ld;
+  int i;
+@};
+@end smallexample
+
+@noindent
+@code{union U} is now always passed in memory.
+
+@end itemize
+
 @item -Wchar-subscripts
 @opindex Wchar-subscripts
 @opindex Wno-char-subscripts
@@ -4624,7 +5414,8 @@ Completely disabling the warning is not recommended.
 
 @item -Wno-cpp
 @r{(C, Objective-C, C++, Objective-C++ and Fortran only)}
-
+@opindex Wno-cpp
+@opindex Wcpp
 Suppress warning messages emitted by @code{#warning} directives.
 
 @item -Wdouble-promotion @r{(C, C++, Objective-C and Objective-C++ only)}
@@ -4701,6 +5492,13 @@ aspects of this level of format checking can be disabled by the
 options: @option{-Wno-format-contains-nul},
 @option{-Wno-format-extra-args}, and @option{-Wno-format-zero-length}.
 @option{-Wformat} is enabled by @option{-Wall}.
+
+@item -Wformat=2
+@opindex Wformat=2
+Enable @option{-Wformat} plus additional format checks.  Currently
+equivalent to @option{-Wformat -Wformat-nonliteral -Wformat-security
+-Wformat-y2k}.
+@end table
 
 @item -Wno-format-contains-nul
 @opindex Wno-format-contains-nul
@@ -4808,13 +5606,6 @@ void f (int a, int b)
 If @option{-Wformat} is specified, do not warn about zero-length formats.
 The C standard specifies that zero-length formats are allowed.
 
-
-@item -Wformat=2
-@opindex Wformat=2
-Enable @option{-Wformat} plus additional format checks.  Currently
-equivalent to @option{-Wformat -Wformat-nonliteral -Wformat-security
--Wformat-y2k}.
-
 @item -Wformat-nonliteral
 @opindex Wformat-nonliteral
 @opindex Wno-format-nonliteral
@@ -4875,7 +5666,6 @@ sufficient length or magnitude.
 @opindex Wno-format-y2k
 If @option{-Wformat} is specified, also warn about @code{strftime}
 formats that may yield only a two-digit year.
-@end table
 
 @item -Wnonnull
 @opindex Wnonnull
@@ -4904,22 +5694,6 @@ is only active when @option{-fdelete-null-pointer-checks} is active,
 which is enabled by optimizations in most targets.  The precision of
 the warnings depends on the optimization options used.
 
-@item -Winaccessible-base @r{(C++, Objective-C++ only)}
-@opindex Winaccessible-base
-@opindex Wno-inaccessible-base
-Warn when a base class is inaccessible in a class derived from it due to
-ambiguity.  The warning is enabled by default.  Note the warning for virtual
-bases is enabled by the @option{-Wextra} option.
-@smallexample
-@group
-struct A @{ int a; @};
-
-struct B : A @{ @};
-
-struct C : B, A @{ @};
-@end group
-@end smallexample
-
 @item -Winit-self @r{(C, C++, Objective-C and Objective-C++ only)}
 @opindex Winit-self
 @opindex Wno-init-self
@@ -4940,20 +5714,20 @@ int f()
 
 This warning is enabled by @option{-Wall} in C++.
 
-@item -Wimplicit-int @r{(C and Objective-C only)}
+@item -Wno-implicit-int @r{(C and Objective-C only)}
 @opindex Wimplicit-int
 @opindex Wno-implicit-int
-Warn when a declaration does not specify a type.
-This warning is enabled by @option{-Wall}.
+This option controls warnings when a declaration does not specify a type.
+This warning is enabled by default in C99 and later dialects of C,
+and also by @option{-Wall}.
 
-@item -Wimplicit-function-declaration @r{(C and Objective-C only)}
+@item -Wno-implicit-function-declaration @r{(C and Objective-C only)}
 @opindex Wimplicit-function-declaration
 @opindex Wno-implicit-function-declaration
-Give a warning whenever a function is used before being declared. In
-C99 mode (@option{-std=c99} or @option{-std=gnu99}), this warning is
-enabled by default and it is made into an error by
-@option{-pedantic-errors}. This warning is also enabled by
-@option{-Wall}.
+This option controls warnings when a function is used before being declared.
+This warning is enabled by default in C99 and later dialects of C,
+and also by @option{-Wall}.
+The warning is made into an error by @option{-pedantic-errors}.
 
 @item -Wimplicit @r{(C and Objective-C only)}
 @opindex Wimplicit
@@ -5106,12 +5880,11 @@ switch (cond)
 
 The @option{-Wimplicit-fallthrough=3} warning is enabled by @option{-Wextra}.
 
-@item -Wif-not-aligned @r{(C, C++, Objective-C and Objective-C++ only)}
+@item -Wno-if-not-aligned @r{(C, C++, Objective-C and Objective-C++ only)}
 @opindex Wif-not-aligned
 @opindex Wno-if-not-aligned
-Control if warning triggered by the @code{warn_if_not_aligned} attribute
-should be issued.  This is enabled by default.
-Use @option{-Wno-if-not-aligned} to disable it.
+Control if warnings triggered by the @code{warn_if_not_aligned} attribute
+should be issued.  These warnings are enabled by default.
 
 @item -Wignored-qualifiers @r{(C and C++ only)}
 @opindex Wignored-qualifiers
@@ -5126,10 +5899,11 @@ even without this option.
 
 This warning is also enabled by @option{-Wextra}.
 
-@item -Wignored-attributes @r{(C and C++ only)}
+@item -Wno-ignored-attributes @r{(C and C++ only)}
 @opindex Wignored-attributes
 @opindex Wno-ignored-attributes
-Warn when an attribute is ignored.  This is different from the
+This option controls warnings when an attribute is ignored.
+This is different from the
 @option{-Wattributes} option in that it warns whenever the compiler decides
 to drop an attribute, not that the attribute is either unknown, used in a
 wrong place, etc.  This warning is enabled by default.
@@ -5235,8 +6009,7 @@ allocate<void> (size_t);
 @opindex Wno-missing-braces
 Warn if an aggregate or union initializer is not fully bracketed.  In
 the following example, the initializer for @code{a} is not fully
-bracketed, but that for @code{b} is fully bracketed.  This warning is
-enabled by @option{-Wall} in C.
+bracketed, but that for @code{b} is fully bracketed.
 
 @smallexample
 int a[2][2] = @{ 0, 1, 2, 3 @};
@@ -5250,21 +6023,23 @@ This warning is enabled by @option{-Wall}.
 @opindex Wno-missing-include-dirs
 Warn if a user-supplied include directory does not exist.
 
-@item -Wmissing-profile
+@item -Wno-missing-profile
 @opindex Wmissing-profile
 @opindex Wno-missing-profile
-Warn if feedback profiles are missing when using the
+This option controls warnings if feedback profiles are missing when using the
 @option{-fprofile-use} option.
 This option diagnoses those cases where a new function or a new file is added
-to the user code between compiling with @option{-fprofile-generate} and with
-@option{-fprofile-use}, without regenerating the profiles.  In these cases, the
-profile feedback data files do not contain any profile feedback information for
+between compiling with @option{-fprofile-generate} and with
+@option{-fprofile-use}, without regenerating the profiles.
+In these cases, the profile feedback data files do not contain any
+profile feedback information for
 the newly added function or file respectively.  Also, in the case when profile
 count data (.gcda) files are removed, GCC cannot use any profile feedback
-information.  In all these cases, warnings are issued to inform the user that a
-profile generation step is due.  @option{-Wno-missing-profile} can be used to
-disable the warning.  Ignoring the warning can result in poorly optimized code.
-Completely disabling the warning is not recommended and should be done only
+information.  In all these cases, warnings are issued to inform you that a
+profile generation step is due.
+Ignoring the warning can result in poorly optimized code.
+@option{-Wno-missing-profile} can be used to
+disable the warning, but this is not recommended and should be done only
 when non-existent profile data is justified.
 
 @item -Wmultistatement-macros
@@ -5365,7 +6140,7 @@ this sort of problem in programs.
 The C++17 standard will define the order of evaluation of operands in
 more cases: in particular it requires that the right-hand side of an
 assignment be evaluated before the left-hand side, so the above
-examples are no longer undefined.  But this warning will still warn
+examples are no longer undefined.  But this option will still warn
 about them, to help people avoid writing code that is undefined in C
 and earlier revisions of C++.
 
@@ -5406,15 +6181,17 @@ the function is not used.
 
 This warning is enabled by default in C++ and by @option{-Wall} otherwise.
 
-@item -Wshift-count-negative
+@item -Wno-shift-count-negative
 @opindex Wshift-count-negative
 @opindex Wno-shift-count-negative
-Warn if shift count is negative. This warning is enabled by default.
+Controls warnings if a shift count is negative.
+This warning is enabled by default.
 
-@item -Wshift-count-overflow
+@item -Wno-shift-count-overflow
 @opindex Wshift-count-overflow
 @opindex Wno-shift-count-overflow
-Warn if shift count >= width of type. This warning is enabled by default.
+Controls warnings if a shift count is greater than or equal to the bit width
+of the type.  This warning is enabled by default.
 
 @item -Wshift-negative-value
 @opindex Wshift-negative-value
@@ -5422,12 +6199,11 @@ Warn if shift count >= width of type. This warning is enabled by default.
 Warn if left shifting a negative value.  This warning is enabled by
 @option{-Wextra} in C99 and C++11 modes (and newer).
 
-@item -Wshift-overflow
+@item -Wno-shift-overflow
 @itemx -Wshift-overflow=@var{n}
 @opindex Wshift-overflow
 @opindex Wno-shift-overflow
-Warn about left shift overflows.  This warning is enabled by
-default in C99 and C++11 modes (and newer).
+These options control warnings about left shift overflows.
 
 @table @gcctabopt
 @item -Wshift-overflow=1
@@ -5471,10 +6247,10 @@ between @option{-Wswitch} and this option is that this option gives a
 warning about an omitted enumeration code even if there is a
 @code{default} label.
 
-@item -Wswitch-bool
+@item -Wno-switch-bool
 @opindex Wswitch-bool
 @opindex Wno-switch-bool
-Warn whenever a @code{switch} statement has an index of boolean type
+Do not warn when a @code{switch} statement has an index of boolean type
 and the case values are outside the range of a boolean type.
 It is possible to suppress this warning by casting the controlling
 expression to a type other than @code{bool}.  For example:
@@ -5488,17 +6264,18 @@ switch ((int) (a == 4))
 @end smallexample
 This warning is enabled by default for C and C++ programs.
 
-@item -Wswitch-outside-range
+@item -Wno-switch-outside-range
 @opindex Wswitch-outside-range
 @opindex Wno-switch-outside-range
-Warn whenever a @code{switch} case has a value that is outside of its
+This option controls warnings when a @code{switch} case has a value
+that is outside of its
 respective type range.  This warning is enabled by default for
 C and C++ programs.
 
-@item -Wswitch-unreachable
+@item -Wno-switch-unreachable
 @opindex Wswitch-unreachable
 @opindex Wno-switch-unreachable
-Warn whenever a @code{switch} statement contains statements between the
+Do not warn when a @code{switch} statement contains statements between the
 controlling expression and the first case label, which will never be
 executed.  For example:
 @smallexample
@@ -5677,10 +6454,11 @@ to compute a value that itself is never used, because such
 computations may be deleted by data flow analysis before the warnings
 are printed.
 
-@item -Winvalid-memory-model
+@item -Wno-invalid-memory-model
 @opindex Winvalid-memory-model
 @opindex Wno-invalid-memory-model
-Warn for invocations of @ref{__atomic Builtins}, @ref{__sync Builtins},
+This option controls warnings
+for invocations of @ref{__atomic Builtins}, @ref{__sync Builtins},
 and the C11 atomic generic functions with a memory consistency argument
 that is either invalid for the operation or outside the range of values
 of the @code{memory_order} enumeration.  For example, since the
@@ -5917,7 +6695,7 @@ a small subset of simple buffer overflows even without optimization in
 calls to the GCC built-in functions like @code{__builtin_memcpy} that
 correspond to the standard functions.  In any case, the option warns about
 just a subset of buffer overflows detected by the corresponding overflow
-checking built-ins.  For example, the option will issue a warning for
+checking built-ins.  For example, the option issues a warning for
 the @code{strcpy} call below because it copies at least 5 characters
 (the string @code{"blue"} including the terminating NUL) into the buffer
 of size 4.
@@ -5948,7 +6726,7 @@ Option @option{-Wstringop-overflow=2} is enabled by default.
 @opindex Wno-stringop-overflow
 The @option{-Wstringop-overflow=1} option uses type-zero Object Size Checking
 to determine the sizes of destination objects.  This is the default setting
-of the option.  At this setting the option will not warn for writes past
+of the option.  At this setting the option does not warn for writes past
 the end of subobjects of larger objects accessed by pointers unless the
 size of the largest surrounding object is known.  When the destination may
 be one of several objects it is assumed to be the largest one of them.  On
@@ -5959,8 +6737,8 @@ a non-zero value.
 @item -Wstringop-overflow=2
 The @option{-Wstringop-overflow=2} option uses type-one Object Size Checking
 to determine the sizes of destination objects.  At this setting the option
-will warn about overflows when writing to members of the largest complete
-objects whose exact size is known.  It will, however, not warn for excessive
+warna about overflows when writing to members of the largest complete
+objects whose exact size is known.  However, it does not warn for excessive
 writes to the same members of unknown objects referenced by pointers since
 they may point to arrays containing unknown numbers of elements.
 
@@ -5974,16 +6752,17 @@ code.
 @item -Wstringop-overflow=4
 The @option{-Wstringop-overflow=4} option uses type-three Object Size Checking
 to determine the sizes of destination objects.  At this setting the option
-will warn about overflowing any data members, and when the destination is
+warns about overflowing any data members, and when the destination is
 one of several objects it uses the size of the largest of them to decide
 whether to issue a warning.  Similarly to @option{-Wstringop-overflow=3} this
 setting of the option may result in warnings for benign code.
 @end table
 
-@item -Wstringop-truncation
+@item -Wno-stringop-truncation
 @opindex Wstringop-truncation
 @opindex Wno-stringop-truncation
-Warn for calls to bounded string manipulation functions such as @code{strncat},
+Do not warn for calls to bounded string manipulation functions
+such as @code{strncat},
 @code{strncpy}, and @code{stpncpy} that may either truncate the copied string
 or leave the destination unchanged.
 
@@ -6102,39 +6881,10 @@ appropriate may not be detected.
 @opindex Wno-suggest-attribute=cold
 
 Warn about functions that might be candidates for @code{cold} attribute.  This
-is based on static detection and generally will only warn about functions which
+is based on static detection and generally only warns about functions which
 always leads to a call to another @code{cold} function such as wrappers of
 C++ @code{throw} or fatal error reporting functions leading to @code{abort}.
 @end table
-
-@item -Wsuggest-final-types
-@opindex Wno-suggest-final-types
-@opindex Wsuggest-final-types
-Warn about types with virtual methods where code quality would be improved
-if the type were declared with the C++11 @code{final} specifier, 
-or, if possible,
-declared in an anonymous namespace. This allows GCC to more aggressively
-devirtualize the polymorphic calls. This warning is more effective with 
-link-time optimization, 
-where the information about the class hierarchy graph is
-more complete.
-
-@item -Wsuggest-final-methods
-@opindex Wno-suggest-final-methods
-@opindex Wsuggest-final-methods
-Warn about virtual methods where code quality would be improved if the method
-were declared with the C++11 @code{final} specifier, 
-or, if possible, its type were
-declared in an anonymous namespace or with the @code{final} specifier.
-This warning is
-more effective with link-time optimization, where the information about the
-class hierarchy graph is more complete. It is recommended to first consider
-suggestions of @option{-Wsuggest-final-types} and then rebuild with new
-annotations.
-
-@item -Wsuggest-override
-Warn about overriding virtual functions that are not marked with the override
-keyword.
 
 @item -Walloc-zero
 @opindex Wno-alloc-zero
@@ -6243,6 +6993,24 @@ See also @option{-Wvla-larger-than=}@samp{byte-size}.
 @opindex Wno-alloca-larger-than
 Disable @option{-Walloca-larger-than=} warnings.  The option is
 equivalent to @option{-Walloca-larger-than=}@samp{SIZE_MAX} or larger.
+
+@item -Warith-conversion
+@opindex Warith-conversion
+@opindex Wno-arith-conversion
+Do warn about implicit conversions from arithmetic operations even
+when conversion of the operands to the same type cannot change their
+values.  This affects warnings from @option{-Wconversion},
+@option{-Wfloat-conversion}, and @option{-Wsign-conversion}.
+
+@smallexample
+@group
+void f (char c, int i)
+@{
+  c = c + i; // warns with @option{-Wconversion}
+  c = c + 1; // only warns with @option{-Warith-conversion}
+@}
+@end group
+@end smallexample
 
 @item -Warray-bounds
 @itemx -Warray-bounds=@var{n}
@@ -6752,62 +7520,6 @@ disables the warnings about non-ISO @code{printf} / @code{scanf} format
 width specifiers @code{I32}, @code{I64}, and @code{I} used on Windows targets,
 which depend on the MS runtime.
 
-@item -Waligned-new
-@opindex Waligned-new
-@opindex Wno-aligned-new
-Warn about a new-expression of a type that requires greater alignment
-than the @code{alignof(std::max_align_t)} but uses an allocation
-function without an explicit alignment parameter. This option is
-enabled by @option{-Wall}.
-
-Normally this only warns about global allocation functions, but
-@option{-Waligned-new=all} also warns about class member allocation
-functions.
-
-@item -Wplacement-new
-@itemx -Wplacement-new=@var{n}
-@opindex Wplacement-new
-@opindex Wno-placement-new
-Warn about placement new expressions with undefined behavior, such as
-constructing an object in a buffer that is smaller than the type of
-the object.  For example, the placement new expression below is diagnosed
-because it attempts to construct an array of 64 integers in a buffer only
-64 bytes large.
-@smallexample
-char buf [64];
-new (buf) int[64];
-@end smallexample
-This warning is enabled by default.
-
-@table @gcctabopt
-@item -Wplacement-new=1
-This is the default warning level of @option{-Wplacement-new}.  At this
-level the warning is not issued for some strictly undefined constructs that
-GCC allows as extensions for compatibility with legacy code.  For example,
-the following @code{new} expression is not diagnosed at this level even
-though it has undefined behavior according to the C++ standard because
-it writes past the end of the one-element array.
-@smallexample
-struct S @{ int n, a[1]; @};
-S *s = (S *)malloc (sizeof *s + 31 * sizeof s->a[0]);
-new (s->a)int [32]();
-@end smallexample
-
-@item -Wplacement-new=2
-At this level, in addition to diagnosing all the same constructs as at level
-1, a diagnostic is also issued for placement new expressions that construct
-an object in the last member of structure whose type is an array of a single
-element and whose size is less than the size of the object being constructed.
-While the previous example would be diagnosed, the following construct makes
-use of the flexible member array extension to avoid the warning at level 2.
-@smallexample
-struct S @{ int n, a[]; @};
-S *s = (S *)malloc (sizeof *s + 32 * sizeof s->a[0]);
-new (s->a)int [32]();
-@end smallexample
-
-@end table
-
 @item -Wpointer-arith
 @opindex Wpointer-arith
 @opindex Wno-pointer-arith
@@ -6817,10 +7529,11 @@ convenience in calculations with @code{void *} pointers and pointers
 to functions.  In C++, warn also when an arithmetic operation involves
 @code{NULL}.  This warning is also enabled by @option{-Wpedantic}.
 
-@item -Wpointer-compare
+@item -Wno-pointer-compare
 @opindex Wpointer-compare
 @opindex Wno-pointer-compare
-Warn if a pointer is compared with a zero character constant.  This usually
+Do not warn if a pointer is compared with a zero character constant.
+This usually
 means that the pointer was meant to be dereferenced.  For example:
 
 @smallexample
@@ -6990,27 +7703,11 @@ When compiling C++, warn about the deprecated conversion from string
 literals to @code{char *}.  This warning is enabled by default for C++
 programs.
 
-@item -Wcatch-value
-@itemx -Wcatch-value=@var{n} @r{(C++ and Objective-C++ only)}
-@opindex Wcatch-value
-@opindex Wno-catch-value
-Warn about catch handlers that do not catch via reference.
-With @option{-Wcatch-value=1} (or @option{-Wcatch-value} for short)
-warn about polymorphic class types that are caught by value.
-With @option{-Wcatch-value=2} warn about all class types that are caught
-by value. With @option{-Wcatch-value=3} warn about all types that are
-not caught by reference. @option{-Wcatch-value} is enabled by @option{-Wall}.
-
 @item -Wclobbered
 @opindex Wclobbered
 @opindex Wno-clobbered
 Warn for variables that might be changed by @code{longjmp} or
 @code{vfork}.  This warning is also enabled by @option{-Wextra}.
-
-@item -Wconditionally-supported @r{(C++ and Objective-C++ only)}
-@opindex Wconditionally-supported
-@opindex Wno-conditionally-supported
-Warn for conditionally-supported (C++11 [intro.defs]) constructs.
 
 @item -Wconversion
 @opindex Wconversion
@@ -7032,31 +7729,8 @@ reference to them. Warnings about conversions between signed and
 unsigned integers are disabled by default in C++ unless
 @option{-Wsign-conversion} is explicitly enabled.
 
-@item -Wno-conversion-null @r{(C++ and Objective-C++ only)}
-@opindex Wconversion-null
-@opindex Wno-conversion-null
-Do not warn for conversions between @code{NULL} and non-pointer
-types. @option{-Wconversion-null} is enabled by default.
-
-@item -Wzero-as-null-pointer-constant @r{(C++ and Objective-C++ only)}
-@opindex Wzero-as-null-pointer-constant
-@opindex Wno-zero-as-null-pointer-constant
-Warn when a literal @samp{0} is used as null pointer constant.  This can
-be useful to facilitate the conversion to @code{nullptr} in C++11.
-
-@item -Wsubobject-linkage @r{(C++ and Objective-C++ only)}
-@opindex Wsubobject-linkage
-@opindex Wno-subobject-linkage
-Warn if a class type has a base or a field whose type uses the anonymous
-namespace or depends on a type with no linkage.  If a type A depends on
-a type B with no or internal linkage, defining it in multiple
-translation units would be an ODR violation because the meaning of B
-is different in each translation unit.  If A only appears in a single
-translation unit, the best way to silence the warning is to give it
-internal linkage by putting it in an anonymous namespace as well.  The
-compiler doesn't give this warning for types defined in the main .C
-file, as those are unlikely to have multiple definitions.
-@option{-Wsubobject-linkage} is enabled by default.
+Warnings about conversion from arithmetic on a small type back to that
+type are only given with @option{-Warith-conversion}.
 
 @item -Wdangling-else
 @opindex Wdangling-else
@@ -7110,22 +7784,16 @@ Warn when macros @code{__TIME__}, @code{__DATE__} or @code{__TIMESTAMP__}
 are encountered as they might prevent bit-wise-identical reproducible
 compilations.
 
-@item -Wdelete-incomplete @r{(C++ and Objective-C++ only)}
-@opindex Wdelete-incomplete
-@opindex Wno-delete-incomplete
-Warn when deleting a pointer to incomplete type, which may cause
-undefined behavior at runtime.  This warning is enabled by default.
-
-@item -Wuseless-cast @r{(C++ and Objective-C++ only)}
-@opindex Wuseless-cast
-@opindex Wno-useless-cast
-Warn when an expression is casted to its own type.
-
 @item -Wempty-body
 @opindex Wempty-body
 @opindex Wno-empty-body
 Warn if an empty body occurs in an @code{if}, @code{else} or @code{do
 while} statement.  This warning is also enabled by @option{-Wextra}.
+
+@item -Wno-endif-labels
+@opindex Wendif-labels
+@opindex Wno-endif-labels
+Do not warn about stray tokens after @code{#else} and @code{#endif}.
 
 @item -Wenum-compare
 @opindex Wenum-compare
@@ -7140,11 +7808,6 @@ enabled by @option{-Wall}.
 @opindex Wno-enum-conversion
 Warn when a value of enumerated type is implicitly converted to a 
 different enumerated type.  This warning is enabled by @option{-Wextra}.
-
-@item -Wextra-semi @r{(C++, Objective-C++ only)}
-@opindex Wextra-semi
-@opindex Wno-extra-semi
-Warn about redundant semicolon after in-class function definition.
 
 @item -Wjump-misses-init @r{(C, Objective-C only)}
 @opindex Wjump-misses-init
@@ -7191,22 +7854,6 @@ real to lower precision real values.  This option is also enabled by
 @opindex Wscalar-storage-order
 Do not warn on suspicious constructs involving reverse scalar storage order.
 
-@item -Wsized-deallocation @r{(C++ and Objective-C++ only)}
-@opindex Wsized-deallocation
-@opindex Wno-sized-deallocation
-Warn about a definition of an unsized deallocation function
-@smallexample
-void operator delete (void *) noexcept;
-void operator delete[] (void *) noexcept;
-@end smallexample
-without a definition of the corresponding sized deallocation function
-@smallexample
-void operator delete (void *, std::size_t) noexcept;
-void operator delete[] (void *, std::size_t) noexcept;
-@end smallexample
-or vice versa.  Enabled by @option{-Wextra} along with
-@option{-fsized-deallocation}.
-
 @item -Wsizeof-pointer-div
 @opindex Wsizeof-pointer-div
 @opindex Wno-sizeof-pointer-div
@@ -7241,10 +7888,10 @@ void make_file (const char *name)
 
 The @option{-Wsizeof-pointer-memaccess} option is enabled by @option{-Wall}.
 
-@item -Wsizeof-array-argument
+@item -Wno-sizeof-array-argument
 @opindex Wsizeof-array-argument
 @opindex Wno-sizeof-array-argument
-Warn when the @code{sizeof} operator is applied to a parameter that is
+Do not warn when the @code{sizeof} operator is applied to a parameter that is
 declared as an array in a function definition.  This warning is enabled by
 default for C and C++ programs.
 
@@ -7285,10 +7932,10 @@ behavior and are not portable in C, so they usually indicate that the
 programmer intended to use @code{strcmp}.  This warning is enabled by
 @option{-Wall}.
 
-@item -Waddress-of-packed-member
+@item -Wno-address-of-packed-member
 @opindex Waddress-of-packed-member
 @opindex Wno-address-of-packed-member
-Warn when the address of packed member of struct or union is taken,
+Do not warn when the address of packed member of struct or union is taken,
 which usually results in an unaligned pointer value.  This is
 enabled by default.
 
@@ -7353,7 +8000,7 @@ or as a non-function, or when a built-in function declared with a type
 that does not include a prototype is called with arguments whose promoted
 types do not match those expected by the function.  When @option{-Wextra}
 is specified, also warn when a built-in function that takes arguments is
-declared without a prototype.  The @option{-Wno-builtin-declaration-mismatch}
+declared without a prototype.  The @option{-Wbuiltin-declaration-mismatch}
 warning is enabled by default.  To avoid the warning include the appropriate
 header to bring the prototypes of built-in functions into scope.
 
@@ -7588,10 +8235,10 @@ This warning is included in @option{-Wextra}.  To get other
 @option{-Wextra} warnings without this one, use @option{-Wextra
 -Wno-override-init}.
 
-@item -Woverride-init-side-effects @r{(C and Objective-C only)}
+@item -Wno-override-init-side-effects @r{(C and Objective-C only)}
 @opindex Woverride-init-side-effects
 @opindex Wno-override-init-side-effects
-Warn if an initialized field with side effects is overridden when
+Do not warn if an initialized field with side effects is overridden when
 using designated initializers (@pxref{Designated Inits, , Designated
 Initializers}).  This warning is enabled by default.
 
@@ -7618,11 +8265,11 @@ struct bar @{
 @end group
 @end smallexample
 
-@item -Wpacked-bitfield-compat
+@item -Wnopacked-bitfield-compat
 @opindex Wpacked-bitfield-compat
 @opindex Wno-packed-bitfield-compat
 The 4.1, 4.2 and 4.3 series of GCC ignore the @code{packed} attribute
-on bit-fields of type @code{char}.  This has been fixed in GCC 4.4 but
+on bit-fields of type @code{char}.  This was fixed in GCC 4.4 but
 the change can lead to differences in the structure layout.  GCC
 informs you when the offset of such a field has changed in GCC 4.4.
 For example there is no longer a 4-bit padding between field @code{a}
@@ -7672,7 +8319,7 @@ reduce the padding and so make the structure smaller.
 Warn if anything is declared more than once in the same scope, even in
 cases where multiple declaration is valid and changes nothing.
 
-@item -Wno-restrict
+@item -Wrestrict
 @opindex Wrestrict
 @opindex Wno-restrict
 Warn when an object referenced by a @code{restrict}-qualified parameter
@@ -7700,13 +8347,6 @@ is included in @option{-Wall}.
 @opindex Wno-nested-externs
 Warn if an @code{extern} declaration is encountered within a function.
 
-@item -Wno-inherited-variadic-ctor
-@opindex Winherited-variadic-ctor
-@opindex Wno-inherited-variadic-ctor
-Suppress warnings about use of C++11 inheriting constructors when the
-base class inherited from has a C variadic constructor; the warning is
-on by default because the ellipsis is not inherited.
-
 @item -Winline
 @opindex Winline
 @opindex Wno-inline
@@ -7720,20 +8360,6 @@ the size of the function being inlined and the amount of inlining
 that has already been done in the current function.  Therefore,
 seemingly insignificant changes in the source program can cause the
 warnings produced by @option{-Winline} to appear or disappear.
-
-@item -Wno-invalid-offsetof @r{(C++ and Objective-C++ only)}
-@opindex Wno-invalid-offsetof
-@opindex Winvalid-offsetof
-Suppress warnings from applying the @code{offsetof} macro to a non-POD
-type.  According to the 2014 ISO C++ standard, applying @code{offsetof}
-to a non-standard-layout type is undefined.  In existing C++ implementations,
-however, @code{offsetof} typically gives meaningful results.
-This flag is for users who are aware that they are
-writing nonportable code and who have deliberately chosen to ignore the
-warning about it.
-
-The restrictions on @code{offsetof} may be relaxed in a future version
-of the C++ standard.
 
 @item -Wint-in-bool-context
 @opindex Wint-in-bool-context
@@ -7780,12 +8406,11 @@ alternate syntax is used in ISO C99 mode.  This is enabled by either
 @option{-Wpedantic} or @option{-Wtraditional}.  To inhibit the warning
 messages, use @option{-Wno-variadic-macros}.
 
-@item -Wvarargs
+@item -Wno-varargs
 @opindex Wvarargs
 @opindex Wno-varargs
-Warn upon questionable usage of the macros used to handle variable
-arguments like @code{va_start}.  This is default.  To inhibit the
-warning messages, use @option{-Wno-varargs}.
+Do not warn upon questionable usage of the macros used to handle variable
+arguments like @code{va_start}.  These warnings are enabled by default.
 
 @item -Wvector-operation-performance
 @opindex Wvector-operation-performance
@@ -7799,16 +8424,6 @@ using scalars of wider type, which normally is more performance efficient;
 and @code{as a single scalar}, which means that vector fits into a
 scalar type.
 
-@item -Wno-virtual-move-assign
-@opindex Wvirtual-move-assign
-@opindex Wno-virtual-move-assign
-Suppress warnings about inheriting from a virtual base with a
-non-trivial C++11 move assignment operator.  This is dangerous because
-if the virtual base is reachable along more than one path, it is
-moved multiple times, which can mean both objects end up in the
-moved-from state.  If the move assignment operator is written to avoid
-moving from a moved-from object, this warning can be disabled.
-
 @item -Wvla
 @opindex Wvla
 @opindex Wno-vla
@@ -7819,7 +8434,7 @@ the variable-length array.
 @item -Wvla-larger-than=@var{byte-size}
 @opindex Wvla-larger-than=
 @opindex Wno-vla-larger-than
-If this option is used, the compiler will warn for declarations of
+If this option is used, the compiler warns for declarations of
 variable-length arrays whose size is either unbounded, or bounded
 by an argument that allows the array size to exceed @var{byte-size}
 bytes.  This is similar to how @option{-Walloca-larger-than=}@var{byte-size}
@@ -7899,14 +8514,410 @@ warns about such constants in system header files.  This can be useful
 when preparing code to use with the @code{FLOAT_CONST_DECIMAL64} pragma
 from the decimal floating-point extension to C99.
 
+@item -Wno-lto-type-mismatch
+@opindex Wlto-type-mismatch
+@opindex Wno-lto-type-mismatch
+
+During the link-time optimization, do not warn about type mismatches in
+global declarations from different compilation units.
+Requires @option{-flto} to be enabled.  Enabled by default.
+
 @item -Wno-designated-init @r{(C and Objective-C only)}
+@opindex Wdesignated-init
+@opindex Wno-designated-init
 Suppress warnings when a positional initializer is used to initialize
 a structure that has been marked with the @code{designated_init}
 attribute.
 
-@item -Whsa
-Issue a warning when HSAIL cannot be emitted for the compiled function or
-OpenMP construct.
+@item -Wno-hsa
+@opindex Whsa
+@opindex Wno-hsa
+Do not warn when HSAIL cannot be emitted for the compiled function or
+OpenMP construct.  These warnings are enabled by default.
+
+@end table
+
+@node Static Analyzer Options
+@section Options That Control Static Analysis
+
+@table @gcctabopt
+@item -fanalyzer
+@opindex analyzer
+@opindex fanalyzer
+@opindex fno-analyzer
+This option enables an static analysis of program flow which looks
+for ``interesting'' interprocedural paths through the
+code, and issues warnings for problems found on them.
+
+This analysis is much more expensive than other GCC warnings.
+
+Enabling this option effectively enables the following warnings:
+
+@gccoptlist{ @gol
+-Wanalyzer-double-fclose @gol
+-Wanalyzer-double-free @gol
+-Wanalyzer-exposure-through-output-file @gol
+-Wanalyzer-file-leak @gol
+-Wanalyzer-free-of-non-heap @gol
+-Wanalyzer-malloc-leak @gol
+-Wanalyzer-possible-null-argument @gol
+-Wanalyzer-possible-null-dereference @gol
+-Wanalyzer-null-argument @gol
+-Wanalyzer-null-dereference @gol
+-Wanalyzer-stale-setjmp-buffer @gol
+-Wanalyzer-tainted-array-index @gol
+-Wanalyzer-unsafe-call-within-signal-handler @gol
+-Wanalyzer-use-after-free @gol
+-Wanalyzer-use-of-pointer-in-stale-stack-frame @gol
+}
+
+This option is only available if GCC was configured with analyzer
+support enabled.
+
+@item -Wanalyzer-too-complex
+@opindex Wanalyzer-too-complex
+@opindex Wno-analyzer-too-complex
+If @option{-fanalyzer} is enabled, the analyzer uses various heuristics
+to attempt to explore the control flow and data flow in the program,
+but these can be defeated by sufficiently complicated code.
+
+By default, the analysis silently stops if the code is too
+complicated for the analyzer to fully explore and it reaches an internal
+limit.  The @option{-Wanalyzer-too-complex} option warns if this occurs.
+
+@item -Wno-analyzer-double-fclose
+@opindex Wanalyzer-double-fclose
+@opindex Wno-analyzer-double-fclose
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-double-fclose} to disable it.
+
+This diagnostic warns for paths through the code in which a @code{FILE *}
+can have @code{fclose} called on it more than once.
+
+@item -Wno-analyzer-double-free
+@opindex Wanalyzer-double-free
+@opindex Wno-analyzer-double-free
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-double-free} to disable it.
+
+This diagnostic warns for paths through the code in which a pointer
+can have @code{free} called on it more than once.
+
+@item -Wno-analyzer-exposure-through-output-file
+@opindex Wanalyzer-exposure-through-output-file
+@opindex Wno-analyzer-exposure-through-output-file
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-exposure-through-output-file}
+to disable it.
+
+This diagnostic warns for paths through the code in which a
+security-sensitive value is written to an output file
+(such as writing a password to a log file).
+
+@item -Wno-analyzer-file-leak
+@opindex Wanalyzer-file-leak
+@opindex Wno-analyzer-file-leak
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-file-leak}
+to disable it.
+
+This diagnostic warns for paths through the code in which a
+@code{<stdio.h>} @code{FILE *} stream object is leaked.
+
+@item -Wno-analyzer-free-of-non-heap
+@opindex Wanalyzer-free-of-non-heap
+@opindex Wno-analyzer-free-of-non-heap
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-free-of-non-heap}
+to disable it.
+
+This diagnostic warns for paths through the code in which @code{free}
+is called on a non-heap pointer (e.g. an on-stack buffer, or a global).
+
+@item -Wno-analyzer-malloc-leak
+@opindex Wanalyzer-malloc-leak
+@opindex Wno-analyzer-malloc-leak
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-malloc-leak}
+to disable it.
+
+This diagnostic warns for paths through the code in which a
+pointer allocated via @code{malloc} is leaked.
+
+@item -Wno-analyzer-possible-null-argument
+@opindex Wanalyzer-possible-null-argument
+@opindex Wno-analyzer-possible-null-argument
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-possible-null-argument} to disable it.
+
+This diagnostic warns for paths through the code in which a
+possibly-NULL value is passed to a function argument marked
+with @code{__attribute__((nonnull))} as requiring a non-NULL
+value.
+
+@item -Wno-analyzer-possible-null-dereference
+@opindex Wanalyzer-possible-null-dereference
+@opindex Wno-analyzer-possible-null-dereference
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-possible-null-dereference} to disable it.
+
+This diagnostic warns for paths through the code in which a
+possibly-NULL value is dereferenced.
+
+@item -Wno-analyzer-null-argument
+@opindex Wanalyzer-null-argument
+@opindex Wno-analyzer-null-argument
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-null-argument} to disable it.
+
+This diagnostic warns for paths through the code in which a
+value known to be NULL is passed to a function argument marked
+with @code{__attribute__((nonnull))} as requiring a non-NULL
+value.
+
+@item -Wno-analyzer-null-dereference
+@opindex Wanalyzer-null-dereference
+@opindex Wno-analyzer-null-dereference
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-null-dereference} to disable it.
+
+This diagnostic warns for paths through the code in which a
+value known to be NULL is dereferenced.
+
+@item -Wno-analyzer-stale-setjmp-buffer
+@opindex Wanalyzer-stale-setjmp-buffer
+@opindex Wno-analyzer-stale-setjmp-buffer
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-stale-setjmp-buffer} to disable it.
+
+This diagnostic warns for paths through the code in which
+@code{longjmp} is called to rewind to a @code{jmp_buf} relating
+to a @code{setjmp} call in a function that has returned.
+
+When @code{setjmp} is called on a @code{jmp_buf} to record a rewind
+location, it records the stack frame.  The stack frame becomes invalid
+when the function containing the @code{setjmp} call returns.  Attempting
+to rewind to it via @code{longjmp} would reference a stack frame that
+no longer exists, and likely lead to a crash (or worse).
+
+@item -Wno-analyzer-tainted-array-index
+@opindex Wanalyzer-tainted-array-index
+@opindex Wno-analyzer-tainted-array-index
+This warning requires both @option{-fanalyzer} and
+@option{-fanalyzer-checker=taint} to enable it;
+use @option{-Wno-analyzer-tainted-array-index} to disable it.
+
+This diagnostic warns for paths through the code in which a value
+that could be under an attacker's control is used as the index
+of an array access without being sanitized.
+
+@item -Wno-analyzer-unsafe-call-within-signal-handler
+@opindex Wanalyzer-unsafe-call-within-signal-handler
+@opindex Wno-analyzer-unsafe-call-within-signal-handler
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-unsafe-call-within-signal-handler} to disable it.
+
+This diagnostic warns for paths through the code in which a
+function known to be async-signal-unsafe (such as @code{fprintf}) is
+called from a signal handler.
+
+@item -Wno-analyzer-use-after-free
+@opindex Wanalyzer-use-after-free
+@opindex Wno-analyzer-use-after-free
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-use-after-free} to disable it.
+
+This diagnostic warns for paths through the code in which a
+pointer is used after @code{free} is called on it.
+
+@item -Wno-analyzer-use-of-pointer-in-stale-stack-frame
+@opindex Wanalyzer-use-of-pointer-in-stale-stack-frame
+@opindex Wno-analyzer-use-of-pointer-in-stale-stack-frame
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-use-of-pointer-in-stale-stack-frame}
+to disable it.
+
+This diagnostic warns for paths through the code in which a pointer
+is dereferenced that points to a variable in a stale stack frame.
+
+@end table
+
+Pertinent parameters for controlling the exploration are:
+@option{--param analyzer-bb-explosion-factor=@var{value}},
+@option{--param analyzer-max-enodes-per-program-point=@var{value}},
+@option{--param analyzer-max-recursion-depth=@var{value}}, and
+@option{--param analyzer-min-snodes-for-call-summary=@var{value}}.
+
+The following options control the analyzer.
+
+@table @gcctabopt
+
+@item -fanalyzer-call-summaries
+@opindex fanalyzer-call-summaries
+@opindex fno-analyzer-call-summaries
+Simplify interprocedural analysis by computing the effect of certain calls,
+rather than exploring all paths through the function from callsite to each
+possible return.
+
+If enabled, call summaries are only used for functions with more than one
+call site, and that are sufficiently complicated (as per
+@option{--param analyzer-min-snodes-for-call-summary=@var{value}}).
+
+@item -fanalyzer-checker=@var{name}
+@opindex fanalyzer-checker
+Restrict the analyzer to run just the named checker, and enable it.
+
+Some checkers are disabled by default (even with @option{-fanalyzer}),
+such as the @code{taint} checker that implements
+@option{-Wanalyzer-tainted-array-index}, and this option is required
+to enable them.
+
+@item -fanalyzer-fine-grained
+@opindex fanalyzer-fine-grained
+@opindex fno-analyzer-fine-grained
+This option is intended for analyzer developers.
+
+Internally the analyzer builds an ``exploded graph'' that combines
+control flow graphs with data flow information.
+
+By default, an edge in this graph can contain the effects of a run
+of multiple statements within a basic block.  With
+@option{-fanalyzer-fine-grained}, each statement gets its own edge.
+
+@item -fanalyzer-show-duplicate-count
+@opindex fanalyzer-show-duplicate-count
+@opindex fno-analyzer-show-duplicate-count
+This option is intended for analyzer developers: if multiple diagnostics
+have been detected as being duplicates of each other, it emits a note when
+reporting the best diagnostic, giving the number of additional diagnostics
+that were suppressed by the deduplication logic.
+
+@item -fno-analyzer-state-merge
+@opindex fanalyzer-state-merge
+@opindex fno-analyzer-state-merge
+This option is intended for analyzer developers.
+
+By default the analyzer attempts to simplify analysis by merging
+sufficiently similar states at each program point as it builds its
+``exploded graph''.  With @option{-fno-analyzer-state-merge} this
+merging can be suppressed, for debugging state-handling issues.
+
+@item -fno-analyzer-state-purge
+@opindex fanalyzer-state-purge
+@opindex fno-analyzer-state-purge
+This option is intended for analyzer developers.
+
+By default the analyzer attempts to simplify analysis by purging
+aspects of state at a program point that appear to no longer be relevant
+e.g. the values of locals that aren't accessed later in the function
+and which aren't relevant to leak analysis.
+
+With @option{-fno-analyzer-state-purge} this purging of state can
+be suppressed, for debugging state-handling issues.
+
+@item -fanalyzer-transitivity
+@opindex fanalyzer-transitivity
+@opindex fno-analyzer-transitivity
+This option enables transitivity of constraints within the analyzer.
+
+@item -fanalyzer-verbose-edges
+This option is intended for analyzer developers.  It enables more
+verbose, lower-level detail in the descriptions of control flow
+within diagnostic paths.
+
+@item -fanalyzer-verbose-state-changes
+This option is intended for analyzer developers.  It enables more
+verbose, lower-level detail in the descriptions of events relating
+to state machines within diagnostic paths.
+
+@item -fanalyzer-verbosity=@var{level}
+This option controls the complexity of the control flow paths that are
+emitted for analyzer diagnostics.
+
+The @var{level} can be one of:
+
+@table @samp
+@item 0
+At this level, interprocedural call and return events are displayed,
+along with the most pertinent state-change events relating to
+a diagnostic.  For example, for a double-@code{free} diagnostic,
+both calls to @code{free} will be shown.
+
+@item 1
+As per the previous level, but also show events for the entry
+to each function.
+
+@item 2
+As per the previous level, but also show events relating to
+control flow that are significant to triggering the issue
+(e.g. ``true path taken'' at a conditional).
+
+This level is the default.
+
+@item 3
+As per the previous level, but show all control flow events, not
+just significant ones.
+
+@item 4
+This level is intended for analyzer developers; it adds various
+other events intended for debugging the analyzer.
+
+@end table
+
+@item -fdump-analyzer
+@opindex fdump-analyzer
+Dump internal details about what the analyzer is doing to
+@file{@var{file}.analyzer.txt}.
+This option is overridden by @option{-fdump-analyzer-stderr}.
+
+@item -fdump-analyzer-stderr
+@opindex fdump-analyzer-stderr
+Dump internal details about what the analyzer is doing to stderr.
+This option overrides @option{-fdump-analyzer}.
+
+@item -fdump-analyzer-callgraph
+@opindex fdump-analyzer-callgraph
+Dump a representation of the call graph suitable for viewing with
+GraphViz to @file{@var{file}.callgraph.dot}.
+
+@item -fdump-analyzer-exploded-graph
+@opindex fdump-analyzer-exploded-graph
+Dump a representation of the ``exploded graph'' suitable for viewing with
+GraphViz to @file{@var{file}.eg.dot}.
+Nodes are color-coded based on state-machine states to emphasize
+state changes.
+
+@item -fdump-analyzer-exploded-nodes
+@opindex dump-analyzer-exploded-nodes
+Emit diagnostics showing where nodes in the ``exploded graph'' are
+in relation to the program source.
+
+@item -fdump-analyzer-exploded-nodes-2
+@opindex dump-analyzer-exploded-nodes-2
+Dump a textual representation of the ``exploded graph'' to
+@file{@var{file}.eg.txt}.
+
+@item -fdump-analyzer-exploded-nodes-3
+@opindex dump-analyzer-exploded-nodes-3
+Dump a textual representation of the ``exploded graph'' to
+one dump file per node, to @file{@var{file}.eg-@var{id}.txt}.
+This is typically a large number of dump files.
+
+@item -fdump-analyzer-state-purge
+@opindex fdump-analyzer-state-purge
+As per @option{-fdump-analyzer-supergraph}, dump a representation of the
+``supergraph'' suitable for viewing with GraphViz, but annotate the
+graph with information on what state will be purged at each node.
+The graph is written to @file{@var{file}.state-purge.dot}.
+
+@item -fdump-analyzer-supergraph
+@opindex fdump-analyzer-supergraph
+Dump representations of the ``supergraph'' suitable for viewing with
+GraphViz to @file{@var{file}.supergraph.dot} and to
+@file{@var{file}.supergraph-eg.dot}.  These show all of the
+control flow graphs in the program, with interprocedural edges for
+calls and returns.  The second dump contains annotations showing nodes
+in the ``exploded graph'' and diagnostics associated with them.
 
 @end table
 
@@ -8532,14 +9543,15 @@ by @option{-O2} and also turns on the following optimization flags:
 -floop-unroll-and-jam @gol
 -fpeel-loops @gol
 -fpredictive-commoning @gol
+-fsplit-loops @gol
 -fsplit-paths @gol
--ftree-loop-distribute-patterns @gol
 -ftree-loop-distribution @gol
 -ftree-loop-vectorize @gol
 -ftree-partial-pre @gol
 -ftree-slp-vectorize @gol
 -funswitch-loops @gol
 -fvect-cost-model @gol
+-fvect-cost-model=dynamic @gol
 -fversion-loops-for-strides}
 
 @item -O0
@@ -9119,7 +10131,7 @@ advantage of this; if your code relies on the value of the object
 storage persisting beyond the lifetime of the object, you can use this
 flag to disable this optimization.  To preserve stores before the
 constructor starts (e.g.@: because your operator new clears the object
-storage) but still treat the object as dead after the destructor you,
+storage) but still treat the object as dead after the destructor, you
 can use @option{-flifetime-dse=1}.  The default behavior can be
 explicitly selected with @option{-flifetime-dse=2}.
 @option{-flifetime-dse=0} is equivalent to @option{-fno-lifetime-dse}.
@@ -9554,7 +10566,7 @@ When enabled, interprocedural constant propagation performs function cloning
 when externally visible function can be called with constant arguments.
 Because this optimization can create multiple copies of functions,
 it may significantly increase code size
-(see @option{--param ipcp-unit-growth=@var{value}}).
+(see @option{--param ipa-cp-unit-growth=@var{value}}).
 This flag is enabled by default at @option{-O3}.
 It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
@@ -9726,7 +10738,8 @@ Assume that a loop with an exit will eventually take the exit and not loop
 indefinitely.  This allows the compiler to remove loops that otherwise have
 no side-effects, not considering eventual endless looping as such.
 
-This option is enabled by default at @option{-O2}.
+This option is enabled by default at @option{-O2} for C++ with -std=c++11
+or higher.
 
 @item -ftree-dominator-opts
 @opindex ftree-dominator-opts
@@ -10233,9 +11246,9 @@ The @option{-fstrict-aliasing} option is enabled at levels
 @itemx -falign-functions=@var{n}:@var{m}:@var{n2}
 @itemx -falign-functions=@var{n}:@var{m}:@var{n2}:@var{m2}
 @opindex falign-functions
-Align the start of functions to the next power-of-two greater than
-@var{n}, skipping up to @var{m}-1 bytes.  This ensures that at least
-the first @var{m} bytes of the function can be fetched by the CPU
+Align the start of functions to the next power-of-two greater than or
+equal to @var{n}, skipping up to @var{m}-1 bytes.  This ensures that at
+least the first @var{m} bytes of the function can be fetched by the CPU
 without crossing an @var{n}-byte alignment boundary.
 
 If @var{m} is not specified, it defaults to @var{n}.
@@ -10301,6 +11314,9 @@ Align loops to a power-of-two boundary.  If the loops are executed
 many times, this makes up for any execution of the dummy padding
 instructions.
 
+If @option{-falign-labels} is greater than this value, then its value
+is used instead.
+
 Parameters of this option are analogous to the @option{-falign-functions} option.
 @option{-fno-align-loops} and @option{-falign-loops=1} are
 equivalent and mean that loops are not aligned.
@@ -10319,6 +11335,9 @@ Enabled at levels @option{-O2}, @option{-O3}.
 Align branch targets to a power-of-two boundary, for branch targets
 where the targets can only be reached by jumping.  In this case,
 no dummy operations need be executed.
+
+If @option{-falign-labels} is greater than this value, then its value
+is used instead.
 
 Parameters of this option are analogous to the @option{-falign-functions} option.
 @option{-fno-align-jumps} and @option{-falign-jumps=1} are
@@ -10496,6 +11515,20 @@ conflicting translation units.  Specifically
 @option{-fno-strict-overflow}, @option{-fwrapv} and @option{-fno-trapv} take
 precedence; and for example @option{-ffp-contract=off} takes precedence
 over @option{-ffp-contract=fast}.  You can override them at link time.
+
+Diagnostic options such as @option{-Wstringop-overflow} are passed
+through to the link stage and their setting matches that of the
+compile-step at function granularity.  Note that this matters only
+for diagnostics emitted during optimization.  Note that code
+transforms such as inlining can lead to warnings being enabled
+or disabled for regions if code not consistent with the setting
+at compile time.
+
+When you need to pass options to the assembler via @option{-Wa} or
+@option{-Xassembler} make sure to either compile such translation
+units with @option{-fno-lto} or consistently use the same assembler
+options on all translation units.  You can alternatively also
+specify assembler options at LTO link time.
 
 To enable debug info generation you need to supply @option{-g} at
 compile time.  If any of the input files at link time were built
@@ -10686,7 +11719,7 @@ default, GCC emits an error message when an inconsistent profile is detected.
 This option is enabled by @option{-fauto-profile}.
 
 @item -fprofile-partial-training
-@opindex fprofile-use
+@opindex fprofile-partial-training
 With @code{-fprofile-use} all portions of programs not executed during train
 run are optimized agressively for size rather than speed.  In some cases it is
 not practical to train all possible hot paths in the program. (For
@@ -11422,7 +12455,7 @@ For example, parameter value 20 limits unit growth to 1.2 times the original
 size. Cold functions (either marked cold via an attribute or by profile
 feedback) are not accounted into the unit size.
 
-@item ipcp-unit-growth
+@item ipa-cp-unit-growth
 Specifies maximal overall growth of the compilation unit caused by
 interprocedural constant propagation.  For example, parameter value 10 limits
 unit growth to 1.1 times the original size.
@@ -12067,6 +13100,11 @@ speed
 (@option{sra-max-scalarization-size-Ospeed}) or size
 (@option{sra-max-scalarization-size-Osize}) respectively.
 
+@item sra-max-propagations
+The maximum number of artificial accesses that Scalar Replacement of
+Aggregates (SRA) will track, per one local variable, in order to
+facilitate copy propagation.
+
 @item tm-max-aggregate-size
 When making copies of thread-local variables in a transaction, this
 parameter specifies the size in bytes after which variables are
@@ -12423,9 +13461,6 @@ will not try to thread through its block.
 Maximum number of nested calls to search for control dependencies
 during uninitialized variable analysis.
 
-@item max-once-peeled-insns
-The maximum number of insns of a peeled loop that rolls only once.
-
 @item sra-max-scalarization-size-Osize
 Maximum size, in storage units, of an aggregate
 which should be considered for scalarization when compiling for size.
@@ -12456,6 +13491,37 @@ of iterations or recursive calls GCC performs when optimizing certain
 statements or when determining their validity prior to issuing
 diagnostics.
 
+@item store-merging-max-size
+Maximum size of a single store merging region in bytes.
+
+@item hash-table-verification-limit
+The number of elements for which hash table verification is done
+for each searched element.
+
+@item max-find-base-term-values
+Maximum number of VALUEs handled during a single find_base_term call.
+
+@item analyzer-max-enodes-per-program-point
+The maximum number of exploded nodes per program point within
+the analyzer, before terminating analysis of that point.
+
+@item analyzer-min-snodes-for-call-summary
+The minimum number of supernodes within a function for the
+analyzer to consider summarizing its effects at call sites.
+
+@item analyzer-max-recursion-depth
+The maximum number of times a callsite can appear in a call stack
+within the analyzer, before terminating analysis of a call that would
+recurse deeper.
+
+@item gimple-fe-computed-hot-bb-threshold
+The number of executions of a basic block which is considered hot.
+The parameter is used only in GIMPLE FE.
+
+@item analyzer-bb-explosion-factor
+The maximum number of 'after supernode' exploded nodes within the analyzer
+per supernode, before terminating analysis.
+
 @end table
 
 The following choices of @var{name} are available on AArch64 targets:
@@ -12469,6 +13535,17 @@ Also use the cost model to choose between SVE and Advanced SIMD vectorization.
 Using unpacked vectors includes storing smaller elements in larger
 containers and accessing elements with extending loads and truncating
 stores.
+
+@item aarch64-float-recp-precision
+The number of Newton iterations for calculating the reciprocal for float type.
+The precision of division is proportional to this param when division
+approximation is enabled.  The default value is 1.
+
+@item aarch64-double-recp-precision
+The number of Newton iterations for calculating the reciprocal for double type.
+The precision of division is propotional to this param when division
+approximation is enabled.  The default value is 2.
+
 @end table
 
 @end table
@@ -12663,6 +13740,21 @@ If @var{path} is specified, GCC saves @file{.gcno} file into @var{path}
 location.  If you combine the option with multiple source files,
 the @file{.gcno} file will be overwritten.
 
+@item -fprofile-prefix-path=@var{path}
+@opindex fprofile-prefix-path
+
+This option can be used in combination with
+@option{profile-generate=}@var{profile_dir} and
+@option{profile-use=}@var{profile_dir} to inform GCC where is the base
+directory of built source tree.  By default @var{profile_dir} will contain
+files with mangled absolute paths of all object files in the built project.
+This is not desirable when directory used to build the instrumented binary
+differs from the directory used to build the binary optimized with profile
+feedback because the profile data will not be found during the optimized build.
+In such setups @option{-fprofile-prefix-path=}@var{path} with @var{path}
+pointing to the base directory of the build can be used to strip the irrelevant
+part of the path and keep all file names relative to the main build directory.
+
 @item -fprofile-update=@var{method}
 @opindex fprofile-update
 
@@ -12697,6 +13789,35 @@ all the regular expressions (separated by a semi-colon).
 
 For example, @option{-fprofile-exclude-files=/usr/*} will prevent instrumentation
 of all files that are located in @file{/usr/} folder.
+
+@item -fprofile-reproducible
+@opindex fprofile-reproducible
+Control level of reproducibility of profile gathered by
+@code{-fprofile-generate}.  This makes it possible to rebuild program
+with same outcome which is useful, for example, for distribution
+packages.
+
+With @option{-fprofile-reproducibility=serial} the profile gathered by
+@option{-fprofile-generate} is reproducible provided the trained program
+behaves the same at each invocation of the train run, it is not
+multi-threaded and profile data streaming is always done in the same
+order.  Note that profile streaming happens at the end of program run but
+also before @code{fork} function is invoked.
+
+Note that it is quite common that execution counts of some part of
+programs depends, for example, on length of temporary file names or
+memory space randomization (that may affect hash-table collision rate).
+Such non-reproducible part of programs may be annotated by
+@code{no_instrument_function} function attribute. @code{gcov-dump} with
+@option{-l} can be used to dump gathered data and verify that they are
+indeed reproducible.
+
+With @option{-fprofile-reproducibility=parallel-runs} collected profile
+stays reproducible regardless the order of streaming of the data into
+gcda files.  This setting makes it possible to run multiple instances of
+instrumented program in parallel (such as with @code{make -j}). This
+reduces quality of gathered data, in particular of indirect call
+profiling.
 
 @item -fsanitize=address
 @opindex fsanitize=address
@@ -13340,6 +14461,7 @@ If @code{N=0}, no pad location is recorded.
 The NOP instructions are inserted at---and maybe before, depending on
 @var{M}---the function entry address, even before the prologue.
 
+The maximum value of @var{N} and @var{M} is 65535.
 @end table
 
 
@@ -13400,6 +14522,21 @@ This option may be useful in conjunction with the @option{-B} or
 @option{-wrapper} options to specify an alternate preprocessor or
 perform additional processing of the program source between
 normal preprocessing and compilation.
+
+@item -flarge-source-files
+@opindex flarge-source-files
+Adjust GCC to expect large source files, at the expense of slower
+compilation and higher memory usage.
+
+Specifically, GCC normally tracks both column numbers and line numbers
+within source files and it normally prints both of these numbers in
+diagnostics.  However, once it has processed a certain number of source
+lines, it stops tracking column numbers and only tracks line numbers.
+This means that diagnostics for later lines do not include column numbers.
+It also means that options like @option{-Wmisleading-indentation} cease to work
+at that point, although the compiler prints a note if this happens.
+Passing @option{-flarge-source-files} significantly increases the number
+of source lines that GCC can process before it stops tracking columns.
 
 @end table
 
@@ -15481,54 +16618,28 @@ computing CRC32).
 The @var{string} should be different for every file you compile.
 
 @item -save-temps
-@itemx -save-temps=cwd
 @opindex save-temps
-Store the usual ``temporary'' intermediate files permanently; place them
-in the current directory and name them based on the source file.  Thus,
-compiling @file{foo.c} with @option{-c -save-temps} produces files
-@file{foo.i} and @file{foo.s}, as well as @file{foo.o}.  This creates a
-preprocessed @file{foo.i} output file even though the compiler now
-normally uses an integrated preprocessor.
+Store the usual ``temporary'' intermediate files permanently; name them
+as auxiliary output files, as specified described under
+@option{-dumpbase} and @option{-dumpdir}.
 
 When used in combination with the @option{-x} command-line option,
-@option{-save-temps} is sensible enough to avoid over writing an
+@option{-save-temps} is sensible enough to avoid overwriting an
 input source file with the same extension as an intermediate file.
 The corresponding intermediate file may be obtained by renaming the
 source file before using @option{-save-temps}.
 
-If you invoke GCC in parallel, compiling several different source
-files that share a common base name in different subdirectories or the
-same source file compiled for multiple output destinations, it is
-likely that the different parallel compilers will interfere with each
-other, and overwrite the temporary files.  For instance:
-
-@smallexample
-gcc -save-temps -o outdir1/foo.o indir1/foo.c&
-gcc -save-temps -o outdir2/foo.o indir2/foo.c&
-@end smallexample
-
-may result in @file{foo.i} and @file{foo.o} being written to
-simultaneously by both compilers.
+@item -save-temps=cwd
+@opindex save-temps=cwd
+Equivalent to @option{-save-temps -dumpdir ./}.
 
 @item -save-temps=obj
 @opindex save-temps=obj
-Store the usual ``temporary'' intermediate files permanently.  If the
-@option{-o} option is used, the temporary files are based on the
-object file.  If the @option{-o} option is not used, the
-@option{-save-temps=obj} switch behaves like @option{-save-temps}.
-
-For example:
-
-@smallexample
-gcc -save-temps=obj -c foo.c
-gcc -save-temps=obj -c bar.c -o dir/xbar.o
-gcc -save-temps=obj foobar.c -o dir2/yfoobar
-@end smallexample
-
-@noindent
-creates @file{foo.i}, @file{foo.s}, @file{dir/xbar.i},
-@file{dir/xbar.s}, @file{dir2/yfoobar.i}, @file{dir2/yfoobar.s}, and
-@file{dir2/yfoobar.o}.
+Equivalent to @option{-save-temps -dumpdir @file{outdir/}}, where
+@file{outdir/} is the directory of the output file specified after the
+@option{-o} option, including any directory separators.  If the
+@option{-o} option is not used, the @option{-save-temps=obj} switch
+behaves like @option{-save-temps=cwd}.
 
 @item -time@r{[}=@var{file}@r{]}
 @opindex time
@@ -15565,7 +16676,7 @@ can later tell what file was being compiled, and with which options.
 Dump the final internal representation (RTL) to @var{file}.  If the
 optional argument is omitted (or if @var{file} is @code{.}), the name
 of the dump file is determined by appending @code{.gkd} to the
-compilation output file name.
+dump base name, see @option{-dumpbase}.
 
 @item -fcompare-debug@r{[}=@var{opts}@r{]}
 @opindex fcompare-debug
@@ -15978,7 +17089,9 @@ dynamically linked.  This is the default code model.
 @item -mcmodel=large
 @opindex mcmodel=large
 Generate code for the large code model.  This makes no assumptions about
-addresses and sizes of sections.  Programs can be statically linked only.
+addresses and sizes of sections.  Programs can be statically linked only.  The
+@option{-mcmodel=large} option is incompatible with @option{-mabi=ilp32},
+@option{-fpic} and @option{-fPIC}.
 
 @item -mstrict-align
 @itemx -mno-strict-align
@@ -16112,6 +17225,7 @@ instruction set.  If using a later revision, e.g. @option{-march=armv8.1-a}
 or @option{-march=armv8-a+lse}, the ARMv8.1-Atomics instructions will be
 used directly.  The same applies when using @option{-mcpu=} when the
 selected cpu supports the @samp{lse} feature.
+This option is on by default.
 
 @item -march=@var{name}
 @opindex march
@@ -16160,9 +17274,13 @@ performance of the code.  Permissible values for this option are:
 @samp{ares}, @samp{exynos-m1}, @samp{emag}, @samp{falkor},
 @samp{neoverse-e1},@samp{neoverse-n1},@samp{qdf24xx}, @samp{saphira},
 @samp{phecda}, @samp{xgene1}, @samp{vulcan}, @samp{octeontx},
-@samp{octeontx81},  @samp{octeontx83}, @samp{thunderx}, @samp{thunderxt88},
+@samp{octeontx81},  @samp{octeontx83},
+@samp{octeontx2}, @samp{octeontx2t98}, @samp{octeontx2t96}
+@samp{octeontx2t93}, @samp{octeontx2f95}, @samp{octeontx2f95n},
+@samp{octeontx2f95mm}
+@samp{thunderx}, @samp{thunderxt88},
 @samp{thunderxt88p1}, @samp{thunderxt81}, @samp{tsv110},
-@samp{thunderxt83}, @samp{thunderx2t99},
+@samp{thunderxt83}, @samp{thunderx2t99}, @samp{thunderx3t110}, @samp{zeus},
 @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
 @samp{cortex-a75.cortex-a55}, @samp{cortex-a76.cortex-a55}
@@ -16262,10 +17380,11 @@ The possible values of @samp{bits} are: @samp{scalable}, @samp{128},
 @samp{256}, @samp{512}, @samp{1024} and @samp{2048}.
 Specifying @samp{scalable} selects vector-length agnostic
 output.  At present @samp{-msve-vector-bits=128} also generates vector-length
-agnostic output.  All other values generate vector-length specific code.
-The behavior of these values may change in future releases and no value except
-@samp{scalable} should be relied on for producing code that is portable across
-different hardware SVE vector lengths.
+agnostic output for big-endian targets.  All other values generate
+vector-length specific code.  The behavior of these values may change
+in future releases and no value except @samp{scalable} should be
+relied on for producing code that is portable across different
+hardware SVE vector lengths.
 
 The default is @samp{-msve-vector-bits=scalable}, which produces
 vector-length agnostic code.
@@ -16365,6 +17484,14 @@ Enable 8-bit Integer Matrix Multiply instructions.  This also enables
 Advanced SIMD and floating-point instructions.  This option is enabled by
 default for @option{-march=armv8.6-a}.  Use of this option with architectures
 prior to Armv8.2-A is not supported.
+@item f32mm
+Enable 32-bit Floating point Matrix Multiply instructions.  This also enables
+SVE instructions.  Use of this option with architectures prior to Armv8.2-A is
+not supported.
+@item f64mm
+Enable 64-bit Floating point Matrix Multiply instructions.  This also enables
+SVE instructions.  Use of this option with architectures prior to Armv8.2-A is
+not supported.
 @item bf16
 Enable brain half-precision floating-point instructions.  This also enables
 Advanced SIMD and floating-point instructions.  This option is enabled by
@@ -17205,7 +18332,7 @@ while increasing the instruction count.
 
 @item -mq-class
 @opindex mq-class
-Enable @samp{q} instruction alternatives.
+Ths option is deprecated.  Enable @samp{q} instruction alternatives.
 This is the default for @option{-Os}.
 
 @item -mRcq
@@ -17490,6 +18617,7 @@ Permissible names are:
 @samp{armv6-m}, @samp{armv6s-m},
 @samp{armv7-m}, @samp{armv7e-m},
 @samp{armv8-m.base}, @samp{armv8-m.main},
+@samp{armv8.1-m.main},
 @samp{iwmmxt} and @samp{iwmmxt2}.
 
 Additionally, the following architectures, which lack support for the
@@ -17880,6 +19008,33 @@ The single- and double-precision FPv5 floating-point instructions.
 Disable the floating-point extensions.
 @end table
 
+@item  armv8.1-m.main
+@table @samp
+
+@item +dsp
+The DSP instructions.
+
+@item +mve
+The M-Profile Vector Extension (MVE) integer instructions.
+
+@item +mve.fp
+The M-Profile Vector Extension (MVE) integer and single precision
+floating-point instructions.
+
+@item +fp
+The single-precision floating-point instructions.
+
+@item +fp.dp
+The single- and double-precision floating-point instructions.
+
+@item +nofp
+Disable the floating-point extension.
+
+@item +cdecp0, +cdecp1, ... , +cdecp7
+Enable the Custom Datapath Extension (CDE) on selected coprocessors according
+to the numbers given in the options in the range 0 to 7.
+@end table
+
 @item  armv8-m.main
 @table @samp
 @item +dsp
@@ -17896,6 +19051,10 @@ The single- and double-precision floating-point instructions.
 
 @item +nofp
 Disable the floating-point extension.
+
+@item +cdecp0, +cdecp1, ... , +cdecp7
+Enable the Custom Datapath Extension (CDE) on selected coprocessors according
+to the numbers given in the options in the range 0 to 7.
 @end table
 
 @item armv8-r
@@ -17945,7 +19104,7 @@ Permissible names are: @samp{arm7tdmi}, @samp{arm7tdmi-s}, @samp{arm710t},
 @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-r8}, @samp{cortex-r52},
 @samp{cortex-m0}, @samp{cortex-m0plus}, @samp{cortex-m1}, @samp{cortex-m3},
 @samp{cortex-m4}, @samp{cortex-m7}, @samp{cortex-m23}, @samp{cortex-m33},
-@samp{cortex-m35p},
+@samp{cortex-m35p}, @samp{cortex-m55},
 @samp{cortex-m1.small-multiply}, @samp{cortex-m0.small-multiply},
 @samp{cortex-m0plus.small-multiply}, @samp{exynos-m1}, @samp{marvell-pj4},
 @samp{neoverse-n1}, @samp{xscale}, @samp{iwmmxt}, @samp{iwmmxt2},
@@ -18536,6 +19695,20 @@ Allow to use truncation instead of rounding towards zero for fractional fixed-po
 @item -nodevicelib
 @opindex nodevicelib
 Don't link against AVR-LibC's device specific library @code{lib<mcu>.a}.
+
+@item -nodevicespecs
+@opindex nodevicespecs
+Don't add @option{-specs=device-specs/specs-@var{mcu}} to the compiler driver's
+command line.  The user takes responsibility for supplying the sub-processes
+like compiler proper, assembler and linker with appropriate command line
+options.  This means that the user has to supply her private device specs
+file by means of @option{-specs=@var{path-to-specs-file}}.  There is no
+more need for option @option{-mmcu=@var{mcu}}.
+
+This option can also serve as a replacement for the older way of
+specifying custom device-specs files that needed @option{-B @var{some-path}} to point to a directory
+which contains a folder named @code{device-specs} which contains a specs file named
+@code{specs-@var{mcu}}, where @var{mcu} was specified by @option{-mmcu=@var{mcu}}.
 
 @item -Waddr-space-convert
 @opindex Waddr-space-convert
@@ -20161,6 +21334,14 @@ Generate code for a big-endian target.
 @item -mlittle-endian
 @opindex mlittle-endian
 Generate code for a little-endian target.  This is the default.
+
+@item -mxbpf
+Generate code for an expanded version of BPF, which relaxes some of
+the restrictions imposed by the BPF architecture:
+@itemize @minus
+@item Save and restore callee-saved registers at function entry and
+exit, respectively.
+@end itemize
 @end table
 
 @node FR30 Options
@@ -21650,7 +22831,6 @@ faster on processors with 32-bit busses at the expense of more memory.
 aligns structures containing the above types differently than
 most published application binary interface specifications for the m68k.
 
-@item -mpcrel
 @opindex mpcrel
 Use the pc-relative addressing mode of the 68000 directly, instead of
 using a global offset table.  At present, this option implies @option{-fpic},
@@ -24166,7 +25346,7 @@ compare and set flag operations.
 @item -mcmov
 @opindex mcmov
 Enable generation of conditional move (@code{l.cmov}) instructions.  By
-default the equivalent will be generated using using set and branch.
+default the equivalent will be generated using set and branch.
 
 @item -mror
 @opindex mror
@@ -24478,6 +25658,15 @@ Put global and static data smaller than @var{n} bytes into a special section
 Do or don't use smaller but slower prologue and epilogue code that uses
 library function calls.  The default is to use fast inline prologues and
 epilogues.
+
+@item -mshorten-memrefs
+@itemx -mno-shorten-memrefs
+@opindex mshorten-memrefs
+Do or do not attempt to make more use of compressed load/store instructions by
+replacing a load/store of 'base register + large offset' with a new load/store
+of 'new base + small offset'.  If the new base gets stored in a compressed
+register, then the new load/store can be compressed.  Currently targets 32-bit
+integer load/stores only.
 
 @item -mstrict-align
 @itemx -mno-strict-align
@@ -25738,7 +26927,16 @@ the offset with a symbol reference to a canary in the TLS block.
 @opindex mpcrel
 @opindex mno-pcrel
 Generate (do not generate) pc-relative addressing when the option
-@option{-mcpu=future} is used.
+@option{-mcpu=future} is used.  The @option{-mpcrel} option requires
+that the medium code model (@option{-mcmodel=medium}) and prefixed
+addressing (@option{-mprefixed}) options are enabled.
+
+@item -mprefixed
+@itemx -mno-prefixed
+@opindex mprefixed
+@opindex mno-prefixed
+Generate (do not generate) addressing modes using prefixed load and
+store instructions when the option @option{-mcpu=future} is used.
 @end table
 
 @node RX Options
@@ -26155,6 +27353,16 @@ The default is the value used for @option{-march}.
 Generate code that adds (does not add) in TPF OS specific branches to trace
 routines in the operating system.  This option is off by default, even
 when compiling for the TPF OS@.
+
+@item -mtpf-trace-skip
+@itemx -mno-tpf-trace-skip
+@opindex mtpf-trace-skip
+@opindex mno-tpf-trace-skip
+Generate code that changes (does not change) the default branch
+targets enabled by @option{-mtpf-trace} to point to specialized trace
+routines providing the ability of selectively skipping function trace
+entries for the TPF OS.  This option is off by default, even when
+compiling for the TPF OS and specifying @option{-mtpf-trace}.
 
 @item -mfused-madd
 @itemx -mno-fused-madd
@@ -28615,6 +29823,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -menqcmd
 @opindex menqcmd
 @need 200
+@itemx -mtsxldtrk
+@opindex mtsxldtrk
+@need 200
 @itemx -mavx512vpopcntdq
 @opindex mavx512vpopcntdq
 @need 200
@@ -28632,6 +29843,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @itemx -mcldemote
 @opindex mcldemote
+@need 200
+@itemx -mserialize
+@opindex mserialize
 These switches enable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4, SSE4A, SSE4.1, SSE4.2, AVX, AVX2, AVX512F, AVX512PF,
 AVX512ER, AVX512CD, AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA, AVX512VBMI, SHA,
@@ -28640,9 +29854,9 @@ WBNOINVD, FMA4, PREFETCHW, RDPID, PREFETCHWT1, RDSEED, SGX, XOP, LWP,
 3DNow!@:, enhanced 3DNow!@:, POPCNT, ABM, ADX, BMI, BMI2, LZCNT, FXSR, XSAVE,
 XSAVEOPT, XSAVEC, XSAVES, RTM, HLE, TBM, MWAITX, CLZERO, PKU, AVX512VBMI2,
 GFNI, VAES, WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B, AVX512BF16,
-ENQCMD, AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, or CLDEMOTE
-extended instruction sets.  Each has a corresponding @option{-mno-} option to
-disable use of these instructions.
+ENQCMD, AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, SERIALIZE
+or CLDEMOTE extended instruction sets.  Each has a corresponding
+@option{-mno-} option to disable use of these instructions.
 
 These extensions are also available as built-in functions: see
 @ref{x86 Built-in Functions}, for details of the functions enabled and
@@ -29246,9 +30460,9 @@ Note that @option{-mcmodel=large} is incompatible with
 @option{-mindirect-branch=thunk-extern} since the thunk function may
 not be reachable in the large code model.
 
-Note that @option{-mindirect-branch=thunk-extern} is incompatible with
-@option{-fcf-protection=branch} since the external thunk cannot be modified
-to disable control-flow check.
+Note that @option{-mindirect-branch=thunk-extern} is compatible with
+@option{-fcf-protection=branch} since the external thunk can be made
+to enable control-flow check.
 
 @item -mfunction-return=@var{choice}
 @opindex mfunction-return
@@ -29260,6 +30474,10 @@ function return to external call and return thunk provided in a separate
 object file.  You can control this behavior for a specific function by
 using the function attribute @code{function_return}.
 @xref{Function Attributes}.
+
+Note that @option{-mindirect-return=thunk-extern} is compatible with
+@option{-fcf-protection=branch} since the external thunk can be made
+to enable control-flow check.
 
 Note that @option{-mcmodel=large} is incompatible with
 @option{-mfunction-return=thunk} and
@@ -29563,6 +30781,29 @@ assembly code generated by GCC still shows direct call
 instructions---look at the disassembled object code to see the actual
 instructions.  Note that the assembler uses an indirect call for
 every cross-file call, not just those that really are out of range.
+
+@item -mabi=@var{name}
+@opindex mabi
+Generate code for the specified ABI@.  Permissible values are: @samp{call0},
+@samp{windowed}.  Default ABI is chosen by the Xtensa core configuration.
+
+@item -mabi=call0
+@opindex mabi=call0
+When this option is enabled function parameters are passed in registers
+@code{a2} through @code{a7}, registers @code{a12} through @code{a15} are
+caller-saved, and register @code{a15} may be used as a frame pointer.
+When this version of the ABI is enabled the C preprocessor symbol
+@code{__XTENSA_CALL0_ABI__} is defined.
+
+@item -mabi=windowed
+@opindex mabi=windowed
+When this option is enabled function parameters are passed in registers
+@code{a10} through @code{a15}, and called function rotates register window
+by 8 registers on entry so that its arguments are found in registers
+@code{a2} through @code{a7}.  Register @code{a7} may be used as a frame
+pointer.  Register window is rotated 8 registers back upon return.
+When this version of the ABI is enabled the C preprocessor symbol
+@code{__XTENSA_WINDOWED_ABI__} is defined.
 @end table
 
 @node zSeries Options
@@ -29725,17 +30966,24 @@ together or combine them with constant text in a single argument.
 @item %%
 Substitute one @samp{%} into the program name or argument.
 
+@item %"
+Substitute an empty argument.
+
 @item %i
 Substitute the name of the input file being processed.
 
 @item %b
-Substitute the basename of the input file being processed.
-This is the substring up to (and not including) the last period
-and not including the directory.
+Substitute the basename for outputs related with the input file being
+processed.  This is often the substring up to (and not including) the
+last period and not including the directory but, unless %w is active, it
+expands to the basename for auxiliary outputs, which may be influenced
+by an explicit output name, and by various other options that control
+how auxiliary outputs are named.
 
 @item %B
 This is the same as @samp{%b}, but include the file suffix (text after
-the last period).
+the last period).  Without %w, it expands to the basename for dump
+outputs.
 
 @item %d
 Marks the argument containing or following the @samp{%d} as a
@@ -30428,6 +31676,10 @@ precompiled header.  The following are known to be safe:
 -fsched-spec  -fsched-spec-load  -fsched-spec-load-dangerous @gol
 -fsched-verbose=@var{number}  -fschedule-insns  -fvisibility= @gol
 -pedantic-errors}
+
+@item Address space layout randomization (ASLR) can lead to not binary identical
+PCH files.  If you rely on stable PCH file contents disable ASLR when generating
+PCH files.
 
 @end itemize
 

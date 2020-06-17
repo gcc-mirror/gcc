@@ -862,6 +862,9 @@ union_stack_vars (size_t a, size_t b)
   stack_vars[b].representative = a;
   stack_vars[a].next = b;
 
+  /* Make sure A is big enough to hold B.  */
+  stack_vars[a].size = upper_bound (stack_vars[a].size, stack_vars[b].size);
+
   /* Update the required alignment of partition A to account for B.  */
   if (stack_vars[a].alignb < stack_vars[b].alignb)
     stack_vars[a].alignb = stack_vars[b].alignb;
@@ -4613,7 +4616,8 @@ expand_debug_expr (tree exp)
 	      op0 = copy_rtx (op0);
 	    if (op0 == orig_op0)
 	      op0 = shallow_copy_rtx (op0);
-	    set_mem_attributes (op0, exp, 0);
+	    if (TREE_CODE (tem) != SSA_NAME)
+	      set_mem_attributes (op0, exp, 0);
 	  }
 
 	if (known_eq (bitpos, 0) && mode == GET_MODE (op0))
@@ -6123,6 +6127,29 @@ discover_nonconstant_array_refs_r (tree * tp, int *walk_subtrees,
   return NULL_TREE;
 }
 
+/* If there's a chance to get a pseudo for t then if it would be of float mode
+   and the actual access is via an integer mode (lowered memcpy or similar
+   access) then avoid the register expansion if the mode likely is not storage
+   suitable for raw bits processing (like XFmode on i?86).  */
+
+static void
+avoid_type_punning_on_regs (tree t)
+{
+  machine_mode access_mode = TYPE_MODE (TREE_TYPE (t));
+  if (access_mode != BLKmode
+      && !SCALAR_INT_MODE_P (access_mode))
+    return;
+  tree base = get_base_address (t);
+  if (DECL_P (base)
+      && !TREE_ADDRESSABLE (base)
+      && FLOAT_MODE_P (DECL_MODE (base))
+      && maybe_lt (GET_MODE_PRECISION (DECL_MODE (base)),
+		   GET_MODE_BITSIZE (GET_MODE_INNER (DECL_MODE (base))))
+      /* Double check in the expensive way we really would get a pseudo.  */
+      && use_register_for_decl (base))
+    TREE_ADDRESSABLE (base) = 1;
+}
+
 /* RTL expansion is not able to compile array references with variable
    offsets for arrays stored in single register.  Discover such
    expressions and mark variables as addressable to avoid this
@@ -6156,6 +6183,12 @@ discover_nonconstant_array_refs (void)
 		default:
 		  break;
 		}
+	    if (gimple_vdef (stmt))
+	      {
+		tree t = gimple_get_lhs (stmt);
+		if (t && REFERENCE_CLASS_P (t))
+		  avoid_type_punning_on_regs (t);
+	      }
 	  }
       }
 }
@@ -6653,7 +6686,40 @@ pass_expand::execute (function *fun)
   if (crtl->tail_call_emit)
     fixup_tail_calls ();
 
-  /* BB subdivision may have created basic blocks that are are only reachable
+  unsigned HOST_WIDE_INT patch_area_size = function_entry_patch_area_size;
+  unsigned HOST_WIDE_INT patch_area_entry = function_entry_patch_area_start;
+
+  tree patchable_function_entry_attr
+    = lookup_attribute ("patchable_function_entry",
+			DECL_ATTRIBUTES (cfun->decl));
+  if (patchable_function_entry_attr)
+    {
+      tree pp_val = TREE_VALUE (patchable_function_entry_attr);
+      tree patchable_function_entry_value1 = TREE_VALUE (pp_val);
+
+      patch_area_size = tree_to_uhwi (patchable_function_entry_value1);
+      patch_area_entry = 0;
+      if (TREE_CHAIN (pp_val) != NULL_TREE)
+	{
+	  tree patchable_function_entry_value2
+	    = TREE_VALUE (TREE_CHAIN (pp_val));
+	  patch_area_entry = tree_to_uhwi (patchable_function_entry_value2);
+	}
+    }
+
+  if (patch_area_entry > patch_area_size)
+    {
+      if (patch_area_size > 0)
+	warning (OPT_Wattributes,
+		 "patchable function entry %wu exceeds size %wu",
+		 patch_area_entry, patch_area_size);
+      patch_area_entry = 0;
+    }
+
+  crtl->patch_area_size = patch_area_size;
+  crtl->patch_area_entry = patch_area_entry;
+
+  /* BB subdivision may have created basic blocks that are only reachable
      from unlikely bbs but not marked as such in the profile.  */
   if (optimize)
     propagate_unlikely_bbs_forward ();

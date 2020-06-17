@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1372,10 +1372,17 @@ package body CStand is
          "long_long_unsigned");
 
       --  Standard_Unsigned_64 is not user visible, but is used internally. It
-      --  is an unsigned type mod 2**64, 64-bits unsigned, size is 64.
+      --  is an unsigned type mod 2**64 with 64 bits size.
 
       Standard_Unsigned_64 := New_Standard_Entity;
       Build_Unsigned_Integer_Type (Standard_Unsigned_64, 64, "unsigned_64");
+
+      --  Standard_Address is not user visible, but is used internally. It is
+      --  an unsigned type mod 2**System_Address_Size with System.Address size.
+
+      Standard_Address := New_Standard_Entity;
+      Build_Unsigned_Integer_Type
+        (Standard_Address, System_Address_Size, "standard_address");
 
       --  Note: universal integer and universal real are constructed as fully
       --  formed signed numeric types, with parameters corresponding to the
@@ -1566,7 +1573,9 @@ package body CStand is
       Build_Exception (S_Tasking_Error);
 
       --  Numeric_Error is a normal exception in Ada 83, but in Ada 95
-      --  it is a renaming of Constraint_Error. Is this test too early???
+      --  it is a renaming of Constraint_Error. This test is too early since
+      --  it doesn't handle pragma Ada_83. But it's not worth the trouble of
+      --  fixing this.
 
       if Ada_Version = Ada_83 then
          Build_Exception (S_Numeric_Error);

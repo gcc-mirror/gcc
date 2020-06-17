@@ -28,17 +28,23 @@
 
 function! SetStyle()
   let l:fname = expand("%:p")
+  let l:ext = fnamemodify(l:fname, ":e")
+  let l:c_exts = ['c', 'h', 'cpp', 'cc', 'C', 'H', 'def', 'java']
   if stridx(l:fname, 'libsanitizer') != -1
     return
   endif
-  setlocal tabstop=8
-  setlocal softtabstop=2
-  setlocal shiftwidth=2
-  setlocal noexpandtab
-  setlocal textwidth=80
+  if l:ext != "py"
+    setlocal tabstop=8
+    setlocal softtabstop=2
+    setlocal shiftwidth=2
+    setlocal noexpandtab
+  endif
+  if &filetype == "gitcommit"
+    setlocal textwidth=72
+  else
+    setlocal textwidth=80
+  endif
   setlocal formatoptions-=ro formatoptions+=cqlt
-  let l:ext = fnamemodify(l:fname, ":e")
-  let l:c_exts = ['c', 'h', 'cpp', 'cc', 'C', 'H', 'def', 'java']
   if index(l:c_exts, l:ext) != -1
     setlocal cindent
     setlocal cinoptions=>4,n-2,{2,^-2,:2,=2,g0,f0,h2,p4,t0,+2,(0,u0,w1,m0

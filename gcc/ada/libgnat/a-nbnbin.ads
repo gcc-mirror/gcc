@@ -13,9 +13,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Finalization;
-with Ada.Streams;
+pragma Ada_2020;
 
+with Ada.Strings.Text_Output; use Ada.Strings.Text_Output;
+
+private with Ada.Finalization;
 private with System;
 
 --  Note that some Ada 2020 aspects are commented out since they are not
@@ -23,11 +25,10 @@ private with System;
 
 package Ada.Numerics.Big_Numbers.Big_Integers
   with Preelaborate
---  Nonblocking
 is
-   type Big_Integer is private;
-   --  with Integer_Literal => From_String,
-   --       Put_Image => Put_Image;
+   type Big_Integer is private with
+     Integer_Literal => From_String,
+     Put_Image       => Put_Image;
 
    function Is_Valid (Arg : Big_Integer) return Boolean
      with Convention => Intrinsic;
@@ -45,11 +46,15 @@ is
    function To_Big_Integer (Arg : Integer) return Big_Integer;
 
    subtype Big_Positive is Big_Integer
-     with Dynamic_Predicate => Big_Positive > To_Big_Integer (0),
+     with Dynamic_Predicate =>
+            (if Is_Valid (Big_Positive)
+             then Big_Positive > To_Big_Integer (0)),
           Predicate_Failure => (raise Constraint_Error);
 
    subtype Big_Natural is Big_Integer
-     with Dynamic_Predicate => Big_Natural >= To_Big_Integer (0),
+     with Dynamic_Predicate =>
+            (if Is_Valid (Big_Natural)
+             then Big_Natural >= To_Big_Integer (0)),
           Predicate_Failure => (raise Constraint_Error);
 
    function In_Range (Arg, Low, High : Big_Integer) return Boolean is
@@ -89,16 +94,14 @@ is
 
    end Unsigned_Conversions;
 
-   function To_String (Arg : Big_Integer;
+   function To_String (Arg   : Big_Integer;
                        Width : Field := 0;
                        Base  : Number_Base := 10) return String
      with Post => To_String'Result'First = 1;
 
    function From_String (Arg : String) return Big_Integer;
 
-   procedure Put_Image
-     (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
-      Arg    : Big_Integer);
+   procedure Put_Image (S : in out Sink'Class; V : Big_Integer);
 
    function "+" (L : Big_Integer) return Big_Integer;
 

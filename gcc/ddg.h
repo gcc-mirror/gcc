@@ -116,9 +116,6 @@ struct ddg
   int num_loads;
   int num_stores;
 
-  /* Number of debug instructions in the BB.  */
-  int num_debug;
-
   /* This array holds the nodes in the graph; it is indexed by the node
      cuid, which follows the order of the instructions in the BB.  */
   ddg_node_ptr nodes;

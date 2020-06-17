@@ -455,9 +455,10 @@ offline_size (struct cgraph_node *node, ipa_size_summary *info)
          Take this into account.  */
       else if (DECL_COMDAT (node->decl)
 	       && node->can_remove_if_no_direct_calls_p ())
-	return (info->size
-		* (100 - param_comdat_sharing_probability)
-		+ 50) / 100;
+	{
+	  int prob = opt_for_fn (node->decl, param_comdat_sharing_probability);
+	  return (info->size * (100 - prob) + 50) / 100;
+	}
     }
   return 0;
 }

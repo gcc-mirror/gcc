@@ -60,6 +60,9 @@ set _multiline_last_beginning_line -1
 # This is cleared at the end of each test by gcc-dg.exp's wrapper for dg-test.
 set multiline_expected_outputs []
 
+# Was dg-enable-nn-line-numbers called?
+set nn_line_numbers_enabled 0
+
 ############################################################################
 # Exported functions.
 ############################################################################
@@ -173,6 +176,91 @@ proc handle-multiline-outputs { text } {
 
 	set index [expr $index + 1]
     }
+
+    return $text
+}
+
+# DejaGnu directive to enable post-processing the line numbers printed in
+# the left-hand margin when printing the source code, converting them to
+# "NN", e.g from:
+#
+#    100 |   if (flag)
+#        |      ^
+#        |      |
+#        |      (1) following 'true' branch...
+#    101 |     {
+#    102 |       foo ();
+#        |       ^
+#        |       |
+#        |       (2) ...to here
+#
+# to:
+#
+#     NN |   if (flag)
+#        |      ^
+#        |      |
+#        |      (1) following 'true' branch...
+#     NN |     {
+#     NN |       foo ();
+#        |       ^
+#        |       |
+#        |       (2) ...to here
+#
+# This is useful e.g. when testing how interprocedural paths are printed
+# via dg-begin/end-multiline-output, to avoid depending on precise line
+# numbers.
+
+proc dg-enable-nn-line-numbers { args } {
+    verbose "dg-nn-line-numbers: args: $args" 2
+    global nn_line_numbers_enabled
+    set nn_line_numbers_enabled 1
+}
+
+# Hook to be called by prune.exp's prune_gcc_output to convert such line
+# numbers to "NN" form.
+#
+# Match substrings of the form:
+#  "   25 |"
+# and convert them to:
+#  "   NN |"
+#
+# It returns a copy of its input, with the above changes.
+
+proc maybe-handle-nn-line-numbers { text } {
+    global testname_with_flags
+
+    verbose "maybe-handle-nn-line-numbers" 3
+
+    global nn_line_numbers_enabled
+    if { [expr {!$nn_line_numbers_enabled}] } {
+	verbose "nn_line_numbers_enabled false; bailing out" 3
+	return $text
+    }
+    
+    verbose "maybe-handle-nn-line-numbers: text before: ${text}" 4
+
+    # dg.exp's dg-test trims leading whitespace from the output
+    # in this line:
+    #   set comp_output [string trimleft $comp_output]
+    # so we can't rely on the exact leading whitespace for the
+    # first line in the output.
+    # Match initial input lines that start like:
+    #  "25 |"
+    # and convert them to:
+    #  "   NN |"
+    set rexp2 {(^[0-9]+ \|)}
+    set count_a [regsub -all $rexp2 $text "   NN |" text]
+    verbose "maybe-handle-nn-line-numbers: count_a: $count_a" 4
+    
+    # Match lines that start like:
+    #  "   25 |"
+    # and convert them to:
+    #  "   NN |"
+    set rexp {([ ]+[0-9]+ \|)}
+    set count_b [regsub -all $rexp $text "   NN |" text]
+    verbose "maybe-handle-nn-line-numbers: count_b: $count_b" 4
+
+    verbose "maybe-handle-nn-line-numbers: text after: ${text}" 4
 
     return $text
 }

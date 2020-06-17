@@ -234,6 +234,11 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 0, 127)")))
 
+;; Return 1 if op is a unsigned 8-bit constant integer.
+(define_predicate "u8bit_cint_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 255)")))
+
 ;; Return 1 if op is a signed 8-bit constant integer.
 ;; Integer multiplication complete more quickly
 (define_predicate "s8bit_cint_operand"
@@ -306,7 +311,7 @@
 (define_predicate "cint34_operand"
   (match_code "const_int")
 {
-  if (!TARGET_PREFIXED_ADDR)
+  if (!TARGET_PREFIXED)
     return 0;
 
   return SIGNED_INTEGER_34BIT_P (INTVAL (op));

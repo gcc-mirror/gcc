@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_PRETTY_PRINT_H
 
 #include "obstack.h"
+#include "diagnostic-url.h"
 
 /* Maximum number of format string arguments.  */
 #define PP_NL_ARGMAX   30
@@ -278,8 +279,8 @@ public:
   /* Nonzero means that text should be colorized.  */
   bool show_color;
 
-  /* Nonzero means that URLs should be emitted.  */
-  bool show_urls;
+  /* Whether URLs should be emitted, and which terminator to use.  */
+  diagnostic_url_format url_format;
 };
 
 static inline const char *

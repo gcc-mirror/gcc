@@ -1,0 +1,89 @@
+/* An overview of the state machine from sm-malloc.cc.
+   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Contributed by David Malcolm <dmalcolm@redhat.com>.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+/* Keep this in-sync with sm-malloc.cc  */
+
+digraph "malloc" {
+
+  /* STATES. */
+
+  /* Start state.  */
+  start;
+
+  /* State for a pointer returned from malloc that hasn't been checked for
+     NULL.
+     It could be a pointer to heap-allocated memory, or could be NULL.  */
+  unchecked;
+
+  /* State for a pointer that's known to be NULL.  */
+  null;
+
+  /* State for a pointer to heap-allocated memory, known to be non-NULL.  */
+  nonnull;
+
+  /* State for a pointer to freed memory.  */
+  freed;
+
+  /* State for a pointer that's known to not be on the heap (e.g. to a local
+     or global).  */
+  non_heap;
+
+  /* Stop state, for pointers we don't want to track any more.  */
+  stop;
+
+  /* TRANSITIONS. */
+
+  start -> unchecked [label="on 'X=malloc(...);'"];
+  start -> unchecked [label="on 'X=calloc(...);'"];
+
+  start -> non_heap [label="on 'X=alloca(...);'"];
+  start -> non_heap [label="on 'X=__builtin_alloca(...);'"];
+
+  /* On "free".  */
+  start -> freed [label="on 'free(X);'"];
+  unchecked -> freed [label="on 'free(X);'"];
+  nonnull -> freed [label="on 'free(X);'"];
+  freed -> stop [label="on 'free(X);':\n Warn('double-free')"];
+  non_heap -> stop  [label="on 'free(X);':\n Warn('free of non-heap')"];
+
+  /* Handle "__attribute__((nonnull))".   */
+  unchecked -> nonnull [label="on 'FN(X)' with __attribute__((nonnull)):\nWarn('possible NULL arg')"];
+  null -> stop [label="on 'FN(X)' with __attribute__((nonnull)):\nWarn('NULL arg')"];
+
+  /* is_zero_assignment.  */
+  start -> null [label="on 'X = 0;'"];
+  unchecked -> null [label="on 'X = 0;'"];
+  nonnull -> null [label="on 'X = 0;'"];
+  freed -> null [label="on 'X = 0;'"];
+
+  start -> non_heap [label="on 'X = &EXPR;'"];
+
+  /* Handle dereferences.  */
+  unchecked -> nonnull [label="on '*X':\nWarn('possible NULL deref')"];
+  null -> stop [label="on '*X':\nWarn('NULL deref')"];
+  freed -> stop [label="on '*X':\nWarn('use after free')"];
+
+  /* on_condition.  */
+  unchecked -> nonnull [label="on 'X != 0'"];
+  unchecked -> null [label="on 'X == 0'"];
+
+  unchecked -> stop [label="on leak:\nWarn('leak')"];
+  nonnull -> stop [label="on leak:\nWarn('leak')"];
+}

@@ -28,21 +28,23 @@ case ${query} in
       ;;
     --gdcflags)
       GDCFLAGS_default="-fmessage-length=0 -fno-show-column"
-      GDCFLAGS_config="@GDCFLAGSX@"
+      GDCFLAGS_config="@WARN_DFLAGS@ @GDCFLAGS@ -fno-release -funittest"
       echo ${GDCFLAGS_default} ${GDCFLAGS_config}
       ;;
     --gdcpaths)
       GDCPATHS_default="-nostdinc"
       GDCPATHS_config="-B${BUILD_DIR}/src
                        -I${BUILD_DIR}/libdruntime
-                       -I${SRC_DIR}/libdruntime
-                       -I${SRC_DIR}/src"
+                       -I${SRC_DIR}/libdruntime"
+      # Include phobos in search path if compiling in library.
+      if [ "x@ENABLE_LIBDRUNTIME_ONLY_FALSE@" = "x" ]; then
+         GDCPATHS_config="${GDCPATHS_config} -I${SRC_DIR}/src"
+      fi
       echo ${GDCPATHS_default} ${GDCPATHS_config}
       ;;
     --gdcldflags)
       GDCLDFLAGS="-B${BUILD_DIR}/src
                   -B${BUILD_DIR}/libdruntime/gcc
-                  -L${BUILD_DIR}/libdruntime/.libs
                   -L${BUILD_DIR}/src/.libs"
       echo ${GDCLDFLAGS}
       ;;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2019, Free Software Foundation, Inc.           --
+--             Copyright (C) 2019-2020, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,7 +57,6 @@ package body Bindo.Augmentors is
 
       procedure Visit_Elaboration_Root
         (Inv_Graph : Invocation_Graph;
-         Lib_Graph : Library_Graph;
          Root      : Invocation_Graph_Vertex_Id);
       pragma Inline (Visit_Elaboration_Root);
       --  Start a DFS traversal from elaboration root Root to:
@@ -67,9 +66,7 @@ package body Bindo.Augmentors is
       --    * Create invocation edges for each such transition where the
       --      successor is Root.
 
-      procedure Visit_Elaboration_Roots
-        (Inv_Graph : Invocation_Graph;
-         Lib_Graph : Library_Graph);
+      procedure Visit_Elaboration_Roots (Inv_Graph : Invocation_Graph);
       pragma Inline (Visit_Elaboration_Roots);
       --  Start a DFS traversal from all elaboration roots to:
       --
@@ -80,7 +77,6 @@ package body Bindo.Augmentors is
 
       procedure Visit_Vertex
         (Inv_Graph                  : Invocation_Graph;
-         Lib_Graph                  : Library_Graph;
          Invoker                    : Invocation_Graph_Vertex_Id;
          Last_Vertex                : Library_Graph_Vertex_Id;
          Root_Vertex                : Library_Graph_Vertex_Id;
@@ -113,10 +109,8 @@ package body Bindo.Augmentors is
       -- Augment_Library_Graph --
       ---------------------------
 
-      procedure Augment_Library_Graph
-        (Inv_Graph : Invocation_Graph;
-         Lib_Graph : Library_Graph)
-      is
+      procedure Augment_Library_Graph (Inv_Graph : Invocation_Graph) is
+         Lib_Graph : constant Library_Graph := Get_Lib_Graph (Inv_Graph);
       begin
          pragma Assert (Present (Lib_Graph));
 
@@ -133,7 +127,7 @@ package body Bindo.Augmentors is
          Longest_Path  := 0;
          Total_Visited := 0;
 
-         Visit_Elaboration_Roots (Inv_Graph, Lib_Graph);
+         Visit_Elaboration_Roots (Inv_Graph);
          Write_Statistics;
 
          End_Phase (Library_Graph_Augmentation);
@@ -145,9 +139,9 @@ package body Bindo.Augmentors is
 
       procedure Visit_Elaboration_Root
         (Inv_Graph : Invocation_Graph;
-         Lib_Graph : Library_Graph;
          Root      : Invocation_Graph_Vertex_Id)
       is
+         Lib_Graph : constant Library_Graph := Get_Lib_Graph (Inv_Graph);
          pragma Assert (Present (Inv_Graph));
          pragma Assert (Present (Lib_Graph));
          pragma Assert (Present (Root));
@@ -173,7 +167,6 @@ package body Bindo.Augmentors is
 
          Visit_Vertex
            (Inv_Graph                  => Inv_Graph,
-            Lib_Graph                  => Lib_Graph,
             Invoker                    => Root,
             Last_Vertex                => Root_Vertex,
             Root_Vertex                => Root_Vertex,
@@ -189,25 +182,20 @@ package body Bindo.Augmentors is
       -- Visit_Elaboration_Roots --
       -----------------------------
 
-      procedure Visit_Elaboration_Roots
-        (Inv_Graph : Invocation_Graph;
-         Lib_Graph : Library_Graph)
-      is
+      procedure Visit_Elaboration_Roots (Inv_Graph : Invocation_Graph) is
+         Lib_Graph : constant Library_Graph := Get_Lib_Graph (Inv_Graph);
+         pragma Assert (Present (Inv_Graph));
+         pragma Assert (Present (Lib_Graph));
+
          Iter : Elaboration_Root_Iterator;
          Root : Invocation_Graph_Vertex_Id;
 
       begin
-         pragma Assert (Present (Inv_Graph));
-         pragma Assert (Present (Lib_Graph));
-
          Iter := Iterate_Elaboration_Roots (Inv_Graph);
          while Has_Next (Iter) loop
             Next (Iter, Root);
 
-            Visit_Elaboration_Root
-              (Inv_Graph => Inv_Graph,
-               Lib_Graph => Lib_Graph,
-               Root      => Root);
+            Visit_Elaboration_Root (Inv_Graph => Inv_Graph, Root => Root);
          end loop;
       end Visit_Elaboration_Roots;
 
@@ -217,7 +205,6 @@ package body Bindo.Augmentors is
 
       procedure Visit_Vertex
         (Inv_Graph                  : Invocation_Graph;
-         Lib_Graph                  : Library_Graph;
          Invoker                    : Invocation_Graph_Vertex_Id;
          Last_Vertex                : Library_Graph_Vertex_Id;
          Root_Vertex                : Library_Graph_Vertex_Id;
@@ -226,6 +213,8 @@ package body Bindo.Augmentors is
          Internal_Controlled_Action : Boolean;
          Path                       : Natural)
       is
+         Lib_Graph : constant Library_Graph := Get_Lib_Graph (Inv_Graph);
+
          New_Path : constant Natural := Path + 1;
 
          Edge           : Invocation_Graph_Edge_Id;
@@ -300,7 +289,6 @@ package body Bindo.Augmentors is
 
             Visit_Vertex
               (Inv_Graph                  => Inv_Graph,
-               Lib_Graph                  => Lib_Graph,
                Invoker                    => Target (Inv_Graph, Edge),
                Last_Vertex                => Invoker_Vertex,
                Root_Vertex                => Root_Vertex,

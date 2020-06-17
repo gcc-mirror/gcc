@@ -106,7 +106,7 @@ const enum rtx_class rtx_class[NUM_RTX_CODE] = {
 #undef DEF_RTL_EXPR
 };
 
-/* Whether rtxs with the given code code store data in the hwint field.  */
+/* Whether rtxs with the given code store data in the hwint field.  */
 
 #define RTX_CODE_HWINT_P_1(ENUM)					\
     ((ENUM) == CONST_INT || (ENUM) == CONST_DOUBLE			\

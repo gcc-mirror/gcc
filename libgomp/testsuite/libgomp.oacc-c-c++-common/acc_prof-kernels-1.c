@@ -106,7 +106,7 @@ static void cb_enqueue_launch_start (acc_prof_info *prof_info, acc_event_info *e
     assert (event_info->launch_event.vector_length >= 1);
   else if (acc_device_type == acc_device_nvidia) /* ... is special.  */
     assert (event_info->launch_event.vector_length == 32);
-  else if (acc_device_type == acc_device_gcn) /* ...and so is this.  */
+  else if (acc_device_type == acc_device_radeon) /* ...and so is this.  */
     assert (event_info->launch_event.vector_length == 64);
   else
     {
@@ -120,7 +120,7 @@ static void cb_enqueue_launch_start (acc_prof_info *prof_info, acc_event_info *e
 
   if (acc_device_type == acc_device_host)
     assert (api_info->device_api == acc_device_api_none);
-  else if (acc_device_type == acc_device_gcn)
+  else if (acc_device_type == acc_device_radeon)
     assert (api_info->device_api == acc_device_api_other);
   else
     assert (api_info->device_api == acc_device_api_cuda);

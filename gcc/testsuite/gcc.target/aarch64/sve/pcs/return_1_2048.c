@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O -msve-vector-bits=2048 -g" } */
-/* { dg-final { check-function-bodies "**" "" } } */
+/* { dg-final { check-function-bodies "**" "" "" { target lp64 } } } */
 
 /*
 ** callee_pred:

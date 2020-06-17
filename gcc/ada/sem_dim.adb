@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,7 +40,6 @@ with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
@@ -377,10 +376,6 @@ package body Sem_Dim is
    procedure Set_Symbol (E : Entity_Id; Val : String_Id);
    --  Associate a symbol representation of a dimension vector with a subtype
 
-   function String_From_Numeric_Literal (N : Node_Id) return String_Id;
-   --  Return the string that corresponds to the numeric litteral N as it
-   --  appears in the source.
-
    function Symbol_Of (E : Entity_Id) return String_Id;
    --  E denotes a subtype with a dimension. Return the symbol representation
    --  of the dimension vector.
@@ -681,7 +676,7 @@ package body Sem_Dim is
       --  Skip the symbol expression when present
 
       if Present (Symbol_Expr) and then Num_Choices = 0 then
-         Expr := Next (Expr);
+         Next (Expr);
       end if;
 
       Position := Low_Position_Bound;
@@ -2590,16 +2585,6 @@ package body Sem_Dim is
             Result := No_Rational;
          end if;
 
-         --  Provide minimal semantic information on dimension expressions,
-         --  even though they have no run-time existence. This is for use by
-         --  ASIS tools, in particular pretty-printing. If generating code
-         --  standard operator resolution will take place.
-
-         if ASIS_Mode then
-            Set_Entity (N, Standard_Op_Minus);
-            Set_Etype  (N, Standard_Integer);
-         end if;
-
          return Result;
       end Process_Minus;
 
@@ -2624,16 +2609,6 @@ package body Sem_Dim is
             Left_Rat := Process_Literal (Left);
             Right_Rat := Process_Literal (Right);
             Result := Left_Rat / Right_Rat;
-         end if;
-
-         --  Provide minimal semantic information on dimension expressions,
-         --  even though they have no run-time existence. This is for use by
-         --  ASIS tools, in particular pretty-printing. If generating code
-         --  standard operator resolution will take place.
-
-         if ASIS_Mode then
-            Set_Entity (N, Standard_Op_Divide);
-            Set_Etype  (N, Standard_Integer);
          end if;
 
          return Result;
@@ -3759,63 +3734,6 @@ package body Sem_Dim is
    begin
       Symbol_Table.Set (E, Val);
    end Set_Symbol;
-
-   ---------------------------------
-   -- String_From_Numeric_Literal --
-   ---------------------------------
-
-   function String_From_Numeric_Literal (N : Node_Id) return String_Id is
-      Loc     : constant Source_Ptr        := Sloc (N);
-      Sbuffer : constant Source_Buffer_Ptr :=
-                  Source_Text (Get_Source_File_Index (Loc));
-      Src_Ptr : Source_Ptr := Loc;
-
-      C : Character  := Sbuffer (Src_Ptr);
-      --  Current source program character
-
-      function Belong_To_Numeric_Literal (C : Character) return Boolean;
-      --  Return True if C belongs to a numeric literal
-
-      -------------------------------
-      -- Belong_To_Numeric_Literal --
-      -------------------------------
-
-      function Belong_To_Numeric_Literal (C : Character) return Boolean is
-      begin
-         case C is
-            when '0' .. '9'
-               | '_' | '.' | 'e' | '#' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F'
-            =>
-               return True;
-
-            --  Make sure '+' or '-' is part of an exponent.
-
-            when '+' | '-' =>
-               declare
-                  Prev_C : constant Character := Sbuffer (Src_Ptr - 1);
-               begin
-                  return Prev_C = 'e' or else Prev_C = 'E';
-               end;
-
-            --  All other character doesn't belong to a numeric literal
-
-            when others =>
-               return False;
-         end case;
-      end Belong_To_Numeric_Literal;
-
-   --  Start of processing for String_From_Numeric_Literal
-
-   begin
-      Start_String;
-      while Belong_To_Numeric_Literal (C) loop
-         Store_String_Char (C);
-         Src_Ptr := Src_Ptr + 1;
-         C       := Sbuffer (Src_Ptr);
-      end loop;
-
-      return End_String;
-   end String_From_Numeric_Literal;
 
    ---------------
    -- Symbol_Of --

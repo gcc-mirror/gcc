@@ -585,7 +585,6 @@ static void cse_insn (rtx_insn *);
 static void cse_prescan_path (struct cse_basic_block_data *);
 static void invalidate_from_clobbers (rtx_insn *);
 static void invalidate_from_sets_and_clobbers (rtx_insn *);
-static rtx cse_process_notes (rtx, rtx, bool *);
 static void cse_extended_basic_block (struct cse_basic_block_data *);
 extern void dump_class (struct table_elt*);
 static void get_cse_reg_info_1 (unsigned int regno);
@@ -4625,7 +4624,7 @@ cse_insn (rtx_insn *insn)
   for (i = 0; i < n_sets; i++)
     {
       bool repeat = false;
-      bool mem_noop_insn = false;
+      bool noop_insn = false;
       rtx src, dest;
       rtx src_folded;
       struct table_elt *elt = 0, *p;
@@ -4715,8 +4714,20 @@ cse_insn (rtx_insn *insn)
 
       /* Compute SRC's hash code, and also notice if it
 	 should not be recorded at all.  In that case,
-	 prevent any further processing of this assignment.  */
-      do_not_record = 0;
+	 prevent any further processing of this assignment.
+
+	 We set DO_NOT_RECORD if the destination has a REG_UNUSED note.
+	 This avoids getting the source register into the tables, where it
+	 may be invalidated later (via REG_QTY), then trigger an ICE upon
+	 re-insertion.
+
+	 This is only a problem in multi-set insns.  If it were a single
+	 set the dead copy would have been removed.  If the RHS were anything
+	 but a simple REG, then we won't call insert_regs and thus there's
+	 no potential for triggering the ICE.  */
+      do_not_record = (REG_P (dest)
+		       && REG_P (src)
+		       && find_reg_note (insn, REG_UNUSED, dest));
       hash_arg_in_memory = 0;
 
       sets[i].src = src;
@@ -5074,7 +5085,7 @@ cse_insn (rtx_insn *insn)
 	     to prefer it.  Copy it to src_related.  The code below will
 	     then give it a negative cost.  */
 	  if (GET_CODE (dest) == code && rtx_equal_p (p->exp, dest))
-	    src_related = dest;
+	    src_related = p->exp;
 	}
 
       /* Find the cheapest valid equivalent, trying all the available
@@ -5324,17 +5335,27 @@ cse_insn (rtx_insn *insn)
 	    }
 
 	  /* Similarly, lots of targets don't allow no-op
-	     (set (mem x) (mem x)) moves.  */
+	     (set (mem x) (mem x)) moves.  Even (set (reg x) (reg x))
+	     might be impossible for certain registers (like CC registers).  */
 	  else if (n_sets == 1
-		   && MEM_P (trial)
-		   && MEM_P (dest)
+		   && !CALL_P (insn)
+		   && (MEM_P (trial) || REG_P (trial))
 		   && rtx_equal_p (trial, dest)
 		   && !side_effects_p (dest)
 		   && (cfun->can_delete_dead_exceptions
-		       || insn_nothrow_p (insn)))
+		       || insn_nothrow_p (insn))
+		   /* We can only remove the later store if the earlier aliases
+		      at least all accesses the later one.  */
+		   && (!MEM_P (trial)
+		       || ((MEM_ALIAS_SET (dest) == MEM_ALIAS_SET (trial)
+			    || alias_set_subset_of (MEM_ALIAS_SET (dest),
+						    MEM_ALIAS_SET (trial)))
+			    && (!MEM_EXPR (trial)
+				|| refs_same_for_tbaa_p (MEM_EXPR (trial),
+							 MEM_EXPR (dest))))))
 	    {
 	      SET_SRC (sets[i].rtl) = trial;
-	      mem_noop_insn = true;
+	      noop_insn = true;
 	      break;
 	    }
 
@@ -5562,8 +5583,8 @@ cse_insn (rtx_insn *insn)
 	  sets[i].rtl = 0;
 	}
 
-      /* Similarly for no-op MEM moves.  */
-      else if (mem_noop_insn)
+      /* Similarly for no-op moves.  */
+      else if (noop_insn)
 	{
 	  if (cfun->can_throw_non_call_exceptions && can_throw_internal (insn))
 	    cse_cfg_altered = true;
@@ -6200,75 +6221,28 @@ invalidate_from_sets_and_clobbers (rtx_insn *insn)
     }
 }
 
-/* Process X, part of the REG_NOTES of an insn.  Look at any REG_EQUAL notes
-   and replace any registers in them with either an equivalent constant
-   or the canonical form of the register.  If we are inside an address,
-   only do this if the address remains valid.
+static rtx cse_process_note (rtx);
 
-   OBJECT is 0 except when within a MEM in which case it is the MEM.
+/* A simplify_replace_fn_rtx callback for cse_process_note.  Process X,
+   part of the REG_NOTES of an insn.  Replace any registers with either
+   an equivalent constant or the canonical form of the register.
+   Only replace addresses if the containing MEM remains valid.
 
-   Return the replacement for X.  */
+   Return the replacement for X, or null if it should be simplified
+   recursively.  */
 
 static rtx
-cse_process_notes_1 (rtx x, rtx object, bool *changed)
+cse_process_note_1 (rtx x, const_rtx, void *)
 {
-  enum rtx_code code = GET_CODE (x);
-  const char *fmt = GET_RTX_FORMAT (code);
-  int i;
-
-  switch (code)
+  if (MEM_P (x))
     {
-    case CONST:
-    case SYMBOL_REF:
-    case LABEL_REF:
-    CASE_CONST_ANY:
-    case PC:
-    case CC0:
-    case LO_SUM:
+      validate_change (x, &XEXP (x, 0), cse_process_note (XEXP (x, 0)), false);
       return x;
+    }
 
-    case MEM:
-      validate_change (x, &XEXP (x, 0),
-		       cse_process_notes (XEXP (x, 0), x, changed), 0);
-      return x;
-
-    case EXPR_LIST:
-      if (REG_NOTE_KIND (x) == REG_EQUAL)
-	XEXP (x, 0) = cse_process_notes (XEXP (x, 0), NULL_RTX, changed);
-      /* Fall through.  */
-
-    case INSN_LIST:
-    case INT_LIST:
-      if (XEXP (x, 1))
-	XEXP (x, 1) = cse_process_notes (XEXP (x, 1), NULL_RTX, changed);
-      return x;
-
-    case SIGN_EXTEND:
-    case ZERO_EXTEND:
-    case SUBREG:
-      {
-	rtx new_rtx = cse_process_notes (XEXP (x, 0), object, changed);
-	/* We don't substitute VOIDmode constants into these rtx,
-	   since they would impede folding.  */
-	if (GET_MODE (new_rtx) != VOIDmode)
-	  validate_change (object, &XEXP (x, 0), new_rtx, 0);
-	return x;
-      }
-
-    case UNSIGNED_FLOAT:
-      {
-	rtx new_rtx = cse_process_notes (XEXP (x, 0), object, changed);
-	/* We don't substitute negative VOIDmode constants into these rtx,
-	   since they would impede folding.  */
-	if (GET_MODE (new_rtx) != VOIDmode
-	    || (CONST_INT_P (new_rtx) && INTVAL (new_rtx) >= 0)
-	    || (CONST_DOUBLE_P (new_rtx) && CONST_DOUBLE_HIGH (new_rtx) >= 0))
-	  validate_change (object, &XEXP (x, 0), new_rtx, 0);
-	return x;
-      }
-
-    case REG:
-      i = REG_QTY (REGNO (x));
+  if (REG_P (x))
+    {
+      int i = REG_QTY (REGNO (x));
 
       /* Return a constant or a constant register.  */
       if (REGNO_QTY_VALID_P (REGNO (x)))
@@ -6287,26 +6261,19 @@ cse_process_notes_1 (rtx x, rtx object, bool *changed)
 
       /* Otherwise, canonicalize this register.  */
       return canon_reg (x, NULL);
-
-    default:
-      break;
     }
 
-  for (i = 0; i < GET_RTX_LENGTH (code); i++)
-    if (fmt[i] == 'e')
-      validate_change (object, &XEXP (x, i),
-		       cse_process_notes (XEXP (x, i), object, changed), 0);
-
-  return x;
+  return NULL_RTX;
 }
 
+/* Process X, part of the REG_NOTES of an insn.  Replace any registers in it
+   with either an equivalent constant or the canonical form of the register.
+   Only replace addresses if the containing MEM remains valid.  */
+
 static rtx
-cse_process_notes (rtx x, rtx object, bool *changed)
+cse_process_note (rtx x)
 {
-  rtx new_rtx = cse_process_notes_1 (x, object, changed);
-  if (new_rtx != x)
-    *changed = true;
-  return new_rtx;
+  return simplify_replace_fn_rtx (x, NULL_RTX, cse_process_note_1, NULL);
 }
 
 
@@ -6601,14 +6568,19 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 	    {
 	      /* Process notes first so we have all notes in canonical forms
 		 when looking for duplicate operations.  */
-	      if (REG_NOTES (insn))
-		{
-		  bool changed = false;
-		  REG_NOTES (insn) = cse_process_notes (REG_NOTES (insn),
-						        NULL_RTX, &changed);
-		  if (changed)
-		    df_notes_rescan (insn);
-		}
+	      bool changed = false;
+	      for (rtx note = REG_NOTES (insn); note; note = XEXP (note, 1))
+		if (REG_NOTE_KIND (note) == REG_EQUAL)
+		  {
+		    rtx newval = cse_process_note (XEXP (note, 0));
+		    if (newval != XEXP (note, 0))
+		      {
+			XEXP (note, 0) = newval;
+			changed = true;
+		      }
+		  }
+	      if (changed)
+		df_notes_rescan (insn);
 
 	      cse_insn (insn);
 

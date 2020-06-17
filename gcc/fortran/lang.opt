@@ -387,7 +387,7 @@ All intrinsics procedures are available regardless of selected standard.
 
 fallow-invalid-boz
 Fortran RejectNegative Var(flag_allow_invalid_boz)
-Allow a BOZ literal constant to appear in an invalid context.
+Allow a BOZ literal constant to appear in an invalid context and with X instead of Z.
 
 fallow-leading-underscore
 Fortran Undocumented Var(flag_allow_leading_underscore)
@@ -415,7 +415,7 @@ Produce a warning at runtime if a array temporary has been created for a procedu
 
 fconvert=
 Fortran RejectNegative Joined Enum(gfc_convert) Var(flag_convert) Init(GFC_FLAG_CONVERT_NATIVE)
--fconvert=<big-endian|little-endian|native|swap> The endianness used for unformatted files.
+-fconvert=<big-endian|little-endian|native|swap>	The endianness used for unformatted files.
 
 Enum
 Name(gfc_convert) Type(enum gfc_convert) UnknownError(Unrecognized option to endianness value: %qs)

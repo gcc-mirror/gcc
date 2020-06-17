@@ -140,8 +140,8 @@ class range_store
 {
 public:
   virtual bool range_of_expr (irange &r, tree expr, gimple *stmt = NULL) = 0;
-  virtual const value_range_equiv *get_value_range (const_tree expr,
-						    gimple *stmt = NULL);
+  virtual const class value_range_equiv *get_value_range (const_tree expr,
+							  gimple *stmt = NULL);
 };
 
 // This class utilizes a GORI map to determine which SSA_NAMES can

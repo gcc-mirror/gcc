@@ -131,6 +131,9 @@ lto_write_options (void)
 	case OPT_SPECIAL_input_file:
 	case OPT_dumpdir:
 	case OPT_fresolution_:
+	case OPT_fdebug_prefix_map_:
+	case OPT_ffile_prefix_map_:
+	case OPT_fmacro_prefix_map_:
 	  continue;
 
 	default:
@@ -163,6 +166,12 @@ lto_write_options (void)
 	append_to_collect_gcc_options (&temporary_obstack, &first_p,
 				       option->canonical_option[j]);
     }
+
+  const char *collect_as_options = getenv ("COLLECT_AS_OPTIONS");
+  if (collect_as_options)
+    prepend_xassembler_to_collect_as_options (collect_as_options,
+					      &temporary_obstack);
+
   obstack_grow (&temporary_obstack, "\0", 1);
   args = XOBFINISH (&temporary_obstack, char *);
   lto_write_data (args, strlen (args) + 1);

@@ -257,11 +257,13 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
   edge->count.stream_out (ob->main_stream);
 
   bp = bitpack_create (ob->main_stream);
-  uid = (!gimple_has_body_p (edge->caller->decl) || edge->caller->thunk.thunk_p
-	 ? edge->lto_stmt_uid : gimple_uid (edge->call_stmt) + 1);
+  uid = !edge->call_stmt ? edge->lto_stmt_uid
+			 : gimple_uid (edge->call_stmt) + 1;
   bp_pack_enum (&bp, cgraph_inline_failed_t,
 	        CIF_N_REASONS, edge->inline_failed);
+  gcc_checking_assert (uid || edge->caller->thunk.thunk_p);
   bp_pack_var_len_unsigned (&bp, uid);
+  bp_pack_value (&bp, edge->speculative_id, 16);
   bp_pack_value (&bp, edge->indirect_inlining_edge, 1);
   bp_pack_value (&bp, edge->speculative, 1);
   bp_pack_value (&bp, edge->call_stmt_cannot_inline_p, 1);
@@ -284,16 +286,11 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
 			     | ECF_SIBCALL
 			     | ECF_LEAF
 			     | ECF_NOVOPS)));
+
+      bp_pack_value (&bp, edge->indirect_info->num_speculative_call_targets,
+		     16);
     }
   streamer_write_bitpack (&bp);
-  if (edge->indirect_unknown_callee)
-    {
-      streamer_write_hwi_stream (ob->main_stream,
-			         edge->indirect_info->common_target_id);
-      if (edge->indirect_info->common_target_id)
-	streamer_write_hwi_stream
-	   (ob->main_stream, edge->indirect_info->common_target_probability);
-    }
 }
 
 /* Return if NODE contain references from other partitions.  */
@@ -454,7 +451,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
     streamer_write_hwi_stream (ob->main_stream, ref);
 
 
-  lto_output_fn_decl_index (ob->decl_state, ob->main_stream, node->decl);
+  lto_output_fn_decl_ref (ob->decl_state, ob->main_stream, node->decl);
   node->count.stream_out (ob->main_stream);
   streamer_write_hwi_stream (ob->main_stream, node->count_materialization_scale);
 
@@ -538,6 +535,8 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->merged_extern_inline, 1);
   bp_pack_value (&bp, node->thunk.thunk_p, 1);
   bp_pack_value (&bp, node->parallelized_function, 1);
+  bp_pack_value (&bp, node->declare_variant_alt, 1);
+  bp_pack_value (&bp, node->calls_declare_variant_alt, 1);
   bp_pack_enum (&bp, ld_plugin_symbol_resolution,
 	        LDPR_NUM_KNOWN,
 		/* When doing incremental link, we will get new resolution
@@ -592,7 +591,7 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
   streamer_write_enum (ob->main_stream, LTO_symtab_tags, LTO_symtab_last_tag,
 		       LTO_symtab_variable);
   streamer_write_hwi_stream (ob->main_stream, node->order);
-  lto_output_var_decl_index (ob->decl_state, ob->main_stream, node->decl);
+  lto_output_var_decl_ref (ob->decl_state, ob->main_stream, node->decl);
   bp = bitpack_create (ob->main_stream);
   bp_pack_value (&bp, node->externally_visible, 1);
   bp_pack_value (&bp, node->no_reorder, 1);
@@ -673,7 +672,7 @@ lto_output_ref (struct lto_simple_output_block *ob, struct ipa_ref *ref,
 {
   struct bitpack_d bp;
   int nref;
-  int uid = ref->lto_stmt_uid;
+  int uid = !ref->stmt ? ref->lto_stmt_uid : gimple_uid (ref->stmt) + 1;
   struct cgraph_node *node;
 
   bp = bitpack_create (ob->main_stream);
@@ -690,6 +689,8 @@ lto_output_ref (struct lto_simple_output_block *ob, struct ipa_ref *ref,
       if (ref->stmt)
 	uid = gimple_uid (ref->stmt) + 1;
       streamer_write_hwi_stream (ob->main_stream, uid);
+      bp_pack_value (&bp, ref->speculative_id, 16);
+      streamer_write_bitpack (&bp);
     }
 }
 
@@ -1068,18 +1069,26 @@ output_offload_tables (void)
 
   for (unsigned i = 0; i < vec_safe_length (offload_funcs); i++)
     {
+      symtab_node *node = symtab_node::get ((*offload_funcs)[i]);
+      if (!node)
+	continue;
+      node->force_output = true;
       streamer_write_enum (ob->main_stream, LTO_symtab_tags,
 			   LTO_symtab_last_tag, LTO_symtab_unavail_node);
-      lto_output_fn_decl_index (ob->decl_state, ob->main_stream,
-				(*offload_funcs)[i]);
+      lto_output_fn_decl_ref (ob->decl_state, ob->main_stream,
+			      (*offload_funcs)[i]);
     }
 
   for (unsigned i = 0; i < vec_safe_length (offload_vars); i++)
     {
+      symtab_node *node = symtab_node::get ((*offload_vars)[i]);
+      if (!node)
+	continue;
+      node->force_output = true;
       streamer_write_enum (ob->main_stream, LTO_symtab_tags,
 			   LTO_symtab_last_tag, LTO_symtab_variable);
-      lto_output_var_decl_index (ob->decl_state, ob->main_stream,
-				 (*offload_vars)[i]);
+      lto_output_var_decl_ref (ob->decl_state, ob->main_stream,
+			       (*offload_vars)[i]);
     }
 
   streamer_write_uhwi_stream (ob->main_stream, 0);
@@ -1187,6 +1196,8 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->merged_extern_inline = bp_unpack_value (bp, 1);
   node->thunk.thunk_p = bp_unpack_value (bp, 1);
   node->parallelized_function = bp_unpack_value (bp, 1);
+  node->declare_variant_alt = bp_unpack_value (bp, 1);
+  node->calls_declare_variant_alt = bp_unpack_value (bp, 1);
   node->resolution = bp_unpack_enum (bp, ld_plugin_symbol_resolution,
 				     LDPR_NUM_KNOWN);
   node->split_part = bp_unpack_value (bp, 1);
@@ -1216,7 +1227,6 @@ input_node (struct lto_file_decl_data *file_data,
   tree fn_decl;
   struct cgraph_node *node;
   struct bitpack_d bp;
-  unsigned decl_index;
   int ref = LCC_NOT_FOUND, ref2 = LCC_NOT_FOUND;
   int clone_ref;
   int order;
@@ -1226,8 +1236,7 @@ input_node (struct lto_file_decl_data *file_data,
   order = streamer_read_hwi (ib) + file_data->order_base;
   clone_ref = streamer_read_hwi (ib);
 
-  decl_index = streamer_read_uhwi (ib);
-  fn_decl = lto_file_decl_data_get_fn_decl (file_data, decl_index);
+  fn_decl = lto_input_fn_decl_ref (ib, file_data);
 
   if (clone_ref != LCC_NOT_FOUND)
     {
@@ -1336,7 +1345,6 @@ static varpool_node *
 input_varpool_node (struct lto_file_decl_data *file_data,
 		    class lto_input_block *ib)
 {
-  int decl_index;
   tree var_decl;
   varpool_node *node;
   struct bitpack_d bp;
@@ -1346,8 +1354,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   const char *section;
 
   order = streamer_read_hwi (ib) + file_data->order_base;
-  decl_index = streamer_read_uhwi (ib);
-  var_decl = lto_file_decl_data_get_var_decl (file_data, decl_index);
+  var_decl = lto_input_var_decl_ref (ib, file_data);
 
   /* Declaration of functions can be already merged with a declaration
      from other input file.  We keep cgraph unmerged until after streaming
@@ -1428,7 +1435,11 @@ input_ref (class lto_input_block *ib,
   ref = referring_node->create_reference (node, use);
   ref->speculative = speculative;
   if (is_a <cgraph_node *> (referring_node))
-    ref->lto_stmt_uid = streamer_read_hwi (ib);
+    {
+      ref->lto_stmt_uid = streamer_read_hwi (ib);
+      bp = streamer_read_bitpack (ib);
+      ref->speculative_id = bp_unpack_value (&bp, 16);
+    }
 }
 
 /* Read an edge from IB.  NODES points to a vector of previously read nodes for
@@ -1442,7 +1453,7 @@ input_edge (class lto_input_block *ib, vec<symtab_node *> nodes,
 {
   struct cgraph_node *caller, *callee;
   struct cgraph_edge *edge;
-  unsigned int stmt_id;
+  unsigned int stmt_id, speculative_id;
   profile_count count;
   cgraph_inline_failed_t inline_failed;
   struct bitpack_d bp;
@@ -1466,6 +1477,7 @@ input_edge (class lto_input_block *ib, vec<symtab_node *> nodes,
   bp = streamer_read_bitpack (ib);
   inline_failed = bp_unpack_enum (&bp, cgraph_inline_failed_t, CIF_N_REASONS);
   stmt_id = bp_unpack_var_len_unsigned (&bp);
+  speculative_id = bp_unpack_value (&bp, 16);
 
   if (indirect)
     edge = caller->create_indirect_edge (NULL, 0, count);
@@ -1475,6 +1487,7 @@ input_edge (class lto_input_block *ib, vec<symtab_node *> nodes,
   edge->indirect_inlining_edge = bp_unpack_value (&bp, 1);
   edge->speculative = bp_unpack_value (&bp, 1);
   edge->lto_stmt_uid = stmt_id;
+  edge->speculative_id = speculative_id;
   edge->inline_failed = inline_failed;
   edge->call_stmt_cannot_inline_p = bp_unpack_value (&bp, 1);
   edge->can_throw_external = bp_unpack_value (&bp, 1);
@@ -1494,9 +1507,9 @@ input_edge (class lto_input_block *ib, vec<symtab_node *> nodes,
       if (bp_unpack_value (&bp, 1))
 	ecf_flags |= ECF_RETURNS_TWICE;
       edge->indirect_info->ecf_flags = ecf_flags;
-      edge->indirect_info->common_target_id = streamer_read_hwi (ib);
-      if (edge->indirect_info->common_target_id)
-        edge->indirect_info->common_target_probability = streamer_read_hwi (ib);
+
+      edge->indirect_info->num_speculative_call_targets
+	= bp_unpack_value (&bp, 16);
     }
 }
 
@@ -1772,9 +1785,8 @@ input_offload_tables (bool do_force_output)
 	{
 	  if (tag == LTO_symtab_unavail_node)
 	    {
-	      int decl_index = streamer_read_uhwi (ib);
 	      tree fn_decl
-		= lto_file_decl_data_get_fn_decl (file_data, decl_index);
+		= lto_input_fn_decl_ref (ib, file_data);
 	      vec_safe_push (offload_funcs, fn_decl);
 
 	      /* Prevent IPA from removing fn_decl as unreachable, since there
@@ -1785,9 +1797,8 @@ input_offload_tables (bool do_force_output)
 	    }
 	  else if (tag == LTO_symtab_variable)
 	    {
-	      int decl_index = streamer_read_uhwi (ib);
 	      tree var_decl
-		= lto_file_decl_data_get_var_decl (file_data, decl_index);
+		= lto_input_var_decl_ref (ib, file_data);
 	      vec_safe_push (offload_vars, var_decl);
 
 	      /* Prevent IPA from removing var_decl as unused, since there

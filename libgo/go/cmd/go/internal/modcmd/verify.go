@@ -6,16 +6,19 @@ package modcmd
 
 import (
 	"bytes"
-	"cmd/go/internal/cfg"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 
 	"cmd/go/internal/base"
-	"cmd/go/internal/dirhash"
+	"cmd/go/internal/cfg"
 	"cmd/go/internal/modfetch"
 	"cmd/go/internal/modload"
-	"cmd/go/internal/module"
+	"cmd/go/internal/work"
+
+	"golang.org/x/mod/module"
+	"golang.org/x/mod/sumdb/dirhash"
 )
 
 var cmdVerify = &base.Command{
@@ -32,13 +35,17 @@ non-zero status.
 	Run: runVerify,
 }
 
+func init() {
+	work.AddModCommonFlags(cmdVerify)
+}
+
 func runVerify(cmd *base.Command, args []string) {
 	if len(args) != 0 {
 		// NOTE(rsc): Could take a module pattern.
 		base.Fatalf("go mod verify: verify takes no arguments")
 	}
 	// Checks go mod expected behavior
-	if !modload.Enabled() {
+	if !modload.Enabled() || !modload.HasModRoot() {
 		if cfg.Getenv("GO111MODULE") == "off" {
 			base.Fatalf("go: modules disabled by GO111MODULE=off; see 'go help modules'")
 		} else {
@@ -61,12 +68,10 @@ func verifyMod(mod module.Version) bool {
 		_, zipErr = os.Stat(zip)
 	}
 	dir, dirErr := modfetch.DownloadDir(mod)
-	if dirErr == nil {
-		_, dirErr = os.Stat(dir)
-	}
 	data, err := ioutil.ReadFile(zip + "hash")
 	if err != nil {
-		if zipErr != nil && os.IsNotExist(zipErr) && dirErr != nil && os.IsNotExist(dirErr) {
+		if zipErr != nil && errors.Is(zipErr, os.ErrNotExist) &&
+			dirErr != nil && errors.Is(dirErr, os.ErrNotExist) {
 			// Nothing downloaded yet. Nothing to verify.
 			return true
 		}
@@ -75,7 +80,7 @@ func verifyMod(mod module.Version) bool {
 	}
 	h := string(bytes.TrimSpace(data))
 
-	if zipErr != nil && os.IsNotExist(zipErr) {
+	if zipErr != nil && errors.Is(zipErr, os.ErrNotExist) {
 		// ok
 	} else {
 		hZ, err := dirhash.HashZip(zip, dirhash.DefaultHash)
@@ -87,7 +92,7 @@ func verifyMod(mod module.Version) bool {
 			ok = false
 		}
 	}
-	if dirErr != nil && os.IsNotExist(dirErr) {
+	if dirErr != nil && errors.Is(dirErr, os.ErrNotExist) {
 		// ok
 	} else {
 		hD, err := dirhash.HashDir(dir, mod.Path+"@"+mod.Version, dirhash.DefaultHash)

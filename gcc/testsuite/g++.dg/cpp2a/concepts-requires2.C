@@ -1,4 +1,4 @@
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 // Test the types of atomic constraints
 
@@ -12,13 +12,13 @@ template<typename T> constexpr fool p1() { return {}; }
 template<typename T> constexpr fool p2() { return {}; }
 
 template<typename T>
-concept Bad = p1<T>() && p2<T>(); // { dg-error "does not have type 'bool'" }
+concept Bad = p1<T>() && p2<T>(); // { dg-error "bool" }
 
 template<typename T> requires Bad<T> void bad(T x) { }
 
 void driver_2()
 {
-  bad(0); // { dg-error "" }
+  bad(0); // { dg-message "" }
 }
 
 // req6.C
@@ -26,10 +26,10 @@ struct X { };
 int operator==(X, X) { return 0; }
 
 template<typename T>
-concept C1 = (X()); // { dg-error "does not have type 'bool'" }
+concept C1 = (X()); // { dg-error "bool" }
 
 template<typename T>
-concept C2 = (X() == X()); // { dg-error "does not have type 'bool'" }
+concept C2 = (X() == X()); // { dg-error "bool" }
 
 template<typename T>
   requires C1<T>
@@ -41,8 +41,8 @@ void h2(T);
 
 void driver_3()
 {
-  h1(0); // { dg-error "" }
-  h2(0); // { dg-error "" }
+  h1(0); // { dg-message "" }
+  h2(0); // { dg-message "" }
 }
 
 // req7.C

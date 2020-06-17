@@ -399,6 +399,9 @@ get_full_len (const wide_int &op)
 static bool
 should_emit_struct_debug (tree type, enum debug_info_usage usage)
 {
+  if (debug_info_level <= DINFO_LEVEL_TERSE)
+    return false;
+
   enum debug_struct_file criterion;
   tree type_decl;
   bool generic = lang_hooks.types.generic_p (type);
@@ -1476,7 +1479,7 @@ dw_val_equal_p (dw_val_node *a, dw_val_node *b)
 
     case dw_val_class_vms_delta:
       return (!strcmp (a->v.val_vms_delta.lbl1, b->v.val_vms_delta.lbl1)
-              && !strcmp (a->v.val_vms_delta.lbl1, b->v.val_vms_delta.lbl1));
+	      && !strcmp (a->v.val_vms_delta.lbl2, b->v.val_vms_delta.lbl2));
 
     case dw_val_class_discr_value:
       return (a->v.val_discr_value.pos == b->v.val_discr_value.pos
@@ -3825,8 +3828,7 @@ static void add_bound_info (dw_die_ref, enum dwarf_attribute, tree,
 static void add_subscript_info (dw_die_ref, tree, bool);
 static void add_byte_size_attribute (dw_die_ref, tree);
 static void add_alignment_attribute (dw_die_ref, tree);
-static inline void add_bit_offset_attribute (dw_die_ref, tree,
-					     struct vlr_context *);
+static void add_bit_offset_attribute (dw_die_ref, tree);
 static void add_bit_size_attribute (dw_die_ref, tree);
 static void add_prototyped_attribute (dw_die_ref, tree);
 static void add_abstract_origin_attribute (dw_die_ref, tree);
@@ -12101,8 +12103,9 @@ file_name_acquire (dwarf_file_data **slot, file_name_acquire_data *fnad)
 
   fi = fnad->files + fnad->used_files++;
 
+  f = remap_debug_filename (d->filename);
+
   /* Skip all leading "./".  */
-  f = d->filename;
   while (f[0] == '.' && IS_DIR_SEPARATOR (f[1]))
     f += 2;
 
@@ -13606,7 +13609,7 @@ generic_parameter_die (tree parm, tree arg,
   dw_die_ref tmpl_die = NULL;
   const char *name = NULL;
 
-  /* C++2a accepts class literals as template parameters, and var
+  /* C++20 accepts class literals as template parameters, and var
      decls with initializers represent them.  The VAR_DECLs would be
      rejected, but we can take the DECL_INITIAL constructor and
      attempt to expand it.  */
@@ -19114,6 +19117,7 @@ struct vlr_context
      QUAL_UNION_TYPE nodes.  Each time such a structure is passed to a
      function processing a FIELD_DECL, it is required to be non null.  */
   tree struct_type;
+
   /* When generating a variant part in a RECORD_TYPE (i.e. a nested
      QUAL_UNION_TYPE), this holds an expression that computes the offset for
      this variant part as part of the root record (in storage units).  For
@@ -19452,9 +19456,13 @@ add_data_member_location_attribute (dw_die_ref die,
 	 to dwarf_version >= 4 once most consumers catched up.  */
       if (dwarf_version >= 5
 	  && TREE_CODE (decl) == FIELD_DECL
-	  && DECL_BIT_FIELD_TYPE (decl))
+	  && DECL_BIT_FIELD_TYPE (decl)
+	  && (ctx->variant_part_offset == NULL_TREE
+	      || TREE_CODE (ctx->variant_part_offset) == INTEGER_CST))
 	{
 	  tree off = bit_position (decl);
+	  if (ctx->variant_part_offset)
+	    off = bit_from_pos (ctx->variant_part_offset, off);
 	  if (tree_fits_uhwi_p (off) && get_AT (die, DW_AT_bit_size))
 	    {
 	      remove_AT (die, DW_AT_byte_size);
@@ -20258,150 +20266,6 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl, bool cache_p)
   return tree_add_const_value_attribute_for_decl (die, decl);
 }
 
-/* Helper function for tree_add_const_value_attribute.  Natively encode
-   initializer INIT into an array.  Return true if successful.  */
-
-static bool
-native_encode_initializer (tree init, unsigned char *array, int size)
-{
-  tree type;
-
-  if (init == NULL_TREE)
-    return false;
-
-  STRIP_NOPS (init);
-  switch (TREE_CODE (init))
-    {
-    case STRING_CST:
-      type = TREE_TYPE (init);
-      if (TREE_CODE (type) == ARRAY_TYPE)
-	{
-	  tree enttype = TREE_TYPE (type);
-	  scalar_int_mode mode;
-
-	  if (!is_int_mode (TYPE_MODE (enttype), &mode)
-	      || GET_MODE_SIZE (mode) != 1)
-	    return false;
-	  if (int_size_in_bytes (type) != size)
-	    return false;
-	  if (size > TREE_STRING_LENGTH (init))
-	    {
-	      memcpy (array, TREE_STRING_POINTER (init),
-		      TREE_STRING_LENGTH (init));
-	      memset (array + TREE_STRING_LENGTH (init),
-		      '\0', size - TREE_STRING_LENGTH (init));
-	    }
-	  else
-	    memcpy (array, TREE_STRING_POINTER (init), size);
-	  return true;
-	}
-      return false;
-    case CONSTRUCTOR:
-      type = TREE_TYPE (init);
-      if (int_size_in_bytes (type) != size)
-	return false;
-      if (TREE_CODE (type) == ARRAY_TYPE)
-	{
-	  HOST_WIDE_INT min_index;
-	  unsigned HOST_WIDE_INT cnt;
-	  int curpos = 0, fieldsize;
-	  constructor_elt *ce;
-
-	  if (TYPE_DOMAIN (type) == NULL_TREE
-	      || !tree_fits_shwi_p (TYPE_MIN_VALUE (TYPE_DOMAIN (type))))
-	    return false;
-
-	  fieldsize = int_size_in_bytes (TREE_TYPE (type));
-	  if (fieldsize <= 0)
-	    return false;
-
-	  min_index = tree_to_shwi (TYPE_MIN_VALUE (TYPE_DOMAIN (type)));
-	  memset (array, '\0', size);
-	  FOR_EACH_VEC_SAFE_ELT (CONSTRUCTOR_ELTS (init), cnt, ce)
-	    {
-	      tree val = ce->value;
-	      tree index = ce->index;
-	      int pos = curpos;
-	      if (index && TREE_CODE (index) == RANGE_EXPR)
-		pos = (tree_to_shwi (TREE_OPERAND (index, 0)) - min_index)
-		      * fieldsize;
-	      else if (index)
-		pos = (tree_to_shwi (index) - min_index) * fieldsize;
-
-	      if (val)
-		{
-		  STRIP_NOPS (val);
-		  if (!native_encode_initializer (val, array + pos, fieldsize))
-		    return false;
-		}
-	      curpos = pos + fieldsize;
-	      if (index && TREE_CODE (index) == RANGE_EXPR)
-		{
-		  int count = tree_to_shwi (TREE_OPERAND (index, 1))
-			      - tree_to_shwi (TREE_OPERAND (index, 0));
-		  while (count-- > 0)
-		    {
-		      if (val)
-			memcpy (array + curpos, array + pos, fieldsize);
-		      curpos += fieldsize;
-		    }
-		}
-	      gcc_assert (curpos <= size);
-	    }
-	  return true;
-	}
-      else if (TREE_CODE (type) == RECORD_TYPE
-	       || TREE_CODE (type) == UNION_TYPE)
-	{
-	  tree field = NULL_TREE;
-	  unsigned HOST_WIDE_INT cnt;
-	  constructor_elt *ce;
-
-	  if (int_size_in_bytes (type) != size)
-	    return false;
-
-	  if (TREE_CODE (type) == RECORD_TYPE)
-	    field = TYPE_FIELDS (type);
-
-	  FOR_EACH_VEC_SAFE_ELT (CONSTRUCTOR_ELTS (init), cnt, ce)
-	    {
-	      tree val = ce->value;
-	      int pos, fieldsize;
-
-	      if (ce->index != 0)
-		field = ce->index;
-
-	      if (val)
-		STRIP_NOPS (val);
-
-	      if (field == NULL_TREE || DECL_BIT_FIELD (field))
-		return false;
-
-	      if (TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE
-		  && TYPE_DOMAIN (TREE_TYPE (field))
-		  && ! TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (field))))
-		return false;
-	      else if (DECL_SIZE_UNIT (field) == NULL_TREE
-		       || !tree_fits_shwi_p (DECL_SIZE_UNIT (field)))
-		return false;
-	      fieldsize = tree_to_shwi (DECL_SIZE_UNIT (field));
-	      pos = int_byte_position (field);
-	      gcc_assert (pos + fieldsize <= size);
-	      if (val && fieldsize != 0
-		  && !native_encode_initializer (val, array + pos, fieldsize))
-		return false;
-	    }
-	  return true;
-	}
-      return false;
-    case VIEW_CONVERT_EXPR:
-    case NON_LVALUE_EXPR:
-      return native_encode_initializer (TREE_OPERAND (init, 0), array, size);
-    default:
-      return native_encode_expr (init, array, size) == size;
-    }
-}
-
 /* Attach a DW_AT_const_value attribute to DIE. The value of the
    attribute is the const value T.  */
 
@@ -20446,7 +20310,7 @@ tree_add_const_value_attribute (dw_die_ref die, tree t)
 	{
 	  unsigned char *array = ggc_cleared_vec_alloc<unsigned char> (size);
 
-	  if (native_encode_initializer (init, array, size))
+	  if (native_encode_initializer (init, array, size) == size)
 	    {
 	      add_AT_vec (die, DW_AT_const_value, size, 1, array);
 	      return true;
@@ -21235,14 +21099,12 @@ add_alignment_attribute (dw_die_ref die, tree tree_node)
    exact location of the "containing object" for a bit-field is rather
    complicated.  It's handled by the `field_byte_offset' function (above).
 
-   CTX is required: see the comment for VLR_CONTEXT.
-
    Note that it is the size (in bytes) of the hypothetical "containing object"
    which will be given in the DW_AT_byte_size attribute for this bit-field.
    (See `byte_size_attribute' above).  */
 
 static inline void
-add_bit_offset_attribute (dw_die_ref die, tree decl, struct vlr_context *ctx)
+add_bit_offset_attribute (dw_die_ref die, tree decl)
 {
   HOST_WIDE_INT object_offset_in_bytes;
   tree original_type = DECL_BIT_FIELD_TYPE (decl);
@@ -21251,7 +21113,10 @@ add_bit_offset_attribute (dw_die_ref die, tree decl, struct vlr_context *ctx)
   HOST_WIDE_INT highest_order_field_bit_offset;
   HOST_WIDE_INT bit_offset;
 
-  field_byte_offset (decl, ctx, &object_offset_in_bytes);
+  /* The containing object is within the DECL_CONTEXT.  */
+  struct vlr_context ctx = { DECL_CONTEXT (decl), NULL_TREE };
+
+  field_byte_offset (decl, &ctx, &object_offset_in_bytes);
 
   /* Must be a field and a bit field.  */
   gcc_assert (original_type && TREE_CODE (decl) == FIELD_DECL);
@@ -21705,6 +21570,9 @@ add_type_attribute (dw_die_ref object_die, tree type, int cv_quals,
 {
   enum tree_code code  = TREE_CODE (type);
   dw_die_ref type_die  = NULL;
+
+  if (debug_info_level <= DINFO_LEVEL_TERSE)
+    return;
 
   /* ??? If this type is an unnamed subrange type of an integral, floating-point
      or fixed-point type, use the inner type.  This is because we have no
@@ -23042,11 +22910,22 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		  != (unsigned) s.column))
 	    add_AT_unsigned (subr_die, DW_AT_decl_column, s.column);
 
-	  /* If the prototype had an 'auto' or 'decltype(auto)' return type,
-	     emit the real type on the definition die.  */
+	  /* If the prototype had an 'auto' or 'decltype(auto)' in
+	     the return type, emit the real type on the definition die.  */
 	  if (is_cxx () && debug_info_level > DINFO_LEVEL_TERSE)
 	    {
 	      dw_die_ref die = get_AT_ref (old_die, DW_AT_type);
+	      while (die
+		     && (die->die_tag == DW_TAG_reference_type
+			 || die->die_tag == DW_TAG_rvalue_reference_type
+			 || die->die_tag == DW_TAG_pointer_type
+			 || die->die_tag == DW_TAG_const_type
+			 || die->die_tag == DW_TAG_volatile_type
+			 || die->die_tag == DW_TAG_restrict_type
+			 || die->die_tag == DW_TAG_array_type
+			 || die->die_tag == DW_TAG_ptr_to_member_type
+			 || die->die_tag == DW_TAG_subroutine_type))
+		die = get_AT_ref (die, DW_AT_type);
 	      if (die == auto_die || die == decltype_auto_die)
 		add_type_attribute (subr_die, TREE_TYPE (TREE_TYPE (decl)),
 				    TYPE_UNQUALIFIED, false, context_die);
@@ -24405,16 +24284,11 @@ gen_field_die (tree decl, struct vlr_context *ctx, dw_die_ref context_die)
     {
       add_byte_size_attribute (decl_die, decl);
       add_bit_size_attribute (decl_die, decl);
-      add_bit_offset_attribute (decl_die, decl, ctx);
+      add_bit_offset_attribute (decl_die, decl);
     }
 
   add_alignment_attribute (decl_die, decl);
 
-  /* If we have a variant part offset, then we are supposed to process a member
-     of a QUAL_UNION_TYPE, which is how we represent variant parts in
-     trees.  */
-  gcc_assert (ctx->variant_part_offset == NULL_TREE
-	      || TREE_CODE (DECL_FIELD_CONTEXT (decl)) != QUAL_UNION_TYPE);
   if (TREE_CODE (DECL_FIELD_CONTEXT (decl)) != UNION_TYPE)
     add_data_member_location_attribute (decl_die, decl, ctx);
 
@@ -24477,9 +24351,8 @@ gen_producer_string (void)
       case OPT_o:
       case OPT_d:
       case OPT_dumpbase:
+      case OPT_dumpbase_ext:
       case OPT_dumpdir:
-      case OPT_auxbase:
-      case OPT_auxbase_strip:
       case OPT_quiet:
       case OPT_version:
       case OPT_v:
@@ -25009,7 +24882,9 @@ analyze_variants_discr (tree variant_part_decl,
 
 	  else if ((candidate_discr
 		      = analyze_discr_in_predicate (match_expr, struct_type))
-		   && TREE_TYPE (candidate_discr) == boolean_type_node)
+		   && (TREE_TYPE (candidate_discr) == boolean_type_node
+		       || TREE_TYPE (TREE_TYPE (candidate_discr))
+			  == boolean_type_node))
 	    {
 	      /* We are matching:  <discr_field> for a boolean discriminant.
 		 This sub-expression matches boolean_true_node.  */
@@ -26498,39 +26373,44 @@ gen_decl_die (tree decl, tree origin, struct vlr_context *ctx,
     case VAR_DECL:
     case RESULT_DECL:
       /* If we are in terse mode, don't generate any DIEs to represent any
-	 variable declarations or definitions.  */
-      if (debug_info_level <= DINFO_LEVEL_TERSE)
+	 variable declarations or definitions unless it is external.  */
+      if (debug_info_level < DINFO_LEVEL_TERSE
+	  || (debug_info_level == DINFO_LEVEL_TERSE
+	      && !TREE_PUBLIC (decl_or_origin)))
 	break;
 
-      /* Avoid generating stray type DIEs during late dwarf dumping.
-         All types have been dumped early.  */
-      if (early_dwarf
-	  /* ???  But in LTRANS we cannot annotate early created variably
-	     modified type DIEs without copying them and adjusting all
-	     references to them.  Dump them again as happens for inlining
-	     which copies both the decl and the types.  */
-	  /* ???  And even non-LTO needs to re-visit type DIEs to fill
-	     in VLA bound information for example.  */
-	  || (decl && variably_modified_type_p (TREE_TYPE (decl),
-						current_function_decl)))
+      if (debug_info_level > DINFO_LEVEL_TERSE)
 	{
-	  /* Output any DIEs that are needed to specify the type of this data
-	     object.  */
-	  if (decl_by_reference_p (decl_or_origin))
-	    gen_type_die (TREE_TYPE (TREE_TYPE (decl_or_origin)), context_die);
-	  else
-	    gen_type_die (TREE_TYPE (decl_or_origin), context_die);
-	}
+	  /* Avoid generating stray type DIEs during late dwarf dumping.
+	     All types have been dumped early.  */
+	  if (early_dwarf
+	      /* ???  But in LTRANS we cannot annotate early created variably
+		 modified type DIEs without copying them and adjusting all
+		 references to them.  Dump them again as happens for inlining
+		 which copies both the decl and the types.  */
+	      /* ???  And even non-LTO needs to re-visit type DIEs to fill
+		 in VLA bound information for example.  */
+	      || (decl && variably_modified_type_p (TREE_TYPE (decl),
+						    current_function_decl)))
+	    {
+	      /* Output any DIEs that are needed to specify the type of this data
+		 object.  */
+	      if (decl_by_reference_p (decl_or_origin))
+		gen_type_die (TREE_TYPE (TREE_TYPE (decl_or_origin)), context_die);
+	      else
+		gen_type_die (TREE_TYPE (decl_or_origin), context_die);
+	    }
 
-      if (early_dwarf)
-	{
-	  /* And its containing type.  */
-	  class_origin = decl_class_context (decl_or_origin);
-	  if (class_origin != NULL_TREE)
-	    gen_type_die_for_member (class_origin, decl_or_origin, context_die);
+	  if (early_dwarf)
+	    {
+	      /* And its containing type.  */
+	      class_origin = decl_class_context (decl_or_origin);
+	      if (class_origin != NULL_TREE)
+		gen_type_die_for_member (class_origin, decl_or_origin, context_die);
 
-	  /* And its containing namespace.  */
-	  context_die = declare_in_namespace (decl_or_origin, context_die);
+	      /* And its containing namespace.  */
+	      context_die = declare_in_namespace (decl_or_origin, context_die);
+	    }
 	}
 
       /* Now output the DIE to represent the data object itself.  This gets
@@ -26975,8 +26855,10 @@ dwarf2out_decl (tree decl)
 	context_die = lookup_decl_die (DECL_CONTEXT (decl));
 
       /* If we are in terse mode, don't generate any DIEs to represent any
-	 variable declarations or definitions.  */
-      if (debug_info_level <= DINFO_LEVEL_TERSE)
+	 variable declarations or definitions unless it is external.  */
+      if (debug_info_level < DINFO_LEVEL_TERSE
+	  || (debug_info_level == DINFO_LEVEL_TERSE
+	      && !TREE_PUBLIC (decl)))
 	return;
       break;
 
@@ -27754,6 +27636,7 @@ dwarf2out_inline_entry (tree block)
 static void
 dwarf2out_size_function (tree decl)
 {
+  set_early_dwarf s;
   function_to_dwarf_procedure (decl);
 }
 
@@ -29673,9 +29556,9 @@ prune_unused_types (void)
   for (i = 0; base_types.iterate (i, &base_type); i++)
     prune_unused_types_mark (base_type, 1);
 
-  /* For -fvar-tracking-assignments, also set the mark on nodes that could be
-     referenced by DW_TAG_call_site DW_AT_call_origin (i.e. direct call
-     callees).  */
+  /* Also set the mark on nodes that could be referenced by
+     DW_TAG_call_site DW_AT_call_origin (i.e. direct call callees) or
+     by DW_TAG_inlined_subroutine origins.  */
   cgraph_node *cnode;
   FOR_EACH_FUNCTION (cnode)
     if (cnode->referred_to_p (false))
@@ -29684,8 +29567,7 @@ prune_unused_types (void)
 	if (die == NULL || die->die_mark)
 	  continue;
 	for (cgraph_edge *e = cnode->callers; e; e = e->next_caller)
-	  if (e->caller != cnode
-	      && opt_for_fn (e->caller->decl, flag_var_tracking_assignments))
+	  if (e->caller != cnode)
 	    {
 	      prune_unused_types_mark (die, 1);
 	      break;
@@ -32170,24 +32052,6 @@ dwarf2out_early_finish (const char *filename)
      sure to adjust the phase after annotating the LTRANS CU DIE.  */
   if (in_lto_p)
     {
-      /* Force DW_TAG_imported_unit to be created now, otherwise
-	 we might end up without it or ordered after DW_TAG_inlined_subroutine
-	 referencing DIEs from it.  */
-      if (! flag_wpa && flag_incremental_link != INCREMENTAL_LINK_LTO)
-	{
-	  unsigned i;
-	  tree tu;
-	  if (external_die_map)
-	    FOR_EACH_VEC_SAFE_ELT (all_translation_units, i, tu)
-	      if (sym_off_pair *desc = external_die_map->get (tu))
-		{
-		  dw_die_ref import = new_die (DW_TAG_imported_unit,
-					       comp_unit_die (), NULL_TREE);
-		  add_AT_external_die_ref (import, DW_AT_import,
-					   desc->sym, desc->off);
-		}
-	}
-
       early_dwarf_finished = true;
       if (dump_file)
 	{
@@ -32295,7 +32159,7 @@ dwarf2out_early_finish (const char *filename)
      location related output removed and some LTO specific changes.
      Some refactoring might make both smaller and easier to match up.  */
 
-  /* Traverse the DIE's and add add sibling attributes to those DIE's
+  /* Traverse the DIE's and add sibling attributes to those DIE's
      that have children.  */
   add_sibling_attributes (comp_unit_die ());
   for (limbo_die_node *node = limbo_die_list; node; node = node->next)

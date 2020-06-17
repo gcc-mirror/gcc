@@ -39,5 +39,5 @@ void test_bzero (void)
    called gimple fold regardless.
 
    If we really care about previous behavior, we could put a call to
-   gimple ::fold_stmt into xevrp_folder::fold_stmt().  */
+   gimple ::fold_stmt into evrp_folder::fold_stmt().  */
 /* { dg-final { scan-tree-dump-not "builtin_(bcopy|bzero|memcpy)" "dse1" } } */

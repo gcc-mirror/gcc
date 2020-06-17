@@ -1540,8 +1540,6 @@ handle_UF_128_rem (UINT128 * pres, UINT64 sgn, int expon, UINT128 CQ,
     __shr_128 (CQ, Qh, amount);
   }
 
-  expon = 0;
-
 #ifndef IEEE_ROUND_NEAREST_TIES_AWAY
 #ifndef IEEE_ROUND_NEAREST
   if (!(*prounding_mode))
@@ -1675,8 +1673,6 @@ handle_UF_128 (UINT128 * pres, UINT64 sgn, int expon, UINT128 CQ,
   } else {
     __shr_128 (CQ, Qh, amount);
   }
-
-  expon = 0;
 
 #ifndef IEEE_ROUND_NEAREST_TIES_AWAY
 #ifndef IEEE_ROUND_NEAREST

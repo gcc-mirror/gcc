@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2019, Free Software Foundation, Inc.           --
+--             Copyright (C) 2019-2020, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,11 +42,9 @@ package Bindo.Augmentors is
    ------------------------------
 
    package Library_Graph_Augmentors is
-      procedure Augment_Library_Graph
-        (Inv_Graph : Invocation_Graph;
-         Lib_Graph : Library_Graph);
-      --  Augment library graph Lib_Graph with information from invocation
-      --  graph Inv_Graph as follows:
+      procedure Augment_Library_Graph (Inv_Graph : Invocation_Graph);
+      --  Augment the library graph of Inv_Graph with information from
+      --  invocation graph Inv_Graph as follows:
       --
       --    1) Traverse the invocation graph starting from each elaboration
       --       procedure of unit Root.

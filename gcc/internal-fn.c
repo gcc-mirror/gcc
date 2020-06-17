@@ -167,6 +167,8 @@ expand_load_lanes_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
   create_output_operand (&ops[0], target, TYPE_MODE (type));
   create_fixed_operand (&ops[1], mem);
   expand_insn (get_multi_vector_move (type, optab), 2, ops);
+  if (!rtx_equal_p (target, ops[0].value))
+    emit_move_insn (target, ops[0].value);
 }
 
 /* Expand STORE_LANES call STMT using optab OPTAB.  */
@@ -2507,6 +2509,8 @@ expand_mask_load_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
   create_fixed_operand (&ops[1], mem);
   create_input_operand (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)));
   expand_insn (icode, 3, ops);
+  if (!rtx_equal_p (target, ops[0].value))
+    emit_move_insn (target, ops[0].value);
 }
 
 #define expand_mask_load_lanes_optab_fn expand_mask_load_optab_fn
@@ -2827,6 +2831,8 @@ expand_gather_load_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
   insn_code icode = convert_optab_handler (optab, TYPE_MODE (TREE_TYPE (lhs)),
 					   TYPE_MODE (TREE_TYPE (offset)));
   expand_insn (icode, i, ops);
+  if (!rtx_equal_p (lhs_rtx, ops[0].value))
+    emit_move_insn (lhs_rtx, ops[0].value);
 }
 
 /* Expand DIVMOD() using:
@@ -2882,6 +2888,32 @@ static void
 expand_NOP (internal_fn, gcall *)
 {
   /* Nothing.  But it shouldn't really prevail.  */
+}
+
+/* Coroutines, all should have been processed at this stage.  */
+
+static void
+expand_CO_FRAME (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
+static void
+expand_CO_YIELD (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
+static void
+expand_CO_SUSPN (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
+static void
+expand_CO_ACTOR (internal_fn, gcall *)
+{
+  gcc_unreachable ();
 }
 
 /* Expand a call to FN using the operands in STMT.  FN has a single

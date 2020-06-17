@@ -588,6 +588,22 @@
   (and (match_code "mem")
        (match_test "aarch64_sve_ld1rq_operand_p (op)")))
 
+(define_predicate "aarch64_sve_ld1ro_operand_b"
+  (and (match_code "mem")
+       (match_test "aarch64_sve_ld1ro_operand_p (op, QImode)")))
+
+(define_predicate "aarch64_sve_ld1ro_operand_h"
+  (and (match_code "mem")
+       (match_test "aarch64_sve_ld1ro_operand_p (op, HImode)")))
+
+(define_predicate "aarch64_sve_ld1ro_operand_w"
+  (and (match_code "mem")
+       (match_test "aarch64_sve_ld1ro_operand_p (op, SImode)")))
+
+(define_predicate "aarch64_sve_ld1ro_operand_d"
+  (and (match_code "mem")
+       (match_test "aarch64_sve_ld1ro_operand_p (op, DImode)")))
+
 (define_predicate "aarch64_sve_ldff1_operand"
   (and (match_code "mem")
        (match_test "aarch64_sve_ldff1_operand_p (op)")))
@@ -636,19 +652,19 @@
 
 (define_predicate "aarch64_sve_arith_immediate"
   (and (match_code "const,const_vector")
-       (match_test "aarch64_sve_arith_immediate_p (op, false)")))
+       (match_test "aarch64_sve_arith_immediate_p (mode, op, false)")))
 
 (define_predicate "aarch64_sve_sub_arith_immediate"
   (and (match_code "const,const_vector")
-       (match_test "aarch64_sve_arith_immediate_p (op, true)")))
+       (match_test "aarch64_sve_arith_immediate_p (mode, op, true)")))
 
 (define_predicate "aarch64_sve_qadd_immediate"
   (and (match_code "const,const_vector")
-       (match_test "aarch64_sve_sqadd_sqsub_immediate_p (op, false)")))
+       (match_test "aarch64_sve_sqadd_sqsub_immediate_p (mode, op, false)")))
 
 (define_predicate "aarch64_sve_qsub_immediate"
   (and (match_code "const,const_vector")
-       (match_test "aarch64_sve_sqadd_sqsub_immediate_p (op, true)")))
+       (match_test "aarch64_sve_sqadd_sqsub_immediate_p (mode, op, true)")))
 
 (define_predicate "aarch64_sve_vector_inc_dec_immediate"
   (and (match_code "const,const_vector")

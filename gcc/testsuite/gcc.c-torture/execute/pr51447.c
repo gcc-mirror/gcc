@@ -14,6 +14,9 @@ int
 main (void)
 {
   __label__ nonlocal_lab;
+#ifdef __x86_64__
+  void *save = ptr;
+#endif
   __attribute__((noinline, noclone)) void
     bar (void *func)
       {
@@ -25,5 +28,8 @@ main (void)
 nonlocal_lab:
   if (ptr != &&nonlocal_lab)
     abort ();
+#ifdef __x86_64__
+  ptr = save; /* Restore the call-saved register.  */
+#endif
   return 0;
 }

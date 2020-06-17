@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1998-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -592,7 +592,7 @@ package Lib.Xref is
 
    --  What we do in such cases is to gather nodes, where we would have liked
    --  to call Generate_Reference but we couldn't because we didn't know enough
-   --  into this table, Then we deal with generating references later on when
+   --  into this table, then we deal with generating references later on when
    --  we have sufficient information to do it right.
 
    type Deferred_Reference_Entry is record

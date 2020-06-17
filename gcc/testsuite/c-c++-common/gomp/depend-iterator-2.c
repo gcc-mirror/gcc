@@ -41,7 +41,7 @@ f1 (void)
   ;
   #pragma omp task depend (iterator (int i = 0:4, \
 				     struct U { int (*p)[i + 2]; } *p = 0:2) , in : a)	/* { dg-error "type of iterator 'p' refers to outer iterator 'i'" "" { target c } } */
-  ;									/* { dg-error "types may not be defined in iterator type|not an integer constant" "" { target c++ } .-1 } */
+  ;									/* { dg-error "types may not be defined in iterator type|not an integral constant" "" { target c++ } .-1 } */
   #pragma omp task depend (iterator (i = 0:4, j = i:16) , in : a)	/* { dg-error "begin expression refers to outer iterator 'i'" } */
   ;
   #pragma omp task depend (iterator (i = 0:4, j = 2:i:1) , in : a)	/* { dg-error "end expression refers to outer iterator 'i'" } */

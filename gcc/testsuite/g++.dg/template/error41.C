@@ -8,5 +8,5 @@ struct A
 
 template <int> struct B
 {
-  int x[A::i];	// { dg-error "array bound is not an integer constant" }
+  int x[A::i];	// { dg-error "not an integral constant-expression" }
 };

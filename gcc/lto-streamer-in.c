@@ -316,57 +316,45 @@ lto_input_tree_ref (class lto_input_block *ib, class data_in *data_in,
   unsigned HOST_WIDE_INT ix_u;
   tree result = NULL_TREE;
 
-  lto_tag_check_range (tag, LTO_field_decl_ref, LTO_namelist_decl_ref);
-
-  switch (tag)
+  if (tag == LTO_ssa_name_ref)
     {
-    case LTO_type_ref:
-      ix_u = streamer_read_uhwi (ib);
-      result = lto_file_decl_data_get_type (data_in->file_data, ix_u);
-      break;
-
-    case LTO_ssa_name_ref:
       ix_u = streamer_read_uhwi (ib);
       result = (*SSANAMES (fn))[ix_u];
-      break;
-
-    case LTO_field_decl_ref:
+    }
+  else
+    {
+      gcc_checking_assert (tag == LTO_global_stream_ref);
       ix_u = streamer_read_uhwi (ib);
-      result = lto_file_decl_data_get_field_decl (data_in->file_data, ix_u);
-      break;
-
-    case LTO_function_decl_ref:
-      ix_u = streamer_read_uhwi (ib);
-      result = lto_file_decl_data_get_fn_decl (data_in->file_data, ix_u);
-      break;
-
-    case LTO_type_decl_ref:
-      ix_u = streamer_read_uhwi (ib);
-      result = lto_file_decl_data_get_type_decl (data_in->file_data, ix_u);
-      break;
-
-    case LTO_namespace_decl_ref:
-      ix_u = streamer_read_uhwi (ib);
-      result = lto_file_decl_data_get_namespace_decl (data_in->file_data, ix_u);
-      break;
-
-    case LTO_global_decl_ref:
-    case LTO_result_decl_ref:
-    case LTO_const_decl_ref:
-    case LTO_imported_decl_ref:
-    case LTO_label_decl_ref:
-    case LTO_translation_unit_decl_ref:
-    case LTO_namelist_decl_ref:
-      ix_u = streamer_read_uhwi (ib);
-      result = lto_file_decl_data_get_var_decl (data_in->file_data, ix_u);
-      break;
-
-    default:
-      gcc_unreachable ();
+      result = (*data_in->file_data->current_decl_state
+		->streams[LTO_DECL_STREAM])[ix_u];
     }
 
   gcc_assert (result);
 
+  return result;
+}
+
+/* Read VAR_DECL reference to DATA from IB.  */
+
+tree
+lto_input_var_decl_ref (lto_input_block *ib, lto_file_decl_data *file_data)
+{
+  unsigned int ix_u = streamer_read_uhwi (ib);
+  tree result = (*file_data->current_decl_state
+		 ->streams[LTO_DECL_STREAM])[ix_u];
+  gcc_assert (TREE_CODE (result) == VAR_DECL);
+  return result;
+}
+
+/* Read VAR_DECL reference to DATA from IB.  */
+
+tree
+lto_input_fn_decl_ref (lto_input_block *ib, lto_file_decl_data *file_data)
+{
+  unsigned int ix_u = streamer_read_uhwi (ib);
+  tree result = (*file_data->current_decl_state
+		 ->streams[LTO_DECL_STREAM])[ix_u];
+  gcc_assert (TREE_CODE (result) == FUNCTION_DECL);
   return result;
 }
 
@@ -821,6 +809,7 @@ input_cfg (class lto_input_block *ib, class data_in *data_in,
       loop->owned_clique = streamer_read_hwi (ib);
       loop->dont_vectorize = streamer_read_hwi (ib);
       loop->force_vectorize = streamer_read_hwi (ib);
+      loop->finite_p = streamer_read_hwi (ib);
       loop->simduid = stream_read_tree (ib, data_in);
 
       place_new_loop (fn, loop);
@@ -892,6 +881,7 @@ fixup_call_stmt_edges_1 (struct cgraph_node *node, gimple **stmts,
         fatal_error (input_location,
 		     "Cgraph edge statement index out of range");
       cedge->call_stmt = as_a <gcall *> (stmts[cedge->lto_stmt_uid - 1]);
+      cedge->lto_stmt_uid = 0;
       if (!cedge->call_stmt)
         fatal_error (input_location,
 		     "Cgraph edge statement index not found");
@@ -902,6 +892,7 @@ fixup_call_stmt_edges_1 (struct cgraph_node *node, gimple **stmts,
         fatal_error (input_location,
 		     "Cgraph edge statement index out of range");
       cedge->call_stmt = as_a <gcall *> (stmts[cedge->lto_stmt_uid - 1]);
+      cedge->lto_stmt_uid = 0;
       if (!cedge->call_stmt)
         fatal_error (input_location, "Cgraph edge statement index not found");
     }
@@ -912,6 +903,7 @@ fixup_call_stmt_edges_1 (struct cgraph_node *node, gimple **stmts,
 	  fatal_error (input_location,
 		       "Reference statement index out of range");
 	ref->stmt = stmts[ref->lto_stmt_uid - 1];
+	ref->lto_stmt_uid = 0;
 	if (!ref->stmt)
 	  fatal_error (input_location, "Reference statement index not found");
       }
@@ -1017,6 +1009,30 @@ input_struct_function_base (struct function *fn, class data_in *data_in,
     }
 }
 
+/* Read a chain of tree nodes from input block IB.  DATA_IN contains
+   tables and descriptors for the file being read.  */
+
+static tree
+streamer_read_chain (class lto_input_block *ib, class data_in *data_in)
+{
+  tree first, prev, curr;
+
+  /* The chain is written as NULL terminated list of trees.  */
+  first = prev = NULL_TREE;
+  do
+    {
+      curr = stream_read_tree (ib, data_in);
+      if (prev)
+	TREE_CHAIN (prev) = curr;
+      else
+	first = curr;
+
+      prev = curr;
+    }
+  while (curr);
+
+  return first;
+}
 
 /* Read the body of function FN_DECL from DATA_IN using input block IB.  */
 
@@ -1135,8 +1151,9 @@ input_function (tree fn_decl, class data_in *data_in,
 		 we'd later ICE on.  */
 	      tree block;
 	      if (gimple_debug_inline_entry_p (stmt)
-		  && (block = gimple_block (stmt))
-		  && !inlined_function_outer_scope_p (block))
+		  && (((block = gimple_block (stmt))
+		       && !inlined_function_outer_scope_p (block))
+		      || !debug_inline_points))
 		remove = true;
 	      if (is_gimple_call (stmt)
 		  && gimple_call_internal_p (stmt))
@@ -1412,24 +1429,29 @@ lto_read_tree (class lto_input_block *ib, class data_in *data_in,
 
   lto_read_tree_1 (ib, data_in, result);
 
-  /* end_marker = */ streamer_read_uchar (ib);
-
   return result;
 }
 
 
 /* Populate the reader cache with trees materialized from the SCC
-   following in the IB, DATA_IN stream.  */
+   following in the IB, DATA_IN stream.
+   If SHARED_SCC is true we input LTO_tree_scc.  */
 
 hashval_t
 lto_input_scc (class lto_input_block *ib, class data_in *data_in,
-	       unsigned *len, unsigned *entry_len)
+	       unsigned *len, unsigned *entry_len, bool shared_scc)
 {
-  /* A blob of unnamed tree nodes, fill the cache from it and
-     recurse.  */
   unsigned size = streamer_read_uhwi (ib);
-  hashval_t scc_hash = streamer_read_uhwi (ib);
+  hashval_t scc_hash = 0;
   unsigned scc_entry_len = 1;
+
+  if (shared_scc)
+    {
+      if (size & 1)
+	scc_entry_len = streamer_read_uhwi (ib);
+      size /= 2;
+      scc_hash = streamer_read_uhwi (ib);
+    }
 
   if (size == 1)
     {
@@ -1441,17 +1463,16 @@ lto_input_scc (class lto_input_block *ib, class data_in *data_in,
       unsigned int first = data_in->reader_cache->nodes.length ();
       tree result;
 
-      scc_entry_len = streamer_read_uhwi (ib);
-
       /* Materialize size trees by reading their headers.  */
       for (unsigned i = 0; i < size; ++i)
 	{
 	  enum LTO_tags tag = streamer_read_record_start (ib);
 	  if (tag == LTO_null
-	      || (tag >= LTO_field_decl_ref && tag <= LTO_global_decl_ref)
+	      || tag == LTO_global_stream_ref
 	      || tag == LTO_tree_pickle_reference
 	      || tag == LTO_integer_cst
-	      || tag == LTO_tree_scc)
+	      || tag == LTO_tree_scc
+	      || tag == LTO_trees)
 	    gcc_unreachable ();
 
 	  result = streamer_alloc_tree (ib, data_in, tag);
@@ -1464,7 +1485,6 @@ lto_input_scc (class lto_input_block *ib, class data_in *data_in,
 	  result = streamer_tree_cache_get_tree (data_in->reader_cache,
 						 first + i);
 	  lto_read_tree_1 (ib, data_in, result);
-	  /* end_marker = */ streamer_read_uchar (ib);
 	}
     }
 
@@ -1473,6 +1493,32 @@ lto_input_scc (class lto_input_block *ib, class data_in *data_in,
   return scc_hash;
 }
 
+/* Read reference to tree from IB and DATA_IN.
+   This is used for streaming tree bodies where we know that
+   the tree is already in cache or is indexable and 
+   must be matched with stream_write_tree_ref.  */
+
+tree
+stream_read_tree_ref (lto_input_block *ib, data_in *data_in)
+{
+  int ix = streamer_read_hwi (ib);
+  if (!ix)
+    return NULL_TREE;
+  if (ix > 0)
+    return streamer_tree_cache_get_tree (data_in->reader_cache, ix - 1);
+
+  ix = -ix - 1;
+  int id = ix & 1;
+  ix /= 2;
+
+  tree ret;
+  if (!id)
+    ret = (*data_in->file_data->current_decl_state
+	   ->streams[LTO_DECL_STREAM])[ix];
+  else
+    ret = (*SSANAMES (cfun))[ix];
+  return ret;
+}
 
 /* Read a tree from input block IB using the per-file context in
    DATA_IN.  This context is used, for example, to resolve references
@@ -1488,7 +1534,7 @@ lto_input_tree_1 (class lto_input_block *ib, class data_in *data_in,
 
   if (tag == LTO_null)
     result = NULL_TREE;
-  else if (tag >= LTO_field_decl_ref && tag <= LTO_namelist_decl_ref)
+  else if (tag == LTO_global_stream_ref || tag == LTO_ssa_name_ref)
     {
       /* If TAG is a reference to an indexable tree, the next value
 	 in IB is the index into the table where we expect to find
@@ -1505,7 +1551,7 @@ lto_input_tree_1 (class lto_input_block *ib, class data_in *data_in,
     {
       /* For shared integer constants in singletons we can use the
          existing tree integer constant merging code.  */
-      tree type = stream_read_tree (ib, data_in);
+      tree type = stream_read_tree_ref (ib, data_in);
       unsigned HOST_WIDE_INT len = streamer_read_uhwi (ib);
       unsigned HOST_WIDE_INT i;
       HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
@@ -1517,7 +1563,7 @@ lto_input_tree_1 (class lto_input_block *ib, class data_in *data_in,
 				 (a, len, TYPE_PRECISION (type)));
       streamer_tree_cache_append (data_in->reader_cache, result, hash);
     }
-  else if (tag == LTO_tree_scc)
+  else if (tag == LTO_tree_scc || tag == LTO_trees)
     gcc_unreachable ();
   else
     {
@@ -1533,11 +1579,11 @@ lto_input_tree (class lto_input_block *ib, class data_in *data_in)
 {
   enum LTO_tags tag;
 
-  /* Input and skip SCCs.  */
-  while ((tag = streamer_read_record_start (ib)) == LTO_tree_scc)
+  /* Input pickled trees needed to stream in the reference.  */
+  while ((tag = streamer_read_record_start (ib)) == LTO_trees)
     {
       unsigned len, entry_len;
-      lto_input_scc (ib, data_in, &len, &entry_len);
+      lto_input_scc (ib, data_in, &len, &entry_len, false);
 
       /* Register DECLs with the debuginfo machinery.  */
       while (!dref_queue.is_empty ())
@@ -1546,7 +1592,15 @@ lto_input_tree (class lto_input_block *ib, class data_in *data_in)
 	  debug_hooks->register_external_die (e.decl, e.sym, e.off);
 	}
     }
-  return lto_input_tree_1 (ib, data_in, tag, 0);
+  tree t = lto_input_tree_1 (ib, data_in, tag, 0);
+
+  if (!dref_queue.is_empty ())
+    {
+      dref_entry e = dref_queue.pop ();
+      debug_hooks->register_external_die (e.decl, e.sym, e.off);
+      gcc_checking_assert (dref_queue.is_empty ());
+    }
+  return t;
 }
 
 

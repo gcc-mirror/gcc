@@ -397,6 +397,9 @@ struct gomp_team_state
   unsigned place_partition_off;
   unsigned place_partition_len;
 
+  /* Def-allocator-var ICV.  */
+  uintptr_t def_allocator;
+
 #ifdef HAVE_SYNC_BUILTINS
   /* Number of single stmts encountered.  */
   unsigned long single_count;
@@ -450,6 +453,7 @@ extern int gomp_debug_var;
 extern bool gomp_display_affinity_var;
 extern char *gomp_affinity_format_var;
 extern size_t gomp_affinity_format_len;
+extern uintptr_t gomp_def_allocator;
 extern int goacc_device_num;
 extern char *goacc_device_type;
 extern int goacc_default_dims[GOMP_DIM_MAX];
@@ -832,7 +836,7 @@ extern void gomp_display_affinity_place (char *, size_t, size_t *, int);
 
 /* affinity-fmt.c */
 
-extern void gomp_print_string (const char *str, size_t len);
+extern bool gomp_print_string (const char *str, size_t len);
 extern void gomp_set_affinity_format (const char *, size_t);
 extern void gomp_display_string (char *, size_t, size_t *, const char *,
 				 size_t);
@@ -1068,6 +1072,8 @@ typedef struct acc_dispatch_t
     __typeof (GOMP_OFFLOAD_openacc_async_host2dev) *host2dev_func;
   } async;
 
+  __typeof (GOMP_OFFLOAD_openacc_get_property) *get_property_func;
+
   /* NVIDIA target specific routines.  */
   struct {
     __typeof (GOMP_OFFLOAD_openacc_cuda_get_current_device)
@@ -1113,7 +1119,6 @@ struct gomp_device_descr
   __typeof (GOMP_OFFLOAD_get_caps) *get_caps_func;
   __typeof (GOMP_OFFLOAD_get_type) *get_type_func;
   __typeof (GOMP_OFFLOAD_get_num_devices) *get_num_devices_func;
-  __typeof (GOMP_OFFLOAD_get_property) *get_property_func;
   __typeof (GOMP_OFFLOAD_init_device) *init_device_func;
   __typeof (GOMP_OFFLOAD_fini_device) *fini_device_func;
   __typeof (GOMP_OFFLOAD_version) *version_func;

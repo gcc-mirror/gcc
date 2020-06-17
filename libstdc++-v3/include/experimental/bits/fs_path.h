@@ -137,33 +137,33 @@ namespace __detail
 		     path>::type;
 
   template<typename _Source>
-    static _Source
+    inline _Source
     _S_range_begin(_Source __begin) { return __begin; }
 
   struct __null_terminated { };
 
   template<typename _Source>
-    static __null_terminated
+    inline __null_terminated
     _S_range_end(_Source) { return {}; }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    static const _CharT*
+    inline const _CharT*
     _S_range_begin(const basic_string<_CharT, _Traits, _Alloc>& __str)
     { return __str.data(); }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    static const _CharT*
+    inline const _CharT*
     _S_range_end(const basic_string<_CharT, _Traits, _Alloc>& __str)
     { return __str.data() + __str.size(); }
 
 #if __cplusplus >= 201402L
   template<typename _CharT, typename _Traits>
-    static const _CharT*
+    inline const _CharT*
     _S_range_begin(const basic_string_view<_CharT, _Traits>& __str)
     { return __str.data(); }
 
   template<typename _CharT, typename _Traits>
-    static const _CharT*
+    inline const _CharT*
     _S_range_end(const basic_string_view<_CharT, _Traits>& __str)
     { return __str.data() + __str.size(); }
 #endif
@@ -494,6 +494,13 @@ namespace __detail
     static string_type
     _S_convert_loc(const char* __first, const char* __last,
 		   const std::locale& __loc);
+
+    static string_type
+    _S_convert_loc(char* __first, char* __last, const std::locale& __loc)
+    {
+      return _S_convert_loc(const_cast<const char*>(__first),
+			    const_cast<const char*>(__last), __loc);
+    }
 
     template<typename _Iter>
       static string_type
@@ -1086,34 +1093,56 @@ namespace __detail
   inline std::u32string
   path::u32string() const { return string<char32_t>(); }
 
-#ifndef _GLIBCXX_FILESYSTEM_IS_WINDOWS
   template<typename _CharT, typename _Traits, typename _Allocator>
     inline std::basic_string<_CharT, _Traits, _Allocator>
     path::generic_string(const _Allocator& __a) const
-    { return string<_CharT, _Traits, _Allocator>(__a); }
+    {
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+      const _CharT __slash = is_same<_CharT, wchar_t>::value
+	? _CharT(L'/')
+	: _CharT('/'); // Assume value is correct for the encoding.
+#else
+      const _CharT __slash = _CharT('/');
+#endif
+      basic_string<_CharT, _Traits, _Allocator> __str(__a);
+      __str.reserve(_M_pathname.size());
+      bool __add_slash = false;
+      for (auto& __elem : *this)
+	{
+	  if (__elem._M_type == _Type::_Root_dir)
+	    {
+	      __str += __slash;
+	      continue;
+	    }
+	  if (__add_slash)
+	    __str += __slash;
+	  __str += __elem.string<_CharT, _Traits, _Allocator>(__a);
+	  __add_slash = __elem._M_type == _Type::_Filename;
+	}
+      return __str;
+    }
 
   inline std::string
-  path::generic_string() const { return string(); }
+  path::generic_string() const { return generic_string<char>(); }
 
 #if _GLIBCXX_USE_WCHAR_T
   inline std::wstring
-  path::generic_wstring() const { return wstring(); }
+  path::generic_wstring() const { return generic_string<wchar_t>(); }
 #endif
 
 #ifdef _GLIBCXX_USE_CHAR8_T
   inline std::u8string
-  path::generic_u8string() const { return u8string(); }
+  path::generic_u8string() const { return generic_string<char8_t>(); }
 #else
   inline std::string
-  path::generic_u8string() const { return u8string(); }
+  path::generic_u8string() const { return generic_string<char>(); }
 #endif
 
   inline std::u16string
-  path::generic_u16string() const { return u16string(); }
+  path::generic_u16string() const { return generic_string<char16_t>(); }
 
   inline std::u32string
-  path::generic_u32string() const { return u32string(); }
-#endif
+  path::generic_u32string() const { return generic_string<char32_t>(); }
 
   inline int
   path::compare(const string_type& __s) const { return compare(path(__s)); }

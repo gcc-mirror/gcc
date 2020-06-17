@@ -882,13 +882,13 @@ get_symbol_for_decl (tree decl)
 
 	 Iterate elements whether a symbol is already in m_global_symbols
 	 of not.  */
-        if (is_in_global_vars && !sym->m_emitted_to_brig)
-	  {
-	    for (unsigned i = 0; i < hsa_cfun->m_global_symbols.length (); i++)
-	      if (hsa_cfun->m_global_symbols[i] == sym)
-		return *slot;
-	    hsa_cfun->m_global_symbols.safe_push (sym);
-	  }
+      if (is_in_global_vars && !sym->m_emitted_to_brig)
+	{
+	  for (unsigned i = 0; i < hsa_cfun->m_global_symbols.length (); i++)
+	    if (hsa_cfun->m_global_symbols[i] == sym)
+	      return *slot;
+	  hsa_cfun->m_global_symbols.safe_push (sym);
+	}
 
       return *slot;
     }

@@ -17,5 +17,5 @@ static void *bar(__SIZE_TYPE__ n)
   return p;
 }
 
-/* { dg-final { scan-ipa-dump "Function f found to be malloc" "pure-const" } } */
-/* { dg-final { scan-ipa-dump "Function bar found to be malloc" "pure-const" } } */
+/* { dg-final { scan-ipa-dump "Function f/\[0-9+\]+ found to be malloc" "pure-const" } } */
+/* { dg-final { scan-ipa-dump "Function bar/\[0-9+\]+ found to be malloc" "pure-const" } } */

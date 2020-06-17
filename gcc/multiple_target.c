@@ -126,7 +126,7 @@ create_dispatcher_calls (struct cgraph_node *node)
       FOR_EACH_VEC_ELT (edges_to_redirect, i, e)
 	{
 	  e->redirect_callee (inode);
-	  e->redirect_call_stmt_to_callee ();
+	  cgraph_edge::redirect_call_stmt_to_callee (e);
 	}
 
       /* Redirect references.  */
@@ -178,10 +178,6 @@ create_dispatcher_calls (struct cgraph_node *node)
   node->externally_visible = false;
   node->forced_by_abi = false;
   node->set_section (NULL);
-  node->unique_name = ((node->resolution == LDPR_PREVAILING_DEF_IRONLY
-			|| node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
-		       && !flag_incremental_link);
-  node->resolution = LDPR_PREVAILING_DEF_IRONLY;
 
   DECL_ARTIFICIAL (node->decl) = 1;
   node->force_output = true;
@@ -501,7 +497,7 @@ redirect_to_specific_clone (cgraph_node *node)
 	      if (attribute_list_equal (attr_target, attr_target2))
 		{
 		  e->redirect_callee (callee);
-		  e->redirect_call_stmt_to_callee ();
+		  cgraph_edge::redirect_call_stmt_to_callee (e);
 		  break;
 		}
 	    }

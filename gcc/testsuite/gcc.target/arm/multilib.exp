@@ -40,7 +40,8 @@ proc multilib_config {profile} {
 proc check_multi_dir { gcc_opts multi_dir } {
     global tool
 
-    set gcc_output [${tool}_target_compile "--print-multi-directory $gcc_opts" "" "none" ""]
+    set options [list "additional_flags=[concat "--print-multi-directory" [gcc_opts]]"]
+    set gcc_output [${tool}_target_compile "" "" "none" $options]
     if { [string match "$multi_dir\n" $gcc_output] } {
 	pass "multilibdir $gcc_opts $multi_dir"
     } else {
@@ -799,6 +800,30 @@ if {[multilib_config "rmprofile"] } {
 	{-march=armv8-r+fp.sp -mfpu=auto -mfloat-abi=hard} "thumb/v7-r+fp.sp/hard"
 	{-march=armv8-r+crc+fp.sp -mfpu=auto -mfloat-abi=softfp} "thumb/v7-r+fp.sp/softfp"
 	{-march=armv8-r+crc+fp.sp -mfpu=auto -mfloat-abi=hard} "thumb/v7-r+fp.sp/hard"
+	{-march=armv8.1-m.main -mfpu=auto -mfloat-abi=soft} "thumb/v8-m.main/nofp"
+	{-march=armv8.1-m.main+dsp -mfpu=auto -mfloat-abi=soft} "thumb/v8-m.main/nofp"
+	{-march=armv8.1-m.main+dsp+fp -mfpu=auto -mfloat-abi=soft} "thumb/v8-m.main/nofp"
+	{-march=armv8.1-m.main+dsp+fp.dp -mfpu=auto -mfloat-abi=soft} "thumb/v8-m.main/nofp"
+	{-march=armv8.1-m.main -mfpu=auto -mfloat-abi=softfp} "thumb/v8-m.main/nofp"
+	{-march=armv8.1-m.main+dsp -mfpu=auto -mfloat-abi=softfp} "thumb/v8-m.main/nofp"
+	{-march=armv8.1-m.main+dsp+fp -mfpu=auto -mfloat-abi=softfp} "thumb/v8-m.main+fp/softfp"
+	{-march=armv8.1-m.main+dsp+fp.dp -mfpu=auto -mfloat-abi=softfp} "thumb/v8-m.main+dp/softfp"
+	{-march=armv8.1-m.main+dsp+fp -mfpu=auto -mfloat-abi=hard} "thumb/v8-m.main+fp/hard"
+	{-march=armv8.1-m.main+dsp+fp.dp -mfpu=auto -mfloat-abi=hard} "thumb/v8-m.main+dp/hard"
+	{-march=armv8.1-m.main+mve -mfpu=auto -mfloat-abi=soft} "thumb/v8-m.main/nofp"
+	{-march=armv8.1-m.main+mve.fp -mfpu=auto -mfloat-abi=soft} "thumb/v8-m.main/nofp"
+	{-march=armv8.1-m.main+mve -mfpu=auto -mfloat-abi=softfp} "thumb/v8-m.main/nofp"
+	{-march=armv8.1-m.main+mve.fp -mfpu=auto -mfloat-abi=softfp} "thumb/v8-m.main+fp/softfp"
+	{-march=armv8.1-m.main+mve -mfpu=auto -mfloat-abi=hard} "thumb/v8.1-m.main+mve/hard"
+	{-march=armv8.1-m.main+mve+fp -mfpu=auto -mfloat-abi=hard} "thumb/v8-m.main+fp/hard"
+	{-march=armv8.1-m.main+mve+fp -mfpu=auto -mfloat-abi=softfp} "thumb/v8-m.main+fp/softfp"
+	{-march=armv8.1-m.main+mve.fp -mfpu=auto -mfloat-abi=hard} "thumb/v8-m.main+fp/hard"
+	{-march=armv8.1-m.main+mve+fp.dp -mfpu=auto -mfloat-abi=soft} "thumb/v8-m.main/nofp"
+	{-march=armv8.1-m.main+mve.fp+fp.dp -mfpu=auto -mfloat-abi=soft} "thumb/v8-m.main/nofp"
+	{-march=armv8.1-m.main+mve+fp.dp -mfpu=auto -mfloat-abi=softfp} "thumb/v8-m.main+dp/softfp"
+	{-march=armv8.1-m.main+mve.fp+fp.dp -mfpu=auto -mfloat-abi=softfp} "thumb/v8-m.main+dp/softfp"
+	{-march=armv8.1-m.main+mve+fp.dp -mfpu=auto -mfloat-abi=hard} "thumb/v8-m.main+dp/hard"
+	{-march=armv8.1-m.main+mve.fp+fp.dp -mfpu=auto -mfloat-abi=hard} "thumb/v8-m.main+dp/hard"
     } {
 	check_multi_dir $opts $dir
     }

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *             Copyright (C) 1992-2019, Free Software Foundation, Inc.      *
+ *             Copyright (C) 1992-2020, Free Software Foundation, Inc.      *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1211,6 +1211,16 @@ personality_body (_Unwind_Action uw_phases,
 	}
       else
 	{
+#ifdef __ARM_EABI_UNWINDER__
+	  /* Though we do not use this field ourselves, initializing
+	     it is required by the ARM EH ABI before a personality
+	     function in phase1 returns _URC_HANDLER_FOUND, so that
+	     any personality function can use it in phase2 to test
+	     whether the handler frame was reached.  */
+	  uw_exception->barrier_cache.sp
+	    = _Unwind_GetGR (uw_context, UNWIND_STACK_REG);
+#endif
+
 #ifndef CERT
 	  /* Trigger the appropriate notification routines before the second
 	     phase starts, when the stack is still intact.  First install what

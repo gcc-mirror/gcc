@@ -257,7 +257,7 @@ func (t Time) Before(u Time) bool {
 
 // Equal reports whether t and u represent the same time instant.
 // Two times can be equal even if they are in different locations.
-// For example, 6:00 +0200 CEST and 4:00 UTC are Equal.
+// For example, 6:00 +0200 and 4:00 UTC are Equal.
 // See the documentation on the Time type for the pitfalls of using == with
 // Time values; most code should use Equal instead.
 func (t Time) Equal(u Time) bool {
@@ -1148,6 +1148,9 @@ func (t Time) Zone() (name string, offset int) {
 // Unix returns t as a Unix time, the number of seconds elapsed
 // since January 1, 1970 UTC. The result does not depend on the
 // location associated with t.
+// Unix-like operating systems often record time as a 32-bit
+// count of seconds, but since the method here returns a 64-bit
+// value it is valid for billions of years into the past or future.
 func (t Time) Unix() int64 {
 	return t.unixSec()
 }

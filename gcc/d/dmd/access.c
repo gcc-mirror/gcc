@@ -1,5 +1,5 @@
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -39,7 +39,7 @@ static Dsymbol *mostVisibleOverload(Dsymbol *s);
  */
 Prot getAccess(AggregateDeclaration *ad, Dsymbol *smember)
 {
-    Prot access_ret = Prot(PROTnone);
+    Prot access_ret = Prot(Prot::none);
 
     assert(ad->isStructDeclaration() || ad->isClassDeclaration());
     if (smember->toParent() == ad)
@@ -52,27 +52,27 @@ Prot getAccess(AggregateDeclaration *ad, Dsymbol *smember)
     }
     if (ClassDeclaration *cd = ad->isClassDeclaration())
     {
-        for (size_t i = 0; i < cd->baseclasses->dim; i++)
+        for (size_t i = 0; i < cd->baseclasses->length; i++)
         {
             BaseClass *b = (*cd->baseclasses)[i];
 
             Prot access = getAccess(b->sym, smember);
             switch (access.kind)
             {
-                case PROTnone:
+                case Prot::none:
                     break;
 
-                case PROTprivate:
-                    access_ret = Prot(PROTnone);  // private members of base class not accessible
+                case Prot::private_:
+                    access_ret = Prot(Prot::none);  // private members of base class not accessible
                     break;
 
-                case PROTpackage:
-                case PROTprotected:
-                case PROTpublic:
-                case PROTexport:
+                case Prot::package_:
+                case Prot::protected_:
+                case Prot::public_:
+                case Prot::export_:
                     // If access is to be tightened
-                    if (PROTpublic < access.kind)
-                        access = Prot(PROTpublic);
+                    if (Prot::public_ < access.kind)
+                        access = Prot(Prot::public_);
 
                     // Pick path with loosest access
                     if (access_ret.isMoreRestrictiveThan(access))
@@ -110,11 +110,11 @@ static bool isAccessible(
 
         if (ClassDeclaration *cdthis = dthis->isClassDeclaration())
         {
-            for (size_t i = 0; i < cdthis->baseclasses->dim; i++)
+            for (size_t i = 0; i < cdthis->baseclasses->length; i++)
             {
                 BaseClass *b = (*cdthis->baseclasses)[i];
                 Prot access = getAccess(b->sym, smember);
-                if (access.kind >= PROTprotected ||
+                if (access.kind >= Prot::protected_ ||
                     isAccessible(smember, sfunc, b->sym, cdscope))
                 {
                     return true;
@@ -128,7 +128,7 @@ static bool isAccessible(
         {
             if (ClassDeclaration *cdthis = dthis->isClassDeclaration())
             {
-                for (size_t i = 0; i < cdthis->baseclasses->dim; i++)
+                for (size_t i = 0; i < cdthis->baseclasses->length; i++)
                 {
                     BaseClass *b = (*cdthis->baseclasses)[i];
                     if (isAccessible(smember, sfunc, b->sym, cdscope))
@@ -164,17 +164,17 @@ bool checkAccess(AggregateDeclaration *ad, Loc loc, Scope *sc, Dsymbol *smember)
     if (smemberparent == ad)
     {
         access = smember->prot();
-        result = access.kind >= PROTpublic ||
+        result = access.kind >= Prot::public_ ||
                  hasPrivateAccess(ad, f) ||
                  isFriendOf(ad, cdscope) ||
-                 (access.kind == PROTpackage && hasPackageAccess(sc, smember)) ||
+                 (access.kind == Prot::package_ && hasPackageAccess(sc, smember)) ||
                  ad->getAccessModule() == sc->_module;
     }
-    else if ((access = getAccess(ad, smember)).kind >= PROTpublic)
+    else if ((access = getAccess(ad, smember)).kind >= Prot::public_)
     {
         result = true;
     }
-    else if (access.kind == PROTpackage && hasPackageAccess(sc, ad))
+    else if (access.kind == Prot::package_ && hasPackageAccess(sc, ad))
     {
         result = true;
     }
@@ -343,8 +343,8 @@ bool checkAccess(Loc loc, Scope *sc, Expression *e, Declaration *d)
     }
     if (!e)
     {
-        if ((d->prot().kind == PROTprivate && d->getAccessModule() != sc->_module) ||
-            (d->prot().kind == PROTpackage && !hasPackageAccess(sc, d)))
+        if ((d->prot().kind == Prot::private_ && d->getAccessModule() != sc->_module) ||
+            (d->prot().kind == Prot::package_ && !hasPackageAccess(sc, d)))
         {
             error(loc, "%s %s is not accessible from module %s",
                 d->kind(), d->toPrettyChars(), sc->_module->toChars());
@@ -392,7 +392,7 @@ bool checkAccess(Loc loc, Scope *sc, Package *p)
         return false;
     for (; sc; sc = sc->enclosing)
     {
-        if (sc->scopesym && sc->scopesym->isPackageAccessible(p, Prot(PROTprivate)))
+        if (sc->scopesym && sc->scopesym->isPackageAccessible(p, Prot(Prot::private_)))
             return false;
     }
     const char *name = p->toPrettyChars();
@@ -418,22 +418,23 @@ bool symbolIsVisible(Module *mod, Dsymbol *s)
 
     switch (s->prot().kind)
     {
-        case PROTundefined:
+        case Prot::undefined:
             return true;
-        case PROTnone:
+        case Prot::none:
             return false; // no access
-        case PROTprivate:
+        case Prot::private_:
             return s->getAccessModule() == mod;
-        case PROTpackage:
+        case Prot::package_:
             return s->getAccessModule() == mod || hasPackageAccess(mod, s);
-        case PROTprotected:
+        case Prot::protected_:
             return s->getAccessModule() == mod;
-        case PROTpublic:
-        case PROTexport:
+        case Prot::public_:
+        case Prot::export_:
             return true;
         default:
             assert(0);
     }
+    return false;
 }
 
 /**
@@ -459,22 +460,23 @@ bool symbolIsVisible(Scope *sc, Dsymbol *s)
 
     switch (s->prot().kind)
     {
-        case PROTundefined:
+        case Prot::undefined:
             return true;
-        case PROTnone:
+        case Prot::none:
             return false; // no access
-        case PROTprivate:
+        case Prot::private_:
             return sc->_module == s->getAccessModule();
-        case PROTpackage:
+        case Prot::package_:
             return sc->_module == s->getAccessModule() || hasPackageAccess(sc->_module, s);
-        case PROTprotected:
+        case Prot::protected_:
             return hasProtectedAccess(sc, s);
-        case PROTpublic:
-        case PROTexport:
+        case Prot::public_:
+        case Prot::export_:
             return true;
         default:
             assert(0);
     }
+    return false;
 }
 
 /**

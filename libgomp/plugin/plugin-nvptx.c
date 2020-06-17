@@ -1121,74 +1121,6 @@ GOMP_OFFLOAD_get_num_devices (void)
   return nvptx_get_num_devices ();
 }
 
-union gomp_device_property_value
-GOMP_OFFLOAD_get_property (int n, int prop)
-{
-  union gomp_device_property_value propval = { .val = 0 };
-
-  pthread_mutex_lock (&ptx_dev_lock);
-
-  if (n >= nvptx_get_num_devices () || n < 0 || ptx_devices[n] == NULL)
-    {
-      pthread_mutex_unlock (&ptx_dev_lock);
-      return propval;
-    }
-
-  struct ptx_device *ptx_dev = ptx_devices[n];
-  switch (prop)
-    {
-    case GOMP_DEVICE_PROPERTY_MEMORY:
-      {
-	size_t total_mem;
-
-	CUDA_CALL_ERET (propval, cuDeviceTotalMem, &total_mem, ptx_dev->dev);
-	propval.val = total_mem;
-      }
-      break;
-    case GOMP_DEVICE_PROPERTY_FREE_MEMORY:
-      {
-	size_t total_mem;
-	size_t free_mem;
-	CUdevice ctxdev;
-
-	CUDA_CALL_ERET (propval, cuCtxGetDevice, &ctxdev);
-	if (ptx_dev->dev == ctxdev)
-	  CUDA_CALL_ERET (propval, cuMemGetInfo, &free_mem, &total_mem);
-	else if (ptx_dev->ctx)
-	  {
-	    CUcontext old_ctx;
-
-	    CUDA_CALL_ERET (propval, cuCtxPushCurrent, ptx_dev->ctx);
-	    CUDA_CALL_ERET (propval, cuMemGetInfo, &free_mem, &total_mem);
-	    CUDA_CALL_ASSERT (cuCtxPopCurrent, &old_ctx);
-	  }
-	else
-	  {
-	    CUcontext new_ctx;
-
-	    CUDA_CALL_ERET (propval, cuCtxCreate, &new_ctx, CU_CTX_SCHED_AUTO,
-			    ptx_dev->dev);
-	    CUDA_CALL_ERET (propval, cuMemGetInfo, &free_mem, &total_mem);
-	    CUDA_CALL_ASSERT (cuCtxDestroy, new_ctx);
-	  }
-	propval.val = free_mem;
-      }
-      break;
-    case GOMP_DEVICE_PROPERTY_NAME:
-      propval.ptr = ptx_dev->name;
-      break;
-    case GOMP_DEVICE_PROPERTY_VENDOR:
-      propval.ptr = "Nvidia";
-      break;
-    case GOMP_DEVICE_PROPERTY_DRIVER:
-      propval.ptr = cuda_driver_version_s;
-      break;
-    }
-
-  pthread_mutex_unlock (&ptx_dev_lock);
-  return propval;
-}
-
 bool
 GOMP_OFFLOAD_init_device (int n)
 {
@@ -1818,6 +1750,76 @@ GOMP_OFFLOAD_openacc_async_dev2host (int ord, void *dst, const void *src,
   return true;
 }
 
+union goacc_property_value
+GOMP_OFFLOAD_openacc_get_property (int n, enum goacc_property prop)
+{
+  union goacc_property_value propval = { .val = 0 };
+
+  pthread_mutex_lock (&ptx_dev_lock);
+
+  if (n >= nvptx_get_num_devices () || n < 0 || ptx_devices[n] == NULL)
+    {
+      pthread_mutex_unlock (&ptx_dev_lock);
+      return propval;
+    }
+
+  struct ptx_device *ptx_dev = ptx_devices[n];
+  switch (prop)
+    {
+    case GOACC_PROPERTY_MEMORY:
+      {
+	size_t total_mem;
+
+	CUDA_CALL_ERET (propval, cuDeviceTotalMem, &total_mem, ptx_dev->dev);
+	propval.val = total_mem;
+      }
+      break;
+    case GOACC_PROPERTY_FREE_MEMORY:
+      {
+	size_t total_mem;
+	size_t free_mem;
+	CUdevice ctxdev;
+
+	CUDA_CALL_ERET (propval, cuCtxGetDevice, &ctxdev);
+	if (ptx_dev->dev == ctxdev)
+	  CUDA_CALL_ERET (propval, cuMemGetInfo, &free_mem, &total_mem);
+	else if (ptx_dev->ctx)
+	  {
+	    CUcontext old_ctx;
+
+	    CUDA_CALL_ERET (propval, cuCtxPushCurrent, ptx_dev->ctx);
+	    CUDA_CALL_ERET (propval, cuMemGetInfo, &free_mem, &total_mem);
+	    CUDA_CALL_ASSERT (cuCtxPopCurrent, &old_ctx);
+	  }
+	else
+	  {
+	    CUcontext new_ctx;
+
+	    CUDA_CALL_ERET (propval, cuCtxCreate, &new_ctx, CU_CTX_SCHED_AUTO,
+			    ptx_dev->dev);
+	    CUDA_CALL_ERET (propval, cuMemGetInfo, &free_mem, &total_mem);
+	    CUDA_CALL_ASSERT (cuCtxDestroy, new_ctx);
+	  }
+	propval.val = free_mem;
+      }
+      break;
+    case GOACC_PROPERTY_NAME:
+      propval.ptr = ptx_dev->name;
+      break;
+    case GOACC_PROPERTY_VENDOR:
+      propval.ptr = "Nvidia";
+      break;
+    case GOACC_PROPERTY_DRIVER:
+      propval.ptr = cuda_driver_version_s;
+      break;
+    default:
+      break;
+    }
+
+  pthread_mutex_unlock (&ptx_dev_lock);
+  return propval;
+}
+
 /* Adjust launch dimensions: pick good values for number of blocks and warps
    and ensure that number of warps does not exceed CUDA limits as well as GCC's
    own limits.  */
@@ -1929,9 +1931,4 @@ GOMP_OFFLOAD_run (int ord, void *tgt_fn, void *tgt_vars, void **args)
   nvptx_stacks_free (stacks, teams * threads);
 }
 
-void
-GOMP_OFFLOAD_async_run (int ord, void *tgt_fn, void *tgt_vars, void **args,
-			void *async_data)
-{
-  GOMP_PLUGIN_fatal ("GOMP_OFFLOAD_async_run unimplemented");
-}
+/* TODO: Implement GOMP_OFFLOAD_async_run. */

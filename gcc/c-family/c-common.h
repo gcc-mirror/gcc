@@ -189,6 +189,9 @@ enum rid
   /* C++ concepts */
   RID_CONCEPT, RID_REQUIRES,
 
+  /* C++ coroutines */
+  RID_CO_AWAIT, RID_CO_YIELD, RID_CO_RETURN,
+
   /* C++ transactional memory.  */
   RID_ATOMIC_NOEXCEPT, RID_ATOMIC_CANCEL, RID_SYNCHRONIZED,
 
@@ -433,9 +436,11 @@ extern machine_mode c_default_pointer_mode;
 #define D_TRANSMEM	0X0800	/* C++ transactional memory TS.  */
 #define D_CXX_CHAR8_T	0X1000	/* In C++, only with -fchar8_t.  */
 #define D_CXX20		0x2000  /* In C++, C++20 only.  */
+#define D_CXX_COROUTINES 0x4000  /* In C++, only with coroutines.  */
 
 #define D_CXX_CONCEPTS_FLAGS D_CXXONLY | D_CXX_CONCEPTS
 #define D_CXX_CHAR8_T_FLAGS D_CXXONLY | D_CXX_CHAR8_T
+#define D_CXX_COROUTINES_FLAGS (D_CXXONLY | D_CXX_COROUTINES)
 
 /* The reserved keyword table.  */
 extern const struct c_common_resword c_common_reswords[];
@@ -715,8 +720,8 @@ enum cxx_dialect {
   cxx14,
   /* C++17 */
   cxx17,
-  /* C++2a (C++20?) */
-  cxx2a
+  /* C++20 */
+  cxx20
 };
 
 /* The C++ dialect being used. C++98 is the default.  */
@@ -779,8 +784,7 @@ enum conversion_safety {
   SAFE_CONVERSION = 0,
   /* Another type of conversion with problems.  */
   UNSAFE_OTHER,
-  /* Conversion between signed and unsigned integers
-     which are all warned about immediately, so this is unused.  */
+  /* Conversion between signed and unsigned integers.  */
   UNSAFE_SIGN,
   /* Conversions that reduce the precision of reals including conversions
      from reals to integers.  */
@@ -849,8 +853,7 @@ extern tree c_common_signed_type (tree);
 extern tree c_common_signed_or_unsigned_type (int, tree);
 extern void c_common_init_ts (void);
 extern tree c_build_bitfield_integer_type (unsigned HOST_WIDE_INT, int);
-extern enum conversion_safety unsafe_conversion_p (location_t, tree, tree, tree,
-						   bool);
+extern enum conversion_safety unsafe_conversion_p (tree, tree, tree, bool);
 extern bool decl_with_nonnull_addr_p (const_tree);
 extern tree c_fully_fold (tree, bool, bool *, bool = false);
 extern tree c_wrap_maybe_const (tree, bool);
@@ -1193,7 +1196,7 @@ extern void c_finish_omp_taskyield (location_t);
 extern tree c_finish_omp_for (location_t, enum tree_code, tree, tree, tree,
 			      tree, tree, tree, tree, bool);
 extern bool c_omp_check_loop_iv (tree, tree, walk_tree_lh);
-extern bool c_omp_check_loop_iv_exprs (location_t, tree, tree, tree, tree,
+extern bool c_omp_check_loop_iv_exprs (location_t, tree, int, tree, tree, tree,
 				       walk_tree_lh);
 extern tree c_finish_oacc_wait (location_t, tree, tree);
 extern tree c_oacc_split_loop_clauses (tree, tree *, bool);
@@ -1203,6 +1206,7 @@ extern tree c_omp_declare_simd_clauses_to_numbers (tree, tree);
 extern void c_omp_declare_simd_clauses_to_decls (tree, tree);
 extern bool c_omp_predefined_variable (tree);
 extern enum omp_clause_default_kind c_omp_predetermined_sharing (tree);
+extern enum omp_clause_defaultmap_kind c_omp_predetermined_mapping (tree);
 extern tree c_omp_check_context_selector (location_t, tree);
 extern void c_omp_mark_declare_variant (location_t, tree, tree);
 extern const char *c_omp_map_clause_name (tree, bool);

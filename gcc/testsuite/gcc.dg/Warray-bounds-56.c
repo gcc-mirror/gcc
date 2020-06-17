@@ -42,8 +42,8 @@ struct Flex f3 = { 3, { 1, 2, 3 } };
 
 NOIPA void test_strcpy_flexarray (void)
 {
-  T (S (0), fx);                // { dg-bogus "\\\[-Warray-bounds" "pr92815" { xfail *-*-*} }
-  T (S (9), fx);                // { dg-bogus "\\\[-Warray-bounds" "pr92815" { xfail *-*-*} }
+  T (S (0), fx);                // { dg-bogus "\\\[-Warray-bounds" "pr92815" }
+  T (S (9), fx);                // { dg-bogus "\\\[-Warray-bounds" "pr92815" }
 
   T (S (0), f1);
   T (S (1), f1);                // { dg-warning "\\\[-Warray-bounds" }

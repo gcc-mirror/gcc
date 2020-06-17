@@ -118,8 +118,9 @@ extern opt_machine_mode default_vectorize_related_mode (machine_mode,
 extern opt_machine_mode default_get_mask_mode (machine_mode);
 extern bool default_empty_mask_is_expensive (unsigned);
 extern void *default_init_cost (class loop *);
-extern unsigned default_add_stmt_cost (void *, int, enum vect_cost_for_stmt,
-				       class _stmt_vec_info *, int,
+extern unsigned default_add_stmt_cost (class vec_info *, void *, int,
+				       enum vect_cost_for_stmt,
+				       class _stmt_vec_info *, tree, int,
 				       enum vect_cost_model_location);
 extern void default_finish_cost (void *, unsigned *, unsigned *, unsigned *);
 extern void default_destroy_cost_data (void *);
@@ -185,6 +186,7 @@ extern tree default_emutls_var_init (tree, tree, tree);
 extern unsigned int default_hard_regno_nregs (unsigned int, machine_mode);
 extern bool default_hard_regno_scratch_ok (unsigned int);
 extern bool default_mode_dependent_address_p (const_rtx, addr_space_t);
+extern bool default_new_address_profitable_p (rtx, rtx_insn *, rtx);
 extern bool default_target_option_valid_attribute_p (tree, tree, tree, int);
 extern bool default_target_option_pragma_parse (tree, tree);
 extern bool default_target_can_inline_p (tree, tree);

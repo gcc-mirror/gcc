@@ -104,6 +104,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/override.m4 \
 	$(top_srcdir)/../config/stdint.m4 \
+	$(top_srcdir)/../config/toolexeclibdir.m4 \
 	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
 	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
 	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../libtool.m4 \
@@ -129,6 +130,7 @@ am__objects_1 = sancov_flags.lo sanitizer_allocator.lo \
 	sanitizer_linux_libcdep.lo sanitizer_linux_s390.lo \
 	sanitizer_mac.lo sanitizer_mac_libcdep.lo sanitizer_netbsd.lo \
 	sanitizer_openbsd.lo sanitizer_persistent_allocator.lo \
+	sanitizer_platform_limits_freebsd.lo \
 	sanitizer_platform_limits_linux.lo \
 	sanitizer_platform_limits_openbsd.lo \
 	sanitizer_platform_limits_posix.lo \
@@ -372,7 +374,7 @@ AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic \
 	-Wno-long-long -fPIC -fno-builtin -fno-exceptions -fno-rtti \
 	-fomit-frame-pointer -funwind-tables -fvisibility=hidden \
 	-Wno-variadic-macros $(LIBSTDCXX_RAW_CXX_CXXFLAGS) \
-	-std=gnu++11 $(EXTRA_CXXFLAGS) $(am__append_1)
+	-std=gnu++14 $(EXTRA_CXXFLAGS) $(am__append_1)
 AM_CCASFLAGS = $(EXTRA_ASFLAGS)
 ACLOCAL_AMFLAGS = -I m4
 noinst_LTLIBRARIES = libsanitizer_common.la
@@ -400,6 +402,7 @@ sanitizer_common_files = \
 	sanitizer_netbsd.cpp \
 	sanitizer_openbsd.cpp \
 	sanitizer_persistent_allocator.cpp \
+	sanitizer_platform_limits_freebsd.cpp \
 	sanitizer_platform_limits_linux.cpp \
 	sanitizer_platform_limits_openbsd.cpp \
 	sanitizer_platform_limits_posix.cpp \
@@ -556,6 +559,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_netbsd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_openbsd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_persistent_allocator.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_platform_limits_freebsd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_platform_limits_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_platform_limits_openbsd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_platform_limits_posix.Plo@am__quote@

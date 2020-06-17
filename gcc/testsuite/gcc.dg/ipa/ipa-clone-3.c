@@ -34,8 +34,10 @@ int recur_fn (struct V * __restrict v)
 
 int main ()
 {
-  struct V v = {1, 3};
+  struct V v;
 
+  v.f0 = 1;
+  v.f1 = 3;
   return recur_fn (&v);
 }
 

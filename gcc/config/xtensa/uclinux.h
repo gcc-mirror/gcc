@@ -51,10 +51,15 @@ along with GCC; see the file COPYING3.  If not see
   %{mlongcalls:--longcalls} \
   %{mno-longcalls:--no-longcalls} \
   %{mauto-litpools:--auto-litpools} \
-  %{mno-auto-litpools:--no-auto-litpools}"
+  %{mno-auto-litpools:--no-auto-litpools} \
+  %{mabi=windowed:--abi-windowed} \
+  %{mabi=call0:--abi-call0}"
 
 #undef LINK_SPEC
-#define LINK_SPEC "%{!no-elf2flt:%{!elf2flt*:-elf2flt}}"
+#define LINK_SPEC \
+ "%{!no-elf2flt:%{!elf2flt*:-elf2flt}} \
+  %{mabi=windowed:--abi-windowed} \
+  %{mabi=call0:--abi-call0}"
 
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX	"."

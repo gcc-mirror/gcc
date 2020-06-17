@@ -1024,13 +1024,11 @@ LINEMAPS_LAST_ALLOCATED_MACRO_MAP (const line_maps *set)
   return (line_map_macro *)LINEMAPS_LAST_ALLOCATED_MAP (set, true);
 }
 
-extern location_t get_combined_adhoc_loc (class line_maps *,
-					       location_t,
-					       source_range,
-					       void *);
+extern location_t get_combined_adhoc_loc (line_maps *, location_t,
+					  source_range, void *);
 extern void *get_data_from_adhoc_loc (const line_maps *, location_t);
 extern location_t get_location_from_adhoc_loc (const line_maps *,
-						    location_t);
+					       location_t);
 
 extern source_range get_range_from_loc (line_maps *set, location_t loc);
 
@@ -1043,8 +1041,7 @@ pure_location_p (line_maps *set, location_t loc);
 /* Given location LOC within SET, strip away any packed range information
    or ad-hoc information.  */
 
-extern location_t get_pure_location (line_maps *set,
-					  location_t loc);
+extern location_t get_pure_location (line_maps *set, location_t loc);
 
 /* Combine LOC and BLOCK, giving a combined adhoc location.  */
 
@@ -1432,6 +1429,7 @@ semi_embedded_vec<T, NUM_EMBEDDED>::truncate (int len)
 }
 
 class fixit_hint;
+class diagnostic_path;
 
 /* A "rich" source code location, for use when printing diagnostics.
    A rich_location has one or more carets&ranges, where the carets
@@ -1727,6 +1725,10 @@ class rich_location
     return !m_fixits_cannot_be_auto_applied;
   }
 
+  /* An optional path through the code.  */
+  const diagnostic_path *get_path () const { return m_path; }
+  void set_path (const diagnostic_path *path) { m_path = path; }
+
 private:
   bool reject_impossible_fixit (location_t where);
   void stop_supporting_fixits ();
@@ -1751,6 +1753,8 @@ protected:
 
   bool m_seen_impossible_fixit;
   bool m_fixits_cannot_be_auto_applied;
+
+  const diagnostic_path *m_path;
 };
 
 /* A struct for the result of range_label::get_text: a NUL-terminated buffer

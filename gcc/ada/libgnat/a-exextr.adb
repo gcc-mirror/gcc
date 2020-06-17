@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,11 +43,22 @@ package body Exception_Traces is
    --  Convenient shortcut
 
    type Exception_Action is access procedure (E : Exception_Occurrence);
+   pragma Favor_Top_Level (Exception_Action);
+
    Global_Action : Exception_Action := null;
+   pragma Atomic (Global_Action);
    pragma Export
      (Ada, Global_Action, "__gnat_exception_actions_global_action");
    --  Global action, executed whenever an exception is raised.  Changing the
    --  export name must be coordinated with code in g-excact.adb.
+
+   Global_Unhandled_Action : Exception_Action := null;
+   pragma Atomic (Global_Unhandled_Action);
+   pragma Export
+     (Ada, Global_Unhandled_Action,
+      "__gnat_exception_actions_global_unhandled_action");
+   --  Global action, executed whenever an unhandled exception is raised.
+   --  Changing the export name must be coordinated with code in g-excact.adb.
 
    Raise_Hook_Initialized : Boolean := False;
    pragma Export
@@ -77,6 +88,11 @@ package body Exception_Traces is
    ----------------------
 
    procedure Notify_Exception (Excep : EOA; Is_Unhandled : Boolean) is
+      --  Save actions locally to avoid any race condition that would
+      --  reset them to null.
+      Action           : constant Exception_Action := Global_Action;
+      Unhandled_Action : constant Exception_Action := Global_Unhandled_Action;
+
    begin
       --  Output the exception information required by the Exception_Trace
       --  configuration. Take care not to output information about internal
@@ -119,8 +135,12 @@ package body Exception_Traces is
          To_Action (Exception_Data_Ptr (Excep.Id).Raise_Hook) (Excep.all);
       end if;
 
-      if Global_Action /= null then
-         Global_Action (Excep.all);
+      if Is_Unhandled and Unhandled_Action /= null then
+         Unhandled_Action (Excep.all);
+      end if;
+
+      if Action /= null then
+         Action (Excep.all);
       end if;
    end Notify_Exception;
 

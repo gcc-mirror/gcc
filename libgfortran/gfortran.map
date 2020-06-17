@@ -1606,4 +1606,26 @@ GFORTRAN_9.2 {
 GFORTRAN_10 {
   global:
   _gfortran_os_error_at;
+  _gfortran_sind_r4;
+  _gfortran_sind_r8;
+  _gfortran_sind_r10;
+  _gfortran_sind_r16;
+  _gfortran_cosd_r4;
+  _gfortran_cosd_r8;
+  _gfortran_cosd_r10;
+  _gfortran_cosd_r16;
+  _gfortran_tand_r4;
+  _gfortran_tand_r8;
+  _gfortran_tand_r10;
+  _gfortran_tand_r16;
 } GFORTRAN_9.2;
+
+GFORTRAN_10.2 {
+  global:
+  _gfortran_findloc0_c10;
+  _gfortran_mfindloc0_c10;
+  _gfortran_sfindloc0_c10;
+  _gfortran_findloc1_c10;
+  _gfortran_mfindloc1_c10;
+  _gfortran_sfindloc1_c10;
+} GFORTRAN_10;

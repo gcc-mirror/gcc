@@ -1050,7 +1050,7 @@ expand_binop_directly (enum insn_code icode, machine_mode mode, optab binoptab,
   commutative_p = commutative_optab_p (binoptab);
   if (commutative_p
       && GET_MODE (xop0) != xmode0 && GET_MODE (xop1) != xmode1
-      && GET_MODE (xop0) == xmode1 && GET_MODE (xop1) == xmode1)
+      && GET_MODE (xop0) == xmode1 && GET_MODE (xop1) == xmode0)
     std::swap (xop0, xop1);
 
   /* If we are optimizing, force expensive constants into a register.  */
@@ -2889,8 +2889,11 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
 	  if (temp)
 	    return temp;
 
+	  /* We do not provide a 128-bit bswap in libgcc so force the use of
+	     a double bswap for 64-bit targets.  */
 	  if (GET_MODE_SIZE (int_mode) == 2 * UNITS_PER_WORD
-	      && optab_handler (unoptab, word_mode) != CODE_FOR_nothing)
+	      && (UNITS_PER_WORD == 8
+		  || optab_handler (unoptab, word_mode) != CODE_FOR_nothing))
 	    {
 	      temp = expand_doubleword_bswap (mode, op0, target);
 	      if (temp)
@@ -5627,6 +5630,8 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
       if (shift_amt)
 	{
 	  class expand_operand ops[3];
+	  if (shift_amt == const0_rtx)
+	    return v2;
 	  if (shift_code != CODE_FOR_nothing)
 	    {
 	      create_output_operand (&ops[0], target, mode);

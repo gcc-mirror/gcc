@@ -421,14 +421,6 @@ ssa_prop_init (void)
 	e->flags &= ~EDGE_EXECUTABLE;
     }
   uid_to_stmt.safe_grow (gimple_stmt_max_uid (cfun));
-
-  /* Seed the algorithm by adding the successors of the entry block to the
-     edge worklist.  */
-  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
-    {
-      e->flags &= ~EDGE_EXECUTABLE;
-      add_control_edge (e);
-    }
 }
 
 
@@ -758,7 +750,16 @@ ssa_propagation_engine::ssa_propagate (void)
 
   /* Iterate until the worklists are empty.  We iterate both blocks
      and stmts in RPO order, using sets of two worklists to first
-     complete the current iteration before iterating over backedges.  */
+     complete the current iteration before iterating over backedges.
+     Seed the algorithm by adding the successors of the entry block to the
+     edge worklist.  */
+  edge e;
+  edge_iterator ei;
+  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
+    {
+      e->flags &= ~EDGE_EXECUTABLE;
+      add_control_edge (e);
+    }
   while (1)
     {
       int next_block_order = (bitmap_empty_p (cfg_blocks)
@@ -991,13 +992,19 @@ public:
     bitmap need_eh_cleanup;
 
     class substitute_and_fold_engine *substitute_and_fold_engine;
+
 private:
-    void massage_new_statments (gimple_stmt_iterator old_gsi,
-				gimple_stmt_iterator new_gsi);
+    void foreach_new_stmt_in_bb (gimple_stmt_iterator old_gsi,
+				 gimple_stmt_iterator new_gsi);
 };
 
+/* Call post_new_stmt for each each new statement that has been added
+   to the current BB.  OLD_GSI is the statement iterator before the BB
+   changes ocurred.  NEW_GSI is the iterator which may contain new
+   statements.  */
+
 void
-substitute_and_fold_dom_walker::massage_new_statments
+substitute_and_fold_dom_walker::foreach_new_stmt_in_bb
 				(gimple_stmt_iterator old_gsi,
 				 gimple_stmt_iterator new_gsi)
 {
@@ -1032,7 +1039,8 @@ substitute_and_fold_engine::propagate_into_phi_args (basic_block bb)
 	      || virtual_operand_p (arg))
 	    continue;
 	  tree val = get_value (arg, phi);
-	  if (val && may_propagate_copy (arg, val))
+	  if (val && is_gimple_min_invariant (val)
+	      && may_propagate_copy (arg, val))
 	    propagate_value (use_p, val);
 	}
     }
@@ -1187,7 +1195,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
       /* Now cleanup.  */
       if (did_replace)
 	{
-	  massage_new_statments (prev_gsi, i);
+	  foreach_new_stmt_in_bb (prev_gsi, i);
 
 	  /* If we cleaned up EH information from the statement,
 	     remove EH edges.  */

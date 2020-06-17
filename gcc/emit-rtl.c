@@ -939,11 +939,13 @@ validate_subreg (machine_mode omode, machine_mode imode,
 	   && GET_MODE_INNER (imode) == omode)
     ;
   /* ??? x86 sse code makes heavy use of *paradoxical* vector subregs,
-     i.e. (subreg:V4SF (reg:SF) 0).  This surely isn't the cleanest way to
-     represent this.  It's questionable if this ought to be represented at
-     all -- why can't this all be hidden in post-reload splitters that make
-     arbitrarily mode changes to the registers themselves.  */
-  else if (VECTOR_MODE_P (omode) && GET_MODE_INNER (omode) == imode)
+     i.e. (subreg:V4SF (reg:SF) 0) or (subreg:V4SF (reg:V2SF) 0).  This
+     surely isn't the cleanest way to represent this.  It's questionable
+     if this ought to be represented at all -- why can't this all be hidden
+     in post-reload splitters that make arbitrarily mode changes to the
+     registers themselves.  */
+  else if (VECTOR_MODE_P (omode)
+	   && GET_MODE_INNER (omode) == GET_MODE_INNER (imode))
     ;
   /* Subregs involving floating point modes are not allowed to
      change size.  Therefore (subreg:DI (reg:DF) 0) is fine, but
@@ -2065,8 +2067,10 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	  new_size = DECL_SIZE_UNIT (t);
 	}
 
-      /* ???  If we end up with a constant here do record a MEM_EXPR.  */
-      else if (CONSTANT_CLASS_P (t))
+      /* ???  If we end up with a constant or a descriptor do not
+	 record a MEM_EXPR.  */
+      else if (CONSTANT_CLASS_P (t)
+	       || TREE_CODE (t) == CONSTRUCTOR)
 	;
 
       /* If this is a field reference, record it.  */
@@ -2080,59 +2084,12 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	    new_size = DECL_SIZE_UNIT (TREE_OPERAND (t, 1));
 	}
 
-      /* If this is an array reference, look for an outer field reference.  */
-      else if (TREE_CODE (t) == ARRAY_REF)
+      /* Else record it.  */
+      else
 	{
-	  tree off_tree = size_zero_node;
-	  /* We can't modify t, because we use it at the end of the
-	     function.  */
-	  tree t2 = t;
-
-	  do
-	    {
-	      tree index = TREE_OPERAND (t2, 1);
-	      tree low_bound = array_ref_low_bound (t2);
-	      tree unit_size = array_ref_element_size (t2);
-
-	      /* We assume all arrays have sizes that are a multiple of a byte.
-		 First subtract the lower bound, if any, in the type of the
-		 index, then convert to sizetype and multiply by the size of
-		 the array element.  */
-	      if (! integer_zerop (low_bound))
-		index = fold_build2 (MINUS_EXPR, TREE_TYPE (index),
-				     index, low_bound);
-
-	      off_tree = size_binop (PLUS_EXPR,
-				     size_binop (MULT_EXPR,
-						 fold_convert (sizetype,
-							       index),
-						 unit_size),
-				     off_tree);
-	      t2 = TREE_OPERAND (t2, 0);
-	    }
-	  while (TREE_CODE (t2) == ARRAY_REF);
-
-	  if (DECL_P (t2)
-	      || (TREE_CODE (t2) == COMPONENT_REF
-		  /* For trailing arrays t2 doesn't have a size that
-		     covers all valid accesses.  */
-		  && ! array_at_struct_end_p (t)))
-	    {
-	      attrs.expr = t2;
-	      attrs.offset_known_p = false;
-	      if (poly_int_tree_p (off_tree, &attrs.offset))
-		{
-		  attrs.offset_known_p = true;
-		  apply_bitpos = bitpos;
-		}
-	    }
-	  /* Else do not record a MEM_EXPR.  */
-	}
-
-      /* If this is an indirect reference, record it.  */
-      else if (TREE_CODE (t) == MEM_REF 
-	       || TREE_CODE (t) == TARGET_MEM_REF)
-	{
+	  gcc_assert (handled_component_p (t)
+		      || TREE_CODE (t) == MEM_REF
+		      || TREE_CODE (t) == TARGET_MEM_REF);
 	  attrs.expr = t;
 	  attrs.offset_known_p = true;
 	  attrs.offset = 0;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2007-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2007-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -295,6 +295,7 @@ is
             K      : Bit_Count;       --  Next decrement to exponent
 
          begin
+            K := 0;
             Mantissa := Random (Gen) / 2**Extra_Bits;
             R := Unsigned_32 (Mantissa mod 2**Extra_Bits);
             R_Bits := Extra_Bits;
@@ -403,10 +404,9 @@ is
 
       elsif Result_Subtype'Base'Size > 32 then
          declare
-            --  In the 64-bit case, we have to be careful, since not all 64-bit
-            --  unsigned values are representable in GNAT's root_integer type.
-            --  Ignore different-size warnings here since GNAT's handling
-            --  is correct.
+            --  In the 64-bit case, we have to be careful since not all 64-bit
+            --  unsigned values are representable in GNAT's universal integer.
+            --  Ignore unequal-size warnings since GNAT's handling is correct.
 
             pragma Warnings ("Z");
             function Conv_To_Unsigned is
@@ -422,7 +422,8 @@ is
 
          begin
             if N = 0 then
-               return Conv_To_Result (Conv_To_Unsigned (Min) + Random (Gen));
+               X := Random (Gen);
+               return Conv_To_Result (Conv_To_Unsigned (Min) + X);
 
             else
                Slop := Unsigned_64'Last rem N + 1;
@@ -436,28 +437,73 @@ is
             end if;
          end;
 
-      elsif Result_Subtype'Pos (Max) - Result_Subtype'Pos (Min) =
-                                                         2 ** 32 - 1
-      then
-         return Result_Subtype'Val
-           (Result_Subtype'Pos (Min) + Unsigned_32'Pos (Random (Gen)));
       else
          declare
-            N    : constant Unsigned_32 :=
-                     Unsigned_32 (Result_Subtype'Pos (Max) -
-                                    Result_Subtype'Pos (Min) + 1);
-            Slop : constant Unsigned_32 := Unsigned_32'Last rem N + 1;
-            X    : Unsigned_32;
+            --  In the 32-bit case, unlike the above case, we need to handle
+            --  both integer and enumeration types. If the values of the result
+            --  subtype are contiguous, then we can still use the above trick.
+            --  Otherwise we need to rely on 'Pos and 'Val in the computation,
+            --  which is more costly since it will thus be done in universal
+            --  integer. And ignore unequal-size warnings in this case too.
+
+            pragma Warnings ("Z");
+            function Conv_To_Unsigned is
+               new Unchecked_Conversion (Result_Subtype'Base, Unsigned_32);
+            function Conv_To_Result is
+               new Unchecked_Conversion (Unsigned_32, Result_Subtype'Base);
+            pragma Warnings ("z");
+
+            Contiguous : constant Boolean :=
+                              Result_Subtype'Pos (Result_Subtype'Last) -
+                                Result_Subtype'Pos (Result_Subtype'First)
+                                =
+                              Result_Subtype'Enum_Rep (Result_Subtype'Last) -
+                                Result_Subtype'Enum_Rep (Result_Subtype'First);
+
+            N, X, Slop : Unsigned_32;
 
          begin
-            loop
-               X := Random (Gen);
-               exit when Slop = N or else X <= Unsigned_32'Last - Slop;
-            end loop;
+            if Contiguous then
+               N := Conv_To_Unsigned (Max) - Conv_To_Unsigned (Min) + 1;
 
-            return
-              Result_Subtype'Val
-                (Result_Subtype'Pos (Min) + Unsigned_32'Pos (X rem N));
+               if N = 0 then
+                  X := Random (Gen);
+                  return Conv_To_Result (Conv_To_Unsigned (Min) + X);
+
+               else
+                  Slop := Unsigned_32'Last rem N + 1;
+
+                  loop
+                     X := Random (Gen);
+                     exit when Slop = N or else X <= Unsigned_32'Last - Slop;
+                  end loop;
+
+                  return Conv_To_Result (Conv_To_Unsigned (Min) + X rem N);
+               end if;
+
+            else
+               N := Unsigned_32 (Result_Subtype'Pos (Max) -
+                                   Result_Subtype'Pos (Min) + 1);
+
+               if N = 0 then
+                  X := Random (Gen);
+                  return
+                    Result_Subtype'Val
+                      (Result_Subtype'Pos (Min) + Unsigned_32'Pos (X));
+
+               else
+                  Slop := Unsigned_32'Last rem N + 1;
+
+                  loop
+                     X := Random (Gen);
+                     exit when Slop = N or else X <= Unsigned_32'Last - Slop;
+                  end loop;
+
+                  return
+                    Result_Subtype'Val
+                      (Result_Subtype'Pos (Min) + Unsigned_32'Pos (X rem N));
+               end if;
+            end if;
          end;
       end if;
    end Random_Discrete;

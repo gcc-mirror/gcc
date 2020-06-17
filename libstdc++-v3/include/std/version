@@ -50,7 +50,6 @@
 #define __cpp_lib_result_of_sfinae 201210
 
 #if _GLIBCXX_HOSTED
-# define __cpp_lib_allocator_is_always_equal 201411
 # define __cpp_lib_allocator_traits_is_always_equal 201411
 # define __cpp_lib_shared_ptr_arrays 201611L
 #endif
@@ -69,6 +68,9 @@
 
 #if __cplusplus >= 201402L
 // c++14
+#if __cpp_impl_coroutine
+# define __cpp_lib_coroutine 201902L
+#endif
 #define __cpp_lib_integral_constant_callable 201304
 #define __cpp_lib_is_final 201402L
 #define __cpp_lib_transformation_trait_aliases 201304
@@ -120,13 +122,14 @@
 #if _GLIBCXX_HOSTED
 #define __cpp_lib_any 201606L
 #define __cpp_lib_apply 201603
-#define __cpp_lib_array_constexpr 201803
+#define __cpp_lib_array_constexpr 201803L
 #define __cpp_lib_as_const 201510
 #define __cpp_lib_boyer_moore_searcher 201603
 #define __cpp_lib_chrono 201611
 #define __cpp_lib_clamp 201603
-#define __cpp_lib_constexpr_char_traits 201611
+#define __cpp_lib_constexpr_char_traits 201611L
 #define __cpp_lib_enable_shared_from_this 201603
+#define __cpp_lib_execution 201902L // FIXME: should be 201603L
 #define __cpp_lib_filesystem 201703
 #define __cpp_lib_gcd 201606
 #define __cpp_lib_gcd_lcm 201606
@@ -134,7 +137,6 @@
 #define __cpp_lib_invoke 201411L
 #define __cpp_lib_lcm 201606
 #define __cpp_lib_make_from_tuple 201606
-#define __cpp_lib_map_insertion 201411
 #define __cpp_lib_map_try_emplace 201411
 #define __cpp_lib_math_special_functions 201603L
 #ifdef _GLIBCXX_HAS_GTHREADS
@@ -146,6 +148,7 @@
 #define __cpp_lib_nonmember_container_access 201411
 #define __cpp_lib_not_fn 201603
 #define __cpp_lib_optional 201606L
+#define __cpp_lib_parallel_algorithm 201603L
 #define __cpp_lib_raw_memory_algorithms 201606L
 #define __cpp_lib_sample 201603
 #ifdef _GLIBCXX_HAS_GTHREADS
@@ -153,47 +156,75 @@
 # define __cpp_lib_shared_mutex 201505
 #endif
 #define __cpp_lib_shared_ptr_weak_type 201606
-#define __cpp_lib_string_view 201803
+#define __cpp_lib_string_view 201803L
 // #define __cpp_lib_to_chars 201611L
-#define __cpp_lib_unordered_map_insertion 201411
 #define __cpp_lib_unordered_map_try_emplace 201411
 #define __cpp_lib_variant 201606L
-#define __cpp_lib_parallel_algorithm 201603L
 #endif
 
 #if __cplusplus > 201703L
 // c++2a
+#define __cpp_lib_atomic_flag_test 201907L
+#define __cpp_lib_atomic_float 201711L
 #define __cpp_lib_atomic_ref 201806L
+#define __cpp_lib_atomic_value_initialization 201911L
 #define __cpp_lib_bitops 201907L
 #define __cpp_lib_bounded_array_traits 201902L
-#if __cpp_concepts
-# define __cpp_lib_concepts 201806L
+// __cpp_lib_char8_t is defined in <bits/c++config.h>
+#if __cpp_concepts >= 201907L
+# define __cpp_lib_concepts 202002L
 #endif
 #if __cpp_impl_destroying_delete
 # define __cpp_lib_destroying_delete 201806L
 #endif
 #define __cpp_lib_endian 201907L
+#define __cpp_lib_int_pow2 202002L
 #ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
 # define __cpp_lib_is_constant_evaluated 201811L
 #endif
+#define __cpp_lib_is_nothrow_convertible 201806L
+#define __cpp_lib_remove_cvref 201711L
+#if __cpp_impl_three_way_comparison >= 201907L && __cpp_lib_concepts
+# define __cpp_lib_three_way_comparison 201907L
+#endif
+#define __cpp_lib_type_identity 201806L
+#define __cpp_lib_unwrap_ref 201811L
 
 #if _GLIBCXX_HOSTED
+#undef __cpp_lib_array_constexpr
+#undef __cpp_lib_constexpr_char_traits
+#define __cpp_lib_array_constexpr 201811L
+#define __cpp_lib_assume_aligned 201811L
 #define __cpp_lib_bind_front 201907L
+// FIXME: #define __cpp_lib_execution 201902L
+#define __cpp_lib_integer_comparison_functions 202002L
 #define __cpp_lib_constexpr_algorithms 201806L
+#define __cpp_lib_constexpr_char_traits 201811L
 #define __cpp_lib_constexpr_complex 201711L
 #define __cpp_lib_constexpr_dynamic_alloc 201907L
-#define __cpp_lib_constexpr_invoke 201907L
-#define __cpp_lib_erase_if 201900L
+#define __cpp_lib_constexpr_functional 201907L
+#define __cpp_lib_constexpr_iterator 201811L
+#define __cpp_lib_constexpr_memory 201811L
+#define __cpp_lib_constexpr_numeric 201911L
+#define __cpp_lib_constexpr_string_view 201811L
+#define __cpp_lib_constexpr_tuple 201811L
+#define __cpp_lib_constexpr_utility 201811L
+#define __cpp_lib_erase_if 202002L
 #define __cpp_lib_interpolate 201902L
 #ifdef _GLIBCXX_HAS_GTHREADS
-# define __cpp_lib_jthread 201907L
+# define __cpp_lib_jthread 201911L
 #endif
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_math_constants 201907L
-#define __cpp_lib_span 201902L
-#if __cpp_impl_three_way_comparison >= 201907L && __cpp_lib_concepts
-# define __cpp_lib_three_way_comparison 201711L
+#define __cpp_lib_polymorphic_allocator 201902L
+#if __cpp_lib_concepts
+# define __cpp_lib_ranges 201911L
 #endif
+#define __cpp_lib_shift 201806L
+#define __cpp_lib_span 202002L
+#define __cpp_lib_ssize 201902L
+#define __cpp_lib_starts_ends_with 201711L
+#define __cpp_lib_to_address 201711L
 #define __cpp_lib_to_array 201907L
 #endif
 #endif // C++2a

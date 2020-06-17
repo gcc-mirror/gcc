@@ -106,6 +106,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/override.m4 \
 	$(top_srcdir)/../config/stdint.m4 \
+	$(top_srcdir)/../config/toolexeclibdir.m4 \
 	$(top_srcdir)/../config/warnings.m4 \
 	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
 	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
@@ -414,7 +415,8 @@ PAT_N = $(word 2,$(PAT_SPLIT))
 PAT_S = $(word 3,$(PAT_SPLIT))
 IFUNC_DEF = -DIFUNC_ALT=$(PAT_S)
 IFUNC_OPT = $(word $(PAT_S),$(IFUNC_OPTIONS))
-M_DEPS = -MT $@ -MD -MP -MF $(DEPDIR)/$(@F).Ppo
+@AMDEP_TRUE@M_DEPS = -MT $@ -MD -MP -MF $(DEPDIR)/$(@F).Ppo
+@AMDEP_FALSE@M_DEPS = 
 M_SIZE = -DN=$(PAT_N)
 M_IFUNC = $(if $(PAT_S),$(IFUNC_DEF) $(IFUNC_OPT))
 M_FILE = $(PAT_BASE)_n.c

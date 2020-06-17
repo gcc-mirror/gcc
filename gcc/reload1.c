@@ -395,7 +395,6 @@ static void delete_output_reload (rtx_insn *, int, int, rtx);
 static void delete_address_reloads (rtx_insn *, rtx_insn *);
 static void delete_address_reloads_1 (rtx_insn *, rtx, rtx_insn *);
 static void inc_for_reload (rtx, rtx, rtx, poly_int64);
-static void add_auto_inc_notes (rtx_insn *, rtx);
 static void substitute (rtx *, const_rtx, rtx);
 static bool gen_reload_chain_without_interm_reg_p (int, int);
 static int reloads_conflict (int, int);
@@ -2607,8 +2606,9 @@ eliminate_regs_1 (rtx x, machine_mode mem_mode, rtx insn,
 		   structure of the insn in a way that reload can't handle.
 		   We special-case the commonest situation in
 		   eliminate_regs_in_insn, so just replace a PLUS with a
-		   PLUS here, unless inside a MEM.  */
-		if (mem_mode != 0
+		   PLUS here, unless inside a MEM.  In DEBUG_INSNs, it is
+		   always ok to replace a PLUS with just a REG.  */
+		if ((mem_mode != 0 || (insn && DEBUG_INSN_P (insn)))
 		    && CONST_INT_P (XEXP (x, 1))
 		    && known_eq (INTVAL (XEXP (x, 1)), -ep->previous_offset))
 		  return ep->to_rtx;
@@ -9068,30 +9068,5 @@ inc_for_reload (rtx reloadreg, rtx in, rtx value, poly_int64 inc_amount)
 						GET_MODE (reloadreg))));
       else
 	emit_insn (gen_sub2_insn (reloadreg, inc));
-    }
-}
-
-static void
-add_auto_inc_notes (rtx_insn *insn, rtx x)
-{
-  enum rtx_code code = GET_CODE (x);
-  const char *fmt;
-  int i, j;
-
-  if (code == MEM && auto_inc_p (XEXP (x, 0)))
-    {
-      add_reg_note (insn, REG_INC, XEXP (XEXP (x, 0), 0));
-      return;
-    }
-
-  /* Scan all the operand sub-expressions.  */
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	add_auto_inc_notes (insn, XEXP (x, i));
-      else if (fmt[i] == 'E')
-	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	  add_auto_inc_notes (insn, XVECEXP (x, i, j));
     }
 }

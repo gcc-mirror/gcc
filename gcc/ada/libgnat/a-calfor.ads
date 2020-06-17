@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---         Copyright (C) 2005-2019, Free Software Foundation, Inc.          --
+--         Copyright (C) 2005-2020, Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT.  In accordance with the copyright of that document, you can freely --
@@ -205,6 +205,14 @@ package Ada.Calendar.Formatting is
    --  0.0, the result is Image (abs Elapsed_Time, Include_Time_Fraction)
    --  prefixed with a minus sign. If abs Elapsed_Time represents 100 hours or
    --  more, Time_Error is raised.
+
+   function Local_Image
+     (Date                  : Time;
+      Include_Time_Fraction : Boolean := False) return String
+   is (Image (Date,
+              Include_Time_Fraction,
+              Time_Zones.Local_Time_Offset (Date)));
+   --  Returns a string form of Date relative to the local time offset.
 
    function Value (Elapsed_Time : String) return Duration;
    --  Returns a Duration value for the image given as Elapsed_Time.

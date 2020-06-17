@@ -40,6 +40,7 @@ struct int_tree_hasher
     }
   static void mark_deleted (value_type &v) { v.to = reinterpret_cast<tree> (0x1); }
   static bool is_empty (const value_type &v) { return v.to == NULL; }
+  static const bool empty_zero_p = true;
   static void mark_empty (value_type &v) { v.to = NULL; }
   static void remove (value_type &) {}
 };

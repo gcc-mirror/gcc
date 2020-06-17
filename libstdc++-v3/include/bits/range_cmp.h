@@ -55,6 +55,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
 #ifdef __cpp_lib_concepts
+// Define this here, included by all the headers that need to define it.
+#define __cpp_lib_ranges 201911L
+
 namespace ranges
 {
   namespace __detail
@@ -62,7 +65,8 @@ namespace ranges
     // BUILTIN-PTR-CMP(T, ==, U)
     template<typename _Tp, typename _Up>
       concept __eq_builtin_ptr_cmp
-	= convertible_to<_Tp, const volatile void*>
+	= requires (_Tp&& __t, _Up&& __u) { { __t == __u } -> same_as<bool>; }
+	  && convertible_to<_Tp, const volatile void*>
 	  && convertible_to<_Up, const volatile void*>
 	  && (! requires(_Tp&& __t, _Up&& __u)
 	      { operator==(std::forward<_Tp>(__t), std::forward<_Up>(__u)); }
@@ -73,7 +77,8 @@ namespace ranges
     // BUILTIN-PTR-CMP(T, <, U)
     template<typename _Tp, typename _Up>
       concept __less_builtin_ptr_cmp
-	= convertible_to<_Tp, const volatile void*>
+	= requires (_Tp&& __t, _Up&& __u) { { __t < __u } -> same_as<bool>; }
+	  && convertible_to<_Tp, const volatile void*>
 	  && convertible_to<_Up, const volatile void*>
 	  && (! requires(_Tp&& __t, _Up&& __u)
 	      { operator<(std::forward<_Tp>(__t), std::forward<_Up>(__u)); }

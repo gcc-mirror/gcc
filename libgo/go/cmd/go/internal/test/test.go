@@ -572,8 +572,9 @@ func runTest(cmd *base.Command, args []string) {
 	}
 
 	// Pass timeout to tests if it exists.
+	// Prepend rather than appending so that it appears before positional arguments.
 	if testActualTimeout > 0 {
-		testArgs = append(testArgs, "-test.timeout="+testActualTimeout.String())
+		testArgs = append([]string{"-test.timeout=" + testActualTimeout.String()}, testArgs...)
 	}
 
 	// show passing test output (after buffering) with -v flag.
@@ -828,7 +829,7 @@ func builderTest(b *work.Builder, p *load.Package) (buildAction, runAction, prin
 	if p.ImportPath == "command-line-arguments" {
 		elem = p.Name
 	} else {
-		elem = load.DefaultExecName(p.ImportPath)
+		elem = p.DefaultExecName()
 	}
 	testBinary := elem + ".test"
 
@@ -1141,7 +1142,7 @@ func (c *runCache) builderRunTest(b *work.Builder, a *work.Action) error {
 
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.Dir = a.Package.Dir
-	cmd.Env = base.EnvForDir(cmd.Dir, cfg.OrigEnv)
+	cmd.Env = base.EnvForDir(cmd.Dir, cfg.OrigEnv[:len(cfg.OrigEnv):len(cfg.OrigEnv)])
 	cmd.Stdout = stdout
 	cmd.Stderr = stdout
 
@@ -1223,6 +1224,14 @@ func (c *runCache) builderRunTest(b *work.Builder, a *work.Action) error {
 		if len(out) == 0 {
 			fmt.Fprintf(cmd.Stdout, "%s\n", err)
 		}
+		// NOTE(golang.org/issue/37555): test2json reports that a test passes
+		// unless "FAIL" is printed at the beginning of a line. The test may not
+		// actually print that if it panics, exits, or terminates abnormally,
+		// so we print it here. We can't always check whether it was printed
+		// because some tests need stdout to be a terminal (golang.org/issue/34791),
+		// not a pipe.
+		// TODO(golang.org/issue/29062): tests that exit with status 0 without
+		// printing a final result should fail.
 		fmt.Fprintf(cmd.Stdout, "FAIL\t%s\t%s\n", a.Package.ImportPath, t)
 	}
 

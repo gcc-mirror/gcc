@@ -614,10 +614,20 @@ func fixupStack(stk []uintptr, skip int, canonStack *[maxStack]uintptr, size uin
 	// Increase the skip count to take into account the frames corresponding
 	// to runtime.callersRaw and to the C routine that it invokes.
 	skip += 2
+	sawSigtramp := false
 	for _, pc := range stk {
 		// Subtract 1 from PC to undo the 1 we added in callback in
 		// go-callers.c.
-		function, file, _, frames := funcfileline(pc-1, -1)
+		function, file, _, frames := funcfileline(pc-1, -1, false)
+
+		// Skip an unnamed function above sigtramp, as it is
+		// likely the signal handler.
+		if sawSigtramp {
+			sawSigtramp = false
+			if function == "" {
+				continue
+			}
+		}
 
 		// Skip split-stack functions (match by function name)
 		skipFrame := false
@@ -630,11 +640,18 @@ func fixupStack(stk []uintptr, skip int, canonStack *[maxStack]uintptr, size uin
 			skipFrame = true
 		}
 
-		// Skip thunks and recover functions.  There is no equivalent to
-		// these functions in the gc toolchain.
+		// Skip thunks and recover functions and other functions
+		// specific to gccgo, that do not appear in the gc toolchain.
 		fcn := function
 		if hasSuffix(fcn, "..r") {
 			skipFrame = true
+		} else if function == "runtime.deferreturn" || function == "runtime.sighandler" {
+			skipFrame = true
+		} else if function == "runtime.sigtramp" || function == "runtime.sigtrampgo" {
+			skipFrame = true
+			// Also skip subsequent unnamed functions,
+			// which will be the signal handler itself.
+			sawSigtramp = true
 		} else {
 			for fcn != "" && (fcn[len(fcn)-1] >= '0' && fcn[len(fcn)-1] <= '9') {
 				fcn = fcn[:len(fcn)-1]

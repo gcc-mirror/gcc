@@ -78,6 +78,7 @@ struct ipa_bit_ggc_hash_traits : public ggc_cache_remove <ipa_bits *>
     {
       return a->value == b->value && a->mask == b->mask;
     }
+  static const bool empty_zero_p = true;
   static void
   mark_empty (ipa_bits *&p)
     {
@@ -123,6 +124,7 @@ struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <value_range *>
     {
       return a->equal_p (*b);
     }
+  static const bool empty_zero_p = true;
   static void
   mark_empty (value_range *&p)
     {
@@ -1852,8 +1854,9 @@ determine_known_aggregate_parts (struct ipa_func_body_info *fbi,
   tree arg_base;
   bool check_ref, by_ref;
   ao_ref r;
+  int max_agg_items = opt_for_fn (fbi->node->decl, param_ipa_max_agg_items);
 
-  if (param_ipa_max_agg_items == 0)
+  if (max_agg_items == 0)
     return;
 
   /* The function operates in three stages.  First, we prepare check_ref, r,
@@ -1951,14 +1954,14 @@ determine_known_aggregate_parts (struct ipa_func_body_info *fbi,
 		 operands, whose definitions can finally reach the call.  */
 	      add_to_agg_contents_list (&list, (*copy = *content, copy));
 
-	      if (++value_count == param_ipa_max_agg_items)
+	      if (++value_count == max_agg_items)
 		break;
 	    }
 
 	  /* Add to the list consisting of all dominating virtual operands.  */
 	  add_to_agg_contents_list (&all_list, content);
 
-	  if (++item_count == 2 * param_ipa_max_agg_items)
+	  if (++item_count == 2 * max_agg_items)
 	    break;
 	}
       dom_vuse = gimple_vuse (stmt);
@@ -2876,7 +2879,7 @@ ipa_analyze_node (struct cgraph_node *node)
   fbi.bb_infos = vNULL;
   fbi.bb_infos.safe_grow_cleared (last_basic_block_for_fn (cfun));
   fbi.param_count = ipa_get_param_count (info);
-  fbi.aa_walk_budget = param_ipa_max_aa_steps;
+  fbi.aa_walk_budget = opt_for_fn (node->decl, param_ipa_max_aa_steps);
 
   for (struct cgraph_edge *cs = node->callees; cs; cs = cs->next_callee)
     {
@@ -3234,7 +3237,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "ipa-prop: Discovered call to a known target "
-		     "(%s -> %s) but cannot refer to it. Giving up.\n",
+		     "(%s -> %s) but cannot refer to it.  Giving up.\n",
 		     ie->caller->dump_name (),
 		     ie->callee->dump_name ());
 	  return NULL;
@@ -3245,25 +3248,26 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
   /* If the edge is already speculated.  */
   if (speculative && ie->speculative)
     {
-      struct cgraph_edge *e2;
-      struct ipa_ref *ref;
-      ie->speculative_call_info (e2, ie, ref);
-      if (e2->callee->ultimate_alias_target ()
-	  != callee->ultimate_alias_target ())
+      if (dump_file)
 	{
-	  if (dump_file)
-	    fprintf (dump_file, "ipa-prop: Discovered call to a speculative "
-		     "target (%s -> %s) but the call is already "
-		     "speculated to %s. Giving up.\n",
-		     ie->caller->dump_name (), callee->dump_name (),
-		     e2->callee->dump_name ());
-	}
-      else
-	{
-	  if (dump_file)
-	    fprintf (dump_file, "ipa-prop: Discovered call to a speculative target "
-		     "(%s -> %s) this agree with previous speculation.\n",
-		     ie->caller->dump_name (), callee->dump_name ());
+	  cgraph_edge *e2 = ie->speculative_call_for_target (callee);
+	  if (!e2)
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "ipa-prop: Discovered call to a "
+			 "speculative target (%s -> %s) but the call is "
+			 "already speculated to different target.  "
+			 "Giving up.\n",
+			 ie->caller->dump_name (), callee->dump_name ());
+	    }
+	  else
+	    {
+	      if (dump_file)
+		fprintf (dump_file,
+			 "ipa-prop: Discovered call to a speculative target "
+			 "(%s -> %s) this agree with previous speculation.\n",
+			 ie->caller->dump_name (), callee->dump_name ());
+	    }
 	}
       return NULL;
     }
@@ -3294,12 +3298,12 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
     {
       dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, ie->call_stmt,
 		       "converting indirect call in %s to direct call to %s\n",
-		       ie->caller->name (), callee->name ());
+		       ie->caller->dump_name (), callee->dump_name ());
     }
   if (!speculative)
     {
       struct cgraph_edge *orig = ie;
-      ie = ie->make_direct (callee);
+      ie = cgraph_edge::make_direct (ie, callee);
       /* If we resolved speculative edge the cost is already up to date
 	 for direct call (adjusted by inline_edge_duplication_hook).  */
       if (ie == orig)
@@ -3489,7 +3493,7 @@ remove_described_reference (symtab_node *symbol, struct ipa_cst_ref_desc *rdesc)
   to_del->remove_reference ();
   if (dump_file)
     fprintf (dump_file, "ipa-prop: Removed a reference from %s to %s.\n",
-	     origin->caller->dump_name (), xstrdup_for_dump (symbol->name ()));
+	     origin->caller->dump_name (), symbol->dump_name ());
   return true;
 }
 
@@ -3768,7 +3772,6 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
       class cgraph_indirect_call_info *ici = ie->indirect_info;
       struct ipa_jump_func *jfunc;
       int param_index;
-      cgraph_node *spec_target = NULL;
 
       next_ie = ie->next_callee;
 
@@ -3784,14 +3787,11 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 
       param_index = ici->param_index;
       jfunc = ipa_get_ith_jump_func (top, param_index);
+      cgraph_node *spec_target = NULL;
 
+      /* FIXME: This may need updating for multiple calls.  */
       if (ie->speculative)
-	{
-	  struct cgraph_edge *de;
-          struct ipa_ref *ref;
-	  ie->speculative_call_info (de, ie, ref);
-	  spec_target = de->callee;
-	}
+	spec_target = ie->first_speculative_call_target ()->callee;
 
       if (!opt_for_fn (node->decl, flag_indirect_inlining))
 	new_direct_edge = NULL;
@@ -4625,7 +4625,7 @@ ipa_read_jump_function (class lto_input_block *ib,
       {
 	tree t = stream_read_tree (ib, data_in);
 	if (flag && prevails)
-	  t = build_fold_addr_expr (t);
+	  t = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (t)), t);
 	ipa_set_jf_constant (jump_func, t, cs);
       }
       break;
@@ -5756,7 +5756,7 @@ ipcp_transform_function (struct cgraph_node *node)
   fbi.bb_infos = vNULL;
   fbi.bb_infos.safe_grow_cleared (last_basic_block_for_fn (cfun));
   fbi.param_count = param_count;
-  fbi.aa_walk_budget = param_ipa_max_aa_steps;
+  fbi.aa_walk_budget = opt_for_fn (node->decl, param_ipa_max_aa_steps);
 
   vec_safe_grow_cleared (descriptors, param_count);
   ipa_populate_param_decls (node, *descriptors);

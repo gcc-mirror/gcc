@@ -79,7 +79,6 @@
    (CTRLREG_PSW		    0)
    (CTRLREG_USP		    2)
    (CTRLREG_FPSW	    3)
-   (CTRLREG_CPEN	    4)
    (CTRLREG_BPSW	    8)
    (CTRLREG_BPC		    9)
    (CTRLREG_ISP		   10)
@@ -2511,7 +2510,7 @@
    (use (match_operand:SI  1 "nonmemory_operand")) ;; Length
    (match_operand          3 "immediate_operand")  ;; Align
    (unspec_volatile:BLK [(reg:SI 1) (reg:SI 2) (reg:SI 3)] UNSPEC_SETMEM)]
-  ""
+  "rx_allow_string_insns"
   {
     rtx addr = gen_rtx_REG (SImode, 1);
     rtx val  = gen_rtx_REG (QImode, 2);
@@ -2530,7 +2529,7 @@
 	(unspec_volatile:BLK [(reg:SI 1) (reg:SI 2) (reg:SI 3)] UNSPEC_SETMEM))
    (clobber (reg:SI 1))
    (clobber (reg:SI 3))]
-  ""
+  "rx_allow_string_insns"
   "sstr.b"
   [(set_attr "length" "2")
    (set_attr "timings" "1111")] ;; The timing is a guesstimate.

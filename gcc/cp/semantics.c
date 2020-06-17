@@ -127,11 +127,10 @@ struct GTY(()) deferred_access {
        A::B* A::f() { return 0; }
 
      is valid, even though `A::B' is not generally accessible.  */
-  vec<deferred_access_check, va_gc> * GTY(()) deferred_access_checks;
+  vec<deferred_access_check, va_gc> *deferred_access_checks;
 
   /* The current mode of access checks.  */
   enum deferring_kind deferring_access_checks_kind;
-
 };
 
 /* Data for deferred access checking.  */
@@ -257,6 +256,75 @@ pop_to_parent_deferring_access_checks (void)
     }
 }
 
+/* If the current scope isn't allowed to access DECL along
+   BASETYPE_PATH, give an error, or if we're parsing a function or class
+   template, defer the access check to be performed at instantiation time.
+   The most derived class in BASETYPE_PATH is the one used to qualify DECL.
+   DIAG_DECL is the declaration to use in the error diagnostic.  */
+
+static bool
+enforce_access (tree basetype_path, tree decl, tree diag_decl,
+		tsubst_flags_t complain, access_failure_info *afi = NULL)
+{
+  gcc_assert (TREE_CODE (basetype_path) == TREE_BINFO);
+
+  if (flag_new_inheriting_ctors
+      && DECL_INHERITED_CTOR (decl))
+    {
+      /* 7.3.3/18: The additional constructors are accessible if they would be
+	 accessible when used to construct an object of the corresponding base
+	 class.  */
+      decl = strip_inheriting_ctors (decl);
+      basetype_path = lookup_base (basetype_path, DECL_CONTEXT (decl),
+				   ba_any, NULL, complain);
+    }
+
+  tree cs = current_scope ();
+  if (processing_template_decl
+      && (CLASS_TYPE_P (cs) || TREE_CODE (cs) == FUNCTION_DECL))
+    if (tree template_info = get_template_info (cs))
+      {
+	/* When parsing a function or class template, we in general need to
+	   defer access checks until template instantiation time, since a friend
+	   declaration may grant access only to a particular specialization of
+	   the template.  */
+
+	if (accessible_p (basetype_path, decl, /*consider_local_p=*/true))
+	  /* But if the member is deemed accessible at parse time, then we can
+	     assume it'll be accessible at instantiation time.  */
+	  return true;
+
+	/* Access of a dependent decl should be rechecked after tsubst'ing
+	   into the user of the decl, rather than explicitly deferring the
+	   check here.  */
+	gcc_assert (!uses_template_parms (decl));
+	if (TREE_CODE (decl) == FIELD_DECL)
+	  gcc_assert (!uses_template_parms (DECL_CONTEXT (decl)));
+
+	/* Defer this access check until instantiation time.  */
+	deferred_access_check access_check;
+	access_check.binfo = basetype_path;
+	access_check.decl = decl;
+	access_check.diag_decl = diag_decl;
+	access_check.loc = input_location;
+	vec_safe_push (TI_DEFERRED_ACCESS_CHECKS (template_info), access_check);
+	return true;
+      }
+
+  if (!accessible_p (basetype_path, decl, /*consider_local_p=*/true))
+    {
+      if (flag_new_inheriting_ctors)
+	diag_decl = strip_inheriting_ctors (diag_decl);
+      if (complain & tf_error)
+	complain_about_access (decl, diag_decl, true);
+      if (afi)
+	afi->record_access_failure (basetype_path, decl, diag_decl);
+      return false;
+    }
+
+  return true;
+}
+
 /* Perform the access checks in CHECKS.  The TREE_PURPOSE of each node
    is the BINFO indicating the qualifying scope used to access the
    DECL node stored in the TREE_VALUE of the node.  If CHECKS is empty
@@ -321,9 +389,7 @@ perform_or_defer_access_check (tree binfo, tree decl, tree diag_decl,
   deferred_access *ptr;
   deferred_access_check *chk;
 
-
-  /* Exit if we are in a context that no access checking is performed.
-     */
+  /* Exit if we are in a context that no access checking is performed.  */
   if (deferred_access_no_check)
     return true;
 
@@ -380,7 +446,8 @@ add_stmt (tree t)
 
       /* When we expand a statement-tree, we must know whether or not the
 	 statements are full-expressions.  We record that fact here.  */
-      STMT_IS_FULL_EXPR_P (t) = stmts_are_full_exprs_p ();
+      if (STATEMENT_CODE_P (TREE_CODE (t)))
+	STMT_IS_FULL_EXPR_P (t) = stmts_are_full_exprs_p ();
     }
 
   if (code == LABEL_EXPR || code == CASE_LABEL_EXPR)
@@ -734,6 +801,9 @@ is_std_constant_evaluated_p (tree fn)
     return false;
 
   tree fndecl = cp_get_callee_fndecl_nofold (fn);
+  if (fndecl == NULL_TREE)
+    return false;
+
   if (fndecl_built_in_p (fndecl, CP_BUILT_IN_IS_CONSTANT_EVALUATED,
 			 BUILT_IN_FRONTEND))
     return true;
@@ -1989,70 +2059,34 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
   return ret;
 }
 
-/* If we are currently parsing a template and we encountered a typedef
-   TYPEDEF_DECL that is being accessed though CONTEXT, this function
-   adds the typedef to a list tied to the current template.
-   At template instantiation time, that list is walked and access check
-   performed for each typedef.
-   LOCATION is the location of the usage point of TYPEDEF_DECL.  */
-
-void
-add_typedef_to_current_template_for_access_check (tree typedef_decl,
-                                                  tree context,
-						  location_t location)
-{
-    tree template_info = NULL;
-    tree cs = current_scope ();
-
-    if (!is_typedef_decl (typedef_decl)
-	|| !context
-	|| !CLASS_TYPE_P (context)
-	|| !cs)
-      return;
-
-    if (CLASS_TYPE_P (cs) || TREE_CODE (cs) == FUNCTION_DECL)
-      template_info = get_template_info (cs);
-
-    if (template_info
-	&& TI_TEMPLATE (template_info)
-	&& !currently_open_class (context))
-      append_type_to_template_for_access_check (cs, typedef_decl,
-						context, location);
-}
-
 /* DECL was the declaration to which a qualified-id resolved.  Issue
    an error message if it is not accessible.  If OBJECT_TYPE is
    non-NULL, we have just seen `x->' or `x.' and OBJECT_TYPE is the
    type of `*x', or `x', respectively.  If the DECL was named as
-   `A::B' then NESTED_NAME_SPECIFIER is `A'.  */
+   `A::B' then NESTED_NAME_SPECIFIER is `A'.  Return value is like
+   perform_access_checks above.  */
 
-void
+bool
 check_accessibility_of_qualified_id (tree decl,
 				     tree object_type,
-				     tree nested_name_specifier)
+				     tree nested_name_specifier,
+				     tsubst_flags_t complain)
 {
-  tree scope;
-  tree qualifying_type = NULL_TREE;
-
-  /* If we are parsing a template declaration and if decl is a typedef,
-     add it to a list tied to the template.
-     At template instantiation time, that list will be walked and
-     access check performed.  */
-  add_typedef_to_current_template_for_access_check (decl,
-						    nested_name_specifier
-						    ? nested_name_specifier
-						    : DECL_CONTEXT (decl),
-						    input_location);
-
   /* If we're not checking, return immediately.  */
   if (deferred_access_no_check)
-    return;
+    return true;
 
   /* Determine the SCOPE of DECL.  */
-  scope = context_for_name_lookup (decl);
+  tree scope = context_for_name_lookup (decl);
   /* If the SCOPE is not a type, then DECL is not a member.  */
-  if (!TYPE_P (scope))
-    return;
+  if (!TYPE_P (scope)
+      /* If SCOPE is dependent then we can't perform this access check now,
+	 and since we'll perform this access check again after substitution
+	 there's no need to explicitly defer it.  */
+      || dependent_type_p (scope))
+    return true;
+
+  tree qualifying_type = NULL_TREE;
   /* Compute the scope through which DECL is being accessed.  */
   if (object_type
       /* OBJECT_TYPE might not be a class type; consider:
@@ -2091,10 +2125,11 @@ check_accessibility_of_qualified_id (tree decl,
   if (qualifying_type
       /* It is possible for qualifying type to be a TEMPLATE_TYPE_PARM
 	 or similar in a default argument value.  */
-      && CLASS_TYPE_P (qualifying_type)
-      && !dependent_type_p (qualifying_type))
-    perform_or_defer_access_check (TYPE_BINFO (qualifying_type), decl,
-				   decl, tf_warning_or_error);
+      && CLASS_TYPE_P (qualifying_type))
+    return perform_or_defer_access_check (TYPE_BINFO (qualifying_type), decl,
+					  decl, complain);
+
+  return true;
 }
 
 /* EXPR is the result of a qualified-id.  The QUALIFYING_CLASS was the
@@ -2504,7 +2539,7 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	      bool abnormal = true;
 	      for (lkp_iterator iter (fn); abnormal && iter; ++iter)
 		{
-		  tree fndecl = *iter;
+		  tree fndecl = STRIP_TEMPLATE (*iter);
 		  if (TREE_CODE (fndecl) != FUNCTION_DECL
 		      || !TREE_THIS_VOLATILE (fndecl))
 		    abnormal = false;
@@ -2661,7 +2696,6 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	      tree arg2 = (*orig_args)[2];
 	      int literal_mask = ((literal_integer_zerop (arg1) << 1)
 				  | (literal_integer_zerop (arg2) << 2));
-	      arg2 = instantiate_non_dependent_expr (arg2);
 	      warn_for_memset (input_location, arg0, arg2, literal_mask);
 	    }
 
@@ -3209,7 +3243,7 @@ begin_class_definition (tree t)
       SET_CLASSTYPE_INTERFACE_UNKNOWN_X
 	(t, finfo->interface_unknown);
     }
-  reset_specialization();
+  reset_specialization ();
 
   /* Make a declaration for this class in its own scope.  */
   build_self_reference ();
@@ -3522,8 +3556,15 @@ tree
 process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
 {
   if (cp_unevaluated_operand)
-    /* It's not a use (3.2) if we're in an unevaluated context.  */
-    return decl;
+    {
+      tree type = TREE_TYPE (decl);
+      if (!dependent_type_p (type)
+	  && variably_modified_type_p (type, NULL_TREE))
+	/* VLAs are used even in unevaluated context.  */;
+      else
+	/* It's not a use (3.2) if we're in an unevaluated context.  */
+	return decl;
+    }
   if (decl == error_mark_node)
     return decl;
 
@@ -8553,7 +8594,7 @@ handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
 		TREE_OPERAND (cond, 1), iter);
       return true;
     }
-  if (!c_omp_check_loop_iv_exprs (locus, orig_declv,
+  if (!c_omp_check_loop_iv_exprs (locus, orig_declv, i,
 				  TREE_VEC_ELT (declv, i), NULL_TREE,
 				  cond, cp_walk_subtrees))
     return true;
@@ -8939,8 +8980,8 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
       tree orig_init;
       FOR_EACH_VEC_ELT (*orig_inits, i, orig_init)
 	if (orig_init
-	    && !c_omp_check_loop_iv_exprs (locus, orig_declv
-						  ? orig_declv : declv,
+	    && !c_omp_check_loop_iv_exprs (locus,
+					   orig_declv ? orig_declv : declv, i,
 					   TREE_VEC_ELT (declv, i), orig_init,
 					   NULL_TREE, cp_walk_subtrees))
 	  fail = true;
@@ -9034,35 +9075,11 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
 	  return NULL;
 	}
 
-      if (!processing_template_decl)
-	{
-	  init = fold_build_cleanup_point_expr (TREE_TYPE (init), init);
-	  init = cp_build_modify_expr (elocus, decl, NOP_EXPR, init,
-				       tf_warning_or_error);
-	}
+      if (!processing_template_decl && TREE_CODE (init) != TREE_VEC)
+	init = cp_build_modify_expr (elocus, decl, NOP_EXPR, init,
+				     tf_warning_or_error);
       else
 	init = build2 (MODIFY_EXPR, void_type_node, decl, init);
-      if (cond
-	  && TREE_SIDE_EFFECTS (cond)
-	  && COMPARISON_CLASS_P (cond)
-	  && !processing_template_decl)
-	{
-	  tree t = TREE_OPERAND (cond, 0);
-	  if (TREE_SIDE_EFFECTS (t)
-	      && t != decl
-	      && (TREE_CODE (t) != NOP_EXPR
-		  || TREE_OPERAND (t, 0) != decl))
-	    TREE_OPERAND (cond, 0)
-	      = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
-
-	  t = TREE_OPERAND (cond, 1);
-	  if (TREE_SIDE_EFFECTS (t)
-	      && t != decl
-	      && (TREE_CODE (t) != NOP_EXPR
-		  || TREE_OPERAND (t, 0) != decl))
-	    TREE_OPERAND (cond, 1)
-	      = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
-	}
       if (decl == error_mark_node || init == error_mark_node)
 	return NULL;
 
@@ -9091,8 +9108,44 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
 
   for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INCR (omp_for)); i++)
     {
-      decl = TREE_OPERAND (TREE_VEC_ELT (OMP_FOR_INIT (omp_for), i), 0);
+      init = TREE_VEC_ELT (OMP_FOR_INIT (omp_for), i);
+      decl = TREE_OPERAND (init, 0);
+      cond = TREE_VEC_ELT (OMP_FOR_COND (omp_for), i);
       incr = TREE_VEC_ELT (OMP_FOR_INCR (omp_for), i);
+
+      if (!processing_template_decl)
+	{
+	  if (TREE_CODE (TREE_OPERAND (init, 1)) == TREE_VEC)
+	    {
+	      tree t = TREE_VEC_ELT (TREE_OPERAND (init, 1), 1);
+	      TREE_VEC_ELT (TREE_OPERAND (init, 1), 1)
+		= fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+	      t = TREE_VEC_ELT (TREE_OPERAND (init, 1), 2);
+	      TREE_VEC_ELT (TREE_OPERAND (init, 1), 2)
+		= fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+	    }
+	  else
+	    {
+	      tree t = TREE_OPERAND (init, 1);
+	      TREE_OPERAND (init, 1)
+		= fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+	    }
+	  if (TREE_CODE (TREE_OPERAND (cond, 1)) == TREE_VEC)
+	    {
+	      tree t = TREE_VEC_ELT (TREE_OPERAND (cond, 1), 1);
+	      TREE_VEC_ELT (TREE_OPERAND (cond, 1), 1)
+		= fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+	      t = TREE_VEC_ELT (TREE_OPERAND (cond, 1), 2);
+	      TREE_VEC_ELT (TREE_OPERAND (cond, 1), 2)
+		= fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+	    }
+	  else
+	    {
+	      tree t = TREE_OPERAND (cond, 1);
+	      TREE_OPERAND (cond, 1)
+		= fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+	    }
+	}
 
       if (TREE_CODE (incr) != MODIFY_EXPR)
 	continue;
@@ -9678,8 +9731,10 @@ finish_static_assert (tree condition, tree message, location_t location,
             error ("static assertion failed: %s",
 		   TREE_STRING_POINTER (message));
 
-	  /* Actually explain the failure if this is a concept check.  */
-	  if (concept_check_p (orig_condition))
+	  /* Actually explain the failure if this is a concept check or a
+	     requires-expression.  */
+	  if (concept_check_p (orig_condition)
+	      || TREE_CODE (orig_condition) == REQUIRES_EXPR)
 	    diagnose_constraints (location, orig_condition, NULL_TREE);
 	}
       else if (condition && condition != error_mark_node)
@@ -9730,6 +9785,14 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
       SET_TYPE_STRUCTURAL_EQUALITY (type);
 
       return type;
+    }
+  else if (processing_template_decl)
+    {
+      ++cp_unevaluated_operand;
+      expr = instantiate_non_dependent_expr_sfinae (expr, complain);
+      --cp_unevaluated_operand;
+      if (expr == error_mark_node)
+	return error_mark_node;
     }
 
   /* The type denoted by decltype(e) is defined as follows:  */
@@ -10380,7 +10443,8 @@ cp_build_vec_convert (tree arg, location_t loc, tree type,
 
   tree ret = NULL_TREE;
   if (!type_dependent_expression_p (arg) && !dependent_type_p (type))
-    ret = c_build_vec_convert (cp_expr_loc_or_input_loc (arg), arg,
+    ret = c_build_vec_convert (cp_expr_loc_or_input_loc (arg),
+			       decay_conversion (arg, complain),
 			       loc, type, (complain & tf_error) != 0);
 
   if (!processing_template_decl)

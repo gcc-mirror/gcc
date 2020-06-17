@@ -1,7 +1,6 @@
 /* PR tree-optimization/66688 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fno-reorder-blocks -fcompare-debug" } */
-/* { dg-xfail-if "" { powerpc-ibm-aix* } } */
 
 struct fdt_header { unsigned magic; } *a;
 

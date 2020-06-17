@@ -167,11 +167,15 @@ struct access
   struct access *next_sibling;
 
   /* Pointers to the first and last element in the linked list of assign
-     links.  */
-  struct assign_link *first_link, *last_link;
+     links for propagation from LHS to RHS.  */
+  struct assign_link *first_rhs_link, *last_rhs_link;
 
-  /* Pointer to the next access in the work queue.  */
-  struct access *next_queued;
+  /* Pointers to the first and last element in the linked list of assign
+     links for propagation from LHS to RHS.  */
+  struct assign_link *first_lhs_link, *last_lhs_link;
+
+  /* Pointer to the next access in the work queues.  */
+  struct access *next_rhs_queued, *next_lhs_queued;
 
   /* Replacement variable for this access "region."  Never to be accessed
      directly, always only by the means of get_access_replacement() and only
@@ -184,8 +188,11 @@ struct access
   /* Is this particular access write access? */
   unsigned write : 1;
 
-  /* Is this access currently in the work queue?  */
-  unsigned grp_queued : 1;
+  /* Is this access currently in the rhs work queue?  */
+  unsigned grp_rhs_queued : 1;
+
+  /* Is this access currently in the lhs work queue?  */
+  unsigned grp_lhs_queued : 1;
 
   /* Does this group contain a write access?  This flag is propagated down the
      access tree.  */
@@ -211,8 +218,11 @@ struct access
      is not propagated in the access tree in any direction.  */
   unsigned grp_scalar_write : 1;
 
-  /* Is this access an artificial one created to scalarize some record
-     entirely? */
+  /* In a root of an access tree, true means that the entire tree should be
+     totally scalarized - that all scalar leafs should be scalarized and
+     non-root grp_total_scalarization accesses should be honored.  Otherwise,
+     non-root accesses with grp_total_scalarization should never get scalar
+     replacements.  */
   unsigned grp_total_scalarization : 1;
 
   /* Other passes of the analysis use this bit to make function
@@ -259,12 +269,14 @@ typedef struct access *access_p;
 static object_allocator<struct access> access_pool ("SRA accesses");
 
 /* A structure linking lhs and rhs accesses from an aggregate assignment.  They
-   are used to propagate subaccesses from rhs to lhs as long as they don't
-   conflict with what is already there.  */
+   are used to propagate subaccesses from rhs to lhs and vice versa as long as
+   they don't conflict with what is already there.  In the RHS->LHS direction,
+   we also propagate grp_write flag to lazily mark that the access contains any
+   meaningful data.  */
 struct assign_link
 {
   struct access *lacc, *racc;
-  struct assign_link *next;
+  struct assign_link *next_rhs, *next_lhs;
 };
 
 /* Alloc pool for allocating assign link structures.  */
@@ -272,6 +284,9 @@ static object_allocator<assign_link> assign_link_pool ("SRA links");
 
 /* Base (tree) -> Vector (vec<access_p> *) map.  */
 static hash_map<tree, auto_vec<access_p> > *base_access_vec;
+
+/* Hash to limit creation of artificial accesses */
+static hash_map<tree, unsigned> *propagation_budget;
 
 /* Candidate hash table helpers.  */
 
@@ -324,7 +339,7 @@ static struct obstack name_obstack;
 
 /* Head of a linked list of accesses that need to have its subaccesses
    propagated to their assignment counterparts. */
-static struct access *work_queue_head;
+static struct access *rhs_work_queue_head, *lhs_work_queue_head;
 
 /* Dump contents of ACCESS to file F in a human friendly way.  If GRP is true,
    representative fields are dumped, otherwise those which only describe the
@@ -485,6 +500,15 @@ find_access_in_subtree (struct access *access, HOST_WIDE_INT offset,
       access = child;
     }
 
+  /* Total scalarization does not replace single field structures with their
+     single field but rather creates an access for them underneath.  Look for
+     it.  */
+  if (access)
+    while (access->first_child
+	   && access->first_child->offset == offset
+	   && access->first_child->size == size)
+      access = access->first_child;
+
   return access;
 }
 
@@ -522,79 +546,155 @@ get_var_base_offset_size_access (tree base, HOST_WIDE_INT offset,
 }
 
 /* Add LINK to the linked list of assign links of RACC.  */
+
 static void
 add_link_to_rhs (struct access *racc, struct assign_link *link)
 {
   gcc_assert (link->racc == racc);
 
-  if (!racc->first_link)
+  if (!racc->first_rhs_link)
     {
-      gcc_assert (!racc->last_link);
-      racc->first_link = link;
+      gcc_assert (!racc->last_rhs_link);
+      racc->first_rhs_link = link;
     }
   else
-    racc->last_link->next = link;
+    racc->last_rhs_link->next_rhs = link;
 
-  racc->last_link = link;
-  link->next = NULL;
+  racc->last_rhs_link = link;
+  link->next_rhs = NULL;
 }
 
-/* Move all link structures in their linked list in OLD_RACC to the linked list
-   in NEW_RACC.  */
+/* Add LINK to the linked list of lhs assign links of LACC.  */
+
 static void
-relink_to_new_repr (struct access *new_racc, struct access *old_racc)
+add_link_to_lhs (struct access *lacc, struct assign_link *link)
 {
-  if (!old_racc->first_link)
-    {
-      gcc_assert (!old_racc->last_link);
-      return;
-    }
+  gcc_assert (link->lacc == lacc);
 
-  if (new_racc->first_link)
+  if (!lacc->first_lhs_link)
     {
-      gcc_assert (!new_racc->last_link->next);
-      gcc_assert (!old_racc->last_link || !old_racc->last_link->next);
-
-      new_racc->last_link->next = old_racc->first_link;
-      new_racc->last_link = old_racc->last_link;
+      gcc_assert (!lacc->last_lhs_link);
+      lacc->first_lhs_link = link;
     }
   else
-    {
-      gcc_assert (!new_racc->last_link);
+    lacc->last_lhs_link->next_lhs = link;
 
-      new_racc->first_link = old_racc->first_link;
-      new_racc->last_link = old_racc->last_link;
-    }
-  old_racc->first_link = old_racc->last_link = NULL;
+  lacc->last_lhs_link = link;
+  link->next_lhs = NULL;
 }
 
-/* Add ACCESS to the work queue (which is actually a stack).  */
+/* Move all link structures in their linked list in OLD_ACC to the linked list
+   in NEW_ACC.  */
+static void
+relink_to_new_repr (struct access *new_acc, struct access *old_acc)
+{
+  if (old_acc->first_rhs_link)
+    {
+
+      if (new_acc->first_rhs_link)
+	{
+	  gcc_assert (!new_acc->last_rhs_link->next_rhs);
+	  gcc_assert (!old_acc->last_rhs_link
+		      || !old_acc->last_rhs_link->next_rhs);
+
+	  new_acc->last_rhs_link->next_rhs = old_acc->first_rhs_link;
+	  new_acc->last_rhs_link = old_acc->last_rhs_link;
+	}
+      else
+	{
+	  gcc_assert (!new_acc->last_rhs_link);
+
+	  new_acc->first_rhs_link = old_acc->first_rhs_link;
+	  new_acc->last_rhs_link = old_acc->last_rhs_link;
+	}
+      old_acc->first_rhs_link = old_acc->last_rhs_link = NULL;
+    }
+  else
+    gcc_assert (!old_acc->last_rhs_link);
+
+  if (old_acc->first_lhs_link)
+    {
+
+      if (new_acc->first_lhs_link)
+	{
+	  gcc_assert (!new_acc->last_lhs_link->next_lhs);
+	  gcc_assert (!old_acc->last_lhs_link
+		      || !old_acc->last_lhs_link->next_lhs);
+
+	  new_acc->last_lhs_link->next_lhs = old_acc->first_lhs_link;
+	  new_acc->last_lhs_link = old_acc->last_lhs_link;
+	}
+      else
+	{
+	  gcc_assert (!new_acc->last_lhs_link);
+
+	  new_acc->first_lhs_link = old_acc->first_lhs_link;
+	  new_acc->last_lhs_link = old_acc->last_lhs_link;
+	}
+      old_acc->first_lhs_link = old_acc->last_lhs_link = NULL;
+    }
+  else
+    gcc_assert (!old_acc->last_lhs_link);
+
+}
+
+/* Add ACCESS to the work to queue for propagation of subaccesses from RHS to
+   LHS (which is actually a stack).  */
 
 static void
-add_access_to_work_queue (struct access *access)
+add_access_to_rhs_work_queue (struct access *access)
 {
-  if (access->first_link && !access->grp_queued)
+  if (access->first_rhs_link && !access->grp_rhs_queued)
     {
-      gcc_assert (!access->next_queued);
-      access->next_queued = work_queue_head;
-      access->grp_queued = 1;
-      work_queue_head = access;
+      gcc_assert (!access->next_rhs_queued);
+      access->next_rhs_queued = rhs_work_queue_head;
+      access->grp_rhs_queued = 1;
+      rhs_work_queue_head = access;
     }
 }
 
-/* Pop an access from the work queue, and return it, assuming there is one.  */
+/* Add ACCESS to the work to queue for propagation of subaccesses from LHS to
+   RHS (which is actually a stack).  */
+
+static void
+add_access_to_lhs_work_queue (struct access *access)
+{
+  if (access->first_lhs_link && !access->grp_lhs_queued)
+    {
+      gcc_assert (!access->next_lhs_queued);
+      access->next_lhs_queued = lhs_work_queue_head;
+      access->grp_lhs_queued = 1;
+      lhs_work_queue_head = access;
+    }
+}
+
+/* Pop an access from the work queue for propagating from RHS to LHS, and
+   return it, assuming there is one.  */
 
 static struct access *
-pop_access_from_work_queue (void)
+pop_access_from_rhs_work_queue (void)
 {
-  struct access *access = work_queue_head;
+  struct access *access = rhs_work_queue_head;
 
-  work_queue_head = access->next_queued;
-  access->next_queued = NULL;
-  access->grp_queued = 0;
+  rhs_work_queue_head = access->next_rhs_queued;
+  access->next_rhs_queued = NULL;
+  access->grp_rhs_queued = 0;
   return access;
 }
 
+/* Pop an access from the work queue for propagating from LHS to RHS, and
+   return it, assuming there is one.  */
+
+static struct access *
+pop_access_from_lhs_work_queue (void)
+{
+  struct access *access = lhs_work_queue_head;
+
+  lhs_work_queue_head = access->next_lhs_queued;
+  access->next_lhs_queued = NULL;
+  access->grp_lhs_queued = 0;
+  return access;
+}
 
 /* Allocate necessary structures.  */
 
@@ -829,6 +929,8 @@ create_access (tree expr, gimple *stmt, bool write)
       size = max_size;
       unscalarizable_region = true;
     }
+  if (size == 0)
+    return NULL;
   if (size < 0)
     {
       disqualify_candidate (base, "Encountered an unconstrained access.");
@@ -856,9 +958,13 @@ create_access (tree expr, gimple *stmt, bool write)
 static bool
 scalarizable_type_p (tree type, bool const_decl)
 {
-  gcc_assert (!is_gimple_reg_type (type));
+  if (is_gimple_reg_type (type))
+    return true;
   if (type_contains_placeholder_p (type))
     return false;
+
+  bool have_predecessor_field = false;
+  HOST_WIDE_INT prev_pos = 0;
 
   switch (TREE_CODE (type))
   {
@@ -868,11 +974,21 @@ scalarizable_type_p (tree type, bool const_decl)
 	{
 	  tree ft = TREE_TYPE (fld);
 
+	  if (zerop (DECL_SIZE (fld)))
+	    continue;
+
+	  HOST_WIDE_INT pos = int_bit_position (fld);
+	  if (have_predecessor_field
+	      && pos <= prev_pos)
+	    return false;
+
+	  have_predecessor_field = true;
+	  prev_pos = pos;
+
 	  if (DECL_BIT_FIELD (fld))
 	    return false;
 
-	  if (!is_gimple_reg_type (ft)
-	      && !scalarizable_type_p (ft, const_decl))
+	  if (!scalarizable_type_p (ft, const_decl))
 	    return false;
 	}
 
@@ -902,122 +1018,13 @@ scalarizable_type_p (tree type, bool const_decl)
 	return false;
 
       tree elem = TREE_TYPE (type);
-      if (!is_gimple_reg_type (elem)
-	  && !scalarizable_type_p (elem, const_decl))
+      if (!scalarizable_type_p (elem, const_decl))
 	return false;
       return true;
     }
   default:
     return false;
   }
-}
-
-static void scalarize_elem (tree, HOST_WIDE_INT, HOST_WIDE_INT, bool, tree, tree);
-
-/* Create total_scalarization accesses for all scalar fields of a member
-   of type DECL_TYPE conforming to scalarizable_type_p.  BASE
-   must be the top-most VAR_DECL representing the variable; within that,
-   OFFSET locates the member and REF must be the memory reference expression for
-   the member.  */
-
-static void
-completely_scalarize (tree base, tree decl_type, HOST_WIDE_INT offset, tree ref)
-{
-  switch (TREE_CODE (decl_type))
-    {
-    case RECORD_TYPE:
-      for (tree fld = TYPE_FIELDS (decl_type); fld; fld = DECL_CHAIN (fld))
-	if (TREE_CODE (fld) == FIELD_DECL)
-	  {
-	    HOST_WIDE_INT pos = offset + int_bit_position (fld);
-	    tree ft = TREE_TYPE (fld);
-	    tree nref = build3 (COMPONENT_REF, ft, ref, fld, NULL_TREE);
-
-	    scalarize_elem (base, pos, tree_to_uhwi (DECL_SIZE (fld)),
-			    TYPE_REVERSE_STORAGE_ORDER (decl_type),
-			    nref, ft);
-	  }
-      break;
-    case ARRAY_TYPE:
-      {
-	tree elemtype = TREE_TYPE (decl_type);
-	tree elem_size = TYPE_SIZE (elemtype);
-	gcc_assert (elem_size && tree_fits_shwi_p (elem_size));
-	HOST_WIDE_INT el_size = tree_to_shwi (elem_size);
-	gcc_assert (el_size > 0);
-
-	tree minidx = TYPE_MIN_VALUE (TYPE_DOMAIN (decl_type));
-	gcc_assert (TREE_CODE (minidx) == INTEGER_CST);
-	tree maxidx = TYPE_MAX_VALUE (TYPE_DOMAIN (decl_type));
-	/* Skip (some) zero-length arrays; others have MAXIDX == MINIDX - 1.  */
-	if (maxidx)
-	  {
-	    gcc_assert (TREE_CODE (maxidx) == INTEGER_CST);
-	    tree domain = TYPE_DOMAIN (decl_type);
-	    /* MINIDX and MAXIDX are inclusive, and must be interpreted in
-	       DOMAIN (e.g. signed int, whereas min/max may be size_int).  */
-	    offset_int idx = wi::to_offset (minidx);
-	    offset_int max = wi::to_offset (maxidx);
-	    if (!TYPE_UNSIGNED (domain))
-	      {
-		idx = wi::sext (idx, TYPE_PRECISION (domain));
-		max = wi::sext (max, TYPE_PRECISION (domain));
-	      }
-	    for (int el_off = offset; idx <= max; ++idx)
-	      {
-		tree nref = build4 (ARRAY_REF, elemtype,
-				    ref,
-				    wide_int_to_tree (domain, idx),
-				    NULL_TREE, NULL_TREE);
-		scalarize_elem (base, el_off, el_size,
-				TYPE_REVERSE_STORAGE_ORDER (decl_type),
-				nref, elemtype);
-		el_off += el_size;
-	      }
-	  }
-      }
-      break;
-    default:
-      gcc_unreachable ();
-    }
-}
-
-/* Create total_scalarization accesses for a member of type TYPE, which must
-   satisfy either is_gimple_reg_type or scalarizable_type_p.  BASE must be the
-   top-most VAR_DECL representing the variable; within that, POS and SIZE locate
-   the member, REVERSE gives its torage order. and REF must be the reference
-   expression for it.  */
-
-static void
-scalarize_elem (tree base, HOST_WIDE_INT pos, HOST_WIDE_INT size, bool reverse,
-		tree ref, tree type)
-{
-  if (is_gimple_reg_type (type))
-  {
-    struct access *access = create_access_1 (base, pos, size);
-    access->expr = ref;
-    access->type = type;
-    access->grp_total_scalarization = 1;
-    access->reverse = reverse;
-    /* Accesses for intraprocedural SRA can have their stmt NULL.  */
-  }
-  else
-    completely_scalarize (base, type, pos, ref);
-}
-
-/* Create a total_scalarization access for VAR as a whole.  VAR must be of a
-   RECORD_TYPE or ARRAY_TYPE conforming to scalarizable_type_p.  */
-
-static void
-create_total_scalarization_access (tree var)
-{
-  HOST_WIDE_INT size = tree_to_uhwi (DECL_SIZE (var));
-  struct access *access;
-
-  access = create_access_1 (var, 0, size);
-  access->expr = var;
-  access->type = TREE_TYPE (var);
-  access->grp_total_scalarization = 1;
 }
 
 /* Return true if REF has an VIEW_CONVERT_EXPR somewhere in it.  */
@@ -1300,7 +1307,9 @@ build_accesses_from_assign (gimple *stmt)
       link->lacc = lacc;
       link->racc = racc;
       add_link_to_rhs (racc, link);
-      add_access_to_work_queue (racc);
+      add_link_to_lhs (lacc, link);
+      add_access_to_rhs_work_queue (racc);
+      add_access_to_lhs_work_queue (lacc);
 
       /* Let's delay marking the areas as written until propagation of accesses
 	 across link, unless the nature of rhs tells us that its data comes
@@ -2029,7 +2038,6 @@ sort_and_splice_var_accesses (tree var)
       bool grp_assignment_read = access->grp_assignment_read;
       bool grp_assignment_write = access->grp_assignment_write;
       bool multiple_scalar_reads = false;
-      bool total_scalarization = access->grp_total_scalarization;
       bool grp_partial_lhs = access->grp_partial_lhs;
       bool first_scalar = is_gimple_reg_type (access->type);
       bool unscalarizable_region = access->grp_unscalarizable_region;
@@ -2081,7 +2089,6 @@ sort_and_splice_var_accesses (tree var)
 	  grp_assignment_write |= ac2->grp_assignment_write;
 	  grp_partial_lhs |= ac2->grp_partial_lhs;
 	  unscalarizable_region |= ac2->grp_unscalarizable_region;
-	  total_scalarization |= ac2->grp_total_scalarization;
 	  relink_to_new_repr (access, ac2);
 
 	  /* If there are both aggregate-type and scalar-type accesses with
@@ -2122,9 +2129,7 @@ sort_and_splice_var_accesses (tree var)
       access->grp_scalar_write = grp_scalar_write;
       access->grp_assignment_read = grp_assignment_read;
       access->grp_assignment_write = grp_assignment_write;
-      access->grp_hint = total_scalarization
-	|| (multiple_scalar_reads && !constant_decl_p (var));
-      access->grp_total_scalarization = total_scalarization;
+      access->grp_hint = multiple_scalar_reads && !constant_decl_p (var);
       access->grp_partial_lhs = grp_partial_lhs;
       access->grp_unscalarizable_region = unscalarizable_region;
       access->grp_same_access_path = grp_same_access_path;
@@ -2140,7 +2145,7 @@ sort_and_splice_var_accesses (tree var)
 /* Create a variable for the given ACCESS which determines the type, name and a
    few other properties.  Return the variable declaration and store it also to
    ACCESS->replacement.  REG_TREE is used when creating a declaration to base a
-   default-definition SSA name on on in order to facilitate an uninitialized
+   default-definition SSA name on in order to facilitate an uninitialized
    warning.  It is used instead of the actual ACCESS type if that is not of a
    gimple register type.  */
 
@@ -2163,15 +2168,9 @@ create_access_replacement (struct access *access, tree reg_type = NULL_TREE)
        variant.  This avoids issues with weirdo ABIs like AAPCS.  */
     repl = create_tmp_var (build_qualified_type (TYPE_MAIN_VARIANT (type),
 						 TYPE_QUALS (type)), "SR");
-  if (TREE_CODE (type) == COMPLEX_TYPE
-      || TREE_CODE (type) == VECTOR_TYPE)
-    {
-      if (!access->grp_partial_lhs)
-	DECL_GIMPLE_REG_P (repl) = 1;
-    }
-  else if (access->grp_partial_lhs
-	   && is_gimple_reg_type (type))
-    TREE_ADDRESSABLE (repl) = 1;
+  if (access->grp_partial_lhs
+      && is_gimple_reg_type (type))
+    DECL_NOT_GIMPLE_REG_P (repl) = 1;
 
   DECL_SOURCE_LOCATION (repl) = DECL_SOURCE_LOCATION (access->base);
   DECL_ARTIFICIAL (repl) = 1;
@@ -2252,7 +2251,7 @@ create_access_replacement (struct access *access, tree reg_type = NULL_TREE)
 	  print_generic_expr (dump_file, access->base);
 	  fprintf (dump_file, " offset: %u, size: %u: ",
 		   (unsigned) access->offset, (unsigned) access->size);
-	  print_generic_expr (dump_file, repl);
+	  print_generic_expr (dump_file, repl, TDF_UID);
 	  fprintf (dump_file, "\n");
 	}
     }
@@ -2321,6 +2320,91 @@ build_access_trees (struct access *access)
   return true;
 }
 
+/* Traverse the access forest where ROOT is the first root and verify that
+   various important invariants hold true.  */
+
+DEBUG_FUNCTION void
+verify_sra_access_forest (struct access *root)
+{
+  struct access *access = root;
+  tree first_base = root->base;
+  gcc_assert (DECL_P (first_base));
+  do
+    {
+      gcc_assert (access->base == first_base);
+      if (access->parent)
+	gcc_assert (access->offset >= access->parent->offset
+		    && access->size <= access->parent->size);
+      if (access->next_sibling)
+	gcc_assert (access->next_sibling->offset
+		    >= access->offset + access->size);
+
+      poly_int64 poffset, psize, pmax_size;
+      bool reverse;
+      tree base = get_ref_base_and_extent (access->expr, &poffset, &psize,
+					   &pmax_size, &reverse);
+      HOST_WIDE_INT offset, size, max_size;
+      if (!poffset.is_constant (&offset)
+	  || !psize.is_constant (&size)
+	  || !pmax_size.is_constant (&max_size))
+	gcc_unreachable ();
+      gcc_assert (base == first_base);
+      gcc_assert (offset == access->offset);
+      gcc_assert (access->grp_unscalarizable_region
+		  || access->grp_total_scalarization
+		  || size == max_size);
+      gcc_assert (access->grp_unscalarizable_region
+		  || !is_gimple_reg_type (access->type)
+		  || size == access->size);
+      gcc_assert (reverse == access->reverse);
+
+      if (access->first_child)
+	{
+	  gcc_assert (access->first_child->parent == access);
+	  access = access->first_child;
+	}
+      else if (access->next_sibling)
+	{
+	  gcc_assert (access->next_sibling->parent == access->parent);
+	  access = access->next_sibling;
+	}
+      else
+	{
+	  while (access->parent && !access->next_sibling)
+	    access = access->parent;
+	  if (access->next_sibling)
+	    access = access->next_sibling;
+	  else
+	    {
+	      gcc_assert (access == root);
+	      root = root->next_grp;
+	      access = root;
+	    }
+	}
+    }
+  while (access);
+}
+
+/* Verify access forests of all candidates with accesses by calling
+   verify_access_forest on each on them.  */
+
+DEBUG_FUNCTION void
+verify_all_sra_access_forests (void)
+{
+  bitmap_iterator bi;
+  unsigned i;
+  EXECUTE_IF_SET_IN_BITMAP (candidate_bitmap, 0, i, bi)
+    {
+      tree var = candidate (i);
+      struct access *access = get_first_repr_for_decl (var);
+      if (access)
+	{
+	  gcc_assert (access->base == var);
+	  verify_sra_access_forest (access);
+	}
+    }
+}
+
 /* Return true if expr contains some ARRAY_REFs into a variable bounded
    array.  */
 
@@ -2338,15 +2422,16 @@ expr_with_var_bounded_array_refs_p (tree expr)
 }
 
 /* Analyze the subtree of accesses rooted in ROOT, scheduling replacements when
-   both seeming beneficial and when ALLOW_REPLACEMENTS allows it.  Also set all
-   sorts of access flags appropriately along the way, notably always set
-   grp_read and grp_assign_read according to MARK_READ and grp_write when
-   MARK_WRITE is true.
+   both seeming beneficial and when ALLOW_REPLACEMENTS allows it.  If TOTALLY
+   is set, we are totally scalarizing the aggregate.  Also set all sorts of
+   access flags appropriately along the way, notably always set grp_read and
+   grp_assign_read according to MARK_READ and grp_write when MARK_WRITE is
+   true.
 
    Creating a replacement for a scalar access is considered beneficial if its
-   grp_hint is set (this means we are either attempting total scalarization or
-   there is more than one direct read access) or according to the following
-   table:
+   grp_hint ot TOTALLY is set (this means either that there is more than one
+   direct read access or that we are attempting total scalarization) or
+   according to the following table:
 
    Access written to through a scalar type (once or more times)
    |
@@ -2377,7 +2462,7 @@ expr_with_var_bounded_array_refs_p (tree expr)
 
 static bool
 analyze_access_subtree (struct access *root, struct access *parent,
-			bool allow_replacements)
+			bool allow_replacements, bool totally)
 {
   struct access *child;
   HOST_WIDE_INT limit = root->offset + root->size;
@@ -2395,8 +2480,6 @@ analyze_access_subtree (struct access *root, struct access *parent,
 	root->grp_write = 1;
       if (parent->grp_assignment_write)
 	root->grp_assignment_write = 1;
-      if (parent->grp_total_scalarization)
-	root->grp_total_scalarization = 1;
       if (!parent->grp_same_access_path)
 	root->grp_same_access_path = 0;
     }
@@ -2411,10 +2494,10 @@ analyze_access_subtree (struct access *root, struct access *parent,
     {
       hole |= covered_to < child->offset;
       sth_created |= analyze_access_subtree (child, root,
-					     allow_replacements && !scalar);
+					     allow_replacements && !scalar,
+					     totally);
 
       root->grp_unscalarized_data |= child->grp_unscalarized_data;
-      root->grp_total_scalarization &= child->grp_total_scalarization;
       if (child->grp_covered)
 	covered_to += child->size;
       else
@@ -2422,7 +2505,9 @@ analyze_access_subtree (struct access *root, struct access *parent,
     }
 
   if (allow_replacements && scalar && !root->first_child
-      && (root->grp_hint
+      && (totally || !root->grp_total_scalarization)
+      && (totally
+	  || root->grp_hint
 	  || ((root->grp_scalar_read || root->grp_assignment_read)
 	      && (root->grp_scalar_write || root->grp_assignment_write))))
     {
@@ -2464,6 +2549,7 @@ analyze_access_subtree (struct access *root, struct access *parent,
     {
       if (allow_replacements
 	  && scalar && !root->first_child
+	  && !root->grp_total_scalarization
 	  && (root->grp_scalar_write || root->grp_assignment_write)
 	  && !bitmap_bit_p (cannot_scalarize_away_bitmap,
 			    DECL_UID (root->base)))
@@ -2484,7 +2570,7 @@ analyze_access_subtree (struct access *root, struct access *parent,
 	root->grp_total_scalarization = 0;
     }
 
-  if (!hole || root->grp_total_scalarization)
+  if (!hole || totally)
     root->grp_covered = 1;
   else if (root->grp_write || comes_initialized_p (root->base))
     root->grp_unscalarized_data = 1; /* not covered and written to */
@@ -2500,7 +2586,8 @@ analyze_access_trees (struct access *access)
 
   while (access)
     {
-      if (analyze_access_subtree (access, NULL, true))
+      if (analyze_access_subtree (access, NULL, true,
+				  access->grp_total_scalarization))
 	ret = true;
       access = access->next_grp;
     }
@@ -2508,17 +2595,17 @@ analyze_access_trees (struct access *access)
   return ret;
 }
 
-/* Return true iff a potential new child of LACC at offset OFFSET and with size
+/* Return true iff a potential new child of ACC at offset OFFSET and with size
    SIZE would conflict with an already existing one.  If exactly such a child
-   already exists in LACC, store a pointer to it in EXACT_MATCH.  */
+   already exists in ACC, store a pointer to it in EXACT_MATCH.  */
 
 static bool
-child_would_conflict_in_lacc (struct access *lacc, HOST_WIDE_INT norm_offset,
+child_would_conflict_in_acc (struct access *acc, HOST_WIDE_INT norm_offset,
 			      HOST_WIDE_INT size, struct access **exact_match)
 {
   struct access *child;
 
-  for (child = lacc->first_child; child; child = child->next_sibling)
+  for (child = acc->first_child; child; child = child->next_sibling)
     {
       if (child->offset == norm_offset && child->size == size)
 	{
@@ -2544,7 +2631,7 @@ child_would_conflict_in_lacc (struct access *lacc, HOST_WIDE_INT norm_offset,
 static struct access *
 create_artificial_child_access (struct access *parent, struct access *model,
 				HOST_WIDE_INT new_offset,
-				bool set_grp_write)
+				bool set_grp_read, bool set_grp_write)
 {
   struct access **child;
   tree expr = parent->base;
@@ -2566,8 +2653,9 @@ create_artificial_child_access (struct access *parent, struct access *model,
   access->offset = new_offset;
   access->size = model->size;
   access->type = model->type;
+  access->parent = parent;
+  access->grp_read = set_grp_read;
   access->grp_write = set_grp_write;
-  access->grp_read = false;
   access->reverse = model->reverse;
 
   child = &parent->first_child;
@@ -2586,16 +2674,42 @@ create_artificial_child_access (struct access *parent, struct access *model,
    and has assignment links leading from it, re-enqueue it.  */
 
 static void
-subtree_mark_written_and_enqueue (struct access *access)
+subtree_mark_written_and_rhs_enqueue (struct access *access)
 {
   if (access->grp_write)
     return;
   access->grp_write = true;
-  add_access_to_work_queue (access);
+  add_access_to_rhs_work_queue (access);
 
   struct access *child;
   for (child = access->first_child; child; child = child->next_sibling)
-    subtree_mark_written_and_enqueue (child);
+    subtree_mark_written_and_rhs_enqueue (child);
+}
+
+/* If there is still budget to create a propagation access for DECL, return
+   true and decrement the budget.  Otherwise return false.  */
+
+static bool
+budget_for_propagation_access (tree decl)
+{
+  unsigned b, *p = propagation_budget->get (decl);
+  if (p)
+    b = *p;
+  else
+    b = param_sra_max_propagations;
+
+  if (b == 0)
+    return false;
+  b--;
+
+  if (b == 0 && dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "The propagation budget of ");
+      print_generic_expr (dump_file, decl);
+      fprintf (dump_file, " (UID: %u) has been exhausted.\n", DECL_UID (decl));
+    }
+  propagation_budget->put (decl, b);
+  return true;
 }
 
 /* Propagate subaccesses and grp_write flags of RACC across an assignment link
@@ -2605,7 +2719,7 @@ subtree_mark_written_and_enqueue (struct access *access)
    possible.  */
 
 static bool
-propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
+propagate_subaccesses_from_rhs (struct access *lacc, struct access *racc)
 {
   struct access *rchild;
   HOST_WIDE_INT norm_delta = lacc->offset - racc->offset;
@@ -2618,7 +2732,7 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
       gcc_checking_assert (!comes_initialized_p (racc->base));
       if (racc->grp_write)
 	{
-	  subtree_mark_written_and_enqueue (lacc);
+	  subtree_mark_written_and_rhs_enqueue (lacc);
 	  ret = true;
 	}
     }
@@ -2630,7 +2744,7 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
       if (!lacc->grp_write)
 	{
 	  ret = true;
-	  subtree_mark_written_and_enqueue (lacc);
+	  subtree_mark_written_and_rhs_enqueue (lacc);
 	}
       return ret;
     }
@@ -2640,10 +2754,13 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
       if (!lacc->grp_write)
 	{
 	  ret = true;
-	  subtree_mark_written_and_enqueue (lacc);
+	  subtree_mark_written_and_rhs_enqueue (lacc);
 	}
       if (!lacc->first_child && !racc->first_child)
 	{
+	  /* We are about to change the access type from aggregate to scalar,
+	     so we need to put the reverse flag onto the access, if any.  */
+	  const bool reverse = TYPE_REVERSE_STORAGE_ORDER (lacc->type);
 	  tree t = lacc->base;
 
 	  lacc->type = racc->type;
@@ -2658,9 +2775,12 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
 	      lacc->expr = build_ref_for_model (EXPR_LOCATION (lacc->base),
 						lacc->base, lacc->offset,
 						racc, NULL, false);
+	      if (TREE_CODE (lacc->expr) == MEM_REF)
+		REF_REVERSE_STORAGE_ORDER (lacc->expr) = reverse;
 	      lacc->grp_no_warning = true;
 	      lacc->grp_same_access_path = false;
 	    }
+	  lacc->reverse = reverse;
 	}
       return ret;
     }
@@ -2670,7 +2790,7 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
       struct access *new_acc = NULL;
       HOST_WIDE_INT norm_offset = rchild->offset + norm_delta;
 
-      if (child_would_conflict_in_lacc (lacc, norm_offset, rchild->size,
+      if (child_would_conflict_in_acc (lacc, norm_offset, rchild->size,
 					&new_acc))
 	{
 	  if (new_acc)
@@ -2678,17 +2798,17 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
 	      if (!new_acc->grp_write && rchild->grp_write)
 		{
 		  gcc_assert (!lacc->grp_write);
-		  subtree_mark_written_and_enqueue (new_acc);
+		  subtree_mark_written_and_rhs_enqueue (new_acc);
 		  ret = true;
 		}
 
 	      rchild->grp_hint = 1;
 	      new_acc->grp_hint |= new_acc->grp_read;
 	      if (rchild->first_child
-		  && propagate_subaccesses_across_link (new_acc, rchild))
+		  && propagate_subaccesses_from_rhs (new_acc, rchild))
 		{
 		  ret = 1;
-		  add_access_to_work_queue (new_acc);
+		  add_access_to_rhs_work_queue (new_acc);
 		}
 	    }
 	  else
@@ -2696,34 +2816,97 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
 	      if (!lacc->grp_write)
 		{
 		  ret = true;
-		  subtree_mark_written_and_enqueue (lacc);
+		  subtree_mark_written_and_rhs_enqueue (lacc);
 		}
 	    }
 	  continue;
 	}
 
-      if (rchild->grp_unscalarizable_region)
+      if (rchild->grp_unscalarizable_region
+	  || !budget_for_propagation_access (lacc->base))
 	{
 	  if (rchild->grp_write && !lacc->grp_write)
 	    {
 	      ret = true;
-	      subtree_mark_written_and_enqueue (lacc);
+	      subtree_mark_written_and_rhs_enqueue (lacc);
 	    }
 	  continue;
 	}
 
       rchild->grp_hint = 1;
-      new_acc = create_artificial_child_access (lacc, rchild, norm_offset,
-						lacc->grp_write
-						|| rchild->grp_write);
+      /* Because get_ref_base_and_extent always includes padding in size for
+	 accesses to DECLs but not necessarily for COMPONENT_REFs of the same
+	 type, we might be actually attempting to here to create a child of the
+	 same type as the parent.  */
+      if (!types_compatible_p (lacc->type, rchild->type))
+	new_acc = create_artificial_child_access (lacc, rchild, norm_offset,
+						  false,
+						  (lacc->grp_write
+						   || rchild->grp_write));
+      else
+	new_acc = lacc;
       gcc_checking_assert (new_acc);
       if (racc->first_child)
-	propagate_subaccesses_across_link (new_acc, rchild);
+	propagate_subaccesses_from_rhs (new_acc, rchild);
 
-      add_access_to_work_queue (lacc);
+      add_access_to_rhs_work_queue (lacc);
       ret = true;
     }
 
+  return ret;
+}
+
+/* Propagate subaccesses of LACC across an assignment link to RACC if they
+   should inhibit total scalarization of the corresponding area.  No flags are
+   being propagated in the process.  Return true if anything changed.  */
+
+static bool
+propagate_subaccesses_from_lhs (struct access *lacc, struct access *racc)
+{
+  if (is_gimple_reg_type (racc->type)
+      || lacc->grp_unscalarizable_region
+      || racc->grp_unscalarizable_region)
+    return false;
+
+  /* TODO: Do we want set some new racc flag to stop potential total
+     scalarization if lacc is a scalar access (and none fo the two have
+     children)?  */
+
+  bool ret = false;
+  HOST_WIDE_INT norm_delta = racc->offset - lacc->offset;
+  for (struct access *lchild = lacc->first_child;
+       lchild;
+       lchild = lchild->next_sibling)
+    {
+      struct access *matching_acc = NULL;
+      HOST_WIDE_INT norm_offset = lchild->offset + norm_delta;
+
+      if (lchild->grp_unscalarizable_region
+	  || child_would_conflict_in_acc (racc, norm_offset, lchild->size,
+					  &matching_acc)
+	  || !budget_for_propagation_access (racc->base))
+	{
+	  if (matching_acc
+	      && propagate_subaccesses_from_lhs (lchild, matching_acc))
+	    add_access_to_lhs_work_queue (matching_acc);
+	  continue;
+	}
+
+      /* Because get_ref_base_and_extent always includes padding in size for
+	 accesses to DECLs but not necessarily for COMPONENT_REFs of the same
+	 type, we might be actually attempting to here to create a child of the
+	 same type as the parent.  */
+      if (!types_compatible_p (racc->type, lchild->type))
+	{
+	  struct access *new_acc
+	    = create_artificial_child_access (racc, lchild, norm_offset,
+					      true, false);
+	  propagate_subaccesses_from_lhs (lchild, new_acc);
+	}
+      else
+	propagate_subaccesses_from_lhs (lchild, racc);
+      ret = true;
+    }
   return ret;
 }
 
@@ -2732,16 +2915,17 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
 static void
 propagate_all_subaccesses (void)
 {
-  while (work_queue_head)
+  propagation_budget = new hash_map<tree, unsigned>;
+  while (rhs_work_queue_head)
     {
-      struct access *racc = pop_access_from_work_queue ();
+      struct access *racc = pop_access_from_rhs_work_queue ();
       struct assign_link *link;
 
       if (racc->group_representative)
 	racc= racc->group_representative;
-      gcc_assert (racc->first_link);
+      gcc_assert (racc->first_rhs_link);
 
-      for (link = racc->first_link; link; link = link->next)
+      for (link = racc->first_rhs_link; link; link = link->next_rhs)
 	{
 	  struct access *lacc = link->lacc;
 
@@ -2754,22 +2938,411 @@ propagate_all_subaccesses (void)
 	    {
 	      if (!lacc->grp_write)
 		{
-		  subtree_mark_written_and_enqueue (lacc);
+		  subtree_mark_written_and_rhs_enqueue (lacc);
 		  reque_parents = true;
 		}
 	    }
-	  else if (propagate_subaccesses_across_link (lacc, racc))
+	  else if (propagate_subaccesses_from_rhs (lacc, racc))
 	    reque_parents = true;
 
 	  if (reque_parents)
 	    do
 	      {
-		add_access_to_work_queue (lacc);
+		add_access_to_rhs_work_queue (lacc);
 		lacc = lacc->parent;
 	      }
 	    while (lacc);
 	}
     }
+
+  while (lhs_work_queue_head)
+    {
+      struct access *lacc = pop_access_from_lhs_work_queue ();
+      struct assign_link *link;
+
+      if (lacc->group_representative)
+	lacc = lacc->group_representative;
+      gcc_assert (lacc->first_lhs_link);
+
+      if (!bitmap_bit_p (candidate_bitmap, DECL_UID (lacc->base)))
+	continue;
+
+      for (link = lacc->first_lhs_link; link; link = link->next_lhs)
+	{
+	  struct access *racc = link->racc;
+
+	  if (racc->group_representative)
+	    racc = racc->group_representative;
+	  if (!bitmap_bit_p (candidate_bitmap, DECL_UID (racc->base)))
+	    continue;
+	  if (propagate_subaccesses_from_lhs (lacc, racc))
+	    add_access_to_lhs_work_queue (racc);
+	}
+    }
+  delete propagation_budget;
+}
+
+/* Return true if the forest beginning with ROOT does not contain
+   unscalarizable regions or non-byte aligned accesses.  */
+
+static bool
+can_totally_scalarize_forest_p (struct access *root)
+{
+  struct access *access = root;
+  do
+    {
+      if (access->grp_unscalarizable_region
+	  || (access->offset % BITS_PER_UNIT) != 0
+	  || (access->size % BITS_PER_UNIT) != 0
+	  || (is_gimple_reg_type (access->type)
+	      && access->first_child))
+	return false;
+
+      if (access->first_child)
+	access = access->first_child;
+      else if (access->next_sibling)
+	access = access->next_sibling;
+      else
+	{
+	  while (access->parent && !access->next_sibling)
+	    access = access->parent;
+	  if (access->next_sibling)
+	    access = access->next_sibling;
+	  else
+	    {
+	      gcc_assert (access == root);
+	      root = root->next_grp;
+	      access = root;
+	    }
+	}
+    }
+  while (access);
+  return true;
+}
+
+/* Create and return an ACCESS in PARENT spanning from POS with SIZE, TYPE and
+   reference EXPR for total scalarization purposes and mark it as such.  Within
+   the children of PARENT, link it in between PTR and NEXT_SIBLING.  */
+
+static struct access *
+create_total_scalarization_access (struct access *parent, HOST_WIDE_INT pos,
+				   HOST_WIDE_INT size, tree type, tree expr,
+				   struct access **ptr,
+				   struct access *next_sibling)
+{
+  struct access *access = access_pool.allocate ();
+  memset (access, 0, sizeof (struct access));
+  access->base = parent->base;
+  access->offset = pos;
+  access->size = size;
+  access->expr = expr;
+  access->type = type;
+  access->parent = parent;
+  access->grp_write = parent->grp_write;
+  access->grp_total_scalarization = 1;
+  access->grp_hint = 1;
+  access->grp_same_access_path = path_comparable_for_same_access (expr);
+  access->reverse = reverse_storage_order_for_component_p (expr);
+
+  access->next_sibling = next_sibling;
+  *ptr = access;
+  return access;
+}
+
+/* Create and return an ACCESS in PARENT spanning from POS with SIZE, TYPE and
+   reference EXPR for total scalarization purposes and mark it as such, link it
+   at *PTR and reshape the tree so that those elements at *PTR and their
+   siblings which fall within the part described by POS and SIZE are moved to
+   be children of the new access.  If a partial overlap is detected, return
+   NULL.  */
+
+static struct access *
+create_total_access_and_reshape (struct access *parent, HOST_WIDE_INT pos,
+				 HOST_WIDE_INT size, tree type, tree expr,
+				 struct access **ptr)
+{
+  struct access **p = ptr;
+
+  while (*p && (*p)->offset < pos + size)
+    {
+      if ((*p)->offset + (*p)->size > pos + size)
+	return NULL;
+      p = &(*p)->next_sibling;
+    }
+
+  struct access *next_child = *ptr;
+  struct access *new_acc
+    = create_total_scalarization_access (parent, pos, size, type, expr,
+					 ptr, *p);
+  if (p != ptr)
+    {
+      new_acc->first_child = next_child;
+      *p = NULL;
+      for (struct access *a = next_child; a; a = a->next_sibling)
+	a->parent = new_acc;
+    }
+  return new_acc;
+}
+
+static bool totally_scalarize_subtree (struct access *root);
+
+/* Return true if INNER is either the same type as OUTER or if it is the type
+   of a record field in OUTER at offset zero, possibly in nested
+   sub-records.  */
+
+static bool
+access_and_field_type_match_p (tree outer, tree inner)
+{
+  if (TYPE_MAIN_VARIANT (outer) == TYPE_MAIN_VARIANT (inner))
+    return true;
+  if (TREE_CODE (outer) != RECORD_TYPE)
+    return false;
+  tree fld = TYPE_FIELDS (outer);
+  while (fld)
+    {
+     if (TREE_CODE (fld) == FIELD_DECL)
+       {
+	if (!zerop (DECL_FIELD_OFFSET (fld)))
+	  return false;
+	if (TYPE_MAIN_VARIANT (TREE_TYPE (fld)) == inner)
+	  return true;
+	if (TREE_CODE (TREE_TYPE (fld)) == RECORD_TYPE)
+	  fld = TYPE_FIELDS (TREE_TYPE (fld));
+	else
+	  return false;
+       }
+     else
+       fld = DECL_CHAIN (fld);
+    }
+  return false;
+}
+
+/* Return type of total_should_skip_creating_access indicating whether a total
+   scalarization access for a field/element should be created, whether it
+   already exists or whether the entire total scalarization has to fail.  */
+
+enum total_sra_field_state {TOTAL_FLD_CREATE, TOTAL_FLD_DONE, TOTAL_FLD_FAILED};
+
+/* Do all the necessary steps in total scalarization when the given aggregate
+   type has a TYPE at POS with the given SIZE should be put into PARENT and
+   when we have processed all its siblings with smaller offsets up until and
+   including LAST_SEEN_SIBLING (which can be NULL).
+
+   If some further siblings are to be skipped, set *LAST_SEEN_SIBLING as
+   appropriate.  Return TOTAL_FLD_CREATE id the caller should carry on with
+   creating a new access, TOTAL_FLD_DONE if access or accesses capable of
+   representing the described part of the aggregate for the purposes of total
+   scalarization already exist or TOTAL_FLD_FAILED if there is a problem which
+   prevents total scalarization from happening at all.  */
+
+static enum total_sra_field_state
+total_should_skip_creating_access (struct access *parent,
+				   struct access **last_seen_sibling,
+				   tree type, HOST_WIDE_INT pos,
+				   HOST_WIDE_INT size)
+{
+  struct access *next_child;
+  if (!*last_seen_sibling)
+    next_child = parent->first_child;
+  else
+    next_child = (*last_seen_sibling)->next_sibling;
+
+  /* First, traverse the chain of siblings until it points to an access with
+     offset at least equal to POS.  Check all skipped accesses whether they
+     span the POS boundary and if so, return with a failure.  */
+  while (next_child && next_child->offset < pos)
+    {
+      if (next_child->offset + next_child->size > pos)
+	return TOTAL_FLD_FAILED;
+      *last_seen_sibling = next_child;
+      next_child = next_child->next_sibling;
+    }
+
+  /* Now check whether next_child has exactly the right POS and SIZE and if so,
+     whether it can represent what we need and can be totally scalarized
+     itself.  */
+  if (next_child && next_child->offset == pos
+      && next_child->size == size)
+    {
+      if (!is_gimple_reg_type (next_child->type)
+	  && (!access_and_field_type_match_p (type, next_child->type)
+	      || !totally_scalarize_subtree (next_child)))
+	return TOTAL_FLD_FAILED;
+
+      *last_seen_sibling = next_child;
+      return TOTAL_FLD_DONE;
+    }
+
+  /* If the child we're looking at would partially overlap, we just cannot
+     totally scalarize.  */
+  if (next_child
+      && next_child->offset < pos + size
+      && next_child->offset + next_child->size > pos + size)
+    return TOTAL_FLD_FAILED;
+
+  if (is_gimple_reg_type (type))
+    {
+      /* We don't scalarize accesses that are children of other scalar type
+	 accesses, so if we go on and create an access for a register type,
+	 there should not be any pre-existing children.  There are rare cases
+	 where the requested type is a vector but we already have register
+	 accesses for all its elements which is equally good.  Detect that
+	 situation or whether we need to bail out.  */
+
+      HOST_WIDE_INT covered = pos;
+      bool skipping = false;
+      while (next_child
+	     && next_child->offset + next_child->size <= pos + size)
+	{
+	  if (next_child->offset != covered
+	      || !is_gimple_reg_type (next_child->type))
+	    return TOTAL_FLD_FAILED;
+
+	  covered += next_child->size;
+	  *last_seen_sibling = next_child;
+	  next_child = next_child->next_sibling;
+	  skipping = true;
+	}
+
+      if (skipping)
+	{
+	  if (covered != pos + size)
+	    return TOTAL_FLD_FAILED;
+	  else
+	    return TOTAL_FLD_DONE;
+	}
+    }
+
+  return TOTAL_FLD_CREATE;
+}
+
+/* Go over sub-tree rooted in ROOT and attempt to create scalar accesses
+   spanning all uncovered areas covered by ROOT, return false if the attempt
+   failed.  All created accesses will have grp_unscalarizable_region set (and
+   should be ignored if the function returns false).  */
+
+static bool
+totally_scalarize_subtree (struct access *root)
+{
+  gcc_checking_assert (!root->grp_unscalarizable_region);
+  gcc_checking_assert (!is_gimple_reg_type (root->type));
+
+  struct access *last_seen_sibling = NULL;
+
+  switch (TREE_CODE (root->type))
+    {
+    case RECORD_TYPE:
+      for (tree fld = TYPE_FIELDS (root->type); fld; fld = DECL_CHAIN (fld))
+	if (TREE_CODE (fld) == FIELD_DECL)
+	  {
+	    tree ft = TREE_TYPE (fld);
+	    HOST_WIDE_INT fsize = tree_to_uhwi (DECL_SIZE (fld));
+	    if (!fsize)
+	      continue;
+
+	    HOST_WIDE_INT pos = root->offset + int_bit_position (fld);
+	    enum total_sra_field_state
+	      state = total_should_skip_creating_access (root,
+							 &last_seen_sibling,
+							 ft, pos, fsize);
+	    switch (state)
+	      {
+	      case TOTAL_FLD_FAILED:
+		return false;
+	      case TOTAL_FLD_DONE:
+		continue;
+	      case TOTAL_FLD_CREATE:
+		break;
+	      default:
+		gcc_unreachable ();
+	      }
+
+	    struct access **p = (last_seen_sibling
+				 ? &last_seen_sibling->next_sibling
+				 : &root->first_child);
+	    tree nref = build3 (COMPONENT_REF, ft, root->expr, fld, NULL_TREE);
+	    struct access *new_child
+	      = create_total_access_and_reshape (root, pos, fsize, ft, nref, p);
+	    if (!new_child)
+	      return false;
+
+	    if (!is_gimple_reg_type (ft)
+		&& !totally_scalarize_subtree (new_child))
+	      return false;
+	    last_seen_sibling = new_child;
+	  }
+      break;
+    case ARRAY_TYPE:
+      {
+	tree elemtype = TREE_TYPE (root->type);
+	tree elem_size = TYPE_SIZE (elemtype);
+	gcc_assert (elem_size && tree_fits_shwi_p (elem_size));
+	HOST_WIDE_INT el_size = tree_to_shwi (elem_size);
+	gcc_assert (el_size > 0);
+
+	tree minidx = TYPE_MIN_VALUE (TYPE_DOMAIN (root->type));
+	gcc_assert (TREE_CODE (minidx) == INTEGER_CST);
+	tree maxidx = TYPE_MAX_VALUE (TYPE_DOMAIN (root->type));
+	/* Skip (some) zero-length arrays; others have MAXIDX == MINIDX - 1.  */
+	if (!maxidx)
+	  goto out;
+	gcc_assert (TREE_CODE (maxidx) == INTEGER_CST);
+	tree domain = TYPE_DOMAIN (root->type);
+	/* MINIDX and MAXIDX are inclusive, and must be interpreted in
+	   DOMAIN (e.g. signed int, whereas min/max may be size_int).  */
+	offset_int idx = wi::to_offset (minidx);
+	offset_int max = wi::to_offset (maxidx);
+	if (!TYPE_UNSIGNED (domain))
+	  {
+	    idx = wi::sext (idx, TYPE_PRECISION (domain));
+	    max = wi::sext (max, TYPE_PRECISION (domain));
+	  }
+	for (HOST_WIDE_INT pos = root->offset;
+	     idx <= max;
+	     pos += el_size, ++idx)
+	  {
+	    enum total_sra_field_state
+	      state = total_should_skip_creating_access (root,
+							 &last_seen_sibling,
+							 elemtype, pos,
+							 el_size);
+	    switch (state)
+	      {
+	      case TOTAL_FLD_FAILED:
+		return false;
+	      case TOTAL_FLD_DONE:
+		continue;
+	      case TOTAL_FLD_CREATE:
+		break;
+	      default:
+		gcc_unreachable ();
+	      }
+
+	    struct access **p = (last_seen_sibling
+				 ? &last_seen_sibling->next_sibling
+				 : &root->first_child);
+	    tree nref = build4 (ARRAY_REF, elemtype, root->expr,
+				wide_int_to_tree (domain, idx),
+				NULL_TREE, NULL_TREE);
+	    struct access *new_child
+	      = create_total_access_and_reshape (root, pos, el_size, elemtype,
+						 nref, p);
+	    if (!new_child)
+	      return false;
+
+	    if (!is_gimple_reg_type (elemtype)
+		&& !totally_scalarize_subtree (new_child))
+	      return false;
+	    last_seen_sibling = new_child;
+	  }
+      }
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+ out:
+  return true;
 }
 
 /* Go through all accesses collected throughout the (intraprocedural) analysis
@@ -2784,8 +3357,22 @@ analyze_all_variable_accesses (void)
   bitmap tmp = BITMAP_ALLOC (NULL);
   bitmap_iterator bi;
   unsigned i;
-  bool optimize_speed_p = !optimize_function_for_size_p (cfun);
 
+  bitmap_copy (tmp, candidate_bitmap);
+  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, bi)
+    {
+      tree var = candidate (i);
+      struct access *access;
+
+      access = sort_and_splice_var_accesses (var);
+      if (!access || !build_access_trees (access))
+	disqualify_candidate (var,
+			      "No or inhibitingly overlapping accesses.");
+    }
+
+  propagate_all_subaccesses ();
+
+  bool optimize_speed_p = !optimize_function_for_size_p (cfun);
   /* If the user didn't set PARAM_SRA_MAX_SCALARIZATION_SIZE_<...>,
      fall back to a target default.  */
   unsigned HOST_WIDE_INT max_scalarization_size
@@ -2801,7 +3388,6 @@ analyze_all_variable_accesses (void)
       if (global_options_set.x_param_sra_max_scalarization_size_size)
 	max_scalarization_size = param_sra_max_scalarization_size_size;
     }
-
   max_scalarization_size *= BITS_PER_UNIT;
 
   EXECUTE_IF_SET_IN_BITMAP (candidate_bitmap, 0, i, bi)
@@ -2809,46 +3395,59 @@ analyze_all_variable_accesses (void)
 	&& !bitmap_bit_p (cannot_scalarize_away_bitmap, i))
       {
 	tree var = candidate (i);
+	if (!VAR_P (var))
+	  continue;
 
-	if (VAR_P (var) && scalarizable_type_p (TREE_TYPE (var),
-						constant_decl_p (var)))
+	if (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (var))) > max_scalarization_size)
 	  {
-	    if (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (var)))
-		<= max_scalarization_size)
-	      {
-		create_total_scalarization_access (var);
-		completely_scalarize (var, TREE_TYPE (var), 0, var);
-		statistics_counter_event (cfun,
-					  "Totally-scalarized aggregates", 1);
-		if (dump_file && (dump_flags & TDF_DETAILS))
-		  {
-		    fprintf (dump_file, "Will attempt to totally scalarize ");
-		    print_generic_expr (dump_file, var);
-		    fprintf (dump_file, " (UID: %u): \n", DECL_UID (var));
-		  }
-	      }
-	    else if (dump_file && (dump_flags & TDF_DETAILS))
+	    if (dump_file && (dump_flags & TDF_DETAILS))
 	      {
 		fprintf (dump_file, "Too big to totally scalarize: ");
 		print_generic_expr (dump_file, var);
 		fprintf (dump_file, " (UID: %u)\n", DECL_UID (var));
 	      }
+	    continue;
 	  }
+
+	bool all_types_ok = true;
+	for (struct access *access = get_first_repr_for_decl (var);
+	     access;
+	     access = access->next_grp)
+	  if (!can_totally_scalarize_forest_p (access)
+	      || !scalarizable_type_p (access->type, constant_decl_p (var)))
+	    {
+	      all_types_ok = false;
+	      break;
+	    }
+	if (!all_types_ok)
+	  continue;
+
+	if (dump_file && (dump_flags & TDF_DETAILS))
+	  {
+	    fprintf (dump_file, "Will attempt to totally scalarize ");
+	    print_generic_expr (dump_file, var);
+	    fprintf (dump_file, " (UID: %u): \n", DECL_UID (var));
+	  }
+	bool scalarized = true;
+	for (struct access *access = get_first_repr_for_decl (var);
+	     access;
+	     access = access->next_grp)
+	  if (!is_gimple_reg_type (access->type)
+	      && !totally_scalarize_subtree (access))
+	    {
+	      scalarized = false;
+	      break;
+	    }
+
+	if (scalarized)
+	  for (struct access *access = get_first_repr_for_decl (var);
+	       access;
+	       access = access->next_grp)
+	    access->grp_total_scalarization = true;
       }
 
-  bitmap_copy (tmp, candidate_bitmap);
-  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, bi)
-    {
-      tree var = candidate (i);
-      struct access *access;
-
-      access = sort_and_splice_var_accesses (var);
-      if (!access || !build_access_trees (access))
-	disqualify_candidate (var,
-			      "No or inhibitingly overlapping accesses.");
-    }
-
-  propagate_all_subaccesses ();
+  if (flag_checking)
+    verify_all_sra_access_forests ();
 
   bitmap_copy (tmp, candidate_bitmap);
   EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, bi)
@@ -3075,12 +3674,15 @@ get_access_for_expr (tree expr)
 
   if (tree basesize = DECL_SIZE (base))
     {
-      poly_int64 sz = tree_to_poly_int64 (basesize);
-      if (offset < 0 || known_le (sz, offset))
+      poly_int64 sz;
+      if (offset < 0
+	  || !poly_int_tree_p (basesize, &sz)
+	  || known_le (sz, offset))
 	return NULL;
     }
 
-  if (!bitmap_bit_p (candidate_bitmap, DECL_UID (base)))
+  if (max_size == 0
+      || !bitmap_bit_p (candidate_bitmap, DECL_UID (base)))
     return NULL;
 
   return get_var_base_offset_size_access (base, offset, max_size);
@@ -3098,6 +3700,7 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
   location_t loc;
   struct access *access;
   tree type, bfr, orig_expr;
+  bool partial_cplx_access = false;
 
   if (TREE_CODE (*expr) == BIT_FIELD_REF)
     {
@@ -3108,7 +3711,10 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
     bfr = NULL_TREE;
 
   if (TREE_CODE (*expr) == REALPART_EXPR || TREE_CODE (*expr) == IMAGPART_EXPR)
-    expr = &TREE_OPERAND (*expr, 0);
+    {
+      expr = &TREE_OPERAND (*expr, 0);
+      partial_cplx_access = true;
+    }
   access = get_access_for_expr (*expr);
   if (!access)
     return false;
@@ -3136,13 +3742,32 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
          be accessed as a different type too, potentially creating a need for
          type conversion (see PR42196) and when scalarized unions are involved
          in assembler statements (see PR42398).  */
-      if (!useless_type_conversion_p (type, access->type))
+      if (!bfr && !useless_type_conversion_p (type, access->type))
 	{
 	  tree ref;
 
 	  ref = build_ref_for_model (loc, orig_expr, 0, access, gsi, false);
 
-	  if (write)
+	  if (partial_cplx_access)
+	    {
+	    /* VIEW_CONVERT_EXPRs in partial complex access are always fine in
+	       the case of a write because in such case the replacement cannot
+	       be a gimple register.  In the case of a load, we have to
+	       differentiate in between a register an non-register
+	       replacement.  */
+	      tree t = build1 (VIEW_CONVERT_EXPR, type, repl);
+	      gcc_checking_assert (!write || access->grp_partial_lhs);
+	      if (!access->grp_partial_lhs)
+		{
+		  tree tmp = make_ssa_name (type);
+		  gassign *stmt = gimple_build_assign (tmp, t);
+		  /* This is always a read. */
+		  gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
+		  t = tmp;
+		}
+	      *expr = t;
+	    }
+	  else if (write)
 	    {
 	      gassign *stmt;
 
@@ -3718,25 +4343,39 @@ initialize_constant_pool_replacements (void)
       tree var = candidate (i);
       if (!constant_decl_p (var))
 	continue;
-      vec<access_p> *access_vec = get_base_access_vector (var);
-      if (!access_vec)
-	continue;
-      for (unsigned i = 0; i < access_vec->length (); i++)
+
+      struct access *access = get_first_repr_for_decl (var);
+
+      while (access)
 	{
-	  struct access *access = (*access_vec)[i];
-	  if (!access->replacement_decl)
-	    continue;
-	  gassign *stmt
-	    = gimple_build_assign (get_access_replacement (access),
-				   unshare_expr (access->expr));
-	  if (dump_file && (dump_flags & TDF_DETAILS))
+	  if (access->replacement_decl)
 	    {
-	      fprintf (dump_file, "Generating constant initializer: ");
-	      print_gimple_stmt (dump_file, stmt, 0);
-	      fprintf (dump_file, "\n");
+	      gassign *stmt
+		= gimple_build_assign (get_access_replacement (access),
+				       unshare_expr (access->expr));
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "Generating constant initializer: ");
+		  print_gimple_stmt (dump_file, stmt, 0);
+		  fprintf (dump_file, "\n");
+		}
+	      gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
+	      update_stmt (stmt);
 	    }
-	  gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
-	  update_stmt (stmt);
+
+	  if (access->first_child)
+	    access = access->first_child;
+	  else if (access->next_sibling)
+	    access = access->next_sibling;
+	  else
+	    {
+	      while (access->parent && !access->next_sibling)
+		access = access->parent;
+	      if (access->next_sibling)
+		access = access->next_sibling;
+	      else
+		access = access->next_grp;
+	    }
 	}
     }
 

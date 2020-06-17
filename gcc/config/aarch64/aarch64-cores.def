@@ -109,10 +109,28 @@ AARCH64_CORE("ares",  ares, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_F
 AARCH64_CORE("neoverse-n1",  neoversen1, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD | AARCH64_FL_PROFILE, neoversen1, 0x41, 0xd0c, -1)
 AARCH64_CORE("neoverse-e1",  neoversee1, cortexa53, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD | AARCH64_FL_SSBS, cortexa73, 0x41, 0xd4a, -1)
 
+/* Cavium ('C') cores. */
+AARCH64_CORE("octeontx2",      octeontx2,      cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_CRYPTO | AARCH64_FL_PROFILE, cortexa57, 0x43, 0x0b0, -1)
+AARCH64_CORE("octeontx2t98",   octeontx2t98,   cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_CRYPTO | AARCH64_FL_PROFILE, cortexa57, 0x43, 0x0b1, -1)
+AARCH64_CORE("octeontx2t96",   octeontx2t96,   cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_CRYPTO | AARCH64_FL_PROFILE, cortexa57, 0x43, 0x0b2, -1)
+/* Note OcteonTX2 T93 is an alias to OcteonTX2 T96. */
+AARCH64_CORE("octeontx2t93",   octeontx2t93,   cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_CRYPTO | AARCH64_FL_PROFILE, cortexa57, 0x43, 0x0b2, -1)
+AARCH64_CORE("octeontx2f95",   octeontx2f95,   cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_CRYPTO | AARCH64_FL_PROFILE, cortexa57, 0x43, 0x0b3, -1)
+AARCH64_CORE("octeontx2f95n",  octeontx2f95n,  cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_CRYPTO | AARCH64_FL_PROFILE, cortexa57, 0x43, 0x0b4, -1)
+AARCH64_CORE("octeontx2f95mm", octeontx2f95mm, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_CRYPTO | AARCH64_FL_PROFILE, cortexa57, 0x43, 0x0b5, -1)
+
 /* HiSilicon ('H') cores. */
 AARCH64_CORE("tsv110",  tsv110, tsv110, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_CRYPTO | AARCH64_FL_F16 | AARCH64_FL_AES | AARCH64_FL_SHA2, tsv110,   0x48, 0xd01, -1)
 
+/* ARMv8.3-A Architecture Processors.  */
+
+/* Marvell cores (TX3). */
+AARCH64_CORE("thunderx3t110",  thunderx3t110,  thunderx3t110, 8_3A,  AARCH64_FL_FOR_ARCH8_3 | AARCH64_FL_CRYPTO | AARCH64_FL_RCPC | AARCH64_FL_SM4 | AARCH64_FL_SHA3 | AARCH64_FL_F16FML | AARCH64_FL_RCPC8_4, thunderx3t110, 0x43, 0x0b8, 0x0a)
+
 /* ARMv8.4-A Architecture Processors.  */
+
+/* Arm ('A') cores.  */
+AARCH64_CORE("zeus", zeus, cortexa57, 8_4A,  AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_SVE | AARCH64_FL_RCPC | AARCH64_FL_I8MM | AARCH64_FL_BF16 | AARCH64_FL_F16 | AARCH64_FL_PROFILE | AARCH64_FL_SSBS | AARCH64_FL_RNG, neoversen1, 0x41, 0xd40, -1)
 
 /* Qualcomm ('Q') cores. */
 AARCH64_CORE("saphira",     saphira,    saphira,    8_4A,  AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_CRYPTO | AARCH64_FL_RCPC, saphira,   0x51, 0xC01, -1)

@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -12,7 +12,7 @@
 
 #include "root/root.h"
 #include "root/stringtable.h"
-
+#include "ast_node.h"
 #include "globals.h"
 #include "arraytypes.h"
 #include "visitor.h"
@@ -83,24 +83,23 @@ struct Ungag
     ~Ungag() { global.gag = oldgag; }
 };
 
-enum PROTKIND
-{
-    PROTundefined,
-    PROTnone,           // no access
-    PROTprivate,
-    PROTpackage,
-    PROTprotected,
-    PROTpublic,
-    PROTexport
-};
-
 struct Prot
 {
-    PROTKIND kind;
+    enum Kind
+    {
+        undefined,
+        none,           // no access
+        private_,
+        package_,
+        protected_,
+        public_,
+        export_
+    };
+    Kind kind;
     Package *pkg;
 
     Prot();
-    Prot(PROTKIND kind);
+    Prot(Kind kind);
 
     bool isMoreRestrictiveThan(const Prot other) const;
     bool operator==(const Prot& other) const;
@@ -109,7 +108,7 @@ struct Prot
 
 // in hdrgen.c
 void protectionToBuffer(OutBuffer *buf, Prot prot);
-const char *protectionToChars(PROTKIND kind);
+const char *protectionToChars(Prot::Kind kind);
 
 /* State of symbol in winding its way through the passes of the compiler
  */
@@ -146,7 +145,7 @@ enum
 
 typedef int (*Dsymbol_apply_ft_t)(Dsymbol *, void *);
 
-class Dsymbol : public RootObject
+class Dsymbol : public ASTNode
 {
 public:
     Identifier *ident;
@@ -282,7 +281,7 @@ public:
     virtual AttribDeclaration *isAttribDeclaration() { return NULL; }
     virtual AnonDeclaration *isAnonDeclaration() { return NULL; }
     virtual OverloadSet *isOverloadSet() { return NULL; }
-    virtual void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) { v->visit(this); }
 };
 
 // Dsymbol that generates a scope
@@ -296,7 +295,7 @@ public:
 
 private:
     Dsymbols *importedScopes;   // imported Dsymbol's
-    PROTKIND *prots;            // array of PROTKIND, one for each import
+    Prot::Kind *prots;            // array of PROTKIND, one for each import
 
     BitArray accessiblePackages, privateAccessiblePackages;
 
@@ -376,8 +375,10 @@ public:
 
 class ForwardingScopeDsymbol : public ScopeDsymbol
 {
+public:
     ScopeDsymbol *forward;
 
+    ForwardingScopeDsymbol(ScopeDsymbol *forward);
     Dsymbol *symtabInsert(Dsymbol *s);
     Dsymbol *symtabLookup(Dsymbol *s, Identifier *id);
     void importScope(Dsymbol *s, Prot protection);

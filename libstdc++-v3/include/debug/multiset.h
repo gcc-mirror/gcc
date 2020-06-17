@@ -58,6 +58,16 @@ namespace __debug
       template<typename _ItT, typename _SeqT, typename _CatT>
 	friend class ::__gnu_debug::_Safe_iterator;
 
+      // Reference wrapper for base class. Disambiguates multiset(const _Base&)
+      // from copy constructor by requiring a user-defined conversion.
+      // See PR libstdc++/90102.
+      struct _Base_ref
+      {
+	_Base_ref(const _Base& __r) : _M_ref(__r) { }
+
+	const _Base& _M_ref;
+      };
+
     public:
       // types:
       typedef _Key					key_type;
@@ -138,8 +148,8 @@ namespace __debug
 		__gnu_debug::__base(__last),
 		__comp, __a) { }
 
-      multiset(const _Base& __x)
-      : _Base(__x) { }
+      multiset(_Base_ref __x)
+      : _Base(__x._M_ref) { }
 
 #if __cplusplus < 201103L
       multiset&
@@ -584,7 +594,7 @@ namespace __debug
     multiset(initializer_list<_Key>, _Allocator)
     -> multiset<_Key, less<_Key>, _Allocator>;
 
-#endif
+#endif // deduction guides
 
   template<typename _Key, typename _Compare, typename _Allocator>
     inline bool
@@ -592,6 +602,13 @@ namespace __debug
 	       const multiset<_Key, _Compare, _Allocator>& __rhs)
     { return __lhs._M_base() == __rhs._M_base(); }
 
+#if __cpp_lib_three_way_comparison
+  template<typename _Key, typename _Compare, typename _Alloc>
+    inline __detail::__synth3way_t<_Key>
+    operator<=>(const multiset<_Key, _Compare, _Alloc>& __lhs,
+		const multiset<_Key, _Compare, _Alloc>& __rhs)
+    { return __lhs._M_base() <=> __rhs._M_base(); }
+#else
   template<typename _Key, typename _Compare, typename _Allocator>
     inline bool
     operator!=(const multiset<_Key, _Compare, _Allocator>& __lhs,
@@ -621,6 +638,7 @@ namespace __debug
     operator>(const multiset<_Key, _Compare, _Allocator>& __lhs,
 	      const multiset<_Key, _Compare, _Allocator>& __rhs)
     { return __lhs._M_base() > __rhs._M_base(); }
+#endif // three-way comparison
 
   template<typename _Key, typename _Compare, typename _Allocator>
     void
@@ -630,19 +648,6 @@ namespace __debug
     { return __x.swap(__y); }
 
 } // namespace __debug
-
-#if __cplusplus > 201703L
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-namespace ranges::__detail
-{
-  template<typename _Tp> extern inline const bool __enable_view_impl;
-  template<typename _Key, typename _Compare, typename _Alloc>
-    inline constexpr bool
-      __enable_view_impl<std::__debug::multiset<_Key, _Compare, _Alloc>>
-	= false;
-} // namespace ranges::__detail
-_GLIBCXX_END_NAMESPACE_VERSION
-#endif // C++20
 } // namespace std
 
 #endif

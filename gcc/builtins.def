@@ -189,6 +189,12 @@ along with GCC; see the file COPYING3.  If not see
   DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, BT_LAST, BT_LAST, false, false, \
 	       false, ATTR_LAST, false, false)
 
+/* Builtins used in implementing coroutine support. */
+#undef DEF_COROUTINE_BUILTIN
+#define DEF_COROUTINE_BUILTIN(ENUM, NAME, TYPE, ATTRS) \
+  DEF_BUILTIN (ENUM, "__builtin_coro_" NAME, BUILT_IN_NORMAL, TYPE, TYPE, \
+	       true, true, true, ATTRS, true, flag_coroutines)
+
 /* Builtin used by the implementation of OpenACC and OpenMP.  Few of these are
    actually implemented in the compiler; most are in libgomp.  */
 /* These builtins also need to be enabled in offloading compilers invoked from
@@ -828,6 +834,8 @@ DEF_GCC_BUILTIN        (BUILT_IN_APPLY_ARGS, "apply_args", BT_FN_PTR_VAR, ATTR_L
 DEF_GCC_BUILTIN        (BUILT_IN_BSWAP16, "bswap16", BT_FN_UINT16_UINT16, ATTR_CONST_NOTHROW_LEAF_LIST)
 DEF_GCC_BUILTIN        (BUILT_IN_BSWAP32, "bswap32", BT_FN_UINT32_UINT32, ATTR_CONST_NOTHROW_LEAF_LIST)
 DEF_GCC_BUILTIN        (BUILT_IN_BSWAP64, "bswap64", BT_FN_UINT64_UINT64, ATTR_CONST_NOTHROW_LEAF_LIST)
+DEF_GCC_BUILTIN        (BUILT_IN_BSWAP128, "bswap128", BT_FN_UINT128_UINT128, ATTR_CONST_NOTHROW_LEAF_LIST)
+
 DEF_EXT_LIB_BUILTIN    (BUILT_IN_CLEAR_CACHE, "__clear_cache", BT_FN_VOID_PTR_PTR, ATTR_NOTHROW_LEAF_LIST)
 /* [trans-mem]: Adjust BUILT_IN_TM_CALLOC if BUILT_IN_CALLOC is changed.  */
 DEF_LIB_BUILTIN        (BUILT_IN_CALLOC, "calloc", BT_FN_PTR_SIZE_SIZE, ATTR_MALLOC_WARN_UNUSED_RESULT_SIZE_1_2_NOTHROW_LEAF_LIST)
@@ -966,7 +974,7 @@ DEF_BUILTIN_STUB (BUILT_IN_STRCMP_EQ, "__builtin_strcmp_eq")
 DEF_BUILTIN_STUB (BUILT_IN_STRNCMP_EQ, "__builtin_strncmp_eq")
 
 /* Object size checking builtins.  */
-DEF_GCC_BUILTIN	       (BUILT_IN_OBJECT_SIZE, "object_size", BT_FN_SIZE_CONST_PTR_INT, ATTR_PURE_NOTHROW_LEAF_LIST)
+DEF_GCC_BUILTIN	       (BUILT_IN_OBJECT_SIZE, "object_size", BT_FN_SIZE_CONST_PTR_INT, ATTR_CONST_NOTHROW_LEAF_LIST)
 DEF_EXT_LIB_BUILTIN    (BUILT_IN_MEMCPY_CHK, "__memcpy_chk", BT_FN_PTR_PTR_CONST_PTR_SIZE_SIZE, ATTR_RET1_NOTHROW_NONNULL_LEAF)
 DEF_EXT_LIB_BUILTIN    (BUILT_IN_MEMMOVE_CHK, "__memmove_chk", BT_FN_PTR_PTR_CONST_PTR_SIZE_SIZE, ATTR_RET1_NOTHROW_NONNULL_LEAF)
 DEF_EXT_LIB_BUILTIN    (BUILT_IN_MEMPCPY_CHK, "__mempcpy_chk", BT_FN_PTR_PTR_CONST_PTR_SIZE_SIZE, ATTR_RETNONNULL_NOTHROW_LEAF)
@@ -1063,6 +1071,9 @@ DEF_GCC_BUILTIN (BUILT_IN_LINE, "LINE", BT_FN_INT, ATTR_NOTHROW_LEAF_LIST)
 
 /* Sanitizer builtins. */
 #include "sanitizer.def"
+
+/* Coroutine builtins.  */
+#include "coroutine-builtins.def"
 
 /* Do not expose the BRIG builtins by default gcc-wide, but only privately in
    the BRIG FE as long as there are no references for them in the middle end

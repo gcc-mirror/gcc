@@ -1136,9 +1136,9 @@ do {							\
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.
    LABELNO is an integer which is different for each call.  */
-#define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO) \
-( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
-  sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
+#define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)			\
+  ((OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),			\
+   sprintf ((OUTPUT), "%s.%u", (NAME), (unsigned int)(LABELNO)))
 
 /* The following macro defines the format used to output the second
    operand of the .type assembler directive.  Different svr4 assemblers
@@ -1342,18 +1342,29 @@ do { \
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 /* How to renumber registers for dbx and gdb.  */
-#define DBX_REGISTER_NUMBER(REGNO) \
+#define DBX_REGISTER_NUMBER(REGNO)				\
   ((TARGET_MULMAC_32BY16_SET && (REGNO) >= 56 && (REGNO) <= 57) \
-   ? ((REGNO) ^ !TARGET_BIG_ENDIAN) \
-   : (TARGET_MUL64_SET && (REGNO) >= 57 && (REGNO) <= 59) \
-   ? ((REGNO) == 57 \
-      ? 58 /* MMED */ \
-      : ((REGNO) & 1) ^ TARGET_BIG_ENDIAN \
-      ? 59 /* MHI */ \
-      : 57 + !!TARGET_MULMAC_32BY16_SET) /* MLO */ \
+   ? ((REGNO) ^ !TARGET_BIG_ENDIAN)				\
+   : (TARGET_MUL64_SET && (REGNO) >= 57 && (REGNO) <= 58)	\
+   ? (((REGNO) == 57)						\
+      ? 58 /* MMED */						\
+      : 57 + !!TARGET_MULMAC_32BY16_SET) /* MLO */		\
    : (REGNO))
 
+/* Use gcc hard register numbering for eh_frame.  */
 #define DWARF_FRAME_REGNUM(REG) (REG)
+
+/* Map register numbers held in the call frame info that gcc has
+   collected using DWARF_FRAME_REGNUM to those that should be output
+   in .debug_frame and .eh_frame.  */
+#define DWARF2_FRAME_REG_OUT(REGNO, FOR_EH)			\
+  ((TARGET_MULMAC_32BY16_SET && (REGNO) >= 56 && (REGNO) <= 57) \
+   ? ((REGNO) ^ !TARGET_BIG_ENDIAN)				\
+   : (TARGET_MUL64_SET && (REGNO) >= 57 && (REGNO) <= 58)	\
+   ? (((REGNO) == 57)						\
+      ? 58 /* MMED */						\
+      : 57 + !!TARGET_MULMAC_32BY16_SET) /* MLO */		\
+   : (REGNO))
 
 #define DWARF_FRAME_RETURN_COLUMN 	DWARF_FRAME_REGNUM (31)
 

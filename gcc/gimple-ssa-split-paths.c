@@ -67,8 +67,14 @@ find_block_to_duplicate_for_splitting_paths (basic_block latch)
 	 region.  Verify that it is.
 
 	 First, verify that BB has two predecessors (each arm of the
-	 IF-THEN-ELSE) and two successors (the latch and exit).  */
-      if (EDGE_COUNT (bb->preds) == 2 && EDGE_COUNT (bb->succs) == 2)
+	 IF-THEN-ELSE) and two successors (the latch and exit) and that
+	 all edges are normal.  */
+      if (EDGE_COUNT (bb->preds) == 2
+	  && !(EDGE_PRED (bb, 0)->flags & EDGE_COMPLEX)
+	  && !(EDGE_PRED (bb, 1)->flags & EDGE_COMPLEX)
+	  && EDGE_COUNT (bb->succs) == 2
+	  && !(EDGE_SUCC (bb, 0)->flags & EDGE_COMPLEX)
+	  && !(EDGE_SUCC (bb, 1)->flags & EDGE_COMPLEX))
 	{
 	  /* Now verify that BB's immediate dominator ends in a
 	     conditional as well.  */

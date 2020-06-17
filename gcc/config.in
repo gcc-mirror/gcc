@@ -24,6 +24,12 @@
 #endif
 
 
+/* Define to the root for URLs about GCC changes. */
+#ifndef USED_FOR_TARGET
+#undef CHANGES_ROOT_URL
+#endif
+
+
 /* Define as the number of bits in a byte, if `limits.h' doesn't. */
 #ifndef USED_FOR_TARGET
 #undef CHAR_BIT
@@ -73,6 +79,24 @@
 /* The default for -fdiagnostics-color option */
 #ifndef USED_FOR_TARGET
 #undef DIAGNOSTICS_COLOR_DEFAULT
+#endif
+
+
+/* The default for -fdiagnostics-urls option */
+#ifndef USED_FOR_TARGET
+#undef DIAGNOSTICS_URLS_DEFAULT
+#endif
+
+
+/* Define to the root for documentation URLs. */
+#ifndef USED_FOR_TARGET
+#undef DOCUMENTATION_ROOT_URL
+#endif
+
+
+/* Define 0/1 if static analyzer feature is enabled. */
+#ifndef USED_FOR_TARGET
+#undef ENABLE_ANALYZER
 #endif
 
 
@@ -565,6 +589,12 @@
 #endif
 
 
+/* Define if your assembler supports %gotoff relocation syntax. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_NIOS2_GOTOFF_RELOCATION
+#endif
+
+
 /* Define if your assembler supports the -no-mul-bug-abort option. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_NO_MUL_BUG_ABORT_OPTION
@@ -673,6 +703,13 @@
    alignment hint argument. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS
+#endif
+
+
+/* Define if your assembler supports vl/vst/vlm/vstm with an optional
+   alignment hint argument on z13. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS_ON_Z13
 #endif
 
 
@@ -2176,6 +2213,12 @@
 /* GNU C Library minor version number used on the target, or 0. */
 #ifndef USED_FOR_TARGET
 #undef TARGET_GLIBC_MINOR
+#endif
+
+
+/* Define if your target C Library properly handles PT_GNU_STACK */
+#ifndef USED_FOR_TARGET
+#undef TARGET_LIBC_GNUSTACK
 #endif
 
 

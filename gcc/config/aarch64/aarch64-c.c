@@ -149,7 +149,20 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 	bits = 0;
       builtin_define_with_int_value ("__ARM_FEATURE_SVE_BITS", bits);
     }
+  aarch64_def_or_undef (TARGET_SVE, "__ARM_FEATURE_SVE_VECTOR_OPERATIONS",
+			pfile);
+  aarch64_def_or_undef (TARGET_SVE_I8MM,
+			"__ARM_FEATURE_SVE_MATMUL_INT8", pfile);
+  aarch64_def_or_undef (TARGET_SVE_F32MM,
+			"__ARM_FEATURE_SVE_MATMUL_FP32", pfile);
+  aarch64_def_or_undef (TARGET_SVE_F64MM,
+			"__ARM_FEATURE_SVE_MATMUL_FP64", pfile);
   aarch64_def_or_undef (TARGET_SVE2, "__ARM_FEATURE_SVE2", pfile);
+  aarch64_def_or_undef (TARGET_SVE2_AES, "__ARM_FEATURE_SVE2_AES", pfile);
+  aarch64_def_or_undef (TARGET_SVE2_BITPERM,
+			"__ARM_FEATURE_SVE2_BITPERM", pfile);
+  aarch64_def_or_undef (TARGET_SVE2_SHA3, "__ARM_FEATURE_SVE2_SHA3", pfile);
+  aarch64_def_or_undef (TARGET_SVE2_SM4, "__ARM_FEATURE_SVE2_SM4", pfile);
 
   aarch64_def_or_undef (TARGET_LSE, "__ARM_FEATURE_ATOMICS", pfile);
   aarch64_def_or_undef (TARGET_AES, "__ARM_FEATURE_AES", pfile);

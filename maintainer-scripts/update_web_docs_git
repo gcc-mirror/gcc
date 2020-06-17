@@ -1,0 +1,278 @@
+#!/bin/sh
+
+# Generate HTML documentation from GCC Texinfo docs.
+#
+# If you want to run this on a machine different from gcc.gnu.org, you
+# may need to adjust GITROOT and WWWBASE below (or override them via the
+# environment).
+
+set -e
+
+# Run this from /tmp.
+GITROOT=${GITROOT:-"/git/gcc.git"}
+export GITROOT
+
+PATH=/usr/local/bin:$PATH
+
+MANUALS="cpp
+  cppinternals
+  fastjar
+  gcc
+  gccgo
+  gccint
+  gcj
+  gfortran
+  gfc-internals
+  gnat_ugn
+  gnat-style
+  gnat_rm
+  libgomp
+  libitm
+  libquadmath
+  libiberty
+  porting"
+
+CSS=/gcc.css
+
+WWWBASE=${WWWBASE:-"/www/gcc/htdocs"}
+WWWBASE_PREFORMATTED=/www/gcc/htdocs-preformatted
+WWWPREPROCESS='/www/gcc/bin/preprocess -r'
+
+# Process options -rrelease and -ddirectory
+RELEASE=""
+SUBDIR=""
+
+while [ $# -gt 0 ]; do
+  case $1 in
+    -r*)
+      if [ -n "$RELEASE" ]; then
+        echo "Multiple releases specified" >&2
+	exit 1
+      fi
+      RELEASE="${1#-r}"
+      if [ -z "$RELEASE" ]; then
+	shift
+	RELEASE="$1"
+	if [ -z "$RELEASE" ]; then
+	  echo "No release specified with -r" >&2
+	  exit 1
+	fi
+      fi
+      ;;
+    -d*)
+      if [ -n "$SUBDIR" ]; then
+        echo "Multiple subdirectories specified" >&2
+	exit 1
+      fi
+      SUBDIR="${1#-d}"
+      if [ -z "$SUBDIR" ]; then
+	shift
+	SUBDIR="$1"
+	if [ -z "$SUBDIR" ]; then
+	  echo "No subdirectory specified with -d" >&2
+	  exit 1
+	fi
+      fi
+      ;;
+    *)
+      echo "Unknown argument \"$1\"" >&2
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+if [ -n "$RELEASE" ] && [ -z "$SUBDIR" ]; then
+  echo "Release specified without subdirectory" >&2
+  exit 1
+fi
+
+if [ -z "$SUBDIR" ]; then
+  DOCSDIR=$WWWBASE/onlinedocs
+else
+  DOCSDIR=$WWWBASE/onlinedocs/$SUBDIR
+fi
+
+if [ ! -d $WWWBASE ]; then
+  echo "WWW base directory \"$WWWBASE\" does not exist." >&2
+  exit 1
+fi
+
+if [ ! -d $DOCSDIR ]; then
+  mkdir $DOCSDIR
+  chmod g+w $DOCSDIR
+fi
+
+if [ -z "$RELEASE" ]; then
+  RELEASE=master
+fi
+
+WORKDIR=/tmp/gcc-doc-update.$$
+
+rm -rf $WORKDIR
+mkdir $WORKDIR
+cd $WORKDIR
+if [ "$RELEASE" = "master" ]; then
+  git clone -q $GITROOT gcc
+else
+  git clone -q -b releases/gcc-$RELEASE $GITROOT gcc
+fi
+rm -rf gcc/.git
+
+# Remove all unwanted files.  This is needed to avoid packaging all the
+# sources instead of only documentation sources.
+# Note that we have to preserve gcc/jit/docs since the jit docs are
+# not .texi files (Makefile, .rst and .png), and the jit docs use
+# include directives to pull in content from jit/jit-common.h and
+# jit/notes.txt, so we have to preserve those also.
+find gcc -type f \( -name '*.texi' \
+  -o -path gcc/gcc/doc/install.texi2html \
+  -o -path gcc/gcc/doc/include/texinfo.tex \
+  -o -path gcc/gcc/BASE-VER \
+  -o -path gcc/gcc/DEV-PHASE \
+  -o -path "gcc/gcc/ada/doc/gnat_ugn/*.png" \
+  -o -path "gcc/gcc/jit/docs/*" \
+  -o -path "gcc/gcc/jit/jit-common.h" \
+  -o -path "gcc/gcc/jit/notes.txt" \
+  -o -print0 \) | xargs -0 rm -f
+
+# Build a tarball of the sources.
+tar cf docs-sources.tar gcc
+
+# The directory to pass to -I; this is the one with texinfo.tex
+# and fdl.texi.
+includedir=gcc/gcc/doc/include
+
+# Generate gcc-vers.texi.
+(
+   echo "@set version-GCC $(cat gcc/gcc/BASE-VER)"
+   if [ "$(cat gcc/gcc/DEV-PHASE)" = "experimental" ]; then
+      echo "@set DEVELOPMENT"
+   else
+      echo "@clear DEVELOPMENT"
+   fi
+   echo "@set srcdir $WORKDIR/gcc/gcc"
+   echo "@set VERSION_PACKAGE (GCC)"
+   echo "@set BUGURL @uref{http://gcc.gnu.org/bugs/}"
+) > $includedir/gcc-vers.texi
+
+# Generate libquadmath-vers.texi.
+echo "@set BUGURL @uref{http://gcc.gnu.org/bugs/}" \
+  > $includedir/libquadmath-vers.texi
+
+# Now convert the relevant files from texi to HTML, PDF and PostScript.
+for file in $MANUALS; do
+  filename=`find . -name ${file}.texi`
+  if [ "${filename}" ]; then
+    includes="-I ${includedir} -I `dirname ${filename}`"
+    if [ "$file" = "gnat_ugn" ]; then
+      includes="$includes -I gcc/gcc/ada -I gcc/gcc/ada/doc/gnat_ugn"
+    fi
+    makeinfo --html --css-ref $CSS $includes -o ${file} ${filename}
+    tar cf ${file}-html.tar ${file}/*.html
+    texi2dvi $includes -o ${file}.dvi ${filename} </dev/null >/dev/null && dvips -o ${file}.ps ${file}.dvi
+    texi2pdf $includes -o ${file}.pdf ${filename} </dev/null
+    mkdir -p $DOCSDIR/$file
+  fi
+done
+
+# The jit is a special-case, using sphinx rather than texinfo.
+# Specifically, the jit docs need sphinx 1.0 or later.
+#
+# The jit/docs Makefile uses the executable $(SPHINXBUILD),
+# defaulting to "sphinx-build".
+#
+# sphinx is packaged in Fedora and EPEL 6 within "python-sphinx",
+# in RHEL 8 within "python3-sphinx",
+# and in openSUSE within "python-Sphinx".
+#
+# For EPEL6, python-sphinx is sphinx 0.6.6, which is missing various
+# directives (e.g. ":c:macro:"), so we need the variant
+# python-sphinx10 package.  The latter installs its executable as
+#   /usr/bin/sphinx-1.0-build
+# so we needed to override SPHINXBUILD with this when invoking "make".
+pushd gcc/gcc/jit/docs
+make html || true
+popd
+cp -a gcc/gcc/jit/docs/_build/html jit
+mkdir -p $DOCSDIR/jit
+
+# Work around makeinfo generated file names and references with
+# "_002d" instead of "-".
+find . -name '*.html' | while read f; do
+  # Do this for the contents of each file.
+  sed -i -e 's/_002d/-/g' "$f"
+  # And rename files if necessary.
+  ff=`echo $f | sed -e 's/_002d/-/g'`;
+  if [ "$f" != "$ff" ]; then
+    printf "Renaming %s to %s\n" "$f" "$ff" 
+    mv "$f" "$ff"
+  fi
+done
+
+# Then build a gzipped copy of each of the resulting .html, .ps and .tar files
+for file in */*.html *.ps *.pdf *.tar; do
+  cat $file | gzip --best > $file.gz
+done
+
+# On the 15th of the month, wipe all the old files from the
+# web server.
+today=`date +%d`
+if test $today = 15; then
+  find $DOCSDIR -type f -maxdepth 1 -print | grep -v index.html | xargs rm
+  for m in $MANUALS; do
+    rm -f $DOCSDIR/$m/*.html $DOCSDIR/$m/*.html.gz
+  done
+fi
+
+# And copy the resulting files to the web server
+for file in */*.html *.ps *.pdf *.tar; do
+  if [ -f $DOCSDIR/$file ]; then
+    cat $DOCSDIR/$file | 
+      sed -e '/^<meta name=generator/d' \
+          -e '/^%DVIPSSource:/d' > file1
+  fi
+  cat $file |
+    sed -e '/^<meta name=generator/d' \
+        -e '/^%DVIPSSource:/d' > file2
+  if cmp -s file1 file2; then
+    :
+  else
+    cp $file $DOCSDIR/$file
+    cp $file.gz $DOCSDIR/$file.gz
+  fi
+done
+
+# Again, the jit is a special case, with nested subdirectories
+# below "jit", and with some non-HTML files (.png images from us,
+# plus .css and .js supplied by sphinx, and source files, renamed
+# from .rst to .txt).
+find jit \
+    -name "*.html" -o -name "*.png" \
+    -o -name "*.css" -o -name "*.js" \
+    -o -name "*.txt" |
+  while read file ; do
+    # Note that $file here will contain path fragments beginning
+    # with "jit/", e.g. "jit/cp/topics/functions.html"
+    mkdir -p $(dirname $DOCSDIR/$file)
+    cp $file $DOCSDIR/$file
+  done
+
+cd $DOCSDIR
+
+# Finally, generate the installation documentation
+if [ "$RELEASE" = "master" ]; then
+  SOURCEDIR=$WORKDIR/gcc/gcc/doc
+  DESTDIR=$WWWBASE_PREFORMATTED/install
+  export SOURCEDIR
+  export DESTDIR
+  $WORKDIR/gcc/gcc/doc/install.texi2html
+
+  # Preprocess the entire web site, not just the install docs!
+  echo "Invoking $WWWPREPROCESS"
+  $WWWPREPROCESS |grep -v '^  Warning: Keeping'
+fi
+
+# Clean up behind us.
+
+rm -rf $WORKDIR

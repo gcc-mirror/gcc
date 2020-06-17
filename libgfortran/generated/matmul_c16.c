@@ -2367,7 +2367,6 @@ matmul_c16_vanilla (gfc_array_c16 * const restrict retarray,
 
 /* Currently, this is i386 only.  Adjust for other architectures.  */
 
-#include <config/i386/cpuinfo.h>
 void matmul_c16 (gfc_array_c16 * const restrict retarray, 
 	gfc_array_c16 * const restrict a, gfc_array_c16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm)
@@ -2384,11 +2383,11 @@ void matmul_c16 (gfc_array_c16 * const restrict retarray,
   if (matmul_fn == NULL)
     {
       matmul_fn = matmul_c16_vanilla;
-      if (__cpu_model.__cpu_vendor == VENDOR_INTEL)
+      if (__builtin_cpu_is ("intel"))
 	{
           /* Run down the available processors in order of preference.  */
 #ifdef HAVE_AVX512F
-      	  if (__cpu_model.__cpu_features[0] & (1 << FEATURE_AVX512F))
+	  if (__builtin_cpu_supports ("avx512f"))
 	    {
 	      matmul_fn = matmul_c16_avx512f;
 	      goto store;
@@ -2397,8 +2396,8 @@ void matmul_c16 (gfc_array_c16 * const restrict retarray,
 #endif  /* HAVE_AVX512F */
 
 #ifdef HAVE_AVX2
-      	  if ((__cpu_model.__cpu_features[0] & (1 << FEATURE_AVX2))
-	     && (__cpu_model.__cpu_features[0] & (1 << FEATURE_FMA)))
+	  if (__builtin_cpu_supports ("avx2")
+	      && __builtin_cpu_supports ("fma"))
 	    {
 	      matmul_fn = matmul_c16_avx2;
 	      goto store;
@@ -2407,26 +2406,26 @@ void matmul_c16 (gfc_array_c16 * const restrict retarray,
 #endif
 
 #ifdef HAVE_AVX
-      	  if (__cpu_model.__cpu_features[0] & (1 << FEATURE_AVX))
+	  if (__builtin_cpu_supports ("avx"))
  	    {
               matmul_fn = matmul_c16_avx;
 	      goto store;
 	    }
 #endif  /* HAVE_AVX */
         }
-    else if (__cpu_model.__cpu_vendor == VENDOR_AMD)
+    else if (__builtin_cpu_is ("amd"))
       {
 #if defined(HAVE_AVX) && defined(HAVE_FMA3) && defined(HAVE_AVX128)
-        if ((__cpu_model.__cpu_features[0] & (1 << FEATURE_AVX))
-	    && (__cpu_model.__cpu_features[0] & (1 << FEATURE_FMA)))
+	if (__builtin_cpu_supports ("avx")
+	    && __builtin_cpu_supports ("fma"))
 	  {
             matmul_fn = matmul_c16_avx128_fma3;
 	    goto store;
 	  }
 #endif
 #if defined(HAVE_AVX) && defined(HAVE_FMA4) && defined(HAVE_AVX128)
-        if ((__cpu_model.__cpu_features[0] & (1 << FEATURE_AVX))
-	     && (__cpu_model.__cpu_features[0] & (1 << FEATURE_FMA4)))
+	if (__builtin_cpu_supports ("avx")
+	    && __builtin_cpu_supports ("fma4"))
 	  {
             matmul_fn = matmul_c16_avx128_fma4;
 	    goto store;

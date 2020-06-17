@@ -66,6 +66,7 @@ class GTY((user)) hash_map
        	return Traits::is_deleted (e);
       }
 
+    static const bool empty_zero_p = Traits::empty_zero_p;
     static void mark_empty (hash_entry &e) { Traits::mark_empty (e); }
     static bool is_empty (const hash_entry &e) { return Traits::is_empty (e); }
 

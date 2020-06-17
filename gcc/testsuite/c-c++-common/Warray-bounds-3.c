@@ -287,15 +287,16 @@ void test_strcpy_bounds (char *d, const char *s)
   TI (char, 1, "",   a, a + SR (0, DIFF_MAX - 1));
   TI (char, 2, "0",  a, a + SR (0, DIFF_MAX - 1));
   TI (char, 2, "0",  a, a + SR (1, DIFF_MAX - 1));
-  /* The following needs a warning for reading past the end.  */
-  TI (char, 2, "0",  a, a + SR (2, DIFF_MAX - 1));
+  /* The warning below isn't the most accurate because while reading
+     from it is invalid, the offset that refers just past the end of
+     the source array is strictly valid.  */
+  TI (char, 2, "0",  a, a + SR (2, DIFF_MAX - 1));    /* { dg-warning "offset 2 is out of the bounds \\\[0, 2] of object \[^\n\r\]+ with type 'char ?\\\[2]'" } */
   TI (char, 2, "0",  a, a + SR (3, DIFF_MAX - 1));   /* { dg-warning "offset \\\[3, \[0-9\]+] is out of the bounds \\\[0, 2] of object \[^\n\r\]+ with type .char ?\\\[2\\\]."  "strcpy" } */
 
   TI (char, 3, "01", a, a + SR (0, DIFF_MAX - 1));
   TI (char, 3, "01", a, a + SR (1, DIFF_MAX - 1));
   TI (char, 3, "01", a, a + SR (2, DIFF_MAX - 1));
-  /* The following needs a warning for reading past the end.  */
-  TI (char, 3, "01", a, a + SR (3, DIFF_MAX - 1));
+  TI (char, 3, "01", a, a + SR (3, DIFF_MAX - 1));   /* { dg-warning "offset 3 is out of the bounds \\\[0, 3] of object \[^\n\r\]+ with type 'char ?\\\[3]'" } */
   TI (char, 3, "01", a, a + SR (4, DIFF_MAX - 1));   /* { dg-warning "offset \\\[4, \[0-9\]+] is out of the bounds \\\[0, 3] of object \[^\n\r\]+ with type .char ?\\\[3\\\]."  "strcpy" } */
 
   TI (char, 4, "012", a, a + SR (DIFF_MAX - 2, DIFF_MAX - 1));   /* { dg-warning "offset \\\[\[0-9\]+, \[0-9\]+] is out of the bounds \\\[0, 4] of object \[^\n\r\]+ with type .char ?\\\[4\\\]."  "strcpy" } */

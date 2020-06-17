@@ -240,9 +240,21 @@ func asmcgocall(fn, arg unsafe.Pointer) int32 {
 	return 0
 }
 
-// round n up to a multiple of a.  a must be a power of 2.
-func round(n, a uintptr) uintptr {
+// alignUp rounds n up to a multiple of a. a must be a power of 2.
+func alignUp(n, a uintptr) uintptr {
 	return (n + a - 1) &^ (a - 1)
+}
+
+// alignDown rounds n down to a multiple of a. a must be a power of 2.
+func alignDown(n, a uintptr) uintptr {
+	return n &^ (a - 1)
+}
+
+// divRoundUp returns ceil(n / a).
+func divRoundUp(n, a uintptr) uintptr {
+	// a is generally a power of two. This will get inlined and
+	// the compiler will optimize the division.
+	return (n + a - 1) / a
 }
 
 // checkASM returns whether assembly runtime checks have passed.
@@ -284,6 +296,10 @@ func getSigactionHandler(*_sigaction) uintptr
 
 //go:noescape
 func setSigactionHandler(*_sigaction, uintptr)
+
+// Get signal code, written in C.
+//go:noescape
+func getSiginfoCode(*_siginfo_t) uintptr
 
 // Retrieve fields from the siginfo_t and ucontext_t pointers passed
 // to a signal handler using C, as they are often hidden in a union.

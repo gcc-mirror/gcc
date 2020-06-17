@@ -129,6 +129,8 @@ struct sanopt_tree_triplet_hash : typed_noop_remove <sanopt_tree_triplet>
     ref.t1 = reinterpret_cast<tree> (1);
   }
 
+  static const bool empty_zero_p = true;
+
   static void
   mark_empty (sanopt_tree_triplet &ref)
   {
@@ -183,6 +185,8 @@ struct sanopt_tree_couple_hash : typed_noop_remove <sanopt_tree_couple>
   {
     ref.ptr = reinterpret_cast<tree> (1);
   }
+
+  static const bool empty_zero_p = true;
 
   static void
   mark_empty (sanopt_tree_couple &ref)
@@ -1154,6 +1158,7 @@ sanitize_rewrite_addressable_params (function *fun)
 	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
 	{
 	  TREE_ADDRESSABLE (arg) = 0;
+	  DECL_NOT_GIMPLE_REG_P (arg) = 0;
 	  /* The parameter is no longer addressable.  */
 	  has_any_addressable_param = true;
 
@@ -1170,9 +1175,12 @@ sanitize_rewrite_addressable_params (function *fun)
 	    continue;
 
 	  if (dump_file)
-	    fprintf (dump_file,
-		     "Rewriting parameter whose address is taken: %s\n",
-		     IDENTIFIER_POINTER (DECL_NAME (arg)));
+	    {
+	      fprintf (dump_file,
+		       "Rewriting parameter whose address is taken: ");
+	      print_generic_expr (dump_file, arg, dump_flags);
+	      fputc ('\n', dump_file);
+	    }
 
 	  SET_DECL_PT_UID (var, DECL_PT_UID (arg));
 
@@ -1182,7 +1190,6 @@ sanitize_rewrite_addressable_params (function *fun)
 	    {
 	      /* We need to create a SSA name that will be used for the
 		 assignment.  */
-	      DECL_GIMPLE_REG_P (arg) = 1;
 	      tree tmp = get_or_create_ssa_default_def (cfun, arg);
 	      g = gimple_build_assign (var, tmp);
 	      gimple_set_location (g, DECL_SOURCE_LOCATION (arg));

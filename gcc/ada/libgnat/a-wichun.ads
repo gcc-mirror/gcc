@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2005-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2005-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -173,6 +173,18 @@ package Ada.Wide_Characters.Unicode is
    --  Note that Other, Format (Cf) is also quite deliberately not included
    --  in the list of categories above. This means that these characters can
    --  be included in character and string literals.
+
+   function Is_Basic (U : Wide_Character) return Boolean;
+   pragma Inline (Is_Basic);
+   --  Returns True if the Wide_Character designated by Item has no
+   --  Decomposition Mapping in the code charts of ISO/IEC 10646:2017,
+   --  otherwise returns False.
+
+   function To_Basic (U : Wide_Character) return Wide_Character;
+   pragma Inline (To_Basic);
+   --  Returns the Wide_Character whose code point is given by the first value
+   --  of its Decomposition Mapping in the code charts of ISO/IEC 10646:2017 if
+   --  any, returns Item otherwise.
 
    --  The following function is used to fold to upper case, as required by
    --  the Ada 2005 standard rules for identifier case folding. Two

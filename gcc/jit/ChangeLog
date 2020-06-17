@@ -1,3 +1,159 @@
+2020-06-16  Nicolas Bértolo  <nicolasbertolo@gmail.com>
+
+	* Make-lang.in: Always define version, minor and release
+	numbers. Create the Windows shared library as
+	libgccjit-$(LIBGCCJIT_VERSION_NUM).dll.
+
+2020-06-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/95306
+	* jit-builtins.c (builtins_manager::make_primitive_type):
+	Implement BT_CONST_VOLATILE_PTR.
+
+2020-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/95426
+	* dummy-frontend.c: Include "options.h", "stringpool.h", and
+	"attribs.h".
+	(ATTR_EXCL): New, copied from lto/lto-lang.c.
+	(attr_noreturn_exclusions): Likewise.
+	(attr_returns_twice_exclusions): Likewise.
+	(attr_const_pure_exclusions): Likewise.
+	(jit_attribute_table): Likewise, copied from lto_attribute_table.
+	(jit_format_attribute_table): Likewise, copied from
+	lto_format_attribute_table.
+	(handle_noreturn_attribute): New, copied from lto/lto-lang.c.
+	(handle_leaf_attribute): Likewise.
+	(handle_const_attribute): Likewise.
+	(handle_malloc_attribute): Likewise.
+	(handle_pure_attribute): Likewise.
+	(handle_novops_attribute): Likewise.
+	(get_nonnull_operand): Likewise.
+	(handle_nonnull_attribute): Likewise.
+	(handle_nothrow_attribute): Likewise.
+	(handle_sentinel_attribute): Likewise.
+	(handle_type_generic_attribute): Likewise.
+	(handle_transaction_pure_attribute): Likewise.
+	(handle_returns_twice_attribute): Likewise.
+	(handle_patchable_function_entry_attribute): Likewise.
+	(ignore_attribute): Likewise.
+	(handle_format_attribute): Likewise.
+	(handle_format_arg_attribute): Likewise.
+	(handle_fnspec_attribute): Likewise.
+	(LANG_HOOKS_COMMON_ATTRIBUTE_TABLE): Define.
+	(LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE): Define.
+
+2020-05-28  Nicolas Bértolo  <nicolasbertolo@gmail.com>
+
+	* Make-lang.in: Remove extra slash. Build libgccjit.dll and its
+	import library in Windows.
+	* config-lang.in: Update comment about --enable-host-shared.
+	* jit-w32.h: New file.
+	* jit-w32.c: New file.
+	(print_last_error): New function that prints the error
+	string corresponding to GetLastError().
+	(get_TOKEN_USER_current_user): Helper function used for getting
+	the SID belonging to the current user.
+	(create_directory_for_current_user): Helper function to create
+	a directory with permissions such that only the current user can
+	access it.
+	(win_mkdtemp): Create a temporary directory using Windows APIs.
+	* jit-playback.c: Do not chmod files in Windows. Use LoadLibrary,
+	FreeLibrary and GetProcAddress instead of libdl.
+	* jit-result.h, jit-result.c: Introduce result::handle_t to
+	abstract over the types used for dynamic library handles.
+	* jit-tempdir.c: Do not use mkdtemp() in Windows, use
+	win_mkdtemp().
+
+2020-05-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/95314
+	* dummy-frontend.c (LANG_HOOKS_DEEP_UNSHARING): Define to be true.
+	* jit-playback.h (gcc::jit::playback::rvalue): Mark tree node with
+	TREE_VISITED.
+
+2020-05-27  Tom Tromey  <tromey@gcc.gnu.org>
+
+	PR jit/91330
+	* docs/conf.py (texinfo_documents): Set description.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2020-05-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/95306
+	* docs/topics/functions.rst
+	(gcc_jit_context_get_builtin_function): Document.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* dummy-frontend.c (jit_langhook_global_bindings_p): Remove
+	gcc_unreachable.
+	* jit-builtins.c (type_names): New array.
+	(get_string_for_type_id): New function.
+	(gcc::jit::builtins_manager::make_primitive_type): Show name of
+	type in error messages.  Update cases to reflect the order in
+	builtin-types.def.  Implement cases for BT_INT8, BT_INT16,
+	BT_UINT8, BT_CONST_PTR, BT_VOLATILE_PTR, BT_INT_PTR, BT_FLOAT_PTR,
+	BT_CONST_DOUBLE_PTR, BT_SIZE, BT_CONST_SIZE.
+
+2020-05-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/topics/compatibility.rst: Fix underline.
+	Fix missing labels.
+	* docs/topics/types.rst: Fix missing blank line.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2020-05-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/95296
+	* docs/topics/expressions.rst (Unary Operations): Document that
+	result_type of gcc_jit_context_new_unary_op must be a numeric type.
+	(Binary Operations): Likewise for gcc_jit_context_new_binary_op.
+	(Global variables): Document that "type" of
+	gcc_jit_context_new_global must be non-`void`.
+	* docs/topics/function-pointers.rst
+	(gcc_jit_context_new_function_ptr_type): Document that the
+	param_types must be non-void, but that return_type may be.
+	* docs/topics/functions.rst (Params): Document that
+	gcc_jit_context_new_param's type must be non-void.
+	(Functions): Likewise for gcc_jit_function_new_local.
+	* docs/topics/types.rst (gcc_jit_context_new_array_type): Document
+	that the type must be non-void.
+	(gcc_jit_context_new_field): Likewise.
+	* docs/_build/texinfo/Makefile: Regenerate.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* libgccjit.c (gcc_jit_context_new_array_type): Fail if
+	element_type is void.
+	(gcc_jit_context_new_field): Likewise for "type".
+	(gcc_jit_context_new_function_ptr_type): Likewise for each
+	element of param_types.
+	(gcc_jit_context_new_param): Likewise for "type".
+	(gcc_jit_context_new_global): Likewise.
+	(gcc_jit_function_new_local): Likewise.
+	(gcc_jit_type_get_aligned): Likewise.
+
+2020-03-31  Andrea Corallo  <andrea.corallo@arm.com>
+	    David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_13): New ABI tag
+	plus add version paragraph.
+	* libgccjit++.h (namespace gccjit::version): Add new namespace.
+	* libgccjit.c (gcc_jit_version_major, gcc_jit_version_minor)
+	(gcc_jit_version_patchlevel): New functions.
+	* libgccjit.h (LIBGCCJIT_HAVE_gcc_jit_version): New macro.
+	(gcc_jit_version_major, gcc_jit_version_minor)
+	(gcc_jit_version_patchlevel): New functions.
+	* libgccjit.map (LIBGCCJIT_ABI_13) New ABI tag.
+
+2020-03-23  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* jit-playback.h
+	(gcc::jit::playback::context m_recording_ctxt): Remove
+	m_char_array_type_node field.
+	* jit-playback.c
+	(playback::context::context) Remove m_char_array_type_node from member
+	initializer list.
+	(playback::context::new_string_literal) Fix logic to handle string
+	length > 200.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

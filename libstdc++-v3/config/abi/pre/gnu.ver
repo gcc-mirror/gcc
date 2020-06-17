@@ -2291,6 +2291,12 @@ GLIBCXX_3.4.28 {
     _ZNSt12__shared_ptrINSt10filesystem28recursive_directory_iterator10_Dir_stackELN9__gnu_cxx12_Lock_policyE[012]EEC2EOS5_;
     _ZNSt12__shared_ptrINSt10filesystem7__cxx1128recursive_directory_iterator10_Dir_stackELN9__gnu_cxx12_Lock_policyE[012]EEC2EOS6_;
 
+    # key functions, vtables and rtti for memory resources
+    _ZNSt3pmr15memory_resourceD[0125]Ev;
+    _ZT[ISV]NSt3pmr15memory_resourceE;
+    _ZNSt3pmr25monotonic_buffer_resourceD[0125]Ev;
+    _ZT[ISV]NSt3pmr25monotonic_buffer_resourceE;
+
 } GLIBCXX_3.4.27;
 
 # Symbols in the support library (libsupc++) have their own tag.

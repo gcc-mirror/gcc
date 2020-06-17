@@ -1,3 +1,9 @@
+2020-01-21  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (gofmt$(EXEEXT)): Link against $(LIBGOTOOL).
+	(check-go-tool): Copy some vendor directories.
+	* Makefile.in: Regenerate.
+
 2019-09-06  Ian Lance Taylor  <iant@golang.org>
 
 	* Makefile.am (check-carchive-test): Just run "go test", not "go

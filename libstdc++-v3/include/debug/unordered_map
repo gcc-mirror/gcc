@@ -81,6 +81,14 @@ namespace __debug
       template<typename _ItT, typename _SeqT>
 	friend class ::__gnu_debug::_Safe_local_iterator;
 
+      // Reference wrapper for base class. See PR libstdc++/90102.
+      struct _Base_ref
+      {
+	_Base_ref(const _Base& __r) : _M_ref(__r) { }
+
+	const _Base& _M_ref;
+      };
+
     public:
       typedef typename _Base::size_type			size_type;
       typedef typename _Base::hasher			hasher;
@@ -121,8 +129,8 @@ namespace __debug
 
       unordered_map(const unordered_map&) = default;
 
-      unordered_map(const _Base& __x)
-      : _Base(__x) { }
+      unordered_map(_Base_ref __x)
+      : _Base(__x._M_ref) { }
 
       unordered_map(unordered_map&&) = default;
 
@@ -741,13 +749,14 @@ namespace __debug
 	       const unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
     { return __x._M_base() == __y._M_base(); }
 
+#if __cpp_impl_three_way_comparison < 201907L
   template<typename _Key, typename _Tp, typename _Hash,
 	   typename _Pred, typename _Alloc>
     inline bool
     operator!=(const unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
 	       const unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
     { return !(__x == __y); }
-
+#endif
 
   /// Class std::unordered_multimap with safety/checking/debug instrumentation.
   template<typename _Key, typename _Tp,
@@ -774,6 +783,14 @@ namespace __debug
 	friend class ::__gnu_debug::_Safe_iterator;
       template<typename _ItT, typename _SeqT>
 	friend class ::__gnu_debug::_Safe_local_iterator;
+
+      // Reference wrapper for base class. See PR libstdc++/90102.
+      struct _Base_ref
+      {
+	_Base_ref(const _Base& __r) : _M_ref(__r) { }
+
+	const _Base& _M_ref;
+      };
 
     public:
       typedef typename _Base::size_type			size_type;
@@ -815,8 +832,8 @@ namespace __debug
 
       unordered_multimap(const unordered_multimap&) = default;
 
-      unordered_multimap(const _Base& __x)
-      : _Base(__x) { }
+      unordered_multimap(_Base_ref __x)
+      : _Base(__x._M_ref) { }
 
       unordered_multimap(unordered_multimap&&) = default;
 
@@ -1347,12 +1364,14 @@ namespace __debug
 	       const unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
     { return __x._M_base() == __y._M_base(); }
 
+#if __cpp_impl_three_way_comparison < 201907L
   template<typename _Key, typename _Tp, typename _Hash,
 	   typename _Pred, typename _Alloc>
     inline bool
     operator!=(const unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
 	       const unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
     { return !(__x == __y); }
+#endif
 
 } // namespace __debug
 } // namespace std

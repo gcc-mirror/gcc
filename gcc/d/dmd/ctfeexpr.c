@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -43,18 +43,18 @@ int ClassReferenceExp::getFieldIndex(Type *fieldtype, unsigned fieldoffset)
 {
     ClassDeclaration *cd = originalClass();
     unsigned fieldsSoFar = 0;
-    for (size_t j = 0; j < value->elements->dim; j++)
+    for (size_t j = 0; j < value->elements->length; j++)
     {
-        while (j - fieldsSoFar >= cd->fields.dim)
+        while (j - fieldsSoFar >= cd->fields.length)
         {
-            fieldsSoFar += cd->fields.dim;
+            fieldsSoFar += cd->fields.length;
             cd = cd->baseClass;
         }
         VarDeclaration *v2 = cd->fields[j - fieldsSoFar];
         if (fieldoffset == v2->offset &&
             fieldtype->size() == v2->type->size())
         {
-            return (int)(value->elements->dim - fieldsSoFar - cd->fields.dim + (j-fieldsSoFar));
+            return (int)(value->elements->length - fieldsSoFar - cd->fields.length + (j-fieldsSoFar));
         }
     }
     return -1;
@@ -66,17 +66,17 @@ int ClassReferenceExp::findFieldIndexByName(VarDeclaration *v)
 {
     ClassDeclaration *cd = originalClass();
     size_t fieldsSoFar = 0;
-    for (size_t j = 0; j < value->elements->dim; j++)
+    for (size_t j = 0; j < value->elements->length; j++)
     {
-        while (j - fieldsSoFar >= cd->fields.dim)
+        while (j - fieldsSoFar >= cd->fields.length)
         {
-            fieldsSoFar += cd->fields.dim;
+            fieldsSoFar += cd->fields.length;
             cd = cd->baseClass;
         }
         VarDeclaration *v2 = cd->fields[j - fieldsSoFar];
         if (v == v2)
         {
-            return (int)(value->elements->dim - fieldsSoFar - cd->fields.dim + (j-fieldsSoFar));
+            return (int)(value->elements->length - fieldsSoFar - cd->fields.length + (j-fieldsSoFar));
         }
     }
     return -1;
@@ -100,7 +100,7 @@ const char *VoidInitExp::toChars()
 // Same as getFieldIndex, but checks for a direct match with the VarDeclaration
 int findFieldIndexByName(StructDeclaration *sd, VarDeclaration *v)
 {
-    for (size_t i = 0; i < sd->fields.dim; ++i)
+    for (size_t i = 0; i < sd->fields.length; ++i)
     {
         if (sd->fields[i] == v)
             return (int)i;
@@ -229,8 +229,8 @@ Expressions *copyLiteralArray(Expressions *oldelems, Expression *basis = NULL)
         return oldelems;
     CtfeStatus::numArrayAllocs++;
     Expressions *newelems = new Expressions();
-    newelems->setDim(oldelems->dim);
-    for (size_t i = 0; i < oldelems->dim; i++)
+    newelems->setDim(oldelems->length);
+    for (size_t i = 0; i < oldelems->length; i++)
     {
         Expression *el = (*oldelems)[i];
         if (!el)
@@ -288,8 +288,8 @@ UnionExp copyLiteral(Expression *e)
         StructLiteralExp *sle = (StructLiteralExp *)e;
         Expressions *oldelems = sle->elements;
         Expressions * newelems = new Expressions();
-        newelems->setDim(oldelems->dim);
-        for (size_t i = 0; i < newelems->dim; i++)
+        newelems->setDim(oldelems->length);
+        for (size_t i = 0; i < newelems->length; i++)
         {
             // We need the struct definition to detect block assignment
             VarDeclaration *v = sle->sd->fields[i];
@@ -534,12 +534,12 @@ uinteger_t resolveArrayLength(Expression *e)
     if (e->op == TOKarrayliteral)
     {
         ArrayLiteralExp *ale = (ArrayLiteralExp *)e;
-        return ale->elements ? ale->elements->dim : 0;
+        return ale->elements ? ale->elements->length : 0;
     }
     if (e->op == TOKassocarrayliteral)
     {
         AssocArrayLiteralExp *ale = (AssocArrayLiteralExp *)e;
-        return ale->keys->dim;
+        return ale->keys->length;
     }
     assert(0);
     return 0;
@@ -1057,6 +1057,7 @@ static bool numCmp(TOK op, N n1, N n2)
         default:
             assert(0);
     }
+    return false;
 }
 
 /// Returns cmp OP 0; where OP is ==, !=, <, >=, etc. Result is 0 or 1
@@ -1089,11 +1090,12 @@ int realCmp(TOK op, real_t r1, real_t r2)
             case TOKle:
             case TOKgt:
             case TOKge:
-                return 0;
+                break;
 
             default:
                 assert(0);
         }
+        return 0;
     }
     else
     {
@@ -1314,16 +1316,16 @@ int ctfeRawCmp(Loc loc, Expression *e1, Expression *e2)
 
         if (es1->sd != es2->sd)
             return 1;
-        else if ((!es1->elements || !es1->elements->dim) &&
-            (!es2->elements || !es2->elements->dim))
+        else if ((!es1->elements || !es1->elements->length) &&
+            (!es2->elements || !es2->elements->length))
             return 0;            // both arrays are empty
         else if (!es1->elements || !es2->elements)
             return 1;
-        else if (es1->elements->dim != es2->elements->dim)
+        else if (es1->elements->length != es2->elements->length)
             return 1;
         else
         {
-            for (size_t i = 0; i < es1->elements->dim; i++)
+            for (size_t i = 0; i < es1->elements->length; i++)
             {
                 Expression *ee1 = (*es1->elements)[i];
                 Expression *ee2 = (*es2->elements)[i];
@@ -1344,8 +1346,8 @@ int ctfeRawCmp(Loc loc, Expression *e1, Expression *e2)
         AssocArrayLiteralExp *es1 = (AssocArrayLiteralExp *)e1;
         AssocArrayLiteralExp *es2 = (AssocArrayLiteralExp *)e2;
 
-        size_t dim = es1->keys->dim;
-        if (es2->keys->dim != dim)
+        size_t dim = es1->keys->length;
+        if (es2->keys->length != dim)
             return 1;
 
         bool *used = (bool *)mem.xmalloc(sizeof(bool) * dim);
@@ -1459,12 +1461,12 @@ UnionExp ctfeCat(Loc loc, Type *type, Expression *e1, Expression *e2)
         // [chars] ~ string => string (only valid for CTFE)
         StringExp *es1 = (StringExp *)e2;
         ArrayLiteralExp *es2 = (ArrayLiteralExp *)e1;
-        size_t len = es1->len + es2->elements->dim;
+        size_t len = es1->len + es2->elements->length;
         unsigned char sz = es1->sz;
 
         void *s = mem.xmalloc((len + 1) * sz);
-        memcpy((char *)s + sz * es2->elements->dim, es1->string, es1->len * sz);
-        for (size_t i = 0; i < es2->elements->dim; i++)
+        memcpy((char *)s + sz * es2->elements->length, es1->string, es1->len * sz);
+        for (size_t i = 0; i < es2->elements->length; i++)
         {
             Expression *es2e = (*es2->elements)[i];
             if (es2e->op != TOKint64)
@@ -1493,12 +1495,12 @@ UnionExp ctfeCat(Loc loc, Type *type, Expression *e1, Expression *e2)
         // Concatenate the strings
         StringExp *es1 = (StringExp *)e1;
         ArrayLiteralExp *es2 = (ArrayLiteralExp *)e2;
-        size_t len = es1->len + es2->elements->dim;
+        size_t len = es1->len + es2->elements->length;
         unsigned char sz = es1->sz;
 
         void *s = mem.xmalloc((len + 1) * sz);
         memcpy(s, es1->string, es1->len * sz);
-        for (size_t i = 0; i < es2->elements->dim; i++)
+        for (size_t i = 0; i < es2->elements->length; i++)
         {
             Expression *es2e = (*es2->elements)[i];
             if (es2e->op != TOKint64)
@@ -1529,7 +1531,7 @@ UnionExp ctfeCat(Loc loc, Type *type, Expression *e1, Expression *e2)
 
         new(&ue) ArrayLiteralExp(es1->loc, type, copyLiteralArray(es1->elements));
         es1 = (ArrayLiteralExp *)ue.exp();
-        es1->elements->insert(es1->elements->dim, copyLiteralArray(es2->elements));
+        es1->elements->insert(es1->elements->length, copyLiteralArray(es2->elements));
         return ue;
     }
     if (e1->op == TOKarrayliteral && e2->op == TOKnull &&
@@ -1557,7 +1559,7 @@ Expression *findKeyInAA(Loc loc, AssocArrayLiteralExp *ae, Expression *e2)
 {
     /* Search the keys backwards, in case there are duplicate keys
      */
-    for (size_t i = ae->keys->dim; i;)
+    for (size_t i = ae->keys->length; i;)
     {
         i--;
         Expression *ekey = (*ae->keys)[i];
@@ -1591,9 +1593,9 @@ Expression *ctfeIndex(Loc loc, Type *type, Expression *e1, uinteger_t indx)
     assert(e1->op == TOKarrayliteral);
     {
         ArrayLiteralExp *ale = (ArrayLiteralExp *)e1;
-        if (indx >= ale->elements->dim)
+        if (indx >= ale->elements->length)
         {
-            error(loc, "array index %llu is out of bounds %s[0 .. %llu]", (ulonglong)indx, e1->toChars(), (ulonglong)ale->elements->dim);
+            error(loc, "array index %llu is out of bounds %s[0 .. %llu]", (ulonglong)indx, e1->toChars(), (ulonglong)ale->elements->length);
             return CTFEExp::cantexp;
         }
         Expression *e = (*ale->elements)[(size_t)indx];
@@ -1680,7 +1682,7 @@ void assignInPlace(Expression *dest, Expression *src)
         assert(dest->op == src->op);
         oldelems = ((StructLiteralExp *)dest)->elements;
         newelems = ((StructLiteralExp *)src)->elements;
-        if (((StructLiteralExp *)dest)->sd->isNested() && oldelems->dim == newelems->dim - 1)
+        if (((StructLiteralExp *)dest)->sd->isNested() && oldelems->length == newelems->length - 1)
             oldelems->push(NULL);
     }
     else if (dest->op == TOKarrayliteral && src->op==TOKarrayliteral)
@@ -1706,9 +1708,9 @@ void assignInPlace(Expression *dest, Expression *src)
     else
         assert(0);
 
-    assert(oldelems->dim == newelems->dim);
+    assert(oldelems->length == newelems->length);
 
-    for (size_t i= 0; i < oldelems->dim; ++i)
+    for (size_t i= 0; i < oldelems->length; ++i)
     {
         Expression *e = (*newelems)[i];
         Expression *o = (*oldelems)[i];
@@ -1734,8 +1736,8 @@ Expressions *changeOneElement(Expressions *oldelems, size_t indexToChange, Expre
 {
     Expressions *expsx = new Expressions();
     ++CtfeStatus::numArrayAllocs;
-    expsx->setDim(oldelems->dim);
-    for (size_t j = 0; j < expsx->dim; j++)
+    expsx->setDim(oldelems->length);
+    for (size_t j = 0; j < expsx->length; j++)
     {
         if (j == indexToChange)
             (*expsx)[j] = newelem;
@@ -1754,7 +1756,7 @@ Expression *assignAssocArrayElement(Loc loc, AssocArrayLiteralExp *aae,
     Expressions *keysx = aae->keys;
     Expressions *valuesx = aae->values;
     int updated = 0;
-    for (size_t j = valuesx->dim; j; )
+    for (size_t j = valuesx->length; j; )
     {
         j--;
         Expression *ekey = (*aae->keys)[j];
@@ -2027,13 +2029,13 @@ void showCtfeExpr(Expression *e, int level)
     if (elements)
     {
         size_t fieldsSoFar = 0;
-        for (size_t i = 0; i < elements->dim; i++)
+        for (size_t i = 0; i < elements->length; i++)
         {
             Expression *z = NULL;
             VarDeclaration *v = NULL;
             if (i > 15)
             {
-                printf("...(total %d elements)\n", (int)elements->dim);
+                printf("...(total %d elements)\n", (int)elements->length);
                 return;
             }
             if (sd)
@@ -2043,17 +2045,17 @@ void showCtfeExpr(Expression *e, int level)
             }
             else if (cd)
             {
-                while (i - fieldsSoFar >= cd->fields.dim)
+                while (i - fieldsSoFar >= cd->fields.length)
                 {
-                    fieldsSoFar += cd->fields.dim;
+                    fieldsSoFar += cd->fields.length;
                     cd = cd->baseClass;
                     for (int j = level; j > 0; --j) printf(" ");
                     printf(" BASE CLASS: %s\n", cd->toChars());
                 }
                 v = cd->fields[i - fieldsSoFar];
-                assert((elements->dim + i) >= (fieldsSoFar + cd->fields.dim));
-                size_t indx = (elements->dim - fieldsSoFar)- cd->fields.dim + i;
-                assert(indx < elements->dim);
+                assert((elements->length + i) >= (fieldsSoFar + cd->fields.length));
+                size_t indx = (elements->length - fieldsSoFar)- cd->fields.length + i;
+                assert(indx < elements->length);
                 z = (*elements)[indx];
             }
             if (!z)
@@ -2109,8 +2111,8 @@ UnionExp voidInitLiteral(Type *t, VarDeclaration *var)
     {
         TypeStruct *ts = (TypeStruct *)t;
         Expressions *exps = new Expressions();
-        exps->setDim(ts->sym->fields.dim);
-        for (size_t i = 0; i < ts->sym->fields.dim; i++)
+        exps->setDim(ts->sym->fields.length);
+        for (size_t i = 0; i < ts->sym->fields.length; i++)
         {
             (*exps)[i] = voidInitLiteral(ts->sym->fields[i]->type, ts->sym->fields[i]).copy();
         }

@@ -83,7 +83,7 @@ Common Joined UInteger Var(param_case_values_threshold) Param Optimization
 The smallest number of different values for which it is best to use a jump-table instead of a tree of conditional branches, if 0, use the default for the machine.
 
 -param=comdat-sharing-probability=
-Common Joined UInteger Var(param_comdat_sharing_probability) Init(20) Param
+Common Joined UInteger Var(param_comdat_sharing_probability) Init(20) Param Optimization
 Probability that COMDAT function will be shared with different compilation unit.
 
 -param=cxx-max-namespaces-for-diagnostic-help=
@@ -191,60 +191,60 @@ Common Joined UInteger Var(param_integer_share_limit) Init(251) IntegerRange(2, 
 The upper bound for sharing integer constants.
 
 -param=ipa-cp-eval-threshold=
-Common Joined UInteger Var(param_ipa_cp_eval_threshold) Init(500) Param
+Common Joined UInteger Var(param_ipa_cp_eval_threshold) Init(500) Param Optimization
 Threshold ipa-cp opportunity evaluation that is still considered beneficial to clone.
 
 -param=ipa-cp-loop-hint-bonus=
-Common Joined UInteger Var(param_ipa_cp_loop_hint_bonus) Init(64) Param
+Common Joined UInteger Var(param_ipa_cp_loop_hint_bonus) Init(64) Param Optimization
 Compile-time bonus IPA-CP assigns to candidates which make loop bounds or strides known.
 
 -param=ipa-cp-max-recursive-depth=
-Common Joined UInteger Var(param_ipa_cp_max_recursive_depth) Init(8) Param
+Common Joined UInteger Var(param_ipa_cp_max_recursive_depth) Init(8) Param Optimization
 Maximum depth of recursive cloning for self-recursive function.
 
 -param=ipa-cp-min-recursive-probability=
-Common Joined UInteger Var(param_ipa_cp_min_recursive_probability) Init(2) Param
+Common Joined UInteger Var(param_ipa_cp_min_recursive_probability) Init(2) Param Optimization
 Recursive cloning only when the probability of call being executed exceeds the parameter.
 
 -param=ipa-cp-recursion-penalty=
-Common Joined UInteger Var(param_ipa_cp_recursion_penalty) Init(40) IntegerRange(0, 100) Param
+Common Joined UInteger Var(param_ipa_cp_recursion_penalty) Init(40) IntegerRange(0, 100) Param Optimization
 Percentage penalty the recursive functions will receive when they are evaluated for cloning.
 
 -param=ipa-cp-single-call-penalty=
-Common Joined UInteger Var(param_ipa_cp_single_call_penalty) Init(15) IntegerRange(0, 100) Param
+Common Joined UInteger Var(param_ipa_cp_single_call_penalty) Init(15) IntegerRange(0, 100) Param Optimization
 Percentage penalty functions containing a single call to another function will receive when they are evaluated for cloning.
 
+-param=ipa-cp-unit-growth=
+Common Joined UInteger Var(param_ipa_cp_unit_growth) Init(10) Param Optimization
+How much can given compilation unit grow because of the interprocedural constant propagation (in percent).
+
 -param=ipa-cp-value-list-size=
-Common Joined UInteger Var(param_ipa_cp_value_list_size) Init(8) Param
+Common Joined UInteger Var(param_ipa_cp_value_list_size) Init(8) Param Optimization
 Maximum size of a list of values associated with each parameter for interprocedural constant propagation.
 
 -param=ipa-max-aa-steps=
-Common Joined UInteger Var(param_ipa_max_aa_steps) Init(25000) Param
+Common Joined UInteger Var(param_ipa_max_aa_steps) Init(25000) Param Optimization
 Maximum number of statements that will be visited by IPA formal parameter analysis based on alias analysis in any given function.
 
 -param=ipa-max-agg-items=
-Common Joined UInteger Var(param_ipa_max_agg_items) Init(16) Param
+Common Joined UInteger Var(param_ipa_max_agg_items) Init(16) Param Optimization
 Maximum number of aggregate content items for a parameter in jump functions and lattices.
 
 -param=ipa-max-param-expr-ops=
-Common Joined UInteger Var(param_ipa_max_param_expr_ops) Init(10) Param
+Common Joined UInteger Var(param_ipa_max_param_expr_ops) Init(10) Param Optimization
 Maximum number of operations in a parameter expression that can be handled by IPA analysis.
 
 -param=ipa-max-switch-predicate-bounds=
-Common Joined UInteger Var(param_ipa_max_switch_predicate_bounds) Init(5) Param
-Maximal number of boundary endpoints of case ranges of switch statement used during IPA functoin summary generation.
+Common Joined UInteger Var(param_ipa_max_switch_predicate_bounds) Init(5) Param Optimization
+Maximal number of boundary endpoints of case ranges of switch statement used during IPA function summary generation.
 
 -param=ipa-sra-max-replacements=
-Common Joined UInteger Var(param_ipa_sra_max_replacements) Init(8) IntegerRange(0, 16) Param
+Common Joined UInteger Var(param_ipa_sra_max_replacements) Optimization Init(8) IntegerRange(0, 16) Param
 Maximum pieces that IPA-SRA tracks per formal parameter, as a consequence, also the maximum number of replacements of a formal parameter.
 
 -param=ipa-sra-ptr-growth-factor=
-Common Joined UInteger Var(param_ipa_sra_ptr_growth_factor) Init(2) Param
+Common Joined UInteger Var(param_ipa_sra_ptr_growth_factor) Init(2) Param Optimization
 Maximum allowed growth of number and total size of new parameters that ipa-sra replaces a pointer to an aggregate with.
-
--param=ipcp-unit-growth=
-Common Joined UInteger Var(param_ipcp_unit_growth) Init(10) Param
-How much can given compilation unit grow because of the interprocedural constant propagation (in percent).
 
 -param=ira-loop-reserved-regs=
 Common Joined UInteger Var(param_ira_loop_reserved_regs) Init(2) Param Optimization
@@ -423,7 +423,7 @@ Common Joined UInteger Var(param_max_dse_active_local_stores) Init(5000) Param O
 Maximum number of active local stores in RTL dead store elimination.
 
 -param=max-early-inliner-iterations=
-Common Joined UInteger Var(param_early_inliner_max_iterations) Init(1) Param
+Common Joined UInteger Var(param_early_inliner_max_iterations) Init(1) Param Optimization
 The maximum number of nested indirect inlining performed by early inliner.
 
 -param=max-fields-for-field-sensitive=
@@ -555,7 +555,7 @@ Common Joined UInteger Var(param_max_pow_sqrt_depth) Init(5) IntegerRange(1, 32)
 Maximum depth of sqrt chains to use when synthesizing exponentiation by a real constant.
 
 -param=max-predicted-iterations=
-Common Joined UInteger Var(param_max_predicted_iterations) Init(100) Param Optimization
+Common Joined UInteger Var(param_max_predicted_iterations) Init(100) IntegerRange(0, 65536) Param Optimization
 The maximum number of loop iterations we predict statically.
 
 -param=max-reload-search-insns=
@@ -599,7 +599,7 @@ Common Joined UInteger Var(param_max_slsr_candidate_scan) Init(50) IntegerRange(
 Maximum length of candidate scans for straight-line strength reduction.
 
 -param=max-speculative-devirt-maydefs=
-Common Joined UInteger Var(param_max_speculative_devirt_maydefs) Init(50) Param
+Common Joined UInteger Var(param_max_speculative_devirt_maydefs) Init(50) Param Optimization
 Maximum number of may-defs visited when devirtualizing speculatively.
 
 -param=max-ssa-name-query-depth=
@@ -661,6 +661,10 @@ Max. size of loc list for which reverse ops should be added.
 -param=max-vartrack-size=
 Common Joined UInteger Var(param_max_vartrack_size) Init(50000000) Param Optimization
 Max. size of var tracking hash tables.
+
+-param=max-find-base-term-values=
+Common Joined UInteger Var(param_max_find_base_term_values) Init(200) Param Optimization
+Maximum number of VALUEs handled during a single find_base_term call.
 
 -param=max-vrp-switch-assertions=
 Common Joined UInteger Var(param_max_vrp_switch_assertions) Init(10) Param Optimization
@@ -840,6 +844,10 @@ Maximum size, in storage units, of an aggregate which should be considered for s
 Common Joined UInteger Var(param_sra_max_scalarization_size_speed) Param Optimization
 Maximum size, in storage units, of an aggregate which should be considered for scalarization when compiling for speed.
 
+-param=sra-max-propagations=
+Common Joined UInteger Var(param_sra_max_propagations) Param Optimization Init(32)
+Maximum number of artificial accesses to enable forward propagation that Scalar Replacement of Aggregates will keep for one local variable.
+
 -param=ssa-name-def-chain-limit=
 Common Joined UInteger Var(param_ssa_name_def_chain_limit) Init(512) Param Optimization
 The maximum number of SSA_NAME assignments to follow in determining a value.
@@ -899,6 +907,14 @@ Stop reverse growth if the reverse probability of best edge is less than this th
 -param=tree-reassoc-width=
 Common Joined UInteger Var(param_tree_reassoc_width) Param Optimization
 Set the maximum number of instructions executed in parallel in reassociated tree.  If 0, use the target dependent heuristic.
+
+-param=tsan-distinguish-volatile=
+Common Joined UInteger Var(param_tsan_distinguish_volatile) IntegerRange(0, 1) Param
+Emit special instrumentation for accesses to volatiles.
+
+-param=tsan-instrument-func-entry-exit=
+Common Joined UInteger Var(param_tsan_instrument_func_entry_exit) Init(1) IntegerRange(0, 1) Param
+Emit instrumentation calls to __tsan_func_entry() and __tsan_func_exit().
 
 -param=uninit-control-dep-attempts=
 Common Joined UInteger Var(param_uninit_control_dep_attempts) Init(1000) IntegerRange(1, 65536) Param Optimization

@@ -7837,9 +7837,10 @@ native_encode_string (const_tree expr, unsigned char *ptr, int len, int off)
     return 0;
   if (off == -1)
     off = 0;
+  len = MIN (total_bytes - off, len);
   if (ptr == NULL)
     /* Dry run.  */;
-  else if (TREE_STRING_LENGTH (expr) - off < MIN (total_bytes, len))
+  else
     {
       int written = 0;
       if (off < TREE_STRING_LENGTH (expr))
@@ -7847,12 +7848,9 @@ native_encode_string (const_tree expr, unsigned char *ptr, int len, int off)
 	  written = MIN (len, TREE_STRING_LENGTH (expr) - off);
 	  memcpy (ptr, TREE_STRING_POINTER (expr) + off, written);
 	}
-      memset (ptr + written, 0,
-	      MIN (total_bytes - written, len - written));
+      memset (ptr + written, 0, len - written);
     }
-  else
-    memcpy (ptr, TREE_STRING_POINTER (expr) + off, MIN (total_bytes, len));
-  return MIN (total_bytes - off, len);
+  return len;
 }
 
 
@@ -7891,6 +7889,213 @@ native_encode_expr (const_tree expr, unsigned char *ptr, int len, int off)
       return native_encode_string (expr, ptr, len, off);
 
     default:
+      return 0;
+    }
+}
+
+/* Similar to native_encode_expr, but also handle CONSTRUCTORs, VCEs,
+   NON_LVALUE_EXPRs and nops.  */
+
+int
+native_encode_initializer (tree init, unsigned char *ptr, int len,
+			   int off)
+{
+  /* We don't support starting at negative offset and -1 is special.  */
+  if (off < -1 || init == NULL_TREE)
+    return 0;
+
+  STRIP_NOPS (init);
+  switch (TREE_CODE (init))
+    {
+    case VIEW_CONVERT_EXPR:
+    case NON_LVALUE_EXPR:
+      return native_encode_initializer (TREE_OPERAND (init, 0), ptr, len, off);
+    default:
+      return native_encode_expr (init, ptr, len, off);
+    case CONSTRUCTOR:
+      tree type = TREE_TYPE (init);
+      HOST_WIDE_INT total_bytes = int_size_in_bytes (type);
+      if (total_bytes < 0)
+	return 0;
+      if ((off == -1 && total_bytes > len) || off >= total_bytes)
+	return 0;
+      int o = off == -1 ? 0 : off;
+      if (TREE_CODE (type) == ARRAY_TYPE)
+	{
+	  HOST_WIDE_INT min_index;
+	  unsigned HOST_WIDE_INT cnt;
+	  HOST_WIDE_INT curpos = 0, fieldsize;
+	  constructor_elt *ce;
+
+	  if (TYPE_DOMAIN (type) == NULL_TREE
+	      || !tree_fits_shwi_p (TYPE_MIN_VALUE (TYPE_DOMAIN (type))))
+	    return 0;
+
+	  fieldsize = int_size_in_bytes (TREE_TYPE (type));
+	  if (fieldsize <= 0)
+	    return 0;
+
+	  min_index = tree_to_shwi (TYPE_MIN_VALUE (TYPE_DOMAIN (type)));
+	  if (ptr != NULL)
+	    memset (ptr, '\0', MIN (total_bytes - off, len));
+
+	  FOR_EACH_VEC_SAFE_ELT (CONSTRUCTOR_ELTS (init), cnt, ce)
+	    {
+	      tree val = ce->value;
+	      tree index = ce->index;
+	      HOST_WIDE_INT pos = curpos, count = 0;
+	      bool full = false;
+	      if (index && TREE_CODE (index) == RANGE_EXPR)
+		{
+		  if (!tree_fits_shwi_p (TREE_OPERAND (index, 0))
+		      || !tree_fits_shwi_p (TREE_OPERAND (index, 1)))
+		    return 0;
+		  pos = (tree_to_shwi (TREE_OPERAND (index, 0)) - min_index)
+			* fieldsize;
+		  count = (tree_to_shwi (TREE_OPERAND (index, 1))
+			   - tree_to_shwi (TREE_OPERAND (index, 0)));
+		}
+	      else if (index)
+		{
+		  if (!tree_fits_shwi_p (index))
+		    return 0;
+		  pos = (tree_to_shwi (index) - min_index) * fieldsize;
+		}
+
+	      curpos = pos;
+	      if (val)
+		do
+		  {
+		    if (off == -1
+			|| (curpos >= off
+			    && (curpos + fieldsize
+				<= (HOST_WIDE_INT) off + len)))
+		      {
+			if (full)
+			  {
+			    if (ptr)
+			      memcpy (ptr + (curpos - o), ptr + (pos - o),
+				      fieldsize);
+			  }
+			else if (!native_encode_initializer (val,
+							     ptr
+							     ? ptr + curpos - o
+							     : NULL,
+							     fieldsize,
+							     off == -1 ? -1
+								       : 0))
+			  return 0;
+			else
+			  {
+			    full = true;
+			    pos = curpos;
+			  }
+		      }
+		    else if (curpos + fieldsize > off
+			     && curpos < (HOST_WIDE_INT) off + len)
+		      {
+			/* Partial overlap.  */
+			unsigned char *p = NULL;
+			int no = 0;
+			int l;
+			if (curpos >= off)
+			  {
+			    if (ptr)
+			      p = ptr + curpos - off;
+			    l = MIN ((HOST_WIDE_INT) off + len - curpos,
+				     fieldsize);
+			  }
+			else
+			  {
+			    p = ptr;
+			    no = off - curpos;
+			    l = len;
+			  }
+			if (!native_encode_initializer (val, p, l, no))
+			  return 0;
+		      }
+		    curpos += fieldsize;
+		  }
+		while (count-- != 0);
+	    }
+	  return MIN (total_bytes - off, len);
+	}
+      else if (TREE_CODE (type) == RECORD_TYPE
+	       || TREE_CODE (type) == UNION_TYPE)
+	{
+	  unsigned HOST_WIDE_INT cnt;
+	  constructor_elt *ce;
+
+	  if (ptr != NULL)
+	    memset (ptr, '\0', MIN (total_bytes - off, len));
+	  FOR_EACH_VEC_SAFE_ELT (CONSTRUCTOR_ELTS (init), cnt, ce)
+	    {
+	      tree field = ce->index;
+	      tree val = ce->value;
+	      HOST_WIDE_INT pos, fieldsize;
+
+	      if (field == NULL_TREE)
+		return 0;
+
+	      pos = int_byte_position (field);
+	      if (off != -1 && (HOST_WIDE_INT) off + len <= pos)
+		continue;
+
+	      if (TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE
+		  && TYPE_DOMAIN (TREE_TYPE (field))
+		  && ! TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (field))))
+		return 0;
+	      if (DECL_SIZE_UNIT (field) == NULL_TREE
+		  || !tree_fits_shwi_p (DECL_SIZE_UNIT (field)))
+		return 0;
+	      fieldsize = tree_to_shwi (DECL_SIZE_UNIT (field));
+	      if (fieldsize == 0)
+		continue;
+
+	      if (off != -1 && pos + fieldsize <= off)
+		continue;
+
+	      if (DECL_BIT_FIELD (field))
+		return 0;
+
+	      if (val == NULL_TREE)
+		continue;
+
+	      if (off == -1
+		  || (pos >= off
+		      && (pos + fieldsize <= (HOST_WIDE_INT) off + len)))
+		{
+		  if (!native_encode_initializer (val, ptr ? ptr + pos - o
+							   : NULL,
+						  fieldsize,
+						  off == -1 ? -1 : 0))
+		    return 0;
+		}
+	      else
+		{
+		  /* Partial overlap.  */
+		  unsigned char *p = NULL;
+		  int no = 0;
+		  int l;
+		  if (pos >= off)
+		    {
+		      if (ptr)
+			p = ptr + pos - off;
+		      l = MIN ((HOST_WIDE_INT) off + len - pos,
+				fieldsize);
+		    }
+		  else
+		    {
+		      p = ptr;
+		      no = off - pos;
+		      l = len;
+		    }
+		  if (!native_encode_initializer (val, p, l, no))
+		    return 0;
+		}
+	    }
+	  return MIN (total_bytes - off, len);
+	}
       return 0;
     }
 }
@@ -8129,7 +8334,7 @@ native_interpret_expr (tree type, const unsigned char *ptr, int len)
 /* Returns true if we can interpret the contents of a native encoding
    as TYPE.  */
 
-static bool
+bool
 can_native_interpret_type_p (tree type)
 {
   switch (TREE_CODE (type))
@@ -8146,6 +8351,70 @@ can_native_interpret_type_p (tree type)
       return true;
     default:
       return false;
+    }
+}
+
+/* Routines for manipulation of native_encode_expr encoded data if the encoded
+   or extracted constant positions and/or sizes aren't byte aligned.  */
+
+/* Shift left the bytes in PTR of SZ elements by AMNT bits, carrying over the
+   bits between adjacent elements.  AMNT should be within
+   [0, BITS_PER_UNIT).
+   Example, AMNT = 2:
+   00011111|11100000 << 2 = 01111111|10000000
+   PTR[1]  | PTR[0]         PTR[1]  | PTR[0].  */
+
+void
+shift_bytes_in_array_left (unsigned char *ptr, unsigned int sz,
+			   unsigned int amnt)
+{
+  if (amnt == 0)
+    return;
+
+  unsigned char carry_over = 0U;
+  unsigned char carry_mask = (~0U) << (unsigned char) (BITS_PER_UNIT - amnt);
+  unsigned char clear_mask = (~0U) << amnt;
+
+  for (unsigned int i = 0; i < sz; i++)
+    {
+      unsigned prev_carry_over = carry_over;
+      carry_over = (ptr[i] & carry_mask) >> (BITS_PER_UNIT - amnt);
+
+      ptr[i] <<= amnt;
+      if (i != 0)
+	{
+	  ptr[i] &= clear_mask;
+	  ptr[i] |= prev_carry_over;
+	}
+    }
+}
+
+/* Like shift_bytes_in_array_left but for big-endian.
+   Shift right the bytes in PTR of SZ elements by AMNT bits, carrying over the
+   bits between adjacent elements.  AMNT should be within
+   [0, BITS_PER_UNIT).
+   Example, AMNT = 2:
+   00011111|11100000 >> 2 = 00000111|11111000
+   PTR[0]  | PTR[1]         PTR[0]  | PTR[1].  */
+
+void
+shift_bytes_in_array_right (unsigned char *ptr, unsigned int sz,
+			    unsigned int amnt)
+{
+  if (amnt == 0)
+    return;
+
+  unsigned char carry_over = 0U;
+  unsigned char carry_mask = ~(~0U << amnt);
+
+  for (unsigned int i = 0; i < sz; i++)
+    {
+      unsigned prev_carry_over = carry_over;
+      carry_over = ptr[i] & carry_mask;
+
+      carry_over <<= (unsigned char) BITS_PER_UNIT - amnt;
+      ptr[i] >>= amnt;
+      ptr[i] |= prev_carry_over;
     }
 }
 
@@ -8254,7 +8523,12 @@ build_fold_addr_expr_with_type_loc (location_t loc, tree t, tree ptrtype)
     }
   else if (TREE_CODE (t) == MEM_REF
 	   && integer_zerop (TREE_OPERAND (t, 1)))
-    return TREE_OPERAND (t, 0);
+    {
+      t = TREE_OPERAND (t, 0);
+
+      if (TREE_TYPE (t) != ptrtype)
+	t = fold_convert_loc (loc, ptrtype, t);
+    }
   else if (TREE_CODE (t) == MEM_REF
 	   && TREE_CODE (TREE_OPERAND (t, 0)) == INTEGER_CST)
     return fold_binary (POINTER_PLUS_EXPR, ptrtype,
@@ -10010,7 +10284,7 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 	  if (!base)
 	    return NULL_TREE;
 	  return fold_build2 (MEM_REF, type,
-			      build_fold_addr_expr (base),
+			      build1 (ADDR_EXPR, TREE_TYPE (arg0), base),
 			      int_const_binop (PLUS_EXPR, arg1,
 					       size_int (coffset)));
 	}
@@ -10874,11 +11148,11 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 
       /* Convert -A / -B to A / B when the type is signed and overflow is
 	 undefined.  */
-      if ((!INTEGRAL_TYPE_P (type) || TYPE_OVERFLOW_UNDEFINED (type))
+      if ((!ANY_INTEGRAL_TYPE_P (type) || TYPE_OVERFLOW_UNDEFINED (type))
 	  && TREE_CODE (op0) == NEGATE_EXPR
 	  && negate_expr_p (op1))
 	{
-	  if (INTEGRAL_TYPE_P (type))
+	  if (ANY_INTEGRAL_TYPE_P (type))
 	    fold_overflow_warning (("assuming signed overflow does not occur "
 				    "when distributing negation across "
 				    "division"),
@@ -10888,11 +11162,11 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 						    TREE_OPERAND (arg0, 0)),
 				  negate_expr (op1));
 	}
-      if ((!INTEGRAL_TYPE_P (type) || TYPE_OVERFLOW_UNDEFINED (type))
+      if ((!ANY_INTEGRAL_TYPE_P (type) || TYPE_OVERFLOW_UNDEFINED (type))
 	  && TREE_CODE (arg1) == NEGATE_EXPR
 	  && negate_expr_p (op0))
 	{
-	  if (INTEGRAL_TYPE_P (type))
+	  if (ANY_INTEGRAL_TYPE_P (type))
 	    fold_overflow_warning (("assuming signed overflow does not occur "
 				    "when distributing negation across "
 				    "division"),
@@ -11355,50 +11629,6 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
         {
 	  tree res = constant_boolean_node (code==NE_EXPR, type);
 	  return omit_one_operand_loc (loc, type, res, arg0);
-	}
-
-      /* Fold (X & C) op (Y & C) as (X ^ Y) & C op 0", and symmetries.  */
-      if (TREE_CODE (arg0) == BIT_AND_EXPR
-	  && TREE_CODE (arg1) == BIT_AND_EXPR)
-	{
-	  tree arg00 = TREE_OPERAND (arg0, 0);
-	  tree arg01 = TREE_OPERAND (arg0, 1);
-	  tree arg10 = TREE_OPERAND (arg1, 0);
-	  tree arg11 = TREE_OPERAND (arg1, 1);
-	  tree itype = TREE_TYPE (arg0);
-
-	  if (operand_equal_p (arg01, arg11, 0))
-	    {
-	      tem = fold_convert_loc (loc, itype, arg10);
-	      tem = fold_build2_loc (loc, BIT_XOR_EXPR, itype, arg00, tem);
-	      tem = fold_build2_loc (loc, BIT_AND_EXPR, itype, tem, arg01);
-	      return fold_build2_loc (loc, code, type, tem,
-				      build_zero_cst (itype));
-	    }
-	  if (operand_equal_p (arg01, arg10, 0))
-	    {
-	      tem = fold_convert_loc (loc, itype, arg11);
-	      tem = fold_build2_loc (loc, BIT_XOR_EXPR, itype, arg00, tem);
-	      tem = fold_build2_loc (loc, BIT_AND_EXPR, itype, tem, arg01);
-	      return fold_build2_loc (loc, code, type, tem,
-				      build_zero_cst (itype));
-	    }
-	  if (operand_equal_p (arg00, arg11, 0))
-	    {
-	      tem = fold_convert_loc (loc, itype, arg10);
-	      tem = fold_build2_loc (loc, BIT_XOR_EXPR, itype, arg01, tem);
-	      tem = fold_build2_loc (loc, BIT_AND_EXPR, itype, tem, arg00);
-	      return fold_build2_loc (loc, code, type, tem,
-				      build_zero_cst (itype));
-	    }
-	  if (operand_equal_p (arg00, arg10, 0))
-	    {
-	      tem = fold_convert_loc (loc, itype, arg11);
-	      tem = fold_build2_loc (loc, BIT_XOR_EXPR, itype, arg01, tem);
-	      tem = fold_build2_loc (loc, BIT_AND_EXPR, itype, tem, arg00);
-	      return fold_build2_loc (loc, code, type, tem,
-				      build_zero_cst (itype));
-	    }
 	}
 
       if (TREE_CODE (arg0) == BIT_XOR_EXPR
@@ -13564,8 +13794,10 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
     CASE_CFN_POPCOUNT:
     CASE_CFN_CLZ:
     CASE_CFN_CLRSB:
+    case CFN_BUILT_IN_BSWAP16:
     case CFN_BUILT_IN_BSWAP32:
     case CFN_BUILT_IN_BSWAP64:
+    case CFN_BUILT_IN_BSWAP128:
       /* Always true.  */
       return true;
 

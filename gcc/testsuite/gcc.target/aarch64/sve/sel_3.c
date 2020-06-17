@@ -1,5 +1,6 @@
 /* { dg-do assemble { target aarch64_asm_sve_ok } } */
 /* { dg-options "-O2 -msve-vector-bits=256 --save-temps" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #include <stdint.h>
 
@@ -25,26 +26,63 @@ typedef float vnx4sf __attribute__((vector_size (32)));
 
 #define MASK_8		{ 0, 9, 2, 11, 4, 13, 6, 15 }
 
-#define INDEX_32 vnx16qi
-#define INDEX_16 vnx8hi
-#define INDEX_8 vnx4si
-
-#define PERMUTE(type, nunits)						\
-type permute_##type (type x, type y)					\
-{									\
-  return __builtin_shuffle (x, y, (INDEX_##nunits) MASK_##nunits);	\
+/*
+** permute_vnx16qi:
+**	ptrue	(p[0-7])\.d, vl4
+**	sel	z0\.b, \1, z0\.b, z1\.b
+**	ret
+*/
+__SVInt8_t
+permute_vnx16qi (__SVInt8_t x, __SVInt8_t y)
+{
+  return __builtin_shuffle ((vnx16qi) x, (vnx16qi) y, (vnx16qi) MASK_32);
 }
 
-PERMUTE(vnx16qi, 32)
-PERMUTE(vnx8hi, 16)
-PERMUTE(vnx4si, 8)
-PERMUTE(vnx8hf, 16)
-PERMUTE(vnx4sf, 8)
+/*
+** permute_vnx8hi:
+**	ptrue	(p[0-7])\.d, vl4
+**	sel	z0\.h, \1, z0\.h, z1\.h
+**	ret
+*/
+__SVInt16_t
+permute_vnx8hi (__SVInt16_t x, __SVInt16_t y)
+{
+  return __builtin_shuffle ((vnx8hi) x, (vnx8hi) y, (vnx8hi) MASK_16);
+}
 
-/* { dg-final { scan-assembler-not {\ttbl\t} } } */
+/*
+** permute_vnx4si:
+**	ptrue	(p[0-7])\.d, vl4
+**	sel	z0\.s, \1, z0\.s, z1\.s
+**	ret
+*/
+__SVInt32_t
+permute_vnx4si (__SVInt32_t x, __SVInt32_t y)
+{
+  return __builtin_shuffle ((vnx4si) x, (vnx4si) y, (vnx4si) MASK_8);
+}
 
-/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.b, p[0-9]+, z[0-9]+\.b, z[0-9]+\.b\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.h, p[0-9]+, z[0-9]+\.h, z[0-9]+\.h\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.s, p[0-9]+, z[0-9]+\.s, z[0-9]+\.s\n} 2 } } */
+/*
+** permute_vnx8hf:
+**	ptrue	(p[0-7])\.d, vl4
+**	sel	z0\.h, \1, z0\.h, z1\.h
+**	ret
+*/
+__SVFloat16_t
+permute_vnx8hf (__SVFloat16_t x, __SVFloat16_t y)
+{
+  return (__SVFloat16_t) __builtin_shuffle ((vnx8hf) x, (vnx8hf) y,
+					    (vnx8hi) MASK_16);
+}
 
-/* { dg-final { scan-assembler-times {\tptrue\tp[0-9]+\.d, vl4\n} 5 } } */
+/*
+** permute_vnx4sf:
+**	ptrue	(p[0-7])\.d, vl4
+**	sel	z0\.s, \1, z0\.s, z1\.s
+**	ret
+*/
+__SVFloat32_t
+permute_vnx4sf (__SVFloat32_t x, __SVFloat32_t y)
+{
+  return __builtin_shuffle ((vnx4sf) x, (vnx4sf) y, (vnx4si) MASK_8);
+}

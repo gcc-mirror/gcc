@@ -1,6 +1,5 @@
 // { dg-do compile }
-// { dg-options "-g" }
-// { dg-additional-options "-Wno-return-type" }
+// { dg-options "-g -Wno-return-type" }
 
 typedef unsigned int uint32_t;
 typedef unsigned long int uint64_t;

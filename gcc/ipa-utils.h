@@ -98,6 +98,8 @@ void enable_odr_based_tbaa (tree type);
 bool odr_based_tbaa_p (const_tree type);
 void set_type_canonical_for_odr_type (tree type, tree canonical);
 
+void register_odr_enum (tree type);
+
 /* Return vector containing possible targets of polymorphic call E.
    If COMPLETEP is non-NULL, store true if the list is complete. 
    CACHE_TOKEN (if non-NULL) will get stored to an unique ID of entry
@@ -243,7 +245,7 @@ odr_type_p (const_tree t)
 {
   /* We do not have this information when not in LTO, but we do not need
      to care, since it is used only for type merging.  */
-  gcc_checking_assert (in_lto_p || flag_lto);
+  gcc_checking_assert (in_lto_p || flag_lto || flag_generate_offload);
   return TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL
          && DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t));
 }

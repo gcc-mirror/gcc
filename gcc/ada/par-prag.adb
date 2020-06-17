@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -101,10 +101,6 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
    --    No_Obsolescent_Features must be processed at parse time, since there
    --    are some obsolescent features (e.g. character replacements) which are
    --    handled at parse time.
-   --
-   --    SPARK must be processed at parse time, since this restriction controls
-   --    whether the scanner recognizes a spark HIDE directive formatted as an
-   --    Ada comment (and generates a Tok_SPARK_Hide token for the directive).
    --
    --    No_Dependence must be processed at parse time, since otherwise it gets
    --    handled too late.
@@ -257,12 +253,11 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
                   Restriction_Warnings (No_Obsolescent_Features) :=
                     Prag_Id = Pragma_Restriction_Warnings;
 
-               when Name_SPARK
-                  | Name_SPARK_05
-               =>
-                  Set_Restriction (SPARK_05, Pragma_Node);
-                  Restriction_Warnings (SPARK_05) :=
-                    Prag_Id = Pragma_Restriction_Warnings;
+               when Name_SPARK_05 =>
+                  Error_Msg_Name_1 := Chars (Expr);
+                  Error_Msg_N
+                    ("??% restriction is obsolete and ignored, consider " &
+                     "using 'S'P'A'R'K_'Mode and gnatprove instead", Arg);
 
                when others =>
                   null;
@@ -1157,11 +1152,11 @@ begin
             return Nkind (Arg1) = N_Identifier
 
               --  Return True if the tool name is GNAT, and we're not in
-              --  GNATprove or CodePeer or ASIS mode...
+              --  GNATprove or CodePeer mode...
 
               and then ((Chars (Arg1) = Name_Gnat
                           and then not
-                            (CodePeer_Mode or GNATprove_Mode or ASIS_Mode))
+                            (CodePeer_Mode or GNATprove_Mode))
 
               --  or if the tool name is GNATprove, and we're in GNATprove
               --  mode.
@@ -1315,10 +1310,6 @@ begin
 
       when Pragma_Abort_Defer
          | Pragma_Abstract_State
-         | Pragma_Acc_Data
-         | Pragma_Acc_Kernels
-         | Pragma_Acc_Loop
-         | Pragma_Acc_Parallel
          | Pragma_Aggregate_Individually_Assign
          | Pragma_Async_Readers
          | Pragma_Async_Writers
@@ -1359,21 +1350,21 @@ begin
          | Pragma_Convention
          | Pragma_Deadline_Floor
          | Pragma_Debug_Policy
-         | Pragma_Depends
-         | Pragma_Detect_Blocking
          | Pragma_Default_Initial_Condition
          | Pragma_Default_Scalar_Storage_Order
          | Pragma_Default_Storage_Pool
+         | Pragma_Depends
+         | Pragma_Detect_Blocking
          | Pragma_Disable_Atomic_Synchronization
          | Pragma_Discard_Names
          | Pragma_Dispatching_Domain
          | Pragma_Effective_Reads
          | Pragma_Effective_Writes
-         | Pragma_Eliminate
          | Pragma_Elaborate
          | Pragma_Elaborate_All
          | Pragma_Elaborate_Body
          | Pragma_Elaboration_Checks
+         | Pragma_Eliminate
          | Pragma_Enable_Atomic_Synchronization
          | Pragma_Export
          | Pragma_Export_Function
@@ -1385,8 +1376,8 @@ begin
          | Pragma_Extensions_Visible
          | Pragma_External
          | Pragma_External_Name_Casing
-         | Pragma_Favor_Top_Level
          | Pragma_Fast_Math
+         | Pragma_Favor_Top_Level
          | Pragma_Finalize_Storage_Only
          | Pragma_Ghost
          | Pragma_Global
@@ -1411,8 +1402,8 @@ begin
          | Pragma_Interface
          | Pragma_Interface_Name
          | Pragma_Interrupt_Handler
-         | Pragma_Interrupt_State
          | Pragma_Interrupt_Priority
+         | Pragma_Interrupt_State
          | Pragma_Invariant
          | Pragma_Keep_Names
          | Pragma_License
@@ -1446,9 +1437,9 @@ begin
          | Pragma_No_Tagged_Streams
          | Pragma_Normalize_Scalars
          | Pragma_Obsolescent
-         | Pragma_Ordered
          | Pragma_Optimize
          | Pragma_Optimize_Alignment
+         | Pragma_Ordered
          | Pragma_Overflow_Mode
          | Pragma_Overriding_Renamings
          | Pragma_Pack
@@ -1478,6 +1469,8 @@ begin
          | Pragma_Pure
          | Pragma_Pure_Function
          | Pragma_Queuing_Policy
+         | Pragma_Rational
+         | Pragma_Ravenscar
          | Pragma_Refined_Depends
          | Pragma_Refined_Global
          | Pragma_Refined_Post
@@ -1486,10 +1479,8 @@ begin
          | Pragma_Remote_Access_Type
          | Pragma_Remote_Call_Interface
          | Pragma_Remote_Types
-         | Pragma_Restricted_Run_Time
-         | Pragma_Rational
-         | Pragma_Ravenscar
          | Pragma_Rename_Pragma
+         | Pragma_Restricted_Run_Time
          | Pragma_Reviewable
          | Pragma_Secondary_Stack_Size
          | Pragma_Share_Generic
@@ -1499,9 +1490,9 @@ begin
          | Pragma_Short_Descriptors
          | Pragma_Simple_Storage_Pool_Type
          | Pragma_SPARK_Mode
+         | Pragma_Static_Elaboration_Desired
          | Pragma_Storage_Size
          | Pragma_Storage_Unit
-         | Pragma_Static_Elaboration_Desired
          | Pragma_Stream_Convert
          | Pragma_Subtitle
          | Pragma_Suppress
@@ -1531,12 +1522,12 @@ begin
          | Pragma_Unsuppress
          | Pragma_Unused
          | Pragma_Use_VADS_Size
+         | Pragma_Validity_Checks
          | Pragma_Volatile
          | Pragma_Volatile_Components
          | Pragma_Volatile_Full_Access
          | Pragma_Volatile_Function
          | Pragma_Weak_External
-         | Pragma_Validity_Checks
       =>
          null;
 

@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "cfgloop.h"
+#include "tree-eh.h"
 
 /* TODO:
    1. Sinking store only using scalar promotion (IE without moving the RHS):
@@ -67,6 +68,8 @@ static struct
   /* The number of statements sunk down the flowgraph by code sinking.  */
   int sunk;
 
+  /* The number of stores commoned and sunk down by store commoning.  */
+  int commoned;
 } sink_stats;
 
 
@@ -467,9 +470,179 @@ statement_sink_location (gimple *stmt, basic_block frombb,
   return true;
 }
 
+/* Very simplistic code to sink common stores from the predecessor through
+   our virtual PHI.  We do this before sinking stmts from BB as it might
+   expose sinking opportunities of the merged stores.
+   Once we have partial dead code elimination through sth like SSU-PRE this
+   should be moved there.  */
+
+static unsigned
+sink_common_stores_to_bb (basic_block bb)
+{
+  unsigned todo = 0;
+  gphi *phi;
+
+  if (EDGE_COUNT (bb->preds) > 1
+      && (phi = get_virtual_phi (bb)))
+    {
+      /* Repeat until no more common stores are found.  */
+      while (1)
+	{
+	  gimple *first_store = NULL;
+	  auto_vec <tree, 5> vdefs;
+	  gimple_stmt_iterator gsi;
+
+	  /* Search for common stores defined by all virtual PHI args.
+	     ???  Common stores not present in all predecessors could
+	     be handled by inserting a forwarder to sink to.  Generally
+	     this involves deciding which stores to do this for if
+	     multiple common stores are present for different sets of
+	     predecessors.  See PR11832 for an interesting case.  */
+	  for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
+	    {
+	      tree arg = gimple_phi_arg_def (phi, i);
+	      gimple *def = SSA_NAME_DEF_STMT (arg);
+	      if (! is_gimple_assign (def)
+		  || stmt_can_throw_internal (cfun, def))
+		{
+		  /* ???  We could handle some cascading with the def being
+		     another PHI.  We'd have to insert multiple PHIs for
+		     the rhs then though (if they are not all equal).  */
+		  first_store = NULL;
+		  break;
+		}
+	      /* ???  Do not try to do anything fancy with aliasing, thus
+		 do not sink across non-aliased loads (or even stores,
+		 so different store order will make the sinking fail).  */
+	      bool all_uses_on_phi = true;
+	      imm_use_iterator iter;
+	      use_operand_p use_p;
+	      FOR_EACH_IMM_USE_FAST (use_p, iter, arg)
+		if (USE_STMT (use_p) != phi)
+		  {
+		    all_uses_on_phi = false;
+		    break;
+		  }
+	      if (! all_uses_on_phi)
+		{
+		  first_store = NULL;
+		  break;
+		}
+	      /* Check all stores are to the same LHS.  */
+	      if (! first_store)
+		first_store = def;
+	      /* ??? We could handle differing SSA uses in the LHS by inserting
+		 PHIs for them.  */
+	      else if (! operand_equal_p (gimple_assign_lhs (first_store),
+					  gimple_assign_lhs (def), 0)
+		       || (gimple_clobber_p (first_store)
+			   != gimple_clobber_p (def)))
+		{
+		  first_store = NULL;
+		  break;
+		}
+	      vdefs.safe_push (arg);
+	    }
+	  if (! first_store)
+	    break;
+
+	  /* Check if we need a PHI node to merge the stored values.  */
+	  bool allsame = true;
+	  if (!gimple_clobber_p (first_store))
+	    for (unsigned i = 1; i < vdefs.length (); ++i)
+	      {
+		gimple *def = SSA_NAME_DEF_STMT (vdefs[i]);
+		if (! operand_equal_p (gimple_assign_rhs1 (first_store),
+				       gimple_assign_rhs1 (def), 0))
+		  {
+		    allsame = false;
+		    break;
+		  }
+	      }
+
+	  /* We cannot handle aggregate values if we need to merge them.  */
+	  tree type = TREE_TYPE (gimple_assign_lhs (first_store));
+	  if (! allsame
+	      && ! is_gimple_reg_type (type))
+	    break;
+
+	  if (dump_enabled_p ())
+	    {
+	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS,
+			       first_store,
+			       "sinking common stores %sto ",
+			       allsame ? "with same value " : "");
+	      dump_generic_expr (MSG_OPTIMIZED_LOCATIONS, TDF_SLIM,
+				 gimple_assign_lhs (first_store));
+	      dump_printf (MSG_OPTIMIZED_LOCATIONS, "\n");
+	    }
+
+	  /* Insert a PHI to merge differing stored values if necessary.
+	     Note that in general inserting PHIs isn't a very good idea as
+	     it makes the job of coalescing and register allocation harder.
+	     Even common SSA uses on the rhs/lhs might extend their lifetime
+	     across multiple edges by this code motion which makes
+	     register allocation harder.  */
+	  tree from;
+	  if (! allsame)
+	    {
+	      from = make_ssa_name (type);
+	      gphi *newphi = create_phi_node (from, bb);
+	      for (unsigned i = 0; i < vdefs.length (); ++i)
+		{
+		  gimple *def = SSA_NAME_DEF_STMT (vdefs[i]);
+		  add_phi_arg (newphi, gimple_assign_rhs1 (def),
+			       EDGE_PRED (bb, i), UNKNOWN_LOCATION);
+		}
+	    }
+	  else
+	    from = gimple_assign_rhs1 (first_store);
+
+	  /* Remove all stores.  */
+	  for (unsigned i = 0; i < vdefs.length (); ++i)
+	    TREE_VISITED (vdefs[i]) = 1;
+	  for (unsigned i = 0; i < vdefs.length (); ++i)
+	    /* If we have more than one use of a VDEF on the PHI make sure
+	       we remove the defining stmt only once.  */
+	    if (TREE_VISITED (vdefs[i]))
+	      {
+		TREE_VISITED (vdefs[i]) = 0;
+		gimple *def = SSA_NAME_DEF_STMT (vdefs[i]);
+		gsi = gsi_for_stmt (def);
+		unlink_stmt_vdef (def);
+		gsi_remove (&gsi, true);
+		release_defs (def);
+	      }
+
+	  /* Insert the first store at the beginning of the merge BB.  */
+	  gimple_set_vdef (first_store, gimple_phi_result (phi));
+	  SSA_NAME_DEF_STMT (gimple_vdef (first_store)) = first_store;
+	  gimple_phi_set_result (phi, make_ssa_name (gimple_vop (cfun)));
+	  gimple_set_vuse (first_store, gimple_phi_result (phi));
+	  gimple_assign_set_rhs1 (first_store, from);
+	  /* ???  Should we reset first_stores location?  */
+	  gsi = gsi_after_labels (bb);
+	  gsi_insert_before (&gsi, first_store, GSI_SAME_STMT);
+	  sink_stats.commoned++;
+
+	  todo |= TODO_cleanup_cfg;
+	}
+
+      /* We could now have empty predecessors that we could remove,
+	 forming a proper CFG for further sinking.  Note that even
+	 CFG cleanup doesn't do this fully at the moment and it
+	 doesn't preserve post-dominators in the process either.
+	 The mergephi pass might do it though.  gcc.dg/tree-ssa/ssa-sink-13.c
+	 shows this nicely if you disable tail merging or (same effect)
+	 make the stored values unequal.  */
+    }
+
+  return todo;
+}
+
 /* Perform code sinking on BB */
 
-static void
+static unsigned
 sink_code_in_bb (basic_block bb)
 {
   basic_block son;
@@ -477,6 +650,10 @@ sink_code_in_bb (basic_block bb)
   edge_iterator ei;
   edge e;
   bool last = true;
+  unsigned todo = 0;
+
+  /* Sink common stores from the predecessor through our virtual PHI.  */
+  todo |= sink_common_stores_to_bb (bb);
 
   /* If this block doesn't dominate anything, there can't be any place to sink
      the statements to.  */
@@ -563,8 +740,10 @@ sink_code_in_bb (basic_block bb)
        son;
        son = next_dom_son (CDI_POST_DOMINATORS, son))
     {
-      sink_code_in_bb (son);
+      todo |= sink_code_in_bb (son);
     }
+
+  return todo;
 }
 
 /* Perform code sinking.
@@ -642,13 +821,14 @@ pass_sink_code::execute (function *fun)
   memset (&sink_stats, 0, sizeof (sink_stats));
   calculate_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
-  sink_code_in_bb (EXIT_BLOCK_PTR_FOR_FN (fun));
+  unsigned todo = sink_code_in_bb (EXIT_BLOCK_PTR_FOR_FN (fun));
   statistics_counter_event (fun, "Sunk statements", sink_stats.sunk);
+  statistics_counter_event (fun, "Commoned stores", sink_stats.commoned);
   free_dominance_info (CDI_POST_DOMINATORS);
   remove_fake_exit_edges ();
   loop_optimizer_finalize ();
 
-  return 0;
+  return todo;
 }
 
 } // anon namespace

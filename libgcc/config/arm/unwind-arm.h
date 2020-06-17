@@ -43,19 +43,15 @@ extern "C" {
 #endif
 _Unwind_Ptr __attribute__((weak)) __gnu_Unwind_Find_got (_Unwind_Ptr);
 
-static inline _Unwind_Ptr gnu_Unwind_Find_got (_Unwind_Ptr ptr)
+static inline _Unwind_Ptr _Unwind_gnu_Find_got (_Unwind_Ptr ptr)
 {
     _Unwind_Ptr res;
 
     if (__gnu_Unwind_Find_got)
-	res =  __gnu_Unwind_Find_got (ptr);
+	res = __gnu_Unwind_Find_got (ptr);
     else
-      {
-	asm volatile ("mov %[result], r" XSTR(FDPIC_REGNUM)
-		      : [result]"=r" (res)
-		      :
-		      :);
-      }
+	__asm volatile ("mov %[result], r" XSTR(FDPIC_REGNUM)
+			: [result] "=r" (res));
 
     return res;
 }
@@ -75,7 +71,7 @@ static inline _Unwind_Ptr gnu_Unwind_Find_got (_Unwind_Ptr ptr)
 #if __FDPIC__
       /* For FDPIC, we store the offset of the GOT entry.  */
       /* So, first get GOT from dynamic linker and then use indirect access.  */
-      tmp += gnu_Unwind_Find_got (ptr);
+      tmp += _Unwind_gnu_Find_got (ptr);
       tmp = *(_Unwind_Word *) tmp;
 #elif (defined(linux) && !defined(__uClinux__)) || defined(__NetBSD__) \
     || defined(__FreeBSD__) || defined(__fuchsia__)

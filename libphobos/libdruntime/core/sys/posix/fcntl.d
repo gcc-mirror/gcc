@@ -779,7 +779,102 @@ else version (CRuntime_Bionic)
 }
 else version (CRuntime_Musl)
 {
-    enum {
+    version (X86_64)
+    {
+        enum
+        {
+            O_DIRECTORY     = 0x010000, // octal   0200000
+            O_NOFOLLOW      = 0x020000, // octal   0400000
+            O_DIRECT        = 0x004000, // octal    040000
+            O_LARGEFILE     =        0,
+            O_TMPFILE       = 0x410000, // octal 020200000
+
+            F_GETLK        = 5,
+            F_SETLK        = 6,
+            F_SETLKW       = 7,
+        }
+    }
+    // Note: Definitions for i386 are in arch/generic/bits/fcntl.h
+    else version (X86)
+    {
+        enum
+        {
+            O_DIRECTORY     = 0x010000, // octal   0200000
+            O_NOFOLLOW      = 0x020000, // octal   0400000
+            O_DIRECT        = 0x004000, // octal    040000
+            O_LARGEFILE     = 0x008000, // octal   0100000
+            O_TMPFILE       = 0x410000, // octal 020200000
+
+            F_GETLK        = 12,
+            F_SETLK        = 13,
+            F_SETLKW       = 14,
+        }
+    }
+    else version (ARM)
+    {
+        enum
+        {
+            O_DIRECTORY     = 0x004000, // octal    040000
+            O_NOFOLLOW      = 0x008000, // octal   0100000
+            O_DIRECT        = 0x010000, // octal   0200000
+            O_LARGEFILE     = 0x020000, // octal   0400000
+            O_TMPFILE       = 0x404000, // octal 020040000
+
+            F_GETLK        = 12,
+            F_SETLK        = 13,
+            F_SETLKW       = 14,
+        }
+    }
+    else version (AArch64)
+    {
+        enum
+        {
+            O_DIRECTORY     = 0x004000, // octal    040000
+            O_NOFOLLOW      = 0x008000, // octal   0100000
+            O_DIRECT        = 0x010000, // octal   0200000
+            O_LARGEFILE     = 0x020000, // octal   0400000
+            O_TMPFILE       = 0x404000, // octal 020040000
+
+            F_GETLK        = 5,
+            F_SETLK        = 6,
+            F_SETLKW       = 7,
+        }
+    }
+    else version (SystemZ)
+    {
+        enum
+        {
+            O_DIRECTORY     = 0x010000, // octal   0200000
+            O_NOFOLLOW      = 0x020000, // octal   0400000
+            O_DIRECT        = 0x004000, // octal    040000
+            O_LARGEFILE     = 0x008000, // octal   0100000
+            O_TMPFILE       = 0x410000, // octal 020200000
+
+            F_GETLK        = 5,
+            F_SETLK        = 6,
+            F_SETLKW       = 7,
+        }
+    }
+    else version (PPC64)
+    {
+        enum
+        {
+            O_DIRECTORY     = 0x004000, // octal    040000
+            O_NOFOLLOW      = 0x008000, // octal   0100000
+            O_DIRECT        = 0x020000, // octal   0400000
+            O_LARGEFILE     = 0x010000, // octal   0200000
+            O_TMPFILE       = 0x410000, // octal 020200000
+
+            F_GETLK        = 5,
+            F_SETLK        = 6,
+            F_SETLKW       = 7,
+        }
+    }
+    else
+        static assert(0, "Platform not supported");
+
+    enum
+    {
         O_CREAT         = 0x40,     // octal     0100
         O_EXCL          = 0x80,     // octal     0200
         O_NOCTTY        = 0x100,    // octal     0400
@@ -790,16 +885,11 @@ else version (CRuntime_Musl)
         O_DSYNC         = 0x1000,   // octal   010000
         O_SYNC          = 0x101000, // octal 04010000
         O_RSYNC         = O_SYNC,
-        O_DIRECTORY     = 0x10000,
-        O_NOFOLLOW      = 0x20000,
         O_CLOEXEC       = 0x80000,
 
         O_ASYNC         = 0x2000,
-        O_DIRECT        = 0x4000,
-        O_LARGEFILE     =      0,
         O_NOATIME       = 0x40000,
         O_PATH          = 0x200000,
-        O_TMPFILE       = 0x410000,
         O_NDELAY        = O_NONBLOCK,
         O_SEARCH        = O_PATH,
         O_EXEC          = O_PATH,
@@ -809,19 +899,19 @@ else version (CRuntime_Musl)
         O_WRONLY        = 01,
         O_RDWR          = 02,
     }
-    enum {
+    enum
+    {
         F_DUPFD        = 0,
         F_GETFD        = 1,
         F_SETFD        = 2,
         F_GETFL        = 3,
         F_SETFL        = 4,
-        F_GETLK        = 5,
-        F_SETLK        = 6,
-        F_SETLKW       = 7,
+        // F_GETLK, F_SETLK, F_SETLKW are arch-specific
         F_SETOWN       = 8,
         F_GETOWN       = 9,
     }
-    enum {
+    enum
+    {
         F_RDLCK        = 0,
         F_WRLCK        = 1,
         F_UNLCK        = 2,

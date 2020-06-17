@@ -139,8 +139,10 @@ print_ignored_options (void)
       const char *opt;
 
       opt = ignored_options.pop ();
-      warning_at (UNKNOWN_LOCATION, 0,
-		  "unrecognized command-line option %qs", opt);
+      /* Use inform, not warning_at, to avoid promoting these to errors.  */
+      inform (UNKNOWN_LOCATION,
+	      "unrecognized command-line option %qs may have been intended "
+	      "to silence earlier diagnostics", opt);
     }
 }
 
@@ -383,8 +385,7 @@ handle_common_deferred_options (void)
 	  break;
 
 	case OPT_fdump_:
-	  if (!g->get_dumps ()->dump_switch_p (opt->arg))
-	    error ("unrecognized command-line option %<-fdump-%s%>", opt->arg);
+	  g->get_dumps ()->dump_switch_p (opt->arg);
 	  break;
 
         case OPT_fopt_info_:

@@ -23,7 +23,9 @@ D_EXTRA_DFLAGS=-nostdinc -I $(srcdir) \
 	-I $(top_srcdir)/libdruntime -I ../libdruntime -I .
 
 # D flags for compilation
-AM_DFLAGS=$(phobos_compiler_pic_flag)
+AM_DFLAGS= \
+	$(phobos_compiler_pic_flag) \
+	$(WARN_DFLAGS) $(CHECKING_DFLAGS)
 
 # Install all D files
 ALL_PHOBOS_INSTALL_DSOURCES = $(PHOBOS_DSOURCES)
@@ -40,8 +42,17 @@ libgphobos_la_SOURCES = $(ALL_PHOBOS_SOURCES)
 libgphobos_la_LIBTOOLFLAGS =
 libgphobos_la_LDFLAGS = -Wc,-nophoboslib,-dstartfiles,-B../libdruntime/gcc \
     -version-info $(libtool_VERSION)
-libgphobos_la_LIBADD = ../libdruntime/libgdruntime.la $(LIBZ)
-libgphobos_la_DEPENDENCIES = libgphobos.spec
+libgphobos_la_LIBADD = \
+    ../libdruntime/libgdruntime_convenience.la $(LIBZ)
+libgphobos_la_DEPENDENCIES = \
+    ../libdruntime/libgdruntime_convenience.la libgphobos.spec
+
+# Also override library link commands: This is not strictly
+# required, but we want to record additional dependencies such
+# as pthread in the library
+libgphobos_la_LINK = $(LIBTOOL) --tag=D $(libgphobos_la_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(GDC) $(AM_CFLAGS) $(CFLAGS) \
+	$(libgphobos_la_LDFLAGS) $(LDFLAGS) -o $@
 
 # Handles generated files as well
 install-data-local:
@@ -59,6 +70,12 @@ install-data-local:
 # https://gist.github.com/jpf91/8744acebc9dcf1e9d1a35cdff20afbb2
 # Can't use wildcards here:
 # https://www.gnu.org/software/automake/manual/html_node/Wildcards.html
+if ENABLE_LIBDRUNTIME_ONLY
+
+PHOBOS_DSOURCES =
+
+else
+
 PHOBOS_DSOURCES = etc/c/curl.d etc/c/sqlite3.d etc/c/zlib.d \
 	std/algorithm/comparison.d std/algorithm/internal.d \
 	std/algorithm/iteration.d std/algorithm/mutation.d \
@@ -121,3 +138,5 @@ PHOBOS_DSOURCES = etc/c/curl.d etc/c/sqlite3.d etc/c/zlib.d \
 	std/utf.d std/uuid.d std/variant.d std/windows/charset.d \
 	std/windows/registry.d std/windows/syserror.d std/xml.d std/zip.d \
 	std/zlib.d
+
+endif

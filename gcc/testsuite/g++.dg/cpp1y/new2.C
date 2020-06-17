@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -std=c++17 -fdump-tree-cddce-details" } */
+/* { dg-options "-O2 -std=c++17 -fdump-tree-cddce-details -fdelete-null-pointer-checks" } */
 
 #include <cstdio>
 #include <cstdlib>

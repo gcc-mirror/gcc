@@ -388,7 +388,7 @@ and they are included in release distributions.
 
 Manuals are also provided on the GCC web site, in both HTML and
 PostScript forms.  This is done via the script
-@file{maintainer-scripts/update_web_docs_svn}.  Each manual to be
+@file{maintainer-scripts/update_web_docs_git}.  Each manual to be
 provided online must be listed in the definition of @code{MANUALS} in
 that file; a file @file{@var{name}.texi} must only appear once in the
 source tree, and the output manual must have the same name as the
@@ -561,7 +561,7 @@ A news item on @file{index.html}, and possibly an announcement on the
 @email{gcc-announce@@gcc.gnu.org} mailing list.
 @item
 The front end's manuals should be mentioned in
-@file{maintainer-scripts/update_web_docs_svn} (@pxref{Texinfo Manuals})
+@file{maintainer-scripts/update_web_docs_git} (@pxref{Texinfo Manuals})
 and the online manuals should be linked to from
 @file{onlinedocs/index.html}.
 @item
@@ -1363,6 +1363,12 @@ Target has 64-bit @code{long long}.
 @item long_neq_int
 Target has @code{int} and @code{long} with different sizes.
 
+@item short_eq_int
+Target has @code{short} and @code{int} with the same size.
+
+@item ptr_eq_short
+Target has pointers (@code{void *}) and @code{short} with the same size.
+
 @item int_eq_float
 Target has @code{int} and @code{float} with the same size.
 
@@ -1379,11 +1385,15 @@ Target supports @code{long double} that is longer than @code{double}.
 Target has pointers that are 32 bits or longer.
 
 @item size20plus
-Target has a 20-bit or larger address space, so at least supports
+Target has a 20-bit or larger address space, so supports at least
 16-bit array and structure sizes.
 
+@item size24plus
+Target has a 24-bit or larger address space, so supports at least
+20-bit array and structure sizes.
+
 @item size32plus
-Target has a 32-bit or larger address space, so at least supports
+Target has a 32-bit or larger address space, so supports at least
 24-bit array and structure sizes.
 
 @item 4byte_wchar_t
@@ -1733,6 +1743,12 @@ ARM target defines @code{__ARM_FP} using @code{-mfloat-abi=softfp} or
 equivalent options.  Some multilibs may be incompatible with these
 options.
 
+@item arm_fp_dp_ok
+@anchor{arm_fp_dp_ok}
+ARM target defines @code{__ARM_FP} with double-precision support using
+@code{-mfloat-abi=softfp} or equivalent options.  Some multilibs may
+be incompatible with these options.
+
 @item arm_hf_eabi
 ARM target adheres to the VFP and Advanced SIMD Register Arguments
 variant of the ABI for the ARM Architecture (as selected with
@@ -1823,6 +1839,17 @@ Some multilibs may be incompatible with these options.
 ARM target supports @code{-mfpu=vfp3 -mfloat-abi=softfp}.
 Some multilibs may be incompatible with these options.
 
+@item arm_arch_v8a_hard_ok
+@anchor{arm_arch_v8a_hard_ok}
+The compiler is targeting @code{arm*-*-*} and can compile and assemble code
+using the options @code{-march=armv8-a -mfpu=neon-fp-armv8 -mfloat-abi=hard}.
+This is not enough to guarantee that linking works.
+
+@item arm_arch_v8a_hard_multilib
+The compiler is targeting @code{arm*-*-*} and can build programs using
+the options @code{-march=armv8-a -mfpu=neon-fp-armv8 -mfloat-abi=hard}.
+The target can also run the resulting binaries.
+
 @item arm_v8_vfp_ok
 ARM target supports @code{-mfpu=fp-armv8 -mfloat-abi=softfp}.
 Some multilibs may be incompatible with these options.
@@ -1893,6 +1920,26 @@ ARM target supports options to generate instructions from ARMv8.2-A with
 the 8-Bit Integer Matrix Multiply extension (i8mm). Some multilibs may be
 incompatible with these options.
 
+@item arm_v8_1m_mve_ok
+ARM target supports options to generate instructions from ARMv8.1-M with
+the M-Profile Vector Extension (MVE). Some multilibs may be incompatible
+with these options.
+
+@item arm_v8m_main_cde
+ARM target supports options to generate instructions from ARMv8-M with
+the Custom Datapath Extension (CDE). Some multilibs may be incompatible
+with these options.
+
+@item arm_v8m_main_cde_fp
+ARM target supports options to generate instructions from ARMv8-M with
+the Custom Datapath Extension (CDE) and floating-point (VFP).
+Some multilibs may be incompatible with these options.
+
+@item arm_v8_1m_main_cde_mve
+ARM target supports options to generate instructions from ARMv8.1-M with
+the Custom Datapath Extension (CDE) and M-Profile Vector Extension (MVE).
+Some multilibs may be incompatible with these options.
+
 @item arm_prefer_ldrd_strd
 ARM target prefers @code{LDRD} and @code{STRD} instructions over
 @code{LDM} and @code{STM} instructions.
@@ -1945,6 +1992,14 @@ ARM Target supports options suitable for accessing the Q-bit manipulation
 intrinsics from @code{arm_acle.h}.
 Some multilibs may be incompatible with these options.
 
+@item arm_softfp_ok
+@anchor{arm_softfp_ok}
+ARM target supports the @code{-mfloat-abi=softfp} option.
+
+@item arm_hard_ok
+@anchor{arm_hard_ok}
+ARM target supports the @code{-mfloat-abi=hard} option.
+
 @end table
 
 @subsubsection AArch64-specific attributes
@@ -1966,6 +2021,15 @@ AArch64 target which generates instruction sequences for big endian.
 @item aarch64_small_fpic
 Binutils installed on test system supports relocation types required by -fpic
 for AArch64 small memory model.
+@item aarch64_sve_hw
+AArch64 target that is able to generate and execute SVE code (regardless of
+whether it does so by default).
+@item aarch64_sve128_hw
+@itemx aarch64_sve256_hw
+@itemx aarch64_sve512_hw
+@itemx aarch64_sve1024_hw
+@itemx aarch64_sve2048_hw
+Like @code{aarch64_sve_hw}, but also test for an exact hardware vector length.
 
 @end table
 
@@ -1994,6 +2058,16 @@ when using the new ABI.
 
 @item mpaired_single
 MIPS target supports @code{-mpaired-single}.
+@end table
+
+@subsubsection MSP430-specific attributes
+
+@table @code
+@item msp430_small
+MSP430 target has the small memory model enabled (@code{-msmall}).
+
+@item msp430_large
+MSP430 target has the large memory model enabled (@code{-mlarge}).
 @end table
 
 @subsubsection PowerPC-specific attributes
@@ -2172,6 +2246,9 @@ overloads for @code{strchr} etc. functions.
 @item d_runtime
 Target provides the D runtime.
 
+@item d_runtime_has_std_library
+Target provides the D standard library (Phobos).
+
 @item dummy_wcsftime
 Target uses a dummy @code{wcsftime} function that always returns zero.
 
@@ -2186,6 +2263,12 @@ Target provides @file{fenv.h} include file.
 @item fenv_exceptions
 Target supports @file{fenv.h} with all the standard IEEE exceptions
 and floating-point exceptions are raised by arithmetic operations.
+
+@item fileio
+Target offers such file I/O library functions as @code{fopen},
+@code{fclose}, @code{tmpnam}, and @code{remove}.  This is a link-time
+requirement for the presence of the functions in the library; even if
+they fail at runtime, the requirement is still regarded as satisfied.
 
 @item freestanding
 Target is @samp{freestanding} as defined in section 4 of the C99 standard.
@@ -2431,6 +2514,9 @@ Target uses comdat groups.
 @item indirect_calls
 Target supports indirect calls, i.e. calls where the target is not
 constant.
+
+@item lgccjit
+Target supports -lgccjit, i.e. libgccjit.so can be linked into jit tests.
 @end table
 
 @subsubsection Local to tests in @code{gcc.target/i386}
@@ -2499,6 +2585,11 @@ are:
 in certain modes; see the @ref{arm_fp_ok,,arm_fp_ok effective target
 keyword}.
 
+@item arm_fp_dp
+@code{__ARM_FP} definition with double-precision support.  Only ARM
+targets support this feature, and only then in certain modes; see the
+@ref{arm_fp_dp_ok,,arm_fp_dp_ok effective target keyword}.
+
 @item arm_neon
 NEON support.  Only ARM targets support this feature, and only then
 in certain modes; see the @ref{arm_neon_ok,,arm_neon_ok effective target
@@ -2534,6 +2625,11 @@ the @ref{arm_neon_fp16_ok,,arm_neon_fp16_ok effective target keyword}.
 @item arm_vfp3
 arm vfp3 floating point support; see
 the @ref{arm_vfp3_ok,,arm_vfp3_ok effective target keyword}.
+
+@item arm_arch_v8a_hard
+Add options for ARMv8-A and the hard-float variant of the AAPCS,
+if this is supported by the compiler; see the
+@ref{arm_arch_v8a_hard_ok,,arm_arch_v8a_hard_ok} effective target keyword.
 
 @item arm_v8_1a_neon
 Add options for ARMv8.1-A with Adv.SIMD support, if this is supported
@@ -2644,6 +2740,9 @@ This is equivalent to @code{dg-require-effective-target cxa_atexit}.
 @item dg-require-dll ""
 Skip the test if the target does not support DLL attributes.
 
+@item dg-require-dot ""
+Skip the test if the host does not have @command{dot}.
+
 @item dg-require-fork ""
 Skip the test if the target does not support @code{fork}.
 
@@ -2687,6 +2786,9 @@ Passes if @var{regexp} matches text in @var{filename}.
 Passes if @var{regexp} does not match text in @var{filename}.
 @item scan-module @var{module} @var{regexp} [@{ target/xfail @var{selector} @}]
 Passes if @var{regexp} matches in Fortran module @var{module}.
+@item dg-check-dot @var{filename}
+Passes if @var{filename} is a valid @file{.dot} file (by running
+@code{dot -Tpng} on it, and verifying the exit code is 0).
 @end table
 
 @subsubsection Scan the assembly output
@@ -2717,17 +2819,19 @@ assembly output.
 Passes if @var{symbol} is not defined as a hidden symbol in the test's
 assembly output.
 
-@item check-function-bodies @var{prefix} @var{terminator} [@var{option}]
+@item check-function-bodies @var{prefix} @var{terminator} [@var{options} [@{ target/xfail @var{selector} @}]]
 Looks through the source file for comments that give the expected assembly
 output for selected functions.  Each line of expected output starts with the
 prefix string @var{prefix} and the expected output for a function as a whole
 is followed by a line that starts with the string @var{terminator}.
 Specifying an empty terminator is equivalent to specifying @samp{"*/"}.
 
-If @var{option} is specified, the test only applies to command lines
-that contain @var{option}.  This can be useful if a source file is compiled
-both with and without optimization, since it is rarely useful to check the
-assembly output for unoptimized code.
+@var{options}, if specified, is a list of regular expressions, each of
+which matches a full command-line option.  A non-empty list prevents
+the test from running unless all of the given options are present on the
+command line.  This can help if a source file is compiled both with
+and without optimization, since it is rarely useful to check the full
+function body for unoptimized code.
 
 The first line of the expected output for a function @var{fn} has the form:
 

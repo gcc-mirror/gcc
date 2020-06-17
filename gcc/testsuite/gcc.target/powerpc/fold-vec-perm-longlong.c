@@ -29,4 +29,4 @@ testul (vector unsigned long long vul2, vector unsigned long long vul3,
   return vec_perm (vul2, vul3, vuc);
 }
 
-/* { dg-final { scan-assembler-times "vperm" 3 } } */
+/* { dg-final { scan-assembler-times {\m(?:v|xx)permr?\M} 3 } } */

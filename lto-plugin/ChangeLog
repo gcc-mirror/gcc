@@ -1,3 +1,68 @@
+2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/95413
+	* configure: Regenerated.
+
+2020-05-26  Alexandre Oliva  <oliva@adacore.com>
+
+	* lto-plugin.c (skip_in_suffix): New.
+	(exec_lto_wrapper): Use skip_in_suffix and concat to build
+	non-temporary output names.
+	(onload): Look for -dumpdir in COLLECT_GCC_OPTIONS, and
+	override link_output_name with it.
+
+2020-05-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/94998
+	* configure: Regenerated.
+
+2020-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lto-plugin.c: Document -linker-output-auto-notlo-rel option.
+	(linker_output_set): Change type to bool.
+	(linker_output_known): Likewise.
+	(linker_output_auto_nolto_rel): New variable.
+	(all_symbols_read_handler): Take it into account.
+	<LDPO_REL>: Do not issue the warning if it is set.
+	(process_option): Process -linker-output-auto-notlo-rel.
+	(cleanup_handler): Remove unused variable.
+	(onload) <LDPT_LINKER_OUTPUT>: Adjust to above type change.
+
+2020-04-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/94739
+	* configure: Regenerated.
+
+2020-04-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/94739
+	* Makefile.am (AM_CFLAGS): Add $(CET_HOST_FLAGS).
+	* configure.ac: Add GCC_CET_HOST_FLAGS(CET_HOST_FLAGS) and
+	AC_SUBST(CET_HOST_FLAGS).
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+
+2020-03-19  Martin Liska  <mliska@suse.cz>
+
+	* lto-plugin.c (LTO_SECTION_PREFIX): Rename to ...
+	(LTO_SYMTAB_PREFIX): ... this.
+	(LTO_SECTION_PREFIX_LEN): Rename to ...
+	(LTO_SYMTAB_PREFIX_LEN): ... this.
+	(LTO_SYMTAB_EXT_PREFIX): New.
+	(LTO_SYMTAB_EXT_PREFIX_LEN): New.
+	(LTO_LTO_PREFIX): New.
+	(LTO_LTO_PREFIX_LEN): New.
+	(parse_table_entry): Fill up unused to zero.
+	(parse_table_entry_extension): New.
+	(parse_symtab_extension): New.
+	(finish_conflict_resolution): Change type
+	for resolution.
+	(process_symtab): Use new macro name.
+	(process_symtab_extension): New.
+	(claim_file_handler): Parse also process_symtab_extension.
+	(onload): Call new add_symbols_v2.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

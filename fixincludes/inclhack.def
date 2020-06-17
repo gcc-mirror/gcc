@@ -2614,6 +2614,21 @@ fix = {
 };
 
 /*
+ * Fix missing SCNuMAX defines in inttypes.h
+ */
+fix = {
+    hackname  = hpux_c99_inttypes4;
+    mach      = "hppa*-hp-hpux11.[01]*";
+    files     = inttypes.h;
+    sed       = "/^[ \t]*#[ \t]*define[ \t]*SCNxMAX[ \t]*SCNx64/a\\\n"
+		"#define SCNuMAX \t SCNu64\n";
+    sed       = "/^[ \t]*#[ \t]*define[ \t]*SCNxMAX[ \t]*SCNx32/a\\\n"
+		"#define SCNuMAX \t SCNu32\n";
+    test_text = "#define SCNxMAX SCNx64\n"
+		"#define SCNxMAX SCNx32\n";
+};
+
+/*
  *  Fix hpux broken ctype macros
  */
 fix = {

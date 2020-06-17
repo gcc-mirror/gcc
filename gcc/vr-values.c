@@ -2826,7 +2826,7 @@ vr_values::extract_range_from_stmt (gimple *stmt, edge *taken_edge_p,
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "\nVisiting statement:\n");
+      fprintf (dump_file, "\nextract_range_from_stmt visiting:\n");
       print_gimple_stmt (dump_file, stmt, 0, dump_flags);
     }
 
@@ -3591,9 +3591,11 @@ range_fits_type_p (const value_range *vr,
   return true;
 }
 
+/* If COND can be folded entirely as TRUE or FALSE, rewrite the
+   conditional as such, and return TRUE.  */
+
 bool
-simplify_using_ranges::simplify_cond_using_ranges_when_edge_is_known
-						(gcond *cond)
+simplify_using_ranges::fold_cond (gcond *cond)
 {
   /* ?? vrp_folder::fold_predicate_in() is a superset of this.  At
      some point we should merge all variants of this code.  */
@@ -3624,7 +3626,7 @@ simplify_using_ranges::simplify_cond_using_ranges_1 (gcond *stmt)
   tree op1 = gimple_cond_rhs (stmt);
   enum tree_code cond_code = gimple_cond_code (stmt);
 
-  if (simplify_cond_using_ranges_when_edge_is_known (stmt))
+  if (fold_cond (stmt))
     return true;
 
   if (cond_code != NE_EXPR

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -643,28 +643,31 @@ package body Exp_Disp is
       elsif TSS_Name = TSS_Deep_Finalize then
          return Uint_9;
 
+      elsif TSS_Name = TSS_Put_Image then
+         return Uint_10;
+
       --  In VM targets unconditionally allow obtaining the position associated
       --  with predefined interface primitives since in these platforms any
       --  tagged type has these primitives.
 
       elsif Ada_Version >= Ada_2005 or else not Tagged_Type_Expansion then
          if Chars (E) = Name_uDisp_Asynchronous_Select then
-            return Uint_10;
-
-         elsif Chars (E) = Name_uDisp_Conditional_Select then
             return Uint_11;
 
-         elsif Chars (E) = Name_uDisp_Get_Prim_Op_Kind then
+         elsif Chars (E) = Name_uDisp_Conditional_Select then
             return Uint_12;
 
-         elsif Chars (E) = Name_uDisp_Get_Task_Id then
+         elsif Chars (E) = Name_uDisp_Get_Prim_Op_Kind then
             return Uint_13;
 
-         elsif Chars (E) = Name_uDisp_Requeue then
+         elsif Chars (E) = Name_uDisp_Get_Task_Id then
             return Uint_14;
 
-         elsif Chars (E) = Name_uDisp_Timed_Select then
+         elsif Chars (E) = Name_uDisp_Requeue then
             return Uint_15;
+
+         elsif Chars (E) = Name_uDisp_Timed_Select then
+            return Uint_16;
          end if;
       end if;
 
@@ -1110,6 +1113,14 @@ package body Exp_Disp is
         and then Is_Class_Wide_Type (Ctrl_Typ)
       then
          Controlling_Tag := Duplicate_Subexpr (Ctrl_Arg);
+
+      elsif Is_Access_Type (Ctrl_Typ) then
+         Controlling_Tag :=
+           Make_Selected_Component (Loc,
+             Prefix        =>
+               Make_Explicit_Dereference (Loc,
+                 Duplicate_Subexpr_Move_Checks (Ctrl_Arg)),
+             Selector_Name => New_Occurrence_Of (DTC_Entity (Subp), Loc));
 
       else
          Controlling_Tag :=
@@ -2134,6 +2145,11 @@ package body Exp_Disp is
       end loop;
 
       Thunk_Id := Make_Temporary (Loc, 'T');
+
+      --  Note: any change to this symbol name needs to be coordinated
+      --  with GNATcoverage, as that tool relies on it to identify
+      --  thunks and exclude them from source coverage analysis.
+
       Set_Ekind (Thunk_Id, Ekind (Prim));
       Set_Is_Thunk (Thunk_Id);
       Set_Convention (Thunk_Id, Convention (Prim));
@@ -3828,6 +3844,7 @@ package body Exp_Disp is
       --  tagged type, when one of its primitive operations has a type in its
       --  profile whose full view has not been analyzed yet. More complex cases
       --  involve composite types that have one private unfrozen subcomponent.
+      --  Move this check to sem???
 
       procedure Export_DT (Typ : Entity_Id; DT : Entity_Id; Index : Nat := 0);
       --  Export the dispatch table DT of tagged type Typ. Required to generate
@@ -4301,6 +4318,7 @@ package body Exp_Disp is
             Append_To (Result,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => OSD,
+                Constant_Present    => True,
                 Object_Definition   =>
                   Make_Subtype_Indication (Loc,
                     Subtype_Mark =>
@@ -4338,7 +4356,7 @@ package body Exp_Disp is
                     Attribute_Name => Name_Alignment)));
 
             --  In secondary dispatch tables the Typeinfo component contains
-            --  the address of the Object Specific Data (see a-tags.ads)
+            --  the address of the Object Specific Data (see a-tags.ads).
 
             Append_To (DT_Aggr_List,
               Make_Attribute_Reference (Loc,
@@ -4680,16 +4698,16 @@ package body Exp_Disp is
       end if;
 
       --  Ensure that the value of Max_Predef_Prims defined in a-tags is
-      --  correct. Valid values are 9 under configurable runtime or 15
+      --  correct. Valid values are 10 under configurable runtime or 16
       --  with full runtime.
 
       if RTE_Available (RE_Interface_Data) then
-         if Max_Predef_Prims /= 15 then
+         if Max_Predef_Prims /= 16 then
             Error_Msg_N ("run-time library configuration error", Typ);
             goto Leave;
          end if;
       else
-         if Max_Predef_Prims /= 9 then
+         if Max_Predef_Prims /= 10 then
             Error_Msg_N ("run-time library configuration error", Typ);
             Error_Msg_CRT ("tagged types", Typ);
             goto Leave;
@@ -8142,6 +8160,7 @@ package body Exp_Disp is
             --  We exclude Input and Output stream operations because
             --  Limited_Controlled inherits useless Input and Output stream
             --  operations from Root_Controlled, which can never be overridden.
+            --  Move this check to sem???
 
             if not Is_TSS (Prim, TSS_Stream_Input)
                  and then

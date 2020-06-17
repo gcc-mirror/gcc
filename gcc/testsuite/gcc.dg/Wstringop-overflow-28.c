@@ -224,7 +224,7 @@ void ptr_sub_from_end (int n, int i0, int i1, int i2, int i3)
   q += n;      //  N=1     N=2
   q[-1] = 0;   // p[0]    p[1]
   q[-2] = 1;   // p[-1]   p[0]
-  q[-3] = 2;   // p[-2]   p[-1]   // { dg-warning "\\\[-Wstringop-overflow" "pr92939: negative offset from end" { xfail *-*-* } }
+  q[-3] = 2;   // p[-2]   p[-1]   // { dg-warning "\\\[-Wstringop-overflow" "pr92939: negative offset from end" }
 
   /* The following isn't diagnosed because the warning doesn't recognize
      the index below as necessarily having the same value as the size

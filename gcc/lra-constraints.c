@@ -1054,12 +1054,15 @@ match_reload (signed char out, signed char *ins, signed char *outs,
   curr_insn_input_reloads[curr_insn_input_reloads_num].match_p = true;
   curr_insn_input_reloads[curr_insn_input_reloads_num++].reg = new_in_reg;
   for (i = 0; (in = ins[i]) >= 0; i++)
-    {
-      lra_assert
-	(GET_MODE (*curr_id->operand_loc[in]) == VOIDmode
-	 || GET_MODE (new_in_reg) == GET_MODE (*curr_id->operand_loc[in]));
+    if (GET_MODE (*curr_id->operand_loc[in]) == VOIDmode
+	|| GET_MODE (new_in_reg) == GET_MODE (*curr_id->operand_loc[in]))
       *curr_id->operand_loc[in] = new_in_reg;
-    }
+    else
+      {
+	lra_assert
+	  (GET_MODE (new_out_reg) == GET_MODE (*curr_id->operand_loc[in]));
+	*curr_id->operand_loc[in] = new_out_reg;
+      }
   lra_update_dups (curr_id, ins);
   if (out < 0)
     return;
@@ -1068,6 +1071,8 @@ match_reload (signed char out, signed char *ins, signed char *outs,
   if (find_reg_note (curr_insn, REG_UNUSED, out_rtx) == NULL_RTX)
     {
       start_sequence ();
+      if (out >= 0 && curr_static_id->operand[out].strict_low)
+	out_rtx = gen_rtx_STRICT_LOW_PART (VOIDmode, out_rtx);
       lra_emit_move (out_rtx, copy_rtx (new_out_reg));
       emit_insn (*after);
       *after = get_insns ();
@@ -1486,7 +1491,7 @@ static bool process_address (int, bool, rtx_insn **, rtx_insn **);
 static bool
 simplify_operand_subreg (int nop, machine_mode reg_mode)
 {
-  int hard_regno;
+  int hard_regno, inner_hard_regno;
   rtx_insn *before, *after;
   machine_mode mode, innermode;
   rtx reg, new_reg;
@@ -1732,15 +1737,19 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
      for the new uses.  */
   else if (REG_P (reg)
 	   && REGNO (reg) >= FIRST_PSEUDO_REGISTER
-	   && (hard_regno = lra_get_regno_hard_regno (REGNO (reg))) >= 0
-	   && (hard_regno_nregs (hard_regno, innermode)
-	       < hard_regno_nregs (hard_regno, mode))
-	   && (regclass = lra_get_allocno_class (REGNO (reg)))
-	   && (type != OP_IN
-	       || !in_hard_reg_set_p (reg_class_contents[regclass],
-				      mode, hard_regno)
-	       || overlaps_hard_reg_set_p (lra_no_alloc_regs,
-					   mode, hard_regno)))
+	   && paradoxical_subreg_p (operand)
+	   && (inner_hard_regno = lra_get_regno_hard_regno (REGNO (reg))) >= 0
+	   && ((hard_regno
+		= simplify_subreg_regno (inner_hard_regno, innermode,
+					 SUBREG_BYTE (operand), mode)) < 0
+	       || ((hard_regno_nregs (inner_hard_regno, innermode)
+		    < hard_regno_nregs (hard_regno, mode))
+		   && (regclass = lra_get_allocno_class (REGNO (reg)))
+		   && (type != OP_IN
+		       || !in_hard_reg_set_p (reg_class_contents[regclass],
+					      mode, hard_regno)
+		       || overlaps_hard_reg_set_p (lra_no_alloc_regs,
+						   mode, hard_regno)))))
     {
       /* The class will be defined later in curr_insn_transform.  */
       enum reg_class rclass

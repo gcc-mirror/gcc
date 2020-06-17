@@ -1,3 +1,118 @@
+2020-06-12  Martin Liska  <mliska@suse.cz>
+
+	* .gitignore: Add .clang-tidy.
+
+2020-06-08  Jason Merrill  <jason@redhat.com>
+
+	* configure.ac: Check AX_CXX_COMPILE_STDCXX if not bootstrapping.
+	* configure: Regenerate.
+
+2020-06-06  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* MAINTAINERS: Add myself as xtensa port maintainer.
+
+2020-05-28  Nicolas Bértolo  <nicolasbertolo@gmail.com>
+
+	* configure.ac: Don't require --enable-host-shared when building
+	for Mingw.
+	* configure: Regenerate.
+
+2020-05-18  Jason Merrill  <jason@redhat.com>
+
+	* configure.ac: Update bootstrap dialect to -std=c++11.
+
+2020-05-18  Alex Coplan  <alex.coplan@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2020-04-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/92713
+	* configure.ac ["${ENABLE_LIBSTDCXX}" = "default" && amdgcn*-*-*]
+	(noconfigdirs): Add 'target-libstdc++-v3'.
+	* configure: Regenerate.
+
+2020-04-21  Stephen Casner  <casner@acm.org>
+
+	PR 25830
+	* configure.ac (noconfigdirs): Exclude gdb & gprof for pdp11.
+	* configure: Rebuild.
+
+2020-04-17  Martin Liska  <mliska@suse.cz>
+	    Jonathan Yong <10walls@gmail.com>
+
+	PR gcov-profile/94570
+	* ltmain.sh: Do not define HAVE_DOS_BASED_FILE_SYSTEM
+	for CYGWIN.
+
+2020-04-14  Martin Jambor  <mjambor@suse.cz>
+
+	* MAINTAINERS (Reviewers): Add myself as callgraph (IPA) reviewer.
+
+2020-04-09  Tom Tromey  <tom@tromey.com>
+
+	* configure: Rebuild.
+	* Makefile.in: Rebuild.
+	* Makefile.def (gdbsupport, gdbserver): New host modules.
+	(configure-gdb): Depend on all-gdbsupport.
+	(all-gdb): Depend on all-gdbsupport, all-libctf.
+	* configure.ac (host_tools): Add gdbserver.
+	Conditionally build gdbserver and gdbsupport.
+
+2020-03-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* configure.ac: Build libgomp by default for amdgcn.
+	* configure: Regenerate.
+
+2020-03-05  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2020-02-28  Joel Hutton  <joel.hutton@arm.com>
+
+	* MAINTAINERS (Write After Approval) : Add myself.
+
+2020-02-20  Palmer Dabbelt  <palmer@sifive.com>
+
+	* MAINTAINERS: Change palmer@sifive.com to palmer@dabbelt.com.
+
+2020-02-14  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (attribute alias): Mention type requirement.
+	(attribute weak): Same.
+	(attribute weakref): Correct invalid example.
+
+2020-02-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* doc/md.texi (PowerPC and IBM RS6000): Improve documentation.
+
+2020-01-15  Segher Boessenkool  <segher@kernel.crashing.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* .gitattributes: Add *.md diff=md.
+
+2020-01-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	The mentioned auto-generated file is no more part of the
+
+	GCC sources, it's auto-generated in $(builddir) during build.
+
+	PR target/92055
+	* contrib/gcc_update (files_and_dependencies): Remove
+	entry for gcc/config/avr/t-multilib.
+
+2020-01-14  Anatoly Sokolov <aesok@dol.ru>
+
+	* MAINTAINERS: Update my email address.
+
+2020-01-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* README.MOVED_TO_GIT: Remove.
+
+2020-01-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* README.MOVED_TO_GIT: New file.
+
 2020-01-02  Dennis Zhang  <dennis.zhang@arm.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

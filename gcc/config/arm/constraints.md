@@ -32,17 +32,79 @@
 
 ;; The following multi-letter normal constraints have been used:
 ;; in ARM/Thumb-2 state: Da, Db, Dc, Dd, Dn, DN, Dm, Dl, DL, Do, Dv, Dy, Di,
-;;			 Dt, Dp, Dz, Tu
+;;			 Dt, Dp, Dz, Tu, Te
 ;; in Thumb-1 state: Pa, Pb, Pc, Pd, Pe
-;; in Thumb-2 state: Ha, Pj, PJ, Ps, Pt, Pu, Pv, Pw, Px, Py, Pz
-;; in all states: Pf
+;; in Thumb-2 state: Ha, Pj, PJ, Ps, Pt, Pu, Pv, Pw, Px, Py, Pz, Rd, Rf, Rb, Ra,
+;;		     Rg, Ri
+;; in all states: Pf, Pg
 
 ;; The following memory constraints have been used:
-;; in ARM/Thumb-2 state: Uh, Ut, Uv, Uy, Un, Um, Us
+;; in ARM/Thumb-2 state: Uh, Ut, Uv, Uy, Un, Um, Us, Up, Uf, Ux, Ul
 ;; in ARM state: Uq
 ;; in Thumb state: Uu, Uw
 ;; in all states: Q
 
+(define_register_constraint "Up" "TARGET_HAVE_MVE ? VPR_REG : NO_REGS"
+  "MVE VPR register")
+
+(define_memory_constraint "Ul"
+ "@internal
+  In ARM/Thumb-2 state a valid address for load instruction with XEXP (op, 0)
+  being label of the literal data item to be loaded."
+ (and (match_code "mem")
+      (match_test "TARGET_HAVE_MVE && reload_completed
+		   && (GET_CODE (XEXP (op, 0)) == LABEL_REF
+		       || (GET_CODE (XEXP (op, 0)) == CONST
+			   && GET_CODE (XEXP (XEXP (op, 0), 0)) == PLUS
+			   && GET_CODE (XEXP (XEXP (XEXP (op, 0), 0), 0)) == LABEL_REF
+			   && CONST_INT_P (XEXP (XEXP (XEXP (op, 0), 0), 1))))")))
+
+(define_register_constraint "Uf" "TARGET_HAVE_MVE ? VFPCC_REG : NO_REGS"
+  "MVE FPCCR register")
+
+(define_register_constraint "Te" "TARGET_HAVE_MVE ? EVEN_REG : NO_REGS"
+  "EVEN core registers @code{r0}, @code{r2}, @code{r4}, @code{r6}, @code{r8},
+   @code{r10}, @code{r12}, @code{r14}")
+
+(define_constraint "Rd"
+  "@internal In Thumb-2 state a constant in range 1 to 16"
+  (and (match_code "const_int")
+       (match_test "TARGET_HAVE_MVE && ival >= 1 && ival <= 16")))
+
+(define_constraint "Ra"
+  "@internal In Thumb-2 state a constant in range 0 to 7"
+  (and (match_code "const_int")
+       (match_test "TARGET_HAVE_MVE && ival >= 0 && ival <= 7")))
+
+(define_constraint "Rb"
+  "@internal In Thumb-2 state a constant in range 1 to 8"
+  (and (match_code "const_int")
+       (match_test "TARGET_HAVE_MVE && ival >= 1 && ival <= 8")))
+
+(define_constraint "Rc"
+  "@internal In Thumb-2 state a constant in range 0 to 15"
+  (and (match_code "const_int")
+       (match_test "TARGET_HAVE_MVE && ival >= 0 && ival <= 15")))
+
+(define_constraint "Re"
+  "@internal In Thumb-2 state a constant in range 0 to 31"
+  (and (match_code "const_int")
+       (match_test "TARGET_HAVE_MVE && ival >= 0 && ival <= 31")))
+
+(define_constraint "Rf"
+  "@internal In Thumb-2 state a constant in range 1 to 32"
+  (and (match_code "const_int")
+       (match_test "TARGET_HAVE_MVE && ival >= 1 && ival <= 32")))
+
+(define_constraint "Rg"
+  "@internal In Thumb-2 state a constant is one among 1, 2, 4 and 8"
+  (and (match_code "const_int")
+       (match_test "TARGET_HAVE_MVE && ((ival == 1) || (ival == 2)
+				       || (ival == 4) || (ival == 8))")))
+
+;; True if the immediate is multiple of 8 and in range of -/+ 1016 for MVE.
+(define_predicate "mve_vldrd_immediate"
+  (match_test "satisfies_constraint_Ri (op)"))
 
 (define_register_constraint "t" "TARGET_32BIT ? VFP_LO_REGS : NO_REGS"
  "The VFP registers @code{s0}-@code{s31}.")
@@ -187,6 +249,11 @@
        (match_test "!is_mm_relaxed (memmodel_from_int (ival))
 		    && !is_mm_consume (memmodel_from_int (ival))
 		    && !is_mm_release (memmodel_from_int (ival))")))
+
+(define_constraint "Pg"
+  "@internal In Thumb-2 state a constant in range 1 to 32"
+  (and (match_code "const_int")
+       (match_test "TARGET_THUMB2 && ival >= 1 && ival <= 32")))
 
 (define_constraint "Ps"
   "@internal In Thumb-2 state a constant in the range -255 to +255"
@@ -411,6 +478,15 @@
   quad-word values in four ARM registers."
  (and (match_code "mem")
       (match_test "TARGET_32BIT && neon_vector_mem_operand (op, 1, true)")))
+
+(define_memory_constraint "Ux"
+ "@internal
+  In ARM/Thumb-2 state a valid address and load into CORE regs or only to
+  LO_REGS based on mode of op."
+ (and (match_code "mem")
+      (match_test "(TARGET_HAVE_MVE || TARGET_HAVE_MVE_FLOAT)
+		   && mve_vector_mem_operand (GET_MODE (op),
+					      XEXP (op, 0), true)")))
 
 (define_memory_constraint "Uq"
  "@internal

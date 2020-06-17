@@ -65,6 +65,7 @@ struct function_format_info
 
 /* Initialized in init_dynamic_diag_info.  */
 static GTY(()) tree local_tree_type_node;
+static GTY(()) tree local_event_ptr_node;
 static GTY(()) tree local_gimple_ptr_node;
 static GTY(()) tree local_cgraph_node_ptr_node;
 static GTY(()) tree locus;
@@ -752,9 +753,12 @@ static const format_char_info asm_fprintf_char_table[] =
   { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "pq", "cR", NULL }, \
   { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "c",  NULL }, \
   { "r",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "//cR",   NULL }, \
+  { "@",   1, STD_C89, { T_EVENT_PTR,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL }, \
   { "<",   0, STD_C89, NOARGUMENTS, "",      "<",   NULL }, \
   { ">",   0, STD_C89, NOARGUMENTS, "",      ">",   NULL }, \
   { "'" ,  0, STD_C89, NOARGUMENTS, "",      "",    NULL }, \
+  { "{",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   "cR", NULL }, \
+  { "}",   0, STD_C89, NOARGUMENTS, "",      "",    NULL }, \
   { "R",   0, STD_C89, NOARGUMENTS, "",     "\\",   NULL }, \
   { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL }, \
   { "Z",   1, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "", &gcc_diag_char_table[0] }
@@ -2993,6 +2997,7 @@ static const struct
    NAME ("decl", "declaration"),
    NAME ("enumeral", "enumerated"),
    NAME ("floating point", "floating-point"),
+   NAME ("nonstatic", "non-static"),
    NAME ("non-zero", "nonzero"),
    NAME ("reg", "register"),
    NAME ("stmt", "statement"),
@@ -3268,8 +3273,7 @@ check_plain (location_t format_string_loc, tree format_string_cst,
 			       "quoted %qs directive in format; "
 			       "use %qs instead", "%s", "%qs");
       else if (format_chars - orig_format_chars > 2
-	       && !strncasecmp (format_chars - 3, "can%'t", 5)
-	       && !ISALPHA (format_chars[1]))
+	       && !strncasecmp (format_chars - 3, "can%'t", 6))
 	format_warning_substr (format_string_loc,
 			       format_string_cst,
 			       fmtchrpos - 3, fmtchrpos + 3, opt,
@@ -4987,6 +4991,11 @@ init_dynamic_diag_info (void)
   if (!local_cgraph_node_ptr_node
       || local_cgraph_node_ptr_node == void_type_node)
     local_cgraph_node_ptr_node = get_named_type ("cgraph_node");
+
+  /* Similar to the above but for diagnostic_event_id_t*.  */
+  if (!local_event_ptr_node
+      || local_event_ptr_node == void_type_node)
+    local_event_ptr_node = get_named_type ("diagnostic_event_id_t");
 
   static tree hwi;
 

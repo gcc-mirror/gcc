@@ -195,11 +195,23 @@ mark_use (tree expr, bool rvalue_p, bool read_p,
 	  tree nop = RECUR (op);
 	  if (nop == error_mark_node)
 	    return error_mark_node;
-	  TREE_OPERAND (expr, 0) = nop;
-	  /* If we're replacing a DECL with a constant, we also need to change
-	     the TREE_CODE of the location wrapper.  */
-	  if (op != nop && rvalue_p)
-	    TREE_SET_CODE (expr, NON_LVALUE_EXPR);
+	  else if (op == nop)
+	    /* No change.  */;
+	  else if (DECL_P (nop) || CONSTANT_CLASS_P (nop))
+	    {
+	      /* Reuse the location wrapper.  */
+	      TREE_OPERAND (expr, 0) = nop;
+	      /* If we're replacing a DECL with a constant, we also need to
+		 change the TREE_CODE of the location wrapper.  */
+	      if (rvalue_p)
+		TREE_SET_CODE (expr, NON_LVALUE_EXPR);
+	    }
+	  else
+	    {
+	      /* Drop the location wrapper.  */
+	      expr = nop;
+	      protected_set_expr_location (expr, loc);
+	    }
 	  return expr;
 	}
       gcc_fallthrough();
@@ -387,6 +399,11 @@ fold_for_warn (tree x)
 {
   /* C++ implementation.  */
 
+  /* Prevent warning-dependent constexpr evaluation from changing
+     DECL_UID (which breaks -fcompare-debug) and from instantiating
+     templates.  */
+  uid_sensitive_constexpr_evaluation_sentinel s;
+
   /* It's not generally safe to fully fold inside of a template, so
      call fold_non_dependent_expr instead.  */
   if (processing_template_decl)
@@ -397,6 +414,8 @@ fold_for_warn (tree x)
       else
 	return f;
     }
+  else if (cxx_dialect >= cxx11)
+    x = maybe_constant_value (x);
 
   return c_fully_fold (x, /*for_init*/false, /*maybe_constp*/NULL);
 }

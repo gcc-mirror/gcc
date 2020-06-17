@@ -1,3 +1,194 @@
+2020-06-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/95313
+	* io/write.c (ztoa_big): Disable -Wstringop-overflow for one
+	line.
+
+2020-06-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95091
+	* io/transfer.c (finalize_transfer): Fix type in error message.
+
+2020-06-01  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR libfortran/95418
+	* config/fpu-387.h (struct fenv): Add __attribute__ ((gcc_struct)).
+
+2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/95413
+	* configure: Regenerated.
+
+2020-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/95390
+	* Makefile.am (i_findloc0_c): Add findloc0_i10.c.
+	(i_findloc1_c): Add findloc1_i10.c.
+	* gfortran.map (GFORTRAN_10.2): New symbol version, export
+	_gfortran_{,m,s}findloc{0,1}_c10 symbols.
+	* Makefile.in: Regenerated.
+	* generated/findloc0_c10.c: Generated.
+	* generated/findloc1_c10.c: Generated.
+
+2020-05-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR libfortran/95104
+	* io/unit.c (unlock_unit): Guard by check for NULL pointer.
+
+2020-05-26  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl   <kargl@gcc.gnu.org>
+
+	PR libfortran/95104
+	* io/transfer.c (st_wait_async): Do not dereference NULL pointer.
+
+2020-05-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95195
+	* io/transfer.c (finalize_transfer): Generate runtime error for
+	namelist input/output to unformatted file.
+
+2020-05-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/95191
+	* io/async.c (async_wait_id): Generate error if ID is higher
+	than the highest current ID.
+	* runtime/error.c (translate_error): Handle LIBERROR_BAD_WAIT_ID.
+
+2020-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* m4/matmul.m4: Don't include <config/i386/cpuinfo.h>.  Use
+	__builtin_cpu_is/__builtin_cpu_supports
+	* generated/matmul_c10.c: Regenerated.
+	* generated/matmul_c16.c: Likewise.
+	* generated/matmul_c4.c: Likewise.
+	* generated/matmul_c8.c: Likewise.
+	* generated/matmul_i1.c: Likewise.
+	* generated/matmul_i16.c: Likewise.
+	* generated/matmul_i2.c: Likewise.
+	* generated/matmul_i4.c: Likewise.
+	* generated/matmul_i8.c: Likewise.
+	* generated/matmul_r10.c: Likewise.
+	* generated/matmul_r16.c: Likewise.
+	* generated/matmul_r4.c: Likewise.
+	* generated/matmul_r8.c: Likewise.
+
+2020-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/95147
+	* configure: Regenerated.
+
+2020-05-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/95119
+	* io/close.c (close_status): Add CLOSE_INVALID.
+	(st_close): Return early on invalid STATUS parameter.
+
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2020-05-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/fpu-387.h (__math_force_eval): Remove.
+	(__math_force_eval_div): New define.
+	(local_feraiseexcept): Use __math_force_eval_div to use
+	generic division to generate INVALID, DIVZERO and INEXACT
+	exceptions.
+	(struct fenv): Define named struct instead of typedef.
+
+2020-05-01  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/fpu-387.h (__math_force_eval): New define.
+	(local_feraiseexcept): Use __math_force_eval to evaluate
+	generic division to generate INVALID and DIVZERO exceptions.
+
+2020-04-22  Fritz Reese  <foreese@gcc.gnu.org>
+
+	* intrinsics/trigd.c, intrinsics/trigd_lib.inc, intrinsics/trigd.inc:
+	Guard against unavailable math functions.
+	Use suffixes from kinds.h based on the REAL kind.
+
+2020-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/94694
+	PR libfortran/94586
+	* configure.ac: Add math func checks for fmaf, fma and fmal.  Add
+	HAVE_INLINE_BUILTIN_COPYSIGN check.
+	* c99_protos.h (copysign, fmaf, fma, fmal): Provide fallback
+	prototypes.
+	(HAVE_COPYSIGN, HAVE_FMAF, HAVE_FMA, HAVE_FMAL): Define if not
+	defined and fallback version is provided.
+	* intrinsics/c99_functions.c (copysign, fmaf, fma, fmal): Provide
+	fallback implementations if possible
+	* configure: Regenerated.
+	* config.h.in: Regenerated.
+
+2020-04-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/fpu-387.h (local_feraiseexcept) [__SSE_MATH__]:
+	Remove unneeded assignments to volatile memory.
+
+2020-04-01  Fritz Reese  <foreese@gcc.gnu.org>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93871
+	* Makefile.am, Makefile.in: New make rule for intrinsics/trigd.c.
+	* gfortran.map: New routines for {sind, cosd, tand}X{r4, r8, r10, r16}.
+	* intrinsics/trigd.c, intrinsics/trigd_lib.inc, intrinsics/trigd.inc:
+	New files. Defines native degree-valued trig functions.
+
+2020-02-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/93599
+	* io/async.c (destroy_adv_cond): Do not destroy lock.
+	(async_io): Make sure au->lock is locked for finishing of thread.
+	Do not lock/unlock around signalling emptysignal. Unlock au->lock
+	before return.
+	(init_adv_cond): Do not initialize lock.
+	(enqueue_transfer): Unlock after signal.
+	(enqueue_done_id): Likewise.
+	(enqueue_done): Likewise.
+	(enqueue_close): Likewise.
+	(enqueue_data_transfer): Likewise.
+	(async_wait_id): Do not lock/unlock around signalling au->work.
+	(async_wait): Unlock after signal.
+	* io/async.h (SIGNAL): Add comment about needed au->lock.
+	Remove locking/unlocking of advcond->lock.
+	(WAIT_SIGNAL_MUTEX): Add comment. Remove locking/unlocking of
+	advcond->lock.  Unlock mutex only at the end.  Loop on
+	__ghread_cond_wait returning zero.
+	(REVOKE_SIGNAL): Add comment. Remove locking/unlocking of
+	advcond->lock.
+	(struct adv_cond): Remove mutex from struct.
+
+2020-02-12  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libstdc++/79193
+	PR libstdc++/88999
+
+	* configure: Regenerated.
+
+2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure.ac: Handle `--with-toolexeclibdir='.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
+2020-01-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/93234
+	* io/unit.c (set_internal_unit): Set round and sign flags
+	correctly.
+
+2020-01-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/90374
+	* io/format.c (parse_format_list): Zero width not allowed with
+	FMT_D.
+	* io/write_float.def (build_float_string): Include range of
+	higher exponent values that require wider width.
+
 2020-01-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/90374

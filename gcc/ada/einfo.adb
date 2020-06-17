@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -282,6 +282,7 @@ package body Einfo is
 
    --    SPARK_Pragma                    Node40
 
+   --    Access_Subprogram_Wrapper       Node41
    --    Original_Protected_Subprogram   Node41
    --    SPARK_Aux_Pragma                Node41
 
@@ -629,8 +630,8 @@ package body Einfo is
    --    Is_Activation_Record            Flag305
    --    Needs_Activation_Record         Flag306
    --    Is_Loop_Parameter               Flag307
-   --    Invariants_Ignored              Flag308
 
+   --    (unused)                        Flag308
    --    (unused)                        Flag309
 
    --  Note: Flag310-317 are defined in atree.ads/adb, but not yet in atree.h
@@ -713,7 +714,7 @@ package body Einfo is
 
    function Abstract_States (Id : E) return L is
    begin
-      pragma Assert (Ekind_In (Id, E_Generic_Package, E_Package));
+      pragma Assert (Is_Package_Or_Generic_Package (Id));
       return Elist25 (Id);
    end Abstract_States;
 
@@ -737,6 +738,12 @@ package body Einfo is
                                    E_Record_Type_With_Private));
       return Node30 (Implementation_Base_Type (Id));
    end Access_Disp_Table_Elab_Flag;
+
+   function Access_Subprogram_Wrapper (Id : E) return E is
+   begin
+      pragma Assert (Ekind (Id) = E_Subprogram_Type);
+      return Node41 (Id);
+   end Access_Subprogram_Wrapper;
 
    function Activation_Record_Component (Id : E) return E is
    begin
@@ -837,7 +844,7 @@ package body Einfo is
 
    function Body_Entity (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Package, E_Generic_Package));
+      pragma Assert (Is_Package_Or_Generic_Package (Id));
       return Node19 (Id);
    end Body_Entity;
 
@@ -990,7 +997,7 @@ package body Einfo is
 
    function Current_Value (Id : E) return N is
    begin
-      pragma Assert (Ekind (Id) in Object_Kind);
+      pragma Assert (Is_Object (Id));
       return Node9 (Id);
    end Current_Value;
 
@@ -1284,13 +1291,15 @@ package body Einfo is
                        E_Package,
                        E_Package_Body)
            or else
+         Is_Type (Id)                         --  types
+           or else
          Ekind (Id) = E_Void);                --  special purpose
       return Node34 (Id);
    end Contract;
 
    function Contract_Wrapper (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Entry, E_Entry_Family));
+      pragma Assert (Is_Entry (Id));
       return Node25 (Id);
    end Contract_Wrapper;
 
@@ -1424,8 +1433,8 @@ package body Einfo is
 
    function First_Private_Entity (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Package, E_Generic_Package)
-                       or else Ekind (Id) in Concurrent_Kind);
+      pragma Assert (Is_Package_Or_Generic_Package (Id)
+                       or else Is_Concurrent_Type (Id));
       return Node16 (Id);
    end First_Private_Entity;
 
@@ -1700,8 +1709,7 @@ package body Einfo is
    function Has_Out_Or_In_Out_Parameter (Id : E) return B is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Entry, E_Entry_Family)
-          or else Is_Subprogram_Or_Generic_Subprogram (Id));
+        (Is_Entry (Id) or else Is_Subprogram_Or_Generic_Subprogram (Id));
       return Flag110 (Id);
    end Has_Out_Or_In_Out_Parameter;
 
@@ -2076,12 +2084,6 @@ package body Einfo is
    begin
       return Node21 (Id);
    end Interface_Name;
-
-   function Invariants_Ignored (Id : E) return B is
-   begin
-      pragma Assert (Is_Type (Id));
-      return Flag308 (Id);
-   end Invariants_Ignored;
 
    function Is_Abstract_Subprogram (Id : E) return B is
    begin
@@ -3044,7 +3046,7 @@ package body Einfo is
 
    function Package_Instantiation (Id : E) return N is
    begin
-      pragma Assert (Ekind_In (Id, E_Package, E_Generic_Package));
+      pragma Assert (Is_Package_Or_Generic_Package (Id));
       return Node26 (Id);
    end Package_Instantiation;
 
@@ -3621,17 +3623,17 @@ package body Einfo is
       return Flag238 (Id);
    end Warnings_Off_Used_Unreferenced;
 
+   function Was_Hidden (Id : E) return B is
+   begin
+      return Flag196 (Id);
+   end Was_Hidden;
+
    function Wrapped_Entity (Id : E) return E is
    begin
       pragma Assert (Ekind_In (Id, E_Function, E_Procedure)
                        and then Is_Primitive_Wrapper (Id));
       return Node27 (Id);
    end Wrapped_Entity;
-
-   function Was_Hidden (Id : E) return B is
-   begin
-      return Flag196 (Id);
-   end Was_Hidden;
 
    ------------------------------
    -- Classification Functions --
@@ -3883,7 +3885,7 @@ package body Einfo is
 
    procedure Set_Abstract_States (Id : E; V : L) is
    begin
-      pragma Assert (Ekind_In (Id, E_Generic_Package, E_Package));
+      pragma Assert (Is_Package_Or_Generic_Package (Id));
       Set_Elist25 (Id, V);
    end Set_Abstract_States;
 
@@ -3907,6 +3909,12 @@ package body Einfo is
       pragma Assert (Is_Tagged_Type (Id));
       Set_Node30 (Id, V);
    end Set_Access_Disp_Table_Elab_Flag;
+
+   procedure Set_Access_Subprogram_Wrapper (Id : E; V : E) is
+   begin
+      pragma Assert (Ekind (Id) = E_Subprogram_Type);
+      Set_Node41 (Id, V);
+   end Set_Access_Subprogram_Wrapper;
 
    procedure Set_Anonymous_Designated_Type (Id : E; V : E) is
    begin
@@ -4006,7 +4014,7 @@ package body Einfo is
 
    procedure Set_Body_Entity (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Package, E_Generic_Package));
+      pragma Assert (Is_Package_Or_Generic_Package (Id));
       Set_Node19 (Id, V);
    end Set_Body_Entity;
 
@@ -4139,6 +4147,10 @@ package body Einfo is
          Ekind_In (Id, E_Generic_Package,     --  packages
                        E_Package,
                        E_Package_Body)
+
+           or else
+         Is_Type (Id)                         -- types
+
            or else
          Ekind (Id) = E_Void);                --  special purpose
       Set_Node34 (Id, V);
@@ -4146,7 +4158,7 @@ package body Einfo is
 
    procedure Set_Contract_Wrapper (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Entry, E_Entry_Family));
+      pragma Assert (Is_Entry (Id));
       Set_Node25 (Id, V);
    end Set_Contract_Wrapper;
 
@@ -4593,8 +4605,8 @@ package body Einfo is
 
    procedure Set_First_Private_Entity (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Package, E_Generic_Package)
-                       or else Ekind (Id) in Concurrent_Kind);
+      pragma Assert (Is_Package_Or_Generic_Package (Id)
+                       or else Is_Concurrent_Type (Id));
       Set_Node16 (Id, V);
    end Set_First_Private_Entity;
 
@@ -5283,12 +5295,6 @@ package body Einfo is
    begin
       Set_Node21 (Id, V);
    end Set_Interface_Name;
-
-   procedure Set_Invariants_Ignored (Id : E; V : B := True) is
-   begin
-      pragma Assert (Is_Type (Id));
-      Set_Flag308 (Id, V);
-   end Set_Invariants_Ignored;
 
    procedure Set_Is_Abstract_Subprogram (Id : E; V : B := True) is
    begin
@@ -6173,8 +6179,7 @@ package body Einfo is
 
    procedure Set_No_Return (Id : E; V : B := True) is
    begin
-      pragma Assert
-        (V = False or else Ekind_In (Id, E_Procedure, E_Generic_Procedure));
+      pragma Assert (Is_Subprogram (Id) or else Is_Generic_Subprogram (Id));
       Set_Flag113 (Id, V);
    end Set_No_Return;
 
@@ -7405,7 +7410,7 @@ package body Einfo is
       Comp_Id := First_Entity (Id);
       while Present (Comp_Id) loop
          exit when Ekind (Comp_Id) = E_Component;
-         Comp_Id := Next_Entity (Comp_Id);
+         Next_Entity (Comp_Id);
       end loop;
 
       return Comp_Id;
@@ -7428,7 +7433,7 @@ package body Einfo is
       Comp_Id := First_Entity (Id);
       while Present (Comp_Id) loop
          exit when Ekind_In (Comp_Id, E_Component, E_Discriminant);
-         Comp_Id := Next_Entity (Comp_Id);
+         Next_Entity (Comp_Id);
       end loop;
 
       return Comp_Id;
@@ -7755,7 +7760,7 @@ package body Einfo is
             return True;
          end if;
 
-         Ent := Next_Entity (Ent);
+         Next_Entity (Ent);
       end loop;
 
       return False;
@@ -7827,7 +7832,7 @@ package body Einfo is
 
    function Has_Non_Null_Abstract_State (Id : E) return B is
    begin
-      pragma Assert (Ekind_In (Id, E_Generic_Package, E_Package));
+      pragma Assert (Is_Package_Or_Generic_Package (Id));
 
       return
         Present (Abstract_States (Id))
@@ -7863,7 +7868,7 @@ package body Einfo is
    -----------------------------
 
    function Has_Null_Abstract_State (Id : E) return B is
-      pragma Assert (Ekind_In (Id, E_Generic_Package, E_Package));
+      pragma Assert (Is_Package_Or_Generic_Package (Id));
 
       States : constant Elist_Id := Abstract_States (Id);
 
@@ -8180,15 +8185,6 @@ package body Einfo is
         Ekind (Id) = E_Abstract_State and then Nkind (Parent (Id)) = N_Null;
    end Is_Null_State;
 
-   ---------------------
-   -- Is_Packed_Array --
-   ---------------------
-
-   function Is_Packed_Array (Id : E) return B is
-   begin
-      return Is_Array_Type (Id) and then Is_Packed (Id);
-   end Is_Packed_Array;
-
    -----------------------------------
    -- Is_Package_Or_Generic_Package --
    -----------------------------------
@@ -8197,6 +8193,15 @@ package body Einfo is
    begin
       return Ekind_In (Id, E_Generic_Package, E_Package);
    end Is_Package_Or_Generic_Package;
+
+   ---------------------
+   -- Is_Packed_Array --
+   ---------------------
+
+   function Is_Packed_Array (Id : E) return B is
+   begin
+      return Is_Array_Type (Id) and then Is_Packed (Id);
+   end Is_Packed_Array;
 
    ---------------
    -- Is_Prival --
@@ -8243,6 +8248,21 @@ package body Einfo is
         Is_Concurrent_Record_Type (Id)
           and then Is_Protected_Type (Corresponding_Concurrent_Type (Id));
    end Is_Protected_Record_Type;
+
+   -------------------------------------
+   -- Is_Relaxed_Initialization_State --
+   -------------------------------------
+
+   function Is_Relaxed_Initialization_State (Id : E) return B is
+   begin
+      --  To qualify, the abstract state must appear with simple option
+      --  "Relaxed_Initialization" (??? add reference to SPARK RM once the
+      --  Relaxed_Initialization aspect is described there).
+
+      return
+        Ekind (Id) = E_Abstract_State
+          and then Has_Option (Id, Name_Relaxed_Initialization);
+   end Is_Relaxed_Initialization_State;
 
    --------------------------------
    -- Is_Standard_Character_Type --
@@ -8416,44 +8436,6 @@ package body Einfo is
       Set_Next_Entity (First, Second);     --  First --> Second
    end Link_Entities;
 
-   ----------------------
-   -- Model_Emin_Value --
-   ----------------------
-
-   function Model_Emin_Value (Id : E) return Uint is
-   begin
-      return Machine_Emin_Value (Id);
-   end Model_Emin_Value;
-
-   -------------------------
-   -- Model_Epsilon_Value --
-   -------------------------
-
-   function Model_Epsilon_Value (Id : E) return Ureal is
-      Radix : constant Ureal := UR_From_Uint (Machine_Radix_Value (Id));
-   begin
-      return Radix ** (1 - Model_Mantissa_Value (Id));
-   end Model_Epsilon_Value;
-
-   --------------------------
-   -- Model_Mantissa_Value --
-   --------------------------
-
-   function Model_Mantissa_Value (Id : E) return Uint is
-   begin
-      return Machine_Mantissa_Value (Id);
-   end Model_Mantissa_Value;
-
-   -----------------------
-   -- Model_Small_Value --
-   -----------------------
-
-   function Model_Small_Value (Id : E) return Ureal is
-      Radix : constant Ureal := UR_From_Uint (Machine_Radix_Value (Id));
-   begin
-      return Radix ** (Model_Emin_Value (Id) - 1);
-   end Model_Small_Value;
-
    ------------------------
    -- Machine_Emax_Value --
    ------------------------
@@ -8529,6 +8511,44 @@ package body Einfo is
       end case;
    end Machine_Radix_Value;
 
+   ----------------------
+   -- Model_Emin_Value --
+   ----------------------
+
+   function Model_Emin_Value (Id : E) return Uint is
+   begin
+      return Machine_Emin_Value (Id);
+   end Model_Emin_Value;
+
+   -------------------------
+   -- Model_Epsilon_Value --
+   -------------------------
+
+   function Model_Epsilon_Value (Id : E) return Ureal is
+      Radix : constant Ureal := UR_From_Uint (Machine_Radix_Value (Id));
+   begin
+      return Radix ** (1 - Model_Mantissa_Value (Id));
+   end Model_Epsilon_Value;
+
+   --------------------------
+   -- Model_Mantissa_Value --
+   --------------------------
+
+   function Model_Mantissa_Value (Id : E) return Uint is
+   begin
+      return Machine_Mantissa_Value (Id);
+   end Model_Mantissa_Value;
+
+   -----------------------
+   -- Model_Small_Value --
+   -----------------------
+
+   function Model_Small_Value (Id : E) return Ureal is
+      Radix : constant Ureal := UR_From_Uint (Machine_Radix_Value (Id));
+   begin
+      return Radix ** (Model_Emin_Value (Id) - 1);
+   end Model_Small_Value;
+
    --------------------
    -- Next_Component --
    --------------------
@@ -8540,7 +8560,7 @@ package body Einfo is
       Comp_Id := Next_Entity (Id);
       while Present (Comp_Id) loop
          exit when Ekind (Comp_Id) = E_Component;
-         Comp_Id := Next_Entity (Comp_Id);
+         Next_Entity (Comp_Id);
       end loop;
 
       return Comp_Id;
@@ -8557,7 +8577,7 @@ package body Einfo is
       Comp_Id := Next_Entity (Id);
       while Present (Comp_Id) loop
          exit when Ekind_In (Comp_Id, E_Component, E_Discriminant);
-         Comp_Id := Next_Entity (Comp_Id);
+         Next_Entity (Comp_Id);
       end loop;
 
       return Comp_Id;
@@ -8590,7 +8610,7 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Discriminant);
 
       loop
-         D := Next_Entity (D);
+         Next_Entity (D);
          if No (D)
            or else (Ekind (D) /= E_Discriminant
                       and then not Is_Itype (D))
@@ -8715,7 +8735,7 @@ package body Einfo is
             N := N + 1;
          end if;
 
-         Ent := Next_Entity (Ent);
+         Next_Entity (Ent);
       end loop;
 
       return N;
@@ -8734,7 +8754,7 @@ package body Einfo is
       Formal := First_Formal (Id);
       while Present (Formal) loop
          N := N + 1;
-         Formal := Next_Formal (Formal);
+         Next_Formal (Formal);
       end loop;
 
       return N;
@@ -9611,7 +9631,7 @@ package body Einfo is
             return Empty;
          end if;
 
-      --  For non-incomplete, non-private types, return the type itself Also
+      --  For non-incomplete, non-private types, return the type itself. Also
       --  for entities that are not types at all return the entity itself.
 
       else
@@ -9797,7 +9817,6 @@ package body Einfo is
       W ("In_Package_Body",                 Flag48  (Id));
       W ("In_Private_Part",                 Flag45  (Id));
       W ("In_Use",                          Flag8   (Id));
-      W ("Invariants_Ignored",              Flag308 (Id));
       W ("Is_Abstract_Subprogram",          Flag19  (Id));
       W ("Is_Abstract_Type",                Flag146 (Id));
       W ("Is_Access_Constant",              Flag69  (Id));
@@ -10166,7 +10185,9 @@ package body Einfo is
          when E_Abstract_State =>
             Write_Str ("Refinement_Constituents");
 
-         when E_Return_Statement =>
+         when E_Block
+            | E_Return_Statement
+         =>
             Write_Str ("Return_Applies_To");
 
          when others =>
@@ -11271,11 +11292,10 @@ package body Einfo is
             | E_Package
             | E_Package_Body
             | E_Procedure
-            | E_Protected_Type
             | E_Subprogram_Body
             | E_Task_Body
-            | E_Task_Type
             | E_Variable
+            | Type_Kind
             | E_Void
          =>
             Write_Str ("Contract");
@@ -11423,6 +11443,9 @@ package body Einfo is
             | E_Task_Type
          =>
             Write_Str ("SPARK_Aux_Pragma");
+
+         when E_Subprogram_Type =>
+            Write_Str ("Access_Subprogram_Wrapper");
 
          when others =>
             Write_Str ("Field41??");

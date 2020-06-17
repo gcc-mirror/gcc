@@ -150,6 +150,11 @@ AC_DEFUN([AC_LIB_LINKFLAGS_BODY],
       fi
     fi
 ])
+  AC_LIB_ARG_WITH([lib$1-type],
+[  --with-lib$1-type=TYPE     type of library to search for (auto/static/shared) ],
+  [ with_lib$1_type=$withval ], [ with_lib$1_type=auto ])
+  lib_type=`eval echo \$with_lib$1_type`
+
   dnl Search the library and its dependencies in $additional_libdir and
   dnl $LDFLAGS. Using breadth-first-seach.
   LIB[]NAME=
@@ -195,13 +200,13 @@ AC_DEFUN([AC_LIB_LINKFLAGS_BODY],
           found_so=
           found_a=
           if test $use_additional = yes; then
-            if test -n "$shlibext" && test -f "$additional_libdir/lib$name.$shlibext"; then
+            if test -n "$shlibext" && test -f "$additional_libdir/lib$name.$shlibext" && test x$lib_type != xstatic; then
               found_dir="$additional_libdir"
               found_so="$additional_libdir/lib$name.$shlibext"
               if test -f "$additional_libdir/lib$name.la"; then
                 found_la="$additional_libdir/lib$name.la"
               fi
-            else
+            elif test x$lib_type != xshared; then
               if test -f "$additional_libdir/lib$name.$libext"; then
                 found_dir="$additional_libdir"
                 found_a="$additional_libdir/lib$name.$libext"
@@ -217,13 +222,13 @@ AC_DEFUN([AC_LIB_LINKFLAGS_BODY],
               case "$x" in
                 -L*)
                   dir=`echo "X$x" | sed -e 's/^X-L//'`
-                  if test -n "$shlibext" && test -f "$dir/lib$name.$shlibext"; then
+                  if test -n "$shlibext" && test -f "$dir/lib$name.$shlibext" && test x$lib_type != xstatic; then
                     found_dir="$dir"
                     found_so="$dir/lib$name.$shlibext"
                     if test -f "$dir/lib$name.la"; then
                       found_la="$dir/lib$name.la"
                     fi
-                  else
+                  elif test x$lib_type != xshared; then
                     if test -f "$dir/lib$name.$libext"; then
                       found_dir="$dir"
                       found_a="$dir/lib$name.$libext"
@@ -487,8 +492,13 @@ AC_DEFUN([AC_LIB_LINKFLAGS_BODY],
             dnl known to the linker and runtime loader. (All the system
             dnl directories known to the linker should also be known to the
             dnl runtime loader, otherwise the system is severely misconfigured.)
-            LIB[]NAME="${LIB[]NAME}${LIB[]NAME:+ }-l$name"
-            LTLIB[]NAME="${LTLIB[]NAME}${LTLIB[]NAME:+ }-l$name"
+            if test "x$lib_type" = "xauto" || test "x$lib_type" = "xshared"; then
+              LIB[]NAME="${LIB[]NAME}${LIB[]NAME:+ }-l$name"
+              LTLIB[]NAME="${LTLIB[]NAME}${LTLIB[]NAME:+ }-l$name"
+            else
+              LIB[]NAME="${LIB[]NAME}${LIB[]NAME:+ }-l:lib$name.$libext"
+              LTLIB[]NAME="${LTLIB[]NAME}${LTLIB[]NAME:+ }-l:lib$name.$libext"
+            fi
           fi
         fi
       fi

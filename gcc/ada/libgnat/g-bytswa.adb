@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2006-2019, AdaCore                     --
+--                     Copyright (C) 2006-2020, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,7 +45,7 @@ package body GNAT.Byte_Swapping is
    function Swapped2 (Input : Item) return Item is
       function As_U16 is new Unchecked_Conversion (Item, U16);
       function As_Item is new Unchecked_Conversion (U16, Item);
-      pragma Compile_Time_Error (Item'Max_Size_In_Storage_Elements /= 2,
+      pragma Compile_Time_Warning (Item'Max_Size_In_Storage_Elements /= 2,
         "storage size must be 2 bytes");
    begin
       return As_Item (Bswap_16 (As_U16 (Input)));
@@ -58,7 +58,7 @@ package body GNAT.Byte_Swapping is
    function Swapped4 (Input : Item) return Item is
       function As_U32 is new Unchecked_Conversion (Item, U32);
       function As_Item is new Unchecked_Conversion (U32, Item);
-      pragma Compile_Time_Error (Item'Max_Size_In_Storage_Elements /= 4,
+      pragma Compile_Time_Warning (Item'Max_Size_In_Storage_Elements /= 4,
         "storage size must be 4 bytes");
    begin
       return As_Item (Bswap_32 (As_U32 (Input)));
@@ -71,7 +71,7 @@ package body GNAT.Byte_Swapping is
    function Swapped8 (Input : Item) return Item is
       function As_U64 is new Unchecked_Conversion (Item, U64);
       function As_Item is new Unchecked_Conversion (U64, Item);
-      pragma Compile_Time_Error (Item'Max_Size_In_Storage_Elements /= 8,
+      pragma Compile_Time_Warning (Item'Max_Size_In_Storage_Elements /= 8,
         "storage size must be 8 bytes");
    begin
       return As_Item (Bswap_64 (As_U64 (Input)));

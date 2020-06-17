@@ -368,6 +368,26 @@ rtx_refs_may_alias_p (const_rtx x, const_rtx mem, bool tbaa_p)
 			     && MEM_ALIAS_SET (mem) != 0);
 }
 
+/* Return true if the ref EARLIER behaves the same as LATER with respect
+   to TBAA for every memory reference that might follow LATER.  */
+
+bool
+refs_same_for_tbaa_p (tree earlier, tree later)
+{
+  ao_ref earlier_ref, later_ref;
+  ao_ref_init (&earlier_ref, earlier);
+  ao_ref_init (&later_ref, later);
+  alias_set_type earlier_set = ao_ref_alias_set (&earlier_ref);
+  alias_set_type later_set = ao_ref_alias_set (&later_ref);
+  if (!(earlier_set == later_set
+	|| alias_set_subset_of (later_set, earlier_set)))
+    return false;
+  alias_set_type later_base_set = ao_ref_base_alias_set (&later_ref);
+  alias_set_type earlier_base_set = ao_ref_base_alias_set (&earlier_ref);
+  return (earlier_base_set == later_base_set
+	  || alias_set_subset_of (later_base_set, earlier_base_set));
+}
+
 /* Returns a pointer to the alias set entry for ALIAS_SET, if there is
    such an entry, or NULL otherwise.  */
 
@@ -587,6 +607,49 @@ objects_must_conflict_p (tree t1, tree t2)
   return alias_sets_must_conflict_p (set1, set2);
 }
 
+/* Return true if T is an end of the access path which can be used
+   by type based alias oracle.  */
+
+bool
+ends_tbaa_access_path_p (const_tree t)
+{
+  switch (TREE_CODE (t))
+    {
+    case COMPONENT_REF:
+      if (DECL_NONADDRESSABLE_P (TREE_OPERAND (t, 1)))
+	return true;
+      /* Permit type-punning when accessing a union, provided the access
+	 is directly through the union.  For example, this code does not
+	 permit taking the address of a union member and then storing
+	 through it.  Even the type-punning allowed here is a GCC
+	 extension, albeit a common and useful one; the C standard says
+	 that such accesses have implementation-defined behavior.  */
+      else if (TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == UNION_TYPE)
+	return true;
+      break;
+
+    case ARRAY_REF:
+    case ARRAY_RANGE_REF:
+      if (TYPE_NONALIASED_COMPONENT (TREE_TYPE (TREE_OPERAND (t, 0))))
+	return true;
+      break;
+
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+      break;
+
+    case BIT_FIELD_REF:
+    case VIEW_CONVERT_EXPR:
+      /* Bitfields and casts are never addressable.  */
+      return true;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+  return false;
+}
+
 /* Return the outermost parent of component present in the chain of
    component references handled by get_inner_reference in T with the
    following property:
@@ -601,40 +664,8 @@ component_uses_parent_alias_set_from (const_tree t)
 
   while (handled_component_p (t))
     {
-      switch (TREE_CODE (t))
-	{
-	case COMPONENT_REF:
-	  if (DECL_NONADDRESSABLE_P (TREE_OPERAND (t, 1)))
-	    found = t;
-	  /* Permit type-punning when accessing a union, provided the access
-	     is directly through the union.  For example, this code does not
-	     permit taking the address of a union member and then storing
-	     through it.  Even the type-punning allowed here is a GCC
-	     extension, albeit a common and useful one; the C standard says
-	     that such accesses have implementation-defined behavior.  */
-	  else if (TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == UNION_TYPE)
-	    found = t;
-	  break;
-
-	case ARRAY_REF:
-	case ARRAY_RANGE_REF:
-	  if (TYPE_NONALIASED_COMPONENT (TREE_TYPE (TREE_OPERAND (t, 0))))
-	    found = t;
-	  break;
-
-	case REALPART_EXPR:
-	case IMAGPART_EXPR:
-	  break;
-
-	case BIT_FIELD_REF:
-	case VIEW_CONVERT_EXPR:
-	  /* Bitfields and casts are never addressable.  */
-	  found = t;
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
+      if (ends_tbaa_access_path_p (t))
+	found = t;
 
       t = TREE_OPERAND (t, 0);
     }
@@ -830,7 +861,7 @@ get_alias_set (tree t)
   alias_set_type set;
 
   /* We cannot give up with -fno-strict-aliasing because we need to build
-     proper type representation for possible functions which are build with
+     proper type representations for possible functions which are built with
      -fstrict-aliasing.  */
 
   /* return 0 if this or its type is an error.  */
@@ -889,9 +920,9 @@ get_alias_set (tree t)
       if (set != -1)
 	return set;
       /* Handle structure type equality for pointer types, arrays and vectors.
-	 This is easy to do, because the code bellow ignore canonical types on
+	 This is easy to do, because the code below ignores canonical types on
 	 these anyway.  This is important for LTO, where TYPE_CANONICAL for
-	 pointers cannot be meaningfuly computed by the frotnend.  */
+	 pointers cannot be meaningfully computed by the frontend.  */
       if (canonical_type_used_p (t))
 	{
 	  /* In LTO we set canonical types for all types where it makes
@@ -1000,9 +1031,9 @@ get_alias_set (tree t)
 	   || TREE_CODE (p) == VECTOR_TYPE;
 	   p = TREE_TYPE (p))
 	{
-	  /* Ada supports recusive pointers.  Instead of doing recrusion check
-	     just give up once the preallocated space of 8 elements is up.
-	     In this case just punt to void * alias set.  */
+	  /* Ada supports recursive pointers.  Instead of doing recursion
+	     check, just give up once the preallocated space of 8 elements
+	     is up.  In this case just punt to void * alias set.  */
 	  if (reference.length () == 8)
 	    {
 	      p = ptr_type_node;
@@ -1017,7 +1048,7 @@ get_alias_set (tree t)
 	}
       p = TYPE_MAIN_VARIANT (p);
 
-      /* In LTO for C++ programs we can turn in complete types to complete
+      /* In LTO for C++ programs we can turn incomplete types to complete
 	 using ODR name lookup.  */
       if (in_lto_p && TYPE_STRUCTURAL_EQUALITY_P (p) && odr_type_p (p))
 	{
@@ -1164,10 +1195,16 @@ record_alias_subset (alias_set_type superset, alias_set_type subset)
     superset_entry->has_zero_child = 1;
   else
     {
-      subset_entry = get_alias_set_entry (subset);
       if (!superset_entry->children)
 	superset_entry->children
 	  = hash_map<alias_set_hash, int>::create_ggc (64);
+
+      /* Enter the SUBSET itself as a child of the SUPERSET.  If it was
+	 already there we're done.  */
+      if (superset_entry->children->put (subset, 0))
+	return;
+
+      subset_entry = get_alias_set_entry (subset);
       /* If there is an entry for the subset, enter all of its children
 	 (if they are not already present) as children of the SUPERSET.  */
       if (subset_entry)
@@ -1185,21 +1222,17 @@ record_alias_subset (alias_set_type superset, alias_set_type subset)
 		superset_entry->children->put ((*iter).first, (*iter).second);
 	    }
 	}
-
-      /* Enter the SUBSET itself as a child of the SUPERSET.  */
-      superset_entry->children->put (subset, 0);
     }
 }
 
-/* Record that component types of TYPE, if any, are part of that type for
+/* Record that component types of TYPE, if any, are part of SUPERSET for
    aliasing purposes.  For record types, we only record component types
    for fields that are not marked non-addressable.  For array types, we
    only record the component type if it is not marked non-aliased.  */
 
 void
-record_component_aliases (tree type)
+record_component_aliases (tree type, alias_set_type superset)
 {
-  alias_set_type superset = get_alias_set (type);
   tree field;
 
   if (superset == 0)
@@ -1253,7 +1286,21 @@ record_component_aliases (tree type)
 					 == get_alias_set (TREE_TYPE (field)));
 		}
 
-	      record_alias_subset (superset, get_alias_set (t));
+	      alias_set_type set = get_alias_set (t);
+	      record_alias_subset (superset, set);
+	      /* If the field has alias-set zero make sure to still record
+		 any componets of it.  This makes sure that for
+		   struct A {
+		     struct B {
+		       int i;
+		       char c[4];
+		     } b;
+		   };
+		 in C++ even though 'B' has alias-set zero because
+		 TYPE_TYPELESS_STORAGE is set, 'A' has the alias-set of
+		 'int' as subset.  */
+	      if (set == 0)
+		record_component_aliases (t, superset);
 	    }
       }
       break;
@@ -1269,6 +1316,19 @@ record_component_aliases (tree type)
       break;
     }
 }
+
+/* Record that component types of TYPE, if any, are part of that type for
+   aliasing purposes.  For record types, we only record component types
+   for fields that are not marked non-addressable.  For array types, we
+   only record the component type if it is not marked non-aliased.  */
+
+void
+record_component_aliases (tree type)
+{
+  alias_set_type superset = get_alias_set (type);
+  record_component_aliases (type, superset);
+}
+
 
 /* Allocate an alias set for use in storing and reading from the varargs
    spill area.  */
@@ -1944,6 +2004,9 @@ find_base_term (rtx x, vec<std::pair<cselib_val *,
 
       if (cselib_sp_based_value_p (val))
 	return static_reg_base_value[STACK_POINTER_REGNUM];
+
+      if (visited_vals.length () > (unsigned) param_max_find_base_term_values)
+	return ret;
 
       f = val->locs;
       /* Reset val->locs to avoid infinite recursion.  */

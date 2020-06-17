@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2015-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2015-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,6 +60,11 @@ package body Contracts is
    --  region. The pragmas in question are:
    --
    --    Part_Of
+
+   procedure Check_Type_Or_Object_External_Properties
+     (Type_Or_Obj_Id : Entity_Id);
+   --  Perform checking of external properties pragmas that is common to both
+   --  type declarations and object declarations.
 
    procedure Expand_Subprogram_Contract (Body_Id : Entity_Id);
    --  Expand the contracts of a subprogram body and its correspoding spec (if
@@ -213,7 +218,7 @@ package body Contracts is
       --    Initializes
       --    Part_Of (instantiation only)
 
-      elsif Ekind_In (Id, E_Generic_Package, E_Package) then
+      elsif Is_Package_Or_Generic_Package (Id) then
          if Nam_In (Prag_Nam, Name_Abstract_State,
                               Name_Initial_Condition,
                               Name_Initializes)
@@ -244,18 +249,33 @@ package body Contracts is
             raise Program_Error;
          end if;
 
-      --  Protected units, the applicable pragmas are:
-      --    Part_Of
+      --  The four volatility refinement pragmas are ok for all types.
+      --  Part_Of is ok for task types and protected types.
+      --  Depends and Global are ok for task types.
 
-      elsif Ekind (Id) = E_Protected_Type then
-         if Prag_Nam = Name_Part_Of then
-            Add_Classification;
+      elsif Is_Type (Id) then
+         declare
+            Is_OK : constant Boolean :=
+              Nam_In (Prag_Nam, Name_Async_Readers,
+                                Name_Async_Writers,
+                                Name_Effective_Reads,
+                                Name_Effective_Writes)
+              or else (Ekind (Id) = E_Task_Type
+                         and Nam_In (Prag_Nam, Name_Part_Of,
+                                               Name_Depends,
+                                               Name_Global))
+              or else (Ekind (Id) = E_Protected_Type
+                         and Prag_Nam = Name_Part_Of);
+         begin
+            if Is_OK then
+               Add_Classification;
+            else
 
-         --  The pragma is not a proper contract item
+               --  The pragma is not a proper contract item
 
-         else
-            raise Program_Error;
-         end if;
+               raise Program_Error;
+            end if;
+         end;
 
       --  Subprogram bodies, the applicable pragmas are:
       --    Postcondition
@@ -299,16 +319,6 @@ package body Contracts is
       --    Global
       --    Part_Of
 
-      elsif Ekind (Id) = E_Task_Type then
-         if Nam_In (Prag_Nam, Name_Depends, Name_Global, Name_Part_Of) then
-            Add_Classification;
-
-         --  The pragma is not a proper contract item
-
-         else
-            raise Program_Error;
-         end if;
-
       --  Variables, the applicable pragmas are:
       --    Async_Readers
       --    Async_Writers
@@ -338,6 +348,9 @@ package body Contracts is
          else
             raise Program_Error;
          end if;
+
+      else
+         raise Program_Error;
       end if;
    end Add_Contract_Item;
 
@@ -412,7 +425,7 @@ package body Contracts is
             Analyze_Task_Contract (Defining_Entity (Decl));
 
          --  For type declarations, we need to do the preanalysis of Iterable
-         --  aspect specifications.
+         --  and the 3 Xxx_Literal aspect specifications.
 
          --  Other type aspects need to be resolved here???
 
@@ -420,14 +433,39 @@ package body Contracts is
            and then Present (Aspect_Specifications (Decl))
          then
             declare
-               E  : constant Entity_Id := Defining_Identifier (Decl);
-               It : constant Node_Id   := Find_Aspect (E, Aspect_Iterable);
+               E  : constant Entity_Id  := Defining_Identifier (Decl);
+               It : constant Node_Id    := Find_Aspect (E, Aspect_Iterable);
+               I_Lit : constant Node_Id :=
+                 Find_Aspect (E, Aspect_Integer_Literal);
+               R_Lit : constant Node_Id :=
+                 Find_Aspect (E, Aspect_Real_Literal);
+               S_Lit : constant Node_Id :=
+                 Find_Aspect (E, Aspect_String_Literal);
 
             begin
                if Present (It) then
                   Validate_Iterable_Aspect (E, It);
                end if;
+
+               if Present (I_Lit) then
+                  Validate_Literal_Aspect (E, I_Lit);
+               end if;
+               if Present (R_Lit) then
+                  Validate_Literal_Aspect (E, R_Lit);
+               end if;
+               if Present (S_Lit) then
+                  Validate_Literal_Aspect (E, S_Lit);
+               end if;
             end;
+         end if;
+
+         if Nkind_In (Decl, N_Full_Type_Declaration,
+                            N_Private_Type_Declaration,
+                            N_Task_Type_Declaration,
+                            N_Protected_Type_Declaration,
+                            N_Formal_Type_Declaration)
+         then
+            Analyze_Type_Contract (Defining_Identifier (Decl));
          end if;
 
          Next (Decl);
@@ -540,9 +578,7 @@ package body Contracts is
       --  Save the SPARK_Mode-related data to restore on exit
 
       Skip_Assert_Exprs : constant Boolean :=
-                            Ekind_In (Subp_Id, E_Entry, E_Entry_Family)
-                              and then not ASIS_Mode
-                              and then not GNATprove_Mode;
+                            Is_Entry (Subp_Id) and then not GNATprove_Mode;
 
       Depends  : Node_Id := Empty;
       Global   : Node_Id := Empty;
@@ -576,7 +612,7 @@ package body Contracts is
       elsif Present (Items) then
 
          --  Do not analyze the pre/postconditions of an entry declaration
-         --  unless annotating the original tree for ASIS or GNATprove. The
+         --  unless annotating the original tree for GNATprove. The
          --  real analysis occurs when the pre/postconditons are relocated to
          --  the contract wrapper procedure (see Build_Contract_Wrapper).
 
@@ -636,7 +672,7 @@ package body Contracts is
             if Prag_Nam = Name_Contract_Cases then
 
                --  Do not analyze the contract cases of an entry declaration
-               --  unless annotating the original tree for ASIS or GNATprove.
+               --  unless annotating the original tree for GNATprove.
                --  The real analysis occurs when the contract cases are moved
                --  to the contract wrapper procedure (Build_Contract_Wrapper).
 
@@ -721,6 +757,233 @@ package body Contracts is
       end if;
    end Analyze_Entry_Or_Subprogram_Contract;
 
+   ----------------------------------------------
+   -- Check_Type_Or_Object_External_Properties --
+   ----------------------------------------------
+
+   procedure Check_Type_Or_Object_External_Properties
+     (Type_Or_Obj_Id : Entity_Id)
+   is
+      function Decl_Kind (Is_Type     : Boolean;
+                          Object_Kind : String) return String;
+      --  Returns "type" or Object_Kind, depending on Is_Type
+
+      ---------------
+      -- Decl_Kind --
+      ---------------
+
+      function Decl_Kind (Is_Type     : Boolean;
+                          Object_Kind : String) return String is
+      begin
+         if Is_Type then
+            return "type";
+         else
+            return Object_Kind;
+         end if;
+      end Decl_Kind;
+
+      Is_Type_Id : constant Boolean := Is_Type (Type_Or_Obj_Id);
+
+      --  Local variables
+
+      AR_Val       : Boolean := False;
+      AW_Val       : Boolean := False;
+      ER_Val       : Boolean := False;
+      EW_Val       : Boolean := False;
+      Seen         : Boolean := False;
+      Prag         : Node_Id;
+      Obj_Typ      : Entity_Id;
+
+   --  Start of processing for Check_Type_Or_Object_External_Properties
+
+   begin
+      --  Analyze all external properties
+
+      if Is_Type_Id then
+         Obj_Typ := Type_Or_Obj_Id;
+
+         --  If the parent type of a derived type is volatile
+         --  then the derived type inherits volatility-related flags.
+
+         if Is_Derived_Type (Type_Or_Obj_Id) then
+            declare
+               Parent_Type : constant Entity_Id :=
+                 Etype (Base_Type (Type_Or_Obj_Id));
+            begin
+               if Is_Effectively_Volatile (Parent_Type) then
+                  AR_Val := Async_Readers_Enabled (Parent_Type);
+                  AW_Val := Async_Writers_Enabled (Parent_Type);
+                  ER_Val := Effective_Reads_Enabled (Parent_Type);
+                  EW_Val := Effective_Writes_Enabled (Parent_Type);
+               end if;
+            end;
+         end if;
+      else
+         Obj_Typ := Etype (Type_Or_Obj_Id);
+      end if;
+
+      Prag := Get_Pragma (Type_Or_Obj_Id, Pragma_Async_Readers);
+
+      if Present (Prag) then
+         declare
+            Saved_AR_Val : constant Boolean := AR_Val;
+         begin
+            Analyze_External_Property_In_Decl_Part (Prag, AR_Val);
+            Seen := True;
+            if Saved_AR_Val and not AR_Val then
+               Error_Msg_N
+                 ("illegal non-confirming Async_Readers specification",
+                  Prag);
+            end if;
+         end;
+      end if;
+
+      Prag := Get_Pragma (Type_Or_Obj_Id, Pragma_Async_Writers);
+
+      if Present (Prag) then
+         declare
+            Saved_AW_Val : constant Boolean := AW_Val;
+         begin
+            Analyze_External_Property_In_Decl_Part (Prag, AW_Val);
+            Seen := True;
+            if Saved_AW_Val and not AW_Val then
+               Error_Msg_N
+                 ("illegal non-confirming Async_Writers specification",
+                  Prag);
+            end if;
+         end;
+      end if;
+
+      Prag := Get_Pragma (Type_Or_Obj_Id, Pragma_Effective_Reads);
+
+      if Present (Prag) then
+         declare
+            Saved_ER_Val : constant Boolean := ER_Val;
+         begin
+            Analyze_External_Property_In_Decl_Part (Prag, ER_Val);
+            Seen := True;
+            if Saved_ER_Val and not ER_Val then
+               Error_Msg_N
+                 ("illegal non-confirming Effective_Reads specification",
+                  Prag);
+            end if;
+         end;
+      end if;
+
+      Prag := Get_Pragma (Type_Or_Obj_Id, Pragma_Effective_Writes);
+
+      if Present (Prag) then
+         declare
+            Saved_EW_Val : constant Boolean := EW_Val;
+         begin
+            Analyze_External_Property_In_Decl_Part (Prag, EW_Val);
+            Seen := True;
+            if Saved_EW_Val and not EW_Val then
+               Error_Msg_N
+                 ("illegal non-confirming Effective_Writes specification",
+                  Prag);
+            end if;
+         end;
+      end if;
+
+      --  Verify the mutual interaction of the various external properties
+
+      if Seen then
+         Check_External_Properties
+           (Type_Or_Obj_Id, AR_Val, AW_Val, ER_Val, EW_Val);
+      end if;
+
+      --  The following checks are relevant only when SPARK_Mode is on, as
+      --  they are not standard Ada legality rules. Internally generated
+      --  temporaries are ignored.
+
+      if SPARK_Mode = On and then Comes_From_Source (Type_Or_Obj_Id) then
+         if Is_Effectively_Volatile (Type_Or_Obj_Id) then
+
+            --  The declaration of an effectively volatile object or type must
+            --  appear at the library level (SPARK RM 7.1.3(3), C.6(6)).
+
+            if not Is_Library_Level_Entity (Type_Or_Obj_Id) then
+               Error_Msg_N
+                 ("effectively volatile "
+                    & Decl_Kind (Is_Type     => Is_Type_Id,
+                                 Object_Kind => "variable")
+                    & " & must be declared at library level "
+                    & "(SPARK RM 7.1.3(3))", Type_Or_Obj_Id);
+
+            --  An object of a discriminated type cannot be effectively
+            --  volatile except for protected objects (SPARK RM 7.1.3(5)).
+
+            elsif Has_Discriminants (Obj_Typ)
+              and then not Is_Protected_Type (Obj_Typ)
+            then
+               Error_Msg_N
+                ("discriminated "
+                   & Decl_Kind (Is_Type     => Is_Type_Id,
+                                Object_Kind => "object")
+                   & " & cannot be volatile",
+                 Type_Or_Obj_Id);
+            end if;
+
+            --  An object decl shall be compatible with respect to volatility
+            --  with its type (SPARK RM 7.1.3(2)).
+
+            if not Is_Type_Id then
+               if Is_Effectively_Volatile  (Obj_Typ) then
+                  Check_Volatility_Compatibility
+                    (Type_Or_Obj_Id, Obj_Typ,
+                     "volatile object", "its type",
+                     Srcpos_Bearer => Type_Or_Obj_Id);
+               end if;
+
+            --  A component of a composite type (in this case, the composite
+            --  type is an array type) shall be compatible with respect to
+            --  volatility with the composite type (SPARK RM 7.1.3(6)).
+
+            elsif Is_Array_Type (Obj_Typ) then
+               Check_Volatility_Compatibility
+                 (Component_Type (Obj_Typ), Obj_Typ,
+                  "component type", "its enclosing array type",
+                  Srcpos_Bearer => Obj_Typ);
+
+            --  A component of a composite type (in this case, the composite
+            --  type is a record type) shall be compatible with respect to
+            --  volatility with the composite type (SPARK RM 7.1.3(6)).
+
+            elsif Is_Record_Type (Obj_Typ) then
+               declare
+                  Comp : Entity_Id := First_Component (Obj_Typ);
+               begin
+                  while Present (Comp) loop
+                     Check_Volatility_Compatibility
+                       (Etype (Comp), Obj_Typ,
+                        "record component " & Get_Name_String (Chars (Comp)),
+                        "its enclosing record type",
+                        Srcpos_Bearer => Comp);
+                     Next_Component (Comp);
+                  end loop;
+               end;
+            end if;
+
+         --  The type or object is not effectively volatile
+
+         else
+            --  A non-effectively volatile type cannot have effectively
+            --  volatile components (SPARK RM 7.1.3(6)).
+
+            if Is_Type_Id
+              and then not Is_Effectively_Volatile (Type_Or_Obj_Id)
+              and then Has_Volatile_Component (Type_Or_Obj_Id)
+            then
+               Error_Msg_N
+                 ("non-volatile type & cannot have volatile"
+                    & " components",
+                  Type_Or_Obj_Id);
+            end if;
+         end if;
+      end if;
+   end Check_Type_Or_Object_External_Properties;
+
    -----------------------------
    -- Analyze_Object_Contract --
    -----------------------------
@@ -739,15 +1002,10 @@ package body Contracts is
       Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
       --  Save the SPARK_Mode-related data to restore on exit
 
-      AR_Val   : Boolean := False;
-      AW_Val   : Boolean := False;
-      ER_Val   : Boolean := False;
-      EW_Val   : Boolean := False;
       NC_Val   : Boolean := False;
       Items    : Node_Id;
       Prag     : Node_Id;
       Ref_Elmt : Elmt_Id;
-      Seen     : Boolean := False;
 
    begin
       --  The loop parameter in an element iterator over a formal container
@@ -814,41 +1072,8 @@ package body Contracts is
 
       else pragma Assert (Ekind (Obj_Id) = E_Variable);
 
-         --  Analyze all external properties
-
-         Prag := Get_Pragma (Obj_Id, Pragma_Async_Readers);
-
-         if Present (Prag) then
-            Analyze_External_Property_In_Decl_Part (Prag, AR_Val);
-            Seen := True;
-         end if;
-
-         Prag := Get_Pragma (Obj_Id, Pragma_Async_Writers);
-
-         if Present (Prag) then
-            Analyze_External_Property_In_Decl_Part (Prag, AW_Val);
-            Seen := True;
-         end if;
-
-         Prag := Get_Pragma (Obj_Id, Pragma_Effective_Reads);
-
-         if Present (Prag) then
-            Analyze_External_Property_In_Decl_Part (Prag, ER_Val);
-            Seen := True;
-         end if;
-
-         Prag := Get_Pragma (Obj_Id, Pragma_Effective_Writes);
-
-         if Present (Prag) then
-            Analyze_External_Property_In_Decl_Part (Prag, EW_Val);
-            Seen := True;
-         end if;
-
-         --  Verify the mutual interaction of the various external properties
-
-         if Seen then
-            Check_External_Properties (Obj_Id, AR_Val, AW_Val, ER_Val, EW_Val);
-         end if;
+         Check_Type_Or_Object_External_Properties
+           (Type_Or_Obj_Id => Obj_Id);
 
          --  Analyze the non-external volatility property No_Caching
 
@@ -858,10 +1083,10 @@ package body Contracts is
             Analyze_External_Property_In_Decl_Part (Prag, NC_Val);
          end if;
 
-         --  The anonymous object created for a single concurrent type carries
-         --  pragmas Depends and Globat of the type.
+         --  The anonymous object created for a single task type carries
+         --  pragmas Depends and Global of the type.
 
-         if Is_Single_Concurrent_Object (Obj_Id) then
+         if Is_Single_Task_Object (Obj_Id) then
 
             --  Analyze Global first, as Depends may mention items classified
             --  in the global categorization.
@@ -911,47 +1136,6 @@ package body Contracts is
 
          else
             Check_Missing_Part_Of (Obj_Id);
-         end if;
-
-         --  The following checks are relevant only when SPARK_Mode is on, as
-         --  they are not standard Ada legality rules. Internally generated
-         --  temporaries are ignored.
-
-         if SPARK_Mode = On and then Comes_From_Source (Obj_Id) then
-            if Is_Effectively_Volatile (Obj_Id) then
-
-               --  The declaration of an effectively volatile object must
-               --  appear at the library level (SPARK RM 7.1.3(3), C.6(6)).
-
-               if not Is_Library_Level_Entity (Obj_Id) then
-                  Error_Msg_N
-                    ("volatile variable & must be declared at library level "
-                     & "(SPARK RM 7.1.3(3))", Obj_Id);
-
-               --  An object of a discriminated type cannot be effectively
-               --  volatile except for protected objects (SPARK RM 7.1.3(5)).
-
-               elsif Has_Discriminants (Obj_Typ)
-                 and then not Is_Protected_Type (Obj_Typ)
-               then
-                  Error_Msg_N
-                    ("discriminated object & cannot be volatile", Obj_Id);
-               end if;
-
-            --  The object is not effectively volatile
-
-            else
-               --  A non-effectively volatile object cannot have effectively
-               --  volatile components (SPARK RM 7.1.3(6)).
-
-               if not Is_Effectively_Volatile (Obj_Id)
-                 and then Has_Volatile_Component (Obj_Typ)
-               then
-                  Error_Msg_N
-                    ("non-volatile object & cannot have volatile components",
-                     Obj_Id);
-               end if;
-            end if;
          end if;
       end if;
 
@@ -1304,6 +1488,16 @@ package body Contracts is
 
       Restore_SPARK_Mode (Saved_SM, Saved_SMP);
    end Analyze_Task_Contract;
+
+   ---------------------------
+   -- Analyze_Type_Contract --
+   ---------------------------
+
+   procedure Analyze_Type_Contract (Type_Id : Entity_Id) is
+   begin
+      Check_Type_Or_Object_External_Properties
+        (Type_Or_Obj_Id => Type_Id);
+   end Analyze_Type_Contract;
 
    -----------------------------
    -- Create_Generic_Contract --
@@ -2543,11 +2737,6 @@ package body Contracts is
       if not Expander_Active then
          return;
 
-      --  ASIS requires an unaltered tree
-
-      elsif ASIS_Mode then
-         return;
-
       --  GNATprove does not need the executable semantics of a contract
 
       elsif GNATprove_Mode then
@@ -2761,6 +2950,15 @@ package body Contracts is
                                   N_Task_Type_Declaration)
             then
                Analyze_Task_Contract (Defining_Entity (Decl));
+            end if;
+
+            if Nkind_In (Decl, N_Full_Type_Declaration,
+                               N_Private_Type_Declaration,
+                               N_Task_Type_Declaration,
+                               N_Protected_Type_Declaration,
+                               N_Formal_Type_Declaration)
+            then
+               Analyze_Type_Contract (Defining_Identifier (Decl));
             end if;
 
             Prev (Decl);

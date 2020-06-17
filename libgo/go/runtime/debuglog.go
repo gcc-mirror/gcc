@@ -803,7 +803,7 @@ func printDebugLog() {
 
 func printDebugLogPC(pc uintptr) {
 	print(hex(pc))
-	name, file, line, _ := funcfileline(pc, -1)
+	name, file, line, _ := funcfileline(pc, -1, false)
 	if name == "" {
 		print(" [unknown PC]")
 	} else {

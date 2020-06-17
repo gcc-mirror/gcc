@@ -85,6 +85,19 @@ typedef unsigned gcov_type_unsigned __attribute__ ((mode (QI)));
 #define GCOV_LOCKED 0
 #endif
 
+#ifndef GCOV_SUPPORTS_ATOMIC
+/* Detect whether target can support atomic update of profilers.  */
+#if __SIZEOF_LONG_LONG__ == 4 && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
+#define GCOV_SUPPORTS_ATOMIC 1
+#else
+#if __SIZEOF_LONG_LONG__ == 8 && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_8
+#define GCOV_SUPPORTS_ATOMIC 1
+#else
+#define GCOV_SUPPORTS_ATOMIC 0
+#endif
+#endif
+#endif
+
 /* In libgcov we need these functions to be extern, so prefix them with
    __gcov.  In libgcov they must also be hidden so that the instance in
    the executable is not also used in a DSO.  */
@@ -147,7 +160,7 @@ extern struct gcov_info *gcov_list;
 
 /* Poison these, so they don't accidentally slip in.  */
 #pragma GCC poison gcov_write_string gcov_write_tag gcov_write_length
-#pragma GCC poison gcov_time gcov_magic
+#pragma GCC poison gcov_time
 
 #ifdef HAVE_GAS_HIDDEN
 #define ATTRIBUTE_HIDDEN  __attribute__ ((__visibility__ ("hidden")))
@@ -253,6 +266,12 @@ extern void __gcov_reset_int (void) ATTRIBUTE_HIDDEN;
 /* User function to enable early write of profile information so far.  */
 extern void __gcov_dump_int (void) ATTRIBUTE_HIDDEN;
 
+/* Lock critical section for __gcov_dump and __gcov_reset functions.  */
+extern void __gcov_lock (void) ATTRIBUTE_HIDDEN;
+
+/* Unlock critical section for __gcov_dump and __gcov_reset functions.  */
+extern void __gcov_unlock (void) ATTRIBUTE_HIDDEN;
+
 /* The merge function that just sums the counters.  */
 extern void __gcov_merge_add (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
 
@@ -274,6 +293,7 @@ extern void __gcov_pow2_profiler_atomic (gcov_type *, gcov_type);
 extern void __gcov_topn_values_profiler (gcov_type *, gcov_type);
 extern void __gcov_topn_values_profiler_atomic (gcov_type *, gcov_type);
 extern void __gcov_indirect_call_profiler_v4 (gcov_type, void *);
+extern void __gcov_indirect_call_profiler_v4_atomic (gcov_type, void *);
 extern void __gcov_time_profiler (gcov_type *);
 extern void __gcov_time_profiler_atomic (gcov_type *);
 extern void __gcov_average_profiler (gcov_type *, gcov_type);
@@ -364,6 +384,103 @@ gcov_get_counter_target (void)
 
   return gcov_read_counter_mem ();
 #endif
+}
+
+/* Add VALUE to *COUNTER and make it with atomic operation
+   if USE_ATOMIC is true.  */
+
+static inline void
+gcov_counter_add (gcov_type *counter, gcov_type value,
+		  int use_atomic ATTRIBUTE_UNUSED)
+{
+#if GCOV_SUPPORTS_ATOMIC
+  if (use_atomic)
+    __atomic_fetch_add (counter, value, __ATOMIC_RELAXED);
+  else
+#endif
+    *counter += value;
+}
+
+/* Add key value pair VALUE:COUNT to a top N COUNTERS.  When INCREMENT_TOTAL
+   is true, add COUNT to total of the TOP counter.  If USE_ATOMIC is true,
+   do it in atomic way.  */
+
+static inline void
+gcov_topn_add_value (gcov_type *counters, gcov_type value, gcov_type count,
+		     int use_atomic, int increment_total)
+{
+  if (increment_total)
+    gcov_counter_add (&counters[0], 1, use_atomic);
+
+  struct gcov_kvp *prev_node = NULL;
+  struct gcov_kvp *minimal_node = NULL;
+  struct gcov_kvp *current_node  = (struct gcov_kvp *)(intptr_t)counters[2];
+
+  while (current_node)
+    {
+      if (current_node->value == value)
+	{
+	  gcov_counter_add (&current_node->count, count, use_atomic);
+	  return;
+	}
+
+      if (minimal_node == NULL
+	  || current_node->count < minimal_node->count)
+	minimal_node = current_node;
+
+      prev_node = current_node;
+      current_node = current_node->next;
+    }
+
+  if (counters[1] == GCOV_TOPN_MAXIMUM_TRACKED_VALUES)
+    {
+      if (--minimal_node->count < count)
+	{
+	  minimal_node->value = value;
+	  minimal_node->count = count;
+	}
+    }
+  else
+    {
+      struct gcov_kvp *new_node
+	= (struct gcov_kvp *)xcalloc (1, sizeof (struct gcov_kvp));
+      new_node->value = value;
+      new_node->count = count;
+
+      int success = 0;
+      if (!counters[2])
+	{
+#if GCOV_SUPPORTS_ATOMIC
+	  if (use_atomic)
+	    {
+	      struct gcov_kvp **ptr = (struct gcov_kvp **)(intptr_t)&counters[2];
+	      success = !__sync_val_compare_and_swap (ptr, 0, new_node);
+	    }
+	  else
+#endif
+	    {
+	      counters[2] = (intptr_t)new_node;
+	      success = 1;
+	    }
+	}
+      else if (prev_node && !prev_node->next)
+	{
+#if GCOV_SUPPORTS_ATOMIC
+	  if (use_atomic)
+	    success = !__sync_val_compare_and_swap (&prev_node->next, 0,
+						    new_node);
+	  else
+#endif
+	    {
+	      prev_node->next = new_node;
+	      success = 1;
+	    }
+	}
+
+      /* Increment number of nodes.  */
+      if (success)
+	gcov_counter_add (&counters[1], 1, use_atomic);
+    }
 }
 
 #endif /* !inhibit_libc */

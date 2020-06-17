@@ -1,4 +1,4 @@
-/* { dg-final { check-function-bodies "**" "" "-DCHECK_ASM" } } */
+/* { dg-final { check-function-bodies "**" "" "-DCHECK_ASM" { target { ! ilp32 } } } } */
 
 #include "test_sve_acle.h"
 

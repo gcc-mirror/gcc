@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -129,7 +129,7 @@ CtfeStack::CtfeStack() : framepointer(0), maxStackPointer(0)
 
 size_t CtfeStack::stackPointer()
 {
-    return values.dim;
+    return values.length;
 }
 
 Expression *CtfeStack::getThis()
@@ -153,12 +153,12 @@ void CtfeStack::startFrame(Expression *thisexp)
 
 void CtfeStack::endFrame()
 {
-    size_t oldframe = (size_t)(frames[frames.dim-1]);
-    localThis = savedThis[savedThis.dim-1];
+    size_t oldframe = (size_t)(frames[frames.length-1]);
+    localThis = savedThis[savedThis.length-1];
     popAll(framepointer);
     framepointer = oldframe;
-    frames.setDim(frames.dim - 1);
-    savedThis.setDim(savedThis.dim -1);
+    frames.setDim(frames.length - 1);
+    savedThis.setDim(savedThis.length -1);
 }
 
 bool CtfeStack::isInCurrentFrame(VarDeclaration *v)
@@ -173,7 +173,7 @@ Expression *CtfeStack::getValue(VarDeclaration *v)
     if ((v->isDataseg() || v->storage_class & STCmanifest) && !v->isCTFE())
     {
         assert(v->ctfeAdrOnStack >= 0 &&
-        v->ctfeAdrOnStack < (int)globalValues.dim);
+        v->ctfeAdrOnStack < (int)globalValues.length);
         return globalValues[v->ctfeAdrOnStack];
     }
     assert(v->ctfeAdrOnStack >= 0 && v->ctfeAdrOnStack < (int)stackPointer());
@@ -198,7 +198,7 @@ void CtfeStack::push(VarDeclaration *v)
         return;
     }
     savedId.push((void *)(size_t)(v->ctfeAdrOnStack));
-    v->ctfeAdrOnStack = (int)values.dim;
+    v->ctfeAdrOnStack = (int)values.length;
     vars.push(v);
     values.push(NULL);
 }
@@ -209,7 +209,7 @@ void CtfeStack::pop(VarDeclaration *v)
     assert(!(v->storage_class & (STCref | STCout)));
     int oldid = v->ctfeAdrOnStack;
     v->ctfeAdrOnStack = (int)(size_t)(savedId[oldid]);
-    if (v->ctfeAdrOnStack == (int)values.dim - 1)
+    if (v->ctfeAdrOnStack == (int)values.length - 1)
     {
         values.pop();
         vars.pop();
@@ -221,8 +221,8 @@ void CtfeStack::popAll(size_t stackpointer)
 {
     if (stackPointer() > maxStackPointer)
         maxStackPointer = stackPointer();
-    assert(values.dim >= stackpointer);
-    for (size_t i = stackpointer; i < values.dim; ++i)
+    assert(values.length >= stackpointer);
+    for (size_t i = stackpointer; i < values.length; ++i)
     {
         VarDeclaration *v = vars[i];
         v->ctfeAdrOnStack = (int)(size_t)(savedId[i]);
@@ -235,7 +235,7 @@ void CtfeStack::popAll(size_t stackpointer)
 void CtfeStack::saveGlobalConstant(VarDeclaration *v, Expression *e)
 {
      assert(v->_init && (v->isConst() || v->isImmutable() || v->storage_class & STCmanifest) && !v->isCTFE());
-     v->ctfeAdrOnStack = (int)globalValues.dim;
+     v->ctfeAdrOnStack = (int)globalValues.length;
      globalValues.push(e);
 }
 
@@ -342,7 +342,7 @@ struct CompiledCtfeFunction
                 {
                     if (!td->objects)
                         return;
-                    for (size_t i= 0; i < td->objects->dim; ++i)
+                    for (size_t i= 0; i < td->objects->length; ++i)
                     {
                         RootObject *o = td->objects->tdata()[i];
                         Expression *ex = isExpression(o);
@@ -406,7 +406,7 @@ public:
 
     void visit(CompoundStatement *s)
     {
-        for (size_t i = 0; i < s->statements->dim; i++)
+        for (size_t i = 0; i < s->statements->length; i++)
         {
             Statement *sx = (*s->statements)[i];
             if (sx)
@@ -416,7 +416,7 @@ public:
 
     void visit(UnrolledLoopStatement *s)
     {
-        for (size_t i = 0; i < s->statements->dim; i++)
+        for (size_t i = 0; i < s->statements->length; i++)
         {
             Statement *sx = (*s->statements)[i];
             if (sx)
@@ -481,7 +481,7 @@ public:
         ccf->onExpression(s->condition);
         // Note that the body contains the the Case and Default
         // statements, so we only need to compile the expressions
-        for (size_t i = 0; i < s->cases->dim; i++)
+        for (size_t i = 0; i < s->cases->length; i++)
         {
             ccf->onExpression((*s->cases)[i]->exp);
         }
@@ -546,7 +546,7 @@ public:
     {
         if (s->_body)
             ctfeCompile(s->_body);
-        for (size_t i = 0; i < s->catches->dim; i++)
+        for (size_t i = 0; i < s->catches->length; i++)
         {
             Catch *ca = (*s->catches)[i];
             if (ca->var)
@@ -616,7 +616,7 @@ void ctfeCompile(FuncDeclaration *fd)
     {
         Type *tb = fd->type->toBasetype();
         assert(tb->ty == Tfunction);
-        for (size_t i = 0; i < fd->parameters->dim; i++)
+        for (size_t i = 0; i < fd->parameters->length; i++)
         {
             VarDeclaration *v = (*fd->parameters)[i];
             fd->ctfeCode->onDeclaration(v);
@@ -700,7 +700,7 @@ Expression *ctfeInterpretForPragmaMsg(Expression *e)
 
     TupleExp *tup = (TupleExp *)e;
     Expressions *expsx = NULL;
-    for (size_t i = 0; i < tup->exps->dim; ++i)
+    for (size_t i = 0; i < tup->exps->length; ++i)
     {
         Expression *g = (*tup->exps)[i];
         Expression *h = g;
@@ -710,8 +710,8 @@ Expression *ctfeInterpretForPragmaMsg(Expression *e)
             if (!expsx)
             {
                 expsx = new Expressions();
-                expsx->setDim(tup->exps->dim);
-                for (size_t j = 0; j < tup->exps->dim; j++)
+                expsx->setDim(tup->exps->length);
+                for (size_t j = 0; j < tup->exps->length; j++)
                     (*expsx)[j] = (*tup->exps)[j];
             }
             (*expsx)[i] = h;
@@ -760,8 +760,8 @@ static Expression *interpretFunction(UnionExp *pue, FuncDeclaration *fd, InterSt
     Type *tb = fd->type->toBasetype();
     assert(tb->ty == Tfunction);
     TypeFunction *tf = (TypeFunction *)tb;
-    if (tf->varargs && arguments &&
-        ((fd->parameters && arguments->dim != fd->parameters->dim) || (!fd->parameters && arguments->dim)))
+    if (tf->parameterList.varargs != VARARGnone && arguments &&
+        ((fd->parameters && arguments->length != fd->parameters->length) || (!fd->parameters && arguments->length)))
     {
         fd->error("C-style variadic functions are not yet implemented in CTFE");
         return CTFEExp::cantexp;
@@ -785,8 +785,8 @@ static Expression *interpretFunction(UnionExp *pue, FuncDeclaration *fd, InterSt
     // Place to hold all the arguments to the function while
     // we are evaluating them.
     Expressions eargs;
-    size_t dim = arguments ? arguments->dim : 0;
-    assert((fd->parameters ? fd->parameters->dim : 0) == dim);
+    size_t dim = arguments ? arguments->length : 0;
+    assert((fd->parameters ? fd->parameters->length : 0) == dim);
 
     /* Evaluate all the arguments to the function,
      * store the results in eargs[]
@@ -795,7 +795,7 @@ static Expression *interpretFunction(UnionExp *pue, FuncDeclaration *fd, InterSt
     for (size_t i = 0; i < dim; i++)
     {
         Expression *earg = (*arguments)[i];
-        Parameter *fparam = Parameter::getNth(tf->parameters, i);
+        Parameter *fparam = tf->parameterList[i];
 
         if (fparam->storageClass & (STCout | STCref))
         {
@@ -859,7 +859,7 @@ static Expression *interpretFunction(UnionExp *pue, FuncDeclaration *fd, InterSt
     for (size_t i = 0; i < dim; i++)
     {
         Expression *earg = eargs[i];
-        Parameter *fparam = Parameter::getNth(tf->parameters, i);
+        Parameter *fparam = tf->parameterList[i];
         VarDeclaration *v = (*fd->parameters)[i];
         ctfeStack.push(v);
 
@@ -1045,7 +1045,7 @@ public:
         if (istate->start == s)
             istate->start = NULL;
 
-        const size_t dim = s->statements ? s->statements->dim : 0;
+        const size_t dim = s->statements ? s->statements->length : 0;
         for (size_t i = 0; i < dim; i++)
         {
             Statement *sx = (*s->statements)[i];
@@ -1060,7 +1060,7 @@ public:
         if (istate->start == s)
             istate->start = NULL;
 
-        const size_t dim = s->statements ? s->statements->dim : 0;
+        const size_t dim = s->statements ? s->statements->length : 0;
         for (size_t i = 0; i < dim; i++)
         {
             Statement *sx = (*s->statements)[i];
@@ -1200,7 +1200,7 @@ public:
     // Check all members of an array for escaping local variables. Return false if error
     static bool stopPointersEscapingFromArray(Loc loc, Expressions *elems)
     {
-        for (size_t i = 0; i < elems->dim; i++)
+        for (size_t i = 0; i < elems->length; i++)
         {
             Expression *m = (*elems)[i];
             if (!m)
@@ -1237,7 +1237,7 @@ public:
             result = interpret(pue, s->exp, istate, ctfeNeedLvalue);
             return;
         }
-        if (tf->next && tf->next->ty == Tdelegate && istate->fd->closureVars.dim > 0)
+        if (tf->next && tf->next->ty == Tdelegate && istate->fd->closureVars.length > 0)
         {
             // To support this, we need to copy all the closure vars
             // into the delegate literal.
@@ -1470,7 +1470,7 @@ public:
             return;
 
         Statement *scase = NULL;
-        size_t dim = s->cases ? s->cases->dim : 0;
+        size_t dim = s->cases ? s->cases->length : 0;
         for (size_t i = 0; i < dim; i++)
         {
             CaseStatement *cs = (*s->cases)[i];
@@ -1585,7 +1585,7 @@ public:
         {
             Expression *e = NULL;
             e = interpret(pue, s->_body, istate);
-            for (size_t i = 0; i < s->catches->dim; i++)
+            for (size_t i = 0; i < s->catches->length; i++)
             {
                 if (e || !istate->start)    // goto target was found
                     break;
@@ -1605,7 +1605,7 @@ public:
             Type *extype = ex->thrown->originalClass()->type;
 
             // Search for an appropriate catch clause.
-            for (size_t i = 0; i < s->catches->dim; i++)
+            for (size_t i = 0; i < s->catches->length; i++)
             {
                 Catch *ca = (*s->catches)[i];
                 Type *catype = ca->type;
@@ -1652,21 +1652,28 @@ public:
     {
         // Little sanity check to make sure it's really a Throwable
         ClassReferenceExp *boss = oldest->thrown;
-        assert((*boss->value->elements)[4]->type->ty == Tclass);    // Throwable.next
+        const int next = 4;                         // index of Throwable.next
+        assert((*boss->value->elements)[next]->type->ty == Tclass); // Throwable.next
         ClassReferenceExp *collateral = newest->thrown;
         if ( isAnErrorException(collateral->originalClass()) &&
             !isAnErrorException(boss->originalClass()))
         {
+            /* Find the index of the Error.bypassException field
+             */
+            int bypass = next + 1;
+            if ((*collateral->value->elements)[bypass]->type->ty == Tuns32)
+                bypass += 1;  // skip over _refcount field
+            assert((*collateral->value->elements)[bypass]->type->ty == Tclass);
+
             // The new exception bypass the existing chain
-            assert((*collateral->value->elements)[5]->type->ty == Tclass);
-            (*collateral->value->elements)[5] = boss;
+            (*collateral->value->elements)[bypass] = boss;
             return newest;
         }
-        while ((*boss->value->elements)[4]->op == TOKclassreference)
+        while ((*boss->value->elements)[next]->op == TOKclassreference)
         {
-            boss = (ClassReferenceExp *)(*boss->value->elements)[4];
+            boss = (ClassReferenceExp *)(*boss->value->elements)[next];
         }
-        (*boss->value->elements)[4] = collateral;
+        (*boss->value->elements)[next] = collateral;
         return oldest;
     }
 
@@ -2279,7 +2286,7 @@ public:
                 // Reserve stack space for all tuple members
                 if (!td->objects)
                     return;
-                for (size_t i = 0; i < td->objects->dim; ++i)
+                for (size_t i = 0; i < td->objects->length; ++i)
                 {
                     RootObject * o = (*td->objects)[i];
                     Expression *ex = isExpression(o);
@@ -2359,7 +2366,7 @@ public:
         {
             // Check for static struct declarations, which aren't executable
             AttribDeclaration *ad = e->declaration->isAttribDeclaration();
-            if (ad && ad->decl && ad->decl->dim == 1)
+            if (ad && ad->decl && ad->decl->length == 1)
             {
                 Dsymbol *sparent = (*ad->decl)[0];
                 if (sparent->isAggregateDeclaration() ||
@@ -2424,7 +2431,7 @@ public:
             return;
 
         Expressions *expsx = e->exps;
-        for (size_t i = 0; i < expsx->dim; i++)
+        for (size_t i = 0; i < expsx->length; i++)
         {
             Expression *exp = (*expsx)[i];
             Expression *ex = interpret(exp, istate);
@@ -2475,7 +2482,7 @@ public:
             return;
 
         Expressions *expsx = e->elements;
-        size_t dim = expsx ? expsx->dim : 0;
+        size_t dim = expsx ? expsx->length : 0;
         for (size_t i = 0; i < dim; i++)
         {
             Expression *exp = (*expsx)[i];
@@ -2514,7 +2521,7 @@ public:
         {
             // todo: all tuple expansions should go in semantic phase.
             expandTuples(expsx);
-            if (expsx->dim != dim)
+            if (expsx->length != dim)
             {
                 e->error("CTFE internal error: invalid array literal");
                 result = CTFEExp::cantexp;
@@ -2547,7 +2554,7 @@ public:
 
         Expressions *keysx = e->keys;
         Expressions *valuesx = e->values;
-        for (size_t i = 0; i < keysx->dim; i++)
+        for (size_t i = 0; i < keysx->length; i++)
         {
             Expression *ekey = (*keysx)[i];
             Expression *evalue = (*valuesx)[i];
@@ -2574,7 +2581,7 @@ public:
             expandTuples(keysx);
         if (valuesx != e->values)
             expandTuples(valuesx);
-        if (keysx->dim != valuesx->dim)
+        if (keysx->length != valuesx->length)
         {
             e->error("CTFE internal error: invalid AA");
             result = CTFEExp::cantexp;
@@ -2583,10 +2590,10 @@ public:
 
         /* Remove duplicate keys
          */
-        for (size_t i = 1; i < keysx->dim; i++)
+        for (size_t i = 1; i < keysx->length; i++)
         {
             Expression *ekey = (*keysx)[i - 1];
-            for (size_t j = i; j < keysx->dim; j++)
+            for (size_t j = i; j < keysx->length; j++)
             {
                 Expression *ekey2 = (*keysx)[j];
                 if (!ctfeEqual(e->loc, TOKequal, ekey, ekey2))
@@ -2628,13 +2635,13 @@ public:
             return;
         }
 
-        size_t dim = e->elements ? e->elements->dim : 0;
+        size_t dim = e->elements ? e->elements->length : 0;
         Expressions *expsx = e->elements;
 
-        if (dim != e->sd->fields.dim)
+        if (dim != e->sd->fields.length)
         {
             // guaranteed by AggregateDeclaration.fill and TypeStruct.defaultInitLiteral
-            assert(e->sd->isNested() && dim == e->sd->fields.dim - 1);
+            assert(e->sd->isNested() && dim == e->sd->fields.length - 1);
 
             /* If a nested struct has no initialized hidden pointer,
                 * set it to null to match the runtime behaviour.
@@ -2646,7 +2653,7 @@ public:
             expsx->push(ne);
             ++dim;
         }
-        assert(dim == e->sd->fields.dim);
+        assert(dim == e->sd->fields.length);
 
         for (size_t i = 0; i < dim; i++)
         {
@@ -2686,7 +2693,7 @@ public:
         if (expsx != e->elements)
         {
             expandTuples(expsx);
-            if (expsx->dim != e->sd->fields.dim)
+            if (expsx->length != e->sd->fields.length)
             {
                 e->error("CTFE internal error: invalid struct literal");
                 result = CTFEExp::cantexp;
@@ -2716,7 +2723,7 @@ public:
             return lenExpr;
         size_t len = (size_t)(lenExpr->toInteger());
         Type *elemType = ((TypeArray *)newtype)->next;
-        if (elemType->ty == Tarray && argnum < (int)arguments->dim - 1)
+        if (elemType->ty == Tarray && argnum < (int)arguments->length - 1)
         {
             Expression *elem = recursivelyCreateArrayLiteral(pue, loc, elemType, istate,
                 arguments, argnum + 1);
@@ -2732,7 +2739,7 @@ public:
             ae->ownedByCtfe = OWNEDctfe;
             return ae;
         }
-        assert(argnum == (int)arguments->dim - 1);
+        assert(argnum == (int)arguments->length - 1);
         if (elemType->ty == Tchar || elemType->ty == Twchar || elemType->ty == Tdchar)
         {
             const unsigned ch = (unsigned)elemType->defaultInitLiteral(loc)->toInteger();
@@ -2781,11 +2788,11 @@ public:
             {
                 StructDeclaration *sd = ((TypeStruct *)e->newtype->toBasetype())->sym;
                 Expressions *exps = new Expressions();
-                exps->reserve(sd->fields.dim);
+                exps->reserve(sd->fields.length);
                 if (e->arguments)
                 {
-                    exps->setDim(e->arguments->dim);
-                    for (size_t i = 0; i < exps->dim; i++)
+                    exps->setDim(e->arguments->length);
+                    for (size_t i = 0; i < exps->length; i++)
                     {
                         Expression *ex = (*e->arguments)[i];
                         ex = interpret(ex, istate);
@@ -2813,14 +2820,14 @@ public:
             ClassDeclaration *cd = ((TypeClass *)e->newtype->toBasetype())->sym;
             size_t totalFieldCount = 0;
             for (ClassDeclaration *c = cd; c; c = c->baseClass)
-                totalFieldCount += c->fields.dim;
+                totalFieldCount += c->fields.length;
             Expressions *elems = new Expressions;
             elems->setDim(totalFieldCount);
             size_t fieldsSoFar = totalFieldCount;
             for (ClassDeclaration *c = cd; c; c = c->baseClass)
             {
-                fieldsSoFar -= c->fields.dim;
-                for (size_t i = 0; i < c->fields.dim; i++)
+                fieldsSoFar -= c->fields.length;
+                for (size_t i = 0; i < c->fields.length; i++)
                 {
                     VarDeclaration *v = c->fields[i];
                     if (v->inuse)
@@ -2884,7 +2891,7 @@ public:
         if (e->newtype->toBasetype()->isscalar())
         {
             Expression *newval;
-            if (e->arguments && e->arguments->dim)
+            if (e->arguments && e->arguments->length)
                 newval = (*e->arguments)[0];
             else
                 newval = e->newtype->defaultInitLiteral(e->loc);
@@ -3627,7 +3634,7 @@ public:
         if (!v->overlapped)
             return;
 
-        for (size_t i = 0; i < sle->sd->fields.dim; i++)
+        for (size_t i = 0; i < sle->sd->fields.length; i++)
         {
             VarDeclaration *v2 = sle->sd->fields[i];
             if (v == v2 || !v->isOverlappedWith(v2))
@@ -3679,7 +3686,7 @@ public:
                 e->error("CTFE internal error: cannot find field %s in %s", v->toChars(), ex->toChars());
                 return CTFEExp::cantexp;
             }
-            assert(0 <= fieldi && fieldi < (int)sle->elements->dim);
+            assert(0 <= fieldi && fieldi < (int)sle->elements->length);
 
             // If it's a union, set all other members of this union to void
             stompOverlappedFields(sle, v);
@@ -3769,10 +3776,10 @@ public:
 
             Expressions *oldelems = ((ArrayLiteralExp *)oldval)->elements;
             Expressions *newelems = ((ArrayLiteralExp *)newval)->elements;
-            assert(oldelems->dim == newelems->dim);
+            assert(oldelems->length == newelems->length);
 
             Type *elemtype = oldval->type->nextOf();
-            for (size_t i = 0; i < newelems->dim; i++)
+            for (size_t i = 0; i < newelems->length; i++)
             {
                 Expression *oldelem = (*oldelems)[i];
                 Expression *newelem = paintTypeOntoLiteral(elemtype, (*newelems)[i]);
@@ -3908,7 +3915,7 @@ public:
             if (e1->op == TOKarrayliteral)
             {
                 lowerbound = 0;
-                upperbound = ((ArrayLiteralExp *)e1)->elements->dim;
+                upperbound = ((ArrayLiteralExp *)e1)->elements->length;
             }
             else if (e1->op == TOKstring)
             {
@@ -4119,7 +4126,7 @@ public:
                 Expressions *newelems = ((ArrayLiteralExp *)newval)->elements;
                 Type *elemtype = existingAE->type->nextOf();
                 bool needsPostblit = e->op != TOKblit && e->e2->isLvalue();
-                for (size_t j = 0; j < newelems->dim; j++)
+                for (size_t j = 0; j < newelems->length; j++)
                 {
                     Expression *newelem = (*newelems)[j];
                     newelem = paintTypeOntoLiteral(elemtype, newelem);
@@ -4149,7 +4156,7 @@ public:
 
                 Expression *assignTo(ArrayLiteralExp *ae)
                 {
-                    return assignTo(ae, 0, ae->elements->dim);
+                    return assignTo(ae, 0, ae->elements->length);
                 }
 
                 Expression *assignTo(ArrayLiteralExp *ae, size_t lwr, size_t upr)
@@ -4458,7 +4465,7 @@ public:
         result = pue->exp();
     }
 
-    void visit(AndAndExp *e)
+    void visit(LogicalExp *e)
     {
         // Check for an insidePointer expression, evaluate it if so
         interpretFourPointerRelation(pue, e);
@@ -4470,9 +4477,10 @@ public:
             return;
 
         int res;
-        if (result->isBool(false))
-            res = 0;
-        else if (isTrueBool(result))
+        const bool andand = e->op == TOKandand;
+        if (andand ? result->isBool(false) : isTrueBool(result))
+            res = !andand;
+        else if (andand ? isTrueBool(result) : result->isBool(false))
         {
             UnionExp ue2;
             result = interpret(&ue2, e->e2, istate);
@@ -4490,64 +4498,14 @@ public:
                 res = 1;
             else
             {
-                result->error("%s does not evaluate to a boolean", result->toChars());
+                result->error("`%s` does not evaluate to a boolean", result->toChars());
                 result = CTFEExp::cantexp;
                 return;
             }
         }
         else
         {
-            result->error("%s cannot be interpreted as a boolean", result->toChars());
-            result = CTFEExp::cantexp;
-            return;
-        }
-        if (goal != ctfeNeedNothing)
-        {
-            new(pue) IntegerExp(e->loc, res, e->type);
-            result = pue->exp();
-        }
-    }
-
-    void visit(OrOrExp *e)
-    {
-        // Check for an insidePointer expression, evaluate it if so
-        interpretFourPointerRelation(pue, e);
-        if (result)
-            return;
-
-        result = interpret(e->e1, istate);
-        if (exceptionOrCant(result))
-            return;
-
-        int res;
-        if (isTrueBool(result))
-            res = 1;
-        else if (result->isBool(false))
-        {
-            UnionExp ue2;
-            result = interpret(&ue2, e->e2, istate);
-            if (exceptionOrCant(result))
-                return;
-            if (result->op == TOKvoidexp)
-            {
-                assert(e->type->ty == Tvoid);
-                result = NULL;
-                return;
-            }
-            if (result->isBool(false))
-                res = 0;
-            else if (isTrueBool(result))
-                res = 1;
-            else
-            {
-                result->error("%s cannot be interpreted as a boolean", result->toChars());
-                result = CTFEExp::cantexp;
-                return;
-            }
-        }
-        else
-        {
-            result->error("%s cannot be interpreted as a boolean", result->toChars());
+            result->error("`%s` cannot be interpreted as a boolean", result->toChars());
             result = CTFEExp::cantexp;
             return;
         }
@@ -4636,7 +4594,7 @@ public:
             if (fd->ident == Id::__ArrayPostblit ||
                 fd->ident == Id::__ArrayDtor)
             {
-                assert(e->arguments->dim == 1);
+                assert(e->arguments->length == 1);
                 Expression *ea = (*e->arguments)[0];
                 //printf("1 ea = %s %s\n", ea->type->toChars(), ea->toChars());
                 if (ea->op == TOKslice)
@@ -4649,6 +4607,10 @@ public:
                     result = getVarExp(e->loc, istate, ((SymbolExp *)ea)->var, ctfeNeedRvalue);
                 else if (ea->op == TOKaddress)
                     result = interpret(((AddrExp *)ea)->e1, istate);
+                // https://issues.dlang.org/show_bug.cgi?id=18871
+                // https://issues.dlang.org/show_bug.cgi?id=18819
+                else if (ea->op == TOKarrayliteral)
+                    result = interpret((ArrayLiteralExp *)ea, istate);
                 else
                     assert(0);
                 if (CTFEExp::isCantExp(result))
@@ -4907,7 +4869,7 @@ public:
             // Convert literal __vector(int) -> __vector([array])
             Expressions *elements = new Expressions();
             elements->setDim(e->dim);
-            for (size_t i = 0; i < elements->dim; i++)
+            for (size_t i = 0; i < elements->length; i++)
                 (*elements)[i] = copyLiteral(e->e1).copy();
             TypeSArray *type = NULL;
             if (e->type->ty == Tvector)
@@ -5495,7 +5457,7 @@ public:
             ale->ownedByCtfe = OWNEDctfe;
 
             // Bugzilla 14686
-            for (size_t i = 0; i < ale->elements->dim; i++)
+            for (size_t i = 0; i < ale->elements->length; i++)
             {
                 Expression *ex = evaluatePostblit(istate, (*ale->elements)[i]);
                 if (exceptionOrCant(ex))
@@ -5603,7 +5565,7 @@ public:
                 if (sd->dtor)
                 {
                     ArrayLiteralExp *ale = (ArrayLiteralExp *)result;
-                    for (size_t i = 0; i < ale->elements->dim; i++)
+                    for (size_t i = 0; i < ale->elements->length; i++)
                     {
                         Expression *el = (*ale->elements)[i];
                         result = interpretFunction(pue, sd->dtor, istate, NULL, el);
@@ -5717,7 +5679,7 @@ public:
                     {
                         ArrayLiteralExp *ale = (ArrayLiteralExp *)ie->e1;
                         const size_t indx = (size_t)ie->e2->toInteger();
-                        if (indx < ale->elements->dim)
+                        if (indx < ale->elements->length)
                         {
                             Expression *xx = (*ale->elements)[indx];
                             if (xx)
@@ -6110,7 +6072,7 @@ public:
         Expressions *keysx = aae->keys;
         Expressions *valuesx = aae->values;
         size_t removed = 0;
-        for (size_t j = 0; j < valuesx->dim; ++j)
+        for (size_t j = 0; j < valuesx->length; ++j)
         {
             Expression *ekey = (*keysx)[j];
             int eq = ctfeEqual(e->loc, TOKequal, ekey, index);
@@ -6122,8 +6084,8 @@ public:
                 (*valuesx)[j - removed] = (*valuesx)[j];
             }
         }
-        valuesx->dim = valuesx->dim - removed;
-        keysx->dim = keysx->dim - removed;
+        valuesx->length = valuesx->length - removed;
+        keysx->length = keysx->length - removed;
         new(pue) IntegerExp(e->loc, removed ? 1 : 0, Type::tbool);
         result = pue->exp();
     }
@@ -6300,7 +6262,7 @@ static bool isVoid(Expression *e, bool checkArray = false)
 // or is an array literal or struct literal of void elements.
 bool isEntirelyVoid(Expressions *elems)
 {
-    for (size_t i = 0; i < elems->dim; i++)
+    for (size_t i = 0; i < elems->length; i++)
     {
         Expression *e = (*elems)[i];
         // It can be NULL for performance reasons,
@@ -6314,7 +6276,7 @@ bool isEntirelyVoid(Expressions *elems)
 // Scrub all members of an array. Return false if error
 Expression *scrubArray(Loc loc, Expressions *elems, bool structlit)
 {
-    for (size_t i = 0; i < elems->dim; i++)
+    for (size_t i = 0; i < elems->length; i++)
     {
         Expression *e = (*elems)[i];
         // It can be NULL for performance reasons,
@@ -6410,7 +6372,7 @@ Expression *scrubCacheValue(Expression *e)
 
 Expression *scrubArrayCache(Expressions *elems)
 {
-    for (size_t i = 0; i < elems->dim; i++)
+    for (size_t i = 0; i < elems->length; i++)
     {
         Expression *e = (*elems)[i];
         (*elems)[i] = scrubCacheValue(e);
@@ -6442,7 +6404,7 @@ static Expression *interpret_length(UnionExp *pue, InterState *istate, Expressio
         return earg;
     dinteger_t len = 0;
     if (earg->op == TOKassocarrayliteral)
-        len = ((AssocArrayLiteralExp *)earg)->keys->dim;
+        len = ((AssocArrayLiteralExp *)earg)->keys->length;
     else
         assert(earg->op == TOKnull);
     new(pue) IntegerExp(earg->loc, len, Type::tsize_t);
@@ -6504,7 +6466,7 @@ Expression *interpret_dup(UnionExp *pue, InterState *istate, Expression *earg)
         return NULL;
     assert(earg->op == TOKassocarrayliteral);
     AssocArrayLiteralExp *aae = (AssocArrayLiteralExp *)copyLiteral(earg).copy();
-    for (size_t i = 0; i < aae->keys->dim; i++)
+    for (size_t i = 0; i < aae->keys->length; i++)
     {
         if (Expression *e = evaluatePostblit(istate, (*aae->keys)[i]))
             return e;
@@ -6540,21 +6502,21 @@ Expression *interpret_aaApply(UnionExp *pue, InterState *istate, Expression *aa,
 
     assert(fd && fd->fbody);
     assert(fd->parameters);
-    size_t numParams = fd->parameters->dim;
+    size_t numParams = fd->parameters->length;
     assert(numParams == 1 || numParams == 2);
 
-    Parameter *fparam = Parameter::getNth(((TypeFunction *)fd->type)->parameters, numParams - 1);
+    Parameter *fparam = ((TypeFunction *)fd->type)->parameterList[numParams - 1];
     bool wantRefValue = 0 != (fparam->storageClass & (STCout | STCref));
 
     Expressions args;
     args.setDim(numParams);
 
     AssocArrayLiteralExp *ae = (AssocArrayLiteralExp *)aa;
-    if (!ae->keys || ae->keys->dim == 0)
+    if (!ae->keys || ae->keys->length == 0)
         return new IntegerExp(deleg->loc, 0, Type::tsize_t);
     Expression *eresult;
 
-    for (size_t i = 0; i < ae->keys->dim; ++i)
+    for (size_t i = 0; i < ae->keys->length; ++i)
     {
         Expression *ekey = (*ae->keys)[i];
         Expression *evalue = (*ae->values)[i];
@@ -6599,7 +6561,7 @@ static Expression *foreachApplyUtf(UnionExp *pue, InterState *istate, Expression
 
     assert(fd && fd->fbody);
     assert(fd->parameters);
-    size_t numParams = fd->parameters->dim;
+    size_t numParams = fd->parameters->length;
     assert(numParams == 1 || numParams == 2);
     Type *charType = (*fd->parameters)[numParams-1]->type;
     Type *indexType = numParams == 2 ? (*fd->parameters)[0]->type
@@ -6845,14 +6807,14 @@ Expression *evaluateIfBuiltin(UnionExp *pue, InterState *istate, Loc loc,
     FuncDeclaration *fd, Expressions *arguments, Expression *pthis)
 {
     Expression *e = NULL;
-    size_t nargs = arguments ? arguments->dim : 0;
+    size_t nargs = arguments ? arguments->length : 0;
     if (!pthis)
     {
         if (isBuiltin(fd) == BUILTINyes)
         {
             Expressions args;
             args.setDim(nargs);
-            for (size_t i = 0; i < args.dim; i++)
+            for (size_t i = 0; i < args.length; i++)
             {
                 Expression *earg = (*arguments)[i];
                 earg = interpret(earg, istate);
@@ -6895,9 +6857,9 @@ Expression *evaluateIfBuiltin(UnionExp *pue, InterState *istate, Loc loc,
             else // (nargs == 3)
             {
                 if (id == Id::_aaApply)
-                    return interpret_aaApply(pue, istate, firstarg, (Expression *)(arguments->data[2]));
+                    return interpret_aaApply(pue, istate, firstarg, (*arguments)[2]);
                 if (id == Id::_aaApply2)
-                    return interpret_aaApply(pue, istate, firstarg, (Expression *)(arguments->data[2]));
+                    return interpret_aaApply(pue, istate, firstarg, (*arguments)[2]);
             }
         }
     }
@@ -6908,8 +6870,8 @@ Expression *evaluateIfBuiltin(UnionExp *pue, InterState *istate, Loc loc,
             // At present, the constructors just copy their arguments into the struct.
             // But we might need some magic if stack tracing gets added to druntime.
             StructLiteralExp *se = ((ClassReferenceExp *)pthis)->value;
-            assert(arguments->dim <= se->elements->dim);
-            for (size_t i = 0; i < arguments->dim; ++i)
+            assert(arguments->length <= se->elements->length);
+            for (size_t i = 0; i < arguments->length; ++i)
             {
                 e = interpret((*arguments)[i], istate);
                 if (exceptionOrCantInterpret(e))
@@ -6965,7 +6927,7 @@ Expression *evaluatePostblit(InterState *istate, Expression *e)
     if (e->op == TOKarrayliteral)
     {
         ArrayLiteralExp *ale = (ArrayLiteralExp *)e;
-        for (size_t i = 0; i < ale->elements->dim; i++)
+        for (size_t i = 0; i < ale->elements->length; i++)
         {
             e = evaluatePostblit(istate, (*ale->elements)[i]);
             if (e)
@@ -7001,7 +6963,7 @@ Expression *evaluateDtor(InterState *istate, Expression *e)
     if (e->op == TOKarrayliteral)
     {
         ArrayLiteralExp *alex = (ArrayLiteralExp *)e;
-        for (size_t i = alex->elements->dim; 0 < i--; )
+        for (size_t i = alex->elements->length; 0 < i--; )
             e = evaluateDtor(istate, (*alex->elements)[i]);
     }
     else if (e->op == TOKstructliteral)

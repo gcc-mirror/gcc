@@ -66,7 +66,7 @@ static_assert( same_as<std::ranges::iterator_t<O>,
 		       decltype(std::declval<O&>().begin())> );
 
 static_assert( same_as<std::ranges::sentinel_t<C>,
-		       contiguous_iterator_wrapper<char>> );
+		       decltype(std::declval<C&>().end())> );
 static_assert( same_as<std::ranges::sentinel_t<O>,
 		       decltype(std::declval<O&>().end())> );
 

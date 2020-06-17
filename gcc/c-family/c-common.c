@@ -324,7 +324,7 @@ static bool nonnull_check_p (tree, unsigned HOST_WIDE_INT);
    ObjC is like C except that D_OBJC and D_CXX_OBJC are not set
    C++ --std=c++98: D_CONLY | D_CXX11 | D_CXX20 | D_OBJC
    C++ --std=c++11: D_CONLY | D_CXX20 | D_OBJC
-   C++ --std=c++2a: D_CONLY | D_OBJC
+   C++ --std=c++20: D_CONLY | D_OBJC
    ObjC++ is like C++ except that D_OBJC is not set
 
    If -fno-asm is used, D_ASM is added to the mask.  If
@@ -536,6 +536,11 @@ const struct c_common_resword c_common_reswords[] =
   /* Concepts-related keywords */
   { "concept",		RID_CONCEPT,	D_CXX_CONCEPTS_FLAGS | D_CXXWARN },
   { "requires", 	RID_REQUIRES,	D_CXX_CONCEPTS_FLAGS | D_CXXWARN },
+
+  /* Coroutines-related keywords */
+  { "co_await",		RID_CO_AWAIT,	D_CXX_COROUTINES_FLAGS | D_CXXWARN },
+  { "co_yield",		RID_CO_YIELD,	D_CXX_COROUTINES_FLAGS | D_CXXWARN },
+  { "co_return", 	RID_CO_RETURN,	D_CXX_COROUTINES_FLAGS | D_CXXWARN },
 
   /* These Objective-C keywords are recognized only immediately after
      an '@'.  */
@@ -1307,9 +1312,9 @@ int_safely_convertible_to_real_p (const_tree from_type, const_tree to_type)
 	* EXPR is not a constant of integer type which cannot be
 	  exactly converted to real type.
 
-   Function allows conversions between types of different signedness and
-   can return SAFE_CONVERSION (zero) in that case.  Function can produce
-   signedness warnings if PRODUCE_WARNS is true.
+   Function allows conversions between types of different signedness if
+   CHECK_SIGN is false and can return SAFE_CONVERSION (zero) in that
+   case.  Function can return UNSAFE_SIGN if CHECK_SIGN is true.
 
    RESULT, when non-null is the result of the conversion.  When constant
    it is included in the text of diagnostics.
@@ -1319,16 +1324,10 @@ int_safely_convertible_to_real_p (const_tree from_type, const_tree to_type)
    to TYPE.  */
 
 enum conversion_safety
-unsafe_conversion_p (location_t loc, tree type, tree expr, tree result,
-		     bool produce_warns)
+unsafe_conversion_p (tree type, tree expr, tree result, bool check_sign)
 {
   enum conversion_safety give_warning = SAFE_CONVERSION; /* is 0 or false */
   tree expr_type = TREE_TYPE (expr);
-
-  bool cstresult = (result
-		    && TREE_CODE_CLASS (TREE_CODE (result)) == tcc_constant);
-
-  loc = expansion_point_location_if_in_system_header (loc);
 
   expr = fold_for_warn (expr);
 
@@ -1355,32 +1354,13 @@ unsafe_conversion_p (location_t loc, tree type, tree expr, tree result,
 	  if (TYPE_UNSIGNED (type) && !TYPE_UNSIGNED (expr_type)
 	      && tree_int_cst_sgn (expr) < 0)
 	    {
-	      if (produce_warns)
-		{
-		  if (cstresult)
-		    warning_at (loc, OPT_Wsign_conversion,
-				"unsigned conversion from %qT to %qT "
-				"changes value from %qE to %qE",
-				expr_type, type, expr, result);
-		  else
-		    warning_at (loc, OPT_Wsign_conversion,
-				"unsigned conversion from %qT to %qT "
-				"changes the value of %qE",
-				expr_type, type, expr);
-		}
+	      if (check_sign)
+		give_warning = UNSAFE_SIGN;
 	    }
 	  else if (!TYPE_UNSIGNED (type) && TYPE_UNSIGNED (expr_type))
 	    {
-	      if (cstresult)
-		warning_at (loc, OPT_Wsign_conversion,
-			    "signed conversion from %qT to %qT changes "
-			    "value from %qE to %qE",
-			    expr_type, type, expr, result);
-	      else
-		warning_at (loc, OPT_Wsign_conversion,
-			    "signed conversion from %qT to %qT changes "
-			    "the value of %qE",
-			    expr_type, type, expr);
+	      if (check_sign)
+		give_warning = UNSAFE_SIGN;
 	    }
 	  else
 	    give_warning = UNSAFE_OTHER;
@@ -1419,8 +1399,8 @@ unsafe_conversion_p (location_t loc, tree type, tree expr, tree result,
 	   with different type of EXPR, but it is still safe, because when EXPR
 	   is a constant, it's type is not used in text of generated warnings
 	   (otherwise they could sound misleading).  */
-	return unsafe_conversion_p (loc, type, TREE_REALPART (expr), result,
-				    produce_warns);
+	return unsafe_conversion_p (type, TREE_REALPART (expr), result,
+				    check_sign);
       /* Conversion from complex constant with non-zero imaginary part.  */
       else
 	{
@@ -1428,21 +1408,11 @@ unsafe_conversion_p (location_t loc, tree type, tree expr, tree result,
 	     Perform checks for both real and imaginary parts.  */
 	  if (TREE_CODE (type) == COMPLEX_TYPE)
 	    {
-	      /* Unfortunately, produce_warns must be false in two subsequent
-		 calls of unsafe_conversion_p, because otherwise we could
-		 produce strange "double" warnings, if both real and imaginary
-		 parts have conversion problems related to signedness.
-
-		 For example:
-		 int32_t _Complex a = 0x80000000 + 0x80000000i;
-
-		 Possible solution: add a separate function for checking
-		 constants and combine result of two calls appropriately.  */
 	      enum conversion_safety re_safety =
-		  unsafe_conversion_p (loc, type, TREE_REALPART (expr),
-				       result, false);
+		unsafe_conversion_p (type, TREE_REALPART (expr),
+				     result, check_sign);
 	      enum conversion_safety im_safety =
-		unsafe_conversion_p (loc, type, imag_part, result, false);
+		unsafe_conversion_p (type, imag_part, result, check_sign);
 
 	      /* Merge the results into appropriate single warning.  */
 
@@ -1525,15 +1495,13 @@ unsafe_conversion_p (location_t loc, tree type, tree expr, tree result,
 	  /* When they are the same width but different signedness,
 	     then the value may change.  */
 	  else if (((TYPE_PRECISION (type) == TYPE_PRECISION (expr_type)
-		    && TYPE_UNSIGNED (expr_type) != TYPE_UNSIGNED (type))
-		   /* Even when converted to a bigger type, if the type is
-		      unsigned but expr is signed, then negative values
-		      will be changed.  */
+		     && TYPE_UNSIGNED (expr_type) != TYPE_UNSIGNED (type))
+		    /* Even when converted to a bigger type, if the type is
+		       unsigned but expr is signed, then negative values
+		       will be changed.  */
 		    || (TYPE_UNSIGNED (type) && !TYPE_UNSIGNED (expr_type)))
-		   && produce_warns)
-	    warning_at (loc, OPT_Wsign_conversion, "conversion to %qT from %qT "
-			"may change the sign of the result",
-			type, expr_type);
+		   && check_sign)
+	    give_warning = UNSAFE_SIGN;
 	}
 
       /* Warn for integer types converted to real types if and only if
@@ -1589,13 +1557,10 @@ unsafe_conversion_p (location_t loc, tree type, tree expr, tree result,
 	      /* Check for different signedness, see case for real-domain
 		 integers (above) for a more detailed comment.  */
 	      else if (((TYPE_PRECISION (to_type) == TYPE_PRECISION (from_type)
-		    && TYPE_UNSIGNED (to_type) != TYPE_UNSIGNED (from_type))
-		    || (TYPE_UNSIGNED (to_type) && !TYPE_UNSIGNED (from_type)))
-		    && produce_warns)
-		warning_at (loc, OPT_Wsign_conversion,
-			"conversion to %qT from %qT "
-			"may change the sign of the result",
-			type, expr_type);
+			 && TYPE_UNSIGNED (to_type) != TYPE_UNSIGNED (from_type))
+			|| (TYPE_UNSIGNED (to_type) && !TYPE_UNSIGNED (from_type)))
+		       && check_sign)
+		give_warning = UNSAFE_SIGN;
 	    }
 	  else if (TREE_CODE (from_type) == INTEGER_TYPE
 		   && TREE_CODE (to_type) == REAL_TYPE
@@ -2422,10 +2387,13 @@ c_common_type_for_mode (machine_mode mode, int unsignedp)
     }
 
   for (t = registered_builtin_types; t; t = TREE_CHAIN (t))
-    if (TYPE_MODE (TREE_VALUE (t)) == mode
-	&& !!unsignedp == !!TYPE_UNSIGNED (TREE_VALUE (t)))
-      return TREE_VALUE (t);
-
+    {
+      tree type = TREE_VALUE (t);
+      if (TYPE_MODE (type) == mode
+	  && VECTOR_TYPE_P (type) == VECTOR_MODE_P (mode)
+	  && !!unsignedp == !!TYPE_UNSIGNED (type))
+	return type;
+    }
   return NULL_TREE;
 }
 
@@ -5764,8 +5732,26 @@ check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
   if (warn_format)
     check_function_sentinel (fntype, nargs, argarray);
 
-  if (warn_restrict)
-    warned_p |= check_function_restrict (fndecl, fntype, nargs, argarray);
+  if (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
+    {
+      switch (DECL_FUNCTION_CODE (fndecl))
+	{
+	case BUILT_IN_SPRINTF:
+	case BUILT_IN_SPRINTF_CHK:
+	case BUILT_IN_SNPRINTF:
+	case BUILT_IN_SNPRINTF_CHK:
+	  /* Let the sprintf pass handle these.  */
+	  return warned_p;
+
+	default:
+	  break;
+	}
+    }
+
+  /* check_function_restrict sets the DECL_READ_P for arguments
+     so it must be called unconditionally.  */
+  warned_p |= check_function_restrict (fndecl, fntype, nargs, argarray);
+
   return warned_p;
 }
 
@@ -6730,6 +6716,8 @@ speculation_safe_value_resolve_params (location_t loc, tree orig_function,
       tree val2 = (*params)[1];
       if (TREE_CODE (TREE_TYPE (val2)) == ARRAY_TYPE)
 	val2 = default_conversion (val2);
+      if (error_operand_p (val2))
+	return false;
       if (!(TREE_TYPE (val) == TREE_TYPE (val2)
 	    || useless_type_conversion_p (TREE_TYPE (val), TREE_TYPE (val2))))
 	{
@@ -7414,11 +7402,13 @@ resolve_overloaded_builtin (location_t loc, tree function,
       {
 	tree new_function, first_param, result;
 	enum built_in_function fncode
-	  = speculation_safe_value_resolve_call (function, params);;
+	  = speculation_safe_value_resolve_call (function, params);
+
+	if (fncode == BUILT_IN_NONE)
+	  return error_mark_node;
 
 	first_param = (*params)[0];
-	if (fncode == BUILT_IN_NONE
-	    || !speculation_safe_value_resolve_params (loc, function, params))
+	if (!speculation_safe_value_resolve_params (loc, function, params))
 	  return error_mark_node;
 
 	if (targetm.have_speculation_safe_value (true))
@@ -7444,7 +7434,7 @@ resolve_overloaded_builtin (location_t loc, tree function,
 	      warning_at (input_location, 0,
 			  "this target does not define a speculation barrier; "
 			  "your program will still execute correctly, "
-			  "but incorrect speculation may not be be "
+			  "but incorrect speculation may not be "
 			  "restricted");
 
 	    /* If the optional second argument is present, handle any side
@@ -8100,7 +8090,7 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
 	if (TREE_CODE (type0) == INTEGER_TYPE
 	    && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE)
 	  {
-	    if (unsafe_conversion_p (loc, TREE_TYPE (type1), op0,
+	    if (unsafe_conversion_p (TREE_TYPE (type1), op0,
 				     NULL_TREE, false))
 	      {
 		if (complain)
@@ -8149,7 +8139,7 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
 	if (TREE_CODE (type0) == INTEGER_TYPE
 	    && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE)
 	  {
-	    if (unsafe_conversion_p (loc, TREE_TYPE (type1), op0,
+	    if (unsafe_conversion_p (TREE_TYPE (type1), op0,
 				     NULL_TREE, false))
 	      {
 		if (complain)
@@ -8165,7 +8155,7 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
 		     || TREE_CODE (type0) == INTEGER_TYPE)
 		 && SCALAR_FLOAT_TYPE_P (TREE_TYPE (type1)))
 	  {
-	    if (unsafe_conversion_p (loc, TREE_TYPE (type1), op0,
+	    if (unsafe_conversion_p (TREE_TYPE (type1), op0,
 				     NULL_TREE, false))
 	      {
 		if (complain)

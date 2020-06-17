@@ -1,4 +1,4 @@
-// { dg-do run { target c++2a } }
+// { dg-do run { target c++20 } }
 
 template<typename T>
 concept C1 = __is_same_as(T, int)

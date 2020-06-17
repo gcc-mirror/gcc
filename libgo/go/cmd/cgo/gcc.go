@@ -834,7 +834,7 @@ func (p *Package) rewriteCall(f *File, call *Call) (string, bool) {
 	// Rewrite C.f(p) to
 	//    func() {
 	//            _cgo0 := p
-	//            _cgoCheckPointer(_cgo0)
+	//            _cgoCheckPointer(_cgo0, nil)
 	//            C.f(_cgo0)
 	//    }()
 	// Using a function literal like this lets us evaluate the
@@ -852,7 +852,7 @@ func (p *Package) rewriteCall(f *File, call *Call) (string, bool) {
 	//    defer func() func() {
 	//            _cgo0 := p
 	//            return func() {
-	//                    _cgoCheckPointer(_cgo0)
+	//                    _cgoCheckPointer(_cgo0, nil)
 	//                    C.f(_cgo0)
 	//            }
 	//    }()()
@@ -939,7 +939,7 @@ func (p *Package) rewriteCall(f *File, call *Call) (string, bool) {
 		}
 
 		fmt.Fprintf(&sb, "_cgo%d := %s; ", i, gofmtPos(arg, origArg.Pos()))
-		fmt.Fprintf(&sbCheck, "_cgoCheckPointer(_cgo%d); ", i)
+		fmt.Fprintf(&sbCheck, "_cgoCheckPointer(_cgo%d, nil); ", i)
 	}
 
 	if call.Deferred {
@@ -2211,6 +2211,11 @@ func (c *typeConv) FinishType(pos token.Pos) {
 // Type returns a *Type with the same memory layout as
 // dtype when used as the type of a variable or a struct field.
 func (c *typeConv) Type(dtype dwarf.Type, pos token.Pos) *Type {
+	return c.loadType(dtype, pos, "")
+}
+
+// loadType recursively loads the requested dtype and its dependency graph.
+func (c *typeConv) loadType(dtype dwarf.Type, pos token.Pos, parent string) *Type {
 	// Always recompute bad pointer typedefs, as the set of such
 	// typedefs changes as we see more types.
 	checkCache := true
@@ -2218,7 +2223,9 @@ func (c *typeConv) Type(dtype dwarf.Type, pos token.Pos) *Type {
 		checkCache = false
 	}
 
-	key := dtype.String()
+	// The cache key should be relative to its parent.
+	// See issue https://golang.org/issue/31891
+	key := parent + " > " + dtype.String()
 
 	if checkCache {
 		if t, ok := c.m[key]; ok {
@@ -2487,7 +2494,13 @@ func (c *typeConv) Type(dtype dwarf.Type, pos token.Pos) *Type {
 		}
 		name := c.Ident("_Ctype_" + dt.Name)
 		goIdent[name.Name] = name
-		sub := c.Type(dt.Type, pos)
+		akey := ""
+		if c.anonymousStructTypedef(dt) {
+			// only load type recursively for typedefs of anonymous
+			// structs, see issues 37479 and 37621.
+			akey = key
+		}
+		sub := c.loadType(dt.Type, pos, akey)
 		if c.badPointerTypedef(dt) {
 			// Treat this typedef as a uintptr.
 			s := *sub
@@ -3006,6 +3019,13 @@ func fieldPrefix(fld []*ast.Field) string {
 		}
 	}
 	return prefix
+}
+
+// anonymousStructTypedef reports whether dt is a C typedef for an anonymous
+// struct.
+func (c *typeConv) anonymousStructTypedef(dt *dwarf.TypedefType) bool {
+	st, ok := dt.Type.(*dwarf.StructType)
+	return ok && st.StructName == ""
 }
 
 // badPointerTypedef reports whether t is a C typedef that should not be considered a pointer in Go.

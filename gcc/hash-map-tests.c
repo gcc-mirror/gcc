@@ -101,6 +101,8 @@ test_map_of_strings_to_int ()
   ASSERT_EQ (1, string_map.elements ());
   ASSERT_EQ (true, string_map.put (another_ant, 5));
   ASSERT_EQ (1, string_map.elements ());
+
+  free (another_ant);
 }
 
 /* Construct a hash_map using int_hash and verify that
@@ -278,6 +280,27 @@ test_map_of_type_with_ctor_and_dtor ()
   }
 }
 
+/* Test calling empty on a hash_map that has a key type with non-zero
+   "empty" value.  */
+
+static void
+test_nonzero_empty_key ()
+{
+  typedef int_hash<int, INT_MIN, INT_MAX> IntHash;
+  hash_map<int, int, simple_hashmap_traits<IntHash, int> > x;
+
+  for (int i = 1; i != 32; ++i)
+    x.put (i, i);
+
+  ASSERT_EQ (x.get (0), NULL);
+  ASSERT_EQ (*x.get (1), 1);
+
+  x.empty ();
+
+  ASSERT_EQ (x.get (0), NULL);
+  ASSERT_EQ (x.get (1), NULL);
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -286,6 +309,7 @@ hash_map_tests_c_tests ()
   test_map_of_strings_to_int ();
   test_map_of_int_to_strings ();
   test_map_of_type_with_ctor_and_dtor ();
+  test_nonzero_empty_key ();
 }
 
 } // namespace selftest

@@ -382,9 +382,11 @@ __do_global_dtors_aux (void)
   if (__builtin_expect (completed, 0))
     return;
 
+#if DEFAULT_USE_CXA_ATEXIT
 #ifdef CRTSTUFFS_O
   if (__cxa_finalize)
     __cxa_finalize (__dso_handle);
+#endif
 #endif
 
 #ifdef FINI_ARRAY_SECTION_ASM_OP

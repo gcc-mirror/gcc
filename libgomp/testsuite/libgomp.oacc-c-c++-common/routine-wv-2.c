@@ -2,8 +2,13 @@
 #include <openacc.h>
 #include <gomp-constants.h>
 
+#ifdef ACC_DEVICE_TYPE_radeon
+#define NUM_WORKERS 16
+#define NUM_VECTORS 1
+#else
 #define NUM_WORKERS 16
 #define NUM_VECTORS 32
+#endif
 #define WIDTH 64
 #define HEIGHT 32
 

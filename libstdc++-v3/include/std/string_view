@@ -37,17 +37,21 @@
 
 #if __cplusplus >= 201703L
 
-#include <limits>
 #include <iosfwd>
 #include <bits/char_traits.h>
 #include <bits/functional_hash.h>
+#include <bits/int_limits.h>
 #include <bits/range_access.h>
+#include <bits/ostream_insert.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#define __cpp_lib_string_view 201803
+# define __cpp_lib_string_view 201803L
+#if __cplusplus > 201703L
+# define __cpp_lib_constexpr_string_view 201811L
+#endif
 
   // Helper for basic_string and basic_string_view members.
   constexpr size_t
@@ -262,6 +266,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // [string.view.ops], string operations:
 
+      _GLIBCXX20_CONSTEXPR
       size_type
       copy(_CharT* __str, size_type __n, size_type __pos = 0) const
       {
@@ -320,6 +325,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
 #if __cplusplus > 201703L
+#define __cpp_lib_starts_ends_with 201711L
       constexpr bool
       starts_with(basic_string_view __x) const noexcept
       { return this->substr(0, __x.size()) == __x; }
@@ -456,10 +462,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_compare(size_type __n1, size_type __n2) noexcept
       {
 	const difference_type __diff = __n1 - __n2;
-	if (__diff > std::numeric_limits<int>::max())
-	  return std::numeric_limits<int>::max();
-	if (__diff < std::numeric_limits<int>::min())
-	  return std::numeric_limits<int>::min();
+	if (__diff > __detail::__int_limits<int>::max())
+	  return __detail::__int_limits<int>::max();
+	if (__diff < __detail::__int_limits<int>::min())
+	  return __detail::__int_limits<int>::min();
 	return static_cast<int>(__diff);
       }
 
@@ -492,6 +498,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     noexcept
     { return __x.size() == __y.size() && __x.compare(__y) == 0; }
 
+#if __cpp_lib_three_way_comparison
+  template<typename _CharT, typename _Traits>
+    constexpr auto
+    operator<=>(basic_string_view<_CharT, _Traits> __x,
+		basic_string_view<_CharT, _Traits> __y) noexcept
+    -> decltype(__detail::__char_traits_cmp_cat<_Traits>(0))
+    { return __detail::__char_traits_cmp_cat<_Traits>(__x.compare(__y)); }
+
+  template<typename _CharT, typename _Traits>
+    constexpr auto
+    operator<=>(basic_string_view<_CharT, _Traits> __x,
+		__type_identity_t<basic_string_view<_CharT, _Traits>> __y)
+    noexcept
+    -> decltype(__detail::__char_traits_cmp_cat<_Traits>(0))
+    { return __detail::__char_traits_cmp_cat<_Traits>(__x.compare(__y)); }
+#else
   template<typename _CharT, typename _Traits>
     constexpr bool
     operator==(__type_identity_t<basic_string_view<_CharT, _Traits>> __x,
@@ -592,6 +614,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator>=(__type_identity_t<basic_string_view<_CharT, _Traits>> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return __x.compare(__y) >= 0; }
+#endif // three-way comparison
 
   // [string.view.io], Inserters and extractors
   template<typename _CharT, typename _Traits>
@@ -727,11 +750,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cpp_lib_concepts
   namespace ranges
   {
-    template<typename> extern inline const bool enable_safe_range;
-    // Opt-in to safe_range concept
+    // Opt-in to borrowed_range concept
     template<typename _CharT, typename _Traits>
       inline constexpr bool
-	enable_safe_range<basic_string_view<_CharT, _Traits>> = true;
+	enable_borrowed_range<basic_string_view<_CharT, _Traits>> = true;
+
+    // Opt-in to view concept
+    template<typename _CharT, typename _Traits>
+      inline constexpr bool
+	enable_view<basic_string_view<_CharT, _Traits>> = true;
   }
 #endif
 _GLIBCXX_END_NAMESPACE_VERSION

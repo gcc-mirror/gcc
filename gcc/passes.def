@@ -39,8 +39,10 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_lower_tm);
   NEXT_PASS (pass_refactor_eh);
   NEXT_PASS (pass_lower_eh);
+  NEXT_PASS (pass_coroutine_lower_builtins);
   NEXT_PASS (pass_build_cfg);
   NEXT_PASS (pass_warn_function_return);
+  NEXT_PASS (pass_coroutine_early_expand_ifns);
   NEXT_PASS (pass_expand_omp);
   NEXT_PASS (pass_warn_printf);
   NEXT_PASS (pass_walloca, /*strict_mode_p=*/true);
@@ -149,6 +151,8 @@ along with GCC; see the file COPYING3.  If not see
   TERMINATE_PASS_LIST (all_small_ipa_passes)
 
   INSERT_PASSES_AFTER (all_regular_ipa_passes)
+  NEXT_PASS (pass_analyzer);
+  NEXT_PASS (pass_ipa_odr);
   NEXT_PASS (pass_ipa_whole_program_visibility);
   NEXT_PASS (pass_ipa_profile);
   NEXT_PASS (pass_ipa_icf);
@@ -187,6 +191,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_oacc_device_lower);
   NEXT_PASS (pass_omp_device_lower);
   NEXT_PASS (pass_omp_target_link);
+  NEXT_PASS (pass_adjust_alignment);
   NEXT_PASS (pass_all_optimizations);
   PUSH_INSERT_PASSES_WITHIN (pass_all_optimizations)
       NEXT_PASS (pass_remove_cgraph_callee_edges);

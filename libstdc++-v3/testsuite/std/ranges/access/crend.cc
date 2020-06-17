@@ -34,7 +34,7 @@ struct R1
 };
 
 // N.B. this is a lie, rend on an R1 rvalue will return a dangling pointer.
-template<> constexpr bool std::ranges::enable_safe_range<R1> = true;
+template<> constexpr bool std::ranges::enable_borrowed_range<R1> = true;
 
 void
 test01()
@@ -60,7 +60,7 @@ struct R2
 };
 
 // N.B. this is a lie, rend on an R2 rvalue will return a dangling pointer.
-template<> constexpr bool std::ranges::enable_safe_range<R2> = true;
+template<> constexpr bool std::ranges::enable_borrowed_range<R2> = true;
 
 void
 test02()
@@ -85,7 +85,7 @@ struct R3
 };
 
 // N.B. this is a lie, rend on an R3 rvalue will return a dangling pointer.
-template<> constexpr bool std::ranges::enable_safe_range<R3> = true;
+template<> constexpr bool std::ranges::enable_borrowed_range<R3> = true;
 
 void
 test03()

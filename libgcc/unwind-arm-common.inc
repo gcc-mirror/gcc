@@ -419,7 +419,7 @@ get_eit_entry (_Unwind_Control_Block *ucbp, _uw return_address)
       UCB_PR_ADDR (ucbp) = selfrel_offset31 (ucbp->pr_cache.ehtp);
 #if __FDPIC__
       UCB_PR_GOT (ucbp)
-	= (unsigned int) gnu_Unwind_Find_got ((_Unwind_Ptr) UCB_PR_ADDR (ucbp));
+	= (unsigned int) _Unwind_gnu_Find_got ((_Unwind_Ptr) UCB_PR_ADDR (ucbp));
 #endif
     }
   return _URC_OK;
@@ -462,7 +462,7 @@ unwind_phase2 (_Unwind_Control_Block * ucbp, phase2_vrs * vrs)
 
 #if __FDPIC__
   /* r9 could have been lost due to PLT jump.  Restore correct value.  */
-  vrs->core.r[FDPIC_REGNUM] = gnu_Unwind_Find_got (VRS_PC (vrs));
+  vrs->core.r[FDPIC_REGNUM] = _Unwind_gnu_Find_got (VRS_PC (vrs));
 #endif
 
   uw_restore_core_regs (vrs, &vrs->core);
@@ -562,7 +562,7 @@ unwind_phase2_forced (_Unwind_Control_Block *ucbp, phase2_vrs *entry_vrs,
 
 #if __FDPIC__
   /* r9 could have been lost due to PLT jump.  Restore correct value.  */
-  saved_vrs.core.r[FDPIC_REGNUM] = gnu_Unwind_Find_got (VRS_PC (&saved_vrs));
+  saved_vrs.core.r[FDPIC_REGNUM] = _Unwind_gnu_Find_got (VRS_PC (&saved_vrs));
 #endif
 
   uw_restore_core_regs (&saved_vrs, &saved_vrs.core);
@@ -698,7 +698,7 @@ __gnu_Unwind_Resume (_Unwind_Control_Block * ucbp, phase2_vrs * entry_vrs)
       /* Upload the registers to enter the landing pad.  */
 #if __FDPIC__
       /* r9 could have been lost due to PLT jump.  Restore correct value.  */
-      entry_vrs->core.r[FDPIC_REGNUM] = gnu_Unwind_Find_got (VRS_PC (entry_vrs));
+      entry_vrs->core.r[FDPIC_REGNUM] = _Unwind_gnu_Find_got (VRS_PC (entry_vrs));
 #endif
       uw_restore_core_regs (entry_vrs, &entry_vrs->core);
 

@@ -74,6 +74,15 @@ test02()
   VERIFY( ! f(x, x) );
 }
 
+struct Y
+{
+  operator void*() const;
+  operator int() const;
+};
+
+// Y{} == Y{} is ambiguous so ranges::less{}(Y{}, Y{}) should be invalid
+static_assert( !std::is_invocable_v<F&, Y, Y> );
+
 int
 main()
 {

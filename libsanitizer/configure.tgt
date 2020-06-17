@@ -22,6 +22,8 @@
 TSAN_TARGET_DEPENDENT_OBJECTS=
 SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS=
 case "${target}" in
+  x86_64-*-freebsd* | i?86-*-freebsd*)
+	;;
   x86_64-*-linux* | i?86-*-linux*)
 	if test x$ac_cv_sizeof_void_p = x8; then
 		TSAN_SUPPORTED=yes
@@ -60,7 +62,7 @@ case "${target}" in
 		TSAN_TARGET_DEPENDENT_OBJECTS=tsan_rtl_aarch64.lo
 	fi
 	;;
-  x86_64-*-darwin[1]* | i?86-*-darwin[1]*)
+  x86_64-*-darwin1[2-9]* | i?86-*-darwin1[2-9]*)
 	TSAN_SUPPORTED=no
 	;;
   x86_64-*-solaris2.11* | i?86-*-solaris2.11*)

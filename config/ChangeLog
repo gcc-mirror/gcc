@@ -1,3 +1,70 @@
+2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/95413
+	* cet.m4: Replace save_CFLAGS and save_LDFLAGS with
+	cet_save_CFLAGS and cet_save_LDFLAGS.
+
+2020-05-18  Jason Merrill  <jason@redhat.com>
+
+	* ax_cxx_compile_stdcxx.m4: Import from autoconf archive with
+	an adjustment to try the default mode.
+
+2020-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/95147
+	* cet.m4 (GCC_CET_FLAGS): Also check if -fcf-protection works
+	when defaulting to auto.
+
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* cet.m4 (GCC_CET_FLAGS): Change default to auto.
+
+2020-05-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/94998
+	* cet.m4 (GCC_CET_HOST_FLAGS): Enable CET in cross compiler if
+	possible.
+
+2020-04-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/94739
+	* cet.m4 (GCC_CET_HOST_FLAGS): Add -fcf-protection=none to
+	-Wl,-z,ibt,-z,shstk.  Check whether -fcf-protection=none
+	-Wl,-z,ibt,-z,shstk works first.
+
+2020-04-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/94739
+	* cet.m4 (GCC_CET_HOST_FLAGS): New.
+
+2020-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/94694
+	PR libfortran/94586
+	* math.m4 (GCC_CHECK_MATH_INLINE_BUILTIN_FALLBACK1,
+	GCC_CHECK_MATH_INLINE_BUILTIN_FALLBACK2): New.
+
+2020-02-12  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libstdc++/79193
+	PR libstdc++/88999
+	* no-executables.m4: Use a non-empty program to test for linker
+	support.
+
+2020-02-01  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* lib-link.m4 (AC_LIB_LINKFLAGS_BODY): Update shell syntax.
+
+2020-01-27  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* lib-link.m4 (AC_LIB_LINKFLAGS_BODY): Add new
+	--with-libXXX-type=... option.  Use this to guide the selection of
+	either a shared library or a static library.
+
+2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
+
+	* toolexeclibdir.m4: New file.
+
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
 
 	* futex.m4: Handle *-uclinux*.

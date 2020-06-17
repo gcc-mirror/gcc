@@ -322,7 +322,6 @@ private:
 
   auto_vec<function *> m_functions;
   auto_vec<tree> m_globals;
-  tree m_char_array_type_node;
   tree m_const_char_ptr;
 
   /* Source location handling.  */
@@ -577,7 +576,12 @@ public:
   rvalue (context *ctxt, tree inner)
     : m_ctxt (ctxt),
       m_inner (inner)
-  {}
+  {
+    /* Pre-mark tree nodes with TREE_VISITED so that they can be
+       deeply unshared during gimplification (including across
+       functions); this requires LANG_HOOKS_DEEP_UNSHARING to be true.  */
+    TREE_VISITED (inner) = 1;
+  }
 
   rvalue *
   as_rvalue () { return this; }

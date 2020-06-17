@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2013-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2013-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -95,6 +95,8 @@ package Ada.Containers.Indefinite_Holders is
    function Copy (Source : Holder) return Holder;
 
    procedure Move (Target : in out Holder; Source : in out Holder);
+
+   procedure Swap (Left, Right : in out Holder);
 
 private
 

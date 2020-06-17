@@ -31,7 +31,8 @@ program main
     myvar%p%p(i) = -1.0
   end do
 
-!$acc enter data copyin(myvar, myvar%p) create(myvar%p%p)
+!$acc enter data copyin(myvar)
+!$acc enter data copyin(myvar%p) create(myvar%p%p)
 
 !$acc parallel loop present(myvar%p%p)
   do i=1,100
@@ -39,7 +40,8 @@ program main
   end do
 !$acc end parallel loop
 
-!$acc exit data copyout(myvar%p%p) delete(myvar, myvar%p)
+!$acc exit data copyout(myvar%p%p) delete(myvar%p)
+!$acc exit data delete(myvar)
 
   do i=1,100
     if (myvar%p%p(i) .ne. i * 2) stop 1

@@ -1023,6 +1023,7 @@ copy_loop_info (class loop *loop, class loop *target)
   target->dont_vectorize = loop->dont_vectorize;
   target->force_vectorize = loop->force_vectorize;
   target->in_oacc_kernels_region = loop->in_oacc_kernels_region;
+  target->finite_p = loop->finite_p;
   target->unroll = loop->unroll;
   target->owned_clique = loop->owned_clique;
 }
@@ -1505,9 +1506,10 @@ create_preheader (class loop *loop, int flags)
       else
         {
           /* If we want simple preheaders, also force the preheader to have
-             just a single successor.  */
+	     just a single successor and a normal edge.  */
           if ((flags & CP_SIMPLE_PREHEADERS)
-              && !single_succ_p (single_entry->src))
+	      && ((single_entry->flags & EDGE_COMPLEX)
+		  || !single_succ_p (single_entry->src)))
             need_forwarder_block = true;
           /* If we want fallthru preheaders, also create forwarder block when
              preheader ends with a jump or has predecessors from loop.  */

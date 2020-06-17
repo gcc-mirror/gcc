@@ -16,7 +16,7 @@ f1 (svbool_t pg, signed char *s8_ptr, void *void_ptr, struct s *s_ptr,
   svst1 (pg, void_ptr, 0); /* { dg-error {passing 'int' to argument 3 of 'svst1', which expects an SVE vector type} } */
   svst1 (pg, void_ptr, pg); /* { dg-error {'svst1' has no form that takes 'svbool_t' arguments} } */
   svst1 (pg, 0, s8);
-  svst1 (pg, (int *) 0, s8); /* { dg-warning "passing argument 2 of 'svst1_s8' from incompatible pointer type" } */
+  svst1 (pg, (int32_t *) 0, s8); /* { dg-warning "passing argument 2 of 'svst1_s8' from incompatible pointer type" } */
   svst1 (pg, void_ptr, s8);
   svst1 (pg, s_ptr, s8); /* { dg-warning "passing argument 2 of 'svst1_s8' from incompatible pointer type" } */
   svst1 (pg, f32_ptr, s8); /* { dg-warning "passing argument 2 of 'svst1_s8' from incompatible pointer type" } */

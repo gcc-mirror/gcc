@@ -1,6 +1,5 @@
 // { dg-do compile }
-// { dg-options "-fgnu-tm -O3" }
-// { dg-additional-options "-Wno-return-type" }
+// { dg-options "-fgnu-tm -O3 -Wno-return-type" }
 
 template<typename _InputIterator, typename _Distance>  inline void advance(_InputIterator& __i, _Distance __n)
   {

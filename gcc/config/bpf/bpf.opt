@@ -108,6 +108,12 @@ Enum(bpf_kernel) String(5.1) Value(LINUX_V5_1)
 EnumValue
 Enum(bpf_kernel) String(5.2) Value(LINUX_V5_2)
 
+; Use xBPF extensions.
+
+mxbpf
+Target Report Mask(XBPF)
+Generate xBPF.
+
 ; Selecting big endian or little endian targets.
 
 mbig-endian

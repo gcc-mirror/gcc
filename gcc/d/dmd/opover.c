@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -239,10 +239,10 @@ Expression *op_overload(Expression *e, Scope *sc)
                 Expression *ae1old = ae->e1;
 
                 const bool maybeSlice =
-                    (ae->arguments->dim == 0 ||
-                     (ae->arguments->dim == 1 && (*ae->arguments)[0]->op == TOKinterval));
+                    (ae->arguments->length == 0 ||
+                     (ae->arguments->length == 1 && (*ae->arguments)[0]->op == TOKinterval));
                 IntervalExp *ie = NULL;
-                if (maybeSlice && ae->arguments->dim)
+                if (maybeSlice && ae->arguments->length)
                 {
                     assert((*ae->arguments)[0]->op == TOKinterval);
                     ie = (IntervalExp *)(*ae->arguments)[0];
@@ -397,10 +397,10 @@ Expression *op_overload(Expression *e, Scope *sc)
             Expression *ae1old = ae->e1;
 
             const bool maybeSlice =
-                (ae->arguments->dim == 0 ||
-                 (ae->arguments->dim == 1 && (*ae->arguments)[0]->op == TOKinterval));
+                (ae->arguments->length == 0 ||
+                 (ae->arguments->length == 1 && (*ae->arguments)[0]->op == TOKinterval));
             IntervalExp *ie = NULL;
-            if (maybeSlice && ae->arguments->dim)
+            if (maybeSlice && ae->arguments->length)
             {
                 assert((*ae->arguments)[0]->op == TOKinterval);
                 ie = (IntervalExp *)(*ae->arguments)[0];
@@ -439,7 +439,7 @@ Expression *op_overload(Expression *e, Scope *sc)
                             return;
                         }
                         // Convert to IndexExp
-                        if (ae->arguments->dim == 1)
+                        if (ae->arguments->length == 1)
                         {
                             result = new IndexExp(ae->loc, ae->e1, (*ae->arguments)[0]);
                             result = semantic(result, sc);
@@ -962,7 +962,7 @@ Expression *op_overload(Expression *e, Scope *sc)
                 ClassDeclaration *cd1 = t1->isClassHandle();
                 ClassDeclaration *cd2 = t2->isClassHandle();
 
-                if (!(cd1->cpp || cd2->cpp))
+                if (!(cd1->isCPPclass() || cd2->isCPPclass()))
                 {
                     /* Rewrite as:
                      *      .object.opEquals(e1, e2)
@@ -1079,11 +1079,11 @@ Expression *op_overload(Expression *e, Scope *sc)
             {
                 TupleExp *tup1 = (TupleExp *)e->e1;
                 TupleExp *tup2 = (TupleExp *)e->e2;
-                size_t dim = tup1->exps->dim;
-                if (dim != tup2->exps->dim)
+                size_t dim = tup1->exps->length;
+                if (dim != tup2->exps->length)
                 {
                     e->error("mismatched tuple lengths, %d and %d",
-                        (int)dim, (int)tup2->exps->dim);
+                        (int)dim, (int)tup2->exps->length);
                     result = new ErrorExp();
                     return;
                 }
@@ -1106,9 +1106,9 @@ Expression *op_overload(Expression *e, Scope *sc)
                         if (!result)
                             result = eeq;
                         else if (e->op == TOKequal)
-                            result = new AndAndExp(e->loc, result, eeq);
+                            result = new LogicalExp(e->loc, TOKandand, result, eeq);
                         else
-                            result = new OrOrExp(e->loc, result, eeq);
+                            result = new LogicalExp(e->loc, TOKoror, result, eeq);
                     }
                     assert(result);
                 }
@@ -1140,10 +1140,10 @@ Expression *op_overload(Expression *e, Scope *sc)
                 Expression *ae1old = ae->e1;
 
                 const bool maybeSlice =
-                    (ae->arguments->dim == 0 ||
-                     (ae->arguments->dim == 1 && (*ae->arguments)[0]->op == TOKinterval));
+                    (ae->arguments->length == 0 ||
+                     (ae->arguments->length == 1 && (*ae->arguments)[0]->op == TOKinterval));
                 IntervalExp *ie = NULL;
-                if (maybeSlice && ae->arguments->dim)
+                if (maybeSlice && ae->arguments->length)
                 {
                     assert((*ae->arguments)[0]->op == TOKinterval);
                     ie = (IntervalExp *)(*ae->arguments)[0];
@@ -1704,12 +1704,12 @@ Lerr:
 
 bool inferApplyArgTypes(ForeachStatement *fes, Scope *sc, Dsymbol *&sapply)
 {
-    if (!fes->parameters || !fes->parameters->dim)
+    if (!fes->parameters || !fes->parameters->length)
         return false;
 
     if (sapply)     // prefer opApply
     {
-        for (size_t u = 0; u < fes->parameters->dim; u++)
+        for (size_t u = 0; u < fes->parameters->length; u++)
         {
             Parameter *p = (*fes->parameters)[u];
             if (p->type)
@@ -1742,7 +1742,7 @@ bool inferApplyArgTypes(ForeachStatement *fes, Scope *sc, Dsymbol *&sapply)
 
     /* Return if no parameters need types.
      */
-    for (size_t u = 0; u < fes->parameters->dim; u++)
+    for (size_t u = 0; u < fes->parameters->length; u++)
     {
         Parameter *p = (*fes->parameters)[u];
         if (!p->type)
@@ -1760,7 +1760,7 @@ bool inferApplyArgTypes(ForeachStatement *fes, Scope *sc, Dsymbol *&sapply)
         case Tarray:
         case Tsarray:
         case Ttuple:
-            if (fes->parameters->dim == 2)
+            if (fes->parameters->length == 2)
             {
                 if (!p->type)
                 {
@@ -1780,7 +1780,7 @@ bool inferApplyArgTypes(ForeachStatement *fes, Scope *sc, Dsymbol *&sapply)
         {
             TypeAArray *taa = (TypeAArray *)tab;
 
-            if (fes->parameters->dim == 2)
+            if (fes->parameters->length == 2)
             {
                 if (!p->type)
                 {
@@ -1808,7 +1808,7 @@ bool inferApplyArgTypes(ForeachStatement *fes, Scope *sc, Dsymbol *&sapply)
             goto Laggr;
 
         Laggr:
-            if (fes->parameters->dim == 1)
+            if (fes->parameters->length == 1)
             {
                 if (!p->type)
                 {
@@ -1923,9 +1923,9 @@ static int inferApplyArgTypesY(TypeFunction *tf, Parameters *parameters, int fla
 {   size_t nparams;
     Parameter *p;
 
-    if (Parameter::dim(tf->parameters) != 1)
+    if (tf->parameterList.length() != 1)
         goto Lnomatch;
-    p = Parameter::getNth(tf->parameters, 0);
+    p = tf->parameterList[0];
     if (p->type->ty != Tdelegate)
         goto Lnomatch;
     tf = (TypeFunction *)p->type->nextOf();
@@ -1934,16 +1934,16 @@ static int inferApplyArgTypesY(TypeFunction *tf, Parameters *parameters, int fla
     /* We now have tf, the type of the delegate. Match it against
      * the parameters, filling in missing parameter types.
      */
-    nparams = Parameter::dim(tf->parameters);
-    if (nparams == 0 || tf->varargs)
+    nparams = tf->parameterList.length();
+    if (nparams == 0 || tf->parameterList.varargs != VARARGnone)
         goto Lnomatch;          // not enough parameters
-    if (parameters->dim != nparams)
+    if (parameters->length != nparams)
         goto Lnomatch;          // not enough parameters
 
     for (size_t u = 0; u < nparams; u++)
     {
         p = (*parameters)[u];
-        Parameter *param = Parameter::getNth(tf->parameters, u);
+        Parameter *param = tf->parameterList[u];
         if (p->type)
         {
             if (!p->type->equals(param->type))

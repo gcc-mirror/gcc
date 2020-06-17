@@ -22,11 +22,12 @@ include $(top_srcdir)/d_rules.am
 D_EXTRA_DFLAGS=-nostdinc -I $(srcdir) -I .
 
 # D flags for compilation
-AM_DFLAGS=$(phobos_compiler_pic_flag)
+AM_DFLAGS= \
+	$(phobos_compiler_pic_flag) \
+	$(WARN_DFLAGS) $(CHECKING_DFLAGS)
 
 # Install all D and DI files
 ALL_DRUNTIME_INSTALL_DSOURCES = $(DRUNTIME_DSOURCES) \
-	$(DRUNTIME_DSOURCES_GC) $(DRUNTIME_DSOURCES_GCSTUB) \
 	$(DRUNTIME_DSOURCES_BIONIC) $(DRUNTIME_DSOURCES_DARWIN) \
 	$(DRUNTIME_DSOURCES_DRAGONFLYBSD) $(DRUNTIME_DSOURCES_FREEBSD) \
 	$(DRUNTIME_DSOURCES_LINUX) $(DRUNTIME_DSOURCES_NETBSD) \
@@ -38,14 +39,8 @@ ALL_DRUNTIME_INSTALL_DSOURCES = $(DRUNTIME_DSOURCES) \
 # Setup source files depending on configure
 DRUNTIME_SOURCES_CONFIGURED =
 
-# GC sources
-if DRUNTIME_GC_ENABLE
-    DRUNTIME_SOURCES_CONFIGURED += $(DRUNTIME_DSOURCES_GC)
-else
-    DRUNTIME_SOURCES_CONFIGURED += $(DRUNTIME_DSOURCES_GCSTUB)
-endif
 # OS specific sources
-if DRUNTIME_OS_UNIX
+if DRUNTIME_OS_POSIX
     DRUNTIME_SOURCES_CONFIGURED += $(DRUNTIME_DSOURCES_POSIX)
 endif
 if DRUNTIME_OS_DARWIN
@@ -88,15 +83,18 @@ endif
 if DRUNTIME_CPU_POWERPC
     DRUNTIME_SOURCES_CONFIGURED += config/powerpc/switchcontext.S
 endif
-if DRUNTIME_CPU_POWERPC64
-    DRUNTIME_SOURCES_CONFIGURED += config/powerpc64/callwithstack.S
-endif
 if DRUNTIME_CPU_X86
 if DRUNTIME_OS_MINGW
     DRUNTIME_SOURCES_CONFIGURED += config/mingw/switchcontext.S
 else
     DRUNTIME_SOURCES_CONFIGURED += config/x86/switchcontext.S
 endif
+endif
+if DRUNTIME_CPU_SYSTEMZ
+    DRUNTIME_SOURCES_CONFIGURED += config/systemz/get_tls_offset.S
+endif
+if DRUNTIME_CPU_S390
+    DRUNTIME_SOURCES_CONFIGURED += config/s390/get_tls_offset.S
 endif
 
 # Provide __start_minfo, __stop_minfo if linker doesn't.
@@ -118,6 +116,8 @@ DRUNTIME_DSOURCES_GENERATED = gcc/config.d gcc/libbacktrace.d
 ALL_DRUNTIME_SOURCES = $(DRUNTIME_DSOURCES) $(DRUNTIME_CSOURCES) \
 	$(DRUNTIME_SOURCES_CONFIGURED) $(DRUNTIME_DSOURCES_GENERATED)
 
+# Need this library to both be part of libgphobos.a, and installed separately.
+# 1) separate libgdruntime.la
 toolexeclib_LTLIBRARIES = libgdruntime.la
 libgdruntime_la_SOURCES = $(ALL_DRUNTIME_SOURCES)
 libgdruntime_la_LIBTOOLFLAGS =
@@ -125,6 +125,21 @@ libgdruntime_la_LDFLAGS = -Wc,-nophoboslib,-dstartfiles,-B../src,-Bgcc \
     -version-info $(libtool_VERSION)
 libgdruntime_la_LIBADD = $(LIBATOMIC) $(LIBBACKTRACE)
 libgdruntime_la_DEPENDENCIES = $(DRTSTUFF)
+# Also override library link commands: This is not strictly
+# required, but we want to record additional dependencies such
+# as pthread in the library
+libgdruntime_la_LINK = $(LIBTOOL) --tag=D $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(GDC) $(AM_CFLAGS) $(CFLAGS) \
+	$(libgdruntime_la_LDFLAGS) $(LDFLAGS) -o $@
+
+# 2) integrated libgdruntime_convenience.la that is to be part of libgphobos.a
+noinst_LTLIBRARIES = libgdruntime_convenience.la
+libgdruntime_convenience_la_SOURCES = $(libgdruntime_la_SOURCES)
+libgdruntime_convenience_la_LIBTOOLFLAGS = $(libgdruntime_la_LIBTOOLFLAGS)
+libgdruntime_convenience_la_LDFLAGS = $(libgdruntime_la_LDFLAGS)
+libgdruntime_convenience_la_LIBADD = $(libgdruntime_la_LIBADD)
+libgdruntime_convenience_la_DEPENDENCIES = $(libgdruntime_la_DEPENDENCIES)
+libgdruntime_convenience_la_LINK = $(libgdruntime_la_LINK)
 
 # Handles generated files as well
 install-data-local:
@@ -160,7 +175,9 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/stdc/wctype.d core/sync/barrier.d core/sync/condition.d \
 	core/sync/config.d core/sync/exception.d core/sync/mutex.d \
 	core/sync/rwmutex.d core/sync/semaphore.d core/thread.d core/time.d \
-	core/vararg.d gcc/attribute.d gcc/backtrace.d gcc/builtins.d gcc/deh.d \
+	core/vararg.d gc/bits.d gc/config.d gc/gcinterface.d \
+	gc/impl/conservative/gc.d gc/impl/manual/gc.d gc/os.d gc/pooltable.d \
+	gc/proxy.d gcc/attribute.d gcc/backtrace.d gcc/builtins.d gcc/deh.d \
 	gcc/emutls.d gcc/gthread.d gcc/sections/android.d \
 	gcc/sections/elf_shared.d gcc/sections/osx.d gcc/sections/package.d \
 	gcc/sections/win32.d gcc/sections/win64.d gcc/unwind/arm.d \
@@ -190,12 +207,6 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 
 DRUNTIME_DSOURCES_STDCXX = core/stdcpp/exception.d \
 	core/stdcpp/typeinfo.d
-
-DRUNTIME_DSOURCES_GC = gc/bits.d gc/config.d gc/gcinterface.d \
-	gc/impl/conservative/gc.d gc/impl/manual/gc.d gc/os.d gc/pooltable.d \
-	gc/proxy.d
-
-DRUNTIME_DSOURCES_GCSTUB = gcstub/gc.d
 
 DRUNTIME_DSOURCES_BIONIC = core/sys/bionic/fcntl.d \
 	core/sys/bionic/string.d core/sys/bionic/unistd.d
@@ -241,12 +252,12 @@ DRUNTIME_DSOURCES_LINUX = core/sys/linux/config.d \
 	core/sys/linux/sched.d core/sys/linux/stdio.d core/sys/linux/string.d \
 	core/sys/linux/sys/auxv.d core/sys/linux/sys/eventfd.d \
 	core/sys/linux/sys/file.d core/sys/linux/sys/inotify.d \
-	core/sys/linux/sys/mman.d core/sys/linux/sys/netinet/tcp.d \
-	core/sys/linux/sys/prctl.d core/sys/linux/sys/signalfd.d \
-	core/sys/linux/sys/socket.d core/sys/linux/sys/sysinfo.d \
-	core/sys/linux/sys/time.d core/sys/linux/sys/xattr.d \
-	core/sys/linux/termios.d core/sys/linux/time.d \
-	core/sys/linux/timerfd.d core/sys/linux/tipc.d core/sys/linux/unistd.d
+	core/sys/linux/sys/mman.d core/sys/linux/sys/prctl.d \
+	core/sys/linux/sys/signalfd.d core/sys/linux/sys/socket.d \
+	core/sys/linux/sys/sysinfo.d core/sys/linux/sys/time.d \
+	core/sys/linux/sys/xattr.d core/sys/linux/termios.d \
+	core/sys/linux/time.d core/sys/linux/timerfd.d core/sys/linux/tipc.d \
+	core/sys/linux/unistd.d
 
 DRUNTIME_DSOURCES_NETBSD = core/sys/netbsd/dlfcn.d \
 	core/sys/netbsd/execinfo.d core/sys/netbsd/string.d \

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,10 +46,10 @@ package Rtsfind is
    --  in the package entity table. The units must be either library level
    --  package declarations, or library level subprogram declarations. Generic
    --  units, library level instantiations and subprogram bodies acting as
-   --  specs may not be referenced (all these cases could be added at the
+   --  specs must not be referenced. (All these cases could be added at the
    --  expense of additional complexity in the body of Rtsfind, but it doesn't
    --  seem worthwhile, since the implementation controls the set of units that
-   --  are referenced, and this restriction is easily met.
+   --  are referenced, and this restriction is easily met.)
 
    --  IMPORTANT NOTE: the specs of packages and procedures with'ed using
    --  this mechanism must not contain use clauses. This is because these
@@ -58,6 +58,9 @@ package Rtsfind is
    --  compilation. The presence of extraneous visible stuff has no effect on
    --  the compilation except in the presence of use clauses, which might
    --  result in unexpected ambiguities.
+
+   --  NOTE: If RTU_Id is modified, the subtypes of RTU_Id in the package body
+   --  might need to be modified. See Get_Unit_Name.
 
    type RTU_Id is (
 
@@ -122,6 +125,12 @@ package Rtsfind is
       Ada_Strings_Wide_Superbounded,
       Ada_Strings_Wide_Wide_Superbounded,
       Ada_Strings_Unbounded,
+      Ada_Strings_Text_Output,
+
+      --  Children of Ada.Strings.Text_Output
+
+      Ada_Strings_Text_Output_Utils,
+      Ada_Strings_Text_Output_Buffers,
 
       --  Children of Ada.Text_IO (for Check_Text_IO_Special_Unit)
 
@@ -165,6 +174,7 @@ package Rtsfind is
       --  Children of System
 
       System_Address_Image,
+      System_Address_To_Access_Conversions,
       System_Arith_64,
       System_AST_Handling,
       System_Assertions,
@@ -303,6 +313,8 @@ package Rtsfind is
       System_Pool_Empty,
       System_Pool_Local,
       System_Pool_Size,
+      System_Put_Images,
+      System_Put_Task_Images,
       System_Relative_Delays,
       System_RPC,
       System_Scalar_Values,
@@ -372,93 +384,6 @@ package Rtsfind is
       System_Tasking_Restricted_Stages,
       System_Tasking_Rendezvous,
       System_Tasking_Stages);
-
-   subtype Ada_Child is RTU_Id
-     range Ada_Calendar .. Ada_Wide_Wide_Text_IO_Modular_IO;
-   --  Range of values for children or grand-children of Ada
-
-   subtype Ada_Calendar_Child is Ada_Child
-     range Ada_Calendar_Delays .. Ada_Calendar_Delays;
-   --  Range of values for children of Ada.Calendar
-
-   subtype Ada_Dispatching_Child is RTU_Id
-     range Ada_Dispatching_EDF .. Ada_Dispatching_EDF;
-   --  Range of values for children of Ada.Dispatching
-
-   subtype Ada_Interrupts_Child is Ada_Child range
-     Ada_Interrupts_Names .. Ada_Interrupts_Names;
-   --  Range of values for children of Ada.Interrupts
-
-   subtype Ada_Numerics_Child is Ada_Child
-     range Ada_Numerics_Generic_Elementary_Functions ..
-           Ada_Numerics_Generic_Elementary_Functions;
-   --  Range of values for children of Ada.Numerics
-
-   subtype Ada_Real_Time_Child is Ada_Child
-     range Ada_Real_Time_Delays .. Ada_Real_Time_Timing_Events;
-   --  Range of values for children of Ada.Real_Time
-
-   subtype Ada_Streams_Child is Ada_Child
-     range Ada_Streams_Stream_IO .. Ada_Streams_Stream_IO;
-   --  Range of values for children of Ada.Streams
-
-   subtype Ada_Strings_Child is Ada_Child
-     range Ada_Strings_Superbounded .. Ada_Strings_Unbounded;
-   --  Range of values for children of Ada.Strings
-
-   subtype Ada_Text_IO_Child is Ada_Child
-     range Ada_Text_IO_Decimal_IO .. Ada_Text_IO_Modular_IO;
-   --  Range of values for children of Ada.Text_IO
-
-   subtype Ada_Wide_Text_IO_Child is Ada_Child
-     range Ada_Wide_Text_IO_Decimal_IO .. Ada_Wide_Text_IO_Modular_IO;
-   --  Range of values for children of Ada.Text_IO
-
-   subtype Ada_Wide_Wide_Text_IO_Child is Ada_Child
-     range Ada_Wide_Wide_Text_IO_Decimal_IO ..
-           Ada_Wide_Wide_Text_IO_Modular_IO;
-
-   subtype Interfaces_Child is RTU_Id
-     range Interfaces_Packed_Decimal .. Interfaces_Packed_Decimal;
-   --  Range of values for children of Interfaces
-
-   subtype System_Child is RTU_Id
-     range System_Address_Image .. System_Tasking_Stages;
-   --  Range of values for children or grandchildren of System
-
-   subtype System_Dim_Child is RTU_Id
-     range System_Dim_Float_IO .. System_Dim_Integer_IO;
-   --  Range of values for children of System.Dim
-
-   subtype System_Multiprocessors_Child is RTU_Id
-     range System_Multiprocessors_Dispatching_Domains ..
-       System_Multiprocessors_Dispatching_Domains;
-   --  Range of values for children of System.Multiprocessors
-
-   subtype System_Storage_Pools_Child is RTU_Id
-     range System_Storage_Pools_Subpools .. System_Storage_Pools_Subpools;
-
-   subtype System_Strings_Child is RTU_Id
-     range System_Strings_Stream_Ops .. System_Strings_Stream_Ops;
-
-   subtype System_Tasking_Child is System_Child
-     range System_Tasking_Async_Delays .. System_Tasking_Stages;
-   --  Range of values for children of System.Tasking
-
-   subtype System_Tasking_Protected_Objects_Child is System_Tasking_Child
-     range System_Tasking_Protected_Objects_Entries ..
-       System_Tasking_Protected_Objects_Single_Entry;
-   --  Range of values for children of System.Tasking.Protected_Objects
-
-   subtype System_Tasking_Restricted_Child is System_Tasking_Child
-     range System_Tasking_Restricted_Stages ..
-       System_Tasking_Restricted_Stages;
-   --  Range of values for children of System.Tasking.Restricted
-
-   subtype System_Tasking_Async_Delays_Child is System_Tasking_Child
-     range System_Tasking_Async_Delays_Enqueue_Calendar ..
-       System_Tasking_Async_Delays_Enqueue_RT;
-   --  Range of values for children of System.Tasking.Async_Delays
 
    --------------------------
    -- Runtime Entity Table --
@@ -562,6 +487,16 @@ package Rtsfind is
      RO_WW_Super_String,                 -- Ada.Strings.Wide_Wide_Superbounded
 
      RE_Unbounded_String,                -- Ada.Strings.Unbounded
+
+     RE_Sink,                            -- Ada.Strings.Text_Output
+
+     RE_Put_UTF_8,                       -- Ada.Strings.Text_Output.Utils
+     RE_Put_Wide_Wide_String,            -- Ada.Strings.Text_Output.Utils
+
+     RE_Buffer,                          -- Ada.Strings.Text_Output.Buffers
+     RE_New_Buffer,                      -- Ada.Strings.Text_Output.Buffers
+     RE_Destroy,                         -- Ada.Strings.Text_Output.Buffers
+     RE_Get,                             -- Ada.Strings.Text_Output.Buffers
 
      RE_Wait_For_Release,                -- Ada.Synchronous_Barriers
 
@@ -1244,6 +1179,29 @@ package Rtsfind is
 
      RE_Stack_Bounded_Pool,              -- System.Pool_Size
 
+     RE_Put_Image_Integer,               -- System.Put_Images
+     RE_Put_Image_Long_Long_Integer,     -- System.Put_Images
+     RE_Put_Image_Unsigned,              -- System.Put_Images
+     RE_Put_Image_Long_Long_Unsigned,    -- System.Put_Images
+     RE_Put_Image_Thin_Pointer,          -- System.Put_Images
+     RE_Put_Image_Fat_Pointer,           -- System.Put_Images
+     RE_Put_Image_Access_Subp,           -- System.Put_Images
+     RE_Put_Image_Access_Prot_Subp,      -- System.Put_Images
+     RE_Put_Image_String,                -- System.Put_Images
+     RE_Put_Image_Wide_String,           -- System.Put_Images
+     RE_Put_Image_Wide_Wide_String,      -- System.Put_Images
+     RE_Array_Before,                    -- System.Put_Images
+     RE_Array_Between,                   -- System.Put_Images
+     RE_Array_After,                     -- System.Put_Images
+     RE_Simple_Array_Between,            -- System.Put_Images
+     RE_Record_Before,                   -- System.Put_Images
+     RE_Record_Between,                  -- System.Put_Images
+     RE_Record_After,                    -- System.Put_Images
+     RE_Put_Image_Unknown,               -- System.Put_Images
+
+     RE_Put_Image_Protected,             -- System.Put_Task_Images
+     RE_Put_Image_Task,                  -- System.Put_Task_Images
+
      RE_Do_Apc,                          -- System.RPC
      RE_Do_Rpc,                          -- System.RPC
      RE_Params_Stream_Type,              -- System.RPC
@@ -1427,6 +1385,7 @@ package Rtsfind is
      RE_I_C,                             -- System.Stream_Attributes
      RE_I_F,                             -- System.Stream_Attributes
      RE_I_I,                             -- System.Stream_Attributes
+     RE_I_I24,                           -- System.Stream_Attributes
      RE_I_LF,                            -- System.Stream_Attributes
      RE_I_LI,                            -- System.Stream_Attributes
      RE_I_LLF,                           -- System.Stream_Attributes
@@ -1439,6 +1398,7 @@ package Rtsfind is
      RE_I_SSU,                           -- System.Stream_Attributes
      RE_I_SU,                            -- System.Stream_Attributes
      RE_I_U,                             -- System.Stream_Attributes
+     RE_I_U24,                           -- System.Stream_Attributes
      RE_I_WC,                            -- System.Stream_Attributes
      RE_I_WWC,                           -- System.Stream_Attributes
 
@@ -1448,6 +1408,7 @@ package Rtsfind is
      RE_W_C,                             -- System.Stream_Attributes
      RE_W_F,                             -- System.Stream_Attributes
      RE_W_I,                             -- System.Stream_Attributes
+     RE_W_I24,                           -- System.Stream_Attributes
      RE_W_LF,                            -- System.Stream_Attributes
      RE_W_LI,                            -- System.Stream_Attributes
      RE_W_LLF,                           -- System.Stream_Attributes
@@ -1460,6 +1421,7 @@ package Rtsfind is
      RE_W_SSU,                           -- System.Stream_Attributes
      RE_W_SU,                            -- System.Stream_Attributes
      RE_W_U,                             -- System.Stream_Attributes
+     RE_W_U24,                           -- System.Stream_Attributes
      RE_W_WC,                            -- System.Stream_Attributes
      RE_W_WWC,                           -- System.Stream_Attributes
 
@@ -1575,6 +1537,9 @@ package Rtsfind is
      RE_Packed_Bytes1,                   -- System.Unsigned_Types
      RE_Packed_Bytes2,                   -- System.Unsigned_Types
      RE_Packed_Bytes4,                   -- System.Unsigned_Types
+     RE_Rev_Packed_Bytes1,               -- System.Unsigned_Types
+     RE_Rev_Packed_Bytes2,               -- System.Unsigned_Types
+     RE_Rev_Packed_Bytes4,               -- System.Unsigned_Types
      RE_Short_Unsigned,                  -- System.Unsigned_Types
      RE_Short_Short_Unsigned,            -- System.Unsigned_Types
      RE_Unsigned,                        -- System.Unsigned_Types
@@ -1806,6 +1771,16 @@ package Rtsfind is
      RO_WW_Super_String                  => Ada_Strings_Wide_Wide_Superbounded,
 
      RE_Unbounded_String                 => Ada_Strings_Unbounded,
+
+     RE_Sink                             => Ada_Strings_Text_Output,
+
+     RE_Put_UTF_8                        => Ada_Strings_Text_Output_Utils,
+     RE_Put_Wide_Wide_String             => Ada_Strings_Text_Output_Utils,
+
+     RE_Buffer                           => Ada_Strings_Text_Output_Buffers,
+     RE_New_Buffer                       => Ada_Strings_Text_Output_Buffers,
+     RE_Destroy                          => Ada_Strings_Text_Output_Buffers,
+     RE_Get                              => Ada_Strings_Text_Output_Buffers,
 
      RE_Wait_For_Release                 => Ada_Synchronous_Barriers,
 
@@ -2612,6 +2587,29 @@ package Rtsfind is
 
      RE_Stack_Bounded_Pool               => System_Pool_Size,
 
+     RE_Put_Image_Integer                => System_Put_Images,
+     RE_Put_Image_Long_Long_Integer      => System_Put_Images,
+     RE_Put_Image_Unsigned               => System_Put_Images,
+     RE_Put_Image_Long_Long_Unsigned     => System_Put_Images,
+     RE_Put_Image_Thin_Pointer           => System_Put_Images,
+     RE_Put_Image_Fat_Pointer            => System_Put_Images,
+     RE_Put_Image_Access_Subp            => System_Put_Images,
+     RE_Put_Image_Access_Prot_Subp       => System_Put_Images,
+     RE_Put_Image_String                 => System_Put_Images,
+     RE_Put_Image_Wide_String            => System_Put_Images,
+     RE_Put_Image_Wide_Wide_String       => System_Put_Images,
+     RE_Array_Before                     => System_Put_Images,
+     RE_Array_Between                    => System_Put_Images,
+     RE_Array_After                      => System_Put_Images,
+     RE_Simple_Array_Between             => System_Put_Images,
+     RE_Record_Before                    => System_Put_Images,
+     RE_Record_Between                   => System_Put_Images,
+     RE_Record_After                     => System_Put_Images,
+     RE_Put_Image_Unknown                => System_Put_Images,
+
+     RE_Put_Image_Protected              => System_Put_Task_Images,
+     RE_Put_Image_Task                   => System_Put_Task_Images,
+
      RO_RD_Delay_For                     => System_Relative_Delays,
 
      RE_Do_Apc                           => System_RPC,
@@ -2675,6 +2673,7 @@ package Rtsfind is
      RE_I_C                              => System_Stream_Attributes,
      RE_I_F                              => System_Stream_Attributes,
      RE_I_I                              => System_Stream_Attributes,
+     RE_I_I24                            => System_Stream_Attributes,
      RE_I_LF                             => System_Stream_Attributes,
      RE_I_LI                             => System_Stream_Attributes,
      RE_I_LLF                            => System_Stream_Attributes,
@@ -2687,6 +2686,7 @@ package Rtsfind is
      RE_I_SSU                            => System_Stream_Attributes,
      RE_I_SU                             => System_Stream_Attributes,
      RE_I_U                              => System_Stream_Attributes,
+     RE_I_U24                            => System_Stream_Attributes,
      RE_I_WC                             => System_Stream_Attributes,
      RE_I_WWC                            => System_Stream_Attributes,
 
@@ -2696,6 +2696,7 @@ package Rtsfind is
      RE_W_C                              => System_Stream_Attributes,
      RE_W_F                              => System_Stream_Attributes,
      RE_W_I                              => System_Stream_Attributes,
+     RE_W_I24                            => System_Stream_Attributes,
      RE_W_LF                             => System_Stream_Attributes,
      RE_W_LI                             => System_Stream_Attributes,
      RE_W_LLF                            => System_Stream_Attributes,
@@ -2708,6 +2709,7 @@ package Rtsfind is
      RE_W_SSU                            => System_Stream_Attributes,
      RE_W_SU                             => System_Stream_Attributes,
      RE_W_U                              => System_Stream_Attributes,
+     RE_W_U24                            => System_Stream_Attributes,
      RE_W_WC                             => System_Stream_Attributes,
      RE_W_WWC                            => System_Stream_Attributes,
 
@@ -2823,6 +2825,9 @@ package Rtsfind is
      RE_Packed_Bytes1                    => System_Unsigned_Types,
      RE_Packed_Bytes2                    => System_Unsigned_Types,
      RE_Packed_Bytes4                    => System_Unsigned_Types,
+     RE_Rev_Packed_Bytes1                => System_Unsigned_Types,
+     RE_Rev_Packed_Bytes2                => System_Unsigned_Types,
+     RE_Rev_Packed_Bytes4                => System_Unsigned_Types,
      RE_Short_Unsigned                   => System_Unsigned_Types,
      RE_Short_Short_Unsigned             => System_Unsigned_Types,
      RE_Unsigned                         => System_Unsigned_Types,
@@ -3124,6 +3129,13 @@ package Rtsfind is
    --  and whose selector is either Text_IO.xxx or Wide_Text_IO.xxx or
    --  Wide_Wide_Text_IO.xxx, where xxx is one of the subpackages of Text_IO
    --  that is specially handled as described for Check_Text_IO_Special_Unit.
+
+   function Is_Text_IO_Special_Package (E : Entity_Id) return Boolean;
+   --  Return True iff E is one of the special generic Text_IO packages, which
+   --  Ada RM defines to be nested in Ada.Text_IO, but GNAT defines as its
+   --  private children. This is similar to Is_Text_IO_Special_Unit, but is
+   --  meant to be used on a fully resolved AST, especially in the backends.
+   --  This is used by SPARK.
 
    function RTE (E : RE_Id) return Entity_Id;
    --  Given the entity defined in the above tables, as identified by the

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Alloc;
 with Debug;    use Debug;
@@ -958,32 +959,7 @@ package body Sem_Type is
             --  Note: test for presence of E is defense against previous error.
 
             if No (E) then
-
-               --  If expansion is disabled the Corresponding_Record_Type may
-               --  not be available yet, so use the interface list in the
-               --  declaration directly.
-
-               if ASIS_Mode
-                 and then Nkind (Parent (BT2)) = N_Protected_Type_Declaration
-                 and then Present (Interface_List (Parent (BT2)))
-               then
-                  declare
-                     Intf : Node_Id := First (Interface_List (Parent (BT2)));
-                  begin
-                     while Present (Intf) loop
-                        if Is_Ancestor (Etype (T1), Entity (Intf)) then
-                           return True;
-                        else
-                           Next (Intf);
-                        end if;
-                     end loop;
-                  end;
-
-                  return False;
-
-               else
-                  Check_Error_Detected;
-               end if;
+               Check_Error_Detected;
 
             --  Here we have a corresponding record type
 
@@ -1046,15 +1022,17 @@ package body Sem_Type is
 
       --  Ada 2012 (AI05-0149): Allow an anonymous access type in the context
       --  of a named general access type. An implicit conversion will be
-      --  applied. For the resolution, one designated type must cover the
-      --  other.
+      --  applied. For the resolution, the designated types must match if
+      --  untagged; further, if the designated type is tagged, the designated
+      --  type of the anonymous access type shall be covered by the designated
+      --  type of the named access type.
 
       elsif Ada_Version >= Ada_2012
         and then Ekind (BT1) = E_General_Access_Type
         and then Ekind (BT2) = E_Anonymous_Access_Type
-        and then (Covers (Designated_Type (T1), Designated_Type (T2))
-                    or else
-                  Covers (Designated_Type (T2), Designated_Type (T1)))
+        and then Covers (Designated_Type (T1), Designated_Type (T2))
+        and then (Is_Class_Wide_Type (Designated_Type (T1)) >=
+                  Is_Class_Wide_Type (Designated_Type (T2)))
       then
          return True;
 
@@ -1383,7 +1361,7 @@ package body Sem_Type is
       begin
          return In_Same_List (Parent (Typ), Op_Decl)
            or else
-             (Ekind_In (Scop, E_Package, E_Generic_Package)
+             (Is_Package_Or_Generic_Package (Scop)
                and then List_Containing (Op_Decl) =
                               Visible_Declarations (Parent (Scop))
                and then List_Containing (Parent (Typ)) =
@@ -2450,7 +2428,19 @@ package body Sem_Type is
            or else
              (not Is_Tagged_Type (Typ)
                and then Ekind (Typ) /= E_Anonymous_Access_Type
-               and then Covers (Etype (N), Typ));
+               and then Covers (Etype (N), Typ))
+
+           or else
+             (Nkind (N) = N_Integer_Literal
+               and then Present (Find_Aspect (Typ, Aspect_Integer_Literal)))
+
+           or else
+             (Nkind (N) = N_Real_Literal
+               and then Present (Find_Aspect (Typ, Aspect_Real_Literal)))
+
+           or else
+             (Nkind (N) = N_String_Literal
+               and then Present (Find_Aspect (Typ, Aspect_String_Literal)));
 
       --  Overloaded case
 

@@ -8943,8 +8943,12 @@ Interface_type::finalize_methods()
 	  continue;
 	}
 
+      const Typed_identifier_list* imethods = it->parse_methods_;
+      if (imethods == NULL)
+	continue;
+
       Named_type* nt = t->named_type();
-      if (nt != NULL && it->parse_methods_ != NULL)
+      if (nt != NULL)
 	{
 	  std::vector<Named_type*>::const_iterator q;
 	  for (q = seen.begin(); q != seen.end(); ++q)
@@ -8960,22 +8964,26 @@ Interface_type::finalize_methods()
 	  seen.push_back(nt);
 	}
 
-      const Typed_identifier_list* imethods = it->parse_methods_;
-      if (imethods == NULL)
-	continue;
       for (Typed_identifier_list::const_iterator q = imethods->begin();
 	   q != imethods->end();
 	   ++q)
 	{
 	  if (q->name().empty())
 	    inherit.push_back(*q);
-	  else if (this->find_method(q->name()) == NULL)
-	    this->all_methods_->push_back(Typed_identifier(q->name(),
-							   q->type(), tl));
 	  else
-	    go_error_at(tl, "inherited method %qs is ambiguous",
-		     Gogo::message_name(q->name()).c_str());
+	    {
+	      const Typed_identifier* oldm = this->find_method(q->name());
+	      if (oldm == NULL)
+		this->all_methods_->push_back(Typed_identifier(q->name(),
+							       q->type(), tl));
+	      else if (!Type::are_identical(q->type(), oldm->type(),
+					    Type::COMPARE_TAGS, NULL))
+		go_error_at(tl, "duplicate method %qs",
+			    Gogo::message_name(q->name()).c_str());
+	    }
 	}
+
+      seen.pop_back();
     }
 
   if (!this->all_methods_->empty())

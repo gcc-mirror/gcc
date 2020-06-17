@@ -86,6 +86,8 @@ fi
 
 AC_USE_SYSTEM_EXTENSIONS
 
+GCC_WITH_TOOLEXECLIBDIR
+
 # Calculate toolexeclibdir
 # Also toolexecdir, though it's only used in toolexeclibdir
 case ${version_specific_libs} in
@@ -101,7 +103,14 @@ case ${version_specific_libs} in
        test x"$with_cross_host" != x"no"; then
       # Install a library built with a cross compiler in tooldir, not libdir.
       toolexecdir='$(exec_prefix)/$(target_alias)'
-      toolexeclibdir='$(toolexecdir)/lib'
+      case ${with_toolexeclibdir} in
+	no)
+	  toolexeclibdir='$(toolexecdir)/lib'
+	  ;;
+	*)
+	  toolexeclibdir=${with_toolexeclibdir}
+	  ;;
+      esac
     else
       toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
       toolexeclibdir='$(libdir)'
@@ -383,6 +392,9 @@ GCC_CHECK_MATH_FUNC([cabsl])
 GCC_CHECK_MATH_FUNC([floorf])
 GCC_CHECK_MATH_FUNC([floor])
 GCC_CHECK_MATH_FUNC([floorl])
+GCC_CHECK_MATH_FUNC([fmaf])
+GCC_CHECK_MATH_FUNC([fma])
+GCC_CHECK_MATH_FUNC([fmal])
 GCC_CHECK_MATH_FUNC([fmodf])
 GCC_CHECK_MATH_FUNC([fmod])
 GCC_CHECK_MATH_FUNC([fmodl])
@@ -506,6 +518,11 @@ GCC_CHECK_MATH_FUNC([catanl])
 
 # On AIX, clog is present in libm as __clog
 AC_CHECK_LIB([m],[__clog],[AC_DEFINE([HAVE_CLOG],[1],[libm includes clog])])
+
+GCC_CHECK_MATH_INLINE_BUILTIN_FALLBACK2([copysign], [double])
+GCC_CHECK_MATH_INLINE_BUILTIN_FALLBACK2([copysignl], [long double])
+GCC_CHECK_MATH_INLINE_BUILTIN_FALLBACK1([fabs], [double])
+GCC_CHECK_MATH_INLINE_BUILTIN_FALLBACK1([fabsl], [long double])
 
 # Check whether the system has a working stat()
 LIBGFOR_CHECK_WORKING_STAT

@@ -1,7 +1,7 @@
 // PR sanitizer/85029
 // { dg-do compile }
 // { dg-skip-if "" { *-*-* } { "-flto -fno-fat-lto-objects" } }
-// { dg-options "-fsanitize=undefined" }
+// { dg-options "-fsanitize=undefined -Wno-register" }
 
 struct B {
   virtual B bar ();

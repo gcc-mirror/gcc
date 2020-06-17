@@ -852,6 +852,26 @@ path::operator+=(const path& p)
       return *this;
     }
 
+#if _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  if (_M_type() == _Type::_Root_name
+      || (_M_type() == _Type::_Filename && _M_pathname.size() == 1))
+    {
+      // Handle path("C") += path(":") and path("C:") += path("/x")
+      // FIXME: do this more efficiently
+      *this = path(_M_pathname + p._M_pathname);
+      return *this;
+    }
+#endif
+#if SLASHSLASH_IS_ROOTNAME
+  if (_M_type() == _Type::_Root_dir)
+    {
+      // Handle path("/") += path("/x") and path("//") += path("x")
+      // FIXME: do this more efficiently
+      *this = path(_M_pathname + p._M_pathname);
+      return *this;
+    }
+#endif
+
   const auto orig_pathlen = _M_pathname.length();
   const auto orig_type = _M_type();
   const auto orig_size = _M_cmpts.size();
@@ -1037,6 +1057,26 @@ path::_M_concat(basic_string_view<value_type> s)
       operator=(s);
       return;
     }
+
+#if _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  if (_M_type() == _Type::_Root_name
+      || (_M_type() == _Type::_Filename && _M_pathname.size() == 1))
+    {
+      // Handle path("C") += ":" and path("C:") += "/x"
+      // FIXME: do this more efficiently
+      *this = path(_M_pathname + string_type(s));
+      return;
+    }
+#endif
+#if SLASHSLASH_IS_ROOTNAME
+  if (_M_type() == _Type::_Root_dir)
+    {
+      // Handle path("/") += "/x" and path("//") += "x"
+      // FIXME: do this more efficiently
+      *this = path(_M_pathname + string_type(s));
+      return;
+    }
+#endif
 
   const auto orig_pathlen = _M_pathname.length();
   const auto orig_type = _M_type();
@@ -1909,11 +1949,7 @@ path::_S_convert_loc(const char* __first, const char* __last,
     _GLIBCXX_THROW_OR_ABORT(filesystem_error(
 	  "Cannot convert character sequence",
 	  std::make_error_code(errc::illegal_byte_sequence)));
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-  return __ws;
-#else
-  return _Cvt<wchar_t>::_S_convert(__ws.data(), __ws.data() + __ws.size());
-#endif
+  return _S_convert(std::move(__ws));
 #else
   return {__first, __last};
 #endif

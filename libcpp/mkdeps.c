@@ -268,7 +268,7 @@ deps_add_default_target (class mkdeps *d, const char *tgt)
     return;
 
   if (tgt[0] == '\0')
-    deps_add_target (d, "-", 1);
+    d->targets.push (xstrdup ("-"));
   else
     {
 #ifndef TARGET_OBJECT_SUFFIX

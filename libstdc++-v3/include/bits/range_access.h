@@ -35,6 +35,7 @@
 #if __cplusplus >= 201103L
 #include <initializer_list>
 #include <bits/iterator_concepts.h>
+#include <bits/int_limits.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -321,6 +322,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // C++17
 
 #if __cplusplus > 201703L
+#define __cpp_lib_ssize 201902L
   template<typename _Container>
     constexpr auto
     ssize(const _Container& __cont)
@@ -343,59 +345,37 @@ namespace ranges
     inline constexpr bool disable_sized_range = false;
 
   template<typename _Tp>
-    inline constexpr bool enable_safe_range = false;
+    inline constexpr bool enable_borrowed_range = false;
+
+  template<typename _Tp>
+    extern const bool enable_view;
 
   namespace __detail
   {
-    using __max_diff_type = long long;
-    using __max_size_type = unsigned long long;
-
-    template<typename _Tp>
-      concept __is_integer_like = integral<_Tp>
-	|| same_as<_Tp, __max_diff_type> || same_as<_Tp, __max_size_type>;
-
-    template<typename _Tp>
-      concept __is_signed_integer_like = signed_integral<_Tp>
-	|| same_as<_Tp, __max_diff_type>;
-
     template<integral _Tp>
       constexpr make_unsigned_t<_Tp>
       __to_unsigned_like(_Tp __t) noexcept
       { return __t; }
 
-    // Part of the constraints of ranges::safe_range
+    template<typename _Tp, bool _MaxDiff = same_as<_Tp, __max_diff_type>>
+      using __make_unsigned_like_t
+	= conditional_t<_MaxDiff, __max_size_type, make_unsigned_t<_Tp>>;
+
+    // Part of the constraints of ranges::borrowed_range
     template<typename _Tp>
-      concept __maybe_safe_range
-	= is_lvalue_reference_v<_Tp> || enable_safe_range<remove_cvref_t<_Tp>>;
+      concept __maybe_borrowed_range
+	= is_lvalue_reference_v<_Tp>
+	  || enable_borrowed_range<remove_cvref_t<_Tp>>;
 
   } // namespace __detail
 
   namespace __cust_access
   {
-    using std::ranges::__detail::__maybe_safe_range;
+    using std::ranges::__detail::__maybe_borrowed_range;
     using std::__detail::__class_or_enum;
-
-    template<typename _Tp>
-      constexpr decay_t<_Tp>
-      __decay_copy(_Tp&& __t)
-      noexcept(is_nothrow_convertible_v<_Tp, decay_t<_Tp>>)
-      { return std::forward<_Tp>(__t); }
-
-    template<typename _Tp>
-      concept __member_begin = requires(_Tp& __t)
-	{
-	  { __decay_copy(__t.begin()) } -> input_or_output_iterator;
-	};
-
-    template<typename _Tp> void begin(_Tp&&) = delete;
-    template<typename _Tp> void begin(initializer_list<_Tp>&&) = delete;
-
-    template<typename _Tp>
-      concept __adl_begin = __class_or_enum<remove_reference_t<_Tp>>
-	&& requires(_Tp& __t)
-	{
-	  { __decay_copy(begin(__t)) } -> input_or_output_iterator;
-	};
+    using std::__detail::__decay_copy;
+    using std::__detail::__member_begin;
+    using std::__detail::__adl_begin;
 
     struct _Begin
     {
@@ -413,7 +393,7 @@ namespace ranges
 	}
 
     public:
-      template<__maybe_safe_range _Tp>
+      template<__maybe_borrowed_range _Tp>
 	requires is_array_v<remove_reference_t<_Tp>> || __member_begin<_Tp>
 	  || __adl_begin<_Tp>
 	constexpr auto
@@ -422,7 +402,9 @@ namespace ranges
 	  if constexpr (is_array_v<remove_reference_t<_Tp>>)
 	    {
 	      static_assert(is_lvalue_reference_v<_Tp>);
-	      return __t;
+	      using _Up = remove_all_extents_t<remove_reference_t<_Tp>>;
+	      static_assert(sizeof(_Up) != 0, "not array of incomplete type");
+	      return __t + 0;
 	    }
 	  else if constexpr (__member_begin<_Tp>)
 	    return __t.begin();
@@ -438,8 +420,8 @@ namespace ranges
 	    -> sentinel_for<decltype(_Begin{}(std::forward<_Tp>(__t)))>;
 	};
 
-    template<typename _Tp> void end(_Tp&&) = delete;
-    template<typename _Tp> void end(initializer_list<_Tp>&&) = delete;
+    void end(auto&) = delete;
+    void end(const auto&) = delete;
 
     template<typename _Tp>
       concept __adl_end = __class_or_enum<remove_reference_t<_Tp>>
@@ -456,7 +438,7 @@ namespace ranges
 	static constexpr bool
 	_S_noexcept()
 	{
-	  if constexpr (is_array_v<remove_reference_t<_Tp>>)
+	  if constexpr (is_bounded_array_v<remove_reference_t<_Tp>>)
 	    return true;
 	  else if constexpr (__member_end<_Tp>)
 	    return noexcept(__decay_copy(std::declval<_Tp&>().end()));
@@ -465,16 +447,15 @@ namespace ranges
 	}
 
     public:
-      template<__maybe_safe_range _Tp>
-	requires is_array_v<remove_reference_t<_Tp>> || __member_end<_Tp>
+      template<__maybe_borrowed_range _Tp>
+	requires is_bounded_array_v<remove_reference_t<_Tp>> || __member_end<_Tp>
 	|| __adl_end<_Tp>
 	constexpr auto
 	operator()(_Tp&& __t) const noexcept(_S_noexcept<_Tp>())
 	{
-	  if constexpr (is_array_v<remove_reference_t<_Tp>>)
+	  if constexpr (is_bounded_array_v<remove_reference_t<_Tp>>)
 	    {
 	      static_assert(is_lvalue_reference_v<_Tp>);
-	      static_assert(is_bounded_array_v<remove_reference_t<_Tp>>);
 	      return __t + extent_v<remove_reference_t<_Tp>>;
 	    }
 	  else if constexpr (__member_end<_Tp>)
@@ -524,7 +505,8 @@ namespace ranges
 	  { __decay_copy(__t.rbegin()) } -> input_or_output_iterator;
 	};
 
-    template<typename _Tp> void rbegin(_Tp&&) = delete;
+    void rbegin(auto&) = delete;
+    void rbegin(const auto&) = delete;
 
     template<typename _Tp>
       concept __adl_rbegin = __class_or_enum<remove_reference_t<_Tp>>
@@ -565,7 +547,7 @@ namespace ranges
 	}
 
     public:
-      template<__maybe_safe_range _Tp>
+      template<__maybe_borrowed_range _Tp>
 	requires __member_rbegin<_Tp> || __adl_rbegin<_Tp> || __reversable<_Tp>
 	constexpr auto
 	operator()(_Tp&& __t) const
@@ -587,7 +569,8 @@ namespace ranges
 	    -> sentinel_for<decltype(_RBegin{}(__t))>;
 	};
 
-    template<typename _Tp> void rend(_Tp&&) = delete;
+    void rend(auto&) = delete;
+    void rend(const auto&) = delete;
 
     template<typename _Tp>
       concept __adl_rend = __class_or_enum<remove_reference_t<_Tp>>
@@ -622,7 +605,7 @@ namespace ranges
 	}
 
     public:
-      template<__maybe_safe_range _Tp>
+      template<__maybe_borrowed_range _Tp>
 	requires __member_rend<_Tp> || __adl_rend<_Tp> || __reversable<_Tp>
 	constexpr auto
 	operator()(_Tp&& __t) const
@@ -669,7 +652,8 @@ namespace ranges
 	    -> __detail::__is_integer_like;
 	};
 
-    template<typename _Tp> void size(_Tp&&) = delete;
+    void size(auto&) = delete;
+    void size(const auto&) = delete;
 
     template<typename _Tp>
       concept __adl_size = __class_or_enum<remove_reference_t<_Tp>>
@@ -696,7 +680,7 @@ namespace ranges
 	static constexpr bool
 	_S_noexcept()
 	{
-	  if constexpr (is_array_v<remove_reference_t<_Tp>>)
+	  if constexpr (is_bounded_array_v<remove_reference_t<_Tp>>)
 	    return true;
 	  else if constexpr (__member_size<_Tp>)
 	    return noexcept(__decay_copy(std::declval<_Tp>().size()));
@@ -709,14 +693,13 @@ namespace ranges
 
     public:
       template<typename _Tp>
-	requires is_array_v<remove_reference_t<_Tp>>
+	requires is_bounded_array_v<remove_reference_t<_Tp>>
 	  || __member_size<_Tp> || __adl_size<_Tp> || __sentinel_size<_Tp>
 	constexpr auto
 	operator()(_Tp&& __e) const noexcept(_S_noexcept<_Tp>())
 	{
-	  if constexpr (is_array_v<remove_reference_t<_Tp>>)
+	  if constexpr (is_bounded_array_v<remove_reference_t<_Tp>>)
 	    {
-	      static_assert(is_bounded_array_v<remove_reference_t<_Tp>>);
 	      return extent_v<remove_reference_t<_Tp>>;
 	    }
 	  else if constexpr (__member_size<_Tp>)
@@ -727,6 +710,32 @@ namespace ranges
 	    return __detail::__to_unsigned_like(
 		_End{}(std::forward<_Tp>(__e))
 		- _Begin{}(std::forward<_Tp>(__e)));
+	}
+    };
+
+    struct _SSize
+    {
+      template<typename _Tp>
+	requires requires (_Tp&& __e)
+	  {
+	    _Begin{}(std::forward<_Tp>(__e));
+	    _Size{}(std::forward<_Tp>(__e));
+	  }
+	constexpr auto
+	operator()(_Tp&& __e) const
+	noexcept(noexcept(_Size{}(std::forward<_Tp>(__e))))
+	{
+	  using __iter_type = decltype(_Begin{}(std::forward<_Tp>(__e)));
+	  using __diff_type = iter_difference_t<__iter_type>;
+	  using std::__detail::__int_limits;
+	  auto __size = _Size{}(std::forward<_Tp>(__e));
+	  if constexpr (integral<__diff_type>)
+	    {
+	      if constexpr (__int_limits<__diff_type>::digits
+			    < __int_limits<ptrdiff_t>::digits)
+		return static_cast<ptrdiff_t>(__size);
+	    }
+	  return static_cast<__diff_type>(__size);
 	}
     };
 
@@ -766,7 +775,7 @@ namespace ranges
       template<typename _Tp>
 	requires __member_empty<_Tp> || __size0_empty<_Tp>
 	|| __eq_iter_empty<_Tp>
-	constexpr auto
+	constexpr bool
 	operator()(_Tp&& __e) const noexcept(_S_noexcept<_Tp>())
 	{
 	  if constexpr (__member_empty<_Tp>)
@@ -805,7 +814,8 @@ namespace ranges
 	}
 
     public:
-      template<typename _Tp> requires __member_data<_Tp> || __begin_data<_Tp>
+      template<__maybe_borrowed_range _Tp>
+	requires __member_data<_Tp> || __begin_data<_Tp>
 	constexpr auto
 	operator()(_Tp&& __e) const noexcept(_S_noexcept<_Tp>())
 	{
@@ -841,6 +851,7 @@ namespace ranges
     inline constexpr __cust_access::_CRBegin crbegin{};
     inline constexpr __cust_access::_CREnd crend{};
     inline constexpr __cust_access::_Size size{};
+    inline constexpr __cust_access::_SSize ssize{};
     inline constexpr __cust_access::_Empty empty{};
     inline constexpr __cust_access::_Data data{};
     inline constexpr __cust_access::_CData cdata{};
@@ -854,12 +865,13 @@ namespace ranges
 	ranges::end(__t);
       };
 
-  /// [range.range] The safe_range concept.
+  /// [range.range] The borrowed_range concept.
   template<typename _Tp>
-    concept safe_range = range<_Tp> && __detail::__maybe_safe_range<_Tp>;
+    concept borrowed_range
+      = range<_Tp> && __detail::__maybe_borrowed_range<_Tp>;
 
-  template<range _Range>
-    using iterator_t = decltype(ranges::begin(std::declval<_Range&>()));
+  template<typename _Tp>
+    using iterator_t = std::__detail::__range_iter_t<_Tp>;
 
   template<range _Range>
     using sentinel_t = decltype(ranges::end(std::declval<_Range&>()));
@@ -881,6 +893,9 @@ namespace ranges
   template<typename _Tp>
     concept sized_range = range<_Tp>
       && requires(_Tp& __t) { ranges::size(__t); };
+
+  template<sized_range _Range>
+    using range_size_t = decltype(ranges::size(std::declval<_Range&>()));
 
   // [range.refinements]
 

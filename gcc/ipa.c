@@ -242,12 +242,12 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 			       edge->caller->dump_name (),
 			       target->dump_name ());
 	    }
-	  edge = edge->make_direct (target);
+	  edge = cgraph_edge::make_direct (edge, target);
 	  if (ipa_fn_summaries)
 	    ipa_update_overall_fn_summary (node->inlined_to
 					   ? node->inlined_to : node);
 	  else if (edge->call_stmt)
-	    edge->redirect_call_stmt_to_callee ();
+	    cgraph_edge::redirect_call_stmt_to_callee (edge);
 	}
     }
 }
@@ -391,17 +391,20 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 		      n->used_as_abstract_origin = true;
 		}
 	    }
-	  /* If any symbol in a comdat group is reachable, force
-	     all externally visible symbols in the same comdat
+	  /* If any non-external and non-local symbol in a comdat group is
+ 	     reachable, force all externally visible symbols in the same comdat
 	     group to be reachable as well.  Comdat-local symbols
 	     can be discarded if all uses were inlined.  */
-	  if (node->same_comdat_group)
+	  if (node->same_comdat_group
+	      && node->externally_visible
+	      && !DECL_EXTERNAL (node->decl))
 	    {
 	      symtab_node *next;
 	      for (next = node->same_comdat_group;
 		   next != node;
 		   next = next->same_comdat_group)
 		if (!next->comdat_local_p ()
+		    && !DECL_EXTERNAL (next->decl)
 		    && !reachable.add (next))
 		  enqueue_node (next, &first, &reachable);
 	    }
@@ -447,6 +450,9 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 			reachable.add (body);
 		      reachable.add (e->callee);
 		    }
+		  else if (e->callee->declare_variant_alt
+			   && !e->callee->in_other_partition)
+		    reachable.add (e->callee);
 		  enqueue_node (e->callee, &first, &reachable);
 		}
 
@@ -616,7 +622,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	  if (vnode->definition)
 	    {
 	      if (file)
-		fprintf (file, " %s", vnode->name ());
+		fprintf (file, " %s", vnode->dump_name ());
 	      changed = true;
 	    }
 	  /* Keep body if it may be useful for constant folding.  */
@@ -649,7 +655,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	    (has_addr_references_p, NULL, true))
 	  {
 	    if (file)
-	      fprintf (file, " %s", node->name ());
+	      fprintf (file, " %s", node->dump_name ());
 	    node->address_taken = false;
 	    changed = true;
 	    if (node->local_p ()
@@ -794,7 +800,8 @@ ipa_discover_variable_flags (void)
 	if (!address_taken)
 	  {
 	    if (TREE_ADDRESSABLE (vnode->decl) && dump_file)
-	      fprintf (dump_file, " %s (non-addressable)", vnode->name ());
+	      fprintf (dump_file, " %s (non-addressable)",
+		       vnode->dump_name ());
 	    vnode->call_for_symbol_and_aliases (clear_addressable_bit, NULL,
 					        true);
 	  }
@@ -805,13 +812,13 @@ ipa_discover_variable_flags (void)
 	    && vnode->get_section () == NULL)
 	  {
 	    if (!TREE_READONLY (vnode->decl) && dump_file)
-	      fprintf (dump_file, " %s (read-only)", vnode->name ());
+	      fprintf (dump_file, " %s (read-only)", vnode->dump_name ());
 	    vnode->call_for_symbol_and_aliases (set_readonly_bit, NULL, true);
 	  }
 	if (!vnode->writeonly && !read && !address_taken && written)
 	  {
 	    if (dump_file)
-	      fprintf (dump_file, " %s (write-only)", vnode->name ());
+	      fprintf (dump_file, " %s (write-only)", vnode->dump_name ());
 	    vnode->call_for_symbol_and_aliases (set_writeonly_bit, &remove_p, 
 					        true);
 	  }

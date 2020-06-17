@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 struct function;
 struct profile_count;
+class sreal;
 
 /* Quality of the profile count.  Because gengtype does not support enums
    inside of classes, this is in global namespace.  */
@@ -258,6 +259,16 @@ public:
       gcc_checking_assert (v >= 0 && v <= REG_BR_PROB_BASE);
       ret.m_val = RDIV (v * (uint64_t) max_probability, REG_BR_PROB_BASE);
       ret.m_quality = GUESSED;
+      return ret;
+    }
+
+  /* Return THIS with quality set to ADJUSTED.  */
+  profile_probability adjusted () const
+    {
+      profile_probability ret = *this;
+      if (!initialized_p ())
+	return *this;
+      ret.m_quality = ADJUSTED;
       return ret;
     }
 
@@ -614,6 +625,8 @@ public:
 					  profile_probability other,
 					  profile_count count2) const;
 
+  /* Return probability as sreal.  */
+  sreal to_sreal () const;
   /* LTO streaming support.  */
   static profile_probability stream_in (class lto_input_block *);
   void stream_out (struct output_block *);
@@ -673,8 +686,6 @@ public:
    profile_count::uninitialized ()  for unknown execution count.
 
  */
-
-class sreal;
 
 struct GTY(()) profile_count
 {

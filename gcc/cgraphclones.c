@@ -132,7 +132,9 @@ cgraph_edge::clone (cgraph_node *n, gcall *call_stmt, unsigned stmt_uid,
 
   new_edge->inline_failed = inline_failed;
   new_edge->indirect_inlining_edge = indirect_inlining_edge;
-  new_edge->lto_stmt_uid = stmt_uid;
+  if (!call_stmt)
+    new_edge->lto_stmt_uid = stmt_uid;
+  new_edge->speculative_id = speculative_id;
   /* Clone flags that depend on call_stmt availability manually.  */
   new_edge->can_throw_external = can_throw_external;
   new_edge->call_stmt_cannot_inline_p = call_stmt_cannot_inline_p;
@@ -163,6 +165,7 @@ set_new_clone_decl_and_node_flags (cgraph_node *new_node)
   DECL_STATIC_DESTRUCTOR (new_node->decl) = 0;
   DECL_SET_IS_OPERATOR_NEW (new_node->decl, 0);
   DECL_SET_IS_OPERATOR_DELETE (new_node->decl, 0);
+  DECL_IS_REPLACEABLE_OPERATOR (new_node->decl) = 0;
 
   new_node->externally_visible = 0;
   new_node->local = 1;
@@ -401,7 +404,6 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
   new_node->tp_first_run = tp_first_run;
   new_node->tm_clone = tm_clone;
   new_node->icf_merged = icf_merged;
-  new_node->merged_comdat = merged_comdat;
   new_node->thunk = thunk;
   new_node->unit_id = unit_id;
   new_node->merged_comdat = merged_comdat;
@@ -744,10 +746,10 @@ cgraph_node::set_call_stmt_including_clones (gimple *old_stmt,
 					     bool update_speculative)
 {
   cgraph_node *node;
-  cgraph_edge *edge = get_edge (old_stmt);
+  cgraph_edge *master_edge = get_edge (old_stmt);
 
-  if (edge)
-    edge->set_call_stmt (new_stmt, update_speculative);
+  if (master_edge)
+    cgraph_edge::set_call_stmt (master_edge, new_stmt, update_speculative);
 
   node = clones;
   if (node)
@@ -756,20 +758,25 @@ cgraph_node::set_call_stmt_including_clones (gimple *old_stmt,
 	cgraph_edge *edge = node->get_edge (old_stmt);
 	if (edge)
 	  {
-	    edge->set_call_stmt (new_stmt, update_speculative);
+	    edge = cgraph_edge::set_call_stmt (edge, new_stmt,
+					       update_speculative);
 	    /* If UPDATE_SPECULATIVE is false, it means that we are turning
 	       speculative call into a real code sequence.  Update the
 	       callgraph edges.  */
 	    if (edge->speculative && !update_speculative)
 	      {
-		cgraph_edge *direct, *indirect;
-		ipa_ref *ref;
+		cgraph_edge *indirect = edge->speculative_call_indirect_edge ();
 
-		gcc_assert (!edge->indirect_unknown_callee);
-		edge->speculative_call_info (direct, indirect, ref);
-		direct->speculative = false;
+		for (cgraph_edge *next, *direct
+			= edge->first_speculative_call_target ();
+		     direct;
+		     direct = next)
+		  {
+		    next = direct->next_speculative_call_target ();
+		    direct->speculative_call_target_ref ()->speculative = false;
+		    direct->speculative = false;
+		  }
 		indirect->speculative = false;
-		ref->speculative = false;
 	      }
 	  }
 	if (node->clones)
@@ -800,11 +807,10 @@ cgraph_node::create_edge_including_clones (cgraph_node *callee,
 					   cgraph_inline_failed_t reason)
 {
   cgraph_node *node;
-  cgraph_edge *edge;
 
   if (!get_edge (stmt))
     {
-      edge = create_edge (callee, stmt, count);
+      cgraph_edge *edge = create_edge (callee, stmt, count);
       edge->inline_failed = reason;
     }
 
@@ -821,7 +827,7 @@ cgraph_node::create_edge_including_clones (cgraph_node *callee,
 	     call in the clone or we are processing clones of unreachable
 	     master where edges has been removed.  */
 	  if (edge)
-	    edge->set_call_stmt (stmt);
+	    edge = cgraph_edge::set_call_stmt (edge, stmt);
 	  else if (! node->get_edge (stmt))
 	    {
 	      edge = node->create_edge (callee, stmt, count);
@@ -855,7 +861,7 @@ cgraph_node::remove_symbol_and_inline_clones (cgraph_node *forbidden_node)
 
   if (this == forbidden_node)
     {
-      callers->remove ();
+      cgraph_edge::remove (callers);
       return true;
     }
   for (e = callees; e; e = next)
@@ -1024,6 +1030,7 @@ cgraph_node::create_version_clone_with_body
   DECL_STATIC_DESTRUCTOR (new_decl) = 0;
   DECL_SET_IS_OPERATOR_NEW (new_decl, 0);
   DECL_SET_IS_OPERATOR_DELETE (new_decl, 0);
+  DECL_IS_REPLACEABLE_OPERATOR (new_decl) = 0;
 
   /* Create the new version's call-graph node.
      and update the edges of the new node. */
@@ -1148,20 +1155,20 @@ symbol_table::materialize_all_clones (void)
 		  if (symtab->dump_file)
 		    {
 		      fprintf (symtab->dump_file, "cloning %s to %s\n",
-			       xstrdup_for_dump (node->clone_of->name ()),
-			       xstrdup_for_dump (node->name ()));
+			       node->clone_of->dump_name (),
+			       node->dump_name ());
 		      if (node->clone.tree_map)
 		        {
 			  unsigned int i;
-			  fprintf (symtab->dump_file, "   replace map: ");
+			  fprintf (symtab->dump_file, "    replace map:");
 			  for (i = 0;
 			       i < vec_safe_length (node->clone.tree_map);
 			       i++)
 			    {
 			      ipa_replace_map *replace_info;
 			      replace_info = (*node->clone.tree_map)[i];
-			      fprintf (symtab->dump_file, "%i -> ",
-				       (*node->clone.tree_map)[i]->parm_num);
+			      fprintf (symtab->dump_file, "%s %i -> ",
+				       i ? "," : "", replace_info->parm_num);
 			      print_generic_expr (symtab->dump_file,
 						  replace_info->new_tree);
 			    }

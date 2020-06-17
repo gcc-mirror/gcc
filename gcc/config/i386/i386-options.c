@@ -205,7 +205,9 @@ static struct ix86_target_opts isa2_opts[] =
   { "-mcldemote",	OPTION_MASK_ISA2_CLDEMOTE },
   { "-mptwrite",	OPTION_MASK_ISA2_PTWRITE },
   { "-mavx512bf16",	OPTION_MASK_ISA2_AVX512BF16 },
-  { "-menqcmd",		OPTION_MASK_ISA2_ENQCMD }
+  { "-menqcmd",		OPTION_MASK_ISA2_ENQCMD },
+  { "-mserialize",	OPTION_MASK_ISA2_SERIALIZE },
+  { "-mtsxldtrk",	OPTION_MASK_ISA2_TSXLDTRK }
 };
 static struct ix86_target_opts isa_opts[] =
 {
@@ -741,7 +743,8 @@ ix86_option_override_internal (bool main_args_p,
 			       struct gcc_options *opts,
 			       struct gcc_options *opts_set);
 static void
-set_ix86_tune_features (enum processor_type ix86_tune, bool dump);
+set_ix86_tune_features (struct gcc_options *opts,
+			enum processor_type ix86_tune, bool dump);
 
 /* Restore the current options */
 
@@ -810,7 +813,7 @@ ix86_function_specific_restore (struct gcc_options *opts,
 
   /* Recreate the tune optimization tests */
   if (old_tune != ix86_tune)
-    set_ix86_tune_features (ix86_tune, false);
+    set_ix86_tune_features (opts, ix86_tune, false);
 }
 
 /* Adjust target options after streaming them in.  This is mainly about
@@ -1016,6 +1019,8 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("ptwrite",   OPT_mptwrite),
     IX86_ATTR_ISA ("avx512bf16",   OPT_mavx512bf16),
     IX86_ATTR_ISA ("enqcmd", OPT_menqcmd),
+    IX86_ATTR_ISA ("serialize", OPT_mserialize),
+    IX86_ATTR_ISA ("tsxldtrk", OPT_mtsxldtrk),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -1538,13 +1543,13 @@ ix86_parse_stringop_strategy_string (char *strategy_str, bool is_memset)
    print the features that are explicitly set.  */
 
 static void
-parse_mtune_ctrl_str (bool dump)
+parse_mtune_ctrl_str (struct gcc_options *opts, bool dump)
 {
-  if (!ix86_tune_ctrl_string)
+  if (!opts->x_ix86_tune_ctrl_string)
     return;
 
   char *next_feature_string = NULL;
-  char *curr_feature_string = xstrdup (ix86_tune_ctrl_string);
+  char *curr_feature_string = xstrdup (opts->x_ix86_tune_ctrl_string);
   char *orig = curr_feature_string;
   int i;
   do
@@ -1583,7 +1588,8 @@ parse_mtune_ctrl_str (bool dump)
    processor type.  */
 
 static void
-set_ix86_tune_features (enum processor_type ix86_tune, bool dump)
+set_ix86_tune_features (struct gcc_options *opts,
+			enum processor_type ix86_tune, bool dump)
 {
   unsigned HOST_WIDE_INT ix86_tune_mask = HOST_WIDE_INT_1U << ix86_tune;
   int i;
@@ -1605,7 +1611,7 @@ set_ix86_tune_features (enum processor_type ix86_tune, bool dump)
                  ix86_tune_features[i] ? "on" : "off");
     }
 
-  parse_mtune_ctrl_str (dump);
+  parse_mtune_ctrl_str (opts, dump);
 }
 
 
@@ -2364,7 +2370,7 @@ ix86_option_override_internal (bool main_args_p,
       XDELETEVEC (s);
     }
 
-  set_ix86_tune_features (ix86_tune, opts->x_ix86_dump_tunes);
+  set_ix86_tune_features (opts, ix86_tune, opts->x_ix86_dump_tunes);
 
   ix86_recompute_optlev_based_flags (opts, opts_set);
 
@@ -3081,6 +3087,8 @@ ix86_set_indirect_branch_type (tree fndecl)
 		? "thunk-extern" : "thunk"));
 
       if (cfun->machine->indirect_branch_type != indirect_branch_keep
+	  && (cfun->machine->indirect_branch_type
+	      != indirect_branch_thunk_extern)
 	  && (flag_cf_protection & CF_RETURN))
 	error ("%<-mindirect-branch%> and %<-fcf-protection%> are not "
 	       "compatible");
@@ -3124,6 +3132,8 @@ ix86_set_indirect_branch_type (tree fndecl)
 		? "thunk-extern" : "thunk"));
 
       if (cfun->machine->function_return_type != indirect_branch_keep
+	  && (cfun->machine->function_return_type
+	      != indirect_branch_thunk_extern)
 	  && (flag_cf_protection & CF_RETURN))
 	error ("%<-mfunction-return%> and %<-fcf-protection%> are not "
 	       "compatible");

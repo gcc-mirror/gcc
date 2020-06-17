@@ -226,6 +226,10 @@ public:
   /* True if the loop is part of an oacc kernels region.  */
   unsigned in_oacc_kernels_region : 1;
 
+  /* True if the loop is known to be finite.  This is a localized
+     flag_finite_loops or similar pragmas state.  */
+  unsigned finite_p : 1;
+
   /* The number of times to unroll the loop.  0 means no information given,
      just do what we always do.  A value of 1 means do not unroll the loop.
      A value of USHRT_MAX means unroll with no specific unrolling factor.
@@ -499,7 +503,6 @@ extern bool iv_analyze_expr (rtx_insn *, scalar_int_mode, rtx,
 			     class rtx_iv *);
 extern rtx get_iv_value (class rtx_iv *, rtx);
 extern bool biv_p (rtx_insn *, scalar_int_mode, rtx);
-extern void find_simple_exit (class loop *, class niter_desc *);
 extern void iv_analysis_done (void);
 
 extern class niter_desc *get_simple_loop_desc (class loop *loop);

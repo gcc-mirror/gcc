@@ -18,12 +18,23 @@
 # looping over tests.
 
 # Exit immediately if this isn't a CRIS target.
-if { ![istarget cris-*-*] && ![istarget crisv32-*-*] } then {
+if { ![istarget cris-*-*] } then {
   return
 }
 
 # Load support procs.
 load_lib gcc-dg.exp
+
+# For the time being, provide a means to tell whether the target is "cc0".
+# Some targets may split cbranch and cstore late, but for a cc0-target,
+# all the fun happens at "final" time, so this should be a safe time for
+# a scan.
+proc check_effective_target_cc0 { } {
+    return [check_no_messages_and_pattern cc0 "\\(cc0\\)" rtl-final {
+	extern void g (void);
+	void f (int *p, int *q) { *q = *p == 42; if (*p == 7) g (); }
+    }]
+}
 
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS

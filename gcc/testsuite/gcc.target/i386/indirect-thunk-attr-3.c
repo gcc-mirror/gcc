@@ -17,7 +17,7 @@ male_indirect_jump (long offset)
 
 /* { dg-final { scan-assembler "mov(?:l|q)\[ \t\]*dispatch" { target *-*-linux* } } } */
 /* { dg-final { scan-assembler {movq[ \t]*_dispatch} { target { lp64 && *-*-darwin* } } } } */
-/* { dg-final { scan-assembler {movl[ \t]*[Ll]_dispatch\$non_lazy_ptr-L[0-9]+\$pb} { target { ia32 && *-*-darwin* } } } } */
+/* { dg-final { scan-assembler {movl[ \t]*_dispatch-L[0-9]+\$pb} { target { ia32 && *-*-darwin* } } } } */
 /* { dg-final { scan-assembler-times {jmp[ \t]*\.?LIND} 2 } } */
 /* { dg-final { scan-assembler-times {call[ \t]*\.?LIND} 2 } } */
 /* { dg-final { scan-assembler {\tpause} } } */

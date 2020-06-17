@@ -64,6 +64,8 @@ extern bool arm_q_bit_access (void);
 extern bool arm_ge_bits_access (void);
 
 #ifdef RTX_CODE
+enum reg_class
+arm_mode_base_reg_class (machine_mode);
 extern void arm_gen_unlikely_cbranch (enum rtx_code, machine_mode cc_mode,
 				      rtx label_ref);
 extern bool arm_vector_mode_supported_p (machine_mode);
@@ -83,9 +85,10 @@ extern int thumb_legitimate_offset_p (machine_mode, HOST_WIDE_INT);
 extern int thumb1_legitimate_address_p (machine_mode, rtx, int);
 extern bool ldm_stm_operation_p (rtx, bool, machine_mode mode,
                                  bool, bool);
+extern bool clear_operation_p (rtx, bool);
 extern int arm_const_double_rtx (rtx);
 extern int vfp3_const_double_rtx (rtx);
-extern int neon_immediate_valid_for_move (rtx, machine_mode, rtx *, int *);
+extern int simd_immediate_valid_for_move (rtx, machine_mode, rtx *, int *);
 extern int neon_immediate_valid_for_logic (rtx, machine_mode, int, rtx *,
 					   int *);
 extern int neon_immediate_valid_for_shift (rtx, machine_mode, rtx *,
@@ -113,6 +116,7 @@ extern bool arm_tls_referenced_p (rtx);
 
 extern int arm_coproc_mem_operand (rtx, bool);
 extern int neon_vector_mem_operand (rtx, int, bool);
+extern int mve_vector_mem_operand (machine_mode, rtx, bool);
 extern int neon_struct_mem_operand (rtx);
 
 extern rtx *neon_vcmla_lane_prepare_operands (rtx *);
@@ -576,4 +580,7 @@ void arm_parse_option_features (sbitmap, const cpu_arch_option *,
 
 void arm_initialize_isa (sbitmap, const enum isa_feature *);
 
+const char * arm_gen_far_branch (rtx *, int, const char * , const char *);
+
+bool arm_mve_immediate_check(rtx, machine_mode, bool);
 #endif /* ! GCC_ARM_PROTOS_H */

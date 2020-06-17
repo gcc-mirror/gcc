@@ -26,6 +26,16 @@ Loadp (void *ptr)
   return __atomic_load_n ((void **) ptr, __ATOMIC_SEQ_CST);
 }
 
+uint8_t Load8 (uint8_t *ptr)
+  __asm__ (GOSYM_PREFIX "runtime..z2finternal..z2fatomic.Load8")
+  __attribute__ ((no_split_stack));
+
+uint8_t
+Load8 (uint8_t *ptr)
+{
+  return __atomic_load_n (ptr, __ATOMIC_SEQ_CST);
+}
+
 uint64_t Load64 (uint64_t *ptr)
   __asm__ (GOSYM_PREFIX "runtime..z2finternal..z2fatomic.Load64")
   __attribute__ ((no_split_stack));
@@ -234,6 +244,16 @@ void Store (uint32_t *ptr, uint32_t val)
 
 void
 Store (uint32_t *ptr, uint32_t val)
+{
+  __atomic_store_n (ptr, val, __ATOMIC_SEQ_CST);
+}
+
+void Store8 (uint8_t *ptr, uint8_t val)
+  __asm__ (GOSYM_PREFIX "runtime..z2finternal..z2fatomic.Store8")
+  __attribute__ ((no_split_stack));
+
+void
+Store8 (uint8_t *ptr, uint8_t val)
 {
   __atomic_store_n (ptr, val, __ATOMIC_SEQ_CST);
 }

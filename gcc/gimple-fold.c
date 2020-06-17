@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "calls.h"
 #include "tree-vector-builder.h"
 #include "tree-ssa-strlen.h"
+#include "varasm.h"
 
 enum strlen_range_kind {
   /* Compute the exact constant string length.  */
@@ -1234,11 +1235,17 @@ gimple_fold_builtin_memset (gimple_stmt_iterator *gsi, tree c, tree len)
 
   length = tree_to_uhwi (len);
   if (GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (etype)) != length
+      || (GET_MODE_PRECISION (SCALAR_INT_TYPE_MODE (etype))
+	  != GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE (etype)))
       || get_pointer_alignment (dest) / BITS_PER_UNIT < length)
     return NULL_TREE;
 
   if (length > HOST_BITS_PER_WIDE_INT / BITS_PER_UNIT)
     return NULL_TREE;
+
+  if (!type_has_mode_precision_p (etype))
+    etype = lang_hooks.types.type_for_mode (SCALAR_INT_TYPE_MODE (etype),
+					    TYPE_UNSIGNED (etype));
 
   if (integer_zerop (c))
     cval = 0;
@@ -1280,7 +1287,7 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
 		       c_strlen_data *pdata, unsigned eltsize)
 {
   gcc_assert (TREE_CODE (arg) != SSA_NAME);
- 
+
   /* The length computed by this invocation of the function.  */
   tree val = NULL_TREE;
 
@@ -1371,7 +1378,9 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
 
 	  /* Fail when the array bound is unknown or zero.  */
 	  val = TYPE_SIZE_UNIT (optype);
-	  if (!val || integer_zerop (val))
+	  if (!val
+	      || TREE_CODE (val) != INTEGER_CST
+	      || integer_zerop (val))
 	    return false;
 
 	  val = fold_build2 (MINUS_EXPR, TREE_TYPE (val), val,
@@ -1405,7 +1414,9 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
 
 	  /* Fail when the array bound is unknown or zero.  */
 	  val = TYPE_SIZE_UNIT (optype);
-	  if (!val || integer_zerop (val))
+	  if (!val
+	      || TREE_CODE (val) != INTEGER_CST
+	      || integer_zerop (val))
 	    return false;
 	  val = fold_build2 (MINUS_EXPR, TREE_TYPE (val), val,
 			     integer_one_node);
@@ -1422,7 +1433,46 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
 	     type about the length here.  */
 	  tight_bound = true;
 	}
-      else if (VAR_P (arg))
+      else if (TREE_CODE (arg) == MEM_REF
+	       && TREE_CODE (TREE_TYPE (arg)) == ARRAY_TYPE
+	       && TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) == INTEGER_TYPE
+	       && TREE_CODE (TREE_OPERAND (arg, 0)) == ADDR_EXPR)
+	{
+	  /* Handle a MEM_REF into a DECL accessing an array of integers,
+	     being conservative about references to extern structures with
+	     flexible array members that can be initialized to arbitrary
+	     numbers of elements as an extension (static structs are okay).
+	     FIXME: Make this less conservative -- see
+	     component_ref_size in tree.c.  */
+	  tree ref = TREE_OPERAND (TREE_OPERAND (arg, 0), 0);
+	  if ((TREE_CODE (ref) == PARM_DECL || VAR_P (ref))
+	      && (decl_binds_to_current_def_p (ref)
+		  || !array_at_struct_end_p (arg)))
+	    {
+	      /* Fail if the offset is out of bounds.  Such accesses
+		 should be diagnosed at some point.  */
+	      val = DECL_SIZE_UNIT (ref);
+	      if (!val
+		  || TREE_CODE (val) != INTEGER_CST
+		  || integer_zerop (val))
+		return false;
+
+	      poly_offset_int psiz = wi::to_offset (val);
+	      poly_offset_int poff = mem_ref_offset (arg);
+	      if (known_le (psiz, poff))
+		return false;
+
+	      pdata->minlen = ssize_int (0);
+
+	      /* Subtract the offset and one for the terminating nul.  */
+	      psiz -= poff;
+	      psiz -= 1;
+	      val = wide_int_to_tree (TREE_TYPE (val), psiz);
+	      /* Since VAL reflects the size of a declared object
+		 rather the type of the access it is not a tight bound.  */
+	    }
+	}
+      else if (TREE_CODE (arg) == PARM_DECL || VAR_P (arg))
 	{
 	  /* Avoid handling pointers to arrays.  GCC might misuse
 	     a pointer to an array of one bound to point to an array
@@ -1500,7 +1550,8 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
 	     the referenced subobject minus 1 (for the terminating nul).  */
 	  tree type = TREE_TYPE (base);
 	  if (TREE_CODE (type) == POINTER_TYPE
-	      || !VAR_P (base) || !(val = DECL_SIZE_UNIT (base)))
+	      || (TREE_CODE (base) != PARM_DECL && !VAR_P (base))
+	      || !(val = DECL_SIZE_UNIT (base)))
 	    val = build_all_ones_cst (size_type_node);
 	  else
 	    {
@@ -1818,7 +1869,7 @@ gimple_fold_builtin_strncpy (gimple_stmt_iterator *gsi,
   /* If the LEN parameter is zero, return DEST.  */
   if (integer_zerop (len))
     {
-      /* Avoid warning if the destination refers to a an array/pointer
+      /* Avoid warning if the destination refers to an array/pointer
 	 decorate with attribute nonstring.  */
       if (!nonstring)
 	{
@@ -4789,6 +4840,7 @@ static bool
 maybe_canonicalize_mem_ref_addr (tree *t)
 {
   bool res = false;
+  tree *orig_t = t;
 
   if (TREE_CODE (*t) == ADDR_EXPR)
     t = &TREE_OPERAND (*t, 0);
@@ -4886,6 +4938,31 @@ maybe_canonicalize_mem_ref_addr (tree *t)
 	{
 	  *t = TREE_OPERAND (TREE_OPERAND (*t, 0), 0);
 	  res = true;
+	}
+    }
+
+  else if (TREE_CODE (*orig_t) == ADDR_EXPR
+	   && TREE_CODE (*t) == MEM_REF
+	   && TREE_CODE (TREE_OPERAND (*t, 0)) == INTEGER_CST)
+    {
+      tree base;
+      poly_int64 coffset;
+      base = get_addr_base_and_unit_offset (TREE_OPERAND (*orig_t, 0),
+					    &coffset);
+      if (base)
+	{
+	  gcc_assert (TREE_CODE (base) == MEM_REF);
+	  poly_int64 moffset;
+	  if (mem_ref_offset (base).to_shwi (&moffset))
+	    {
+	      coffset += moffset;
+	      if (wi::to_poly_wide (TREE_OPERAND (base, 0)).to_shwi (&moffset))
+		{
+		  coffset += moffset;
+		  *orig_t = build_int_cst (TREE_TYPE (*orig_t), coffset);
+		  return true;
+		}
+	    }
 	}
     }
 
@@ -6374,8 +6451,8 @@ gimple_fold_stmt_to_constant_1 (gimple *stmt, tree (*valueize) (tree),
 		    && TREE_CODE (op1) == INTEGER_CST)
 		  {
 		    tree off = fold_convert (ptr_type_node, op1);
-		    return build_fold_addr_expr_loc
-			(loc,
+		    return build1_loc
+			(loc, ADDR_EXPR, TREE_TYPE (op0),
 			 fold_build2 (MEM_REF,
 				      TREE_TYPE (TREE_TYPE (op0)),
 				      unshare_expr (op0), off));
@@ -6665,12 +6742,14 @@ fold_array_ctor_reference (tree type, tree ctor,
   /* And offset within the access.  */
   inner_offset = offset % (elt_size.to_uhwi () * BITS_PER_UNIT);
 
-  if (size > elt_size.to_uhwi () * BITS_PER_UNIT)
+  unsigned HOST_WIDE_INT elt_sz = elt_size.to_uhwi ();
+  if (size > elt_sz * BITS_PER_UNIT)
     {
       /* native_encode_expr constraints.  */
       if (size > MAX_BITSIZE_MODE_ANY_MODE
 	  || size % BITS_PER_UNIT != 0
-	  || inner_offset % BITS_PER_UNIT != 0)
+	  || inner_offset % BITS_PER_UNIT != 0
+	  || elt_sz > MAX_BITSIZE_MODE_ANY_MODE / BITS_PER_UNIT)
 	return NULL_TREE;
 
       unsigned ctor_idx;
@@ -6701,10 +6780,11 @@ fold_array_ctor_reference (tree type, tree ctor,
       index = wi::umax (index, access_index);
       do
 	{
-	  int len = native_encode_expr (val, buf + bufoff,
-					elt_size.to_uhwi (),
+	  if (bufoff + elt_sz > sizeof (buf))
+	    elt_sz = sizeof (buf) - bufoff;
+	  int len = native_encode_expr (val, buf + bufoff, elt_sz,
 					inner_offset / BITS_PER_UNIT);
-	  if (len != elt_size - inner_offset / BITS_PER_UNIT)
+	  if (len != (int) elt_sz - inner_offset / BITS_PER_UNIT)
 	    return NULL_TREE;
 	  inner_offset = 0;
 	  bufoff += len;
@@ -6919,8 +6999,10 @@ fold_ctor_reference (tree type, tree ctor, const poly_uint64 &poly_offset,
   if (CONSTANT_CLASS_P (ctor)
       && BITS_PER_UNIT == 8
       && offset % BITS_PER_UNIT == 0
+      && offset / BITS_PER_UNIT <= INT_MAX
       && size % BITS_PER_UNIT == 0
-      && size <= MAX_BITSIZE_MODE_ANY_MODE)
+      && size <= MAX_BITSIZE_MODE_ANY_MODE
+      && can_native_interpret_type_p (type))
     {
       unsigned char buf[MAX_BITSIZE_MODE_ANY_MODE / BITS_PER_UNIT];
       int len = native_encode_expr (ctor, buf, size / BITS_PER_UNIT,
@@ -6934,13 +7016,35 @@ fold_ctor_reference (tree type, tree ctor, const poly_uint64 &poly_offset,
       if (!suboff)
 	suboff = &dummy;
 
+      tree ret;
       if (TREE_CODE (TREE_TYPE (ctor)) == ARRAY_TYPE
 	  || TREE_CODE (TREE_TYPE (ctor)) == VECTOR_TYPE)
-	return fold_array_ctor_reference (type, ctor, offset, size,
-					  from_decl, suboff);
+	ret = fold_array_ctor_reference (type, ctor, offset, size,
+					 from_decl, suboff);
+      else
+	ret = fold_nonarray_ctor_reference (type, ctor, offset, size,
+					    from_decl, suboff);
 
-      return fold_nonarray_ctor_reference (type, ctor, offset, size,
-					   from_decl, suboff);
+      /* Fall back to native_encode_initializer.  Needs to be done
+	 only in the outermost fold_ctor_reference call (because it itself
+	 recurses into CONSTRUCTORs) and doesn't update suboff.  */
+      if (ret == NULL_TREE
+	  && suboff == &dummy
+	  && BITS_PER_UNIT == 8
+	  && offset % BITS_PER_UNIT == 0
+	  && offset / BITS_PER_UNIT <= INT_MAX
+	  && size % BITS_PER_UNIT == 0
+	  && size <= MAX_BITSIZE_MODE_ANY_MODE
+	  && can_native_interpret_type_p (type))
+	{
+	  unsigned char buf[MAX_BITSIZE_MODE_ANY_MODE / BITS_PER_UNIT];
+	  int len = native_encode_initializer (ctor, buf, size / BITS_PER_UNIT,
+					       offset / BITS_PER_UNIT);
+	  if (len > 0)
+	    return native_interpret_expr (type, buf, len);
+	}
+
+      return ret;
     }
 
   return NULL_TREE;
@@ -7049,7 +7153,7 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
 	tree c = fold_const_aggregate_ref_1 (TREE_OPERAND (t, 0), valueize);
 	if (c && TREE_CODE (c) == COMPLEX_CST)
 	  return fold_build1_loc (EXPR_LOCATION (t),
-			      TREE_CODE (t), TREE_TYPE (t), c);
+				  TREE_CODE (t), TREE_TYPE (t), c);
 	break;
       }
 
@@ -7380,6 +7484,7 @@ rewrite_to_defined_overflow (gimple *stmt)
   gimple_assign_set_lhs (stmt, make_ssa_name (type, stmt));
   if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR)
     gimple_assign_set_rhs_code (stmt, PLUS_EXPR);
+  gimple_set_modified (stmt, true);
   gimple_seq_add_stmt (&stmts, stmt);
   gimple *cvt = gimple_build_assign (lhs, NOP_EXPR, gimple_assign_lhs (stmt));
   gimple_seq_add_stmt (&stmts, cvt);

@@ -42,6 +42,13 @@ namespace aarch64_sve
     extern const function_base *const svasr;
     extern const function_base *const svasr_wide;
     extern const function_base *const svasrd;
+    extern const function_base *const svbfdot;
+    extern const function_base *const svbfdot_lane;
+    extern const function_base *const svbfmlalb;
+    extern const function_base *const svbfmlalb_lane;
+    extern const function_base *const svbfmlalt;
+    extern const function_base *const svbfmlalt_lane;
+    extern const function_base *const svbfmmla;
     extern const function_base *const svbic;
     extern const function_base *const svbrka;
     extern const function_base *const svbrkb;
@@ -84,6 +91,7 @@ namespace aarch64_sve
     extern const function_base *const svcreate3;
     extern const function_base *const svcreate4;
     extern const function_base *const svcvt;
+    extern const function_base *const svcvtnt;
     extern const function_base *const svdiv;
     extern const function_base *const svdivr;
     extern const function_base *const svdot;
@@ -108,6 +116,7 @@ namespace aarch64_sve
     extern const function_base *const svlastb;
     extern const function_base *const svld1;
     extern const function_base *const svld1_gather;
+    extern const function_base *const svld1ro;
     extern const function_base *const svld1rq;
     extern const function_base *const svld1sb;
     extern const function_base *const svld1sb_gather;
@@ -164,6 +173,7 @@ namespace aarch64_sve
     extern const function_base *const svmla_lane;
     extern const function_base *const svmls;
     extern const function_base *const svmls_lane;
+    extern const function_base *const svmmla;
     extern const function_base *const svmov;
     extern const function_base *const svmsb;
     extern const function_base *const svmul;
@@ -258,10 +268,14 @@ namespace aarch64_sve
     extern const function_base *const svstnt1;
     extern const function_base *const svsub;
     extern const function_base *const svsubr;
+    extern const function_base *const svsudot;
+    extern const function_base *const svsudot_lane;
     extern const function_base *const svtbl;
     extern const function_base *const svtmad;
     extern const function_base *const svtrn1;
+    extern const function_base *const svtrn1q;
     extern const function_base *const svtrn2;
+    extern const function_base *const svtrn2q;
     extern const function_base *const svtsmul;
     extern const function_base *const svtssel;
     extern const function_base *const svundef;
@@ -270,13 +284,20 @@ namespace aarch64_sve
     extern const function_base *const svundef4;
     extern const function_base *const svunpkhi;
     extern const function_base *const svunpklo;
+    extern const function_base *const svusdot;
+    extern const function_base *const svusdot_lane;
+    extern const function_base *const svusmmla;
     extern const function_base *const svuzp1;
+    extern const function_base *const svuzp1q;
     extern const function_base *const svuzp2;
+    extern const function_base *const svuzp2q;
     extern const function_base *const svwhilele;
     extern const function_base *const svwhilelt;
     extern const function_base *const svwrffr;
     extern const function_base *const svzip1;
+    extern const function_base *const svzip1q;
     extern const function_base *const svzip2;
+    extern const function_base *const svzip2q;
   }
 }
 

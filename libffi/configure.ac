@@ -61,6 +61,11 @@ AC_PROG_LIBTOOL
 # Test for 64-bit build.
 AC_CHECK_SIZEOF([size_t])
 
+cat > local.exp <<EOF
+set CC_FOR_TARGET "$CC"
+set CXX_FOR_TARGET "$CXX"
+EOF
+
 AM_MAINTAINER_MODE
 
 AC_CHECK_HEADERS(sys/mman.h)
@@ -332,10 +337,19 @@ AC_ARG_ENABLE(purify-safety,
     AC_DEFINE(USING_PURIFY, 1, [Define this if you are using Purify and want to suppress spurious messages.])
   fi)
 
+GCC_WITH_TOOLEXECLIBDIR
+
 if test -n "$with_cross_host" &&
    test x"$with_cross_host" != x"no"; then
   toolexecdir='$(exec_prefix)/$(target_alias)'
-  toolexeclibdir='$(toolexecdir)/lib'
+  case ${with_toolexeclibdir} in
+    no)
+      toolexeclibdir='$(toolexecdir)/lib'
+      ;;
+    *)
+      toolexeclibdir=${with_toolexeclibdir}
+      ;;
+  esac
 else
   toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
   toolexeclibdir='$(libdir)'

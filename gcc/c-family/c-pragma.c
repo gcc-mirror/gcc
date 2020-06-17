@@ -814,7 +814,7 @@ handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
       if (hint)
 	warning_at (loc, OPT_Wpragmas,
 		    "unknown option after %<#pragma GCC diagnostic%> kind;"
-		    " did you mean %<-%s%>", hint);
+		    " did you mean %<-%s%>?", hint);
       else
 	warning_at (loc, OPT_Wpragmas,
 		    "unknown option after %<#pragma GCC diagnostic%> kind");
@@ -1003,6 +1003,7 @@ struct GTY(()) opt_stack {
   tree target_strings;
   tree optimize_binary;
   tree optimize_strings;
+  gcc_options * GTY ((skip)) saved_global_options;
 };
 
 static GTY(()) struct opt_stack * options_stack;
@@ -1028,6 +1029,11 @@ handle_pragma_push_options (cpp_reader *ARG_UNUSED(dummy))
   options_stack = p;
 
   /* Save optimization and target flags in binary format.  */
+  if (flag_checking)
+    {
+      p->saved_global_options = XNEW (gcc_options);
+      *p->saved_global_options = global_options;
+    }
   p->optimize_binary = build_optimization_node (&global_options);
   p->target_binary = build_target_option_node (&global_options);
 
@@ -1078,6 +1084,11 @@ handle_pragma_pop_options (cpp_reader *ARG_UNUSED(dummy))
       c_cpp_builtins_optimize_pragma (parse_in, old_optimize,
 				      p->optimize_binary);
       optimization_current_node = p->optimize_binary;
+    }
+  if (flag_checking)
+    {
+      cl_optimization_compare (p->saved_global_options, &global_options);
+      free (p->saved_global_options);
     }
 
   current_target_pragma = p->target_strings;

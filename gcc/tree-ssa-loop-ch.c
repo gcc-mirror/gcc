@@ -83,7 +83,7 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
-		 "  Not duplicating bb %i: both sucessors are in loop.\n",
+		 "  Not duplicating bb %i: both successors are in loop.\n",
 		 loop->num);
       return false;
     }

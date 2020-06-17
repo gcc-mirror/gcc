@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,11 +64,11 @@ package Sem_Disp is
    --  this call actually do???
 
    procedure Check_Operation_From_Private_View (Subp, Old_Subp : Entity_Id);
-   --  Add Old_Subp to the list of primitive operations of the corresponding
-   --  tagged type if it is the full view of a private tagged type. The Alias
-   --  of Old_Subp is adjusted to point to the inherited procedure of the
-   --  full view because it is always this one which has to be called.
-   --  What is Subp used for???
+   --  No action performed if Subp is not an alias of a dispatching operation.
+   --  Add Old_Subp (if not already present) to the list of primitives of the
+   --  tagged type T of Subp if T is the full view of a private tagged type.
+   --  The Alias of Old_Subp is adjusted to point to the inherited procedure
+   --  of the full view because it is always this one which has to be called.
 
    function Covered_Interface_Op (Prim : Entity_Id) return Entity_Id;
    --  Returns the interface primitive that Prim covers, when its controlling

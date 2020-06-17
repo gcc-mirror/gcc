@@ -1,3 +1,4 @@
+! { dg-do run }
 ! Check whether absent optional arguments are properly
 ! handled with use_device_{addr,ptr}.
 program main

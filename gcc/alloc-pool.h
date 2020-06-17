@@ -60,7 +60,7 @@ public:
 
   /* Dump usage coupled to LOC location, where TOTAL is sum of all rows.  */
   inline void
-  dump (mem_location *loc, mem_usage &total) const
+  dump (mem_location *loc, const mem_usage &total) const
   {
     char *location_string = loc->to_string ();
 
@@ -521,6 +521,12 @@ public:
     /* Call destructor.  */
     object->~T ();
 
+    m_allocator.remove (object);
+  }
+
+  inline void
+  remove_raw (void *object)
+  {
     m_allocator.remove (object);
   }
 

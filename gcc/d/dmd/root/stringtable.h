@@ -1,5 +1,5 @@
 
-/* Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+/* Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
  * http://www.boost.org/LICENSE_1_0.txt
@@ -9,7 +9,7 @@
 #pragma once
 
 #include "root.h"
-#include "rmem.h"   // for d_size_t
+#include "dcompat.h" // for d_size_t
 
 struct StringEntry;
 

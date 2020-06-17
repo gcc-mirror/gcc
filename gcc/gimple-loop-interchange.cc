@@ -879,6 +879,7 @@ loop_cand::undo_simple_reduction (reduction_p re, bitmap dce_seeds)
   if (re->producer != NULL)
     {
       gimple_set_vuse (re->producer, NULL_TREE);
+      update_stmt (re->producer);
       from = gsi_for_stmt (re->producer);
       gsi_remove (&from, false);
       gimple_seq_add_stmt_without_update (&stmts, re->producer);
@@ -920,6 +921,7 @@ loop_cand::undo_simple_reduction (reduction_p re, bitmap dce_seeds)
   gimple_set_vdef (re->consumer, NULL_TREE);
   gimple_set_vuse (re->consumer, NULL_TREE);
   gimple_assign_set_rhs1 (re->consumer, re->next);
+  update_stmt (re->consumer);
   from = gsi_for_stmt (re->consumer);
   to = gsi_for_stmt (SSA_NAME_DEF_STMT (re->next));
   gsi_move_after (&from, &to);
@@ -1248,13 +1250,16 @@ tree_loop_interchange::move_code_to_inner_loop (class loop *outer,
 	      continue;
 	    }
 
-	  if (gimple_vuse (stmt))
-	    gimple_set_vuse (stmt, NULL_TREE);
 	  if (gimple_vdef (stmt))
 	    {
 	      unlink_stmt_vdef (stmt);
 	      release_ssa_name (gimple_vdef (stmt));
 	      gimple_set_vdef (stmt, NULL_TREE);
+	    }
+	  if (gimple_vuse (stmt))
+	    {
+	      gimple_set_vuse (stmt, NULL_TREE);
+	      update_stmt (stmt);
 	    }
 
 	  reset_debug_uses (stmt);

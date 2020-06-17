@@ -114,6 +114,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/override.m4 \
+	$(top_srcdir)/../config/toolexeclibdir.m4 \
 	$(top_srcdir)/../config/unwind_ipinfo.m4 \
 	$(top_srcdir)/config/libtool.m4 \
 	$(top_srcdir)/config/ltoptions.m4 \
@@ -173,6 +174,7 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
 	"$(DESTDIR)$(toolexeclibgoimagedir)" \
 	"$(DESTDIR)$(toolexeclibgoimagecolordir)" \
 	"$(DESTDIR)$(toolexeclibgoindexdir)" \
+	"$(DESTDIR)$(toolexeclibgointernaldir)" \
 	"$(DESTDIR)$(toolexeclibgoiodir)" \
 	"$(DESTDIR)$(toolexeclibgologdir)" \
 	"$(DESTDIR)$(toolexeclibgomathdir)" \
@@ -334,13 +336,14 @@ DATA = $(noinst_DATA) $(toolexeclibgo_DATA) \
 	$(toolexeclibgoencoding_DATA) $(toolexeclibgogo_DATA) \
 	$(toolexeclibgohash_DATA) $(toolexeclibgohtml_DATA) \
 	$(toolexeclibgoimage_DATA) $(toolexeclibgoimagecolor_DATA) \
-	$(toolexeclibgoindex_DATA) $(toolexeclibgoio_DATA) \
-	$(toolexeclibgolog_DATA) $(toolexeclibgomath_DATA) \
-	$(toolexeclibgomime_DATA) $(toolexeclibgonet_DATA) \
-	$(toolexeclibgonethttp_DATA) $(toolexeclibgonetrpc_DATA) \
-	$(toolexeclibgoos_DATA) $(toolexeclibgopath_DATA) \
-	$(toolexeclibgoregexp_DATA) $(toolexeclibgoruntime_DATA) \
-	$(toolexeclibgosync_DATA) $(toolexeclibgotesting_DATA) \
+	$(toolexeclibgoindex_DATA) $(toolexeclibgointernal_DATA) \
+	$(toolexeclibgoio_DATA) $(toolexeclibgolog_DATA) \
+	$(toolexeclibgomath_DATA) $(toolexeclibgomime_DATA) \
+	$(toolexeclibgonet_DATA) $(toolexeclibgonethttp_DATA) \
+	$(toolexeclibgonetrpc_DATA) $(toolexeclibgoos_DATA) \
+	$(toolexeclibgopath_DATA) $(toolexeclibgoregexp_DATA) \
+	$(toolexeclibgoruntime_DATA) $(toolexeclibgosync_DATA) \
+	$(toolexeclibgotesting_DATA) \
 	$(toolexeclibgotestinginternal_DATA) $(toolexeclibgotext_DATA) \
 	$(toolexeclibgotexttemplate_DATA) $(toolexeclibgounicode_DATA)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
@@ -743,7 +746,8 @@ toolexeclibgohash_DATA = \
 	hash/adler32.gox \
 	hash/crc32.gox \
 	hash/crc64.gox \
-	hash/fnv.gox
+	hash/fnv.gox \
+	hash/maphash.gox
 
 toolexeclibgohtmldir = $(toolexeclibgodir)/html
 toolexeclibgohtml_DATA = \
@@ -857,13 +861,20 @@ toolexeclibgounicode_DATA = \
 	unicode/utf8.gox
 
 
+# Some internal packages are needed to bootstrap the gc toolchain.
+toolexeclibgointernaldir = $(toolexeclibgodir)/internal
+toolexeclibgointernal_DATA = \
+	internal/reflectlite.gox
+
+
 # Some packages are only needed for tests, so unlike the other
 # internal packages nothing will explicitly depend on them.
 # Force them to be built.
 noinst_DATA = golang.org/x/net/nettest.gox internal/cfg.gox \
-	internal/testenv.gox internal/trace.gox \
-	net/internal/socktest.gox os/signal/internal/pty.gox \
-	runtime/pprof/internal/profile.gox zdefaultcc.go
+	internal/obscuretestdata.gox internal/testenv.gox \
+	internal/trace.gox net/internal/socktest.gox \
+	os/signal/internal/pty.gox runtime/pprof/internal/profile.gox \
+	zdefaultcc.go
 @LIBGO_IS_RTEMS_FALSE@rtems_task_variable_add_file = 
 @LIBGO_IS_RTEMS_TRUE@rtems_task_variable_add_file = runtime/rtems-task-variable-add.c
 runtime_context_asm_file = $(am__append_3)
@@ -1093,6 +1104,10 @@ runtime_internal_sys_lo_check_GOCFLAGS = -fgo-compiling-runtime
 # otherwise we can't get the line numbers.
 # Also use -fno-inline to get better results from the memory profiler.
 runtime_pprof_check_GOCFLAGS = -static-libgo -fno-inline
+
+# Use -static for the syscall tests if possible, because otherwise when
+# running as root the re-execs ignore LD_LIBRARY_PATH.
+@HAVE_STATIC_LINK_TRUE@syscall_check_GOCFLAGS = -static
 extra_go_files_runtime_internal_sys = version.go
 extra_go_files_internal_cpu = cpugen.go
 extra_go_files_golang_org_x_sys_cpu = gcpugen.go
@@ -1847,6 +1862,27 @@ uninstall-toolexeclibgoindexDATA:
 	@list='$(toolexeclibgoindex_DATA)'; test -n "$(toolexeclibgoindexdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(toolexeclibgoindexdir)'; $(am__uninstall_files_from_dir)
+install-toolexeclibgointernalDATA: $(toolexeclibgointernal_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(toolexeclibgointernal_DATA)'; test -n "$(toolexeclibgointernaldir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(toolexeclibgointernaldir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(toolexeclibgointernaldir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgointernaldir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgointernaldir)" || exit $$?; \
+	done
+
+uninstall-toolexeclibgointernalDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(toolexeclibgointernal_DATA)'; test -n "$(toolexeclibgointernaldir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(toolexeclibgointernaldir)'; $(am__uninstall_files_from_dir)
 install-toolexeclibgoioDATA: $(toolexeclibgoio_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(toolexeclibgoio_DATA)'; test -n "$(toolexeclibgoiodir)" || list=; \
@@ -2316,7 +2352,7 @@ all-am: Makefile $(LIBRARIES) $(LTLIBRARIES) $(DATA) config.h \
 		all-local
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibgodir)" "$(DESTDIR)$(toolexeclibgoarchivedir)" "$(DESTDIR)$(toolexeclibgocompressdir)" "$(DESTDIR)$(toolexeclibgocontainerdir)" "$(DESTDIR)$(toolexeclibgocryptodir)" "$(DESTDIR)$(toolexeclibgocryptox509dir)" "$(DESTDIR)$(toolexeclibgodatabasedir)" "$(DESTDIR)$(toolexeclibgodatabasesqldir)" "$(DESTDIR)$(toolexeclibgodebugdir)" "$(DESTDIR)$(toolexeclibgoencodingdir)" "$(DESTDIR)$(toolexeclibgogodir)" "$(DESTDIR)$(toolexeclibgohashdir)" "$(DESTDIR)$(toolexeclibgohtmldir)" "$(DESTDIR)$(toolexeclibgoimagedir)" "$(DESTDIR)$(toolexeclibgoimagecolordir)" "$(DESTDIR)$(toolexeclibgoindexdir)" "$(DESTDIR)$(toolexeclibgoiodir)" "$(DESTDIR)$(toolexeclibgologdir)" "$(DESTDIR)$(toolexeclibgomathdir)" "$(DESTDIR)$(toolexeclibgomimedir)" "$(DESTDIR)$(toolexeclibgonetdir)" "$(DESTDIR)$(toolexeclibgonethttpdir)" "$(DESTDIR)$(toolexeclibgonetrpcdir)" "$(DESTDIR)$(toolexeclibgoosdir)" "$(DESTDIR)$(toolexeclibgopathdir)" "$(DESTDIR)$(toolexeclibgoregexpdir)" "$(DESTDIR)$(toolexeclibgoruntimedir)" "$(DESTDIR)$(toolexeclibgosyncdir)" "$(DESTDIR)$(toolexeclibgotestingdir)" "$(DESTDIR)$(toolexeclibgotestinginternaldir)" "$(DESTDIR)$(toolexeclibgotextdir)" "$(DESTDIR)$(toolexeclibgotexttemplatedir)" "$(DESTDIR)$(toolexeclibgounicodedir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibgodir)" "$(DESTDIR)$(toolexeclibgoarchivedir)" "$(DESTDIR)$(toolexeclibgocompressdir)" "$(DESTDIR)$(toolexeclibgocontainerdir)" "$(DESTDIR)$(toolexeclibgocryptodir)" "$(DESTDIR)$(toolexeclibgocryptox509dir)" "$(DESTDIR)$(toolexeclibgodatabasedir)" "$(DESTDIR)$(toolexeclibgodatabasesqldir)" "$(DESTDIR)$(toolexeclibgodebugdir)" "$(DESTDIR)$(toolexeclibgoencodingdir)" "$(DESTDIR)$(toolexeclibgogodir)" "$(DESTDIR)$(toolexeclibgohashdir)" "$(DESTDIR)$(toolexeclibgohtmldir)" "$(DESTDIR)$(toolexeclibgoimagedir)" "$(DESTDIR)$(toolexeclibgoimagecolordir)" "$(DESTDIR)$(toolexeclibgoindexdir)" "$(DESTDIR)$(toolexeclibgointernaldir)" "$(DESTDIR)$(toolexeclibgoiodir)" "$(DESTDIR)$(toolexeclibgologdir)" "$(DESTDIR)$(toolexeclibgomathdir)" "$(DESTDIR)$(toolexeclibgomimedir)" "$(DESTDIR)$(toolexeclibgonetdir)" "$(DESTDIR)$(toolexeclibgonethttpdir)" "$(DESTDIR)$(toolexeclibgonetrpcdir)" "$(DESTDIR)$(toolexeclibgoosdir)" "$(DESTDIR)$(toolexeclibgopathdir)" "$(DESTDIR)$(toolexeclibgoregexpdir)" "$(DESTDIR)$(toolexeclibgoruntimedir)" "$(DESTDIR)$(toolexeclibgosyncdir)" "$(DESTDIR)$(toolexeclibgotestingdir)" "$(DESTDIR)$(toolexeclibgotestinginternaldir)" "$(DESTDIR)$(toolexeclibgotextdir)" "$(DESTDIR)$(toolexeclibgotexttemplatedir)" "$(DESTDIR)$(toolexeclibgounicodedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -2398,7 +2434,8 @@ install-exec-am: install-exec-local install-toolexeclibLIBRARIES \
 	install-toolexeclibgohashDATA install-toolexeclibgohtmlDATA \
 	install-toolexeclibgoimageDATA \
 	install-toolexeclibgoimagecolorDATA \
-	install-toolexeclibgoindexDATA install-toolexeclibgoioDATA \
+	install-toolexeclibgoindexDATA \
+	install-toolexeclibgointernalDATA install-toolexeclibgoioDATA \
 	install-toolexeclibgologDATA install-toolexeclibgomathDATA \
 	install-toolexeclibgomimeDATA install-toolexeclibgonetDATA \
 	install-toolexeclibgonethttpDATA \
@@ -2467,8 +2504,10 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	uninstall-toolexeclibgohtmlDATA \
 	uninstall-toolexeclibgoimageDATA \
 	uninstall-toolexeclibgoimagecolorDATA \
-	uninstall-toolexeclibgoindexDATA uninstall-toolexeclibgoioDATA \
-	uninstall-toolexeclibgologDATA uninstall-toolexeclibgomathDATA \
+	uninstall-toolexeclibgoindexDATA \
+	uninstall-toolexeclibgointernalDATA \
+	uninstall-toolexeclibgoioDATA uninstall-toolexeclibgologDATA \
+	uninstall-toolexeclibgomathDATA \
 	uninstall-toolexeclibgomimeDATA uninstall-toolexeclibgonetDATA \
 	uninstall-toolexeclibgonethttpDATA \
 	uninstall-toolexeclibgonetrpcDATA \
@@ -2509,7 +2548,8 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	install-toolexeclibgohashDATA install-toolexeclibgohtmlDATA \
 	install-toolexeclibgoimageDATA \
 	install-toolexeclibgoimagecolorDATA \
-	install-toolexeclibgoindexDATA install-toolexeclibgoioDATA \
+	install-toolexeclibgoindexDATA \
+	install-toolexeclibgointernalDATA install-toolexeclibgoioDATA \
 	install-toolexeclibgologDATA install-toolexeclibgomathDATA \
 	install-toolexeclibgomimeDATA install-toolexeclibgonetDATA \
 	install-toolexeclibgonethttpDATA \
@@ -2540,8 +2580,10 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	uninstall-toolexeclibgohtmlDATA \
 	uninstall-toolexeclibgoimageDATA \
 	uninstall-toolexeclibgoimagecolorDATA \
-	uninstall-toolexeclibgoindexDATA uninstall-toolexeclibgoioDATA \
-	uninstall-toolexeclibgologDATA uninstall-toolexeclibgomathDATA \
+	uninstall-toolexeclibgoindexDATA \
+	uninstall-toolexeclibgointernalDATA \
+	uninstall-toolexeclibgoioDATA uninstall-toolexeclibgologDATA \
+	uninstall-toolexeclibgomathDATA \
 	uninstall-toolexeclibgomimeDATA uninstall-toolexeclibgonetDATA \
 	uninstall-toolexeclibgonethttpDATA \
 	uninstall-toolexeclibgonetrpcDATA \

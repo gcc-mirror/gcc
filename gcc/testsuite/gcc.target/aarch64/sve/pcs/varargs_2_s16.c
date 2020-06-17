@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fno-stack-clash-protection -g" } */
-/* { dg-final { check-function-bodies "**" "" } } */
+/* { dg-final { check-function-bodies "**" "" "" { target lp64 } } } */
 
 #include <arm_sve.h>
 #include <stdarg.h>

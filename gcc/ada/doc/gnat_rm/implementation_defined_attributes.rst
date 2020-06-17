@@ -336,6 +336,9 @@ Attribute Enum_Rep
 
 .. index:: Enum_Rep
 
+Note that this attribute is now standard in Ada 202x and is available
+as an implementation defined attribute for earlier Ada versions.
+
 For every enumeration subtype ``S``, ``S'Enum_Rep`` denotes a
 function with the following spec:
 
@@ -353,7 +356,7 @@ enumeration literal or object.
 The function returns the representation value for the given enumeration
 value.  This will be equal to value of the ``Pos`` attribute in the
 absence of an enumeration representation clause.  This is a static
-attribute (i.e.,:the result is static if the argument is static).
+attribute (i.e., the result is static if the argument is static).
 
 ``S'Enum_Rep`` can also be used with integer types and objects,
 in which case it simply returns the integer value.  The reason for this
@@ -370,6 +373,9 @@ Attribute Enum_Val
 .. index:: Representation of enums
 
 .. index:: Enum_Val
+
+Note that this attribute is now standard in Ada 202x and is available
+as an implementation defined attribute for earlier Ada versions.
 
 For every enumeration subtype ``S``, ``S'Enum_Val`` denotes a
 function with the following spec:

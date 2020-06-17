@@ -22,6 +22,9 @@ typedef struct gimple gimple;
 /* Likewise for gimple.  */
 typedef struct cgraph_node cgraph_node;
 
+/* Likewise for diagnostic_event_id_t.  */
+typedef struct diagnostic_event_id_t diagnostic_event_id_t;
+
 #define FORMAT(kind) __attribute__ ((format (__gcc_## kind ##__, 1, 2)))
 
 void diag (const char*, ...) FORMAT (diag);
@@ -30,7 +33,7 @@ void tdiag (const char*, ...) FORMAT (tdiag);
 void cxxdiag (const char*, ...) FORMAT (cxxdiag);
 void dump (const char*, ...) FORMAT (dump_printf);
 
-void test_diag (tree t, gimple *gc)
+void test_diag (tree t, gimple *gc, diagnostic_event_id_t *event_id_ptr)
 {
   diag ("%<");   /* { dg-warning "unterminated quoting directive" } */
   diag ("%>");   /* { dg-warning "unmatched quoting directive " } */
@@ -38,6 +41,7 @@ void test_diag (tree t, gimple *gc)
 
   diag ("%G", gc); /* { dg-warning "format" } */
   diag ("%K", t); /* { dg-warning "format" } */
+  diag ("%@", event_id_ptr);
 
   diag ("%R");       /* { dg-warning "unmatched color reset directive" } */
   diag ("%r", "");   /* { dg-warning "unterminated color directive" } */

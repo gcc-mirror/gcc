@@ -59,8 +59,8 @@ __asm__ (".section " SECTION "," FLAGS "\n\t"				\
 /* Beginning of .ctor/.dtor sections that provides a list of constructors and
    destructors to run.  */
 
-INIT_SECTION_NEG_ONE (".ctors", "\"aw\"", "__CTOR_LIST__");
-INIT_SECTION_NEG_ONE (".dtors", "\"aw\"", "__DTOR_LIST__");
+INIT_SECTION_NEG_ONE (".ctors", "\"a\"", "__CTOR_LIST__");
+INIT_SECTION_NEG_ONE (".dtors", "\"a\"", "__DTOR_LIST__");
 
 /* Beginning of .eh_frame section that provides all of the exception handling
    tables.  */

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1478,6 +1478,32 @@ package body Ch3 is
          Restore_Scan_State (Scan_State);
          Append_To (Decls, P_Type_Declaration);
          Done := False;
+         return;
+
+      --  AI12-0275: Object renaming declaration without subtype_mark or
+      --  access_definition
+
+      elsif Token = Tok_Renames then
+         if Ada_Version < Ada_2020 then
+            Error_Msg_SC
+              ("object renaming without subtype is an Ada 202x feature");
+            Error_Msg_SC ("\compile with -gnat2020");
+         end if;
+
+         Scan; -- past renames
+
+         Decl_Node :=
+           New_Node (N_Object_Renaming_Declaration, Ident_Sloc);
+         Set_Name (Decl_Node, P_Name);
+         Set_Defining_Identifier (Decl_Node, Idents (1));
+
+         P_Aspect_Specifications (Decl_Node, Semicolon => False);
+
+         T_Semicolon;
+
+         Append (Decl_Node, Decls);
+         Done := False;
+
          return;
 
       --  Otherwise we have an error situation
@@ -4676,7 +4702,9 @@ package body Ch3 is
    --  the scan pointer is repositioned past the next semicolon, and the scan
    --  for declarative items continues.
 
-   function P_Basic_Declarative_Items return List_Id is
+   function P_Basic_Declarative_Items
+     (Declare_Expression : Boolean) return List_Id
+   is
       Decl  : Node_Id;
       Decls : List_Id;
       Kind  : Node_Kind;
@@ -4724,7 +4752,15 @@ package body Ch3 is
             Kind = N_Task_Body       or else
             Kind = N_Protected_Body
          then
-            Error_Msg ("proper body not allowed in package spec", Sloc (Decl));
+            if Declare_Expression then
+               Error_Msg
+                 ("proper body not allowed in declare_expression",
+                  Sloc (Decl));
+            else
+               Error_Msg
+                 ("proper body not allowed in package spec",
+                  Sloc (Decl));
+            end if;
 
             --  Complete declaration of mangled subprogram body, for better
             --  recovery if analysis is attempted.

@@ -118,7 +118,7 @@ maybe_set_intrinsic (FuncDeclaration *decl)
 
 	  OutBuffer buf;
 	  mangleToBuffer (fd->type, &buf);
-	  tdeco = buf.extractString ();
+	  tdeco = buf.extractChars ();
 	}
 
       /* Matching the type deco may be a bit too strict, as it means that all
@@ -465,6 +465,25 @@ expand_intrinsic_pow (tree callexp)
 
   return call_builtin_fn (callexp, DECL_FUNCTION_CODE (builtin), 2,
 			  base, exponent);
+}
+
+/* Expand a front-end intrinsic call to toPrec().  This takes one argument, the
+   signature to which can be either:
+
+	T toPrec(T)(float f);
+	T toPrec(T)(double f);
+	T toPrec(T)(real f);
+
+    This rounds the argument F to the precision of the specified floating
+    point type T.  The original call expression is held in CALLEXP.  */
+
+static tree
+expand_intrinsic_toprec (tree callexp)
+{
+  tree f = CALL_EXPR_ARG (callexp, 0);
+  tree type = TREE_TYPE (callexp);
+
+  return convert (type, f);
 }
 
 /* Expand a front-end intrinsic call to va_arg().  This takes either one or two
@@ -817,6 +836,9 @@ maybe_expand_intrinsic (tree callexp)
 			      CALL_EXPR_ARG (callexp, 0),
 			      CALL_EXPR_ARG (callexp, 1),
 			      CALL_EXPR_ARG (callexp, 2));
+
+    case INTRINSIC_TOPREC:
+      return expand_intrinsic_toprec (callexp);
 
     case INTRINSIC_VA_ARG:
     case INTRINSIC_C_VA_ARG:

@@ -639,19 +639,9 @@ decode_oacc_directive (void)
 
   gfc_matching_function = false;
 
-  if (gfc_pure (NULL))
-    {
-      gfc_error_now ("OpenACC directives at %C may not appear in PURE "
-		     "procedures");
-      gfc_error_recovery ();
-      return ST_NONE;
-    }
-
   if (gfc_current_state () == COMP_FUNCTION
       && gfc_current_block ()->result->ts.kind == -1)
     spec_only = true;
-
-  gfc_unset_implicit_pure (NULL);
 
   old_locus = gfc_current_locus;
 
@@ -660,6 +650,21 @@ decode_oacc_directive (void)
      first character.  */
 
   c = gfc_peek_ascii_char ();
+
+  switch (c)
+    {
+    case 'r':
+      matcha ("routine", gfc_match_oacc_routine, ST_OACC_ROUTINE);
+      break;
+    }
+
+  gfc_unset_implicit_pure (NULL);
+  if (gfc_pure (NULL))
+    {
+      gfc_error_now ("OpenACC directives other than ROUTINE may not appear in PURE "
+		     "procedures at %C");
+      goto error_handling;
+    }
 
   switch (c)
     {
@@ -704,9 +709,6 @@ decode_oacc_directive (void)
       break;
     case 'l':
       matcha ("loop", gfc_match_oacc_loop, ST_OACC_LOOP);
-      break;
-    case 'r':
-      match ("routine", gfc_match_oacc_routine, ST_OACC_ROUTINE);
       break;
     case 's':
       matcha ("serial loop", gfc_match_oacc_serial_loop, ST_OACC_SERIAL_LOOP);
@@ -849,7 +851,7 @@ decode_omp_directive (void)
   /* match is for directives that should be recognized only if
      -fopenmp, matchs for directives that should be recognized
      if either -fopenmp or -fopenmp-simd.
-     Handle only the directives allowed in PURE/ELEMENTAL procedures
+     Handle only the directives allowed in PURE procedures
      first (those also shall not turn off implicit pure).  */
   switch (c)
     {
@@ -868,7 +870,7 @@ decode_omp_directive (void)
   if (flag_openmp && gfc_pure (NULL))
     {
       gfc_error_now ("OpenMP directives other than SIMD or DECLARE TARGET "
-		     "at %C may not appear in PURE or ELEMENTAL procedures");
+		     "at %C may not appear in PURE procedures");
       gfc_error_recovery ();
       return ST_NONE;
     }
@@ -1078,8 +1080,7 @@ decode_omp_directive (void)
       if (!flag_openmp && gfc_pure (NULL))
 	{
 	  gfc_error_now ("OpenMP directives other than SIMD or DECLARE TARGET "
-			 "at %C may not appear in PURE or ELEMENTAL "
-			 "procedures");
+			 "at %C may not appear in PURE procedures");
 	  reject_statement ();
 	  gfc_error_recovery ();
 	  return ST_NONE;
@@ -5231,6 +5232,9 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
     case ST_OMP_TARGET_DATA:
       omp_end_st = ST_OMP_END_TARGET_DATA;
       break;
+    case ST_OMP_TARGET_PARALLEL:
+      omp_end_st = ST_OMP_END_TARGET_PARALLEL;
+      break;
     case ST_OMP_TARGET_TEAMS:
       omp_end_st = ST_OMP_END_TARGET_TEAMS;
       break;
@@ -6042,8 +6046,9 @@ set_syms_host_assoc (gfc_symbol *sym)
 {
   gfc_component *c;
   const char dot[2] = ".";
-  char parent1[GFC_MAX_SYMBOL_LEN + 1];
-  char parent2[GFC_MAX_SYMBOL_LEN + 1];
+  /* Symbols take the form module.submodule_ or module.name_. */
+  char parent1[2 * GFC_MAX_SYMBOL_LEN + 2];
+  char parent2[2 * GFC_MAX_SYMBOL_LEN + 2];
 
   if (sym == NULL)
     return;

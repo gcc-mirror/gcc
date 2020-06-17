@@ -9,7 +9,7 @@ f1 (svbool_t pg, svfloat16_t f16, svfloat32_t f32, svfloat64_t f64,
   svmla_lane (f32, f32, f32); /* { dg-error {too few arguments to function 'svmla_lane'} } */
   svmla_lane (f32, f32, f32, 0, 0); /* { dg-error {too many arguments to function 'svmla_lane'} } */
   svmla_lane (pg, pg, pg, 0); /* { dg-error {'svmla_lane' has no form that takes 'svbool_t' arguments} } */
-  svmla_lane (s32, s32, s32, 0); /* { dg-error {'svmla_lane' has no form that takes 'svint32_t' arguments} } */
+  svmla_lane (s32, s32, s32, 0); /* { dg-error {ACLE function 'svmla_lane_s32' requires ISA extension 'sve2'} "" { xfail aarch64_sve2 } } */
   svmla_lane (1, f32, f32, 0); /* { dg-error {passing 'int' to argument 1 of 'svmla_lane', which expects an SVE vector type} } */
   svmla_lane (f32, 1, f32, 0); /* { dg-error {passing 'int' to argument 2 of 'svmla_lane', which expects an SVE vector type} } */
   svmla_lane (f32, f32, 1, 0); /* { dg-error {passing 'int' to argument 3 of 'svmla_lane', which expects an SVE vector type} } */

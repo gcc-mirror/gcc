@@ -1,3 +1,61 @@
+2020-05-29  Martin Liska  <mliska@suse.cz>
+
+	* bugzilla-close-candidate.py: Fix sorting of branches.
+
+2020-05-29  Martin Liska  <mliska@suse.cz>
+
+	* bugzilla-close-candidate.py: Fix parsing of SVN revisions.
+	Fix skipping of PRs that contain Can be closed message.
+
+2020-05-29  Martin Liska  <mliska@suse.cz>
+
+	* bugzilla-close-candidate.py: Support both SVN and GIT messages
+	in PRs. Remove need of usage of the bugzilla API key.
+
+2020-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* update_version_git: Rewrite using
+	contrib/gcc-changelog/git_update_version.py.
+
+2020-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* crontab: Snapshots from trunk are now GCC 11 related.
+	Add GCC 10 snapshots from the respective branch.
+
+2020-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc_release (upload_files): Without -l, pass -m 755 to the mkdir
+	command invoked through ssh.
+
+	* update_web_docs_git: Drop SPHINXBUILD=/usr/bin/sphinx-1.0-build.
+
+2020-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc_release: Add support for -b local-git-repo argument.
+
+2020-01-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* update_web_docs_libstdcxx_git: New file.
+	* update_web_docs_libstdcxx_svn: Remove.
+	* crontab: Use update_web_docs_libstdcxx_git.
+
+2020-01-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* update_web_docs_git: New file.
+	* update_web_docs_svn: Remove.
+	* crontab: Use update_web_docs_svn.
+
+2020-01-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc_release: Use git instead of SVN.
+	* crontab: Update gcc_release calls.
+
+2020-01-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* update_version_git: New file.
+	* update_version:svn: Remove.
+	* crontab: Use update_version_git.
+
 2019-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* gcc_release: Use https for gcc.gnu.org.

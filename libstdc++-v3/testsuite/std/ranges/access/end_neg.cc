@@ -25,9 +25,8 @@ extern int unbounded[];
 auto
 test01()
 {
-  return std::ranges::end(unbounded); // { dg-error "here" }
+  return std::ranges::end(unbounded); // { dg-error "no match" }
 }
-// { dg-error "static assertion failed" "" { target *-*-* } 0 }
 
 struct incomplete;
 extern incomplete array[2];
@@ -38,5 +37,3 @@ test02()
   return std::ranges::end(array); // { dg-error "here" }
 }
 // { dg-error "incomplete type" "" { target *-*-* } 0 }
-
-

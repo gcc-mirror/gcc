@@ -116,6 +116,13 @@ func TestStackGrowth(t *testing.T) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+
+		if Compiler == "gccgo" && !*Pusestackmaps {
+			// This test is flaky for gccgo's
+			// conservative stack scanning.
+			return
+		}
+
 		done := make(chan bool)
 		var startTime time.Time
 		var started, progress uint32
@@ -599,9 +606,6 @@ func (s structWithMethod) callers() []uintptr {
 	return pc[:Callers(0, pc)]
 }
 
-// The noinline prevents this function from being inlined
-// into a wrapper. TODO: remove this when issue 28640 is fixed.
-//go:noinline
 func (s structWithMethod) stack() string {
 	buf := make([]byte, 4<<10)
 	return string(buf[:Stack(buf, false)])

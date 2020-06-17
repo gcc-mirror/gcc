@@ -631,6 +631,7 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+CET_HOST_FLAGS
 NO_PIE_FLAG
 NO_PIE_CFLAGS
 enable_default_pie
@@ -786,6 +787,8 @@ LTLIBICONV
 LIBICONV
 ZSTD_LIB
 ZSTD_INCLUDE
+ZSTD_LDFLAGS
+ZSTD_CPPFLAGS
 DL_LIB
 LDEXP_LIB
 EXTRA_GCC_LIBS
@@ -819,7 +822,6 @@ accel_dir_suffix
 real_target_noncanonical
 enable_as_accelerator
 gnat_install_lib
-DOCUMENTATION_ROOT_URL
 REPORT_BUGS_TEXI
 REPORT_BUGS_TO
 PKGVERSION
@@ -958,6 +960,7 @@ enable_fixed_point
 enable_threads
 enable_tls
 enable_vtable_verify
+enable_analyzer
 enable_objc_gc
 with_dwarf2
 enable_shared
@@ -966,6 +969,7 @@ with_specs
 with_pkgversion
 with_bugurl
 with_documentation_root_url
+with_changes_root_url
 enable_languages
 with_multilib_list
 with_zstd
@@ -973,6 +977,7 @@ with_zstd_include
 with_zstd_lib
 enable_rpath
 with_libiconv_prefix
+with_libiconv_type
 enable_sjlj_exceptions
 with_gcc_major_version_only
 enable_secureplt
@@ -1013,7 +1018,9 @@ enable_host_shared
 enable_libquadmath_support
 with_linker_hash_style
 with_diagnostics_color
+with_diagnostics_urls
 enable_default_pie
+enable_cet
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1685,6 +1692,7 @@ Optional Features:
   --enable-tls            enable or disable generation of tls code overriding
                           the assembler check for tls support
   --enable-vtable-verify  enable vtable verification feature
+  --disable-analyzer      disable -fanalyzer static analyzer
   --enable-objc-gc        enable the use of Boehm's garbage collector with the
                           GNU Objective-C runtime
   --disable-shared        don't provide a shared libgcc
@@ -1767,6 +1775,7 @@ Optional Features:
   --disable-libquadmath-support
                           disable libquadmath support for Fortran
   --enable-default-pie    enable Position Independent Executable as default
+  --enable-cet            enable Intel CET in host libraries [default=auto]
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1799,6 +1808,8 @@ Optional Packages:
   --with-bugurl=URL       Direct users to URL to report a bug
   --with-documentation-root-url=URL
                           Root for documentation URLs
+  --with-changes-root-url=URL
+                          Root for GCC changes URLs
   --with-multilib-list    select multilibs (AArch64, SH and x86-64 only)
   --with-zstd=PATH        specify prefix directory for installed zstd library.
                           Equivalent to --with-zstd-include=PATH/include plus
@@ -1809,6 +1820,7 @@ Optional Packages:
   --with-gnu-ld           assume the C compiler uses GNU ld default=no
   --with-libiconv-prefix[=DIR]  search for libiconv in DIR/include and DIR/lib
   --without-libiconv-prefix     don't search for libiconv in includedir and libdir
+  --with-libiconv-type=TYPE     type of library to search for (auto/static/shared)
   --with-gcc-major-version-only
                           use only GCC major number in filesystem paths
   --with-pic              try to use only PIC/non-PIC objects [default=use
@@ -1832,6 +1844,11 @@ Optional Packages:
                           auto-if-env stands for -fdiagnostics-color=auto if
                           GCC_COLOR environment variable is present and
                           -fdiagnostics-color=never otherwise
+  --with-diagnostics-urls={never,auto,auto-if-env,always}
+                          specify the default of -fdiagnostics-urls option
+                          auto-if-env stands for -fdiagnostics-urls=auto if
+                          GCC_URLS or TERM_URLS environment variable is
+                          present and -fdiagnostics-urls=never otherwise
 
 Some influential environment variables:
   CC          C compiler command
@@ -5693,6 +5710,7 @@ $as_echo "$ac_cv_safe_to_define___extensions__" >&6; }
   $as_echo "#define _TANDEM_SOURCE 1" >>confdefs.h
 
 
+
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -7703,6 +7721,23 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+# Check whether --enable-analyzer was given.
+if test "${enable_analyzer+set}" = set; then :
+  enableval=$enable_analyzer; if test x$enable_analyzer = xno; then
+	analyzer=0
+else
+	analyzer=1
+fi
+else
+  analyzer=1
+fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define ENABLE_ANALYZER $analyzer
+_ACEOF
+
+
 # Check whether --enable-objc-gc was given.
 if test "${enable_objc_gc+set}" = set; then :
   enableval=$enable_objc_gc; if test x$enable_objc_gc = xno; then
@@ -7820,14 +7855,39 @@ if test "${with_documentation_root_url+set}" = set; then :
   withval=$with_documentation_root_url; case "$withval" in
       yes) as_fn_error $? "documentation root URL not specified" "$LINENO" 5 ;;
       no)  as_fn_error $? "documentation root URL not specified" "$LINENO" 5 ;;
-      *)   DOCUMENTATION_ROOT_URL="$withval"
-	   ;;
+      */)  DOCUMENTATION_ROOT_URL="$withval" ;;
+      *)   as_fn_error $? "documentation root URL does not end with /" "$LINENO" 5 ;;
      esac
 else
-  DOCUMENTATION_ROOT_URL="https://gcc.gnu.org/onlinedocs/gcc/"
+  DOCUMENTATION_ROOT_URL="https://gcc.gnu.org/onlinedocs/"
 
 fi
 
+
+cat >>confdefs.h <<_ACEOF
+#define DOCUMENTATION_ROOT_URL "$DOCUMENTATION_ROOT_URL"
+_ACEOF
+
+
+# Allow overriding the default URL for GCC changes
+
+# Check whether --with-changes-root-url was given.
+if test "${with_changes_root_url+set}" = set; then :
+  withval=$with_changes_root_url; case "$withval" in
+      yes) as_fn_error $? "changes root URL not specified" "$LINENO" 5 ;;
+      no)  as_fn_error $? "changes root URL not specified" "$LINENO" 5 ;;
+      */)  CHANGES_ROOT_URL="$withval" ;;
+      *)   as_fn_error $? "changes root URL does not end with /" "$LINENO" 5 ;;
+     esac
+else
+  CHANGES_ROOT_URL="https://gcc.gnu.org/"
+
+fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define CHANGES_ROOT_URL "$CHANGES_ROOT_URL"
+_ACEOF
 
 
 # Sanity check enable_languages in case someone does not run the toplevel
@@ -7893,17 +7953,20 @@ for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
   else
     enable_offloading=1
     case "$tgt" in
-      *-intelmicemul-*)
+      *-intelmic-* | *-intelmicemul-*)
 	omp_device_property=omp-device-properties-i386
 	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/i386/t-omp-device"
 	;;
-      gcn*-*)
+      amdgcn*)
 	omp_device_property=omp-device-properties-gcn
 	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/gcn/t-omp-device"
 	;;
-      nvptx*-*)
+      nvptx*)
 	omp_device_property=omp-device-properties-nvptx
 	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/nvptx/t-omp-device"
+	;;
+      *)
+	as_fn_error $? "unknown offload target specified" "$LINENO" 5
 	;;
     esac
     omp_device_properties="${omp_device_properties} ${tgt}=${omp_device_property}"
@@ -9935,13 +9998,15 @@ fi
 case "x$with_zstd" in
   x) ;;
   xno)
-    ZSTD_INCLUDE=no
-    ZSTD_LIB=no
+    ZSTD_INCLUDE=
+    ZSTD_LIB=
     ;;
   *) ZSTD_INCLUDE=$with_zstd/include
      ZSTD_LIB=$with_zstd/lib
      ;;
 esac
+
+if test "x$with_zstd" != xno; then
 if test "x$with_zstd_include" != x; then
   ZSTD_INCLUDE=$with_zstd_include
 fi
@@ -9990,6 +10055,8 @@ if test $gcc_cv_header_zstd_h = yes; then
 
 $as_echo "#define HAVE_ZSTD_H 1" >>confdefs.h
 
+elif test "x$with_zstd" != x; then
+    as_fn_error $? "Unable to find zstd.h.  See config.log for details." "$LINENO" 5
 fi
 
 # LTO can use zstd compression algorithm
@@ -10054,6 +10121,7 @@ fi
 ZSTD_LIB="$LIBS"
 LIBS="$save_LIBS"
 
+fi
 
 
 
@@ -10711,6 +10779,16 @@ if test "${with_libiconv_prefix+set}" = set; then :
 
 fi
 
+
+# Check whether --with-libiconv-type was given.
+if test "${with_libiconv_type+set}" = set; then :
+  withval=$with_libiconv_type;  with_libiconv_type=$withval
+else
+   with_libiconv_type=auto
+fi
+
+  lib_type=`eval echo \$with_libiconv_type`
+
       LIBICONV=
   LTLIBICONV=
   INCICONV=
@@ -10748,13 +10826,13 @@ fi
           found_so=
           found_a=
           if test $use_additional = yes; then
-            if test -n "$shlibext" && test -f "$additional_libdir/lib$name.$shlibext"; then
+            if test -n "$shlibext" && test -f "$additional_libdir/lib$name.$shlibext" && test x$lib_type != xstatic; then
               found_dir="$additional_libdir"
               found_so="$additional_libdir/lib$name.$shlibext"
               if test -f "$additional_libdir/lib$name.la"; then
                 found_la="$additional_libdir/lib$name.la"
               fi
-            else
+            elif test x$lib_type != xshared; then
               if test -f "$additional_libdir/lib$name.$libext"; then
                 found_dir="$additional_libdir"
                 found_a="$additional_libdir/lib$name.$libext"
@@ -10778,13 +10856,13 @@ fi
               case "$x" in
                 -L*)
                   dir=`echo "X$x" | sed -e 's/^X-L//'`
-                  if test -n "$shlibext" && test -f "$dir/lib$name.$shlibext"; then
+                  if test -n "$shlibext" && test -f "$dir/lib$name.$shlibext" && test x$lib_type != xstatic; then
                     found_dir="$dir"
                     found_so="$dir/lib$name.$shlibext"
                     if test -f "$dir/lib$name.la"; then
                       found_la="$dir/lib$name.la"
                     fi
-                  else
+                  elif test x$lib_type != xshared; then
                     if test -f "$dir/lib$name.$libext"; then
                       found_dir="$dir"
                       found_a="$dir/lib$name.$libext"
@@ -11012,8 +11090,13 @@ fi
               done
             fi
           else
-                                                            LIBICONV="${LIBICONV}${LIBICONV:+ }-l$name"
-            LTLIBICONV="${LTLIBICONV}${LTLIBICONV:+ }-l$name"
+                                                            if test "x$lib_type" = "xauto" || test "x$lib_type" = "xshared"; then
+              LIBICONV="${LIBICONV}${LIBICONV:+ }-l$name"
+              LTLIBICONV="${LTLIBICONV}${LTLIBICONV:+ }-l$name"
+            else
+              LIBICONV="${LIBICONV}${LIBICONV:+ }-l:lib$name.$libext"
+              LTLIBICONV="${LTLIBICONV}${LTLIBICONV:+ }-l:lib$name.$libext"
+            fi
           fi
         fi
       fi
@@ -18938,7 +19021,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18941 "configure"
+#line 19022 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19044,7 +19127,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19047 "configure"
+#line 19128 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -23342,7 +23425,7 @@ if test $in_tree_ld != yes ; then
       ld_vers=`echo $ld_ver | sed -n \
 	  -e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*.*\)$,\1,p'`
     fi
-    ld_date=`echo $ld_ver | sed -n 's,^.*\([2-9][0-9][0-9][0-9]\)[-]*\([01][0-9]\)[-]*\([0-3][0-9]\).*$,\1\2\3,p'`
+    ld_date=`echo $ld_ver | sed -n 's,^.*\([2-9][0-9][0-9][0-9]\)\(-*\)\([01][0-9]\)\2\([0-3][0-9]\).*$,\1\3\4,p'`
     ld_vers_major=`expr "$ld_vers" : '\([0-9]*\)'`
     ld_vers_minor=`expr "$ld_vers" : '[0-9]*\.\([0-9]*\)'`
     ld_vers_patch=`expr "$ld_vers" : '[0-9]*\.[0-9]*\.\([0-9]*\)'`
@@ -24702,6 +24785,11 @@ $as_echo "#define TLS_SECTION_ASM_FLAG 't'" >>confdefs.h
     fi
     case "$target" in
       i[34567]86-*-*)
+	if test x$on_solaris = xyes; then
+	  case $gas_flag in
+	    yes) tls_as_opt="$tls_as_opt --32" ;;
+	  esac
+	fi
 	conftest_s="$conftest_s
 foo:	.long	25
 	.text
@@ -27937,6 +28025,43 @@ $as_echo "#define HAVE_NEWLIB_NANO_FORMATTED_IO 1" >>confdefs.h
 
       fi
     ;;
+    nios2-*-*)
+    # Versions 2.33 and earlier lacked support for the %gotoff relocation
+    # syntax that is documented in the ABI specification.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for support for %gotoff relocations in constant data" >&5
+$as_echo_n "checking assembler for support for %gotoff relocations in constant data... " >&6; }
+if ${gcc_cv_as_nios2_gotoff_relocation+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_nios2_gotoff_relocation=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '	.extern foo
+	.data
+	.long %gotoff(foo)' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_nios2_gotoff_relocation=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_nios2_gotoff_relocation" >&5
+$as_echo "$gcc_cv_as_nios2_gotoff_relocation" >&6; }
+if test $gcc_cv_as_nios2_gotoff_relocation = yes; then
+
+$as_echo "#define HAVE_AS_NIOS2_GOTOFF_RELOCATION 1" >>confdefs.h
+
+fi
+
+    ;;
     riscv*-*-*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .attribute support" >&5
 $as_echo_n "checking assembler for .attribute support... " >&6; }
@@ -28115,6 +28240,37 @@ $as_echo "$gcc_cv_as_s390_vector_loadstore_alignment_hints" >&6; }
 if test $gcc_cv_as_s390_vector_loadstore_alignment_hints = yes; then
 
 $as_echo "#define HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS 1" >>confdefs.h
+
+fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for vector load/store alignment hints on z13" >&5
+$as_echo_n "checking assembler for vector load/store alignment hints on z13... " >&6; }
+if ${gcc_cv_as_s390_vector_loadstore_alignment_hints_on_z13+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_s390_vector_loadstore_alignment_hints_on_z13=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '	vl %v24,0(%r15),3 ' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -mzarch -march=z13 -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_s390_vector_loadstore_alignment_hints_on_z13=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_s390_vector_loadstore_alignment_hints_on_z13" >&5
+$as_echo "$gcc_cv_as_s390_vector_loadstore_alignment_hints_on_z13" >&6; }
+if test $gcc_cv_as_s390_vector_loadstore_alignment_hints_on_z13 = yes; then
+
+$as_echo "#define HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS_ON_Z13 1" >>confdefs.h
 
 fi
 
@@ -29781,6 +29937,23 @@ $as_echo "#define TARGET_LIBC_PROVIDES_HWCAP_IN_TCB 1" >>confdefs.h
 
 fi
 
+# Check if the target LIBC handles PT_GNU_STACK.
+gcc_cv_libc_gnustack=unknown
+case "$target" in
+  mips*-*-linux*)
+
+if test $glibc_version_major -gt 2 \
+  || ( test $glibc_version_major -eq 2 && test $glibc_version_minor -ge 31 ); then :
+  gcc_cv_libc_gnustack=yes
+fi
+    ;;
+esac
+if test x$gcc_cv_libc_gnustack = xyes; then
+
+$as_echo "#define TARGET_LIBC_GNUSTACK 1" >>confdefs.h
+
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking dl_iterate_phdr in target C library" >&5
 $as_echo_n "checking dl_iterate_phdr in target C library... " >&6; }
 gcc_cv_target_dl_iterate_phdr=unknown
@@ -30485,6 +30658,37 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+# Specify what should be the default of -fdiagnostics-urls option.
+
+# Check whether --with-diagnostics-urls was given.
+if test "${with_diagnostics_urls+set}" = set; then :
+  withval=$with_diagnostics_urls; case x"$withval" in
+   xnever)
+     DIAGNOSTICS_URLS_DEFAULT=DIAGNOSTICS_URL_NO
+     ;;
+   xauto)
+     DIAGNOSTICS_URLS_DEFAULT=DIAGNOSTICS_URL_AUTO
+     ;;
+   xauto-if-env)
+     DIAGNOSTICS_URLS_DEFAULT=-1
+     ;;
+   xalways)
+     DIAGNOSTICS_URLS_DEFAULT=DIAGNOSTICS_URL_YES
+     ;;
+   *)
+     as_fn_error $? "$withval is an invalid option to --with-diagnostics-urls" "$LINENO" 5
+     ;;
+ esac
+else
+  DIAGNOSTICS_URLS_DEFAULT=DIAGNOSTICS_URL_AUTO
+fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define DIAGNOSTICS_URLS_DEFAULT $DIAGNOSTICS_URLS_DEFAULT
+_ACEOF
+
+
 # Generate gcc-driver-name.h containing GCC_DRIVER_NAME for the benefit
 # of jit/jit-playback.c.
 gcc_driver_version=`eval "${get_gcc_base_ver} $srcdir/BASE-VER"`
@@ -30561,6 +30765,187 @@ $as_echo "$gcc_cv_no_pie" >&6; }
 if test "$gcc_cv_no_pie" = "yes"; then
   NO_PIE_FLAG="-no-pie"
 fi
+
+
+# Enable Intel CET on Intel CET enabled host if jit is enabled.
+ # Check whether --enable-cet was given.
+if test "${enable_cet+set}" = set; then :
+  enableval=$enable_cet;
+      case "$enableval" in
+       yes|no|auto) ;;
+       *) as_fn_error $? "Unknown argument to enable/disable cet" "$LINENO" 5 ;;
+                          esac
+
+else
+  enable_cet=auto
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for CET support" >&5
+$as_echo_n "checking for CET support... " >&6; }
+
+case "$host" in
+  i[34567]86-*-linux* | x86_64-*-linux*)
+    may_have_cet=yes
+    cet_save_CFLAGS="$CFLAGS"
+    CFLAGS="$CFLAGS -fcf-protection"
+    case "$enable_cet" in
+      auto)
+	# Check if target supports multi-byte NOPs
+	# and if assembler supports CET insn.
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+#if !defined(__SSE2__)
+#error target does not support multi-byte NOPs
+#else
+asm ("setssbsy");
+#endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  enable_cet=yes
+else
+  enable_cet=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	;;
+      yes)
+	# Check if assembler supports CET.
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+asm ("setssbsy");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+
+else
+  as_fn_error $? "assembler with CET support is required for --enable-cet" "$LINENO" 5
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	;;
+    esac
+    CFLAGS="$cet_save_CFLAGS"
+    ;;
+  *)
+    may_have_cet=no
+    enable_cet=no
+    ;;
+esac
+
+cet_save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -fcf-protection=none"
+cet_save_LDFLAGS="$LDFLAGS"
+LDFLAGS="$LDFLAGS -Wl,-z,ibt,-z,shstk"
+if test x$may_have_cet = xyes; then
+  # Check whether -fcf-protection=none -Wl,-z,ibt,-z,shstk work.
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  may_have_cet=yes
+else
+  may_have_cet=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+if test x$may_have_cet = xyes; then
+  if test x$cross_compiling = xno; then
+    if test "$cross_compiling" = yes; then :
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "cannot run test program while cross compiling
+See \`config.log' for more details" "$LINENO" 5; }
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+static void
+foo (void)
+{
+}
+
+static void
+__attribute__ ((noinline, noclone))
+xxx (void (*f) (void))
+{
+  f ();
+}
+
+static void
+__attribute__ ((noinline, noclone))
+bar (void)
+{
+  xxx (foo);
+}
+
+int
+main ()
+{
+  bar ();
+  return 0;
+}
+
+_ACEOF
+if ac_fn_cxx_try_run "$LINENO"; then :
+  have_cet=no
+else
+  have_cet=yes
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+    if test x$enable_cet = xno -a x$have_cet = xyes; then
+      as_fn_error $? "Intel CET must be enabled on Intel CET enabled host" "$LINENO" 5
+    fi
+  fi
+else
+  # Enable CET in cross compiler if possible so that it will run on both
+  # CET and non-CET hosts.
+  have_cet=yes
+fi
+if test x$enable_cet = xyes; then
+  CET_HOST_FLAGS="-fcf-protection"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+CFLAGS="$cet_save_CFLAGS"
+LDFLAGS="$cet_save_LDFLAGS"
+
+case x$enable_languages in
+*jit*)
+  ;;
+*)
+  CET_HOST_FLAGS=
+  ;;
+esac
 
 
 # Check linker supports '-z bndplt'
@@ -31960,7 +32345,7 @@ $as_echo "$as_me: executing $ac_file commands" >&6;}
     "depdir":C) $SHELL $ac_aux_dir/mkinstalldirs $DEPDIR ;;
     "gccdepdir":C)
   ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/mkinstalldirs build/$DEPDIR
-  for lang in $subdirs c-family common
+  for lang in $subdirs c-family common analyzer
   do
       ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/mkinstalldirs $lang/$DEPDIR
   done ;;

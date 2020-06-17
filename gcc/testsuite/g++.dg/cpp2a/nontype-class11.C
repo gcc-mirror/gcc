@@ -1,5 +1,5 @@
 // PR c++/88538
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 struct S {
   unsigned a;

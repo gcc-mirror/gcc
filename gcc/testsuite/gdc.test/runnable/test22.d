@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 // REQUIRED_ARGS:
 
 import std.math: poly;

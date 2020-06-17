@@ -78,6 +78,14 @@ namespace __debug
       template<typename _ItT, typename _SeqT>
 	friend class ::__gnu_debug::_Safe_local_iterator;
 
+      // Reference wrapper for base class. See PR libstdc++/90102.
+      struct _Base_ref
+      {
+	_Base_ref(const _Base& __r) : _M_ref(__r) { }
+
+	const _Base& _M_ref;
+      };
+
     public:
       typedef typename _Base::size_type			size_type;
       typedef typename _Base::hasher			hasher;
@@ -118,8 +126,8 @@ namespace __debug
 
       unordered_set(const unordered_set&) = default;
 
-      unordered_set(const _Base& __x)
-      : _Base(__x) { }
+      unordered_set(_Base_ref __x)
+      : _Base(__x._M_ref) { }
 
       unordered_set(unordered_set&&) = default;
 
@@ -612,12 +620,13 @@ namespace __debug
 	       const unordered_set<_Value, _Hash, _Pred, _Alloc>& __y)
     { return __x._M_base() == __y._M_base(); }
 
+#if __cpp_impl_three_way_comparison < 201907L
   template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
     inline bool
     operator!=(const unordered_set<_Value, _Hash, _Pred, _Alloc>& __x,
 	       const unordered_set<_Value, _Hash, _Pred, _Alloc>& __y)
     { return !(__x == __y); }
-
+#endif
 
   /// Class std::unordered_multiset with safety/checking/debug instrumentation.
   template<typename _Value,
@@ -644,6 +653,14 @@ namespace __debug
 	friend class ::__gnu_debug::_Safe_iterator;
       template<typename _ItT, typename _SeqT>
 	friend class ::__gnu_debug::_Safe_local_iterator;
+
+      // Reference wrapper for base class. See PR libstdc++/90102.
+      struct _Base_ref
+      {
+	_Base_ref(const _Base& __r) : _M_ref(__r) { }
+
+	const _Base& _M_ref;
+      };
 
     public:
       typedef typename _Base::size_type			size_type;
@@ -685,8 +702,8 @@ namespace __debug
 
       unordered_multiset(const unordered_multiset&) = default;
 
-      unordered_multiset(const _Base& __x)
-      : _Base(__x) { }
+      unordered_multiset(_Base_ref __x)
+      : _Base(__x._M_ref) { }
 
       unordered_multiset(unordered_multiset&&) = default;
 
@@ -1176,29 +1193,15 @@ namespace __debug
 	       const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
     { return __x._M_base() == __y._M_base(); }
 
+#if __cpp_impl_three_way_comparison < 201907L
   template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
     inline bool
     operator!=(const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __x,
 	       const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
     { return !(__x == __y); }
+#endif
 
 } // namespace __debug
-#if __cplusplus > 201703L
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-namespace ranges::__detail
-{
-  template<typename _Tp> extern inline const bool __enable_view_impl;
-  template<typename _Val, typename _Hash, typename _Eq, typename _Alloc>
-    inline constexpr bool
-      __enable_view_impl<std::__debug::unordered_set<_Val, _Hash, _Eq, _Alloc>>
-	= false;
-  template<typename _Val, typename _Hash, typename _Eq, typename _Alloc>
-    inline constexpr bool
-      __enable_view_impl<std::__debug::unordered_multiset<_Val, _Hash, _Eq,
-							  _Alloc>> = false;
-} // namespace ranges::__detail
-_GLIBCXX_END_NAMESPACE_VERSION
-#endif // C++20
 } // namespace std
 
 #endif // C++11

@@ -1547,6 +1547,31 @@ class auto_string_vec : public auto_vec <char *>
   ~auto_string_vec ();
 };
 
+/* A subclass of auto_vec <T *> that deletes all of its elements on
+   destruction.
+
+   This is a crude way for a vec to "own" the objects it points to
+   and clean up automatically.
+
+   For example, no attempt is made to delete elements when an item
+   within the vec is overwritten.
+
+   We can't rely on gnu::unique_ptr within a container,
+   since we can't rely on move semantics in C++98.  */
+
+template <typename T>
+class auto_delete_vec : public auto_vec <T *>
+{
+ public:
+  auto_delete_vec () {}
+  auto_delete_vec (size_t s) : auto_vec <T *> (s) {}
+
+  ~auto_delete_vec ();
+
+private:
+  DISABLE_COPY_AND_ASSIGN(auto_delete_vec<T>);
+};
+
 /* Conditionally allocate heap memory for VEC and its internal vector.  */
 
 template<typename T>
@@ -1649,6 +1674,19 @@ auto_string_vec::~auto_string_vec ()
   char *str;
   FOR_EACH_VEC_ELT (*this, i, str)
     free (str);
+}
+
+/* auto_delete_vec's dtor, deleting all contained items, automatically
+   chaining up to ~auto_vec <T*>, which frees the internal buffer.  */
+
+template <typename T>
+inline
+auto_delete_vec<T>::~auto_delete_vec ()
+{
+  int i;
+  T *item;
+  FOR_EACH_VEC_ELT (*this, i, item)
+    delete item;
 }
 
 

@@ -1,10 +1,9 @@
 env GO111MODULE=off
 [!short] skip # rebuilds std for alternate architecture
+[gccgo] skip
 
 cd mycmd
 go build mycmd
-
-[gccgo] stop
 
 # cross-compile install with implicit GOBIN=$GOPATH/bin can make subdirectory
 env GOARCH=386

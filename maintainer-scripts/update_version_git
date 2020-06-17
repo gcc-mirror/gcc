@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+# Update the current version date in DATESTAMP files and generate
+# ChangeLog file entries since the last DATESTAMP update from the
+# commit messages.
+
+GITROOT=${GITROOT:-"/git/gcc.git"}
+
+# Run this from /tmp.
+export GITROOT
+BASEDIR=`mktemp -d`
+cd "$BASEDIR"
+
+GIT=${GIT:-/usr/local/bin/git}
+
+# Assume all will go well.
+SUBDIR=$BASEDIR/gcc
+${GIT} clone -q -b master "$GITROOT" "$SUBDIR"
+
+cp -a $SUBDIR/contrib/gcc-changelog $BASEDIR/gcc-changelog
+cd "$SUBDIR"
+python3 ../gcc-changelog/git_update_version.py -p
+RESULT=$?
+
+cd /tmp
+
+/bin/rm -rf $BASEDIR
+exit $RESULT

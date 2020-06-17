@@ -1372,7 +1372,7 @@ maybe_va_opt_error (cpp_reader *pfile)
 	 system headers.  */
       if (!cpp_in_system_header (pfile))
 	cpp_error (pfile, CPP_DL_PEDWARN,
-		   "__VA_OPT__ is not available until C++2a");
+		   "__VA_OPT__ is not available until C++20");
     }
   else if (!pfile->state.va_args_ok)
     {
@@ -1380,7 +1380,7 @@ maybe_va_opt_error (cpp_reader *pfile)
 	 variadic macro.  */
       cpp_error (pfile, CPP_DL_PEDWARN,
 		 "__VA_OPT__ can only appear in the expansion"
-		 " of a C++2a variadic macro");
+		 " of a C++20 variadic macro");
     }
 }
 
@@ -1586,35 +1586,74 @@ create_literal (cpp_reader *pfile, cpp_token *token, const uchar *base,
   token->val.str.text = dest;
 }
 
+/* A pair of raw buffer pointers.  The currently open one is [1], the
+   first one is [0].  Used for string literal lexing.  */
+struct lit_accum {
+  _cpp_buff *first;
+  _cpp_buff *last;
+  const uchar *rpos;
+  size_t accum;
+
+  lit_accum ()
+    : first (NULL), last (NULL), rpos (0), accum (0)
+  {
+  }
+
+  void append (cpp_reader *, const uchar *, size_t);
+
+  void read_begin (cpp_reader *);
+  bool reading_p () const
+  {
+    return rpos != NULL;
+  }
+  char read_char ()
+  {
+    char c = *rpos++;
+    if (rpos == BUFF_FRONT (last))
+      rpos = NULL;
+    return c;
+  }
+};
+
 /* Subroutine of lex_raw_string: Append LEN chars from BASE to the buffer
    sequence from *FIRST_BUFF_P to LAST_BUFF_P.  */
 
-static void
-bufring_append (cpp_reader *pfile, const uchar *base, size_t len,
-		_cpp_buff **first_buff_p, _cpp_buff **last_buff_p)
+void
+lit_accum::append (cpp_reader *pfile, const uchar *base, size_t len)
 {
-  _cpp_buff *first_buff = *first_buff_p;
-  _cpp_buff *last_buff = *last_buff_p;
-
-  if (first_buff == NULL)
-    first_buff = last_buff = _cpp_get_buff (pfile, len);
-  else if (len > BUFF_ROOM (last_buff))
+  if (!last)
+    /* Starting.  */
+    first = last = _cpp_get_buff (pfile, len);
+  else if (len > BUFF_ROOM (last))
     {
-      size_t room = BUFF_ROOM (last_buff);
-      memcpy (BUFF_FRONT (last_buff), base, room);
-      BUFF_FRONT (last_buff) += room;
+      /* There is insufficient room in the buffer.  Copy what we can,
+	 and then either extend or create a new one.  */
+      size_t room = BUFF_ROOM (last);
+      memcpy (BUFF_FRONT (last), base, room);
+      BUFF_FRONT (last) += room;
       base += room;
       len -= room;
-      last_buff = _cpp_append_extend_buff (pfile, last_buff, len);
+      accum += room;
+
+      gcc_checking_assert (!rpos);
+
+      last = _cpp_append_extend_buff (pfile, last, len);
     }
 
-  memcpy (BUFF_FRONT (last_buff), base, len);
-  BUFF_FRONT (last_buff) += len;
-
-  *first_buff_p = first_buff;
-  *last_buff_p = last_buff;
+  memcpy (BUFF_FRONT (last), base, len);
+  BUFF_FRONT (last) += len;
+  accum += len;
 }
 
+void
+lit_accum::read_begin (cpp_reader *pfile)
+{
+  /* We never accumulate more than 4 chars to read.  */
+  if (BUFF_ROOM (last) < 4)
+
+    last = _cpp_append_extend_buff (pfile, last, 4);
+  rpos = BUFF_FRONT (last);
+}
 
 /* Returns true if a macro has been defined.
    This might not work if compile with -save-temps,
@@ -1657,267 +1696,255 @@ is_macro_not_literal_suffix(cpp_reader *pfile, const uchar *base)
   return is_macro (pfile, base);
 }
 
-/* Lexes a raw string.  The stored string contains the spelling, including
-   double quotes, delimiter string, '(' and ')', any leading
-   'L', 'u', 'U' or 'u8' and 'R' modifier.  It returns the type of the
-   literal, or CPP_OTHER if it was not properly terminated.
+/* Lexes a raw string.  The stored string contains the spelling,
+   including double quotes, delimiter string, '(' and ')', any leading
+   'L', 'u', 'U' or 'u8' and 'R' modifier.  The created token contains
+   the type of the literal, or CPP_OTHER if it was not properly
+   terminated.
+
+   BASE is the start of the token.  Updates pfile->buffer->cur to just
+   after the lexed string.
 
    The spelling is NUL-terminated, but it is not guaranteed that this
    is the first NUL since embedded NULs are preserved.  */
 
 static void
-lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
-		const uchar *cur)
+lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 {
-  uchar raw_prefix[17];
-  uchar temp_buffer[18];
-  const uchar *orig_base;
-  unsigned int raw_prefix_len = 0, raw_suffix_len = 0;
-  enum raw_str_phase { RAW_STR_PREFIX, RAW_STR, RAW_STR_SUFFIX };
-  raw_str_phase phase = RAW_STR_PREFIX;
-  enum cpp_ttype type;
-  size_t total_len = 0;
-  /* Index into temp_buffer during phases other than RAW_STR,
-     during RAW_STR phase 17 to tell BUF_APPEND that nothing should
-     be appended to temp_buffer.  */
-  size_t temp_buffer_len = 0;
-  _cpp_buff *first_buff = NULL, *last_buff = NULL;
-  size_t raw_prefix_start;
+  const uchar *pos = base;
+
+  /* 'tis a pity this information isn't passed down from the lexer's
+     initial categorization of the token.  */
+  enum cpp_ttype type = CPP_STRING;
+
+  if (*pos == 'L')
+    {
+      type = CPP_WSTRING;
+      pos++;
+    }
+  else if (*pos == 'U')
+    {
+      type = CPP_STRING32;
+      pos++;
+    }
+  else if (*pos == 'u')
+    {
+      if (pos[1] == '8')
+	{
+	  type = CPP_UTF8STRING;
+	  pos++;
+	}
+      else
+	type = CPP_STRING16;
+      pos++;
+    }
+
+  gcc_checking_assert (pos[0] == 'R' && pos[1] == '"');
+  pos += 2;
+
   _cpp_line_note *note = &pfile->buffer->notes[pfile->buffer->cur_note];
 
-  type = (*base == 'L' ? CPP_WSTRING :
-	  *base == 'U' ? CPP_STRING32 :
-	  *base == 'u' ? (base[1] == '8' ? CPP_UTF8STRING : CPP_STRING16)
-	  : CPP_STRING);
+  /* Skip notes before the ".  */
+  while (note->pos < pos)
+    ++note;
 
-#define BUF_APPEND(STR,LEN)					\
-      do {							\
-	bufring_append (pfile, (const uchar *)(STR), (LEN),	\
-			&first_buff, &last_buff);		\
-	total_len += (LEN);					\
-	if (__builtin_expect (temp_buffer_len < 17, 0)		\
-	    && (const uchar *)(STR) != base			\
-	    && (LEN) <= 2)					\
-	  {							\
-	    memcpy (temp_buffer + temp_buffer_len,		\
-		    (const uchar *)(STR), (LEN));		\
-	    temp_buffer_len += (LEN);				\
-	  }							\
-      } while (0)
+  lit_accum accum;
+  
+  uchar prefix[17];
+  unsigned prefix_len = 0;
+  enum Phase
+  {
+   PHASE_PREFIX = -2,
+   PHASE_NONE = -1,
+   PHASE_SUFFIX = 0
+  } phase = PHASE_PREFIX;
 
-  orig_base = base;
-  ++cur;
-  raw_prefix_start = cur - base;
   for (;;)
     {
-      cppchar_t c;
+      gcc_checking_assert (note->pos >= pos);
 
-      /* If we previously performed any trigraph or line splicing
-	 transformations, undo them in between the opening and closing
-	 double quote.  */
-      while (note->pos < cur)
-	++note;
-      for (; note->pos == cur; ++note)
+      /* Undo any escaped newlines and trigraphs.  */
+      if (!accum.reading_p () && note->pos == pos)
+	switch (note->type)
+	  {
+	  case '\\':
+	  case ' ':
+	    /* Restore backslash followed by newline.  */
+	    accum.append (pfile, base, pos - base);
+	    base = pos;
+	    accum.read_begin (pfile);
+	    accum.append (pfile, UC"\\", 1);
+
+	  after_backslash:
+	    if (note->type == ' ')
+	      /* GNU backslash whitespace newline extension.  FIXME
+		 could be any sequence of non-vertical space.  When we
+		 can properly restore any such sequence, we should
+		 mark this note as handled so _cpp_process_line_notes
+		 doesn't warn.  */
+	      accum.append (pfile, UC" ", 1);
+
+	    accum.append (pfile, UC"\n", 1);
+	    note++;
+	    break;
+
+	  case '\n':
+	    /* This can happen for ??/<NEWLINE> when trigraphs are not
+	       being interpretted.  */
+	    gcc_checking_assert (!CPP_OPTION (pfile, trigraphs));
+	    note->type = 0;
+	    note++;
+	    break;
+
+	  default:
+	    gcc_checking_assert (_cpp_trigraph_map[note->type]);
+
+	    /* Don't warn about this trigraph in
+	       _cpp_process_line_notes, since trigraphs show up as
+	       trigraphs in raw strings.  */
+	    uchar type = note->type;
+	    note->type = 0;
+
+	    if (CPP_OPTION (pfile, trigraphs))
+	      {
+		accum.append (pfile, base, pos - base);
+		base = pos;
+		accum.read_begin (pfile);
+		accum.append (pfile, UC"??", 2);
+		accum.append (pfile, &type, 1);
+
+		/* ??/ followed by newline gets two line notes, one for
+		   the trigraph and one for the backslash/newline.  */
+		if (type == '/' && note[1].pos == pos)
+		  {
+		    note++;
+		    gcc_assert (note->type == '\\' || note->type == ' ');
+		    goto after_backslash;
+		  }
+		/* Skip the replacement character.  */
+		base = ++pos;
+	      }
+
+	    note++;
+	    break;
+	  }
+
+      /* Now get a char to process.  Either from an expanded note, or
+	 from the line buffer.  */
+      bool read_note = accum.reading_p ();
+      char c = read_note ? accum.read_char () : *pos++;
+
+      if (phase == PHASE_PREFIX)
 	{
-	  switch (note->type)
+	  if (c == '(')
 	    {
-	    case '\\':
-	    case ' ':
-	      /* Restore backslash followed by newline.  */
-	      BUF_APPEND (base, cur - base);
-	      base = cur;
-	      BUF_APPEND ("\\", 1);
-	    after_backslash:
-	      if (note->type == ' ')
-		{
-		  /* GNU backslash whitespace newline extension.  FIXME
-		     could be any sequence of non-vertical space.  When we
-		     can properly restore any such sequence, we should mark
-		     this note as handled so _cpp_process_line_notes
-		     doesn't warn.  */
-		  BUF_APPEND (" ", 1);
-		}
-
-	      BUF_APPEND ("\n", 1);
-	      break;
-
-	    case 0:
-	      /* Already handled.  */
-	      break;
-
-	    default:
-	      if (_cpp_trigraph_map[note->type])
-		{
-		  /* Don't warn about this trigraph in
-		     _cpp_process_line_notes, since trigraphs show up as
-		     trigraphs in raw strings.  */
-		  uchar type = note->type;
-		  note->type = 0;
-
-		  if (!CPP_OPTION (pfile, trigraphs))
-		    /* If we didn't convert the trigraph in the first
-		       place, don't do anything now either.  */
-		    break;
-
-		  BUF_APPEND (base, cur - base);
-		  base = cur;
-		  BUF_APPEND ("??", 2);
-
-		  /* ??/ followed by newline gets two line notes, one for
-		     the trigraph and one for the backslash/newline.  */
-		  if (type == '/' && note[1].pos == cur)
-		    {
-		      if (note[1].type != '\\'
-			  && note[1].type != ' ')
-			abort ();
-		      BUF_APPEND ("/", 1);
-		      ++note;
-		      goto after_backslash;
-		    }
-		  else
-		    {
-		      /* Skip the replacement character.  */
-		      base = ++cur;
-		      BUF_APPEND (&type, 1);
-		      c = type;
-		      goto check_c;
-		    }
-		}
-	      else
-		abort ();
-	      break;
+	      /* Done.  */
+	      phase = PHASE_NONE;
+	      prefix[prefix_len++] = '"';
 	    }
-	}
-      c = *cur++;
-      if (__builtin_expect (temp_buffer_len < 17, 0))
-	temp_buffer[temp_buffer_len++] = c;
-
-     check_c:
-      if (phase == RAW_STR_PREFIX)
-	{
-	  while (raw_prefix_len < temp_buffer_len)
+	  else if (prefix_len < 16
+		   /* Prefix chars are any of the basic character set,
+		      [lex.charset] except for '
+		      ()\\\t\v\f\n'. Optimized for a contiguous
+		      alphabet.  */
+		   /* Unlike a switch, this collapses down to one or
+		      two shift and bitmask operations on an ASCII
+		      system, with an outlier or two.   */
+		   && (('Z' - 'A' == 25
+			? ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+			: ISIDST (c))
+		       || (c >= '0' && c <= '9')
+		       || c == '_' || c == '{' || c == '}'
+		       || c == '[' || c == ']' || c == '#'
+		       || c == '<' || c == '>' || c == '%'
+		       || c == ':' || c == ';' || c == '.' || c == '?'
+		       || c == '*' || c == '+' || c == '-' || c == '/'
+		       || c == '^' || c == '&' || c == '|' || c == '~'
+		       || c == '!' || c == '=' || c == ','
+		       || c == '"' || c == '\''))
+	    prefix[prefix_len++] = c;
+	  else
 	    {
-	      raw_prefix[raw_prefix_len] = temp_buffer[raw_prefix_len];
-	      switch (raw_prefix[raw_prefix_len])
-		{
-		case ' ': case '(': case ')': case '\\': case '\t':
-		case '\v': case '\f': case '\n': default:
-		  break;
-		/* Basic source charset except the above chars.  */
-		case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
-		case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
-		case 'm': case 'n': case 'o': case 'p': case 'q': case 'r':
-		case 's': case 't': case 'u': case 'v': case 'w': case 'x':
-		case 'y': case 'z':
-		case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
-		case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
-		case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
-		case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
-		case 'Y': case 'Z':
-		case '0': case '1': case '2': case '3': case '4': case '5':
-		case '6': case '7': case '8': case '9':
-		case '_': case '{': case '}': case '#': case '[': case ']':
-		case '<': case '>': case '%': case ':': case ';': case '.':
-		case '?': case '*': case '+': case '-': case '/': case '^':
-		case '&': case '|': case '~': case '!': case '=': case ',':
-		case '"': case '\'':
-		  if (raw_prefix_len < 16)
-		    {
-		      raw_prefix_len++;
-		      continue;
-		    }
-		  break;
-		}
-
-	      if (raw_prefix[raw_prefix_len] != '(')
-		{
-		  int col = CPP_BUF_COLUMN (pfile->buffer, cur) + 1;
-		  if (raw_prefix_len == 16)
-		    cpp_error_with_line (pfile, CPP_DL_ERROR, token->src_loc,
-					 col, "raw string delimiter longer "
-					      "than 16 characters");
-		  else if (raw_prefix[raw_prefix_len] == '\n')
-		    cpp_error_with_line (pfile, CPP_DL_ERROR, token->src_loc,
-					 col, "invalid new-line in raw "
-					      "string delimiter");
-		  else
-		    cpp_error_with_line (pfile, CPP_DL_ERROR, token->src_loc,
-					 col, "invalid character '%c' in "
-					      "raw string delimiter",
-					 (int) raw_prefix[raw_prefix_len]);
-		  pfile->buffer->cur = orig_base + raw_prefix_start - 1;
-		  create_literal (pfile, token, orig_base,
-				  raw_prefix_start - 1, CPP_OTHER);
-		  if (first_buff)
-		    _cpp_release_buff (pfile, first_buff);
-		  return;
-		}
-	      raw_prefix[raw_prefix_len] = '"';
-	      phase = RAW_STR;
-	      /* Nothing should be appended to temp_buffer during
-		 RAW_STR phase.  */
-	      temp_buffer_len = 17;
-	      break;
+	      /* Something is wrong.  */
+	      int col = CPP_BUF_COLUMN (pfile->buffer, pos) + read_note;
+	      if (prefix_len == 16)
+		cpp_error_with_line (pfile, CPP_DL_ERROR, token->src_loc,
+				     col, "raw string delimiter longer "
+				     "than 16 characters");
+	      else if (c == '\n')
+		cpp_error_with_line (pfile, CPP_DL_ERROR, token->src_loc,
+				     col, "invalid new-line in raw "
+				     "string delimiter");
+	      else
+		cpp_error_with_line (pfile, CPP_DL_ERROR, token->src_loc,
+				     col, "invalid character '%c' in "
+				     "raw string delimiter", c);
+	      type = CPP_OTHER;
+	      phase = PHASE_NONE;
+	      /* Continue until we get a close quote, that's probably
+		 the best failure mode.  */
+	      prefix_len = 0;
 	    }
 	  continue;
 	}
-      else if (phase == RAW_STR_SUFFIX)
+
+      if (phase != PHASE_NONE)
 	{
-	  while (raw_suffix_len <= raw_prefix_len
-		 && raw_suffix_len < temp_buffer_len
-		 && temp_buffer[raw_suffix_len] == raw_prefix[raw_suffix_len])
-	    raw_suffix_len++;
-	  if (raw_suffix_len > raw_prefix_len)
+	  if (prefix[phase] != c)
+	    phase = PHASE_NONE;
+	  else if (unsigned (phase + 1) == prefix_len)
 	    break;
-	  if (raw_suffix_len == temp_buffer_len)
-	    continue;
-	  phase = RAW_STR;
-	  /* Nothing should be appended to temp_buffer during
-	     RAW_STR phase.  */
-	  temp_buffer_len = 17;
+	  else
+	    {
+	      phase = Phase (phase + 1);
+	      continue;
+	    }
 	}
-      if (c == ')')
+
+      if (!prefix_len && c == '"')
+	/* Failure mode lexing.  */
+	goto out;
+      else if (prefix_len && c == ')')
+	phase = PHASE_SUFFIX;
+      else if (!read_note && c == '\n')
 	{
-	  phase = RAW_STR_SUFFIX;
-	  raw_suffix_len = 0;
-	  temp_buffer_len = 0;
-	}
-      else if (c == '\n')
-	{
+	  pos--;
+	  pfile->buffer->cur = pos;
 	  if (pfile->state.in_directive
 	      || (pfile->state.parsing_args
 		  && pfile->buffer->next_line >= pfile->buffer->rlimit))
 	    {
-	      cur--;
-	      type = CPP_OTHER;
 	      cpp_error_with_line (pfile, CPP_DL_ERROR, token->src_loc, 0,
 				   "unterminated raw string");
-	      break;
+	      type = CPP_OTHER;
+	      goto out;
 	    }
 
-	  BUF_APPEND (base, cur - base);
+	  accum.append (pfile, base, pos - base + 1);
+	  _cpp_process_line_notes (pfile, false);
 
-	  if (pfile->buffer->cur < pfile->buffer->rlimit)
+	  if (pfile->buffer->next_line < pfile->buffer->rlimit)
 	    CPP_INCREMENT_LINE (pfile, 0);
 	  pfile->buffer->need_line = true;
 
-	  pfile->buffer->cur = cur-1;
-	  _cpp_process_line_notes (pfile, false);
 	  if (!_cpp_get_fresh_line (pfile))
 	    {
+	      /* We ran out of file and failed to get a line.  */
 	      location_t src_loc = token->src_loc;
 	      token->type = CPP_EOF;
 	      /* Tell the compiler the line number of the EOF token.  */
 	      token->src_loc = pfile->line_table->highest_line;
 	      token->flags = BOL;
-	      if (first_buff != NULL)
-		_cpp_release_buff (pfile, first_buff);
+	      if (accum.first)
+		_cpp_release_buff (pfile, accum.first);
 	      cpp_error_with_line (pfile, CPP_DL_ERROR, src_loc, 0,
 				   "unterminated raw string");
+	      /* Now pop the buffer that _cpp_get_fresh_line did not.  */
+	      _cpp_pop_buffer (pfile);
 	      return;
 	    }
 
-	  cur = base = pfile->buffer->cur;
+	  pos = base = pfile->buffer->cur;
 	  note = &pfile->buffer->notes[pfile->buffer->cur_note];
 	}
     }
@@ -1927,7 +1954,7 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
       /* If a string format macro, say from inttypes.h, is placed touching
 	 a string literal it could be parsed as a C++11 user-defined string
 	 literal thus breaking the program.  */
-      if (is_macro_not_literal_suffix (pfile, cur))
+      if (is_macro_not_literal_suffix (pfile, pos))
 	{
 	  /* Raise a warning, but do not consume subsequent tokens.  */
 	  if (CPP_OPTION (pfile, warn_literal_suffix) && !pfile->state.skipping)
@@ -1937,37 +1964,37 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
 				   "a space between literal and string macro");
 	}
       /* Grab user defined literal suffix.  */
-      else if (ISIDST (*cur))
+      else if (ISIDST (*pos))
 	{
 	  type = cpp_userdef_string_add_type (type);
-	  ++cur;
+	  ++pos;
 
-	  while (ISIDNUM (*cur))
-	    ++cur;
+	  while (ISIDNUM (*pos))
+	    ++pos;
 	}
     }
 
-  pfile->buffer->cur = cur;
-  if (first_buff == NULL)
-    create_literal (pfile, token, base, cur - base, type);
+ out:
+  pfile->buffer->cur = pos;
+  if (!accum.accum)
+    create_literal (pfile, token, base, pos - base, type);
   else
     {
-      uchar *dest = _cpp_unaligned_alloc (pfile, total_len + (cur - base) + 1);
+      size_t extra_len = pos - base;
+      uchar *dest = _cpp_unaligned_alloc (pfile, accum.accum + extra_len + 1);
 
       token->type = type;
-      token->val.str.len = total_len + (cur - base);
+      token->val.str.len = accum.accum + extra_len;
       token->val.str.text = dest;
-      last_buff = first_buff;
-      while (last_buff != NULL)
+      for (_cpp_buff *buf = accum.first; buf; buf = buf->next)
 	{
-	  memcpy (dest, last_buff->base,
-		  BUFF_FRONT (last_buff) - last_buff->base);
-	  dest += BUFF_FRONT (last_buff) - last_buff->base;
-	  last_buff = last_buff->next;
+	  size_t len = BUFF_FRONT (buf) - buf->base;
+	  memcpy (dest, buf->base, len);
+	  dest += len;
 	}
-      _cpp_release_buff (pfile, first_buff);
-      memcpy (dest, base, cur - base);
-      dest[cur - base] = '\0';
+      _cpp_release_buff (pfile, accum.first);
+      memcpy (dest, base, extra_len);
+      dest[extra_len] = '\0';
     }
 }
 
@@ -2000,7 +2027,7 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
     }
   if (terminator == 'R')
     {
-      lex_raw_string (pfile, token, base, cur);
+      lex_raw_string (pfile, token, base);
       return;
     }
   if (terminator == '"')
@@ -2651,8 +2678,6 @@ _cpp_lex_token (cpp_reader *pfile)
 bool
 _cpp_get_fresh_line (cpp_reader *pfile)
 {
-  int return_at_eof;
-
   /* We can't get a new line until we leave the current directive.  */
   if (pfile->state.in_directive)
     return false;
@@ -2683,10 +2708,17 @@ _cpp_get_fresh_line (cpp_reader *pfile)
 	  buffer->next_line = buffer->rlimit;
 	}
 
-      return_at_eof = buffer->return_at_eof;
-      _cpp_pop_buffer (pfile);
-      if (pfile->buffer == NULL || return_at_eof)
-	return false;
+      if (buffer->prev && !buffer->return_at_eof)
+	_cpp_pop_buffer (pfile);
+      else
+	{
+	  /* End of translation.  Do not pop the buffer yet. Increment
+	     line number so that the EOF token is on a line of its own
+	     (_cpp_lex_direct doesn't increment in that case, because
+	     it's hard for it to distinguish this special case). */
+	  CPP_INCREMENT_LINE (pfile, 0);
+	  return false;
+	}
     }
 }
 
@@ -2740,6 +2772,8 @@ _cpp_lex_direct (cpp_reader *pfile)
 	      /* Tell the compiler the line number of the EOF token.  */
 	      result->src_loc = pfile->line_table->highest_line;
 	      result->flags = BOL;
+	      /* Now pop the buffer that _cpp_get_fresh_line did not.  */
+	      _cpp_pop_buffer (pfile);
 	    }
 	  return result;
 	}
@@ -2984,7 +3018,7 @@ _cpp_lex_direct (cpp_reader *pfile)
 	  buffer->cur++, result->type = CPP_LESS_EQ;
 	  if (*buffer->cur == '>'
 	      && CPP_OPTION (pfile, cplusplus)
-	      && CPP_OPTION (pfile, lang) >= CLK_GNUCXX2A)
+	      && CPP_OPTION (pfile, lang) >= CLK_GNUCXX20)
 	    buffer->cur++, result->type = CPP_SPACESHIP;
 	}
       else if (*buffer->cur == '<')
@@ -3825,4 +3859,487 @@ void
 cpp_stop_forcing_token_locations (cpp_reader *r)
 {
   r->forced_token_location = 0;
+}
+
+/* We're looking at \, if it's escaping EOL, look past it.  If at
+   LIMIT, don't advance.  */
+
+static const unsigned char *
+do_peek_backslash (const unsigned char *peek, const unsigned char *limit)
+{
+  const unsigned char *probe = peek;
+
+  if (__builtin_expect (peek[1] == '\n', true))
+    {
+    eol:
+      probe += 2;
+      if (__builtin_expect (probe < limit, true))
+	{
+	  peek = probe;
+	  if (*peek == '\\')
+	    /* The user might be perverse.  */
+	    return do_peek_backslash (peek, limit);
+	}
+    }
+  else if (__builtin_expect (peek[1] == '\r', false))
+    {
+      if (probe[2] == '\n')
+	probe++;
+      goto eol;
+    }
+
+  return peek;
+}
+
+static const unsigned char *
+do_peek_next (const unsigned char *peek, const unsigned char *limit)
+{
+  if (__builtin_expect (*peek == '\\', false))
+    peek = do_peek_backslash (peek, limit);
+  return peek;
+}
+
+static const unsigned char *
+do_peek_prev (const unsigned char *peek, const unsigned char *bound)
+{
+  if (peek == bound)
+    return NULL;
+
+  unsigned char c = *--peek;
+  if (__builtin_expect (c == '\n', false)
+      || __builtin_expect (c == 'r', false))
+    {
+      if (peek == bound)
+	return peek;
+      int ix = -1;
+      if (c == '\n' && peek[ix] == '\r')
+	{
+	  if (peek + ix == bound)
+	    return peek;
+	  ix--;
+	}
+
+      if (peek[ix] == '\\')
+	return do_peek_prev (peek + ix, bound);
+
+      return peek;
+    }
+  else
+    return peek;
+}
+
+/* Directives-only scanning.  Somewhat more relaxed than correct
+   parsing -- some ill-formed programs will not be rejected.  */
+
+void
+cpp_directive_only_process (cpp_reader *pfile,
+			    void *data,
+			    void (*cb) (cpp_reader *, CPP_DO_task, void *, ...))
+{
+  do
+    {
+    restart:
+      /* Buffer initialization, but no line cleaning. */
+      cpp_buffer *buffer = pfile->buffer;
+      buffer->cur_note = buffer->notes_used = 0;
+      buffer->cur = buffer->line_base = buffer->next_line;
+      buffer->need_line = false;
+      /* Files always end in a newline.  We rely on this for
+	 character peeking safety.  */
+      gcc_assert (buffer->rlimit[-1] == '\n');
+
+      const unsigned char *base = buffer->cur;
+      unsigned line_count = 0;
+      const unsigned char *line_start = base;
+
+      bool bol = true;
+      bool raw = false;
+
+      const unsigned char *lwm = base;
+      for (const unsigned char *pos = base, *limit = buffer->rlimit;
+	   pos < limit;)
+	{
+	  unsigned char c = *pos++;
+	  /* This matches the switch in _cpp_lex_direct.  */
+	  switch (c)
+	    {
+	    case ' ': case '\t': case '\f': case '\v':
+	      /* Whitespace, do nothing.  */
+	      break;
+
+	    case '\r': /* MAC line ending, or Windows \r\n  */
+	      if (*pos == '\n')
+		pos++;
+	      /* FALLTHROUGH */
+
+	    case '\n':
+	      bol = true;
+
+	    next_line:
+	      CPP_INCREMENT_LINE (pfile, 0);
+	      line_count++;
+	      line_start = pos;
+	      break;
+
+	    case '\\':
+	      /* <backslash><newline> is removed, and doesn't undo any
+		 preceeding escape or whatnot.  */
+	      if (*pos == '\n')
+		{
+		  pos++;
+		  goto next_line;
+		}
+	      else if (*pos == '\r')
+		{
+		  if (pos[1] == '\n')
+		    pos++;
+		  pos++;
+		  goto next_line;
+		}
+	      goto dflt;
+	      
+	    case '#':
+	      if (bol)
+		{
+		  /* Line directive.  */
+		  if (pos - 1 > base && !pfile->state.skipping)
+		    cb (pfile, CPP_DO_print, data,
+			line_count, base, pos - 1 - base);
+
+		  /* Prep things for directive handling. */
+		  buffer->next_line = pos;
+		  buffer->need_line = true;
+		  bool ok = _cpp_get_fresh_line (pfile);
+		  gcc_checking_assert (ok);
+
+		  /* Ensure proper column numbering for generated
+		     error messages. */
+		  buffer->line_base -= pos - line_start;
+
+		  _cpp_handle_directive (pfile, line_start + 1 != pos);
+
+		  /* Sanitize the line settings.  Duplicate #include's can
+		     mess things up. */
+		  // FIXME: Necessary?
+		  pfile->line_table->highest_location
+		    = pfile->line_table->highest_line;
+
+		  if (!pfile->state.skipping
+		      && pfile->buffer->next_line < pfile->buffer->rlimit)
+		    cb (pfile, CPP_DO_location, data,
+			pfile->line_table->highest_line);
+
+		  goto restart;
+		}
+	      goto dflt;
+
+	    case '/':
+	      {
+		const unsigned char *peek = do_peek_next (pos, limit);
+		if (!(*peek == '/' || *peek == '*'))
+		  goto dflt;
+
+		/* Line or block comment  */
+		bool is_block = *peek == '*';
+		bool star = false;
+		bool esc = false;
+		location_t sloc
+		  = linemap_position_for_column (pfile->line_table,
+						 pos - line_start);
+
+		while (pos < limit)
+		  {
+		    char c = *pos++;
+		    switch (c)
+		      {
+		      case '\\':
+			esc = true;
+			break;
+
+		      case '\r':
+			if (*pos == '\n')
+			  pos++;
+			/* FALLTHROUGH  */
+
+		      case '\n':
+			{
+			  CPP_INCREMENT_LINE (pfile, 0);
+			  line_count++;
+			  line_start = pos;
+			  if (!esc && !is_block)
+			    {
+			      bol = true;
+			      goto done_comment;
+			    }
+			}
+			if (!esc)
+			  star = false;
+			esc = false;
+			break;
+
+		      case '*':
+			if (pos > peek && !esc)
+			  star = is_block;
+			esc = false;
+			break;
+
+		      case '/':
+			if (star)
+			  goto done_comment;
+			/* FALLTHROUGH  */
+
+		      default:
+			star = false;
+			esc = false;
+			break;
+		      }
+		  }
+		cpp_error_with_line (pfile, CPP_DL_ERROR, sloc, 0,
+				     "unterminated comment");
+	      done_comment:
+		lwm = pos;
+		break;
+	      }
+
+	    case '\'':
+	      if (!CPP_OPTION (pfile, digit_separators))
+		goto delimited_string;
+
+	      /* Possibly a number punctuator.  */
+	      if (!ISIDNUM (*do_peek_next (pos, limit)))
+		goto delimited_string;
+
+	      goto quote_peek;
+
+	    case '\"':
+	      if (!CPP_OPTION (pfile, rliterals))
+		goto delimited_string;
+
+	    quote_peek:
+	      {
+		/* For ' see if it's a number punctuator
+		   \.?<digit>(<digit>|<identifier-nondigit>
+		   |'<digit>|'<nondigit>|[eEpP]<sign>|\.)* */
+		/* For " see if it's a raw string
+		   {U,L,u,u8}R.  This includes CPP_NUMBER detection,
+		   because that could be 0e+R.  */
+		const unsigned char *peek = pos - 1;
+		bool quote_first = c == '"';
+		bool quote_eight = false;
+		bool maybe_number_start = false;
+		bool want_number = false;
+
+		while ((peek = do_peek_prev (peek, lwm)))
+		  {
+		    unsigned char p = *peek;
+		    if (quote_first)
+		      {
+			if (!raw)
+			  {
+			    if (p != 'R')
+			      break;
+			    raw = true;
+			    continue;
+			  }
+
+			quote_first = false;
+			if (p == 'L' || p == 'U' || p == 'u')
+			  ;
+			else if (p == '8')
+			  quote_eight = true;
+			else
+			  goto second_raw;
+		      }
+		    else if (quote_eight)
+		      {
+			if (p != 'u')
+			  {
+			    raw = false;
+			    break;
+			  }
+			quote_eight = false;
+		      }
+		    else if (c == '"')
+		      {
+		      second_raw:;
+			if (!want_number && ISIDNUM (p))
+			  {
+			    raw = false;
+			    break;
+			  }
+		      }
+
+		    if (ISDIGIT (p))
+		      maybe_number_start = true;
+		    else if (p == '.')
+		      want_number = true;
+		    else if (ISIDNUM (p))
+		      maybe_number_start = false;
+		    else if (p == '+' || p == '-')
+		      {
+			if (const unsigned char *peek_prev
+			    = do_peek_prev (peek, lwm))
+			  {
+			    p = *peek_prev;
+			    if (p == 'e' || p == 'E'
+				|| p == 'p' || p == 'P')
+			      {
+				want_number = true;
+				maybe_number_start = false;
+			      }
+			    else
+			      break;
+			  }
+			else
+			  break;
+		      }
+		    else if (p == '\'' || p == '\"')
+		      {
+			/* If this is lwm, this must be the end of a
+			   previous string.  So this is a trailing
+			   literal type, (a) if those are allowed,
+			     and (b) maybe_start is false.  Otherwise
+			     this must be a CPP_NUMBER because we've
+			     met another ', and we'd have checked that
+			     in its own right.  */
+			if (peek == lwm && CPP_OPTION (pfile, uliterals))
+			  {
+			    if  (!maybe_number_start && !want_number)
+			      /* Must be a literal type.  */
+			      raw = false;
+			  }
+			else if (p == '\''
+				 && CPP_OPTION (pfile, digit_separators))
+			  maybe_number_start = true;
+			break;
+		      }
+		    else if (c == '\'')
+		      break;
+		    else if (!quote_first && !quote_eight)
+		      break;
+		  }
+
+		if (maybe_number_start)
+		  {
+		    if (c == '\'')
+		      /* A CPP NUMBER.  */
+		      goto dflt;
+		    raw = false;
+		  }
+
+		goto delimited_string;
+	      }
+
+	    delimited_string:
+	      {
+		/* (Possibly raw) string or char literal.  */
+		unsigned char end = c;
+		int delim_len = -1;
+		const unsigned char *delim = NULL;
+		location_t sloc = linemap_position_for_column (pfile->line_table,
+							       pos - line_start);
+		int esc = 0;
+
+		if (raw)
+		  {
+		    /* There can be no line breaks in the delimiter.  */
+		    delim = pos;
+		    for (delim_len = 0; (c = *pos++) != '('; delim_len++)
+		      {
+			if (delim_len == 16)
+			  {
+			    cpp_error_with_line (pfile, CPP_DL_ERROR,
+						 sloc, 0,
+						 "raw string delimiter"
+						 " longer than %d"
+						 " characters",
+						 delim_len);
+			    raw = false;
+			    pos = delim;
+			    break;
+			  }
+			if (strchr (") \\\t\v\f\n", c))
+			  {
+			    cpp_error_with_line (pfile, CPP_DL_ERROR,
+						 sloc, 0,
+						 "invalid character '%c'"
+						 " in raw string"
+						 " delimiter", c);
+			    raw = false;
+			    pos = delim;
+			    break;
+			  }
+			if (pos >= limit)
+			  goto bad_string;
+		      }
+		  }
+
+		while (pos < limit)
+		  {
+		    char c = *pos++;
+		    switch (c)
+		      {
+		      case '\\':
+			if (!raw)
+			  esc++;
+			break;
+
+		      case '\r':
+			if (*pos == '\n')
+			  pos++;
+			/* FALLTHROUGH  */
+
+		      case '\n':
+			{
+			  CPP_INCREMENT_LINE (pfile, 0);
+			  line_count++;
+			  line_start = pos;
+			}
+			if (esc)
+			  esc--;
+			break;
+
+		      case ')':
+			if (raw
+			    && pos + delim_len + 1 < limit
+			    && pos[delim_len] == end
+			    && !memcmp (delim, pos, delim_len))
+			  {
+			    pos += delim_len + 1;
+			    raw = false;
+			    goto done_string;
+			  }
+			break;
+
+		      default:
+			if (!raw && !(esc & 1) && c == end)
+			  goto done_string;
+			esc = 0;
+			break;
+		      }
+		  }
+	      bad_string:
+		cpp_error_with_line (pfile, CPP_DL_ERROR, sloc, 0,
+				     "unterminated literal");
+		
+	      done_string:
+		raw = false;
+		lwm = pos - 1;
+	      }
+	      goto dflt;
+
+	    default:
+	    dflt:
+	      bol = false;
+	      pfile->mi_valid = false;
+	      break;
+	    }
+	}
+
+      if (buffer->rlimit > base && !pfile->state.skipping)
+	cb (pfile, CPP_DO_print, data, line_count, base, buffer->rlimit - base);
+
+      _cpp_pop_buffer (pfile);
+    }
+  while (pfile->buffer);
 }

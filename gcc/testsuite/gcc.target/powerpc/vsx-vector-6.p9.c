@@ -1,38 +1,42 @@
 /* { dg-do compile { target lp64 } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_p9vector_ok } */
-/* { dg-options "-mvsx -O2 -mdejagnu-cpu=power9" } */
-
-/* Expected instruction counts for Power9. */
-
-/* { dg-final { scan-assembler-times "xvabsdp" 1 } } */
-/* { dg-final { scan-assembler-times "xvadddp" 1 } } */
-/* { dg-final { scan-assembler-times "xxlnor" 5 } } */
-
-/* We generate xxlor instructions for many reasons other than or'ing vector
-   operands or calling __builtin_vec_or(), which  means we cannot rely on
-   their usage counts being stable.  Therefore, we just ensure at least one
-   xxlor instruction was generated.  */
-/* { dg-final { scan-assembler "xxlor" } } */
-
-/* { dg-final { scan-assembler-times "xvcmpeqdp" 5 } } */
-/* { dg-final { scan-assembler-times "xvcmpgtdp" 8 } } */
-/* { dg-final { scan-assembler-times "xvcmpgedp" 8 } } */
-/* { dg-final { scan-assembler-times "xvrdpim" 1 } } */
-/* { dg-final { scan-assembler-times "xvmaddadp" 1 } } */
-/* { dg-final { scan-assembler-times "xvmsubadp" 1 } } */
-/* { dg-final { scan-assembler-times "xvsubdp" 1 } } */
-/* { dg-final { scan-assembler-times "xvmaxdp" 1 } } */
-/* { dg-final { scan-assembler-times "xvmindp" 1 } } */
-/* { dg-final { scan-assembler-times "xvmuldp" 1 } } */
-/* { dg-final { scan-assembler-times "vperm" 1 } } */
-/* { dg-final { scan-assembler-times "xvrdpic" 1 } } */
-/* { dg-final { scan-assembler-times "xvsqrtdp" 1 } } */
-/* { dg-final { scan-assembler-times "xvrdpiz" 1 } } */
-/* { dg-final { scan-assembler-times "xvmsubasp" 1 } } */
-/* { dg-final { scan-assembler-times "xvnmaddasp" 1 } } */
-/* { dg-final { scan-assembler-times "vmsumshs" 1 } } */
-/* { dg-final { scan-assembler-times "xxland" 13 } } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-O2 -mdejagnu-cpu=power9" } */
 
 /* Source code for the test in vsx-vector-6.h */
 #include "vsx-vector-6.h"
+
+/* { dg-final { scan-assembler-times {\mvmaxub\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mvmsumshs\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mvmsumuhs\M} 1 } } */
+/* { dg-final { scan-assembler-times {\m(?:v|xx)permr?\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvabsdp\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvadddp\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvcmpeqdp\M} 9 } } */
+/* { dg-final { scan-assembler-times {\mxvcmpgedp\M} 10 } } */
+/* { dg-final { scan-assembler-times {\mxvcmpgtdp\M} 10 } } */
+/* { dg-final { scan-assembler-times {\mxvdivdp\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvmadd[am]dp\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvmadd[am]sp\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvmaxdp\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvmindp\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvmsub[am]sp\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvmuldp\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvnmadd[am]dp\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvnmadd[am]sp\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvnmsub[am]dp\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvnmsub[am]sp\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvrdpi\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvrdpic\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvrdpim\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvrdpip\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvrdpiz\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvrspiz\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvsqrtdp\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvmsub[am]dp\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxxland\M} 3 } } */
+/* { dg-final { scan-assembler-times {\mxxlandc\M} 13 } } */
+/* { dg-final { scan-assembler-times {\mxxlnor\M} 5 } } */
+/* { dg-final { scan-assembler-times {\mxxlor\M} 9 } } */
+/* { dg-final { scan-assembler-times {\mxxlxor\M} 3 } } */
+/* { dg-final { scan-assembler-times {\mxxsel\M} 2 } } */

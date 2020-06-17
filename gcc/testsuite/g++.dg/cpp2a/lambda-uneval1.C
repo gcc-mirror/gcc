@@ -1,4 +1,4 @@
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 typedef decltype([]{}) C; // the closure type has no name for linkage purposes
 

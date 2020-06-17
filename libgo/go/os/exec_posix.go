@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build aix darwin dragonfly freebsd hurd js,wasm linux nacl netbsd openbsd solaris windows
+// +build aix darwin dragonfly freebsd hurd js,wasm linux netbsd openbsd solaris windows
 
 package os
 
 import (
+	"internal/syscall/execenv"
+	"runtime"
 	"syscall"
 )
 
@@ -38,7 +40,7 @@ func startProcess(name string, argv []string, attr *ProcAttr) (p *Process, err e
 		Sys: attr.Sys,
 	}
 	if sysattr.Env == nil {
-		sysattr.Env, err = environForSysProcAttr(sysattr.Sys)
+		sysattr.Env, err = execenv.Default(sysattr.Sys)
 		if err != nil {
 			return nil, err
 		}
@@ -49,9 +51,14 @@ func startProcess(name string, argv []string, attr *ProcAttr) (p *Process, err e
 	}
 
 	pid, h, e := syscall.StartProcess(name, argv, sysattr)
+
+	// Make sure we don't run the finalizers of attr.Files.
+	runtime.KeepAlive(attr)
+
 	if e != nil {
 		return nil, &PathError{"fork/exec", name, e}
 	}
+
 	return newProcess(pid, h), nil
 }
 

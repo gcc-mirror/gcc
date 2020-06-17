@@ -54,13 +54,6 @@ enum offload_target_type
   OFFLOAD_TARGET_TYPE_GCN = 8
 };
 
-/* Container type for passing device properties.  */
-union gomp_device_property_value
-{
-  const char *ptr;
-  size_t val;
-};
-
 /* Opaque type to represent plugin-dependent implementation of an
    OpenACC asynchronous queue.  */
 struct goacc_asyncqueue;
@@ -74,6 +67,32 @@ struct goacc_asyncqueue_list
 
 typedef struct goacc_asyncqueue *goacc_aq;
 typedef struct goacc_asyncqueue_list *goacc_aq_list;
+
+
+/* OpenACC 'acc_get_property' support.  */
+
+/* Device property values.  Keep in sync with
+   'libgomp/{openacc.h,openacc.f90}:acc_device_property_t'.  */
+enum goacc_property
+  {
+   /* Mask to tell numeric and string values apart.  */
+#define GOACC_PROPERTY_STRING_MASK 0x10000
+
+   /* Start from 1 to catch uninitialized use.  */
+   GOACC_PROPERTY_MEMORY =		1,
+   GOACC_PROPERTY_FREE_MEMORY =		2,
+   GOACC_PROPERTY_NAME =		GOACC_PROPERTY_STRING_MASK | 1,
+   GOACC_PROPERTY_VENDOR =		GOACC_PROPERTY_STRING_MASK | 2,
+   GOACC_PROPERTY_DRIVER =		GOACC_PROPERTY_STRING_MASK | 3
+  };
+
+/* Container type for passing device properties.  */
+union goacc_property_value
+{
+  const char *ptr;
+  size_t val;
+};
+
 
 /* Auxiliary struct, used for transferring pairs of addresses from plugin
    to libgomp.  */
@@ -101,7 +120,6 @@ extern const char *GOMP_OFFLOAD_get_name (void);
 extern unsigned int GOMP_OFFLOAD_get_caps (void);
 extern int GOMP_OFFLOAD_get_type (void);
 extern int GOMP_OFFLOAD_get_num_devices (void);
-extern union gomp_device_property_value GOMP_OFFLOAD_get_property (int, int);
 extern bool GOMP_OFFLOAD_init_device (int);
 extern bool GOMP_OFFLOAD_fini_device (int);
 extern unsigned GOMP_OFFLOAD_version (void);
@@ -141,6 +159,8 @@ extern void *GOMP_OFFLOAD_openacc_cuda_get_current_context (void);
 extern void *GOMP_OFFLOAD_openacc_cuda_get_stream (struct goacc_asyncqueue *);
 extern int GOMP_OFFLOAD_openacc_cuda_set_stream (struct goacc_asyncqueue *,
 						 void *);
+extern union goacc_property_value
+  GOMP_OFFLOAD_openacc_get_property (int, enum goacc_property);
 
 #ifdef __cplusplus
 }

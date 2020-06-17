@@ -24,7 +24,7 @@ void test01()
   typedef std::move_iterator<greedy_ops::X*> iterator_type;
 
   iterator_type it(nullptr);
-  
+
   it == it;
   it != it;
   it < it;
@@ -34,10 +34,4 @@ void test01()
   // it - it;  // See PR libstdc++/71771
   1 + it;
   it + 1;
-}
-
-int main() 
-{ 
-  test01();
-  return 0;
 }

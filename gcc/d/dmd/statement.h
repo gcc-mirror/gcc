@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -13,6 +13,7 @@
 #include "root/root.h"
 
 #include "arraytypes.h"
+#include "ast_node.h"
 #include "dsymbol.h"
 #include "visitor.h"
 #include "tokens.h"
@@ -66,7 +67,7 @@ enum BE
     BEany = (BEfallthru | BEthrow | BEreturn | BEgoto | BEhalt)
 };
 
-class Statement : public RootObject
+class Statement : public ASTNode
 {
 public:
     Loc loc;
@@ -105,7 +106,7 @@ public:
     virtual BreakStatement *isBreakStatement() { return NULL; }
     virtual DtorExpStatement *isDtorExpStatement() { return NULL; }
     virtual ForwardingStatement *isForwardingStatement() { return NULL; }
-    virtual void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) { v->visit(this); }
 };
 
 /** Any Statement that fails semantic() or has a component that is an ErrorExp or
@@ -232,15 +233,13 @@ public:
 
 class ForwardingStatement : public Statement
 {
+public:
     ForwardingScopeDsymbol *sym;
     Statement *statement;
 
+    ForwardingStatement(Loc loc, ForwardingScopeDsymbol *sym, Statement *s);
+    ForwardingStatement(Loc loc, Statement *s);
     Statement *syntaxCopy();
-    Statement *getRelatedLabeled();
-    bool hasBreak();
-    bool hasContinue();
-    Statement *scopeCode(Scope *sc, Statement **sentry, Statement **sexception, Statement **sfinally);
-    Statement *last();
     Statements *flatten(Scope *sc);
     ForwardingStatement *isForwardingStatement() { return this; }
     void accept(Visitor *v) { v->visit(this); }
@@ -384,6 +383,7 @@ class StaticForeachStatement : public Statement
 public:
     StaticForeach *sfe;
 
+    StaticForeachStatement(Loc loc, StaticForeach *sfe);
     Statement *syntaxCopy();
     Statements *flatten(Scope *sc);
 

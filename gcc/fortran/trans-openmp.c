@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef GCC_DIAG_STYLE
 #define GCC_DIAG_STYLE __gcc_gfc__
 #include "attribs.h"
+#include "function.h"
 
 int ompws_flags;
 
@@ -90,18 +91,16 @@ gfc_omp_check_optional_argument (tree decl, bool for_present_check)
   if (!DECL_LANG_SPECIFIC (decl))
     return NULL_TREE;
 
-  bool is_array_type = false;
+  tree orig_decl = decl;
 
   /* For assumed-shape arrays, a local decl with arg->data is used.  */
   if (TREE_CODE (decl) != PARM_DECL
       && (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl))
 	  || GFC_ARRAY_TYPE_P (TREE_TYPE (decl))))
-    {
-      is_array_type = true;
-      decl = GFC_DECL_SAVED_DESCRIPTOR (decl);
-    }
+    decl = GFC_DECL_SAVED_DESCRIPTOR (decl);
 
-  if (TREE_CODE (decl) != PARM_DECL
+  if (decl == NULL_TREE
+      || TREE_CODE (decl) != PARM_DECL
       || !DECL_LANG_SPECIFIC (decl)
       || !GFC_DECL_OPTIONAL_ARGUMENT (decl))
     return NULL_TREE;
@@ -131,23 +130,8 @@ gfc_omp_check_optional_argument (tree decl, bool for_present_check)
       return decl;
     }
 
-  tree cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
-			       decl, null_pointer_node);
-
-  /* Fortran regards unallocated allocatables/disassociated pointer which
-     are passed to a nonallocatable, nonpointer argument as not associated;
-     cf. F2018, 15.5.2.12, Paragraph 1.  */
-  if (is_array_type)
-    {
-      tree cond2 = build_fold_indirect_ref_loc (input_location, decl);
-      cond2 = gfc_conv_array_data (cond2);
-      cond2 = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
-			       cond2, null_pointer_node);
-      cond = fold_build2_loc (input_location, TRUTH_ANDIF_EXPR,
-			      boolean_type_node, cond, cond2);
-    }
-
-  return cond;
+  return fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+			  orig_decl, null_pointer_node);
 }
 
 
@@ -223,7 +207,8 @@ gfc_omp_privatize_by_reference (const_tree decl)
   return false;
 }
 
-/* True if OpenMP sharing attribute of DECL is predetermined.  */
+/* OMP_CLAUSE_DEFAULT_UNSPECIFIED unless OpenMP sharing attribute
+   of DECL is predetermined.  */
 
 enum omp_clause_default_kind
 gfc_omp_predetermined_sharing (tree decl)
@@ -293,6 +278,28 @@ gfc_omp_predetermined_sharing (tree decl)
 
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
 }
+
+
+/* OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED unless OpenMP mapping attribute
+   of DECL is predetermined.  */
+
+enum omp_clause_defaultmap_kind
+gfc_omp_predetermined_mapping (tree decl)
+{
+  if (DECL_ARTIFICIAL (decl)
+      && ! GFC_DECL_RESULT (decl)
+      && ! (DECL_LANG_SPECIFIC (decl)
+	    && GFC_DECL_SAVED_DESCRIPTOR (decl)))
+    return OMP_CLAUSE_DEFAULTMAP_TO;
+
+  /* These are either array or derived parameters, or vtables.  */
+  if (VAR_P (decl) && TREE_READONLY (decl)
+      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
+    return OMP_CLAUSE_DEFAULTMAP_TO;
+
+  return OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED;
+}
+
 
 /* Return decl that should be used when reporting DEFAULT(NONE)
    diagnostics.  */
@@ -1285,22 +1292,6 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p)
 	  && !GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (TREE_TYPE (decl))))
 	return;
       tree orig_decl = decl;
-
-      /* For nonallocatable, nonpointer arrays, a temporary variable is
-	 generated, but this one is only defined if the variable is present;
-	 hence, we now set it to NULL to avoid accessing undefined variables.
-	 We cannot use a temporary variable here as otherwise the replacement
-	 of the variables in omp-low.c will not work.  */
-      if (present && GFC_ARRAY_TYPE_P (TREE_TYPE (decl)))
-	{
-	  tree tmp = fold_build2_loc (input_location, MODIFY_EXPR,
-				      void_type_node, decl, null_pointer_node);
-	  tree cond = fold_build1_loc (input_location, TRUTH_NOT_EXPR,
-				       boolean_type_node, present);
-	  tmp = build3_loc (input_location, COND_EXPR, void_type_node,
-			    cond, tmp, NULL_TREE);
-	  gimplify_and_add (tmp, pre_p);
-	}
 
       c4 = build_omp_clause (OMP_CLAUSE_LOCATION (c), OMP_CLAUSE_MAP);
       OMP_CLAUSE_SET_MAP_KIND (c4, GOMP_MAP_POINTER);
@@ -4295,23 +4286,22 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
 		break;
 	      }
 	}
-      if (!dovar_found)
+      if (!dovar_found && op == EXEC_OMP_SIMD)
 	{
-	  if (op == EXEC_OMP_SIMD)
+	  if (collapse == 1)
 	    {
-	      if (collapse == 1)
-		{
-		  tmp = build_omp_clause (input_location, OMP_CLAUSE_LINEAR);
-		  OMP_CLAUSE_LINEAR_STEP (tmp) = step;
-		  OMP_CLAUSE_LINEAR_NO_COPYIN (tmp) = 1;
-		}
-	      else
-		tmp = build_omp_clause (input_location, OMP_CLAUSE_LASTPRIVATE);
-	      if (!simple)
-		dovar_found = 2;
+	      tmp = build_omp_clause (input_location, OMP_CLAUSE_LINEAR);
+	      OMP_CLAUSE_LINEAR_STEP (tmp) = step;
+	      OMP_CLAUSE_LINEAR_NO_COPYIN (tmp) = 1;
+	      OMP_CLAUSE_DECL (tmp) = dovar_decl;
+	      omp_clauses = gfc_trans_add_clause (tmp, omp_clauses);
 	    }
-	  else
-	    tmp = build_omp_clause (input_location, OMP_CLAUSE_PRIVATE);
+	  if (!simple)
+	    dovar_found = 2;
+	}
+      else if (!dovar_found && !simple)
+	{
+	  tmp = build_omp_clause (input_location, OMP_CLAUSE_PRIVATE);
 	  OMP_CLAUSE_DECL (tmp) = dovar_decl;
 	  omp_clauses = gfc_trans_add_clause (tmp, omp_clauses);
 	}
@@ -5357,6 +5347,7 @@ gfc_trans_omp_target (gfc_code *code)
       {
 	stmtblock_t iblock;
 
+	pushlevel ();
 	gfc_start_block (&iblock);
 	tree inner_clauses
 	  = gfc_trans_omp_clauses (&block, &clausesa[GFC_OMP_SPLIT_PARALLEL],
@@ -5425,6 +5416,7 @@ gfc_trans_omp_target (gfc_code *code)
 			 omp_clauses);
       if (code->op != EXEC_OMP_TARGET)
 	OMP_TARGET_COMBINED (stmt) = 1;
+      cfun->has_omp_target = true;
     }
   gfc_add_expr_to_block (&block, stmt);
   return gfc_finish_block (&block);

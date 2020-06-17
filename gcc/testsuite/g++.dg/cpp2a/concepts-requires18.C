@@ -1,10 +1,10 @@
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template<typename T>
 concept integer = __is_same_as(T, int);
 
 template<typename T>
-concept subst = requires (T x) { requires true; };
+concept subst = requires (T x) { requires true; }; // { dg-error "parameter type .void." }
 
 template<typename T>
 concept c1 = requires { requires integer<T> || subst<T&>; }; // { dg-message "in requirements" }

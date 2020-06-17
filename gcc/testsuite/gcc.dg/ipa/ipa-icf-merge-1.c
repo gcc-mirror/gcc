@@ -18,7 +18,7 @@ int main ()
 }
 
 /* Notice the two functions are the same.  */
-/* { dg-final { scan-ipa-dump "Semantic equality hit:foo->main" "icf" } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:foo/\[0-9+\]+->main/\[0-9+\]+" "icf" } } */
 
 /* Make sure we don't tail call main.  */
 /* { dg-final { scan-ipa-dump-not "= main \\(\\);" "icf" } } */

@@ -1704,11 +1704,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	       const unordered_set<_Value, _Hash, _Pred, _Alloc>& __y)
     { return __x._M_h._M_equal(__y._M_h); }
 
+#if __cpp_impl_three_way_comparison < 201907L
   template<class _Value, class _Hash, class _Pred, class _Alloc>
     inline bool
     operator!=(const unordered_set<_Value, _Hash, _Pred, _Alloc>& __x,
 	       const unordered_set<_Value, _Hash, _Pred, _Alloc>& __y)
     { return !(__x == __y); }
+#endif
 
   template<class _Value, class _Hash, class _Pred, class _Alloc>
     inline bool
@@ -1716,11 +1718,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	       const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
     { return __x._M_h._M_equal(__y._M_h); }
 
+#if __cpp_impl_three_way_comparison < 201907L
   template<class _Value, class _Hash, class _Pred, class _Alloc>
     inline bool
     operator!=(const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __x,
 	       const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
     { return !(__x == __y); }
+#endif
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
 
@@ -1771,21 +1775,6 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
       _S_get_table(unordered_multiset<_Val, _Hash2, _Eq2, _Alloc>& __set)
       { return __set._M_h; }
     };
-
-#if __cplusplus > 201703L
-namespace ranges::__detail
-{
-  template<typename _Tp> extern inline const bool __enable_view_impl;
-  template<typename _Val, typename _Hash, typename _Eq, typename _Alloc>
-    inline constexpr bool
-      __enable_view_impl<_GLIBCXX_STD_C::unordered_set<_Val, _Hash, _Eq,
-						       _Alloc>> = false;
-  template<typename _Val, typename _Hash, typename _Eq, typename _Alloc>
-    inline constexpr bool
-      __enable_view_impl<_GLIBCXX_STD_C::unordered_multiset<_Val, _Hash, _Eq,
-							    _Alloc>> = false;
-} // namespace ranges::__detail
-#endif // C++20
 #endif // C++17
 
 _GLIBCXX_END_NAMESPACE_VERSION

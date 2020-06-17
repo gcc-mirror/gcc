@@ -64,5 +64,5 @@ int main(int argc, char **argv)
   return 0;
 }
 
-/* { dg-final { scan-ipa-dump "Semantic equality hit:f1->f2" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:f1/\[0-9+\]+->f2/\[0-9+\]+" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Equal symbols: 1" "icf"  } } */

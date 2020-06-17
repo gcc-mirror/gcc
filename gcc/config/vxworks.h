@@ -273,3 +273,11 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
 #undef DWARF_GNAT_ENCODINGS_DEFAULT
 #define DWARF_GNAT_ENCODINGS_DEFAULT \
   (TARGET_VXWORKS7 ? DWARF_GNAT_ENCODINGS_MINIMAL : DWARF_GNAT_ENCODINGS_ALL)
+
+/* The default configuration of incremental LTO linking (-flinker-output=rel)
+   warns if an object file included in the link does not contain LTO bytecode,
+   because in this case the output will not contain it either, thus preventing
+   further incremental LTO linking.  We do not do repeated incremental linking
+   so silence the warning (instead of passing -flinker-output=nolto-rel).  */
+#undef LTO_PLUGIN_SPEC
+#define LTO_PLUGIN_SPEC "%{!mrtp:-plugin-opt=-linker-output-auto-notlo-rel}"

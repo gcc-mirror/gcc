@@ -1,4 +1,5 @@
 /* { dg-options "-O2 -fPIC -msve-vector-bits=256" } */
+/* { dg-require-effective-target fpic } */
 
 typedef unsigned int v8si __attribute__((vector_size(32)));
 

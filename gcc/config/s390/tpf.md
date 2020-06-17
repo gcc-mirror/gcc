@@ -18,16 +18,20 @@
 ;; <http://www.gnu.org/licenses/>.
 
 (define_insn "prologue_tpf"
-  [(unspec_volatile [(const_int 0)] UNSPECV_TPF_PROLOGUE)
+  [(unspec_volatile [(match_operand 0 "const_int_operand" "J")
+		     (match_operand 1 "const_int_operand" "J")]
+		    UNSPECV_TPF_PROLOGUE)
    (clobber (reg:DI 1))]
   "TARGET_TPF_PROFILING"
-  "larl\t%%r1,.+14\;tm\t4065,255\;bnz\t4064"
+  "larl\t%%r1,.+14\;tm\t%0,255\;bnz\t%1"
   [(set_attr "length"   "14")])
 
 
 (define_insn "epilogue_tpf"
-  [(unspec_volatile [(const_int 0)] UNSPECV_TPF_EPILOGUE)
+  [(unspec_volatile [(match_operand 0 "const_int_operand" "J")
+		     (match_operand 1 "const_int_operand" "J")]
+		    UNSPECV_TPF_EPILOGUE)
    (clobber (reg:DI 1))]
   "TARGET_TPF_PROFILING"
-  "larl\t%%r1,.+14\;tm\t4071,255\;bnz\t4070"
+  "larl\t%%r1,.+14\;tm\t%0,255\;bnz\t%1"
   [(set_attr "length"   "14")])

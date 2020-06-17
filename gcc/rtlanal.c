@@ -1631,12 +1631,18 @@ set_noop_p (const_rtx set)
       int i;
       rtx par = XEXP (src, 1);
       rtx src0 = XEXP (src, 0);
-      poly_int64 c0 = rtx_to_poly_int64 (XVECEXP (par, 0, 0));
+      poly_int64 c0;
+      if (!poly_int_rtx_p (XVECEXP (par, 0, 0), &c0))
+	return 0;
       poly_int64 offset = GET_MODE_UNIT_SIZE (GET_MODE (src0)) * c0;
 
       for (i = 1; i < XVECLEN (par, 0); i++)
-	if (maybe_ne (rtx_to_poly_int64 (XVECEXP (par, 0, i)), c0 + i))
-	  return 0;
+	{
+	  poly_int64 c0i;
+	  if (!poly_int_rtx_p (XVECEXP (par, 0, i), &c0i)
+	      || maybe_ne (c0i, c0 + i))
+	    return 0;
+	}
       return
 	REG_CAN_CHANGE_MODE_P (REGNO (dst), GET_MODE (src0), GET_MODE (dst))
 	&& simplify_subreg_regno (REGNO (src0), GET_MODE (src0),
@@ -2474,10 +2480,11 @@ remove_note (rtx_insn *insn, const_rtx note)
 }
 
 /* Remove REG_EQUAL and/or REG_EQUIV notes if INSN has such notes.
-   Return true if any note has been removed.  */
+   If NO_RESCAN is false and any notes were removed, call
+   df_notes_rescan.  Return true if any note has been removed.  */
 
 bool
-remove_reg_equal_equiv_notes (rtx_insn *insn)
+remove_reg_equal_equiv_notes (rtx_insn *insn, bool no_rescan)
 {
   rtx *loc;
   bool ret = false;
@@ -2494,6 +2501,8 @@ remove_reg_equal_equiv_notes (rtx_insn *insn)
       else
 	loc = &XEXP (*loc, 1);
     }
+  if (ret && !no_rescan)
+    df_notes_rescan (insn);
   return ret;
 }
 
@@ -4207,18 +4216,23 @@ rtx_cost (rtx x, machine_mode mode, enum rtx_code outer_code,
   const char *fmt;
   int total;
   int factor;
+  unsigned mode_size;
 
   if (x == 0)
     return 0;
 
-  if (GET_MODE (x) != VOIDmode)
+  if (GET_CODE (x) == SET)
+    /* A SET doesn't have a mode, so let's look at the SET_DEST to get
+       the mode for the factor.  */
+    mode = GET_MODE (SET_DEST (x));
+  else if (GET_MODE (x) != VOIDmode)
     mode = GET_MODE (x);
+
+  mode_size = estimated_poly_value (GET_MODE_SIZE (mode));
 
   /* A size N times larger than UNITS_PER_WORD likely needs N times as
      many insns, taking N times as long.  */
-  factor = estimated_poly_value (GET_MODE_SIZE (mode)) / UNITS_PER_WORD;
-  if (factor == 0)
-    factor = 1;
+  factor = mode_size > UNITS_PER_WORD ? mode_size / UNITS_PER_WORD : 1;
 
   /* Compute the default costs of certain things.
      Note that targetm.rtx_costs can override the defaults.  */
@@ -4243,14 +4257,6 @@ rtx_cost (rtx x, machine_mode mode, enum rtx_code outer_code,
       /* Used in combine.c as a marker.  */
       total = 0;
       break;
-    case SET:
-      /* A SET doesn't have a mode, so let's look at the SET_DEST to get
-	 the mode for the factor.  */
-      mode = GET_MODE (SET_DEST (x));
-      factor = estimated_poly_value (GET_MODE_SIZE (mode)) / UNITS_PER_WORD;
-      if (factor == 0)
-	factor = 1;
-      /* FALLTHRU */
     default:
       total = factor * COSTS_N_INSNS (1);
     }
@@ -6584,4 +6590,30 @@ tls_referenced_p (const_rtx x)
     if (GET_CODE (*iter) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (*iter) != 0)
       return true;
   return false;
+}
+
+/* Process recursively X of INSN and add REG_INC notes if necessary.  */
+void
+add_auto_inc_notes (rtx_insn *insn, rtx x)
+{
+  enum rtx_code code = GET_CODE (x);
+  const char *fmt;
+  int i, j;
+
+  if (code == MEM && auto_inc_p (XEXP (x, 0)))
+    {
+      add_reg_note (insn, REG_INC, XEXP (XEXP (x, 0), 0));
+      return;
+    }
+
+  /* Scan all X sub-expressions.  */
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	add_auto_inc_notes (insn, XEXP (x, i));
+      else if (fmt[i] == 'E')
+	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  add_auto_inc_notes (insn, XVECEXP (x, i, j));
+    }
 }

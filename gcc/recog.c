@@ -3501,6 +3501,13 @@ peep2_attempt (basic_block bb, rtx_insn *insn, int match_len, rtx_insn *attempt)
   if (as_note)
     fixup_args_size_notes (before_try, last, get_args_size (as_note));
 
+  /* Scan the new insns for embedded side effects and add appropriate
+     REG_INC notes.  */
+  if (AUTO_INC_DEC)
+    for (x = last; x != before_try; x = PREV_INSN (x))
+      if (NONDEBUG_INSN_P (x))
+	add_auto_inc_notes (x, PATTERN (x));
+
   /* If we generated a jump instruction, it won't have
      JUMP_LABEL set.  Recompute after we're done.  */
   for (x = last; x != before_try; x = PREV_INSN (x))
@@ -3924,14 +3931,7 @@ public:
   virtual bool gate (function *)
     {
       /* If optimizing, then go ahead and split insns now.  */
-      if (optimize > 0)
-	return true;
-
-#ifdef STACK_REGS
-      return true;
-#else
-      return false;
-#endif
+      return optimize > 0;
     }
 
   virtual unsigned int execute (function *)
@@ -3950,12 +3950,66 @@ make_pass_split_after_reload (gcc::context *ctxt)
   return new pass_split_after_reload (ctxt);
 }
 
+static bool
+enable_split_before_sched2 (void)
+{
+#ifdef INSN_SCHEDULING
+  return optimize > 0 && flag_schedule_insns_after_reload;
+#else
+  return false;
+#endif
+}
+
+namespace {
+
+const pass_data pass_data_split_before_sched2 =
+{
+  RTL_PASS, /* type */
+  "split3", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_NONE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_split_before_sched2 : public rtl_opt_pass
+{
+public:
+  pass_split_before_sched2 (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_split_before_sched2, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *)
+    {
+      return enable_split_before_sched2 ();
+    }
+
+  virtual unsigned int execute (function *)
+    {
+      split_all_insns ();
+      return 0;
+    }
+
+}; // class pass_split_before_sched2
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_split_before_sched2 (gcc::context *ctxt)
+{
+  return new pass_split_before_sched2 (ctxt);
+}
+
 namespace {
 
 const pass_data pass_data_split_before_regstack =
 {
   RTL_PASS, /* type */
-  "split3", /* name */
+  "split4", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
   TV_NONE, /* tv_id */
   0, /* properties_required */
@@ -3990,13 +4044,9 @@ pass_split_before_regstack::gate (function *)
      and scheduling after reload is not done, they might not be
      split until final which doesn't allow splitting
      if HAVE_ATTR_length.  */
-# ifdef INSN_SCHEDULING
-  return (optimize && !flag_schedule_insns_after_reload);
-# else
-  return (optimize);
-# endif
+  return !enable_split_before_sched2 ();
 #else
-  return 0;
+  return false;
 #endif
 }
 
@@ -4006,62 +4056,6 @@ rtl_opt_pass *
 make_pass_split_before_regstack (gcc::context *ctxt)
 {
   return new pass_split_before_regstack (ctxt);
-}
-
-static unsigned int
-rest_of_handle_split_before_sched2 (void)
-{
-#ifdef INSN_SCHEDULING
-  split_all_insns ();
-#endif
-  return 0;
-}
-
-namespace {
-
-const pass_data pass_data_split_before_sched2 =
-{
-  RTL_PASS, /* type */
-  "split4", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_NONE, /* tv_id */
-  0, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
-
-class pass_split_before_sched2 : public rtl_opt_pass
-{
-public:
-  pass_split_before_sched2 (gcc::context *ctxt)
-    : rtl_opt_pass (pass_data_split_before_sched2, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  virtual bool gate (function *)
-    {
-#ifdef INSN_SCHEDULING
-      return optimize > 0 && flag_schedule_insns_after_reload;
-#else
-      return false;
-#endif
-    }
-
-  virtual unsigned int execute (function *)
-    {
-      return rest_of_handle_split_before_sched2 ();
-    }
-
-}; // class pass_split_before_sched2
-
-} // anon namespace
-
-rtl_opt_pass *
-make_pass_split_before_sched2 (gcc::context *ctxt)
-{
-  return new pass_split_before_sched2 (ctxt);
 }
 
 namespace {

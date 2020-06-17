@@ -8,7 +8,7 @@
 /* Test that the intrinsics compile with optimization.  All of them
    are defined as inline functions in {,x,e,p,t,s,w,a,b,i}mmintrin.h,
    mm3dnow.h, fma4intrin.h, xopintrin.h, abmintrin.h, bmiintrin.h,
-   tbmintrin.h, lwpintrin.h, popcntintrin.h, fmaintrin.h,
+   tbmintrin.h, lwpintrin.h, popcntintrin.h, fmaintrin.h, tsxldtrkintrin.h,
    avx5124fmapsintrin.h, avx5124vnniwintrin.h, avx512vpopcntdqintrin.h,
    avx512bitalgintrin.h, avx512vp2intersectintrin.h,
    avx512vp2intersectvlintrin.h and mm_malloc.h that reference the proper
@@ -102,7 +102,7 @@
 
 
 #ifndef DIFFERENT_PRAGMAS
-#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,avx512f,avx512er,avx512cd,avx512pf,sha,prefetchwt1,avx512vl,avx512bw,avx512dq,avx512vbmi,avx512ifma,avx5124fmaps,avx5124vnniw,avx512vpopcntdq,gfni,avx512bitalg,avx512bf16,avx512vp2intersect")
+#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,avx512f,avx512er,avx512cd,avx512pf,sha,prefetchwt1,avx512vl,avx512bw,avx512dq,avx512vbmi,avx512vbmi2,avx512ifma,avx5124fmaps,avx5124vnniw,avx512vpopcntdq,gfni,avx512bitalg,avx512bf16,avx512vp2intersect,serialize,tsxldtrk")
 #endif
 
 /* Following intrinsics require immediate arguments.  They
@@ -219,7 +219,7 @@ test_4 (_mm_cmpestrz, int, __m128i, int, __m128i, int, 1)
 
 /* immintrin.h (AVX/AVX2/RDRND/FSGSBASE/F16C/RTM/AVX512F/SHA) */
 #ifdef DIFFERENT_PRAGMAS
-#pragma GCC target ("avx,avx2,rdrnd,fsgsbase,f16c,rtm,avx512f,avx512er,avx512cd,avx512pf,sha,avx512vl,avx512bw,avx512dq,avx512ifma,avx512vbmi,avx5124fmaps,avx5124vnniw,avx512vpopcntdq,gfni,avx512bitalg,avx512bf16,avx512vp2intersect")
+#pragma GCC target ("avx,avx2,rdrnd,fsgsbase,f16c,rtm,avx512f,avx512er,avx512cd,avx512pf,sha,avx512vl,avx512bw,avx512dq,avx512ifma,avx512vbmi,avx512vbmi2,avx5124fmaps,avx5124vnniw,avx512vpopcntdq,gfni,avx512bitalg,avx512bf16,avx512vp2intersect,serialize,tsxldtrk")
 #endif
 #include <immintrin.h>
 test_1 (_cvtss_sh, unsigned short, float, 1)
@@ -438,6 +438,24 @@ test_2 (_mm512_sub_round_pd, __m512d, __m512d, __m512d, 9)
 test_2 (_mm512_sub_round_ps, __m512, __m512, __m512, 9)
 test_2 (_mm_cmp_sd_mask, __mmask8, __m128d, __m128d, 1)
 test_2 (_mm_cmp_ss_mask, __mmask8, __m128, __m128, 1)
+test_2 (_mm512_shrdi_epi16, __m512i, __m512i, __m512i, 1)
+test_2 (_mm512_shrdi_epi32, __m512i, __m512i, __m512i, 1)
+test_2 (_mm512_shrdi_epi64, __m512i, __m512i, __m512i, 1)
+test_2 (_mm256_shrdi_epi16, __m256i, __m256i, __m256i, 1)
+test_2 (_mm256_shrdi_epi32, __m256i, __m256i, __m256i, 1)
+test_2 (_mm256_shrdi_epi64, __m256i, __m256i, __m256i, 1)
+test_2 (_mm_shrdi_epi16, __m128i, __m128i, __m128i, 1)
+test_2 (_mm_shrdi_epi32, __m128i, __m128i, __m128i, 1)
+test_2 (_mm_shrdi_epi64, __m128i, __m128i, __m128i, 1)
+test_2 (_mm512_shldi_epi16, __m512i, __m512i, __m512i, 1)
+test_2 (_mm512_shldi_epi32, __m512i, __m512i, __m512i, 1)
+test_2 (_mm512_shldi_epi64, __m512i, __m512i, __m512i, 1)
+test_2 (_mm256_shldi_epi16, __m256i, __m256i, __m256i, 1)
+test_2 (_mm256_shldi_epi32, __m256i, __m256i, __m256i, 1)
+test_2 (_mm256_shldi_epi64, __m256i, __m256i, __m256i, 1)
+test_2 (_mm_shldi_epi16, __m128i, __m128i, __m128i, 1)
+test_2 (_mm_shldi_epi32, __m128i, __m128i, __m128i, 1)
+test_2 (_mm_shldi_epi64, __m128i, __m128i, __m128i, 1)
 #ifdef __x86_64__
 test_2 (_mm_cvt_roundi64_sd, __m128d, __m128d, long long, 9)
 test_2 (_mm_cvt_roundi64_ss, __m128, __m128, long long, 9)
@@ -544,6 +562,24 @@ test_3 (_mm512_ternarylogic_epi32, __m512i, __m512i, __m512i, __m512i, 1)
 test_3 (_mm512_ternarylogic_epi64, __m512i, __m512i, __m512i, __m512i, 1)
 test_3 (_mm_mask_cmp_sd_mask, __mmask8, __mmask8, __m128d, __m128d, 1)
 test_3 (_mm_mask_cmp_ss_mask, __mmask8, __mmask8, __m128, __m128, 1)
+test_3 (_mm512_maskz_shrdi_epi16, __m512i, __mmask32, __m512i, __m512i, 1)
+test_3 (_mm512_maskz_shrdi_epi32, __m512i, __mmask16, __m512i, __m512i, 1)
+test_3 (_mm512_maskz_shrdi_epi64, __m512i, __mmask8, __m512i, __m512i, 1)
+test_3 (_mm256_maskz_shrdi_epi16, __m256i, __mmask16, __m256i, __m256i, 1)
+test_3 (_mm256_maskz_shrdi_epi32, __m256i, __mmask8, __m256i, __m256i, 1)
+test_3 (_mm256_maskz_shrdi_epi64, __m256i, __mmask8, __m256i, __m256i, 1)
+test_3 (_mm_maskz_shrdi_epi16, __m128i, __mmask8, __m128i, __m128i, 1)
+test_3 (_mm_maskz_shrdi_epi32, __m128i, __mmask8, __m128i, __m128i, 1)
+test_3 (_mm_maskz_shrdi_epi64, __m128i, __mmask8, __m128i, __m128i, 1)
+test_3 (_mm512_maskz_shldi_epi16, __m512i, __mmask32, __m512i, __m512i, 1)
+test_3 (_mm512_maskz_shldi_epi32, __m512i, __mmask16, __m512i, __m512i, 1)
+test_3 (_mm512_maskz_shldi_epi64, __m512i, __mmask8, __m512i, __m512i, 1)
+test_3 (_mm256_maskz_shldi_epi16, __m256i, __mmask16, __m256i, __m256i, 1)
+test_3 (_mm256_maskz_shldi_epi32, __m256i, __mmask8, __m256i, __m256i, 1)
+test_3 (_mm256_maskz_shldi_epi64, __m256i, __mmask8, __m256i, __m256i, 1)
+test_3 (_mm_maskz_shldi_epi16, __m128i, __mmask8, __m128i, __m128i, 1)
+test_3 (_mm_maskz_shldi_epi32, __m128i, __mmask8, __m128i, __m128i, 1)
+test_3 (_mm_maskz_shldi_epi64, __m128i, __mmask8, __m128i, __m128i, 1)
 test_3v (_mm512_i32scatter_epi32, void *, __m512i, __m512i, 1)
 test_3v (_mm512_i32scatter_epi64, void *, __m256i, __m512i, 1)
 test_3v (_mm512_i32scatter_pd, void *, __m256i, __m512d, 1)
@@ -658,6 +694,24 @@ test_4 (_mm_mask3_fnmsub_round_sd, __m128d, __m128d, __m128d, __m128d, __mmask8,
 test_4 (_mm_mask3_fnmsub_round_ss, __m128, __m128, __m128, __m128, __mmask8, 9)
 test_4 (_mm_maskz_fnmsub_round_sd, __m128d, __mmask8, __m128d, __m128d, __m128d, 9)
 test_4 (_mm_maskz_fnmsub_round_ss, __m128, __mmask8, __m128, __m128, __m128, 9)
+test_4 (_mm512_mask_shrdi_epi16, __m512i, __m512i, __mmask32, __m512i, __m512i, 1)
+test_4 (_mm512_mask_shrdi_epi32, __m512i, __m512i, __mmask16, __m512i, __m512i, 1)
+test_4 (_mm512_mask_shrdi_epi64, __m512i, __m512i, __mmask8, __m512i, __m512i, 1)
+test_4 (_mm256_mask_shrdi_epi16, __m256i, __m256i, __mmask16, __m256i, __m256i, 1)
+test_4 (_mm256_mask_shrdi_epi32, __m256i, __m256i, __mmask8, __m256i, __m256i, 1)
+test_4 (_mm256_mask_shrdi_epi64, __m256i, __m256i, __mmask8, __m256i, __m256i, 1)
+test_4 (_mm_mask_shrdi_epi16, __m128i, __m128i, __mmask8, __m128i, __m128i, 1)
+test_4 (_mm_mask_shrdi_epi32, __m128i, __m128i, __mmask8, __m128i, __m128i, 1)
+test_4 (_mm_mask_shrdi_epi64, __m128i, __m128i, __mmask8, __m128i, __m128i, 1)
+test_4 (_mm512_mask_shldi_epi16, __m512i, __m512i, __mmask32, __m512i, __m512i, 1)
+test_4 (_mm512_mask_shldi_epi32, __m512i, __m512i, __mmask16, __m512i, __m512i, 1)
+test_4 (_mm512_mask_shldi_epi64, __m512i, __m512i, __mmask8, __m512i, __m512i, 1)
+test_4 (_mm256_mask_shldi_epi16, __m256i, __m256i, __mmask16, __m256i, __m256i, 1)
+test_4 (_mm256_mask_shldi_epi32, __m256i, __m256i, __mmask8, __m256i, __m256i, 1)
+test_4 (_mm256_mask_shldi_epi64, __m256i, __m256i, __mmask8, __m256i, __m256i, 1)
+test_4 (_mm_mask_shldi_epi16, __m128i, __m128i, __mmask8, __m128i, __m128i, 1)
+test_4 (_mm_mask_shldi_epi32, __m128i, __m128i, __mmask8, __m128i, __m128i, 1)
+test_4 (_mm_mask_shldi_epi64, __m128i, __m128i, __mmask8, __m128i, __m128i, 1)
 test_4v (_mm512_mask_i32scatter_epi32, void *, __mmask16, __m512i, __m512i, 1)
 test_4v (_mm512_mask_i32scatter_epi64, void *, __mmask8, __m256i, __m512i, 1)
 test_4v (_mm512_mask_i32scatter_pd, void *, __mmask8, __m256i, __m512d, 1)

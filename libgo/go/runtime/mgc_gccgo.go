@@ -145,40 +145,15 @@ func registerGCRoots(r *gcRootList) {
 // and carries on.
 func checkPreempt() {
 	gp := getg()
-	if !gp.preempt || gp != gp.m.curg || gp.m.locks != 0 || gp.m.mallocing != 0 || gp.m.preemptoff != "" || gp.m.incgo {
+	if !gp.preempt || gp != gp.m.curg || !canPreemptM(gp.m) {
 		return
 	}
 
-	// Synchronize with scang.
-	gp.scanningself = true
-	casgstatus(gp, _Grunning, _Gwaiting)
-	if gp.preemptscan {
-		for !castogscanstatus(gp, _Gwaiting, _Gscanwaiting) {
-			// Likely to be racing with the GC as
-			// it sees a _Gwaiting and does the
-			// stack scan. If so, gcworkdone will
-			// be set and gcphasework will simply
-			// return.
-		}
-		if !gp.gcscandone {
-			mp := acquirem()
-			gcw := &gp.m.p.ptr().gcw
-			scanstack(gp, gcw)
-			releasem(mp)
-			gp.gcscandone = true
-		}
-		gp.preemptscan = false
-		gp.preempt = false
-		casfrom_Gscanstatus(gp, _Gscanwaiting, _Gwaiting)
-		// This clears gcscanvalid.
-		casgstatus(gp, _Gwaiting, _Grunning)
-		gp.scanningself = false
-		return
+	if gp.preemptStop {
+		mcall(preemptPark)
 	}
 
 	// Act like goroutine called runtime.Gosched.
-	casgstatus(gp, _Gwaiting, _Grunning)
-	gp.scanningself = false
 	mcall(gopreempt_m)
 }
 

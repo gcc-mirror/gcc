@@ -57,7 +57,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 // as possible at runtime, use as few resources as possible, and hopefully
 // be elided out of existence... hmmm.
 template <class _Concept>
-inline void __function_requires()
+_GLIBCXX14_CONSTEXPR inline void __function_requires()
 {
   void (_Concept::*__x)() _IsUnused = &_Concept::__constraints;
 }

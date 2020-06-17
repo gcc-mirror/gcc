@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "spellcheck.h"
 #include "opt-suggestions.h"
 #include "diagnostic-color.h"
+#include "selftest.h"
 
 static void set_Wstrict_aliasing (struct gcc_options *opts, int onoff);
 
@@ -478,7 +479,6 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_2_PLUS, OPT_fdevirtualize, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fdevirtualize_speculatively, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fexpensive_optimizations, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_ffinite_loops, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fgcse, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fhoist_adjacent_loads, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_findirect_inlining, NULL, 1 },
@@ -845,30 +845,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	/* We have a DUMP_DIR_NAME, prepend that.  */
 	opts->x_dump_base_name = opts_concat (opts->x_dump_dir_name,
 					      opts->x_dump_base_name, NULL);
-      else if (opts->x_aux_base_name
-	       && strcmp (opts->x_aux_base_name, HOST_BIT_BUCKET) != 0)
-	/* AUX_BASE_NAME is set and is not the bit bucket.  If it
-	   contains a directory component, prepend those directories.
-	   Typically this places things in the same directory as the
-	   object file.  */
-	{
-	  const char *aux_base;
-
-	  base_of_path (opts->x_aux_base_name, &aux_base);
-	  if (opts->x_aux_base_name != aux_base)
-	    {
-	      int dir_len = aux_base - opts->x_aux_base_name;
-	      char *new_dump_base_name
-		= XOBNEWVEC (&opts_obstack, char,
-			     strlen (opts->x_dump_base_name) + dir_len + 1);
-
-	      /* Copy directory component from OPTS->X_AUX_BASE_NAME.  */
-	      memcpy (new_dump_base_name, opts->x_aux_base_name, dir_len);
-	      /* Append existing OPTS->X_DUMP_BASE_NAME.  */
-	      strcpy (new_dump_base_name + dir_len, opts->x_dump_base_name);
-	      opts->x_dump_base_name = new_dump_base_name;
-	    }
-	}
 
       /* It is definitely prefixed now.  */
       opts->x_dump_base_name_prefixed = true;
@@ -1292,6 +1268,14 @@ print_filtered_help (unsigned int include_flags,
 			       | CL_COMMON | CL_TARGET)) == 0)
 	continue;
 
+      /* If an option contains a language specification,
+	 exclude it from common unless all languages are present.  */
+      if ((include_flags & CL_COMMON)
+	  && !(option->flags & CL_DRIVER)
+	  && (option->flags & CL_LANG_ALL)
+	  && (option->flags & CL_LANG_ALL) != CL_LANG_ALL)
+	continue;
+
       found = true;
       /* Skip switches that have already been printed.  */
       if (opts->x_help_printed[i])
@@ -1308,17 +1292,37 @@ print_filtered_help (unsigned int include_flags,
 	  help = undocumented_msg;
 	}
 
+      /* Get the translation.  */
+      help = _(help);
+
       if (option->alias_target < N_OPTS
 	  && cl_options [option->alias_target].help)
 	{
-	  if (help == undocumented_msg)
+	  const struct cl_option *target = cl_options + option->alias_target;
+	  if (option->help == NULL)
 	    {
-	      /* For undocumented options that are aliases for other options
-		 that are documented, point the reader to the other option in
-		 preference of the former.  */
-	      snprintf (new_help, sizeof new_help,
-			_("Same as %s.  Use the latter option instead."),
-			cl_options [option->alias_target].opt_text);
+	      /* The option is undocumented but is an alias for an option that
+		 is documented.  If the option has alias arguments, then its
+		 purpose is to provide certain arguments to the other option, so
+		 inform the reader of this.  Otherwise, point the reader to the
+		 other option in preference to the former.  */
+
+	      if (option->alias_arg)
+		{
+		  if (option->neg_alias_arg)
+		    snprintf (new_help, sizeof new_help,
+			      _("Same as %s%s (or, in negated form, %s%s)."),
+			      target->opt_text, option->alias_arg,
+			      target->opt_text, option->neg_alias_arg);
+		  else
+		    snprintf (new_help, sizeof new_help,
+			      _("Same as %s%s."),
+			      target->opt_text, option->alias_arg);
+		}
+	      else
+		snprintf (new_help, sizeof new_help,
+			  _("Same as %s."),
+			  target->opt_text);
 	    }
 	  else
 	    {
@@ -1345,9 +1349,6 @@ print_filtered_help (unsigned int include_flags,
 
 	  help = new_help;
 	}
-
-      /* Get the translation.  */
-      help = _(help);
 
       /* Find the gap between the name of the
 	 option and its descriptive text.  */
@@ -2144,6 +2145,13 @@ print_help (struct gcc_options *opts, unsigned int lang_mask,
       a = comma + 1;
     }
 
+  /* We started using PerFunction/Optimization for parameters and
+     a warning.  We should exclude these from optimization options.  */
+  if (include_flags & CL_OPTIMIZATION)
+    exclude_flags |= CL_WARNING;
+  if (!(include_flags & CL_PARAMS))
+    exclude_flags |= CL_PARAMS;
+
   if (include_flags)
     print_specific_help (include_flags, exclude_flags, 0, opts,
 			 lang_mask);
@@ -2321,17 +2329,6 @@ common_handle_option (struct gcc_options *opts,
       opts->x_flag_gen_aux_info = 1;
       break;
 
-    case OPT_auxbase_strip:
-      {
-	char *tmp = xstrdup (arg);
-	strip_off_ending (tmp, strlen (tmp));
-	if (tmp[0])
-	  opts->x_aux_base_name = tmp;
-	else
-	  free (tmp);
-      }
-      break;
-
     case OPT_d:
       decode_d_option (arg, opts, loc, dc);
       break;
@@ -2416,6 +2413,14 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT_fdiagnostics_show_cwe:
       dc->show_cwe = value;
+      break;
+
+    case OPT_fdiagnostics_path_format_:
+      dc->path_format = (enum diagnostic_path_format)value;
+      break;
+
+    case OPT_fdiagnostics_show_path_depths:
+      dc->show_path_depths = value;
       break;
 
     case OPT_fdiagnostics_show_option:
@@ -2582,10 +2587,12 @@ common_handle_option (struct gcc_options *opts,
 	    function_entry_patch_area_start = 0;
 	  }
 	if (function_entry_patch_area_size < 0
+	    || function_entry_patch_area_size > USHRT_MAX
 	    || function_entry_patch_area_start < 0
+	    || function_entry_patch_area_start > USHRT_MAX
 	    || function_entry_patch_area_size 
 		< function_entry_patch_area_start)
-	  error ("invalid arguments for %<-fpatchable_function_entry%>");
+	  error ("invalid arguments for %<-fpatchable-function-entry%>");
 	free (patch_area_arg);
       }
       break;
@@ -3096,6 +3103,32 @@ option_name (diagnostic_context *context, int option_index,
     return NULL;
 }
 
+/* Get the page within the documentation for this option.  */
+
+static const char *
+get_option_html_page (int option_index)
+{
+  const cl_option *cl_opt = &cl_options[option_index];
+
+  /* Analyzer options are on their own page.  */
+  if (strstr(cl_opt->opt_text, "analyzer-"))
+    return "gcc/Static-Analyzer-Options.html";
+
+#ifdef CL_Fortran
+  if ((cl_opt->flags & CL_Fortran) != 0
+      /* If it is option common to both C/C++ and Fortran, it is documented
+	 in gcc/ rather than gfortran/ docs.  */
+      && (cl_opt->flags & CL_C) == 0
+#ifdef CL_CXX
+      && (cl_opt->flags & CL_CXX) == 0
+#endif
+     )
+    return "gfortran/Error-and-Warning-Options.html";
+#endif
+
+  return "gcc/Warning-Options.html";
+}
+
 /* Return malloced memory for a URL describing the option OPTION_INDEX
    which enabled a diagnostic (context CONTEXT).  */
 
@@ -3103,16 +3136,50 @@ char *
 get_option_url (diagnostic_context *, int option_index)
 {
   if (option_index)
-    /* DOCUMENTATION_ROOT_URL should be supplied via -D by the Makefile
-       (see --with-documentation-root-url).
+    return concat (/* DOCUMENTATION_ROOT_URL should be supplied via -D by
+		      the Makefile (see --with-documentation-root-url), and
+		      should have a trailing slash.  */
+		   DOCUMENTATION_ROOT_URL,
 
-       Expect an anchor of the form "index-Wfoo" e.g.
-       <a name="index-Wformat"></a>, and thus an id within
-       the URL of "#index-Wformat".  */
-    return concat (DOCUMENTATION_ROOT_URL,
-		   "Warning-Options.html",
+		   /* get_option_html_page will return something like
+		      "gcc/Warning-Options.html".  */
+		   get_option_html_page (option_index),
+
+		   /* Expect an anchor of the form "index-Wfoo" e.g.
+		      <a name="index-Wformat"></a>, and thus an id within
+		      the URL of "#index-Wformat".  */
 		   "#index", cl_options[option_index].opt_text,
 		   NULL);
   else
     return NULL;
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Verify that get_option_html_page works as expected.  */
+
+static void
+test_get_option_html_page ()
+{
+  ASSERT_STREQ (get_option_html_page (OPT_Wcpp), "gcc/Warning-Options.html");
+  ASSERT_STREQ (get_option_html_page (OPT_Wanalyzer_double_free),
+	     "gcc/Static-Analyzer-Options.html");
+#ifdef CL_Fortran
+  ASSERT_STREQ (get_option_html_page (OPT_Wline_truncation),
+		"gfortran/Error-and-Warning-Options.html");
+#endif
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+opts_c_tests ()
+{
+  test_get_option_html_page ();
+}
+
+} // namespace selftest
+
+#endif /* #if CHECKING_P */

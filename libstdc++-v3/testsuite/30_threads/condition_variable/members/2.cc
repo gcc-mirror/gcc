@@ -55,6 +55,8 @@ void test01()
 
 void test01_alternate_clock()
 {
+  using __gnu_test::slow_clock;
+
   try
     {
       std::condition_variable c1;

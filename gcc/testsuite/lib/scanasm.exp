@@ -569,7 +569,7 @@ proc parse_function_bodies { filename result } {
     set terminator {^\s*\.size}
 
     # Regexp for lines that aren't interesting.
-    set fluff {^\s*(?:\.|//)}
+    set fluff {^\s*(?:\.|//|@)}
 
     set fd [open $filename r]
     set in_function 0
@@ -604,7 +604,7 @@ proc check_function_body { functions name body_regexp } {
 
 # Check the implementations of functions against expected output.  Used as:
 #
-# { dg-do { check-function-bodies PREFIX TERMINATOR[ OPTION] } }
+# { dg-do { check-function-bodies PREFIX TERMINATOR[ OPTION[ SELECTOR]] } }
 #
 # See sourcebuild.texi for details.
 
@@ -612,12 +612,12 @@ proc check-function-bodies { args } {
     if { [llength $args] < 2 } {
 	error "too few arguments to check-function-bodies"
     }
-    if { [llength $args] > 3 } {
+    if { [llength $args] > 4 } {
 	error "too many arguments to check-function-bodies"
     }
 
-    if { [llength $args] == 3 } {
-	set required_flag [lindex $args 2]
+    if { [llength $args] >= 3 } {
+	set required_flags [lindex $args 2]
 
 	upvar 2 dg-extra-tool-flags extra_tool_flags
 	set flags $extra_tool_flags
@@ -626,8 +626,28 @@ proc check-function-bodies { args } {
 	if { [info exists torture_current_flags] } {
 	    append flags " " $torture_current_flags
 	}
-	if { ![regexp " $required_flag " $flags] } {
-	    return
+	foreach required_flag $required_flags {
+	    switch -- $required_flag {
+		target -
+		xfail {
+		    error "misplaced $required_flag in check-function-bodies"
+		}
+	    }
+	}
+	foreach required_flag $required_flags {
+	    if { ![regexp " $required_flag " $flags] } {
+		return
+	    }
+	}
+    }
+
+    set xfail_all 0
+    if { [llength $args] >= 4 } {
+	switch [dg-process-target [lindex $args 3]] {
+	    "S" { }
+	    "N" { return }
+	    "F" { set xfail_all 1 }
+	    "P" { }
 	}
     }
 
@@ -669,7 +689,7 @@ proc check-function-bodies { args } {
 	if { [string equal -length $prefix_len $line $prefix] } {
 	    set line [string trim [string range $line $prefix_len end]]
 	    if { !$in_function } {
-		if { [regexp "^(.*\\S)\\s+{(.*)}\$" $line dummy \
+		if { [regexp "^(.*?\\S)\\s+{(.*)}\$" $line dummy \
 			  line selector] } {
 		    set selector [dg-process-target $selector]
 		} else {
@@ -694,7 +714,7 @@ proc check-function-bodies { args } {
 	    }
 	} elseif { [string equal -length $terminator_len $line $terminator] } {
 	    if { ![string equal $selector "N"] } {
-		if { [string equal $selector "F"] } {
+		if { $xfail_all || [string equal $selector "F"] } {
 		    setup_xfail "*-*-*"
 		}
 		set testname "$testcase check-function-bodies $function_name"

@@ -1,3 +1,426 @@
+2020-06-15  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* configure: Regenerate.
+	* configure.ac: Use AC_COMPILE_IFELSE instead of manual
+	preprocessor invocation to check for __XTENSA_CALL0_ABI__.
+
+2020-06-09  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/95494
+	* libgcov-driver.c (write_top_counters): Cast first to
+	intptr_t as sizeof(*) != sizeof(gcov_type).
+	* libgcov.h (gcov_counter_set_if_null): Remove.
+	(gcov_topn_add_value): Cast first to intptr_t and update
+	linked list directly.
+
+2020-06-09  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/unwind-dw2-xtensa.c (uw_install_context): Merge
+	with uw_install_context_1.
+
+2020-06-04  Andreas Schwab  <schwab@suse.de>
+
+	PR target/59230
+	PR libfortran/59227
+	* config/ia64/t-softfp-compat (softfp_file_list): Filter out
+	soft-fp/divtf3.c.
+	(LIB2ADD): Add config/ia64/divtf3.c.
+	* config/ia64/divtf3.c: New file.
+
+2020-06-03  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/95480
+	* libgcov-profiler.c (GCOV_SUPPORTS_ATOMIC): Move to...
+	* libgcov.h (GCOV_SUPPORTS_ATOMIC): ...here.
+	(gcov_counter_add): Use GCOV_SUPPORTS_ATOMIC guard.
+	(gcov_counter_set_if_null): Likewise.
+
+2020-06-02  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/div.S (__divdi3): For negative arguments, change bgez
+	to bgtz.
+
+2020-06-02  Martin Liska  <mliska@suse.cz>
+
+	* libgcov.h (gcov_topn_add_value): Use xcalloc instead
+	of xmalloc.
+
+2020-06-02  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c (prune_topn_counter): Remove.
+	(prune_counters): Likewise.
+	(merge_one_data): Special case TOP N counters
+	as they have variable length.
+	(write_top_counters): New.
+	(write_one_data): Special case TOP N.
+	(dump_one_gcov): Do not prune TOP N counters.
+	* libgcov-merge.c (merge_topn_values_set): Remove.
+	(__gcov_merge_topn): Use gcov_topn_add_value.
+	* libgcov-profiler.c (__gcov_topn_values_profiler_body):
+	Likewise here.
+	* libgcov.h (gcov_counter_add): New.
+	(gcov_counter_set_if_null): Likewise.
+	(gcov_topn_add_value): New.
+
+2020-06-01  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sfp-exceptions.c (struct fenv):
+	Add __attribute__ ((gcc_struct)).
+
+2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/95413
+	* configure: Regenerated.
+
+2020-05-28  Dong JianQiang  <dongjianqiang2@huawei.com>
+
+	PR gcov-profile/95332
+	* libgcov-util.c (read_gcda_file): Call gcov_magic.
+	* libgcov.h (gcov_magic): Disable GCC poison.
+
+2020-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/95212
+	* config/i386/cpuinfo.h (processor_features): Move
+	FEATURE_AVX512VP2INTERSECT after FEATURE_AVX512BF16.
+
+2020-05-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/91695
+	* config/i386/cpuinfo.c (get_available_features): Fix VPCLMULQDQ
+	check.
+
+2020-05-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/95212
+	PR target/95220
+	* config/i386/cpuinfo.c (get_available_features): Fix
+	FEATURE_GFNI check.  Also check FEATURE_AVX512VP2INTERSECT.
+	* config/i386/cpuinfo.h (processor_features): Add
+	FEATURE_AVX512VP2INTERSECT.
+
+2020-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/95147
+	* configure: Regenerated.
+
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2020-05-09  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config.host: Remove support for crisv32-*-* and cris*-*-linux.
+	* config/cris/libgcc-glibc.ver, config/cris/t-linux: Remove.
+
+2020-05-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sfp-exceptions.c (__math_force_eval): Remove.
+	(__math_force_eval_div): New define.
+	(__sfp_handle_exceptions): Use __math_force_eval_div to use
+	generic division to generate INVALID, DIVZERO and INEXACT
+	exceptions.
+
+2020-05-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/lse-init.c (init_have_lse_atomics): Use __getauxval
+	instead of getauxval.
+	(AT_HWCAP): Define.
+	(HWCAP_ATOMICS): Define.
+	Guard detection on __gnu_linux__.
+
+2020-05-05  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config.host: Delete changes meant for a private branch.
+	* config/rs6000/t-float128: Likewise.
+	* configure.ac: Likewise.
+	* configure: Likewise.
+
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/93623
+	* Makefile.in: Remove __gcov_flush.
+	* gcov.h (__gcov_flush): Remove.
+	* libgcov-interface.c (__gcov_flush): Remove.
+	(init_mx): Use renamed mutex.
+	(__gcov_lock): Likewise.
+	(__gcov_unlock): Likewise.
+	(__gcov_fork): Likewise.
+	(__gcov_flush): Remove.
+
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/93623
+	* libgcov-interface.c (__gcov_fork): Do not flush
+	and reset only in child process.
+	(__gcov_execl): Dump counters only and reset them
+	only if exec* fails.
+	(__gcov_execlp): Likewise.
+	(__gcov_execle): Likewise.
+	(__gcov_execv): Likewise.
+	(__gcov_execvp): Likewise.
+	(__gcov_execve): Likewise.
+
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/93623
+	* Makefile.in: Add _gcov_lock_unlock to LIBGCOV_INTERFACE.
+	* libgcov-interface.c (ALIAS_void_fn): Remove.
+	(__gcov_lock): New.
+	(__gcov_unlock): New.
+	(__gcov_flush): Use __gcov_lock and __gcov_unlock.
+	(__gcov_reset): Likewise.
+	(__gcov_dump): Likewise.
+	* libgcov.h (__gcov_lock): New declaration.
+	(__gcov_unlock): Likewise.
+
+2020-05-01  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sfp-exceptions.c (__math_force_eval): New define.
+	(__sfp_handle_exceptions): Use __math_force_eval to evaluate
+	generic division to generate INVALID and DIVZERO exceptions.
+
+2020-04-27  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rs6000/crtresfpr.S: Use .machine ppc.
+	* config/rs6000/crtresxfpr.S: Likewise.
+	* config/rs6000/crtsavfpr.S: Likewise.
+
+2020-04-21  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94514
+	* config/aarch64/aarch64-unwind.h (aarch64_frob_update_context):
+	Update context->flags accroding to the frame state.
+
+2020-04-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sfp-exceptions.c (__sfp_handle_exceptions) [__SSE_MATH__]:
+	Remove unneeded assignments to volatile memory.
+
+2020-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93053
+	* configure.ac (LIBGCC_CHECK_AS_LSE): Add HAVE_AS_LSE checking.
+	* config/aarch64/lse.S: Include auto-target.h, if HAVE_AS_LSE
+	is not defined, use just .arch armv8-a.
+	(B, M, N, OPN): Define.
+	(COMMENT): New .macro.
+	(CAS, CASP, SWP, LDOP): Use .inst directive if HAVE_AS_LSE is not
+	defined.  Otherwise, move the operands right after the glue? and
+	comment out operands where the macros are used.
+	* configure: Regenerated.
+	* config.in: Regenerated.
+
+2020-04-07  Ian Lance Taylor  <iant@golang.org>
+
+	PR libgcc/94513
+	* generic-morestack.c: Give up trying to use __mmap/__munmap, use
+	syscall instead.
+
+2020-04-04  Ian Lance Taylor  <iant@golang.org>
+
+	* generic-morestack.c: Only use __mmap on glibc >= 2.26.
+
+2020-04-03  Ian Lance Taylor  <iant@golang.org>
+
+	* generic-morestack.c: On GNU/Linux use __mmap/__munmap rather
+	than mmap/munmap, to avoid hooks.
+
+2020-04-03  Jim Johnston  <jjohnst@us.ibm.com>
+
+	* config/s390/tpf-unwind.h (MIN_PATRANGE, MAX_PATRANGE)
+	(TPFRA_OFFSET): Macros removed.
+	(CP_CNF, cinfc_fast, CINFC_CMRESET, CINTFC_CMCENBKST)
+	(CINTFC_CMCENBKED, ICST_CRET, ICST_SRET, LOWCORE_PAGE3_ADDR)
+	(PG3_SKIPPING_OFFSET): New macros.
+	(__isPATrange): Use cinfc_fast for the check.
+	(__isSkipResetAddr): New function.
+	(s390_fallback_frame_state): Check for skip trace addresses. Use
+	either ICST_CRET or ICST_SRET to calculate return address
+	location.
+	(__tpf_eh_return): Handle skip trace addresses.
+
+2020-03-26  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/94220
+	* config/arm/lib1funcs.asm (COND): Use a single definition for
+	unified syntax.
+	(aeabi_uidivmod): Unified syntax when optimizing Thumb for size.
+	(aeabi_idivmod): Likewise.
+	(divsi3_skip_div0_test): Likewise.
+
+2020-03-17  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* config/arm/t-arm: Do not compile cmse_nonsecure_call.S for v8.1-m.
+
+2020-03-04  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config.host: Include the new makefile fragment.
+	* config/s390/t-tpf: New file.
+
+2020-03-03  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/bpabi-v6m.S (aeabi_lcmp): Convert thumb1 code to unified
+	syntax.
+	(aeabi_ulcmp, aeabi_ldivmod, aeabi_uldivmod): Likewise.
+	(aeabi_frsub, aeabi_cfcmpeq, aeabi_fcmpeq): Likewise.
+	(aeabi_fcmp, aeabi_drsub, aeabi_cdrcmple): Likewise.
+	(aeabi_cdcmpeq, aeabi_dcmpeq, aeabi_dcmp): Likewise.
+	* config/arm/lib1funcs.S (Lend_fde): Convert thumb1 code to unified
+	syntax.
+	(divsi3, modsi3): Likewise.
+	(clzdi2, ctzsi2): Likewise.
+	* config/arm/libunwind.S (restore_core_regs): Convert thumb1 code to
+	unified syntax.
+	(UNWIND_WRAPPER): Likewise.
+
+2020-03-02  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-interface.c: Remove duplicate
+	declaration of __gcov_flush_mx.
+
+2020-02-18  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/92924
+	* libgcov-merge.c (merge_topn_values_set): Record
+	when a TOP N counter becomes invalid.  When merging
+	remove a smallest value if the space is needed.
+
+2020-02-12  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libstdc++/79193
+	PR libstdc++/88999
+
+	* configure: Regenerated.
+
+2020-02-10  Jeff Law  <law@redhat.com>
+
+	* config/frv/frvbegin.c: Use right flags for .ctors and .dtors
+	sections.
+	* config/frv/frvend.c: Similarly.
+
+2020-02-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcc/85334
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Increment):
+	New.
+
+2020-02-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/93615
+	* unwind-arm-common.inc: Replace uses of gnu_Unwind_Find_got with
+	_Unwind_gnu_Find_got.
+	* unwind-pe.h: Likewise.
+
+2020-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93615
+	* config/arm/unwind-arm.h (gnu_Unwind_Find_got): Rename to ...
+	(_Unwind_gnu_Find_got): ... this.  Use __asm instead of asm.  Remove
+	trailing :s in asm.  Formatting fixes.
+	(_Unwind_decode_typeinfo_ptr): Adjust caller.
+
+2020-01-31  Sandra Loosemore  <sandra@codesourcery.com>
+
+	nios2: Support for GOT-relative DW_EH_PE_datarel encoding.
+
+	* config.host [nios2-*-linux*] (tmake_file, tm_file): Adjust.
+	* config/nios2-elf-lib.h: New.
+	* unwind-dw2-fde-dip.c (_Unwind_IteratePhdrCallback): Use existing
+	code for finding GOT base for nios2.
+
+2020-01-27  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/93403
+	* libgcov-profiler.c (__gcov_indirect_call_profiler_v4):
+	Call __gcov_indirect_call_profiler_body.
+	(__gcov_indirect_call_profiler_body): New.
+	(__gcov_indirect_call_profiler_v4_atomic): New.
+	* libgcov.h (__gcov_indirect_call_profiler_v4_atomic):
+	New declaration.
+
+2020-01-27  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/crti.S: Add RF16 object attribute.
+	* config/arc/crtn.S: Likewise.
+	* config/arc/crttls.S: Likewise.
+	* config/arc/lib1funcs.S: Likewise.
+	* config/arc/fp-hack.h (ARC_OPTFPE): Define.
+	* config/arc/lib2funcs.c: New file.
+	* config/arc/t-arc: Add lib2funcs to LIB2ADD.
+
+2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
+
+	* Makefile.in (configure_deps): Add `toolexeclibdir.m4'.
+	* configure.ac: Handle `--with-toolexeclibdir='.
+	* configure: Regenerate.
+
+2020-01-23  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	* config/mips/gnustack.h: Check for TARGET_LIBC_GNUSTACK also.
+
+2020-01-23  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	* config/mips/gnustack.h: New file.
+	* config/mips/crti.S: Include gnustack.h.
+	* config/mips/crtn.S: Likewise.
+	* config/mips/mips16.S: Likewise.
+	* config/mips/vr4120-div.S: Likewise.
+
+2020-01-23  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c (prune_topn_counter): Remove
+	check for -1 as we only prune run-time counters
+	that do not generate an invalid state.
+
+2020-01-22  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/92924
+	* libgcov-profiler.c (__gcov_topn_values_profiler_body): First
+	try to find an existing value, then find an empty slot
+	if not found.
+
+2020-01-22  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/92924
+	* libgcov-driver.c (prune_topn_counter): New.
+	(prune_counters): Likewise.
+	(dump_one_gcov): Prune a run-time counter.
+	* libgcov-profiler.c (__gcov_topn_values_profiler_body):
+	For a known value, add GCOV_TOPN_VALUES to value.
+	Otherwise, decrement all counters by one.
+
+2020-01-18  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/arit.c (DS): Apply attribute __fallthrough__.
+
+2020-01-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libgcc/92988
+	* crtstuff.c (__do_global_dtors_aux): Only call __cxa_finalize if
+	DEFAULT_USE_CXA_ATEXIT is true.
+
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/t-arm: Check return value of gcc rather than lack of
+	output.
+
+2020-01-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/lib1funcs.S (skip): Simplify.
+
+2020-01-10  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/atomic.c: Remove include of stdint.h.
+	(__sync_val_compare_and_swap_##SIZE): Replace uintptr_t with
+	__UINTPTR_TYPE__.
+
+2020-01-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/atomic.c: New.
+	* config/gcn/t-amdgcn (LIB2ADD): Add atomic.c.
+
 2020-01-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	Implement 64-bit double functions.

@@ -53,6 +53,13 @@ along with GCC; see the file COPYING3.  If not see
    driver to lto-wrapper.  */
 #define OFFLOAD_TARGET_NAMES_ENV	"OFFLOAD_TARGET_NAMES"
 
+/* By default there is no special suffix for target executables.  */
+#ifdef TARGET_EXECUTABLE_SUFFIX
+#define HAVE_TARGET_EXECUTABLE_SUFFIX
+#else
+#define TARGET_EXECUTABLE_SUFFIX ""
+#endif
+
 enum lto_mode_d {
   LTO_MODE_NONE,			/* Not doing LTO.  */
   LTO_MODE_LTO,				/* Normal LTO.  */
@@ -73,6 +80,7 @@ static char *offload_objects_file_name;
 static char *makefile;
 static unsigned int num_deb_objs;
 static const char **early_debug_object_names;
+static bool xassembler_options_error = false;
 
 const char tool_name[] = "lto-wrapper";
 
@@ -125,7 +133,7 @@ maybe_unlink (const char *file)
 }
 
 /* Template of LTRANS dumpbase suffix.  */
-#define DUMPBASE_SUFFIX ".ltrans18446744073709551615"
+#define DUMPBASE_SUFFIX "ltrans18446744073709551615"
 
 /* Create decoded options from the COLLECT_GCC and COLLECT_GCC_OPTIONS
    environment.  */
@@ -137,42 +145,14 @@ get_options_from_collect_gcc_options (const char *collect_gcc,
 				      unsigned int *decoded_options_count)
 {
   struct obstack argv_obstack;
-  char *argv_storage;
   const char **argv;
-  int j, k, argc;
+  int argc;
 
-  argv_storage = xstrdup (collect_gcc_options);
   obstack_init (&argv_obstack);
   obstack_ptr_grow (&argv_obstack, collect_gcc);
 
-  for (j = 0, k = 0; argv_storage[j] != '\0'; ++j)
-    {
-      if (argv_storage[j] == '\'')
-	{
-	  obstack_ptr_grow (&argv_obstack, &argv_storage[k]);
-	  ++j;
-	  do
-	    {
-	      if (argv_storage[j] == '\0')
-		fatal_error (input_location,
-			     "malformed %<COLLECT_GCC_OPTIONS%>");
-	      else if (strncmp (&argv_storage[j], "'\\''", 4) == 0)
-		{
-		  argv_storage[k++] = '\'';
-		  j += 4;
-		}
-	      else if (argv_storage[j] == '\'')
-		break;
-	      else
-		argv_storage[k++] = argv_storage[j++];
-	    }
-	  while (1);
-	  argv_storage[k++] = '\0';
-	}
-    }
-
-  obstack_ptr_grow (&argv_obstack, NULL);
-  argc = obstack_object_size (&argv_obstack) / sizeof (void *) - 1;
+  parse_options_from_collect_gcc_options (collect_gcc_options,
+					  &argv_obstack, &argc);
   argv = XOBFINISH (&argv_obstack, const char **);
 
   decode_cmdline_options_to_array (argc, (const char **)argv, CL_DRIVER,
@@ -512,6 +492,45 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
       }
    else
      j++;
+
+  if (!xassembler_options_error)
+    for (i = j = 0; ; i++, j++)
+      {
+	for (; i < *decoded_options_count; i++)
+	  if ((*decoded_options)[i].opt_index == OPT_Xassembler)
+	    break;
+
+	for (; j < fdecoded_options_count; j++)
+	  if (fdecoded_options[j].opt_index == OPT_Xassembler)
+	    break;
+
+	if (i == *decoded_options_count && j == fdecoded_options_count)
+	  break;
+	else if (i < *decoded_options_count && j == fdecoded_options_count)
+	  {
+	    warning (0, "Extra option to %<-Xassembler%>: %s,"
+		     " dropping all %<-Xassembler%> and %<-Wa%> options.",
+		     (*decoded_options)[i].arg);
+	    xassembler_options_error = true;
+	    break;
+	  }
+	else if (i == *decoded_options_count && j < fdecoded_options_count)
+	  {
+	    warning (0, "Extra option to %<-Xassembler%>: %s,"
+		     " dropping all %<-Xassembler%> and %<-Wa%> options.",
+		     fdecoded_options[j].arg);
+	    xassembler_options_error = true;
+	    break;
+	  }
+	else if (strcmp ((*decoded_options)[i].arg, fdecoded_options[j].arg))
+	  {
+	    warning (0, "Options to %<-Xassembler%> do not match: %s, %s,"
+		     " dropping all %<-Xassembler%> and %<-Wa%> options.",
+		     (*decoded_options)[i].arg, fdecoded_options[j].arg);
+	    xassembler_options_error = true;
+	    break;
+	  }
+      }
 }
 
 /* Auxiliary function that frees elements of PTR and PTR itself.
@@ -624,6 +643,13 @@ append_compiler_options (obstack *argv_obstack, struct cl_decoded_option *opts,
 	case OPT_Ofast:
 	case OPT_Og:
 	case OPT_Os:
+	  break;
+
+	case OPT_Xassembler:
+	  /* When we detected a mismatch in assembler options between
+	     the input TU's fall back to previous behavior of ignoring them.  */
+	  if (xassembler_options_error)
+	    continue;
 	  break;
 
 	default:
@@ -1081,12 +1107,7 @@ debug_objcopy (const char *infile, bool rename)
     }
 
   if (save_temps)
-    {
-      outfile = (char *) xmalloc (strlen (orig_infile)
-				  + sizeof (".debug.temp.o") + 1);
-      strcpy (outfile, orig_infile);
-      strcat (outfile, ".debug.temp.o");
-    }
+    outfile = concat (orig_infile, ".debug.temp.o", NULL);
   else
     outfile = make_temp_file (".debug.temp.o");
   errmsg = simple_object_copy_lto_debug_sections (inobj, outfile, &err, rename);
@@ -1215,30 +1236,35 @@ init_num_threads (void)
 #endif
 }
 
-/* FIXME: once using -std=c11, we can use std::thread::hardware_concurrency.  */
+/* FIXME: once using -std=c++11, we can use std::thread::hardware_concurrency.  */
 
-/* Return true when a jobserver is running and can accept a job.  */
+/* Test and return reason why a jobserver cannot be detected.  */
 
-static bool
+static const char *
 jobserver_active_p (void)
 {
+  #define JS_PREFIX "jobserver is not available: "
+  #define JS_NEEDLE "--jobserver-auth="
+
   const char *makeflags = getenv ("MAKEFLAGS");
   if (makeflags == NULL)
-    return false;
+    return JS_PREFIX "%<MAKEFLAGS%> environment variable is unset";
 
-  const char *needle = "--jobserver-auth=";
-  const char *n = strstr (makeflags, needle);
+  const char *n = strstr (makeflags, JS_NEEDLE);
   if (n == NULL)
-    return false;
+    return JS_PREFIX "%<" JS_NEEDLE "%> is not present in %<MAKEFLAGS%>";
 
   int rfd = -1;
   int wfd = -1;
 
-  return (sscanf (n + strlen (needle), "%d,%d", &rfd, &wfd) == 2
-	  && rfd > 0
-	  && wfd > 0
-	  && is_valid_fd (rfd)
-	  && is_valid_fd (wfd));
+  if (sscanf (n + strlen (JS_NEEDLE), "%d,%d", &rfd, &wfd) == 2
+      && rfd > 0
+      && wfd > 0
+      && is_valid_fd (rfd)
+      && is_valid_fd (wfd))
+    return NULL;
+  else
+    return JS_PREFIX "cannot access %<" JS_NEEDLE "%> file descriptors";
 }
 
 /* Execute gcc. ARGC is the number of arguments. ARGV contains the arguments. */
@@ -1251,7 +1277,8 @@ run_gcc (unsigned argc, char *argv[])
   const char **argv_ptr;
   char *list_option_full = NULL;
   const char *linker_output = NULL;
-  const char *collect_gcc, *collect_gcc_options;
+  const char *collect_gcc;
+  char *collect_gcc_options;
   int parallel = 0;
   int jobserver = 0;
   int auto_parallel = 0;
@@ -1271,6 +1298,8 @@ run_gcc (unsigned argc, char *argv[])
   bool linker_output_rel = false;
   bool skip_debug = false;
   unsigned n_debugobj;
+  const char *dumppfx = NULL, *incoming_dumppfx = NULL;
+  static char current_dir[] = { '.', DIR_SEPARATOR, '\0' };
 
   /* Get the driver and options.  */
   collect_gcc = getenv ("COLLECT_GCC");
@@ -1281,6 +1310,26 @@ run_gcc (unsigned argc, char *argv[])
   if (!collect_gcc_options)
     fatal_error (input_location,
 		 "environment variable %<COLLECT_GCC_OPTIONS%> must be set");
+
+  char *collect_as_options = getenv ("COLLECT_AS_OPTIONS");
+
+  /* Prepend -Xassembler to each option, and append the string
+     to collect_gcc_options.  */
+  if (collect_as_options)
+    {
+      obstack temporary_obstack;
+      obstack_init (&temporary_obstack);
+
+      prepend_xassembler_to_collect_as_options (collect_as_options,
+						&temporary_obstack);
+      obstack_1grow (&temporary_obstack, '\0');
+
+      char *xassembler_opts_string
+	= XOBFINISH (&temporary_obstack, char *);
+      collect_gcc_options = concat (collect_gcc_options, xassembler_opts_string,
+				    NULL);
+    }
+
   get_options_from_collect_gcc_options (collect_gcc, collect_gcc_options,
 					&decoded_options,
 					&decoded_options_count);
@@ -1362,6 +1411,10 @@ run_gcc (unsigned argc, char *argv[])
 	  linker_output = option->arg;
 	  break;
 
+	  /* We don't have to distinguish between -save-temps=* and
+	     -save-temps, -dumpdir already carries that
+	     information.  */
+	case OPT_save_temps_:
 	case OPT_save_temps:
 	  save_temps = 1;
 	  break;
@@ -1407,6 +1460,10 @@ run_gcc (unsigned argc, char *argv[])
 	  skip_debug = option->arg && !strcmp (option->arg, "0");
 	  break;
 
+	case OPT_dumpdir:
+	  incoming_dumppfx = dumppfx = option->arg;
+	  break;
+
 	default:
 	  break;
 	}
@@ -1433,38 +1490,59 @@ run_gcc (unsigned argc, char *argv[])
       auto_parallel = 0;
       parallel = 0;
     }
-  else if (!jobserver && jobserver_active_p ())
+  else
     {
-      parallel = 1;
-      jobserver = 1;
+      const char *jobserver_error = jobserver_active_p ();
+      if (jobserver && jobserver_error != NULL)
+	warning (0, jobserver_error);
+      else if (!jobserver && jobserver_error == NULL)
+	{
+	  parallel = 1;
+	  jobserver = 1;
+	}
     }
 
-  if (linker_output)
+  if (!dumppfx)
     {
-      char *output_dir, *base, *name;
-      bool bit_bucket = strcmp (linker_output, HOST_BIT_BUCKET) == 0;
-
-      output_dir = xstrdup (linker_output);
-      base = output_dir;
-      for (name = base; *name; name++)
-	if (IS_DIR_SEPARATOR (*name))
-	  base = name + 1;
-      *base = '\0';
-
-      linker_output = &linker_output[base - output_dir];
-      if (*output_dir == '\0')
+      if (!linker_output
+	  || strcmp (linker_output, HOST_BIT_BUCKET) == 0)
+	dumppfx = "a.";
+      else
 	{
-	  static char current_dir[] = { '.', DIR_SEPARATOR, '\0' };
-	  output_dir = current_dir;
-	}
-      if (!bit_bucket)
-	{
-	  obstack_ptr_grow (&argv_obstack, "-dumpdir");
-	  obstack_ptr_grow (&argv_obstack, output_dir);
-	}
+	  const char *obase = lbasename (linker_output), *temp;
 
-      obstack_ptr_grow (&argv_obstack, "-dumpbase");
+	  /* Strip the executable extension.  */
+	  size_t blen = strlen (obase), xlen;
+	  if ((temp = strrchr (obase + 1, '.'))
+	      && (xlen = strlen (temp))
+	      && (strcmp (temp, ".exe") == 0
+#if defined(HAVE_TARGET_EXECUTABLE_SUFFIX)
+		  || strcmp (temp, TARGET_EXECUTABLE_SUFFIX) == 0
+#endif
+		  || strcmp (obase, "a.out") == 0))
+	    dumppfx = xstrndup (linker_output,
+				obase - linker_output + blen - xlen + 1);
+	  else
+	    dumppfx = concat (linker_output, ".", NULL);
+	}
     }
+
+  /* If there's no directory component in the dumppfx, add one, so
+     that, when it is used as -dumpbase, it overrides any occurrence
+     of -dumpdir that might have been passed in.  */
+  if (!dumppfx || lbasename (dumppfx) == dumppfx)
+    dumppfx = concat (current_dir, dumppfx, NULL);
+
+  /* Make sure some -dumpdir is passed, so as to get predictable
+     -dumpbase overriding semantics.  If we got an incoming -dumpdir
+     argument, we'll pass it on, so don't bother with another one
+     then.  */
+  if (!incoming_dumppfx)
+    {
+      obstack_ptr_grow (&argv_obstack, "-dumpdir");
+      obstack_ptr_grow (&argv_obstack, "");
+    }
+  obstack_ptr_grow (&argv_obstack, "-dumpbase");
 
   /* Remember at which point we can scrub args to re-use the commons.  */
   new_head_argc = obstack_object_size (&argv_obstack) / sizeof (void *);
@@ -1570,15 +1648,11 @@ cont1:
 
   if (lto_mode == LTO_MODE_LTO)
     {
-      if (linker_output)
-	{
-	  obstack_ptr_grow (&argv_obstack, linker_output);
-	  flto_out = (char *) xmalloc (strlen (linker_output)
-				       + sizeof (".lto.o") + 1);
-	  strcpy (flto_out, linker_output);
-	  strcat (flto_out, ".lto.o");
-	}
-      else
+      /* -dumpbase argument for LTO.  */
+      flto_out = concat (dumppfx, "lto.o", NULL);
+      obstack_ptr_grow (&argv_obstack, flto_out);
+
+      if (!save_temps)
 	flto_out = make_temp_file (".lto.o");
       obstack_ptr_grow (&argv_obstack, "-o");
       obstack_ptr_grow (&argv_obstack, flto_out);
@@ -1586,47 +1660,17 @@ cont1:
   else 
     {
       const char *list_option = "-fltrans-output-list=";
-      size_t list_option_len = strlen (list_option);
-      char *tmp;
 
-      if (linker_output)
-	{
-	  char *dumpbase = (char *) xmalloc (strlen (linker_output)
-					     + sizeof (".wpa") + 1);
-	  strcpy (dumpbase, linker_output);
-	  strcat (dumpbase, ".wpa");
-	  obstack_ptr_grow (&argv_obstack, dumpbase);
-	}
+      /* -dumpbase argument for WPA.  */
+      char *dumpbase = concat (dumppfx, "wpa", NULL);
+      obstack_ptr_grow (&argv_obstack, dumpbase);
 
-      if (linker_output && save_temps)
-	{
-	  ltrans_output_file = (char *) xmalloc (strlen (linker_output)
-						 + sizeof (".ltrans.out") + 1);
-	  strcpy (ltrans_output_file, linker_output);
-	  strcat (ltrans_output_file, ".ltrans.out");
-	}
+      if (save_temps)
+	ltrans_output_file = concat (dumppfx, "ltrans.out", NULL);
       else
-	{
-	  char *prefix = NULL;
-	  if (linker_output)
-	    {
-	      prefix = (char *) xmalloc (strlen (linker_output) + 2);
-	      strcpy (prefix, linker_output);
-	      strcat (prefix, ".");
-	    }
-
-	  ltrans_output_file = make_temp_file_with_prefix (prefix,
-							   ".ltrans.out");
-	  free (prefix);
-	}
-      list_option_full = (char *) xmalloc (sizeof (char) *
-		         (strlen (ltrans_output_file) + list_option_len + 1));
-      tmp = list_option_full;
-
-      obstack_ptr_grow (&argv_obstack, tmp);
-      strcpy (tmp, list_option);
-      tmp += list_option_len;
-      strcpy (tmp, ltrans_output_file);
+	ltrans_output_file = make_temp_file (".ltrans.out");
+      list_option_full = concat (list_option, ltrans_output_file, NULL);
+      obstack_ptr_grow (&argv_obstack, list_option_full);
 
       if (jobserver)
 	{
@@ -1782,16 +1826,10 @@ cont:
 	  output_name = XOBFINISH (&env_obstack, char *);
 
 	  /* Adjust the dumpbase if the linker output file was seen.  */
-	  if (linker_output)
-	    {
-	      char *dumpbase
-		  = (char *) xmalloc (strlen (linker_output)
-				      + sizeof (DUMPBASE_SUFFIX) + 1);
-	      snprintf (dumpbase,
-			strlen (linker_output) + sizeof (DUMPBASE_SUFFIX),
-			"%s.ltrans%u", linker_output, i);
-	      argv_ptr[0] = dumpbase;
-	    }
+	  int dumpbase_len = (strlen (dumppfx) + sizeof (DUMPBASE_SUFFIX));
+	  char *dumpbase = (char *) xmalloc (dumpbase_len + 1);
+	  snprintf (dumpbase, dumpbase_len, "%sltrans%u.ltrans", dumppfx, i);
+	  argv_ptr[0] = dumpbase;
 
 	  argv_ptr[1] = "-fltrans";
 	  argv_ptr[2] = "-o";
@@ -1843,23 +1881,32 @@ cont:
 	      putenv (xstrdup ("MAKEFLAGS="));
 	      putenv (xstrdup ("MFLAGS="));
 	    }
-	  new_argv[0] = getenv ("MAKE");
-	  if (!new_argv[0])
-	    new_argv[0] = "make";
-	  new_argv[1] = "-f";
-	  new_argv[2] = makefile;
-	  i = 3;
+
+	  char **make_argv = buildargv (getenv ("MAKE"));
+	  if (make_argv)
+	    {
+	      for (unsigned argc = 0; make_argv[argc]; argc++)
+		obstack_ptr_grow (&argv_obstack, make_argv[argc]);
+	    }
+	  else
+	    obstack_ptr_grow (&argv_obstack, "make");
+
+	  obstack_ptr_grow (&argv_obstack, "-f");
+	  obstack_ptr_grow (&argv_obstack, makefile);
 	  if (!jobserver)
 	    {
 	      snprintf (jobs, 31, "-j%ld",
 			auto_parallel ? nthreads_var : parallel);
-	      new_argv[i++] = jobs;
+	      obstack_ptr_grow (&argv_obstack, jobs);
 	    }
-	  new_argv[i++] = "all";
-	  new_argv[i++] = NULL;
+	  obstack_ptr_grow (&argv_obstack, "all");
+	  obstack_ptr_grow (&argv_obstack, NULL);
+	  new_argv = XOBFINISH (&argv_obstack, const char **);
+
 	  pex = collect_execute (new_argv[0], CONST_CAST (char **, new_argv),
 				 NULL, NULL, PEX_SEARCH, false);
 	  do_wait (new_argv[0], pex);
+	  freeargv (make_argv);
 	  maybe_unlink (makefile);
 	  makefile = NULL;
 	  for (i = 0; i < nr; ++i)

@@ -561,6 +561,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__WAITPKG__");
   if (isa_flag2 & OPTION_MASK_ISA2_CLDEMOTE)
     def_or_undef (parse_in, "__CLDEMOTE__");
+  if (isa_flag2 & OPTION_MASK_ISA2_SERIALIZE)
+    def_or_undef (parse_in, "__SERIALIZE__");
   if (isa_flag2 & OPTION_MASK_ISA2_PTWRITE)
     def_or_undef (parse_in, "__PTWRITE__");
   if (isa_flag2 & OPTION_MASK_ISA2_AVX512BF16)
@@ -569,6 +571,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__MMX_WITH_SSE__");
   if (isa_flag2 & OPTION_MASK_ISA2_ENQCMD)
     def_or_undef (parse_in, "__ENQCMD__");
+  if (isa_flag2 & OPTION_MASK_ISA2_TSXLDTRK)
+    def_or_undef (parse_in, "__TSXLDTRK__");
   if (TARGET_IAMCU)
     {
       def_or_undef (parse_in, "__iamcu");
@@ -697,6 +701,8 @@ ix86_target_macros (void)
       cpp_assert (parse_in, "cpu=i386");
       cpp_assert (parse_in, "machine=i386");
       builtin_define_std ("i386");
+      cpp_define (parse_in, "_ILP32");
+      cpp_define (parse_in, "__ILP32__");
     }
 
   if (!TARGET_80387)

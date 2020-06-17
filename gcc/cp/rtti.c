@@ -1472,6 +1472,7 @@ get_tinfo_desc (unsigned ix)
   /* Pass the fields chained in reverse.  */
   finish_builtin_struct (pseudo_type, pseudo_name, fields, NULL_TREE);
   CLASSTYPE_AS_BASE (pseudo_type) = pseudo_type;
+  xref_basetypes (pseudo_type, /*bases=*/NULL_TREE);
 
   res->type = cp_build_qualified_type (pseudo_type, TYPE_QUAL_CONST);
   res->name = get_identifier (real_name);
@@ -1587,6 +1588,20 @@ emit_support_tinfos (void)
       }
   for (tree t = registered_builtin_types; t; t = TREE_CHAIN (t))
     emit_support_tinfo_1 (TREE_VALUE (t));
+  /* For compatibility, emit DFP typeinfos even when DFP isn't enabled,
+     because we've emitted that in the past.  */
+  if (!targetm.decimal_float_supported_p ())
+    {
+      gcc_assert (dfloat32_type_node == NULL_TREE
+		  && dfloat64_type_node == NULL_TREE
+		  && dfloat128_type_node == NULL_TREE);
+      fallback_dfloat32_type = make_node (REAL_TYPE);
+      fallback_dfloat64_type = make_node (REAL_TYPE);
+      fallback_dfloat128_type = make_node (REAL_TYPE);
+      emit_support_tinfo_1 (fallback_dfloat32_type);
+      emit_support_tinfo_1 (fallback_dfloat64_type);
+      emit_support_tinfo_1 (fallback_dfloat128_type);
+    }
   input_location = saved_loc;
 }
 

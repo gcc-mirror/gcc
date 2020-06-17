@@ -106,7 +106,7 @@ static bool gimple_divmod_fixed_value_transform (gimple_stmt_iterator *);
 static bool gimple_mod_pow2_value_transform (gimple_stmt_iterator *);
 static bool gimple_mod_subtract_transform (gimple_stmt_iterator *);
 static bool gimple_stringops_transform (gimple_stmt_iterator *);
-static bool gimple_ic_transform (gimple_stmt_iterator *);
+static void dump_ic_profile (gimple_stmt_iterator *gsi);
 
 /* Allocate histogram value.  */
 
@@ -262,17 +262,18 @@ dump_histogram_value (FILE *dump_file, histogram_value hist)
 	{
 	  fprintf (dump_file,
 		   (hist->type == HIST_TYPE_TOPN_VALUES
-		    ? "Top N value counter " : "Indirect call counter"));
+		    ? "Top N value counter" : "Indirect call counter"));
 	  if (hist->hvalue.counters)
 	    {
-	      fprintf (dump_file, "all: %" PRId64 ", values: ",
-		       (int64_t) hist->hvalue.counters[0]);
-	      for (unsigned i = 0; i < GCOV_TOPN_VALUES; i++)
+	      unsigned count = hist->hvalue.counters[1];
+	      fprintf (dump_file, " all: %" PRId64 ", %" PRId64 " values: ",
+		       (int64_t) hist->hvalue.counters[0], (int64_t) count);
+	      for (unsigned i = 0; i < count; i++)
 		{
 		  fprintf (dump_file, "[%" PRId64 ":%" PRId64 "]",
-			   (int64_t) hist->hvalue.counters[2 * i + 1],
-			   (int64_t) hist->hvalue.counters[2 * i + 2]);
-		  if (i != GCOV_TOPN_VALUES - 1)
+			   (int64_t) hist->hvalue.counters[2 * i + 2],
+			   (int64_t) hist->hvalue.counters[2 * i + 3]);
+		  if (i != count - 1)
 		    fprintf (dump_file, ", ");
 		}
 	      fprintf (dump_file, ".\n");
@@ -330,7 +331,7 @@ stream_out_histogram_value (struct output_block *ob, histogram_value hist)
       /* When user uses an unsigned type with a big value, constant converted
 	 to gcov_type (a signed type) can be negative.  */
       gcov_type value = hist->hvalue.counters[i];
-      if (hist->type == HIST_TYPE_TOPN_VALUES && i > 0)
+      if (hist->type == HIST_TYPE_TOPN_VALUES)
 	;
       else
 	gcc_assert (value >= 0);
@@ -375,7 +376,6 @@ stream_in_histogram_value (class lto_input_block *ib, gimple *stmt)
 
 	case HIST_TYPE_TOPN_VALUES:
 	case HIST_TYPE_INDIR_CALL:
-	  ncounters = GCOV_TOPN_VALUES_COUNTERS;
 	  break;
 
 	case HIST_TYPE_IOR:
@@ -386,10 +386,31 @@ stream_in_histogram_value (class lto_input_block *ib, gimple *stmt)
 	default:
 	  gcc_unreachable ();
 	}
-      new_val->hvalue.counters = XNEWVAR (gcov_type, sizeof (*new_val->hvalue.counters) * ncounters);
-      new_val->n_counters = ncounters;
-      for (i = 0; i < ncounters; i++)
-	new_val->hvalue.counters[i] = streamer_read_gcov_count (ib);
+
+      /* TOP N counters have variable number of counters.  */
+      if (type == HIST_TYPE_INDIR_CALL || type == HIST_TYPE_TOPN_VALUES)
+	{
+	  gcov_type total = streamer_read_gcov_count (ib);
+	  gcov_type ncounters = streamer_read_gcov_count (ib);
+	  new_val->hvalue.counters = XNEWVAR (gcov_type,
+					      sizeof (*new_val->hvalue.counters)
+					      * (2 + 2 * ncounters));
+	  new_val->hvalue.counters[0] = total;
+	  new_val->hvalue.counters[1] = ncounters;
+	  new_val->n_counters = 2 + 2 * ncounters;
+	  for (i = 0; i < 2 * ncounters; i++)
+	    new_val->hvalue.counters[2 + i] = streamer_read_gcov_count (ib);
+	}
+      else
+	{
+	  new_val->hvalue.counters = XNEWVAR (gcov_type,
+					      sizeof (*new_val->hvalue.counters)
+					      * ncounters);
+	  new_val->n_counters = ncounters;
+	  for (i = 0; i < ncounters; i++)
+	    new_val->hvalue.counters[i] = streamer_read_gcov_count (ib);
+	}
+
       if (!next_p)
 	gimple_add_histogram_value (cfun, stmt, new_val);
       else
@@ -616,8 +637,7 @@ gimple_value_profile_transformations (void)
 	  if (gimple_mod_subtract_transform (&gsi)
 	      || gimple_divmod_fixed_value_transform (&gsi)
 	      || gimple_mod_pow2_value_transform (&gsi)
-	      || gimple_stringops_transform (&gsi)
-	      || gimple_ic_transform (&gsi))
+	      || gimple_stringops_transform (&gsi))
 	    {
 	      stmt = gsi_stmt (gsi);
 	      changed = true;
@@ -628,6 +648,10 @@ gimple_value_profile_transformations (void)
 		  gsi = gsi_for_stmt (stmt);
 		}
 	    }
+
+	  /* The function never thansforms a GIMPLE statement.  */
+	  if (dump_enabled_p ())
+	    dump_ic_profile (&gsi);
         }
     }
 
@@ -714,25 +738,40 @@ gimple_divmod_fixed_value (gassign *stmt, tree value, profile_probability prob,
 
 /* Return the n-th value count of TOPN_VALUE histogram.  If
    there's a value, return true and set VALUE and COUNT
-   arguments.  */
+   arguments.
+
+   Counters have the following meaning.
+
+   abs (counters[0]) is the number of executions
+   for i in 0 ... TOPN-1
+     counters[2 * i + 1] is target
+     abs (counters[2 * i + 2]) is corresponding hitrate counter.
+
+   Value of counters[0] negative when counter became
+   full during merging and some values are lost.  */
 
 bool
 get_nth_most_common_value (gimple *stmt, const char *counter_type,
 			   histogram_value hist, gcov_type *value,
 			   gcov_type *count, gcov_type *all, unsigned n)
 {
-  if (hist->hvalue.counters[2] == -1)
+  unsigned counters = hist->hvalue.counters[1];
+  if (n >= counters)
     return false;
-
-  gcc_assert (n < GCOV_TOPN_VALUES);
 
   *count = 0;
   *value = 0;
 
-  gcov_type read_all = hist->hvalue.counters[0];
+  gcov_type read_all = abs_hwi (hist->hvalue.counters[0]);
 
-  gcov_type v = hist->hvalue.counters[2 * n + 1];
-  gcov_type c = hist->hvalue.counters[2 * n + 2];
+  gcov_type v = hist->hvalue.counters[2 * n + 2];
+  gcov_type c = hist->hvalue.counters[2 * n + 3];
+
+  if (hist->hvalue.counters[0] < 0
+      && (flag_profile_reproducible == PROFILE_REPRODUCIBILITY_PARALLEL_RUNS
+	  || (flag_profile_reproducible
+	      == PROFILE_REPRODUCIBILITY_MULTITHREADED)))
+    return false;
 
   /* Indirect calls can't be verified.  */
   if (stmt
@@ -1386,14 +1425,10 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
   return dcall_stmt;
 }
 
-/*
-  For every checked indirect/virtual call determine if most common pid of
-  function/class method has probability more than 50%. If yes modify code of
-  this call to:
- */
+/* Dump info about indirect call profile.  */
 
-static bool
-gimple_ic_transform (gimple_stmt_iterator *gsi)
+static void
+dump_ic_profile (gimple_stmt_iterator *gsi)
 {
   gcall *stmt;
   histogram_value histogram;
@@ -1402,52 +1437,46 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
 
   stmt = dyn_cast <gcall *> (gsi_stmt (*gsi));
   if (!stmt)
-    return false;
+    return;
 
   if (gimple_call_fndecl (stmt) != NULL_TREE)
-    return false;
+    return;
 
   if (gimple_call_internal_p (stmt))
-    return false;
+    return;
 
   histogram = gimple_histogram_value_of_type (cfun, stmt, HIST_TYPE_INDIR_CALL);
   if (!histogram)
-    return false;
+    return;
 
-  if (!get_nth_most_common_value (NULL, "indirect call", histogram, &val,
-				  &count, &all))
-    return false;
+  count = 0;
+  all = histogram->hvalue.counters[0];
 
-  if (4 * count <= 3 * all)
-    return false;
-
-  direct_call = find_func_by_profile_id ((int)val);
-
-  if (direct_call == NULL)
+  for (unsigned j = 0; j < GCOV_TOPN_MAXIMUM_TRACKED_VALUES; j++)
     {
-      if (val)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, stmt,
-			     "Indirect call -> direct call from other "
-			     "module %T=> %i (will resolve only with LTO)\n",
-			     gimple_call_fn (stmt), (int)val);
-	}
-      return false;
-    }
+      if (!get_nth_most_common_value (NULL, "indirect call", histogram, &val,
+				      &count, &all, j))
+	return;
+      if (!count)
+	continue;
 
-  if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt,
-		       "Indirect call -> direct call "
-		       "%T => %T transformation on insn postponed\n",
-		       gimple_call_fn (stmt), direct_call->decl);
+      direct_call = find_func_by_profile_id ((int) val);
+
+      if (direct_call == NULL)
+	dump_printf_loc (
+	  MSG_MISSED_OPTIMIZATION, stmt,
+	  "Indirect call -> direct call from other "
+	  "module %T=> %i (will resolve by ipa-profile only with LTO)\n",
+	  gimple_call_fn (stmt), (int) val);
+      else
+	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt,
+			 "Indirect call -> direct call "
+			 "%T => %T (will resolve by ipa-profile)\n",
+			 gimple_call_fn (stmt), direct_call->decl);
       dump_printf_loc (MSG_NOTE, stmt,
-		       "hist->count %" PRId64
-		       " hist->all %" PRId64"\n", count, all);
+		       "hist->count %" PRId64 " hist->all %" PRId64 "\n",
+		       count, all);
     }
-
-  return true;
 }
 
 /* Return true if the stringop CALL shall be profiled.  SIZE_ARG be
@@ -1892,7 +1921,7 @@ gimple_find_values_to_profile (histogram_values *values)
 
 	case HIST_TYPE_TOPN_VALUES:
 	case HIST_TYPE_INDIR_CALL:
-	  hist->n_counters = GCOV_TOPN_VALUES_COUNTERS;
+	  hist->n_counters = GCOV_TOPN_MEM_COUNTERS;
 	  break;
 
         case HIST_TYPE_TIME_PROFILE:

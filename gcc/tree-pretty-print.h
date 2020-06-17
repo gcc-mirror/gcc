@@ -42,11 +42,14 @@ extern char *print_generic_expr_to_str (tree);
 extern void dump_omp_clauses (pretty_printer *, tree, int, dump_flags_t);
 extern void dump_omp_atomic_memory_order (pretty_printer *,
 					  enum omp_memory_order);
+extern void dump_omp_loop_non_rect_expr (pretty_printer *, tree, int,
+					 dump_flags_t);
 extern int dump_generic_node (pretty_printer *, tree, int, dump_flags_t, bool);
 extern void print_declaration (pretty_printer *, tree, int, dump_flags_t);
 extern int op_code_prio (enum tree_code);
 extern int op_prio (const_tree);
 extern const char *op_symbol_code (enum tree_code);
+extern void pretty_print_string (pretty_printer *, const char *, size_t);
 extern void print_call_name (pretty_printer *, tree, dump_flags_t);
 extern void percent_K_format (text_info *, location_t, tree);
 extern void pp_tree_identifier (pretty_printer *, tree);

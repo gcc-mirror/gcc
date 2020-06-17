@@ -45,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Local functions, macros and variables.  */
 static const char *op_symbol (const_tree);
-static void pretty_print_string (pretty_printer *, const char*, unsigned);
 static void newline_and_indent (pretty_printer *, int);
 static void maybe_init_pretty_print (FILE *);
 static void print_struct_decl (pretty_printer *, const_tree, int, dump_flags_t);
@@ -432,7 +431,7 @@ static void
 dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 {
   const char *name;
-
+  const char *modifier = NULL;
   switch (OMP_CLAUSE_CODE (clause))
     {
     case OMP_CLAUSE_PRIVATE:
@@ -446,13 +445,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       goto print_remap;
     case OMP_CLAUSE_LASTPRIVATE:
       name = "lastprivate";
-      if (!OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (clause))
-	goto print_remap;
-      pp_string (pp, "lastprivate(conditional:");
-      dump_generic_node (pp, OMP_CLAUSE_DECL (clause),
-			 spc, flags, false);
-      pp_right_paren (pp);
-      break;
+      if (OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (clause))
+	modifier = "conditional:";
+      goto print_remap;
     case OMP_CLAUSE_COPYIN:
       name = "copyin";
       goto print_remap;
@@ -464,6 +459,8 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       goto print_remap;
     case OMP_CLAUSE_USE_DEVICE_PTR:
       name = "use_device_ptr";
+      if (OMP_CLAUSE_USE_DEVICE_PTR_IF_PRESENT (clause))
+	modifier = "if_present:";
       goto print_remap;
     case OMP_CLAUSE_USE_DEVICE_ADDR:
       name = "use_device_addr";
@@ -501,6 +498,8 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
   print_remap:
       pp_string (pp, name);
       pp_left_paren (pp);
+      if (modifier)
+	pp_string (pp, modifier);
       dump_generic_node (pp, OMP_CLAUSE_DECL (clause),
 			 spc, flags, false);
       pp_right_paren (pp);
@@ -1569,7 +1568,36 @@ dump_mem_ref (pretty_printer *pp, tree node, int spc, dump_flags_t flags)
 	}
       pp_right_bracket (pp);
     }
- }
+}
+
+/* Helper function for dump_generic_node.  Dump INIT or COND expression for
+   OpenMP loop non-rectangular iterators.  */
+
+void
+dump_omp_loop_non_rect_expr (pretty_printer *pp, tree node, int spc,
+			     dump_flags_t flags)
+{
+  gcc_assert (TREE_CODE (node) == TREE_VEC);
+  dump_generic_node (pp, TREE_VEC_ELT (node, 0), spc, flags, false);
+  pp_string (pp, " * ");
+  if (op_prio (TREE_VEC_ELT (node, 1)) <= op_code_prio (MULT_EXPR))
+    {
+      pp_left_paren (pp);
+      dump_generic_node (pp, TREE_VEC_ELT (node, 1), spc, flags, false);
+      pp_right_paren (pp);
+    }
+  else
+    dump_generic_node (pp, TREE_VEC_ELT (node, 1), spc, flags, false);
+  pp_string (pp, " + ");
+  if (op_prio (TREE_VEC_ELT (node, 1)) <= op_code_prio (PLUS_EXPR))
+    {
+      pp_left_paren (pp);
+      dump_generic_node (pp, TREE_VEC_ELT (node, 2), spc, flags, false);
+      pp_right_paren (pp);
+    }
+  else
+    dump_generic_node (pp, TREE_VEC_ELT (node, 2), spc, flags, false);
+}
 
 /* Dump the node NODE on the pretty_printer PP, SPC spaces of
    indent.  FLAGS specifies details to show in the dump (see TDF_* in
@@ -1762,6 +1790,14 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 		pp_decimal_int (pp, TYPE_PRECISION (node));
 		pp_greater (pp);
 	      }
+	    else if (TREE_CODE (node) == BOOLEAN_TYPE)
+	      {
+		pp_string (pp, (TYPE_UNSIGNED (node)
+				? "<unsigned-boolean:"
+				: "<signed-boolean:"));
+		pp_decimal_int (pp, TYPE_PRECISION (node));
+		pp_greater (pp);
+	      }
 	    else if (TREE_CODE (node) == VOID_TYPE)
 	      pp_string (pp, "void");
 	    else
@@ -1892,7 +1928,15 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 
     case ARRAY_TYPE:
       {
+	unsigned int quals = TYPE_QUALS (node);
 	tree tmp;
+
+	if (quals & TYPE_QUAL_ATOMIC)
+	  pp_string (pp, "atomic ");
+	if (quals & TYPE_QUAL_CONST)
+	  pp_string (pp, "const ");
+	if (quals & TYPE_QUAL_VOLATILE)
+	  pp_string (pp, "volatile ");
 
 	/* Print the innermost component type.  */
 	for (tmp = TREE_TYPE (node); TREE_CODE (tmp) == ARRAY_TYPE;
@@ -2078,6 +2122,12 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
     case VECTOR_CST:
       {
 	unsigned i;
+	if (flags & TDF_GIMPLE)
+	  {
+	    pp_string (pp, "_Literal (");
+	    dump_generic_node (pp, TREE_TYPE (node), spc, flags, false);
+	    pp_string (pp, ") ");
+	  }
 	pp_string (pp, "{ ");
 	unsigned HOST_WIDE_INT nunits;
 	if (!VECTOR_CST_NELTS (node).is_constant (&nunits))
@@ -2315,6 +2365,12 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	bool is_struct_init = false;
 	bool is_array_init = false;
 	widest_int curidx;
+	if (flags & TDF_GIMPLE)
+	  {
+	    pp_string (pp, "_Literal (");
+	    dump_generic_node (pp, TREE_TYPE (node), spc, flags, false);
+	    pp_string (pp, ") ");
+	  }
 	pp_left_brace (pp);
 	if (TREE_CLOBBER_P (node))
 	  pp_string (pp, "CLOBBER");
@@ -3391,13 +3447,34 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 		  spc += 2;
 		  newline_and_indent (pp, spc);
 		  pp_string (pp, "for (");
-		  dump_generic_node (pp,
-				     TREE_VEC_ELT (OMP_FOR_INIT (node), i),
-				     spc, flags, false);
+		  tree init = TREE_VEC_ELT (OMP_FOR_INIT (node), i);
+		  if (TREE_CODE (init) != MODIFY_EXPR
+		      || TREE_CODE (TREE_OPERAND (init, 1)) != TREE_VEC)
+		    dump_generic_node (pp, init, spc, flags, false);
+		  else
+		    {
+		      dump_generic_node (pp, TREE_OPERAND (init, 0),
+					 spc, flags, false);
+		      pp_string (pp, " = ");
+		      dump_omp_loop_non_rect_expr (pp, TREE_OPERAND (init, 1),
+						   spc, flags);
+		    }
 		  pp_string (pp, "; ");
-		  dump_generic_node (pp,
-				     TREE_VEC_ELT (OMP_FOR_COND (node), i),
-				     spc, flags, false);
+		  tree cond = TREE_VEC_ELT (OMP_FOR_COND (node), i);
+		  if (!COMPARISON_CLASS_P (cond)
+		      || TREE_CODE (TREE_OPERAND (cond, 1)) != TREE_VEC)
+		    dump_generic_node (pp, cond, spc, flags, false);
+		  else
+		    {
+		      dump_generic_node (pp, TREE_OPERAND (cond, 0),
+					 spc, flags, false);
+		      const char *op = op_symbol (cond);
+		      pp_space (pp);
+		      pp_string (pp, op);
+		      pp_space (pp);
+		      dump_omp_loop_non_rect_expr (pp, TREE_OPERAND (cond, 1),
+						   spc, flags);
+		    }
 		  pp_string (pp, "; ");
 		  dump_generic_node (pp,
 				     TREE_VEC_ELT (OMP_FOR_INCR (node), i),
@@ -4204,8 +4281,8 @@ print_call_name (pretty_printer *pp, tree node, dump_flags_t flags)
 /* Print the first N characters in the array STR, replacing non-printable
    characters (including embedded nuls) with unambiguous escape sequences.  */
 
-static void
-pretty_print_string (pretty_printer *pp, const char *str, unsigned n)
+void
+pretty_print_string (pretty_printer *pp, const char *str, size_t n)
 {
   if (str == NULL)
     return;

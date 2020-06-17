@@ -36,6 +36,7 @@ struct simple_hashmap_traits
   static inline hashval_t hash (const key_type &);
   static inline bool equal_keys (const key_type &, const key_type &);
   template <typename T> static inline void remove (T &);
+  static const bool empty_zero_p = H::empty_zero_p;
   template <typename T> static inline bool is_empty (const T &);
   template <typename T> static inline bool is_deleted (const T &);
   template <typename T> static inline void mark_empty (T &);
@@ -113,6 +114,7 @@ template <typename Value>
 struct unbounded_hashmap_traits
 {
   template <typename T> static inline void remove (T &);
+  static const bool empty_zero_p = default_hash_traits <Value>::empty_zero_p;
   template <typename T> static inline bool is_empty (const T &);
   template <typename T> static inline bool is_deleted (const T &);
   template <typename T> static inline void mark_empty (T &);

@@ -14,7 +14,7 @@ gettext (char*);
 char*
 fill (char *buf, size_t len, int count)
 {
-  if (snprintf (buf, len, "%s: %d", gettext ("count"), count) >= len)  /* { dg-bogus "directive output of 2 bytes causes result to exceed .INT_MAX." */
+  if (snprintf (buf, len, "%s: %d", gettext ("count"), count) >= len)  /* { dg-bogus "directive output of 2 bytes causes result to exceed .INT_MAX." } */
     return 0;
 
   return buf;

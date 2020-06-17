@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -301,15 +301,10 @@ bool discardValue(Expression *e)
             return true;
 
         case TOKandand:
-        {
-            AndAndExp *aae = (AndAndExp *)e;
-            return discardValue(aae->e2);
-        }
-
         case TOKoror:
         {
-            OrOrExp *ooe = (OrOrExp *)e;
-            return discardValue(ooe->e2);
+            LogicalExp *aae = (LogicalExp  *)e;
+            return discardValue(aae->e2);
         }
 
         case TOKquestion:

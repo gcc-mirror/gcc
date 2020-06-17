@@ -6112,9 +6112,23 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
     }
 
   if (loc == stack_pointer_rtx
-      && maybe_ne (hard_frame_pointer_adjustment, -1)
+      && (maybe_ne (hard_frame_pointer_adjustment, -1)
+	  || (!frame_pointer_needed && !ACCUMULATE_OUTGOING_ARGS))
       && preserve)
     cselib_set_value_sp_based (v);
+
+  /* Don't record MO_VAL_SET for VALUEs that can be described using
+     cfa_base_rtx or cfa_base_rtx + CONST_INT, cselib already knows
+     all the needed equivalences and they shouldn't change depending
+     on which register holds that VALUE in some instruction.  */
+  if (!frame_pointer_needed
+      && cfa_base_rtx
+      && cselib_sp_derived_value_p (v))
+    {
+      if (preserve)
+	preserve_value (v);
+      return;
+    }
 
   nloc = replace_expr_with_values (oloc);
   if (nloc)
@@ -10044,19 +10058,25 @@ vt_initialize (void)
       preserve_value (val);
       if (reg != hard_frame_pointer_rtx && fixed_regs[REGNO (reg)])
 	cselib_preserve_cfa_base_value (val, REGNO (reg));
+      if (ofst)
+	{
+	  cselib_val *valsp
+	    = cselib_lookup_from_insn (stack_pointer_rtx,
+				       GET_MODE (stack_pointer_rtx), 1,
+				       VOIDmode, get_insns ());
+	  preserve_value (valsp);
+	  expr = plus_constant (GET_MODE (reg), reg, ofst);
+	  /* This cselib_add_permanent_equiv call needs to be done before
+	     the other cselib_add_permanent_equiv a few lines later,
+	     because after that one is done, cselib_lookup on this expr
+	     will due to the cselib SP_DERIVED_VALUE_P optimizations
+	     return valsp and so no permanent equivalency will be added.  */
+	  cselib_add_permanent_equiv (valsp, expr, get_insns ());
+	}
+
       expr = plus_constant (GET_MODE (stack_pointer_rtx),
 			    stack_pointer_rtx, -ofst);
       cselib_add_permanent_equiv (val, expr, get_insns ());
-
-      if (ofst)
-	{
-	  val = cselib_lookup_from_insn (stack_pointer_rtx,
-					 GET_MODE (stack_pointer_rtx), 1,
-					 VOIDmode, get_insns ());
-	  preserve_value (val);
-	  expr = plus_constant (GET_MODE (reg), reg, ofst);
-	  cselib_add_permanent_equiv (val, expr, get_insns ());
-	}
     }
 
   /* In order to factor out the adjustments made to the stack pointer or to
@@ -10147,10 +10167,10 @@ vt_initialize (void)
 
   vt_add_function_parameters ();
 
+  bool record_sp_value = false;
   FOR_EACH_BB_FN (bb, cfun)
     {
       rtx_insn *insn;
-      HOST_WIDE_INT pre, post = 0;
       basic_block first_bb, last_bb;
 
       if (MAY_HAVE_DEBUG_BIND_INSNS)
@@ -10160,6 +10180,15 @@ vt_initialize (void)
 	    fprintf (dump_file, "first value: %i\n",
 		     cselib_get_next_uid ());
 	}
+
+      if (MAY_HAVE_DEBUG_BIND_INSNS
+	  && cfa_base_rtx
+	  && !frame_pointer_needed
+	  && record_sp_value)
+	cselib_record_sp_cfa_base_equiv (-cfa_base_offset
+					 - VTI (bb)->in.stack_adjust,
+					 BB_HEAD (bb));
+      record_sp_value = true;
 
       first_bb = bb;
       for (;;)
@@ -10186,6 +10215,8 @@ vt_initialize (void)
 	    {
 	      if (INSN_P (insn))
 		{
+		  HOST_WIDE_INT pre = 0, post = 0;
+
 		  if (!frame_pointer_needed)
 		    {
 		      insn_stack_adjust_offset_pre_post (insn, &pre, &post);
@@ -10205,7 +10236,7 @@ vt_initialize (void)
 		  cselib_hook_called = false;
 		  adjust_insn (bb, insn);
 
-		  if (!frame_pointer_needed && pre)
+		  if (pre)
 		    VTI (bb)->out.stack_adjust += pre;
 
 		  if (DEBUG_MARKER_INSN_P (insn))
@@ -10232,7 +10263,7 @@ vt_initialize (void)
 		    add_with_sets (insn, 0, 0);
 		  cancel_changes (0);
 
-		  if (!frame_pointer_needed && post)
+		  if (post)
 		    {
 		      micro_operation mo;
 		      mo.type = MO_ADJUST;

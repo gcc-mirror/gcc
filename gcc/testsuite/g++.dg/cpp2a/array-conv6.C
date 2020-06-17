@@ -1,5 +1,5 @@
 // PR c++/91364 - Implement P0388R4: Permit conversions to arrays of unknown bound.
-// { dg-do run { target c++2a } }
+// { dg-do run { target c++20 } }
 
 // Ranking of reference initialization conversions
 

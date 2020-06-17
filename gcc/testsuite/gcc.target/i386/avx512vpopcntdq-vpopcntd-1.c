@@ -40,7 +40,7 @@ TEST (void)
   }
 
   res1.x = INTRINSIC (_popcnt_epi32)       (src.x);
-  res2.x = INTRINSIC (_mask_popcnt_epi32)  (src.x, mask, src0.x);
+  res2.x = INTRINSIC (_mask_popcnt_epi32)  (src0.x, mask, src.x);
   res3.x = INTRINSIC (_maskz_popcnt_epi32) (mask, src.x);
 
   if (UNION_CHECK (AVX512F_LEN, i_d) (res1, res_ref))

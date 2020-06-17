@@ -5613,7 +5613,8 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_cvtepi64_storeu_epi8 (void * __P, __mmask8 __M, __m512i __A)
 {
-  __builtin_ia32_pmovqb512mem_mask ((__v16qi *) __P, (__v8di) __A, __M);
+  __builtin_ia32_pmovqb512mem_mask ((unsigned long long *) __P,
+				    (__v8di) __A, __M);
 }
 
 extern __inline __m128i
@@ -5648,7 +5649,7 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_cvtsepi64_storeu_epi8 (void * __P, __mmask8 __M, __m512i __A)
 {
-  __builtin_ia32_pmovsqb512mem_mask ((__v16qi *) __P, (__v8di) __A, __M);
+  __builtin_ia32_pmovsqb512mem_mask ((unsigned long long *) __P, (__v8di) __A, __M);
 }
 
 extern __inline __m128i
@@ -5683,7 +5684,7 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_cvtusepi64_storeu_epi8 (void * __P, __mmask8 __M, __m512i __A)
 {
-  __builtin_ia32_pmovusqb512mem_mask ((__v16qi *) __P, (__v8di) __A, __M);
+  __builtin_ia32_pmovusqb512mem_mask ((unsigned long long *) __P, (__v8di) __A, __M);
 }
 
 extern __inline __m128i
@@ -8570,22 +8571,22 @@ _mm512_maskz_cvtps_ph (__mmask16 __W, __m512 __A, const int __I)
     (__m512)__builtin_ia32_vcvtph2ps512_mask((__v16hi)(A), (__v16sf)_mm512_setzero_ps(), U, B)
 
 #define _mm512_cvt_roundps_ph(A, I)						 \
-  ((__m256i) __builtin_ia32_vcvtps2ph512_mask ((__v16sf)(__m512) A, (int) (I),\
+  ((__m256i) __builtin_ia32_vcvtps2ph512_mask ((__v16sf)(__m512) (A), (int) (I),\
     (__v16hi)_mm256_undefined_si256 (), -1))
 #define _mm512_cvtps_ph(A, I)						 \
-  ((__m256i) __builtin_ia32_vcvtps2ph512_mask ((__v16sf)(__m512) A, (int) (I),\
+  ((__m256i) __builtin_ia32_vcvtps2ph512_mask ((__v16sf)(__m512) (A), (int) (I),\
     (__v16hi)_mm256_undefined_si256 (), -1))
 #define _mm512_mask_cvt_roundps_ph(U, W, A, I)				 \
-  ((__m256i) __builtin_ia32_vcvtps2ph512_mask ((__v16sf)(__m512) A, (int) (I),\
+  ((__m256i) __builtin_ia32_vcvtps2ph512_mask ((__v16sf)(__m512) (A), (int) (I),\
     (__v16hi)(__m256i)(U), (__mmask16) (W)))
 #define _mm512_mask_cvtps_ph(U, W, A, I)				 \
-  ((__m256i) __builtin_ia32_vcvtps2ph512_mask ((__v16sf)(__m512) A, (int) (I),\
+  ((__m256i) __builtin_ia32_vcvtps2ph512_mask ((__v16sf)(__m512) (A), (int) (I),\
     (__v16hi)(__m256i)(U), (__mmask16) (W)))
 #define _mm512_maskz_cvt_roundps_ph(W, A, I)					 \
-  ((__m256i) __builtin_ia32_vcvtps2ph512_mask ((__v16sf)(__m512) A, (int) (I),\
+  ((__m256i) __builtin_ia32_vcvtps2ph512_mask ((__v16sf)(__m512) (A), (int) (I),\
     (__v16hi)_mm256_setzero_si256 (), (__mmask16) (W)))
 #define _mm512_maskz_cvtps_ph(W, A, I)					 \
-  ((__m256i) __builtin_ia32_vcvtps2ph512_mask ((__v16sf)(__m512) A, (int) (I),\
+  ((__m256i) __builtin_ia32_vcvtps2ph512_mask ((__v16sf)(__m512) (A), (int) (I),\
     (__v16hi)_mm256_setzero_si256 (), (__mmask16) (W)))
 #endif
 
@@ -10081,32 +10082,32 @@ _mm_mask_cmp_round_ss_mask (__mmask8 __M, __m128 __X, __m128 __Y,
 #define _mm512_mask_cmp_epi64_mask(M, X, Y, P)				\
   ((__mmask8) __builtin_ia32_cmpq512_mask ((__v8di)(__m512i)(X),	\
 					   (__v8di)(__m512i)(Y), (int)(P),\
-					   (__mmask8)M))
+					   (__mmask8)(M)))
 
 #define _mm512_mask_cmp_epi32_mask(M, X, Y, P)				\
   ((__mmask16) __builtin_ia32_cmpd512_mask ((__v16si)(__m512i)(X),	\
 					    (__v16si)(__m512i)(Y), (int)(P), \
-					    (__mmask16)M))
+					    (__mmask16)(M)))
 
 #define _mm512_mask_cmp_epu64_mask(M, X, Y, P)				\
   ((__mmask8) __builtin_ia32_ucmpq512_mask ((__v8di)(__m512i)(X),	\
 					    (__v8di)(__m512i)(Y), (int)(P),\
-					    (__mmask8)M))
+					    (__mmask8)(M)))
 
 #define _mm512_mask_cmp_epu32_mask(M, X, Y, P)				\
   ((__mmask16) __builtin_ia32_ucmpd512_mask ((__v16si)(__m512i)(X),	\
 					     (__v16si)(__m512i)(Y), (int)(P), \
-					     (__mmask16)M))
+					     (__mmask16)(M)))
 
 #define _mm512_mask_cmp_round_pd_mask(M, X, Y, P, R)			\
   ((__mmask8) __builtin_ia32_cmppd512_mask ((__v8df)(__m512d)(X),	\
 					    (__v8df)(__m512d)(Y), (int)(P),\
-					    (__mmask8)M, R))
+					    (__mmask8)(M), R))
 
 #define _mm512_mask_cmp_round_ps_mask(M, X, Y, P, R)			\
   ((__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf)(__m512)(X),	\
 					     (__v16sf)(__m512)(Y), (int)(P),\
-					     (__mmask16)M, R))
+					     (__mmask16)(M), R))
 
 #define _mm_cmp_round_sd_mask(X, Y, P, R)				\
   ((__mmask8) __builtin_ia32_cmpsd_mask ((__v2df)(__m128d)(X),		\
@@ -10468,179 +10469,189 @@ _mm512_mask_i64scatter_epi64 (void *__addr, __mmask8 __mask,
 #else
 #define _mm512_i32gather_ps(INDEX, ADDR, SCALE)				\
   (__m512) __builtin_ia32_gathersiv16sf ((__v16sf)_mm512_undefined_ps(),\
-					 (void const *)ADDR,		\
-					 (__v16si)(__m512i)INDEX,	\
-					 (__mmask16)0xFFFF, (int)SCALE)
+					 (void const *) (ADDR),		\
+					 (__v16si)(__m512i) (INDEX),	\
+					 (__mmask16)0xFFFF,		\
+					 (int) (SCALE))
 
 #define _mm512_mask_i32gather_ps(V1OLD, MASK, INDEX, ADDR, SCALE)	\
-  (__m512) __builtin_ia32_gathersiv16sf ((__v16sf)(__m512)V1OLD,	\
-					 (void const *)ADDR,		\
-					 (__v16si)(__m512i)INDEX,	\
-					 (__mmask16)MASK, (int)SCALE)
+  (__m512) __builtin_ia32_gathersiv16sf ((__v16sf)(__m512) (V1OLD),	\
+					 (void const *) (ADDR),		\
+					 (__v16si)(__m512i) (INDEX),	\
+					 (__mmask16) (MASK),		\
+					 (int) (SCALE))
 
 #define _mm512_i32gather_pd(INDEX, ADDR, SCALE)				\
   (__m512d) __builtin_ia32_gathersiv8df ((__v8df)_mm512_undefined_pd(),	\
-					 (void const *)ADDR,		\
-					 (__v8si)(__m256i)INDEX,	\
-					 (__mmask8)0xFF, (int)SCALE)
+					 (void const *) (ADDR),		\
+					 (__v8si)(__m256i) (INDEX),	\
+					 (__mmask8)0xFF, (int) (SCALE))
 
 #define _mm512_mask_i32gather_pd(V1OLD, MASK, INDEX, ADDR, SCALE)	\
-  (__m512d) __builtin_ia32_gathersiv8df ((__v8df)(__m512d)V1OLD,	\
-					 (void const *)ADDR,		\
-					 (__v8si)(__m256i)INDEX,	\
-					 (__mmask8)MASK, (int)SCALE)
+  (__m512d) __builtin_ia32_gathersiv8df ((__v8df)(__m512d) (V1OLD),	\
+					 (void const *) (ADDR),		\
+					 (__v8si)(__m256i) (INDEX),	\
+					 (__mmask8) (MASK),		\
+					 (int) (SCALE))
 
 #define _mm512_i64gather_ps(INDEX, ADDR, SCALE)				\
   (__m256) __builtin_ia32_gatherdiv16sf ((__v8sf)_mm256_undefined_ps(),	\
-					 (void const *)ADDR,		\
-					 (__v8di)(__m512i)INDEX,	\
-					 (__mmask8)0xFF, (int)SCALE)
+					 (void const *) (ADDR),		\
+					 (__v8di)(__m512i) (INDEX),	\
+					 (__mmask8)0xFF, (int) (SCALE))
 
 #define _mm512_mask_i64gather_ps(V1OLD, MASK, INDEX, ADDR, SCALE)	\
-  (__m256) __builtin_ia32_gatherdiv16sf ((__v8sf)(__m256)V1OLD,		\
-					 (void const *)ADDR,		\
-					 (__v8di)(__m512i)INDEX,	\
-					 (__mmask8)MASK, (int)SCALE)
+  (__m256) __builtin_ia32_gatherdiv16sf ((__v8sf)(__m256) (V1OLD),	\
+					 (void const *) (ADDR),		\
+					 (__v8di)(__m512i) (INDEX),	\
+					 (__mmask8) (MASK),		\
+					 (int) (SCALE))
 
 #define _mm512_i64gather_pd(INDEX, ADDR, SCALE)				\
   (__m512d) __builtin_ia32_gatherdiv8df ((__v8df)_mm512_undefined_pd(),	\
-					 (void const *)ADDR,		\
-					 (__v8di)(__m512i)INDEX,	\
-					 (__mmask8)0xFF, (int)SCALE)
+					 (void const *) (ADDR),		\
+					 (__v8di)(__m512i) (INDEX),	\
+					 (__mmask8)0xFF, (int) (SCALE))
 
 #define _mm512_mask_i64gather_pd(V1OLD, MASK, INDEX, ADDR, SCALE)	\
-  (__m512d) __builtin_ia32_gatherdiv8df ((__v8df)(__m512d)V1OLD,	\
-					 (void const *)ADDR,		\
-					 (__v8di)(__m512i)INDEX,	\
-					 (__mmask8)MASK, (int)SCALE)
+  (__m512d) __builtin_ia32_gatherdiv8df ((__v8df)(__m512d) (V1OLD),	\
+					 (void const *) (ADDR),		\
+					 (__v8di)(__m512i) (INDEX),	\
+					 (__mmask8) (MASK),		\
+					 (int) (SCALE))
 
 #define _mm512_i32gather_epi32(INDEX, ADDR, SCALE)			\
-  (__m512i) __builtin_ia32_gathersiv16si ((__v16si)_mm512_undefined_epi32 (),	\
-					  (void const *)ADDR,		\
-					  (__v16si)(__m512i)INDEX,	\
-					  (__mmask16)0xFFFF, (int)SCALE)
+  (__m512i) __builtin_ia32_gathersiv16si ((__v16si)_mm512_undefined_epi32 (),\
+					  (void const *) (ADDR),	\
+					  (__v16si)(__m512i) (INDEX),	\
+					  (__mmask16)0xFFFF,		\
+					  (int) (SCALE))
 
 #define _mm512_mask_i32gather_epi32(V1OLD, MASK, INDEX, ADDR, SCALE)	\
-  (__m512i) __builtin_ia32_gathersiv16si ((__v16si)(__m512i)V1OLD,	\
-					  (void const *)ADDR,		\
-					  (__v16si)(__m512i)INDEX,	\
-					  (__mmask16)MASK, (int)SCALE)
+  (__m512i) __builtin_ia32_gathersiv16si ((__v16si)(__m512i) (V1OLD),	\
+					  (void const *) (ADDR),	\
+					  (__v16si)(__m512i) (INDEX),	\
+					  (__mmask16) (MASK),		\
+					  (int) (SCALE))
 
 #define _mm512_i32gather_epi64(INDEX, ADDR, SCALE)			\
-  (__m512i) __builtin_ia32_gathersiv8di ((__v8di)_mm512_undefined_epi32 (),	\
-					 (void const *)ADDR,		\
-					 (__v8si)(__m256i)INDEX,	\
-					 (__mmask8)0xFF, (int)SCALE)
+  (__m512i) __builtin_ia32_gathersiv8di ((__v8di)_mm512_undefined_epi32 (),\
+					 (void const *) (ADDR),		\
+					 (__v8si)(__m256i) (INDEX),	\
+					 (__mmask8)0xFF, (int) (SCALE))
 
 #define _mm512_mask_i32gather_epi64(V1OLD, MASK, INDEX, ADDR, SCALE)	\
-  (__m512i) __builtin_ia32_gathersiv8di ((__v8di)(__m512i)V1OLD,	\
-					 (void const *)ADDR,		\
-					 (__v8si)(__m256i)INDEX,	\
-					 (__mmask8)MASK, (int)SCALE)
+  (__m512i) __builtin_ia32_gathersiv8di ((__v8di)(__m512i) (V1OLD),	\
+					 (void const *) (ADDR),		\
+					 (__v8si)(__m256i) (INDEX),	\
+					 (__mmask8) (MASK),		\
+					 (int) (SCALE))
 
-#define _mm512_i64gather_epi32(INDEX, ADDR, SCALE)			  \
-  (__m256i) __builtin_ia32_gatherdiv16si ((__v8si)_mm256_undefined_si256(), \
-					  (void const *)ADDR,		  \
-					  (__v8di)(__m512i)INDEX,	  \
-					  (__mmask8)0xFF, (int)SCALE)
+#define _mm512_i64gather_epi32(INDEX, ADDR, SCALE)			   \
+  (__m256i) __builtin_ia32_gatherdiv16si ((__v8si)_mm256_undefined_si256(),\
+					  (void const *) (ADDR),	   \
+					  (__v8di)(__m512i) (INDEX),	   \
+					  (__mmask8)0xFF, (int) (SCALE))
 
 #define _mm512_mask_i64gather_epi32(V1OLD, MASK, INDEX, ADDR, SCALE)	\
-  (__m256i) __builtin_ia32_gatherdiv16si ((__v8si)(__m256i)V1OLD,	\
-					  (void const *)ADDR,		\
-					  (__v8di)(__m512i)INDEX,	\
-					  (__mmask8)MASK, (int)SCALE)
+  (__m256i) __builtin_ia32_gatherdiv16si ((__v8si)(__m256i) (V1OLD),	\
+					  (void const *) (ADDR),	\
+					  (__v8di)(__m512i) (INDEX),	\
+					  (__mmask8) (MASK),		\
+					  (int) (SCALE))
 
 #define _mm512_i64gather_epi64(INDEX, ADDR, SCALE)			\
-  (__m512i) __builtin_ia32_gatherdiv8di ((__v8di)_mm512_undefined_epi32 (),	\
-					 (void const *)ADDR,		\
-					 (__v8di)(__m512i)INDEX,	\
-					 (__mmask8)0xFF, (int)SCALE)
+  (__m512i) __builtin_ia32_gatherdiv8di ((__v8di)_mm512_undefined_epi32 (),\
+					 (void const *) (ADDR),		\
+					 (__v8di)(__m512i) (INDEX),	\
+					 (__mmask8)0xFF, (int) (SCALE))
 
 #define _mm512_mask_i64gather_epi64(V1OLD, MASK, INDEX, ADDR, SCALE)	\
-  (__m512i) __builtin_ia32_gatherdiv8di ((__v8di)(__m512i)V1OLD,	\
-					 (void const *)ADDR,		\
-					 (__v8di)(__m512i)INDEX,	\
-					 (__mmask8)MASK, (int)SCALE)
+  (__m512i) __builtin_ia32_gatherdiv8di ((__v8di)(__m512i) (V1OLD),	\
+					 (void const *) (ADDR),		\
+					 (__v8di)(__m512i) (INDEX),	\
+					 (__mmask8) (MASK),		\
+					 (int) (SCALE))
 
 #define _mm512_i32scatter_ps(ADDR, INDEX, V1, SCALE)			\
-  __builtin_ia32_scattersiv16sf ((void *)ADDR, (__mmask16)0xFFFF,	\
-				 (__v16si)(__m512i)INDEX,		\
-				 (__v16sf)(__m512)V1, (int)SCALE)
+  __builtin_ia32_scattersiv16sf ((void *) (ADDR), (__mmask16)0xFFFF,	\
+				 (__v16si)(__m512i) (INDEX),		\
+				 (__v16sf)(__m512) (V1), (int) (SCALE))
 
 #define _mm512_mask_i32scatter_ps(ADDR, MASK, INDEX, V1, SCALE)		\
-  __builtin_ia32_scattersiv16sf ((void *)ADDR, (__mmask16)MASK,		\
-				 (__v16si)(__m512i)INDEX,		\
-				 (__v16sf)(__m512)V1, (int)SCALE)
+  __builtin_ia32_scattersiv16sf ((void *) (ADDR), (__mmask16) (MASK),	\
+				 (__v16si)(__m512i) (INDEX),		\
+				 (__v16sf)(__m512) (V1), (int) (SCALE))
 
 #define _mm512_i32scatter_pd(ADDR, INDEX, V1, SCALE)			\
-  __builtin_ia32_scattersiv8df ((void *)ADDR, (__mmask8)0xFF,		\
-				(__v8si)(__m256i)INDEX,			\
-				(__v8df)(__m512d)V1, (int)SCALE)
+  __builtin_ia32_scattersiv8df ((void *) (ADDR), (__mmask8)0xFF,	\
+				(__v8si)(__m256i) (INDEX),		\
+				(__v8df)(__m512d) (V1), (int) (SCALE))
 
 #define _mm512_mask_i32scatter_pd(ADDR, MASK, INDEX, V1, SCALE)		\
-  __builtin_ia32_scattersiv8df ((void *)ADDR, (__mmask8)MASK,		\
-				(__v8si)(__m256i)INDEX,			\
-				(__v8df)(__m512d)V1, (int)SCALE)
+  __builtin_ia32_scattersiv8df ((void *) (ADDR), (__mmask8) (MASK),	\
+				(__v8si)(__m256i) (INDEX),		\
+				(__v8df)(__m512d) (V1), (int) (SCALE))
 
 #define _mm512_i64scatter_ps(ADDR, INDEX, V1, SCALE)			\
-  __builtin_ia32_scatterdiv16sf ((void *)ADDR, (__mmask8)0xFF,		\
-				 (__v8di)(__m512i)INDEX,		\
-				 (__v8sf)(__m256)V1, (int)SCALE)
+  __builtin_ia32_scatterdiv16sf ((void *) (ADDR), (__mmask8)0xFF,	\
+				 (__v8di)(__m512i) (INDEX),		\
+				 (__v8sf)(__m256) (V1), (int) (SCALE))
 
 #define _mm512_mask_i64scatter_ps(ADDR, MASK, INDEX, V1, SCALE)		\
-  __builtin_ia32_scatterdiv16sf ((void *)ADDR, (__mmask16)MASK,		\
-				 (__v8di)(__m512i)INDEX,		\
-				 (__v8sf)(__m256)V1, (int)SCALE)
+  __builtin_ia32_scatterdiv16sf ((void *) (ADDR), (__mmask16) (MASK),	\
+				 (__v8di)(__m512i) (INDEX),		\
+				 (__v8sf)(__m256) (V1), (int) (SCALE))
 
 #define _mm512_i64scatter_pd(ADDR, INDEX, V1, SCALE)			\
-  __builtin_ia32_scatterdiv8df ((void *)ADDR, (__mmask8)0xFF,		\
-				(__v8di)(__m512i)INDEX,			\
-				(__v8df)(__m512d)V1, (int)SCALE)
+  __builtin_ia32_scatterdiv8df ((void *) (ADDR), (__mmask8)0xFF,	\
+				(__v8di)(__m512i) (INDEX),		\
+				(__v8df)(__m512d) (V1), (int) (SCALE))
 
 #define _mm512_mask_i64scatter_pd(ADDR, MASK, INDEX, V1, SCALE)		\
-  __builtin_ia32_scatterdiv8df ((void *)ADDR, (__mmask8)MASK,		\
-				(__v8di)(__m512i)INDEX,			\
-				(__v8df)(__m512d)V1, (int)SCALE)
+  __builtin_ia32_scatterdiv8df ((void *) (ADDR), (__mmask8) (MASK),	\
+				(__v8di)(__m512i) (INDEX),		\
+				(__v8df)(__m512d) (V1), (int) (SCALE))
 
 #define _mm512_i32scatter_epi32(ADDR, INDEX, V1, SCALE)			\
-  __builtin_ia32_scattersiv16si ((void *)ADDR, (__mmask16)0xFFFF,	\
-				 (__v16si)(__m512i)INDEX,		\
-				 (__v16si)(__m512i)V1, (int)SCALE)
+  __builtin_ia32_scattersiv16si ((void *) (ADDR), (__mmask16)0xFFFF,	\
+				 (__v16si)(__m512i) (INDEX),		\
+				 (__v16si)(__m512i) (V1), (int) (SCALE))
 
 #define _mm512_mask_i32scatter_epi32(ADDR, MASK, INDEX, V1, SCALE)	\
-  __builtin_ia32_scattersiv16si ((void *)ADDR, (__mmask16)MASK,		\
-				 (__v16si)(__m512i)INDEX,		\
-				 (__v16si)(__m512i)V1, (int)SCALE)
+  __builtin_ia32_scattersiv16si ((void *) (ADDR), (__mmask16) (MASK),	\
+				 (__v16si)(__m512i) (INDEX),		\
+				 (__v16si)(__m512i) (V1), (int) (SCALE))
 
 #define _mm512_i32scatter_epi64(ADDR, INDEX, V1, SCALE)			\
-  __builtin_ia32_scattersiv8di ((void *)ADDR, (__mmask8)0xFF,		\
-				(__v8si)(__m256i)INDEX,			\
-				(__v8di)(__m512i)V1, (int)SCALE)
+  __builtin_ia32_scattersiv8di ((void *) (ADDR), (__mmask8)0xFF,	\
+				(__v8si)(__m256i) (INDEX),		\
+				(__v8di)(__m512i) (V1), (int) (SCALE))
 
 #define _mm512_mask_i32scatter_epi64(ADDR, MASK, INDEX, V1, SCALE)	\
-  __builtin_ia32_scattersiv8di ((void *)ADDR, (__mmask8)MASK,		\
-				(__v8si)(__m256i)INDEX,			\
-				(__v8di)(__m512i)V1, (int)SCALE)
+  __builtin_ia32_scattersiv8di ((void *) (ADDR), (__mmask8) (MASK),	\
+				(__v8si)(__m256i) (INDEX),		\
+				(__v8di)(__m512i) (V1), (int) (SCALE))
 
 #define _mm512_i64scatter_epi32(ADDR, INDEX, V1, SCALE)			\
-  __builtin_ia32_scatterdiv16si ((void *)ADDR, (__mmask8)0xFF,		\
-				 (__v8di)(__m512i)INDEX,		\
-				 (__v8si)(__m256i)V1, (int)SCALE)
+  __builtin_ia32_scatterdiv16si ((void *) (ADDR), (__mmask8)0xFF,	\
+				 (__v8di)(__m512i) (INDEX),		\
+				 (__v8si)(__m256i) (V1), (int) (SCALE))
 
 #define _mm512_mask_i64scatter_epi32(ADDR, MASK, INDEX, V1, SCALE)	\
-  __builtin_ia32_scatterdiv16si ((void *)ADDR, (__mmask8)MASK,		\
-				 (__v8di)(__m512i)INDEX,		\
-				 (__v8si)(__m256i)V1, (int)SCALE)
+  __builtin_ia32_scatterdiv16si ((void *) (ADDR), (__mmask8) (MASK),	\
+				 (__v8di)(__m512i) (INDEX),		\
+				 (__v8si)(__m256i) (V1), (int) (SCALE))
 
 #define _mm512_i64scatter_epi64(ADDR, INDEX, V1, SCALE)			\
-  __builtin_ia32_scatterdiv8di ((void *)ADDR, (__mmask8)0xFF,		\
-				(__v8di)(__m512i)INDEX,			\
-				(__v8di)(__m512i)V1, (int)SCALE)
+  __builtin_ia32_scatterdiv8di ((void *) (ADDR), (__mmask8)0xFF,	\
+				(__v8di)(__m512i) (INDEX),		\
+				(__v8di)(__m512i) (V1), (int) (SCALE))
 
 #define _mm512_mask_i64scatter_epi64(ADDR, MASK, INDEX, V1, SCALE)	\
-  __builtin_ia32_scatterdiv8di ((void *)ADDR, (__mmask8)MASK,		\
-				(__v8di)(__m512i)INDEX,			\
-				(__v8di)(__m512i)V1, (int)SCALE)
+  __builtin_ia32_scatterdiv8di ((void *) (ADDR), (__mmask8) (MASK),	\
+				(__v8di)(__m512i) (INDEX),		\
+				(__v8di)(__m512i) (V1), (int) (SCALE))
 #endif
 
 extern __inline __m512d
@@ -15488,12 +15499,12 @@ _mm_mask_cmp_ss_mask (__mmask8 __M, __m128 __X, __m128 __Y, const int __P)
 #define _mm512_mask_cmp_pd_mask(M, X, Y, P)					\
   ((__mmask8) __builtin_ia32_cmppd512_mask ((__v8df)(__m512d)(X),	\
 					    (__v8df)(__m512d)(Y), (int)(P),\
-					    (__mmask8)M, _MM_FROUND_CUR_DIRECTION))
+					    (__mmask8)(M), _MM_FROUND_CUR_DIRECTION))
 
 #define _mm512_mask_cmp_ps_mask(M, X, Y, P)					\
   ((__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf)(__m512)(X),	\
 					     (__v16sf)(__m512)(Y), (int)(P),\
-					     (__mmask16)M,_MM_FROUND_CUR_DIRECTION))
+					     (__mmask16)(M),_MM_FROUND_CUR_DIRECTION))
 
 #define _mm_cmp_sd_mask(X, Y, P)					\
   ((__mmask8) __builtin_ia32_cmpsd_mask ((__v2df)(__m128d)(X),		\

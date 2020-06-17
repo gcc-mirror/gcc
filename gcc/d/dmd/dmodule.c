@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -91,7 +91,7 @@ Module::Module(const char *filename, Identifier *ident, int doDocComment, int do
     nameoffset = 0;
     namelen = 0;
 
-    srcfilename = FileName::defaultExt(filename, global.mars_ext);
+    srcfilename = FileName::defaultExt(filename, global.mars_ext.ptr);
 
     if (global.run_noext && global.params.run &&
         !FileName::ext(filename) &&
@@ -101,8 +101,8 @@ Module::Module(const char *filename, Identifier *ident, int doDocComment, int do
         FileName::free(srcfilename);
         srcfilename = FileName::removeExt(filename);    // just does a mem.strdup(filename)
     }
-    else if (!FileName::equalsExt(srcfilename, global.mars_ext) &&
-        !FileName::equalsExt(srcfilename, global.hdr_ext) &&
+    else if (!FileName::equalsExt(srcfilename, global.mars_ext.ptr) &&
+        !FileName::equalsExt(srcfilename, global.hdr_ext.ptr) &&
         !FileName::equalsExt(srcfilename, "dd"))
     {
         error("source file name '%s' must have .%s extension", srcfilename, global.mars_ext);
@@ -112,13 +112,13 @@ Module::Module(const char *filename, Identifier *ident, int doDocComment, int do
     if (!FileName::absolute(srcfilename))
         srcfilePath = getcwd(NULL, 0);
 
-    objfile = setOutfile(global.params.objname, global.params.objdir, filename, global.obj_ext);
+    objfile = setOutfile(global.params.objname.ptr, global.params.objdir.ptr, filename, global.obj_ext.ptr);
 
     if (doDocComment)
         setDocfile();
 
     if (doHdrGen)
-        hdrfile = setOutfile(global.params.hdrname, global.params.hdrdir, arg, global.hdr_ext);
+        hdrfile = setOutfile(global.params.hdrname.ptr, global.params.hdrdir.ptr, arg, global.hdr_ext.ptr);
 
     //objfile = new File(objfilename);
 }
@@ -130,7 +130,7 @@ Module *Module::create(const char *filename, Identifier *ident, int doDocComment
 
 void Module::setDocfile()
 {
-    docfile = setOutfile(global.params.docname, global.params.docdir, arg, global.doc_ext);
+    docfile = setOutfile(global.params.docname.ptr, global.params.docdir.ptr, arg, global.doc_ext.ptr);
 }
 
 /*********************************************
@@ -202,7 +202,7 @@ static void checkModFileAlias(OutBuffer *buf, OutBuffer *dotmods,
         const char *m = (*ms)[j];
         const char *q = strchr(m, '=');
         assert(q);
-        if (dotmods->offset <= (size_t)(q - m) && memcmp(dotmods->peekString(), m, q - m) == 0)
+        if (dotmods->offset <= (size_t)(q - m) && memcmp(dotmods->peekChars(), m, q - m) == 0)
         {
             buf->reset();
             size_t qlen = strlen(q + 1);
@@ -224,14 +224,14 @@ Module *Module::load(Loc loc, Identifiers *packages, Identifier *ident)
     // into:
     //  foo\bar\baz
     const char *filename = ident->toChars();
-    if (packages && packages->dim)
+    if (packages && packages->length)
     {
         OutBuffer buf;
         OutBuffer dotmods;
-        Array<const char *> *ms = global.params.modFileAliasStrings;
-        const size_t msdim = ms ? ms->dim : 0;
+        Array<const char *> *ms = &global.params.modFileAliasStrings;
+        const size_t msdim = ms ? ms->length : 0;
 
-        for (size_t i = 0; i < packages->dim; i++)
+        for (size_t i = 0; i < packages->length; i++)
         {
             Identifier *pid = (*packages)[i];
             const char *p = pid->toChars();
@@ -275,7 +275,7 @@ Module *Module::load(Loc loc, Identifiers *packages, Identifier *ident)
         OutBuffer buf;
         if (packages)
         {
-            for (size_t i = 0; i < packages->dim; i++)
+            for (size_t i = 0; i < packages->length; i++)
             {
                 Identifier *pid = (*packages)[i];
                 buf.writestring(pid->toChars());
@@ -283,7 +283,7 @@ Module *Module::load(Loc loc, Identifiers *packages, Identifier *ident)
             }
         }
         buf.printf("%s\t(%s)", ident->toChars(), m->srcfile->toChars());
-        message("import    %s", buf.peekString());
+        message("import    %s", buf.peekChars());
     }
 
     m = m->parse();
@@ -302,7 +302,7 @@ bool Module::read(Loc loc)
         {
             ::error(loc, "cannot find source code for runtime library file 'object.d'");
             errorSupplemental(loc, "dmd might not be correctly installed. Run 'dmd -man' for installation instructions.");
-            const char *dmdConfFile = global.inifilename ? FileName::canonicalName(global.inifilename) : NULL;
+            const char *dmdConfFile = global.inifilename.length ? FileName::canonicalName(global.inifilename.ptr) : NULL;
             errorSupplemental(loc, "config file: %s", dmdConfFile ? dmdConfFile : "not found");
         }
         else
@@ -324,7 +324,7 @@ bool Module::read(Loc loc)
              */
             if (global.path)
             {
-                for (size_t i = 0; i < global.path->dim; i++)
+                for (size_t i = 0; i < global.path->length; i++)
                 {
                     const char *p = (*global.path)[i];
                     fprintf(stderr, "import path[%llu] = %s\n", (ulonglong)i, p);
@@ -679,7 +679,7 @@ void Module::importAll(Scope *)
     // If it isn't there, some compiler rewrites, like
     //    classinst == classinst -> .object.opEquals(classinst, classinst)
     // would fail inside object.d.
-    if (members->dim == 0 || ((*members)[0])->ident != Id::object ||
+    if (members->length == 0 || ((*members)[0])->ident != Id::object ||
         (*members)[0]->isImport() == NULL)
     {
         Import *im = new Import(Loc(), NULL, Id::object, NULL, 0);
@@ -690,7 +690,7 @@ void Module::importAll(Scope *)
     {
         // Add all symbols into module's symbol table
         symtab = new DsymbolTable();
-        for (size_t i = 0; i < members->dim; i++)
+        for (size_t i = 0; i < members->length; i++)
         {
             Dsymbol *s = (*members)[i];
             s->addMember(sc, sc->scopesym);
@@ -704,13 +704,13 @@ void Module::importAll(Scope *)
      * before any semantic() on any of them.
      */
     setScope(sc);               // remember module scope for semantic
-    for (size_t i = 0; i < members->dim; i++)
+    for (size_t i = 0; i < members->length; i++)
     {
         Dsymbol *s = (*members)[i];
         s->setScope(sc);
     }
 
-    for (size_t i = 0; i < members->dim; i++)
+    for (size_t i = 0; i < members->length; i++)
     {
         Dsymbol *s = (*members)[i];
         s->importAll(sc);
@@ -740,7 +740,7 @@ void Module::semantic(Scope *)
     //printf("Module = %p, linkage = %d\n", sc->scopesym, sc->linkage);
 
     // Pass 1 semantic routines: do public side of the definition
-    for (size_t i = 0; i < members->dim; i++)
+    for (size_t i = 0; i < members->length; i++)
     {
         Dsymbol *s = (*members)[i];
 
@@ -777,7 +777,7 @@ void Module::semantic2(Scope*)
     //printf("Module = %p\n", sc.scopesym);
 
     // Pass 2 semantic routines: do initializers and function bodies
-    for (size_t i = 0; i < members->dim; i++)
+    for (size_t i = 0; i < members->length; i++)
     {
         Dsymbol *s = (*members)[i];
         s->semantic2(sc);
@@ -808,7 +808,7 @@ void Module::semantic3(Scope*)
     //printf("Module = %p\n", sc.scopesym);
 
     // Pass 3 semantic routines: do initializers and function bodies
-    for (size_t i = 0; i < members->dim; i++)
+    for (size_t i = 0; i < members->length; i++)
     {
         Dsymbol *s = (*members)[i];
         //printf("Module %s: %s.semantic3()\n", toChars(), s->toChars());
@@ -884,7 +884,7 @@ bool Module::isPackageAccessible(Package *p, Prot protection, int flags)
     if (insearch) // don't follow import cycles
         return false;
     if (flags & IgnorePrivateImports)
-        protection = Prot(PROTpublic); // only consider public imports
+        protection = Prot(Prot::public_); // only consider public imports
     insearch = true;
     bool r = ScopeDsymbol::isPackageAccessible(p, protection);
     insearch = false;
@@ -899,7 +899,7 @@ Dsymbol *Module::symtabInsert(Dsymbol *s)
 
 void Module::clearCache()
 {
-    for (size_t i = 0; i < amodules.dim; i++)
+    for (size_t i = 0; i < amodules.length; i++)
     {
         Module *m = amodules[i];
         m->searchCacheIdent = NULL;
@@ -913,7 +913,7 @@ void Module::clearCache()
 void Module::addDeferredSemantic(Dsymbol *s)
 {
     // Don't add it if it is already there
-    for (size_t i = 0; i < deferred.dim; i++)
+    for (size_t i = 0; i < deferred.length; i++)
     {
         Dsymbol *sd = deferred[i];
 
@@ -949,14 +949,14 @@ void Module::runDeferredSemantic()
     static int nested;
     if (nested)
         return;
-    //if (deferred.dim) printf("+Module::runDeferredSemantic(), len = %d\n", deferred.dim);
+    //if (deferred.length) printf("+Module::runDeferredSemantic(), len = %d\n", deferred.length);
     nested++;
 
     size_t len;
     do
     {
         dprogress = 0;
-        len = deferred.dim;
+        len = deferred.length;
         if (!len)
             break;
 
@@ -982,12 +982,12 @@ void Module::runDeferredSemantic()
             s->semantic(NULL);
             //printf("deferred: %s, parent = %s\n", s->toChars(), s->parent->toChars());
         }
-        //printf("\tdeferred.dim = %d, len = %d, dprogress = %d\n", deferred.dim, len, dprogress);
+        //printf("\tdeferred.length = %d, len = %d, dprogress = %d\n", deferred.length, len, dprogress);
         if (todoalloc)
             free(todoalloc);
-    } while (deferred.dim < len || dprogress);  // while making progress
+    } while (deferred.length < len || dprogress);  // while making progress
     nested--;
-    //printf("-Module::runDeferredSemantic(), len = %d\n", deferred.dim);
+    //printf("-Module::runDeferredSemantic(), len = %d\n", deferred.length);
 }
 
 void Module::runDeferredSemantic2()
@@ -995,7 +995,7 @@ void Module::runDeferredSemantic2()
     Module::runDeferredSemantic();
 
     Dsymbols *a = &Module::deferred2;
-    for (size_t i = 0; i < a->dim; i++)
+    for (size_t i = 0; i < a->length; i++)
     {
         Dsymbol *s = (*a)[i];
         //printf("[%d] %s semantic2a\n", i, s->toPrettyChars());
@@ -1012,7 +1012,7 @@ void Module::runDeferredSemantic3()
     Module::runDeferredSemantic2();
 
     Dsymbols *a = &Module::deferred3;
-    for (size_t i = 0; i < a->dim; i++)
+    for (size_t i = 0; i < a->length; i++)
     {
         Dsymbol *s = (*a)[i];
         //printf("[%d] %s semantic3a\n", i, s->toPrettyChars());
@@ -1034,7 +1034,7 @@ void Module::runDeferredSemantic3()
 int Module::imports(Module *m)
 {
     //printf("%s Module::imports(%s)\n", toChars(), m->toChars());
-    for (size_t i = 0; i < aimports.dim; i++)
+    for (size_t i = 0; i < aimports.length; i++)
     {
         Module *mi = aimports[i];
         if (mi == m)
@@ -1059,12 +1059,12 @@ bool Module::selfImports()
     //printf("Module::selfImports() %s\n", toChars());
     if (selfimports == 0)
     {
-        for (size_t i = 0; i < amodules.dim; i++)
+        for (size_t i = 0; i < amodules.length; i++)
             amodules[i]->insearch = 0;
 
         selfimports = imports(this) + 1;
 
-        for (size_t i = 0; i < amodules.dim; i++)
+        for (size_t i = 0; i < amodules.length; i++)
             amodules[i]->insearch = 0;
     }
     return selfimports == 2;
@@ -1079,11 +1079,11 @@ bool Module::rootImports()
     //printf("Module::rootImports() %s\n", toChars());
     if (rootimports == 0)
     {
-        for (size_t i = 0; i < amodules.dim; i++)
+        for (size_t i = 0; i < amodules.length; i++)
             amodules[i]->insearch = 0;
 
         rootimports = 1;
-        for (size_t i = 0; i < amodules.dim; ++i)
+        for (size_t i = 0; i < amodules.length; ++i)
         {
             Module *m = amodules[i];
             if (m->isRoot() && imports(m))
@@ -1093,7 +1093,7 @@ bool Module::rootImports()
             }
         }
 
-        for (size_t i = 0; i < amodules.dim; i++)
+        for (size_t i = 0; i < amodules.length; i++)
             amodules[i]->insearch = 0;
     }
     return rootimports == 2;
@@ -1119,9 +1119,9 @@ const char *ModuleDeclaration::toChars()
 {
     OutBuffer buf;
 
-    if (packages && packages->dim)
+    if (packages && packages->length)
     {
-        for (size_t i = 0; i < packages->dim; i++)
+        for (size_t i = 0; i < packages->length; i++)
         {
             Identifier *pid = (*packages)[i];
             buf.writestring(pid->toChars());
@@ -1129,7 +1129,7 @@ const char *ModuleDeclaration::toChars()
         }
     }
     buf.writestring(id->toChars());
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 /* =========================== Package ===================== */
@@ -1207,7 +1207,7 @@ DsymbolTable *Package::resolve(Identifiers *packages, Dsymbol **pparent, Package
 
     if (packages)
     {
-        for (size_t i = 0; i < packages->dim; i++)
+        for (size_t i = 0; i < packages->length; i++)
         {
             Identifier *pid = (*packages)[i];
             Package *pkg;
@@ -1288,11 +1288,11 @@ const char *lookForSourceFile(const char **path, const char *filename)
      */
     *path = NULL;
 
-    const char *sdi = FileName::forceExt(filename, global.hdr_ext);
+    const char *sdi = FileName::forceExt(filename, global.hdr_ext.ptr);
     if (FileName::exists(sdi) == 1)
         return sdi;
 
-    const char *sd  = FileName::forceExt(filename, global.mars_ext);
+    const char *sd  = FileName::forceExt(filename, global.mars_ext.ptr);
     if (FileName::exists(sd) == 1)
         return sd;
 
@@ -1318,7 +1318,7 @@ const char *lookForSourceFile(const char **path, const char *filename)
     if (!global.path)
         return NULL;
 
-    for (size_t i = 0; i < global.path->dim; i++)
+    for (size_t i = 0; i < global.path->length; i++)
     {
         const char *p = (*global.path)[i];
 

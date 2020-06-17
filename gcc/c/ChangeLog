@@ -1,3 +1,228 @@
+2020-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_expr_no_commas): Save, clear and restore
+	c_in_omp_for.
+	(c_parser_omp_for_loop): Set c_in_omp_for around some calls to avoid
+	premature c_fully_fold.  Defer explicit c_fully_fold calls to after
+	c_finish_omp_for.
+	* c-tree.h (c_in_omp_for): Declare.
+	* c-typeck.c (c_in_omp_for): Define.
+	(build_modify_expr): Avoid c_fully_fold if c_in_omp_for.
+	(digest_init): Likewise.
+	(build_binary_op): Likewise.
+
+2020-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_schedule): Reject modifier separated
+	from kind by comma rather than colon.
+
+2020-06-05  Mark Wielaard  <mark@klomp.org>
+
+	* c-decl.c (implicit_decl_warning): When warned and olddecl is
+	an undeclared builtin, then add a fixit header hint, if found.
+	(implicitly_declare): Add OPT_Wbuiltin_declaration_mismatch to
+	warning_at about implicit builtin declaration type mismatch.
+
+2020-06-03  Mark Wielaard  <mark@klomp.org>
+
+	* c-parser.c (struct c_parser): Add seen_string_literal
+	bitfield.
+	(c_parser_consume_token): Reset seen_string_literal.
+	(c_parser_error_richloc): Add name_hint if seen_string_literal
+	and next token is a CPP_NAME and we have a missing header
+	suggestion for the name.
+	(c_parser_string_literal): Set seen_string_literal.
+
+2020-06-03  Mark Wielaard  <mark@klomp.org>
+
+	* c-parser.c (c_parser_postfix_expression_after_primary): Add
+	scope with matching_parens after CPP_OPEN_PAREN.
+
+2020-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-objc-common.h (LANG_HOOKS_OMP_PREDETERMINED_MAPPING): Redefine.
+
+2020-05-28  Nicolas Bértolo  <nicolasbertolo@gmail.com>
+
+	* Make-lang.in: Remove extra slash.
+
+2020-05-19  Martin Liska  <mliska@suse.cz>
+
+	* c-parser.c: Fix typo.
+
+2020-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_target): Set cfun->has_omp_target.
+
+2020-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94703
+	* gimple-parser.c (c_parser_parse_ssa_name): Do not set
+	DECL_GIMPLE_REG_P.
+
+2020-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94842
+	* c-decl.c (set_labels_context_r): In addition to context-less
+	LABEL_DECLs adjust also LABEL_DECLs with context equal to
+	parent function if any.
+	(store_parm_decls): Adjust comment.
+
+2020-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR objc/94637
+	* c-parser.c (c_parser_objc_selector_arg): Handle CPP_SCOPE like
+	two CPP_COLON tokens.
+
+2020-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/94629
+	* c-parser.c (c_parser_oacc_routine): Remove redundant assignment
+	to data.clauses.
+
+2020-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94593
+	* c-parser.c (c_parser_pragma) <case PRAGMA_OMP_REQUIRES>: Reject
+	requires directive when not at file scope.
+
+2020-04-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94120
+	* c-decl.c (c_check_in_current_scope): New function.
+	* c-tree.h (c_check_in_current_scope): Declare it.
+	* c-parser.c (c_parser_oacc_declare): Add check that variables
+	are declared in the same scope as the directive. Fix handling
+	of namespace vars.
+
+2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94512
+	* c-parser.c (c_parser_omp_parallel): Set OMP_PARALLEL_COMBINED
+	if c_parser_omp_master succeeded.
+
+2020-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/94029
+	PR c/94239
+	* c-parser.c (c_parser_declaration_or_fndef): Initialize endloc to
+	the function_start_locus location.  Don't do that afterwards for the
+	__GIMPLE body parsing.
+
+2020-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/94029
+	* c-tree.h (finish_function): Add location_t argument defaulted to
+	input_location.
+	* c-parser.c (c_parser_compound_statement): Add endlocp argument and
+	set it to the locus of closing } if non-NULL.
+	(c_parser_compound_statement_nostart): Return locus of closing }.
+	(c_parser_parse_rtl_body): Likewise.
+	(c_parser_declaration_or_fndef): Propagate locus of closing } to
+	finish_function.
+	* c-decl.c (finish_function): Add end_loc argument, use it instead of
+	input_location to set function_end_locus.
+
+2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94172
+	* c-tree.h (C_TYPE_INCOMPLETE_VARS): Define to TYPE_LANG_SLOT_1
+	instead of TYPE_VFIELD, and support it on {RECORD,UNION,ENUMERAL}_TYPE.
+	(TYPE_ACTUAL_ARG_TYPES): Check that it is only used on FUNCTION_TYPEs.
+	* c-decl.c (pushdecl): Push C_TYPE_INCOMPLETE_VARS also to
+	ENUMERAL_TYPEs.
+	(finish_incomplete_vars): New function, moved from finish_struct.  Use
+	relayout_decl instead of layout_decl.
+	(finish_struct): Remove obsolete comment about C_TYPE_INCOMPLETE_VARS
+	being TYPE_VFIELD.  Use finish_incomplete_vars.
+	(finish_enum): Clear C_TYPE_INCOMPLETE_VARS.  Call
+	finish_incomplete_vars.
+	* c-typeck.c (c_build_qualified_type): Clear C_TYPE_INCOMPLETE_VARS
+	also on ENUMERAL_TYPEs.
+
+2020-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94179
+	* c-fold.c (c_fully_fold_internal): Handle MEM_REF.
+
+2020-03-13  Martin Sebor  <msebor@redhat.com>
+
+	PR c/94040
+	* c-decl.c (builtin_structptr_type_count): New constant.
+	(match_builtin_function_types): Reject decls that are incompatible
+	in types pointed to by pointers.
+	(diagnose_mismatched_decls): Adjust comments.
+
+2020-03-05  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/93577
+	* c-typeck.c (pop_init_level): Do not diagnose initializers as
+	empty when initialized type is error_mark_node.
+	(set_designator, process_init_element): Ignore initializers for
+	elements of a variable-size type or of error_mark_node.
+
+2020-03-01  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/93926
+	* c-decl.c (types_close_enough_to_match): New function.
+	(match_builtin_function_types):
+	(diagnose_mismatched_decls): Add missing inform call to a warning.
+
+2020-03-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c/93812
+	* c-typeck.c (build_functype_attribute_variant): New function.
+	(composite_type): Call it.
+
+2020-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/93912
+	* gimple-parser.c (c_parser_gimple_parse_bb_spec_edge_probability):
+	Rename last argument from probablity to probability.
+
+2020-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/93576
+	* c-decl.c (grokdeclarator): If this_size_varies, only push size into
+	*expr if it has side effects.
+
+2020-01-30  Jeff Law  <law@redhat.com>
+
+	PR c/88660
+	* c-parser.c (c_parser_switch_statement): Make sure to request
+	marking the switch expr as used.
+
+2020-01-22  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/93348
+	* c-typeck.c (build_c_cast): Call remove_c_maybe_const_expr on
+	argument with integer operands.
+
+2020-01-16  Kerem Kat  <keremkat@gmail.com>
+
+	PR c/92833
+	* c-parser.c (c_parser_consume_token): Fix peeked token stack pop
+	to support 4 available tokens.
+
+2020-01-15  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/93072
+	* c-decl.c (pushdecl): Use TREE_PUBLIC, not DECL_EXTERNAL, to
+	determine whether to set DECL_CONTEXT.
+
+2020-01-13  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/93241
+	* c-typeck.c (build_c_cast): Check for expressions with integer
+	operands that can occur in an unevaluated part of an integer
+	constant expression and call note_integer_operands as needed.
+
+2019-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/93199
+	* gimple-parser.c (c_parser_parse_gimple_body): Remove __PHI IFN
+	permanently.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

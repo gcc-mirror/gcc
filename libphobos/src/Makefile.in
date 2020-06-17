@@ -96,6 +96,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/override.m4 \
+	$(top_srcdir)/../config/toolexeclibdir.m4 \
 	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
 	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
 	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/acinclude.m4 \
@@ -144,77 +145,122 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 am__dirstamp = $(am__leading_dot)dirstamp
-am__objects_1 = etc/c/curl.lo etc/c/sqlite3.lo etc/c/zlib.lo \
-	std/algorithm/comparison.lo std/algorithm/internal.lo \
-	std/algorithm/iteration.lo std/algorithm/mutation.lo \
-	std/algorithm/package.lo std/algorithm/searching.lo \
-	std/algorithm/setops.lo std/algorithm/sorting.lo std/array.lo \
-	std/ascii.lo std/base64.lo std/bigint.lo std/bitmanip.lo \
-	std/compiler.lo std/complex.lo std/concurrency.lo \
-	std/container/array.lo std/container/binaryheap.lo \
-	std/container/dlist.lo std/container/package.lo \
-	std/container/rbtree.lo std/container/slist.lo \
-	std/container/util.lo std/conv.lo std/csv.lo \
-	std/datetime/date.lo std/datetime/interval.lo \
-	std/datetime/package.lo std/datetime/stopwatch.lo \
-	std/datetime/systime.lo std/datetime/timezone.lo \
-	std/demangle.lo std/digest/crc.lo std/digest/digest.lo \
-	std/digest/hmac.lo std/digest/md.lo std/digest/murmurhash.lo \
-	std/digest/package.lo std/digest/ripemd.lo std/digest/sha.lo \
-	std/encoding.lo std/exception.lo \
-	std/experimental/allocator/building_blocks/affix_allocator.lo \
-	std/experimental/allocator/building_blocks/allocator_list.lo \
-	std/experimental/allocator/building_blocks/bitmapped_block.lo \
-	std/experimental/allocator/building_blocks/bucketizer.lo \
-	std/experimental/allocator/building_blocks/fallback_allocator.lo \
-	std/experimental/allocator/building_blocks/free_list.lo \
-	std/experimental/allocator/building_blocks/free_tree.lo \
-	std/experimental/allocator/building_blocks/kernighan_ritchie.lo \
-	std/experimental/allocator/building_blocks/null_allocator.lo \
-	std/experimental/allocator/building_blocks/package.lo \
-	std/experimental/allocator/building_blocks/quantizer.lo \
-	std/experimental/allocator/building_blocks/region.lo \
-	std/experimental/allocator/building_blocks/scoped_allocator.lo \
-	std/experimental/allocator/building_blocks/segregator.lo \
-	std/experimental/allocator/building_blocks/stats_collector.lo \
-	std/experimental/allocator/common.lo \
-	std/experimental/allocator/gc_allocator.lo \
-	std/experimental/allocator/mallocator.lo \
-	std/experimental/allocator/mmap_allocator.lo \
-	std/experimental/allocator/package.lo \
-	std/experimental/allocator/showcase.lo \
-	std/experimental/allocator/typed.lo \
-	std/experimental/checkedint.lo std/experimental/logger/core.lo \
-	std/experimental/logger/filelogger.lo \
-	std/experimental/logger/multilogger.lo \
-	std/experimental/logger/nulllogger.lo \
-	std/experimental/logger/package.lo \
-	std/experimental/typecons.lo std/file.lo std/format.lo \
-	std/functional.lo std/getopt.lo std/internal/cstring.lo \
-	std/internal/math/biguintcore.lo \
-	std/internal/math/biguintnoasm.lo \
-	std/internal/math/errorfunction.lo \
-	std/internal/math/gammafunction.lo std/internal/scopebuffer.lo \
-	std/internal/test/dummyrange.lo std/internal/test/range.lo \
-	std/internal/test/uda.lo std/internal/unicode_comp.lo \
-	std/internal/unicode_decomp.lo \
-	std/internal/unicode_grapheme.lo std/internal/unicode_norm.lo \
-	std/internal/unicode_tables.lo \
-	std/internal/windows/advapi32.lo std/json.lo std/math.lo \
-	std/mathspecial.lo std/meta.lo std/mmfile.lo std/net/curl.lo \
-	std/net/isemail.lo std/numeric.lo std/outbuffer.lo \
-	std/parallelism.lo std/path.lo std/process.lo std/random.lo \
-	std/range/interfaces.lo std/range/package.lo \
-	std/range/primitives.lo std/regex/internal/backtracking.lo \
-	std/regex/internal/generator.lo std/regex/internal/ir.lo \
-	std/regex/internal/kickstart.lo std/regex/internal/parser.lo \
-	std/regex/internal/tests.lo std/regex/internal/thompson.lo \
-	std/regex/package.lo std/signals.lo std/socket.lo \
-	std/stdint.lo std/stdio.lo std/string.lo std/system.lo \
-	std/traits.lo std/typecons.lo std/typetuple.lo std/uni.lo \
-	std/uri.lo std/utf.lo std/uuid.lo std/variant.lo \
-	std/windows/charset.lo std/windows/registry.lo \
-	std/windows/syserror.lo std/xml.lo std/zip.lo std/zlib.lo
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@am__objects_1 = etc/c/curl.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	etc/c/sqlite3.lo etc/c/zlib.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/comparison.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/internal.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/iteration.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/mutation.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/package.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/searching.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/setops.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/sorting.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/array.lo std/ascii.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/base64.lo std/bigint.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/bitmanip.lo std/compiler.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/complex.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/concurrency.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/container/array.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/container/binaryheap.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/container/dlist.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/container/package.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/container/rbtree.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/container/slist.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/container/util.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/conv.lo std/csv.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/datetime/date.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/datetime/interval.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/datetime/package.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/datetime/stopwatch.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/datetime/systime.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/datetime/timezone.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/demangle.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/crc.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/digest.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/hmac.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/md.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/murmurhash.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/package.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/ripemd.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/sha.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/encoding.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/exception.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/affix_allocator.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/allocator_list.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/bitmapped_block.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/bucketizer.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/fallback_allocator.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/free_list.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/free_tree.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/kernighan_ritchie.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/null_allocator.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/package.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/quantizer.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/region.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/scoped_allocator.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/segregator.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/stats_collector.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/common.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/gc_allocator.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/mallocator.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/mmap_allocator.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/package.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/showcase.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/typed.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/checkedint.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/logger/core.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/logger/filelogger.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/logger/multilogger.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/logger/nulllogger.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/logger/package.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/typecons.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/file.lo std/format.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/functional.lo std/getopt.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/cstring.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/biguintcore.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/biguintnoasm.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/errorfunction.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/gammafunction.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/scopebuffer.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/test/dummyrange.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/test/range.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/test/uda.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/unicode_comp.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/unicode_decomp.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/unicode_grapheme.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/unicode_norm.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/unicode_tables.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/windows/advapi32.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/json.lo std/math.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/mathspecial.lo std/meta.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/mmfile.lo std/net/curl.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/net/isemail.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/numeric.lo std/outbuffer.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/parallelism.lo std/path.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/process.lo std/random.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/range/interfaces.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/range/package.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/range/primitives.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/backtracking.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/generator.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/ir.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/kickstart.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/parser.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/tests.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/thompson.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/package.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/signals.lo std/socket.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/stdint.lo std/stdio.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/string.lo std/system.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/traits.lo std/typecons.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/typetuple.lo std/uni.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/uri.lo std/utf.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/uuid.lo std/variant.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/windows/charset.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/windows/registry.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/windows/syserror.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/xml.lo std/zip.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/zlib.lo
 am__objects_2 = $(am__objects_1)
 am__objects_3 = $(am__objects_2)
 am_libgphobos_la_OBJECTS = $(am__objects_3)
@@ -277,6 +323,7 @@ CCASFLAGS = @CCASFLAGS@
 CC_FOR_BUILD = @CC_FOR_BUILD@
 CFLAGS = @CFLAGS@
 CFLAGS_FOR_BUILD = @CFLAGS_FOR_BUILD@
+CHECKING_DFLAGS = @CHECKING_DFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
@@ -299,7 +346,6 @@ EXEEXT = @EXEEXT@
 FGREP = @FGREP@
 GDC = @GDC@
 GDCFLAGS = @GDCFLAGS@
-GDCFLAGSX = @GDCFLAGSX@
 GREP = @GREP@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
@@ -342,6 +388,7 @@ SHELL = @SHELL@
 SPEC_PHOBOS_DEPS = @SPEC_PHOBOS_DEPS@
 STRIP = @STRIP@
 VERSION = @VERSION@
+WARN_DFLAGS = @WARN_DFLAGS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -416,18 +463,6 @@ LTDCOMPILE = $(LIBTOOL) --tag=D $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(GDC) $(AM_DFLAGS)
 
 
-# Also override library link commands: This is not strictly
-# required, but we want to record additional dependencies such
-# as pthread in the library
-libgdruntime_la_LINK = $(LIBTOOL) --tag=D $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(GDC) $(AM_CFLAGS) $(CFLAGS) \
-	$(libgdruntime_la_LDFLAGS) $(LDFLAGS) -o $@
-
-libgphobos_la_LINK = $(LIBTOOL) --tag=D $(libgphobos_la_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(GDC) $(AM_CFLAGS) $(CFLAGS) \
-	$(libgphobos_la_LDFLAGS) $(LDFLAGS) -o $@
-
-
 # Include D build rules
 
 # Make sure GDC can find libdruntime and libphobos include files
@@ -436,7 +471,10 @@ D_EXTRA_DFLAGS = -nostdinc -I $(srcdir) \
 
 
 # D flags for compilation
-AM_DFLAGS = $(phobos_compiler_pic_flag)
+AM_DFLAGS = \
+	$(phobos_compiler_pic_flag) \
+	$(WARN_DFLAGS) $(CHECKING_DFLAGS)
+
 
 # Install all D files
 ALL_PHOBOS_INSTALL_DSOURCES = $(PHOBOS_DSOURCES)
@@ -453,76 +491,89 @@ libgphobos_la_LIBTOOLFLAGS =
 libgphobos_la_LDFLAGS = -Wc,-nophoboslib,-dstartfiles,-B../libdruntime/gcc \
     -version-info $(libtool_VERSION)
 
-libgphobos_la_LIBADD = ../libdruntime/libgdruntime.la $(LIBZ)
-libgphobos_la_DEPENDENCIES = libgphobos.spec
+libgphobos_la_LIBADD = \
+    ../libdruntime/libgdruntime_convenience.la $(LIBZ)
+
+libgphobos_la_DEPENDENCIES = \
+    ../libdruntime/libgdruntime_convenience.la libgphobos.spec
+
+
+# Also override library link commands: This is not strictly
+# required, but we want to record additional dependencies such
+# as pthread in the library
+libgphobos_la_LINK = $(LIBTOOL) --tag=D $(libgphobos_la_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(GDC) $(AM_CFLAGS) $(CFLAGS) \
+	$(libgphobos_la_LDFLAGS) $(LDFLAGS) -o $@
+
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@PHOBOS_DSOURCES = etc/c/curl.d etc/c/sqlite3.d etc/c/zlib.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/comparison.d std/algorithm/internal.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/iteration.d std/algorithm/mutation.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/package.d std/algorithm/searching.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/setops.d std/algorithm/sorting.d std/array.d std/ascii.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/base64.d std/bigint.d std/bitmanip.d std/compiler.d std/complex.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/concurrency.d std/container/array.d std/container/binaryheap.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/container/dlist.d std/container/package.d std/container/rbtree.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/container/slist.d std/container/util.d std/conv.d std/csv.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/datetime/date.d std/datetime/interval.d std/datetime/package.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/datetime/stopwatch.d std/datetime/systime.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/datetime/timezone.d std/demangle.d std/digest/crc.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/digest.d std/digest/hmac.d std/digest/md.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/murmurhash.d std/digest/package.d std/digest/ripemd.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/sha.d std/encoding.d std/exception.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/affix_allocator.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/allocator_list.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/bitmapped_block.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/bucketizer.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/fallback_allocator.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/free_list.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/free_tree.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/kernighan_ritchie.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/null_allocator.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/package.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/quantizer.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/region.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/scoped_allocator.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/segregator.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/stats_collector.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/common.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/gc_allocator.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/mallocator.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/mmap_allocator.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/package.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/showcase.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/typed.d std/experimental/checkedint.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/logger/core.d std/experimental/logger/filelogger.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/logger/multilogger.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/logger/nulllogger.d std/experimental/logger/package.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/typecons.d std/file.d std/format.d std/functional.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/getopt.d std/internal/cstring.d std/internal/math/biguintcore.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/biguintnoasm.d std/internal/math/errorfunction.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/gammafunction.d std/internal/scopebuffer.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/test/dummyrange.d std/internal/test/range.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/test/uda.d std/internal/unicode_comp.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/unicode_decomp.d std/internal/unicode_grapheme.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/unicode_norm.d std/internal/unicode_tables.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/windows/advapi32.d std/json.d std/math.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/mathspecial.d std/meta.d std/mmfile.d std/net/curl.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/net/isemail.d std/numeric.d std/outbuffer.d std/parallelism.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/path.d std/process.d std/random.d std/range/interfaces.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/range/package.d std/range/primitives.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/backtracking.d std/regex/internal/generator.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/ir.d std/regex/internal/kickstart.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/parser.d std/regex/internal/tests.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/thompson.d std/regex/package.d std/signals.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/socket.d std/stdint.d std/stdio.d std/string.d std/system.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/traits.d std/typecons.d std/typetuple.d std/uni.d std/uri.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/utf.d std/uuid.d std/variant.d std/windows/charset.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/windows/registry.d std/windows/syserror.d std/xml.d std/zip.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/zlib.d
+
 
 # Source file definitions. Boring stuff, auto-generated with
 # https://gist.github.com/jpf91/8744acebc9dcf1e9d1a35cdff20afbb2
 # Can't use wildcards here:
 # https://www.gnu.org/software/automake/manual/html_node/Wildcards.html
-PHOBOS_DSOURCES = etc/c/curl.d etc/c/sqlite3.d etc/c/zlib.d \
-	std/algorithm/comparison.d std/algorithm/internal.d \
-	std/algorithm/iteration.d std/algorithm/mutation.d \
-	std/algorithm/package.d std/algorithm/searching.d \
-	std/algorithm/setops.d std/algorithm/sorting.d std/array.d std/ascii.d \
-	std/base64.d std/bigint.d std/bitmanip.d std/compiler.d std/complex.d \
-	std/concurrency.d std/container/array.d std/container/binaryheap.d \
-	std/container/dlist.d std/container/package.d std/container/rbtree.d \
-	std/container/slist.d std/container/util.d std/conv.d std/csv.d \
-	std/datetime/date.d std/datetime/interval.d std/datetime/package.d \
-	std/datetime/stopwatch.d std/datetime/systime.d \
-	std/datetime/timezone.d std/demangle.d std/digest/crc.d \
-	std/digest/digest.d std/digest/hmac.d std/digest/md.d \
-	std/digest/murmurhash.d std/digest/package.d std/digest/ripemd.d \
-	std/digest/sha.d std/encoding.d std/exception.d \
-	std/experimental/allocator/building_blocks/affix_allocator.d \
-	std/experimental/allocator/building_blocks/allocator_list.d \
-	std/experimental/allocator/building_blocks/bitmapped_block.d \
-	std/experimental/allocator/building_blocks/bucketizer.d \
-	std/experimental/allocator/building_blocks/fallback_allocator.d \
-	std/experimental/allocator/building_blocks/free_list.d \
-	std/experimental/allocator/building_blocks/free_tree.d \
-	std/experimental/allocator/building_blocks/kernighan_ritchie.d \
-	std/experimental/allocator/building_blocks/null_allocator.d \
-	std/experimental/allocator/building_blocks/package.d \
-	std/experimental/allocator/building_blocks/quantizer.d \
-	std/experimental/allocator/building_blocks/region.d \
-	std/experimental/allocator/building_blocks/scoped_allocator.d \
-	std/experimental/allocator/building_blocks/segregator.d \
-	std/experimental/allocator/building_blocks/stats_collector.d \
-	std/experimental/allocator/common.d \
-	std/experimental/allocator/gc_allocator.d \
-	std/experimental/allocator/mallocator.d \
-	std/experimental/allocator/mmap_allocator.d \
-	std/experimental/allocator/package.d \
-	std/experimental/allocator/showcase.d \
-	std/experimental/allocator/typed.d std/experimental/checkedint.d \
-	std/experimental/logger/core.d std/experimental/logger/filelogger.d \
-	std/experimental/logger/multilogger.d \
-	std/experimental/logger/nulllogger.d std/experimental/logger/package.d \
-	std/experimental/typecons.d std/file.d std/format.d std/functional.d \
-	std/getopt.d std/internal/cstring.d std/internal/math/biguintcore.d \
-	std/internal/math/biguintnoasm.d std/internal/math/errorfunction.d \
-	std/internal/math/gammafunction.d std/internal/scopebuffer.d \
-	std/internal/test/dummyrange.d std/internal/test/range.d \
-	std/internal/test/uda.d std/internal/unicode_comp.d \
-	std/internal/unicode_decomp.d std/internal/unicode_grapheme.d \
-	std/internal/unicode_norm.d std/internal/unicode_tables.d \
-	std/internal/windows/advapi32.d std/json.d std/math.d \
-	std/mathspecial.d std/meta.d std/mmfile.d std/net/curl.d \
-	std/net/isemail.d std/numeric.d std/outbuffer.d std/parallelism.d \
-	std/path.d std/process.d std/random.d std/range/interfaces.d \
-	std/range/package.d std/range/primitives.d \
-	std/regex/internal/backtracking.d std/regex/internal/generator.d \
-	std/regex/internal/ir.d std/regex/internal/kickstart.d \
-	std/regex/internal/parser.d std/regex/internal/tests.d \
-	std/regex/internal/thompson.d std/regex/package.d std/signals.d \
-	std/socket.d std/stdint.d std/stdio.d std/string.d std/system.d \
-	std/traits.d std/typecons.d std/typetuple.d std/uni.d std/uri.d \
-	std/utf.d std/uuid.d std/variant.d std/windows/charset.d \
-	std/windows/registry.d std/windows/syserror.d std/xml.d std/zip.d \
-	std/zlib.d
-
+@ENABLE_LIBDRUNTIME_ONLY_TRUE@PHOBOS_DSOURCES = 
 all: all-am
 
 .SUFFIXES:

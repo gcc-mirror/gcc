@@ -99,7 +99,9 @@ unknown_device_type_error (acc_device_t invalid_type)
 static const char *
 get_openacc_name (const char *name)
 {
-  if (strcmp (name, "nvptx") == 0)
+  if (strcmp (name, "gcn") == 0)
+    return "radeon";
+  else if (strcmp (name, "nvptx") == 0)
     return "nvidia";
   else
     return name;
@@ -115,6 +117,7 @@ name_of_acc_device_t (enum acc_device_t type)
     case acc_device_host: return "host";
     case acc_device_not_host: return "not_host";
     case acc_device_nvidia: return "nvidia";
+    case acc_device_radeon: return "radeon";
     default: unknown_device_type_error (type);
     }
   __builtin_unreachable ();
@@ -760,14 +763,14 @@ acc_set_device_num (int ord, acc_device_t d)
 
 ialias (acc_set_device_num)
 
-static union gomp_device_property_value
+static union goacc_property_value
 get_property_any (int ord, acc_device_t d, acc_device_property_t prop)
 {
   goacc_lazy_initialize ();
   struct goacc_thread *thr = goacc_thread ();
 
   if (d == acc_device_current && thr && thr->dev)
-    return thr->dev->get_property_func (thr->dev->target_id, prop);
+    return thr->dev->openacc.get_property_func (thr->dev->target_id, prop);
 
   gomp_mutex_lock (&acc_device_lock);
 
@@ -789,7 +792,7 @@ get_property_any (int ord, acc_device_t d, acc_device_property_t prop)
 
   assert (dev);
 
-  return dev->get_property_func (dev->target_id, prop);
+  return dev->openacc.get_property_func (dev->target_id, prop);
 }
 
 size_t
@@ -798,7 +801,7 @@ acc_get_property (int ord, acc_device_t d, acc_device_property_t prop)
   if (!known_device_type_p (d))
     unknown_device_type_error(d);
 
-  if (prop & GOMP_DEVICE_PROPERTY_STRING_MASK)
+  if (prop & GOACC_PROPERTY_STRING_MASK)
     return 0;
   else
     return get_property_any (ord, d, prop).val;
@@ -812,7 +815,7 @@ acc_get_property_string (int ord, acc_device_t d, acc_device_property_t prop)
   if (!known_device_type_p (d))
     unknown_device_type_error(d);
 
-  if (prop & GOMP_DEVICE_PROPERTY_STRING_MASK)
+  if (prop & GOACC_PROPERTY_STRING_MASK)
     return get_property_any (ord, d, prop).ptr;
   else
     return NULL;

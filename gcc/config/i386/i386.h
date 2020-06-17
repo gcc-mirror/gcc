@@ -199,6 +199,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_AVX512BF16_P(x)	TARGET_ISA2_AVX512BF16_P(x)
 #define TARGET_ENQCMD	TARGET_ISA2_ENQCMD
 #define TARGET_ENQCMD_P(x) TARGET_ISA2_ENQCMD_P(x)
+#define TARGET_SERIALIZE	TARGET_ISA2_SERIALIZE
+#define TARGET_SERIALIZE_P(x) TARGET_ISA2_SERIALIZE_P(x)
+#define TARGET_TSXLDTRK	TARGET_ISA2_TSXLDTRK
+#define TARGET_TSXLDTRK_P(x) TARGET_ISA2_TSXLDTRK_P(x)
 
 #define TARGET_LP64	TARGET_ABI_64
 #define TARGET_LP64_P(x)	TARGET_ABI_64_P(x)
@@ -1128,9 +1132,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /*xmm8,xmm9,xmm10,xmm11,xmm12,xmm13,xmm14,xmm15*/		\
      6,   6,    6,    6,    6,    6,    6,    6,		\
 /*xmm16,xmm17,xmm18,xmm19,xmm20,xmm21,xmm22,xmm23*/		\
-     6,    6,     6,    6,    6,    6,    6,    6,		\
+     1,    1,     1,    1,    1,    1,    1,    1,		\
 /*xmm24,xmm25,xmm26,xmm27,xmm28,xmm29,xmm30,xmm31*/		\
-     6,    6,     6,    6,    6,    6,    6,    6,		\
+     1,    1,     1,    1,    1,    1,    1,    1,		\
  /* k0,  k1,  k2,  k3,  k4,  k5,  k6,  k7*/			\
      1,   1,   1,   1,   1,   1,   1,   1 }
 
@@ -1319,6 +1323,13 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    requiring a frame pointer.  */
 #ifndef SUBTARGET_FRAME_POINTER_REQUIRED
 #define SUBTARGET_FRAME_POINTER_REQUIRED 0
+#endif
+
+/* Define the shadow offset for asan. Other OS's can override in the
+   respective tm.h files.  */
+#ifndef SUBTARGET_SHADOW_OFFSET
+#define SUBTARGET_SHADOW_OFFSET	    \
+  (TARGET_LP64 ? HOST_WIDE_INT_C (0x7fff8000) : HOST_WIDE_INT_1 << 29)
 #endif
 
 /* Make sure we can access arbitrary call frames.  */
@@ -2258,13 +2269,37 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 #define ASM_OUTPUT_FUNCTION_LABEL(FILE, NAME, DECL) \
   ix86_asm_output_function_label ((FILE), (NAME), (DECL))
 
+/* A C statement (sans semicolon) to output a reference to SYMBOL_REF SYM.
+   If not defined, assemble_name will be used to output the name of the
+   symbol.  This macro may be used to modify the way a symbol is referenced
+   depending on information encoded by TARGET_ENCODE_SECTION_INFO.  */
+
+#ifndef ASM_OUTPUT_SYMBOL_REF
+#define ASM_OUTPUT_SYMBOL_REF(FILE, SYM) \
+  do {							\
+    const char *name					\
+      = assemble_name_resolve (XSTR (x, 0));		\
+    /* In -masm=att wrap identifiers that start with $	\
+       into parens.  */					\
+    if (ASSEMBLER_DIALECT == ASM_ATT			\
+	&& name[0] == '$'				\
+	&& user_label_prefix[0] == '\0')		\
+      {							\
+	fputc ('(', (FILE));				\
+	assemble_name_raw ((FILE), name);		\
+	fputc (')', (FILE));				\
+      }							\
+    else						\
+      assemble_name_raw ((FILE), name);			\
+  } while (0)
+#endif
+
 /* Under some conditions we need jump tables in the text section,
    because the assembler cannot handle label differences between
-   sections.  This is the case for x86_64 on Mach-O for example.  */
+   sections.  */
 
 #define JUMP_TABLES_IN_TEXT_SECTION \
-  (flag_pic && ((TARGET_MACHO && TARGET_64BIT) \
-   || (!TARGET_64BIT && !HAVE_AS_GOTOFF_IN_DATA)))
+  (flag_pic && !(TARGET_64BIT || HAVE_AS_GOTOFF_IN_DATA))
 
 /* Switch to init or fini section via SECTION_OP, emit a call to FUNC,
    and switch back.  For x86 we do this only to save a few bytes that
@@ -2409,9 +2444,9 @@ const wide_int_bitmask PTA_RDPID (0, HOST_WIDE_INT_1U << 6);
 const wide_int_bitmask PTA_PCONFIG (0, HOST_WIDE_INT_1U << 7);
 const wide_int_bitmask PTA_WBNOINVD (0, HOST_WIDE_INT_1U << 8);
 const wide_int_bitmask PTA_AVX512VP2INTERSECT (0, HOST_WIDE_INT_1U << 9);
-const wide_int_bitmask PTA_WAITPKG (0, HOST_WIDE_INT_1U << 9);
 const wide_int_bitmask PTA_PTWRITE (0, HOST_WIDE_INT_1U << 10);
 const wide_int_bitmask PTA_AVX512BF16 (0, HOST_WIDE_INT_1U << 11);
+const wide_int_bitmask PTA_WAITPKG (0, HOST_WIDE_INT_1U << 12);
 const wide_int_bitmask PTA_MOVDIRI(0, HOST_WIDE_INT_1U << 13);
 const wide_int_bitmask PTA_MOVDIR64B(0, HOST_WIDE_INT_1U << 14);
 
@@ -2726,6 +2761,13 @@ enum function_type
   TYPE_EXCEPTION
 };
 
+enum queued_insn_type
+{
+  TYPE_NONE = 0,
+  TYPE_ENDBR,
+  TYPE_PATCHABLE_AREA
+};
+
 struct GTY(()) machine_function {
   struct stack_local_entry *stack_locals;
   int varargs_gpr_size;
@@ -2816,8 +2858,11 @@ struct GTY(()) machine_function {
   /* Nonzero if the function places outgoing arguments on stack.  */
   BOOL_BITFIELD outgoing_args_on_stack : 1;
 
-  /* If true, ENDBR is queued at function entrance.  */
-  BOOL_BITFIELD endbr_queued_at_entrance : 1;
+  /* If true, ENDBR or patchable area is queued at function entrance.  */
+  ENUM_BITFIELD(queued_insn_type) insn_queued_at_entrance : 2;
+
+  /* If true, the function label has been emitted.  */
+  BOOL_BITFIELD function_label_emitted : 1;
 
   /* True if the function needs a stack frame.  */
   BOOL_BITFIELD stack_frame_required : 1;

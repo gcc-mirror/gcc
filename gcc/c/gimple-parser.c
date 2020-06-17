@@ -149,12 +149,13 @@ static bool
 c_parser_gimple_parse_bb_spec_edge_probability (tree val,
 						gimple_parser &parser,
 						int *index,
-						profile_probability *probablity)
+						profile_probability
+						*probability)
 {
   bool return_p = c_parser_gimple_parse_bb_spec (val, index);
   if (return_p)
     {
-      *probablity = profile_probability::uninitialized ();
+      *probability = profile_probability::uninitialized ();
       /* Parse frequency if provided.  */
       if (c_parser_next_token_is (parser, CPP_OPEN_PAREN))
 	{
@@ -188,7 +189,7 @@ c_parser_gimple_parse_bb_spec_edge_probability (tree val,
 	    }
 
 	  unsigned int value = TREE_INT_CST_LOW (f);
-	  *probablity = profile_probability (value, quality);
+	  *probability = profile_probability (value, quality);
 
 	  c_parser_consume_token (parser);
 	  if (!c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<)%>"))
@@ -327,7 +328,7 @@ c_parser_parse_gimple_body (c_parser *cparser, char *gimple_pass,
 		      add_phi_arg (phi, gimple_call_arg (stmt, i + 1), e,
 				   UNKNOWN_LOCATION);
 		  }
-		gsi_remove (&gsi, false);
+		gsi_remove (&gsi, true);
 	      }
 	  /* Fill SSA name gaps, putting them on the freelist.  */
 	  for (unsigned i = 1; i < num_ssa_names; ++i)
@@ -1271,9 +1272,6 @@ c_parser_parse_ssa_name (gimple_parser &parser,
 	      error ("invalid base %qE for SSA name", parent);
 	      return error_mark_node;
 	    }
-	  if (VECTOR_TYPE_P (TREE_TYPE (parent))
-	      || TREE_CODE (TREE_TYPE (parent)) == COMPLEX_TYPE)
-	    DECL_GIMPLE_REG_P (parent) = 1;
 	  name = make_ssa_name_fn (cfun, parent,
 				   gimple_build_nop (), version);
 	}

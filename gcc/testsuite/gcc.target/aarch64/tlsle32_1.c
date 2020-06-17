@@ -2,6 +2,7 @@
 /* { dg-require-effective-target tls_native } */
 /* { dg-require-effective-target aarch64_tlsle32 } */
 /* { dg-options "-O2 -fpic -ftls-model=local-exec -mtls-size=32 --save-temps" } */
+/* { dg-require-effective-target fpic } */
 
 #include "tls_1.x"
 

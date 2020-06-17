@@ -1,4 +1,5 @@
 // { dg-do compile { target c++14 } }
+// { dg-additional-options "-fdelete-null-pointer-checks" }
 
 constexpr int *f4(bool b) {
   if (b) {

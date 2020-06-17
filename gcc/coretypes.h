@@ -153,6 +153,7 @@ struct cl_decoded_option;
 struct cl_option_handlers;
 struct diagnostic_context;
 class pretty_printer;
+class diagnostic_event_id_t;
 
 template<typename T> struct array_traits;
 
@@ -209,6 +210,13 @@ enum profile_update {
   PROFILE_UPDATE_SINGLE,
   PROFILE_UPDATE_ATOMIC,
   PROFILE_UPDATE_PREFER_ATOMIC
+};
+
+/* Type of profile reproducibility methods.  */
+enum profile_reproducibility {
+    PROFILE_REPRODUCIBILITY_SERIAL,
+    PROFILE_REPRODUCIBILITY_PARALLEL_RUNS,
+    PROFILE_REPRODUCIBILITY_MULTITHREADED
 };
 
 /* Types of unwind/exception handling info that can be generated.  */

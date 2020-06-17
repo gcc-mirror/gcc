@@ -2430,8 +2430,7 @@ pass_build_ssa::execute (function *fun)
   basic_block bb;
 
   /* Increase the set of variables we can rewrite into SSA form
-     by clearing TREE_ADDRESSABLE and setting DECL_GIMPLE_REG_P
-     and transform the IL to support this.  */
+     by clearing TREE_ADDRESSABLE and transform the IL to support this.  */
   if (optimize)
     execute_update_addresses_taken ();
 
@@ -2593,11 +2592,9 @@ mark_use_interesting (tree var, gimple *stmt, basic_block bb,
     }
 }
 
-
-/* Do a dominator walk starting at BB processing statements that
-   reference symbols in SSA operands.  This is very similar to
-   mark_def_sites, but the scan handles statements whose operands may
-   already be SSA names.
+/* Processing statements in BB that reference symbols in SSA operands.
+   This is very similar to mark_def_sites, but the scan handles
+   statements whose operands may already be SSA names.
 
    If INSERT_PHI_P is true, mark those uses as live in the
    corresponding block.  This is later used by the PHI placement
@@ -2610,9 +2607,8 @@ mark_use_interesting (tree var, gimple *stmt, basic_block bb,
 	   that.  */
 
 static void
-prepare_block_for_update (basic_block bb, bool insert_phi_p)
+prepare_block_for_update_1 (basic_block bb, bool insert_phi_p)
 {
-  basic_block son;
   edge e;
   edge_iterator ei;
 
@@ -2694,13 +2690,51 @@ prepare_block_for_update (basic_block bb, bool insert_phi_p)
 	}
     }
 
-  /* Now visit all the blocks dominated by BB.  */
-  for (son = first_dom_son (CDI_DOMINATORS, bb);
-       son;
-       son = next_dom_son (CDI_DOMINATORS, son))
-    prepare_block_for_update (son, insert_phi_p);
 }
 
+/* Do a dominator walk starting at BB processing statements that
+   reference symbols in SSA operands.  This is very similar to
+   mark_def_sites, but the scan handles statements whose operands may
+   already be SSA names.
+
+   If INSERT_PHI_P is true, mark those uses as live in the
+   corresponding block.  This is later used by the PHI placement
+   algorithm to make PHI pruning decisions.
+
+   FIXME.  Most of this would be unnecessary if we could associate a
+	   symbol to all the SSA names that reference it.  But that
+	   sounds like it would be expensive to maintain.  Still, it
+	   would be interesting to see if it makes better sense to do
+	   that.  */
+static void
+prepare_block_for_update (basic_block bb, bool insert_phi_p)
+{
+  size_t sp = 0;
+  basic_block *worklist;
+
+  /* Allocate the worklist.  */
+  worklist = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
+  /* Add the BB to the worklist.  */
+  worklist[sp++] = bb;
+
+  while (sp)
+    {
+      basic_block bb;
+      basic_block son;
+
+      /* Pick a block from the worklist.  */
+      bb = worklist[--sp];
+
+      prepare_block_for_update_1 (bb, insert_phi_p);
+
+      /* Now add all the blocks dominated by BB to the worklist.  */
+      for (son = first_dom_son (CDI_DOMINATORS, bb);
+	   son;
+	   son = next_dom_son (CDI_DOMINATORS, son))
+	worklist[sp++] = son;
+    }
+  free (worklist);
+}
 
 /* Helper for prepare_names_to_update.  Mark all the use sites for
    NAME as interesting.  BLOCKS and INSERT_PHI_P are as in

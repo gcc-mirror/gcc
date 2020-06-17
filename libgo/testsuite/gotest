@@ -36,7 +36,7 @@ keep=false
 pkgpath=
 prefix=
 dejagnu=no
-timeout=240
+timeout=600
 testname=""
 bench=""
 trace=false
@@ -305,7 +305,7 @@ x)
 	    "") ;;
 	    $goarch) ;;
 	    $goos) ;;
-	    aix | android | darwin | dragonfly | freebsd | hurd | js | linux | nacl | netbsd | openbsd | plan9 | solaris | windows)
+	    aix | android | darwin | dragonfly | freebsd | hurd | illumos | js | linux | nacl | netbsd | openbsd | plan9 | solaris | windows)
 		tag1=nonmatchingtag
 		;;
 	    386 | amd64 | amd64p32 | arm | armbe | arm64 | arm64be | alpha | ia64 | m68k | mips | mipsle | mips64 | mips64le | mips64p32 | mips64p32le·| nios2 | ppc | ppc64 | ppc64le | riscv64 | s390 | s390x | sh | shbe | sparc | sparc64 | wasm)
@@ -317,7 +317,7 @@ x)
 	    "") ;;
 	    $goarch) ;;
 	    $goos) ;;
-	    aix | android | darwin | dragonfly | freebsd | hurd | js | linux | nacl | netbsd | openbsd | plan9 | solaris | windows)
+	    aix | android | darwin | dragonfly | freebsd | hurd | illumos | js | linux | nacl | netbsd | openbsd | plan9 | solaris | windows)
 		tag2=nonmatchingtag
 		;;
 	    386 | amd64 | amd64p32 | arm | armbe | arm64 | arm64be | alpha | ia64 | m68k | mips | mipsle | mips64 | mips64le | mips64p32 | mips64p32le·| nios2 | ppc | ppc64 | ppc64le | riscv64 | s390 | s390x | sh | shbe | sparc | sparc64 | wasm)
@@ -475,7 +475,7 @@ if $havex; then
 	cp _gotest_.o `dirname $package`/lib`basename $package`.a
 
 	# Force the test version of the package to be imported first,
-	# so that it's type definitions will be used, in case any new
+	# so that its type definitions will be used, in case any new
 	# methods appear in export_test.go files.
 	echo "package $xpackage" > _first_test.go
 	echo 'import _ "'$package'"' >> _first_test.go
@@ -517,6 +517,11 @@ symtogo() {
     if expr "$tp" : '^\.' >/dev/null 2>&1; then
       continue
     fi
+    # Skip type descriptors.  These are normally skipped because they
+    # are weak symbols, but if not using GNU nm we may see them here.
+    if expr "$tp" : '^type\.\.' >/dev/null 2>&1; then
+      continue
+    fi
     s=$(echo "$tp" | sed -e 's/\.\.z2f/%/g' | sed -e 's/.*%//')
     # Screen out methods (X.Y.Z).
     if ! expr "$s" : '^[^.]*\.[^.]*$' >/dev/null 2>&1; then
@@ -535,6 +540,27 @@ symtogo() {
   done
 }
 
+# Takes an example name and puts any output into the file example.txt.
+# It strips comment markers but does not otherwise change the output.
+exampleoutput() {
+    n=$(testname $1)
+    for f in $gofiles $xgofiles; do
+	if ! grep "^func $n(" $f >/dev/null 2>&1; then
+	    continue
+	fi
+	# Copy the output comment, if any, into example.txt.
+	# Remove the comment markers.
+	sed -n "/^func $n(/,/^}$/ p" $f |
+	    sed -n '\|// \([Uu]nordered \)\?[Oo]utput:|,$ p' |
+	    sed -n '\|//| s|[ 	]*// \?||p' > example.txt
+	# Check whether we found an output comment.
+	if ! sed -n '1p' < example.txt | grep '[Oo]utput:' >/dev/null 2>&1; then
+	    rm -f example.txt
+	fi
+	return
+    done
+}
+
 {
 	# On systems using PPC64 ELF ABI v1 function symbols show up
 	# as descriptors in the data section.
@@ -546,7 +572,12 @@ symtogo() {
 	pattern='Test([^a-z].*)?'
 	# The -p option tells GNU nm not to sort.
 	# The -v option tells Solaris nm to sort by value.
-        testsyms=$($NM -p -v _gotest_.o $xofile | egrep " $text .*\."$pattern'$' | fgrep -v ' __go_' | egrep -v '\.\.\w+$' | sed 's/.* //')
+        testsyms=$($NM -p -v _gotest_.o | egrep " $text .*\."$pattern'$' | fgrep -v ' __go_' | egrep -v '\.\.\w+$' | sed 's/.* //')
+	testxsyms=
+	if $havex; then
+	    testxsyms=$($NM -p -v $xofile | egrep " $text .*\."$pattern'$' | fgrep -v ' __go_' | egrep -v '\.\.\w+$' | sed 's/.* //')
+	    testsyms="$testsyms $testxsyms"
+	fi
         tests=$(symtogo "$testsyms")
 	if [ "x$tests" = x ]; then
 		echo 'gotest: warning: no tests matching '$pattern in _gotest_.o $xofile 1>&2
@@ -554,12 +585,20 @@ symtogo() {
 	fi
 	# benchmarks are named BenchmarkFoo.
 	pattern='Benchmark([^a-z].*)?'
-	benchmarksyms=$($NM -p -v _gotest_.o $xofile | egrep " $text .*\."$pattern'$' | fgrep -v ' __go_' | egrep -v '\.\.\w+$' | sed 's/.* //')
+	benchmarksyms=$($NM -p -v _gotest_.o | egrep " $text .*\."$pattern'$' | fgrep -v ' __go_' | egrep -v '\.\.\w+$' | sed 's/.* //')
+	if $havex; then
+	    benchmarkxsyms=$($NM -p -v $xofile | egrep " $text .*\."$pattern'$' | fgrep -v ' __go_' | egrep -v '\.\.\w+$' | sed 's/.* //')
+	    benchmarksyms="$benchmarksyms $benchmarkxsyms"
+	fi
         benchmarks=$(symtogo "$benchmarksyms")
 
 	# examples are named ExampleFoo
 	pattern='Example([^a-z].*)?'
-	examplesyms=$($NM -p -v _gotest_.o $xofile | egrep " $text .*\."$pattern'$' | fgrep -v ' __go_' | egrep -v '\.\.\w+$' | sed 's/.* //')
+	examplesyms=$($NM -p -v _gotest_.o | egrep " $text .*\."$pattern'$' | fgrep -v ' __go_' | egrep -v '\.\.\w+$' | sed 's/.* //')
+	if $havex; then
+	    examplexsyms=$($NM -p -v $xofile | egrep " $text .*\."$pattern'$' | fgrep -v ' __go_' | egrep -v '\.\.\w+$' | sed 's/.* //')
+	    examplesyms="$examplesyms $examplexsyms"
+	fi
 	examples=$(symtogo "$examplesyms")
 
 	# package spec
@@ -570,9 +609,29 @@ symtogo() {
 		echo 'import "./_gotest_"'
 	fi
 	if $havex; then
+	    needxtest=false
+	    if test -n "$testxsyms" -o -n "$benchmarkxsyms"; then
+		needxtest=true
+	    else
+		# Check whether any example has output.
+		for i in $(symtogo "$examplexsyms"); do
+		    exampleoutput $i
+		    if test -f example.txt; then
+			rm -f example.txt
+			needxtest=true
+			break
+		    fi
+		done
+	    fi
+	    if test x$needxtest = xtrue; then
 		echo 'import "./_xtest_"'
+	    else
+		echo 'import _ "./_xtest_"'
+	    fi
 	fi
-	echo 'import "testing"'
+	if test "$package" != "testing"; then
+		echo 'import "testing"'
+	fi
 	echo 'import "testing/internal/testdeps"'
 	if ! test -n "$testmain"; then
 		echo 'import __os__ "os"'
@@ -590,7 +649,7 @@ symtogo() {
 	# benchmark array
 	# The comment makes the multiline declaration
 	# gofmt-safe even when there are no benchmarks.
-	echo 'var benchmarks = []testing.InternalBenchmark{ //'
+	echo 'var benchmarks = []testing.InternalBenchmark{'
 	for i in $benchmarks; do
 		n=$(testname $i)
 		j=$(localname $i)
@@ -599,7 +658,7 @@ symtogo() {
 	echo '}'
 
 	# examples array
-	echo 'var examples = []testing.InternalExample{ //'
+	echo 'var examples = []testing.InternalExample{'
 	for i in $examples; do
 		n=$(testname $i)
 		j=$(localname $i)
@@ -607,54 +666,37 @@ symtogo() {
 		hasoutput=false
 		unordered=false
 		output=
-		for f in $gofiles $xgofiles; do
-		    if ! grep "^func $n(" $f >/dev/null 2>&1; then
-			continue
-		    fi
-		    # Copy the output comment, if any, into example.txt.
-		    # Remove the comment markers.
-		    sed -n "/^func $n(/,/^}$/ p" $f |
-			sed -n '\|// \([Uu]nordered \)\?[Oo]utput:|,$ p' |
-			sed -n '\|//| s|[ 	]*// \?||p' > example.txt
-		    # Check whether we found an output comment.
-		    if ! sed -n '1p' < example.txt | grep '[Oo]utput:' >/dev/null 2>&1; then
-			# An example with no output is only compiled, not run,
-			# so don't add it to the examples slice.
-			rm -f example.txt
-			break
-		    fi
-		    # Check whether the output can be unordered.
-		    unordered=false
-		    if sed -n '1p' < example.txt | grep -i unordered; then
-			unordered=true
-		    fi
-		    # Remove the output header.
-		    # Quote backslashes.
-		    # Quote quotation characters.
-		    # Turn tab into \t.
-		    # Turn pairs of spaces into " \x20", because $() will
-		    # drop duplicate spaces.
-		    # Drop trailing spaces, and turn newlines into \n.
-		    # Remove leading and trailing \n.
-		    sed '1 s/\([Uu]nordered \)\?[Oo]utput:[ 	]*//' < example.txt |
-				 sed -e 's/\\/\\\\/g' \
-				     -e 's/"/\\"/g' \
-				     -e 's/	/\\t/g' \
-				     -e 's/  / \\x20/g' \
-				     -e 's/[ 	]*$/\\n/g' |
-				 tr -d '\n' |
-				 sed -e 's/^\(\\n\)*//' \
-				     -e 's/\(\\n\)*$//' > example2.txt
-		    hasoutput=true
-		    rm -f example.txt
-		    break
-		done
-		if test x$hasoutput = xtrue; then
-		    echo '	{"'$n'", '$j','
-		    sed -e 's/^/		"/' -e 's/$/", /' < example2.txt
-		    echo $unordered'},'
-		    rm -f example2.txt
+		exampleoutput $i
+		if ! test -f example.txt; then
+		    continue
 		fi
+		# Check whether the output can be unordered.
+		unordered=false
+		if sed -n '1p' < example.txt | grep -i unordered >/dev/null 2>&1; then
+		    unordered=true
+		fi
+		# Remove the output header.
+		# Quote backslashes.
+		# Quote quotation characters.
+		# Turn tab into \t.
+		# Turn pairs of spaces into " \x20", because $() will
+		# drop duplicate spaces.
+		# Drop trailing spaces, and turn newlines into \n.
+		# Remove leading and trailing \n.
+		sed '1 s/\([Uu]nordered \)\?[Oo]utput:[ 	]*//' < example.txt |
+			     sed -e 's/\\/\\\\/g' \
+				 -e 's/"/\\"/g' \
+				 -e 's/	/\\t/g' \
+				 -e 's/  / \\x20/g' \
+				 -e 's/[ 	]*$/\\n/g' |
+			     tr -d '\n' |
+			     sed -e 's/^\(\\n\)*//' \
+				 -e 's/\(\\n\)*$//' > example2.txt
+		hasoutput=true
+		echo '	{"'$n'", '$j','
+		sed -e 's/^/		"/' -e 's/$/", /' < example2.txt
+		echo $unordered'},'
+		rm -f example.txt example2.txt
 	done
 	echo '}'
 

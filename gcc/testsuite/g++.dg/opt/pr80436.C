@@ -1,7 +1,6 @@
 // PR debug/80436
 // { dg-do compile { target c++11 } }
 // { dg-options "-O3 -fcompare-debug" }
-// { dg-xfail-if "" { powerpc-ibm-aix* } }
 
 void fn (...);
 void foo (int, int, int);

@@ -28,6 +28,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #  This file contains the stack frame setup for contents of the .fini and
 # .init sections.
 
+#ifdef __ARC_RF16__
+	/* Use object attributes to inform other tools this file is
+	safe for RF16 configuration.  */
+	.arc_attribute Tag_ARC_ABI_rf16, 1
+#endif
 	.section .init
 	.global _init
 	.word 0

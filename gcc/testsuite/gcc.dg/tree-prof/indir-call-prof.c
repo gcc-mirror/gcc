@@ -37,6 +37,6 @@ main (void)
   return 0;
 }
 
-/* { dg-final-use-not-autofdo { scan-ipa-dump "Indirect call -> direct call.* a1 transformation on insn" "profile"} } */
-/* { dg-final-use-autofdo { scan-ipa-dump "Indirect call -> direct call.* a1 transformation on insn" "afdo"} } */
+/* { dg-final-use-not-autofdo { scan-ipa-dump "Indirect call -> direct call.* a1 .will resolve by ipa-profile" "profile"} } */
+/* { dg-final-use-autofdo { scan-ipa-dump "Indirect call -> direct call.* a1 .will resolve by ipa-profile" "afdo"} } */
 /* { dg-final-use { scan-tree-dump-not "Invalid sum" "optimized"} } */

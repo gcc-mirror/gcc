@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "target.h"
 
 /* ----- Type related -----  */
 
@@ -147,10 +148,12 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
 
   /* Recurse for vector types with the same number of subparts.  */
   else if (TREE_CODE (inner_type) == VECTOR_TYPE
-	   && TREE_CODE (outer_type) == VECTOR_TYPE
-	   && TYPE_PRECISION (inner_type) == TYPE_PRECISION (outer_type))
-    return useless_type_conversion_p (TREE_TYPE (outer_type),
-				      TREE_TYPE (inner_type));
+	   && TREE_CODE (outer_type) == VECTOR_TYPE)
+    return (known_eq (TYPE_VECTOR_SUBPARTS (inner_type),
+		      TYPE_VECTOR_SUBPARTS (outer_type))
+	    && useless_type_conversion_p (TREE_TYPE (outer_type),
+					  TREE_TYPE (inner_type))
+	    && targetm.compatible_vector_types_p (inner_type, outer_type));
 
   else if (TREE_CODE (inner_type) == ARRAY_TYPE
 	   && TREE_CODE (outer_type) == ARRAY_TYPE)
@@ -370,7 +373,7 @@ copy_var_decl (tree var, tree name, tree type)
 
   TREE_ADDRESSABLE (copy) = TREE_ADDRESSABLE (var);
   TREE_THIS_VOLATILE (copy) = TREE_THIS_VOLATILE (var);
-  DECL_GIMPLE_REG_P (copy) = DECL_GIMPLE_REG_P (var);
+  DECL_NOT_GIMPLE_REG_P (copy) = DECL_NOT_GIMPLE_REG_P (var);
   DECL_ARTIFICIAL (copy) = DECL_ARTIFICIAL (var);
   DECL_IGNORED_P (copy) = DECL_IGNORED_P (var);
   DECL_CONTEXT (copy) = DECL_CONTEXT (var);
@@ -490,14 +493,7 @@ create_tmp_var (tree type, const char *prefix)
 tree
 create_tmp_reg (tree type, const char *prefix)
 {
-  tree tmp;
-
-  tmp = create_tmp_var (type, prefix);
-  if (TREE_CODE (type) == COMPLEX_TYPE
-      || TREE_CODE (type) == VECTOR_TYPE)
-    DECL_GIMPLE_REG_P (tmp) = 1;
-
-  return tmp;
+  return create_tmp_var (type, prefix);
 }
 
 /* Create a new temporary variable declaration of type TYPE by calling
@@ -511,9 +507,6 @@ create_tmp_reg_fn (struct function *fn, tree type, const char *prefix)
 
   tmp = create_tmp_var_raw (type, prefix);
   gimple_add_tmp_var_fn (fn, tmp);
-  if (TREE_CODE (type) == COMPLEX_TYPE
-      || TREE_CODE (type) == VECTOR_TYPE)
-    DECL_GIMPLE_REG_P (tmp) = 1;
 
   return tmp;
 }
@@ -789,13 +782,9 @@ is_gimple_reg (tree t)
   if (TREE_CODE (t) == VAR_DECL && DECL_HARD_REGISTER (t))
     return false;
 
-  /* Complex and vector values must have been put into SSA-like form.
-     That is, no assignments to the individual components.  */
-  if (TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE
-      || TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
-    return DECL_GIMPLE_REG_P (t);
-
-  return true;
+  /* Variables can be marked as having partial definitions, avoid
+     putting them into SSA form.  */
+  return !DECL_NOT_GIMPLE_REG_P (t);
 }
 
 

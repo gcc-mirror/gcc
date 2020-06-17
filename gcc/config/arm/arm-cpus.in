@@ -129,8 +129,15 @@ define feature armv8_6
 # M-Profile security extensions.
 define feature cmse
 
+# Architecture rel 8.1-M.
+define feature armv8_1m_main
+
 # Floating point and Neon extensions.
 # VFPv1 is not supported in GCC.
+
+# This feature bit is enabled for all VFP, MVE and
+# MVE with floating point extensions.
+define feature vfp_base
 
 # Vector floating point v2.
 define feature vfpv2
@@ -183,6 +190,9 @@ define feature quirk_armv6kz
 # Cortex-M3 LDRD quirk.
 define feature quirk_cm3_ldrd
 
+# Don't use .cpu assembly directive
+define feature quirk_no_asmcpu
+
 # (Very) slow multiply operations.  Should probably be a tuning bit.
 define feature smallmul
 
@@ -194,11 +204,25 @@ define feature sb
 # v8-A architectures, added by default from v8.5-A
 define feature predres
 
+# M-profile Vector Extension feature bits
+define feature mve
+define feature mve_float
+
 # 8-bit Integer Matrix Multiply extension. Optional from v8.2-A.
 define feature i8mm
 
 # Brain half-precision floating-point extension. Optional from v8.2-A.
 define feature bf16
+
+# Arm Custom Datapath Extension (CDE).
+define feature cdecp0
+define feature cdecp1
+define feature cdecp2
+define feature cdecp3
+define feature cdecp4
+define feature cdecp5
+define feature cdecp6
+define feature cdecp7
 
 # Feature groups.  Conventionally all (or mostly) upper case.
 # ALL_FPU lists all the feature bits associated with the floating-point
@@ -227,7 +251,7 @@ define fgroup ALL_SIMD	ALL_SIMD_INTERNAL ALL_SIMD_EXTERNAL
 
 # List of all FPU bits to strip out if -mfpu is used to override the
 # default.  fp16 is deliberately missing from this list.
-define fgroup ALL_FPU_INTERNAL	vfpv2 vfpv3 vfpv4 fpv5 fp16conv fp_dbl ALL_SIMD_INTERNAL
+define fgroup ALL_FPU_INTERNAL	vfp_base vfpv2 vfpv3 vfpv4 fpv5 fp16conv fp_dbl ALL_SIMD_INTERNAL
 # Similarly, but including fp16 and other extensions that aren't part of
 # -mfpu support.
 define fgroup ALL_FPU_EXTERNAL fp16 bf16
@@ -235,21 +259,21 @@ define fgroup ALL_FPU_EXTERNAL fp16 bf16
 # Everything related to the FPU extensions (FP or SIMD).
 define fgroup ALL_FP	ALL_FPU_EXTERNAL ALL_FPU_INTERNAL ALL_SIMD
 
-define fgroup ARMv4       armv4 notm
-define fgroup ARMv4t      ARMv4 thumb
-define fgroup ARMv5t      ARMv4t armv5t
-define fgroup ARMv5te     ARMv5t armv5te
-define fgroup ARMv5tej    ARMv5te
-define fgroup ARMv6       ARMv5te armv6 be8
-define fgroup ARMv6j      ARMv6
-define fgroup ARMv6k      ARMv6 armv6k
-define fgroup ARMv6z      ARMv6
-define fgroup ARMv6kz     ARMv6k quirk_armv6kz
-define fgroup ARMv6zk     ARMv6k
-define fgroup ARMv6t2     ARMv6 thumb2
+define fgroup ARMv4         armv4 notm
+define fgroup ARMv4t        ARMv4 thumb
+define fgroup ARMv5t        ARMv4t armv5t
+define fgroup ARMv5te       ARMv5t armv5te
+define fgroup ARMv5tej      ARMv5te
+define fgroup ARMv6         ARMv5te armv6 be8
+define fgroup ARMv6j        ARMv6
+define fgroup ARMv6k        ARMv6 armv6k
+define fgroup ARMv6z        ARMv6
+define fgroup ARMv6kz       ARMv6k quirk_armv6kz
+define fgroup ARMv6zk       ARMv6k
+define fgroup ARMv6t2       ARMv6 thumb2
 # This is suspect.  ARMv6-m doesn't really pull in any useful features
 # from ARMv5* or ARMv6.
-define fgroup ARMv6m      armv4 thumb armv5t armv5te armv6 be8
+define fgroup ARMv6m        armv4 thumb armv5t armv5te armv6 be8
 # This is suspect, the 'common' ARMv7 subset excludes the thumb2 'DSP' and
 # integer SIMD instructions that are in ARMv6T2.  */
 define fgroup ARMv7       ARMv6m thumb2 armv7
@@ -269,12 +293,15 @@ define fgroup ARMv8_6a    ARMv8_5a armv8_6
 define fgroup ARMv8m_base ARMv6m armv8 cmse tdiv
 define fgroup ARMv8m_main ARMv7m armv8 cmse
 define fgroup ARMv8r      ARMv8a
+define fgroup ARMv8_1m_main ARMv8m_main armv8_1m_main
 
 # Useful combinations.
-define fgroup VFPv2	vfpv2
+define fgroup VFPv2	vfp_base vfpv2
 define fgroup VFPv3	VFPv2 vfpv3
 define fgroup VFPv4	VFPv3 vfpv4 fp16conv
 define fgroup FPv5	VFPv4 fpv5
+define fgroup MVE      mve vfp_base armv7em
+define fgroup MVE_FP   MVE FPv5 fp16 mve_float
 
 define fgroup FP_DBL	fp_dbl
 define fgroup FP_D32	FP_DBL fp_d32
@@ -287,7 +314,7 @@ define fgroup DOTPROD	NEON dotprod
 # architectures.
 # xscale isn't really a 'quirk', but it isn't an architecture either and we
 # need to ignore it for matching purposes.
-define fgroup ALL_QUIRKS   quirk_no_volatile_ce quirk_armv6kz quirk_cm3_ldrd xscale
+define fgroup ALL_QUIRKS   quirk_no_volatile_ce quirk_armv6kz quirk_cm3_ldrd xscale quirk_no_asmcpu
 
 # Architecture entries
 # format:
@@ -662,6 +689,14 @@ begin arch armv8-m.main
  option fp.dp add FPv5 FP_DBL
  option nofp remove ALL_FP
  option nodsp remove armv7em
+ option cdecp0 add cdecp0
+ option cdecp1 add cdecp1
+ option cdecp2 add cdecp2
+ option cdecp3 add cdecp3
+ option cdecp4 add cdecp4
+ option cdecp5 add cdecp5
+ option cdecp6 add cdecp6
+ option cdecp7 add cdecp7
 end arch armv8-m.main
 
 begin arch armv8-r
@@ -679,6 +714,29 @@ begin arch armv8-r
  option nocrypto remove ALL_CRYPTO
  option nofp remove ALL_FP
 end arch armv8-r
+
+begin arch armv8.1-m.main
+ tune for cortex-m7
+ tune flags CO_PROC
+ base 8M_MAIN
+ profile M
+ isa ARMv8_1m_main
+# fp => FPv5-sp-d16; fp.dp => FPv5-d16
+ option dsp add armv7em
+ option fp add FPv5 fp16
+ option fp.dp add FPv5 FP_DBL fp16
+ option nofp remove ALL_FP
+ option mve add MVE
+ option mve.fp add MVE_FP
+ option cdecp0 add cdecp0
+ option cdecp1 add cdecp1
+ option cdecp2 add cdecp2
+ option cdecp3 add cdecp3
+ option cdecp4 add cdecp4
+ option cdecp5 add cdecp5
+ option cdecp6 add cdecp6
+ option cdecp7 add cdecp7
+end arch armv8.1-m.main
 
 begin arch iwmmxt
  tune for iwmmxt
@@ -1445,6 +1503,15 @@ begin cpu cortex-m35p
  option nodsp remove armv7em
  costs v7m
 end cpu cortex-m35p
+
+begin cpu cortex-m55
+ cname cortexm55
+ tune flags LDSCHED
+ architecture armv8.1-m.main+mve.fp+fp.dp
+ isa quirk_no_asmcpu
+ costs v7m
+ vendor 41
+end cpu cortex-m55
 
 # V8 R-profile implementations.
 begin cpu cortex-r52

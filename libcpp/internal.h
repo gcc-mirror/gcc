@@ -268,9 +268,6 @@ struct lexer_state
   /* Nonzero when parsing arguments to a function-like macro.  */
   unsigned char parsing_args;
 
-  /* Nonzero if in a __has_include__ or __has_include_next__ statement.  */
-  unsigned char in__has_include__;
-
   /* Nonzero if prevent_expansion is true only because output is
      being discarded.  */
   unsigned char discarding_output;
@@ -278,7 +275,7 @@ struct lexer_state
   /* Nonzero to skip evaluating part of an expression.  */
   unsigned int skip_eval;
 
-  /* Nonzero when handling a deferred pragma.  */
+  /* Nonzero when tokenizing a deferred pragma.  */
   unsigned char in_deferred_pragma;
 
   /* Nonzero if the deferred pragma being handled allows macro expansion.  */
@@ -293,8 +290,6 @@ struct spec_nodes
   cpp_hashnode *n_false;		/* C++ keyword false */
   cpp_hashnode *n__VA_ARGS__;		/* C99 vararg macros */
   cpp_hashnode *n__VA_OPT__;		/* C++ vararg macros */
-  cpp_hashnode *n__has_include__;	/* __has_include__ operator */
-  cpp_hashnode *n__has_include_next__;	/* __has_include_next__ operator */
 };
 
 typedef struct _cpp_line_note _cpp_line_note;
@@ -641,6 +636,16 @@ cpp_in_primary_file (cpp_reader *pfile)
   return pfile->line_table->depth == 1;
 }
 
+/* True if NODE is a macro for the purposes of ifdef, defined etc.  */
+inline bool _cpp_defined_macro_p (cpp_hashnode *node)
+{
+  /* Do not treat conditional macros as being defined.  This is due to
+     the powerpc port using conditional macros for 'vector', 'bool',
+     and 'pixel' to act as conditional keywords.  This messes up tests
+     like #ifndef bool.  */
+  return cpp_macro_p (node) && !(node->flags & NODE_CONDITIONAL);
+}
+
 /* In macro.c */
 extern void _cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node);
 inline void _cpp_maybe_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node)
@@ -672,9 +677,10 @@ extern void _cpp_init_hashtable (cpp_reader *, cpp_hash_table *);
 extern void _cpp_destroy_hashtable (cpp_reader *);
 
 /* In files.c */
-typedef struct _cpp_file _cpp_file;
+enum _cpp_find_file_kind
+  { _cpp_FFK_NORMAL, _cpp_FFK_FAKE, _cpp_FFK_PRE_INCLUDE, _cpp_FFK_HAS_INCLUDE };
 extern _cpp_file *_cpp_find_file (cpp_reader *, const char *, cpp_dir *,
-				  bool, int, bool, location_t);
+				  int angle, _cpp_find_file_kind, location_t);
 extern bool _cpp_find_failed (_cpp_file *);
 extern void _cpp_mark_file_once_only (cpp_reader *, struct _cpp_file *);
 extern void _cpp_fake_include (cpp_reader *, const char *);
@@ -740,17 +746,6 @@ extern void _cpp_do_file_change (cpp_reader *, enum lc_reason, const char *,
 				 linenum_type, unsigned int);
 extern void _cpp_pop_buffer (cpp_reader *);
 extern char *_cpp_bracket_include (cpp_reader *);
-
-/* In directives.c */
-struct _cpp_dir_only_callbacks
-{
-  /* Called to print a block of lines. */
-  void (*print_lines) (int, const void *, size_t);
-  bool (*maybe_print_line) (location_t);
-};
-
-extern void _cpp_preprocess_dir_only (cpp_reader *,
-				      const struct _cpp_dir_only_callbacks *);
 
 /* In traditional.c.  */
 extern bool _cpp_scan_out_logical_line (cpp_reader *, cpp_macro *, bool);

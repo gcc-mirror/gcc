@@ -751,8 +751,9 @@ x86_64_elf_section_type_flags (tree decl, const char *name, int reloc)
     flags |= SECTION_RELRO;
 
   if (strcmp (name, ".lbss") == 0
-      || strncmp (name, ".lbss.", 5) == 0
-      || strncmp (name, ".gnu.linkonce.lb.", 16) == 0)
+      || strncmp (name, ".lbss.", sizeof (".lbss.") - 1) == 0
+      || strncmp (name, ".gnu.linkonce.lb.",
+		  sizeof (".gnu.linkonce.lb.") - 1) == 0)
     flags |= SECTION_BSS;
 
   return flags;
@@ -1396,9 +1397,7 @@ ix86_legitimate_combined_insn (rtx_insn *insn)
 static unsigned HOST_WIDE_INT
 ix86_asan_shadow_offset (void)
 {
-  return TARGET_LP64 ? (TARGET_MACHO ? (HOST_WIDE_INT_1 << 44)
-				     : HOST_WIDE_INT_C (0x7fff8000))
-		     : (HOST_WIDE_INT_1 << 29);
+  return SUBTARGET_SHADOW_OFFSET;
 }
 
 /* Argument support functions.  */
@@ -1562,6 +1561,9 @@ ix86_asm_output_function_label (FILE *asm_out_file, const char *fname,
 				tree decl)
 {
   bool is_ms_hook = ix86_function_ms_hook_prologue (decl);
+
+  if (cfun)
+    cfun->machine->function_label_emitted = true;
 
   if (is_ms_hook)
     {
@@ -3153,7 +3155,7 @@ function_arg_64 (const CUMULATIVE_ARGS *cum, machine_mode mode,
 
 static rtx
 function_arg_ms_64 (const CUMULATIVE_ARGS *cum, machine_mode mode,
-		    machine_mode orig_mode, bool named,
+		    machine_mode orig_mode, bool named, const_tree type,
 		    HOST_WIDE_INT bytes)
 {
   unsigned int regno;
@@ -3173,7 +3175,10 @@ function_arg_ms_64 (const CUMULATIVE_ARGS *cum, machine_mode mode,
   if (TARGET_SSE && (mode == SFmode || mode == DFmode))
     {
       if (named)
-	regno = cum->regno + FIRST_SSE_REG;
+	{
+	  if (type == NULL_TREE || !AGGREGATE_TYPE_P (type))
+	    regno = cum->regno + FIRST_SSE_REG;
+	}
       else
 	{
 	  rtx t1, t2;
@@ -3253,7 +3258,8 @@ ix86_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
       enum calling_abi call_abi = cum ? cum->call_abi : ix86_abi;
 
       if (call_abi == MS_ABI)
-	reg = function_arg_ms_64 (cum, mode, arg.mode, arg.named, bytes);
+	reg = function_arg_ms_64 (cum, mode, arg.mode, arg.named,
+				  arg.type, bytes);
       else
 	reg = function_arg_64 (cum, mode, arg.mode, arg.type, arg.named);
     }
@@ -4908,6 +4914,248 @@ ix86_pre_reload_split (void)
 {
   return (can_create_pseudo_p ()
 	  && !(cfun->curr_properties & PROP_rtl_split_insns));
+}
+
+/* Return the opcode of the TYPE_SSEMOV instruction.  To move from
+   or to xmm16-xmm31/ymm16-ymm31 registers, we either require
+   TARGET_AVX512VL or it is a register to register move which can
+   be done with zmm register move. */
+
+static const char *
+ix86_get_ssemov (rtx *operands, unsigned size,
+		 enum attr_mode insn_mode, machine_mode mode)
+{
+  char buf[128];
+  bool misaligned_p = (misaligned_operand (operands[0], mode)
+		       || misaligned_operand (operands[1], mode));
+  bool evex_reg_p = (size == 64
+		     || EXT_REX_SSE_REG_P (operands[0])
+		     || EXT_REX_SSE_REG_P (operands[1]));
+  machine_mode scalar_mode;
+
+  const char *opcode = NULL;
+  enum
+    {
+      opcode_int,
+      opcode_float,
+      opcode_double
+    } type = opcode_int;
+
+  switch (insn_mode)
+    {
+    case MODE_V16SF:
+    case MODE_V8SF:
+    case MODE_V4SF:
+      scalar_mode = E_SFmode;
+      type = opcode_float;
+      break;
+    case MODE_V8DF:
+    case MODE_V4DF:
+    case MODE_V2DF:
+      scalar_mode = E_DFmode;
+      type = opcode_double;
+      break;
+    case MODE_XI:
+    case MODE_OI:
+    case MODE_TI:
+      scalar_mode = GET_MODE_INNER (mode);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  /* NB: To move xmm16-xmm31/ymm16-ymm31 registers without AVX512VL,
+     we can only use zmm register move without memory operand.  */
+  if (evex_reg_p
+      && !TARGET_AVX512VL
+      && GET_MODE_SIZE (mode) < 64)
+    {
+      /* NB: Even though ix86_hard_regno_mode_ok doesn't allow
+	 xmm16-xmm31 nor ymm16-ymm31 in 128/256 bit modes when
+	 AVX512VL is disabled, LRA can still generate reg to
+	 reg moves with xmm16-xmm31 and ymm16-ymm31 in 128/256 bit
+	 modes.  */
+      if (memory_operand (operands[0], mode)
+	  || memory_operand (operands[1], mode))
+	gcc_unreachable ();
+      size = 64;
+      switch (type)
+	{
+	case opcode_int:
+	  opcode = misaligned_p ? "vmovdqu32" : "vmovdqa32";
+	  break;
+	case opcode_float:
+	  opcode = misaligned_p ? "vmovups" : "vmovaps";
+	  break;
+	case opcode_double:
+	  opcode = misaligned_p ? "vmovupd" : "vmovapd";
+	  break;
+	}
+    }
+  else if (SCALAR_FLOAT_MODE_P (scalar_mode))
+    {
+      switch (scalar_mode)
+	{
+	case E_SFmode:
+	  opcode = misaligned_p ? "%vmovups" : "%vmovaps";
+	  break;
+	case E_DFmode:
+	  opcode = misaligned_p ? "%vmovupd" : "%vmovapd";
+	  break;
+	case E_TFmode:
+	  if (evex_reg_p)
+	    opcode = misaligned_p ? "vmovdqu64" : "vmovdqa64";
+	  else
+	    opcode = misaligned_p ? "%vmovdqu" : "%vmovdqa";
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+  else if (SCALAR_INT_MODE_P (scalar_mode))
+    {
+      switch (scalar_mode)
+	{
+	case E_QImode:
+	  if (evex_reg_p)
+	    opcode = (misaligned_p
+		      ? (TARGET_AVX512BW
+			 ? "vmovdqu8"
+			 : "vmovdqu64")
+		      : "vmovdqa64");
+	  else
+	    opcode = (misaligned_p
+		      ? (TARGET_AVX512BW
+			 ? "vmovdqu8"
+			 : "%vmovdqu")
+		      : "%vmovdqa");
+	  break;
+	case E_HImode:
+	  if (evex_reg_p)
+	    opcode = (misaligned_p
+		      ? (TARGET_AVX512BW
+			 ? "vmovdqu16"
+			 : "vmovdqu64")
+		      : "vmovdqa64");
+	  else
+	    opcode = (misaligned_p
+		      ? (TARGET_AVX512BW
+			 ? "vmovdqu16"
+			 : "%vmovdqu")
+		      : "%vmovdqa");
+	  break;
+	case E_SImode:
+	  if (evex_reg_p)
+	    opcode = misaligned_p ? "vmovdqu32" : "vmovdqa32";
+	  else
+	    opcode = misaligned_p ? "%vmovdqu" : "%vmovdqa";
+	  break;
+	case E_DImode:
+	case E_TImode:
+	case E_OImode:
+	  if (evex_reg_p)
+	    opcode = misaligned_p ? "vmovdqu64" : "vmovdqa64";
+	  else
+	    opcode = misaligned_p ? "%vmovdqu" : "%vmovdqa";
+	  break;
+	case E_XImode:
+	  opcode = misaligned_p ? "vmovdqu64" : "vmovdqa64";
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+  else
+    gcc_unreachable ();
+
+  switch (size)
+    {
+    case 64:
+      snprintf (buf, sizeof (buf), "%s\t{%%g1, %%g0|%%g0, %%g1}",
+		opcode);
+      break;
+    case 32:
+      snprintf (buf, sizeof (buf), "%s\t{%%t1, %%t0|%%t0, %%t1}",
+		opcode);
+      break;
+    case 16:
+      snprintf (buf, sizeof (buf), "%s\t{%%x1, %%x0|%%x0, %%x1}",
+		opcode);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  output_asm_insn (buf, operands);
+  return "";
+}
+
+/* Return the template of the TYPE_SSEMOV instruction to move
+   operands[1] into operands[0].  */
+
+const char *
+ix86_output_ssemov (rtx_insn *insn, rtx *operands)
+{
+  machine_mode mode = GET_MODE (operands[0]);
+  if (get_attr_type (insn) != TYPE_SSEMOV
+      || mode != GET_MODE (operands[1]))
+    gcc_unreachable ();
+
+  enum attr_mode insn_mode = get_attr_mode (insn);
+
+  switch (insn_mode)
+    {
+    case MODE_XI:
+    case MODE_V8DF:
+    case MODE_V16SF:
+      return ix86_get_ssemov (operands, 64, insn_mode, mode);
+
+    case MODE_OI:
+    case MODE_V4DF:
+    case MODE_V8SF:
+      return ix86_get_ssemov (operands, 32, insn_mode, mode);
+
+    case MODE_TI:
+    case MODE_V2DF:
+    case MODE_V4SF:
+      return ix86_get_ssemov (operands, 16, insn_mode, mode);
+
+    case MODE_DI:
+      /* Handle broken assemblers that require movd instead of movq. */
+      if (!HAVE_AS_IX86_INTERUNIT_MOVQ
+	  && (GENERAL_REG_P (operands[0])
+	      || GENERAL_REG_P (operands[1])))
+	return "%vmovd\t{%1, %0|%0, %1}";
+      else
+	return "%vmovq\t{%1, %0|%0, %1}";
+
+    case MODE_SI:
+      return "%vmovd\t{%1, %0|%0, %1}";
+
+    case MODE_DF:
+      if (TARGET_AVX && REG_P (operands[0]) && REG_P (operands[1]))
+	return "vmovsd\t{%d1, %0|%0, %d1}";
+      else
+	return "%vmovsd\t{%1, %0|%0, %1}";
+
+    case MODE_SF:
+      if (TARGET_AVX && REG_P (operands[0]) && REG_P (operands[1]))
+	return "vmovss\t{%d1, %0|%0, %d1}";
+      else
+	return "%vmovss\t{%1, %0|%0, %1}";
+
+    case MODE_V1DF:
+      gcc_assert (!TARGET_AVX);
+      return "movlpd\t{%1, %0|%0, %1}";
+
+    case MODE_V2SF:
+      if (TARGET_AVX && REG_P (operands[0]))
+	return "vmovlps\t{%1, %d0|%d0, %1}";
+      else
+	return "%vmovlps\t{%1, %0|%0, %1}";
+
+    default:
+      gcc_unreachable ();
+    }
 }
 
 /* Returns true if OP contains a symbol reference */
@@ -6856,14 +7104,14 @@ release_scratch_register_on_entry (struct scratch_reg *sr, HOST_WIDE_INT offset,
 
 	  /* The RX FRAME_RELATED_P mechanism doesn't know about pop.  */
 	  RTX_FRAME_RELATED_P (insn) = 1;
-	  x = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (UNITS_PER_WORD));
+	  x = plus_constant (Pmode, stack_pointer_rtx, UNITS_PER_WORD);
 	  x = gen_rtx_SET (stack_pointer_rtx, x);
 	  add_reg_note (insn, REG_FRAME_RELATED_EXPR, x);
 	  m->fs.sp_offset -= UNITS_PER_WORD;
 	}
       else
 	{
-	  rtx x = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (offset));
+	  rtx x = plus_constant (Pmode, stack_pointer_rtx, offset);
 	  x = gen_rtx_SET (sr->reg, gen_rtx_MEM (word_mode, x));
 	  emit_insn (x);
 	}
@@ -7650,7 +7898,7 @@ gen_frame_set (rtx reg, rtx frame_reg, int offset, bool store)
   rtx addr, mem;
 
   if (offset)
-    addr = gen_rtx_PLUS (Pmode, frame_reg, GEN_INT (offset));
+    addr = plus_constant (Pmode, frame_reg, offset);
   mem = gen_frame_mem (GET_MODE (reg), offset ? addr : frame_reg);
   return gen_rtx_SET (store ? mem : reg, store ? reg : mem);
 }
@@ -8346,8 +8594,8 @@ ix86_emit_restore_reg_using_pop (rtx reg)
 	  m->fs.cfa_offset -= UNITS_PER_WORD;
 
 	  add_reg_note (insn, REG_CFA_DEF_CFA,
-			gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-				      GEN_INT (m->fs.cfa_offset)));
+			plus_constant (Pmode, stack_pointer_rtx,
+				       m->fs.cfa_offset));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
     }
@@ -8531,7 +8779,7 @@ ix86_emit_outlined_ms2sysv_restore (const struct ix86_frame &frame,
 	  gcc_assert (m->fs.fp_valid);
 	  gcc_assert (m->fs.cfa_reg == hard_frame_pointer_rtx);
 
-	  tmp = gen_rtx_PLUS (DImode, rbp, GEN_INT (8));
+	  tmp = plus_constant (DImode, rbp, 8);
 	  RTVEC_ELT (v, vi++) = gen_rtx_SET (stack_pointer_rtx, tmp);
 	  RTVEC_ELT (v, vi++) = gen_rtx_SET (rbp, gen_rtx_MEM (DImode, rbp));
 	  tmp = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode));
@@ -8545,7 +8793,7 @@ ix86_emit_outlined_ms2sysv_restore (const struct ix86_frame &frame,
 	  gcc_assert (m->fs.sp_valid);
 
 	  r10 = gen_rtx_REG (DImode, R10_REG);
-	  tmp = gen_rtx_PLUS (Pmode, rsi, GEN_INT (stub_ptr_offset));
+	  tmp = plus_constant (Pmode, rsi, stub_ptr_offset);
 	  emit_insn (gen_rtx_SET (r10, tmp));
 
 	  RTVEC_ELT (v, vi++) = gen_rtx_SET (stack_pointer_rtx, r10);
@@ -8805,8 +9053,13 @@ ix86_expand_epilogue (int style)
 	      t = plus_constant (Pmode, t, m->fs.fp_offset - UNITS_PER_WORD);
 	      emit_insn (gen_rtx_SET (sa, t));
 
-	      t = gen_frame_mem (Pmode, hard_frame_pointer_rtx);
-	      insn = emit_move_insn (hard_frame_pointer_rtx, t);
+	      /* NB: eh_return epilogues must restore the frame pointer
+		 in word_mode since the upper 32 bits of RBP register
+		 can have any values.  */
+	      t = gen_frame_mem (word_mode, hard_frame_pointer_rtx);
+	      rtx frame_reg = gen_rtx_REG (word_mode,
+					   HARD_FRAME_POINTER_REGNUM);
+	      insn = emit_move_insn (frame_reg, t);
 
 	      /* Note that we use SA as a temporary CFA, as the return
 		 address is at the proper place relative to it.  We
@@ -8821,7 +9074,7 @@ ix86_expand_epilogue (int style)
 	      add_reg_note (insn, REG_CFA_DEF_CFA,
 			    plus_constant (Pmode, sa, UNITS_PER_WORD));
 	      ix86_add_queued_cfa_restore_notes (insn);
-	      add_reg_note (insn, REG_CFA_RESTORE, hard_frame_pointer_rtx);
+	      add_reg_note (insn, REG_CFA_RESTORE, frame_reg);
 	      RTX_FRAME_RELATED_P (insn) = 1;
 
 	      m->fs.cfa_reg = sa;
@@ -8937,17 +9190,16 @@ ix86_expand_epilogue (int style)
 
       insn = emit_insn (gen_rtx_SET
 			(stack_pointer_rtx,
-			 gen_rtx_PLUS (Pmode,
-				       crtl->drap_reg,
-				       GEN_INT (-param_ptr_offset))));
+			 plus_constant (Pmode, crtl->drap_reg,
+					-param_ptr_offset)));
       m->fs.cfa_reg = stack_pointer_rtx;
       m->fs.cfa_offset = param_ptr_offset;
       m->fs.sp_offset = param_ptr_offset;
       m->fs.realigned = false;
 
       add_reg_note (insn, REG_CFA_DEF_CFA,
-		    gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-				  GEN_INT (param_ptr_offset)));
+		    plus_constant (Pmode, stack_pointer_rtx,
+				   param_ptr_offset));
       RTX_FRAME_RELATED_P (insn) = 1;
 
       if (!call_used_or_fixed_reg_p (REGNO (crtl->drap_reg)))
@@ -9116,6 +9368,38 @@ ix86_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED)
 	  if (NOTE_KIND (insn) == NOTE_INSN_DELETED_DEBUG_LABEL)
 	    CODE_LABEL_NUMBER (insn) = -1;
     }
+}
+
+/* Implement TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY.  */
+
+void
+ix86_print_patchable_function_entry (FILE *file,
+				     unsigned HOST_WIDE_INT patch_area_size,
+				     bool record_p)
+{
+  if (cfun->machine->function_label_emitted)
+    {
+      /* NB: When ix86_print_patchable_function_entry is called after
+	 function table has been emitted, we have inserted or queued
+	 a pseudo UNSPECV_PATCHABLE_AREA instruction at the proper
+	 place.  There is nothing to do here.  */
+      return;
+    }
+
+  default_print_patchable_function_entry (file, patch_area_size,
+					  record_p);
+}
+
+/* Output patchable area.  NB: default_print_patchable_function_entry
+   isn't available in i386.md.  */
+
+void
+ix86_output_patchable_area (unsigned int patch_area_size,
+			    bool record_p)
+{
+  default_print_patchable_function_entry (asm_out_file,
+					  patch_area_size,
+					  record_p);
 }
 
 /* Return a scratch register to use in the split stack prologue.  The
@@ -9459,8 +9743,8 @@ ix86_expand_split_stack_prologue (void)
       */
       words = TARGET_64BIT ? 3 : 5;
       emit_insn (gen_rtx_SET (scratch_reg,
-			      gen_rtx_PLUS (Pmode, frame_reg,
-					    GEN_INT (words * UNITS_PER_WORD))));
+			      plus_constant (Pmode, frame_reg,
+					     words * UNITS_PER_WORD)));
 
       varargs_label = gen_label_rtx ();
       emit_jump_insn (gen_jump (varargs_label));
@@ -9478,8 +9762,8 @@ ix86_expand_split_stack_prologue (void)
   if (cfun->machine->split_stack_varargs_pointer != NULL_RTX)
     {
       emit_insn (gen_rtx_SET (scratch_reg,
-			      gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-					    GEN_INT (UNITS_PER_WORD))));
+			      plus_constant (Pmode, stack_pointer_rtx,
+					     UNITS_PER_WORD)));
 
       emit_label (varargs_label);
       LABEL_NUSES (varargs_label) = 1;
@@ -10717,7 +11001,7 @@ ix86_tls_module_base (void)
   if (!ix86_tls_module_base_symbol)
     {
       ix86_tls_module_base_symbol
-	= gen_rtx_SYMBOL_REF (Pmode, "_TLS_MODULE_BASE_");
+	= gen_rtx_SYMBOL_REF (ptr_mode, "_TLS_MODULE_BASE_");
 
       SYMBOL_REF_FLAGS (ix86_tls_module_base_symbol)
 	|= TLS_MODEL_GLOBAL_DYNAMIC << SYMBOL_FLAG_TLS_SHIFT;
@@ -10748,8 +11032,6 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
   switch (model)
     {
     case TLS_MODEL_GLOBAL_DYNAMIC:
-      dest = gen_reg_rtx (Pmode);
-
       if (!TARGET_64BIT)
 	{
 	  if (flag_pic && !TARGET_PECOFF)
@@ -10763,13 +11045,17 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 
       if (TARGET_GNU2_TLS)
 	{
+	  dest = gen_reg_rtx (ptr_mode);
 	  if (TARGET_64BIT)
-	    emit_insn (gen_tls_dynamic_gnu2_64 (dest, x));
+	    emit_insn (gen_tls_dynamic_gnu2_64 (ptr_mode, dest, x));
 	  else
 	    emit_insn (gen_tls_dynamic_gnu2_32 (dest, x, pic));
 
-	  tp = get_thread_pointer (Pmode, true);
-	  dest = force_reg (Pmode, gen_rtx_PLUS (Pmode, tp, dest));
+	  tp = get_thread_pointer (ptr_mode, true);
+	  dest = gen_rtx_PLUS (ptr_mode, tp, dest);
+	  if (GET_MODE (dest) != Pmode)
+	     dest = gen_rtx_ZERO_EXTEND (Pmode, dest);
+	  dest = force_reg (Pmode, dest);
 
 	  if (GET_MODE (x) != Pmode)
 	    x = gen_rtx_ZERO_EXTEND (Pmode, x);
@@ -10780,6 +11066,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	{
 	  rtx caddr = ix86_tls_get_addr ();
 
+	  dest = gen_reg_rtx (Pmode);
 	  if (TARGET_64BIT)
 	    {
 	      rtx rax = gen_rtx_REG (Pmode, AX_REG);
@@ -10803,8 +11090,6 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
       break;
 
     case TLS_MODEL_LOCAL_DYNAMIC:
-      base = gen_reg_rtx (Pmode);
-
       if (!TARGET_64BIT)
 	{
 	  if (flag_pic)
@@ -10820,19 +11105,22 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	{
 	  rtx tmp = ix86_tls_module_base ();
 
+	  base = gen_reg_rtx (ptr_mode);
 	  if (TARGET_64BIT)
-	    emit_insn (gen_tls_dynamic_gnu2_64 (base, tmp));
+	    emit_insn (gen_tls_dynamic_gnu2_64 (ptr_mode, base, tmp));
 	  else
 	    emit_insn (gen_tls_dynamic_gnu2_32 (base, tmp, pic));
 
-	  tp = get_thread_pointer (Pmode, true);
-	  set_unique_reg_note (get_last_insn (), REG_EQUAL,
-			       gen_rtx_MINUS (Pmode, tmp, tp));
+	  tp = get_thread_pointer (ptr_mode, true);
+	  if (GET_MODE (base) != Pmode)
+	    base = gen_rtx_ZERO_EXTEND (Pmode, base);
+	  base = force_reg (Pmode, base);
 	}
       else
 	{
 	  rtx caddr = ix86_tls_get_addr ();
 
+	  base = gen_reg_rtx (Pmode);
 	  if (TARGET_64BIT)
 	    {
 	      rtx rax = gen_rtx_REG (Pmode, AX_REG);
@@ -10864,7 +11152,15 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 
       if (TARGET_GNU2_TLS)
 	{
-	  dest = force_reg (Pmode, gen_rtx_PLUS (Pmode, dest, tp));
+	  if (GET_MODE (tp) != Pmode)
+	    {
+	      dest = lowpart_subreg (ptr_mode, dest, Pmode);
+	      dest = gen_rtx_PLUS (ptr_mode, tp, dest);
+	      dest = gen_rtx_ZERO_EXTEND (Pmode, dest);
+	    }
+	  else
+	    dest = gen_rtx_PLUS (Pmode, tp, dest);
+	  dest = force_reg (Pmode, dest);
 
 	  if (GET_MODE (x) != Pmode)
 	    x = gen_rtx_ZERO_EXTEND (Pmode, x);
@@ -12245,6 +12541,8 @@ print_reg (rtx x, int code, FILE *file)
    ^ -- print addr32 prefix if TARGET_64BIT and Pmode != word_mode
    M -- print addr32 prefix for TARGET_X32 with VSIB address.
    ! -- print NOTRACK prefix for jxx/call/ret instructions if required.
+   N -- print maskz if it's constant 0 operand.
+   I -- print comparision predicate operand for sse cmp condition.
  */
 
 void
@@ -14447,8 +14745,17 @@ ix86_lea_outperforms (rtx_insn *insn, unsigned int regno0, unsigned int regno1,
       return true;
     }
 
+  rtx_insn *rinsn = recog_data.insn;
+
   dist_define = distance_non_agu_define (regno1, regno2, insn);
   dist_use = distance_agu_use (regno0, insn);
+
+  /* distance_non_agu_define can call extract_insn_cached.  If this function
+     is called from define_split conditions, that can break insn splitting,
+     because split_insns works by clearing recog_data.insn and then modifying
+     recog_data.operand array and match the various split conditions.  */
+  if (recog_data.insn != rinsn)
+    recog_data.insn = NULL;
 
   if (dist_define < 0 || dist_define >= LEA_MAX_STALL)
     {
@@ -14821,6 +15128,7 @@ ix86_build_const_vector (machine_mode mode, bool vect, rtx value)
     case E_V16SFmode:
     case E_V8SFmode:
     case E_V4SFmode:
+    case E_V2SFmode:
     case E_V8DFmode:
     case E_V4DFmode:
     case E_V2DFmode:
@@ -14861,6 +15169,7 @@ ix86_build_signbit_mask (machine_mode mode, bool vect, bool invert)
     case E_V4SImode:
     case E_V8SFmode:
     case E_V4SFmode:
+    case E_V2SFmode:
       vec_mode = mode;
       imode = SImode;
       break;
@@ -16813,9 +17122,14 @@ ix86_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 	 the stack, we need to skip the first insn which pushes the
 	 (call-saved) register static chain; this push is 1 byte.  */
       offset += 5;
+      int skip = MEM_P (chain) ? 1 : 0;
+      /* Skip ENDBR32 at the entry of the target function.  */
+      if (need_endbr
+	  && !cgraph_node::get (fndecl)->only_called_directly_p ())
+	skip += 4;
       disp = expand_binop (SImode, sub_optab, fnaddr,
 			   plus_constant (Pmode, XEXP (m_tramp, 0),
-					  offset - (MEM_P (chain) ? 1 : 0)),
+					  offset - skip),
 			   NULL_RTX, 1, OPTAB_DIRECT);
       emit_move_insn (mem, disp);
     }
@@ -17266,8 +17580,13 @@ ix86_fold_builtin (tree fndecl, int n_args,
 		    countt = build_int_cst (integer_type_node, count);
 		}
 	      tree_vector_builder builder;
-	      builder.new_unary_operation (TREE_TYPE (args[0]), args[0],
-					   false);
+	      if (mask != HOST_WIDE_INT_M1U || is_vshift)
+		builder.new_vector (TREE_TYPE (args[0]),
+				    TYPE_VECTOR_SUBPARTS (TREE_TYPE (args[0])),
+				    1);
+	      else
+		builder.new_unary_operation (TREE_TYPE (args[0]), args[0],
+					     false);
 	      unsigned int cnt = builder.encoded_nelts ();
 	      for (unsigned int i = 0; i < cnt; ++i)
 		{
@@ -20134,8 +20453,16 @@ current_fentry_section (const char **name)
 void
 x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 {
-  if (cfun->machine->endbr_queued_at_entrance)
-    fprintf (file, "\t%s\n", TARGET_64BIT ? "endbr64" : "endbr32");
+  if (cfun->machine->insn_queued_at_entrance)
+    {
+      if (cfun->machine->insn_queued_at_entrance == TYPE_ENDBR)
+	fprintf (file, "\t%s\n", TARGET_64BIT ? "endbr64" : "endbr32");
+      unsigned int patch_area_size
+	= crtl->patch_area_size - crtl->patch_area_entry;
+      if (patch_area_size)
+	ix86_output_patchable_area (patch_area_size,
+				    crtl->patch_area_entry == 0);
+    }
 
   const char *mcount_name = MCOUNT_NAME;
 
@@ -20727,9 +21054,11 @@ ix86_vector_mode_supported_p (machine_mode mode)
     return true;
   if (TARGET_AVX512F && VALID_AVX512F_REG_MODE (mode))
     return true;
-  if ((TARGET_MMX || TARGET_MMX_WITH_SSE) && VALID_MMX_REG_MODE (mode))
+  if ((TARGET_MMX || TARGET_MMX_WITH_SSE)
+      && VALID_MMX_REG_MODE (mode))
     return true;
-  if (TARGET_3DNOW && VALID_MMX_REG_MODE_3DNOW (mode))
+  if ((TARGET_3DNOW || TARGET_MMX_WITH_SSE)
+      && VALID_MMX_REG_MODE_3DNOW (mode))
     return true;
   return false;
 }
@@ -21493,7 +21822,9 @@ ix86_get_mask_mode (machine_mode data_mode)
   if ((TARGET_AVX512F && vector_size == 64)
       || (TARGET_AVX512VL && (vector_size == 32 || vector_size == 16)))
     {
-      if (elem_size == 4 || elem_size == 8 || TARGET_AVX512BW)
+      if (elem_size == 4
+	  || elem_size == 8
+	  || (TARGET_AVX512BW && (elem_size == 1 || elem_size == 2)))
 	return smallest_int_mode_for_size (nunits);
     }
 
@@ -21596,16 +21927,16 @@ ix86_init_cost (class loop *)
 /* Implement targetm.vectorize.add_stmt_cost.  */
 
 static unsigned
-ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
-		    class _stmt_vec_info *stmt_info, int misalign,
+ix86_add_stmt_cost (class vec_info *vinfo, void *data, int count,
+		    enum vect_cost_for_stmt kind,
+		    class _stmt_vec_info *stmt_info, tree vectype,
+		    int misalign,
 		    enum vect_cost_model_location where)
 {
   unsigned *cost = (unsigned *) data;
   unsigned retval = 0;
   bool scalar_p
     = (kind == scalar_stmt || kind == scalar_load || kind == scalar_store);
-
-  tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
   int stmt_cost = - 1;
 
   bool fp = false;
@@ -21757,7 +22088,8 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
   /* Statements in an inner loop relative to the loop being
      vectorized are weighted more heavily.  The value here is
      arbitrary and could potentially be improved with analysis.  */
-  if (where == vect_body && stmt_info && stmt_in_inner_loop_p (stmt_info))
+  if (where == vect_body && stmt_info
+      && stmt_in_inner_loop_p (vinfo, stmt_info))
     count *= 50;  /* FIXME.  */
 
   retval = (unsigned) (count * stmt_cost);
@@ -22105,11 +22437,12 @@ ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
       *clear = build_call_expr (fnclex, 0);
       tree sw_var = create_tmp_var_raw (short_unsigned_type_node);
       tree fnstsw_call = build_call_expr (fnstsw, 0);
-      tree sw_mod = build2 (MODIFY_EXPR, short_unsigned_type_node,
-			    sw_var, fnstsw_call);
+      tree sw_mod = build4 (TARGET_EXPR, short_unsigned_type_node, sw_var,
+			    fnstsw_call, NULL_TREE, NULL_TREE);
       tree exceptions_x87 = fold_convert (integer_type_node, sw_var);
-      tree update_mod = build2 (MODIFY_EXPR, integer_type_node,
-				exceptions_var, exceptions_x87);
+      tree update_mod = build4 (TARGET_EXPR, integer_type_node,
+				exceptions_var, exceptions_x87,
+				NULL_TREE, NULL_TREE);
       *update = build2 (COMPOUND_EXPR, integer_type_node,
 			sw_mod, update_mod);
       tree update_fldenv = build_call_expr (fldenv, 1, fenv_addr);
@@ -22122,15 +22455,17 @@ ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
       tree stmxcsr = get_ix86_builtin (IX86_BUILTIN_STMXCSR);
       tree ldmxcsr = get_ix86_builtin (IX86_BUILTIN_LDMXCSR);
       tree stmxcsr_hold_call = build_call_expr (stmxcsr, 0);
-      tree hold_assign_orig = build2 (MODIFY_EXPR, unsigned_type_node,
-				      mxcsr_orig_var, stmxcsr_hold_call);
+      tree hold_assign_orig = build4 (TARGET_EXPR, unsigned_type_node,
+				      mxcsr_orig_var, stmxcsr_hold_call,
+				      NULL_TREE, NULL_TREE);
       tree hold_mod_val = build2 (BIT_IOR_EXPR, unsigned_type_node,
 				  mxcsr_orig_var,
 				  build_int_cst (unsigned_type_node, 0x1f80));
       hold_mod_val = build2 (BIT_AND_EXPR, unsigned_type_node, hold_mod_val,
 			     build_int_cst (unsigned_type_node, 0xffffffc0));
-      tree hold_assign_mod = build2 (MODIFY_EXPR, unsigned_type_node,
-				     mxcsr_mod_var, hold_mod_val);
+      tree hold_assign_mod = build4 (TARGET_EXPR, unsigned_type_node,
+				     mxcsr_mod_var, hold_mod_val,
+				     NULL_TREE, NULL_TREE);
       tree ldmxcsr_hold_call = build_call_expr (ldmxcsr, 1, mxcsr_mod_var);
       tree hold_all = build2 (COMPOUND_EXPR, unsigned_type_node,
 			      hold_assign_orig, hold_assign_mod);
@@ -22159,8 +22494,8 @@ ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 			    exceptions_assign);
 	}
       else
-	*update = build2 (MODIFY_EXPR, integer_type_node,
-			  exceptions_var, exceptions_sse);
+	*update = build4 (TARGET_EXPR, integer_type_node, exceptions_var,
+			  exceptions_sse, NULL_TREE, NULL_TREE);
       tree ldmxcsr_update_call = build_call_expr (ldmxcsr, 1, mxcsr_orig_var);
       *update = build2 (COMPOUND_EXPR, void_type_node, *update,
 			ldmxcsr_update_call);
@@ -22650,7 +22985,7 @@ ix86_test_loading_unspec ()
   /* Verify that the two mems are thus treated as equal.  */
   ASSERT_TRUE (rtx_equal_p (dst, v0));
 
-  /* Verify the the insn is recognized.  */
+  /* Verify that the insn is recognized.  */
   ASSERT_NE(-1, recog_memoized (insn));
 
   /* Test of an UNSPEC_VOLATILE, which has its own enum values.  */
@@ -22726,6 +23061,10 @@ ix86_run_selftests (void)
 
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE ix86_output_function_epilogue
+
+#undef TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY
+#define TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY \
+  ix86_print_patchable_function_entry
 
 #undef TARGET_ENCODE_SECTION_INFO
 #ifndef SUBTARGET_ENCODE_SECTION_INFO

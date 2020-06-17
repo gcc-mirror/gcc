@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -415,9 +415,7 @@ package Namet is
    --  also the suffixes used to indicate package body entities and to
    --  distinguish between overloaded entities). Note that names are not
    --  qualified until just before the call to gigi, so this routine is only
-   --  needed by processing that occurs after gigi has been called. This
-   --  includes all ASIS processing, since ASIS works on the tree written
-   --  after gigi has been called.
+   --  needed by processing that occurs after gigi has been called.
 
    procedure Append_Unqualified_Decoded
      (Buf : in out Bounded_String;
@@ -549,15 +547,6 @@ package Namet is
    procedure Unlock;
    --  Unlocks the name table to allow use of the extra space reserved by the
    --  call to Lock. See gnat1drv for details of the need for this.
-
-   procedure Tree_Read;
-   --  Initializes internal tables from current tree file using the relevant
-   --  Table.Tree_Read routines. Note that Initialize should not be called if
-   --  Tree_Read is used. Tree_Read includes all necessary initialization.
-
-   procedure Tree_Write;
-   --  Writes out internal tables to current tree file using the relevant
-   --  Table.Tree_Write routines.
 
    procedure Write_Name (Id : Valid_Name_Id);
    --  Write_Name writes the characters of the specified name using the

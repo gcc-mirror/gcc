@@ -3,4 +3,5 @@
 // { dg-do compile }
 
 struct {
-   a(void = 0; a(0), a(0)	// { dg-error "" }
+  a(void = 0; a(0), a(0) // { dg-error "" }
+// { dg-error "-:expected" "" { target *-*-* } .+1 }

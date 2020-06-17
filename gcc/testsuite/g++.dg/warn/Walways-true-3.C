@@ -17,7 +17,7 @@ bar (int &a)
   if (&b) // { dg-warning "7:the compiler can assume that the address of" }
     foo ();
 
-  if (!&c) // { dg-warning "8:the compiler can assume that the address of" }
+  if (!&c) // { dg-warning "8:the address of" }
     foo ();
 
   if (!&(int &)(int &)a) // { dg-warning "8:the compiler can assume that the address of" }
@@ -29,7 +29,7 @@ bar (int &a)
   if (&b != 0) // { dg-warning "10:the compiler can assume that the address of" }
     foo ();
 
-  if (0 == &(int &)(int &)c) // { dg-warning "9:the compiler can assume that the address of" }
+  if (0 == &(int &)(int &)c) // { dg-warning "9:the address of" }
     foo ();
 
   if (&a != (int *)0) // { dg-warning "10:the compiler can assume that the address of" }

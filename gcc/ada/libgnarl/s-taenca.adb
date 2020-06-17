@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2019, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2020, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,13 +35,11 @@ with System.Tasking.Protected_Objects.Entries;
 with System.Tasking.Protected_Objects.Operations;
 with System.Tasking.Queuing;
 with System.Tasking.Utilities;
-with System.Parameters;
 
 package body System.Tasking.Entry_Calls is
 
    package STPO renames System.Task_Primitives.Operations;
 
-   use Parameters;
    use Protected_Objects.Entries;
    use Protected_Objects.Operations;
 
@@ -71,24 +69,18 @@ package body System.Tasking.Entry_Calls is
    --  permitted. Since the server cannot be obtained reliably, it must be
    --  obtained unreliably and then checked again once it has been locked.
    --
-   --  If Single_Lock and server is a PO, release RTS_Lock
-   --
    --  This should only be called by the Entry_Call.Self.
    --  It should be holding no other ATCB locks at the time.
 
    procedure Unlock_Server (Entry_Call : Entry_Call_Link);
    --  STPO.Unlock the server targeted by Entry_Call. The server must
    --  be locked before calling this.
-   --
-   --  If Single_Lock and server is a PO, take RTS_Lock on exit.
 
    procedure Unlock_And_Update_Server
      (Self_ID    : Task_Id;
       Entry_Call : Entry_Call_Link);
    --  Similar to Unlock_Server, but services entry calls if the
    --  server is a protected object.
-   --
-   --  If Single_Lock and server is a PO, take RTS_Lock on exit.
 
    procedure Check_Pending_Actions_For_Entry_Call
      (Self_ID    : Task_Id;
@@ -200,19 +192,9 @@ package body System.Tasking.Entry_Calls is
                --  We had very bad luck, interleaving with TWO different
                --  requeue operations. Go around the loop and try again.
 
-               if Single_Lock then
-                  STPO.Unlock_RTS;
-                  STPO.Yield;
-                  STPO.Lock_RTS;
-               else
-                  STPO.Yield;
-               end if;
+               STPO.Yield;
 
             else
-               if Single_Lock then
-                  STPO.Unlock_RTS;
-               end if;
-
                Lock_Entries_With_Status (Test_PO, Ceiling_Violation);
 
                --  ???
@@ -232,20 +214,12 @@ package body System.Tasking.Entry_Calls is
                      Old_Base_Priority : System.Any_Priority;
 
                   begin
-                     if Single_Lock then
-                        STPO.Lock_RTS;
-                     end if;
-
                      STPO.Write_Lock (Current_Task);
                      Old_Base_Priority := Current_Task.Common.Base_Priority;
                      Current_Task.New_Base_Priority := Test_PO.Ceiling;
                      System.Tasking.Initialization.Change_Base_Priority
                        (Current_Task);
                      STPO.Unlock (Current_Task);
-
-                     if Single_Lock then
-                        STPO.Unlock_RTS;
-                     end if;
 
                      --  Following lock should not fail
 
@@ -258,10 +232,6 @@ package body System.Tasking.Entry_Calls is
 
                exit when To_Address (Test_PO) = Entry_Call.Called_PO;
                Unlock_Entries (Test_PO);
-
-               if Single_Lock then
-                  STPO.Lock_RTS;
-               end if;
             end if;
 
          else
@@ -343,11 +313,6 @@ package body System.Tasking.Entry_Calls is
 
       pragma Assert (Entry_Call.Mode = Asynchronous_Call);
       Initialization.Defer_Abort_Nestable (Self_ID);
-
-      if Single_Lock then
-         STPO.Lock_RTS;
-      end if;
-
       STPO.Write_Lock (Self_ID);
       Entry_Call.Cancellation_Attempted := True;
 
@@ -357,13 +322,7 @@ package body System.Tasking.Entry_Calls is
 
       Entry_Calls.Wait_For_Completion (Entry_Call);
       STPO.Unlock (Self_ID);
-
-      if Single_Lock then
-         STPO.Unlock_RTS;
-      end if;
-
       Succeeded := Entry_Call.State = Cancelled;
-
       Initialization.Undefer_Abort_Nestable (Self_ID);
 
       --  Ideally, abort should no longer be deferred at this point, so we
@@ -401,26 +360,13 @@ package body System.Tasking.Entry_Calls is
          if Called_PO.Pending_Action then
             Called_PO.Pending_Action := False;
             Caller := STPO.Self;
-
-            if Single_Lock then
-               STPO.Lock_RTS;
-            end if;
-
             STPO.Write_Lock (Caller);
             Caller.New_Base_Priority := Called_PO.Old_Base_Priority;
             Initialization.Change_Base_Priority (Caller);
             STPO.Unlock (Caller);
-
-            if Single_Lock then
-               STPO.Unlock_RTS;
-            end if;
          end if;
 
          Unlock_Entries (Called_PO);
-
-         if Single_Lock then
-            STPO.Lock_RTS;
-         end if;
       end if;
    end Unlock_And_Update_Server;
 
@@ -441,26 +387,13 @@ package body System.Tasking.Entry_Calls is
          if Called_PO.Pending_Action then
             Called_PO.Pending_Action := False;
             Caller := STPO.Self;
-
-            if Single_Lock then
-               STPO.Lock_RTS;
-            end if;
-
             STPO.Write_Lock (Caller);
             Caller.New_Base_Priority := Called_PO.Old_Base_Priority;
             Initialization.Change_Base_Priority (Caller);
             STPO.Unlock (Caller);
-
-            if Single_Lock then
-               STPO.Unlock_RTS;
-            end if;
          end if;
 
          Unlock_Entries (Called_PO);
-
-         if Single_Lock then
-            STPO.Lock_RTS;
-         end if;
       end if;
    end Unlock_Server;
 
@@ -481,21 +414,13 @@ package body System.Tasking.Entry_Calls is
       --  a chance of getting ready immediately, using Unlock & Yield.
       --  See similar action in Wait_For_Call & Timed_Selective_Wait.
 
-      if Single_Lock then
-         STPO.Unlock_RTS;
-      else
-         STPO.Unlock (Self_Id);
-      end if;
+      STPO.Unlock (Self_Id);
 
       if Entry_Call.State < Done then
          STPO.Yield;
       end if;
 
-      if Single_Lock then
-         STPO.Lock_RTS;
-      else
-         STPO.Write_Lock (Self_Id);
-      end if;
+      STPO.Write_Lock (Self_Id);
 
       loop
          Check_Pending_Actions_For_Entry_Call (Self_Id, Entry_Call);
@@ -507,7 +432,6 @@ package body System.Tasking.Entry_Calls is
 
       Self_Id.Common.State := Runnable;
       Utilities.Exit_One_ATC_Level (Self_Id);
-
    end Wait_For_Completion;
 
    --------------------------------------

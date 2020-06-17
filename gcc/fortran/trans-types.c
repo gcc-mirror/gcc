@@ -1595,7 +1595,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
   mpz_init_set_ui (stride, 1);
   mpz_init (delta);
 
-  /* We don't use build_array_type because this does not include include
+  /* We don't use build_array_type because this does not include
      lang-specific information (i.e. the bounds of the array) when checking
      for duplicates.  */
   if (as->rank)
@@ -2836,9 +2836,10 @@ copy_derived_types:
 	  && (c->attr.allocatable || c->attr.pointer)
 	  && !derived->attr.is_class)
 	{
-	  char caf_name[GFC_MAX_SYMBOL_LEN];
+	  /* Provide sufficient space to hold "_caf_symbol".  */
+	  char caf_name[GFC_MAX_SYMBOL_LEN + 6];
 	  gfc_component *token;
-	  snprintf (caf_name, GFC_MAX_SYMBOL_LEN, "_caf_%s", c->name);
+	  snprintf (caf_name, sizeof (caf_name), "_caf_%s", c->name);
 	  token = gfc_find_component (derived, caf_name, true, true, NULL);
 	  gcc_assert (token);
 	  c->caf_token = token->backend_decl;
@@ -3098,6 +3099,16 @@ gfc_get_function_type (gfc_symbol * sym, gfc_actual_arglist *actual_args)
 
 	  vec_safe_push (typelist, type);
 	}
+      /* For noncharacter scalar intrinsic types, VALUE passes the value,
+	 hence, the optional status cannot be transferred via a NULL pointer.
+	 Thus, we will use a hidden argument in that case.  */
+      else if (arg
+	       && arg->attr.optional
+	       && arg->attr.value
+	       && !arg->attr.dimension
+	       && arg->ts.type != BT_CLASS
+	       && !gfc_bt_struct (arg->ts.type))
+	vec_safe_push (typelist, boolean_type_node);
     }
 
   if (!vec_safe_is_empty (typelist)

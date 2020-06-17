@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -50,6 +50,12 @@ is
    type Generator is limited private;
 
    function Random (Gen : Generator) return Result_Subtype;
+
+   function Random
+     (Gen   : Generator;
+      First : Result_Subtype;
+      Last  : Result_Subtype) return Result_Subtype
+     with Post => Random'Result in First .. Last;
 
    procedure Reset (Gen : Generator; Initiator : Integer);
    procedure Reset (Gen : Generator);

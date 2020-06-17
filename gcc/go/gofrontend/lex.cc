@@ -198,7 +198,7 @@ Token::Token(const Token& tok)
       break;
     case TOKEN_FLOAT:
     case TOKEN_IMAGINARY:
-      mpfr_init_set(this->u_.float_value, tok.u_.float_value, GMP_RNDN);
+      mpfr_init_set(this->u_.float_value, tok.u_.float_value, MPFR_RNDN);
       break;
     default:
       go_unreachable();
@@ -238,7 +238,7 @@ Token::operator=(const Token& tok)
       break;
     case TOKEN_FLOAT:
     case TOKEN_IMAGINARY:
-      mpfr_init_set(this->u_.float_value, tok.u_.float_value, GMP_RNDN);
+      mpfr_init_set(this->u_.float_value, tok.u_.float_value, MPFR_RNDN);
       break;
     default:
       go_unreachable();
@@ -278,11 +278,11 @@ Token::print(FILE* file) const
       break;
     case TOKEN_FLOAT:
       fprintf(file, "float ");
-      mpfr_out_str(file, 10, 0, this->u_.float_value, GMP_RNDN);
+      mpfr_out_str(file, 10, 0, this->u_.float_value, MPFR_RNDN);
       break;
     case TOKEN_IMAGINARY:
       fprintf(file, "imaginary ");
-      mpfr_out_str(file, 10, 0, this->u_.float_value, GMP_RNDN);
+      mpfr_out_str(file, 10, 0, this->u_.float_value, MPFR_RNDN);
       break;
     case TOKEN_OPERATOR:
       fprintf(file, "operator ");
@@ -1213,7 +1213,7 @@ Lex::gather_number()
 	  else
 	    {
 	      mpfr_t ival;
-	      mpfr_init_set_z(ival, val, GMP_RNDN);
+	      mpfr_init_set_z(ival, val, MPFR_RNDN);
 	      mpz_clear(val);
 	      Token ret = Token::make_imaginary_token(ival, location);
 	      mpfr_clear(ival);
@@ -1310,7 +1310,7 @@ Lex::gather_number()
     }
 
   mpfr_t val;
-  int r = mpfr_init_set_str(val, num.c_str(), base, GMP_RNDN);
+  int r = mpfr_init_set_str(val, num.c_str(), base, MPFR_RNDN);
   go_assert(r == 0);
 
   bool is_imaginary = *p == 'i';

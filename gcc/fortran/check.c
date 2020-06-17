@@ -67,7 +67,12 @@ gfc_invalid_boz (const char *msg, locus *loc)
       return false;
     }
 
-  gfc_error (msg, loc);
+  const char hint[] = " [see %<-fno-allow-invalid-boz%>]";
+  size_t len = strlen (msg) + strlen (hint) + 1;
+  char *msg2 = (char *) alloca (len);
+  strcpy (msg2, msg);
+  strcat (msg2, hint);
+  gfc_error (msg2, loc);
   return true;
 }
 
@@ -1426,6 +1431,18 @@ gfc_check_x_yd (gfc_expr *x, gfc_expr *y)
   return true;
 }
 
+bool
+gfc_invalid_null_arg (gfc_expr *x)
+{
+  if (x->expr_type == EXPR_NULL)
+    {
+      gfc_error ("NULL at %L is not permitted as actual argument "
+		 "to %qs intrinsic function", &x->where,
+		 gfc_current_intrinsic);
+      return true;
+    }
+  return false;
+}
 
 bool
 gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
@@ -1433,12 +1450,9 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
   symbol_attribute attr1, attr2;
   int i;
   bool t;
-  locus *where;
 
-  where = &pointer->where;
-
-  if (pointer->expr_type == EXPR_NULL)
-    goto null_arg;
+  if (gfc_invalid_null_arg (pointer))
+    return false;
 
   attr1 = gfc_expr_attr (pointer);
 
@@ -1463,9 +1477,8 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
   if (target == NULL)
     return true;
 
-  where = &target->where;
-  if (target->expr_type == EXPR_NULL)
-    goto null_arg;
+  if (gfc_invalid_null_arg (target))
+    return false;
 
   if (target->expr_type == EXPR_VARIABLE || target->expr_type == EXPR_FUNCTION)
     attr2 = gfc_expr_attr (target);
@@ -1513,13 +1526,6 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
 	  }
     }
   return t;
-
-null_arg:
-
-  gfc_error ("NULL pointer at %L is not permitted as actual argument "
-	     "of %qs intrinsic function", where, gfc_current_intrinsic);
-  return false;
-
 }
 
 
@@ -3368,6 +3374,9 @@ gfc_check_kill_sub (gfc_expr *pid, gfc_expr *sig, gfc_expr *status)
 bool
 gfc_check_kind (gfc_expr *x)
 {
+  if (gfc_invalid_null_arg (x))
+    return false;
+
   if (gfc_bt_struct (x->ts.type) || x->ts.type == BT_CLASS)
     {
       gfc_error ("%qs argument of %qs intrinsic at %L must be of "
@@ -3442,6 +3451,9 @@ bool
 gfc_check_len_lentrim (gfc_expr *s, gfc_expr *kind)
 {
   if (!type_check (s, 0, BT_CHARACTER))
+    return false;
+
+  if (gfc_invalid_null_arg (s))
     return false;
 
   if (!kind_check (kind, 1, BT_INTEGER))
@@ -3942,6 +3954,10 @@ gfc_check_findloc (gfc_actual_arglist *ap)
   v1 = v->ts.type == BT_CHARACTER;
   if ((a1 && !v1) || (!a1 && v1))
     goto incompat;
+
+  /* Check the kind of the characters argument match.  */
+  if (a1 && v1 && a->ts.kind != v->ts.kind)
+    goto incompat;
 	 
   d = ap->next->next->expr;
   m = ap->next->next->next->expr;
@@ -4125,6 +4141,12 @@ gfc_check_transf_bit_intrins (gfc_actual_arglist *ap)
 bool
 gfc_check_merge (gfc_expr *tsource, gfc_expr *fsource, gfc_expr *mask)
 {
+  if (gfc_invalid_null_arg (tsource))
+    return false;
+
+  if (gfc_invalid_null_arg (fsource))
+    return false;
+
   if (!same_type_check (tsource, 0, fsource, 1))
     return false;
 
@@ -5042,6 +5064,9 @@ gfc_check_shape (gfc_expr *source, gfc_expr *kind)
 {
   gfc_array_ref *ar;
 
+  if (gfc_invalid_null_arg (source))
+    return false;
+
   if (source->rank == 0 || source->expr_type != EXPR_VARIABLE)
     return true;
 
@@ -5124,6 +5149,9 @@ gfc_check_size (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 bool
 gfc_check_sizeof (gfc_expr *arg)
 {
+  if (gfc_invalid_null_arg (arg))
+    return false;
+
   if (arg->ts.type == BT_PROCEDURE)
     {
       gfc_error ("%qs argument of %qs intrinsic at %L shall not be a procedure",
@@ -5609,6 +5637,9 @@ gfc_check_sngl (gfc_expr *a)
 bool
 gfc_check_spread (gfc_expr *source, gfc_expr *dim, gfc_expr *ncopies)
 {
+  if (gfc_invalid_null_arg (source))
+    return false;
+
   if (source->rank >= GFC_MAX_DIMENSIONS)
     {
       gfc_error ("%qs argument of %qs intrinsic at %L must be less "
@@ -6139,6 +6170,9 @@ gfc_check_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
   size_t source_size;
   size_t result_size;
 
+  if (gfc_invalid_null_arg (source))
+    return false;
+
   /* SOURCE shall be a scalar or array of any type.  */
   if (source->ts.type == BT_PROCEDURE
       && source->symtree->n.sym->attr.subroutine == 1)
@@ -6153,6 +6187,9 @@ gfc_check_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
     return false;
 
   if (mold->ts.type == BT_BOZ && illegal_boz_arg (mold))
+    return false;
+
+  if (gfc_invalid_null_arg (mold))
     return false;
 
   /* MOLD shall be a scalar or array of any type.  */
@@ -6376,6 +6413,9 @@ bool
 gfc_check_trim (gfc_expr *x)
 {
   if (!type_check (x, 0, BT_CHARACTER))
+    return false;
+
+  if (gfc_invalid_null_arg (x))
     return false;
 
   if (!scalar_check (x, 0))
@@ -6603,7 +6643,7 @@ gfc_check_random_seed (gfc_expr *size, gfc_expr *put, gfc_expr *get)
 	gfc_error ("Size of %qs argument of %qs intrinsic at %L "
 		   "too small (%i/%i)",
 		   gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
-		   where, (int) mpz_get_ui (put_size), seed_size);
+		   &put->where, (int) mpz_get_ui (put_size), seed_size);
     }
 
   if (get != NULL)
@@ -6635,7 +6675,7 @@ gfc_check_random_seed (gfc_expr *size, gfc_expr *put, gfc_expr *get)
 	gfc_error ("Size of %qs argument of %qs intrinsic at %L "
 		   "too small (%i/%i)",
 		   gfc_current_intrinsic_arg[2]->name, gfc_current_intrinsic,
-		   where, (int) mpz_get_ui (get_size), seed_size);
+		   &get->where, (int) mpz_get_ui (get_size), seed_size);
     }
 
   /* RANDOM_SEED may not have more than one non-optional argument.  */

@@ -99,7 +99,7 @@ auto_purge_vect_location::~auto_purge_vect_location ()
 
 void
 dump_stmt_cost (FILE *f, void *data, int count, enum vect_cost_for_stmt kind,
-		stmt_vec_info stmt_info, int misalign, unsigned cost,
+		stmt_vec_info stmt_info, tree, int misalign, unsigned cost,
 		enum vect_cost_model_location where)
 {
   fprintf (f, "%p ", data);
@@ -461,6 +461,7 @@ vec_info::vec_info (vec_info::vec_kind kind_in, void *target_cost_data_in,
 		    vec_info_shared *shared_)
   : kind (kind_in),
     shared (shared_),
+    stmt_vec_info_ro (false),
     target_cost_data (target_cost_data_in)
 {
   stmt_vec_infos.create (50);
@@ -619,8 +620,7 @@ vec_info::replace_stmt (gimple_stmt_iterator *gsi, stmt_vec_info stmt_info,
 {
   gimple *old_stmt = stmt_info->stmt;
   gcc_assert (!stmt_info->pattern_stmt_p && old_stmt == gsi_stmt (*gsi));
-  set_vinfo_for_stmt (old_stmt, NULL);
-  set_vinfo_for_stmt (new_stmt, stmt_info);
+  gimple_set_uid (new_stmt, gimple_uid (old_stmt));
   stmt_info->stmt = new_stmt;
   gsi_replace (gsi, new_stmt, true);
 }
@@ -631,7 +631,6 @@ stmt_vec_info
 vec_info::new_stmt_vec_info (gimple *stmt)
 {
   stmt_vec_info res = XCNEW (class _stmt_vec_info);
-  res->vinfo = this;
   res->stmt = stmt;
 
   STMT_VINFO_TYPE (res) = undef_vec_info_type;
@@ -642,6 +641,7 @@ vec_info::new_stmt_vec_info (gimple *stmt)
   STMT_VINFO_REDUC_FN (res) = IFN_LAST;
   STMT_VINFO_REDUC_IDX (res) = -1;
   STMT_VINFO_SLP_VECT_ONLY (res) = false;
+  STMT_VINFO_VEC_STMTS (res) = vNULL;
 
   if (gimple_code (stmt) == GIMPLE_PHI
       && is_loop_header_bb_p (gimple_bb (stmt)))
@@ -666,6 +666,7 @@ vec_info::set_vinfo_for_stmt (gimple *stmt, stmt_vec_info info)
   unsigned int uid = gimple_uid (stmt);
   if (uid == 0)
     {
+      gcc_assert (!stmt_vec_info_ro);
       gcc_checking_assert (info);
       uid = stmt_vec_infos.length () + 1;
       gimple_set_uid (stmt, uid);
@@ -706,6 +707,7 @@ vec_info::free_stmt_vec_info (stmt_vec_info stmt_info)
 
   STMT_VINFO_SAME_ALIGN_REFS (stmt_info).release ();
   STMT_VINFO_SIMD_CLONE_INFO (stmt_info).release ();
+  STMT_VINFO_VEC_STMTS (stmt_info).release ();
   free (stmt_info);
 }
 
@@ -986,7 +988,8 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 			 "loop vectorized using variable length vectors\n");
     }
 
-  loop_p new_loop = vect_transform_loop (loop_vinfo);
+  loop_p new_loop = vect_transform_loop (loop_vinfo,
+					 loop_vectorized_call);
   (*num_vectorized_loops)++;
   /* Now that the loop has been vectorized, allow it to be unrolled
      etc.  */

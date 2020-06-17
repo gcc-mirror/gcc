@@ -1,6 +1,5 @@
 // { dg-do compile }
-// { dg-options "-std=c++11" }
-// { dg-additional-options "-Wno-return-type" }
+// { dg-options "-std=c++11 -Wno-return-type" }
 
 namespace std
 {

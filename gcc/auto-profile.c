@@ -1055,7 +1055,7 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
   struct cgraph_edge *new_edge
       = indirect_edge->make_speculative (direct_call,
 					 profile_count::uninitialized ());
-  new_edge->redirect_call_stmt_to_callee ();
+  cgraph_edge::redirect_call_stmt_to_callee (new_edge);
   gimple_remove_histogram_value (cfun, stmt, hist);
   inline_call (new_edge, true, NULL, NULL, false);
 }
@@ -1628,7 +1628,8 @@ auto_profile (void)
        function before annotation, so the profile inside bar@loc_foo2
        will be useful.  */
     autofdo::stmt_set promoted_stmts;
-    for (int i = 0; i < param_early_inliner_max_iterations; i++)
+    for (int i = 0; i < opt_for_fn (node->decl,
+				    param_early_inliner_max_iterations); i++)
       {
         if (!flag_value_profile_transformations
             || !autofdo::afdo_vpt_for_early_inline (&promoted_stmts))

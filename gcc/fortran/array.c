@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "options.h"
 #include "gfortran.h"
+#include "parse.h"
 #include "match.h"
 #include "constructor.h"
 
@@ -822,7 +823,6 @@ cleanup:
   return MATCH_ERROR;
 }
 
-
 /* Given a symbol and an array specification, modify the symbol to
    have that array specification.  The error locus is needed in case
    something goes wrong.  On failure, the caller must free the spec.  */
@@ -831,10 +831,17 @@ bool
 gfc_set_array_spec (gfc_symbol *sym, gfc_array_spec *as, locus *error_loc)
 {
   int i;
-
+  symbol_attribute *attr;
+  
   if (as == NULL)
     return true;
 
+  /* If the symbol corresponds to a submodule module procedure the array spec is
+     already set, so do not attempt to set it again here. */
+  attr = &sym->attr;
+  if (gfc_submodule_procedure(attr))
+    return true;
+  
   if (as->rank
       && !gfc_add_dimension (&sym->attr, sym->name, error_loc))
     return false;
@@ -856,6 +863,10 @@ gfc_set_array_spec (gfc_symbol *sym, gfc_array_spec *as, locus *error_loc)
 		 "codimension", sym->name, error_loc);
       return false;
     }
+
+  /* Check F2018:C822.  */
+  if (sym->as->rank + sym->as->corank > GFC_MAX_DIMENSIONS)
+    goto too_many;
 
   if (as->corank)
     {
@@ -887,7 +898,7 @@ gfc_set_array_spec (gfc_symbol *sym, gfc_array_spec *as, locus *error_loc)
       if (sym->as->rank + sym->as->corank > GFC_MAX_DIMENSIONS)
 	goto too_many;
 
-      for (i = 0; i < sym->as->corank; i++)
+      for (i = sym->as->corank - 1; i >= 0; i--)
 	{
 	  sym->as->lower[as->rank + i] = sym->as->lower[i];
 	  sym->as->upper[as->rank + i] = sym->as->upper[i];
@@ -1468,7 +1479,7 @@ static cons_stack *base;
 static bool check_constructor (gfc_constructor_base, bool (*) (gfc_expr *));
 
 /* Check an EXPR_VARIABLE expression in a constructor to make sure
-   that that variable is an iteration variables.  */
+   that that variable is an iteration variable.  */
 
 bool
 gfc_check_iter_variable (gfc_expr *expr)
@@ -1759,6 +1770,11 @@ cleanup:
   return t;
 }
 
+/* Variables for noticing if all constructors are empty, and
+   if any of them had a type.  */
+
+static bool empty_constructor;
+static gfc_typespec empty_ts;
 
 /* Expand a constructor into constant constructors without any
    iterators, calling the work function for each of the expanded
@@ -1782,6 +1798,9 @@ expand_constructor (gfc_constructor_base base)
 
       e = c->expr;
 
+      if (empty_constructor)
+	empty_ts = e->ts;
+
       if (e->expr_type == EXPR_ARRAY)
 	{
 	  if (!expand_constructor (e->value.constructor))
@@ -1790,6 +1809,7 @@ expand_constructor (gfc_constructor_base base)
 	  continue;
 	}
 
+      empty_constructor = false;
       e = gfc_copy_expr (e);
       if (!gfc_simplify_expr (e, 1))
 	{
@@ -1873,6 +1893,8 @@ gfc_expand_constructor (gfc_expr *e, bool fatal)
 
   iter_stack = NULL;
 
+  empty_constructor = true;
+  gfc_clear_ts (&empty_ts);
   current_expand.expand_work_function = expand;
 
   if (!expand_constructor (e->value.constructor))
@@ -1881,6 +1903,13 @@ gfc_expand_constructor (gfc_expr *e, bool fatal)
       rc = false;
       goto done;
     }
+
+  /* If we don't have an explicit constructor type, and there
+     were only empty constructors, then take the type from
+     them.  */
+
+  if (constructor_ts.type == BT_UNKNOWN && empty_constructor)
+    e->ts = empty_ts;
 
   gfc_constructor_free (e->value.constructor);
   e->value.constructor = current_expand.base;

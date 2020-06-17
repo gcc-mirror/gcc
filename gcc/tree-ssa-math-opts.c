@@ -121,37 +121,57 @@ along with GCC; see the file COPYING3.  If not see
    division.  */
 struct occurrence {
   /* The basic block represented by this structure.  */
-  basic_block bb;
+  basic_block bb = basic_block();
 
   /* If non-NULL, the SSA_NAME holding the definition for a reciprocal
      inserted in BB.  */
-  tree recip_def;
+  tree recip_def = tree();
 
   /* If non-NULL, the SSA_NAME holding the definition for a squared
      reciprocal inserted in BB.  */
-  tree square_recip_def;
+  tree square_recip_def = tree();
 
   /* If non-NULL, the GIMPLE_ASSIGN for a reciprocal computation that
      was inserted in BB.  */
-  gimple *recip_def_stmt;
+  gimple *recip_def_stmt = nullptr;
 
   /* Pointer to a list of "struct occurrence"s for blocks dominated
      by BB.  */
-  struct occurrence *children;
+  struct occurrence *children = nullptr;
 
   /* Pointer to the next "struct occurrence"s in the list of blocks
      sharing a common dominator.  */
-  struct occurrence *next;
+  struct occurrence *next = nullptr;
 
   /* The number of divisions that are in BB before compute_merit.  The
      number of divisions that are in BB or post-dominate it after
      compute_merit.  */
-  int num_divisions;
+  int num_divisions = 0;
 
   /* True if the basic block has a division, false if it is a common
      dominator for basic blocks that do.  If it is false and trapping
      math is active, BB is not a candidate for inserting a reciprocal.  */
-  bool bb_has_division;
+  bool bb_has_division = false;
+
+  /* Construct a struct occurrence for basic block BB, and whose
+     children list is headed by CHILDREN.  */
+  occurrence (basic_block bb, struct occurrence *children)
+  : bb (bb), children (children)
+  {
+    bb->aux = this;
+  }
+
+  /* Destroy a struct occurrence and remove it from its basic block.  */
+  ~occurrence ()
+  {
+    bb->aux = nullptr;
+  }
+
+  /* Allocate memory for a struct occurrence from OCC_POOL.  */
+  static void* operator new (size_t);
+
+  /* Return memory for a struct occurrence to OCC_POOL.  */
+  static void operator delete (void*, size_t);
 };
 
 static struct
@@ -191,23 +211,17 @@ static struct occurrence *occ_head;
 /* Allocation pool for getting instances of "struct occurrence".  */
 static object_allocator<occurrence> *occ_pool;
 
-
-
-/* Allocate and return a new struct occurrence for basic block BB, and
-   whose children list is headed by CHILDREN.  */
-static struct occurrence *
-occ_new (basic_block bb, struct occurrence *children)
+void* occurrence::operator new (size_t n)
 {
-  struct occurrence *occ;
-
-  bb->aux = occ = occ_pool->allocate ();
-  memset (occ, 0, sizeof (struct occurrence));
-
-  occ->bb = bb;
-  occ->children = children;
-  return occ;
+  gcc_assert (n == sizeof(occurrence));
+  return occ_pool->allocate_raw ();
 }
 
+void occurrence::operator delete (void *occ, size_t n)
+{
+  gcc_assert (n == sizeof(occurrence));
+  occ_pool->remove_raw (occ);
+}
 
 /* Insert NEW_OCC into our subset of the dominator tree.  P_HEAD points to a
    list of "struct occurrence"s, one per basic block, having IDOM as
@@ -259,7 +273,7 @@ insert_bb (struct occurrence *new_occ, basic_block idom,
 	  /* None of the previous blocks has DOM as a dominator: if we tail
 	     recursed, we would reexamine them uselessly. Just switch BB with
 	     DOM, and go on looking for blocks dominated by DOM.  */
-          new_occ = occ_new (dom, new_occ);
+	  new_occ = new occurrence (dom, new_occ);
 	}
 
       else
@@ -288,7 +302,7 @@ register_division_in (basic_block bb, int importance)
   occ = (struct occurrence *) bb->aux;
   if (!occ)
     {
-      occ = occ_new (bb, NULL);
+      occ = new occurrence (bb, NULL);
       insert_bb (occ, ENTRY_BLOCK_PTR_FOR_FN (cfun), &occ_head);
     }
 
@@ -518,8 +532,7 @@ free_bb (struct occurrence *occ)
   /* First get the two pointers hanging off OCC.  */
   next = occ->next;
   child = occ->children;
-  occ->bb->aux = NULL;
-  occ_pool->remove (occ);
+  delete occ;
 
   /* Now ensure that we don't recurse unless it is necessary.  */
   if (!child)
@@ -2477,7 +2490,7 @@ is_copysign_call_with_1 (gimple *call)
 }
 
 /* Try to expand the pattern x * copysign (1, y) into xorsign (x, y).
-   This only happens when the the xorsign optab is defined, if the
+   This only happens when the xorsign optab is defined, if the
    pattern is not a xorsign pattern or if expansion fails FALSE is
    returned, otherwise TRUE is returned.  */
 static bool
@@ -2715,11 +2728,14 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple *stmt,
      multiply-and-accumulate instructions.
 
      If the widened-multiplication result has more than one uses, it is
-     probably wiser not to do the conversion.  */
+     probably wiser not to do the conversion.  Also restrict this operation
+     to single basic block to avoid moving the multiply to a different block
+     with a higher execution frequency.  */
   if (code == PLUS_EXPR
       && (rhs1_code == MULT_EXPR || rhs1_code == WIDEN_MULT_EXPR))
     {
       if (!has_single_use (rhs1)
+	  || gimple_bb (rhs1_stmt) != gimple_bb (stmt)
 	  || !is_widening_mult_p (rhs1_stmt, &type1, &mult_rhs1,
 				  &type2, &mult_rhs2))
 	return false;
@@ -2729,6 +2745,7 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple *stmt,
   else if (rhs2_code == MULT_EXPR || rhs2_code == WIDEN_MULT_EXPR)
     {
       if (!has_single_use (rhs2)
+	  || gimple_bb (rhs2_stmt) != gimple_bb (stmt)
 	  || !is_widening_mult_p (rhs2_stmt, &type1, &mult_rhs1,
 				  &type2, &mult_rhs2))
 	return false;
@@ -2924,6 +2941,35 @@ convert_mult_to_fma_1 (tree mul_result, tree op1, tree op2)
 	  fprintf (dump_file, "Generated FMA ");
 	  print_gimple_stmt (dump_file, gsi_stmt (gsi), 0, TDF_NONE);
 	  fprintf (dump_file, "\n");
+	}
+
+      /* If the FMA result is negated in a single use, fold the negation
+	 too.  */
+      orig_stmt = gsi_stmt (gsi);
+      use_operand_p use_p;
+      gimple *neg_stmt;
+      if (is_gimple_call (orig_stmt)
+	  && gimple_call_internal_p (orig_stmt)
+	  && gimple_call_lhs (orig_stmt)
+	  && TREE_CODE (gimple_call_lhs (orig_stmt)) == SSA_NAME
+	  && single_imm_use (gimple_call_lhs (orig_stmt), &use_p, &neg_stmt)
+	  && is_gimple_assign (neg_stmt)
+	  && gimple_assign_rhs_code (neg_stmt) == NEGATE_EXPR
+	  && !stmt_could_throw_p (cfun, neg_stmt))
+	{
+	  gsi = gsi_for_stmt (neg_stmt);
+	  if (fold_stmt (&gsi, follow_all_ssa_edges))
+	    {
+	      if (maybe_clean_or_replace_eh_stmt (neg_stmt, gsi_stmt (gsi)))
+		gcc_unreachable ();
+	      update_stmt (gsi_stmt (gsi));
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "Folded FMA negation ");
+		  print_gimple_stmt (dump_file, gsi_stmt (gsi), 0, TDF_NONE);
+		  fprintf (dump_file, "\n");
+		}
+	    }
 	}
 
       widen_mul_stats.fmas_inserted++;

@@ -1,5 +1,5 @@
 // PR c++/67147
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template <class F, class I1, class I2 = I1>
 concept IndirectCallableRelation = true;

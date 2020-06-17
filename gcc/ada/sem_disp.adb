@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1482,22 +1482,6 @@ package body Sem_Disp is
             end if;
          end if;
 
-      --  If the tagged type is a concurrent type then we must be compiling
-      --  with no code generation (we are either compiling a generic unit or
-      --  compiling under -gnatc mode) because we have previously tested that
-      --  no serious errors has been reported. In this case we do not add the
-      --  primitive to the list of primitives of Tagged_Type but we leave the
-      --  primitive decorated as a dispatching operation to be able to analyze
-      --  and report errors associated with the Object.Operation notation.
-
-      elsif Is_Concurrent_Type (Tagged_Type) then
-         pragma Assert (not Expander_Active);
-
-         --  Attach operation to list of primitives of the synchronized type
-         --  itself, for ASIS use.
-
-         Add_Dispatching_Operation (Tagged_Type, Subp);
-
       --  If no old subprogram, then we add this as a dispatching operation,
       --  but we avoid doing this if an error was posted, to prevent annoying
       --  cascaded errors.
@@ -2564,14 +2548,6 @@ package body Sem_Disp is
       Prim : Node_Id;
 
    begin
-      --  Diagnose failure to match No_Return in parent (Ada-2005, AI-414, but
-      --  we do it unconditionally in Ada 95 now, since this is our pragma).
-
-      if No_Return (Prev_Op) and then not No_Return (New_Op) then
-         Error_Msg_N ("procedure & must have No_Return pragma", New_Op);
-         Error_Msg_N ("\since overridden procedure has No_Return", New_Op);
-      end if;
-
       --  If there is no previous operation to override, the type declaration
       --  was malformed, and an error must have been emitted already.
 
@@ -2682,7 +2658,6 @@ package body Sem_Disp is
          Set_Alias (Prev_Op, New_Op);
          Set_DTC_Entity (Prev_Op, Empty);
          Set_Has_Controlling_Result (New_Op, Has_Controlling_Result (Prev_Op));
-         return;
       end if;
    end Override_Dispatching_Operation;
 

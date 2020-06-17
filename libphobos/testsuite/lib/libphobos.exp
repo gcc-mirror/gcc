@@ -162,10 +162,6 @@ proc libphobos_init { args } {
 	append ld_library_path ":${gccdir}"
     }
 
-    if { [file exists "${blddir}/libdruntime/.libs/libgdruntime.${shlib_ext}"] } {
-	append ld_library_path ":${blddir}/libdruntime/.libs"
-    }
-
     if { [file exists "${blddir}/src/.libs/libgphobos.${shlib_ext}"] } {
 	append ld_library_path ":${blddir}/src/.libs"
     }
@@ -289,7 +285,7 @@ proc check_effective_target_linux_pre_2639 { } {
 
     if { [check_no_compiler_messages linux_pre_2639 assembly {
 	#include <linux/version.h>
-	#if !defined LINUX_VERSION_CODE || LINUX_VERSION_CODE < KERNEL_VERSION(2.6.39)
+	#if !defined LINUX_VERSION_CODE || LINUX_VERSION_CODE < KERNEL_VERSION(2,6,39)
 	#error Yes, it is.
 	#endif
     }] } {

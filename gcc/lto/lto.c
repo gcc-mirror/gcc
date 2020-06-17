@@ -355,7 +355,7 @@ lto_wpa_write_files (void)
 	       lsei_next_in_partition (&lsei))
 	    {
 	      symtab_node *node = lsei_node (lsei);
-	      fprintf (symtab->dump_file, "%s ", node->asm_name ());
+	      fprintf (symtab->dump_file, "%s ", node->dump_asm_name ());
 	    }
 	  fprintf (symtab->dump_file, "\n  Symbols in boundary: ");
 	  for (lsei = lsei_start (part->encoder); !lsei_end_p (lsei);
@@ -364,7 +364,7 @@ lto_wpa_write_files (void)
 	      symtab_node *node = lsei_node (lsei);
 	      if (!lto_symtab_encoder_in_partition_p (part->encoder, node))
 		{
-		  fprintf (symtab->dump_file, "%s ", node->asm_name ());
+		  fprintf (symtab->dump_file, "%s ", node->dump_asm_name ());
 		  cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
 		  if (cnode
 		      && lto_symtab_encoder_encode_body_p (part->encoder,
@@ -561,18 +561,13 @@ offload_handle_link_vars (void)
 			  DECL_ATTRIBUTES (var->decl)))
       {
 	tree type = build_pointer_type (TREE_TYPE (var->decl));
-	tree link_ptr_var = make_node (VAR_DECL);
-	TREE_TYPE (link_ptr_var) = type;
+	tree link_ptr_var = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+					clone_function_name (var->decl,
+							     "linkptr"), type);
 	TREE_USED (link_ptr_var) = 1;
 	TREE_STATIC (link_ptr_var) = 1;
-	SET_DECL_MODE (link_ptr_var, TYPE_MODE (type));
-	DECL_SIZE (link_ptr_var) = TYPE_SIZE (type);
-	DECL_SIZE_UNIT (link_ptr_var) = TYPE_SIZE_UNIT (type);
+	TREE_PUBLIC (link_ptr_var) = TREE_PUBLIC (var->decl);
 	DECL_ARTIFICIAL (link_ptr_var) = 1;
-	tree var_name = DECL_ASSEMBLER_NAME (var->decl);
-	char *new_name
-	  = ACONCAT ((IDENTIFIER_POINTER (var_name), "_linkptr", NULL));
-	DECL_NAME (link_ptr_var) = get_identifier (new_name);
 	SET_DECL_ASSEMBLER_NAME (link_ptr_var, DECL_NAME (link_ptr_var));
 	SET_DECL_VALUE_EXPR (var->decl, build_simple_mem_ref (link_ptr_var));
 	DECL_HAS_VALUE_EXPR_P (var->decl) = 1;

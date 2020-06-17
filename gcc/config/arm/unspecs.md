@@ -154,6 +154,10 @@
   UNSPEC_SMUADX		; Represent the SMUADX operation.
   UNSPEC_SSAT16		; Represent the SSAT16 operation.
   UNSPEC_USAT16		; Represent the USAT16 operation.
+  UNSPEC_CDE		; Custom Datapath Extension instruction.
+  UNSPEC_CDEA		; Custom Datapath Extension instruction.
+  UNSPEC_VCDE		; Custom Datapath Extension instruction.
+  UNSPEC_VCDEA		; Custom Datapath Extension instruction.
 ])
 
 
@@ -170,6 +174,7 @@
   UNSPEC_TORC		; Used by the intrinsic form of the iWMMXt TORC instruction.
   UNSPEC_TORVSC		; Used by the intrinsic form of the iWMMXt TORVSC instruction.
   UNSPEC_TEXTRC		; Used by the intrinsic form of the iWMMXt TEXTRC instruction.
+  UNSPEC_GET_FPSCR_NZCVQC	; Represent fetch of FPSCR_nzcvqc content.
 ])
 
 
@@ -218,6 +223,7 @@
   VUNSPEC_STL		; Represent a store-register-release.
   VUNSPEC_GET_FPSCR	; Represent fetch of FPSCR content.
   VUNSPEC_SET_FPSCR	; Represent assign of FPSCR content.
+  VUNSPEC_SET_FPSCR_NZCVQC	; Represent assign of FPSCR_nzcvqc content.
   VUNSPEC_PROBE_STACK_RANGE ; Represent stack range probing.
   VUNSPEC_CDP		; Represent the coprocessor cdp instruction.
   VUNSPEC_CDP2		; Represent the coprocessor cdp2 instruction.
@@ -239,6 +245,14 @@
   VUNSPEC_MRRC2		; Represent the coprocessor mrrc2 instruction.
   VUNSPEC_SPECULATION_BARRIER ; Represents an unconditional speculation barrier.
   VUNSPEC_APSR_WRITE     ; Represent writing the APSR.
+  VUNSPEC_VSTR_VLDR	; Represent the vstr/vldr instruction.
+  VUNSPEC_CLRM_APSR	; Represent the clearing of APSR with clrm instruction.
+  VUNSPEC_VSCCLRM_VPR	; Represent the clearing of VPR with vscclrm
+			; instruction.
+  VUNSPEC_VLSTM		; Represent the lazy store multiple with vlstm
+			; instruction.
+  VUNSPEC_VLLDM		; Represent the lazy load multiple with vlldm
+			; instruction.
 ])
 
 ;; Enumerators for NEON unspecs.
@@ -485,6 +499,8 @@
   UNSPEC_VRNDX
   UNSPEC_DOT_S
   UNSPEC_DOT_U
+  UNSPEC_DOT_US
+  UNSPEC_DOT_SU
   UNSPEC_VFML_LO
   UNSPEC_VFML_HI
   UNSPEC_VCADD90
@@ -493,4 +509,12 @@
   UNSPEC_VCMLA90
   UNSPEC_VCMLA180
   UNSPEC_VCMLA270
+  UNSPEC_MATMUL_S
+  UNSPEC_MATMUL_U
+  UNSPEC_MATMUL_US
+  UNSPEC_BFCVT
+  UNSPEC_BFCVT_HIGH
+  UNSPEC_BFMMLA
+  UNSPEC_BFMAB
+  UNSPEC_BFMAT
 ])

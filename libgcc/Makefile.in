@@ -165,6 +165,7 @@ AUTOCONF = autoconf
 configure_deps = \
 	$(srcdir)/../config/enable.m4 \
 	$(srcdir)/../config/tls.m4 \
+	$(srcdir)/../config/toolexeclibdir.m4 \
 	$(srcdir)/../config/acx.m4 \
 	$(srcdir)/../config/no-executables.m4 \
 	$(srcdir)/../config/lib-ld.m4 \
@@ -903,9 +904,10 @@ LIBGCOV_PROFILER = _gcov_interval_profiler				\
 	_gcov_ior_profiler_atomic					\
 	_gcov_indirect_call_profiler_v4					\
 	_gcov_time_profiler
-LIBGCOV_INTERFACE = _gcov_dump _gcov_flush _gcov_fork			\
+LIBGCOV_INTERFACE = _gcov_dump _gcov_fork				\
 	_gcov_execl _gcov_execlp					\
-	_gcov_execle _gcov_execv _gcov_execvp _gcov_execve _gcov_reset
+	_gcov_execle _gcov_execv _gcov_execvp _gcov_execve _gcov_reset  \
+	_gcov_lock_unlock
 LIBGCOV_DRIVER = _gcov
 
 libgcov-merge-objects = $(patsubst %,%$(objext),$(LIBGCOV_MERGE))

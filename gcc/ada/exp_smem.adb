@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -454,7 +454,7 @@ package body Exp_Smem is
 
       begin
          while Next (Nod) /= After loop
-            Nod := Next (Nod);
+            Next (Nod);
          end loop;
 
          return Nod;

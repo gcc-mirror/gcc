@@ -1348,20 +1348,21 @@ default_init_cost (class loop *loop_info ATTRIBUTE_UNUSED)
    it into the cost specified by WHERE, and returns the cost added.  */
 
 unsigned
-default_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
-		       class _stmt_vec_info *stmt_info, int misalign,
+default_add_stmt_cost (class vec_info *vinfo, void *data, int count,
+		       enum vect_cost_for_stmt kind,
+		       class _stmt_vec_info *stmt_info, tree vectype,
+		       int misalign,
 		       enum vect_cost_model_location where)
 {
   unsigned *cost = (unsigned *) data;
   unsigned retval = 0;
-
-  tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
   int stmt_cost = targetm.vectorize.builtin_vectorization_cost (kind, vectype,
 								misalign);
    /* Statements in an inner loop relative to the loop being
       vectorized are weighted more heavily.  The value here is
       arbitrary and could potentially be improved with analysis.  */
-  if (where == vect_body && stmt_info && stmt_in_inner_loop_p (stmt_info))
+  if (where == vect_body && stmt_info
+      && stmt_in_inner_loop_p (vinfo, stmt_info))
     count *= 50;  /* FIXME.  */
 
   retval = (unsigned) (count * stmt_cost);
@@ -1562,6 +1563,19 @@ default_mode_dependent_address_p (const_rtx addr ATTRIBUTE_UNUSED,
 				  addr_space_t addrspace ATTRIBUTE_UNUSED)
 {
   return false;
+}
+
+extern bool default_new_address_profitable_p (rtx, rtx);
+
+
+/* The default implementation of TARGET_NEW_ADDRESS_PROFITABLE_P.  */
+
+bool
+default_new_address_profitable_p (rtx memref ATTRIBUTE_UNUSED,
+				  rtx_insn *insn ATTRIBUTE_UNUSED,
+				  rtx new_addr ATTRIBUTE_UNUSED)
+{
+  return true;
 }
 
 bool
@@ -1812,6 +1826,7 @@ default_print_patchable_function_entry (FILE *file,
 
       switch_to_section (get_section ("__patchable_function_entries",
 				      SECTION_WRITE | SECTION_RELRO, NULL));
+      assemble_align (POINTER_SIZE);
       fputs (asm_op, file);
       assemble_name_raw (file, buf);
       fputc ('\n', file);
@@ -1822,7 +1837,7 @@ default_print_patchable_function_entry (FILE *file,
 
   unsigned i;
   for (i = 0; i < patch_area_size; ++i)
-    fprintf (file, "\t%s\n", nop_templ);
+    output_asm_insn (nop_templ, NULL);
 }
 
 bool

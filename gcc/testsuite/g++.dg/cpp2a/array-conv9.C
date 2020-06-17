@@ -1,5 +1,5 @@
 // PR c++/91364 - Implement P0388R4: Permit conversions to arrays of unknown bound.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 int arr[1];
 extern int arr2[];

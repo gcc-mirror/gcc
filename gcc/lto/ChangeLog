@@ -1,3 +1,93 @@
+2020-06-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-common.c (compare_tree_sccs_1): Do not compare TYPE_VALUES.
+
+2020-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-common.c (lto_read_decls): Do not skip stray refs.
+
+2020-05-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-common.c (compare_tree_sccs_1): Sanity check that we never
+	read TRANSLATION_UNIT_DECL.
+	(process_dref): Break out from ...
+	(unify_scc): ... here.
+	(process_new_tree): Break out from ...
+	(lto_read_decls): ... here; handle streaming of singleton trees.
+	(print_lto_report_1): Update statistics.
+
+2020-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94703
+	* lto-common.c (compare_tree_sccs_1): Compare
+	DECL_NOT_GIMPLE_REG_P.
+
+2020-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94707
+	* lto-common.c (compare_tree_sccs_1): Handle DECL_FIELD_ABI_IGNORED.
+
+2020-04-17  Martin Liska  <mliska@suse.cz>
+
+	PR lto/94612
+	* lto-common.c: Initialize file_data->lto_section_header
+	before lto_mode_identity_table call.  It is needed because
+	it decompresses a LTO section.
+
+2020-04-08  Martin Liska  <mliska@suse.cz>
+
+	PR c++/94314
+	* lto-common.c (compare_tree_sccs_1): Compare also
+	DECL_IS_REPLACEABLE_OPERATOR.
+
+2020-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94223
+	* lto-lang.c (lto_set_decl_assembler_name): Use a static ulong
+	counter instead of DECL_UID.
+
+2020-03-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libgomp/81689
+	* lto.c (offload_handle_link_vars): Propagate TREE_PUBLIC state.
+
+2020-01-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	* lto.c (offload_handle_link_vars): Reduce chance of
+	naming clashes of generated linkptr variable.
+
+2020-01-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94233
+	* lto.c (offload_handle_link_vars): Cleanup; call
+	build_decl to ensure alignment is set.
+
+2020-02-05  Martin Liska  <mliska@suse.cz>
+
+	PR lto/93489
+	* lto-dump.c (dump_list_functions): Do not
+	load body for aliases.
+	(dump_body): Likewise here.
+
+2020-01-16  Martin Liska  <mliska@suse.cz>
+
+	* lto-partition.c (lto_balanced_map): Remember
+	best_noreorder_pos and then restore to it
+	when we revert.
+
+2020-01-08  Martin Liska  <mliska@suse.cz>
+
+	* lto-partition.c (add_symbol_to_partition_1): Use ::dump_name or
+	::dump_asm_name instead of (::name or ::asm_name).
+	(lto_balanced_map): Likewise.
+	(promote_symbol): Likewise.
+	(rename_statics): Likewise.
+	* lto.c (lto_wpa_write_files): Likewise.
+
+2020-01-08  Martin Liska  <mliska@suse.cz>
+
+	* lto-partition.c (lto_balanced_map): Use symtab_node::dump_name.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

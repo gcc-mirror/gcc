@@ -38,6 +38,7 @@ std_headers = \
 	${std_srcdir}/complex \
 	${std_srcdir}/concepts \
 	${std_srcdir}/condition_variable \
+	${std_srcdir}/coroutine \
 	${std_srcdir}/deque \
 	${std_srcdir}/execution \
 	${std_srcdir}/filesystem \
@@ -128,6 +129,7 @@ bits_headers = \
 	${bits_srcdir}/hashtable.h \
 	${bits_srcdir}/hashtable_policy.h \
 	${bits_srcdir}/indirect_array.h \
+	${bits_srcdir}/int_limits.h \
 	${bits_srcdir}/invoke.h \
 	${bits_srcdir}/ios_base.h \
 	${bits_srcdir}/istream.tcc \
@@ -156,6 +158,9 @@ bits_headers = \
 	${bits_srcdir}/random.tcc \
 	${bits_srcdir}/range_access.h \
 	${bits_srcdir}/range_cmp.h \
+	${bits_srcdir}/ranges_algobase.h \
+	${bits_srcdir}/ranges_algo.h \
+	${bits_srcdir}/ranges_uninitialized.h \
 	${bits_srcdir}/refwrap.h \
 	${bits_srcdir}/regex.h \
 	${bits_srcdir}/regex.tcc \
@@ -1244,22 +1249,12 @@ stamp-float128:
 endif
 
 # This header is not installed, it's only used to build libstdc++ itself.
-${host_builddir}/largefile-config.h: ${CONFIG_HEADER} \
-				     ${glibcxx_srcdir}/include/bits/c++config
-	@echo '#if defined _GLIBCXX_CXX_CONFIG_H || defined _FEATURES_H' > $@
-	@echo '# error "This file must be included before any others"' >> $@
-	@echo '#endif' >> $@
-	@echo >> $@
-	@echo '/* Enable large inode numbers on Mac OS X 10.5.  */' >> $@
-	@echo '#ifndef _DARWIN_USE_64_BIT_INODE' >> $@
-	@echo '# define _DARWIN_USE_64_BIT_INODE 1' >> $@
-	@echo '#endif' >> $@
-	@echo >> $@
-	@echo '/* Number of bits in a file offset, on hosts where this is settable. */' >> $@
-	@grep '_FILE_OFFSET_BITS' ${CONFIG_HEADER} >> $@
-	@echo >> $@
-	@echo '/* Define for large files, on AIX-style hosts. */' >> $@
-	@grep '_LARGE_FILES' ${CONFIG_HEADER} >> $@
+${host_builddir}/largefile-config.h: ${CONFIG_HEADER}
+	@rm -f $@.tmp
+	@-grep 'define _DARWIN_USE_64_BIT_INODE' ${CONFIG_HEADER} >> $@.tmp
+	@-grep 'define _FILE_OFFSET_BITS' ${CONFIG_HEADER} >> $@.tmp
+	@-grep 'define _LARGE_FILES' ${CONFIG_HEADER} >> $@.tmp
+	@mv $@.tmp $@
 
 # NB: The non-empty default ldbl_compat works around an AIX sed
 # oddity, see libstdc++/31957 for details.

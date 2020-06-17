@@ -89,7 +89,6 @@ void verify_histograms (void);
 void free_histograms (function *);
 void stringop_block_profile (gimple *, unsigned int *, HOST_WIDE_INT *);
 gcall *gimple_ic (gcall *, struct cgraph_node *, profile_probability);
-bool check_ic_target (gcall *, struct cgraph_node *);
 bool get_nth_most_common_value (gimple *stmt, const char *counter_type,
 				histogram_value hist, gcov_type *value,
 				gcov_type *count, gcov_type *all,

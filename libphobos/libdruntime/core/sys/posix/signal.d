@@ -575,24 +575,51 @@ else
 
 version (CRuntime_Glibc)
 {
-    struct sigaction_t
+    version (SystemZ)
     {
-        static if ( true /* __USE_POSIX199309 */ )
+        struct sigaction_t
         {
-            union
+            static if ( true /* __USE_POSIX199309 */ )
+            {
+                union
+                {
+                    sigfn_t     sa_handler;
+                    sigactfn_t  sa_sigaction;
+                }
+            }
+            else
             {
                 sigfn_t     sa_handler;
-                sigactfn_t  sa_sigaction;
             }
-        }
-        else
-        {
-            sigfn_t     sa_handler;
-        }
-        sigset_t        sa_mask;
-        int             sa_flags;
+            int             __glibc_reserved0;
+            int             sa_flags;
 
-        void function() sa_restorer;
+            void function() sa_restorer;
+
+            sigset_t        sa_mask;
+        }
+    }
+    else
+    {
+        struct sigaction_t
+        {
+            static if ( true /* __USE_POSIX199309 */ )
+            {
+                union
+                {
+                    sigfn_t     sa_handler;
+                    sigactfn_t  sa_sigaction;
+                }
+            }
+            else
+            {
+                sigfn_t     sa_handler;
+            }
+            sigset_t        sa_mask;
+            int             sa_flags;
+
+            void function() sa_restorer;
+        }
     }
 }
 else version (CRuntime_Musl)
@@ -1115,10 +1142,10 @@ else version (FreeBSD)
     int sigdelset(sigset_t*, int);
     int sigemptyset(sigset_t *);
     int sigfillset(sigset_t *);
-    int sigismember(in sigset_t *, int);
+    int sigismember(in sigset_t*, int);
     int sigpending(sigset_t *);
     int sigprocmask(int, in sigset_t*, sigset_t*);
-    int sigsuspend(in sigset_t *);
+    int sigsuspend(in sigset_t*);
     int sigwait(in sigset_t*, int*);
 }
 else version (NetBSD)
@@ -1201,10 +1228,10 @@ else version (NetBSD)
     int __sigdelset14(sigset_t*, int);
     int __sigemptyset14(sigset_t *);
     int __sigfillset14(sigset_t *);
-    int __sigismember14(in sigset_t *, int);
+    int __sigismember14(in sigset_t*, int);
     int __sigpending14(sigset_t *);
     int __sigprocmask14(int, in sigset_t*, sigset_t*);
-    int __sigsuspend14(in sigset_t *);
+    int __sigsuspend14(in sigset_t*);
     int sigwait(in sigset_t*, int*);
 
     alias __sigaction14 sigaction;
@@ -1287,10 +1314,10 @@ else version (OpenBSD)
     int sigdelset(sigset_t*, int);
     int sigemptyset(sigset_t *);
     int sigfillset(sigset_t *);
-    int sigismember(in sigset_t *, int);
+    int sigismember(in sigset_t*, int);
     int sigpending(sigset_t *);
     int sigprocmask(int, in sigset_t*, sigset_t*);
-    int sigsuspend(in sigset_t *);
+    int sigsuspend(in sigset_t*);
     int sigwait(in sigset_t*, int*);
 }
 else version (DragonFlyBSD)
@@ -1336,10 +1363,10 @@ else version (DragonFlyBSD)
     int sigdelset(sigset_t*, int);
     int sigemptyset(sigset_t *);
     int sigfillset(sigset_t *);
-    int sigismember(in sigset_t *, int);
+    int sigismember(in sigset_t*, int);
     int sigpending(sigset_t *);
     int sigprocmask(int, in sigset_t*, sigset_t*);
-    int sigsuspend(in sigset_t *);
+    int sigsuspend(in sigset_t*);
     int sigwait(in sigset_t*, int*);
 }
 else version (Solaris)
@@ -3231,7 +3258,7 @@ else version (CRuntime_Musl)
     sigfn_t2 sigset(int sig, sigfn_t2 func);
 
     int killpg(pid_t, int);
-    int sigaltstack(const scope stack_t*, stack_t*);
+    int sigaltstack(in stack_t*, stack_t*);
     int sighold(int);
     int sigignore(int);
     int siginterrupt(int, int);

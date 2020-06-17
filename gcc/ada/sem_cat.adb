@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1815,7 +1815,17 @@ package body Sem_Cat is
 
       --    4. called from sem_res Resolve_Actuals
 
-      if K = N_Attribute_Reference then
+      if K = N_Attribute_Definition_Clause then
+         E := Etype (Entity (N));
+
+         if Is_Remote_Access_To_Class_Wide_Type (E) then
+            Error_Msg_Name_1 := Chars (N);
+            Error_Msg_N
+              ("cannot specify% aspect for a remote operand", N);
+            return;
+         end if;
+
+      elsif K = N_Attribute_Reference then
          E := Etype (Prefix (N));
 
          if Is_Remote_Access_To_Class_Wide_Type (E) then

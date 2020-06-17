@@ -517,7 +517,7 @@
 			  [(match_operand 4 "cc_register" "") (const_int 0)])
 			 (match_operand:SF 1 "s_register_operand" "0,r")
 			 (match_operand:SF 2 "s_register_operand" "r,0")))]
-  "TARGET_THUMB2 && TARGET_SOFT_FLOAT"
+  "TARGET_THUMB2 && TARGET_SOFT_FLOAT && !TARGET_HAVE_MVE"
   "@
    it\\t%D3\;mov%D3\\t%0, %2
    it\\t%d3\;mov%d3\\t%0, %1"
@@ -537,13 +537,18 @@
 )
 
 (define_insn "*nonsecure_call_reg_thumb2"
-  [(call (unspec:SI [(mem:SI (reg:SI R4_REGNUM))]
+  [(call (unspec:SI [(mem:SI (match_operand:SI 0 "s_register_operand" "l*r"))]
 		    UNSPEC_NONSECURE_MEM)
-	 (match_operand 0 "" ""))
-   (use (match_operand 1 "" ""))
+	 (match_operand 1 "" ""))
+   (use (match_operand 2 "" ""))
    (clobber (reg:SI LR_REGNUM))]
   "TARGET_THUMB2 && use_cmse"
-  "bl\\t__gnu_cmse_nonsecure_call"
+  {
+    if (TARGET_HAVE_FPCXT_CMSE)
+      return "blxns\\t%0";
+    else
+      return "bl\\t__gnu_cmse_nonsecure_call";
+  }
   [(set_attr "length" "4")
    (set_attr "type" "call")]
 )
@@ -562,13 +567,18 @@
 (define_insn "*nonsecure_call_value_reg_thumb2"
   [(set (match_operand 0 "" "")
 	(call
-	 (unspec:SI [(mem:SI (reg:SI R4_REGNUM))]
+	 (unspec:SI [(mem:SI (match_operand:SI 1 "register_operand" "l*r"))]
 		    UNSPEC_NONSECURE_MEM)
-	 (match_operand 1 "" "")))
-   (use (match_operand 2 "" ""))
+	 (match_operand 2 "" "")))
+   (use (match_operand 3 "" ""))
    (clobber (reg:SI LR_REGNUM))]
   "TARGET_THUMB2 && use_cmse"
-  "bl\t__gnu_cmse_nonsecure_call"
+  {
+    if (TARGET_HAVE_FPCXT_CMSE)
+      return "blxns\\t%1";
+    else
+      return "bl\\t__gnu_cmse_nonsecure_call";
+  }
   [(set_attr "length" "4")
    (set_attr "type" "call")]
 )
@@ -1576,3 +1586,67 @@
       FAIL;
  }")
 
+(define_insn "*clear_apsr"
+  [(unspec_volatile:SI [(const_int 0)] VUNSPEC_CLRM_APSR)
+  (clobber (reg:CC CC_REGNUM))]
+  "TARGET_THUMB2 && TARGET_HAVE_FPCXT_CMSE && use_cmse"
+  "clrm%?\\t{APSR}"
+  [(set_attr "predicable" "yes")]
+)
+
+;; The operands are validated through the clear_multiple_operation
+;; match_parallel predicate rather than through constraints so enable it only
+;; after reload.
+(define_insn "*clear_multiple"
+  [(match_parallel 0 "clear_multiple_operation"
+     [(set (match_operand:SI 1 "register_operand" "")
+	   (const_int 0))])]
+  "TARGET_THUMB2 && TARGET_HAVE_FPCXT_CMSE && use_cmse && reload_completed"
+  {
+    char pattern[100];
+    int i, num_saves = XVECLEN (operands[0], 0);
+
+    strcpy (pattern, \"clrm%?\\t{\");
+    for (i = 0; i < num_saves; i++)
+      {
+	if (GET_CODE (XVECEXP (operands[0], 0, i)) == UNSPEC_VOLATILE)
+	  {
+	    strcat (pattern, \"APSR\");
+	    ++i;
+	  }
+	else
+	  strcat (pattern,
+		  reg_names[REGNO (XEXP (XVECEXP (operands[0], 0, i), 0))]);
+	if (i < num_saves - 1)
+	  strcat (pattern, \", %|\");
+      }
+    strcat (pattern, \"}\");
+    output_asm_insn (pattern, operands);
+    return \"\";
+  }
+  [(set_attr "predicable" "yes")]
+)
+
+(define_insn "thumb2_asrl"
+  [(set (match_operand:DI 0 "arm_general_register_operand" "+r")
+	(ashiftrt:DI (match_dup 0)
+		     (match_operand:SI 1 "arm_reg_or_long_shift_imm" "rPg")))]
+  "TARGET_HAVE_MVE"
+  "asrl%?\\t%Q0, %R0, %1"
+  [(set_attr "predicable" "yes")])
+
+(define_insn "thumb2_lsll"
+  [(set (match_operand:DI 0 "arm_general_register_operand" "+r")
+	(ashift:DI (match_dup 0)
+		   (match_operand:SI 1 "arm_reg_or_long_shift_imm" "rPg")))]
+  "TARGET_HAVE_MVE"
+  "lsll%?\\t%Q0, %R0, %1"
+  [(set_attr "predicable" "yes")])
+
+(define_insn "thumb2_lsrl"
+  [(set (match_operand:DI 0 "arm_general_register_operand" "+r")
+	(lshiftrt:DI (match_dup 0)
+		     (match_operand:SI 1 "long_shift_imm" "Pg")))]
+  "TARGET_HAVE_MVE"
+  "lsrl%?\\t%Q0, %R0, %1"
+  [(set_attr "predicable" "yes")])

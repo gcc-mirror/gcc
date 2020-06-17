@@ -1,0 +1,109 @@
+// Copyright (C) 2020 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 3, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License along
+// with this library; see the file COPYING3.  If not see
+// <http://www.gnu.org/licenses/>.
+
+// { dg-options "-std=gnu++2a" }
+// { dg-do run { target c++2a } }
+
+#include <algorithm>
+#include <testsuite_hooks.h>
+#include <testsuite_iterators.h>
+
+using __gnu_test::test_container;
+using __gnu_test::test_range;
+using __gnu_test::input_iterator_wrapper;
+using __gnu_test::output_iterator_wrapper;
+using __gnu_test::forward_iterator_wrapper;
+
+namespace ranges = std::ranges;
+
+struct X
+{
+  int i;
+
+  friend constexpr bool
+  operator==(const X& a, const X& b)
+  {
+    return a.i == b.i;
+  }
+};
+
+void
+test01()
+{
+    {
+      const X x[6] = { {2}, {2}, {6}, {8}, {10}, {11} };
+      X y[5];
+      X z[5] = { {2}, {2}, {6}, {9}, {10} };
+      auto [in,out] = ranges::replace_copy(x, x+5, y, 8, X{9}, &X::i);
+      VERIFY( in == x+5 && out == y+5 );
+      VERIFY( ranges::equal(y, z) );
+    }
+
+    {
+      const X x[6] = { {2}, {2}, {6}, {8}, {10}, {11} };
+      X y[5];
+      X z[5] = { {2}, {2}, {6}, {8}, {10} };
+      auto [in,out] = ranges::replace_copy(x, x+5, y, 7, X{9}, &X::i);
+      VERIFY( in == x+5 && out == y+5 );
+      VERIFY( ranges::equal(x, x+5, y, y+5) && ranges::equal(y, z) );
+    }
+
+    {
+      X x[6] = { {2}, {2}, {6}, {8}, {10}, {11} };
+      X y[6];
+      X z[6] = { {7}, {7}, {6}, {8}, {10}, {11} };
+      test_container<X, forward_iterator_wrapper> cx(x), cy(y), cz(z);
+      auto [in, out] = ranges::replace_copy(cx, cy.begin(), 2, X{7}, &X::i);
+      VERIFY( in == cx.end() && out == cy.end() );
+      VERIFY( ranges::equal(cy, cz) );
+    }
+
+    {
+      X x[6] = { {2}, {2}, {6}, {8}, {10}, {11} };
+      X y[6];
+      const X z[6] = { {7}, {7}, {6}, {8}, {10}, {11} };
+      test_range<X, input_iterator_wrapper> cx(x);
+      test_range<X, output_iterator_wrapper> cy(y);
+      auto [in, out] = ranges::replace_copy(cx, cy.begin(), 2, X{7}, &X::i);
+      VERIFY( in == cx.end() && out == cy.end() );
+      VERIFY( ranges::equal(y, z) );
+    }
+}
+
+struct Y { int i; int j; };
+
+constexpr bool
+test02()
+{
+  bool ok = true;
+  Y x[] = { {3,2}, {2,4}, {3,6} };
+  Y y[] = { {4,5}, {2,4}, {4,5} };
+  Y z[] = { {4,5}, {2,4}, {4,5} };
+  auto [in, out] = ranges::replace_copy(x, y, 3, Y{4,5}, &Y::i);
+  ok &= in == x+3;
+  ok &= out == y+3;
+  ok &= ranges::equal(y, z, {}, &Y::i, &Y::i);
+  ok &= ranges::equal(y, z, {}, &Y::j, &Y::j);
+  return ok;
+}
+
+int
+main()
+{
+  test01();
+  static_assert(test02());
+}

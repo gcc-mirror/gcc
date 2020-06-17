@@ -406,7 +406,7 @@ private:
 
   auto_vec<tree, 16> m_new_types;
 
-  /* Vector of structures telling how to replace old parameters in in the
+  /* Vector of structures telling how to replace old parameters in the
      function body.  TODO: Even though there usually be only few, but should we
      use a hash?  */
 

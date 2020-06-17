@@ -1,0 +1,181 @@
+; analyzer.opt -- Options for the analyzer.
+
+; Copyright (C) 2019-2020 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+; 
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+; 
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+; See the GCC internals manual for a description of this file's format.
+
+; Please try to keep this file in ASCII collating order.
+
+-param=analyzer-bb-explosion-factor=
+Common Joined UInteger Var(param_analyzer_bb_explosion_factor) Init(5) Param
+The maximum number of 'after supernode' exploded nodes within the analyzer per supernode, before terminating analysis.
+
+-param=analyzer-max-enodes-per-program-point=
+Common Joined UInteger Var(param_analyzer_max_enodes_per_program_point) Init(8) Param
+The maximum number of exploded nodes per program point within the analyzer, before terminating analysis of that point.
+
+-param=analyzer-max-recursion-depth=
+Common Joined UInteger Var(param_analyzer_max_recursion_depth) Init(2) Param
+The maximum number of times a callsite can appear in a call stack within the analyzer, before terminating analysis of a call that would recurse deeper.
+
+-param=analyzer-min-snodes-for-call-summary=
+Common Joined UInteger Var(param_analyzer_min_snodes_for_call_summary) Init(10) Param
+The minimum number of supernodes within a function for the analyzer to consider summarizing its effects at call sites.
+
+Wanalyzer-double-fclose
+Common Var(warn_analyzer_double_fclose) Init(1) Warning
+Warn about code paths in which a stdio FILE can be closed more than once.
+
+Wanalyzer-double-free
+Common Var(warn_analyzer_double_free) Init(1) Warning
+Warn about code paths in which a pointer can be freed more than once.
+
+Wanalyzer-exposure-through-output-file
+Common Var(warn_analyzer_exposure_through_output_file) Init(1) Warning
+Warn about code paths in which sensitive data is written to a file.
+
+Wanalyzer-file-leak
+Common Var(warn_analyzer_file_leak) Init(1) Warning
+Warn about code paths in which a stdio FILE is not closed.
+
+Wanalyzer-free-of-non-heap
+Common Var(warn_analyzer_free_of_non_heap) Init(1) Warning
+Warn about code paths in which a non-heap pointer is freed.
+
+Wanalyzer-malloc-leak
+Common Var(warn_analyzer_malloc_leak) Init(1) Warning
+Warn about code paths in which a heap-allocated pointer leaks.
+
+Wanalyzer-possible-null-argument
+Common Var(warn_analyzer_possible_null_argument) Init(1) Warning
+Warn about code paths in which a possibly-NULL value is passed to a must-not-be-NULL function argument.
+
+Wanalyzer-possible-null-dereference
+Common Var(warn_analyzer_possible_null_dereference) Init(1) Warning
+Warn about code paths in which a possibly-NULL pointer is dereferenced.
+
+Wanalyzer-unsafe-call-within-signal-handler
+Common Var(warn_analyzer_unsafe_call_within_signal_handler) Init(1) Warning
+Warn about code paths in which an async-signal-unsafe function is called from a signal handler.
+
+Wanalyzer-null-argument
+Common Var(warn_analyzer_null_argument) Init(1) Warning
+Warn about code paths in which NULL is passed to a must-not-be-NULL function argument.
+
+Wanalyzer-null-dereference
+Common Var(warn_analyzer_null_dereference) Init(1) Warning
+Warn about code paths in which a NULL pointer is dereferenced.
+
+Wanalyzer-stale-setjmp-buffer
+Common Var(warn_analyzer_stale_setjmp_buffer) Init(1) Warning
+Warn about code paths in which a longjmp rewinds to a jmp_buf saved in a stack frame that has returned.
+
+Wanalyzer-tainted-array-index
+Common Var(warn_analyzer_tainted_array_index) Init(1) Warning
+Warn about code paths in which an unsanitized value is used as an array index.
+
+Wanalyzer-use-after-free
+Common Var(warn_analyzer_use_after_free) Init(1) Warning
+Warn about code paths in which a freed value is used.
+
+Wanalyzer-use-of-pointer-in-stale-stack-frame
+Common Var(warn_analyzer_use_of_pointer_in_stale_stack_frame) Init(1) Warning
+Warn about code paths in which a pointer to a stale stack frame is used.
+
+Wanalyzer-too-complex
+Common Var(warn_analyzer_too_complex) Init(0) Warning
+Warn if the code is too complicated for the analyzer to fully explore.
+
+fanalyzer-checker=
+Common Joined RejectNegative Var(flag_analyzer_checker)
+Restrict the analyzer to run just the named checker.
+
+fanalyzer-fine-grained
+Common Var(flag_analyzer_fine_grained) Init(0)
+Avoid combining multiple statements into one exploded edge.
+
+fanalyzer-show-duplicate-count
+Common Var(flag_analyzer_show_duplicate_count) Init(0)
+Issue a note when diagnostics are deduplicated.
+
+fanalyzer-state-purge
+Common Var(flag_analyzer_state_purge) Init(1)
+Purge unneeded state during analysis.
+
+fanalyzer-state-merge
+Common Var(flag_analyzer_state_merge) Init(1)
+Merge similar-enough states during analysis.
+
+fanalyzer-transitivity
+Common Var(flag_analyzer_transitivity) Init(0)
+Enable transitivity of constraints during analysis.
+
+fanalyzer-call-summaries
+Common Var(flag_analyzer_call_summaries) Init(0)
+Approximate the effect of function calls to simplify analysis.
+
+fanalyzer-verbose-edges
+Common Var(flag_analyzer_verbose_edges) Init(0)
+Emit more verbose descriptions of control flow in diagnostics.
+
+fanalyzer-verbose-state-changes
+Common Var(flag_analyzer_verbose_state_changes) Init(0)
+Emit more verbose descriptions of state changes in diagnostics.
+
+fanalyzer-verbosity=
+Common Joined UInteger Var(analyzer_verbosity) Init(2)
+Control which events are displayed in diagnostic paths.
+
+fdump-analyzer
+Common RejectNegative Var(flag_dump_analyzer)
+Dump various analyzer internals to SRCFILE.analyzer.txt.
+
+fdump-analyzer-stderr
+Common RejectNegative Var(flag_dump_analyzer_stderr)
+Dump various analyzer internals to stderr.
+
+fdump-analyzer-callgraph
+Common RejectNegative Var(flag_dump_analyzer_callgraph)
+Dump analyzer-specific call graph information to a SRCFILE.callgraph.dot file.
+
+fdump-analyzer-exploded-graph
+Common RejectNegative Var(flag_dump_analyzer_exploded_graph)
+Dump the analyzer exploded graph to a SRCFILE.eg.dot file.
+
+fdump-analyzer-exploded-nodes
+Common RejectNegative Var(flag_dump_analyzer_exploded_nodes)
+Emit diagnostics showing the location of nodes in the exploded graph.
+
+fdump-analyzer-exploded-nodes-2
+Common RejectNegative Var(flag_dump_analyzer_exploded_nodes_2)
+Dump a textual representation of the exploded graph to SRCFILE.eg.txt.
+
+fdump-analyzer-exploded-nodes-3
+Common RejectNegative Var(flag_dump_analyzer_exploded_nodes_3)
+Dump a textual representation of the exploded graph to SRCFILE.eg-ID.txt.
+
+fdump-analyzer-state-purge
+Common RejectNegative Var(flag_dump_analyzer_state_purge)
+Dump state-purging information to a SRCFILE.state-purge.dot file.
+
+fdump-analyzer-supergraph
+Common RejectNegative Var(flag_dump_analyzer_supergraph)
+Dump the analyzer supergraph to a SRCFILE.supergraph.dot file.
+
+; This comment is to ensure we retain the blank line above.

@@ -933,8 +933,7 @@ store_integral_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
 	 However, only do that if the value is not BLKmode.  */
 
       const bool backwards = WORDS_BIG_ENDIAN && fieldmode != BLKmode;
-      unsigned int nwords = (bitsize + (BITS_PER_WORD - 1)) / BITS_PER_WORD;
-      unsigned int i;
+      const int nwords = (bitsize + (BITS_PER_WORD - 1)) / BITS_PER_WORD;
       rtx_insn *last;
 
       /* This is the mode we must force value to, so that there will be enough
@@ -950,35 +949,31 @@ store_integral_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
 	value_mode = smallest_int_mode_for_size (nwords * BITS_PER_WORD);
 
       last = get_last_insn ();
-      for (i = 0; i < nwords; i++)
+      for (int i = 0; i < nwords; i++)
 	{
-	  /* If I is 0, use the low-order word in both field and target;
-	     if I is 1, use the next to lowest word; and so on.  */
-	  unsigned int wordnum = (backwards
-				  ? GET_MODE_SIZE (value_mode) / UNITS_PER_WORD
-				  - i - 1
-				  : i);
-	  unsigned int bit_offset = (backwards ^ reverse
-				     ? MAX ((int) bitsize - ((int) i + 1)
-					    * BITS_PER_WORD,
-					    0)
-				     : (int) i * BITS_PER_WORD);
-	  rtx value_word = operand_subword_force (value, wordnum, value_mode);
-	  unsigned HOST_WIDE_INT new_bitsize =
-	    MIN (BITS_PER_WORD, bitsize - i * BITS_PER_WORD);
-
-	  /* If the remaining chunk doesn't have full wordsize we have
-	     to make sure that for big-endian machines the higher order
-	     bits are used.  */
-	  if (new_bitsize < BITS_PER_WORD && BYTES_BIG_ENDIAN && !backwards)
-	    {
-	      int shift = BITS_PER_WORD - new_bitsize;
-	      rtx shift_rtx = gen_int_shift_amount (word_mode, shift);
-	      value_word = simplify_expand_binop (word_mode, lshr_optab,
-						  value_word, shift_rtx,
-						  NULL_RTX, true,
-						  OPTAB_LIB_WIDEN);
-	    }
+	  /* Number of bits to be stored in this iteration, i.e. BITS_PER_WORD
+	     except maybe for the last iteration.  */
+	  const unsigned HOST_WIDE_INT new_bitsize
+	    = MIN (BITS_PER_WORD, bitsize - i * BITS_PER_WORD);
+	  /* Bit offset from the starting bit number in the target.  */
+	  const unsigned int bit_offset
+	    = backwards ^ reverse
+	      ? MAX ((int) bitsize - (i + 1) * BITS_PER_WORD, 0)
+	      : i * BITS_PER_WORD;
+	  /* Starting word number in the value.  */
+	  const unsigned int wordnum
+	    = backwards
+	      ? GET_MODE_SIZE (value_mode) / UNITS_PER_WORD - (i + 1)
+	      : i;
+	  /* The chunk of the value in word_mode.  We use bit-field extraction
+	      in BLKmode to handle unaligned memory references and to shift the
+	      last chunk right on big-endian machines if need be.  */
+	  rtx value_word
+	    = fieldmode == BLKmode
+	      ? extract_bit_field (value, new_bitsize, wordnum * BITS_PER_WORD,
+				   1, NULL_RTX, word_mode, word_mode, false,
+				   NULL)
+	      : operand_subword_force (value, wordnum, value_mode);
 
 	  if (!store_bit_field_1 (op0, new_bitsize,
 				  bitnum + bit_offset,

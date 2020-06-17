@@ -46,8 +46,6 @@ const (
 // gcMarkRootPrepare queues root scanning jobs (stacks, globals, and
 // some miscellany) and initializes scanning-related state.
 //
-// The caller must have call gcCopySpans().
-//
 // The world must be stopped.
 //
 //go:nowritebarrier
@@ -111,8 +109,7 @@ func gcMarkRootCheck() {
 fail:
 	println("gp", gp, "goid", gp.goid,
 		"status", readgstatus(gp),
-		"gcscandone", gp.gcscandone,
-		"gcscanvalid", gp.gcscanvalid)
+		"gcscandone", gp.gcscandone)
 	unlock(&allglock) // Avoid self-deadlock with traceback.
 	throw("scan missed a g")
 }
@@ -182,7 +179,7 @@ func markroot(gcw *gcWork, i uint32) {
 			gp.waitsince = work.tstart
 		}
 
-		// scang must be done on the system stack in case
+		// scanstack must be done on the system stack in case
 		// we're trying to scan our own stack.
 		systemstack(func() {
 			// If this is a self-scan, put the user G in
@@ -196,14 +193,24 @@ func markroot(gcw *gcWork, i uint32) {
 				userG.waitreason = waitReasonGarbageCollectionScan
 			}
 
-			// TODO: scang blocks until gp's stack has
-			// been scanned, which may take a while for
+			// TODO: suspendG blocks (and spins) until gp
+			// stops, which may take a while for
 			// running goroutines. Consider doing this in
 			// two phases where the first is non-blocking:
 			// we scan the stacks we can and ask running
 			// goroutines to scan themselves; and the
 			// second blocks.
-			scang(gp, gcw)
+			stopped := suspendG(gp)
+			if stopped.dead {
+				gp.gcscandone = true
+				return
+			}
+			if gp.gcscandone {
+				throw("g already scanned")
+			}
+			scanstack(gp, gcw)
+			gp.gcscandone = true
+			resumeG(stopped)
 
 			if selfScan {
 				casgstatus(userG, _Gwaiting, _Grunning)
@@ -242,13 +249,21 @@ func markrootSpans(gcw *gcWork, shard int) {
 	sg := mheap_.sweepgen
 	spans := mheap_.sweepSpans[mheap_.sweepgen/2%2].block(shard)
 	// Note that work.spans may not include spans that were
-	// allocated between entering the scan phase and now. This is
-	// okay because any objects with finalizers in those spans
-	// must have been allocated and given finalizers after we
-	// entered the scan phase, so addfinalizer will have ensured
-	// the above invariants for them.
-	for _, s := range spans {
-		if s.state != mSpanInUse {
+	// allocated between entering the scan phase and now. We may
+	// also race with spans being added into sweepSpans when they're
+	// just created, and as a result we may see nil pointers in the
+	// spans slice. This is okay because any objects with finalizers
+	// in those spans must have been allocated and given finalizers
+	// after we entered the scan phase, so addfinalizer will have
+	// ensured the above invariants for them.
+	for i := 0; i < len(spans); i++ {
+		// sweepBuf.block requires that we read pointers from the block atomically.
+		// It also requires that we ignore nil pointers.
+		s := (*mspan)(atomic.Loadp(unsafe.Pointer(&spans[i])))
+
+		// This is racing with spans being initialized, so
+		// check the state carefully.
+		if s == nil || s.state.get() != mSpanInUse {
 			continue
 		}
 		// Check that this span was swept (it may be cached or uncached).
@@ -600,16 +615,16 @@ func doscanstackswitch(*g, *g)
 
 // scanstack scans gp's stack, greying all pointers found on the stack.
 //
+// scanstack will also shrink the stack if it is safe to do so. If it
+// is not, it schedules a stack shrink for the next synchronous safe
+// point.
+//
 // scanstack is marked go:systemstack because it must not be preempted
 // while using a workbuf.
 //
 //go:nowritebarrier
 //go:systemstack
 func scanstack(gp *g, gcw *gcWork) {
-	if gp.gcscanvalid {
-		return
-	}
-
 	if readgstatus(gp)&_Gscan == 0 {
 		print("runtime:scanstack: gp=", gp, ", goid=", gp.goid, ", gp->atomicstatus=", hex(readgstatus(gp)), "\n")
 		throw("scanstack - bad status")
@@ -622,17 +637,9 @@ func scanstack(gp *g, gcw *gcWork) {
 	case _Gdead:
 		return
 	case _Grunning:
-		// ok for gccgo, though not for gc.
-		if usestackmaps {
-			print("runtime: gp=", gp, ", goid=", gp.goid, ", gp->atomicstatus=", readgstatus(gp), "\n")
-			throw("scanstack: goroutine not stopped")
-		}
-	case _Gsyscall:
-		if usestackmaps {
-			print("runtime: gp=", gp, ", goid=", gp.goid, ", gp->atomicstatus=", readgstatus(gp), "\n")
-			throw("scanstack: goroutine in syscall")
-		}
-	case _Grunnable, _Gwaiting:
+		print("runtime: gp=", gp, ", goid=", gp.goid, ", gp->atomicstatus=", readgstatus(gp), "\n")
+		throw("scanstack: goroutine not stopped")
+	case _Grunnable, _Gsyscall, _Gwaiting:
 		// ok
 	}
 
@@ -644,6 +651,8 @@ func scanstack(gp *g, gcw *gcWork) {
 			doscanstack(gp, gcw)
 		} else if gp.entry != nil {
 			// This is a newly created g that hasn't run. No stack to scan.
+		} else if readgstatus(gp)&^_Gscan == _Gsyscall {
+			scanSyscallStack(gp, gcw)
 		} else {
 			// Scanning another g's stack. We need to switch to that g
 			// to unwind its stack. And switch back after scan.
@@ -661,8 +670,6 @@ func scanstack(gp *g, gcw *gcWork) {
 	// This is necessary as it uses stack objects (a.k.a. stack tracing).
 	// We don't (yet) do stack objects, and regular stack/heap scan
 	// will take care of defer records just fine.
-
-	gp.gcscanvalid = true
 }
 
 // scanstackswitch scans gp's stack by switching (gogo) to gp and
@@ -698,6 +705,38 @@ func scanstackswitch(gp *g, gcw *gcWork) {
 	// gp.scang is already cleared in C code.
 
 	releasem(mp)
+}
+
+// scanSyscallStack scans the stack of a goroutine blocked in a
+// syscall by waking it up and asking it to scan its own stack.
+func scanSyscallStack(gp *g, gcw *gcWork) {
+	if gp.scanningself {
+		// We've suspended the goroutine by setting the _Gscan bit,
+		// so this shouldn't be possible.
+		throw("scanSyscallStack: scanningself")
+	}
+	if gp.gcscandone {
+		// We've suspended the goroutine by setting the _Gscan bit,
+		// so this shouldn't be possible.
+
+		throw("scanSyscallStack: gcscandone")
+	}
+
+	gp.gcScannedSyscallStack = false
+	for {
+		mp := gp.m
+		noteclear(&mp.scannote)
+		gp.scangcw = uintptr(unsafe.Pointer(gcw))
+		tgkill(getpid(), _pid_t(mp.procid), _SIGURG)
+		// Wait for gp to scan its own stack.
+		notesleep(&mp.scannote)
+		if gp.gcScannedSyscallStack {
+			return
+		}
+
+		// The signal was delivered at a bad time.  Try again.
+		osyield()
+	}
 }
 
 type gcDrainFlags int
@@ -1087,10 +1126,10 @@ func scanstackblockwithmap(pc, b0, n0 uintptr, ptrmask *uint8, gcw *gcWork) {
 				if obj != 0 {
 					o, span, objIndex := findObject(obj, b, i, false)
 					if obj < minPhysPageSize ||
-						span != nil && span.state != mSpanManual &&
-							(obj < span.base() || obj >= span.limit || span.state != mSpanInUse) {
+						span != nil && span.state.get() != mSpanManual &&
+							(obj < span.base() || obj >= span.limit || span.state.get() != mSpanInUse) {
 						print("runtime: found in object at *(", hex(b), "+", hex(i), ") = ", hex(obj), ", pc=", hex(pc), "\n")
-						name, file, line, _ := funcfileline(pc, -1)
+						name, file, line, _ := funcfileline(pc, -1, false)
 						print(name, "\n", file, ":", line, "\n")
 						//gcDumpObject("object", b, i)
 						throw("found bad pointer in Go stack (incorrect use of unsafe or cgo?)")
@@ -1218,15 +1257,15 @@ func gcDumpObject(label string, obj, off uintptr) {
 		return
 	}
 	print(" s.base()=", hex(s.base()), " s.limit=", hex(s.limit), " s.spanclass=", s.spanclass, " s.elemsize=", s.elemsize, " s.state=")
-	if 0 <= s.state && int(s.state) < len(mSpanStateNames) {
-		print(mSpanStateNames[s.state], "\n")
+	if state := s.state.get(); 0 <= state && int(state) < len(mSpanStateNames) {
+		print(mSpanStateNames[state], "\n")
 	} else {
-		print("unknown(", s.state, ")\n")
+		print("unknown(", state, ")\n")
 	}
 
 	skipped := false
 	size := s.elemsize
-	if s.state == mSpanManual && size == 0 {
+	if s.state.get() == mSpanManual && size == 0 {
 		// We're printing something from a stack frame. We
 		// don't know how big it is, so just show up to an
 		// including off.
@@ -1314,7 +1353,7 @@ var useCheckmark = false
 func initCheckmarks() {
 	useCheckmark = true
 	for _, s := range mheap_.allspans {
-		if s.state == mSpanInUse {
+		if s.state.get() == mSpanInUse {
 			heapBitsForAddr(s.base()).initCheckmarkSpan(s.layout())
 		}
 	}
@@ -1323,7 +1362,7 @@ func initCheckmarks() {
 func clearCheckmarks() {
 	useCheckmark = false
 	for _, s := range mheap_.allspans {
-		if s.state == mSpanInUse {
+		if s.state.get() == mSpanInUse {
 			heapBitsForAddr(s.base()).clearCheckmarkSpan(s.layout())
 		}
 	}

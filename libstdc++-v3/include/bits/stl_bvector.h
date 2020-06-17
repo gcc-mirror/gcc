@@ -182,10 +182,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_offset = static_cast<unsigned int>(__n);
     }
 
-    friend bool
+    friend _GLIBCXX20_CONSTEXPR bool
     operator==(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
     { return __x._M_p == __y._M_p && __x._M_offset == __y._M_offset; }
 
+#if __cpp_lib_three_way_comparison
+    friend constexpr strong_ordering
+    operator<=>(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
+    noexcept
+    {
+      if (const auto __cmp = __x._M_p <=> __y._M_p; __cmp != 0)
+	return __cmp;
+      return __x._M_offset <=> __y._M_offset;
+    }
+#else
     friend bool
     operator<(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
     {
@@ -208,6 +218,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     friend bool
     operator>=(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
     { return !(__x < __y); }
+#endif // three-way comparison
 
     friend ptrdiff_t
     operator-(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
@@ -404,39 +415,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     operator+(difference_type __n, const const_iterator& __x)
     { return __x + __n; }
   };
-
-  inline void
-  __fill_bvector(_Bit_type * __v,
-		 unsigned int __first, unsigned int __last, bool __x)
-  {
-    const _Bit_type __fmask = ~0ul << __first;
-    const _Bit_type __lmask = ~0ul >> (_S_word_bit - __last);
-    const _Bit_type __mask = __fmask & __lmask;
-
-    if (__x)
-      *__v |= __mask;
-    else
-      *__v &= ~__mask;
-  }
-
-  inline void
-  fill(_Bit_iterator __first, _Bit_iterator __last, const bool& __x)
-  {
-    if (__first._M_p != __last._M_p)
-      {
-	_Bit_type* __first_p = __first._M_p;
-	if (__first._M_offset != 0)
-	  __fill_bvector(__first_p++, __first._M_offset, _S_word_bit, __x);
-
-	__builtin_memset(__first_p, __x ? ~0 : 0,
-			 (__last._M_p - __first_p) * sizeof(_Bit_type));
-
-	if (__last._M_offset != 0)
-	  __fill_bvector(__last._M_p, 0, __last._M_offset, __x);
-      }
-    else if (__first._M_offset != __last._M_offset)
-      __fill_bvector(__first._M_p, __first._M_offset, __last._M_offset, __x);
-  }
 
   template<typename _Alloc>
     struct _Bvector_base
@@ -1325,15 +1303,46 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   };
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace std
+
+  inline void
+  __fill_bvector(_GLIBCXX_STD_C::_Bit_type * __v,
+		 unsigned int __first, unsigned int __last, bool __x)
+  {
+    using _GLIBCXX_STD_C::_Bit_type;
+    using _GLIBCXX_STD_C::_S_word_bit;
+    const _Bit_type __fmask = ~0ul << __first;
+    const _Bit_type __lmask = ~0ul >> (_S_word_bit - __last);
+    const _Bit_type __mask = __fmask & __lmask;
+
+    if (__x)
+      *__v |= __mask;
+    else
+      *__v &= ~__mask;
+  }
+
+  inline void
+  __fill_a1(_GLIBCXX_STD_C::_Bit_iterator __first,
+	    _GLIBCXX_STD_C::_Bit_iterator __last, const bool& __x)
+  {
+    using _GLIBCXX_STD_C::_Bit_type;
+    using _GLIBCXX_STD_C::_S_word_bit;
+    if (__first._M_p != __last._M_p)
+      {
+	_Bit_type* __first_p = __first._M_p;
+	if (__first._M_offset != 0)
+	  __fill_bvector(__first_p++, __first._M_offset, _S_word_bit, __x);
+
+	__builtin_memset(__first_p, __x ? ~0 : 0,
+			 (__last._M_p - __first_p) * sizeof(_Bit_type));
+
+	if (__last._M_offset != 0)
+	  __fill_bvector(__last._M_p, 0, __last._M_offset, __x);
+      }
+    else if (__first._M_offset != __last._M_offset)
+      __fill_bvector(__first._M_p, __first._M_offset, __last._M_offset, __x);
+  }
 
 #if __cplusplus >= 201103L
-
-namespace std _GLIBCXX_VISIBILITY(default)
-{
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   // DR 1182.
   /// std::hash specialization for vector<bool>.
   template<typename _Alloc>
@@ -1343,10 +1352,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_t
       operator()(const _GLIBCXX_STD_C::vector<bool, _Alloc>&) const noexcept;
     };
+#endif // C++11
 
 _GLIBCXX_END_NAMESPACE_VERSION
-}// namespace std
-
-#endif // C++11
+} // namespace std
 
 #endif

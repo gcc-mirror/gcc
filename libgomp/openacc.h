@@ -49,14 +49,14 @@ extern "C" {
 /* Types */
 typedef enum acc_device_t {
   /* Keep in sync with include/gomp-constants.h.  */
-  acc_device_current = -3,
+  acc_device_current = -1,
   acc_device_none = 0,
   acc_device_default = 1,
   acc_device_host = 2,
   /* acc_device_host_nonshm = 3 removed.  */
   acc_device_not_host = 4,
   acc_device_nvidia = 5,
-  acc_device_gcn = 8,
+  acc_device_radeon = 8,
   _ACC_device_hwm,
   /* Ensure enumeration is layout compatible with int.  */
   _ACC_highest = __INT_MAX__,
@@ -64,8 +64,7 @@ typedef enum acc_device_t {
 } acc_device_t;
 
 typedef enum acc_device_property_t {
-  /* Keep in sync with include/gomp-constants.h.  */
-  /* Start from 1 to catch uninitialized use.  */
+  /* Keep in sync with 'libgomp/libgomp-plugin.h:goacc_property'.  */
   acc_property_memory = 1,
   acc_property_free_memory = 2,
   acc_property_name = 0x10001,

@@ -1160,6 +1160,50 @@ non_conflicting_reg_copy_p (rtx_insn *insn)
   return SET_SRC (set);
 }
 
+#ifdef EH_RETURN_DATA_REGNO
+
+/* Add EH return hard registers as conflict hard registers to allocnos
+   living at end of BB.  For most allocnos it is already done in
+   process_bb_node_lives when we processing input edges but it does
+   not work when and EH edge is edge out of the current region.  This
+   function covers such out of region edges. */
+static void
+process_out_of_region_eh_regs (basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+  unsigned int i;
+  bitmap_iterator bi;
+  bool eh_p = false;
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    if ((e->flags & EDGE_EH)
+	&& IRA_BB_NODE (e->dest)->parent != IRA_BB_NODE (bb)->parent)
+      eh_p = true;
+
+  if (! eh_p)
+    return;
+
+  EXECUTE_IF_SET_IN_BITMAP (df_get_live_out (bb), FIRST_PSEUDO_REGISTER, i, bi)
+    {
+      ira_allocno_t a = ira_curr_regno_allocno_map[i];
+      for (int n = ALLOCNO_NUM_OBJECTS (a) - 1; n >= 0; n--)
+	{
+	  ira_object_t obj = ALLOCNO_OBJECT (a, n);
+	  for (int k = 0; ; k++)
+	    {
+	      unsigned int regno = EH_RETURN_DATA_REGNO (k);
+	      if (regno == INVALID_REGNUM)
+		break;
+	      SET_HARD_REG_BIT (OBJECT_CONFLICT_HARD_REGS (obj), regno);
+	      SET_HARD_REG_BIT (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj), regno);
+	    }
+	}
+    }
+}
+
+#endif
+
 /* Process insns of the basic block given by its LOOP_TREE_NODE to
    update allocno live ranges, allocno hard register conflicts,
    intersected calls, and register pressure info for allocnos for the
@@ -1212,6 +1256,10 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	  }
       EXECUTE_IF_SET_IN_BITMAP (reg_live_out, FIRST_PSEUDO_REGISTER, j, bi)
 	mark_pseudo_regno_live (j);
+
+#ifdef EH_RETURN_DATA_REGNO
+      process_out_of_region_eh_regs (bb);
+#endif
 
       freq = REG_FREQ_FROM_BB (bb);
       if (freq == 0)

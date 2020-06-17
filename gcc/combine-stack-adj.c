@@ -70,9 +70,10 @@ static rtx single_set_for_csa (rtx_insn *);
 static void free_csa_reflist (struct csa_reflist *);
 static struct csa_reflist *record_one_stack_ref (rtx_insn *, rtx *,
 						 struct csa_reflist *);
-static int try_apply_stack_adjustment (rtx_insn *, struct csa_reflist *,
-				       HOST_WIDE_INT, HOST_WIDE_INT);
-static void combine_stack_adjustments_for_block (basic_block);
+static bool try_apply_stack_adjustment (rtx_insn *, struct csa_reflist *,
+					HOST_WIDE_INT, HOST_WIDE_INT,
+					bitmap, rtx_insn *);
+static void combine_stack_adjustments_for_block (basic_block, bitmap);
 
 
 /* Main entry point for stack adjustment combination.  */
@@ -81,9 +82,12 @@ static void
 combine_stack_adjustments (void)
 {
   basic_block bb;
+  bitmap live = BITMAP_ALLOC (&reg_obstack);
 
   FOR_EACH_BB_FN (bb, cfun)
-    combine_stack_adjustments_for_block (bb);
+    combine_stack_adjustments_for_block (bb, live);
+
+  BITMAP_FREE (live);
 }
 
 /* Recognize a MEM of the form (sp) or (plus sp const).  */
@@ -219,18 +223,60 @@ no_unhandled_cfa (rtx_insn *insn)
    as each of the memories and stack references in REFLIST.  Return true
    on success.  */
 
-static int
+static bool
 try_apply_stack_adjustment (rtx_insn *insn, struct csa_reflist *reflist,
-			    HOST_WIDE_INT new_adjust, HOST_WIDE_INT delta)
+			    HOST_WIDE_INT new_adjust, HOST_WIDE_INT delta,
+			    bitmap live, rtx_insn *other_insn)
 {
   struct csa_reflist *ml;
   rtx set;
+  bool remove_equal = false;
 
   set = single_set_for_csa (insn);
   if (MEM_P (SET_DEST (set)))
     validate_change (insn, &SET_DEST (set),
 		     replace_equiv_address (SET_DEST (set), stack_pointer_rtx),
 		     1);
+  else if (REG_P (SET_SRC (set)))
+    {
+      if (other_insn == NULL_RTX || live == NULL)
+	return false;
+      rtx other_set = single_set_for_csa (other_insn);
+      if (SET_DEST (other_set) != stack_pointer_rtx
+	  || GET_CODE (SET_SRC (other_set)) != PLUS
+	  || XEXP (SET_SRC (other_set), 0) != stack_pointer_rtx
+	  || !CONST_INT_P (XEXP (SET_SRC (other_set), 1)))
+	return false;
+      if (PATTERN (other_insn) != other_set)
+	{
+	  if (GET_CODE (PATTERN (other_insn)) != PARALLEL)
+	    return false;
+	  int i;
+	  rtx p = PATTERN (other_insn);
+	  for (i = 0; i < XVECLEN (p, 0); ++i)
+	    {
+	      rtx this_rtx = XVECEXP (p, 0, i);
+	      if (this_rtx == other_set)
+		continue;
+	      if (GET_CODE (this_rtx) != CLOBBER)
+		return false;
+	      if (!REG_P (XEXP (this_rtx, 0))
+		  || !HARD_REGISTER_P (XEXP (this_rtx, 0)))
+		return false;
+	      unsigned int end_regno = END_REGNO (XEXP (this_rtx, 0));
+	      for (unsigned int regno = REGNO (XEXP (this_rtx, 0));
+		   regno < end_regno; ++regno)
+		if (bitmap_bit_p (live, regno))
+		  return false;
+	    }
+	}
+      validate_change (insn, &PATTERN (insn), copy_rtx (PATTERN (other_insn)),
+		       1);
+      set = single_set_for_csa (insn);
+      validate_change (insn, &XEXP (SET_SRC (set), 1), GEN_INT (new_adjust),
+		       1);
+      remove_equal = true;
+    }
   else
     validate_change (insn, &XEXP (SET_SRC (set), 1), GEN_INT (new_adjust), 1);
 
@@ -256,10 +302,12 @@ try_apply_stack_adjustment (rtx_insn *insn, struct csa_reflist *reflist,
       for (ml = reflist; ml ; ml = ml->next)
 	ml->sp_offset -= delta;
 
-      return 1;
+      if (remove_equal)
+	remove_reg_equal_equiv_notes (insn);
+      return true;
     }
   else
-    return 0;
+    return false;
 }
 
 /* For non-debug insns, record all stack memory references in INSN
@@ -489,15 +537,20 @@ force_move_args_size_note (basic_block bb, rtx_insn *prev, rtx_insn *insn)
 /* Subroutine of combine_stack_adjustments, called for each basic block.  */
 
 static void
-combine_stack_adjustments_for_block (basic_block bb)
+combine_stack_adjustments_for_block (basic_block bb, bitmap live)
 {
   HOST_WIDE_INT last_sp_adjust = 0;
   rtx_insn *last_sp_set = NULL;
   rtx_insn *last2_sp_set = NULL;
+  bitmap last_sp_live = NULL;
   struct csa_reflist *reflist = NULL;
+  bitmap copy = NULL;
   rtx_insn *insn, *next;
   rtx set;
   bool end_of_block = false;
+
+  bitmap_copy (live, DF_LR_IN (bb));
+  df_simulate_initialize_forwards (bb, live);
 
   for (insn = BB_HEAD (bb); !end_of_block ; insn = next)
     {
@@ -514,21 +567,43 @@ combine_stack_adjustments_for_block (basic_block bb)
 	{
 	  rtx dest = SET_DEST (set);
 	  rtx src = SET_SRC (set);
+	  HOST_WIDE_INT this_adjust = 0;
 
 	  /* Find constant additions to the stack pointer.  */
 	  if (dest == stack_pointer_rtx
 	      && GET_CODE (src) == PLUS
 	      && XEXP (src, 0) == stack_pointer_rtx
 	      && CONST_INT_P (XEXP (src, 1)))
-	    {
-	      HOST_WIDE_INT this_adjust = INTVAL (XEXP (src, 1));
+	    this_adjust = INTVAL (XEXP (src, 1));
+	  /* Or such additions turned by postreload into a store of
+	     equivalent register.  */
+	  else if (dest == stack_pointer_rtx
+		   && REG_P (src)
+		   && REGNO (src) != STACK_POINTER_REGNUM)
+	    if (rtx equal = find_reg_note (insn, REG_EQUAL, NULL_RTX))
+	      if (GET_CODE (XEXP (equal, 0)) == PLUS
+		  && XEXP (XEXP (equal, 0), 0) == stack_pointer_rtx
+		  && CONST_INT_P (XEXP (XEXP (equal, 0), 1)))
+		this_adjust = INTVAL (XEXP (XEXP (equal, 0), 1));
 
+	  if (this_adjust)
+	    {
 	      /* If we've not seen an adjustment previously, record
 		 it now and continue.  */
 	      if (! last_sp_set)
 		{
 		  last_sp_set = insn;
 		  last_sp_adjust = this_adjust;
+		  if (REG_P (src))
+		    {
+		      if (copy == NULL)
+			copy = BITMAP_ALLOC (&reg_obstack);
+		      last_sp_live = copy;
+		      bitmap_copy (last_sp_live, live);
+		    }
+		  else
+		    last_sp_live = NULL;
+		  df_simulate_one_insn_forwards (bb, insn, live);
 		  continue;
 		}
 
@@ -560,13 +635,16 @@ combine_stack_adjustments_for_block (basic_block bb)
 		      && try_apply_stack_adjustment (last_sp_set, reflist,
 						     last_sp_adjust
 						     + this_adjust,
-						     this_adjust))
+						     this_adjust,
+						     last_sp_live,
+						     insn))
 		    {
 		      /* It worked!  */
 		      maybe_move_args_size_note (last_sp_set, insn, false);
 		      maybe_merge_cfa_adjust (last_sp_set, insn, false);
 		      delete_insn (insn);
 		      last_sp_adjust += this_adjust;
+		      last_sp_live = NULL;
 		      continue;
 		    }
 		}
@@ -577,10 +655,12 @@ combine_stack_adjustments_for_block (basic_block bb)
 		       ? last_sp_adjust >= 0 : last_sp_adjust <= 0)
 		{
 		  if (no_unhandled_cfa (last_sp_set)
+		      && !REG_P (src)
 		      && try_apply_stack_adjustment (insn, reflist,
 						     last_sp_adjust
 						     + this_adjust,
-						     -last_sp_adjust))
+						     -last_sp_adjust,
+						     NULL, NULL))
 		    {
 		      /* It worked!  */
 		      maybe_move_args_size_note (insn, last_sp_set, true);
@@ -588,8 +668,10 @@ combine_stack_adjustments_for_block (basic_block bb)
 		      delete_insn (last_sp_set);
 		      last_sp_set = insn;
 		      last_sp_adjust += this_adjust;
+		      last_sp_live = NULL;
 		      free_csa_reflist (reflist);
 		      reflist = NULL;
+		      df_simulate_one_insn_forwards (bb, insn, live);
 		      continue;
 		    }
 		}
@@ -612,6 +694,16 @@ combine_stack_adjustments_for_block (basic_block bb)
 	      reflist = NULL;
 	      last_sp_set = insn;
 	      last_sp_adjust = this_adjust;
+	      if (REG_P (src))
+		{
+		  if (copy == NULL)
+		    copy = BITMAP_ALLOC (&reg_obstack);
+		  last_sp_live = copy;
+		  bitmap_copy (last_sp_live, live);
+		}
+	      else
+		last_sp_live = NULL;
+	      df_simulate_one_insn_forwards (bb, insn, live);
 	      continue;
 	    }
 
@@ -641,7 +733,8 @@ combine_stack_adjustments_for_block (basic_block bb)
 	      && !reg_mentioned_p (stack_pointer_rtx, src)
 	      && memory_address_p (GET_MODE (dest), stack_pointer_rtx)
 	      && try_apply_stack_adjustment (insn, reflist, 0,
-					     -last_sp_adjust))
+					     -last_sp_adjust,
+					     NULL, NULL))
 	    {
 	      if (last2_sp_set)
 		maybe_move_args_size_note (last2_sp_set, last_sp_set, false);
@@ -652,13 +745,17 @@ combine_stack_adjustments_for_block (basic_block bb)
 	      reflist = NULL;
 	      last_sp_set = NULL;
 	      last_sp_adjust = 0;
+	      last_sp_live = NULL;
+	      df_simulate_one_insn_forwards (bb, insn, live);
 	      continue;
 	    }
 	}
 
-      if (!CALL_P (insn) && last_sp_set
-	  && record_stack_refs (insn, &reflist))
-	continue;
+      if (!CALL_P (insn) && last_sp_set && record_stack_refs (insn, &reflist))
+	{
+	  df_simulate_one_insn_forwards (bb, insn, live);
+	  continue;
+	}
 
       /* Otherwise, we were not able to process the instruction.
 	 Do not continue collecting data across such a one.  */
@@ -676,7 +773,10 @@ combine_stack_adjustments_for_block (basic_block bb)
 	  last2_sp_set = NULL;
 	  last_sp_set = NULL;
 	  last_sp_adjust = 0;
+	  last_sp_live = NULL;
 	}
+
+      df_simulate_one_insn_forwards (bb, insn, live);
     }
 
   if (last_sp_set && last_sp_adjust == 0)
@@ -687,6 +787,8 @@ combine_stack_adjustments_for_block (basic_block bb)
 
   if (reflist)
     free_csa_reflist (reflist);
+  if (copy)
+    BITMAP_FREE (copy);
 }
 
 static unsigned int

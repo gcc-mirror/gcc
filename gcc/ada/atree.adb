@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,6 @@ with Nlists;  use Nlists;
 with Opt;     use Opt;
 with Output;  use Output;
 with Sinput;  use Sinput;
-with Tree_IO; use Tree_IO;
 
 with GNAT.Heap_Sort_G;
 
@@ -961,9 +960,9 @@ package body Atree is
 
             --  The following code is a bit kludgy. It would be cleaner to
             --  Add an entry Change_Expanded_Name_To_Selected_Component to
-            --  Sinfo.CN, but that's an earthquake, because it has the wrong
-            --  license, and Atree is used outside the compiler, e.g. in the
-            --  binder and in ASIS, so we don't want to add that dependency.
+            --  Sinfo.CN, but that's delicate because Atree is used in the
+            --  binder, so we don't want to add that dependency.
+            --  ??? Revisit now that ASIS is no longer using this unit.
 
             --  Consequently we have no choice but to hold our noses and do
             --  the change manually. At least we are Atree, so this odd use
@@ -1941,11 +1940,12 @@ package body Atree is
       V13 : Node_Kind;
       V14 : Node_Kind;
       V15 : Node_Kind;
-      V16 : Node_Kind) return Boolean
+      V16 : Node_Kind;
+      V17 : Node_Kind) return Boolean
    is
    begin
       return Nkind_In (Nkind (N), V1, V2, V3, V4, V5, V6, V7, V8, V9, V10,
-                                  V11, V12, V13, V14, V15, V16);
+                                  V11, V12, V13, V14, V15, V16, V17);
    end Nkind_In;
 
    --------
@@ -2685,32 +2685,6 @@ package body Atree is
    begin
       Discard := Traverse (Node);
    end Traverse_Proc;
-
-   ---------------
-   -- Tree_Read --
-   ---------------
-
-   procedure Tree_Read is
-   begin
-      Tree_Read_Int (Node_Count);
-      Nodes.Tree_Read;
-      Flags.Tree_Read;
-      Orig_Nodes.Tree_Read;
-      Paren_Counts.Tree_Read;
-   end Tree_Read;
-
-   ----------------
-   -- Tree_Write --
-   ----------------
-
-   procedure Tree_Write is
-   begin
-      Tree_Write_Int (Node_Count);
-      Nodes.Tree_Write;
-      Flags.Tree_Write;
-      Orig_Nodes.Tree_Write;
-      Paren_Counts.Tree_Write;
-   end Tree_Write;
 
    ------------------------------
    -- Unchecked Access Package --

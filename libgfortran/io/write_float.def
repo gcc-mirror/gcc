@@ -497,7 +497,9 @@ build_float_string (st_parameter_dt *dtp, const fnode *f, char *buffer,
       else if (f->u.real.e == 0)
 	{
 	  /* Zero width specified, no leading zeros in exponent  */
-	  if (e > 99 || e < -99)
+	  if (e > 999 || e < -999)
+	    edigits = 6;
+	  else if (e > 99 || e < -99)
 	    edigits = 5;
 	  else if (e > 9 || e < -9)
 	    edigits = 4;

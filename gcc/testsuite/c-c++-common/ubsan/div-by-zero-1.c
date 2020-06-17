@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-fsanitize=integer-divide-by-zero -Wno-div-by-zero" } */
+/* { dg-options "-fsanitize=integer-divide-by-zero -Wno-div-by-zero -Wno-volatile" { target c++ } } */
 
 int
 main (void)

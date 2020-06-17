@@ -1348,6 +1348,16 @@ gfc_match_assignment (void)
   rvalue = NULL;
   m = gfc_match (" %e%t", &rvalue);
 
+  if (m == MATCH_YES
+      && rvalue->ts.type == BT_BOZ
+      && lvalue->ts.type == BT_CLASS)
+    {
+      m = MATCH_ERROR;
+      gfc_error ("BOZ literal constant at %L is neither a DATA statement "
+		 "value nor an actual argument of INT/REAL/DBLE/CMPLX "
+		 "intrinsic subprogram", &rvalue->where);
+    }
+
   if (lvalue->expr_type == EXPR_CONSTANT)
     {
       /* This clobbers %len and %kind.  */
@@ -1362,6 +1372,14 @@ gfc_match_assignment (void)
       gfc_free_expr (rvalue);
       return m;
     }
+
+  if (!lvalue->symtree)
+    {
+      gfc_free_expr (lvalue);
+      gfc_free_expr (rvalue);
+      return MATCH_ERROR;
+    }
+
 
   gfc_set_sym_referenced (lvalue->symtree->n.sym);
 
@@ -1957,6 +1975,14 @@ gfc_match_associate (void)
 	  goto assocListError;
 	}
 
+      /* The target expression cannot be a BOZ literal constant.  */
+      if (newAssoc->target->ts.type == BT_BOZ)
+	{
+	  gfc_error ("Association target at %L cannot be a BOZ literal "
+		     "constant", &newAssoc->target->where);
+	  goto assocListError;
+	}
+
       /* The `variable' field is left blank for now; because the target is not
 	 yet resolved, we can't use gfc_has_vector_subscript to determine it
 	 for now.  This is set during resolution.  */
@@ -2222,9 +2248,9 @@ gfc_match_type_spec (gfc_typespec *ts)
 
 found:
 
-      m = gfc_match_init_expr (&e);
+      m = gfc_match_expr (&e);
       if (m == MATCH_NO || m == MATCH_ERROR)
-	return MATCH_NO;
+	return m;
 
       /* If a comma appears, it is an intrinsic subprogram. */
       gfc_gobble_whitespace ();
@@ -2239,7 +2265,10 @@ found:
 	 a scalar integer initialization-expr and valid kind parameter. */
       if (c == ')')
 	{
-	  if (e->ts.type != BT_INTEGER || e->rank > 0)
+	  bool ok = true;
+	  if (e->expr_type != EXPR_CONSTANT && e->expr_type != EXPR_VARIABLE)
+	    ok = gfc_reduce_init_expr (e);
+	  if (!ok || e->ts.type != BT_INTEGER || e->rank > 0)
 	    {
 	      gfc_free_expr (e);
 	      return MATCH_NO;
@@ -2860,6 +2889,7 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
       && o != NULL
       && o->state == COMP_OMP_STRUCTURED_BLOCK
       && (o->head->op == EXEC_OACC_LOOP
+	  || o->head->op == EXEC_OACC_KERNELS_LOOP
 	  || o->head->op == EXEC_OACC_PARALLEL_LOOP
 	  || o->head->op == EXEC_OACC_SERIAL_LOOP))
     {
@@ -2869,9 +2899,20 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
 		      || o->head->next->op == EXEC_DO_WHILE)
 		  && o->previous != NULL
 		  && o->previous->tail->op == o->head->op);
-      if (o->previous->tail->ext.omp_clauses != NULL
-	  && o->previous->tail->ext.omp_clauses->collapse > 1)
-	collapse = o->previous->tail->ext.omp_clauses->collapse;
+      if (o->previous->tail->ext.omp_clauses != NULL)
+	{
+	  /* Both collapsed and tiled loops are lowered the same way, but are not
+	     compatible.  In gfc_trans_omp_do, the tile is prioritized.  */
+	  if (o->previous->tail->ext.omp_clauses->tile_list)
+	    {
+	      collapse = 0;
+	      gfc_expr_list *el = o->previous->tail->ext.omp_clauses->tile_list;
+	      for ( ; el; el = el->next)
+		++collapse;
+	    }
+	  else if (o->previous->tail->ext.omp_clauses->collapse > 1)
+	    collapse = o->previous->tail->ext.omp_clauses->collapse;
+	}
       if (st == ST_EXIT && cnt <= collapse)
 	{
 	  gfc_error ("EXIT statement at %C terminating !$ACC LOOP loop");
@@ -2879,8 +2920,11 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
 	}
       if (st == ST_CYCLE && cnt < collapse)
 	{
-	  gfc_error ("CYCLE statement at %C to non-innermost collapsed"
-		     " !$ACC LOOP loop");
+	  gfc_error (o->previous->tail->ext.omp_clauses->tile_list
+		     ? G_("CYCLE statement at %C to non-innermost tiled"
+			  " !$ACC LOOP loop")
+		     : G_("CYCLE statement at %C to non-innermost collapsed"
+			  " !$ACC LOOP loop"));
 	  return MATCH_ERROR;
 	}
     }
@@ -6294,8 +6338,14 @@ select_type_set_tmp (gfc_typespec *ts)
 		    = CLASS_DATA (selector)->attr.dimension;
 	      sym->attr.codimension
 		    = CLASS_DATA (selector)->attr.codimension;
-	      sym->as
-		    = gfc_copy_array_spec (CLASS_DATA (selector)->as);
+	      if (CLASS_DATA (selector)->as->type != AS_EXPLICIT)
+		sym->as = gfc_copy_array_spec (CLASS_DATA (selector)->as);
+	      else
+		{
+		  sym->as = gfc_get_array_spec();
+		  sym->as->rank = CLASS_DATA (selector)->as->rank;
+		  sym->as->type = AS_DEFERRED;
+		}
 	    }
 	}
 
@@ -6631,6 +6681,7 @@ gfc_match_select_rank (void)
 
       if (m != MATCH_YES)
 	{
+	  gfc_undo_symbols ();
 	  std::swap (ns, gfc_current_ns);
 	  gfc_free_namespace (ns);
 	  return m;

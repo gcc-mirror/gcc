@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 
 static rtx break_out_memory_refs (rtx);
-static void anti_adjust_stack_and_probe_stack_clash (rtx);
 
 
 /* Truncate and perhaps sign-extend C as appropriate for MODE.  */
@@ -128,6 +127,9 @@ plus_constant (machine_mode mode, rtx x, poly_int64 c, bool inplace)
 	      cst = gen_lowpart (mode, cst);
 	      gcc_assert (cst);
 	    }
+	  else if (GET_MODE (cst) == VOIDmode
+		   && get_pool_mode (XEXP (x, 0)) != mode)
+	    break;
 	  if (GET_MODE (cst) == VOIDmode || GET_MODE (cst) == mode)
 	    {
 	      tem = plus_constant (mode, cst, c);
@@ -1945,7 +1947,7 @@ emit_stack_clash_protection_probe_loop_end (rtx loop_lab, rtx end_loop,
 	allocate/probe beyond that because this probing style does not
 	guarantee signal handling capability if the guard is hit.  */
 
-static void
+void
 anti_adjust_stack_and_probe_stack_clash (rtx size)
 {
   /* First ensure SIZE is Pmode.  */

@@ -1107,3 +1107,11 @@ AVX512BF16 built-in functions and code generation.
 menqcmd
 Target Report Mask(ISA2_ENQCMD) Var(ix86_isa_flags2) Save
 Support ENQCMD built-in functions and code generation.
+
+mserialize
+Target Report Mask(ISA2_SERIALIZE) Var(ix86_isa_flags2) Save
+Support SERIALIZE built-in functions and code generation.
+
+mtsxldtrk
+Target Report Mask(ISA2_TSXLDTRK) Var(ix86_isa_flags2) Save
+Support TSXLDTRK built-in functions and code generation.

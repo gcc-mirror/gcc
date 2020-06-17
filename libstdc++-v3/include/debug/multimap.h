@@ -59,6 +59,16 @@ namespace __debug
       template<typename _ItT, typename _SeqT, typename _CatT>
 	friend class ::__gnu_debug::_Safe_iterator;
 
+      // Reference wrapper for base class. Disambiguates multimap(const _Base&)
+      // from copy constructor by requiring a user-defined conversion.
+      // See PR libstdc++/90102.
+      struct _Base_ref
+      {
+	_Base_ref(const _Base& __r) : _M_ref(__r) { }
+
+	const _Base& _M_ref;
+      };
+
     public:
       // types:
       typedef _Key					key_type;
@@ -138,8 +148,8 @@ namespace __debug
 		__gnu_debug::__base(__last),
 	      __comp, __a) { }
 
-      multimap(const _Base& __x)
-      : _Base(__x) { }
+      multimap(_Base_ref __x)
+      : _Base(__x._M_ref) { }
 
 #if __cplusplus < 201103L
       multimap&
@@ -621,6 +631,13 @@ namespace __debug
 	       const multimap<_Key, _Tp, _Compare, _Allocator>& __rhs)
     { return __lhs._M_base() == __rhs._M_base(); }
 
+#if __cpp_lib_three_way_comparison
+  template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
+    inline __detail::__synth3way_t<pair<const _Key, _Tp>>
+    operator<=>(const multimap<_Key, _Tp, _Compare, _Alloc>& __lhs,
+		const multimap<_Key, _Tp, _Compare, _Alloc>& __rhs)
+    { return __lhs._M_base() <=> __rhs._M_base(); }
+#else
   template<typename _Key, typename _Tp,
 	   typename _Compare, typename _Allocator>
     inline bool
@@ -655,6 +672,7 @@ namespace __debug
     operator>(const multimap<_Key, _Tp, _Compare, _Allocator>& __lhs,
 	      const multimap<_Key, _Tp, _Compare, _Allocator>& __rhs)
     { return __lhs._M_base() > __rhs._M_base(); }
+#endif // three-way comparison
 
   template<typename _Key, typename _Tp,
 	   typename _Compare, typename _Allocator>

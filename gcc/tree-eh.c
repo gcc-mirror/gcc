@@ -356,6 +356,9 @@ struct leh_state
      split out into a separate structure so that we don't have to
      copy so much when processing other nodes.  */
   struct leh_tf_state *tf;
+
+  /* Outer non-clean up region.  */
+  eh_region outer_non_cleanup;
 };
 
 struct leh_tf_state
@@ -1624,7 +1627,8 @@ decide_copy_try_finally (int ndests, bool may_throw, gimple_seq finally)
     return f_estimate < 40 || f_estimate * 2 < sw_estimate * 3;
 }
 
-/* REG is the enclosing region for a possible cleanup region, or the region
+/* REG is current region of a LEH state.
+   is the enclosing region for a possible cleanup region, or the region
    itself.  Returns TRUE if such a region would be unreachable.
 
    Cleanup regions within a must-not-throw region aren't actually reachable
@@ -1632,10 +1636,18 @@ decide_copy_try_finally (int ndests, bool may_throw, gimple_seq finally)
    routine will call terminate before unwinding.  */
 
 static bool
-cleanup_is_dead_in (eh_region reg)
+cleanup_is_dead_in (leh_state *state)
 {
-  while (reg && reg->type == ERT_CLEANUP)
-    reg = reg->outer;
+  if (flag_checking)
+    {
+      eh_region reg = state->cur_region;
+      while (reg && reg->type == ERT_CLEANUP)
+	reg = reg->outer;
+
+      gcc_assert (reg == state->outer_non_cleanup);
+    }
+
+  eh_region reg = state->outer_non_cleanup;
   return (reg && reg->type == ERT_MUST_NOT_THROW);
 }
 
@@ -1658,7 +1670,7 @@ lower_try_finally (struct leh_state *state, gtry *tp)
   this_tf.try_finally_expr = tp;
   this_tf.top_p = tp;
   this_tf.outer = state;
-  if (using_eh_for_cleanups_p () && !cleanup_is_dead_in (state->cur_region))
+  if (using_eh_for_cleanups_p () && !cleanup_is_dead_in (state))
     {
       this_tf.region = gen_eh_region_cleanup (state->cur_region);
       this_state.cur_region = this_tf.region;
@@ -1669,6 +1681,7 @@ lower_try_finally (struct leh_state *state, gtry *tp)
       this_state.cur_region = state->cur_region;
     }
 
+  this_state.outer_non_cleanup = state->outer_non_cleanup;
   this_state.ehp_region = state->ehp_region;
   this_state.tf = &this_tf;
 
@@ -1768,6 +1781,7 @@ lower_catch (struct leh_state *state, gtry *tp)
     {
       try_region = gen_eh_region_try (state->cur_region);
       this_state.cur_region = try_region;
+      this_state.outer_non_cleanup = this_state.cur_region;
     }
 
   lower_eh_constructs_1 (&this_state, gimple_try_eval_ptr (tp));
@@ -1781,6 +1795,7 @@ lower_catch (struct leh_state *state, gtry *tp)
   emit_resx (&new_seq, try_region);
 
   this_state.cur_region = state->cur_region;
+  this_state.outer_non_cleanup = state->outer_non_cleanup;
   this_state.ehp_region = try_region;
 
   /* Add eh_seq from lowering EH in the cleanup sequence after the cleanup
@@ -1857,6 +1872,7 @@ lower_eh_filter (struct leh_state *state, gtry *tp)
       this_region = gen_eh_region_allowed (state->cur_region,
 				           gimple_eh_filter_types (inner));
       this_state.cur_region = this_region;
+      this_state.outer_non_cleanup = this_state.cur_region;
     }
 
   lower_eh_constructs_1 (&this_state, gimple_try_eval_ptr (tp));
@@ -1912,6 +1928,7 @@ lower_eh_must_not_throw (struct leh_state *state, gtry *tp)
       TREE_USED (this_region->u.must_not_throw.failure_decl) = 1;
 
       this_state.cur_region = this_region;
+      this_state.outer_non_cleanup = this_state.cur_region;
     }
 
   lower_eh_constructs_1 (&this_state, gimple_try_eval_ptr (tp));
@@ -1929,12 +1946,13 @@ lower_cleanup (struct leh_state *state, gtry *tp)
   eh_region this_region = NULL;
   struct leh_tf_state fake_tf;
   gimple_seq result;
-  bool cleanup_dead = cleanup_is_dead_in (state->cur_region);
+  bool cleanup_dead = cleanup_is_dead_in (state);
 
   if (flag_exceptions && !cleanup_dead)
     {
       this_region = gen_eh_region_cleanup (state->cur_region);
       this_state.cur_region = this_region;
+      this_state.outer_non_cleanup = state->outer_non_cleanup;
     }
 
   lower_eh_constructs_1 (&this_state, gimple_try_eval_ptr (tp));
@@ -2054,9 +2072,6 @@ lower_eh_constructs_2 (struct leh_state *state, gimple_stmt_iterator *gsi)
 	  gimple_set_location (s, gimple_location (stmt));
 	  gimple_set_block (s, gimple_block (stmt));
 	  gimple_set_lhs (stmt, tmp);
-	  if (TREE_CODE (TREE_TYPE (tmp)) == COMPLEX_TYPE
-	      || TREE_CODE (TREE_TYPE (tmp)) == VECTOR_TYPE)
-	    DECL_GIMPLE_REG_P (tmp) = 1;
 	  gsi_insert_after (gsi, s, GSI_SAME_STMT);
 	}
       /* Look for things that can throw exceptions, and record them.  */
@@ -2310,7 +2325,7 @@ redirect_eh_edge_1 (edge edge_in, basic_block new_bb, bool change_region)
   old_lp = get_eh_landing_pad_from_number (old_lp_nr);
 
   throw_stmt = last_stmt (edge_in->src);
-  gcc_assert (lookup_stmt_eh_lp (throw_stmt) == old_lp_nr);
+  gcc_checking_assert (lookup_stmt_eh_lp (throw_stmt) == old_lp_nr);
 
   new_label = gimple_block_label (new_bb);
 
@@ -2921,6 +2936,16 @@ stmt_could_throw_p (function *fun, gimple *stmt)
     }
 }
 
+/* Return true if STMT in function FUN must be assumed necessary because of
+   non-call exceptions.  */
+
+bool
+stmt_unremovable_because_of_non_call_eh_p (function *fun, gimple *stmt)
+{
+  return (fun->can_throw_non_call_exceptions
+	  && !fun->can_delete_dead_exceptions
+	  && stmt_could_throw_p (fun, stmt));
+}
 
 /* Return true if expression T could throw an exception.  */
 
@@ -3550,10 +3575,15 @@ optimize_clobbers (basic_block bb)
 }
 
 /* Try to sink var = {v} {CLOBBER} stmts followed just by
-   internal throw to successor BB.  */
+   internal throw to successor BB.
+   SUNK, if not NULL, is an array of sequences indexed by basic-block
+   index to sink to and to pick up sinking opportunities from.
+   If FOUND_OPPORTUNITY is not NULL then do not perform the optimization
+   but set *FOUND_OPPORTUNITY to true.  */
 
 static int
-sink_clobbers (basic_block bb)
+sink_clobbers (basic_block bb,
+	       gimple_seq *sunk = NULL, bool *found_opportunity = NULL)
 {
   edge e;
   edge_iterator ei;
@@ -3588,8 +3618,15 @@ sink_clobbers (basic_block bb)
 	return 0;
       any_clobbers = true;
     }
-  if (!any_clobbers)
+  if (!any_clobbers && (!sunk || gimple_seq_empty_p (sunk[bb->index])))
     return 0;
+
+  /* If this was a dry run, tell it we found clobbers to sink.  */
+  if (found_opportunity)
+    {
+      *found_opportunity = true;
+      return 0;
+    }
 
   edge succe = single_succ_edge (bb);
   succbb = succe->dest;
@@ -3597,7 +3634,6 @@ sink_clobbers (basic_block bb)
   /* See if there is a virtual PHI node to take an updated virtual
      operand from.  */
   gphi *vphi = NULL;
-  tree vuse = NULL_TREE;
   for (gphi_iterator gpi = gsi_start_phis (succbb);
        !gsi_end_p (gpi); gsi_next (&gpi))
     {
@@ -3605,12 +3641,16 @@ sink_clobbers (basic_block bb)
       if (virtual_operand_p (res))
 	{
 	  vphi = gpi.phi ();
-	  vuse = res;
 	  break;
 	}
     }
 
-  dgsi = gsi_after_labels (succbb);
+  gimple *first_sunk = NULL;
+  gimple *last_sunk = NULL;
+  if (sunk && !(succbb->flags & BB_VISITED))
+    dgsi = gsi_start (sunk[succbb->index]);
+  else
+    dgsi = gsi_after_labels (succbb);
   gsi = gsi_last_bb (bb);
   for (gsi_prev (&gsi); !gsi_end_p (gsi); gsi_prev (&gsi))
     {
@@ -3641,36 +3681,46 @@ sink_clobbers (basic_block bb)
          forwarder edge we can keep virtual operands in place.  */
       gsi_remove (&gsi, false);
       gsi_insert_before (&dgsi, stmt, GSI_NEW_STMT);
-
-      /* But adjust virtual operands if we sunk across a PHI node.  */
-      if (vuse)
+      if (!first_sunk)
+	first_sunk = stmt;
+      last_sunk = stmt;
+    }
+  if (sunk && !gimple_seq_empty_p (sunk[bb->index]))
+    {
+      if (!first_sunk)
+	first_sunk = gsi_stmt (gsi_last (sunk[bb->index]));
+      last_sunk = gsi_stmt (gsi_start (sunk[bb->index]));
+      gsi_insert_seq_before_without_update (&dgsi,
+					    sunk[bb->index], GSI_NEW_STMT);
+      sunk[bb->index] = NULL;
+    }
+  if (first_sunk)
+    {
+      /* Adjust virtual operands if we sunk across a virtual PHI.  */
+      if (vphi)
 	{
-	  gimple *use_stmt;
 	  imm_use_iterator iter;
 	  use_operand_p use_p;
-	  FOR_EACH_IMM_USE_STMT (use_stmt, iter, vuse)
+	  gimple *use_stmt;
+	  tree phi_def = gimple_phi_result (vphi);
+	  FOR_EACH_IMM_USE_STMT (use_stmt, iter, phi_def)
 	    FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
-	      SET_USE (use_p, gimple_vdef (stmt));
-	  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (vuse))
+              SET_USE (use_p, gimple_vdef (first_sunk));
+	  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (phi_def))
 	    {
-	      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_vdef (stmt)) = 1;
-	      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (vuse) = 0;
+	      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_vdef (first_sunk)) = 1;
+	      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (phi_def) = 0;
 	    }
-	  /* Adjust the incoming virtual operand.  */
-	  SET_USE (PHI_ARG_DEF_PTR_FROM_EDGE (vphi, succe), gimple_vuse (stmt));
-	  SET_USE (gimple_vuse_op (stmt), vuse);
+	  SET_USE (PHI_ARG_DEF_PTR_FROM_EDGE (vphi, succe),
+		   gimple_vuse (last_sunk));
+	  SET_USE (gimple_vuse_op (last_sunk), phi_def);
 	}
       /* If there isn't a single predecessor but no virtual PHI node
          arrange for virtual operands to be renamed.  */
-      else if (gimple_vuse_op (stmt) != NULL_USE_OPERAND_P
-	       && !single_pred_p (succbb))
+      else if (!single_pred_p (succbb)
+	       && TREE_CODE (gimple_vuse (last_sunk)) == SSA_NAME)
 	{
-	  /* In this case there will be no use of the VDEF of this stmt. 
-	     ???  Unless this is a secondary opportunity and we have not
-	     removed unreachable blocks yet, so we cannot assert this.  
-	     Which also means we will end up renaming too many times.  */
-	  SET_USE (gimple_vuse_op (stmt), gimple_vop (cfun));
-	  mark_virtual_operands_for_renaming (cfun);
+	  mark_virtual_operand_for_renaming (gimple_vuse (last_sunk));
 	  todo |= TODO_update_ssa_only_virtuals;
 	}
     }
@@ -3863,6 +3913,7 @@ pass_lower_eh_dispatch::execute (function *fun)
   basic_block bb;
   int flags = 0;
   bool redirected = false;
+  bool any_resx_to_process = false;
 
   assign_filter_values ();
 
@@ -3879,18 +3930,48 @@ pass_lower_eh_dispatch::execute (function *fun)
 	}
       else if (gimple_code (last) == GIMPLE_RESX)
 	{
-	  if (stmt_can_throw_external (cfun, last))
+	  if (stmt_can_throw_external (fun, last))
 	    optimize_clobbers (bb);
-	  else
-	    flags |= sink_clobbers (bb);
+	  else if (!any_resx_to_process)
+	    sink_clobbers (bb, NULL, &any_resx_to_process);
 	}
+      bb->flags &= ~BB_VISITED;
     }
-
   if (redirected)
     {
       free_dominance_info (CDI_DOMINATORS);
       delete_unreachable_blocks ();
     }
+
+  if (any_resx_to_process)
+    {
+      /* Make sure to catch all secondary sinking opportunities by processing
+	 blocks in RPO order and after all CFG modifications from lowering
+	 and unreachable block removal.  */
+      int *rpo = XNEWVEC  (int, n_basic_blocks_for_fn (fun));
+      int rpo_n = pre_and_rev_post_order_compute_fn (fun, NULL, rpo, false);
+      gimple_seq *sunk = XCNEWVEC (gimple_seq, last_basic_block_for_fn (fun));
+      for (int i = 0; i < rpo_n; ++i)
+	{
+	  bb = BASIC_BLOCK_FOR_FN (fun, rpo[i]);
+	  gimple *last = last_stmt (bb);
+	  if (last
+	      && gimple_code (last) == GIMPLE_RESX
+	      && !stmt_can_throw_external (fun, last))
+	    flags |= sink_clobbers (bb, sunk);
+	  /* If there were any clobbers sunk into this BB, insert them now.  */
+	  if (!gimple_seq_empty_p (sunk[bb->index]))
+	    {
+	      gimple_stmt_iterator gsi = gsi_after_labels (bb);
+	      gsi_insert_seq_before (&gsi, sunk[bb->index], GSI_NEW_STMT);
+	      sunk[bb->index] = NULL;
+	    }
+	  bb->flags |= BB_VISITED;
+	}
+      free (rpo);
+      free (sunk);
+    }
+
   return flags;
 }
 
@@ -4278,9 +4359,10 @@ cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
 	|  | EH
 	<..>
      which CFG verification would choke on.  See PR45172 and PR51089.  */
-  FOR_EACH_EDGE (e, ei, old_bb->preds)
-    if (find_edge (e->src, new_bb))
-      return false;
+  if (!single_pred_p (new_bb))
+    FOR_EACH_EDGE (e, ei, old_bb->preds)
+      if (find_edge (e->src, new_bb))
+	return false;
 
   FOR_EACH_EDGE (e, ei, old_bb->preds)
     redirect_edge_var_map_clear (e);
@@ -4669,9 +4751,15 @@ cleanup_all_empty_eh (void)
   eh_landing_pad lp;
   int i;
 
-  for (i = 1; vec_safe_iterate (cfun->eh->lp_array, i, &lp); ++i)
-    if (lp)
-      changed |= cleanup_empty_eh (lp);
+  /* Ideally we'd walk the region tree and process LPs inner to outer
+     to avoid quadraticness in EH redirection.  Walking the LP array
+     in reverse seems to be an approximation of that.  */
+  for (i = vec_safe_length (cfun->eh->lp_array) - 1; i >= 1; --i)
+    {
+      lp = (*cfun->eh->lp_array)[i];
+      if (lp)
+	changed |= cleanup_empty_eh (lp);
+    }
 
   return changed;
 }

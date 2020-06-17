@@ -1,5 +1,5 @@
 #! blah
-
+// RUNNABLE_PHOBOS_TEST
 static assert(__LINE__ == 3); // fails as __LINE__ is 2
 
 import std.stdio;
@@ -252,15 +252,15 @@ void test2()
     // This test only tests undefined, architecture-dependant behavior.
     // E.g. the result of converting a float whose value doesn't fit into the integer
     // leads to an undefined result.
-    version(GNU)
-       return;
-
-    float f = float.infinity;
-    int i = cast(int) f;
-    writeln(i);
-    writeln(cast(int)float.max);
-    assert(i == cast(int)float.max);
-    assert(i == 0x80000000);
+    version (DigitalMars)
+    {
+        float f = float.infinity;
+        int i = cast(int) f;
+        writeln(i);
+        writeln(cast(int)float.max);
+        assert(i == cast(int)float.max);
+        assert(i == 0x80000000);
+    }
 }
 
 /************************************/

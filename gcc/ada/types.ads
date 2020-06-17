@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -668,30 +668,39 @@ package Types is
    No_Check_Id : constant := 0;
    --  Check_Id value used to indicate no check
 
-   Access_Check           : constant :=  1;
-   Accessibility_Check    : constant :=  2;
-   Alignment_Check        : constant :=  3;
-   Allocation_Check       : constant :=  4;
-   Atomic_Synchronization : constant :=  5;
-   Discriminant_Check     : constant :=  6;
-   Division_Check         : constant :=  7;
-   Duplicated_Tag_Check   : constant :=  8;
-   Elaboration_Check      : constant :=  9;
-   Index_Check            : constant := 10;
-   Length_Check           : constant := 11;
-   Overflow_Check         : constant := 12;
-   Predicate_Check        : constant := 13;
-   Range_Check            : constant := 14;
-   Storage_Check          : constant := 15;
-   Tag_Check              : constant := 16;
-   Validity_Check         : constant := 17;
-   Container_Checks       : constant := 18;
-   Tampering_Check        : constant := 19;
+   Access_Check               : constant :=  1;
+   Accessibility_Check        : constant :=  2;
+   Alignment_Check            : constant :=  3;
+   Allocation_Check           : constant :=  4;
+   Atomic_Synchronization     : constant :=  5;
+   Characters_Assertion_Check : constant :=  6;
+   Containers_Assertion_Check : constant :=  7;
+   Discriminant_Check         : constant :=  8;
+   Division_Check             : constant :=  9;
+   Duplicated_Tag_Check       : constant := 10;
+   Elaboration_Check          : constant := 11;
+   Index_Check                : constant := 12;
+   Interfaces_Assertion_Check : constant := 13;
+   IO_Assertion_Check         : constant := 14;
+   Length_Check               : constant := 15;
+   Numerics_Assertion_Check   : constant := 16;
+   Overflow_Check             : constant := 17;
+   Predicate_Check            : constant := 18;
+   Program_Error_Check        : constant := 19;
+   Range_Check                : constant := 20;
+   Storage_Check              : constant := 21;
+   Strings_Assertion_Check    : constant := 22;
+   System_Assertion_Check     : constant := 23;
+   Tag_Check                  : constant := 24;
+   Validity_Check             : constant := 25;
+   Container_Checks           : constant := 26;
+   Tampering_Check            : constant := 27;
+   Tasking_Check              : constant := 28;
    --  Values used to represent individual predefined checks (including the
    --  setting of Atomic_Synchronization, which is implemented internally using
    --  a "check" whose name is Atomic_Synchronization).
 
-   All_Checks : constant := 20;
+   All_Checks : constant := 29;
    --  Value used to represent All_Checks value
 
    subtype Predefined_Check_Id is Check_Id range 1 .. All_Checks;
@@ -715,7 +724,8 @@ package Types is
    --  To add a new check type to GNAT, the following steps are required:
 
    --    1.  Add an entry to Snames spec for the new name
-   --    2.  Add an entry to the definition of Check_Id above
+   --    2.  Add an entry to the definition of Check_Id above (very important:
+   --        these definitions should be in the same order in Snames and here)
    --    3.  Add a new function to Checks to handle the new check test
    --    4.  Add a new Do_xxx_Check flag to Sinfo (if required)
    --    5.  Add appropriate checks for the new test

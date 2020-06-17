@@ -3,16 +3,18 @@
 /* { dg-lto-options { { -flto -O2 } } } */
 /* { dg-extra-ld-options { -r -nostdlib -flinker-output=nolto-rel } } */
 
+typedef unsigned uint32_t __attribute__((mode (__SI__)));
+
 typedef struct abc_s {
   char a1;
   short a2;
-  unsigned int a3;
-  unsigned int a4;
+  uint32_t a3;
+  uint32_t a4;
 } abc;
 
 typedef struct xyz_s {
- unsigned x1;
- unsigned x2;
+ uint32_t x1;
+ uint32_t x2;
  abc *x3;
 } xyz;
 

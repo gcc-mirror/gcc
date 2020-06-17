@@ -211,12 +211,13 @@ access_check (const char *name, int mode)
 static void
 process_asm (FILE *in, FILE *out, FILE *cfile)
 {
-  int fn_count = 0, var_count = 0, dims_count = 0;
-  struct obstack fns_os, vars_os, varsizes_os, dims_os;
+  int fn_count = 0, var_count = 0, dims_count = 0, regcount_count = 0;
+  struct obstack fns_os, vars_os, varsizes_os, dims_os, regcounts_os;
   obstack_init (&fns_os);
   obstack_init (&vars_os);
   obstack_init (&varsizes_os);
   obstack_init (&dims_os);
+  obstack_init (&regcounts_os);
 
   struct oaccdims
   {
@@ -224,13 +225,20 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
     char *name;
   } dim;
 
+  struct regcount
+  {
+    int sgpr_count;
+    int vgpr_count;
+    char *kernel_name;
+  } regcount;
+
   /* Always add _init_array and _fini_array as kernels.  */
   obstack_ptr_grow (&fns_os, xstrdup ("_init_array"));
   obstack_ptr_grow (&fns_os, xstrdup ("_fini_array"));
   fn_count += 2;
 
   char buf[1000];
-  enum { IN_CODE, IN_VARS, IN_FUNCS } state = IN_CODE;
+  enum { IN_CODE, IN_AMD_KERNEL_CODE_T, IN_VARS, IN_FUNCS } state = IN_CODE;
   while (fgets (buf, sizeof (buf), in))
     {
       switch (state)
@@ -243,6 +251,22 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 		obstack_grow (&dims_os, &dim, sizeof (dim));
 		dims_count++;
 	      }
+	    else if (sscanf (buf, " .amdgpu_hsa_kernel %ms\n",
+			     &regcount.kernel_name) == 1)
+	      break;
+
+	    break;
+	  }
+	case IN_AMD_KERNEL_CODE_T:
+	  {
+	    gcc_assert (regcount.kernel_name);
+	    if (sscanf (buf, " wavefront_sgpr_count = %d\n",
+			&regcount.sgpr_count) == 1)
+	      break;
+	    else if (sscanf (buf, " workitem_vgpr_count = %d\n",
+			     &regcount.vgpr_count) == 1)
+	      break;
+
 	    break;
 	  }
 	case IN_VARS:
@@ -282,19 +306,36 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 	state = IN_VARS;
       else if (sscanf (buf, " .section .gnu.offload_funcs%c", &dummy) > 0)
 	state = IN_FUNCS;
+      else if (sscanf (buf, " .amd_kernel_code_%c", &dummy) > 0)
+	{
+	  state = IN_AMD_KERNEL_CODE_T;
+	  regcount.sgpr_count = regcount.vgpr_count = -1;
+	}
       else if (sscanf (buf, " .section %c", &dummy) > 0
 	       || sscanf (buf, " .text%c", &dummy) > 0
 	       || sscanf (buf, " .bss%c", &dummy) > 0
 	       || sscanf (buf, " .data%c", &dummy) > 0
 	       || sscanf (buf, " .ident %c", &dummy) > 0)
 	state = IN_CODE;
+      else if (sscanf (buf, " .end_amd_kernel_code_%c", &dummy) > 0)
+	{
+	  state = IN_CODE;
+	  gcc_assert (regcount.kernel_name != NULL
+		      && regcount.sgpr_count >= 0
+		      && regcount.vgpr_count >= 0);
+	  obstack_grow (&regcounts_os, &regcount, sizeof (regcount));
+	  regcount_count++;
+	  regcount.kernel_name = NULL;
+	  regcount.sgpr_count = regcount.vgpr_count = -1;
+	}
 
-      if (state == IN_CODE)
+      if (state == IN_CODE || state == IN_AMD_KERNEL_CODE_T)
 	fputs (buf, out);
     }
 
   char **fns = XOBFINISH (&fns_os, char **);
   struct oaccdims *dims = XOBFINISH (&dims_os, struct oaccdims *);
+  struct regcount *regcounts = XOBFINISH (&regcounts_os, struct regcount *);
 
   fprintf (cfile, "#include <stdlib.h>\n");
   fprintf (cfile, "#include <stdbool.h>\n\n");
@@ -322,6 +363,8 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
   fprintf (cfile, "static const struct hsa_kernel_description {\n"
 	   "  const char *name;\n"
 	   "  int oacc_dims[3];\n"
+	   "  int sgpr_count;\n"
+	   "  int vgpr_count;\n"
 	   "} gcn_kernels[] = {\n  ");
   dim.d[0] = dim.d[1] = dim.d[2] = 0;
   const char *comma;
@@ -329,15 +372,24 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
     {
       /* Find if we recorded dimensions for this function.  */
       int *d = dim.d;		/* Previously zeroed.  */
+      int sgpr_count = 0;
+      int vgpr_count = 0;
       for (int j = 0; j < dims_count; j++)
 	if (strcmp (fns[i], dims[j].name) == 0)
 	  {
 	    d = dims[j].d;
 	    break;
 	  }
+      for (int j = 0; j < regcount_count; j++)
+	if (strcmp (fns[i], regcounts[j].kernel_name) == 0)
+	  {
+	    sgpr_count = regcounts[j].sgpr_count;
+	    vgpr_count = regcounts[j].vgpr_count;
+	    break;
+	  }
 
-      fprintf (cfile, "%s{\"%s\", {%d, %d, %d}}", comma,
-	       fns[i], d[0], d[1], d[2]);
+      fprintf (cfile, "%s{\"%s\", {%d, %d, %d}, %d, %d}", comma,
+	       fns[i], d[0], d[1], d[2], sgpr_count, vgpr_count);
 
       free (fns[i]);
     }
@@ -346,7 +398,10 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
   obstack_free (&fns_os, NULL);
   for (i = 0; i < dims_count; i++)
     free (dims[i].name);
+  for (i = 0; i < regcount_count; i++)
+    free (regcounts[i].kernel_name);
   obstack_free (&dims_os, NULL);
+  obstack_free (&regcounts_os, NULL);
 }
 
 /* Embed an object file into a C source file.  */
@@ -469,7 +524,7 @@ main (int argc, char **argv)
   FILE *in = stdin;
   FILE *out = stdout;
   FILE *cfile = stdout;
-  const char *outname = 0, *offloadsrc = 0;
+  const char *outname = 0;
 
   progname = "mkoffload";
   diagnostic_initialize (global_dc, 0);
@@ -598,18 +653,11 @@ main (int argc, char **argv)
       if (!strcmp (argv[ix], "-o") && ix + 1 != argc)
 	outname = argv[++ix];
       else
-	{
-	  obstack_ptr_grow (&cc_argv_obstack, argv[ix]);
-
-	  if (argv[ix][0] != '-')
-	    offloadsrc = argv[ix];
-	}
+	obstack_ptr_grow (&cc_argv_obstack, argv[ix]);
     }
 
   obstack_ptr_grow (&cc_argv_obstack, "-o");
   obstack_ptr_grow (&cc_argv_obstack, gcn_s1_name);
-  obstack_ptr_grow (&cc_argv_obstack,
-		    concat ("-mlocal-symbol-id=", offloadsrc, NULL));
   obstack_ptr_grow (&cc_argv_obstack, NULL);
   const char **cc_argv = XOBFINISH (&cc_argv_obstack, const char **);
 

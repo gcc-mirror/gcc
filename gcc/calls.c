@@ -586,18 +586,8 @@ special_function_p (const_tree fndecl, int flags)
 {
   tree name_decl = DECL_NAME (fndecl);
 
-  if (fndecl && name_decl
-      && IDENTIFIER_LENGTH (name_decl) <= 11
-      /* Exclude functions not at the file scope, or not `extern',
-	 since they are not the magic functions we would otherwise
-	 think they are.
-	 FIXME: this should be handled with attributes, not with this
-	 hacky imitation of DECL_ASSEMBLER_NAME.  It's (also) wrong
-	 because you can declare fork() inside a function if you
-	 wish.  */
-      && (DECL_CONTEXT (fndecl) == NULL_TREE
-	  || TREE_CODE (DECL_CONTEXT (fndecl)) == TRANSLATION_UNIT_DECL)
-      && TREE_PUBLIC (fndecl))
+  if (maybe_special_function_p (fndecl)
+      && IDENTIFIER_LENGTH (name_decl) <= 11)
     {
       const char *name = IDENTIFIER_POINTER (name_decl);
       const char *tname = name;
@@ -1875,69 +1865,6 @@ maybe_complain_about_tail_call (tree call_expr, const char *reason)
   error_at (EXPR_LOCATION (call_expr), "cannot tail-call: %s", reason);
 }
 
-/* Used to define rdwr_map below.  */
-struct rdwr_access_hash: int_hash<int, -1> { };
-
-/* A mapping between argument number corresponding to attribute access
-   mode (read_only, write_only, or read_write) and operands.  */
-typedef hash_map<rdwr_access_hash, attr_access> rdwr_map;
-
-/* Initialize a mapping for a call to function FNDECL declared with
-   attribute access.  Each attribute poisitional operand inserts one
-   entry into the mapping with the operand number as the key.  */
-
-static void
-init_attr_rdwr_indices (rdwr_map *rwm, tree fntype)
-{
-  if (!fntype)
-    return;
-
-  tree access = TYPE_ATTRIBUTES (fntype);
-  /* If the function's type has no attributes there's nothing to do.  */
-  if (!access)
-    return;
-
-  access = lookup_attribute ("access", access);
-  if (!access)
-    return;
-
-  tree mode = TREE_VALUE (access);
-  gcc_assert (TREE_CODE (mode) == STRING_CST);
-  const char *modestr = TREE_STRING_POINTER (mode);
-  for (const char *m = modestr; *m; )
-    {
-      attr_access acc = { };
-
-      switch (*m)
-	{
-	case 'r': acc.mode = acc.read_only; break;
-	case 'w': acc.mode = acc.write_only; break;
-	default: acc.mode = acc.read_write; break;
-	}
-
-      char *end;
-      acc.ptrarg = strtoul (++m, &end, 10);
-      m = end;
-      if (*m == ',')
-	{
-	  acc.sizarg = strtoul (++m, &end, 10);
-	  m = end;
-	}
-      else
-	acc.sizarg = UINT_MAX;
-
-      acc.ptr = NULL_TREE;
-      acc.size = NULL_TREE;
-
-      /* Unconditionally add an entry for the required pointer
-	 operand of the attribute, and one for the optional size
-	 operand when it's specified.  */
-      rwm->put (acc.ptrarg, acc);
-      if (acc.sizarg != UINT_MAX)
-	rwm->put (acc.sizarg, acc);
-    }
-}
-
 /* Returns the type of the argument ARGNO to function with type FNTYPE
    or null when the typoe cannot be determined or no such argument exists.  */
 
@@ -1968,11 +1895,13 @@ append_attrname (const std::pair<int, attr_access> &access,
      appends the attribute pointer operand even when none was specified.  */
   size_t len = strlen (attrstr);
 
-  const char *atname
+  const char* const atname
     = (access.second.mode == attr_access::read_only
        ? "read_only"
        : (access.second.mode == attr_access::write_only
-	  ? "write_only" : "read_write"));
+	  ? "write_only"
+	  : (access.second.mode == attr_access::read_write
+	     ? "read_write" : "none")));
 
   const char *sep = len ? ", " : "";
 
@@ -2140,11 +2069,13 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree exp)
 	  /* For read-only and read-write attributes also set the source
 	     size.  */
 	  srcsize = objsize;
-	  if (access.second.mode == attr_access::read_only)
+	  if (access.second.mode == attr_access::read_only
+	      || access.second.mode == attr_access::none)
 	    {
 	      /* For a read-only attribute there is no destination so
 		 clear OBJSIZE.  This emits "reading N bytes" kind of
-		 diagnostics instead of the "writing N bytes" kind.  */
+		 diagnostics instead of the "writing N bytes" kind,
+		 unless MODE is none.  */
 	      objsize = NULL_TREE;
 	    }
 	}
@@ -2154,7 +2085,7 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree exp)
 	 diagnosed.  */
       TREE_NO_WARNING (exp) = false;
       check_access (exp, NULL_TREE, NULL_TREE, size, /*maxread=*/ NULL_TREE,
-		    srcsize, objsize);
+		    srcsize, objsize, access.second.mode != attr_access::none);
 
       if (TREE_NO_WARNING (exp))
 	/* If check_access issued a warning above, append the relevant
@@ -2294,8 +2225,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
   /* Array for up to the two attribute alloc_size arguments.  */
   tree alloc_args[] = { NULL_TREE, NULL_TREE };
 
-  /* Map of attribute read_only, write_only, or read_write specifications
-     for function arguments.  */
+  /* Map of attribute accewss specifications for function arguments.  */
   rdwr_map rdwr_idx;
   init_attr_rdwr_indices (&rdwr_idx, fntype);
 
@@ -2568,7 +2498,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
      nul-terminated strings.  */
   maybe_warn_nonstring_arg (fndecl, exp);
 
-  /* Check read_only, write_only, and read_write arguments.  */
+  /* Check attribute access arguments.  */
   maybe_warn_rdwr_sizes (&rdwr_idx, exp);
 }
 
@@ -6268,6 +6198,21 @@ must_pass_va_arg_in_stack (tree type)
 {
   function_arg_info arg (type, /*named=*/false);
   return targetm.calls.must_pass_in_stack (arg);
+}
+
+/* Return true if FIELD is the C++17 empty base field that should
+   be ignored for ABI calling convention decisions in order to
+   maintain ABI compatibility between C++14 and earlier, which doesn't
+   add this FIELD to classes with empty bases, and C++17 and later
+   which does.  */
+
+bool
+cxx17_empty_base_field_p (const_tree field)
+{
+  return (DECL_FIELD_ABI_IGNORED (field)
+	  && DECL_ARTIFICIAL (field)
+	  && RECORD_OR_UNION_TYPE_P (TREE_TYPE (field))
+	  && !lookup_attribute ("no_unique_address", DECL_ATTRIBUTES (field)));
 }
 
 /* Tell the garbage collector about GTY markers in this source file.  */

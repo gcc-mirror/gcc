@@ -58,7 +58,7 @@ static tree pointer_diff (location_t, tree, tree, tree, tsubst_flags_t, tree *);
 static tree get_delta_difference (tree, tree, bool, bool, tsubst_flags_t);
 static void casts_away_constness_r (tree *, tree *, tsubst_flags_t);
 static bool casts_away_constness (tree, tree, tsubst_flags_t);
-static bool maybe_warn_about_returning_address_of_local (tree);
+static bool maybe_warn_about_returning_address_of_local (tree, location_t = UNKNOWN_LOCATION);
 static void error_args_num (location_t, tree, bool);
 static int convert_arguments (tree, vec<tree, va_gc> **, tree, int,
                               tsubst_flags_t);
@@ -478,11 +478,12 @@ composite_pointer_error (const op_location_t &location,
 }
 
 /* Subroutine of composite_pointer_type to implement the recursive
-   case.  See that function for documentation of the parameters.  */
+   case.  See that function for documentation of the parameters.  And ADD_CONST
+   is used to track adding "const" where needed.  */
 
 static tree
 composite_pointer_type_r (const op_location_t &location,
-			  tree t1, tree t2, 
+			  tree t1, tree t2, bool *add_const,
 			  composite_pointer_operation operation,
 			  tsubst_flags_t complain)
 {
@@ -503,20 +504,17 @@ composite_pointer_type_r (const op_location_t &location,
       pointee2 = TYPE_PTRMEM_POINTED_TO_TYPE (t2);
     }
 
-  /* [expr.rel]
+  /* [expr.type]
 
-     Otherwise, the composite pointer type is a pointer type
-     similar (_conv.qual_) to the type of one of the operands,
-     with a cv-qualification signature (_conv.qual_) that is the
-     union of the cv-qualification signatures of the operand
-     types.  */
+     If T1 and T2 are similar types, the result is the cv-combined type of
+     T1 and T2.  */
   if (same_type_ignoring_top_level_qualifiers_p (pointee1, pointee2))
     result_type = pointee1;
   else if ((TYPE_PTR_P (pointee1) && TYPE_PTR_P (pointee2))
 	   || (TYPE_PTRMEM_P (pointee1) && TYPE_PTRMEM_P (pointee2)))
     {
       result_type = composite_pointer_type_r (location, pointee1, pointee2,
-					      operation, complain);
+					      add_const, operation, complain);
       if (result_type == error_mark_node)
 	return error_mark_node;
     }
@@ -529,9 +527,18 @@ composite_pointer_type_r (const op_location_t &location,
 	return error_mark_node;
       result_type = void_type_node;
     }
+  const int q1 = cp_type_quals (pointee1);
+  const int q2 = cp_type_quals (pointee2);
+  const int quals = q1 | q2;
   result_type = cp_build_qualified_type (result_type,
-					 (cp_type_quals (pointee1)
-					  | cp_type_quals (pointee2)));
+					 (quals | (*add_const
+						   ? TYPE_QUAL_CONST
+						   : TYPE_UNQUALIFIED)));
+  /* The cv-combined type can add "const" as per [conv.qual]/3.3 (except for
+     the TLQ).  The reason is that both T1 and T2 can then be converted to the
+     cv-combined type of T1 and T2.  */
+  if (quals != q1 || quals != q2)
+    *add_const = true;
   /* If the original types were pointers to members, so is the
      result.  */
   if (TYPE_PTRMEM_P (t1))
@@ -556,7 +563,7 @@ composite_pointer_type_r (const op_location_t &location,
   return build_type_attribute_variant (result_type, attributes);
 }
 
-/* Return the composite pointer type (see [expr.rel]) for T1 and T2.
+/* Return the composite pointer type (see [expr.type]) for T1 and T2.
    ARG1 and ARG2 are the values with those types.  The OPERATION is to
    describe the operation between the pointer types,
    in case an error occurs.
@@ -573,7 +580,7 @@ composite_pointer_type (const op_location_t &location,
   tree class1;
   tree class2;
 
-  /* [expr.rel]
+  /* [expr.type]
 
      If one operand is a null pointer constant, the composite pointer
      type is the type of the other operand.  */
@@ -584,10 +591,10 @@ composite_pointer_type (const op_location_t &location,
 
   /* We have:
 
-       [expr.rel]
+       [expr.type]
 
-       If one of the operands has type "pointer to cv1 void*", then
-       the other has type "pointer to cv2T", and the composite pointer
+       If one of the operands has type "pointer to cv1 void", then
+       the other has type "pointer to cv2 T", and the composite pointer
        type is "pointer to cv12 void", where cv12 is the union of cv1
        and cv2.
 
@@ -719,7 +726,9 @@ composite_pointer_type (const op_location_t &location,
         }
     }
 
-  return composite_pointer_type_r (location, t1, t2, operation, complain);
+  bool add_const = false;
+  return composite_pointer_type_r (location, t1, t2, &add_const, operation,
+				   complain);
 }
 
 /* Return the merged type of two types.
@@ -1247,13 +1256,16 @@ structural_comptypes (tree t1, tree t2, int strict)
 
   gcc_assert (TYPE_P (t1) && TYPE_P (t2));
 
-  /* TYPENAME_TYPEs should be resolved if the qualifying scope is the
-     current instantiation.  */
-  if (TREE_CODE (t1) == TYPENAME_TYPE)
-    t1 = resolve_typename_type (t1, /*only_current_p=*/true);
+  if (!comparing_specializations)
+    {
+      /* TYPENAME_TYPEs should be resolved if the qualifying scope is the
+	 current instantiation.  */
+      if (TREE_CODE (t1) == TYPENAME_TYPE)
+	t1 = resolve_typename_type (t1, /*only_current_p=*/true);
 
-  if (TREE_CODE (t2) == TYPENAME_TYPE)
-    t2 = resolve_typename_type (t2, /*only_current_p=*/true);
+      if (TREE_CODE (t2) == TYPENAME_TYPE)
+	t2 = resolve_typename_type (t2, /*only_current_p=*/true);
+    }
 
   if (TYPE_PTRMEMFUNC_P (t1))
     t1 = TYPE_PTRMEMFUNC_FN_TYPE (t1);
@@ -1483,10 +1495,17 @@ structural_comptypes (tree t1, tree t2, int strict)
 bool
 comptypes (tree t1, tree t2, int strict)
 {
+  gcc_checking_assert (t1 && t2);
+
+  /* TYPE_ARGUMENT_PACKS are not really types.  */
+  gcc_checking_assert (TREE_CODE (t1) != TYPE_ARGUMENT_PACK
+		       && TREE_CODE (t2) != TYPE_ARGUMENT_PACK);
+
   if (strict == COMPARE_STRICT && comparing_specializations
       && (t1 != TYPE_CANONICAL (t1) || t2 != TYPE_CANONICAL (t2)))
     /* If comparing_specializations, treat dependent aliases as distinct.  */
     strict = COMPARE_STRUCTURAL;
+
   if (strict == COMPARE_STRICT)
     {
       if (t1 == t2)
@@ -2505,7 +2524,7 @@ build_class_member_access_expr (cp_expr object, tree member,
       if (complain & tf_error)
 	{
 	  if (TREE_CODE (member) == FIELD_DECL)
-	    error ("invalid use of nonstatic data member %qE", member);
+	    error ("invalid use of non-static data member %qE", member);
 	  else
 	    error ("%qD is not a member of %qT", member, object_type);
 	}
@@ -3311,6 +3330,22 @@ build_x_indirect_ref (location_t loc, tree expr, ref_operator errorstring,
     return rval;
 }
 
+/* Like c-family strict_aliasing_warning, but don't warn for dependent
+   types or expressions.  */
+
+static bool
+cp_strict_aliasing_warning (location_t loc, tree type, tree expr)
+{
+  if (processing_template_decl)
+    {
+      tree e = expr;
+      STRIP_NOPS (e);
+      if (dependent_type_p (type) || type_dependent_expression_p (e))
+	return false;
+    }
+  return strict_aliasing_warning (loc, type, expr);
+}
+
 /* The implementation of the above, and of indirection implied by other
    constructs.  If DO_FOLD is true, fold away INDIRECT_REF of ADDR_EXPR.  */
 
@@ -3353,10 +3388,10 @@ cp_build_indirect_ref_1 (location_t loc, tree ptr, ref_operator errorstring,
 	  /* If a warning is issued, mark it to avoid duplicates from
 	     the backend.  This only needs to be done at
 	     warn_strict_aliasing > 2.  */
-	  if (warn_strict_aliasing > 2)
-	    if (strict_aliasing_warning (EXPR_LOCATION (ptr),
-					 type, TREE_OPERAND (ptr, 0)))
-	      TREE_NO_WARNING (ptr) = 1;
+	  if (warn_strict_aliasing > 2
+	      && cp_strict_aliasing_warning (EXPR_LOCATION (ptr),
+					     type, TREE_OPERAND (ptr, 0)))
+	    TREE_NO_WARNING (ptr) = 1;
 	}
 
       if (VOID_TYPE_P (t))
@@ -4452,6 +4487,10 @@ cp_build_binary_op (const op_location_t &location,
      Also implies COMMON.  */
   int short_compare = 0;
 
+  /* Nonzero if this is a right-shift operation, which can be computed on the
+     original short and then promoted if the operand is a promoted short.  */
+  int short_shift = 0;
+
   /* Nonzero means set RESULT_TYPE to the common type of the args.  */
   int common = 0;
 
@@ -4844,6 +4883,9 @@ cp_build_binary_op (const op_location_t &location,
 		}
 	      else
 		{
+		  if (!integer_zerop (const_op1))
+		    short_shift = 1;
+
 		  if (compare_tree_int (const_op1, TYPE_PRECISION (type0)) >= 0
 		      && (complain & tf_warning)
 		      && c_inhibit_evaluation_warnings == 0)
@@ -5286,17 +5328,19 @@ cp_build_binary_op (const op_location_t &location,
 					      CPO_COMPARISON, complain);
       else if (code0 == POINTER_TYPE && null_ptr_cst_p (orig_op1))
 	{
-	  result_type = type0;
-	  if (extra_warnings && (complain & tf_warning))
-	    warning_at (location, OPT_Wextra,
-			"ordered comparison of pointer with integer zero");
+	  /* Core Issue 1512 made this ill-formed.  */
+	  if (complain & tf_error)
+	    error_at (location, "ordered comparison of pointer with "
+		      "integer zero (%qT and %qT)", type0, type1);
+	  return error_mark_node;
 	}
       else if (code1 == POINTER_TYPE && null_ptr_cst_p (orig_op0))
 	{
-	  result_type = type1;
-	  if (extra_warnings && (complain & tf_warning))
-	    warning_at (location, OPT_Wextra,
-			"ordered comparison of pointer with integer zero");
+	  /* Core Issue 1512 made this ill-formed.  */
+	  if (complain & tf_error)
+	    error_at (location, "ordered comparison of pointer with "
+		      "integer zero (%qT and %qT)", type0, type1);
+	  return error_mark_node;
 	}
       else if (null_ptr_cst_p (orig_op0) && null_ptr_cst_p (orig_op1))
 	/* One of the operands must be of nullptr_t type.  */
@@ -5584,6 +5628,41 @@ cp_build_binary_op (const op_location_t &location,
 	  final_type = result_type;
 	  result_type = shorten_binary_op (result_type, op0, op1,
 					   shorten == -1);
+	}
+
+      /* Shifts can be shortened if shifting right.  */
+
+      if (short_shift)
+	{
+	  int unsigned_arg;
+	  tree arg0 = get_narrower (op0, &unsigned_arg);
+	  /* We're not really warning here but when we set short_shift we
+	     used fold_for_warn to fold the operand.  */
+	  tree const_op1 = fold_for_warn (op1);
+
+	  final_type = result_type;
+
+	  if (arg0 == op0 && final_type == TREE_TYPE (op0))
+	    unsigned_arg = TYPE_UNSIGNED (TREE_TYPE (op0));
+
+	  if (TYPE_PRECISION (TREE_TYPE (arg0)) < TYPE_PRECISION (result_type)
+	      && tree_int_cst_sgn (const_op1) > 0
+	      /* We can shorten only if the shift count is less than the
+		 number of bits in the smaller type size.  */
+	      && compare_tree_int (const_op1,
+				   TYPE_PRECISION (TREE_TYPE (arg0))) < 0
+	      /* We cannot drop an unsigned shift after sign-extension.  */
+	      && (!TYPE_UNSIGNED (final_type) || unsigned_arg))
+	    {
+	      /* Do an unsigned shift if the operand was zero-extended.  */
+	      result_type
+		= c_common_signed_or_unsigned_type (unsigned_arg,
+						    TREE_TYPE (arg0));
+	      /* Convert value-to-be-shifted to that type.  */
+	      if (TREE_TYPE (op0) != result_type)
+		op0 = convert (result_type, op0);
+	      converted = 1;
+	    }
 	}
 
       /* Comparison operations are shortened too but differently.
@@ -6285,6 +6364,7 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
       tree stripped_arg = tree_strip_any_location_wrapper (arg);
       if (TREE_CODE (stripped_arg) == FUNCTION_DECL
 	  && DECL_IMMEDIATE_FUNCTION_P (stripped_arg)
+	  && cp_unevaluated_operand == 0
 	  && (current_function_decl == NULL_TREE
 	      || !DECL_IMMEDIATE_FUNCTION_P (current_function_decl)))
 	{
@@ -7343,7 +7423,7 @@ build_static_cast_1 (location_t loc, tree type, tree expr, bool c_cast_p,
   if (TYPE_REF_P (type)
       && TYPE_REF_IS_RVALUE (type)
       && (clk = real_lvalue_p (expr))
-      && reference_related_p (TREE_TYPE (type), intype)
+      && reference_compatible_p (TREE_TYPE (type), intype)
       && (c_cast_p || at_least_as_qualified_p (TREE_TYPE (type), intype)))
     {
       if (processing_template_decl)
@@ -7729,7 +7809,7 @@ build_reinterpret_cast_1 (location_t loc, tree type, tree expr,
       expr = cp_build_addr_expr (expr, complain);
 
       if (warn_strict_aliasing > 2)
-	strict_aliasing_warning (EXPR_LOCATION (expr), type, expr);
+	cp_strict_aliasing_warning (EXPR_LOCATION (expr), type, expr);
 
       if (expr != error_mark_node)
 	expr = build_reinterpret_cast_1
@@ -7843,7 +7923,7 @@ build_reinterpret_cast_1 (location_t loc, tree type, tree expr,
 
       if (warn_strict_aliasing <= 2)
 	/* strict_aliasing_warning STRIP_NOPs its expr.  */
-	strict_aliasing_warning (EXPR_LOCATION (expr), type, expr);
+	cp_strict_aliasing_warning (EXPR_LOCATION (expr), type, expr);
 
       return build_nop_reinterpret (type, expr);
     }
@@ -8688,6 +8768,9 @@ build_x_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
   tree overload = NULL_TREE;
   tree op = build_nt (modifycode, NULL_TREE, NULL_TREE);
 
+  if (lhs == error_mark_node || rhs == error_mark_node)
+    return cp_expr (error_mark_node, loc);
+
   if (processing_template_decl)
     {
       if (modifycode == NOP_EXPR
@@ -9426,11 +9509,12 @@ convert_for_initialization (tree exp, tree type, tree rhs, int flags,
    temporary give an appropriate warning and return true.  */
 
 static bool
-maybe_warn_about_returning_address_of_local (tree retval)
+maybe_warn_about_returning_address_of_local (tree retval, location_t loc)
 {
   tree valtype = TREE_TYPE (DECL_RESULT (current_function_decl));
   tree whats_returned = fold_for_warn (retval);
-  location_t loc = cp_expr_loc_or_input_loc (retval);
+  if (!loc)
+    loc = cp_expr_loc_or_input_loc (retval);
 
   for (;;)
     {
@@ -9464,7 +9548,7 @@ maybe_warn_about_returning_address_of_local (tree retval)
 	  || is_std_forward_p (whats_returned)))
     {
       tree arg = CALL_EXPR_ARG (whats_returned, 0);
-      return maybe_warn_about_returning_address_of_local (arg);
+      return maybe_warn_about_returning_address_of_local (arg, loc);
     }
 
   if (TREE_CODE (whats_returned) != ADDR_EXPR)
@@ -9510,7 +9594,7 @@ maybe_warn_about_returning_address_of_local (tree retval)
 	  if (TYPE_REF_P (TREE_TYPE (base)))
 	    {
 	      if (tree init = DECL_INITIAL (base))
-		return maybe_warn_about_returning_address_of_local (init);
+		return maybe_warn_about_returning_address_of_local (init, loc);
 	      else
 		return false;
 	    }
@@ -10037,7 +10121,7 @@ check_return_expr (tree retval, bool *no_warning)
 	retval = build2 (COMPOUND_EXPR, TREE_TYPE (retval), retval,
 			 TREE_OPERAND (retval, 0));
       else if (!processing_template_decl
-	       && maybe_warn_about_returning_address_of_local (retval)
+	       && maybe_warn_about_returning_address_of_local (retval, loc)
 	       && INDIRECT_TYPE_P (valtype))
 	retval = build2 (COMPOUND_EXPR, TREE_TYPE (retval), retval,
 			 build_zero_cst (TREE_TYPE (retval)));
@@ -10049,6 +10133,9 @@ check_return_expr (tree retval, bool *no_warning)
   /* Actually copy the value returned into the appropriate location.  */
   if (retval && retval != result)
     retval = build2 (INIT_EXPR, TREE_TYPE (result), result, retval);
+
+  if (tree set = maybe_set_retval_sentinel ())
+    retval = build2 (COMPOUND_EXPR, void_type_node, retval, set);
 
   return retval;
 }

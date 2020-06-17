@@ -2098,7 +2098,7 @@ get_string_length (tree str, unsigned eltsize, const vr_values *vr)
   if (res.range.max < target_int_max ())
     {
       res.knownrange = true;
-      /* When the the length of the longest string is known and not
+      /* When the length of the longest string is known and not
 	 excessive use it as the likely length of the string(s).  */
       res.range.likely = res.range.max;
     }
@@ -2331,7 +2331,9 @@ get_origin_and_offset (tree x, HOST_WIDE_INT *fldoff, HOST_WIDE_INT *off)
 
       if (off)
 	{
-	  tree xtype = TREE_TYPE (TREE_TYPE (x));
+	  tree xtype
+	    = (TREE_CODE (x) == ADDR_EXPR
+	       ? TREE_TYPE (TREE_OPERAND (x, 0)) : TREE_TYPE (TREE_TYPE (x)));
 
 	  /* The byte offset of the most basic struct member the byte
 	     offset *OFF corresponds to, or for a (multidimensional)
@@ -2478,7 +2480,7 @@ format_string (const directive &dir, tree arg, const vr_values *vr_values)
 	     is bounded by MB_LEN_MAX * wcslen (S).  */
 	  res.range.max *= target_mb_len_max ();
 	  res.range.unlikely = res.range.max;
-	  /* It's likely that the the total length is not more that
+	  /* It's likely that the total length is not more that
 	     2 * wcslen (S).*/
 	  res.range.likely = res.range.min * 2;
 
@@ -3337,7 +3339,7 @@ format_directive (const call_info &info,
 	}
       else if (!info.is_string_func ())
 	{
-	  /* If the warning is for a file function function like fprintf
+	  /* If the warning is for a file function like fprintf
 	     of printf with no destination size just print the computed
 	     result.  */
 	  if (min == max)
@@ -4118,7 +4120,7 @@ try_substitute_return_value (gimple_stmt_iterator *gsi,
   bool removed = false;
 
   /* The minimum and maximum return value.  */
-  unsigned HOST_WIDE_INT retval[2];
+  unsigned HOST_WIDE_INT retval[2] = {0};
   bool safe = is_call_safe (info, res, true, retval);
 
   if (safe

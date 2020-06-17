@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -234,6 +234,10 @@ package Exp_Ch6 is
    --  the constructor, and the allocator is rewritten to refer to that access
    --  object. Function_Call must denote a call to a CPP_Constructor function.
 
+   function Might_Have_Tasks (Typ : Entity_Id) return Boolean;
+   --  Return True if Typ is a limited class-wide type (or subtype), since it
+   --  might have task components.
+
    function Needs_BIP_Alloc_Form (Func_Id : Entity_Id) return Boolean;
    --  Ada 2005 (AI-318-02): Return True if the function needs an implicit
    --  BIP_Alloc_Form parameter (see type BIP_Formal_Kind).
@@ -246,12 +250,6 @@ package Exp_Ch6 is
 
    function Needs_BIP_Task_Actuals (Func_Id : Entity_Id) return Boolean;
    --  Return True if the function returns an object of a type that has tasks.
-
-   function Needs_Result_Accessibility_Level
-     (Func_Id : Entity_Id) return Boolean;
-   --  Ada 2012 (AI05-0234): Return True if the function needs an implicit
-   --  parameter to identify the accessibility level of the function result
-   --  "determined by the point of call".
 
    function Unqual_BIP_Iface_Function_Call (Expr : Node_Id) return Node_Id;
    --  Return the inner BIP function call removing any qualification from Expr

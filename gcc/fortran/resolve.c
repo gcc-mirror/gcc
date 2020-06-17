@@ -264,8 +264,8 @@ resolve_procedure_interface (gfc_symbol *sym)
    Since a dummy argument cannot be a non-dummy procedure, the only
    resort left for untyped names are the IMPLICIT types.  */
 
-static void
-resolve_formal_arglist (gfc_symbol *proc)
+void
+gfc_resolve_formal_arglist (gfc_symbol *proc)
 {
   gfc_formal_arglist *f;
   gfc_symbol *sym;
@@ -319,7 +319,7 @@ resolve_formal_arglist (gfc_symbol *proc)
         }
 
       if (sym->attr.if_source != IFSRC_UNKNOWN)
-	resolve_formal_arglist (sym);
+	gfc_resolve_formal_arglist (sym);
 
       if (sym->attr.subroutine || sym->attr.external)
 	{
@@ -547,7 +547,7 @@ find_arglists (gfc_symbol *sym)
       || gfc_fl_struct (sym->attr.flavor) || sym->attr.intrinsic)
     return;
 
-  resolve_formal_arglist (sym);
+  gfc_resolve_formal_arglist (sym);
 }
 
 
@@ -1753,8 +1753,10 @@ gfc_resolve_intrinsic (gfc_symbol *sym, locus *loc)
   gfc_intrinsic_sym* isym = NULL;
   const char* symstd;
 
-  if (sym->formal)
+  if (sym->resolve_symbol_called >= 2)
     return true;
+
+  sym->resolve_symbol_called = 2;
 
   /* Already resolved.  */
   if (sym->from_intmod && sym->ts.type != BT_UNKNOWN)
@@ -2601,21 +2603,27 @@ resolve_global_procedure (gfc_symbol *sym, locus *where, int sub)
 	  goto done;
 	}
 
-      if (!pedantic && (gfc_option.allow_std & GFC_STD_GNU))
-	/* Turn erros into warnings with -std=gnu and -std=legacy.  */
-	gfc_errors_to_warnings (true);
-
+      bool bad_result_characteristics;
       if (!gfc_compare_interfaces (sym, def_sym, sym->name, 0, 1,
-				   reason, sizeof(reason), NULL, NULL))
+				   reason, sizeof(reason), NULL, NULL,
+				   &bad_result_characteristics))
 	{
-	  gfc_error_opt (0, "Interface mismatch in global procedure %qs at %L:"
-			 " %s", sym->name, &sym->declared_at, reason);
+	  /* Turn erros into warnings with -std=gnu and -std=legacy,
+	     unless a function returns a wrong type, which can lead
+	     to all kinds of ICEs and wrong code.  */
+
+	  if (!pedantic && (gfc_option.allow_std & GFC_STD_GNU)
+	      && !bad_result_characteristics)
+	    gfc_errors_to_warnings (true);
+
+	  gfc_error ("Interface mismatch in global procedure %qs at %L: %s",
+		     sym->name, &sym->declared_at, reason);
+	  gfc_errors_to_warnings (false);
 	  goto done;
 	}
     }
 
 done:
-  gfc_errors_to_warnings (false);
 
   if (gsym->type == GSYM_UNKNOWN)
     {
@@ -3128,6 +3136,13 @@ resolve_function (gfc_expr *expr)
       && (sym->intmod_sym_id == GFC_ISYM_CAF_GET
 	  || sym->intmod_sym_id == GFC_ISYM_CAF_SEND))
     return true;
+
+  if (expr->ref)
+    {
+      gfc_error ("Unexpected junk after %qs at %L", expr->symtree->n.sym->name,
+		 &expr->where);
+      return false;
+    }
 
   if (sym && sym->attr.intrinsic
       && !gfc_resolve_intrinsic (sym, &expr->where))
@@ -3979,6 +3994,9 @@ resolve_operator (gfc_expr *e)
 
   op1 = e->value.op.op1;
   op2 = e->value.op.op2;
+  if (op1 == NULL && op2 == NULL)
+    return false;
+
   dual_locus_error = false;
 
   /* op1 and op2 cannot both be BOZ.  */
@@ -5192,8 +5210,8 @@ gfc_resolve_substring_charlen (gfc_expr *e)
 bool
 gfc_resolve_ref (gfc_expr *expr)
 {
-  int current_part_dimension, n_components, seen_part_dimension;
-  gfc_ref *ref, **prev;
+  int current_part_dimension, n_components, seen_part_dimension, dim;
+  gfc_ref *ref, **prev, *array_ref;
   bool equal_length;
 
   for (ref = expr->ref; ref; ref = ref->next)
@@ -5239,12 +5257,14 @@ gfc_resolve_ref (gfc_expr *expr)
   current_part_dimension = 0;
   seen_part_dimension = 0;
   n_components = 0;
+  array_ref = NULL;
 
   for (ref = expr->ref; ref; ref = ref->next)
     {
       switch (ref->type)
 	{
 	case REF_ARRAY:
+	  array_ref = ref;
 	  switch (ref->u.ar.type)
 	    {
 	    case AR_FULL:
@@ -5260,6 +5280,7 @@ gfc_resolve_ref (gfc_expr *expr)
 	      break;
 
 	    case AR_ELEMENT:
+	      array_ref = NULL;
 	      current_part_dimension = 0;
 	      break;
 
@@ -5299,7 +5320,33 @@ gfc_resolve_ref (gfc_expr *expr)
 	  break;
 
 	case REF_SUBSTRING:
+	  break;
+
 	case REF_INQUIRY:
+	  /* Implement requirement in note 9.7 of F2018 that the result of the
+	     LEN inquiry be a scalar.  */
+	  if (ref->u.i == INQUIRY_LEN && array_ref && expr->ts.deferred)
+	    {
+	      array_ref->u.ar.type = AR_ELEMENT;
+	      expr->rank = 0;
+	      /* INQUIRY_LEN is not evaluated from the rest of the expr
+		 but directly from the string length. This means that setting
+		 the array indices to one does not matter but might trigger
+		 a runtime bounds error. Suppress the check.  */
+	      expr->no_bounds_check = 1;
+	      for (dim = 0; dim < array_ref->u.ar.dimen; dim++)
+		{
+		  array_ref->u.ar.dimen_type[dim] = DIMEN_ELEMENT;
+		  if (array_ref->u.ar.start[dim])
+		    gfc_free_expr (array_ref->u.ar.start[dim]);
+		  array_ref->u.ar.start[dim]
+			= gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
+		  if (array_ref->u.ar.end[dim])
+		    gfc_free_expr (array_ref->u.ar.end[dim]);
+		  if (array_ref->u.ar.stride[dim])
+		    gfc_free_expr (array_ref->u.ar.stride[dim]);
+		}
+	    }
 	  break;
 	}
 
@@ -8832,26 +8879,43 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
   /* For variable targets, we get some attributes from the target.  */
   if (target->expr_type == EXPR_VARIABLE)
     {
-      gfc_symbol* tsym;
+      gfc_symbol *tsym, *dsym;
 
       gcc_assert (target->symtree);
       tsym = target->symtree->n.sym;
-
-      if (tsym->attr.subroutine
-	  || tsym->attr.external
-	  || (tsym->attr.function
-	      && (tsym->result != tsym || tsym->attr.recursive)))
-	{
-	  gfc_error ("Associating entity %qs at %L is a procedure name",
-		     tsym->name, &target->where);
-	  return;
-	}
 
       if (gfc_expr_attr (target).proc_pointer)
 	{
 	  gfc_error ("Associating entity %qs at %L is a procedure pointer",
 		     tsym->name, &target->where);
 	  return;
+	}
+
+      if (tsym->attr.flavor == FL_PROCEDURE && tsym->generic
+	  && (dsym = gfc_find_dt_in_generic (tsym)) != NULL
+	  && dsym->attr.flavor == FL_DERIVED)
+	{
+	  gfc_error ("Derived type %qs cannot be used as a variable at %L",
+		     tsym->name, &target->where);
+	  return;
+	}
+
+      if (tsym->attr.flavor == FL_PROCEDURE)
+	{
+	  bool is_error = true;
+	  if (tsym->attr.function && tsym->result == tsym)
+	    for (gfc_namespace *ns = sym->ns; ns; ns = ns->parent)
+	      if (tsym == ns->proc_name)
+		{
+		  is_error = false;
+		  break;
+		}
+	  if (is_error)
+	    {
+	      gfc_error ("Associating entity %qs at %L is a procedure name",
+			 tsym->name, &target->where);
+	      return;
+	    }
 	}
 
       sym->attr.asynchronous = tsym->attr.asynchronous;
@@ -9888,9 +9952,6 @@ resolve_transfer (gfc_code *code)
 		 "an assumed-size array", &code->loc);
       return;
     }
-
-  if (async_io_dt && exp->expr_type == EXPR_VARIABLE)
-    exp->symtree->n.sym->attr.asynchronous = 1;
 }
 
 
@@ -11950,14 +12011,14 @@ start:
 	  break;
 
 	case EXEC_OPEN:
-	  if (!gfc_resolve_open (code->ext.open))
+	  if (!gfc_resolve_open (code->ext.open, &code->loc))
 	    break;
 
 	  resolve_branch (code->ext.open->err, code);
 	  break;
 
 	case EXEC_CLOSE:
-	  if (!gfc_resolve_close (code->ext.close))
+	  if (!gfc_resolve_close (code->ext.close, &code->loc))
 	    break;
 
 	  resolve_branch (code->ext.close->err, code);
@@ -11999,7 +12060,7 @@ start:
 
 	case EXEC_READ:
 	case EXEC_WRITE:
-	  if (!gfc_resolve_dt (code->ext.dt, &code->loc))
+	  if (!gfc_resolve_dt (code, code->ext.dt, &code->loc))
 	    break;
 
 	  resolve_branch (code->ext.dt->err, code);
@@ -12297,7 +12358,7 @@ resolve_charlen (gfc_charlen *cl)
 	}
 
       /* cl->length has been resolved.  It should have an integer type.  */
-      if (cl->length->ts.type != BT_INTEGER)
+      if (cl->length->ts.type != BT_INTEGER || cl->length->rank != 0)
 	{
 	  gfc_error ("Scalar INTEGER expression expected at %L",
 		     &cl->length->where);
@@ -12572,6 +12633,7 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
 	{
 	  gfc_error ("Array pointer %qs at %L must have a deferred shape or "
 		     "assumed rank", sym->name, &sym->declared_at);
+	  sym->error = 1;
 	  return false;
 	}
     }
@@ -13063,8 +13125,10 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
     {
       if (sym->attr.proc_pointer)
 	{
+	  const char* name = (sym->attr.result ? sym->ns->proc_name->name
+					       : sym->name);
 	  gfc_error ("Procedure pointer %qs at %L shall not be elemental",
-		     sym->name, &sym->declared_at);
+		     name, &sym->declared_at);
 	  return false;
 	}
       if (sym->attr.dummy)
@@ -13151,7 +13215,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
       if (sym->attr.subroutine && sym->attr.result)
 	{
 	  gfc_error ("PROCEDURE attribute conflicts with RESULT attribute "
-		     "in %qs at %L", sym->name, &sym->declared_at);
+		     "in %qs at %L", sym->ns->proc_name->name, &sym->declared_at);
 	  return false;
 	}
       if (sym->attr.external && sym->attr.function && !sym->attr.module_procedure
@@ -13849,7 +13913,7 @@ resolve_typebound_procedure (gfc_symtree* stree)
     {
       /* If proc has not been resolved at this point, proc->name may
 	 actually be a USE associated entity. See PR fortran/89647. */
-      if (!proc->resolved
+      if (!proc->resolve_symbol_called
 	  && proc->attr.function == 0 && proc->attr.subroutine == 0)
 	{
 	  gfc_symbol *tmp;
@@ -14956,11 +15020,6 @@ resolve_fl_namelist (gfc_symbol *sym)
 	}
     }
 
-  if (async_io_dt)
-    {
-      for (nl = sym->namelist; nl; nl = nl->next)
-	nl->sym->attr.asynchronous = 1;
-    }
   return true;
 }
 
@@ -15099,9 +15158,9 @@ resolve_symbol (gfc_symbol *sym)
   gfc_array_spec *as;
   bool saved_specification_expr;
 
-  if (sym->resolved)
+  if (sym->resolve_symbol_called >= 1)
     return;
-  sym->resolved = 1;
+  sym->resolve_symbol_called = 1;
 
   /* No symbol will ever have union type; only components can be unions.
      Union type declaration symbols have type BT_UNKNOWN but flavor FL_UNION
@@ -16820,7 +16879,8 @@ resolve_equivalence (gfc_equiv *eq)
 	  && !gfc_notify_std (GFC_STD_GNU, msg, sym->name, &e->where))
 		continue;
 
-  identical_types:
+identical_types:
+
       last_ts =&sym->ts;
       last_where = &e->where;
 
@@ -16828,8 +16888,7 @@ resolve_equivalence (gfc_equiv *eq)
 	continue;
 
       /* Shall not be an automatic array.  */
-      if (e->ref->type == REF_ARRAY
-	  && !gfc_resolve_array_spec (e->ref->u.ar.as, 1))
+      if (e->ref->type == REF_ARRAY && is_non_constant_shape_array (sym))
 	{
 	  gfc_error ("Array %qs at %L with non-constant bounds cannot be "
 		     "an EQUIVALENCE object", sym->name, &e->where);
@@ -17079,6 +17138,7 @@ resolve_types (gfc_namespace *ns)
   gfc_data *d;
   gfc_equiv *eq;
   gfc_namespace* old_ns = gfc_current_ns;
+  bool recursive = ns->proc_name && ns->proc_name->attr.recursive;
 
   if (ns->types_resolved)
     return;
@@ -17105,7 +17165,7 @@ resolve_types (gfc_namespace *ns)
 
   if (ns->proc_name && ns->proc_name->attr.flavor == FL_PROCEDURE
       && ns->proc_name->attr.if_source == IFSRC_IFBODY)
-    resolve_formal_arglist (ns->proc_name);
+    gfc_resolve_formal_arglist (ns->proc_name);
 
   gfc_traverse_ns (ns, resolve_bind_c_derived_types);
 
@@ -17132,7 +17192,7 @@ resolve_types (gfc_namespace *ns)
 
   gfc_traverse_ns (ns, resolve_values);
 
-  if (ns->save_all || !flag_automatic)
+  if (ns->save_all || (!flag_automatic && !recursive))
     gfc_save_all (ns);
 
   iter_stack = NULL;

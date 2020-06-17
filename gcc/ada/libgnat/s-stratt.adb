@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,6 +59,7 @@ package body System.Stream_Attributes is
    subtype S_C   is SEA (1 .. (Character'Size                + SU - 1) / SU);
    subtype S_F   is SEA (1 .. (Float'Size                    + SU - 1) / SU);
    subtype S_I   is SEA (1 .. (Integer'Size                  + SU - 1) / SU);
+   subtype S_I24 is SEA (1 .. (Integer_24'Size               + SU - 1) / SU);
    subtype S_LF  is SEA (1 .. (Long_Float'Size               + SU - 1) / SU);
    subtype S_LI  is SEA (1 .. (Long_Integer'Size             + SU - 1) / SU);
    subtype S_LLF is SEA (1 .. (Long_Long_Float'Size          + SU - 1) / SU);
@@ -71,6 +72,7 @@ package body System.Stream_Attributes is
    subtype S_SSU is SEA (1 .. (UST.Short_Short_Unsigned'Size + SU - 1) / SU);
    subtype S_SU  is SEA (1 .. (UST.Short_Unsigned'Size       + SU - 1) / SU);
    subtype S_U   is SEA (1 .. (UST.Unsigned'Size             + SU - 1) / SU);
+   subtype S_U24 is SEA (1 .. (Unsigned_24'Size              + SU - 1) / SU);
    subtype S_WC  is SEA (1 .. (Wide_Character'Size           + SU - 1) / SU);
    subtype S_WWC is SEA (1 .. (Wide_Wide_Character'Size      + SU - 1) / SU);
 
@@ -80,6 +82,7 @@ package body System.Stream_Attributes is
    function From_AS  is new UC (Thin_Pointer,             S_AS);
    function From_F   is new UC (Float,                    S_F);
    function From_I   is new UC (Integer,                  S_I);
+   function From_I24 is new UC (Integer_24,               S_I24);
    function From_LF  is new UC (Long_Float,               S_LF);
    function From_LI  is new UC (Long_Integer,             S_LI);
    function From_LLF is new UC (Long_Long_Float,          S_LLF);
@@ -92,6 +95,7 @@ package body System.Stream_Attributes is
    function From_SSU is new UC (UST.Short_Short_Unsigned, S_SSU);
    function From_SU  is new UC (UST.Short_Unsigned,       S_SU);
    function From_U   is new UC (UST.Unsigned,             S_U);
+   function From_U24 is new UC (Unsigned_24,              S_U24);
    function From_WC  is new UC (Wide_Character,           S_WC);
    function From_WWC is new UC (Wide_Wide_Character,      S_WWC);
 
@@ -101,6 +105,7 @@ package body System.Stream_Attributes is
    function To_AS  is new UC (S_AS,  Thin_Pointer);
    function To_F   is new UC (S_F,   Float);
    function To_I   is new UC (S_I,   Integer);
+   function To_I24 is new UC (S_I24, Integer_24);
    function To_LF  is new UC (S_LF,  Long_Float);
    function To_LI  is new UC (S_LI,  Long_Integer);
    function To_LLF is new UC (S_LLF, Long_Long_Float);
@@ -113,6 +118,7 @@ package body System.Stream_Attributes is
    function To_SSU is new UC (S_SSU, UST.Short_Short_Unsigned);
    function To_SU  is new UC (S_SU,  UST.Short_Unsigned);
    function To_U   is new UC (S_U,   UST.Unsigned);
+   function To_U24 is new UC (S_U24, Unsigned_24);
    function To_WC  is new UC (S_WC,  Wide_Character);
    function To_WWC is new UC (S_WWC, Wide_Wide_Character);
 
@@ -232,6 +238,24 @@ package body System.Stream_Attributes is
          return To_I (T);
       end if;
    end I_I;
+
+   -----------
+   -- I_I24 --
+   -----------
+
+   function I_I24 (Stream : not null access RST) return Integer_24 is
+      T : S_I24;
+      L : SEO;
+
+   begin
+      Ada.Streams.Read (Stream.all, T, L);
+
+      if L < T'Last then
+         raise Err;
+      else
+         return To_I24 (T);
+      end if;
+   end I_I24;
 
    ----------
    -- I_LF --
@@ -453,6 +477,24 @@ package body System.Stream_Attributes is
       end if;
    end I_U;
 
+   -----------
+   -- I_U24 --
+   -----------
+
+   function I_U24 (Stream : not null access RST) return Unsigned_24 is
+      T : S_U24;
+      L : SEO;
+
+   begin
+      Ada.Streams.Read (Stream.all, T, L);
+
+      if L < T'Last then
+         raise Err;
+      else
+         return To_U24 (T);
+      end if;
+   end I_U24;
+
    ----------
    -- I_WC --
    ----------
@@ -550,6 +592,16 @@ package body System.Stream_Attributes is
    begin
       Ada.Streams.Write (Stream.all, T);
    end W_I;
+
+   -----------
+   -- W_I24 --
+   -----------
+
+   procedure W_I24 (Stream : not null access RST; Item : Integer_24) is
+      T : constant S_I24 := From_I24 (Item);
+   begin
+      Ada.Streams.Write (Stream.all, T);
+   end W_I24;
 
    ----------
    -- W_LF --
@@ -682,6 +734,16 @@ package body System.Stream_Attributes is
    begin
       Ada.Streams.Write (Stream.all, T);
    end W_U;
+
+   -----------
+   -- W_U24 --
+   -----------
+
+   procedure W_U24 (Stream : not null access RST; Item : Unsigned_24) is
+      T : constant S_U24 := From_U24 (Item);
+   begin
+      Ada.Streams.Write (Stream.all, T);
+   end W_U24;
 
    ----------
    -- W_WC --

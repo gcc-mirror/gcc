@@ -69,13 +69,17 @@
 # include <type_traits>
 #endif
 
-#if __cplusplus > 201402L
-# define __cpp_lib_array_constexpr 201803
+#if __cplusplus > 201703L
+# define __cpp_lib_array_constexpr 201811L
+# define __cpp_lib_constexpr_iterator 201811L
+#elif __cplusplus == 201703L
+# define __cpp_lib_array_constexpr 201803L
 #endif
 
 #if __cplusplus > 201703L
 # include <compare>
 # include <new>
+# include <bits/iterator_concepts.h>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -86,6 +90,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @addtogroup iterators
    * @{
    */
+
+#if __cplusplus > 201703L && __cpp_lib_concepts
+  namespace __detail
+  {
+    // Weaken iterator_category _Cat to _Limit if it is derived from that,
+    // otherwise use _Otherwise.
+    template<typename _Cat, typename _Limit, typename _Otherwise = _Cat>
+      using __clamp_iter_cat
+	= conditional_t<derived_from<_Cat, _Limit>, _Limit, _Otherwise>;
+  }
+#endif
 
   // 24.4.1 Reverse iterators
   /**
@@ -124,6 +139,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename __traits_type::difference_type	difference_type;
       typedef typename __traits_type::pointer		pointer;
       typedef typename __traits_type::reference		reference;
+
+#if __cplusplus > 201703L && __cpp_lib_concepts
+      using iterator_concept
+	= conditional_t<random_access_iterator<_Iterator>,
+			random_access_iterator_tag,
+			bidirectional_iterator_tag>;
+      using iterator_category
+	= __detail::__clamp_iter_cat<typename __traits_type::iterator_category,
+				     random_access_iterator_tag>;
+#endif
 
       /**
        *  The default constructor value-initializes member @p current.
@@ -192,7 +217,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       _GLIBCXX17_CONSTEXPR pointer
       operator->() const
-#if __cplusplus > 201703L && defined __cpp_concepts
+#if __cplusplus > 201703L && __cpp_concepts >= 201907L
       requires is_pointer_v<_Iterator>
 	|| requires(const _Iterator __i) { __i.operator->(); }
 #endif
@@ -325,10 +350,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __y  A %reverse_iterator.
    *  @return  A simple bool.
    *
-   *  Reverse iterators forward many operations to their underlying base()
-   *  iterators.  Others are implemented in terms of one another.
+   *  Reverse iterators forward comparisons to their underlying base()
+   *  iterators.
    *
   */
+#if __cplusplus <= 201703L || ! defined __cpp_lib_concepts
   template<typename _Iterator>
     inline _GLIBCXX17_CONSTEXPR bool
     operator==(const reverse_iterator<_Iterator>& __x,
@@ -367,6 +393,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 280. Comparison of reverse_iterator to const reverse_iterator.
+
   template<typename _IteratorL, typename _IteratorR>
     inline _GLIBCXX17_CONSTEXPR bool
     operator==(const reverse_iterator<_IteratorL>& __x,
@@ -377,31 +404,81 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _GLIBCXX17_CONSTEXPR bool
     operator<(const reverse_iterator<_IteratorL>& __x,
 	      const reverse_iterator<_IteratorR>& __y)
-    { return __y.base() < __x.base(); }
+    { return __x.base() > __y.base(); }
 
   template<typename _IteratorL, typename _IteratorR>
     inline _GLIBCXX17_CONSTEXPR bool
     operator!=(const reverse_iterator<_IteratorL>& __x,
 	       const reverse_iterator<_IteratorR>& __y)
-    { return !(__x == __y); }
+    { return __x.base() != __y.base(); }
 
   template<typename _IteratorL, typename _IteratorR>
     inline _GLIBCXX17_CONSTEXPR bool
     operator>(const reverse_iterator<_IteratorL>& __x,
 	      const reverse_iterator<_IteratorR>& __y)
-    { return __y < __x; }
+    { return __x.base() < __y.base(); }
 
   template<typename _IteratorL, typename _IteratorR>
     inline _GLIBCXX17_CONSTEXPR bool
     operator<=(const reverse_iterator<_IteratorL>& __x,
 	       const reverse_iterator<_IteratorR>& __y)
-    { return !(__y < __x); }
+    { return __x.base() >= __y.base(); }
 
   template<typename _IteratorL, typename _IteratorR>
     inline _GLIBCXX17_CONSTEXPR bool
     operator>=(const reverse_iterator<_IteratorL>& __x,
 	       const reverse_iterator<_IteratorR>& __y)
-    { return !(__x < __y); }
+    { return __x.base() <= __y.base(); }
+#else // C++20
+  template<typename _IteratorL, typename _IteratorR>
+    constexpr bool
+    operator==(const reverse_iterator<_IteratorL>& __x,
+	       const reverse_iterator<_IteratorR>& __y)
+    requires requires { { __x.base() == __y.base() } -> convertible_to<bool>; }
+    { return __x.base() == __y.base(); }
+
+  template<typename _IteratorL, typename _IteratorR>
+    constexpr bool
+    operator!=(const reverse_iterator<_IteratorL>& __x,
+	       const reverse_iterator<_IteratorR>& __y)
+    requires requires { { __x.base() != __y.base() } -> convertible_to<bool>; }
+    { return __x.base() != __y.base(); }
+
+  template<typename _IteratorL, typename _IteratorR>
+    constexpr bool
+    operator<(const reverse_iterator<_IteratorL>& __x,
+	      const reverse_iterator<_IteratorR>& __y)
+    requires requires { { __x.base() > __y.base() } -> convertible_to<bool>; }
+    { return __x.base() > __y.base(); }
+
+  template<typename _IteratorL, typename _IteratorR>
+    constexpr bool
+    operator>(const reverse_iterator<_IteratorL>& __x,
+	      const reverse_iterator<_IteratorR>& __y)
+    requires requires { { __x.base() < __y.base() } -> convertible_to<bool>; }
+    { return __x.base() < __y.base(); }
+
+  template<typename _IteratorL, typename _IteratorR>
+    constexpr bool
+    operator<=(const reverse_iterator<_IteratorL>& __x,
+	       const reverse_iterator<_IteratorR>& __y)
+    requires requires { { __x.base() >= __y.base() } -> convertible_to<bool>; }
+    { return __x.base() >= __y.base(); }
+
+  template<typename _IteratorL, typename _IteratorR>
+    constexpr bool
+    operator>=(const reverse_iterator<_IteratorL>& __x,
+	       const reverse_iterator<_IteratorR>& __y)
+    requires requires { { __x.base() <= __y.base() } -> convertible_to<bool>; }
+    { return __x.base() <= __y.base(); }
+
+  template<typename _IteratorL,
+	   three_way_comparable_with<_IteratorL> _IteratorR>
+    constexpr compare_three_way_result_t<_IteratorL, _IteratorR>
+    operator<=>(const reverse_iterator<_IteratorL>& __x,
+		const reverse_iterator<_IteratorR>& __y)
+    { return __y.base() <=> __x.base(); }
+#endif // C++20
   //@}
 
 #if __cplusplus < 201103L
@@ -501,9 +578,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /// A nested typedef for the type of whatever container you used.
       typedef _Container          container_type;
+#if __cplusplus > 201703L
+      using difference_type = ptrdiff_t;
+
+      constexpr back_insert_iterator() noexcept : container(nullptr) { }
+#endif
 
       /// The only way to create this %iterator is with a container.
-      explicit
+      explicit _GLIBCXX20_CONSTEXPR
       back_insert_iterator(_Container& __x)
       : container(std::__addressof(__x)) { }
 
@@ -526,6 +608,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 #else
+      _GLIBCXX20_CONSTEXPR
       back_insert_iterator&
       operator=(const typename _Container::value_type& __value)
       {
@@ -533,6 +616,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+      _GLIBCXX20_CONSTEXPR
       back_insert_iterator&
       operator=(typename _Container::value_type&& __value)
       {
@@ -542,16 +626,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
       /// Simply returns *this.
+      _GLIBCXX20_CONSTEXPR
       back_insert_iterator&
       operator*()
       { return *this; }
 
       /// Simply returns *this.  (This %iterator does not @a move.)
+      _GLIBCXX20_CONSTEXPR
       back_insert_iterator&
       operator++()
       { return *this; }
 
       /// Simply returns *this.  (This %iterator does not @a move.)
+      _GLIBCXX20_CONSTEXPR
       back_insert_iterator
       operator++(int)
       { return *this; }
@@ -569,6 +656,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  types for you.
   */
   template<typename _Container>
+    _GLIBCXX20_CONSTEXPR
     inline back_insert_iterator<_Container>
     back_inserter(_Container& __x)
     { return back_insert_iterator<_Container>(__x); }
@@ -593,9 +681,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /// A nested typedef for the type of whatever container you used.
       typedef _Container          container_type;
+#if __cplusplus > 201703L
+      using difference_type = ptrdiff_t;
+
+      constexpr front_insert_iterator() noexcept : container(nullptr) { }
+#endif
 
       /// The only way to create this %iterator is with a container.
-      explicit front_insert_iterator(_Container& __x)
+      explicit _GLIBCXX20_CONSTEXPR
+      front_insert_iterator(_Container& __x)
       : container(std::__addressof(__x)) { }
 
       /**
@@ -617,6 +711,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 #else
+      _GLIBCXX20_CONSTEXPR
       front_insert_iterator&
       operator=(const typename _Container::value_type& __value)
       {
@@ -624,6 +719,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+      _GLIBCXX20_CONSTEXPR
       front_insert_iterator&
       operator=(typename _Container::value_type&& __value)
       {
@@ -633,16 +729,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
       /// Simply returns *this.
+      _GLIBCXX20_CONSTEXPR
       front_insert_iterator&
       operator*()
       { return *this; }
 
       /// Simply returns *this.  (This %iterator does not @a move.)
+      _GLIBCXX20_CONSTEXPR
       front_insert_iterator&
       operator++()
       { return *this; }
 
       /// Simply returns *this.  (This %iterator does not @a move.)
+      _GLIBCXX20_CONSTEXPR
       front_insert_iterator
       operator++(int)
       { return *this; }
@@ -660,6 +759,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  types for you.
   */
   template<typename _Container>
+    _GLIBCXX20_CONSTEXPR
     inline front_insert_iterator<_Container>
     front_inserter(_Container& __x)
     { return front_insert_iterator<_Container>(__x); }
@@ -682,19 +782,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class insert_iterator
     : public iterator<output_iterator_tag, void, void, void, void>
     {
+#if __cplusplus > 201703L && defined __cpp_lib_concepts
+      using _Iter = std::__detail::__range_iter_t<_Container>;
+
+    protected:
+      _Container* container = nullptr;
+      _Iter iter = _Iter();
+#else
+      typedef typename _Container::iterator		_Iter;
+
     protected:
       _Container* container;
-      typename _Container::iterator iter;
+      _Iter iter;
+#endif
 
     public:
       /// A nested typedef for the type of whatever container you used.
       typedef _Container          container_type;
 
+#if __cplusplus > 201703L && defined __cpp_lib_concepts
+      using difference_type = ptrdiff_t;
+
+      insert_iterator() = default;
+#endif
+
       /**
        *  The only way to create this %iterator is with a container and an
        *  initial position (a normal %iterator into the container).
       */
-      insert_iterator(_Container& __x, typename _Container::iterator __i)
+      _GLIBCXX20_CONSTEXPR
+      insert_iterator(_Container& __x, _Iter __i)
       : container(std::__addressof(__x)), iter(__i) {}
 
       /**
@@ -729,6 +846,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 #else
+      _GLIBCXX20_CONSTEXPR
       insert_iterator&
       operator=(const typename _Container::value_type& __value)
       {
@@ -737,6 +855,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+      _GLIBCXX20_CONSTEXPR
       insert_iterator&
       operator=(typename _Container::value_type&& __value)
       {
@@ -747,16 +866,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
       /// Simply returns *this.
+      _GLIBCXX20_CONSTEXPR
       insert_iterator&
       operator*()
       { return *this; }
 
       /// Simply returns *this.  (This %iterator does not @a move.)
+      _GLIBCXX20_CONSTEXPR
       insert_iterator&
       operator++()
       { return *this; }
 
       /// Simply returns *this.  (This %iterator does not @a move.)
+      _GLIBCXX20_CONSTEXPR
       insert_iterator&
       operator++(int)
       { return *this; }
@@ -774,6 +896,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  template parameter deduction, making the compiler match the correct
    *  types for you.
   */
+#if __cplusplus > 201703L && defined __cpp_lib_concepts
+  template<typename _Container>
+    constexpr insert_iterator<_Container>
+    inserter(_Container& __x, std::__detail::__range_iter_t<_Container> __i)
+    { return insert_iterator<_Container>(__x, __i); }
+#else
   template<typename _Container, typename _Iterator>
     inline insert_iterator<_Container>
     inserter(_Container& __x, _Iterator __i)
@@ -781,6 +909,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return insert_iterator<_Container>(__x,
 					 typename _Container::iterator(__i));
     }
+#endif
 
   // @} group iterators
 
@@ -912,7 +1041,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // provide overloads whose operands are of the same type.  Can someone
   // remind me what generic programming is about? -- Gaby
 
-  // Forward iterator requirements
+#if __cpp_lib_three_way_comparison
+  template<typename _IteratorL, typename _IteratorR, typename _Container>
+    requires requires (_IteratorL __lhs, _IteratorR __rhs)
+    { { __lhs == __rhs } -> std::convertible_to<bool>; }
+    constexpr bool
+    operator==(const __normal_iterator<_IteratorL, _Container>& __lhs,
+	       const __normal_iterator<_IteratorR, _Container>& __rhs)
+    noexcept(noexcept(__lhs.base() == __rhs.base()))
+    { return __lhs.base() == __rhs.base(); }
+
+  template<typename _IteratorL, typename _IteratorR, typename _Container>
+    constexpr std::__detail::__synth3way_t<_IteratorR, _IteratorL>
+    operator<=>(const __normal_iterator<_IteratorL, _Container>& __lhs,
+		const __normal_iterator<_IteratorR, _Container>& __rhs)
+    noexcept(noexcept(std::__detail::__synth3way(__lhs.base(), __rhs.base())))
+    { return std::__detail::__synth3way(__lhs.base(), __rhs.base()); }
+#else
+   // Forward iterator requirements
   template<typename _IteratorL, typename _IteratorR, typename _Container>
     _GLIBCXX20_CONSTEXPR
     inline bool
@@ -947,7 +1093,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Random access iterator requirements
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-    _GLIBCXX20_CONSTEXPR
     inline bool
     operator<(const __normal_iterator<_IteratorL, _Container>& __lhs,
 	      const __normal_iterator<_IteratorR, _Container>& __rhs)
@@ -963,7 +1108,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __lhs.base() < __rhs.base(); }
 
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-    _GLIBCXX20_CONSTEXPR
     inline bool
     operator>(const __normal_iterator<_IteratorL, _Container>& __lhs,
 	      const __normal_iterator<_IteratorR, _Container>& __rhs)
@@ -979,7 +1123,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __lhs.base() > __rhs.base(); }
 
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-    _GLIBCXX20_CONSTEXPR
     inline bool
     operator<=(const __normal_iterator<_IteratorL, _Container>& __lhs,
 	       const __normal_iterator<_IteratorR, _Container>& __rhs)
@@ -995,7 +1138,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __lhs.base() <= __rhs.base(); }
 
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-    _GLIBCXX20_CONSTEXPR
     inline bool
     operator>=(const __normal_iterator<_IteratorL, _Container>& __lhs,
 	       const __normal_iterator<_IteratorR, _Container>& __rhs)
@@ -1009,6 +1151,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const __normal_iterator<_Iterator, _Container>& __rhs)
     _GLIBCXX_NOEXCEPT
     { return __lhs.base() >= __rhs.base(); }
+#endif // three-way comparison
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // According to the resolution of DR179 not only the various comparison
@@ -1104,15 +1247,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       _Sent _M_last;
     };
-
-  namespace __detail
-  {
-    // Weaken iterator_category _Cat to _Limit if it is derived from that,
-    // otherwise use _Otherwise.
-    template<typename _Cat, typename _Limit, typename _Otherwise = _Cat>
-      using __clamp_iter_cat
-	= conditional_t<derived_from<_Cat, _Limit>, _Limit, _Otherwise>;
-  }
 #endif // C++20
 
   // 24.4.3  Move iterators
@@ -1166,16 +1300,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       explicit _GLIBCXX17_CONSTEXPR
       move_iterator(iterator_type __i)
-      : _M_current(__i) { }
+      : _M_current(std::move(__i)) { }
 
       template<typename _Iter>
 	_GLIBCXX17_CONSTEXPR
 	move_iterator(const move_iterator<_Iter>& __i)
 	: _M_current(__i.base()) { }
 
+      template<typename _Iter>
+	_GLIBCXX17_CONSTEXPR
+	move_iterator& operator=(const move_iterator<_Iter>& __i)
+	{
+	  _M_current = __i.base();
+	  return *this;
+	}
+
+#if __cplusplus <= 201703L
       _GLIBCXX17_CONSTEXPR iterator_type
       base() const
       { return _M_current; }
+#else
+      constexpr iterator_type
+      base() const &
+#if __cpp_lib_concepts
+	requires copy_constructible<iterator_type>
+#endif
+      { return _M_current; }
+
+      constexpr iterator_type
+      base() &&
+      { return std::move(_M_current); }
+#endif
 
       _GLIBCXX17_CONSTEXPR reference
       operator*() const
@@ -1199,6 +1354,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	++_M_current;
 	return __tmp;
       }
+
+#if __cpp_lib_concepts
+      constexpr void
+      operator++(int) requires (!forward_iterator<_Iterator>)
+      { ++_M_current; }
+#endif
 
       _GLIBCXX17_CONSTEXPR move_iterator&
       operator--()
@@ -1270,14 +1431,73 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // C++20
     };
 
-  // Note: See __normal_iterator operators note from Gaby to understand
-  // why there are always 2 versions for most of the move_iterator
-  // operators.
   template<typename _IteratorL, typename _IteratorR>
     inline _GLIBCXX17_CONSTEXPR bool
     operator==(const move_iterator<_IteratorL>& __x,
 	       const move_iterator<_IteratorR>& __y)
+#if __cplusplus > 201703L && __cpp_lib_concepts
+    requires requires { { __x.base() == __y.base() } -> convertible_to<bool>; }
+#endif
     { return __x.base() == __y.base(); }
+
+#if __cpp_lib_three_way_comparison
+  template<typename _IteratorL,
+	   three_way_comparable_with<_IteratorL> _IteratorR>
+    constexpr compare_three_way_result_t<_IteratorL, _IteratorR>
+    operator<=>(const move_iterator<_IteratorL>& __x,
+		const move_iterator<_IteratorR>& __y)
+    { return __x.base() <=> __y.base(); }
+#else
+  template<typename _IteratorL, typename _IteratorR>
+    inline _GLIBCXX17_CONSTEXPR bool
+    operator!=(const move_iterator<_IteratorL>& __x,
+	       const move_iterator<_IteratorR>& __y)
+    { return !(__x == __y); }
+#endif
+
+  template<typename _IteratorL, typename _IteratorR>
+    inline _GLIBCXX17_CONSTEXPR bool
+    operator<(const move_iterator<_IteratorL>& __x,
+	      const move_iterator<_IteratorR>& __y)
+#if __cplusplus > 201703L && __cpp_lib_concepts
+    requires requires { { __x.base() < __y.base() } -> convertible_to<bool>; }
+#endif
+    { return __x.base() < __y.base(); }
+
+  template<typename _IteratorL, typename _IteratorR>
+    inline _GLIBCXX17_CONSTEXPR bool
+    operator<=(const move_iterator<_IteratorL>& __x,
+	       const move_iterator<_IteratorR>& __y)
+#if __cplusplus > 201703L && __cpp_lib_concepts
+    requires requires { { __y.base() < __x.base() } -> convertible_to<bool>; }
+#endif
+    { return !(__y < __x); }
+
+  template<typename _IteratorL, typename _IteratorR>
+    inline _GLIBCXX17_CONSTEXPR bool
+    operator>(const move_iterator<_IteratorL>& __x,
+	      const move_iterator<_IteratorR>& __y)
+#if __cplusplus > 201703L && __cpp_lib_concepts
+    requires requires { { __y.base() < __x.base() } -> convertible_to<bool>; }
+#endif
+    { return __y < __x; }
+
+  template<typename _IteratorL, typename _IteratorR>
+    inline _GLIBCXX17_CONSTEXPR bool
+    operator>=(const move_iterator<_IteratorL>& __x,
+	       const move_iterator<_IteratorR>& __y)
+#if __cplusplus > 201703L && __cpp_lib_concepts
+    requires requires { { __x.base() < __y.base() } -> convertible_to<bool>; }
+#endif
+    { return !(__x < __y); }
+
+#if ! (__cplusplus > 201703L && __cpp_lib_concepts)
+  // Note: See __normal_iterator operators note from Gaby to understand
+  // why we have these extra overloads for some move_iterator operators.
+
+  // These extra overloads are not needed in C++20, because the ones above
+  // are constrained with a requires-clause and so overload resolution will
+  // prefer them to greedy unconstrained function templates.
 
   template<typename _Iterator>
     inline _GLIBCXX17_CONSTEXPR bool
@@ -1285,23 +1505,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const move_iterator<_Iterator>& __y)
     { return __x.base() == __y.base(); }
 
-  template<typename _IteratorL, typename _IteratorR>
-    inline _GLIBCXX17_CONSTEXPR bool
-    operator!=(const move_iterator<_IteratorL>& __x,
-	       const move_iterator<_IteratorR>& __y)
-    { return !(__x == __y); }
-
   template<typename _Iterator>
     inline _GLIBCXX17_CONSTEXPR bool
     operator!=(const move_iterator<_Iterator>& __x,
 	       const move_iterator<_Iterator>& __y)
     { return !(__x == __y); }
-
-  template<typename _IteratorL, typename _IteratorR>
-    inline _GLIBCXX17_CONSTEXPR bool
-    operator<(const move_iterator<_IteratorL>& __x,
-	      const move_iterator<_IteratorR>& __y)
-    { return __x.base() < __y.base(); }
 
   template<typename _Iterator>
     inline _GLIBCXX17_CONSTEXPR bool
@@ -1309,23 +1517,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      const move_iterator<_Iterator>& __y)
     { return __x.base() < __y.base(); }
 
-  template<typename _IteratorL, typename _IteratorR>
-    inline _GLIBCXX17_CONSTEXPR bool
-    operator<=(const move_iterator<_IteratorL>& __x,
-	       const move_iterator<_IteratorR>& __y)
-    { return !(__y < __x); }
-
   template<typename _Iterator>
     inline _GLIBCXX17_CONSTEXPR bool
     operator<=(const move_iterator<_Iterator>& __x,
 	       const move_iterator<_Iterator>& __y)
     { return !(__y < __x); }
-
-  template<typename _IteratorL, typename _IteratorR>
-    inline _GLIBCXX17_CONSTEXPR bool
-    operator>(const move_iterator<_IteratorL>& __x,
-	      const move_iterator<_IteratorR>& __y)
-    { return __y < __x; }
 
   template<typename _Iterator>
     inline _GLIBCXX17_CONSTEXPR bool
@@ -1333,17 +1529,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      const move_iterator<_Iterator>& __y)
     { return __y < __x; }
 
-  template<typename _IteratorL, typename _IteratorR>
-    inline _GLIBCXX17_CONSTEXPR bool
-    operator>=(const move_iterator<_IteratorL>& __x,
-	       const move_iterator<_IteratorR>& __y)
-    { return !(__x < __y); }
-
   template<typename _Iterator>
     inline _GLIBCXX17_CONSTEXPR bool
     operator>=(const move_iterator<_Iterator>& __x,
 	       const move_iterator<_Iterator>& __y)
     { return !(__x < __y); }
+#endif // ! C++20
 
   // DR 685.
   template<typename _IteratorL, typename _IteratorR>
@@ -1362,7 +1553,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Iterator>
     inline _GLIBCXX17_CONSTEXPR move_iterator<_Iterator>
     make_move_iterator(_Iterator __i)
-    { return move_iterator<_Iterator>(__i); }
+    { return move_iterator<_Iterator>(std::move(__i)); }
 
   template<typename _Iterator, typename _ReturnType
     = typename conditional<__move_if_noexcept_cond
@@ -1386,25 +1577,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   namespace __detail
   {
-    template<input_or_output_iterator _It>
-      class _Common_iter_proxy
-      {
-	iter_value_t<_It> _M_keep;
-
-	_Common_iter_proxy(iter_reference_t<_It>&& __x)
-	: _M_keep(std::move(__x)) { }
-
-	template<typename _Iter, typename _Sent>
-	  friend class common_iterator;
-
-      public:
-	const iter_value_t<_It>*
-	operator->() const
-	{ return std::__addressof(_M_keep); }
-      };
-
     template<typename _It>
-      concept __common_iter_has_arrow = readable<const _It>
+      concept __common_iter_has_arrow = indirectly_readable<const _It>
 	&& (requires(const _It& __it) { __it.operator->(); }
 	    || is_reference_v<iter_reference_t<_It>>
 	    || constructible_from<iter_value_t<_It>, iter_reference_t<_It>>);
@@ -1413,7 +1587,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// An iterator/sentinel adaptor for representing a non-common range.
   template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
-    requires (!same_as<_It, _Sent>)
+    requires (!same_as<_It, _Sent>) && copyable<_It>
   class common_iterator
   {
     template<typename _Tp, typename _Up>
@@ -1430,6 +1604,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr bool
       _S_noexcept()
       { return _S_noexcept1<_It, _It2>() && _S_noexcept1<_Sent, _Sent2>(); }
+
+    class _Proxy
+    {
+      iter_value_t<_It> _M_keep;
+
+      _Proxy(iter_reference_t<_It>&& __x)
+      : _M_keep(std::move(__x)) { }
+
+      friend class common_iterator;
+
+    public:
+      const iter_value_t<_It>*
+      operator->() const
+      { return std::__addressof(_M_keep); }
+    };
 
   public:
     constexpr
@@ -1587,7 +1776,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return std::__addressof(__tmp);
 	}
       else
-	return _Common_iter_proxy(*_M_it);
+	return _Proxy{*_M_it};
     }
 
     common_iterator&
@@ -1722,26 +1911,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using difference_type = iter_difference_t<_It>;
     };
 
-  namespace __detail
-  {
-    // FIXME: This has to be at namespace-scope because of PR 92078.
-    template<typename _Iter>
-      struct __common_iter_ptr
+  template<input_iterator _It, typename _Sent>
+    struct iterator_traits<common_iterator<_It, _Sent>>
+    {
+    private:
+      template<typename _Iter>
+	struct __ptr
 	{
 	  using type = void;
 	};
 
-    template<typename _Iter>
-      requires __detail::__common_iter_has_arrow<_Iter>
-      struct __common_iter_ptr<_Iter>
-      {
-	using type = decltype(std::declval<const _Iter&>().operator->());
-      };
-  } // namespace __detail
+      template<typename _Iter>
+	requires __detail::__common_iter_has_arrow<_Iter>
+	struct __ptr<_Iter>
+	{
+	  using _CIter = common_iterator<_Iter, _Sent>;
+	  using type = decltype(std::declval<const _CIter&>().operator->());
+	};
 
-  template<input_iterator _It, typename _Sent>
-    struct iterator_traits<common_iterator<_It, _Sent>>
-    {
+    public:
       using iterator_concept = conditional_t<forward_iterator<_It>,
 	    forward_iterator_tag, input_iterator_tag>;
       using iterator_category = __detail::__clamp_iter_cat<
@@ -1749,8 +1937,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	forward_iterator_tag, input_iterator_tag>;
       using value_type = iter_value_t<_It>;
       using difference_type = iter_difference_t<_It>;
-      using pointer = typename
-	__detail::__common_iter_ptr<common_iterator<_It, _Sent>>::type;
+      using pointer = typename __ptr<_It>::type;
       using reference = iter_reference_t<_It>;
     };
 
@@ -1767,7 +1954,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr
       counted_iterator(_It __i, iter_difference_t<_It> __n)
-      : _M_current(__i), _M_length(__n)
+      : _M_current(std::move(__i)), _M_length(__n)
       { __glibcxx_assert(__n >= 0); }
 
       template<typename _It2>

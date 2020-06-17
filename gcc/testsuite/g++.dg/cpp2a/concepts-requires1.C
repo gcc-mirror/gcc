@@ -1,4 +1,4 @@
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template<typename T>
 concept Class = __is_class(T);
@@ -41,8 +41,8 @@ template<int N> requires N == 0 struct S2 { }; // { dg-error "does not have type
 
 template<int N> requires (N == 0) struct S3 { }; // OK
 
-template<typename T, T X> requires X struct S4 { }; // OK
-S4<int, 0> x1;      // { dg-error "template constraint failure|does not have type" }
+template<typename T, T X> requires X struct S4 { }; // { dg-error "bool" }
+S4<int, 0> x1;      // { dg-error "template constraint failure" }
 S4<bool, true> x2; // OK
 S4<bool, false> x3; // { dg-error "template constraint failure" }
 

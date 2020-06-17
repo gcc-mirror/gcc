@@ -31,6 +31,54 @@
 	      || REGNO_REG_CLASS (REGNO (op)) != NO_REGS));
 })
 
+(define_predicate "mve_memory_operand"
+  (and (match_code "mem")
+       (match_test "TARGET_32BIT
+		    && mve_vector_mem_operand (GET_MODE (op), XEXP (op, 0),
+					       false)")))
+
+(define_predicate "mve_scatter_memory"
+  (and (match_code "mem")
+       (match_test "TARGET_HAVE_MVE && REG_P (XEXP (op, 0))
+		    && mve_vector_mem_operand (GET_MODE (op), XEXP (op, 0),
+					       false)")))
+
+;; True for immediates in the range of 1 to 16 for MVE.
+(define_predicate "mve_imm_16"
+  (match_test "satisfies_constraint_Rd (op)"))
+
+;; True for immediates in the range of 0 to 7 for MVE.
+(define_predicate "mve_imm_7"
+  (match_test "satisfies_constraint_Ra (op)"))
+
+;; True for immediates in the range of 1 to 8 for MVE.
+(define_predicate "mve_imm_8"
+  (match_test "satisfies_constraint_Rb (op)"))
+
+;; True for immediates in the range of 0 to 15 for MVE.
+(define_predicate "mve_imm_15"
+  (match_test "satisfies_constraint_Rc (op)"))
+
+;; True for immediates in the range of 0 to 31 for MVE.
+(define_predicate "mve_imm_31"
+  (match_test "satisfies_constraint_Re (op)"))
+
+;; True for immediates in the range of 1 to 32 for MVE.
+(define_predicate "mve_imm_32"
+  (match_test "satisfies_constraint_Rf (op)"))
+
+;; True if the immediate is one among 1, 2, 4 or 8 for MVE.
+(define_predicate "mve_imm_selective_upto_8"
+  (match_test "satisfies_constraint_Rg (op)"))
+
+;; True if the immediate is the range +/- 1016 and multiple of 8 for MVE.
+(define_constraint "Ri"
+  "@internal In Thumb-2 state a constant is multiple of 8 and in range
+   of -/+ 1016 for MVE"
+  (and (match_code "const_int")
+       (match_test "TARGET_HAVE_MVE && (-1016 <= ival) && (ival <= 1016)
+		    && ((ival % 8) == 0)")))
+
 ; Predicate for stack protector guard's address in
 ; stack_protect_combined_set_insn and stack_protect_combined_test_insn patterns
 (define_predicate "guard_addr_operand"
@@ -46,6 +94,14 @@
   (match_code "mem")
 {
   return guard_addr_operand (XEXP (op, 0), mode);
+})
+
+(define_predicate "vpr_register_operand"
+  (match_code "reg")
+{
+  return REG_P (op)
+	  && (REGNO (op) >= FIRST_PSEUDO_REGISTER
+	      || IS_VPR_REGNUM (REGNO (op)));
 })
 
 (define_predicate "imm_for_neon_inv_logic_operand"
@@ -99,6 +155,18 @@
 	      || REGNO (op) >= FIRST_PSEUDO_REGISTER));
 })
 
+;; Low core register, or any pseudo.
+(define_predicate "arm_low_register_operand"
+  (match_code "reg,subreg")
+{
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+
+  return (REG_P (op)
+	  && (REGNO (op) <= LAST_LO_REGNUM
+	      || REGNO (op) >= FIRST_PSEUDO_REGISTER));
+})
+
 (define_predicate "arm_general_adddi_operand"
   (ior (match_operand 0 "arm_general_register_operand")
        (and (match_code "const_int")
@@ -117,7 +185,7 @@
 	      || REGNO_REG_CLASS (REGNO (op)) == VFP_D0_D7_REGS
 	      || REGNO_REG_CLASS (REGNO (op)) == VFP_LO_REGS
 	      || (TARGET_VFPD32
-		  && REGNO_REG_CLASS (REGNO (op)) == VFP_REGS)));
+		  && REGNO_REG_CLASS (REGNO (op)) == VFP_HI_REGS)));
 })
 
 (define_predicate "vfp_hard_register_operand"
@@ -181,6 +249,47 @@
 (define_predicate "const_int_M_operand"
   (and (match_operand 0 "const_int_operand")
        (match_test "satisfies_constraint_M (op)")))
+
+(define_predicate "const_int_coproc_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "IN_RANGE (UINTVAL (op), 0, ARM_CDE_CONST_COPROC)")
+       (match_test "arm_arch_cde_coproc_bits[UINTVAL (op)] & arm_arch_cde_coproc")))
+
+(define_predicate "const_int_ccde1_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "IN_RANGE (UINTVAL (op), 0, ARM_CCDE_CONST_1)")))
+
+(define_predicate "const_int_ccde2_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "IN_RANGE (UINTVAL (op), 0, ARM_CCDE_CONST_2)")))
+
+(define_predicate "const_int_ccde3_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "IN_RANGE (UINTVAL (op), 0, ARM_CCDE_CONST_3)")))
+
+(define_predicate "const_int_vcde1_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "IN_RANGE (UINTVAL (op), 0, ARM_VCDE_CONST_1)")))
+
+(define_predicate "const_int_vcde2_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "IN_RANGE (UINTVAL (op), 0, ARM_VCDE_CONST_2)")))
+
+(define_predicate "const_int_vcde3_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "IN_RANGE (UINTVAL (op), 0, ARM_VCDE_CONST_3)")))
+
+(define_predicate "const_int_mve_cde1_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "IN_RANGE (UINTVAL (op), 0, ARM_MVE_CDE_CONST_1)")))
+
+(define_predicate "const_int_mve_cde2_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "IN_RANGE (UINTVAL (op), 0, ARM_MVE_CDE_CONST_2)")))
+
+(define_predicate "const_int_mve_cde3_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "IN_RANGE (UINTVAL (op), 0, ARM_MVE_CDE_CONST_3)")))
 
 ;; This doesn't have to do much because the constant is already checked
 ;; in the shift_operator predicate.
@@ -335,6 +444,15 @@
                  (match_test "CONST_INT_P (XEXP (op, 1))
 		              && (UINTVAL (XEXP (op, 1)) < 32)")))
        (match_test "mode == GET_MODE (op)")))
+
+;; True for Armv8.1-M Mainline long shift instructions.
+(define_predicate "long_shift_imm"
+  (match_test "satisfies_constraint_Pg (op)"))
+
+(define_predicate "arm_reg_or_long_shift_imm"
+  (ior (match_test "TARGET_THUMB2
+		    && arm_general_register_operand (op, GET_MODE (op))")
+       (match_test "satisfies_constraint_Pg (op)")))
 
 ;; True for MULT, to identify which variant of shift_operator is in use.
 (define_special_predicate "mult_operator"
@@ -545,6 +663,18 @@
 	    (match_test "satisfies_constraint_Dy (op)")
 	    (match_test "satisfies_constraint_G (op)"))))
 
+(define_special_predicate "clear_multiple_operation"
+  (match_code "parallel")
+{
+ return clear_operation_p (op, /*vfp*/false);
+})
+
+(define_special_predicate "clear_vfp_multiple_operation"
+  (match_code "parallel")
+{
+ return clear_operation_p (op, /*vfp*/true);
+})
+
 (define_special_predicate "load_multiple_operation"
   (match_code "parallel")
 {
@@ -667,7 +797,7 @@
 (define_predicate "imm_for_neon_mov_operand"
   (match_code "const_vector,const_int")
 {
-  return neon_immediate_valid_for_move (op, mode, NULL, NULL);
+  return simd_immediate_valid_for_move (op, mode, NULL, NULL);
 })
 
 (define_predicate "imm_for_neon_lshift_operand"

@@ -697,6 +697,17 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
   if (error_operand_p (e) || type == error_mark_node)
     return error_mark_node;
 
+  if (TREE_CODE (e) == COMPOUND_EXPR)
+    {
+      e = ocp_convert (type, TREE_OPERAND (e, 1), convtype, flags, complain);
+      if (e == error_mark_node)
+	return error_mark_node;
+      if (e == TREE_OPERAND (expr, 1))
+	return expr;
+      return build2_loc (EXPR_LOCATION (expr), COMPOUND_EXPR, TREE_TYPE (e),
+			 TREE_OPERAND (expr, 0), e);
+    }
+
   complete_type (type);
   complete_type (TREE_TYPE (expr));
 
@@ -712,7 +723,9 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
   if (!CLASS_TYPE_P (type))
     {
       e = mark_rvalue_use (e);
-      e = scalar_constant_value (e);
+      tree v = scalar_constant_value (e);
+      if (!error_operand_p (v))
+	e = v;
     }
   if (error_operand_p (e))
     return error_mark_node;
@@ -982,9 +995,8 @@ cp_get_fndecl_from_callee (tree fn, bool fold /* = true */)
   if (TREE_CODE (fn) == FUNCTION_DECL)
     return fn;
   tree type = TREE_TYPE (fn);
-  if (type == unknown_type_node)
+  if (type == NULL_TREE || !INDIRECT_TYPE_P (type))
     return NULL_TREE;
-  gcc_assert (INDIRECT_TYPE_P (type));
   if (fold)
     fn = maybe_constant_init (fn);
   STRIP_NOPS (fn);

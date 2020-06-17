@@ -1,3 +1,22 @@
+2020-02-20  Alexandre Oliva <oliva@adacore.com>
+
+	* mkheaders.in: Don't require build-time shell on host.
+
+2020-02-13  Matheus Castanho  <msc@linux.ibm.com>
+
+	* fixinc.in: Skip machine_name fix on powerpc*-*-linux*.
+
+2020-02-13  Alexandre Oliva <oliva@adacore.com>
+
+	* mkheaders.in: Re-create subdirs, copy limits.h into subdir.
+	* mkfixinc.sh: Create dummy fixinc for *-*-vxworks7*.
+
+2020-01-25  John David Anglin  <danglin@gcc.gnu.org>
+
+	* inclhack.def (hpux_c99_inttypes4): New, add missing SCNuMAX defines.
+	* fixincl.x: Regenerate.
+	* tests/base/inttypes.h: Update for above fix.
+
 2019-12-30  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR libgomp/93066

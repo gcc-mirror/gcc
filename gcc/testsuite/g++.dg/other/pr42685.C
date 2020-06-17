@@ -1,6 +1,5 @@
 // { dg-do compile }
 // { dg-options "-O -funroll-loops -fcompare-debug" }
-// { dg-xfail-if "" { powerpc-ibm-aix* } }
 
 void Remap(int n, int *src, int *dst, int *map)
 {

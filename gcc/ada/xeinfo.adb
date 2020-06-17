@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -126,10 +126,10 @@ procedure XEinfo is
    Get_Cmnt : constant Pattern := BreakX ('-') * A & "--";
    Get_Expr : constant Pattern := wsp & "return " & Break (';') * Expr;
    Chek_End : constant Pattern := wsp & "end" & BreakX (';') & ';';
+   Get_B0   : constant Pattern := BreakX (' ') * A & " or else " & Rest * B;
    Get_B1   : constant Pattern := BreakX (' ') * A & " in " & Rest * B;
    Get_B2   : constant Pattern := BreakX (' ') * A & " = " & Rest * B;
    Get_B3   : constant Pattern := BreakX (' ') * A & " /= " & Rest * B;
-   Get_B4   : constant Pattern := BreakX (' ') * A & " or else " & Rest * B;
    To_Paren : constant Pattern := wsp * Filler & '(';
    Get_Fml  : constant Pattern := Break (" :") * Formal & wsp & ':' & wsp
                                   & BreakX (" );") * Formaltyp;
@@ -163,6 +163,9 @@ procedure XEinfo is
 
    procedure Sethead (Line : in out VString; Term : String);
    --  Process function header into C
+
+   procedure Translate_Expr (Expr : in out VString);
+   --  Translate expression from Ada to C
 
    -------------
    -- Badfunc --
@@ -241,6 +244,22 @@ procedure XEinfo is
          Put_Line (Ofile, A &  Rtn & ' ' & Name & Args & Term);
       end if;
    end Sethead;
+
+   --------------------
+   -- Translate_Expr --
+   --------------------
+
+   procedure Translate_Expr (Expr : in out VString) is
+      M : Match_Result;
+
+   begin
+      Match (Expr, Get_B1, M);
+      Replace (M, "IN (" & A & ", " & B & ')');
+      Match (Expr, Get_B2, M);
+      Replace (M, A & " == " & B);
+      Match (Expr, Get_B3, M);
+      Replace (M, A & " != " & B);
+   end Translate_Expr;
 
 --  Start of processing for XEinfo
 
@@ -485,14 +504,21 @@ begin
             Badfunc;
          end if;
 
-         Match (Expr, Get_B1, M);
-         Replace (M, "IN (" & A & ", " & B & ')');
-         Match (Expr, Get_B2, M);
-         Replace (M, A & " == " & B);
-         Match (Expr, Get_B3, M);
-         Replace (M, A & " != " & B);
-         Match (Expr, Get_B4, M);
-         Replace (M, A & " || " & B);
+         --  Process expression
+
+         if Match (Expr, Get_B0, M) then
+            declare
+               Saved_A : VString := A;
+               Saved_B : VString := B;
+            begin
+               Translate_Expr (Saved_A);
+               Translate_Expr (Saved_B);
+               Replace (M, Saved_A & " || " & Saved_B);
+            end;
+         else
+            Translate_Expr (Expr);
+         end if;
+
          Put_Line (Ofile, "");
          Sethead (Fline, "");
          Put_Line (Ofile, C & "   { return " & Expr & "; }");

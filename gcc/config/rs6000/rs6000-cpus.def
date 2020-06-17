@@ -75,15 +75,14 @@
 				 | OPTION_MASK_P8_VECTOR		\
 				 | OPTION_MASK_P9_VECTOR)
 
-/* Support for a future processor's features.  Do not enable -mpcrel until it
-   is fully functional.  */
-#define ISA_FUTURE_MASKS_SERVER	(ISA_3_0_MASKS_SERVER			\
-				 | OPTION_MASK_FUTURE			\
-				 | OPTION_MASK_PREFIXED_ADDR)
-
 /* Flags that need to be turned off if -mno-future.  */
 #define OTHER_FUTURE_MASKS	(OPTION_MASK_PCREL			\
-				 | OPTION_MASK_PREFIXED_ADDR)
+				 | OPTION_MASK_PREFIXED)
+
+/* Support for a future processor's features.  */
+#define ISA_FUTURE_MASKS_SERVER	(ISA_3_0_MASKS_SERVER			\
+				 | OPTION_MASK_FUTURE			\
+				 | OTHER_FUTURE_MASKS)
 
 /* Flags that need to be turned off if -mno-power9-vector.  */
 #define OTHER_P9_VECTOR_MASKS	(OPTION_MASK_FLOAT128_HW		\
@@ -100,6 +99,10 @@
 				 | OPTION_MASK_EFFICIENT_UNALIGNED_VSX	\
 				 | OPTION_MASK_FLOAT128_KEYWORD		\
 				 | OPTION_MASK_P8_VECTOR)
+
+/* Flags that need to be turned off if -mno-altivec.  */
+#define OTHER_ALTIVEC_MASKS	(OTHER_VSX_VECTOR_MASKS			\
+				 | OPTION_MASK_VSX)
 
 #define POWERPC_7400_MASK	(OPTION_MASK_PPC_GFXOPT | OPTION_MASK_ALTIVEC)
 
@@ -143,7 +146,7 @@
 				 | OPTION_MASK_POWERPC64		\
 				 | OPTION_MASK_PPC_GFXOPT		\
 				 | OPTION_MASK_PPC_GPOPT		\
-				 | OPTION_MASK_PREFIXED_ADDR		\
+				 | OPTION_MASK_PREFIXED			\
 				 | OPTION_MASK_QUAD_MEMORY		\
 				 | OPTION_MASK_QUAD_MEMORY_ATOMIC	\
 				 | OPTION_MASK_RECIP_PRECISION		\

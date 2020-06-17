@@ -63,6 +63,7 @@
 #endif
 #if __cplusplus > 201703L
 # include <compare>
+# define __cpp_lib_constexpr_utility 201811L
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)

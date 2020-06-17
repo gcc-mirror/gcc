@@ -37,11 +37,34 @@ proc scan-wpa-ipa-dump { args } {
     }
     if { [llength $args] >= 3 } {
 	scan-dump "wpa-ipa" [lindex $args 0] \
-		  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".exe.wpa" \
+		  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".wpa" \
 		  [lindex $args 2]
     } else {
 	scan-dump "wpa-ipa" [lindex $args 0] \
-		  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".exe.wpa"
+		  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".wpa"
+    }
+}
+
+# Argument 0 is the regexp to match
+# Argument 1 is the name of the dumped ipa pass
+# Argument 2 handles expected failures and the like
+proc scan-pgo-wpa-ipa-dump { args } {
+
+    if { [llength $args] < 2 } {
+	error "scan-pgo-wpa-ipa-dump: too few arguments"
+	return
+    }
+    if { [llength $args] > 3 } {
+	error "scan-pgo-wpa-ipa-dump: too many arguments"
+	return
+    }
+    if { [llength $args] >= 3 } {
+	scan-dump "pgo-wpa-ipa" [lindex $args 0] \
+		  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".x02.wpa" \
+		  [lindex $args 2]
+    } else {
+	scan-dump "pgo-wpa-ipa" [lindex $args 0] \
+		  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".x02.wpa"
     }
 }
 
@@ -62,11 +85,11 @@ proc scan-wpa-ipa-dump-times { args } {
     }
     if { [llength $args] >= 4 } {
 	scan-dump-times "wpa-ipa" [lindex $args 0] [lindex $args 1] \
-			"\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 2]" ".exe.wpa" \
+			"\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 2]" ".wpa" \
 			[lindex $args 3]
     } else {
 	scan-dump-times "wpa-ipa" [lindex $args 0] [lindex $args 1] \
-			"\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 2]" ".exe.wpa"
+			"\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 2]" ".wpa"
     }
 }
 
@@ -87,11 +110,11 @@ proc scan-wpa-ipa-dump-not { args } {
     }
     if { [llength $args] >= 3 } {
 	scan-dump-not "wpa-ipa" [lindex $args 0] \
-		      "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".exe.wpa" \
+		      "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".wpa" \
 		      [lindex $args 2]
     } else {
 	scan-dump-not "wpa-ipa" [lindex $args 0] \
-		      "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".exe.wpa"
+		      "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".wpa"
     }
 }
 
@@ -113,11 +136,11 @@ proc scan-wpa-ipa-dump-dem { args } {
     }
     if { [llength $args] >= 3 } {
 	scan-dump-dem "wpa-ipa" [lindex $args 0] \
-		      "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".exe.wpa" \
+		      "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".wpa" \
 		      [lindex $args 2]
     } else {
 	scan-dump-dem "wpa-ipa" [lindex $args 0] \
-		      "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".exe.wpa"
+		      "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".wpa"
     }
 }
 
@@ -138,10 +161,10 @@ proc scan-wpa-ipa-dump-dem-not { args } {
     }
     if { [llength $args] >= 3 } {
 	scan-dump-dem-not "wpa-ipa" [lindex $args 0] \
-			  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".exe.wpa" \
+			  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".wpa" \
 			  [lindex $args 2]
     } else {
 	scan-dump-dem-not "wpa-ipa" [lindex $args 0] \
-			  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".exe.wpa"
+			  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".wpa"
     }
 }

@@ -35,7 +35,7 @@ struct __alloc_traits    : allocator_traits<_Alloc>    {
   template<typename _Tp>       struct rebind       {   typedef typename _Base_type::template rebind_alloc<_Tp> other;   };
 };
 
-template<typename _Tp>     class allocator {
+template<typename _Tp>     struct allocator {
   typedef _Tp value_type;
   template<typename _Tp1>  struct rebind  {   typedef allocator<_Tp1> other;   };
 };

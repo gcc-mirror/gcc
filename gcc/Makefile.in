@@ -262,6 +262,10 @@ LINKER = $(CC)
 LINKER_FLAGS = $(CFLAGS)
 endif
 
+# Enable Intel CET on Intel CET enabled host if needed.
+CET_HOST_FLAGS = @CET_HOST_FLAGS@
+COMPILER += $(CET_HOST_FLAGS)
+
 NO_PIE_CFLAGS = @NO_PIE_CFLAGS@
 NO_PIE_FLAG = @NO_PIE_FLAG@
 
@@ -567,7 +571,7 @@ xm_include_list=@xm_include_list@
 xm_defines=@xm_defines@
 lang_checks=
 lang_checks_parallelized=
-lang_opt_files=@lang_opt_files@ $(srcdir)/c-family/c.opt $(srcdir)/common.opt $(srcdir)/params.opt
+lang_opt_files=@lang_opt_files@ $(srcdir)/c-family/c.opt $(srcdir)/common.opt $(srcdir)/params.opt $(srcdir)/analyzer/analyzer.opt
 lang_specs_files=@lang_specs_files@
 lang_tree_files=@lang_tree_files@
 target_cpu_default=@target_cpu_default@
@@ -1042,10 +1046,12 @@ ALL_LINKERFLAGS = $(ALL_CXXFLAGS)
 
 # Build and host support libraries.
 
-# Use the "pic" build of libiberty if --enable-host-shared.
+# Use the "pic" build of libiberty if --enable-host-shared, unless we are
+# building for mingw.
+LIBIBERTY_PICDIR=$(if $(findstring mingw,$(target)),,pic)
 ifeq ($(enable_host_shared),yes)
-LIBIBERTY = ../libiberty/pic/libiberty.a
-BUILD_LIBIBERTY = $(build_libobjdir)/libiberty/pic/libiberty.a
+LIBIBERTY = ../libiberty/$(LIBIBERTY_PICDIR)/libiberty.a
+BUILD_LIBIBERTY = $(build_libobjdir)/libiberty/$(LIBIBERTY_PICDIR)/libiberty.a
 else
 LIBIBERTY = ../libiberty/libiberty.a
 BUILD_LIBIBERTY = $(build_libobjdir)/libiberty/libiberty.a
@@ -1075,7 +1081,8 @@ GNATMAKE = @GNATMAKE@
 # Libs needed (at present) just for jcf-dump.
 LDEXP_LIB = @LDEXP_LIB@
 
-ZSTD_LIB = @ZSTD_LIB@
+ZSTD_INC = @ZSTD_CPPFLAGS@
+ZSTD_LIB = @ZSTD_LDFLAGS@ @ZSTD_LIB@
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
@@ -1214,6 +1221,34 @@ C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
   c-family/c-ubsan.o c-family/known-headers.o \
   c-family/c-attribs.o c-family/c-warn.o c-family/c-spellcheck.o
 
+# Analyzer object files
+ANALYZER_OBJS = \
+	analyzer/analysis-plan.o \
+	analyzer/analyzer.o \
+	analyzer/analyzer-logging.o \
+	analyzer/analyzer-pass.o \
+	analyzer/analyzer-selftests.o \
+	analyzer/bar-chart.o \
+	analyzer/call-string.o \
+	analyzer/checker-path.o \
+	analyzer/constraint-manager.o \
+	analyzer/diagnostic-manager.o \
+	analyzer/engine.o \
+	analyzer/function-set.o \
+	analyzer/pending-diagnostic.o \
+	analyzer/program-point.o \
+	analyzer/program-state.o \
+	analyzer/region-model.o \
+	analyzer/sm.o \
+	analyzer/sm-file.o \
+	analyzer/sm-malloc.o \
+	analyzer/sm-pattern-test.o \
+	analyzer/sm-sensitive.o \
+	analyzer/sm-signal.o \
+	analyzer/sm-taint.o \
+	analyzer/state-purge.o \
+	analyzer/supergraph.o
+
 # Language-independent object files.
 # We put the *-match.o and insn-*.o files first so that a parallel make
 # will build them sooner, because they are large and otherwise tend to be
@@ -1235,6 +1270,7 @@ OBJS = \
 	insn-recog.o \
 	insn-enums.o \
 	ggc-page.o \
+	adjust-alignment.o \
 	alias.o \
 	alloc-pool.o \
 	auto-inc-dec.o \
@@ -1265,6 +1301,7 @@ OBJS = \
 	compare-elim.o \
 	context.o \
 	convert.o \
+	coroutine-passes.o \
 	coverage.o \
 	cppbuiltin.o \
 	cppdefault.o \
@@ -1283,6 +1320,7 @@ OBJS = \
 	df-problems.o \
 	df-scan.o \
 	dfp.o \
+	digraph.o \
 	dojump.o \
 	dominance.o \
 	domwalk.o \
@@ -1315,6 +1353,7 @@ OBJS = \
 	ggc-common.o \
 	ggc-tests.o \
 	gimple.o \
+	gimple-array-bounds.o \
 	gimple-builder.o \
 	gimple-expr.o \
 	gimple-iterator.o \
@@ -1351,6 +1390,7 @@ OBJS = \
 	godump.o \
 	graph.o \
 	graphds.o \
+	graphviz.o \
 	graphite.o \
 	graphite-isl-ast-to-gimple.o \
 	graphite-dependences.o \
@@ -1450,6 +1490,7 @@ OBJS = \
 	optinfo-emit-json.o \
 	options-save.o \
 	opts-global.o \
+	ordered-hash-map-tests.o \
 	passes.o \
 	plugin.o \
 	postreload-gcse.o \
@@ -1528,6 +1569,7 @@ OBJS = \
 	tree-data-ref.o \
 	tree-dfa.o \
 	tree-diagnostic.o \
+	tree-diagnostic-path.o \
 	tree-dump.o \
 	tree-eh.o \
 	tree-emutls.o \
@@ -1606,10 +1648,12 @@ OBJS = \
 	tree-vector-builder.o \
 	tree-vrp.o \
 	tree.o \
+	tristate.o \
 	typed-splay-tree.o \
 	unique-ptr-tests.o \
 	valtrack.o \
 	value-range.o \
+	value-range-equiv.o \
 	value-prof.o \
 	var-tracking.o \
 	varasm.o \
@@ -1623,6 +1667,7 @@ OBJS = \
 	wide-int-print.o \
 	xcoffout.o \
 	$(out_object_file) \
+	$(ANALYZER_OBJS) \
 	$(EXTRA_OBJS) \
 	$(host_hook_obj)
 
@@ -1693,11 +1738,15 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
 # This symlink makes the full installation name of the driver be available
 # from within the *build* directory, for use when running the JIT library
 # from there (e.g. when running its testsuite).
-$(FULL_DRIVER_NAME): ./xgcc
+$(FULL_DRIVER_NAME): ./xgcc$(exeext)
 	rm -f $@
 	$(LN_S) $< $@
 
 #
+# SELFTEST_DEPS need to be set before including language makefile fragments.
+# Otherwise $(SELFTEST_DEPS) is empty when used from <LANG>/Make-lang.in.
+SELFTEST_DEPS = $(GCC_PASSES) stmp-int-hdrs $(srcdir)/testsuite/selftests
+
 # Language makefile fragments.
 
 # The following targets define the interface between us and the languages.
@@ -1973,8 +2022,6 @@ DEVNULL=$(if $(findstring mingw,$(build)),nul,/dev/null)
 SELFTEST_FLAGS = -nostdinc $(DEVNULL) -S -o $(DEVNULL) \
 	-fself-test=$(srcdir)/testsuite/selftests
 
-SELFTEST_DEPS = $(GCC_PASSES) stmp-int-hdrs $(srcdir)/testsuite/selftests
-
 # Run the selftests during the build once we have a driver and the frontend,
 # so that self-test failures are caught as early as possible.
 # Use "s-selftest-FE" to ensure that we only run the selftests if the
@@ -2158,8 +2205,6 @@ lto-wrapper$(exeext): $(LTO_WRAPPER_OBJS) libcommon-target.a $(LIBDEPS)
 	   $(LTO_WRAPPER_OBJS) libcommon-target.a $(LIBS)
 	mv -f T$@ $@
 
-CFLAGS-opts.o += -DDOCUMENTATION_ROOT_URL=\"@DOCUMENTATION_ROOT_URL@\"
-
 # Files used by all variants of C or by the stand-alone pre-processor.
 
 CFLAGS-c-family/c-opts.o += @TARGET_SYSTEM_ROOT_DEFINE@
@@ -2249,7 +2294,7 @@ CFLAGS-version.o += -DBASEVER=$(BASEVER_s) -DDATESTAMP=$(DATESTAMP_s) \
 version.o: $(REVISION) $(DATESTAMP) $(BASEVER) $(DEVPHASE)
 
 # lto-compress.o needs $(ZLIBINC) added to the include flags.
-CFLAGS-lto-compress.o += $(ZLIBINC)
+CFLAGS-lto-compress.o += $(ZLIBINC) $(ZSTD_INC)
 
 CFLAGS-lto-streamer-in.o += -DTARGET_MACHINE=\"$(target_noncanonical)\"
 
@@ -2586,6 +2631,7 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/omp-offload.h \
   $(srcdir)/omp-offload.c \
   $(srcdir)/omp-expand.c \
+  $(srcdir)/omp-general.c \
   $(srcdir)/omp-low.c \
   $(srcdir)/targhooks.c $(out_file) $(srcdir)/passes.c $(srcdir)/cgraphunit.c \
   $(srcdir)/cgraphclones.c \
@@ -3226,7 +3272,7 @@ TEXI_GCCINT_FILES = gccint.texi gcc-common.texi gcc-vers.texi		\
 	 gnu.texi gpl_v3.texi fdl.texi contrib.texi languages.texi	\
 	 sourcebuild.texi gty.texi libgcc.texi cfg.texi tree-ssa.texi	\
 	 loop.texi generic.texi gimple.texi plugins.texi optinfo.texi   \
-	 match-and-simplify.texi ux.texi poly-int.texi
+	 match-and-simplify.texi analyzer.texi ux.texi poly-int.texi
 
 TEXI_GCCINSTALL_FILES = install.texi install-old.texi fdl.texi		\
 	 gcc-common.texi gcc-vers.texi

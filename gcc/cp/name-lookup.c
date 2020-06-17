@@ -2321,12 +2321,14 @@ update_local_overload (cxx_binding *binding, tree newval)
 static bool
 matching_fn_p (tree one, tree two)
 {
+  if (TREE_CODE (one) != TREE_CODE (two))
+    return false;
+
   if (!compparms (TYPE_ARG_TYPES (TREE_TYPE (one)),
 		  TYPE_ARG_TYPES (TREE_TYPE (two))))
     return false;
 
-  if (TREE_CODE (one) == TEMPLATE_DECL
-      && TREE_CODE (two) == TEMPLATE_DECL)
+  if (TREE_CODE (one) == TEMPLATE_DECL)
     {
       /* Compare template parms.  */
       if (!comp_template_parms (DECL_TEMPLATE_PARMS (one),
@@ -2668,8 +2670,8 @@ check_local_shadow (tree decl)
 	}
       /* Don't complain if it's from an enclosing function.  */
       else if (DECL_CONTEXT (old) == current_function_decl
-	  && TREE_CODE (decl) != PARM_DECL
-	  && TREE_CODE (old) == PARM_DECL)
+	       && TREE_CODE (decl) != PARM_DECL
+	       && TREE_CODE (old) == PARM_DECL)
 	{
 	  /* Go to where the parms should be and see if we find
 	     them there.  */
@@ -2679,11 +2681,14 @@ check_local_shadow (tree decl)
 	    /* Skip the ctor/dtor cleanup level.  */
 	    b = b->level_chain;
 
-	  /* ARM $8.3 */
+	  /* [basic.scope.param] A parameter name shall not be redeclared
+	     in the outermost block of the function definition.  */
 	  if (b->kind == sk_function_parms)
 	    {
 	      error_at (DECL_SOURCE_LOCATION (decl),
 			"declaration of %q#D shadows a parameter", decl);
+	      inform (DECL_SOURCE_LOCATION (old),
+		      "%q#D previously declared here", old);
 	      return;
 	    }
 	}
@@ -2757,7 +2762,9 @@ check_local_shadow (tree decl)
       enum opt_code warning_code;
       if (warn_shadow)
 	warning_code = OPT_Wshadow;
-      else if (same_type_p (TREE_TYPE (old), TREE_TYPE (decl))
+      else if ((TREE_TYPE (old)
+		&& TREE_TYPE (decl)
+		&& same_type_p (TREE_TYPE (old), TREE_TYPE (decl)))
 	       || TREE_CODE (decl) == TYPE_DECL
 	       || TREE_CODE (old) == TYPE_DECL
 	       || (!dependent_type_p (TREE_TYPE (decl))
@@ -2996,7 +3003,8 @@ do_pushdecl (tree decl, bool is_friend)
   /* The binding level we will be pushing into.  During local class
      pushing, we want to push to the containing scope.  */
   cp_binding_level *level = current_binding_level;
-  while (level->kind == sk_class)
+  while (level->kind == sk_class
+	 || level->kind == sk_cleanup)
     level = level->level_chain;
 
   /* An anonymous namespace has a NULL DECL_NAME, but we still want to
@@ -4012,38 +4020,46 @@ is_nested_namespace (tree ancestor, tree descendant, bool inline_only)
   return ancestor == descendant;
 }
 
-/* Returns true if ROOT (a namespace, class, or function) encloses
-   CHILD.  CHILD may be either a class type or a namespace.  */
+/* Returns true if ROOT (a non-alias namespace, class, or function)
+   encloses CHILD.  CHILD may be either a class type or a namespace
+   (maybe alias).  */
 
 bool
 is_ancestor (tree root, tree child)
 {
-  gcc_assert ((TREE_CODE (root) == NAMESPACE_DECL
-	       || TREE_CODE (root) == FUNCTION_DECL
-	       || CLASS_TYPE_P (root)));
-  gcc_assert ((TREE_CODE (child) == NAMESPACE_DECL
-	       || CLASS_TYPE_P (child)));
+  gcc_checking_assert ((TREE_CODE (root) == NAMESPACE_DECL
+			&& !DECL_NAMESPACE_ALIAS (root))
+		       || TREE_CODE (root) == FUNCTION_DECL
+		       || CLASS_TYPE_P (root));
+  gcc_checking_assert (TREE_CODE (child) == NAMESPACE_DECL
+		       || CLASS_TYPE_P (child));
 
-  /* The global namespace encloses everything.  */
+  /* The global namespace encloses everything.  Early-out for the
+     common case.  */
   if (root == global_namespace)
     return true;
 
-  /* Search until we reach namespace scope.  */
+  /* Search CHILD until we reach namespace scope.  */
   while (TREE_CODE (child) != NAMESPACE_DECL)
     {
       /* If we've reached the ROOT, it encloses CHILD.  */
       if (root == child)
 	return true;
+
       /* Go out one level.  */
       if (TYPE_P (child))
 	child = TYPE_NAME (child);
       child = CP_DECL_CONTEXT (child);
     }
 
-  if (TREE_CODE (root) == NAMESPACE_DECL)
-    return is_nested_namespace (root, child);
+  if (TREE_CODE (root) != NAMESPACE_DECL)
+    /* Failed to meet the non-namespace we were looking for.  */
+    return false;
 
-  return false;
+  if (tree alias = DECL_NAMESPACE_ALIAS (child))
+    child = alias;
+
+  return is_nested_namespace (root, child);
 }
 
 /* Enter the class or namespace scope indicated by T suitable for name
@@ -4634,7 +4650,6 @@ lookup_using_decl (tree scope, name_lookup &lookup)
 	  maybe_warn_cpp0x (CPP0X_INHERITING_CTORS);
 	  lookup.name = ctor_identifier;
 	  CLASSTYPE_NON_AGGREGATE (current) = true;
-	  TYPE_HAS_USER_CONSTRUCTOR (current) = true;
     	}
 
       /* Cannot introduce a constructor name.  */
@@ -5622,19 +5637,19 @@ get_std_name_hint (const char *name)
     {"make_any", "<any>", cxx17},
     /* <array>.  */
     {"array", "<array>", cxx11},
-    {"to_array", "<array>", cxx2a},
+    {"to_array", "<array>", cxx20},
     /* <atomic>.  */
     {"atomic", "<atomic>", cxx11},
     {"atomic_flag", "<atomic>", cxx11},
-    {"atomic_ref", "<atomic>", cxx2a},
+    {"atomic_ref", "<atomic>", cxx20},
     /* <bitset>.  */
     {"bitset", "<bitset>", cxx11},
     /* <compare> */
-    {"weak_equality", "<compare>", cxx2a},
-    {"strong_equality", "<compare>", cxx2a},
-    {"partial_ordering", "<compare>", cxx2a},
-    {"weak_ordering", "<compare>", cxx2a},
-    {"strong_ordering", "<compare>", cxx2a},
+    {"weak_equality", "<compare>", cxx20},
+    {"strong_equality", "<compare>", cxx20},
+    {"partial_ordering", "<compare>", cxx20},
+    {"weak_ordering", "<compare>", cxx20},
+    {"strong_ordering", "<compare>", cxx20},
     /* <complex>.  */
     {"complex", "<complex>", cxx98},
     {"complex_literals", "<complex>", cxx14},
@@ -5657,17 +5672,17 @@ get_std_name_hint (const char *name)
     {"ofstream", "<fstream>", cxx98},
     /* <functional>.  */
     {"bind", "<functional>", cxx11},
-    {"bind_front", "<functional>", cxx2a},
+    {"bind_front", "<functional>", cxx20},
     {"function", "<functional>", cxx11},
     {"hash", "<functional>", cxx11},
     {"invoke", "<functional>", cxx17},
     {"mem_fn", "<functional>", cxx11},
     {"not_fn", "<functional>", cxx17},
     {"reference_wrapper", "<functional>", cxx11},
-    {"unwrap_reference", "<functional>", cxx2a},
-    {"unwrap_reference_t", "<functional>", cxx2a},
-    {"unwrap_ref_decay", "<functional>", cxx2a},
-    {"unwrap_ref_decay_t", "<functional>", cxx2a},
+    {"unwrap_reference", "<functional>", cxx20},
+    {"unwrap_reference_t", "<functional>", cxx20},
+    {"unwrap_ref_decay", "<functional>", cxx20},
+    {"unwrap_ref_decay_t", "<functional>", cxx20},
     /* <future>. */
     {"async", "<future>", cxx11},
     {"future", "<future>", cxx11},
@@ -5750,7 +5765,7 @@ get_std_name_hint (const char *name)
     {"shared_mutex", "<shared_mutex>", cxx17},
     {"shared_timed_mutex", "<shared_mutex>", cxx14},
     /* <source_location>.  */
-    {"source_location", "<source_location>", cxx2a},
+    {"source_location", "<source_location>", cxx20},
     /* <sstream>.  */
     {"basic_stringbuf", "<sstream>", cxx98},
     {"basic_istringstream", "<sstream>", cxx98},
@@ -5765,7 +5780,7 @@ get_std_name_hint (const char *name)
     {"basic_string", "<string>", cxx98},
     {"string", "<string>", cxx98},
     {"wstring", "<string>", cxx98},
-    {"u8string", "<string>", cxx2a},
+    {"u8string", "<string>", cxx20},
     {"u16string", "<string>", cxx11},
     {"u32string", "<string>", cxx11},
     /* <string_view>.  */
@@ -5791,10 +5806,10 @@ get_std_name_hint (const char *name)
     {"enable_if_t", "<type_traits>", cxx14},
     {"invoke_result", "<type_traits>", cxx17},
     {"invoke_result_t", "<type_traits>", cxx17},
-    {"remove_cvref", "<type_traits>", cxx2a},
-    {"remove_cvref_t", "<type_traits>", cxx2a},
-    {"type_identity", "<type_traits>", cxx2a},
-    {"type_identity_t", "<type_traits>", cxx2a},
+    {"remove_cvref", "<type_traits>", cxx20},
+    {"remove_cvref_t", "<type_traits>", cxx20},
+    {"type_identity", "<type_traits>", cxx20},
+    {"type_identity_t", "<type_traits>", cxx20},
     {"void_t", "<type_traits>", cxx17},
     {"conjunction", "<type_traits>", cxx17},
     {"conjunction_v", "<type_traits>", cxx17},
@@ -5846,8 +5861,8 @@ get_cxx_dialect_name (enum cxx_dialect dialect)
       return "C++14";
     case cxx17:
       return "C++17";
-    case cxx2a:
-      return "C++2a";
+    case cxx20:
+      return "C++20";
     }
 }
 
@@ -5929,7 +5944,7 @@ maybe_suggest_missing_header (location_t location, tree name, tree scope)
 /* Generate a name_hint at LOCATION for NAME, an IDENTIFIER_NODE for which name
    lookup failed within the explicitly provided SCOPE.
 
-   Suggest the the best meaningful candidates (if any), otherwise
+   Suggest the best meaningful candidates (if any), otherwise
    an empty name_hint is returned.  */
 
 name_hint
@@ -6442,7 +6457,8 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
 
 	  /* Lookup the conversion operator in the class.  */
 	  class_type = level->this_entity;
-	  operators = lookup_fnfields (class_type, name, /*protect=*/0);
+	  operators = lookup_fnfields (class_type, name, /*protect=*/0,
+				       tf_warning_or_error);
 	  if (operators)
 	    return operators;
 	}
@@ -7363,23 +7379,59 @@ push_namespace (tree name, bool make_inline)
     name_lookup lookup (name, 0);
     if (!lookup.search_qualified (current_namespace, /*usings=*/false))
       ;
-    else if (TREE_CODE (lookup.value) != NAMESPACE_DECL)
-      ;
-    else if (tree dna = DECL_NAMESPACE_ALIAS (lookup.value))
+    else if (TREE_CODE (lookup.value) == TREE_LIST)
       {
-	/* A namespace alias is not allowed here, but if the alias
-	   is for a namespace also inside the current scope,
-	   accept it with a diagnostic.  That's better than dying
-	   horribly.  */
-	if (is_nested_namespace (current_namespace, CP_DECL_CONTEXT (dna)))
+	/* An ambiguous lookup.  If exactly one is a namespace, we
+	   want that.  If more than one is a namespace, error, but
+	   pick one of them.  */
+	/* DR2061 can cause us to find multiple namespaces of the same
+	   name.  We must treat that carefully and avoid thinking we
+	   need to push a new (possibly) duplicate namespace.  Hey,
+	   if you want to use the same identifier within an inline
+	   nest, knock yourself out.  */
+	for (tree *chain = &lookup.value, next; (next = *chain);)
 	  {
-	    error ("namespace alias %qD not allowed here, "
-		   "assuming %qD", lookup.value, dna);
-	    ns = dna;
+	    tree decl = TREE_VALUE (next);
+	    if (TREE_CODE (decl) == NAMESPACE_DECL)
+	      {
+		if (!ns)
+		  ns = decl;
+		else if (SCOPE_DEPTH (ns) >= SCOPE_DEPTH (decl))
+		  ns = decl;
+
+		/* Advance.  */
+		chain = &TREE_CHAIN (next);
+	      }
+	    else
+	      /* Stitch out.  */
+	      *chain = TREE_CHAIN (next);
+	  }
+
+	if (TREE_CHAIN (lookup.value))
+	  {
+	    error ("%<namespace %E%> is ambiguous", name);
+	    print_candidates (lookup.value);
 	  }
       }
-    else
+    else if (TREE_CODE (lookup.value) == NAMESPACE_DECL)
       ns = lookup.value;
+
+    if (ns)
+      if (tree dna = DECL_NAMESPACE_ALIAS (ns))
+	{
+	  /* A namespace alias is not allowed here, but if the alias
+	     is for a namespace also inside the current scope,
+	     accept it with a diagnostic.  That's better than dying
+	     horribly.  */
+	  if (is_nested_namespace (current_namespace, CP_DECL_CONTEXT (dna)))
+	    {
+	      error ("namespace alias %qD not allowed here, "
+		     "assuming %qD", ns, dna);
+	      ns = dna;
+	    }
+	  else
+	    ns = NULL_TREE;
+	}
   }
 
   bool new_ns = false;
@@ -7617,6 +7669,12 @@ maybe_save_operator_binding (tree e)
 
   if (!fns && (fns = op_unqualified_lookup (fnname)))
     {
+      tree d = is_overloaded_fn (fns) ? get_first_fn (fns) : fns;
+      if (DECL_P (d) && DECL_CLASS_SCOPE_P (d))
+	/* We don't need to remember class-scope functions or declarations,
+	   normal unqualified lookup will find them again.  */
+	return;
+
       bindings = tree_cons (fnname, fns, bindings);
       if (attr)
 	TREE_VALUE (attr) = bindings;

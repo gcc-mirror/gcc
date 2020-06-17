@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -97,7 +97,7 @@ static void collectUnitTests(Dsymbols *symbols, AA *uniqueUnitTests, Expressions
 {
     if (!symbols)
         return;
-    for (size_t i = 0; i < symbols->dim; i++)
+    for (size_t i = 0; i < symbols->length; i++)
     {
         Dsymbol *symbol = (*symbols)[i];
         UnitTestDeclaration *unitTest = symbol->isUnitTestDeclaration();
@@ -119,7 +119,7 @@ static void collectUnitTests(Dsymbols *symbols, AA *uniqueUnitTests, Expressions
 
             if (attrDecl)
             {
-                Dsymbols *decl = attrDecl->include(NULL, NULL);
+                Dsymbols *decl = attrDecl->include(NULL);
                 collectUnitTests(decl, uniqueUnitTests, unitTests);
             }
         }
@@ -143,9 +143,9 @@ bool isTypeFinalClass(Type *t)       { return t->toBasetype()->ty == Tclass && (
 
 Expression *isTypeX(TraitsExp *e, bool (*fp)(Type *t))
 {
-    if (!e->args || !e->args->dim)
+    if (!e->args || !e->args->length)
         return False(e);
-    for (size_t i = 0; i < e->args->dim; i++)
+    for (size_t i = 0; i < e->args->length; i++)
     {
         Type *t = getType((*e->args)[i]);
         if (!t || !fp(t))
@@ -163,9 +163,9 @@ bool isFuncOverrideFunction(FuncDeclaration *f) { return f->isOverride(); }
 
 Expression *isFuncX(TraitsExp *e, bool (*fp)(FuncDeclaration *f))
 {
-    if (!e->args || !e->args->dim)
+    if (!e->args || !e->args->length)
         return False(e);
-    for (size_t i = 0; i < e->args->dim; i++)
+    for (size_t i = 0; i < e->args->length; i++)
     {
         Dsymbol *s = getDsymbol((*e->args)[i]);
         if (!s)
@@ -183,9 +183,9 @@ bool isDeclLazy(Declaration *d) { return (d->storage_class & STClazy) != 0; }
 
 Expression *isDeclX(TraitsExp *e, bool (*fp)(Declaration *d))
 {
-    if (!e->args || !e->args->dim)
+    if (!e->args || !e->args->length)
         return False(e);
-    for (size_t i = 0; i < e->args->dim; i++)
+    for (size_t i = 0; i < e->args->length; i++)
     {
         Dsymbol *s = getDsymbol((*e->args)[i]);
         if (!s)
@@ -309,9 +309,9 @@ bool isTemplate(Dsymbol *s)
 
 Expression *isSymbolX(TraitsExp *e, bool (*fp)(Dsymbol *s))
 {
-    if (!e->args || !e->args->dim)
+    if (!e->args || !e->args->length)
         return False(e);
-    for (size_t i = 0; i < e->args->dim; i++)
+    for (size_t i = 0; i < e->args->length; i++)
     {
         Dsymbol *s = getDsymbol((*e->args)[i]);
         if (!s || !fp(s))
@@ -332,7 +332,7 @@ Expression *isSymbolX(TraitsExp *e, bool (*fp)(Dsymbol *s))
  */
 Expression *pointerBitmap(TraitsExp *e)
 {
-    if (!e->args || e->args->dim != 1)
+    if (!e->args || e->args->length != 1)
     {
         error(e->loc, "a single type expected for trait pointerBitmap");
         return new ErrorExp();
@@ -430,7 +430,7 @@ Expression *pointerBitmap(TraitsExp *e)
         virtual void visit(TypeStruct *t)
         {
             d_uns64 structoff = offset;
-            for (size_t i = 0; i < t->sym->fields.dim; i++)
+            for (size_t i = 0; i < t->sym->fields.length; i++)
             {
                 VarDeclaration *v = t->sym->fields[i];
                 offset = structoff + v->offset;
@@ -451,7 +451,7 @@ Expression *pointerBitmap(TraitsExp *e)
             if (t->sym->baseClass)
                 visitClass((TypeClass*)t->sym->baseClass->type);
 
-            for (size_t i = 0; i < t->sym->fields.dim; i++)
+            for (size_t i = 0; i < t->sym->fields.length; i++)
             {
                 VarDeclaration *v = t->sym->fields[i];
                 offset = classoff + v->offset;
@@ -497,7 +497,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         if (!TemplateInstance::semanticTiargs(e->loc, sc, e->args, 1))
             return new ErrorExp();
     }
-    size_t dim = e->args ? e->args->dim : 0;
+    size_t dim = e->args ? e->args->length : 0;
 
     if (e->ident == Id::isArithmetic)
     {
@@ -969,7 +969,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
             return dimError(e, 1, dim);
 
         LINK link;
-        int varargs;
+        VarArg varargs;
         RootObject *o = (*e->args)[0];
         Type *t = isType(o);
         TypeFunction *tf = NULL;
@@ -985,7 +985,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         if (tf)
         {
             link = tf->linkage;
-            varargs = tf->varargs;
+            varargs = tf->parameterList.varargs;
         }
         else
         {
@@ -997,7 +997,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
                 return new ErrorExp();
             }
             link = fd->linkage;
-            fd->getParameters(&varargs);
+            varargs = fd->getParameterList().varargs;
         }
         const char *style;
         switch (varargs)
@@ -1034,10 +1034,10 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
             else if (t->ty == Tpointer && t->nextOf()->ty == Tfunction)
                 tf = (TypeFunction *)t->nextOf();
         }
-        Parameters* fparams;
+        ParameterList fparams;
         if (tf)
         {
-            fparams = tf->parameters;
+            fparams = tf->parameterList;
         }
         else
         {
@@ -1049,7 +1049,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
                     o->toChars(), o1->toChars());
                 return new ErrorExp();
             }
-            fparams = fd->getParameters(NULL);
+            fparams = fd->getParameterList();
         }
 
         StorageClass stc;
@@ -1064,14 +1064,14 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         }
         ex = ex->ctfeInterpret();
         uinteger_t ii = ex->toUInteger();
-        if (ii >= Parameter::dim(fparams))
+        if (ii >= fparams.length())
         {
-            e->error("parameter index must be in range 0..%u not %s", (unsigned)Parameter::dim(fparams), ex->toChars());
+            e->error("parameter index must be in range 0..%u not %s", (unsigned)fparams.length(), ex->toChars());
             return new ErrorExp();
         }
 
         unsigned n = (unsigned)ii;
-        Parameter *p = Parameter::getNth(fparams, n);
+        Parameter *p = fparams[n];
         stc = p->storageClass;
 
         // This mirrors hdrgen.visit(Parameter p)
@@ -1135,12 +1135,32 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         {
             Dsymbol *s = getDsymbol(o);
             Declaration *d = NULL;
-            if (!s || (d = s->isDeclaration()) == NULL)
+            AggregateDeclaration *ad = NULL;
+            if (!s || ((d = s->isDeclaration()) == NULL
+                       && (ad = s->isAggregateDeclaration()) == NULL))
             {
                 e->error("argument to `__traits(getLinkage, %s)` is not a declaration", o->toChars());
                 return new ErrorExp();
             }
-            link = d->linkage;
+            if (d != NULL)
+                link = d->linkage;
+            else
+            {
+                switch (ad->classKind)
+                {
+                    case ClassKind::d:
+                        link = LINKd;
+                        break;
+                    case ClassKind::cpp:
+                        link = LINKcpp;
+                        break;
+                    case ClassKind::objc:
+                        link = LINKobjc;
+                        break;
+                    default:
+                        assert(0);
+                }
+            }
         }
         const char *linkage = linkageToChars(link);
         StringExp *se = new StringExp(e->loc, const_cast<char *>(linkage));
@@ -1182,16 +1202,27 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
             {
                 if (!sm)
                     return 1;
+
+                // skip local symbols, such as static foreach loop variables
+                if (Declaration *decl = sm->isDeclaration())
+                {
+                    if (decl->storage_class & STClocal)
+                    {
+                        return 0;
+                    }
+                }
+
                 //printf("\t[%i] %s %s\n", i, sm->kind(), sm->toChars());
                 if (sm->ident)
                 {
-                    const char *idx = sm->ident->toChars();
-                    if (idx[0] == '_' && idx[1] == '_' &&
-                        sm->ident != Id::ctor &&
-                        sm->ident != Id::dtor &&
-                        sm->ident != Id::__xdtor &&
-                        sm->ident != Id::postblit &&
-                        sm->ident != Id::__xpostblit)
+                    // https://issues.dlang.org/show_bug.cgi?id=10096
+                    // https://issues.dlang.org/show_bug.cgi?id=10100
+                    // Skip over internal members in __traits(allMembers)
+                    if ((sm->isCtorDeclaration() && sm->ident != Id::ctor) ||
+                        (sm->isDtorDeclaration() && sm->ident != Id::dtor) ||
+                        (sm->isPostBlitDeclaration() && sm->ident != Id::postblit) ||
+                        sm->isInvariantDeclaration() ||
+                        sm->isUnitTestDeclaration())
                     {
                         return 0;
                     }
@@ -1211,7 +1242,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
 
                     /* Skip if already present in idents[]
                      */
-                    for (size_t j = 0; j < idents->dim; j++)
+                    for (size_t j = 0; j < idents->length; j++)
                     {
                         Identifier *id = (*idents)[j];
                         if (id == sm->ident)
@@ -1247,12 +1278,12 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
             {
                 static void dg(ClassDeclaration *cd, PushIdentsDg *ctx)
                 {
-                    for (size_t i = 0; i < cd->baseclasses->dim; i++)
+                    for (size_t i = 0; i < cd->baseclasses->length; i++)
                     {
                         ClassDeclaration *cb = (*cd->baseclasses)[i]->sym;
                         assert(cb);
                         ScopeDsymbol_foreach(NULL, cb->members, &PushIdentsDg::dg, ctx);
-                        if (cb->baseclasses->dim)
+                        if (cb->baseclasses->length)
                             dg(cb, ctx);
                     }
                 }
@@ -1263,7 +1294,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         // Turn Identifiers into StringExps reusing the allocated array
         assert(sizeof(Expressions) == sizeof(Identifiers));
         Expressions *exps = (Expressions *)idents;
-        for (size_t i = 0; i < idents->dim; i++)
+        for (size_t i = 0; i < idents->length; i++)
         {
             Identifier *id = (*idents)[i];
             StringExp *se = new StringExp(e->loc, const_cast<char *>(id->toChars()));
@@ -1352,6 +1383,13 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
 
         RootObject *o1 = (*e->args)[0];
         RootObject *o2 = (*e->args)[1];
+
+        // issue 12001, allow isSame, <BasicType>, <BasicType>
+        Type *t1 = isType(o1);
+        Type *t2 = isType(o2);
+        if (t1 && t2 && t1->equals(t2))
+            return True(e);
+
         Dsymbol *s1 = getDsymbol(o1);
         Dsymbol *s2 = getDsymbol(o2);
         //printf("isSame: %s, %s\n", o1->toChars(), o2->toChars());
@@ -1411,7 +1449,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         TupleExp *te= new TupleExp(e->loc, exps);
         return semantic(te, sc);
     }
-    else if(e->ident == Id::getVirtualIndex)
+    else if (e->ident == Id::getVirtualIndex)
     {
         if (dim != 1)
             return dimError(e, 1, dim);

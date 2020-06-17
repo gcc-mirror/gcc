@@ -38,4 +38,17 @@ enum gcc_plugin_symbol_visibility
     GCCPV_HIDDEN
   };
 
+enum gcc_plugin_symbol_type
+{
+  GCCST_UNKNOWN,
+  GCCST_FUNCTION,
+  GCCST_VARIABLE
+};
+
+enum gcc_plugin_symbol_section_kind
+{
+  GCCSSK_DEFAULT,
+  GCCSSK_BSS
+};
+
 #endif /* GCC_LTO_SYMTAB_H  */

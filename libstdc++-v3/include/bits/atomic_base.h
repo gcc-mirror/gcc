@@ -139,6 +139,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _IntTp>
     struct __atomic_base;
 
+#if __cplusplus <= 201703L
+# define _GLIBCXX20_INIT(I)
+#else
+# define __cpp_lib_atomic_value_initialization 201911L
+# define _GLIBCXX20_INIT(I) = I
+#endif
 
 #define ATOMIC_VAR_INIT(_VI) { _VI }
 
@@ -169,7 +175,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   struct __atomic_flag_base
   {
-    __atomic_flag_data_type _M_i;
+    __atomic_flag_data_type _M_i _GLIBCXX20_INIT({});
   };
 
   _GLIBCXX_END_EXTERN_C
@@ -201,6 +207,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       return __atomic_test_and_set (&_M_i, int(__m));
     }
+
+#if __cplusplus > 201703L
+#define __cpp_lib_atomic_flag_test 201907L
+
+    _GLIBCXX_ALWAYS_INLINE bool
+    test(memory_order __m = memory_order_seq_cst) const noexcept
+    {
+      __atomic_flag_data_type __v;
+      __atomic_load(&_M_i, &__v, int(__m));
+      return __v == __GCC_ATOMIC_TEST_AND_SET_TRUEVAL;
+    }
+
+    _GLIBCXX_ALWAYS_INLINE bool
+    test(memory_order __m = memory_order_seq_cst) const volatile noexcept
+    {
+      __atomic_flag_data_type __v;
+      __atomic_load(&_M_i, &__v, int(__m));
+      return __v == __GCC_ATOMIC_TEST_AND_SET_TRUEVAL;
+    }
+#endif // C++20
 
     _GLIBCXX_ALWAYS_INLINE void
     clear(memory_order __m = memory_order_seq_cst) noexcept
@@ -267,7 +293,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr int _S_alignment =
 	sizeof(_ITp) > alignof(_ITp) ? sizeof(_ITp) : alignof(_ITp);
 
-      alignas(_S_alignment) __int_type _M_i;
+      alignas(_S_alignment) __int_type _M_i _GLIBCXX20_INIT(0);
 
     public:
       __atomic_base() noexcept = default;
@@ -595,7 +621,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       typedef _PTp* 	__pointer_type;
 
-      __pointer_type 	_M_p;
+      __pointer_type 	_M_p _GLIBCXX20_INIT(nullptr);
 
       // Factored out to facilitate explicit specialization.
       constexpr ptrdiff_t
@@ -844,21 +870,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { __atomic_store(__ptr, std::__addressof(__t), int(__m)); }
 
     template<typename _Tp>
-      _GLIBCXX_ALWAYS_INLINE _Tp
-      load(_Tp* __ptr, memory_order __m) noexcept
+      _GLIBCXX_ALWAYS_INLINE _Val<_Tp>
+      load(const _Tp* __ptr, memory_order __m) noexcept
       {
 	alignas(_Tp) unsigned char __buf[sizeof(_Tp)];
-	_Tp* __dest = reinterpret_cast<_Tp*>(__buf);
+	auto* __dest = reinterpret_cast<_Val<_Tp>*>(__buf);
 	__atomic_load(__ptr, __dest, int(__m));
 	return *__dest;
       }
 
     template<typename _Tp>
-      _GLIBCXX_ALWAYS_INLINE _Tp
+      _GLIBCXX_ALWAYS_INLINE _Val<_Tp>
       exchange(_Tp* __ptr, _Val<_Tp> __desired, memory_order __m) noexcept
       {
         alignas(_Tp) unsigned char __buf[sizeof(_Tp)];
-	_Tp* __dest = reinterpret_cast<_Tp*>(__buf);
+	auto* __dest = reinterpret_cast<_Val<_Tp>*>(__buf);
 	__atomic_exchange(__ptr, std::__addressof(__desired), __dest, int(__m));
 	return *__dest;
       }
@@ -1175,8 +1201,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __atomic_impl::__sub_fetch_flt(&_M_fp, __i); }
 
     private:
-      alignas(_S_alignment) _Fp _M_fp;
+      alignas(_S_alignment) _Fp _M_fp _GLIBCXX20_INIT(0);
     };
+#undef _GLIBCXX20_INIT
 
   template<typename _Tp,
 	   bool = is_integral_v<_Tp>, bool = is_floating_point_v<_Tp>>

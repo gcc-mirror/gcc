@@ -1,4 +1,4 @@
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // { dg-additional-options "-fconcepts-ts" }
 
 struct A {
@@ -15,6 +15,6 @@ template <class X> concept bool C() {
 }
 
 int main() {
-  static_assert(C<A>());
+  static_assert(!C<A>());
   return 0;
 }

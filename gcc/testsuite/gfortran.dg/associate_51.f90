@@ -14,7 +14,14 @@ end
 recursive function f2()
   associate (y1 => f2()) ! { dg-error "Invalid association target" }
   end associate          ! { dg-error "Expecting END FUNCTION statement" }
-  associate (y2 => f2)   ! { dg-error "is a procedure name" }
+end
+
+recursive function f3()
+  associate (y1 => f3)
+    print *, y1()  ! { dg-error "Expected array subscript" }
+  end associate
+  associate (y2 => f3) ! { dg-error "Associate-name 'y2' at \\(1\\) is used as array" }
+    print *, y2(1)
   end associate
 end
 
@@ -22,7 +29,7 @@ subroutine p2
   type t
   end type
   type(t) :: z = t()
-  associate (y => t)
+  associate (y => t())
   end associate
 end
 

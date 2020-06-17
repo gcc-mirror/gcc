@@ -267,15 +267,18 @@ bpf_compute_frame_layout (void)
 
   cfun->machine->local_vars_size += padding_locals;
 
-  /* Set the space used in the stack by callee-saved used registers in
-     the current function.  There is no need to round up, since the
-     registers are all 8 bytes wide.  */
-  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if ((df_regs_ever_live_p (regno)
-	 && !call_used_or_fixed_reg_p (regno))
-	|| (cfun->calls_alloca
-	    && regno == STACK_POINTER_REGNUM))
-      cfun->machine->callee_saved_reg_size += 8;
+  if (TARGET_XBPF)
+    {
+      /* Set the space used in the stack by callee-saved used
+	 registers in the current function.  There is no need to round
+	 up, since the registers are all 8 bytes wide.  */
+      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	if ((df_regs_ever_live_p (regno)
+	     && !call_used_or_fixed_reg_p (regno))
+	    || (cfun->calls_alloca
+		&& regno == STACK_POINTER_REGNUM))
+	  cfun->machine->callee_saved_reg_size += 8;
+    }
 
   /* Check that the total size of the frame doesn't exceed the limit
      imposed by eBPF.  */
@@ -299,38 +302,50 @@ bpf_compute_frame_layout (void)
 void
 bpf_expand_prologue (void)
 {
-  int regno, fp_offset;
   rtx insn;
   HOST_WIDE_INT size;
 
   size = (cfun->machine->local_vars_size
 	  + cfun->machine->callee_saved_reg_size);
-  fp_offset = -cfun->machine->local_vars_size;
 
-  /* Save callee-saved hard registes.  The register-save-area starts
-     right after the local variables.  */
-  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+  /* The BPF "hardware" provides a fresh new set of registers for each
+     called function, some of which are initialized to the values of
+     the arguments passed in the first five registers.  In doing so,
+     it saves the values of the registers of the caller, and restored
+     them upon returning.  Therefore, there is no need to save the
+     callee-saved registers here.  What is worse, the kernel
+     implementation refuses to run programs in which registers are
+     referred before being initialized.  */
+  if (TARGET_XBPF)
     {
-      if ((df_regs_ever_live_p (regno)
-	   && !call_used_or_fixed_reg_p (regno))
-	  || (cfun->calls_alloca
-	      && regno == STACK_POINTER_REGNUM))
-	{
-	  rtx mem;
+      int regno;
+      int fp_offset = -cfun->machine->local_vars_size;
 
-	  if (!IN_RANGE (fp_offset, -1 - 0x7fff, 0x7fff))
-	    /* This has been already reported as an error in
-	       bpf_compute_frame_layout. */
-	    break;
-	  else
+      /* Save callee-saved hard registes.  The register-save-area
+	 starts right after the local variables.  */
+      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	{
+	  if ((df_regs_ever_live_p (regno)
+	       && !call_used_or_fixed_reg_p (regno))
+	      || (cfun->calls_alloca
+		  && regno == STACK_POINTER_REGNUM))
 	    {
-	      mem = gen_frame_mem (DImode,
-				   plus_constant (DImode,
-						  hard_frame_pointer_rtx,
-						  fp_offset - 8));
-	      insn = emit_move_insn (mem, gen_rtx_REG (DImode, regno));
-	      RTX_FRAME_RELATED_P (insn) = 1;
-	      fp_offset -= 8;
+	      rtx mem;
+
+	      if (!IN_RANGE (fp_offset, -1 - 0x7fff, 0x7fff))
+		/* This has been already reported as an error in
+		   bpf_compute_frame_layout. */
+		break;
+	      else
+		{
+		  mem = gen_frame_mem (DImode,
+				       plus_constant (DImode,
+						      hard_frame_pointer_rtx,
+						      fp_offset - 8));
+		  insn = emit_move_insn (mem, gen_rtx_REG (DImode, regno));
+		  RTX_FRAME_RELATED_P (insn) = 1;
+		  fp_offset -= 8;
+		}
 	    }
 	}
     }
@@ -362,34 +377,38 @@ bpf_expand_prologue (void)
 void
 bpf_expand_epilogue (void)
 {
-  int regno, fp_offset;
-  rtx insn;
-
-  fp_offset = -cfun->machine->local_vars_size;
-
-  /* Restore callee-saved hard registes from the stack.  */
-  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+  /* See note in bpf_expand_prologue for an explanation on why we are
+     not restoring callee-saved registers in BPF.  */
+  if (TARGET_XBPF)
     {
-      if ((df_regs_ever_live_p (regno)
-	   && !call_used_or_fixed_reg_p (regno))
-	  || (cfun->calls_alloca
-	      && regno == STACK_POINTER_REGNUM))
-	{
-	  rtx mem;
+      rtx insn;
+      int regno;
+      int fp_offset = -cfun->machine->local_vars_size;
 
-	  if (!IN_RANGE (fp_offset, -1 - 0x7fff, 0x7fff))
-	    /* This has been already reported as an error in
-	       bpf_compute_frame_layout. */
-	    break;
-	  else
+      /* Restore callee-saved hard registes from the stack.  */
+      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	{
+	  if ((df_regs_ever_live_p (regno)
+	       && !call_used_or_fixed_reg_p (regno))
+	      || (cfun->calls_alloca
+		  && regno == STACK_POINTER_REGNUM))
 	    {
-	      mem = gen_frame_mem (DImode,
-				   plus_constant (DImode,
-						  hard_frame_pointer_rtx,
-						  fp_offset - 8));
-	      insn = emit_move_insn (gen_rtx_REG (DImode, regno), mem);
-	      RTX_FRAME_RELATED_P (insn) = 1;
-	      fp_offset -= 8;
+	      rtx mem;
+
+	      if (!IN_RANGE (fp_offset, -1 - 0x7fff, 0x7fff))
+		/* This has been already reported as an error in
+		   bpf_compute_frame_layout. */
+		break;
+	      else
+		{
+		  mem = gen_frame_mem (DImode,
+				       plus_constant (DImode,
+						      hard_frame_pointer_rtx,
+						      fp_offset - 8));
+		  insn = emit_move_insn (gen_rtx_REG (DImode, regno), mem);
+		  RTX_FRAME_RELATED_P (insn) = 1;
+		  fp_offset -= 8;
+		}
 	    }
 	}
     }

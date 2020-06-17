@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-ccp -fno-tree-forwprop -fno-tree-fre -fno-tree-vrp -fdisable-tree-evrp-copyprop" } */
-/* { dg-additional-options "-fdump-tree-dse1-details" } */
+/* { dg-options "-O2 -fno-tree-ccp -fno-tree-forwprop -fno-tree-fre -fno-tree-vrp -fdump-tree-dse1-details" } */
+/* { dg-additional-options "-fdisable-tree-evrp-copyprop" } */
 
 int
 f ()

@@ -205,6 +205,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-section-names.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "ipa-inline.h"
+#include "omp-offload.h"
 
 /* Queue of cgraph nodes scheduled to be added into cgraph.  This is a
    secondary queue used during optimization to accommodate passes that
@@ -760,7 +762,7 @@ process_symver_attribute (symtab_node *n)
   if (n->weakref)
     {
       error_at (DECL_SOURCE_LOCATION (n->decl),
-		"weakref cannot be versioned");
+		"%<weakref%> cannot be versioned");
       return;
     }
   if (!TREE_PUBLIC (n->decl))
@@ -851,6 +853,13 @@ process_function_and_variable_attributes (cgraph_node *first,
        node = symtab->next_function (node))
     {
       tree decl = node->decl;
+
+      if (node->alias
+	  && lookup_attribute ("flatten", DECL_ATTRIBUTES (decl)))
+	{
+	  warning_at (DECL_SOURCE_LOCATION (node->decl), OPT_Wattributes,
+		      "%<flatten%> attribute is ignored on aliases");
+	}
       if (DECL_PRESERVE_P (decl))
 	node->mark_force_output ();
       else if (lookup_attribute ("externally_visible", DECL_ATTRIBUTES (decl)))
@@ -861,14 +870,23 @@ process_function_and_variable_attributes (cgraph_node *first,
 			" attribute have effect only on public objects");
 	}
       if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl))
-	  && (node->definition && !node->alias))
+	  && node->definition
+	  && (!node->alias || DECL_INITIAL (decl) != error_mark_node))
 	{
-	  warning_at (DECL_SOURCE_LOCATION (node->decl), OPT_Wattributes,
+	  /* NODE->DEFINITION && NODE->ALIAS is nonzero for valid weakref
+	     function declarations; DECL_INITIAL is non-null for invalid
+	     weakref functions that are also defined.  */
+	  warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
 		      "%<weakref%> attribute ignored"
 		      " because function is defined");
 	  DECL_WEAK (decl) = 0;
 	  DECL_ATTRIBUTES (decl) = remove_attribute ("weakref",
 						     DECL_ATTRIBUTES (decl));
+	  DECL_ATTRIBUTES (decl) = remove_attribute ("alias",
+						     DECL_ATTRIBUTES (decl));
+	  node->alias = false;
+	  node->weakref = false;
+	  node->transparent_alias = false;
 	}
       else if (lookup_attribute ("alias", DECL_ATTRIBUTES (decl))
 	  && node->definition
@@ -1020,19 +1038,17 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
             {
 	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, edge->call_stmt,
 			       "devirtualizing call in %s to %s\n",
-			       edge->caller->name (), target->name ());
+			       edge->caller->dump_name (),
+			       target->dump_name ());
 	    }
 
-	  edge->make_direct (target);
-	  edge->redirect_call_stmt_to_callee ();
+	  edge = cgraph_edge::make_direct (edge, target);
+	  gimple *new_call = cgraph_edge::redirect_call_stmt_to_callee (edge);
 
 	  if (symtab->dump_file)
 	    {
-	      fprintf (symtab->dump_file,
-		       "Devirtualized as: ");
-	      print_gimple_stmt (symtab->dump_file,
-				 edge->call_stmt, 0,
-				 TDF_SLIM);
+	      fprintf (symtab->dump_file, "Devirtualized as: ");
+	      print_gimple_stmt (symtab->dump_file, new_call, 0, TDF_SLIM);
 	    }
 	}
     }
@@ -1053,15 +1069,15 @@ check_global_declaration (symtab_node *snode)
       && DECL_INITIAL (decl) == 0
       && DECL_EXTERNAL (decl)
       && ! DECL_ARTIFICIAL (decl)
-      && ! TREE_NO_WARNING (decl)
-      && ! TREE_PUBLIC (decl)
-      && (warn_unused_function
-	  || snode->referred_to_p (/*include_self=*/false)))
+      && ! TREE_PUBLIC (decl))
     {
-      if (snode->referred_to_p (/*include_self=*/false))
+      if (TREE_NO_WARNING (decl))
+	;
+      else if (snode->referred_to_p (/*include_self=*/false))
 	pedwarn (input_location, 0, "%q+F used but never defined", decl);
       else
-	warning (OPT_Wunused_function, "%q+F declared %<static%> but never defined", decl);
+	warning (OPT_Wunused_function, "%q+F declared %<static%> but never "
+				       "defined", decl);
       /* This symbol is effectively an "extern" declaration now.  */
       TREE_PUBLIC (decl) = 1;
     }
@@ -1145,6 +1161,9 @@ analyze_functions (bool first_time)
 	  node->fixup_same_cpp_alias_visibility (node->get_alias_target ());
   build_type_inheritance_graph ();
 
+  if (flag_openmp && first_time)
+    omp_discover_implicit_declare_target ();
+
   /* Analysis adds static variables that in turn adds references to new functions.
      So we need to iterate the process until it stabilize.  */
   while (changed)
@@ -1167,7 +1186,7 @@ analyze_functions (bool first_time)
 		fprintf (symtab->dump_file, "Trivially needed symbols:");
 	      changed = true;
 	      if (symtab->dump_file)
-		fprintf (symtab->dump_file, " %s", node->asm_name ());
+		fprintf (symtab->dump_file, " %s", node->dump_asm_name ());
 	      if (!changed && symtab->dump_file)
 		fprintf (symtab->dump_file, "\n");
 	    }
@@ -1324,7 +1343,7 @@ analyze_functions (bool first_time)
       if (!node->aux && !node->referred_to_p ())
 	{
 	  if (symtab->dump_file)
-	    fprintf (symtab->dump_file, " %s", node->name ());
+	    fprintf (symtab->dump_file, " %s", node->dump_name ());
 
 	  /* See if the debugger can use anything before the DECL
 	     passes away.  Perhaps it can notice a DECL that is now a
@@ -2043,10 +2062,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	for (; i < nargs; i++, arg = DECL_CHAIN (arg))
 	  {
 	    tree tmp = arg;
-	    if (VECTOR_TYPE_P (TREE_TYPE (arg))
-		|| TREE_CODE (TREE_TYPE (arg)) == COMPLEX_TYPE)
-	      DECL_GIMPLE_REG_P (arg) = 1;
-
+	    DECL_NOT_GIMPLE_REG_P (arg) = 0;
 	    if (!is_gimple_val (arg))
 	      {
 		tmp = create_tmp_reg (TYPE_MAIN_VARIANT
@@ -2436,7 +2452,7 @@ expand_all_functions (void)
 	  if (symtab->dump_file)
 	    fprintf (symtab->dump_file,
 		     "Time profile order in expand_all_functions:%s:%d\n",
-		     node->asm_name (), node->tp_first_run);
+		     node->dump_asm_name (), node->tp_first_run);
 	  node->process = 0;
 	  node->expand ();
 	}
@@ -2467,7 +2483,8 @@ expand_all_functions (void)
 
   symtab->process_new_functions ();
   free_gimplify_stack ();
-
+  delete ipa_saved_clone_sources;
+  ipa_saved_clone_sources = NULL;
   free (order);
 }
 
