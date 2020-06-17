@@ -67,6 +67,8 @@ do                                         \
 while (0)
 #endif
 
+#define TARGET_RUST_CPU_INFO cr16_rust_target_cpu_info
+
 /* Force the generation of dwarf .debug_frame sections even if not
    compiling -g.  This guarantees that we can unwind the stack.  */
 #define DWARF2_FRAME_INFO 1

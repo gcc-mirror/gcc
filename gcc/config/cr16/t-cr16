@@ -23,3 +23,6 @@ MULTILIB_DIRNAMES    = far-pic int32
 MULTILIB_MATCHES     =
 MULTILIB_EXTRA_OPTS  = mcr16cplus mdata-model=far
 
+cr16-rust.o: $(srcdir)/config/cr16/cr16-rust.c \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_COMMON_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
