@@ -3553,7 +3553,7 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
 	 pointer arithmetic.)  */
       idx = cp_perform_integral_promotions (idx, complain);
 
-      idx = maybe_constant_value (idx);
+      idx = maybe_fold_non_dependent_expr (idx, complain);
 
       /* An array that is indexed by a non-constant
 	 cannot be stored in a register; we must be able to do
