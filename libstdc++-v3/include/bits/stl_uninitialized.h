@@ -549,7 +549,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  typedef typename iterator_traits<_ForwardIterator>::value_type
 	    _ValueType;
 
-	  std::fill(__first, __last, _ValueType());
+	  if (__first == __last)
+	    return;
+
+	  typename iterator_traits<_ForwardIterator>::value_type* __val
+	    = std::__addressof(*__first);
+	  std::_Construct(__val);
+	  if (++__first != __last)
+	    std::fill(__first, __last, *__val);
 	}
     };
 
@@ -582,16 +589,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         static _ForwardIterator
         __uninit_default_n(_ForwardIterator __first, _Size __n)
         {
-	  typedef typename iterator_traits<_ForwardIterator>::value_type
-	    _ValueType;
-
-	  return std::fill_n(__first, __n, _ValueType());
+	  if (__n > 0)
+	    {
+	      typename iterator_traits<_ForwardIterator>::value_type* __val
+		= std::__addressof(*__first);
+	      std::_Construct(__val);
+	      ++__first;
+	      __first = std::fill_n(__first, __n - 1, *__val);
+	    }
+	  return __first;
 	}
     };
 
   // __uninitialized_default
-  // Fills [first, last) with std::distance(first, last) default
-  // constructed value_types(s).
+  // Fills [first, last) with value-initialized value_types.
   template<typename _ForwardIterator>
     inline void
     __uninitialized_default(_ForwardIterator __first,
@@ -608,7 +619,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   // __uninitialized_default_n
-  // Fills [first, first + n) with n default constructed value_type(s).
+  // Fills [first, first + n) with value-initialized value_types.
   template<typename _ForwardIterator, typename _Size>
     inline _ForwardIterator
     __uninitialized_default_n(_ForwardIterator __first, _Size __n)
@@ -625,8 +636,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 
   // __uninitialized_default_a
-  // Fills [first, last) with std::distance(first, last) default
-  // constructed value_types(s), constructed with the allocator alloc.
+  // Fills [first, last) with value_types constructed by the allocator
+  // alloc, with no arguments passed to the construct call.
   template<typename _ForwardIterator, typename _Allocator>
     void
     __uninitialized_default_a(_ForwardIterator __first,
@@ -656,8 +667,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 
   // __uninitialized_default_n_a
-  // Fills [first, first + n) with n default constructed value_types(s),
-  // constructed with the allocator alloc.
+  // Fills [first, first + n) with value_types constructed by the allocator
+  // alloc, with no arguments passed to the construct call.
   template<typename _ForwardIterator, typename _Size, typename _Allocator>
     _ForwardIterator
     __uninitialized_default_n_a(_ForwardIterator __first, _Size __n, 
@@ -678,6 +689,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
 
+  // __uninitialized_default_n_a specialization for std::allocator,
+  // which ignores the allocator and value-initializes the elements.
   template<typename _ForwardIterator, typename _Size, typename _Tp>
     inline _ForwardIterator
     __uninitialized_default_n_a(_ForwardIterator __first, _Size __n, 
@@ -749,8 +762,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   // __uninitialized_default_novalue
-  // Fills [first, last) with std::distance(first, last) default-initialized
-  // value_types(s).
+  // Fills [first, last) with default-initialized value_types.
   template<typename _ForwardIterator>
     inline void
     __uninitialized_default_novalue(_ForwardIterator __first,
@@ -764,8 +776,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__uninit_default_novalue(__first, __last);
     }
 
-  // __uninitialized_default_n
-  // Fills [first, first + n) with n default-initialized value_type(s).
+  // __uninitialized_default_novalue_n
+  // Fills [first, first + n) with default-initialized value_types.
   template<typename _ForwardIterator, typename _Size>
     inline _ForwardIterator
     __uninitialized_default_novalue_n(_ForwardIterator __first, _Size __n)
