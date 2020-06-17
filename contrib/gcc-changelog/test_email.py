@@ -351,3 +351,13 @@ class TestGccChangelog(unittest.TestCase):
         assert len(modified_files) == 3
         assert modified_files[1] == ('gcc/ada/libgnat/s-atopar.adb', 'D')
         assert modified_files[2] == ('gcc/ada/libgnat/s-aoinar.adb', 'A')
+
+    def test_backport(self):
+        email = self.from_patch_glob('0001-asan-fix-RTX-emission.patch')
+        assert not email.errors
+        assert len(email.changelog_entries) == 1
+        entry = list(email.to_changelog_entries())[0][1]
+        assert entry.startswith('2020-06-11  Martin Liska  <mliska@suse.cz>')
+        assert '\tBackported from master:' in entry
+        assert '\t2020-06-11  Martin Liska  <mliska@suse.cz>' in entry
+        assert '\t\t    Jakub Jelinek  <jakub@redhat.com>' in entry
