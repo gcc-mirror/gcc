@@ -18953,7 +18953,8 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
              here.  */
 
           if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON)
-              && !is_friend && !processing_explicit_instantiation)
+	      && !is_friend && is_declaration
+	      && !processing_explicit_instantiation)
             warning (0, "declaration %qD does not declare anything", decl);
 
 	  type = TREE_TYPE (decl);
