@@ -4175,27 +4175,34 @@ package body Sem_Res is
                         end if;
                      end if;
 
-                  --  AI12-0074
+                  --  AI12-0074 & AI12-0377
                   --  Check 6.4.1: If the mode is out, the actual parameter is
                   --  a view conversion, and the type of the formal parameter
-                  --  is a scalar type that has the Default_Value aspect
-                  --  specified, then
-                  --    - there shall exist a type (other than a root numeric
-                  --      type) that is an ancestor of both the target type and
-                  --      the operand type; and
-                  --    - the type of the operand of the conversion shall have
-                  --      the Default_Value aspect specified.
+                  --  is a scalar type, then either:
+                  --    - the target and operand type both do not have the
+                  --      Default_Value aspect specified; or
+                  --    - the target and operand type both have the
+                  --      Default_Value aspect specified, and there shall exist
+                  --      a type (other than a root numeric type) that is an
+                  --      ancestor of both the target type and the operand
+                  --      type.
 
                   elsif Ekind (F) = E_Out_Parameter
                     and then Is_Scalar_Type (Etype (F))
-                    and then Present (Default_Aspect_Value (Etype (F)))
-                    and then
-                      (not Same_Ancestor (Etype (F), Expr_Typ)
-                         or else No (Default_Aspect_Value (Expr_Typ)))
                   then
-                     Error_Msg_N
-                       ("view conversion between unrelated types with "
-                        & "Default_Value not allowed (RM 6.4.1)", A);
+                     if Has_Default_Aspect (Etype (F)) /=
+                        Has_Default_Aspect (Expr_Typ)
+                     then
+                        Error_Msg_N
+                          ("view conversion requires Default_Value on both " &
+                           "types (RM 6.4.1)", A);
+                     elsif Has_Default_Aspect (Expr_Typ)
+                       and then not Same_Ancestor (Etype (F), Expr_Typ)
+                     then
+                        Error_Msg_N
+                          ("view conversion between unrelated types with "
+                           & "Default_Value not allowed (RM 6.4.1)", A);
+                     end if;
                   end if;
                end;
 
