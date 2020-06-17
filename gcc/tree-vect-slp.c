@@ -744,7 +744,7 @@ static bool
 vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		       vec<stmt_vec_info> stmts, unsigned int group_size,
 		       poly_uint64 *max_nunits, bool *matches,
-		       bool *two_operators)
+		       bool *two_operators, tree *node_vectype)
 {
   unsigned int i;
   stmt_vec_info first_stmt_info = stmts[0];
@@ -848,6 +848,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
       /* Check the operation.  */
       if (i == 0)
 	{
+	  *node_vectype = vectype;
 	  first_stmt_code = rhs_code;
 
 	  /* Shift arguments should be equal in all the packed stmts for a
@@ -1259,14 +1260,17 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	return NULL;
       (*tree_size)++;
       node = vect_create_new_slp_node (stmts, 0);
+      SLP_TREE_VECTYPE (node) = vectype;
       return node;
     }
 
 
   bool two_operators = false;
   unsigned char *swap = XALLOCAVEC (unsigned char, group_size);
+  tree vectype = NULL_TREE;
   if (!vect_build_slp_tree_1 (vinfo, swap, stmts, group_size,
-			      &this_max_nunits, matches, &two_operators))
+			      &this_max_nunits, matches, &two_operators,
+			      &vectype))
     return NULL;
 
   /* If the SLP node is a load, terminate the recursion unless masked.  */
@@ -1284,6 +1288,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	  *max_nunits = this_max_nunits;
 	  (*tree_size)++;
 	  node = vect_create_new_slp_node (stmts, 0);
+	  SLP_TREE_VECTYPE (node) = vectype;
 	  /* And compute the load permutation.  Whether it is actually
 	     a permutation depends on the unrolling factor which is
 	     decided later.  */
@@ -1509,6 +1514,7 @@ fail:
 
   node = vect_create_new_slp_node (stmts, nops);
   SLP_TREE_TWO_OPERATORS (node) = two_operators;
+  SLP_TREE_VECTYPE (node) = vectype;
   SLP_TREE_CHILDREN (node).splice (children);
   return node;
 }
@@ -2169,6 +2175,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	      for (unsigned i = 0; i < group_size; ++i)
 		scalar_stmts.quick_push (next_info);
 	      slp_tree conv = vect_create_new_slp_node (scalar_stmts, 1);
+	      SLP_TREE_VECTYPE (conv) = STMT_VINFO_VECTYPE (next_info);
 	      SLP_TREE_CHILDREN (conv).quick_push (node);
 	      SLP_INSTANCE_TREE (new_instance) = conv;
 	      /* We also have to fake this conversion stmt as SLP reduction
@@ -2620,7 +2627,7 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
       else
 	vf = 1;
       unsigned int group_size = SLP_TREE_LANES (node);
-      tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+      tree vectype = SLP_TREE_VECTYPE (node);
       SLP_TREE_NUMBER_OF_VEC_STMTS (node)
 	= vect_get_num_vectors (vf * group_size, vectype);
     }
@@ -3963,7 +3970,7 @@ vect_schedule_slp_instance (vec_info *vinfo,
   stmt_vec_info stmt_info = SLP_TREE_REPRESENTATIVE (node);
 
   /* VECTYPE is the type of the destination.  */
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  tree vectype = SLP_TREE_VECTYPE (node);
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
   unsigned group_size = SLP_TREE_SCALAR_STMTS (node).length ();
 

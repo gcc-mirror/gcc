@@ -11230,15 +11230,18 @@ vect_is_simple_use (vec_info *vinfo, stmt_vec_info stmt, slp_tree slp_node,
     {
       slp_tree child = SLP_TREE_CHILDREN (slp_node)[operand];
       *slp_def = child;
+      *vectype = SLP_TREE_VECTYPE (child);
       if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
-	*op = gimple_get_lhs (SLP_TREE_REPRESENTATIVE (child)->stmt);
+	{
+	  *op = gimple_get_lhs (SLP_TREE_REPRESENTATIVE (child)->stmt);
+	  return vect_is_simple_use (*op, vinfo, dt, def_stmt_info_out);
+	}
       else
 	{
 	  if (def_stmt_info_out)
 	    *def_stmt_info_out = NULL;
 	  *op = SLP_TREE_SCALAR_OPS (child)[0];
 	  *dt = SLP_TREE_DEF_TYPE (child);
-	  *vectype = SLP_TREE_VECTYPE (child);
 	  return true;
 	}
     }
@@ -11269,11 +11272,8 @@ vect_is_simple_use (vec_info *vinfo, stmt_vec_info stmt, slp_tree slp_node,
 	}
       else
 	gcc_unreachable ();
+      return vect_is_simple_use (*op, vinfo, dt, vectype, def_stmt_info_out);
     }
-
-  /* ???  We might want to update *vectype from *slp_def here though
-     when sharing nodes this would prevent unsharing in the caller.  */
-  return vect_is_simple_use (*op, vinfo, dt, vectype, def_stmt_info_out);
 }
 
 /* If OP is not NULL and is external or constant update its vector
