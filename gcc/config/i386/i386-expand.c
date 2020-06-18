@@ -10929,7 +10929,8 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 		     machine_mode mode, int ignore)
 {
   size_t i;
-  enum insn_code icode, icode2;
+  enum insn_code icode = (enum insn_code)  0,
+		 icode2 = (enum insn_code) 0;
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   tree arg0, arg1, arg2, arg3, arg4;
   rtx op0, op1, op2, op3, op4, pat, pat2, insn;

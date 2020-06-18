@@ -962,8 +962,9 @@ public:
 
   virtual bool gate (function *)
     {
-      /* Do not re-run on ltrans stage.  */
-      return !flag_ltrans;
+      /* Only run on ltrans strage if split-args was provided.  */
+      bool ret = !flag_ltrans || split_outputs;
+      return ret;
     }
   virtual unsigned int execute (function *)
     {

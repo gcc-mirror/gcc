@@ -472,21 +472,23 @@ analyse_symbol_references (symtab_node *node, int set)
 
   /* Add all duplicated references to the partition.  */
   for (i = 0; node->iterate_reference (i, ref); i++)
-    if (ref->referred->get_partitioning_class () == SYMBOL_DUPLICATE)
-      {
-	symtab_node *node1 = ref->referred;
-	analyse_symbol (node1, set);
-      }
-    /* References to a readonly variable may be constant foled into its value.
-       Recursively look into the initializers of the constant variable and add
-       references, too.  */
-    else if (is_a <varpool_node *> (ref->referred)
-	    /* && (dyn_cast <varpool_node *> (ref->referred)
-		 ->ctor_useable_for_folding_p ()))*/)
-      {
-	symtab_node *node1 = ref->referred;
-	analyse_symbol (node1, set);
-      }
+    {
+      if (ref->referred->get_partitioning_class () == SYMBOL_DUPLICATE)
+	{
+	  symtab_node *node1 = ref->referred;
+	  analyse_symbol (node1, set);
+	}
+      /* References to a readonly variable may be constant foled into its value.
+	 Recursively look into the initializers of the constant variable and add
+	 references, too.  */
+      /* Check if we have a reference to global variable or function.  */
+      if (is_a <varpool_node *> (ref->referred)
+	       || is_a <cgraph_node *> (ref->referred))
+	{
+	  symtab_node *node1 = ref->referred;
+	  analyse_symbol (node1, set);
+	}
+    }
 }
 
 static bool analyse_symbol_1 (symtab_node *node, int set)
@@ -1390,7 +1392,7 @@ rename_statics (lto_symtab_encoder_t encoder, symtab_node *node)
    all inlinees are added.  */
 
 void
-lto_promote_cross_file_statics (void)
+lto_promote_cross_file_statics (bool promote)
 {
   unsigned i, n_sets;
 
@@ -1436,8 +1438,8 @@ lto_promote_cross_file_statics (void)
 	      validize_symbol_for_target (node);
 	      continue;
 	    }
-
-          promote_symbol (node);
+	  if (promote)
+	    promote_symbol (node);
         }
     }
   delete lto_clone_numbers;

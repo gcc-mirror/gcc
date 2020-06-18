@@ -1,3 +1,21 @@
+2020-06-17  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* cgraphunit.c (ipa_passes): Flush asm file, and handle
+	crash of child process.
+	* gcc.c (execute): Print additional ld call if verbose flag is
+	provided.
+	* ipa-visibility.c (gate): Run if split_outputs.
+	* lto-cgraph.c (lto_apply_partition_mask): Only mark body_removed
+	if node is not a defintion.
+	* lto-partition.c (analyse_symbol_references): Merge partitions of
+	functions which we take address of.
+	(lto_promote_cross_file_statics): call promote_symbol only if
+	promote is provided.
+	* lto-partition.h: update lto_promote_cross_file_statics
+	declaration.
+	* config/i386/i386-expand.c (ix86_expand_builtin): Initialize
+	icode.
+
 2020-06-08  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* cgraphunit.c (cgraph_node::expand): Quick return if no body is

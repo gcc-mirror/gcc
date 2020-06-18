@@ -2680,7 +2680,7 @@ ipa_passes (void)
 	  /* Find out statics that need to be promoted
 	     to globals with hidden visibility because they are accessed from
 	     multiple partitions.  */
-	  lto_promote_cross_file_statics ();
+	  lto_promote_cross_file_statics (false);
 
 	  /* Check if we have variables being referenced across partitions.  */
 	  lto_check_usage_from_other_partitions ();
@@ -2696,6 +2696,9 @@ ipa_passes (void)
 
 	  init_additional_asm_names_file ();
 
+	  /* Flush asm file, so we don't get repeated output as we fork.  */
+	  fflush (asm_out_file);
+
 	  /* Run serially for now.  */
 	  for (i = 0; i < partitions; ++i)
 	    {
@@ -2706,14 +2709,32 @@ ipa_passes (void)
 	      pids[i] = fork ();
 	      if (pids[i] == 0)
 		{
-		  handle_additional_asm ();
+		  handle_additional_asm (true);
 		  lto_apply_partition_mask (ltrans_partitions[i]);
+
 		  goto continue_compilation;
 		}
 	      else
 		{
 		  int wstatus;
 		  waitpid (pids[i], &wstatus, 0);
+
+		  if (WIFEXITED (wstatus))
+		    {
+		      if (WEXITSTATUS (wstatus) == 0)
+			continue;
+		      else
+			{
+			  fprintf (stderr, "Child %d exited with error\n", i);
+			  internal_error ("Child exited with error");
+			}
+
+		    }
+		  else if (WIFSIGNALED (wstatus))
+		    {
+		      fprintf (stderr, "Child %d aborted due to signal\n", i);
+		      internal_error ("Child aborted with error");
+		    }
 		}
 	    }
 	  exit (0);

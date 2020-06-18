@@ -3934,6 +3934,9 @@ execute (void)
 				       ? PEX_RECORD_TIMES : 0),
 		      progname, temp_filename);
 
+      if (verbose_flag)
+	print_command (&additional_ld);
+
       async_launch_commands (pex, 1, &additional_ld);
       ret = await_commands_to_finish (pex, 1, &additional_ld);
       pex_free (pex);

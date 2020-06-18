@@ -2108,10 +2108,9 @@ lto_apply_partition_mask (ltrans_partition partition)
 	    {
 	      maybe_release_function_dominators (cnode);
 	      cnode->release_body ();
-	      cnode->body_removed = true;
+	      if (!cnode->definition)
+		cnode->body_removed = true;
 	    }
-
-	  node->in_other_partition = true;
 	}
     }
 
