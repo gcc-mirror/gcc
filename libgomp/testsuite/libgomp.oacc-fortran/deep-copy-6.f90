@@ -12,10 +12,13 @@ program dtype
   end type mytype
   integer i
 
-  type(mytype) :: var
+  type(mytype), target :: var
+  integer, pointer :: hostptr(:)
 
   allocate(var%a(1:n))
   allocate(var%b(1:n))
+
+  hostptr => var%a
 
 !$acc data copy(var)
 
@@ -48,6 +51,9 @@ program dtype
   if (.not. acc_is_present(var)) stop 23
 
 !$acc end data
+
+  ! See 'deep-copy-6-no_finalize.F90'.
+  if (.not. associated(hostptr, var%a)) stop 30
 
   do i = 1,4
     if (var%a(i) .ne. 0) stop 1

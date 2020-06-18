@@ -948,8 +948,8 @@ struct target_var_desc {
   bool copy_from;
   /* True if data always should be copied from device to host at the end.  */
   bool always_copy_from;
-  /* True if variable should be detached at end of region.  */
-  bool do_detach;
+  /* True if this is for OpenACC 'attach'.  */
+  bool is_attach;
   /* Relative offset against key host_start.  */
   uintptr_t offset;
   /* Actual length.  */
