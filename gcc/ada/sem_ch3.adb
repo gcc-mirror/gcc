@@ -5718,11 +5718,13 @@ package body Sem_Ch3 is
 
       --  If the base type is a scalar type, or else if there is no
       --  constraint, the atomic flag is inherited by the subtype.
+      --  Ditto for the Independent aspect.
 
       if Is_Scalar_Type (Id)
         or else Is_Entity_Name (Subtype_Indication (N))
       then
          Set_Is_Atomic (Id, Is_Atomic (T));
+         Set_Is_Independent (Id, Is_Independent (T));
       end if;
 
       --  Remaining processing depends on characteristics of base type

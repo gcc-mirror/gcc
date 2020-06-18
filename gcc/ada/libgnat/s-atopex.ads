@@ -33,13 +33,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
-
 generic
    type Atomic_Type is private with Atomic;
 package System.Atomic_Operations.Exchange
   with Pure
---  Blocking
 is
    function Atomic_Exchange
      (Item  : aliased in out Atomic_Type;

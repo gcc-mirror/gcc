@@ -30,8 +30,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
 private with Ada.Finalization;
+
 package Ada.Streams.Storage.Unbounded with Preelaborate is
 
    type Stream_Type is new Storage_Stream_Type with private with

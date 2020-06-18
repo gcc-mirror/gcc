@@ -30,7 +30,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
 package Ada.Streams.Storage with Pure is
 
    type Storage_Stream_Type is abstract new Root_Stream_Type with private;

@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
-
 package Ada.Strings.Text_Output.Formatting is
 
    --  Template-based output, based loosely on C's printf family. Unlike

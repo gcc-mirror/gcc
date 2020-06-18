@@ -29,7 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
 with Unchecked_Conversion;
 with Ada.Strings.Text_Output.Utils;
 use Ada.Strings.Text_Output;

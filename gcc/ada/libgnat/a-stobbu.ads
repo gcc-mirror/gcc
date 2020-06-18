@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
-
 package Ada.Strings.Text_Output.Bit_Buckets is
    function Bit_Bucket return Sink_Access;
 end Ada.Strings.Text_Output.Bit_Buckets;
