@@ -1,3 +1,12 @@
+2020-06-17  Samuel Thibault  <samuel.thibault@gnu.org>
+
+	Backported from master:
+	2020-06-17  Samuel Thibault  <samuel.thibault@gnu.org>
+
+	* config.host (md_unwind_header) <i[34567]86-*-gnu*>: Set to
+	'i386/gnu-unwind.h'
+	* config/i386/gnu-unwind.h: New file.
+
 2020-05-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/lse-init.c (init_have_lse_atomics): Use __getauxval
