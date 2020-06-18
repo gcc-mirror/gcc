@@ -1,3 +1,10 @@
+2020-06-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-06-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/gomp/hsa-indirect-call-1.c: New file.
+
 2020-06-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/94109
