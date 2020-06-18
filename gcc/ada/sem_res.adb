@@ -4112,27 +4112,33 @@ package body Sem_Res is
             then
                declare
                   Expr_Typ : constant Entity_Id := Etype (Expression (A));
+
                begin
-                  if Ekind (F) = E_In_Out_Parameter
-                    and then Is_Array_Type (Etype (F))
+                  --  Check RM 4.6 (24.2/2)
+
+                  if Is_Array_Type (Etype (F))
+                    and then Is_View_Conversion (A)
                   then
                      --  In a view conversion, the conversion must be legal in
                      --  both directions, and thus both component types must be
                      --  aliased, or neither (4.6 (8)).
 
-                     --  The extra rule in 4.6 (24.9.2) seems unduly
-                     --  restrictive: the privacy requirement should not apply
-                     --  to generic types, and should be checked in an
-                     --  instance. ARG query is in order ???
+                     --  Check RM 4.6 (24.8/2)
 
                      if Has_Aliased_Components (Expr_Typ) /=
                         Has_Aliased_Components (Etype (F))
                      then
-                        Error_Msg_N
-                          ("both component types in a view conversion must be"
-                            & " aliased, or neither", A);
+                        --  This normally illegal conversion is legal in an
+                        --  expanded instance body because of RM 12.3(11).
+                        --  At runtime, conversion must create a new object.
 
-                     --  Comment here??? what set of cases???
+                        if not In_Instance then
+                           Error_Msg_N
+                             ("both component types in a view conversion must"
+                              & " be aliased, or neither", A);
+                        end if;
+
+                     --  Check RM 4.6 (24/3)
 
                      elsif not Same_Ancestor (Etype (F), Expr_Typ) then
                         --  Check view conv between unrelated by ref array

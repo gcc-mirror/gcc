@@ -14276,6 +14276,18 @@ package body Sem_Util is
       return Present (Formal) and then Ekind (Formal) = E_Out_Parameter;
    end Is_Actual_Out_Parameter;
 
+   --------------------------------
+   -- Is_Actual_In_Out_Parameter --
+   --------------------------------
+
+   function Is_Actual_In_Out_Parameter (N : Node_Id) return Boolean is
+      Formal : Entity_Id;
+      Call   : Node_Id;
+   begin
+      Find_Actual (N, Formal, Call);
+      return Present (Formal) and then Ekind (Formal) = E_In_Out_Parameter;
+   end Is_Actual_In_Out_Parameter;
+
    -------------------------
    -- Is_Actual_Parameter --
    -------------------------
@@ -19463,6 +19475,31 @@ package body Sem_Util is
          end case;
       end if;
    end Is_Variable;
+
+   ------------------------
+   -- Is_View_Conversion --
+   ------------------------
+
+   function Is_View_Conversion (N : Node_Id) return Boolean is
+   begin
+      if Nkind (N) = N_Type_Conversion
+        and then Nkind (Unqual_Conv (N)) = N_Identifier
+      then
+         if Is_Tagged_Type (Etype (N))
+           and then Is_Tagged_Type (Etype (Unqual_Conv (N)))
+         then
+            return True;
+
+         elsif Is_Actual_Parameter (N)
+           and then (Is_Actual_Out_Parameter (N)
+                       or else Is_Actual_In_Out_Parameter (N))
+         then
+            return True;
+         end if;
+      end if;
+
+      return False;
+   end Is_View_Conversion;
 
    ---------------------------
    -- Is_Visibly_Controlled --
