@@ -137,8 +137,8 @@ else:
             else:
                 branch = repo.create_head(name, ref).set_tracking_branch(ref)
             print('=== Working on: %s ===' % branch, flush=True)
-            origin.pull(rebase=True)
             branch.checkout()
+            origin.pull(rebase=True)
             print('branch pulled and checked out')
             update_current_branch()
             assert not repo.index.diff(None)
