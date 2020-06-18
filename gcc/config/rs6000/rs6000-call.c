@@ -10714,16 +10714,19 @@ rs6000_builtin_valid_without_lhs (enum rs6000_builtins fn_code)
    operation.  This sets up true/false vectors, and uses the
    VEC_COND_EXPR operation.
    CODE indicates which comparison is to be made. (EQ, GT, ...).
-   TYPE indicates the type of the result.  */
+   TYPE indicates the type of the result.
+   Code is inserted before GSI.  */
 static tree
-fold_build_vec_cmp (tree_code code, tree type,
-		    tree arg0, tree arg1)
+fold_build_vec_cmp (tree_code code, tree type, tree arg0, tree arg1,
+		    gimple_stmt_iterator *gsi)
 {
   tree cmp_type = truth_type_for (type);
   tree zero_vec = build_zero_cst (type);
   tree minus_one_vec = build_minus_one_cst (type);
-  tree cmp = fold_build2 (code, cmp_type, arg0, arg1);
-  return fold_build3 (VEC_COND_EXPR, type, cmp, minus_one_vec, zero_vec);
+  tree temp = create_tmp_reg_or_ssa_name (cmp_type);
+  gimple *g = gimple_build_assign (temp, code, arg0, arg1);
+  gsi_insert_before (gsi, g, GSI_SAME_STMT);
+  return fold_build3 (VEC_COND_EXPR, type, temp, minus_one_vec, zero_vec);
 }
 
 /* Helper function to handle the in-between steps for the
@@ -10734,7 +10737,7 @@ fold_compare_helper (gimple_stmt_iterator *gsi, tree_code code, gimple *stmt)
   tree arg0 = gimple_call_arg (stmt, 0);
   tree arg1 = gimple_call_arg (stmt, 1);
   tree lhs = gimple_call_lhs (stmt);
-  tree cmp = fold_build_vec_cmp (code, TREE_TYPE (lhs), arg0, arg1);
+  tree cmp = fold_build_vec_cmp (code, TREE_TYPE (lhs), arg0, arg1, gsi);
   gimple *g = gimple_build_assign (lhs, cmp);
   gimple_set_location (g, gimple_location (stmt));
   gsi_replace (gsi, g, true);
