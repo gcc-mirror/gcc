@@ -1179,9 +1179,8 @@ ix86_split_idivmod (machine_mode mode, rtx operands[],
   JUMP_LABEL (insn) = qimode_label;
 
   /* Generate original signed/unsigned divimod.  */
-  div = gen_divmod4_1 (operands[0], operands[1],
-		       operands[2], operands[3]);
-  emit_insn (div);
+  emit_insn (gen_divmod4_1 (operands[0], operands[1],
+			    operands[2], operands[3]));
 
   /* Branch to the end.  */
   emit_jump_insn (gen_jump (end_label));
@@ -1215,18 +1214,10 @@ ix86_split_idivmod (machine_mode mode, rtx operands[],
     }
 
   /* Extract remainder from AH.  */
-  tmp1 = gen_rtx_ZERO_EXTRACT (GET_MODE (operands[1]),
-			       tmp0, GEN_INT (8), GEN_INT (8));
-  if (REG_P (operands[1]))
-    insn = emit_move_insn (operands[1], tmp1);
-  else
-    {
-      /* Need a new scratch register since the old one has result
-	 of 8bit divide.  */
-      scratch = gen_reg_rtx (GET_MODE (operands[1]));
-      emit_move_insn (scratch, tmp1);
-      insn = emit_move_insn (operands[1], scratch);
-    }
+  scratch = gen_lowpart (GET_MODE (operands[1]), scratch);
+  tmp1 = gen_rtx_ZERO_EXTRACT (GET_MODE (operands[1]), scratch,
+			       GEN_INT (8), GEN_INT (8));
+  insn = emit_move_insn (operands[1], tmp1);
   set_unique_reg_note (insn, REG_EQUAL, mod);
 
   /* Zero extend quotient from AL.  */
@@ -7060,10 +7051,7 @@ promote_duplicated_reg (machine_mode mode, rtx val)
       rtx reg = convert_modes (mode, QImode, val, true);
 
       if (!TARGET_PARTIAL_REG_STALL)
-	if (mode == SImode)
-	  emit_insn (gen_insvsi_1 (reg, reg));
-	else
-	  emit_insn (gen_insvdi_1 (reg, reg));
+	emit_insn (gen_insv_1 (mode, reg, reg));
       else
 	{
 	  tmp = expand_simple_binop (mode, ASHIFT, reg, GEN_INT (8),
