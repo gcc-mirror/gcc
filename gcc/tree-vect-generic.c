@@ -957,8 +957,9 @@ expand_vector_condition (gimple_stmt_iterator *gsi)
 
   if (code == SSA_NAME)
     {
-      gimple *assign = SSA_NAME_DEF_STMT (a);
-      if (TREE_CODE_CLASS (gimple_assign_rhs_code (assign)) == tcc_comparison)
+      gassign *assign = dyn_cast<gassign *> (SSA_NAME_DEF_STMT (a));
+      if (assign != NULL
+	  && TREE_CODE_CLASS (gimple_assign_rhs_code (assign)) == tcc_comparison)
 	{
 	  a_is_comparison = true;
 	  a1 = gimple_assign_rhs1 (assign);
