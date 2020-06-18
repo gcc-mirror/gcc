@@ -81,15 +81,23 @@ def update_current_branch():
         if (commit.author.email == 'gccadmin@gcc.gnu.org'
                 and commit.message.strip() == 'Daily bump.'):
             break
-        commit = commit.parents[0]
+        # We support merge commits but only with 2 parensts
+        assert len(commit.parents) <= 2
+        commit = commit.parents[-1]
         commit_count += 1
 
     print('%d revisions since last Daily bump' % commit_count)
     datestamp_path = os.path.join(args.git_path, 'gcc/DATESTAMP')
     if (read_timestamp(datestamp_path) != current_timestamp
             or args.dry_mode or args.current):
-        commits = parse_git_revisions(args.git_path, '%s..HEAD'
-                                      % commit.hexsha)
+        head = repo.head.commit
+        # if HEAD is a merge commit, start with second parent
+        # (branched that is being merged into the current one)
+        assert len(head.parents) <= 2
+        if len(head.parents) == 2:
+            head = head.parents[1]
+        commits = parse_git_revisions(args.git_path, '%s..%s'
+                                      % (commit.hexsha, head.hexsha))
         for git_commit in reversed(commits):
             prepend_to_changelog_files(repo, args.git_path, git_commit,
                                        not args.dry_mode)
