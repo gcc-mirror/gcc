@@ -3264,7 +3264,7 @@ package body Exp_Ch6 is
       Param_Count   : Natural := 0;
       Parent_Formal : Entity_Id;
       Parent_Subp   : Entity_Id;
-      Pref_Entity   : Entity_Id;
+      Prev_Ult      : Node_Id;
       Scop          : Entity_Id;
       Subp          : Entity_Id;
 
@@ -3824,59 +3824,29 @@ package body Exp_Ch6 is
                                 Expression (Original_Node (Prev_Orig));
                            end if;
 
-                           --  If this is an Access attribute applied to the
-                           --  the current instance object passed to a type
-                           --  initialization procedure, then use the level
-                           --  of the type itself. This is not really correct,
-                           --  as there should be an extra level parameter
-                           --  passed in with _init formals (only in the case
-                           --  where the type is immutably limited), but we
-                           --  don't have an easy way currently to create such
-                           --  an extra formal (init procs aren't ever frozen).
-                           --  For now we just use the level of the type,
-                           --  which may be too shallow, but that works better
-                           --  than passing Object_Access_Level of the type,
-                           --  which can be one level too deep in some cases.
-                           --  ???
+                           --  Obtain the ultimate prefix so we can check for
+                           --  the case where we are taking 'Access of a
+                           --  component of an anonymous access formal - which
+                           --  would mean we need to pass said formal's
+                           --  corresponding extra accessibility formal.
 
-                           --  A further case that requires special handling
-                           --  is the common idiom E.all'access. If E is a
-                           --  formal of the enclosing subprogram, the
-                           --  accessibility of the expression is that of E.
+                           Prev_Ult := Ultimate_Prefix (Prev_Orig);
 
-                           if Is_Entity_Name (Prev_Orig) then
-                              Pref_Entity := Entity (Prev_Orig);
-
-                           elsif Nkind (Prev_Orig) = N_Explicit_Dereference
-                             and then Is_Entity_Name (Prefix (Prev_Orig))
-                           then
-                              Pref_Entity := Entity (Prefix ((Prev_Orig)));
-
-                           else
-                              Pref_Entity := Empty;
-                           end if;
-
-                           if Is_Entity_Name (Prev_Orig)
-                             and then Is_Type (Entity (Prev_Orig))
-                           then
-                              Add_Extra_Actual
-                                (Expr =>
-                                   Make_Integer_Literal (Loc,
-                                     Intval =>
-                                       Type_Access_Level (Pref_Entity)),
-                                 EF   => Get_Accessibility (Formal));
-
-                           elsif Nkind (Prev_Orig) = N_Explicit_Dereference
-                             and then Present (Pref_Entity)
-                             and then Is_Formal (Pref_Entity)
+                           if Is_Entity_Name (Prev_Ult)
+                             and then not Is_Type (Entity (Prev_Ult))
                              and then Present
-                                        (Get_Accessibility (Pref_Entity))
+                                        (Get_Accessibility
+                                          (Entity (Prev_Ult)))
                            then
                               Add_Extra_Actual
                                 (Expr =>
                                    New_Occurrence_Of
-                                     (Get_Accessibility (Pref_Entity), Loc),
+                                     (Get_Accessibility
+                                        (Entity (Prev_Ult)), Loc),
                                  EF   => Get_Accessibility (Formal));
+
+                           --  Normal case, call Object_Access_Level. Note:
+                           --  should be Dynamic_Accessibility_Level ???
 
                            else
                               Add_Extra_Actual
