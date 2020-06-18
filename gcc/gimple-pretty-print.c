@@ -444,7 +444,9 @@ dump_binary_rhs (pretty_printer *buffer, const gassign *gs, int spc,
 	  break;
 	}
       else
-	gcc_fallthrough ();
+	{
+	  gcc_fallthrough ();
+	}
     case COMPLEX_EXPR:
     case VEC_WIDEN_MULT_HI_EXPR:
     case VEC_WIDEN_MULT_LO_EXPR:
