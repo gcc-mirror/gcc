@@ -10154,6 +10154,8 @@ finish_template_variable (tree var, tsubst_flags_t complain)
   arglist = coerce_innermost_template_parms (parms, arglist, templ, complain,
 					     /*req_all*/true,
 					     /*use_default*/true);
+  if (arglist == error_mark_node)
+    return error_mark_node;
 
   if (flag_concepts && !constraints_satisfied_p (templ, arglist))
     {
