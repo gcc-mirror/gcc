@@ -1,5 +1,6 @@
 2020-06-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR c/95378
 	* c-common.c (get_atomic_generic_size): Check cv-qualifiers in
 	pointer arguments.
 
