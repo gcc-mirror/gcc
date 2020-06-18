@@ -1363,22 +1363,21 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 		    edge e0, edge e1, gimple *phi,
 		    tree arg0, tree arg1)
 {
-  tree result, type, rhs;
-  gcond *cond;
+  tree result;
   edge true_edge, false_edge;
-  enum tree_code cmp, minmax, ass_code;
-  tree smaller, alt_smaller, larger, alt_larger, arg_true, arg_false;
+  enum tree_code minmax, ass_code;
+  tree smaller, larger, arg_true, arg_false;
   gimple_stmt_iterator gsi, gsi_from;
 
-  type = TREE_TYPE (PHI_RESULT (phi));
+  tree type = TREE_TYPE (PHI_RESULT (phi));
 
   /* The optimization may be unsafe due to NaNs.  */
   if (HONOR_NANS (type) || HONOR_SIGNED_ZEROS (type))
     return false;
 
-  cond = as_a <gcond *> (last_stmt (cond_bb));
-  cmp = gimple_cond_code (cond);
-  rhs = gimple_cond_rhs (cond);
+  gcond *cond = as_a <gcond *> (last_stmt (cond_bb));
+  enum tree_code cmp = gimple_cond_code (cond);
+  tree rhs = gimple_cond_rhs (cond);
 
   /* Turn EQ/NE of extreme values to order comparisons.  */
   if ((cmp == NE_EXPR || cmp == EQ_EXPR)
@@ -1401,8 +1400,8 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 
   /* This transformation is only valid for order comparisons.  Record which
      operand is smaller/larger if the result of the comparison is true.  */
-  alt_smaller = NULL_TREE;
-  alt_larger = NULL_TREE;
+  tree alt_smaller = NULL_TREE;
+  tree alt_larger = NULL_TREE;
   if (cmp == LT_EXPR || cmp == LE_EXPR)
     {
       smaller = gimple_cond_lhs (cond);
@@ -1462,6 +1461,50 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
     }
   else
     return false;
+
+  /* Handle the special case of (signed_type)x < 0 being equivalent
+     to x > MAX_VAL(signed_type) and (signed_type)x >= 0 equivalent
+     to x <= MAX_VAL(signed_type).  */
+  if ((cmp == GE_EXPR || cmp == LT_EXPR)
+      && INTEGRAL_TYPE_P (type)
+      && TYPE_UNSIGNED (type)
+      && integer_zerop (rhs))
+    {
+      tree op = gimple_cond_lhs (cond);
+      if (TREE_CODE (op) == SSA_NAME
+	  && INTEGRAL_TYPE_P (TREE_TYPE (op))
+	  && !TYPE_UNSIGNED (TREE_TYPE (op)))
+	{
+	  gimple *def_stmt = SSA_NAME_DEF_STMT (op);
+	  if (gimple_assign_cast_p (def_stmt))
+	    {
+	      tree op1 = gimple_assign_rhs1 (def_stmt);
+	      if (INTEGRAL_TYPE_P (TREE_TYPE (op1))
+		  && TYPE_UNSIGNED (TREE_TYPE (op1))
+		  && (TYPE_PRECISION (TREE_TYPE (op))
+		      == TYPE_PRECISION (TREE_TYPE (op1)))
+		  && useless_type_conversion_p (type, TREE_TYPE (op1)))
+		{
+		  wide_int w1 = wi::max_value (TREE_TYPE (op));
+		  wide_int w2 = wi::add (w1, 1);
+		  if (cmp == LT_EXPR)
+		    {
+		      larger = op1;
+		      smaller = wide_int_to_tree (TREE_TYPE (op1), w1);
+		      alt_smaller = wide_int_to_tree (TREE_TYPE (op1), w2);
+		      alt_larger = NULL_TREE;
+		    }
+		  else
+		    {
+		      smaller = op1;
+		      larger = wide_int_to_tree (TREE_TYPE (op1), w1);
+		      alt_larger = wide_int_to_tree (TREE_TYPE (op1), w2);
+		      alt_smaller = NULL_TREE;
+		    }
+		}
+	    }
+	}
+    }
 
   /* We need to know which is the true edge and which is the false
       edge so that we know if have abs or negative abs.  */
