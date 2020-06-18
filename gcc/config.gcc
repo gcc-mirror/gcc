@@ -1529,7 +1529,7 @@ cr16-*-elf)
         tm_file="elfos.h ${tm_file} newlib-stdint.h"
         tmake_file="${tmake_file} cr16/t-cr16 "
         use_collect2=no
-		rust_target_objs="cr16-rust.o"
+        rust_target_objs="cr16-rust.o"
         ;;
 cris-*-elf | cris-*-none)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
@@ -1605,6 +1605,7 @@ csky-*-*)
 		exit 1
 		;;
 	esac
+	rust_target_objs="csky-rust.o"
 	;;
 epiphany-*-elf | epiphany-*-rtems*)
 	tm_file="${tm_file} dbxelf.h elfos.h"

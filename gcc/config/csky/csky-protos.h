@@ -27,6 +27,8 @@ extern bool csky_legitimate_pic_operand_p (rtx);
 
 extern void csky_cpu_cpp_builtins (cpp_reader *);
 
+extern void csky_rust_target_cpu_info (void);
+
 extern bool csky_inlinable_constant (HOST_WIDE_INT value);
 extern bool csky_shifted_imm8_constant (unsigned HOST_WIDE_INT,
 					unsigned int *, unsigned int *);

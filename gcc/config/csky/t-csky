@@ -27,3 +27,7 @@ $(srcdir)/config/csky/csky_tables.opt: $(srcdir)/config/csky/csky_genopt.sh \
   $(srcdir)/config/csky/csky_cores.def
 	$(SHELL) $(srcdir)/config/csky/csky_genopt.sh $(srcdir)/config/csky > \
 		$(srcdir)/config/csky/csky_tables.opt
+
+csky-rust.o: $(srcdir)/config/csky/csky-rust.c \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_COMMON_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

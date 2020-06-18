@@ -704,6 +704,8 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 #define TARGET_CPU_CPP_BUILTINS()		      \
   csky_cpu_cpp_builtins (pfile)
 
+#define TARGET_RUST_CPU_INFO csky_rust_target_cpu_info
+
 /******************************************************************
  *			Per-function Data			  *
  ******************************************************************/
