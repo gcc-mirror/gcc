@@ -1750,23 +1750,25 @@ package body Exp_Attr is
       ----------------------
 
       function Get_Integer_Type (Typ : Entity_Id) return Entity_Id is
-         Siz     : constant Uint := RM_Size (Base_Type (Typ));
+         Siz     : constant Uint := Esize (Base_Type (Typ));
          Int_Typ : Entity_Id;
 
       begin
-         --  We need to accommodate unsigned values
+         --  We need to accommodate invalid values of the base type since we
+         --  accept them for Enum_Rep and Pos, so we reason on the Esize. And
+         --  we use an unsigned type since the enumeration type is unsigned.
 
-         if Siz < RM_Size (Standard_Short_Short_Integer) then
-            Int_Typ := Standard_Short_Short_Integer;
+         if Siz <= Esize (Standard_Short_Short_Unsigned) then
+            Int_Typ := Standard_Short_Short_Unsigned;
 
-         elsif Siz < RM_Size (Standard_Short_Integer) then
-            Int_Typ := Standard_Short_Integer;
+         elsif Siz <= Esize (Standard_Short_Unsigned) then
+            Int_Typ := Standard_Short_Unsigned;
 
-         elsif Siz < RM_Size (Standard_Integer) then
-            Int_Typ := Standard_Integer;
+         elsif Siz <= Esize (Standard_Unsigned) then
+            Int_Typ := Standard_Unsigned;
 
          else
-            Int_Typ := Standard_Long_Long_Integer;
+            raise Program_Error;
          end if;
 
          return Int_Typ;
@@ -2529,6 +2531,19 @@ package body Exp_Attr is
          end if;
       end Alignment;
 
+      ---------------------------
+      -- Asm_Input, Asm_Output --
+      ---------------------------
+
+      --  The Asm_Input and Asm_Output attributes are not expanded at this
+      --  stage, but will be eliminated in the expansion of the Asm call,
+      --  see Exp_Intr for details. So the back end will never see them.
+
+      when Attribute_Asm_Input
+         | Attribute_Asm_Output
+      =>
+         null;
+
       ---------
       -- Bit --
       ---------
@@ -2547,34 +2562,11 @@ package body Exp_Attr is
       -- Bit_Position --
       ------------------
 
-      --  We compute this if a component clause was present, otherwise we leave
-      --  the computation up to the back end, since we don't know what layout
-      --  will be chosen.
+      --  We leave the computation up to the back end, since we don't know what
+      --  layout will be chosen if no component clause was specified.
 
-      --  Note that the attribute can apply to a naked record component
-      --  in generated code (i.e. the prefix is an identifier that
-      --  references the component or discriminant entity).
-
-      when Attribute_Bit_Position => Bit_Position : declare
-         CE : Entity_Id;
-
-      begin
-         if Nkind (Pref) = N_Identifier then
-            CE := Entity (Pref);
-         else
-            CE := Entity (Selector_Name (Pref));
-         end if;
-
-         if Known_Static_Component_Bit_Offset (CE) then
-            Rewrite (N,
-              Make_Integer_Literal (Loc,
-                Intval => Component_Bit_Offset (CE)));
-            Analyze_And_Resolve (N, Typ);
-
-         else
-            Apply_Universal_Integer_Attribute_Checks (N);
-         end if;
-      end Bit_Position;
+      when Attribute_Bit_Position =>
+         Apply_Universal_Integer_Attribute_Checks (N);
 
       ------------------
       -- Body_Version --
@@ -2817,6 +2809,15 @@ package body Exp_Attr is
          Analyze_And_Resolve (N, Id_Kind);
       end Caller;
 
+      --------------------
+      -- Component_Size --
+      --------------------
+
+      --  Component_Size is handled by the back end
+
+      when Attribute_Component_Size =>
+         Apply_Universal_Integer_Attribute_Checks (N);
+
       -------------
       -- Compose --
       -------------
@@ -3020,24 +3021,10 @@ package body Exp_Attr is
       -- Descriptor_Size --
       ---------------------
 
+      --  Descriptor_Size is handled by the back end
+
       when Attribute_Descriptor_Size =>
-
-         --  Attribute Descriptor_Size is handled by the back end when applied
-         --  to an unconstrained array type.
-
-         if Is_Array_Type (Ptyp)
-           and then not Is_Constrained (Ptyp)
-         then
-            Apply_Universal_Integer_Attribute_Checks (N);
-
-         --  For any other type, the descriptor size is 0 because there is no
-         --  actual descriptor, but the result is not formally static.
-
-         else
-            Rewrite (N, Make_Integer_Literal (Loc, 0));
-            Analyze (N);
-            Set_Is_Static_Expression (N, False);
-         end if;
+         Apply_Universal_Integer_Attribute_Checks (N);
 
       ---------------
       -- Elab_Body --
@@ -3480,42 +3467,11 @@ package body Exp_Attr is
       -- First_Bit --
       ---------------
 
-      --  Compute this if component clause was present, otherwise we leave the
-      --  computation to be completed in the back-end, since we don't know what
-      --  layout will be chosen.
+      --  We leave the computation up to the back end, since we don't know what
+      --  layout will be chosen if no component clause was specified.
 
-      when Attribute_First_Bit => First_Bit_Attr : declare
-         CE : constant Entity_Id := Entity (Selector_Name (Pref));
-
-      begin
-         --  In Ada 2005 (or later) if we have the non-default bit order, then
-         --  we return the original value as given in the component clause
-         --  (RM 2005 13.5.2(3/2)).
-
-         if Present (Component_Clause (CE))
-           and then Ada_Version >= Ada_2005
-           and then Reverse_Bit_Order (Scope (CE))
-         then
-            Rewrite (N,
-              Make_Integer_Literal (Loc,
-                Intval => Expr_Value (First_Bit (Component_Clause (CE)))));
-            Analyze_And_Resolve (N, Typ);
-
-         --  Otherwise (Ada 83/95 or Ada 2005 or later with default bit order),
-         --  rewrite with normalized value if we know it statically.
-
-         elsif Known_Static_Component_Bit_Offset (CE) then
-            Rewrite (N,
-              Make_Integer_Literal (Loc,
-                Component_Bit_Offset (CE) mod System_Storage_Unit));
-            Analyze_And_Resolve (N, Typ);
-
-         --  Otherwise left to back end, just do universal integer checks
-
-         else
-            Apply_Universal_Integer_Attribute_Checks (N);
-         end if;
-      end First_Bit_Attr;
+      when Attribute_First_Bit =>
+         Apply_Universal_Integer_Attribute_Checks (N);
 
       --------------------------------
       -- Fixed_Value, Integer_Value --
@@ -4145,45 +4101,11 @@ package body Exp_Attr is
       -- Last_Bit --
       --------------
 
-      --  We compute this if a component clause was present, otherwise we leave
-      --  the computation up to the back end, since we don't know what layout
-      --  will be chosen.
+      --  We leave the computation up to the back end, since we don't know what
+      --  layout will be chosen if no component clause was specified.
 
-      when Attribute_Last_Bit => Last_Bit_Attr : declare
-         CE : constant Entity_Id := Entity (Selector_Name (Pref));
-
-      begin
-         --  In Ada 2005 (or later) if we have the non-default bit order, then
-         --  we return the original value as given in the component clause
-         --  (RM 2005 13.5.2(3/2)).
-
-         if Present (Component_Clause (CE))
-           and then Ada_Version >= Ada_2005
-           and then Reverse_Bit_Order (Scope (CE))
-         then
-            Rewrite (N,
-              Make_Integer_Literal (Loc,
-                Intval => Expr_Value (Last_Bit (Component_Clause (CE)))));
-            Analyze_And_Resolve (N, Typ);
-
-         --  Otherwise (Ada 83/95 or Ada 2005 or later with default bit order),
-         --  rewrite with normalized value if we know it statically.
-
-         elsif Known_Static_Component_Bit_Offset (CE)
-           and then Known_Static_Esize (CE)
-         then
-            Rewrite (N,
-              Make_Integer_Literal (Loc,
-               Intval => (Component_Bit_Offset (CE) mod System_Storage_Unit)
-                                + Esize (CE) - 1));
-            Analyze_And_Resolve (N, Typ);
-
-         --  Otherwise leave to back end, just apply universal integer checks
-
-         else
-            Apply_Universal_Integer_Attribute_Checks (N);
-         end if;
-      end Last_Bit_Attr;
+      when Attribute_Last_Bit =>
+         Apply_Universal_Integer_Attribute_Checks (N);
 
       ------------------
       -- Leading_Part --
@@ -5247,44 +5169,11 @@ package body Exp_Attr is
       -- Position --
       --------------
 
-      --  We compute this if a component clause was present, otherwise we leave
-      --  the computation up to the back end, since we don't know what layout
-      --  will be chosen.
+      --  We leave the computation up to the back end, since we don't know what
+      --  layout will be chosen if no component clause was specified.
 
-      when Attribute_Position => Position_Attr : declare
-         CE : constant Entity_Id := Entity (Selector_Name (Pref));
-
-      begin
-         if Present (Component_Clause (CE)) then
-
-            --  In Ada 2005 (or later) if we have the non-default bit order,
-            --  then we return the original value as given in the component
-            --  clause (RM 2005 13.5.2(2/2)).
-
-            if Ada_Version >= Ada_2005
-              and then Reverse_Bit_Order (Scope (CE))
-            then
-               Rewrite (N,
-                  Make_Integer_Literal (Loc,
-                    Intval => Expr_Value (Position (Component_Clause (CE)))));
-
-            --  Otherwise (Ada 83 or 95, or default bit order specified in
-            --  later Ada version), return the normalized value.
-
-            else
-               Rewrite (N,
-                 Make_Integer_Literal (Loc,
-                   Intval => Component_Bit_Offset (CE) / System_Storage_Unit));
-            end if;
-
-            Analyze_And_Resolve (N, Typ);
-
-         --  If back end is doing things, just apply universal integer checks
-
-         else
-            Apply_Universal_Integer_Attribute_Checks (N);
-         end if;
-      end Position_Attr;
+      when Attribute_Position =>
+         Apply_Universal_Integer_Attribute_Checks (N);
 
       ----------
       -- Pred --
@@ -7577,40 +7466,17 @@ package body Exp_Attr is
          Rewrite_Attribute_Proc_Call (Pname);
       end Write;
 
-      --  Component_Size is handled by the back end, unless the component size
-      --  is known at compile time, which is always true in the packed array
-      --  case. It is important that the packed array case is handled in the
-      --  front end (see Eval_Attribute) since the back end would otherwise get
-      --  confused by the equivalent packed array type.
-
-      when Attribute_Component_Size =>
-         null;
-
       --  The following attributes are handled by the back end (except that
       --  static cases have already been evaluated during semantic processing,
       --  but in any case the back end should not count on this).
 
-      --  The back end also handles the non-class-wide cases of Size
-
-      when Attribute_Bit_Order
-         | Attribute_Code_Address
-         | Attribute_Definite
+      when Attribute_Code_Address
          | Attribute_Deref
          | Attribute_Null_Parameter
          | Attribute_Passed_By_Reference
          | Attribute_Pool_Address
-         | Attribute_Scalar_Storage_Order
       =>
          null;
-
-      --  The following attributes are also handled by the back end, but return
-      --  a universal integer result, so may need a conversion for checking
-      --  that the result is in range.
-
-      when Attribute_Aft
-         | Attribute_Max_Alignment_For_Allocation
-      =>
-         Apply_Universal_Integer_Attribute_Checks (N);
 
       --  The following attributes should not appear at this stage, since they
       --  have already been handled by the analyzer (and properly rewritten
@@ -7618,12 +7484,15 @@ package body Exp_Attr is
 
       when Attribute_Abort_Signal
          | Attribute_Address_Size
+         | Attribute_Aft
          | Attribute_Atomic_Always_Lock_Free
          | Attribute_Base
+         | Attribute_Bit_Order
          | Attribute_Class
          | Attribute_Compiler_Version
          | Attribute_Default_Bit_Order
          | Attribute_Default_Scalar_Storage_Order
+         | Attribute_Definite
          | Attribute_Delta
          | Attribute_Denorm
          | Attribute_Digits
@@ -7645,6 +7514,7 @@ package body Exp_Attr is
          | Attribute_Machine_Overflows
          | Attribute_Machine_Radix
          | Attribute_Machine_Rounds
+         | Attribute_Max_Alignment_For_Allocation
          | Attribute_Maximum_Alignment
          | Attribute_Model_Emin
          | Attribute_Model_Epsilon
@@ -7659,6 +7529,7 @@ package body Exp_Attr is
          | Attribute_Safe_Large
          | Attribute_Safe_Last
          | Attribute_Safe_Small
+         | Attribute_Scalar_Storage_Order
          | Attribute_Scale
          | Attribute_Signed_Zeros
          | Attribute_Small
@@ -7674,15 +7545,6 @@ package body Exp_Attr is
          | Attribute_Word_Size
       =>
          raise Program_Error;
-
-      --  The Asm_Input and Asm_Output attributes are not expanded at this
-      --  stage, but will be eliminated in the expansion of the Asm call, see
-      --  Exp_Intr for details. So the back end will never see these either.
-
-      when Attribute_Asm_Input
-         | Attribute_Asm_Output
-      =>
-         null;
       end case;
 
    --  Note: as mentioned earlier, individual sections of the above case

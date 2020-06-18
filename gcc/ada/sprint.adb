@@ -4489,6 +4489,43 @@ package body Sprint is
                               Write_Str (", ");
                            end loop;
 
+                           if Present (Extra_Formals (Typ)) then
+                              Param := Extra_Formals (Typ);
+
+                              while Present (Param) loop
+                                 Write_Str (", ");
+                                 Write_Id (Param);
+                                 Write_Str (" : ");
+                                 Write_Id (Etype (Param));
+
+                                 Param := Extra_Formal (Param);
+                              end loop;
+                           end if;
+
+                           Write_Char (')');
+                        end;
+
+                     elsif Present (Extra_Formals (Typ)) then
+                        declare
+                           Param : Entity_Id;
+
+                        begin
+                           Write_Str (" (");
+
+                           Param := Extra_Formals (Typ);
+
+                           while Present (Param) loop
+                              Write_Id (Param);
+                              Write_Str (" : ");
+                              Write_Id (Etype (Param));
+
+                              if Present (Extra_Formal (Param)) then
+                                 Write_Str (", ");
+                              end if;
+
+                              Param := Extra_Formal (Param);
+                           end loop;
+
                            Write_Char (')');
                         end;
                      end if;

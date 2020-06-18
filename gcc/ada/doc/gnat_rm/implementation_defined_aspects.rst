@@ -464,6 +464,13 @@ Aspect Refined_State
 
 This aspect is equivalent to :ref:`pragma Refined_State<Pragma-Refined_State>`.
 
+Aspect Relaxed_Initialization
+=============================
+.. index:: Refined_Initialization
+
+For the syntax and semantics of this aspect, see the SPARK 2014 Reference
+Manual, section 6.10.
+
 Aspect Remote_Access_Type
 =========================
 .. index:: Remote_Access_Type

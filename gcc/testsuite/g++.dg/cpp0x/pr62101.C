@@ -17,7 +17,7 @@ void g(Y, double);
 struct Y
 {
   // { dg-prune-output "note" }
-  friend void g(Y, int) = delete;
+  friend void g(Y, int) = delete; // { dg-error "not first declaration" }
   friend void g(Y, double) {}
 };
 

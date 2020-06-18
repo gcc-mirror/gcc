@@ -7,7 +7,7 @@ void bar ();
 struct A
 {
   friend void foo () = delete;	// { dg-error "redefinition of" }
-  friend void bar () = delete;	// { dg-message "previously defined here" }
+  friend void bar () = delete;	// { dg-error "not first declaration" }
 };
 
 void bar () {}	// { dg-error "redefinition of" }

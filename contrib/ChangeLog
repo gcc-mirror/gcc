@@ -1,3 +1,13 @@
+2020-06-17  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Print 'Backported from master'
+	heading to backported commits.
+	* gcc-changelog/test_email.py: Test it.
+	* gcc-changelog/test_patches.txt: Add new patch.
+	* gcc-changelog/git_repository.py: Add commit_to_date hook.
+	* gcc-changelog/git_email.py: Add fuzzy implementation
+	of commit_to_date_hook.
+
 2020-06-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* prepare-commit-msg: Use the gcc-config.mklog-hook-type Git

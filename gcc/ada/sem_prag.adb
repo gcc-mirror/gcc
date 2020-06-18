@@ -8323,11 +8323,21 @@ package body Sem_Prag is
                      Next_Formal (Formal);
                   end loop;
 
+                  --  Error out if the number of parameters is lower than n
+
                   if Count < Minimum then
                      Error_Msg_Uint_1 := UI_From_Int (Minimum);
                      Error_Pragma_Arg
                        ("argument of pragma% must have at least"
                         & "^ parameters", Arg2);
+
+                  --  But warn if it is exactly n because this is useless
+
+                  elsif Count = Minimum then
+                     Error_Msg_Uint_1 := UI_From_Int (Minimum + 1);
+                     Error_Msg_N
+                       ("??subprogram should have at least ^ parameters",
+                        Get_Pragma_Arg (Arg2));
                   end if;
                end;
             end if;
@@ -31293,10 +31303,12 @@ package body Sem_Prag is
 
                   if Force then
                      if Cont = False then
-                        Error_Msg ("<<~!!", Eloc);
+                        Error_Msg
+                           ("<<~!!", Eloc, Is_Compile_Time_Pragma => True);
                         Cont := True;
                      else
-                        Error_Msg ("\<<~!!", Eloc);
+                        Error_Msg
+                           ("\<<~!!", Eloc, Is_Compile_Time_Pragma => True);
                      end if;
 
                   --  Error, rather than warning, or in a body, so we do not
@@ -31307,10 +31319,12 @@ package body Sem_Prag is
 
                   else
                      if Cont = False then
-                        Error_Msg ("<<~", Eloc);
+                        Error_Msg
+                           ("<<~", Eloc, Is_Compile_Time_Pragma => True);
                         Cont := True;
                      else
-                        Error_Msg ("\<<~", Eloc);
+                        Error_Msg
+                           ("\<<~", Eloc, Is_Compile_Time_Pragma => True);
                      end if;
                   end if;
 

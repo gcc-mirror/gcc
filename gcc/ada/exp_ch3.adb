@@ -7516,6 +7516,7 @@ package body Exp_Ch3 is
         and then Has_DIC (Typ)
         and then Present (DIC_Procedure (Typ))
         and then not Has_Init_Expression (N)
+        and then not Is_Imported (Def_Id)
       then
          declare
             DIC_Call : constant Node_Id := Build_DIC_Call (Loc, Def_Id, Typ);

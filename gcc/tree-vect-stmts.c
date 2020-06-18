@@ -820,14 +820,6 @@ vect_model_simple_cost (vec_info *,
 	prologue_cost += record_stmt_cost (cost_vec, 1, scalar_to_vec,
 					   stmt_info, 0, vect_prologue);
 
-  /* Adjust for two-operator SLP nodes.  */
-  if (node && SLP_TREE_TWO_OPERATORS (node))
-    {
-      ncopies *= 2;
-      inside_cost += record_stmt_cost (cost_vec, ncopies, vec_perm,
-				       stmt_info, 0, vect_body);
-    }
-
   /* Pass the inside-of-loop statements to the target-specific cost model.  */
   inside_cost += record_stmt_cost (cost_vec, ncopies, kind,
 				   stmt_info, 0, vect_body);
@@ -2846,33 +2838,26 @@ vect_get_strided_load_store_ops (stmt_vec_info stmt_info,
 				 tree *dataref_bump, tree *vec_offset)
 {
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
-  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  gimple_seq stmts;
 
   tree bump = size_binop (MULT_EXPR,
 			  fold_convert (sizetype, unshare_expr (DR_STEP (dr))),
 			  size_int (TYPE_VECTOR_SUBPARTS (vectype)));
-  *dataref_bump = force_gimple_operand (bump, &stmts, true, NULL_TREE);
-  if (stmts)
-    gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
+  *dataref_bump = cse_and_gimplify_to_preheader (loop_vinfo, bump);
 
   /* The offset given in GS_INFO can have pointer type, so use the element
      type of the vector instead.  */
-  tree offset_type = TREE_TYPE (gs_info->offset);
-  offset_type = TREE_TYPE (gs_info->offset_vectype);
+  tree offset_type = TREE_TYPE (gs_info->offset_vectype);
 
   /* Calculate X = DR_STEP / SCALE and convert it to the appropriate type.  */
   tree step = size_binop (EXACT_DIV_EXPR, unshare_expr (DR_STEP (dr)),
 			  ssize_int (gs_info->scale));
   step = fold_convert (offset_type, step);
-  step = force_gimple_operand (step, &stmts, true, NULL_TREE);
 
   /* Create {0, X, X*2, X*3, ...}.  */
-  *vec_offset = gimple_build (&stmts, VEC_SERIES_EXPR, gs_info->offset_vectype,
-			      build_zero_cst (offset_type), step);
-  if (stmts)
-    gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
+  tree offset = fold_build2 (VEC_SERIES_EXPR, gs_info->offset_vectype,
+			     build_zero_cst (offset_type), step);
+  *vec_offset = cse_and_gimplify_to_preheader (loop_vinfo, offset);
 }
 
 /* Return the amount that should be added to a vector pointer to move

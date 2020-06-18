@@ -156,9 +156,6 @@ package body Exp_Ch6 is
    --  level is known not to be statically deeper than the result type of the
    --  function.
 
-   function BIP_Suffix_Kind (E : Entity_Id) return BIP_Formal_Kind;
-   --  Ada 2005 (AI-318-02): Returns the kind of the given extra formal.
-
    function Caller_Known_Size
      (Func_Call   : Node_Id;
       Result_Subt : Entity_Id) return Boolean;
@@ -284,9 +281,6 @@ package body Exp_Ch6 is
    procedure Insert_Post_Call_Actions (N : Node_Id; Post_Call : List_Id);
    --  Insert the Post_Call list previously produced by routine Expand_Actuals
    --  or Expand_Call_Helper into the tree.
-
-   function Is_Build_In_Place_Entity (E : Entity_Id) return Boolean;
-   --  Ada 2005 (AI-318-02): Returns True if E is a BIP entity.
 
    procedure Replace_Renaming_Declaration_Id
       (New_Decl  : Node_Id;
@@ -3617,6 +3611,21 @@ package body Exp_Ch6 is
             then
                Prev_Orig := Prev;
 
+            --  If the actual is an attribute reference that was expanded
+            --  into a reference to an entity, then get accessibility level
+            --  from that entity. AARM 6.1.1(27.d) says "... the implicit
+            --  constant declaration defines the accessibility level of X'Old".
+
+            elsif Nkind (Prev_Orig) = N_Attribute_Reference
+              and then Nam_In (Attribute_Name (Prev_Orig),
+                               Name_Old,
+                               Name_Loop_Entry)
+              and then Is_Entity_Name (Prev)
+              and then Present (Entity (Prev))
+              and then Is_Object (Entity (Prev))
+            then
+               Prev_Orig := Prev;
+
             elsif Nkind (Prev_Orig) = N_Type_Conversion then
                Prev_Orig := Expression (Prev_Orig);
             end if;
@@ -4666,9 +4675,8 @@ package body Exp_Ch6 is
 
                procedure Convert (Act : Node_Id; Typ : Entity_Id) is
                begin
-                  Rewrite (Act, OK_Convert_To (Typ, Relocate_Node (Act)));
-                  Analyze (Act);
-                  Resolve (Act, Typ);
+                  Rewrite (Act, OK_Convert_To (Typ, Act));
+                  Analyze_And_Resolve (Act, Typ);
                end Convert;
 
                --  Local variables
@@ -4686,8 +4694,8 @@ package body Exp_Ch6 is
                   Formal_Typ := Etype (Formal);
                   Parent_Typ := Etype (Parent_Formal);
 
-                  --  For an IN parameter of a scalar type, the parent formal
-                  --  type and derived formal type differ or the parent formal
+                  --  For an IN parameter of a scalar type, the derived formal
+                  --  type and parent formal type differ, and the parent formal
                   --  type and actual type do not match statically.
 
                   if Is_Scalar_Type (Formal_Typ)
@@ -4698,15 +4706,6 @@ package body Exp_Ch6 is
                     and then not Raises_Constraint_Error (Actual)
                   then
                      Convert (Actual, Parent_Typ);
-                     Enable_Range_Check (Actual);
-
-                     --  If the actual has been marked as requiring a range
-                     --  check, then generate it here.
-
-                     if Do_Range_Check (Actual) then
-                        Generate_Range_Check
-                          (Actual, Etype (Formal), CE_Range_Check_Failed);
-                     end if;
 
                   --  For access types, the parent formal type and actual type
                   --  differ.
@@ -4728,10 +4727,8 @@ package body Exp_Ch6 is
                         --  inlined.
 
                         Rewrite (Actual,
-                          Unchecked_Convert_To (Parent_Typ,
-                            Relocate_Node (Actual)));
-                        Analyze (Actual);
-                        Resolve (Actual, Parent_Typ);
+                          Unchecked_Convert_To (Parent_Typ, Actual));
+                        Analyze_And_Resolve (Actual, Parent_Typ);
                      end if;
 
                   --  If there is a change of representation, then generate a

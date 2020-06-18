@@ -15,19 +15,19 @@ const A foo (const A d, const C e)
   const A f;
   const B b = { 4 };
   A g;
-  #pragma omp parallel default (none)	// { dg-error "enclosing 'parallel'" }
+  #pragma omp parallel default (none)	// { dg-message "note: enclosing 'parallel'" }
     bar (&a);				// { dg-error "not specified" }
-  #pragma omp parallel default (none)	// { dg-error "enclosing 'parallel'" }
+  #pragma omp parallel default (none)	// { dg-message "note: enclosing 'parallel'" }
     bar (&b);				// { dg-error "not specified" }
-  #pragma omp parallel default (none)	// { dg-error "enclosing 'parallel'" }
+  #pragma omp parallel default (none)	// { dg-message "note: enclosing 'parallel'" }
     bar (&c);				// { dg-error "not specified" }
-  #pragma omp parallel default (none)	// { dg-error "enclosing 'parallel'" }
+  #pragma omp parallel default (none)	// { dg-message "note: enclosing 'parallel'" }
     bar (&d);				// { dg-error "not specified" }
-  #pragma omp parallel default (none)	// { dg-error "enclosing 'parallel'" }
+  #pragma omp parallel default (none)	// { dg-message "note: enclosing 'parallel'" }
     bar (&e);				// { dg-error "not specified" }
-  #pragma omp parallel default (none)	// { dg-error "enclosing 'parallel'" }
+  #pragma omp parallel default (none)	// { dg-message "note: enclosing 'parallel'" }
     bar (&f);				// { dg-error "not specified" }
-  #pragma omp parallel default (none)	// { dg-error "enclosing 'parallel'" }
+  #pragma omp parallel default (none)	// { dg-message "note: enclosing 'parallel'" }
     bar (&g);				// { dg-error "not specified" }
   return f;
 }

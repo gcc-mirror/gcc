@@ -9,7 +9,7 @@ int thr1, thr2;
 void
 foo (void)
 {
-#pragma omp task untied	/* { dg-error "enclosing task" } */
+#pragma omp task untied	/* { dg-message "note: enclosing task" } */
   {
     thr1++;		/* { dg-error "used in untied task" } */
     thr2 |= 4;		/* { dg-error "used in untied task" } */

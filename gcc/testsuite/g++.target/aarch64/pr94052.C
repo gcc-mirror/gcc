@@ -26,7 +26,7 @@ public:
   d x();
   d y();
 };
-class z : ad<int> {};
+class z : public ad<int> {};
 struct ae {
   p af;
 };

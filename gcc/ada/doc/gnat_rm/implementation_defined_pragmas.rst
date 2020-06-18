@@ -926,6 +926,8 @@ support is available, then the code generator will issue a message
 indicating that the necessary attribute for implementation of this
 pragma is not available.
 
+.. _Compile_Time_Error:
+
 Pragma Compile_Time_Error
 =========================
 
@@ -978,6 +980,11 @@ One typical use is within a generic where compile time known characteristics
 of formal parameters are tested, and warnings given appropriately. Another use
 with a first parameter of True is to warn a client about use of a package,
 for example that it is not fully implemented.
+
+In previous versions of the compiler, combining *-gnatwe* with
+Compile_Time_Warning resulted in an fatal error. Now the compiler will always
+emit a warning. You can use :ref:`Compile_Time_Error` to force the generation
+of an error.
 
 Pragma Compiler_Unit
 ====================

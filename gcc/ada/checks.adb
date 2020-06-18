@@ -250,6 +250,21 @@ package body Checks is
    --  routine. The Do_Static flag indicates that only a static check is
    --  to be done.
 
+   procedure Compute_Range_For_Arithmetic_Op
+     (Op       : Node_Kind;
+      Lo_Left  : Uint;
+      Hi_Left  : Uint;
+      Lo_Right : Uint;
+      Hi_Right : Uint;
+      OK       : out Boolean;
+      Lo       : out Uint;
+      Hi       : out Uint);
+   --  Given an integer arithmetical operation Op and the range of values of
+   --  its operand(s), try to compute a conservative estimate of the possible
+   --  range of values for the result of the operation. Thus if OK is True on
+   --  return, the result is known to lie in the range Lo .. Hi (inclusive).
+   --  If OK is false, both Lo and Hi are set to No_Uint.
+
    type Check_Type is new Check_Id range Access_Check .. Division_Check;
    function Check_Needed (Nod : Node_Id; Check : Check_Type) return Boolean;
    --  This function is used to see if an access or division by zero check is
@@ -4417,6 +4432,307 @@ package body Checks is
       end if;
    end Null_Exclusion_Static_Checks;
 
+   -------------------------------------
+   -- Compute_Range_For_Arithmetic_Op --
+   -------------------------------------
+
+   procedure Compute_Range_For_Arithmetic_Op
+     (Op       : Node_Kind;
+      Lo_Left  : Uint;
+      Hi_Left  : Uint;
+      Lo_Right : Uint;
+      Hi_Right : Uint;
+      OK       : out Boolean;
+      Lo       : out Uint;
+      Hi       : out Uint)
+   is
+      --  Use local variables for possible adjustments
+
+      Llo : Uint renames Lo_Left;
+      Lhi : Uint renames Hi_Left;
+      Rlo : Uint := Lo_Right;
+      Rhi : Uint := Hi_Right;
+
+   begin
+      --  We will compute a range for the result in almost all cases
+
+      OK := True;
+
+      case Op is
+
+         --  Absolute value
+
+         when N_Op_Abs =>
+            Lo := Uint_0;
+            Hi := UI_Max (abs Rlo, abs Rhi);
+
+         --  Addition
+
+         when N_Op_Add =>
+            Lo := Llo + Rlo;
+            Hi := Lhi + Rhi;
+
+         --  Division
+
+         when N_Op_Divide =>
+
+            --  If the right operand can only be zero, set 0..0
+
+            if Rlo = 0 and then Rhi = 0 then
+               Lo := Uint_0;
+               Hi := Uint_0;
+
+            --  Possible bounds of division must come from dividing end
+            --  values of the input ranges (four possibilities), provided
+            --  zero is not included in the possible values of the right
+            --  operand.
+
+            --  Otherwise, we just consider two intervals of values for
+            --  the right operand: the interval of negative values (up to
+            --  -1) and the interval of positive values (starting at 1).
+            --  Since division by 1 is the identity, and division by -1
+            --  is negation, we get all possible bounds of division in that
+            --  case by considering:
+            --    - all values from the division of end values of input
+            --      ranges;
+            --    - the end values of the left operand;
+            --    - the negation of the end values of the left operand.
+
+            else
+               declare
+                  Mrk : constant Uintp.Save_Mark := Mark;
+                  --  Mark so we can release the RR and Ev values
+
+                  Ev1 : Uint;
+                  Ev2 : Uint;
+                  Ev3 : Uint;
+                  Ev4 : Uint;
+
+               begin
+                  --  Discard extreme values of zero for the divisor, since
+                  --  they will simply result in an exception in any case.
+
+                  if Rlo = 0 then
+                     Rlo := Uint_1;
+                  elsif Rhi = 0 then
+                     Rhi := -Uint_1;
+                  end if;
+
+                  --  Compute possible bounds coming from dividing end
+                  --  values of the input ranges.
+
+                  Ev1 := Llo / Rlo;
+                  Ev2 := Llo / Rhi;
+                  Ev3 := Lhi / Rlo;
+                  Ev4 := Lhi / Rhi;
+
+                  Lo := UI_Min (UI_Min (Ev1, Ev2), UI_Min (Ev3, Ev4));
+                  Hi := UI_Max (UI_Max (Ev1, Ev2), UI_Max (Ev3, Ev4));
+
+                  --  If the right operand can be both negative or positive,
+                  --  include the end values of the left operand in the
+                  --  extreme values, as well as their negation.
+
+                  if Rlo < 0 and then Rhi > 0 then
+                     Ev1 := Llo;
+                     Ev2 := -Llo;
+                     Ev3 := Lhi;
+                     Ev4 := -Lhi;
+
+                     Lo := UI_Min (Lo,
+                             UI_Min (UI_Min (Ev1, Ev2), UI_Min (Ev3, Ev4)));
+                     Hi := UI_Max (Hi,
+                             UI_Max (UI_Max (Ev1, Ev2), UI_Max (Ev3, Ev4)));
+                  end if;
+
+                  --  Release the RR and Ev values
+
+                  Release_And_Save (Mrk, Lo, Hi);
+               end;
+            end if;
+
+         --  Exponentiation
+
+         when N_Op_Expon =>
+
+            --  Discard negative values for the exponent, since they will
+            --  simply result in an exception in any case.
+
+            if Rhi < 0 then
+               Rhi := Uint_0;
+            elsif Rlo < 0 then
+               Rlo := Uint_0;
+            end if;
+
+            --  Estimate number of bits in result before we go computing
+            --  giant useless bounds. Basically the number of bits in the
+            --  result is the number of bits in the base multiplied by the
+            --  value of the exponent. If this is big enough that the result
+            --  definitely won't fit in Long_Long_Integer, return immediately
+            --  and avoid computing giant bounds.
+
+            --  The comparison here is approximate, but conservative, it
+            --  only clicks on cases that are sure to exceed the bounds.
+
+            if Num_Bits (UI_Max (abs Llo, abs Lhi)) * Rhi + 1 > 100 then
+               Lo := No_Uint;
+               Hi := No_Uint;
+               OK := False;
+               return;
+
+            --  If right operand is zero then result is 1
+
+            elsif Rhi = 0 then
+               Lo := Uint_1;
+               Hi := Uint_1;
+
+            else
+               --  High bound comes either from exponentiation of largest
+               --  positive value to largest exponent value, or from
+               --  the exponentiation of most negative value to an
+               --  even exponent.
+
+               declare
+                  Hi1, Hi2 : Uint;
+
+               begin
+                  if Lhi > 0 then
+                     Hi1 := Lhi ** Rhi;
+                  else
+                     Hi1 := Uint_0;
+                  end if;
+
+                  if Llo < 0 then
+                     if Rhi mod 2 = 0 then
+                        Hi2 := Llo ** Rhi;
+                     else
+                        Hi2 := Llo ** (Rhi - 1);
+                     end if;
+                  else
+                     Hi2 := Uint_0;
+                  end if;
+
+                  Hi := UI_Max (Hi1, Hi2);
+               end;
+
+               --  Result can only be negative if base can be negative
+
+               if Llo < 0 then
+                  if Rhi mod 2 = 0 then
+                     Lo := Llo ** (Rhi - 1);
+                  else
+                     Lo := Llo ** Rhi;
+                  end if;
+
+               --  Otherwise low bound is minimum ** minimum
+
+               else
+                  Lo := Llo ** Rlo;
+               end if;
+            end if;
+
+         --  Negation
+
+         when N_Op_Minus =>
+            Lo := -Rhi;
+            Hi := -Rlo;
+
+         --  Mod
+
+         when N_Op_Mod =>
+            declare
+               Maxabs : constant Uint := UI_Max (abs Rlo, abs Rhi) - 1;
+               --  This is the maximum absolute value of the result
+
+            begin
+               Lo := Uint_0;
+               Hi := Uint_0;
+
+               --  The result depends only on the sign and magnitude of
+               --  the right operand, it does not depend on the sign or
+               --  magnitude of the left operand.
+
+               if Rlo < 0 then
+                  Lo := -Maxabs;
+               end if;
+
+               if Rhi > 0 then
+                  Hi := Maxabs;
+               end if;
+            end;
+
+         --  Multiplication
+
+         when N_Op_Multiply =>
+
+            --  Possible bounds of multiplication must come from multiplying
+            --  end values of the input ranges (four possibilities).
+
+            declare
+               Mrk : constant Uintp.Save_Mark := Mark;
+               --  Mark so we can release the Ev values
+
+               Ev1 : constant Uint := Llo * Rlo;
+               Ev2 : constant Uint := Llo * Rhi;
+               Ev3 : constant Uint := Lhi * Rlo;
+               Ev4 : constant Uint := Lhi * Rhi;
+
+            begin
+               Lo := UI_Min (UI_Min (Ev1, Ev2), UI_Min (Ev3, Ev4));
+               Hi := UI_Max (UI_Max (Ev1, Ev2), UI_Max (Ev3, Ev4));
+
+               --  Release the Ev values
+
+               Release_And_Save (Mrk, Lo, Hi);
+            end;
+
+         --  Plus operator (affirmation)
+
+         when N_Op_Plus =>
+            Lo := Rlo;
+            Hi := Rhi;
+
+         --  Remainder
+
+         when N_Op_Rem =>
+            declare
+               Maxabs : constant Uint := UI_Max (abs Rlo, abs Rhi) - 1;
+               --  This is the maximum absolute value of the result. Note
+               --  that the result range does not depend on the sign of the
+               --  right operand.
+
+            begin
+               Lo := Uint_0;
+               Hi := Uint_0;
+
+               --  Case of left operand negative, which results in a range
+               --  of -Maxabs .. 0 for those negative values. If there are
+               --  no negative values then Lo value of result is always 0.
+
+               if Llo < 0 then
+                  Lo := -Maxabs;
+               end if;
+
+               --  Case of left operand positive
+
+               if Lhi > 0 then
+                  Hi := Maxabs;
+               end if;
+            end;
+
+         --  Subtract
+
+         when N_Op_Subtract =>
+            Lo := Llo - Rhi;
+            Hi := Lhi - Rlo;
+
+         --  Nothing else should be possible
+
+         when others =>
+            raise Program_Error;
+      end case;
+   end Compute_Range_For_Arithmetic_Op;
+
    ----------------------------------
    -- Conditional_Statements_Begin --
    ----------------------------------
@@ -4530,6 +4846,7 @@ package body Checks is
    --  Determine size of below cache (power of 2 is more efficient)
 
    Determine_Range_Cache_N    : array (Cache_Index) of Node_Id;
+   Determine_Range_Cache_O    : array (Cache_Index) of Node_Id;
    Determine_Range_Cache_V    : array (Cache_Index) of Boolean;
    Determine_Range_Cache_Lo   : array (Cache_Index) of Uint;
    Determine_Range_Cache_Hi   : array (Cache_Index) of Uint;
@@ -4541,7 +4858,9 @@ package body Checks is
    --  checking calls the routine on the way up the tree, a quadratic behavior
    --  can otherwise be encountered in large expressions. The cache entry for
    --  node N is stored in the (N mod Cache_Size) entry, and can be validated
-   --  by checking the actual node value stored there. The Range_Cache_V array
+   --  by checking the actual node value stored there. The Range_Cache_O array
+   --  records the setting of Original_Node (N) so that the cache entry does
+   --  not become stale when the node N is rewritten. The Range_Cache_V array
    --  records the setting of Assume_Valid for the cache entry.
 
    procedure Determine_Range
@@ -4551,11 +4870,30 @@ package body Checks is
       Hi           : out Uint;
       Assume_Valid : Boolean := False)
    is
+      Kind : constant Node_Kind := Nkind (N);
+      --  Kind of node
+
+      function Half_Address_Space return Uint;
+      --  The size of half the total addressable memory space in storage units
+      --  (minus one, so that the size fits in a signed integer whose size is
+      --  System_Address_Size, which helps in various cases).
+
+      ------------------------
+      -- Half_Address_Space --
+      ------------------------
+
+      function Half_Address_Space return Uint is
+      begin
+         return Uint_2 ** (System_Address_Size - 1) - 1;
+      end Half_Address_Space;
+
+      --  Local variables
+
       Typ : Entity_Id := Etype (N);
       --  Type to use, may get reset to base type for possibly invalid entity
 
-      Lo_Left : Uint;
-      Hi_Left : Uint;
+      Lo_Left : Uint := No_Uint;
+      Hi_Left : Uint := No_Uint;
       --  Lo and Hi bounds of left operand
 
       Lo_Right : Uint := No_Uint;
@@ -4580,29 +4918,6 @@ package body Checks is
 
       Btyp : Entity_Id;
       --  Base type
-
-      function OK_Operands return Boolean;
-      --  Used for binary operators. Determines the ranges of the left and
-      --  right operands, and if they are both OK, returns True, and puts
-      --  the results in Lo_Right, Hi_Right, Lo_Left, Hi_Left.
-
-      -----------------
-      -- OK_Operands --
-      -----------------
-
-      function OK_Operands return Boolean is
-      begin
-         Determine_Range
-           (Left_Opnd  (N), OK1, Lo_Left,  Hi_Left, Assume_Valid);
-
-         if not OK1 then
-            return False;
-         end if;
-
-         Determine_Range
-           (Right_Opnd (N), OK1, Lo_Right, Hi_Right, Assume_Valid);
-         return OK1;
-      end OK_Operands;
 
    --  Start of processing for Determine_Range
 
@@ -4681,6 +4996,8 @@ package body Checks is
 
       if Determine_Range_Cache_N (Cindex) = N
            and then
+         Determine_Range_Cache_O (Cindex) = Original_Node (N)
+           and then
          Determine_Range_Cache_V (Cindex) = Assume_Valid
       then
          Lo := Determine_Range_Cache_Lo (Cindex);
@@ -4736,7 +5053,7 @@ package body Checks is
       --  corresponding base type bound if possible. If we can't get a bound
       --  then we figure we can't determine the range (a peculiar case, that
       --  perhaps cannot happen, but there is no point in bombing in this
-      --  optimization circuit.
+      --  optimization circuit).
 
       --  First the low bound
 
@@ -4781,198 +5098,121 @@ package body Checks is
       --  refinement is possible, then Lor and Hir are set to possibly tighter
       --  bounds, and OK1 is set to True.
 
-      case Nkind (N) is
+      case Kind is
 
-         --  For unary plus, result is limited by range of operand
+         --  Unary operation case
 
-         when N_Op_Plus =>
-            Determine_Range
-              (Right_Opnd (N), OK1, Lor, Hir, Assume_Valid);
-
-         --  For unary minus, determine range of operand, and negate it
-
-         when N_Op_Minus =>
+         when N_Op_Abs
+            | N_Op_Minus
+            | N_Op_Plus
+         =>
             Determine_Range
               (Right_Opnd (N), OK1, Lo_Right, Hi_Right, Assume_Valid);
 
             if OK1 then
-               Lor := -Hi_Right;
-               Hir := -Lo_Right;
+               Compute_Range_For_Arithmetic_Op
+                 (Kind, Lo_Left, Hi_Left, Lo_Right, Hi_Right, OK1, Lor, Hir);
             end if;
 
-         --  For binary addition, get range of each operand and do the
-         --  addition to get the result range.
+         --  Binary operation case
 
-         when N_Op_Add =>
-            if OK_Operands then
-               Lor := Lo_Left + Lo_Right;
-               Hir := Hi_Left + Hi_Right;
+         when N_Op_Add
+            | N_Op_Divide
+            | N_Op_Expon
+            | N_Op_Mod
+            | N_Op_Multiply
+            | N_Op_Rem
+            | N_Op_Subtract
+         =>
+            Determine_Range
+              (Left_Opnd (N), OK1, Lo_Left, Hi_Left, Assume_Valid);
+
+            if OK1 then
+               Determine_Range
+                 (Right_Opnd (N), OK1, Lo_Right, Hi_Right, Assume_Valid);
             end if;
 
-         --  Division is tricky. The only case we consider is where the right
-         --  operand is a positive constant, and in this case we simply divide
-         --  the bounds of the left operand
-
-         when N_Op_Divide =>
-            if OK_Operands then
-               if Lo_Right = Hi_Right
-                 and then Lo_Right > 0
-               then
-                  Lor := Lo_Left / Lo_Right;
-                  Hir := Hi_Left / Lo_Right;
-               else
-                  OK1 := False;
-               end if;
-            end if;
-
-         --  For binary subtraction, get range of each operand and do the worst
-         --  case subtraction to get the result range.
-
-         when N_Op_Subtract =>
-            if OK_Operands then
-               Lor := Lo_Left - Hi_Right;
-               Hir := Hi_Left - Lo_Right;
-            end if;
-
-         --  For MOD, if right operand is a positive constant, then result must
-         --  be in the allowable range of mod results.
-
-         when N_Op_Mod =>
-            if OK_Operands then
-               if Lo_Right = Hi_Right
-                 and then Lo_Right /= 0
-               then
-                  if Lo_Right > 0 then
-                     Lor := Uint_0;
-                     Hir := Lo_Right - 1;
-
-                  else -- Lo_Right < 0
-                     Lor := Lo_Right + 1;
-                     Hir := Uint_0;
-                  end if;
-
-               else
-                  OK1 := False;
-               end if;
-            end if;
-
-         --  For REM, if right operand is a positive constant, then result must
-         --  be in the allowable range of mod results.
-
-         when N_Op_Rem =>
-            if OK_Operands then
-               if Lo_Right = Hi_Right and then Lo_Right /= 0 then
-                  declare
-                     Dval : constant Uint := (abs Lo_Right) - 1;
-
-                  begin
-                     --  The sign of the result depends on the sign of the
-                     --  dividend (but not on the sign of the divisor, hence
-                     --  the abs operation above).
-
-                     if Lo_Left < 0 then
-                        Lor := -Dval;
-                     else
-                        Lor := Uint_0;
-                     end if;
-
-                     if Hi_Left < 0 then
-                        Hir := Uint_0;
-                     else
-                        Hir := Dval;
-                     end if;
-                  end;
-
-               else
-                  OK1 := False;
-               end if;
+            if OK1 then
+               Compute_Range_For_Arithmetic_Op
+                 (Kind, Lo_Left, Hi_Left, Lo_Right, Hi_Right, OK1, Lor, Hir);
             end if;
 
          --  Attribute reference cases
 
          when N_Attribute_Reference =>
-            case Attribute_Name (N) is
+            case Get_Attribute_Id (Attribute_Name (N)) is
 
                --  For Pos/Val attributes, we can refine the range using the
                --  possible range of values of the attribute expression.
 
-               when Name_Pos
-                  | Name_Val
+               when Attribute_Pos
+                  | Attribute_Val
                =>
                   Determine_Range
                     (First (Expressions (N)), OK1, Lor, Hir, Assume_Valid);
 
-               --  For Length attribute, use the bounds of the corresponding
-               --  index type to refine the range.
+               --  For Length and Range_Length attributes, use the bounds of
+               --  the (corresponding index) type to refine the range.
 
-               when Name_Length =>
+               when Attribute_Length
+                  | Attribute_Range_Length
+               =>
                   declare
-                     Atyp : Entity_Id := Etype (Prefix (N));
-                     Inum : Nat;
-                     Indx : Node_Id;
+                     Ptyp : Entity_Id;
+                     Ityp : Entity_Id;
 
                      LL, LU : Uint;
                      UL, UU : Uint;
 
                   begin
-                     if Is_Access_Type (Atyp) then
-                        Atyp := Designated_Type (Atyp);
+                     Ptyp := Etype (Prefix (N));
+                     if Is_Access_Type (Ptyp) then
+                        Ptyp := Designated_Type (Ptyp);
                      end if;
 
                      --  For string literal, we know exact value
 
-                     if Ekind (Atyp) = E_String_Literal_Subtype then
+                     if Ekind (Ptyp) = E_String_Literal_Subtype then
                         OK := True;
-                        Lo := String_Literal_Length (Atyp);
-                        Hi := String_Literal_Length (Atyp);
+                        Lo := String_Literal_Length (Ptyp);
+                        Hi := String_Literal_Length (Ptyp);
                         return;
                      end if;
 
-                     --  Otherwise check for expression given
-
-                     if No (Expressions (N)) then
-                        Inum := 1;
+                     if Is_Array_Type (Ptyp) then
+                        Ityp := Get_Index_Subtype (N);
                      else
-                        Inum :=
-                          UI_To_Int (Expr_Value (First (Expressions (N))));
+                        Ityp := Ptyp;
                      end if;
 
-                     Indx := First_Index (Atyp);
-                     for J in 2 .. Inum loop
-                        Next_Index (Indx);
-                     end loop;
-
-                     --  If the index type is a formal type or derived from
+                     --  If the (index) type is a formal type or derived from
                      --  one, the bounds are not static.
 
-                     if Is_Generic_Type (Root_Type (Etype (Indx))) then
+                     if Is_Generic_Type (Root_Type (Ityp)) then
                         OK := False;
                         return;
                      end if;
 
                      Determine_Range
-                       (Type_Low_Bound (Etype (Indx)), OK1, LL, LU,
-                        Assume_Valid);
+                       (Type_Low_Bound (Ityp), OK1, LL, LU, Assume_Valid);
 
                      if OK1 then
                         Determine_Range
-                          (Type_High_Bound (Etype (Indx)), OK1, UL, UU,
-                           Assume_Valid);
+                          (Type_High_Bound (Ityp), OK1, UL, UU, Assume_Valid);
 
                         if OK1 then
-
                            --  The maximum value for Length is the biggest
                            --  possible gap between the values of the bounds.
                            --  But of course, this value cannot be negative.
 
                            Hir := UI_Max (Uint_0, UU - LL + 1);
 
-                           --  For constrained arrays, the minimum value for
+                           --  For a constrained array, the minimum value for
                            --  Length is taken from the actual value of the
                            --  bounds, since the index will be exactly of this
                            --  subtype.
 
-                           if Is_Constrained (Atyp) then
+                           if Is_Constrained (Ptyp) then
                               Lor := UI_Max (Uint_0, UL - LU + 1);
 
                            --  For an unconstrained array, the minimum value
@@ -4983,6 +5223,95 @@ package body Checks is
                            end if;
                         end if;
                      end if;
+
+                     --  Small optimization: the maximum size in storage units
+                     --  an object can have with GNAT is half of the address
+                     --  space, so we can bound the length of an array declared
+                     --  in Interfaces (or its children) because its component
+                     --  size is at least the storage unit and it is meant to
+                     --  be used to interface actual array objects.
+
+                     if Is_Array_Type (Ptyp) then
+                        declare
+                           S : constant Entity_Id := Scope (Base_Type (Ptyp));
+                        begin
+                           if Is_RTU (S, Interfaces)
+                             or else (S /= Standard_Standard
+                                       and then Is_RTU (Scope (S), Interfaces))
+                           then
+                              Hir := UI_Min (Hir, Half_Address_Space);
+                           end if;
+                        end;
+                     end if;
+                  end;
+
+               --  The maximum default alignment is quite low, but GNAT accepts
+               --  alignment clauses that are fairly large, but not as large as
+               --  the maximum size of objects, see below.
+
+               when Attribute_Alignment =>
+                  Lor := Uint_0;
+                  Hir := Half_Address_Space;
+                  OK1 := True;
+
+               --  The attribute should have been folded if a component clause
+               --  was specified, so we assume there is none.
+
+               when Attribute_Bit
+                  | Attribute_First_Bit
+               =>
+                  Lor := Uint_0;
+                  Hir := UI_From_Int (System_Storage_Unit - 1);
+                  OK1 := True;
+
+               --  Likewise about the component clause. Note that Last_Bit
+               --  yields -1 for a field of size 0 if First_Bit is 0.
+
+               when Attribute_Last_Bit =>
+                  Lor := Uint_Minus_1;
+                  Hir := Hi;
+                  OK1 := True;
+
+               --  Likewise about the component clause for Position. The
+               --  maximum size in storage units that an object can have
+               --  with GNAT is half of the address space.
+
+               when Attribute_Max_Size_In_Storage_Elements
+                  | Attribute_Position
+               =>
+                  Lor := Uint_0;
+                  Hir := Half_Address_Space;
+                  OK1 := True;
+
+               --  These attributes yield a nonnegative value (we do not set
+               --  the maximum value because it is too large to be useful).
+
+               when Attribute_Bit_Position
+                  | Attribute_Component_Size
+                  | Attribute_Object_Size
+                  | Attribute_Size
+                  | Attribute_Value_Size
+               =>
+                  Lor := Uint_0;
+                  Hir := Hi;
+                  OK1 := True;
+
+               --  The maximum size is the sum of twice the size of the largest
+               --  integer for every dimension, rounded up to the next multiple
+               --  of the maximum alignment, but we add instead of rounding.
+
+               when Attribute_Descriptor_Size =>
+                  declare
+                     Max_Align : constant Pos :=
+                                   Maximum_Alignment * System_Storage_Unit;
+                     Max_Size  : constant Uint :=
+                                   2 * Esize (Universal_Integer);
+                     Ndims     : constant Pos :=
+                                   Number_Dimensions (Etype (Prefix (N)));
+                  begin
+                     Lor := Uint_0;
+                     Hir := Max_Size * Ndims + Max_Align;
+                     OK1 := True;
                   end;
 
                --  No special handling for other attributes
@@ -5068,6 +5397,7 @@ package body Checks is
       --  Set cache entry for future call and we are all done
 
       Determine_Range_Cache_N  (Cindex) := N;
+      Determine_Range_Cache_O  (Cindex) := Original_Node (N);
       Determine_Range_Cache_V  (Cindex) := Assume_Valid;
       Determine_Range_Cache_Lo (Cindex) := Lo;
       Determine_Range_Cache_Hi (Cindex) := Hi;
@@ -5243,6 +5573,8 @@ package body Checks is
       Cindex := Cache_Index (N mod Cache_Size);
 
       if Determine_Range_Cache_N (Cindex) = N
+           and then
+         Determine_Range_Cache_O (Cindex) = Original_Node (N)
            and then
          Determine_Range_Cache_V (Cindex) = Assume_Valid
       then
@@ -5515,6 +5847,7 @@ package body Checks is
       --  Set cache entry for future call and we are all done
 
       Determine_Range_Cache_N    (Cindex) := N;
+      Determine_Range_Cache_O    (Cindex) := Original_Node (N);
       Determine_Range_Cache_V    (Cindex) := Assume_Valid;
       Determine_Range_Cache_Lo_R (Cindex) := Lo;
       Determine_Range_Cache_Hi_R (Cindex) := Hi;
@@ -5728,9 +6061,9 @@ package body Checks is
                Do_Ovflow_Check := False;
 
             --  Despite the comments above, it is worth dealing specially with
-            --  division specially. The only case where integer division can
-            --  overflow is (largest negative number) / (-1). So we will do
-            --  an extra range analysis to see if this is possible.
+            --  division. The only case where integer division can overflow is
+            --  (largest negative number) / (-1). So we will do an extra range
+            --  analysis to see if this is possible.
 
             elsif Nkind (N) = N_Op_Divide then
                Determine_Range
@@ -5749,6 +6082,17 @@ package body Checks is
                   then
                      Do_Ovflow_Check := False;
                   end if;
+               end if;
+
+            --  Likewise for Abs/Minus, the only case where the operation can
+            --  overflow is when the operand is the largest negative number.
+
+            elsif Nkind_In (N, N_Op_Abs, N_Op_Minus) then
+               Determine_Range
+                 (Right_Opnd (N), OK, Lo, Hi, Assume_Valid => True);
+
+               if OK and then Lo > Expr_Value (Type_Low_Bound (Typ)) then
+                  Do_Ovflow_Check := False;
                end if;
             end if;
 
@@ -6814,9 +7158,9 @@ package body Checks is
 
       else
          declare
-            A_Idx   : Node_Id := Empty;
+            A_Idx   : Node_Id;
             A_Range : Node_Id;
-            Ind     : Nat;
+            Ind     : Pos;
             Num     : List_Id;
             Range_N : Node_Id;
 
@@ -6839,10 +7183,12 @@ package body Checks is
                   if Nkind (A_Idx) = N_Range then
                      A_Range := A_Idx;
 
-                  elsif Nkind (A_Idx) = N_Identifier
-                    or else Nkind (A_Idx) = N_Expanded_Name
-                  then
+                  elsif Nkind_In (A_Idx, N_Identifier, N_Expanded_Name) then
                      A_Range := Scalar_Range (Entity (A_Idx));
+
+                     if Nkind (A_Range) = N_Subtype_Indication then
+                        A_Range := Range_Expression (Constraint (A_Range));
+                     end if;
 
                   else pragma Assert (Nkind (A_Idx) = N_Subtype_Indication);
                      A_Range := Range_Expression (Constraint (A_Idx));
@@ -8866,279 +9212,9 @@ package body Checks is
       --  Otherwise compute result range
 
       else
+         Compute_Range_For_Arithmetic_Op
+           (Nkind (N), Llo, Lhi, Rlo, Rhi, OK, Lo, Hi);
          Bignum_Operands := False;
-
-         case Nkind (N) is
-
-            --  Absolute value
-
-            when N_Op_Abs =>
-               Lo := Uint_0;
-               Hi := UI_Max (abs Rlo, abs Rhi);
-
-            --  Addition
-
-            when N_Op_Add =>
-               Lo := Llo + Rlo;
-               Hi := Lhi + Rhi;
-
-            --  Division
-
-            when N_Op_Divide =>
-
-               --  If the right operand can only be zero, set 0..0
-
-               if Rlo = 0 and then Rhi = 0 then
-                  Lo := Uint_0;
-                  Hi := Uint_0;
-
-               --  Possible bounds of division must come from dividing end
-               --  values of the input ranges (four possibilities), provided
-               --  zero is not included in the possible values of the right
-               --  operand.
-
-               --  Otherwise, we just consider two intervals of values for
-               --  the right operand: the interval of negative values (up to
-               --  -1) and the interval of positive values (starting at 1).
-               --  Since division by 1 is the identity, and division by -1
-               --  is negation, we get all possible bounds of division in that
-               --  case by considering:
-               --    - all values from the division of end values of input
-               --      ranges;
-               --    - the end values of the left operand;
-               --    - the negation of the end values of the left operand.
-
-               else
-                  declare
-                     Mrk : constant Uintp.Save_Mark := Mark;
-                     --  Mark so we can release the RR and Ev values
-
-                     Ev1 : Uint;
-                     Ev2 : Uint;
-                     Ev3 : Uint;
-                     Ev4 : Uint;
-
-                  begin
-                     --  Discard extreme values of zero for the divisor, since
-                     --  they will simply result in an exception in any case.
-
-                     if Rlo = 0 then
-                        Rlo := Uint_1;
-                     elsif Rhi = 0 then
-                        Rhi := -Uint_1;
-                     end if;
-
-                     --  Compute possible bounds coming from dividing end
-                     --  values of the input ranges.
-
-                     Ev1 := Llo / Rlo;
-                     Ev2 := Llo / Rhi;
-                     Ev3 := Lhi / Rlo;
-                     Ev4 := Lhi / Rhi;
-
-                     Lo := UI_Min (UI_Min (Ev1, Ev2), UI_Min (Ev3, Ev4));
-                     Hi := UI_Max (UI_Max (Ev1, Ev2), UI_Max (Ev3, Ev4));
-
-                     --  If the right operand can be both negative or positive,
-                     --  include the end values of the left operand in the
-                     --  extreme values, as well as their negation.
-
-                     if Rlo < 0 and then Rhi > 0 then
-                        Ev1 := Llo;
-                        Ev2 := -Llo;
-                        Ev3 := Lhi;
-                        Ev4 := -Lhi;
-
-                        Min (Lo,
-                             UI_Min (UI_Min (Ev1, Ev2), UI_Min (Ev3, Ev4)));
-                        Max (Hi,
-                             UI_Max (UI_Max (Ev1, Ev2), UI_Max (Ev3, Ev4)));
-                     end if;
-
-                     --  Release the RR and Ev values
-
-                     Release_And_Save (Mrk, Lo, Hi);
-                  end;
-               end if;
-
-            --  Exponentiation
-
-            when N_Op_Expon =>
-
-               --  Discard negative values for the exponent, since they will
-               --  simply result in an exception in any case.
-
-               if Rhi < 0 then
-                  Rhi := Uint_0;
-               elsif Rlo < 0 then
-                  Rlo := Uint_0;
-               end if;
-
-               --  Estimate number of bits in result before we go computing
-               --  giant useless bounds. Basically the number of bits in the
-               --  result is the number of bits in the base multiplied by the
-               --  value of the exponent. If this is big enough that the result
-               --  definitely won't fit in Long_Long_Integer, switch to bignum
-               --  mode immediately, and avoid computing giant bounds.
-
-               --  The comparison here is approximate, but conservative, it
-               --  only clicks on cases that are sure to exceed the bounds.
-
-               if Num_Bits (UI_Max (abs Llo, abs Lhi)) * Rhi + 1 > 100 then
-                  Lo := No_Uint;
-                  Hi := No_Uint;
-
-               --  If right operand is zero then result is 1
-
-               elsif Rhi = 0 then
-                  Lo := Uint_1;
-                  Hi := Uint_1;
-
-               else
-                  --  High bound comes either from exponentiation of largest
-                  --  positive value to largest exponent value, or from
-                  --  the exponentiation of most negative value to an
-                  --  even exponent.
-
-                  declare
-                     Hi1, Hi2 : Uint;
-
-                  begin
-                     if Lhi > 0 then
-                        Hi1 := Lhi ** Rhi;
-                     else
-                        Hi1 := Uint_0;
-                     end if;
-
-                     if Llo < 0 then
-                        if Rhi mod 2 = 0 then
-                           Hi2 := Llo ** Rhi;
-                        else
-                           Hi2 := Llo ** (Rhi - 1);
-                        end if;
-                     else
-                        Hi2 := Uint_0;
-                     end if;
-
-                     Hi := UI_Max (Hi1, Hi2);
-                  end;
-
-                  --  Result can only be negative if base can be negative
-
-                  if Llo < 0 then
-                     if Rhi mod 2 = 0 then
-                        Lo := Llo ** (Rhi - 1);
-                     else
-                        Lo := Llo ** Rhi;
-                     end if;
-
-                  --  Otherwise low bound is minimum ** minimum
-
-                  else
-                     Lo := Llo ** Rlo;
-                  end if;
-               end if;
-
-            --  Negation
-
-            when N_Op_Minus =>
-               Lo := -Rhi;
-               Hi := -Rlo;
-
-            --  Mod
-
-            when N_Op_Mod =>
-               declare
-                  Maxabs : constant Uint := UI_Max (abs Rlo, abs Rhi) - 1;
-                  --  This is the maximum absolute value of the result
-
-               begin
-                  Lo := Uint_0;
-                  Hi := Uint_0;
-
-                  --  The result depends only on the sign and magnitude of
-                  --  the right operand, it does not depend on the sign or
-                  --  magnitude of the left operand.
-
-                  if Rlo < 0 then
-                     Lo := -Maxabs;
-                  end if;
-
-                  if Rhi > 0 then
-                     Hi := Maxabs;
-                  end if;
-               end;
-
-            --  Multiplication
-
-            when N_Op_Multiply =>
-
-               --  Possible bounds of multiplication must come from multiplying
-               --  end values of the input ranges (four possibilities).
-
-               declare
-                  Mrk : constant Uintp.Save_Mark := Mark;
-                  --  Mark so we can release the Ev values
-
-                  Ev1 : constant Uint := Llo * Rlo;
-                  Ev2 : constant Uint := Llo * Rhi;
-                  Ev3 : constant Uint := Lhi * Rlo;
-                  Ev4 : constant Uint := Lhi * Rhi;
-
-               begin
-                  Lo := UI_Min (UI_Min (Ev1, Ev2), UI_Min (Ev3, Ev4));
-                  Hi := UI_Max (UI_Max (Ev1, Ev2), UI_Max (Ev3, Ev4));
-
-                  --  Release the Ev values
-
-                  Release_And_Save (Mrk, Lo, Hi);
-               end;
-
-            --  Plus operator (affirmation)
-
-            when N_Op_Plus =>
-               Lo := Rlo;
-               Hi := Rhi;
-
-            --  Remainder
-
-            when N_Op_Rem =>
-               declare
-                  Maxabs : constant Uint := UI_Max (abs Rlo, abs Rhi) - 1;
-                  --  This is the maximum absolute value of the result. Note
-                  --  that the result range does not depend on the sign of the
-                  --  right operand.
-
-               begin
-                  Lo := Uint_0;
-                  Hi := Uint_0;
-
-                  --  Case of left operand negative, which results in a range
-                  --  of -Maxabs .. 0 for those negative values. If there are
-                  --  no negative values then Lo value of result is always 0.
-
-                  if Llo < 0 then
-                     Lo := -Maxabs;
-                  end if;
-
-                  --  Case of left operand positive
-
-                  if Lhi > 0 then
-                     Hi := Maxabs;
-                  end if;
-               end;
-
-            --  Subtract
-
-            when N_Op_Subtract =>
-               Lo := Llo - Rhi;
-               Hi := Lhi - Rlo;
-
-            --  Nothing else should be possible
-
-            when others =>
-               raise Program_Error;
-         end case;
       end if;
 
       --  Here for the case where we have not rewritten anything (no bignum
@@ -10092,7 +10168,7 @@ package body Checks is
 
             else
                declare
-                  Ndims : constant Nat := Number_Dimensions (T_Typ);
+                  Ndims : constant Pos := Number_Dimensions (T_Typ);
 
                begin
                   --  Build the condition for the explicit dereference case
@@ -10797,7 +10873,7 @@ package body Checks is
 
             elsif Is_Constrained (Exptyp) then
                declare
-                  Ndims : constant Nat := Number_Dimensions (T_Typ);
+                  Ndims : constant Pos := Number_Dimensions (T_Typ);
 
                   L_Index : Node_Id;
                   R_Index : Node_Id;
@@ -10851,7 +10927,7 @@ package body Checks is
 
             else
                declare
-                  Ndims : constant Nat := Number_Dimensions (T_Typ);
+                  Ndims : constant Pos := Number_Dimensions (T_Typ);
 
                begin
                   --  Build the condition for the explicit dereference case

@@ -93,35 +93,35 @@ end subroutine
 
 subroutine w1 (array)
   real, optional :: array(:)
-  !$omp parallel default(none)     ! { dg-error "enclosing 'parallel'" }
+  !$omp parallel default(none)     ! { dg-message "note: enclosing 'parallel'" }
   if (.not.present (array)) stop 1 ! { dg-error "'array' not specified in enclosing 'parallel'" }
   !$omp end parallel
 end subroutine
 
 subroutine w2 (array2)
   real, optional :: array2(*)
-  !$omp parallel default(none)      ! { dg-error "enclosing 'parallel'" "TODO" { xfail *-*-* } }
+  !$omp parallel default(none)      ! { dg-message "note: enclosing 'parallel'" "TODO" { xfail *-*-* } }
   if (.not.present (array2)) stop 2 ! { dg-error "'array2' not specified in enclosing 'parallel'" "TODO" { xfail *-*-* } }
   !$omp end parallel
 end subroutine
 
 subroutine w3 (arg)
   real, optional :: arg
-  !$omp parallel default(none)    ! { dg-error "enclosing 'parallel'" }
+  !$omp parallel default(none)    ! { dg-message "note: enclosing 'parallel'" }
   if (.not.present (arg)) stop 3  ! { dg-error "'arg' not specified in enclosing 'parallel'" }
   !$omp end parallel
 end subroutine
 
 subroutine w4 (arg2)
   real, value, optional :: arg2
-  !$omp parallel default(none)     ! { dg-error "enclosing 'parallel" "TODO" { xfail *-*-* } }
+  !$omp parallel default(none)     ! { dg-message "note: enclosing 'parallel" "TODO" { xfail *-*-* } }
   if (.not.present (arg2)) stop 4  ! { dg-error "'arg2' not specified in enclosing 'parallel'" "TODO" { xfail *-*-*} }
   !$omp end parallel
 end subroutine
 
 subroutine w5 (array3)
   real, optional :: array3(..)
-  !$omp parallel default(none)      ! { dg-error "enclosing 'parallel'" }
+  !$omp parallel default(none)      ! { dg-message "note: enclosing 'parallel'" }
   if (.not.present (array3)) stop 5 ! { dg-error "'array3' not specified in enclosing 'parallel'" }
   !$omp end parallel
 end subroutine

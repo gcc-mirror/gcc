@@ -3929,15 +3929,13 @@ package body Sem_Ch4 is
                  and then Is_Visible_Component (Comp, Sel)
                then
 
-                  --  AI05-105:  if the context is an object renaming with
+                  --  AI05-105: if the context is an object renaming with
                   --  an anonymous access type, the expected type of the
                   --  object must be anonymous. This is a name resolution rule.
 
                   if Nkind (Parent (N)) /= N_Object_Renaming_Declaration
                     or else No (Access_Definition (Parent (N)))
-                    or else Ekind (Etype (Comp)) = E_Anonymous_Access_Type
-                    or else
-                      Ekind (Etype (Comp)) = E_Anonymous_Access_Subprogram_Type
+                    or else Is_Anonymous_Access_Type (Etype (Comp))
                   then
                      Set_Entity (Sel, Comp);
                      Set_Etype (Sel, Etype (Comp));
@@ -6542,12 +6540,32 @@ package body Sem_Ch4 is
       Op_Id : Entity_Id;
       N     : Node_Id)
    is
-      Index : Interp_Index;
+      Index : Interp_Index := 0;
       It    : Interp;
       Found : Boolean := False;
       I_F   : Interp_Index;
       T_F   : Entity_Id;
       Scop  : Entity_Id := Empty;
+
+      function Check_Access_Object_Types
+        (N : Node_Id; Typ : Entity_Id) return Boolean;
+      --  Check for RM 4.5.2 (9.6/2): When both are of access-to-object types,
+      --  the designated types shall be the same or one shall cover the other,
+      --  and if the designated types are elementary or array types, then the
+      --  designated subtypes shall statically match.
+      --  If N is not overloaded, then its unique type must be compatible as
+      --  per above. Otherwise iterate through the interpretations of N looking
+      --  for a compatible one.
+
+      procedure Check_Compatible_Profiles (N : Node_Id; Typ : Entity_Id);
+      --  Check for RM 4.5.2(9.7/2): When both are of access-to-subprogram
+      --  types, the designated profiles shall be subtype conformant.
+
+      function References_Anonymous_Access_Type
+        (N : Node_Id; Typ : Entity_Id) return Boolean;
+      --  Return True either if N is not overloaded and its Etype is an
+      --  anonymous access type or if one of the interpretations of N refers
+      --  to an anonymous access type compatible with Typ.
 
       procedure Try_One_Interp (T1 : Entity_Id);
       --  The context of the equality operator plays no role in resolving the
@@ -6556,12 +6574,183 @@ package body Sem_Ch4 is
       --  and an error can be emitted now, after trying to disambiguate, i.e.
       --  applying preference rules.
 
+      -------------------------------
+      -- Check_Access_Object_Types --
+      -------------------------------
+
+      function Check_Access_Object_Types
+        (N : Node_Id; Typ : Entity_Id) return Boolean
+      is
+         function Check_Designated_Types (DT1, DT2 : Entity_Id) return Boolean;
+         --  Check RM 4.5.2 (9.6/2) on the given designated types.
+
+         ----------------------------
+         -- Check_Designated_Types --
+         ----------------------------
+
+         function Check_Designated_Types
+           (DT1, DT2 : Entity_Id) return Boolean is
+         begin
+            --  If the designated types are elementary or array types, then
+            --  the designated subtypes shall statically match.
+
+            if Is_Elementary_Type (DT1) or else Is_Array_Type (DT1) then
+               if Base_Type (DT1) /= Base_Type (DT2) then
+                  return False;
+               else
+                  return Subtypes_Statically_Match (DT1, DT2);
+               end if;
+
+            --  Otherwise, the designated types shall be the same or one
+            --  shall cover the other.
+
+            else
+               return DT1 = DT2
+                 or else Covers (DT1, DT2)
+                 or else Covers (DT2, DT1);
+            end if;
+         end Check_Designated_Types;
+
+      --  Start of processing for Check_Access_Object_Types
+
+      begin
+         --  Return immediately with no checks if Typ is not an
+         --  access-to-object type.
+
+         if not Is_Access_Object_Type (Typ) then
+            return True;
+
+         --  Any_Type is compatible with all types in this context, and is used
+         --  in particular for the designated type of a 'null' value.
+
+         elsif Directly_Designated_Type (Typ) = Any_Type
+           or else Nkind (N) = N_Null
+         then
+            return True;
+         end if;
+
+         if not Is_Overloaded (N) then
+            if Is_Access_Object_Type (Etype (N)) then
+               return Check_Designated_Types
+                 (Designated_Type (Typ), Designated_Type (Etype (N)));
+            end if;
+         else
+            declare
+               Typ_Is_Anonymous : constant Boolean :=
+                 Is_Anonymous_Access_Type (Typ);
+
+               I  : Interp_Index;
+               It : Interp;
+
+            begin
+               Get_First_Interp (N, I, It);
+               while Present (It.Typ) loop
+
+                  --  The check on designated types if only relevant when one
+                  --  of the types is anonymous, ignore other (non relevant)
+                  --  types.
+
+                  if (Typ_Is_Anonymous
+                       or else Is_Anonymous_Access_Type (It.Typ))
+                    and then Is_Access_Object_Type (It.Typ)
+                  then
+                     if Check_Designated_Types
+                          (Designated_Type (Typ), Designated_Type (It.Typ))
+                     then
+                        return True;
+                     end if;
+                  end if;
+
+                  Get_Next_Interp (I, It);
+               end loop;
+            end;
+         end if;
+
+         return False;
+      end Check_Access_Object_Types;
+
+      -------------------------------
+      -- Check_Compatible_Profiles --
+      -------------------------------
+
+      procedure Check_Compatible_Profiles (N : Node_Id; Typ : Entity_Id) is
+         I     : Interp_Index;
+         It    : Interp;
+         I1    : Interp_Index := 0;
+         Found : Boolean      := False;
+         Tmp   : Entity_Id    := Empty;
+
+      begin
+         if not Is_Overloaded (N) then
+            Check_Subtype_Conformant
+              (Designated_Type (Etype (N)), Designated_Type (Typ), N);
+         else
+            Get_First_Interp (N, I, It);
+            while Present (It.Typ) loop
+               if Is_Access_Subprogram_Type (It.Typ) then
+                  if not Found then
+                     Found := True;
+                     Tmp   := It.Typ;
+                     I1    := I;
+
+                  else
+                     It := Disambiguate (N, I1, I, Any_Type);
+
+                     if It /= No_Interp then
+                        Tmp := It.Typ;
+                        I1  := I;
+                     else
+                        Found := False;
+                        exit;
+                     end if;
+                  end if;
+               end if;
+
+               Get_Next_Interp (I, It);
+            end loop;
+
+            if Found then
+               Check_Subtype_Conformant
+                 (Designated_Type (Tmp), Designated_Type (Typ), N);
+            end if;
+         end if;
+      end Check_Compatible_Profiles;
+
+      --------------------------------------
+      -- References_Anonymous_Access_Type --
+      --------------------------------------
+
+      function References_Anonymous_Access_Type
+        (N : Node_Id; Typ : Entity_Id) return Boolean
+      is
+         I  : Interp_Index;
+         It : Interp;
+      begin
+         if not Is_Overloaded (N) then
+            return Is_Anonymous_Access_Type (Etype (N));
+         else
+            Get_First_Interp (N, I, It);
+            while Present (It.Typ) loop
+               if Is_Anonymous_Access_Type (It.Typ)
+                 and then (Covers (It.Typ, Typ) or else Covers (Typ, It.Typ))
+               then
+                  return True;
+               end if;
+
+               Get_Next_Interp (I, It);
+            end loop;
+
+            return False;
+         end if;
+      end References_Anonymous_Access_Type;
+
       --------------------
       -- Try_One_Interp --
       --------------------
 
       procedure Try_One_Interp (T1 : Entity_Id) is
-         Bas : Entity_Id;
+         Universal_Access : Boolean;
+         Bas              : Entity_Id;
 
       begin
          --  Perform a sanity check in case of previous errors
@@ -6580,6 +6769,9 @@ package body Sem_Ch4 is
 
          --  In Ada 2005, the equality operator for anonymous access types
          --  is declared in Standard, and preference rules apply to it.
+
+         Universal_Access := Is_Anonymous_Access_Type (T1)
+           or else References_Anonymous_Access_Type (R, T1);
 
          if Present (Scop) then
 
@@ -6601,48 +6793,28 @@ package body Sem_Ch4 is
             then
                null;
 
-            elsif Ekind (T1) = E_Anonymous_Access_Type
-              and then Scop = Standard_Standard
-            then
-               null;
+            elsif Scop /= Standard_Standard or else not Universal_Access then
 
-            else
                --  The scope does not contain an operator for the type
 
                return;
             end if;
 
          --  If we have infix notation, the operator must be usable. Within
-         --  an instance, if the type is already established we know it is
-         --  correct. If an operand is universal it is compatible with any
-         --  numeric type.
+         --  an instance, the type may have been immediately visible if the
+         --  types are compatible.
 
          elsif In_Open_Scopes (Scope (Bas))
            or else Is_Potentially_Use_Visible (Bas)
            or else In_Use (Bas)
            or else (In_Use (Scope (Bas)) and then not Is_Hidden (Bas))
-
-            --  In an instance, the type may have been immediately visible.
-            --  Either the types are compatible, or one operand is universal
-            --  (numeric or null).
-
            or else
              ((In_Instance or else In_Inlined_Body)
-                and then
-                  (First_Subtype (T1) = First_Subtype (Etype (R))
-                    or else Nkind (R) = N_Null
-                    or else
-                      (Is_Numeric_Type (T1)
-                        and then Is_Universal_Numeric_Type (Etype (R)))))
-
-           --  In Ada 2005, the equality on anonymous access types is declared
-           --  in Standard, and is always visible.
-
-           or else Ekind (T1) = E_Anonymous_Access_Type
+                and then Has_Compatible_Type (R, T1))
          then
             null;
 
-         else
+         elsif not Universal_Access then
             --  Save candidate type for subsequent error message, if any
 
             if not Is_Limited_Type (T1) then
@@ -6655,9 +6827,7 @@ package body Sem_Ch4 is
          --  Ada 2005 (AI-230): Keep restriction imposed by Ada 83 and 95:
          --  Do not allow anonymous access types in equality operators.
 
-         if Ada_Version < Ada_2005
-           and then Ekind (T1) = E_Anonymous_Access_Type
-         then
+         if Ada_Version < Ada_2005 and then Universal_Access then
             return;
          end if;
 
@@ -6675,9 +6845,10 @@ package body Sem_Ch4 is
          --  because that indicates the potential rewriting case where the
          --  interpretation to consider is actually "=" and the node may be
          --  about to be rewritten by Analyze_Equality_Op.
+         --  Finally, also check for RM 4.5.2 (9.6/2).
 
          if T1 /= Standard_Void_Type
-           and then Has_Compatible_Type (R, T1)
+           and then (Universal_Access or else Has_Compatible_Type (R, T1))
 
            and then
              ((not Is_Limited_Type (T1)
@@ -6692,7 +6863,18 @@ package body Sem_Ch4 is
              (Nkind (N) /= N_Op_Ne
                or else not Is_Tagged_Type (T1)
                or else Chars (Op_Id) = Name_Op_Eq)
+
+           and then (not Universal_Access
+                      or else Check_Access_Object_Types (R, T1))
          then
+            if Universal_Access
+              and then Is_Access_Subprogram_Type (T1)
+              and then Nkind (L) /= N_Null
+              and then Nkind (R) /= N_Null
+            then
+               Check_Compatible_Profiles (R, T1);
+            end if;
+
             if Found
               and then Base_Type (T1) /= Base_Type (T_F)
             then
@@ -6724,11 +6906,6 @@ package body Sem_Ch4 is
             if Etype (N) = Any_Type then
                Found := False;
             end if;
-
-         elsif Scop = Standard_Standard
-           and then Ekind (T1) = E_Anonymous_Access_Type
-         then
-            Found := True;
          end if;
       end Try_One_Interp;
 
@@ -6763,7 +6940,6 @@ package body Sem_Ch4 is
 
       if not Is_Overloaded (L) then
          Try_One_Interp (Etype (L));
-
       else
          Get_First_Interp (L, Index, It);
          while Present (It.Typ) loop

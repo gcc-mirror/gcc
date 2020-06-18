@@ -615,9 +615,13 @@ class GitCommit:
             timestamp = entry.datetime
             if self.cherry_pick_commit:
                 timestamp = self.commit_to_date_hook(self.cherry_pick_commit)
+                # it can happen that it is a cherry-pick for a different
+                # repository
                 if timestamp:
                     timestamp = timestamp.strftime(DATE_FORMAT)
-            if not timestamp or use_commit_ts:
+                else:
+                    timestamp = current_timestamp
+            elif not timestamp or use_commit_ts:
                 timestamp = current_timestamp
             authors = entry.authors if entry.authors else [self.author]
             # add Co-Authored-By authors to all ChangeLog entries

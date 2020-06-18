@@ -1081,15 +1081,30 @@ package body Exp_Disp is
          then
             Old_Formal := Extra_Formal (Last_Formal);
             New_Formal := New_Copy (Old_Formal);
+            Set_Scope (New_Formal, Subp_Typ);
 
             Set_Extra_Formal (Last_Formal, New_Formal);
             Set_Extra_Formals (Subp_Typ, New_Formal);
+
+            if Ekind (Subp) = E_Function
+              and then Present (Extra_Accessibility_Of_Result (Subp))
+              and then Extra_Accessibility_Of_Result (Subp) = Old_Formal
+            then
+               Set_Extra_Accessibility_Of_Result (Subp_Typ, New_Formal);
+            end if;
 
             Old_Formal := Extra_Formal (Old_Formal);
             while Present (Old_Formal) loop
                Set_Extra_Formal (New_Formal, New_Copy (Old_Formal));
                New_Formal := Extra_Formal (New_Formal);
                Set_Scope (New_Formal, Subp_Typ);
+
+               if Ekind (Subp) = E_Function
+                 and then Present (Extra_Accessibility_Of_Result (Subp))
+                 and then Extra_Accessibility_Of_Result (Subp) = Old_Formal
+               then
+                  Set_Extra_Accessibility_Of_Result (Subp_Typ, New_Formal);
+               end if;
 
                Old_Formal := Extra_Formal (Old_Formal);
             end loop;
