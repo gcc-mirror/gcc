@@ -17,3 +17,4 @@ foo1 (int16x8_t a)
 }
 
 /* { dg-final { scan-assembler-times "vbic.i16" 2 }  } */
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

@@ -1,3 +1,18 @@
+2020-06-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-06-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR lto/94848
+	* testsuite/libgomp.fortran/use_device_ptr-optional-3.f90: Add
+	'dg-do run'.
+
+2020-06-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR lto/94848
+	PR middle-end/95551
+	* testsuite/libgomp.fortran/target-var.f90: New test.
+
 2020-06-05  Thomas Schwinge  <thomas@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 

@@ -64,6 +64,8 @@ extern bool arm_q_bit_access (void);
 extern bool arm_ge_bits_access (void);
 
 #ifdef RTX_CODE
+enum reg_class
+arm_mode_base_reg_class (machine_mode);
 extern void arm_gen_unlikely_cbranch (enum rtx_code, machine_mode cc_mode,
 				      rtx label_ref);
 extern bool arm_vector_mode_supported_p (machine_mode);
@@ -114,6 +116,7 @@ extern bool arm_tls_referenced_p (rtx);
 
 extern int arm_coproc_mem_operand (rtx, bool);
 extern int neon_vector_mem_operand (rtx, int, bool);
+extern int mve_vector_mem_operand (machine_mode, rtx, bool);
 extern int neon_struct_mem_operand (rtx);
 
 extern rtx *neon_vcmla_lane_prepare_operands (rtx *);

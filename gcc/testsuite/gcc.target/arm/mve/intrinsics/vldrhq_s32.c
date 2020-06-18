@@ -10,4 +10,5 @@ foo (int16_t const * base)
   return vldrhq_s32 (base);
 }
 
-/* { dg-final { scan-assembler "vldrh.s32"  }  } */
+/* { dg-final { scan-assembler-times "vldrh.s32" 1 }  } */
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

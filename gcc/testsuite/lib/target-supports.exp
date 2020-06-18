@@ -998,6 +998,12 @@ proc check_effective_target_fgraphite {} {
     } "-O1 -fgraphite"]
 }
 
+# Return 1 if compiled with --enable-offload-targets=
+# This affects host compilation as ENABLE_OFFLOAD then evaluates to true.
+proc check_effective_target_offloading_enabled {} {
+    return [check_configured_with "--enable-offload-targets"]
+}
+
 # Return 1 if compilation with -fopenacc is error-free for trivial
 # code, 0 otherwise.
 

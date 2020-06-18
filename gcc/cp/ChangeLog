@@ -1,3 +1,11 @@
+2020-06-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95508
+	* constexpr.c (maybe_fold_non_dependent_expr): New.
+	* cp-tree.h (maybe_fold_non_dependent_expr): Declare.
+	* typeck.c (cp_build_array_ref): Call maybe_fold_non_dependent_expr
+	instead of maybe_constant_value.
+
 2020-06-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (instantiate_coro_traits): Pass a reference

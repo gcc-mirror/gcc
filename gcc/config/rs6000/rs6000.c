@@ -24978,6 +24978,61 @@ address_to_insn_form (rtx addr,
   return INSN_FORM_BAD;
 }
 
+/* Helper function to see if we're potentially looking at lfs/stfs.
+   - PARALLEL containing a SET and a CLOBBER
+   - stfs:
+    - SET is from UNSPEC_SI_FROM_SF to MEM:SI
+    - CLOBBER is a V4SF
+   - lfs:
+    - SET is from UNSPEC_SF_FROM_SI to REG:SF
+    - CLOBBER is a DI
+ */
+
+static bool
+is_lfs_stfs_insn (rtx_insn *insn)
+{
+  rtx pattern = PATTERN (insn);
+  if (GET_CODE (pattern) != PARALLEL)
+    return false;
+
+  /* This should be a parallel with exactly one set and one clobber.  */
+  if (XVECLEN (pattern, 0) != 2)
+    return false;
+
+  rtx set = XVECEXP (pattern, 0, 0);
+  if (GET_CODE (set) != SET)
+    return false;
+
+  rtx clobber = XVECEXP (pattern, 0, 1);
+  if (GET_CODE (clobber) != CLOBBER)
+    return false;
+
+  /* All we care is that the destination of the SET is a mem:SI,
+     the source should be an UNSPEC_SI_FROM_SF, and the clobber
+     should be a scratch:V4SF.  */
+
+  rtx dest = SET_DEST (set);
+  rtx src = SET_SRC (set);
+  rtx scratch = SET_DEST (clobber);
+
+  if (GET_CODE (src) != UNSPEC)
+    return false;
+
+  /* stfs case.  */
+  if (XINT (src, 1) == UNSPEC_SI_FROM_SF
+      && GET_CODE (dest) == MEM && GET_MODE (dest) == SImode
+      && GET_CODE (scratch) == SCRATCH && GET_MODE (scratch) == V4SFmode)
+    return true;
+
+  /* lfs case.  */
+  if (XINT (src, 1) == UNSPEC_SF_FROM_SI
+      && GET_CODE (dest) == REG && GET_MODE (dest) == SFmode
+      && GET_CODE (scratch) == SCRATCH && GET_MODE (scratch) == DImode)
+    return true;
+
+  return false;
+}
+
 /* Helper function to take a REG and a MODE and turn it into the non-prefixed
    instruction format (D/DS/DQ) used for offset memory.  */
 
@@ -25088,7 +25143,10 @@ prefixed_load_p (rtx_insn *insn)
   else
     non_prefixed = reg_to_non_prefixed (reg, mem_mode);
 
-  return address_is_prefixed (XEXP (mem, 0), mem_mode, non_prefixed);
+  if (non_prefixed == NON_PREFIXED_X && is_lfs_stfs_insn (insn))
+    return address_is_prefixed (XEXP (mem, 0), mem_mode, NON_PREFIXED_DEFAULT);
+  else
+    return address_is_prefixed (XEXP (mem, 0), mem_mode, non_prefixed);
 }
 
 /* Whether a store instruction is a prefixed instruction.  This is called from
@@ -25117,8 +25175,16 @@ prefixed_store_p (rtx_insn *insn)
     return false;
 
   machine_mode mem_mode = GET_MODE (mem);
+  rtx addr = XEXP (mem, 0);
   enum non_prefixed_form non_prefixed = reg_to_non_prefixed (reg, mem_mode);
-  return address_is_prefixed (XEXP (mem, 0), mem_mode, non_prefixed);
+
+  /* Need to make sure we aren't looking at a stfs which doesn't look
+     like the other things reg_to_non_prefixed/address_is_prefixed
+     looks for.  */
+  if (non_prefixed == NON_PREFIXED_X && is_lfs_stfs_insn (insn))
+    return address_is_prefixed (addr, mem_mode, NON_PREFIXED_DEFAULT);
+  else
+    return address_is_prefixed (addr, mem_mode, non_prefixed);
 }
 
 /* Whether a load immediate or add instruction is a prefixed instruction.  This

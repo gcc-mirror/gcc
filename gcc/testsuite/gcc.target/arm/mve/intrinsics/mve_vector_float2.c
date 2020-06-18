@@ -11,10 +11,6 @@ foo32 ()
   return b;
 }
 
-/* { dg-final { scan-assembler "vmov\\tq\[0-7\], q\[0-7\]"  }  } */
-/* { dg-final { scan-assembler "vstrb.*" }  } */
-/* { dg-final { scan-assembler "vldr.64*" }  } */
-
 float16x8_t
 foo16 ()
 {
@@ -22,6 +18,9 @@ foo16 ()
   return b;
 }
 
-/* { dg-final { scan-assembler "vmov\\tq\[0-7\], q\[0-7\]"  }  } */
-/* { dg-final { scan-assembler "vstrb.*" }  } */
-/* { dg-final { scan-assembler "vldr.64.*" }  } */
+/* { dg-final { scan-assembler-times "vmov\\tq\[0-7\], q\[0-7\]" 2 } } */
+/* { dg-final { scan-assembler-times "vstrw.32*" 1 } } */
+/* { dg-final { scan-assembler-times "vstrh.16*" 1 } } */
+/* { dg-final { scan-assembler-times "vldrw.32*" 1 } } */
+/* { dg-final { scan-assembler-times "vldrh.16*" 1 } } */
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

@@ -7043,6 +7043,19 @@ fold_non_dependent_expr (tree t,
   return maybe_constant_value (t, object, manifestly_const_eval);
 }
 
+/* Like fold_non_dependent_expr, but if EXPR couldn't be folded to a constant,
+   return the original expression.  */
+
+tree
+maybe_fold_non_dependent_expr (tree expr,
+			       tsubst_flags_t complain/*=tf_warning_or_error*/)
+{
+  tree t = fold_non_dependent_expr (expr, complain);
+  if (t && TREE_CONSTANT (t))
+    return t;
+
+  return expr;
+}
 
 /* Like maybe_constant_init but first fully instantiate the argument.  */
 

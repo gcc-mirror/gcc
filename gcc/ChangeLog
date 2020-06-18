@@ -1,3 +1,144 @@
+2020-06-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-06-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* hsa-gen.c (gen_hsa_insns_for_call): Move 'function_decl ==
+	NULL_TREE' check earlier.
+
+2020-06-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/arm_mve.h (__arm_vbicq_n_u16): Correct the intrinsic
+	arguments.
+	(__arm_vbicq_n_s16): Likewise.
+	(__arm_vbicq_n_u32): Likewise.
+	(__arm_vbicq_n_s32): Likewise.
+	(__arm_vbicq): Modify polymorphic variant.
+
+2020-06-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/94735
+	* config/arm/predicates.md (mve_scatter_memory): Define to
+	match (mem (reg)) for scatter store memory.
+	* config/arm/mve.md (mve_vstrbq_scatter_offset_<supf><mode>): Modify
+	define_insn to define_expand.
+	(mve_vstrbq_scatter_offset_p_<supf><mode>): Likewise.
+	(mve_vstrhq_scatter_offset_<supf><mode>): Likewise.
+	(mve_vstrhq_scatter_shifted_offset_p_<supf><mode>): Likewise.
+	(mve_vstrhq_scatter_shifted_offset_<supf><mode>): Likewise.
+	(mve_vstrdq_scatter_offset_p_<supf>v2di): Likewise.
+	(mve_vstrdq_scatter_offset_<supf>v2di): Likewise.
+	(mve_vstrdq_scatter_shifted_offset_p_<supf>v2di): Likewise.
+	(mve_vstrdq_scatter_shifted_offset_<supf>v2di): Likewise.
+	(mve_vstrhq_scatter_offset_fv8hf): Likewise.
+	(mve_vstrhq_scatter_offset_p_fv8hf): Likewise.
+	(mve_vstrhq_scatter_shifted_offset_fv8hf): Likewise.
+	(mve_vstrhq_scatter_shifted_offset_p_fv8hf): Likewise.
+	(mve_vstrwq_scatter_offset_fv4sf): Likewise.
+	(mve_vstrwq_scatter_offset_p_fv4sf): Likewise.
+	(mve_vstrwq_scatter_offset_p_<supf>v4si): Likewise.
+	(mve_vstrwq_scatter_offset_<supf>v4si): Likewise.
+	(mve_vstrwq_scatter_shifted_offset_fv4sf): Likewise.
+	(mve_vstrwq_scatter_shifted_offset_p_fv4sf): Likewise.
+	(mve_vstrwq_scatter_shifted_offset_p_<supf>v4si): Likewise.
+	(mve_vstrwq_scatter_shifted_offset_<supf>v4si): Likewise.
+	(mve_vstrbq_scatter_offset_<supf><mode>_insn): Define insn for scatter
+	stores.
+	(mve_vstrbq_scatter_offset_p_<supf><mode>_insn): Likewise.
+	(mve_vstrhq_scatter_offset_<supf><mode>_insn): Likewise.
+	(mve_vstrhq_scatter_shifted_offset_p_<supf><mode>_insn): Likewise.
+	(mve_vstrhq_scatter_shifted_offset_<supf><mode>_insn): Likewise.
+	(mve_vstrdq_scatter_offset_p_<supf>v2di_insn): Likewise.
+	(mve_vstrdq_scatter_offset_<supf>v2di_insn): Likewise.
+	(mve_vstrdq_scatter_shifted_offset_p_<supf>v2di_insn): Likewise.
+	(mve_vstrdq_scatter_shifted_offset_<supf>v2di_insn): Likewise.
+	(mve_vstrhq_scatter_offset_fv8hf_insn): Likewise.
+	(mve_vstrhq_scatter_offset_p_fv8hf_insn): Likewise.
+	(mve_vstrhq_scatter_shifted_offset_fv8hf_insn): Likewise.
+	(mve_vstrhq_scatter_shifted_offset_p_fv8hf_insn): Likewise.
+	(mve_vstrwq_scatter_offset_fv4sf_insn): Likewise.
+	(mve_vstrwq_scatter_offset_p_fv4sf_insn): Likewise.
+	(mve_vstrwq_scatter_offset_p_<supf>v4si_insn): Likewise.
+	(mve_vstrwq_scatter_offset_<supf>v4si_insn): Likewise.
+	(mve_vstrwq_scatter_shifted_offset_fv4sf_insn): Likewise.
+	(mve_vstrwq_scatter_shifted_offset_p_fv4sf_insn): Likewise.
+	(mve_vstrwq_scatter_shifted_offset_p_<supf>v4si_insn): Likewise.
+	(mve_vstrwq_scatter_shifted_offset_<supf>v4si_insn): Likewise.
+
+2020-06-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/arm.c (mve_vector_mem_operand): Fix unwanted
+	fall-throughs.
+
+2020-06-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+	    Andre Vieira   <andre.simoesdiasvieira@arm.com>
+
+	PR target/94959
+	* config/arm/arm-protos.h (arm_mode_base_reg_class): Function
+	declaration.
+	(mve_vector_mem_operand): Likewise.
+	* config/arm/arm.c (thumb2_legitimate_address_p): For MVE target check
+	the load from memory to a core register is legitimate for give mode.
+	(mve_vector_mem_operand): Define function.
+	(arm_print_operand): Modify comment.
+	(arm_mode_base_reg_class): Define.
+	* config/arm/arm.h (MODE_BASE_REG_CLASS): Modify to add check for
+	TARGET_HAVE_MVE and expand to arm_mode_base_reg_class on TRUE.
+	* config/arm/constraints.md (Ux): Likewise.
+	(Ul): Likewise.
+	* config/arm/mve.md (mve_mov): Replace constraint Us with Ux and also
+	add support for missing Vector Store Register and Vector Load Register.
+	Add a new alternative to support load from memory to PC (or label) in
+	vector store/load.
+	(mve_vstrbq_<supf><mode>): Modify constraint Us to Ux.
+	(mve_vldrbq_<supf><mode>): Modify constriant Us to Ux, predicate to
+	mve_memory_operand and also modify the MVE instructions to emit.
+	(mve_vldrbq_z_<supf><mode>): Modify constraint Us to Ux.
+	(mve_vldrhq_fv8hf): Modify constriant Us to Ux, predicate to
+	mve_memory_operand and also modify the MVE instructions to emit.
+	(mve_vldrhq_<supf><mode>): Modify constriant Us to Ux, predicate to
+	mve_memory_operand and also modify the MVE instructions to emit.
+	(mve_vldrhq_z_fv8hf): Likewise.
+	(mve_vldrhq_z_<supf><mode>): Likewise.
+	(mve_vldrwq_fv4sf): Likewise.
+	(mve_vldrwq_<supf>v4si): Likewise.
+	(mve_vldrwq_z_fv4sf): Likewise.
+	(mve_vldrwq_z_<supf>v4si): Likewise.
+	(mve_vld1q_f<mode>): Modify constriant Us to Ux.
+	(mve_vld1q_<supf><mode>): Likewise.
+	(mve_vstrhq_fv8hf): Modify constriant Us to Ux, predicate to
+	mve_memory_operand.
+	(mve_vstrhq_p_fv8hf): Modify constriant Us to Ux, predicate to
+	mve_memory_operand and also modify the MVE instructions to emit.
+	(mve_vstrhq_p_<supf><mode>): Likewise.
+	(mve_vstrhq_<supf><mode>): Modify constriant Us to Ux, predicate to
+	mve_memory_operand.
+	(mve_vstrwq_fv4sf): Modify constriant Us to Ux.
+	(mve_vstrwq_p_fv4sf): Modify constriant Us to Ux and also modify the MVE
+	instructions to emit.
+	(mve_vstrwq_p_<supf>v4si): Likewise.
+	(mve_vstrwq_<supf>v4si): Likewise.Modify constriant Us to Ux.
+	* config/arm/predicates.md (mve_memory_operand): Define.
+
+2020-06-15  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (v<expander><mode>3): Fix unsignedp.
+
+2020-06-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-offload.c (add_decls_addresses_to_decl_constructor,
+	omp_finish_file): With in_lto_p, stream out all offload-table
+	items even if the symtab_node does not exist.
+
+2020-06-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR lto/94848
+	PR middle-end/95551
+	* omp-offload.c (add_decls_addresses_to_decl_constructor,
+	omp_finish_file): Skip removed items.
+	* lto-cgraph.c (output_offload_tables): Likewise; set force_output
+	to this node for variables and functions.
+
 2020-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/95528

@@ -1,3 +1,12 @@
+2020-06-17  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-06-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95088
+	* class.c (get_unique_type_string): Replace use of fixed size
+	buffer by internally passing a pointer to strings.
+
 2020-06-14  Steven G. Kargl  <kargl@gcc.gnu.org>
 	    Harald Anlauf  <anlauf@gmx.de>
 

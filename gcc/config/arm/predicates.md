@@ -31,6 +31,18 @@
 	      || REGNO_REG_CLASS (REGNO (op)) != NO_REGS));
 })
 
+(define_predicate "mve_memory_operand"
+  (and (match_code "mem")
+       (match_test "TARGET_32BIT
+		    && mve_vector_mem_operand (GET_MODE (op), XEXP (op, 0),
+					       false)")))
+
+(define_predicate "mve_scatter_memory"
+  (and (match_code "mem")
+       (match_test "TARGET_HAVE_MVE && REG_P (XEXP (op, 0))
+		    && mve_vector_mem_operand (GET_MODE (op), XEXP (op, 0),
+					       false)")))
+
 ;; True for immediates in the range of 1 to 16 for MVE.
 (define_predicate "mve_imm_16"
   (match_test "satisfies_constraint_Rd (op)"))
@@ -140,6 +152,18 @@
 
   return (REG_P (op)
 	  && (REGNO (op) <= LAST_ARM_REGNUM
+	      || REGNO (op) >= FIRST_PSEUDO_REGISTER));
+})
+
+;; Low core register, or any pseudo.
+(define_predicate "arm_low_register_operand"
+  (match_code "reg,subreg")
+{
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+
+  return (REG_P (op)
+	  && (REGNO (op) <= LAST_LO_REGNUM
 	      || REGNO (op) >= FIRST_PSEUDO_REGISTER));
 })
 
