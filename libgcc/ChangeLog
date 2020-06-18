@@ -1,3 +1,18 @@
+2020-06-17  Samuel Thibault  <samuel.thibault@gnu.org>
+
+	* config.host (md_unwind_header) <i[34567]86-*-gnu*>: Set to
+	'i386/gnu-unwind.h'
+	* config/i386/gnu-unwind.h: New file.
+
+2020-06-17  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-util.c (read_gcda_finalize): Remove const operator.
+	(merge_wrapper): Add both counts and use them properly.
+	(topn_to_memory_representation): New function.
+	(gcov_merge): Covert on disk representation to in memory
+	representation.
+	* libgcov.h: Remove const operator.
+
 2020-06-15  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* configure: Regenerate.
