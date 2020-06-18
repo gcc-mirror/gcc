@@ -3412,6 +3412,7 @@ static void append_split_outputs (extra_arg_storer *storer,
 	  const char **argv = storer->create_new (orig_argc + 1);
 	  const char *temp_obj = make_temp_file ("additional-obj.o");
 	  record_temp_file (temp_obj, true, true);
+	  record_temp_file (additional_asm_files[i], true, true);
 
 	  memcpy (argv, orig_argv, (orig_argc + 1) * sizeof (const char *));
 
@@ -3860,6 +3861,9 @@ execute (void)
   struct command additional_ld = {NULL, NULL};
   extra_arg_storer storer;
 
+  struct command *commands_batch;
+  int n;
+
   gcc_assert (!processing_spec_function);
 
   if (wrapper_string)
@@ -3903,22 +3907,33 @@ execute (void)
   append_valgrind (&to_be_released, n_commands, commands);
 #endif
 
-  /* Run each piped subprocess.  */
+  /* FIXME: Interact with GNU Jobserver if necessary.  */
 
-  pex = pex_init (PEX_USE_PIPES | ((report_times || report_times_to_file)
-				   ? PEX_RECORD_TIMES : 0),
-		  progname, temp_filename);
-  if (pex == NULL)
-    fatal_error (input_location, "%<pex_init%> failed: %m");
+  commands_batch = commands;
+  n = MIN (4, n_commands);
 
-  /* Lauch the commands.  */
-  async_launch_commands (pex, n_commands, commands);
+  for (int i = 0; n > 0; i += 4, n = MIN (4, n_commands - i))
+    {
+      /* Run each piped subprocess.  */
 
-  /* Await them to be done.  */
-  ret = await_commands_to_finish (pex, n_commands, commands);
+      pex = pex_init (PEX_USE_PIPES | ((report_times || report_times_to_file)
+				       ? PEX_RECORD_TIMES : 0),
+		      progname, temp_filename);
+      if (pex == NULL)
+	fatal_error (input_location, "%<pex_init%> failed: %m");
 
-  /* Cleanup.  */
-  pex_free (pex);
+      /* Lauch the commands.  */
+      async_launch_commands (pex, n, commands_batch);
+
+      /* Await them to be done.  */
+      ret |= await_commands_to_finish (pex, n, commands_batch);
+
+      commands_batch = commands_batch + n;
+
+      /* Cleanup.  */
+      pex_free (pex);
+    }
+
 
   if (ret != 0)
     goto cleanup;

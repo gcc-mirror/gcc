@@ -2273,7 +2273,7 @@ public:
   inline asm_node *finalize_toplevel_asm (tree asm_str);
 
   /* Analyze the whole compilation unit once it is parsed completely.  */
-  void finalize_compilation_unit (void);
+  void finalize_compilation_unit (const char *);
 
   /* C++ frontend produce same body aliases all over the place, even before PCH
      gets streamed out. It relies on us linking the aliases with their function
@@ -2283,7 +2283,7 @@ public:
   void process_same_body_aliases (void);
 
   /* Perform simple optimizations based on callgraph.  */
-  void compile (void);
+  void compile (const char *);
 
   /* Process CGRAPH_NEW_FUNCTIONS and perform actions necessary to add these
      functions into callgraph in a way so they look like ordinary reachable

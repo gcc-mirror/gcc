@@ -2709,7 +2709,6 @@ ipa_passes (void)
 	      pids[i] = fork ();
 	      if (pids[i] == 0)
 		{
-		  handle_additional_asm (true);
 		  lto_apply_partition_mask (ltrans_partitions[i]);
 
 		  goto continue_compilation;
@@ -2828,7 +2827,7 @@ symbol_table::output_weakrefs (void)
 /* Perform simple optimizations based on callgraph.  */
 
 void
-symbol_table::compile (void)
+symbol_table::compile (const char *name)
 {
   if (seen_error ())
     return;
@@ -2873,6 +2872,10 @@ symbol_table::compile (void)
   timevar_pop (TV_CGRAPHOPT);
 
   /* Output everything.  */
+  init_asm_output (name);
+  if (split_outputs)
+    handle_additional_asm (true);
+
   switch_to_section (text_section);
   (*debug_hooks->assembly_start) ();
   if (!quiet_flag)
@@ -3040,7 +3043,7 @@ debuginfo_early_stop (void)
 /* Analyze the whole compilation unit once it is parsed completely.  */
 
 void
-symbol_table::finalize_compilation_unit (void)
+symbol_table::finalize_compilation_unit (const char *name)
 {
   timevar_push (TV_CGRAPH);
 
@@ -3097,7 +3100,7 @@ symbol_table::finalize_compilation_unit (void)
     }
 
   /* Finally drive the pass manager.  */
-  compile ();
+  compile (name);
 
   timevar_pop (TV_CGRAPH);
 }

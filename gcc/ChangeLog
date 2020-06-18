@@ -1,3 +1,25 @@
+2020-06-18  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* toplev.c (lang_dependent_init): Move call to init_asm output to
+	* cgraphunit.c (compile): Here. Also run handle_additional_asm if
+	split_outputs is provided.
+	* gcc.c (append_split_ouputs): Record asm temporary file.
+	(execute): Run a max of 4 jobs in parallel instead of n_commands.
+	* cgraph.h: Update finalize_compilation_unit and compile
+	declarations.
+
+2020-06-18  Richard Biener  <rguenther@suse.de>
+
+	* varasm.c (assemble_variable): Make sure to not
+	defer output when outputting addressed constants.
+	(output_constant_def_contents): Likewise.
+	(add_constant_to_table): Take and pass on whether to
+	defer output.
+	(output_addressed_constants): Likewise.
+	(output_constant_def): Pass on whether to defer output
+	to add_constant_to_table.
+	(tree_output_constant_def): Defer output of constants.
+
 2020-06-17  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* cgraphunit.c (ipa_passes): Flush asm file, and handle

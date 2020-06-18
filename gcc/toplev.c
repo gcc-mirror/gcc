@@ -105,11 +105,10 @@ static void do_compile ();
 static void process_options (void);
 static void backend_init (void);
 static int lang_dependent_init (const char *);
-static void init_asm_output (const char *);
 static void finalize (bool);
 
 static void crash_signal (int) ATTRIBUTE_NORETURN;
-static void compile_file (void);
+static void compile_file (const char *);
 
 /* True if we don't need a backend (e.g. preprocessing only).  */
 static bool no_backend;
@@ -452,7 +451,7 @@ wrapup_global_declarations (tree *vec, int len)
    output and various debugging dumps.  */
 
 static void
-compile_file (void)
+compile_file (const char *name)
 {
   timevar_start (TV_PHASE_PARSING);
   timevar_push (TV_PARSE_GLOBAL);
@@ -483,7 +482,7 @@ compile_file (void)
   if (!in_lto_p)
     {
       timevar_start (TV_PHASE_OPT_GEN);
-      symtab->finalize_compilation_unit ();
+      symtab->finalize_compilation_unit (name);
       timevar_stop (TV_PHASE_OPT_GEN);
     }
 
@@ -834,7 +833,7 @@ print_switch_values (print_switch_fn_type print_fn)
    on, because then the driver will have provided the name of a
    temporary file or bit bucket for us.  NAME is the file specified on
    the command line, possibly NULL.  */
-static void
+void
 init_asm_output (const char *name)
 {
   if (name == NULL && asm_file_name == 0)
@@ -2018,8 +2017,6 @@ lang_dependent_init (const char *name)
 
   if (!flag_wpa)
     {
-      init_asm_output (name);
-
       /* If stack usage information is desired, open the output file.  */
       if (flag_stack_usage && !flag_generate_lto)
 	stack_usage_file = open_auxiliary_file ("su");
@@ -2318,7 +2315,7 @@ do_compile ()
 
           timevar_stop (TV_PHASE_SETUP);
 
-          compile_file ();
+          compile_file (main_input_filename);
         }
       else
         {
