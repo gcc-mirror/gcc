@@ -4009,31 +4009,6 @@ static bool
 compute_objsize (tree ptr, int ostype, access_ref *pref,
 		 bitmap *visited, const vr_values *rvals /* = NULL */)
 {
-  if (ostype == 0)
-    {
-      /* Use BOS only for raw memory functions like memcpy to get
-	 the size of the largest enclosing object.  */
-      tree off = NULL_TREE;
-      unsigned HOST_WIDE_INT size;
-      if (compute_builtin_object_size (ptr, ostype, &size, &pref->ref, &off))
-	{
-	  if (off)
-	    {
-	      offset_int offset = wi::to_offset (off);
-	      pref->offrng[0] += offset;
-	      pref->offrng[1] += offset;
-
-	      /* compute_builtin_object_size() returns the remaining
-		 size in PTR.  Add the offset to it to get the full
-		 size.  */
-	      pref->sizrng[0] = pref->sizrng[1] = size + offset;
-	    }
-	  else
-	    pref->sizrng[0] = pref->sizrng[1] = size;
-	  return true;
-	}
-    }
-
   const bool addr = TREE_CODE (ptr) == ADDR_EXPR;
   if (addr)
     ptr = TREE_OPERAND (ptr, 0);
@@ -4058,18 +4033,28 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
 
   if (code == COMPONENT_REF)
     {
+      tree field = TREE_OPERAND (ptr, 1);
+
       if (ostype == 0)
 	{
 	  /* For raw memory functions like memcpy bail if the size
 	     of the enclosing object cannot be determined.  */
-	  access_ref tmpref;
 	  tree ref = TREE_OPERAND (ptr, 0);
-	  if (!compute_objsize (ref, ostype, &tmpref, visited, rvals)
-	      || !tmpref.ref)
+	  if (!compute_objsize (ref, ostype, pref, visited, rvals)
+	      || !pref->ref)
 	    return false;
+
+	  /* Otherwise, use the size of the enclosing object and add
+	     the offset of the member to the offset computed so far.  */
+	  tree offset = byte_position (field);
+	  if (TREE_CODE (offset) != INTEGER_CST)
+	    return false;
+	  offset_int off = wi::to_offset (offset);
+	  pref->offrng[0] += off;
+	  pref->offrng[1] += off;
+	  return true;
 	}
 
-      tree field = TREE_OPERAND (ptr, 1);
       /* Bail if the reference is to the pointer itself (as opposed
 	 to what it points to).  */
       if (!addr && POINTER_TYPE_P (TREE_TYPE (field)))
@@ -4147,8 +4132,11 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
 	  orng[0] *= sz;
 	  orng[1] *= sz;
 
-	  if (TREE_CODE (eltype) == ARRAY_TYPE)
+	  if (ostype && TREE_CODE (eltype) == ARRAY_TYPE)
 	    {
+	      /* Execpt for the permissive raw memory functions which
+		 use the size of the whole object determined above,
+		 use the size of the referenced array.  */
 	      pref->sizrng[0] = pref->offrng[0] + orng[0] + sz;
 	      pref->sizrng[1] = pref->offrng[1] + orng[1] + sz;
 	    }
