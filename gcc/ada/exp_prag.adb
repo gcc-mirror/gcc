@@ -61,9 +61,7 @@ package body Exp_Prag is
    -- Local Subprograms --
    -----------------------
 
-   function Arg1 (N : Node_Id) return Node_Id;
-   function Arg2 (N : Node_Id) return Node_Id;
-   function Arg3 (N : Node_Id) return Node_Id;
+   function Arg_N (N : Node_Id; Arg_Number : Positive) return Node_Id;
    --  Obtain specified pragma argument expression
 
    procedure Expand_Pragma_Abort_Defer             (N : Node_Id);
@@ -84,13 +82,24 @@ package body Exp_Prag is
    --  these cases we want no initialization to occur, but we have already done
    --  the initialization by the time we see the pragma, so we have to undo it.
 
-   ----------
-   -- Arg1 --
-   ----------
+   -----------
+   -- Arg_N --
+   -----------
 
-   function Arg1 (N : Node_Id) return Node_Id is
-      Arg : constant Node_Id := First (Pragma_Argument_Associations (N));
+   function Arg_N (N : Node_Id; Arg_Number : Positive) return Node_Id is
+      Arg : Node_Id := First (Pragma_Argument_Associations (N));
    begin
+      if No (Arg) then
+         return Empty;
+      end if;
+
+      for J in 2 .. Arg_Number loop
+         Next (Arg);
+         if No (Arg) then
+            return Empty;
+         end if;
+      end loop;
+
       if Present (Arg)
         and then Nkind (Arg) = N_Pragma_Argument_Association
       then
@@ -98,66 +107,7 @@ package body Exp_Prag is
       else
          return Arg;
       end if;
-   end Arg1;
-
-   ----------
-   -- Arg2 --
-   ----------
-
-   function Arg2 (N : Node_Id) return Node_Id is
-      Arg1 : constant Node_Id := First (Pragma_Argument_Associations (N));
-
-   begin
-      if No (Arg1) then
-         return Empty;
-
-      else
-         declare
-            Arg : constant Node_Id := Next (Arg1);
-         begin
-            if Present (Arg)
-              and then Nkind (Arg) = N_Pragma_Argument_Association
-            then
-               return Expression (Arg);
-            else
-               return Arg;
-            end if;
-         end;
-      end if;
-   end Arg2;
-
-   ----------
-   -- Arg3 --
-   ----------
-
-   function Arg3 (N : Node_Id) return Node_Id is
-      Arg1 : constant Node_Id := First (Pragma_Argument_Associations (N));
-
-   begin
-      if No (Arg1) then
-         return Empty;
-
-      else
-         declare
-            Arg : Node_Id := Next (Arg1);
-         begin
-            if No (Arg) then
-               return Empty;
-
-            else
-               Next (Arg);
-
-               if Present (Arg)
-                 and then Nkind (Arg) = N_Pragma_Argument_Association
-               then
-                  return Expression (Arg);
-               else
-                  return Arg;
-               end if;
-            end if;
-         end;
-      end if;
-   end Arg3;
+   end Arg_N;
 
    ---------------------
    -- Expand_N_Pragma --
@@ -317,8 +267,8 @@ package body Exp_Prag is
    --------------------------
 
    procedure Expand_Pragma_Check (N : Node_Id) is
-      Cond : constant Node_Id := Arg2 (N);
-      Nam  : constant Name_Id := Chars (Arg1 (N));
+      Cond : constant Node_Id := Arg_N (N, 2);
+      Nam  : constant Name_Id := Chars (Arg_N (N, 1));
       Msg  : Node_Id;
 
       Loc : constant Source_Ptr := Sloc (First_Node (Cond));
@@ -477,7 +427,7 @@ package body Exp_Prag is
       if ((Debug_Flag_Dot_G
             or else Restriction_Active (No_Exception_Propagation))
            and then Present (Find_Local_Handler (RTE (RE_Assert_Failure), N)))
-        or else (Opt.Exception_Locations_Suppressed and then No (Arg3 (N)))
+        or else (Opt.Exception_Locations_Suppressed and then No (Arg_N (N, 3)))
       then
          Rewrite (N,
            Make_If_Statement (Loc,
@@ -491,8 +441,8 @@ package body Exp_Prag is
       else
          --  If we have a message given, use it
 
-         if Present (Arg3 (N)) then
-            Msg := Get_Pragma_Arg (Arg3 (N));
+         if Present (Arg_N (N, 3)) then
+            Msg := Get_Pragma_Arg (Arg_N (N, 3));
 
          --  Here we have no string, so prepare one
 
@@ -615,8 +565,8 @@ package body Exp_Prag is
    procedure Expand_Pragma_Common_Object (N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (N);
 
-      Internal : constant Node_Id := Arg1 (N);
-      External : constant Node_Id := Arg2 (N);
+      Internal : constant Node_Id := Arg_N (N, 1);
+      External : constant Node_Id := Arg_N (N, 2);
 
       Psect : Node_Id;
       --  Psect value upper cased as string literal
@@ -1380,11 +1330,11 @@ package body Exp_Prag is
       if Relaxed_RM_Semantics
         and then List_Length (Pragma_Argument_Associations (N)) = 2
         and then Pragma_Name (N) = Name_Import
-        and then Nkind (Arg2 (N)) = N_String_Literal
+        and then Nkind (Arg_N (N, 2)) = N_String_Literal
       then
-         Def_Id := Entity (Arg1 (N));
+         Def_Id := Entity (Arg_N (N, 1));
       else
-         Def_Id := Entity (Arg2 (N));
+         Def_Id := Entity (Arg_N (N, 2));
       end if;
 
       --  Variable case (we have to undo any initialization already done)
@@ -1401,7 +1351,7 @@ package body Exp_Prag is
 
          declare
             Loc          : constant Source_Ptr := Sloc (N);
-            Rtti_Name    : constant Node_Id    := Arg3 (N);
+            Rtti_Name    : constant Node_Id    := Arg_N (N, 3);
             Dum          : constant Entity_Id  := Make_Temporary (Loc, 'D');
             Exdata       : List_Id;
             Lang_Char    : Node_Id;
@@ -2219,7 +2169,9 @@ package body Exp_Prag is
                           (Make_Function_Call
                              (Loc, New_Occurrence_Of (RTE (RE_Clock), Loc)))),
                     Right_Opnd  =>
-                      Unchecked_Convert_To (Standard_Duration, Arg1 (N)))))));
+                      Unchecked_Convert_To (
+                        Standard_Duration,
+                        Arg_N (N, 1)))))));
 
          Analyze (N);
       end if;
@@ -2230,7 +2182,7 @@ package body Exp_Prag is
    -------------------------------------------
 
    procedure Expand_Pragma_Suppress_Initialization (N : Node_Id) is
-      Def_Id : constant Entity_Id  := Entity (Arg1 (N));
+      Def_Id : constant Entity_Id  := Entity (Arg_N (N, 1));
 
    begin
       --  Variable case (we have to undo any initialization already done)
