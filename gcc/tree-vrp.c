@@ -1796,7 +1796,6 @@ register_edge_assert_for_2 (tree name, edge e,
     {
       enum tree_code new_code = ((comp_code == GT_EXPR || comp_code == GE_EXPR)
 				 ? GT_EXPR : LE_EXPR);
-
       add_assert_info (asserts, name, name, new_code, x);
     }
   add_assert_info (asserts, name, name, comp_code, val);
