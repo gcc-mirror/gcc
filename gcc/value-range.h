@@ -35,48 +35,20 @@ enum value_range_kind
   VR_LAST
 };
 
-enum vrange_discriminator
-{
-  VRANGE_KIND_UNKNOWN,
-  VRANGE_KIND_INT,
-  VRANGE_KIND_INT_WITH_EQUIVS
-};
+// Helper for is_a<> to distinguish between irange and widest_irange.
 
-class vrange
+enum irange_discriminator
 {
-public:
-  unsigned num_pairs () const;
-  bool undefined_p () const;
-  bool varying_p () const;
-  void set_undefined ();
-  void set_varying (tree type);
-  tree type () const;
-  void dump (FILE * = stderr) const;
-  vrange& operator= (const vrange &);
-  virtual void union_ (const vrange &) = 0;
-  virtual void intersect (const vrange &) = 0;
-  virtual void invert () = 0;
-protected:
-  bool simple_ranges_p () const { return m_max_ranges == 1; }
-private:
-  bool compatible_copy_p (const vrange &) const;
-  void copy_compatible_range (const vrange &);
-  void copy_incompatible_range (const vrange &);
-  virtual void copy_simple_range (const vrange &) = 0;
-
-public:
-  // For is_a_helper.
-  enum vrange_discriminator m_discriminator;
-protected:
-  unsigned char m_num_ranges;
-  unsigned char m_max_ranges;
-  value_range_kind m_kind;
-  tree *m_base;
+  IRANGE_KIND_UNKNOWN,
+  IRANGE_KIND_INT,
+  IRANGE_KIND_WIDEST_INT
 };
 
 // Range of values that can be associated with an SSA_NAME.
+//
+// This is the base class without any storage.
 
-class irange : public vrange
+class irange
 {
 public:
   void set (tree, tree, value_range_kind = VR_RANGE);
@@ -91,21 +63,28 @@ public:
   /* Types of value ranges.  */
   bool symbolic_p () const;
   bool constant_p () const;
+  bool undefined_p () const;
+  bool varying_p () const;
+  void set_varying (tree type);
+  void set_undefined ();
 
   void union_ (const irange *);
   void intersect (const irange *);
-  virtual void union_ (const vrange &);
-  virtual void intersect (const vrange &);
+  void union_ (const irange &);
+  void intersect (const irange &);
 
+  irange& operator= (const irange &);
   bool operator== (const irange &) const;
   bool operator!= (const irange &r) const { return !(*this == r); }
   bool equal_p (const irange &) const;
 
   /* Misc methods.  */
+  tree type () const;
   bool may_contain_p (tree) const;
   bool zero_p () const;
   bool nonzero_p () const;
   bool singleton_p (tree *result = NULL) const;
+  void dump (FILE * = stderr) const;
   void simple_dump (FILE *) const;
 
   static bool supports_type_p (tree);
@@ -117,17 +96,18 @@ public:
   wide_int lower_bound (unsigned = 0) const;
   wide_int upper_bound (unsigned) const;
   wide_int upper_bound () const;
-  virtual void invert ();
+  void invert ();
 
 protected:
   void check ();
+  // Returns true for an old-school value_range with anti ranges.
+  bool simple_ranges_p () const { return m_max_ranges == 1; }
   irange (tree *, unsigned);
   irange (tree *, unsigned, const irange &);
 
 private:
   int value_inside_range (tree) const;
 
-  virtual void copy_simple_range (const vrange &);
   void intersect_from_wide_ints (const wide_int &, const wide_int &);
   bool maybe_anti_range (const irange &) const;
   void multi_range_set_anti_range (tree, tree);
@@ -135,7 +115,22 @@ private:
   void multi_range_intersect (const irange &);
   tree tree_lower_bound (unsigned = 0) const;
   tree tree_upper_bound (unsigned) const;
+
+  bool compatible_copy_p (const irange &) const;
+  void copy_compatible_range (const irange &);
+  void copy_simple_range (const irange &);
+
+public:
+  ENUM_BITFIELD(irange_discriminator) m_discriminator : 8;
+protected:
+  unsigned char m_num_ranges;
+  unsigned char m_max_ranges;
+  ENUM_BITFIELD(value_range_kind) m_kind : 8;
+
+  tree *m_base;
 };
+
+// int_range<N> describes an irange with N pairs of ranges.
 
 template<unsigned N>
 class GTY((user)) int_range : public irange
@@ -165,6 +160,25 @@ private:
   tree m_ranges[N*2];
 };
 
+// This is a special int_range<> with only one pair, plus
+// VR_ANTI_RANGE magic to describe slightly more than can be described
+// in one pair.  It is described in the code as a "simple range" (as
+// opposed to multi-ranges which have multiple sub-ranges).  It is
+// provided for backward compatibility with the more limited,
+// traditional value_range's.
+//
+// simple_ranges_p() returns true for value_range's.
+//
+// There are copy methods to seamlessly copy to/fro multi-ranges.
+
+typedef int_range<1> value_range;
+
+// An irange with "unlimited" sub-ranges.  In reality we are limited
+// by the number of values that fit in an `m_num_ranges'.
+//
+// A widest_irange starts with a handful of sub-ranges in local
+// storage and will grow into the heap as necessary.
+
 class widest_irange : public irange
 {
 public:
@@ -177,16 +191,14 @@ public:
   widest_irange (const irange &);
   ~widest_irange ();
   widest_irange& operator= (const widest_irange &);
-
-  virtual void union_ (const vrange &);
-  virtual void invert ();
+  void resize_if_needed (unsigned);
 #if CHECKING_P
   static void stats_dump (FILE *);
 #endif
+
 private:
   static const unsigned m_sub_ranges_in_local_storage = 5;
   void init_widest_irange ();
-  void resize_if_needed (unsigned);
 
   // Memory usage stats.
   void stats_register_use (void);
@@ -196,14 +208,12 @@ private:
   tree m_ranges[m_sub_ranges_in_local_storage*2];
 };
 
-typedef int_range<1> value_range;
-
 value_range union_helper (const value_range *, const value_range *);
 value_range intersect_helper (const value_range *, const value_range *);
 extern bool range_has_numeric_bounds_p (const irange *);
 extern bool ranges_from_anti_range (const value_range *,
 				    value_range *, value_range *);
-extern void dump_value_range (FILE *, const vrange *);
+extern void dump_value_range (FILE *, const irange *);
 extern void dump_value_range_stats (FILE *);
 extern bool vrp_val_is_min (const_tree);
 extern bool vrp_val_is_max (const_tree);
@@ -244,7 +254,7 @@ irange::kind () const
 }
 
 inline tree
-vrange::type () const
+irange::type () const
 {
   gcc_checking_assert (!undefined_p ());
   return TREE_TYPE (m_base[0]);
@@ -277,7 +287,7 @@ irange::max () const
 }
 
 inline bool
-vrange::varying_p () const
+irange::varying_p () const
 {
   if (simple_ranges_p ())
     return m_kind == VR_VARYING;
@@ -288,7 +298,7 @@ vrange::varying_p () const
 }
 
 inline bool
-vrange::undefined_p () const
+irange::undefined_p () const
 {
   if (simple_ranges_p ())
     {
@@ -339,26 +349,6 @@ range_includes_zero_p (const irange *vr)
     return true;
 
   return vr->may_contain_p (build_zero_cst (vr->type ()));
-}
-
-template <>
-template <>
-inline bool
-is_a_helper <const irange *>::test (const vrange *p)
-{
-  return p
-    && (p->m_discriminator == VRANGE_KIND_INT
-	|| p->m_discriminator == VRANGE_KIND_INT_WITH_EQUIVS);
-}
-
-template <>
-template <>
-inline bool
-is_a_helper <irange *>::test (vrange *p)
-{
-  return p
-    && (p->m_discriminator == VRANGE_KIND_INT
-	|| p->m_discriminator == VRANGE_KIND_INT_WITH_EQUIVS);
 }
 
 template<unsigned N>

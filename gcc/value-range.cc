@@ -27,36 +27,38 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "fold-const.h"
 
-// Abstract vrange implementation.
+// Here we copy between any two irange's.  The ranges can be simple or
+// multi-ranges, and copying between any combination works correctly.
 
-unsigned
-vrange::num_pairs () const
-{
-  return m_num_ranges;
-}
-
-vrange&
-vrange::operator= (const vrange &src)
+irange&
+irange::operator= (const irange &src)
 {
   if (compatible_copy_p (src))
     copy_compatible_range (src);
   else if (simple_ranges_p () != src.simple_ranges_p ())
     copy_simple_range (src);
   else
-    copy_incompatible_range (src);
+    {
+      set_undefined ();
+      union_ (src);
+    }
   return *this;
 }
 
+// Return TRUE if copying SRC to THIS can be done trivially.  Trivial
+// copies are those that can be done by just straight up copying the
+// fields, without having to squish or expand ranges (as is the case
+// when copying between a simple and a multi-range).
+
 bool
-vrange::compatible_copy_p (const vrange &src) const
+irange::compatible_copy_p (const irange &src) const
 {
   if (src.undefined_p () || src.varying_p ())
     return true;
 
   // Symbolics may be copied straight because there's only one
   // representation for them.
-  const irange *int_range = as_a <const irange *> (&src);
-  if (int_range && !range_has_numeric_bounds_p (int_range))
+  if (!range_has_numeric_bounds_p (&src))
     return true;
 
   if (simple_ranges_p () != src.simple_ranges_p ())
@@ -65,8 +67,10 @@ vrange::compatible_copy_p (const vrange &src) const
   return m_max_ranges >= src.m_num_ranges;
 }
 
+// Trivial copy from SRC to THIS by copying the component fields.
+
 void
-vrange::copy_compatible_range (const vrange &src)
+irange::copy_compatible_range (const irange &src)
 {
   if (src.undefined_p ())
     set_undefined ();
@@ -84,12 +88,8 @@ vrange::copy_compatible_range (const vrange &src)
     }
 }
 
-void
-vrange::copy_incompatible_range (const vrange &src)
-{
-  set_undefined ();
-  union_ (src);
-}
+// Return TRUE if SRC is a multi-range that can be represented as a
+// VR_ANTI_RANGE.
 
 bool
 irange::maybe_anti_range (const irange &src) const
@@ -107,10 +107,12 @@ irange::maybe_anti_range (const irange &src) const
 	  && ub == type_max);
 }
 
+// Copy between a simple and a multi-range or vice-versa.
+
 void
-irange::copy_simple_range (const vrange &vsrc)
+irange::copy_simple_range (const irange &vsrc)
 {
-  const irange *src = as_a <const irange *> (&vsrc);
+  const irange *src = &vsrc;
   gcc_checking_assert (src->simple_ranges_p () != simple_ranges_p ());
 
   if (src->undefined_p ())
@@ -144,7 +146,7 @@ irange::copy_simple_range (const vrange &vsrc)
 irange::irange (tree *base, unsigned nranges)
 {
   m_kind = VR_UNDEFINED;
-  m_discriminator = VRANGE_KIND_INT;
+  m_discriminator = IRANGE_KIND_INT;
   m_base = base;
   m_num_ranges = 0;
   m_max_ranges = nranges;
@@ -152,10 +154,9 @@ irange::irange (tree *base, unsigned nranges)
 
 irange::irange (tree *base, unsigned nranges, const irange &other)
 {
-  m_discriminator = VRANGE_KIND_INT;
+  m_discriminator = IRANGE_KIND_INT;
   m_base = base;
   m_max_ranges = nranges;
-  // Uses the generic vrange copy constructor to copy without sharing.
   *this = other;
 }
 
@@ -201,11 +202,36 @@ template<unsigned N>
 int_range<N>&
 int_range<N>::operator= (const int_range &src)
 {
-  vrange::operator= (src);
+  irange::operator= (src);
   return *this;
 }
-
+
 // widest_irange implementation
+
+template <>
+template <>
+inline bool
+is_a_helper <const irange *>::test (const irange *p)
+{
+  return p && (p->m_discriminator == IRANGE_KIND_INT
+	       || p->m_discriminator == IRANGE_KIND_WIDEST_INT);
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <const widest_irange *>::test (const irange *p)
+{
+  return p && p->m_discriminator == IRANGE_KIND_WIDEST_INT;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <widest_irange *>::test (irange *p)
+{
+  return p && p->m_discriminator == IRANGE_KIND_WIDEST_INT;
+}
 
 widest_irange::widest_irange ()
   : irange (m_ranges, m_sub_ranges_in_local_storage)
@@ -218,7 +244,7 @@ widest_irange::widest_irange (const widest_irange &other)
 {
   init_widest_irange ();
   resize_if_needed (other.num_pairs ());
-  vrange::operator= (other);
+  irange::operator= (other);
 }
 
 widest_irange::widest_irange (tree min, tree max, value_range_kind kind)
@@ -251,7 +277,7 @@ widest_irange::widest_irange (const irange &other)
 {
   init_widest_irange ();
   resize_if_needed (other.num_pairs ());
-  vrange::operator= (other);
+  irange::operator= (other);
 }
 
 widest_irange::~widest_irange ()
@@ -265,7 +291,7 @@ widest_irange::~widest_irange ()
 widest_irange &
 widest_irange::operator= (const widest_irange &src)
 {
-  vrange::operator= (src);
+  irange::operator= (src);
   return *this;
 }
 
@@ -273,6 +299,7 @@ void
 widest_irange::init_widest_irange ()
 {
   m_blob = NULL;
+  m_discriminator = IRANGE_KIND_WIDEST_INT;
 }
 
 void
@@ -281,7 +308,9 @@ widest_irange::resize_if_needed (unsigned nranges)
   if (m_max_ranges >= nranges)
     return;
 
-  // We're about to double the size.  Bail if it won't fit.
+  // If the reallocation below will exceed the maximum number of
+  // ranges that fit in the m_max_ranges field, just leave things as
+  // they are.  This is the theoreticaly max we can handle.
   if (nranges * 2 > sizeof (m_max_ranges) * 255)
     return;
 
@@ -298,22 +327,6 @@ widest_irange::resize_if_needed (unsigned nranges)
 	  m_blob[i * 2 + 1] = m_ranges[i * 2 + 1];
 	}
     }
-}
-
-void
-widest_irange::union_ (const vrange &other)
-{
-  unsigned size = num_pairs () + other.num_pairs ();
-  resize_if_needed (size);
-  irange::union_ (other);
-}
-
-void
-widest_irange::invert ()
-{
-  unsigned size = num_pairs () + 1;
-  resize_if_needed (size);
-  irange::invert ();
 }
 
 int widest_irange::stats_used_buckets[11];
@@ -350,16 +363,17 @@ dump_value_range_stats (FILE *file)
 }
 
 void
-vrange::set_undefined ()
+irange::set_undefined ()
 {
   if (simple_ranges_p ())
     m_kind = VR_UNDEFINED;
-  else m_kind = VR_RANGE;
+  else
+    m_kind = VR_RANGE;
   m_num_ranges = 0;
 }
 
 void
-vrange::set_varying (tree type)
+irange::set_varying (tree type)
 {
   if (simple_ranges_p ())
     m_kind = VR_VARYING;
@@ -547,6 +561,8 @@ irange::set (tree min, tree max, value_range_kind kind)
   if (flag_checking)
     check ();
 }
+
+// Set range for a multi-range irange from an anti-range ~[MIN,MAX].
 
 void
 irange::multi_range_set_anti_range (tree min, tree max)
@@ -1693,6 +1709,11 @@ union_helper (const value_range *vr0, const value_range *vr1)
 void
 irange::union_ (const irange *other)
 {
+  if (widest_irange *widest = dyn_cast <widest_irange *> (this))
+    {
+      unsigned size = num_pairs () + other->num_pairs ();
+      widest->resize_if_needed (size);
+    }
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Meeting\n  ");
@@ -1750,11 +1771,10 @@ private:
 /* Range union, but for references.  */
 
 void
-irange::union_ (const vrange &vr)
+irange::union_ (const irange &r)
 {
   disable_dump_details details;
-  const irange *other = as_a <const irange *> (&vr);
-  union_ (other);
+  union_ (&r);
 }
 
 void
@@ -1805,12 +1825,13 @@ irange::intersect (const irange *other)
 /* Range intersect, but for references.  */
 
 void
-irange::intersect (const vrange &vr)
+irange::intersect (const irange &r)
 {
   disable_dump_details details;
-  const irange *other = as_a <const irange *> (&vr);
-  intersect (other);
+  intersect (&r);
 }
+
+// union_ for multi-ranges.
 
 void
 irange::multi_range_union (const irange &r)
@@ -1954,6 +1975,8 @@ irange::intersect_from_wide_ints (const wide_int &x, const wide_int &y)
     check ();
 }
 
+// intersect for multi-ranges.
+
 void
 irange::multi_range_intersect (const irange &r)
 {
@@ -2006,6 +2029,14 @@ subtract_one (const wide_int &x, tree type, wi::overflow_type &overflow)
 void
 irange::invert ()
 {
+  // Resize a widest_irange if needed.
+  if (widest_irange *widest = dyn_cast <widest_irange *> (this))
+    {
+      unsigned size = num_pairs () + 1;
+      widest->resize_if_needed (size);
+    }
+
+  // Handle simple ranges.
   if (simple_ranges_p ())
     {
       /* We can't just invert VR_RANGE and VR_ANTI_RANGE because we may
@@ -2114,6 +2145,8 @@ irange::invert ()
     check ();
 }
 
+// Dump a simple range.
+
 void
 irange::simple_dump (FILE *file) const
 {
@@ -2172,13 +2205,14 @@ dump_bound_with_infinite_markers (FILE *file, tree bound)
     print_generic_expr (file, bound);
 }
 
+// Dump any range.
+
 void
-vrange::dump (FILE *file) const
+irange::dump (FILE *file) const
 {
-  const irange *ir = as_a <const irange *> (this);
-  if (ir && simple_ranges_p ())
+  if (simple_ranges_p ())
     {
-      ir->simple_dump (file);
+      simple_dump (file);
       return;
     }
   if (undefined_p ())
@@ -2206,7 +2240,7 @@ vrange::dump (FILE *file) const
   else if (m_kind == VR_ANTI_RANGE)
     {
       gcc_checking_assert (m_num_ranges == 1);
-      gcc_checking_assert (!range_has_numeric_bounds_p (ir));
+      gcc_checking_assert (!range_has_numeric_bounds_p (this));
       tree lb = m_base[0];
       tree ub = m_base[1];
       fprintf (file, "~[");
@@ -2220,20 +2254,20 @@ vrange::dump (FILE *file) const
 }
 
 void
-dump_value_range (FILE *file, const vrange *vr)
+dump_value_range (FILE *file, const irange *vr)
 {
   vr->dump (file);
 }
 
 DEBUG_FUNCTION void
-debug (const vrange *vr)
+debug (const irange *vr)
 {
   dump_value_range (stderr, vr);
   fprintf (stderr, "\n");
 }
 
 DEBUG_FUNCTION void
-debug (const vrange &vr)
+debug (const irange &vr)
 {
   debug (&vr);
 }

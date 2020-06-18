@@ -29,7 +29,7 @@ class GTY((user)) value_range_equiv : public value_range
  public:
   value_range_equiv () : value_range ()
     {
-      m_discriminator = VRANGE_KIND_INT_WITH_EQUIVS;
+      m_discriminator = IRANGE_KIND_INT;
       m_equiv = NULL;
     }
   value_range_equiv (const value_range &);
@@ -54,8 +54,6 @@ class GTY((user)) value_range_equiv : public value_range
   bool operator!= (const value_range_equiv &) const /* = delete */;
   void intersect (const value_range_equiv *);
   void union_ (const value_range_equiv *);
-  virtual void intersect (const vrange &);
-  virtual void union_ (const vrange &);
   bool equal_p (const value_range_equiv &, bool ignore_equivs) const;
 
   /* Types of value ranges.  */
@@ -84,21 +82,5 @@ class GTY((user)) value_range_equiv : public value_range
 };
 
 extern void dump_value_range (FILE *, const value_range_equiv *);
-
-template <>
-template <>
-inline bool
-is_a_helper <const value_range_equiv *>::test (const vrange *p)
-{
-  return p && p->m_discriminator == VRANGE_KIND_INT_WITH_EQUIVS;
-}
-
-template <>
-template <>
-inline bool
-is_a_helper <value_range_equiv *>::test (vrange *p)
-{
-  return p && p->m_discriminator == VRANGE_KIND_INT_WITH_EQUIVS;
-}
 
 #endif // GCC_VALUE_RANGE_EQUIV_H

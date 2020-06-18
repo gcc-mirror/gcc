@@ -30,14 +30,14 @@ along with GCC; see the file COPYING3.  If not see
 value_range_equiv::value_range_equiv (tree min, tree max, bitmap equiv,
 				      value_range_kind kind)
 {
-  m_discriminator = VRANGE_KIND_INT_WITH_EQUIVS;
+  m_discriminator = IRANGE_KIND_INT;
   m_equiv = NULL;
   set (min, max, equiv, kind);
 }
 
 value_range_equiv::value_range_equiv (const value_range &other)
 {
-  m_discriminator = VRANGE_KIND_INT_WITH_EQUIVS;
+  m_discriminator = IRANGE_KIND_INT;
   m_equiv = NULL;
   set (other.min(), other.max (), NULL, other.kind ());
 }
@@ -190,16 +190,8 @@ value_range_equiv::equiv_add (const_tree var,
 }
 
 void
-value_range_equiv::intersect (const vrange &vother)
+value_range_equiv::intersect (const value_range_equiv *other)
 {
-  if (!is_a <const value_range_equiv *> (&vother))
-    {
-      irange::intersect (vother);
-      return;
-    }
-  const value_range_equiv *other = as_a <const value_range_equiv *> (&vother);
-  gcc_checking_assert (other != NULL);
-
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Intersecting\n  ");
@@ -247,22 +239,8 @@ value_range_equiv::intersect (const vrange &vother)
 }
 
 void
-value_range_equiv::intersect (const value_range_equiv *other)
+value_range_equiv::union_ (const value_range_equiv *other)
 {
-  intersect (*other);
-}
-
-void
-value_range_equiv::union_ (const vrange &vother)
-{
-  if (!is_a <const value_range_equiv *> (&vother))
-    {
-      irange::union_ (vother);
-      return;
-    }
-  const value_range_equiv *other = as_a <const value_range_equiv *> (&vother);
-  gcc_checking_assert (other != NULL);
-
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Meeting\n  ");
@@ -278,8 +256,7 @@ value_range_equiv::union_ (const vrange &vother)
     this->deep_copy (other);
   else
     {
-      gcc_checking_assert (other->simple_ranges_p ());
-      value_range tem = union_helper (this, (const value_range *) other);
+      value_range tem = union_helper (this, other);
       this->update (tem.min (), tem.max (), tem.kind ());
 
       /* The resulting set of equivalences is always the intersection of
@@ -296,12 +273,6 @@ value_range_equiv::union_ (const vrange &vother)
       dump_value_range (dump_file, this);
       fprintf (dump_file, "\n");
     }
-}
-
-void
-value_range_equiv::union_ (const value_range_equiv *other)
-{
-  union_ (*other);
 }
 
 void
