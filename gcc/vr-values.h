@@ -22,6 +22,65 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "value-range-equiv.h"
 
+// Class to simplify a statement using range information.
+//
+// The constructor takes a full vr_values, but all it needs is
+// get_value_range() from it.  This class could be made to work with
+// any range repository.
+
+class simplify_using_ranges
+{
+public:
+  simplify_using_ranges (class vr_values *);
+  ~simplify_using_ranges ();
+  bool simplify (gimple_stmt_iterator *);
+
+  // ?? These should be cleaned, merged, and made private.
+  tree vrp_evaluate_conditional (tree_code, tree, tree, gimple *);
+  void vrp_visit_cond_stmt (gcond *, edge *);
+  tree vrp_evaluate_conditional_warnv_with_ops (enum tree_code,
+						tree, tree, bool,
+						bool *, bool *);
+
+private:
+  const value_range_equiv *get_value_range (const_tree op);
+  bool simplify_truth_ops_using_ranges (gimple_stmt_iterator *, gimple *);
+  bool simplify_div_or_mod_using_ranges (gimple_stmt_iterator *, gimple *);
+  bool simplify_abs_using_ranges (gimple_stmt_iterator *, gimple *);
+  bool simplify_bit_ops_using_ranges (gimple_stmt_iterator *, gimple *);
+  bool simplify_min_or_max_using_ranges (gimple_stmt_iterator *, gimple *);
+  bool simplify_cond_using_ranges_1 (gcond *);
+  bool fold_cond (gcond *);
+  bool simplify_switch_using_ranges (gswitch *);
+  bool simplify_float_conversion_using_ranges (gimple_stmt_iterator *,
+					       gimple *);
+  bool simplify_internal_call_using_ranges (gimple_stmt_iterator *, gimple *);
+
+  bool two_valued_val_range_p (tree, tree *, tree *);
+  bool op_with_boolean_value_range_p (tree);
+  tree compare_name_with_value (enum tree_code, tree, tree, bool *, bool);
+  tree compare_names (enum tree_code, tree, tree, bool *);
+  const value_range_equiv *get_vr_for_comparison (int, value_range_equiv *);
+  tree vrp_evaluate_conditional_warnv_with_ops_using_ranges (enum tree_code,
+							     tree, tree,
+							     bool *);
+  void cleanup_edges_and_switches (void);
+
+  /* Vectors of edges that need removing and switch statements that
+     need updating.  It is expected that a pass using the simplification
+     routines will, at the end of the pass, clean up the edges and
+     switch statements.  The class dtor will try to detect cases
+     that do not follow that expectation.  */
+  struct switch_update {
+    gswitch *stmt;
+    tree vec;
+  };
+
+  vec<edge> to_remove_edges;
+  vec<switch_update> to_update_switch_stmts;
+  class vr_values *store;
+};
+
 /* The VR_VALUES class holds the current view of range information
    for all the SSA_NAMEs in the IL.
 
@@ -52,7 +111,6 @@ class vr_values
   tree op_with_constant_singleton_value_range (tree);
   void adjust_range_with_scev (value_range_equiv *, class loop *,
 			       gimple *, tree);
-  tree vrp_evaluate_conditional (tree_code, tree, tree, gimple *);
   void dump_all_value_ranges (FILE *);
 
   void extract_range_for_var_from_comparison_expr (tree, enum tree_code,
@@ -61,11 +119,6 @@ class vr_values
   void extract_range_from_phi_node (gphi *, value_range_equiv *);
   void extract_range_basic (value_range_equiv *, gimple *);
   void extract_range_from_stmt (gimple *, edge *, tree *, value_range_equiv *);
-
-  void vrp_visit_cond_stmt (gcond *, edge *);
-
-  void simplify_cond_using_ranges_2 (gcond *);
-  bool simplify_stmt_using_ranges (gimple_stmt_iterator *);
 
   /* Indicate that propagation through the lattice is complete.  */
   void set_lattice_propagation_complete (void) { values_propagated = true; }
@@ -76,24 +129,9 @@ class vr_values
   void free_value_range (value_range_equiv *vr)
     { vrp_value_range_pool.remove (vr); }
 
-  /* */
-  void cleanup_edges_and_switches (void);
-
  private:
   value_range_equiv *get_lattice_entry (const_tree);
   bool vrp_stmt_computes_nonzero (gimple *);
-  bool op_with_boolean_value_range_p (tree);
-  bool check_for_binary_op_overflow (enum tree_code, tree, tree, tree, bool *);
-  const value_range_equiv *get_vr_for_comparison (int, value_range_equiv *);
-  tree compare_name_with_value (enum tree_code, tree, tree, bool *, bool);
-  tree compare_names (enum tree_code, tree, tree, bool *);
-  bool two_valued_val_range_p (tree, tree *, tree *);
-  tree vrp_evaluate_conditional_warnv_with_ops_using_ranges (enum tree_code,
-							     tree, tree,
-							     bool *);
-  tree vrp_evaluate_conditional_warnv_with_ops (enum tree_code,
-						tree, tree, bool,
-						bool *, bool *);
   void extract_range_from_assignment (value_range_equiv *, gassign *);
   void extract_range_from_assert (value_range_equiv *, tree);
   void extract_range_from_ssa_name (value_range_equiv *, tree);
@@ -106,17 +144,6 @@ class vr_values
 				      tree, tree, tree);
   void vrp_visit_assignment_or_call (gimple*, tree *, value_range_equiv *);
   void vrp_visit_switch_stmt (gswitch *, edge *);
-  bool simplify_truth_ops_using_ranges (gimple_stmt_iterator *, gimple *);
-  bool simplify_div_or_mod_using_ranges (gimple_stmt_iterator *, gimple *);
-  bool simplify_abs_using_ranges (gimple_stmt_iterator *, gimple *);
-  bool simplify_bit_ops_using_ranges (gimple_stmt_iterator *, gimple *);
-  bool simplify_min_or_max_using_ranges (gimple_stmt_iterator *, gimple *);
-  bool simplify_cond_using_ranges_1 (gcond *);
-  bool fold_cond (gcond *);
-  bool simplify_switch_using_ranges (gswitch *);
-  bool simplify_float_conversion_using_ranges (gimple_stmt_iterator *,
-					       gimple *);
-  bool simplify_internal_call_using_ranges (gimple_stmt_iterator *, gimple *);
 
   /* Allocation pools for value_range objects.  */
   object_allocator<value_range_equiv> vrp_value_range_pool;
@@ -136,20 +163,18 @@ class vr_values
      number of executable edges we saw the last time we visited the
      node.  */
   int *vr_phi_edge_counts;
-
-  /* Vectors of edges that need removing and switch statements that
-     need updating.  It is expected that a pass using the simplification
-     routines will, at the end of the pass, clean up the edges and
-     switch statements.  The class dtor will try to detect cases
-     that do not follow that expectation.  */
-  struct switch_update {
-    gswitch *stmt;
-    tree vec;
-  };
-
-  vec<edge> to_remove_edges;
-  vec<switch_update> to_update_switch_stmts;
+  simplify_using_ranges simplifier;
 };
 
+inline const value_range_equiv *
+simplify_using_ranges::get_value_range (const_tree op)
+{
+  return store->get_value_range (op);
+}
+
 extern tree get_output_for_vrp (gimple *);
+
+// FIXME: Move this to tree-vrp.c.
+void simplify_cond_using_ranges_2 (class vr_values *, gcond *);
+
 #endif /* GCC_VR_VALUES_H */
