@@ -1,3 +1,105 @@
+2020-06-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/gomp/default-1.c: Update.
+	* c-c++-common/gomp/defaultmap-3.c: Likewise.
+	* c-c++-common/gomp/order-4.c: Likewise.
+	* g++.dg/gomp/parallel-2.C: Likewise.
+	* g++.dg/gomp/predetermined-1.C: Likewise.
+	* g++.dg/gomp/sharing-1.C: Likewise.
+	* gcc.dg/gomp/appendix-a/a.24.1.c: Likewise.
+	* gcc.dg/gomp/parallel-2.c: Likewise.
+	* gcc.dg/gomp/pr44085.c: Likewise.
+	* gcc.dg/gomp/sharing-1.c: Likewise.
+	* gcc.dg/gomp/vla-1.c: Likewise.
+	* gfortran.dg/gomp/appendix-a/a.24.1.f90: Likewise.
+	* gfortran.dg/gomp/crayptr3.f90: Likewise.
+	* gfortran.dg/gomp/pr33439.f90: Likewise.
+	* gfortran.dg/gomp/pr44036-1.f90: Likewise.
+	* gfortran.dg/gomp/pr44085.f90: Likewise.
+	* gfortran.dg/gomp/pr44536.f90: Likewise.
+	* gfortran.dg/gomp/pr94672.f90: Likewise.
+	* gfortran.dg/gomp/sharing-1.f90: Likewise.
+	* gfortran.dg/gomp/sharing-2.f90: Likewise.
+	* gfortran.dg/gomp/sharing-3.f90: Likewise.
+
+2020-06-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/gomp/hsa-indirect-call-1.c: New file.
+
+2020-06-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/66159
+	* g++.dg/warn/forward-inner.C: Check alias-declaration using
+	elaborated-type-specifier.
+
+2020-06-17  Bin Cheng  <bin.cheng@linux.alibaba.com>
+	    Kaipeng Zhou  <zhoukaipeng3@huawei.com>
+	    Bin Cheng  <bin.cheng@linux.alibaba.com>
+	    Kaipeng Zhou  <zhoukaipeng3@huawei.com>
+
+	PR tree-optimization/95199
+	* gcc.target/aarch64/sve/pr95199.c: New test.
+
+2020-06-17  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/spaceship-synth9.C: New test.
+
+2020-06-17  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/concepts-ca107.C: New test.
+
+2020-06-17  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/consteval17.C: New test.
+
+2020-06-17  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/pr62101.C: Expect error.
+	* g++.dg/cpp0x/pr80259.C: Expect error.
+	* g++.dg/cpp2a/concepts-friend8.C: New test.
+
+2020-06-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* c-c++-common/pr95378.c: New test.
+
+2020-06-17  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/20200617.c: New test.
+
+2020-06-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95508
+	* g++.dg/template/conv16.C: New test.
+
+2020-06-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR testsuite/95716
+	* g++.dg/ext/pr85503.C: Give ai::cv public access.
+
+2020-06-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95717
+	* g++.dg/torture/pr95717.C: New testcase.
+
+2020-06-17  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/95720
+	* gcc.misc-tests/gcov-pr94029.c: Remove not needed remove-gcda.
+	* lib/gcov.exp: Delete properly .gcov files.
+
+2020-06-17  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/vect/vec-cond-expr-eh.C: New test.
+
+2020-06-17  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx2-shiftqihi-constant-1.c: New test.
+	* gcc.target/i386/avx2-shiftqihi-constant-2.c: Ditto.
+	* gcc.target/i386/avx512bw-shiftqihi-constant-1.c: Ditto.
+	* gcc.target/i386/avx512bw-shiftqihi-constant-2.c: Ditto.
+	* gcc.target/i386/sse2-shiftqihi-constant-1.c: Ditto.
+	* gcc.target/i386/sse2-shiftqihi-constant-2.c: Ditto.
+
 2020-06-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* g++.dg/torture/pr95493-1.C: New test.

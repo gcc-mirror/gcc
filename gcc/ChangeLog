@@ -1,3 +1,143 @@
+2020-06-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gimplify.c (omp_notice_threadprivate_variable)
+	(omp_default_clause, omp_notice_variable): 'inform' after 'error'
+	diagnostic.  Adjust all users.
+
+2020-06-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* hsa-gen.c (gen_hsa_insns_for_call): Move 'function_decl ==
+	NULL_TREE' check earlier.
+
+2020-06-17  Forrest Timour  <forrest.timour@gmail.com>
+
+	* doc/extend.texi (attribute access): Fix a typo.
+
+2020-06-17  Bin Cheng  <bin.cheng@linux.alibaba.com>
+	    Kaipeng Zhou  <zhoukaipeng3@huawei.com>
+
+	PR tree-optimization/95199
+	* tree-vect-stmts.c: Eliminate common stmts for bump and offset in
+	strided load/store operations and remove redundant code.
+
+2020-06-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* coretypes.h (first_type): New alias template.
+	* recog.h (insn_gen_fn::operator()): Use it instead of a decltype.
+	Remove spurious “...” and split the function type out into a typedef.
+
+2020-06-17  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.c (s390_fix_long_loop_prediction): Exit early
+	for PARALLELs.
+
+2020-06-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_build_slp_tree_1): Set the passed
+	in *vectype parameter.
+	(vect_build_slp_tree_2): Set SLP_TREE_VECTYPE from what
+	vect_build_slp_tree_1 computed.
+	(vect_analyze_slp_instance): Set SLP_TREE_VECTYPE.
+	(vect_slp_analyze_node_operations_1): Use the SLP node vector type.
+	(vect_schedule_slp_instance): Likewise.
+	* tree-vect-stmts.c (vect_is_simple_use): Take the vector type
+	from SLP_TREE_VECTYPE.
+
+2020-06-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95717
+	* tree-vect-loop-manip.c (slpeel_tree_duplicate_loop_to_edge_cfg):
+	Move BB SSA updating before exit/latch PHI current def copying.
+
+2020-06-17  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Add new file.
+	* expr.c (expand_expr_real_2): Add gcc_unreachable as we should
+	not meet this condition.
+	(do_store_flag): Likewise.
+	* gimplify.c (gimplify_expr): Gimplify first argument of
+	VEC_COND_EXPR to be a SSA name.
+	* internal-fn.c (vec_cond_mask_direct): New.
+	(vec_cond_direct): Likewise.
+	(vec_condu_direct): Likewise.
+	(vec_condeq_direct): Likewise.
+	(expand_vect_cond_optab_fn):  New.
+	(expand_vec_cond_optab_fn): Likewise.
+	(expand_vec_condu_optab_fn): Likewise.
+	(expand_vec_condeq_optab_fn): Likewise.
+	(expand_vect_cond_mask_optab_fn): Likewise.
+	(expand_vec_cond_mask_optab_fn): Likewise.
+	(direct_vec_cond_mask_optab_supported_p): Likewise.
+	(direct_vec_cond_optab_supported_p): Likewise.
+	(direct_vec_condu_optab_supported_p): Likewise.
+	(direct_vec_condeq_optab_supported_p): Likewise.
+	* internal-fn.def (VCOND): New OPTAB.
+	(VCONDU): Likewise.
+	(VCONDEQ): Likewise.
+	(VCOND_MASK): Likewise.
+	* optabs.c (get_rtx_code): Make it global.
+	(expand_vec_cond_mask_expr): Removed.
+	(expand_vec_cond_expr): Removed.
+	* optabs.h (expand_vec_cond_expr): Likewise.
+	(vector_compare_rtx): Make it global.
+	* passes.def: Add new pass_gimple_isel pass.
+	* tree-cfg.c (verify_gimple_assign_ternary): Add check
+	for VEC_COND_EXPR about first argument.
+	* tree-pass.h (make_pass_gimple_isel): New.
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Prevent
+	propagation of the first argument of a VEC_COND_EXPR.
+	* tree-ssa-reassoc.c (ovce_extract_ops): Support SSA_NAME as
+	first argument of a VEC_COND_EXPR.
+	(optimize_vec_cond_expr): Likewise.
+	* tree-vect-generic.c (expand_vector_divmod): Make SSA_NAME
+	for a first argument of created VEC_COND_EXPR.
+	(expand_vector_condition): Fix coding style.
+	* tree-vect-stmts.c (vectorizable_condition): Gimplify
+	first argument.
+	* gimple-isel.cc: New file.
+
+2020-06-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-hsa.h (TEXT_SECTION_ASM_OP): Use ".text".
+	(BSS_SECTION_ASM_OP): Use ".bss".
+	(ASM_SPEC): Remove "-mattr=-code-object-v3".
+	(LINK_SPEC): Add "--export-dynamic".
+	* config/gcn/gcn-opts.h (processor_type): Replace PROCESSOR_VEGA with
+	PROCESSOR_VEGA10 and PROCESSOR_VEGA20.
+	* config/gcn/gcn-run.c (HSA_RUNTIME_LIB): Use ".so.1" variant.
+	(load_image): Remove obsolete relocation handling.
+	Add ".kd" suffix to the symbol names.
+	* config/gcn/gcn.c (MAX_NORMAL_SGPR_COUNT): Set to 62.
+	(gcn_option_override): Update gcn_isa test.
+	(gcn_kernel_arg_types): Update all the assembler directives.
+	Remove the obsolete options.
+	(gcn_conditional_register_usage): Update MAX_NORMAL_SGPR_COUNT usage.
+	(gcn_omp_device_kind_arch_isa): Handle PROCESSOR_VEGA10 and
+	PROCESSOR_VEGA20.
+	(output_file_start): Rework assembler file header.
+	(gcn_hsa_declare_function_name): Rework kernel metadata.
+	* config/gcn/gcn.h (GCN_KERNEL_ARG_TYPES): Set to 16.
+	* config/gcn/gcn.opt (PROCESSOR_VEGA): Remove enum.
+	(PROCESSOR_VEGA10): New enum value.
+	(PROCESSOR_VEGA20): New enum value.
+
+2020-06-17  Martin Liska  <mliska@suse.cz>
+
+	* gcov-dump.c (print_version): Collapse lisence header to 2 lines
+	in --version.
+	* gcov-tool.c (print_version): Likewise.
+	* gcov.c (print_version): Likewise.
+
+2020-06-17  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/95524
+	* config/i386/i386-expand.c
+	(ix86_expand_vec_shift_qihi_constant): New function.
+	* config/i386/i386-protos.h
+	(ix86_expand_vec_shift_qihi_constant): Declare.
+	* config/i386/sse.md (<shift_insn><mode>3): Optimize shift
+	V*QImode by constant.
+
 2020-06-16  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR tree-optimization/95649

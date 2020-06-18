@@ -1,3 +1,19 @@
+2020-06-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR lto/94848
+	* testsuite/libgomp.fortran/use_device_ptr-optional-3.f90: Add
+	'dg-do run'.
+
+2020-06-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (init_environment_variables): Use ".so.1"
+	variant for HSA_RUNTIME_LIB name.
+	(find_executable_symbol_1): Delete.
+	(find_executable_symbol): Delete.
+	(init_kernel_properties): Add ".kd" suffix to symbol names.
+	(find_load_offset): Delete.
+	(create_and_finalize_hsa_program): Remove relocation handling.
+
 2020-06-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/routine-10.f90: New test.
