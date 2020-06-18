@@ -21,6 +21,7 @@
 (define_c_enum "unspec"
   [UNSPEC_VCMPBFP
    UNSPEC_VMSUMU
+   UNSPEC_VMSUMUDM
    UNSPEC_VMSUMM
    UNSPEC_VMSUMSHM
    UNSPEC_VMSUMUHS
@@ -970,6 +971,16 @@
 		     UNSPEC_VMSUMU))]
   "TARGET_ALTIVEC"
   "vmsumu<VI_char>m %0,%1,%2,%3"
+  [(set_attr "type" "veccomplex")])
+
+(define_insn "altivec_vmsumudm"
+  [(set (match_operand:V1TI 0 "register_operand" "=v")
+	(unspec:V1TI [(match_operand:V2DI 1 "register_operand" "v")
+		      (match_operand:V2DI 2 "register_operand" "v")
+		      (match_operand:V1TI 3 "register_operand" "v")]
+		     UNSPEC_VMSUMUDM))]
+  "TARGET_P8_VECTOR"
+  "vmsumudm %0,%1,%2,%3"
   [(set_attr "type" "veccomplex")])
 
 (define_insn "altivec_vmsumm<VI_char>m"
