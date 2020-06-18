@@ -1102,17 +1102,6 @@ early_check_defaulted_comparison (tree fn)
       return false;
     }
 
-  if (!ctx)
-    {
-      if (DECL_OVERLOADED_OPERATOR_IS (fn, SPACESHIP_EXPR))
-	error_at (loc, "three-way comparison operator can only be defaulted "
-		  "in a class definition");
-      else
-	error_at (loc, "equality comparison operator can only be defaulted "
-		  "in a class definition");
-      return false;
-    }
-
   if (!DECL_OVERLOADED_OPERATOR_IS (fn, SPACESHIP_EXPR)
       && !same_type_p (TREE_TYPE (TREE_TYPE (fn)), boolean_type_node))
     {
@@ -1146,16 +1135,27 @@ early_check_defaulted_comparison (tree fn)
   for (; parmnode != void_list_node; parmnode = TREE_CHAIN (parmnode))
     {
       tree parmtype = TREE_VALUE (parmnode);
-      if (same_type_p (parmtype, ctx))
+      if (CLASS_TYPE_P (parmtype))
 	saw_byval = true;
-      else if (TREE_CODE (parmtype) != REFERENCE_TYPE
-	       || TYPE_REF_IS_RVALUE (parmtype)
-	       || TYPE_QUALS (TREE_TYPE (parmtype)) != TYPE_QUAL_CONST
-	       || !(same_type_ignoring_top_level_qualifiers_p
-		    (TREE_TYPE (parmtype), ctx)))
-	saw_bad = true;
+      else if (TREE_CODE (parmtype) == REFERENCE_TYPE
+	       && !TYPE_REF_IS_RVALUE (parmtype)
+	       && TYPE_QUALS (TREE_TYPE (parmtype)) == TYPE_QUAL_CONST)
+	{
+	  saw_byref = true;
+	  parmtype = TREE_TYPE (parmtype);
+	}
       else
-	saw_byref = true;
+	saw_bad = true;
+
+      if (!saw_bad && !ctx)
+	{
+	  /* Defaulted outside the class body.  */
+	  ctx = TYPE_MAIN_VARIANT (parmtype);
+	  if (!is_friend (ctx, fn))
+	    error_at (loc, "defaulted %qD is not a friend of %qT", fn, ctx);
+	}
+      else if (!same_type_ignoring_top_level_qualifiers_p (parmtype, ctx))
+	saw_bad = true;
     }
 
   if (saw_bad || (saw_byval && saw_byref))
