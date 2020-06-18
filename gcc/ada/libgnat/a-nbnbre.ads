@@ -13,8 +13,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
-
 with Ada.Numerics.Big_Numbers.Big_Integers;
 
 with Ada.Strings.Text_Output; use Ada.Strings.Text_Output;

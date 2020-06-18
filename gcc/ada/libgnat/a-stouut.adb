@@ -29,9 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
-
 with Ada.Strings.UTF_Encoding.Wide_Wide_Strings;
+
 package body Ada.Strings.Text_Output.Utils is
 
    procedure Put_Octet (S : in out Sink'Class; Item : Character) with Inline;

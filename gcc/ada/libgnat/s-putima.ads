@@ -29,9 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
 with Ada.Strings.Text_Output;
 with System.Unsigned_Types;
+
 package System.Put_Images is
 
    --  This package contains subprograms that are called by the generated code
