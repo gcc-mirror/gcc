@@ -3373,7 +3373,7 @@ public:
   struct function *fun;
 
   void vrp_initialize (struct function *);
-  void vrp_finalize (bool);
+  void vrp_finalize (class vrp_folder *, bool);
 
   class vr_values vr_values;
 
@@ -3938,23 +3938,28 @@ vrp_prop::visit_phi (gphi *phi)
 
 class vrp_folder : public substitute_and_fold_engine
 {
-public:
-  vrp_folder () : substitute_and_fold_engine (/* Fold all stmts.  */ true) {  }
+ public:
+  vrp_folder (vr_values *v)
+    : substitute_and_fold_engine (/* Fold all stmts.  */ true),
+      m_vr_values (v), simplifier (v)
+    {  }
   tree get_value (tree, gimple *stmt) FINAL OVERRIDE;
   bool fold_stmt (gimple_stmt_iterator *) FINAL OVERRIDE;
 
-  class vr_values *vr_values;
+  class vr_values *m_vr_values;
 
 private:
   bool fold_predicate_in (gimple_stmt_iterator *);
   /* Delegators.  */
   tree vrp_evaluate_conditional (tree_code code, tree op0,
 				 tree op1, gimple *stmt)
-    { return vr_values->vrp_evaluate_conditional (code, op0, op1, stmt); }
+    { return simplifier.vrp_evaluate_conditional (code, op0, op1, stmt); }
   bool simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
-    { return vr_values->simplify_stmt_using_ranges (gsi); }
+    { return simplifier.simplify (gsi); }
  tree op_with_constant_singleton_value_range (tree op)
-    { return vr_values->op_with_constant_singleton_value_range (op); }
+    { return m_vr_values->op_with_constant_singleton_value_range (op); }
+
+  simplify_using_ranges simplifier;
 };
 
 /* If the statement pointed by SI has a predicate whose value can be
@@ -4096,7 +4101,8 @@ simplify_stmt_for_jump_threading (gimple *stmt, gimple *within_stmt,
       tree op1 = gimple_cond_rhs (cond_stmt);
       op1 = lhs_of_dominating_assert (op1, bb, stmt);
 
-      return vr_values->vrp_evaluate_conditional (gimple_cond_code (cond_stmt),
+      simplify_using_ranges simplifier (vr_values);
+      return simplifier.vrp_evaluate_conditional (gimple_cond_code (cond_stmt),
 						  op0, op1, within_stmt);
     }
 
@@ -4332,7 +4338,7 @@ identify_jump_threads (struct function *fun, class vr_values *vr_values)
 /* Traverse all the blocks folding conditionals with known ranges.  */
 
 void
-vrp_prop::vrp_finalize (bool warn_array_bounds_p)
+vrp_prop::vrp_finalize (vrp_folder *folder, bool warn_array_bounds_p)
 {
   size_t i;
 
@@ -4376,9 +4382,7 @@ vrp_prop::vrp_finalize (bool warn_array_bounds_p)
   if (warn_array_bounds && warn_array_bounds_p)
     set_all_edges_as_executable (fun);
 
-  class vrp_folder vrp_folder;
-  vrp_folder.vr_values = &vr_values;
-  vrp_folder.substitute_and_fold ();
+  folder->substitute_and_fold ();
 
   if (warn_array_bounds && warn_array_bounds_p)
     {
@@ -4453,7 +4457,10 @@ execute_vrp (struct function *fun, bool warn_array_bounds_p)
   class vrp_prop vrp_prop;
   vrp_prop.vrp_initialize (fun);
   vrp_prop.ssa_propagate ();
-  vrp_prop.vrp_finalize (warn_array_bounds_p);
+  /* Instantiate the folder here, so that edge cleanups happen at the
+     end of this function.  */
+  vrp_folder folder (&vrp_prop.vr_values);
+  vrp_prop.vrp_finalize (&folder, warn_array_bounds_p);
 
   /* We must identify jump threading opportunities before we release
      the datastructures built by VRP.  */
@@ -4471,7 +4478,8 @@ execute_vrp (struct function *fun, bool warn_array_bounds_p)
     {
       gimple *last = last_stmt (bb);
       if (last && gimple_code (last) == GIMPLE_COND)
-	vrp_prop.vr_values.simplify_cond_using_ranges_2 (as_a <gcond *> (last));
+	simplify_cond_using_ranges_2 (&vrp_prop.vr_values,
+				      as_a <gcond *> (last));
     }
 
   free_numbers_of_iterations_estimates (fun);
@@ -4496,7 +4504,6 @@ execute_vrp (struct function *fun, bool warn_array_bounds_p)
      processing by the pass manager.  */
   thread_through_all_blocks (false);
 
-  vrp_prop.vr_values.cleanup_edges_and_switches ();
   threadedge_finalize_values ();
 
   scev_finalize ();
