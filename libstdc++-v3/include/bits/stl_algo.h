@@ -2783,15 +2783,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _Compare __comp)
     {
       while (__first1 != __last1 && __first2 != __last2)
-	if (__comp(__first2, __first1))
-	  return false;
-	else if (__comp(__first1, __first2))
-	  ++__first1;
-	else
-	  {
-	    ++__first1;
+	{
+	  if (__comp(__first2, __first1))
+	    return false;
+	  if (!__comp(__first1, __first2))
 	    ++__first2;
-	  }
+	  ++__first1;
+	}
 
       return __first2 == __last2;
     }
