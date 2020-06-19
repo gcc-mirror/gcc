@@ -687,7 +687,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       using value_type = _Tp;
 
-      constexpr optional() = default;
+      constexpr optional() noexcept { }
 
       constexpr optional(nullopt_t) noexcept { }
 
