@@ -972,6 +972,7 @@ with_documentation_root_url
 with_changes_root_url
 enable_languages
 with_multilib_list
+with_multilib_generator
 with_zstd
 with_zstd_include
 with_zstd_lib
@@ -1811,6 +1812,8 @@ Optional Packages:
   --with-changes-root-url=URL
                           Root for GCC changes URLs
   --with-multilib-list    select multilibs (AArch64, SH and x86-64 only)
+  --with-multilib-generator
+                          Multi-libs configuration string (RISC-V only)
   --with-zstd=PATH        specify prefix directory for installed zstd library.
                           Equivalent to --with-zstd-include=PATH/include plus
                           --with-zstd-lib=PATH/lib
@@ -7999,6 +8002,15 @@ if test "${with_multilib_list+set}" = set; then :
   withval=$with_multilib_list; :
 else
   with_multilib_list=default
+fi
+
+
+
+# Check whether --with-multilib-generator was given.
+if test "${with_multilib_generator+set}" = set; then :
+  withval=$with_multilib_generator; :
+else
+  with_multilib_generator=default
 fi
 
 
@@ -19018,7 +19030,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19021 "configure"
+#line 19033 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19124,7 +19136,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19127 "configure"
+#line 19139 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

@@ -2438,11 +2438,13 @@ riscv*-*-elf* | riscv*-*-rtems*)
 	  tmake_file="${tmake_file} riscv/t-rtems"
 	  ;;
 	*)
-	  case "x${enable_multilib}" in
-	  xno) ;;
-	  xyes) tmake_file="${tmake_file} riscv/t-elf-multilib" ;;
-	  *) echo "Unknown value for enable_multilib"; exit 1
-	  esac
+	  if test "x${with_multilib_generator}" == xdefault; then
+		  case "x${enable_multilib}" in
+		  xno) ;;
+		  xyes) tmake_file="${tmake_file} riscv/t-elf-multilib" ;;
+		  *) echo "Unknown value for enable_multilib"; exit 1
+		  esac
+	  fi
 	esac
 	tmake_file="${tmake_file} riscv/t-riscv"
 	gnu_ld=yes
@@ -4609,6 +4611,30 @@ case "${target}" in
 			exit 1
 			;;
 		esac
+		# Handle --with-multilib-generator.
+		if test "x${with_multilib_generator}" != xdefault; then
+			if test "x${with_multilib_list}" != xdefault; then
+				echo "--with-multilib-list= can't used with --with-multilib-generator= at same time" 1>&2
+				exit 1
+			fi
+			case "${target}" in
+			riscv*-*-elf*)
+				if ${srcdir}/config/riscv/multilib-generator \
+					`echo ${with_multilib_generator} | sed 's/;/ /g'`\
+					> t-multilib-config;
+				then
+					tmake_file="${tmake_file} riscv/t-withmultilib-generator"
+				else
+					echo "invalid option for --with-multilib-generator" 1>&2
+					exit 1
+				fi
+				;;
+			*)
+				echo "--with-multilib-generator= is not supported for ${target}, only supported for riscv*-*-elf*" 1>&2
+				exit 1
+				;;
+			esac
+		fi
 
 		# Handle --with-multilib-list.
 		if test "x${with_multilib_list}" != xdefault; then

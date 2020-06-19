@@ -1102,6 +1102,11 @@ AC_ARG_WITH(multilib-list,
 :,
 with_multilib_list=default)
 
+AC_ARG_WITH(multilib-generator,
+[AS_HELP_STRING([--with-multilib-generator], [Multi-libs configuration string (RISC-V only)])],
+:,
+with_multilib_generator=default)
+
 # -------------------------
 # Checks for other programs
 # -------------------------

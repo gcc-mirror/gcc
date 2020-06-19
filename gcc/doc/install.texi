@@ -1252,6 +1252,37 @@ If @option{--with-multilib-list} is not given, then only 32-bit and
 64-bit run-time libraries will be enabled.
 @end table
 
+@item --with-multilib-generator=@var{config}
+Specify what multilibs to build.  @var{config} is a semicolon separated list of
+values, possibly consisting of a single value.  Currently only implemented
+for riscv*-*-elf*.  The accepted values and meanings are given below.
+
+
+Every config is constructed with four components: architecture string, ABI,
+reuse rule with architecture string and reuse rule with sub-extension.
+
+Example 1: Add multi-lib suppport for rv32i with ilp32.
+@smallexample
+rv32i-ilp32--
+@end smallexample
+
+Example 2: Add multi-lib suppport for rv32i with ilp32 and rv32imafd with ilp32.
+@smallexample
+rv32i-ilp32--;rv32imafd-ilp32--
+@end smallexample
+
+Example 3: Add multi-lib suppport for rv32i with ilp32; rv32im with ilp32 and
+rv32ic with ilp32 will reuse this multi-lib set.
+@smallexample
+rv32i-ilp32-rv32im-c
+@end smallexample
+
+Example 4: Add multi-lib suppport for rv64ima with lp64; rv64imaf with lp64,
+rv64imac with lp64 and rv64imafc with lp64 will reuse this multi-lib set.
+@smallexample
+rv64ima-lp64--f,c,fc
+@end smallexample
+
 @item --with-endian=@var{endians}
 Specify what endians to use.
 Currently only implemented for sh*-*-*.

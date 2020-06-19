@@ -194,7 +194,14 @@ def expand_combination(ext):
   return ext
 
 for cfg in sys.argv[1:]:
-  (arch, abi, extra, ext) = cfg.split('-')
+  try:
+    (arch, abi, extra, ext) = cfg.split('-')
+  except:
+    print ("Invalid configure string %s, <arch>-<abi>-<extra>-<extensions>\n"
+           "<extra> and <extensions> can be empty, "
+           "e.g. rv32imafd-ilp32--" % cfg)
+    sys.exit(1)
+
   arch = arch_canonicalize (arch)
   arches[arch] = 1
   abis[abi] = 1
