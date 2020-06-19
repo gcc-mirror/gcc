@@ -38,6 +38,14 @@ along with GCC; see the file COPYING3.  If not see
     }						\
    while (0)
 
+#define TARGET_RUST_CPU_INFO()		\
+  do {						\
+    rust_add_target_info("target_arch", "fr30");	\
+    if (TARGET_SMALL_MODEL)	\
+      rust_add_target_info("target_feature", "small-model");	\
+    /*TODO: figure out how to do lsim option here if useful */	\
+  } while (0)
+
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC "crt0.o%s crti.o%s crtbegin.o%s"
 
