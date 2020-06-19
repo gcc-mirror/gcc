@@ -880,7 +880,7 @@ empty_modify_p (tree type, tree op)
 /* Implements the lang_hooks.gimplify_expr routine for language D.
    Do gimplification of D specific expression trees in EXPR_P.  */
 
-int
+static int
 d_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
 		 gimple_seq *post_p ATTRIBUTE_UNUSED)
 {
@@ -1024,7 +1024,7 @@ d_add_entrypoint_module (Module *entry, Module *root)
 
 /* Implements the lang_hooks.parse_file routine for language D.  */
 
-void
+static void
 d_parse_file (void)
 {
   if (global.params.verbose)
@@ -1505,49 +1505,6 @@ d_type_for_size (unsigned bits, int unsignedp)
     }
 
   return 0;
-}
-
-/* Return the signed or unsigned version of TYPE, an integral type, the
-   signedness being specified by UNSIGNEDP.  */
-
-static tree
-d_signed_or_unsigned_type (int unsignedp, tree type)
-{
-  if (TYPE_UNSIGNED (type) == (unsigned) unsignedp)
-    return type;
-
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (d_cent_type))
-    return unsignedp ? d_ucent_type : d_cent_type;
-
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (d_long_type))
-    return unsignedp ? d_ulong_type : d_long_type;
-
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (d_int_type))
-    return unsignedp ? d_uint_type : d_int_type;
-
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (d_short_type))
-    return unsignedp ? d_ushort_type : d_short_type;
-
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (d_byte_type))
-    return unsignedp ? d_ubyte_type : d_byte_type;
-
-  return signed_or_unsigned_type_for (unsignedp, type);
-}
-
-/* Return the unsigned version of TYPE, an integral type.  */
-
-tree
-d_unsigned_type (tree type)
-{
-  return d_signed_or_unsigned_type (1, type);
-}
-
-/* Return the signed version of TYPE, an integral type.  */
-
-tree
-d_signed_type (tree type)
-{
-  return d_signed_or_unsigned_type (0, type);
 }
 
 /* Implements the lang_hooks.types.type_promotes_to routine for language D.
