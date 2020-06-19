@@ -1622,6 +1622,7 @@ epiphany-*-elf | epiphany-*-rtems*)
 	extra_objs="${extra_objs} mode-switch-use.o resolve-sw-modes.o"
 	tm_defines="${tm_defines} EPIPHANY_STACK_OFFSET=${with_stack_offset:-8}"
 	extra_headers="epiphany_intrinsics.h"
+	rust_target_objs="epiphany-rust.o"
 	;;
 fr30-*-elf)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"

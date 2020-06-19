@@ -30,6 +30,10 @@ resolve-sw-modes.o : $(srcdir)/config/epiphany/resolve-sw-modes.c \
   insn-attr-common.h $(TREE_PASS_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $<
 
+epiphany-rust.o: $(srcdir)/config/epiphany/epiphany-rust.c \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_COMMON_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+
 SPECS = specs.install
 
 specs: specs.install
