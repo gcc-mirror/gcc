@@ -4038,8 +4038,8 @@ gcn_vectorize_preferred_simd_mode (scalar_mode mode)
    In particular, we do *not* want to match vector bit-size.  */
 
 static opt_machine_mode
-gcn_related_vector_mode (machine_mode vector_mode, scalar_mode element_mode,
-			 poly_uint64 nunits)
+gcn_related_vector_mode (machine_mode ARG_UNUSED (vector_mode),
+			 scalar_mode element_mode, poly_uint64 nunits)
 {
   if (known_ne (nunits, 0U) && known_ne (nunits, 64U))
     return VOIDmode;
@@ -4937,7 +4937,7 @@ gcn_fixup_accel_lto_options (tree fndecl)
 static void
 output_file_start (void)
 {
-  char *cpu;
+  const char *cpu;
   switch (gcn_arch)
     {
     case PROCESSOR_FIJI: cpu = "gfx803"; break;
