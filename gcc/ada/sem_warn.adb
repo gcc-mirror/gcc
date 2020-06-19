@@ -3520,6 +3520,7 @@ package body Sem_Warn is
       if Constant_Condition_Warnings
         and then Is_Known_Branch
         and then Comes_From_Source (Orig)
+        and then Nkind (Orig) in N_Has_Entity
         and then not In_Instance
       then
          --  Don't warn if comparison of result of attribute against a constant
@@ -3854,7 +3855,7 @@ package body Sem_Warn is
                         then
                            if Act1 = First_Actual (N) then
                               Error_Msg_FE
-                                ("<<`IN OUT` prefix overlaps with "
+                                ("<I<`IN OUT` prefix overlaps with "
                                  & "actual for&", Act1, Form2);
 
                            else
@@ -3862,7 +3863,7 @@ package body Sem_Warn is
 
                               Error_Msg_Node_2 := Form2;
                               Error_Msg_FE
-                                ("<<writable actual for & overlaps with "
+                                ("<I<writable actual for & overlaps with "
                                  & "actual for&", Act1, Form2);
                            end if;
 
@@ -3874,7 +3875,7 @@ package body Sem_Warn is
                            --  This is one of the messages
 
                            Error_Msg_FE
-                             ("<<writable actual for & overlaps with "
+                             ("<I<writable actual for & overlaps with "
                               & "actual for&", Act1, Form1);
                         end if;
                      end if;

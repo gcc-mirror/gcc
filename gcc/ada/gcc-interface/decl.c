@@ -5401,8 +5401,8 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
       tree unpadded_type = TREE_TYPE (TYPE_FIELDS (gnu_param_type));
 
       if (foreign
-	  || (!must_pass_by_ref (unpadded_type)
-	      && mech != By_Reference
+	  || (mech != By_Reference
+	      && !must_pass_by_ref (unpadded_type)
 	      && (mech == By_Copy || !default_pass_by_ref (unpadded_type))
 	      && TYPE_ALIGN (unpadded_type) >= TYPE_ALIGN (gnu_param_type)))
 	gnu_param_type = unpadded_type;
@@ -5424,11 +5424,6 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
 	gnu_param_type = TREE_TYPE (gnu_param_type);
 
       gnu_param_type = TREE_TYPE (gnu_param_type);
-
-      if (ro_param)
-	gnu_param_type
-	  = change_qualified_type (gnu_param_type, TYPE_QUAL_CONST);
-
       gnu_param_type = build_pointer_type (gnu_param_type);
       by_component_ptr = true;
     }
@@ -5760,6 +5755,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 {
   const Entity_Kind kind = Ekind (gnat_subprog);
   const bool method_p = is_cplusplus_method (gnat_subprog);
+  const bool variadic = IN (Convention (gnat_subprog), Convention_C_Variadic);
   Entity_Id gnat_return_type = Etype (gnat_subprog);
   Entity_Id gnat_param;
   tree gnu_type = present_gnu_tree (gnat_subprog)
@@ -5792,7 +5788,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
   bool return_by_invisi_ref_p = false;
   bool return_unconstrained_p = false;
   bool incomplete_profile_p = false;
-  unsigned int num;
+  int num;
 
   /* Look into the return type and get its associated GCC tree if it is not
      void, and then compute various flags for the subprogram type.  But make
@@ -5961,6 +5957,11 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
       tree gnu_param_name = get_entity_name (gnat_param);
       tree gnu_param, gnu_param_type;
       bool cico = false;
+
+      /* For a variadic C function, do not build unnamed parameters.  */
+      if (variadic
+	  && num == (Convention (gnat_subprog) - Convention_C_Variadic_0))
+	break;
 
       /* Fetch an existing parameter with complete type and reuse it.  But we
 	 didn't save the CICO property so we can only do it for In parameters
@@ -6195,7 +6196,8 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 
   /* The lists have been built in reverse.  */
   gnu_param_type_list = nreverse (gnu_param_type_list);
-  gnu_param_type_list = chainon (gnu_param_type_list, void_list_node);
+  if (!variadic)
+    gnu_param_type_list = chainon (gnu_param_type_list, void_list_node);
   gnu_param_list = nreverse (gnu_param_list);
   gnu_cico_list = nreverse (gnu_cico_list);
 

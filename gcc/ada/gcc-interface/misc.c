@@ -47,6 +47,7 @@
 #include "atree.h"
 #include "namet.h"
 #include "nlists.h"
+#include "snames.h"
 #include "uintp.h"
 #include "fe.h"
 #include "sinfo.h"

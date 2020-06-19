@@ -79,8 +79,7 @@ package body Exp_Attr is
    function Build_Array_VS_Func
      (Attr       : Node_Id;
       Formal_Typ : Entity_Id;
-      Array_Typ  : Entity_Id;
-      Comp_Typ   : Entity_Id) return Entity_Id;
+      Array_Typ  : Entity_Id) return Entity_Id;
    --  Validate the components of an array type by means of a function. Return
    --  the entity of the validation function. The parameters are as follows:
    --
@@ -91,8 +90,6 @@ package body Exp_Attr is
    --      parameter.
    --
    --    * Array_Typ - the array type whose components are to be validated
-   --
-   --    * Comp_Typ - the component type of the array
 
    function Build_Disp_Get_Task_Id_Call (Actual : Node_Id) return Node_Id;
    --  Build a call to Disp_Get_Task_Id, passing Actual as actual parameter
@@ -237,10 +234,11 @@ package body Exp_Attr is
    function Build_Array_VS_Func
      (Attr       : Node_Id;
       Formal_Typ : Entity_Id;
-      Array_Typ  : Entity_Id;
-      Comp_Typ   : Entity_Id) return Entity_Id
+      Array_Typ  : Entity_Id) return Entity_Id
    is
-      Loc : constant Source_Ptr := Sloc (Attr);
+      Loc      : constant Source_Ptr := Sloc (Attr);
+      Comp_Typ : constant Entity_Id :=
+        Validated_View (Component_Type (Array_Typ));
 
       function Validate_Component
         (Obj_Id  : Entity_Id;
@@ -737,7 +735,7 @@ package body Exp_Attr is
       --  Use the root type when dealing with a class-wide type
 
       if Is_Class_Wide_Type (Typ) then
-         Typ := Root_Type (Typ);
+         Typ := Validated_View (Root_Type (Typ));
       end if;
 
       Typ_Decl := Declaration_Node (Typ);
@@ -1768,7 +1766,7 @@ package body Exp_Attr is
             Int_Typ := Standard_Unsigned;
 
          else
-            raise Program_Error;
+            Int_Typ := Standard_Long_Long_Unsigned;
          end if;
 
          return Int_Typ;
@@ -4589,6 +4587,7 @@ package body Exp_Attr is
          Typ     : constant Entity_Id := Etype (N);
          CW_Temp : Entity_Id;
          CW_Typ  : Entity_Id;
+         Decl    : Node_Id;
          Ins_Nod : Node_Id;
          Subp    : Node_Id;
          Temp    : Entity_Id;
@@ -4687,13 +4686,15 @@ package body Exp_Attr is
             CW_Temp := Make_Temporary (Loc, 'T');
             CW_Typ  := Class_Wide_Type (Typ);
 
-            Insert_Before_And_Analyze (Ins_Nod,
+            Decl :=
               Make_Object_Declaration (Loc,
                 Defining_Identifier => CW_Temp,
                 Constant_Present    => True,
                 Object_Definition   => New_Occurrence_Of (CW_Typ, Loc),
                 Expression          =>
-                  Convert_To (CW_Typ, Relocate_Node (Pref))));
+                  Convert_To (CW_Typ, Relocate_Node (Pref)));
+
+            Insert_Before_And_Analyze (Ins_Nod, Decl);
 
             --  Generate:
             --    Temp : Typ renames Typ (CW_Temp);
@@ -4711,12 +4712,15 @@ package body Exp_Attr is
             --  Generate:
             --    Temp : constant Typ := Pref;
 
-            Insert_Before_And_Analyze (Ins_Nod,
+            Decl :=
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Temp,
                 Constant_Present    => True,
                 Object_Definition   => New_Occurrence_Of (Typ, Loc),
-                Expression          => Relocate_Node (Pref)));
+                Expression          => Relocate_Node (Pref));
+
+            Insert_Before_And_Analyze (Ins_Nod, Decl);
+
          end if;
 
          if Present (Subp) then
@@ -4728,7 +4732,7 @@ package body Exp_Attr is
          --  to reflect the new placement of the prefix.
 
          if Validity_Checks_On and then Validity_Check_Operands then
-            Ensure_Valid (Pref);
+            Ensure_Valid (Expression (Decl));
          end if;
 
          Rewrite (N, New_Occurrence_Of (Temp, Loc));
@@ -7088,16 +7092,16 @@ package body Exp_Attr is
       -------------------
 
       when Attribute_Valid_Scalars => Valid_Scalars : declare
-         Val_Typ  : constant Entity_Id := Validated_View (Ptyp);
-         Comp_Typ : Entity_Id;
-         Expr     : Node_Id;
+         Val_Typ : constant Entity_Id := Validated_View (Ptyp);
+         Expr    : Node_Id;
 
       begin
          --  Assume that the prefix does not need validation
 
          Expr := Empty;
 
-         --  Attribute 'Valid_Scalars is not supported on private tagged types
+         --  Attribute 'Valid_Scalars is not supported on private tagged types;
+         --  see a detailed explanation where this attribute is analyzed.
 
          if Is_Private_Type (Ptyp) and then Is_Tagged_Type (Ptyp) then
             null;
@@ -7130,21 +7134,16 @@ package body Exp_Attr is
          --  dimensions of the array while checking individual components.
 
          elsif Is_Array_Type (Val_Typ) then
-            Comp_Typ := Validated_View (Component_Type (Val_Typ));
-
-            if Scalar_Part_Present (Comp_Typ) then
-               Expr :=
-                 Make_Function_Call (Loc,
-                   Name                   =>
-                     New_Occurrence_Of
-                       (Build_Array_VS_Func
-                         (Attr       => N,
-                          Formal_Typ => Ptyp,
-                          Array_Typ  => Val_Typ,
-                          Comp_Typ   => Comp_Typ),
-                       Loc),
-                   Parameter_Associations => New_List (Pref));
-            end if;
+            Expr :=
+              Make_Function_Call (Loc,
+                Name                   =>
+                  New_Occurrence_Of
+                    (Build_Array_VS_Func
+                      (Attr       => N,
+                       Formal_Typ => Ptyp,
+                       Array_Typ  => Val_Typ),
+                    Loc),
+                Parameter_Associations => New_List (Pref));
 
          --  Validate the scalar components, discriminants of a record type by
          --  examining the structure of a record type.

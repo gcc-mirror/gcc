@@ -79,16 +79,19 @@ package body Ada.Streams.Storage.Bounded is
    overriding procedure Write
      (Stream : in out Stream_Type; Item : Stream_Element_Array)
    is
-      pragma Assert
-        (Element_Count (Stream) + Item'Length <= Stream.Max_Elements
-           or else (raise Constraint_Error));
-      --  That is a precondition in the RM
-
-      New_Count : constant Stream_Element_Count :=
-        Element_Count (Stream) + Item'Length;
    begin
-      Stream.Elements (Element_Count (Stream) + 1 .. New_Count) := Item;
-      Stream.Count := New_Count;
+      if Element_Count (Stream) + Item'Length > Stream.Max_Elements then
+         --  That is a precondition in the RM
+         raise Constraint_Error;
+      end if;
+
+      declare
+         New_Count : constant Stream_Element_Count :=
+           Element_Count (Stream) + Item'Length;
+      begin
+         Stream.Elements (Element_Count (Stream) + 1 .. New_Count) := Item;
+         Stream.Count := New_Count;
+      end;
    end Write;
 
    -------------------

@@ -32,6 +32,7 @@ with Einfo;     use Einfo;
 with Elists;    use Elists;
 with Errout;    use Errout;
 with Expander;  use Expander;
+with Exp_Ch3;   use Exp_Ch3;
 with Exp_Ch6;   use Exp_Ch6;
 with Exp_Ch7;   use Exp_Ch7;
 with Exp_Ch9;   use Exp_Ch9;
@@ -498,9 +499,14 @@ package body Sem_Ch6 is
          --  Within a generic preanalyze the original expression for name
          --  capture. The body is also generated but plays no role in
          --  this because it is not part of the original source.
+         --  If this is an ignored Ghost entity, analysis of the generated
+         --  body is needed to hide external references (as is done in
+         --  Analyze_Subprogram_Body) after which the the subprogram profile
+         --  can be frozen, which is needed to expand calls to such an ignored
+         --  Ghost subprogram.
 
          if Inside_A_Generic then
-            Set_Has_Completion (Def_Id);
+            Set_Has_Completion (Def_Id, not Is_Ignored_Ghost_Entity (Def_Id));
             Push_Scope (Def_Id);
             Install_Formals (Def_Id);
             Preanalyze_Spec_Expression (Expr, Etype (Def_Id));
@@ -1194,7 +1200,33 @@ package body Sem_Ch6 is
             --  object declaration.
 
             Set_Is_Return_Object (Defining_Identifier (Obj_Decl));
-            Analyze (Obj_Decl);
+
+            --  Returning a build-in-place unconstrained array type we defer
+            --  the full analysis of the returned object to avoid generating
+            --  the corresponding constrained subtype; otherwise the bounds
+            --  would be created in the stack and a dangling reference would
+            --  be returned pointing to the bounds. We perform its preanalysis
+            --  to report errors on the initializing aggregate now (if any);
+            --  we also ensure its activation chain and Master variable are
+            --  defined (if tasks are being declared) since they are generated
+            --  as part of the analysis and expansion of the object declaration
+            --  at this stage.
+
+            if Is_Array_Type (R_Type)
+              and then not Is_Constrained (R_Type)
+              and then Is_Build_In_Place_Function (Scope_Id)
+              and then Needs_BIP_Alloc_Form (Scope_Id)
+              and then Nkind_In (Expr, N_Aggregate, N_Extension_Aggregate)
+            then
+               Preanalyze (Obj_Decl);
+
+               if Expander_Active then
+                  Ensure_Activation_Chain_And_Master (Obj_Decl);
+               end if;
+
+            else
+               Analyze (Obj_Decl);
+            end if;
 
             Check_Return_Subtype_Indication (Obj_Decl);
 

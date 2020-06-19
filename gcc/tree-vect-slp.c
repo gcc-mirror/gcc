@@ -2969,7 +2969,22 @@ vect_bb_slp_scalar_cost (vec_info *vinfo,
 	{
 	  /* Do not directly pass LIFE to the recursive call, copy it to
 	     confine changes in the callee to the current child/subtree.  */
-	  subtree_life.safe_splice (*life);
+	  if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)
+	    {
+	      subtree_life.safe_grow_cleared (SLP_TREE_LANES (child));
+	      for (unsigned j = 0;
+		   j < SLP_TREE_LANE_PERMUTATION (node).length (); ++j)
+		{
+		  auto perm = SLP_TREE_LANE_PERMUTATION (node)[j];
+		  if (perm.first == i)
+		    subtree_life[perm.second] = (*life)[j];
+		}
+	    }
+	  else
+	    {
+	      gcc_assert (SLP_TREE_LANES (node) == SLP_TREE_LANES (child));
+	      subtree_life.safe_splice (*life);
+	    }
 	  vect_bb_slp_scalar_cost (vinfo, child, &subtree_life, cost_vec,
 				   visited);
 	  subtree_life.truncate (0);
@@ -4199,7 +4214,6 @@ vect_schedule_slp_instance (vec_info *vinfo,
     {
       /* Or if we do not have 1:1 matching scalar stmts emit after the
 	 children vectorized defs.  */
-      gimple *last_in_child;
       gimple *last_stmt = NULL;
       FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
 	/* ???  With only external defs the following breaks.  Note
@@ -4208,11 +4222,15 @@ vect_schedule_slp_instance (vec_info *vinfo,
 	if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
 	  {
 	    /* We are emitting all vectorized stmts in the same place and
-	       the last one is the last.  */
-	    last_in_child = SLP_TREE_VEC_STMTS (child).last ();
-	    if (!last_stmt
-		|| vect_stmt_dominates_stmt_p (last_stmt, last_in_child))
-	      last_stmt = last_in_child;
+	       the last one is the last.
+	       ???  Unless we have a load permutation applied and that
+	       figures to re-use an earlier generated load.  */
+	    unsigned j;
+	    gimple *vstmt;
+	    FOR_EACH_VEC_ELT (SLP_TREE_VEC_STMTS (child), j, vstmt)
+	      if (!last_stmt
+		  || vect_stmt_dominates_stmt_p (last_stmt, vstmt))
+		last_stmt = vstmt;
 	  }
       if (is_a <gphi *> (last_stmt))
 	si = gsi_after_labels (gimple_bb (last_stmt));

@@ -5266,7 +5266,6 @@ package body Sem_Ch3 is
       Skip : Boolean := False)
    is
       Id       : constant Entity_Id := Defining_Identifier (N);
-      R_Checks : Check_Result;
       T        : Entity_Id;
 
    begin
@@ -5791,32 +5790,28 @@ package body Sem_Ch3 is
 
       --  Check that Constraint_Error is raised for a scalar subtype indication
       --  when the lower or upper bound of a non-null range lies outside the
-      --  range of the type mark.
+      --  range of the type mark. Likewise for an array subtype, but check the
+      --  compatibility for each index.
 
       if Nkind (Subtype_Indication (N)) = N_Subtype_Indication then
-         if Is_Scalar_Type (Etype (Id))
-           and then Scalar_Range (Id) /=
-                    Scalar_Range
-                      (Etype (Subtype_Mark (Subtype_Indication (N))))
-         then
-            Apply_Range_Check
-              (Scalar_Range (Id),
-               Etype (Subtype_Mark (Subtype_Indication (N))));
+         declare
+            Indic_Typ    : constant Entity_Id :=
+                             Etype (Subtype_Mark (Subtype_Indication (N)));
+            Subt_Index   : Node_Id;
+            Target_Index : Node_Id;
 
-         --  In the array case, check compatibility for each index
+         begin
+            if Is_Scalar_Type (Etype (Id))
+              and then Scalar_Range (Id) /= Scalar_Range (Indic_Typ)
+            then
+               Apply_Range_Check (Scalar_Range (Id), Indic_Typ);
 
-         elsif Is_Array_Type (Etype (Id)) and then Present (First_Index (Id))
-         then
-            --  This really should be a subprogram that finds the indications
-            --  to check???
+            elsif Is_Array_Type (Etype (Id))
+              and then Present (First_Index (Id))
+            then
+               Subt_Index   := First_Index (Id);
+               Target_Index := First_Index (Indic_Typ);
 
-            declare
-               Subt_Index   : Node_Id := First_Index (Id);
-               Target_Index : Node_Id :=
-                                First_Index (Etype
-                                  (Subtype_Mark (Subtype_Indication (N))));
-
-            begin
                while Present (Subt_Index) loop
                   if ((Nkind (Subt_Index) = N_Identifier
                         and then Ekind (Entity (Subt_Index)) in Scalar_Kind)
@@ -5824,30 +5819,17 @@ package body Sem_Ch3 is
                     and then
                       Nkind (Scalar_Range (Etype (Subt_Index))) = N_Range
                   then
-                     declare
-                        Target_Typ : constant Entity_Id :=
-                                       Etype (Target_Index);
-                     begin
-                        R_Checks :=
-                          Get_Range_Checks
-                            (Scalar_Range (Etype (Subt_Index)),
-                             Target_Typ,
-                             Etype (Subt_Index),
-                             Defining_Identifier (N));
-
-                        Insert_Range_Checks
-                          (R_Checks,
-                           N,
-                           Target_Typ,
-                           Sloc (Defining_Identifier (N)));
-                     end;
+                     Apply_Range_Check
+                       (Scalar_Range (Etype (Subt_Index)),
+                        Etype (Target_Index),
+                        Insert_Node => N);
                   end if;
 
                   Next_Index (Subt_Index);
                   Next_Index (Target_Index);
                end loop;
-            end;
-         end if;
+            end if;
+         end;
       end if;
 
       Set_Optimize_Alignment_Flags (Id);
@@ -18882,7 +18864,9 @@ package body Sem_Ch3 is
       --  a component in a sibling package that is inherited from a visible
       --  component of a type in an ancestor package; the component in the
       --  sibling package should not be visible even though the component it
-      --  inherited from is visible). This does not apply however in the case
+      --  inherited from is visible), but instance bodies are not subject to
+      --  this second case since they have the Has_Private_View mechanism to
+      --  ensure proper visibility. This does not apply however in the case
       --  where the scope of the type is a private child unit, or when the
       --  parent comes from a local package in which the ancestor is currently
       --  visible. The latter suppression of visibility is needed for cases
@@ -18892,7 +18876,8 @@ package body Sem_Ch3 is
         or else
           (not Is_Private_Descendant (Type_Scope)
             and then not In_Open_Scopes (Type_Scope)
-            and then Has_Private_Declaration (Original_Type))
+            and then Has_Private_Declaration (Original_Type)
+            and then not In_Instance_Body)
       then
          --  If the type derives from an entity in a formal package, there
          --  are no additional visible components.

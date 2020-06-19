@@ -69,11 +69,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     = typename conditional<__is_final(_Tp), false_type,
 			   __is_empty_non_tuple<_Tp>>::type;
 
-  template<std::size_t _Idx, typename _Head,
+  template<size_t _Idx, typename _Head,
 	   bool = __empty_not_final<_Head>::value>
     struct _Head_base;
 
-  template<std::size_t _Idx, typename _Head>
+  template<size_t _Idx, typename _Head>
     struct _Head_base<_Idx, _Head, true>
     : public _Head
     {
@@ -120,7 +120,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_head(const _Head_base& __b) noexcept { return __b; }
     };
 
-  template<std::size_t _Idx, typename _Head>
+  template<size_t _Idx, typename _Head>
     struct _Head_base<_Idx, _Head, false>
     {
       constexpr _Head_base()
@@ -179,7 +179,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * point in the hierarchy; we use it to implement a constant-time
    * get() operation.
    */
-  template<std::size_t _Idx, typename... _Elements>
+  template<size_t _Idx, typename... _Elements>
     struct _Tuple_impl;
 
   /**
@@ -187,12 +187,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * and derive from a @c Tuple_impl containing the remaining elements
    * (which contains the @c Tail).
    */
-  template<std::size_t _Idx, typename _Head, typename... _Tail>
+  template<size_t _Idx, typename _Head, typename... _Tail>
     struct _Tuple_impl<_Idx, _Head, _Tail...>
     : public _Tuple_impl<_Idx + 1, _Tail...>,
       private _Head_base<_Idx, _Head>
     {
-      template<std::size_t, typename...> friend class _Tuple_impl;
+      template<size_t, typename...> friend class _Tuple_impl;
 
       typedef _Tuple_impl<_Idx + 1, _Tail...> _Inherited;
       typedef _Head_base<_Idx, _Head> _Base;
@@ -337,11 +337,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   // Basis case of inheritance recursion.
-  template<std::size_t _Idx, typename _Head>
+  template<size_t _Idx, typename _Head>
     struct _Tuple_impl<_Idx, _Head>
     : private _Head_base<_Idx, _Head>
     {
-      template<std::size_t, typename...> friend class _Tuple_impl;
+      template<size_t, typename...> friend class _Tuple_impl;
 
       typedef _Head_base<_Idx, _Head> _Base;
 
@@ -1244,7 +1244,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// class tuple_size
   template<typename... _Elements>
     struct tuple_size<tuple<_Elements...>>
-    : public integral_constant<std::size_t, sizeof...(_Elements)> { };
+    : public integral_constant<size_t, sizeof...(_Elements)> { };
 
 #if __cplusplus > 201402L
   template <typename _Tp>
@@ -1255,7 +1255,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * Recursive case for tuple_element: strip off the first element in
    * the tuple and retrieve the (i-1)th element of the remaining tuple.
    */
-  template<std::size_t __i, typename _Head, typename... _Tail>
+  template<size_t __i, typename _Head, typename... _Tail>
     struct tuple_element<__i, tuple<_Head, _Tail...> >
     : tuple_element<__i - 1, tuple<_Tail...> > { };
 
@@ -1278,30 +1278,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  "tuple index is in range");
     };
 
-  template<std::size_t __i, typename _Head, typename... _Tail>
+  template<size_t __i, typename _Head, typename... _Tail>
     constexpr _Head&
     __get_helper(_Tuple_impl<__i, _Head, _Tail...>& __t) noexcept
     { return _Tuple_impl<__i, _Head, _Tail...>::_M_head(__t); }
 
-  template<std::size_t __i, typename _Head, typename... _Tail>
+  template<size_t __i, typename _Head, typename... _Tail>
     constexpr const _Head&
     __get_helper(const _Tuple_impl<__i, _Head, _Tail...>& __t) noexcept
     { return _Tuple_impl<__i, _Head, _Tail...>::_M_head(__t); }
 
   /// Return a reference to the ith element of a tuple.
-  template<std::size_t __i, typename... _Elements>
+  template<size_t __i, typename... _Elements>
     constexpr __tuple_element_t<__i, tuple<_Elements...>>&
     get(tuple<_Elements...>& __t) noexcept
     { return std::__get_helper<__i>(__t); }
 
   /// Return a const reference to the ith element of a const tuple.
-  template<std::size_t __i, typename... _Elements>
+  template<size_t __i, typename... _Elements>
     constexpr const __tuple_element_t<__i, tuple<_Elements...>>&
     get(const tuple<_Elements...>& __t) noexcept
     { return std::__get_helper<__i>(__t); }
 
   /// Return an rvalue reference to the ith element of a tuple rvalue.
-  template<std::size_t __i, typename... _Elements>
+  template<size_t __i, typename... _Elements>
     constexpr __tuple_element_t<__i, tuple<_Elements...>>&&
     get(tuple<_Elements...>&& __t) noexcept
     {
@@ -1310,7 +1310,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   /// Return a const rvalue reference to the ith element of a const tuple rvalue.
-  template<std::size_t __i, typename... _Elements>
+  template<size_t __i, typename... _Elements>
     constexpr const __tuple_element_t<__i, tuple<_Elements...>>&&
     get(const tuple<_Elements...>&& __t) noexcept
     {
@@ -1496,7 +1496,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			_Tuple, _Nm>
     { };
 
-  template<std::size_t _Nm, typename _Tuple, typename... _Tp>
+  template<size_t _Nm, typename _Tuple, typename... _Tp>
     struct __make_tuple_impl<_Nm, tuple<_Tp...>, _Tuple, _Nm>
     {
       typedef tuple<_Tp...> __type;
@@ -1504,7 +1504,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tuple>
     struct __do_make_tuple
-    : __make_tuple_impl<0, tuple<>, _Tuple, std::tuple_size<_Tuple>::value>
+    : __make_tuple_impl<0, tuple<>, _Tuple, tuple_size<_Tuple>::value>
     { };
 
   // Returns the std::tuple equivalent of a tuple-like type.
@@ -1552,14 +1552,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct __make_1st_indices<>
     {
-      typedef std::_Index_tuple<> __type;
+      typedef _Index_tuple<> __type;
     };
 
   template<typename _Tp, typename... _Tpls>
     struct __make_1st_indices<_Tp, _Tpls...>
     {
-      typedef typename std::_Build_index_tuple<std::tuple_size<
-	typename std::remove_reference<_Tp>::type>::value>::__type __type;
+      typedef typename _Build_index_tuple<tuple_size<
+	typename remove_reference<_Tp>::type>::value>::__type __type;
     };
 
   // Performs the actual concatenation by step-wise expanding tuple-like
@@ -1568,8 +1568,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Ret, typename _Indices, typename... _Tpls>
     struct __tuple_concater;
 
-  template<typename _Ret, std::size_t... _Is, typename _Tp, typename... _Tpls>
-    struct __tuple_concater<_Ret, std::_Index_tuple<_Is...>, _Tp, _Tpls...>
+  template<typename _Ret, size_t... _Is, typename _Tp, typename... _Tpls>
+    struct __tuple_concater<_Ret, _Index_tuple<_Is...>, _Tp, _Tpls...>
     {
       template<typename... _Us>
         static constexpr _Ret
@@ -1584,7 +1584,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _Ret>
-    struct __tuple_concater<_Ret, std::_Index_tuple<>>
+    struct __tuple_concater<_Ret, _Index_tuple<>>
     {
       template<typename... _Us>
 	static constexpr _Ret
@@ -1679,14 +1679,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { }
 
   template<class _T1, class _T2>
-    template<typename... _Args1, std::size_t... _Indexes1,
-             typename... _Args2, std::size_t... _Indexes2>
+    template<typename... _Args1, size_t... _Indexes1,
+	     typename... _Args2, size_t... _Indexes2>
       _GLIBCXX20_CONSTEXPR inline
       pair<_T1, _T2>::
       pair(tuple<_Args1...>& __tuple1, tuple<_Args2...>& __tuple2,
 	   _Index_tuple<_Indexes1...>, _Index_tuple<_Indexes2...>)
       : first(std::forward<_Args1>(std::get<_Indexes1>(__tuple1))...),
-        second(std::forward<_Args2>(std::get<_Indexes2>(__tuple2))...)
+	second(std::forward<_Args2>(std::get<_Indexes2>(__tuple2))...)
       { }
 
 #if __cplusplus >= 201703L

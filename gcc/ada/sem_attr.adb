@@ -6836,7 +6836,7 @@ package body Sem_Attr is
             --  Verify the consistency of types when the current component is
             --  part of a miltiple component update.
 
-            --    Comp_1, ..., Comp_N => <value>
+            --    Comp_1 | ... | Comp_N => <value>
 
             if Present (Etype (Comp)) then
                Base_Typ := Base_Type (Etype (Comp));
@@ -6877,6 +6877,11 @@ package body Sem_Attr is
 
          elsif Nkind (E1) /= N_Aggregate then
             Error_Attr ("attribute % requires component association list", N);
+
+         elsif Present (Expressions (E1)) then
+            Error_Attr ("attribute % requires named component associations",
+                        First (Expressions (E1)));
+
          end if;
 
          --  Inspect the update aggregate, looking at all the associations and
@@ -7016,6 +7021,10 @@ package body Sem_Attr is
                --  types due to a code generation issue. Is_Visible_Component
                --  does not allow for a component of a private tagged type to
                --  be successfully retrieved.
+               --  ??? This attribute should simply ignore type privacy
+               --  (see Validated_View). It should examine components of the
+               --  tagged type extensions (if any) and recursively examine
+               --  'Valid_Scalars of the parent's type (if any).
 
                --  Do not use Error_Attr_P because this bypasses any subsequent
                --  processing and leaves the attribute with type Any_Type. This
