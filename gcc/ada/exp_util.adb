@@ -11324,6 +11324,14 @@ package body Exp_Util is
         and then Is_Class_Wide_Type (Etype (Exp))
       then
          return;
+
+      --  An expression which is in SPARK mode is considered side effect free
+      --  if the resulting value is captured by a variable or a constant.
+
+      elsif GNATprove_Mode
+        and then Nkind (Parent (Exp)) = N_Object_Declaration
+      then
+         return;
       end if;
 
       --  The remaining processing is done with all checks suppressed
@@ -11576,15 +11584,6 @@ package body Exp_Util is
       --  Otherwise we generate a reference to the expression
 
       else
-         --  An expression which is in SPARK mode is considered side effect
-         --  free if the resulting value is captured by a variable or a
-         --  constant.
-
-         if GNATprove_Mode
-           and then Nkind (Parent (Exp)) = N_Object_Declaration
-         then
-            goto Leave;
-
          --  When generating C code we cannot consider side effect free object
          --  declarations that have discriminants and are initialized by means
          --  of a function call since on this target there is no secondary
@@ -11598,7 +11597,7 @@ package body Exp_Util is
          --  be identified here to avoid entering into a never-ending loop
          --  generating internal object declarations.
 
-         elsif Modify_Tree_For_C
+         if Modify_Tree_For_C
            and then Nkind (Parent (Exp)) = N_Object_Declaration
            and then
              (Nkind (Exp) /= N_Function_Call
