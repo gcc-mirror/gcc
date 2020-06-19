@@ -345,7 +345,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  The newly-created %function contains a copy of the target of @a
        *  __x (if it has one).
        */
-      function(const function& __x);
+      function(const function& __x)
+      : _Function_base()
+      {
+	if (static_cast<bool>(__x))
+	  {
+	    __x._M_manager(_M_functor, __x._M_functor, __clone_functor);
+	    _M_invoker = __x._M_invoker;
+	    _M_manager = __x._M_manager;
+	  }
+      }
 
       /**
        *  @brief %Function move constructor.
@@ -354,10 +363,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  The newly-created %function contains the target of @a __x
        *  (if it has one).
        */
-      function(function&& __x) noexcept : _Function_base()
-      {
-	__x.swap(*this);
-      }
+      function(function&& __x) noexcept
+      : _Function_base()
+      { __x.swap(*this); }
 
       /**
        *  @brief Builds a %function that targets a copy of the incoming
@@ -378,7 +386,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Functor,
 	       typename = _Requires<__not_<is_same<_Functor, function>>, void>,
 	       typename = _Requires<_Callable<_Functor>, void>>
-	function(_Functor);
+	function(_Functor __f)
+	: _Function_base()
+	{
+	  typedef _Function_handler<_Res(_ArgTypes...), _Functor> _My_handler;
+
+	  if (_My_handler::_M_not_empty_function(__f))
+	    {
+	      _My_handler::_M_init_functor(_M_functor, std::move(__f));
+	      _M_invoker = &_My_handler::_M_invoke;
+	      _M_manager = &_My_handler::_M_manager;
+	    }
+	}
 
       /**
        *  @brief %Function assignment operator.
@@ -508,7 +527,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  The function call operator invokes the target function object
        *  stored by @c this.
        */
-      _Res operator()(_ArgTypes... __args) const;
+      _Res
+      operator()(_ArgTypes... __args) const
+      {
+	if (_M_empty())
+	  __throw_bad_function_call();
+	return _M_invoker(_M_functor, std::forward<_ArgTypes>(__args)...);
+      }
 
 #if __cpp_rtti
       // [3.7.2.5] function target access
@@ -521,7 +546,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  This function will not throw an %exception.
        */
-      const type_info& target_type() const noexcept;
+      const type_info&
+      target_type() const noexcept
+      {
+	if (_M_manager)
+	  {
+	    _Any_data __typeinfo_result;
+	    _M_manager(__typeinfo_result, _M_functor, __get_type_info);
+	    return *__typeinfo_result._M_access<const type_info*>();
+	  }
+	else
+	  return typeid(void);
+      }
 
       /**
        *  @brief Access the stored target function object.
@@ -534,9 +570,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        * @{
        */
-      template<typename _Functor>       _Functor* target() noexcept;
+      template<typename _Functor>
+	_Functor*
+	target() noexcept
+	{
+	  const function* __const_this = this;
+	  const _Functor* __func = __const_this->template target<_Functor>();
+	  return const_cast<_Functor*>(__func);
+	}
 
-      template<typename _Functor> const _Functor* target() const noexcept;
+      template<typename _Functor>
+	const _Functor*
+	target() const noexcept
+	{
+	  if (typeid(_Functor) == target_type() && _M_manager)
+	    {
+	      _Any_data __ptr;
+	      _M_manager(__ptr, _M_functor, __get_functor_ptr);
+	      return __ptr._M_access<const _Functor*>();
+	    }
+	  else
+	    return nullptr;
+	}
       // @}
 #endif
 
@@ -580,90 +635,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Functor, typename _Signature = typename
 	   __function_guide_helper<decltype(&_Functor::operator())>::type>
     function(_Functor) -> function<_Signature>;
-#endif
-
-  // Out-of-line member definitions.
-  template<typename _Res, typename... _ArgTypes>
-    function<_Res(_ArgTypes...)>::
-    function(const function& __x)
-    : _Function_base()
-    {
-      if (static_cast<bool>(__x))
-	{
-	  __x._M_manager(_M_functor, __x._M_functor, __clone_functor);
-	  _M_invoker = __x._M_invoker;
-	  _M_manager = __x._M_manager;
-	}
-    }
-
-  template<typename _Res, typename... _ArgTypes>
-    template<typename _Functor, typename, typename>
-      function<_Res(_ArgTypes...)>::
-      function(_Functor __f)
-      : _Function_base()
-      {
-	typedef _Function_handler<_Res(_ArgTypes...), _Functor> _My_handler;
-
-	if (_My_handler::_M_not_empty_function(__f))
-	  {
-	    _My_handler::_M_init_functor(_M_functor, std::move(__f));
-	    _M_invoker = &_My_handler::_M_invoke;
-	    _M_manager = &_My_handler::_M_manager;
-	  }
-      }
-
-  template<typename _Res, typename... _ArgTypes>
-    _Res
-    function<_Res(_ArgTypes...)>::
-    operator()(_ArgTypes... __args) const
-    {
-      if (_M_empty())
-	__throw_bad_function_call();
-      return _M_invoker(_M_functor, std::forward<_ArgTypes>(__args)...);
-    }
-
-#if __cpp_rtti
-  template<typename _Res, typename... _ArgTypes>
-    const type_info&
-    function<_Res(_ArgTypes...)>::
-    target_type() const noexcept
-    {
-      if (_M_manager)
-	{
-	  _Any_data __typeinfo_result;
-	  _M_manager(__typeinfo_result, _M_functor, __get_type_info);
-	  return *__typeinfo_result._M_access<const type_info*>();
-	}
-      else
-	return typeid(void);
-    }
-
-  template<typename _Res, typename... _ArgTypes>
-    template<typename _Functor>
-      _Functor*
-      function<_Res(_ArgTypes...)>::
-      target() noexcept
-      {
-	const function* __const_this = this;
-	const _Functor* __func = __const_this->template target<_Functor>();
-	return const_cast<_Functor*>(__func);
-      }
-
-  template<typename _Res, typename... _ArgTypes>
-    template<typename _Functor>
-      const _Functor*
-      function<_Res(_ArgTypes...)>::
-      target() const noexcept
-      {
-	if (typeid(_Functor) == target_type() && _M_manager)
-	  {
-	    _Any_data __ptr;
-	    _M_manager(__ptr, _M_functor, __get_functor_ptr);
-	    return __ptr._M_access<const _Functor*>();
-	  }
-	else
-	  return nullptr;
-      }
 #endif
 
   // [20.7.15.2.6] null pointer comparisons
