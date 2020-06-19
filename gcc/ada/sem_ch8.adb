@@ -8212,11 +8212,13 @@ package body Sem_Ch8 is
                   else
                      Add_One_Interp (N, Predef_Op2, T);
                   end if;
-
                else
                   if not Is_Binary_Op then
                      Add_One_Interp (N, Predef_Op, T);
-                  else
+
+                  --  Predef_Op2 may be empty in case of previous errors
+
+                  elsif Present (Predef_Op2) then
                      Add_One_Interp (N, Predef_Op2, T);
                   end if;
                end if;

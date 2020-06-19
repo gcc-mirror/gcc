@@ -595,7 +595,12 @@ package body Lib.Xref is
    --  Start of processing for Generate_Reference
 
    begin
-      pragma Assert (Nkind (E) in N_Entity);
+      --  May happen in case of severe errors
+
+      if Nkind (E) not in N_Entity then
+         return;
+      end if;
+
       Find_Actual (N, Formal, Call);
 
       if Present (Formal) then
