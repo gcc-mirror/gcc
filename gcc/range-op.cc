@@ -306,23 +306,16 @@ create_possibly_reversed_range (irange &r, tree type,
     r = widest_irange (type, new_lb, new_ub);
 }
 
-// Return a value_range instance that is a boolean TRUE.
+// Return an irange instance that is a boolean TRUE.
 
 static inline int_range<1>
 range_true (tree type)
 {
   unsigned prec = TYPE_PRECISION (type);
   return int_range<1> (type, wi::one (prec), wi::one (prec));
-#if 0
-  // ??
-  // Build ~[0,0] instead of [1,1] because Ada booleans may be larger
-  // than 1-bit.
-  tree zero = build_zero_cst (type);
-  return int_range<1> (zero, zero, VR_ANTI_RANGE);
-#endif
 }
 
-// Return a value_range instance that is a boolean FALSE.
+// Return an irange instance that is a boolean FALSE.
 
 static inline int_range<1>
 range_false (tree type)
@@ -331,7 +324,7 @@ range_false (tree type)
   return int_range<1> (type, wi::zero (prec), wi::zero (prec));
 }
 
-// Return a value_range that covers both true and false.
+// Return an irange that covers both true and false.
 
 static inline int_range<1>
 range_true_and_false (tree type)
@@ -1605,7 +1598,7 @@ operator_rshift::op1_range (irange &r,
       // Folding the original operation may discard some impossible
       // ranges from the LHS.
       widest_irange lhs_refined;
-      op_rshift.fold_range (lhs_refined, type, value_range (type), op2);
+      op_rshift.fold_range (lhs_refined, type, int_range<1> (type), op2);
       lhs_refined.intersect (lhs);
       widest_irange shift_range (shift, shift);
       widest_irange lb, ub;
