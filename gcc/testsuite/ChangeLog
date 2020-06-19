@@ -1,3 +1,63 @@
+2020-06-18  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/spaceship-ref1.C: New test.
+	* g++.dg/cpp2a/spaceship-synth-neg4.C: New test.
+	* g++.dg/cpp2a/spaceship-union1.C: New test.
+
+2020-06-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr78904-1a.c: New test.
+	* gcc.target/i386/pr78904-1b.c: Ditto.
+	* gcc.target/i386/pr78904-2a.c: Ditto.
+	* gcc.target/i386/pr78904-2b.c: Ditto.
+	* gcc.target/i386/pr78904-3a.c: Ditto.
+	* gcc.target/i386/pr78904-3b.c: Ditto.
+	* gcc.target/i386/pr78904-4a.c: Ditto.
+	* gcc.target/i386/pr78904-4b.c: Ditto.
+	* gcc.target/i386/pr78904-5a.c: Ditto.
+	* gcc.target/i386/pr78904-5b.c: Ditto.
+	* gcc.target/i386/pr78904-6a.c: Ditto.
+	* gcc.target/i386/pr78904-6b.c: Ditto.
+	* gcc.target/i386/pr78967-1a.c: Ditto.
+	* gcc.target/i386/pr78967-1b.c: Ditto.
+	* gcc.target/i386/pr78967-2a.c: Ditto.
+	* gcc.target/i386/pr78967-2b.c: Ditto.
+
+2020-06-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/95667
+	PR middle-end/92814
+	* gcc.dg/Wstringop-overflow-25.c: Remove xfails.
+	* gcc.dg/Wstringop-overflow-39.c: New test.
+
+2020-06-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95735
+	* g++.dg/cpp2a/concepts-err2.C: New test.
+
+2020-06-18  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* g++.target/aarch64/pr94052.C: Give z::ad public access.
+
+2020-06-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/map-alloc-comp-1.f90: New test.
+
+2020-06-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95728
+	* g++.dg/template/cast6.C: New test.
+
+2020-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95699
+	* gcc.dg/tree-ssa/pr95699.c: New test.
+
+2020-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/95713
+	* gcc.dg/pr95713.c: New test.
+
 2020-06-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-c++-common/gomp/default-1.c: Update.
