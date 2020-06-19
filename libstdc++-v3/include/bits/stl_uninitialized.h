@@ -553,9 +553,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         static void
         __uninit_default(_ForwardIterator __first, _ForwardIterator __last)
         {
-	  typedef typename iterator_traits<_ForwardIterator>::value_type
-	    _ValueType;
-
 	  if (__first == __last)
 	    return;
 
