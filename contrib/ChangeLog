@@ -1,3 +1,19 @@
+2020-06-18  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: First checkout and then
+	run git pull ---rebase.
+
+2020-06-18  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Support merge commits
+	and walk only on the branch that is being merged and generate
+	missing ChangeLog entries.
+
+2020-06-18  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Fix Backported from timestamp when
+	use_commit_ts=True is used.
+
 2020-06-17  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Print 'Backported from master'

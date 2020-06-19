@@ -1,3 +1,306 @@
+2020-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Get_Size_For_Range): Only make sure to return a
+	size lower than that of the original type if possible.
+	* libgnat/s-rannum.adb (Random_Discrete): Back out optimization
+	added for 32-bit types.
+
+2020-06-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch6.ads, sem_ch6.adb (Check_Formal_Conformance): New
+	subprogram.
+	(Check_Conformance): Move code to Check_Formal_Conformance.
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Check for formal
+	conformance when needed.
+
+2020-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Narrow_Large_Operation): New procedure to try
+	and narrow large arithmetic and comparison operations.
+	(Expand_N_In): Call it.
+	(Expand_N_Op_Abs): Likewise.
+	(Expand_N_Op_Add): Likewise.
+	(Expand_N_Op_Divide): Likewise.
+	(Expand_N_Op_Eq): Likewise.
+	(Expand_N_Op_Ge): Likewise.
+	(Expand_N_Op_Gt): Likewise.
+	(Expand_N_Op_Le): Likewise.
+	(Expand_N_Op_Lt): Likewise.
+	(Expand_N_Op_Minus): Likewise.
+	(Expand_N_Op_Mod): Likewise.
+	(Expand_N_Op_Multiply): Likewise.
+	(Expand_N_Op_Ne): Likewise.
+	(Expand_N_Op_Plus): Likewise.
+	(Expand_N_Op_Rem): Likewise.
+	(Expand_N_Op_Subtract): Likewise.
+	(Expand_N_Type_Conversion): Use Convert_To procedure.
+	* exp_ch9.adb (Is_Pure_Barrier) <N_Identifier>: Skip all
+	numeric types.
+	<N_Type_Conversion>: Use explicit criterion.
+
+2020-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_Allocator_Expression): Apply constraint
+	and predicate checks for the qualified expression on entry,
+	followed by constraint and predicate checks for the allocator
+	itself, and return early if this results in a static error.
+	(Expand_N_Allocator): Do not do the same here.  Instead apply
+	constraint and predicate checks for arrays in the subtype
+	indication case.
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Do not apply
+	range checks to allocators here.
+
+2020-06-18  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.adb (BIP_Suffix_Kind, Is_Build_In_Place_Entity): Move
+	declarations...
+	* exp_ch6.ads: Here.
+	* exp_util.adb (Is_Secondary_Stack_BIP_Func_Call): Do not rely
+	on the name of the scope to locate the extra formal BIPalloc
+	since they are copied when the pointer type associated with
+	dispatching calls is built; rely on routines
+	Is_Build_In_Place_Entity and BIP_Suffix_Kind.
+	* exp_disp.adb (Expand_Dispatching_Call): Set the scope of the
+	first extra formal of the internally built pointer type.
+	* sem_ch3.adb (Derive_Subprogram): Do not inherit extra formals
+	from a limited interface parent since limitedness is not
+	inherited in such case (AI-419) and this affects the extra
+	formals.
+	* sprint.adb (Write_Itype): Output extra formals of subprogram
+	types.
+
+2020-06-18  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* errout.adb (Write_Error_Summary): Display number of warnings
+	treated as errors.
+	* errutil.ads: Update comment.
+
+2020-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_attr.adb (Analyze_Attribute) <Asm_{In,Out}put>: Alphabetize.
+	<Component_Size>: Add check for universal integer attribute.
+	<Aft>, <Bit_Order>, <Definite>, <Max_Alignment_For_Allocation>,
+	<Scalar_Storage_Order>: Raise Program_Error on them.
+	* sem_attr.adb (Eval_Attribute) <Component_Size>: Add comment on
+	the packed array case.
+
+2020-06-18  Steve Baird  <baird@adacore.com>
+
+	* sem_util.adb (Object_Access_Level): Treat a 'Old attribute
+	reference like an aggregate in determining its static
+	accessibility level; after the evaluation of the relevant
+	post-condition, the implicitly declared constant associated with
+	an Old attribute reference ceases to exist. Similarly for
+	Loop_Entry attribute.
+	* exp_ch6.adb (Expand_Call_Helper): For an attribute reference
+	that is expanded into a reference to an implicitly declared
+	constant (e.g., a 'Old or 'Loop_Entry attribute), compute the
+	dynamic accessibility level of that constant by looking at the
+	declaration of the constant (as opposed to looking at the
+	attribute reference).
+
+2020-06-18  Steve Baird  <baird@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Do not generate a
+	default initial condition check for the declaration of an
+	imported object.
+
+2020-06-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* Makefile.rtl: Add s-statxd.o.
+	* bindgen.adb (Gen_Adainit): Add support for XDR_Stream.
+	* bindusg.adb (Display): Add mention of -xdr.
+	* gnatbind.adb: Process -xdr switch.
+	* init.c (__gl_xdr_stream): New.
+	* opt.ads (XDR_Stream): New.
+	* libgnat/s-stratt__xdr.adb: Rename to...
+	* libgnat/s-statxd.adb: this and adjust.
+	* libgnat/s-statxd.ads: New.
+	* libgnat/s-stratt.ads, libgnat/s-stratt.adb: Choose between
+	default and XDR implementation at runtime.
+	* libgnat/s-ststop.ads: Update comments.
+	* doc/gnat_rm/implementation_advice.rst: Update doc on XDR
+	streaming.
+	* gnat_rm.texi: Regenerate.
+
+2020-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute) <To_Address>: Use the address
+	size of the target instead of the host when checking the value of
+	a static expression.  Also use standard idiom for exponentiation.
+
+2020-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_prag.adb (Process_Convention): Give a warning on C_Variadic_n
+	being applied to a subprogram with exactly n parameters.
+
+2020-06-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnarl/s-osinte__linux.ads, libgnat/g-io.adb,
+	libgnat/g-socket.adb, libgnat/g-socthi.adb,
+	libgnat/g-socthi.ads, libgnat/g-socthi__vxworks.adb,
+	libgnat/g-socthi__vxworks.ads, libgnat/g-sothco.ads,
+	libgnat/s-io.adb, libgnat/a-except.adb: Fix function profile
+	mismatch with imported C functions.
+
+2020-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Expand_Call_Helper): Remove superfluous calls
+	to Relocate_Node and merge calls to Analyze and Resolve in a
+	couple of places.  Do not attempt to generate a range check
+	for an actual parameter against the formal's type of a derived
+	subprogram after generating a conversion to the formal's type
+	of the parent subprogram.
+
+2020-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Compute_Range_For_Arithmetic_Op): New procedure to
+	compute a range for an arithmetical operation extracted from...
+	(Minimize_Eliminate_Overflows): ...here.  Call it.
+	(Determine_Range_Cache_O): New cache for Original_Node nodes.
+	(Determine_Range): Call Compute_Range_For_Arithmetic_Op for all
+	arithmetic expressions. Use Attribute_Id in lieu of Attribute_Name
+	for attributes. Add handling for Range_Length alongside Length.
+	Add specific handling for Alignment, Bit, First_Bit, Last_Bit,
+	Max_Size_In_Storage_Elements, Position, Bit_Position,
+	Component_Size, Object_Size, Size, Value_Size, Descriptor_Size.
+	(Enable_Overflow_Check): Omit the check for Abs and Minus if the
+	operand cannot be the largest negative number.
+	(Selected_Length_Checks): Use Pos for Number_Dimensions.
+	* exp_attr.adb (Expand_N_Attribute_Reference): Move compile-time
+	handling of Bit_Position, Descriptor_Size, First_Bit, Last_Bit
+	and Position to...
+	* sem_attr.adb (Eval_Attribute): ...here.  Move up Alignment for
+	objects and use Compile_Time_Known_Attribute in this case too.
+
+2020-06-18  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* erroutc.ads: Declare new Is_Compile_Time_Msg boolean,
+	add new Compile_Time_Pragma field to Error_Msg_Object type.
+	(Count_Compile_Time_Pragma_Warnings): New function.
+	* erroutc.adb (Count_Compile_Time_Pragma_Warnings): New
+	function.
+	(Compilation_Errors): Take Compile_Time warnings into account
+	when tallying Errors/Warnings.
+	* errout.ads (Error_Msg): New procedure.
+	* errout.adb (Error_Msg): New procedure.
+	(Error_Msg_Internal): Set new Compile_Time_Pragma field in
+	Error_Msg_Object.
+	* errutil.adb (Error_Msg): Set new Compile_Time_Pragma field in
+	Error_Msg_Object.
+	* sem_prag.adb (Validate_Compile_Time_Warning_Or_Error): Pass
+	True to new Error_Msg procedure.
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Update doc for
+	the Compile_Time_Warning pragma.
+	* gnat_rm.texi: Regenerate.
+	* opt.ads: Update comment.
+
+2020-06-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch4.adb (Check_Compatible_Profiles): Add explicit
+	initialization.
+
+2020-06-18  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb (Generate_Index_Checks): Handle
+	N_Subtype_Indication returned from Scalar_Range.
+
+2020-06-18  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb, sem_ch3.adb: Minor refactorings.
+	* sem_eval.adb (Eval_Qualified_Expression): Fix reference to RM
+	rule in comment; only set a local variable Hex in the branch
+	where it is used.
+
+2020-06-18  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_eval.adb (Check_Non_Static_Context): Use Is_RTE.
+
+2020-06-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch4.adb (Find_Equality_Types.Check_Access_Object_Types):
+	New function, used to implement RM 4.5.2 (9.6/2).
+	(Find_Equality_Types.Check_Compatible_Profiles): New function,
+	used to implement RM 4.5.2(9.7/2).
+	(Find_Equality_Types.Reference_Anonymous_Access_Type): New
+	function.
+	(Find_Equality_Types.Try_One_Interp): Fix handling of anonymous
+	access types which was accepting both too much and too little.
+	Remove accumulated special and incomplete cases for
+	instantiations, replaced by Has_Compatible_Type.
+	(Analyze_Overloaded_Selected_Component): Use
+	Is_Anonymous_Access_Type instead of Ekind_In.
+	* sem_res.adb: Code cleanup and bug fix: use
+	Is_Anonymous_Access_Type instead of Ekind_In.  Relax checking of
+	anonymous access parameter when universal_access "=" is
+	involved.
+	* sem_type.adb: Likewise.
+	(Find_Unique_Type): Move code from here...
+	(Specific_Type): ...to here. Also add missing handling of access
+	to class wide types.
+	* einfo.ads, einfo.adb (Is_Access_Object_Type): New.
+
+2020-06-18  Bob Duff  <duff@adacore.com>
+
+	* libgnat/a-strsto.ads, libgnat/a-ststbo.adb,
+	libgnat/a-ststbo.ads, libgnat/a-ststun.adb,
+	libgnat/a-ststun.ads: New files, containing packages
+	Ada.Streams.Storage, Ada.Streams.Storage.Bounded, and
+	Ada.Streams.Storage.Unbounded.
+	* impunit.adb, Makefile.rtl: Add new file names.
+
+2020-06-18  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch13.adb (Has_Good_Profile): Enforce strictness in the
+	check. Required to detect wrong profiles for Input and Output.
+	(Analyze_Stream_TSS_Definition): Minor enhancement in the text
+	of the error for class-wide attributes.
+
+2020-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_attr.adb (Get_Integer_Type): Pick an unsigned type based
+	on the Esize of the base type of the input type.
+
+2020-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_Array_Equality): For the optimization of
+	the 2-element case, build new expression lists for the indices.
+
+2020-06-18  Richard Kenner  <kenner@adacore.com>
+
+	* sem_util.adb (Enclosing_Subprogram): No longer need
+	Convention_Protected.
+
+2020-06-18  Claire Dross  <dross@adacore.com>
+
+	* sem_util.adb (Is_OK_Volatile_Context): Return False on
+	definitions of constants declared in declare expressions.
+
+2020-06-18  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_aspects.rst
+	(Relaxed_Initialization): New implementation-defined aspect.
+	* doc/gnat_rm/implementation_defined_attributes.rst
+	(Initialized): New implementation-defined attribute.
+	* gnat_rm.texi: Regenerate.
+
+2020-06-18  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Expand_Dispatching_Call): Add missing decoration
+	of attribute Extra_Accessibility_Of_Result.
+	* freeze.adb (Check_Extra_Formals): No check required if
+	expansion is disabled; Adding check on
+	Extra_Accessibilty_Of_Result.
+	(Freeze_Subprogram): Fix decoration of
+	Extra_Accessibility_Of_Result.
+	* sem_ch3.adb (Derive_Subprogram): Fix decoration of
+	Extra_Accessibility_Of_Result
+
+2020-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Optimize_Length_Comparison): Accept 32-bit values
+	in the full unsigned range.
+
 2020-06-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* checks.adb (Apply_Universal_Integer_Attribute_Checks): Do not do

@@ -1,3 +1,8 @@
+2020-06-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.c (resolve_omp_clauses): Reject vars with
+	allocatable components in OpenMP map clauses.
+
 2020-06-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	* parse.c (decode_oacc_directive): Permit 'acc routine' also

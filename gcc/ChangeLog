@@ -1,3 +1,186 @@
+2020-06-18  Felix Yang  <felix.yang@huawei.com>
+
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Call
+	vect_relevant_for_alignment_p to filter out data references in
+	the loop whose alignment is irrelevant when trying loop peeling
+	to force alignment.
+
+2020-06-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*cmpqi_ext<mode>_1): Use SWI248 mode
+	iterator instead of SImode for ZERO_EXTRACT RTX.  Use SWI248
+	mode iterator for the first operand of ZERO_EXTRACT RTX.
+	Change ext_register_operand predicate to register_operand.
+	Rename from *cmpqi_ext_1.
+	(*cmpqi_ext<mode>_2): Ditto.  Rename from *cmpqi_ext_2.
+	(*cmpqi_ext<mode>_3): Ditto.  Rename from *cmpqi_ext_3.
+	(*cmpqi_ext<mode>_4): Ditto.  Rename from *cmpqi_ext_4.
+	(cmpi_ext_3): Use HImode instead of SImode for ZERO_EXTRACT RTX.
+	(*extv<mode>): Use SWI24 mode iterator for the first operand
+	of ZERO_EXTRACT RTX.  Change ext_register_operand predicate
+	to register_operand.
+	(*extzv<mode>): Use SWI248 mode iterator for the first operand
+	of ZERO_EXTRACT RTX.  Change ext_register_operand predicate
+	to register_operand.
+	(*extzvqi): Use SWI248 mode iterator instead of SImode for
+	ZERO_EXTRACT RTX.  Use SWI248 mode iterator for the first operand
+	of ZERO_EXTRACT RTX.  Change ext_register_operand predicate to
+	register_operand.
+	(*extzvqi_mem_rex64 and corresponding peephole2):  Use SWI248 mode
+	iterator instead of SImode for ZERO_EXTRACT RTX.  Use SWI248
+	mode iterator for the first operand of ZERO_EXTRACT RTX.
+	Change ext_register_operand predicate to register_operand.
+	(@insv<mode>_1): Use SWI248 mode iterator for the first operand
+	of ZERO_EXTRACT RTX.  Change ext_register_operand predicate to
+	register_operand.
+	(*insvqi_1): Use SWI248 mode iterator instead of SImode
+	for ZERO_EXTRACT RTX.  Use SWI248 mode iterator for the
+	first operand of ZERO_EXTRACT RTX.  Change ext_register_operand
+	predicate to register_operand.
+	(*insvqi_2): Ditto.
+	(*insvqi_3): Ditto.
+	(*insvqi_1_mem_rex64 and corresponding peephole2):  Use SWI248 mode
+	iterator instead of SImode for ZERO_EXTRACT RTX.  Use SWI248
+	mode iterator for the first operand of ZERO_EXTRACT RTX.
+	Change ext_register_operand predicate to register_operand.
+	(addqi_ext_1): New expander.
+	(*addqi_ext<mode>_1): Use SWI248 mode iterator instead of SImode
+	for ZERO_EXTRACT RTX.  Use SWI248 mode iterator for the first
+	operand of ZERO_EXTRACT RTX.  Change ext_register_operand predicate
+	to register_operand.  Rename from *addqi_ext_1.
+	(*addqi_ext<mode>_2): Ditto. Rename from *addqi_ext_2.
+	(divmodqi4): Use HImode instead of SImode for ZERO_EXTRACT RTX.
+	(udivmodqi4): Ditto.
+	(testqi_ext_1): Use HImode instead of SImode for ZERO_EXTRACT RTX.
+	(*testqi_ext<mode>_1): Use SWI248 mode iterator instead of SImode
+	for ZERO_EXTRACT RTX.  Use SWI248 mode iterator for the first
+	operand of ZERO_EXTRACT RTX.  Change ext_register_operand predicate
+	to register_operand.  Rename from *testqi_ext_1.
+	(*testqi_ext<mode>_2): Ditto.  Rename from *testqi_ext_2.
+	(andqi_ext_1): New expander.
+	(*andqi_ext<mode>_1): Use SWI248 mode iterator instead of SImode
+	for ZERO_EXTRACT RTX.  Use SWI248 mode iterator for the first
+	operand of ZERO_EXTRACT RTX.  Change ext_register_operand predicate
+	to register_operand.  Rename from andqi_ext_1.
+	(*andqi_ext<mode>_1_cc): Ditto.  Rename from *andqi_ext_1_cc.
+	(*andqi_ext<mode>_2): Ditto.  Rename from *andqi_ext_2.
+	(*<code>qi_ext<mode>_1): Ditto.  Rename from *<code>qi_ext_1.
+	(*<code>qi_ext<mode>_2): Ditto.  Rename from *<code>qi_ext_2.
+	(xorqi_ext_1_cc): Use HImode instead of SImode for ZERO_EXTRACT RTX.
+	(*xorqi_ext<mode>_1_cc):  Use SWI248 mode iterator instead of SImode
+	for ZERO_EXTRACT RTX.  Use SWI248 mode iterator for the first
+	operand of ZERO_EXTRACT RTX.  Change ext_register_operand predicate
+	to register_operand.  Rename from *xorqi_ext_1_cc.
+	* config/i386/i386-expand.c (ix86_split_idivmod): Emit ZERO_EXTRACT
+	in mode, matching its first operand.
+	(promote_duplicated_reg): Update for renamed insv<mode>_1.
+	* config/i386/predicates.md (ext_register_operand): Remove predicate.
+
+2020-06-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/95667
+	PR middle-end/92814
+	* builtins.c (compute_objsize): Remove call to
+	compute_builtin_object_size and instead compute conservative sizes
+	directly here.
+
+2020-06-18  Martin Liska  <mliska@suse.cz>
+
+	* coretypes.h (struct iterator_range): New type.
+	* tree-vect-patterns.c (vect_determine_precisions): Use
+	range-based iterator.
+	(vect_pattern_recog): Likewise.
+	* tree-vect-slp.c (_bb_vec_info):  Likewise.
+	(_bb_vec_info::~_bb_vec_info): Likewise.
+	(vect_slp_check_for_constructors): Likewise.
+	* tree-vectorizer.h:Add new iterators
+	and functions that use it.
+
+2020-06-18  Martin Liska  <mliska@suse.cz>
+
+	* config/rs6000/rs6000-call.c (fold_build_vec_cmp):
+	Since 502d63b6d6141597bb18fd23c87736a1b384cf8f, first argument
+	of a VEC_COND_EXPR cannot be tcc_comparison and so that
+	a SSA_NAME needs to be created before we use it for the first
+	argument of the VEC_COND_EXPR.
+	(fold_compare_helper): Pass gsi to fold_build_vec_cmp.
+
+2020-06-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/95739
+	* internal-fn.c (expand_vect_cond_optab_fn): Move the result
+	to the target if necessary.
+	(expand_vect_cond_mask_optab_fn): Likewise.
+
+2020-06-18  Martin Liska  <mliska@suse.cz>
+
+	* tree-ssa-reassoc.c (ovce_extract_ops): Replace *vcond with
+	vcond as we check for NULL pointer.
+
+2020-06-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimple-pretty-print.c (dump_binary_rhs): Use braces to
+	silence empty-body warning with gcc_fallthrough.
+
+2020-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95699
+	* tree-ssa-phiopt.c (minmax_replacement): Treat (signed int)x < 0
+	as x > INT_MAX and (signed int)x >= 0 as x <= INT_MAX.  Move variable
+	declarations to the statements that set them where possible.
+
+2020-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/95713
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Don't allow
+	scalar mode halfvectype other than vector boolean for
+	VEC_PACK_TRUNC_EXPR.
+
+2020-06-18  Richard Biener  <rguenther@suse.de>
+
+	* varasm.c (assemble_variable): Make sure to not
+	defer output when outputting addressed constants.
+	(output_constant_def_contents): Likewise.
+	(add_constant_to_table): Take and pass on whether to
+	defer output.
+	(output_addressed_constants): Likewise.
+	(output_constant_def): Pass on whether to defer output
+	to add_constant_to_table.
+	(tree_output_constant_def): Defer output of constants.
+
+2020-06-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_slp_tree::two_operators): Remove.
+	(_slp_tree::lane_permutation): New member.
+	(_slp_tree::code): Likewise.
+	(SLP_TREE_TWO_OPERATORS): Remove.
+	(SLP_TREE_LANE_PERMUTATION): New.
+	(SLP_TREE_CODE): Likewise.
+	(vect_stmt_dominates_stmt_p): Declare.
+	* tree-vectorizer.c (vect_stmt_dominates_stmt_p): New function.
+	* tree-vect-stmts.c (vect_model_simple_cost): Remove
+	SLP_TREE_TWO_OPERATORS handling.
+	* tree-vect-slp.c (_slp_tree::_slp_tree): Amend.
+	(_slp_tree::~_slp_tree): Likewise.
+	(vect_two_operations_perm_ok_p): Remove.
+	(vect_build_slp_tree_1): Remove verification of two-operator
+	permutation here.
+	(vect_build_slp_tree_2): When we have two different operators
+	build two computation SLP nodes and a blend.
+	(vect_print_slp_tree): Print the lane permutation if it exists.
+	(slp_copy_subtree): Copy it.
+	(vect_slp_rearrange_stmts): Re-arrange it.
+	(vect_slp_analyze_node_operations_1): Handle SLP_TREE_CODE
+	VEC_PERM_EXPR explicitely.
+	(vect_schedule_slp_instance): Likewise.  Remove old
+	SLP_TREE_TWO_OPERATORS code.
+	(vectorizable_slp_permutation): New function.
+
+2020-06-18  Martin Liska  <mliska@suse.cz>
+
+	* tree-vect-generic.c (expand_vector_condition): Check
+	for gassign before inspecting RHS.
+
 2020-06-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gimplify.c (omp_notice_threadprivate_variable)

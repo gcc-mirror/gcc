@@ -1,3 +1,22 @@
+2020-06-18  Jason Merrill  <jason@redhat.com>
+
+	* method.c (early_check_defaulted_comparison): Check for &&.
+	(build_comparison_op): Allow empty union.  Diagnose non-category
+	type.
+	(common_comparison_type): Remove handling for non-category type.
+
+2020-06-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95735
+	* pt.c (finish_template_variable): Return if
+	coerce_innermost_template_parms return error_mark_node.
+
+2020-06-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95728
+	* pt.c (tsubst_copy_and_build) <case NEW_EXPR>: Return error_mark_node
+	if placement is erroneous.
+
 2020-06-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/66159
