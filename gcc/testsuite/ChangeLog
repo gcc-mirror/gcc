@@ -1,3 +1,28 @@
+2020-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/95713
+	* gcc.dg/pr95713.c: New test.
+
+2020-06-18  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	Backported from master:
+	2020-06-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/mve_vaddq_m.c: New test.
+
+2020-06-18  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	Backported from master:
+	2020-06-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/mve_scalar_shifts1.c: New test.
+	* gcc.target/arm/mve/intrinsics/mve_scalar_shifts2.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_scalar_shifts3.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_scalar_shifts4.c: Likewise.
+
 2020-06-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from master:

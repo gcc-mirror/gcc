@@ -1,3 +1,62 @@
+2020-06-18  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	PR target/95347
+	* config/rs6000/rs6000.c (is_stfs_insn): Rename to
+	is_lfs_stfs_insn and make it recognize lfs as well.
+	(prefixed_store_p): Use is_lfs_stfs_insn().
+	(prefixed_load_p): Use is_lfs_stfs_insn() to recognize lfs.
+
+2020-06-18  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	PR target/95347
+	* config/rs6000/rs6000.c (prefixed_store_p): Add special case
+	for stfs.
+	(is_stfs_insn): New helper function.
+
+2020-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/95713
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Don't allow
+	scalar mode halfvectype other than vector boolean for
+	VEC_PACK_TRUNC_EXPR.
+
+2020-06-18  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	Backported from master:
+	2020-06-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/arm_mve.h (__arm_vaddq_m_n_s8): Correct the intrinsic
+	arguments.
+	(__arm_vaddq_m_n_s32): Likewise.
+	(__arm_vaddq_m_n_s16): Likewise.
+	(__arm_vaddq_m_n_u8): Likewise.
+	(__arm_vaddq_m_n_u32): Likewise.
+	(__arm_vaddq_m_n_u16): Likewise.
+	(__arm_vaddq_m): Modify polymorphic variant.
+
+2020-06-18  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	Backported from master:
+	2020-06-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/mve.md (mve_uqrshll_sat<supf>_di): Correct the predicate
+	and constraint of all the operands.
+	(mve_sqrshrl_sat<supf>_di): Likewise.
+	(mve_uqrshl_si): Likewise.
+	(mve_sqrshr_si): Likewise.
+	(mve_uqshll_di): Likewise.
+	(mve_urshrl_di): Likewise.
+	(mve_uqshl_si): Likewise.
+	(mve_urshr_si): Likewise.
+	(mve_sqshl_si): Likewise.
+	(mve_srshr_si): Likewise.
+	(mve_srshrl_di): Likewise.
+	(mve_sqshll_di): Likewise.
+	* config/arm/predicates.md (arm_low_register_operand): Define.
+
 2020-06-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from master:
