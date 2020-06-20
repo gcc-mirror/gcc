@@ -1,3 +1,24 @@
+2020-06-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_related_vector_mode): Add ARG_UNUSED.
+	(output_file_start): Use const 'char *'.
+
+2020-06-19  Przemyslaw Wirkus  <Przemyslaw.Wirkus@arm.com>
+
+	PR tree-optimization/94880
+	* match.pd (A | B) - B -> (A & ~B): New simplification.
+
+2020-06-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_bb_slp_scalar_cost): Adjust
+	for lane permutations.
+
+2020-06-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95761
+	* tree-vect-slp.c (vect_schedule_slp_instance): Walk all
+	vectorized stmts for finding the last one.
+
 2020-06-18  Felix Yang  <felix.yang@huawei.com>
 
 	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Call

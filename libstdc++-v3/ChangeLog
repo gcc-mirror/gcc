@@ -1,3 +1,39 @@
+2020-06-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95765
+	* include/bits/stl_algobase.h (__size_to_integer(float))
+	(__size_to_integer(double), __size_to_integer(long double))
+	(__size_to_integer(__float128)): Cast return type explicitly.
+	* include/bits/stl_uninitialized.h (__uninitialized_default_1<true>):
+	Remove unused typedef.
+
+2020-06-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_pair.h (_Index_tuple): Remove redundant
+	namespace qualification.
+	(pair::pair(tuple<>&, tuple<>&, _Index_tuple, _Index_tuple)):
+	Likewise.
+	* include/std/tuple (_Head_base, _Tuple_impl, tuple_size)
+	(tuple_element, __get_helper, get, __make_tuple_impl)
+	(__make_1st_indices, __tuple_concater)
+	(pair::pair(tuple<>&, tuple<>&, _Index_tuple, _Index_tuple)):
+	Likewise.
+	* include/std/utility (tuple_element, __is_tuple_like_impl)
+	(tuple_size, __pair_get, get): Likewise.
+
+2020-06-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_function.h (function): Define all member
+	functions inline.
+
+2020-06-19  Marc Glisse  <marc.glisse@inria.fr>
+
+	* include/bits/stl_algo.h (__includes): Simplify the code.
+
+2020-06-19  Marc Glisse  <marc.glisse@inria.fr>
+
+	* include/std/optional (optional()): Explicitly define it.
+
 2020-06-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/94540
