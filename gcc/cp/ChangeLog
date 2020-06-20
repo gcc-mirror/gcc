@@ -1,3 +1,9 @@
+2020-06-19  Jason Merrill  <jason@redhat.com>
+
+	* method.c (early_check_defaulted_comparison): Allow defaulting
+	comparison outside class.  Complain if non-member operator isn't a
+	friend.
+
 2020-06-18  Jason Merrill  <jason@redhat.com>
 
 	* method.c (early_check_defaulted_comparison): Check for &&.

@@ -1,3 +1,35 @@
+2020-06-19  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/tree-ssa/popcount4ll.c: Add target lp64.
+	* gcc.dg/tree-ssa/popcount5ll.c: Same.
+
+2020-06-19  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/spaceship-friend1.C: New test.
+	* g++.dg/cpp2a/spaceship-err4.C: Adjust diagnostic.
+
+2020-06-19  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/vec-extracth-be-0.c: Apply -mbig
+	conditionally for powerpc64le*-*-*.
+	* gcc.target/powerpc/vec-extracth-be-1.c: Same.
+	* gcc.target/powerpc/vec-extracth-be-2.c: Same.
+	* gcc.target/powerpc/vec-extracth-be-3.c: Same.
+	* gcc.target/powerpc/vec-extractl-be-0.c: Same.
+	* gcc.target/powerpc/vec-extractl-be-1.c: Same.
+	* gcc.target/powerpc/vec-extractl-be-2.c: Same.
+	* gcc.target/powerpc/vec-extractl-be-3.c: Same.
+
+2020-06-19  Przemyslaw Wirkus  <Przemyslaw.Wirkus@arm.com>
+
+	PR tree-optimization/94880
+	* gcc.dg/tree-ssa/pr94880.c: New Test.
+
+2020-06-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95761
+	* gcc.dg/torture/pr95761.c: New testcase.
+
 2020-06-18  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp2a/spaceship-ref1.C: New test.
