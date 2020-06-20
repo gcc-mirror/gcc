@@ -1,3 +1,18 @@
+2020-06-19  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/spaceship-friend1.C: New test.
+	* g++.dg/cpp2a/spaceship-err4.C: Adjust diagnostic.
+
+2020-06-19  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/spaceship-ref1.C: New test.
+	* g++.dg/cpp2a/spaceship-synth-neg4.C: New test.
+	* g++.dg/cpp2a/spaceship-union1.C: New test.
+
+2020-06-19  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/consteval17.C: New test.
+
 2020-06-18  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

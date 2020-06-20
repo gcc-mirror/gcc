@@ -1,3 +1,21 @@
+2020-06-19  Jason Merrill  <jason@redhat.com>
+
+	* method.c (early_check_defaulted_comparison): Allow defaulting
+	comparison outside class.  Complain if non-member operator isn't a
+	friend.
+
+2020-06-19  Jason Merrill  <jason@redhat.com>
+
+	* method.c (early_check_defaulted_comparison): Check for &&.
+	(build_comparison_op): Allow empty union.  Diagnose non-category
+	type.
+	(common_comparison_type): Remove handling for non-category type.
+
+2020-06-19  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_new_op_1): Don't look for a CALL_EXPR when
+	calling a consteval function.
+
 2020-06-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/95508

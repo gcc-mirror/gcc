@@ -1,3 +1,13 @@
+2020-06-19  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/95018
+	* common.opt (flag_cunroll_grow_size): New flag.
+	* toplev.c (process_options): Set flag_cunroll_grow_size.
+	* tree-ssa-loop-ivcanon.c (pass_complete_unroll::execute):
+	Use flag_cunroll_grow_size.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Override flag_cunroll_grow_size.
+
 2020-06-18  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	PR target/95347
