@@ -2145,6 +2145,8 @@ struct pg_edge_callback_data
   bitmap sccs_to_merge;
   /* Array constains component information for all vertices.  */
   int *vertices_component;
+  /* Array constains postorder information for all vertices.  */
+  int *vertices_post;
   /* Vector to record all data dependence relations which are needed
      to break strong connected components by runtime alias checks.  */
   vec<ddr_p> *alias_ddrs;
@@ -2401,7 +2403,7 @@ loop_distribution::break_alias_scc_partitions (struct graph *rdg,
 					       vec<struct partition *> *partitions,
 					       vec<ddr_p> *alias_ddrs)
 {
-  int i, j, k, num_sccs, num_sccs_no_alias;
+  int i, j, k, num_sccs, num_sccs_no_alias = 0;
   /* Build partition dependence graph.  */
   graph *pg = build_partition_graph (rdg, partitions, false);
 
@@ -2452,6 +2454,7 @@ loop_distribution::break_alias_scc_partitions (struct graph *rdg,
       cbdata.sccs_to_merge = sccs_to_merge;
       cbdata.alias_ddrs = alias_ddrs;
       cbdata.vertices_component = XNEWVEC (int, pg->n_vertices);
+      cbdata.vertices_post = XNEWVEC (int, pg->n_vertices);
       /* Record the component information which will be corrupted by next
 	 graph scc finding call.  */
       for (i = 0; i < pg->n_vertices; ++i)
@@ -2460,6 +2463,11 @@ loop_distribution::break_alias_scc_partitions (struct graph *rdg,
       /* Collect data dependences for runtime alias checks to break SCCs.  */
       if (bitmap_count_bits (sccs_to_merge) != (unsigned) num_sccs)
 	{
+	  /* Record the postorder information which will be corrupted by next
+	     graph SCC finding call.  */
+	  for (i = 0; i < pg->n_vertices; ++i)
+	    cbdata.vertices_post[i] = pg->vertices[i].post;
+
 	  /* Run SCC finding algorithm again, with alias dependence edges
 	     skipped.  This is to topologically sort partitions according to
 	     compilation time known dependence.  Note the topological order
@@ -2490,11 +2498,6 @@ loop_distribution::break_alias_scc_partitions (struct graph *rdg,
 	      if (cbdata.vertices_component[k] != i)
 		continue;
 
-	      /* Update to the minimal postordeer number of vertices in scc so
-		 that merged partition is sorted correctly against others.  */
-	      if (pg->vertices[j].post > pg->vertices[k].post)
-		pg->vertices[j].post = pg->vertices[k].post;
-
 	      partition_merge_into (NULL, first, partition, FUSE_SAME_SCC);
 	      (*partitions)[k] = NULL;
 	      partition_free (partition);
@@ -2505,6 +2508,14 @@ loop_distribution::break_alias_scc_partitions (struct graph *rdg,
 	      first->type = PTYPE_SEQUENTIAL;
 	    }
 	}
+      /* Restore the postorder information if it's corrupted in finding SCC
+	 with alias dependence edges skipped.  */
+      if (num_sccs_no_alias > 0)
+	for (i = 0; i < pg->n_vertices; ++i)
+	  pg->vertices[i].post = cbdata.vertices_post[i];
+
+      free (cbdata.vertices_component);
+      free (cbdata.vertices_post);
     }
 
   sort_partitions_by_post_order (pg, partitions);
