@@ -242,11 +242,13 @@ static tree
 gfc_sym_mangled_common_id (gfc_common_head *com)
 {
   int has_underscore;
-  /* Provide sufficient space to hold "symbol.eq.1234567890__".  */
-  char mangled_name[GFC_MAX_MANGLED_SYMBOL_LEN + 1 + 16];
-  char name[GFC_MAX_SYMBOL_LEN + 1 + 16];
+  /* Provide sufficient space to hold "symbol.symbol.eq.1234567890__".  */
+  char mangled_name[2*GFC_MAX_MANGLED_SYMBOL_LEN + 1 + 16 + 1];
+  char name[sizeof (mangled_name) - 2];
 
   /* Get the name out of the common block pointer.  */
+  size_t len = strlen (com->name);
+  gcc_assert (len < sizeof (name));
   strcpy (name, com->name);
 
   /* If we're suppose to do a bind(c).  */
