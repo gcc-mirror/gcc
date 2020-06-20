@@ -5700,6 +5700,11 @@ gfc_match_equivalence (void)
 
 	  if (!gfc_add_in_equivalence (&sym->attr, sym->name, NULL))
 	    goto cleanup;
+	  if (sym->ts.type == BT_CLASS
+	      && CLASS_DATA (sym)
+	      && !gfc_add_in_equivalence (&CLASS_DATA (sym)->attr,
+					  sym->name, NULL))
+	    goto cleanup;
 
 	  if (sym->attr.in_common)
 	    {
