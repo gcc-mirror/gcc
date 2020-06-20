@@ -34,3 +34,7 @@ MULTILIB_MATCHES	= mcpu?simple=mcpu?fr300 \
 MULTILIB_EXCEPTIONS	= mcpu=frv/mno-pack* mcpu=simple/mno-pack*
 
 EXTRA_HEADERS = $(srcdir)/config/frv/frv-asm.h
+
+frv-rust.o: $(srcdir)/config/frv/frv-rust.c \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_COMMON_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

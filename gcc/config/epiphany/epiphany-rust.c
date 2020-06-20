@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Implement TARGET_RUST_CPU_INFO for Adapteva Epiphany targets.  */
 
-void cris_rust_target_cpu_info(void) {
+void epiphany_rust_target_cpu_info(void) {
     rust_add_target_info("target_arch", "epiphany");
 
     // llvm seems to have no support for sky (nor historical support), so names are made up by me

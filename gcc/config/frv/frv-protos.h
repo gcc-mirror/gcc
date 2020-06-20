@@ -26,6 +26,9 @@ extern void frv_debug_stack			(frv_stack_t *);
 extern int frv_initial_elimination_offset	(int, int);
 extern void frv_ifcvt_machdep_init		(void *);
 
+/* Defined in frv-rust.c  */
+extern void frv_rust_target_cpu_info (void);
+
 #ifdef RTX_CODE
 extern int frv_legitimate_address_p_1		(machine_mode, rtx,
 						 int, int, int);

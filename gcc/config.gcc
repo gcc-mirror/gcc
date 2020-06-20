@@ -381,6 +381,7 @@ bpf-*-*)
 	;;
 frv*)	cpu_type=frv
 	extra_options="${extra_options} g.opt"
+	rust_target_objs="frv-rust.o"
 	;;
 ft32*)	cpu_type=ft32
 	target_has_targetm_common=no

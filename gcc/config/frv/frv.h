@@ -188,6 +188,7 @@
     }									\
   while (0)
 
+#define TARGET_RUST_CPU_INFO frv_rust_target_cpu_info
 
 #define TARGET_HAS_FPRS		(TARGET_HARD_FLOAT || TARGET_MEDIA)
 
