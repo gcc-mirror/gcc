@@ -398,7 +398,15 @@ get_intel_cpu (struct __processor_model *cpu_model,
       CHECK___builtin_cpu_is ("corei7");
       cpu_model->__cpu_type = INTEL_COREI7;
       if (has_cpu_feature (cpu_model, cpu_features2,
-			   FEATURE_AVX512VNNI))
+			   FEATURE_AVX512BF16))
+	{
+	  /* Cooper Lake.  */
+	  cpu = "cooperlake";
+	  CHECK___builtin_cpu_is ("cooperlake");
+	  cpu_model->__cpu_subtype = INTEL_COREI7_COOPERLAKE;
+	}
+      else if (has_cpu_feature (cpu_model, cpu_features2,
+				FEATURE_AVX512VNNI))
 	{
 	  /* Cascade Lake.  */
 	  cpu = "cascadelake";
