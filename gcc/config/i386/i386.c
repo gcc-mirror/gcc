@@ -13846,7 +13846,9 @@ ix86_dirflag_mode_needed (rtx_insn *insn)
 static bool
 ix86_check_avx_upper_register (const_rtx exp)
 {
-  return SSE_REG_P (exp) && GET_MODE_BITSIZE (GET_MODE (exp)) > 128;
+  return (SSE_REG_P (exp)
+	  && !EXT_REX_SSE_REG_P (exp)
+	  && GET_MODE_BITSIZE (GET_MODE (exp)) > 128);
 }
 
 /* Return needed mode for entity in optimize_mode_switching pass.  */
