@@ -1,3 +1,19 @@
+2020-06-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95505
+	* coroutines.cc (morph_fn_to_coro): Update handling of
+	get-return-object-on-allocation-fail and diagnose missing
+	std::nothrow.
+
+2020-06-20  Jason Merrill  <jason@redhat.com>
+
+	* call.c (joust): Only compare constraints for non-template
+	candidates with matching parameters.
+	* pt.c (tsubst_pack_expansion): Fix getting a type parameter
+	pack.
+	(more_specialized_fn): Only compare constraints for candidates with
+	matching parameters.
+
 2020-06-19  Jason Merrill  <jason@redhat.com>
 
 	* method.c (early_check_defaulted_comparison): Allow defaulting

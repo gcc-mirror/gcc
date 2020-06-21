@@ -1,3 +1,36 @@
+2020-06-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95707
+	* gfortran.h (gfc_common_head): Enlarge buffer.
+	* trans-common.c (gfc_sym_mangled_common_id): Enlarge temporary
+	buffers, and add check on length on mangled name to prevent
+	overflow.
+
+2020-06-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95688
+	* iresolve.c (gfc_get_string): Enlarge static buffer size.
+
+2020-06-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95687
+	* class.c (get_unique_type_string): Return a string with dynamic
+	length.
+	(get_unique_hashed_string, gfc_hash_value): Use dynamic result
+	from get_unique_type_string instead of static buffer.
+
+2020-06-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95689
+	* interface.c (check_sym_interfaces): Enlarge temporary buffer,
+	and add check on length on mangled name to prevent overflow.
+
+2020-06-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95587
+	* match.c (gfc_match_equivalence): Check constraints on
+	EQUIVALENCE objects also for CLASS variables.
+
 2020-06-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	* openmp.c (resolve_omp_clauses): Reject vars with

@@ -1,3 +1,44 @@
+2020-06-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95505
+	* g++.dg/coroutines/pr95505.C: New test.
+
+2020-06-20  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/concepts-return-req1.C: Expect error.
+	* g++.dg/cpp2a/concepts-p2113a.C: New test.
+	* g++.dg/cpp2a/concepts-p2113b.C: New test.
+
+2020-06-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95707
+	* gfortran.dg/pr95707.f90: New file.
+
+2020-06-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95688
+	* gfortran.dg/pr95688.f90: New file.
+
+2020-06-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95687
+	* gfortran.dg/pr95687.f90: New file.
+
+2020-06-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95689
+	* gfortran.dg/pr95689.f90: New file.
+
+2020-06-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95587
+	* gfortran.dg/pr95587.f90: New file.
+
+2020-06-20  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/95638
+	* g++.dg/tree-ssa/pr95638.C: New test.
+
 2020-06-19  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/tree-ssa/popcount4ll.c: Add target lp64.
