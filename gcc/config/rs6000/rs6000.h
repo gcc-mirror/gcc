@@ -522,6 +522,7 @@ extern int rs6000_vector_align[];
 #define MASK_HTM			OPTION_MASK_HTM
 #define MASK_ISEL			OPTION_MASK_ISEL
 #define MASK_MFCRF			OPTION_MASK_MFCRF
+#define MASK_MMA			OPTION_MASK_MMA
 #define MASK_MULHW			OPTION_MASK_MULHW
 #define MASK_MULTIPLE			OPTION_MASK_MULTIPLE
 #define MASK_NO_UPDATE			OPTION_MASK_NO_UPDATE
@@ -776,7 +777,7 @@ extern unsigned rs6000_pointer_size;
 #define FUNCTION_BOUNDARY 32
 
 /* No data type wants to be aligned rounder than this.  */
-#define BIGGEST_ALIGNMENT 128
+#define BIGGEST_ALIGNMENT (TARGET_MMA ? 512 : 128)
 
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY 32
@@ -1035,16 +1036,17 @@ enum data_align { align_abi, align_opt, align_both };
 	 ((MODE) == V4SFmode		\
 	  || (MODE) == V2DFmode)	\
 
-/* Note KFmode and possibly TFmode (i.e. IEEE 128-bit floating point) are not
-   really a vector, but we want to treat it as a vector for moves, and
-   such.  */
+/* Modes that are not vectors, but require vector alignment.  Treat these like
+   vectors in terms of loads and stores.  */
+#define VECTOR_ALIGNMENT_P(MODE)					\
+  (FLOAT128_VECTOR_P (MODE) || (MODE) == POImode || (MODE) == PXImode)
 
 #define ALTIVEC_VECTOR_MODE(MODE)					\
   ((MODE) == V16QImode							\
    || (MODE) == V8HImode						\
    || (MODE) == V4SFmode						\
    || (MODE) == V4SImode						\
-   || FLOAT128_VECTOR_P (MODE))
+   || VECTOR_ALIGNMENT_P (MODE))
 
 #define ALTIVEC_OR_VSX_VECTOR_MODE(MODE)				\
   (ALTIVEC_VECTOR_MODE (MODE) || VSX_VECTOR_MODE (MODE)			\
@@ -2309,6 +2311,7 @@ extern int frame_pointer_needed;
 #define RS6000_BTM_POWERPC64	MASK_POWERPC64	/* 64-bit registers.  */
 #define RS6000_BTM_FLOAT128	MASK_FLOAT128_KEYWORD /* IEEE 128-bit float.  */
 #define RS6000_BTM_FLOAT128_HW	MASK_FLOAT128_HW /* IEEE 128-bit float h/w.  */
+#define RS6000_BTM_MMA		MASK_MMA	/* ISA 3.1 MMA.  */
 #define RS6000_BTM_FUTURE	MASK_FUTURE
 
 
@@ -2331,7 +2334,9 @@ extern int frame_pointer_needed;
 				 | RS6000_BTM_LDBL128			\
 				 | RS6000_BTM_POWERPC64			\
 				 | RS6000_BTM_FLOAT128			\
-				 | RS6000_BTM_FLOAT128_HW)
+				 | RS6000_BTM_FLOAT128_HW		\
+				 | RS6000_BTM_MMA			\
+				 | RS6000_BTM_FUTURE)
 
 /* Define builtin enum index.  */
 
@@ -2443,6 +2448,8 @@ enum rs6000_builtin_type_index
   RS6000_BTI_ieee128_float,	 /* ieee 128-bit floating point */
   RS6000_BTI_ibm128_float,	 /* IBM 128-bit floating point */
   RS6000_BTI_const_str,		 /* pointer to const char * */
+  RS6000_BTI_vector_pair,	 /* unsigned 256-bit types (vector pair).  */
+  RS6000_BTI_vector_quad,	 /* unsigned 512-bit types (vector quad).  */
   RS6000_BTI_MAX
 };
 
@@ -2495,6 +2502,8 @@ enum rs6000_builtin_type_index
 #define ieee128_float_type_node		 (rs6000_builtin_types[RS6000_BTI_ieee128_float])
 #define ibm128_float_type_node		 (rs6000_builtin_types[RS6000_BTI_ibm128_float])
 #define const_str_type_node		 (rs6000_builtin_types[RS6000_BTI_const_str])
+#define vector_pair_type_node		 (rs6000_builtin_types[RS6000_BTI_vector_pair])
+#define vector_quad_type_node		 (rs6000_builtin_types[RS6000_BTI_vector_quad])
 
 extern GTY(()) tree rs6000_builtin_types[RS6000_BTI_MAX];
 extern GTY(()) tree rs6000_builtin_decls[RS6000_BUILTIN_COUNT];

@@ -12208,6 +12208,24 @@ rs6000_init_builtins (void)
   else
     ieee128_float_type_node = ibm128_float_type_node = long_double_type_node;
 
+  /* Vector paired and vector quad support.  */
+  if (TARGET_MMA)
+    {
+      tree oi_uns_type = make_unsigned_type (256);
+      vector_pair_type_node = build_distinct_type_copy (oi_uns_type);
+      SET_TYPE_MODE (vector_pair_type_node, POImode);
+      layout_type (vector_pair_type_node);
+      lang_hooks.types.register_builtin_type (vector_pair_type_node,
+					      "__vector_pair");
+
+      tree xi_uns_type = make_unsigned_type (512);
+      vector_quad_type_node = build_distinct_type_copy (xi_uns_type);
+      SET_TYPE_MODE (vector_quad_type_node, PXImode);
+      layout_type (vector_quad_type_node);
+      lang_hooks.types.register_builtin_type (vector_quad_type_node,
+					      "__vector_quad");
+    }
+
   /* Initialize the modes for builtin_function_type, mapping a machine mode to
      tree type node.  */
   builtin_mode_to_type[QImode][0] = integer_type_node;
@@ -12239,6 +12257,8 @@ rs6000_init_builtins (void)
   builtin_mode_to_type[V8HImode][1] = unsigned_V8HI_type_node;
   builtin_mode_to_type[V16QImode][0] = V16QI_type_node;
   builtin_mode_to_type[V16QImode][1] = unsigned_V16QI_type_node;
+  builtin_mode_to_type[POImode][1] = vector_pair_type_node;
+  builtin_mode_to_type[PXImode][1] = vector_quad_type_node;
 
   tdecl = add_builtin_type ("__bool char", bool_char_type_node);
   TYPE_NAME (bool_char_type_node) = tdecl;
