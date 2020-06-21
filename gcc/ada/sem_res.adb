@@ -7042,6 +7042,7 @@ package body Sem_Res is
 
       if not Checking_Potentially_Static_Expression
         and then Is_Static_Function_Call (N)
+        and then not Is_Intrinsic_Subprogram (Ultimate_Alias (Nam))
         and then not Error_Posted (Ultimate_Alias (Nam))
       then
          Inline_Static_Function_Call (N, Ultimate_Alias (Nam));
