@@ -1,3 +1,14 @@
+2020-06-20  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/95110
+	* gcc.dg/tree-ssa/pr94969.c: Swap scan-tree-dump-not arguments.
+
+2020-06-20  Bin Cheng  <bin.cheng@linux.alibaba.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94969
+	* gcc.dg/tree-ssa/pr94969.c: New test.
+
 2020-06-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from master:
