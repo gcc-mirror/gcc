@@ -2251,20 +2251,24 @@ extern int frame_pointer_needed;
    flags macros, but we've run out of bits, so we now map the options into new
    settings used here.  */
 
-/* Builtin attributes.  */
-#define RS6000_BTC_SPECIAL	0x00000000	/* Special function.  */
+/* Builtin operand count.  */
 #define RS6000_BTC_UNARY	0x00000001	/* normal unary function.  */
 #define RS6000_BTC_BINARY	0x00000002	/* normal binary function.  */
 #define RS6000_BTC_TERNARY	0x00000003	/* normal ternary function.  */
 #define RS6000_BTC_QUATERNARY	0x00000004	/* normal quaternary
 						   function. */
+#define RS6000_BTC_QUINARY	0x00000005	/* normal quinary function.  */
+#define RS6000_BTC_SENARY	0x00000006	/* normal senary function.  */
+#define RS6000_BTC_OPND_MASK	0x00000007	/* Mask to isolate operands. */
 
-#define RS6000_BTC_PREDICATE	0x00000005	/* predicate function.  */
-#define RS6000_BTC_ABS		0x00000006	/* Altivec/VSX ABS
+/* Builtin attributes.  */
+#define RS6000_BTC_SPECIAL	0x00000000	/* Special function.  */
+#define RS6000_BTC_PREDICATE	0x00000008	/* predicate function.  */
+#define RS6000_BTC_ABS		0x00000010	/* Altivec/VSX ABS
 						   function.  */
-#define RS6000_BTC_DST		0x00000007	/* Altivec DST function.  */
+#define RS6000_BTC_DST		0x00000020	/* Altivec DST function.  */
 
-#define RS6000_BTC_TYPE_MASK	0x0000000f	/* Mask to isolate types */
+#define RS6000_BTC_TYPE_MASK	0x0000003f	/* Mask to isolate types */
 
 #define RS6000_BTC_MISC		0x00000000	/* No special attributes.  */
 #define RS6000_BTC_CONST	0x00000100	/* Neither uses, nor
@@ -2273,13 +2277,18 @@ extern int frame_pointer_needed;
 						   state/mem and does
 						   not modify global state.  */
 #define RS6000_BTC_FP		0x00000400	/* depends on rounding mode.  */
-#define RS6000_BTC_ATTR_MASK	0x00000700	/* Mask of the attributes.  */
+#define RS6000_BTC_QUAD		0x00000800	/* Uses a register quad.  */
+#define RS6000_BTC_PAIR		0x00001000	/* Uses a register pair.  */
+#define RS6000_BTC_QUADPAIR	0x00001800	/* Uses a quad and a pair.  */
+#define RS6000_BTC_ATTR_MASK	0x00001f00	/* Mask of the attributes.  */
 
 /* Miscellaneous information.  */
 #define RS6000_BTC_SPR		0x01000000	/* function references SPRs.  */
 #define RS6000_BTC_VOID		0x02000000	/* function has no return value.  */
 #define RS6000_BTC_CR		0x04000000	/* function references a CR.  */
 #define RS6000_BTC_OVERLOADED	0x08000000	/* function is overloaded.  */
+#define RS6000_BTC_GIMPLE	0x10000000	/* function should be expanded
+						   into gimple.  */
 #define RS6000_BTC_MISC_MASK	0x1f000000	/* Mask of the misc info.  */
 
 /* Convenience macros to document the instruction type.  */
@@ -2348,6 +2357,7 @@ extern int frame_pointer_needed;
 #undef RS6000_BUILTIN_A
 #undef RS6000_BUILTIN_D
 #undef RS6000_BUILTIN_H
+#undef RS6000_BUILTIN_M
 #undef RS6000_BUILTIN_P
 #undef RS6000_BUILTIN_X
 
@@ -2359,6 +2369,7 @@ extern int frame_pointer_needed;
 #define RS6000_BUILTIN_A(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_D(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_H(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
+#define RS6000_BUILTIN_M(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 
@@ -2377,6 +2388,7 @@ enum rs6000_builtins
 #undef RS6000_BUILTIN_A
 #undef RS6000_BUILTIN_D
 #undef RS6000_BUILTIN_H
+#undef RS6000_BUILTIN_M
 #undef RS6000_BUILTIN_P
 #undef RS6000_BUILTIN_X
 

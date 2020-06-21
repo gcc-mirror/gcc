@@ -296,6 +296,8 @@
    UNSPEC_VSX_DIVUD
    UNSPEC_VSX_MULSD
    UNSPEC_VSX_SIGN_EXTEND
+   UNSPEC_VSX_XVCVBF16SP
+   UNSPEC_VSX_XVCVSPBF16
    UNSPEC_VSX_XVCVSPSXDS
    UNSPEC_VSX_VSLO
    UNSPEC_VSX_EXTRACT
@@ -345,6 +347,12 @@
    UNSPEC_VSX_FIRST_MISMATCH_EOS_INDEX
    UNSPEC_XXGENPCV
   ])
+
+(define_int_iterator XVCVBF16	[UNSPEC_VSX_XVCVSPBF16
+				 UNSPEC_VSX_XVCVBF16SP])
+
+(define_int_attr xvcvbf16       [(UNSPEC_VSX_XVCVSPBF16 "xvcvspbf16")
+				 (UNSPEC_VSX_XVCVBF16SP "xvcvbf16sp")])
 
 ;; VSX moves
 
@@ -5676,3 +5684,10 @@
   DONE;
 })
 
+(define_insn "vsx_<xvcvbf16>"
+  [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
+	(unspec:V16QI [(match_operand:V16QI 1 "vsx_register_operand" "wa")]
+		      XVCVBF16))]
+  "TARGET_FUTURE"
+  "<xvcvbf16> %x0,%x1"
+  [(set_attr "type" "vecfloat")])
