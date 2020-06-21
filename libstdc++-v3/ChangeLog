@@ -1,3 +1,10 @@
+2020-06-20  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/24_iterators/move_iterator/rel_ops_c++20.cc:
+	Remove greedy_ops tests.
+	* testsuite/24_iterators/reverse_iterator/rel_ops_c++20.cc:
+	Remove greedy_ops tests.
+
 2020-06-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/95765
