@@ -163,6 +163,18 @@ is
       Insert (Container, No_Element, New_Item, Count);
    end Append;
 
+   ---------------
+   -- Append_One --
+   ---------------
+
+   procedure Append_One
+     (Container : in out List;
+      New_Item  : Element_Type)
+   is
+   begin
+      Insert (Container, No_Element, New_Item, 1);
+   end Append_One;
+
    ------------
    -- Assign --
    ------------

@@ -15142,18 +15142,32 @@ package body Sem_Ch13 is
       --  Predicates that establish the legality of each possible operation in
       --  an Aggregate aspect.
 
-      function Valid_Empty          (E : Entity_Id) return Boolean;
-      function Valid_Add_Named      (E : Entity_Id) return Boolean;
-      function Valid_Add_Unnamed    (E : Entity_Id) return Boolean;
-      function Valid_New_Indexed    (E : Entity_Id) return Boolean;
-
-      --  Note: The legality rules for Assign_Indexed are the same as for
-      --  Add_Named.
+      function Valid_Empty             (E : Entity_Id) return Boolean;
+      function Valid_Add_Named         (E : Entity_Id) return Boolean;
+      function Valid_Add_Unnamed       (E : Entity_Id) return Boolean;
+      function Valid_New_Indexed       (E : Entity_Id) return Boolean;
+      function Valid_Assign_Indexed    (E : Entity_Id) return Boolean;
 
       generic
         with function Pred (Id : Node_Id) return Boolean;
       procedure Resolve_Operation (Subp_Id : Node_Id);
       --  Common processing to resolve each aggregate operation.
+
+      ------------------------
+      -- Valid_Assign_Index --
+      ------------------------
+
+      function Valid_Assign_Indexed (E : Entity_Id) return Boolean is
+      begin
+         --  The profile must be the same as for Add_Named, with the added
+         --  requirement that the key_type be a discrete type.
+
+         if Valid_Add_Named (E) then
+            return Is_Discrete_Type (Etype (Next_Formal (First_Formal (E))));
+         else
+            return False;
+         end if;
+      end Valid_Assign_Indexed;
 
       -----------------
       -- Valid_Emoty --
@@ -15278,7 +15292,8 @@ package body Sem_Ch13 is
       procedure Resolve_Named   is new Resolve_Operation (Valid_Add_Named);
       procedure Resolve_Indexed is new Resolve_Operation (Valid_New_Indexed);
       procedure Resolve_Assign_Indexed
-                                is new Resolve_Operation (Valid_Add_Named);
+                                is new Resolve_Operation
+                                                      (Valid_Assign_Indexed);
    begin
       Assoc := First (Component_Associations (Expr));
 
