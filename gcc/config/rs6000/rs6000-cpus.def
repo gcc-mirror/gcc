@@ -76,7 +76,8 @@
 				 | OPTION_MASK_P9_VECTOR)
 
 /* Flags that need to be turned off if -mno-future.  */
-#define OTHER_FUTURE_MASKS	(OPTION_MASK_PCREL			\
+#define OTHER_FUTURE_MASKS	(OPTION_MASK_MMA			\
+				 | OPTION_MASK_PCREL			\
 				 | OPTION_MASK_PREFIXED)
 
 /* Support for a future processor's features.  */
@@ -132,6 +133,7 @@
 				 | OPTION_MASK_HTM			\
 				 | OPTION_MASK_ISEL			\
 				 | OPTION_MASK_MFCRF			\
+				 | OPTION_MASK_MMA			\
 				 | OPTION_MASK_MODULO			\
 				 | OPTION_MASK_MULHW			\
 				 | OPTION_MASK_NO_UPDATE		\

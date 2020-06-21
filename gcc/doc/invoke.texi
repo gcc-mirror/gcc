@@ -1198,7 +1198,7 @@ See RS/6000 and PowerPC Options.
 -mgnu-attribute  -mno-gnu-attribute @gol
 -mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{reg} @gol
 -mstack-protector-guard-offset=@var{offset} -mprefixed -mno-prefixed @gol
--mpcrel -mno-pcrel}
+-mpcrel -mno-pcrel -mmma -mno-mmma}
 
 @emph{RX Options}
 @gccoptlist{-m64bit-doubles  -m32bit-doubles  -fpu  -nofpu@gol
@@ -25622,7 +25622,8 @@ following options:
 -mpowerpc-gpopt  -mpowerpc-gfxopt @gol
 -mmulhw  -mdlmzb  -mmfpgpr  -mvsx @gol
 -mcrypto  -mhtm  -mpower8-fusion  -mpower8-vector @gol
--mquad-memory  -mquad-memory-atomic  -mfloat128  -mfloat128-hardware}
+-mquad-memory  -mquad-memory-atomic  -mfloat128 @gol
+-mfloat128-hardware -mprefixed -mpcrel -mmma}
 
 The particular options set for any particular CPU varies between
 compiler versions, depending on what setting seems to produce optimal
@@ -26618,6 +26619,13 @@ addressing (@option{-mprefixed}) options are enabled.
 @opindex mno-prefixed
 Generate (do not generate) addressing modes using prefixed load and
 store instructions when the option @option{-mcpu=future} is used.
+
+@item -mmma
+@itemx -mno-mma
+@opindex mmma
+@opindex mno-mma
+Generate (do not generate) the MMA instructions when the option
+@option{-mcpu=future} is used.
 @end table
 
 @node RX Options
