@@ -9941,7 +9941,7 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
 
     case E_POImode:
     case E_PXImode:
-      if (CONSTANT_P (operands[1]))
+      if (CONST_INT_P (operands[1]) && INTVAL (operands[1]) != 0)
 	error ("%qs is an opaque type, and you can't set it to other values.",
 	       (mode == POImode) ? "__vector_pair" : "__vector_quad");
       break;
@@ -12852,6 +12852,14 @@ print_operand (FILE *file, rtx x, int code)
 
       /* %c is output_addr_const if a CONSTANT_ADDRESS_P, otherwise
 	 output_operand.  */
+
+    case 'A':
+      /* Write the MMA accumulator number associated with VSX register X.  */
+      if (!REG_P (x) || !FP_REGNO_P (REGNO (x)) || (REGNO (x) % 4) != 0)
+	output_operand_lossage ("invalid %%A value");
+      else
+	fprintf (file, "%d", (REGNO (x) - FIRST_FPR_REGNO) / 4);
+      return;
 
     case 'D':
       /* Like 'J' but get to the GT bit only.  */
@@ -15963,6 +15971,12 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	  unsigned offset = 0;
 	  unsigned size = GET_MODE_SIZE (reg_mode);
 
+	  /* If we are reading an accumulator register, we have to
+	     deprime it before we can access it.  */
+	  if (TARGET_MMA
+	      && GET_MODE (src) == PXImode && FP_REGNO_P (REGNO (src)))
+	    emit_insn (gen_mma_xxmfacc (src, src));
+
 	  for (int i = 0; i < nregs; i++)
 	    {
 	      unsigned subreg = (WORDS_BIG_ENDIAN)
@@ -15991,6 +16005,32 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	      emit_insn (gen_rtx_SET (dst2, src2));
 	    }
 
+	  /* If we are writing an accumulator register, we have to
+	     prime it after we've written it.  */
+	  if (TARGET_MMA
+	      && GET_MODE (dst) == PXImode && FP_REGNO_P (REGNO (dst)))
+	    emit_insn (gen_mma_xxmtacc (dst, dst));
+
+	  return;
+	}
+
+      if (GET_CODE (src) == UNSPEC)
+	{
+	  gcc_assert (REG_P (dst)
+		      && FP_REGNO_P (REGNO (dst))
+		      && XINT (src, 1) == UNSPEC_MMA_ASSEMBLE_ACC);
+
+	  reg_mode = GET_MODE (XVECEXP (src, 0, 0));
+	  for (int i = 0; i < XVECLEN (src, 0); i++)
+	    {
+	      rtx dst_i = gen_rtx_REG (reg_mode, reg + i);
+	      emit_insn (gen_rtx_SET (dst_i, XVECEXP (src, 0, i)));
+	    }
+
+	  /* We are writing an accumulator register, so we have to
+	     prime it after we've written it.  */
+	  emit_insn (gen_mma_xxmtacc (dst, dst));
+
 	  return;
 	}
 
@@ -15999,6 +16039,12 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 
   if (REG_P (src) && REG_P (dst) && (REGNO (src) < REGNO (dst)))
     {
+      /* If we are reading an accumulator register, we have to
+	 deprime it before we can access it.  */
+      if (TARGET_MMA
+	  && GET_MODE (src) == PXImode && FP_REGNO_P (REGNO (src)))
+	emit_insn (gen_mma_xxmfacc (src, src));
+
       /* Move register range backwards, if we might have destructive
 	 overlap.  */
       int i;
@@ -16007,6 +16053,12 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 						     i * reg_mode_size),
 				simplify_gen_subreg (reg_mode, src, mode,
 						     i * reg_mode_size)));
+
+      /* If we are writing an accumulator register, we have to
+	 prime it after we've written it.  */
+      if (TARGET_MMA
+	  && GET_MODE (dst) == PXImode && FP_REGNO_P (REGNO (dst)))
+	emit_insn (gen_mma_xxmtacc (dst, dst));
     }
   else
     {
@@ -16139,6 +16191,12 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	    gcc_assert (rs6000_offsettable_memref_p (dst, reg_mode, true));
 	}
 
+      /* If we are reading an accumulator register, we have to
+	 deprime it before we can access it.  */
+      if (TARGET_MMA && REG_P (src)
+	  && GET_MODE (src) == PXImode && FP_REGNO_P (REGNO (src)))
+	emit_insn (gen_mma_xxmfacc (src, src));
+
       for (i = 0; i < nregs; i++)
 	{
 	  /* Calculate index to next subword.  */
@@ -16156,6 +16214,13 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 				  simplify_gen_subreg (reg_mode, src, mode,
 						       j * reg_mode_size)));
 	}
+
+      /* If we are writing an accumulator register, we have to
+	 prime it after we've written it.  */
+      if (TARGET_MMA && REG_P (dst)
+	  && GET_MODE (dst) == PXImode && FP_REGNO_P (REGNO (dst)))
+	emit_insn (gen_mma_xxmtacc (dst, dst));
+
       if (restore_basereg != NULL_RTX)
 	emit_insn (restore_basereg);
     }
