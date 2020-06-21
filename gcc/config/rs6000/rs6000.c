@@ -1745,6 +1745,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P
 #define TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P \
   rs6000_cannot_substitute_mem_equiv_p
+
+#undef TARGET_INVALID_CONVERSION
+#define TARGET_INVALID_CONVERSION rs6000_invalid_conversion
 
 
 /* Processor table.  */
@@ -1798,7 +1801,7 @@ rs6000_hard_regno_nregs_internal (int regno, machine_mode mode)
      128-bit floating point that can go in vector registers, which has VSX
      memory addressing.  */
   if (FP_REGNO_P (regno))
-    reg_size = (VECTOR_MEM_VSX_P (mode) || FLOAT128_VECTOR_P (mode)
+    reg_size = (VECTOR_MEM_VSX_P (mode) || VECTOR_ALIGNMENT_P (mode)
 		? UNITS_PER_VSX_WORD
 		: UNITS_PER_FP_WORD);
 
@@ -1821,6 +1824,18 @@ rs6000_hard_regno_mode_ok_uncached (int regno, machine_mode mode)
   if (COMPLEX_MODE_P (mode))
     mode = GET_MODE_INNER (mode);
 
+  /* Vector pair modes need even/odd VSX register pairs.  Only allow vector
+     registers.  We need to allow OImode to have the same registers as POImode,
+     even though we do not enable the move pattern for OImode.  */
+  if (mode == POImode || mode == OImode)
+    return (TARGET_MMA && VSX_REGNO_P (regno) && (regno & 1) == 0);
+
+  /* MMA accumulator modes need FPR registers divisible by 4.  We need to allow
+     XImode to have the same registers as PXImode, even though we do not enable
+     the move pattern for XImode.  */
+  if (mode == PXImode || mode == XImode)
+    return (TARGET_MMA && FP_REGNO_P (regno) && (regno & 3) == 0);
+
   /* PTImode can only go in GPRs.  Quad word memory operations require even/odd
      register combinations, and use PTImode where we need to deal with quad
      word memory operations.  Don't allow quad words in the argument or frame
@@ -1836,7 +1851,7 @@ rs6000_hard_regno_mode_ok_uncached (int regno, machine_mode mode)
      asked for it.  */
   if (TARGET_VSX && VSX_REGNO_P (regno)
       && (VECTOR_MEM_VSX_P (mode)
-	  || FLOAT128_VECTOR_P (mode)
+	  || VECTOR_ALIGNMENT_P (mode)
 	  || reg_addr[mode].scalar_in_vmx_p
 	  || mode == TImode
 	  || (TARGET_VADDUQM && mode == V1TImode)))
@@ -1846,7 +1861,7 @@ rs6000_hard_regno_mode_ok_uncached (int regno, machine_mode mode)
 
       if (ALTIVEC_REGNO_P (regno))
 	{
-	  if (GET_MODE_SIZE (mode) != 16 && !reg_addr[mode].scalar_in_vmx_p)
+	  if (GET_MODE_SIZE (mode) < 16 && !reg_addr[mode].scalar_in_vmx_p)
 	    return 0;
 
 	  return ALTIVEC_REGNO_P (last_regno);
@@ -1862,7 +1877,7 @@ rs6000_hard_regno_mode_ok_uncached (int regno, machine_mode mode)
      modes and DImode.  */
   if (FP_REGNO_P (regno))
     {
-      if (FLOAT128_VECTOR_P (mode))
+      if (VECTOR_ALIGNMENT_P (mode))
 	return false;
 
       if (SCALAR_FLOAT_MODE_P (mode)
@@ -1925,16 +1940,19 @@ rs6000_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
    GPR registers, and TImode can go in any GPR as well as VSX registers (PR
    57744).
 
+   Similarly, don't allow POImode (vector pair, restricted to even VSX
+   registers) or PXImode (vector quad, restricted to FPR registers divisible
+   by 4) to tie with other modes.
+
    Altivec/VSX vector tests were moved ahead of scalar float mode, so that IEEE
    128-bit floating point on VSX systems ties with other vectors.  */
 
 static bool
 rs6000_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
-  if (mode1 == PTImode)
-    return mode2 == PTImode;
-  if (mode2 == PTImode)
-    return false;
+  if (mode1 == PTImode || mode1 == POImode || mode1 == PXImode
+      || mode2 == PTImode || mode2 == POImode || mode2 == PXImode)
+    return mode1 == mode2;
 
   if (ALTIVEC_OR_VSX_VECTOR_MODE (mode1))
     return ALTIVEC_OR_VSX_VECTOR_MODE (mode2);
@@ -2206,6 +2224,8 @@ rs6000_debug_reg_global (void)
     SDmode,
     DDmode,
     TDmode,
+    V2SImode,
+    V2SFmode,
     V16QImode,
     V8HImode,
     V4SImode,
@@ -2220,9 +2240,14 @@ rs6000_debug_reg_global (void)
     V2DFmode,
     V8SFmode,
     V4DFmode,
+    OImode,
+    XImode,
+    POImode,
+    PXImode,
     CCmode,
     CCUNSmode,
     CCEQmode,
+    CCFPmode,
   };
 
   /* Virtual regs we are interested in.  */
@@ -2619,7 +2644,7 @@ rs6000_setup_reg_addr_masks (void)
 		  && (rc == RELOAD_REG_GPR || rc == RELOAD_REG_FPR)
 		  && msize <= 8
 		  && !VECTOR_MODE_P (m2)
-		  && !FLOAT128_VECTOR_P (m2)
+		  && !VECTOR_ALIGNMENT_P (m2)
 		  && !complex_p
 		  && (m != E_DFmode || !TARGET_VSX)
 		  && (m != E_SFmode || !TARGET_P8_VECTOR)
@@ -2673,6 +2698,22 @@ rs6000_setup_reg_addr_masks (void)
 	      addr_mask |= RELOAD_REG_OFFSET;
 	      if (rc == RELOAD_REG_FPR || rc == RELOAD_REG_VMX)
 		addr_mask |= RELOAD_REG_QUAD_OFFSET;
+	    }
+
+	  /* Vector pairs can do both indexed and offset loads if the
+	     instructions are enabled, otherwise they can only do offset loads
+	     since it will be broken into two vector moves.  Vector quads can
+	     only do offset loads.  */
+	  else if ((addr_mask != 0) && TARGET_MMA
+		   && (m2 == POImode || m2 == PXImode))
+	    {
+	      addr_mask |= RELOAD_REG_OFFSET;
+	      if (rc == RELOAD_REG_FPR || rc == RELOAD_REG_VMX)
+		{
+		  addr_mask |= RELOAD_REG_QUAD_OFFSET;
+		  if (m2 == POImode)
+		    addr_mask |= RELOAD_REG_INDEXED;
+		}
 	    }
 
 	  /* VMX registers can do (REG & -16) and ((REG+REG) & -16)
@@ -2876,6 +2917,18 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
       rs6000_vector_align[TImode] = align64;
     }
 
+  /* Add support for vector pairs and vector quad registers.  */
+  if (TARGET_MMA)
+    {
+      rs6000_vector_unit[POImode] = VECTOR_NONE;
+      rs6000_vector_mem[POImode] = VECTOR_VSX;
+      rs6000_vector_align[POImode] = 256;
+
+      rs6000_vector_unit[PXImode] = VECTOR_NONE;
+      rs6000_vector_mem[PXImode] = VECTOR_VSX;
+      rs6000_vector_align[PXImode] = 512;
+    }
+
   /* Register class constraints for the constraints that depend on compile
      switches. When the VSX code was added, different constraints were added
      based on the type (DFmode, V2DFmode, V4SFmode).  For the vector types, all
@@ -3006,6 +3059,14 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 		{
 		  reg_addr[TFmode].reload_gpr_vsx = CODE_FOR_reload_gpr_from_vsxtf;
 		  reg_addr[TFmode].reload_vsx_gpr = CODE_FOR_reload_vsx_from_gprtf;
+		}
+
+	      if (TARGET_MMA)
+		{
+		  reg_addr[POImode].reload_store = CODE_FOR_reload_poi_di_store;
+		  reg_addr[POImode].reload_load = CODE_FOR_reload_poi_di_load;
+		  reg_addr[PXImode].reload_store = CODE_FOR_reload_pxi_di_store;
+		  reg_addr[PXImode].reload_load = CODE_FOR_reload_pxi_di_load;
 		}
 	    }
 	}
@@ -3339,7 +3400,8 @@ rs6000_builtin_mask_calculate (void)
 	      && !TARGET_IEEEQUAD)	    ? RS6000_BTM_LDBL128   : 0)
 	  | ((TARGET_FLOAT128_TYPE)	    ? RS6000_BTM_FLOAT128  : 0)
 	  | ((TARGET_FLOAT128_HW)	    ? RS6000_BTM_FLOAT128_HW : 0)
-	  | ((TARGET_FUTURE)                ? RS6000_BTM_FUTURE    : 0));
+	  | ((TARGET_MMA)		    ? RS6000_BTM_MMA	   : 0)
+	  | ((TARGET_FUTURE)		    ? RS6000_BTM_FUTURE    : 0));
 }
 
 /* Implement TARGET_MD_ASM_ADJUST.  All asm statements are considered
@@ -4200,6 +4262,15 @@ rs6000_option_override_internal (bool global_init_p)
 	error ("%qs requires %qs", "-mpcrel", "-mcmodel=medium");
 
       rs6000_isa_flags &= ~OPTION_MASK_PCREL;
+    }
+
+  /* Turn off vector pair/mma options on non-future systems.  */
+  if (!TARGET_FUTURE && TARGET_MMA)
+    {
+      if ((rs6000_isa_flags_explicit & OPTION_MASK_MMA) != 0)
+	error ("%qs requires %qs", "-mmma", "-mcpu=future");
+
+      rs6000_isa_flags &= ~OPTION_MASK_MMA;
     }
 
   if (TARGET_DEBUG_REG || TARGET_DEBUG_TARGET)
@@ -7175,7 +7246,7 @@ rs6000_slow_unaligned_access (machine_mode mode, unsigned int align)
   return (STRICT_ALIGNMENT
 	  || (!TARGET_EFFICIENT_UNALIGNED_VSX
 	      && ((SCALAR_FLOAT_MODE_NOT_VECTOR_P (mode) && align < 32)
-		  || ((VECTOR_MODE_P (mode) || FLOAT128_VECTOR_P (mode))
+		  || ((VECTOR_MODE_P (mode) || VECTOR_ALIGNMENT_P (mode))
 		      && (int) align < VECTOR_ALIGN (mode)))));
 }
 
@@ -7360,7 +7431,7 @@ quad_address_p (rtx addr, machine_mode mode, bool strict)
 {
   rtx op0, op1;
 
-  if (GET_MODE_SIZE (mode) != 16)
+  if (GET_MODE_SIZE (mode) < 16)
     return false;
 
   if (legitimate_indirect_address_p (addr, strict))
@@ -7677,6 +7748,12 @@ reg_offset_addressing_ok_p (machine_mode mode)
       if (VECTOR_MEM_ALTIVEC_OR_VSX_P (mode))
 	return mode_supports_dq_form (mode);
       break;
+
+      /* The vector pair/quad types support offset addressing if the
+	 underlying vectors support offset addressing.  */
+    case E_POImode:
+    case E_PXImode:
+      return TARGET_MMA;
 
     case E_SDmode:
       /* If we can do direct load/stores of SDmode, restrict it to reg+reg
@@ -8024,8 +8101,14 @@ legitimate_indexed_address_p (rtx x, int strict)
 bool
 avoiding_indexed_address_p (machine_mode mode)
 {
-  /* Avoid indexed addressing for modes that have non-indexed
-     load/store instruction forms.  */
+  unsigned int msize = GET_MODE_SIZE (mode);
+
+  /* Avoid indexed addressing for modes that have non-indexed load/store
+     instruction forms.  On the future system, vector pairs have an indexed
+     form, but vector quads don't.  */
+  if (msize > 16)
+    return msize != 32;
+
   return (TARGET_AVOID_XFORM && VECTOR_MEM_NONE_P (mode));
 }
 
@@ -9854,6 +9937,13 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
       if (CONSTANT_P (operands[1])
 	  && !easy_vector_constant (operands[1], mode))
 	operands[1] = force_const_mem (mode, operands[1]);
+      break;
+
+    case E_POImode:
+    case E_PXImode:
+      if (CONSTANT_P (operands[1]))
+	error ("%qs is an opaque type, and you can't set it to other values.",
+	       (mode == POImode) ? "__vector_pair" : "__vector_quad");
       break;
 
     case E_SImode:
@@ -12117,8 +12207,20 @@ rs6000_preferred_reload_class (rtx x, enum reg_class rclass)
       return NO_REGS;
     }
 
-  if (GET_MODE_CLASS (mode) == MODE_INT && rclass == GEN_OR_FLOAT_REGS)
-    return GENERAL_REGS;
+  /* For the vector pair and vector quad modes, prefer their natural register
+     (VSX or FPR) rather than GPR registers.  For other integer types, prefer
+     the GPR registers.  */
+  if (rclass == GEN_OR_FLOAT_REGS)
+    {
+      if (mode == POImode)
+	return VSX_REGS;
+
+      if (mode == PXImode)
+	return FLOAT_REGS;
+
+      if (GET_MODE_CLASS (mode) == MODE_INT)
+	return GENERAL_REGS;
+    }
 
   return rclass;
 }
@@ -15793,7 +15895,20 @@ rs6000_split_multireg_move (rtx dst, rtx src)
   reg = REG_P (dst) ? REGNO (dst) : REGNO (src);
   mode = GET_MODE (dst);
   nregs = hard_regno_nregs (reg, mode);
-  if (FP_REGNO_P (reg))
+
+  /* If we have a vector quad register for MMA, and this is a load or store,
+     see if we can use vector paired load/stores.  */
+  if (mode == PXImode && TARGET_MMA
+      && (MEM_P (dst) || MEM_P (src)))
+    {
+      reg_mode = POImode;
+      nregs /= 2;
+    }
+  /* If we have a vector pair/quad mode, split it into two/four separate
+     vectors.  */
+  else if (mode == POImode || mode == PXImode)
+    reg_mode = V1TImode;
+  else if (FP_REGNO_P (reg))
     reg_mode = DECIMAL_FLOAT_MODE_P (mode) ? DDmode :
 	(TARGET_HARD_FLOAT ? DFmode : SFmode);
   else if (ALTIVEC_REGNO_P (reg))
@@ -15835,6 +15950,51 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	}
 
       return;
+    }
+
+  /* The __vector_pair and __vector_quad modes are multi-register modes,
+     so if have to load or store the registers, we have to be careful to
+     properly swap them if we're in little endian mode below.  This means
+     the last register gets the first memory location.  */
+  if (mode == POImode || mode == PXImode)
+    {
+      if (MEM_P (dst))
+	{
+	  unsigned offset = 0;
+	  unsigned size = GET_MODE_SIZE (reg_mode);
+
+	  for (int i = 0; i < nregs; i++)
+	    {
+	      unsigned subreg = (WORDS_BIG_ENDIAN)
+				  ? i * size : (nregs - 1 - i) * size;
+	      rtx dst2 = adjust_address (dst, reg_mode, offset);
+	      rtx src2 = simplify_gen_subreg (reg_mode, src, mode, subreg);
+	      offset += size;
+	      emit_insn (gen_rtx_SET (dst2, src2));
+	    }
+
+	  return;
+	}
+
+      if (MEM_P (src))
+	{
+	  unsigned offset = 0;
+	  unsigned size = GET_MODE_SIZE (reg_mode);
+
+	  for (int i = 0; i < nregs; i++)
+	    {
+	      unsigned subreg = (WORDS_BIG_ENDIAN)
+				  ? i * size : (nregs - 1 - i) * size;
+	      rtx dst2 = simplify_gen_subreg (reg_mode, dst, mode, subreg);
+	      rtx src2 = adjust_address (src, reg_mode, offset);
+	      offset += size;
+	      emit_insn (gen_rtx_SET (dst2, src2));
+	    }
+
+	  return;
+	}
+
+      /* Register -> register moves can use common code.  */
     }
 
   if (REG_P (src) && REG_P (dst) && (REGNO (src) < REGNO (dst)))
@@ -19227,7 +19387,8 @@ rs6000_handle_altivec_attribute (tree *node,
 
 /* AltiVec defines five built-in scalar types that serve as vector
    elements; we must teach the compiler how to mangle them.  The 128-bit
-   floating point mangling is target-specific as well.  */
+   floating point mangling is target-specific as well.  MMA defines
+   two built-in types to be used as opaque vector types.  */
 
 static const char *
 rs6000_mangle_type (const_tree type)
@@ -19248,6 +19409,11 @@ rs6000_mangle_type (const_tree type)
     return "g";
   if (SCALAR_FLOAT_TYPE_P (type) && FLOAT128_IEEE_P (TYPE_MODE (type)))
     return ieee128_mangling_gcc_8_1 ? "U10__float128" : "u9__ieee128";
+
+  if (type == vector_pair_type_node)
+    return "u13__vector_pair";
+  if (type == vector_quad_type_node)
+    return "u13__vector_quad";
 
   /* For all other types, use the default mangling.  */
   return NULL;
@@ -22506,7 +22672,7 @@ rs6000_function_value (const_tree valtype,
   /* VSX is a superset of Altivec and adds V2DImode/V2DFmode.  Since the same
      return register is used in both cases, and we won't see V2DImode/V2DFmode
      for pure altivec, combine the two cases.  */
-  else if ((TREE_CODE (valtype) == VECTOR_TYPE || FLOAT128_VECTOR_P (mode))
+  else if ((TREE_CODE (valtype) == VECTOR_TYPE || VECTOR_ALIGNMENT_P (mode))
 	   && TARGET_ALTIVEC && TARGET_ALTIVEC_ABI
 	   && ALTIVEC_OR_VSX_VECTOR_MODE (mode))
     regno = ALTIVEC_ARG_RETURN;
@@ -22922,6 +23088,7 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "isel",			OPTION_MASK_ISEL,		false, true  },
   { "mfcrf",			OPTION_MASK_MFCRF,		false, true  },
   { "mfpgpr",			0,				false, true  },
+  { "mma",			OPTION_MASK_MMA,		false, true  },
   { "modulo",			OPTION_MASK_MODULO,		false, true  },
   { "mulhw",			OPTION_MASK_MULHW,		false, true  },
   { "multiple",			OPTION_MASK_MULTIPLE,		false, true  },
@@ -22992,6 +23159,8 @@ static struct rs6000_opt_mask const rs6000_builtin_mask_names[] =
   { "powerpc64",	 RS6000_BTM_POWERPC64,  false, false },
   { "float128",		 RS6000_BTM_FLOAT128,   false, false },
   { "float128-hw",	 RS6000_BTM_FLOAT128_HW,false, false },
+  { "mma",		 RS6000_BTM_MMA,	false, false },
+  { "future",		 RS6000_BTM_FUTURE,	false, false },
 };
 
 /* Option variables that we want to support inside attribute((target)) and
@@ -24947,7 +25116,7 @@ address_to_insn_form (rtx addr,
 	non_prefixed_format = NON_PREFIXED_DS;
 
       else if (TARGET_VSX && size >= 16
-	       && (VECTOR_MODE_P (mode) || FLOAT128_VECTOR_P (mode)))
+	       && (VECTOR_MODE_P (mode) || VECTOR_ALIGNMENT_P (mode)))
 	non_prefixed_format = NON_PREFIXED_DQ;
 
       else
@@ -25076,7 +25245,7 @@ reg_to_non_prefixed (rtx reg, machine_mode mode)
 
       else if (TARGET_VSX && size >= 16
 	       && (VECTOR_MODE_P (mode)
-		   || FLOAT128_VECTOR_P (mode)
+		   || VECTOR_ALIGNMENT_P (mode)
 		   || mode == TImode || mode == CTImode))
 	return (TARGET_P9_VECTOR) ? NON_PREFIXED_DQ : NON_PREFIXED_X;
 
@@ -25100,7 +25269,7 @@ reg_to_non_prefixed (rtx reg, machine_mode mode)
 
       else if (TARGET_VSX && size >= 16
 	       && (VECTOR_MODE_P (mode)
-		   || FLOAT128_VECTOR_P (mode)
+		   || VECTOR_ALIGNMENT_P (mode)
 		   || mode == TImode || mode == CTImode))
 	return NON_PREFIXED_DQ;
 
@@ -26492,6 +26661,45 @@ rs6000_cannot_substitute_mem_equiv_p (rtx mem)
     return true;
 
   return false;
+}
+
+/* Implement TARGET_INVALID_CONVERSION.  */
+
+static const char *
+rs6000_invalid_conversion (const_tree fromtype, const_tree totype)
+{
+  if (element_mode (fromtype) != element_mode (totype))
+    {
+      /* Do not allow conversions to/from PXImode and POImode types.  */
+      if (TYPE_MODE (fromtype) == PXImode)
+	return N_("invalid conversion from type %<__vector_quad%>");
+      if (TYPE_MODE (totype) == PXImode)
+	return N_("invalid conversion to type %<__vector_quad%>");
+      if (TYPE_MODE (fromtype) == POImode)
+	return N_("invalid conversion from type %<__vector_pair%>");
+      if (TYPE_MODE (totype) == POImode)
+	return N_("invalid conversion to type %<__vector_pair%>");
+    }
+  else if (POINTER_TYPE_P (fromtype) && POINTER_TYPE_P (totype))
+    {
+      /* Do not allow conversions to/from PXImode and POImode pointer
+	 types, except to/from void pointers.  */
+      if (TYPE_MODE (TREE_TYPE (fromtype)) == PXImode
+	  && TYPE_MODE (TREE_TYPE (totype)) != VOIDmode)
+	return N_("invalid conversion from type %<* __vector_quad%>");
+      if (TYPE_MODE (TREE_TYPE (totype)) == PXImode
+	  && TYPE_MODE (TREE_TYPE (fromtype)) != VOIDmode)
+	return N_("invalid conversion to type %<* __vector_quad%>");
+      if (TYPE_MODE (TREE_TYPE (fromtype)) == POImode
+	  && TYPE_MODE (TREE_TYPE (totype)) != VOIDmode)
+	return N_("invalid conversion from type %<* __vector_pair%>");
+      if (TYPE_MODE (TREE_TYPE (totype)) == POImode
+	  && TYPE_MODE (TREE_TYPE (fromtype)) != VOIDmode)
+	return N_("invalid conversion to type %<* __vector_pair%>");
+    }
+
+  /* Conversion allowed.  */
+  return NULL;
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;
