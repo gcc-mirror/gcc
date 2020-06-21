@@ -10265,15 +10265,17 @@ package body Exp_Ch4 is
       --  where Bits is the shift count mod Esize (the mod operation here
       --  deals with ludicrous large shift counts, which are apparently OK).
 
-      --  What about nonbinary modulus ???
+      if Modify_Tree_For_C then
+         declare
+            Loc : constant Source_Ptr := Sloc (N);
+            Rtp : constant Entity_Id  := Etype (Right_Opnd (N));
+            Typ : constant Entity_Id  := Etype (N);
 
-      declare
-         Loc : constant Source_Ptr := Sloc (N);
-         Rtp : constant Entity_Id  := Etype (Right_Opnd (N));
-         Typ : constant Entity_Id  := Etype (N);
+         begin
+            --  Sem_Intr should prevent getting there with a non binary modulus
 
-      begin
-         if Modify_Tree_For_C then
+            pragma Assert (not Non_Binary_Modulus (Typ));
+
             Rewrite (Right_Opnd (N),
               Make_Op_Rem (Loc,
                 Left_Opnd  => Relocate_Node (Right_Opnd (N)),
@@ -10298,8 +10300,8 @@ package body Exp_Ch4 is
                           Duplicate_Subexpr_No_Checks (Right_Opnd (N))))));
 
             Analyze_And_Resolve (N, Typ);
-         end if;
-      end;
+         end;
+      end if;
    end Expand_N_Op_Rotate_Left;
 
    ------------------------------
@@ -10318,22 +10320,24 @@ package body Exp_Ch4 is
       --  where Bits is the shift count mod Esize (the mod operation here
       --  deals with ludicrous large shift counts, which are apparently OK).
 
-      --  What about nonbinary modulus ???
+      if Modify_Tree_For_C then
+         declare
+            Loc : constant Source_Ptr := Sloc (N);
+            Rtp : constant Entity_Id  := Etype (Right_Opnd (N));
+            Typ : constant Entity_Id  := Etype (N);
 
-      declare
-         Loc : constant Source_Ptr := Sloc (N);
-         Rtp : constant Entity_Id  := Etype (Right_Opnd (N));
-         Typ : constant Entity_Id  := Etype (N);
+         begin
+            --  Sem_Intr should prevent getting there with a non binary modulus
 
-      begin
-         Rewrite (Right_Opnd (N),
-           Make_Op_Rem (Loc,
-             Left_Opnd  => Relocate_Node (Right_Opnd (N)),
-             Right_Opnd => Make_Integer_Literal (Loc, Esize (Typ))));
+            pragma Assert (not Non_Binary_Modulus (Typ));
 
-         Analyze_And_Resolve (Right_Opnd (N), Rtp);
+            Rewrite (Right_Opnd (N),
+              Make_Op_Rem (Loc,
+                Left_Opnd  => Relocate_Node (Right_Opnd (N)),
+                Right_Opnd => Make_Integer_Literal (Loc, Esize (Typ))));
 
-         if Modify_Tree_For_C then
+            Analyze_And_Resolve (Right_Opnd (N), Rtp);
+
             Rewrite (N,
               Make_Op_Or (Loc,
                 Left_Opnd =>
@@ -10351,8 +10355,8 @@ package body Exp_Ch4 is
                           Duplicate_Subexpr_No_Checks (Right_Opnd (N))))));
 
             Analyze_And_Resolve (N, Typ);
-         end if;
-      end;
+         end;
+      end if;
    end Expand_N_Op_Rotate_Right;
 
    ----------------------------
@@ -10382,6 +10386,10 @@ package body Exp_Ch4 is
             Hi    : Uint;
 
          begin
+            --  Sem_Intr should prevent getting there with a non binary modulus
+
+            pragma Assert (not Non_Binary_Modulus (Typ));
+
             if Compile_Time_Known_Value (Right) then
                if Expr_Value (Right) >= Siz then
                   Rewrite (N, Make_Integer_Literal (Loc, 0));
@@ -10439,7 +10447,14 @@ package body Exp_Ch4 is
       Binary_Op_Validity_Checks (N);
 
       --  If we are in Modify_Tree_For_C mode, there is no shift right
-      --  arithmetic in C, so we rewrite in terms of logical shifts.
+      --  arithmetic in C, so we rewrite in terms of logical shifts for
+      --  modular integers, and keep the Shift_Right intrinsic for signed
+      --  integers: even though doing a shift on a signed integer is not
+      --  fully guaranteed by the C standard, this is what C compilers
+      --  implement in practice.
+      --  Consider also taking advantage of this for modular integers by first
+      --  performing an unchecked conversion of the modular integer to a signed
+      --  integer of the same sign, and then convert back.
 
       --    Shift_Right (Num, Bits) or
       --      (if Num >= Sign
@@ -10448,26 +10463,24 @@ package body Exp_Ch4 is
 
       --  Here Mask is all 1 bits (2**size - 1), and Sign is 2**(size - 1)
 
-      --  Note: in almost all C compilers it would work to just shift a
-      --  signed integer right, but it's undefined and we cannot rely on it.
-
       --  Note: the above works fine for shift counts greater than or equal
       --  to the word size, since in this case (not (Shift_Right (Mask, bits)))
       --  generates all 1'bits.
 
-      --  What about nonbinary modulus ???
+      if Modify_Tree_For_C and then Is_Modular_Integer_Type (Etype (N)) then
+         declare
+            Loc   : constant Source_Ptr := Sloc (N);
+            Typ   : constant Entity_Id  := Etype (N);
+            Sign  : constant Uint       := 2 ** (Esize (Typ) - 1);
+            Mask  : constant Uint       := (2 ** Esize (Typ)) - 1;
+            Left  : constant Node_Id    := Left_Opnd (N);
+            Right : constant Node_Id    := Right_Opnd (N);
+            Maskx : Node_Id;
 
-      declare
-         Loc   : constant Source_Ptr := Sloc (N);
-         Typ   : constant Entity_Id  := Etype (N);
-         Sign  : constant Uint       := 2 ** (Esize (Typ) - 1);
-         Mask  : constant Uint       := (2 ** Esize (Typ)) - 1;
-         Left  : constant Node_Id    := Left_Opnd (N);
-         Right : constant Node_Id    := Right_Opnd (N);
-         Maskx : Node_Id;
+         begin
+            --  Sem_Intr should prevent getting there with a non binary modulus
 
-      begin
-         if Modify_Tree_For_C then
+            pragma Assert (not Non_Binary_Modulus (Typ));
 
             --  Here if not (Shift_Right (Mask, bits)) can be computed at
             --  compile time as a single constant.
@@ -10513,8 +10526,8 @@ package body Exp_Ch4 is
                       Maskx,
                       Make_Integer_Literal (Loc, 0)))));
             Analyze_And_Resolve (N, Typ);
-         end if;
-      end;
+         end;
+      end if;
    end Expand_N_Op_Shift_Right_Arithmetic;
 
    --------------------------

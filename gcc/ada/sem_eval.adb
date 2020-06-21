@@ -2941,9 +2941,14 @@ package body Sem_Eval is
       end if;
 
       case Nam is
-         when Name_Shift_Left  => Eval_Shift (N, E, N_Op_Shift_Left);
-         when Name_Shift_Right => Eval_Shift (N, E, N_Op_Shift_Right);
-         when others           => null;
+         when Name_Shift_Left  =>
+            Eval_Shift (N, E, N_Op_Shift_Left);
+         when Name_Shift_Right =>
+            Eval_Shift (N, E, N_Op_Shift_Right);
+         when Name_Shift_Right_Arithmetic =>
+            Eval_Shift (N, E, N_Op_Shift_Right_Arithmetic);
+         when others           =>
+            null;
       end case;
    end Eval_Intrinsic_Call;
 
@@ -4800,13 +4805,11 @@ package body Sem_Eval is
       end Check_Elab_Call;
 
    begin
-      --  Evaluate logical shift operators on binary modular types
-
-      if Is_Modular_Integer_Type (Typ)
-        and then not Non_Binary_Modulus (Typ)
-        and then Compile_Time_Known_Value (Left)
+      if Compile_Time_Known_Value (Left)
         and then Compile_Time_Known_Value (Right)
       then
+         pragma Assert (not Non_Binary_Modulus (Typ));
+
          if Op = N_Op_Shift_Left then
             Check_Elab_Call;
 
@@ -4821,12 +4824,73 @@ package body Sem_Eval is
          elsif Op = N_Op_Shift_Right then
             Check_Elab_Call;
 
-            --  Fold Shift_Right (X, Y) by computing X / 2**Y
+            --  Fold Shift_Right (X, Y) by computing abs X / 2**Y
 
             Fold_Uint
               (N,
-               Expr_Value (Left) / (Uint_2 ** Expr_Value (Right)),
+               abs Expr_Value (Left) / (Uint_2 ** Expr_Value (Right)),
                Static => Static);
+
+         elsif Op = N_Op_Shift_Right_Arithmetic then
+            Check_Elab_Call;
+
+            declare
+               Two_Y   : constant Uint := Uint_2 ** Expr_Value (Right);
+               Modulus : Uint;
+            begin
+               if Is_Modular_Integer_Type (Typ) then
+                  Modulus := Einfo.Modulus (Typ);
+               else
+                  Modulus := Uint_2 ** RM_Size (Typ);
+               end if;
+
+               --  X / 2**Y if X if positive or a small enough modular integer
+
+               if (Is_Modular_Integer_Type (Typ)
+                    and then Expr_Value (Left) < Modulus / Uint_2)
+                 or else
+                   (not Is_Modular_Integer_Type (Typ)
+                     and then Expr_Value (Left) >= 0)
+               then
+                  Fold_Uint (N, Expr_Value (Left) / Two_Y, Static => Static);
+
+               --  -1 (aka all 1's) if Y is larger than the number of bits
+               --  available or if X = -1.
+
+               elsif Two_Y > Modulus
+                 or else Expr_Value (Left) = Uint_Minus_1
+               then
+                  if Is_Modular_Integer_Type (Typ) then
+                     Fold_Uint (N, Modulus - Uint_1, Static => Static);
+                  else
+                     Fold_Uint (N, Uint_Minus_1, Static => Static);
+                  end if;
+
+               --  Large modular integer, compute via multiply/divide the
+               --  following: X >> Y + (1 << Y - 1) << (RM_Size - Y)
+
+               elsif Is_Modular_Integer_Type (Typ) then
+                  Fold_Uint
+                    (N,
+                     (Expr_Value (Left)) / Two_Y
+                        + (Two_Y - Uint_1)
+                          * Uint_2 ** (RM_Size (Typ) - Expr_Value (Right)),
+                     Static => Static);
+
+               --  Negative signed integer, compute via multiple/divide the
+               --  following:
+               --  (Modulus + X) >> Y + (1 << Y - 1) << (RM_Size - Y) - Modulus
+
+               else
+                  Fold_Uint
+                    (N,
+                     (Modulus + Expr_Value (Left)) / Two_Y
+                        + (Two_Y - Uint_1)
+                          * Uint_2 ** (RM_Size (Typ) - Expr_Value (Right))
+                        - Modulus,
+                     Static => Static);
+               end if;
+            end;
          end if;
       end if;
    end Fold_Shift;
