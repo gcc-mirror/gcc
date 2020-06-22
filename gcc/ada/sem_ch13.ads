@@ -164,6 +164,11 @@ package Sem_Ch13 is
    --  parameter does the actual replacement of node N, which is either a
    --  simple direct reference to T, or a selected component that represents
    --  an appropriately qualified occurrence of T.
+   --
+   --  This also replaces each reference to a component, entry, or protected
+   --  procedure with a selected component whose prefix is the parameter.
+   --  For example, Component_Name becomes Parameter.Component_Name, where
+   --  Parameter is the parameter, which is of type T.
 
    function Rep_Item_Too_Late
      (T     : Entity_Id;

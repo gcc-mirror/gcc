@@ -14498,11 +14498,9 @@ package body Sem_Ch13 is
 
       function Visible_Component (Comp : Name_Id) return Entity_Id;
       --  Given an identifier in the expression, check whether there is a
-      --  discriminant or component of the type that is directy visible, and
-      --  rewrite it as the corresponding selected component of the formal of
-      --  the subprogram. The entity is located by a sequential search, which
-      --  seems acceptable given the typical size of component lists and check
-      --  expressions. Possible optimization ???
+      --  discriminant, component, protected procedure, or entry of the type
+      --  that is directy visible, and rewrite it as the corresponding selected
+      --  component of the formal of the subprogram.
 
       ----------------------
       -- Replace_Type_Ref --
@@ -14677,14 +14675,20 @@ package body Sem_Ch13 is
 
       function Visible_Component (Comp : Name_Id) return Entity_Id is
          E : Entity_Id;
-
       begin
-         --  Types with nameable components are records and discriminated
-         --  private types.
+         --  Types with nameable components are record, task, and protected
+         --  types, and discriminated private types.
 
-         if Ekind (T) = E_Record_Type
+         if Ekind (T) in E_Record_Type
+                       | E_Task_Type
+                       | E_Protected_Type
            or else (Is_Private_Type (T) and then Has_Discriminants (T))
          then
+            --  This is a sequential search, which seems acceptable
+            --  efficiency-wise, given the typical size of component
+            --  lists, protected operation lists, task item lists, and
+            --  check expressions.
+
             E := First_Entity (T);
             while Present (E) loop
                if Comes_From_Source (E) and then Chars (E) = Comp then
@@ -14695,7 +14699,7 @@ package body Sem_Ch13 is
             end loop;
          end if;
 
-         --  Nothing by that name, or the type has no components
+         --  Nothing by that name
 
          return Empty;
       end Visible_Component;
