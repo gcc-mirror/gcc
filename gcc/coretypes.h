@@ -359,10 +359,6 @@ struct kv_pair
   const ValueType value;	/* the value of the name */
 };
 
-/* Alias of the first type, ignoring the second.  */
-template<typename T1, typename T2>
-using first_type = T1;
-
 /* Iterator pair used for a collection iteration with range-based loops.  */
 
 template<typename T>
