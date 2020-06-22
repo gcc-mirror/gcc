@@ -65,6 +65,9 @@ extern void ia64_expand_vec_perm_even_odd (rtx, rtx, rtx, int);
 extern void ia64_expand_vec_setv2sf (rtx op[3]);
 #endif /* RTX_CODE */
 
+/* Defined in ia64-rust.c  */
+extern void ia64_rust_target_cpu_info (void);
+
 #ifdef TREE_CODE
 #ifdef RTX_CODE
 extern rtx ia64_expand_builtin (tree, rtx, rtx, machine_mode, int);
