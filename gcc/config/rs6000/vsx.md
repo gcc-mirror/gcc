@@ -3014,7 +3014,7 @@
 	 [(match_operand:VSX_EXTRACT_I4 1 "altivec_register_operand" "v")
 	  (match_operand:QI 2 "const_0_to_3_operand" "n")]
 	 UNSPEC_XXGENPCV))]
-    "TARGET_FUTURE && TARGET_64BIT"
+    "TARGET_POWER10 && TARGET_64BIT"
     "xxgenpcv<wd>m %x0,%1,%2"
     [(set_attr "type" "vecsimple")])
 
@@ -3022,7 +3022,7 @@
   [(use (match_operand:VSX_EXTRACT_I4 0 "register_operand"))
    (use (match_operand:VSX_EXTRACT_I4 1 "register_operand"))
    (use (match_operand:QI 2 "immediate_operand"))]
-  "TARGET_FUTURE"
+  "TARGET_POWER10"
 {
   if (!BYTES_BIG_ENDIAN)
     {
@@ -5688,6 +5688,6 @@
   [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
 	(unspec:V16QI [(match_operand:V16QI 1 "vsx_register_operand" "wa")]
 		      XVCVBF16))]
-  "TARGET_FUTURE"
+  "TARGET_POWER10"
   "<xvcvbf16> %x0,%x1"
   [(set_attr "type" "vecfloat")])
