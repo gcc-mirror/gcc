@@ -4216,9 +4216,6 @@ vect_schedule_slp_instance (vec_info *vinfo,
 	 children vectorized defs.  */
       gimple *last_stmt = NULL;
       FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-	/* ???  With only external defs the following breaks.  Note
-	   external defs do not get all vector init stmts generated
-	   at the same place.  */
 	if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
 	  {
 	    /* We are emitting all vectorized stmts in the same place and
@@ -4231,6 +4228,21 @@ vect_schedule_slp_instance (vec_info *vinfo,
 	      if (!last_stmt
 		  || vect_stmt_dominates_stmt_p (last_stmt, vstmt))
 		last_stmt = vstmt;
+	  }
+	else
+	  {
+	    /* For externals we have to look at all defs since their
+	       insertion place is decided per vector.  */
+	    unsigned j;
+	    tree vdef;
+	    FOR_EACH_VEC_ELT (SLP_TREE_VEC_DEFS (child), j, vdef)
+	      if (TREE_CODE (vdef) == SSA_NAME)
+		{
+		  gimple *vstmt = SSA_NAME_DEF_STMT (vdef);
+		  if (!last_stmt
+		      || vect_stmt_dominates_stmt_p (last_stmt, vstmt))
+		    last_stmt = vstmt;
+		}
 	  }
       if (is_a <gphi *> (last_stmt))
 	si = gsi_after_labels (gimple_bb (last_stmt));
