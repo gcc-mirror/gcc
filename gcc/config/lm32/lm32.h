@@ -43,6 +43,21 @@
     }                                                   \
   while (0)
 
+#define TARGET_RUST_CPU_INFO()                                        \
+  do {                                                                \
+    rust_add_target_info("target_arch", "lm32");                      \
+    if (TARGET_MULTIPLY_ENABLED)                                      \
+      rust_add_target_info("target_feature", "multiply-enabled");     \
+    if (TARGET_DIVIDE_ENABLED)                                        \
+      rust_add_target_info("target_feature", "divide-enabled");       \
+    if (TARGET_BARREL_SHIFT_ENABLED)                                  \
+      rust_add_target_info("target_feature", "barrel-shift-enabled"); \
+    if (TARGET_SIGN_EXTEND_ENABLED)                                   \
+      rust_add_target_info("target_feature", "sign-extend-enabled");  \
+    if (TARGET_USER_ENABLED)                                          \
+      rust_add_target_info("target_feature", "user-enabled");         \
+  } while (0)
+
 #undef  ASM_SPEC
 #define ASM_SPEC "\
 %{mmultiply-enabled} \
