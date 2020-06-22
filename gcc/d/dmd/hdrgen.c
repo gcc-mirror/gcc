@@ -618,7 +618,7 @@ public:
         buf->writenl();
     }
 
-    void visit(OnScopeStatement *s)
+    void visit(ScopeGuardStatement *s)
     {
         buf->writestring(Token::toChars(s->tok));
         buf->writeByte(' ');

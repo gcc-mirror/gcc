@@ -435,7 +435,7 @@ int blockExit(Statement *s, FuncDeclaration *func, bool mustNotThrow)
             result |= finalresult & ~BEfallthru;
         }
 
-        void visit(OnScopeStatement *)
+        void visit(ScopeGuardStatement *)
         {
             // At this point, this statement is just an empty placeholder
             result = BEfallthru;
