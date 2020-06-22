@@ -1,3 +1,12 @@
+2020-06-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* Makefile.am (tmake_file): Build and install AIX-style FAT libraries.
+	* Makefile.in: Regenerate.
+	* configure.ac (tmake_file): Substitute.
+	* configure: Regenerate.
+	* configure.host (aix*): Define tmake_file.
+	* config/os/aix/t-aix: New file.
+
 2020-06-20  Jason Merrill  <jason@redhat.com>
 
 	* testsuite/24_iterators/move_iterator/rel_ops_c++20.cc:
