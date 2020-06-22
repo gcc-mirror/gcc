@@ -1,7 +1,7 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_future_ok } */
-/* { dg-options "-mdejagnu-cpu=future -O2" } */
+/* { dg-require-effective-target power10_ok } */
+/* { dg-options "-mdejagnu-cpu=power10 -O2" } */
 
-/* Ensure -mcpu=future compiles cleanly.  */
+/* Ensure -mcpu=power10 compiles cleanly.  */
 
 void x (void) { }
