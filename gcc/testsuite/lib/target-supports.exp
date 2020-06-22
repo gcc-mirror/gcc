@@ -4671,6 +4671,24 @@ proc check_effective_target_arm_cmse_ok {} {
     } "-mcmse"];
 }
 
+# Return 1 if the target supports executing MVE instructions, 0
+# otherwise.
+
+proc check_effective_target_arm_mve_hw {} {
+    return [check_runtime arm_mve_hw_available {
+	int
+	main (void)
+	{
+	  long long a = 16;
+	  int b = 3;
+	  asm ("sqrshrl %Q1, %R1, #64, %2"
+	       : "=l" (a)
+	       : "0" (a), "r" (b));
+	  return (a != 2);
+	}
+    } ""]
+}
+
 # Return 1 if this is an ARM target where ARMv8-M Security Extensions with
 # clearing instructions (clrm, vscclrm, vstr/vldr with FPCXT) is available.
 
