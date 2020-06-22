@@ -13406,6 +13406,11 @@ tsubst_default_argument (tree fn, int parmnum, tree type, tree arg,
   if (TREE_CODE (arg) == DEFERRED_PARSE)
     return arg;
 
+  /* Shortcut {}.  */
+  if (BRACE_ENCLOSED_INITIALIZER_P (arg)
+      && CONSTRUCTOR_NELTS (arg) == 0)
+    return arg;
+
   tree parm = FUNCTION_FIRST_USER_PARM (fn);
   parm = chain_index (parmnum, parm);
   tree parmtype = TREE_TYPE (parm);
@@ -22769,7 +22774,15 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
 	{
 	  tree bad_old_arg = NULL_TREE, bad_new_arg = NULL_TREE;
 	  tree old_args = ARGUMENT_PACK_ARGS (old_pack);
-
+	  temp_override<int> ovl (TREE_VEC_LENGTH (old_args));
+	  /* During template argument deduction for the aggregate deduction
+	     candidate, the number of elements in a trailing parameter pack
+	     is only deduced from the number of remaining function
+	     arguments if it is not otherwise deduced.  */
+	  if (cxx_dialect >= cxx20
+	      && TREE_VEC_LENGTH (new_args) < TREE_VEC_LENGTH (old_args)
+	      && builtin_guide_p (TPARMS_PRIMARY_TEMPLATE (tparms)))
+	    TREE_VEC_LENGTH (old_args) = TREE_VEC_LENGTH (new_args);
 	  if (!comp_template_args (old_args, new_args,
 				   &bad_old_arg, &bad_new_arg))
 	    /* Inconsistent unification of this parameter pack.  */
@@ -27982,6 +27995,23 @@ template_guide_p (const_tree fn)
   return false;
 }
 
+/* True if FN is an aggregate initialization guide or the copy deduction
+   guide.  */
+
+bool
+builtin_guide_p (const_tree fn)
+{
+  if (!deduction_guide_p (fn))
+    return false;
+  if (!DECL_ARTIFICIAL (fn))
+    /* Explicitly declared.  */
+    return false;
+  if (DECL_ABSTRACT_ORIGIN (fn))
+    /* Derived from a constructor.  */
+    return false;
+  return true;
+}
+
 /* OLDDECL is a _DECL for a template parameter.  Return a similar parameter at
    LEVEL:INDEX, using tsubst_args and complain for substitution into non-type
    template parameter types.  Note that the handling of template template
@@ -28293,22 +28323,43 @@ build_deduction_guide (tree type, tree ctor, tree outer_args, tsubst_flags_t com
 /* Add to LIST the member types for the reshaped initializer CTOR.  */
 
 static tree
-collect_ctor_idx_types (tree ctor, tree list)
+collect_ctor_idx_types (tree ctor, tree list, tree elt = NULL_TREE)
 {
   vec<constructor_elt, va_gc> *v = CONSTRUCTOR_ELTS (ctor);
   tree idx, val; unsigned i;
   FOR_EACH_CONSTRUCTOR_ELT (v, i, idx, val)
     {
+      tree ftype = elt ? elt : finish_decltype_type (idx, true, tf_none);
       if (BRACE_ENCLOSED_INITIALIZER_P (val)
-	  && CONSTRUCTOR_NELTS (val))
-	if (tree subidx = CONSTRUCTOR_ELT (val, 0)->index)
-	  if (TREE_CODE (subidx) == FIELD_DECL)
-	    {
-	      list = collect_ctor_idx_types (val, list);
-	      continue;
-	    }
-      tree ftype = finish_decltype_type (idx, true, tf_none);
-      list = tree_cons (NULL_TREE, ftype, list);
+	  && CONSTRUCTOR_NELTS (val)
+	  /* As in reshape_init_r, a non-aggregate or array-of-dependent-bound
+	     type gets a single initializer.  */
+	  && CP_AGGREGATE_TYPE_P (ftype)
+	  && !(TREE_CODE (ftype) == ARRAY_TYPE
+	       && uses_template_parms (TYPE_DOMAIN (ftype))))
+	{
+	  tree subelt = NULL_TREE;
+	  if (TREE_CODE (ftype) == ARRAY_TYPE)
+	    subelt = TREE_TYPE (ftype);
+	  list = collect_ctor_idx_types (val, list, subelt);
+	  continue;
+	}
+      tree arg = NULL_TREE;
+      if (i == v->length() - 1
+	  && PACK_EXPANSION_P (ftype))
+	/* Give the trailing pack expansion parameter a default argument to
+	   match aggregate initialization behavior, even if we deduce the
+	   length of the pack separately to more than we have initializers. */
+	arg = build_constructor (init_list_type_node, NULL);
+      /* if ei is of array type and xi is a braced-init-list or string literal,
+	 Ti is an rvalue reference to the declared type of ei */
+      STRIP_ANY_LOCATION_WRAPPER (val);
+      if (TREE_CODE (ftype) == ARRAY_TYPE
+	  && (BRACE_ENCLOSED_INITIALIZER_P (val)
+	      || TREE_CODE (val) == STRING_CST))
+	ftype = (cp_build_reference_type
+		 (ftype, BRACE_ENCLOSED_INITIALIZER_P (val)));
+      list = tree_cons (arg, ftype, list);
     }
 
   return list;
