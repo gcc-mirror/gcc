@@ -297,7 +297,7 @@ struct insn_gen_fn
   template<typename ...Ts>
   rtx_insn *operator() (Ts... args) const
   {
-    typedef rtx_insn *(*funcptr) (first_type<rtx, Ts>...);
+    typedef rtx_insn *(*funcptr) (decltype ((void) args, NULL_RTX)...);
     return ((funcptr) func) (args...);
   }
 
