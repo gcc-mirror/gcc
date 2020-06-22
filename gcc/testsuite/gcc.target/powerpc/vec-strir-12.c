@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -mdejagnu-cpu=future" } */
+/* { dg-options "-O1 -mdejagnu-cpu=power10" } */
 /* See vec-strir-13.c for the same test with -O2 optimization.  */
 
 #include <altivec.h>

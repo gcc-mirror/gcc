@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_future_ok } */
-/* { dg-options "-Wno-psabi -mdejagnu-cpu=future -O2" } */
+/* { dg-require-effective-target power10_ok } */
+/* { dg-options "-Wno-psabi -mdejagnu-cpu=power10 -O2" } */
 
 typedef unsigned char  vec_t __attribute__((vector_size(16)));
 
