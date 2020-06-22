@@ -12999,6 +12999,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	{
 	  if (arg->sym
 	      && arg->sym->ts.type == BT_DERIVED
+	      && arg->sym->ts.u.derived
 	      && !arg->sym->ts.u.derived->attr.use_assoc
 	      && !gfc_check_symbol_access (arg->sym->ts.u.derived)
 	      && !gfc_notify_std (GFC_STD_F2003, "%qs is of a PRIVATE type "
