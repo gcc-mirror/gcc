@@ -2693,7 +2693,7 @@ BU_SPECIAL_X (RS6000_BUILTIN_CPU_SUPPORTS, "__builtin_cpu_supports",
 BU_SPECIAL_X (RS6000_BUILTIN_CFSTRING, "__builtin_cfstring", RS6000_BTM_ALWAYS,
 	      RS6000_BTC_MISC)
 
-/* FUTURE MMA builtins.  */
+/* POWER10 MMA builtins.  */
 BU_VSX_1 (XVCVBF16SP,	    "xvcvbf16sp",	MISC, vsx_xvcvbf16sp)
 BU_VSX_1 (XVCVSPBF16,	    "xvcvspbf16",	MISC, vsx_xvcvspbf16)
 

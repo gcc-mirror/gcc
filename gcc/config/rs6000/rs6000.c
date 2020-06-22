@@ -259,7 +259,8 @@ enum {
   CLONE_ISA_2_05,			/* ISA 2.05 (power6).  */
   CLONE_ISA_2_06,			/* ISA 2.06 (power7).  */
   CLONE_ISA_2_07,			/* ISA 2.07 (power8).  */
-  CLONE_ISA_3_00,			/* ISA 3.00 (power9).  */
+  CLONE_ISA_3_00,			/* ISA 3.0 (power9).  */
+  CLONE_ISA_3_1,			/* ISA 3.1 (power10).  */
   CLONE_MAX
 };
 
@@ -274,7 +275,8 @@ static const struct clone_map rs6000_clone_map[CLONE_MAX] = {
   { OPTION_MASK_CMPB,		"arch_2_05" },	/* ISA 2.05 (power6).  */
   { OPTION_MASK_POPCNTD,	"arch_2_06" },	/* ISA 2.06 (power7).  */
   { OPTION_MASK_P8_VECTOR,	"arch_2_07" },	/* ISA 2.07 (power8).  */
-  { OPTION_MASK_P9_VECTOR,	"arch_3_00" },	/* ISA 3.00 (power9).  */
+  { OPTION_MASK_P9_VECTOR,	"arch_3_00" },	/* ISA 3.0 (power9).  */
+  { OPTION_MASK_POWER10,	"arch_3_1" },	/* ISA 3.1 (power10).  */
 };
 
 
@@ -3399,7 +3401,7 @@ rs6000_builtin_mask_calculate (void)
 	  | ((TARGET_FLOAT128_TYPE)	    ? RS6000_BTM_FLOAT128  : 0)
 	  | ((TARGET_FLOAT128_HW)	    ? RS6000_BTM_FLOAT128_HW : 0)
 	  | ((TARGET_MMA)		    ? RS6000_BTM_MMA	   : 0)
-	  | ((TARGET_FUTURE)		    ? RS6000_BTM_FUTURE    : 0));
+	  | ((TARGET_POWER10)               ? RS6000_BTM_P10       : 0));
 }
 
 /* Implement TARGET_MD_ASM_ADJUST.  All asm statements are considered
@@ -4092,15 +4094,15 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_isa_flags &= ~OPTION_MASK_FLOAT128_HW;
     }
 
-  /* Enable -mprefixed by default on 'future' systems.  */
-  if (TARGET_FUTURE && (rs6000_isa_flags_explicit & OPTION_MASK_PREFIXED) == 0)
+  /* Enable -mprefixed by default on power10 systems.  */
+  if (TARGET_POWER10 && (rs6000_isa_flags_explicit & OPTION_MASK_PREFIXED) == 0)
     rs6000_isa_flags |= OPTION_MASK_PREFIXED;
 
-  /* -mprefixed requires -mcpu=future.  */
-  else if (TARGET_PREFIXED && !TARGET_FUTURE)
+  /* -mprefixed requires -mcpu=power10 (or later).  */
+  else if (TARGET_PREFIXED && !TARGET_POWER10)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_PREFIXED) != 0)
-	error ("%qs requires %qs", "-mprefixed", "-mcpu=future");
+	error ("%qs requires %qs", "-mprefixed", "-mcpu=power10");
 
       rs6000_isa_flags &= ~OPTION_MASK_PREFIXED;
     }
@@ -4262,11 +4264,11 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_isa_flags &= ~OPTION_MASK_PCREL;
     }
 
-  /* Turn off vector pair/mma options on non-future systems.  */
-  if (!TARGET_FUTURE && TARGET_MMA)
+  /* Turn off vector pair/mma options on non-power10 systems.  */
+  if (!TARGET_POWER10 && TARGET_MMA)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_MMA) != 0)
-	error ("%qs requires %qs", "-mmma", "-mcpu=future");
+	error ("%qs requires %qs", "-mmma", "-mcpu=power10");
 
       rs6000_isa_flags &= ~OPTION_MASK_MMA;
     }
@@ -4280,7 +4282,7 @@ rs6000_option_override_internal (bool global_init_p)
 			&& rs6000_tune != PROCESSOR_POWER7
 			&& rs6000_tune != PROCESSOR_POWER8
 			&& rs6000_tune != PROCESSOR_POWER9
-			&& rs6000_tune != PROCESSOR_FUTURE
+			&& rs6000_tune != PROCESSOR_POWER10
 			&& rs6000_tune != PROCESSOR_PPCA2
 			&& rs6000_tune != PROCESSOR_CELL
 			&& rs6000_tune != PROCESSOR_PPC476);
@@ -4294,7 +4296,7 @@ rs6000_option_override_internal (bool global_init_p)
 				 || rs6000_tune == PROCESSOR_POWER7
 				 || rs6000_tune == PROCESSOR_POWER8
 				 || rs6000_tune == PROCESSOR_POWER9
-				 || rs6000_tune == PROCESSOR_FUTURE
+				 || rs6000_tune == PROCESSOR_POWER10
 				 || rs6000_tune == PROCESSOR_PPCE500MC
 				 || rs6000_tune == PROCESSOR_PPCE500MC64
 				 || rs6000_tune == PROCESSOR_PPCE5500
@@ -4590,7 +4592,7 @@ rs6000_option_override_internal (bool global_init_p)
 	break;
 
       case PROCESSOR_POWER9:
-      case PROCESSOR_FUTURE:
+      case PROCESSOR_POWER10:
 	rs6000_cost = &power9_cost;
 	break;
 
@@ -5527,8 +5529,8 @@ rs6000_machine_from_flags (void)
   /* Disable the flags that should never influence the .machine selection.  */
   flags &= ~(OPTION_MASK_PPC_GFXOPT | OPTION_MASK_PPC_GPOPT);
 
-  if ((flags & (ISA_FUTURE_MASKS_SERVER & ~ISA_3_0_MASKS_SERVER)) != 0)
-    return "future";
+  if ((flags & (ISA_3_1_MASKS_SERVER & ~ISA_3_0_MASKS_SERVER)) != 0)
+    return "power10";
   if ((flags & (ISA_3_0_MASKS_SERVER & ~ISA_2_7_MASKS_SERVER)) != 0)
     return "power9";
   if ((flags & (ISA_2_7_MASKS_SERVER & ~ISA_2_6_MASKS_SERVER)) != 0)
@@ -8098,7 +8100,7 @@ avoiding_indexed_address_p (machine_mode mode)
   unsigned int msize = GET_MODE_SIZE (mode);
 
   /* Avoid indexed addressing for modes that have non-indexed load/store
-     instruction forms.  On the future system, vector pairs have an indexed
+     instruction forms.  On power10, vector pairs have an indexed
      form, but vector quads don't.  */
   if (msize > 16)
     return msize != 32;
@@ -9186,7 +9188,7 @@ rs6000_reassociation_width (unsigned int opc ATTRIBUTE_UNUSED,
     {
     case PROCESSOR_POWER8:
     case PROCESSOR_POWER9:
-    case PROCESSOR_FUTURE:
+    case PROCESSOR_POWER10:
       if (DECIMAL_FLOAT_MODE_P (mode))
 	return 1;
       if (VECTOR_MODE_P (mode))
@@ -17156,7 +17158,7 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 
 	/* Separate a load from a narrower, dependent store.  */
 	if ((rs6000_sched_groups || rs6000_tune == PROCESSOR_POWER9
-	     || rs6000_tune == PROCESSOR_FUTURE)
+	     || rs6000_tune == PROCESSOR_POWER10)
 	    && GET_CODE (PATTERN (insn)) == SET
 	    && GET_CODE (PATTERN (dep_insn)) == SET
 	    && MEM_P (XEXP (PATTERN (insn), 1))
@@ -17194,7 +17196,7 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 		 || rs6000_tune == PROCESSOR_POWER7
 		 || rs6000_tune == PROCESSOR_POWER8
 		 || rs6000_tune == PROCESSOR_POWER9
-		 || rs6000_tune == PROCESSOR_FUTURE
+		 || rs6000_tune == PROCESSOR_POWER10
                  || rs6000_tune == PROCESSOR_CELL)
                 && recog_memoized (dep_insn)
                 && (INSN_CODE (dep_insn) >= 0))
@@ -17774,7 +17776,7 @@ rs6000_issue_rate (void)
   case PROCESSOR_POWER8:
     return 7;
   case PROCESSOR_POWER9:
-  case PROCESSOR_FUTURE:
+  case PROCESSOR_POWER10:
     return 6;
   default:
     return 1;
@@ -21539,7 +21541,7 @@ rs6000_register_move_cost (machine_mode mode,
 		 allocation a move within the same class might turn
 		 out to be a nop.  */
 	      if (rs6000_tune == PROCESSOR_POWER9
-		  || rs6000_tune == PROCESSOR_FUTURE)
+		  || rs6000_tune == PROCESSOR_POWER10)
 		ret = 3 * hard_regno_nregs (FIRST_GPR_REGNO, mode);
 	      else
 		ret = 4 * hard_regno_nregs (FIRST_GPR_REGNO, mode);
@@ -23141,7 +23143,7 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "float128",			OPTION_MASK_FLOAT128_KEYWORD,	false, true  },
   { "float128-hardware",	OPTION_MASK_FLOAT128_HW,	false, true  },
   { "fprnd",			OPTION_MASK_FPRND,		false, true  },
-  { "future",			OPTION_MASK_FUTURE,		false, true  },
+  { "power10",			OPTION_MASK_POWER10,		false, true  },
   { "hard-dfp",			OPTION_MASK_DFP,		false, true  },
   { "htm",			OPTION_MASK_HTM,		false, true  },
   { "isel",			OPTION_MASK_ISEL,		false, true  },
@@ -23219,7 +23221,7 @@ static struct rs6000_opt_mask const rs6000_builtin_mask_names[] =
   { "float128",		 RS6000_BTM_FLOAT128,   false, false },
   { "float128-hw",	 RS6000_BTM_FLOAT128_HW,false, false },
   { "mma",		 RS6000_BTM_MMA,	false, false },
-  { "future",		 RS6000_BTM_FUTURE,	false, false },
+  { "power10",		 RS6000_BTM_P10,	false, false },
 };
 
 /* Option variables that we want to support inside attribute((target)) and
@@ -23908,7 +23910,7 @@ rs6000_disable_incompatible_switches (void)
     const HOST_WIDE_INT dep_flags;	/* flags that depend on this option.  */
     const char *const name;		/* name of the switch.  */
   } flags[] = {
-    { OPTION_MASK_FUTURE,	OTHER_FUTURE_MASKS,	"future"	},
+    { OPTION_MASK_POWER10,	OTHER_POWER10_MASKS,	"power10"	},
     { OPTION_MASK_P9_VECTOR,	OTHER_P9_VECTOR_MASKS,	"power9-vector"	},
     { OPTION_MASK_P8_VECTOR,	OTHER_P8_VECTOR_MASKS,	"power8-vector"	},
     { OPTION_MASK_VSX,		OTHER_VSX_VECTOR_MASKS,	"vsx"		},

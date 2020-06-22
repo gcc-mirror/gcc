@@ -5656,6 +5656,6 @@
   [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
 	(unspec:V16QI [(match_operand:V16QI 1 "vsx_register_operand" "wa")]
 		      XVCVBF16))]
-  "TARGET_FUTURE"
+  "TARGET_POWER10"
   "<xvcvbf16> %x0,%x1"
   [(set_attr "type" "vecfloat")])

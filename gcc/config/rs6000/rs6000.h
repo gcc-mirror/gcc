@@ -104,6 +104,7 @@
    to the assembler if -mpower9-vector was also used.  */
 #define ASM_CPU_SPEC \
 "%{mcpu=native: %(asm_cpu_native); \
+  mcpu=power10: -mpower10; \
   mcpu=power9: -mpower9; \
   mcpu=power8|mcpu=powerpc64le: %{mpower9-vector: -mpower9;: -mpower8}; \
   mcpu=power7: -mpower7; \
@@ -159,7 +160,6 @@
   mcpu=e5500: -me5500; \
   mcpu=e6500: -me6500; \
   mcpu=titan: -mtitan; \
-  mcpu=future: -mfuture; \
   !mcpu*: %{mpower9-vector: -mpower9; \
 	    mpower8-vector|mcrypto|mdirect-move|mhtm: -mpower8; \
 	    mvsx: -mpower7; \
@@ -538,7 +538,7 @@ extern int rs6000_vector_align[];
 #define MASK_STRICT_ALIGN		OPTION_MASK_STRICT_ALIGN
 #define MASK_UPDATE			OPTION_MASK_UPDATE
 #define MASK_VSX			OPTION_MASK_VSX
-#define MASK_FUTURE			OPTION_MASK_FUTURE
+#define MASK_POWER10			OPTION_MASK_POWER10
 
 #ifndef IN_LIBGCC2
 #define MASK_POWERPC64			OPTION_MASK_POWERPC64
@@ -2321,7 +2321,7 @@ extern int frame_pointer_needed;
 #define RS6000_BTM_FLOAT128	MASK_FLOAT128_KEYWORD /* IEEE 128-bit float.  */
 #define RS6000_BTM_FLOAT128_HW	MASK_FLOAT128_HW /* IEEE 128-bit float h/w.  */
 #define RS6000_BTM_MMA		MASK_MMA	/* ISA 3.1 MMA.  */
-#define RS6000_BTM_FUTURE	MASK_FUTURE
+#define RS6000_BTM_P10		MASK_POWER10
 
 #define RS6000_BTM_COMMON	(RS6000_BTM_ALTIVEC			\
 				 | RS6000_BTM_VSX			\
@@ -2344,7 +2344,7 @@ extern int frame_pointer_needed;
 				 | RS6000_BTM_FLOAT128			\
 				 | RS6000_BTM_FLOAT128_HW		\
 				 | RS6000_BTM_MMA			\
-				 | RS6000_BTM_FUTURE)
+				 | RS6000_BTM_P10)
 
 /* Define builtin enum index.  */
 

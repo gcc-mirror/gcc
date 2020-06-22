@@ -10566,8 +10566,8 @@ rs6000_invalid_builtin (enum rs6000_builtins fncode)
 	   "-m64");
   else if ((fnmask & RS6000_BTM_P9_MISC) == RS6000_BTM_P9_MISC)
     error ("%qs requires the %qs option", name, "-mcpu=power9");
-  else if ((fnmask & RS6000_BTM_FUTURE) != 0)
-    error ("%qs requires the %qs option", name, "-mcpu=future");
+  else if ((fnmask & RS6000_BTM_P10) != 0)
+    error ("%qs requires the %qs option", name, "-mcpu=power10");
   else if ((fnmask & RS6000_BTM_MMA) != 0)
     error ("%qs requires the %qs option", name, "-mmma");
   else if ((fnmask & RS6000_BTM_LDBL128) == RS6000_BTM_LDBL128)
