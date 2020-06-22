@@ -7192,9 +7192,7 @@ fpu-target.inc: fpu-target.h $(srcdir)/libgfortran.h
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 misc_specifics.m4 > $@
 
 # target overrides
-ifneq ($(tmake_file),)
-include $(tmake_file)
-endif
+-include $(tmake_file)
 
 # GNU Make needs to see an explicit $(MAKE) variable in the command it
 # runs to enable its job server during parallel builds.  Hence the

@@ -154,8 +154,6 @@ all-multi: $(libatomic_la_LIBADD)
 	$(MULTIDO) $(AM_MAKEFLAGS) DO=all multi-do # $(MAKE)
 
 # target overrides
-ifneq ($(tmake_file),)
-include $(tmake_file)
-endif
+-include $(tmake_file)
 
 include $(top_srcdir)/../multilib.am

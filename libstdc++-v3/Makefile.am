@@ -174,8 +174,6 @@ AM_MAKEFLAGS = \
 FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 
 # target overrides
-ifneq ($(tmake_file),)
-include $(tmake_file)
-endif
+-include $(tmake_file)
 
 include $(top_srcdir)/../multilib.am
