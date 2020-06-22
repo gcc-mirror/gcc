@@ -439,7 +439,7 @@ public:
             ctfeCompile(s->statement);
     }
 
-    void visit(OnScopeStatement *)
+    void visit(ScopeGuardStatement *)
     {
         // rewritten to try/catch/finally
         assert(0);
@@ -1753,7 +1753,7 @@ public:
         result = new ThrownExceptionExp(s->loc, (ClassReferenceExp *)e);
     }
 
-    void visit(OnScopeStatement *)
+    void visit(ScopeGuardStatement *)
     {
         assert(0);
     }

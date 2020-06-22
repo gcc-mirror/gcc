@@ -914,7 +914,7 @@ FuncDeclaration *buildPostBlit(StructDeclaration *sd, Scope *sc)
 
             ex = new CallExp(loc, new IdentifierExp(loc, Id::__ArrayDtor), ex);
         }
-        a->push(new OnScopeStatement(loc, TOKon_scope_failure, new ExpStatement(loc, ex)));
+        a->push(new ScopeGuardStatement(loc, TOKon_scope_failure, new ExpStatement(loc, ex)));
     }
 
     // Build our own "postblit" which executes a, but only if needed.

@@ -194,7 +194,7 @@ public:
         if (s->finalbody)
             visitStmt(s->finalbody);
     }
-    void visit(OnScopeStatement *) {  }
+    void visit(ScopeGuardStatement *) {  }
     void visit(ThrowStatement *) {  }
     void visit(DebugStatement *s)
     {
