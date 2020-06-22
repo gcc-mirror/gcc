@@ -1,6 +1,15 @@
 2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2020-06-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-general.c (omp_extract_for_data): For triangular loops with
+	all loop invariant expressions constant where the innermost loop is
+	executed at least once compute number of iterations at compile time.
+
+2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2020-06-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.h (OMP_FOR_NON_RECTANGULAR): Define.
