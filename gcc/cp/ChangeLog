@@ -1,3 +1,13 @@
+2020-06-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-06-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95505
+	* coroutines.cc (morph_fn_to_coro): Update handling of
+	get-return-object-on-allocation-fail and diagnose missing
+	std::nothrow.
+
 2020-06-19  Jason Merrill  <jason@redhat.com>
 
 	* method.c (early_check_defaulted_comparison): Allow defaulting

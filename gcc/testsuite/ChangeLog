@@ -1,3 +1,11 @@
+2020-06-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-06-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95505
+	* g++.dg/coroutines/pr95505.C: New test.
+
 2020-06-20  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	PR tree-optimization/95110
