@@ -195,7 +195,7 @@ package Sem_Ch3 is
      (N            : Node_Id;
       Related_Nod  : Node_Id;
       Related_Id   : Entity_Id := Empty;
-      Suffix_Index : Nat       := 1);
+      Suffix_Index : Pos       := 1);
    --  Process an index that is given in an array declaration, an entry
    --  family declaration or a loop iteration. The index is given by an index
    --  declaration (a 'box'), or by a discrete range. The later can be the name

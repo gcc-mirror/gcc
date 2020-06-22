@@ -440,7 +440,7 @@ package body Sem_Ch3 is
       Related_Nod  : Node_Id;
       Related_Id   : Entity_Id;
       Suffix       : Character;
-      Suffix_Index : Nat);
+      Suffix_Index : Pos);
    --  Process an index constraint S in a constrained array declaration. The
    --  constraint can be a subtype name, or a range with or without an explicit
    --  subtype mark. The index is the corresponding index of the unconstrained
@@ -5987,9 +5987,9 @@ package body Sem_Ch3 is
       Element_Type  : Entity_Id;
       Implicit_Base : Entity_Id;
       Index         : Node_Id;
-      Nb_Index      : Nat;
+      Nb_Index      : Pos;
       Priv          : Entity_Id;
-      Related_Id    : Entity_Id := Empty;
+      Related_Id    : Entity_Id;
 
    begin
       if Nkind (Def) = N_Constrained_Array_Definition then
@@ -14100,7 +14100,7 @@ package body Sem_Ch3 is
       Related_Nod  : Node_Id;
       Related_Id   : Entity_Id;
       Suffix       : Character;
-      Suffix_Index : Nat)
+      Suffix_Index : Pos)
    is
       Def_Id : Entity_Id;
       R      : Node_Id := Empty;
@@ -19120,7 +19120,7 @@ package body Sem_Ch3 is
      (N            : Node_Id;
       Related_Nod  : Node_Id;
       Related_Id   : Entity_Id := Empty;
-      Suffix_Index : Nat       := 1)
+      Suffix_Index : Pos       := 1)
    is
       R      : Node_Id;
       T      : Entity_Id;
