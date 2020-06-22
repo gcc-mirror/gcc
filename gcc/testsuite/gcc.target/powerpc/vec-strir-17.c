@@ -1,6 +1,6 @@
 /* { dg-do run } */
-/* { dg-require-effective-target powerpc_future_hw } */
-/* { dg-options "-O2 -mdejagnu-cpu=future" } */
+/* { dg-require-effective-target power10_hw } */
+/* { dg-options "-O2 -mdejagnu-cpu=power10" } */
 
 #include <altivec.h>
 

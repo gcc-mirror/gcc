@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mdejagnu-cpu=future" } */
+/* { dg-options "-mdejagnu-cpu=power10" } */
 
 #include <altivec.h>
 
