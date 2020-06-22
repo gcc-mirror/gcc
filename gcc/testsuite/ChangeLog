@@ -1,3 +1,12 @@
+2020-06-21  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/mma-builtin-1.c: New file.
+	* gcc.target/powerpc/mma-builtin-2.c: New file.
+	* gcc.target/powerpc/mma-builtin-3.c: New file.
+	* gcc.target/powerpc/mma-builtin-4.c: New file.
+	* gcc.target/powerpc/mma-builtin-5.c: New file.
+	* gcc.target/powerpc/mma-builtin-6.c: New file.
+
 2020-06-20  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/95505

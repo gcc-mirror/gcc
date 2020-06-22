@@ -1,3 +1,11 @@
+2020-06-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config.host (extra_parts): Add crtcxa_64 and crtdbase_64.
+	* config/rs6000/t-aix-cxa: Explicitly compile 32 bit with -maix32
+	and 64 bit with -maix64.
+	* config/rs6000/t-slibgcc-aix: Remove extra @multilib_dir@ level.
+	Build and install AIX-style FAT libraries.
+
 2020-06-17  Samuel Thibault  <samuel.thibault@gnu.org>
 
 	* config.host (md_unwind_header) <i[34567]86-*-gnu*>: Set to

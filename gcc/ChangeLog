@@ -1,3 +1,192 @@
+2020-06-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config.gcc: Use t-aix64, biarch64 and default64 for cpu_is_64bit.
+	* config/rs6000/aix72.h (ASM_SPEC): Remove aix64 option.
+	(ASM_SPEC32): New.
+	(ASM_SPEC64): New.
+	(ASM_CPU_SPEC): Remove vsx and altivec options.
+	(CPP_SPEC_COMMON): Rename from CPP_SPEC.
+	(CPP_SPEC32): New.
+	(CPP_SPEC64): New.
+	(CPLUSPLUS_CPP_SPEC): Rename to CPLUSPLUS_CPP_SPEC_COMMON..
+	(TARGET_DEFAULT): Only define if not BIARCH.
+	(LIB_SPEC_COMMON): Rename from LIB_SPEC.
+	(LIB_SPEC32): New.
+	(LIB_SPEC64): New.
+	(LINK_SPEC_COMMON): Rename from LINK_SPEC.
+	(LINK_SPEC32): New.
+	(LINK_SPEC64): New.
+	(STARTFILE_SPEC): Add 64 bit version of crtcxa and crtdbase.
+	(ASM_SPEC): Define 32 and 64 bit alternatives using DEFAULT_ARCH64_P.
+	(CPP_SPEC): Same.
+	(CPLUSPLUS_CPP_SPEC): Same.
+	(LIB_SPEC): Same.
+	(LINK_SPEC): Same.
+	(SUBTARGET_EXTRA_SPECS): Add new 32/64 specs.
+	* config/rs6000/defaultaix64.h: New file.
+	* config/rs6000/t-aix64: New file.
+
+2020-06-21  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/predicates.md (mma_assemble_input_operand): New.
+	* config/rs6000/rs6000-builtin.def (BU_MMA_1, BU_MMA_V2, BU_MMA_3,
+	BU_MMA_5, BU_MMA_6, BU_VSX_1): Add support macros for defining MMA
+	built-in functions.
+	(ASSEMBLE_ACC, ASSEMBLE_PAIR, DISASSEMBLE_ACC, DISASSEMBLE_PAIR,
+	PMXVBF16GER2, PMXVBF16GER2NN, PMXVBF16GER2NP, PMXVBF16GER2PN,
+	PMXVBF16GER2PP, PMXVF16GER2, PMXVF16GER2NN, PMXVF16GER2NP,
+	PMXVF16GER2PN, PMXVF16GER2PP, PMXVF32GER, PMXVF32GERNN,
+	PMXVF32GERNP, PMXVF32GERPN, PMXVF32GERPP, PMXVF64GER, PMXVF64GERNN,
+	PMXVF64GERNP, PMXVF64GERPN, PMXVF64GERPP, PMXVI16GER2, PMXVI16GER2PP,
+	PMXVI16GER2S, PMXVI16GER2SPP, PMXVI4GER8, PMXVI4GER8PP, PMXVI8GER4,
+	PMXVI8GER4PP, PMXVI8GER4SPP, XVBF16GER2, XVBF16GER2NN, XVBF16GER2NP,
+	XVBF16GER2PN, XVBF16GER2PP, XVCVBF16SP, XVCVSPBF16, XVF16GER2,
+	XVF16GER2NN, XVF16GER2NP, XVF16GER2PN, XVF16GER2PP, XVF32GER,
+	XVF32GERNN, XVF32GERNP, XVF32GERPN, XVF32GERPP, XVF64GER, XVF64GERNN,
+	XVF64GERNP, XVF64GERPN, XVF64GERPP, XVI16GER2, XVI16GER2PP, XVI16GER2S,
+	XVI16GER2SPP, XVI4GER8, XVI4GER8PP, XVI8GER4, XVI8GER4PP, XVI8GER4SPP,
+	XXMFACC, XXMTACC, XXSETACCZ): Add MMA built-ins.
+	* config/rs6000/rs6000.c (rs6000_emit_move): Use CONST_INT_P.
+	Allow zero constants.
+	(print_operand) <case 'A'>: New output modifier.
+	(rs6000_split_multireg_move): Add support for inserting accumulator
+	priming and depriming instructions.  Add support for splitting an
+	assemble accumulator pattern.
+	* config/rs6000/rs6000-call.c (mma_init_builtins, mma_expand_builtin,
+	rs6000_gimple_fold_mma_builtin): New functions.
+	(RS6000_BUILTIN_M): New macro.
+	(def_builtin): Handle RS6000_BTC_QUAD and RS6000_BTC_PAIR attributes.
+	(bdesc_mma): Add new MMA built-in support.
+	(htm_expand_builtin): Use RS6000_BTC_OPND_MASK.
+	(rs6000_invalid_builtin): Add handling of RS6000_BTM_FUTURE and
+	RS6000_BTM_MMA.
+	(rs6000_builtin_valid_without_lhs): Handle RS6000_BTC_VOID attribute.
+	(rs6000_gimple_fold_builtin): Call rs6000_builtin_is_supported_p
+	and rs6000_gimple_fold_mma_builtin.
+	(rs6000_expand_builtin): Call mma_expand_builtin.
+	Use RS6000_BTC_OPND_MASK.
+	(rs6000_init_builtins): Adjust comment.  Call mma_init_builtins.
+	(htm_init_builtins): Use RS6000_BTC_OPND_MASK.
+	(builtin_function_type): Handle VSX_BUILTIN_XVCVSPBF16 and
+	VSX_BUILTIN_XVCVBF16SP.
+	* config/rs6000/rs6000.h (RS6000_BTC_QUINARY, RS6000_BTC_SENARY,
+	RS6000_BTC_OPND_MASK, RS6000_BTC_QUAD, RS6000_BTC_PAIR,
+	RS6000_BTC_QUADPAIR, RS6000_BTC_GIMPLE): New defines.
+	(RS6000_BTC_PREDICATE, RS6000_BTC_ABS, RS6000_BTC_DST,
+	RS6000_BTC_TYPE_MASK, RS6000_BTC_ATTR_MASK): Adjust values.
+	* config/rs6000/mma.md (MAX_MMA_OPERANDS): New define_constant.
+	(UNSPEC_MMA_ASSEMBLE_ACC, UNSPEC_MMA_PMXVBF16GER2,
+	UNSPEC_MMA_PMXVBF16GER2NN, UNSPEC_MMA_PMXVBF16GER2NP,
+	UNSPEC_MMA_PMXVBF16GER2PN, UNSPEC_MMA_PMXVBF16GER2PP,
+	UNSPEC_MMA_PMXVF16GER2, UNSPEC_MMA_PMXVF16GER2NN,
+	UNSPEC_MMA_PMXVF16GER2NP, UNSPEC_MMA_PMXVF16GER2PN,
+	UNSPEC_MMA_PMXVF16GER2PP, UNSPEC_MMA_PMXVF32GER,
+	UNSPEC_MMA_PMXVF32GERNN, UNSPEC_MMA_PMXVF32GERNP,
+	UNSPEC_MMA_PMXVF32GERPN, UNSPEC_MMA_PMXVF32GERPP,
+	UNSPEC_MMA_PMXVF64GER, UNSPEC_MMA_PMXVF64GERNN,
+	UNSPEC_MMA_PMXVF64GERNP, UNSPEC_MMA_PMXVF64GERPN,
+	UNSPEC_MMA_PMXVF64GERPP, UNSPEC_MMA_PMXVI16GER2,
+	UNSPEC_MMA_PMXVI16GER2PP, UNSPEC_MMA_PMXVI16GER2S,
+	UNSPEC_MMA_PMXVI16GER2SPP, UNSPEC_MMA_PMXVI4GER8,
+	UNSPEC_MMA_PMXVI4GER8PP, UNSPEC_MMA_PMXVI8GER4,
+	UNSPEC_MMA_PMXVI8GER4PP, UNSPEC_MMA_PMXVI8GER4SPP,
+	UNSPEC_MMA_XVBF16GER2, UNSPEC_MMA_XVBF16GER2NN,
+	UNSPEC_MMA_XVBF16GER2NP, UNSPEC_MMA_XVBF16GER2PN,
+	UNSPEC_MMA_XVBF16GER2PP, UNSPEC_MMA_XVF16GER2, UNSPEC_MMA_XVF16GER2NN,
+	UNSPEC_MMA_XVF16GER2NP, UNSPEC_MMA_XVF16GER2PN, UNSPEC_MMA_XVF16GER2PP,
+	UNSPEC_MMA_XVF32GER, UNSPEC_MMA_XVF32GERNN, UNSPEC_MMA_XVF32GERNP,
+	UNSPEC_MMA_XVF32GERPN, UNSPEC_MMA_XVF32GERPP, UNSPEC_MMA_XVF64GER,
+	UNSPEC_MMA_XVF64GERNN, UNSPEC_MMA_XVF64GERNP, UNSPEC_MMA_XVF64GERPN,
+	UNSPEC_MMA_XVF64GERPP, UNSPEC_MMA_XVI16GER2, UNSPEC_MMA_XVI16GER2PP,
+	UNSPEC_MMA_XVI16GER2S, UNSPEC_MMA_XVI16GER2SPP, UNSPEC_MMA_XVI4GER8,
+	UNSPEC_MMA_XVI4GER8PP, UNSPEC_MMA_XVI8GER4, UNSPEC_MMA_XVI8GER4PP,
+	UNSPEC_MMA_XVI8GER4SPP, UNSPEC_MMA_XXMFACC, UNSPEC_MMA_XXMTACC): New.
+	(MMA_ACC, MMA_VV, MMA_AVV, MMA_PV, MMA_APV, MMA_VVI4I4I8,
+	MMA_AVVI4I4I8, MMA_VVI4I4I2, MMA_AVVI4I4I2, MMA_VVI4I4,
+	MMA_AVVI4I4, MMA_PVI4I2, MMA_APVI4I2, MMA_VVI4I4I4,
+	MMA_AVVI4I4I4): New define_int_iterator.
+	(acc, vv, avv, pv, apv, vvi4i4i8, avvi4i4i8, vvi4i4i2,
+	avvi4i4i2, vvi4i4, avvi4i4, pvi4i2, apvi4i2, vvi4i4i4,
+	avvi4i4i4): New define_int_attr.
+	(*movpxi): Add zero constant alternative.
+	(mma_assemble_pair, mma_assemble_acc): New define_expand.
+	(*mma_assemble_acc): New define_insn_and_split.
+	(mma_<acc>, mma_xxsetaccz, mma_<vv>, mma_<avv>, mma_<pv>, mma_<apv>,
+	mma_<vvi4i4i8>, mma_<avvi4i4i8>, mma_<vvi4i4i2>, mma_<avvi4i4i2>,
+	mma_<vvi4i4>, mma_<avvi4i4>, mma_<pvi4i2>, mma_<apvi4i2>,
+	mma_<vvi4i4i4>, mma_<avvi4i4i4>): New define_insn.
+	* config/rs6000/rs6000.md (define_attr "type"): New type mma.
+	* config/rs6000/vsx.md (UNSPEC_VSX_XVCVBF16SP): New.
+	(UNSPEC_VSX_XVCVSPBF16): Likewise.
+	(XVCVBF16): New define_int_iterator.
+	(xvcvbf16): New define_int_attr.
+	(vsx_<xvcvbf16>): New define_insn.
+	* doc/extend.texi: Document the mma built-ins.
+
+2020-06-21  Peter Bergner  <bergner@linux.ibm.com>
+	    Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/mma.md: New file.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Define
+	__MMA__ for mma.
+	* config/rs6000/rs6000-call.c (rs6000_init_builtins): Add support
+	for __vector_pair and __vector_quad types.
+	* config/rs6000/rs6000-cpus.def (OTHER_FUTURE_MASKS): Add
+	OPTION_MASK_MMA.
+	(POWERPC_MASKS): Likewise.
+	* config/rs6000/rs6000-modes.def (OI, XI): New integer modes.
+	(POI, PXI): New partial integer modes.
+	* config/rs6000/rs6000.c (TARGET_INVALID_CONVERSION): Define.
+	(rs6000_hard_regno_nregs_internal): Use VECTOR_ALIGNMENT_P.
+	(rs6000_hard_regno_mode_ok_uncached): Likewise.
+	Add support for POImode being allowed in VSX registers and PXImode
+	being allowed in FP registers.
+	(rs6000_modes_tieable_p): Adjust comment.
+	Add support for POImode and PXImode.
+	(rs6000_debug_reg_global) <print_tieable_modes>: Add OImode, POImode
+	XImode, PXImode, V2SImode, V2SFmode and CCFPmode..
+	(rs6000_setup_reg_addr_masks): Use VECTOR_ALIGNMENT_P.
+	Set up appropriate addr_masks for vector pair and vector quad addresses.
+	(rs6000_init_hard_regno_mode_ok): Add support for vector pair and
+	vector quad registers.  Setup reload handlers for POImode and PXImode.
+	(rs6000_builtin_mask_calculate): Add support for RS6000_BTM_MMA.
+	(rs6000_option_override_internal): Error if -mmma is specified
+	without -mcpu=future.
+	(rs6000_slow_unaligned_access): Use VECTOR_ALIGNMENT_P.
+	(quad_address_p): Change size test to less than 16 bytes.
+	(reg_offset_addressing_ok_p): Add support for ISA 3.1 vector pair
+	and vector quad instructions.
+	(avoiding_indexed_address_p): Likewise.
+	(rs6000_emit_move): Disallow POImode and PXImode moves involving
+	constants.
+	(rs6000_preferred_reload_class): Prefer VSX registers for POImode
+	and FP registers for PXImode.
+	(rs6000_split_multireg_move): Support splitting POImode and PXImode
+	move instructions.
+	(rs6000_mangle_type): Adjust comment.  Add support for mangling
+	__vector_pair and __vector_quad types.
+	(rs6000_opt_masks): Add entry for mma.
+	(rs6000_builtin_mask_names): Add RS6000_BTM_MMA and RS6000_BTM_FUTURE.
+	(rs6000_function_value): Use VECTOR_ALIGNMENT_P.
+	(address_to_insn_form): Likewise.
+	(reg_to_non_prefixed): Likewise.
+	(rs6000_invalid_conversion): New function.
+	* config/rs6000/rs6000.h (MASK_MMA): Define.
+	(BIGGEST_ALIGNMENT): Set to 512 if MMA support is enabled.
+	(VECTOR_ALIGNMENT_P): New helper macro.
+	(ALTIVEC_VECTOR_MODE): Use VECTOR_ALIGNMENT_P.
+	(RS6000_BTM_MMA): Define.
+	(RS6000_BTM_COMMON): Add RS6000_BTM_MMA and RS6000_BTM_FUTURE.
+	(rs6000_builtin_type_index): Add RS6000_BTI_vector_pair and
+	RS6000_BTI_vector_quad.
+	(vector_pair_type_node): New.
+	(vector_quad_type_node): New.
+	* config/rs6000/rs6000.md: Include mma.md.
+	(define_mode_iterator RELOAD): Add POI and PXI.
+	* config/rs6000/t-rs6000 (MD_INCLUDES): Add mma.md.
+	* config/rs6000/rs6000.opt (-mmma): New.
+	* doc/invoke.texi: Document -mmma.
+
 2020-06-20  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	PR tree-optimization/95638
