@@ -9746,7 +9746,7 @@ package body Sem_Ch13 is
 
             elsif Nkind (Ritem) = N_Aspect_Specification
               and then Present (Aspect_Rep_Item (Ritem))
-              and then Scope (Typ) /= Current_Scope
+              and then Scope_Depth (Scope (Typ)) > Scope_Depth (Current_Scope)
             then
                declare
                   Prag : constant Node_Id := Aspect_Rep_Item (Ritem);
