@@ -5829,8 +5829,8 @@ package body Sem_Ch3 is
                Target_Index := First_Index (Indic_Typ);
 
                while Present (Subt_Index) loop
-                  if ((Nkind (Subt_Index) = N_Identifier
-                        and then Ekind (Entity (Subt_Index)) in Scalar_Kind)
+                  if ((Nkind (Subt_Index) in N_Expanded_Name | N_Identifier
+                        and then Is_Scalar_Type (Entity (Subt_Index)))
                        or else Nkind (Subt_Index) = N_Subtype_Indication)
                     and then
                       Nkind (Scalar_Range (Etype (Subt_Index))) = N_Range
