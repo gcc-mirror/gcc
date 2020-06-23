@@ -202,7 +202,7 @@ static void checkModFileAlias(OutBuffer *buf, OutBuffer *dotmods,
         const char *m = (*ms)[j];
         const char *q = strchr(m, '=');
         assert(q);
-        if (dotmods->offset <= (size_t)(q - m) && memcmp(dotmods->peekChars(), m, q - m) == 0)
+        if (dotmods->length() <= (size_t)(q - m) && memcmp(dotmods->peekChars(), m, q - m) == 0)
         {
             buf->reset();
             size_t qlen = strlen(q + 1);
@@ -398,7 +398,7 @@ Module *Module::parse()
                         dbuf.writeByte(u);
                 }
                 dbuf.writeByte(0);              // add 0 as sentinel for scanner
-                buflen = dbuf.offset - 1;       // don't include sentinel in count
+                buflen = dbuf.length() - 1;     // don't include sentinel in count
                 buf = (utf8_t *) dbuf.extractData();
             }
             else
@@ -451,7 +451,7 @@ Module *Module::parse()
                         dbuf.writeByte(u);
                 }
                 dbuf.writeByte(0);              // add 0 as sentinel for scanner
-                buflen = dbuf.offset - 1;       // don't include sentinel in count
+                buflen = dbuf.length() - 1;     // don't include sentinel in count
                 buf = (utf8_t *) dbuf.extractData();
             }
         }

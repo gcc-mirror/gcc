@@ -43,18 +43,18 @@ public:
 
     void indent()
     {
-        if (buf->offset >= 1 &&
-            buf->data[buf->offset - 1] == '\n')
+        if (buf->length() >= 1 &&
+            buf->slice().ptr[buf->length() - 1] == '\n')
             for (int i = 0; i < indentLevel; i++)
                 buf->writeByte(' ');
     }
 
     void removeComma()
     {
-        if (buf->offset >= 2 &&
-            buf->data[buf->offset - 2] == ',' &&
-            (buf->data[buf->offset - 1] == '\n' || buf->data[buf->offset - 1] == ' '))
-            buf->offset -= 2;
+        if (buf->length() >= 2 &&
+            buf->slice().ptr[buf->length() - 2] == ',' &&
+            (buf->slice().ptr[buf->length() - 1] == '\n' || buf->slice().ptr[buf->length() - 1] == ' '))
+            buf->setsize(buf->length() - 2);
     }
 
     void comma()
@@ -181,12 +181,12 @@ public:
     {
         indentLevel--;
         removeComma();
-        if (buf->offset >= 2 &&
-            buf->data[buf->offset - 2] == '[' &&
-            buf->data[buf->offset - 1] == '\n')
-            buf->offset -= 1;
-        else if (!(buf->offset >= 1 &&
-            buf->data[buf->offset - 1] == '['))
+        if (buf->length() >= 2 &&
+            buf->slice().ptr[buf->length() - 2] == '[' &&
+            buf->slice().ptr[buf->length() - 1] == '\n')
+            buf->setsize(buf->length() - 1);
+        else if (!(buf->length() >= 1 &&
+            buf->slice().ptr[buf->length() - 1] == '['))
         {
             buf->writestring("\n");
             indent();
@@ -209,10 +209,10 @@ public:
     {
         indentLevel--;
         removeComma();
-        if (buf->offset >= 2 &&
-            buf->data[buf->offset - 2] == '{' &&
-            buf->data[buf->offset - 1] == '\n')
-            buf->offset -= 1;
+        if (buf->length() >= 2 &&
+            buf->slice().ptr[buf->length() - 2] == '{' &&
+            buf->slice().ptr[buf->length() - 1] == '\n')
+            buf->setsize(buf->length() - 1);
         else
         {
             buf->writestring("\n");

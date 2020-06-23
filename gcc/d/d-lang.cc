@@ -1043,7 +1043,7 @@ d_parse_file (void)
 	      buf.writestring (s);
 	    }
 
-	  message ("%.*s", (int) buf.offset, (char *) buf.data);
+	  message ("%s", buf.peekChars ());
 	}
     }
 
@@ -1361,7 +1361,7 @@ d_parse_file (void)
 	  buf.doindent = 1;
 
 	  moduleToBuffer (&buf, m);
-	  message ("%.*s", (int) buf.offset, (char *) buf.data);
+	  message ("%s", buf.peekChars ());
 	}
     }
 

@@ -1758,7 +1758,7 @@ Expression *castTo(Expression *e, Scope *sc, Type *t)
                         else
                             buffer.writeUTF16(c);
                     }
-                    newlen = buffer.offset / 2;
+                    newlen = buffer.length() / 2;
                     buffer.writeUTF16(0);
                     goto L1;
 
@@ -1785,7 +1785,7 @@ Expression *castTo(Expression *e, Scope *sc, Type *t)
                         else
                             buffer.writeUTF8(c);
                     }
-                    newlen = buffer.offset;
+                    newlen = buffer.length();
                     buffer.writeUTF8(0);
                     goto L1;
 
@@ -1812,7 +1812,7 @@ Expression *castTo(Expression *e, Scope *sc, Type *t)
                             buffer.writeUTF8(c);
                         newlen++;
                     }
-                    newlen = buffer.offset;
+                    newlen = buffer.length();
                     buffer.writeUTF8(0);
                     goto L1;
 
@@ -1826,7 +1826,7 @@ Expression *castTo(Expression *e, Scope *sc, Type *t)
                             buffer.writeUTF16(c);
                         newlen++;
                     }
-                    newlen = buffer.offset / 2;
+                    newlen = buffer.length() / 2;
                     buffer.writeUTF16(0);
                     goto L1;
 

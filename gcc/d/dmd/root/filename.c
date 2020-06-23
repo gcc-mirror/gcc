@@ -8,7 +8,7 @@
 
 #include "dsystem.h"
 #include "filename.h"
-
+#include "port.h"
 #include "outbuffer.h"
 #include "array.h"
 #include "file.h"
@@ -111,7 +111,7 @@ Strings *FileName::splitPath(const char *path)
                     {
                         char *home = getenv("HOME");
                         // Expand ~ only if it is prefixing the rest of the path.
-                        if (!buf.offset && p[1] == '/' && home)
+                        if (!buf.length() && p[1] == '/' && home)
                             buf.writestring(home);
                         else
                             buf.writestring("~");
@@ -125,7 +125,7 @@ Strings *FileName::splitPath(const char *path)
                 }
                 break;
             }
-            if (buf.offset)             // if path is not empty
+            if (buf.length())             // if path is not empty
             {
                 array->push(buf.extractChars());
             }
