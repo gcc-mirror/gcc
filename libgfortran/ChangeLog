@@ -1,3 +1,8 @@
+2020-06-22  David Edelsohn  <dje.gcc@gmail.com>
+
+	* Makefile.am: Use -include.
+	* Makefile.in: Regenerate.
+
 2020-06-21  David Edelsohn  <dje.gcc@gmail.com>
 
 	* Makefile.am (tmake_file): Build and install AIX-style FAT libraries.
