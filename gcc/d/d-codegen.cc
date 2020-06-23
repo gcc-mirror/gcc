@@ -2507,15 +2507,11 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
 	    {
 	      VarDeclaration *v = (*fd->parameters)[i];
 	      /* Remove if already in closureVars so can push to front.  */
-	      for (size_t j = i; j < fd->closureVars.length; j++)
-		{
-		  Dsymbol *s = fd->closureVars[j];
-		  if (s == v)
-		    {
-		      fd->closureVars.remove (j);
-		      break;
-		    }
-		}
+	      size_t j = fd->closureVars.find (v);
+
+	      if (j < fd->closureVars.length)
+		fd->closureVars.remove (j);
+
 	      fd->closureVars.insert (i, v);
 	    }
 	}
@@ -2523,15 +2519,11 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
       /* Also add hidden `this' to outer context.  */
       if (fd->vthis)
 	{
-	  for (size_t i = 0; i < fd->closureVars.length; i++)
-	    {
-	      Dsymbol *s = fd->closureVars[i];
-	      if (s == fd->vthis)
-		{
-		  fd->closureVars.remove (i);
-		  break;
-		}
-	    }
+	  size_t i = fd->closureVars.find (fd->vthis);
+
+	  if (i < fd->closureVars.length)
+	    fd->closureVars.remove (i);
+
 	  fd->closureVars.insert (0, fd->vthis);
 	}
     }
