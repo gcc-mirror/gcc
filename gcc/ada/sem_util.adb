@@ -7825,18 +7825,9 @@ package body Sem_Util is
          Set_Etype (Def_Id, Any_Type);
       end if;
 
-      --  Inherited discriminants and components in derived record types are
-      --  immediately visible. Itypes are not.
+      --  All entities except Itypes are immediately visible
 
-      --  Unless the Itype is for a record type with a corresponding remote
-      --  type (what is that about, it was not commented ???)
-
-      if Ekind (Def_Id) in E_Discriminant | E_Component
-        or else
-          ((not Is_Record_Type (Def_Id)
-             or else No (Corresponding_Remote_Type (Def_Id)))
-            and then not Is_Itype (Def_Id))
-      then
+      if not Is_Itype (Def_Id) then
          Set_Is_Immediately_Visible (Def_Id);
          Set_Current_Entity         (Def_Id);
       end if;
