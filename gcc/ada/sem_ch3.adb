@@ -5279,8 +5279,8 @@ package body Sem_Ch3 is
      (N    : Node_Id;
       Skip : Boolean := False)
    is
-      Id       : constant Entity_Id := Defining_Identifier (N);
-      T        : Entity_Id;
+      Id : constant Entity_Id := Defining_Identifier (N);
+      T  : Entity_Id;
 
    begin
       Generate_Definition (Id);
@@ -19374,18 +19374,23 @@ package body Sem_Ch3 is
          Set_Scalar_Range   (Def_Id, R);
          Conditional_Delay  (Def_Id, T);
 
+         --  In the subtype indication case inherit properties of the parent
+
          if Nkind (N) = N_Subtype_Indication then
+
+            --  It is enough to inherit predicate flags and not the predicate
+            --  functions, because predicates on an index type are illegal
+            --  anyway and the flags are enough to detect them.
+
             Inherit_Predicate_Flags (Def_Id, Entity (Subtype_Mark (N)));
-         end if;
 
-         --  In the subtype indication case, if the immediate parent of the
-         --  new subtype is nonstatic, then the subtype we create is nonstatic,
-         --  even if its bounds are static.
+            --  If the immediate parent of the new subtype is nonstatic, then
+            --  the subtype we create is nonstatic as well, even if its bounds
+            --  are static.
 
-         if Nkind (N) = N_Subtype_Indication
-           and then not Is_OK_Static_Subtype (Entity (Subtype_Mark (N)))
-         then
-            Set_Is_Non_Static_Subtype (Def_Id);
+            if not Is_OK_Static_Subtype (Entity (Subtype_Mark (N))) then
+               Set_Is_Non_Static_Subtype (Def_Id);
+            end if;
          end if;
       end if;
 
