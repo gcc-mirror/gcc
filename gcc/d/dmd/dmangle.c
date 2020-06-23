@@ -262,7 +262,7 @@ public:
 
         // Write argument types
         paramsToDecoBuffer(t->parameterList.parameters);
-        //if (buf->data[buf->offset - 1] == '@') halt();
+        //if (buf->slice().ptr[buf->length() - 1] == '@') halt();
         buf->writeByte('Z' - t->parameterList.varargs);   // mark end of arg list
         if (tret != NULL)
             visitWithMask(tret, 0);
@@ -308,7 +308,7 @@ public:
         Mangler v(&buf2);
         v.paramsToDecoBuffer(t->arguments);
         const char *s = buf2.peekChars();
-        int len = (int)buf2.offset;
+        int len = (int)buf2.length();
         buf->printf("%d%.*s", len, len, s);
     }
 
@@ -716,8 +716,8 @@ public:
                     else
                         tmp.writeUTF8(c);
                 }
-                q = (utf8_t *)tmp.data;
-                qlen = tmp.offset;
+                q = (utf8_t *)tmp.slice().ptr;
+                qlen = tmp.length();
                 break;
 
             case 4:
@@ -730,8 +730,8 @@ public:
                     else
                         tmp.writeUTF8(c);
                 }
-                q = (utf8_t *)tmp.data;
-                qlen = tmp.offset;
+                q = (utf8_t *)tmp.slice().ptr;
+                qlen = tmp.length();
                 break;
 
             default:
@@ -741,7 +741,7 @@ public:
         buf->writeByte(m);
         buf->printf("%d_", (int)qlen); // nbytes <= 11
 
-        for (utf8_t *p = (utf8_t *)buf->data + buf->offset, *pend = p + 2 * qlen;
+        for (utf8_t *p = (utf8_t *)buf->slice().ptr + buf->length(), *pend = p + 2 * qlen;
              p < pend; p += 2, ++q)
         {
             utf8_t hi = *q >> 4 & 0xF;
@@ -749,7 +749,7 @@ public:
             utf8_t lo = *q & 0xF;
             p[1] = (utf8_t)(lo < 10 ? lo + '0' : lo - 10 + 'a');
         }
-        buf->offset += 2 * qlen;
+        buf->setsize(buf->length() + 2 * qlen);
     }
 
     void visit(ArrayLiteralExp *e)

@@ -9,28 +9,26 @@
 #pragma once
 
 #include "dsystem.h"
-#include "port.h"
+#include "dcompat.h"
 #include "rmem.h"
 
 class RootObject;
 
 struct OutBuffer
 {
-    unsigned char *data;
-    size_t offset;
-    size_t size;
-
-    int level;
-    bool doindent;
 private:
+    DArray<unsigned char> data;
+    size_t offset;
     bool notlinehead;
 public:
 
+    int level;
+    bool doindent;
+
     OutBuffer()
     {
-        data = NULL;
+        data = DArray<unsigned char>();
         offset = 0;
-        size = 0;
 
         doindent = 0;
         level = 0;
@@ -38,15 +36,16 @@ public:
     }
     ~OutBuffer()
     {
-        mem.xfree(data);
+        mem.xfree(data.ptr);
     }
+    const DArray<unsigned char> slice() const { return data; }
+    d_size_t length() const { return offset; }
     char *extractData();
 
     void reserve(size_t nbytes);
     void setsize(size_t size);
     void reset();
     void write(const void *data, d_size_t nbytes);
-    void writebstring(utf8_t *string);
     void writestring(const char *string);
     void prependstring(const char *string);
     void writenl();                     // write newline

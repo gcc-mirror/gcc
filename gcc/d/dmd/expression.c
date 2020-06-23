@@ -4430,7 +4430,7 @@ StringExp *ArrayLiteralExp::toStringExp()
         else if (sz == 2) { prefix = 'w'; buf.writeword(0); }
         else              { prefix = 'd'; buf.write4(0); }
 
-        const size_t len = buf.offset / sz - 1;
+        const size_t len = buf.length() / sz - 1;
         StringExp *se = new StringExp(loc, buf.extractData(), len, prefix);
         se->sz = sz;
         se->type = type;

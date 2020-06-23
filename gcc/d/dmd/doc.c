@@ -365,7 +365,7 @@ void gendocfile(Module *m)
             mbuf.write(file.buffer, file.len);
         }
     }
-    DocComment::parseMacros(&m->escapetable, &m->macrotable, (utf8_t *)mbuf.data, mbuf.offset);
+    DocComment::parseMacros(&m->escapetable, &m->macrotable, (utf8_t *)mbuf.slice().ptr, mbuf.length());
 
     Scope *sc = Scope::createGlobal(m);      // create root scope
 
@@ -427,12 +427,12 @@ void gendocfile(Module *m)
         emitMemberComments(m, &buf, sc);
     }
 
-    //printf("BODY= '%.*s'\n", buf.offset, buf.data);
-    Macro::define(&m->macrotable, (const utf8_t *)"BODY", 4, (const utf8_t *)buf.data, buf.offset);
+    //printf("BODY= '%.*s'\n", buf.length(), buf.slice().ptr);
+    Macro::define(&m->macrotable, (const utf8_t *)"BODY", 4, (const utf8_t *)buf.slice().ptr, buf.length());
 
     OutBuffer buf2;
     buf2.writestring("$(DDOC)\n");
-    size_t end = buf2.offset;
+    size_t end = buf2.length();
     m->macrotable->expand(&buf2, 0, &end, NULL, 0);
 
     /* Remove all the escape sequences from buf2,
@@ -440,12 +440,12 @@ void gendocfile(Module *m)
      */
     {
         buf.setsize(0);
-        buf.reserve(buf2.offset);
-        utf8_t *p = (utf8_t *)buf2.data;
-        for (size_t j = 0; j < buf2.offset; j++)
+        buf.reserve(buf2.length());
+        utf8_t *p = (utf8_t *)buf2.slice().ptr;
+        for (size_t j = 0; j < buf2.length(); j++)
         {
             utf8_t c = p[j];
-            if (c == 0xFF && j + 1 < buf2.offset)
+            if (c == 0xFF && j + 1 < buf2.length())
             {
                 j++;
                 continue;
@@ -455,7 +455,7 @@ void gendocfile(Module *m)
             else if (c == '\r')
             {
                 buf.writestring("\r\n");
-                if (j + 1 < buf2.offset && p[j + 1] == '\n')
+                if (j + 1 < buf2.length() && p[j + 1] == '\n')
                 {
                     j++;
                 }
@@ -467,7 +467,7 @@ void gendocfile(Module *m)
 
     // Transfer image to file
     assert(m->docfile);
-    m->docfile->setbuffer(buf.data, buf.offset);
+    m->docfile->setbuffer(buf.slice().ptr, buf.length());
     m->docfile->ref = 1;
     ensurePathToNameExists(Loc(), m->docfile->toChars());
     writeFile(m->loc, m->docfile);
@@ -482,9 +482,9 @@ void gendocfile(Module *m)
  */
 void escapeDdocString(OutBuffer *buf, size_t start)
 {
-    for (size_t u = start; u < buf->offset; u++)
+    for (size_t u = start; u < buf->length(); u++)
     {
-        utf8_t c = buf->data[u];
+        utf8_t c = buf->slice().ptr[u];
         switch(c)
         {
             case '$':
@@ -518,9 +518,9 @@ void escapeStrayParenthesis(Loc loc, OutBuffer *buf, size_t start)
 {
     unsigned par_open = 0;
 
-    for (size_t u = start; u < buf->offset; u++)
+    for (size_t u = start; u < buf->length(); u++)
     {
-        utf8_t c = buf->data[u];
+        utf8_t c = buf->slice().ptr[u];
         switch(c)
         {
             case '(':
@@ -546,10 +546,10 @@ void escapeStrayParenthesis(Loc loc, OutBuffer *buf, size_t start)
     if (par_open)                       // if any unmatched lparens
     {
         par_open = 0;
-        for (size_t u = buf->offset; u > start;)
+        for (size_t u = buf->length(); u > start;)
         {
             u--;
-            utf8_t c = buf->data[u];
+            utf8_t c = buf->slice().ptr[u];
             switch(c)
             {
                 case ')':
@@ -699,9 +699,9 @@ void emitMemberComments(ScopeDsymbol *sds, OutBuffer *buf, Scope *sc)
     else if (sds->isModule())
         m = "$(DDOC_MODULE_MEMBERS ";
 
-    size_t offset1 = buf->offset;         // save starting offset
+    size_t offset1 = buf->length();         // save starting offset
     buf->writestring(m);
-    size_t offset2 = buf->offset;         // to see if we write anything
+    size_t offset2 = buf->length();         // to see if we write anything
 
     sc = sc->push(sds);
 
@@ -720,11 +720,11 @@ void emitMemberComments(ScopeDsymbol *sds, OutBuffer *buf, Scope *sc)
 
     sc->pop();
 
-    if (buf->offset == offset2)
+    if (buf->length() == offset2)
     {
         /* Didn't write out any members, so back out last write
          */
-        buf->offset = offset1;
+        buf->setsize(offset1);
     }
     else
         buf->writestring(")\n");
@@ -780,7 +780,7 @@ void emitComment(Dsymbol *s, OutBuffer *buf, Scope *sc)
 
                     if (i == 0)
                     {
-                        size_t o = buf->offset;
+                        size_t o = buf->length();
                         toDocBuffer(sx, buf, sc);
                         highlightCode(sc, sx, buf, o);
                         continue;
@@ -788,7 +788,7 @@ void emitComment(Dsymbol *s, OutBuffer *buf, Scope *sc)
 
                     buf->writestring("$(DDOC_DITTO ");
                     {
-                        size_t o = buf->offset;
+                        size_t o = buf->length();
                         toDocBuffer(sx, buf, sc);
                         highlightCode(sc, sx, buf, o);
                     }
@@ -804,7 +804,7 @@ void emitComment(Dsymbol *s, OutBuffer *buf, Scope *sc)
                         emitMemberComments(sds, buf, sc);
                 }
                 buf->writestring(ddoc_decl_dd_e);
-                //printf("buf.2 = [[%.*s]]\n", buf->offset - o0, buf->data + o0);
+                //printf("buf.2 = [[%.*s]]\n", buf->length() - o0, buf->slice().ptr + o0);
             }
 
             if (s)
@@ -1454,9 +1454,9 @@ void DocComment::writeSections(Scope *sc, Dsymbols *a, OutBuffer *buf)
             loc = m->md->loc;
     }
 
-    size_t offset1 = buf->offset;
+    size_t offset1 = buf->length();
     buf->writestring("$(DDOC_SECTIONS ");
-    size_t offset2 = buf->offset;
+    size_t offset2 = buf->length();
 
     for (size_t i = 0; i < sections.length; i++)
     {
@@ -1468,7 +1468,7 @@ void DocComment::writeSections(Scope *sc, Dsymbols *a, OutBuffer *buf)
         if (!sec->namelen && i == 0)
         {
             buf->writestring("$(DDOC_SUMMARY ");
-            size_t o = buf->offset;
+            size_t o = buf->length();
             buf->write(sec->body, sec->bodylen);
             escapeStrayParenthesis(loc, buf, o);
             highlightText(sc, a, buf, o);
@@ -1495,7 +1495,7 @@ void DocComment::writeSections(Scope *sc, Dsymbols *a, OutBuffer *buf)
 
             buf->writestring("$(DDOC_EXAMPLES ");
 
-            size_t o = buf->offset;
+            size_t o = buf->length();
             buf->writestring((const char *)c);
 
             if (utd->codedoc)
@@ -1512,11 +1512,11 @@ void DocComment::writeSections(Scope *sc, Dsymbols *a, OutBuffer *buf)
         }
     }
 
-    if (buf->offset == offset2)
+    if (buf->length() == offset2)
     {
         /* Didn't write out any sections, so back out last write
          */
-        buf->offset = offset1;
+        buf->setsize(offset1);
         buf->writestring("$(DDOC_BLANKLINE)\n");
     }
     else
@@ -1553,7 +1553,7 @@ void Section::write(Loc loc, DocComment *, Scope *sc, Dsymbols *a, OutBuffer *bu
 
             // Replace _ characters with spaces
             buf->writestring("$(DDOC_SECTION_H ");
-            size_t o = buf->offset;
+            size_t o = buf->length();
             for (size_t u = 0; u < namelen; u++)
             {
                 utf8_t c = name[u];
@@ -1567,7 +1567,7 @@ void Section::write(Loc loc, DocComment *, Scope *sc, Dsymbols *a, OutBuffer *bu
         buf->writestring("$(DDOC_DESCRIPTION ");
     }
   L1:
-    size_t o = buf->offset;
+    size_t o = buf->length();
     buf->write(body, bodylen);
     escapeStrayParenthesis(loc, buf, o);
     highlightText(sc, a, buf, o);
@@ -1655,7 +1655,7 @@ void ParamSection::write(Loc loc, DocComment *, Scope *sc, Dsymbols *a, OutBuffe
             {
                 buf->writestring("$(DDOC_PARAM_ID ");
                 {
-                    size_t o = buf->offset;
+                    size_t o = buf->length();
                     Parameter *fparam = isFunctionParameter(a, namestart, namelen);
                     if (!fparam)
                     {
@@ -1692,7 +1692,7 @@ void ParamSection::write(Loc loc, DocComment *, Scope *sc, Dsymbols *a, OutBuffe
 
                 buf->writestring("$(DDOC_PARAM_DESC ");
                 {
-                    size_t o = buf->offset;
+                    size_t o = buf->length();
                     buf->write(textstart, textlen);
                     escapeStrayParenthesis(loc, buf, o);
                     highlightText(sc, a, buf, o);
@@ -1999,12 +1999,12 @@ const utf8_t *skipwhitespace(const utf8_t *p)
 
 size_t skiptoident(OutBuffer *buf, size_t i)
 {
-    while (i < buf->offset)
+    while (i < buf->length())
     {
         dchar_t c;
 
         size_t oi = i;
-        if (utf_decodeChar((utf8_t *)buf->data, buf->offset, &i, &c))
+        if (utf_decodeChar((utf8_t *)buf->slice().ptr, buf->length(), &i, &c))
         {
             /* Ignore UTF errors, but still consume input
              */
@@ -2029,12 +2029,12 @@ size_t skiptoident(OutBuffer *buf, size_t i)
 
 size_t skippastident(OutBuffer *buf, size_t i)
 {
-    while (i < buf->offset)
+    while (i < buf->length())
     {
         dchar_t c;
 
         size_t oi = i;
-        if (utf_decodeChar((utf8_t *)buf->data, buf->offset, &i, &c))
+        if (utf_decodeChar((utf8_t *)buf->slice().ptr, buf->length(), &i, &c))
         {
             /* Ignore UTF errors, but still consume input
              */
@@ -2064,8 +2064,8 @@ size_t skippastident(OutBuffer *buf, size_t i)
 
 size_t skippastURL(OutBuffer *buf, size_t i)
 {
-    size_t length = buf->offset - i;
-    utf8_t *p = (utf8_t *)&buf->data[i];
+    size_t length = buf->length() - i;
+    utf8_t *p = (utf8_t *)&buf->slice().ptr[i];
     size_t j;
     unsigned sawdot = 0;
 
@@ -2236,9 +2236,9 @@ void highlightText(Scope *sc, Dsymbols *a, OutBuffer *buf, size_t offset)
 
     size_t iLineStart = offset;
 
-    for (size_t i = offset; i < buf->offset; i++)
+    for (size_t i = offset; i < buf->length(); i++)
     {
-        utf8_t c = buf->data[i];
+        utf8_t c = buf->slice().ptr[i];
 
      Lcont:
         switch (c)
@@ -2265,7 +2265,7 @@ void highlightText(Scope *sc, Dsymbols *a, OutBuffer *buf, size_t offset)
                 }
 
                 if (!sc->_module->isDocFile &&
-                    !inCode && i == iLineStart && i + 1 < buf->offset)    // if "\n\n"
+                    !inCode && i == iLineStart && i + 1 < buf->length())    // if "\n\n"
                 {
                     static const char blankline[] = "$(DDOC_BLANKLINE)\n";
 
@@ -2280,7 +2280,7 @@ void highlightText(Scope *sc, Dsymbols *a, OutBuffer *buf, size_t offset)
                 leadingBlank = 0;
                 if (inCode)
                     break;
-                utf8_t *p = (utf8_t *)&buf->data[i];
+                utf8_t *p = (utf8_t *)&buf->slice().ptr[i];
                 const char *se = sc->_module->escapetable->escapeChar('<');
                 if (se && strcmp(se, "&lt;") == 0)
                 {
@@ -2292,7 +2292,7 @@ void highlightText(Scope *sc, Dsymbols *a, OutBuffer *buf, size_t offset)
                         p += 4;
                         while (1)
                         {
-                            if (j == buf->offset)
+                            if (j == buf->length())
                                 goto L1;
                             if (p[0] == '-' && p[1] == '-' && p[2] == '>')
                             {
@@ -2312,7 +2312,7 @@ void highlightText(Scope *sc, Dsymbols *a, OutBuffer *buf, size_t offset)
                         p += 2;
                         while (1)
                         {
-                            if (j == buf->offset)
+                            if (j == buf->length())
                                 break;
                             if (p[0] == '>')
                             {
@@ -2357,7 +2357,7 @@ void highlightText(Scope *sc, Dsymbols *a, OutBuffer *buf, size_t offset)
                 leadingBlank = 0;
                 if (inCode)
                     break;
-                utf8_t *p = (utf8_t *)&buf->data[i];
+                utf8_t *p = (utf8_t *)&buf->slice().ptr[i];
                 if (p[1] == '#' || isalpha(p[1]))
                     break;                      // already a character entity
                 // Replace '&' with '&amp;' character entity
@@ -2380,7 +2380,7 @@ void highlightText(Scope *sc, Dsymbols *a, OutBuffer *buf, size_t offset)
 
                     OutBuffer codebuf;
 
-                    codebuf.write(buf->data + iCodeStart + 1, i - (iCodeStart + 1));
+                    codebuf.write(buf->slice().ptr + iCodeStart + 1, i - (iCodeStart + 1));
 
                     // escape the contents, but do not perform highlighting except for DDOC_PSYMBOL
                     highlightCode(sc, a, &codebuf, 0);
@@ -2389,7 +2389,7 @@ void highlightText(Scope *sc, Dsymbols *a, OutBuffer *buf, size_t offset)
 
                     static const char pre[] = "$(DDOC_BACKQUOTED ";
                     i = buf->insert(iCodeStart, pre, strlen(pre));
-                    i = buf->insert(i, (char *)codebuf.data, codebuf.offset);
+                    i = buf->insert(i, (char *)codebuf.slice().ptr, codebuf.length());
                     i = buf->insert(i, ")", 1);
 
                     i--; // point to the ending ) so when the for loop does i++, it will see the next character
@@ -2425,9 +2425,9 @@ void highlightText(Scope *sc, Dsymbols *a, OutBuffer *buf, size_t offset)
                     while (1)
                     {
                         ++i;
-                        if (i >= buf->offset)
+                        if (i >= buf->length())
                             break;
-                        c = buf->data[i];
+                        c = buf->slice().ptr[i];
                         if (c == '\n')
                         {
                             eollen = 1;
@@ -2436,9 +2436,9 @@ void highlightText(Scope *sc, Dsymbols *a, OutBuffer *buf, size_t offset)
                         if (c == '\r')
                         {
                             eollen = 1;
-                            if (i + 1 >= buf->offset)
+                            if (i + 1 >= buf->length())
                                 break;
-                            if (buf->data[i + 1] == '\n')
+                            if (buf->slice().ptr[i + 1] == '\n')
                             {
                                 eollen = 2;
                                 break;
@@ -2470,13 +2470,13 @@ void highlightText(Scope *sc, Dsymbols *a, OutBuffer *buf, size_t offset)
                         // The code section is from iCodeStart to i
                         OutBuffer codebuf;
 
-                        codebuf.write(buf->data + iCodeStart, i - iCodeStart);
+                        codebuf.write(buf->slice().ptr + iCodeStart, i - iCodeStart);
                         codebuf.writeByte(0);
 
                         // Remove leading indentations from all lines
                         bool lineStart = true;
-                        utf8_t *endp = (utf8_t *)codebuf.data + codebuf.offset;
-                        for (utf8_t *p = (utf8_t *)codebuf.data; p < endp; )
+                        utf8_t *endp = (utf8_t *)codebuf.slice().ptr + codebuf.length();
+                        for (utf8_t *p = (utf8_t *)codebuf.slice().ptr; p < endp; )
                         {
                             if (lineStart)
                             {
@@ -2484,11 +2484,11 @@ void highlightText(Scope *sc, Dsymbols *a, OutBuffer *buf, size_t offset)
                                 utf8_t *q = p;
                                 while (j-- > 0 && q < endp && isIndentWS(q))
                                     ++q;
-                                codebuf.remove(p - (utf8_t *)codebuf.data, q - p);
-                                assert((utf8_t *)codebuf.data <= p);
-                                assert(p < (utf8_t *)codebuf.data + codebuf.offset);
+                                codebuf.remove(p - (utf8_t *)codebuf.slice().ptr, q - p);
+                                assert((utf8_t *)codebuf.slice().ptr <= p);
+                                assert(p < (utf8_t *)codebuf.slice().ptr + codebuf.length());
                                 lineStart = false;
-                                endp = (utf8_t *)codebuf.data + codebuf.offset; // update
+                                endp = (utf8_t *)codebuf.slice().ptr + codebuf.length(); // update
                                 continue;
                             }
                             if (*p == '\n')
@@ -2498,7 +2498,7 @@ void highlightText(Scope *sc, Dsymbols *a, OutBuffer *buf, size_t offset)
 
                         highlightCode2(sc, a, &codebuf, 0);
                         buf->remove(iCodeStart, i - iCodeStart);
-                        i = buf->insert(iCodeStart, codebuf.data, codebuf.offset);
+                        i = buf->insert(iCodeStart, codebuf.slice().ptr, codebuf.length());
                         i = buf->insert(i, (const char *)")\n", 2);
                         i -= 2; // in next loop, c should be '\n'
                     }
@@ -2521,7 +2521,7 @@ void highlightText(Scope *sc, Dsymbols *a, OutBuffer *buf, size_t offset)
                 if (sc->_module->isDocFile || inCode)
                     break;
 
-                utf8_t *start = (utf8_t *)buf->data + i;
+                utf8_t *start = (utf8_t *)buf->slice().ptr + i;
                 if (isIdStart(start))
                 {
                     size_t j = skippastident(buf, i);
@@ -2541,7 +2541,7 @@ void highlightText(Scope *sc, Dsymbols *a, OutBuffer *buf, size_t offset)
                     // leading '_' means no highlight unless it's a reserved symbol name
                     if (c == '_' &&
                         (i == 0 || !isdigit(*(start - 1))) &&
-                        (i == buf->offset - 1 || !isReservedName(start, len)))
+                        (i == buf->length() - 1 || !isReservedName(start, len)))
                     {
                         buf->remove(i, 1);
                         i = j - 1;
@@ -2582,8 +2582,8 @@ void highlightCode(Scope *sc, Dsymbol *s, OutBuffer *buf, size_t offset)
     //printf("highlightCode(s = %s '%s')\n", s->kind(), s->toChars());
     OutBuffer ancbuf;
     emitAnchor(&ancbuf, s, sc);
-    buf->insert(offset, (char *)ancbuf.data, ancbuf.offset);
-    offset += ancbuf.offset;
+    buf->insert(offset, (char *)ancbuf.slice().ptr, ancbuf.length());
+    offset += ancbuf.length();
 
     Dsymbols a;
     a.push(s);
@@ -2597,9 +2597,9 @@ void highlightCode(Scope *sc, Dsymbols *a, OutBuffer *buf, size_t offset)
 {
     //printf("highlightCode(a = '%s')\n", a->toChars());
 
-    for (size_t i = offset; i < buf->offset; i++)
+    for (size_t i = offset; i < buf->length(); i++)
     {
-        utf8_t c = buf->data[i];
+        utf8_t c = buf->slice().ptr[i];
         const char *se = sc->_module->escapetable->escapeChar(c);
         if (se)
         {
@@ -2610,7 +2610,7 @@ void highlightCode(Scope *sc, Dsymbols *a, OutBuffer *buf, size_t offset)
             continue;
         }
 
-        utf8_t *start = (utf8_t *)buf->data + i;
+        utf8_t *start = (utf8_t *)buf->slice().ptr + i;
         if (isIdStart(start))
         {
             size_t j = skippastident(buf, i);
@@ -2656,12 +2656,12 @@ void highlightCode3(Scope *sc, OutBuffer *buf, const utf8_t *p, const utf8_t *pe
 void highlightCode2(Scope *sc, Dsymbols *a, OutBuffer *buf, size_t offset)
 {
     unsigned errorsave = global.errors;
-    Lexer lex(NULL, (utf8_t *)buf->data, 0, buf->offset - 1, 0, 1);
+    Lexer lex(NULL, (utf8_t *)buf->slice().ptr, 0, buf->length() - 1, 0, 1);
     OutBuffer res;
-    const utf8_t *lastp = (utf8_t *)buf->data;
+    const utf8_t *lastp = (utf8_t *)buf->slice().ptr;
 
-    //printf("highlightCode2('%.*s')\n", buf->offset - 1, buf->data);
-    res.reserve(buf->offset);
+    //printf("highlightCode2('%.*s')\n", buf->length() - 1, buf->slice().ptr);
+    res.reserve(buf->length());
     while (1)
     {
         Token tok;
@@ -2705,7 +2705,7 @@ void highlightCode2(Scope *sc, Dsymbols *a, OutBuffer *buf, size_t offset)
         if (highlight)
         {
             res.writestring(highlight);
-            size_t o = res.offset;
+            size_t o = res.length();
             highlightCode3(sc, &res, tok.ptr, lex.p);
             if (tok.value == TOKcomment || tok.value == TOKstring)
                 escapeDdocString(&res, o);  // Bugzilla 7656, 7715, and 10519
