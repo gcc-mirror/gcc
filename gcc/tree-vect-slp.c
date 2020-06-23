@@ -1915,6 +1915,25 @@ vect_find_last_scalar_stmt_in_slp (slp_tree node)
   return last;
 }
 
+/* Find the first stmt in NODE.  */
+
+stmt_vec_info
+vect_find_first_scalar_stmt_in_slp (slp_tree node)
+{
+  stmt_vec_info first = NULL;
+  stmt_vec_info stmt_vinfo;
+
+  for (int i = 0; SLP_TREE_SCALAR_STMTS (node).iterate (i, &stmt_vinfo); i++)
+    {
+      stmt_vinfo = vect_orig_stmt (stmt_vinfo);
+      if (!first
+	  || get_later_stmt (stmt_vinfo, first) == first)
+	first = stmt_vinfo;
+    }
+
+  return first;
+}
+
 /* Splits a group of stores, currently beginning at FIRST_VINFO, into
    two groups: one (still beginning at FIRST_VINFO) of size GROUP1_SIZE
    (also containing the first GROUP1_SIZE stmts, since stores are
@@ -4205,15 +4224,33 @@ vect_schedule_slp_instance (vec_info *vinfo,
 		     "------>vectorizing SLP node starting from: %G",
 		     stmt_info->stmt);
 
-  /* Vectorized stmts go before the last scalar stmt which is where
-     all uses are ready.  */
-  stmt_vec_info last_stmt_info = vect_find_last_scalar_stmt_in_slp (node);
-  if (last_stmt_info)
-    si = gsi_for_stmt (last_stmt_info->stmt);
+  if (STMT_VINFO_DATA_REF (stmt_info)
+      && SLP_TREE_CODE (node) != VEC_PERM_EXPR)
+    {
+      /* Vectorized loads go before the first scalar load to make it
+	 ready early, vectorized stores go before the last scalar
+	 stmt which is where all uses are ready.  */
+      stmt_vec_info last_stmt_info = NULL;
+      if (DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info)))
+	last_stmt_info = vect_find_first_scalar_stmt_in_slp (node);
+      else /* DR_IS_WRITE */
+	last_stmt_info = vect_find_last_scalar_stmt_in_slp (node);
+      si = gsi_for_stmt (last_stmt_info->stmt);
+    }
+  else if (SLP_TREE_CHILDREN (node).is_empty ())
+    /* This happens for reduction PHIs.  */
+    si = gsi_for_stmt (vect_find_last_scalar_stmt_in_slp (node)->stmt);
+  else if (stmt_vec_info first_stmt_info
+	     = vect_find_last_scalar_stmt_in_slp (node))
+    /* ???  Shifts by scalars hit us here again, we end up vectorizing
+       the shift operand but end up using the scalar operand anyway.
+       This needs to be better reflected in the SLP tree.  For now
+       use the last position if available.  */
+    si = gsi_for_stmt (first_stmt_info->stmt);
   else
     {
-      /* Or if we do not have 1:1 matching scalar stmts emit after the
-	 children vectorized defs.  */
+      /* Emit other stmts after the children vectorized defs which is
+	 earliest possible.  */
       gimple *last_stmt = NULL;
       FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
 	if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
