@@ -5880,7 +5880,16 @@ gnat_write_global_declarations (void)
 	  }
     }
 
-  /* Output debug information for all global type declarations first.  This
+  /* First output the integral global variables, so that they can be referenced
+     as bounds by the global dynamic types.  Skip external variables, unless we
+     really need to emit debug info for them:, e.g. imported variables.  */
+  FOR_EACH_VEC_SAFE_ELT (global_decls, i, iter)
+    if (TREE_CODE (iter) == VAR_DECL
+	&& INTEGRAL_TYPE_P (TREE_TYPE (iter))
+	&& (!DECL_EXTERNAL (iter) || !DECL_IGNORED_P (iter)))
+      rest_of_decl_compilation (iter, true, 0);
+
+  /* Now output debug information for the global type declarations.  This
      ensures that global types whose compilation hasn't been finalized yet,
      for example pointers to Taft amendment types, have their compilation
      finalized in the right context.  */
@@ -5888,7 +5897,20 @@ gnat_write_global_declarations (void)
     if (TREE_CODE (iter) == TYPE_DECL && !DECL_IGNORED_P (iter))
       debug_hooks->type_decl (iter, false);
 
-  /* Output imported functions.  */
+  /* Then output the other global variables.  We need to do that after the
+     information for global types is emitted so that they are finalized.  */
+  FOR_EACH_VEC_SAFE_ELT (global_decls, i, iter)
+    if (TREE_CODE (iter) == VAR_DECL
+	&& !INTEGRAL_TYPE_P (TREE_TYPE (iter))
+	&& (!DECL_EXTERNAL (iter) || !DECL_IGNORED_P (iter)))
+      rest_of_decl_compilation (iter, true, 0);
+
+  /* Output debug information for the global constants.  */
+  FOR_EACH_VEC_SAFE_ELT (global_decls, i, iter)
+    if (TREE_CODE (iter) == CONST_DECL && !DECL_IGNORED_P (iter))
+      debug_hooks->early_global_decl (iter);
+
+  /* Output it for the imported functions.  */
   FOR_EACH_VEC_SAFE_ELT (global_decls, i, iter)
     if (TREE_CODE (iter) == FUNCTION_DECL
 	&& DECL_EXTERNAL (iter)
@@ -5897,21 +5919,7 @@ gnat_write_global_declarations (void)
 	&& DECL_FUNCTION_IS_DEF (iter))
       debug_hooks->early_global_decl (iter);
 
-  /* Output global constants.  */
-  FOR_EACH_VEC_SAFE_ELT (global_decls, i, iter)
-    if (TREE_CODE (iter) == CONST_DECL && !DECL_IGNORED_P (iter))
-      debug_hooks->early_global_decl (iter);
-
-  /* Then output the global variables.  We need to do that after the debug
-     information for global types is emitted so that they are finalized.  Skip
-     external global variables, unless we need to emit debug info for them:
-     this is useful for imported variables, for instance.  */
-  FOR_EACH_VEC_SAFE_ELT (global_decls, i, iter)
-    if (TREE_CODE (iter) == VAR_DECL
-	&& (!DECL_EXTERNAL (iter) || !DECL_IGNORED_P (iter)))
-      rest_of_decl_compilation (iter, true, 0);
-
-  /* Output the imported modules/declarations.  In GNAT, these are only
+  /* Output it for the imported modules/declarations.  In GNAT, these are only
      materializing subprogram.  */
   FOR_EACH_VEC_SAFE_ELT (global_decls, i, iter)
    if (TREE_CODE (iter) == IMPORTED_DECL && !DECL_IGNORED_P (iter))
