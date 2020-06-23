@@ -525,13 +525,6 @@ do {						   \
 #define SET_DECL_INDUCTION_VAR(NODE, X) \
   SET_DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE), X)
 
-/* In a VAR_DECL without the DECL_LOOP_PARM_P flag set and that is a renaming
-   pointer, points to the object being renamed, if any.  */
-#define DECL_RENAMED_OBJECT(NODE) \
-  GET_DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))
-#define SET_DECL_RENAMED_OBJECT(NODE, X) \
-  SET_DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE), X)
-
 /* In a TYPE_DECL, points to the parallel type if any, otherwise 0.  */
 #define DECL_PARALLEL_TYPE(NODE) \
   GET_DECL_LANG_SPECIFIC (TYPE_DECL_CHECK (NODE))
