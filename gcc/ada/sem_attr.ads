@@ -311,6 +311,16 @@ package Sem_Attr is
       --  This attribute is identical to the Object_Size attribute. It is
       --  provided for compatibility with the DEC attribute of this name.
 
+      ----------------------
+      -- Max_Integer_Size --
+      ----------------------
+
+      Attribute_Max_Integer_Size => True,
+      --  Standard'Max_Integer_Size (Standard is the only permissible prefix)
+      --  provides values System.Min_Int and System.Max_Int, and is intended
+      --  primarily for constructing these definitions in package System. This
+      --  is a static attribute.
+
       -----------------------
       -- Maximum_Alignment --
       -----------------------

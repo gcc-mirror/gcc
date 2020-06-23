@@ -4755,6 +4755,13 @@ package body Sem_Attr is
       when Attribute_Max_Size_In_Storage_Elements =>
          Max_Alignment_For_Allocation_Max_Size_In_Storage_Elements;
 
+      ----------------------
+      -- Max_Integer_Size --
+      ----------------------
+
+      when Attribute_Max_Integer_Size =>
+         Standard_Attribute (System_Max_Integer_Size);
+
       ----------------------------------
       -- Max_Size_In_Storage_Elements --
       ----------------------------------
@@ -10431,6 +10438,7 @@ package body Sem_Attr is
          | Attribute_Initialized
          | Attribute_Last_Bit
          | Attribute_Library_Level
+         | Attribute_Max_Integer_Size
          | Attribute_Maximum_Alignment
          | Attribute_Old
          | Attribute_Output

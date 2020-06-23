@@ -63,6 +63,7 @@ with Stand;    use Stand;
 with Style;    use Style;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
+with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
 
 package body Sem_Aggr is
@@ -831,7 +832,8 @@ package body Sem_Aggr is
 
       if not Support_Aggregates_On_Target
         and then Comes_From_Source (N)
-        and then (not Known_Static_Esize (Typ) or else Esize (Typ) > 64)
+        and then (not Known_Static_Esize (Typ)
+                   or else Esize (Typ) > System_Max_Integer_Size)
       then
          Error_Msg_CRT ("aggregate", N);
       end if;

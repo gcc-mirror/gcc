@@ -1824,27 +1824,13 @@ package body Exp_Attr is
 
       function Get_Integer_Type (Typ : Entity_Id) return Entity_Id is
          Siz     : constant Uint := Esize (Base_Type (Typ));
-         Int_Typ : Entity_Id;
 
       begin
          --  We need to accommodate invalid values of the base type since we
          --  accept them for Enum_Rep and Pos, so we reason on the Esize. And
          --  we use an unsigned type since the enumeration type is unsigned.
 
-         if Siz <= Esize (Standard_Short_Short_Unsigned) then
-            Int_Typ := Standard_Short_Short_Unsigned;
-
-         elsif Siz <= Esize (Standard_Short_Unsigned) then
-            Int_Typ := Standard_Short_Unsigned;
-
-         elsif Siz <= Esize (Standard_Unsigned) then
-            Int_Typ := Standard_Unsigned;
-
-         else
-            Int_Typ := Standard_Long_Long_Unsigned;
-         end if;
-
-         return Int_Typ;
+         return Small_Integer_Type_For (Siz, Uns => True);
       end Get_Integer_Type;
 
       ---------------------------------
@@ -5274,7 +5260,6 @@ package body Exp_Attr is
 
       when Attribute_Pred => Pred : declare
          Etyp : constant Entity_Id := Base_Type (Ptyp);
-         Ityp : Entity_Id;
 
       begin
          --  For enumeration types with non-standard representations, we
@@ -5294,26 +5279,14 @@ package body Exp_Attr is
                   Expand_Pred_Succ_Attribute (N);
                end if;
 
-               if Is_Unsigned_Type (Etyp) then
-                  if Esize (Typ) <= Standard_Integer_Size then
-                     Ityp := RTE (RE_Unsigned);
-                  else
-                     Ityp := RTE (RE_Long_Long_Unsigned);
-                  end if;
-
-               else
-                  if Esize (Etyp) <= Standard_Integer_Size then
-                     Ityp := Standard_Integer;
-                  else
-                     Ityp := Standard_Long_Long_Integer;
-                  end if;
-               end if;
-
                Rewrite (N,
                  Unchecked_Convert_To (Etyp,
                     Make_Op_Subtract (Loc,
                        Left_Opnd  =>
-                         Unchecked_Convert_To (Ityp, First (Exprs)),
+                         Unchecked_Convert_To (
+                           Integer_Type_For
+                             (Esize (Etyp), Is_Unsigned_Type (Etyp)),
+                           First (Exprs)),
                        Right_Opnd =>
                          Make_Integer_Literal (Loc, 1))));
 
@@ -6352,7 +6325,6 @@ package body Exp_Attr is
 
       when Attribute_Succ => Succ : declare
          Etyp : constant Entity_Id := Base_Type (Ptyp);
-         Ityp : Entity_Id;
 
       begin
          --  For enumeration types with non-standard representations, we
@@ -6372,26 +6344,14 @@ package body Exp_Attr is
                   Expand_Pred_Succ_Attribute (N);
                end if;
 
-               if Is_Unsigned_Type (Etyp) then
-                  if Esize (Typ) <= Standard_Integer_Size then
-                     Ityp := RTE (RE_Unsigned);
-                  else
-                     Ityp := RTE (RE_Long_Long_Unsigned);
-                  end if;
-
-               else
-                  if Esize (Etyp) <= Standard_Integer_Size then
-                     Ityp := Standard_Integer;
-                  else
-                     Ityp := Standard_Long_Long_Integer;
-                  end if;
-               end if;
-
                Rewrite (N,
                  Unchecked_Convert_To (Etyp,
                     Make_Op_Add (Loc,
                        Left_Opnd  =>
-                         Unchecked_Convert_To (Ityp, First (Exprs)),
+                         Unchecked_Convert_To (
+                           Integer_Type_For
+                             (Esize (Etyp), Is_Unsigned_Type (Etyp)),
+                           First (Exprs)),
                        Right_Opnd =>
                          Make_Integer_Literal (Loc, 1))));
 
@@ -6675,7 +6635,6 @@ package body Exp_Attr is
       when Attribute_Val => Val : declare
          Etyp : constant Entity_Id := Base_Type (Ptyp);
          Expr : constant Node_Id := First (Exprs);
-         Ityp : Entity_Id;
          Rtyp : Entity_Id;
 
       begin
@@ -6727,21 +6686,6 @@ package body Exp_Attr is
                --  Contiguous non-standard enumeration type
 
                if Present (Enum_Pos_To_Rep (Etyp)) then
-                  if Is_Unsigned_Type (Etyp) then
-                     if Esize (Typ) <= Standard_Integer_Size then
-                        Ityp := RTE (RE_Unsigned);
-                     else
-                        Ityp := RTE (RE_Long_Long_Unsigned);
-                     end if;
-
-                  else
-                     if Esize (Etyp) <= Standard_Integer_Size then
-                        Ityp := Standard_Integer;
-                     else
-                        Ityp := Standard_Long_Long_Integer;
-                     end if;
-                  end if;
-
                   Rewrite (N,
                     Unchecked_Convert_To (Etyp,
                       Make_Op_Add (Loc,
@@ -6749,7 +6693,10 @@ package body Exp_Attr is
                           Make_Integer_Literal (Loc,
                             Enumeration_Rep (First_Literal (Etyp))),
                         Right_Opnd =>
-                          Convert_To (Ityp, Expr))));
+                          Unchecked_Convert_To (
+                            Integer_Type_For
+                              (Esize (Etyp), Is_Unsigned_Type (Etyp)),
+                            Expr))));
 
                --  Standard enumeration type
 
@@ -7129,27 +7076,16 @@ package body Exp_Attr is
          --  correct, even though a value greater than 127 looks signed to a
          --  signed comparison.
 
-         elsif Is_Unsigned_Type (Ptyp)
-           or else (Is_Private_Type (Ptyp) and then Is_Unsigned_Type (Btyp))
-         then
-            if Esize (Ptyp) <= 32 then
-               PBtyp := RTE (RE_Unsigned_32);
-            else
-               PBtyp := RTE (RE_Unsigned_64);
-            end if;
-
-            Rewrite (N, Make_Range_Test);
-
-         --  Signed types
-
          else
-            if Esize (Ptyp) <= Esize (Standard_Integer) then
-               PBtyp := Standard_Integer;
-            else
-               PBtyp := Standard_Long_Long_Integer;
-            end if;
-
-            Rewrite (N, Make_Range_Test);
+            declare
+               Uns : constant Boolean
+                       := Is_Unsigned_Type (Ptyp)
+                            or else (Is_Private_Type (Ptyp)
+                                      and then Is_Unsigned_Type (Btyp));
+            begin
+               PBtyp := Integer_Type_For (Esize (Ptyp), Uns);
+               Rewrite (N, Make_Range_Test);
+            end;
          end if;
 
          --  If a predicate is present, then we do the predicate test, even if
@@ -7599,6 +7535,7 @@ package body Exp_Attr is
          | Attribute_Machine_Radix
          | Attribute_Machine_Rounds
          | Attribute_Max_Alignment_For_Allocation
+         | Attribute_Max_Integer_Size
          | Attribute_Maximum_Alignment
          | Attribute_Model_Emin
          | Attribute_Model_Epsilon

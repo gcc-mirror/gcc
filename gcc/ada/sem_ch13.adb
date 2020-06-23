@@ -390,8 +390,7 @@ package body Sem_Ch13 is
 
    procedure Adjust_Record_For_Reverse_Bit_Order (R : Entity_Id) is
       Max_Machine_Scalar_Size : constant Uint :=
-                                  UI_From_Int
-                                    (Standard_Long_Long_Integer_Size);
+                                  UI_From_Int (System_Max_Integer_Size);
       --  We use this as the maximum machine scalar size
 
       SSU : constant Uint := UI_From_Int (System_Storage_Unit);
@@ -15693,12 +15692,12 @@ package body Sem_Ch13 is
             return;
          end if;
 
-         --  Case of component size is greater than or equal to 64 and the
-         --  alignment of the array is at least as large as the alignment
-         --  of the component. We are definitely OK in this situation.
+         --  Case where component size is greater than or equal to the maximum
+         --  integer size and the alignment of the array is at least as large
+         --  as the alignment of the component. We are OK in this situation.
 
          if Known_Component_Size (Atyp)
-           and then Component_Size (Atyp) >= 64
+           and then Component_Size (Atyp) >= System_Max_Integer_Size
            and then Known_Alignment (Atyp)
            and then Known_Alignment (Ctyp)
            and then Alignment (Atyp) >= Alignment (Ctyp)
@@ -15709,8 +15708,7 @@ package body Sem_Ch13 is
          --  Check actual component size
 
          if not Known_Component_Size (Atyp)
-           or else not (Addressable (Component_Size (Atyp))
-                         and then Component_Size (Atyp) < 64)
+           or else not Addressable (Component_Size (Atyp))
            or else Component_Size (Atyp) mod Esize (Ctyp) /= 0
          then
             No_Independence;
@@ -15796,10 +15794,12 @@ package body Sem_Ch13 is
             return False;
          end if;
 
-         --  Size of component must be addressable or greater than 64 bits
-         --  and a multiple of bytes.
+         --  Size of component must be addressable or greater than the maximum
+         --  integer size and a multiple of bytes.
 
-         if not Addressable (Esize (C)) and then Esize (C) < Uint_64 then
+         if not Addressable (Esize (C))
+           and then Esize (C) < System_Max_Integer_Size
+         then
             return False;
          end if;
 

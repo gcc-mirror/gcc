@@ -325,7 +325,6 @@ package body Exp_Util is
       declare
          Loc : constant Source_Ptr := Sloc (N);
          T   : constant Entity_Id  := Etype (N);
-         Ti  : Entity_Id;
 
       begin
          --  Defend against a call where the argument has no type, or has a
@@ -357,15 +356,11 @@ package body Exp_Util is
          --  value of type T.
 
          if Nonzero_Is_True (T) or else Has_Non_Standard_Rep (T) then
-            if Esize (T) <= Esize (Standard_Integer) then
-               Ti := Standard_Integer;
-            else
-               Ti := Standard_Long_Long_Integer;
-            end if;
-
             Rewrite (N,
               Make_Op_Ne (Loc,
-                Left_Opnd  => Unchecked_Convert_To (Ti, N),
+                Left_Opnd  =>
+                  Unchecked_Convert_To
+                    (Integer_Type_For (Esize (T), Uns => False), N),
                 Right_Opnd =>
                   Make_Attribute_Reference (Loc,
                     Attribute_Name => Name_Enum_Rep,
@@ -4574,11 +4569,11 @@ package body Exp_Util is
       if not Is_Record_Type (UT) and then not Is_Array_Type (UT) then
          return False;
 
-      --  If we know that we have a small (64 bits or less) record or small
-      --  bit-packed array, then everything is fine, since the back end can
-      --  handle these cases correctly.
+      --  If we know that we have a small (at most the maximum integer size)
+      --  record or bit-packed array, then everything is fine, since the back
+      --  end can handle these cases correctly.
 
-      elsif Esize (Comp) <= 64
+      elsif Esize (Comp) <= System_Max_Integer_Size
         and then (Is_Record_Type (UT) or else Is_Bit_Packed_Array (UT))
       then
          return False;
@@ -7727,6 +7722,37 @@ package body Exp_Util is
       return Proc /= Empty;
    end Inside_Init_Proc;
 
+   ----------------------
+   -- Integer_Type_For --
+   ----------------------
+
+   function Integer_Type_For (S : Uint; Uns : Boolean) return Entity_Id is
+   begin
+      pragma Assert (S <= System_Max_Integer_Size);
+
+      --  This is the canonical 32-bit type
+
+      if S <= Standard_Integer_Size then
+         if Uns then
+            return Standard_Unsigned;
+         else
+            return Standard_Integer;
+         end if;
+
+      --  This is the canonical 64-bit type
+
+      elsif S <= Standard_Long_Long_Integer_Size then
+         if Uns then
+            return Standard_Long_Long_Unsigned;
+         else
+            return Standard_Long_Long_Integer;
+         end if;
+
+      else
+         raise Program_Error;
+      end if;
+   end Integer_Type_For;
+
    ----------------------------
    -- Is_All_Null_Statements --
    ----------------------------
@@ -10554,37 +10580,8 @@ package body Exp_Util is
 
       --  Unsigned integer cases (includes normal enumeration types)
 
-      elsif Is_Unsigned_Type (Typ) then
-         if Siz <= Esize (Standard_Short_Short_Unsigned) then
-            return Standard_Short_Short_Unsigned;
-         elsif Siz <= Esize (Standard_Short_Unsigned) then
-            return Standard_Short_Unsigned;
-         elsif Siz <= Esize (Standard_Unsigned) then
-            return Standard_Unsigned;
-         elsif Siz <= Esize (Standard_Long_Unsigned) then
-            return Standard_Long_Unsigned;
-         elsif Siz <= Esize (Standard_Long_Long_Unsigned) then
-            return Standard_Long_Long_Unsigned;
-         else
-            raise Program_Error;
-         end if;
-
-      --  Signed integer cases
-
       else
-         if Siz <= Esize (Standard_Short_Short_Integer) then
-            return Standard_Short_Short_Integer;
-         elsif Siz <= Esize (Standard_Short_Integer) then
-            return Standard_Short_Integer;
-         elsif Siz <= Esize (Standard_Integer) then
-            return Standard_Integer;
-         elsif Siz <= Esize (Standard_Long_Integer) then
-            return Standard_Long_Integer;
-         elsif Siz <= Esize (Standard_Long_Long_Integer) then
-            return Standard_Long_Long_Integer;
-         else
-            raise Program_Error;
-         end if;
+         return Small_Integer_Type_For (Siz, Is_Unsigned_Type (Typ));
       end if;
    end Matching_Standard_Type;
 
@@ -10645,9 +10642,9 @@ package body Exp_Util is
       --  initialization, or the object is imported.
 
       --  The same holds for all initialized scalar types and all access types.
-      --  Packed bit arrays of size up to 64 are represented using a modular
-      --  type with an initialization (to zero) and can be processed like other
-      --  initialized scalar types.
+      --  Packed bit array types of size up to the maximum integer size are
+      --  represented using a modular type with an initialization (to zero) and
+      --  can be processed like other initialized scalar types.
 
       --  If the type is controlled, code to attach the object to a
       --  finalization chain is generated at the point of declaration, and
@@ -10841,12 +10838,12 @@ package body Exp_Util is
                Ptyp : constant Entity_Id := Etype (P);
 
             begin
-               --  If we know the component size and it is not larger than 64,
-               --  then we are definitely OK. The back end does the assignment
-               --  of misaligned small objects correctly.
+               --  If we know the component size and it is not larger than the
+               --  maximum integer size, then we are OK. The back end does the
+               --  assignment of small misaligned objects correctly.
 
                if Known_Static_Component_Size (Ptyp)
-                 and then Component_Size (Ptyp) <= 64
+                 and then Component_Size (Ptyp) <= System_Max_Integer_Size
                then
                   return False;
 
@@ -11369,7 +11366,7 @@ package body Exp_Util is
       elsif (Is_Elementary_Type (Exp_Type)
               or else (Is_Record_Type (Exp_Type)
                         and then Known_Static_RM_Size (Exp_Type)
-                        and then RM_Size (Exp_Type) <= 64
+                        and then RM_Size (Exp_Type) <= System_Max_Integer_Size
                         and then not Has_Discriminants (Exp_Type)
                         and then not Is_By_Reference_Type (Exp_Type)))
         and then (Variable_Ref
@@ -13520,6 +13517,55 @@ package body Exp_Util is
               Right_Opnd => Make_Non_Empty_Check (Loc, R)),
           Reason    => CE_Range_Check_Failed));
    end Silly_Boolean_Array_Xor_Test;
+
+   ----------------------------
+   -- Small_Integer_Type_For --
+   ----------------------------
+
+   function Small_Integer_Type_For (S : Uint; Uns : Boolean) return Entity_Id
+   is
+   begin
+      pragma Assert (S <= System_Max_Integer_Size);
+
+      if S <= Standard_Short_Short_Integer_Size then
+         if Uns then
+            return Standard_Short_Short_Unsigned;
+         else
+            return Standard_Short_Short_Integer;
+         end if;
+
+      elsif S <= Standard_Short_Integer_Size then
+         if Uns then
+            return Standard_Short_Unsigned;
+         else
+            return Standard_Short_Integer;
+         end if;
+
+      elsif S <= Standard_Integer_Size then
+         if Uns then
+            return Standard_Unsigned;
+         else
+            return Standard_Integer;
+         end if;
+
+      elsif S <= Standard_Long_Integer_Size then
+         if Uns then
+            return Standard_Long_Unsigned;
+         else
+            return Standard_Long_Integer;
+         end if;
+
+      elsif S <= Standard_Long_Long_Integer_Size then
+         if Uns then
+            return Standard_Long_Long_Unsigned;
+         else
+            return Standard_Long_Long_Integer;
+         end if;
+
+      else
+         raise Program_Error;
+      end if;
+   end Small_Integer_Type_For;
 
    --------------------------
    -- Target_Has_Fixed_Ops --
