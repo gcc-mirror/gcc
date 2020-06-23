@@ -2033,6 +2033,8 @@ ref_same_as_full_array (gfc_ref *full_ref, gfc_ref *ref)
     return false;
   if (ref->type != REF_ARRAY)
     return false;
+  if (ref->u.ar.type == AR_FULL)
+    return true;
   if (ref->u.ar.type != AR_SECTION)
     return false;
 
