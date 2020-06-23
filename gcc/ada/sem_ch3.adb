@@ -1185,7 +1185,7 @@ package body Sem_Ch3 is
             end;
          end if;
 
-         if not (Is_Type (Etype (Desig_Type))) then
+         if not Is_Type (Etype (Desig_Type)) then
             Error_Msg_N
               ("expect type in function specification",
                Result_Definition (T_Def));
@@ -19214,7 +19214,6 @@ package body Sem_Ch3 is
          if Nkind (Low_Bound (N)) = N_Attribute_Reference
            and then Attribute_Name (Low_Bound (N)) = Name_First
            and then Is_Entity_Name (Prefix (Low_Bound (N)))
-           and then Is_Type (Entity (Prefix (Low_Bound (N))))
            and then Is_Discrete_Type (Entity (Prefix (Low_Bound (N))))
          then
             --  The type of the index will be the type of the prefix, as long
@@ -19266,7 +19265,6 @@ package body Sem_Ch3 is
 
          if Is_Entity_Name (Prefix (N))
            and then Comes_From_Source (N)
-           and then Is_Type (Entity (Prefix (N)))
            and then Is_Discrete_Type (Entity (Prefix (N)))
          then
             Def_Id := Entity (Prefix (N));
