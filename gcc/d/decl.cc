@@ -697,13 +697,18 @@ public:
 	    return;
 	  }
 
-	if (d->_init && !d->_init->isVoidInitializer ())
+	if (d->_init)
 	  {
-	    Expression *e = initializerToExpression (d->_init, d->type);
-	    DECL_INITIAL (decl) = build_expr (e, true);
+	    /* Use the explicit initializer, this includes `void`.  */
+	    if (!d->_init->isVoidInitializer ())
+	      {
+		Expression *e = initializerToExpression (d->_init, d->type);
+		DECL_INITIAL (decl) = build_expr (e, true);
+	      }
 	  }
 	else
 	  {
+	    /* Use default initializer for the type.  */
 	    if (TypeStruct *ts = d->type->isTypeStruct ())
 	      DECL_INITIAL (decl) = layout_struct_initializer (ts->sym);
 	    else
