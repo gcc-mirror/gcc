@@ -125,7 +125,7 @@ f7_parts := $(F7_C_PARTS)
 iter-items  := $(f7_parts)
 iter-labels := $(f7_parts)
 
-include $(srcdir)/empty.mk $(patsubst %,$(libf7)/libf7-c-object.mk,$(iter-items))
+-include $(patsubst %,$(libf7)/libf7-c-object.mk,$(iter-items))
 
 libgcc-objects += $(patsubst %,f7_c_%$(objext),$(F7_C_PARTS))
 
@@ -136,7 +136,7 @@ f7_parts := $(F7_ASM_PARTS)
 iter-items  := $(f7_parts)
 iter-labels := $(f7_parts)
 
-include $(srcdir)/empty.mk $(patsubst %,$(libf7)/libf7-asm-object.mk,$(iter-items))
+-include $(patsubst %,$(libf7)/libf7-asm-object.mk,$(iter-items))
 
 libgcc-objects += $(patsubst %,f7_asm_%$(objext),$(F7_ASM_PARTS))
 
