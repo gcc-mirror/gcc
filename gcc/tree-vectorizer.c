@@ -752,6 +752,8 @@ vect_stmt_dominates_stmt_p (gimple *s1, gimple *s2)
       if (gsi_stmt (gsi1) == s2)
 	return true;
     }
+  if (gimple_uid (gsi_stmt (gsi1)) == -1u)
+    return false;
 
   gimple_stmt_iterator gsi2 = gsi_for_stmt (s2);
   while (gimple_uid (gsi_stmt (gsi2)) == 0)
@@ -762,6 +764,8 @@ vect_stmt_dominates_stmt_p (gimple *s1, gimple *s2)
       if (gsi_stmt (gsi2) == s1)
 	return true;
     }
+  if (gimple_uid (gsi_stmt (gsi2)) == -1u)
+    return false;
 
   if (gimple_uid (gsi_stmt (gsi1)) <= gimple_uid (gsi_stmt (gsi2)))
     return true;
