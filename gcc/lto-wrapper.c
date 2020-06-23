@@ -830,6 +830,7 @@ compile_offload_image (const char *target, const char *compiler_path,
 		       unsigned int linker_opt_count)
 {
   char *filename = NULL;
+  char *dumpbase;
   char **argv;
   char *suffix
     = XALLOCAVEC (char, sizeof ("/accel//mkoffload") + strlen (target));
@@ -853,8 +854,13 @@ compile_offload_image (const char *target, const char *compiler_path,
 		 "could not find %s in %s (consider using %<-B%>)",
 		 suffix + 1, compiler_path);
 
+  dumpbase = concat (dumppfx, "x", target, NULL);
+
   /* Generate temporary output file name.  */
-  filename = make_temp_file (".target.o");
+  if (save_temps)
+    filename = concat (dumpbase, ".o", NULL);
+  else
+    filename = make_temp_file (".target.o");
 
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);
@@ -874,6 +880,9 @@ compile_offload_image (const char *target, const char *compiler_path,
   append_compiler_options (&argv_obstack, compiler_opts,
 			   compiler_opt_count);
   append_diag_options (&argv_obstack, linker_opts, linker_opt_count);
+
+  obstack_ptr_grow (&argv_obstack, "-dumpbase");
+  obstack_ptr_grow (&argv_obstack, dumpbase);
 
   /* Append options specified by -foffload last.  In case of conflicting
      options we expect offload compiler to choose the latest.  */
@@ -1298,7 +1307,7 @@ run_gcc (unsigned argc, char *argv[])
   bool linker_output_rel = false;
   bool skip_debug = false;
   unsigned n_debugobj;
-  const char *dumppfx = NULL, *incoming_dumppfx = NULL;
+  const char *incoming_dumppfx = dumppfx = NULL;
   static char current_dir[] = { '.', DIR_SEPARATOR, '\0' };
 
   /* Get the driver and options.  */
