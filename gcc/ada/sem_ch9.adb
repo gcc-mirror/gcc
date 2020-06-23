@@ -1252,7 +1252,7 @@ package body Sem_Ch9 is
       E := First_Entity (P_Type);
       while Present (E) loop
          if Chars (E) = Chars (Id)
-           and then (Ekind (E) = Ekind (Id))
+           and then Ekind (E) = Ekind (Id)
            and then Type_Conformant (Id, E)
          then
             Entry_Name := E;

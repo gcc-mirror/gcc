@@ -6042,7 +6042,7 @@ package body Sem_Ch3 is
          then
             declare
                Loc   : constant Source_Ptr := Sloc (Def);
-               Decl  : Entity_Id;
+               Decl  : Node_Id;
                New_E : Entity_Id;
 
             begin
@@ -19211,23 +19211,20 @@ package body Sem_Ch3 is
             return;
          end if;
 
+         --  If the range bounds are "T'Low .. T'High" where T is a name of
+         --  a discrete type, then use T as the type of the index.
+
          if Nkind (Low_Bound (N)) = N_Attribute_Reference
            and then Attribute_Name (Low_Bound (N)) = Name_First
            and then Is_Entity_Name (Prefix (Low_Bound (N)))
            and then Is_Discrete_Type (Entity (Prefix (Low_Bound (N))))
+
+           and then Nkind (High_Bound (N)) = N_Attribute_Reference
+           and then Attribute_Name (High_Bound (N)) = Name_Last
+           and then Is_Entity_Name (Prefix (High_Bound (N)))
+           and then Entity (Prefix (High_Bound (N))) = Def_Id
          then
-            --  The type of the index will be the type of the prefix, as long
-            --  as the upper bound is 'Last of the same type.
-
             Def_Id := Entity (Prefix (Low_Bound (N)));
-
-            if Nkind (High_Bound (N)) /= N_Attribute_Reference
-              or else Attribute_Name (High_Bound (N)) /= Name_Last
-              or else not Is_Entity_Name (Prefix (High_Bound (N)))
-              or else Entity (Prefix (High_Bound (N))) /= Def_Id
-            then
-               Def_Id := Empty;
-            end if;
          end if;
 
          R := N;
@@ -19370,9 +19367,9 @@ package body Sem_Ch3 is
             Set_First_Literal     (Def_Id, First_Literal (T));
          end if;
 
-         Set_Size_Info      (Def_Id,                  (T));
-         Set_RM_Size        (Def_Id, RM_Size          (T));
-         Set_First_Rep_Item (Def_Id, First_Rep_Item   (T));
+         Set_Size_Info      (Def_Id,                (T));
+         Set_RM_Size        (Def_Id, RM_Size        (T));
+         Set_First_Rep_Item (Def_Id, First_Rep_Item (T));
 
          Set_Scalar_Range   (Def_Id, R);
          Conditional_Delay  (Def_Id, T);
