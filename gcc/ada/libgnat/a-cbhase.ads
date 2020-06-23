@@ -36,7 +36,7 @@ with Ada.Iterator_Interfaces;
 private with Ada.Containers.Hash_Tables;
 with Ada.Containers.Helpers;
 private with Ada.Streams;
-private with Ada.Finalization; use Ada.Finalization;
+private with Ada.Finalization;
 
 generic
    type Element_Type is private;
@@ -592,7 +592,7 @@ private
 
    No_Element : constant Cursor := (Container => null, Node => 0);
 
-   type Iterator is new Limited_Controlled and
+   type Iterator is new Ada.Finalization.Limited_Controlled and
      Set_Iterator_Interfaces.Forward_Iterator with
    record
       Container : Set_Access;
