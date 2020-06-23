@@ -6823,6 +6823,18 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, const char *s,
 			 && Nkind (Associated_Node_For_Itype (gnat_entity))
 			    == N_Loop_Parameter_Specification));
 
+  /* If the GNAT encodings are not used, we don't need a variable for debug
+     info purposes if the expression is a constant or another variable, but
+     we need to be careful because we do not generate debug info for external
+     variables so DECL_IGNORED_P is not stable across units.  */
+  if (need_debug
+      && gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL
+      && (TREE_CONSTANT (gnu_expr)
+	  || (!expr_public_p
+	      && DECL_P (gnu_expr)
+	      && !DECL_IGNORED_P (gnu_expr))))
+    need_debug = false;
+
   /* Now create it, possibly only for debugging purposes.  */
   if (use_variable || need_debug)
     {
@@ -6843,10 +6855,7 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, const char *s,
 	 variable only if the variable is used by the generated code.
 	 Returning the variable ensures the caller will use it in generated
 	 code.  Note that there is no need for a location if the debug info
-	 contains an integer constant.
-	 TODO: when the encoding-based debug scheme is dropped, move this
-	 condition to the top-level IF block: we will not need to create a
-	 variable anymore in such cases, then.  */
+	 contains an integer constant.  */
       if (use_variable || (need_debug && !TREE_CONSTANT (gnu_expr)))
 	return gnu_decl;
     }
