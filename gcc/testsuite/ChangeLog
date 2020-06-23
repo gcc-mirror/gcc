@@ -1,3 +1,206 @@
+2020-06-22  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/cfuged-0.c: I protest.
+	* gcc.target/powerpc/cfuged-1.c: I protest.
+	* gcc.target/powerpc/clone3.c: I protest.
+	* gcc.target/powerpc/cntlzdm-0.c: I protest.
+	* gcc.target/powerpc/cntlzdm-1.c: I protest.
+	* gcc.target/powerpc/cnttzdm-0.c: I protest.
+	* gcc.target/powerpc/cnttzdm-1.c: I protest.
+	* gcc.target/powerpc/cpu-future.c: I protest.
+	* gcc.target/powerpc/dg-future-0.c: I protest.
+	* gcc.target/powerpc/dg-future-1.c: I protest.
+	* gcc.target/powerpc/localentry-1.c: I protest.
+	* gcc.target/powerpc/localentry-detect-1.c: I protest.
+	* gcc.target/powerpc/mma-builtin-1.c: I protest.
+	* gcc.target/powerpc/mma-builtin-2.c: I protest.
+	* gcc.target/powerpc/mma-builtin-3.c: I protest.
+	* gcc.target/powerpc/mma-builtin-4.c: I protest.
+	* gcc.target/powerpc/mma-builtin-5.c: I protest.
+	* gcc.target/powerpc/mma-builtin-6.c: I protest.
+	* gcc.target/powerpc/notoc-direct-1.c: I protest.
+	* gcc.target/powerpc/pcrel-sibcall-1.c: I protest.
+	* gcc.target/powerpc/pdep-0.c: I protest.
+	* gcc.target/powerpc/pdep-1.c: I protest.
+	* gcc.target/powerpc/pextd-0.c: I protest.
+	* gcc.target/powerpc/pextd-1.c: I protest.
+	* gcc.target/powerpc/pr93122.c: I protest.
+	* gcc.target/powerpc/pr94740.c: I protest.
+	* gcc.target/powerpc/setbceq.c: I protest.
+	* gcc.target/powerpc/setbcge.c: I protest.
+	* gcc.target/powerpc/setbcgt.c: I protest.
+	* gcc.target/powerpc/setbcle.c: I protest.
+	* gcc.target/powerpc/setbclt.c: I protest.
+	* gcc.target/powerpc/setbcne.c: I protest.
+	* gcc.target/powerpc/setnbceq.c: I protest.
+	* gcc.target/powerpc/setnbcge.c: I protest.
+	* gcc.target/powerpc/setnbcgt.c: I protest.
+	* gcc.target/powerpc/setnbcle.c: I protest.
+	* gcc.target/powerpc/setnbclt.c: I protest.
+	* gcc.target/powerpc/setnbcne.c: I protest.
+	* gcc.target/powerpc/vec-cfuged-0.c: I protest.
+	* gcc.target/powerpc/vec-cfuged-1.c: I protest.
+	* gcc.target/powerpc/vec-clrl-0.c: I protest.
+	* gcc.target/powerpc/vec-clrl-1.c: I protest.
+	* gcc.target/powerpc/vec-clrl-2.c: I protest.
+	* gcc.target/powerpc/vec-clrl-3.c: I protest.
+	* gcc.target/powerpc/vec-clrr-0.c: I protest.
+	* gcc.target/powerpc/vec-clrr-1.c: I protest.
+	* gcc.target/powerpc/vec-clrr-2.c: I protest.
+	* gcc.target/powerpc/vec-clrr-3.c: I protest.
+	* gcc.target/powerpc/vec-cntlzm-0.c: I protest.
+	* gcc.target/powerpc/vec-cntlzm-1.c: I protest.
+	* gcc.target/powerpc/vec-cnttzm-0.c: I protest.
+	* gcc.target/powerpc/vec-cnttzm-1.c: I protest.
+	* gcc.target/powerpc/vec-extracth-0.c: I protest.
+	* gcc.target/powerpc/vec-extracth-1.c: I protest.
+	* gcc.target/powerpc/vec-extracth-2.c: I protest.
+	* gcc.target/powerpc/vec-extracth-3.c: I protest.
+	* gcc.target/powerpc/vec-extracth-4.c: I protest.
+	* gcc.target/powerpc/vec-extracth-5.c: I protest.
+	* gcc.target/powerpc/vec-extracth-6.c: I protest.
+	* gcc.target/powerpc/vec-extracth-7.c: I protest.
+	* gcc.target/powerpc/vec-extracth-be-0.c: I protest.
+	* gcc.target/powerpc/vec-extracth-be-1.c: I protest.
+	* gcc.target/powerpc/vec-extracth-be-2.c: I protest.
+	* gcc.target/powerpc/vec-extracth-be-3.c: I protest.
+	* gcc.target/powerpc/vec-extractl-0.c: I protest.
+	* gcc.target/powerpc/vec-extractl-1.c: I protest.
+	* gcc.target/powerpc/vec-extractl-2.c: I protest.
+	* gcc.target/powerpc/vec-extractl-3.c: I protest.
+	* gcc.target/powerpc/vec-extractl-4.c: I protest.
+	* gcc.target/powerpc/vec-extractl-5.c: I protest.
+	* gcc.target/powerpc/vec-extractl-6.c: I protest.
+	* gcc.target/powerpc/vec-extractl-7.c: I protest.
+	* gcc.target/powerpc/vec-extractl-be-0.c: I protest.
+	* gcc.target/powerpc/vec-extractl-be-1.c: I protest.
+	* gcc.target/powerpc/vec-extractl-be-2.c: I protest.
+	* gcc.target/powerpc/vec-extractl-be-3.c: I protest.
+	* gcc.target/powerpc/vec-gnb-0.c: I protest.
+	* gcc.target/powerpc/vec-gnb-1.c: I protest.
+	* gcc.target/powerpc/vec-gnb-2.c: I protest.
+	* gcc.target/powerpc/vec-pdep-0.c: I protest.
+	* gcc.target/powerpc/vec-pdep-1.c: I protest.
+	* gcc.target/powerpc/vec-pext-0.c: I protest.
+	* gcc.target/powerpc/vec-pext-1.c: I protest.
+	* gcc.target/powerpc/vec-stril-0.c: I protest.
+	* gcc.target/powerpc/vec-stril-1.c: I protest.
+	* gcc.target/powerpc/vec-stril-10.c: I protest.
+	* gcc.target/powerpc/vec-stril-11.c: I protest.
+	* gcc.target/powerpc/vec-stril-12.c: I protest.
+	* gcc.target/powerpc/vec-stril-13.c: I protest.
+	* gcc.target/powerpc/vec-stril-14.c: I protest.
+	* gcc.target/powerpc/vec-stril-15.c: I protest.
+	* gcc.target/powerpc/vec-stril-16.c: I protest.
+	* gcc.target/powerpc/vec-stril-17.c: I protest.
+	* gcc.target/powerpc/vec-stril-18.c: I protest.
+	* gcc.target/powerpc/vec-stril-19.c: I protest.
+	* gcc.target/powerpc/vec-stril-2.c: I protest.
+	* gcc.target/powerpc/vec-stril-20.c: I protest.
+	* gcc.target/powerpc/vec-stril-21.c: I protest.
+	* gcc.target/powerpc/vec-stril-22.c: I protest.
+	* gcc.target/powerpc/vec-stril-23.c: I protest.
+	* gcc.target/powerpc/vec-stril-3.c: I protest.
+	* gcc.target/powerpc/vec-stril-4.c: I protest.
+	* gcc.target/powerpc/vec-stril-5.c: I protest.
+	* gcc.target/powerpc/vec-stril-6.c: I protest.
+	* gcc.target/powerpc/vec-stril-7.c: I protest.
+	* gcc.target/powerpc/vec-stril-8.c: I protest.
+	* gcc.target/powerpc/vec-stril-9.c: I protest.
+	* gcc.target/powerpc/vec-stril_p-0.c: I protest.
+	* gcc.target/powerpc/vec-stril_p-1.c: I protest.
+	* gcc.target/powerpc/vec-stril_p-10.c: I protest.
+	* gcc.target/powerpc/vec-stril_p-11.c: I protest.
+	* gcc.target/powerpc/vec-stril_p-2.c: I protest.
+	* gcc.target/powerpc/vec-stril_p-3.c: I protest.
+	* gcc.target/powerpc/vec-stril_p-4.c: I protest.
+	* gcc.target/powerpc/vec-stril_p-5.c: I protest.
+	* gcc.target/powerpc/vec-stril_p-6.c: I protest.
+	* gcc.target/powerpc/vec-stril_p-7.c: I protest.
+	* gcc.target/powerpc/vec-stril_p-8.c: I protest.
+	* gcc.target/powerpc/vec-stril_p-9.c: I protest.
+	* gcc.target/powerpc/vec-strir-0.c: I protest.
+	* gcc.target/powerpc/vec-strir-1.c: I protest.
+	* gcc.target/powerpc/vec-strir-10.c: I protest.
+	* gcc.target/powerpc/vec-strir-11.c: I protest.
+	* gcc.target/powerpc/vec-strir-12.c: I protest.
+	* gcc.target/powerpc/vec-strir-13.c: I protest.
+	* gcc.target/powerpc/vec-strir-14.c: I protest.
+	* gcc.target/powerpc/vec-strir-15.c: I protest.
+	* gcc.target/powerpc/vec-strir-16.c: I protest.
+	* gcc.target/powerpc/vec-strir-17.c: I protest.
+	* gcc.target/powerpc/vec-strir-18.c: I protest.
+	* gcc.target/powerpc/vec-strir-19.c: I protest.
+	* gcc.target/powerpc/vec-strir-2.c: I protest.
+	* gcc.target/powerpc/vec-strir-20.c: I protest.
+	* gcc.target/powerpc/vec-strir-21.c: I protest.
+	* gcc.target/powerpc/vec-strir-22.c: I protest.
+	* gcc.target/powerpc/vec-strir-23.c: I protest.
+	* gcc.target/powerpc/vec-strir-3.c: I protest.
+	* gcc.target/powerpc/vec-strir-4.c: I protest.
+	* gcc.target/powerpc/vec-strir-5.c: I protest.
+	* gcc.target/powerpc/vec-strir-6.c: I protest.
+	* gcc.target/powerpc/vec-strir-7.c: I protest.
+	* gcc.target/powerpc/vec-strir-8.c: I protest.
+	* gcc.target/powerpc/vec-strir-9.c: I protest.
+	* gcc.target/powerpc/vec-strir_p-0.c: I protest.
+	* gcc.target/powerpc/vec-strir_p-1.c: I protest.
+	* gcc.target/powerpc/vec-strir_p-10.c: I protest.
+	* gcc.target/powerpc/vec-strir_p-11.c: I protest.
+	* gcc.target/powerpc/vec-strir_p-2.c: I protest.
+	* gcc.target/powerpc/vec-strir_p-3.c: I protest.
+	* gcc.target/powerpc/vec-strir_p-4.c: I protest.
+	* gcc.target/powerpc/vec-strir_p-5.c: I protest.
+	* gcc.target/powerpc/vec-strir_p-6.c: I protest.
+	* gcc.target/powerpc/vec-strir_p-7.c: I protest.
+	* gcc.target/powerpc/vec-strir_p-8.c: I protest.
+	* gcc.target/powerpc/vec-strir_p-9.c: I protest.
+	* gcc.target/powerpc/vec-ternarylogic-0.c: I protest.
+	* gcc.target/powerpc/vec-ternarylogic-1.c: I protest.
+	* gcc.target/powerpc/vec-ternarylogic-10.c: I protest.
+	* gcc.target/powerpc/vec-ternarylogic-2.c: I protest.
+	* gcc.target/powerpc/vec-ternarylogic-3.c: I protest.
+	* gcc.target/powerpc/vec-ternarylogic-4.c: I protest.
+	* gcc.target/powerpc/vec-ternarylogic-5.c: I protest.
+	* gcc.target/powerpc/vec-ternarylogic-6.c: I protest.
+	* gcc.target/powerpc/vec-ternarylogic-7.c: I protest.
+	* gcc.target/powerpc/vec-ternarylogic-8.c: I protest.
+	* gcc.target/powerpc/vec-ternarylogic-9.c: I protest.
+	* gcc.target/powerpc/xxgenpc-runnable.c: I protest.
+	* lib/target-supports.exp: Stuff.
+
+2020-06-22  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/mve_scalar_shifts1.c: Modify.
+	* gcc.target/arm/mve/intrinsics/mve_scalar_shifts2.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_scalar_shifts3.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_scalar_shifts4.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_arm_mve_hw): Define.
+
+2020-06-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/95708
+	* gfortran.dg/pr95708.f90: New test.
+
+2020-06-22  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95791
+	* gcc.target/i386/pr95791.c: New test.
+
+2020-06-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/95585
+	* gfortran.dg/pr95585.f90: New test.
+
+2020-06-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95770
+	* gcc.dg/pr95770.c: New testcase.
+
+2020-06-22  Kito Cheng  <kito.cheng@sifive.com>
+
+	* g++.target/riscv/frflags.C: New.
+
 2020-06-21  Peter Bergner  <bergner@linux.ibm.com>
 
 	* gcc.target/powerpc/mma-builtin-1.c: New file.

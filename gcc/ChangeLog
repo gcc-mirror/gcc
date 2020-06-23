@@ -1,3 +1,98 @@
+2020-06-22  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/altivec.h: Use _ARCH_PWR10, not _ARCH_PWR_FUTURE.
+	Update comment for ISA 3.1.
+	* config/rs6000/altivec.md: Use TARGET_POWER10, not TARGET_FUTURE.
+	* config/rs6000/driver-rs6000.c (asm_names): Use -mpwr10 for power10
+	on AIX, and -mpower10 elsewhere.
+	* config/rs6000/future.md: Delete.
+	* config/rs6000/linux64.h: Update comments.  Use TARGET_POWER10, not
+	TARGET_FUTURE.
+	* config/rs6000/power10.md: New file.
+	* config/rs6000/ppc-auxv.h: Use PPC_PLATFORM_POWER10, not
+	PPC_PLATFORM_FUTURE.
+	* config/rs6000/rs6000-builtin.def: Update comments.  Use BU_P10V_*
+	names instead of BU_FUTURE_V_* names.  Use RS6000_BTM_P10 instead of
+	RS6000_BTM_FUTURE.  Use P10_BUILTIN_* instead of FUTURE_BUILTIN_*.
+	Use BU_P10_* instead of BU_FUTURE_*.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Define
+	_ARCH_PWR10 instead of _ARCH_PWR_FUTURE.
+	(altivec_resolve_overloaded_builtin): Use P10_BUILTIN_VEC_XXEVAL, not
+	FUTURE_BUILTIN_VEC_XXEVAL.
+	* config/rs6000/rs6000-call.c: Use P10_BUILTIN_*, not FUTURE_BUILTIN_*.
+	Update compiler messages.
+	* config/rs6000/rs6000-cpus.def: Update comments.  Use ISA_3_1_*, not
+	ISA_FUTURE_*.  Use OPTION_MASK_POWER10, not OPTION_MASK_FUTURE.
+	* config/rs6000/rs6000-opts.h: Use PROCESSOR_POWER10, not
+	PROCESSOR_FUTURE.
+	* config/rs6000/rs6000-string.c: Ditto.
+	* config/rs6000/rs6000-tables.opt (rs6000_cpu_opt_value): Use "power10"
+	instead of "future", reorder it to right after "power9".
+	* config/rs6000/rs6000.c: Update comments.  Use OPTION_MASK_POWER10,
+	not OPTION_MASK_FUTURE.  Use TARGET_POWER10, not TARGET_FUTURE.  Use
+	RS6000_BTM_P10, not RS6000_BTM_FUTURE.  Update compiler messages.
+	Use PROCESSOR_POWER10, not PROCESSOR_FUTURE.  Use ISA_3_1_MASKS_SERVER,
+	not ISA_FUTURE_MASKS_SERVER.
+	(rs6000_opt_masks): Use "power10" instead of "future".
+	(rs6000_builtin_mask_names): Ditto.
+	(rs6000_disable_incompatible_switches): Ditto.
+	* config/rs6000/rs6000.h: Use -mpower10, not -mfuture.  Use
+	-mcpu=power10, not -mcpu=future.  Use MASK_POWER10, not MASK_FUTURE.
+	Use OPTION_MASK_POWER10, not OPTION_MASK_FUTURE.  Use RS6000_BTM_P10,
+	not RS6000_BTM_FUTURE.
+	* config/rs6000/rs6000.md: Use "power10", not "future".  Use
+	TARGET_POWER10, not TARGET_FUTURE.  Include "power10.md", not
+	"future.md".
+	* config/rs6000/rs6000.opt (mfuture): Delete.
+	(mpower10): New.
+	* config/rs6000/t-rs6000: Use "power10.md", not "future.md".
+	* config/rs6000/vsx.md: Use TARGET_POWER10, not TARGET_FUTURE.
+
+2020-06-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* coretypes.h (first_type): Delete.
+	* recog.h (insn_gen_fn::operator()): Go back to using a decltype.
+
+2020-06-22  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* doc/sourcebuild.texi (arm_v8_1m_mve_fp_ok): Add item.
+	(arm_mve_hw): Likewise.
+
+2020-06-22  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95791
+	* config/i386/i386.c (ix86_dirflag_mode_needed): Skip
+	EXT_REX_SSE_REG_P.
+
+2020-06-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95770
+	* tree-vect-slp.c (vect_schedule_slp_instance): Also consider
+	external defs.
+
+2020-06-22  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_function_arg): Disallow vector arguments.
+	(gcn_return_in_memory): Return vectors in memory.
+
+2020-06-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-general.c (omp_extract_for_data): For triangular loops with
+	all loop invariant expressions constant where the innermost loop is
+	executed at least once compute number of iterations at compile time.
+
+2020-06-22  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.h (ASM_SPEC): Remove riscv_expand_arch call.
+	(DRIVER_SELF_SPECS): New.
+
+2020-06-22  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-builtins.c (RISCV_FTYPE_NAME0): New.
+	(RISCV_FTYPE_ATYPES0): New.
+	(riscv_builtins): Using RISCV_USI_FTYPE for frflags.
+	* config/riscv/riscv-ftypes.def: Remove VOID argument.
+
 2020-06-21  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config.gcc: Use t-aix64, biarch64 and default64 for cpu_is_64bit.

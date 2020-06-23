@@ -1,3 +1,27 @@
+2020-06-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95708
+	* intrinsic.c (add_functions): Replace CLASS_INQUIRY with
+	CLASS_TRANSFORMATIONAL for intrinsic num_images.
+	(make_generic): Replace ACTUAL_NO with ACTUAL_YES for
+	intrinsic team_number.
+	* resolve.c (resolve_fl_procedure): Check pointer ts.u.derived
+	exists before using it.
+
+2020-06-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95585
+	* check.c (gfc_check_reshape): Add check for a value when
+	the symbol has an attribute flavor FL_PARAMETER.
+
+2020-06-22  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/42693
+	* arith.c (gfc_arith_error): Enclose strings in G_() instead
+	of _().
+
 2020-06-20  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95707
