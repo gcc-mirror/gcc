@@ -552,6 +552,11 @@ cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
 		       TYPE_NAME (type));
       break;
 
+    case TYPE_PACK_EXPANSION:
+      emit_diagnostic (diag_kind, loc, 0,
+		       "invalid use of pack expansion %qT", type);
+      break;
+
     case TYPENAME_TYPE:
     case DECLTYPE_TYPE:
       emit_diagnostic (diag_kind, loc, 0,
