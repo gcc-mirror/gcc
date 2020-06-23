@@ -2498,6 +2498,8 @@ const wide_int_bitmask PTA_KNM = PTA_KNL | PTA_AVX5124VNNIW
 
 #include "insn-attr-common.h"
 
+#include "common/config/i386/i386-cpuinfo.h"
+
 class pta
 {
 public:
@@ -2505,10 +2507,13 @@ public:
   const enum processor_type processor;
   const enum attr_cpu schedule;
   const wide_int_bitmask flags;
+  const int model;
+  const enum feature_priority priority;
 };
 
 extern const pta processor_alias_table[];
 extern int const pta_size;
+extern unsigned int const num_arch_names;
 #endif
 
 #endif
