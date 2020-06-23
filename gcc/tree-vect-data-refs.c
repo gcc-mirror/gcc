@@ -232,61 +232,43 @@ vect_preserves_scalar_order_p (dr_vec_info *dr_info_a, dr_vec_info *dr_info_b)
       && !STMT_VINFO_GROUPED_ACCESS (stmtinfo_b))
     return true;
 
-  /* STMT_A and STMT_B belong to overlapping groups.  All loads in a
-     SLP group are emitted at the position of the last scalar load and
-     all loads in an interleaving group are emitted at the position
-     of the first scalar load.
+  /* STMT_A and STMT_B belong to overlapping groups.  All loads are
+     emitted at the position of the first scalar load.
      Stores in a group are emitted at the position of the last scalar store.
      Compute that position and check whether the resulting order matches
-     the current one.
-     We have not yet decided between SLP and interleaving so we have
-     to conservatively assume both.  */
-  stmt_vec_info il_a;
-  stmt_vec_info last_a = il_a = DR_GROUP_FIRST_ELEMENT (stmtinfo_a);
-  if (last_a)
+     the current one.  */
+  stmt_vec_info il_a = DR_GROUP_FIRST_ELEMENT (stmtinfo_a);
+  if (il_a)
     {
-      for (stmt_vec_info s = DR_GROUP_NEXT_ELEMENT (last_a); s;
-	   s = DR_GROUP_NEXT_ELEMENT (s))
-	last_a = get_later_stmt (last_a, s);
-      if (!DR_IS_WRITE (STMT_VINFO_DATA_REF (stmtinfo_a)))
-	{
-	  for (stmt_vec_info s = DR_GROUP_NEXT_ELEMENT (il_a); s;
-	       s = DR_GROUP_NEXT_ELEMENT (s))
-	    if (get_later_stmt (il_a, s) == il_a)
-	      il_a = s;
-	}
-      else
-	il_a = last_a;
+      if (DR_IS_WRITE (STMT_VINFO_DATA_REF (stmtinfo_a)))
+	for (stmt_vec_info s = DR_GROUP_NEXT_ELEMENT (il_a); s;
+	     s = DR_GROUP_NEXT_ELEMENT (s))
+	  il_a = get_later_stmt (il_a, s);
+      else /* DR_IS_READ */
+	for (stmt_vec_info s = DR_GROUP_NEXT_ELEMENT (il_a); s;
+	     s = DR_GROUP_NEXT_ELEMENT (s))
+	  if (get_later_stmt (il_a, s) == il_a)
+	    il_a = s;
     }
   else
-    last_a = il_a = stmtinfo_a;
-  stmt_vec_info il_b;
-  stmt_vec_info last_b = il_b = DR_GROUP_FIRST_ELEMENT (stmtinfo_b);
-  if (last_b)
+    il_a = stmtinfo_a;
+  stmt_vec_info il_b = DR_GROUP_FIRST_ELEMENT (stmtinfo_b);
+  if (il_b)
     {
-      for (stmt_vec_info s = DR_GROUP_NEXT_ELEMENT (last_b); s;
-	   s = DR_GROUP_NEXT_ELEMENT (s))
-	last_b = get_later_stmt (last_b, s);
-      if (!DR_IS_WRITE (STMT_VINFO_DATA_REF (stmtinfo_b)))
-	{
-	  for (stmt_vec_info s = DR_GROUP_NEXT_ELEMENT (il_b); s;
-	       s = DR_GROUP_NEXT_ELEMENT (s))
-	    if (get_later_stmt (il_b, s) == il_b)
-	      il_b = s;
-	}
-      else
-	il_b = last_b;
+      if (DR_IS_WRITE (STMT_VINFO_DATA_REF (stmtinfo_b)))
+	for (stmt_vec_info s = DR_GROUP_NEXT_ELEMENT (il_b); s;
+	     s = DR_GROUP_NEXT_ELEMENT (s))
+	  il_b = get_later_stmt (il_b, s);
+      else /* DR_IS_READ */
+	for (stmt_vec_info s = DR_GROUP_NEXT_ELEMENT (il_b); s;
+	     s = DR_GROUP_NEXT_ELEMENT (s))
+	  if (get_later_stmt (il_b, s) == il_b)
+	    il_b = s;
     }
   else
-    last_b = il_b = stmtinfo_b;
+    il_b = stmtinfo_b;
   bool a_after_b = (get_later_stmt (stmtinfo_a, stmtinfo_b) == stmtinfo_a);
-  return (/* SLP */
-	  (get_later_stmt (last_a, last_b) == last_a) == a_after_b
-	  /* Interleaving */
-	  && (get_later_stmt (il_a, il_b) == il_a) == a_after_b
-	  /* Mixed */
-	  && (get_later_stmt (il_a, last_b) == il_a) == a_after_b
-	  && (get_later_stmt (last_a, il_b) == last_a) == a_after_b);
+  return (get_later_stmt (il_a, il_b) == il_a) == a_after_b;
 }
 
 /* A subroutine of vect_analyze_data_ref_dependence.  Handle
@@ -702,71 +684,144 @@ vect_slp_analyze_node_dependences (vec_info *vinfo, slp_tree node,
   /* This walks over all stmts involved in the SLP load/store done
      in NODE verifying we can sink them up to the last stmt in the
      group.  */
-  stmt_vec_info last_access_info = vect_find_last_scalar_stmt_in_slp (node);
-  for (unsigned k = 0; k < SLP_TREE_SCALAR_STMTS (node).length (); ++k)
+  if (DR_IS_WRITE (STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (node))))
     {
-      stmt_vec_info access_info = SLP_TREE_SCALAR_STMTS (node)[k];
-      if (access_info == last_access_info)
-	continue;
-      data_reference *dr_a = STMT_VINFO_DATA_REF (access_info);
-      ao_ref ref;
-      bool ref_initialized_p = false;
-      for (gimple_stmt_iterator gsi = gsi_for_stmt (access_info->stmt);
-	   gsi_stmt (gsi) != last_access_info->stmt; gsi_next (&gsi))
+      stmt_vec_info last_access_info = vect_find_last_scalar_stmt_in_slp (node);
+      for (unsigned k = 0; k < SLP_TREE_SCALAR_STMTS (node).length (); ++k)
 	{
-	  gimple *stmt = gsi_stmt (gsi);
-	  if (! gimple_vuse (stmt)
-	      || (DR_IS_READ (dr_a) && ! gimple_vdef (stmt)))
+	  stmt_vec_info access_info = SLP_TREE_SCALAR_STMTS (node)[k];
+	  if (access_info == last_access_info)
 	    continue;
-
-	  /* If we couldn't record a (single) data reference for this
-	     stmt we have to resort to the alias oracle.  */
-	  stmt_vec_info stmt_info = vinfo->lookup_stmt (stmt);
-	  data_reference *dr_b = STMT_VINFO_DATA_REF (stmt_info);
-	  if (!dr_b)
+	  data_reference *dr_a = STMT_VINFO_DATA_REF (access_info);
+	  ao_ref ref;
+	  bool ref_initialized_p = false;
+	  for (gimple_stmt_iterator gsi = gsi_for_stmt (access_info->stmt);
+	       gsi_stmt (gsi) != last_access_info->stmt; gsi_next (&gsi))
 	    {
-	      /* We are moving a store or sinking a load - this means
-	         we cannot use TBAA for disambiguation.  */
-	      if (!ref_initialized_p)
-		ao_ref_init (&ref, DR_REF (dr_a));
-	      if (stmt_may_clobber_ref_p_1 (stmt, &ref, false)
-		  || ref_maybe_used_by_stmt_p (stmt, &ref, false))
-		return false;
-	      continue;
-	    }
-
-	  bool dependent = false;
-	  /* If we run into a store of this same instance (we've just
-	     marked those) then delay dependence checking until we run
-	     into the last store because this is where it will have
-	     been sunk to (and we verify if we can do that as well).  */
-	  if (gimple_visited_p (stmt))
-	    {
-	      if (stmt_info != last_store_info)
+	      gimple *stmt = gsi_stmt (gsi);
+	      if (! gimple_vuse (stmt))
 		continue;
-	      unsigned i;
-	      stmt_vec_info store_info;
-	      FOR_EACH_VEC_ELT (stores, i, store_info)
+
+	      /* If we couldn't record a (single) data reference for this
+		 stmt we have to resort to the alias oracle.  */
+	      stmt_vec_info stmt_info = vinfo->lookup_stmt (stmt);
+	      data_reference *dr_b = STMT_VINFO_DATA_REF (stmt_info);
+	      if (!dr_b)
 		{
-		  data_reference *store_dr = STMT_VINFO_DATA_REF (store_info);
-		  ddr_p ddr = initialize_data_dependence_relation
-				(dr_a, store_dr, vNULL);
-		  dependent
-		    = vect_slp_analyze_data_ref_dependence (vinfo, ddr);
-		  free_dependence_relation (ddr);
-		  if (dependent)
-		    break;
+		  /* We are moving a store - this means
+		     we cannot use TBAA for disambiguation.  */
+		  if (!ref_initialized_p)
+		    ao_ref_init (&ref, DR_REF (dr_a));
+		  if (stmt_may_clobber_ref_p_1 (stmt, &ref, false)
+		      || ref_maybe_used_by_stmt_p (stmt, &ref, false))
+		    return false;
+		  continue;
 		}
+
+	      bool dependent = false;
+	      /* If we run into a store of this same instance (we've just
+		 marked those) then delay dependence checking until we run
+		 into the last store because this is where it will have
+		 been sunk to (and we verify if we can do that as well).  */
+	      if (gimple_visited_p (stmt))
+		{
+		  if (stmt_info != last_store_info)
+		    continue;
+		  unsigned i;
+		  stmt_vec_info store_info;
+		  FOR_EACH_VEC_ELT (stores, i, store_info)
+		    {
+		      data_reference *store_dr
+			= STMT_VINFO_DATA_REF (store_info);
+		      ddr_p ddr = initialize_data_dependence_relation
+				    (dr_a, store_dr, vNULL);
+		      dependent
+			= vect_slp_analyze_data_ref_dependence (vinfo, ddr);
+		      free_dependence_relation (ddr);
+		      if (dependent)
+			break;
+		    }
+		}
+	      else
+		{
+		  ddr_p ddr = initialize_data_dependence_relation (dr_a,
+								   dr_b, vNULL);
+		  dependent = vect_slp_analyze_data_ref_dependence (vinfo, ddr);
+		  free_dependence_relation (ddr);
+		}
+	      if (dependent)
+		return false;
 	    }
-	  else
+	}
+    }
+  else /* DR_IS_READ */
+    {
+      stmt_vec_info first_access_info
+	= vect_find_first_scalar_stmt_in_slp (node);
+      for (unsigned k = 0; k < SLP_TREE_SCALAR_STMTS (node).length (); ++k)
+	{
+	  stmt_vec_info access_info = SLP_TREE_SCALAR_STMTS (node)[k];
+	  if (access_info == first_access_info)
+	    continue;
+	  data_reference *dr_a = STMT_VINFO_DATA_REF (access_info);
+	  ao_ref ref;
+	  bool ref_initialized_p = false;
+	  for (gimple_stmt_iterator gsi = gsi_for_stmt (access_info->stmt);
+	       gsi_stmt (gsi) != first_access_info->stmt; gsi_prev (&gsi))
 	    {
-	      ddr_p ddr = initialize_data_dependence_relation (dr_a,
-							       dr_b, vNULL);
-	      dependent = vect_slp_analyze_data_ref_dependence (vinfo, ddr);
-	      free_dependence_relation (ddr);
+	      gimple *stmt = gsi_stmt (gsi);
+	      if (! gimple_vdef (stmt))
+		continue;
+
+	      /* If we couldn't record a (single) data reference for this
+		 stmt we have to resort to the alias oracle.  */
+	      stmt_vec_info stmt_info = vinfo->lookup_stmt (stmt);
+	      data_reference *dr_b = STMT_VINFO_DATA_REF (stmt_info);
+	      if (!dr_b)
+		{
+		  /* We are hoisting a load - this means we can use
+		     TBAA for disambiguation.  */
+		  if (!ref_initialized_p)
+		    ao_ref_init (&ref, DR_REF (dr_a));
+		  if (stmt_may_clobber_ref_p_1 (stmt, &ref, true))
+		    return false;
+		  continue;
+		}
+
+	      bool dependent = false;
+	      /* If we run into a store of this same instance (we've just
+		 marked those) then delay dependence checking until we run
+		 into the last store because this is where it will have
+		 been sunk to (and we verify if we can do that as well).  */
+	      if (gimple_visited_p (stmt))
+		{
+		  if (stmt_info != last_store_info)
+		    continue;
+		  unsigned i;
+		  stmt_vec_info store_info;
+		  FOR_EACH_VEC_ELT (stores, i, store_info)
+		    {
+		      data_reference *store_dr
+			= STMT_VINFO_DATA_REF (store_info);
+		      ddr_p ddr = initialize_data_dependence_relation
+				    (dr_a, store_dr, vNULL);
+		      dependent
+			= vect_slp_analyze_data_ref_dependence (vinfo, ddr);
+		      free_dependence_relation (ddr);
+		      if (dependent)
+			break;
+		    }
+		}
+	      else
+		{
+		  ddr_p ddr = initialize_data_dependence_relation (dr_a,
+								   dr_b, vNULL);
+		  dependent = vect_slp_analyze_data_ref_dependence (vinfo, ddr);
+		  free_dependence_relation (ddr);
+		}
+	      if (dependent)
+		return false;
 	    }
-	  if (dependent)
-	    return false;
 	}
     }
   return true;
@@ -2399,10 +2454,20 @@ vect_slp_analyze_and_verify_node_alignment (vec_info *vinfo, slp_tree node)
 
   dr_vec_info *dr_info = STMT_VINFO_DR_INFO (first_stmt_info);
   vect_compute_data_ref_alignment (vinfo, dr_info);
-  /* For creating the data-ref pointer we need alignment of the
-     first element anyway.  */
+  /* In several places we need alignment of the first element anyway.  */
   if (dr_info != first_dr_info)
     vect_compute_data_ref_alignment (vinfo, first_dr_info);
+
+  /* For creating the data-ref pointer we need alignment of the
+     first element as well.  */
+  first_stmt_info = vect_find_first_scalar_stmt_in_slp (node);
+  if (first_stmt_info != SLP_TREE_SCALAR_STMTS (node)[0])
+    {
+      first_dr_info = STMT_VINFO_DR_INFO (first_stmt_info);
+      if (dr_info != first_dr_info)
+	vect_compute_data_ref_alignment (vinfo, first_dr_info);
+    }
+
   if (! verify_data_ref_alignment (vinfo, dr_info))
     {
       if (dump_enabled_p ())
