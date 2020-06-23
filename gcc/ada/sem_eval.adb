@@ -445,9 +445,11 @@ package body Sem_Eval is
          --  is folded, and since this is definitely a failure, extra checks
          --  are OK.
 
-         Insert_Action (Expr,
-           Make_Predicate_Check
-             (Typ, Duplicate_Subexpr (Expr)), Suppress => All_Checks);
+         if Predicate_Enabled (Typ) then
+            Insert_Action (Expr,
+              Make_Predicate_Check
+                (Typ, Duplicate_Subexpr (Expr)), Suppress => All_Checks);
+         end if;
       end if;
    end Check_Expression_Against_Static_Predicate;
 

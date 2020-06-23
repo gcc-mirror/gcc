@@ -4423,7 +4423,7 @@ package body Sem_Ch3 is
       --  the predicate still applies.
 
       if not Suppress_Assignment_Checks (N)
-        and then Predicate_Enabled (T)
+        and then (Predicate_Enabled (T) or else Has_Static_Predicate (T))
         and then
           (not No_Initialization (N)
             or else (Present (E) and then Nkind (E) = N_Aggregate))
@@ -4434,15 +4434,23 @@ package body Sem_Ch3 is
       then
          --  If the type has a static predicate and the expression is known at
          --  compile time, see if the expression satisfies the predicate.
+         --  In the case of a static expression, this must be done even if
+         --  the predicate is not enabled (as per static expression rules).
 
          if Present (E) then
             Check_Expression_Against_Static_Predicate (E, T);
          end if;
 
+         --  Do not perform further predicate-related checks unless
+         --  predicates are enabled for the subtype.
+
+         if not Predicate_Enabled (T) then
+            null;
+
          --  If the type is a null record and there is no explicit initial
          --  expression, no predicate check applies.
 
-         if No (E) and then Is_Null_Record_Type (T) then
+         elsif No (E) and then Is_Null_Record_Type (T) then
             null;
 
          --  Do not generate a predicate check if the initialization expression

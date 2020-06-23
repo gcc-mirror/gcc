@@ -7318,6 +7318,13 @@ package body Exp_Ch6 is
       Exp : Node_Id := Expression (N);
       pragma Assert (Present (Exp));
 
+      Exp_Is_Function_Call : constant Boolean :=
+        Nkind (Exp) = N_Function_Call
+          or else (Nkind (Exp) = N_Explicit_Dereference
+                   and then Is_Entity_Name (Prefix (Exp))
+                   and then Ekind (Entity (Prefix (Exp))) = E_Constant
+                   and then Is_Related_To_Func_Return (Entity (Prefix (Exp))));
+
       Exp_Typ : constant Entity_Id := Etype (Exp);
       --  The type of the expression (not necessarily the same as R_Type)
 
@@ -7533,7 +7540,7 @@ package body Exp_Ch6 is
             Decl : Node_Id;
             Ent  : Entity_Id;
          begin
-            if Nkind (Exp) /= N_Function_Call
+            if not Exp_Is_Function_Call
               and then Has_Discriminants (Ubt)
               and then not Is_Constrained (Ubt)
               and then not Has_Unchecked_Union (Ubt)
@@ -7570,7 +7577,7 @@ package body Exp_Ch6 is
               (not Is_Array_Type (Exp_Typ)
                 or else Is_Constrained (Exp_Typ) = Is_Constrained (R_Type)
                 or else CW_Or_Has_Controlled_Part (Utyp))
-           and then Nkind (Exp) = N_Function_Call
+           and then Exp_Is_Function_Call
          then
             Set_By_Ref (N);
 

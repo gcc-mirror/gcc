@@ -2725,6 +2725,7 @@ package body Sem_Ch7 is
          Set_Has_Pragma_Unreferenced_Objects
                                      (Priv, Has_Pragma_Unreferenced_Objects
                                                                        (Full));
+         Set_Predicates_Ignored      (Priv, Predicates_Ignored         (Full));
          if Is_Unchecked_Union (Full) then
             Set_Is_Unchecked_Union (Base_Type (Priv));
          end if;

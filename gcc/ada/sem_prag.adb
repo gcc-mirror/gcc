@@ -21201,9 +21201,7 @@ package body Sem_Prag is
             Set_Has_Delayed_Freeze (Typ);
 
             Set_Predicates_Ignored (Typ,
-              Present (Check_Policy_List)
-                and then
-                  Policy_In_Effect (Name_Dynamic_Predicate) = Name_Ignore);
+              Policy_In_Effect (Name_Dynamic_Predicate) = Name_Ignore);
             Discard := Rep_Item_Too_Late (Typ, N, FOnly => True);
          end Predicate;
 
