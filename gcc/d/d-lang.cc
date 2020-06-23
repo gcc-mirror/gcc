@@ -306,7 +306,7 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
   global.params.cplusplus = CppStdRevisionCpp14;
 
   /* Warnings and deprecations are disabled by default.  */
-  global.params.useDeprecated = DIAGNOSTICoff;
+  global.params.useDeprecated = DIAGNOSTICinform;
   global.params.warnings = DIAGNOSTICoff;
 
   global.params.imppath = new Strings ();
