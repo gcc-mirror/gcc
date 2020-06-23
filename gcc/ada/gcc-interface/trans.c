@@ -7282,10 +7282,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	      : gnat_expr;
 	  const Entity_Id gnat_type
 	    = Underlying_Type (Etype (Name (gnat_node)));
-	  const bool regular_array_type_p
-	    = Is_Array_Type (gnat_type) && !Is_Bit_Packed_Array (gnat_type);
 	  const bool use_memset_p
-	    = regular_array_type_p
+	    = Is_Array_Type (gnat_type)
 	      && Nkind (gnat_inner) == N_Aggregate
 	      && Is_Single_Aggregate (gnat_inner);
 
@@ -7356,7 +7354,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	     not completely disjoint, play safe and use memmove.  But don't do
 	     it for a bit-packed array as it might not be byte-aligned.  */
 	  if (TREE_CODE (gnu_result) == MODIFY_EXPR
-	      && regular_array_type_p
+	      && Is_Array_Type (gnat_type)
+	      && !Is_Bit_Packed_Array (gnat_type)
 	      && !(Forwards_OK (gnat_node) && Backwards_OK (gnat_node)))
 	    {
 	      tree to = TREE_OPERAND (gnu_result, 0);
