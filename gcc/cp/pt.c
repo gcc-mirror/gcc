@@ -28329,7 +28329,7 @@ collect_ctor_idx_types (tree ctor, tree list, tree elt = NULL_TREE)
   tree idx, val; unsigned i;
   FOR_EACH_CONSTRUCTOR_ELT (v, i, idx, val)
     {
-      tree ftype = elt ? elt : finish_decltype_type (idx, true, tf_none);
+      tree ftype = elt ? elt : TREE_TYPE (idx);
       if (BRACE_ENCLOSED_INITIALIZER_P (val)
 	  && CONSTRUCTOR_NELTS (val)
 	  /* As in reshape_init_r, a non-aggregate or array-of-dependent-bound
