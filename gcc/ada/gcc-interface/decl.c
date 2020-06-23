@@ -3507,18 +3507,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	      gnu_type = make_node (RECORD_TYPE);
 	      TYPE_NAME (gnu_type) = gnu_entity_name;
-	      if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
-		{
-		  /* Use the ultimate base record type as the debug type.
-		     Subtypes and derived types bring no useful
-		     information.  */
-		  Entity_Id gnat_debug_type = gnat_entity;
-		  while (Etype (gnat_debug_type) != gnat_debug_type)
-		    gnat_debug_type = Etype (gnat_debug_type);
-		  tree gnu_debug_type
-		    = TYPE_MAIN_VARIANT (gnat_to_gnu_type (gnat_debug_type));
-		  SET_TYPE_DEBUG_TYPE (gnu_type, gnu_debug_type);
-		}
 	      TYPE_PACKED (gnu_type) = TYPE_PACKED (gnu_base_type);
 	      TYPE_REVERSE_STORAGE_ORDER (gnu_type)
 		= Reverse_Storage_Order (gnat_entity);
@@ -3580,6 +3568,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 					 true, debug_info_p,
 					 NULL, gnat_entity);
 		}
+
+	      /* Or else, if the subtype is artificial and encodings are not
+		 used, use the base record type as the debug type.  */
+	      else if (debug_info_p
+		       && artificial_p
+		       && gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+		SET_TYPE_DEBUG_TYPE (gnu_type, gnu_unpad_base_type);
 	    }
 
 	  /* Otherwise, go down all the components in the new type and make
