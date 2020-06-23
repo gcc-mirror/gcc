@@ -7556,15 +7556,14 @@ package body Exp_Ch6 is
          Set_Enclosing_Sec_Stack_Return (N);
 
          --  Optimize the case where the result is a function call. In this
-         --  case either the result is already on the secondary stack, or is
-         --  already being returned with the stack pointer depressed and no
-         --  further processing is required except to set the By_Ref flag
-         --  to ensure that gigi does not attempt an extra unnecessary copy.
-         --  (actually not just unnecessary but harmfully wrong in the case
-         --  of a controlled type, where gigi does not know how to do a copy).
-         --  To make up for a gcc 2.8.1 deficiency (???), we perform the copy
-         --  for array types if the constrained status of the target type is
-         --  different from that of the expression.
+         --  case the result is already on the secondary stack and no further
+         --  processing is required except to set the By_Ref flag to ensure
+         --  that gigi does not attempt an extra unnecessary copy. (Actually
+         --  not just unnecessary but wrong in the case of a controlled type,
+         --  where gigi does not know how to do a copy.) To make up for a gcc
+         --  2.8.1 deficiency (???), we perform the copy for array types if the
+         --  constrained status of the target type is different from that of
+         --  the expression.
 
          if Requires_Transient_Scope (Exp_Typ)
            and then
