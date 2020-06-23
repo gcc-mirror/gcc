@@ -707,6 +707,7 @@ target_noncanonical = @target_noncanonical@
 target_os = @target_os@
 target_subdir = @target_subdir@
 target_vendor = @target_vendor@
+tmake_file = @tmake_file@
 toolexecdir = @toolexecdir@
 toolexeclibdir = @toolexeclibdir@
 top_build_prefix = @top_build_prefix@
@@ -7189,6 +7190,9 @@ fpu-target.inc: fpu-target.h $(srcdir)/libgfortran.h
 
 @MAINTAINER_MODE_TRUE@$(gfor_misc_specifics): m4/misc_specifics.m4 m4/head.m4
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 misc_specifics.m4 > $@
+
+# target overrides
+-include $(tmake_file)
 
 # GNU Make needs to see an explicit $(MAKE) variable in the command it
 # runs to enable its job server during parallel builds.  Hence the

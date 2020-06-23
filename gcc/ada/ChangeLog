@@ -1,3 +1,212 @@
+2020-06-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (lvalue_required_for_attribute_p): Do not deal
+	with 'Pos or 'Val.
+	(Attribute_to_gnu): Likewise.
+	* gcc-interface/utils.c (create_field_decl): Small formatting fix.
+
+2020-06-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (adjust_for_implicit_deref): Delete.
+	(maybe_implicit_deref): Likewise.
+	(Attribute_to_gnu): Replace calls to maybe_implicit_deref by calls
+	to maybe_padded_object.
+	(Call_to_gnu): Likewise.
+	(gnat_to_gnu) <N_Indexed_Component>: Likewise.
+	<N_Slice>: Likewise.
+	<N_Selected_Component>: Likewise.
+	<N_Free_Statement>: Remove call to adjust_for_implicit_deref and
+	manually make sure that the designated type is complete.
+	* gcc-interface/utils2.c (build_simple_component_ref): Add comment.
+
+2020-06-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_param): Tidy up.
+	(gnat_to_gnu_subprog_type): For a variadic C function, do not
+	build unnamed parameters and do not add final void node.
+	* gcc-interface/misc.c: Include snames.h.
+	* gcc-interface/trans.c (Attribute_to_gnu): Tidy up.
+	(Call_to_gnu): Implement support for unnamed parameters in a
+	variadic C function.
+	* gcc-interface/utils.c: Include snames.h.
+	(copy_type): Tidy up.
+
+2020-06-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Do not apply
+	range checks to allocators here.
+
+2020-06-19  Justin Squirek  <squirek@adacore.com>
+
+	* lib.adb (Check_Same_Extended_Unit): Add check to determine if
+	the body for the subunits exist in the same file as their
+	specifications.
+
+2020-06-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (In_Place_Assign_OK): In an allocator context,
+	check the bounds of an array aggregate against those of the
+	designated type, except if the latter is unconstrained.
+
+2020-06-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Is_Visible_Component): Reason only on the private
+	status of the original type in an instance body.
+
+2020-06-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_res.adb (Resolve_Qualified_Expression): Do not override the
+	type of the node when it is unconstrained if it is for an allocator.
+
+2020-06-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_res.adb (Resolve_Allocator): Call Resolve_Qualified_Expression
+	on the qualified expression, if any, instead of doing an incomplete
+	type resolution manually.
+	(Resolve_Qualified_Expression): Apply predicate check to operand.
+
+2020-06-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): In an instance body,
+	also invoke Find_Component_In_Instance on the parent subtype of
+	a derived tagged type immediately visible.  Remove obsolete case.
+
+2020-06-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_attr.adb (Get_Integer_Type): Return the largest supported
+	unsigned integer type if need be.
+
+2020-06-19  Justin Squirek  <squirek@adacore.com>
+
+	* sem_warn.adb (Warn_On_Known_Condition): Add general sanity
+	check that asserts the original source node being checked
+	contains an entity. If not, it could be the result of special
+	case expansion for type conversions.
+
+2020-06-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Do not indicate
+	that the function has a completion if it appears within a Ghost
+	generic package.
+
+2020-06-19  Bob Duff  <duff@adacore.com>
+
+	* libgnat/a-ststbo.adb (Write): Replace pragma Assert with "if
+	... raise Constraint_Error".
+
+2020-06-19  Justin Squirek  <squirek@adacore.com>
+
+	* widechar.adb, widechar.ads (Skip_Wide): Catch validity check
+	failure when skipping over characters, and update comment to
+	reflect Skip_Wide's usage in error printing.
+
+2020-06-19  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.ads (Ensure_Activation_Chain_And_Master): New
+	subprogram.
+	* exp_ch3.adb (Ensure_Activation_Chain_And_Master): New
+	subprogram that factorizes code.
+	(Expand_N_Object_Declaration): Call new subprogram.
+	* sem_ch6.adb (Analyze_Function_Return): Returning a
+	build-in-place unconstrained array type defer the full analysis
+	of the returned object to avoid generating the corresponding
+	constrained subtype; otherwise the bounds would be created in
+	the stack and a dangling reference would be returned pointing to
+	the bounds.
+
+2020-06-19  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/a-nbnbin.adb, libgnat/a-nbnbin.ads,
+	libgnat/a-nbnbin__gmp.adb, libgnat/a-nbnbre.adb,
+	libgnat/a-nbnbre.ads: Update spec according to AI12-0366.
+
+2020-06-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.ads: Remove excessive whitespace in declarations of
+	functions for check suppression.
+
+2020-06-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch7.adb (Hide_Public_Entities): Split handling of objects
+	and subprograms, and do not reject the latter upfront in nested
+	instance specs if there are no referencer subprograms at all.
+	(Analyze_Package_Body_Helper): Also call Hide_Public_Entities on
+	nested generic instances.
+
+2020-06-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Reject illegal positional
+	component associations; fix syntax in comment about named
+	component associations.
+
+2020-06-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Resolve_Delta_Record_Aggregate): Modify a nested
+	Get_Component_Type routine to return a component and not just
+	its type; use this routine to decorate the identifier within the
+	delta aggregate.
+
+2020-06-19  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch4.adb (Find_Equality_Types.Check_Access_Attribute): New.
+	(Find_Equality_Types): Move universal_access related checks at
+	the end of the processing and add call to
+	Check_Access_Attribute.
+
+2020-06-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_prag.adb (Process_Convention): Revert previous change.
+
+2020-06-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.ads (Apply_Static_Length_Check): Move up.
+	(Apply_Range_Check): Add parameter Insert_Node.
+	* checks.adb (Apply_Selected_Range_Checks): Merge into...
+	(Apply_Range_Check): ...this.  Add parameter Insert_Node,
+	pass it as Warn_Node to Selected_Range_Checks and use it
+	as insertion point for the checks.
+	* sem_ch3.adb (Analyze_Subtype_Declaration): Rewrite block
+	dealing with the range checks for the subtype indication.
+	Use local variable and call Apply_Range_Check in both cases.
+
+2020-06-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Call Ensure_Valid
+	on the expression of an object declaration that captures the
+	value of 'Old prefix.
+
+2020-06-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Add comment.
+	* sem_attr.adb (Analyze_Attribute): Add ??? comment.
+	* sem_util.ads (Valid_Scalars): This routine is only used for
+	'Valid_Scalars and not for 'Valid.
+
+2020-06-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Do not call
+	Scalar_Part_Present on the array component's type.
+	(Build_Array_VS_Func): Remove Comp_Typ parameter, because it can
+	be easily computed from the Array_Top parameter *and redundant
+	parameters are confusing and error-prone).
+
+2020-06-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_attr.adb (Build_Record_VS_Func): Strip privacy and type
+	derivation from the root type when 'Valid_Scalars is applied to
+	a class-wide type.
+
+2020-06-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb (Apply_Parameter_Validity_Checks): Remove testing
+	of Check_Validity_Of_Parameters for every formal parameter and
+	function result.
+
+2020-06-19  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): Add missing
+	warning tag.
+
 2020-06-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch4.adb (Get_Size_For_Range): Only make sure to return a

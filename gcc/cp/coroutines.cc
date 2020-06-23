@@ -3913,30 +3913,25 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree grooaf = NULL_TREE;
   tree dummy_promise = build_dummy_object (get_coroutine_promise_type (orig));
 
-  /* We don't require this, so lookup_promise_method can return NULL...  */
+  /* We don't require this, so lookup_promise_method can return NULL,
+     but, if the lookup succeeds, then the function must be usable.  */
   if (grooaf_meth && BASELINK_P (grooaf_meth))
-    {
-      /* ... but, if the lookup succeeds, then the function must be
-	 usable.
-	 build_new_method_call () wants a valid pointer to (an empty)  args
-	 list in this case.  */
-      vec<tree, va_gc> *args = make_tree_vector ();
-      grooaf = build_new_method_call (dummy_promise, grooaf_meth, &args,
-				      NULL_TREE, LOOKUP_NORMAL, NULL,
-				      tf_warning_or_error);
-      release_tree_vector (args);
-    }
+    grooaf = build_new_method_call (dummy_promise, grooaf_meth, NULL,
+				    NULL_TREE, LOOKUP_NORMAL, NULL,
+				    tf_warning_or_error);
 
   /* Allocate the frame, this has several possibilities:
      [dcl.fct.def.coroutine] / 9 (part 1)
      The allocation function’s name is looked up in the scope of the promise
      type.  It's not a failure for it to be absent see part 4, below.  */
+
   tree nwname = ovl_op_identifier (false, NEW_EXPR);
-  tree fns = lookup_promise_method (orig, nwname, fn_start,
-				    /*musthave=*/false);
   tree new_fn = NULL_TREE;
-  if (fns && BASELINK_P (fns))
+
+  if (TYPE_HAS_NEW_OPERATOR (promise_type))
     {
+      tree fns = lookup_promise_method (orig, nwname, fn_start,
+				    /*musthave=*/true);
       /* [dcl.fct.def.coroutine] / 9 (part 2)
 	If the lookup finds an allocation function in the scope of the promise
 	type, overload resolution is performed on a function call created by
@@ -3966,30 +3961,29 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	    vec_safe_push (args, arg);
 	}
 
-      /* We might need to check that the provided function is nothrow.  */
+      /* Note the function selected; we test to see if it's NOTHROW.  */
       tree func;
-      /* Failure is OK for the first attempt.  */
+      /* Failure is not an error for this attempt.  */
       new_fn = build_new_method_call (dummy_promise, fns, &args, NULL,
 				      LOOKUP_NORMAL, &func, tf_none);
       release_tree_vector (args);
 
-      if (!new_fn || new_fn == error_mark_node)
+      if (new_fn == error_mark_node)
 	{
 	  /* [dcl.fct.def.coroutine] / 9 (part 3)
 	    If no viable function is found, overload resolution is performed
 	    again on a function call created by passing just the amount of
 	    space required as an argument of type std::size_t.  */
-	  args = make_tree_vector ();
-	  vec_safe_push (args, resizeable); /* Space needed.  */
+	  args = make_tree_vector_single (resizeable); /* Space needed.  */
 	  new_fn = build_new_method_call (dummy_promise, fns, &args,
 					  NULL_TREE, LOOKUP_NORMAL, &func,
 					  tf_none);
 	  release_tree_vector (args);
 	}
 
-     /* However, if the initial lookup succeeded, then one of these two
-	options must be available.  */
-    if (!new_fn || new_fn == error_mark_node)
+     /* However, if the promise provides an operator new, then one of these
+	two options must be available.  */
+    if (new_fn == error_mark_node)
       {
 	error_at (fn_start, "%qE is provided by %qT but is not usable with"
 		  " the function signature %qD", nwname, promise_type, orig);
@@ -3999,7 +3993,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       error_at (fn_start, "%qE is provided by %qT but %qE is not marked"
 		" %<throw()%> or %<noexcept%>", grooaf, promise_type, nwname);
     }
-  else
+  else /* No operator new in the promise.  */
     {
       /* [dcl.fct.def.coroutine] / 9 (part 4)
 	 If this lookup fails, the allocation function’s name is looked up in
@@ -4009,7 +4003,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       /* build_operator_new_call () will insert size needed as element 0 of
 	 this, and we might need to append the std::nothrow constant.  */
       vec_alloc (args, 2);
-
       if (grooaf)
 	{
 	  /* [dcl.fct.def.coroutine] / 10 (part 2)
@@ -4023,6 +4016,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  tree std_nt = lookup_qualified_name (std_node,
 					       get_identifier ("nothrow"),
 					       0, /*complain=*/true, false);
+	  if (!std_nt || std_nt == error_mark_node)
+	    error_at (fn_start, "%qE is provided by %qT but %<std::nothrow%> "
+		      "cannot be found", grooaf, promise_type);
 	  vec_safe_push (args, std_nt);
 	}
 
@@ -4037,7 +4033,10 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 					tf_warning_or_error);
       resizeable = build_call_expr_internal_loc
 	(fn_start, IFN_CO_FRAME, size_type_node, 2, frame_size, coro_fp);
-      CALL_EXPR_ARG (new_fn, 0) = resizeable;
+      /* If the operator call fails for some reason, then don't try to
+	 amend it.  */
+      if (new_fn != error_mark_node)
+	CALL_EXPR_ARG (new_fn, 0) = resizeable;
 
       release_tree_vector (args);
     }
@@ -4280,12 +4279,34 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   tree gro = NULL_TREE;
   tree gro_bind_vars = NULL_TREE;
+  tree gro_cleanup_stmt = NULL_TREE;
   /* We have to sequence the call to get_return_object before initial
      suspend.  */
   if (gro_is_void_p)
-    finish_expr_stmt (get_ro);
+    r = get_ro;
+  else if (same_type_p (gro_type, fn_return_type))
+    {
+     /* [dcl.fct.def.coroutine] / 7
+	The expression promise.get_return_object() is used to initialize the
+	glvalue result or... (see below)
+	Construct the return result directly.  */
+      if (TYPE_NEEDS_CONSTRUCTING (gro_type))
+	{
+	  vec<tree, va_gc> *arg = make_tree_vector_single (get_ro);
+	  r = build_special_member_call (DECL_RESULT (orig),
+					 complete_ctor_identifier,
+					 &arg, gro_type, LOOKUP_NORMAL,
+					 tf_warning_or_error);
+	  release_tree_vector (arg);
+	}
+      else
+	r = build2_loc (fn_start, INIT_EXPR, gro_type,
+			DECL_RESULT (orig), get_ro);
+    }
   else
     {
+      /* ... or ... Construct an object that will be used as the single
+	param to the CTOR for the return object.  */
       gro = build_lang_decl (VAR_DECL, get_identifier ("coro.gro"), gro_type);
       DECL_CONTEXT (gro) = current_scope ();
       DECL_ARTIFICIAL (gro) = true;
@@ -4302,8 +4323,21 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	}
       else
 	r = build2_loc (fn_start, INIT_EXPR, gro_type, gro, get_ro);
-      finish_expr_stmt (r);
+      /* The constructed object might require a cleanup.  */
+      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (gro_type))
+	{
+	  tree cleanup
+	    = build_special_member_call (gro, complete_dtor_identifier,
+					 NULL, gro_type, LOOKUP_NORMAL,
+					 tf_warning_or_error);
+	  gro_cleanup_stmt = build_stmt (input_location, CLEANUP_STMT, NULL,
+					 cleanup, gro);
+	}
     }
+  finish_expr_stmt (r);
+
+  if (gro_cleanup_stmt)
+    CLEANUP_BODY (gro_cleanup_stmt) = push_stmt_list ();
 
   /* Initialize the resume_idx_name to 0, meaning "not started".  */
   tree resume_idx_m
@@ -4345,21 +4379,20 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
      promise was constructed.  We now supply a reference to that var,
      either as the return value (if it's the same type) or to the CTOR
      for an object of the return type.  */
-  if (gro_is_void_p)
-    r = NULL_TREE;
-  else
-    r = rvalue (gro);
 
-  if (!same_type_p (gro_type, fn_return_type))
+  if (same_type_p (gro_type, fn_return_type))
+    r = gro_is_void_p ? NULL_TREE : DECL_RESULT (orig);
+  else
     {
-      /* The return object is , even if the gro is void.  */
       if (CLASS_TYPE_P (fn_return_type))
 	{
+	  /* For class type return objects, we can attempt to construct,
+	     even if the gro is void.  */
 	  vec<tree, va_gc> *args = NULL;
 	  vec<tree, va_gc> **arglist = NULL;
 	  if (!gro_is_void_p)
 	    {
-	      args = make_tree_vector_single (r);
+	      args = make_tree_vector_single (rvalue (gro));
 	      arglist = &args;
 	    }
 	  r = build_special_member_call (NULL_TREE,
@@ -4370,11 +4403,26 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  if (args)
 	    release_tree_vector (args);
 	}
-      else /* ??? suppose we have non-class return and void gro?  */
-	r = build1_loc (input_location, CONVERT_EXPR, fn_return_type, r);
+      else if (gro_is_void_p)
+	{
+	  /* We can't initialize a non-class return value from void.  */
+	  error_at (input_location, "cannot initialize a return object of type"
+		    " %qT with an rvalue of type %<void%>", fn_return_type);
+	  r = error_mark_node;
+	}
+      else
+	r = build1_loc (input_location, CONVERT_EXPR,
+			fn_return_type, rvalue (gro));
     }
 
   finish_return_stmt (r);
+
+  if (gro_cleanup_stmt)
+    {
+      CLEANUP_BODY (gro_cleanup_stmt)
+	= pop_stmt_list (CLEANUP_BODY (gro_cleanup_stmt));
+      add_stmt (gro_cleanup_stmt);
+    }
 
   /* Finish up the ramp function.  */
   BIND_EXPR_VARS (gro_context_bind) = gro_bind_vars;

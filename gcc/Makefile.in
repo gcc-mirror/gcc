@@ -1763,22 +1763,16 @@ SELFTEST_DEPS = $(GCC_PASSES) stmp-int-hdrs $(srcdir)/testsuite/selftests
 gnat_install_lib = @gnat_install_lib@
 
 # per-language makefile fragments
-ifneq ($(LANG_MAKEFRAGS),)
-include $(LANG_MAKEFRAGS)
-endif
+-include $(LANG_MAKEFRAGS)
 
 # target and host overrides must follow the per-language makefile fragments
 # so they can override or augment language-specific variables
 
 # target overrides
-ifneq ($(tmake_file),)
-include $(tmake_file)
-endif
+-include $(tmake_file)
 
 # host overrides
-ifneq ($(xmake_file),)
-include $(xmake_file)
-endif
+-include $(xmake_file)
 
 # all-tree.def includes all the tree.def files.
 all-tree.def: s-alltree; @true

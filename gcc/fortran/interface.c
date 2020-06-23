@@ -1981,7 +1981,8 @@ check_interface1 (gfc_interface *p, gfc_interface *q0,
 static void
 check_sym_interfaces (gfc_symbol *sym)
 {
-  char interface_name[GFC_MAX_SYMBOL_LEN + sizeof("generic interface ''")];
+  /* Provide sufficient space to hold "generic interface 'symbol.symbol'".  */
+  char interface_name[2*GFC_MAX_SYMBOL_LEN+2 + sizeof("generic interface ''")];
   gfc_interface *p;
 
   if (sym->ns != gfc_current_ns)
@@ -1989,6 +1990,8 @@ check_sym_interfaces (gfc_symbol *sym)
 
   if (sym->generic != NULL)
     {
+      size_t len = strlen (sym->name) + sizeof("generic interface ''");
+      gcc_assert (len < sizeof (interface_name));
       sprintf (interface_name, "generic interface '%s'", sym->name);
       if (check_interface0 (sym->generic, interface_name))
 	return;

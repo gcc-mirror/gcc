@@ -1,3 +1,17 @@
+2020-06-22  David Edelsohn  <dje.gcc@gmail.com>
+
+	* Makefile.am: Use -include.
+	* Makefile.in: Regenerate.
+
+2020-06-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* Makefile.am (tmake_file): Build and install AIX-style FAT libraries.
+	* Makefile.in: Regenerate.
+	* configure.ac (tmake_file): Substitute.
+	* configure: Regenerate.
+	* configure.tgt (powerpc-ibm-aix*): Define tmake_file.
+	* config/t-aix: New file.
+
 2020-06-01  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/x86/fenv.c (struct fenv): Add __attribute__ ((gcc_struct)).

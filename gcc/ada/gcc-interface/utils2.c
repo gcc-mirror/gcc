@@ -972,7 +972,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
 		       && (((TREE_CODE (restype)
 			     == TREE_CODE (operand_type (result))
 			     && TYPE_MODE (restype)
-				 == TYPE_MODE (operand_type (result))))
+				== TYPE_MODE (operand_type (result))))
 			   || TYPE_ALIGN_OK (restype))))
 	    result = TREE_OPERAND (result, 0);
 

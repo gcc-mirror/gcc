@@ -1249,25 +1249,16 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 					  true)))
 	gnu_result = DECL_INITIAL (gnu_result);
 
-      /* If it's a renaming pointer, get to the renamed object.  */
-      if (TREE_CODE (gnu_result) == VAR_DECL
-          && !DECL_LOOP_PARM_P (gnu_result)
-	  && DECL_RENAMED_OBJECT (gnu_result))
-	gnu_result = DECL_RENAMED_OBJECT (gnu_result);
+      /* Do the final dereference.  */
+      gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_result);
 
-      /* Otherwise, do the final dereference.  */
-      else
-	{
-	  gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_result);
+      if ((TREE_CODE (gnu_result) == INDIRECT_REF
+	   || TREE_CODE (gnu_result) == UNCONSTRAINED_ARRAY_REF)
+	  && No (Address_Clause (gnat_entity)))
+	TREE_THIS_NOTRAP (gnu_result) = 1;
 
-	  if ((TREE_CODE (gnu_result) == INDIRECT_REF
-	       || TREE_CODE (gnu_result) == UNCONSTRAINED_ARRAY_REF)
-	      && No (Address_Clause (gnat_entity)))
-	    TREE_THIS_NOTRAP (gnu_result) = 1;
-
-	  if (read_only)
-	    TREE_READONLY (gnu_result) = 1;
-	}
+      if (read_only)
+	TREE_READONLY (gnu_result) = 1;
     }
 
   /* If we have a constant declaration and its initializer, try to return the
@@ -6543,31 +6534,19 @@ gnat_to_gnu (Node_Id gnat_node)
 		&& (Is_Array_Type (Etype (gnat_temp))
 		    || Is_Record_Type (Etype (gnat_temp))
 		    || Is_Concurrent_Type (Etype (gnat_temp)))))
-	{
-	  tree gnu_temp
-	    = gnat_to_gnu_entity (gnat_temp,
-				  gnat_to_gnu (Renamed_Object (gnat_temp)),
-				  true);
-	  /* See case 2 of renaming in gnat_to_gnu_entity.  */
-	  if (TREE_SIDE_EFFECTS (gnu_temp))
-	    gnu_result = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_temp);
-	}
+	gnat_to_gnu_entity (gnat_temp,
+			    gnat_to_gnu (Renamed_Object (gnat_temp)),
+			    true);
       break;
 
     case N_Exception_Renaming_Declaration:
       gnat_temp = Defining_Entity (gnat_node);
       gnu_result = alloc_stmt_list ();
 
-      /* See the above case for the rationale.  */
       if (Present (Renamed_Entity (gnat_temp)))
-	{
-	  tree gnu_temp
-	    = gnat_to_gnu_entity (gnat_temp,
-				  gnat_to_gnu (Renamed_Entity (gnat_temp)),
-				  true);
-	  if (TREE_SIDE_EFFECTS (gnu_temp))
-	    gnu_result = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_temp);
-	}
+	gnat_to_gnu_entity (gnat_temp,
+			    gnat_to_gnu (Renamed_Entity (gnat_temp)),
+			    true);
       break;
 
     case N_Subprogram_Renaming_Declaration:
@@ -7175,9 +7154,8 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Allocator:
       {
-	tree gnu_init = NULL_TREE;
-	tree gnu_type;
-	bool ignore_init_type = false;
+	tree gnu_type, gnu_init;
+	bool ignore_init_type;
 
 	gnat_temp = Expression (gnat_node);
 
@@ -7186,15 +7164,22 @@ gnat_to_gnu (Node_Id gnat_node)
 	   contains both the type and an initial value for the object.  */
 	if (Nkind (gnat_temp) == N_Identifier
 	    || Nkind (gnat_temp) == N_Expanded_Name)
-	  gnu_type = gnat_to_gnu_type (Entity (gnat_temp));
+	  {
+	    ignore_init_type = false;
+	    gnu_init = NULL_TREE;
+	    gnu_type = gnat_to_gnu_type (Entity (gnat_temp));
+	  }
+
 	else if (Nkind (gnat_temp) == N_Qualified_Expression)
 	  {
 	    const Entity_Id gnat_desig_type
 	      = Designated_Type (Underlying_Type (Etype (gnat_node)));
 
-	    ignore_init_type = Has_Constrained_Partial_View (gnat_desig_type);
-	    gnu_init = gnat_to_gnu (Expression (gnat_temp));
+	    /* The flag is effectively only set on the base types.  */
+	    ignore_init_type
+	      = Has_Constrained_Partial_View (Base_Type (gnat_desig_type));
 
+	    gnu_init = gnat_to_gnu (Expression (gnat_temp));
 	    gnu_init = maybe_unconstrained_array (gnu_init);
 
 	    gigi_checking_assert (!Do_Range_Check (Expression (gnat_temp)));
@@ -7282,10 +7267,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	      : gnat_expr;
 	  const Entity_Id gnat_type
 	    = Underlying_Type (Etype (Name (gnat_node)));
-	  const bool regular_array_type_p
-	    = Is_Array_Type (gnat_type) && !Is_Bit_Packed_Array (gnat_type);
 	  const bool use_memset_p
-	    = regular_array_type_p
+	    = Is_Array_Type (gnat_type)
 	      && Nkind (gnat_inner) == N_Aggregate
 	      && Is_Single_Aggregate (gnat_inner);
 
@@ -7356,7 +7339,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	     not completely disjoint, play safe and use memmove.  But don't do
 	     it for a bit-packed array as it might not be byte-aligned.  */
 	  if (TREE_CODE (gnu_result) == MODIFY_EXPR
-	      && regular_array_type_p
+	      && Is_Array_Type (gnat_type)
+	      && !Is_Bit_Packed_Array (gnat_type)
 	      && !(Forwards_OK (gnat_node) && Backwards_OK (gnat_node)))
 	    {
 	      tree to = TREE_OPERAND (gnu_result, 0);

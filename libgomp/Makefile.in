@@ -16,7 +16,7 @@
 
 # Plugins for offload execution, Makefile.am fragment.
 #
-# Copyright (C) 2014-2019 Free Software Foundation, Inc.
+# Copyright (C) 2014-2020 Free Software Foundation, Inc.
 #
 # Contributed by Mentor Embedded.
 #
@@ -530,6 +530,7 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
+tmake_file = @tmake_file@
 toolexecdir = @toolexecdir@
 toolexeclibdir = @toolexeclibdir@
 top_build_prefix = @top_build_prefix@
@@ -573,8 +574,8 @@ libgomp_la_SOURCES = alloc.c atomic.c barrier.c critical.c env.c \
 	affinity.c target.c splay-tree.c libgomp-plugin.c \
 	oacc-parallel.c oacc-host.c oacc-init.c oacc-mem.c \
 	oacc-async.c oacc-plugin.c oacc-cuda.c priority_queue.c \
-	affinity-fmt.c teams.c allocator.c oacc-profiling.c oacc-target.c \
-	$(am__append_4)
+	affinity-fmt.c teams.c allocator.c oacc-profiling.c \
+	oacc-target.c $(am__append_4)
 
 # Nvidia PTX OpenACC plugin.
 @PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_version_info = -version-info $(libtool_VERSION)
@@ -1437,6 +1438,9 @@ libgomp.info: $(STAMP_BUILD_INFO)
 stamp-build-info: libgomp.texi
 	$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) -o libgomp.info $(srcdir)/libgomp.texi
 	@touch $@
+
+# target overrides
+-include $(tmake_file)
 
 # GNU Make needs to see an explicit $(MAKE) variable in the command it
 # runs to enable its job server during parallel builds.  Hence the

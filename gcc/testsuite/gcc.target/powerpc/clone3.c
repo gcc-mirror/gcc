@@ -16,7 +16,7 @@
 static long s;
 long *p = &s;
 
-__attribute__((target_clones("cpu=future,cpu=power9,default")))
+__attribute__((target_clones("cpu=power10,cpu=power9,default")))
 long mod_func (long a, long b)
 {
   return (a % b) + s;

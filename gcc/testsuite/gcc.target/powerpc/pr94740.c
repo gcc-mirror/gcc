@@ -1,7 +1,7 @@
 /* PR rtl-optimization/94740 */
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_future_ok } */
-/* { dg-options "-O2 -mdejagnu-cpu=future -mpcrel" } */
+/* { dg-require-effective-target power10_ok } */
+/* { dg-options "-O2 -mdejagnu-cpu=power10 -mpcrel" } */
 
 int array[8];
 int

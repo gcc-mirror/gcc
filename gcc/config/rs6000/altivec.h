@@ -686,7 +686,7 @@ __altivec_scalar_pred(vec_any_nle,
    to #define vec_step to __builtin_vec_step.  */
 #define vec_step(x) __builtin_vec_step (* (__typeof__ (x) *) 0)
 
-#ifdef _ARCH_PWR_FUTURE
+#ifdef _ARCH_PWR10
 /* May modify these macro definitions if future capabilities overload
    with support for different vector argument and result types.  */
 #define vec_cntlzm(a, b)	__builtin_altivec_vclzdm (a, b)
@@ -696,7 +696,7 @@ __altivec_scalar_pred(vec_any_nle,
 #define vec_cfuge(a, b)	__builtin_altivec_vcfuged (a, b)
 #define vec_genpcvm(a, b)	__builtin_vec_xxgenpcvm (a, b)
 
-/* Overloaded built-in functions for future architecture.  */
+/* Overloaded built-in functions for ISA 3.1.  */
 #define vec_extractl(a, b, c)	__builtin_vec_extractl (a, b, c)
 #define vec_extracth(a, b, c)	__builtin_vec_extracth (a, b, c)
 

@@ -132,7 +132,7 @@ iter-labels := $(siintfuncs16)
 iter-sizes := $(patsubst %,2,$(siintfuncs16)) $(patsubst %,2,$(hiintfuncs16))
 
 
-include $(srcdir)/empty.mk $(patsubst %,$(srcdir)/siditi-object.mk,$(iter-items))
+-include $(patsubst %,$(srcdir)/siditi-object.mk,$(iter-items))
 libgcc-objects += $(patsubst %,%$(objext),$(hiintfuncs16))
 
 ifeq ($(enable_shared),yes)
@@ -167,7 +167,7 @@ iter-items  := $(round_funcs)
 iter-labels := $(round_suffix)
 iter-flags  := $(patsubst %,-DL_round,$(iter-items))
 
-include $(srcdir)/empty.mk $(patsubst %,$(srcdir)/config/avr/lib2-object.mk,$(iter-items))
+-include $(patsubst %,$(srcdir)/config/avr/lib2-object.mk,$(iter-items))
 
 libgcc-objects += $(patsubst %,%$(objext),$(round_funcs))
 
@@ -181,7 +181,7 @@ iter-items  := $(clrsb_funcs)
 iter-labels := $(clrsb_funcs)
 iter-flags  := $(patsubst %,-DL_clrsb,$(iter-items))
 
-include $(srcdir)/empty.mk $(patsubst %,$(srcdir)/config/avr/lib2-object.mk,$(iter-items))
+-include $(patsubst %,$(srcdir)/config/avr/lib2-object.mk,$(iter-items))
 
 libgcc-objects += $(patsubst %,%$(objext),$(clrsb_funcs))
 
@@ -195,7 +195,7 @@ iter-items  := $(countls_funcs)
 iter-labels := $(countls_modes)
 iter-flags  := $(patsubst %,-DL_countls,$(iter-items))
 
-include $(srcdir)/empty.mk $(patsubst %,$(srcdir)/config/avr/lib2-object.mk,$(iter-items))
+-include $(patsubst %,$(srcdir)/config/avr/lib2-object.mk,$(iter-items))
 
 libgcc-objects += $(patsubst %,%$(objext),$(countls_funcs))
 
@@ -209,7 +209,7 @@ iter-items  := $(countlsu_funcs)
 iter-labels := $(countlsu_modes)
 iter-flags  := $(patsubst %,-DL_countlsu,$(iter-items))
 
-include $(srcdir)/empty.mk $(patsubst %,$(srcdir)/config/avr/lib2-object.mk,$(iter-items))
+-include $(patsubst %,$(srcdir)/config/avr/lib2-object.mk,$(iter-items))
 
 libgcc-objects += $(patsubst %,%$(objext),$(countlsu_funcs))
 

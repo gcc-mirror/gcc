@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-options "-mdejagnu-cpu=future" } */
+/* { dg-options "-mdejagnu-cpu=power10" } */
 
 extern void abort (void);
 

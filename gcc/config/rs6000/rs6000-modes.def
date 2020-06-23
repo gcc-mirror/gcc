@@ -82,3 +82,13 @@ VECTOR_MODE (INT, SI, 2);     /*                 V2SI  */
    for quad memory atomic operations to force getting an even/odd register
    combination.  */
 PARTIAL_INT_MODE (TI, 128, PTI);
+
+/* Define, but don't use the larger integer modes.  We need an integer mode
+   defined that is the same size as the vector pair and vector quad modes.  */
+
+INT_MODE (OI, 32);
+INT_MODE (XI, 64);
+
+/* Modes used by __vector_pair and __vector_quad.  */
+PARTIAL_INT_MODE (OI, 256, POI);	/* __vector_pair.  */
+PARTIAL_INT_MODE (XI, 512, PXI);	/* __vector_quad.  */
