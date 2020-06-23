@@ -211,6 +211,10 @@ static int64_t *bb_rank;
 /* Operand->rank hashtable.  */
 static hash_map<tree, int64_t> *operand_rank;
 
+/* SSA_NAMEs that are forms of loop accumulators and whose ranks need to be
+   biased.  */
+static auto_bitmap biased_names;
+
 /* Vector of SSA_NAMEs on which after reassociate_bb is done with
    all basic blocks the CFG should be adjusted - basic blocks
    split right after that SSA_NAME's definition statement and before
@@ -255,6 +259,53 @@ reassoc_remove_stmt (gimple_stmt_iterator *gsi)
    the depth of any reassociation tree we can see, but not larger than
    the rank difference between two blocks.  */
 #define PHI_LOOP_BIAS (1 << 15)
+
+/* Return TRUE iff PHI_LOOP_BIAS should be propagated from one of the STMT's
+   operands to the STMT's left-hand side.  The goal is to preserve bias in code
+   like this:
+
+     x_1 = phi(x_0, x_2)
+     a = x_1 | 1
+     b = a ^ 2
+     .MEM = b
+     c = b + d
+     x_2 = c + e
+
+   That is, we need to preserve bias along single-use chains originating from
+   loop-carried phis.  Only GIMPLE_ASSIGNs to SSA_NAMEs are considered to be
+   uses, because only they participate in rank propagation.  */
+static bool
+propagate_bias_p (gimple *stmt)
+{
+  use_operand_p use;
+  imm_use_iterator use_iter;
+  gimple *single_use_stmt = NULL;
+
+  if (TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)) == tcc_reference)
+    return false;
+
+  FOR_EACH_IMM_USE_FAST (use, use_iter, gimple_assign_lhs (stmt))
+    {
+      gimple *current_use_stmt = USE_STMT (use);
+
+      if (is_gimple_assign (current_use_stmt)
+	  && TREE_CODE (gimple_assign_lhs (current_use_stmt)) == SSA_NAME)
+	{
+	  if (single_use_stmt != NULL && single_use_stmt != current_use_stmt)
+	    return false;
+	  single_use_stmt = current_use_stmt;
+	}
+    }
+
+  if (single_use_stmt == NULL)
+    return false;
+
+  if (gimple_bb (stmt)->loop_father
+      != gimple_bb (single_use_stmt)->loop_father)
+    return false;
+
+  return true;
+}
 
 /* Rank assigned to a phi statement.  If STMT is a loop-carried phi of
    an innermost loop, and the phi has only a single use which is inside
@@ -313,48 +364,26 @@ phi_rank (gimple *stmt)
   return bb_rank[bb->index];
 }
 
-/* If EXP is an SSA_NAME defined by a PHI statement that represents a
-   loop-carried dependence of an innermost loop, return TRUE; else
-   return FALSE.  */
-static bool
-loop_carried_phi (tree exp)
-{
-  gimple *phi_stmt;
-  int64_t block_rank;
-
-  if (TREE_CODE (exp) != SSA_NAME
-      || SSA_NAME_IS_DEFAULT_DEF (exp))
-    return false;
-
-  phi_stmt = SSA_NAME_DEF_STMT (exp);
-
-  if (gimple_code (SSA_NAME_DEF_STMT (exp)) != GIMPLE_PHI)
-    return false;
-
-  /* Non-loop-carried phis have block rank.  Loop-carried phis have
-     an additional bias added in.  If this phi doesn't have block rank,
-     it's biased and should not be propagated.  */
-  block_rank = bb_rank[gimple_bb (phi_stmt)->index];
-
-  if (phi_rank (phi_stmt) != block_rank)
-    return true;
-
-  return false;
-}
-
 /* Return the maximum of RANK and the rank that should be propagated
    from expression OP.  For most operands, this is just the rank of OP.
    For loop-carried phis, the value is zero to avoid undoing the bias
    in favor of the phi.  */
 static int64_t
-propagate_rank (int64_t rank, tree op)
+propagate_rank (int64_t rank, tree op, bool *maybe_biased_p)
 {
   int64_t op_rank;
 
-  if (loop_carried_phi (op))
-    return rank;
-
   op_rank = get_rank (op);
+
+  /* Check whether op is biased after the get_rank () call, since it might have
+     updated biased_names.  */
+  if (TREE_CODE (op) == SSA_NAME
+      && bitmap_bit_p (biased_names, SSA_NAME_VERSION (op)))
+    {
+      if (maybe_biased_p == NULL)
+	return rank;
+      *maybe_biased_p = true;
+    }
 
   return MAX (rank, op_rank);
 }
@@ -433,13 +462,20 @@ get_rank (tree e)
 
       stmt = SSA_NAME_DEF_STMT (e);
       if (gimple_code (stmt) == GIMPLE_PHI)
-	rank = phi_rank (stmt);
+	{
+	  rank = phi_rank (stmt);
+	  if (rank != bb_rank[gimple_bb (stmt)->index])
+	    bitmap_set_bit (biased_names, SSA_NAME_VERSION (e));
+	}
 
       else if (!is_gimple_assign (stmt))
 	rank = bb_rank[gimple_bb (stmt)->index];
 
       else
 	{
+	  bool biased_p = false;
+	  bool *maybe_biased_p = propagate_bias_p (stmt) ? &biased_p : NULL;
+
 	  /* Otherwise, find the maximum rank for the operands.  As an
 	     exception, remove the bias from loop-carried phis when propagating
 	     the rank so that dependent operations are not also biased.  */
@@ -448,9 +484,11 @@ get_rank (tree e)
 	     thus have rank 0.  */
 	  rank = 0;
 	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
-	    rank = propagate_rank (rank, op);
+	    rank = propagate_rank (rank, op, maybe_biased_p);
 
 	  rank += 1;
+	  if (biased_p)
+	    bitmap_set_bit (biased_names, SSA_NAME_VERSION (e));
 	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -6933,6 +6971,7 @@ fini_reassoc (void)
 			    reassociate_stats.pows_created);
 
   delete operand_rank;
+  bitmap_clear (biased_names);
   operand_entry_pool.release ();
   free (bb_rank);
   plus_negates.release ();
