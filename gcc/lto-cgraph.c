@@ -2106,10 +2106,32 @@ lto_apply_partition_mask (ltrans_partition partition)
 	  cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
 	  if (cnode)
 	    {
-	      maybe_release_function_dominators (cnode);
-	      cnode->release_body ();
-	      if (!cnode->definition)
-		cnode->body_removed = true;
+	      if (cnode->clone_of)
+		cnode->remove_from_clone_tree ();
+
+	      if (cnode->has_gimple_body_p ())
+		{
+		  maybe_release_function_dominators (cnode);
+		  cnode->remove_callees ();
+		  cnode->remove_all_references ();
+		  cnode->release_body ();
+		  cnode->body_removed = true;
+		  cnode->analyzed = false;
+		  cnode->definition = false;
+		  cnode->cpp_implicit_alias = false;
+		  cnode->alias = false;
+		  cnode->transparent_alias = false;
+		  cnode->thunk.thunk_p = false;
+		  cnode->weakref = false;
+		  /* After early inlining we drop always_inline attributes on
+		     bodies of functions that are still referenced (have their
+		     address taken).  */
+		  DECL_ATTRIBUTES (cnode->decl)
+		    = remove_attribute ("always_inline",
+					DECL_ATTRIBUTES (node->decl));
+
+		  cnode->in_other_partition = true;
+		}
 	    }
 	}
     }
@@ -2127,4 +2149,6 @@ lto_apply_partition_mask (ltrans_partition partition)
 
       node->remove ();
     }
+
+  symtab->remove_unreachable_nodes (NULL);
 }

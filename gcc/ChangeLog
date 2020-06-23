@@ -1,3 +1,11 @@
+2020-06-23  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* cgraphunit.c (ipa_passes): Run ipa passes also when
+	split_outputs.
+	* ipa-icf.c (gate): Don't run when split_outputs.
+	* lto-cgraph.c (lto_apply_partition_mask): Correctly set nodes in
+	the partition boundary.
+
 2020-06-18  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* toplev.c (lang_dependent_init): Move call to init_asm output to

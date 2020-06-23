@@ -963,7 +963,7 @@ public:
   virtual bool gate (function *)
     {
       /* Only run on ltrans strage if split-args was provided.  */
-      bool ret = !flag_ltrans || split_outputs;
+      bool ret = !flag_ltrans;
       return ret;
     }
   virtual unsigned int execute (function *)

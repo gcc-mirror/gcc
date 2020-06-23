@@ -2769,7 +2769,7 @@ ipa_passes (void)
   if (flag_generate_lto || flag_generate_offload)
     targetm.asm_out.lto_end ();
 
-  if (!flag_ltrans
+  if ((!flag_ltrans || split_outputs)
       && ((in_lto_p && flag_incremental_link != INCREMENTAL_LINK_LTO)
 	  || !flag_lto || flag_fat_lto_objects))
     execute_ipa_pass_list (passes->all_regular_ipa_passes);
