@@ -1032,18 +1032,20 @@ d_parse_file (void)
       message ("binary    %s", global.params.argv0.ptr);
       message ("version   %s", global.version.ptr);
 
-      if (global.params.versionids)
+      if (global.versionids)
 	{
-	  OutBuffer buf;
-	  buf.writestring ("predefs  ");
-	  for (size_t i = 0; i < global.params.versionids->length; i++)
+	  obstack buffer;
+	  gcc_obstack_init (&buffer);
+	  obstack_grow (&buffer, "predefs  ", 9);
+	  for (size_t i = 0; i < global.versionids->length; i++)
 	    {
-	      const char *s = (*global.params.versionids)[i];
-	      buf.writestring (" ");
-	      buf.writestring (s);
+	      Identifier *id = (*global.versionids)[i];
+	      const char *str = id->toChars ();
+	      obstack_1grow (&buffer, ' ');
+	      obstack_grow (&buffer, str, strlen (str));
 	    }
 
-	  message ("%s", buf.peekChars ());
+	  message ("%s", (char *) obstack_finish (&buffer));
 	}
     }
 
