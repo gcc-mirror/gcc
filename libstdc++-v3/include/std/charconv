@@ -327,7 +327,10 @@ namespace __detail
       using _Up = __detail::__unsigned_least_t<_Tp>;
       _Up __unsigned_val = __value;
 
-      if (__value == 0 && __first != __last)
+      if (__first == __last) [[__unlikely__]]
+	return { __last, errc::value_too_large };
+
+      if (__value == 0)
 	{
 	  *__first = '0';
 	  return { __first + 1, errc{} };
