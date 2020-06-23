@@ -1249,25 +1249,16 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 					  true)))
 	gnu_result = DECL_INITIAL (gnu_result);
 
-      /* If it's a renaming pointer, get to the renamed object.  */
-      if (TREE_CODE (gnu_result) == VAR_DECL
-          && !DECL_LOOP_PARM_P (gnu_result)
-	  && DECL_RENAMED_OBJECT (gnu_result))
-	gnu_result = DECL_RENAMED_OBJECT (gnu_result);
+      /* Do the final dereference.  */
+      gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_result);
 
-      /* Otherwise, do the final dereference.  */
-      else
-	{
-	  gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_result);
+      if ((TREE_CODE (gnu_result) == INDIRECT_REF
+	   || TREE_CODE (gnu_result) == UNCONSTRAINED_ARRAY_REF)
+	  && No (Address_Clause (gnat_entity)))
+	TREE_THIS_NOTRAP (gnu_result) = 1;
 
-	  if ((TREE_CODE (gnu_result) == INDIRECT_REF
-	       || TREE_CODE (gnu_result) == UNCONSTRAINED_ARRAY_REF)
-	      && No (Address_Clause (gnat_entity)))
-	    TREE_THIS_NOTRAP (gnu_result) = 1;
-
-	  if (read_only)
-	    TREE_READONLY (gnu_result) = 1;
-	}
+      if (read_only)
+	TREE_READONLY (gnu_result) = 1;
     }
 
   /* If we have a constant declaration and its initializer, try to return the
@@ -6543,31 +6534,19 @@ gnat_to_gnu (Node_Id gnat_node)
 		&& (Is_Array_Type (Etype (gnat_temp))
 		    || Is_Record_Type (Etype (gnat_temp))
 		    || Is_Concurrent_Type (Etype (gnat_temp)))))
-	{
-	  tree gnu_temp
-	    = gnat_to_gnu_entity (gnat_temp,
-				  gnat_to_gnu (Renamed_Object (gnat_temp)),
-				  true);
-	  /* See case 2 of renaming in gnat_to_gnu_entity.  */
-	  if (TREE_SIDE_EFFECTS (gnu_temp))
-	    gnu_result = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_temp);
-	}
+	gnat_to_gnu_entity (gnat_temp,
+			    gnat_to_gnu (Renamed_Object (gnat_temp)),
+			    true);
       break;
 
     case N_Exception_Renaming_Declaration:
       gnat_temp = Defining_Entity (gnat_node);
       gnu_result = alloc_stmt_list ();
 
-      /* See the above case for the rationale.  */
       if (Present (Renamed_Entity (gnat_temp)))
-	{
-	  tree gnu_temp
-	    = gnat_to_gnu_entity (gnat_temp,
-				  gnat_to_gnu (Renamed_Entity (gnat_temp)),
-				  true);
-	  if (TREE_SIDE_EFFECTS (gnu_temp))
-	    gnu_result = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_temp);
-	}
+	gnat_to_gnu_entity (gnat_temp,
+			    gnat_to_gnu (Renamed_Entity (gnat_temp)),
+			    true);
       break;
 
     case N_Subprogram_Renaming_Declaration:
