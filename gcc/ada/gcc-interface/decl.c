@@ -6774,13 +6774,13 @@ elaborate_expression (Node_Id gnat_expr, Entity_Id gnat_entity, const char *s,
   /* If we don't need a value and this is static or a discriminant,
      we don't need to do anything.  */
   if (!need_value
-      && (Is_OK_Static_Expression (gnat_expr)
+      && (Compile_Time_Known_Value (gnat_expr)
 	  || (Nkind (gnat_expr) == N_Identifier
 	      && Ekind (Entity (gnat_expr)) == E_Discriminant)))
     return NULL_TREE;
 
   /* If it's a static expression, we don't need a variable for debugging.  */
-  if (need_debug && Is_OK_Static_Expression (gnat_expr))
+  if (need_debug && Compile_Time_Known_Value (gnat_expr))
     need_debug = false;
 
   /* Otherwise, convert this tree to its GCC equivalent and elaborate it.  */
