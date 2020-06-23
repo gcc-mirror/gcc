@@ -4279,12 +4279,34 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   tree gro = NULL_TREE;
   tree gro_bind_vars = NULL_TREE;
+  tree gro_cleanup_stmt = NULL_TREE;
   /* We have to sequence the call to get_return_object before initial
      suspend.  */
   if (gro_is_void_p)
-    finish_expr_stmt (get_ro);
+    r = get_ro;
+  else if (same_type_p (gro_type, fn_return_type))
+    {
+     /* [dcl.fct.def.coroutine] / 7
+	The expression promise.get_return_object() is used to initialize the
+	glvalue result or... (see below)
+	Construct the return result directly.  */
+      if (TYPE_NEEDS_CONSTRUCTING (gro_type))
+	{
+	  vec<tree, va_gc> *arg = make_tree_vector_single (get_ro);
+	  r = build_special_member_call (DECL_RESULT (orig),
+					 complete_ctor_identifier,
+					 &arg, gro_type, LOOKUP_NORMAL,
+					 tf_warning_or_error);
+	  release_tree_vector (arg);
+	}
+      else
+	r = build2_loc (fn_start, INIT_EXPR, gro_type,
+			DECL_RESULT (orig), get_ro);
+    }
   else
     {
+      /* ... or ... Construct an object that will be used as the single
+	param to the CTOR for the return object.  */
       gro = build_lang_decl (VAR_DECL, get_identifier ("coro.gro"), gro_type);
       DECL_CONTEXT (gro) = current_scope ();
       DECL_ARTIFICIAL (gro) = true;
@@ -4301,8 +4323,21 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	}
       else
 	r = build2_loc (fn_start, INIT_EXPR, gro_type, gro, get_ro);
-      finish_expr_stmt (r);
+      /* The constructed object might require a cleanup.  */
+      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (gro_type))
+	{
+	  tree cleanup
+	    = build_special_member_call (gro, complete_dtor_identifier,
+					 NULL, gro_type, LOOKUP_NORMAL,
+					 tf_warning_or_error);
+	  gro_cleanup_stmt = build_stmt (input_location, CLEANUP_STMT, NULL,
+					 cleanup, gro);
+	}
     }
+  finish_expr_stmt (r);
+
+  if (gro_cleanup_stmt)
+    CLEANUP_BODY (gro_cleanup_stmt) = push_stmt_list ();
 
   /* Initialize the resume_idx_name to 0, meaning "not started".  */
   tree resume_idx_m
@@ -4344,21 +4379,20 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
      promise was constructed.  We now supply a reference to that var,
      either as the return value (if it's the same type) or to the CTOR
      for an object of the return type.  */
-  if (gro_is_void_p)
-    r = NULL_TREE;
-  else
-    r = rvalue (gro);
 
-  if (!same_type_p (gro_type, fn_return_type))
+  if (same_type_p (gro_type, fn_return_type))
+    r = gro_is_void_p ? NULL_TREE : DECL_RESULT (orig);
+  else
     {
-      /* The return object is , even if the gro is void.  */
       if (CLASS_TYPE_P (fn_return_type))
 	{
+	  /* For class type return objects, we can attempt to construct,
+	     even if the gro is void.  */
 	  vec<tree, va_gc> *args = NULL;
 	  vec<tree, va_gc> **arglist = NULL;
 	  if (!gro_is_void_p)
 	    {
-	      args = make_tree_vector_single (r);
+	      args = make_tree_vector_single (rvalue (gro));
 	      arglist = &args;
 	    }
 	  r = build_special_member_call (NULL_TREE,
@@ -4369,11 +4403,26 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  if (args)
 	    release_tree_vector (args);
 	}
-      else /* ??? suppose we have non-class return and void gro?  */
-	r = build1_loc (input_location, CONVERT_EXPR, fn_return_type, r);
+      else if (gro_is_void_p)
+	{
+	  /* We can't initialize a non-class return value from void.  */
+	  error_at (input_location, "cannot initialize a return object of type"
+		    " %qT with an rvalue of type %<void%>", fn_return_type);
+	  r = error_mark_node;
+	}
+      else
+	r = build1_loc (input_location, CONVERT_EXPR,
+			fn_return_type, rvalue (gro));
     }
 
   finish_return_stmt (r);
+
+  if (gro_cleanup_stmt)
+    {
+      CLEANUP_BODY (gro_cleanup_stmt)
+	= pop_stmt_list (CLEANUP_BODY (gro_cleanup_stmt));
+      add_stmt (gro_cleanup_stmt);
+    }
 
   /* Finish up the ramp function.  */
   BIND_EXPR_VARS (gro_context_bind) = gro_bind_vars;
