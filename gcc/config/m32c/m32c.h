@@ -80,6 +80,21 @@
       builtin_define ("__m32c_cpu__=1"); \
   }
 
+#define TARGET_RUST_CPU_INFO() \
+  do { \
+    rust_add_target_info("target_arch", "m32c"); \
+    if (TARGET_R8C) \
+      rust_add_target_info("target_feature", "r8c"); \
+    if (TARGET_M16C) \
+      rust_add_target_info("target_feature", "m16c"); \
+    if (TARGET_M32CM) \
+      rust_add_target_info("target_feature", "m32cm"); \
+    if (TARGET_M32C) \
+      rust_add_target_info("target_feature", "m32c"); \
+    /*TODO: find way of getting sim info?*/ \
+    /*TODO: find way of defining memregs usefully?*/ \
+  } while (0)
+
 /* The pragma handlers need to know if we've started processing
    functions yet, as the memregs pragma should only be given at the
    beginning of the file.  This variable starts off TRUE and later
