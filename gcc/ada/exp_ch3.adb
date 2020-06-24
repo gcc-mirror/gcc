@@ -4758,7 +4758,7 @@ package body Exp_Ch3 is
    begin
       pragma Assert (Nkind (Obj_Decl) = N_Object_Declaration);
 
-      if Has_Task (Typ) or else Might_Have_Tasks (Typ) then
+      if Might_Have_Tasks (Typ) then
          Build_Activation_Chain_Entity (Obj_Decl);
 
          if Has_Task (Typ) then
@@ -5898,10 +5898,8 @@ package body Exp_Ch3 is
                Typ := Etype (Comp);
 
                if Ekind (Typ) = E_Anonymous_Access_Type
-                 and then
-                   (Has_Task (Available_View (Designated_Type (Typ)))
-                      or else
-                    Might_Have_Tasks (Available_View (Designated_Type (Typ))))
+                 and then Might_Have_Tasks
+                            (Available_View (Designated_Type (Typ)))
                  and then No (Master_Id (Typ))
                then
                   --  Ensure that the record or array type have a _master
@@ -6785,7 +6783,7 @@ package body Exp_Ch3 is
       --  of the stacks in this scenario, the stacks of the first array are
       --  not counted.
 
-      if (Has_Task (Typ) or else Might_Have_Tasks (Typ))
+      if Might_Have_Tasks (Typ)
         and then not Restriction_Active (No_Secondary_Stack)
         and then (Restriction_Active (No_Implicit_Heap_Allocations)
           or else Restriction_Active (No_Implicit_Task_Allocations))

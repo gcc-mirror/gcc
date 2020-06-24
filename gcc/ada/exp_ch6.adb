@@ -8912,7 +8912,7 @@ package body Exp_Ch6 is
          --  rather than some outer chain.
 
       begin
-         if Has_Task (Result_Subt) or else Might_Have_Tasks (Result_Subt) then
+         if Might_Have_Tasks (Result_Subt) then
             Actions := New_List;
             Build_Task_Allocate_Block_With_Init_Stmts
               (Actions, Allocator, Init_Stmts => New_List (Assign));
@@ -9954,8 +9954,9 @@ package body Exp_Ch6 is
    begin
       return not Global_No_Tasking
         and then not No_Run_Time_Mode
-        and then Is_Class_Wide_Type (Typ)
-        and then Is_Limited_Record (Typ);
+        and then (Has_Task (Typ)
+                    or else (Is_Class_Wide_Type (Typ)
+                               and then Is_Limited_Record (Typ)));
    end Might_Have_Tasks;
 
    ----------------------------
