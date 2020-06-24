@@ -960,6 +960,10 @@ checked_options["flag_merge_constants"]++
 checked_options["param_max_fields_for_field_sensitive"]++
 checked_options["flag_omit_frame_pointer"]++
 checked_options["unroll_only_small_loops"]++
+# arc exceptions
+checked_options["TARGET_ALIGN_CALL"]++
+checked_options["TARGET_CASE_VECTOR_PC_RELATIVE"]++
+checked_options["arc_size_opt_level"]++
 
 for (i = 0; i < n_opts; i++) {
 	name = var_name(flags[i]);
