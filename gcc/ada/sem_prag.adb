@@ -15314,7 +15314,7 @@ package body Sem_Prag is
          -- Default_Storage_Pool --
          --------------------------
 
-         --  pragma Default_Storage_Pool (storage_pool_NAME | null);
+         --  pragma Default_Storage_Pool (storage_pool_NAME | null | Standard);
 
          when Pragma_Default_Storage_Pool => Default_Storage_Pool : declare
             Pool : Node_Id;
@@ -15355,6 +15355,18 @@ package body Sem_Prag is
 
                   Set_Etype (Pool, Empty);
 
+               --  Case of Default_Storage_Pool (Standard);
+
+               elsif Nkind (Pool) = N_Identifier
+                 and then Chars (Pool) = Name_Standard
+               then
+                  Analyze (Pool);
+
+                  if Entity (Pool) /= Standard_Standard then
+                     Error_Pragma_Arg
+                       ("package Standard is not directly visible", Arg1);
+                  end if;
+
                --  Case of Default_Storage_Pool (storage_pool_NAME);
 
                else
@@ -15362,7 +15374,7 @@ package body Sem_Prag is
                   --  argument is "null".
 
                   if Is_Configuration_Pragma then
-                     Error_Pragma_Arg ("NULL expected", Arg1);
+                     Error_Pragma_Arg ("NULL or Standard expected", Arg1);
                   end if;
 
                   --  The expected type for a non-"null" argument is

@@ -6387,7 +6387,7 @@ package body Freeze is
             end if;
 
          --  The pool applies to named and anonymous access types, but not
-         --  to subprogram and to  internal types generated for 'Access
+         --  to subprogram and to internal types generated for 'Access
          --  references.
 
          elsif Is_Access_Type (E)
@@ -6411,6 +6411,11 @@ package body Freeze is
 
                if Nkind (Default_Pool) = N_Null then
                   Set_No_Pool_Assigned (E);
+
+               --  Case of pragma Default_Storage_Pool (Standard)
+
+               elsif Entity (Default_Pool) = Standard_Standard then
+                  Set_Associated_Storage_Pool (E, RTE (RE_Global_Pool_Object));
 
                --  Case of pragma Default_Storage_Pool (storage_pool_NAME)
 
