@@ -1,9 +1,15 @@
-// Test handling of the case where we have a void g-r-o and a non-void
+// Test handling of the case where we have a class g-r-o and a non-void
 // and non-class-type ramp return.
 
 #include "coro.h"
 
 int g_promise = -1;
+
+struct Thing {
+  double x;
+  Thing () : x(0.0) {}
+  ~Thing () {}
+};
 
 template<typename R, typename HandleRef, typename ...T>
 struct std::coroutine_traits<R, HandleRef, T...> {
@@ -14,7 +20,7 @@ struct std::coroutine_traits<R, HandleRef, T...> {
           g_promise = 1;
         }
 	~promise_type () { PRINT ("Destroyed Promise"); g_promise = 0;}
-        void get_return_object() {}
+        Thing get_return_object() { return {}; }
 
         auto initial_suspend() {
           return std::suspend_always{};
@@ -31,7 +37,7 @@ my_coro (std::coroutine_handle<>& h)
 {
   PRINT ("coro1: about to return");
   co_return;
-} // { dg-error {cannot initialize a return object of type 'int' with an rvalue of type 'void'} }
+} // { dg-error {'struct Thing' used where a 'int' was expected} }
 
 int main ()
 {
@@ -55,5 +61,5 @@ int main ()
     }
 
   PRINT ("main: returning");
-  return 0;
+  return t;
 }
