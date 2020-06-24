@@ -8494,20 +8494,20 @@ package body Freeze is
       Set_Analyzed (Lo, False);
       Analyze (Lo);
 
-      --  Resolve with universal fixed if the base type, and the base type if
-      --  it is a subtype. Note we can't resolve the base type with itself,
-      --  that would be a reference before definition.
+      --  Resolve with universal fixed if the base type, and with the base
+      --  type if we are freezing a subtype. Note we can't resolve the base
+      --  type with itself, that would be a reference before definition.
+      --  The resolution of the bounds of a subtype, if they are given by real
+      --  literals,  includes the setting of the Corresponding_Integer_Value,
+      --  as for other literals of a fixed-point type.
 
       if Typ = Btyp then
          Resolve (Lo, Universal_Fixed);
+         Set_Corresponding_Integer_Value
+           (Lo, UR_To_Uint (Realval (Lo) / Small));
       else
          Resolve (Lo, Btyp);
       end if;
-
-      --  Set corresponding integer value for bound
-
-      Set_Corresponding_Integer_Value
-        (Lo, UR_To_Uint (Realval (Lo) / Small));
 
       --  Similar processing for high bound
 
@@ -8517,12 +8517,11 @@ package body Freeze is
 
       if Typ = Btyp then
          Resolve (Hi, Universal_Fixed);
+         Set_Corresponding_Integer_Value
+           (Hi, UR_To_Uint (Realval (Hi) / Small));
       else
          Resolve (Hi, Btyp);
       end if;
-
-      Set_Corresponding_Integer_Value
-        (Hi, UR_To_Uint (Realval (Hi) / Small));
 
       --  Set type of range to correspond to bounds
 
