@@ -14774,16 +14774,17 @@ package body Sem_Prag is
 
             function Is_Acceptable_Dim3 (N : Node_Id) return Boolean;
             --  Returns True if N is an acceptable argument for CUDA_Execute,
-            --  false otherwise.
+            --  False otherwise.
 
             ------------------------
             -- Is_Acceptable_Dim3 --
             ------------------------
 
             function Is_Acceptable_Dim3 (N : Node_Id) return Boolean is
-               Tmp : Node_Id;
+               Expr : Node_Id;
             begin
-               if Etype (N) = RTE (RE_Dim3) or else Is_Integer_Type (Etype (N))
+               if Is_RTE (Etype (N), RE_Dim3)
+                 or else Is_Integer_Type (Etype (N))
                then
                   return True;
                end if;
@@ -14791,10 +14792,10 @@ package body Sem_Prag is
                if Nkind (N) = N_Aggregate
                  and then List_Length (Expressions (N)) = 3
                then
-                  Tmp := First (Expressions (N));
-                  while Present (Tmp) loop
-                     Analyze_And_Resolve (Tmp, Any_Integer);
-                     Tmp := Next (Tmp);
+                  Expr := First (Expressions (N));
+                  while Present (Expr) loop
+                     Analyze_And_Resolve (Expr, Any_Integer);
+                     Next (Expr);
                   end loop;
                   return True;
                end if;
@@ -14813,7 +14814,6 @@ package body Sem_Prag is
             --  Start of processing for CUDA_Execute
 
          begin
-
             GNAT_Pragma;
             Check_At_Least_N_Arguments (3);
             Check_At_Most_N_Arguments (5);
