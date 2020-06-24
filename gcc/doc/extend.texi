@@ -22256,6 +22256,12 @@ Intel Core i7 Tigerlake CPU.
 @item cooperlake
 Intel Core i7 Cooperlake CPU.
 
+@item sapphirerapids
+Intel Core i7 sapphirerapids CPU.
+
+@item alderlake
+Intel Core i7 Alderlake CPU.
+
 @item bonnell
 Intel Atom Bonnell CPU.
 
