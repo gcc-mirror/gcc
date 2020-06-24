@@ -1,3 +1,53 @@
+2020-06-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/95493
+	PR middle-end/95690
+	* cfgexpand.c (expand_debug_expr): Avoid calling
+	set_mem_attributes_minus_bitpos when we were expanding
+	an SSA name.
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Remove
+	ARRAY_REF special-casing, add CONSTRUCTOR to the set of
+	special-cases we do not want MEM_EXPRs for.  Assert
+	we end up with reasonable MEM_EXPRs.
+	* varasm.c (build_constant_desc): Remove set_mem_attributes call.
+
+2020-06-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95487
+	* tree-vect-stmts.c (vectorizable_store): Use a truth type
+	for the scatter mask.
+
+2020-06-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95308
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Generalize
+	test for TARGET_MEM_REFs.
+
+2020-06-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95133
+	* gimple-ssa-split-paths.c
+	(find_block_to_duplicate_for_splitting_paths): Check for
+	normal edges.
+
+2020-06-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/95118
+	* real.c (real_to_decimal_for_mode): Make sure we handle
+	a zero with nonzero exponent.
+
+2020-06-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95049
+	* tree-ssa-sccvn.c (set_ssa_val_to): Reject lattice transition
+	between different constants.
+
+2020-06-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94964
+	* cfgloopmanip.c (create_preheader): Require non-complex
+	preheader edge for CP_SIMPLE_PREHEADERS.
+
 2020-06-20  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	PR tree-optimization/94969
