@@ -2516,7 +2516,7 @@ public:
     void add_namespace_context (depset *, tree ns);
 
   private:
-    depset *add_partial_redirect (depset *partial);
+    depset *add_partial_redirect (depset *partial, depset **slot = nullptr);
     bool add_binding (tree ns, tree value);
 
   public:  
@@ -2838,7 +2838,7 @@ enum merge_kind
   MK_indirect_lwm = 0x5,
   MK_local_friend = MK_indirect_lwm, /* Found by CTX, index.  */
   MK_enum,	/* Found by CTX, & 1stMemberNAME.  */
-  MK_attached, /* Found by attachee & index.  */
+  MK_attached,  /* Found by attachee & index.  */
 
   /* Template specialization kinds below. These are all found via
      primary template and specialization args.  */
@@ -2861,7 +2861,10 @@ enum merge_kind
 
   MK_alias_spec = MK_decl_spec | MK_tmpl_alias_mask,
 
-  MK_hwm = 16
+  // FIXME: perhaps the MK_field, MK_vtable, MK_as_base can all be
+  // combined, so that this can be put up there?
+  MK_partial = 16,
+  MK_hwm
 };
 /* This is more than a debugging array.  NULLs are used to determine
    an invalid merge_kind number.  */
@@ -2872,7 +2875,8 @@ static char const *const merge_kind_name[MK_hwm] =
     "type spec", "type tmpl spec",	/*  8,9 type (template).  */
     NULL, "type partial spec",		/* 10,11 partial template. */
     "decl spec", "decl tmpl spec",	/* 12,13 decl (template).  */
-    "alias spec", NULL			/* 14,15 alias. */
+    "alias spec", NULL,			/* 14,15 alias. */
+    "partial",				/* 16 constrained partial */
   };
 
 /* Mergeable entity location data.  */
@@ -7368,7 +7372,12 @@ trees_in::install_entity (tree decl)
     {
       DECL_MODULE_PENDING_MEMBERS_P (decl) = true;
       if (TREE_CODE (decl) == TEMPLATE_DECL)
-	DECL_MODULE_PENDING_MEMBERS_P (DECL_TEMPLATE_RESULT (decl)) = true;
+	{
+	  // FIXME: DECL_MODULE_PENDING_MEMBERS_P requires a
+	  // TYPE_DECL, what was I thinking?
+	  gcc_unreachable ();
+	  DECL_MODULE_PENDING_MEMBERS_P (DECL_TEMPLATE_RESULT (decl)) = true;
+	}
     }
 
   return true;
@@ -8286,9 +8295,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
       /* The DECL_TEMPLATE_RESULT of a partial specialization.
 	 Write the partial specialization's template.  */
       depset *redirect = dep->deps[0];
-      gcc_checking_assert ((redirect->get_entity_kind ()
-			    == depset::EK_SPECIALIZATION)
-			   && redirect->is_partial ());
+      gcc_checking_assert (redirect->is_partial ());
       tpl = redirect->get_entity ();
       goto partial_template;
     }
@@ -9867,6 +9874,11 @@ trees_out::get_merge_kind (tree decl, depset *dep)
       gcc_unreachable ();
 
     case depset::EK_DECL:
+      if (dep->is_partial ())
+	{
+	  mk = MK_partial;
+	  break;
+	}
       {
 	tree ctx = CP_DECL_CONTEXT (decl);
 
@@ -10196,6 +10208,14 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	    key.index = ix;
 	  }
 	  break;
+
+	case MK_partial:
+	  {
+	    key.constraints = get_constraints (inner);
+	    key.ret = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (inner));
+	    key.args = CLASSTYPE_TI_ARGS (TREE_TYPE (inner));
+	  }
+	  break;
 	}
 
       tree_node (name);
@@ -10205,15 +10225,17 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	  u (code);
 	}
 
-      if (mk == MK_named && inner && TREE_CODE (inner) == FUNCTION_DECL)
+      if (mk == MK_partial
+	  || (mk == MK_named && inner && TREE_CODE (inner) == FUNCTION_DECL))
 	{
 	  tree_node (key.ret);
 	  tree arg = key.args;
-	  while (arg && arg != void_list_node)
-	    {
-	      tree_node (TREE_VALUE (arg));
-	      arg = TREE_CHAIN (arg);
-	    }
+	  if (mk == MK_named)
+	    while (arg && arg != void_list_node)
+	      {
+		tree_node (TREE_VALUE (arg));
+		arg = TREE_CHAIN (arg);
+	      }
 	  tree_node (arg);
 	  tree_node (key.constraints);
 	}
@@ -10397,12 +10419,14 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
       key.ref_q = cp_ref_qualifier ((code >> 0) & 3);
       key.index = code >> 2;
 
-      if (mk == MK_named && inner && TREE_CODE (inner) == FUNCTION_DECL)
+      if (mk == MK_partial
+	  || (mk == MK_named && inner && TREE_CODE (inner) == FUNCTION_DECL))
 	{
 	  key.ret = tree_node ();
 	  tree arg, *arg_ptr = &key.args;
 	  while ((arg = tree_node ())
-		 && arg != void_list_node)
+		 && arg != void_list_node
+		 && mk != MK_partial)
 	    {
 	      *arg_ptr = tree_cons (NULL_TREE, arg, NULL_TREE);
 	      arg_ptr = &TREE_CHAIN (*arg_ptr);
@@ -10414,7 +10438,7 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
       if (get_overrun ())
 	return error_mark_node;
 
-      if (mk < MK_indirect_lwm)
+      if (mk < MK_indirect_lwm || mk == MK_partial)
 	{
 	  DECL_NAME (decl) = name;
 	  DECL_CONTEXT (decl) = FROB_CONTEXT (container);
@@ -10425,6 +10449,26 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	  DECL_CONTEXT (inner) = DECL_CONTEXT (decl);
 	}
 
+      if (mk == MK_partial)
+	{
+	  for (tree spec = DECL_TEMPLATE_SPECIALIZATIONS (key.ret);
+	       spec; spec = TREE_CHAIN (spec))
+	    {
+	      tree tmpl = TREE_VALUE (spec);
+	      if (template_args_equal (key.args,
+				       CLASSTYPE_TI_ARGS (TREE_TYPE (tmpl)))
+		  && cp_tree_equal (key.constraints,
+				    get_constraints
+				    (DECL_TEMPLATE_RESULT (tmpl))))
+		{
+		  existing = tmpl;
+		  break;
+		}
+	    }
+	  if (!existing)
+	    add_mergeable_specialization (key.ret, key.args, decl, 2);
+	}
+      else
       switch (TREE_CODE (container))
 	{
 	default:
@@ -10884,7 +10928,7 @@ trees_in::find_duplicate (tree existing)
   return duplicates->get (existing);
 }
 
-/* We're starting to read duplicate DECL.  EXISTING is the already
+/* We're starting to read a duplicate DECL.  EXISTING is the already
    known node.  */
 
 void
@@ -11855,6 +11899,44 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	 non-DECL entries, or when discovering dependencies.  */
       gcc_checking_assert (ek != EK_DECL || current);
 
+      if (DECL_IMPLICIT_TYPEDEF_P (decl)
+	  /* ... not an enum, for instance.  */
+	  && RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl))
+	  && TYPE_LANG_SPECIFIC (TREE_TYPE (decl))
+	  && CLASSTYPE_USE_TEMPLATE (TREE_TYPE (decl)) == 2)
+	{
+	  /* A partial or explicit specialization. Partial
+	     specializations constrained by requires clauses are not
+	     in the hash table, because they have the same set of
+	     template parameters as their general template:
+
+	     template<typename T> class silly;
+	     template<typename T> requires true class silly {};
+
+	     We need to find them, insert their TEMPLATE_DECL in the
+	     dep_hash, and then convert the dep we just found into a
+	     redirect.  */
+
+	  tree ti = TYPE_TEMPLATE_INFO (TREE_TYPE (decl));
+	  tree tmpl = TI_TEMPLATE (ti);
+	  tree partial = NULL_TREE;
+	  for (tree spec = DECL_TEMPLATE_SPECIALIZATIONS (tmpl);
+	       spec; spec = TREE_CHAIN (spec))
+	    if (DECL_TEMPLATE_RESULT (TREE_VALUE (spec)) == decl)
+	      {
+		partial = TREE_VALUE (spec);
+		break;
+	      }
+
+	  if (partial)
+	    {
+	      depset *tmpl_dep = make_dependency (partial, EK_DECL);
+	      
+	      gcc_checking_assert (tmpl_dep->get_entity_kind () == EK_DECL);
+	      return add_partial_redirect (tmpl_dep, slot);
+	    }
+	}
+
       bool has_def = ek != EK_USING && has_definition (decl);
       if (ek > EK_BINDING)
 	ek = EK_DECL;
@@ -12309,7 +12391,7 @@ specialization_cmp (const void *a_, const void *b_)
    dependency add.  */
 
 depset *
-depset::hash::add_partial_redirect (depset *partial)
+depset::hash::add_partial_redirect (depset *partial, depset **slot)
 {
   partial->set_flag_bit<DB_PARTIAL_BIT> ();
 
@@ -12319,7 +12401,8 @@ depset::hash::add_partial_redirect (depset *partial)
   /* Redirects are never reached -- always snap to their target.  */
   redirect->set_flag_bit<DB_UNREACHED_BIT> ();
 
-  depset **slot = entity_slot (inner, true);
+  if (!slot)
+    slot = entity_slot (inner, true);
   gcc_checking_assert (!*slot);
   *slot = redirect;
   redirect->deps.safe_push (partial);

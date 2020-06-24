@@ -1,3 +1,33 @@
+2020-06-24  Nathan Sidwell  <nathan@acm.org>
+
+	Constrained partial specializations
+	gcc/cp/
+	* module.cc (depset::hash::add_partial_redirect): Add slot parm.
+	(enum merge_kind): Add MK_partial.
+	(merge_kind_name): Likewise.
+	(trees_out::decl_node): A redirect may be for an EK_DECL.
+	(trees_out::get_merge_kind): Determine MK_partial.
+	(trees_{in,out}::key_mergeable): Deal with MK_partial.
+	(depset::hash::make_dependency): Deal with discovering a partial
+	specialization.
+	* pt.c (maybe_new_partial_specialization): Add module bits to the
+	new typedef.
+	(tsubst_template_decl): Relax module import assert.
+	(tsubst_template_decl): Refactor, add fixme to check.
+	gcc/testsuite/
+	* g++.dg/modules/nested-constr-1.h: New.
+	* g++.dg/modules/nested-constr-1_a.H: New.
+	* g++.dg/modules/nested-constr-1_b.C: New.
+	* g++.dg/modules/nested-constr-2_a.C: New.
+	* g++.dg/modules/nested-constr-2_b.C: New.
+	* g++.dg/modules/nested-constr-2_c.C: New.
+	* g++.dg/modules/tmpl-part-req-1.h: New.
+	* g++.dg/modules/tmpl-part-req-1_a.H: New.
+	* g++.dg/modules/tmpl-part-req-1_b.C: New.
+	* g++.dg/modules/tmpl-part-req-2.h: New.
+	* g++.dg/modules/tmpl-part-req-2_a.H: New.
+	* g++.dg/modules/tmpl-part-req-2_b.C: New.
+
 2020-06-11  Nathan Sidwell  <nathan@acm.org>
 
 	Merge master b825a228907

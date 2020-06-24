@@ -952,6 +952,9 @@ maybe_new_partial_specialization (tree type)
       TREE_PRIVATE (d) = (current_access_specifier == access_private_node);
       TREE_PROTECTED (d) = (current_access_specifier == access_protected_node);
 
+      set_instantiating_module (d);
+      DECL_MODULE_EXPORT_P (d) = DECL_MODULE_EXPORT_P (tmpl);
+
       return t;
     }
 
@@ -14152,7 +14155,13 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
       if (DECL_LANG_SPECIFIC (inner))
 	{
 	  DECL_MODULE_PURVIEW_P (r) = DECL_MODULE_PURVIEW_P (inner);
-	  gcc_checking_assert (!DECL_MODULE_IMPORT_P (inner));
+	  /* If this is a constrained template, the above tsubst of
+	     inner can find the unconstrained template, which may have
+	     come from an import.  This is ok, because we don't
+	     register this instantiation (see below).  */
+	  gcc_checking_assert (!DECL_MODULE_IMPORT_P (inner)
+			       || (TEMPLATE_PARMS_CONSTRAINTS
+				   (DECL_TEMPLATE_PARMS (t))));
 	  DECL_MODULE_IMPORT_P (r) = false;
 	}
     }
@@ -14163,13 +14172,16 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
   if (PRIMARY_TEMPLATE_P (t))
     DECL_PRIMARY_TEMPLATE (r) = r;
 
-  if (TREE_CODE (decl) != TYPE_DECL && !VAR_P (decl)
-      && !lambda_fntype)
+  if (TREE_CODE (decl) == FUNCTION_DECL && !lambda_fntype)
     /* Record this non-type partial instantiation.  */
+    // FIXME: Should we be registering this if this is a constrained
+    // template?  DECL_TEMPLATE_RESULT (r) might be the unconstrained
+    // template's result we found in the above instantiations.  And
+    // that smells wrong.
     register_specialization (r, t,
 			     DECL_TI_ARGS (DECL_TEMPLATE_RESULT (r)),
 			     false, hash);
-
+  
   return r;
 }
 
