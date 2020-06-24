@@ -2702,9 +2702,7 @@ ipa_passes (void)
 	  /* Run serially for now.  */
 	  for (i = 0; i < partitions; ++i)
 	    {
-	      if (ltrans_partitions[i]->symbols == 0)
-		continue; /* FIXME: Find out why we are generating empty
-			     partitions.  */
+	      gcc_assert (ltrans_partitions[i]->symbols > 0);
 
 	      pids[i] = fork ();
 	      if (pids[i] == 0)

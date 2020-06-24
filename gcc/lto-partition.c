@@ -124,8 +124,6 @@ add_references_to_partition (ltrans_partition part, symtab_node *node)
       }
 }
 
-static int current_working_partition = -1;
-
 /* Helper function for add_symbol_to_partition doing the actual dirty work
    of adding NODE to PART.  */
 
@@ -139,10 +137,6 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
   /* If NODE is already there, we have nothing to do.  */
   if (lto_symtab_encoder_in_partition_p (part->encoder, node))
     return true;
-
-  if (current_working_partition != node->aux2)
-    fatal_error (UNKNOWN_LOCATION, "Adding node to partition which was meant to"
-		 "be in another partition");
 
   /* non-duplicated aliases or tunks of a duplicated symbol needs to be output
      just once.
@@ -577,7 +571,9 @@ lto_max_no_alonevap_map (void)
 {
   symtab_node *node;
   int n_partitions = 0, i, n = 0, j = 0;
+  int total_size = 0, max_size = -1;
   int *compression;
+  int *sizes;
 
   FOR_EACH_SYMBOL (node)
     node->aux2 = n++;
@@ -599,18 +595,94 @@ lto_max_no_alonevap_map (void)
     analyse_symbol (node, node->aux2);
 
   /* Allocate a compression vector, where we will map each disjoint set into
-     0, ..., n_partitions - 1.  Complexity: n.  */
+     0, ..., n_partitions - 1.  Also allocates a size vector which will
+     hold each partition size.  Complexity: n.  */
 
   compression = (int *) alloca (n * sizeof (*compression));
+  sizes       = (int *) alloca (n * sizeof (*sizes));
+  memset (sizes, 0, n * sizeof (*sizes));
   for (i = 0; i < n; ++i)
     compression[i] = -1; /* Invalid value.  */
 
-  /* Create LTRANS partitions.  */
 
-  n_partitions = n - disjoint_sets.successful_unions;
-  ltrans_partitions.create (n_partitions);
-  for (i = 0; i < n_partitions; i++)
-    new_partition ("");
+  /* Compute the size of each partition.  */
+  i = 0;
+  FOR_EACH_SYMBOL (node)
+    {
+      cgraph_node *cnode = dyn_cast<cgraph_node *> (node);
+      if (!cnode)
+	{
+	  i++;
+	  continue;
+	}
+
+      ipa_size_summary *summary = ipa_size_summaries->get (cnode);
+      if (summary)
+	{
+	  int root = disjoint_sets.find (i);
+	  sizes[root] += summary->size;
+	}
+      i++;
+    }
+
+  /* Compute the total size and maximum size.  */
+  for (i = 0; i < n; ++i)
+    {
+      total_size += sizes[i];
+      max_size    = MAX (max_size, sizes[i]);
+    }
+
+  /* Quick return if total size is small.  */
+  if (total_size < param_min_partition_size)
+    return;
+
+  /* Unite small partitions.  */
+
+  for (i = -1, j = 0; j < n; ++j)
+    {
+      if (sizes[j] == 0)
+	continue;
+
+      if (i == -1)
+	i = j;
+      else
+	{
+	  if (sizes[i] + sizes[j] < max_size)
+	    {
+	      ds->unite (i, j);
+	      sizes[j] += sizes[i];
+	      sizes[i] = 0;
+	    }
+	  else
+	      i = j;
+	}
+    }
+
+  /* Unite the smallest partition with the second smallest.  This is
+     to avoid having one very big partition and two other very small ones.  */
+  int smallest_pos = -1;
+  int second_smallest_pos = -1;
+  int smallest = INT_MAX;
+
+  for (i = 0; i < n; ++i)
+    {
+      if (sizes[i] == 0)
+	continue;
+
+      if (sizes[i] < smallest)
+	{
+	  smallest = sizes[i];
+	  second_smallest_pos = smallest_pos;
+	  smallest_pos = i;
+	}
+    }
+
+  if (smallest_pos != -1 && second_smallest_pos != -1)
+    {
+      ds->unite (smallest_pos, second_smallest_pos);
+      sizes[smallest_pos] += sizes[second_smallest_pos];
+      sizes[second_smallest_pos] = 0;
+    }
 
   /* Compress 0...(n-1) into 0...(n_partitions-1) so that we avoid manuvers with
      the LTRANS partitions.  Complexity: n * log*(n).  */
@@ -621,25 +693,33 @@ lto_max_no_alonevap_map (void)
       int root = disjoint_sets.find (i);
       node->aux2 = root;
       node->aux = NULL;
-      if (compression[root] < 0)
+
+      if (node->get_partitioning_class () == SYMBOL_PARTITION
+	  && compression[root] < 0)
 	compression[root] = j++;
       i++;
     }
 
-  /* A invariant of the above loop.  */
-  gcc_assert (n_partitions == j);
+  n_partitions = j;
+
+  /* Quick return if we have only one partition.  */
+  if (n_partitions <= 1)
+    return;
+
+  /* Create LTRANS partitions.  */
+  ltrans_partitions.create (n_partitions);
+  for (i = 0; i < n_partitions; i++)
+    new_partition ("");
 
   /* Indeed insert vertex into the LTRANS partitions, and clear AUX
      variable.  Complexity: n.  */
   FOR_EACH_SYMBOL (node)
     {
-      int p = compression[node->aux2];
-      current_working_partition = node->aux2;
-
       if (node->get_partitioning_class () != SYMBOL_PARTITION
 	  || symbol_partitioned_p (node))
 	  continue;
-
+      
+      int p = compression[node->aux2];
       add_symbol_to_partition (ltrans_partitions[p], node);
     }
 }

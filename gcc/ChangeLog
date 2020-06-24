@@ -1,3 +1,11 @@
+2020-06-24  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* cgraphunit.c (ipa_passes): Assert for non-empty partition.
+	* lto-partition.c: Remove currrent_working_partition.
+	(add_symbol_to_partition): Remove useless check.
+	(lto_max_no_alonevap_map): Use an heuristic to merge small
+	partitions. Also fix creation of empty partitions.
+
 2020-06-23  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* cgraphunit.c (ipa_passes): Run ipa passes also when
