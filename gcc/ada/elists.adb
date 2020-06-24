@@ -373,6 +373,64 @@ package body Elists is
       return Elists.Last;
    end New_Elmt_List;
 
+   -------------------
+   -- New_Elmt_List --
+   -------------------
+
+   function New_Elmt_List (Elmt1 : Node_Or_Entity_Id)
+     return Elist_Id
+   is
+      L : constant Elist_Id := New_Elmt_List;
+   begin
+      Append_Elmt (Elmt1, L);
+      return L;
+   end New_Elmt_List;
+
+   -------------------
+   -- New_Elmt_List --
+   -------------------
+
+   function New_Elmt_List
+     (Elmt1 : Node_Or_Entity_Id;
+      Elmt2 : Node_Or_Entity_Id) return Elist_Id
+   is
+      L : constant Elist_Id := New_Elmt_List (Elmt1);
+   begin
+      Append_Elmt (Elmt2, L);
+      return L;
+   end New_Elmt_List;
+
+   -------------------
+   -- New_Elmt_List --
+   -------------------
+
+   function New_Elmt_List
+     (Elmt1 : Node_Or_Entity_Id;
+      Elmt2 : Node_Or_Entity_Id;
+      Elmt3 : Node_Or_Entity_Id) return Elist_Id
+   is
+      L : constant Elist_Id := New_Elmt_List (Elmt1, Elmt2);
+   begin
+      Append_Elmt (Elmt3, L);
+      return L;
+   end New_Elmt_List;
+
+   -------------------
+   -- New_Elmt_List --
+   -------------------
+
+   function New_Elmt_List
+     (Elmt1 : Node_Or_Entity_Id;
+      Elmt2 : Node_Or_Entity_Id;
+      Elmt3 : Node_Or_Entity_Id;
+      Elmt4 : Node_Or_Entity_Id) return Elist_Id
+   is
+      L : constant Elist_Id := New_Elmt_List (Elmt1, Elmt2, Elmt3);
+   begin
+      Append_Elmt (Elmt4, L);
+      return L;
+   end New_Elmt_List;
+
    ---------------
    -- Next_Elmt --
    ---------------
