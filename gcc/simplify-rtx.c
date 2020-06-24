@@ -3645,6 +3645,8 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 
     case ROTATERT:
     case ROTATE:
+      if (trueop1 == CONST0_RTX (mode))
+	return op0;
       /* Canonicalize rotates by constant amount.  If op1 is bitsize / 2,
 	 prefer left rotation, if op1 is from bitsize / 2 + 1 to
 	 bitsize - 1, use other direction of rotate with 1 .. bitsize / 2 - 1
