@@ -982,7 +982,7 @@ package body Sem_Util is
                    Reason => PE_Bad_Predicated_Generic_Type));
 
             else
-               Error_Msg_FE (Msg & "<<", N, Typ);
+               Error_Msg_FE (Msg, N, Typ);
             end if;
 
          else
