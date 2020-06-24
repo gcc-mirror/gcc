@@ -417,7 +417,11 @@ namespace __detail
       static_assert(is_unsigned<_Tp>::value, "implementation bug");
 
       const ptrdiff_t __len = __last - __first;
-      int __i = 0;
+      ptrdiff_t __i = 0;
+      while (__i < __len && __first[__i] == '0')
+	++__i;
+      const ptrdiff_t __leading_zeroes = __i;
+
       while (__i < __len)
 	{
 	  const unsigned char __c = (unsigned)__first[__i] - '0';
@@ -428,7 +432,7 @@ namespace __detail
 	  __i++;
 	}
       __first += __i;
-      return __i <= __detail::__int_limits<_Tp>::digits;
+      return (__i - __leading_zeroes) <= __detail::__int_limits<_Tp>::digits;
     }
 
   /// std::from_chars implementation for integers in bases 3 to 10.
