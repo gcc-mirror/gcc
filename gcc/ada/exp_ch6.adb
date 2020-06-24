@@ -7545,16 +7545,9 @@ package body Exp_Ch6 is
          --  processing is required except to set the By_Ref flag to ensure
          --  that gigi does not attempt an extra unnecessary copy. (Actually
          --  not just unnecessary but wrong in the case of a controlled type,
-         --  where gigi does not know how to do a copy.) To make up for a gcc
-         --  2.8.1 deficiency (???), we perform the copy for array types if the
-         --  constrained status of the target type is different from that of
-         --  the expression.
+         --  where gigi does not know how to do a copy.)
 
          if Requires_Transient_Scope (Exp_Typ)
-           and then
-              (not Is_Array_Type (Exp_Typ)
-                or else Is_Constrained (Exp_Typ) = Is_Constrained (R_Type)
-                or else CW_Or_Has_Controlled_Part (Utyp))
            and then Exp_Is_Function_Call
          then
             Set_By_Ref (N);
