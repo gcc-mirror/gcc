@@ -8314,7 +8314,11 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0
 	  && resolves_to_fixed_type_p (arg))
 	{
-	  fn = lookup_vfn_in_binfo (DECL_VINDEX (fn), cand->conversion_path);
+	  tree binfo = cand->conversion_path;
+	  if (BINFO_TYPE (binfo) != DECL_CONTEXT (fn))
+	    binfo = lookup_base (binfo, DECL_CONTEXT (fn), ba_unique,
+				 NULL, complain);
+	  fn = lookup_vfn_in_binfo (DECL_VINDEX (fn), binfo);
 	  flags |= LOOKUP_NONVIRTUAL;
 	}
 
