@@ -21541,21 +21541,12 @@ package body Sem_Ch3 is
          Check_Incomplete (S);
          P := Parent (S);
 
-         --  Ada 2005 (AI-231): Static check
-
-         if Ada_Version >= Ada_2005
-           and then Present (P)
-           and then Null_Exclusion_Present (P)
-           and then Nkind (P) /= N_Access_To_Object_Definition
-           and then not Is_Access_Type (Entity (S))
-         then
-            Error_Msg_N ("`NOT NULL` only allowed for an access type", S);
-         end if;
-
          --  The following mirroring of assertion in Null_Exclusion_Present is
          --  ugly, can't we have a range, a static predicate or even a flag???
 
          May_Have_Null_Exclusion :=
+           Present (P)
+             and then
            Nkind (P) in N_Access_Definition
                       | N_Access_Function_Definition
                       | N_Access_Procedure_Definition
@@ -21570,6 +21561,17 @@ package body Sem_Ch3 is
                       | N_Object_Renaming_Declaration
                       | N_Parameter_Specification
                       | N_Subtype_Declaration;
+
+         --  Ada 2005 (AI-231): Static check
+
+         if Ada_Version >= Ada_2005
+           and then May_Have_Null_Exclusion
+           and then Null_Exclusion_Present (P)
+           and then Nkind (P) /= N_Access_To_Object_Definition
+           and then not Is_Access_Type (Entity (S))
+         then
+            Error_Msg_N ("`NOT NULL` only allowed for an access type", S);
+         end if;
 
          --  Create an Itype that is a duplicate of Entity (S) but with the
          --  null-exclusion attribute.
