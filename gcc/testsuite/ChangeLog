@@ -1,3 +1,42 @@
+2020-06-23  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/class-deduction-aggr3.C: New test.
+	* g++.dg/cpp2a/class-deduction-aggr4.C: New test.
+
+2020-06-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.fortran-torture/execute/forall_5.f90: Make forall
+	statement conforming.
+
+2020-06-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95477
+	* g++.dg/coroutines/pr95477.C: New test.
+	* g++.dg/coroutines/void-gro-non-class-coro.C: New test.
+
+2020-06-23  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/95646
+	* gcc.target/arm/pr95646.c: New test.
+
+2020-06-23  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/scanoffload.exp: New.
+	* lib/scanoffloadrtl.exp: Load it.  Replace ".o" with ""
+	globally, and use scanoffload's scoff wrapper to fill it in.
+	* lib/scanoffloadtree.exp: Likewise.
+
+2020-06-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/95812
+	* gfortran.dg/dependency_59.f90: New test.
+
+2020-06-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/95586
+	* gfortran.dg/pr95586_1.f90: New test.
+	* gfortran.dg/pr95586_2.f90: New test.
+
 2020-06-22  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/cfuged-0.c: I protest.

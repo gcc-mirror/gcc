@@ -1,3 +1,50 @@
+2020-06-23  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gcc-interface/utils2.c (build_binary_op): Remove space.
+
+2020-06-23  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Allocator>: Minor tweaks.
+	Call Has_Constrained_Partial_View on base type of designated type.
+
+2020-06-23  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gcc-interface/utils.c (gnat_write_global_declarations): Output
+	integral global variables first and the imported functions later.
+
+2020-06-23  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gcc-interface/decl.c (elaborate_expression_1): When GNAT encodings
+	are not used, do not create a variable for debug info purposes if
+	the expression is itself a user-declared variable.
+
+2020-06-23  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gcc-interface/ada-tree.h (DECL_RENAMED_OBJECT): Delete.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Always use
+	the stabilized reference directly for renaming and create a variable
+	pointing to it separately if requested.
+	* gcc-interface/misc.c (gnat_print_decl): Adjust for deletion.
+	* gcc-interface/trans.c (Identifier_to_gnu): Likewise.
+	(gnat_to_gnu) <N_Object_Renaming_Declaration>:
+	Do not deal with side-effects here.
+	<N_Exception_Renaming_Declaration>: Likewise.
+
+2020-06-23  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gcc-interface/decl.c (elaborate_expression): Replace calls to
+	Is_OK_Static_Expression with Compile_Time_Known_Value.
+
+2020-06-23  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Subtype>: Set
+	debug type to the base type and only if the subtype is artificial.
+
+2020-06-23  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Assignment_Statement>: Do
+	not test Is_Bit_Packed_Array in the memset path.
+
 2020-06-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (lvalue_required_for_attribute_p): Do not deal
