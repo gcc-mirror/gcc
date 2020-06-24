@@ -1,3 +1,35 @@
+2020-06-23  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-06-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95689
+	* interface.c (check_sym_interfaces): Enlarge temporary buffer,
+	and add check on length on mangled name to prevent overflow.
+
+2020-06-23  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-06-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95587
+	* match.c (gfc_match_equivalence): Check constraints on
+	EQUIVALENCE objects also for CLASS variables.
+
+2020-06-23  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	Backported from master:
+	2020-06-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+		    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95708
+	* intrinsic.c (add_functions): Replace CLASS_INQUIRY with
+	CLASS_TRANSFORMATIONAL for intrinsic num_images.
+	(make_generic): Replace ACTUAL_NO with ACTUAL_YES for
+	intrinsic team_number.
+	* resolve.c (resolve_fl_procedure): Check pointer ts.u.derived
+	exists before using it.
+
 2020-06-14  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95503
