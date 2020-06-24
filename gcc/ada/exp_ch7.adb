@@ -398,6 +398,31 @@ package body Exp_Ch7 is
    --  actions or secondary-stack management, in which case the nested
    --  subprogram is a finalizer.
 
+   procedure Unnest_If_Statement (If_Stmt : Node_Id);
+   --  The separate statement lists associated with an if-statement (then part,
+   --  elsif parts, else part) may require unnesting if they directly contain
+   --  a subprogram body that references up-level objects. Each statement list
+   --  is traversed to locate such subprogram bodies, and if a part's statement
+   --  list contains a body, then the list is replaced with a new procedure
+   --  containing the part's statements followed by a call to the procedure.
+   --  Furthermore, any nested blocks, loops, or if statements will also be
+   --  traversed to determine the need for further unnesting transformations.
+
+   procedure Unnest_Statement_List (Stmts : in out List_Id);
+   --  A list of statements that directly contains a subprogram at its outer
+   --  level, that may reference objects declared in that same statement list,
+   --  is rewritten as a procedure containing the statement list Stmts (which
+   --  includes any such objects as well as the nested subprogram), followed by
+   --  a call to the new procedure, and Stmts becomes the list containing the
+   --  procedure and the call. This ensures that Unnest_Subprogram will later
+   --  properly handle up-level references from the nested subprogram to
+   --  objects declared earlier in statement list, by creating an activation
+   --  record and passing it to the nested subprogram. This procedure also
+   --  resets the Scope of objects declared in the statement list, as well as
+   --  the Scope of the nested subprogram, to refer to the new procedure.
+   --  Also, the new procedure is marked Has_Nested_Subprogram, so this should
+   --  only be called when known that the statement list contains a subprogram.
+
    procedure Unnest_Loop (Loop_Stmt : Node_Id);
    --  Top-level Loops that contain nested subprograms with up-level references
    --  need to have activation records. We do this by rewriting the loop as a
@@ -4232,6 +4257,17 @@ package body Exp_Ch7 is
               and then Contains_Subprogram (Entity (Identifier (Decl_Or_Stmt)))
             then
                Unnest_Block (Decl_Or_Stmt);
+
+            --  If-statements may contain subprogram bodies at the outer level
+            --  of their statement lists, and the subprograms may make up-level
+            --  references (such as to objects declared in the same statement
+            --  list). Unlike block and loop cases, however, we don't have an
+            --  entity on which to test the Contains_Subprogram flag, so
+            --  Unnest_If_Statement must traverse the statement lists to
+            --  determine whether there are nested subprograms present.
+
+            elsif Nkind (Decl_Or_Stmt) = N_If_Statement then
+               Unnest_If_Statement (Decl_Or_Stmt);
 
             elsif Nkind (Decl_Or_Stmt) = N_Loop_Statement then
                declare
@@ -9261,6 +9297,11 @@ package body Exp_Ch7 is
           Handled_Statement_Sequence =>
             Handled_Statement_Sequence (Decl));
 
+      --  Handlers in the block may contain nested subprograms that require
+      --  unnesting.
+
+      Check_Unnesting_In_Handlers (Local_Body);
+
       Rewrite (Decl, Local_Body);
       Analyze (Decl);
       Set_Has_Nested_Subprogram (Local_Proc);
@@ -9287,6 +9328,94 @@ package body Exp_Ch7 is
          Next_Entity (Ent);
       end loop;
    end Unnest_Block;
+
+   -------------------------
+   -- Unnest_If_Statement --
+   -------------------------
+
+   procedure Unnest_If_Statement (If_Stmt : Node_Id) is
+
+      procedure Check_Stmts_For_Subp_Unnesting (Stmts : in out List_Id);
+      --  A list of statements (that may be a list associated with a then,
+      --  elsif, or else part of an if-statement) is traversed at the top
+      --  level to determine whether it contains a subprogram body, and if so,
+      --  the statements will be replaced with a new procedure body containing
+      --  the statements followed by a call to the procedure. The individual
+      --  statements may also be blocks, loops, or other if statements that
+      --  themselves may require contain nested subprograms needing unnesting.
+
+      procedure Check_Stmts_For_Subp_Unnesting (Stmts : in out List_Id) is
+         Subp_Found : Boolean := False;
+
+      begin
+         if Is_Empty_List (Stmts) then
+            return;
+         end if;
+
+         declare
+            Stmt : Node_Id := First (Stmts);
+         begin
+            while Present (Stmt) loop
+               if Nkind (Stmt) = N_Subprogram_Body then
+                  Subp_Found := True;
+                  exit;
+               end if;
+
+               Next (Stmt);
+            end loop;
+         end;
+
+         --  The statements themselves may be blocks, loops, etc. that in turn
+         --  contain nested subprograms requiring an unnesting transformation.
+         --  We perform this traversal after looking for subprogram bodies, to
+         --  avoid considering procedures created for one of those statements
+         --  (such as a block rewritten as a procedure) as a nested subprogram
+         --  of the statement list (which could result in an unneeded wrapper
+         --  procedure).
+
+         Check_Unnesting_In_Decls_Or_Stmts (Stmts);
+
+         --  If there was a top-level subprogram body in the statement list,
+         --  then perform an unnesting transformation on the list by replacing
+         --  the statements with a wrapper procedure body containing the
+         --  original statements followed by a call to that procedure.
+
+         if Subp_Found then
+            Unnest_Statement_List (Stmts);
+         end if;
+      end Check_Stmts_For_Subp_Unnesting;
+
+      --  Local variables
+
+      Then_Stmts : List_Id := Then_Statements (If_Stmt);
+      Else_Stmts : List_Id := Else_Statements (If_Stmt);
+
+   --  Start of processing for Unnest_If_Statement
+
+   begin
+      Check_Stmts_For_Subp_Unnesting (Then_Stmts);
+      Set_Then_Statements (If_Stmt, Then_Stmts);
+
+      if not Is_Empty_List (Elsif_Parts (If_Stmt)) then
+         declare
+            Elsif_Part  : Node_Id :=
+                            First (Elsif_Parts (If_Stmt));
+            Elsif_Stmts : List_Id;
+         begin
+            while Present (Elsif_Part) loop
+               Elsif_Stmts := Then_Statements (Elsif_Part);
+
+               Check_Stmts_For_Subp_Unnesting (Elsif_Stmts);
+               Set_Then_Statements (Elsif_Part, Elsif_Stmts);
+
+               Next (Elsif_Part);
+            end loop;
+         end;
+      end if;
+
+      Check_Stmts_For_Subp_Unnesting (Else_Stmts);
+      Set_Else_Statements (If_Stmt, Else_Stmts);
+   end Unnest_If_Statement;
 
    -----------------
    -- Unnest_Loop --
@@ -9348,6 +9477,75 @@ package body Exp_Ch7 is
       --  their Scope fields reset, since they're still associated with the
       --  same loop entity that now belongs to the copied loop statement.
    end Unnest_Loop;
+
+   ---------------------------
+   -- Unnest_Statement_List --
+   ---------------------------
+
+   procedure Unnest_Statement_List (Stmts : in out List_Id) is
+      Loc        : constant Source_Ptr := Sloc (First (Stmts));
+      Local_Body : Node_Id;
+      Local_Call : Node_Id;
+      Local_Proc : Entity_Id;
+      New_Stmts  : constant List_Id := Empty_List;
+
+   begin
+      Local_Proc :=
+        Make_Defining_Identifier (Loc,
+          Chars => New_Internal_Name ('P'));
+
+      Local_Body :=
+        Make_Subprogram_Body (Loc,
+          Specification              =>
+            Make_Procedure_Specification (Loc,
+              Defining_Unit_Name => Local_Proc),
+          Declarations               => Empty_List,
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements => Stmts));
+
+      Append_To (New_Stmts, Local_Body);
+
+      Analyze (Local_Body);
+
+      Set_Has_Nested_Subprogram (Local_Proc);
+
+      Local_Call :=
+        Make_Procedure_Call_Statement (Loc,
+          Name => New_Occurrence_Of (Local_Proc, Loc));
+
+      Append_To (New_Stmts, Local_Call);
+      Analyze (Local_Call);
+
+      --  Traverse the statements, and for any that are declarations or
+      --  subprogram bodies that have entities, set the Scope of those
+      --  entities to the new procedure's Entity_Id.
+
+      declare
+         Stmt : Node_Id := First (Stmts);
+
+      begin
+         while Present (Stmt) loop
+            case Nkind (Stmt) is
+               when N_Declaration
+                  | N_Renaming_Declaration
+               =>
+                  Set_Scope (Defining_Identifier (Stmt), Local_Proc);
+
+               when N_Subprogram_Body =>
+                  Set_Scope
+                    (Defining_Unit_Name (Specification (Stmt)), Local_Proc);
+
+               when others =>
+                  null;
+            end case;
+
+            Next (Stmt);
+         end loop;
+      end;
+
+      Stmts := New_Stmts;
+   end Unnest_Statement_List;
 
    --------------------------------
    -- Wrap_Transient_Declaration --
