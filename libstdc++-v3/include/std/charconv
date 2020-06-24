@@ -142,7 +142,7 @@ namespace __detail
 	'u', 'v', 'w', 'x', 'y', 'z'
       };
 
-      while (__val >= __base)
+      while (__val >= (unsigned)__base)
 	{
 	  auto const __quo = __val / __base;
 	  auto const __rem = __val % __base;
