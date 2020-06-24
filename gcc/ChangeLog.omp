@@ -1,6 +1,13 @@
 2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2020-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (lower_omp_for): Fix two pastos.
+
+2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2020-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-general.c (omp_extract_for_data): For triangular loops with

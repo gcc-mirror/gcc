@@ -11236,7 +11236,7 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    TREE_VEC_ELT (*rhs_p, 1)
 	      = get_formal_tmp_var (TREE_VEC_ELT (*rhs_p, 1), &cnt_list);
 	  if (!is_gimple_min_invariant (TREE_VEC_ELT (*rhs_p, 2)))
-	    TREE_VEC_ELT (*rhs_p, 1)
+	    TREE_VEC_ELT (*rhs_p, 2)
 	      = get_formal_tmp_var (TREE_VEC_ELT (*rhs_p, 2), &cnt_list);
 	}
       else if (!is_gimple_min_invariant (*rhs_p))
@@ -11251,7 +11251,7 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    TREE_VEC_ELT (*rhs_p, 1)
 	      = get_formal_tmp_var (TREE_VEC_ELT (*rhs_p, 1), &cnt_list);
 	  if (!is_gimple_min_invariant (TREE_VEC_ELT (*rhs_p, 2)))
-	    TREE_VEC_ELT (*rhs_p, 1)
+	    TREE_VEC_ELT (*rhs_p, 2)
 	      = get_formal_tmp_var (TREE_VEC_ELT (*rhs_p, 2), &cnt_list);
 	}
       else if (!is_gimple_min_invariant (*rhs_p))
