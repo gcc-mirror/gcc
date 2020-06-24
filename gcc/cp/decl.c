@@ -12105,105 +12105,99 @@ grokdeclarator (const cp_declarator *declarator,
 
 	    /* Handle a late-specified return type.  */
 	    tree late_return_type = declarator->u.function.late_return_type;
-	    if (funcdecl_p
-		/* This is the case e.g. for
-		   using T = auto () -> int.  */
-		|| inner_declarator == NULL)
+	    if (tree auto_node = type_uses_auto (type))
 	      {
-		if (tree auto_node = type_uses_auto (type))
+		if (!late_return_type && funcdecl_p)
 		  {
-		    if (!late_return_type)
+		    if (current_class_type
+			&& LAMBDA_TYPE_P (current_class_type))
+		      /* OK for C++11 lambdas.  */;
+		    else if (cxx_dialect < cxx14)
 		      {
-			if (current_class_type
-			    && LAMBDA_TYPE_P (current_class_type))
-			  /* OK for C++11 lambdas.  */;
-			else if (cxx_dialect < cxx14)
-			  {
-			    error_at (typespec_loc, "%qs function uses "
-				      "%<auto%> type specifier without "
-				      "trailing return type", name);
-			    inform (typespec_loc,
-				    "deduced return type only available "
-				    "with %<-std=c++14%> or %<-std=gnu++14%>");
-			  }
-			else if (virtualp)
-			  {
-			    error_at (typespec_loc, "virtual function "
-				      "cannot have deduced return type");
-			    virtualp = false;
-			  }
+			error_at (typespec_loc, "%qs function uses "
+				  "%<auto%> type specifier without "
+				  "trailing return type", name);
+			inform (typespec_loc,
+				"deduced return type only available "
+				"with %<-std=c++14%> or %<-std=gnu++14%>");
 		      }
-		    else if (!is_auto (type) && sfk != sfk_conversion)
+		    else if (virtualp)
 		      {
-			error_at (typespec_loc, "%qs function with trailing "
-				  "return type has %qT as its type rather "
-				  "than plain %<auto%>", name, type);
-			return error_mark_node;
-		      }
-		    else if (is_auto (type) && AUTO_IS_DECLTYPE (type))
-		      {
-			if (funcdecl_p)
-			  error_at (typespec_loc,
-				    "%qs function with trailing return type "
-				    "has %<decltype(auto)%> as its type "
-				    "rather than plain %<auto%>", name);
-			else
-			  error_at (typespec_loc,
-				    "invalid use of %<decltype(auto)%>");
-			return error_mark_node;
-		      }
-		    tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node);
-		    if (!tmpl)
-		      if (tree late_auto = type_uses_auto (late_return_type))
-			tmpl = CLASS_PLACEHOLDER_TEMPLATE (late_auto);
-		    if (tmpl && funcdecl_p)
-		      {
-			if (!dguide_name_p (unqualified_id))
-			  {
-			    error_at (declarator->id_loc, "deduced class "
-				      "type %qD in function return type",
-				      DECL_NAME (tmpl));
-			    inform (DECL_SOURCE_LOCATION (tmpl),
-				    "%qD declared here", tmpl);
-			    return error_mark_node;
-			  }
-			else if (!late_return_type)
-			  {
-			    error_at (declarator->id_loc, "deduction guide "
-				      "for %qT must have trailing return "
-				      "type", TREE_TYPE (tmpl));
-			    inform (DECL_SOURCE_LOCATION (tmpl),
-				    "%qD declared here", tmpl);
-			    return error_mark_node;
-			  }
-			else if (CLASS_TYPE_P (late_return_type)
-				 && CLASSTYPE_TEMPLATE_INFO (late_return_type)
-				 && (CLASSTYPE_TI_TEMPLATE (late_return_type)
-				     == tmpl))
-			  /* OK */;
-			else
-			  error ("trailing return type %qT of deduction guide "
-				 "is not a specialization of %qT",
-				 late_return_type, TREE_TYPE (tmpl));
+			error_at (typespec_loc, "virtual function "
+				  "cannot have deduced return type");
+			virtualp = false;
 		      }
 		  }
-		else if (late_return_type
-			 && sfk != sfk_conversion)
+		else if (!is_auto (type) && sfk != sfk_conversion)
 		  {
-		    if (late_return_type == error_mark_node)
-		      return error_mark_node;
-		    if (cxx_dialect < cxx11)
-		      /* Not using maybe_warn_cpp0x because this should
-			 always be an error.  */
-		      error_at (typespec_loc,
-				"trailing return type only available "
-				"with %<-std=c++11%> or %<-std=gnu++11%>");
-		    else
-		      error_at (typespec_loc, "%qs function with trailing "
-				"return type not declared with %<auto%> "
-				"type specifier", name);
+		    error_at (typespec_loc, "%qs function with trailing "
+			      "return type has %qT as its type rather "
+			      "than plain %<auto%>", name, type);
 		    return error_mark_node;
 		  }
+		else if (is_auto (type) && AUTO_IS_DECLTYPE (type))
+		  {
+		    if (funcdecl_p)
+		      error_at (typespec_loc,
+				"%qs function with trailing return type "
+				"has %<decltype(auto)%> as its type "
+				"rather than plain %<auto%>", name);
+		    else
+		      error_at (typespec_loc,
+				"invalid use of %<decltype(auto)%>");
+		    return error_mark_node;
+		  }
+		tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node);
+		if (!tmpl)
+		  if (tree late_auto = type_uses_auto (late_return_type))
+		    tmpl = CLASS_PLACEHOLDER_TEMPLATE (late_auto);
+		if (tmpl && funcdecl_p)
+		  {
+		    if (!dguide_name_p (unqualified_id))
+		      {
+			error_at (declarator->id_loc, "deduced class "
+				  "type %qD in function return type",
+				  DECL_NAME (tmpl));
+			inform (DECL_SOURCE_LOCATION (tmpl),
+				"%qD declared here", tmpl);
+			return error_mark_node;
+		      }
+		    else if (!late_return_type)
+		      {
+			error_at (declarator->id_loc, "deduction guide "
+				  "for %qT must have trailing return "
+				  "type", TREE_TYPE (tmpl));
+			inform (DECL_SOURCE_LOCATION (tmpl),
+				"%qD declared here", tmpl);
+			return error_mark_node;
+		      }
+		    else if (CLASS_TYPE_P (late_return_type)
+			      && CLASSTYPE_TEMPLATE_INFO (late_return_type)
+			      && (CLASSTYPE_TI_TEMPLATE (late_return_type)
+				  == tmpl))
+		      /* OK */;
+		    else
+		      error ("trailing return type %qT of deduction guide "
+			      "is not a specialization of %qT",
+			      late_return_type, TREE_TYPE (tmpl));
+		  }
+	      }
+	    else if (late_return_type
+		     && sfk != sfk_conversion)
+	      {
+		if (late_return_type == error_mark_node)
+		  return error_mark_node;
+		if (cxx_dialect < cxx11)
+		  /* Not using maybe_warn_cpp0x because this should
+		     always be an error.  */
+		  error_at (typespec_loc,
+			    "trailing return type only available "
+			    "with %<-std=c++11%> or %<-std=gnu++11%>");
+		else
+		  error_at (typespec_loc, "%qs function with trailing "
+			    "return type not declared with %<auto%> "
+			    "type specifier", name);
+		return error_mark_node;
 	      }
 	    type = splice_late_return_type (type, late_return_type);
 	    if (type == error_mark_node)
