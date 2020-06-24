@@ -21487,14 +21487,6 @@ package body Sem_Ch3 is
       Related_Id  : Entity_Id := Empty;
       Suffix      : Character := ' ') return Entity_Id
    is
-      P               : Node_Id;
-      Def_Id          : Entity_Id;
-      Error_Node      : Node_Id;
-      Full_View_Id    : Entity_Id;
-      Subtype_Mark_Id : Entity_Id;
-
-      May_Have_Null_Exclusion : Boolean;
-
       procedure Check_Incomplete (T : Node_Id);
       --  Called to verify that an incomplete type is not used prematurely
 
@@ -21518,6 +21510,16 @@ package body Sem_Ch3 is
             Error_Msg_N ("invalid use of type before its full declaration", T);
          end if;
       end Check_Incomplete;
+
+      --  Local variables
+
+      P               : Node_Id;
+      Def_Id          : Entity_Id;
+      Error_Node      : Node_Id;
+      Full_View_Id    : Entity_Id;
+      Subtype_Mark_Id : Entity_Id;
+
+      May_Have_Null_Exclusion : Boolean;
 
    --  Start of processing for Process_Subtype
 
@@ -21550,7 +21552,8 @@ package body Sem_Ch3 is
             Error_Msg_N ("`NOT NULL` only allowed for an access type", S);
          end if;
 
-         --  The following is ugly, can't we have a range or even a flag???
+         --  The following mirroring of assertion in Null_Exclusion_Present is
+         --  ugly, can't we have a range, a static predicate or even a flag???
 
          May_Have_Null_Exclusion :=
            Nkind (P) in N_Access_Definition
@@ -21562,6 +21565,7 @@ package body Sem_Ch3 is
                       | N_Derived_Type_Definition
                       | N_Discriminant_Specification
                       | N_Formal_Object_Declaration
+                      | N_Function_Specification
                       | N_Object_Declaration
                       | N_Object_Renaming_Declaration
                       | N_Parameter_Specification
