@@ -2455,6 +2455,10 @@ lookup_vfn_in_binfo (tree idx, tree binfo)
   int ix = tree_to_shwi (idx);
   if (TARGET_VTABLE_USES_DESCRIPTORS)
     ix /= MAX (TARGET_VTABLE_USES_DESCRIPTORS, 1);
+  while (BINFO_PRIMARY_P (binfo))
+    /* BINFO_VIRTUALS in a primary base isn't accurate, find the derived
+       class that actually owns the vtable.  */
+    binfo = BINFO_INHERITANCE_CHAIN (binfo);
   tree virtuals = BINFO_VIRTUALS (binfo);
   return TREE_VALUE (chain_index (ix, virtuals));
 }
