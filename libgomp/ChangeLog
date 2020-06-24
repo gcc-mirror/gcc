@@ -1,3 +1,8 @@
+2020-06-23  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/lib/libgomp.exp: Load gcc lib scanoffload.exp.
+	* testsuite/lib/libgomp-dg.exp: Drop now-obsolete -save-temps.
+
 2020-06-22  David Edelsohn  <dje.gcc@gmail.com>
 
 	* Makefile.am: Use -include.

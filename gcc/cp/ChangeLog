@@ -1,3 +1,25 @@
+2020-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93976
+	Implement C++20 P2082R1, Fixing CTAD for aggregates.
+	* cp-tree.h (TPARMS_PRIMARY_TEMPLATE): Split out from...
+	(DECL_PRIMARY_TEMPLATE): ...here.
+	(builtin_guide_p): Declare.
+	* decl.c (reshape_init_class): Handle bases of a template.
+	(reshape_init_r): An array with dependent bound takes a single
+	initializer.
+	* pt.c (tsubst_default_argument): Shortcut {}.
+	(unify_pack_expansion): Allow omitted arguments to trailing pack.
+	(builtin_guide_p): New.
+	(collect_ctor_idx_types): Give a trailing pack a {} default
+	argument.  Handle arrays better.
+
+2020-06-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95477
+	* coroutines.cc (morph_fn_to_coro): Apply a cleanup to
+	the get return object when the DTOR is non-trivial.
+
 2020-06-20  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/95505
