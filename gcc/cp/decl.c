@@ -6153,7 +6153,22 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 
   /* The initializer for a class is always a CONSTRUCTOR.  */
   new_init = build_constructor (init_list_type_node, NULL);
-  field = next_initializable_field (TYPE_FIELDS (type));
+
+  int binfo_idx = -1;
+  tree binfo = TYPE_BINFO (type);
+  tree base_binfo = NULL_TREE;
+  if (cxx_dialect >= cxx17 && uses_template_parms (type))
+    {
+      /* We get here from maybe_aggr_guide for C++20 class template argument
+	 deduction.  In this case we need to look through the binfo because a
+	 template doesn't have base fields.  */
+      binfo_idx = 0;
+      BINFO_BASE_ITERATE (binfo, binfo_idx, base_binfo);
+    }
+  if (base_binfo)
+    field = base_binfo;
+  else
+    field = next_initializable_field (TYPE_FIELDS (type));
 
   if (!field)
     {
@@ -6170,6 +6185,9 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	}
       return new_init;
     }
+
+  /* For C++20 CTAD, handle pack expansions in the base list.  */
+  tree last_was_pack_expansion = NULL_TREE;
 
   /* Loop through the initializable fields, gathering initializers.  */
   while (d->cur != d->end)
@@ -6218,6 +6236,13 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
       if (!field)
 	break;
 
+      last_was_pack_expansion = (PACK_EXPANSION_P (TREE_TYPE (field))
+				 ? field : NULL_TREE);
+      if (last_was_pack_expansion)
+	/* Each non-trailing aggregate element that is a pack expansion is
+	   assumed to correspond to no elements of the initializer list.  */
+	goto continue_;
+
       field_init = reshape_init_r (TREE_TYPE (field), d,
 				   /*first_initializer_p=*/NULL_TREE,
 				   complain);
@@ -6243,7 +6268,27 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
       if (TREE_CODE (type) == UNION_TYPE)
 	break;
 
-      field = next_initializable_field (DECL_CHAIN (field));
+    continue_:
+      if (base_binfo)
+	{
+	  BINFO_BASE_ITERATE (binfo, ++binfo_idx, base_binfo);
+	  if (base_binfo)
+	    field = base_binfo;
+	  else
+	    field = next_initializable_field (TYPE_FIELDS (type));
+	}
+      else
+	field = next_initializable_field (DECL_CHAIN (field));
+    }
+
+  /* A trailing aggregate element that is a pack expansion is assumed to
+     correspond to all remaining elements of the initializer list (if any).  */
+  if (last_was_pack_expansion)
+    {
+      CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_init),
+			      last_was_pack_expansion, d->cur->value);
+      while (d->cur != d->end)
+	d->cur++;
     }
 
   return new_init;
@@ -6319,7 +6364,11 @@ reshape_init_r (tree type, reshape_iter *d, tree first_initializer_p,
 
   /* A non-aggregate type is always initialized with a single
      initializer.  */
-  if (!CP_AGGREGATE_TYPE_P (type))
+  if (!CP_AGGREGATE_TYPE_P (type)
+      /* As is an array with dependent bound.  */
+      || (cxx_dialect >= cxx20
+	  && TREE_CODE (type) == ARRAY_TYPE
+	  && uses_template_parms (TYPE_DOMAIN (type))))
     {
       /* It is invalid to initialize a non-aggregate type with a
 	 brace-enclosed initializer before C++0x.

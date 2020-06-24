@@ -1,3 +1,9 @@
+2020-06-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* Makefile.in: Remove uses of empty.mk. Use -include.
+	* config/avr/t-avr: Use -include.
+	* empty.mk: Delete.
+
 2020-06-21  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config.host (extra_parts): Add crtcxa_64 and crtdbase_64.

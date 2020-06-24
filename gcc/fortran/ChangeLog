@@ -1,3 +1,16 @@
+2020-06-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/95812
+	* dependency.c (ref_same_as_full_array): Handle case of AR_FULL
+	vs. AR_FULL.
+
+2020-06-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95586
+	* decl.c (gfc_match_implicit): Only perform else branch if
+	the type spect is not BT_DERIVED.
+
 2020-06-22  Steven G. Kargl  <kargl@gcc.gnu.org>
 	    Mark Eggleston  <markeggleston@gcc.gnu.org>
 

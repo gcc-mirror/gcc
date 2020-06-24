@@ -2092,14 +2092,17 @@ _GLIBCXX_END_NAMESPACE_ALGO
 	  if (__pred(__first))
 	    return __first;
 	  ++__first;
+	  // FALLTHRU
 	case 2:
 	  if (__pred(__first))
 	    return __first;
 	  ++__first;
+	  // FALLTHRU
 	case 1:
 	  if (__pred(__first))
 	    return __first;
 	  ++__first;
+	  // FALLTHRU
 	case 0:
 	default:
 	  return __last;

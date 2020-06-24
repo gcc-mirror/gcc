@@ -4815,8 +4815,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    templates are primary, too.  */
 
 /* Returns the primary template corresponding to these parameters.  */
+#define TPARMS_PRIMARY_TEMPLATE(NODE) (TREE_TYPE (NODE))
+
 #define DECL_PRIMARY_TEMPLATE(NODE) \
-  (TREE_TYPE (DECL_INNERMOST_TEMPLATE_PARMS (NODE)))
+  (TPARMS_PRIMARY_TEMPLATE (DECL_INNERMOST_TEMPLATE_PARMS (NODE)))
 
 /* Returns nonzero if NODE is a primary template.  */
 #define PRIMARY_TEMPLATE_P(NODE) (DECL_PRIMARY_TEMPLATE (NODE) == (NODE))
@@ -7024,6 +7026,7 @@ extern bool dguide_name_p			(tree);
 extern bool deduction_guide_p			(const_tree);
 extern bool copy_guide_p			(const_tree);
 extern bool template_guide_p			(const_tree);
+extern bool builtin_guide_p			(const_tree);
 extern void store_explicit_specifier		(tree, tree);
 extern tree add_outermost_template_args		(tree, tree);
 

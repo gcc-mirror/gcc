@@ -8728,7 +8728,8 @@ vectorizable_load (vec_info *vinfo,
       /* For BB vectorization always use the first stmt to base
 	 the data ref pointer on.  */
       if (bb_vinfo)
-	first_stmt_info_for_drptr = SLP_TREE_SCALAR_STMTS (slp_node)[0];
+	first_stmt_info_for_drptr
+	  = vect_find_first_scalar_stmt_in_slp (slp_node);
 
       /* Check if the chain of loads is already vectorized.  */
       if (STMT_VINFO_VEC_STMTS (first_stmt_info).exists ()

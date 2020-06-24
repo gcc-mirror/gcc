@@ -1,3 +1,33 @@
+2020-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/from_chars/1_c++20_neg.cc: Check enumeration
+	type.
+	* testsuite/20_util/from_chars/1_neg.cc: Likewise. Move dg-error
+	directives outside preprocessor condition.
+
+2020-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95832
+	* include/std/variant (__detail::__variant::_Build_FUN): Remove
+	partial specialization to prevent narrowing conversions to bool.
+	* testsuite/20_util/variant/compile.cc: Test non-narrowing
+	conversions to bool.
+	* testsuite/20_util/variant/run.cc: Likewise.
+
+2020-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++17/Makefile.in: Regenerate.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/filesystem/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2020-06-22  David Edelsohn  <dje.gcc@gmail.com>
 
 	* Makefile.am: Use -include.

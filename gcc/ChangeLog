@@ -1,3 +1,43 @@
+2020-06-23  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config.gcc: Identify power10 as a 64-bit processor and as valid
+	for --with-cpu and --with-tune.
+
+2020-06-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* Makefile.in (LANG_MAKEFRAGS): Same.
+	(tmake_file): Use -include.
+	(xmake_file): Same.
+
+2020-06-23  Michael Meissner  <meissner@linux.ibm.com>
+
+	* REVISION: Delete file meant for a private branch.
+
+2020-06-23  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/95646
+	* config/arm/arm.c: (cmse_nonsecure_entry_clear_before_return): Use
+	'callee_saved_reg_p' instead of 'calL_used_or_fixed_reg_p'.
+
+2020-06-23  Alexandre Oliva  <oliva@adacore.com>
+
+	* collect-utils.h (dumppfx): New.
+	* collect-utils.c (dumppfx): Likewise.
+	* lto-wrapper.c (run_gcc): Set global dumppfx.
+	(compile_offload_image): Pass a -dumpbase on to mkoffload.
+	* config/nvptx/mkoffload.c (ptx_dumpbase): New.
+	(main): Handle incoming -dumpbase.  Set ptx_dumpbase.  Obey
+	save_temps.
+	(compile_native): Pass -dumpbase et al to compiler.
+	* config/gcn/mkoffload.c (gcn_dumpbase): New.
+	(main): Handle incoming -dumpbase.  Set gcn_dumpbase.  Obey
+	save_temps.  Pass -dumpbase et al to offload target compiler.
+	(compile_native): Pass -dumpbase et al to compiler.
+
+2020-06-23  Michael Meissner  <meissner@linux.ibm.com>
+
+	* REVISION: New file.
+
 2020-06-22  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/altivec.h: Use _ARCH_PWR10, not _ARCH_PWR_FUTURE.
