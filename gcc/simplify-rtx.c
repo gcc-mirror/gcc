@@ -1391,6 +1391,10 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 				       GET_MODE (XEXP (op, 0)));
 	  break;
 
+	case PARITY:
+	  /* (parity (parity x)) -> parity (x).  */
+	  return op;
+
 	default:
 	  break;
 	}
