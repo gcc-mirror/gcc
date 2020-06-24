@@ -1,5 +1,8 @@
 2020-06-24  Nathan Sidwell  <nathan@acm.org>
 
+	Merge master f2242ec0d3f
+	Over the hump!
+
 	Constrained partial specializations
 	gcc/cp/
 	* module.cc (depset::hash::add_partial_redirect): Add slot parm.
