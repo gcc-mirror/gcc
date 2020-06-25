@@ -1,3 +1,90 @@
+2020-06-24  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	PR target/94954
+	* gcc.target/powerpc/builtins-1-p9-runnable.c: Update.
+
+2020-06-24  Alexandre Oliva  <oliva@adacore.com>
+
+	PR testsuite/95416
+	PR testsuite/95577
+	* gcc.misc-tests/outputs.exp (gsplit_dwarf): Move -g into it.
+	(outest): Introduce conditionals and string/variable/expr
+	expansion.  Drop special-casing of $aout and .dwo.
+	(gspd): New conditional.  Guard all .dwo files with it.
+	(ltop): New conditional.  Guard files created by the LTO
+	plugin with it.  Guard files created by fat LTO compilation
+	with its negation.  Add a few -fno-use-linker-plugin tests
+	guarded by it.
+
+2020-06-24  Nicholas Krause  <xerofoify@gmail.com>
+
+	PR c++/95672
+	* g++.dg/template/pr95672.C: New test.
+
+2020-06-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95518
+	PR c++/95813
+	* g++.dg/coroutines/pr95518.C: New test.
+	* g++.dg/coroutines/pr95813.C: New test.
+
+2020-06-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/void-gro-non-class-coro.C: Moved to...
+	* g++.dg/coroutines/coro-bad-gro-01-void-gro-non-class-coro.C: ...here.
+	* g++.dg/coroutines/coro-bad-gro-00-class-gro-scalar-return.C: New test.
+
+2020-06-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95719
+	* g++.dg/tree-ssa/final4.C: New test.
+
+2020-06-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95827
+	* gfortran.dg/pr95827.f90: New file.
+
+2020-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95866
+	* gcc.target/i386/pr95866-1.c: New testcase.
+
+2020-06-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95660
+	* gcc.target/i386/builtin_target.c (check_detailed): Updated.
+
+2020-06-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95843
+	* gcc.target/i386/builtin_target.c: Include <stdlib.h>,
+	../../../common/config/i386/i386-cpuinfo.h and
+	../../../common/config/i386/cpuinfo.h.
+	(check_amd_cpu_model): Removed.
+	(check_intel_cpu_model): Likewise,
+	(CHECK___builtin_cpu_is): New.
+	(gcc_assert): New.  Defined as assert.
+	(gcc_unreachable): New.  Defined as abort.
+	(inline): New.  Defined as empty.
+	(ISA_NAMES_TABLE_START): Likewise.
+	(ISA_NAMES_TABLE_END): Likewise.
+	(ISA_NAMES_TABLE_ENTRY): New.
+	(check_features): Include
+	"../../../common/config/i386/i386-isas.h".
+	(check_detailed): Call cpu_indicator_init.  Always call
+	check_features.  Call get_amd_cpu instead of check_amd_cpu_model.
+	Call get_intel_cpu instead of check_intel_cpu_model.
+
+2020-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95856
+	* gcc.dg/vect/pr95856.c: New testcase.
+
+2020-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95810
+	* gcc.dg/ubsan/pr95810.c: New test.
+
 2020-06-23  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp2a/class-deduction-aggr3.C: New test.
