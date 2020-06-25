@@ -3644,8 +3644,6 @@ package body Sem_Ch3 is
       --  E is set to Expression (N) throughout this routine. When Expression
       --  (N) is modified, E is changed accordingly.
 
-      Prev_Entity : Entity_Id := Empty;
-
       procedure Check_Dynamic_Object (Typ : Entity_Id);
       --  A library-level object with nonstatic discriminant constraints may
       --  require dynamic allocation. The declaration is illegal if the
@@ -3921,7 +3919,8 @@ package body Sem_Ch3 is
       Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
       --  Save the Ghost-related attributes to restore on exit
 
-      Related_Id : Entity_Id;
+      Prev_Entity       : Entity_Id := Empty;
+      Related_Id        : Entity_Id;
       Full_View_Present : Boolean := False;
 
    --  Start of processing for Analyze_Object_Declaration
@@ -4520,7 +4519,7 @@ package body Sem_Ch3 is
             end if;
 
          --  Case of initialization present but in error. Set initial
-         --  expression as absent (but do not make above complaints)
+         --  expression as absent (but do not make above complaints).
 
          elsif E = Error then
             Set_Expression (N, Empty);
@@ -4529,19 +4528,15 @@ package body Sem_Ch3 is
          --  Case of initialization present
 
          else
-            --  Check restrictions in Ada 83
+            --  Unconstrained variables not allowed in Ada 83
 
-            if not Constant_Present (N) then
-
-               --  Unconstrained variables not allowed in Ada 83 mode
-
-               if Ada_Version = Ada_83
-                 and then Comes_From_Source (Object_Definition (N))
-               then
-                  Error_Msg_N
-                    ("(Ada 83) unconstrained variable not allowed",
-                     Object_Definition (N));
-               end if;
+            if Ada_Version = Ada_83
+              and then not Constant_Present (N)
+              and then Comes_From_Source (Object_Definition (N))
+            then
+               Error_Msg_N
+                 ("(Ada 83) unconstrained variable not allowed",
+                  Object_Definition (N));
             end if;
 
             --  Now we constrain the variable from the initializing expression
@@ -4620,7 +4615,7 @@ package body Sem_Ch3 is
                Act_T := Find_Type_Of_Object (Object_Definition (N), N);
             end if;
 
-            --  Propagate attributes to full view when needed.
+            --  Propagate attributes to full view when needed
 
             Set_Is_Constr_Subt_For_U_Nominal (Act_T);
 
@@ -6190,7 +6185,8 @@ package body Sem_Ch3 is
 
       --  Unconstrained array case
 
-      else
+      else pragma Assert (Nkind (Def) = N_Unconstrained_Array_Definition);
+
          Set_Ekind                    (T, E_Array_Type);
          Init_Size_Align              (T);
          Set_Etype                    (T, T);
@@ -17735,9 +17731,7 @@ package body Sem_Ch3 is
 
       --  Case of an anonymous array subtype
 
-      if Def_Kind in
-           N_Constrained_Array_Definition | N_Unconstrained_Array_Definition
-      then
+      if Def_Kind in N_Array_Type_Definition then
          T := Empty;
          Array_Type_Declaration (T, Obj_Def);
 
