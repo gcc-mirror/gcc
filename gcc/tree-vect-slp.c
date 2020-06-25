@@ -4262,13 +4262,6 @@ vect_schedule_slp_instance (vec_info *vinfo,
   else if (SLP_TREE_CHILDREN (node).is_empty ())
     /* This happens for reduction PHIs.  */
     si = gsi_for_stmt (vect_find_last_scalar_stmt_in_slp (node)->stmt);
-  else if (stmt_vec_info first_stmt_info
-	     = vect_find_last_scalar_stmt_in_slp (node))
-    /* ???  Shifts by scalars hit us here again, we end up vectorizing
-       the shift operand but end up using the scalar operand anyway.
-       This needs to be better reflected in the SLP tree.  For now
-       use the last position if available.  */
-    si = gsi_for_stmt (first_stmt_info->stmt);
   else
     {
       /* Emit other stmts after the children vectorized defs which is
