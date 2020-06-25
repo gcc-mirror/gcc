@@ -6141,7 +6141,12 @@ package body Sem_Ch3 is
       --  Constrained array case
 
       if No (T) then
-         T := Create_Itype (E_Void, P, Related_Id, 'T');
+         --  We might be creating more than one itype with the same Related_Id,
+         --  e.g. for an array object definition and its initial value. Give
+         --  them unique suffixes, because GNATprove require distinct types to
+         --  have different names.
+
+         T := Create_Itype (E_Void, P, Related_Id, 'T', Suffix_Index => -1);
       end if;
 
       if Nkind (Def) = N_Constrained_Array_Definition then
