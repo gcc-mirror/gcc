@@ -1,3 +1,10 @@
+2020-06-25  Tobias Burnus  <tobias@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourery.com>
+
+	PR fortran/95869
+
+	* trans-openmp.c (gfc_trans_omp_target): Use correct scoping block.
+
 2020-06-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* trans-openmp.c (gfc_split_omp_clauses): Add if clause

@@ -1,3 +1,11 @@
+2020-06-25  Tobias Burnus  <tobias@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourery.com>
+
+	PR fortran/95869
+
+	* gfortran.dg/gomp/combined-if.f90 (test_target_parallel): Re-enable.
+	* gfortran.dg/gomp/pr95869.f90: New.
+
 2020-06-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* gfortran.dg/gomp/combined-if.f90: New.

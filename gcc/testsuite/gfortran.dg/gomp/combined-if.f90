@@ -18,17 +18,15 @@ contains
     end do
   end subroutine
 
-  ! TODO: This currently fails with an internal compiler error
-  ! (PR 95869)
-  !subroutine test_target_parallel
-  !  do j = 1, N
-  !    !$omp target parallel if(j .lt. LIMIT) map(tofrom: a(1:N))
-  !    do i = 1, N
-  !      a(i) = a(i) + 1
-  !    end do
-  !    !$omp end target parallel
-  !   end do
-  !end subroutine
+  subroutine test_target_parallel
+    do j = 1, N
+      !$omp target parallel if(j .lt. LIMIT) map(tofrom: a(1:N))
+      do i = 1, N
+        a(i) = a(i) + 1
+      end do
+      !$omp end target parallel
+     end do
+  end subroutine
 
   subroutine test_target_parallel_loop
     do j = 1, N
@@ -105,6 +103,6 @@ contains
 
 end module
 
-! { dg-final { scan-tree-dump-times "(?n)#pragma omp target.* if\\(" 8 "omplower" } }
+! { dg-final { scan-tree-dump-times "(?n)#pragma omp target.* if\\(" 9 "omplower" } }
 ! { dg-final { scan-tree-dump-times "(?n)#pragma omp simd.* if\\(" 7 "omplower" } }
-! { dg-final { scan-tree-dump-times "(?n)#pragma omp parallel.* if\\(" 5 "omplower" } }
+! { dg-final { scan-tree-dump-times "(?n)#pragma omp parallel.* if\\(" 6 "omplower" } }
