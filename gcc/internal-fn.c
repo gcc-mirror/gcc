@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-ssa.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "explow.h"
 
 /* The names of each internal function, indexed by function number.  */
 const char *const internal_fn_name_array[] = {
@@ -107,6 +108,10 @@ init_internal_fns ()
 #define mask_store_direct { 3, 2, false }
 #define store_lanes_direct { 0, 0, false }
 #define mask_store_lanes_direct { 0, 0, false }
+#define vec_cond_mask_direct { 0, 0, false }
+#define vec_cond_direct { 0, 0, false }
+#define vec_condu_direct { 0, 0, false }
+#define vec_condeq_direct { 0, 0, false }
 #define scatter_store_direct { 3, 1, false }
 #define unary_direct { 0, 0, true }
 #define binary_direct { 0, 0, true }
@@ -2548,6 +2553,86 @@ expand_mask_store_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 
 #define expand_mask_store_lanes_optab_fn expand_mask_store_optab_fn
 
+/* Expand VCOND, VCONDU and VCONDEQ optab internal functions.
+   The expansion of STMT happens based on OPTAB table associated.  */
+
+static void
+expand_vect_cond_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
+{
+  class expand_operand ops[6];
+  insn_code icode;
+  tree lhs = gimple_call_lhs (stmt);
+  tree op0a = gimple_call_arg (stmt, 0);
+  tree op0b = gimple_call_arg (stmt, 1);
+  tree op1 = gimple_call_arg (stmt, 2);
+  tree op2 = gimple_call_arg (stmt, 3);
+  enum tree_code tcode = (tree_code) int_cst_value (gimple_call_arg (stmt, 4));
+
+  tree vec_cond_type = TREE_TYPE (lhs);
+  tree op_mode = TREE_TYPE (op0a);
+  bool unsignedp = TYPE_UNSIGNED (op_mode);
+
+  machine_mode mode = TYPE_MODE (vec_cond_type);
+  machine_mode cmp_op_mode = TYPE_MODE (op_mode);
+
+  icode = convert_optab_handler (optab, mode, cmp_op_mode);
+  rtx comparison
+    = vector_compare_rtx (VOIDmode, tcode, op0a, op0b, unsignedp, icode, 4);
+  rtx rtx_op1 = expand_normal (op1);
+  rtx rtx_op2 = expand_normal (op2);
+
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  create_output_operand (&ops[0], target, mode);
+  create_input_operand (&ops[1], rtx_op1, mode);
+  create_input_operand (&ops[2], rtx_op2, mode);
+  create_fixed_operand (&ops[3], comparison);
+  create_fixed_operand (&ops[4], XEXP (comparison, 0));
+  create_fixed_operand (&ops[5], XEXP (comparison, 1));
+  expand_insn (icode, 6, ops);
+}
+
+#define expand_vec_cond_optab_fn expand_vect_cond_optab_fn
+#define expand_vec_condu_optab_fn expand_vect_cond_optab_fn
+#define expand_vec_condeq_optab_fn expand_vect_cond_optab_fn
+
+/* Expand VCOND_MASK optab internal function.
+   The expansion of STMT happens based on OPTAB table associated.  */
+
+static void
+expand_vect_cond_mask_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
+{
+  class expand_operand ops[4];
+
+  tree lhs = gimple_call_lhs (stmt);
+  tree op0 = gimple_call_arg (stmt, 0);
+  tree op1 = gimple_call_arg (stmt, 1);
+  tree op2 = gimple_call_arg (stmt, 2);
+  tree vec_cond_type = TREE_TYPE (lhs);
+
+  machine_mode mode = TYPE_MODE (vec_cond_type);
+  machine_mode mask_mode = TYPE_MODE (TREE_TYPE (op0));
+  enum insn_code icode = convert_optab_handler (optab, mode, mask_mode);
+  rtx mask, rtx_op1, rtx_op2;
+
+  gcc_assert (icode != CODE_FOR_nothing);
+
+  mask = expand_normal (op0);
+  rtx_op1 = expand_normal (op1);
+  rtx_op2 = expand_normal (op2);
+
+  mask = force_reg (mask_mode, mask);
+  rtx_op1 = force_reg (GET_MODE (rtx_op1), rtx_op1);
+
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  create_output_operand (&ops[0], target, mode);
+  create_input_operand (&ops[1], rtx_op1, mode);
+  create_input_operand (&ops[2], rtx_op2, mode);
+  create_input_operand (&ops[3], mask, mask_mode);
+  expand_insn (icode, 4, ops);
+}
+
+#define expand_vec_cond_mask_optab_fn expand_vect_cond_mask_optab_fn
+
 static void
 expand_ABNORMAL_DISPATCHER (internal_fn, gcall *)
 {
@@ -3131,6 +3216,10 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_mask_store_optab_supported_p direct_optab_supported_p
 #define direct_store_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_mask_store_lanes_optab_supported_p multi_vector_optab_supported_p
+#define direct_vec_cond_mask_optab_supported_p multi_vector_optab_supported_p
+#define direct_vec_cond_optab_supported_p multi_vector_optab_supported_p
+#define direct_vec_condu_optab_supported_p multi_vector_optab_supported_p
+#define direct_vec_condeq_optab_supported_p multi_vector_optab_supported_p
 #define direct_scatter_store_optab_supported_p convert_optab_supported_p
 #define direct_while_optab_supported_p convert_optab_supported_p
 #define direct_fold_extract_optab_supported_p direct_optab_supported_p

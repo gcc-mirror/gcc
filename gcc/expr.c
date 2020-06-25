@@ -9316,17 +9316,8 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
       if (temp != 0)
 	return temp;
 
-      /* For vector MIN <x, y>, expand it a VEC_COND_EXPR <x <= y, x, y>
-	 and similarly for MAX <x, y>.  */
       if (VECTOR_TYPE_P (type))
-	{
-	  tree t0 = make_tree (type, op0);
-	  tree t1 = make_tree (type, op1);
-	  tree comparison = build2 (code == MIN_EXPR ? LE_EXPR : GE_EXPR,
-				    type, t0, t1);
-	  return expand_vec_cond_expr (type, comparison, t0, t1,
-				       original_target);
-	}
+	gcc_unreachable ();
 
       /* At this point, a MEM target is no longer useful; we will get better
 	 code without it.  */
@@ -9914,10 +9905,6 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	OK_DEFER_POP;
 	return temp;
       }
-
-    case VEC_COND_EXPR:
-      target = expand_vec_cond_expr (type, treeop0, treeop1, treeop2, target);
-      return target;
 
     case VEC_DUPLICATE_EXPR:
       op0 = expand_expr (treeop0, NULL_RTX, VOIDmode, modifier);
@@ -12249,8 +12236,7 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
   STRIP_NOPS (arg1);
 
   /* For vector typed comparisons emit code to generate the desired
-     all-ones or all-zeros mask.  Conveniently use the VEC_COND_EXPR
-     expander for this.  */
+     all-ones or all-zeros mask.  */
   if (TREE_CODE (ops->type) == VECTOR_TYPE)
     {
       tree ifexp = build2 (ops->code, ops->type, arg0, arg1);
@@ -12258,12 +12244,7 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
 	  && expand_vec_cmp_expr_p (TREE_TYPE (arg0), ops->type, ops->code))
 	return expand_vec_cmp_expr (ops->type, ifexp, target);
       else
-	{
-	  tree if_true = constant_boolean_node (true, ops->type);
-	  tree if_false = constant_boolean_node (false, ops->type);
-	  return expand_vec_cond_expr (ops->type, ifexp, if_true,
-				       if_false, target);
-	}
+	gcc_unreachable ();
     }
 
   /* Optimize (x % C1) == C2 or (x % C1) != C2 if it is beneficial

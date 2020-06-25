@@ -136,6 +136,11 @@ DEF_INTERNAL_OPTAB_FN (STORE_LANES, ECF_CONST, vec_store_lanes, store_lanes)
 DEF_INTERNAL_OPTAB_FN (MASK_STORE_LANES, 0,
 		       vec_mask_store_lanes, mask_store_lanes)
 
+DEF_INTERNAL_OPTAB_FN (VCOND, 0, vcond, vec_cond)
+DEF_INTERNAL_OPTAB_FN (VCONDU, 0, vcondu, vec_condu)
+DEF_INTERNAL_OPTAB_FN (VCONDEQ, 0, vcondeq, vec_condeq)
+DEF_INTERNAL_OPTAB_FN (VCOND_MASK, 0, vcond_mask, vec_cond_mask)
+
 DEF_INTERNAL_OPTAB_FN (WHILE_ULT, ECF_CONST | ECF_NOTHROW, while_ult, while)
 DEF_INTERNAL_OPTAB_FN (CHECK_RAW_PTRS, ECF_CONST | ECF_NOTHROW,
 		       check_raw_ptrs, check_ptrs)

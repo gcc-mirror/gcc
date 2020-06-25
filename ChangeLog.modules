@@ -1,5 +1,10 @@
 2020-06-25  Nathan Sidwell  <nathan@acm.org>
 
+	Merge master 502d63b6d61
+	Lower VEC_COND_EXPR into internal functions. [Martin Liska]
+	Apply d11c9841d54 Add missing check for gassign.  [Martin Liska]
+	Apply 9435fb9668e Fix typo in tree-ssa-reassoc.c. [Martin Liska]
+
 	Merge master 2021af0c23a
 
 	Merge master 668ef28fbb4
@@ -9,7 +14,7 @@
 	access checking streaming.
 
 	Merge master 92bed036098
-	c++: Improve access checking inside templates [PR41437]
+	c++: Improve access checking inside templates [PR41437] [Patrick Palka]
 
 	Merge master a97e49a89d1
 
