@@ -3149,15 +3149,6 @@ vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal)
       return false;
     }
 
-  if (BB_VINFO_DATAREFS (bb_vinfo).length () < 2)
-    {
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "not vectorized: not enough data-refs in "
-			 "basic block.\n");
-      return false;
-    }
-
   if (!vect_analyze_data_ref_accesses (bb_vinfo))
     {
      if (dump_enabled_p ())
@@ -3169,9 +3160,9 @@ vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal)
 
   vect_slp_check_for_constructors (bb_vinfo);
 
-  /* If there are no grouped stores in the region there is no need
-     to continue with pattern recog as vect_analyze_slp will fail
-     anyway.  */
+  /* If there are no grouped stores and no constructors in the region
+     there is no need to continue with pattern recog as vect_analyze_slp
+     will fail anyway.  */
   if (bb_vinfo->grouped_stores.is_empty ())
     {
       if (dump_enabled_p ())
