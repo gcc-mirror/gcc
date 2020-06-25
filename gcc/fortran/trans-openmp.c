@@ -4748,7 +4748,7 @@ gfc_split_omp_clauses (gfc_code *code,
 	  clausesa[GFC_OMP_SPLIT_TARGET].if_exprs[OMP_IF_TARGET]
 	    = code->ext.omp_clauses->if_exprs[OMP_IF_TARGET];
 	  /* And this is copied to all.  */
-	  clausesa[GFC_OMP_SPLIT_PARALLEL].if_expr
+	  clausesa[GFC_OMP_SPLIT_TARGET].if_expr
 	    = code->ext.omp_clauses->if_expr;
 	}
       if (mask & GFC_OMP_MASK_TEAMS)
@@ -4832,6 +4832,9 @@ gfc_split_omp_clauses (gfc_code *code,
 	  /* Duplicate collapse.  */
 	  clausesa[GFC_OMP_SPLIT_SIMD].collapse
 	    = code->ext.omp_clauses->collapse;
+	  /* And this is copied to all.  */
+	  clausesa[GFC_OMP_SPLIT_SIMD].if_expr
+	    = code->ext.omp_clauses->if_expr;
 	}
       if (mask & GFC_OMP_MASK_TASKLOOP)
 	{
