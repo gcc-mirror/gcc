@@ -1,3 +1,9 @@
+2020-06-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95689
+	* gfortran.dg/pr95689.f90: New test.
+	(reverts the cherry-pick from commit 62c0c0ea7bfb6f8f6b8d767b05120cafb6823da6)
+
 2020-06-23  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
