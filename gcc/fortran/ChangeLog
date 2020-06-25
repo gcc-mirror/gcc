@@ -1,3 +1,9 @@
+2020-06-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95689
+	* interface.c (check_sym_interfaces): Enlarge temporary buffer,
+	and add check on length on mangled name to prevent overflow.
+
 2020-06-23  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
