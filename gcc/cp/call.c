@@ -6341,7 +6341,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	      result = build_over_call (cand, LOOKUP_NORMAL, ocomplain);
 	    }
 
-	  if (trivial_fn_p (cand->fn))
+	  if (trivial_fn_p (cand->fn) || DECL_IMMEDIATE_FUNCTION_P (cand->fn))
 	    /* There won't be a CALL_EXPR.  */;
 	  else if (result && result != error_mark_node)
 	    {

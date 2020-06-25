@@ -1,5 +1,7 @@
 2020-06-25  Nathan Sidwell  <nathan@acm.org>
 
+	Merge master 68df8e8c343
+
 	Merge master 502d63b6d61
 	Lower VEC_COND_EXPR into internal functions. [Martin Liska]
 	Apply d11c9841d54 Add missing check for gassign.  [Martin Liska]

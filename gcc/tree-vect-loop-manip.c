@@ -1053,6 +1053,10 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop,
 
   add_phi_args_after_copy (new_bbs, scalar_loop->num_nodes + 1, NULL);
 
+  /* Skip new preheader since it's deleted if copy loop is added at entry.  */
+  for (unsigned i = (at_exit ? 0 : 1); i < scalar_loop->num_nodes + 1; i++)
+    rename_variables_in_bb (new_bbs[i], duplicate_outer_loop);
+
   if (scalar_loop != loop)
     {
       /* If we copied from SCALAR_LOOP rather than LOOP, SSA_NAMEs from
@@ -1129,10 +1133,6 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop,
       set_immediate_dominator (CDI_DOMINATORS, new_loop->header,
 			       loop_preheader_edge (new_loop)->src);
     }
-
-  /* Skip new preheader since it's deleted if copy loop is added at entry.  */
-  for (unsigned i = (at_exit ? 0 : 1); i < scalar_loop->num_nodes + 1; i++)
-    rename_variables_in_bb (new_bbs[i], duplicate_outer_loop);
 
   if (scalar_loop != loop)
     {

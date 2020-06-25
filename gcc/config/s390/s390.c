@@ -13957,8 +13957,13 @@ s390_fix_long_loop_prediction (rtx_insn *insn)
   int distance;
 
   /* This will exclude branch on count and branch on index patterns
-     since these are correctly statically predicted.  */
-  if (!set
+     since these are correctly statically predicted.
+
+     The additional check for a PARALLEL is required here since
+     single_set might be != NULL for PARALLELs where the set of the
+     iteration variable is dead.  */
+  if (GET_CODE (PATTERN (insn)) == PARALLEL
+      || !set
       || SET_DEST (set) != pc_rtx
       || GET_CODE (SET_SRC(set)) != IF_THEN_ELSE)
     return false;
