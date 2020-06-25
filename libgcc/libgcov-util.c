@@ -80,8 +80,6 @@ static int k_ctrs_mask[GCOV_COUNTERS];
 static struct gcov_ctr_info k_ctrs[GCOV_COUNTERS];
 /* Number of kind of counters that have been seen.  */
 static int k_ctrs_types;
-/* The object summary being processed.  */
-static struct gcov_summary *curr_object_summary;
 
 /* Merge functions for counters.  */
 #define DEF_GCOV_COUNTER(COUNTER, NAME, FN_TYPE) __gcov_merge ## FN_TYPE,
@@ -225,8 +223,7 @@ tag_counters (unsigned tag, unsigned length)
 static void
 tag_summary (unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
 {
-  curr_object_summary = (gcov_summary *) xcalloc (sizeof (gcov_summary), 1);
-  gcov_read_summary (curr_object_summary);
+  gcov_read_summary (&curr_gcov_info->summary);
 }
 
 /* This function is called at the end of reading a gcda file.
@@ -300,7 +297,6 @@ read_gcda_file (const char *filename)
   obstack_init (&fn_info);
   num_fn_info = 0;
   curr_fn_info = 0;
-  curr_object_summary = NULL;
   {
     size_t len = strlen (filename) + 1;
     char *str_dup = (char*) xmalloc (len);
@@ -584,6 +580,11 @@ gcov_merge (struct gcov_info *info1, struct gcov_info *info2, int w)
   int has_mismatch = 0;
 
   gcc_assert (info2->n_functions == n_functions);
+
+  /* Merge summary.  */
+  info1->summary.runs += info2->summary.runs;
+  info1->summary.sum_max += info2->summary.sum_max;
+
   for (f_ix = 0; f_ix < n_functions; f_ix++)
     {
       unsigned t_ix;

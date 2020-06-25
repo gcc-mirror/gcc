@@ -217,6 +217,7 @@ struct gcov_info
                                                   to function information  */
 #else
   struct gcov_fn_info **functions;
+  struct gcov_summary summary;
 #endif /* !IN_GCOV_TOOL */
 };
 

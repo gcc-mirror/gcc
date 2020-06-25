@@ -442,19 +442,6 @@ write_one_data (const struct gcov_info *gi_ptr,
   gcov_write_unsigned (0);
 }
 
-/* Helper function for merging summary.  */
-
-static void
-merge_summary (int run_counted, struct gcov_summary *summary,
-	      gcov_type run_max)
-{
-  if (!run_counted)
-    {
-      summary->runs++;
-      summary->sum_max += run_max;
-    }
-}
-
 /* Dump the coverage counts for one gcov_info object. We merge with existing
    counts when possible, to avoid growing the .da files ad infinitum. We use
    this program's checksum to make sure we only accumulate whole program
@@ -464,7 +451,8 @@ merge_summary (int run_counted, struct gcov_summary *summary,
 
 static void
 dump_one_gcov (struct gcov_info *gi_ptr, struct gcov_filename *gf,
-	       unsigned run_counted, gcov_type run_max)
+	       unsigned run_counted ATTRIBUTE_UNUSED,
+	       gcov_type run_max ATTRIBUTE_UNUSED)
 {
   struct gcov_summary summary = {};
   int error;
@@ -492,7 +480,15 @@ dump_one_gcov (struct gcov_info *gi_ptr, struct gcov_filename *gf,
 
   gcov_rewrite ();
 
-  merge_summary (run_counted, &summary, run_max);
+#if !IN_GCOV_TOOL
+  if (!run_counted)
+    {
+      summary.runs++;
+      summary.sum_max += run_max;
+    }
+#else
+  summary = gi_ptr->summary;
+#endif
 
   write_one_data (gi_ptr, &summary);
   /* fall through */
