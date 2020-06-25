@@ -1,3 +1,31 @@
+2020-06-24  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2020-06-21  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/mma-builtin-1.c: New test.
+	* gcc.target/powerpc/mma-builtin-2.c: New test.
+	* gcc.target/powerpc/mma-builtin-3.c: New test.
+	* gcc.target/powerpc/mma-builtin-4.c: New test.
+	* gcc.target/powerpc/mma-builtin-5.c: New test.
+	* gcc.target/powerpc/mma-builtin-6.c: New test.
+
+2020-06-24  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2020-06-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95719
+	* g++.dg/tree-ssa/final4.C: New test.
+
+2020-06-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-06-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95717
+	* g++.dg/torture/pr95717.C: New testcase.
+
 2020-06-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backported from master:
