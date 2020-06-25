@@ -5140,9 +5140,6 @@ gfc_resolve_substring_charlen (gfc_expr *e)
 	return;
     }
 
-  e->ts.type = BT_CHARACTER;
-  e->ts.kind = gfc_default_character_kind;
-
   if (!e->ts.u.cl)
     e->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
 
