@@ -9638,7 +9638,7 @@ resolve_select_rank (gfc_code *code, gfc_namespace *old_ns)
   gfc_namespace *ns;
   gfc_code *body, *new_st, *tail;
   gfc_case *c;
-  char tname[GFC_MAX_SYMBOL_LEN];
+  char tname[GFC_MAX_SYMBOL_LEN + 7];
   char name[2 * GFC_MAX_SYMBOL_LEN];
   gfc_symtree *st;
   gfc_expr *selector_expr = NULL;
