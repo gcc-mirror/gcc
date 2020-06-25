@@ -393,6 +393,7 @@ fido-*-*)
 	cpu_type=m68k
 	extra_headers=math-68881.h
 	extra_options="${extra_options} m68k/m68k-tables.opt"
+	rust_target_objs="m68k-rust.o"
         ;;
 i[34567]86-*-*)
 	cpu_type=i386
@@ -488,6 +489,7 @@ m32r*-*-*)
 m68k-*-*)
 	extra_headers=math-68881.h
 	extra_options="${extra_options} m68k/m68k-tables.opt"
+	rust_target_objs="m68k-rust.o"
 	;;
 microblaze*-*-*)
         cpu_type=microblaze
