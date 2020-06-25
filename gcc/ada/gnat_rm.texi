@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , May 05, 2020
+GNAT Reference Manual , May 14, 2020
 
 AdaCore
 
@@ -8902,7 +8902,7 @@ DETAILS ::= On | Off, local_NAME
 DETAILS ::= static_string_EXPRESSION
 DETAILS ::= On | Off, static_string_EXPRESSION
 
-TOOL_NAME ::= GNAT | GNATProve
+TOOL_NAME ::= GNAT | GNATprove
 
 REASON ::= Reason => STRING_LITERAL @{& STRING_LITERAL@}
 @end example
@@ -10167,8 +10167,8 @@ supported by the target for the given type.
 @code{obj'Bit}, where @code{obj} is any object, yields the bit
 offset within the storage unit (byte) that contains the first bit of
 storage allocated for the object.  The value of this attribute is of the
-type @emph{universal_integer}, and is always a non-negative number not
-exceeding the value of @code{System.Storage_Unit}.
+type @emph{universal_integer} and is always a nonnegative number smaller
+than @code{System.Storage_Unit}.
 
 For an object that is a variable or a constant allocated in a register,
 the value is zero.  (The use of this attribute does not force the
@@ -10337,14 +10337,16 @@ array descriptor contains bounds information and is located immediately before
 the first element of the array.
 
 @example
-type Unconstr_Array is array (Positive range <>) of Boolean;
+type Unconstr_Array is array (Short_Short_Integer range <>) of Positive;
 Put_Line ("Descriptor size = " & Unconstr_Array'Descriptor_Size'Img);
 @end example
 
-The attribute takes into account any additional padding due to type alignment.
-In the example above, the descriptor contains two values of type
-@code{Positive} representing the low and high bound.  Since @code{Positive} has
-a size of 31 bits and an alignment of 4, the descriptor size is @code{2 * Positive'Size + 2} or 64 bits.
+The attribute takes into account any padding due to the alignment of the
+component type. In the example above, the descriptor contains two values
+of type @code{Short_Short_Integer} representing the low and high bound. But,
+since @code{Positive} has an alignment of 4, the size of the descriptor is
+@code{2 * Short_Short_Integer'Size} rounded up to the next multiple of 32,
+which yields a size of 32 bits, i.e. including 16 bits of padding.
 
 @node Attribute Elaborated,Attribute Elab_Body,Attribute Descriptor_Size,Implementation Defined Attributes
 @anchor{gnat_rm/implementation_defined_attributes attribute-elaborated}@anchor{174}

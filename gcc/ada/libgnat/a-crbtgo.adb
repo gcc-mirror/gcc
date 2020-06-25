@@ -693,11 +693,11 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
 
    procedure Generic_Move (Target, Source : in out Tree_Type) is
    begin
+      TC_Check (Source.TC);
+
       if Target'Address = Source'Address then
          return;
       end if;
-
-      TC_Check (Source.TC);
 
       Clear (Target);
 

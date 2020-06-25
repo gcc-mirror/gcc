@@ -44,7 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Return the GCC location for the D frontend location LOC.  */
 
 location_t
-make_location_t (const Loc& loc)
+make_location_t (const Loc &loc)
 {
   location_t gcc_location = input_location;
 
@@ -82,7 +82,7 @@ d_decl_context (Dsymbol *dsym)
 	  return build_import_decl (parent);
 	}
 
-      /* Declarations marked as 'static' or '__gshared' are never
+      /* Declarations marked as `static' or `__gshared' are never
 	 part of any context except at module level.  */
       if (decl != NULL && decl->isDataseg ())
 	continue;
@@ -164,7 +164,7 @@ declaration_type (Declaration *decl)
   if (declaration_reference_p (decl))
     return build_reference_type (type);
 
-  /* The 'this' parameter is always const.  */
+  /* The `this' parameter is always const.  */
   if (decl->isThisDeclaration ())
     return insert_type_modifiers (type, MODconst);
 
@@ -241,7 +241,7 @@ build_integer_cst (dinteger_t value, tree type)
 /* Build REAL_CST of type TOTYPE with the value VALUE.  */
 
 tree
-build_float_cst (const real_t& value, Type *totype)
+build_float_cst (const real_t &value, Type *totype)
 {
   real_t new_value;
   TypeBasic *tb = totype->isTypeBasic ();
@@ -293,7 +293,7 @@ tree
 d_array_value (tree type, tree len, tree data)
 {
   tree len_field, ptr_field;
-  vec<constructor_elt, va_gc> *ce = NULL;
+  vec <constructor_elt, va_gc> *ce = NULL;
 
   gcc_assert (TYPE_DYNAMIC_ARRAY (type));
   len_field = TYPE_FIELDS (type);
@@ -319,7 +319,7 @@ get_array_length (tree exp, Type *type)
   switch (tb->ty)
     {
     case Tsarray:
-      return size_int (((TypeSArray *) tb)->dim->toUInteger ());
+      return size_int (tb->isTypeSArray ()->dim->toUInteger ());
 
     case Tarray:
       return d_array_length (exp);
@@ -356,7 +356,7 @@ build_class_binfo (tree super, ClassDeclaration *cd)
    This function makes assumptions about interface layout.  */
 
 tree
-build_interface_binfo (tree super, ClassDeclaration *cd, unsigned& offset)
+build_interface_binfo (tree super, ClassDeclaration *cd, unsigned &offset)
 {
   tree binfo = make_tree_binfo (cd->baseclasses->length);
   tree ctype = build_ctype (cd->type);
@@ -421,7 +421,7 @@ build_delegate_cst (tree method, tree object, Type *type)
       TYPE_DELEGATE (ctype) = 1;
     }
 
-  vec<constructor_elt, va_gc> *ce = NULL;
+  vec <constructor_elt, va_gc> *ce = NULL;
   CONSTRUCTOR_APPEND_ELT (ce, TYPE_FIELDS (ctype), object);
   CONSTRUCTOR_APPEND_ELT (ce, TREE_CHAIN (TYPE_FIELDS (ctype)), method);
 
@@ -445,7 +445,7 @@ build_method_call (tree callee, tree object, Type *type)
 /* Extract callee and object from T and return in to CALLEE and OBJECT.  */
 
 void
-extract_from_method_call (tree t, tree& callee, tree& object)
+extract_from_method_call (tree t, tree &callee, tree &object)
 {
   gcc_assert (METHOD_CALL_EXPR (t));
   object = CONSTRUCTOR_ELT (t, 0)->value;
@@ -812,9 +812,8 @@ identity_compare_p (StructDeclaration *sd)
       Type *tb = vd->type->toBasetype ();
 
       /* Check inner data structures.  */
-      if (tb->ty == Tstruct)
+      if (TypeStruct *ts = tb->isTypeStruct ())
 	{
-	  TypeStruct *ts = (TypeStruct *) tb;
 	  if (!identity_compare_p (ts->sym))
 	    return false;
 	}
@@ -897,11 +896,10 @@ lower_struct_comparison (tree_code code, StructDeclaration *sd,
       tree t2ref = component_ref (t2, sfield);
       tree tcmp;
 
-      if (type->ty == Tstruct)
+      if (TypeStruct *ts = type->isTypeStruct ())
 	{
 	  /* Compare inner data structures.  */
-	  StructDeclaration *decl = ((TypeStruct *) type)->sym;
-	  tcmp = lower_struct_comparison (code, decl, t1ref, t2ref);
+	  tcmp = lower_struct_comparison (code, ts->sym, t1ref, t2ref);
 	}
       else if (type->ty != Tvector && type->isintegral ())
 	{
@@ -1096,13 +1094,13 @@ build_array_struct_comparison (tree_code code, StructDeclaration *sd,
    matches the layout of TYPE.  */
 
 tree
-build_struct_literal (tree type, vec<constructor_elt, va_gc> *init)
+build_struct_literal (tree type, vec <constructor_elt, va_gc> *init)
 {
   /* If the initializer was empty, use default zero initialization.  */
   if (vec_safe_is_empty (init))
     return build_constructor (type, NULL);
 
-  vec<constructor_elt, va_gc> *ve = NULL;
+  vec <constructor_elt, va_gc> *ve = NULL;
   HOST_WIDE_INT offset = 0;
   bool constant_p = true;
   bool finished = false;
@@ -1680,16 +1678,14 @@ build_array_set (tree ptr, tree length, tree value)
 tree
 build_array_from_val (Type *type, tree val)
 {
-  gcc_assert (type->ty == Tsarray);
-
   tree etype = build_ctype (type->nextOf ());
 
   /* Initializing a multidimensional array.  */
   if (TREE_CODE (etype) == ARRAY_TYPE && TREE_TYPE (val) != etype)
     val = build_array_from_val (type->nextOf (), val);
 
-  size_t dims = ((TypeSArray *) type)->dim->toInteger ();
-  vec<constructor_elt, va_gc> *elms = NULL;
+  size_t dims = type->isTypeSArray ()->dim->toInteger ();
+  vec <constructor_elt, va_gc> *elms = NULL;
   vec_safe_reserve (elms, dims);
 
   val = d_convert (etype, val);
@@ -1716,12 +1712,32 @@ void_okay_p (tree t)
   return t;
 }
 
+/* Builds a CALL_EXPR at location LOC in the source file to execute when an
+   array bounds check fails.  */
+
+tree
+build_array_bounds_call (const Loc &loc)
+{
+  switch (global.params.checkAction)
+    {
+    case CHECKACTION_D:
+      return d_assert_call (loc, LIBCALL_ARRAY_BOUNDS);
+
+    case CHECKACTION_C:
+    case CHECKACTION_halt:
+      return build_call_expr (builtin_decl_explicit (BUILT_IN_TRAP), 0);
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Builds a bounds condition checking that INDEX is between 0 and LEN.
    The condition returns the INDEX if true, or throws a RangeError.
    If INCLUSIVE, we allow INDEX == LEN to return true also.  */
 
 tree
-build_bounds_condition (const Loc& loc, tree index, tree len, bool inclusive)
+build_bounds_condition (const Loc &loc, tree index, tree len, bool inclusive)
 {
   if (!array_bounds_check ())
     return index;
@@ -1735,9 +1751,7 @@ build_bounds_condition (const Loc& loc, tree index, tree len, bool inclusive)
   tree condition = fold_build2 (inclusive ? GT_EXPR : GE_EXPR,
 				d_bool_type, index, len);
   /* Terminate the program with a trap if no D runtime present.  */
-  tree boundserr = (global.params.checkAction == CHECKACTION_D)
-    ? d_assert_call (loc, LIBCALL_ARRAY_BOUNDS)
-    : build_call_expr (builtin_decl_explicit (BUILT_IN_TRAP), 0);
+  tree boundserr = build_array_bounds_call (loc);
 
   return build_condition (TREE_TYPE (index), condition, boundserr, index);
 }
@@ -1762,8 +1776,7 @@ array_bounds_check (void)
       fd = d_function_chain->function;
       if (fd && fd->type->ty == Tfunction)
 	{
-	  TypeFunction *tf = (TypeFunction *) fd->type;
-	  if (tf->trust == TRUSTsafe)
+	  if (fd->type->isTypeFunction ()->trust == TRUSTsafe)
 	    return true;
 	}
       return false;
@@ -1783,9 +1796,9 @@ get_function_type (Type *t)
   if (t->ty == Tpointer)
     t = t->nextOf ()->toBasetype ();
   if (t->ty == Tfunction)
-    tf = (TypeFunction *) t;
+    tf = t->isTypeFunction ();
   else if (t->ty == Tdelegate)
-    tf = (TypeFunction *) ((TypeDelegate *) t)->next;
+    tf = t->isTypeDelegate ()->next->isTypeFunction ();
   return tf;
 }
 
@@ -1817,7 +1830,7 @@ call_by_alias_p (FuncDeclaration *caller, FuncDeclaration *callee)
 }
 
 /* Entry point for call routines.  Builds a function call to FD.
-   OBJECT is the 'this' reference passed and ARGS are the arguments to FD.  */
+   OBJECT is the `this' reference passed and ARGS are the arguments to FD.  */
 
 tree
 d_build_call_expr (FuncDeclaration *fd, tree object, Expressions *arguments)
@@ -1826,7 +1839,7 @@ d_build_call_expr (FuncDeclaration *fd, tree object, Expressions *arguments)
 		       build_address (get_symbol_decl (fd)), object, arguments);
 }
 
-/* Builds a CALL_EXPR of type TF to CALLABLE.  OBJECT holds the 'this' pointer,
+/* Builds a CALL_EXPR of type TF to CALLABLE.  OBJECT holds the `this' pointer,
    ARGUMENTS are evaluated in left to right order, saved and promoted
    before passing.  */
 
@@ -1860,7 +1873,7 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
     }
 
   /* Build the argument list for the call.  */
-  vec<tree, va_gc> *args = NULL;
+  vec <tree, va_gc> *args = NULL;
   tree saved_args = NULL_TREE;
 
   /* If this is a delegate call or a nested function being called as
@@ -1879,7 +1892,7 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 
 	  if (arg->op == TOKcomma)
 	    {
-	      CommaExp *ce = (CommaExp *) arg;
+	      CommaExp *ce = arg->isCommaExp ();
 	      tree tce = build_expr (ce->e1);
 	      saved_args = compound_expr (saved_args, tce);
 	      (*arguments)[i] = ce->e2;
@@ -1916,8 +1929,7 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 	  if (TREE_ADDRESSABLE (TREE_TYPE (targ)))
 	    {
 	      Type *t = arg->type->toBasetype ();
-	      gcc_assert (t->ty == Tstruct);
-	      StructDeclaration *sd = ((TypeStruct *) t)->sym;
+	      StructDeclaration *sd = t->isTypeStruct ()->sym;
 
 	      /* Nested structs also have ADDRESSABLE set, but if the type has
 		 neither a copy constructor nor a destructor available, then we
@@ -1964,7 +1976,7 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 /* Builds a call to AssertError or AssertErrorMsg.  */
 
 tree
-d_assert_call (const Loc& loc, libcall_fn libcall, tree msg)
+d_assert_call (const Loc &loc, libcall_fn libcall, tree msg)
 {
   tree file;
   tree line = size_int (loc.linnum);
@@ -2032,7 +2044,7 @@ build_float_modulus (tree type, tree arg0, tree arg1)
 }
 
 /* Build a function type whose first argument is a pointer to BASETYPE,
-   which is to be used for the 'vthis' context parameter for TYPE.
+   which is to be used for the `vthis' context parameter for TYPE.
    The base type may be a record for member functions, or a void for
    nested functions and delegates.  */
 
@@ -2073,7 +2085,7 @@ get_frame_for_symbol (Dsymbol *sym)
       /* Check that the nested function is properly defined.  */
       if (!fd->fbody)
 	{
-	  /* Should instead error on line that references 'fd'.  */
+	  /* Should instead error on line that references `fd'.  */
 	  error_at (make_location_t (fd->loc), "nested function missing body");
 	  return null_pointer_node;
 	}
@@ -2169,7 +2181,7 @@ get_frame_for_symbol (Dsymbol *sym)
     {
       tree frame_ref = get_framedecl (thisfd, fdparent);
 
-      /* If 'thisfd' is a derived member function, then 'fdparent' is the
+      /* If `thisfd' is a derived member function, then `fdparent' is the
 	 overridden member function in the base class.  Even if there's a
 	 closure environment, we should give the original stack data as the
 	 nested function frame.  */
@@ -2183,14 +2195,14 @@ get_frame_for_symbol (Dsymbol *sym)
 	  if (cdo->isBaseOf (cd, &offset) && offset != 0)
 	    {
 	      /* Generate a new frame to pass to the overriden function that
-		 has the 'this' pointer adjusted.  */
+		 has the `this' pointer adjusted.  */
 	      gcc_assert (offset != OFFSET_RUNTIME);
 
 	      tree type = FRAMEINFO_TYPE (get_frameinfo (fdoverride));
 	      tree fields = TYPE_FIELDS (type);
-	      /* The 'this' field comes immediately after the '__chain'.  */
+	      /* The `this' field comes immediately after the `__chain'.  */
 	      tree thisfield = chain_index (1, fields);
-	      vec<constructor_elt, va_gc> *ve = NULL;
+	      vec <constructor_elt, va_gc> *ve = NULL;
 
 	      tree framefields = TYPE_FIELDS (FRAMEINFO_TYPE (ffo));
 	      frame_ref = build_deref (frame_ref);
@@ -2251,7 +2263,7 @@ d_nested_struct (StructDeclaration *sd)
 
 
 /* Starting from the current function FD, try to find a suitable value of
-   'this' in nested function instances.  A suitable 'this' value is an
+   `this' in nested function instances.  A suitable `this' value is an
    instance of OCD or a class that has OCD as a base.  */
 
 static tree
@@ -2289,7 +2301,7 @@ find_this_tree (ClassDeclaration *ocd)
   return NULL_TREE;
 }
 
-/* Retrieve the outer class/struct 'this' value of DECL from
+/* Retrieve the outer class/struct `this' value of DECL from
    the current function.  */
 
 tree
@@ -2315,7 +2327,7 @@ build_vthis (AggregateDeclaration *decl)
 	  outer = ((TemplateInstance *) outer->parent)->enclosing;
 	}
 
-      /* For outer classes, get a suitable 'this' value.
+      /* For outer classes, get a suitable `this' value.
 	 For outer functions, get a suitable frame/closure pointer.  */
       ClassDeclaration *cdo = outer->isClassDeclaration ();
       FuncDeclaration *fdo = outer->isFuncDeclaration ();
@@ -2400,7 +2412,7 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
 	    }
 	}
 
-      /* Also add hidden 'this' to outer context.  */
+      /* Also add hidden `this' to outer context.  */
       if (fd->vthis)
 	{
 	  for (size_t i = 0; i < fd->closureVars.length; i++)
@@ -2530,7 +2542,7 @@ build_closure (FuncDeclaration *fd)
 }
 
 /* Return the frame of FD.  This could be a static chain or a closure
-   passed via the hidden 'this' pointer.  */
+   passed via the hidden `this' pointer.  */
 
 tree
 get_frameinfo (FuncDeclaration *fd)

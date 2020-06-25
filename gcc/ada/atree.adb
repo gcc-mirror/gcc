@@ -1940,11 +1940,12 @@ package body Atree is
       V13 : Node_Kind;
       V14 : Node_Kind;
       V15 : Node_Kind;
-      V16 : Node_Kind) return Boolean
+      V16 : Node_Kind;
+      V17 : Node_Kind) return Boolean
    is
    begin
       return Nkind_In (Nkind (N), V1, V2, V3, V4, V5, V6, V7, V8, V9, V10,
-                                  V11, V12, V13, V14, V15, V16);
+                                  V11, V12, V13, V14, V15, V16, V17);
    end Nkind_In;
 
    --------
@@ -2070,8 +2071,7 @@ package body Atree is
 
    procedure Preserve_Comes_From_Source (NewN, OldN : Node_Id) is
    begin
-      Nodes.Table (NewN).Comes_From_Source :=
-        Nodes.Table (OldN).Comes_From_Source;
+      Set_Comes_From_Source (NewN, Comes_From_Source (OldN));
    end Preserve_Comes_From_Source;
 
    ----------------------

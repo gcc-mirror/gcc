@@ -330,12 +330,12 @@ package body Comperr is
                   End_Line;
 
                   Write_Str
-                    ("| alternatively submit a bug report by email " &
-                     "to report@adacore.com,");
+                    ("| Or submit a bug report by email " &
+                     "to report@adacore.com");
                   End_Line;
 
                   Write_Str
-                    ("| including your customer number #nnn " &
+                    ("| and include your customer number #nnn " &
                      "in the subject line.");
                   End_Line;
                end if;

@@ -73,7 +73,7 @@ struct d_option_data
   bool deps_skip_system;	    /* -MM  */
   const char *deps_filename;	    /* -M[M]D  */
   const char *deps_filename_user;   /* -MF <arg>  */
-  OutBuffer *deps_target;	    /* -M[QT] <arg> */
+  vec <const char *> deps_target;   /* -M[QT] <arg> */
   bool deps_phony;		    /* -MP  */
 
   bool stdinc;			    /* -nostdinc  */
@@ -95,7 +95,7 @@ struct binding_level *global_binding_level;
 static GTY(()) tree global_context;
 
 /* Array of all global declarations to pass back to the middle-end.  */
-static GTY(()) vec<tree, va_gc> *global_declarations;
+static GTY(()) vec <tree, va_gc> *global_declarations;
 
 /* Support for GCC-style command-line make dependency generation.
    Adds TARGET to the make dependencies target buffer.
@@ -104,16 +104,13 @@ static GTY(()) vec<tree, va_gc> *global_declarations;
 static void
 deps_add_target (const char *target, bool quoted)
 {
-  if (!d_option.deps_target)
-    d_option.deps_target = new OutBuffer ();
-  else
-    d_option.deps_target->writeByte (' ');
-
-  d_option.deps_target->reserve (strlen (target));
+  obstack buffer;
+  gcc_obstack_init (&buffer);
 
   if (!quoted)
     {
-      d_option.deps_target->writestring (target);
+      obstack_grow (&buffer, target, strlen (target));
+      d_option.deps_target.safe_push ((const char *) obstack_finish (&buffer));
       return;
     }
 
@@ -125,31 +122,59 @@ deps_add_target (const char *target, bool quoted)
 	case ' ':
 	case '\t':
 	  for (const char *q = p - 1; target <= q && *q == '\\';  q--)
-	    d_option.deps_target->writeByte ('\\');
-	  d_option.deps_target->writeByte ('\\');
+	    obstack_1grow (&buffer, '\\');
+	  obstack_1grow (&buffer, '\\');
 	  break;
 
 	case '$':
-	  d_option.deps_target->writeByte ('$');
+	  obstack_1grow (&buffer, '$');
 	  break;
 
 	case '#':
-	  d_option.deps_target->writeByte ('\\');
+	  obstack_1grow (&buffer, '\\');
 	  break;
 
 	default:
 	  break;
 	}
 
-      d_option.deps_target->writeByte (*p);
+      obstack_1grow (&buffer, *p);
     }
+
+  d_option.deps_target.safe_push ((const char *) obstack_finish (&buffer));
 }
 
-/* Write out all dependencies of a given MODULE to the specified BUFFER.
+/* Write STR, with a leading space to BUFFER, updating COLUMN as appropriate.
    COLMAX is the number of columns to word-wrap at (0 means don't wrap).  */
 
 static void
-deps_write (Module *module, OutBuffer *buffer, unsigned colmax = 72)
+deps_write_string (const char *str, obstack *buffer, unsigned &column,
+		   unsigned colmax = 72)
+{
+  unsigned size = strlen (str);
+
+  if (column != 0)
+    {
+      if (colmax && column + size > colmax)
+	{
+	  obstack_grow (buffer, " \\\n ", 4);
+	  column = 1;
+	}
+      else
+	{
+	  obstack_1grow (buffer, ' ');
+	  column++;
+	}
+    }
+
+  column += size;
+  obstack_grow (buffer, str, size);
+}
+
+/* Write out all dependencies of a given MODULE to the specified BUFFER.  */
+
+static void
+deps_write (Module *module, obstack *buffer)
 {
   hash_set <const char *> seen_modules;
   vec <const char *> dependencies = vNULL;
@@ -161,18 +186,15 @@ deps_write (Module *module, OutBuffer *buffer, unsigned colmax = 72)
   unsigned column = 0;
 
   /* Write out make target module name.  */
-  if (d_option.deps_target)
+  if (d_option.deps_target.length ())
     {
-      buffer->writestring (d_option.deps_target->extractChars ());
-      column = d_option.deps_target->offset;
+      for (unsigned i = 0; i < d_option.deps_target.length (); i++)
+	deps_write_string (d_option.deps_target[i], buffer, column);
     }
   else
-    {
-      buffer->writestring (module->objfile->name->str);
-      column = buffer->offset;
-    }
+    deps_write_string (module->objfile->name->str, buffer, column);
 
-  buffer->writestring (":");
+  obstack_1grow (buffer, ':');
   column++;
 
   /* Search all modules for file dependencies.  */
@@ -236,33 +258,17 @@ deps_write (Module *module, OutBuffer *buffer, unsigned colmax = 72)
 
   /* Write out all make dependencies.  */
   for (size_t i = 0; i < dependencies.length (); i++)
-    {
-      const char *str = dependencies[i];
-      unsigned size = strlen (str);
-      column += size;
+    deps_write_string (dependencies[i], buffer, column);
 
-      if (colmax && column > colmax)
-	{
-	  buffer->writestring (" \\\n ");
-	  column = size + 1;
-	}
-      else
-	{
-	  buffer->writestring (" ");
-	  column++;
-	}
-
-      buffer->writestring (str);
-    }
-
-  buffer->writenl ();
+  obstack_1grow (buffer, '\n');
 
   /* Write out all phony targets.  */
   for (size_t i = 0; i < phonylist.length (); i++)
     {
-      buffer->writenl ();
-      buffer->writestring (phonylist[i]);
-      buffer->writestring (":\n");
+      const char *str = phonylist[i];
+      obstack_1grow (buffer, '\n');
+      obstack_grow (buffer, str, strlen (str));
+      obstack_grow (buffer, ":\n", 2);
     }
 }
 
@@ -285,6 +291,7 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
   global.params.useOut = CHECKENABLEdefault;
   global.params.useArrayBounds = CHECKENABLEdefault;
   global.params.useSwitchError = CHECKENABLEdefault;
+  global.params.checkAction = CHECKACTION_D;
   global.params.useModuleInfo = true;
   global.params.useTypeInfo = true;
   global.params.useExceptions = true;
@@ -313,7 +320,7 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
   d_option.deps_skip_system = false;
   d_option.deps_filename = NULL;
   d_option.deps_filename_user = NULL;
-  d_option.deps_target = NULL;
+  d_option.deps_target = vNULL;
   d_option.deps_phony = false;
   d_option.stdinc = true;
 }
@@ -330,7 +337,7 @@ d_init_options_struct (gcc_options *opts)
   /* Avoid range issues for complex multiply and divide.  */
   opts->x_flag_complex_method = 2;
 
-  /* Unlike C, there is no global 'errno' variable.  */
+  /* Unlike C, there is no global `errno' variable.  */
   opts->x_flag_errno_math = 0;
   opts->frontend_set_flag_errno_math = true;
 
@@ -359,7 +366,7 @@ d_init (void)
   Objc::_init ();
 
   /* Back-end init.  */
-  global_binding_level = ggc_cleared_alloc<binding_level> ();
+  global_binding_level = ggc_cleared_alloc <binding_level> ();
   current_binding_level = global_binding_level;
 
   /* This allows the code in d-builtins.cc to not have to worry about
@@ -775,7 +782,7 @@ d_post_options (const char ** fn)
       if (!global_options_set.x_flag_exceptions)
 	global.params.useExceptions = false;
 
-      global.params.checkAction = CHECKACTION_halt;
+      global.params.checkAction = CHECKACTION_C;
     }
 
   /* Keep in sync with existing -fbounds-check flag.  */
@@ -1135,7 +1142,7 @@ d_parse_file (void)
       unsigned errors = global.startGagging ();
       Module *m = Module::load (Loc (), NULL, Identifier::idPool ("__main"));
 
-      if (! global.endGagging (errors))
+      if (!global.endGagging (errors))
 	{
 	  m->importedFrom = m;
 	  modules.push (m);
@@ -1269,10 +1276,13 @@ d_parse_file (void)
   /* Make dependencies.  */
   if (d_option.deps)
     {
-      OutBuffer buf;
+      obstack buffer;
+      FILE *deps_stream;
+
+      gcc_obstack_init (&buffer);
 
       for (size_t i = 0; i < modules.length; i++)
-	deps_write (modules[i], &buf);
+	deps_write (modules[i], &buffer);
 
       /* -MF <arg> overrides -M[M]D.  */
       if (d_option.deps_filename_user)
@@ -1280,13 +1290,25 @@ d_parse_file (void)
 
       if (d_option.deps_filename)
 	{
-	  File *fdeps = File::create (d_option.deps_filename);
-	  fdeps->setbuffer ((void *) buf.data, buf.offset);
-	  fdeps->ref = 1;
-	  writeFile (Loc (), fdeps);
+	  deps_stream = fopen (d_option.deps_filename, "w");
+	  if (!deps_stream)
+	    {
+	      fatal_error (input_location, "opening dependency file %s: %m",
+			   d_option.deps_filename);
+	      goto had_errors;
+	    }
 	}
       else
-	message ("%.*s", (int) buf.offset, (char *) buf.data);
+	deps_stream = stdout;
+
+      fprintf (deps_stream, "%s", (char *) obstack_finish (&buffer));
+
+      if (deps_stream != stdout
+	  && (ferror (deps_stream) || fclose (deps_stream)))
+	{
+	  fatal_error (input_location, "closing dependency file %s: %m",
+		       d_option.deps_filename);
+	}
     }
 
   /* Generate JSON files.  */
@@ -1296,18 +1318,27 @@ d_parse_file (void)
       json_generate (&buf, &modules);
 
       const char *name = global.params.jsonfilename.ptr;
+      FILE *json_stream;
 
       if (name && (name[0] != '-' || name[1] != '\0'))
 	{
 	  const char *nameext
 	    = FileName::defaultExt (name, global.json_ext.ptr);
-	  File *fjson = File::create (nameext);
-	  fjson->setbuffer ((void *) buf.data, buf.offset);
-	  fjson->ref = 1;
-	  writeFile (Loc (), fjson);
+	  json_stream = fopen (nameext, "w");
+	  if (!json_stream)
+	    {
+	      fatal_error (input_location, "opening json file %s: %m", nameext);
+	      goto had_errors;
+	    }
 	}
       else
-	message ("%.*s", (int) buf.offset, (char *) buf.data);
+	json_stream = stdout;
+
+      fprintf (json_stream, "%s", buf.peekChars ());
+
+      if (json_stream != stdout
+	  && (ferror (json_stream) || fclose (json_stream)))
+	fatal_error (input_location, "closing json file %s: %m", name);
     }
 
   /* Generate Ddoc files.  */
@@ -1672,11 +1703,10 @@ static classify_record
 d_classify_record (tree type)
 {
   Type *t = TYPE_LANG_FRONTEND (type);
+  TypeClass *tc = t ? t->isTypeClass () : NULL;
 
-  if (t && t->ty == Tclass)
+  if (tc != NULL)
     {
-      TypeClass *tc = (TypeClass *) t;
-
       /* extern(C++) interfaces get emitted as classes.  */
       if (tc->sym->isInterfaceDeclaration ()
 	  && !tc->sym->isCPPinterface ())
@@ -1744,7 +1774,7 @@ d_tree_node_structure (lang_tree_node *t)
 struct lang_type *
 build_lang_type (Type *t)
 {
-  struct lang_type *lt = ggc_cleared_alloc<struct lang_type> ();
+  struct lang_type *lt = ggc_cleared_alloc <struct lang_type> ();
   lt->type = t;
   return lt;
 }
@@ -1758,11 +1788,11 @@ build_lang_decl (Declaration *d)
      there's no associated frontend symbol to refer to (yet).  If the symbol
      appears later in the compilation, then the slot will be re-used.  */
   if (d == NULL)
-    return ggc_cleared_alloc<struct lang_decl> ();
+    return ggc_cleared_alloc <struct lang_decl> ();
 
   struct lang_decl *ld = (d->csym) ? DECL_LANG_SPECIFIC (d->csym) : NULL;
   if (ld == NULL)
-    ld = ggc_cleared_alloc<struct lang_decl> ();
+    ld = ggc_cleared_alloc <struct lang_decl> ();
 
   if (ld->decl == NULL)
     ld->decl = d;
@@ -1776,10 +1806,10 @@ build_lang_decl (Declaration *d)
 static void
 d_dup_lang_specific_decl (tree node)
 {
-  if (! DECL_LANG_SPECIFIC (node))
+  if (!DECL_LANG_SPECIFIC (node))
     return;
 
-  struct lang_decl *ld = ggc_alloc<struct lang_decl> ();
+  struct lang_decl *ld = ggc_alloc <struct lang_decl> ();
   memcpy (ld, DECL_LANG_SPECIFIC (node), sizeof (struct lang_decl));
   DECL_LANG_SPECIFIC (node) = ld;
 }
@@ -1814,12 +1844,10 @@ static tree
 d_build_eh_runtime_type (tree type)
 {
   Type *t = TYPE_LANG_FRONTEND (type);
+  gcc_assert (t != NULL);
+  t = t->toBasetype ();
 
-  if (t != NULL)
-    t = t->toBasetype ();
-
-  gcc_assert (t != NULL && t->ty == Tclass);
-  ClassDeclaration *cd = ((TypeClass *) t)->sym;
+  ClassDeclaration *cd = t->isTypeClass ()->sym;
   tree decl;
 
   if (cd->isCPPclass ())

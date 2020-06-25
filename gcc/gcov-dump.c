@@ -144,9 +144,8 @@ print_version (void)
 {
   printf ("gcov-dump %s%s\n", pkgversion_string, version_string);
   printf ("Copyright (C) 2020 Free Software Foundation, Inc.\n");
-  printf ("This is free software; see the source for copying conditions.\n"
-  	  "There is NO warranty; not even for MERCHANTABILITY or \n"
-	  "FITNESS FOR A PARTICULAR PURPOSE.\n\n");
+  printf ("This is free software; see the source for copying conditions.  There is NO\n\
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n");
 }
 
 static void

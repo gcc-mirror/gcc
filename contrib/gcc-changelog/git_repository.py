@@ -32,6 +32,13 @@ from git_commit import GitCommit
 def parse_git_revisions(repo_path, revisions, strict=False):
     repo = Repo(repo_path)
 
+    def commit_to_date(commit):
+        try:
+            c = repo.commit(commit)
+            return datetime.utcfromtimestamp(c.committed_date)
+        except ValueError:
+            return None
+
     parsed_commits = []
     if '..' in revisions:
         commits = list(repo.iter_commits(revisions))
@@ -60,6 +67,7 @@ def parse_git_revisions(repo_path, revisions, strict=False):
         author = '%s  <%s>' % (commit.author.name, commit.author.email)
         git_commit = GitCommit(commit.hexsha, date, author,
                                commit.message.split('\n'), modified_files,
-                               strict=strict)
+                               strict=strict,
+                               commit_to_date_hook=commit_to_date)
         parsed_commits.append(git_commit)
     return parsed_commits

@@ -11587,10 +11587,6 @@ perform_instantiation_time_access_checks (tree tmpl, tree targs)
 	tree diag_decl = chk->diag_decl;
 	tree type_scope = TREE_TYPE (chk->binfo);
 
-	if (uses_template_parms (decl)
-	    || (TREE_CODE (decl) == FIELD_DECL
-		&& uses_template_parms (DECL_CONTEXT (decl))))
-	  decl = tsubst_copy (decl, targs, tf_error, NULL_TREE);
 	if (uses_template_parms (type_scope))
 	  type_scope = tsubst (type_scope, targs, tf_error, NULL_TREE);
 
@@ -17537,7 +17533,16 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree &orig_declv,
       else
 	decl = RECUR (decl);
     }
-  init = RECUR (init);
+  if (init && TREE_CODE (init) == TREE_VEC)
+    {
+      init = copy_node (init);
+      TREE_VEC_ELT (init, 0)
+	= tsubst_decl (TREE_VEC_ELT (init, 0), args, complain);
+      TREE_VEC_ELT (init, 1) = RECUR (TREE_VEC_ELT (init, 1));
+      TREE_VEC_ELT (init, 2) = RECUR (TREE_VEC_ELT (init, 2));
+    }
+  else
+    init = RECUR (init);
 
   if (orig_declv && OMP_FOR_ORIG_DECLS (t))
     {
@@ -17589,7 +17594,21 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree &orig_declv,
 
       if (!range_for)
 	{
-	  cond = RECUR (TREE_VEC_ELT (OMP_FOR_COND (t), i));
+	  cond = TREE_VEC_ELT (OMP_FOR_COND (t), i);
+	  if (COMPARISON_CLASS_P (cond)
+	      && TREE_CODE (TREE_OPERAND (cond, 1)) == TREE_VEC)
+	    {
+	      tree lhs = RECUR (TREE_OPERAND (cond, 0));
+	      tree rhs = copy_node (TREE_OPERAND (cond, 1));
+	      TREE_VEC_ELT (rhs, 0)
+		= tsubst_decl (TREE_VEC_ELT (rhs, 0), args, complain);
+	      TREE_VEC_ELT (rhs, 1) = RECUR (TREE_VEC_ELT (rhs, 1));
+	      TREE_VEC_ELT (rhs, 2) = RECUR (TREE_VEC_ELT (rhs, 2));
+	      cond = build2 (TREE_CODE (cond), TREE_TYPE (cond),
+			     lhs, rhs);	      
+	    }
+	  else
+	    cond = RECUR (cond);
 	  incr = TREE_VEC_ELT (OMP_FOR_INCR (t), i);
 	  if (TREE_CODE (incr) == MODIFY_EXPR)
 	    {

@@ -47,6 +47,7 @@ with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch10; use Sem_Ch10;
 with Sem_Ch12; use Sem_Ch12;
 with Sem_Prag; use Sem_Prag;
+with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
@@ -265,6 +266,19 @@ package body Inline is
    --  Make entry in Inlined table for subprogram E, or return table index
    --  that already holds E.
 
+   procedure Establish_Actual_Mapping_For_Inlined_Call
+     (N                     : Node_Id;
+      Subp                  : Entity_Id;
+      Decls                 : List_Id;
+      Body_Or_Expr_To_Check : Node_Id);
+   --  Establish a mapping from formals to actuals in the call N for the target
+   --  subprogram Subp, and create temporaries or renamings when needed for the
+   --  actuals that are expressions (except for actuals given by simple entity
+   --  names or literals) or that are scalars that require copying to preserve
+   --  semantics. Any temporary objects that are created are inserted in Decls.
+   --  Body_Or_Expr_To_Check indicates the target body (or possibly expression
+   --  of an expression function), which may be traversed to count formal uses.
+
    function Get_Code_Unit_Entity (E : Entity_Id) return Entity_Id;
    pragma Inline (Get_Code_Unit_Entity);
    --  Return the entity node for the unit containing E. Always return the spec
@@ -306,6 +320,10 @@ package body Inline is
    --    Test_Case
    --    Unmodified
    --    Unreferenced
+
+   procedure Reset_Actual_Mapping_For_Inlined_Call (Subp : Entity_Id);
+   --  Reset the Renamed_Object flags on the formals of Subp, which can be set
+   --  by a call to Establish_Actual_Mapping_For_Inlined_Call.
 
    ------------------------------
    -- Deferred Cleanup Actions --
@@ -2791,6 +2809,280 @@ package body Inline is
       end loop;
    end Cleanup_Scopes;
 
+   procedure Establish_Actual_Mapping_For_Inlined_Call
+     (N                     : Node_Id;
+      Subp                  : Entity_Id;
+      Decls                 : List_Id;
+      Body_Or_Expr_To_Check : Node_Id)
+   is
+
+      function Formal_Is_Used_Once (Formal : Entity_Id) return Boolean;
+      --  Determine whether a formal parameter is used only once in
+      --  Body_Or_Expr_To_Check.
+
+      -------------------------
+      -- Formal_Is_Used_Once --
+      -------------------------
+
+      function Formal_Is_Used_Once (Formal : Entity_Id) return Boolean is
+         Use_Counter : Int := 0;
+
+         function Count_Uses (N : Node_Id) return Traverse_Result;
+         --  Traverse the tree and count the uses of the formal parameter.
+         --  In this case, for optimization purposes, we do not need to
+         --  continue the traversal once more than one use is encountered.
+
+         ----------------
+         -- Count_Uses --
+         ----------------
+
+         function Count_Uses (N : Node_Id) return Traverse_Result is
+         begin
+            --  The original node is an identifier
+
+            if Nkind (N) = N_Identifier
+              and then Present (Entity (N))
+
+               --  Original node's entity points to the one in the copied body
+
+              and then Nkind (Entity (N)) = N_Identifier
+              and then Present (Entity (Entity (N)))
+
+               --  The entity of the copied node is the formal parameter
+
+              and then Entity (Entity (N)) = Formal
+            then
+               Use_Counter := Use_Counter + 1;
+
+               if Use_Counter > 1 then
+
+                  --  Denote more than one use and abandon the traversal
+
+                  Use_Counter := 2;
+                  return Abandon;
+
+               end if;
+            end if;
+
+            return OK;
+         end Count_Uses;
+
+         procedure Count_Formal_Uses is new Traverse_Proc (Count_Uses);
+
+      --  Start of processing for Formal_Is_Used_Once
+
+      begin
+         Count_Formal_Uses (Body_Or_Expr_To_Check);
+         return Use_Counter = 1;
+      end Formal_Is_Used_Once;
+
+      -- Local Data --
+
+      F        : Entity_Id;
+      A        : Node_Id;
+      Decl     : Node_Id;
+      Loc      : constant Source_Ptr := Sloc (N);
+      New_A    : Node_Id;
+      Temp     : Entity_Id;
+      Temp_Typ : Entity_Id;
+
+   --  Start of processing for Establish_Actual_Mapping_For_Inlined_Call
+
+   begin
+      F := First_Formal (Subp);
+      A := First_Actual (N);
+      while Present (F) loop
+         if Present (Renamed_Object (F)) then
+
+            --  If expander is active, it is an error to try to inline a
+            --  recursive program. In GNATprove mode, just indicate that the
+            --  inlining will not happen, and mark the subprogram as not always
+            --  inlined.
+
+            if GNATprove_Mode then
+               Cannot_Inline
+                 ("cannot inline call to recursive subprogram?", N, Subp);
+               Set_Is_Inlined_Always (Subp, False);
+            else
+               Error_Msg_N
+                 ("cannot inline call to recursive subprogram", N);
+            end if;
+
+            return;
+         end if;
+
+         --  Reset Last_Assignment for any parameters of mode out or in out, to
+         --  prevent spurious warnings about overwriting for assignments to the
+         --  formal in the inlined code.
+
+         if Is_Entity_Name (A) and then Ekind (F) /= E_In_Parameter then
+            Set_Last_Assignment (Entity (A), Empty);
+         end if;
+
+         --  If the argument may be a controlling argument in a call within
+         --  the inlined body, we must preserve its class-wide nature to ensure
+         --  that dynamic dispatching will take place subsequently. If the
+         --  formal has a constraint, then it must be preserved to retain the
+         --  semantics of the body.
+
+         if Is_Class_Wide_Type (Etype (F))
+           or else (Is_Access_Type (Etype (F))
+                     and then Is_Class_Wide_Type (Designated_Type (Etype (F))))
+         then
+            Temp_Typ := Etype (F);
+
+         elsif Base_Type (Etype (F)) = Base_Type (Etype (A))
+           and then Etype (F) /= Base_Type (Etype (F))
+           and then Is_Constrained (Etype (F))
+         then
+            Temp_Typ := Etype (F);
+
+         else
+            Temp_Typ := Etype (A);
+         end if;
+
+         --  If the actual is a simple name or a literal, no need to
+         --  create a temporary, object can be used directly.
+
+         --  If the actual is a literal and the formal has its address taken,
+         --  we cannot pass the literal itself as an argument, so its value
+         --  must be captured in a temporary. Skip this optimization in
+         --  GNATprove mode, to make sure any check on a type conversion
+         --  will be issued.
+
+         if (Is_Entity_Name (A)
+              and then
+                (not Is_Scalar_Type (Etype (A))
+                  or else Ekind (Entity (A)) = E_Enumeration_Literal)
+              and then not GNATprove_Mode)
+
+         --  When the actual is an identifier and the corresponding formal is
+         --  used only once in the original body, the formal can be substituted
+         --  directly with the actual parameter. Skip this optimization in
+         --  GNATprove mode, to make sure any check on a type conversion
+         --  will be issued.
+
+           or else
+             (Nkind (A) = N_Identifier
+               and then Formal_Is_Used_Once (F)
+               and then not GNATprove_Mode)
+
+           or else
+             (Nkind_In (A, N_Real_Literal,
+                           N_Integer_Literal,
+                           N_Character_Literal)
+               and then not Address_Taken (F))
+         then
+            if Etype (F) /= Etype (A) then
+               Set_Renamed_Object
+                 (F, Unchecked_Convert_To (Etype (F), Relocate_Node (A)));
+            else
+               Set_Renamed_Object (F, A);
+            end if;
+
+         else
+            Temp := Make_Temporary (Loc, 'C');
+
+            --  If the actual for an in/in-out parameter is a view conversion,
+            --  make it into an unchecked conversion, given that an untagged
+            --  type conversion is not a proper object for a renaming.
+
+            --  In-out conversions that involve real conversions have already
+            --  been transformed in Expand_Actuals.
+
+            if Nkind (A) = N_Type_Conversion
+              and then Ekind (F) /= E_In_Parameter
+            then
+               New_A :=
+                 Make_Unchecked_Type_Conversion (Loc,
+                   Subtype_Mark => New_Occurrence_Of (Etype (F), Loc),
+                   Expression   => Relocate_Node (Expression (A)));
+
+            --  In GNATprove mode, keep the most precise type of the actual for
+            --  the temporary variable, when the formal type is unconstrained.
+            --  Otherwise, the AST may contain unexpected assignment statements
+            --  to a temporary variable of unconstrained type renaming a local
+            --  variable of constrained type, which is not expected by
+            --  GNATprove.
+
+            elsif Etype (F) /= Etype (A)
+              and then (not GNATprove_Mode or else Is_Constrained (Etype (F)))
+            then
+               New_A    := Unchecked_Convert_To (Etype (F), Relocate_Node (A));
+               Temp_Typ := Etype (F);
+
+            else
+               New_A := Relocate_Node (A);
+            end if;
+
+            Set_Sloc (New_A, Sloc (N));
+
+            --  If the actual has a by-reference type, it cannot be copied,
+            --  so its value is captured in a renaming declaration. Otherwise
+            --  declare a local constant initialized with the actual.
+
+            --  We also use a renaming declaration for expressions of an array
+            --  type that is not bit-packed, both for efficiency reasons and to
+            --  respect the semantics of the call: in most cases the original
+            --  call will pass the parameter by reference, and thus the inlined
+            --  code will have the same semantics.
+
+            --  Finally, we need a renaming declaration in the case of limited
+            --  types for which initialization cannot be by copy either.
+
+            if Ekind (F) = E_In_Parameter
+              and then not Is_By_Reference_Type (Etype (A))
+              and then not Is_Limited_Type (Etype (A))
+              and then
+                (not Is_Array_Type (Etype (A))
+                  or else not Is_Object_Reference (A)
+                  or else Is_Bit_Packed_Array (Etype (A)))
+            then
+               Decl :=
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Temp,
+                   Constant_Present    => True,
+                   Object_Definition   => New_Occurrence_Of (Temp_Typ, Loc),
+                   Expression          => New_A);
+
+            else
+               --  In GNATprove mode, make an explicit copy of input
+               --  parameters when formal and actual types differ, to make
+               --  sure any check on the type conversion will be issued.
+               --  The legality of the copy is ensured by calling first
+               --  Call_Can_Be_Inlined_In_GNATprove_Mode.
+
+               if GNATprove_Mode
+                 and then Ekind (F) /= E_Out_Parameter
+                 and then not Same_Type (Etype (F), Etype (A))
+               then
+                  pragma Assert (not Is_By_Reference_Type (Etype (A)));
+                  pragma Assert (not Is_Limited_Type (Etype (A)));
+
+                  Append_To (Decls,
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Make_Temporary (Loc, 'C'),
+                      Constant_Present    => True,
+                      Object_Definition   => New_Occurrence_Of (Temp_Typ, Loc),
+                      Expression          => New_Copy_Tree (New_A)));
+               end if;
+
+               Decl :=
+                 Make_Object_Renaming_Declaration (Loc,
+                   Defining_Identifier => Temp,
+                   Subtype_Mark        => New_Occurrence_Of (Temp_Typ, Loc),
+                   Name                => New_A);
+            end if;
+
+            Append (Decl, Decls);
+            Set_Renamed_Object (F, Temp);
+         end if;
+
+         Next_Formal (F);
+         Next_Actual (A);
+      end loop;
+   end Establish_Actual_Mapping_For_Inlined_Call;
+
    -------------------------
    -- Expand_Inlined_Call --
    -------------------------
@@ -2816,15 +3108,11 @@ package body Inline is
       Blk      : Node_Id;
       Decl     : Node_Id;
       Exit_Lab : Entity_Id := Empty;
-      F        : Entity_Id;
-      A        : Node_Id;
       Lab_Decl : Node_Id   := Empty;
       Lab_Id   : Node_Id;
-      New_A    : Node_Id;
       Num_Ret  : Nat       := 0;
       Ret_Type : Entity_Id;
       Temp     : Entity_Id;
-      Temp_Typ : Entity_Id;
 
       Is_Unc      : Boolean;
       Is_Unc_Decl : Boolean;
@@ -2889,9 +3177,6 @@ package body Inline is
       procedure Rewrite_Procedure_Call (N : Node_Id; Blk : Node_Id);
       --  If procedure body has no local variables, inline body without
       --  creating block, otherwise rewrite call with block.
-
-      function Formal_Is_Used_Once (Formal : Entity_Id) return Boolean;
-      --  Determine whether a formal parameter is used only once in Orig_Bod
 
       -----------------------------------
       -- Declare_Postconditions_Result --
@@ -3409,62 +3694,6 @@ package body Inline is
          end if;
       end Rewrite_Procedure_Call;
 
-      -------------------------
-      -- Formal_Is_Used_Once --
-      -------------------------
-
-      function Formal_Is_Used_Once (Formal : Entity_Id) return Boolean is
-         Use_Counter : Int := 0;
-
-         function Count_Uses (N : Node_Id) return Traverse_Result;
-         --  Traverse the tree and count the uses of the formal parameter.
-         --  In this case, for optimization purposes, we do not need to
-         --  continue the traversal once more than one use is encountered.
-
-         ----------------
-         -- Count_Uses --
-         ----------------
-
-         function Count_Uses (N : Node_Id) return Traverse_Result is
-         begin
-            --  The original node is an identifier
-
-            if Nkind (N) = N_Identifier
-              and then Present (Entity (N))
-
-               --  Original node's entity points to the one in the copied body
-
-              and then Nkind (Entity (N)) = N_Identifier
-              and then Present (Entity (Entity (N)))
-
-               --  The entity of the copied node is the formal parameter
-
-              and then Entity (Entity (N)) = Formal
-            then
-               Use_Counter := Use_Counter + 1;
-
-               if Use_Counter > 1 then
-
-                  --  Denote more than one use and abandon the traversal
-
-                  Use_Counter := 2;
-                  return Abandon;
-
-               end if;
-            end if;
-
-            return OK;
-         end Count_Uses;
-
-         procedure Count_Formal_Uses is new Traverse_Proc (Count_Uses);
-
-      --  Start of processing for Formal_Is_Used_Once
-
-      begin
-         Count_Formal_Uses (Orig_Bod);
-         return Use_Counter = 1;
-      end Formal_Is_Used_Once;
-
    --  Start of processing for Expand_Inlined_Call
 
    begin
@@ -3694,198 +3923,7 @@ package body Inline is
       --  Create temporaries for the actuals that are expressions, or that are
       --  scalars and require copying to preserve semantics.
 
-      F := First_Formal (Subp);
-      A := First_Actual (N);
-      while Present (F) loop
-         if Present (Renamed_Object (F)) then
-
-            --  If expander is active, it is an error to try to inline a
-            --  recursive program. In GNATprove mode, just indicate that the
-            --  inlining will not happen, and mark the subprogram as not always
-            --  inlined.
-
-            if GNATprove_Mode then
-               Cannot_Inline
-                 ("cannot inline call to recursive subprogram?", N, Subp);
-               Set_Is_Inlined_Always (Subp, False);
-            else
-               Error_Msg_N
-                 ("cannot inline call to recursive subprogram", N);
-            end if;
-
-            return;
-         end if;
-
-         --  Reset Last_Assignment for any parameters of mode out or in out, to
-         --  prevent spurious warnings about overwriting for assignments to the
-         --  formal in the inlined code.
-
-         if Is_Entity_Name (A) and then Ekind (F) /= E_In_Parameter then
-            Set_Last_Assignment (Entity (A), Empty);
-         end if;
-
-         --  If the argument may be a controlling argument in a call within
-         --  the inlined body, we must preserve its classwide nature to insure
-         --  that dynamic dispatching take place subsequently. If the formal
-         --  has a constraint it must be preserved to retain the semantics of
-         --  the body.
-
-         if Is_Class_Wide_Type (Etype (F))
-           or else (Is_Access_Type (Etype (F))
-                     and then Is_Class_Wide_Type (Designated_Type (Etype (F))))
-         then
-            Temp_Typ := Etype (F);
-
-         elsif Base_Type (Etype (F)) = Base_Type (Etype (A))
-           and then Etype (F) /= Base_Type (Etype (F))
-           and then Is_Constrained (Etype (F))
-         then
-            Temp_Typ := Etype (F);
-
-         else
-            Temp_Typ := Etype (A);
-         end if;
-
-         --  If the actual is a simple name or a literal, no need to
-         --  create a temporary, object can be used directly.
-
-         --  If the actual is a literal and the formal has its address taken,
-         --  we cannot pass the literal itself as an argument, so its value
-         --  must be captured in a temporary. Skip this optimization in
-         --  GNATprove mode, to make sure any check on a type conversion
-         --  will be issued.
-
-         if (Is_Entity_Name (A)
-              and then
-                (not Is_Scalar_Type (Etype (A))
-                  or else Ekind (Entity (A)) = E_Enumeration_Literal)
-              and then not GNATprove_Mode)
-
-         --  When the actual is an identifier and the corresponding formal is
-         --  used only once in the original body, the formal can be substituted
-         --  directly with the actual parameter. Skip this optimization in
-         --  GNATprove mode, to make sure any check on a type conversion
-         --  will be issued.
-
-           or else
-             (Nkind (A) = N_Identifier
-               and then Formal_Is_Used_Once (F)
-               and then not GNATprove_Mode)
-
-           or else
-             (Nkind_In (A, N_Real_Literal,
-                           N_Integer_Literal,
-                           N_Character_Literal)
-               and then not Address_Taken (F))
-         then
-            if Etype (F) /= Etype (A) then
-               Set_Renamed_Object
-                 (F, Unchecked_Convert_To (Etype (F), Relocate_Node (A)));
-            else
-               Set_Renamed_Object (F, A);
-            end if;
-
-         else
-            Temp := Make_Temporary (Loc, 'C');
-
-            --  If the actual for an in/in-out parameter is a view conversion,
-            --  make it into an unchecked conversion, given that an untagged
-            --  type conversion is not a proper object for a renaming.
-
-            --  In-out conversions that involve real conversions have already
-            --  been transformed in Expand_Actuals.
-
-            if Nkind (A) = N_Type_Conversion
-              and then Ekind (F) /= E_In_Parameter
-            then
-               New_A :=
-                 Make_Unchecked_Type_Conversion (Loc,
-                   Subtype_Mark => New_Occurrence_Of (Etype (F), Loc),
-                   Expression   => Relocate_Node (Expression (A)));
-
-            --  In GNATprove mode, keep the most precise type of the actual for
-            --  the temporary variable, when the formal type is unconstrained.
-            --  Otherwise, the AST may contain unexpected assignment statements
-            --  to a temporary variable of unconstrained type renaming a local
-            --  variable of constrained type, which is not expected by
-            --  GNATprove.
-
-            elsif Etype (F) /= Etype (A)
-              and then (not GNATprove_Mode or else Is_Constrained (Etype (F)))
-            then
-               New_A    := Unchecked_Convert_To (Etype (F), Relocate_Node (A));
-               Temp_Typ := Etype (F);
-
-            else
-               New_A := Relocate_Node (A);
-            end if;
-
-            Set_Sloc (New_A, Sloc (N));
-
-            --  If the actual has a by-reference type, it cannot be copied,
-            --  so its value is captured in a renaming declaration. Otherwise
-            --  declare a local constant initialized with the actual.
-
-            --  We also use a renaming declaration for expressions of an array
-            --  type that is not bit-packed, both for efficiency reasons and to
-            --  respect the semantics of the call: in most cases the original
-            --  call will pass the parameter by reference, and thus the inlined
-            --  code will have the same semantics.
-
-            --  Finally, we need a renaming declaration in the case of limited
-            --  types for which initialization cannot be by copy either.
-
-            if Ekind (F) = E_In_Parameter
-              and then not Is_By_Reference_Type (Etype (A))
-              and then not Is_Limited_Type (Etype (A))
-              and then
-                (not Is_Array_Type (Etype (A))
-                  or else not Is_Object_Reference (A)
-                  or else Is_Bit_Packed_Array (Etype (A)))
-            then
-               Decl :=
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Temp,
-                   Constant_Present    => True,
-                   Object_Definition   => New_Occurrence_Of (Temp_Typ, Loc),
-                   Expression          => New_A);
-
-            else
-               --  In GNATprove mode, make an explicit copy of input
-               --  parameters when formal and actual types differ, to make
-               --  sure any check on the type conversion will be issued.
-               --  The legality of the copy is ensured by calling first
-               --  Call_Can_Be_Inlined_In_GNATprove_Mode.
-
-               if GNATprove_Mode
-                 and then Ekind (F) /= E_Out_Parameter
-                 and then not Same_Type (Etype (F), Etype (A))
-               then
-                  pragma Assert (not Is_By_Reference_Type (Etype (A)));
-                  pragma Assert (not Is_Limited_Type (Etype (A)));
-
-                  Append_To (Decls,
-                    Make_Object_Declaration (Loc,
-                      Defining_Identifier => Make_Temporary (Loc, 'C'),
-                      Constant_Present    => True,
-                      Object_Definition   => New_Occurrence_Of (Temp_Typ, Loc),
-                      Expression          => New_Copy_Tree (New_A)));
-               end if;
-
-               Decl :=
-                 Make_Object_Renaming_Declaration (Loc,
-                   Defining_Identifier => Temp,
-                   Subtype_Mark        => New_Occurrence_Of (Temp_Typ, Loc),
-                   Name                => New_A);
-            end if;
-
-            Append (Decl, Decls);
-            Set_Renamed_Object (F, Temp);
-         end if;
-
-         Next_Formal (F);
-         Next_Actual (A);
-      end loop;
+      Establish_Actual_Mapping_For_Inlined_Call (N, Subp, Decls, Orig_Bod);
 
       --  Establish target of function call. If context is not assignment or
       --  declaration, create a temporary as a target. The declaration for the
@@ -4148,11 +4186,7 @@ package body Inline is
 
       --  Cleanup mapping between formals and actuals for other expansions
 
-      F := First_Formal (Subp);
-      while Present (F) loop
-         Set_Renamed_Object (F, Empty);
-         Next_Formal (F);
-      end loop;
+      Reset_Actual_Mapping_For_Inlined_Call (Subp);
    end Expand_Inlined_Call;
 
    --------------------------
@@ -4598,6 +4632,128 @@ package body Inline is
       Backend_Not_Inlined_Subps := No_Elist;
    end Initialize;
 
+   --------------------------------------------
+   -- Inline_Static_Expression_Function_Call --
+   --------------------------------------------
+
+   procedure Inline_Static_Expression_Function_Call
+     (N : Node_Id; Subp : Entity_Id)
+   is
+
+      function Replace_Formal (N : Node_Id) return Traverse_Result;
+      --  Replace each occurrence of a formal with the corresponding actual,
+      --  using the mapping created by Establish_Mapping_For_Inlined_Call.
+
+      function Reset_Sloc (Nod : Node_Id) return Traverse_Result;
+      --  Reset the Sloc of a node to that of the call itself, so that errors
+      --  will be flagged on the call to the static expression function itself
+      --  rather than on the expression of the function's declaration.
+
+      --------------------
+      -- Replace_Formal --
+      --------------------
+
+      function Replace_Formal (N : Node_Id) return Traverse_Result is
+         A   : Entity_Id;
+         E   : Entity_Id;
+
+      begin
+         if Is_Entity_Name (N) and then Present (Entity (N)) then
+            E := Entity (N);
+
+            if Is_Formal (E) and then Scope (E) = Subp then
+               A := Renamed_Object (E);
+
+               if Nkind (A) = N_Defining_Identifier then
+                  Rewrite (N, New_Occurrence_Of (A, Sloc (N)));
+
+               --  Literal cases
+
+               else
+                  Rewrite (N, New_Copy (A));
+               end if;
+            end if;
+
+            return Skip;
+
+         else
+            return OK;
+         end if;
+      end Replace_Formal;
+
+      procedure Replace_Formals is new Traverse_Proc (Replace_Formal);
+
+      ------------------
+      -- Process_Sloc --
+      ------------------
+
+      function Reset_Sloc (Nod : Node_Id) return Traverse_Result is
+      begin
+         Set_Sloc (Nod, Sloc (N));
+         Set_Comes_From_Source (Nod, False);
+
+         return OK;
+      end Reset_Sloc;
+
+      procedure Reset_Slocs is new Traverse_Proc (Reset_Sloc);
+
+   --  Start of processing for Inline_Static_Expression_Function_Call
+
+   begin
+      pragma Assert (Is_Static_Expression_Function_Call (N));
+
+      declare
+         Decls     : constant List_Id := New_List;
+         Func_Expr : constant Node_Id :=
+                       Expression_Of_Expression_Function (Subp);
+         Expr_Copy : constant Node_Id := New_Copy_Tree (Func_Expr);
+
+      begin
+         --  Create a mapping from formals to actuals, also creating temps in
+         --  Decls, when needed, to hold the actuals.
+
+         Establish_Actual_Mapping_For_Inlined_Call (N, Subp, Decls, Func_Expr);
+
+         Insert_Actions (N, Decls);
+
+         --  Now substitute actuals for their corresponding formal references
+         --  within the expression.
+
+         Replace_Formals (Expr_Copy);
+
+         Reset_Slocs (Expr_Copy);
+
+         --  Apply a qualified expression with the function's result subtype,
+         --  to ensure that we check the expression against any constraint
+         --  or predicate, which will cause the call to be illegal if the
+         --  folded expression doesn't satisfy them. (The predicate case
+         --  might not get checked if the subtype hasn't been frozen yet,
+         --  which can happen if this static expression happens to be what
+         --  causes the freezing, because Has_Static_Predicate doesn't get
+         --  set on the subtype until it's frozen and Build_Predicates is
+         --  called. It's not clear how to address this case. ???)
+
+         Rewrite (Expr_Copy,
+           Make_Qualified_Expression (Sloc (Expr_Copy),
+             Subtype_Mark =>
+               New_Occurrence_Of (Etype (N), Sloc (Expr_Copy)),
+             Expression =>
+               Relocate_Node (Expr_Copy)));
+
+         Set_Etype (Expr_Copy, Etype (N));
+
+         Analyze_And_Resolve (Expr_Copy, Etype (N));
+
+         --  Finally rewrite the function call as the folded static result
+
+         Rewrite (N, Expr_Copy);
+
+         --  Cleanup mapping between formals and actuals for other expansions
+
+         Reset_Actual_Mapping_For_Inlined_Call (Subp);
+      end;
+   end Inline_Static_Expression_Function_Call;
+
    ------------------------
    -- Instantiate_Bodies --
    ------------------------
@@ -5001,5 +5157,19 @@ package body Inline is
          J := J + 1;
       end loop;
    end Remove_Dead_Instance;
+
+   -------------------------------------------
+   -- Reset_Actual_Mapping_For_Inlined_Call --
+   -------------------------------------------
+
+   procedure Reset_Actual_Mapping_For_Inlined_Call (Subp : Entity_Id) is
+      F : Entity_Id := First_Formal (Subp);
+
+   begin
+      while Present (F) loop
+         Set_Renamed_Object (F, Empty);
+         Next_Formal (F);
+      end loop;
+   end Reset_Actual_Mapping_For_Inlined_Call;
 
 end Inline;

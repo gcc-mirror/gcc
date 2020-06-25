@@ -40,7 +40,6 @@ with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
@@ -376,10 +375,6 @@ package body Sem_Dim is
 
    procedure Set_Symbol (E : Entity_Id; Val : String_Id);
    --  Associate a symbol representation of a dimension vector with a subtype
-
-   function String_From_Numeric_Literal (N : Node_Id) return String_Id;
-   --  Return the string that corresponds to the numeric litteral N as it
-   --  appears in the source.
 
    function Symbol_Of (E : Entity_Id) return String_Id;
    --  E denotes a subtype with a dimension. Return the symbol representation
@@ -3739,63 +3734,6 @@ package body Sem_Dim is
    begin
       Symbol_Table.Set (E, Val);
    end Set_Symbol;
-
-   ---------------------------------
-   -- String_From_Numeric_Literal --
-   ---------------------------------
-
-   function String_From_Numeric_Literal (N : Node_Id) return String_Id is
-      Loc     : constant Source_Ptr        := Sloc (N);
-      Sbuffer : constant Source_Buffer_Ptr :=
-                  Source_Text (Get_Source_File_Index (Loc));
-      Src_Ptr : Source_Ptr := Loc;
-
-      C : Character  := Sbuffer (Src_Ptr);
-      --  Current source program character
-
-      function Belong_To_Numeric_Literal (C : Character) return Boolean;
-      --  Return True if C belongs to a numeric literal
-
-      -------------------------------
-      -- Belong_To_Numeric_Literal --
-      -------------------------------
-
-      function Belong_To_Numeric_Literal (C : Character) return Boolean is
-      begin
-         case C is
-            when '0' .. '9'
-               | '_' | '.' | 'e' | '#' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F'
-            =>
-               return True;
-
-            --  Make sure '+' or '-' is part of an exponent.
-
-            when '+' | '-' =>
-               declare
-                  Prev_C : constant Character := Sbuffer (Src_Ptr - 1);
-               begin
-                  return Prev_C = 'e' or else Prev_C = 'E';
-               end;
-
-            --  All other character doesn't belong to a numeric literal
-
-            when others =>
-               return False;
-         end case;
-      end Belong_To_Numeric_Literal;
-
-   --  Start of processing for String_From_Numeric_Literal
-
-   begin
-      Start_String;
-      while Belong_To_Numeric_Literal (C) loop
-         Store_String_Char (C);
-         Src_Ptr := Src_Ptr + 1;
-         C       := Sbuffer (Src_Ptr);
-      end loop;
-
-      return End_String;
-   end String_From_Numeric_Literal;
 
    ---------------
    -- Symbol_Of --

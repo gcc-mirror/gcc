@@ -3952,6 +3952,14 @@ add_list_candidates (tree fns, tree first_arg,
       if (any_strictly_viable (*candidates))
 	return;
     }
+  else if (CONSTRUCTOR_IS_DESIGNATED_INIT (init_list)
+	   && !CP_AGGREGATE_TYPE_P (totype))
+    {
+      if (complain & tf_error)
+	error ("designated initializers cannot be used with a "
+	       "non-aggregate type %qT", totype);
+      return;
+    }
 
   /* Expand the CONSTRUCTOR into a new argument vec.  */
   vec<tree, va_gc> *new_args;
@@ -4301,6 +4309,11 @@ implicit_conversion_error (location_t loc, tree type, tree expr)
     instantiate_type (type, expr, complain);
   else if (invalid_nonstatic_memfn_p (loc, expr, complain))
     /* We gave an error.  */;
+  else if (BRACE_ENCLOSED_INITIALIZER_P (expr)
+	   && CONSTRUCTOR_IS_DESIGNATED_INIT (expr)
+	   && !CP_AGGREGATE_TYPE_P (type))
+    error_at (loc, "designated initializers cannot be used with a "
+	      "non-aggregate type %qT", type);
   else
     {
       range_label_for_type_mismatch label (TREE_TYPE (expr), type);

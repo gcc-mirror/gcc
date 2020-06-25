@@ -165,6 +165,14 @@ package Sem_Eval is
    --  In the former case, if the target type, Ttyp is constrained, then a
    --  check is made to see if the string literal is of appropriate length.
 
+   function Checking_Potentially_Static_Expression return Boolean;
+   --  Returns True if the checking for potentially static expressions is
+   --  enabled; otherwise returns False.
+
+   procedure Set_Checking_Potentially_Static_Expression (Value : Boolean);
+   --  Enables checking for potentially static expressions if Value is True,
+   --  and disables such checking if Value is False.
+
    type Compare_Result is (LT, LE, EQ, GT, GE, NE, Unknown);
    subtype Compare_GE is Compare_Result range EQ .. GE;
    subtype Compare_LE is Compare_Result range LT .. EQ;
@@ -480,6 +488,12 @@ package Sem_Eval is
    --  Returns True if it can guarantee that Lo .. Hi is not a null range. If
    --  it cannot (because the value of Lo or Hi is not known at compile time)
    --  then it returns False.
+
+   function Predicates_Compatible (T1, T2 : Entity_Id) return Boolean;
+   --  In Ada 2012, subtypes are statically compatible if the predicates are
+   --  compatible as well. This function performs the required check that
+   --  predicates are compatible. Split from Subtypes_Statically_Compatible
+   --  so that it can be used in specializing error messages.
 
    function Predicates_Match (T1, T2 : Entity_Id) return Boolean;
    --  In Ada 2012, subtypes statically match if their predicates match as

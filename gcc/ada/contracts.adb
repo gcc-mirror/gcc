@@ -425,7 +425,7 @@ package body Contracts is
             Analyze_Task_Contract (Defining_Entity (Decl));
 
          --  For type declarations, we need to do the preanalysis of Iterable
-         --  aspect specifications.
+         --  and the 3 Xxx_Literal aspect specifications.
 
          --  Other type aspects need to be resolved here???
 
@@ -433,12 +433,28 @@ package body Contracts is
            and then Present (Aspect_Specifications (Decl))
          then
             declare
-               E  : constant Entity_Id := Defining_Identifier (Decl);
-               It : constant Node_Id   := Find_Aspect (E, Aspect_Iterable);
+               E  : constant Entity_Id  := Defining_Identifier (Decl);
+               It : constant Node_Id    := Find_Aspect (E, Aspect_Iterable);
+               I_Lit : constant Node_Id :=
+                 Find_Aspect (E, Aspect_Integer_Literal);
+               R_Lit : constant Node_Id :=
+                 Find_Aspect (E, Aspect_Real_Literal);
+               S_Lit : constant Node_Id :=
+                 Find_Aspect (E, Aspect_String_Literal);
 
             begin
                if Present (It) then
                   Validate_Iterable_Aspect (E, It);
+               end if;
+
+               if Present (I_Lit) then
+                  Validate_Literal_Aspect (E, I_Lit);
+               end if;
+               if Present (R_Lit) then
+                  Validate_Literal_Aspect (E, R_Lit);
+               end if;
+               if Present (S_Lit) then
+                  Validate_Literal_Aspect (E, S_Lit);
                end if;
             end;
          end if;

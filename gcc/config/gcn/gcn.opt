@@ -29,10 +29,10 @@ EnumValue
 Enum(gpu_type) String(fiji) Value(PROCESSOR_FIJI)
 
 EnumValue
-Enum(gpu_type) String(gfx900) Value(PROCESSOR_VEGA)
+Enum(gpu_type) String(gfx900) Value(PROCESSOR_VEGA10)
 
 EnumValue
-Enum(gpu_type) String(gfx906) Value(PROCESSOR_VEGA)
+Enum(gpu_type) String(gfx906) Value(PROCESSOR_VEGA20)
 
 march=
 Target RejectNegative Joined ToLower Enum(gpu_type) Var(gcn_arch) Init(PROCESSOR_FIJI)

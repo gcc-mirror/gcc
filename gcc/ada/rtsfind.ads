@@ -428,6 +428,8 @@ package Rtsfind is
      RO_CA_Delay_Until,                  -- Ada.Calendar.Delays
      RO_CA_To_Duration,                  -- Ada.Calendar.Delays
 
+     RE_Yield,                           -- Ada_Dispatching
+
      RE_Set_Deadline,                    -- Ada.Dispatching.EDF
 
      RE_Code_Loc,                        -- Ada.Exceptions
@@ -1711,6 +1713,8 @@ package Rtsfind is
      RO_CA_Delay_For                     => Ada_Calendar_Delays,
      RO_CA_Delay_Until                   => Ada_Calendar_Delays,
      RO_CA_To_Duration                   => Ada_Calendar_Delays,
+
+     RE_Yield                            => Ada_Dispatching,
 
      RE_Set_Deadline                     => Ada_Dispatching_EDF,
 

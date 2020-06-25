@@ -309,6 +309,8 @@ package body Ada.Containers.Bounded_Hashed_Sets is
       Position  : in out Cursor)
    is
    begin
+      TC_Check (Container.TC);
+
       if Checks and then Position.Node = 0 then
          raise Constraint_Error with "Position cursor equals No_Element";
       end if;
@@ -317,8 +319,6 @@ package body Ada.Containers.Bounded_Hashed_Sets is
       then
          raise Program_Error with "Position cursor designates wrong set";
       end if;
-
-      TC_Check (Container.TC);
 
       pragma Assert (Vet (Position), "bad cursor in Delete");
 
@@ -1179,12 +1179,12 @@ package body Ada.Containers.Bounded_Hashed_Sets is
       Node : constant Count_Type := Element_Keys.Find (Container, New_Item);
 
    begin
+      TE_Check (Container.TC);
+
       if Checks and then Node = 0 then
          raise Constraint_Error with
            "attempt to replace element not in set";
       end if;
-
-      TE_Check (Container.TC);
 
       Container.Nodes (Node).Element := New_Item;
    end Replace;

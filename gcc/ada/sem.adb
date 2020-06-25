@@ -1412,6 +1412,7 @@ package body Sem is
       S_GNAT_Mode         : constant Boolean          := GNAT_Mode;
       S_Global_Dis_Names  : constant Boolean          := Global_Discard_Names;
       S_In_Assertion_Expr : constant Nat              := In_Assertion_Expr;
+      S_In_Declare_Expr   : constant Nat              := In_Declare_Expr;
       S_In_Default_Expr   : constant Boolean          := In_Default_Expr;
       S_In_Spec_Expr      : constant Boolean          := In_Spec_Expression;
       S_Inside_A_Generic  : constant Boolean          := Inside_A_Generic;
@@ -1523,6 +1524,7 @@ package body Sem is
       Full_Analysis      := True;
       Inside_A_Generic   := False;
       In_Assertion_Expr  := 0;
+      In_Declare_Expr    := 0;
       In_Default_Expr    := False;
       In_Spec_Expression := False;
       Set_Comes_From_Source_Default (False);
@@ -1607,6 +1609,7 @@ package body Sem is
       Global_Discard_Names := S_Global_Dis_Names;
       GNAT_Mode            := S_GNAT_Mode;
       In_Assertion_Expr    := S_In_Assertion_Expr;
+      In_Declare_Expr      := S_In_Declare_Expr;
       In_Default_Expr      := S_In_Default_Expr;
       In_Spec_Expression   := S_In_Spec_Expr;
       Inside_A_Generic     := S_Inside_A_Generic;

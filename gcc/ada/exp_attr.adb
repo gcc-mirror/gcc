@@ -1737,10 +1737,40 @@ package body Exp_Attr is
       Pref  : constant Node_Id      := Prefix (N);
       Exprs : constant List_Id      := Expressions (N);
 
+      function Get_Integer_Type (Typ : Entity_Id) return Entity_Id;
+      --  Return a small integer type appropriate for the enumeration type
+
       procedure Rewrite_Attribute_Proc_Call (Pname : Entity_Id);
       --  Rewrites an attribute for Read, Write, Output, or Put_Image with a
       --  call to the appropriate TSS procedure. Pname is the entity for the
       --  procedure to call.
+
+      ----------------------
+      -- Get_Integer_Type --
+      ----------------------
+
+      function Get_Integer_Type (Typ : Entity_Id) return Entity_Id is
+         Siz     : constant Uint := RM_Size (Base_Type (Typ));
+         Int_Typ : Entity_Id;
+
+      begin
+         --  We need to accommodate unsigned values
+
+         if Siz < RM_Size (Standard_Short_Short_Integer) then
+            Int_Typ := Standard_Short_Short_Integer;
+
+         elsif Siz < RM_Size (Standard_Short_Integer) then
+            Int_Typ := Standard_Short_Integer;
+
+         elsif Siz < RM_Size (Standard_Integer) then
+            Int_Typ := Standard_Integer;
+
+         else
+            Int_Typ := Standard_Long_Long_Integer;
+         end if;
+
+         return Int_Typ;
+      end Get_Integer_Type;
 
       ---------------------------------
       -- Rewrite_Attribute_Proc_Call --
@@ -3146,8 +3176,6 @@ package body Exp_Attr is
 
       when Attribute_Enum_Rep => Enum_Rep : declare
          Expr : Node_Id;
-         Ityp : Entity_Id;
-         Psiz : Uint;
 
       begin
          --  Get the expression, which is X for Enum_Type'Enum_Rep (X) or
@@ -3177,22 +3205,7 @@ package body Exp_Attr is
          --  the size information.
 
          if Is_Enumeration_Type (Ptyp) then
-            Psiz := RM_Size (Base_Type (Ptyp));
-
-            if Psiz < 8 then
-               Ityp := Standard_Integer_8;
-
-            elsif Psiz < 16 then
-               Ityp := Standard_Integer_16;
-
-            elsif Psiz < 32 then
-               Ityp := Standard_Integer_32;
-
-            else
-               Ityp := Standard_Integer_64;
-            end if;
-
-            Rewrite (N, OK_Convert_To (Ityp, Expr));
+            Rewrite (N, OK_Convert_To (Get_Integer_Type (Ptyp), Expr));
             Convert_To_And_Rewrite (Typ, N);
 
          else
@@ -3385,42 +3398,80 @@ package body Exp_Attr is
          Analyze_And_Resolve (N, Typ);
       end Finalization_Size;
 
-      -----------
-      -- First --
-      -----------
+      -----------------
+      -- First, Last --
+      -----------------
 
-      when Attribute_First =>
-
+      when Attribute_First
+         | Attribute_Last
+      =>
          --  If the prefix type is a constrained packed array type which
          --  already has a Packed_Array_Impl_Type representation defined, then
-         --  replace this attribute with a direct reference to 'First of the
-         --  appropriate index subtype (since otherwise the back end will try
-         --  to give us the value of 'First for this implementation type).
+         --  replace this attribute with a direct reference to the attribute of
+         --  the appropriate index subtype (since otherwise the back end will
+         --  try to give us the value of 'First for this implementation type).
 
          if Is_Constrained_Packed_Array (Ptyp) then
             Rewrite (N,
               Make_Attribute_Reference (Loc,
-                Attribute_Name => Name_First,
+                Attribute_Name => Attribute_Name (N),
                 Prefix         =>
                   New_Occurrence_Of (Get_Index_Subtype (N), Loc)));
             Analyze_And_Resolve (N, Typ);
+
+         --  For a constrained array type, if the bound is a reference to an
+         --  entity which is not a discriminant, just replace with a direct
+         --  reference. Note that this must be in keeping with what is done
+         --  for scalar types in order for range checks to be elided in loops.
+
+         --  However, avoid doing it if the array type is public because, in
+         --  this case, we effectively rely on the back end to create public
+         --  symbols with consistent names across units for the array bounds.
+
+         elsif Is_Array_Type (Ptyp)
+           and then Is_Constrained (Ptyp)
+           and then not Is_Public (Ptyp)
+         then
+            declare
+               Bnd : Node_Id;
+
+            begin
+               if Id = Attribute_First then
+                  Bnd := Type_Low_Bound (Get_Index_Subtype (N));
+               else
+                  Bnd := Type_High_Bound (Get_Index_Subtype (N));
+               end if;
+
+               if Is_Entity_Name (Bnd)
+                 and then Ekind (Entity (Bnd)) /= E_Discriminant
+               then
+                  Rewrite (N, New_Occurrence_Of (Entity (Bnd), Loc));
+               end if;
+            end;
 
          --  For access type, apply access check as needed
 
          elsif Is_Access_Type (Ptyp) then
             Apply_Access_Check (N);
 
-         --  For scalar type, if low bound is a reference to an entity, just
+         --  For scalar type, if the bound is a reference to an entity, just
          --  replace with a direct reference. Note that we can only have a
          --  reference to a constant entity at this stage, anything else would
          --  have already been rewritten.
 
          elsif Is_Scalar_Type (Ptyp) then
             declare
-               Lo : constant Node_Id := Type_Low_Bound (Ptyp);
+               Bnd : Node_Id;
+
             begin
-               if Is_Entity_Name (Lo) then
-                  Rewrite (N, New_Occurrence_Of (Entity (Lo), Loc));
+               if Id = Attribute_First then
+                  Bnd := Type_Low_Bound (Ptyp);
+               else
+                  Bnd := Type_High_Bound (Ptyp);
+               end if;
+
+               if Is_Entity_Name (Bnd) then
+                  Rewrite (N, New_Occurrence_Of (Entity (Bnd), Loc));
                end if;
             end;
          end if;
@@ -4089,45 +4140,6 @@ package body Exp_Attr is
          --  resolved to establish its proper type.
 
          Analyze_And_Resolve (N);
-
-      ----------
-      -- Last --
-      ----------
-
-      when Attribute_Last =>
-
-         --  If the prefix type is a constrained packed array type which
-         --  already has a Packed_Array_Impl_Type representation defined, then
-         --  replace this attribute with a direct reference to 'Last of the
-         --  appropriate index subtype (since otherwise the back end will try
-         --  to give us the value of 'Last for this implementation type).
-
-         if Is_Constrained_Packed_Array (Ptyp) then
-            Rewrite (N,
-              Make_Attribute_Reference (Loc,
-                Attribute_Name => Name_Last,
-                Prefix => New_Occurrence_Of (Get_Index_Subtype (N), Loc)));
-            Analyze_And_Resolve (N, Typ);
-
-         --  For access type, apply access check as needed
-
-         elsif Is_Access_Type (Ptyp) then
-            Apply_Access_Check (N);
-
-         --  For scalar type, if high bound is a reference to an entity, just
-         --  replace with a direct reference. Note that we can only have a
-         --  reference to a constant entity at this stage, anything else would
-         --  have already been rewritten.
-
-         elsif Is_Scalar_Type (Ptyp) then
-            declare
-               Hi : constant Node_Id := Type_High_Bound (Ptyp);
-            begin
-               if Is_Entity_Name (Hi) then
-                  Rewrite (N, New_Occurrence_Of (Entity (Hi), Loc));
-               end if;
-            end;
-         end if;
 
       --------------
       -- Last_Bit --
@@ -5159,9 +5171,6 @@ package body Exp_Attr is
       -- Pos --
       ---------
 
-      --  For enumeration types with a standard representation, Pos is handled
-      --  by the back end.
-
       --  For enumeration types, with a non-standard representation we generate
       --  a call to the _Rep_To_Pos function created when the type was frozen.
       --  The call has the form:
@@ -5172,17 +5181,21 @@ package body Exp_Attr is
       --  Program_Error to be raised if the expression has an invalid
       --  representation, and False if range checks are suppressed.
 
+      --  For enumeration types with a standard representation, Pos can be
+      --  rewritten as a simple conversion with Conversion_OK set.
+
       --  For integer types, Pos is equivalent to a simple integer conversion
       --  and we rewrite it as such.
 
       when Attribute_Pos => Pos : declare
+         Expr : constant Node_Id := First (Exprs);
          Etyp : Entity_Id := Base_Type (Ptyp);
 
       begin
          --  Deal with zero/non-zero boolean values
 
          if Is_Boolean_Type (Etyp) then
-            Adjust_Condition (First (Exprs));
+            Adjust_Condition (Expr);
             Etyp := Standard_Boolean;
             Set_Prefix (N, New_Occurrence_Of (Standard_Boolean, Loc));
          end if;
@@ -5202,21 +5215,32 @@ package body Exp_Attr is
                        New_Occurrence_Of (TSS (Etyp, TSS_Rep_To_Pos), Loc),
                      Parameter_Associations => Exprs)));
 
-               Analyze_And_Resolve (N, Typ);
+            --  Standard enumeration type (replace by conversion)
 
-            --  Standard enumeration type (do universal integer check)
+            --  This is simply a direct conversion from the enumeration type to
+            --  the target integer type, which is treated by the back end as a
+            --  normal integer conversion, treating the enumeration type as an
+            --  integer, which is exactly what we want. We set Conversion_OK to
+            --  make sure that the analyzer does not complain about what might
+            --  be an illegal conversion.
+
+            --  However the target type is universal integer in most cases,
+            --  which is a very large type, so we first convert to a small
+            --  signed integer type in order not to lose the size information.
 
             else
-               Apply_Universal_Integer_Attribute_Checks (N);
+               Rewrite (N, OK_Convert_To (Get_Integer_Type (Ptyp), Expr));
+               Convert_To_And_Rewrite (Typ, N);
+
             end if;
 
          --  Deal with integer types (replace by conversion)
 
          elsif Is_Integer_Type (Etyp) then
-            Rewrite (N, Convert_To (Typ, First (Exprs)));
-            Analyze_And_Resolve (N, Typ);
+            Rewrite (N, Convert_To (Typ, Expr));
          end if;
 
+         Analyze_And_Resolve (N, Typ);
       end Pos;
 
       --------------
@@ -6660,12 +6684,12 @@ package body Exp_Attr is
       -- Val --
       ---------
 
-      --  For enumeration types with a standard representation, Val is handled
-      --  by the back end.
-
       --  For enumeration types with a non-standard representation we use the
       --  _Pos_To_Rep array that was created when the type was frozen, unless
       --  the representation is contiguous in which case we use an addition.
+
+      --  For enumeration types with a standard representation, Val can be
+      --  rewritten as a simple conversion with Conversion_OK set.
 
       --  For integer types, Val is equivalent to a simple integer conversion
       --  and we rewrite it as such.
@@ -6749,11 +6773,16 @@ package body Exp_Attr is
                         Right_Opnd =>
                           Convert_To (Ityp, Expr))));
 
-                  --  Suppress checks since the range check was done above
-                  --  and it guarantees that the addition cannot overflow.
+               --  Standard enumeration type
 
-                  Analyze_And_Resolve (N, Typ, Suppress => All_Checks);
+               else
+                  Rewrite (N, OK_Convert_To (Typ, Expr));
                end if;
+
+               --  Suppress checks since the range check was done above
+               --  and it guarantees that the addition cannot overflow.
+
+               Analyze_And_Resolve (N, Typ, Suppress => All_Checks);
             end if;
 
          --  Deal with integer types

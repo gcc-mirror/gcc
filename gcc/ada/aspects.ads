@@ -109,6 +109,7 @@ package Aspects is
       Aspect_Initial_Condition,             -- GNAT
       Aspect_Initializes,                   -- GNAT
       Aspect_Input,
+      Aspect_Integer_Literal,
       Aspect_Interrupt_Priority,
       Aspect_Invariant,                     -- GNAT
       Aspect_Iterator_Element,
@@ -133,6 +134,7 @@ package Aspects is
       Aspect_Priority,
       Aspect_Put_Image,
       Aspect_Read,
+      Aspect_Real_Literal,
       Aspect_Refined_Depends,               -- GNAT
       Aspect_Refined_Global,                -- GNAT
       Aspect_Refined_Post,                  -- GNAT
@@ -149,6 +151,7 @@ package Aspects is
       Aspect_Storage_Pool,
       Aspect_Storage_Size,
       Aspect_Stream_Size,
+      Aspect_String_Literal,
       Aspect_Suppress,
       Aspect_Synchronization,
       Aspect_Test_Case,                     -- GNAT
@@ -204,6 +207,7 @@ package Aspects is
       Aspect_Remote_Access_Type,            -- GNAT
       Aspect_Shared,                        -- GNAT (equivalent to Atomic)
       Aspect_Simple_Storage_Pool_Type,      -- GNAT
+      Aspect_Static,
       Aspect_Suppress_Debug_Info,           -- GNAT
       Aspect_Suppress_Initialization,       -- GNAT
       Aspect_Thread_Local_Storage,          -- GNAT
@@ -214,7 +218,8 @@ package Aspects is
       Aspect_Unreferenced_Objects,          -- GNAT
       Aspect_Volatile,
       Aspect_Volatile_Components,
-      Aspect_Volatile_Full_Access);         -- GNAT
+      Aspect_Volatile_Full_Access,          -- GNAT
+      Aspect_Yield);
 
    subtype Aspect_Id_Exclude_No_Aspect is
      Aspect_Id range Aspect_Id'Succ (No_Aspect) .. Aspect_Id'Last;
@@ -373,6 +378,7 @@ package Aspects is
       Aspect_Initial_Condition          => Expression,
       Aspect_Initializes                => Expression,
       Aspect_Input                      => Name,
+      Aspect_Integer_Literal            => Name,
       Aspect_Interrupt_Priority         => Expression,
       Aspect_Invariant                  => Expression,
       Aspect_Iterable                   => Expression,
@@ -397,6 +403,7 @@ package Aspects is
       Aspect_Priority                   => Expression,
       Aspect_Put_Image                  => Name,
       Aspect_Read                       => Name,
+      Aspect_Real_Literal               => Name,
       Aspect_Refined_Depends            => Expression,
       Aspect_Refined_Global             => Expression,
       Aspect_Refined_Post               => Expression,
@@ -413,6 +420,7 @@ package Aspects is
       Aspect_Storage_Pool               => Name,
       Aspect_Storage_Size               => Expression,
       Aspect_Stream_Size                => Expression,
+      Aspect_String_Literal             => Name,
       Aspect_Suppress                   => Name,
       Aspect_Synchronization            => Name,
       Aspect_Test_Case                  => Expression,
@@ -467,6 +475,7 @@ package Aspects is
       Aspect_Initial_Condition            => False,
       Aspect_Initializes                  => False,
       Aspect_Input                        => False,
+      Aspect_Integer_Literal              => False,
       Aspect_Interrupt_Priority           => False,
       Aspect_Invariant                    => False,
       Aspect_Iterable                     => False,
@@ -491,6 +500,7 @@ package Aspects is
       Aspect_Priority                     => False,
       Aspect_Put_Image                    => False,
       Aspect_Read                         => False,
+      Aspect_Real_Literal                 => False,
       Aspect_Refined_Depends              => False,
       Aspect_Refined_Global               => False,
       Aspect_Refined_Post                 => False,
@@ -507,6 +517,7 @@ package Aspects is
       Aspect_Storage_Pool                 => True,
       Aspect_Storage_Size                 => True,
       Aspect_Stream_Size                  => True,
+      Aspect_String_Literal               => False,
       Aspect_Suppress                     => False,
       Aspect_Synchronization              => False,
       Aspect_Test_Case                    => False,
@@ -545,6 +556,7 @@ package Aspects is
       Aspect_Remote_Access_Type           => False,
       Aspect_Shared                       => True,
       Aspect_Simple_Storage_Pool_Type     => True,
+      Aspect_Static                       => False,
       Aspect_Suppress_Debug_Info          => False,
       Aspect_Suppress_Initialization      => False,
       Aspect_Thread_Local_Storage         => True,
@@ -555,7 +567,8 @@ package Aspects is
       Aspect_Unreferenced_Objects         => False,
       Aspect_Volatile                     => True,
       Aspect_Volatile_Components          => True,
-      Aspect_Volatile_Full_Access         => True);
+      Aspect_Volatile_Full_Access         => True,
+      Aspect_Yield                        => False);
 
    -----------------------------------------
    -- Table Linking Names and Aspect_Id's --
@@ -614,6 +627,7 @@ package Aspects is
       Aspect_Initial_Condition            => Name_Initial_Condition,
       Aspect_Initializes                  => Name_Initializes,
       Aspect_Input                        => Name_Input,
+      Aspect_Integer_Literal              => Name_Integer_Literal,
       Aspect_Interrupt_Handler            => Name_Interrupt_Handler,
       Aspect_Interrupt_Priority           => Name_Interrupt_Priority,
       Aspect_Invariant                    => Name_Invariant,
@@ -650,6 +664,7 @@ package Aspects is
       Aspect_Pure_Function                => Name_Pure_Function,
       Aspect_Put_Image                    => Name_Put_Image,
       Aspect_Read                         => Name_Read,
+      Aspect_Real_Literal                 => Name_Real_Literal,
       Aspect_Refined_Depends              => Name_Refined_Depends,
       Aspect_Refined_Global               => Name_Refined_Global,
       Aspect_Refined_Post                 => Name_Refined_Post,
@@ -668,10 +683,12 @@ package Aspects is
       Aspect_Size                         => Name_Size,
       Aspect_Small                        => Name_Small,
       Aspect_SPARK_Mode                   => Name_SPARK_Mode,
+      Aspect_Static                       => Name_Static,
       Aspect_Static_Predicate             => Name_Static_Predicate,
       Aspect_Storage_Pool                 => Name_Storage_Pool,
       Aspect_Storage_Size                 => Name_Storage_Size,
       Aspect_Stream_Size                  => Name_Stream_Size,
+      Aspect_String_Literal               => Name_String_Literal,
       Aspect_Suppress                     => Name_Suppress,
       Aspect_Suppress_Debug_Info          => Name_Suppress_Debug_Info,
       Aspect_Suppress_Initialization      => Name_Suppress_Initialization,
@@ -694,7 +711,8 @@ package Aspects is
       Aspect_Volatile_Full_Access         => Name_Volatile_Full_Access,
       Aspect_Volatile_Function            => Name_Volatile_Function,
       Aspect_Warnings                     => Name_Warnings,
-      Aspect_Write                        => Name_Write);
+      Aspect_Write                        => Name_Write,
+      Aspect_Yield                        => Name_Yield);
 
    function Get_Aspect_Id (Name : Name_Id) return Aspect_Id;
    pragma Inline (Get_Aspect_Id);
@@ -832,6 +850,7 @@ package Aspects is
       Aspect_Inline                       => Always_Delay,
       Aspect_Inline_Always                => Always_Delay,
       Aspect_Input                        => Always_Delay,
+      Aspect_Integer_Literal              => Always_Delay,
       Aspect_Interrupt_Handler            => Always_Delay,
       Aspect_Interrupt_Priority           => Always_Delay,
       Aspect_Invariant                    => Always_Delay,
@@ -857,6 +876,7 @@ package Aspects is
       Aspect_Pure_Function                => Always_Delay,
       Aspect_Put_Image                    => Always_Delay,
       Aspect_Read                         => Always_Delay,
+      Aspect_Real_Literal                 => Always_Delay,
       Aspect_Relative_Deadline            => Always_Delay,
       Aspect_Remote_Access_Type           => Always_Delay,
       Aspect_Remote_Call_Interface        => Always_Delay,
@@ -869,6 +889,7 @@ package Aspects is
       Aspect_Static_Predicate             => Always_Delay,
       Aspect_Storage_Pool                 => Always_Delay,
       Aspect_Stream_Size                  => Always_Delay,
+      Aspect_String_Literal               => Always_Delay,
       Aspect_Suppress                     => Always_Delay,
       Aspect_Suppress_Debug_Info          => Always_Delay,
       Aspect_Suppress_Initialization      => Always_Delay,
@@ -919,11 +940,13 @@ package Aspects is
       Aspect_Refined_State                => Never_Delay,
       Aspect_Relaxed_Initialization       => Never_Delay,
       Aspect_SPARK_Mode                   => Never_Delay,
+      Aspect_Static                       => Never_Delay,
       Aspect_Synchronization              => Never_Delay,
       Aspect_Test_Case                    => Never_Delay,
       Aspect_Unimplemented                => Never_Delay,
       Aspect_Volatile_Function            => Never_Delay,
       Aspect_Warnings                     => Never_Delay,
+      Aspect_Yield                        => Never_Delay,
 
       Aspect_Alignment                    => Rep_Aspect,
       Aspect_Atomic                       => Rep_Aspect,

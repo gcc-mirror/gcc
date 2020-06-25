@@ -1023,9 +1023,9 @@ package body Exp_Disp is
       --  list including the creation of a new set of matching entities.
 
       declare
-         Old_Formal : Entity_Id := First_Formal (Subp);
-         New_Formal : Entity_Id;
-         Extra      : Entity_Id := Empty;
+         Old_Formal  : Entity_Id := First_Formal (Subp);
+         New_Formal  : Entity_Id;
+         Last_Formal : Entity_Id := Empty;
 
       begin
          if Present (Old_Formal) then
@@ -1049,7 +1049,7 @@ package body Exp_Disp is
                --  errors when the itype is the completion of a type derived
                --  from a private type.
 
-               Extra := New_Formal;
+               Last_Formal := New_Formal;
                Next_Formal (Old_Formal);
                exit when No (Old_Formal);
 
@@ -1059,17 +1059,41 @@ package body Exp_Disp is
             end loop;
 
             Unlink_Next_Entity (New_Formal);
-            Set_Last_Entity (Subp_Typ, Extra);
+            Set_Last_Entity (Subp_Typ, Last_Formal);
          end if;
 
          --  Now that the explicit formals have been duplicated, any extra
-         --  formals needed by the subprogram must be created.
+         --  formals needed by the subprogram must be duplicated; we know
+         --  that extra formals are available because they were added when
+         --  the tagged type was frozen (see Expand_Freeze_Record_Type).
 
-         if Present (Extra) then
-            Set_Extra_Formal (Extra, Empty);
+         pragma Assert (Is_Frozen (Typ));
+
+         --  Warning: The addition of the extra formals cannot be performed
+         --  here invoking Create_Extra_Formals since we must ensure that all
+         --  the extra formals of the pointer type and the target subprogram
+         --  match (and for functions that return a tagged type the profile of
+         --  the built subprogram type always returns a class-wide type, which
+         --  may affect the addition of some extra formals).
+
+         if Present (Last_Formal)
+           and then Present (Extra_Formal (Last_Formal))
+         then
+            Old_Formal := Extra_Formal (Last_Formal);
+            New_Formal := New_Copy (Old_Formal);
+
+            Set_Extra_Formal (Last_Formal, New_Formal);
+            Set_Extra_Formals (Subp_Typ, New_Formal);
+
+            Old_Formal := Extra_Formal (Old_Formal);
+            while Present (Old_Formal) loop
+               Set_Extra_Formal (New_Formal, New_Copy (Old_Formal));
+               New_Formal := Extra_Formal (New_Formal);
+               Set_Scope (New_Formal, Subp_Typ);
+
+               Old_Formal := Extra_Formal (Old_Formal);
+            end loop;
          end if;
-
-         Create_Extra_Formals (Subp_Typ);
       end;
 
       --  Complete description of pointer type, including size information, as

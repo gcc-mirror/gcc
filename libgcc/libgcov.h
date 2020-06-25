@@ -216,7 +216,7 @@ struct gcov_info
   const struct gcov_fn_info *const *functions; /* pointer to pointers
                                                   to function information  */
 #else
-  const struct gcov_fn_info **functions;
+  struct gcov_fn_info **functions;
 #endif /* !IN_GCOV_TOOL */
 };
 

@@ -314,6 +314,8 @@ package body Ada.Containers.Hashed_Maps is
 
    procedure Delete (Container : in out Map; Position : in out Cursor) is
    begin
+      TC_Check (Container.HT.TC);
+
       if Checks and then Position.Node = null then
          raise Constraint_Error with
            "Position cursor of Delete equals No_Element";
@@ -324,8 +326,6 @@ package body Ada.Containers.Hashed_Maps is
          raise Program_Error with
            "Position cursor of Delete designates wrong map";
       end if;
-
-      TC_Check (Container.HT.TC);
 
       pragma Assert (Vet (Position), "bad cursor in Delete");
 
@@ -999,12 +999,12 @@ package body Ada.Containers.Hashed_Maps is
       Node : constant Node_Access := Key_Ops.Find (Container.HT, Key);
 
    begin
+      TE_Check (Container.HT.TC);
+
       if Checks and then Node = null then
          raise Constraint_Error with
            "attempt to replace key not in map";
       end if;
-
-      TE_Check (Container.HT.TC);
 
       Node.Key := Key;
       Node.Element := New_Item;
@@ -1020,6 +1020,8 @@ package body Ada.Containers.Hashed_Maps is
       New_Item  : Element_Type)
    is
    begin
+      TE_Check (Position.Container.HT.TC);
+
       if Checks and then Position.Node = null then
          raise Constraint_Error with
            "Position cursor of Replace_Element equals No_Element";
@@ -1030,8 +1032,6 @@ package body Ada.Containers.Hashed_Maps is
          raise Program_Error with
            "Position cursor of Replace_Element designates wrong map";
       end if;
-
-      TE_Check (Position.Container.HT.TC);
 
       pragma Assert (Vet (Position), "bad cursor in Replace_Element");
 

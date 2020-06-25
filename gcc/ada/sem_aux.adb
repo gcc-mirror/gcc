@@ -344,8 +344,8 @@ package body Sem_Aux is
       --  predefined integer types. If the type is formal, it is also a first
       --  subtype, and its base type has no freeze node. On the other hand, a
       --  subtype of a generic formal is not its own first subtype. Its base
-      --  type, if anonymous, is attached to the formal type decl. from which
-      --  the first subtype is obtained.
+      --  type, if anonymous, is attached to the formal type declaration from
+      --  which the first subtype is obtained.
 
       if No (F) then
          if B = Base_Type (Standard_Integer) then
@@ -1329,6 +1329,15 @@ package body Sem_Aux is
                     and then Nkind (Parent (Unit_Declaration_Node (E))) =
                                N_Protected_Definition);
    end Is_Protected_Operation;
+
+   -------------------------------
+   -- Is_Record_Or_Limited_Type --
+   -------------------------------
+
+   function Is_Record_Or_Limited_Type (Typ : Entity_Id) return Boolean is
+   begin
+      return Is_Record_Type (Typ) or else Is_Limited_Type (Typ);
+   end Is_Record_Or_Limited_Type;
 
    ----------------------
    -- Nearest_Ancestor --

@@ -657,6 +657,7 @@ extern alias_set_type c_get_alias_set (tree);
 extern int in_alignof;
 extern int in_sizeof;
 extern int in_typeof;
+extern bool c_in_omp_for;
 
 extern tree c_last_sizeof_arg;
 extern location_t c_last_sizeof_loc;

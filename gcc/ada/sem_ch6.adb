@@ -552,6 +552,37 @@ package body Sem_Ch6 is
                   Check_Limited_Return (Original_Node (N), Expr, Typ);
                   End_Scope;
                end if;
+
+               --  In the case of an expression function marked with the
+               --  aspect Static, we need to check the requirement that the
+               --  function's expression is a potentially static expression.
+               --  This is done by making a full copy of the expression tree
+               --  and performing a special preanalysis on that tree with
+               --  the global flag Checking_Potentially_Static_Expression
+               --  enabled. If the resulting expression is static, then it's
+               --  OK, but if not, that means the expression violates the
+               --  requirements of the Ada 202x RM in 4.9(3.2/5-3.4/5) and
+               --  we flag an error.
+
+               if Is_Static_Expression_Function (Def_Id) then
+                  if not Is_Static_Expression (Expr) then
+                     declare
+                        Exp_Copy : constant Node_Id := New_Copy_Tree (Expr);
+                     begin
+                        Set_Checking_Potentially_Static_Expression (True);
+
+                        Preanalyze_Formal_Expression (Exp_Copy, Typ);
+
+                        if not Is_Static_Expression (Exp_Copy) then
+                           Error_Msg_N
+                             ("static expression function requires "
+                                & "potentially static expression", Expr);
+                        end if;
+
+                        Set_Checking_Potentially_Static_Expression (False);
+                     end;
+                  end if;
+               end if;
             end if;
          end;
       end if;
@@ -1269,7 +1300,7 @@ package body Sem_Ch6 is
          --  only once, i.e. not to the simple return statement generated at
          --  the end of its expansion because, prior to leaving the function,
          --  the accessibility level of the return object changes to be a level
-         --  determined by the point of call (RM 3.10.2(10.8/3).
+         --  determined by the point of call (RM 3.10.2(10.8/3)).
 
          if Ada_Version >= Ada_2005
            and then Ekind (R_Type) = E_Anonymous_Access_Type
@@ -3070,7 +3101,7 @@ package body Sem_Ch6 is
                   --  To ensure proper coverage when body is inlined, indicate
                   --  whether the subprogram comes from source.
 
-                  Set_Comes_From_Source (Subp, Comes_From_Source (N));
+                  Preserve_Comes_From_Source (Subp, N);
 
                   if Present (First_Formal (Body_Id)) then
                      Plist := Copy_Parameter_List (Body_Id);
@@ -4402,13 +4433,7 @@ package body Sem_Ch6 is
 
       --  Handle inlining
 
-      --  Note: Normally we don't do any inlining if expansion is off, since
-      --  we won't generate code in any case. An exception arises in GNATprove
-      --  mode where we want to expand some calls in place, even with expansion
-      --  disabled, since the inlining eases formal verification.
-
-      if not GNATprove_Mode
-        and then Expander_Active
+      if Expander_Active
         and then Serious_Errors_Detected = 0
         and then Present (Spec_Id)
         and then Has_Pragma_Inline (Spec_Id)
@@ -5464,9 +5489,7 @@ package body Sem_Ch6 is
                           N_Formal_Abstract_Subprogram_Declaration,
                           N_Subprogram_Renaming_Declaration)
          then
-            if Is_Abstract_Type (Etype (Designator))
-              and then not Is_Interface (Etype (Designator))
-            then
+            if Is_Abstract_Type (Etype (Designator)) then
                Error_Msg_N
                  ("function that returns abstract type must be abstract", N);
 
@@ -9403,6 +9426,28 @@ package body Sem_Ch6 is
          end if;
       end FCO;
 
+      function User_Defined_Numeric_Literal_Mismatch return Boolean;
+      --  Usually literals with the same value like 12345 and 12_345
+      --  or 123.0 and 123.00 conform, but not if they are
+      --  user-defined literals.
+
+      -------------------------------------------
+      -- User_Defined_Numeric_Literal_Mismatch --
+      -------------------------------------------
+
+      function User_Defined_Numeric_Literal_Mismatch return Boolean is
+         E1_Is_User_Defined : constant Boolean :=
+           not Nkind_In (Given_E1, N_Integer_Literal, N_Real_Literal);
+         E2_Is_User_Defined : constant Boolean :=
+           not Nkind_In (Given_E2, N_Integer_Literal, N_Real_Literal);
+      begin
+         pragma Assert (E1_Is_User_Defined = E2_Is_User_Defined);
+
+         return E1_Is_User_Defined and then
+           not String_Equal (String_From_Numeric_Literal (E1),
+                             String_From_Numeric_Literal (E2));
+      end User_Defined_Numeric_Literal_Mismatch;
+
       --  Local variables
 
       Result : Boolean;
@@ -9664,7 +9709,8 @@ package body Sem_Ch6 is
                  FCL (Expressions (E1), Expressions (E2));
 
             when N_Integer_Literal =>
-               return (Intval (E1) = Intval (E2));
+               return (Intval (E1) = Intval (E2))
+                 and then not User_Defined_Numeric_Literal_Mismatch;
 
             when N_Null =>
                return True;
@@ -9750,7 +9796,8 @@ package body Sem_Ch6 is
                  FCE (High_Bound (E1), High_Bound (E2));
 
             when N_Real_Literal =>
-               return (Realval (E1) = Realval (E2));
+               return (Realval (E1) = Realval (E2))
+                 and then not User_Defined_Numeric_Literal_Mismatch;
 
             when N_Selected_Component =>
                return

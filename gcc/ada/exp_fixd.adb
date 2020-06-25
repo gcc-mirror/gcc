@@ -262,7 +262,8 @@ package body Exp_Fixd is
          --  Remove inner conversion if both inner and outer conversions are
          --  to integer types, since the inner one serves no purpose (except
          --  perhaps to set rounding, so we preserve the Rounded_Result flag)
-         --  and also we preserve the range check flag on the inner operand
+         --  and also preserve the Conversion_OK and Do_Range_Check flags of
+         --  the inner conversion.
 
          if Is_Integer_Type (Typ)
            and then Is_Integer_Type (Etype (Expr))
@@ -273,6 +274,7 @@ package body Exp_Fixd is
                 Subtype_Mark => New_Occurrence_Of (Typ, Loc),
                 Expression   => Expression (Expr));
             Set_Rounded_Result (Result, Rounded_Result_Set (Expr));
+            Set_Conversion_OK  (Result, Conversion_OK (Expr));
             Rcheck := Rcheck or Do_Range_Check (Expr);
 
          --  For all other cases, a simple type conversion will work

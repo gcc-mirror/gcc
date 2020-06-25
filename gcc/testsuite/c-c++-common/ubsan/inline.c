@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fsanitize=vla-bound -c -O3 -fdump-tree-optimized" } */
+/* { dg-options "-fsanitize=vla-bound -c -O3 -fdump-tree-optimized -ffat-lto-objects" } */
 
 int x;
 

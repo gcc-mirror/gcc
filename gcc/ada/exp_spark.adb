@@ -434,7 +434,7 @@ package body Exp_SPARK is
    begin
       --  Replace a reference to a renaming with the actual renamed object
 
-      if Ekind (Obj_Id) in Object_Kind then
+      if Is_Object (Obj_Id) then
          Ren := Renamed_Object (Obj_Id);
 
          if Present (Ren) then

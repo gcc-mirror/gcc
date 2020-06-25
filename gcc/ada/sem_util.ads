@@ -1126,8 +1126,8 @@ package Sem_Util is
    function Get_Iterable_Type_Primitive
      (Typ : Entity_Id;
       Nam : Name_Id) return Entity_Id;
-   --  Retrieve one of the primitives First, Next, Has_Element, Element from
-   --  the value of the Iterable aspect of a type.
+   --  Retrieve one of the primitives First, Last, Next, Previous, Has_Element,
+   --  Element from the value of the Iterable aspect of a type.
 
    procedure Get_Library_Unit_Name_String (Decl_Node : Node_Id);
    --  Retrieve the fully expanded name of the library unit declared by
@@ -1382,9 +1382,10 @@ package Sem_Util is
    --  yet received a full declaration.
 
    function Has_Relaxed_Initialization (E : Entity_Id) return Boolean;
-   --  Returns True iff entity E, which can be either a type, a variable, an
-   --  abstract state or a function, is subject to the Relaxed_Initialization
-   --  aspect.
+   --  Returns True iff entity E is subject to the Relaxed_Initialization
+   --  aspect. Entity E can be either type, variable, constant, function,
+   --  or abstract state. For private types and deferred constants E should
+   --  be the private view, because aspect can only be attached there.
 
    function Has_Signed_Zeros (E : Entity_Id) return Boolean;
    --  Determines if the floating-point type E supports signed zeros.
@@ -2069,6 +2070,15 @@ package Sem_Util is
    --  the case of procedure call statements (unlike the direct use of
    --  the N_Statement_Other_Than_Procedure_Call subtype from Sinfo).
    --  Note that a label is *not* a statement, and will return False.
+
+   function Is_Static_Expression_Function (Subp : Entity_Id) return Boolean;
+   --  Determine whether subprogram Subp denotes a static expression function,
+   --  which is an expression function with the aspect Static with value True.
+
+   function Is_Static_Expression_Function_Call (Call : Node_Id) return Boolean;
+   --  Determine whether Call is a static call to a static expression function,
+   --  meaning that the name of the call denotes a static expression function
+   --  and all of the call's actual parameters are given by static expressions.
 
    function Is_Subcomponent_Of_Atomic_Object (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N denotes a reference to a subcomponent
@@ -2928,6 +2938,10 @@ package Sem_Util is
 
    function Statically_Names_Object (N : Node_Id) return Boolean;
    --  Return True iff N is a name that "statically names" an object.
+
+   function String_From_Numeric_Literal (N : Node_Id) return String_Id;
+   --  Return the string that corresponds to the numeric literal N as it
+   --  appears in the source.
 
    function Subject_To_Loop_Entry_Attributes (N : Node_Id) return Boolean;
    --  Determine whether node N is a loop statement subject to at least one
