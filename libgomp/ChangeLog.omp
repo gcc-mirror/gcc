@@ -1,3 +1,8 @@
+2020-07-15  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/collapse-1.f90: Fix race condition.
+	* testsuite/libgomp.oacc-fortran/collapse-2.f90: Likewise.
+
 2020-06-02  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/routine-wv-2.c (DoWorkVec):
