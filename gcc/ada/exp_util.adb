@@ -6198,26 +6198,6 @@ package body Exp_Util is
       return End_String;
    end Fully_Qualified_Name_String;
 
-   ------------------------
-   -- Generate_Poll_Call --
-   ------------------------
-
-   procedure Generate_Poll_Call (N : Node_Id) is
-   begin
-      --  No poll call if polling not active
-
-      if not Polling_Required then
-         return;
-
-      --  Otherwise generate require poll call
-
-      else
-         Insert_Before_And_Analyze (N,
-           Make_Procedure_Call_Statement (Sloc (N),
-             Name => New_Occurrence_Of (RTE (RE_Poll), Sloc (N))));
-      end if;
-   end Generate_Poll_Call;
-
    ---------------------------------
    -- Get_Current_Value_Condition --
    ---------------------------------

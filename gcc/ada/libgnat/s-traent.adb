@@ -29,10 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Polling (Off);
---  We must turn polling off for this unit, because otherwise we get
---  elaboration circularities with Ada.Exceptions.
-
 pragma Compiler_Unit_Warning;
 
 package body System.Traceback_Entries is

@@ -31,10 +31,6 @@
 
 --  This is a AIX (Native) version of this package
 
-pragma Polling (Off);
---  Turn off polling, we do not want ATC polling to take place during tasking
---  operations. It causes infinite loops and other problems.
-
 package body System.OS_Interface is
 
    use Interfaces.C;

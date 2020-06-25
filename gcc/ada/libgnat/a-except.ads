@@ -36,10 +36,6 @@
 --  This is the default version of this package. We also have cert and zfp
 --  versions.
 
-pragma Polling (Off);
---  We must turn polling off for this unit, because otherwise we get
---  elaboration circularities with ourself.
-
 with System;
 with System.Parameters;
 with System.Standard_Library;
@@ -239,31 +235,6 @@ private
    function Triggered_By_Abort return Boolean;
    --  Determine whether the current exception (if it exists) is an instance of
    --  Standard'Abort_Signal.
-
-   -----------------------
-   -- Polling Interface --
-   -----------------------
-
-   --  The GNAT compiler has an option to generate polling calls to the Poll
-   --  routine in this package. Specifying the -gnatP option for a compilation
-   --  causes a call to Ada.Exceptions.Poll to be generated on every subprogram
-   --  entry and on every iteration of a loop, thus avoiding the possibility of
-   --  a case of unbounded time between calls.
-
-   --  This polling interface may be used for instrumentation or debugging
-   --  purposes (e.g. implementing watchpoints in software or in the debugger).
-
-   --  In the GNAT technology itself, this interface is used to implement
-   --  immediate asynchronous transfer of control and immediate abort on
-   --  targets which do not provide for one thread interrupting another.
-
-   --  Note: this used to be in a separate unit called System.Poll, but that
-   --  caused horrible circular elaboration problems between System.Poll and
-   --  Ada.Exceptions.
-
-   procedure Poll;
-   --  Check for asynchronous abort. Note that we do not inline the body.
-   --  This makes the interface more useful for debugging purposes.
 
    --------------------------
    -- Exception_Occurrence --

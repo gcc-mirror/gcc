@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Jul 01, 2020
+GNAT User's Guide for Native Platforms , Sep 29, 2020
 
 AdaCore
 
@@ -2850,7 +2850,6 @@ Overflow_Mode
 Overriding_Renamings
 Partition_Elaboration_Policy
 Persistent_BSS
-Polling
 Prefix_Exception_Messages
 Priority_Specific_Dispatching
 Profile
@@ -9719,19 +9718,6 @@ has no effect if cancelled by a subsequent @code{-gnat-p} switch.
 @item @code{-gnat-p}
 
 Cancel effect of previous @code{-gnatp} switch.
-@end table
-
-@geindex -gnatP (gcc)
-
-
-@table @asis
-
-@item @code{-gnatP}
-
-Enable polling. This is required on some systems (notably Windows NT) to
-obtain asynchronous abort and asynchronous transfer of control capability.
-See @code{Pragma_Polling} in the @cite{GNAT_Reference_Manual} for full
-details.
 @end table
 
 @geindex -gnatq (gcc)

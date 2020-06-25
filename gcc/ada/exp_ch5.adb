@@ -3510,17 +3510,6 @@ package body Exp_Ch5 is
       Analyze (N);
    end Expand_Formal_Container_Element_Loop;
 
-   -----------------------------
-   -- Expand_N_Goto_Statement --
-   -----------------------------
-
-   --  Add poll before goto if polling active
-
-   procedure Expand_N_Goto_Statement (N : Node_Id) is
-   begin
-      Generate_Poll_Call (N);
-   end Expand_N_Goto_Statement;
-
    ---------------------------
    -- Expand_N_If_Statement --
    ---------------------------
@@ -4608,7 +4597,6 @@ package body Exp_Ch5 is
    --  4. Deal with while loops where Condition_Actions is set
    --  5. Deal with loops over predicated subtypes
    --  6. Deal with loops with iterators over arrays and containers
-   --  7. Insert polling call if required
 
    procedure Expand_N_Loop_Statement (N : Node_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
@@ -4627,12 +4615,6 @@ package body Exp_Ch5 is
 
       if Present (Scheme) then
          Adjust_Condition (Condition (Scheme));
-      end if;
-
-      --  Generate polling call
-
-      if Is_Non_Empty_List (Statements (N)) then
-         Generate_Poll_Call (First (Statements (N)));
       end if;
 
       --  Nothing more to do for plain loop with no iteration scheme

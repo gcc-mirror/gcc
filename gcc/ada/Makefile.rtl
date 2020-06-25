@@ -1812,7 +1812,6 @@ endif
 # HP/PA HP-UX 10
 ifeq ($(strip $(filter-out hppa% hp hpux10%,$(target_cpu) $(target_vendor) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
-  a-excpol.adb<libgnat/a-excpol__abort.adb \
   a-intnam.ads<libgnarl/a-intnam__hpux.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-interr.adb<libgnarl/s-interr__sigaction.adb \
@@ -1992,7 +1991,6 @@ ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(target_os))),)
   endif
   LIBGNAT_TARGET_PAIRS += \
   a-dirval.adb<libgnat/a-dirval__mingw.adb \
-  a-excpol.adb<libgnat/a-excpol__abort.adb \
   s-gloloc.adb<libgnat/s-gloloc__mingw.adb \
   s-inmaop.adb<libgnarl/s-inmaop__dummy.adb \
   s-taspri.ads<libgnarl/s-taspri__mingw.ads \

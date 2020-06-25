@@ -31,10 +31,6 @@
 
 --  Version of System.OS_Interface for LynxOS-178 (POSIX Threads)
 
-pragma Polling (Off);
---  Turn off polling, we do not want ATC polling to take place during tasking
---  operations. It may cause infinite loops and other problems.
-
 package body System.OS_Interface is
 
    ------------------

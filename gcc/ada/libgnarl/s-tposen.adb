@@ -52,10 +52,6 @@ pragma Style_Checks (All_Checks);
 --  performed at compile time, and is relatively cheap (see PO_Do_Or_Queue,
 --  Service_Entry).
 
-pragma Polling (Off);
---  Turn off polling, we do not want polling to take place during tasking
---  operations. It can cause infinite loops and other problems.
-
 pragma Suppress (All_Checks);
 --  Why is this required ???
 

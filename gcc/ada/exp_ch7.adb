@@ -4919,7 +4919,6 @@ package body Exp_Ch7 is
          Fin_Id    : Entity_Id;
          Mark      : Entity_Id := Empty;
          New_Decls : List_Id;
-         Old_Poll  : Boolean;
 
       begin
          --  If we are generating expanded code for debugging purposes, use the
@@ -4935,12 +4934,6 @@ package body Exp_Ch7 is
          else
             Loc := No_Location;
          end if;
-
-         --  Set polling off. The finalization and cleanup code is executed
-         --  with aborts deferred.
-
-         Old_Poll := Polling_Required;
-         Polling_Required := False;
 
          --  A task activation call has already been built for a task
          --  allocation block.
@@ -5050,10 +5043,6 @@ package body Exp_Ch7 is
          if Present (Fin_Id) then
             Build_Finalizer_Call (N, Fin_Id);
          end if;
-
-         --  Restore saved polling mode
-
-         Polling_Required := Old_Poll;
       end;
    end Expand_Cleanup_Actions;
 
