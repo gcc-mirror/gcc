@@ -1958,20 +1958,13 @@ check_final_overrider (tree overrider, tree basefn)
     /* OK */;
   else
     {
+      auto_diagnostic_group d;
       if (fail == 1)
-	{
-	  auto_diagnostic_group d;
-	  error ("invalid covariant return type for %q+#D", overrider);
-	  inform (DECL_SOURCE_LOCATION (basefn),
-		  "overridden function is %q#D", basefn);
-	}
+	error ("invalid covariant return type for %q+#D", overrider);
       else
-	{
-	  auto_diagnostic_group d;
-	  error ("conflicting return type specified for %q+#D", overrider);
-	  inform (DECL_SOURCE_LOCATION (basefn),
-		  "overridden function is %q#D", basefn);
-	}
+	error ("conflicting return type specified for %q+#D", overrider);
+      inform (DECL_SOURCE_LOCATION (basefn),
+	      "overridden function is %q#D", basefn);
       DECL_INVALID_OVERRIDER_P (overrider) = 1;
       return 0;
     }
@@ -1989,6 +1982,25 @@ check_final_overrider (tree overrider, tree basefn)
       error ("conflicting type attributes specified for %q+#D", overrider);
       inform (DECL_SOURCE_LOCATION (basefn),
 	      "overridden function is %q#D", basefn);
+      DECL_INVALID_OVERRIDER_P (overrider) = 1;
+      return 0;
+    }
+
+  /* A consteval virtual function shall not override a virtual function that is
+     not consteval. A consteval virtual function shall not be overridden by a
+     virtual function that is not consteval.  */
+  if (DECL_IMMEDIATE_FUNCTION_P (overrider)
+      != DECL_IMMEDIATE_FUNCTION_P (basefn))
+    {
+      auto_diagnostic_group d;
+      if (DECL_IMMEDIATE_FUNCTION_P (overrider))
+	error ("%<consteval%> function %q+D overriding non-%<consteval%> "
+	       "function", overrider);
+      else
+	error ("non-%<consteval%> function %q+D overriding %<consteval%> "
+	       "function", overrider);
+      inform (DECL_SOURCE_LOCATION (basefn),
+	      "overridden function is %qD", basefn);
       DECL_INVALID_OVERRIDER_P (overrider) = 1;
       return 0;
     }
