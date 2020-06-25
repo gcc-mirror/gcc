@@ -13437,7 +13437,7 @@ mma_init_builtins (void)
 	{
 	  /* This is a normal MMA built-in function.  */
 	  unsigned j = (attr & RS6000_BTC_QUAD) ? 1 : 0;
-	  for (; j < insn_data[icode].n_operands; j++)
+	  for (; j < (unsigned) insn_data[icode].n_operands; j++)
 	    {
 	      machine_mode mode = insn_data[icode].operand[j].mode;
 	      if (gimple_func && mode == PXImode)
