@@ -1,5 +1,8 @@
 2020-06-25  Nathan Sidwell  <nathan@acm.org>
 
+	Merge master 92bed036098
+	c++: Improve access checking inside templates [PR41437]
+
 	Merge master a97e49a89d1
 
 2020-06-24  Nathan Sidwell  <nathan@acm.org>
