@@ -37,7 +37,7 @@
 
 with Interfaces.C; use Interfaces.C;
 
-package body Ada.Synchronous_Barriers is
+package body Ada.Synchronous_Barriers with SPARK_Mode => Off is
 
    --------------------
    -- POSIX barriers --

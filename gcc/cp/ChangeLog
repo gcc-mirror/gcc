@@ -1,3 +1,94 @@
+2020-06-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/93467
+	* constraint.cc (associate_classtype_constraints): If there is a
+	discrepancy between the current template depth and the template
+	depth of the original declaration, then adjust the template
+	parameter depth within the current constraints appropriately.
+	* pt.c (tsubst_friend_class): Substitute into and set the
+	constraints on the injected declaration.
+
+2020-06-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (instantiate_coro_traits): Pass a reference
+	to lambda closure objects to traits instantiation.
+	(morph_fn_to_coro): Likewise for promise parameter
+	preview and allocator lookup.
+
+2020-06-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95440
+	* call.c (add_candidates): Use vec_safe_length() for
+	testing the arguments list.
+	(build_new_method_call_1): Use vec_safe_is_empty() when
+	checking for an empty args list.
+
+2020-06-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95562
+	* parser.c (cp_parser_direct_declarator): Clear
+	CP_PARSER_FLAGS_DELAY_NOEXCEPT if the declarator kind is not
+	cdk_id.
+
+2020-06-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95137
+	* coroutines.cc (expand_one_await_expression): Build separate
+	DTOR trees for the awaitable object on the destroy and resume
+	paths.
+
+2020-06-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95552
+	* cp-gimplify.c (predeclare_vla): Only predeclare a VLA if it's
+	wrapped in a pointer type.
+
+2020-06-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95369
+	* call.c (build_converted_constant_expr_internal): Allow
+	list-initialization.
+
+2020-06-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* cp-tree.def (CO_RETURN_EXPR): Correct the class
+	to use tcc_statement.
+
+2020-06-05  Jason Merrill  <jason@redhat.com>
+
+	* error.c (dump_binary_op): Handle negative operand to
+	POINTER_PLUS_EXPR.
+
+2020-06-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93310
+	* constexpr.c (cxx_eval_constant_expression) [OBJ_TYPE_REF]:
+	Evaluate OBJ_TYPE_REF_EXPR.
+
+2020-06-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95158
+	* class.c (lookup_vfn_in_binfo): New.
+	* call.c (build_over_call): Use it.
+	* cp-tree.h (resolves_to_fixed_type_p): Add default argument.
+	(lookup_vfn_in_binfo): Declare.
+
+2020-06-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95346
+	* coroutines.cc (morph_fn_to_coro): Ensure that the get-
+	return-object is constructed correctly; When it is not the
+	final return value, pass it to the CTOR of the return type
+	as an rvalue, per the standard comment.
+
+2020-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82304
+	PR c++/95307
+	* constexpr.c (cxx_eval_constant_expression): Diagnose CONVERT_EXPR
+	conversions from pointer types to arithmetic types here...
+	(cxx_eval_outermost_constant_expr): ... instead of here.
+
 2020-06-03  Mark Wielaard  <mark@klomp.org>
 
 	* parser.c (cp_lexer_safe_previous_token): New function.
@@ -162,6 +253,7 @@
 
 2020-05-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/95242
 	* call.c (build_new_op_1): Suppress
 	warn_zero_as_null_pointer_constant across comparison of <=> result
 	to 0.
@@ -191,6 +283,37 @@
 	* constexpr.c (cxx_eval_constant_expression)
 	<case TEMPLATE_ID_EXPR>: Don't evaluate the concept when
 	constexpr evaluation is uid-sensitive.
+
+2020-05-22  Jason Merrill  <jason@redhat.com>
+
+	* cp-gimplify.c (cp_gimplify_expr) [CALL_EXPR]: Don't preevaluate
+	the function address if the call used operator syntax.
+
+2020-05-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95221
+	* cp-ubsan.c (cp_ubsan_maybe_instrument_member_call): For a virtual
+	call, instrument the OBJ_TYPE_REF.
+
+	* decl.c (compute_array_index_type_loc): Diagnose expressions
+	in a template that can't be constant.
+	* parser.c (cp_parser_direct_declarator): Don't check
+	non-constant array bounds here.
+
+	* cp-tree.h (is_rvalue_constant_expression): Declare.
+	* constexpr.c (is_rvalue_constant_expression): New.
+	* parser.c (cp_parser_constant_expression): Use it.
+	* decl.c (cp_finish_decl): Try to treat a constexpr initializer in a
+	template as constant.
+
+	* typeck.c (build_x_modify_expr): Handle error_mark_node arguments.
+
+	* decl.c (grokparms): Return NULL_TREE if any parms were erroneous.
+
+2020-05-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (finish_co_return_stmt): Revert change to use
+	finish_expr_stmt.
 
 2020-05-21  Patrick Palka  <ppalka@redhat.com>
 
@@ -422,7 +545,7 @@
 2020-05-13  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/95020
-	* constraint.c (tsubst_requires_expr): Produce a new
+	* constraint.cc (tsubst_requires_expr): Produce a new
 	requires-expression when processing_template_decl, even if
 	template arguments are not dependent.
 

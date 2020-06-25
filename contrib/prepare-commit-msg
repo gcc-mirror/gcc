@@ -49,6 +49,19 @@ elif [ $COMMIT_SOURCE = commit ]; then
     # otherwise, assume a new commit with -C.
     if [ $SHA1 = HEAD ]; then
 	cmd="diff --cached HEAD^"
+	if [ "$(git config gcc-config.mklog-hook-type)" = "smart-amend" ]; then
+	    # Check if the existing message still describes the staged changes.
+	    f=$(mktemp /tmp/git-commit.XXXXXX) || exit 1
+	    git log -1 --pretty=email HEAD > $f
+	    printf '\n---\n\n' >> $f
+	    git $cmd >> $f
+	    if contrib/gcc-changelog/git_email.py "$f" >/dev/null 2>&1; then
+		# Existing commit message is still OK for amended commit.
+		rm $f
+		exit 0
+	    fi
+	    rm $f
+	fi
     else
 	cmd="diff --cached"
     fi
@@ -58,8 +71,11 @@ else
 fi
 
 # Save diff to a file if requested.
-if ! [ -z "$GCC_GIT_DIFF_FILE" ]; then
-  git $cmd > "$GCC_GIT_DIFF_FILE";
+DIFF_FILE=$(git config gcc-config.diff-file)
+if ! [ -z "$DIFF_FILE" ]; then
+    tee="tee $DIFF_FILE"
+else
+    tee="cat"
 fi
 
-git $cmd | git gcc-mklog -c "$COMMIT_MSG_FILE"
+git $cmd | $tee | git gcc-mklog -c "$COMMIT_MSG_FILE"

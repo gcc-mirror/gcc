@@ -1523,15 +1523,6 @@ package body Sinfo is
       return Flag10 (N);
    end Has_Dynamic_Length_Check;
 
-   function Has_Dynamic_Range_Check
-      (N : Node_Id) return Boolean is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind =  N_Subtype_Declaration
-        or else NT (N).Nkind in N_Subexpr);
-      return Flag12 (N);
-   end Has_Dynamic_Range_Check;
-
    function Has_Init_Expression
       (N : Node_Id) return Boolean is
    begin
@@ -2104,6 +2095,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Op_Expon);
       return Flag13 (N);
    end Is_Power_Of_2_For_Shift;
+
+   function Is_Preelaborable_Call
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Call_Marker);
+      return Flag7 (N);
+   end Is_Preelaborable_Call;
 
    function Is_Prefixed_Call
       (N : Node_Id) return Boolean is
@@ -4997,15 +4996,6 @@ package body Sinfo is
       Set_Flag10 (N, Val);
    end Set_Has_Dynamic_Length_Check;
 
-   procedure Set_Has_Dynamic_Range_Check
-      (N : Node_Id; Val : Boolean := True) is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind =  N_Subtype_Declaration
-        or else NT (N).Nkind in N_Subexpr);
-      Set_Flag12 (N, Val);
-   end Set_Has_Dynamic_Range_Check;
-
    procedure Set_Has_Init_Expression
       (N : Node_Id; Val : Boolean := True) is
    begin
@@ -5580,6 +5570,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Op_Expon);
       Set_Flag13 (N, Val);
    end Set_Is_Power_Of_2_For_Shift;
+
+   procedure Set_Is_Preelaborable_Call
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Call_Marker);
+      Set_Flag7 (N, Val);
+   end Set_Is_Preelaborable_Call;
 
    procedure Set_Is_Prefixed_Call
       (N : Node_Id; Val : Boolean := True) is

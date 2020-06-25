@@ -192,10 +192,6 @@ package body Exp_Attr is
    procedure Expand_Update_Attribute (N : Node_Id);
    --  Handle the expansion of attribute Update
 
-   function Get_Index_Subtype (N : Node_Id) return Entity_Id;
-   --  Used for Last, Last, and Length, when the prefix is an array type.
-   --  Obtains the corresponding index subtype.
-
    procedure Find_Fat_Info
      (T        : Entity_Id;
       Fat_Type : out Entity_Id;
@@ -3163,32 +3159,8 @@ package body Exp_Attr is
             Expr := Pref;
          end if;
 
-         --  If the expression is an enumeration literal, it is replaced by the
-         --  literal value.
-
-         if Nkind (Expr) in N_Has_Entity
-           and then Ekind (Entity (Expr)) = E_Enumeration_Literal
-         then
-            Rewrite (N,
-              Make_Integer_Literal (Loc, Enumeration_Rep (Entity (Expr))));
-
-         --  If this is a renaming of a literal, recover the representation
-         --  of the original. If it renames an expression there is nothing to
-         --  fold.
-
-         elsif Nkind (Expr) in N_Has_Entity
-           and then Ekind (Entity (Expr)) = E_Constant
-           and then Present (Renamed_Object (Entity (Expr)))
-           and then Is_Entity_Name (Renamed_Object (Entity (Expr)))
-           and then Ekind (Entity (Renamed_Object (Entity (Expr)))) =
-                      E_Enumeration_Literal
-         then
-            Rewrite (N,
-              Make_Integer_Literal (Loc,
-                Enumeration_Rep (Entity (Renamed_Object (Entity (Expr))))));
-
-         --  If not constant-folded above, Enum_Type'Enum_Rep (X) or
-         --  X'Enum_Rep expands to
+         --  If not constant-folded, Enum_Type'Enum_Rep (X) or X'Enum_Rep
+         --  expands to
 
          --    target-type (X)
 
@@ -3204,7 +3176,7 @@ package body Exp_Attr is
          --  first convert to a small signed integer type in order not to lose
          --  the size information.
 
-         elsif Is_Enumeration_Type (Ptyp) then
+         if Is_Enumeration_Type (Ptyp) then
             Psiz := RM_Size (Base_Type (Ptyp));
 
             if Psiz < 8 then
@@ -3631,6 +3603,7 @@ package body Exp_Attr is
 
          --    (X'address = Y'address)
          --      and then (X'Size = Y'Size)
+         --      and then (X'Size /= 0)      (AI12-0077)
 
          --  If both arguments have the same Etype the second conjunct can be
          --  omitted.
@@ -3650,27 +3623,39 @@ package body Exp_Attr is
              Attribute_Name => Name_Size,
              Prefix         => New_Copy_Tree (X));
 
-         Y_Size :=
-           Make_Attribute_Reference (Loc,
-             Attribute_Name => Name_Size,
-             Prefix         => New_Copy_Tree (Y));
-
          if Etype (X) = Etype (Y) then
             Rewrite (N,
-              Make_Op_Eq (Loc,
-                Left_Opnd  => X_Addr,
-                Right_Opnd => Y_Addr));
-         else
-            Rewrite (N,
-              Make_Op_And (Loc,
+              Make_And_Then (Loc,
                 Left_Opnd  =>
                   Make_Op_Eq (Loc,
                     Left_Opnd  => X_Addr,
                     Right_Opnd => Y_Addr),
                 Right_Opnd =>
-                  Make_Op_Eq (Loc,
+                  Make_Op_Ne (Loc,
                     Left_Opnd  => X_Size,
-                    Right_Opnd => Y_Size)));
+                    Right_Opnd => Make_Integer_Literal (Loc, 0))));
+         else
+            Y_Size :=
+              Make_Attribute_Reference (Loc,
+                Attribute_Name => Name_Size,
+                Prefix         => New_Copy_Tree (Y));
+
+            Rewrite (N,
+              Make_And_Then (Loc,
+                Left_Opnd  =>
+                  Make_Op_Eq (Loc,
+                    Left_Opnd  => X_Addr,
+                    Right_Opnd => Y_Addr),
+                Right_Opnd =>
+                  Make_And_Then (Loc,
+                    Left_Opnd  =>
+                      Make_Op_Eq (Loc,
+                        Left_Opnd  => X_Size,
+                        Right_Opnd => Y_Size),
+                    Right_Opnd =>
+                      Make_Op_Ne (Loc,
+                        Left_Opnd  => New_Copy_Tree (X_Size),
+                        Right_Opnd => Make_Integer_Literal (Loc, 0)))));
          end if;
 
          Analyze_And_Resolve (N, Standard_Boolean);
@@ -3732,8 +3717,6 @@ package body Exp_Attr is
       -- Image --
       -----------
 
-      --  Image attribute is handled in separate unit Exp_Imgv
-
       when Attribute_Image =>
 
          --  Leave attribute unexpanded in CodePeer mode: the gnat2scil
@@ -3743,7 +3726,7 @@ package body Exp_Attr is
             return;
          end if;
 
-         Expand_Image_Attribute (N);
+         Exp_Imgv.Expand_Image_Attribute (N);
 
       ---------
       -- Img --
@@ -3752,7 +3735,26 @@ package body Exp_Attr is
       --  X'Img is expanded to typ'Image (X), where typ is the type of X
 
       when Attribute_Img =>
-         Expand_Image_Attribute (N);
+         Exp_Imgv.Expand_Image_Attribute (N);
+
+      -----------------
+      -- Initialized --
+      -----------------
+
+      --  For execution, we could either implement an approximation of this
+      --  aspect, or use Valid_Scalars as a first approximation. For now we do
+      --  the latter.
+
+      when Attribute_Initialized =>
+         Rewrite
+           (N,
+            Make_Attribute_Reference
+              (Sloc           => Loc,
+               Prefix         => Pref,
+               Attribute_Name => Name_Valid_Scalars,
+               Expressions    => Exprs));
+
+         Analyze_And_Resolve (N);
 
       -----------
       -- Input --
@@ -4112,7 +4114,7 @@ package body Exp_Attr is
          elsif Is_Access_Type (Ptyp) then
             Apply_Access_Check (N);
 
-         --  For scalar type, if low bound is a reference to an entity, just
+         --  For scalar type, if high bound is a reference to an entity, just
          --  replace with a direct reference. Note that we can only have a
          --  reference to a constant entity at this stage, anything else would
          --  have already been rewritten.
@@ -4804,27 +4806,31 @@ package body Exp_Attr is
 
       when Attribute_Overlaps_Storage => Overlaps_Storage : declare
          Loc : constant Source_Ptr := Sloc (N);
+         X   : constant Node_Id    := Prefix (N);
+         Y   : constant Node_Id    := First (Expressions (N));
 
-         X   : constant Node_Id := Prefix (N);
-         Y   : constant Node_Id := First (Expressions (N));
          --  The arguments
 
          X_Addr, Y_Addr : Node_Id;
-         --  the expressions for their integer addresses
+
+         --  The expressions for their integer addresses
 
          X_Size, Y_Size : Node_Id;
-         --  the expressions for their sizes
+
+         --  The expressions for their sizes
 
          Cond : Node_Id;
 
       begin
          --  Attribute expands into:
 
-         --    if X'Address < Y'address then
-         --      (X'address + X'Size - 1) >= Y'address
-         --    else
-         --      (Y'address + Y'size - 1) >= X'Address
-         --    end if;
+         --    (if X'Size = 0 or else Y'Size = 0 then
+         --       False
+         --     else
+         --       (if X'Address <= Y'Address then
+         --         (X'Address + X'Size - 1) >= Y'Address
+         --        else
+         --         (Y'Address + Y'Size - 1) >= X'Address))
 
          --  with the proper address operations. We convert addresses to
          --  integer addresses to use predefined arithmetic. The size is
@@ -4867,29 +4873,62 @@ package body Exp_Attr is
               Left_Opnd  => X_Addr,
               Right_Opnd => Y_Addr);
 
+         --  Perform the rewriting
+
          Rewrite (N,
            Make_If_Expression (Loc, New_List (
-             Cond,
 
-             Make_Op_Ge (Loc,
-               Left_Opnd   =>
-                 Make_Op_Add (Loc,
-                   Left_Opnd  => New_Copy_Tree (X_Addr),
-                   Right_Opnd =>
-                     Make_Op_Subtract (Loc,
-                       Left_Opnd  => X_Size,
-                       Right_Opnd => Make_Integer_Literal (Loc, 1))),
-               Right_Opnd => Y_Addr),
+             --  Generate a check for zero-sized things like a null record with
+             --  size zero or an array with zero length since they have no
+             --  opportunity of overlapping.
 
-             Make_Op_Ge (Loc,
+             --  Without this check, a zero-sized object can trigger a false
+             --  runtime result if it's compared against another object in
+             --  its declarative region, due to the zero-sized object having
+             --  the same address.
+
+             Make_Or_Else (Loc,
                Left_Opnd  =>
-                 Make_Op_Add (Loc,
-                   Left_Opnd  => New_Copy_Tree (Y_Addr),
-                   Right_Opnd =>
-                     Make_Op_Subtract (Loc,
-                       Left_Opnd  => Y_Size,
-                       Right_Opnd => Make_Integer_Literal (Loc, 1))),
-               Right_Opnd => X_Addr))));
+                 Make_Op_Eq (Loc,
+                   Left_Opnd  =>
+                     Make_Attribute_Reference (Loc,
+                       Attribute_Name => Name_Size,
+                       Prefix         => New_Copy_Tree (X)),
+                   Right_Opnd => Make_Integer_Literal (Loc, 0)),
+               Right_Opnd =>
+                 Make_Op_Eq (Loc,
+                   Left_Opnd  =>
+                     Make_Attribute_Reference (Loc,
+                       Attribute_Name => Name_Size,
+                       Prefix         => New_Copy_Tree (Y)),
+                   Right_Opnd => Make_Integer_Literal (Loc, 0))),
+
+             New_Occurrence_Of (Standard_False, Loc),
+
+             --  Non-zero-size overlap check
+
+             Make_If_Expression (Loc, New_List (
+               Cond,
+
+               Make_Op_Ge (Loc,
+                 Left_Opnd   =>
+                   Make_Op_Add (Loc,
+                    Left_Opnd  => New_Copy_Tree (X_Addr),
+                     Right_Opnd =>
+                       Make_Op_Subtract (Loc,
+                         Left_Opnd  => X_Size,
+                         Right_Opnd => Make_Integer_Literal (Loc, 1))),
+                 Right_Opnd => Y_Addr),
+
+               Make_Op_Ge (Loc,
+                 Left_Opnd   =>
+                   Make_Op_Add (Loc,
+                     Left_Opnd  => New_Copy_Tree (Y_Addr),
+                     Right_Opnd =>
+                       Make_Op_Subtract (Loc,
+                         Left_Opnd  => Y_Size,
+                         Right_Opnd => Make_Integer_Literal (Loc, 1))),
+                 Right_Opnd => X_Addr))))));
 
          Analyze_And_Resolve (N, Standard_Boolean);
       end Overlaps_Storage;
@@ -5456,43 +5495,36 @@ package body Exp_Attr is
             return;
          end if;
 
-         --  If there is a TSS for Put_Image, just call it
+         --  If there is a TSS for Put_Image, just call it. This is true for
+         --  tagged types (if enabled) and if there is a user-specified
+         --  Put_Image.
 
          Pname := TSS (U_Type, TSS_Put_Image);
          if No (Pname) then
             if Is_Tagged_Type (U_Type) and then Is_Derived_Type (U_Type) then
                Pname := Find_Optional_Prim_Op (U_Type, TSS_Put_Image);
-               pragma Assert
-                 (Has_Interfaces (U_Type) -- ????interfaces not yet supported
-                    or else Enable_Put_Image (U_Type) = Present (Pname));
             else
                Pname := Find_Inherited_TSS (U_Type, TSS_Put_Image);
             end if;
          end if;
 
          if No (Pname) then
+            --  If Put_Image is disabled, call the "unknown" version
+
+            if not Enable_Put_Image (U_Type) then
+               Rewrite (N, Build_Unknown_Put_Image_Call (N));
+               Analyze (N);
+               return;
+
             --  For elementary types, we call the routine in System.Put_Images
             --  directly.
 
-            if Is_Elementary_Type (U_Type) then
+            elsif Is_Elementary_Type (U_Type) then
                Rewrite (N, Build_Elementary_Put_Image_Call (N));
                Analyze (N);
                return;
 
-            --  ???It would be nice to call Build_String_Put_Image_Call below
-            --  if U_Type is a standard string type, but it currently generates
-            --  something like:
-            --
-            --     Put_Image_String (Sink, String (X));
-            --
-            --  so if X is of a private type whose full type is "new String",
-            --  then the type conversion is illegal. To fix that, we would need
-            --  to do unchecked conversions of access values, taking care to
-            --  deal with thin and fat pointers properly. For now, we just fall
-            --  back to Build_Array_Put_Image_Procedure in these cases, so the
-            --  following says "Root_Type (Entity (Pref))" instead of "U_Type".
-
-            elsif Is_Standard_String_Type (Root_Type (Entity (Pref))) then
+            elsif Is_Standard_String_Type (U_Type) then
                Rewrite (N, Build_String_Put_Image_Call (N));
                Analyze (N);
                return;
@@ -5528,25 +5560,10 @@ package body Exp_Attr is
                Analyze (N);
                return;
 
-            --  All other record type cases, including protected records
+            --  All other record type cases
 
             else
                pragma Assert (Is_Record_Type (U_Type));
-
-               --  Program_Error is raised when calling the default
-               --  implementation of the Put_Image attribute of an
-               --  Unchecked_Union type. ???It would be friendlier to print a
-               --  canned string. See handling of unchecked unions in
-               --  exp_put_image.adb (which is not reachable).
-
-               if Is_Unchecked_Union (Base_Type (U_Type)) then
-                  Rewrite (N,
-                    Make_Raise_Program_Error (Loc,
-                      Reason => PE_Unchecked_Union_Restriction));
-                  Set_Etype (N, Standard_Void_Type);
-                  return;
-               end if;
-
                Build_Record_Put_Image_Procedure
                  (Loc, Full_Base (U_Type), Decl, Pname);
                Insert_Action (N, Decl);
@@ -7185,6 +7202,12 @@ package body Exp_Attr is
                   Unchecked_Convert_To (Val_Typ, New_Copy_Tree (Pref)),
                 Attribute_Name => Name_Valid);
 
+            --  Required by LLVM although the sizes are the same???
+
+            if Nkind (Prefix (Expr)) = N_Unchecked_Type_Conversion then
+               Set_No_Truncation (Prefix (Expr));
+            end if;
+
          --  Validate the scalar components of an array by iterating over all
          --  dimensions of the array while checking individual components.
 
@@ -7237,8 +7260,6 @@ package body Exp_Attr is
       -- Value --
       -----------
 
-      --  Value attribute is handled in separate unit Exp_Imgv
-
       when Attribute_Value =>
          Exp_Imgv.Expand_Value_Attribute (N);
 
@@ -7258,8 +7279,6 @@ package body Exp_Attr is
       -- Wide_Image --
       ----------------
 
-      --  Wide_Image attribute is handled in separate unit Exp_Imgv
-
       when Attribute_Wide_Image =>
          --  Leave attribute unexpanded in CodePeer mode: the gnat2scil
          --  back-end knows how to handle this attribute directly.
@@ -7273,8 +7292,6 @@ package body Exp_Attr is
       ---------------------
       -- Wide_Wide_Image --
       ---------------------
-
-      --  Wide_Wide_Image attribute is handled in separate unit Exp_Imgv
 
       when Attribute_Wide_Wide_Image =>
          --  Leave attribute unexpanded in CodePeer mode: the gnat2scil
@@ -7368,8 +7385,6 @@ package body Exp_Attr is
       -- Wide_Wide_Width --
       ---------------------
 
-      --  Wide_Wide_Width attribute is handled in separate unit Exp_Imgv
-
       when Attribute_Wide_Wide_Width =>
          Exp_Imgv.Expand_Width_Attribute (N, Wide_Wide);
 
@@ -7377,16 +7392,12 @@ package body Exp_Attr is
       -- Wide_Width --
       ----------------
 
-      --  Wide_Width attribute is handled in separate unit Exp_Imgv
-
       when Attribute_Wide_Width =>
          Exp_Imgv.Expand_Width_Attribute (N, Wide);
 
       -----------
       -- Width --
       -----------
-
-      --  Width attribute is handled in separate unit Exp_Imgv
 
       when Attribute_Width =>
          Exp_Imgv.Expand_Width_Attribute (N, Normal);
@@ -8525,35 +8536,6 @@ package body Exp_Attr is
 
       return BT;
    end Full_Base;
-
-   -----------------------
-   -- Get_Index_Subtype --
-   -----------------------
-
-   function Get_Index_Subtype (N : Node_Id) return Node_Id is
-      P_Type : Entity_Id := Etype (Prefix (N));
-      Indx   : Node_Id;
-      J      : Int;
-
-   begin
-      if Is_Access_Type (P_Type) then
-         P_Type := Designated_Type (P_Type);
-      end if;
-
-      if No (Expressions (N)) then
-         J := 1;
-      else
-         J := UI_To_Int (Expr_Value (First (Expressions (N))));
-      end if;
-
-      Indx := First_Index (P_Type);
-      while J > 1 loop
-         Next_Index (Indx);
-         J := J - 1;
-      end loop;
-
-      return Etype (Indx);
-   end Get_Index_Subtype;
 
    -------------------------------
    -- Get_Stream_Convert_Pragma --

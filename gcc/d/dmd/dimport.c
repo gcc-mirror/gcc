@@ -35,7 +35,7 @@ Import::Import(Loc loc, Identifiers *packages, Identifier *id, Identifier *alias
     this->id = id;
     this->aliasId = aliasId;
     this->isstatic = isstatic;
-    this->protection = Prot(PROTprivate); // default to private
+    this->protection = Prot(Prot::private_); // default to private
     this->pkg = NULL;
     this->mod = NULL;
 
@@ -321,7 +321,7 @@ void Import::semantic(Scope *sc)
 
         OutBuffer *ob = global.params.moduleDeps;
         Module* imod = sc->instantiatingModule();
-        if (!global.params.moduleDepsFile)
+        if (!global.params.moduleDepsFile.length)
             ob->writestring("depsImport ");
         ob->writestring(imod->toPrettyChars());
         ob->writestring(" (");

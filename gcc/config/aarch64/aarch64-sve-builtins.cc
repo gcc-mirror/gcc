@@ -878,6 +878,9 @@ sve_switcher::sve_switcher ()
   aarch64_isa_flags = (AARCH64_FL_FP | AARCH64_FL_SIMD | AARCH64_FL_F16
 		       | AARCH64_FL_SVE);
 
+  m_old_maximum_field_alignment = maximum_field_alignment;
+  maximum_field_alignment = 0;
+
   m_old_general_regs_only = TARGET_GENERAL_REGS_ONLY;
   global_options.x_target_flags &= ~MASK_GENERAL_REGS_ONLY;
 
@@ -895,6 +898,7 @@ sve_switcher::~sve_switcher ()
   if (m_old_general_regs_only)
     global_options.x_target_flags |= MASK_GENERAL_REGS_ONLY;
   aarch64_isa_flags = m_old_isa_flags;
+  maximum_field_alignment = m_old_maximum_field_alignment;
 }
 
 function_builder::function_builder ()

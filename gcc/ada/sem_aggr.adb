@@ -85,9 +85,8 @@ package body Sem_Aggr is
       --  The node of the choice
    end record;
 
-   type Case_Table_Type is array (Nat range <>) of Case_Bounds;
-   --  Table type used by Check_Case_Choices procedure. Entry zero is not
-   --  used (reserved for the sort). Real entries start at one.
+   type Case_Table_Type is array (Pos range <>) of Case_Bounds;
+   --  Table type used by Check_Case_Choices procedure
 
    -----------------------
    -- Local Subprograms --
@@ -117,15 +116,6 @@ package body Sem_Aggr is
    --  Expression is also OK in an instance or inlining context, because we
    --  have already preanalyzed and it is known to be type correct.
 
-   procedure Check_Qualified_Aggregate (Level : Nat; Expr : Node_Id);
-   --  Given aggregate Expr, check that sub-aggregates of Expr that are nested
-   --  at Level are qualified. If Level = 0, this applies to Expr directly.
-   --  Only issue errors in formal verification mode.
-
-   function Is_Top_Level_Aggregate (Expr : Node_Id) return Boolean;
-   --  Return True of Expr is an aggregate not contained directly in another
-   --  aggregate.
-
    ------------------------------------------------------
    -- Subprograms used for RECORD AGGREGATE Processing --
    ------------------------------------------------------
@@ -147,9 +137,10 @@ package body Sem_Aggr is
    --
    --  Once this new Component_Association_List is built and all the semantic
    --  checks performed, the original aggregate subtree is replaced with the
-   --  new named record aggregate just built. Note that subtree substitution is
-   --  performed with Rewrite so as to be able to retrieve the original
-   --  aggregate.
+   --  new named record aggregate just built. This new record aggregate has no
+   --  positional associations, so its Expressions field is set to No_List.
+   --  Note that subtree substitution is performed with Rewrite so as to be
+   --  able to retrieve the original aggregate.
    --
    --  The aggregate subtree manipulation performed by Resolve_Record_Aggregate
    --  yields the aggregate format expected by Gigi. Typically, this kind of
@@ -233,12 +224,6 @@ package body Sem_Aggr is
    --  Give possible misspelling diagnostic if Component is likely to be a
    --  misspelling of one of the components of the Assoc_List. This is called
    --  by Resolve_Aggr_Expr after producing an invalid component error message.
-
-   procedure Check_Static_Discriminated_Subtype (T : Entity_Id; V : Node_Id);
-   --  An optimization: determine whether a discriminated subtype has a static
-   --  constraint, and contains array components whose length is also static,
-   --  either because they are constrained by the discriminant, or because the
-   --  original component bounds are static.
 
    -----------------------------------------------------
    -- Subprograms used for ARRAY AGGREGATE Processing --
@@ -730,103 +715,6 @@ package body Sem_Aggr is
       end if;
    end Check_Expr_OK_In_Limited_Aggregate;
 
-   -------------------------------
-   -- Check_Qualified_Aggregate --
-   -------------------------------
-
-   procedure Check_Qualified_Aggregate (Level : Nat; Expr : Node_Id) is
-      Comp_Expr : Node_Id;
-      Comp_Assn : Node_Id;
-
-   begin
-      if Level = 0 then
-         if Nkind (Parent (Expr)) /= N_Qualified_Expression then
-            Check_SPARK_05_Restriction ("aggregate should be qualified", Expr);
-         end if;
-
-      else
-         Comp_Expr := First (Expressions (Expr));
-         while Present (Comp_Expr) loop
-            if Nkind (Comp_Expr) = N_Aggregate then
-               Check_Qualified_Aggregate (Level - 1, Comp_Expr);
-            end if;
-
-            Comp_Expr := Next (Comp_Expr);
-         end loop;
-
-         Comp_Assn := First (Component_Associations (Expr));
-         while Present (Comp_Assn) loop
-            Comp_Expr := Expression (Comp_Assn);
-
-            if Nkind (Comp_Expr) = N_Aggregate then
-               Check_Qualified_Aggregate (Level - 1, Comp_Expr);
-            end if;
-
-            Comp_Assn := Next (Comp_Assn);
-         end loop;
-      end if;
-   end Check_Qualified_Aggregate;
-
-   ----------------------------------------
-   -- Check_Static_Discriminated_Subtype --
-   ----------------------------------------
-
-   procedure Check_Static_Discriminated_Subtype (T : Entity_Id; V : Node_Id) is
-      Disc : constant Entity_Id := First_Discriminant (T);
-      Comp : Entity_Id;
-      Ind  : Entity_Id;
-
-   begin
-      if Has_Record_Rep_Clause (T) then
-         return;
-
-      elsif Present (Next_Discriminant (Disc)) then
-         return;
-
-      elsif Nkind (V) /= N_Integer_Literal then
-         return;
-      end if;
-
-      Comp := First_Component (T);
-      while Present (Comp) loop
-         if Is_Scalar_Type (Etype (Comp)) then
-            null;
-
-         elsif Is_Private_Type (Etype (Comp))
-           and then Present (Full_View (Etype (Comp)))
-           and then Is_Scalar_Type (Full_View (Etype (Comp)))
-         then
-            null;
-
-         elsif Is_Array_Type (Etype (Comp)) then
-            if Is_Bit_Packed_Array (Etype (Comp)) then
-               return;
-            end if;
-
-            Ind := First_Index (Etype (Comp));
-            while Present (Ind) loop
-               if Nkind (Ind) /= N_Range
-                 or else Nkind (Low_Bound (Ind))  /= N_Integer_Literal
-                 or else Nkind (High_Bound (Ind)) /= N_Integer_Literal
-               then
-                  return;
-               end if;
-
-               Next_Index (Ind);
-            end loop;
-
-         else
-            return;
-         end if;
-
-         Next_Component (Comp);
-      end loop;
-
-      --  On exit, all components have statically known sizes
-
-      Set_Size_Known_At_Compile_Time (T);
-   end Check_Static_Discriminated_Subtype;
-
    -------------------------
    -- Is_Others_Aggregate --
    -------------------------
@@ -851,17 +739,6 @@ package body Sem_Aggr is
         and then No (Next (First (Assoc)))
         and then No (Next (First (Choice_List (First (Assoc)))));
    end Is_Single_Aggregate;
-
-   ----------------------------
-   -- Is_Top_Level_Aggregate --
-   ----------------------------
-
-   function Is_Top_Level_Aggregate (Expr : Node_Id) return Boolean is
-   begin
-      return Nkind (Parent (Expr)) /= N_Aggregate
-        and then (Nkind (Parent (Expr)) /= N_Component_Association
-                   or else Nkind (Parent (Parent (Expr))) /= N_Aggregate);
-   end Is_Top_Level_Aggregate;
 
    --------------------------------
    -- Make_String_Into_Aggregate --
@@ -945,41 +822,6 @@ package body Sem_Aggr is
                Next (Comp);
             end loop;
          end;
-      end if;
-
-      --  An unqualified aggregate is restricted in SPARK to:
-
-      --    An aggregate item inside an aggregate for a multi-dimensional array
-
-      --    An expression being assigned to an unconstrained array, but only if
-      --    the aggregate specifies a value for OTHERS only.
-
-      if Nkind (Parent (N)) = N_Qualified_Expression then
-         if Is_Array_Type (Typ) then
-            Check_Qualified_Aggregate (Number_Dimensions (Typ), N);
-         else
-            Check_Qualified_Aggregate (1, N);
-         end if;
-      else
-         if Is_Array_Type (Typ)
-           and then Nkind (Parent (N)) = N_Assignment_Statement
-           and then not Is_Constrained (Etype (Name (Parent (N))))
-         then
-            if not Is_Others_Aggregate (N) then
-               Check_SPARK_05_Restriction
-                 ("array aggregate should have only OTHERS", N);
-            end if;
-
-         elsif Is_Top_Level_Aggregate (N) then
-            Check_SPARK_05_Restriction ("aggregate should be qualified", N);
-
-         --  The legality of this unqualified aggregate is checked by calling
-         --  Check_Qualified_Aggregate from one of its enclosing aggregate,
-         --  unless one of these already causes an error to be issued.
-
-         else
-            null;
-         end if;
       end if;
 
       --  Check for aggregates not allowed in configurable run-time mode.
@@ -1984,9 +1826,8 @@ package body Sem_Aggr is
             --  if a choice in an aggregate is a subtype indication these
             --  denote the lowest and highest values of the subtype
 
-            Table : Case_Table_Type (0 .. Case_Table_Size);
-            --  Used to sort all the different choice values. Entry zero is
-            --  reserved for sorting purposes.
+            Table : Case_Table_Type (1 .. Case_Table_Size);
+            --  Used to sort all the different choice values
 
             Single_Choice : Boolean;
             --  Set to true every time there is a single discrete choice in a
@@ -2068,16 +1909,6 @@ package body Sem_Aggr is
                      --  bounds of the array aggregate are within range.
 
                      Set_Do_Range_Check (Choice, False);
-
-                     --  In SPARK, the choice must be static
-
-                     if not (Is_OK_Static_Expression (Choice)
-                              or else (Nkind (Choice) = N_Range
-                                        and then Is_OK_Static_Range (Choice)))
-                     then
-                        Check_SPARK_05_Restriction
-                          ("choice should be static", Choice);
-                     end if;
                   end if;
 
                   --  If we could not resolve the discrete choice stop here
@@ -2805,7 +2636,7 @@ package body Sem_Aggr is
    begin
       if Ada_Version < Ada_2020 then
          Error_Msg_N ("delta_aggregate is an Ada 202x feature", N);
-         Error_Msg_N ("\compile with -gnatX", N);
+         Error_Msg_N ("\compile with -gnat2020", N);
       end if;
 
       if not Is_Composite_Type (Typ) then
@@ -3256,7 +3087,6 @@ package body Sem_Aggr is
       --  In SPARK, the ancestor part cannot be a type mark
 
       if Is_Entity_Name (A) and then Is_Type (Entity (A)) then
-         Check_SPARK_05_Restriction ("ancestor part cannot be a type mark", A);
 
          --  AI05-0115: if the ancestor part is a subtype mark, the ancestor
          --  must not have unknown discriminants.
@@ -3453,7 +3283,7 @@ package body Sem_Aggr is
 
       Box_Node       : Node_Id := Empty;
       Is_Box_Present : Boolean := False;
-      Others_Box     : Integer := 0;
+      Others_Box     : Natural := 0;
       --  Ada 2005 (AI-287): Variables used in case of default initialization
       --  to provide a functionality similar to Others_Etype. Box_Present
       --  indicates that the component takes its default initialization;
@@ -3506,7 +3336,7 @@ package body Sem_Aggr is
       --  of the ancestor.
 
       function Get_Value
-        (Compon                 : Node_Id;
+        (Compon                 : Entity_Id;
          From                   : List_Id;
          Consider_Others_Choice : Boolean := False) return Node_Id;
       --  Given a record component stored in parameter Compon, this function
@@ -3562,6 +3392,8 @@ package body Sem_Aggr is
       begin
          --  If this is a box association the expression is missing, so use the
          --  Sloc of the aggregate itself for the new association.
+
+         pragma Assert (Present (Expr) xor Is_Box_Present);
 
          if Present (Expr) then
             Loc := Sloc (Expr);
@@ -3782,7 +3614,7 @@ package body Sem_Aggr is
       ---------------
 
       function Get_Value
-        (Compon                 : Node_Id;
+        (Compon                 : Entity_Id;
          From                   : List_Id;
          Consider_Others_Choice : Boolean := False) return Node_Id
       is
@@ -3974,8 +3806,6 @@ package body Sem_Aggr is
       is
          Loc : constant Source_Ptr := Sloc (N);
 
-         Needs_Box : Boolean := False;
-
          procedure Process_Component (Comp : Entity_Id);
          --  Add one component with a box association to the inner aggregate,
          --  and recurse if component is itself composite.
@@ -3990,7 +3820,7 @@ package body Sem_Aggr is
 
          begin
             if Is_Record_Type (T) and then Has_Discriminants (T) then
-               New_Aggr := Make_Aggregate (Loc, New_List, New_List);
+               New_Aggr := Make_Aggregate (Loc, No_List, New_List);
                Set_Etype (New_Aggr, T);
 
                Add_Association
@@ -4001,8 +3831,12 @@ package body Sem_Aggr is
                Add_Discriminant_Values (New_Aggr, Assoc_List);
                Propagate_Discriminants (New_Aggr, Assoc_List);
 
+               Build_Constrained_Itype
+                 (New_Aggr, T, Component_Associations (New_Aggr));
             else
-               Needs_Box := True;
+               Add_Association
+                 (Comp, Empty, Component_Associations (Aggr),
+                  Is_Box_Present => True);
             end if;
          end Process_Component;
 
@@ -4052,14 +3886,6 @@ package body Sem_Aggr is
                Process_Component (Comp);
                Next_Component (Comp);
             end loop;
-         end if;
-
-         if Needs_Box then
-            Append_To (Component_Associations (Aggr),
-              Make_Component_Association (Loc,
-                Choices     => New_List (Make_Others_Choice (Loc)),
-                Expression  => Empty,
-                Box_Present => True));
          end if;
       end Propagate_Discriminants;
 
@@ -4331,12 +4157,6 @@ package body Sem_Aggr is
       if Present (Component_Associations (N))
         and then Present (First (Component_Associations (N)))
       then
-         if Present (Expressions (N)) then
-            Check_SPARK_05_Restriction
-              ("named association cannot follow positional one",
-               First (Choices (First (Component_Associations (N)))));
-         end if;
-
          declare
             Assoc : Node_Id;
 
@@ -4348,21 +4168,9 @@ package body Sem_Aggr is
                     ("iterated component association can only appear in an "
                      & "array aggregate", N);
                   raise Unrecoverable_Error;
-
-               else
-                  if List_Length (Choices (Assoc)) > 1 then
-                     Check_SPARK_05_Restriction
-                       ("component association in record aggregate must "
-                        & "contain a single choice", Assoc);
-                  end if;
-
-                  if Nkind (First (Choices (Assoc))) = N_Others_Choice then
-                     Check_SPARK_05_Restriction
-                       ("record aggregate cannot contain OTHERS", Assoc);
-                  end if;
                end if;
 
-               Assoc := Next (Assoc);
+               Next (Assoc);
             end loop;
          end;
       end if;
@@ -4564,75 +4372,11 @@ package body Sem_Aggr is
 
       --  STEP 4: Set the Etype of the record aggregate
 
-      --  ??? This code is pretty much a copy of Sem_Ch3.Build_Subtype. That
-      --  routine should really be exported in sem_util or some such and used
-      --  in sem_ch3 and here rather than have a copy of the code which is a
-      --  maintenance nightmare.
-
-      --  ??? Performance WARNING. The current implementation creates a new
-      --  itype for all aggregates whose base type is discriminated. This means
-      --  that for record aggregates nested inside an array aggregate we will
-      --  create a new itype for each record aggregate if the array component
-      --  type has discriminants. For large aggregates this may be a problem.
-      --  What should be done in this case is to reuse itypes as much as
-      --  possible.
-
       if Has_Discriminants (Typ)
         or else (Has_Unknown_Discriminants (Typ)
                   and then Present (Underlying_Record_View (Typ)))
       then
-         Build_Constrained_Itype : declare
-            Constrs     : constant List_Id    := New_List;
-            Loc         : constant Source_Ptr := Sloc (N);
-            Def_Id      : Entity_Id;
-            Indic       : Node_Id;
-            New_Assoc   : Node_Id;
-            Subtyp_Decl : Node_Id;
-
-         begin
-            New_Assoc := First (New_Assoc_List);
-            while Present (New_Assoc) loop
-               Append_To (Constrs, Duplicate_Subexpr (Expression (New_Assoc)));
-               Next (New_Assoc);
-            end loop;
-
-            if Has_Unknown_Discriminants (Typ)
-              and then Present (Underlying_Record_View (Typ))
-            then
-               Indic :=
-                 Make_Subtype_Indication (Loc,
-                   Subtype_Mark =>
-                     New_Occurrence_Of (Underlying_Record_View (Typ), Loc),
-                   Constraint   =>
-                     Make_Index_Or_Discriminant_Constraint (Loc,
-                       Constraints => Constrs));
-            else
-               Indic :=
-                 Make_Subtype_Indication (Loc,
-                   Subtype_Mark =>
-                     New_Occurrence_Of (Base_Type (Typ), Loc),
-                   Constraint   =>
-                     Make_Index_Or_Discriminant_Constraint (Loc,
-                       Constraints => Constrs));
-            end if;
-
-            Def_Id := Create_Itype (Ekind (Typ), N);
-
-            Subtyp_Decl :=
-              Make_Subtype_Declaration (Loc,
-                Defining_Identifier => Def_Id,
-                Subtype_Indication  => Indic);
-            Set_Parent (Subtyp_Decl, Parent (N));
-
-            --  Itypes must be analyzed with checks off (see itypes.ads)
-
-            Analyze (Subtyp_Decl, Suppress => All_Checks);
-
-            Set_Etype (N, Def_Id);
-            Check_Static_Discriminated_Subtype
-              (Def_Id, Expression (First (New_Assoc_List)));
-         end Build_Constrained_Itype;
-
+         Build_Constrained_Itype (N, Typ, New_Assoc_List);
       else
          Set_Etype (N, Typ);
       end if;
@@ -5043,7 +4787,7 @@ package body Sem_Aggr is
                         Expr : Node_Id;
 
                      begin
-                        Expr := Make_Aggregate (Loc, New_List, New_List);
+                        Expr := Make_Aggregate (Loc, No_List, New_List);
                         Set_Etype (Expr, Ctyp);
 
                         --  If the enclosing type has discriminants, they have
@@ -5062,6 +4806,9 @@ package body Sem_Aggr is
                              (Expr, Component_Associations (Expr));
                            Propagate_Discriminants
                              (Expr, Component_Associations (Expr));
+
+                           Build_Constrained_Itype
+                             (Expr, Ctyp, Component_Associations (Expr));
 
                         else
                            declare

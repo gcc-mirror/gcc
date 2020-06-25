@@ -5330,19 +5330,17 @@ esac
 # This is after config.host so we can augment tmake_file.
 case ${host} in
 xtensa*-*)
-  cat > conftest.c <<EOF
-	#ifdef __XTENSA_CALL0_ABI__
-	#error
-	#endif
-EOF
-  if { ac_try='${CC-cc} -E -o conftest.i conftest.c 1>&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }; then
-      tmake_file="${tmake_file} xtensa/t-windowed"
-  fi
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#ifdef __XTENSA_CALL0_ABI__
+		      #error
+		      #endif
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  tmake_file="${tmake_file} xtensa/t-windowed"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
   ;;
 esac
 

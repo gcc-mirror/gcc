@@ -104,11 +104,18 @@ class substitute_and_fold_engine
     : fold_all_stmts (fold_all_stmts) { }
   virtual ~substitute_and_fold_engine (void) { }
   virtual bool fold_stmt (gimple_stmt_iterator *) { return false; }
-  virtual tree get_value (tree) { return NULL_TREE; }
+  virtual tree get_value (tree, gimple *) { return NULL_TREE; }
 
   bool substitute_and_fold (basic_block = NULL);
   bool replace_uses_in (gimple *);
   bool replace_phi_args_in (gphi *);
+
+  virtual void pre_fold_bb (basic_block) { }
+  virtual void post_fold_bb (basic_block) { }
+  virtual void pre_fold_stmt (gimple *) { }
+  virtual void post_new_stmt (gimple *) { }
+
+  void propagate_into_phi_args (basic_block);
 
   /* Users like VRP can set this when they want to perform
      folding for every propagation.  */

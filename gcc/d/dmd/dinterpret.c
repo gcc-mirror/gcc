@@ -760,7 +760,7 @@ static Expression *interpretFunction(UnionExp *pue, FuncDeclaration *fd, InterSt
     Type *tb = fd->type->toBasetype();
     assert(tb->ty == Tfunction);
     TypeFunction *tf = (TypeFunction *)tb;
-    if (tf->varargs && arguments &&
+    if (tf->parameterList.varargs != VARARGnone && arguments &&
         ((fd->parameters && arguments->length != fd->parameters->length) || (!fd->parameters && arguments->length)))
     {
         fd->error("C-style variadic functions are not yet implemented in CTFE");
@@ -795,7 +795,7 @@ static Expression *interpretFunction(UnionExp *pue, FuncDeclaration *fd, InterSt
     for (size_t i = 0; i < dim; i++)
     {
         Expression *earg = (*arguments)[i];
-        Parameter *fparam = Parameter::getNth(tf->parameters, i);
+        Parameter *fparam = tf->parameterList[i];
 
         if (fparam->storageClass & (STCout | STCref))
         {
@@ -859,7 +859,7 @@ static Expression *interpretFunction(UnionExp *pue, FuncDeclaration *fd, InterSt
     for (size_t i = 0; i < dim; i++)
     {
         Expression *earg = eargs[i];
-        Parameter *fparam = Parameter::getNth(tf->parameters, i);
+        Parameter *fparam = tf->parameterList[i];
         VarDeclaration *v = (*fd->parameters)[i];
         ctfeStack.push(v);
 
@@ -4465,7 +4465,7 @@ public:
         result = pue->exp();
     }
 
-    void visit(AndAndExp *e)
+    void visit(LogicalExp *e)
     {
         // Check for an insidePointer expression, evaluate it if so
         interpretFourPointerRelation(pue, e);
@@ -4477,9 +4477,10 @@ public:
             return;
 
         int res;
-        if (result->isBool(false))
-            res = 0;
-        else if (isTrueBool(result))
+        const bool andand = e->op == TOKandand;
+        if (andand ? result->isBool(false) : isTrueBool(result))
+            res = !andand;
+        else if (andand ? isTrueBool(result) : result->isBool(false))
         {
             UnionExp ue2;
             result = interpret(&ue2, e->e2, istate);
@@ -4497,64 +4498,14 @@ public:
                 res = 1;
             else
             {
-                result->error("%s does not evaluate to a boolean", result->toChars());
+                result->error("`%s` does not evaluate to a boolean", result->toChars());
                 result = CTFEExp::cantexp;
                 return;
             }
         }
         else
         {
-            result->error("%s cannot be interpreted as a boolean", result->toChars());
-            result = CTFEExp::cantexp;
-            return;
-        }
-        if (goal != ctfeNeedNothing)
-        {
-            new(pue) IntegerExp(e->loc, res, e->type);
-            result = pue->exp();
-        }
-    }
-
-    void visit(OrOrExp *e)
-    {
-        // Check for an insidePointer expression, evaluate it if so
-        interpretFourPointerRelation(pue, e);
-        if (result)
-            return;
-
-        result = interpret(e->e1, istate);
-        if (exceptionOrCant(result))
-            return;
-
-        int res;
-        if (isTrueBool(result))
-            res = 1;
-        else if (result->isBool(false))
-        {
-            UnionExp ue2;
-            result = interpret(&ue2, e->e2, istate);
-            if (exceptionOrCant(result))
-                return;
-            if (result->op == TOKvoidexp)
-            {
-                assert(e->type->ty == Tvoid);
-                result = NULL;
-                return;
-            }
-            if (result->isBool(false))
-                res = 0;
-            else if (isTrueBool(result))
-                res = 1;
-            else
-            {
-                result->error("%s cannot be interpreted as a boolean", result->toChars());
-                result = CTFEExp::cantexp;
-                return;
-            }
-        }
-        else
-        {
-            result->error("%s cannot be interpreted as a boolean", result->toChars());
+            result->error("`%s` cannot be interpreted as a boolean", result->toChars());
             result = CTFEExp::cantexp;
             return;
         }
@@ -6554,7 +6505,7 @@ Expression *interpret_aaApply(UnionExp *pue, InterState *istate, Expression *aa,
     size_t numParams = fd->parameters->length;
     assert(numParams == 1 || numParams == 2);
 
-    Parameter *fparam = Parameter::getNth(((TypeFunction *)fd->type)->parameters, numParams - 1);
+    Parameter *fparam = ((TypeFunction *)fd->type)->parameterList[numParams - 1];
     bool wantRefValue = 0 != (fparam->storageClass & (STCout | STCref));
 
     Expressions args;

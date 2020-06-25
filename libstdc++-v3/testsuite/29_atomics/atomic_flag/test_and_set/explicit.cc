@@ -19,14 +19,13 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <atomic>
+#include <testsuite_hooks.h>
 
 int main()
 {
   using namespace std;
   atomic_flag af = ATOMIC_FLAG_INIT;
 
-  if (!af.test_and_set(memory_order_acquire))
-    af.clear(memory_order_release);
-
-  return 0;
+  VERIFY( ! af.test_and_set(memory_order_acquire) );
+  VERIFY( af.test_and_set(memory_order_acquire) );
 }

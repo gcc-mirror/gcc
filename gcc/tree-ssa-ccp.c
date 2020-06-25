@@ -943,7 +943,7 @@ do_dbg_cnt (void)
 class ccp_folder : public substitute_and_fold_engine
 {
  public:
-  tree get_value (tree) FINAL OVERRIDE;
+  tree get_value (tree, gimple *) FINAL OVERRIDE;
   bool fold_stmt (gimple_stmt_iterator *) FINAL OVERRIDE;
 };
 
@@ -952,7 +952,7 @@ class ccp_folder : public substitute_and_fold_engine
    of calling member functions.  */
 
 tree
-ccp_folder::get_value (tree op)
+ccp_folder::get_value (tree op, gimple *stmt ATTRIBUTE_UNUSED)
 {
   return get_constant_value (op);
 }

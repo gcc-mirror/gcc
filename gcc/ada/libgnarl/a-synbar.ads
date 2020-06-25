@@ -33,7 +33,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package Ada.Synchronous_Barriers is
+package Ada.Synchronous_Barriers with SPARK_Mode => Off is
    pragma Preelaborate (Synchronous_Barriers);
 
    subtype Barrier_Limit is Positive range 1 .. Positive'Last;

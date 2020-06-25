@@ -1537,7 +1537,7 @@ public:
 
         sc = sc->push();            // just create new scope
         sc->flags &= ~SCOPEctfe;    // temporary stop CTFE
-        sc->protection = Prot(PROTpublic);    // Bugzilla 12506
+        sc->protection = Prot(Prot::public_);    // Bugzilla 12506
 
         if (!exp->type || exp->type == Type::tvoid)
         {
@@ -1653,16 +1653,16 @@ public:
             exp->td->semantic(sc);
 
             TypeFunction *tfl = (TypeFunction *)exp->fd->type;
-            size_t dim = Parameter::dim(tfl->parameters);
+            size_t dim = tfl->parameterList.length();
             if (arguments->length < dim)
             {   // Default arguments are always typed, so they don't need inference.
-                Parameter *p = Parameter::getNth(tfl->parameters, arguments->length);
+                Parameter *p = tfl->parameterList[arguments->length];
                 if (p->defaultArg)
                     dim = arguments->length;
             }
 
-            if ((!tfl->varargs && arguments->length == dim) ||
-                ( tfl->varargs && arguments->length >= dim))
+            if ((tfl->parameterList.varargs == VARARGnone && arguments->length == dim) ||
+                (tfl->parameterList.varargs != VARARGnone && arguments->length >= dim))
             {
                 Objects *tiargs = new Objects();
                 tiargs->reserve(exp->td->parameters->length);
@@ -1671,7 +1671,7 @@ public:
                 {
                     TemplateParameter *tp = (*exp->td->parameters)[i];
                     for (size_t u = 0; u < dim; u++)
-                    {   Parameter *p = Parameter::getNth(tfl->parameters, u);
+                    {   Parameter *p = tfl->parameterList[u];
                         if (p->type->ty == Tident &&
                             ((TypeIdentifier *)p->type)->ident == tp->ident)
                         {   Expression *e = (*arguments)[u];
@@ -2025,13 +2025,13 @@ public:
                         /* Generate tuple from function parameter types.
                         */
                         assert(tded->ty == Tfunction);
-                        Parameters *params = ((TypeFunction *)tded)->parameters;
-                        size_t dim = Parameter::dim(params);
+                        TypeFunction *tdedf = (TypeFunction *)tded;
+                        size_t dim = tdedf->parameterList.length();
                         Parameters *args = new Parameters;
                         args->reserve(dim);
                         for (size_t i = 0; i < dim; i++)
                         {
-                            Parameter *arg = Parameter::getNth(params, i);
+                            Parameter *arg = tdedf->parameterList[i];
                             assert(arg && arg->type);
                             /* If one of the default arguments was an error,
                                don't return an invalid tuple
@@ -2073,7 +2073,7 @@ public:
                      * The results of this are highly platform dependent, and intended
                      * primarly for use in implementing va_arg().
                      */
-                    tded = Target::toArgTypes(e->targ);
+                    tded = target.toArgTypes(e->targ);
                     if (!tded)
                         goto Lno;           // not valid for a parameter
                     break;
@@ -2160,9 +2160,7 @@ public:
                     if (m <= MATCHnomatch)
                         goto Lno;
                     s->semantic(sc);
-                    if (sc->sds)
-                        s->addMember(sc, sc->sds);
-                    else if (!sc->insert(s))
+                    if (!sc->insert(s))
                         e->error("declaration %s is already defined", s->toChars());
 
                     unSpeculative(sc, s);
@@ -2194,8 +2192,6 @@ public:
              */
             if (!tup && !sc->insert(s))
                 e->error("declaration %s is already defined", s->toChars());
-            if (sc->sds)
-                s->addMember(sc, sc->sds);
 
             unSpeculative(sc, s);
         }
@@ -2299,7 +2295,7 @@ public:
                 exp->e2 = exp->e2->castTo(sc, Type::tshiftcnt);
         }
 
-        if (!Target::isVectorOpSupported(exp->type->toBasetype(), exp->op, exp->e2->type->toBasetype()))
+        if (!target.isVectorOpSupported(exp->type->toBasetype(), exp->op, exp->e2->type->toBasetype()))
         {
             result = exp->incompatibleTypes();
             return;
@@ -2377,13 +2373,13 @@ public:
             OutBuffer *ob = global.params.moduleDeps;
             Module* imod = sc->instantiatingModule();
 
-            if (!global.params.moduleDepsFile)
+            if (!global.params.moduleDepsFile.length)
                 ob->writestring("depsFile ");
             ob->writestring(imod->toPrettyChars());
             ob->writestring(" (");
             escapePath(ob, imod->srcfile->toChars());
             ob->writestring(") : ");
-            if (global.params.moduleDepsFile)
+            if (global.params.moduleDepsFile.length)
                 ob->writestring("string : ");
             ob->writestring((char *) se->string);
             ob->writestring(" (");
@@ -2455,7 +2451,7 @@ public:
                     sc->fieldinit[i] |= CSXhalt;
             }
 
-            if (!global.params.useAssert)
+            if (global.params.useAssert == CHECKENABLEoff)
             {
                 Expression *e = new HaltExp(exp->loc);
                 e = semantic(e, sc);
@@ -2682,7 +2678,7 @@ public:
                 MODMatchToBuffer(&thisBuf, e->e1->type->mod, tf->mod);
                 MODMatchToBuffer(&funcBuf, tf->mod, e->e1->type->mod);
                 e->error("%smethod %s is not callable using a %s%s",
-                    funcBuf.peekString(), f->toPrettyChars(), thisBuf.peekString(), e->e1->toChars());
+                    funcBuf.peekChars(), f->toPrettyChars(), thisBuf.peekChars(), e->e1->toChars());
                 return setError();
             }
         }
@@ -2915,7 +2911,7 @@ public:
                     // lazy paramaters can be called without violating purity and safety
                     Type *tw = ve->var->type;
                     Type *tc = ve->var->type->substWildTo(MODconst);
-                    TypeFunction *tf = new TypeFunction(NULL, tc, 0, LINKd, STCsafe | STCpure);
+                    TypeFunction *tf = new TypeFunction(ParameterList(), tc, LINKd, STCsafe | STCpure);
                     (tf = (TypeFunction *)tf->semantic(exp->loc, sc))->next = tw;    // hack for bug7757
                     TypeDelegate *t = new TypeDelegate(tf);
                     ve->type = t->semantic(exp->loc, sc);
@@ -3423,8 +3419,8 @@ public:
 
                 //printf("tf = %s, args = %s\n", tf->deco, (*exp->arguments)[0]->type->deco);
                 ::error(exp->loc, "%s %s %s is not callable using argument types %s",
-                        p, exp->e1->toChars(), parametersTypeToChars(tf->parameters, tf->varargs),
-                        buf.peekString());
+                        p, exp->e1->toChars(), parametersTypeToChars(tf->parameterList),
+                        buf.peekChars());
 
                 return setError();
             }
@@ -3496,8 +3492,8 @@ public:
 
                     //printf("tf = %s, args = %s\n", tf->deco, (*exp->arguments)[0]->type->deco);
                     ::error(exp->loc, "%s %s is not callable using argument types %s",
-                            exp->e1->toChars(), parametersTypeToChars(tf->parameters, tf->varargs),
-                            buf.peekString());
+                            exp->e1->toChars(), parametersTypeToChars(tf->parameterList),
+                            buf.peekChars());
 
                     exp->f = NULL;
                 }
@@ -3921,7 +3917,7 @@ public:
             return;
         }
 
-        if (!Target::isVectorOpSupported(tb, exp->op))
+        if (!target.isVectorOpSupported(tb, exp->op))
         {
             result = exp->incompatibleTypes();
             return;
@@ -3945,7 +3941,7 @@ public:
             return;
         }
 
-        if (!Target::isVectorOpSupported(exp->e1->type->toBasetype(), exp->op))
+        if (!target.isVectorOpSupported(exp->e1->type->toBasetype(), exp->op))
         {
             result = exp->incompatibleTypes();
             return;
@@ -3986,7 +3982,7 @@ public:
             return;
         }
 
-        if (!Target::isVectorOpSupported(tb, exp->op))
+        if (!target.isVectorOpSupported(tb, exp->op))
         {
             result = exp->incompatibleTypes();
             return;
@@ -4028,7 +4024,7 @@ public:
             return;
         }
 
-        if (!Target::isVectorOpSupported(e->e1->type->toBasetype(), e->op))
+        if (!target.isVectorOpSupported(e->e1->type->toBasetype(), e->op))
         {
             result = e->incompatibleTypes();
             return;
@@ -6414,7 +6410,7 @@ public:
         }
 
         tb1 = exp->e1->type->toBasetype();
-        if (!Target::isVectorOpSupported(tb1, exp->op, tb2))
+        if (!target.isVectorOpSupported(tb1, exp->op, tb2))
         {
             result = exp->incompatibleTypes();
             return;
@@ -6547,7 +6543,7 @@ public:
 
         t1 = exp->e1->type->toBasetype();
         t2 = exp->e2->type->toBasetype();
-        if (!Target::isVectorOpSupported(t1, exp->op, t2))
+        if (!target.isVectorOpSupported(t1, exp->op, t2))
         {
             result = exp->incompatibleTypes();
             return;
@@ -6868,7 +6864,7 @@ public:
                 exp->type = t1;  // t1 is complex
             }
         }
-        else if (!Target::isVectorOpSupported(tb, exp->op, exp->e2->type->toBasetype()))
+        else if (!target.isVectorOpSupported(tb, exp->op, exp->e2->type->toBasetype()))
         {
             result = exp->incompatibleTypes();
             return;
@@ -6968,7 +6964,7 @@ public:
                 exp->type = t1;  // t1 is complex
             }
         }
-        else if (!Target::isVectorOpSupported(tb, exp->op, exp->e2->type->toBasetype()))
+        else if (!target.isVectorOpSupported(tb, exp->op, exp->e2->type->toBasetype()))
         {
             result = exp->incompatibleTypes();
             return;
@@ -7013,7 +7009,7 @@ public:
             result = exp;
             return;
         }
-        if (!Target::isVectorOpSupported(tb, exp->op, exp->e2->type->toBasetype()))
+        if (!target.isVectorOpSupported(tb, exp->op, exp->e2->type->toBasetype()))
         {
             result = exp->incompatibleTypes();
             return;
@@ -7095,7 +7091,7 @@ public:
         if (exp->checkArithmeticBin())
             return setError();
 
-        if (!Target::isVectorOpSupported(exp->e1->type->toBasetype(), exp->op, exp->e2->type->toBasetype()))
+        if (!target.isVectorOpSupported(exp->e1->type->toBasetype(), exp->op, exp->e2->type->toBasetype()))
         {
             result = exp->incompatibleTypes();
             return;
@@ -7195,7 +7191,7 @@ public:
 
         if (exp->checkIntegralBin())
             return setError();
-        if (!Target::isVectorOpSupported(exp->e1->type->toBasetype(), exp->op, exp->e2->type->toBasetype()))
+        if (!target.isVectorOpSupported(exp->e1->type->toBasetype(), exp->op, exp->e2->type->toBasetype()))
         {
             result = exp->incompatibleTypes();
             return;
@@ -7230,7 +7226,7 @@ public:
 
         if (exp->checkIntegralBin())
             return setError();
-        if (!Target::isVectorOpSupported(exp->e1->type->toBasetype(), exp->op, exp->e2->type->toBasetype()))
+        if (!target.isVectorOpSupported(exp->e1->type->toBasetype(), exp->op, exp->e2->type->toBasetype()))
         {
             result = exp->incompatibleTypes();
             return;
@@ -7265,7 +7261,7 @@ public:
 
         if (exp->checkIntegralBin())
             return setError();
-        if (!Target::isVectorOpSupported(exp->e1->type->toBasetype(), exp->op, exp->e2->type->toBasetype()))
+        if (!target.isVectorOpSupported(exp->e1->type->toBasetype(), exp->op, exp->e2->type->toBasetype()))
         {
             result = exp->incompatibleTypes();
             return;
@@ -7324,7 +7320,7 @@ public:
             return;
         }
 
-        if (!Target::isVectorOpSupported(tb, exp->op, exp->e2->type->toBasetype()))
+        if (!target.isVectorOpSupported(tb, exp->op, exp->e2->type->toBasetype()))
         {
             result = exp->incompatibleTypes();
             return;
@@ -7381,7 +7377,7 @@ public:
             return;
         }
 
-        if (!Target::isVectorOpSupported(tb, exp->op, exp->e2->type->toBasetype()))
+        if (!target.isVectorOpSupported(tb, exp->op, exp->e2->type->toBasetype()))
         {
             result = exp->incompatibleTypes();
             return;
@@ -7438,7 +7434,7 @@ public:
             return;
         }
 
-        if (!Target::isVectorOpSupported(tb, exp->op, exp->e2->type->toBasetype()))
+        if (!target.isVectorOpSupported(tb, exp->op, exp->e2->type->toBasetype()))
         {
             result = exp->incompatibleTypes();
             return;
@@ -7449,7 +7445,7 @@ public:
         result = exp;
     }
 
-    void visit(OrOrExp *exp)
+    void visit(LogicalExp *exp)
     {
         if (exp->type)
         {
@@ -7459,7 +7455,6 @@ public:
 
         setNoderefOperands(exp);
 
-        // same as for AndAnd
         Expression *e1x = semantic(exp->e1, sc);
 
         // for static alias this: https://issues.dlang.org/show_bug.cgi?id=17684
@@ -7475,87 +7470,9 @@ public:
             /* If in static if, don't evaluate e2 if we don't have to.
             */
             e1x = e1x->optimize(WANTvalue);
-            if (e1x->isBool(true))
+            if (e1x->isBool(exp->op == TOKoror))
             {
-                result = new IntegerExp(exp->loc, 1, Type::tbool);
-                return;
-            }
-        }
-
-        Expression *e2x = semantic(exp->e2, sc);
-        sc->mergeCallSuper(exp->loc, cs1);
-
-        // for static alias this: https://issues.dlang.org/show_bug.cgi?id=17684
-        if (e2x->op == TOKtype)
-            e2x = resolveAliasThis(sc, e2x);
-
-        e2x = resolveProperties(sc, e2x);
-
-        bool f1 = checkNonAssignmentArrayOp(e1x);
-        bool f2 = checkNonAssignmentArrayOp(e2x);
-        if (f1 || f2)
-            return setError();
-
-        // Unless the right operand is 'void', the expression is converted to 'bool'.
-        if (e2x->type->ty != Tvoid)
-            e2x = e2x->toBoolean(sc);
-
-        if (e2x->op == TOKtype || e2x->op == TOKscope)
-        {
-            exp->error("%s is not an expression", exp->e2->toChars());
-            return setError();
-        }
-        if (e1x->op == TOKerror)
-        {
-            result = e1x;
-            return;
-        }
-        if (e2x->op == TOKerror)
-        {
-            result = e2x;
-            return;
-        }
-
-        // The result type is 'bool', unless the right operand has type 'void'.
-        if (e2x->type->ty == Tvoid)
-            exp->type = Type::tvoid;
-        else
-            exp->type = Type::tbool;
-
-        exp->e1 = e1x;
-        exp->e2 = e2x;
-        result = exp;
-    }
-
-    void visit(AndAndExp *exp)
-    {
-        if (exp->type)
-        {
-            result = exp;
-            return;
-        }
-
-        setNoderefOperands(exp);
-
-        // same as for OrOr
-        Expression *e1x = semantic(exp->e1, sc);
-
-        // for static alias this: https://issues.dlang.org/show_bug.cgi?id=17684
-        if (e1x->op == TOKtype)
-            e1x = resolveAliasThis(sc, e1x);
-
-        e1x = resolveProperties(sc, e1x);
-        e1x = e1x->toBoolean(sc);
-        unsigned cs1 = sc->callSuper;
-
-        if (sc->flags & SCOPEcondition)
-        {
-            /* If in static if, don't evaluate e2 if we don't have to.
-            */
-            e1x = e1x->optimize(WANTvalue);
-            if (e1x->isBool(false))
-            {
-                result = new IntegerExp(exp->loc, 0, Type::tbool);
+                result = new IntegerExp(exp->loc, exp->op == TOKoror, Type::tbool);
                 return;
             }
         }
@@ -7760,7 +7677,7 @@ public:
             exp->error("%s is not defined for associative arrays", Token::toChars(exp->op));
             return setError();
         }
-        else if (!Target::isVectorOpSupported(t1, exp->op, t2))
+        else if (!target.isVectorOpSupported(t1, exp->op, t2))
         {
             result = exp->incompatibleTypes();
             return;
@@ -7909,7 +7826,7 @@ public:
         Type *t1 = exp->e1->type->toBasetype();
         Type *t2 = exp->e2->type->toBasetype();
 
-        if (!Target::isVectorOpSupported(t1, exp->op, t2))
+        if (!target.isVectorOpSupported(t1, exp->op, t2))
         {
             result = exp->incompatibleTypes();
             return;
@@ -7962,7 +7879,7 @@ public:
 
         Type *tb1 = exp->e1->type->toBasetype();
         Type *tb2 = exp->e2->type->toBasetype();
-        if (!Target::isVectorOpSupported(tb1, exp->op, tb2))
+        if (!target.isVectorOpSupported(tb1, exp->op, tb2))
         {
             result = exp->incompatibleTypes();
             return;
@@ -8254,7 +8171,7 @@ Expression *semanticX(DotIdExp *exp, Scope *sc)
                     }
                     OutBuffer buf;
                     mangleToBuffer(ds, &buf);
-                    const char *s = buf.extractString();
+                    const char *s = buf.extractChars();
                     Expression *e = new StringExp(exp->loc, const_cast<char*>(s), strlen(s));
                     e = semantic(e, sc);
                     return e;

@@ -57,50 +57,6 @@ package Opt is
    --  from a compilation point of view (e.g. spelling of identifiers and
    --  white space layout do not count in this computation).
 
-   --  The way the checksum is computed has evolved across the various versions
-   --  of GNAT. When gprbuild is called with -m, the checksums must be computed
-   --  the same way in gprbuild as it was in the GNAT version of the compiler.
-   --  The different ways are
-
-   --    Version 6.4 and later:
-
-   --      The Accumulate_Token_Checksum procedure is called after each numeric
-   --      literal and each identifier/keyword. For keywords, Tok_Identifier is
-   --      used in the call to Accumulate_Token_Checksum.
-
-   --    Versions 5.04 to 6.3:
-
-   --      For keywords, the token value were used in the call to procedure
-   --      Accumulate_Token_Checksum. Type Token_Type did not include Tok_Some.
-
-   --    Versions 5.03:
-
-   --      For keywords, the token value were used in the call to
-   --      Accumulate_Token_Checksum. Type Token_Type did not include
-   --      Tok_Interface, Tok_Overriding, Tok_Synchronized and Tok_Some.
-
-   --    Versions 5.02 and before:
-
-   --      No calls to procedure Accumulate_Token_Checksum (the checksum
-   --      mechanism was introduced in version 5.03).
-
-   --  To signal to the scanner whether Accumulate_Token_Checksum needs to be
-   --  called and what versions to call, the following Boolean flags are used:
-
-   Checksum_Accumulate_Token_Checksum : Boolean := True;
-   --  GPRBUILD
-   --  Set to False by gprbuild when the version of GNAT is 5.02 or before. If
-   --  this switch is False, then we do not call Accumulate_Token_Checksum, so
-   --  the setting of the following two flags is irrelevant.
-
-   Checksum_GNAT_6_3 : Boolean := False;
-   --  GPRBUILD
-   --  Set to True by gprbuild when the version of GNAT is 6.3 or before.
-
-   Checksum_GNAT_5_03 : Boolean := False;
-   --  GPRBUILD
-   --  Set to True by gprbuild when the version of GNAT is 5.03 or before.
-
    Checksum_Accumulate_Limited_Checksum : Boolean := False;
    --  Used to control the computation of the limited view of a package.
    --  (Not currently used, possible optimization for ALI files of units
@@ -417,9 +373,9 @@ package Opt is
    Configurable_Run_Time_Mode : Boolean := False;
    --  GNAT, GNATBIND
    --  Set True if the compiler is operating in configurable run-time mode.
-   --  This happens if the flag Targparm.Configurable_Run_TimeMode_On_Target
-   --  is set True, or if pragma No_Run_Time is used. See the spec of Rtsfind
-   --  for details on the handling of the latter pragma.
+   --  This happens if the flag Targparm.Configurable_Run_Time_On_Target is
+   --  True, or if pragma No_Run_Time is used. See the spec of Rtsfind for
+   --  details on the handling of the latter pragma.
 
    Constant_Condition_Warnings : Boolean := False;
    --  GNAT
@@ -2205,12 +2161,12 @@ package Opt is
    --  allocated dispatch tables. If it is True, then the front end will
    --  generate static aggregates for dispatch tables that contain forward
    --  references to addresses of subprograms not seen yet, and the back end
-   --  must be prepared to handle this case. If it is False, then the front
-   --  end generates assignments to initialize the dispatch table, and there
-   --  are no such forward references. By default we build statically allocated
-   --  dispatch tables for all library level tagged types in all platforms.This
-   --  behavior can be disabled using switch -gnatd.t which will set this flag
-   --  to False and revert to the previous dynamic behavior.
+   --  must be prepared to handle this case. If it is False, then the front end
+   --  generates assignments to initialize the dispatch table, and there are
+   --  no such forward references. By default we build statically allocated
+   --  dispatch tables for all library-level tagged types in all platforms.
+   --  This behavior can be disabled using switch -gnatd.t which will set
+   --  this flag to False and revert to the previous dynamic behavior.
 
    Expander_Active : Boolean := False;
    --  A flag that indicates if expansion is active (True) or deactivated
@@ -2221,6 +2177,10 @@ package Opt is
    --  this flag, see package Expander. Indeed this flag might more logically
    --  be in the spec of Expander, but it is referenced by Errout, and it
    --  really seems wrong for Errout to depend on Expander.
+
+   Tagged_Seen : Boolean := False;
+   --  Set True by the parser if the "tagged" reserved word is seen. This is
+   --  needed in Exp_Put_Image (see that package for documentation).
 
    -----------------------------------
    -- Modes for Formal Verification --

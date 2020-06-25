@@ -47,7 +47,7 @@ const char *DebugSymbol::toChars()
     {
         OutBuffer buf;
         buf.printf("%d", level);
-        return buf.extractString();
+        return buf.extractChars();
     }
 }
 
@@ -81,8 +81,8 @@ void DebugSymbol::addMember(Scope *, ScopeDsymbol *sds)
                 errors = true;
             }
             if (!m->debugids)
-                m->debugids = new Strings();
-            m->debugids->push(ident->toChars());
+                m->debugids = new Identifiers();
+            m->debugids->push(ident);
         }
     }
     else
@@ -137,7 +137,7 @@ const char *VersionSymbol::toChars()
     {
         OutBuffer buf;
         buf.printf("%d", level);
-        return buf.extractString();
+        return buf.extractChars();
     }
 }
 
@@ -172,8 +172,8 @@ void VersionSymbol::addMember(Scope *, ScopeDsymbol *sds)
                 errors = true;
             }
             if (!m->versionids)
-                m->versionids = new Strings();
-            m->versionids->push(ident->toChars());
+                m->versionids = new Identifiers();
+            m->versionids->push(ident);
         }
     }
     else

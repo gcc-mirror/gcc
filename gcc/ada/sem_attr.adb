@@ -164,6 +164,15 @@ package body Sem_Attr is
       Attribute_Max_Alignment_For_Allocation => True,
       others                                 => False);
 
+   --  The following array is the list of attributes defined in the Ada 2020
+   --  RM which are not defined in Ada 2012. These are recognized in Ada
+   --  95/2005/2012 modes, but are considered to be implementation defined.
+
+   Attribute_20 : constant Attribute_Class_Array := Attribute_Class_Array'(
+      Attribute_Enum_Rep                     |
+      Attribute_Enum_Val                     => True,
+      others                                 => False);
+
    --  The following array contains all attributes that imply a modification
    --  of their prefixes or result in an access value. Such prefixes can be
    --  considered as lvalues.
@@ -210,15 +219,6 @@ package body Sem_Attr is
    --  Rewrites node N with an occurrence of either Standard_False or
    --  Standard_True, depending on the value of the parameter B. The
    --  result is marked as a static expression.
-
-   function Statically_Denotes_Object (N : Node_Id) return Boolean;
-   --  Predicate used to check the legality of the prefix to 'Loop_Entry and
-   --  'Old, when the prefix is not an entity name. Current RM specfies that
-   --  the prefix must be a direct or expanded name, but it has been proposed
-   --  that the prefix be allowed to be a selected component that does not
-   --  depend on a discriminant, or an indexed component with static indices.
-   --  Current code for this predicate implements this more permissive
-   --  implementation.
 
    -----------------------
    -- Analyze_Attribute --
@@ -349,9 +349,6 @@ package body Sem_Attr is
       procedure Check_Floating_Point_Type_2;
       --  Verify that prefix of attribute N is a float type and that
       --  two attribute expressions are present
-
-      procedure Check_SPARK_05_Restriction_On_Attribute;
-      --  Issue an error in formal mode because attribute N is allowed
 
       procedure Check_Integer_Type;
       --  Verify that prefix of attribute N is an integer type
@@ -804,7 +801,6 @@ package body Sem_Attr is
       --  Start of processing for Analyze_Access_Attribute
 
       begin
-         Check_SPARK_05_Restriction_On_Attribute;
          Check_E0;
 
          if Nkind (P) = N_Character_Literal then
@@ -1328,6 +1324,15 @@ package body Sem_Attr is
             then
                null;
 
+            --  Attribute 'Result is allowed to appear in aspect
+            --  Relaxed_Initialization (??? add reference to SPARK RM once this
+            --  attribute is described there).
+
+            elsif Prag_Nam = Name_Relaxed_Initialization
+              and then Aname = Name_Result
+            then
+               null;
+
             elsif Nam_In (Prag_Nam, Name_Post,
                                     Name_Post_Class,
                                     Name_Postcondition,
@@ -1418,58 +1423,63 @@ package body Sem_Attr is
       -----------------------------
 
       procedure Analyze_Image_Attribute (Str_Typ : Entity_Id) is
+         procedure Check_Image_Type (Image_Type : Entity_Id);
+         --  Check that Image_Type is legal as the type of a prefix of 'Image.
+         --  Legality depends on the Ada language version.
+
+         procedure Check_Image_Type (Image_Type : Entity_Id) is
+         begin
+            if Ada_Version >= Ada_2020 then
+               null; -- all types are OK
+            elsif not Is_Scalar_Type (Image_Type) then
+               if Ada_Version >= Ada_2012 then
+                  Error_Attr_P
+                    ("prefix of % attribute must be a scalar type or a scalar "
+                       & "object name");
+               else
+                  Error_Attr_P ("prefix of % attribute must be a scalar type");
+               end if;
+            end if;
+         end Check_Image_Type;
+
+      --  Start of processing for Analyze_Image_Attribute
+
       begin
-         Check_SPARK_05_Restriction_On_Attribute;
-
-         --  AI12-00124: The ARG has adopted the GNAT semantics of 'Img for
+         --  AI12-0124: The ARG has adopted the GNAT semantics of 'Img for
          --  scalar types, so that the prefix can be an object, a named value,
-         --  or a type, and there is no need for an argument in this case.
+         --  or a type. If the prefix is an object, there is no argument.
 
-         if Attr_Id = Attribute_Img
-           or else (Ada_Version > Ada_2005 and then Is_Object_Image (P))
-         then
+         if Is_Object_Image (P) then
             Check_E0;
             Set_Etype (N, Str_Typ);
+            Check_Image_Type (Etype (P));
 
-            if Attr_Id = Attribute_Img and then not Is_Object_Image (P) then
-               Error_Attr_P
-                 ("prefix of % attribute must be a scalar object name");
+            if Attr_Id /= Attribute_Img and then Ada_Version < Ada_2012 then
+               Error_Attr_P ("prefix of % attribute must be a scalar type");
             end if;
          else
             Check_E1;
             Set_Etype (N, Str_Typ);
 
-            --  Check that the prefix type is scalar - much in the same way as
-            --  Check_Scalar_Type but with custom error messages to denote the
-            --  variants of 'Image attributes.
+            --  ???It's not clear why 'Img should behave any differently than
+            --  'Image.
 
-            if Is_Entity_Name (P)
-              and then Is_Type (Entity (P))
-              and then Ekind (Entity (P)) = E_Incomplete_Type
+            if Attr_Id = Attribute_Img then
+               Error_Attr_P
+                 ("prefix of % attribute must be a scalar object name");
+            end if;
+
+            pragma Assert (Is_Entity_Name (P) and then Is_Type (Entity (P)));
+
+            if Ekind (Entity (P)) = E_Incomplete_Type
               and then Present (Full_View (Entity (P)))
             then
                P_Type := Full_View (Entity (P));
+               P_Base_Type := Base_Type (P_Type);
                Set_Entity (P, P_Type);
             end if;
 
-            if not Is_Entity_Name (P)
-              or else not Is_Type (Entity (P))
-              or else not Is_Scalar_Type (P_Type)
-            then
-               if Ada_Version > Ada_2005 then
-                  Error_Attr_P
-                    ("prefix of % attribute must be a scalar type or a scalar "
-                     & "object name");
-               else
-                  Error_Attr_P ("prefix of % attribute must be a scalar type");
-               end if;
-
-            elsif Is_Protected_Self_Reference (P) then
-               Error_Attr_P
-                 ("prefix of % attribute denotes current instance "
-                  & "(RM 9.4(21/2))");
-            end if;
-
+            Check_Image_Type (P_Type);
             Resolve (E1, P_Base_Type);
             Validate_Non_Static_Attribute_Function_Call;
          end if;
@@ -2303,16 +2313,6 @@ package body Sem_Attr is
          end if;
       end Check_Scalar_Type;
 
-      ------------------------------------------
-      -- Check_SPARK_05_Restriction_On_Attribute --
-      ------------------------------------------
-
-      procedure Check_SPARK_05_Restriction_On_Attribute is
-      begin
-         Error_Msg_Name_1 := Aname;
-         Check_SPARK_05_Restriction ("attribute % is not allowed", P);
-      end Check_SPARK_05_Restriction_On_Attribute;
-
       ---------------------------
       -- Check_Standard_Prefix --
       ---------------------------
@@ -2366,7 +2366,6 @@ package body Sem_Attr is
 
          Analyze (E2);
          Resolve (E2, P_Type);
-         Check_Not_CPP_Type;
       end Check_Put_Image_Attribute;
 
       ----------------------------
@@ -2798,7 +2797,7 @@ package body Sem_Attr is
             when 'E' =>
                Error_Attr_P
                  ("prefix of attribute % that is potentially "
-                  & "unevaluated must denote an entity");
+                  & "unevaluated must statically name an entity");
 
             when 'W' =>
                Error_Msg_Name_1 := Aname;
@@ -2867,12 +2866,14 @@ package body Sem_Attr is
       end if;
 
       --  Deal with Ada 2005 attributes that are implementation attributes
-      --  because they appear in a version of Ada before Ada 2005, and
-      --  similarly for Ada 2012 attributes appearing in an earlier version.
+      --  because they appear in a version of Ada before Ada 2005, ditto for
+      --  Ada 2012 and Ada 2020 attributes appearing in an earlier version.
 
       if (Attribute_05 (Attr_Id) and then Ada_Version < Ada_2005)
             or else
          (Attribute_12 (Attr_Id) and then Ada_Version < Ada_2012)
+            or else
+         (Attribute_20 (Attr_Id) and then Ada_Version < Ada_2020)
       then
          Check_Restriction (No_Implementation_Attributes, N);
       end if;
@@ -3045,21 +3046,6 @@ package body Sem_Attr is
          end if;
       end if;
 
-      --  In SPARK, attributes of private types are only allowed if the full
-      --  type declaration is visible.
-
-      --  Note: the check for Present (Entity (P)) defends against some error
-      --  conditions where the Entity field is not set.
-
-      if Is_Entity_Name (P) and then Present (Entity (P))
-        and then Is_Type (Entity (P))
-        and then Is_Private_Type (P_Type)
-        and then not In_Open_Scopes (Scope (P_Type))
-        and then not In_Spec_Expression
-      then
-         Check_SPARK_05_Restriction ("invisible attribute of type", N);
-      end if;
-
       --  Remaining processing depends on attribute
 
       case Attr_Id is
@@ -3226,12 +3212,6 @@ package body Sem_Attr is
          then
             Error_Msg_NE -- CODEFIX
               ("?r?redundant attribute, & is its own base type", N, Typ);
-         end if;
-
-         if Nkind (Parent (N)) /= N_Attribute_Reference then
-            Error_Msg_Name_1 := Aname;
-            Check_SPARK_05_Restriction
-              ("attribute% is only allowed as prefix of another attribute", P);
          end if;
 
          Set_Etype (N, Base_Type (Entity (P)));
@@ -4173,6 +4153,26 @@ package body Sem_Attr is
       when Attribute_Img =>
          Analyze_Image_Attribute (Standard_String);
 
+      -----------------
+      -- Initialized --
+      -----------------
+
+      when Attribute_Initialized =>
+         Check_E0;
+
+         if Comes_From_Source (N) then
+
+            --  A similar attribute Valid_Scalars can be prefixed with
+            --  references to both functions and objects, but this attribute
+            --  can be only prefixed with references to objects.
+
+            if not Is_Object_Reference (P) then
+               Error_Attr_P ("prefix of % attribute must be object");
+            end if;
+         end if;
+
+         Set_Etype (N, Standard_Boolean);
+
       -----------
       -- Input --
       -----------
@@ -4577,13 +4577,13 @@ package body Sem_Attr is
 
          Check_References_In_Prefix (Loop_Id);
 
-         --  The prefix must denote a static entity if the pragma does not
+         --  The prefix must statically name an object if the pragma does not
          --  apply to the innermost enclosing loop statement, or if it appears
-         --  within a potentially unevaluated epxression.
+         --  within a potentially unevaluated expression.
 
          if Is_Entity_Name (P)
            or else Nkind (Parent (P)) = N_Object_Renaming_Declaration
-           or else Statically_Denotes_Object (P)
+           or else Statically_Names_Object (P)
          then
             null;
 
@@ -5083,7 +5083,7 @@ package body Sem_Attr is
             --  is potentially unevaluated (6.1.1 (27/3)).
 
             if Is_Potentially_Unevaluated (N)
-              and then not Statically_Denotes_Object (P)
+              and then not Statically_Names_Object (P)
             then
                Uneval_Old_Msg;
 
@@ -5219,14 +5219,6 @@ package body Sem_Attr is
       when Attribute_Pos =>
          Check_Discrete_Type;
          Check_E1;
-
-         if Is_Boolean_Type (P_Type) then
-            Error_Msg_Name_1 := Aname;
-            Error_Msg_Name_2 := Chars (P_Type);
-            Check_SPARK_05_Restriction
-              ("attribute% is not allowed for type%", P);
-         end if;
-
          Resolve (E1, P_Base_Type);
          Set_Etype (N, Universal_Integer);
 
@@ -5245,14 +5237,6 @@ package body Sem_Attr is
       when Attribute_Pred =>
          Check_Scalar_Type;
          Check_E1;
-
-         if Is_Real_Type (P_Type) or else Is_Boolean_Type (P_Type) then
-            Error_Msg_Name_1 := Aname;
-            Error_Msg_Name_2 := Chars (P_Type);
-            Check_SPARK_05_Restriction
-              ("attribute% is not allowed for type%", P);
-         end if;
-
          Resolve (E1, P_Base_Type);
          Set_Etype (N, P_Base_Type);
 
@@ -5560,6 +5544,11 @@ package body Sem_Attr is
 
       when Attribute_Reduce =>
          Check_E2;
+
+         if not Extensions_Allowed then
+            Error_Attr
+              ("% attribute only supported under -gnatX", P);
+         end if;
 
          declare
             Stream : constant Node_Id := Prefix (N);
@@ -6041,7 +6030,7 @@ package body Sem_Attr is
 
             --  Validate_Remote_Access_To_Class_Wide_Type for attribute
             --  Storage_Pool since this attribute is not defined for such
-            --  types (RM E.2.3(22)).
+            --  types (RM E.2.2(17)).
 
             Validate_Remote_Access_To_Class_Wide_Type (N);
 
@@ -6075,9 +6064,9 @@ package body Sem_Attr is
                Check_Type;
                Set_Etype (N, Universal_Integer);
 
-               --   Validate_Remote_Access_To_Class_Wide_Type for attribute
-               --   Storage_Size since this attribute is not defined for
-               --   such types (RM E.2.3(22)).
+               --  Validate_Remote_Access_To_Class_Wide_Type for attribute
+               --  Storage_Size since this attribute is not defined for
+               --  such types (RM E.2.2(17)).
 
                Validate_Remote_Access_To_Class_Wide_Type (N);
 
@@ -6159,14 +6148,6 @@ package body Sem_Attr is
       when Attribute_Succ =>
          Check_Scalar_Type;
          Check_E1;
-
-         if Is_Real_Type (P_Type) or else Is_Boolean_Type (P_Type) then
-            Error_Msg_Name_1 := Aname;
-            Error_Msg_Name_2 := Chars (P_Type);
-            Check_SPARK_05_Restriction
-              ("attribute% is not allowed for type%", P);
-         end if;
-
          Resolve (E1, P_Base_Type);
          Set_Etype (N, P_Base_Type);
 
@@ -6966,13 +6947,6 @@ package body Sem_Attr is
          Check_E1;
          Check_Discrete_Type;
 
-         if Is_Boolean_Type (P_Type) then
-            Error_Msg_Name_1 := Aname;
-            Error_Msg_Name_2 := Chars (P_Type);
-            Check_SPARK_05_Restriction
-              ("attribute% is not allowed for type%", P);
-         end if;
-
          --  Note, we need a range check in general, but we wait for the
          --  Resolve call to do this, since we want to let Eval_Attribute
          --  have a chance to find an static illegality first.
@@ -7074,7 +7048,6 @@ package body Sem_Attr is
       -----------
 
       when Attribute_Value =>
-         Check_SPARK_05_Restriction_On_Attribute;
          Check_E1;
          Check_Scalar_Type;
 
@@ -7165,7 +7138,6 @@ package body Sem_Attr is
       ----------------
 
       when Attribute_Wide_Value =>
-         Check_SPARK_05_Restriction_On_Attribute;
          Check_E1;
          Check_Scalar_Type;
 
@@ -7219,7 +7191,6 @@ package body Sem_Attr is
       ----------------
 
       when Attribute_Wide_Width =>
-         Check_SPARK_05_Restriction_On_Attribute;
          Check_E0;
          Check_Scalar_Type;
          Set_Etype (N, Universal_Integer);
@@ -7229,7 +7200,6 @@ package body Sem_Attr is
       -----------
 
       when Attribute_Width =>
-         Check_SPARK_05_Restriction_On_Attribute;
          Check_E0;
          Check_Scalar_Type;
          Set_Etype (N, Universal_Integer);
@@ -7297,12 +7267,18 @@ package body Sem_Attr is
 
    procedure Eval_Attribute (N : Node_Id) is
       Loc   : constant Source_Ptr   := Sloc (N);
-      Aname : constant Name_Id      := Attribute_Name (N);
-      Id    : constant Attribute_Id := Get_Attribute_Id (Aname);
-      P     : constant Node_Id      := Prefix (N);
 
       C_Type : constant Entity_Id := Etype (N);
       --  The type imposed by the context
+
+      Aname : Name_Id;
+      --  Attribute_Name (N) after verification of validity of N
+
+      Id : Attribute_Id;
+      --  Get_Attribute_Id (Aname) after Aname is set
+
+      P : Node_Id;
+      --  Prefix (N) after verification of validity of N
 
       E1 : Node_Id;
       --  First expression, or Empty if none
@@ -7380,10 +7356,6 @@ package body Sem_Attr is
       --  First and Last of scalar types and for First_Valid and Last_Valid.
       --  Static is reset to False if the type or index type is not statically
       --  constrained.
-
-      function Statically_Denotes_Entity (N : Node_Id) return Boolean;
-      --  Verify that the prefix of a potentially static array attribute
-      --  satisfies the conditions of 4.9 (14).
 
       -----------------------------------
       -- Check_Concurrent_Discriminant --
@@ -7661,28 +7633,20 @@ package body Sem_Attr is
          end if;
       end Set_Bounds;
 
-      -------------------------------
-      -- Statically_Denotes_Entity --
-      -------------------------------
-
-      function Statically_Denotes_Entity (N : Node_Id) return Boolean is
-         E : Entity_Id;
-
-      begin
-         if not Is_Entity_Name (N) then
-            return False;
-         else
-            E := Entity (N);
-         end if;
-
-         return
-           Nkind (Parent (E)) /= N_Object_Renaming_Declaration
-             or else Statically_Denotes_Entity (Renamed_Object (E));
-      end Statically_Denotes_Entity;
-
    --  Start of processing for Eval_Attribute
 
    begin
+      --  Return immediately if e.g. N has been rewritten or is malformed due
+      --  to previous errors.
+
+      if Nkind (N) /= N_Attribute_Reference then
+         return;
+      end if;
+
+      Aname := Attribute_Name (N);
+      Id    := Get_Attribute_Id (Aname);
+      P     := Prefix (N);
+
       --  The To_Address attribute can be static, but it cannot be evaluated at
       --  compile time, so just return.
 
@@ -7715,9 +7679,7 @@ package body Sem_Attr is
          --  We skip evaluation if the expander is not active. This is not just
          --  an optimization. It is of key importance that we not rewrite the
          --  attribute in a generic template, since we want to pick up the
-         --  setting of the check in the instance, Testing Expander_Active
-         --  might seem an easy way of doing this, but we need to account for
-         --  ASIS needs, so check explicitly for a generic context.
+         --  setting of the check in the instance.
 
          if not Inside_A_Generic then
             declare
@@ -7775,7 +7737,11 @@ package body Sem_Attr is
       --  purpose, a string literal counts as an object (attributes of string
       --  literals can only appear in generated code).
 
-      if Is_Object_Reference (P) or else Nkind (P) = N_String_Literal then
+      if Is_Object_Reference (P)
+        or else Nkind (P) = N_String_Literal
+        or else (Is_Entity_Name (P)
+                 and then Ekind (Entity (P)) = E_Enumeration_Literal)
+      then
 
          --  For Component_Size, the prefix is an array object, and we apply
          --  the attribute to the type of the object. This is allowed for both
@@ -8472,8 +8438,8 @@ package body Sem_Attr is
       when Attribute_Constrained =>
 
          --  The expander might fold it and set the static flag accordingly,
-         --  but with expansion disabled (as in ASIS), it remains as an
-         --  attribute reference, and this reference is not static.
+         --  but with expansion disabled, it remains as an attribute reference,
+         --  and this reference is not static.
 
          Set_Is_Static_Expression (N, False);
 
@@ -8589,7 +8555,7 @@ package body Sem_Attr is
       --------------
 
       when Attribute_Enum_Val => Enum_Val : declare
-         Lit : Node_Id;
+         Lit : Entity_Id;
 
       begin
          --  We have something like Enum_Type'Enum_Val (23), so search for a
@@ -10309,6 +10275,7 @@ package body Sem_Attr is
          | Attribute_First_Bit
          | Attribute_Img
          | Attribute_Input
+         | Attribute_Initialized
          | Attribute_Last_Bit
          | Attribute_Library_Level
          | Attribute_Maximum_Alignment
@@ -11300,6 +11267,7 @@ package body Sem_Attr is
                --  will be reported when resolving the call.
 
                if Attr_Id /= Attribute_Unrestricted_Access then
+                  Error_Msg_Name_1 := Aname;
                   Error_Msg_N ("prefix of % attribute must be aliased", P);
 
                --  Check for unrestricted access where expected type is a thin
@@ -12119,59 +12087,6 @@ package body Sem_Attr is
          Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
       end if;
    end Set_Boolean_Result;
-
-   -------------------------------
-   -- Statically_Denotes_Object --
-   -------------------------------
-
-   function Statically_Denotes_Object (N : Node_Id) return Boolean is
-      Indx : Node_Id;
-
-   begin
-      if Is_Entity_Name (N) then
-         return True;
-
-      elsif Nkind (N) = N_Selected_Component
-        and then Statically_Denotes_Object (Prefix (N))
-        and then Present (Entity (Selector_Name (N)))
-      then
-         declare
-            Sel_Id    : constant Entity_Id := Entity (Selector_Name (N));
-            Comp_Decl : constant Node_Id   := Parent (Sel_Id);
-
-         begin
-            if Depends_On_Discriminant (Sel_Id) then
-               return False;
-
-            elsif Nkind (Parent (Parent (Comp_Decl))) = N_Variant then
-               return False;
-
-            else
-               return True;
-            end if;
-         end;
-
-      elsif Nkind (N) = N_Indexed_Component
-        and then Statically_Denotes_Object (Prefix (N))
-        and then Is_Constrained (Etype (Prefix (N)))
-      then
-         Indx := First (Expressions (N));
-         while Present (Indx) loop
-            if not Compile_Time_Known_Value (Indx)
-              or else Do_Range_Check (Indx)
-            then
-               return False;
-            end if;
-
-            Next (Indx);
-         end loop;
-
-         return True;
-
-      else
-         return False;
-      end if;
-   end Statically_Denotes_Object;
 
    --------------------------------
    -- Stream_Attribute_Available --

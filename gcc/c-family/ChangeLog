@@ -1,3 +1,31 @@
+2020-06-10  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/92860
+	* c-attribs.c (handle_optimize_attribute):
+	Save global options and compare it after parsing of function
+	attribute.
+	* c-pragma.c (opt_stack::saved_global_options): New field.
+	(handle_pragma_push_options): Save global_options.
+	(handle_pragma_pop_options): Compare them after pop.
+
+2020-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/95580
+	* c-pretty-print.c (c_pretty_printer::unary_expression): Handle the
+	case when MEM_REF's first argument has type pointer to incomplete type.
+
+2020-06-05  Jason Merrill  <jason@redhat.com>
+
+	* c-pretty-print.c (pp_c_additive_expression): Handle negative
+	operand to POINTER_PLUS_EXPR.
+
+2020-06-04  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/10138
+	PR middle-end/95136
+	* c-attribs.c (append_access_attrs): Handle attr_access::none.
+	(handle_access_attribute): Same.
+
 2020-06-03  Mark Wielaard  <mark@klomp.org>
 
 	* known-headers.cc (get_cp_stdlib_header_for_string_macro_name):

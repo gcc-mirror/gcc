@@ -31,7 +31,7 @@
 
 pragma Ada_2020;
 
-package Ada.Strings.Text_Output.Utils is
+package Ada.Strings.Text_Output.Utils with Preelaborate is
 
    --  This package provides utility functions on Sink'Class. These are
    --  intended for use by Put_Image attributes, both the default versions

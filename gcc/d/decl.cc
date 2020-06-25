@@ -68,7 +68,7 @@ d_mangle_decl (Dsymbol *decl)
     {
       OutBuffer buf;
       mangleToBuffer (decl, &buf);
-      return buf.extractString ();
+      return buf.extractChars ();
     }
 }
 
@@ -232,7 +232,7 @@ public:
 
   void visit (AttribDeclaration *d)
   {
-    Dsymbols *ds = d->include (NULL, NULL);
+    Dsymbols *ds = d->include (NULL);
 
     if (!ds)
       return;
@@ -1134,8 +1134,12 @@ get_symbol_decl (Declaration *decl)
     {
       tree mangled_name;
 
-      if (decl->mangleOverride)
-	mangled_name = get_identifier (decl->mangleOverride);
+      if (decl->mangleOverride.length)
+	{
+	  mangled_name =
+	    get_identifier_with_length (decl->mangleOverride.ptr,
+					decl->mangleOverride.length);
+	}
       else
 	mangled_name = get_identifier (d_mangle_decl (decl));
 
@@ -1325,9 +1329,9 @@ get_symbol_decl (Declaration *decl)
     TREE_THIS_VOLATILE (decl->csym) = 1;
 
   /* Protection attributes are used by the debugger.  */
-  if (decl->protection.kind == PROTprivate)
+  if (decl->protection.kind == Prot::private_)
     TREE_PRIVATE (decl->csym) = 1;
-  else if (decl->protection.kind == PROTprotected)
+  else if (decl->protection.kind == Prot::protected_)
     TREE_PROTECTED (decl->csym) = 1;
 
   /* Likewise, so could the deprecated attribute.  */
@@ -2011,7 +2015,7 @@ mark_needed (tree decl)
 unsigned
 base_vtable_offset (ClassDeclaration *cd, BaseClass *bc)
 {
-  unsigned csymoffset = Target::classinfosize;
+  unsigned csymoffset = target.classinfosize;
   unsigned interfacesize = int_size_in_bytes (vtbl_interface_type_node);
   csymoffset += cd->vtblInterfaces->length * interfacesize;
 
@@ -2020,7 +2024,7 @@ base_vtable_offset (ClassDeclaration *cd, BaseClass *bc)
       BaseClass *b = (*cd->vtblInterfaces)[i];
       if (b == bc)
 	return csymoffset;
-      csymoffset += b->sym->vtbl.length * Target::ptrsize;
+      csymoffset += b->sym->vtbl.length * target.ptrsize;
     }
 
   /* Check all overriding interface vtbl[]s.  */
@@ -2033,7 +2037,7 @@ base_vtable_offset (ClassDeclaration *cd, BaseClass *bc)
 	    {
 	      if (bc == bs)
 		return csymoffset;
-	      csymoffset += bs->sym->vtbl.length * Target::ptrsize;
+	      csymoffset += bs->sym->vtbl.length * target.ptrsize;
 	    }
 	}
     }

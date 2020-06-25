@@ -1677,7 +1677,8 @@ typedef struct gfc_common_head
   char use_assoc, saved, threadprivate;
   unsigned char omp_declare_target : 1;
   unsigned char omp_declare_target_link : 1;
-  char name[GFC_MAX_SYMBOL_LEN + 1];
+  /* Provide sufficient space to hold "symbol.eq.1234567890".  */
+  char name[GFC_MAX_SYMBOL_LEN + 1 + 14];
   struct gfc_symbol *head;
   const char* binding_label;
   int is_bind_c;
@@ -1773,6 +1774,16 @@ gfc_oacc_routine_name;
 
 #define gfc_get_oacc_routine_name() XCNEW (gfc_oacc_routine_name)
 
+/* Node in linked list to see what has already been finalized
+   earlier.  */
+
+typedef struct gfc_was_finalized {
+  gfc_expr *e;
+  gfc_component *c;
+  struct gfc_was_finalized *next;
+}
+gfc_was_finalized;
+
 /* A namespace describes the contents of procedure, module, interface block
    or BLOCK construct.  */
 /* ??? Anything else use these?  */
@@ -1864,6 +1875,11 @@ typedef struct gfc_namespace
 
   /* Linked list of !$omp declare simd constructs.  */
   struct gfc_omp_declare_simd *omp_declare_simd;
+
+  /* A hash set for the the gfc expressions that have already
+     been finalized in this namespace.  */
+
+  gfc_was_finalized *was_finalized;
 
   /* Set to 1 if namespace is a BLOCK DATA program unit.  */
   unsigned is_block_data:1;
@@ -2216,9 +2232,6 @@ typedef struct gfc_expr
 
   /* Set this if the expression came from expanding an array constructor.  */
   unsigned int from_constructor : 1;
-
-  /* Set this if the expression has already been finalized.  */
-  unsigned int finalized : 1;
 
   /* If an expression comes from a Hollerith constant or compile-time
      evaluation of a transfer statement, it may have a prescribed target-
@@ -3552,6 +3565,7 @@ bool gfc_calculate_transfer_sizes (gfc_expr*, gfc_expr*, gfc_expr*,
 bool gfc_boz2int (gfc_expr *, int);
 bool gfc_boz2real (gfc_expr *, int);
 bool gfc_invalid_boz (const char *, locus *);
+bool gfc_invalid_null_arg (gfc_expr *);
 
 
 /* class.c */

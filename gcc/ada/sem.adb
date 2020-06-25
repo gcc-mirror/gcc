@@ -819,7 +819,7 @@ package body Sem is
             Scope_Suppress.Suppress := Svs;
          end;
 
-      elsif Suppress = Overflow_Check then
+      else
          declare
             Svg : constant Boolean := Scope_Suppress.Suppress (Suppress);
          begin
@@ -1842,7 +1842,9 @@ package body Sem is
 
                procedure Assert_Done (Withed_Unit : Node_Id) is
                begin
-                  if not Done (Get_Cunit_Unit_Number (Withed_Unit)) then
+                  if Withed_Unit /= Main_CU
+                    and then not Done (Get_Cunit_Unit_Number (Withed_Unit))
+                  then
                      if not Nkind_In
                               (Unit (Withed_Unit),
                                  N_Generic_Package_Declaration,
@@ -2375,7 +2377,7 @@ package body Sem is
             Action (Lib_Unit);
          end if;
 
-         Context_Item := Next (Context_Item);
+         Next (Context_Item);
       end loop;
    end Walk_Withs_Immediate;
 

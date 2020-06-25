@@ -2001,6 +2001,11 @@ package body Sem_Prag is
                Push_Scope (Spec_Id);
 
                if Ekind (Spec_Id) = E_Task_Type then
+
+                  --  Task discriminants cannot appear in the [Refined_]Depends
+                  --  contract, but must be present for the analysis so that we
+                  --  can reject them with an informative error message.
+
                   if Has_Discriminants (Spec_Id) then
                      Install_Discriminants (Spec_Id);
                   end if;
@@ -2123,7 +2128,8 @@ package body Sem_Prag is
                & """No_Caching"" (SPARK RM 7.1.2(6))", N);
          else
             SPARK_Msg_N
-              ("external property % must apply to a volatile object", N);
+              ("external property % must apply to a volatile type or object",
+               N);
          end if;
 
       --  Pragma No_Caching should only apply to volatile variables of
@@ -2790,6 +2796,11 @@ package body Sem_Prag is
             Push_Scope (Spec_Id);
 
             if Ekind (Spec_Id) = E_Task_Type then
+
+               --  Task discriminants cannot appear in the [Refined_]Global
+               --  contract, but must be present for the analysis so that we
+               --  can reject them with an informative error message.
+
                if Has_Discriminants (Spec_Id) then
                   Install_Discriminants (Spec_Id);
                end if;
@@ -4330,9 +4341,9 @@ package body Sem_Prag is
       procedure Set_Ravenscar_Profile (Profile : Profile_Name; N : Node_Id);
       --  Activate the set of configuration pragmas and restrictions that make
       --  up the Profile. Profile must be either GNAT_Extended_Ravenscar,
-      --  GNAT_Ravenscar_EDF, or Ravenscar. N is the corresponding pragma node,
-      --  which is used for error messages on any constructs violating the
-      --  profile.
+      --  GNAT_Ravenscar_EDF, Jorvik, or Ravenscar. N is the corresponding
+      --  pragma node, which is used for error messages on any constructs
+      --  violating the profile.
 
       ---------------------
       -- Ada_2005_Pragma --
@@ -4521,6 +4532,185 @@ package body Sem_Prag is
          --  Implement rules in AI12-0131: an overriding operation can have
          --  a class-wide precondition only if one of its ancestors has an
          --  explicit class-wide precondition.
+
+         procedure Build_Access_Subprogram_Wrapper
+           (Decl : Node_Id;
+            Prag : Node_Id);
+         --  When an access_to_subprogram type has pre/postconditions, we
+         --  build a subprogram that includes these contracts and is invoked
+         --  by any indirect call through the corresponding access type.
+
+         procedure Build_Access_Subprogram_Wrapper_Body
+           (Decl : Node_Id;
+            New_Decl : Node_Id);
+         --  Build the wrapper body, which holds the indirect call through
+         --  an access_to_subprogram, and whose expansion incorporates the
+         --  contracts of the access type declaration.
+
+         -------------------------------------
+         -- Build_Access_Subprogram_Wrapper --
+         -------------------------------------
+
+         procedure Build_Access_Subprogram_Wrapper
+           (Decl : Node_Id;
+            Prag : Node_Id)
+         is
+            Loc      : constant Source_Ptr := Sloc (Decl);
+            Id       : constant Entity_Id  := Defining_Identifier (Decl);
+            Type_Def : constant Node_Id := Type_Definition (Decl);
+            Specs   :  constant List_Id := Parameter_Specifications (Type_Def);
+            Profile : constant List_Id  := New_List;
+
+            Form_P   : Node_Id;
+            New_P    : Node_Id;
+            New_Decl : Node_Id;
+            Spec     : Node_Id;
+            Subp     : Entity_Id;
+
+         begin
+            if Ekind_In (Id, E_Access_Subprogram_Type,
+               E_Access_Protected_Subprogram_Type,
+               E_Anonymous_Access_Protected_Subprogram_Type,
+               E_Anonymous_Access_Subprogram_Type)
+            then
+               null;
+
+            else
+               Error_Msg_N
+                 ("illegal pre/postcondition on access type", N);
+               return;
+            end if;
+
+            Subp := Make_Temporary (Loc, 'A');
+            Form_P := First (Specs);
+
+            while Present (Form_P) loop
+               New_P := New_Copy_Tree (Form_P);
+               Set_Defining_Identifier (New_P,
+                 Make_Defining_Identifier
+                  (Loc, Chars (Defining_Identifier (Form_P))));
+               Append (New_P, Profile);
+               Next (Form_P);
+            end loop;
+
+            --  Add to parameter specifications the access parameter that
+            --  is passed from an indirect call.
+
+            Append (
+               Make_Parameter_Specification (Loc,
+                 Defining_Identifier => Make_Temporary (Loc, 'P'),
+                 Parameter_Type  =>  New_Occurrence_Of (Id, Loc)),
+               Profile);
+
+            if Nkind (Type_Def) = N_Access_Procedure_Definition then
+               Spec :=
+                 Make_Procedure_Specification (Loc,
+                   Defining_Unit_Name       => Subp,
+                   Parameter_Specifications => Profile);
+            else
+               Spec :=
+                 Make_Function_Specification (Loc,
+                   Defining_Unit_Name       => Subp,
+                   Parameter_Specifications => Profile,
+                   Result_Definition        =>
+                     New_Copy_Tree
+                       (Result_Definition (Type_Definition (Decl))));
+            end if;
+
+            New_Decl :=
+              Make_Subprogram_Declaration (Loc, Specification => Spec);
+            Set_Aspect_Specifications (New_Decl,
+              New_Copy_List_Tree (Aspect_Specifications (Decl)));
+
+            declare
+               Asp : Node_Id;
+
+            begin
+               Asp := First (Aspect_Specifications (New_Decl));
+               while Present (Asp) loop
+                  Set_Aspect_Rep_Item (Asp, Empty);
+                  Set_Entity (Asp, Empty);
+                  Set_Analyzed (Asp, False);
+                  Next (Asp);
+               end loop;
+            end;
+
+            Insert_After (Prag, New_Decl);
+            Set_Access_Subprogram_Wrapper (Designated_Type (Id), Subp);
+            Build_Access_Subprogram_Wrapper_Body (Decl, New_Decl);
+         end Build_Access_Subprogram_Wrapper;
+
+         ------------------------------------------
+         -- Build_Access_Subprogram_Wrapper_Body --
+         ------------------------------------------
+
+         procedure Build_Access_Subprogram_Wrapper_Body
+           (Decl : Node_Id;
+            New_Decl : Node_Id)
+         is
+            Loc       : constant Source_Ptr := Sloc (Decl);
+            Actuals   : constant List_Id := New_List;
+            Type_Def  : constant Node_Id := Type_Definition (Decl);
+            Type_Id   : constant Entity_Id := Defining_Identifier (Decl);
+            Spec_Node : constant Node_Id :=
+              New_Copy_Tree (Specification (New_Decl));
+
+            Act       : Node_Id;
+            Body_Node : Node_Id;
+            Call_Stmt : Node_Id;
+            Ptr       : Entity_Id;
+         begin
+            if not Expander_Active then
+               return;
+            end if;
+
+            Set_Defining_Unit_Name (Spec_Node,
+              Make_Defining_Identifier
+                (Loc, Chars (Defining_Unit_Name (Spec_Node))));
+
+            --  Create List of actuals for indirect call. The last
+            --  parameter of the subprogram is the access value itself.
+
+            Act := First (Parameter_Specifications (Spec_Node));
+
+            while Present (Act) loop
+               Append_To (Actuals,
+                 Make_Identifier (Loc, Chars (Defining_Identifier (Act))));
+               Next (Act);
+               exit when Act = Last (Parameter_Specifications (Spec_Node));
+            end loop;
+
+            Ptr :=
+              Defining_Identifier
+                (Last (Parameter_Specifications (Spec_Node)));
+
+            if Nkind (Type_Def) = N_Access_Procedure_Definition then
+               Call_Stmt := Make_Procedure_Call_Statement (Loc,
+                 Name =>
+                    Make_Explicit_Dereference
+                      (Loc, New_Occurrence_Of (Ptr, Loc)),
+                 Parameter_Associations => Actuals);
+            else
+               Call_Stmt := Make_Simple_Return_Statement (Loc,
+                 Expression =>
+                   Make_Function_Call (Loc,
+                 Name => Make_Explicit_Dereference
+                          (Loc, New_Occurrence_Of (Ptr, Loc)),
+                 Parameter_Associations => Actuals));
+            end if;
+
+            Body_Node := Make_Subprogram_Body (Loc,
+              Specification => Spec_Node,
+              Declarations  => New_List,
+              Handled_Statement_Sequence =>
+                Make_Handled_Sequence_Of_Statements (Loc,
+                  Statements    => New_List (Call_Stmt)));
+
+            --  Place body in list of freeze actions for the type.
+
+            Ensure_Freeze_Node (Type_Id);
+            Append_Freeze_Actions (Type_Id, New_List (Body_Node));
+         end Build_Access_Subprogram_Wrapper_Body;
 
          -----------------------------
          -- Inherits_Class_Wide_Pre --
@@ -4756,12 +4946,22 @@ package body Sem_Prag is
          then
             null;
 
-         --  For Ada_2020, pre/postconditions can appear on formal subprograms
+         --  For Ada 2020, pre/postconditions can appear on formal subprograms
 
          elsif Nkind (Subp_Decl) = N_Formal_Concrete_Subprogram_Declaration
             and then Ada_Version >= Ada_2020
          then
             null;
+
+         elsif Ada_Version >= Ada_2020
+           and then Nkind (Subp_Decl) = N_Full_Type_Declaration
+         then
+
+            --  Access_To_Subprogram type has pre/postconditions.
+            --  Build wrapper subprogram to carry the contract items.
+
+            Build_Access_Subprogram_Wrapper (Subp_Decl, N);
+            return;
 
          --  Otherwise the placement is illegal
 
@@ -7487,7 +7687,7 @@ package body Sem_Prag is
             --  Attribute belongs on the base type. If the view of the type is
             --  currently private, it also belongs on the underlying type.
 
-            --  In Ada_2020, the pragma can apply to a formal type, for which
+            --  In Ada 2020, the pragma can apply to a formal type, for which
             --  there may be no underlying type.
 
             if Prag_Id = Pragma_Atomic
@@ -7658,6 +7858,7 @@ package body Sem_Prag is
            and then Prag_Id = Pragma_Volatile
            and then not Nkind_In (Original_Node (Decl),
                                   N_Full_Type_Declaration,
+                                  N_Formal_Type_Declaration,
                                   N_Object_Declaration,
                                   N_Single_Protected_Declaration,
                                   N_Single_Task_Declaration)
@@ -7957,59 +8158,24 @@ package body Sem_Prag is
                Error_Pragma_Arg
                  ("cannot change convention for overridden dispatching "
                   & "operation", Arg1);
-            end if;
 
-            --  Special checks for Convention_Stdcall
+            --  Special check for convention Stdcall: a dispatching call is not
+            --  allowed. A dispatching subprogram cannot be used to interface
+            --  to the Win32 API, so this check actually does not impose any
+            --  effective restriction.
 
-            if C = Convention_Stdcall then
+            elsif Is_Dispatching_Operation (E)
+              and then C = Convention_Stdcall
+            then
+               --  Note: make this unconditional so that if there is more
+               --  than one call to which the pragma applies, we get a
+               --  message for each call. Also don't use Error_Pragma,
+               --  so that we get multiple messages.
 
-               --  A dispatching call is not allowed. A dispatching subprogram
-               --  cannot be used to interface to the Win32 API, so in fact
-               --  this check does not impose any effective restriction.
-
-               if Is_Dispatching_Operation (E) then
-                  Error_Msg_Sloc := Sloc (E);
-
-                  --  Note: make this unconditional so that if there is more
-                  --  than one call to which the pragma applies, we get a
-                  --  message for each call. Also don't use Error_Pragma,
-                  --  so that we get multiple messages.
-
-                  Error_Msg_N
-                    ("dispatching subprogram# cannot use Stdcall convention!",
-                     Arg1);
-
-               --  Several allowed cases
-
-               elsif Is_Subprogram_Or_Generic_Subprogram (E)
-
-                 --  A variable is OK
-
-                 or else Ekind (E) = E_Variable
-
-                 --  A component as well. The entity does not have its Ekind
-                 --  set until the enclosing record declaration is fully
-                 --  analyzed.
-
-                 or else Nkind (Parent (E)) = N_Component_Declaration
-
-                 --  An access to subprogram is also allowed
-
-                 or else
-                   (Is_Access_Type (E)
-                     and then Ekind (Designated_Type (E)) = E_Subprogram_Type)
-
-                 --  Allow internal call to set convention of subprogram type
-
-                 or else Ekind (E) = E_Subprogram_Type
-               then
-                  null;
-
-               else
-                  Error_Pragma_Arg
-                    ("second argument of pragma% must be subprogram (type)",
-                     Arg2);
-               end if;
+               Error_Msg_Sloc := Sloc (E);
+               Error_Msg_N
+                 ("dispatching subprogram# cannot use Stdcall convention!",
+                  Get_Pragma_Arg (Arg1));
             end if;
 
             --  Set the convention
@@ -8020,26 +8186,38 @@ package body Sem_Prag is
             --  For the case of a record base type, also set the convention of
             --  any anonymous access types declared in the record which do not
             --  currently have a specified convention.
+            --  Similarly for an array base type and anonymous access types
+            --  components.
 
-            if Is_Record_Type (E) and then Is_Base_Type (E) then
-               declare
-                  Comp : Node_Id;
+            if Is_Base_Type (E) then
+               if Is_Record_Type (E) then
+                  declare
+                     Comp : Node_Id;
 
-               begin
-                  Comp := First_Component (E);
-                  while Present (Comp) loop
-                     if Present (Etype (Comp))
-                       and then Ekind_In (Etype (Comp),
-                                          E_Anonymous_Access_Type,
-                                          E_Anonymous_Access_Subprogram_Type)
-                       and then not Has_Convention_Pragma (Comp)
-                     then
-                        Set_Convention (Comp, C);
-                     end if;
+                  begin
+                     Comp := First_Component (E);
+                     while Present (Comp) loop
+                        if Present (Etype (Comp))
+                          and then
+                            Ekind_In (Etype (Comp),
+                                      E_Anonymous_Access_Type,
+                                      E_Anonymous_Access_Subprogram_Type)
+                          and then not Has_Convention_Pragma (Comp)
+                        then
+                           Set_Convention (Comp, C);
+                        end if;
 
-                     Next_Component (Comp);
-                  end loop;
-               end;
+                        Next_Component (Comp);
+                     end loop;
+                  end;
+
+               elsif Is_Array_Type (E)
+                 and then Ekind_In (Component_Type (E),
+                                    E_Anonymous_Access_Type,
+                                    E_Anonymous_Access_Subprogram_Type)
+               then
+                  Set_Convention (Designated_Type (Component_Type (E)), C);
+               end if;
             end if;
 
             --  Deal with incomplete/private type case, where underlying type
@@ -8101,6 +8279,7 @@ package body Sem_Prag is
          E         : Entity_Id;
          E1        : Entity_Id;
          Id        : Node_Id;
+         Subp      : Entity_Id;
 
       --  Start of processing for Process_Convention
 
@@ -8272,13 +8451,114 @@ package body Sem_Prag is
                Error_Pragma_Arg
                  ("second argument of pragma% must be a subprogram", Arg2);
             end if;
+
+         --  Special checks for C_Variadic_n
+
+         elsif C in Convention_C_Variadic then
+
+            --  Several allowed cases
+
+            if Is_Subprogram_Or_Generic_Subprogram (E) then
+               Subp := E;
+
+            --  An access to subprogram is also allowed
+
+            elsif Is_Access_Type (E)
+              and then Ekind (Designated_Type (E)) = E_Subprogram_Type
+            then
+               Subp := Designated_Type (E);
+
+            --  Allow internal call to set convention of subprogram type
+
+            elsif Ekind (E) = E_Subprogram_Type then
+               Subp := E;
+
+            else
+               Error_Pragma_Arg
+                 ("argument of pragma% must be subprogram or access type",
+                  Arg2);
+               Subp := Empty;
+            end if;
+
+            --  ISO C requires a named parameter before the ellipsis, so a
+            --  variadic C function taking 0 fixed parameter cannot exist.
+
+            if C = Convention_C_Variadic_0 then
+
+               Error_Msg_N
+                 ("??C_Variadic_0 cannot be used for an 'I'S'O C function",
+                  Get_Pragma_Arg (Arg2));
+
+            --  Now check the number of parameters of the subprogram
+
+            elsif Present (Subp) then
+               declare
+                  Minimum : constant Nat :=
+                    Convention_Id'Pos (C) -
+                      Convention_Id'Pos (Convention_C_Variadic_0);
+
+                  Count  : Nat;
+                  Formal : Entity_Id;
+
+               begin
+                  Count := 0;
+                  Formal := First_Formal (Subp);
+                  while Present (Formal) loop
+                     Count := Count + 1;
+                     Next_Formal (Formal);
+                  end loop;
+
+                  if Count < Minimum then
+                     Error_Msg_Uint_1 := UI_From_Int (Minimum);
+                     Error_Pragma_Arg
+                       ("argument of pragma% must have at least"
+                        & "^ parameters", Arg2);
+                  end if;
+               end;
+            end if;
+
+         --  Special checks for Stdcall
+
+         elsif C = Convention_Stdcall then
+
+            --  Several allowed cases
+
+            if Is_Subprogram_Or_Generic_Subprogram (E)
+
+              --  A variable is OK
+
+              or else Ekind (E) = E_Variable
+
+              --  A component as well. The entity does not have its Ekind
+              --  set until the enclosing record declaration is fully
+              --  analyzed.
+
+              or else Nkind (Parent (E)) = N_Component_Declaration
+
+              --  An access to subprogram is also allowed
+
+              or else
+                (Is_Access_Type (E)
+                  and then Ekind (Designated_Type (E)) = E_Subprogram_Type)
+
+              --  Allow internal call to set convention of subprogram type
+
+              or else Ekind (E) = E_Subprogram_Type
+            then
+               null;
+
+            else
+               Error_Pragma_Arg
+                 ("argument of pragma% must be subprogram or access type",
+                  Arg2);
+            end if;
          end if;
+
+         Set_Convention_From_Pragma (E);
 
          --  Deal with non-subprogram cases
 
          if not Is_Subprogram_Or_Generic_Subprogram (E) then
-            Set_Convention_From_Pragma (E);
-
             if Is_Type (E) then
 
                --  The pragma must apply to a first subtype, but it can also
@@ -8306,9 +8586,6 @@ package body Sem_Prag is
          --  compilation unit.
 
          else
-            Comp_Unit := Get_Source_Unit (E);
-            Set_Convention_From_Pragma (E);
-
             --  Treat a pragma Import as an implicit body, and pragma import
             --  as implicit reference (for navigation in GNAT Studio).
 
@@ -8353,6 +8630,7 @@ package body Sem_Prag is
             --  Otherwise Loop through the homonyms of the pragma argument's
             --  entity, an apply convention to those in the current scope.
 
+            Comp_Unit := Get_Source_Unit (E);
             E1 := Ent;
 
             loop
@@ -10415,6 +10693,55 @@ package body Sem_Prag is
                   else
                      Add_To_Config_Boolean_Restrictions (No_Elaboration_Code);
                   end if;
+
+               --  Special processing for No_Tasking restriction
+
+               elsif R_Id = No_Tasking then
+
+                  --  Handle global configuration pragmas
+
+                  if No (Cunit (Main_Unit)) then
+                     Set_Global_No_Tasking;
+
+                  --  Handle package System, which may be loaded by rtsfind as
+                  --  a consequence of loading some other run-time unit.
+
+                  else
+                     declare
+                        C_Node : constant Entity_Id :=
+                                   Cunit (Current_Sem_Unit);
+                        C_Ent  : constant Entity_Id :=
+                                   Cunit_Entity (Current_Sem_Unit);
+                        Loc_Str : constant String :=
+                                    Build_Location_String (Sloc (C_Ent));
+                        Ref_Str : constant String := "system.ads";
+                        Ref_Len : constant Positive := Ref_Str'Length;
+
+                     begin
+                        pragma Assert (Loc_Str'First = 1);
+                        pragma Assert (Loc_Str'First = Ref_Str'First);
+
+                        if Nkind (Unit (C_Node)) = N_Package_Declaration
+                          and then Chars (C_Ent) = Name_System
+
+                           --  Handle child packages named foo-system.ads
+
+                          and then Loc_Str'Length > Ref_Str'Length
+                          and then Loc_Str (Loc_Str'First .. Ref_Len)
+                                     = Ref_Str (Ref_Str'First .. Ref_Len)
+
+                           --  ... and ensure that package System has not
+                           --  been previously loaded. Done to ensure that
+                           --  the above checks do not have any corner case
+                           --  (since they are performed without semantic
+                           --  information).
+
+                          and then not RTU_Loaded (Rtsfind.System)
+                        then
+                           Set_Global_No_Tasking;
+                        end if;
+                     end;
+                  end if;
                end if;
 
                --  If this is a warning, then set the warning unless we already
@@ -11150,7 +11477,7 @@ package body Sem_Prag is
       --    Set required policies
 
       --      pragma Task_Dispatching_Policy (FIFO_Within_Priorities)
-      --        (For Ravenscar and GNAT_Extended_Ravenscar profiles)
+      --        (For Ravenscar, Jorvik, and GNAT_Extended_Ravenscar profiles)
       --      pragma Task_Dispatching_Policy (EDF_Across_Priorities)
       --        (For GNAT_Ravenscar_EDF profile)
       --      pragma Locking_Policy (Ceiling_Locking)
@@ -11309,7 +11636,7 @@ package body Sem_Prag is
          end if;
 
          --  Set the following restriction which was added to Ada 2012 (see
-         --  AI-0171):
+         --  AI05-0171):
          --    No_Dependence => System.Multiprocessors.Dispatching_Domains
 
          if Ada_Version >= Ada_2012 then
@@ -11334,7 +11661,32 @@ package body Sem_Prag is
               (Unit    => Nod,
                Warn    => Treat_Restrictions_As_Warnings,
                Profile => Ravenscar);
+
+            --  Set the following restriction which was added to Ada 2020,
+            --  but as a binding interpretation:
+            --     No_Dependence => Ada.Synchronous_Barriers
+            --  for Ravenscar (and therefore for Ravenscar variants) but not
+            --  for Jorvik. The unit Ada.Synchronous_Barriers was introduced
+            --  in Ada2012 (AI05-0174).
+
+            if Profile /= Jorvik then
+               Pref_Id := Make_Identifier (Loc, Name_Find ("ada"));
+               Sel_Id  := Make_Identifier (Loc, Name_Find
+                                                  ("synchronous_barriers"));
+
+               Nod :=
+                 Make_Selected_Component
+                   (Sloc          => Loc,
+                    Prefix        => Pref_Id,
+                    Selector_Name => Sel_Id);
+
+               Set_Restriction_No_Dependence
+                 (Unit    => Nod,
+                  Warn    => Treat_Restrictions_As_Warnings,
+                  Profile => Ravenscar);
+            end if;
          end if;
+
       end Set_Ravenscar_Profile;
 
    --  Start of processing for Analyze_Pragma
@@ -11505,7 +11857,7 @@ package body Sem_Prag is
          --    SIMPLE_OPTION
          --  | NAME_VALUE_OPTION
 
-         --  SIMPLE_OPTION ::= Ghost | Synchronous
+         --  SIMPLE_OPTION ::= Ghost | Relaxed_Initialization | Synchronous
 
          --  NAME_VALUE_OPTION ::=
          --    Part_Of => ABSTRACT_STATE
@@ -11575,15 +11927,16 @@ package body Sem_Prag is
             is
                --  Flags used to verify the consistency of options
 
-               AR_Seen          : Boolean := False;
-               AW_Seen          : Boolean := False;
-               ER_Seen          : Boolean := False;
-               EW_Seen          : Boolean := False;
-               External_Seen    : Boolean := False;
-               Ghost_Seen       : Boolean := False;
-               Others_Seen      : Boolean := False;
-               Part_Of_Seen     : Boolean := False;
-               Synchronous_Seen : Boolean := False;
+               AR_Seen                     : Boolean := False;
+               AW_Seen                     : Boolean := False;
+               ER_Seen                     : Boolean := False;
+               EW_Seen                     : Boolean := False;
+               External_Seen               : Boolean := False;
+               Ghost_Seen                  : Boolean := False;
+               Others_Seen                 : Boolean := False;
+               Part_Of_Seen                : Boolean := False;
+               Relaxed_Initialization_Seen : Boolean := False;
+               Synchronous_Seen            : Boolean := False;
 
                --  Flags used to store the static value of all external states'
                --  expressions.
@@ -12063,6 +12416,12 @@ package body Sem_Prag is
                         elsif Chars (Opt) = Name_Synchronous then
                            Check_Duplicate_Option (Opt, Synchronous_Seen);
                            Check_Ghost_Synchronous;
+
+                        --  Relaxed_Initialization
+
+                        elsif Chars (Opt) = Name_Relaxed_Initialization then
+                           Check_Duplicate_Option
+                             (Opt, Relaxed_Initialization_Seen);
 
                         --  Option Part_Of without an encapsulating state is
                         --  illegal (SPARK RM 7.1.4(8)).
@@ -13185,41 +13544,65 @@ package body Sem_Prag is
             | Pragma_No_Caching
          =>
          Async_Effective : declare
-            Obj_Decl : Node_Id;
-            Obj_Id   : Entity_Id;
-
+            Obj_Or_Type_Decl : Node_Id;
+            Obj_Or_Type_Id   : Entity_Id;
          begin
             GNAT_Pragma;
             Check_No_Identifiers;
             Check_At_Most_N_Arguments  (1);
 
-            Obj_Decl := Find_Related_Context (N, Do_Checks => True);
+            Obj_Or_Type_Decl := Find_Related_Context (N, Do_Checks => True);
 
-            --  Object declaration
+            --  Pragma must apply to a object declaration or to a type
+            --  declaration (only the former in the No_Caching case).
+            --  Original_Node is necessary to account for untagged derived
+            --  types that are rewritten as subtypes of their
+            --  respective root types.
 
-            if Nkind (Obj_Decl) /= N_Object_Declaration then
-               Pragma_Misplaced;
-               return;
+            if Nkind (Obj_Or_Type_Decl) /= N_Object_Declaration then
+               if (Prag_Id = Pragma_No_Caching)
+                  or not Nkind_In (Original_Node (Obj_Or_Type_Decl),
+                                   N_Full_Type_Declaration,
+                                   N_Private_Type_Declaration,
+                                   N_Formal_Type_Declaration,
+                                   N_Task_Type_Declaration,
+                                   N_Protected_Type_Declaration)
+               then
+                  Pragma_Misplaced;
+                  return;
+               end if;
             end if;
 
-            Obj_Id := Defining_Entity (Obj_Decl);
+            Obj_Or_Type_Id := Defining_Entity (Obj_Or_Type_Decl);
 
             --  Perform minimal verification to ensure that the argument is at
-            --  least a variable. Subsequent finer grained checks will be done
-            --  at the end of the declarative region the contains the pragma.
+            --  least a variable or a type. Subsequent finer grained checks
+            --  will be done at the end of the declarative region that
+            --  contains the pragma.
 
-            if Ekind (Obj_Id) = E_Variable then
+            if Ekind (Obj_Or_Type_Id) = E_Variable or Is_Type (Obj_Or_Type_Id)
+            then
+
+               --  In the case of a type, pragma is a type-related
+               --  representation item and so requires checks common to
+               --  all type-related representation items.
+
+               if Is_Type (Obj_Or_Type_Id)
+                 and then Rep_Item_Too_Late (Obj_Or_Type_Id, N)
+               then
+                  return;
+               end if;
 
                --  A pragma that applies to a Ghost entity becomes Ghost for
                --  the purposes of legality checks and removal of ignored Ghost
                --  code.
 
-               Mark_Ghost_Pragma (N, Obj_Id);
+               Mark_Ghost_Pragma (N, Obj_Or_Type_Id);
 
                --  Chain the pragma on the contract for further processing by
                --  Analyze_External_Property_In_Decl_Part.
 
-               Add_Contract_Item (N, Obj_Id);
+               Add_Contract_Item (N, Obj_Or_Type_Id);
 
                --  Analyze the Boolean expression (if any)
 
@@ -13230,7 +13613,8 @@ package body Sem_Prag is
             --  Otherwise the external property applies to a constant
 
             else
-               Error_Pragma ("pragma % must apply to a volatile object");
+               Error_Pragma
+                 ("pragma % must apply to a volatile type or object");
             end if;
          end Async_Effective;
 
@@ -18326,15 +18710,6 @@ package body Sem_Prag is
 
             Set_Has_Own_Invariants (Typ);
 
-            --  Set the Invariants_Ignored flag if that policy is in effect
-
-            Set_Invariants_Ignored (Typ,
-              Present (Check_Policy_List)
-                and then
-                  (Policy_In_Effect (Name_Invariant) = Name_Ignore
-                     and then
-                   Policy_In_Effect (Name_Type_Invariant) = Name_Ignore));
-
             --  If the invariant is class-wide, then it can be inherited by
             --  derived or interface implementing types. The type is said to
             --  have "inheritable" invariants.
@@ -19505,7 +19880,7 @@ package body Sem_Prag is
                   raise Pragma_Exit;
                end if;
 
-               --  Loop to find matching procedures
+               --  Loop to find matching procedures or functions (Ada 2020)
 
                E := Entity (Id);
 
@@ -19513,8 +19888,13 @@ package body Sem_Prag is
                while Present (E)
                  and then Scope (E) = Current_Scope
                loop
-                  if Ekind_In (E, E_Generic_Procedure, E_Procedure) then
+                  --  Ada 2020 (AI12-0269): A function can be No_Return
 
+                  if Ekind_In (E, E_Generic_Procedure, E_Procedure)
+                    or else (Ada_Version >= Ada_2020
+                              and then
+                             Ekind_In (E, E_Generic_Function, E_Function))
+                  then
                      --  Check that the pragma is not applied to a body.
                      --  First check the specless body case, to give a
                      --  different error message. These checks do not apply
@@ -19596,6 +19976,11 @@ package body Sem_Prag is
                     and then From_Aspect_Specification (N)
                   then
                      Set_No_Return (Entity (Id));
+
+                  elsif Ada_Version >= Ada_2020 then
+                     Error_Pragma_Arg
+                       ("no subprogram& found for pragma%", Arg);
+
                   else
                      Error_Pragma_Arg ("no procedure& found for pragma%", Arg);
                   end if;
@@ -21296,6 +21681,9 @@ package body Sem_Prag is
             begin
                if Chars (Argx) = Name_Ravenscar then
                   Set_Ravenscar_Profile (Ravenscar, N);
+
+               elsif Chars (Argx) = Name_Jorvik then
+                  Set_Ravenscar_Profile (Jorvik, N);
 
                elsif Chars (Argx) = Name_Gnat_Extended_Ravenscar then
                   Set_Ravenscar_Profile (GNAT_Extended_Ravenscar, N);
@@ -29885,7 +30273,9 @@ package body Sem_Prag is
 
          --  Skip internally generated code
 
-         elsif not Comes_From_Source (Stmt) then
+         elsif not Comes_From_Source (Stmt)
+           and then not Comes_From_Source (Original_Node (Stmt))
+         then
 
             --  The anonymous object created for a single concurrent type is a
             --  suitable context.
@@ -30031,9 +30421,16 @@ package body Sem_Prag is
                elsif Present (Generic_Parent (Specification (Stmt))) then
                   return Stmt;
 
-               --  Ada_2020: contract on formal subprogram
+               --  Ada 2020: contract on formal subprogram or on generated
+               --  Access_Subprogram_Wrapper, which appears after the related
+               --  Access_Subprogram declaration.
 
                elsif Is_Generic_Actual_Subprogram (Defining_Entity (Stmt))
+                 and then Ada_Version >= Ada_2020
+               then
+                  return Stmt;
+
+               elsif Is_Access_Subprogram_Wrapper (Defining_Entity (Stmt))
                  and then Ada_Version >= Ada_2020
                then
                   return Stmt;
@@ -30204,8 +30601,7 @@ package body Sem_Prag is
    begin
       --  Use the expression of the original aspect when analyzing the template
       --  of a generic unit. In both cases the aspect's tree must be decorated
-      --  to allow for ASIS queries or to save the global references in the
-      --  generic context.
+      --  to save the global references in the generic context.
 
       if From_Aspect_Specification (Prag)
         and then (Present (Context_Id) and then Is_Generic_Unit (Context_Id))
@@ -30546,11 +30942,11 @@ package body Sem_Prag is
       Pragma_Deadline_Floor                 => -1,
       Pragma_Debug                          => -1,
       Pragma_Debug_Policy                   =>  0,
-      Pragma_Detect_Blocking                =>  0,
       Pragma_Default_Initial_Condition      => -1,
       Pragma_Default_Scalar_Storage_Order   =>  0,
       Pragma_Default_Storage_Pool           =>  0,
       Pragma_Depends                        => -1,
+      Pragma_Detect_Blocking                =>  0,
       Pragma_Disable_Atomic_Synchronization =>  0,
       Pragma_Discard_Names                  =>  0,
       Pragma_Dispatching_Domain             => -1,
@@ -30572,9 +30968,9 @@ package body Sem_Prag is
       Pragma_Extensions_Allowed             =>  0,
       Pragma_Extensions_Visible             =>  0,
       Pragma_External                       => -1,
-      Pragma_Favor_Top_Level                =>  0,
       Pragma_External_Name_Casing           =>  0,
       Pragma_Fast_Math                      =>  0,
+      Pragma_Favor_Top_Level                =>  0,
       Pragma_Finalize_Storage_Only          =>  0,
       Pragma_Ghost                          =>  0,
       Pragma_Global                         => -1,
@@ -30638,9 +31034,9 @@ package body Sem_Prag is
       Pragma_Obsolescent                    =>  0,
       Pragma_Optimize                       =>  0,
       Pragma_Optimize_Alignment             =>  0,
+      Pragma_Ordered                        =>  0,
       Pragma_Overflow_Mode                  =>  0,
       Pragma_Overriding_Renamings           =>  0,
-      Pragma_Ordered                        =>  0,
       Pragma_Pack                           =>  0,
       Pragma_Page                           =>  0,
       Pragma_Part_Of                        =>  0,
@@ -30648,7 +31044,6 @@ package body Sem_Prag is
       Pragma_Passive                        =>  0,
       Pragma_Persistent_BSS                 =>  0,
       Pragma_Polling                        =>  0,
-      Pragma_Prefix_Exception_Messages      =>  0,
       Pragma_Post                           => -1,
       Pragma_Postcondition                  => -1,
       Pragma_Post_Class                     => -1,
@@ -30658,6 +31053,7 @@ package body Sem_Prag is
       Pragma_Predicate_Failure              => -1,
       Pragma_Preelaborable_Initialization   => -1,
       Pragma_Preelaborate                   =>  0,
+      Pragma_Prefix_Exception_Messages      =>  0,
       Pragma_Pre_Class                      => -1,
       Pragma_Priority                       => -1,
       Pragma_Priority_Specific_Dispatching  =>  0,
@@ -30676,35 +31072,35 @@ package body Sem_Prag is
       Pragma_Refined_Post                   => -1,
       Pragma_Refined_State                  => -1,
       Pragma_Relative_Deadline              =>  0,
-      Pragma_Rename_Pragma                  =>  0,
       Pragma_Remote_Access_Type             => -1,
       Pragma_Remote_Call_Interface          => -1,
       Pragma_Remote_Types                   => -1,
+      Pragma_Rename_Pragma                  =>  0,
       Pragma_Restricted_Run_Time            =>  0,
       Pragma_Restriction_Warnings           =>  0,
       Pragma_Restrictions                   =>  0,
       Pragma_Reviewable                     => -1,
       Pragma_Secondary_Stack_Size           => -1,
-      Pragma_Short_Circuit_And_Or           =>  0,
       Pragma_Share_Generic                  =>  0,
       Pragma_Shared                         =>  0,
       Pragma_Shared_Passive                 =>  0,
+      Pragma_Short_Circuit_And_Or           =>  0,
       Pragma_Short_Descriptors              =>  0,
       Pragma_Simple_Storage_Pool_Type       =>  0,
       Pragma_Source_File_Name               =>  0,
       Pragma_Source_File_Name_Project       =>  0,
       Pragma_Source_Reference               =>  0,
       Pragma_SPARK_Mode                     =>  0,
+      Pragma_Static_Elaboration_Desired     =>  0,
       Pragma_Storage_Size                   => -1,
       Pragma_Storage_Unit                   =>  0,
-      Pragma_Static_Elaboration_Desired     =>  0,
       Pragma_Stream_Convert                 =>  0,
       Pragma_Style_Checks                   =>  0,
       Pragma_Subtitle                       =>  0,
       Pragma_Suppress                       =>  0,
-      Pragma_Suppress_Exception_Locations   =>  0,
       Pragma_Suppress_All                   =>  0,
       Pragma_Suppress_Debug_Info            =>  0,
+      Pragma_Suppress_Exception_Locations   =>  0,
       Pragma_Suppress_Initialization        =>  0,
       Pragma_System_Name                    =>  0,
       Pragma_Task_Dispatching_Policy        =>  0,
@@ -31149,7 +31545,7 @@ package body Sem_Prag is
          Error_Msg_N ("condition is not known at compile time", Arg1x);
 
       elsif Warn_On_Unknown_Compile_Time_Warning then
-         Error_Msg_N ("?condition is not known at compile time", Arg1x);
+         Error_Msg_N ("??condition is not known at compile time", Arg1x);
       end if;
    end Validate_Compile_Time_Warning_Or_Error;
 

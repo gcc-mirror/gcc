@@ -58,6 +58,7 @@ procedure XSnamesT is
    Line  : VString := Nul;
    Name0 : VString := Nul;
    Name1 : VString := Nul;
+   Name2 : VString := Nul;
    Oval  : VString := Nul;
    Restl : VString := Nul;
 
@@ -69,6 +70,7 @@ procedure XSnamesT is
    Get_Name : constant Pattern := "Name_" & Rest * Name1;
    Chk_Low  : constant Pattern := Pos (0) & Any (Lower_Set) & Rest & Pos (1);
    Findu    : constant Pattern := Span ('u') * A;
+   Is_Conv  : constant Pattern := "Convention_" & Rest;
 
    Val : Natural;
 
@@ -98,12 +100,18 @@ procedure XSnamesT is
 
    --  Patterns used in the spec file
 
-   Get_Attr : constant Pattern := Span (' ') & "Attribute_"
-                                  & Break (",)") * Name1;
-   Get_Conv : constant Pattern := Span (' ') & "Convention_"
-                                  & Break (",)") * Name1;
-   Get_Prag : constant Pattern := Span (' ') & "Pragma_"
-                                  & Break (",)") * Name1;
+   Get_Attr  : constant Pattern := Span (' ') & "Attribute_"
+                                   & Break (",)") * Name1;
+   Get_Conv  : constant Pattern := Span (' ') & "Convention_"
+                                   & Break (",)") * Name1;
+   Get_Prag  : constant Pattern := Span (' ') & "Pragma_"
+                                   & Break (",)") * Name1;
+   Get_Subt1 : constant Pattern := Span (' ') & "subtype "
+                                   & Break (' ') * Name1
+                                   & " is " & Rest * Name2;
+   Get_Subt2 : constant Pattern := Span (' ') & "range "
+                                   & Break (' ') * Name1
+                                   & " .. " & Break (";") * Name2;
 
    type Header_Symbol_Counter is array (Header_Symbol) of Natural;
    Header_Counter : Header_Symbol_Counter := (0, 0, 0, 0, 0);
@@ -143,7 +151,6 @@ procedure XSnamesT is
 
       if Header_Current_Symbol /= S then
          declare
-            Name2 : VString;
             Pat : constant Pattern := "#define  "
                                        & Header_Prefix (S).all
                                        & Break (' ') * Name2;
@@ -227,6 +234,11 @@ begin
             Output_Header_Line (Conv);
          elsif Match (Line, Get_Prag) then
             Output_Header_Line (Prag);
+         elsif Match (Line, Get_Subt1) and then Match (Name2, Is_Conv) then
+            New_Line (OutH);
+            Put_Line (OutH, "SUBTYPE (" & Name1 & ", " & Name2 & ", ");
+         elsif Match (Line, Get_Subt2) and then Match (Name1, Is_Conv) then
+            Put_Line (OutH, "   " & Name1 & ", " & Name2 & ')');
          end if;
       else
 

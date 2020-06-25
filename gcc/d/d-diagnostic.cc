@@ -110,7 +110,7 @@ expand_d_format (const char *format)
     }
 
   gcc_assert (!inbacktick);
-  return buf.extractString ();
+  return buf.extractChars ();
 }
 
 /* Helper routine for all error routines.  Reports a diagnostic specified by

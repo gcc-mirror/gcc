@@ -144,7 +144,8 @@ declaration_type (Declaration *decl)
   /* Lazy declarations are converted to delegates.  */
   if (decl->storage_class & STClazy)
     {
-      TypeFunction *tf = TypeFunction::create (NULL, decl->type, false, LINKd);
+      TypeFunction *tf = TypeFunction::create (NULL, decl->type,
+					       VARARGnone, LINKd);
       TypeDelegate *t = TypeDelegate::create (tf);
       return build_ctype (t->merge2 ());
     }
@@ -193,7 +194,8 @@ parameter_type (Parameter *arg)
   /* Lazy parameters are converted to delegates.  */
   if (arg->storageClass & STClazy)
     {
-      TypeFunction *tf = TypeFunction::create (NULL, arg->type, false, LINKd);
+      TypeFunction *tf = TypeFunction::create (NULL, arg->type,
+					       VARARGnone, LINKd);
       TypeDelegate *t = TypeDelegate::create (tf);
       return build_ctype (t->merge2 ());
     }
@@ -362,7 +364,7 @@ build_interface_binfo (tree super, ClassDeclaration *cd, unsigned& offset)
   /* Want RECORD_TYPE, not POINTER_TYPE.  */
   BINFO_TYPE (binfo) = TREE_TYPE (ctype);
   BINFO_INHERITANCE_CHAIN (binfo) = super;
-  BINFO_OFFSET (binfo) = size_int (offset * Target::ptrsize);
+  BINFO_OFFSET (binfo) = size_int (offset * target.ptrsize);
   BINFO_VIRTUAL_P (binfo) = 1;
 
   for (size_t i = 0; i < cd->baseclasses->length; i++, offset++)
@@ -499,7 +501,7 @@ build_vindex_ref (tree object, tree fntype, size_t index)
 
   gcc_assert (POINTER_TYPE_P (fntype));
 
-  return build_memref (fntype, result, size_int (Target::ptrsize * index));
+  return build_memref (fntype, result, size_int (target.ptrsize * index));
 }
 
 /* Return TRUE if EXP is a valid lvalue.  Lvalue references cannot be
@@ -819,7 +821,7 @@ identity_compare_p (StructDeclaration *sd)
 
       /* Check for types that may have padding.  */
       if ((tb->ty == Tcomplex80 || tb->ty == Tfloat80 || tb->ty == Timaginary80)
-	  && Target::realpad != 0)
+	  && target.realpad != 0)
 	return false;
 
       if (offset <= vd->offset)
@@ -1749,13 +1751,13 @@ array_bounds_check (void)
 
   switch (global.params.useArrayBounds)
     {
-    case BOUNDSCHECKoff:
+    case CHECKENABLEoff:
       return false;
 
-    case BOUNDSCHECKon:
+    case CHECKENABLEon:
       return true;
 
-    case BOUNDSCHECKsafeonly:
+    case CHECKENABLEsafeonly:
       /* For D2 safe functions only.  */
       fd = d_function_chain->function;
       if (fd && fd->type->ty == Tfunction)
@@ -1885,9 +1887,9 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 	    }
 	}
 
-      size_t nparams = Parameter::dim (tf->parameters);
+      size_t nparams = tf->parameterList.length ();
       /* if _arguments[] is the first argument.  */
-      size_t varargs = (tf->linkage == LINKd && tf->varargs == 1);
+      size_t varargs = tf->isDstyleVariadic ();
 
       /* Assumes arguments->length <= formal_args->length if (!tf->varargs).  */
       for (size_t i = 0; i < arguments->length; ++i)
@@ -1898,7 +1900,7 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 	  if (i - varargs < nparams && i >= varargs)
 	    {
 	      /* Actual arguments for declared formal arguments.  */
-	      Parameter *parg = Parameter::getNth (tf->parameters, i - varargs);
+	      Parameter *parg = tf->parameterList[i - varargs];
 	      targ = convert_for_argument (targ, parg);
 	    }
 
@@ -2376,8 +2378,8 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
      of the calling function non-locally.  So we add all parameters with nested
      refs to the function frame, this should also mean overriding methods will
      have the same frame layout when inheriting a contract.  */
-  if ((global.params.useIn && fd->frequire)
-      || (global.params.useOut && fd->fensure))
+  if ((global.params.useIn == CHECKENABLEon && fd->frequire)
+      || (global.params.useOut == CHECKENABLEon && fd->fensure))
     {
       if (fd->parameters)
 	{
@@ -2563,8 +2565,8 @@ get_frameinfo (FuncDeclaration *fd)
 
       /* In checkNestedReference, references from contracts are not added to the
 	 closureVars array, so assume all parameters referenced.  */
-      if ((global.params.useIn && fd->frequire)
-	  || (global.params.useOut && fd->fensure))
+      if ((global.params.useIn == CHECKENABLEon && fd->frequire)
+	  || (global.params.useOut == CHECKENABLEon && fd->fensure))
 	FRAMEINFO_CREATES_FRAME (ffi) = 1;
 
       /* If however `fd` is nested (deeply) in a function that creates a

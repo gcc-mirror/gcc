@@ -1,5 +1,5 @@
 # Makefile.rtl for GNU Ada Compiler (GNAT).
-#   Copyright (C) 2003-2017, Free Software Foundation, Inc.
+#   Copyright (C) 2003-2020, Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -505,13 +505,14 @@ GNATRTL_NONTASKING_OBJS= \
   machcode$(objext) \
   s-addima$(objext) \
   s-addope$(objext) \
+  s-aoinar$(objext) \
+  s-aomoar$(objext) \
   s-aotase$(objext) \
   s-arit64$(objext) \
   s-assert$(objext) \
   s-atacco$(objext) \
   s-atocou$(objext) \
   s-atoope$(objext) \
-  s-atopar$(objext) \
   s-atopex$(objext) \
   s-atopri$(objext) \
   s-auxdec$(objext) \
@@ -1034,7 +1035,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae vxworksaespe,$(target_cpu) $(t
   a-elchha.adb<libgnat/a-elchha__vxworks-ppc-full.adb \
   a-intnam.ads<libgnarl/a-intnam__vxworks.ads \
   a-numaux.ads<libgnat/a-numaux__vxworks.ads \
-  g-io.adb<hie/g-io__vxworks-ppc-cert.adb \
+  g-io.adb<hie/g-io__vxworks-cert.adb \
   s-inmaop.adb<libgnarl/s-inmaop__vxworks.adb \
   s-interr.adb<libgnarl/s-interr__vxworks.adb \
   s-intman.ads<libgnarl/s-intman__vxworks.ads \
@@ -1090,7 +1091,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworksae,$(target_cpu) $(target_vendor) $(ta
   a-elchha.adb<libgnat/a-elchha__vxworks-ppc-full.adb \
   a-intnam.ads<libgnarl/a-intnam__vxworks.ads \
   a-numaux.ads<libgnat/a-numaux__vxworks.ads \
-  g-io.adb<hie/g-io__vxworks-ppc-cert.adb \
+  g-io.adb<hie/g-io__vxworks-cert.adb \
   s-inmaop.adb<libgnarl/s-inmaop__vxworks.adb \
   s-interr.adb<libgnarl/s-interr__vxworks.adb \
   s-intman.ads<libgnarl/s-intman__vxworks.ads \

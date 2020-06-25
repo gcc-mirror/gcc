@@ -39,7 +39,7 @@ Expression *toDelegate(Expression *e, Type* t, Scope *sc)
     //printf("Expression::toDelegate(t = %s) %s\n", t->toChars(), e->toChars());
     Loc loc = e->loc;
 
-    TypeFunction *tf = new TypeFunction(NULL, t, 0, LINKd);
+    TypeFunction *tf = new TypeFunction(ParameterList(), t, LINKd);
     if (t->hasWild())
         tf->mod = MODwild;
     FuncLiteralDeclaration *fld =

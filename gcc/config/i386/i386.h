@@ -2444,9 +2444,9 @@ const wide_int_bitmask PTA_RDPID (0, HOST_WIDE_INT_1U << 6);
 const wide_int_bitmask PTA_PCONFIG (0, HOST_WIDE_INT_1U << 7);
 const wide_int_bitmask PTA_WBNOINVD (0, HOST_WIDE_INT_1U << 8);
 const wide_int_bitmask PTA_AVX512VP2INTERSECT (0, HOST_WIDE_INT_1U << 9);
-const wide_int_bitmask PTA_WAITPKG (0, HOST_WIDE_INT_1U << 9);
 const wide_int_bitmask PTA_PTWRITE (0, HOST_WIDE_INT_1U << 10);
 const wide_int_bitmask PTA_AVX512BF16 (0, HOST_WIDE_INT_1U << 11);
+const wide_int_bitmask PTA_WAITPKG (0, HOST_WIDE_INT_1U << 12);
 const wide_int_bitmask PTA_MOVDIRI(0, HOST_WIDE_INT_1U << 13);
 const wide_int_bitmask PTA_MOVDIR64B(0, HOST_WIDE_INT_1U << 14);
 
@@ -2761,6 +2761,13 @@ enum function_type
   TYPE_EXCEPTION
 };
 
+enum queued_insn_type
+{
+  TYPE_NONE = 0,
+  TYPE_ENDBR,
+  TYPE_PATCHABLE_AREA
+};
+
 struct GTY(()) machine_function {
   struct stack_local_entry *stack_locals;
   int varargs_gpr_size;
@@ -2851,8 +2858,11 @@ struct GTY(()) machine_function {
   /* Nonzero if the function places outgoing arguments on stack.  */
   BOOL_BITFIELD outgoing_args_on_stack : 1;
 
-  /* If true, ENDBR is queued at function entrance.  */
-  BOOL_BITFIELD endbr_queued_at_entrance : 1;
+  /* If true, ENDBR or patchable area is queued at function entrance.  */
+  ENUM_BITFIELD(queued_insn_type) insn_queued_at_entrance : 2;
+
+  /* If true, the function label has been emitted.  */
+  BOOL_BITFIELD function_label_emitted : 1;
 
   /* True if the function needs a stack frame.  */
   BOOL_BITFIELD stack_frame_required : 1;

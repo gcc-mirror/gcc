@@ -127,7 +127,7 @@
 #define __cpp_lib_boyer_moore_searcher 201603
 #define __cpp_lib_chrono 201611
 #define __cpp_lib_clamp 201603
-#define __cpp_lib_constexpr_char_traits 201611
+#define __cpp_lib_constexpr_char_traits 201611L
 #define __cpp_lib_enable_shared_from_this 201603
 #define __cpp_lib_execution 201902L // FIXME: should be 201603L
 #define __cpp_lib_filesystem 201703
@@ -192,16 +192,18 @@
 
 #if _GLIBCXX_HOSTED
 #undef __cpp_lib_array_constexpr
+#undef __cpp_lib_constexpr_char_traits
 #define __cpp_lib_array_constexpr 201811L
 #define __cpp_lib_assume_aligned 201811L
 #define __cpp_lib_bind_front 201907L
 // FIXME: #define __cpp_lib_execution 201902L
 #define __cpp_lib_integer_comparison_functions 202002L
 #define __cpp_lib_constexpr_algorithms 201806L
+#define __cpp_lib_constexpr_char_traits 201811L
 #define __cpp_lib_constexpr_complex 201711L
 #define __cpp_lib_constexpr_dynamic_alloc 201907L
 #define __cpp_lib_constexpr_functional 201907L
-# define __cpp_lib_constexpr_iterator 201811L
+#define __cpp_lib_constexpr_iterator 201811L
 #define __cpp_lib_constexpr_memory 201811L
 #define __cpp_lib_constexpr_numeric 201911L
 #define __cpp_lib_constexpr_string_view 201811L

@@ -23,6 +23,7 @@ m4_include(config/acx.m4)
 m4_include(config/override.m4)
 m4_include(config/proginstall.m4)
 m4_include(config/elf.m4)
+m4_include(config/ax_cxx_compile_stdcxx.m4)
 m4_include([libtool.m4])
 m4_include([ltoptions.m4])
 m4_include([ltsugar.m4])
@@ -1463,9 +1464,12 @@ case "$have_compiler:$host:$target:$enable_bootstrap" in
 esac
 
 # When bootstrapping with GCC, build stage 1 in C++11 mode to ensure that a
-# C++11 compiler can still start the bootstrap.
+# C++11 compiler can still start the bootstrap.  Otherwise, if building GCC,
+# require C++11 (or higher).
 if test "$enable_bootstrap:$GXX" = "yes:yes"; then
   CXX="$CXX -std=c++11"
+elif test "$have_compiler" = yes; then
+  AX_CXX_COMPILE_STDCXX(11)
 fi
 
 # Used for setting $lt_cv_objdir

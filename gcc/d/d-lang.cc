@@ -163,7 +163,7 @@ deps_write (Module *module, OutBuffer *buffer, unsigned colmax = 72)
   /* Write out make target module name.  */
   if (d_option.deps_target)
     {
-      buffer->writestring (d_option.deps_target->extractString ());
+      buffer->writestring (d_option.deps_target->extractChars ());
       column = d_option.deps_target->offset;
     }
   else
@@ -279,12 +279,12 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
   global.vendor = lang_hooks.name;
   global.params.argv0 = xstrdup (decoded_options[0].arg);
   global.params.link = true;
-  global.params.useAssert = true;
-  global.params.useInvariants = true;
-  global.params.useIn = true;
-  global.params.useOut = true;
-  global.params.useArrayBounds = BOUNDSCHECKdefault;
-  global.params.useSwitchError = true;
+  global.params.useAssert = CHECKENABLEdefault;
+  global.params.useInvariants = CHECKENABLEdefault;
+  global.params.useIn = CHECKENABLEdefault;
+  global.params.useOut = CHECKENABLEdefault;
+  global.params.useArrayBounds = CHECKENABLEdefault;
+  global.params.useSwitchError = CHECKENABLEdefault;
   global.params.useModuleInfo = true;
   global.params.useTypeInfo = true;
   global.params.useExceptions = true;
@@ -293,14 +293,10 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
   global.params.hdrStripPlainFunctions = true;
   global.params.betterC = false;
   global.params.allInst = false;
+  global.params.errorLimit = flag_max_errors;
 
   /* Default extern(C++) mangling to C++14.  */
   global.params.cplusplus = CppStdRevisionCpp14;
-
-  global.params.linkswitches = new Strings ();
-  global.params.libfiles = new Strings ();
-  global.params.objfiles = new Strings ();
-  global.params.ddocfiles = new Strings ();
 
   /* Warnings and deprecations are disabled by default.  */
   global.params.useDeprecated = DIAGNOSTICoff;
@@ -308,7 +304,6 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
 
   global.params.imppath = new Strings ();
   global.params.fileImppath = new Strings ();
-  global.params.modFileAliasStrings = new Strings ();
 
   /* Extra GDC-specific options.  */
   d_option.fonly = NULL;
@@ -338,9 +333,6 @@ d_init_options_struct (gcc_options *opts)
   /* Unlike C, there is no global 'errno' variable.  */
   opts->x_flag_errno_math = 0;
   opts->frontend_set_flag_errno_math = true;
-
-  /* Keep in sync with existing -fbounds-check flag.  */
-  opts->x_flag_bounds_check = global.params.useArrayBounds;
 
   /* D says that signed overflow is precisely defined.  */
   opts->x_flag_wrapv = 1;
@@ -387,7 +379,7 @@ d_init (void)
   /* This is the C main, not the D main.  */
   main_identifier_node = get_identifier ("main");
 
-  Target::_init ();
+  target._init (global.params);
   d_init_versions ();
 
   /* Insert all library-configured identifiers and import paths.  */
@@ -424,17 +416,16 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fassert:
-      global.params.useAssert = value;
+      global.params.useAssert = value ? CHECKENABLEon : CHECKENABLEoff;
       break;
 
     case OPT_fbounds_check:
-      global.params.useArrayBounds = value
-	? BOUNDSCHECKon : BOUNDSCHECKoff;
+      global.params.useArrayBounds = value ? CHECKENABLEon : CHECKENABLEoff;
       break;
 
     case OPT_fbounds_check_:
-      global.params.useArrayBounds = (value == 2) ? BOUNDSCHECKon
-	: (value == 1) ? BOUNDSCHECKsafeonly : BOUNDSCHECKoff;
+      global.params.useArrayBounds = (value == 2) ? CHECKENABLEon
+	: (value == 1) ? CHECKENABLEsafeonly : CHECKENABLEoff;
       break;
 
     case OPT_fdebug:
@@ -447,14 +438,16 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 	  int level = integral_argument (arg);
 	  if (level != -1)
 	    {
-	      DebugCondition::setGlobalLevel (level);
+	      global.params.debuglevel = level;
 	      break;
 	    }
 	}
 
       if (Identifier::isValidIdentifier (CONST_CAST (char *, arg)))
 	{
-	  DebugCondition::addGlobalIdent (arg);
+	  if (!global.params.debugids)
+	    global.params.debugids = new Strings ();
+	  global.params.debugids->push (arg);
 	  break;
 	}
 
@@ -476,7 +469,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fdoc_inc_:
-      global.params.ddocfiles->push (arg);
+      global.params.ddocfiles.push (arg);
       break;
 
     case OPT_fdruntime:
@@ -496,7 +489,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_finvariants:
-      global.params.useInvariants = value;
+      global.params.useInvariants = value ? CHECKENABLEon : CHECKENABLEoff;
       break;
 
     case OPT_fmain:
@@ -504,7 +497,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fmodule_file_:
-      global.params.modFileAliasStrings->push (arg);
+      global.params.modFileAliasStrings.push (arg);
       if (!strchr (arg, '='))
 	error ("bad argument for %<-fmodule-file%>: %qs", arg);
       break;
@@ -518,11 +511,11 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fpostconditions:
-      global.params.useOut = value;
+      global.params.useOut = value ? CHECKENABLEon : CHECKENABLEoff;
       break;
 
     case OPT_fpreconditions:
-      global.params.useIn = value;
+      global.params.useIn = value ? CHECKENABLEon : CHECKENABLEoff;
       break;
 
     case OPT_frelease:
@@ -534,7 +527,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fswitch_errors:
-      global.params.useSwitchError = value;
+      global.params.useSwitchError = value ? CHECKENABLEon : CHECKENABLEoff;
       break;
 
     case OPT_ftransition_all:
@@ -586,14 +579,16 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 	  int level = integral_argument (arg);
 	  if (level != -1)
 	    {
-	      VersionCondition::setGlobalLevel (level);
+	      global.params.versionlevel = level;
 	      break;
 	    }
 	}
 
       if (Identifier::isValidIdentifier (CONST_CAST (char *, arg)))
 	{
-	  VersionCondition::addGlobalIdent (arg);
+	  if (!global.params.versionids)
+	    global.params.versionids = new Strings ();
+	  global.params.versionids->push (arg);
 	  break;
 	}
 
@@ -727,29 +722,46 @@ d_post_options (const char ** fn)
   *fn = filename;
 
   /* Release mode doesn't turn off bounds checking for safe functions.  */
-  if (global.params.useArrayBounds == BOUNDSCHECKdefault)
+  if (global.params.useArrayBounds == CHECKENABLEdefault)
     {
       global.params.useArrayBounds = global.params.release
-	? BOUNDSCHECKsafeonly : BOUNDSCHECKon;
-      flag_bounds_check = !global.params.release;
+	? CHECKENABLEsafeonly : CHECKENABLEon;
     }
 
-  if (global.params.release)
+  /* Assert code is generated if unittests are being compiled also, even if
+     release mode is turned on.  */
+  if (global.params.useAssert == CHECKENABLEdefault)
     {
-      if (!global_options_set.x_flag_invariants)
-	global.params.useInvariants = false;
+      if (global.params.useUnitTests || !global.params.release)
+	global.params.useAssert = CHECKENABLEon;
+      else
+	global.params.useAssert = CHECKENABLEoff;
+    }
 
-      if (!global_options_set.x_flag_preconditions)
-	global.params.useIn = false;
+  /* Checks for switches without a default are turned off in release mode.  */
+  if (global.params.useSwitchError == CHECKENABLEdefault)
+    {
+      global.params.useSwitchError = global.params.release
+	? CHECKENABLEoff : CHECKENABLEon;
+    }
 
-      if (!global_options_set.x_flag_postconditions)
-	global.params.useOut = false;
+  /* Contracts are turned off in release mode.  */
+  if (global.params.useInvariants == CHECKENABLEdefault)
+    {
+      global.params.useInvariants = global.params.release
+	? CHECKENABLEoff : CHECKENABLEon;
+    }
 
-      if (!global_options_set.x_flag_assert)
-	global.params.useAssert = false;
+  if (global.params.useIn == CHECKENABLEdefault)
+    {
+      global.params.useIn = global.params.release
+	? CHECKENABLEoff : CHECKENABLEon;
+    }
 
-      if (!global_options_set.x_flag_switch_errors)
-	global.params.useSwitchError = false;
+  if (global.params.useOut == CHECKENABLEdefault)
+    {
+      global.params.useOut = global.params.release
+	? CHECKENABLEoff : CHECKENABLEon;
     }
 
   if (global.params.betterC)
@@ -766,6 +778,9 @@ d_post_options (const char ** fn)
       global.params.checkAction = CHECKACTION_halt;
     }
 
+  /* Keep in sync with existing -fbounds-check flag.  */
+  flag_bounds_check = (global.params.useArrayBounds == CHECKENABLEon);
+
   /* Turn off partitioning unless it was explicitly requested, as it doesn't
      work with D exception chaining, where EH handler uses LSDA to determine
      whether two thrown exception are in the same context.  */
@@ -779,13 +794,10 @@ d_post_options (const char ** fn)
 
   /* Make -fmax-errors visible to frontend's diagnostic machinery.  */
   if (global_options_set.x_flag_max_errors)
-    global.errorLimit = flag_max_errors;
+    global.params.errorLimit = flag_max_errors;
 
   if (flag_excess_precision == EXCESS_PRECISION_DEFAULT)
     flag_excess_precision = EXCESS_PRECISION_STANDARD;
-
-  if (global.params.useUnitTests)
-    global.params.useAssert = true;
 
   global.params.symdebug = write_symbols != NO_DEBUG;
   global.params.useInline = flag_inline_functions;
@@ -798,6 +810,25 @@ d_post_options (const char ** fn)
 
   /* Has no effect yet.  */
   global.params.pic = flag_pic != 0;
+
+  /* Add in versions given on the command line.  */
+  if (global.params.versionids)
+    {
+      for (size_t i = 0; i < global.params.versionids->length; i++)
+	{
+	  const char *s = (*global.params.versionids)[i];
+	  VersionCondition::addGlobalIdent (s);
+	}
+    }
+
+  if (global.params.debugids)
+    {
+      for (size_t i = 0; i < global.params.debugids->length; i++)
+	{
+	  const char *s = (*global.params.debugids)[i];
+	  DebugCondition::addGlobalIdent (s);
+	}
+    }
 
   if (warn_return_type == -1)
     warn_return_type = 0;
@@ -991,8 +1022,8 @@ d_parse_file (void)
 {
   if (global.params.verbose)
     {
-      message ("binary    %s", global.params.argv0);
-      message ("version   %s", global.version);
+      message ("binary    %s", global.params.argv0.ptr);
+      message ("version   %s", global.version.ptr);
 
       if (global.params.versionids)
 	{
@@ -1232,7 +1263,7 @@ d_parse_file (void)
 	 to make the middle-end fully deterministic.  */
       OutBuffer buf;
       mangleToBuffer (Module::rootModule, &buf);
-      first_global_object_name = buf.extractString ();
+      first_global_object_name = buf.extractChars ();
     }
 
   /* Make dependencies.  */
@@ -1264,11 +1295,12 @@ d_parse_file (void)
       OutBuffer buf;
       json_generate (&buf, &modules);
 
-      const char *name = global.params.jsonfilename;
+      const char *name = global.params.jsonfilename.ptr;
 
       if (name && (name[0] != '-' || name[1] != '\0'))
 	{
-	  const char *nameext = FileName::defaultExt (name, global.json_ext);
+	  const char *nameext
+	    = FileName::defaultExt (name, global.json_ext.ptr);
 	  File *fjson = File::create (nameext);
 	  fjson->setbuffer ((void *) buf.data, buf.offset);
 	  fjson->ref = 1;

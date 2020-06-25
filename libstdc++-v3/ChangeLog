@@ -1,3 +1,174 @@
+2020-06-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/char_traits.h (__cpp_lib_constexpr_char_traits):
+	Update value for C++20.
+	* include/std/version (__cpp_lib_constexpr_char_traits): Likewise.
+	* testsuite/21_strings/char_traits/requirements/constexpr_functions_c++17.cc:
+	Update expected value.
+	* testsuite/21_strings/char_traits/requirements/constexpr_functions_c++20.cc:
+	Likewise.
+
+2020-06-15  Paul Keir  <paul.keir@uws.ac.uk>
+
+	* include/bits/char_traits.h (char_traits::move): constexpr move with
+	overlap was using copy_backward incorrectly.
+	* testsuite/21_strings/char_traits/requirements/constexpr_functions_c++20.cc:
+	New test.
+
+2020-06-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/29_atomics/atomic_flag/clear/1.cc: Also test clear()
+	when the value is currently set.
+	* testsuite/29_atomics/atomic_flag/test_and_set/explicit.cc:
+	Actually check the return value.
+	* testsuite/29_atomics/atomic_flag/test_and_set/implicit.cc:
+	Likewise.
+
+2020-06-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_base.h (atomic_flag::test): Add missing
+	const qualifiers.
+	* testsuite/29_atomics/atomic_flag/test/explicit.cc: Add
+	dg-options and verify results of test function.
+	* testsuite/29_atomics/atomic_flag/test/implicit.cc: Likewise.
+
+2020-06-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94749
+	* include/bits/istream.tcc (basic_istream::ignore(streamsize, CharT)):
+	Only discard an extra character if we didn't already reach the
+	maximum number.
+	* src/c++98/istream.cc (istream::ignore(streamsiz, char))
+	(wistream::ignore(streamsize, wchar_t)): Likewise.
+	* testsuite/27_io/basic_istream/ignore/char/94749.cc: New test.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/94749.cc: New test.
+
+2020-06-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/95578
+	* include/bits/ranges_algo.h (__lexicographical_compare_fn):
+	Also check that the iterator and sentinel have the same type before
+	applying the unwrapping optimization for __normal_iterator.
+	Split the check into two, one for the first iterator/sentinel
+	pair and another for second iterator/sentinel pair.  Remove uses
+	of __niter_base, and remove uses of std::move on a
+	__normal_iterator.
+	* include/bits/ranges_algobase.h (__equal_fn): Likewise.
+	(__copy_or_move): Likewise.  Perform similar adjustments for
+	the reverse_iterator and move_iterator optimizations.  Inline
+	the checks into the if-constexprs, and use using-declarations to
+	make them less visually noisy.  Remove uses of __niter_wrap.
+	(__copy_or_move_backward): Likewise.
+	* testsuite/25_algorithms/copy/95578.cc: New test.
+	* testsuite/25_algorithms/copy_backward/95578.cc: New test.
+	* testsuite/25_algorithms/equal/95578.cc: New test.
+	* testsuite/25_algorithms/lexicographical_compare/95578.cc: New test.
+	* testsuite/25_algorithms/move/95578.cc: New test.
+	* testsuite/25_algorithms/move_backward/95578.cc: New test.
+
+2020-06-10  François Dumont  <fdumont@gcc.gnu.org>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/deque.tcc (__lex_cmp_dit): New.
+	(__lexicographical_compare_aux1): Define overloads for deque
+	iterators.
+	* include/bits/stl_algobase.h (__lexicographical_compare::__3way):
+	New static member function.
+	(__lexicographical_compare<true>::__3way): Likewise.
+	(__lexicographical_compare<true>::__lc): Use __3way.
+	(__lexicographical_compare_aux): Rename to
+	__lexicographical_compare_aux1 and declare overloads for deque
+	iterators.
+	(__lexicographical_compare_aux): Define new forwarding function
+	that calls __lexicographical_compare_aux1 and declare new overloads
+	for safe iterators.
+	(lexicographical_compare): Do not use __niter_base on
+	parameters.
+	* include/debug/safe_iterator.tcc
+	(__lexicographical_compare_aux): Define overloads for safe
+	iterators.
+	* testsuite/25_algorithms/lexicographical_compare/1.cc: Add
+	checks with random access iterators.
+	* testsuite/25_algorithms/lexicographical_compare/deque_iterators/1.cc:
+	New test.
+
+2020-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (move_iterator::operator=): Define.
+	* testsuite/24_iterators/move_iterator/dr3265.cc: New test.
+
+2020-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/optional (bad_optional_access): Define default
+	constructor and destructor as defaulted.
+	* testsuite/20_util/optional/bad_access.cc: New test.
+
+2020-06-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/default_delete/48631_neg.cc: Adjust dg-error
+	line number.
+	* testsuite/20_util/default_delete/void_neg.cc: Likewise.
+
+2020-06-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unique_ptr.h (operator<<): Define for C++20.
+	* testsuite/20_util/unique_ptr/io/lwg2948.cc: New test.
+
+2020-06-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (__detail::__ptr, __detail::__ref)
+	(__detail::__cat, __detail::__diff): Move to class scope in the
+	relevant __iterator_traits specializations.
+	(__iterator_traits<>): Use nested class templates instead of ones from
+	namespace __detail.
+	* include/bits/stl_iterator.h (__detail::__common_iter_ptr): Move to
+	class scope in iterator_traits<common_iterator<I, S>>.
+	(iterator_traits<common_iterator<I, S>>): Use nested class template
+	instead of __detail::__common_iter_ptr.
+
+2020-06-04  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_algo.h (__copy_n_a): Move to ...
+	* include/bits/stl_algobase.h (__copy_n_a): ...here. Add __strict
+	parameter.
+	(__copy_n_a(istreambuf_iterator<>, _Size, _Deque_iterator<>, bool)):
+	Declare.
+	(__niter_base(const _Safe_iterator<_Ite, _Seq,
+	random_access_iterator_tag>&)): Declare.
+	(__copy_move_a2(istreambuf_iterator<>, istreambuf_iterator<>,
+	_Deque_iterator<>)): Declare.
+	* include/bits/deque.tcc
+	(__copy_move_a2(istreambuf_iterator<>, istreambuf_iterator<>,
+	_Deque_iterator<>)): New.
+	(__copy_n_a(istreambuf_iterator<>, _Size, _Deque_iterator<>, bool)):
+	New.
+	* include/bits/streambuf_iterator.h
+	(__copy_n_a(istreambuf_iterator<>, _Size, _CharT*, bool)): Adapt.
+	* include/debug/safe_iterator.tcc (__niter_base): New.
+	* testsuite/25_algorithms/copy/streambuf_iterators/char/4.cc
+	(test03): New.
+	* testsuite/25_algorithms/copy/streambuf_iterators/char/debug/deque_neg.cc:
+	New test.
+	* testsuite/25_algorithms/copy_n/debug/istreambuf_ite_deque_neg.cc:
+	New test.
+	* testsuite/25_algorithms/copy_n/istreambuf_iterator/2.cc: New test.
+	* testsuite/25_algorithms/copy_n/istreambuf_iterator/deque.cc:
+	New test.
+
+2020-06-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algobase.h (__copy_n_fn): Only call
+	ranges::copy for positive values.
+	* include/bits/stl_algo.h (copy_n): Convert Size argument to an
+	integral type and only call __copy_n for positive values.
+	* testsuite/util/testsuite_iterators.h
+	(random_access_iterator_wrapper::operator+=): Fix range check for
+	negative values.
+	(output_container, input_container, forward_container)
+	(bidirectional_container, random_access_container): New alias
+	templates.
+	* testsuite/25_algorithms/copy_n/5.cc: New test.
+
 2020-06-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90102

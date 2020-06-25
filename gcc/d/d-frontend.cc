@@ -55,7 +55,6 @@ Global::_init (void)
     ;
 
   this->stdmsg = stderr;
-  this->errorLimit = flag_max_errors;
 }
 
 /* Start gagging. Return the current number of gagged errors.  */
@@ -122,7 +121,7 @@ Loc::toChars (void) const
 	buf.printf (":%u", this->charnum);
     }
 
-  return buf.extractString ();
+  return buf.extractChars ();
 }
 
 bool

@@ -13,4 +13,4 @@ testpx (vector pixel px2, vector pixel px3, vector unsigned char vuc)
   return vec_perm (px2, px3, vuc);
 }
 
-/* { dg-final { scan-assembler-times "vperm" 1 } } */
+/* { dg-final { scan-assembler-times {\m(?:v|xx)permr?\M} 1 } } */

@@ -78,7 +78,7 @@ Port::isFloat32LiteralOutOfRange (const char *buffer)
 
   real_from_string3 (&r.rv (), buffer, TYPE_MODE (float_type_node));
 
-  return r == Target::RealProperties::infinity;
+  return r == target.RealProperties.infinity;
 }
 
 /* Return true if the real_t value from string BUFFER overflows
@@ -91,15 +91,15 @@ Port::isFloat64LiteralOutOfRange (const char *buffer)
 
   real_from_string3 (&r.rv (), buffer, TYPE_MODE (double_type_node));
 
-  return r == Target::RealProperties::infinity;
+  return r == target.RealProperties.infinity;
 }
 
 /* Fetch a little-endian 16-bit value from BUFFER.  */
 
 unsigned
-Port::readwordLE (void *buffer)
+Port::readwordLE (const void *buffer)
 {
-  unsigned char *p = (unsigned char*) buffer;
+  const unsigned char *p = (const unsigned char*) buffer;
 
   return ((unsigned) p[1] << 8) | (unsigned) p[0];
 }
@@ -107,9 +107,9 @@ Port::readwordLE (void *buffer)
 /* Fetch a big-endian 16-bit value from BUFFER.  */
 
 unsigned
-Port::readwordBE (void *buffer)
+Port::readwordBE (const void *buffer)
 {
-  unsigned char *p = (unsigned char*) buffer;
+  const unsigned char *p = (const unsigned char*) buffer;
 
   return ((unsigned) p[0] << 8) | (unsigned) p[1];
 }
@@ -117,9 +117,9 @@ Port::readwordBE (void *buffer)
 /* Fetch a little-endian 32-bit value from BUFFER.  */
 
 unsigned
-Port::readlongLE (void *buffer)
+Port::readlongLE (const void *buffer)
 {
-  unsigned char *p = (unsigned char*) buffer;
+  const unsigned char *p = (const unsigned char*) buffer;
 
   return (((unsigned) p[3] << 24)
 	  | ((unsigned) p[2] << 16)
@@ -130,9 +130,9 @@ Port::readlongLE (void *buffer)
 /* Fetch a big-endian 32-bit value from BUFFER.  */
 
 unsigned
-Port::readlongBE (void *buffer)
+Port::readlongBE (const void *buffer)
 {
-  unsigned char *p = (unsigned char*) buffer;
+  const unsigned char *p = (const unsigned char*) buffer;
 
   return (((unsigned) p[0] << 24)
 	  | ((unsigned) p[1] << 16)

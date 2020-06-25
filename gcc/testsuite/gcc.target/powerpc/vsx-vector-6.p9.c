@@ -9,7 +9,7 @@
 /* { dg-final { scan-assembler-times {\mvmaxub\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mvmsumshs\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mvmsumuhs\M} 1 } } */
-/* { dg-final { scan-assembler-times {\m(?:vpermr?|xxperm)\M} 1 } } */
+/* { dg-final { scan-assembler-times {\m(?:v|xx)permr?\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mxvabsdp\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mxvadddp\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mxvcmpeqdp\M} 9 } } */

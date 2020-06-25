@@ -171,6 +171,7 @@ package body Sem_Ch4 is
    --  being called. The caller will have verified that the object is legal
    --  for the call. If the remaining parameters match, the first parameter
    --  will rewritten as a dereference if needed, prior to completing analysis.
+
    procedure Check_Misspelled_Selector
      (Prefix : Entity_Id;
       Sel    : Node_Id);
@@ -275,20 +276,6 @@ package body Sem_Ch4 is
    --  every type compatible with the operator, even if the operator for the
    --  type is not directly visible. The routine uses this type to emit a more
    --  informative message.
-
-   function Process_Implicit_Dereference_Prefix
-     (E : Entity_Id;
-      P : Node_Id) return Entity_Id;
-   --  Called when P is the prefix of an implicit dereference, denoting an
-   --  object E. The function returns the designated type of the prefix, taking
-   --  into account that the designated type of an anonymous access type may be
-   --  a limited view, when the nonlimited view is visible.
-   --
-   --  If in semantics only mode (-gnatc or generic), the function also records
-   --  that the prefix is a reference to E, if any. Normally, such a reference
-   --  is generated only when the implicit dereference is expanded into an
-   --  explicit one, but for consistency we must generate the reference when
-   --  expansion is disabled as well.
 
    procedure Remove_Abstract_Operations (N : Node_Id);
    --  Ada 2005: implementation of AI-310. An abstract non-dispatching
@@ -469,8 +456,6 @@ package body Sem_Ch4 is
       Onode    : Node_Id;
 
    begin
-      Check_SPARK_05_Restriction ("allocator is not allowed", N);
-
       --  Deal with allocator restrictions
 
       --  In accordance with H.4(7), the No_Allocators restriction only applies
@@ -680,7 +665,7 @@ package body Sem_Ch4 is
                --  that outside of spec expressions, otherwise the declaration
                --  cannot be inserted and analyzed. In such a case, GNATprove
                --  later rejects the allocator as it is not used here in
-               --  a non-interfering context (SPARK 4.8(2) and 7.1.3(12)).
+               --  a non-interfering context (SPARK 4.8(2) and 7.1.3(10)).
 
                if Expander_Active
                  or else (GNATprove_Mode and then not In_Spec_Expression)
@@ -997,10 +982,6 @@ package body Sem_Ch4 is
       --  Flag indicates whether an interpretation of the prefix is a
       --  parameterless call that returns an access_to_subprogram.
 
-      procedure Check_Mixed_Parameter_And_Named_Associations;
-      --  Check that parameter and named associations are not mixed. This is
-      --  a restriction in SPARK mode.
-
       procedure Check_Writable_Actuals (N : Node_Id);
       --  If the call has out or in-out parameters then mark its outermost
       --  enclosing construct as a node on which the writable actuals check
@@ -1015,36 +996,6 @@ package body Sem_Ch4 is
 
       procedure No_Interpretation;
       --  Output error message when no valid interpretation exists
-
-      --------------------------------------------------
-      -- Check_Mixed_Parameter_And_Named_Associations --
-      --------------------------------------------------
-
-      procedure Check_Mixed_Parameter_And_Named_Associations is
-         Actual     : Node_Id;
-         Named_Seen : Boolean;
-
-      begin
-         Named_Seen := False;
-
-         Actual := First (Actuals);
-         while Present (Actual) loop
-            case Nkind (Actual) is
-               when N_Parameter_Association =>
-                  if Named_Seen then
-                     Check_SPARK_05_Restriction
-                       ("named association cannot follow positional one",
-                        Actual);
-                     exit;
-                  end if;
-
-               when others =>
-                  Named_Seen := True;
-            end case;
-
-            Next (Actual);
-         end loop;
-      end Check_Mixed_Parameter_And_Named_Associations;
 
       ----------------------------
       -- Check_Writable_Actuals --
@@ -1187,10 +1138,6 @@ package body Sem_Ch4 is
    --  Start of processing for Analyze_Call
 
    begin
-      if Restriction_Check_Required (SPARK_05) then
-         Check_Mixed_Parameter_And_Named_Associations;
-      end if;
-
       --  Initialize the type of the result of the call to the error type,
       --  which will be reset if the type is successfully resolved.
 
@@ -1216,8 +1163,7 @@ package body Sem_Ch4 is
          --  type is an array, F (X) cannot be interpreted as an indirect call
          --  through the result of the call to F.
 
-         elsif Is_Access_Type (Etype (Nam))
-           and then Ekind (Designated_Type (Etype (Nam))) = E_Subprogram_Type
+         elsif Is_Access_Subprogram_Type (Base_Type (Etype (Nam)))
            and then
              (not Name_Denotes_Function
                or else Nkind (N) = N_Procedure_Call_Statement
@@ -2092,13 +2038,6 @@ package body Sem_Ch4 is
    --  Start of processing for Analyze_Explicit_Dereference
 
    begin
-      --  If source node, check SPARK restriction. We guard this with the
-      --  source node check, because ???
-
-      if Comes_From_Source (N) then
-         Check_SPARK_05_Restriction ("explicit dereference is not allowed", N);
-      end if;
-
       --  In formal verification mode, keep track of all reads and writes
       --  through explicit dereferences.
 
@@ -2318,10 +2257,6 @@ package body Sem_Ch4 is
       Else_Expr := Next (Then_Expr);
 
       if Comes_From_Source (N) then
-         Check_SPARK_05_Restriction ("if expression is not allowed", N);
-      end if;
-
-      if Comes_From_Source (N) then
          Check_Compiler_Unit ("if expression", N);
       end if;
 
@@ -2403,7 +2338,10 @@ package body Sem_Ch4 is
 
       procedure Process_Function_Call;
       --  Prefix in indexed component form is an overloadable entity, so the
-      --  node is a function call. Reformat it as such.
+      --  node is very likely a function call; reformat it as such. The only
+      --  exception is a call to a parameterless function that returns an
+      --  array type, or an access type thereof, in which case this will be
+      --  undone later by Resolve_Call or Resolve_Entry_Call.
 
       procedure Process_Indexed_Component;
       --  Prefix in indexed component form is actually an indexed component.
@@ -2514,7 +2452,7 @@ package body Sem_Ch4 is
             if Is_Access_Type (Array_Type) then
                Error_Msg_NW
                  (Warn_On_Dereference, "?d?implicit dereference", N);
-               Array_Type := Process_Implicit_Dereference_Prefix (Pent, P);
+               Array_Type := Implicitly_Designated_Type (Array_Type);
             end if;
 
             if Is_Array_Type (Array_Type) then
@@ -3182,8 +3120,6 @@ package body Sem_Ch4 is
 
    procedure Analyze_Null (N : Node_Id) is
    begin
-      Check_SPARK_05_Restriction ("null is not allowed", N);
-
       Set_Etype (N, Any_Access);
    end Analyze_Null;
 
@@ -3750,15 +3686,15 @@ package body Sem_Ch4 is
 
          --  To avoid breaking privacy, Is_Hidden gets set elsewhere on such
          --  primitives, but we still need to verify that Nam is indeed a
-         --  controlled subprogram. So, we do that here and issue the
-         --  appropriate error.
+         --  non-visible controlled subprogram. So, we do that here and issue
+         --  the appropriate error.
 
          if Is_Hidden (Nam)
            and then not In_Instance
            and then not Comes_From_Source (Nam)
            and then Comes_From_Source (N)
 
-           --  Verify Nam is a controlled primitive
+           --  Verify Nam is a non-visible controlled primitive
 
            and then Nam_In (Chars (Nam), Name_Adjust,
                                          Name_Finalize,
@@ -3766,6 +3702,7 @@ package body Sem_Ch4 is
            and then Ekind (Nam) = E_Procedure
            and then Is_Controlled (Etype (First_Form))
            and then No (Next_Formal (First_Form))
+           and then not Is_Visibly_Controlled (Etype (First_Form))
          then
             Error_Msg_Node_2 := Etype (First_Form);
             Error_Msg_NE ("call to non-visible controlled primitive & on type"
@@ -3951,18 +3888,6 @@ package body Sem_Ch4 is
                   Set_Etype (Sel, Etype (Comp));
                   Set_Etype (N,   Etype (Comp));
                   Set_Etype (Nam, It.Typ);
-
-                  --  For access type case, introduce explicit dereference for
-                  --  more uniform treatment of entry calls. Do this only once
-                  --  if several interpretations yield an access type.
-
-                  if Is_Access_Type (Etype (Nam))
-                    and then Nkind (Nam) /= N_Explicit_Dereference
-                  then
-                     Insert_Explicit_Dereference (Nam);
-                     Error_Msg_NW
-                       (Warn_On_Dereference, "?d?implicit dereference", N);
-                  end if;
                end if;
 
                Next_Entity (Comp);
@@ -4131,8 +4056,6 @@ package body Sem_Ch4 is
    --  Start of processing for Analyze_Quantified_Expression
 
    begin
-      Check_SPARK_05_Restriction ("quantified expression is not allowed", N);
-
       --  Create a scope to emulate the loop-like behavior of the quantified
       --  expression. The scope is needed to provide proper visibility of the
       --  loop variable.
@@ -4434,7 +4357,6 @@ package body Sem_Ch4 is
       In_Scope      : Boolean;
       Is_Private_Op : Boolean;
       Parent_N      : Node_Id;
-      Pent          : Entity_Id := Empty;
       Prefix_Type   : Entity_Id;
 
       Type_To_Use : Entity_Id;
@@ -4463,7 +4385,8 @@ package body Sem_Ch4 is
       --  indexed component rather than a function call.
 
       function Has_Dereference (Nod : Node_Id) return Boolean;
-      --  Check whether prefix includes a dereference at any level.
+      --  Check whether prefix includes a dereference, explicit or implicit,
+      --  at any recursive level.
 
       --------------------------------
       -- Find_Component_In_Instance --
@@ -4575,10 +4498,6 @@ package body Sem_Ch4 is
          if Nkind (Nod) = N_Explicit_Dereference then
             return True;
 
-         --  When expansion is disabled an explicit dereference may not have
-         --  been inserted, but if this is an access type the indirection makes
-         --  the call safe.
-
          elsif Is_Access_Type (Etype (Nod)) then
             return True;
 
@@ -4631,16 +4550,7 @@ package body Sem_Ch4 is
 
          else
             Error_Msg_NW (Warn_On_Dereference, "?d?implicit dereference", N);
-
-            if Is_Entity_Name (Name) then
-               Pent := Entity (Name);
-            elsif Nkind (Name) = N_Selected_Component
-              and then Is_Entity_Name (Selector_Name (Name))
-            then
-               Pent := Entity (Selector_Name (Name));
-            end if;
-
-            Prefix_Type := Process_Implicit_Dereference_Prefix (Pent, Name);
+            Prefix_Type := Implicitly_Designated_Type (Prefix_Type);
          end if;
 
       --  If we have an explicit dereference of a remote access-to-class-wide
@@ -4727,11 +4637,6 @@ package body Sem_Ch4 is
          Set_Original_Discriminant (Selector_Name (N), Comp);
          Set_Etype (N, Etype (Comp));
          Check_Implicit_Dereference (N, Etype (Comp));
-
-         if Is_Access_Type (Etype (Name)) then
-            Insert_Explicit_Dereference (Name);
-            Error_Msg_NW (Warn_On_Dereference, "?d?implicit dereference", N);
-         end if;
 
       elsif Is_Record_Type (Prefix_Type) then
 
@@ -5033,15 +4938,6 @@ package body Sem_Ch4 is
                if Ekind (Comp) = E_Discriminant then
                   Set_Original_Discriminant (Sel, Comp);
                end if;
-
-               --  For access type case, introduce explicit dereference for
-               --  more uniform treatment of entry calls.
-
-               if Is_Access_Type (Etype (Name)) then
-                  Insert_Explicit_Dereference (Name);
-                  Error_Msg_NW
-                    (Warn_On_Dereference, "?d?implicit dereference", N);
-               end if;
             end if;
 
             <<Next_Comp>>
@@ -5093,7 +4989,7 @@ package body Sem_Ch4 is
          then
             if Is_Task_Type (Prefix_Type)
               and then Present (Entity (Sel))
-              and then Ekind_In (Entity (Sel), E_Entry, E_Entry_Family)
+              and then Is_Entry (Entity (Sel))
             then
                null;
 
@@ -5499,10 +5395,6 @@ package body Sem_Ch4 is
    --  Start of processing for Analyze_Slice
 
    begin
-      if Comes_From_Source (N) then
-         Check_SPARK_05_Restriction ("slice is not allowed", N);
-      end if;
-
       Analyze (P);
       Analyze (D);
 
@@ -5514,8 +5406,8 @@ package body Sem_Ch4 is
          Set_Etype (N, Any_Type);
 
          if Is_Access_Type (Array_Type) then
-            Array_Type := Designated_Type (Array_Type);
             Error_Msg_NW (Warn_On_Dereference, "?d?implicit dereference", N);
+            Array_Type := Implicitly_Designated_Type (Array_Type);
          end if;
 
          if not Is_Array_Type (Array_Type) then
@@ -7460,48 +7352,6 @@ package body Sem_Ch4 is
       end if;
    end Operator_Check;
 
-   -----------------------------------------
-   -- Process_Implicit_Dereference_Prefix --
-   -----------------------------------------
-
-   function Process_Implicit_Dereference_Prefix
-     (E : Entity_Id;
-      P : Entity_Id) return Entity_Id
-   is
-      Ref : Node_Id;
-      Typ : constant Entity_Id := Designated_Type (Etype (P));
-
-   begin
-      if Present (E)
-        and then (Operating_Mode = Check_Semantics or else not Expander_Active)
-      then
-         --  We create a dummy reference to E to ensure that the reference is
-         --  not considered as part of an assignment (an implicit dereference
-         --  can never assign to its prefix). The Comes_From_Source attribute
-         --  needs to be propagated for accurate warnings.
-
-         Ref := New_Occurrence_Of (E, Sloc (P));
-         Set_Comes_From_Source (Ref, Comes_From_Source (P));
-         Generate_Reference (E, Ref);
-      end if;
-
-      --  An implicit dereference is a legal occurrence of an incomplete type
-      --  imported through a limited_with clause, if the full view is visible.
-
-      if From_Limited_With (Typ)
-        and then not From_Limited_With (Scope (Typ))
-        and then
-          (Is_Immediately_Visible (Scope (Typ))
-            or else
-              (Is_Child_Unit (Scope (Typ))
-                and then Is_Visible_Lib_Unit (Scope (Typ))))
-      then
-         return Available_View (Typ);
-      else
-         return Typ;
-      end if;
-   end Process_Implicit_Dereference_Prefix;
-
    --------------------------------
    -- Remove_Abstract_Operations --
    --------------------------------
@@ -8247,7 +8097,8 @@ package body Sem_Ch4 is
          --  as such and retry.
 
          if Has_Implicit_Dereference (Pref_Typ) then
-            Build_Explicit_Dereference (Prefix, First_Discriminant (Pref_Typ));
+            Build_Explicit_Dereference
+              (Prefix, Get_Reference_Discriminant (Pref_Typ));
             return Try_Container_Indexing (N, Prefix, Exprs);
 
          --  Otherwise this is definitely not container indexing

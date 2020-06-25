@@ -125,15 +125,18 @@ package Sem_Eval is
    -----------------
 
    procedure Check_Expression_Against_Static_Predicate
-     (Expr : Node_Id;
-      Typ  : Entity_Id);
+     (Expr                    : Node_Id;
+      Typ                     : Entity_Id;
+      Static_Failure_Is_Error : Boolean := False);
    --  Determine whether an arbitrary expression satisfies the static predicate
    --  of a type. The routine does nothing if Expr is not known at compile time
-   --  or Typ lacks a static predicate, otherwise it may emit a warning if the
-   --  expression is prohibited by the predicate. If the expression is a static
-   --  expression and it fails a predicate that was not explicitly stated to be
-   --  a dynamic predicate, then an additional warning is given, and the flag
-   --  Is_Static_Expression is reset on Expr.
+   --  or Typ lacks a static predicate; otherwise it may emit a warning if the
+   --  expression is prohibited by the predicate, or if Static_Failure_Is_Error
+   --  is True then an error will be flagged. If the expression is a static
+   --  expression, it fails a predicate that was not explicitly stated to be
+   --  a dynamic predicate, and Static_Failure_Is_Error is False, then an
+   --  additional warning is given, and the flag Is_Static_Expression is reset
+   --  on Expr.
 
    procedure Check_Non_Static_Context (N : Node_Id);
    --  Deals with the special check required for a static expression that
@@ -276,7 +279,9 @@ package Sem_Eval is
    --  or character literals. In the latter two cases, the value returned is
    --  the Pos value in the relevant enumeration type. It can also be used for
    --  fixed-point values, in which case it returns the corresponding integer
-   --  value. It cannot be used for floating-point values.
+   --  value, but it cannot be used for floating-point values. Finally, it can
+   --  also be used for the Null access value, as well as for the result of an
+   --  unchecked conversion of the aforementioned handled values.
 
    function Expr_Value_E (N : Node_Id) return Entity_Id;
    --  Returns the folded value of the expression. This function is called in
@@ -477,10 +482,10 @@ package Sem_Eval is
    --  then it returns False.
 
    function Predicates_Match (T1, T2 : Entity_Id) return Boolean;
-   --  In Ada 2012, subtypes statically match if their static predicates
-   --  match as well. This function performs the required check that
-   --  predicates match. Separated out from Subtypes_Statically_Match so
-   --  that it can be used in specializing error messages.
+   --  In Ada 2012, subtypes statically match if their predicates match as
+   --  as well. This function performs the required check that predicates
+   --  match. Separated out from Subtypes_Statically_Match so that it can
+   --  be used in specializing error messages.
 
    function Subtypes_Statically_Compatible
      (T1                      : Entity_Id;

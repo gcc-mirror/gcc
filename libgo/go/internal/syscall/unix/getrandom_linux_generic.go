@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // +build linux
-// +build arm64 arm64be nios2 riscv64
+// +build arm64 arm64be nios2 riscv riscv64
 
 package unix
 

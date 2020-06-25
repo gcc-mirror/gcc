@@ -3595,5 +3595,8 @@ show_global_symbol (gfc_gsymbol *gsym, void *f_data)
 void
 gfc_dump_global_symbols (FILE *f)
 {
-  gfc_traverse_gsymbol (gfc_gsym_root, show_global_symbol, (void *) f);
+  if (gfc_gsym_root == NULL)
+    fprintf (f, "empty\n");
+  else
+    gfc_traverse_gsymbol (gfc_gsym_root, show_global_symbol, (void *) f);
 }

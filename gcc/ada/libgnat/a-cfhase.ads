@@ -801,9 +801,10 @@ is
    --  already in the set.)
 
    procedure Delete (Container : in out Set; Position : in out Cursor) with
-     Global => null,
-     Pre    => Has_Element (Container, Position),
-     Post   =>
+     Global  => null,
+     Depends => (Container =>+ Position, Position => null),
+     Pre     => Has_Element (Container, Position),
+     Post    =>
        Position = No_Element
          and Length (Container) = Length (Container)'Old - 1
 

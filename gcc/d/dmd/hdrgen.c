@@ -918,7 +918,7 @@ public:
         if (ident)
             buf->writestring(ident);
 
-        parametersToBuffer(t->parameters, t->varargs);
+        parametersToBuffer(t->parameterList.parameters, t->parameterList.varargs);
 
         /* Use postfix style for attributes
          */
@@ -988,7 +988,7 @@ public:
             }
             buf->writeByte(')');
         }
-        parametersToBuffer(t->parameters, t->varargs);
+        parametersToBuffer(t->parameterList.parameters, t->parameterList.varargs);
 
         t->inuse--;
     }
@@ -2012,7 +2012,7 @@ public:
         // Don't print tf->mod, tf->trust, and tf->linkage
         if (!f->inferRetType && tf->next)
             typeToBuffer(tf->next, NULL);
-        parametersToBuffer(tf->parameters, tf->varargs);
+        parametersToBuffer(tf->parameterList.parameters, tf->parameterList.varargs);
 
         CompoundStatement *cs = f->fbody->isCompoundStatement();
         Statement *s1;
@@ -2212,11 +2212,11 @@ public:
             if ((sinteger_t)uval >= 0)
             {
                 dinteger_t sizemax;
-                if (Target::ptrsize == 8)
+                if (target.ptrsize == 8)
                     sizemax = 0xFFFFFFFFFFFFFFFFULL;
-                else if (Target::ptrsize == 4)
+                else if (target.ptrsize == 4)
                     sizemax = 0xFFFFFFFFUL;
-                else if (Target::ptrsize == 2)
+                else if (target.ptrsize == 2)
                     sizemax = 0xFFFFUL;
                 else
                     assert(0);
@@ -2358,7 +2358,7 @@ public:
                     buf->writestring("cast(");
                     buf->writestring(t->toChars());
                     buf->writeByte(')');
-                    if (Target::ptrsize == 8)
+                    if (target.ptrsize == 8)
                         goto L4;
                     else
                         goto L3;
@@ -3381,7 +3381,7 @@ void protectionToBuffer(OutBuffer *buf, Prot prot)
     if (p)
         buf->writestring(p);
 
-    if (prot.kind == PROTpackage && prot.pkg)
+    if (prot.kind == Prot::package_ && prot.pkg)
     {
         buf->writeByte('(');
         buf->writestring(prot.pkg->toPrettyChars(true));
@@ -3389,17 +3389,17 @@ void protectionToBuffer(OutBuffer *buf, Prot prot)
     }
 }
 
-const char *protectionToChars(PROTKIND kind)
+const char *protectionToChars(Prot::Kind kind)
 {
     switch (kind)
     {
-        case PROTundefined: return NULL;
-        case PROTnone:      return "none";
-        case PROTprivate:   return "private";
-        case PROTpackage:   return "package";
-        case PROTprotected: return "protected";
-        case PROTpublic:    return "public";
-        case PROTexport:    return "export";
+        case Prot::undefined: return NULL;
+        case Prot::none:      return "none";
+        case Prot::private_:   return "private";
+        case Prot::package_:   return "package";
+        case Prot::protected_: return "protected";
+        case Prot::public_:    return "public";
+        case Prot::export_:    return "export";
         default:            assert(0);
     }
     return NULL;    // never reached
@@ -3469,11 +3469,11 @@ void arrayObjectsToBuffer(OutBuffer *buf, Objects *objects)
     }
 }
 
-const char *parametersTypeToChars(Parameters *parameters, int varargs)
+const char *parametersTypeToChars(ParameterList pl)
 {
     OutBuffer buf;
     HdrGenState hgs;
     PrettyPrintVisitor v(&buf, &hgs);
-    v.parametersToBuffer(parameters, varargs);
-    return buf.extractString();
+    v.parametersToBuffer(pl.parameters, pl.varargs);
+    return buf.extractChars();
 }

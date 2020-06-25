@@ -803,7 +803,7 @@ Lancestorsdone:
         {
             //printf("Creating default this(){} for class %s\n", toChars());
             TypeFunction *btf = fd->type->toTypeFunction();
-            TypeFunction *tf = new TypeFunction(NULL, NULL, 0, LINKd, fd->storage_class);
+            TypeFunction *tf = new TypeFunction(ParameterList(), NULL, LINKd, fd->storage_class);
             tf->mod = btf->mod;
             tf->purity = btf->purity;
             tf->isnothrow = btf->isnothrow;
@@ -867,7 +867,7 @@ Lancestorsdone:
         {
             VarDeclaration *vd = fields[i];
             if (!vd->isThisDeclaration() &&
-                !vd->prot().isMoreRestrictiveThan(Prot(PROTpublic)))
+                !vd->prot().isMoreRestrictiveThan(Prot(Prot::public_)))
             {
                 vd->error("Field members of a synchronized class cannot be %s",
                     protectionToChars(vd->prot().kind));
@@ -988,7 +988,7 @@ Dsymbol *ClassDeclaration::search(const Loc &loc, Identifier *ident, int flags)
                         continue;
                     else if (s == this) // happens if s is nested in this and derives from this
                         s = NULL;
-                    else if (!(flags & IgnoreSymbolVisibility) && !(s->prot().kind == PROTprotected) && !symbolIsVisible(this, s))
+                    else if (!(flags & IgnoreSymbolVisibility) && !(s->prot().kind == Prot::protected_) && !symbolIsVisible(this, s))
                         s = NULL;
                     else
                         break;
@@ -1048,7 +1048,7 @@ static unsigned membersPlace(BaseClasses *vtblInterfaces, size_t &bi, ClassDecla
         assert(b->sym->sizeok == SIZEOKdone);
 
         if (!b->sym->alignsize)
-            b->sym->alignsize = Target::ptrsize;
+            b->sym->alignsize = target.ptrsize;
         cd->alignmember(b->sym->alignsize, b->sym->alignsize, &offset);
         assert(bi < vtblInterfaces->length);
         BaseClass *bv = (*vtblInterfaces)[bi];
@@ -1092,16 +1092,16 @@ void ClassDeclaration::finalizeSize()
     {
         if (interfaces.length == 0)
         {
-            alignsize = Target::ptrsize;
-            structsize = Target::ptrsize;      // allow room for __vptr
+            alignsize = target.ptrsize;
+            structsize = target.ptrsize;      // allow room for __vptr
         }
     }
     else
     {
-        alignsize = Target::ptrsize;
-        structsize = Target::ptrsize;      // allow room for __vptr
-        if (!isCPPclass())
-            structsize += Target::ptrsize; // allow room for __monitor
+        alignsize = target.ptrsize;
+        structsize = target.ptrsize;      // allow room for __vptr
+        if (hasMonitor())
+            structsize += target.ptrsize; // allow room for __monitor
     }
 
     //printf("finalizeSize() %s, sizeok = %d\n", toChars(), sizeok);
@@ -1131,6 +1131,14 @@ void ClassDeclaration::finalizeSize()
 
     // Calculate fields[i]->overlapped
     checkOverlappedFields();
+}
+
+/**************
+ * Returns: true if there's a __monitor field
+ */
+bool ClassDeclaration::hasMonitor()
+{
+    return classKind == ClassKind::d;
 }
 
 /**********************************************************

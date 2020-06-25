@@ -44,9 +44,6 @@ Expression *typeToExpression(Type *t);
 Expression *typeToExpressionHelper(TypeQualified *t, Expression *e, size_t i = 0);
 Initializer *semantic(Initializer *init, Scope *sc, Type *t, NeedInterpret needInterpret);
 
-int Tsize_t = Tuns32;
-int Tptrdiff_t = Tint32;
-
 /***************************** Type *****************************/
 
 ClassDeclaration *Type::dtypeinfo;
@@ -109,7 +106,6 @@ Type *Type::tvoidptr;
 Type *Type::tstring;
 Type *Type::twstring;
 Type *Type::tdstring;
-Type *Type::tvalist;
 Type *Type::basic[TMAX];
 unsigned char Type::sizeTy[TMAX];
 StringTable Type::stringtable;
@@ -262,21 +258,11 @@ void Type::_init()
     tstring = tchar->immutableOf()->arrayOf();
     twstring = twchar->immutableOf()->arrayOf();
     tdstring = tdchar->immutableOf()->arrayOf();
-    tvalist = Target::va_listType();
 
-    if (global.params.isLP64)
-    {
-        Tsize_t = Tuns64;
-        Tptrdiff_t = Tint64;
-    }
-    else
-    {
-        Tsize_t = Tuns32;
-        Tptrdiff_t = Tint32;
-    }
+    const bool isLP64 = global.params.isLP64;
 
-    tsize_t = basic[Tsize_t];
-    tptrdiff_t = basic[Tptrdiff_t];
+    tsize_t = basic[isLP64 ? Tuns64 : Tuns32];
+    tptrdiff_t = basic[isLP64 ? Tint64 : Tint32];
     thash_t = tsize_t;
 }
 
@@ -1469,7 +1455,7 @@ char *MODtoChars(MOD mod)
     OutBuffer buf;
     buf.reserve(16);
     MODtoBuffer(&buf, mod);
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 /********************************
@@ -1484,7 +1470,7 @@ const char *Type::toChars()
     hgs.fullQual = (ty == Tclass && !mod);
 
     ::toCBuffer(this, &buf, NULL, &hgs);
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 char *Type::toPrettyChars(bool QualifyTypes)
@@ -1495,7 +1481,7 @@ char *Type::toPrettyChars(bool QualifyTypes)
     hgs.fullQual = QualifyTypes;
 
     ::toCBuffer(this, &buf, NULL, &hgs);
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 /*********************************
@@ -1518,7 +1504,7 @@ char *Type::modToChars()
     OutBuffer buf;
     buf.reserve(16);
     modToBuffer(&buf);
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 /** For each active modifier (MODconst, MODimmutable, etc) call fp with a
@@ -1581,11 +1567,11 @@ Type *stripDefaultArgs(Type *t)
     {
         TypeFunction *tf = (TypeFunction *)t;
         Type *tret = stripDefaultArgs(tf->next);
-        Parameters *params = N::stripParams(tf->parameters);
-        if (tret == tf->next && params == tf->parameters)
+        Parameters *params = N::stripParams(tf->parameterList.parameters);
+        if (tret == tf->next && params == tf->parameterList.parameters)
             goto Lnot;
         tf = (TypeFunction *)tf->copy();
-        tf->parameters = params;
+        tf->parameterList.parameters = params;
         tf->next = tret;
         //printf("strip %s\n   <- %s\n", tf->toChars(), t->toChars());
         t = tf;
@@ -1999,24 +1985,25 @@ Type *TypeFunction::substWildTo(unsigned)
 
     assert(next);
     Type *tret = next->substWildTo(m);
-    Parameters *params = parameters;
+    Parameters *params = parameterList.parameters;
     if (mod & MODwild)
-        params = parameters->copy();
+        params = parameterList.parameters->copy();
     for (size_t i = 0; i < params->length; i++)
     {
         Parameter *p = (*params)[i];
         Type *t = p->type->substWildTo(m);
         if (t == p->type)
             continue;
-        if (params == parameters)
-            params = parameters->copy();
+        if (params == parameterList.parameters)
+            params = parameterList.parameters->copy();
         (*params)[i] = new Parameter(p->storageClass, t, NULL, NULL);
     }
-    if (next == tret && params == parameters)
+    if (next == tret && params == parameterList.parameters)
         return this;
 
     // Similar to TypeFunction::syntaxCopy;
-    TypeFunction *t = new TypeFunction(params, tret, varargs, linkage);
+    TypeFunction *t = new TypeFunction(ParameterList(params, parameterList.varargs),
+                                       tret, linkage);
     t->mod = ((mod & MODwild) ? (mod & ~MODwild) | MODconst : mod);
     t->isnothrow = isnothrow;
     t->isnogc = isnogc;
@@ -2339,6 +2326,106 @@ Identifier *Type::getTypeInfoIdent()
 TypeBasic *Type::isTypeBasic()
 {
     return NULL;
+}
+
+TypeError *Type::isTypeError()
+{
+    return ty == Terror ? (TypeError *)this : NULL;
+}
+
+TypeVector *Type::isTypeVector()
+{
+    return ty == Tvector ? (TypeVector *)this : NULL;
+}
+
+TypeSArray *Type::isTypeSArray()
+{
+    return ty == Tsarray ? (TypeSArray *)this : NULL;
+}
+
+TypeDArray *Type::isTypeDArray()
+{
+    return ty == Tarray ? (TypeDArray *)this : NULL;
+}
+
+TypeAArray *Type::isTypeAArray()
+{
+    return ty == Taarray ? (TypeAArray *)this : NULL;
+}
+
+TypePointer *Type::isTypePointer()
+{
+    return ty == Tpointer ? (TypePointer *)this : NULL;
+}
+
+TypeReference *Type::isTypeReference()
+{
+    return ty == Treference ? (TypeReference *)this : NULL;
+}
+
+TypeFunction *Type::isTypeFunction()
+{
+    return ty == Tfunction ? (TypeFunction *)this : NULL;
+}
+
+TypeDelegate *Type::isTypeDelegate()
+{
+    return ty == Tdelegate ? (TypeDelegate *)this : NULL;
+}
+
+TypeIdentifier *Type::isTypeIdentifier()
+{
+    return ty == Tident ? (TypeIdentifier *)this : NULL;
+}
+
+TypeInstance *Type::isTypeInstance()
+{
+    return ty == Tinstance ? (TypeInstance *)this : NULL;
+}
+
+TypeTypeof *Type::isTypeTypeof()
+{
+    return ty == Ttypeof ? (TypeTypeof *)this : NULL;
+}
+
+TypeReturn *Type::isTypeReturn()
+{
+    return ty == Treturn ? (TypeReturn *)this : NULL;
+}
+
+TypeStruct *Type::isTypeStruct()
+{
+    return ty == Tstruct ? (TypeStruct *)this : NULL;
+}
+
+TypeEnum *Type::isTypeEnum()
+{
+    return ty == Tenum ? (TypeEnum *)this : NULL;
+}
+
+TypeClass *Type::isTypeClass()
+{
+    return ty == Tclass ? (TypeClass *)this : NULL;
+}
+
+TypeTuple *Type::isTypeTuple()
+{
+    return ty == Ttuple ? (TypeTuple *)this : NULL;
+}
+
+TypeSlice *Type::isTypeSlice()
+{
+    return ty == Tslice ? (TypeSlice *)this : NULL;
+}
+
+TypeNull *Type::isTypeNull()
+{
+    return ty == Tnull ? (TypeNull *)this : NULL;
+}
+
+TypeTraits *Type::isTypeTraits()
+{
+    return ty == Ttraits ? (TypeTraits *)this : NULL;
 }
 
 TypeFunction *Type::toTypeFunction()
@@ -3041,7 +3128,7 @@ d_uns64 TypeBasic::size(Loc)
                         size = 8;       break;
         case Tfloat80:
         case Timaginary80:
-                        size = Target::realsize; break;
+                        size = target.realsize; break;
         case Tcomplex32:
                         size = 8;               break;
         case Tcomplex64:
@@ -3049,7 +3136,7 @@ d_uns64 TypeBasic::size(Loc)
         case Tuns128:
                         size = 16;              break;
         case Tcomplex80:
-                        size = Target::realsize * 2; break;
+                        size = target.realsize * 2; break;
 
         case Tvoid:
             //size = Type::size();      // error message
@@ -3071,7 +3158,7 @@ d_uns64 TypeBasic::size(Loc)
 
 unsigned TypeBasic::alignsize()
 {
-    return Target::alignsize(this);
+    return target.alignsize(this);
 }
 
 
@@ -3125,17 +3212,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            fvalue = Target::FloatProperties::max;
+            fvalue = target.FloatProperties.max;
             goto Lfvalue;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            fvalue = Target::DoubleProperties::max;
+            fvalue = target.DoubleProperties.max;
             goto Lfvalue;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            fvalue = Target::RealProperties::max;
+            fvalue = target.RealProperties.max;
             goto Lfvalue;
         }
     }
@@ -3200,17 +3287,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            fvalue = Target::FloatProperties::min_normal;
+            fvalue = target.FloatProperties.min_normal;
             goto Lfvalue;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            fvalue = Target::DoubleProperties::min_normal;
+            fvalue = target.DoubleProperties.min_normal;
             goto Lfvalue;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            fvalue = Target::RealProperties::min_normal;
+            fvalue = target.RealProperties.min_normal;
             goto Lfvalue;
         }
     }
@@ -3227,7 +3314,7 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tfloat32:
         case Tfloat64:
         case Tfloat80:
-            fvalue = Target::RealProperties::nan;
+            fvalue = target.RealProperties.nan;
             goto Lfvalue;
         }
     }
@@ -3244,7 +3331,7 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tfloat32:
         case Tfloat64:
         case Tfloat80:
-            fvalue = Target::RealProperties::infinity;
+            fvalue = target.RealProperties.infinity;
             goto Lfvalue;
         }
     }
@@ -3255,17 +3342,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            ivalue = Target::FloatProperties::dig;
+            ivalue = target.FloatProperties.dig;
             goto Lint;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            ivalue = Target::DoubleProperties::dig;
+            ivalue = target.DoubleProperties.dig;
             goto Lint;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            ivalue = Target::RealProperties::dig;
+            ivalue = target.RealProperties.dig;
             goto Lint;
         }
     }
@@ -3276,17 +3363,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            fvalue = Target::FloatProperties::epsilon;
+            fvalue = target.FloatProperties.epsilon;
             goto Lfvalue;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            fvalue = Target::DoubleProperties::epsilon;
+            fvalue = target.DoubleProperties.epsilon;
             goto Lfvalue;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            fvalue = Target::RealProperties::epsilon;
+            fvalue = target.RealProperties.epsilon;
             goto Lfvalue;
         }
     }
@@ -3297,17 +3384,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            ivalue = Target::FloatProperties::mant_dig;
+            ivalue = target.FloatProperties.mant_dig;
             goto Lint;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            ivalue = Target::DoubleProperties::mant_dig;
+            ivalue = target.DoubleProperties.mant_dig;
             goto Lint;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            ivalue = Target::RealProperties::mant_dig;
+            ivalue = target.RealProperties.mant_dig;
             goto Lint;
         }
     }
@@ -3318,17 +3405,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            ivalue = Target::FloatProperties::max_10_exp;
+            ivalue = target.FloatProperties.max_10_exp;
             goto Lint;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            ivalue = Target::DoubleProperties::max_10_exp;
+            ivalue = target.DoubleProperties.max_10_exp;
             goto Lint;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            ivalue = Target::RealProperties::max_10_exp;
+            ivalue = target.RealProperties.max_10_exp;
             goto Lint;
         }
     }
@@ -3339,17 +3426,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            ivalue = Target::FloatProperties::max_exp;
+            ivalue = target.FloatProperties.max_exp;
             goto Lint;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            ivalue = Target::DoubleProperties::max_exp;
+            ivalue = target.DoubleProperties.max_exp;
             goto Lint;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            ivalue = Target::RealProperties::max_exp;
+            ivalue = target.RealProperties.max_exp;
             goto Lint;
         }
     }
@@ -3360,17 +3447,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            ivalue = Target::FloatProperties::min_10_exp;
+            ivalue = target.FloatProperties.min_10_exp;
             goto Lint;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            ivalue = Target::DoubleProperties::min_10_exp;
+            ivalue = target.DoubleProperties.min_10_exp;
             goto Lint;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            ivalue = Target::RealProperties::min_10_exp;
+            ivalue = target.RealProperties.min_10_exp;
             goto Lint;
         }
     }
@@ -3381,17 +3468,17 @@ Expression *TypeBasic::getProperty(Loc loc, Identifier *ident, int flag)
         case Tcomplex32:
         case Timaginary32:
         case Tfloat32:
-            ivalue = Target::FloatProperties::min_exp;
+            ivalue = target.FloatProperties.min_exp;
             goto Lint;
         case Tcomplex64:
         case Timaginary64:
         case Tfloat64:
-            ivalue = Target::DoubleProperties::min_exp;
+            ivalue = target.DoubleProperties.min_exp;
             goto Lint;
         case Tcomplex80:
         case Timaginary80:
         case Tfloat80:
-            ivalue = Target::RealProperties::min_exp;
+            ivalue = target.RealProperties.min_exp;
             goto Lint;
         }
     }
@@ -3514,13 +3601,13 @@ Expression *TypeBasic::defaultInit(Loc loc)
         case Tfloat32:
         case Tfloat64:
         case Tfloat80:
-            return new RealExp(loc, Target::RealProperties::snan, this);
+            return new RealExp(loc, target.RealProperties.snan, this);
 
         case Tcomplex32:
         case Tcomplex64:
         case Tcomplex80:
         {   // Can't use fvalue + I*fvalue (the im part becomes a quiet NaN).
-            complex_t cvalue = complex_t(Target::RealProperties::snan, Target::RealProperties::snan);
+            complex_t cvalue = complex_t(target.RealProperties.snan, target.RealProperties.snan);
             return new ComplexExp(loc, cvalue, this);
         }
 
@@ -3701,7 +3788,7 @@ TypeVector::TypeVector(Type *basetype)
     this->basetype = basetype;
 }
 
-TypeVector *TypeVector::create(Loc, Type *basetype)
+TypeVector *TypeVector::create(Type *basetype)
 {
     return new TypeVector(basetype);
 }
@@ -3730,7 +3817,7 @@ Type *TypeVector::semantic(Loc loc, Scope *sc)
     }
     TypeSArray *t = (TypeSArray *)basetype;
     int sz = (int)t->size(loc);
-    switch (Target::isVectorTypeSupported(sz, t->nextOf()))
+    switch (target.isVectorTypeSupported(sz, t->nextOf()))
     {
     case 0: // valid
         break;
@@ -4142,7 +4229,7 @@ Type *TypeSArray::semantic(Loc loc, Scope *sc)
         {
         Loverflow:
             error(loc, "%s size %llu * %llu exceeds 0x%llx size limit for static array",
-                toChars(), (unsigned long long)tbn->size(loc), (unsigned long long)d1, Target::maxStaticDataSize);
+                toChars(), (unsigned long long)tbn->size(loc), (unsigned long long)d1, target.maxStaticDataSize);
             goto Lerror;
         }
 
@@ -4166,7 +4253,7 @@ Type *TypeSArray::semantic(Loc loc, Scope *sc)
              * run on them for the size, since they may be forward referenced.
              */
             bool overflow = false;
-            if (mulu(tbn->size(loc), d2, overflow) >= Target::maxStaticDataSize || overflow)
+            if (mulu(tbn->size(loc), d2, overflow) >= target.maxStaticDataSize || overflow)
                 goto Loverflow;
         }
     }
@@ -4405,14 +4492,14 @@ Type *TypeDArray::syntaxCopy()
 d_uns64 TypeDArray::size(Loc)
 {
     //printf("TypeDArray::size()\n");
-    return Target::ptrsize * 2;
+    return target.ptrsize * 2;
 }
 
 unsigned TypeDArray::alignsize()
 {
     // A DArray consists of two ptr-sized values, so align it on pointer size
     // boundary
-    return Target::ptrsize;
+    return target.ptrsize;
 }
 
 Type *TypeDArray::semantic(Loc loc, Scope *sc)
@@ -4604,7 +4691,7 @@ Type *TypeAArray::syntaxCopy()
 
 d_uns64 TypeAArray::size(Loc)
 {
-    return Target::ptrsize;
+    return target.ptrsize;
 }
 
 Type *TypeAArray::semantic(Loc loc, Scope *sc)
@@ -4967,7 +5054,7 @@ Type *TypePointer::semantic(Loc loc, Scope *sc)
 
 d_uns64 TypePointer::size(Loc)
 {
-    return Target::ptrsize;
+    return target.ptrsize;
 }
 
 MATCH TypePointer::implicitConvTo(Type *to)
@@ -5111,7 +5198,7 @@ Type *TypeReference::semantic(Loc loc, Scope *sc)
 
 d_uns64 TypeReference::size(Loc)
 {
-    return Target::ptrsize;
+    return target.ptrsize;
 }
 
 Expression *TypeReference::dotExp(Scope *sc, Expression *e, Identifier *ident, int flag)
@@ -5133,14 +5220,13 @@ bool TypeReference::isZeroInit(Loc)
 
 /***************************** TypeFunction *****************************/
 
-TypeFunction::TypeFunction(Parameters *parameters, Type *treturn, int varargs, LINK linkage, StorageClass stc)
+TypeFunction::TypeFunction(const ParameterList &pl, Type *treturn, LINK linkage, StorageClass stc)
     : TypeNext(Tfunction, treturn)
 {
 //if (!treturn) *(char*)0=0;
 //    assert(treturn);
-    assert(0 <= varargs && varargs <= 2);
-    this->parameters = parameters;
-    this->varargs = varargs;
+    assert(VARARGnone <= pl.varargs && pl.varargs <= VARARGtypesafe);
+    this->parameterList = pl;
     this->linkage = linkage;
     this->inuse = 0;
     this->isnothrow = false;
@@ -5181,9 +5267,9 @@ TypeFunction::TypeFunction(Parameters *parameters, Type *treturn, int varargs, L
         this->trust = TRUSTtrusted;
 }
 
-TypeFunction *TypeFunction::create(Parameters *parameters, Type *treturn, int varargs, LINK linkage, StorageClass stc)
+TypeFunction *TypeFunction::create(Parameters *parameters, Type *treturn, VarArg varargs, LINK linkage, StorageClass stc)
 {
-    return new TypeFunction(parameters, treturn, varargs, linkage, stc);
+    return new TypeFunction(ParameterList(parameters, varargs), treturn, linkage, stc);
 }
 
 const char *TypeFunction::kind()
@@ -5194,8 +5280,9 @@ const char *TypeFunction::kind()
 Type *TypeFunction::syntaxCopy()
 {
     Type *treturn = next ? next->syntaxCopy() : NULL;
-    Parameters *params = Parameter::arraySyntaxCopy(parameters);
-    TypeFunction *t = new TypeFunction(params, treturn, varargs, linkage);
+    Parameters *parameters = Parameter::arraySyntaxCopy(parameterList.parameters);
+    TypeFunction *t = new TypeFunction(ParameterList(parameters, parameterList.varargs),
+                                       treturn, linkage);
     t->mod = mod;
     t->isnothrow = isnothrow;
     t->isnogc = isnogc;
@@ -5247,19 +5334,19 @@ int Type::covariant(Type *t, StorageClass *pstc, bool fix17349)
     t1 = (TypeFunction *)this;
     t2 = (TypeFunction *)t;
 
-    if (t1->varargs != t2->varargs)
+    if (t1->parameterList.varargs != t2->parameterList.varargs)
         goto Ldistinct;
 
-    if (t1->parameters && t2->parameters)
+    if (t1->parameterList.parameters && t2->parameterList.parameters)
     {
-        size_t dim = Parameter::dim(t1->parameters);
-        if (dim != Parameter::dim(t2->parameters))
+        size_t dim = t1->parameterList.length();
+        if (dim != t2->parameterList.length())
             goto Ldistinct;
 
         for (size_t i = 0; i < dim; i++)
         {
-            Parameter *fparam1 = Parameter::getNth(t1->parameters, i);
-            Parameter *fparam2 = Parameter::getNth(t2->parameters, i);
+            Parameter *fparam1 = t1->parameterList[i];
+            Parameter *fparam2 = t2->parameterList[i];
 
             if (!fparam1->type->equals(fparam2->type))
             {
@@ -5301,10 +5388,10 @@ int Type::covariant(Type *t, StorageClass *pstc, bool fix17349)
             notcovariant |= !fparam1->isCovariant(t1->isref, fparam2);
         }
     }
-    else if (t1->parameters != t2->parameters)
+    else if (t1->parameterList.parameters != t2->parameterList.parameters)
     {
-        size_t dim1 = !t1->parameters ? 0 : t1->parameters->length;
-        size_t dim2 = !t2->parameters ? 0 : t2->parameters->length;
+        size_t dim1 = t1->parameterList.length();
+        size_t dim2 = t2->parameterList.length();
         if (dim1 || dim2)
             goto Ldistinct;
     }
@@ -5461,14 +5548,15 @@ Type *TypeFunction::semantic(Loc loc, Scope *sc)
      * as semantic() will get called again on this.
      */
     TypeFunction *tf = copy()->toTypeFunction();
-    if (parameters)
+    if (parameterList.parameters)
     {
-        tf->parameters = parameters->copy();
-        for (size_t i = 0; i < parameters->length; i++)
+        tf->parameterList.parameters = parameterList.parameters->copy();
+        for (size_t i = 0; i < parameterList.parameters->length; i++)
         {
             void *pp = mem.xmalloc(sizeof(Parameter));
-            Parameter *p = (Parameter *)memcpy(pp, (void *)(*parameters)[i], sizeof(Parameter));
-            (*tf->parameters)[i] = p;
+            Parameter *p = (Parameter *)memcpy(pp, (void *)(*parameterList.parameters)[i],
+                                               sizeof(Parameter));
+            (*tf->parameterList.parameters)[i] = p;
         }
     }
 
@@ -5527,19 +5615,19 @@ Type *TypeFunction::semantic(Loc loc, Scope *sc)
     }
 
     unsigned char wildparams = 0;
-    if (tf->parameters)
+    if (tf->parameterList.parameters)
     {
         /* Create a scope for evaluating the default arguments for the parameters
          */
         Scope *argsc = sc->push();
         argsc->stc = 0;                 // don't inherit storage class
-        argsc->protection = Prot(PROTpublic);
+        argsc->protection = Prot(Prot::public_);
         argsc->func = NULL;
 
-        size_t dim = Parameter::dim(tf->parameters);
+        size_t dim = tf->parameterList.length();
         for (size_t i = 0; i < dim; i++)
         {
-            Parameter *fparam = Parameter::getNth(tf->parameters, i);
+            Parameter *fparam = tf->parameterList[i];
             inuse++;
             fparam->type = fparam->type->semantic(loc, argsc);
             inuse--;
@@ -5727,7 +5815,7 @@ Type *TypeFunction::semantic(Loc loc, Scope *sc)
                             OutBuffer buf2;  stcToBuffer(&buf2, stc2);
 
                             error(loc, "incompatible parameter storage classes '%s' and '%s'",
-                                      buf1.peekString(), buf2.peekString());
+                                      buf1.peekChars(), buf2.peekChars());
                             errors = true;
                             stc = stc1 | (stc & ~(STCref | STCout | STClazy));
                         }
@@ -5742,7 +5830,7 @@ Type *TypeFunction::semantic(Loc loc, Scope *sc)
                 /* Reset number of parameters, and back up one to do this fparam again,
                  * now that it is a tuple
                  */
-                dim = Parameter::dim(tf->parameters);
+                dim = tf->parameterList.length();
                 i--;
                 continue;
             }
@@ -5784,13 +5872,13 @@ Type *TypeFunction::semantic(Loc loc, Scope *sc)
     }
     tf->iswild = wildparams;
 
-    if (tf->isproperty && (tf->varargs || Parameter::dim(tf->parameters) > 2))
+    if (tf->isproperty && (tf->parameterList.varargs != VARARGnone || tf->parameterList.length() > 2))
     {
         error(loc, "properties can only have zero, one, or two parameter");
         errors = true;
     }
 
-    if (tf->varargs == 1 && tf->linkage != LINKd && Parameter::dim(tf->parameters) == 0)
+    if (tf->parameterList.varargs == VARARGvariadic && tf->linkage != LINKd && tf->parameterList.length() == 0)
     {
         error(loc, "variadic functions with non-D linkage must have at least one parameter");
         errors = true;
@@ -5894,10 +5982,10 @@ void TypeFunction::purityLevel()
 
     /* Evaluate what kind of purity based on the modifiers for the parameters
      */
-    const size_t dim = Parameter::dim(tf->parameters);
+    const size_t dim = tf->parameterList.length();
     for (size_t i = 0; i < dim; i++)
     {
-        Parameter *fparam = Parameter::getNth(tf->parameters, i);
+        Parameter *fparam = tf->parameterList[i];
         Type *t = fparam->type;
         if (!t)
             continue;
@@ -5982,13 +6070,13 @@ MATCH TypeFunction::callMatch(Type *tthis, Expressions *args, int flag)
         }
     }
 
-    size_t nparams = Parameter::dim(parameters);
+    size_t nparams = parameterList.length();
     size_t nargs = args ? args->length : 0;
     if (nparams == nargs)
         ;
     else if (nargs > nparams)
     {
-        if (varargs == 0)
+        if (parameterList.varargs == VARARGnone)
             goto Nomatch;               // too many args; no match
         match = MATCHconvert;           // match ... with a "conversion" match level
     }
@@ -5997,7 +6085,7 @@ MATCH TypeFunction::callMatch(Type *tthis, Expressions *args, int flag)
     {
         if (u >= nparams)
             break;
-        Parameter *p = Parameter::getNth(parameters, u);
+        Parameter *p = parameterList[u];
         Expression *arg = (*args)[u];
         assert(arg);
         Type *tprm = p->type;
@@ -6030,7 +6118,7 @@ MATCH TypeFunction::callMatch(Type *tthis, Expressions *args, int flag)
     {
         MATCH m;
 
-        Parameter *p = Parameter::getNth(parameters, u);
+        Parameter *p = parameterList[u];
         assert(p);
         if (u >= nargs)
         {
@@ -6121,14 +6209,14 @@ MATCH TypeFunction::callMatch(Type *tthis, Expressions *args, int flag)
         /* prefer matching the element type rather than the array
          * type when more arguments are present with T[]...
          */
-        if (varargs == 2 && u + 1 == nparams && nargs > nparams)
+        if (parameterList.varargs == VARARGtypesafe && u + 1 == nparams && nargs > nparams)
             goto L1;
 
         //printf("\tm = %d\n", m);
         if (m == MATCHnomatch)                  // if no match
         {
           L1:
-            if (varargs == 2 && u + 1 == nparams)       // if last varargs param
+            if (parameterList.varargs == VARARGtypesafe && u + 1 == nparams)       // if last varargs param
             {
                 Type *tb = p->type->toBasetype();
                 TypeSArray *tsa;
@@ -6206,14 +6294,25 @@ Nomatch:
  */
 bool TypeFunction::hasLazyParameters()
 {
-    size_t dim = Parameter::dim(parameters);
+    size_t dim = parameterList.length();
     for (size_t i = 0; i < dim; i++)
     {
-        Parameter *fparam = Parameter::getNth(parameters, i);
+        Parameter *fparam = parameterList[i];
         if (fparam->storageClass & STClazy)
             return true;
     }
     return false;
+}
+
+/*******************************
+ * Check for `extern (D) U func(T t, ...)` variadic function type,
+ * which has `_arguments[]` added as the first argument.
+ * Returns:
+ *  true if D-style variadic
+ */
+bool TypeFunction::isDstyleVariadic() const
+{
+    return linkage == LINKd && parameterList.varargs == VARARGvariadic;
 }
 
 /***************************
@@ -6268,10 +6367,10 @@ StorageClass TypeFunction::parameterStorageClass(Parameter *p)
     // See if p can escape via any of the other parameters
     if (purity == PUREweak)
     {
-        const size_t dim = Parameter::dim(parameters);
+        const size_t dim = parameterList.length();
         for (size_t i = 0; i < dim; i++)
         {
-            Parameter *fparam = Parameter::getNth(parameters, i);
+            Parameter *fparam = parameterList[i];
             Type *t = fparam->type;
             if (!t)
                 continue;
@@ -6319,7 +6418,7 @@ Type *TypeFunction::addStorageClass(StorageClass stc)
         (stc & STCsafe && t->trust < TRUSTtrusted))
     {
         // Klunky to change these
-        TypeFunction *tf = new TypeFunction(t->parameters, t->next, t->varargs, t->linkage, 0);
+        TypeFunction *tf = new TypeFunction(t->parameterList, t->next, t->linkage, 0);
         tf->mod = t->mod;
         tf->fargs = fargs;
         tf->purity = t->purity;
@@ -6474,12 +6573,12 @@ Type *TypeDelegate::addStorageClass(StorageClass stc)
 
 d_uns64 TypeDelegate::size(Loc)
 {
-    return Target::ptrsize * 2;
+    return target.ptrsize * 2;
 }
 
 unsigned TypeDelegate::alignsize()
 {
-    return Target::ptrsize;
+    return target.ptrsize;
 }
 
 MATCH TypeDelegate::implicitConvTo(Type *to)
@@ -8148,7 +8247,7 @@ Expression *TypeStruct::defaultInitLiteral(Loc loc)
     /* Copy from the initializer symbol for larger symbols,
      * otherwise the literals expressed as code get excessively large.
      */
-    if (size(loc) > Target::ptrsize * 4U && !needsNested())
+    if (size(loc) > target.ptrsize * 4U && !needsNested())
         structinit->useStaticInit = true;
 
     structinit->type = this;
@@ -8401,7 +8500,7 @@ Type *TypeClass::semantic(Loc, Scope *sc)
 
 d_uns64 TypeClass::size(Loc)
 {
-    return Target::ptrsize;
+    return target.ptrsize;
 }
 
 Dsymbol *TypeClass::toDsymbol(Scope *)
@@ -8579,7 +8678,7 @@ L1:
             return e;
         }
 
-        if (ident == Id::__monitor)
+        if (ident == Id::__monitor && sym->hasMonitor())
         {
             /* The handle to the monitor (call it a void*)
              * *(cast(void**)e + 1)
@@ -9312,6 +9411,22 @@ Expression *TypeNull::defaultInit(Loc)
     return new NullExp(Loc(), Type::tnull);
 }
 
+/***********************************************************
+ * Encapsulate Parameters* so .length and [i] can be used on it.
+ * https://dlang.org/spec/function.html#ParameterList
+ */
+
+ParameterList::ParameterList(Parameters *parameters, VarArg varargs)
+{
+    this->parameters = parameters;
+    this->varargs = varargs;
+}
+
+size_t ParameterList::length()
+{
+    return Parameter::dim(parameters);
+}
+
 /***************************** Parameter *****************************/
 
 Parameter::Parameter(StorageClass storageClass, Type *type, Identifier *ident, Expression *defaultArg)
@@ -9369,7 +9484,7 @@ Type *Parameter::isLazyArray()
             TypeDelegate *td = (TypeDelegate *)tel;
             TypeFunction *tf = td->next->toTypeFunction();
 
-            if (!tf->varargs && Parameter::dim(tf->parameters) == 0)
+            if (tf->parameterList.varargs == VARARGnone && tf->parameterList.length() == 0)
             {
                 return tf->next;    // return type of delegate
             }

@@ -41,7 +41,7 @@ AttribDeclaration::AttribDeclaration(Dsymbols *decl)
     this->decl = decl;
 }
 
-Dsymbols *AttribDeclaration::include(Scope *, ScopeDsymbol *)
+Dsymbols *AttribDeclaration::include(Scope *)
 {
     if (errors)
         return NULL;
@@ -51,7 +51,7 @@ Dsymbols *AttribDeclaration::include(Scope *, ScopeDsymbol *)
 
 int AttribDeclaration::apply(Dsymbol_apply_ft_t fp, void *param)
 {
-    Dsymbols *d = include(_scope, NULL);
+    Dsymbols *d = include(_scope);
 
     if (d)
     {
@@ -111,7 +111,7 @@ Scope *AttribDeclaration::newScope(Scope *sc)
 
 void AttribDeclaration::addMember(Scope *sc, ScopeDsymbol *sds)
 {
-    Dsymbols *d = include(sc, sds);
+    Dsymbols *d = include(sc);
 
     if (d)
     {
@@ -131,7 +131,7 @@ void AttribDeclaration::addMember(Scope *sc, ScopeDsymbol *sds)
 
 void AttribDeclaration::setScope(Scope *sc)
 {
-    Dsymbols *d = include(sc, NULL);
+    Dsymbols *d = include(sc);
 
     //printf("\tAttribDeclaration::setScope '%s', d = %p\n",toChars(), d);
     if (d)
@@ -151,7 +151,7 @@ void AttribDeclaration::setScope(Scope *sc)
 
 void AttribDeclaration::importAll(Scope *sc)
 {
-    Dsymbols *d = include(sc, NULL);
+    Dsymbols *d = include(sc);
 
     //printf("\tAttribDeclaration::importAll '%s', d = %p\n", toChars(), d);
     if (d)
@@ -174,7 +174,7 @@ void AttribDeclaration::semantic(Scope *sc)
     if (semanticRun != PASSinit)
         return;
     semanticRun = PASSsemantic;
-    Dsymbols *d = include(sc, NULL);
+    Dsymbols *d = include(sc);
 
     //printf("\tAttribDeclaration::semantic '%s', d = %p\n",toChars(), d);
     if (d)
@@ -195,7 +195,7 @@ void AttribDeclaration::semantic(Scope *sc)
 
 void AttribDeclaration::semantic2(Scope *sc)
 {
-    Dsymbols *d = include(sc, NULL);
+    Dsymbols *d = include(sc);
 
     if (d)
     {
@@ -214,7 +214,7 @@ void AttribDeclaration::semantic2(Scope *sc)
 
 void AttribDeclaration::semantic3(Scope *sc)
 {
-    Dsymbols *d = include(sc, NULL);
+    Dsymbols *d = include(sc);
 
     if (d)
     {
@@ -236,7 +236,7 @@ void AttribDeclaration::addComment(const utf8_t *comment)
     //printf("AttribDeclaration::addComment %s\n", comment);
     if (comment)
     {
-        Dsymbols *d = include(NULL, NULL);
+        Dsymbols *d = include(NULL);
 
         if (d)
         {
@@ -252,7 +252,7 @@ void AttribDeclaration::addComment(const utf8_t *comment)
 
 void AttribDeclaration::setFieldOffset(AggregateDeclaration *ad, unsigned *poffset, bool isunion)
 {
-    Dsymbols *d = include(NULL, NULL);
+    Dsymbols *d = include(NULL);
 
     if (d)
     {
@@ -266,7 +266,7 @@ void AttribDeclaration::setFieldOffset(AggregateDeclaration *ad, unsigned *poffs
 
 bool AttribDeclaration::hasPointers()
 {
-    Dsymbols *d = include(NULL, NULL);
+    Dsymbols *d = include(NULL);
 
     if (d)
     {
@@ -282,7 +282,7 @@ bool AttribDeclaration::hasPointers()
 
 bool AttribDeclaration::hasStaticCtorOrDtor()
 {
-    Dsymbols *d = include(NULL, NULL);
+    Dsymbols *d = include(NULL);
 
     if (d)
     {
@@ -303,14 +303,14 @@ const char *AttribDeclaration::kind() const
 
 bool AttribDeclaration::oneMember(Dsymbol **ps, Identifier *ident)
 {
-    Dsymbols *d = include(NULL, NULL);
+    Dsymbols *d = include(NULL);
 
     return Dsymbol::oneMembers(d, ps, ident);
 }
 
 void AttribDeclaration::checkCtorConstInit()
 {
-    Dsymbols *d = include(NULL, NULL);
+    Dsymbols *d = include(NULL);
 
     if (d)
     {
@@ -327,7 +327,7 @@ void AttribDeclaration::checkCtorConstInit()
 
 void AttribDeclaration::addLocalClass(ClassDeclarations *aclasses)
 {
-    Dsymbols *d = include(NULL, NULL);
+    Dsymbols *d = include(NULL);
 
     if (d)
     {
@@ -383,7 +383,7 @@ bool StorageClassDeclaration::oneMember(Dsymbol **ps, Identifier *ident)
 
 void StorageClassDeclaration::addMember(Scope *sc, ScopeDsymbol *sds)
 {
-    Dsymbols *d = include(sc, sds);
+    Dsymbols *d = include(sc);
     if (d)
     {
         Scope *sc2 = newScope(sc);
@@ -516,7 +516,7 @@ LinkDeclaration::LinkDeclaration(LINK p, Dsymbols *decl)
         : AttribDeclaration(decl)
 {
     //printf("LinkDeclaration(linkage = %d, decl = %p)\n", p, decl);
-    linkage = (p == LINKsystem) ? Target::systemLinkage() : p;
+    linkage = (p == LINKsystem) ? target.systemLinkage() : p;
 }
 
 LinkDeclaration *LinkDeclaration::create(LINK p, Dsymbols *decl)
@@ -596,7 +596,7 @@ ProtDeclaration::ProtDeclaration(Loc loc, Identifiers* pkg_identifiers, Dsymbols
         : AttribDeclaration(decl)
 {
     this->loc = loc;
-    this->protection.kind = PROTpackage;
+    this->protection.kind = Prot::package_;
     this->protection.pkg  = NULL;
     this->pkg_identifiers = pkg_identifiers;
 }
@@ -604,7 +604,7 @@ ProtDeclaration::ProtDeclaration(Loc loc, Identifiers* pkg_identifiers, Dsymbols
 Dsymbol *ProtDeclaration::syntaxCopy(Dsymbol *s)
 {
     assert(!s);
-    if (protection.kind == PROTpackage)
+    if (protection.kind == Prot::package_)
         return new ProtDeclaration(this->loc, pkg_identifiers, Dsymbol::arraySyntaxCopy(decl));
     else
         return new ProtDeclaration(this->loc, protection, Dsymbol::arraySyntaxCopy(decl));
@@ -629,7 +629,7 @@ void ProtDeclaration::addMember(Scope *sc, ScopeDsymbol *sds)
         pkg_identifiers = NULL;
     }
 
-    if (protection.kind == PROTpackage && protection.pkg && sc->_module)
+    if (protection.kind == Prot::package_ && protection.pkg && sc->_module)
     {
         Module *m = sc->_module;
         Package* pkg = m->parent ? m->parent->isPackage() : NULL;
@@ -648,13 +648,13 @@ const char *ProtDeclaration::kind() const
 
 const char *ProtDeclaration::toPrettyChars(bool)
 {
-    assert(protection.kind > PROTundefined);
+    assert(protection.kind > Prot::undefined);
 
     OutBuffer buf;
     buf.writeByte('\'');
     protectionToBuffer(&buf, protection);
     buf.writeByte('\'');
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 /********************************* AlignDeclaration ****************************/
@@ -922,7 +922,7 @@ static unsigned setMangleOverride(Dsymbol *s, char *sym)
 
     if (ad)
     {
-        Dsymbols *decls = ad->include(NULL, NULL);
+        Dsymbols *decls = ad->include(NULL);
         unsigned nestedCount = 0;
 
         if (decls && decls->length)
@@ -994,7 +994,7 @@ void PragmaDeclaration::semantic(Scope *sc)
             name[se->len] = 0;
             if (global.params.verbose)
                 message("library   %s", name);
-            if (global.params.moduleDeps && !global.params.moduleDepsFile)
+            if (global.params.moduleDeps && !global.params.moduleDepsFile.length)
             {
                 OutBuffer *ob = global.params.moduleDeps;
                 Module *imod = sc->instantiatingModule();
@@ -1132,7 +1132,7 @@ void PragmaDeclaration::semantic(Scope *sc)
                 if (args->length)
                     buf.writeByte(')');
             }
-            message("pragma    %s", buf.peekString());
+            message("pragma    %s", buf.peekChars());
         }
         goto Lnodecl;
     }
@@ -1207,7 +1207,7 @@ bool ConditionalDeclaration::oneMember(Dsymbol **ps, Identifier *ident)
     //printf("ConditionalDeclaration::oneMember(), inc = %d\n", condition->inc);
     if (condition->inc)
     {
-        Dsymbols *d = condition->include(NULL, NULL) ? decl : elsedecl;
+        Dsymbols *d = condition->include(NULL) ? decl : elsedecl;
         return Dsymbol::oneMembers(d, ps, ident);
     }
     else
@@ -1221,7 +1221,7 @@ bool ConditionalDeclaration::oneMember(Dsymbol **ps, Identifier *ident)
 
 // Decide if 'then' or 'else' code should be included
 
-Dsymbols *ConditionalDeclaration::include(Scope *sc, ScopeDsymbol *sds)
+Dsymbols *ConditionalDeclaration::include(Scope *sc)
 {
     //printf("ConditionalDeclaration::include(sc = %p) _scope = %p\n", sc, _scope);
 
@@ -1229,12 +1229,12 @@ Dsymbols *ConditionalDeclaration::include(Scope *sc, ScopeDsymbol *sds)
         return NULL;
 
     assert(condition);
-    return condition->include(_scope ? _scope : sc, sds) ? decl : elsedecl;
+    return condition->include(_scope ? _scope : sc) ? decl : elsedecl;
 }
 
 void ConditionalDeclaration::setScope(Scope *sc)
 {
-    Dsymbols *d = include(sc, NULL);
+    Dsymbols *d = include(sc);
 
     //printf("\tConditionalDeclaration::setScope '%s', d = %p\n",toChars(), d);
     if (d)
@@ -1299,7 +1299,7 @@ Dsymbol *StaticIfDeclaration::syntaxCopy(Dsymbol *s)
  * Different from other AttribDeclaration subclasses, include() call requires
  * the completion of addMember and setScope phases.
  */
-Dsymbols *StaticIfDeclaration::include(Scope *sc, ScopeDsymbol *)
+Dsymbols *StaticIfDeclaration::include(Scope *sc)
 {
     //printf("StaticIfDeclaration::include(sc = %p) _scope = %p\n", sc, _scope);
 
@@ -1313,7 +1313,7 @@ Dsymbols *StaticIfDeclaration::include(Scope *sc, ScopeDsymbol *)
         assert(scopesym);   // addMember is already done
         assert(_scope);      // setScope is already done
 
-        d = ConditionalDeclaration::include(_scope, scopesym);
+        d = ConditionalDeclaration::include(_scope);
 
         if (d && !addisdone)
         {
@@ -1338,7 +1338,7 @@ Dsymbols *StaticIfDeclaration::include(Scope *sc, ScopeDsymbol *)
     }
     else
     {
-        d = ConditionalDeclaration::include(sc, scopesym);
+        d = ConditionalDeclaration::include(sc);
         onStack = false;
         return d;
     }
@@ -1423,7 +1423,7 @@ bool StaticForeachDeclaration::oneMember(Dsymbol **ps, Identifier *ident)
     return false;
 }
 
-Dsymbols *StaticForeachDeclaration::include(Scope *, ScopeDsymbol *)
+Dsymbols *StaticForeachDeclaration::include(Scope *)
 {
     if (errors || onStack)
         return NULL;

@@ -212,36 +212,6 @@ package Sem_Attr is
       --  value indicating whether or not the body of the designated library
       --  unit has been elaborated yet.
 
-      --------------
-      -- Enum_Rep --
-      --------------
-
-      Attribute_Enum_Rep => True,
-      --  For every enumeration subtype S, S'Enum_Rep denotes a function
-      --  with the following specification:
-      --
-      --    function S'Enum_Rep (Arg : S'Base) return universal_integer;
-      --
-      --  The function returns the representation value for the given
-      --  enumeration value. This will be equal to the 'Pos value in the
-      --  absence of an enumeration representation clause. This is a static
-      --  attribute (i.e. the result is static if the argument is static).
-
-      --------------
-      -- Enum_Val --
-      --------------
-
-      Attribute_Enum_Val => True,
-      --  For every enumeration subtype S, S'Enum_Val denotes a function with
-      --  the following specification:
-      --
-      --    function S'Enum_Val (Arg : universal_integer) return S'Base;
-      --
-      --  This function performs the inverse transformation to Enum_Rep. Given
-      --  a representation value for the type, it returns the corresponding
-      --  enumeration value. Constraint_Error is raised if no value of the
-      --  enumeration type corresponds to the given integer value.
-
       -----------------------
       -- Finalization_Size --
       -----------------------
@@ -426,6 +396,13 @@ package Sem_Attr is
       --  index subtype of a one dimensional array always gives the same result
       --  as Range applied to the array itself. The result is of type universal
       --  integer.
+
+      ------------
+      -- Reduce --
+      ------------
+
+      Attribute_Reduce => True,
+      --  See AI12-0262-1
 
       ---------
       -- Ref --

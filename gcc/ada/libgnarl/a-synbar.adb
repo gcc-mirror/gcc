@@ -33,7 +33,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body Ada.Synchronous_Barriers is
+package body Ada.Synchronous_Barriers with SPARK_Mode => Off is
 
    protected body Synchronous_Barrier is
 

@@ -2,6 +2,7 @@
 // { dg-do link }
 // { dg-require-weak }
 // { dg-additional-options "-fno-rtti -nodefaultlibs -lc" }
+// { dg-xfail-if "AIX weak" { powerpc-ibm-aix* } }
 
 struct A
 {

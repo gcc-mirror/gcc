@@ -4348,7 +4348,7 @@ build_converted_constant_expr_internal (tree type, tree expr,
      and where the reference binding (if any) binds directly.  */
 
   for (conversion *c = conv;
-       conv && c->kind != ck_identity;
+       c && c->kind != ck_identity;
        c = next_conversion (c))
     {
       switch (c->kind)
@@ -4356,6 +4356,8 @@ build_converted_constant_expr_internal (tree type, tree expr,
 	  /* A conversion function is OK.  If it isn't constexpr, we'll
 	     complain later that the argument isn't constant.  */
 	case ck_user:
+	  /* List-initialization is OK.  */
+	case ck_aggr:
 	  /* The lvalue-to-rvalue conversion is OK.  */
 	case ck_rvalue:
 	  /* Array-to-pointer and function-to-pointer.  */
@@ -5860,7 +5862,7 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 	}
 
       /* Don't bother reversing an operator with two identical parameters.  */
-      else if (args->length () == 2 && (flags & LOOKUP_REVERSED))
+      else if (vec_safe_length (args) == 2 && (flags & LOOKUP_REVERSED))
 	{
 	  tree parmlist = TYPE_ARG_TYPES (TREE_TYPE (fn));
 	  if (same_type_p (TREE_VALUE (parmlist),
@@ -10261,7 +10263,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	  && !(flags & LOOKUP_ONLYCONVERTING)
 	  && cxx_dialect >= cxx20
 	  && CP_AGGREGATE_TYPE_P (basetype)
-	  && !user_args->is_empty ())
+	  && !vec_safe_is_empty (user_args))
 	{
 	  /* Create a CONSTRUCTOR from ARGS, e.g. {1, 2} from <1, 2>.  */
 	  tree list = build_tree_list_vec (user_args);

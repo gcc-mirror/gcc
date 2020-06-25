@@ -297,15 +297,14 @@ instantiate_coro_traits (tree fndecl, location_t kw)
 
   tree functyp = TREE_TYPE (fndecl);
   tree arg = DECL_ARGUMENTS (fndecl);
-  bool lambda_p = LAMBDA_FUNCTION_P (fndecl);
   tree arg_node = TYPE_ARG_TYPES (functyp);
   tree argtypes = make_tree_vec (list_length (arg_node)-1);
   unsigned p = 0;
 
   while (arg_node != NULL_TREE && !VOID_TYPE_P (TREE_VALUE (arg_node)))
     {
-      /* See PR94807, as to why we must exclude lambda here.  */
-      if (is_this_parameter (arg) && !lambda_p)
+      if (is_this_parameter (arg)
+	  || DECL_NAME (arg) == closure_identifier)
 	{
 	  /* We pass a reference to *this to the param preview.  */
 	  tree ct = TREE_TYPE (TREE_TYPE (arg));
@@ -1488,19 +1487,13 @@ expand_one_await_expression (tree *stmt, tree *await_expr, void *d)
   tree resume_label = create_named_label_with_ctx (loc, buf, actor);
   tree empty_list = build_empty_stmt (loc);
 
-  tree dtor = NULL_TREE;
   tree await_type = TREE_TYPE (var);
-  if (needs_dtor)
-    dtor = build_special_member_call (var, complete_dtor_identifier, NULL,
-				      await_type, LOOKUP_NORMAL,
-				      tf_warning_or_error);
-
   tree stmt_list = NULL;
   tree t_expr = STRIP_NOPS (expr);
   tree r;
   tree *await_init = NULL;
   if (t_expr == var)
-    dtor = NULL_TREE;
+    needs_dtor = false;
   else
     {
       /* Initialize the var from the provided 'o' expression.  */
@@ -1615,7 +1608,12 @@ expand_one_await_expression (tree *stmt, tree *await_expr, void *d)
   destroy_label = build_stmt (loc, LABEL_EXPR, destroy_label);
   append_to_statement_list (destroy_label, &body_list);
   if (needs_dtor)
-    append_to_statement_list (dtor, &body_list);
+    {
+      tree dtor = build_special_member_call (var, complete_dtor_identifier,
+					     NULL, await_type, LOOKUP_NORMAL,
+					     tf_warning_or_error);
+      append_to_statement_list (dtor, &body_list);
+    }
   r = build1_loc (loc, GOTO_EXPR, void_type_node, data->cleanup);
   append_to_statement_list (r, &body_list);
 
@@ -1650,7 +1648,12 @@ expand_one_await_expression (tree *stmt, tree *await_expr, void *d)
   /* Get a pointer to the revised statment.  */
   tree *revised = tsi_stmt_ptr (tsi_last (stmt_list));
   if (needs_dtor)
-    append_to_statement_list (dtor, &stmt_list);
+    {
+      tree dtor = build_special_member_call (var, complete_dtor_identifier,
+					     NULL, await_type, LOOKUP_NORMAL,
+					     tf_warning_or_error);
+      append_to_statement_list (dtor, &stmt_list);
+    }
   data->index += 2;
 
   /* Replace the original statement with the expansion.  */
@@ -3798,15 +3801,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  parm.frame_type = actual_type;
 
 	  parm.this_ptr = is_this_parameter (arg);
-	  /* See PR94807.  When a lambda is in a template instantiation, the
-	     closure object is named 'this' instead of '__closure'.  */
-	  if (lambda_p)
-	    {
-	      parm.lambda_cobj = DECL_NAME (arg) == closure_identifier;
-	      gcc_checking_assert (!parm.this_ptr);
-	    }
-	  else
-	    parm.lambda_cobj = false;
+	  parm.lambda_cobj = lambda_p && DECL_NAME (arg) == closure_identifier;
 
 	  parm.trivial_dtor = TYPE_HAS_TRIVIAL_DESTRUCTOR (parm.frame_type);
 	  char *buf;
@@ -3956,9 +3951,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	{
 	  param_info *parm_i = param_uses->get (arg);
 	  gcc_checking_assert (parm_i);
-	  if (parm_i->lambda_cobj)
-	    vec_safe_push (args, arg);
-	  else if (parm_i->this_ptr)
+	  if (parm_i->this_ptr || parm_i->lambda_cobj)
 	    {
 	      /* We pass a reference to *this to the allocator lookup.  */
 	      tree tt = TREE_TYPE (TREE_TYPE (arg));
@@ -4162,9 +4155,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
 	  /* Add this to the promise CTOR arguments list, accounting for
 	     refs and special handling for method this ptr.  */
-	  if (parm.lambda_cobj)
-	    vec_safe_push (promise_args, arg);
-	  else if (parm.this_ptr)
+	  if (parm.this_ptr || parm.lambda_cobj)
 	    {
 	      /* We pass a reference to *this to the param preview.  */
 	      tree tt = TREE_TYPE (arg);

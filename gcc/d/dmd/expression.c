@@ -1385,14 +1385,14 @@ bool functionParameters(Loc loc, Scope *sc, TypeFunction *tf,
     assert(arguments);
     assert(fd || tf->next);
     size_t nargs = arguments ? arguments->length : 0;
-    size_t nparams = Parameter::dim(tf->parameters);
+    size_t nparams = tf->parameterList.length();
     unsigned olderrors = global.errors;
     bool err = false;
     *prettype = Type::terror;
     Expression *eprefix = NULL;
     *peprefix = NULL;
 
-    if (nargs > nparams && tf->varargs == 0)
+    if (nargs > nparams && tf->parameterList.varargs == VARARGnone)
     {
         error(loc, "expected %llu arguments, not %llu for non-variadic function type %s", (ulonglong)nparams, (ulonglong)nargs, tf->toChars());
         return true;
@@ -1446,13 +1446,13 @@ bool functionParameters(Loc loc, Scope *sc, TypeFunction *tf,
 
         if (i < nparams)
         {
-            Parameter *p = Parameter::getNth(tf->parameters, i);
+            Parameter *p = tf->parameterList[i];
 
             if (!arg)
             {
                 if (!p->defaultArg)
                 {
-                    if (tf->varargs == 2 && i + 1 == nparams)
+                    if (tf->parameterList.varargs == VARARGtypesafe && i + 1 == nparams)
                         goto L2;
                     error(loc, "expected %llu function arguments, not %llu", (ulonglong)nparams, (ulonglong)nargs);
                     return true;
@@ -1465,7 +1465,7 @@ bool functionParameters(Loc loc, Scope *sc, TypeFunction *tf,
                 nargs++;
             }
 
-            if (tf->varargs == 2 && i + 1 == nparams)
+            if (tf->parameterList.varargs == VARARGtypesafe && i + 1 == nparams)
             {
                 //printf("\t\tvarargs == 2, p->type = '%s'\n", p->type->toChars());
                 {
@@ -1620,7 +1620,7 @@ bool functionParameters(Loc loc, Scope *sc, TypeFunction *tf,
         assert(arg);
         if (i < nparams)
         {
-            Parameter *p = Parameter::getNth(tf->parameters, i);
+            Parameter *p = tf->parameterList[i];
 
             if (!(p->storageClass & STClazy && p->type->ty == Tvoid))
             {
@@ -1733,7 +1733,7 @@ bool functionParameters(Loc loc, Scope *sc, TypeFunction *tf,
                         break;
                 }
 
-                if (tf->varargs == 1)
+                if (tf->parameterList.varargs == VARARGvariadic)
                 {
                     const char *p = tf->linkage == LINKc ? "extern(C)" : "extern(C++)";
                     if (arg->type->ty == Tarray)
@@ -1823,7 +1823,7 @@ bool functionParameters(Loc loc, Scope *sc, TypeFunction *tf,
                 lastthrow = i;
             if (firstdtor == -1 && arg->type->needsDestruction())
             {
-                Parameter *p = (i >= (ptrdiff_t)nparams ? NULL : Parameter::getNth(tf->parameters, i));
+                Parameter *p = (i >= (ptrdiff_t)nparams ? NULL : tf->parameterList[i]);
                 if (!(p && (p->storageClass & (STClazy | STCref | STCout))))
                     firstdtor = i;
             }
@@ -1853,7 +1853,7 @@ bool functionParameters(Loc loc, Scope *sc, TypeFunction *tf,
         {
             Expression *arg = (*arguments)[i];
 
-            Parameter *parameter = (i >= (ptrdiff_t)nparams ? NULL : Parameter::getNth(tf->parameters, i));
+            Parameter *parameter = (i >= (ptrdiff_t)nparams ? NULL : tf->parameterList[i]);
             const bool isRef = (parameter && (parameter->storageClass & (STCref | STCout)));
             const bool isLazy = (parameter && (parameter->storageClass & STClazy));
 
@@ -1895,7 +1895,7 @@ bool functionParameters(Loc loc, Scope *sc, TypeFunction *tf,
                     // edtor => (__gate || edtor)
                     assert(tmp->edtor);
                     Expression *e = tmp->edtor;
-                    e = new OrOrExp(e->loc, new VarExp(e->loc, gate), e);
+                    e = new LogicalExp(e->loc, TOKoror, new VarExp(e->loc, gate), e);
                     tmp->edtor = semantic(e, sc);
                     //printf("edtor: %s\n", tmp->edtor->toChars());
                 }
@@ -1945,7 +1945,7 @@ bool functionParameters(Loc loc, Scope *sc, TypeFunction *tf,
     //if (eprefix) printf("eprefix: %s\n", eprefix->toChars());
 
     // If D linkage and variadic, add _arguments[] as first argument
-    if (tf->linkage == LINKd && tf->varargs == 1)
+    if (tf->isDstyleVariadic())
     {
         assert(arguments->length >= nparams);
 
@@ -2058,7 +2058,7 @@ const char *Expression::toChars()
     OutBuffer buf;
     HdrGenState hgs;
     toCBuffer(this, &buf, &hgs);
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 void Expression::error(const char *format, ...) const
@@ -2557,7 +2557,7 @@ bool Expression::checkPurity(Scope *sc, VarDeclaration *v)
                     MODMatchToBuffer(&ffbuf, ff->type->mod, v->type->mod);
                     MODMatchToBuffer(&vbuf, v->type->mod, ff->type->mod);
                     error("%s%s '%s' cannot access %sdata '%s'",
-                        ffbuf.peekString(), ff->kind(), ff->toPrettyChars(), vbuf.peekString(), v->toChars());
+                        ffbuf.peekChars(), ff->kind(), ff->toPrettyChars(), vbuf.peekChars(), v->toChars());
                     err = true;
                     break;
                 }
@@ -2818,6 +2818,524 @@ bool Expression::isBool(bool)
     return false;
 }
 
+IntegerExp *Expression::isIntegerExp()
+{
+    return op == TOKint64 ? (IntegerExp *)this : NULL;
+}
+
+ErrorExp *Expression::isErrorExp()
+{
+    return op == TOKerror ? (ErrorExp *)this : NULL;
+}
+
+VoidInitExp *Expression::isVoidInitExp()
+{
+    return op == TOKvoid ? (VoidInitExp *)this : NULL;
+}
+
+RealExp *Expression::isRealExp()
+{
+    return op == TOKfloat64 ? (RealExp *)this : NULL;
+}
+
+ComplexExp *Expression::isComplexExp()
+{
+    return op == TOKcomplex80 ? (ComplexExp *)this : NULL;
+}
+
+IdentifierExp *Expression::isIdentifierExp()
+{
+    return op == TOKidentifier ? (IdentifierExp *)this : NULL;
+}
+
+DollarExp *Expression::isDollarExp()
+{
+    return op == TOKdollar ? (DollarExp *)this : NULL;
+}
+
+DsymbolExp *Expression::isDsymbolExp()
+{
+    return op == TOKdsymbol ? (DsymbolExp *)this : NULL;
+}
+
+ThisExp *Expression::isThisExp()
+{
+    return op == TOKthis ? (ThisExp *)this : NULL;
+}
+
+SuperExp *Expression::isSuperExp()
+{
+    return op == TOKsuper ? (SuperExp *)this : NULL;
+}
+
+NullExp *Expression::isNullExp()
+{
+    return op == TOKnull ? (NullExp *)this : NULL;
+}
+
+StringExp *Expression::isStringExp()
+{
+    return op == TOKstring ? (StringExp *)this : NULL;
+}
+
+TupleExp *Expression::isTupleExp()
+{
+    return op == TOKtuple ? (TupleExp *)this : NULL;
+}
+
+ArrayLiteralExp *Expression::isArrayLiteralExp()
+{
+    return op == TOKarrayliteral ? (ArrayLiteralExp *)this : NULL;
+}
+
+AssocArrayLiteralExp *Expression::isAssocArrayLiteralExp()
+{
+    return op == TOKassocarrayliteral ? (AssocArrayLiteralExp *)this : NULL;
+}
+
+StructLiteralExp *Expression::isStructLiteralExp()
+{
+    return op == TOKstructliteral ? (StructLiteralExp *)this : NULL;
+}
+
+TypeExp *Expression::isTypeExp()
+{
+    return op == TOKtype ? (TypeExp *)this : NULL;
+}
+
+ScopeExp *Expression::isScopeExp()
+{
+    return op == TOKscope ? (ScopeExp *)this : NULL;
+}
+
+TemplateExp *Expression::isTemplateExp()
+{
+    return op == TOKtemplate ? (TemplateExp *)this : NULL;
+}
+
+NewExp *Expression::isNewExp()
+{
+    return op == TOKnew ? (NewExp *)this : NULL;
+}
+
+NewAnonClassExp *Expression::isNewAnonClassExp()
+{
+    return op == TOKnewanonclass ? (NewAnonClassExp *)this : NULL;
+}
+
+SymOffExp *Expression::isSymOffExp()
+{
+    return op == TOKsymoff ? (SymOffExp *)this : NULL;
+}
+
+VarExp *Expression::isVarExp()
+{
+    return op == TOKvar ? (VarExp *)this : NULL;
+}
+
+OverExp *Expression::isOverExp()
+{
+    return op == TOKoverloadset ? (OverExp *)this : NULL;
+}
+
+FuncExp *Expression::isFuncExp()
+{
+    return op == TOKfunction ? (FuncExp *)this : NULL;
+}
+
+DeclarationExp *Expression::isDeclarationExp()
+{
+    return op == TOKdeclaration ? (DeclarationExp *)this : NULL;
+}
+
+TypeidExp *Expression::isTypeidExp()
+{
+    return op == TOKtypeid ? (TypeidExp *)this : NULL;
+}
+
+TraitsExp *Expression::isTraitsExp()
+{
+    return op == TOKtraits ? (TraitsExp *)this : NULL;
+}
+
+HaltExp *Expression::isHaltExp()
+{
+    return op == TOKhalt ? (HaltExp *)this : NULL;
+}
+
+IsExp *Expression::isExp()
+{
+    return op == TOKis ? (IsExp *)this : NULL;
+}
+
+CompileExp *Expression::isCompileExp()
+{
+    return op == TOKmixin ? (CompileExp *)this : NULL;
+}
+
+ImportExp *Expression::isImportExp()
+{
+    return op == TOKimport ? (ImportExp *)this : NULL;
+}
+
+AssertExp *Expression::isAssertExp()
+{
+    return op == TOKassert ? (AssertExp *)this : NULL;
+}
+
+DotIdExp *Expression::isDotIdExp()
+{
+    return op == TOKdotid ? (DotIdExp *)this : NULL;
+}
+
+DotTemplateExp *Expression::isDotTemplateExp()
+{
+    return op == TOKdotti ? (DotTemplateExp *)this : NULL;
+}
+
+DotVarExp *Expression::isDotVarExp()
+{
+    return op == TOKdotvar ? (DotVarExp *)this : NULL;
+}
+
+DotTemplateInstanceExp *Expression::isDotTemplateInstanceExp()
+{
+    return op == TOKdotti ? (DotTemplateInstanceExp *)this : NULL;
+}
+
+DelegateExp *Expression::isDelegateExp()
+{
+    return op == TOKdelegate ? (DelegateExp *)this : NULL;
+}
+
+DotTypeExp *Expression::isDotTypeExp()
+{
+    return op == TOKdottype ? (DotTypeExp *)this : NULL;
+}
+
+CallExp *Expression::isCallExp()
+{
+    return op == TOKcall ? (CallExp *)this : NULL;
+}
+
+AddrExp *Expression::isAddrExp()
+{
+    return op == TOKaddress ? (AddrExp *)this : NULL;
+}
+
+PtrExp *Expression::isPtrExp()
+{
+    return op == TOKstar ? (PtrExp *)this : NULL;
+}
+
+NegExp *Expression::isNegExp()
+{
+    return op == TOKneg ? (NegExp *)this : NULL;
+}
+
+UAddExp *Expression::isUAddExp()
+{
+    return op == TOKuadd ? (UAddExp *)this : NULL;
+}
+
+ComExp *Expression::isComExp()
+{
+    return op == TOKtilde ? (ComExp *)this : NULL;
+}
+
+NotExp *Expression::isNotExp()
+{
+    return op == TOKnot ? (NotExp *)this : NULL;
+}
+
+DeleteExp *Expression::isDeleteExp()
+{
+    return op == TOKdelete ? (DeleteExp *)this : NULL;
+}
+
+CastExp *Expression::isCastExp()
+{
+    return op == TOKcast ? (CastExp *)this : NULL;
+}
+
+VectorExp *Expression::isVectorExp()
+{
+    return op == TOKvector ? (VectorExp *)this : NULL;
+}
+
+VectorArrayExp *Expression::isVectorArrayExp()
+{
+    return op == TOKvectorarray ? (VectorArrayExp *)this : NULL;
+}
+
+SliceExp *Expression::isSliceExp()
+{
+    return op == TOKslice ? (SliceExp *)this : NULL;
+}
+
+ArrayLengthExp *Expression::isArrayLengthExp()
+{
+    return op == TOKarraylength ? (ArrayLengthExp *)this : NULL;
+}
+
+ArrayExp *Expression::isArrayExp()
+{
+    return op == TOKarray ? (ArrayExp *)this : NULL;
+}
+
+DotExp *Expression::isDotExp()
+{
+    return op == TOKdot ? (DotExp *)this : NULL;
+}
+
+CommaExp *Expression::isCommaExp()
+{
+    return op == TOKcomma ? (CommaExp *)this : NULL;
+}
+
+IntervalExp *Expression::isIntervalExp()
+{
+    return op == TOKinterval ? (IntervalExp *)this : NULL;
+}
+
+DelegatePtrExp *Expression::isDelegatePtrExp()
+{
+    return op == TOKdelegateptr ? (DelegatePtrExp *)this : NULL;
+}
+
+DelegateFuncptrExp *Expression::isDelegateFuncptrExp()
+{
+    return op == TOKdelegatefuncptr ? (DelegateFuncptrExp *)this : NULL;
+}
+
+IndexExp *Expression::isIndexExp()
+{
+    return op == TOKindex ? (IndexExp *)this : NULL;
+}
+
+PostExp *Expression::isPostExp()
+{
+    return (op == TOKplusplus || op == TOKminusminus) ? (PostExp *)this : NULL;
+}
+
+PreExp *Expression::isPreExp()
+{
+    return (op == TOKpreplusplus || op == TOKpreminusminus) ? (PreExp *)this : NULL;
+}
+
+AssignExp *Expression::isAssignExp()
+{
+    return op == TOKassign ? (AssignExp *)this : NULL;
+}
+
+ConstructExp *Expression::isConstructExp()
+{
+    return op == TOKconstruct ? (ConstructExp *)this : NULL;
+}
+
+BlitExp *Expression::isBlitExp()
+{
+    return op == TOKblit ? (BlitExp *)this : NULL;
+}
+
+AddAssignExp *Expression::isAddAssignExp()
+{
+    return op == TOKaddass ? (AddAssignExp *)this : NULL;
+}
+
+MinAssignExp *Expression::isMinAssignExp()
+{
+    return op == TOKminass ? (MinAssignExp *)this : NULL;
+}
+
+MulAssignExp *Expression::isMulAssignExp()
+{
+    return op == TOKmulass ? (MulAssignExp *)this : NULL;
+}
+
+
+DivAssignExp *Expression::isDivAssignExp()
+{
+    return op == TOKdivass ? (DivAssignExp *)this : NULL;
+}
+
+ModAssignExp *Expression::isModAssignExp()
+{
+    return op == TOKmodass ? (ModAssignExp *)this : NULL;
+}
+
+AndAssignExp *Expression::isAndAssignExp()
+{
+    return op == TOKandass ? (AndAssignExp *)this : NULL;
+}
+
+OrAssignExp *Expression::isOrAssignExp()
+{
+    return op == TOKorass ? (OrAssignExp *)this : NULL;
+}
+
+XorAssignExp *Expression::isXorAssignExp()
+{
+    return op == TOKxorass ? (XorAssignExp *)this : NULL;
+}
+
+PowAssignExp *Expression::isPowAssignExp()
+{
+    return op == TOKpowass ? (PowAssignExp *)this : NULL;
+}
+
+
+ShlAssignExp *Expression::isShlAssignExp()
+{
+    return op == TOKshlass ? (ShlAssignExp *)this : NULL;
+}
+
+ShrAssignExp *Expression::isShrAssignExp()
+{
+    return op == TOKshrass ? (ShrAssignExp *)this : NULL;
+}
+
+UshrAssignExp *Expression::isUshrAssignExp()
+{
+    return op == TOKushrass ? (UshrAssignExp *)this : NULL;
+}
+
+CatAssignExp *Expression::isCatAssignExp()
+{
+    return op == TOKcatass ? (CatAssignExp *)this : NULL;
+}
+
+AddExp *Expression::isAddExp()
+{
+    return op == TOKadd ? (AddExp *)this : NULL;
+}
+
+MinExp *Expression::isMinExp()
+{
+    return op == TOKmin ? (MinExp *)this : NULL;
+}
+
+CatExp *Expression::isCatExp()
+{
+    return op == TOKcat ? (CatExp *)this : NULL;
+}
+
+MulExp *Expression::isMulExp()
+{
+    return op == TOKmul ? (MulExp *)this : NULL;
+}
+
+DivExp *Expression::isDivExp()
+{
+    return op == TOKdiv ? (DivExp *)this : NULL;
+}
+
+ModExp *Expression::isModExp()
+{
+    return op == TOKmod ? (ModExp *)this : NULL;
+}
+
+PowExp *Expression::isPowExp()
+{
+    return op == TOKpow ? (PowExp *)this : NULL;
+}
+
+ShlExp *Expression::isShlExp()
+{
+    return op == TOKshl ? (ShlExp *)this : NULL;
+}
+
+ShrExp *Expression::isShrExp()
+{
+    return op == TOKshr ? (ShrExp *)this : NULL;
+}
+
+UshrExp *Expression::isUshrExp()
+{
+    return op == TOKushr ? (UshrExp *)this : NULL;
+}
+
+AndExp *Expression::isAndExp()
+{
+    return op == TOKand ? (AndExp *)this : NULL;
+}
+
+OrExp *Expression::isOrExp()
+{
+    return op == TOKor ? (OrExp *)this : NULL;
+}
+
+XorExp *Expression::isXorExp()
+{
+    return op == TOKxor ? (XorExp *)this : NULL;
+}
+
+LogicalExp *Expression::isLogicalExp()
+{
+    return (op == TOKandand || op == TOKoror) ? (LogicalExp *)this : NULL;
+}
+
+InExp *Expression::isInExp()
+{
+    return op == TOKin ? (InExp *)this : NULL;
+}
+
+RemoveExp *Expression::isRemoveExp()
+{
+    return op == TOKremove ? (RemoveExp *)this : NULL;
+}
+
+EqualExp *Expression::isEqualExp()
+{
+    return (op == TOKequal || op == TOKnotequal) ? (EqualExp *)this : NULL;
+}
+
+IdentityExp *Expression::isIdentityExp()
+{
+    return (op == TOKidentity || op == TOKnotidentity) ? (IdentityExp *)this : NULL;
+}
+
+CondExp *Expression::isCondExp()
+{
+    return op == TOKquestion ? (CondExp *)this : NULL;
+}
+
+DefaultInitExp *Expression::isDefaultInitExp()
+{
+    return op == TOKdefault ? (DefaultInitExp *)this : NULL;
+}
+
+FileInitExp *Expression::isFileInitExp()
+{
+    return (op == TOKfile || op == TOKfilefullpath) ? (FileInitExp *)this : NULL;
+}
+
+LineInitExp *Expression::isLineInitExp()
+{
+    return op == TOKline ? (LineInitExp *)this : NULL;
+}
+
+ModuleInitExp *Expression::isModuleInitExp()
+{
+    return op == TOKmodulestring ? (ModuleInitExp *)this : NULL;
+}
+
+FuncInitExp *Expression::isFuncInitExp()
+{
+    return op == TOKfuncstring ? (FuncInitExp *)this : NULL;
+}
+
+PrettyFuncInitExp *Expression::isPrettyFuncInitExp()
+{
+    return op == TOKprettyfunc ? (PrettyFuncInitExp *)this : NULL;
+}
+
+ClassReferenceExp *Expression::isClassReferenceExp()
+{
+    return op == TOKclassreference ? (ClassReferenceExp *)this : NULL;
+}
+
+
 /****************************************
  * Resolve __FILE__, __LINE__, __MODULE__, __FUNCTION__, __PRETTY_FUNCTION__ to loc.
  */
@@ -2925,11 +3443,11 @@ void IntegerExp::normalize()
         case Tint64:        value = (d_int64) value;        break;
         case Tuns64:        value = (d_uns64) value;        break;
         case Tpointer:
-            if (Target::ptrsize == 8)
+            if (target.ptrsize == 8)
                 value = (d_uns64) value;
-            else if (Target::ptrsize == 4)
+            else if (target.ptrsize == 4)
                 value = (d_uns32) value;
-            else if (Target::ptrsize == 2)
+            else if (target.ptrsize == 2)
                 value = (d_uns16) value;
             else
                 assert(0);
@@ -4678,10 +5196,10 @@ MATCH FuncExp::matchType(Type *to, Scope *sc, FuncExp **presult, int flag)
         TypeFunction *tf = (TypeFunction *)fd->type;
         //printf("\ttof = %s\n", tof->toChars());
         //printf("\ttf  = %s\n", tf->toChars());
-        size_t dim = Parameter::dim(tf->parameters);
+        size_t dim = tf->parameterList.length();
 
-        if (Parameter::dim(tof->parameters) != dim ||
-            tof->varargs != tf->varargs)
+        if (tof->parameterList.length() != dim ||
+            tof->parameterList.varargs != tf->parameterList.varargs)
             goto L1;
 
         Objects *tiargs = new Objects();
@@ -4693,7 +5211,7 @@ MATCH FuncExp::matchType(Type *to, Scope *sc, FuncExp **presult, int flag)
             size_t u = 0;
             for (; u < dim; u++)
             {
-                Parameter *p = Parameter::getNth(tf->parameters, u);
+                Parameter *p = tf->parameterList[u];
                 if (p->type->ty == Tident &&
                     ((TypeIdentifier *)p->type)->ident == tp->ident)
                 {
@@ -4701,7 +5219,7 @@ MATCH FuncExp::matchType(Type *to, Scope *sc, FuncExp **presult, int flag)
                 }
             }
             assert(u < dim);
-            Parameter *pto = Parameter::getNth(tof->parameters, u);
+            Parameter *pto = tof->parameterList[u];
             Type *t = pto->type;
             if (t->ty == Terror)
                 goto L1;
@@ -4745,7 +5263,7 @@ MATCH FuncExp::matchType(Type *to, Scope *sc, FuncExp **presult, int flag)
          */
         convertMatch = true;
 
-        TypeFunction *tfy = new TypeFunction(tfx->parameters, tof->next, tfx->varargs, tfx->linkage, STCundefined);
+        TypeFunction *tfy = new TypeFunction(tfx->parameterList, tof->next, tfx->linkage, STCundefined);
         tfy->mod = tfx->mod;
         tfy->isnothrow  = tfx->isnothrow;
         tfy->isnogc     = tfx->isnogc;
@@ -6457,28 +6975,12 @@ XorExp::XorExp(Loc loc, Expression *e1, Expression *e2)
 
 /************************************************************/
 
-OrOrExp::OrOrExp(Loc loc, Expression *e1, Expression *e2)
-        : BinExp(loc, TOKoror, sizeof(OrOrExp), e1, e2)
+LogicalExp::LogicalExp(Loc loc, TOK op, Expression *e1, Expression *e2)
+        : BinExp(loc, op, sizeof(LogicalExp), e1, e2)
 {
 }
 
-Expression *OrOrExp::toBoolean(Scope *sc)
-{
-    Expression *ex2 = e2->toBoolean(sc);
-    if (ex2->op == TOKerror)
-        return ex2;
-    e2 = ex2;
-    return this;
-}
-
-/************************************************************/
-
-AndAndExp::AndAndExp(Loc loc, Expression *e1, Expression *e2)
-        : BinExp(loc, TOKandand, sizeof(AndAndExp), e1, e2)
-{
-}
-
-Expression *AndAndExp::toBoolean(Scope *sc)
+Expression *LogicalExp::toBoolean(Scope *sc)
 {
     Expression *ex2 = e2->toBoolean(sc);
     if (ex2->op == TOKerror)
@@ -6591,9 +7093,9 @@ void CondExp::hookDtors(Scope *sc)
                     //printf("\t++v = %s, v->edtor = %s\n", v->toChars(), v->edtor->toChars());
                     Expression *ve = new VarExp(vcond->loc, vcond);
                     if (isThen)
-                        v->edtor = new AndAndExp(v->edtor->loc, ve, v->edtor);
+                        v->edtor = new LogicalExp(v->edtor->loc, TOKandand, ve, v->edtor);
                     else
-                        v->edtor = new OrOrExp(v->edtor->loc, ve, v->edtor);
+                        v->edtor = new LogicalExp(v->edtor->loc, TOKoror, ve, v->edtor);
                     v->edtor = semantic(v->edtor, sc);
                     //printf("\t--v = %s, v->edtor = %s\n", v->toChars(), v->edtor->toChars());
                 }
@@ -6754,7 +7256,7 @@ Expression *PrettyFuncInitExp::resolveLoc(Loc loc, Scope *sc)
         const char *funcStr = fd->Dsymbol::toPrettyChars();
         OutBuffer buf;
         functionToBufferWithIdent((TypeFunction *)fd->type, &buf, funcStr);
-        s = buf.extractString();
+        s = buf.extractChars();
     }
     else
     {

@@ -505,7 +505,7 @@ static GTY(()) vec <tree, va_gc> *odr_enums;
 struct odr_enum_val
 {
   const char *name;
-  HOST_WIDE_INT val;
+  wide_int val;
   location_t locus;
 };
 
@@ -4048,8 +4048,9 @@ ipa_odr_summary_write (void)
 	      streamer_write_string (ob, ob->main_stream,
 				     IDENTIFIER_POINTER (TREE_PURPOSE (e)),
 				     true);
-	      streamer_write_hwi (ob, tree_to_shwi
-					(DECL_INITIAL (TREE_VALUE (e))));
+	      streamer_write_wide_int (ob,
+				       wi::to_wide (DECL_INITIAL
+						      (TREE_VALUE (e))));
 	    }
 
 	  bitpack_d bp = bitpack_create (ob->main_stream);
@@ -4080,7 +4081,7 @@ ipa_odr_summary_write (void)
 	    {
 	      streamer_write_string (ob, ob->main_stream,
 				     this_enum.vals[j].name, true);
-	      streamer_write_hwi (ob, this_enum.vals[j].val);
+	      streamer_write_wide_int (ob, this_enum.vals[j].val);
 	    }
 
 	  bitpack_d bp = bitpack_create (ob->main_stream);
@@ -4139,35 +4140,51 @@ ipa_odr_read_section (struct lto_file_decl_data *file_data, const char *data,
       class odr_enum &this_enum
 		 = odr_enum_map->get_or_insert (xstrdup (name), &existed_p);
 
+      /* If this is first time we see the enum, remember its definition.  */
       if (!existed_p)
 	{
 	  this_enum.vals.safe_grow_cleared (nvals);
 	  this_enum.warned = false;
+	  if (dump_file)
+	    fprintf (dump_file, "enum %s\n{\n", name);
 	  for (unsigned j = 0; j < nvals; j++)
 	    {
 	      const char *val_name = streamer_read_string (data_in, &ib);
 	      obstack_grow (&odr_enum_obstack, val_name, strlen (val_name) + 1);
 	      this_enum.vals[j].name = XOBFINISH (&odr_enum_obstack, char *);
-	      this_enum.vals[j].val = streamer_read_hwi (&ib);
+	      this_enum.vals[j].val = streamer_read_wide_int (&ib);
+	      if (dump_file)
+		fprintf (dump_file, "  %s = " HOST_WIDE_INT_PRINT_DEC ",\n",
+			 val_name, wi::fits_shwi_p (this_enum.vals[j].val)
+			 ? this_enum.vals[j].val.to_shwi () : -1);
 	    }
 	  bitpack_d bp = streamer_read_bitpack (&ib);
 	  stream_input_location (&this_enum.locus, &bp, data_in);
 	  for (unsigned j = 0; j < nvals; j++)
 	    stream_input_location (&this_enum.vals[j].locus, &bp, data_in);
 	  data_in->location_cache.apply_location_cache ();
+	  if (dump_file)
+	    fprintf (dump_file, "}\n");
 	}
+      /* If we already have definition, compare it with new one and output
+	 warnings if they differs.  */
       else
 	{
 	  int do_warning = -1;
 	  char *warn_name = NULL;
-	  HOST_WIDE_INT warn_value = 0;
+	  wide_int warn_value = wi::zero (1);
 
+	  if (dump_file)
+	    fprintf (dump_file, "Comparing enum %s\n", name);
+
+	  /* Look for differences which we will warn about later once locations
+	     are streamed.  */
 	  for (unsigned j = 0; j < nvals; j++)
 	    {
 	      const char *id = streamer_read_string (data_in, &ib);
-	      HOST_WIDE_INT val = streamer_read_hwi (&ib);
+	      wide_int val = streamer_read_wide_int (&ib);
 
-	      if (do_warning != -1 || j > this_enum.vals.length ())
+	      if (do_warning != -1 || j >= this_enum.vals.length ())
 		continue;
 	      if (strcmp (id, this_enum.vals[j].name)
 		  || val != this_enum.vals[j].val)
@@ -4175,13 +4192,19 @@ ipa_odr_read_section (struct lto_file_decl_data *file_data, const char *data,
 		  warn_name = xstrdup (id);
 		  warn_value = val;
 		  do_warning = j;
+		  if (dump_file)
+		    fprintf (dump_file, "  Different on entry %i\n", j);
 		}
 	    }
-	  bitpack_d bp = streamer_read_bitpack (&ib);
 
+	  /* Stream in locations, but do not apply them unless we are going
+	     to warn.  */
+	  bitpack_d bp = streamer_read_bitpack (&ib);
 	  location_t locus;
+
 	  stream_input_location (&locus, &bp, data_in);
 
+	  /* Did we find a difference?  */
 	  if (do_warning != -1 || nvals != this_enum.vals.length ())
 	    {
 	      data_in->location_cache.apply_location_cache ();
@@ -4213,26 +4236,40 @@ ipa_odr_read_section (struct lto_file_decl_data *file_data, const char *data,
 	    }
 	  else
 	    data_in->location_cache.revert_location_cache ();
+
+	  /* Finally look up for location of the actual value that diverged.  */
 	  for (unsigned j = 0; j < nvals; j++)
 	    {
 	      location_t id_locus;
 
 	      data_in->location_cache.revert_location_cache ();
 	      stream_input_location (&id_locus, &bp, data_in);
+
 	      if ((int) j == do_warning)
 		{
 		  data_in->location_cache.apply_location_cache ();
+
 		  if (strcmp (warn_name, this_enum.vals[j].name))
 		    inform (this_enum.vals[j].locus,
 			    "name %qs differs from name %qs defined"
 			    " in another translation unit",
 			    this_enum.vals[j].name, warn_name);
-		  else
+		  /* FIXME: In case there is easy way to print wide_ints,
+		     perhaps we could do it here instead of overlfow checpl.  */
+		  else if (wi::fits_shwi_p (this_enum.vals[j].val)
+			   && wi::fits_shwi_p (warn_value))
 		    inform (this_enum.vals[j].locus,
 			    "name %qs is defined to " HOST_WIDE_INT_PRINT_DEC
 			    " while another translation unit defines "
 			    "it as " HOST_WIDE_INT_PRINT_DEC,
-			    warn_name, this_enum.vals[j].val, warn_value);
+			    warn_name, this_enum.vals[j].val.to_shwi (),
+			    warn_value.to_shwi ());
+		  else
+		    inform (this_enum.vals[j].locus,
+			    "name %qs is defined to different value "
+			    "in another translation unit",
+			    warn_name);
+
 		  inform (id_locus,
 			  "mismatching definition");
 		}

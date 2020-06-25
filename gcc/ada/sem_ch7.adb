@@ -47,7 +47,6 @@ with Nmake;     use Nmake;
 with Nlists;    use Nlists;
 with Opt;       use Opt;
 with Output;    use Output;
-with Restrict;  use Restrict;
 with Rtsfind;   use Rtsfind;
 with Sem;       use Sem;
 with Sem_Aux;   use Sem_Aux;
@@ -1271,10 +1270,6 @@ package body Sem_Ch7 is
       --  private_with_clauses, and remove them at the end of the nested
       --  package.
 
-      procedure Check_One_Tagged_Type_Or_Extension_At_Most;
-      --  Issue an error in SPARK mode if a package specification contains
-      --  more than one tagged type or type extension.
-
       procedure Clear_Constants (Id : Entity_Id; FE : Entity_Id);
       --  Clears constant indications (Never_Set_In_Source, Constant_Value, and
       --  Is_True_Constant) on all variables that are entities of Id, and on
@@ -1300,58 +1295,6 @@ package body Sem_Ch7 is
       --  This has to be done at the point of entering the instance package's
       --  private part rather than being done in Sem_Ch12.Install_Parent
       --  (which is where the parents' visible declarations are installed).
-
-      ------------------------------------------------
-      -- Check_One_Tagged_Type_Or_Extension_At_Most --
-      ------------------------------------------------
-
-      procedure Check_One_Tagged_Type_Or_Extension_At_Most is
-         Previous : Node_Id;
-
-         procedure Check_Decls (Decls : List_Id);
-         --  Check that either Previous is Empty and Decls does not contain
-         --  more than one tagged type or type extension, or Previous is
-         --  already set and Decls contains no tagged type or type extension.
-
-         -----------------
-         -- Check_Decls --
-         -----------------
-
-         procedure Check_Decls (Decls : List_Id) is
-            Decl : Node_Id;
-
-         begin
-            Decl := First (Decls);
-            while Present (Decl) loop
-               if Nkind (Decl) = N_Full_Type_Declaration
-                 and then Is_Tagged_Type (Defining_Identifier (Decl))
-               then
-                  if No (Previous) then
-                     Previous := Decl;
-
-                  else
-                     Error_Msg_Sloc := Sloc (Previous);
-                     Check_SPARK_05_Restriction
-                       ("at most one tagged type or type extension allowed",
-                        "\\ previous declaration#",
-                        Decl);
-                  end if;
-               end if;
-
-               Next (Decl);
-            end loop;
-         end Check_Decls;
-
-      --  Start of processing for Check_One_Tagged_Type_Or_Extension_At_Most
-
-      begin
-         Previous := Empty;
-         Check_Decls (Vis_Decls);
-
-         if Present (Priv_Decls) then
-            Check_Decls (Priv_Decls);
-         end if;
-      end Check_One_Tagged_Type_Or_Extension_At_Most;
 
       ---------------------
       -- Clear_Constants --
@@ -1888,11 +1831,6 @@ package body Sem_Ch7 is
          Clear_Constants (Id, First_Entity (Id));
          Clear_Constants (Id, First_Private_Entity (Id));
       end if;
-
-      --  Issue an error in SPARK mode if a package specification contains
-      --  more than one tagged type or type extension.
-
-      Check_One_Tagged_Type_Or_Extension_At_Most;
 
       --  Output relevant information as to why the package requires a body.
       --  Do not consider generated packages as this exposes internal symbols
@@ -2801,33 +2739,19 @@ package body Sem_Ch7 is
          Set_Freeze_Node (Priv, Freeze_Node (Full));
 
          --  Propagate Default_Initial_Condition-related attributes from the
-         --  base type of the full view to the full view and vice versa. This
-         --  may seem strange, but is necessary depending on which type
-         --  triggered the generation of the DIC procedure body. As a result,
-         --  both the full view and its base type carry the same DIC-related
-         --  information.
-
-         Propagate_DIC_Attributes (Full, From_Typ => Full_Base);
-         Propagate_DIC_Attributes (Full_Base, From_Typ => Full);
-
-         --  Propagate Default_Initial_Condition-related attributes from the
          --  full view to the private view.
 
          Propagate_DIC_Attributes (Priv, From_Typ => Full);
-
-         --  Propagate invariant-related attributes from the base type of the
-         --  full view to the full view and vice versa. This may seem strange,
-         --  but is necessary depending on which type triggered the generation
-         --  of the invariant procedure body. As a result, both the full view
-         --  and its base type carry the same invariant-related information.
-
-         Propagate_Invariant_Attributes (Full, From_Typ => Full_Base);
-         Propagate_Invariant_Attributes (Full_Base, From_Typ => Full);
 
          --  Propagate invariant-related attributes from the full view to the
          --  private view.
 
          Propagate_Invariant_Attributes (Priv, From_Typ => Full);
+
+         --  Propagate predicate-related attributes from the full view to the
+         --  private view.
+
+         Propagate_Predicate_Attributes (Priv, From_Typ => Full);
 
          if Is_Tagged_Type (Priv)
            and then Is_Tagged_Type (Full)

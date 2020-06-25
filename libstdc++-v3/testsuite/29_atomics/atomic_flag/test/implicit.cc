@@ -1,3 +1,4 @@
+// { dg-options "-std=gnu++2a" }
 // { dg-do run { target c++2a } }
 // { dg-require-thread-fence "" }
 
@@ -19,14 +20,21 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <atomic>
+#include <testsuite_hooks.h>
 
 int main()
 {
   using namespace std;
-  atomic_flag af = ATOMIC_FLAG_INIT;
 
-  if (af.test())
-    af.clear();
+  atomic_flag af0 = ATOMIC_FLAG_INIT;
+  VERIFY( ! af0.test(memory_order_acquire) );
 
-  return 0;
+  atomic_flag af{true};
+  const atomic_flag& caf = af;
+
+  VERIFY( af.test() );
+  VERIFY( caf.test() );
+  af.clear();
+  VERIFY( ! af.test() );
+  VERIFY( ! caf.test() );
 }

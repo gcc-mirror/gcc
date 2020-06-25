@@ -1296,6 +1296,7 @@ package body Exp_Util is
                --  of the type. In the case of an inherited condition for an
                --  overriding operation, both the operation and the function
                --  are given by primitive wrappers.
+               --  Move this check to sem???
 
                if Ekind (New_E) = E_Function
                  and then Is_Primitive_Wrapper (New_E)
@@ -1326,6 +1327,7 @@ package body Exp_Util is
 
             --  Check that there are no calls left to abstract operations if
             --  the current subprogram is not abstract.
+            --  Move this check to sem???
 
             if Nkind (Parent (N)) = N_Function_Call
               and then N = Name (Parent (N))
@@ -1961,9 +1963,6 @@ package body Exp_Util is
       CRec_Typ : Entity_Id;
       --  The corresponding record type of Full_Typ
 
-      Full_Base : Entity_Id;
-      --  The base type of Full_Typ
-
       Full_Typ : Entity_Id;
       --  The full view of working type
 
@@ -1972,6 +1971,9 @@ package body Exp_Util is
 
       Priv_Typ : Entity_Id;
       --  The partial view of working type
+
+      UFull_Typ : Entity_Id;
+      --  The underlying full view of Full_Typ
 
       Work_Typ : Entity_Id;
       --  The working type
@@ -2063,13 +2065,13 @@ package body Exp_Util is
 
       --  Obtain all views of the input type
 
-      Get_Views (Work_Typ, Priv_Typ, Full_Typ, Full_Base, CRec_Typ);
+      Get_Views (Work_Typ, Priv_Typ, Full_Typ, UFull_Typ, CRec_Typ);
 
-      --  Associate the DIC procedure and various relevant flags with all views
+      --  Associate the DIC procedure and various flags with all views
 
       Propagate_DIC_Attributes (Priv_Typ,  From_Typ => Work_Typ);
       Propagate_DIC_Attributes (Full_Typ,  From_Typ => Work_Typ);
-      Propagate_DIC_Attributes (Full_Base, From_Typ => Work_Typ);
+      Propagate_DIC_Attributes (UFull_Typ, From_Typ => Work_Typ);
       Propagate_DIC_Attributes (CRec_Typ,  From_Typ => Work_Typ);
 
       --  The declaration of the DIC procedure must be inserted after the
@@ -2296,9 +2298,8 @@ package body Exp_Util is
                   --  Generate:
                   --    <Comp_Typ>Invariant (_object (<Indices>));
 
-                  --  Note that the invariant procedure may have a null body if
-                  --  assertions are disabled or Assertion_Policy Ignore is in
-                  --  effect.
+                  --  The invariant procedure has a null body if assertions are
+                  --  disabled or Assertion_Policy Ignore is in effect.
 
                   if not Has_Null_Body (Proc_Id) then
                      Append_New_To (Comp_Checks,
@@ -3012,7 +3013,7 @@ package body Exp_Util is
             if Produced_Component_Check and then Has_Unchecked_Union (T) then
                Error_Msg_NE
                  ("invariants cannot be checked on components of "
-                  & "unchecked_union type &?", Comp_Id, T);
+                  & "unchecked_union type &??", Comp_Id, T);
             end if;
          end Process_Record_Component;
 
@@ -3087,11 +3088,18 @@ package body Exp_Util is
    begin
       Work_Typ := Typ;
 
+      --  Do not process the underlying full view of a private type. There is
+      --  no way to get back to the partial view, plus the body will be built
+      --  by the full view or the base type.
+
+      if Is_Underlying_Full_View (Work_Typ) then
+         return;
+
       --  The input type denotes the implementation base type of a constrained
       --  array type. Work with the first subtype as all invariant pragmas are
       --  on its rep item chain.
 
-      if Ekind (Work_Typ) = E_Array_Type and then Is_Itype (Work_Typ) then
+      elsif Ekind (Work_Typ) = E_Array_Type and then Is_Itype (Work_Typ) then
          Work_Typ := First_Subtype (Work_Typ);
 
       --  The input type denotes the corresponding record type of a protected
@@ -3420,9 +3428,6 @@ package body Exp_Util is
       CRec_Typ : Entity_Id;
       --  The corresponding record type of Full_Typ
 
-      Full_Base : Entity_Id;
-      --  The base type of Full_Typ
-
       Full_Typ : Entity_Id;
       --  The full view of working type
 
@@ -3434,6 +3439,9 @@ package body Exp_Util is
 
       Priv_Typ : Entity_Id;
       --  The partial view of working type
+
+      UFull_Typ : Entity_Id;
+      --  The underlying full view of Full_Typ
 
       Work_Typ : Entity_Id;
       --  The working type
@@ -3520,13 +3528,13 @@ package body Exp_Util is
 
       --  Obtain all views of the input type
 
-      Get_Views (Work_Typ, Priv_Typ, Full_Typ, Full_Base, CRec_Typ);
+      Get_Views (Work_Typ, Priv_Typ, Full_Typ, UFull_Typ, CRec_Typ);
 
-      --  Associate the invariant procedure with all views
+      --  Associate the invariant procedure and various flags with all views
 
       Propagate_Invariant_Attributes (Priv_Typ,  From_Typ => Work_Typ);
       Propagate_Invariant_Attributes (Full_Typ,  From_Typ => Work_Typ);
-      Propagate_Invariant_Attributes (Full_Base, From_Typ => Work_Typ);
+      Propagate_Invariant_Attributes (UFull_Typ, From_Typ => Work_Typ);
       Propagate_Invariant_Attributes (CRec_Typ,  From_Typ => Work_Typ);
 
       --  The declaration of the invariant procedure is inserted after the
@@ -6575,6 +6583,35 @@ package body Exp_Util is
       end;
    end Get_Current_Value_Condition;
 
+   -----------------------
+   -- Get_Index_Subtype --
+   -----------------------
+
+   function Get_Index_Subtype (N : Node_Id) return Node_Id is
+      P_Type : Entity_Id := Etype (Prefix (N));
+      Indx   : Node_Id;
+      J      : Int;
+
+   begin
+      if Is_Access_Type (P_Type) then
+         P_Type := Designated_Type (P_Type);
+      end if;
+
+      if No (Expressions (N)) then
+         J := 1;
+      else
+         J := UI_To_Int (Expr_Value (First (Expressions (N))));
+      end if;
+
+      Indx := First_Index (P_Type);
+      while J > 1 loop
+         Next_Index (Indx);
+         J := J - 1;
+      end loop;
+
+      return Etype (Indx);
+   end Get_Index_Subtype;
+
    ---------------------
    -- Get_Stream_Size --
    ---------------------
@@ -9322,18 +9359,15 @@ package body Exp_Util is
    function Make_Invariant_Call (Expr : Node_Id) return Node_Id is
       Loc : constant Source_Ptr := Sloc (Expr);
       Typ : constant Entity_Id  := Base_Type (Etype (Expr));
-
-      Proc_Id : Entity_Id;
-
-   begin
       pragma Assert (Has_Invariants (Typ));
-
-      Proc_Id := Invariant_Procedure (Typ);
+      Proc_Id : constant Entity_Id := Invariant_Procedure (Typ);
       pragma Assert (Present (Proc_Id));
+   begin
+      --  The invariant procedure has a null body if assertions are disabled or
+      --  Assertion_Policy Ignore is in effect. In that case, generate a null
+      --  statement instead of a call to the invariant procedure.
 
-      --  Ignore the invariant if that policy is in effect
-
-      if Invariants_Ignored (Typ) then
+      if Has_Null_Body (Proc_Id) then
          return Make_Null_Statement (Loc);
       else
          return
@@ -12517,13 +12551,10 @@ package body Exp_Util is
       elsif Nkind (Pexp) = N_Selected_Component
         and then Prefix (Pexp) = Exp
       then
-         if No (Etype (Pexp)) then
-            return True;
-         else
-            return
-              not Has_Discriminants (Etype (Pexp))
-                or else Is_Constrained (Etype (Pexp));
-         end if;
+         return No (Etype (Pexp))
+           or else not Is_Type (Etype (Pexp))
+           or else not Has_Discriminants (Etype (Pexp))
+           or else Is_Constrained (Etype (Pexp));
       end if;
 
       --  Set the output type, this comes from Etype if it is set, otherwise we
@@ -13326,6 +13357,12 @@ package body Exp_Util is
             | N_String_Literal
          =>
             return True;
+
+         --  An aggregate is side effect free if all its values are compile
+         --  time known.
+
+         when N_Aggregate =>
+            return Compile_Time_Known_Aggregate (N);
 
          --  We consider that anything else has side effects. This is a bit
          --  crude, but we are pretty close for most common cases, and we

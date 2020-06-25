@@ -1,3 +1,10 @@
+2020-06-05  Mark Wielaard  <mark@klomp.org>
+
+	* c-decl.c (implicit_decl_warning): When warned and olddecl is
+	an undeclared builtin, then add a fixit header hint, if found.
+	(implicitly_declare): Add OPT_Wbuiltin_declaration_mismatch to
+	warning_at about implicit builtin declaration type mismatch.
+
 2020-06-03  Mark Wielaard  <mark@klomp.org>
 
 	* c-parser.c (struct c_parser): Add seen_string_literal

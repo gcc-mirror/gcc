@@ -401,24 +401,6 @@ gcov_counter_add (gcov_type *counter, gcov_type value,
     *counter += value;
 }
 
-/* Set NODE to memory location COUNTER and make it with atomic operation
-   if USE_ATOMIC is true.  */
-
-static inline int
-gcov_counter_set_if_null (gcov_type *counter, struct gcov_kvp *node,
-			  int use_atomic ATTRIBUTE_UNUSED)
-{
-#if GCOV_SUPPORTS_ATOMIC
-  if (use_atomic)
-    return !__sync_val_compare_and_swap (counter, NULL, (intptr_t)node);
-  else
-#endif
-    {
-      *counter = (intptr_t)node;
-      return 1;
-    }
-}
-
 /* Add key value pair VALUE:COUNT to a top N COUNTERS.  When INCREMENT_TOTAL
    is true, add COUNT to total of the TOP counter.  If USE_ATOMIC is true,
    do it in atomic way.  */
@@ -432,7 +414,7 @@ gcov_topn_add_value (gcov_type *counters, gcov_type value, gcov_type count,
 
   struct gcov_kvp *prev_node = NULL;
   struct gcov_kvp *minimal_node = NULL;
-  struct gcov_kvp *current_node  = (struct gcov_kvp *)counters[2];
+  struct gcov_kvp *current_node  = (struct gcov_kvp *)(intptr_t)counters[2];
 
   while (current_node)
     {
@@ -467,10 +449,33 @@ gcov_topn_add_value (gcov_type *counters, gcov_type value, gcov_type count,
 
       int success = 0;
       if (!counters[2])
-	success = gcov_counter_set_if_null (&counters[2], new_node, use_atomic);
+	{
+#if GCOV_SUPPORTS_ATOMIC
+	  if (use_atomic)
+	    {
+	      struct gcov_kvp **ptr = (struct gcov_kvp **)(intptr_t)&counters[2];
+	      success = !__sync_val_compare_and_swap (ptr, 0, new_node);
+	    }
+	  else
+#endif
+	    {
+	      counters[2] = (intptr_t)new_node;
+	      success = 1;
+	    }
+	}
       else if (prev_node && !prev_node->next)
-	success = gcov_counter_set_if_null ((gcov_type *)&prev_node->next,
-					    new_node, use_atomic);
+	{
+#if GCOV_SUPPORTS_ATOMIC
+	  if (use_atomic)
+	    success = !__sync_val_compare_and_swap (&prev_node->next, 0,
+						    new_node);
+	  else
+#endif
+	    {
+	      prev_node->next = new_node;
+	      success = 1;
+	    }
+	}
 
       /* Increment number of nodes.  */
       if (success)

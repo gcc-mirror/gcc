@@ -261,9 +261,9 @@ public:
         }
 
         // Write argument types
-        paramsToDecoBuffer(t->parameters);
+        paramsToDecoBuffer(t->parameterList.parameters);
         //if (buf->data[buf->offset - 1] == '@') halt();
-        buf->writeByte('Z' - t->varargs);   // mark end of arg list
+        buf->writeByte('Z' - t->parameterList.varargs);   // mark end of arg list
         if (tret != NULL)
             visitWithMask(tret, 0);
 
@@ -307,7 +307,7 @@ public:
         buf2.reserve(32);
         Mangler v(&buf2);
         v.paramsToDecoBuffer(t->arguments);
-        const char *s = buf2.peekString();
+        const char *s = buf2.peekChars();
         int len = (int)buf2.offset;
         buf->printf("%d%.*s", len, len, s);
     }
@@ -421,7 +421,7 @@ public:
                     return;
 
                 case LINKcpp:
-                    buf->writestring(Target::toCppMangle(d));
+                    buf->writestring(target.cpp.toMangle(d));
                     return;
 
                 case LINKdefault:
@@ -520,9 +520,9 @@ public:
     {
         assert(!fd->isFuncAliasDeclaration());
 
-        if (fd->mangleOverride)
+        if (fd->mangleOverride.length)
         {
-            buf->writestring(fd->mangleOverride);
+            buf->writestring(fd->mangleOverride.ptr);
             return;
         }
 
@@ -543,9 +543,9 @@ public:
 
     void visit(VarDeclaration *vd)
     {
-        if (vd->mangleOverride)
+        if (vd->mangleOverride.length)
         {
-            buf->writestring(vd->mangleOverride);
+            buf->writestring(vd->mangleOverride.ptr);
             return;
         }
 
@@ -839,7 +839,7 @@ const char *mangleExact(FuncDeclaration *fd)
         OutBuffer buf;
         Mangler v(&buf);
         v.mangleExact(fd);
-        fd->mangleString = buf.extractString();
+        fd->mangleString = buf.extractChars();
     }
     return fd->mangleString;
 }

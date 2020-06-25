@@ -11,7 +11,7 @@
 #pragma once
 
 #include "root/root.h"
-
+#include "ast_node.h"
 #include "globals.h"
 #include "arraytypes.h"
 #include "visitor.h"
@@ -29,7 +29,7 @@ class ExpInitializer;
 
 enum NeedInterpret { INITnointerpret, INITinterpret };
 
-class Initializer : public RootObject
+class Initializer : public ASTNode
 {
 public:
     Loc loc;
@@ -45,7 +45,7 @@ public:
     virtual StructInitializer  *isStructInitializer()  { return NULL; }
     virtual ArrayInitializer   *isArrayInitializer()  { return NULL; }
     virtual ExpInitializer     *isExpInitializer()  { return NULL; }
-    virtual void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) { v->visit(this); }
 };
 
 class VoidInitializer : public Initializer

@@ -2338,11 +2338,11 @@ Alternatively, you may run the script using the following command line:
     Do not report the number of public subprograms with complete contracts
 
 
-  :switch:`--contract-all`
+  :switch:`--contract-cyclomatic`
     Report the McCabe complexity of public subprograms
 
 
-  :switch:`--no-contract-all`
+  :switch:`--no-contract-cyclomatic`
     Do not report the McCabe complexity of public subprograms
 
 
@@ -3244,6 +3244,14 @@ Alternatively, you may run the script using the following command line:
    :switch:`--no-separate-is`
      Do not place the keyword ``is`` on a separate line in a subprogram body in
      case if the spec occupies more than one line.
+
+   .. index:: --no-separate-return (gnatpp)
+
+
+   :switch:`--no-separate-return`
+     In :switch:`--no-compact` mode, if a subprogram spec does not fit on
+     one line, try to place the ``return`` on the same line as the last
+     formal parameter.
 
    .. index:: --separate-loop (gnatpp)
 

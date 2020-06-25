@@ -897,18 +897,17 @@ public:
             {
                 if (FuncDeclaration *fd = sapplyOld->isFuncDeclaration())
                 {
-                    int fvarargs;  // ignored (opApply shouldn't take variadics)
-                    Parameters *fparameters = fd->getParameters(&fvarargs);
+                    ParameterList fparameters = fd->getParameterList();
 
-                    if (Parameter::dim(fparameters) == 1)
+                    if (fparameters.length() == 1)
                     {
                         // first param should be the callback function
-                        Parameter *fparam = Parameter::getNth(fparameters, 0);
+                        Parameter *fparam = fparameters[0];
                         if ((fparam->type->ty == Tpointer || fparam->type->ty == Tdelegate) &&
                             fparam->type->nextOf()->ty == Tfunction)
                         {
                             TypeFunction *tf = (TypeFunction *)fparam->type->nextOf();
-                            foreachParamCount = Parameter::dim(tf->parameters);
+                            foreachParamCount = tf->parameterList.length();
                             foundMismatch = true;
                         }
                     }
@@ -1153,7 +1152,7 @@ public:
                         fs->key = new VarDeclaration(loc, Type::tsize_t, idkey, NULL);
                         fs->key->storage_class |= STCtemp;
                     }
-                    else if (fs->key->type->ty != Tsize_t)
+                    else if (fs->key->type->ty != Type::tsize_t->ty)
                     {
                         tmp_length = new CastExp(loc, tmp_length, fs->key->type);
                     }
@@ -1433,9 +1432,9 @@ public:
                             tfld = (TypeFunction *)tab->nextOf();
                         Lget:
                             //printf("tfld = %s\n", tfld->toChars());
-                            if (tfld->parameters->length == 1)
+                            if (tfld->parameterList.parameters->length == 1)
                             {
-                                Parameter *p = Parameter::getNth(tfld->parameters, 0);
+                                Parameter *p = tfld->parameterList[0];
                                 if (p->type && p->type->ty == Tdelegate)
                                 {
                                     Type *t = p->type->semantic(loc, sc2);
@@ -1460,7 +1459,7 @@ public:
                         p->type = p->type->addStorageClass(p->storageClass);
                         if (tfld)
                         {
-                            Parameter *prm = Parameter::getNth(tfld->parameters, i);
+                            Parameter *prm = tfld->parameterList[i];
                             //printf("\tprm = %s%s\n", (prm->storageClass&STCref?"ref ":""), prm->ident->toChars());
                             stc = prm->storageClass & STCref;
                             id = p->ident;    // argument copy is not need.
@@ -1497,7 +1496,7 @@ public:
                     }
                     // Bugzilla 13840: Throwable nested function inside nothrow function is acceptable.
                     StorageClass stc = mergeFuncAttrs(STCsafe | STCpure | STCnogc, fs->func);
-                    tfld = new TypeFunction(params, Type::tint32, 0, LINKd, stc);
+                    tfld = new TypeFunction(ParameterList(params), Type::tint32, LINKd, stc);
                     fs->cases = new Statements();
                     fs->gotos = new ScopeStatements();
                     FuncLiteralDeclaration *fld = new FuncLiteralDeclaration(loc, Loc(), tfld, TOKdelegate, fs);
@@ -1575,7 +1574,8 @@ public:
                             dgparams->push(new Parameter(0, Type::tvoidptr, NULL, NULL));
                             if (dim == 2)
                                 dgparams->push(new Parameter(0, Type::tvoidptr, NULL, NULL));
-                            fldeTy[i] = new TypeDelegate(new TypeFunction(dgparams, Type::tint32, 0, LINKd));
+                            fldeTy[i] = new TypeDelegate(new TypeFunction(ParameterList(dgparams),
+                                                                          Type::tint32, LINKd));
                             params->push(new Parameter(0, fldeTy[i], NULL, NULL));
                             fdapply[i] = FuncDeclaration::genCfunc(params, Type::tint32, name[i]);
                         }
@@ -1585,8 +1585,8 @@ public:
                         d_uns64 keysize = taa->index->size();
                         if (keysize == SIZE_INVALID)
                             goto Lerror2;
-                        assert(keysize < UINT64_MAX - Target::ptrsize);
-                        keysize = (keysize + (Target::ptrsize- 1)) & ~(Target::ptrsize - 1);
+                        assert(keysize < UINT64_MAX - target.ptrsize);
+                        keysize = (keysize + (target.ptrsize - 1)) & ~(target.ptrsize - 1);
                         // paint delegate argument to the type runtime expects
                         if (!fldeTy[i]->equals(flde->type))
                         {
@@ -1640,7 +1640,8 @@ public:
                         dgparams->push(new Parameter(0, Type::tvoidptr, NULL, NULL));
                         if (dim == 2)
                             dgparams->push(new Parameter(0, Type::tvoidptr, NULL, NULL));
-                        dgty = new TypeDelegate(new TypeFunction(dgparams, Type::tint32, 0, LINKd));
+                        dgty = new TypeDelegate(new TypeFunction(ParameterList(dgparams),
+                                                                 Type::tint32, LINKd));
                         params->push(new Parameter(0, dgty, NULL, NULL));
                         fdapply = FuncDeclaration::genCfunc(params, Type::tint32, fdname);
 
@@ -2023,7 +2024,7 @@ public:
         // If we can short-circuit evaluate the if statement, don't do the
         // semantic analysis of the skipped code.
         // This feature allows a limited form of conditional compilation.
-        if (cs->condition->include(sc, NULL))
+        if (cs->condition->include(sc))
         {
             DebugCondition *dc = cs->condition->isDebugCondition();
             if (dc)
@@ -2329,7 +2330,7 @@ public:
                 needswitcherror = true;
         }
 
-        if (!sc->sw->sdefault && (!ss->isFinal || needswitcherror || global.params.useAssert))
+        if (!sc->sw->sdefault && (!ss->isFinal || needswitcherror || global.params.useAssert == CHECKENABLEon))
         {
             ss->hasNoDefault = 1;
 
@@ -2341,7 +2342,7 @@ public:
             CompoundStatement *cs;
             Statement *s;
 
-            if (global.params.useSwitchError &&
+            if (global.params.useSwitchError == CHECKENABLEon &&
                 global.params.checkAction != CHECKACTION_halt)
             {
                 if (global.params.checkAction == CHECKACTION_C)
@@ -3248,7 +3249,7 @@ public:
              *  try { body } finally { _d_criticalexit(critsec.ptr); }
              */
             Identifier *id = Identifier::generateId("__critsec");
-            Type *t = Type::tint8->sarrayOf(Target::ptrsize + Target::critsecsize());
+            Type *t = Type::tint8->sarrayOf(target.ptrsize + target.critsecsize());
             VarDeclaration *tmp = new VarDeclaration(ss->loc, t, id, NULL);
             tmp->storage_class |= STCtemp | STCgshared | STCstatic;
 
@@ -3829,7 +3830,7 @@ void semantic(Catch *c, Scope *sc)
         }
         else if (cd->isCPPclass())
         {
-            if (!Target::cppExceptions)
+            if (!target.cpp.exceptions)
             {
                 error(c->loc, "catching C++ class objects not supported for this target");
                 c->errors = true;

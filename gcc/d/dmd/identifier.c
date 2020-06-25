@@ -110,7 +110,7 @@ Identifier *Identifier::generateId(const char *prefix, size_t i)
     buf.writestring(prefix);
     buf.printf("%llu", (ulonglong)i);
 
-    char *id = buf.peekString();
+    char *id = buf.peekChars();
     return idPool(id);
 }
 

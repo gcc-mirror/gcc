@@ -64,7 +64,6 @@ Scope::Scope()
     //printf("Scope::Scope() %p\n", this);
     this->_module = NULL;
     this->scopesym = NULL;
-    this->sds = NULL;
     this->enclosing = NULL;
     this->parent = NULL;
     this->sw = NULL;
@@ -82,7 +81,7 @@ Scope::Scope()
     this->linkage = LINKd;
     this->cppmangle = CPPMANGLEdefault;
     this->inlining = PINLINEdefault;
-    this->protection = Prot(PROTpublic);
+    this->protection = Prot(Prot::public_);
     this->explicitProtection = 0;
     this->stc = 0;
     this->depdecl = NULL;
@@ -121,7 +120,7 @@ Scope *Scope::createGlobal(Module *_module)
     sc->aligndecl = NULL;
     sc->linkage = LINKd;
     sc->inlining = PINLINEdefault;
-    sc->protection = Prot(PROTpublic);
+    sc->protection = Prot(Prot::public_);
 
     sc->_module = _module;
 
@@ -151,7 +150,6 @@ Scope *Scope::push()
     //printf("Scope::push(this = %p) new = %p\n", this, s);
     assert(!(flags & SCOPEfree));
     s->scopesym = NULL;
-    s->sds = NULL;
     s->enclosing = this;
     s->slabel = NULL;
     s->nofree = 0;
@@ -625,7 +623,7 @@ void *scope_search_fp(void *arg, const char *seed, int* cost)
         if (scopesym != s->parent)
         {
             (*cost)++; // got to the symbol through an import
-            if (s->prot().kind == PROTprivate)
+            if (s->prot().kind == Prot::private_)
                 return NULL;
         }
     }
@@ -663,7 +661,7 @@ void Scope::deprecation10378(Loc loc, Dsymbol *sold, Dsymbol *snew)
     else
         buf.writestring("nothing");
 
-    deprecation(loc, "%s", buf.peekString());
+    deprecation(loc, "%s", buf.peekChars());
 }
 
 Dsymbol *Scope::search_correct(Identifier *ident)

@@ -3674,9 +3674,7 @@ package body Freeze is
 
             if Warn_On_Export_Import
               and then Comes_From_Source (E)
-              and then (Convention (E) = Convention_C
-                          or else
-                        Convention (E) = Convention_CPP)
+              and then Convention (E) in Convention_C_Family
               and then (Is_Imported (E) or else Is_Exported (E))
               and then Convention (E) /= Convention (Formal)
               and then not Has_Warnings_Off (E)
@@ -3823,9 +3821,8 @@ package body Freeze is
             --  Check suspicious return type for C function
 
             if Warn_On_Export_Import
-              and then (Convention (E) = Convention_C
-                          or else
-                        Convention (E) = Convention_CPP)
+              and then Comes_From_Source (E)
+              and then Convention (E) in Convention_C_Family
               and then (Is_Imported (E) or else Is_Exported (E))
             then
                --  Check suspicious return of fat C pointer
@@ -4225,14 +4222,6 @@ package body Freeze is
                      --  have sufficient info on size and rep clauses.
 
                      elsif CodePeer_Mode then
-                        null;
-
-                     --  Omit check if component has a generic type. This can
-                     --  happen in an instantiation within a generic in ASIS
-                     --  mode, where we force freeze actions without full
-                     --  expansion.
-
-                     elsif Is_Generic_Type (Etype (Comp)) then
                         null;
 
                      --  Do the check
@@ -7390,10 +7379,16 @@ package body Freeze is
                return;
             end if;
 
-            exit when
-              Nkind (Parent_P) = N_Subprogram_Body
+            --  If the parent is a subprogram body, the candidate insertion
+            --  point is just ahead of it.
+
+            if  Nkind (Parent_P) = N_Subprogram_Body
                 and then Unique_Defining_Entity (Parent_P) =
-                           Freeze_Outside_Subp;
+                           Freeze_Outside_Subp
+            then
+               P := Parent_P;
+               exit;
+            end if;
 
             P := Parent_P;
          end loop;

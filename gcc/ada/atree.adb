@@ -960,9 +960,9 @@ package body Atree is
 
             --  The following code is a bit kludgy. It would be cleaner to
             --  Add an entry Change_Expanded_Name_To_Selected_Component to
-            --  Sinfo.CN, but that's an earthquake, because it has the wrong
-            --  license, and Atree is used outside the compiler, e.g. in the
-            --  binder and in ASIS, so we don't want to add that dependency.
+            --  Sinfo.CN, but that's delicate because Atree is used in the
+            --  binder, so we don't want to add that dependency.
+            --  ??? Revisit now that ASIS is no longer using this unit.
 
             --  Consequently we have no choice but to hold our noses and do
             --  the change manually. At least we are Atree, so this odd use

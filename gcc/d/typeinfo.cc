@@ -451,7 +451,8 @@ class TypeInfoVisitor : public Visitor
 	    gcc_assert (voffset != 0u);
 	    value = build_offset (csym, size_int (voffset));
 
-	    CONSTRUCTOR_APPEND_ELT (v, size_int (1), size_int (id->vtbl.length));
+	    CONSTRUCTOR_APPEND_ELT (v, size_int (1),
+				    size_int (id->vtbl.length));
 	    CONSTRUCTOR_APPEND_ELT (v, size_int (2), value);
 	  }
 
@@ -1218,12 +1219,13 @@ layout_classinfo_interfaces (ClassDeclaration *decl)
 
 	  if (id->vtbl.length && offset != ~0u)
 	    {
-	      tree vtbldomain = build_index_type (size_int (id->vtbl.length - 1));
+	      tree vtbldomain
+		= build_index_type (size_int (id->vtbl.length - 1));
 	      tree vtbltype = build_array_type (vtable_entry_type, vtbldomain);
 
 	      field = create_field_decl (vtbltype, NULL, 1, 1);
 	      insert_aggregate_field (type, field, offset);
-	      structsize += id->vtbl.length * Target::ptrsize;
+	      structsize += id->vtbl.length * target.ptrsize;
 	    }
 	}
     }
@@ -1242,12 +1244,13 @@ layout_classinfo_interfaces (ClassDeclaration *decl)
 	      if (type == tinfo_types[TK_CLASSINFO_TYPE])
 		type = copy_aggregate_type (type);
 
-	      tree vtbldomain = build_index_type (size_int (id->vtbl.length - 1));
+	      tree vtbldomain
+		= build_index_type (size_int (id->vtbl.length - 1));
 	      tree vtbltype = build_array_type (vtable_entry_type, vtbldomain);
 
 	      tree field = create_field_decl (vtbltype, NULL, 1, 1);
 	      insert_aggregate_field (type, field, offset);
-	      structsize += id->vtbl.length * Target::ptrsize;
+	      structsize += id->vtbl.length * target.ptrsize;
 	    }
 	}
     }
@@ -1415,7 +1418,7 @@ layout_cpp_typeinfo (ClassDeclaration *cd)
 
   /* Let C++ do the RTTI generation, and just reference the symbol as
      extern, knowing the underlying type is not required.  */
-  const char *ident = Target::cppTypeInfoMangle (cd);
+  const char *ident = target.cpp.typeInfoMangle (cd);
   tree typeinfo = declare_extern_var (get_identifier (ident),
 				      unknown_type_node);
   TREE_READONLY (typeinfo) = 1;

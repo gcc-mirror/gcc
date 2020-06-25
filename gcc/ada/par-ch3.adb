@@ -1487,7 +1487,7 @@ package body Ch3 is
          if Ada_Version < Ada_2020 then
             Error_Msg_SC
               ("object renaming without subtype is an Ada 202x feature");
-            Error_Msg_SC ("\compile with -gnatX");
+            Error_Msg_SC ("\compile with -gnat2020");
          end if;
 
          Scan; -- past renames

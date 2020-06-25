@@ -1129,6 +1129,35 @@ vect_update_misalignment_for_peel (dr_vec_info *dr_info,
   SET_DR_MISALIGNMENT (dr_info, DR_MISALIGNMENT_UNKNOWN);
 }
 
+/* Return true if alignment is relevant for DR_INFO.  */
+
+static bool
+vect_relevant_for_alignment_p (dr_vec_info *dr_info)
+{
+  stmt_vec_info stmt_info = dr_info->stmt;
+
+  if (!STMT_VINFO_RELEVANT_P (stmt_info))
+    return false;
+
+  /* For interleaving, only the alignment of the first access matters.  */
+  if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
+      && DR_GROUP_FIRST_ELEMENT (stmt_info) != stmt_info)
+    return false;
+
+  /* Scatter-gather and invariant accesses continue to address individual
+     scalars, so vector-level alignment is irrelevant.  */
+  if (STMT_VINFO_GATHER_SCATTER_P (stmt_info)
+      || integer_zerop (DR_STEP (dr_info->dr)))
+    return false;
+
+  /* Strided accesses perform only component accesses, alignment is
+     irrelevant for them.  */
+  if (STMT_VINFO_STRIDED_P (stmt_info)
+      && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
+    return false;
+
+  return true;
+}
 
 /* Function verify_data_ref_alignment
 
@@ -1160,32 +1189,19 @@ verify_data_ref_alignment (vec_info *vinfo, dr_vec_info *dr_info)
    handled with respect to alignment.  */
 
 opt_result
-vect_verify_datarefs_alignment (loop_vec_info vinfo)
+vect_verify_datarefs_alignment (loop_vec_info loop_vinfo)
 {
-  vec<data_reference_p> datarefs = vinfo->shared->datarefs;
+  vec<data_reference_p> datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
   struct data_reference *dr;
   unsigned int i;
 
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
-      dr_vec_info *dr_info = vinfo->lookup_dr (dr);
-      stmt_vec_info stmt_info = dr_info->stmt;
-
-      if (!STMT_VINFO_RELEVANT_P (stmt_info))
+      dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
+      if (!vect_relevant_for_alignment_p (dr_info))
 	continue;
 
-      /* For interleaving, only the alignment of the first access matters.   */
-      if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
-	  && DR_GROUP_FIRST_ELEMENT (stmt_info) != stmt_info)
-	continue;
-
-      /* Strided accesses perform only component accesses, alignment is
-	 irrelevant for them.  */
-      if (STMT_VINFO_STRIDED_P (stmt_info)
-	  && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
-	continue;
-
-      opt_result res = verify_data_ref_alignment (vinfo, dr_info);
+      opt_result res = verify_data_ref_alignment (loop_vinfo, dr_info);
       if (!res)
 	return res;
     }
@@ -1415,20 +1431,7 @@ vect_get_peeling_costs_all_drs (loop_vec_info loop_vinfo,
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
       dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
-      stmt_vec_info stmt_info = dr_info->stmt;
-      if (!STMT_VINFO_RELEVANT_P (stmt_info))
-	continue;
-
-      /* For interleaving, only the alignment of the first access
-         matters.  */
-      if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
-	  && DR_GROUP_FIRST_ELEMENT (stmt_info) != stmt_info)
-	continue;
-
-      /* Strided accesses perform only component accesses, alignment is
-         irrelevant for them.  */
-      if (STMT_VINFO_STRIDED_P (stmt_info)
-	  && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
+      if (!vect_relevant_for_alignment_p (dr_info))
 	continue;
 
       int save_misalignment;
@@ -1548,17 +1551,7 @@ vect_peeling_supportable (loop_vec_info loop_vinfo, dr_vec_info *dr0_info,
 	continue;
 
       dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
-      stmt_vec_info stmt_info = dr_info->stmt;
-      /* For interleaving, only the alignment of the first access
-	 matters.  */
-      if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
-	  && DR_GROUP_FIRST_ELEMENT (stmt_info) != stmt_info)
-	continue;
-
-      /* Strided accesses perform only component accesses, alignment is
-	 irrelevant for them.  */
-      if (STMT_VINFO_STRIDED_P (stmt_info)
-	  && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
+      if (!vect_relevant_for_alignment_p (dr_info))
 	continue;
 
       save_misalignment = DR_MISALIGNMENT (dr_info);
@@ -2197,21 +2190,13 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       FOR_EACH_VEC_ELT (datarefs, i, dr)
         {
 	  dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
-	  stmt_vec_info stmt_info = dr_info->stmt;
-
-	  /* For interleaving, only the alignment of the first access
-	     matters.  */
 	  if (aligned_access_p (dr_info)
-	      || (STMT_VINFO_GROUPED_ACCESS (stmt_info)
-		  && DR_GROUP_FIRST_ELEMENT (stmt_info) != stmt_info))
+	      || !vect_relevant_for_alignment_p (dr_info))
 	    continue;
 
+	  stmt_vec_info stmt_info = dr_info->stmt;
 	  if (STMT_VINFO_STRIDED_P (stmt_info))
 	    {
-	      /* Strided loads perform only component accesses, alignment is
-		 irrelevant for them.  */
-	      if (!STMT_VINFO_GROUPED_ACCESS (stmt_info))
-		continue;
 	      do_versioning = false;
 	      break;
 	    }
@@ -2394,28 +2379,28 @@ vect_find_same_alignment_drs (vec_info *vinfo, data_dependence_relation *ddr)
    Return FALSE if a data reference is found that cannot be vectorized.  */
 
 opt_result
-vect_analyze_data_refs_alignment (loop_vec_info vinfo)
+vect_analyze_data_refs_alignment (loop_vec_info loop_vinfo)
 {
   DUMP_VECT_SCOPE ("vect_analyze_data_refs_alignment");
 
   /* Mark groups of data references with same alignment using
      data dependence information.  */
-  vec<ddr_p> ddrs = vinfo->shared->ddrs;
+  vec<ddr_p> ddrs = LOOP_VINFO_DDRS (loop_vinfo);
   struct data_dependence_relation *ddr;
   unsigned int i;
 
   FOR_EACH_VEC_ELT (ddrs, i, ddr)
-    vect_find_same_alignment_drs (vinfo, ddr);
+    vect_find_same_alignment_drs (loop_vinfo, ddr);
 
-  vec<data_reference_p> datarefs = vinfo->shared->datarefs;
+  vec<data_reference_p> datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
   struct data_reference *dr;
 
-  vect_record_base_alignments (vinfo);
+  vect_record_base_alignments (loop_vinfo);
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
-      dr_vec_info *dr_info = vinfo->lookup_dr (dr);
+      dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
       if (STMT_VINFO_VECTORIZABLE (dr_info->stmt))
-	vect_compute_data_ref_alignment (vinfo, dr_info);
+	vect_compute_data_ref_alignment (loop_vinfo, dr_info);
     }
 
   return opt_result::success ();
@@ -2471,7 +2456,7 @@ vect_slp_analyze_and_verify_instance_alignment (vec_info *vinfo,
       return false;
 
   node = SLP_INSTANCE_TREE (instance);
-  if (STMT_VINFO_DATA_REF (SLP_TREE_SCALAR_STMTS (node)[0])
+  if (STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (node))
       && ! vect_slp_analyze_and_verify_node_alignment
 	     (vinfo, SLP_INSTANCE_TREE (instance)))
     return false;
@@ -3216,7 +3201,7 @@ vect_vfa_access_size (vec_info *vinfo, dr_vec_info *dr_info)
       gcc_assert (DR_GROUP_FIRST_ELEMENT (stmt_vinfo) == stmt_vinfo);
       access_size *= DR_GROUP_SIZE (stmt_vinfo) - DR_GROUP_GAP (stmt_vinfo);
     }
-  if (STMT_VINFO_VEC_STMT (stmt_vinfo)
+  if (STMT_VINFO_VEC_STMTS (stmt_vinfo).exists ()
       && (vect_supportable_dr_alignment (vinfo, dr_info, false)
 	  == dr_explicit_realign_optimized))
     {
@@ -4896,7 +4881,6 @@ vect_create_data_ref_ptr (vec_info *vinfo, stmt_vec_info stmt_info,
 		 aggr_ptr, loop, &incr_gsi, insert_after,
 		 &indx_before_incr, &indx_after_incr);
       incr = gsi_stmt (incr_gsi);
-      loop_vinfo->add_stmt (incr);
 
       /* Copy the points-to information if it exists. */
       if (DR_PTR_INFO (dr))
@@ -4926,7 +4910,6 @@ vect_create_data_ref_ptr (vec_info *vinfo, stmt_vec_info stmt_info,
 		 containing_loop, &incr_gsi, insert_after, &indx_before_incr,
 		 &indx_after_incr);
       incr = gsi_stmt (incr_gsi);
-      loop_vinfo->add_stmt (incr);
 
       /* Copy the points-to information if it exists. */
       if (DR_PTR_INFO (dr))
@@ -6407,7 +6390,7 @@ vect_transform_grouped_load (vec_info *vinfo, stmt_vec_info stmt_info,
    for each vector to the associated scalar statement.  */
 
 void
-vect_record_grouped_load_vectors (vec_info *vinfo, stmt_vec_info stmt_info,
+vect_record_grouped_load_vectors (vec_info *, stmt_vec_info stmt_info,
 				  vec<tree> result_chain)
 {
   stmt_vec_info first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
@@ -6441,26 +6424,10 @@ vect_record_grouped_load_vectors (vec_info *vinfo, stmt_vec_info stmt_info,
          DR_GROUP_SAME_DR_STMT.  */
       if (next_stmt_info)
         {
-	  stmt_vec_info new_stmt_info = vinfo->lookup_def (tmp_data_ref);
+	  gimple *new_stmt = SSA_NAME_DEF_STMT (tmp_data_ref);
 	  /* We assume that if VEC_STMT is not NULL, this is a case of multiple
-	     copies, and we put the new vector statement in the first available
-	     RELATED_STMT.  */
-	  if (!STMT_VINFO_VEC_STMT (next_stmt_info))
-	    STMT_VINFO_VEC_STMT (next_stmt_info) = new_stmt_info;
-	  else
-            {
-	      stmt_vec_info prev_stmt_info
-		= STMT_VINFO_VEC_STMT (next_stmt_info);
-	      stmt_vec_info rel_stmt_info
-		= STMT_VINFO_RELATED_STMT (prev_stmt_info);
-	      while (rel_stmt_info)
-		{
-		  prev_stmt_info = rel_stmt_info;
-		  rel_stmt_info = STMT_VINFO_RELATED_STMT (rel_stmt_info);
-		}
-
-	      STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
-            }
+	     copies, and we put the new vector statement last.  */
+	  STMT_VINFO_VEC_STMTS (next_stmt_info).safe_push (new_stmt);
 
 	  next_stmt_info = DR_GROUP_NEXT_ELEMENT (next_stmt_info);
 	  gap_count = 1;

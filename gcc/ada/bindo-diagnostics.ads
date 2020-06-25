@@ -51,11 +51,9 @@ package Bindo.Diagnostics is
    -- API --
    ---------
 
-   procedure Diagnose_Circularities
-     (Inv_Graph : Invocation_Graph;
-      Lib_Graph : Library_Graph);
+   procedure Diagnose_Circularities (Inv_Graph : Invocation_Graph);
    pragma Inline (Diagnose_Circularities);
-   --  Diagnose all cycles of library graph Lib_Graph with matching invocation
-   --  graph Inv_Graph.
+   --  Diagnose all cycles of the library graph of Inv_Graph with matching
+   --  invocation graph Inv_Graph.
 
 end Bindo.Diagnostics;

@@ -1946,47 +1946,82 @@ make_pass_stv (gcc::context *ctxt)
   return new pass_stv (ctxt);
 }
 
-/* Inserting ENDBRANCH instructions.  */
+/* Inserting ENDBR and pseudo patchable-area instructions.  */
 
-static unsigned int
-rest_of_insert_endbranch (void)
+static void
+rest_of_insert_endbr_and_patchable_area (bool need_endbr,
+					 unsigned int patchable_area_size)
 {
-  timevar_push (TV_MACH_DEP);
-
-  rtx cet_eb;
+  rtx endbr;
   rtx_insn *insn;
+  rtx_insn *endbr_insn = NULL;
   basic_block bb;
 
-  /* Currently emit EB if it's a tracking function, i.e. 'nocf_check' is
-     absent among function attributes.  Later an optimization will be
-     introduced to make analysis if an address of a static function is
-     taken.  A static function whose address is not taken will get a
-     nocf_check attribute.  This will allow to reduce the number of EB.  */
-
-  if (!lookup_attribute ("nocf_check",
-			 TYPE_ATTRIBUTES (TREE_TYPE (cfun->decl)))
-      && (!flag_manual_endbr
-	  || lookup_attribute ("cf_check",
-			       DECL_ATTRIBUTES (cfun->decl)))
-      && (!cgraph_node::get (cfun->decl)->only_called_directly_p ()
-	  || ix86_cmodel == CM_LARGE
-	  || ix86_cmodel == CM_LARGE_PIC
-	  || flag_force_indirect_call
-	  || (TARGET_DLLIMPORT_DECL_ATTRIBUTES
-	      && DECL_DLLIMPORT_P (cfun->decl))))
+  if (need_endbr)
     {
-      /* Queue ENDBR insertion to x86_function_profiler.  */
-      if (crtl->profile && flag_fentry)
-	cfun->machine->endbr_queued_at_entrance = true;
-      else
+      /* Currently emit EB if it's a tracking function, i.e. 'nocf_check'
+	 is absent among function attributes.  Later an optimization will
+	 be introduced to make analysis if an address of a static function
+	 is taken.  A static function whose address is not taken will get
+	 a nocf_check attribute.  This will allow to reduce the number of
+	 EB.  */
+      if (!lookup_attribute ("nocf_check",
+			     TYPE_ATTRIBUTES (TREE_TYPE (cfun->decl)))
+	  && (!flag_manual_endbr
+	      || lookup_attribute ("cf_check",
+				   DECL_ATTRIBUTES (cfun->decl)))
+	  && (!cgraph_node::get (cfun->decl)->only_called_directly_p ()
+	      || ix86_cmodel == CM_LARGE
+	      || ix86_cmodel == CM_LARGE_PIC
+	      || flag_force_indirect_call
+	      || (TARGET_DLLIMPORT_DECL_ATTRIBUTES
+		  && DECL_DLLIMPORT_P (cfun->decl))))
 	{
-	  cet_eb = gen_nop_endbr ();
-
-	  bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
-	  insn = BB_HEAD (bb);
-	  emit_insn_before (cet_eb, insn);
+	  if (crtl->profile && flag_fentry)
+	    {
+	      /* Queue ENDBR insertion to x86_function_profiler.
+		 NB: Any patchable-area insn will be inserted after
+		 ENDBR.  */
+	      cfun->machine->insn_queued_at_entrance = TYPE_ENDBR;
+	    }
+	  else
+	    {
+	      endbr = gen_nop_endbr ();
+	      bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
+	      rtx_insn *insn = BB_HEAD (bb);
+	      endbr_insn = emit_insn_before (endbr, insn);
+	    }
 	}
     }
+
+  if (patchable_area_size)
+    {
+      if (crtl->profile && flag_fentry)
+	{
+	  /* Queue patchable-area insertion to x86_function_profiler.
+	     NB: If there is a queued ENDBR, x86_function_profiler
+	     will also handle patchable-area.  */
+	  if (!cfun->machine->insn_queued_at_entrance)
+	    cfun->machine->insn_queued_at_entrance = TYPE_PATCHABLE_AREA;
+	}
+      else
+	{
+	  rtx patchable_area
+	    = gen_patchable_area (GEN_INT (patchable_area_size),
+				  GEN_INT (crtl->patch_area_entry == 0));
+	  if (endbr_insn)
+	    emit_insn_after (patchable_area, endbr_insn);
+	  else
+	    {
+	      bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
+	      insn = BB_HEAD (bb);
+	      emit_insn_before (patchable_area, insn);
+	    }
+	}
+    }
+
+  if (!need_endbr)
+    return;
 
   bb = 0;
   FOR_EACH_BB_FN (bb, cfun)
@@ -1996,7 +2031,6 @@ rest_of_insert_endbranch (void)
 	{
 	  if (CALL_P (insn))
 	    {
-	      bool need_endbr;
 	      need_endbr = find_reg_note (insn, REG_SETJMP, NULL) != NULL;
 	      if (!need_endbr && !SIBLING_CALL_P (insn))
 		{
@@ -2027,8 +2061,8 @@ rest_of_insert_endbranch (void)
 	      /* Generate ENDBRANCH after CALL, which can return more than
 		 twice, setjmp-like functions.  */
 
-	      cet_eb = gen_nop_endbr ();
-	      emit_insn_after_setloc (cet_eb, insn, INSN_LOCATION (insn));
+	      endbr = gen_nop_endbr ();
+	      emit_insn_after_setloc (endbr, insn, INSN_LOCATION (insn));
 	      continue;
 	    }
 
@@ -2058,31 +2092,30 @@ rest_of_insert_endbranch (void)
 		  dest_blk = e->dest;
 		  insn = BB_HEAD (dest_blk);
 		  gcc_assert (LABEL_P (insn));
-		  cet_eb = gen_nop_endbr ();
-		  emit_insn_after (cet_eb, insn);
+		  endbr = gen_nop_endbr ();
+		  emit_insn_after (endbr, insn);
 		}
 	      continue;
 	    }
 
 	  if (LABEL_P (insn) && LABEL_PRESERVE_P (insn))
 	    {
-	      cet_eb = gen_nop_endbr ();
-	      emit_insn_after (cet_eb, insn);
+	      endbr = gen_nop_endbr ();
+	      emit_insn_after (endbr, insn);
 	      continue;
 	    }
 	}
     }
 
-  timevar_pop (TV_MACH_DEP);
-  return 0;
+  return;
 }
 
 namespace {
 
-const pass_data pass_data_insert_endbranch =
+const pass_data pass_data_insert_endbr_and_patchable_area =
 {
   RTL_PASS, /* type.  */
-  "cet", /* name.  */
+  "endbr_and_patchable_area", /* name.  */
   OPTGROUP_NONE, /* optinfo_flags.  */
   TV_MACH_DEP, /* tv_id.  */
   0, /* properties_required.  */
@@ -2092,32 +2125,41 @@ const pass_data pass_data_insert_endbranch =
   0, /* todo_flags_finish.  */
 };
 
-class pass_insert_endbranch : public rtl_opt_pass
+class pass_insert_endbr_and_patchable_area : public rtl_opt_pass
 {
 public:
-  pass_insert_endbranch (gcc::context *ctxt)
-    : rtl_opt_pass (pass_data_insert_endbranch, ctxt)
+  pass_insert_endbr_and_patchable_area (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_insert_endbr_and_patchable_area, ctxt)
   {}
 
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return ((flag_cf_protection & CF_BRANCH));
+      need_endbr = (flag_cf_protection & CF_BRANCH) != 0;
+      patchable_area_size = crtl->patch_area_size - crtl->patch_area_entry;
+      return need_endbr || patchable_area_size;
     }
 
   virtual unsigned int execute (function *)
     {
-      return rest_of_insert_endbranch ();
+      timevar_push (TV_MACH_DEP);
+      rest_of_insert_endbr_and_patchable_area (need_endbr,
+					       patchable_area_size);
+      timevar_pop (TV_MACH_DEP);
+      return 0;
     }
 
-}; // class pass_insert_endbranch
+private:
+  bool need_endbr;
+  unsigned int patchable_area_size;
+}; // class pass_insert_endbr_and_patchable_area
 
 } // anon namespace
 
 rtl_opt_pass *
-make_pass_insert_endbranch (gcc::context *ctxt)
+make_pass_insert_endbr_and_patchable_area (gcc::context *ctxt)
 {
-  return new pass_insert_endbranch (ctxt);
+  return new pass_insert_endbr_and_patchable_area (ctxt);
 }
 
 /* At entry of the nearest common dominator for basic blocks with

@@ -260,6 +260,7 @@ enum {
   CLONE_ISA_2_06,			/* ISA 2.06 (power7).  */
   CLONE_ISA_2_07,			/* ISA 2.07 (power8).  */
   CLONE_ISA_3_00,			/* ISA 3.00 (power9).  */
+  CLONE_ISA_3_1,			/* ISA 3.1 (future).  */
   CLONE_MAX
 };
 
@@ -275,6 +276,7 @@ static const struct clone_map rs6000_clone_map[CLONE_MAX] = {
   { OPTION_MASK_POPCNTD,	"arch_2_06" },	/* ISA 2.06 (power7).  */
   { OPTION_MASK_P8_VECTOR,	"arch_2_07" },	/* ISA 2.07 (power8).  */
   { OPTION_MASK_P9_VECTOR,	"arch_3_00" },	/* ISA 3.00 (power9).  */
+  { OPTION_MASK_FUTURE,		"arch_3_1" },	/* ISA 3.1 (future).  */
 };
 
 
@@ -4567,7 +4569,12 @@ rs6000_option_override_internal (bool global_init_p)
 	    unroll_only_small_loops = 0;
 	  if (!global_options_set.x_flag_rename_registers)
 	    flag_rename_registers = 1;
+	  if (!global_options_set.x_flag_cunroll_grow_size)
+	    flag_cunroll_grow_size = 1;
 	}
+      else
+	if (!global_options_set.x_flag_cunroll_grow_size)
+	  flag_cunroll_grow_size = flag_peel_loops || optimize >= 3;
 
       /* If using typedef char *va_list, signal that
 	 __builtin_va_start (&ap, 0) can be optimized to
@@ -4980,6 +4987,9 @@ rs6000_density_test (rs6000_cost_data *data)
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
+	  if (is_gimple_debug (stmt))
+	    continue;
+
 	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (stmt);
 
 	  if (!STMT_VINFO_RELEVANT_P (stmt_info)

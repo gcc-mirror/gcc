@@ -601,11 +601,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
               if (traits_type::eq_int_type(__c, __eof))
                 __err |= ios_base::eofbit;
-	      else if (traits_type::eq_int_type(__c, __delim))
+	      else if (_M_gcount < __n) // implies __c == __delim
 		{
-		  if (_M_gcount
-		      < __gnu_cxx::__numeric_traits<streamsize>::__max)
-		    ++_M_gcount;
+		  ++_M_gcount;
 		  __sb->sbumpc();
 		}
             }

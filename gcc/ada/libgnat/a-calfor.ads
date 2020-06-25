@@ -206,6 +206,14 @@ package Ada.Calendar.Formatting is
    --  prefixed with a minus sign. If abs Elapsed_Time represents 100 hours or
    --  more, Time_Error is raised.
 
+   function Local_Image
+     (Date                  : Time;
+      Include_Time_Fraction : Boolean := False) return String
+   is (Image (Date,
+              Include_Time_Fraction,
+              Time_Zones.Local_Time_Offset (Date)));
+   --  Returns a string form of Date relative to the local time offset.
+
    function Value (Elapsed_Time : String) return Duration;
    --  Returns a Duration value for the image given as Elapsed_Time.
    --  Constraint_Error is raised if the string is not formatted as described

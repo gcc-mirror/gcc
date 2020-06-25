@@ -28,7 +28,7 @@ public:
     Dsymbols *decl;     // array of Dsymbol's
 
     AttribDeclaration(Dsymbols *decl);
-    virtual Dsymbols *include(Scope *sc, ScopeDsymbol *sds);
+    virtual Dsymbols *include(Scope *sc);
     int apply(Dsymbol_apply_ft_t fp, void *param);
     static Scope *createNewScope(Scope *sc,
         StorageClass newstc, LINK linkage, CPPMANGLE cppmangle, Prot protection,
@@ -180,7 +180,7 @@ public:
     ConditionalDeclaration(Condition *condition, Dsymbols *decl, Dsymbols *elsedecl);
     Dsymbol *syntaxCopy(Dsymbol *s);
     bool oneMember(Dsymbol **ps, Identifier *ident);
-    Dsymbols *include(Scope *sc, ScopeDsymbol *sds);
+    Dsymbols *include(Scope *sc);
     void addComment(const utf8_t *comment);
     void setScope(Scope *sc);
     void accept(Visitor *v) { v->visit(this); }
@@ -195,7 +195,7 @@ public:
 
     StaticIfDeclaration(Condition *condition, Dsymbols *decl, Dsymbols *elsedecl);
     Dsymbol *syntaxCopy(Dsymbol *s);
-    Dsymbols *include(Scope *sc, ScopeDsymbol *sds);
+    Dsymbols *include(Scope *sc);
     void addMember(Scope *sc, ScopeDsymbol *sds);
     void setScope(Scope *sc);
     void importAll(Scope *sc);
@@ -216,7 +216,7 @@ public:
     StaticForeachDeclaration(StaticForeach *sfe, Dsymbols *decl);
     Dsymbol *syntaxCopy(Dsymbol *s);
     bool oneMember(Dsymbol **ps, Identifier *ident);
-    Dsymbols *include(Scope *sc, ScopeDsymbol *sds);
+    Dsymbols *include(Scope *sc);
     void addMember(Scope *sc, ScopeDsymbol *sds);
     void addComment(const utf8_t *comment);
     void setScope(Scope *sc);

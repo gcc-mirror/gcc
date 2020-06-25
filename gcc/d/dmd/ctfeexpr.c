@@ -1057,6 +1057,7 @@ static bool numCmp(TOK op, N n1, N n2)
         default:
             assert(0);
     }
+    return false;
 }
 
 /// Returns cmp OP 0; where OP is ==, !=, <, >=, etc. Result is 0 or 1
@@ -1089,11 +1090,12 @@ int realCmp(TOK op, real_t r1, real_t r2)
             case TOKle:
             case TOKgt:
             case TOKge:
-                return 0;
+                break;
 
             default:
                 assert(0);
         }
+        return 0;
     }
     else
     {

@@ -496,8 +496,7 @@ package body Sem_Ch12 is
    --  On return, the node N has been rewritten with the actual body.
 
    function Build_Subprogram_Decl_Wrapper
-     (Formal_Subp : Entity_Id;
-      Actual_Subp : Entity_Id) return Node_Id;
+     (Formal_Subp : Entity_Id) return Node_Id;
    --  Ada 2020 allows formal subprograms to carry pre/postconditions.
    --  At the point of instantiation these contracts apply to uses of
    --  the actual subprogram. This is implemented by creating wrapper
@@ -508,7 +507,7 @@ package body Sem_Ch12 is
 
    function Build_Subprogram_Body_Wrapper
      (Formal_Subp : Entity_Id;
-      Actual_Subp : Entity_Id) return Node_Id;
+      Actual_Name : Node_Id) return Node_Id;
    --  The body of the wrapper is a call to the actual, with the generated
    --  pre/postconditon checks added.
 
@@ -667,6 +666,10 @@ package body Sem_Ch12 is
    function Has_Been_Exchanged (E : Entity_Id) return Boolean;
    --  Traverse the Exchanged_Views list to see if a type was private
    --  and has already been flipped during this phase of instantiation.
+
+   function Has_Contracts (Decl : Node_Id) return Boolean;
+   --  Determine whether a formal subprogram has a Pre- or Postcondition,
+   --  in which case a subprogram wrapper has to be built for the actual.
 
    procedure Hide_Current_Scope;
    --  When instantiating a generic child unit, the parent context must be
@@ -1096,7 +1099,7 @@ package body Sem_Ch12 is
       --  package. As usual an other association must be last in the list.
 
       procedure Build_Subprogram_Wrappers;
-      --  Ada_2020: AI12-0272 introduces pre/postconditions for formal
+      --  Ada 2020: AI12-0272 introduces pre/postconditions for formal
       --  subprograms. The implementation of making the formal into a renaming
       --  of the actual does not work, given that subprogram renaming cannot
       --  carry aspect specifications. Instead we must create subprogram
@@ -1165,18 +1168,38 @@ package body Sem_Ch12 is
            Defining_Unit_Name (Specification (Analyzed_Formal));
          Aspect_Spec : Node_Id;
          Decl_Node   : Node_Id;
-         Ent         : Entity_Id;
+         Actual_Name : Node_Id;
 
       begin
          --  Create declaration for wrapper subprogram
+         --  The actual can be overloaded, in which case it will be
+         --  resolved when the call in the wrapper body is analyzed.
+         --  We attach the possible interpretations of the actual to
+         --  the name to be used in the call in the wrapper body.
 
          if Is_Entity_Name (Match) then
-            Ent := Entity (Match);
+            Actual_Name := New_Occurrence_Of (Entity (Match), Sloc (Match));
+
+            if Is_Overloaded (Match) then
+               Save_Interps (Match, Actual_Name);
+            end if;
+
          else
-            Ent := Defining_Entity (Last (Assoc_List));
+            --  Use renaming declaration created when analyzing actual.
+            --  This may be incomplete if there are several formal
+            --  subprograms whose actual is an attribute ???
+
+            declare
+               Renaming_Decl : constant Node_Id := Last (Assoc_List);
+
+            begin
+               Actual_Name := New_Occurrence_Of
+                     (Defining_Entity (Renaming_Decl), Sloc (Match));
+               Set_Etype (Actual_Name, Get_Instance_Of (Etype (Formal)));
+            end;
          end if;
 
-         Decl_Node := Build_Subprogram_Decl_Wrapper (Formal, Ent);
+         Decl_Node := Build_Subprogram_Decl_Wrapper (Formal);
 
          --  Transfer aspect specifications from formal subprogram to wrapper
 
@@ -1196,7 +1219,8 @@ package body Sem_Ch12 is
          --  The subprogram may be called in the analysis of subsequent
          --  actuals.
 
-         Append_To (Assoc_List, Build_Subprogram_Body_Wrapper (Formal, Ent));
+         Append_To (Assoc_List,
+            Build_Subprogram_Body_Wrapper (Formal, Actual_Name));
       end Build_Subprogram_Wrappers;
 
       ----------------------------------------
@@ -1753,7 +1777,7 @@ package body Sem_Ch12 is
 
                      --  Warn when an actual is a fixed-point with user-
                      --  defined promitives. The warning is superfluous
-                     --  if the fornal is private, because there can be
+                     --  if the formal is private, because there can be
                      --  no arithmetic operations in the generic so there
                      --  no danger of confusion.
 
@@ -1865,7 +1889,7 @@ package body Sem_Ch12 is
                      --  for it. This is an expansion activity that cannot
                      --  take place e.g. within an enclosing generic unit.
 
-                     if Present (Aspect_Specifications (Analyzed_Formal))
+                     if Has_Contracts (Analyzed_Formal)
                        and then Expander_Active
                      then
                         Build_Subprogram_Wrappers;
@@ -3554,7 +3578,7 @@ package body Sem_Ch12 is
 
       Generate_Reference_To_Generic_Formals (Current_Scope);
 
-      --  For Ada_2020, some formal parameters can carry aspects, which must
+      --  For Ada 2020, some formal parameters can carry aspects, which must
       --  be name-resolved at the end of the list of formal parameters (which
       --  has the semantics of a declaration list).
 
@@ -3576,8 +3600,6 @@ package body Sem_Ch12 is
       Save_Parent : Node_Id;
 
    begin
-      Check_SPARK_05_Restriction ("generic is not allowed", N);
-
       --  A generic may grant access to its private enclosing context depending
       --  on the placement of its corresponding body. From elaboration point of
       --  view, the flow of execution may enter this private context, and then
@@ -3782,8 +3804,6 @@ package body Sem_Ch12 is
       Typ         : Entity_Id;
 
    begin
-      Check_SPARK_05_Restriction ("generic is not allowed", N);
-
       --  A generic may grant access to its private enclosing context depending
       --  on the placement of its corresponding body. From elaboration point of
       --  view, the flow of execution may enter this private context, and then
@@ -4114,8 +4134,6 @@ package body Sem_Ch12 is
          Level    => True,
          Modes    => True,
          Warnings => True);
-
-      Check_SPARK_05_Restriction ("generic is not allowed", N);
 
       --  Very first thing: check for Text_IO special unit in case we are
       --  instantiating one of the children of [[Wide_]Wide_]Text_IO.
@@ -5562,8 +5580,6 @@ package body Sem_Ch12 is
          Modes    => True,
          Warnings => True);
 
-      Check_SPARK_05_Restriction ("generic is not allowed", N);
-
       --  Very first thing: check for special Text_IO unit in case we are
       --  instantiating one of the children of [[Wide_]Wide_]Text_IO. Of course
       --  such an instantiation is bogus (these are packages, not subprograms),
@@ -6204,8 +6220,7 @@ package body Sem_Ch12 is
    -----------------------------------
 
    function Build_Subprogram_Decl_Wrapper
-     (Formal_Subp : Entity_Id;
-      Actual_Subp : Entity_Id) return Node_Id
+     (Formal_Subp : Entity_Id) return Node_Id
    is
       Loc       : constant Source_Ptr := Sloc (Current_Scope);
       Ret_Type  : constant Entity_Id  := Get_Instance_Of (Etype (Formal_Subp));
@@ -6225,16 +6240,19 @@ package body Sem_Ch12 is
 
       Profile := Parameter_Specifications (
                    New_Copy_Tree
-                    (Specification (Unit_Declaration_Node (Actual_Subp))));
+                    (Specification (Unit_Declaration_Node (Formal_Subp))));
 
       Form_F := First_Formal (Formal_Subp);
       Parm_Spec := First (Profile);
 
-      --  Create new entities for the formals.
+      --  Create new entities for the formals. Reset entities so that
+      --  parameter types are properly resolved when wrapper declaration
+      --  is analyzed.
 
       while Present (Parm_Spec) loop
          New_F := Make_Defining_Identifier (Loc, Chars (Form_F));
          Set_Defining_Identifier (Parm_Spec, New_F);
+         Set_Entity (Parameter_Type (Parm_Spec), Empty);
          Next (Parm_Spec);
          Next_Formal (Form_F);
       end loop;
@@ -6264,13 +6282,13 @@ package body Sem_Ch12 is
 
    function Build_Subprogram_Body_Wrapper
      (Formal_Subp : Entity_Id;
-      Actual_Subp : Entity_Id) return Node_Id
+      Actual_Name : Node_Id) return Node_Id
    is
       Loc       : constant Source_Ptr := Sloc (Current_Scope);
       Ret_Type  : constant Entity_Id  := Get_Instance_Of (Etype (Formal_Subp));
       Spec_Node : constant Node_Id :=
         Specification
-          (Build_Subprogram_Decl_Wrapper (Formal_Subp, Actual_Subp));
+          (Build_Subprogram_Decl_Wrapper (Formal_Subp));
       Act       : Node_Id;
       Actuals   : List_Id;
       Body_Node : Node_Id;
@@ -6287,15 +6305,14 @@ package body Sem_Ch12 is
 
       if Ret_Type = Standard_Void_Type then
          Stmt := Make_Procedure_Call_Statement (Loc,
-          Name                   => New_Occurrence_Of (Actual_Subp, Loc),
+          Name                   => Actual_Name,
           Parameter_Associations => Actuals);
 
       else
          Stmt := Make_Simple_Return_Statement (Loc,
             Expression =>
               Make_Function_Call (Loc,
-                Name                   =>
-                  New_Occurrence_Of (Actual_Subp, Loc),
+                Name                   => Actual_Name,
                 Parameter_Associations => Actuals));
       end if;
 
@@ -8106,6 +8123,7 @@ package body Sem_Ch12 is
                      elsif Nkind (Assoc) = N_Identifier
                        and then Nkind (Parent (Assoc)) = N_Type_Conversion
                        and then Subtype_Mark (Parent (Assoc)) = Assoc
+                       and then Present (Etype (Assoc))
                        and then Is_Access_Type (Etype (Assoc))
                        and then Present (Etype (Expression (Parent (Assoc))))
                        and then
@@ -9231,6 +9249,32 @@ package body Sem_Ch12 is
 
       return False;
    end Has_Been_Exchanged;
+
+   -------------------
+   -- Has_Contracts --
+   -------------------
+
+   function Has_Contracts (Decl : Node_Id) return Boolean is
+      A_List : constant List_Id := Aspect_Specifications (Decl);
+      A_Spec : Node_Id;
+      A_Id   : Aspect_Id;
+   begin
+      if No (A_List) then
+         return False;
+      else
+         A_Spec := First (A_List);
+         while Present (A_Spec) loop
+            A_Id := Get_Aspect_Id (A_Spec);
+            if A_Id = Aspect_Pre or else A_Id = Aspect_Post then
+               return True;
+            end if;
+
+            Next (A_Spec);
+         end loop;
+
+         return False;
+      end if;
+   end Has_Contracts;
 
    ----------
    -- Hash --
@@ -10359,7 +10403,9 @@ package body Sem_Ch12 is
             =>
                Formal_Ent := Defining_Identifier (F);
 
-               while Chars (Act) /= Chars (Formal_Ent) loop
+               while Present (Act)
+                 and then Chars (Act) /= Chars (Formal_Ent)
+               loop
                   Next_Entity (Act);
                end loop;
 
@@ -10370,7 +10416,9 @@ package body Sem_Ch12 is
             =>
                Formal_Ent := Defining_Entity (F);
 
-               while Chars (Act) /= Chars (Formal_Ent) loop
+               while Present (Act)
+                 and then Chars (Act) /= Chars (Formal_Ent)
+               loop
                   Next_Entity (Act);
                end loop;
 
@@ -10890,13 +10938,16 @@ package body Sem_Ch12 is
       --  Create new entity for the actual (New_Copy_Tree does not), and
       --  indicate that it is an actual.
 
-      --  If the actual is not an entity and the formal includes aspect
-      --  specifications for contracts, we create an internal name for
-      --  the renaming declaration. The constructed wrapper contains a
-      --  call to the entity in the renaming.
+      --  If the actual is not an entity (i.e. an attribute reference)
+      --  and the formal includes aspect specifications for contracts,
+      --  we create an internal name for the renaming declaration. The
+      --  constructed wrapper contains a call to the entity in the renaming.
+      --  This is an expansion activity, as is the wrapper creation.
 
       if Ada_Version >= Ada_2020
-        and then Present (Aspect_Specifications (Analyzed_Formal))
+        and then Has_Contracts (Analyzed_Formal)
+        and then not Is_Entity_Name (Actual)
+        and then Expander_Active
       then
          New_Subp := Make_Temporary (Sloc (Actual), 'S');
          Set_Defining_Unit_Name (New_Spec, New_Subp);
@@ -11279,10 +11330,9 @@ package body Sem_Ch12 is
             --  access type.
 
             if Ada_Version < Ada_2005
-              or else Ekind (Base_Type (Ftyp))           /=
-                                                  E_Anonymous_Access_Type
-              or else Ekind (Base_Type (Etype (Actual))) /=
-                                                  E_Anonymous_Access_Type
+              or else Ekind (Base_Type (Ftyp)) not in Anonymous_Access_Kind
+              or else Ekind (Base_Type (Etype (Actual)))
+                        not in Anonymous_Access_Kind
             then
                Error_Msg_NE
                  ("type of actual does not match type of&", Actual, Gen_Obj);
@@ -11322,6 +11372,44 @@ package body Sem_Ch12 is
               ("\nonatomic subcomponent of atomic object (RM C.6(13))",
                Actual);
          end if;
+
+         --  Check actual/formal compatibility with respect to the four
+         --  volatility refinement aspects.
+
+         declare
+            Actual_Obj : Entity_Id;
+            N          : Node_Id := Actual;
+         begin
+            --  Similar to Sem_Util.Get_Enclosing_Object, but treat
+            --  pointer dereference like component selection.
+            loop
+               if Is_Entity_Name (N) then
+                  Actual_Obj := Entity (N);
+                  exit;
+               end if;
+
+               case Nkind (N) is
+                  when N_Indexed_Component
+                     | N_Selected_Component
+                     | N_Slice
+                     | N_Explicit_Dereference
+                  =>
+                     N := Prefix (N);
+
+                  when N_Type_Conversion =>
+                     N := Expression (N);
+
+                  when others =>
+                     Actual_Obj := Etype (N);
+                     exit;
+               end case;
+            end loop;
+
+            Check_Volatility_Compatibility
+              (Actual_Obj, A_Gen_Obj, "actual object",
+               "its corresponding formal object of mode in out",
+               Srcpos_Bearer => Actual);
+         end;
 
       --  Formal in-parameter
 
@@ -11477,15 +11565,19 @@ package body Sem_Ch12 is
          Actual_Decl := Parent (Entity (Actual));
       end if;
 
-      --  Ada 2005 (AI-423): For a formal object declaration with a null
-      --  exclusion or an access definition that has a null exclusion: If the
-      --  actual matching the formal object declaration denotes a generic
-      --  formal object of another generic unit G, and the instantiation
-      --  containing the actual occurs within the body of G or within the body
-      --  of a generic unit declared within the declarative region of G, then
-      --  the declaration of the formal object of G must have a null exclusion.
-      --  Otherwise, the subtype of the actual matching the formal object
-      --  declaration shall exclude null.
+      --  Ada 2005 (AI-423) refined by AI12-0287:
+      --  For an object_renaming_declaration with a null_exclusion or an
+      --  access_definition that has a null_exclusion, the subtype of the
+      --  object_name shall exclude null. In addition, if the
+      --  object_renaming_declaration occurs within the body of a generic unit
+      --  G or within the body of a generic unit declared within the
+      --  declarative region of generic unit G, then:
+      --  * if the object_name statically denotes a generic formal object of
+      --    mode in out of G, then the declaration of that object shall have a
+      --    null_exclusion;
+      --  * if the object_name statically denotes a call of a generic formal
+      --    function of G, then the declaration of the result of that function
+      --    shall have a null_exclusion.
 
       if Ada_Version >= Ada_2005
         and then Present (Actual_Decl)
@@ -11494,6 +11586,11 @@ package body Sem_Ch12 is
         and then Nkind (Analyzed_Formal) = N_Formal_Object_Declaration
         and then not Has_Null_Exclusion (Actual_Decl)
         and then Has_Null_Exclusion (Analyzed_Formal)
+        and then Ekind (Defining_Identifier (Analyzed_Formal))
+                  = E_Generic_In_Out_Parameter
+        and then ((In_Generic_Scope (Entity (Actual))
+                    and then In_Package_Body (Scope (Entity (Actual))))
+                  or else not Can_Never_Be_Null (Etype (Actual)))
       then
          Error_Msg_Sloc := Sloc (Analyzed_Formal);
          Error_Msg_N
@@ -11509,6 +11606,7 @@ package body Sem_Ch12 is
         and then Present (Actual)
         and then Is_Object_Reference (Actual)
         and then Is_Effectively_Volatile_Object (Actual)
+        and then not Is_Effectively_Volatile (A_Gen_Obj)
       then
          Error_Msg_N
            ("volatile object cannot act as actual in generic instantiation",
@@ -12361,7 +12459,7 @@ package body Sem_Ch12 is
       Subt       : Entity_Id;
 
       procedure Check_Shared_Variable_Control_Aspects;
-      --  Ada_2020: Verify that shared variable control aspects (RM C.6)
+      --  Ada 2020: Verify that shared variable control aspects (RM C.6)
       --  that may be specified for a formal type are obeyed by the actual.
 
       procedure Diagnose_Predicated_Actual;
@@ -12392,27 +12490,40 @@ package body Sem_Ch12 is
       --  Check_Shared_Variable_Control_Aspects --
       --------------------------------------------
 
-      --  Ada_2020: Verify that shared variable control aspects (RM C.6)
+      --  Ada 2020: Verify that shared variable control aspects (RM C.6)
       --  that may be specified for the formal are obeyed by the actual.
+      --  If the formal is a derived type the aspect specifications must match.
+      --  NOTE: AI12-0282 implies that matching of aspects is required between
+      --  formal and actual in all cases, but this is too restrictive.
+      --  In particular it violates a language design rule: a limited private
+      --  indefinite formal can be matched by any actual. The current code
+      --  reflects an older and more permissive version of RM C.6 (12/5).
 
       procedure Check_Shared_Variable_Control_Aspects is
       begin
          if Ada_Version >= Ada_2020 then
             if Is_Atomic (A_Gen_T) and then not Is_Atomic (Act_T) then
                Error_Msg_NE
-                  ("actual for& must be an atomic type", Actual, A_Gen_T);
+                  ("actual for& must have Atomic aspect", Actual, A_Gen_T);
+
+            elsif Is_Derived_Type (A_Gen_T)
+              and then Is_Atomic (A_Gen_T) /= Is_Atomic (Act_T)
+            then
+               Error_Msg_NE
+                  ("actual for& has different Atomic aspect", Actual, A_Gen_T);
             end if;
 
             if Is_Volatile (A_Gen_T) and then not Is_Volatile (Act_T) then
                Error_Msg_NE
-                  ("actual for& must be a Volatile type", Actual, A_Gen_T);
-            end if;
+                  ("actual for& has different Volatile aspect",
+                    Actual, A_Gen_T);
 
-            if
-              Is_Independent (A_Gen_T) and then not Is_Independent (Act_T)
+            elsif Is_Derived_Type (A_Gen_T)
+              and then Is_Volatile (A_Gen_T) /= Is_Volatile (Act_T)
             then
                Error_Msg_NE
-                 ("actual for& must be an Independent type", Actual, A_Gen_T);
+                  ("actual for& has different Volatile aspect",
+                     Actual, A_Gen_T);
             end if;
 
             --  We assume that an array type whose atomic component type
@@ -12420,44 +12531,60 @@ package body Sem_Ch12 is
             --  aspect Has_Atomic_Components. This is a reasonable inference
             --  from the intent of AI12-0282, and makes it legal to use an
             --  actual that does not have the identical aspect as the formal.
+            --  Ditto for volatile components.
 
-            if Has_Atomic_Components (A_Gen_T)
-               and then not Has_Atomic_Components (Act_T)
-            then
-               if Is_Array_Type (Act_T)
-                 and then Is_Atomic (Component_Type (Act_T))
-               then
-                  null;
-
-               else
+            declare
+               Actual_Atomic_Comp : constant Boolean :=
+               Has_Atomic_Components (Act_T)
+                      or else (Is_Array_Type (Act_T)
+                                and then Is_Atomic (Component_Type (Act_T)));
+            begin
+               if Has_Atomic_Components (A_Gen_T) /= Actual_Atomic_Comp then
                   Error_Msg_NE
-                    ("actual for& must have atomic components",
+                    ("formal and actual for& must agree on atomic components",
                        Actual, A_Gen_T);
                end if;
-            end if;
+            end;
 
-            if Has_Independent_Components (A_Gen_T)
-               and then not Has_Independent_Components (Act_T)
-            then
-               Error_Msg_NE
-                 ("actual for& must have independent components",
-                    Actual, A_Gen_T);
-            end if;
-
-            if Has_Volatile_Components (A_Gen_T)
-               and then not Has_Volatile_Components (Act_T)
-            then
-               if Is_Array_Type (Act_T)
-                 and then Is_Volatile (Component_Type (Act_T))
+            declare
+               Actual_Volatile_Comp : constant Boolean :=
+                 Has_Volatile_Components (Act_T)
+                   or else (Is_Array_Type (Act_T)
+                             and then Is_Volatile (Component_Type (Act_T)));
+            begin
+               if Has_Volatile_Components (A_Gen_T) /= Actual_Volatile_Comp
                then
-                  null;
-
-               else
                   Error_Msg_NE
                     ("actual for& must have volatile components",
                        Actual, A_Gen_T);
                end if;
+            end;
+
+            --  The following two aspects do not require exact matching,
+            --  but only one-way agreement. See RM C.6.
+
+            if Is_Independent (A_Gen_T) and then not Is_Independent (Act_T)
+            then
+               Error_Msg_NE
+                 ("actual for& must have Independent aspect specified",
+                     Actual, A_Gen_T);
             end if;
+
+            if Has_Independent_Components (A_Gen_T)
+              and then not Has_Independent_Components (Act_T)
+            then
+               Error_Msg_NE
+                 ("actual for& must have Independent_Components specified",
+                     Actual, A_Gen_T);
+            end if;
+
+            --  Check actual/formal compatibility with respect to the four
+            --  volatility refinement aspects.
+
+            Check_Volatility_Compatibility
+              (Act_T, A_Gen_T,
+               "actual type", "its corresponding formal type",
+               Srcpos_Bearer => Act_T);
          end if;
       end Check_Shared_Variable_Control_Aspects;
 
@@ -13079,7 +13206,7 @@ package body Sem_Ch12 is
          --  Perform atomic/volatile checks (RM C.6(12)). Note that AI05-0218-1
          --  removes the second instance of the phrase "or allow pass by copy".
 
-         --  For Ada_2020, the aspect may be specified explicitly for the
+         --  For Ada 2020, the aspect may be specified explicitly for the
          --  formal regardless of whether an ancestor obeys it.
 
          if Is_Atomic (Act_T)
@@ -13439,17 +13566,8 @@ package body Sem_Ch12 is
          --  explicitly so. If not declared limited, the actual cannot be
          --  limited (see AI05-0087).
 
-         --  Even though this AI is a binding interpretation, we enable the
-         --  check only in Ada 2012 mode, because this improper construct
-         --  shows up in user code and in existing B-tests.
-
-         if Is_Limited_Type (Act_T)
-           and then not Is_Limited_Type (A_Gen_T)
-           and then Ada_Version >= Ada_2012
-         then
-            if In_Instance then
-               null;
-            else
+         if Is_Limited_Type (Act_T) and then not Is_Limited_Type (A_Gen_T) then
+            if not In_Instance then
                Error_Msg_NE
                  ("actual for non-limited & cannot be a limited type",
                   Actual, Gen_T);
@@ -13458,30 +13576,25 @@ package body Sem_Ch12 is
             end if;
          end if;
 
-         --  Don't check Ada_Version here (for now) because AI12-0036 is
-         --  a binding interpretation; this decision may be reversed if
-         --  the situation turns out to be similar to that of the preceding
-         --  Is_Limited_Type test (see preceding comment).
+         --  Check for AI12-0036
 
          declare
             Formal_Is_Private_Extension : constant Boolean :=
               Nkind (Parent (A_Gen_T)) = N_Private_Extension_Declaration;
 
             Actual_Is_Tagged : constant Boolean := Is_Tagged_Type (Act_T);
+
          begin
             if Actual_Is_Tagged /= Formal_Is_Private_Extension then
-               if In_Instance then
-                  null;
-               else
+               if not In_Instance then
                   if Actual_Is_Tagged then
                      Error_Msg_NE
-                       ("actual for & cannot be a tagged type",
-                        Actual, Gen_T);
+                       ("actual for & cannot be a tagged type", Actual, Gen_T);
                   else
                      Error_Msg_NE
-                       ("actual for & must be a tagged type",
-                        Actual, Gen_T);
+                       ("actual for & must be a tagged type", Actual, Gen_T);
                   end if;
+
                   Abandon_Instantiation (Actual);
                end if;
             end if;

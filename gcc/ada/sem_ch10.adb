@@ -29,6 +29,7 @@ with Contracts; use Contracts;
 with Debug;     use Debug;
 with Einfo;     use Einfo;
 with Errout;    use Errout;
+with Exp_Put_Image;
 with Exp_Util;  use Exp_Util;
 with Elists;    use Elists;
 with Fname;     use Fname;
@@ -621,6 +622,8 @@ package body Sem_Ch10 is
    --  Start of processing for Analyze_Compilation_Unit
 
    begin
+      Exp_Put_Image.Preload_Sink (N);
+
       Process_Compilation_Unit_Pragmas (N);
 
       --  If the unit is a subunit whose parent has not been analyzed (which
@@ -2706,7 +2709,7 @@ package body Sem_Ch10 is
                   if Ada_Version < Ada_2020
                     and then Warn_On_Ada_202X_Compatibility
                   then
-                     Error_Msg_N ("& is an Ada 202X unit?i?", Name (N));
+                     Error_Msg_N ("& is an Ada 202x unit?i?", Name (N));
                   end if;
             end case;
          end if;
@@ -6854,8 +6857,7 @@ package body Sem_Ch10 is
             --  as a small optimization to subsequent handling of private_with
             --  clauses in other nested packages. We replace the clause with
             --  a null statement, which is otherwise ignored by the rest of
-            --  the compiler, so that ASIS tools can reconstruct the source.
-            --  Is this still needed now that ASIS mode is removed???
+            --  the compiler.
 
             if In_Regular_With_Clause (Entity (Name (Item))) then
                declare

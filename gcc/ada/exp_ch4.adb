@@ -1073,7 +1073,9 @@ package body Exp_Ch4 is
 
          elsif Is_Tagged_Type (T) and then not Is_Class_Wide_Type (T) then
             TagT := T;
-            TagR := New_Occurrence_Of (Temp, Loc);
+            TagR :=
+              Make_Explicit_Dereference (Loc,
+                Prefix => New_Occurrence_Of (Temp, Loc));
 
          elsif Is_Private_Type (T)
            and then Is_Tagged_Type (Underlying_Type (T))
@@ -4486,10 +4488,10 @@ package body Exp_Ch4 is
                        and then Nkind (Associated_Node_For_Itype (PtrT)) =
                                   N_Object_Declaration)
       then
-         Error_Msg_N ("?use of an anonymous access type allocator", N);
+         Error_Msg_N ("??use of an anonymous access type allocator", N);
       end if;
 
-      --  RM E.2.3(22). We enforce that the expected type of an allocator
+      --  RM E.2.2(17). We enforce that the expected type of an allocator
       --  shall not be a remote access-to-class-wide-limited-private type
 
       --  Why is this being done at expansion time, seems clearly wrong ???
@@ -4794,7 +4796,7 @@ package body Exp_Ch4 is
                New_Occurrence_Of (RTE (RE_Check_Standard_Allocator), Loc)));
       end if;
 
-      --  Handle case of qualified expression (other than optimization above)
+      --  Handle case of qualified expression (other than optimization above).
       --  First apply constraint checks, because the bounds or discriminants
       --  in the aggregate might not match the subtype mark in the allocator.
 
@@ -5029,20 +5031,18 @@ package body Exp_Ch4 is
                      --  The designated type was an incomplete type, and the
                      --  access type did not get expanded. Salvage it now.
 
-                     if not Restriction_Active (No_Task_Hierarchy) then
-                        if Present (Parent (Base_Type (PtrT))) then
-                           Expand_N_Full_Type_Declaration
-                             (Parent (Base_Type (PtrT)));
+                     if Present (Parent (Base_Type (PtrT))) then
+                        Expand_N_Full_Type_Declaration
+                          (Parent (Base_Type (PtrT)));
 
-                        --  The only other possibility is an itype. For this
-                        --  case, the master must exist in the context. This is
-                        --  the case when the allocator initializes an access
-                        --  component in an init-proc.
+                     --  The only other possibility is an itype. For this
+                     --  case, the master must exist in the context. This is
+                     --  the case when the allocator initializes an access
+                     --  component in an init-proc.
 
-                        else
-                           pragma Assert (Is_Itype (PtrT));
-                           Build_Master_Renaming (PtrT, N);
-                        end if;
+                     else
+                        pragma Assert (Is_Itype (PtrT));
+                        Build_Master_Renaming (PtrT, N);
                      end if;
                   end if;
 
@@ -5312,7 +5312,7 @@ package body Exp_Ch4 is
       Case_Stmt  : Node_Id;
       Decl       : Node_Id;
       Expr       : Node_Id;
-      Target     : Entity_Id;
+      Target     : Entity_Id := Empty;
       Target_Typ : Entity_Id;
 
       In_Predicate : Boolean := False;
@@ -5769,11 +5769,21 @@ package body Exp_Ch4 is
       Elsex : constant Node_Id    := Next (Thenx);
       Typ   : constant Entity_Id  := Etype (N);
 
-      Actions : List_Id;
-      Decl    : Node_Id;
-      Expr    : Node_Id;
-      New_If  : Node_Id;
-      New_N   : Node_Id;
+      Actions      : List_Id;
+      Decl         : Node_Id;
+      Expr         : Node_Id;
+      New_If       : Node_Id;
+      New_N        : Node_Id;
+
+      --  Determine if we are dealing with a special case of a conditional
+      --  expression used as an actual for an anonymous access type which
+      --  forces us to transform the if expression into an expression with
+      --  actions in order to create a temporary to capture the level of the
+      --  expression in each branch.
+
+      Force_Expand : constant Boolean := Is_Anonymous_Access_Actual (N);
+
+   --  Start of processing for Expand_N_If_Expression
 
    begin
       --  Check for MINIMIZED/ELIMINATED overflow mode
@@ -5973,9 +5983,13 @@ package body Exp_Ch4 is
          end;
 
       --  For other types, we only need to expand if there are other actions
-      --  associated with either branch.
+      --  associated with either branch or we need to force expansion to deal
+      --  with if expressions used as an actual of an anonymous access type.
 
-      elsif Present (Then_Actions (N)) or else Present (Else_Actions (N)) then
+      elsif Present (Then_Actions (N))
+        or else Present (Else_Actions (N))
+        or else Force_Expand
+      then
 
          --  We now wrap the actions into the appropriate expression
 
@@ -6047,6 +6061,62 @@ package body Exp_Ch4 is
 
                Set_Else_Actions (N, No_List);
                Analyze_And_Resolve (Elsex, Typ);
+            end if;
+
+            --  We must force expansion into an expression with actions when
+            --  an if expression gets used directly as an actual for an
+            --  anonymous access type.
+
+            if Force_Expand then
+               declare
+                  Cnn  : constant Entity_Id := Make_Temporary (Loc, 'C');
+                  Acts : List_Id;
+               begin
+                  Acts := New_List;
+
+                  --  Generate:
+                  --    Cnn : Ann;
+
+                  Decl :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Cnn,
+                      Object_Definition   => New_Occurrence_Of (Typ, Loc));
+                  Append_To (Acts, Decl);
+
+                  Set_No_Initialization (Decl);
+
+                  --  Generate:
+                  --    if Cond then
+                  --       Cnn := <Thenx>;
+                  --    else
+                  --       Cnn := <Elsex>;
+                  --    end if;
+
+                  New_If :=
+                    Make_Implicit_If_Statement (N,
+                      Condition       => Relocate_Node (Cond),
+                      Then_Statements => New_List (
+                        Make_Assignment_Statement (Sloc (Thenx),
+                          Name       => New_Occurrence_Of (Cnn, Sloc (Thenx)),
+                          Expression => Relocate_Node (Thenx))),
+
+                      Else_Statements => New_List (
+                        Make_Assignment_Statement (Sloc (Elsex),
+                          Name       => New_Occurrence_Of (Cnn, Sloc (Elsex)),
+                          Expression => Relocate_Node (Elsex))));
+                  Append_To (Acts, New_If);
+
+                  --  Generate:
+                  --    do
+                  --       ...
+                  --    in Cnn end;
+
+                  Rewrite (N,
+                    Make_Expression_With_Actions (Loc,
+                      Expression => New_Occurrence_Of (Cnn, Loc),
+                      Actions    => Acts));
+                  Analyze_And_Resolve (N, Typ);
+               end;
             end if;
 
             return;
@@ -6468,12 +6538,13 @@ package body Exp_Ch4 is
 
       else
          declare
-            Typ       : Entity_Id        := Etype (Rop);
-            Is_Acc    : constant Boolean := Is_Access_Type (Typ);
-            Cond      : Node_Id          := Empty;
-            New_N     : Node_Id;
-            Obj       : Node_Id          := Lop;
-            SCIL_Node : Node_Id;
+            Typ                  : Entity_Id        := Etype (Rop);
+            Is_Acc               : constant Boolean := Is_Access_Type (Typ);
+            Check_Null_Exclusion : Boolean;
+            Cond                 : Node_Id          := Empty;
+            New_N                : Node_Id;
+            Obj                  : Node_Id          := Lop;
+            SCIL_Node            : Node_Id;
 
          begin
             Remove_Side_Effects (Obj);
@@ -6526,35 +6597,43 @@ package body Exp_Ch4 is
 
                goto Leave;
 
-            --  Ada 2005 (AI-216): Program_Error is raised when evaluating
-            --  a membership test if the subtype mark denotes a constrained
-            --  Unchecked_Union subtype and the expression lacks inferable
-            --  discriminants.
+            --  Ada 2005 (AI95-0216 amended by AI12-0162): Program_Error is
+            --  raised when evaluating an individual membership test if the
+            --  subtype mark denotes a constrained Unchecked_Union subtype
+            --  and the expression lacks inferable discriminants.
 
             elsif Is_Unchecked_Union (Base_Type (Typ))
               and then Is_Constrained (Typ)
               and then not Has_Inferable_Discriminants (Lop)
             then
-               Insert_Action (N,
-                 Make_Raise_Program_Error (Loc,
-                   Reason => PE_Unchecked_Union_Restriction));
+               Rewrite (N,
+                 Make_Expression_With_Actions (Loc,
+                   Actions    =>
+                     New_List (Make_Raise_Program_Error (Loc,
+                       Reason => PE_Unchecked_Union_Restriction)),
+                   Expression =>
+                     New_Occurrence_Of (Standard_False, Loc)));
+               Analyze_And_Resolve (N, Restyp);
 
-               --  Prevent Gigi from generating incorrect code by rewriting the
-               --  test as False. What is this undocumented thing about ???
-
-               Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
                goto Leave;
             end if;
 
             --  Here we have a non-scalar type
 
             if Is_Acc then
+
+               --  If the null exclusion checks are not compatible, need to
+               --  perform further checks. In other words, we cannot have
+               --  Ltyp including null and Typ excluding null. All other cases
+               --  are OK.
+
+               Check_Null_Exclusion :=
+                 Can_Never_Be_Null (Typ) and then not Can_Never_Be_Null (Ltyp);
                Typ := Designated_Type (Typ);
             end if;
 
             if not Is_Constrained (Typ) then
-               Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
-               Analyze_And_Resolve (N, Restyp);
+               Cond := New_Occurrence_Of (Standard_True, Loc);
 
             --  For the constrained array case, we have to check the subscripts
             --  for an exact match if the lengths are non-zero (the lengths
@@ -6610,19 +6689,6 @@ package body Exp_Ch4 is
                            Build_Attribute_Reference
                              (New_Occurrence_Of (Typ, Loc), Name_Last, J)));
                   end loop;
-
-                  if Is_Acc then
-                     Cond :=
-                       Make_Or_Else (Loc,
-                         Left_Opnd  =>
-                           Make_Op_Eq (Loc,
-                             Left_Opnd  => Obj,
-                             Right_Opnd => Make_Null (Loc)),
-                         Right_Opnd => Cond);
-                  end if;
-
-                  Rewrite (N, Cond);
-                  Analyze_And_Resolve (N, Restyp);
                end Check_Subscripts;
 
             --  These are the cases where constraint checks may be required,
@@ -6638,23 +6704,31 @@ package body Exp_Ch4 is
                if Has_Discriminants (Typ) then
                   Cond := Make_Op_Not (Loc,
                     Right_Opnd => Build_Discriminant_Checks (Obj, Typ));
-
-                  if Is_Acc then
-                     Cond := Make_Or_Else (Loc,
-                       Left_Opnd  =>
-                         Make_Op_Eq (Loc,
-                           Left_Opnd  => Obj,
-                           Right_Opnd => Make_Null (Loc)),
-                       Right_Opnd => Cond);
-                  end if;
-
                else
                   Cond := New_Occurrence_Of (Standard_True, Loc);
                end if;
-
-               Rewrite (N, Cond);
-               Analyze_And_Resolve (N, Restyp);
             end if;
+
+            if Is_Acc then
+               if Check_Null_Exclusion then
+                  Cond := Make_And_Then (Loc,
+                    Left_Opnd  =>
+                      Make_Op_Ne (Loc,
+                        Left_Opnd  => Obj,
+                        Right_Opnd => Make_Null (Loc)),
+                    Right_Opnd => Cond);
+               else
+                  Cond := Make_Or_Else (Loc,
+                    Left_Opnd  =>
+                      Make_Op_Eq (Loc,
+                        Left_Opnd  => Obj,
+                        Right_Opnd => Make_Null (Loc)),
+                    Right_Opnd => Cond);
+               end if;
+            end if;
+
+            Rewrite (N, Cond);
+            Analyze_And_Resolve (N, Restyp);
 
             --  Ada 2012 (AI05-0149): Handle membership tests applied to an
             --  expression of an anonymous access type. This can involve an
@@ -6864,7 +6938,6 @@ package body Exp_Ch4 is
       Typ : constant Entity_Id  := Etype (N);
       P   : constant Node_Id    := Prefix (N);
       T   : constant Entity_Id  := Etype (P);
-      Atp : Entity_Id;
 
    begin
       --  A special optimization, if we have an indexed component that is
@@ -6913,20 +6986,6 @@ package body Exp_Ch4 is
          Make_Build_In_Place_Iface_Call_In_Anonymous_Context (P);
       end if;
 
-      --  If the prefix is an access type, then we unconditionally rewrite if
-      --  as an explicit dereference. This simplifies processing for several
-      --  cases, including packed array cases and certain cases in which checks
-      --  must be generated. We used to try to do this only when it was
-      --  necessary, but it cleans up the code to do it all the time.
-
-      if Is_Access_Type (T) then
-         Insert_Explicit_Dereference (P);
-         Analyze_And_Resolve (P, Designated_Type (T));
-         Atp := Designated_Type (T);
-      else
-         Atp := T;
-      end if;
-
       --  Generate index and validity checks
 
       Generate_Index_Checks (N);
@@ -6938,8 +6997,8 @@ package body Exp_Ch4 is
       --  If selecting from an array with atomic components, and atomic sync
       --  is not suppressed for this array type, set atomic sync flag.
 
-      if (Has_Atomic_Components (Atp)
-           and then not Atomic_Synchronization_Disabled (Atp))
+      if (Has_Atomic_Components (T)
+           and then not Atomic_Synchronization_Disabled (T))
         or else (Is_Atomic (Typ)
                   and then not Atomic_Synchronization_Disabled (Typ))
         or else (Is_Entity_Name (P)
@@ -10424,6 +10483,10 @@ package body Exp_Ch4 is
 
       Apply_Constraint_Check (Operand, Target_Type, No_Sliding => True);
 
+      --  Apply possible predicate check
+
+      Apply_Predicate_Check (Operand, Target_Type);
+
       if Do_Range_Check (Operand) then
          Generate_Range_Check (Operand, Target_Type, CE_Range_Check_Failed);
       end if;
@@ -10572,7 +10635,7 @@ package body Exp_Ch4 is
       Par   : constant Node_Id    := Parent (N);
       P     : constant Node_Id    := Prefix (N);
       S     : constant Node_Id    := Selector_Name (N);
-      Ptyp  : Entity_Id           := Underlying_Type (Etype (P));
+      Ptyp  : constant Entity_Id  := Underlying_Type (Etype (P));
       Disc  : Entity_Id;
       New_N : Node_Id;
       Dcon  : Elmt_Id;
@@ -10623,21 +10686,6 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_N_Selected_Component
 
    begin
-      --  Insert explicit dereference if required
-
-      if Is_Access_Type (Ptyp) then
-
-         --  First set prefix type to proper access type, in case it currently
-         --  has a private (non-access) view of this type.
-
-         Set_Etype (P, Ptyp);
-
-         Insert_Explicit_Dereference (P);
-         Analyze_And_Resolve (P, Designated_Type (Ptyp));
-
-         Ptyp := Etype (P);
-      end if;
-
       --  Deal with discriminant check required
 
       if Do_Discriminant_Check (N) then
@@ -11010,23 +11058,10 @@ package body Exp_Ch4 is
       --  Local variables
 
       Pref     : constant Node_Id := Prefix (N);
-      Pref_Typ : Entity_Id        := Etype (Pref);
 
    --  Start of processing for Expand_N_Slice
 
    begin
-      --  Special handling for access types
-
-      if Is_Access_Type (Pref_Typ) then
-         Pref_Typ := Designated_Type (Pref_Typ);
-
-         Rewrite (Pref,
-           Make_Explicit_Dereference (Sloc (N),
-            Prefix => Relocate_Node (Pref)));
-
-         Analyze_And_Resolve (Pref, Pref_Typ);
-      end if;
-
       --  Ada 2005 (AI-318-02): If the prefix is a call to a build-in-place
       --  function, then additional actuals must be passed.
 
@@ -12005,7 +12040,6 @@ package body Exp_Ch4 is
          Tagged_Conversion : declare
             Actual_Op_Typ   : Entity_Id;
             Actual_Targ_Typ : Entity_Id;
-            Make_Conversion : Boolean := False;
             Root_Op_Typ     : Entity_Id;
 
             procedure Make_Tag_Check (Targ_Typ : Entity_Id);
@@ -12089,78 +12123,26 @@ package body Exp_Ch4 is
                goto Done;
             end if;
 
-            if not Tag_Checks_Suppressed (Actual_Targ_Typ) then
+            --  Create a runtime tag check for a downward CW type conversion
 
-               --  Create a runtime tag check for a downward class-wide type
-               --  conversion.
-
-               if Is_Class_Wide_Type (Actual_Op_Typ)
-                 and then Actual_Op_Typ /= Actual_Targ_Typ
-                 and then Root_Op_Typ /= Actual_Targ_Typ
-                 and then Is_Ancestor (Root_Op_Typ, Actual_Targ_Typ,
-                                       Use_Full_View => True)
-               then
+            if Is_Class_Wide_Type (Actual_Op_Typ)
+              and then Actual_Op_Typ /= Actual_Targ_Typ
+              and then Root_Op_Typ /= Actual_Targ_Typ
+              and then Is_Ancestor
+                         (Root_Op_Typ, Actual_Targ_Typ, Use_Full_View => True)
+              and then not Tag_Checks_Suppressed (Actual_Targ_Typ)
+            then
+               declare
+                  Conv : Node_Id;
+               begin
                   Make_Tag_Check (Class_Wide_Type (Actual_Targ_Typ));
-                  Make_Conversion := True;
-               end if;
-
-               --  AI05-0073: If the result subtype of the function is defined
-               --  by an access_definition designating a specific tagged type
-               --  T, a check is made that the result value is null or the tag
-               --  of the object designated by the result value identifies T.
-               --  Constraint_Error is raised if this check fails.
-
-               if Nkind (Parent (N)) = N_Simple_Return_Statement then
-                  declare
-                     Func     : Entity_Id;
-                     Func_Typ : Entity_Id;
-
-                  begin
-                     --  Climb scope stack looking for the enclosing function
-
-                     Func := Current_Scope;
-                     while Present (Func)
-                       and then Ekind (Func) /= E_Function
-                     loop
-                        Func := Scope (Func);
-                     end loop;
-
-                     --  The function's return subtype must be defined using
-                     --  an access definition.
-
-                     if Nkind (Result_Definition (Parent (Func))) =
-                          N_Access_Definition
-                     then
-                        Func_Typ := Directly_Designated_Type (Etype (Func));
-
-                        --  The return subtype denotes a specific tagged type,
-                        --  in other words, a non class-wide type.
-
-                        if Is_Tagged_Type (Func_Typ)
-                          and then not Is_Class_Wide_Type (Func_Typ)
-                        then
-                           Make_Tag_Check (Actual_Targ_Typ);
-                           Make_Conversion := True;
-                        end if;
-                     end if;
-                  end;
-               end if;
-
-               --  We have generated a tag check for either a class-wide type
-               --  conversion or for AI05-0073.
-
-               if Make_Conversion then
-                  declare
-                     Conv : Node_Id;
-                  begin
-                     Conv :=
-                       Make_Unchecked_Type_Conversion (Loc,
-                         Subtype_Mark => New_Occurrence_Of (Target_Type, Loc),
-                         Expression   => Relocate_Node (Expression (N)));
-                     Rewrite (N, Conv);
-                     Analyze_And_Resolve (N, Target_Type);
-                  end;
-               end if;
+                  Conv :=
+                    Make_Unchecked_Type_Conversion (Loc,
+                      Subtype_Mark => New_Occurrence_Of (Target_Type, Loc),
+                      Expression   => Relocate_Node (Expression (N)));
+                  Rewrite (N, Conv);
+                  Analyze_And_Resolve (N, Target_Type);
+               end;
             end if;
          end Tagged_Conversion;
 

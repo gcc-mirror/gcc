@@ -501,8 +501,9 @@ package body Exp_Pakd is
       --  packed array type. It creates the type and installs it as required.
 
       procedure Set_PB_Type;
-      --  Sets PB_Type to Packed_Bytes{1,2,4} as required by the alignment
-      --  requirements (see documentation in the spec of this package).
+      --  Set PB_Type to [Rev_]Packed_Bytes{1,2,4} as required by the alignment
+      --  and the scalar storage order requirements (see documentation in the
+      --  spec of this package).
 
       -----------------
       -- Install_PAT --
@@ -580,14 +581,6 @@ package body Exp_Pakd is
          Set_Is_Volatile_Full_Access (PAT, Is_Volatile_Full_Access  (Typ));
          Set_Treat_As_Volatile       (PAT, Treat_As_Volatile        (Typ));
 
-         --  For a non-bit-packed array, propagate reverse storage order
-         --  flag from original base type to packed array base type.
-
-         if not Is_Bit_Packed_Array (Typ) then
-            Set_Reverse_Storage_Order
-              (Etype (PAT), Reverse_Storage_Order (Base_Type (Typ)));
-         end if;
-
          --  We definitely do not want to delay freezing for packed array
          --  types. This is of particular importance for the itypes that are
          --  generated for record components depending on discriminants where
@@ -616,16 +609,36 @@ package body Exp_Pakd is
            or else Alignment (Typ) = 1
            or else Component_Alignment (Typ) = Calign_Storage_Unit
          then
-            PB_Type := RTE (RE_Packed_Bytes1);
+            if Reverse_Storage_Order (Typ) then
+               PB_Type := RTE (RE_Rev_Packed_Bytes1);
+            else
+               PB_Type := RTE (RE_Packed_Bytes1);
+            end if;
 
          elsif Csize mod 4 /= 0
            or else Alignment (Typ) = 2
          then
-            PB_Type := RTE (RE_Packed_Bytes2);
+            if Reverse_Storage_Order (Typ) then
+               PB_Type := RTE (RE_Rev_Packed_Bytes2);
+            else
+               PB_Type := RTE (RE_Packed_Bytes2);
+            end if;
 
          else
-            PB_Type := RTE (RE_Packed_Bytes4);
+            if Reverse_Storage_Order (Typ) then
+               PB_Type := RTE (RE_Rev_Packed_Bytes4);
+            else
+               PB_Type := RTE (RE_Packed_Bytes4);
+            end if;
          end if;
+
+         --  The Rev_Packed_Bytes{1,2,4} types cannot be directly declared with
+         --  the reverse scalar storage order in System.Unsigned_Types because
+         --  their component type is aliased and the combination would then be
+         --  flagged as illegal by the compiler. Moreover changing the compiler
+         --  would not address the bootstrap path issue with earlier versions.
+
+         Set_Reverse_Storage_Order (PB_Type, Reverse_Storage_Order (Typ));
       end Set_PB_Type;
 
    --  Start of processing for Create_Packed_Array_Impl_Type
@@ -797,6 +810,10 @@ package body Exp_Pakd is
          end;
 
          Install_PAT;
+
+         --  Propagate the reverse storage order flag to the base type
+
+         Set_Reverse_Storage_Order (Etype (PAT), Reverse_Storage_Order (Typ));
          return;
 
       --  Case of bit-packing required for unconstrained array. We create

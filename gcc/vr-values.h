@@ -112,6 +112,7 @@ class vr_values
   bool simplify_bit_ops_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_min_or_max_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_cond_using_ranges_1 (gcond *);
+  bool fold_cond (gcond *);
   bool simplify_switch_using_ranges (gswitch *);
   bool simplify_float_conversion_using_ranges (gimple_stmt_iterator *,
 					       gimple *);

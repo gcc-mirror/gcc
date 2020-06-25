@@ -69,6 +69,13 @@ package System.Put_Images is
    --  Print "null", or the address of the designated object as an unsigned
    --  hexadecimal integer.
 
+   procedure Put_Image_Access_Subp (S : in out Sink'Class; X : Thin_Pointer);
+   --  For access-to-subprogram types
+
+   procedure Put_Image_Access_Prot_Subp
+     (S : in out Sink'Class; X : Thin_Pointer);
+   --  For access-to-protected-subprogram types
+
    procedure Put_Image_String (S : in out Sink'Class; X : String);
    procedure Put_Image_Wide_String (S : in out Sink'Class; X : Wide_String);
    procedure Put_Image_Wide_Wide_String
@@ -86,8 +93,8 @@ package System.Put_Images is
    procedure Record_Between (S : in out Sink'Class);
    procedure Record_After (S : in out Sink'Class);
 
-   procedure Put_Image_Unknown (S : in out Sink'Class);
+   procedure Put_Image_Unknown (S : in out Sink'Class; Type_Name : String);
    --  For Put_Image of types that don't have the attribute, such as type
-   --  Sink. Prints a canned string.
+   --  Sink.
 
 end System.Put_Images;

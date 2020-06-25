@@ -131,7 +131,7 @@ class CppMangleVisitor : public Visitor
     {
         // First check the target whether some specific ABI is being followed.
         bool isFundamental;
-        if (Target::cppFundamentalType(t, isFundamental))
+        if (target.cpp.fundamentalType(t, isFundamental))
             return isFundamental;
         if (t->ty == Tenum)
         {
@@ -632,7 +632,7 @@ class CppMangleVisitor : public Visitor
                  *          ::= <prefix> <data-member-prefix>
                  */
                 prefix_name(p);
-                //printf("p: %s\n", buf.peekString());
+                //printf("p: %s\n", buf.peekChars());
 
                 if (d->isCtorDeclaration())
                 {
@@ -657,7 +657,8 @@ class CppMangleVisitor : public Visitor
         if (tf->linkage == LINKcpp) //Template args accept extern "C" symbols with special mangling
         {
             assert(tf->ty == Tfunction);
-            mangleFunctionParameters(tf->parameters, tf->varargs);
+            mangleFunctionParameters(tf->parameterList.parameters,
+                                     tf->parameterList.varargs);
         }
     }
 
@@ -672,7 +673,7 @@ class CppMangleVisitor : public Visitor
             {
                 ParamsCppMangle *p = (ParamsCppMangle *)ctx;
                 CppMangleVisitor *mangler = p->mangler;
-                Type *t = Target::cppParameterType(fparam);
+                Type *t = target.cpp.parameterType(fparam);
                 if (t->ty == Tsarray)
                 {
                     // Static arrays in D are passed by value; no counterpart in C++
@@ -803,7 +804,7 @@ public:
             return error(t);
 
         // Handle any target-specific basic types.
-        if (const char *tm = Target::cppTypeMangle(t))
+        if (const char *tm = target.cpp.typeMangle(t))
         {
             // Only do substitutions for non-fundamental types.
             if (!isFundamentalType(t) || t->isConst())
@@ -862,10 +863,10 @@ public:
             case Tuns32:                c = 'j';        break;
             case Tfloat32:              c = 'f';        break;
             case Tint64:
-                c = (Target::c_longsize == 8 ? 'l' : 'x');
+                c = (target.c.longsize == 8 ? 'l' : 'x');
                 break;
             case Tuns64:
-                c = (Target::c_longsize == 8 ? 'm' : 'y');
+                c = (target.c.longsize == 8 ? 'm' : 'y');
                 break;
             case Tint128:                c = 'n';       break;
             case Tuns128:                c = 'o';       break;
@@ -899,7 +900,7 @@ public:
         CV_qualifiers(t);
 
         // Handle any target-specific vector types.
-        if (const char *tm = Target::cppTypeMangle(t))
+        if (const char *tm = target.cpp.typeMangle(t))
         {
             buf->writestring(tm);
         }
@@ -982,7 +983,8 @@ public:
         if (t->isref)
             tn  = tn->referenceTo();
         tn->accept(this);
-        mangleFunctionParameters(t->parameters, t->varargs);
+        mangleFunctionParameters(t->parameterList.parameters,
+                                 t->parameterList.varargs);
         buf->writeByte('E');
         append(t);
     }
@@ -1030,7 +1032,7 @@ public:
         CV_qualifiers(t);
 
         // Handle any target-specific struct types.
-        if (const char *tm = Target::cppTypeMangle(t))
+        if (const char *tm = target.cpp.typeMangle(t))
         {
             buf->writestring(tm);
         }
@@ -1108,7 +1110,7 @@ public:
     {
         buf->writestring("_ZTI");
         cpp_mangle_name(s, false);
-        return buf->extractString();
+        return buf->extractChars();
     }
 };
 
@@ -1118,7 +1120,7 @@ const char *toCppMangleItanium(Dsymbol *s)
     OutBuffer buf;
     CppMangleVisitor v(&buf, s->loc);
     v.mangleOf(s);
-    return buf.extractString();
+    return buf.extractChars();
 }
 
 const char *cppTypeInfoMangleItanium(Dsymbol *s)
@@ -1128,5 +1130,5 @@ const char *cppTypeInfoMangleItanium(Dsymbol *s)
     buf.writestring("_ZTI");    // "TI" means typeinfo structure
     CppMangleVisitor v(&buf, s->loc);
     v.cpp_mangle_name(s, false);
-    return buf.extractString();
+    return buf.extractChars();
 }
