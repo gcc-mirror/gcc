@@ -1,3 +1,179 @@
+2020-06-24  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	PR target/94954
+	* config/rs6000/altivec.h (vec_pack_to_short_fp32): Update.
+	* config/rs6000/altivec.md (UNSPEC_CONVERT_4F32_8F16): New unspec.
+	(convert_4f32_8f16): New define_expand
+	* config/rs6000/rs6000-builtin.def (convert_4f32_8f16): New builtin define
+	and overload.
+	* config/rs6000/rs6000-call.c (P9V_BUILTIN_VEC_CONVERT_4F32_8F16): New
+	overloaded builtin entry.
+	* config/rs6000/vsx.md (UNSPEC_VSX_XVCVSPHP): New unspec.
+	(vsx_xvcvsphp): New define_insn.
+
+2020-06-24  Roger Sayle  <roger@nextmovesoftware.com>
+	    Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* simplify-rtx.c (simplify_unary_operation_1): Simplify rotates by 0.
+
+2020-06-24  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* simplify-rtx.c (simplify_unary_operation_1): Simplify
+	(parity (parity x)) as (parity x), i.e. PARITY is idempotent.
+
+2020-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95866
+	* tree-vect-slp.c (vect_slp_tree_uniform_p): New.
+	(vect_build_slp_tree_2): Properly reset matches[0],
+	ignore uniform constants.
+
+2020-06-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95660
+	* common/config/i386/cpuinfo.h (get_intel_cpu): Remove brand_id.
+	(cpu_indicator_init): Likewise.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Updated.
+
+2020-06-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95774
+	* common/config/i386/cpuinfo.h (get_intel_cpu): Add Cooper Lake
+	detection with AVX512BF16.
+
+2020-06-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95843
+	* common/config/i386/i386-isas.h: New file.  Extracted from
+	gcc/config/i386/i386-builtins.c.
+	(_isa_names_table): Add option.
+	(ISA_NAMES_TABLE_START): New.
+	(ISA_NAMES_TABLE_END): Likewise.
+	(ISA_NAMES_TABLE_ENTRY): Likewise.
+	(isa_names_table): Defined with ISA_NAMES_TABLE_START,
+	ISA_NAMES_TABLE_END and ISA_NAMES_TABLE_ENTRY.  Add more ISAs
+	from enum processor_features.
+	* config/i386/driver-i386.c: Include
+	"common/config/i386/cpuinfo.h" and
+	"common/config/i386/i386-isas.h".
+	(has_feature): New macro.
+	(host_detect_local_cpu): Call cpu_indicator_init to get CPU
+	features.  Use has_feature to detect processor features.  Call
+	Call get_intel_cpu to get the newer Intel CPU name.  Use
+	isa_names_table to generate command-line options.
+	* config/i386/i386-builtins.c: Include
+	"common/config/i386/i386-isas.h".
+	(_arch_names_table): Removed.
+	(isa_names_table): Likewise.
+
+2020-06-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95259
+	* common/config/i386/cpuinfo.h: New file.
+	(__processor_model): Moved from libgcc/config/i386/cpuinfo.h.
+	(__processor_model2): New.
+	(CHECK___builtin_cpu_is): New.  Defined as empty if not defined.
+	(has_cpu_feature): New function.
+	(set_cpu_feature): Likewise.
+	(get_amd_cpu): Moved from libgcc/config/i386/cpuinfo.c.  Use
+	CHECK___builtin_cpu_is.  Return AMD CPU name.
+	(get_intel_cpu): Moved from libgcc/config/i386/cpuinfo.c.  Use
+	Use CHECK___builtin_cpu_is.  Return Intel CPU name.
+	(get_available_features): Moved from libgcc/config/i386/cpuinfo.c.
+	Also check FEATURE_3DNOW, FEATURE_3DNOWP, FEATURE_ADX,
+	FEATURE_ABM, FEATURE_CLDEMOTE, FEATURE_CLFLUSHOPT, FEATURE_CLWB,
+	FEATURE_CLZERO, FEATURE_CMPXCHG16B, FEATURE_CMPXCHG8B,
+	FEATURE_ENQCMD, FEATURE_F16C, FEATURE_FSGSBASE, FEATURE_FXSAVE,
+	FEATURE_HLE, FEATURE_IBT, FEATURE_LAHF_LM, FEATURE_LM,
+	FEATURE_LWP, FEATURE_LZCNT, FEATURE_MOVBE, FEATURE_MOVDIR64B,
+	FEATURE_MOVDIRI, FEATURE_MWAITX, FEATURE_OSXSAVE,
+	FEATURE_PCONFIG, FEATURE_PKU, FEATURE_PREFETCHWT1, FEATURE_PRFCHW,
+	FEATURE_PTWRITE, FEATURE_RDPID, FEATURE_RDRND, FEATURE_RDSEED,
+	FEATURE_RTM, FEATURE_SERIALIZE, FEATURE_SGX, FEATURE_SHA,
+	FEATURE_SHSTK, FEATURE_TBM, FEATURE_TSXLDTRK, FEATURE_VAES,
+	FEATURE_WAITPKG, FEATURE_WBNOINVD, FEATURE_XSAVE, FEATURE_XSAVEC,
+	FEATURE_XSAVEOPT and FEATURE_XSAVES
+	(cpu_indicator_init): Moved from libgcc/config/i386/cpuinfo.c.
+	Also update cpu_model2.
+	* common/config/i386/i386-cpuinfo.h (processor_vendor): Add
+	Add VENDOR_CENTAUR, VENDOR_CYRIX and VENDOR_NSC.
+	(processor_features): Moved from gcc/config/i386/i386-builtins.c.
+	Renamed F_XXX to FEATURE_XXX.  Add FEATURE_3DNOW, FEATURE_3DNOWP,
+	FEATURE_ADX, FEATURE_ABM, FEATURE_CLDEMOTE, FEATURE_CLFLUSHOPT,
+	FEATURE_CLWB, FEATURE_CLZERO, FEATURE_CMPXCHG16B,
+	FEATURE_CMPXCHG8B, FEATURE_ENQCMD, FEATURE_F16C,
+	FEATURE_FSGSBASE, FEATURE_FXSAVE, FEATURE_HLE, FEATURE_IBT,
+	FEATURE_LAHF_LM, FEATURE_LM, FEATURE_LWP, FEATURE_LZCNT,
+	FEATURE_MOVBE, FEATURE_MOVDIR64B, FEATURE_MOVDIRI,
+	FEATURE_MWAITX, FEATURE_OSXSAVE, FEATURE_PCONFIG,
+	FEATURE_PKU, FEATURE_PREFETCHWT1, FEATURE_PRFCHW,
+	FEATURE_PTWRITE, FEATURE_RDPID, FEATURE_RDRND, FEATURE_RDSEED,
+	FEATURE_RTM, FEATURE_SERIALIZE, FEATURE_SGX, FEATURE_SHA,
+	FEATURE_SHSTK, FEATURE_TBM, FEATURE_TSXLDTRK, FEATURE_VAES,
+	FEATURE_WAITPKG, FEATURE_WBNOINVD, FEATURE_XSAVE, FEATURE_XSAVEC,
+	FEATURE_XSAVEOPT, FEATURE_XSAVES and CPU_FEATURE_MAX.
+	(SIZE_OF_CPU_FEATURES): New.
+	* config/i386/i386-builtins.c (processor_features): Removed.
+	(isa_names_table): Replace F_XXX with FEATURE_XXX.
+	(fold_builtin_cpu): Change __cpu_features2 to an array.
+
+2020-06-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95842
+	* common/config/i386/i386-common.c (processor_alias_table): Add
+	processor model and priority to each entry.
+	(pta_size): Updated with -6.
+	(num_arch_names): New.
+	* common/config/i386/i386-cpuinfo.h: New file.
+	* config/i386/i386-builtins.c (feature_priority): Removed.
+	(processor_model): Likewise.
+	(_arch_names_table): Likewise.
+	(arch_names_table): Likewise.
+	(_isa_names_table): Replace P_ZERO with P_NONE.
+	(get_builtin_code_for_version): Replace P_ZERO with P_NONE.  Use
+	processor_alias_table.
+	(fold_builtin_cpu): Replace arch_names_table with
+	processor_alias_table.
+	* config/i386/i386.h: Include "common/config/i386/i386-cpuinfo.h".
+	(pta): Add model and priority.
+	(num_arch_names): New.
+
+2020-06-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_find_first_scalar_stmt_in_slp):
+	Declare.
+	* tree-vect-data-refs.c (vect_preserves_scalar_order_p):
+	Simplify for new position of vectorized SLP loads.
+	(vect_slp_analyze_node_dependences): Adjust for it.
+	(vect_slp_analyze_and_verify_node_alignment): Compute alignment
+	for the first stmts dataref.
+	* tree-vect-slp.c (vect_find_first_scalar_stmt_in_slp): New.
+	(vect_schedule_slp_instance): Emit loads before the
+	first scalar stmt.
+	* tree-vect-stmts.c (vectorizable_load): Do what the comment
+	says and use vect_find_first_scalar_stmt_in_slp.
+
+2020-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95856
+	* tree-vectorizer.c (vect_stmt_dominates_stmt_p): Honor
+	region marker -1u.
+
+2020-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95810
+	* fold-const.c (fold_cond_expr_with_comparison): Optimize
+	A <= 0 ? A : -A into (type)-absu(A) rather than -abs(A).
+
+2020-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (lower_omp_for): Fix two pastos.
+
+2020-06-24  Martin Liska  <mliska@suse.cz>
+
+	* optc-save-gen.awk: Compare string options in cl_optimization_compare
+	by strcmp.
+
 2020-06-23  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* config.gcc: Identify power10 as a 64-bit processor and as valid
