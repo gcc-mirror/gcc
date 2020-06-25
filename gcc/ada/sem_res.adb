@@ -7441,11 +7441,14 @@ package body Sem_Res is
       --  Install the scope created for local declarations, if
       --  any. The syntax allows a Declare_Expression with no
       --  declarations, in analogy with block statements.
+      --  Note that that scope has no explicit declaration, but
+      --  appears as the scope of all entities declared therein.
 
       Decl := First (Actions (N));
 
       while Present (Decl) loop
-         exit when Nkind (Decl) = N_Object_Declaration;
+         exit when Nkind (Decl)
+                     in N_Object_Declaration | N_Object_Renaming_Declaration;
          Next (Decl);
       end loop;
 
