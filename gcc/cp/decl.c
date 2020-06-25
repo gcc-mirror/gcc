@@ -9560,15 +9560,6 @@ grokfndecl (tree ctype,
 	  }
     }
 
-  /* FIXME: For now.  */
-  if (virtualp && (inlinep & 8) != 0)
-    {
-      sorry_at (DECL_SOURCE_LOCATION (decl),
-		"%<virtual%> %<consteval%> method %qD not supported yet",
-		decl);
-      inlinep &= ~8;
-    }
-
   /* If this decl has namespace scope, set that up.  */
   if (in_namespace)
     set_decl_namespace (decl, in_namespace, friendp);
