@@ -1,5 +1,11 @@
 2020-06-25  Nathan Sidwell  <nathan@acm.org>
 
+	Merge masrer 668ef28fbb4.
+	c++: Clean up previous change [PR41437] [Patrick Palka]
+	gcc/cp/
+	* module.cc (trees_{in,out}::code_vals [TEMPLATE_INFO]): Adjust
+	access checking streaming.
+
 	Merge master 92bed036098
 	c++: Improve access checking inside templates [PR41437]
 
