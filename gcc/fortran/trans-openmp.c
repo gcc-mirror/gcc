@@ -5353,7 +5353,7 @@ gfc_trans_omp_target (gfc_code *code)
 	pushlevel ();
 	gfc_start_block (&iblock);
 	tree inner_clauses
-	  = gfc_trans_omp_clauses (&block, &clausesa[GFC_OMP_SPLIT_PARALLEL],
+	  = gfc_trans_omp_clauses (&iblock, &clausesa[GFC_OMP_SPLIT_PARALLEL],
 				   code->loc);
 	stmt = gfc_trans_omp_code (code->block->next, true);
 	stmt = build2_loc (input_location, OMP_PARALLEL, void_type_node, stmt,
