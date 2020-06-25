@@ -1250,13 +1250,6 @@ get_symbol_decl (Declaration *decl)
 	}
 
       /* Miscellaneous function flags.  */
-      if (fd->isMember2 () || fd->isFuncLiteralDeclaration ())
-	{
-	  /* See grokmethod in cp/decl.c.  Maybe we shouldn't be setting inline
-	     flags without reason or proper handling.  */
-	  DECL_DECLARED_INLINE_P (decl->csym) = 1;
-	  DECL_NO_INLINE_WARNING_P (decl->csym) = 1;
-	}
 
       /* In [pragma/inline], functions decorated with `pragma(inline)' affects
 	 whether they are inlined or not.  */
