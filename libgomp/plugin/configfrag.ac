@@ -327,10 +327,3 @@ AC_DEFINE_UNQUOTED([PLUGIN_HSA], [$PLUGIN_HSA],
 AM_CONDITIONAL([PLUGIN_GCN], [test $PLUGIN_GCN = 1])
 AC_DEFINE_UNQUOTED([PLUGIN_GCN], [$PLUGIN_GCN],
   [Define to 1 if the GCN plugin is built, 0 if not.])
-
-if test "$HSA_RUNTIME_LIB" != ""; then
-  HSA_RUNTIME_LIB="$HSA_RUNTIME_LIB/"
-fi
-
-AC_DEFINE_UNQUOTED([HSA_RUNTIME_LIB], ["$HSA_RUNTIME_LIB"],
-  [Define path to HSA runtime.])

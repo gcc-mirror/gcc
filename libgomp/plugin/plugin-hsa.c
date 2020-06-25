@@ -254,7 +254,7 @@ init_enviroment_variables (void)
 
   hsa_runtime_lib = secure_getenv ("HSA_RUNTIME_LIB");
   if (hsa_runtime_lib == NULL)
-    hsa_runtime_lib = HSA_RUNTIME_LIB "libhsa-runtime64.so";
+    hsa_runtime_lib = "libhsa-runtime64.so";
 
   support_cpu_devices = secure_getenv ("HSA_SUPPORT_CPU_DEVICES");
 }
