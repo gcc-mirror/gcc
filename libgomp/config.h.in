@@ -130,9 +130,6 @@
 /* Define to 1 if you have the `__secure_getenv' function. */
 #undef HAVE___SECURE_GETENV
 
-/* Define path to HSA runtime. */
-#undef HSA_RUNTIME_LIB
-
 /* Define to 1 if GNU symbol versioning is used for libgomp. */
 #undef LIBGOMP_GNU_SYMBOL_VERSIONING
 
