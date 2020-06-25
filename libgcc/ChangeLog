@@ -1,3 +1,16 @@
+2020-06-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95259
+	* config/i386/cpuinfo.c: Don't include "cpuinfo.h".  Include
+	"common/config/i386/i386-cpuinfo.h" and
+	"common/config/i386/cpuinfo.h".
+	(__cpu_features2): Changed to array.
+	(get_amd_cpu): Removed.
+	(get_intel_cpu): Likewise.
+	(get_available_features): Likewise.
+	(__cpu_indicator_init): Call cpu_indicator_init.
+	* config/i386/cpuinfo.h: Removed.
+
 2020-06-23  David Edelsohn  <dje.gcc@gmail.com>
 
 	* Makefile.in: Remove uses of empty.mk. Use -include.

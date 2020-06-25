@@ -1111,10 +1111,10 @@ TOK Lexer::wysiwygStringConstant(Token *t, int tc)
             case '`':
                 if (c == tc)
                 {
-                    t->len = (unsigned)stringbuffer.offset;
+                    t->len = (unsigned)stringbuffer.length();
                     stringbuffer.writeByte(0);
-                    t->ustring = (utf8_t *)mem.xmalloc(stringbuffer.offset);
-                    memcpy(t->ustring, stringbuffer.data, stringbuffer.offset);
+                    t->ustring = (utf8_t *)mem.xmalloc(stringbuffer.length());
+                    memcpy(t->ustring, stringbuffer.slice().ptr, stringbuffer.length());
                     stringPostfix(t);
                     return TOKstring;
                 }
@@ -1183,10 +1183,10 @@ TOK Lexer::hexStringConstant(Token *t)
                 {   error("odd number (%d) of hex characters in hex string", n);
                     stringbuffer.writeByte(v);
                 }
-                t->len = (unsigned)stringbuffer.offset;
+                t->len = (unsigned)stringbuffer.length();
                 stringbuffer.writeByte(0);
-                t->ustring = (utf8_t *)mem.xmalloc(stringbuffer.offset);
-                memcpy(t->ustring, stringbuffer.data, stringbuffer.offset);
+                t->ustring = (utf8_t *)mem.xmalloc(stringbuffer.length());
+                memcpy(t->ustring, stringbuffer.slice().ptr, stringbuffer.length());
                 stringPostfix(t);
                 return TOKxstring;
 
@@ -1371,10 +1371,10 @@ Ldone:
         error("delimited string must end in %s\"", hereid->toChars());
     else
         error("delimited string must end in %c\"", delimright);
-    t->len = (unsigned)stringbuffer.offset;
+    t->len = (unsigned)stringbuffer.length();
     stringbuffer.writeByte(0);
-    t->ustring = (utf8_t *)mem.xmalloc(stringbuffer.offset);
-    memcpy(t->ustring, stringbuffer.data, stringbuffer.offset);
+    t->ustring = (utf8_t *)mem.xmalloc(stringbuffer.length());
+    memcpy(t->ustring, stringbuffer.slice().ptr, stringbuffer.length());
     stringPostfix(t);
     return TOKstring;
 }
@@ -1473,10 +1473,10 @@ TOK Lexer::escapeStringConstant(Token *t)
                 break;
 
             case '"':
-                t->len = (unsigned)stringbuffer.offset;
+                t->len = (unsigned)stringbuffer.length();
                 stringbuffer.writeByte(0);
-                t->ustring = (utf8_t *)mem.xmalloc(stringbuffer.offset);
-                memcpy(t->ustring, stringbuffer.data, stringbuffer.offset);
+                t->ustring = (utf8_t *)mem.xmalloc(stringbuffer.length());
+                memcpy(t->ustring, stringbuffer.slice().ptr, stringbuffer.length());
                 stringPostfix(t);
                 return TOKstring;
 
@@ -1997,7 +1997,7 @@ TOK Lexer::inreal(Token *t)
     }
 
     stringbuffer.writeByte(0);
-    const char *sbufptr = (char *)stringbuffer.data;
+    const char *sbufptr = (char *)stringbuffer.slice().ptr;
     TOK result;
     bool isOutOfRange = false;
     t->floatvalue = (isWellformedString ? CTFloat::parse(sbufptr, &isOutOfRange) : CTFloat::zero);
@@ -2049,7 +2049,7 @@ TOK Lexer::inreal(Token *t)
     if (isOutOfRange && !isLong)
     {
         const char *suffix = (result == TOKfloat32v || result == TOKimaginary32v) ? "f" : "";
-        error(scanloc, "number '%s%s' is not representable", (char *)stringbuffer.data, suffix);
+        error(scanloc, "number '%s%s' is not representable", (char *)stringbuffer.slice().ptr, suffix);
     }
     return result;
 }
@@ -2138,7 +2138,7 @@ void Lexer::poundLine()
 
                         case '"':
                             stringbuffer.writeByte(0);
-                            filespec = mem.xstrdup((char *)stringbuffer.data);
+                            filespec = mem.xstrdup((char *)stringbuffer.slice().ptr);
                             p++;
                             break;
 
@@ -2203,6 +2203,14 @@ unsigned Lexer::decodeUTF()
     return u;
 }
 
+static void trimTrailingWhitespace(OutBuffer &buf)
+{
+    const unsigned char *s = buf.slice().ptr;
+    size_t len = buf.length();
+    while (len && (s[len - 1] == ' ' || s[len - 1] == '\t'))
+        --len;
+    buf.setsize(len);
+}
 
 /***************************************************
  * Parse doc comment embedded between t->ptr and p.
@@ -2287,8 +2295,7 @@ void Lexer::getDocComment(Token *t, unsigned lineComment)
                 {   linestart = 0;
                     /* Trim preceding whitespace up to preceding \n
                      */
-                    while (buf.offset && (buf.data[buf.offset - 1] == ' ' || buf.data[buf.offset - 1] == '\t'))
-                        buf.offset--;
+                    trimTrailingWhitespace(buf);
                     continue;
                 }
                 break;
@@ -2324,9 +2331,7 @@ void Lexer::getDocComment(Token *t, unsigned lineComment)
 
                 /* Trim trailing whitespace
                  */
-                while (buf.offset && (buf.data[buf.offset - 1] == ' ' || buf.data[buf.offset - 1] == '\t'))
-                    buf.offset--;
-
+                trimTrailingWhitespace(buf);
                 break;
         }
         buf.writeByte(c);
@@ -2334,14 +2339,13 @@ void Lexer::getDocComment(Token *t, unsigned lineComment)
 
     /* Trim trailing whitespace (if the last line does not have newline)
      */
-    if (buf.offset && (buf.data[buf.offset - 1] == ' ' || buf.data[buf.offset - 1] == '\t'))
+    if (buf.length() && (buf.slice().ptr[buf.length() - 1] == ' ' || buf.slice().ptr[buf.length() - 1] == '\t'))
     {
-        while (buf.offset && (buf.data[buf.offset - 1] == ' ' || buf.data[buf.offset - 1] == '\t'))
-            buf.offset--;
+        trimTrailingWhitespace(buf);
     }
 
     // Always end with a newline
-    if (!buf.offset || buf.data[buf.offset - 1] != '\n')
+    if (!buf.length() || buf.slice().ptr[buf.length() - 1] != '\n')
         buf.writeByte('\n');
 
     buf.writeByte(0);
@@ -2354,7 +2358,7 @@ void Lexer::getDocComment(Token *t, unsigned lineComment)
 
     // Combine with previous doc comment, if any
     if (*dc)
-        *dc = combineComments(*dc, (utf8_t *)buf.data);
+        *dc = combineComments(*dc, (utf8_t *)buf.slice().ptr);
     else
         *dc = (utf8_t *)buf.extractData();
 }

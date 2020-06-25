@@ -46,7 +46,7 @@ class SynchronizedStatement;
 class WithStatement;
 class TryCatchStatement;
 class TryFinallyStatement;
-class OnScopeStatement;
+class ScopeGuardStatement;
 class ThrowStatement;
 class DebugStatement;
 class GotoStatement;
@@ -339,7 +339,7 @@ public:
     virtual void visit(WithStatement *s) { visit((Statement *)s); }
     virtual void visit(TryCatchStatement *s) { visit((Statement *)s); }
     virtual void visit(TryFinallyStatement *s) { visit((Statement *)s); }
-    virtual void visit(OnScopeStatement *s) { visit((Statement *)s); }
+    virtual void visit(ScopeGuardStatement *s) { visit((Statement *)s); }
     virtual void visit(ThrowStatement *s) { visit((Statement *)s); }
     virtual void visit(DebugStatement *s) { visit((Statement *)s); }
     virtual void visit(GotoStatement *s) { visit((Statement *)s); }

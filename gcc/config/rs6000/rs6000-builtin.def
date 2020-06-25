@@ -2289,6 +2289,7 @@ BU_P8V_OVERLOAD_3 (VPERMXOR,   "vpermxor")
 BU_P9V_AV_2 (VSLV,		"vslv",			CONST, vslv)
 BU_P9V_AV_2 (VSRV,		"vsrv",			CONST, vsrv)
 BU_P9V_AV_2 (CONVERT_4F32_8I16, "convert_4f32_8i16", CONST, convert_4f32_8i16)
+BU_P9V_AV_2 (CONVERT_4F32_8F16, "convert_4f32_8f16", CONST, convert_4f32_8f16)
 
 BU_P9V_AV_2 (VFIRSTMATCHINDEX_V16QI, "first_match_index_v16qi",
 	     CONST, first_match_index_v16qi)
@@ -2319,6 +2320,7 @@ BU_P9V_AV_2 (VFIRSTMISMATCHOREOSINDEX_V4SI, "first_mismatch_or_eos_index_v4si",
 BU_P9V_OVERLOAD_2 (VSLV,	"vslv")
 BU_P9V_OVERLOAD_2 (VSRV,	"vsrv")
 BU_P9V_OVERLOAD_2 (CONVERT_4F32_8I16, "convert_4f32_8i16")
+BU_P9V_OVERLOAD_2 (CONVERT_4F32_8F16, "convert_4f32_8f16")
 
 /* 2 argument vector functions added in ISA 3.0 (power9). */
 BU_P9V_AV_2 (VADUB,		"vadub",		CONST,  vaduv16qi3)

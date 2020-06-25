@@ -40,10 +40,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vector-builder.h"
 #include "vec-perm-indices.h"
 #include "insn-config.h"
+#include "tree-ssa-dce.h"
 #include "recog.h"		/* FIXME: for insn_data */
 
 
-static void expand_vector_operations_1 (gimple_stmt_iterator *);
+static void expand_vector_operations_1 (gimple_stmt_iterator *, auto_bitmap *);
 
 /* Return the number of elements in a vector type TYPE that we have
    already decided needs to be expanded piecewise.  We don't support
@@ -932,7 +933,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 /* Expand a vector condition to scalars, by using many conditions
    on the vector's elements.  */
 static void
-expand_vector_condition (gimple_stmt_iterator *gsi)
+expand_vector_condition (gimple_stmt_iterator *gsi, auto_bitmap *dce_ssa_names)
 {
   gassign *stmt = as_a <gassign *> (gsi_stmt (*gsi));
   tree type = gimple_expr_type (stmt);
@@ -954,10 +955,11 @@ expand_vector_condition (gimple_stmt_iterator *gsi)
   tree comp_index = index;
   location_t loc = gimple_location (gsi_stmt (*gsi));
   tree_code code = TREE_CODE (a);
+  gassign *assign = NULL;
 
   if (code == SSA_NAME)
     {
-      gassign *assign = dyn_cast<gassign *> (SSA_NAME_DEF_STMT (a));
+      assign = dyn_cast<gassign *> (SSA_NAME_DEF_STMT (a));
       if (assign != NULL
 	  && TREE_CODE_CLASS (gimple_assign_rhs_code (assign)) == tcc_comparison)
 	{
@@ -1064,6 +1066,10 @@ expand_vector_condition (gimple_stmt_iterator *gsi)
   constr = build_constructor (type, v);
   gimple_assign_set_rhs_from_tree (gsi, constr);
   update_stmt (gsi_stmt (*gsi));
+
+  if (a_is_comparison)
+    bitmap_set_bit (*dce_ssa_names,
+		    SSA_NAME_VERSION (gimple_assign_lhs (assign)));
 }
 
 static tree
@@ -1956,7 +1962,8 @@ expand_vector_conversion (gimple_stmt_iterator *gsi)
 /* Process one statement.  If we identify a vector operation, expand it.  */
 
 static void
-expand_vector_operations_1 (gimple_stmt_iterator *gsi)
+expand_vector_operations_1 (gimple_stmt_iterator *gsi,
+			    auto_bitmap *dce_ssa_names)
 {
   tree lhs, rhs1, rhs2 = NULL, type, compute_type = NULL_TREE;
   enum tree_code code;
@@ -1985,7 +1992,7 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
 
   if (code == VEC_COND_EXPR)
     {
-      expand_vector_condition (gsi);
+      expand_vector_condition (gsi, dce_ssa_names);
       return;
     }
 
@@ -2233,11 +2240,13 @@ expand_vector_operations (void)
   basic_block bb;
   bool cfg_changed = false;
 
+  auto_bitmap dce_ssa_names;
+
   FOR_EACH_BB_FN (bb, cfun)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  expand_vector_operations_1 (&gsi);
+	  expand_vector_operations_1 (&gsi, &dce_ssa_names);
 	  /* ???  If we do not cleanup EH then we will ICE in
 	     verification.  But in reality we have created wrong-code
 	     as we did not properly transition EH info and edges to
@@ -2247,6 +2256,8 @@ expand_vector_operations (void)
 	    cfg_changed = true;
 	}
     }
+
+  simple_dce_from_worklist (dce_ssa_names);
 
   return cfg_changed ? TODO_cleanup_cfg : 0;
 }

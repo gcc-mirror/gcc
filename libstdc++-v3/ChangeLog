@@ -1,3 +1,23 @@
+2020-06-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/charconv (__from_chars_binary): Ignore leading zeros.
+	* testsuite/20_util/from_chars/1.cc: Check "0x1" for all bases,
+	not just 10 and 16.
+	* testsuite/20_util/from_chars/3.cc: New test.
+
+2020-06-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algobase.h (__find_if): Add FALLTHRU markers.
+	* include/std/charconv (__detail::__to_chars): Avoid
+	-Wsign-compare warning.
+
+2020-06-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95851
+	* include/std/charconv (__to_chars_i): Check for zero-sized
+	buffer unconditionally.
+	* testsuite/20_util/to_chars/95851.cc: New test.
+
 2020-06-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/from_chars/1_c++20_neg.cc: Check enumeration

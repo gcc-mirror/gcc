@@ -5395,7 +5395,7 @@ Statement *Parser::parseStatement(int flags, const utf8_t** endPtr, Loc *pEndloc
                 nextToken();
                 check(TOKrparen);
                 Statement *st = parseStatement(PSscope);
-                s = new OnScopeStatement(loc, t, st);
+                s = new ScopeGuardStatement(loc, t, st);
                 break;
             }
 

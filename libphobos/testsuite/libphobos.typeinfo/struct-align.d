@@ -2,7 +2,7 @@ module structalign;
 
 void main ()
 {
-    struct K { int *a; };
+    struct K { int *a; }
     K k;
     auto ti = typeid (k);
 

@@ -42,6 +42,49 @@ along with GCC; see the file COPYING3.  If not see
 #include "d-tree.h"
 
 
+/* Return the signed or unsigned version of TYPE, an integral type, the
+   signedness being specified by UNSIGNEDP.  */
+
+static tree
+d_signed_or_unsigned_type (int unsignedp, tree type)
+{
+  if (TYPE_UNSIGNED (type) == (unsigned) unsignedp)
+    return type;
+
+  if (TYPE_PRECISION (type) == TYPE_PRECISION (d_cent_type))
+    return unsignedp ? d_ucent_type : d_cent_type;
+
+  if (TYPE_PRECISION (type) == TYPE_PRECISION (d_long_type))
+    return unsignedp ? d_ulong_type : d_long_type;
+
+  if (TYPE_PRECISION (type) == TYPE_PRECISION (d_int_type))
+    return unsignedp ? d_uint_type : d_int_type;
+
+  if (TYPE_PRECISION (type) == TYPE_PRECISION (d_short_type))
+    return unsignedp ? d_ushort_type : d_short_type;
+
+  if (TYPE_PRECISION (type) == TYPE_PRECISION (d_byte_type))
+    return unsignedp ? d_ubyte_type : d_byte_type;
+
+  return signed_or_unsigned_type_for (unsignedp, type);
+}
+
+/* Return the unsigned version of TYPE, an integral type.  */
+
+tree
+d_unsigned_type (tree type)
+{
+  return d_signed_or_unsigned_type (1, type);
+}
+
+/* Return the signed version of TYPE, an integral type.  */
+
+tree
+d_signed_type (tree type)
+{
+  return d_signed_or_unsigned_type (0, type);
+}
+
 /* Return TRUE if TYPE is a static array va_list.  This is for compatibility
    with the C ABI, where va_list static arrays are passed by reference.
    However for every other case in D, static arrays are passed by value.  */

@@ -1,3 +1,8 @@
+2020-06-24  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* download_prerequisites: Support AIX and OpenBSD unames.
+	Pipe `{gzip,bzip2} -d` to `tar -xf -`.
+
 2020-06-18  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_update_version.py: First checkout and then

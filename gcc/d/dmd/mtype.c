@@ -1628,7 +1628,7 @@ Type *Type::merge()
 
         mangleToBuffer(this, &buf);
 
-        StringValue *sv = stringtable.update((char *)buf.data, buf.offset);
+        StringValue *sv = stringtable.update((char *)buf.slice().ptr, buf.length());
         if (sv->ptrvalue)
         {
             t = (Type *) sv->ptrvalue;
@@ -2304,7 +2304,7 @@ Identifier *Type::getTypeInfoIdent()
     buf.reserve(32);
     mangleToBuffer(this, &buf);
 
-    size_t len = buf.offset;
+    size_t len = buf.length();
     buf.writeByte(0);
 
     // Allocate buffer on stack, fail over to using malloc()
@@ -2312,7 +2312,7 @@ Identifier *Type::getTypeInfoIdent()
     size_t namelen = 19 + sizeof(len) * 3 + len + 1;
     char *name = namelen <= sizeof(namebuf) ? namebuf : (char *)mem.xmalloc(namelen);
 
-    int length = sprintf(name, "_D%lluTypeInfo_%s6__initZ", (unsigned long long) 9 + len, buf.data);
+    int length = sprintf(name, "_D%lluTypeInfo_%s6__initZ", (unsigned long long) 9 + len, buf.slice().ptr);
     //printf("%p, deco = %s, name = %s\n", this, deco, name);
     assert(0 < length && (size_t)length < namelen);     // don't overflow the buffer
 

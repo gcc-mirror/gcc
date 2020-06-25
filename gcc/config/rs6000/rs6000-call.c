@@ -1985,6 +1985,8 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
 
   { P9V_BUILTIN_VEC_CONVERT_4F32_8I16, P9V_BUILTIN_CONVERT_4F32_8I16,
     RS6000_BTI_unsigned_V8HI, RS6000_BTI_V4SF, RS6000_BTI_V4SF, 0 },
+  { P9V_BUILTIN_VEC_CONVERT_4F32_8F16, P9V_BUILTIN_CONVERT_4F32_8F16,
+    RS6000_BTI_unsigned_V8HI, RS6000_BTI_V4SF, RS6000_BTI_V4SF, 0 },
 
   { P9V_BUILTIN_VEC_VFIRSTMATCHINDEX, P9V_BUILTIN_VFIRSTMATCHINDEX_V16QI,
     RS6000_BTI_UINTSI, RS6000_BTI_V16QI, RS6000_BTI_V16QI, 0 },
@@ -13435,7 +13437,7 @@ mma_init_builtins (void)
 	{
 	  /* This is a normal MMA built-in function.  */
 	  unsigned j = (attr & RS6000_BTC_QUAD) ? 1 : 0;
-	  for (; j < insn_data[icode].n_operands; j++)
+	  for (; j < (unsigned) insn_data[icode].n_operands; j++)
 	    {
 	      machine_mode mode = insn_data[icode].operand[j].mode;
 	      if (gimple_func && mode == PXImode)

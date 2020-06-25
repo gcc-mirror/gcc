@@ -216,10 +216,13 @@ uda_attribute_p (const char *name)
 	return true;
     }
 
-  for (const attribute_spec *p = targetm.attribute_table; p->name; p++)
+  if (targetm.attribute_table)
     {
-      if (get_identifier (p->name) == ident)
-	return true;
+      for (const attribute_spec *p = targetm.attribute_table; p->name; p++)
+	{
+	  if (get_identifier (p->name) == ident)
+	    return true;
+	}
     }
 
   return false;

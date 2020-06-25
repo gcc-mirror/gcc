@@ -5140,9 +5140,6 @@ gfc_resolve_substring_charlen (gfc_expr *e)
 	return;
     }
 
-  e->ts.type = BT_CHARACTER;
-  e->ts.kind = gfc_default_character_kind;
-
   if (!e->ts.u.cl)
     e->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
 
@@ -9638,7 +9635,7 @@ resolve_select_rank (gfc_code *code, gfc_namespace *old_ns)
   gfc_namespace *ns;
   gfc_code *body, *new_st, *tail;
   gfc_case *c;
-  char tname[GFC_MAX_SYMBOL_LEN];
+  char tname[GFC_MAX_SYMBOL_LEN + 7];
   char name[2 * GFC_MAX_SYMBOL_LEN];
   gfc_symtree *st;
   gfc_expr *selector_expr = NULL;

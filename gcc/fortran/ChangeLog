@@ -1,3 +1,9 @@
+2020-06-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95827
+	* iresolve.c (gfc_get_string): Enlarge internal buffer used in
+	generating the mangled name.
+
 2020-06-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/95812
