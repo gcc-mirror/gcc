@@ -1,5 +1,9 @@
 2020-06-25  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* mapper-server.cc (process_server): We should Write when writing.
+	(server): Fix off-by-one error.
+
 	Merge master 68df8e8c343
 
 	Merge master 502d63b6d61

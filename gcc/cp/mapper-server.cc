@@ -450,7 +450,7 @@ bool process_server (Cody::Server *server, unsigned slot, int epoll_fd)
       break;
 
     case Cody::Server::WRITING:
-      if (int err = server->Read ())
+      if (int err = server->Write ())
 	return !(err == EINTR || err == EAGAIN);
       server->PrepareToRead ();
       break;
@@ -693,7 +693,7 @@ server (bool ipv6, int sock_fd, module_resolver *resolver)
 		active = -1;
 	    }
 
-	  if (active > 0)
+	  if (active >= 0)
 	    {
 	      // Do the action
 	      auto *server = connections[active];
