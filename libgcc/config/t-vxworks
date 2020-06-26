@@ -12,7 +12,7 @@ LIB2ADD += $(srcdir)/config/vxcache.c
 # prevail (e.g. unwind.h), and that gcc provided header files intended
 # to be user visible eventually are visible as well.
 LIBGCC2_INCLUDES = -nostdinc -I. \
-  -I$(MULTIBUILDTOP)../../gcc/include-fixed \
+  -I$(MULTIBUILDTOP)../../gcc/include-fixed$(MULTISUBDIR) \
   -I$(MULTIBUILDTOP)../../gcc/include \
   `case "/$(MULTIDIR)" in \
      */mrtp*) echo -I$(WIND_USR)/h -I$(WIND_USR)/h/wrn/coreip ;; \
