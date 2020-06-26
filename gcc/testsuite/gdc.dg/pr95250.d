@@ -8,7 +8,7 @@ template Unsigned(T)
 }
 
 
-void* f95250(T)(T a, T b)
+void* f(T)(T a, T b)
 {
         alias UnsignedVoid = Unsigned!(T);
         return cast(T)(cast(T)(cast(UnsignedVoid)(a-b) / 2));
