@@ -1,3 +1,12 @@
+2020-06-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2020-06-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95874
+	* config/i386/i386.c (PTA_ICELAKE_CLIENT): Remove PTA_CLWB.
+	(PTA_ICELAKE_SERVER): Add PTA_CLWB.
+
 2020-06-20  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	PR tree-optimization/94969
