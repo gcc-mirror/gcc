@@ -49,6 +49,31 @@
     }									  \
   while (0)
 
+#define TARGET_RUST_CPU_INFO() \
+  do {							\
+    rust_add_target_info("target_arch", "mcore");		\
+    if (TARGET_M340)							\
+      rust_add_target_info("target_feature", "m340");	\
+    else							  \
+      rust_add_target_info("target_feature", "m210");	\
+    if (TARGET_OVERALIGN_FUNC)						\
+      rust_add_target_info("target_feature", "4byte-functions");	\
+    if (TARGET_CG_DATA)							\
+      rust_add_target_info("target_feature", "callgraph-data");	\
+    if (TARGET_DIV)							\
+      rust_add_target_info("target_feature", "div");	\
+    if (TARGET_HARDLIT)							\
+      rust_add_target_info("target_feature", "hardlit");	\
+    /*TODO: find way of getting no-lsim info?*/ \
+    if (TARGET_RELAX_IMM)							\
+      rust_add_target_info("target_feature", "relax-immediates");	\
+    if (TARGET_SLOW_BYTES)							\
+      rust_add_target_info("target_feature", "slow-bytes");	\
+    /*TODO: find way of defining stack-increment usefully?*/ \
+    if (TARGET_W_FIELD)							\
+      rust_add_target_info("target_feature", "wide-bitfields");	\
+  } while (0)
+
 #undef  CPP_SPEC
 #define CPP_SPEC "%{m210:%{mlittle-endian:%ethe m210 does not have little endian support}}"
 
