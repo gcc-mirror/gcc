@@ -8740,9 +8740,14 @@ package body Exp_Util is
    function Is_Related_To_Func_Return (Id : Entity_Id) return Boolean is
       Expr : constant Node_Id := Related_Expression (Id);
    begin
+      --  In the case of a function with a class-wide result that returns
+      --  a call to a function with a specific result, we introduce a
+      --  type conversion for the return expression. We do not want that
+      --  type conversion to influence the result of this function.
+
       return
         Present (Expr)
-          and then Nkind (Expr) = N_Explicit_Dereference
+          and then Nkind (Unqual_Conv (Expr)) = N_Explicit_Dereference
           and then Nkind (Parent (Expr)) = N_Simple_Return_Statement;
    end Is_Related_To_Func_Return;
 
