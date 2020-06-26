@@ -432,7 +432,7 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
     int sgpr_count;
     int vgpr_count;
     char *kernel_name;
-  } regcount;
+  } regcount = { -1, -1, NULL };
 
   /* Always add _init_array and _fini_array as kernels.  */
   obstack_ptr_grow (&fns_os, xstrdup ("_init_array"));
@@ -440,7 +440,12 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
   fn_count += 2;
 
   char buf[1000];
-  enum { IN_CODE, IN_AMD_KERNEL_CODE_T, IN_VARS, IN_FUNCS } state = IN_CODE;
+  enum
+    { IN_CODE,
+      IN_METADATA,
+      IN_VARS,
+      IN_FUNCS
+    } state = IN_CODE;
   while (fgets (buf, sizeof (buf), in))
     {
       switch (state)
@@ -453,21 +458,25 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 		obstack_grow (&dims_os, &dim, sizeof (dim));
 		dims_count++;
 	      }
-	    else if (sscanf (buf, " .amdgpu_hsa_kernel %ms\n",
-			     &regcount.kernel_name) == 1)
-	      break;
 
 	    break;
 	  }
-	case IN_AMD_KERNEL_CODE_T:
+	case IN_METADATA:
 	  {
-	    gcc_assert (regcount.kernel_name);
-	    if (sscanf (buf, " wavefront_sgpr_count = %d\n",
-			&regcount.sgpr_count) == 1)
+	    if (sscanf (buf, " - .name: %ms\n", &regcount.kernel_name) == 1)
 	      break;
-	    else if (sscanf (buf, " workitem_vgpr_count = %d\n",
+	    else if (sscanf (buf, " .sgpr_count: %d\n",
+			     &regcount.sgpr_count) == 1)
+	      {
+		gcc_assert (regcount.kernel_name);
+		break;
+	      }
+	    else if (sscanf (buf, " .vgpr_count: %d\n",
 			     &regcount.vgpr_count) == 1)
-	      break;
+	      {
+		gcc_assert (regcount.kernel_name);
+		break;
+	      }
 
 	    break;
 	  }
@@ -508,9 +517,10 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 	state = IN_VARS;
       else if (sscanf (buf, " .section .gnu.offload_funcs%c", &dummy) > 0)
 	state = IN_FUNCS;
-      else if (sscanf (buf, " .amd_kernel_code_%c", &dummy) > 0)
+      else if (sscanf (buf, " .amdgpu_metadata%c", &dummy) > 0)
 	{
-	  state = IN_AMD_KERNEL_CODE_T;
+	  state = IN_METADATA;
+	  regcount.kernel_name = NULL;
 	  regcount.sgpr_count = regcount.vgpr_count = -1;
 	}
       else if (sscanf (buf, " .section %c", &dummy) > 0
@@ -519,7 +529,7 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 	       || sscanf (buf, " .data%c", &dummy) > 0
 	       || sscanf (buf, " .ident %c", &dummy) > 0)
 	state = IN_CODE;
-      else if (sscanf (buf, " .end_amd_kernel_code_%c", &dummy) > 0)
+      else if (sscanf (buf, " .end_amdgpu_metadata%c", &dummy) > 0)
 	{
 	  state = IN_CODE;
 	  gcc_assert (regcount.kernel_name != NULL
@@ -531,7 +541,7 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 	  regcount.sgpr_count = regcount.vgpr_count = -1;
 	}
 
-      if (state == IN_CODE || state == IN_AMD_KERNEL_CODE_T)
+      if (state == IN_CODE || state == IN_METADATA)
 	fputs (buf, out);
     }
 
