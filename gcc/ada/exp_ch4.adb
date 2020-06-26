@@ -2963,12 +2963,13 @@ package body Exp_Ch4 is
 
       --  Local Declarations
 
-      Opnd_Typ : Entity_Id;
-      Ent      : Entity_Id;
-      Len      : Uint;
-      J        : Nat;
-      Clen     : Node_Id;
-      Set      : Boolean;
+      Opnd_Typ   : Entity_Id;
+      Subtyp_Ind : Entity_Id;
+      Ent        : Entity_Id;
+      Len        : Uint;
+      J          : Nat;
+      Clen       : Node_Id;
+      Set        : Boolean;
 
    --  Start of processing for Expand_Concatenate
 
@@ -3441,28 +3442,95 @@ package body Exp_Ch4 is
       --  Initialize_Scalars is enabled. Also since this is the actual result
       --  entity, we make sure we have debug information for the result.
 
+      Subtyp_Ind :=
+        Make_Subtype_Indication (Loc,
+          Subtype_Mark => New_Occurrence_Of (Atyp, Loc),
+          Constraint   =>
+            Make_Index_Or_Discriminant_Constraint (Loc,
+              Constraints => New_List (
+                Make_Range (Loc,
+                  Low_Bound  => Low_Bound,
+                  High_Bound => High_Bound))));
+
       Ent := Make_Temporary (Loc, 'S');
       Set_Is_Internal       (Ent);
       Set_Debug_Info_Needed (Ent);
 
-      --  If the bound is statically known to be out of range, we do not want
-      --  to abort, we want a warning and a runtime constraint error. Note that
-      --  we have arranged that the result will not be treated as a static
-      --  constant, so we won't get an illegality during this insertion.
+      --  If we are concatenating strings and the current scope already uses
+      --  the secondary stack, allocate the resulting string also on the
+      --  secondary stack to avoid putting too much pressure on the primary
+      --  stack.
+      --  Don't do this if -gnatd.h is set, as this will break the wrapping of
+      --  Cnode in an Expression_With_Actions, see Expand_N_Op_Concat.
 
-      Insert_Action (Cnode,
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => Ent,
-          Object_Definition   =>
-            Make_Subtype_Indication (Loc,
-              Subtype_Mark => New_Occurrence_Of (Atyp, Loc),
-              Constraint   =>
-                Make_Index_Or_Discriminant_Constraint (Loc,
-                  Constraints => New_List (
-                    Make_Range (Loc,
-                      Low_Bound  => Low_Bound,
-                      High_Bound => High_Bound))))),
-        Suppress => All_Checks);
+      if Atyp = Standard_String
+        and then Uses_Sec_Stack (Current_Scope)
+        and then RTE_Available (RE_SS_Pool)
+        and then not Debug_Flag_Dot_H
+      then
+         --  Generate:
+         --     subtype Axx is ...;
+         --     type Ayy is access Axx;
+         --     Rxx : Ayy := new <subtype> [storage_pool = ss_pool];
+         --     Sxx : <subtype> renames Rxx.all;
+
+         declare
+            Alloc   : Node_Id;
+            ConstrT : constant Entity_Id := Make_Temporary (Loc, 'A');
+            Acc_Typ : constant Entity_Id := Make_Temporary (Loc, 'A');
+            Temp    : Entity_Id;
+
+         begin
+            Insert_Action (Cnode,
+              Make_Subtype_Declaration (Loc,
+                Defining_Identifier => ConstrT,
+                Subtype_Indication  => Subtyp_Ind),
+              Suppress => All_Checks);
+            Freeze_Itype (ConstrT, Cnode);
+
+            Insert_Action (Cnode,
+              Make_Full_Type_Declaration (Loc,
+                Defining_Identifier => Acc_Typ,
+                Type_Definition     =>
+                  Make_Access_To_Object_Definition (Loc,
+                    Subtype_Indication => New_Occurrence_Of (ConstrT, Loc))),
+              Suppress => All_Checks);
+            Alloc :=
+              Make_Allocator (Loc,
+                Expression => New_Occurrence_Of (ConstrT, Loc));
+            Set_Storage_Pool (Alloc, RTE (RE_SS_Pool));
+            Set_Procedure_To_Call (Alloc, RTE (RE_SS_Allocate));
+
+            Temp := Make_Temporary (Loc, 'R', Alloc);
+            Insert_Action (Cnode,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Temp,
+                Object_Definition   => New_Occurrence_Of (Acc_Typ, Loc),
+                Expression          => Alloc),
+              Suppress => All_Checks);
+
+            Insert_Action (Cnode,
+              Make_Object_Renaming_Declaration (Loc,
+                Defining_Identifier => Ent,
+                Subtype_Mark        => New_Occurrence_Of (ConstrT, Loc),
+                Name                =>
+                  Make_Explicit_Dereference (Loc,
+                    Prefix => New_Occurrence_Of (Temp, Loc))),
+              Suppress => All_Checks);
+         end;
+      else
+         --  If the bound is statically known to be out of range, we do not
+         --  want to abort, we want a warning and a runtime constraint error.
+         --  Note that we have arranged that the result will not be treated as
+         --  a static constant, so we won't get an illegality during this
+         --  insertion.
+
+         Insert_Action (Cnode,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Ent,
+             Object_Definition   => Subtyp_Ind),
+           Suppress => All_Checks);
+      end if;
 
       --  If the result of the concatenation appears as the initializing
       --  expression of an object declaration, we can just rename the
