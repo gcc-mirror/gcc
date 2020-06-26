@@ -1,3 +1,20 @@
+2020-06-25  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-06-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95827
+	* gfortran.dg/pr95827.f90: New file.
+
+2020-06-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-06-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95477
+	* g++.dg/coroutines/pr95477.C: New test.
+	* g++.dg/coroutines/void-gro-non-class-coro.C: New test.
+
 2020-06-24  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:

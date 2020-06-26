@@ -1,3 +1,12 @@
+2020-06-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-06-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95477
+	* coroutines.cc (morph_fn_to_coro): Apply a cleanup to
+	the get return object when the DTOR is non-trivial.
+
 2020-06-24  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:
