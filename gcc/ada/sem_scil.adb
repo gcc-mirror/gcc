@@ -135,7 +135,7 @@ package body Sem_SCIL is
             pragma Assert
               (Nkind (N) in
                  N_Identifier | N_And_Then | N_Or_Else |
-                 N_Expression_With_Actions
+                 N_Expression_With_Actions | N_Function_Call
               and then Etype (N) = Standard_Boolean);
 
             --  Check the entity identifier of the associated tagged type (that
