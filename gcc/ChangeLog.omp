@@ -1,3 +1,15 @@
+2020-07-16  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline (eff23b7961f):
+
+	* config/gcn/gcn-hsa.h (DBX_REGISTER_NUMBER): New macro.
+	* config/gcn/gcn-protos.h (gcn_dwarf_register_number): New prototype.
+	* config/gcn/gcn.c (gcn_expand_prologue): Add RTX_FRAME_RELATED_P
+	and REG_FRAME_RELATED_EXPR to stack and frame pointer adjustments.
+	(gcn_dwarf_register_number): New function.
+	(gcn_dwarf_register_span): New function.
+	(TARGET_DWARF_REGISTER_SPAN): New hook macro.
+
 2020-07-15  Kwok Cheung Yeung  <kcy@codesourcery.com>
 	    Andrew Stubbs   <ams@codesourcery.com>
 
