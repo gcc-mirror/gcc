@@ -1,3 +1,10 @@
+2020-06-26  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gfortran.dg/gomp/combined-if.f90: Adjust expected number
+	of matches depending on whether nvptx offloading is supported.
+	* lib/target-supports.exp
+	(check_effective_target_offload_nvptx): New.
+
 2020-06-25  Tobias Burnus  <tobias@codesourcery.com>
 	    Kwok Cheung Yeung  <kcy@codesourery.com>
 

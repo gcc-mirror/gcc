@@ -9754,6 +9754,14 @@ proc check_effective_target_vect_max_reduc { } {
     return 0
 }
 
+# Return 1 if the compiler has been configured with nvptx offloading.
+
+proc check_effective_target_offload_nvptx { } {
+    return [check_no_compiler_messages offload_nvptx assembly {
+	int main () {return 0;}
+    } "-foffload=nvptx-none" ]
+}
+
 # Return 1 if the compiler has been configured with hsa offloading.
 
 proc check_effective_target_offload_hsa { } {
@@ -9762,7 +9770,7 @@ proc check_effective_target_offload_hsa { } {
     } "-foffload=hsa" ]
 }
 
-# Return 1 if the compiler has been configured with hsa offloading.
+# Return 1 if the compiler has been configured with gcn offloading.
 
 proc check_effective_target_offload_gcn { } {
     return [check_no_compiler_messages offload_gcn assembly {
