@@ -1,3 +1,65 @@
+2020-06-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91104
+	* g++.dg/cpp1y/lambda-generic-variadic21.C: New test.
+
+2020-06-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95828
+	* gfortran.dg/pr95828.f90: New file.
+
+2020-06-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95826
+	* gfortran.dg/pr95826.f90: New file.
+
+2020-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/95250
+	* gdc.dg/pr95250.d: New test.
+
+2020-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/95173
+	* gdc.dg/pr95173.d: New test.
+
+2020-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/init1.d: New test.
+
+2020-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/asm1.d: Don't use deprecated asm syntax.
+	* gdc.dg/compilable.d: Add public to selective import.
+	* gdc.dg/lto/ltotests_0.d: Explicitly catch Throwable.
+	* gdc.dg/runnable.d: Remove empty statement.
+
+2020-06-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/95837
+	* gfortran.dg/char4-subscript.f90: New test.
+
+2020-06-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95839
+	* gcc.dg/vect/bb-slp-pr95839.c: New testcase.
+
+2020-06-25  Tobias Burnus  <tobias@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourery.com>
+
+	PR fortran/95869
+	* gfortran.dg/gomp/combined-if.f90 (test_target_parallel): Re-enable.
+	* gfortran.dg/gomp/pr95869.f90: New.
+
+2020-06-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gfortran.dg/gomp/combined-if.f90: New.
+
+2020-06-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95866
+	* gcc.dg/vect/bb-slp-pr95866.c: New testcase.
+
 2020-06-24  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	PR target/94954

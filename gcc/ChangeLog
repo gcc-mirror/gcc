@@ -1,3 +1,47 @@
+2020-06-25  Nick Clifton  <nickc@redhat.com>
+
+	* config/m32r/m32r.md (movsicc): Disable pattern.
+
+2020-06-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95839
+	* tree-vect-slp.c (vect_slp_analyze_bb_1): Remove premature
+	check on the number of datarefs.
+
+2020-06-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/rs6000-call.c (mma_init_builtins): Cast
+	the insn_data n_operands value to unsigned.
+
+2020-06-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_schedule_slp_instance): Always use
+	vector defs to determine insertion place.
+
+2020-06-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95874
+	* config/i386/i386.h (PTA_ICELAKE_CLIENT): Remove PTA_CLWB.
+	(PTA_ICELAKE_SERVER): Add PTA_CLWB.
+	(PTA_TIGERLAKE): Add PTA_CLWB.
+
+2020-06-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95866
+	* tree-vect-stmts.c (vectorizable_shift): Reject incompatible
+	vectorized shift operands.  For scalar shifts use lane zero
+	of a vectorized shift operand.
+
+2020-06-25  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/95745
+	PR middle-end/95830
+	* gimple-isel.cc (gimple_expand_vec_cond_exprs): Delete dead
+	SSA_NAMEs used as the first argument of a VEC_COND_EXPR.  Always
+	return 0.
+	* tree-vect-generic.c (expand_vector_condition): Remove dead
+	SSA_NAMEs used as the first argument of a VEC_COND_EXPR.
+
 2020-06-24  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	PR target/94954

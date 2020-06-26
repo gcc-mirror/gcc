@@ -1,3 +1,33 @@
+2020-06-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95828
+	* match.c (select_rank_set_tmp): Enlarge internal buffer used in
+	generating a mangled name.
+	* resolve.c (resolve_select_rank): Likewise.
+
+2020-06-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95826
+	* decl.c (gfc_match_decl_type_spec): Replace a fixed size
+	buffer by a pointer and reallocate if necessary.
+
+2020-06-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/95837
+	* resolve.c (gfc_resolve_substring_charlen): Remove
+	bogus ts.kind setting for the expression.
+
+2020-06-25  Tobias Burnus  <tobias@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourery.com>
+
+	PR fortran/95869
+	* trans-openmp.c (gfc_trans_omp_target): Use correct scoping block.
+
+2020-06-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* trans-openmp.c (gfc_split_omp_clauses): Add if clause
+	to target and simd sub-constructs.
+
 2020-06-24  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95827
