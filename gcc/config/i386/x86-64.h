@@ -59,6 +59,17 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define ASM_OUTPUT_ALIGNED_DECL_COMMON(FILE, DECL, NAME, SIZE, ALIGN)		\
   x86_elf_aligned_decl_common (FILE, DECL, NAME, SIZE, ALIGN);
 
+#undef  ASM_OUTPUT_ALIGNED_DECL_LOCAL
+#define ASM_OUTPUT_ALIGNED_DECL_LOCAL(FILE, DECL, NAME, SIZE, ALIGN)  \
+  do								      \
+    {								      \
+      fprintf ((FILE), "%s", LOCAL_ASM_OP);			      \
+      assemble_name ((FILE), (NAME));				      \
+      fprintf ((FILE), "\n");					      \
+      ASM_OUTPUT_ALIGNED_DECL_COMMON (FILE, DECL, NAME, SIZE, ALIGN); \
+    }								      \
+  while (0)
+
 /* This is used to align code labels according to Intel recommendations.  */
 
 #define SUBALIGN_LOG 3
