@@ -4251,8 +4251,15 @@ vect_schedule_slp_instance (vec_info *vinfo,
       si = gsi_for_stmt (last_stmt_info->stmt);
     }
   else if (SLP_TREE_CHILDREN (node).is_empty ())
-    /* This happens for reduction PHIs.  */
-    si = gsi_for_stmt (vect_find_last_scalar_stmt_in_slp (node)->stmt);
+    {
+      /* This happens for reduction and induction PHIs where we do not use the
+	 insertion iterator.  */
+      gcc_assert (STMT_VINFO_TYPE (SLP_TREE_REPRESENTATIVE (node))
+		  == cycle_phi_info_type
+		  || (STMT_VINFO_TYPE (SLP_TREE_REPRESENTATIVE (node))
+		      == induc_vec_info_type));
+      si = gsi_none ();
+    }
   else
     {
       /* Emit other stmts after the children vectorized defs which is
@@ -4261,6 +4268,20 @@ vect_schedule_slp_instance (vec_info *vinfo,
       FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
 	if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
 	  {
+	    /* For fold-left reductions we are retaining the scalar
+	       reduction PHI but we still have SLP_TREE_NUM_VEC_STMTS
+	       set so the representation isn't perfect.  Resort to the
+	       last scalar def here.  */
+	    if (SLP_TREE_VEC_STMTS (child).is_empty ())
+	      {
+		gcc_assert (STMT_VINFO_TYPE (SLP_TREE_REPRESENTATIVE (child))
+			    == cycle_phi_info_type);
+		gphi *phi = as_a <gphi *>
+			      (vect_find_last_scalar_stmt_in_slp (child)->stmt);
+		if (!last_stmt
+		    || vect_stmt_dominates_stmt_p (last_stmt, phi))
+		  last_stmt = phi;
+	      }
 	    /* We are emitting all vectorized stmts in the same place and
 	       the last one is the last.
 	       ???  Unless we have a load permutation applied and that
