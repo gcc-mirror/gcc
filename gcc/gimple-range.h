@@ -25,6 +25,67 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "range.h"
 #include "range-op.h"
+#include "gimple-range-gori.h"
+#include "gimple-range-cache.h"
+
+// This is the basic range generator interface.
+//
+// This base class provides all the API entry points, but only provides
+// functionality at the statement level.  Ie, it can calculate ranges on
+// statements, but does no additonal lookup.
+//
+// All the range_of_* methods will return a range if the types is
+// supported by the range engine.  It may be the full range for the
+// type, AKA varying_p or it may be a refined range.  If the range
+// type is not supported, then false is returned.  Non-statement
+// related methods return whatever the current global value is.
+
+
+class gimple_ranger
+{
+public:
+  virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
+  virtual bool range_of_expr (irange &r, tree name, gimple *stmt = NULL);
+  virtual void range_on_edge (irange &r, edge e, tree name);
+  virtual void range_on_entry (irange &r, basic_block bb, tree name);
+  virtual void range_on_exit (irange &r, basic_block bb, tree name);
+  void export_global_ranges ();
+  void dump (FILE *f);
+protected:
+  bool calc_stmt (irange &r, gimple *s, tree name = NULL_TREE);
+  bool range_of_range_op (irange &r, gimple *s);
+  bool range_of_call (irange &r, gcall *call);
+  bool range_of_cond_expr (irange &r, gassign* cond);
+  ranger_cache m_cache;
+private:
+  bool range_of_phi (irange &r, gphi *phi);
+  bool range_of_non_trivial_assignment (irange &r, gimple *s);
+  bool range_of_builtin_call (irange &r, gcall *call);
+  void range_of_builtin_ubsan_call (irange &r, gcall *call, tree_code code);
+};
+
+
+// A global ranger that uses SCEV/loop (if available) to refine PHI results.
+
+class loop_ranger : public gimple_ranger
+{
+public:
+  loop_ranger ();
+  ~loop_ranger ();
+  virtual void range_on_edge (irange &r, edge e, tree name);
+  virtual bool range_of_stmt (irange &r, gimple *stmt, tree name = NULL_TREE);
+
+private:
+  typedef gimple_ranger super;
+  bool range_with_loop_info (irange &r, tree name);
+  void range_of_ssa_name_with_loop_info (irange &, tree, class loop *,
+					 gphi *);
+
+  class vr_values *m_vr_values;
+};
+
+// Calculate a basic range for a tree expression.
+extern bool get_tree_range (irange &r, tree expr);
 
 // If BB ends with a range generating stmt, return its GSI.
 extern gimple_stmt_iterator gsi_outgoing_range_stmt (basic_block bb);
@@ -39,17 +100,17 @@ extern gimple *gimple_outgoing_edge_range_p (irange &r, edge e);
 extern tree gimple_range_operand1 (const gimple *s);
 extern tree gimple_range_operand2 (const gimple *s);
 extern tree gimple_range_base_of_assignment (const gimple *s);
-extern bool gimple_range_fold (const gimple *s, irange &res,
+extern bool gimple_range_fold (irange &res, const gimple *s,
 			       const irange &r1);
-extern bool gimple_range_fold (const gimple *s, irange &res,
+extern bool gimple_range_fold (irange &res, const gimple *s,
 			       const irange &r1,
 			       const irange &r2);
-extern bool gimple_range_calc_op1 (const gimple *s, irange &r,
+extern bool gimple_range_calc_op1 (irange &r, const gimple *s,
 				   const irange &lhs_range);
-extern bool gimple_range_calc_op1 (const gimple *s, irange &r,
+extern bool gimple_range_calc_op1 (irange &r, const gimple *s,
 				   const irange &lhs_range,
 				   const irange &op2_range);
-extern bool gimple_range_calc_op2 (const gimple *s, irange &r,
+extern bool gimple_range_calc_op2 (irange &r, const gimple *s,
 				   const irange &lhs_range,
 				   const irange &op1_range);
 

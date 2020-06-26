@@ -42,12 +42,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "vr-values.h"
 #include "gimple-ssa-evrp-analyze.h"
-#include "gimple-ranger.h"
+#include "gimple-range.h"
 
-class rvrp_ranger : public trace_ranger
+class rvrp_ranger : public range_store
 {
 public:
-  rvrp_ranger () : trace_ranger (), range_pool ("rvrp value range pool") { }
+  rvrp_ranger () : range_pool ("rvrp value range pool") { }
   ~rvrp_ranger ()
   {
     range_pool.release ();
@@ -58,10 +58,15 @@ public:
 						    gimple *stmt) OVERRIDE
   {
     widest_irange r;
-    if (range_of_expr (r, const_cast<tree> (expr), stmt))
+    if (ranger.range_of_expr (r, const_cast<tree> (expr), stmt))
       return new (range_pool.allocate ()) value_range_equiv (r);
     return new (range_pool.allocate ()) value_range_equiv (TREE_TYPE (expr));
   }
+  virtual bool range_of_expr (irange &r, tree expr, gimple *stmt = NULL)
+  {
+    return ranger.range_of_expr (r, expr, stmt);
+  }
+  gimple_ranger ranger;
 private:
   object_allocator<value_range_equiv> range_pool;
 };
@@ -76,7 +81,7 @@ public:
   {
     widest_irange r;
     tree singleton;
-    if (ranger.range_of_expr (r, op, stmt) && r.singleton_p (&singleton)
+    if (ranger.ranger.range_of_expr (r, op, stmt) && r.singleton_p (&singleton)
 	&& allow_il_changes)
       return singleton;
     return NULL;
@@ -88,7 +93,7 @@ public:
       return false;
 
     widest_irange r;
-    if (ranger.range_of_stmt (r, cond) && r.singleton_p ())
+    if (ranger.ranger.range_of_stmt (r, cond) && r.singleton_p ())
       {
 	if (allow_il_changes)
 	  {

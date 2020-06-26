@@ -27,8 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "ssa.h"
 #include "gimple-pretty-print.h"
-#include "gimple-range-stmt.h"
-#include "gimple-range-cache.h"
+#include "gimple-range.h"
 
 // During contructor, allocate the vector of ssa_names.
 
@@ -461,5 +460,223 @@ ssa_global_cache::dump (FILE *f)
       }
   fputc ('\n', f);
 }
+
+// --------------------------------------------------------------------------
+
+ranger_cache::ranger_cache ()
+{
+  m_workback.create (0);
+  m_workback.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  m_update_list.create (0);
+  m_update_list.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  m_update_list.truncate (0);
+}
+
+ranger_cache::~ranger_cache ()
+{
+  m_workback.release ();
+  m_update_list.release ();
+}
+
+
+//  Provide lookup for the gori-computes class to access the best known range
+//  of an ssa_name in any given basic block.  NOte this does no additonal
+//  lookups, just accesses the data that is already known.
+
+void
+ranger_cache::ssa_range_in_bb (irange &r, tree name, basic_block bb)
+{
+  gimple *s = SSA_NAME_DEF_STMT (name);
+  basic_block def_bb = ((s && gimple_bb (s)) ? gimple_bb (s) :
+					       ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  if (bb == def_bb || !m_on_entry.get_bb_range (r, name, bb))
+    {
+      // Try to pick up any known value first.
+      if (!m_globals.get_global_range (r, name))
+	r = gimple_range_global (name);
+    }
+
+  // Check if pointers have any non-null dereferences.  Non-call
+  // exceptions mean we could throw in the middle of he block, so just
+  // punt for now on those.
+  if (r.varying_p () && m_non_null.non_null_deref_p (name, bb) &&
+      !cfun->can_throw_non_call_exceptions)
+    r = range_nonzero (TREE_TYPE (name));
+}
+
+
+// Return a static range for NAME on entry to basic block BB in R.  If
+// calc is true, fill any cache entries required between BB and the
+// def block for NAME.  Otherwise, return false if the cache is empty.
+
+bool
+ranger_cache::block_range (irange &r, basic_block bb, tree name, bool calc)
+{
+  gcc_checking_assert (gimple_range_ssa_p (name));
+
+  if (calc)
+    {
+      gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+      basic_block def_bb = NULL;
+      if (def_stmt)
+	def_bb = gimple_bb (def_stmt);;
+      if (!def_bb)
+	{
+	  // If we get to the entry block, this better be a default def
+	  // or range_on_entry was called for a block not dominated by
+	  // the def.  This would be a bug.
+	  gcc_checking_assert (SSA_NAME_IS_DEFAULT_DEF (name));
+	  def_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
+	}
+
+      // There is no range on entry for the defintion block.
+      if (def_bb == bb)
+	return false;
+
+      // Otherwise, go figure out what is known in predecessor blocks.
+      fill_block_cache (name, bb, def_bb);
+      gcc_checking_assert (m_on_entry.bb_range_p (name, bb));
+    }
+  return m_on_entry.get_bb_range (r, name, bb);
+}
+
+
+void
+ranger_cache::add_to_update (basic_block bb)
+{
+  if (!m_update_list.contains (bb))
+    m_update_list.quick_push (bb);
+}
+
+#define DEBUG_CACHE (0 && dump_file)
+
+// If there is anything in the iterative update_list, continue
+// processing NAME until the list of blocks is empty.
+
+void
+ranger_cache::iterative_cache_update (tree name)
+{
+  basic_block bb;
+  edge_iterator ei;
+  edge e;
+  widest_irange new_range;
+  widest_irange current_range;
+  widest_irange e_range;
+
+  // Process each block by seeing if it's calculated range on entry is
+  // the same as it's cached value. IF there is a difference, update
+  // the cache to reflect the new value, and check to see if any
+  // successors have cache entries which may need to be checked for
+  // updates.
+
+  while (m_update_list.length () > 0)
+    {
+      bb = m_update_list.pop ();
+if (DEBUG_CACHE) fprintf (dump_file, "FWD visiting block %d\n", bb->index);
+
+      gcc_assert (m_on_entry.get_bb_range (current_range, name, bb));
+      // Calculate the "new" range on entry by unioning the pred edges..
+      new_range.set_undefined ();
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	{
+	  // Get whatever range we can for this edge
+	  if (!outgoing_edge_range_p (e_range, e, name))
+	    ssa_range_in_bb (e_range, name, e->src);
+	  new_range.union_ (e_range);
+	  if (new_range.varying_p ())
+	    break;
+	}
+      // If the range on entry has changed, update it.
+      if (new_range != current_range)
+	{
+if (DEBUG_CACHE) { fprintf (dump_file, "updating range from/to "); current_range.dump (dump_file); new_range.dump (dump_file); }
+	  m_on_entry.set_bb_range (name, bb, new_range);
+	  // Mark each successor that has a range to re-check it's range
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    if (m_on_entry.bb_range_p (name, e->dest))
+	      add_to_update (e->dest);
+	}
+    }
+if (DEBUG_CACHE) fprintf (dump_file, "DONE visiting blocks \n\n");
+}
+
+// Make sure that the range-on-entry cache for NAME is set for block BB.
+// Work back thourgh the CFG to DEF_BB ensuring the range is calculated
+// on the block/edges leading back to that point.
+
+void
+ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
+{
+  edge_iterator ei;
+  edge e;
+  widest_irange block_result;
+  widest_irange undefined;
+
+  // At this point we shouldnt be looking at the def, entry or exit block.
+  gcc_checking_assert (bb != def_bb && bb != ENTRY_BLOCK_PTR_FOR_FN (cfun) &&
+		       bb != EXIT_BLOCK_PTR_FOR_FN (cfun));
+
+  // If the block cache is set, then we've already visited this block.
+  if (m_on_entry.bb_range_p (name, bb))
+    return;
+
+  // Visit each block back to the DEF.  Initialize each one to UNDEFINED.
+  // m_visited at the end will contain all the blocks that we needed to set
+  // the range_on_entry cache for.
+  m_workback.truncate (0);
+  m_workback.quick_push (bb);
+  undefined.set_undefined ();
+  m_on_entry.set_bb_range (name, bb, undefined);
+  gcc_checking_assert (m_update_list.length () == 0);
+
+if (DEBUG_CACHE) { fprintf (dump_file, "\n"); print_generic_expr (dump_file, name, TDF_SLIM); fprintf (dump_file, " : "); }
+
+  while (m_workback.length () > 0)
+    {
+      basic_block node = m_workback.pop ();
+if (DEBUG_CACHE)  fprintf (dump_file, "BACK visiting block %d\n", node->index);
+
+      FOR_EACH_EDGE (e, ei, node->preds)
+        {
+	  basic_block pred = e->src;
+	  widest_irange r;
+	  // If the pred block is the def block add this BB to update list.
+	  if (pred == def_bb)
+	    {
+	      add_to_update (node);
+	      continue;
+	    }
+
+	  // If the pred is entry but NOT def, then it is used before
+	  // defined, it'll get set to []. and no need to update it.
+	  if (pred == ENTRY_BLOCK_PTR_FOR_FN (cfun))
+	    continue;
+
+	  // Regardless of whther we have visited pred or not, if the pred has
+	  // a non-null reference, revisit this block.
+	  if (m_non_null.non_null_deref_p (name, pred))
+	    add_to_update (node);
+
+	  // If the pred block already has a range, or if it can contribute
+	  // something new. Ie, the edge generates a range of some sort.
+	  if (m_on_entry.get_bb_range (r, name, pred))
+	    {
+	      if (!r.undefined_p () || has_edge_range_p (e, name))
+		add_to_update (node);
+	      continue;
+	    }
+
+	  // If the pred hasn't been visited (has no range), add it to
+	  // the list.
+	  gcc_checking_assert (!m_on_entry.bb_range_p (name, pred));
+	  m_on_entry.set_bb_range (name, pred, undefined);
+	  m_workback.quick_push (pred);
+	}
+    }
+
+  iterative_cache_update (name);
+}
+
+
 
 

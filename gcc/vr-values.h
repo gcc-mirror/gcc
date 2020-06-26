@@ -21,7 +21,16 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_VR_VALUES_H
 
 #include "value-range-equiv.h"
-#include "gimple-range-gori.h"
+#include "gimple-range.h"
+
+// Generic object to return a range for an SSA.
+class range_store
+{
+public:
+  virtual bool range_of_expr (irange &r, tree expr, gimple *stmt = NULL) = 0;
+  virtual const class value_range_equiv *get_value_range (const_tree expr,
+						      gimple *stmt = NULL) = 0;
+};
 
 class simplify_using_ranges
 {
