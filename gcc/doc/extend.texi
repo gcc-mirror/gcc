@@ -17018,6 +17018,8 @@ issues a warning.
 The following CPU names can be detected:
 
 @table @samp
+@item power10
+IBM POWER10 Server CPU.
 @item power9
 IBM POWER9 Server CPU.
 @item power8
@@ -17094,6 +17096,8 @@ CPU supports ISA 2.06 (eg, POWER7)
 CPU supports ISA 2.07 (eg, POWER8)
 @item arch_3_00
 CPU supports ISA 3.0 (eg, POWER9)
+@item arch_3_1
+CPU supports ISA 3.1 (eg, POWER10)
 @item archpmu
 CPU supports the set of compatible performance monitoring events.
 @item booke
@@ -17127,6 +17131,8 @@ CPU supports icache snooping capabilities.
 CPU supports 128-bit IEEE binary floating point instructions.
 @item isel
 CPU supports the integer select instruction.
+@item mma
+CPU supports the matrix-multiply assist instructions.
 @item mmu
 CPU has a memory management unit.
 @item notb
