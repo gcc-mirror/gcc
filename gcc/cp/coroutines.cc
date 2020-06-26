@@ -3932,6 +3932,11 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 				    NULL_TREE, LOOKUP_NORMAL, NULL,
 				    tf_warning_or_error);
 
+  /* ... but if that fails, returning an error, the later stages can't handle
+     the erroneous expression, so we reset the call as if it was absent.  */
+  if (grooaf == error_mark_node)
+    grooaf = NULL_TREE;
+
   /* Allocate the frame, this has several possibilities:
      [dcl.fct.def.coroutine] / 9 (part 1)
      The allocation function’s name is looked up in the scope of the promise
