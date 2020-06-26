@@ -1,3 +1,14 @@
+2020-06-25  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c (merge_summary): Remove function as its name
+	is misleading and doing something different.
+	(dump_one_gcov): Add ATTRIBUTE_UNUSED for 2 args. Take read summary
+	in gcov-tool.
+	* libgcov-util.c (curr_object_summary): Remove.
+	(read_gcda_file): Remove unused curr_object_summary.
+	(gcov_merge): Merge summaries.
+	* libgcov.h: Add summary argument for gcov_info struct.
+
 2020-06-24  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/95259

@@ -643,9 +643,9 @@ extern int pwait (int, int *, int);
 
 /* Like bsearch, but takes and passes on an argument like qsort_r.  */
 
-extern void *bsearch_r (register const void *, const void *,
-			size_t, register size_t,
-			register int (*)(const void *, const void *, void *),
+extern void *bsearch_r (const void *, const void *,
+			size_t, size_t,
+			int (*)(const void *, const void *, void *),
 			void *);
 
 #if defined(HAVE_DECL_ASPRINTF) && !HAVE_DECL_ASPRINTF

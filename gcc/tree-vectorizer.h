@@ -1967,7 +1967,6 @@ extern bool vectorizable_reduction (loop_vec_info, stmt_vec_info,
 				    slp_tree, slp_instance,
 				    stmt_vector_for_cost *);
 extern bool vectorizable_induction (loop_vec_info, stmt_vec_info,
-				    gimple_stmt_iterator *,
 				    gimple **, slp_tree,
 				    stmt_vector_for_cost *);
 extern bool vect_transform_reduction (loop_vec_info, stmt_vec_info,

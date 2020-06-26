@@ -12879,16 +12879,19 @@ package body Exp_Ch4 is
    begin
       Remove_Side_Effects (Lop);
 
-      Alt := Last (Alternatives (N));
+      Alt := First (Alternatives (N));
       Res := Make_Cond (Alt);
+      Next (Alt);
 
-      Prev (Alt);
+      --  We use left associativity as in the equivalent boolean case. This
+      --  kind of canonicalization helps the optimizer of the code generator.
+
       while Present (Alt) loop
          Res :=
            Make_Or_Else (Sloc (Alt),
-             Left_Opnd  => Make_Cond (Alt),
-             Right_Opnd => Res);
-         Prev (Alt);
+             Left_Opnd  => Res,
+             Right_Opnd => Make_Cond (Alt));
+         Next (Alt);
       end loop;
 
       Rewrite (N, Res);

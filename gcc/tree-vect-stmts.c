@@ -10549,7 +10549,7 @@ vect_analyze_stmt (vec_info *vinfo,
 	  || vectorizable_reduction (as_a <loop_vec_info> (vinfo), stmt_info,
 				     node, node_instance, cost_vec)
 	  || vectorizable_induction (as_a <loop_vec_info> (vinfo), stmt_info,
-				     NULL, NULL, node, cost_vec)
+				     NULL, node, cost_vec)
 	  || vectorizable_shift (vinfo, stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_condition (vinfo, stmt_info,
 				     NULL, NULL, node, cost_vec)
@@ -10631,7 +10631,7 @@ vect_transform_stmt (vec_info *vinfo,
 
     case induc_vec_info_type:
       done = vectorizable_induction (as_a <loop_vec_info> (vinfo),
-				     stmt_info, gsi, &vec_stmt, slp_node,
+				     stmt_info, &vec_stmt, slp_node,
 				     NULL);
       gcc_assert (done);
       break;
