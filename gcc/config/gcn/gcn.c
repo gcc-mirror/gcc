@@ -2795,7 +2795,11 @@ gcn_expand_prologue ()
   if (!cfun || !cfun->machine || cfun->machine->normal_function)
     {
       rtx sp = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
+      rtx sp_hi = gcn_operand_part (Pmode, sp, 1);
+      rtx sp_lo = gcn_operand_part (Pmode, sp, 0);
       rtx fp = gen_rtx_REG (Pmode, HARD_FRAME_POINTER_REGNUM);
+      rtx fp_hi = gcn_operand_part (Pmode, fp, 1);
+      rtx fp_lo = gcn_operand_part (Pmode, fp, 0);
 
       start_sequence ();
 
@@ -2812,14 +2816,40 @@ gcn_expand_prologue ()
 	+ offsets->callee_saves
 	+ offsets->local_vars + offsets->outgoing_args_size;
       if (sp_adjust > 0)
-	emit_insn (gen_adddi3_scc (sp, sp, gen_int_mode (sp_adjust, DImode)));
+	{
+	  /* Adding RTX_FRAME_RELATED_P effectively disables spliting, so
+	     we use split add explictly, and specify the DImode add in
+	     the note.  */
+	  rtx scc = gen_rtx_REG (BImode, SCC_REG);
+	  rtx adjustment = gen_int_mode (sp_adjust, SImode);
+	  rtx insn = emit_insn (gen_addsi3_scalar_carry (sp_lo, sp_lo,
+							 adjustment, scc));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  add_reg_note (insn, REG_FRAME_RELATED_EXPR,
+			gen_rtx_SET (sp,
+				     gen_rtx_PLUS (DImode, sp, adjustment)));
+	  emit_insn (gen_addcsi3_scalar_zero (sp_hi, sp_hi, scc));
+	}
 
       if (offsets->need_frame_pointer)
-	emit_insn (gen_adddi3_scc (fp, sp,
-				   gen_int_mode
-				   (-(offsets->local_vars +
-				      offsets->outgoing_args_size),
-				    DImode)));
+	{
+	  /* Adding RTX_FRAME_RELATED_P effectively disables spliting, so
+	     we use split add explictly, and specify the DImode add in
+	     the note.  */
+	  rtx scc = gen_rtx_REG (BImode, SCC_REG);
+	  int fp_adjust = -(offsets->local_vars + offsets->outgoing_args_size);
+	  rtx adjustment = gen_int_mode (fp_adjust, SImode);
+	  rtx insn = emit_insn (gen_addsi3_scalar_carry(fp_lo, sp_lo,
+							adjustment, scc));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  add_reg_note (insn, REG_FRAME_RELATED_EXPR,
+			gen_rtx_SET (fp,
+				     gen_rtx_PLUS (DImode, sp, adjustment)));
+	  emit_insn (gen_addcsi3_scalar (fp_hi, sp_hi,
+					 (fp_adjust < 0 ? GEN_INT (-1)
+					  : const0_rtx),
+					 scc, scc));
+	}
 
       rtx_insn *seq = get_insns ();
       end_sequence ();
@@ -2865,6 +2895,8 @@ gcn_expand_prologue ()
 
       /* Set up frame pointer and stack pointer.  */
       rtx sp = gen_rtx_REG (DImode, STACK_POINTER_REGNUM);
+      rtx sp_hi = simplify_gen_subreg (SImode, sp, DImode, 4);
+      rtx sp_lo = simplify_gen_subreg (SImode, sp, DImode, 0);
       rtx fp = gen_rtx_REG (DImode, HARD_FRAME_POINTER_REGNUM);
       rtx fp_hi = simplify_gen_subreg (SImode, fp, DImode, 4);
       rtx fp_lo = simplify_gen_subreg (SImode, fp, DImode, 0);
@@ -2880,10 +2912,28 @@ gcn_expand_prologue ()
       emit_insn (gen_addsi3_scalar_carry (fp_lo, fp_lo, wave_offset, scc));
       emit_insn (gen_addcsi3_scalar_zero (fp_hi, fp_hi, scc));
 
+      /* Adding RTX_FRAME_RELATED_P effectively disables spliting, so we use
+	 split add explictly, and specify the DImode add in the note.
+         The DWARF info expects that the callee-save data is in the frame,
+         even though it isn't (because this is the entry point), so we
+         make a notional adjustment to the DWARF frame offset here.  */
+      rtx dbg_adjustment = gen_int_mode (sp_adjust + offsets->callee_saves,
+					 DImode);
+      rtx insn;
       if (sp_adjust > 0)
-	emit_insn (gen_adddi3_scc (sp, fp, gen_int_mode (sp_adjust, DImode)));
+	{
+	  rtx scc = gen_rtx_REG (BImode, SCC_REG);
+	  rtx adjustment = gen_int_mode (sp_adjust, DImode);
+	  insn = emit_insn (gen_addsi3_scalar_carry(sp_lo, fp_lo, adjustment,
+						    scc));
+	  emit_insn (gen_addcsi3_scalar_zero (sp_hi, fp_hi, scc));
+	}
       else
-	emit_move_insn (sp, fp);
+	insn = emit_move_insn (sp, fp);
+      RTX_FRAME_RELATED_P (insn) = 1;
+      add_reg_note (insn, REG_FRAME_RELATED_EXPR,
+		    gen_rtx_SET (sp, gen_rtx_PLUS (DImode, sp,
+						   dbg_adjustment)));
 
       /* Make sure the flat scratch reg doesn't get optimised away.  */
       emit_insn (gen_prologue_use (gen_rtx_REG (DImode, FLAT_SCRATCH_REG)));
@@ -6108,6 +6158,64 @@ print_operand (FILE *file, rtx x, int code)
   gcc_unreachable ();
 }
 
+/* Implement DBX_REGISTER_NUMBER macro.
+ 
+   Return the DWARF register number that corresponds to the GCC internal
+   REGNO.  */
+
+unsigned int
+gcn_dwarf_register_number (unsigned int regno)
+{
+  /* Registers defined in DWARF.  */
+  if (regno == EXEC_LO_REG)
+    return 17;
+  /* We need to use a more complex DWARF expression for this
+  else if (regno == EXEC_HI_REG)
+    return 17; */
+  else if (regno == VCC_LO_REG)
+    return 768;
+  /* We need to use a more complex DWARF expression for this
+  else if (regno == VCC_HI_REG)
+    return 768;  */
+  else if (regno == SCC_REG)
+    return 128;
+  else if (SGPR_REGNO_P (regno))
+    {
+      if (regno - FIRST_SGPR_REG < 64)
+	return (regno - FIRST_SGPR_REG + 32);
+      else
+	return (regno - FIRST_SGPR_REG + 1024);
+    }
+  else if (VGPR_REGNO_P (regno))
+    return (regno - FIRST_VGPR_REG + 2560);
+
+  /* Otherwise, there's nothing sensible to do.  */
+  return regno + 100000;
+}
+
+/* Implement TARGET_DWARF_REGISTER_SPAN.
+ 
+   DImode and Vector DImode require additional registers.  */
+
+static rtx
+gcn_dwarf_register_span (rtx rtl)
+{
+  machine_mode mode = GET_MODE (rtl);
+
+  if (VECTOR_MODE_P (mode))
+    mode = GET_MODE_INNER (mode);
+
+  if (GET_MODE_SIZE (mode) != 8)
+    return NULL_RTX;
+
+  rtx p = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
+  unsigned regno = REGNO (rtl);
+  XVECEXP (p, 0, 0) = gen_rtx_REG (SImode, regno);
+  XVECEXP (p, 0, 1) = gen_rtx_REG (SImode, regno + 1);
+
+  return p;
+}
+
 /* }}}  */
 /* {{{ TARGET hook overrides.  */
 
@@ -6156,6 +6264,8 @@ print_operand (FILE *file, rtx x, int code)
 #define TARGET_CONSTANT_ALIGNMENT gcn_constant_alignment
 #undef  TARGET_DEBUG_UNWIND_INFO
 #define TARGET_DEBUG_UNWIND_INFO gcn_debug_unwind_info
+#undef  TARGET_DWARF_REGISTER_SPAN
+#define TARGET_DWARF_REGISTER_SPAN gcn_dwarf_register_span
 #undef  TARGET_EMUTLS_VAR_INIT
 #define TARGET_EMUTLS_VAR_INIT gcn_emutls_var_init
 #undef  TARGET_EXPAND_BUILTIN
