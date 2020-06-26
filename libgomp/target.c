@@ -357,10 +357,12 @@ gomp_map_vars_existing (struct gomp_device_descr *devicep,
 			splay_tree_key newn, struct target_var_desc *tgt_var,
 			unsigned char kind, struct gomp_coalesce_buf *cbuf)
 {
+  assert (kind != GOMP_MAP_ATTACH);
+
   tgt_var->key = oldn;
   tgt_var->copy_from = GOMP_MAP_COPY_FROM_P (kind);
   tgt_var->always_copy_from = GOMP_MAP_ALWAYS_FROM_P (kind);
-  tgt_var->do_detach = kind == GOMP_MAP_ATTACH;
+  tgt_var->do_detach = false;
   tgt_var->offset = newn->host_start - oldn->host_start;
   tgt_var->length = newn->host_end - newn->host_start;
 
@@ -815,8 +817,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	  continue;
 	}
       cur_node.host_start = (uintptr_t) hostaddrs[i];
-      if (!GOMP_MAP_POINTER_P (kind & typemask)
-	  && (kind & typemask) != GOMP_MAP_ATTACH)
+      if (!GOMP_MAP_POINTER_P (kind & typemask))
 	cur_node.host_end = cur_node.host_start + sizes[i];
       else
 	cur_node.host_end = cur_node.host_start + sizeof (void *);
