@@ -1,3 +1,48 @@
+2020-06-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95655
+	* config/i386/gnu-user.h (SUBTARGET_FRAME_POINTER_REQUIRED):
+	Removed.
+	* config/i386/i386.c (ix86_frame_pointer_required): Update
+	comments.
+
+2020-06-26  Yichao Yu  <yyc1992@gmail.com>
+
+	* multiple_target.c (redirect_to_specific_clone): Fix tests
+	to check individual attribute rather than an attribute list.
+
+2020-06-26  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.c (cpu_is_info) <power10>: New.
+	* doc/extend.texi (PowerPC Built-in Functions): Document power10,
+	arch_3_1 and mma.
+
+2020-06-26  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi (C Dialect Options): Adjust -std default for C++.
+	* doc/standards.texi (C Language): Correct the default dialect.
+	(C++ Language): Update the default for C++ to gnu++17.
+
+2020-06-26  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* tree-ssa-reassoc.c (dump_range_entry): New function.
+	(debug_range_entry): New debug function.
+	(update_range_test): Invoke dump_range_entry for dumping.
+	(optimize_range_tests_to_bit_test): Merge the entry test in the
+	bit test when possible and lower the profitability threshold.
+
+2020-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95897
+	* tree-vectorizer.h (vectorizable_induction): Remove
+	unused gimple_stmt_iterator * parameter.
+	* tree-vect-loop.c (vectorizable_induction): Likewise.
+	(vect_analyze_loop_operations): Adjust.
+	* tree-vect-stmts.c (vect_analyze_stmt): Likewise.
+	(vect_transform_stmt): Likewise.
+	* tree-vect-slp.c (vect_schedule_slp_instance): Adjust
+	for fold-left reductions, clarify existing reduction case.
+
 2020-06-25  Nick Clifton  <nickc@redhat.com>
 
 	* config/m32r/m32r.md (movsicc): Disable pattern.

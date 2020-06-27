@@ -1,3 +1,69 @@
+2020-06-26  Yichao Yu  <yyc1992@gmail.com>
+
+	* gcc.target/i386/pr95778-1.c: New test.
+	* gcc.target/i386/pr95778-2.c: New test.
+
+2020-06-26  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/cpu-builtin-1.c: Add tests for power10, arch_3_1
+	and mma.
+
+2020-06-26  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/torture/vector-subscript-3.c: In C++17, define away
+	the keyword register.
+	* g++.dg/cpp1z/attributes-enum-1a.C: Only run pre-C++17.
+	* g++.dg/cpp1z/fold7a.C: Likewise.
+	* g++.dg/cpp1z/nontype3a.C: Likewise.
+	* g++.dg/cpp1z/utf8-2a.C: Likewise.
+	* g++.dg/parse/error11.C: Update expected diagnostics for C++17.
+	* g++.dg/torture/pr34850.C: Add -Wno-attribute-warning.
+	* g++.dg/torture/pr49394.C: In C++17, use noexcept(false).
+	* g++.dg/torture/pr82154.C: Use -std=c++14.
+	* lib/target-supports.exp: Set to C++17.
+	* obj-c++.dg/try-catch-9.mm: Use -Wno-register.
+
+2020-06-26  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gfortran.dg/gomp/combined-if.f90: Adjust expected number
+	of matches depending on whether nvptx offloading is supported.
+	* lib/target-supports.exp
+	(check_effective_target_offload_nvptx): New.
+
+2020-06-26  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gnat.dg/opt86_pkg.ads: New helper.
+	* gnat.dg/opt86a.adb: New test.
+	* gnat.dg/opt86b.adb: Likewise.
+	* gnat.dg/opt86c.adb: Likewise.
+
+2020-06-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/pr95250.d: Updated.
+
+2020-06-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95519
+	* g++.dg/coroutines/torture/pr95519-00-return_void.C: New test.
+	* g++.dg/coroutines/torture/pr95519-01-initial-suspend.C: New test.
+	* g++.dg/coroutines/torture/pr95519-02-final_suspend.C: New test.
+	* g++.dg/coroutines/torture/pr95519-03-return-value.C: New test.
+	* g++.dg/coroutines/torture/pr95519-04-yield-value.C: New test.
+	* g++.dg/coroutines/torture/pr95519-05-gro.C: New test.
+	* g++.dg/coroutines/torture/pr95519-06-grooaf.C: New test.
+	* g++.dg/coroutines/torture/pr95519-07-unhandled-exception.C: New test.
+
+2020-06-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/coro1-allocators.h (BAD_GROOAF_STATIC):
+	New.
+	* g++.dg/coroutines/coro-bad-grooaf-00-static.C: New test.
+
+2020-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95897
+	* gcc.dg/vect/pr95897.c: New testcase.
+
 2020-06-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91104

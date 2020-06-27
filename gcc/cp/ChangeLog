@@ -1,3 +1,21 @@
+2020-06-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95519
+	* coroutines.cc (struct coroutine_info):Add a field
+	to hold computed p.return_void expressions.
+	(coro_build_promise_expression): New.
+	(get_coroutine_return_void_expr): New.
+	(finish_co_yield_expr): Build the promise expression
+	using coro_build_promise_expression.
+	(finish_co_return_stmt): Likewise.
+	(build_init_or_final_await): Likewise.
+	(morph_fn_to_coro): Likewise, for several cases.
+
+2020-06-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (morph_fn_to_coro): Handle error
+	returns in building g-r-o-o-a-f expressions.
+
 2020-06-24  Nicholas Krause  <xerofoify@gmail.com>
 
 	PR c++/95672

@@ -1,3 +1,8 @@
+2020-06-26  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* exp_ch4.adb (Expand_Set_Membership): Expand the membership test
+	using left associativity instead of right associativity.
+
 2020-06-23  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	* gcc-interface/utils2.c (build_binary_op): Remove space.
