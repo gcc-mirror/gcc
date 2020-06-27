@@ -206,6 +206,8 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
   fd->tiling = NULL_TREE;
   fd->collapse = 1;
   fd->ordered = 0;
+  fd->first_nonrect = -1;
+  fd->last_nonrect = -1;
   fd->sched_kind = OMP_CLAUSE_SCHEDULE_STATIC;
   fd->sched_modifiers = 0;
   fd->chunk_size = NULL_TREE;
@@ -372,18 +374,24 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
       loop->m1 = NULL_TREE;
       loop->m2 = NULL_TREE;
       loop->outer = 0;
+      loop->non_rect_referenced = false;
       if (TREE_CODE (loop->n1) == TREE_VEC)
 	{
 	  for (int j = i - 1; j >= 0; j--)
 	    if (TREE_VEC_ELT (loop->n1, 0) == gimple_omp_for_index (for_stmt, j))
 	      {
 		loop->outer = i - j;
+		if (loops != NULL)
+		  loops[j].non_rect_referenced = true;
+		if (fd->first_nonrect == -1 || fd->first_nonrect > j)
+		  fd->first_nonrect = j;
 		break;
 	      }
 	  gcc_assert (loop->outer);
 	  loop->m1 = TREE_VEC_ELT (loop->n1, 1);
 	  loop->n1 = TREE_VEC_ELT (loop->n1, 2);
 	  fd->non_rect = true;
+	  fd->last_nonrect = i;
 	}
 
       loop->cond_code = gimple_omp_for_cond (for_stmt, i);
@@ -401,12 +409,17 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 	      if (TREE_VEC_ELT (loop->n2, 0) == gimple_omp_for_index (for_stmt, j))
 		{
 		  loop->outer = i - j;
+		  if (loops != NULL)
+		    loops[j].non_rect_referenced = true;
+		  if (fd->first_nonrect == -1 || fd->first_nonrect > j)
+		    fd->first_nonrect = j;
 		  break;
 		}
 	  gcc_assert (loop->outer);
 	  loop->m2 = TREE_VEC_ELT (loop->n2, 1);
 	  loop->n2 = TREE_VEC_ELT (loop->n2, 2);
 	  fd->non_rect = true;
+	  fd->last_nonrect = i;
 	}
 
       t = gimple_omp_for_incr (for_stmt, i);

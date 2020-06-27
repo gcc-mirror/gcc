@@ -1,6 +1,28 @@
 2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2020-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-general.h (struct omp_for_data_loop): Add non_rect_referenced
+	member, move outer member.
+	(struct omp_for_data): Add first_nonrect and last_nonrect members.
+	* omp-general.c (omp_extract_for_data): Initialize first_nonrect,
+	last_nonrect and non_rect_referenced members.
+	* omp-expand.c (expand_omp_for_init_counts): Handle non-rectangular
+	loops.
+	(expand_omp_for_init_vars): Add nonrect_bounds parameter.  Handle
+	non-rectangular loops.
+	(extract_omp_for_update_vars): Likewise.
+	(expand_omp_for_generic, expand_omp_for_static_nochunk,
+	expand_omp_for_static_chunk, expand_omp_simd,
+	expand_omp_taskloop_for_outer, expand_omp_taskloop_for_inner): Adjust
+	expand_omp_for_init_vars and extract_omp_for_update_vars callers.
+	(expand_omp_for): Don't sorry on non-composite worksharing-loop or
+	distribute.
+
+2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2020-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (lower_omp_for): Fix two pastos.
