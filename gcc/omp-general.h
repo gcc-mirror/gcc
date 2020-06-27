@@ -47,13 +47,16 @@ enum oacc_loop_flags {
    or for non-rectangular loops:
    for (V = M1 * W + N1; V cond M2 * W + N2; V += STEP;
    where W is V of the OUTER-th loop (e.g. for OUTER 1 it is the
-   the index of the immediately surrounding loop).  */
+   the index of the immediately surrounding loop).
+   NON_RECT_REFERENCED is true for loops referenced by loops
+   with non-NULL M1 or M2.  */
 
 struct omp_for_data_loop
 {
   tree v, n1, n2, step, m1, m2;
-  int outer;
   enum tree_code cond_code;
+  int outer;
+  bool non_rect_referenced;
 };
 
 /* A structure describing the main elements of a parallel loop.  */
@@ -67,6 +70,7 @@ struct omp_for_data
   tree tiling;  /* Tiling values (if non null).  */
   int collapse;  /* Collapsed loops, 1 for a non-collapsed loop.  */
   int ordered;
+  int first_nonrect, last_nonrect;
   bool have_nowait, have_ordered, simd_schedule, have_reductemp;
   bool have_pointer_condtemp, have_scantemp, have_nonctrl_scantemp;
   bool non_rect;
