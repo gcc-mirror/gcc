@@ -1,3 +1,19 @@
+2020-06-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/95250
+	* gdc.dg/pr95250.d: New test.
+
+2020-06-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/95173
+	* gdc.dg/pr95173.d: New test.
+
 2020-06-24  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95689
