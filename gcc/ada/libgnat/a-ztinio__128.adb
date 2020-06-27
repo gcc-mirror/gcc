@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---               A D A . T E X T _ I O . I N T E G E R _ I O                --
+--      A D A . W I D E _ W I D E _ T E X T _ I O . I N T E G E R _ I O     --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -29,20 +29,26 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Text_IO.Integer_Aux;
-with System.Img_BIU; use System.Img_BIU;
-with System.Img_Int; use System.Img_Int;
-with System.Img_LLB; use System.Img_LLB;
-with System.Img_LLI; use System.Img_LLI;
-with System.Img_LLW; use System.Img_LLW;
-with System.Img_WIU; use System.Img_WIU;
-with System.Val_Int; use System.Val_Int;
-with System.Val_LLI; use System.Val_LLI;
+with Ada.Wide_Wide_Text_IO.Integer_Aux;
+with System.Img_BIU;  use System.Img_BIU;
+with System.Img_Int;  use System.Img_Int;
+with System.Img_LLB;  use System.Img_LLB;
+with System.Img_LLI;  use System.Img_LLI;
+with System.Img_LLW;  use System.Img_LLW;
+with System.Img_LLLB; use System.Img_LLLB;
+with System.Img_LLLI; use System.Img_LLLI;
+with System.Img_LLLW; use System.Img_LLLW;
+with System.Img_WIU;  use System.Img_WIU;
+with System.Val_Int;  use System.Val_Int;
+with System.Val_LLI;  use System.Val_LLI;
+with System.Val_LLLI; use System.Val_LLLI;
+with System.WCh_Con;  use System.WCh_Con;
+with System.WCh_WtS;  use System.WCh_WtS;
 
-package body Ada.Text_IO.Integer_IO is
+package body Ada.Wide_Wide_Text_IO.Integer_IO is
 
    package Aux_Int is new
-     Ada.Text_IO.Integer_Aux
+     Ada.Wide_Wide_Text_IO.Integer_Aux
        (Integer,
         Scan_Integer,
         Set_Image_Integer,
@@ -50,18 +56,31 @@ package body Ada.Text_IO.Integer_IO is
         Set_Image_Based_Integer);
 
    package Aux_LLI is new
-     Ada.Text_IO.Integer_Aux
+     Ada.Wide_Wide_Text_IO.Integer_Aux
        (Long_Long_Integer,
         Scan_Long_Long_Integer,
         Set_Image_Long_Long_Integer,
         Set_Image_Width_Long_Long_Integer,
         Set_Image_Based_Long_Long_Integer);
 
-   Need_LLI : constant Boolean := Num'Base'Size > Integer'Size;
-   --  Throughout this generic body, we distinguish between the case where type
-   --  Integer is acceptable, and where a Long_Long_Integer is needed. This
-   --  Boolean is used to test for these cases and since it is a constant, only
-   --  code for the relevant case will be included in the instance.
+   package Aux_LLLI is new
+     Ada.Wide_Wide_Text_IO.Integer_Aux
+       (Long_Long_Long_Integer,
+        Scan_Long_Long_Long_Integer,
+        Set_Image_Long_Long_Long_Integer,
+        Set_Image_Width_Long_Long_Long_Integer,
+        Set_Image_Based_Long_Long_Long_Integer);
+
+   Need_LLI  : constant Boolean := Num'Base'Size > Integer'Size;
+   Need_LLLI : constant Boolean := Num'Base'Size > Long_Long_Integer'Size;
+   --  Throughout this generic body, we distinguish between cases where type
+   --  Integer is acceptable, where type Long_Long_Integer is acceptable and
+   --  where type Long_Long_Long_Integer is needed. These boolean constants
+   --  are used to test for these cases and since they are constant, only code
+   --  for the relevant case will be included in the instance.
+
+   subtype TFT is Ada.Wide_Wide_Text_IO.File_Type;
+   --  File type required for calls to routines in Aux
 
    ---------
    -- Get --
@@ -78,10 +97,12 @@ package body Ada.Text_IO.Integer_IO is
       pragma Unsuppress (Overflow_Check);
 
    begin
-      if Need_LLI then
-         Aux_LLI.Get (File, Long_Long_Integer (Item), Width);
+      if Need_LLLI then
+         Aux_LLLI.Get (TFT (File), Long_Long_Long_Integer (Item), Width);
+      elsif Need_LLI then
+         Aux_LLI.Get (TFT (File), Long_Long_Integer (Item), Width);
       else
-         Aux_Int.Get (File, Integer (Item), Width);
+         Aux_Int.Get (TFT (File), Integer (Item), Width);
       end if;
 
    exception
@@ -93,11 +114,11 @@ package body Ada.Text_IO.Integer_IO is
       Width : Field := 0)
    is
    begin
-      Get (Current_In, Item, Width);
+      Get (Current_Input, Item, Width);
    end Get;
 
    procedure Get
-     (From : String;
+     (From : Wide_Wide_String;
       Item : out Num;
       Last : out Positive)
    is
@@ -106,11 +127,19 @@ package body Ada.Text_IO.Integer_IO is
       pragma Unsuppress (Range_Check);
       pragma Unsuppress (Overflow_Check);
 
+      S : constant String := Wide_Wide_String_To_String (From, WCEM_Upper);
+      --  String on which we do the actual conversion. Note that the method
+      --  used for wide character encoding is irrelevant, since if there is
+      --  a character outside the Standard.Character range then the call to
+      --  Aux.Gets will raise Data_Error in any case.
+
    begin
-      if Need_LLI then
-         Aux_LLI.Gets (From, Long_Long_Integer (Item), Last);
+      if Need_LLLI then
+         Aux_LLLI.Gets (S, Long_Long_Long_Integer (Item), Last);
+      elsif Need_LLI then
+         Aux_LLI.Gets (S, Long_Long_Integer (Item), Last);
       else
-         Aux_Int.Gets (From, Integer (Item), Last);
+         Aux_Int.Gets (S, Integer (Item), Last);
       end if;
 
    exception
@@ -128,10 +157,12 @@ package body Ada.Text_IO.Integer_IO is
       Base  : Number_Base := Default_Base)
    is
    begin
-      if Need_LLI then
-         Aux_LLI.Put (File, Long_Long_Integer (Item), Width, Base);
+      if Need_LLLI then
+         Aux_LLLI.Put (TFT (File), Long_Long_Long_Integer (Item), Width, Base);
+      elsif Need_LLI then
+         Aux_LLI.Put (TFT (File), Long_Long_Integer (Item), Width, Base);
       else
-         Aux_Int.Put (File, Integer (Item), Width, Base);
+         Aux_Int.Put (TFT (File), Integer (Item), Width, Base);
       end if;
    end Put;
 
@@ -141,20 +172,28 @@ package body Ada.Text_IO.Integer_IO is
       Base  : Number_Base := Default_Base)
    is
    begin
-      Put (Current_Out, Item, Width, Base);
+      Put (Current_Output, Item, Width, Base);
    end Put;
 
    procedure Put
-     (To   : out String;
+     (To   : out Wide_Wide_String;
       Item : Num;
       Base : Number_Base := Default_Base)
    is
+      S : String (To'First .. To'Last);
+
    begin
-      if Need_LLI then
-         Aux_LLI.Puts (To, Long_Long_Integer (Item), Base);
+      if Need_LLLI then
+         Aux_LLLI.Puts (S, Long_Long_Long_Integer (Item), Base);
+      elsif Need_LLI then
+         Aux_LLI.Puts (S, Long_Long_Integer (Item), Base);
       else
-         Aux_Int.Puts (To, Integer (Item), Base);
+         Aux_Int.Puts (S, Integer (Item), Base);
       end if;
+
+      for J in S'Range loop
+         To (J) := Wide_Wide_Character'Val (Character'Pos (S (J)));
+      end loop;
    end Put;
 
-end Ada.Text_IO.Integer_IO;
+end Ada.Wide_Wide_Text_IO.Integer_IO;

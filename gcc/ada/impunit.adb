@@ -146,6 +146,8 @@ package body Impunit is
     ("a-llfwti", T),  -- Ada.Long_Long_Float_Wide_Text_IO
     ("a-llitio", T),  -- Ada.Long_Long_Integer_Text_IO
     ("a-lliwti", F),  -- Ada.Long_Long_Integer_Wide_Text_IO
+    ("a-llltio", T),  -- Ada.Long_Long_Long_Integer_Text_IO
+    ("a-lllwti", F),  -- Ada.Long_Long_Long_Integer_Wide_Text_IO
     ("a-nlcefu", F),  -- Ada.Long_Complex_Elementary_Functions
     ("a-nlcoty", T),  -- Ada.Numerics.Long_Complex_Types
     ("a-nlelfu", T),  -- Ada.Numerics.Long_Elementary_Functions
@@ -502,6 +504,7 @@ package body Impunit is
     ("a-llctio", T),  -- Ada.Long_Long_Complex_Text_IO
     ("a-llfzti", T),  -- Ada.Long_Long_Float_Wide_Wide_Text_IO
     ("a-llizti", T),  -- Ada.Long_Long_Integer_Wide_Wide_Text_IO
+    ("a-lllzti", T),  -- Ada.Long_Long_Long_Integer_Wide_Wide_Text_IO
     ("a-nlcoar", T),  -- Ada.Numerics.Long_Complex_Arrays
     ("a-nllcar", T),  -- Ada.Numerics.Long_Long_Complex_Arrays
     ("a-nllrar", T),  -- Ada.Numerics.Long_Long_Real_Arrays

@@ -206,6 +206,9 @@ GNATRTL_NONTASKING_OBJS= \
   a-llitio$(objext) \
   a-lliwti$(objext) \
   a-llizti$(objext) \
+  a-llltio$(objext) \
+  a-lllwti$(objext) \
+  a-lllzti$(objext) \
   a-locale$(objext) \
   a-nbnbin$(objext) \
   a-nbnbre$(objext) \
@@ -347,7 +350,6 @@ GNATRTL_NONTASKING_OBJS= \
   a-tigeau$(objext) \
   a-tiinau$(objext) \
   a-tiinio$(objext) \
-  a-timoau$(objext) \
   a-timoio$(objext) \
   a-tiocst$(objext) \
   a-tirsfi$(objext) \
@@ -375,7 +377,6 @@ GNATRTL_NONTASKING_OBJS= \
   a-wtgeau$(objext) \
   a-wtinau$(objext) \
   a-wtinio$(objext) \
-  a-wtmoau$(objext) \
   a-wtmoio$(objext) \
   a-wttest$(objext) \
   a-wwboio$(objext) \
@@ -399,7 +400,6 @@ GNATRTL_NONTASKING_OBJS= \
   a-ztgeau$(objext) \
   a-ztinau$(objext) \
   a-ztinio$(objext) \
-  a-ztmoau$(objext) \
   a-ztmoio$(objext) \
   a-zttest$(objext) \
   a-zzboio$(objext) \
@@ -882,6 +882,12 @@ TRASYM_DWARF_UNIX_OBJS = $(TRASYM_DWARF_COMMON_OBJS) s-mmauni$(objext)
 TRASYM_DWARF_MINGW_OBJS = $(TRASYM_DWARF_COMMON_OBJS)
 
 GNATRTL_128BIT_PAIRS = \
+  a-tiinio.adb<libgnat/a-tiinio__128.adb \
+  a-timoio.adb<libgnat/a-timoio__128.adb \
+  a-wtinio.adb<libgnat/a-wtinio__128.adb \
+  a-wtmoio.adb<libgnat/a-wtmoio__128.adb \
+  a-ztinio.adb<libgnat/a-ztinio__128.adb \
+  a-ztmoio.adb<libgnat/a-ztmoio__128.adb \
   s-scaval.ads<libgnat/s-scaval__128.ads \
   s-scaval.adb<libgnat/s-scaval__128.adb
 

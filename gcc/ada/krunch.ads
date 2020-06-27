@@ -114,6 +114,9 @@
 --  we replace the prefix ada.wide_wide_text_io- by a-zt- and then
 --  the normal crunching rules are applied.
 
+--  An additional trick is used for Ada.Long_Long_Long_Integer_*_IO, where
+--  the Integer word is dropped.
+
 --  The units implementing the support of 128-bit types are crunched to 9 and
 --  System.Compare_Array_* is replaced with System.CA_* before crunching.
 

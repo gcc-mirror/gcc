@@ -73,6 +73,15 @@ begin
       Curlen := Len - 17;
       Krlen := 8;
 
+   elsif Len >= 27
+     and then Buffer (1 .. 27) = "ada-long_long_long_integer_"
+   then
+      Startloc := 3;
+      Buffer (2 .. Len - 2) := Buffer (4 .. Len);
+      Buffer (18 .. Len - 10) := Buffer (26 .. Len - 2);
+      Curlen := Len - 10;
+      Krlen := 8;
+
    elsif Len >= 4 and then Buffer (1 .. 4) = "ada-" then
       Startloc := 3;
       Buffer (2 .. Len - 2) := Buffer (4 .. Len);

@@ -149,6 +149,12 @@ package Ada.Wide_Text_IO.Generic_Aux is
       Ptr    : in out Integer);
    --  Same as above, but no indication if character is loaded
 
+   procedure Load_Integer
+     (File : File_Type;
+      Buf  : out String;
+      Ptr  : in out Natural);
+   --  Loads a possibly signed integer literal value
+
    procedure Put_Item (File : File_Type; Str : String);
    --  This routine is like Wide_Text_IO.Put, except that it checks for
    --  overflow of bounded lines, as described in (RM A.10.6(8)). It is used
@@ -169,7 +175,7 @@ package Ada.Wide_Text_IO.Generic_Aux is
    procedure String_Skip (Str : String; Ptr : out Integer);
    --  Used in the Get from string procedures to skip leading blanks in the
    --  string. Ptr is set to the index of the first non-blank. If the string
-   --  is all blanks, then the excption End_Error is raised, Note that blank
+   --  is all blanks, then the exception End_Error is raised, Note that blank
    --  is defined as a space or horizontal tab (RM A.10.6(5)).
 
    procedure Ungetc (ch : Integer; File : File_Type);

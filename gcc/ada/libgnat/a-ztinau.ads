@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---    A D A . W I D E _ W I D E _ T E X T _ I O . I N T E G E R _ A U X     --
+--    A D A . W I D E _ W I D E _ T E X T _ I O . I N T E G E R  _ A U X    --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -29,55 +29,45 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines for Ada.Wide_Wide_Text_IO.Integer_IO
---  that are shared among separate instantiations of this package. The routines
---  in this package are identical semantically to those in Integer_IO itself,
---  except that the generic parameter Num has been replaced by Integer or
---  Long_Long_Integer, and the default parameters have been removed because
---  they are supplied explicitly by the calls from within the generic template.
+--  This package contains implementation for Ada.Wide_Wide.Text_IO.Integer_IO
+--  and Ada.Wide_Wide_Text_IO.Modular_IO. The routines in this package are
+--  identical semantically to those in Integer_IO and Modular_IO themselves,
+--  except that the default parameters have been removed because they are
+--  supplied explicitly by the calls from within these units.
 
-private package Ada.Wide_Wide_Text_IO.Integer_Aux is
+private generic
+   type Num is (<>);
 
-   procedure Get_Int
+   with function Scan
+     (Str : String; Ptr : not null access Integer; Max : Integer) return Num;
+   with procedure Set_Image
+     (V : Num; S : in out String; P : in out Natural);
+   with procedure Set_Image_Width
+     (V : Num; W : Integer; S : out String; P : in out Natural);
+   with procedure Set_Image_Based
+     (V : Num; B : Natural; W : Integer; S : out String; P : in out Natural);
+
+package Ada.Wide_Wide_Text_IO.Integer_Aux is
+
+   procedure Get
      (File  : File_Type;
-      Item  : out Integer;
+      Item  : out Num;
       Width : Field);
 
-   procedure Get_LLI
-     (File  : File_Type;
-      Item  : out Long_Long_Integer;
-      Width : Field);
-
-   procedure Gets_Int
+   procedure Gets
      (From : String;
-      Item : out Integer;
+      Item : out Num;
       Last : out Positive);
 
-   procedure Gets_LLI
-     (From : String;
-      Item : out Long_Long_Integer;
-      Last : out Positive);
-
-   procedure Put_Int
+   procedure Put
      (File  : File_Type;
-      Item  : Integer;
+      Item  : Num;
       Width : Field;
       Base  : Number_Base);
 
-   procedure Put_LLI
-     (File  : File_Type;
-      Item  : Long_Long_Integer;
-      Width : Field;
-      Base  : Number_Base);
-
-   procedure Puts_Int
+   procedure Puts
      (To   : out String;
-      Item : Integer;
-      Base : Number_Base);
-
-   procedure Puts_LLI
-     (To   : out String;
-      Item : Long_Long_Integer;
+      Item : Num;
       Base : Number_Base);
 
 end Ada.Wide_Wide_Text_IO.Integer_Aux;

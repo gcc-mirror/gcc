@@ -30,16 +30,20 @@
 ------------------------------------------------------------------------------
 
 with Ada.Wide_Text_IO.Integer_Aux;
-with System.Img_BIU; use System.Img_BIU;
-with System.Img_Uns; use System.Img_Uns;
-with System.Img_LLB; use System.Img_LLB;
-with System.Img_LLU; use System.Img_LLU;
-with System.Img_LLW; use System.Img_LLW;
-with System.Img_WIU; use System.Img_WIU;
-with System.Val_Uns; use System.Val_Uns;
-with System.Val_LLU; use System.Val_LLU;
-with System.WCh_Con; use System.WCh_Con;
-with System.WCh_WtS; use System.WCh_WtS;
+with System.Img_BIU;  use System.Img_BIU;
+with System.Img_Uns;  use System.Img_Uns;
+with System.Img_LLB;  use System.Img_LLB;
+with System.Img_LLU;  use System.Img_LLU;
+with System.Img_LLW;  use System.Img_LLW;
+with System.Img_LLLB; use System.Img_LLLB;
+with System.Img_LLLU; use System.Img_LLLU;
+with System.Img_LLLW; use System.Img_LLLW;
+with System.Img_WIU;  use System.Img_WIU;
+with System.Val_Uns;  use System.Val_Uns;
+with System.Val_LLU;  use System.Val_LLU;
+with System.Val_LLLU; use System.Val_LLLU;
+with System.WCh_Con;  use System.WCh_Con;
+with System.WCh_WtS;  use System.WCh_WtS;
 
 package body Ada.Wide_Text_IO.Modular_IO is
 
@@ -59,11 +63,21 @@ package body Ada.Wide_Text_IO.Modular_IO is
         Set_Image_Width_Long_Long_Unsigned,
         Set_Image_Based_Long_Long_Unsigned);
 
-   Need_LLU : constant Boolean := Num'Base'Size > Unsigned'Size;
-   --  Throughout this generic body, we distinguish between the case where type
-   --  Unsigned is acceptable, and where a Long_Long_Unsigned is needed. This
-   --  Boolean is used to test for these cases and since it is a constant, only
-   --  code for the relevant case will be included in the instance.
+   package Aux_LLLU is new
+     Ada.Wide_Text_IO.Integer_Aux
+       (Long_Long_Long_Unsigned,
+        Scan_Long_Long_Long_Unsigned,
+        Set_Image_Long_Long_Long_Unsigned,
+        Set_Image_Width_Long_Long_Long_Unsigned,
+        Set_Image_Based_Long_Long_Long_Unsigned);
+
+   Need_LLU  : constant Boolean := Num'Base'Size > Unsigned'Size;
+   Need_LLLU : constant Boolean := Num'Base'Size > Long_Long_Unsigned'Size;
+   --  Throughout this generic body, we distinguish between cases where type
+   --  Unsigned is acceptable, where type Long_Long_Unsigned is acceptable and
+   --  where type Long_Long_Long_Unsigned is needed. These boolean constants
+   --  are used to test for these cases and since they are constant, only code
+   --  for the relevant case will be included in the instance.
 
    subtype TFT is Ada.Wide_Text_IO.File_Type;
    --  File type required for calls to routines in Aux
@@ -82,7 +96,9 @@ package body Ada.Wide_Text_IO.Modular_IO is
       pragma Unsuppress (Range_Check);
 
    begin
-      if Need_LLU then
+      if Need_LLLU then
+         Aux_LLLU.Get (File, Long_Long_Long_Unsigned (Item), Width);
+      elsif Need_LLU then
          Aux_LLU.Get (TFT (File), Long_Long_Unsigned (Item), Width);
       else
          Aux_Uns.Get (TFT (File), Unsigned (Item), Width);
@@ -116,7 +132,9 @@ package body Ada.Wide_Text_IO.Modular_IO is
       --  Aux.Gets will raise Data_Error in any case.
 
    begin
-      if Need_LLU then
+      if Need_LLLU then
+         Aux_LLLU.Gets (S, Long_Long_Long_Unsigned (Item), Last);
+      elsif Need_LLU then
          Aux_LLU.Gets (S, Long_Long_Unsigned (Item), Last);
       else
          Aux_Uns.Gets (S, Unsigned (Item), Last);
@@ -137,7 +155,9 @@ package body Ada.Wide_Text_IO.Modular_IO is
       Base  : Number_Base := Default_Base)
    is
    begin
-      if Need_LLU then
+      if Need_LLLU then
+         Aux_LLLU.Put (File, Long_Long_Long_Unsigned (Item), Width, Base);
+      elsif Need_LLU then
          Aux_LLU.Put (TFT (File), Long_Long_Unsigned (Item), Width, Base);
       else
          Aux_Uns.Put (TFT (File), Unsigned (Item), Width, Base);
@@ -161,7 +181,9 @@ package body Ada.Wide_Text_IO.Modular_IO is
       S : String (To'First .. To'Last);
 
    begin
-      if Need_LLU then
+      if Need_LLLU then
+         Aux_LLLU.Puts (S, Long_Long_Long_Unsigned (Item), Base);
+      elsif Need_LLU then
          Aux_LLU.Puts (S, Long_Long_Unsigned (Item), Base);
       else
          Aux_Uns.Puts (S, Unsigned (Item), Base);
